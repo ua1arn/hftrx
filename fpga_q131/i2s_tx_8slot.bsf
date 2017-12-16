@@ -1,0 +1,120 @@
+/*
+WARNING: Do NOT edit the input and output ports in this file in a text
+editor if you plan to continue editing the block that represents it in
+the Block Editor! File corruption is VERY likely to occur.
+*/
+/*
+Copyright (C) 1991-2014 Altera Corporation
+Your use of Altera Corporation's design tools, logic functions 
+and other software and tools, and its AMPP partner logic 
+functions, and any output files from any of the foregoing 
+(including device programming or simulation files), and any 
+associated documentation or information are expressly subject 
+to the terms and conditions of the Altera Program License 
+Subscription Agreement, Altera MegaCore Function License 
+Agreement, or other applicable license agreement, including, 
+without limitation, that your use is for the sole purpose of 
+programming logic devices manufactured by Altera and sold by 
+Altera or its authorized distributors.  Please refer to the 
+applicable agreement for further details.
+*/
+(header "symbol" (version "1.2"))
+(symbol
+	(rect 16 16 192 272)
+	(text "i2s_tx_8slot" (rect 5 0 73 14)(font "Arial" (font_size 8)))
+	(text "inst" (rect 8 240 25 252)(font "Arial" ))
+	(port
+		(pt 0 32)
+		(input)
+		(text "clk" (rect 0 0 15 14)(font "Arial" (font_size 8)))
+		(text "clk" (rect 21 27 36 41)(font "Arial" (font_size 8)))
+		(line (pt 0 32)(pt 16 32))
+	)
+	(port
+		(pt 0 48)
+		(input)
+		(text "s37data[63..0]" (rect 0 0 81 14)(font "Arial" (font_size 8)))
+		(text "s37data[63..0]" (rect 21 43 102 57)(font "Arial" (font_size 8)))
+		(line (pt 0 48)(pt 16 48)(line_width 3))
+	)
+	(port
+		(pt 0 64)
+		(input)
+		(text "s37en" (rect 0 0 35 14)(font "Arial" (font_size 8)))
+		(text "s37en" (rect 21 59 56 73)(font "Arial" (font_size 8)))
+		(line (pt 0 64)(pt 16 64))
+	)
+	(port
+		(pt 0 80)
+		(input)
+		(text "s26data[63..0]" (rect 0 0 81 14)(font "Arial" (font_size 8)))
+		(text "s26data[63..0]" (rect 21 75 102 89)(font "Arial" (font_size 8)))
+		(line (pt 0 80)(pt 16 80)(line_width 3))
+	)
+	(port
+		(pt 0 96)
+		(input)
+		(text "s26en" (rect 0 0 35 14)(font "Arial" (font_size 8)))
+		(text "s26en" (rect 21 91 56 105)(font "Arial" (font_size 8)))
+		(line (pt 0 96)(pt 16 96))
+	)
+	(port
+		(pt 0 112)
+		(input)
+		(text "s15data[63..0]" (rect 0 0 81 14)(font "Arial" (font_size 8)))
+		(text "s15data[63..0]" (rect 21 107 102 121)(font "Arial" (font_size 8)))
+		(line (pt 0 112)(pt 16 112)(line_width 3))
+	)
+	(port
+		(pt 0 128)
+		(input)
+		(text "s15en" (rect 0 0 35 14)(font "Arial" (font_size 8)))
+		(text "s15en" (rect 21 123 56 137)(font "Arial" (font_size 8)))
+		(line (pt 0 128)(pt 16 128))
+	)
+	(port
+		(pt 0 144)
+		(input)
+		(text "s04data[63..0]" (rect 0 0 81 14)(font "Arial" (font_size 8)))
+		(text "s04data[63..0]" (rect 21 139 102 153)(font "Arial" (font_size 8)))
+		(line (pt 0 144)(pt 16 144)(line_width 3))
+	)
+	(port
+		(pt 0 160)
+		(input)
+		(text "s04en" (rect 0 0 35 14)(font "Arial" (font_size 8)))
+		(text "s04en" (rect 21 155 56 169)(font "Arial" (font_size 8)))
+		(line (pt 0 160)(pt 16 160))
+	)
+	(port
+		(pt 0 176)
+		(input)
+		(text "i2s_sck" (rect 0 0 43 14)(font "Arial" (font_size 8)))
+		(text "i2s_sck" (rect 21 171 64 185)(font "Arial" (font_size 8)))
+		(line (pt 0 176)(pt 16 176))
+	)
+	(port
+		(pt 0 192)
+		(input)
+		(text "i2s_wsd" (rect 0 0 49 14)(font "Arial" (font_size 8)))
+		(text "i2s_wsd" (rect 21 187 70 201)(font "Arial" (font_size 8)))
+		(line (pt 0 192)(pt 16 192))
+	)
+	(port
+		(pt 0 208)
+		(input)
+		(text "i2s_wsp" (rect 0 0 49 14)(font "Arial" (font_size 8)))
+		(text "i2s_wsp" (rect 21 203 70 217)(font "Arial" (font_size 8)))
+		(line (pt 0 208)(pt 16 208))
+	)
+	(port
+		(pt 176 32)
+		(output)
+		(text "i2s_sdo" (rect 0 0 44 14)(font "Arial" (font_size 8)))
+		(text "i2s_sdo" (rect 111 27 155 41)(font "Arial" (font_size 8)))
+		(line (pt 176 32)(pt 160 32))
+	)
+	(drawing
+		(rectangle (rect 16 16 160 240))
+	)
+)

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="US-ASCII" standalone="yes"?>
+<cof>
+	<eprom_name>EPCS16</eprom_name>
+	<output_filename>C:/user/SVN/tc1/r7s721020/tc1_r7s721020_spi16m.pof</output_filename>
+	<n_pages>0</n_pages>
+	<width>1</width>
+	<mode>7</mode>
+	<hex_block>
+		<hex_filename>C:/user/SVN/tc1/r7s721020/tc1_r7s721020_rom.hex</hex_filename>
+		<hex_addressing>relative</hex_addressing>
+		<hex_offset>0</hex_offset>
+	</hex_block>
+	<version>6</version>
+	<create_cvp_file>0</create_cvp_file>
+	<auto_create_rpd>0</auto_create_rpd>
+	<options>
+		<map_file>1</map_file>
+	</options>
+</cof>

@@ -1,0 +1,718 @@
+/* $Id$ */
+//
+// Проект HF Dream Receiver (КВ приёмник мечты)
+// автор Гена Завидовский mgs2001@mail.ru
+// UA1ARN
+//
+
+#ifndef HARDWARE_H_INCLUDED
+#define HARDWARE_H_INCLUDED
+
+#include <stdlib.h>
+#include <stdint.h>
+//#include <assert.h>
+
+#if \
+	defined (__AVR_ATmega32__) || defined (__AVR_ATmega32A__) || \
+	defined (__AVR_ATmega16__) || defined (__AVR_ATmega16A__) || \
+	0
+
+	#define CPUSTYLE_ATMEGA	1		/* архитектура процессора */
+	#define CPUSTYLE_ATMEGA32	1	/* Набор портов и расположение выводов - DIP40 или TQFP48 */
+
+	#ifndef F_CPU
+	#define F_CPU 8000000ul
+	#endif
+
+	#include <avr/io.h>			/* Pin manipulation functions */
+	#include <avr/pgmspace.h>
+	#include <avr/eeprom.h>		/* только для случая использования внутренней памяти процессора */
+	#include <avr/interrupt.h>
+	#include <avr/cpufunc.h>
+	#include <util/delay.h>
+
+	#define ALIGNX_BEGIN /* __attribute__ ((aligned(32)))  */
+	#define ALIGNX_END /* nothing */
+
+#elif \
+	defined (__AVR_ATmega8__)  || \
+	defined (__AVR_ATmega8A__)  || \
+	0
+
+	#define CPUSTYLE_ATMEGA	1		/* архитектура процессора */
+
+	#ifndef F_CPU
+	#define F_CPU 8000000ul
+	#endif
+
+	#include <avr/io.h>			/* Pin manipulation functions */
+	#include <avr/pgmspace.h>
+	#include <avr/eeprom.h>		/* только для случая использования внутренней памяти процессора */
+	#include <avr/interrupt.h>
+	#include <avr/cpufunc.h>
+	#include <util/delay.h>
+
+	#define ALIGNX_BEGIN /* __attribute__ ((aligned(32)))  */
+	#define ALIGNX_END /* nothing */
+
+#elif \
+	defined (__AVR_ATmega328P__) || defined (__AVR_ATmega328__) || defined (__AVR_ATmega328A__) || \
+	defined (__AVR_ATmega168P__) || defined (__AVR_ATmega168__) || defined (__AVR_ATmega168PA__) || defined (__AVR_ATmega168A__) || \
+	defined (__AVR_ATmega48P__) || defined (__AVR_ATmega48__) || defined (__AVR_ATmega48PA__) || defined (__AVR_ATmega48A__) || \
+	0
+
+	#define CPUSTYLE_ATMEGA	1		/* архитектура процессора */
+	#define CPUSTYLE_ATMEGA328	1
+	#define CPUSTYLE_ATMEGA_XXX4 1
+
+	#ifndef F_CPU
+	#define F_CPU 8000000ul
+	#endif
+
+	#include <avr/io.h>			/* Pin manipulation functions */
+	#include <avr/pgmspace.h>
+	#include <avr/eeprom.h>		/* только для случая использования внутренней памяти процессора */
+	#include <avr/interrupt.h>
+	#include <avr/cpufunc.h>
+	#include <util/delay.h>
+
+	#define ALIGNX_BEGIN /* __attribute__ ((aligned(32)))  */
+	#define ALIGNX_END /* nothing */
+
+#elif \
+	defined (__AVR_ATmega324P__) || defined (__AVR_ATmega324A__) || defined (__AVR_ATmega644__) || \
+	defined (__AVR_ATmega644P__) || defined (__AVR_ATmega644PA__) || \
+	defined (__AVR_ATmega1284P__) || \
+	0
+
+	#define CPUSTYLE_ATMEGA	1		/* архитектура процессора */
+	#define CPUSTYLE_ATMEGA32	1	/* Набор портов и расположение выводов - DIP40 или TQFP48 */
+	#define CPUSTYLE_ATMEGA_XXX4 1	// Atmega324, Atmega644 and so on
+
+	#ifndef F_CPU
+		#define F_CPU 10000000ul
+	#endif
+
+	#include <avr/io.h>			/* Pin manipulation functions */
+	#include <avr/pgmspace.h>
+	#include <avr/eeprom.h>		/* только для случая использования внутренней памяти процессора */
+	#include <avr/interrupt.h>
+	#include <avr/cpufunc.h>
+	#include <util/delay.h>
+
+	#define ALIGNX_BEGIN /* __attribute__ ((aligned(32)))  */
+	#define ALIGNX_END /* nothing */
+
+#elif \
+	defined (__AVR_ATmega64__) || defined (__AVR_ATmega64A__) || \
+	defined (__AVR_ATmega128__) || defined (__AVR_ATmega128A__) || \
+	0
+
+	#define CPUSTYLE_ATMEGA	1		/* архитектура процессора */
+	#define CPUSTYLE_ATMEGA128	1	/* Набор портов и расположение выводов - TQFP64 */
+
+	#ifndef F_CPU
+	#define F_CPU 8000000ul
+	#endif
+
+	#include <avr/io.h>			/* Pin manipulation functions */
+	#include <avr/pgmspace.h>
+	#include <avr/eeprom.h>		/* только для случая использования внутренней памяти процессора */
+	#include <avr/interrupt.h>
+	#include <avr/cpufunc.h>
+	#include <util/delay.h>
+
+	#define ALIGNX_BEGIN /* __attribute__ ((aligned(32)))  */
+	#define ALIGNX_END /* nothing */
+
+#elif \
+	defined (__AVR_ATxmega32A4__) || \
+	defined (__AVR_ATxmega32A4U__) || \
+	defined (__AVR_ATxmega128A4U__) || \
+	0
+
+	#define CPUSTYLE_ATXMEGA	1
+	#define CPUSTYLE_ATXMEGAXXXA4	1
+	
+	#ifndef F_CPU
+	#define F_CPU 32000000uL
+	#endif
+
+	#include <avr/io.h>			/* Pin manipulation functions */
+	#include <avr/pgmspace.h>
+	#include <avr/eeprom.h>		/* только для случая использования внутренней памяти процессора */
+	#include <avr/interrupt.h>
+	#include <avr/cpufunc.h>
+	#include <util/delay.h>
+
+	#define ALIGNX_BEGIN /* __attribute__ ((aligned(32)))  */
+	#define ALIGNX_END /* nothing */
+
+#elif CPUSTYLE_STM32H7XX
+	// STM32H743ZIT6 processors, up to 400 MHz
+
+	#define CPUSTYLE_ARM	1		/* архитектура процессора ARM */
+	#define CPUSTYLE_STM32F		1		/* архитектура процессора STM32F */
+	#define CPUSTYLE_ARM_CM7	1		/* архитектура процессора CORTEX M7 */
+
+	#include "armcpu/stm32h7xx.h"
+
+	#define ALIGNX_BEGIN __attribute__ ((aligned(32))) 
+	#define ALIGNX_END /* nothing */
+
+	#define ARM_MATH_CM7 1
+	#include "../../DSP/Include/arm_math.h"
+	#include "../../DSP/Include/arm_const_structs.h"
+
+#elif CPUSTYLE_STM32F7XX
+	// STM32F745ZGT6 processors, up to 216 MHz 
+
+	#define CPUSTYLE_ARM	1		/* архитектура процессора ARM */
+	#define CPUSTYLE_STM32F		1		/* архитектура процессора STM32F */
+	#define CPUSTYLE_ARM_CM7	1		/* архитектура процессора CORTEX M7 */
+
+	#include "armcpu/stm32f7xx.h"
+
+	#define ALIGNX_BEGIN __attribute__ ((aligned(32))) 
+	#define ALIGNX_END /* nothing */
+
+	#define ARM_MATH_CM7 1
+	#include "../../DSP/Include/arm_math.h"
+	#include "../../DSP/Include/arm_const_structs.h"
+
+#elif CPUSTYLE_STM32F4XX
+
+	#define CPUSTYLE_ARM	1		/* архитектура процессора ARM */
+	#define CPUSTYLE_STM32F		1		/* архитектура процессора STM32F */
+	#define CPUSTYLE_ARM_CM4	1		/* архитектура процессора CORTEX M4 */
+
+	#include "armcpu/stm32f4xx.h"
+
+	#define ALIGNX_BEGIN __attribute__ ((aligned(32))) 
+	#define ALIGNX_END /* nothing */
+
+	#define ARM_MATH_CM4 1
+	#include "../../DSP/Include/arm_math.h"
+	#include "../../DSP/Include/arm_const_structs.h"
+
+#elif CPUSTYLE_STM32F30X
+
+	#define CPUSTYLE_ARM	1		/* архитектура процессора ARM */
+	#define CPUSTYLE_STM32F		1		/* архитектура процессора STM32F */
+	#define CPUSTYLE_ARM_CM4	1		/* архитектура процессора CORTEX M3 */
+
+	// STM32F303VC processors
+	#include "armcpu/stm32f30x.h"
+
+	#define ALIGNX_BEGIN __attribute__ ((aligned(32))) 
+	#define ALIGNX_END /* nothing */
+
+	#define ARM_MATH_CM4 1
+	#include "../../DSP/Include/arm_math.h"
+	#include "../../DSP/Include/arm_const_structs.h"
+
+#elif CPUSTYLE_STM32F1XX
+
+	#define CPUSTYLE_ARM	1		/* архитектура процессора ARM */
+	#define CPUSTYLE_STM32F		1		/* архитектура процессора STM32F */
+	#define CPUSTYLE_ARM_CM3	1		/* архитектура процессора CORTEX M3 */
+
+	#include "armcpu/stm32f1xx.h"
+
+	#define ALIGNX_BEGIN __attribute__ ((aligned(32))) 
+	#define ALIGNX_END /* nothing */
+
+	#define ARM_MATH_CM3 1
+	#include "../../DSP/Include/arm_math.h"
+	#include "../../DSP/Include/arm_const_structs.h"
+
+#elif CPUSTYLE_STM32F0XX
+
+	#define CPUSTYLE_ARM	1		/* архитектура процессора ARM */
+	#define CPUSTYLE_STM32F		1		/* архитектура процессора STM32F */
+	#define CPUSTYLE_ARM_CM0	1		/* архитектура процессора CORTEX M0 */
+	
+	#include "armcpu/stm32f0xx.h"
+
+	#define ALIGNX_BEGIN __attribute__ ((aligned(32))) 
+	#define ALIGNX_END /* nothing */
+
+	#define ARM_MATH_CM0 1
+	//#define ARM_MATH_CM0PLUS 1
+	#include "../../DSP/Include/arm_math.h"
+	#include "../../DSP/Include/arm_const_structs.h"
+
+#elif CPUSTYLE_STM32L0XX
+
+	#define CPUSTYLE_ARM	1		/* архитектура процессора ARM */
+	#define CPUSTYLE_STM32F		1		/* архитектура процессора STM32F */
+	#define CPUSTYLE_ARM_CM0	1		/* архитектура процессора CORTEX M0 */
+	#include "armcpu/stm32l0xx.h"
+
+	#define ALIGNX_BEGIN __attribute__ ((aligned(32))) 
+	#define ALIGNX_END /* nothing */
+
+	#define ARM_MATH_CM0 1
+	//#define ARM_MATH_CM0PLUS 1
+	#include "../../DSP/Include/arm_math.h"
+	#include "../../DSP/Include/arm_const_structs.h"
+
+#elif CPUSTYLE_ATSAM3S
+
+	#define CPUSTYLE_ARM	1		/* архитектура процессора ARM */
+	#define CPUSTYLE_ARM_CM3	1		/* архитектура процессора CORTEX M3 */
+
+	#define __SAM3S4C__ 1		// replace to __SAM3S4B__
+	#include "sam3s.h"
+
+	#define ALIGNX_BEGIN __attribute__ ((aligned(32))) 
+	#define ALIGNX_END /* nothing */
+
+	#define ARM_MATH_CM3 1
+	#include "../../DSP/Include/arm_math.h"
+	#include "../../DSP/Include/arm_const_structs.h"
+
+#elif CPUSTYLE_ATSAM4S
+
+	#define CPUSTYLE_ARM	1		/* архитектура процессора ARM */
+	#define CPUSTYLE_ARM_CM4	1		/* архитектура процессора CORTEX M3 */
+
+	#define __SAM4SA16C__ 1
+	#include "sam4s.h"
+
+	#define ALIGNX_BEGIN __attribute__ ((aligned(32))) 
+	#define ALIGNX_END /* nothing */
+
+	#define ARM_MATH_CM4 1
+	#include "../../DSP/Include/arm_math.h"
+	#include "../../DSP/Include/arm_const_structs.h"
+
+#elif CPUSTYLE_MK20DX	// Teensy 3.1 - Freescale Semiconductor - KINETIS MK20DX256VLH7
+
+	#define CPUSTYLE_ARM	1		/* архитектура процессора ARM */
+	#define CPUSTYLE_ARM_CM4	1		/* архитектура процессора CORTEX M3 */
+
+	#include "armcpu/MK20D5.h"
+
+	#define ALIGNX_BEGIN __attribute__ ((aligned(32))) 
+	#define ALIGNX_END /* nothing */
+
+	#define ARM_MATH_CM4 1
+	#include "../../DSP/Include/arm_math.h"
+	#include "../../DSP/Include/arm_const_structs.h"
+
+#elif CPUSTYLE_AT91SAM7S
+
+	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
+	#define	CPUSTYLE_ARM7TDMI	1
+	#include "armcpu/at91sam7s64.h"
+
+	#define __ASM            __asm           /*!< asm keyword for GNU Compiler          */
+	#define __INLINE         inline          /*!< inline keyword for GNU Compiler       */
+	#define __STATIC_INLINE  static inline
+
+	#include "tdmi7_gcc.h"
+
+	#define ALIGNX_BEGIN __attribute__ ((aligned(32))) 
+	#define ALIGNX_END /* nothing */
+
+#elif CPUSTYLE_AT91SAM9XE
+
+	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
+	#define	CPUSTYLE_ARM7TDMI	1
+	#include "armcpu/at91sam9xe512.h"
+
+	#define ALIGNX_BEGIN __attribute__ ((aligned(32))) 
+	#define ALIGNX_END /* nothing */
+
+	#define __ASM            __asm           /*!< asm keyword for GNU Compiler          */
+	#define __INLINE         inline          /*!< inline keyword for GNU Compiler       */
+	#define __STATIC_INLINE  static inline
+
+	#include "tdmi7_gcc.h"
+
+#elif CPUSTYLE_R7S721
+
+	// Renesas CPU
+	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
+	#define	CPUSTYLE_ARM_CA9	1
+
+	#include "armcpu/Renesas_RZ_A1.h"
+
+	#include "armcpu/iodefine.h"
+	#include "rza_io_regrw.h"
+
+	#include "hardware_r7s721.h"
+
+	#define ALIGNX_BEGIN __attribute__ ((aligned(32))) 
+	#define ALIGNX_END /* nothing */
+
+	//#include "../../DSP/Include/arm_math.h"
+	//#include "../../DSP/Include/arm_const_structs.h"
+
+#elif \
+	defined (__TMS320C28X__) || \
+	0
+
+	#define CPUSTYPE_TMS320F2833X 1
+	#include "tms320f2833x.h"
+
+	//#define CPU_FREQ 150000000uL
+	#define CPU_FREQ 100000000uL
+	//#define CPU_FREQ 5000000uL		// Частота без инициализаwии PLL - xtal / 4
+
+	#define ALIGNX_BEGIN /* __attribute__ ((aligned(32)))  */
+	#define ALIGNX_END /* nothing */
+
+#else 
+
+	#error Not handled processor definition (GCC argument -m=XXXXX)
+	#error In Makefile not defined CPUSTYLE_XXX
+
+#endif
+
+/* По значению маски получить значение младшего бита, входящего в неё. */
+#define MASK2LSB(mask)  ((mask) & (0 - (mask)))
+
+/* макрооределение для расчёта количества "тиков" для выдержки величин задержек. */
+#define NTICKS(t_mS) ((uint_fast16_t) (((uint_fast32_t) (t_mS) * TICKS_FREQUENCY + 500) / 1000))
+#define NTICKSADC(t_uS) ((uint_fast16_t) (((uint_fast32_t) (t_uS) * ADC_FREQ + 5) / 1000000))
+#define NTICKSADC01(t_uS01) ((uint_fast16_t) (((uint_fast32_t) (t_uS01) * ADC_FREQ + 5) / 10000000))
+
+
+void arm_cpu_initialize(void);	// функция вызывается из start-up до копирования всех "быстрых" функций и до инициализации переменных
+void cpu_initialize(void);
+void cpu_initdone(void);	// секция init больше не нужна
+
+uint_fast32_t arm_hardware_stm32f7xx_pllq_initialize(void);	// Настроить выход PLLQ на 48 МГц
+
+void hardware_timer_initialize(uint_fast32_t ticksfreq);
+
+void spool_encinterrupt(void);	/* прерывание по изменению сигнала на входах от валкодера */
+void spool_encinterrupt2(void);	/* прерывание по изменению сигнала на входах от валкодера #2 */
+void hardware_encoder_initialize(void);
+uint_fast8_t hardware_get_encoder_bits(void);/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
+uint_fast8_t hardware_get_encoder2_bits(void);/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
+
+void hardware_adc_initialize(void);
+
+#if CPUSTYLE_ARM
+
+	/* тип для передачи параметра "адрес устройства на SPI шине" */
+	/* это может быть битовая маска в порту ввода-вывода */
+	typedef uint_fast32_t spitarget_t;		
+	/* тип для хранения данных, считанных из порта ввода-вывода или для формируемого значения */
+	typedef uint_fast32_t portholder_t;		
+
+	#define FLASHMEM //__flash
+	#define FLASHMEMINIT	__attribute__((section(".init"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
+	#define NOINLINEAT // __attribute__((noinline))
+
+	#if CPUSTYLE_R7S721
+		#define RAMFUNC_NONILINE // __attribute__((__section__(".ramfunc"), noinline))  
+		#define RAMFUNC			 // __attribute__((__section__(".ramfunc")))  
+	#elif (CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX)
+		#define RAMFUNC_NONILINE __attribute__((__section__(".ramfunc"), noinline))  
+		#define RAMFUNC			 __attribute__((__section__(".ramfunc")))  
+	#elif CPUSTYLE_STM32F4XX
+		#define RAMFUNC_NONILINE // __attribute__((__section__(".ramfunc"), noinline))  
+		#define RAMFUNC			 // __attribute__((__section__(".ramfunc")))  
+	#else
+		#define RAMFUNC_NONILINE __attribute__((__section__(".ramfunc"), noinline))  
+		#define RAMFUNC			 __attribute__((__section__(".ramfunc")))  
+	#endif
+
+	#define ATTRWEAK __attribute__ ((weak))
+	// Use __attribute__ ((weak, alias("Default_Handler")))
+
+	//#define PSTR(s) (s)
+	#define PSTR(s) (__extension__({static const char __c[] FLASHMEM = (s); &__c[0];}))
+
+	void RAMFUNC local_delay_us(int timeUS);
+	void local_delay_ms(int timeMS);
+
+#elif CPUSTYLE_ATMEGA || CPUSTYLE_ATXMEGA
+	// ATMega, ATXMega target
+
+	/* тип для передачи параметра "адрес устройства на SPI шине" */
+	/* это может быть битовая маска в порту ввода-вывода */
+	typedef uint_fast8_t spitarget_t;
+	/* тип для хранения данных, считанный из порта ввода-вывода или для формируемого значения */
+	typedef uint_fast8_t portholder_t;		
+
+	#define local_delay_us(t) do { _delay_us(t); } while (0)
+	#define local_delay_ms(t) do { _delay_ms(t); } while (0)
+ 
+	#define FLASHMEM __flash
+	#define FLASHMEMINIT	__flash	/* не требуется быстрый доступ - например образ загружаемый в FPGA */
+
+	#if (FLASHEND > 0x7FFF)	
+		// нет нужды экономить память FLASH
+		#define NOINLINEAT // __attribute__((noinline))
+	#else
+		#define NOINLINEAT __attribute__((noinline))
+	#endif
+	#define RAMFUNC_NONILINE // __attribute__((__section__(".ramfunc"), noinline))  
+	#define RAMFUNC			 // __attribute__((__section__(".ramfunc")))  
+	#define ATTRWEAK __attribute__ ((weak))
+
+#elif CPUSTYPE_TMS320F2833X
+	/* тип для передачи параметра "адрес устройства на SPI шине" */
+	/* это может быть битовая маска в порту ввода-вывода */
+	typedef uint_fast32_t spitarget_t;
+	/* тип для хранения данных, считанный из порта ввода-вывода или для формируемого значения */
+	typedef uint_fast32_t portholder_t;		
+
+	#define enableIRQ() do { asm(" NOP"); } while (0)
+	#define disableIRQ() do { asm(" NOP"); } while (0)
+
+	#define global_enableIRQ() do { asm(" NOP"); } while (0)
+	#define global_disableIRQ() do { asm(" NOP"); } while (0)
+
+	#define FLASHMEM //__flash
+	#define FLASHMEMINIT	/* не требуется быстрый доступ - например образ загружаемый в FPGA */
+
+	// нет нужды экономить память FLASH
+	#define NOINLINEAT // __attribute__((noinline))
+	#define RAMFUNC_NONILINE // __attribute__((__section__(".ramfunc"), noinline))  
+	#define RAMFUNC			 // __attribute__((__section__(".ramfunc")))  
+	#define ATTRWEAK __attribute__ ((weak))
+
+#else
+	#error Undefined CPUSTYLE_xxxx
+#endif
+
+// Sample usage:
+///* все возможные в данной конфигурации фильтры */
+//#define IF3_FMASK	(IF3_FMASK_0P5 | IF3_FMASK_1P8 | IF3_FMASK_2P7 | IF3_FMASK_3P1)
+
+// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
+void enc_spool(void);
+void enc2_spool(void);
+void kbd_spool(void);
+void display_spool(void);	// отсчёт времени по запрещению обновления дисплея при вращении валкодера
+void board_usb_spool(void);
+
+
+void seq_spool_ticks(void);	/* сиквенсор приём-передача - таймерные состояния*/
+//void key_spool_inputs(void);	// опрос состояния электронного ключа и запоминание факта нажатия
+void spool_secound(void);		// вызывается раз в секунду из таймерного прерывания.
+
+void spool_nmeapps(void);	// Обработчик вызывается при приходе очередного импульса PPS
+
+// получить прескалер и значение для программирования таймера 
+uint_fast8_t
+hardware_calc_sound_params(
+	uint_least16_t tonefreq,	/* tonefreq - частота в десятых долях герца. Минимум - 400 герц (определено набором команд CAT). */
+	unsigned * pvalue);
+// установить прескалер и значение для программирования таймера 
+// called from interrupt or with disabled interrupts
+void hardware_sounds_setfreq(
+	uint_fast8_t prei,
+	unsigned value
+	);
+// выключаем звук
+void hardware_sounds_disable(void);
+/* вызывается при запрещённых прерываниях. */
+void hardware_beep_initialize(void);
+
+
+/* Управление SPI. Так как некоторые периферийные устройства не могут работать с 8-битовыми блоками
+   на шине, в таких случаях формирование делается программно - аппаратный SPI при этом отключается.
+   
+   Так как переключение в нужный режим SPI производится после активизации CS, для такого применения не годятся
+   режимы SPI с "0" уровнем SCLK в неактивном состоянии.
+   */
+
+enum
+{
+	SPIC_MODE0,
+	SPIC_MODE1,
+	SPIC_MODE2, 
+	SPIC_MODE3, 
+	//
+	SPIC_MODES_COUNT
+} spi_modes_t;
+
+// +++ dsp
+// Интерфейс к НЧ кодеку
+void hardware_audiocodec_enable(void);		// Интерфейс к НЧ кодеку
+void hardware_audiocodec_initialize(void);	// Интерфейс к НЧ кодеку
+
+// Интерфейс к ПЧ кодеку или FPGA
+void hardware_fpgacodec_enable(void);		// Интерфейс к ВЧ кодеку
+void hardware_fpgacodec_initialize(void);	// Интерфейс к ВЧ кодеку
+void hardware_fpgaspectrum_enable(void);	// Интерфейс к источнику данных о спектре
+void hardware_fpgaspectrum_initialize(void);	// Интерфейс к источнику данных о спектре
+
+void hardware_dac_initialize(void);		/* инициализация DAC на STM32F4xx */
+void hardware_dac_ch1_setvalue(uint_fast16_t v);	// вывод 12-битного значения на ЦАП - канал 1
+void hardware_dac_ch2_setvalue(uint_fast16_t v);	// вывод 12-битного значения на ЦАП - канал 2
+
+
+void hardware_spi_io_delay(void);
+
+void cat2_parsechar(uint_fast8_t c);				/* вызывается из обработчика прерываний */
+void cat2_rxoverflow(void);							/* вызывается из обработчика прерываний */
+void cat2_disconnect(void);							/* вызывается из обработчика прерываний произошёл разрыв связи при работе по USB CDC */
+void cat2_sendchar(void * ctx);							/* вызывается из обработчика прерываний */
+
+// Функции тестирования работы компорта по прерываниям
+void cat3_parsechar(uint_fast8_t c);				/* вызывается из обработчика прерываний */
+void cat3_rxoverflow(void);							/* вызывается из обработчика прерываний */
+void cat3_disconnect(void);							/* вызывается из обработчика прерываний */
+void cat3_sendchar(void * ctx);							/* вызывается из обработчика прерываний */
+
+void modem_parsechar(uint_fast8_t c);				/* вызывается из обработчика прерываний */
+void modem_rxoverflow(void);						/* вызывается из обработчика прерываний */
+void modem_disconnect(void);						/* вызывается из обработчика прерываний */
+void modem_sendchar(void * ctx);							/* вызывается из обработчика прерываний */
+
+void nmea_parsechar(uint_fast8_t c);				/* вызывается из обработчика прерываний */
+void nmea_rxoverflow(void);							/* вызывается из обработчика прерываний */
+void nmea_sendchar(void * ctx);							/* вызывается из обработчика прерываний */
+
+void hardware_uart1_initialize(void);
+void hardware_uart1_set_speed(uint_fast32_t baudrate);
+void hardware_uart1_tx(void * ctx, uint_fast8_t c);	/* передача символа после прерывания о готовности передатчика */
+void hardware_uart1_enabletx(uint_fast8_t state);	/* вызывается из обработчика прерываний */
+void hardware_uart1_enablerx(uint_fast8_t state);	/* вызывается из обработчика прерываний */
+uint_fast8_t hardware_usart1_putchar(uint_fast8_t c);/* передача символа если готов порт */
+uint_fast8_t hardware_usart1_getchar(char * cp); /* приём символа, если готов порт */
+
+void hardware_uart2_initialize(void);
+void hardware_uart2_set_speed(uint_fast32_t baudrate);
+void hardware_uart2_tx(void * ctx, uint_fast8_t c);	/* передача символа после прерывания о готовности передатчика */
+void hardware_uart2_enabletx(uint_fast8_t state);	/* вызывается из обработчика прерываний */
+void hardware_uart2_enablerx(uint_fast8_t state);	/* вызывается из обработчика прерываний */
+uint_fast8_t hardware_usart2_putchar(uint_fast8_t c);/* передача символа если готов порт */
+uint_fast8_t hardware_usart2_getchar(char * cp); /* приём символа, если готов порт */
+
+void usbd_cdc_tx(void * ctx, uint_fast8_t c);			/* передача символа после прерывания о готовности передатчика - вызывается из HARDWARE_CDC_ONTXCHAR */
+void usbd_cdc_enabletx(uint_fast8_t state);	/* вызывается из обработчика прерываний */
+void usbd_cdc_enablerx(uint_fast8_t state);	/* вызывается из обработчика прерываний */
+
+/* отладочная выдача через USB CDC */
+void debugusb_initialize(void);				/* Вызывается из user-mode программы при запрещённых прерываниях. */
+uint_fast8_t debugusb_putchar(uint_fast8_t c);/* передача символа если готов порт */
+uint_fast8_t debugusb_getchar(char * cp); /* приём символа, если готов порт */
+void debugusb_parsechar(uint_fast8_t c);	/* вызывается из обработчика прерываний */
+void debugusb_sendchar(void * ctx);			/* вызывается из обработчика прерываний */
+
+void modem_spool(void);		/* вызывается из обработчика таймерного прерывания */
+void buffers_spool(void);	/* вызывается из обработчика таймерного прерывания */
+
+// spool-based functions for debug
+int dbg_puts_impl_P(const FLASHMEM char * s);
+int dbg_puts_impl(const char * s);
+int dbg_putchar(int c);
+int dbg_getchar(char * r);
+//#define DEBUGSPEED 256000uL
+#define DEBUGSPEED 57600uL
+
+/* TWI (I2C) interface */
+#define I2C_RETRIES 3	/* количество повторов */
+void i2c_initialize(void);
+void i2c_start(uint_fast8_t address);
+
+void i2c_read(uint_fast8_t * pdata, uint_fast8_t acknak);
+
+#define I2C_READ_ACK 0  // i2c_read parameter
+#define I2C_READ_ACK_1 1  // i2c_read parameter
+#define I2C_READ_NACK 2		// ack_type - last parameterr in read block
+#define I2C_READ_ACK_NACK 3		// чтение первого и единственного байта по I2C
+void i2c_write(uint_fast8_t data);
+void i2c_write_withrestart(uint_fast8_t data);	// запись, после чего restart
+void i2c_waitsend(void);	// Вызвать после последнего i2c_write()
+void i2c_stop(void);
+
+void hardware_twi_master_configure(void);
+
+uint32_t hardware_get_random(void);
+
+void arm_hardware_ltdc_initialize(void);	// STM32F4xxx with LCD-TFT Controller (LTDC)
+void arm_hardware_sdram_initialize(void);
+
+uint_fast8_t usbd_cdc_getrts(void);
+uint_fast8_t usbd_cdc_getdtr(void);
+
+RAMFUNC_NONILINE void AT91F_PIOA_IRQHandler(void);
+
+void SPI2_IRQHandler(void);
+void EXTI0_IRQHandler(void);
+void EXTI1_IRQHandler(void);
+void EXTI2_IRQHandler(void);
+void EXTI3_IRQHandler(void);
+void EXTI4_IRQHandler(void);
+void EXTI9_5_IRQHandler(void);
+void EXTI15_10_IRQHandler(void);
+
+void DMA1_Stream0_IRQHandler(void);		// ch0: SPI3: audio codec (rx) - on stm32F446/all
+void DMA1_Stream3_IRQHandler(void);		// ch3: I2S2_EXT - audio codec (rx) on STM32F429
+void DMA1_Stream4_IRQHandler(void);		// ch0: I2S2 (tx) - audio codec
+
+void DMA2_Stream1_IRQHandler(void);		// ch0: SAI1_A (tx)
+void DMA2_Stream5_IRQHandler(void);		// ch0: SAI1_B (rx)
+void DMA2_Stream4_IRQHandler(void);		// ch3: SAI2_B (tx)
+void DMA2_Stream7_IRQHandler(void);		// ch0: SAI2_B (rx)
+void DMA2_Stream6_IRQHandler(void);		// ch4: SDIO
+void SDIO_IRQHandler(void);
+
+void USART1_IRQHandler(void);
+void USART2_IRQHandler(void);
+void USART3_IRQHandler(void);
+
+
+void cpu_stm32f1xx_setmapr(unsigned long bits);
+
+void hardware_tim21_initialize(void);
+
+void hardware_sdhost_initialize(void);
+void hardware_sdhost_setspeed(unsigned long ticksfreq);
+void hardware_sdhost_setbuswidth(uint_fast8_t use4bit);
+
+void lowtests(void);
+void midtests(void);
+void hightests(void);
+void looptests(void);	// Периодически вызывается в главном цикле
+
+void arm_hardware_invalidate(uintptr_t base, size_t size);	// Сейчас в эту память будем читать по DMA
+void arm_hardware_flush(uintptr_t base, size_t size);	// Сейчас эта память будет записываться по DMA куда-то
+void arm_hardware_flush_invalidate(uintptr_t base, size_t size);	// Сейчас эта память будет записываться по DMA куда-то. Потом содержимое не требуется
+void arm_hardware_flush_all(void);
+
+void r7s721_sdhi0_dma(void);
+
+#if CPUSTYLE_R7S721
+	//  Renesas parameters
+	#define HARDWARE_USBD_PIPE_ISOC_OUT	1	// ISOC OUT Аудиоданные от компьютера в TRX - D0FIFOB0
+	#define HARDWARE_USBD_PIPE_ISOC_IN	2	// ISOC IN Аудиоданные в компьютер из TRX - D0FIFOB1
+	#define HARDWARE_USBD_PIPE_CDC_OUT	3	// CDC OUT Данные ком-порта от компьютера в TRX
+	#define HARDWARE_USBD_PIPE_CDC_IN	4	// CDC IN Данные ком-порта в компьютер из TRX
+	#define HARDWARE_USBD_PIPE_CDC_OUTb	14	// CDC OUT - без передачи данных
+	#define HARDWARE_USBD_PIPE_CDC_INb	15	// CDC IN - без передачи данных
+	#define HARDWARE_USBD_PIPE_CDC_INT	6	//
+	#define HARDWARE_USBD_PIPE_CDC_INTb	7	//
+#endif /* CPUSTYLE_R7S721 */
+
+#define MSGBUFFERSIZE8 12
+
+enum messagetypes
+{
+	MSGT_EMPTY,
+	MSGT_1SEC,
+	MSGT_KEYB,	// 1 byte - key code
+	MSGT_CAT,	// 12 bytes as parameter
+	//
+	MSGT_count
+};
+
+uint_fast8_t takemsgready_user(uint8_t * * dest);	// Буферы с принятымти от обработчиков прерываний сообщениями
+void releasemsgbuffer_user(uint8_t * dest);	// Освобождение обработанного буфера сообщения
+size_t takemsgbufferfree_low(uint8_t * * dest);	// Буфер для формирования сообщения
+void placesemsgbuffer_low(uint_fast8_t type, uint8_t * dest);	// поместить сообщение в очередь к исполнению 
+
+#include "product.h"
+#include "taildefs.h"
+
+#endif // HARDWARE_H_INCLUDED
