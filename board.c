@@ -7362,7 +7362,7 @@ uint_fast8_t board_getadc_smoothed_u8(uint_fast8_t adci, uint_fast8_t lower, uin
 uint_fast8_t board_getadc_unfiltered_u8(uint_fast8_t adci, uint_fast8_t lower, uint_fast8_t upper)	/* получить значение от АЦП в диапазоне lower..upper (включая границы) */
 {
 	const adcvalholder_t t = board_getadc_unfiltered_truevalue(adci);
-	const uint_fast8_t v = lower + (uint_fast8_t) ((uint_fast16_t) t * (upper - lower) / board_getadc_fsval(adci));	// нормируем к требуемому диапазону
+	const uint_fast8_t v = lower + (uint_fast8_t) ((uint_fast32_t) t * (upper - lower) / board_getadc_fsval(adci));	// нормируем к требуемому диапазону
 	ASSERT(v >= lower && v <= upper);
 	return v;
 }
