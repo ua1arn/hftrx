@@ -11577,6 +11577,8 @@ static int mapfft2raster(
 
 int dsp_mag2y(FLOAT_t mag, uint_fast16_t dy)
 {
+	if (mag < waterfalrange)
+		return 0;
 	const FLOAT_t v = mag / waterfalrange;
 	int val = LOG10F(v) * ((int_fast16_t) dy - 1) / toplogdb;
 
