@@ -14,7 +14,7 @@
 #define ARM_STM32F4XX_TQFP144_CTLSTYLE_RAVEN_V7_RW1AM_H_INCLUDED 1
 
 	#if ! defined(STM32F767xx)
-		#error Wrong CPU selected. STM32F746xx expected
+		#error Wrong CPU selected. STM32F767xx expected
 	#endif /* ! defined(STM32F446xx) */
 
 	//#define WITHSAICLOCKFROMI2S 1	/* Блок SAI1 тактируется от PLL I2S */
