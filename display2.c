@@ -1334,9 +1334,9 @@ struct dzone
 		REDRSUBSET(3) | \
 		REDRSUBSET(4) | \
 		REDRSUBSET(5) | \
-		REDRSUBSET(6) | \
 		0)
 #define REDRSUBSET_MENU		REDRSUBSET(7)
+#define REDRSUBSET_SLEEP	REDRSUBSET(6)
 
 enum
 {
