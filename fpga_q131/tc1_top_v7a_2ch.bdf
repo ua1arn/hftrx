@@ -550,7 +550,7 @@ applicable agreement for further details.
 	(output)
 	(rect 1864 1000 2040 1016)
 	(text "OUTPUT" (rect 1 0 39 10)(font "Arial" (font_size 6)))
-	(text "xvrtr_ref" (rect 90 0 133 12)(font "Arial" ))
+	(text "refclk_out" (rect 90 0 139 12)(font "Arial" ))
 	(pt 0 8)
 	(drawing
 		(line (pt 0 8)(pt 52 8))
@@ -1461,10 +1461,6 @@ applicable agreement for further details.
 	(pt 1048 536)
 )
 (connector
-	(pt 1864 1008)
-	(pt 1816 1008)
-)
-(connector
 	(pt 1048 1008)
 	(pt 1768 1008)
 )
@@ -1617,6 +1613,10 @@ applicable agreement for further details.
 (connector
 	(pt 1168 152)
 	(pt 1168 168)
+)
+(connector
+	(pt 1816 1008)
+	(pt 1864 1008)
 )
 (junction (pt 1672 480))
 (junction (pt 1184 584))

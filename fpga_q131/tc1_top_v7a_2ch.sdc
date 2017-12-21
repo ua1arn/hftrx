@@ -52,6 +52,7 @@ set_clock_groups -exclusive \
 set_false_path -from [get_clocks {clockfromadc ref122880 sclk_clock sai1_sck_a_clock fpga_ctl_cs_clock fpga_fir_clk_clock}] -to [get_ports {adc_dith adc_rand adc_shdn adc_pga dac_sleep}]
 set_false_path -from [get_clocks {clockfromadc ref122880 sclk_clock sai1_sck_a_clock fpga_ctl_cs_clock fpga_fir_clk_clock}] -to [get_ports {led0 led1 led2 led3 fpga_ovf}]
 set_false_path -from [get_clocks {clockfromadc ref122880 sclk_clock sai1_sck_a_clock fpga_ctl_cs_clock fpga_fir_clk_clock}] -to [get_ports {sai1_sd_b}]
+set_false_path -from [get_clocks {clockfromadc ref122880 sclk_clock sai1_sck_a_clock fpga_ctl_cs_clock fpga_fir_clk_clock}] -to [get_ports {refclk_out}]
 
 # tsu/th constraints
 
