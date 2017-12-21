@@ -2794,9 +2794,10 @@ static uint_fast8_t bandset2m = 1;	/* используется ли диапазон 2 метра */
 #if WITHCAT
 	static uint_fast8_t catprocenable;	/* разрешена работа подсистемы CAT */
 	static uint_fast8_t catstatetx;		/* запрос перехода трансивера на передачу от CAT команды */
+	static uint_fast8_t catstatetxdata;		/* запрос перехода трансивера на передачу от CAT команды TX1 */
 	static uint_fast8_t cattunemode;		/* запрос перехода трансивера на передачу от CAT команды */
 #else
-	enum { cattunemode = 0 };
+	enum { catstatetx = 0, catstatetxdata = 0, cattunemode = 0 };
 #endif /* WITHCAT */
 
 static uint_fast8_t alignmode;		/* режимы для настройки аппаратной части (0-нормальная работа) */
@@ -2927,6 +2928,7 @@ enum
 #endif /* WITHAUTOTUNER */
 
 #if WITHCAT
+
 	static uint_fast8_t catenable = 1;	/* модифицируется через меню. */
 	static uint_fast8_t catbaudrate = 6;	/* 6 is a 57600 */ /* модифицируется через меню. - номер скорости при работе по CAT */
 	static uint_fast8_t catdtrenable;	/* разрешение манипуляции по DTR CAT */
@@ -2935,6 +2937,10 @@ enum
 	#if WITHTX
 		static uint_fast8_t catrtsenable;	/* разрешение включения передачи по линии RTS CAT */
 	#endif /* WITHTX */
+
+#else /* WITHCAT */
+
+	enum { catenable = 0 };
 
 #endif /* WITHCAT */
 
@@ -5871,7 +5877,14 @@ getlo4ref(
 static uint_fast8_t
 getactualtune(void)
 {
-	return tunemode || cattunemode || reqautotune;
+	return tunemode || (catenable && cattunemode) || reqautotune;
+}
+
+// вызывается из user mode - признак передачи в режиме данных
+static uint_fast8_t
+getcattxdata(void)
+{
+	return catenable && catstatetx && catstatetxdata;
 }
 
 static uint_fast8_t
@@ -6514,7 +6527,7 @@ updateboard(
 			board_set_mainsubrxmode(getactualmaisubrx());		// Левый/правый, A - main RX, B - sub RX
 		#endif /* WITHUSEDUALWATCH */
 		#if WITHUSBUAC
-			board_set_uacmike(txaudio == BOARD_TXAUDIO_USB);	/* на вход трансивера берутся аудиоданные с USB виртуальной платы, а не с микрофона */
+			board_set_uacmike(getcattxdata() || txaudio == BOARD_TXAUDIO_USB);	/* на вход трансивера берутся аудиоданные с USB виртуальной платы, а не с микрофона */
 			board_set_uacplayer(guacplayer);/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
 			#if WITHRTS96 || WITHRTS192 || WITHTRANSPARENTIQ
 				board_set_swapiq(gswapiq);	/* Поменять местами I и Q сэмплы в потоке RTS96 */
@@ -9076,7 +9089,7 @@ static void processcat_enable(uint_fast8_t enable)
 
 		aistate = 0; /* Power-up state of AI mode = 0 (TS-590). */
 		disableIRQ();
-		cattunemode = catstatetx = 0;
+	cattunemode = catstatetx = 0;
 		HARDWARE_CAT_ENABLERX(1);
 		catstatein = CATSTATE_WAITCOMMAND1;
 		catstateout = CATSTATEO_SENDREADY;
@@ -9553,6 +9566,7 @@ processcatmsg(
 				break;
 			case 1:
 				catstatetx = 1;		/* эта переменная сбрасывается и читается и из прерываний */
+				catstatetxdata = 1;
 				break;
 			case 2:
 				cattunemode = 1;
@@ -9565,6 +9579,8 @@ processcatmsg(
 		else
 		{
 			catstatetx = 1;		/* эта переменная сбрасывается и читается и из прерываний */
+			catstatetxdata = 0;
+			cattunemode = 0;
 			if (aistate != 0)
 				cat_answer_request(CAT_TX_INDEX);
 		}
@@ -11791,7 +11807,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		"AGC RATE", 7, 0, 0,	ISTEP1,		/* подстройка параметра АРУ через меню. */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		1, 80, 
-		offsetof(struct nvmap, afsets [AGCSETI_SSB].agc_rate),	/* на n децибел изменения входного сигнала 1 дБ выходного */
+		offsetof(struct nvmap, afsets [AGCSETI_SSB].agc_rate),	/* На N децибел изменения входного сигнала происходит 1 дБ выходного */
 		NULL,
 		& gagc_rate [AGCSETI_SSB],
 		getzerobase, /* складывается со смещением и отображается */
@@ -11847,7 +11863,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		"AGC RATE", 7, 0, 0,	ISTEP1,		/* подстройка параметра АРУ через меню. */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		1, 80, 
-		offsetof(struct nvmap, afsets [AGCSETI_CW].agc_rate),	/* на n децибел изменения входного сигнала 1 дБ выходного */
+		offsetof(struct nvmap, afsets [AGCSETI_CW].agc_rate),	/* На N децибел изменения входного сигнала происходит 1 дБ выходного */
 		NULL,
 		& gagc_rate [AGCSETI_CW],
 		getzerobase, /* складывается со смещением и отображается */
