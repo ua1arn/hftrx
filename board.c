@@ -7176,6 +7176,9 @@ static const uint_fast8_t adcinputs [] =
 #if WITHPOTIFSHIFT
 	POTIFSHIFT,	// потенциометр управления сдвигом полосы ПЧ
 #endif /* WITHPOTIFSHIFT */
+#if WITHPOTNOTCH
+	POTNOTCH,			// потенциометр управления частотой NOTCH фильтра
+#endif /* WITHPOTNOTCH */
 
 #if WITHTX && WITHVOX && ! WITHINTEGRATEDDSP
 	AVOXIX,			// Уровень Anti-VOX

@@ -8071,6 +8071,9 @@ adcfilters_initialize(void)
 		//hardware_set_adc_filterLPF(POTIFGAIN, HARDWARE_ADCFILTER_LPF_DENOM / 2);
 		//hardware_set_adc_filterLPF(POTAFGAIN, HARDWARE_ADCFILTER_LPF_DENOM / 2);
 	#endif /* WITHPOTGAIN */
+	#if WITHPOTNOTCH && WITHNOTCHFREQ
+		hardware_set_adc_filter(POTNOTCH, HARDWARE_ADCFILTER_HISTERESIS2);		// регулировка частоты NOTCH фильтра
+	#endif /* WITHPOTNOTCH && WITHNOTCHFREQ */
 	#if WITHBARS && ! WITHINTEGRATEDDSP
 		hardware_set_adc_filter(SMETERIX, HARDWARE_ADCFILTER_TRACETOP3S);
 	#endif /* WITHBARS && ! WITHINTEGRATEDDSP */
@@ -8104,12 +8107,15 @@ directctlupdate(uint_fast8_t inmenu)
 	#endif /* WITHPOTGAIN */
 	#if WITHPBT && WITHPOTPBT
 		/* установка gpbtoffset PBTMIN, PBTMAX, midscale = PBTHALF */
-		changed |= flagne_u16(& gpbtoffset, board_getadc_filtered_u16(POTPBT, PBTMIN, PBTMAX));
+		changed |= flagne_u16(& gpbtoffset, board_getadc_filtered_u16(POTPBT, PBTMIN, PBTMAX) / 10 * 10);
 	#endif /* WITHPBT && WITHPOTPBT */
 	#if WITHIFSHIFT && WITHPOTIFSHIFT
 		/* установка gifshftoffset IFSHIFTTMIN, IFSHIFTMAX, midscale = IFSHIFTHALF */
-		changed |= flagne_u16(& ifshifoffset, board_getadc_filtered_u16(POTIFSHIFT, IFSHIFTTMIN, IFSHIFTMAX));
+		changed |= flagne_u16(& ifshifoffset, board_getadc_filtered_u16(POTIFSHIFT, IFSHIFTTMIN, IFSHIFTMAX) / 10 * 10);
 	#endif /* WITHIFSHIFT && WITHPOTIFSHIFT */
+	#if WITHPOTNOTCH && WITHNOTCHFREQ
+		changed |= flagne_u16(& gnotchfreq, board_getadc_filtered_u16(POTNOTCH, WITHNOTCHFREQMIN, WITHNOTCHFREQMAX) / 50 * 50);	// регулировка частоты NOTCH фильтра
+	#endif /* WITHPOTNOTCH && WITHNOTCHFREQ */
 #endif /* WITHCPUADCHW */
 	#if CTLSTYLE_RA4YBO_V3
 		changed |= flagne_u8(& guser2, kbd_get_ishold(KIF_USER2));
@@ -11061,6 +11067,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		& gnotch,
 		getzerobase, /* складывается со смещением и отображается */
 	},
+	#if ! WITHPOTNOTCH
 	{
 		"NTCH FRQ", 7, 2, 1,	ISTEP50,		/* управление частотой NOTCH. */
 		ITEM_VALUE,
@@ -11070,6 +11077,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
 	},
+	#endif /* ! WITHPOTNOTCH */
 #endif /* WITHNOTCHFREQ */
 
 #if defined (IF3_MODEL) && (IF3_MODEL != IF3_TYPE_DCRX)

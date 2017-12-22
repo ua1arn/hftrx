@@ -347,12 +347,13 @@
 	//#define WITHPWRLIN	1	/* Индикатор выходной мощности показывает напряжение а не мощность */
 	#define WITHBARS		1	/* отображение S-метра и SWR-метра */
 	#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
-	#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
+	//#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
 	//#define WITHSWLMODE	1	/* поддержка запоминания множества частот в swl-mode */
 	#define WITHVIBROPLEX	1	/* возможность эмуляции передачи виброплексом */
 	#define WITHSPKMUTE		1	/* управление выключением динамика */
 	// Есть ли регулировка параметров потенциометрами
 	#define WITHPOTWPM		1	/* используется регулировка скорости передачи в телеграфе потенциометром */
+	//#define WITHPOTNOTCH	1	/* используется регулировка частоты NOTCH фильтрач потенциометром */
 	#define WITHPOTGAIN		1	/* регуляторы усиления на потенциометрах */
 	//#define WITHPOTPOWER	1	/* регулятор мощности на потенциометре */
 	#define WITHSLEEPTIMER	1	/* выключить индикатор и вывод звука по истечениии указанного времени */
@@ -461,6 +462,9 @@
 	#if WITHPOTPOWER
 		POTPOWER = 6,			// регулировка мощности
 	#endif /* WITHPOTPOWER */
+	#if WITHPOTNOTCH
+		POTNOTCH = 1,			// регулировка частоты NOTCH фильтра
+	#endif /* WITHPOTNOTCH */
 
 		ALCINIX = 9,		// PB1 ALC IN
 
