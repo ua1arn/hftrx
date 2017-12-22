@@ -324,6 +324,7 @@ ui16min(uint_least16_t a, uint_least16_t b)
 /* интерфейсные функции NVRAM */
 
 #if CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX
+#if (NVRAM_TYPE == NVRAM_TYPE_BKPSRAM)
 	// Разрешить запись в Backup domain
 	static void stm32f4xx_bdenable(void)
 	{
@@ -359,6 +360,7 @@ ui16min(uint_least16_t a, uint_least16_t b)
 
 	#endif /* CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX */
 	}
+#endif /* (NVRAM_TYPE != NVRAM_TYPE_CPUEEPROM) */
 #endif /* CPUSTYLE_STM32F */
 
 void nvram_initialize(void)
