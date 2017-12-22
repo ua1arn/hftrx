@@ -8063,7 +8063,7 @@ adcfilters_initialize(void)
 		hardware_set_adc_filter(POTPBT, HARDWARE_ADCFILTER_HISTERESIS2);
 	#endif /* WITHPOTPBT */
 	#if WITHPOTIFSHIFT
-		hardware_set_adc_filter(POTIFSHIFT, HARDWARE_ADCFILTER_HISTERESIS2);
+		hardware_set_adc_filter(POTIFSHIFT, HARDWARE_ADCFILTER_HISTERESIS2);	// регулировка IF SHIFT
 	#endif /* WITHPOTIFSHIFT */
 	#if WITHPOTGAIN
 		hardware_set_adc_filter(POTIFGAIN, HARDWARE_ADCFILTER_HISTERESIS2);
@@ -10561,7 +10561,7 @@ static const FLASHMEM struct menudef menutable [] =
 	},
 #endif /* WITHIF4DSP */
 
-#if WITHIFSHIFT
+#if WITHIFSHIFT && ! WITHPOTIFSHIFT
 	// Увеличение значения параметра смещает слышимую часть спектра в более высокие частоты
 	{
 		"IF SHIFT", 4 + WSIGNFLAG, 2, 1, 	ISTEP50, 
@@ -10572,7 +10572,7 @@ static const FLASHMEM struct menudef menutable [] =
 		NULL,
 		getifshiftbase, 
 	},
-#endif /* WITHIFSHIFT */
+#endif /* WITHIFSHIFT && ! WITHPOTIFSHIFT */
 
 #if CTLSTYLE_RA4YBO_V3
 /*

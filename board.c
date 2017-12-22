@@ -7173,12 +7173,12 @@ static const uint_fast8_t adcinputs [] =
 #if WITHPOTPBT
 	POTPBT,		// потенциометр управления сужением полосы ПЧ
 #endif /* WITHPOTPBT */
-#if WITHPOTIFSHIFT
+#if WITHIFSHIFT && WITHPOTIFSHIFT
 	POTIFSHIFT,	// потенциометр управления сдвигом полосы ПЧ
-#endif /* WITHPOTIFSHIFT */
-#if WITHPOTNOTCH
+#endif /* WITHIFSHIFT && WITHPOTIFSHIFT */
+#if WITHPOTNOTCH && WITHNOTCHFREQ
 	POTNOTCH,			// потенциометр управления частотой NOTCH фильтра
-#endif /* WITHPOTNOTCH */
+#endif /* WITHPOTNOTCH && WITHNOTCHFREQ */
 
 #if WITHTX && WITHVOX && ! WITHINTEGRATEDDSP
 	AVOXIX,			// Уровень Anti-VOX
@@ -7224,7 +7224,7 @@ static const uint_fast8_t adcinputs [] =
 	KI0,
 #elif KI_COUNT == 0
 #else
-	#error KI_COUNT is not defined
+	#error KI_COUNT or KI_LIST is not defined
 #endif
 
 #endif	/* KEYBOARD_USE_ADC */
@@ -7656,7 +7656,7 @@ board_get_pressed_key(void)
 	#elif KI_COUNT == 1
 		KI0,
 	#else
-		#error KI_COUNT is not defined
+		#error KI_COUNT or KI_LIST is not defined
 	#endif
 	};
 

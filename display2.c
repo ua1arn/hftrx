@@ -2928,7 +2928,9 @@ enum
 			{	27, 0,	display_mode3_a,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
 		/* ---------------------------------- */
 			{	0,	2,	display_freqXbig_a, REDRM_FREQ, PGALL, },	// fullwidth = 8 constantly
+		#if ! WITHDSPEXTDDC
 			{	27, 2,	display_agc3,		REDRM_MODE, PGALL, },
+		#endif /* ! WITHDSPEXTDDC */
 			{	27, 4,	display_voxtune3,	REDRM_MODE, PGALL, },
 		/* ---------------------------------- */
 		#if WITHUSEAUDIOREC
@@ -3185,7 +3187,9 @@ enum
 			{	27, 0,	display_mode3_a,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
 		/* ---------------------------------- */
 			{	0,	2,	display_freqXbig_a, REDRM_FREQ, PGALL, },	// fullwidth = 8 constantly
+		#if ! WITHDSPEXTDDC
 			{	27, 2,	display_agc3,		REDRM_MODE, PGALL, },
+		#endif /* ! WITHDSPEXTDDC */
 			{	27, 4,	display_voxtune3,	REDRM_MODE, PGALL, },
 		/* ---------------------------------- */
 		#if WITHUSEAUDIOREC

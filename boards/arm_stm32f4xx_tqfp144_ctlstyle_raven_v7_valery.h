@@ -341,8 +341,8 @@
 	//#define WITHNMEA		1	/* используется NMEA parser */
 	//#define WITHBEACON	1	/* Используется режим маяка */
 	#define WITHVOX			1	/* используется VOX */
-	#define WITHSHOWSWRPWR 1	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
-	#define WITHSWRMTR	1		/* Измеритель КСВ */
+	//#define WITHSHOWSWRPWR 1	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
+	//#define WITHSWRMTR	1		/* Измеритель КСВ */
 	//#define WITHPWRMTR	1	/* Индикатор выходной мощности или */
 	//#define WITHPWRLIN	1	/* Индикатор выходной мощности показывает напряжение а не мощность */
 	#define WITHBARS		1	/* отображение S-метра и SWR-метра */
@@ -353,7 +353,8 @@
 	#define WITHSPKMUTE		1	/* управление выключением динамика */
 	// Есть ли регулировка параметров потенциометрами
 	#define WITHPOTWPM		1	/* используется регулировка скорости передачи в телеграфе потенциометром */
-	//#define WITHPOTNOTCH	1	/* используется регулировка частоты NOTCH фильтрач потенциометром */
+	#define WITHPOTNOTCH	1	/* используется регулировка частоты NOTCH фильтрач потенциометром */
+	#define WITHPOTIFSHIFT	1	/* регулировка IF SHIFT	*/
 	#define WITHPOTGAIN		1	/* регуляторы усиления на потенциометрах */
 	//#define WITHPOTPOWER	1	/* регулятор мощности на потенциометре */
 	#define WITHSLEEPTIMER	1	/* выключить индикатор и вывод звука по истечениии указанного времени */
@@ -463,8 +464,11 @@
 		POTPOWER = 6,			// регулировка мощности
 	#endif /* WITHPOTPOWER */
 	#if WITHPOTNOTCH
-		POTNOTCH = 1,			// регулировка частоты NOTCH фильтра
+		POTNOTCH = 14,			// регулировка частоты NOTCH фильтра
 	#endif /* WITHPOTNOTCH */
+	#if WITHPOTIFSHIFT
+		POTIFSHIFT = 15,			// регулировка IF SHIFT
+	#endif /* WITHPOTIFSHIFT */
 
 		ALCINIX = 9,		// PB1 ALC IN
 
