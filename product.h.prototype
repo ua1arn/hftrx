@@ -23,13 +23,13 @@
 //#define CTLSTYLE_RAVENDSP_V4	1	// Трансивер Вороненок с SD-CARD, DSP STM32F429ZIT6, кодеком TLV320AIC23B и FPGA EP4CE22E22I7N
 //#define CTLSTYLE_RAVENDSP_V5	1	// Трансивер Вороненок с SD-CARD, DUAL WATCH, STM32F746ZET6, TLV320AIC23B и FPGA EP4CE22E22I7N
 //#define CTLSTYLE_RAVENDSP_V6	1	// Трансивер Вороненок с SD-CARD, DUAL WATCH, STM32F746ZET6, NAU8822L и FPGA EP4CE22E22I7N
-//#define CTLSTYLE_RAVENDSP_V7	1	// V6 fixed Rmainunit_v5bm.pcb STM32F746ZET6
+#define CTLSTYLE_RAVENDSP_V7	1	// V6 fixed Rmainunit_v5bm.pcb STM32F746ZET6
 //#define CTLSTYLE_RAVENDSP_V8	1	// modem only Rmainunit_v6bm.pcb STM32F746ZET6
 //#define CTLSTYLE_RAVENDSP_V9	1	// Initial trx: Renesas R7S721020VCFP, SD-CARD, DUAL WATCH, NAU8822L и FPGA EP4CE22E22I7N
 //#define CTLSTYLE_RAVENDSP_V2	1	// Fixed trx:  Renesas R7S721020VCFP, SD-CARD, DUAL WATCH, NAU8822L и FPGA EP4CE22E22I7N
 //#define CTLSTYLE_STORCH_V1	1	// STM32F746ZET6, USB, SD-CARD, DUAL WATCH, NAU8822L и FPGA EP4CE22E22I7N
-//#define CTLSTYLE_STORCH_V2	1	// STM32F746ZET6, 2xUSB, SD-CARD, DUAL WATCH, NAU8822L и FPGA EP4CE22E22I7N
-#define CTLSTYLE_STORCH_V3	1	// Rmainunit_v5fm.pcb STM32F767ZET6, 2xUSB, SD-CARD, 8-bit display imnterface, NAU8822L и FPGA EP4CE22E22I7N
+//#define CTLSTYLE_STORCH_V2	1	// STM32F746ZET6, 2xUSB, SD-CARD, DUAL WATCH, NAU8822L и FPGA EP4CE22E22I7N,
+//#define CTLSTYLE_STORCH_V3	1	// Rmainunit_v5fm.pcb STM32F767ZET6, 2xUSB, SD-CARD, 8-bit display imnterface, NAU8822L и FPGA EP4CE22E22I7N
 
 //
 //#define CTLSTYLE_DSPV1A	1	// Плата "Дятел" с кодеками для DSPIF4 с 12 кГц IF DSP трактом
@@ -119,9 +119,9 @@
 	#include "boards/arm_stm32f4xx_tqfp144_cpustyle_raven_v4.h"	// Rmainunit_v2bm.pcb
 #elif CPUSTYLE_STM32F && CTLSTYLE_RAVENDSP_V5	// SD-CARD. DUAL WATCH, STM32F446ZET6, TLV320AIC23B и FPGA EP4CE22E22I7N
 	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_raven_v5.h"	// Rmainunit_v3bm.pcb
-	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_raven_v5_vlad_vwws.h"	// Rmainunit_v3bm.pcb
+	#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_raven_v5_vlad_vwws.h"	// Rmainunit_v3bm.pcb
 	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_raven_v5_YANTONOV.h"	// Rmainunit_v3bm.pcb
-	#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_raven_v5_polyar.h"	// Rmainunit_v3bm.pcb
+	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_raven_v5_polyar.h"	// Rmainunit_v3bm.pcb
 	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_raven_v5_August.h"	// Rmainunit_v3bm.pcb
 	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_raven_v5_RA0CGS.h"	// Rmainunit_v3bm.pcb
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
@@ -136,8 +136,8 @@
 #elif CPUSTYLE_STM32F && CTLSTYLE_RAVENDSP_V7	// SD-CARD. DUAL WATCH, STM32F446ZET6, TLV320AIC23B и FPGA EP4CE22E22I7N
 	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_raven_v7.h"	// Rmainunit_v5bm.pcb
 	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_raven_v7_yuri5555.h"	// Rmainunit_v5bm.pcb
-	#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_raven_v7_RW1AM.h"	// Rmainunit_v5bm.pcb Пётр RW1AM
-	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_raven_v7_valery.h"	// Rmainunit_v5bm.pcb
+	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_raven_v7_RW1AM.h"	// Rmainunit_v5bm.pcb Пётр RW1AM
+	#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_raven_v7_UY5UM.h"	// Rmainunit_v5bm.pcb Игорь Романович UY5UM
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32f4xx_tqfp144_cpustyle_raven_v7.h"	// Rmainunit_v5bm.pcb
 #elif CPUSTYLE_STM32F && CTLSTYLE_STORCH_V1	// SD-CARD. DUAL WATCH, STM32F446ZET6, TLV320AIC23B и FPGA EP4CE22E22I7N
@@ -150,14 +150,14 @@
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32f4xx_tqfp144_cpustyle_storch_v1.h"	// Rmainunit_v5cm.pcb, Rmainunit_v5dm.pcb
 #elif CPUSTYLE_STM32F && CTLSTYLE_STORCH_V2	// SD-CARD. 2xUSB, DUAL WATCH, STM32F446ZET6, TLV320AIC23B и FPGA EP4CE22E22I7N
-	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v2.h"	// Rmainunit_v5em.pcb (USBx2)
-	#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v2_UA1CEI.h"	// Rmainunit_v5em.pcb (USBx2)
+	#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v2.h"	// RA0CGS Rmainunit_v5em.pcb (USBx2)
+	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v2_UA1CEI.h"	// Rmainunit_v5em.pcb (USBx2)
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32f4xx_tqfp144_cpustyle_storch_v2.h"	// Rmainunit_v5em.pcb (USBx2)
 #elif CPUSTYLE_STM32F && CTLSTYLE_STORCH_V3	// SD-CARD. 2xUSB, DUAL WATCH, STM32F446ZET6, TLV320AIC23B и FPGA EP4CE22E22I7N
-	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v3.h"	// Rmainunit_v5fm.pcb (USBx2, wide display interface)
-	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v3_UA9WF.h"	// Rmainunit_v5fm.pcb (USBx2, wide display interface)
-	#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v3_RA9W.h"	// Rmainunit_v5fm.pcb (USBx2, wide display interface)
+	#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v3.h"	// Rmainunit_v5fm.pcb (USBx2, wide display interface)
+	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v3_UA9WF.h"	// Rmainunit_v5fm.pcb LTC2217 (USBx2, wide display interface)
+	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v3_RA9W.h"	// Rmainunit_v5fm.pcb (USBx2, wide display interface)
 	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v3_headset.h"	// Rmainunit_v5fm.pcb (USBx2, wide display interface)
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32f4xx_tqfp144_cpustyle_storch_v3.h"	// Rmainunit_v5fm.pcb (USBx2, wide display interface)
@@ -261,8 +261,8 @@
 	#include "paramdepend.h"				/* проверка зависимостей параметров конфигурации */
 	#include "boards/atmega_cpustyle_RV9CQQ.h"
 #elif CPUSTYLE_ATMEGA32 && CTLSTYLE_V1B
-	#include "boards/atmega644_ctlstyle_v1.h"	// Синтезатор "Воробей"
-	//#include "boards/atmega644_ctlstyle_v1_gorlov.h"	// Синтезатор "Воробей" для hansgo_1969@mail.ru
+	//#include "boards/atmega644_ctlstyle_v1.h"	// Синтезатор "Воробей"
+	#include "boards/atmega644_ctlstyle_v1_gorlov.h"	// Синтезатор "Воробей" для RC3U hansgo_1969@mail.ru
 	//#include "boards/atmega644_ctlstyle_LADVABEST.h"	// Синтезатор "Воробей" у ladvabest
 	#include "paramdepend.h"				/* проверка зависимостей параметров конфигурации */
 	#include "boards/atmega_cpustyle_v8a.h"

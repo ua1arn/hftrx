@@ -92,6 +92,27 @@ CFG=tc1msvc - Win32 stm32f769ii
 # PROP Bsc_Name "tc1msvc.bsc"
 # PROP Target_Dir ""
 
+!ELSEIF  "$(CFG)" == "tc1msvc - Win32 stm32h743zi"
+
+# PROP BASE Use_MFC 0
+# PROP BASE Use_Debug_Libraries 1
+# PROP BASE Output_Dir "tc1msvc___Win32_stm32h743zi"
+# PROP BASE Intermediate_Dir "tc1msvc___Win32_stm32h743zi"
+# PROP BASE Cmd_Line "NMAKE /a /f tc1msvc_at32.mak stm32f767zi"
+# PROP BASE Rebuild_Opt ""
+# PROP BASE Target_File "tc1msvc.exe"
+# PROP BASE Bsc_Name "tc1msvc.bsc"
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 0
+# PROP Use_Debug_Libraries 1
+# PROP Output_Dir "tc1msvc___Win32_stm32h743zi"
+# PROP Intermediate_Dir "tc1msvc___Win32_stm32h743zi"
+# PROP Cmd_Line "NMAKE /a /f tc1msvc_at32.mak stm32h743zi"
+# PROP Rebuild_Opt ""
+# PROP Target_File "tc1msvc.exe"
+# PROP Bsc_Name "tc1msvc.bsc"
+# PROP Target_Dir ""
+
 !ELSEIF  "$(CFG)" == "tc1msvc - Win32 stm32f429zi"
 
 # PROP BASE Use_MFC 0
@@ -150,27 +171,6 @@ CFG=tc1msvc - Win32 stm32f769ii
 # PROP Output_Dir "tc1msvc___Win32_stm32f723ze"
 # PROP Intermediate_Dir "tc1msvc___Win32_stm32f723ze"
 # PROP Cmd_Line "NMAKE /a /f tc1msvc_at32.mak stm32f723ze"
-# PROP Rebuild_Opt ""
-# PROP Target_File "tc1msvc.exe"
-# PROP Bsc_Name "tc1msvc.bsc"
-# PROP Target_Dir ""
-
-!ELSEIF  "$(CFG)" == "tc1msvc - Win32 stm32h743zi"
-
-# PROP BASE Use_MFC 0
-# PROP BASE Use_Debug_Libraries 1
-# PROP BASE Output_Dir "tc1msvc___Win32_stm32h743zi"
-# PROP BASE Intermediate_Dir "tc1msvc___Win32_stm32h743zi"
-# PROP BASE Cmd_Line "NMAKE /a /f tc1msvc_at32.mak stm32f767zi"
-# PROP BASE Rebuild_Opt ""
-# PROP BASE Target_File "tc1msvc.exe"
-# PROP BASE Bsc_Name "tc1msvc.bsc"
-# PROP BASE Target_Dir ""
-# PROP Use_MFC 0
-# PROP Use_Debug_Libraries 1
-# PROP Output_Dir "tc1msvc___Win32_stm32h743zi"
-# PROP Intermediate_Dir "tc1msvc___Win32_stm32h743zi"
-# PROP Cmd_Line "NMAKE /a /f tc1msvc_at32.mak stm32h743zi"
 # PROP Rebuild_Opt ""
 # PROP Target_File "tc1msvc.exe"
 # PROP Bsc_Name "tc1msvc.bsc"
@@ -602,10 +602,10 @@ CFG=tc1msvc - Win32 stm32f769ii
 
 # Name "tc1msvc - Win32 stm32f746zg"
 # Name "tc1msvc - Win32 stm32f767zi"
+# Name "tc1msvc - Win32 stm32h743zi"
 # Name "tc1msvc - Win32 stm32f429zi"
 # Name "tc1msvc - Win32 stm32f769ii"
 # Name "tc1msvc - Win32 stm32f723ze"
-# Name "tc1msvc - Win32 stm32h743zi"
 # Name "tc1msvc - Win32 stm32f446ze"
 # Name "tc1msvc - Win32 stm32f401rb"
 # Name "tc1msvc - Win32 stm32f407vg"
@@ -631,13 +631,13 @@ CFG=tc1msvc - Win32 stm32f769ii
 
 !ELSEIF  "$(CFG)" == "tc1msvc - Win32 stm32f767zi"
 
+!ELSEIF  "$(CFG)" == "tc1msvc - Win32 stm32h743zi"
+
 !ELSEIF  "$(CFG)" == "tc1msvc - Win32 stm32f429zi"
 
 !ELSEIF  "$(CFG)" == "tc1msvc - Win32 stm32f769ii"
 
 !ELSEIF  "$(CFG)" == "tc1msvc - Win32 stm32f723ze"
-
-!ELSEIF  "$(CFG)" == "tc1msvc - Win32 stm32h743zi"
 
 !ELSEIF  "$(CFG)" == "tc1msvc - Win32 stm32f446ze"
 
@@ -1398,7 +1398,7 @@ SOURCE=.\boards\arm_stm32f4xx_tqfp144_ctlstyle_raven_v7_RW1AM.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\boards\arm_stm32f4xx_tqfp144_ctlstyle_raven_v7_valery.h
+SOURCE=.\boards\arm_stm32f4xx_tqfp144_ctlstyle_raven_v7_UY5UM.h
 # End Source File
 # Begin Source File
 
