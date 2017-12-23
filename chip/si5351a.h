@@ -82,7 +82,9 @@
 
 
 
+//#define SI53xx_I2C_WRITE (0x62 * 2)		// Si5351A-B04486-GT I2C address for writing to the Si5351A - see https://www.silabs.com/internal-apps-management/ClockBuilderDocuments/Si5351A-B04486-GT_datasheet_addendum.pdf
 #define SI53xx_I2C_WRITE 0xC0		// I2C address for writing to the Si5351A
+
 #define SI53xx_I2C_READ  (SI53xx_I2C_WRITE | 1)		// I2C address for reading to the Si5351A
 
 static void
