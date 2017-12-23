@@ -8155,9 +8155,9 @@ static uint_fast8_t sendmorsepos [2];
 	static unsigned char morsestring [2][25];
 #endif
 
-static uint_fast8_t catstatein;
+static uint_fast8_t catstatein = CATSTATE_HALTED;
 
-static volatile uint_fast8_t catstateout;
+static volatile uint_fast8_t catstateout = CATSTATEO_HALTED;
 static volatile const char * catsendptr;
 static volatile uint_fast8_t catsendcount;
 
@@ -9048,22 +9048,15 @@ cat_answer_request(uint_fast8_t catindex)
 	cat_answer_map [catindex] = 1;
 }
 
-
 static void 
 processcat_initialize(void)
 {
-	catprocenable = 
-	catstatetx = 0;
-	catstatein = CATSTATE_HALTED;
-	catstateout = CATSTATEO_HALTED;
-	morsefill = 	/* индекс буфера, заполняемого в данный момент. Противоположгый передаётся. */
-	sendmorsepos [0] = 
-	sendmorsepos [1] = 
-	inpmorselength [0] = 
-	inpmorselength [1] = 0;
-
+	//catprocenable = catstatetxdata = catstatetx = 0;
+	//catstatein = CATSTATE_HALTED;
+	//catstateout = CATSTATEO_HALTED;
+	//morsefill = 0;	/* индекс буфера, заполняемого в данный момент. Противоположный передаётся. */
+	//sendmorsepos [0] = sendmorsepos [1] = inpmorselength [0] = inpmorselength [1] = 0;
 }
-
 
 /* эта операция вызывается неоднократно - не должна мешать работе при уже разрешённом CAT */
 static void processcat_enable(uint_fast8_t enable)
@@ -9071,7 +9064,7 @@ static void processcat_enable(uint_fast8_t enable)
 	if (catprocenable == enable)
 		return;
 	catprocenable = enable;
-	if (!catprocenable)
+	if (! catprocenable)
 	{
 		disableIRQ();
 		HARDWARE_CAT_ENABLERX(0);
@@ -9095,7 +9088,8 @@ static void processcat_enable(uint_fast8_t enable)
 
 		aistate = 0; /* Power-up state of AI mode = 0 (TS-590). */
 		disableIRQ();
-	cattunemode = catstatetx = 0;
+		catstatetxdata = 0;
+		cattunemode = catstatetx = 0;
 		HARDWARE_CAT_ENABLERX(1);
 		catstatein = CATSTATE_WAITCOMMAND1;
 		catstateout = CATSTATEO_SENDREADY;
@@ -9597,6 +9591,7 @@ processcatmsg(
 		{
 			cattunemode = 0;
 			catstatetx = 0;		/* эта переменная сбрасывается и читается и из прерываний */
+			catstatetxdata = 0;
 			if (aistate != 0)
 				cat_answer_request(CAT_RX_INDEX);	// POSSIBLE: ignore main/sub rx selection (0 - main. 1 - sub);
 		}
@@ -9604,6 +9599,7 @@ processcatmsg(
 		{
 			cattunemode = 0;
 			catstatetx = 0;		/* эта переменная сбрасывается и читается и из прерываний */
+			catstatetxdata = 0;
 			if (aistate != 0)
 				cat_answer_request(CAT_RX_INDEX);
 		}
