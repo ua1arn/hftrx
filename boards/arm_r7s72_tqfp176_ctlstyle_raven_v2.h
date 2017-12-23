@@ -51,6 +51,7 @@
 
 	#define FQMODEL_FPGA		1	// FPGA + IQ over I2S
 	#if 0
+		//#define DIRECT_72M595_X1		1	/* Тактовый генератор на плате 72.595 МГц */	
 		#define DIRECT_80M0_X1		1	/* Тактовый генератор на плате 80.0 МГц */	
 		#define BANDSELSTYLERE_UPCONV56M_36M	1	/* Up-conversion with working band .030..36 MHz */
 	#elif 0
@@ -86,6 +87,8 @@
 
 	#define WITHPREAMPATT2_6DB		1	// Управление УВЧ и двухкаскадным аттенюатором с затуханиями 0 - 6 - 12 - 18 dB */
 	//#define WITHATT2_6DB		1		// LTC2217 Управление двухкаскадным аттенюатором с затуханиями 0 - 6 - 12 - 18 dB без УВЧ
+	#define DEFPREAMPSTATE 	0	/* УВЧ по умолчанию включён (1) или выключен (0) */
+
 
 	#define WITHAGCMODEONOFF	1	// АРУ вкл/выкл
 	#define	WITHMIC1LEVEL		1	// установка усиления микрофона
@@ -255,8 +258,6 @@
 	#define WITHDIRECTBANDS 1	/* Прямой переход к диапазонам по нажатиям на клавиатуре */
 	#define WITHSPKMUTE		1	/* управление выключением динамика */
 	// --- Эти строки можно отключать, уменьшая функциональность готового изделия
-
-	#define DEFPREAMPSTATE 	1	/* УВЧ по умолчанию включён (1) или выключен (0) */
 
 	/* что за память настроек и частот используется в контроллере */
 	//#define NVRAM_TYPE NVRAM_TYPE_FM25XXXX	// SERIAL FRAM AUTODETECT
