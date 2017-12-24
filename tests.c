@@ -6946,7 +6946,7 @@ void hardware_f051_dac_ch1_setvalue(uint_fast16_t v)
 
 #endif /* WITHDEBUG */
 
-static void hw_svi(void)
+static void hw_swi(void)
 {
 	__asm volatile (" SWI  0" : /* no outputs */ : /* no inputs */  );
 }
@@ -7090,7 +7090,7 @@ nestedirqtest(void)
 	#endif
 #endif /* ENCODER_BITS */
 	debug_printf_P(PSTR("ICCRPR=%02x cpsr=%08lx* \n"), GICC_RPR, __get_CPSR());
-	//hw_svi();
+	//hw_swi();
 	global_enableIRQ();
 
 	for (;;)
