@@ -8605,75 +8605,75 @@ arm_cpu_atsam4s_pll_initialize(void)
 #define INT_MASK (IRQ_MASK | FIQ_MASK)
 
 /* ARM architecture */
-static inline unsigned hw_get_cpsr(void)
+static inline uint32_t __get_CPSR(void)
 {
-	unsigned long retval;
+	uint32_t retval;
 	asm volatile (" mrs  %0, cpsr" : "=r" (retval) : /* no inputs */  );
 	return retval;
 }
 
 /* ARM architecture */
-static inline void hw_set_cpsr(unsigned val)
+static inline void __set_CPSR(uint32_t val)
 {
 	asm volatile (" msr  cpsr, %0" : /* no outputs */ : "r" (val)  );
 }
 
 /* ARM architecture */
-unsigned RAMFUNC_NONILINE (disableIRQ)(void)
+uint32_t RAMFUNC_NONILINE (disableIRQ)(void)
 {
-	unsigned _cpsr;
-	_cpsr = hw_get_cpsr();
-	hw_set_cpsr(_cpsr | IRQ_MASK);
+	uint32_t _cpsr;
+	_cpsr = __get_CPSR();
+	__set_CPSR(_cpsr | IRQ_MASK);
 	return _cpsr;
 }
 
 /* ARM architecture */
-unsigned RAMFUNC_NONILINE (restoreIRQ)(unsigned oldCPSR)
+uint32_t RAMFUNC_NONILINE (restoreIRQ)(unsigned oldCPSR)
 {
-	unsigned _cpsr;
+	uint32_t _cpsr;
 
-	_cpsr = hw_get_cpsr();
-	hw_set_cpsr((_cpsr & ~IRQ_MASK) | (oldCPSR & IRQ_MASK));
+	_cpsr = __get_CPSR();
+	__set_CPSR((_cpsr & ~IRQ_MASK) | (oldCPSR & IRQ_MASK));
 	return _cpsr;
 }
 
 /* ARM architecture */
-unsigned RAMFUNC_NONILINE (enableIRQ)(void)
+uint32_t RAMFUNC_NONILINE (enableIRQ)(void)
 {
-	unsigned _cpsr;
+	uint32_t _cpsr;
 
-	_cpsr = hw_get_cpsr();
-	hw_set_cpsr(_cpsr & ~IRQ_MASK);
+	_cpsr = __get_CPSR();
+	__set_CPSR(_cpsr & ~IRQ_MASK);
 	return _cpsr;
 }
 
 /* ARM architecture */
-unsigned RAMFUNC_NONILINE (disableFIQ)(void)
+uint32_t RAMFUNC_NONILINE (disableFIQ)(void)
 {
-	unsigned _cpsr;
+	uint32_t _cpsr;
 
-	_cpsr = hw_get_cpsr();
-	hw_set_cpsr(_cpsr | FIQ_MASK);
+	_cpsr = __get_CPSR();
+	__set_CPSR(_cpsr | FIQ_MASK);
 	return _cpsr;
 }
 
 /* ARM architecture */
-unsigned RAMFUNC_NONILINE (restoreFIQ)(unsigned oldCPSR)
+uint32_t RAMFUNC_NONILINE (restoreFIQ)(unsigned oldCPSR)
 {
-	unsigned _cpsr;
+	uint32_t _cpsr;
 
-	_cpsr = hw_get_cpsr();
-	hw_set_cpsr((_cpsr & ~FIQ_MASK) | (oldCPSR & FIQ_MASK));
+	_cpsr = __get_CPSR();
+	__set_CPSR((_cpsr & ~FIQ_MASK) | (oldCPSR & FIQ_MASK));
 	return _cpsr;
 }
 
 /* ARM architecture */
-unsigned RAMFUNC_NONILINE (enableFIQ)(void)
+uint32_t RAMFUNC_NONILINE (enableFIQ)(void)
 {
-	unsigned _cpsr;
+	uint32_t _cpsr;
 
-	_cpsr = hw_get_cpsr();
-	hw_set_cpsr(_cpsr & ~FIQ_MASK);
+	_cpsr = __get_CPSR();
+	__set_CPSR(_cpsr & ~FIQ_MASK);
 	return _cpsr;
 }
 

@@ -14278,16 +14278,6 @@ hamradio_mainloop_vh1(void)
 }
 #endif /* CTLSTYLE_V1H */
 
-#if 0
-/* ARM architecture */
-static unsigned hw_get_cpsr(void)
-{
-	unsigned long retval;
-	__asm volatile (" mrs  %0, cpsr" : "=r" (retval) : /* no inputs */  );
-	return retval;
-}
-#endif
-
 // инициализация машины состояний тюнера
 static void hamradio_tune_initialize(void)
 {
@@ -14503,7 +14493,7 @@ hamradio_main_step(void)
 			} // end keyboard processing
 
 			//auto int marker;
-			//debug_printf_P(PSTR("M0:@%p %02x %08lx!\n"), & marker, INTC.ICCRPR, hw_get_cpsr());
+			//debug_printf_P(PSTR("M0:@%p %02x %08lx!\n"), & marker, INTC.ICCRPR, __get_CPSR());
 
 			uint_fast8_t jumpsize;
 			uint_fast8_t jumpsize2;
