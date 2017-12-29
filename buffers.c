@@ -518,7 +518,7 @@ uint_fast8_t takemsgready_user(uint8_t * * dest)
 		PLIST_ENTRY t = RemoveTailList(& msgsready8);
 		UNLOCK(& locklist8);
 		enableIRQ();
-		message_t * p = CONTAINING_RECORD(t, message_t, item);
+		message_t * const p = CONTAINING_RECORD(t, message_t, item);
 		* dest = p->data;
 		ASSERT(p->type != MSGT_EMPTY);
 		return p->type;
@@ -532,7 +532,7 @@ uint_fast8_t takemsgready_user(uint8_t * * dest)
 // Освобождение обработанного буфера сообщения
 void releasemsgbuffer_user(uint8_t * dest)
 {
-	message_t * p = CONTAINING_RECORD(dest, message_t, data);
+	message_t * const p = CONTAINING_RECORD(dest, message_t, data);
 	disableIRQ();
 	LOCK(& locklist8);
 	InsertHeadList(& msgsfree8, & p->item);
@@ -548,7 +548,7 @@ size_t takemsgbufferfree_low(uint8_t * * dest)
 	{
 		PLIST_ENTRY t = RemoveTailList(& msgsfree8);
 		UNLOCK(& locklist8);
-		message_t * p = CONTAINING_RECORD(t, message_t, item);
+		message_t * const p = CONTAINING_RECORD(t, message_t, item);
 		* dest = p->data;
 		return (MSGBUFFERSIZE8 * sizeof p->data [0]);
 	}
@@ -1111,7 +1111,7 @@ unsigned takerecordbuffer(void * * dest)
 		PLIST_ENTRY t = RemoveTailList2(& recordsready16);
 		global_enableIRQ();
 		-- recbuffered;
-		records16_t * p = CONTAINING_RECORD(t, records16_t, item);
+		records16_t * const p = CONTAINING_RECORD(t, records16_t, item);
 		* dest = p->buff;
 		return (SDCARDBUFFSIZE16 * sizeof p->buff [0]);
 	}
@@ -1121,7 +1121,7 @@ unsigned takerecordbuffer(void * * dest)
 
 void releaserecordbuffer(void * dest)
 {
-	records16_t * p = CONTAINING_RECORD(dest, records16_t, buff);
+	records16_t * const p = CONTAINING_RECORD(dest, records16_t, buff);
 	global_disableIRQ();
 	InsertHeadList2(& recordsfree16, & p->item);
 	global_enableIRQ();
@@ -1140,7 +1140,7 @@ size_t takemodemrxbuffer(uint8_t * * dest)
 	{
 		PLIST_ENTRY t = RemoveTailList2(& modemsrx8);
 		global_enableIRQ();
-		modems8_t * p = CONTAINING_RECORD(t, modems8_t, item);
+		modems8_t * const p = CONTAINING_RECORD(t, modems8_t, item);
 		* dest = p->buff;
 		return p->length;
 	}
@@ -1157,7 +1157,7 @@ size_t takemodembuffer(uint8_t * * dest)
 	{
 		PLIST_ENTRY t = RemoveTailList2(& modemsfree8);
 		global_enableIRQ();
-		modems8_t * p = CONTAINING_RECORD(t, modems8_t, item);
+		modems8_t * const p = CONTAINING_RECORD(t, modems8_t, item);
 		* dest = p->buff;
 		return (MODEMBUFFERSIZE8 * sizeof p->buff [0]);
 	}
@@ -1173,7 +1173,7 @@ size_t takemodembuffer_low(uint8_t * * dest)
 	if (! IsListEmpty2(& modemsfree8))
 	{
 		PLIST_ENTRY t = RemoveTailList2(& modemsfree8);
-		modems8_t * p = CONTAINING_RECORD(t, modems8_t, item);
+		modems8_t * const p = CONTAINING_RECORD(t, modems8_t, item);
 		* dest = p->buff;
 		return (MODEMBUFFERSIZE8 * sizeof p->buff [0]);
 	}
@@ -1185,14 +1185,14 @@ size_t takemodembuffer_low(uint8_t * * dest)
 // вызывается из real-time обработчика прерывания
 void savemodemrxbuffer_low(uint8_t * dest, size_t length)
 {
-	modems8_t * p = CONTAINING_RECORD(dest, modems8_t, buff);
+	modems8_t * const p = CONTAINING_RECORD(dest, modems8_t, buff);
 	p->length = length;
 	InsertHeadList2(& modemsrx8, & p->item);
 }
 
 void releasemodembuffer(uint8_t * dest)
 {
-	modems8_t * p = CONTAINING_RECORD(dest, modems8_t, buff);
+	modems8_t * const p = CONTAINING_RECORD(dest, modems8_t, buff);
 	global_disableIRQ();
 	InsertHeadList2(& modemsfree8, & p->item);
 	global_enableIRQ();
@@ -1201,7 +1201,7 @@ void releasemodembuffer(uint8_t * dest)
 // вызывается из real-time обработчика прерывания
 void releasemodembuffer_low(uint8_t * dest)
 {
-	modems8_t * p = CONTAINING_RECORD(dest, modems8_t, buff);
+	modems8_t * const p = CONTAINING_RECORD(dest, modems8_t, buff);
 	InsertHeadList2(& modemsfree8, & p->item);
 }
 
