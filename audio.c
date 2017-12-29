@@ -9946,6 +9946,7 @@ static void audio_setup_mike(const uint_fast8_t spf)
 		CTLSTYLE_RAVENDSP_V8 || \
 		CTLSTYLE_STORCH_V2 || \
 		CTLSTYLE_STORCH_V3 || \
+		CTLSTYLE_STORCH_V4 || \
 		CTLSTYLE_OLEG4Z_V1 || \
 		0
 
@@ -10430,7 +10431,7 @@ static RAMFUNC FLOAT_t preparevi(
 	switch (dspmode)
 	{
 	case DSPCTL_MODE_TX_BPSK:
-		return txlevelfenceHALF;	// постоянная составляющая с максимальным уровнем
+		return txlevelfence;//HALF;	// постоянная составляющая с максимальным уровнем
 
 	case DSPCTL_MODE_TX_CW:
 		return txlevelfenceHALF;	// постоянная составляющая с максимальным уровнем
