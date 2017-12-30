@@ -3359,7 +3359,7 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий клавиш - 880 Гц - 
 	}
 
 	static uint_fast8_t tdsp_nfm_sql_level = 127;	// NFM NB level
-	static uint_fast8_t tdsp_nfm_sql_off;	// отключить шумодав
+	static uint_fast8_t tdsp_nfm_sql_off = 1;	// отключить шумодав
 	static uint_fast8_t gcwedgetime = 4;			/* Время нарастания/спада огибающей телеграфа при передаче - в 1 мс */
 	static uint_fast8_t gsidetonelevel = 15;	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
 	static uint_fast8_t gsubtonelevel = 10;	/* Уровень сигнала CTCSS в процентах - 0%..100% */
@@ -6528,7 +6528,10 @@ updateboard(
 		board_set_afgain(sleepflag == 0 ? afgain1 : BOARD_AFGAIN_MIN);	// Параметр для регулировки уровня на выходе аудио-ЦАП
 		board_set_rfgain(sleepflag == 0  ? rfgain1 : BOARD_RFGAIN_MIN);	// Параметр для регулировки усидения ПЧ
 
-		#if defined (WITHBBOXMIKESRC)
+		#if ! defined (CODEC1_TYPE) && WITHUSBHW && WITHUSBUAC
+			/* если конфигурация без автнонмного кодека - все въоды модулятора с USB AUDIO */
+			const uint_fast8_t txaudio = BOARD_TXAUDIO_USB;
+		#elif defined (WITHBBOXMIKESRC)
 			const uint_fast8_t txaudio = WITHBBOXMIKESRC;
 		#else /* defined (WITHBBOXMIKESRC) */
 			const uint_fast8_t txaudio = gtxaudio [txmode];
