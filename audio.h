@@ -110,16 +110,21 @@
 #define DMABUFCLUSTER	8	// Cделано небольшое кодичество - чтобы не пропускало прерывания от валкодера при обработке звука
 #define DMABUFCLUSTER	8	// Cделано небольшое кодичество - чтобы не пропускало прерывания от валкодера при обработке звука
 
-#if WITHSUSBSPKONLY
+#if ! WITHI2SHW
+
+	// Конфигурации без аудиокодека
 	// количество сэмплов в DMABUFFSIZE32RX и DMABUFFSIZE16 должно быть одинаковым.
+	// Обеспечить вызовы функции buffers_resample(void)
+
 	#define DMABUFFSIZE32RX (DMABUFCLUSTER * DMABUFSTEP32RX * 7)
 	#define DMABUFFSIZE32TX (DMABUFCLUSTER * DMABUFSTEP32TX * 7 * 4)
 	#define DMABUFFSIZE16 (DMABUFCLUSTER * DMABUFSTEP16 * 7)	/* размер под USB ENDPOINT PACKET SIZE В буфере помещаются пары значений - стерео кодек */
-#else /* WITHSUSBSPKONLY */
+
+#else /* ! WITHI2SHW */
 	#define DMABUFFSIZE32RX (DMABUFCLUSTER * DMABUFSTEP32RX)
 	#define DMABUFFSIZE32TX (DMABUFCLUSTER * DMABUFSTEP32TX * 4)
 	#define DMABUFFSIZE16 (DMABUFCLUSTER * DMABUFSTEP16 * 7)	/* размер под USB ENDPOINT PACKET SIZE В буфере помещаются пары значений - стерео кодек */
-#endif /* WITHSUSBSPKONLY */
+#endif /* ! WITHI2SHW */
 
 // Параметры для канала передачи Real Time Spectrum - stereo, 32 bit, 192 kS/S
 #define DMABUFSTEP192RTS 8	// 8: стерео по 32 бит, 6: стерео по 24 бит

@@ -951,8 +951,8 @@ static RAMFUNC unsigned getsamplemsuacout(
 				static uint16_t addsample [DMABUFSTEP16];
 				enum { HALF = DMABUFFSIZE16 / 2 };
 				// значения как среднее арифметическое сэмплов, между которыми вставляем дополнительный.
-				addsample [0] = ((int_fast32_t) (int16_t) p->buff [HALF - DMABUFSTEP16 + 0] +  (int16_t) p->buff [HALF + 0]) / 2;
-				addsample [1] = ((int_fast32_t) (int16_t) p->buff [HALF - DMABUFSTEP16 + 1] +  (int16_t) p->buff [HALF + 1]) / 2;
+				addsample [0] = ((int_fast32_t) (int16_t) p->buff [HALF - DMABUFSTEP16 + 0] +  (int16_t) p->buff [HALF + 0]) / 2;	// Left
+				addsample [1] = ((int_fast32_t) (int16_t) p->buff [HALF - DMABUFSTEP16 + 1] +  (int16_t) p->buff [HALF + 1]) / 2;	// Right
 				part = NPARTS - 3;
 				datas [0] = & p->buff [0];		// часть перед вставкой
 				sizes [0] = HALF;
@@ -1381,7 +1381,7 @@ void RAMFUNC processing_dmabuffer16rx(uintptr_t addr)
 	voice16_t * const p = CONTAINING_RECORD(addr, voice16_t, buff);
 	buffers_savefrommikeadc(p);
 
-#if WITHUSBUAC && ! WITHSUSBSPKONLY
+#if WITHUSBUAC && WITHI2SHW
 	buffers_resample();		// формирование одного буфера синхронного потока из N несинхронного
 #endif /* WITHUSBUAC */
 }
@@ -1415,7 +1415,7 @@ void RAMFUNC processing_dmabuffer32rx(uintptr_t addr)
 	InsertHeadList2(& voicesfree32rx, & p->item);
 	UNLOCK(& locklist32);
 
-#if WITHUSBUAC && WITHSUSBSPKONLY
+#if WITHUSBUAC && ! WITHI2SHW
 	buffers_resample();		// формирование одного буфера синхронного потока из N несинхронного
 #endif /* WITHUSBUAC */
 }
