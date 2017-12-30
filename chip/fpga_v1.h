@@ -133,6 +133,7 @@ prog_fpga_ctrlreg(
 
 	RBVAL8(040, FPGA_DECODE_CTLREG);
 
+	RBBIT(16, glob_tx_inh_enable);			/* b16: tx_inh_enable - разрешение реакции на вход tx_inh */
 	RBBIT(15, glob_dactest);				/* b15: dactest */
 	RBBIT(14, ! glob_sleep && glob_xvrtr);	/* b14: xvrtr_enable */
 	RBBIT(13, glob_adcfifo);				/* b13: adc_fifo */

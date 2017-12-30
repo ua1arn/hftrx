@@ -692,18 +692,18 @@ FLOAT32P_t modem_get_tx_iq(
 		// BPSK
 		{
 			const int_fast32_t ph = (1 - pbsk_get_phase(suspend) * 2);
-			const FLOAT32P_t iq = { ph, 0 };
+			const FLOAT32P_t iq = { { ph, ph } };
 			return iq;
 		}
 	case 1:
 		// QPSK
 		{
-			const FLOAT32P_t iq = { 1, 0 };
+			const FLOAT32P_t iq = { { 1, 0 } };
 			return iq;
 		}
 	default:
 		{
-			const FLOAT32P_t iq = { 1, 0 };
+			const FLOAT32P_t iq = { { 1, 0 } };
 			return iq;
 		}
 
@@ -750,6 +750,10 @@ void modem_set_mode(uint_fast8_t modemmode)
 /* вызывается при разрешённых прерываниях. */
 void modem_initialze(void)
 {
+#if CTLREGMODE_STORCH_V4
+	arm_hardware_piof_inputs(0x00FF);
+#endif /* CTLREGMODE_STORCH_V4 */
+
 	bpsk_demod_initialize();
 
 	modem_set_speed(3125);		// default value: 31.25 baud
@@ -873,6 +877,28 @@ static size_t nmeaparser_sendbin_buffer(int index, const uint8_t * databuff, siz
 static unsigned ticks;
 static unsigned volatile rxerrchar;
 
+static int numvolts1(int val)	// Напряжение в сотнях милливольт т.е. 151 = 15.1 вольта
+{
+	return val / 10;
+}
+static int numvolts01(int val	)// Напряжение в сотнях милливольт т.е. 151 = 15.1 вольта
+{
+	if (val < 0)
+		val = - val;
+	return val % 10;
+}
+
+static int numamps1(int val)	// Ток в десятках милиампер (до 2.55 ампера), может быть отрицательным
+{
+	return val / 100;
+}
+static int numamps001(int val)	// Ток в десятках милиампер (до 2.55 ампера), может быть отрицательным
+{
+	if (val < 0)
+		val = - val;
+	return val % 100;
+}
+
 void modem_spool(void)
 {
 	size_t len;
@@ -885,7 +911,44 @@ void modem_spool(void)
 		static unsigned seq;
 
 		char buff [100];
-		const size_t len = local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("$GPMDR,%ld,%ld,%u,%u,%d,%d*"),  2L, (long) hamradio_get_freq_rx(), seq ++, rxerrchar, gettxstate(), modem_rx_state);
+#if CTLREGMODE_STORCH_V4
+		// new version
+		// $GPMDR,2,160550000,30000,13.4,+1.55,75,003E003A3234510D37343138,NN*HH
+		const uint32_t * const uidbase = (const uint32_t *) UID_BASE;
+		const uint_fast8_t volt = hamradio_get_volt_value();	// Напряжение в сотнях милливольт т.е. 151 = 15.1 вольта
+		const int_fast16_t drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (до 2.55 ампера), может быть отрицательным
+		const uint_fast8_t address = (GPIOF->IDR & 0x00FF);
+		const size_t len = local_snprintf_P(buff, sizeof buff / sizeof buff [0], 
+			PSTR("$GPMDR,"
+			"%ld,"	// type of information
+			"%ld,"	// freq
+			"%ld,"	// baudrate * 100
+			"%d.%d,"	// voltage
+			"%+d.%02d,"	// current
+			"%ld,"	// address
+			"%08lX%08lX%08lX,"	// uid
+			"%d*"),  
+			2L, 
+			(long) hamradio_get_freq_rx(), 
+			(long) hamradio_get_modem_baudrate100(), 
+			numvolts1(volt), numvolts01(volt),
+			numamps1(drain), numamps001(drain),
+			address,
+			(unsigned long) uidbase [0], (unsigned long) uidbase [1], (unsigned long) uidbase [2], 
+			seq ++
+			);
+#else
+		// ADACTA version
+		const size_t len = local_snprintf_P(buff, sizeof buff / sizeof buff [0], 
+			PSTR("$GPMDR,%ld,%ld,%u,%u,%d,%d*"),  
+			2L, 
+			(long) hamradio_get_freq_rx(), 
+			seq ++, 
+			rxerrchar, 
+			gettxstate(), 
+			modem_rx_state
+			);
+#endif
 		unsigned xorv = calcxorv(buff + 1, len - 1);
 		const size_t len2 = local_snprintf_P(buff + len, sizeof buff / sizeof buff [0] - len, PSTR("%02X\r\n"), xorv);
 		qput(0xff);
@@ -1009,7 +1072,7 @@ void modem_parsechar(uint_fast8_t c)
 	case NMEAST_CHSLO:
 		//debugstate();
 		nmeaparser_state = NMEAST_INITIALIZED;
-		if (nmeaparser_checksum == (nmeaparser_chsval + hex2int(c)))
+		////if (nmeaparser_checksum == (nmeaparser_chsval + hex2int(c)))	// для тесто проверка контрольной суммы отключена
 		{
 			if (nmeaparser_param >= 2 && strcmp(nmeaparser_get_buff(0), "GPMDS") == 0)
 			{

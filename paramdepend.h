@@ -720,6 +720,7 @@
 #define DDS_TYPE_ATTINY2313	9	// experemental: nco=/7, dds=/9
 
 #define XVTR_TYPE_R820T		10
+#define	ADC_TYPE_AD9246		15
 
 #define PLL_TYPE_LMX2306	20
 #define PLL_TYPE_ADF4001	21	// ADF4000 also supported

@@ -3174,6 +3174,13 @@ applicable agreement for further details.
 		(text "dactest" (rect 129 267 171 281)(font "Arial" (font_size 8)))
 		(line (pt 192 272)(pt 176 272))
 	)
+	(port
+		(pt 192 288)
+		(output)
+		(text "tx_inh_enable" (rect 0 0 79 14)(font "Arial" (font_size 8)))
+		(text "tx_inh_enable" (rect 92 283 171 297)(font "Arial" (font_size 8)))
+		(line (pt 192 288)(pt 176 288))
+	)
 	(drawing
 		(rectangle (rect 16 16 176 304))
 	)
@@ -4938,6 +4945,11 @@ applicable agreement for further details.
 	(text "dactest" (rect -3302 1256 -3266 1268)(font "Arial" ))
 	(pt -3328 1272)
 	(pt -3264 1272)
+)
+(connector
+	(text "tx_inh_enable" (rect -3326 1272 -3259 1284)(font "Arial" ))
+	(pt -3328 1288)
+	(pt -3264 1288)
 )
 (junction (pt -3024 -696))
 (junction (pt -2544 -696))

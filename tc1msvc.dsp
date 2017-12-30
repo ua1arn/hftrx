@@ -1326,6 +1326,10 @@ SOURCE=.\boards\arm_stm32f4xx_tqfp144_cpustyle_storch_v3.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\boards\arm_stm32f4xx_tqfp144_cpustyle_storch_v4.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\boards\arm_stm32f4xx_tqfp144_ctlstyle_32F429DISCO.h
 # End Source File
 # Begin Source File
@@ -1455,6 +1459,10 @@ SOURCE=.\boards\arm_stm32f4xx_tqfp144_ctlstyle_storch_v3_RA9W.h
 # Begin Source File
 
 SOURCE=.\boards\arm_stm32f4xx_tqfp144_ctlstyle_storch_v3_UA9WF.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\boards\arm_stm32f4xx_tqfp144_ctlstyle_storch_v4.h
 # End Source File
 # Begin Source File
 

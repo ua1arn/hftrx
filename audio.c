@@ -425,8 +425,15 @@ static FLOAT_t FIRCwnd_tx_MIKE [NtapCoeffs(Ntap_tx_MIKE)];			// подготовленные з
 #endif
 
 static FLOAT_t txlevelfence = INT_MAX;
-static int_fast32_t txlevelfenceINT = INT_MAX - 1;
 static FLOAT_t txlevelfenceHALF = INT_MAX / 2;
+
+static int_fast32_t txlevelfenceSSB_INTEGER = INT_MAX - 1;
+static FLOAT_t txlevelfenceSSB = INT_MAX / 2;
+
+static FLOAT_t txlevelfenceNFM = INT_MAX / 2;
+static FLOAT_t txlevelfenceBPSK = INT_MAX / 2;
+static FLOAT_t txlevelfenceCW = INT_MAX / 2;
+
 static FLOAT_t rxlevelfence = INT_MAX;
 
 static FLOAT_t mikefence = INT_MAX;
@@ -10431,7 +10438,7 @@ static RAMFUNC FLOAT_t preparevi(
 	switch (dspmode)
 	{
 	case DSPCTL_MODE_TX_BPSK:
-		return txlevelfence;//HALF;	// посто€нна€ составл€юща€ с максимальным уровнем
+		return txlevelfenceBPSK;	// посто€нна€ составл€юща€ с максимальным уровнем
 
 	case DSPCTL_MODE_TX_CW:
 		return txlevelfenceHALF;	// посто€нна€ составл€юща€ с максимальным уровнем
@@ -10440,6 +10447,7 @@ static RAMFUNC FLOAT_t preparevi(
 	case DSPCTL_MODE_TX_AM:
 	case DSPCTL_MODE_TX_NFM:
 	case DSPCTL_MODE_TX_FREEDV:
+		// »сточник нормируетс€ к txlevelfenceSSB
 		switch (glob_txaudio)
 		{
 		//case BOARD_TXAUDIO_MIKE:
@@ -10452,23 +10460,23 @@ static RAMFUNC FLOAT_t preparevi(
 				(mikeinlevel < vi0f) ? VOXCHARGE : VOXDISCHARGE);
 			// источник - микрофон, LINE IN или USB
 			// see glob_mik1level (0..100)
-			return injectsubtone(txmikeagc(vi0f * txlevelfence / mikefence), ctcss); //* TXINSCALE; // источник сигнала - микрофон
+			return injectsubtone(txmikeagc(vi0f * txlevelfenceSSB / mikefence), ctcss); //* TXINSCALE; // источник сигнала - микрофон
 
 		case BOARD_TXAUDIO_NOISE:
 			// источник - шум
 			//vf = filter_fir_tx_MIKE((local_random(2UL * IFDACMAXVAL) - IFDACMAXVAL), 0);	// шум
 			// return audio sample in range [- txlevelfence.. + txlevelfence]
-			return injectsubtone((int) (local_random(2 * txlevelfenceINT - 1) - txlevelfenceINT), ctcss);	// шум
+			return injectsubtone((int) (local_random(2 * txlevelfenceSSB_INTEGER - 1) - txlevelfenceSSB_INTEGER), ctcss);	// шум
 
 		case BOARD_TXAUDIO_2TONE:
 			// источник - двухтоновый сигнал
 			// return audio sample in range [- txlevelfence.. + txlevelfence]
-			return injectsubtone(get_dualtonefloat() * txlevelfence, ctcss);		// источник сигнала - двухтональный генератор дл€ настройки
+			return injectsubtone(get_dualtonefloat() * txlevelfenceSSB, ctcss);		// источник сигнала - двухтональный генератор дл€ настройки
 
 		case BOARD_TXAUDIO_1TONE:
 			// источник - синусоидальный сигнал
 			// return audio sample in range [- txlevelfence.. + txlevelfence]
-			return injectsubtone(get_singletonefloat() * txlevelfence, ctcss);
+			return injectsubtone(get_singletonefloat() * txlevelfenceSSB, ctcss);
 
 		case BOARD_TXAUDIO_MUTE:
 			return injectsubtone(0, ctcss);
@@ -10498,7 +10506,7 @@ static RAMFUNC FLOAT32P_t baseband_modulator(
 #if WITHMODEM
 	case DSPCTL_MODE_TX_BPSK:
 		{
-			const FLOAT32P_t vfb = scalepair(modem_get_tx_iq(getTxShapeNotComplete()), vi * shape);
+			const FLOAT32P_t vfb = scalepair(modem_get_tx_iq(getTxShapeNotComplete()), txlevelfenceBPSK * shape);
 	#if WITHMODEMIQLOOPBACK
 			modem_demod_iq(vfb);	// debug loopback
 	#endif /* WITHMODEMIQLOOPBACK */
@@ -10510,7 +10518,7 @@ static RAMFUNC FLOAT32P_t baseband_modulator(
 		{
 			// vi - audio sample in range [- txlevelfence.. + txlevelfence]
 			//const FLOAT32P_t vfb = scalepair_int32(get_int32_aflo_delta(0, pathi), vi * shape);
-			const FLOAT32P_t vfb = scalepair(get_float_aflo_delta(0, pathi), vi * shape);
+			const FLOAT32P_t vfb = scalepair(get_float_aflo_delta(0, pathi), txlevelfenceCW * shape);
 			return vfb;
 		}
 
@@ -10525,7 +10533,7 @@ static RAMFUNC FLOAT32P_t baseband_modulator(
 	
 	case DSPCTL_MODE_TX_AM:
 		{
-			// vi - audio sample in range [- txlevelfence.. + txlevelfence]
+			// vi - audio sample in range [- txlevelfenceSSB.. + txlevelfenceSSB]
 			// input range: of vi: (- IFDACMAXVAL) .. (+ IFDACMAXVAL)
 			const FLOAT_t peak = amcarrierHALF + vi * amshapesignalHALF;
 			//const FLOAT32P_t vfb = scalepair_int32(get_int32_aflo_delta(0, pathi), peak * shape);
@@ -10536,9 +10544,9 @@ static RAMFUNC FLOAT32P_t baseband_modulator(
 	case DSPCTL_MODE_TX_NFM:
 		{
 			// vi - audio sample in range [- txlevelfence.. + txlevelfence]
-			const long int deltaftw = (long) gnfmdeviationftw * vi / txlevelfence;
+			const long int deltaftw = (long) gnfmdeviationftw * vi / txlevelfenceSSB;	// ”читываетс€ нормирование источника звука
 			//const FLOAT32P_t vfb = scalepair_int32(get_int32_aflo_delta(deltaftw, pathi), txlevelfenceHALF * shape);
-			const FLOAT32P_t vfb = scalepair(get_float_aflo_delta(deltaftw, pathi), txlevelfenceHALF * shape);
+			const FLOAT32P_t vfb = scalepair(get_float_aflo_delta(deltaftw, pathi), txlevelfenceNFM * shape);
 			return vfb;
 		}
 	}
@@ -11444,6 +11452,9 @@ static RAMFUNC uint_fast8_t isneedmute(uint_fast8_t dspmode)
 	case DSPCTL_MODE_RX_WFM:
 		return 0;
 
+	case DSPCTL_MODE_RX_BPSK:
+		return 1;
+
 #if WITHUSBUAC
 	case DSPCTL_MODE_RX_DRM:	// в этом режиме не проходит в наушники
 		return 1;
@@ -12281,8 +12292,19 @@ void dsp_initialize(void)
 	#endif /* WITHIFDACWIDTH > DSP_FLOAT_BITSMANTISSA */
 
 	txlevelfence = dacFS * db2ratio(- (FLOAT_t) 1.75) * (FLOAT_t) M_SQRT1_2;	// контролировать по отсутствию индикации переполнени€ DUC при передаче
+	txlevelfenceSSB_INTEGER = txlevelfence;	// ƒл€ источника шума
 	txlevelfenceHALF = txlevelfence / 2;	// ƒл€ режимов с lo6=0 - у которых нет подавлени€ нерабочей боковой
-	txlevelfenceINT = txlevelfence;	// ƒл€ источника шума
+
+	txlevelfenceSSB = txlevelfence;
+#if WITHTXDACFULL
+	txlevelfenceBPSK = txlevelfence;
+	txlevelfenceNFM = txlevelfence;
+	txlevelfenceCW = txlevelfence;
+#else /* WITHTXDACFULL */
+	txlevelfenceBPSK = txlevelfence / 2;
+	txlevelfenceNFM = txlevelfence / 2;
+	txlevelfenceCW = txlevelfence / 2;
+#endif /* WITHTXDACFULL */
 
 	// –азр€дность приЄмного тракта
 	#if WITHIFADCWIDTH > DSP_FLOAT_BITSMANTISSA

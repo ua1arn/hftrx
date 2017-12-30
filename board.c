@@ -89,6 +89,7 @@ static uint_fast8_t 	glob_txgate = 1;	// разрешение драйвера и оконечного усилит
 
 static uint_fast8_t		glob_flt_reset_n;	// сброс фильтров в FPGA DSP
 static uint_fast8_t		glob_dactest;		/* вместо выхода интерполятора к ЦАП передатчика подключается выход NCO */
+static uint_fast8_t		glob_tx_inh_enable;	/* разрешение реакции FPGA на вход tx_inh */
 static uint_fast8_t		glob_adcfifo;
 static uint_fast8_t		glob_xvrtr;
 static uint_fast8_t		glob_dacstraight;	// Требуется формирование кода для ЦАП в режиме беззнакового кода
@@ -594,7 +595,7 @@ pll1_getoutdivider(
 #if CTLSTYLE_V5	//  Маленькая плата. На плате синтезатора управление ГУН и четыре свободных выхода. Остальное - в цепочке
 /* ctl register interface */
 
-#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обовлять множество регистров со "слоями" */
+#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 static void 
 //NOINLINEAT
 prog_ctrlreg(uint_fast8_t plane)
@@ -658,7 +659,7 @@ prog_ctrlreg(uint_fast8_t plane)
 
 // управляющие регистры SW2012MINI с RDX0120
 // управляющие регистры SW2012MINI c цветным дисплеем и регулировкой выходной мощности
-#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обовлять множество регистров со "слоями" */
+#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 
 
 static void 
@@ -693,7 +694,7 @@ prog_ctrlreg(uint_fast8_t plane)
 
 #elif CTLREGSTYLE_SW2012CN
 
-#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обовлять множество регистров со "слоями" */
+#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 
 // управляющие регистры SW2012MINI COLOR 2 c цветным дисплеем ILI9163 и регулировкой выходной мощности
 // управляющие регистры SW2016MINI
@@ -783,7 +784,7 @@ prog_ctrlreg(uint_fast8_t plane)
 // с автотюнером
 // управляющие регистры SW2012MINI COLOR 2 c цветным дисплеем ILI9163 и регулировкой выходной мощности
 
-#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обовлять множество регистров со "слоями" */
+#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 
 	static void 
 	prog_ctrlreg(uint_fast8_t plane)
@@ -830,7 +831,7 @@ prog_ctrlreg(uint_fast8_t plane)
 // с переключением антенн
 // управляющие регистры SW2012MINI COLOR 2 c цветным дисплеем ILI9163 и регулировкой выходной мощности
 
-#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обовлять множество регистров со "слоями" */
+#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 
 	static void 
 	prog_ctrlreg(uint_fast8_t plane)
@@ -868,7 +869,7 @@ prog_ctrlreg(uint_fast8_t plane)
 
 #elif CTLREGSTYLE_SW2013SF
 
-#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обовлять множество регистров со "слоями" */
+#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 
 static void 
 //NOINLINEAT
@@ -911,7 +912,7 @@ prog_ctrlreg(uint_fast8_t plane)
 
 #elif CTLREGSTYLE_SW2013SF_V1	// For UT4UA - with RDX0154 & LCD backlight level
 // For UT4UA управляющие регистры c регулировкой подсветки RDX0154 и регулировкой выходной мощности
-#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обовлять множество регистров со "слоями" */
+#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 
 static void 
 //NOINLINEAT
@@ -954,7 +955,7 @@ prog_ctrlreg(uint_fast8_t plane)
 #elif CTLREGSTYLE_SW2013SF_V2
 // for US2IT управляющие регистры c регулировкой подсветки (без управления диапазонами)
 // 8 bit tuner
-#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обовлять множество регистров со "слоями" */
+#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 
 static void 
 //NOINLINEAT
@@ -1003,7 +1004,7 @@ prog_ctrlreg(uint_fast8_t plane)
 #elif CTLREGSTYLE_SW2013SF_V3
 // for US2IT управляющие регистры c регулировкой подсветки (без управления диапазонами)
 // 7 bit tuner
-#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обовлять множество регистров со "слоями" */
+#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 
 static void 
 //NOINLINEAT
@@ -1048,7 +1049,7 @@ prog_ctrlreg(uint_fast8_t plane)
 
 #elif CTLREGSTYLE_SW2013RDX
 // SW2013SF с индикатором RDX154
-#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обовлять множество регистров со "слоями" */
+#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 
 static void 
 //NOINLINEAT
@@ -1100,7 +1101,7 @@ prog_ctrlreg(uint_fast8_t plane)
 
 #elif CTLREGSTYLE_SW2013RDX_UY5UM_WO240
 // SW2013SF с индикатором RDX154
-#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обовлять множество регистров со "слоями" */
+#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 
 static void 
 //NOINLINEAT
@@ -1153,7 +1154,7 @@ prog_ctrlreg(uint_fast8_t plane)
 #elif CTLREGSTYLE_SW2014NFM
 // SW2013SF с индикатором RDX154
 // дополнительная плата для NFM вместо управления подсветкой
-#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обовлять множество регистров со "слоями" */
+#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 
 static void 
 //NOINLINEAT
@@ -1209,7 +1210,7 @@ prog_ctrlreg(uint_fast8_t plane)
 #elif CTLREGSTYLE_SW2016VHF
 // SW2013SF с индикатором RDX154
 // дополнительная плата для NFM вместо управления подсветкой
-#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обовлять множество регистров со "слоями" */
+#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 
 static void 
 //NOINLINEAT
@@ -1265,7 +1266,7 @@ prog_ctrlreg(uint_fast8_t plane)
 
 #elif CTLREGSTYLE_SW2013RDX_UY5UM	/* с регулировкой мощности R-2R на сигналах выбора диапазонного фильтра */
 // SW2013SF с индикатором RDX154
-#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обовлять множество регистров со "слоями" */
+#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 
 static void 
 //NOINLINEAT
@@ -1307,7 +1308,7 @@ prog_ctrlreg(uint_fast8_t plane)
 
 #elif CTLREGSTYLE_SW2013RDX_LTIYUR
 // SW2013SF с индикатором RDX154
-#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обовлять множество регистров со "слоями" */
+#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 
 static void 
 //NOINLINEAT
@@ -1347,7 +1348,7 @@ prog_ctrlreg(uint_fast8_t plane)
 }
 
 #elif CTLREGSTYLE_SW2011 //  плата с ATMega, 32 bits
-#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обовлять множество регистров со "слоями" */
+#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 
 // SW2011RDX MAXI (classic)
 static void 
@@ -1389,7 +1390,7 @@ prog_ctrlreg(uint_fast8_t plane)
 }
 
 #elif CTLREGSTYLE_SW2011N //  плата с ATMega, 32 bits
-#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обовлять множество регистров со "слоями" */
+#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 
 // SW2011RDX MAXI (classic)
 static void 
@@ -1431,7 +1432,7 @@ prog_ctrlreg(uint_fast8_t plane)
 }
 
 #elif CTLREGMODE24_UA3DKC
-#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обовлять множество регистров со "слоями" */
+#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 // 24-bit control register for down-conversion UA3DKC
 /*
 Если все это удастся реализовать, то на вых. 595 мы будем иметь 
@@ -1487,7 +1488,7 @@ prog_ctrlreg(uint_fast8_t plane)
 }
 
 #elif CTLREGMODE24
-#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обовлять множество регистров со "слоями" */
+#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 
 // 24-bit control register for down-conversion and direct-conversion RX
 static void 
@@ -1523,7 +1524,7 @@ prog_ctrlreg(uint_fast8_t plane)
 }
 
 #elif CTLREGMODE24_RK4CI
-#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обовлять множество регистров со "слоями" */
+#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 
 // Платы "Воробей" и "Колибри" - 24-bit control register - RK4CI version
 
@@ -1567,7 +1568,7 @@ prog_ctrlreg(uint_fast8_t plane)
 }
 
 #elif CTLREGMODE24_RK4CI_V1	/* управляющий регистр - "Воробей-3" с 3*ULN2003 */
-#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обовлять множество регистров со "слоями" */
+#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 
 // Платы "Воробей-3" - 32-bit control register - вариант с позиционными кодами выбора диапазона, фильтра ПЧ и режима работы
 
@@ -1609,7 +1610,7 @@ prog_ctrlreg(uint_fast8_t plane)
 }
 
 #elif CTLREGMODE24_V1
-#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обовлять множество регистров со "слоями" */
+#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 
 // Платы "Воробей" и "Колибри" - 24-bit control register
 
@@ -1674,7 +1675,7 @@ prog_ctrlreg(uint_fast8_t plane)
 }
 
 #elif CTLREGMODE32_V1
-#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обовлять множество регистров со "слоями" */
+#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 
 // Платы "Воробей-3" - 32-bit control register - вариант с позиционными кодами выбора диапазона, фильтра ПЧ и режима работы
 
@@ -1716,7 +1717,7 @@ prog_ctrlreg(uint_fast8_t plane)
 }
 
 #elif CTLREGMODE24_V2
-#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обовлять множество регистров со "слоями" */
+#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 
 // Платы "Воробей-2" с кодеком - 24-bit control register
 
@@ -1760,7 +1761,7 @@ prog_ctrlreg(uint_fast8_t plane)
 }
 
 #elif CTLREGMODE24_IGOR
-#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обовлять множество регистров со "слоями" */
+#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 
 // Платы "Воробей" и "Колибри" - 24-bit control register
 // Вариант для Игоря
@@ -1802,7 +1803,7 @@ prog_ctrlreg(uint_fast8_t plane)
 }
 
 #elif CTLREGMODE16_GEN500
-#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обовлять множество регистров со "слоями" */
+#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 
 // 16-bit control register
 
@@ -2165,7 +2166,7 @@ prog_ctrlreg(uint_fast8_t plane)
 }
 
 #elif CTLREGMODE16
-#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обовлять множество регистров со "слоями" */
+#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 /*
 
 	Выходы 595-х
@@ -2224,7 +2225,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	spi_unselect(target);
 }
 #elif CTLREGMODE16_UR3VBM
-#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обовлять множество регистров со "слоями" */
+#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 /*
 
 	Выходы 595-х
@@ -2284,7 +2285,7 @@ prog_ctrlreg(uint_fast8_t plane)
 }
 
 #elif CTLREGMODE8_UR5YFV
-#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обовлять множество регистров со "слоями" */
+#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 /*
 
 	Выходы 74HC595:
@@ -2322,7 +2323,7 @@ prog_ctrlreg(uint_fast8_t plane)
 }
 
 #elif CTLREGMODE16_RN3ZOB
-#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обовлять множество регистров со "слоями" */
+#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 // 16-bit control register for down-conversion and direct-conversion RX
 // От CTLREGMODE16 отличается позиционным управление диапазонныии фильтрами.
 // пят выходов - 160 80 40 30 20
@@ -2358,7 +2359,7 @@ prog_ctrlreg(uint_fast8_t plane)
 
 
 #elif CTLREGMODE16_DC
-#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обовлять множество регистров со "слоями" */
+#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 /*
 
 	Выходы 595-х
@@ -2419,7 +2420,7 @@ prog_ctrlreg(uint_fast8_t plane)
 }
 
 #elif CTLREGMODE16_NIKOLAI
-#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обовлять множество регистров со "слоями" */
+#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 
 // 16-bit control register for down-conversion and direct-conversion RX
 static void 
@@ -2449,7 +2450,7 @@ prog_ctrlreg(uint_fast8_t plane)
 }
 
 #elif CTLREGMODE_V8A	// приёмник "Воронёнок"
-#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обовлять множество регистров со "слоями" */
+#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 
 // плата управления приёмника "Воронёнок"
 static void 
@@ -2510,7 +2511,7 @@ prog_ctrlreg(uint_fast8_t plane)
 }
 
 #elif CTLREGMODE_RAVENDSP_V1	// трансивер "Воронёнок" с 12 kHz IF DSP
-#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обовлять множество регистров со "слоями" */
+#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 //
 // Проекты:
 // production-mainunit_v2a-rezonit
@@ -2564,7 +2565,7 @@ prog_ctrlreg(uint_fast8_t plane)
 }
 
 #elif CTLREGMODE_RAVENDSP_V3	// трансивер "Воронёнок" с DSP и FPGA
-#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обовлять множество регистров со "слоями" */
+#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 
 // трансивер "Воронёнок" с DSP и FPGA
 static void 
@@ -2648,7 +2649,7 @@ prog_ctldacreg(void)	// CTLREGMODE_RAVENDSP_V3
 }
 
 #elif CTLREGMODE_RAVENDSP_V4	// "Воронёнок" с DSP и FPGA, SD-CARD
-#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обовлять множество регистров со "слоями" */
+#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 
 // "Воронёнок" с DSP и FPGA, SD-CARD
 static void 
@@ -2746,7 +2747,7 @@ prog_ctldacreg(void)	// CTLREGMODE_RAVENDSP_V4
 }
 
 #elif CTLREGMODE_RAVENDSP_V5	// "Воронёнок" с DSP и FPGA, DUAL WATCH, SD-CARD & PA on board
-#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обовлять множество регистров со "слоями" */
+#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 
 #if WITHAUTOTUNEROWNSPI && WITHAUTOTUNER
 
@@ -2871,7 +2872,7 @@ prog_ctldacreg(void)	// CTLREGMODE_RAVENDSP_V5
 }
 
 #elif CTLREGMODE_RAVENDSP_V6	// "Воронёнок" с DSP и FPGA, DUAL WATCH, SD-CARD & PA on board
-#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обовлять множество регистров со "слоями" */
+#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 
 // "Воронёнок" с DSP и FPGA, SD-CARD
 static void 
@@ -2958,7 +2959,7 @@ prog_ctrlreg(uint_fast8_t plane)
 
 #elif CTLREGMODE_RAVENDSP_V7	// V6 fixed "Воронёнок" с DSP и FPGA, DUAL WATCH, SD-CARD & PA on board
 
-#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обовлять множество регистров со "слоями" */
+#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 
 // "Воронёнок" с DSP и FPGA, SD-CARD
 static void 
@@ -3046,7 +3047,7 @@ prog_ctrlreg(uint_fast8_t plane)
 
 #elif CTLREGMODE_STORCH_V1	// V6 fixed "Воронёнок" с USB FS, DSP и FPGA, DUAL WATCH, SD-CARD & PA on board
 
-#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обовлять множество регистров со "слоями" */
+#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 
 // "Storch" с USB, DSP и FPGA, SD-CARD
 static void 
@@ -3133,7 +3134,7 @@ prog_ctrlreg(uint_fast8_t plane)
 
 #elif CTLREGMODE_STORCH_V2	// USB FS, USB HS, DSP и FPGA, DUAL WATCH, SD-CARD & PA on board
 
-#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обовлять множество регистров со "слоями" */
+#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 
 // "Storch" с USB, DSP и FPGA, SD-CARD
 static void 
@@ -3219,7 +3220,7 @@ prog_ctrlreg(uint_fast8_t plane)
 
 #elif CTLREGMODE_STORCH_V2_UA1CEI	// USB FS, USB HS, DSP и FPGA, DUAL WATCH, SD-CARD & PA on board
 // отличается формированием сигналов кода диапазона на заднем разъеме (DIN8)
-#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обовлять множество регистров со "слоями" */
+#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 
 // "Storch" с USB, DSP и FPGA, SD-CARD
 static void 
@@ -3308,7 +3309,7 @@ prog_ctrlreg(uint_fast8_t plane)
 
 #elif CTLREGMODE_STORCH_V3	// USB FS, USB HS, DSP и FPGA, DUAL WATCH, SD-CARD & PA on board
 
-#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обовлять множество регистров со "слоями" */
+#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 
 // "Storch" с USB, DSP и FPGA, SD-CARD
 static void 
@@ -3392,9 +3393,32 @@ prog_ctrlreg(uint_fast8_t plane)
 	}
 }
 
+#elif CTLREGMODE_STORCH_V4
+// Modem v2
+#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
+static void 
+//NOINLINEAT
+prog_ctrlreg(uint_fast8_t plane)
+{
+	prog_fpga_ctrlreg(targetfpga1);	// FPGA control register
+
+	{
+		const spitarget_t target = targetctl1;
+		rbtype_t rbbuff [1] = { 0 };
+
+		RBBIT(0007, glob_tx);					// антенное реле
+		RBBIT(0005, glob_tx && glob_txgate);	// питание предварительного усилителя и цепь смещения оконечного
+		RBBIT(0004, ! glob_tx);					// питание УВЧ
+
+		spi_select(target, CTLREG_SPIMODE);
+		prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
+		spi_unselect(target);
+	}
+}
+
 #elif CTLREGMODE_OLEG4Z_V1	// USB FS, USB HS, DSP и FPGA, DUAL WATCH, SD-CARD & PA on board
 
-#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обовлять множество регистров со "слоями" */
+#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 
 // "Storch" с USB, DSP и FPGA, SD-CARD
 static void 
@@ -3435,7 +3459,7 @@ prog_ctrlreg(uint_fast8_t plane)
 
 #elif CTLREGMODE_RAVENDSP_V8	// Rmainunit_v6bm modem only
 
-#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обовлять множество регистров со "слоями" */
+#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 
 // "Воронёнок" с DSP и FPGA, SD-CARD
 static void 
@@ -3485,7 +3509,7 @@ prog_ctrlreg(uint_fast8_t plane)
 
 #elif CTLREGMODE_RAVENDSP_V9	// renesas Rmainunit_v7bm.pcb
 
-#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обовлять множество регистров со "слоями" */
+#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 
 // "Воронёнок" с DSP и FPGA, SD-CARD
 static void 
@@ -3569,7 +3593,7 @@ prog_ctrlreg(uint_fast8_t plane)
 
 #elif CTLREGMODE_RAVENDSP_V2	// renesas Rmainunit_v7cm.pcb
 
-#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обовлять множество регистров со "слоями" */
+#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 
 // "Воронёнок" с DSP и FPGA, SD-CARD
 static void 
@@ -3652,7 +3676,7 @@ prog_ctrlreg(uint_fast8_t plane)
 
 #elif CTLREGMODE_V7_ARM //ARM_CTLSTYLE_V7_H_INCLUDED	//  новая плата с двумя аттенюаторами, без или с FM, с УВЧ - совмещённая с синтезатором, 6 ГУН
 
-#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обовлять множество регистров со "слоями" */
+#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 
 /* ctl register interface */
 static void 
@@ -3724,7 +3748,7 @@ prog_rxctrlreg(uint_fast8_t plane)
 }
 
 #elif CTLREGMODE_V7_ATMEGA //ATMEGA_CTLSTYLE_V7_H_INCLUDED	//  новая плата с двумя аттенюаторами, без или с FM, с УВЧ - совмещённая с синтезатором, 6 ГУН
-#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обовлять множество регистров со "слоями" */
+#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 
 // Ьез FM
 /* ctl register interface */
@@ -3799,7 +3823,7 @@ prog_rxctrlreg(uint_fast8_t plane)
 }
 
 #elif ARM_CTLSTYLE_V7A_H_INCLUDED		//  новая плата с двумя аттенюаторами, без или с FM, с УВЧ - совмещённая с синтезатором
-#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обовлять множество регистров со "слоями" */
+#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 /* ctl register interface */
 
 static void 
@@ -3872,7 +3896,7 @@ prog_rxctrlreg(uint_fast8_t plane)
 
 #elif CTLREGSTYLE_DISCO32
 	// FPGA_V2
-#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обовлять множество регистров со "слоями" */
+#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 
 static void 
 prog_ctrlreg(uint_fast8_t plane)
@@ -3882,7 +3906,7 @@ prog_ctrlreg(uint_fast8_t plane)
 }
 
 #elif CTLREGSTYLE_WDKP
-#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обовлять множество регистров со "слоями" */
+#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 
 static void 
 //NOINLINEAT
@@ -3893,7 +3917,7 @@ prog_ctrlreg(uint_fast8_t plane)
 
 #elif CTLREGMODE_4Z5KY_V1
 
-	#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обовлять множество регистров со "слоями" */
+	#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 
 /* Синтезатор 4Z5KY с двухстрочником http://ur5yfv.ucoz.ua/forum/28-19-2 */
 
@@ -3935,7 +3959,7 @@ prog_ctrlreg(uint_fast8_t plane)
 
 #elif CTLREGSTYLE_NOCTLREG
 
-	#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обовлять множество регистров со "слоями" */
+	#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 
 	static void 
 	//NOINLINEAT
@@ -4427,6 +4451,17 @@ board_set_dactest(uint_fast8_t v)
 	if (glob_dactest != n)
 	{
 		glob_dactest = n;
+		board_ctlreg1changed();
+	}
+}
+
+void
+board_set_tx_inh_enable(uint_fast8_t v)
+{
+	uint_fast8_t n = v != 0;
+	if (glob_tx_inh_enable != n)
+	{
+		glob_tx_inh_enable = n;
 		board_ctlreg1changed();
 	}
 }
@@ -4950,7 +4985,7 @@ void prog_xvtr_freq(
 	r820t_enable(enable);
 	if (enable)
 		r820t_setfreq(f);
-#endif
+#endif /* (XVTR1_TYPE == XVTR_TYPE_R820T) */
 }
 
 
@@ -5634,6 +5669,8 @@ static void board_fpga_loader_PS(void)
 	#elif CTLSTYLE_STORCH_V2 && (DDS1_CLK_MUL == 1)
 		#include "rbf/rbfimage_v7_2ch.h"	// same as CTLSTYLE_RAVENDSP_V7
 	#elif CTLSTYLE_STORCH_V3 && (DDS1_CLK_MUL == 1)
+		#include "rbf/rbfimage_v7_2ch.h"	// same as CTLSTYLE_RAVENDSP_V7
+	#elif CTLSTYLE_STORCH_V4 && (DDS1_CLK_MUL == 1)
 		#include "rbf/rbfimage_v7_2ch.h"	// same as CTLSTYLE_RAVENDSP_V7
 	#elif CTLSTYLE_OLEG4Z_V1 && (DDS1_CLK_MUL == 1)
 		#include "rbf/rbfimage_oleg4z.h"	// same as CTLSTYLE_RAVENDSP_V7, 1 RX & WFM
@@ -6511,12 +6548,46 @@ static void prog_tsc_initialize(void)
 }
 #endif /* defined (TSC1_TYPE) */
 
+#if ADC1_TYPE == ADC_TYPE_AD9246
+
+static void ad9246_write(uint_fast16_t addr, uint_fast8_t data)
+{
+	const spitarget_t target = targetadc1;	/* addressing to chip */
+	enum { W0, W1, W2, W3 };
+	spi_select(target, SPIC_MODE3);
+	spi_progval8_p1(target, (W0 << 5) | ((addr >> 8) & 0x1F));		// Chip Aaddress, D7=0: write
+	spi_progval8_p2(target, addr);	// 2-nd byte of instruction header
+	spi_progval8_p2(target, data);	// register data
+	spi_complete(target);
+	spi_unselect(target);
+}
+
+static void ad9246_initialize(void)
+{
+	ad9246_write(0x00, 0x18 | 0x24);	// soft reset
+	ad9246_write(0x00, 0x18);			// soft reset deassert
+
+	ad9246_write(0x09, 0x00);	// Duty cycle stabilizer off
+	//ad9246_write(0x0D, 0x01);	// test_io: midscale short
+
+	//ad9246_write(0x18, 0x00);	// VREF: VREF = 1.25 V
+	//ad9246_write(0x18, 0x40);	// VREF: VREF = 1.50 V
+	//ad9246_write(0x18, 0x80);	// VREF: VREF = 1.75 V
+	ad9246_write(0x18, 0xC0);	// VREF: VREF = 2.00 V
+
+	ad9246_write(0x14, 0x01);	// output_mode: twos complement
+
+	ad9246_write(0xFF, 0x01);			// SW transfer
+	ad9246_write(0xFF, 0x00);			// SW transfer
+}
+#endif /* ADC1_TYPE == ADC_TYPE_AD9246 */
+
 void board_reset(void)
 {
 	/* Один общий сигнал на все микросхемы */
 	board_set_reset_n(1);	// снять сигнал сброса
 	board_update();
-	board_set_reset_n(0);	// Выставить сигнал сброса (реально ужд в "0").
+	board_set_reset_n(0);	// Выставить сигнал сброса (реально уже в "0").
 	board_update();
 	board_set_reset_n(1);	// снять сигнал сброса
 	board_update();
@@ -6525,10 +6596,13 @@ void board_reset(void)
 /* вызывается при разрешённых прерываниях. */
 void board_init_chips(void)
 {
+#if ADC1_TYPE == ADC_TYPE_AD9246
+	ad9246_initialize();
+#endif /* ADC1_TYPE == ADC_TYPE_AD9246 */
 #if (XVTR1_TYPE == XVTR_TYPE_R820T)
 	r820t_initialize();
 	r820t_enable(0);
-#endif
+#endif /* (XVTR1_TYPE == XVTR_TYPE_R820T) */
 
 #if WITHSI5351AREPLACE
 	// do nothing
@@ -6634,7 +6708,7 @@ hardware_elkey_getpaddle(uint_fast8_t reverse)
 void 
 hardware_elkey_ports_initialize(void)
 {
-#if defined (ELKEY_BIT_RIGHT) && defined (ELKEY_BIT_RIGHT)
+#if defined (ELKEY_INITIALIZE)
 
 	ELKEY_INITIALIZE();
 
@@ -6644,7 +6718,7 @@ hardware_elkey_ports_initialize(void)
 	/* сигнал PPS от GPS/GLONASS/GALILEO модуля */
 	NMEA_INITIALIZE();
 
-#elif WITHTX && WITHCAT && defined (FROMCAT_BIT_DTR)
+#elif WITHTX && WITHCAT && defined (FROMCAT_DTR_INITIALIZE)
 
 	/* манипуляция от порта RS-232 */
 	FROMCAT_DTR_INITIALIZE();
@@ -6664,16 +6738,18 @@ hardware_get_ptt(void)
 	return WITHBBOXTX;	// автоматический переход на передачу
 #elif ELKEY328
 	return 1;	// todo: 328
-#else /* ELKEY328 */
+#elif defined (HARDWARE_GET_PTT)
 	return HARDWARE_GET_PTT();
-#endif /* ELKEY328 */
+#else /*  */
+	return 0;
+#endif /*  */
 }
 
 // Инициализация входа PTT, входа CAT_RTS
 void 
 hardware_ptt_port_initialize(void)
 {
-#if defined (PTT_BIT_PTT)
+#if defined (PTT_INITIALIZE)
 	PTT_INITIALIZE();
 #endif
 

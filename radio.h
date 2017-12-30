@@ -18,7 +18,7 @@ typedef uint_least64_t phase_t;
 
 #if WITHBBOX && defined (WITHBBOXFREQ)
 	#define DEFAULTDIALFREQ	WITHBBOXFREQ
-#else
+#elif ! defined (DEFAULTDIALFREQ)
 	#define DEFAULTDIALFREQ	7012000L
 #endif
 
@@ -253,11 +253,11 @@ enum {
 	#if WITHMODEM
 		SUBMODE_BPSK,
 	#endif /* WITHMODEM */
+	SUBMODE_ISB,
 	#if WITHFREEDV
 		SUBMODE_FREEDV,
 	#endif /* WITHFREEDV */
 #endif
-	SUBMODE_ISB,
 	//
 	SUBMODE_COUNT
 };
@@ -938,7 +938,7 @@ void elkey_spool_dots(void);	/* электронный ключ - вызываетс€ с периодом 1/ELKEY
 	//#define R820T_LOSTEP (R820T_REFERENCE / 16)	// 1.92 MHz
 	#define R820T_LOSTEP (R820T_REFERENCE / 32)	// 920 kHz
 
-	#if CTLSTYLE_OLEG4Z_V1
+	#if defined (XVTR1_TYPE)
 		#define LO0_SIDE_F(freq) ((freq) >= 50000000uL ? LOCODE_UPPER : LOCODE_INVALID)	/* при отсутствующем конверторе - на нЄм нет инверсии спектра */
 		#define LO1_SIDE	LOCODE_LOWER	/* rf->baseband: ѕри преобразовании на этом гетеродине нет инверсии спектра */
 	#else
@@ -973,6 +973,9 @@ void elkey_spool_dots(void);	/* электронный ключ - вызываетс€ с периодом 1/ELKEY
 	#elif BANDSELSTYLE_OLEG4Z
 		#define TUNE_BOTTOM 20000L		/* 20 kHz нижн€€ частота настройки */
 		#define TUNE_TOP 1700000000L	/* 1.7 GHz верхн€€ частота настройки */
+	#elif BANDSELSTYLERE_UHF_137M_174M
+		#define TUNE_BOTTOM 137000000L		/* нижн€€ частота настройки */
+		#define TUNE_TOP 174000000L			/* верхн€€ частота настройки */
 	#else
 		#error Wrong BANDSELSTYLERE_xxx used
 	#endif /* BANDSELSTYLERE_UPCONV56M */

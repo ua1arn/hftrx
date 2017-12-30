@@ -274,6 +274,7 @@ set_global_assignment -name QIP_FILE cic_64_2iq.qip
 set_global_assignment -name QIP_FILE cic40_ddc_2rx.qip
 set_global_assignment -name ENABLE_INIT_DONE_OUTPUT ON
 set_global_assignment -name BDF_FILE t1_2ch_rts96.bdf
-set_instance_assignment -name WEAK_PULL_UP_RESISTOR OFF -to adc_ovfl
-set_instance_assignment -name WEAK_PULL_UP_RESISTOR OFF -to tx_inh_h
+set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to adc_ovfl
+set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to tx_inh_h
+set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to adc_d*
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top

@@ -3128,6 +3128,10 @@ enum
 	#if (CTLSTYLE_SW2016MINI)
 		static uint_fast8_t rxtxdelay = 45;	/* в единицах mS. модифицируется через меню - задержка перехода прём-передача */
 		static uint_fast8_t txrxdelay = 15;	/* в единицах mS. модифицируется через меню - задержка перехода передача-прём */
+	#elif (CTLREGMODE_STORCH_V4)
+		// modem
+		static uint_fast8_t rxtxdelay = 75;	/* в единицах mS. модифицируется через меню - задержка перехода прём-передача */
+		static uint_fast8_t txrxdelay = 25;	/* в единицах mS. модифицируется через меню - задержка перехода передача-прём */
 	#else
 		static uint_fast8_t rxtxdelay = 25;	/* в единицах mS. модифицируется через меню - задержка перехода прём-передача */
 		static uint_fast8_t txrxdelay = 25;	/* в единицах mS. модифицируется через меню - задержка перехода передача-прём */
@@ -3371,8 +3375,13 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий клавиш - 880 Гц - 
 		#if WITHDACSTRAIGHT
 			static uint_fast8_t gdacstraight = 1;	/* Требуется формирование кода для ЦАП в режиме беззнакового кода */
 		#else /* WITHDACSTRAIGHT */
-			static uint_fast8_t gdacstraight = 0;	/* Требуется формирование кода для ЦАП в режиме беззнакового кода */
+			static uint_fast8_t gdacstraight = 0;	/* Требуется формирование кода для ЦАП в режиме знакового кода */
 		#endif /* WITHDACSTRAIGHT */
+		#if WITHTXINHDISABLE
+			static uint_fast8_t gtxinhenable = 0;	/* запрещение реакции на вход tx_inh */
+		#else /* WITHTXINHDISABLE */
+			static uint_fast8_t gtxinhenable = 1;	/* разрешение реакции на вход tx_inh */
+		#endif /* WITHTXINHDISABLE */
 		//static uint_fast8_t gddcrshift = 1;	/* 0..3 сдвиг данных после умножителей - "0" для имитации 14 бит */
 		//static uint_fast8_t gadcrshift = 0;	/* 0..3 сдвиг данных после АЦП - "2" для имитации работы с 14 бит АЦП */
 		//static uint_fast8_t gadcoffset = ADCOFFSETMID;
@@ -3408,8 +3417,13 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий клавиш - 880 Гц - 
 		9600 * 100uL,	// 9,6k baud		#22
 	};
 
-	static uint_fast8_t gmodemspeed = 9;	// индекс в таблице скоростей передачи - #5: 300 baud, #7: 600 baud, #9: 1k baud
+	static uint_fast8_t gmodemspeed = 7;	// индекс в таблице скоростей передачи - #5: 300 baud, #7: 600 baud, #9: 1k baud
 	static uint_fast8_t gmodemmode;		// применяемая модуляция
+
+	uint_fast32_t hamradio_get_modem_baudrate100(void)
+	{
+		return modembr2int100 [gmodemspeed];
+	}
 
 #endif /* WITHMODEM */
 
@@ -3928,7 +3942,6 @@ static const FLASHMEM submodeprops_t submodes [SUBMODE_COUNT] =
 		"PSK", 
 	},
 #endif /* WITHMODEM */
-#endif /* WITHMODESETSMART */
 	/* SUBMODE_ISB */
 	{	
 		0,
@@ -3947,6 +3960,7 @@ static const FLASHMEM submodeprops_t submodes [SUBMODE_COUNT] =
 		"FDV", 
 	},
 #endif /* WITHFREEDV */
+#endif /* WITHMODESETSMART */
 };
 
 // Возвращает признак работы в LSB данного режима.
@@ -5422,7 +5436,7 @@ gethintlo0(
 	uint_fast8_t lo0side	/* формируем гетеродин для указанной боковой полосы */
 	)
 {
-#if CTLSTYLE_OLEG4Z_V1
+#if defined (XVTR1_TYPE)
 	const uint_fast32_t lo0step = R820T_LOSTEP;
 	// дискретность перестройки гетеродина конвертора
 	if (lo0side == LOCODE_UPPER)		/* При преобразовании на этом гетеродине происходит инверсия спектра */
@@ -5676,7 +5690,7 @@ getif6bw(
 
 #if WITHFREEDV
 	case MODE_FREEDV:
-#endif /* WITHMODEM */
+#endif /* WITHFREEDV */
 	case MODE_CW:
 	case MODE_SSB:
 	case MODE_DIGI:
@@ -5760,7 +5774,7 @@ getlo6(
 #if WITHFREEDV
 	case MODE_FREEDV:
 		return tx ? 0 : 0;		// модем принимает квадратуры
-#endif /* WITHMODEM */
+#endif /* WITHFREEDV */
 
 	default:
 		// AM. NFM и остальные - принимаются на baseband
@@ -6343,6 +6357,7 @@ updateboard(
 			#if WITHDSPEXTDDC	/* "Воронёнок" с DSP и FPGA */
 				board_set_dactest(gdactest);		/* вместо выхода интерполятора к ЦАП передатчика подключается выход NCO */
 				board_set_dacstraight(gdacstraight);	/* Требуется формирование кода для ЦАП в режиме беззнакового кода */
+				board_set_tx_inh_enable(gtxinhenable);				/* разрешение реакции на вход tx_inh */
 			#endif /* WITHDSPEXTDDC */
 		#else /* WITHIF4DSP */
 			board_set_if4lsb(mixXlsbs [4]);	/* для прямого преобразования - управление детектором - или выбор фильтра LSB для конфигураций с фиксированным 3-м гетеродином */
@@ -14131,7 +14146,9 @@ hamradio_initialize(void)
 #if CTLREGMODE_RA4YBO_V1 || CTLREGMODE_RA4YBO_V2 || CTLREGMODE_RA4YBO_V3 || CTLREGMODE_RA4YBO_V3A
 	board_set_bandfonuhf(bandf_calc(111000000L));
 #endif /* CTLREGMODE_RA4YBO_V1 || CTLREGMODE_RA4YBO_V2 || CTLREGMODE_RA4YBO_V3 || CTLREGMODE_RA4YBO_V3A */
-
+#if defined (XVTR1_TYPE)
+	//board_set_bandfxvrtr(bandf_calc(R820T_IFFREQ))	// Жтот диапазон подставляется как ПЧ для трансвертора
+#endif /* defined (XVTR1_TYPE) */
 	board_init_chips();	// программирование всех микросхем синтезатора.
 
 #if WITHUSESDCARD

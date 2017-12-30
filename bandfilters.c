@@ -270,6 +270,12 @@
 
 	#define TUNE_BOTTOM 1600000L			/* нижн€€ частота настройки */
 
+#elif \
+		BANDSELSTYLERE_UHF_137M_174M || \
+		0
+	/* UHF 137..174 MHz */
+	//#define TUNE_BOTTOM 137000000L		/* нижн€€ частота настройки */
+	//#define TUNE_TOP 174000000L			/* верхн€€ частота настройки */
 
 #elif \
 		BANDSELSTYLERE_NOTHING || \
@@ -354,6 +360,7 @@ uint8_t bandf2_calc(
 	CTLREGMODE_STORCH_V1 || \
 	CTLREGMODE_STORCH_V2 || \
 	CTLREGMODE_STORCH_V3 || \
+	CTLREGMODE_STORCH_V4 ||		/* modem only v2 */ \
 	CTLREGMODE_RAVENDSP_V9 || /* renesas */ \
 	CTLREGMODE_RAVENDSP_V2 || /* renesas */ \
 	CTLREGMODE_RAVENDSP_V8 || /* modem only */ \

@@ -96,6 +96,7 @@ void board_set_adcfifo(uint_fast8_t v);	/* Требуется формирование кода для ЦАП в
 void board_set_xvrtr(uint_fast8_t v);	/* Разрешить работу конвертора */
 void board_set_dacstraight(uint_fast8_t v);	/* Требуется формирование кода для ЦАП в режиме беззнакового кода */
 void board_set_dactest(uint_fast8_t v);	/* вместо выхода интерполятора к ЦАП передатчика подключается выход NCO */
+void board_set_tx_inh_enable(uint_fast8_t v);	/* разрешение реакции на вход tx_inh */
 void board_set_dither(uint_fast8_t v);	/* управление зашумлением в LCT2088 */
 void board_set_adcrand(uint_fast8_t v);	/* управление интерфейсом в LCT2088 */
 void board_set_dacscale(uint_fast8_t n);	/* Управление умножителем в тракте сигнала передатчика */
