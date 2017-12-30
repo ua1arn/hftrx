@@ -6529,7 +6529,7 @@ updateboard(
 		board_set_rfgain(sleepflag == 0  ? rfgain1 : BOARD_RFGAIN_MIN);	// Параметр для регулировки усидения ПЧ
 
 		#if ! defined (CODEC1_TYPE) && WITHUSBHW && WITHUSBUAC
-			/* если конфигурация без автнонмного кодека - все въоды модулятора с USB AUDIO */
+			/* если конфигурация без автнонмного аудиокодека - все входы модулятора получают звук с USB AUDIO */
 			const uint_fast8_t txaudio = BOARD_TXAUDIO_USB;
 		#elif defined (WITHBBOXMIKESRC)
 			const uint_fast8_t txaudio = WITHBBOXMIKESRC;
