@@ -7626,6 +7626,8 @@ void board_adc_initialize(void)
 
 #if WITHKEYBOARD
 
+#if KEYBOARD_USE_ADC6
+
 static uint_fast8_t
 kbd_adc6_decode(
 	uint_fast8_t v
@@ -7664,6 +7666,10 @@ kbd_adc6_decode(
 	return KEYBOARD_NOKEY;
 }
 
+#endif /* KEYBOARD_USE_ADC6 */
+
+#if KEYBOARD_USE_ADC6_V1
+
 static uint_fast8_t
 kbd_adc6v1_decode(
 	uint_fast8_t v
@@ -7701,6 +7707,7 @@ kbd_adc6v1_decode(
 
 	return KEYBOARD_NOKEY;
 }
+#endif /* KEYBOARD_USE_ADC6_V1 */
 
 //#define KI_LIST	KI5, KI4, KI3, KI2, KI1, KI0,	// инициализаторы для функции перекодировки
 //#define KI_LIST	KI4, KI3, KI2, KI1, KI0,	// инициализаторы для функции перекодировки
