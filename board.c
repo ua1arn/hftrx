@@ -5033,7 +5033,7 @@ prog_dds1_ftw_noioupdate(const ftw_t * value)
 
 static 
 void 
-prog_dds1_init(void)
+prog_dds1_initialize(void)
 {
 #if defined(DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_AD9852)
 	prog_ad9852_init(targetdds1, 0, DDS1_CLK_MUL);
@@ -5097,7 +5097,7 @@ void prog_dds2_ftw(const ftw_t * value)
 }
 
 static void 
-prog_dds2_init(void)
+prog_dds2_initialize(void)
 {
 #if defined(DDS2_TYPE) && (DDS2_TYPE == DDS_TYPE_AD9852)
 	prog_ad9852_init(targetdds2, 0, DDS2_CLK_MUL);
@@ -5156,7 +5156,7 @@ void prog_dds3_ftw(const ftw_t * value)
 }
 
 static void 
-prog_dds3_init(void)
+prog_dds3_initialize(void)
 {
 #if defined(DDS3_TYPE) && (DDS3_TYPE == DDS_TYPE_AD9852)
 	prog_ad9852_init(targetdds3, 0, DDS3_CLK_MUL);
@@ -5393,7 +5393,7 @@ uint_fast8_t board_pll1_set_n(
 
 // Use variables phase_lo2_r and phase_lo2_n
 
-static void prog_pll2_init(
+static void prog_pll2_initialize(
 	uint_fast8_t asdividern	/* как делитель с программируемым делением rf (N) - используется выход */
 	)
 {
@@ -6553,9 +6553,10 @@ static void prog_tsc_initialize(void)
 static void ad9246_write(uint_fast16_t addr, uint_fast8_t data)
 {
 	const spitarget_t target = targetadc1;	/* addressing to chip */
-	enum { W0, W1, W2, W3 };
+	enum { DTL_1, DTL_2, DTL_3, DTL_1_STREAMING };	// 0: 1 byte of data can be transferred
+
 	spi_select(target, SPIC_MODE3);
-	spi_progval8_p1(target, (W0 << 5) | ((addr >> 8) & 0x1F));		// Chip Aaddress, D7=0: write
+	spi_progval8_p1(target, (DTL_1 << 5) | ((addr >> 8) & 0x1F));		// Chip Aaddress, D7=0: write
 	spi_progval8_p2(target, addr);	// 2-nd byte of instruction header
 	spi_progval8_p2(target, data);	// register data
 	spi_complete(target);
@@ -6565,7 +6566,8 @@ static void ad9246_write(uint_fast16_t addr, uint_fast8_t data)
 static void ad9246_initialize(void)
 {
 	ad9246_write(0x00, 0x18 | 0x24);	// soft reset
-	ad9246_write(0x00, 0x18);			// soft reset deassert
+	local_delay_ms(50);
+	//ad9246_write(0x00, 0x18);			// soft reset deassert
 
 	ad9246_write(0x09, 0x00);	// Duty cycle stabilizer off
 	//ad9246_write(0x0D, 0x01);	// test_io: midscale short
@@ -6578,9 +6580,21 @@ static void ad9246_initialize(void)
 	ad9246_write(0x14, 0x01);	// output_mode: twos complement
 
 	ad9246_write(0xFF, 0x01);			// SW transfer
-	ad9246_write(0xFF, 0x00);			// SW transfer
+	//ad9246_write(0xFF, 0x00);			// SW transfer
 }
 #endif /* ADC1_TYPE == ADC_TYPE_AD9246 */
+
+#if defined(ADC1_TYPE)
+static void prog_rfadc_initialize(void)
+{
+	#if ADC1_TYPE == ADC_TYPE_AD9246
+		ad9246_initialize();
+	#endif /* ADC1_TYPE == ADC_TYPE_AD9246 */
+
+
+}
+#endif /* defined(ADC1_TYPE) */
+
 
 void board_reset(void)
 {
@@ -6592,29 +6606,31 @@ void board_reset(void)
 	board_set_reset_n(1);	// снять сигнал сброса
 	board_update();
 }
+
 /* Initialize chips. All coeffecienters should be already calculated before. */
 /* вызывается при разрешённых прерываниях. */
 void board_init_chips(void)
 {
-#if ADC1_TYPE == ADC_TYPE_AD9246
-	ad9246_initialize();
-#endif /* ADC1_TYPE == ADC_TYPE_AD9246 */
 #if (XVTR1_TYPE == XVTR_TYPE_R820T)
 	r820t_initialize();
 	r820t_enable(0);
 #endif /* (XVTR1_TYPE == XVTR_TYPE_R820T) */
 
+#if defined(ADC1_TYPE)
+	prog_rfadc_initialize();
+#endif /* defined(ADC1_TYPE) */
+
 #if WITHSI5351AREPLACE
 	// do nothing
 #else /* WITHSI5351AREPLACE */
 	#if defined(DDS1_TYPE)
-		prog_dds1_init();
+		prog_dds1_initialize();
 	#endif /* defined(DDS1_TYPE) */
 	#if defined(DDS2_TYPE)
-		prog_dds2_init();
+		prog_dds2_initialize();
 	#endif /* defined(DDS2_TYPE) */
 	#if defined(DDS3_TYPE)
-		prog_dds3_init();
+		prog_dds3_initialize();
 	#endif /* defined(DDS3_TYPE) */
 #endif /* WITHSI5351AREPLACE */
 
@@ -6630,10 +6646,10 @@ void board_init_chips(void)
 
 	// setup fixed PLL - 2-nd lo
 #if LO1DIVIDEVCO
-	prog_pll2_init(1);
+	prog_pll2_initialize(1);
 #else /* LO1DIVIDEVCO */
 	#if defined (PLL2_TYPE)
-		prog_pll2_init(0);
+		prog_pll2_initialize(0);
 	#endif
 #endif /* LO1DIVIDEVCO */
 
