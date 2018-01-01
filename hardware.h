@@ -412,13 +412,13 @@ void hardware_adc_initialize(void);
 		#define RAMFUNC_NONILINE // __attribute__((__section__(".ramfunc"), noinline))  
 		#define RAMFUNC			 // __attribute__((__section__(".ramfunc")))  
 	#elif (CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX)
-		#define RAMFUNC_NONILINE __attribute__((__section__(".ramfunc"), noinline))  
+		#define RAMFUNC_NONILINE __attribute__((__section__(".ramfunc")))  // удаление управления noinline добавило 2-3 процента быстродействия __attribute__((__section__(".ramfunc"), noinline))  
 		#define RAMFUNC			 __attribute__((__section__(".ramfunc")))  
 	#elif CPUSTYLE_STM32F4XX
 		#define RAMFUNC_NONILINE // __attribute__((__section__(".ramfunc"), noinline))  
 		#define RAMFUNC			 // __attribute__((__section__(".ramfunc")))  
 	#else
-		#define RAMFUNC_NONILINE __attribute__((__section__(".ramfunc"), noinline))  
+		#define RAMFUNC_NONILINE __attribute__((__section__(".ramfunc")))  // __attribute__((__section__(".ramfunc"), noinline))  
 		#define RAMFUNC			 __attribute__((__section__(".ramfunc")))  
 	#endif
 
@@ -450,7 +450,7 @@ void hardware_adc_initialize(void);
 		// нет нужды экономить память FLASH
 		#define NOINLINEAT // __attribute__((noinline))
 	#else
-		#define NOINLINEAT __attribute__((noinline))
+		#define NOINLINEAT __attribute__((noinline))	// On small FLASH ATMega CPUs
 	#endif
 	#define RAMFUNC_NONILINE // __attribute__((__section__(".ramfunc"), noinline))  
 	#define RAMFUNC			 // __attribute__((__section__(".ramfunc")))  

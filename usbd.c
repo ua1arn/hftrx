@@ -4465,10 +4465,10 @@ static void Error_Handler(void)
 
 #if (CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX)
 
-static void HAL_Delay(uint32_t ms)
-{
-	local_delay_ms(ms);
-}
+	static void HAL_Delay(uint32_t ms)
+	{
+		local_delay_ms(ms);
+	}
 
 
 /** @brief Reset the Handle's State field.
@@ -4509,54 +4509,6 @@ static void HAL_Delay(uint32_t ms)
                                       (h)->Lock = HAL_UNLOCKED;    \
                                     }while (0)
 #endif /* USE_RTOS */
-
-
-/** 
-  * @brief  __RAM_FUNC definition
-  */ 
-#if defined ( __CC_ARM   )
-/* ARM Compiler
-   ------------
-   RAM functions are defined using the toolchain options. 
-   Functions that are executed in RAM should reside in a separate source module.
-   Using the 'Options for File' dialog you can simply change the 'Code / Const' 
-   area of a module to a memory space in physical RAM.
-   Available memory areas are declared in the 'Target' tab of the 'Options for Target'
-   dialog. 
-*/
-#define __RAM_FUNC HAL_StatusTypeDef 
-
-#elif defined ( __ICCARM__ )
-/* ICCARM Compiler
-   ---------------
-   RAM functions are defined using a specific toolchain keyword "__ramfunc". 
-*/
-#define __RAM_FUNC __ramfunc HAL_StatusTypeDef
-
-#elif defined   (  __GNUC__  )
-/* GNU Compiler
-   ------------
-  RAM functions are defined using a specific toolchain attribute 
-   "__attribute__((section(".RamFunc")))".
-*/
-#define __RAM_FUNC HAL_StatusTypeDef  __attribute__((section(".RamFunc")))
-
-#endif
-
-/** 
-  * @brief  __NOINLINE definition
-  */ 
-#if defined ( __CC_ARM   ) || defined   (  __GNUC__  )
-/* ARM & GNUCompiler 
-   ---------------- 
-*/
-#define __NOINLINE __attribute__ ( (noinline) )
-
-#elif defined ( __ICCARM__ )
-/* ICCARM Compiler
-   ---------------
-*/
-#define __NOINLINE _Pragma("optimize = no_inline")
 
 #endif
 /**
