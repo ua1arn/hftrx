@@ -8128,12 +8128,14 @@ arm_cpu_initialize(void)
 		/* FPU enable on Cortex M4F */
 		SCB->CPACR |= ((3UL << 10 * 2) | (3UL << 11 * 2));  /* set CP10 and CP11 Full Access */
 
-		/* Lazy stacking enabled, automatic state saving enabled is a default state */
-		/* http://infocenter.arm.com/help/topic/com.arm.doc.dai0298a/DAI0298A_cortex_m4f_lazy_stacking_and_context_switching.pdf */
-		//__set_FPSCR(			/* Floating-Point Context Control Register */
-		//	(__get_FPSCR() & ~ (FPU_FPCCR_LSPEN_Msk)) | /* disable Lazy stacking feature */
-		//	FPU_FPCCR_ASPEN_Msk | 
-		//	0);
+		#if 0
+			/* Lazy stacking enabled, automatic state saving enabled is a default state */
+			/* http://infocenter.arm.com/help/topic/com.arm.doc.dai0298a/DAI0298A_cortex_m4f_lazy_stacking_and_context_switching.pdf */
+			__set_FPSCR(			/* Floating-Point Context Control Register */
+				(__get_FPSCR() & ~ (FPU_FPCCR_LSPEN_Msk)) | /* disable Lazy stacking feature */
+				FPU_FPCCR_ASPEN_Msk | 
+				0);
+		#endif
 
 	#endif
 	#ifdef UNALIGNED_SUPPORT_DISABLE
