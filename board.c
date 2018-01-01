@@ -6572,10 +6572,10 @@ static void ad9246_initialize(void)
 	ad9246_write(0x09, 0x00);	// Duty cycle stabilizer off
 	//ad9246_write(0x0D, 0x01);	// test_io: midscale short
 
-	//ad9246_write(0x18, 0x00);	// VREF: VREF = 1.25 V
+	ad9246_write(0x18, 0x00);	// VREF: VREF = 1.25 V
 	//ad9246_write(0x18, 0x40);	// VREF: VREF = 1.50 V
 	//ad9246_write(0x18, 0x80);	// VREF: VREF = 1.75 V
-	ad9246_write(0x18, 0xC0);	// VREF: VREF = 2.00 V
+	//ad9246_write(0x18, 0xC0);	// VREF: VREF = 2.00 V
 
 	ad9246_write(0x14, 0x01);	// output_mode: twos complement
 
