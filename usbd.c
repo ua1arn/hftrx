@@ -4510,7 +4510,7 @@ static void Error_Handler(void)
                                     }while (0)
 #endif /* USE_RTOS */
 
-#endif
+
 /**
   * @}
   */ 
