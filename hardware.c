@@ -8122,7 +8122,16 @@ void
 __attribute__((section(".init")))
 arm_cpu_initialize(void)
 {
-#if CPUSTYLE_ARM_CM0 || CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7
+#if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7
+
+	#if WITHDEBUG
+		// Поддержка для функций диагностики быстродействия BEGINx_STAMP/ENDx_STAMP - audio.c
+		CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
+		DWT->LAR = 0xC5ACCE55;	// Key value for unlock
+		DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
+		DWT->LAR = 0x00000000;	// Key value for lock
+	#endif /* WITHDEBUG */
+
 	#if (__FPU_PRESENT == 1) && (__FPU_USED == 1)
 
 		/* FPU enable on Cortex M4F */
@@ -8141,7 +8150,7 @@ arm_cpu_initialize(void)
 	#ifdef UNALIGNED_SUPPORT_DISABLE
 		SCB->CCR |= SCB_CCR_UNALIGN_TRP_Msk;
 	#endif
-#endif /* CPUSTYLE_ARM_CM0 || CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7 */
+#endif /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7 */
 #if CPUSTYLE_STM32F1XX
 
 	lowlevel_stm32f10x_pll_clock();
