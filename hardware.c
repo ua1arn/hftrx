@@ -7670,13 +7670,13 @@ CP15_readControlRegister(void)
 	return val;
 }
 
-// CSSELR
-static void 
-CP15_writeCSSELR(uint32_t val)
+
+/** \brief  Set CSSELR
+ */
+__STATIC_FORCEINLINE void __set_CSSELR(uint32_t value)
 {
-	// CRn=c0, CRm=c0, Op1=2, Op2=0
-	__asm volatile("mcr p15, 2, %0, c0, c0, 0"
-	  : : "r" (val) : "cc");
+//  __ASM volatile("MCR p15, 2, %0, c0, c0, 0" : : "r"(value) : "memory");
+  __set_CP(15, 2, value, 0, 0, 0);
 }
 
 // TLBIALLIS
@@ -8001,89 +8001,6 @@ void arm_hardware_flush_invalidate(uintptr_t base, size_t size)
 
 #elif CPUSTYLE_ARM_CA9
 
-// Управление кэшем через CP15
-
-// Clean and Invalidate Data Cache Line (using MVA)
-// записать буфер, очистить кэш
-static void CP15_cleanInvalidateDCacheLineMVA(uintptr_t p1)
-{
-	// Clean and invalidate DCache entry (MVA) 
-	// MCR     p15, 0, r0, c7, c14, 1
-	asm volatile (
-		"\n\t"
-		"MCR     p15, 0, %0, c7, c14, 1"
-		"\n\t"
-		: /* no outputs */
-		: "r"(p1)
-		: /* no clobber registers */);
-}
-
-// Invalidate Data Cache Line (using MVA)
-static void CP15_invalidateDCacheLineMVA(uintptr_t p1)
-{
-	// DCIMVAC
-	asm volatile (
-		"\n\t"
-		"MCR     p15, 0, %0, c7, c6, 1"
-		"\n\t"
-		: /* no outputs */
-		: "r"(p1)
-		: /* no clobber registers */);
-}
-
-// Invalidate Data Cache Line (using Set/Way)
-static void CP15_InvalidateDCacheLineSetWay(unsigned int p1)
-{
-	// DCISW
-	asm volatile (
-		"\n\t"
-		"MCR     p15, 0, %0, c7, c6, 2"
-		"\n\t"
-		: /* no outputs */
-		: "r"(p1)
-		: /* no clobber registers */);
-}
-
-
-
-// Invalidate Instruction Cache Line (using MVA)
-static void CP15_invalidateICacheLineMVA(uintptr_t p1)
-{
-	asm volatile (
-		"\n\t"
-		"MCR     p15, 0, %0, c7, c5, 1"
-		"\n\t"
-		: /* no outputs */
-		: "r"(p1)
-		: /* no clobber registers */);
-}
-
-// Clean Data Cache Line (using MVA)
-static void CP15_cleanDCacheLineMVA(uintptr_t p1)
-{
-	asm volatile (
-	   "\n\t"
-	   "MCR     p15, 0, %0, c7, c10, 1"
-	   "\n\t"
-	   : /* no outputs */
-	   : "r"(p1)
-	   : /* no clobber registers */);
-}
-
-// Clean Entire Data Cache
-static void CP15_cleanDCache(void)
-{
-	unsigned int p1 = 0;
-	asm volatile (
-	   "\n\t"
-	   "MCR     p15, 0, %0, c7, c10, 0"
-	   "\n\t"
-	   : /* no outputs */
-	   : "r"(p1)
-	   : /* no clobber registers */);
-}
-
-
 static unsigned long DCACHEROWSIZE; // 32
 static unsigned long ICACHEROWSIZE; // 32
 
@@ -8094,12 +8011,11 @@ static unsigned long ICACHEROWSIZE; // 32
 void arm_hardware_invalidate(uintptr_t base, size_t size)
 {
 	unsigned long len = (size + (DCACHEROWSIZE - 1)) / DCACHEROWSIZE + (((unsigned long) base & (DCACHEROWSIZE - 1)) != 0);
-	uintptr_t mva = MK_MVA(base);
 	while (len --)
 	{
-		CP15_invalidateDCacheLineMVA(mva);	// очистить кэш
-		//CP15_invalidateICacheLineMVA(mva);	// очистить кэш
-		mva += DCACHEROWSIZE;
+		uintptr_t mva = MK_MVA(base);
+		L1C_InvalidateDCacheMVA((void *) mva);	// очистить кэш
+		base += DCACHEROWSIZE;
 	}
 }
 
@@ -8113,14 +8029,14 @@ static void ca9_cache_setup(void)
 	uint_fast32_t leveli;
 	for (leveli = 0; leveli <= ARM_CA9_CACHELEVELMAX; ++ leveli)
 	{
-		CP15_writeCSSELR(leveli * 2 + 0);	// data cache select
+		__set_CSSELR(leveli * 2 + 0);	// data cache select
 		ccsidr0 [leveli] = __get_CCSIDR();
 
 		//const uint32_t assoc0 = (ccsidr0 >> 3) & 0x3FF;
 		//const int passoc0 = ilog2(assoc0);
 		//const uint32_t maxsets0 = (ccsidr0 >> 13) & 0x7FFF;
 
-		CP15_writeCSSELR(leveli * 2 + 1);	// instruction cache select
+		__set_CSSELR(leveli * 2 + 1);	// instruction cache select
 		ccsidr1 [leveli] = __get_CCSIDR();
 
 		//const uint32_t assoc1 = (ccsidr1 >> 3) & 0x3FF;
@@ -8137,50 +8053,18 @@ static void ca9_cache_setup(void)
 static void 
 arm_hardware_invalidate_all(void)
 {
-	uint_fast32_t leveli;
-
-	for (leveli = 0; leveli <= ARM_CA9_CACHELEVELMAX; ++ leveli)
-	{
-		CP15_writeCSSELR(leveli * 2 + 0);	// data cache select
-		const uint_fast32_t ccsidr = __get_CCSIDR();
-
-		const uint_fast32_t dcacherowsize = 4uL << (((ccsidr >> 0) & 0x07) + 2);
-
-		const uint_fast32_t assoc = (ccsidr >> 3) & 0x3FF;	// The associativity does not have to be a power of 2.
-		const uint_fast32_t passoc = ilog2(assoc);
-
-		const uint32_t maxsets = (ccsidr >> 13) & 0x7FFF;	// The number of sets does not have to be a power of 2.
-
-		uint_fast32_t seti;
-
-		for (seti = 0; seti <= maxsets; ++ seti)
-		{
-			uint_fast32_t wayi;
-
-			for (wayi = 0; wayi <= assoc; ++ wayi)
-			{
-
-				const uint_fast32_t v = 
-					(wayi << (32 - passoc)) |		// shift left to 32 - Log2(ASSOCIATIVITY),
-					(seti * dcacherowsize) |
-					(leveli << 1) |
-					0;
-				CP15_InvalidateDCacheLineSetWay(v);	// DCISW access
-			}
-		}
-	}
+	L1C_InvalidateDCacheAll();
 }
 
 // Сейчас эта память будет записываться по DMA куда-то
 void arm_hardware_flush(uintptr_t base, size_t size)
 {
 	unsigned long len = (size + (DCACHEROWSIZE - 1)) / DCACHEROWSIZE + (((unsigned long) base & (DCACHEROWSIZE - 1)) != 0);
-	uintptr_t mva = MK_MVA(base);
 	while (len --)
 	{
-		CP15_cleanDCacheLineMVA(mva);			// записать буфер, кэш продолжает хранить
-		//CP15_cleanICacheLineMVA(mva);			// записать буфер, кэш продолжает хранить
-		mva += DCACHEROWSIZE;
+		uintptr_t mva = MK_MVA(base);
+		L1C_CleanDCacheMVA((void *) mva);		// записать буфер, кэш продолжает хранить
+		base += DCACHEROWSIZE;
 	}
 }
 
@@ -8189,20 +8073,18 @@ void arm_hardware_flush(uintptr_t base, size_t size)
 // применяетмся после начальной инициализации среды выполнния
 void arm_hardware_flush_all(void)
 {
-	CP15_cleanDCache();
-	//CP15_cleanICache();
+	L1C_CleanDCacheAll();
 }
 
 // Сейчас эта память будет записываться по DMA куда-то. Потом содержимое не требуется
 void arm_hardware_flush_invalidate(uintptr_t base, size_t size)
 {
 	unsigned long len = (size + (DCACHEROWSIZE - 1)) / DCACHEROWSIZE + (((unsigned long) base & (DCACHEROWSIZE - 1)) != 0);
-	unsigned long mva = MK_MVA(base);
 	while (len --)
 	{
-		CP15_cleanInvalidateDCacheLineMVA(mva);	// записать буфер, очистить кэш
-		//CP15_cleanInvalidateICacheLineMVA(mva);	// записать буфер, очистить кэш
-		mva += DCACHEROWSIZE;
+		uintptr_t mva = MK_MVA(base);
+		L1C_CleanInvalidateDCacheMVA((void *) mva);	// записать буфер, очистить кэш
+		base += DCACHEROWSIZE;
 	}
 }
 
@@ -8992,7 +8874,7 @@ void cpu_initialize(void)
 	for (leveli = 0; leveli <= ARM_CA9_CACHELEVELMAX; ++ leveli)
 	{
 
-		CP15_writeCSSELR(leveli * 2 + 0);	// data cache select
+		__set_CSSELR(leveli * 2 + 0);	// data cache select
 		const uint32_t ccsidr0 = __get_CCSIDR();
 		const uint32_t assoc0 = (ccsidr0 >> 3) & 0x3FF;
 		const int passoc0 = ilog2(assoc0);
@@ -9000,7 +8882,7 @@ void cpu_initialize(void)
 		const uint32_t linesize0 = 4uL << (((ccsidr0 >> 0) & 0x07) + 2);
 		debug_printf_P(PSTR("cpu_initialize1: level=%d, passoc=%d, assoc=%u, maxsets=%u, data cache row size = %u\n"), leveli, passoc0, assoc0, maxsets0, linesize0);
 
-		CP15_writeCSSELR(leveli * 2 + 1);	// instruction cache select
+		__set_CSSELR(leveli * 2 + 1);	// instruction cache select
 		const uint32_t ccsidr1 = __get_CCSIDR();
 		const uint32_t assoc1 = (ccsidr1 >> 3) & 0x3FF;
 		const int passoc1 = ilog2(assoc1);
