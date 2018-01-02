@@ -222,33 +222,6 @@ void r7s721_intc_registintfunc(uint_fast16_t int_id, void (* func)(void))
 
 // TTB initialize
 
-static void CP15_writeTTB0(unsigned int val)
-{
-	asm volatile("mcr p15, 0, %0, c2, c0, 0" // TTB0
-	  : : "r" (val) : "cc");
-	//__ISB();
-}
-static void CP15_writeTTB1(unsigned int val)
-{
-	asm volatile("mcr p15, 0, %0, c2, c0, 1" // TTB1
-	  : : "r" (val) : "cc");
-	//__ISB();
-}
-static void CP15_writeTTBCR(unsigned int val)
-{
-	asm volatile("mcr p15, 0, %0, c2, c0, 2" // TTBCR
-	  : : "r" (val) : "cc");
-	//__ISB();
-}
-
-static void CP15_writeDomain(unsigned int val)
-{
-	asm volatile("mcr p15, 0, %0, c3, c0, 0" // Domain Access Control Register c3
-	  : : "r" (val) : "cc");
-	//__ISB();
-}
-
-
 // SAM9XE512 bits
 //#define TLB_NCNB 0x0DF2 // Noncachable, Nonbufferable 11 0 1111 1 00 10
 //#define TLB_WT 0x0DFA // Write-through 11 0 1111 1 10 10
@@ -358,13 +331,13 @@ void r7s721_ttb_initialize(void)
 		tlbbase [i] =  r7s721_accessbits(address);
 	}	
 
-	CP15_writeTTBCR(0);
-	CP15_writeTTB0((unsigned int) tlbbase | 0x48);	// TTBR0
-	CP15_writeTTB1((unsigned int) tlbbase | 0x48);	// TTBR1
+	//CP15_writeTTBCR(0);
+	__set_TTBR0((unsigned int) tlbbase | 0x48);	// TTBR0
+	//CP15_writeTTB1((unsigned int) tlbbase | 0x48);	// TTBR1
 
 	// Program the domain access register
-	//CP15_writeDomain(0x55555555); // domain 15: access are not checked
-	CP15_writeDomain(0xFFFFFFFF); // domain 15: access are not checked
+	//__set_DACR(0x55555555); // domain 15: access are not checked
+	__set_DACR(0xFFFFFFFF); // domain 15: access are not checked
 }
 
 // с точностью до 1 мегабайта

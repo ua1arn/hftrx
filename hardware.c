@@ -7617,42 +7617,6 @@ void IRQHandler(void)
 */
 #endif
 
-/*
- * CR1 bits (CP#15 CR1)
- */
-#define CR_M	(1 << 0)	/* MMU enable				*/
-#define CR_A	(1 << 1)	/* Alignment abort enable		*/
-#define CR_C	(1 << 2)	/* Dcache enable			*/
-#define CR_W	(1 << 3)	/* Write buffer enable			*/
-#define CR_P	(1 << 4)	/* 32-bit exception handler		*/
-#define CR_D	(1 << 5)	/* 32-bit data address range		*/
-#define CR_L	(1 << 6)	/* Implementation defined		*/
-#define CR_B	(1 << 7)	/* Big endian				*/
-#define CR_S	(1 << 8)	/* System MMU protection		*/
-#define CR_R	(1 << 9)	/* ROM MMU protection			*/
-#define CR_F	(1 << 10)	/* Implementation defined		*/
-#define CR_Z	(1 << 11)	/* Implementation defined		*/
-#define CR_I	(1 << 12)	/* Icache enable			*/
-#define CR_V	(1 << 13)	/* Vectors relocated to 0xffff0000	*/
-#define CR_RR	(1 << 14)	/* Round Robin cache replacement	*/
-#define CR_L4	(1 << 15)	/* LDR pc can set T bit			*/
-#define CR_DT	(1 << 16)
-#ifdef CONFIG_MMU
-#define CR_HA	(1 << 17)	/* Hardware management of Access Flag   */
-#else
-#define CR_BR	(1 << 17)	/* MPU Background region enable (PMSA)  */
-#endif
-#define CR_IT	(1 << 18)
-#define CR_ST	(1 << 19)
-#define CR_FI	(1 << 21)	/* Fast interrupt (lower latency mode)	*/
-#define CR_U	(1 << 22)	/* Unaligned access operation		*/
-#define CR_XP	(1 << 23)	/* Extended page tables			*/
-#define CR_VE	(1 << 24)	/* Vectored interrupts			*/
-#define CR_EE	(1 << 25)	/* Exception (Big) Endian		*/
-#define CR_TRE	(1 << 28)	/* TEX remap enable			*/
-#define CR_AFE	(1 << 29)	/* Access flag enable			*/
-#define CR_TE	(1 << 30)	/* Thumb exception enable		*/
-
  
 /** \brief  Set CSSELR
  */
@@ -7660,22 +7624,6 @@ __STATIC_FORCEINLINE void __set_CSSELR(uint32_t value)
 {
 //  __ASM volatile("MCR p15, 2, %0, c0, c0, 0" : : "r"(value) : "memory");
   __set_CP(15, 2, value, 0, 0, 0);
-}
-
-// TLBIALLIS
-static void CP15_writeTLBIALLIS(uint32_t val)
-{
-	// CRn=c8, CRm=c3, Op1=0, Op2=0
-	__asm volatile("mcr p15, 0, %0, c8, c3, 0"
-	  : : "r" (val) : "cc");
-}
-
-// TLBIALLI
-static void CP15_writeTLBIALLI(uint32_t val)
-{
-	// CRn=c8, CRm=c5/c6/c7, Op1=0, Op2=0
-	__asm volatile("mcr p15, 0, %0, c8, c5, 0"
-	  : : "r" (val) : "cc");
 }
 
 /* Set Vector Base Address Register to point to application's vector table */
@@ -7693,6 +7641,59 @@ static void CP15_set_mvbase_address(uint32_t val)
 	  : : "r" (val) : "cc");
 	__ISB();
 }
+
+/** \brief Get MVBAR
+This function returns the value of the Monitor Vector Base Address Register.
+
+\return               Monitor Vector Base Address Register
+
+
+*/
+ __STATIC_FORCEINLINE uint32_t __get_MVBAR(void)
+ {
+ uint32_t result;
+ __get_CP(15, 0, result, 12, 0, 1);
+ return result;
+ }
+
+/** \brief Set MVBAR
+This function assigns the given value to the Monitor Vector Base Address Register.
+
+\param [in]    mvbar  Monitor Vector Base Address Register value to set
+
+
+*/
+ __STATIC_FORCEINLINE void __set_MVBAR(uint32_t vbar)
+ {
+ __set_CP(15, 0, vbar, 12, 0, 1);
+ }
+
+/** \brief Get VBAR
+This function returns the value of the Vector Base Address Register.
+
+\return               Vector Base Address Register
+
+
+*/
+ __STATIC_FORCEINLINE uint32_t __get_VBARxxx(void)
+ {
+ uint32_t result;
+ __get_CP(15, 0, result, 12, 0, 0);
+ return result;
+ }
+
+/** \brief Set VBAR
+This function assigns the given value to the Vector Base Address Register.
+
+\param [in]    vbar  Vector Base Address Register value to set
+
+
+*/
+ __STATIC_FORCEINLINE void __set_VBARxxx(uint32_t vbar)
+ {
+ __set_CP(15, 0, vbar, 12, 0, 0);
+ }
+
 
 static void arm_hardware_VFPEnable(void)
 {
@@ -7716,138 +7717,6 @@ static void vfp_access_enable(void)
 	 */
 	__set_CPACR(access | CPACC_FULL(10) | CPACC_FULL(11));
 }
-
-//------------------------------------------------------------------------------
-/// Enable Instruction Cache
-//------------------------------------------------------------------------------
-void cp15_enable_i_cache(void)
-{
-    unsigned int control = __get_SCTLR();
-
-    // Check if cache is disabled
-    if ((control & CR_I) == 0) {
-
-        control |= CR_I;
-        __set_SCTLR(control);        
-        //TRACE_INFO("I cache enabled.\n\r");
-    }
-#if !defined(OP_BOOTSTRAP_on)
-    else {
-
-        //TRACE_INFO("I cache is already enabled.\n\r");
-    }
-#endif
-}
-
-void cp15_vectors_reloc_disable(void)
-{
-
-    unsigned int control = __get_SCTLR();
-
-    if ((control & CR_V) != 0) {
-
-        control &= ~ CR_V;
-        __set_SCTLR(control);        
-    }
-}
-
-//------------------------------------------------------------------------------
-/// Enable MMU
-//------------------------------------------------------------------------------
-static void CP15_enableMMU(void)
-{
-    unsigned int control;
-
-    control = __get_SCTLR();
-
-    // Check if MMU is disabled
-    if ((control & CR_M) == 0) {
-
-        control |= CR_M;
-        __set_SCTLR(control);        
-        //TRACE_INFO("MMU enabled.\n\r");
-    }
-    else {
-
-        //TRACE_INFO("MMU is already enabled.\n\r");
-    }
-}
-
-//------------------------------------------------------------------------------
-/// Disable MMU
-//------------------------------------------------------------------------------
-static void CP15_disableMMU(void)
-{
-    unsigned int control;
-
-    control = __get_SCTLR();
-
-    // Check if MMU is disabled
-    if ((control & CR_M) != 0) {
-
-        control &= ~ CR_M;
-        __set_SCTLR(control);        
-        //TRACE_INFO("MMU enabled.\n\r");
-    }
-    else {
-
-        //TRACE_INFO("MMU is already enabled.\n\r");
-    }
-}
-
-
-#if 0
-//----------------------------------------------------------------------------
-/// Lock I cache
-/// \param I cache index
-//----------------------------------------------------------------------------
-void CP15_LockIcache(unsigned int index)
-{
-    unsigned int victim = 0;
-
-    // invalidate all the cache (4 ways) 
-    CP15_InvalidateIcache();
-    
-    // lockdown all the ways except this in parameter
-    victim =  CP15_ReadIcacheLockdown();
-    victim = 0;
-    victim |= ~index;
-    victim &= 0xffff;
-    CP15_WriteIcacheLockdown(victim);
-}
-
-//----------------------------------------------------------------------------
-/// Lock D cache
-/// \param D cache way
-//----------------------------------------------------------------------------
-void CP15_LockDcache(unsigned int index)
-{
-    unsigned int victim = 0;
-
-    // invalidate all the cache (4 ways)    
-    CP15_InvalidateDcache();
-    
-    // lockdown all the ways except this in parameter    
-    victim =  CP15_ReadDcacheLockdown();
-    victim = 0;
-    victim |= ~index;
-    victim &= 0xffff;
-    CP15_WriteDcacheLockdown(victim);
-}
-
-//----------------------------------------------------------------------------
-/// Lock D cache
-/// \param D cache way
-//----------------------------------------------------------------------------
-void CP15_ShutdownDcache(void)
-{ 
-    CP15_TestCleanInvalidateDcache();  
-    CP15_DrainWriteBuffer();
-    CP15_DisableDcache();
-    CP15_InvalidateTLB();      
-}
-
-#endif /* CPUSTYLE_R7S721 */
 
 /*******************************************************************************
 * Function Name: CPG_Init
@@ -7906,8 +7775,6 @@ void CPG_Init(void)
 }
 
 #endif /* CPUSTYLE_R7S721 */
-
-#if CPUSTYLE_ARM
 
 #if CPUSTYLE_ARM_CM7
 
@@ -8288,7 +8155,8 @@ arm_cpu_initialize(void)
 
 	at91sam9x_clocks(96, 9);
 	//at91sam9x_clocks_48x4();
-	cp15_enable_i_cache();
+	//cp15_enable_i_cache();
+	__set_SCTLR(__get_SCTLR() | SCTLR_I_Msk);
 
 #elif CPUSTYLE_R7S721
 
@@ -8328,7 +8196,7 @@ arm_cpu_initialize(void)
 	/* далее будет выполняться копирование data и инициализация bss - для нормальной работы RESET требуется без DATA CACHE */
 
 #else
-	#error Undefined CPUSTYLE_XXX
+	//#error Undefined CPUSTYLE_XXX
 
 #endif
 }
@@ -8489,92 +8357,6 @@ arm_cpu_atsam4s_pll_initialize(void)
 	}
 }
 #endif /* CPUSTYLE_ATSAM4S */
-
-
-#if CPUSTYLE_AT91SAM7S
-
-/* ARM architecture */
-
-#define IRQ_MASK 0x00000080
-#define FIQ_MASK 0x00000040
-#define INT_MASK (IRQ_MASK | FIQ_MASK)
-
-/* ARM architecture */
-static inline uint32_t __get_CPSR(void)
-{
-	uint32_t retval;
-	asm volatile (" mrs  %0, cpsr" : "=r" (retval) : /* no inputs */  );
-	return retval;
-}
-
-/* ARM architecture */
-static inline void __set_CPSR(uint32_t val)
-{
-	asm volatile (" msr  cpsr, %0" : /* no outputs */ : "r" (val)  );
-}
-
-/* ARM architecture */
-uint32_t RAMFUNC_NONILINE (disableIRQ)(void)
-{
-	uint32_t _cpsr;
-	_cpsr = __get_CPSR();
-	__set_CPSR(_cpsr | IRQ_MASK);
-	return _cpsr;
-}
-
-/* ARM architecture */
-uint32_t RAMFUNC_NONILINE (restoreIRQ)(unsigned oldCPSR)
-{
-	uint32_t _cpsr;
-
-	_cpsr = __get_CPSR();
-	__set_CPSR((_cpsr & ~IRQ_MASK) | (oldCPSR & IRQ_MASK));
-	return _cpsr;
-}
-
-/* ARM architecture */
-uint32_t RAMFUNC_NONILINE (enableIRQ)(void)
-{
-	uint32_t _cpsr;
-
-	_cpsr = __get_CPSR();
-	__set_CPSR(_cpsr & ~IRQ_MASK);
-	return _cpsr;
-}
-
-/* ARM architecture */
-uint32_t RAMFUNC_NONILINE (disableFIQ)(void)
-{
-	uint32_t _cpsr;
-
-	_cpsr = __get_CPSR();
-	__set_CPSR(_cpsr | FIQ_MASK);
-	return _cpsr;
-}
-
-/* ARM architecture */
-uint32_t RAMFUNC_NONILINE (restoreFIQ)(unsigned oldCPSR)
-{
-	uint32_t _cpsr;
-
-	_cpsr = __get_CPSR();
-	__set_CPSR((_cpsr & ~FIQ_MASK) | (oldCPSR & FIQ_MASK));
-	return _cpsr;
-}
-
-/* ARM architecture */
-uint32_t RAMFUNC_NONILINE (enableFIQ)(void)
-{
-	uint32_t _cpsr;
-
-	_cpsr = __get_CPSR();
-	__set_CPSR(_cpsr & ~FIQ_MASK);
-	return _cpsr;
-}
-
-#endif /* CPUSTYLE_AT91SAM7S */
-
-#endif /* CPUSTYLE_ARM */
 
 #if CPUSTYLE_ATXMEGA
 
@@ -8867,18 +8649,18 @@ void cpu_initialize(void)
 	//for (offset = 0; offset < 10uL * 1024 * 1024; offset += 1uL * 1024 * 1024)
 	//	r7s721_ttb_map(0x00000000uL + offset, __data_start__ + offset); // с точностью до 1 мегабайта
 	//CP15_writeTLBIALLIS(0);	// Invalidate TLB
-	//CP15_writeTLBIALLI(0);	// Invalidate TLB
+	MMU_InvalidateTLB();
 	
 	// диагностическая печать параметров CACHE
-	const uint32_t clidr = __get_CLIDR();
-	debug_printf_P(PSTR("cpu_initialize1: clidr=%08lX\n"), clidr);
-
-	ASSERT((clidr & 0x03) != 0 && ARM_CA9_CACHELEVELMAX == 1);
+	//const uint32_t clidr = __get_CLIDR();
+	//debug_printf_P(PSTR("cpu_initialize1: clidr=%08lX\n"), clidr);
+	//ASSERT((clidr & 0x03) != 0 && ARM_CA9_CACHELEVELMAX == 1);
 
 	// Обеспечиваем нормальную обработку RESEТ
 	arm_hardware_invalidate_all();
 
-	CP15_enableMMU();
+	//CP15_enableMMU();
+	MMU_Enable();
 
 	ca9_cache_setup();
 
@@ -8911,9 +8693,15 @@ void cpu_initialize(void)
 	//extern unsigned long __isr_vector__;
 	//CP15_set_vbase_address((unsigned int) & __isr_vector__); // Set Vector Base Address Register
 	//CP15_set_mvbase_address((unsigned int) & __isr_vector__);	//  Set Monitor Vector Base Address Register
-	CP15_set_vbase_address(0); // Set Vector Base Address Register
-	CP15_set_mvbase_address(0);	//  Set Monitor Vector Base Address Register
-	cp15_vectors_reloc_disable();
+
+	__set_VBARxxx(0);	 // Set Vector Base Address Register
+	//CP15_set_vbase_address(0); // Set Vector Base Address Register
+
+	__set_MVBAR(0);	 // Set Vector Base Address Register
+	//CP15_set_mvbase_address(0);	//  Set Monitor Vector Base Address Register
+
+	//cp15_vectors_reloc_disable();
+	__set_SCTLR(__get_SCTLR() & ~ SCTLR_V_Msk);
 
 	debug_printf_P(PSTR("cpu_initialize2: CP15=%08lX\n"), __get_SCTLR());
 
