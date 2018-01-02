@@ -165,6 +165,8 @@ static int_fast8_t		glob_swaprts;		// управление боковой выхода спектроанализато
 
 	// stm32f746, no dualwatch:
 	//	dtcount=0, dtmax=0, dtlast=0, dtcount2=41807716, dtmax2=1244, dtlast2=739, dtcount3=41806755, dtmax3=1446, dtlast3=916
+	// R7S721xxx, dualwatch:
+	//	dtcount=0, dtmax=0, dtlast=0, dtcount2=15890107, dtmax2=1119, dtlast2=590, dtcount3=31778668, dtmax3=1169, dtlast3=723
 
 	static volatile uint_fast32_t dtmax = 0, dtlast = 0, dtcount = 0;
 	static volatile uint_fast32_t dtmax2 = 0, dtlast2 = 0, dtcount2 = 0;

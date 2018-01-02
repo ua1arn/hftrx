@@ -8176,10 +8176,13 @@ arm_cpu_initialize(void)
 		SCB->CCR |= SCB_CCR_UNALIGN_TRP_Msk;
 	#endif
 #endif /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7 */
+
 #if CPUSTYLE_ARM_CA9
 	#if WITHDEBUG
 	{
 		// Поддержка для функций диагностики быстродействия BEGINx_STAMP/ENDx_STAMP - audio.c
+		// From https://stackoverflow.com/questions/3247373/how-to-measure-program-execution-time-in-arm-cortex-a8-processor
+
 		enum { do_reset = 0, enable_divider = 0 };
 		// in general enable all counters (including cycle counter)
 		int32_t value = 1;
