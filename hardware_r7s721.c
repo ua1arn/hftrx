@@ -308,7 +308,7 @@ M_SIZE_IO_2     EQU     2550            ; [Area11] I/O area 2
 #define	TTB_PARA_NORMAL_CACHE       0b00000001110111101110UL	// 01DEE
 
 static uint32_t 
-r7s721_accessbits(uint32_t a)
+r7s721_accessbits(uintptr_t a)
 {
 	const uint32_t addrbase = a & 0xFFF00000uL;
 
@@ -321,13 +321,13 @@ r7s721_accessbits(uint32_t a)
 
 void r7s721_ttb_initialize(void)
 {
-	extern uint32_t __ttb_start__;		// получено из скрипта линкера
-	uint32_t * const tlbbase = & __ttb_start__;
+	extern volatile uint32_t __ttb_start__;		// получено из скрипта линкера
+	volatile uint32_t * const tlbbase = & __ttb_start__;
 	unsigned i;
 
 	for (i = 0; i < 4096; ++ i)
 	{
-		const uint32_t address = (uint32_t) i << 20;
+		const uintptr_t address = (uint32_t) i << 20;
 		tlbbase [i] =  r7s721_accessbits(address);
 	}	
 
@@ -342,12 +342,12 @@ void r7s721_ttb_initialize(void)
 
 // с точностью до 1 мегабайта
 void r7s721_ttb_map(
-	uint32_t va,	/* virtual address */
-	uint32_t la	/* linear (physical) address */
+	uintptr_t va,	/* virtual address */
+	uintptr_t la	/* linear (physical) address */
 	)
 {
-	extern uint32_t __ttb_start__;		// получено из скрипта линкера
-	uint32_t * const tlbbase = & __ttb_start__;
+	volatile extern uint32_t __ttb_start__;		// получено из скрипта линкера
+	volatile uint32_t * const tlbbase = & __ttb_start__;
 	unsigned i = va >> 20;
 	tlbbase [i] =  r7s721_accessbits(la);
 }

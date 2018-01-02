@@ -8639,7 +8639,7 @@ void cpu_initialize(void)
     /* ==== Vector base address setting ==== */
     //VbarInit();
 
-
+	//MMU_Disable();
 	// MMU setup
 	r7s721_ttb_initialize();
 	// Отображение 10 мегабайт с 0x20000000 в 0x00000000
