@@ -225,8 +225,8 @@
 	#define ENCODER_INITIALIZE() \
 		do { \
 			arm_hardware_pio2_alternative(ENCODER_BITS, R7S721_PIOALT_4); \
-			arm_hardware_irqn_interrupt(1, 3, ARM_SYSTEM_PRIORITY, spool_encinterrupt); /* IRQ1, both edges */ \
-			arm_hardware_irqn_interrupt(2, 3, ARM_SYSTEM_PRIORITY, spool_encinterrupt); /* IRQ2, both edges */ \
+			arm_hardware_irqn_interrupt(1, 3, ARM_OVERREALTIME_PRIORITY, spool_encinterrupt); /* IRQ1, both edges */ \
+			arm_hardware_irqn_interrupt(2, 3, ARM_OVERREALTIME_PRIORITY, spool_encinterrupt); /* IRQ2, both edges */ \
 		} while (0)
 
 #endif /* WITHENCODER */

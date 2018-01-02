@@ -176,7 +176,7 @@
 		do { \
 			arm_hardware_piob_inputs(ENCODER_BITS); \
 			arm_hardware_piob_updown(ENCODER_BITS, 0); \
-			arm_hardware_piob_onchangeinterrupt(ENCODER_BITS, ENCODER_BITS, ENCODER_BITS, ARM_SYSTEM_PRIORITY); \
+			arm_hardware_piob_onchangeinterrupt(ENCODER_BITS, ENCODER_BITS, ENCODER_BITS, ARM_OVERREALTIME_PRIORITY); \
 		} while (0)
 
 #endif

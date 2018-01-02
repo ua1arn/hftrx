@@ -560,12 +560,14 @@
 	#if WITHNESTEDINTERRUPTS
 
 		// The processor does not process any exception with a priority value greater than or equal to BASEPRI.
+		extern uint32_t gARM_OVERREALTIME_PRIORITY;
 		extern uint32_t gARM_REALTIME_PRIORITY;
 		extern uint32_t gARM_SYSTEM_PRIORITY;
 		extern uint32_t gARM_BASEPRI_ONLY_REALTIME;
 		extern uint32_t gARM_BASEPRI_ALL_ENABLED;
 		// See usage of functions NVIC_PriorityGroupConfig and NVIC_SetPriorityGrouping
 		// A lower priority value indicating a higher priority of running handler
+		#define ARM_OVERREALTIME_PRIORITY	((const uint32_t) gARM_OVERREALTIME_PRIORITY)
 		#define ARM_REALTIME_PRIORITY	((const uint32_t) gARM_REALTIME_PRIORITY)
 		#define ARM_SYSTEM_PRIORITY	((const uint32_t) gARM_SYSTEM_PRIORITY)
 
@@ -639,12 +641,15 @@
 		*/
 		enum
 		{
-			gARM_REALTIME_PRIORITY = ARM_CA9_ENCODE_PRIORITY(0),	// value for GIC_SetPriority
-			gARM_SYSTEM_PRIORITY = ARM_CA9_ENCODE_PRIORITY(1),		// value for GIC_SetPriority
-			gARM_BASEPRI_ONLY_REALTIME = ARM_CA9_ENCODE_PRIORITY(1),	// value for GIC_SetInterfacePriorityMask
-			gARM_BASEPRI_ALL_ENABLED = ARM_CA9_ENCODE_PRIORITY(2)	// value for GIC_SetInterfacePriorityMask
+			gARM_OVERREALTIME_PRIORITY = ARM_CA9_ENCODE_PRIORITY(0),	// value for GIC_SetPriority
+			gARM_REALTIME_PRIORITY = ARM_CA9_ENCODE_PRIORITY(1),	// value for GIC_SetPriority
+			gARM_SYSTEM_PRIORITY = ARM_CA9_ENCODE_PRIORITY(2),		// value for GIC_SetPriority
+
+			gARM_BASEPRI_ONLY_REALTIME = ARM_CA9_ENCODE_PRIORITY(2),	// value for GIC_SetInterfacePriorityMask
+			gARM_BASEPRI_ALL_ENABLED = ARM_CA9_ENCODE_PRIORITY(3)	// value for GIC_SetInterfacePriorityMask
 		};
 		// A lower priority value indicating a higher priority
+		#define ARM_OVERREALTIME_PRIORITY	((const uint32_t) gARM_OVERREALTIME_PRIORITY)
 		#define ARM_REALTIME_PRIORITY	((const uint32_t) gARM_REALTIME_PRIORITY)
 		#define ARM_SYSTEM_PRIORITY	((const uint32_t) gARM_SYSTEM_PRIORITY)
 
@@ -659,6 +664,7 @@
 
 	#else /* WITHNESTEDINTERRUPTS */
 
+		#define ARM_OVERREALTIME_PRIORITY	0
 		#define ARM_REALTIME_PRIORITY	0
 		#define ARM_SYSTEM_PRIORITY		0
 

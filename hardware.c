@@ -8354,6 +8354,7 @@ arm_cpu_initialize(void)
 
 #if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7 || CPUSTYLE_ARM_CM0
 
+uint32_t gARM_OVERREALTIME_PRIORITY = 0;
 uint32_t gARM_REALTIME_PRIORITY = 0;
 uint32_t gARM_SYSTEM_PRIORITY = 0;
 uint32_t gARM_BASEPRI_ONLY_REALTIME = 0;
@@ -8372,8 +8373,9 @@ arm_cpu_CMx_initialize_NVIC(void)
 	//NVIC_SetPriorityGrouping(0);
 
 	// Вычисление значений приоритета для данной конфигурации
-	gARM_REALTIME_PRIORITY = NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 0, 0);
-	gARM_SYSTEM_PRIORITY = NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 1, 0);
+	gARM_OVERREALTIME_PRIORITY = NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 0, 0);
+	gARM_REALTIME_PRIORITY = NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 1, 0);
+	gARM_SYSTEM_PRIORITY = NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 2, 0);
 	// The processor does not process any exception with a priority value greater than or equal to BASEPRI.
 	gARM_BASEPRI_ONLY_REALTIME = ((gARM_SYSTEM_PRIORITY << (8 - __NVIC_PRIO_BITS)) & 0xff);
 	gARM_BASEPRI_ALL_ENABLED = 0;

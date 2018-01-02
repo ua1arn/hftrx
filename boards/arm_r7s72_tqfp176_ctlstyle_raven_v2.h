@@ -50,9 +50,9 @@
 	//#define FQMODEL_70200		1	// 1-st if = 70.2 MHz, 2-nd IF-200 kHz
 
 	#define FQMODEL_FPGA		1	// FPGA + IQ over I2S
-	#if 0
-		//#define DIRECT_72M595_X1		1	/* Тактовый генератор на плате 72.595 МГц */	
-		#define DIRECT_80M0_X1		1	/* Тактовый генератор на плате 80.0 МГц */	
+	#if 1
+		#define DIRECT_72M595_X1		1	/* Тактовый генератор на плате 72.595 МГц */	
+		//#define DIRECT_80M0_X1		1	/* Тактовый генератор на плате 80.0 МГц */	
 		#define BANDSELSTYLERE_UPCONV56M_36M	1	/* Up-conversion with working band .030..36 MHz */
 	#elif 0
 		#define DIRECT_100M0_X1		1	/* Тактовый генератор на плате 100.0 МГц */	
