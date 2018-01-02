@@ -140,8 +140,8 @@
 		typedef double FLOAT_t;
 
 		#define LOG10F	log10
-		#define LOGF	log
-		#define POWF	pow
+		#define //LOGF	log
+		#define //POWF	pow
 		#define SINF	sin
 		#define COSF	cos
 		#define ATAN2F	atan2
@@ -151,6 +151,9 @@
 		#define SQRTF	sqrt
 		#define FMAXF	fmax
 		#define FMINF	fmin
+		#define LDEXPF	ldexp
+		#define FREXPF	frexp
+		
 		#if defined (__ARM_FEATURE_FMA) || defined (FP_FAST_FMA)
 			#define FMAF	fma
 		#endif /* defined (__ARM_FEATURE_FMA) || defined (FP_FAST_FMA) */
@@ -161,8 +164,8 @@
 		typedef float FLOAT_t;
 
 		#define LOG10F	log10f
-		#define LOGF	logf
-		#define POWF	powf
+		//#define LOGF	logf
+		//#define POWF	powf
 		#define SINF	sinf
 		#define COSF	cosf
 		#define ATAN2F	atan2f
@@ -172,6 +175,9 @@
 		#define SQRTF	sqrtf
 		#define FMAXF	fmaxf
 		#define FMINF	fminf
+		#define LDEXPF	ldexpf
+		#define FREXPF	frexpf
+
 		#if defined (__ARM_FEATURE_FMA) || defined (FP_FAST_FMAF)
 			#define FMAF	fmaf
 		#endif /* defined (__ARM_FEATURE_FMA) || defined (FP_FAST_FMAF) */

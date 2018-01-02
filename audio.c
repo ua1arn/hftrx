@@ -716,6 +716,185 @@ static FLOAT32P_t get_float4_iflo(void)
 
 //////////////////////////////////////////
 
+#define FP_NLOG 12      /* Log argument zero or negative    */
+
+#define FP_POWN 20      /* Negative argument in pow     */   
+#define FP_POWO 21      /* Result of pow overflows      */   
+#define FP_POWU 22      /* Result of pow underflows     */
+#define HUGE ((FLOAT_t) 0.170141183460469230E+39)   /* largest no = 2**+127     */
+
+
+static void CMEMSGF(int erno, FLOAT_t * datap)
+{
+	* datap = 0;
+}
+
+
+static const FLOAT_t LOGF(FLOAT_t x)
+{
+	static const FLOAT_t C1 = ((FLOAT_t) 0.693359375);		/* C1 + C2 should represent log 2 to	*/
+	static const FLOAT_t C2 = ((FLOAT_t) -2.12194440054690583e-4);	/* more than machine precision	*/
+
+	static const FLOAT_t log_a0 = -0.641249434237455811e+2;
+	static const FLOAT_t log_a1 =  0.163839435630215342e+2;
+	static const FLOAT_t log_a2 = -0.789561128874912573e+0;
+	static const FLOAT_t log_b0 = -0.769499321084948798e+3;
+	static const FLOAT_t log_b1 =  0.312032220919245328e+3;
+	static const FLOAT_t log_b2 = -0.356679777390346462e+2;
+
+    FLOAT_t a, b, f, r, w, z;
+    int n;
+
+    if (x <= (FLOAT_t)0.0) 
+	{
+		CMEMSGF(FP_NLOG, &x);
+		if (x == (FLOAT_t)0.0)
+			return(-HUGE);
+		else
+			x = -x;
+	}
+
+    f = FREXPF(x, &n);
+    if (f > M_SQRT1_2) 
+	{
+		a = (f - (FLOAT_t)0.5) - (FLOAT_t)0.5;
+		b = f * (FLOAT_t)0.5 + (FLOAT_t)0.5;
+    }
+    else 
+	{
+		n--;
+		a = f - (FLOAT_t)0.5;
+		b = a * (FLOAT_t)0.5 + (FLOAT_t)0.5;
+    }
+    z = a / b;
+    w = z * z;
+    a = (log_a2 * w + log_a1) * w + log_a0;
+    b = ((w + log_b2) * w + log_b1) * w + log_b0;
+    r = z + z * w * a / b;
+    z = n;
+    return ((z * C2 + r) + z * C1);
+}
+
+#define MAXEXP 2031		/* (MAX_EXP * 16) - 1			*/
+#define MINEXP (-2047)		/* (MIN_EXP * 16) - 1			*/
+
+const FLOAT_t POWF(FLOAT_t x, FLOAT_t y)
+{
+
+	static const FLOAT_t a1[] = {
+		1.0,
+		0.95760328069857365,
+		0.91700404320467123,
+		0.87812608018664974,
+		0.84089641525371454,
+		0.80524516597462716,
+		0.77110541270397041,
+		0.73841307296974966,
+		0.70710678118654752,
+		0.67712777346844637,
+		0.64841977732550483,
+		0.62092890603674203,
+		0.59460355750136054,
+		0.56939431737834583,
+		0.54525386633262883,
+		0.52213689121370692,
+		0.50000000000000000
+	};
+	static const FLOAT_t a2[] = {
+		 0.24114209503420288E-17,
+		 0.92291566937243079E-18,
+		-0.15241915231122319E-17,
+		-0.35421849765286817E-17,
+		-0.31286215245415074E-17,
+		-0.44654376565694490E-17,
+		 0.29306999570789681E-17,
+		 0.11260851040933474E-17
+	};
+
+	static const FLOAT_t p1 = 0.833333333333332114e-1;
+	static const FLOAT_t p2 = 0.125000000005037992e-1;
+	static const FLOAT_t p3 = 0.223214212859242590e-2;
+	static const FLOAT_t p4 = 0.434457756721631196e-3;
+	static const FLOAT_t q1 = 0.693147180559945296e0;
+	static const FLOAT_t q2 = 0.240226506959095371e0;
+	static const FLOAT_t q3 = 0.555041086640855953e-1;
+	static const FLOAT_t q4 = 0.961812905951724170e-2;
+	static const FLOAT_t q5 = 0.133335413135857847e-2;
+	static const FLOAT_t q6 = 0.154002904409897646e-3;
+	static const FLOAT_t q7 = 0.149288526805956082e-4;
+	static const FLOAT_t k = 0.442695040888963407;
+
+    FLOAT_t g, r, u1, u2, v, w, w1, w2, y1, y2, z;
+    int iw1, m, p;
+
+    if (y == 0)
+		return(1.0);
+    if (x <= 0) 
+	{
+		if (x == 0) 
+		{
+			if (y > 0)
+			return(x);
+			CMEMSGF(FP_POWO, &y);
+			return(HUGE);
+		}
+		else 
+		{
+			CMEMSGF(FP_POWN, &x);
+			x = -x;
+		}
+    }
+    g = FREXPF(x, &m);
+    p = 0;
+    if (g <= a1[8])
+	p = 8;
+    if (g <= a1[p + 4])
+	p += 4;
+    if (g <= a1[p + 2])
+	p += 2;
+    p++;
+    z = ((g - a1[p]) - a2[p / 2]) / (g + a1[p]);
+    z += z;
+    v = z * z;
+    r = (((p4 * v + p3) * v + p2) * v + p1) * v * z;
+    r += k * r;
+    u2 = (r + z * k) + z;
+    u1 = (FLOAT_t)0.0625 * (FLOAT_t)(16 * m - p);
+    y1 = (FLOAT_t)0.0625 * (FLOAT_t)((int)(16 * y));
+    y2 = y - y1;
+    w = u2 * y + u1 * y2;
+    w1 = (FLOAT_t)0.0625 * (FLOAT_t)((int)(16 * w));
+    w2 = w - w1;
+    w = w1 + u1 * y1;
+    w1 = (FLOAT_t)0.0625 * (FLOAT_t)((int)(16 * w));
+    w2 += (w - w1);
+    w = (FLOAT_t)0.0625 * (double)((int)(16 * w2));
+    iw1 = 16 * (w1 + w);
+    w2 -= w;
+    while (w2 > 0) 
+	{
+		iw1++;
+		w2 -= (FLOAT_t) 0.0625;
+    }
+    if (iw1 > MAXEXP) 
+	{
+		CMEMSGF(FP_POWO, &y);
+		return(HUGE);
+    }
+    if (iw1 < MINEXP) 
+	{
+		CMEMSGF(FP_POWU, &y);
+		return(0);
+    }
+    m = iw1 / 16;
+    if (iw1 >= 0)
+	m++;	
+    p = 16 * m - iw1;
+    z = ((((((q7*w2 + q6)*w2 + q5)*w2 + q4)*w2 + q3)*w2 + q2)*w2 + q1)*w2;
+    z = a1[p] + a1[p] * z;
+    return LDEXPF(z, m);
+
+}
 //////////////////////////////////////////
 
 // Преобразовать отношение напряжений выраженное в "разах" к децибелам.
