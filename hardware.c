@@ -7654,23 +7654,6 @@ void IRQHandler(void)
 #define CR_TE	(1 << 30)	/* Thumb exception enable		*/
 
  
-//extern unsigned int CP15_readControlRegister(void);
-//extern void CP15_writeControlRegister(unsigned int value);
-//extern void CP15_writeTTB(unsigned int value);
-//extern void CP15_writeDomain(unsigned int value);
-
-// SCTRL
-static uint32_t 
-__attribute__((section(".init")))
-CP15_readControlRegister(void)
-{
-	uint32_t val;
-	__asm volatile("mrc p15, 0, %0, c1, c0, 0"
-	  : "=r" (val) : : "cc");
-	return val;
-}
-
-
 /** \brief  Set CSSELR
  */
 __STATIC_FORCEINLINE void __set_CSSELR(uint32_t value)
@@ -7693,44 +7676,6 @@ static void CP15_writeTLBIALLI(uint32_t val)
 	// CRn=c8, CRm=c5/c6/c7, Op1=0, Op2=0
 	__asm volatile("mcr p15, 0, %0, c8, c5, 0"
 	  : : "r" (val) : "cc");
-}
-
-// SCTRL
-static void 
-__attribute__((section(".init")))
-CP15_writeControlRegister(uint32_t val)
-{
-	__asm volatile("mcr p15, 0, %0, c1, c0, 0"
-	  : : "r" (val) : "cc");
-}
-
-static uint32_t CP15_readAuxControlRegister(void)
-{
-	unsigned int val;
-	__asm volatile("mrc p15, 0, %0, c1, c0, 1"
-	  : "=r" (val) : : "cc");
-	return val;
-}
-
-static void CP15_writeAuxControlRegister(uint32_t val)
-{
-	__asm volatile("mcr p15, 0, %0, c1, c0, 1"
-	  : : "r" (val) : "cc");
-}
-
-static uint32_t CP15_get_copro_access(void)
-{
-	unsigned int val;
-	__asm volatile("mrc p15, 0, %0, c1, c0, 2 @ get copro access"
-	  : "=r" (val) : : "cc");
-	return val;
-}
-
-static void CP15_set_copro_access(uint32_t val)
-{
-	__asm volatile("mcr p15, 0, %0, c1, c0, 2 @ set copro access"
-	  : : "r" (val) : "cc");
-	__ISB();
 }
 
 /* Set Vector Base Address Register to point to application's vector table */
@@ -7764,12 +7709,12 @@ static void arm_hardware_VFPEnable(void)
 
 static void vfp_access_enable(void)
 {
-	unsigned int access = CP15_get_copro_access();
+	unsigned int access = __get_CPACR();
 
 	/*
 	 * Enable full access to VFP (cp10 and cp11)
 	 */
-	CP15_set_copro_access(access | CPACC_FULL(10) | CPACC_FULL(11));
+	__set_CPACR(access | CPACC_FULL(10) | CPACC_FULL(11));
 }
 
 //------------------------------------------------------------------------------
@@ -7777,13 +7722,13 @@ static void vfp_access_enable(void)
 //------------------------------------------------------------------------------
 void cp15_enable_i_cache(void)
 {
-    unsigned int control = CP15_readControlRegister();
+    unsigned int control = __get_SCTLR();
 
     // Check if cache is disabled
     if ((control & CR_I) == 0) {
 
         control |= CR_I;
-        CP15_writeControlRegister(control);        
+        __set_SCTLR(control);        
         //TRACE_INFO("I cache enabled.\n\r");
     }
 #if !defined(OP_BOOTSTRAP_on)
@@ -7797,12 +7742,12 @@ void cp15_enable_i_cache(void)
 void cp15_vectors_reloc_disable(void)
 {
 
-    unsigned int control = CP15_readControlRegister();
+    unsigned int control = __get_SCTLR();
 
     if ((control & CR_V) != 0) {
 
         control &= ~ CR_V;
-        CP15_writeControlRegister(control);        
+        __set_SCTLR(control);        
     }
 }
 
@@ -7813,13 +7758,13 @@ static void CP15_enableMMU(void)
 {
     unsigned int control;
 
-    control = CP15_readControlRegister();
+    control = __get_SCTLR();
 
     // Check if MMU is disabled
     if ((control & CR_M) == 0) {
 
         control |= CR_M;
-        CP15_writeControlRegister(control);        
+        __set_SCTLR(control);        
         //TRACE_INFO("MMU enabled.\n\r");
     }
     else {
@@ -7835,13 +7780,13 @@ static void CP15_disableMMU(void)
 {
     unsigned int control;
 
-    control = CP15_readControlRegister();
+    control = __get_SCTLR();
 
     // Check if MMU is disabled
     if ((control & CR_M) != 0) {
 
         control &= ~ CR_M;
-        CP15_writeControlRegister(control);        
+        __set_SCTLR(control);        
         //TRACE_INFO("MMU enabled.\n\r");
     }
     else {
@@ -8054,6 +7999,8 @@ static void
 arm_hardware_invalidate_all(void)
 {
 	L1C_InvalidateDCacheAll();
+	L1C_InvalidateICacheAll();
+	L1C_InvalidateBTAC();
 }
 
 // Сейчас эта память будет записываться по DMA куда-то
@@ -8371,22 +8318,12 @@ arm_cpu_initialize(void)
 	//(void) INB.RMPR;
 
     /* ==== Initial setting of the level 1 cache ==== */
-	//CP15_writeControlRegister(0);		
+	//__set_SCTLR(0);		
     //L1CacheInit();
-	uint32_t r1;
 
-	r1 = CP15_readControlRegister();
-	r1 |= CR_I;	// 12	Enable I Cache
-	r1 |= CR_C;	// 2	Enable D Cache
-	CP15_writeControlRegister(r1);
-
-	r1 = CP15_readControlRegister();
-	r1 |= CR_Z;	// 11 Program flow prediction enabled
-	CP15_writeControlRegister(r1);
-
-	r1 = CP15_readAuxControlRegister();
-	r1 |= (1UL << 2);	// Enable Dside prefetch
-	CP15_writeAuxControlRegister(r1);
+	L1C_EnableCaches();
+	L1C_EnableBTAC();
+	__set_ACTLR(__get_ACTLR() | ACTLR_L1PE_Msk);	// Enable Dside prefetch
 
 	/* далее будет выполняться копирование data и инициализация bss - для нормальной работы RESET требуется без DATA CACHE */
 
@@ -8910,7 +8847,7 @@ void cpu_initialize(void)
 
 	extern unsigned long __etext, __bss_start__, __bss_end__, __data_end__, __data_start__, __stack;
 
-	debug_printf_P(PSTR("cpu_initialize1: CP15=%08lX, __data_start__=%p\n"), CP15_readControlRegister(), & __data_start__);
+	debug_printf_P(PSTR("cpu_initialize1: CP15=%08lX, __data_start__=%p\n"), __get_SCTLR(), & __data_start__);
 	debug_printf_P(PSTR("__etext=%p, __bss_start__=%p, __bss_end__=%p, __data_start__=%p, __data_end__=%p\n"), & __etext, & __bss_start__, & __bss_end__, & __data_start__, & __data_end__);
 	debug_printf_P(PSTR("__stack=%p, arm_cpu_initialize=%p\n"), & __stack, arm_cpu_initialize);
 
@@ -8978,7 +8915,7 @@ void cpu_initialize(void)
 	CP15_set_mvbase_address(0);	//  Set Monitor Vector Base Address Register
 	cp15_vectors_reloc_disable();
 
-	debug_printf_P(PSTR("cpu_initialize2: CP15=%08lX\n"), CP15_readControlRegister());
+	debug_printf_P(PSTR("cpu_initialize2: CP15=%08lX\n"), __get_SCTLR());
 
 	/* TN-RZ*-A011A/E recommends switch off USB_X1 if usb USB not used */
 	CPG.STBCR7 &= ~ CPG_STBCR7_MSTP71;	// Module Stop 71 0: Channel 0 of the USB 2.0 host/function module runs.
@@ -9008,6 +8945,7 @@ void cpu_initialize(void)
 	// FPU
 	vfp_access_enable();
 	arm_hardware_VFPEnable();
+	//__FPU_Enable();
 
 	arm_gic_initialize();
 
