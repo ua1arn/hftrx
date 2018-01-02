@@ -163,13 +163,15 @@ static int_fast8_t		glob_swaprts;		// управление боковой выхода спектроанализато
 // Определения для работ по оптимизации быстродействия
 #if WITHDEBUG && 0
 
+	// stm32f746, no dualwatch:
+	//	dtcount=0, dtmax=0, dtlast=0, dtcount2=41807716, dtmax2=1244, dtlast2=739, dtcount3=41806755, dtmax3=1446, dtlast3=916
 
-	static volatile uint32_t dtmax = 0, dtlast = 0, dtcount = 0;
-	static volatile uint32_t dtmax2 = 0, dtlast2 = 0, dtcount2 = 0;
-	static volatile uint32_t dtmax3 = 0, dtlast3 = 0, dtcount3 = 0;
-	static uint32_t perft = 0;
-	static uint32_t perft2 = 0;
-	static uint32_t perft3 = 0;
+	static volatile uint_fast32_t dtmax = 0, dtlast = 0, dtcount = 0;
+	static volatile uint_fast32_t dtmax2 = 0, dtlast2 = 0, dtcount2 = 0;
+	static volatile uint_fast32_t dtmax3 = 0, dtlast3 = 0, dtcount3 = 0;
+	static uint_fast32_t perft = 0;
+	static uint_fast32_t perft2 = 0;
+	static uint_fast32_t perft3 = 0;
 
 	static void debug_cleardtmax(void)
 	{
@@ -178,30 +180,15 @@ static int_fast8_t		glob_swaprts;		// управление боковой выхода спектроанализато
 		dtmax3 = 0;
 	}
 
-	// получение из аппаратного счетчика монотонно увеличивающегося кода
-	static uint32_t debug_getticks(void)
-	{
-	#if CPUSTYLE_STM32F
-			//return SysTick->VAL & SysTick_VAL_CURRENT_Msk;
-		return TIM3->CNT;
-	#elif CPUSTYLE_R7S721
-		return ~ OSTM1.OSTMnCNT;		// таймер считает на уменьшение
-	#else
-		#warning Wromg CPUSTYLE_xxx
-		return 0;
-	#endif
-	}
-
-
 	#define BEGIN_STAMP() do { \
-			perft = debug_getticks(); \
+			perft = cpu_getdebugticks(); \
 		} while (0);
 
 	#define END_STAMP() do { \
-			const uint32_t t2 = debug_getticks(); \
+			const uint_fast32_t t2 = cpu_getdebugticks(); \
 			if (perft < t2) \
 			{ \
-				const uint32_t vdt = t2 - perft; \
+				const uint_fast32_t vdt = t2 - perft; \
 				dtlast = vdt; /* текущее значение длительности */ \
 				if (vdt > dtmax) \
 					dtmax = vdt; /* максимальное значение длительности */ \
@@ -210,14 +197,14 @@ static int_fast8_t		glob_swaprts;		// управление боковой выхода спектроанализато
 		} while (0);
 
 	#define BEGIN_STAMP2() do { \
-			perft2 = debug_getticks(); \
+			perft2 = cpu_getdebugticks(); \
 		} while (0);
 
 	#define END_STAMP2() do { \
-			const uint32_t t2 = debug_getticks(); \
+			const uint_fast32_t t2 = cpu_getdebugticks(); \
 			if (perft2 < t2) \
 			{ \
-				const uint32_t vdt = t2 - perft2; \
+				const uint_fast32_t vdt = t2 - perft2; \
 				dtlast2 = vdt; /* текущее значение длительности */ \
 				if (vdt > dtmax2) \
 					dtmax2 = vdt; /* максимальное значение длительности */ \
@@ -226,14 +213,14 @@ static int_fast8_t		glob_swaprts;		// управление боковой выхода спектроанализато
 		} while (0);
 
 	#define BEGIN_STAMP3() do { \
-			perft3 = debug_getticks(); \
+			perft3 = cpu_getdebugticks(); \
 		} while (0);
 
 	#define END_STAMP3() do { \
-			const uint32_t t2 = debug_getticks(); \
+			const uint_fast32_t t2 = cpu_getdebugticks(); \
 			if (perft3 < t2) \
 			{ \
-				const uint32_t vdt = t2 - perft3; \
+				const uint_fast32_t vdt = t2 - perft3; \
 				dtlast3 = vdt; /* текущее значение длительности */ \
 				if (vdt > dtmax3) \
 					dtmax3 = vdt; /* максимальное значение длительности */ \
@@ -245,9 +232,9 @@ static int_fast8_t		glob_swaprts;		// управление боковой выхода спектроанализато
 	/* DSP speed test */
 	void dsp_speed_diagnostics(void)
 	{
-		debug_printf_P(PSTR("dtcount=%u, dtmax=%u, dtlast=%u, "), dtcount, dtmax, dtlast);
-		debug_printf_P(PSTR("dtcount2=%u, dtmax2=%u, dtlast2=%u, "), dtcount2, dtmax2, dtlast2);
-		debug_printf_P(PSTR("dtcount3=%u, dtmax3=%u, dtlast3=%u\n"), dtcount3, dtmax3, dtlast3);
+		debug_printf_P(PSTR("dtcount=%" PRIuFAST32 ", dtmax=%" PRIuFAST32 ", dtlast=%" PRIuFAST32 ", "), dtcount, dtmax, dtlast);
+		debug_printf_P(PSTR("dtcount2=%" PRIuFAST32 ", dtmax2=%" PRIuFAST32 ", dtlast2=%" PRIuFAST32 ", "), dtcount2, dtmax2, dtlast2);
+		debug_printf_P(PSTR("dtcount3=%" PRIuFAST32 ", dtmax3=%" PRIuFAST32 ", dtlast3=%" PRIuFAST32 "\n"), dtcount3, dtmax3, dtlast3);
 	}
 
 #else /* WITHDEBUG */
@@ -10177,15 +10164,24 @@ static RAMFUNC FLOAT_t agc_forvard_float(
 	)
 {
 	BEGIN_STAMP3();
+
 	const FLOAT_t siglevel0 = agc_getsiglevel(sampleiq);
+
 	const volatile agcparams_t * const agcp = & rxagcparams [gwagcprofrx] [pathi];
 	volatile agcstate_t * const st = & rxagcstate [pathi];
 
+	//BEGIN_STAMP();
 	performagc(agcp, st, agccalcstraingth(agcp, siglevel0));	// измеритель уровня сигнала
+	//END_STAMP();
+
+	//BEGIN_STAMP();
 	const FLOAT_t gain = agccalcgain(agcp, performagcresultslow(st));
+	//END_STAMP();
+
 	END_STAMP3();
 	return gain;
 }
+
 // Функция для S-метра - получение десятичного логарифма уровня сигнала от FS
 /* Вызывается из user-mode программы */
 static void agc_reset(
@@ -10212,6 +10208,7 @@ static void agc_reset(
 	}
 #endif
 }
+
 // Функция для S-метра - получение десятичного логарифма уровня сигнала от FS
 /* Вызывается из user-mode программы */
 static FLOAT_t agc_forvard_getstreigthlog10(
@@ -11000,9 +10997,7 @@ static RAMFUNC_NONILINE FLOAT_t baseband_demodulator(
 			// значение для прослушивания
 			// 0.707 == M_SQRT1_2
 			const FLOAT_t sample = saved_delta_fi [pathi]; //(FLOAT_t) M_SQRT1_2;
-			BEGIN_STAMP2();
 			r = sample * nfmoutscale; //* rxoutdenom;	// масштабирование к разрядности аудио-кодека 1_31 -> 1_15
-			END_STAMP2();
 			if (glob_nfm_sql_off == 0)
 			{
 				// "шумодав"
@@ -11089,9 +11084,9 @@ static RAMFUNC FLOAT_t processifadcsampleIQ(
 	{
 		FLOAT32P_t vp0 = { { q23lj_to_q31(iv0), q23lj_to_q31(qv0) } };
 #if WITHDSPLOCALFIR
-		BEGIN_STAMP();
+		////BEGIN_STAMP();
 		vp0 = filter_firp_rx_SSB_IQ(vp0);
-		END_STAMP();
+		////END_STAMP();
 #endif /* WITHDSPLOCALFIR */
 		return baseband_demodulator(vp0, dspmode, pathi);
 	}
@@ -11844,7 +11839,9 @@ void RAMFUNC dsp_extbuffer32rx(const uint32_t * buff)
 				(int_fast32_t) buff [i + DMABUF32RX0I] * rxgate,	// Расширяем 24-х битные числа до 32 бит
 				(int_fast32_t) buff [i + DMABUF32RX0Q] * rxgate	// Расширяем 24-х битные числа до 32 бит
 				);	
+			BEGIN_STAMP2();
 			const FLOAT32P_t filtered = filterRxAudio_Pair(pair, dspmodeA);
+			END_STAMP2();
 			recordsampleSD(filtered.IV, filtered.QV);	// Запись демодулированного сигнала без озвучки клавиш
 			recordsampleUAC(filtered.IV, filtered.QV);	// Запись в UAC демодулированного сигнала без озвучки клавиш
 			savesampleout16stereo(filtered.IV, filtered.QV);	/* к line output подключен модем - озвучку запрещаем */
@@ -11873,7 +11870,9 @@ void RAMFUNC dsp_extbuffer32rx(const uint32_t * buff)
 			case BOARD_RXMAINSUB_A_A:
 				// left:A/right:A
 				{
+					BEGIN_STAMP2();
 					const FLOAT_t filtered = filterRxAudio_rxA(rxA, dspmodeA);
+					END_STAMP2();
 
 					recordsampleSD(filtered, filtered);	// Запись демодулированного сигнала без озвучки клавиш
 					recordsampleUAC(filtered, filtered);	// Запись в UAC демодулированного сигнала без озвучки клавиш
@@ -11887,7 +11886,9 @@ void RAMFUNC dsp_extbuffer32rx(const uint32_t * buff)
 				{
 					// фильтры одинаковые - можем позволить себе паралельную обработку
 					const FLOAT32P_t pair = { { rxA, rxB } };
+					BEGIN_STAMP2();
 					const FLOAT32P_t filtered = filterRxAudio_Pair(pair, dspmodeA);
+					END_STAMP2();
 
 					recordsampleSD(filtered.IV, filtered.QV);	// Запись демодулированного сигнала без озвучки клавиш
 					recordsampleUAC(filtered.IV, filtered.QV);	// Запись в UAC демодулированного сигнала без озвучки клавиш
@@ -11910,7 +11911,9 @@ void RAMFUNC dsp_extbuffer32rx(const uint32_t * buff)
 				{
 					// фильтры одинаковые - можем позволить себе паралельную обработку
 					const FLOAT32P_t pair = { { rxA, rxB } };
+					BEGIN_STAMP2();
 					const FLOAT32P_t filtered = filterRxAudio_Pair(pair, dspmodeA);
+					END_STAMP2();
 
 					recordsampleSD(filtered.QV, filtered.IV);	// Запись демодулированного сигнала без озвучки клавиш
 					recordsampleUAC(filtered.QV, filtered.IV);	// Запись в UAC демодулированного сигнала без озвучки клавиш
@@ -11930,7 +11933,9 @@ void RAMFUNC dsp_extbuffer32rx(const uint32_t * buff)
 			case BOARD_RXMAINSUB_B_B:
 				// left:B/right:B
 				{
+					BEGIN_STAMP2();
 					const FLOAT_t filtered = filterRxAudio_rxB(rxB, dspmodeB);	// todo: пока только с фильтром
+					END_STAMP2();
 
 					recordsampleSD(filtered, filtered);	// Запись демодулированного сигнала без озвучки клавиш
 					recordsampleUAC(filtered, filtered);	// Запись в UAC демодулированного сигнала без озвучки клавиш
@@ -11950,8 +11955,10 @@ void RAMFUNC dsp_extbuffer32rx(const uint32_t * buff)
 			/* прием WFM (демодуляция в FPGA, только без WITHUSEDUALWATCH)	*/
 			const FLOAT_t left = (int_fast32_t) buff [i + DMABUF32RX1I] * rxgate;		// Расширяем 24-х битные числа до 32 бит
 			//const FLOAT_t right = (int_fast32_t) buff [i + DMABUF32RX1Q] * rxgate;		// Расширяем 24-х битные числа до 32 бит
+			BEGIN_STAMP2();
 			//const FLOAT_t leftFiltered = filterRxAudio_rxA(left * nfmoutscale, dspmodeA);
 			const FLOAT_t leftFiltered = filterRxAudio_rxA(get_lout16(), dspmodeA);	// TODO: debug
+			END_STAMP2();
 			recordsampleSD(leftFiltered, leftFiltered);	// Запись демодулированного сигнала без озвучки клавиш
 			recordsampleUAC(leftFiltered, leftFiltered);	// Запись в UAC демодулированного сигнала без озвучки клавиш
 			savesampleout16stereo(injectsidetone(leftFiltered, sdtn), injectsidetone(leftFiltered, sdtn));
@@ -11978,7 +11985,9 @@ void RAMFUNC dsp_extbuffer32rx(const uint32_t * buff)
 				0		// MAIN RX
 				);	
 
+			BEGIN_STAMP2();
 			const FLOAT_t leftFiltered = filterRxAudio_rxA(left, dspmodeA);
+			END_STAMP2();
 			recordsampleSD(leftFiltered, leftFiltered);	// Запись демодулированного сигнала без озвучки клавиш
 			recordsampleUAC(leftFiltered, leftFiltered);	// Запись в UAC демодулированного сигнала без озвучки клавиш
 			savesampleout16stereo(injectsidetone(leftFiltered, sdtn), injectsidetone(leftFiltered, sdtn));
@@ -12004,7 +12013,9 @@ void RAMFUNC dsp_extbuffer32rx(const uint32_t * buff)
 		processafadcsample(vi, dspmodeA, shape, ctcss);	// Передатчик - использование принятого с AF ADC буфера
 
 		const FLOAT_t left = processifadcsamplei(buff [i + DMABUF32RX] * rxgate, dspmodeA);	// Расширяем 24-х битные числа до 32 бит
+		BEGIN_STAMP2();
 		const FLOAT_t leftFiltered = filterRxAudio_rxA(left, dspmodeA);
+		END_STAMP2();
 		recordsampleSD(leftFiltered, leftFiltered);	// Запись демодулированного сигнала без озвучки клавиш
 		recordsampleUAC(leftFiltered, leftFiltered);	// Запись в UAC демодулированного сигнала без озвучки клавиш
 		savesampleout16stereo(injectsidetone(leftFiltered, sdtn), injectsidetone(leftFiltered, sdtn));

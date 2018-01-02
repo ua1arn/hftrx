@@ -383,6 +383,7 @@
 void arm_cpu_initialize(void);	// функция вызывается из start-up до копирования всех "быстрых" функций и до инициализации переменных
 void cpu_initialize(void);
 void cpu_initdone(void);	// секция init больше не нужна
+uint_fast32_t cpu_getdebugticks(void);	// получение из аппаратного счетчика монотонно увеличивающегося кода
 
 uint_fast32_t arm_hardware_stm32f7xx_pllq_initialize(void);	// Настроить выход PLLQ на 48 МГц
 

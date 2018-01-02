@@ -8115,6 +8115,25 @@ void arm_hardware_flush_invalidate(uintptr_t base, size_t size)
 
 #endif /* CPUSTYLE_ARM_CM7 */
 
+// получение из аппаратного счетчика монотонно увеличивающегося кода
+// see arm_cpu_initialize() in hardware.c
+uint_fast32_t cpu_getdebugticks(void)
+{
+#if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7
+	return DWT->CYCCNT;
+#elif CPUSTYLE_STM32F
+	//return SysTick->VAL & SysTick_VAL_CURRENT_Msk;
+	return TIM3->CNT;
+#elif CPUSTYLE_R7S721
+	return ~ OSTM1.OSTMnCNT;		// таймер считает на уменьшение
+#else
+	#warning Wromg CPUSTYLE_xxx
+	return 0;
+#endif
+}
+
+
+
 /* функция вызывается из start-up до копирования в SRAM всех "быстрых" функций и до инициализации переменных
 */
 // watchdog disable, clock initialize, cache enable

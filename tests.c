@@ -4927,6 +4927,11 @@ static void sdtick(void)
 
 void hightests(void)
 {
+#if 1 && defined (__GNUC__)
+	{
+		debug_printf_P(PSTR("__GNUC__=%d, __GNUC_MINOR__=%d\nx"), (int) __GNUC__, (int) __GNUC_MINOR__);
+	}
+#endif
 #if 0
 	{
 		debug_printf_P(PSTR("PLL_FREQ=%lu Hz (%lu MHz)\n"), (unsigned long) PLL_FREQ, (unsigned long) PLL_FREQ / 1000000);
