@@ -8124,8 +8124,14 @@ uint_fast32_t cpu_getdebugticks(void)
 #elif CPUSTYLE_STM32F
 	//return SysTick->VAL & SysTick_VAL_CURRENT_Msk;
 	return TIM3->CNT;
-#elif CPUSTYLE_R7S721
-	return ~ OSTM1.OSTMnCNT;		// таймер считает на уменьшение
+#elif CPUSTYLE_ARM_CA9
+	{
+		uint32_t result;
+		// Read CCNT Register
+		//asm volatile ("MRC p15, 0, %0, c9, c13, 0\t\n": "=r"(value));  
+		__get_CP(15, 0, result, 9, 13, 0);
+		return(result);
+	}
 #else
 	#warning Wromg CPUSTYLE_xxx
 	return 0;
@@ -8170,6 +8176,41 @@ arm_cpu_initialize(void)
 		SCB->CCR |= SCB_CCR_UNALIGN_TRP_Msk;
 	#endif
 #endif /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7 */
+#if CPUSTYLE_ARM_CA9
+	#if WITHDEBUG
+	{
+		// Поддержка для функций диагностики быстродействия BEGINx_STAMP/ENDx_STAMP - audio.c
+		enum { do_reset = 0, enable_divider = 0 };
+		// in general enable all counters (including cycle counter)
+		int32_t value = 1;
+
+		// peform reset:  
+		if (do_reset)
+		{
+			value |= 2;     // reset all counters to zero.
+			value |= 4;     // reset cycle counter to zero.
+		} 
+
+		if (enable_divider)
+			value |= 8;     // enable "by 64" divider for CCNT.
+
+		value |= 16;
+
+		// program the performance-counter control-register:
+		//asm volatile ("MCR p15, 0, %0, c9, c12, 0\t\n" :: "r"(value));  
+		__set_CP(15, 0, value, 9, 12, 0);
+
+		// enable all counters:  
+		//asm volatile ("MCR p15, 0, %0, c9, c12, 1\t\n" :: "r"(0x8000000f));  
+		__set_CP(15, 0, 0x8000000f, 9, 12, 1);
+
+		// clear overflows:
+		//asm volatile ("MCR p15, 0, %0, c9, c12, 3\t\n" :: "r"(0x8000000f));
+		__set_CP(15, 0, 0x8000000f, 9, 12, 3);
+	}
+	#endif /* WITHDEBUG */
+#endif /* CPUSTYLE_ARM_CA9 */
+
 #if CPUSTYLE_STM32F1XX
 
 	lowlevel_stm32f10x_pll_clock();
