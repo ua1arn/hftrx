@@ -38,15 +38,15 @@
 		#if defined(STM32F767xx)
 			// normal operation frequency
 			#define REF1_MUL 216		// 2*216.000 MHz (192 <= PLLN <= 432)
-			#define HARDWARE_FLASH_LATENCY FLASH_ACR_LATENCY_6WS	// overvlocking
+			#define HARDWARE_FLASH_LATENCY FLASH_ACR_LATENCY_6WS
+		#elif CPUSTYLE_STM32F7XX
+			// normal operation frequency
+			#define REF1_MUL 216		// 2*216.000 MHz (192 <= PLLN <= 432)
+			#define HARDWARE_FLASH_LATENCY FLASH_ACR_LATENCY_7WS
 		#elif CPUSTYLE_STM32H7XX
 			// normal operation frequency
 			#define REF1_MUL 384		// 2*384.000 MHz (192 <= PLLN <= 432)
 			#define HARDWARE_FLASH_LATENCY FLASH_ACR_LATENCY_2WS
-		#elif CPUSTYLE_STM32F7XX
-			// normal operation frequency
-			#define REF1_MUL 216		// 2*216.000 MHz (192 <= PLLN <= 432)
-			#define HARDWARE_FLASH_LATENCY FLASH_ACR_LATENCY_7WS	// overvlocking mode
 		#endif
 
 	#else
@@ -56,7 +56,7 @@
 			#define REF1_DIV 8			// ref freq = 2.000 MHz
 			// normal operation frequency
 			#define REF1_MUL 216		// 2*216.000 MHz (192 <= PLLN <= 432)
-			#define HARDWARE_FLASH_LATENCY FLASH_ACR_LATENCY_6WS	// overvlocking
+			#define HARDWARE_FLASH_LATENCY FLASH_ACR_LATENCY_6WS
 		#elif CPUSTYLE_STM32F7XX
 			// тактирование от внутреннего RC генератора 16 ћ√ц
 			#define REF1_DIV 8			// ref freq = 2.000 MHz
@@ -68,7 +68,7 @@
 			#define REF1_DIV 32			// ref freq = 2.000 MHz
 			// normal operation frequency
 			#define REF1_MUL 384			// 2*384.000 MHz (192 <= PLLN <= 432)
-			#define HARDWARE_FLASH_LATENCY FLASH_ACR_LATENCY_2WS	// overvlocking mode
+			#define HARDWARE_FLASH_LATENCY FLASH_ACR_LATENCY_2WS
 		#endif
 
 	#endif
