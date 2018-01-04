@@ -10257,7 +10257,7 @@ static const FLASHMEM struct menudef menutable [] =
 	{
 		"FREQ FPS", 7, 0, 0,	ISTEP1,	
 		ITEM_VALUE,
-		5, 25,							/* частота обновления показаний частоты от 5 до 25 раз в секунду */
+		4, 25,							/* частота обновления показаний частоты от 5 до 25 раз в секунду */
 		offsetof(struct nvmap, displayfreqsfps),
 		NULL,
 		& displayfreqsfps,
@@ -10267,7 +10267,7 @@ static const FLASHMEM struct menudef menutable [] =
 	{
 		"SMTR FPS", 7, 0, 0,	ISTEP1,	
 		ITEM_VALUE,
-		5, 25,							/* частота обновления барграфов от 5 до 25 раз в секунду */
+		4, 25,							/* частота обновления барграфов от 5 до 25 раз в секунду */
 		offsetof(struct nvmap, displaybarsfps),
 		NULL,
 		& displaybarsfps,
