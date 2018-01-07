@@ -2952,10 +2952,10 @@ enum
 			{	0,	14,	display_time5,		REDRM_BARS, PG0, },	// TIME
 		#endif /* defined (RTC1_TYPE) */
 		#if WITHVOLTLEVEL
-			{	6,	14,	display_voltlevelV5, REDRM_VOLT, PG0, },	// voltmeter with "V"
+			{	6,	14,	display_voltlevelV5, REDRM_VOLT, PG0 | REDRSUBSET_MENU, },	// voltmeter with "V"
 		#endif /* WITHVOLTLEVEL  */
 		#if WITHCURRLEVEL
-			{	11, 14,	display_currlevelA6, REDRM_VOLT, PG0, },	// amphermeter with "A"
+			{	11, 14,	display_currlevelA6, REDRM_VOLT, PG0 | REDRSUBSET_MENU, },	// amphermeter with "A"
 		#endif /*  WITHCURRLEVEL */
 		#if WITHAMHIGHKBDADJ
 			{	6, 14,	display_amfmhighcut3,REDRM_MODE, PG0, },	// 3.7
@@ -3074,10 +3074,10 @@ enum
 			{	0,	14,	display_time5,		REDRM_BARS, PG0, },	// TIME
 		#endif /* defined (RTC1_TYPE) */
 		#if WITHVOLTLEVEL
-			{	6,	14,	display_voltlevelV5, REDRM_VOLT, PG0, },	// voltmeter with "V"
+			{	6,	14,	display_voltlevelV5, REDRM_VOLT, PG0 | REDRSUBSET_MENU, },	// voltmeter with "V"
 		#endif /* WITHVOLTLEVEL  */
 		#if WITHCURRLEVEL
-			{	11, 14,	display_currlevelA6, REDRM_VOLT, PG0, },	// amphermeter with "A"
+			{	11, 14,	display_currlevelA6, REDRM_VOLT, PG0 | REDRSUBSET_MENU, },	// amphermeter with "A"
 		#endif /*  WITHCURRLEVEL */
 		#if WITHAMHIGHKBDADJ
 			{	6, 14,	display_amfmhighcut3,REDRM_MODE, PG0, },	// 3.7
