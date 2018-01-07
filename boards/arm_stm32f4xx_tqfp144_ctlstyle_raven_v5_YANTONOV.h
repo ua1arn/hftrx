@@ -376,7 +376,7 @@
 	//#define WITHRTCLSI 1	/* запуск LSI (без кварца) */
 	//#define RTC1_TYPE RTC_TYPE_STM32F4xx	/* STM32F4xx internal RTC peripherial */
 	//#define TSC1_TYPE TSC_TYPE_STMPE811	/* touch screen controller */
-	//#define DAC1_TYPE	99999		/* наличие ЦАП для подстройки тактовой частоты */
+	#define DAC1_TYPE	99999		/* наличие ЦАП для подстройки тактовой частоты */
 
 	#define DDS1_CLK_DIV	1		/* Делитель опорной частоты перед подачей в DDS1 */
 
