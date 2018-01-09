@@ -342,7 +342,7 @@
 	#include "armcpu/iodefine.h"
 	#include "rza_io_regrw.h"
 
-	#include "hardware_r7s721.h"
+	//#include "hardware_r7s721.h"
 
 	#define ALIGNX_BEGIN __attribute__ ((aligned(32))) 
 	#define ALIGNX_END /* nothing */
@@ -682,7 +682,8 @@ void arm_hardware_flush(uintptr_t base, size_t size);	// Сейчас эта память будет
 void arm_hardware_flush_invalidate(uintptr_t base, size_t size);	// Сейчас эта память будет записываться по DMA куда-то. Потом содержимое не требуется
 void arm_hardware_flush_all(void);
 
-void r7s721_sdhi0_dma(void);
+void r7s721_sdhi0_dma_handler(void);
+void r7s721_intc_registintfunc(uint_fast16_t int_id, void (* func)(void));
 
 #if CPUSTYLE_R7S721
 	//  Renesas parameters

@@ -9,7 +9,7 @@ SRC += \
  elkey.c \
  encoder.c \
  serial.c \
- hardware.c hardware_r7s721.c \
+ hardware.c \
  hd44780.c \
  display.c display2.c \
  keyboard.c\

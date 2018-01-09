@@ -750,10 +750,6 @@ SOURCE=.\hardware.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\hardware_r7s721.c
-# End Source File
-# Begin Source File
-
 SOURCE=.\hardwarecodecs.c
 # End Source File
 # Begin Source File
@@ -935,10 +931,6 @@ SOURCE=.\formats.h
 # Begin Source File
 
 SOURCE=.\hardware.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\hardware_r7s721.h
 # End Source File
 # Begin Source File
 
