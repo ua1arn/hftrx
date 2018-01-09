@@ -2705,6 +2705,13 @@ usbd_handler_brdy_bulk_in8(PCD_TypeDef * const Instance, uint_fast8_t pipe, uint
 				HARDWARE_CDC_ONTXCHAR((void *) Instance);		// отсюда вызовется usbd_cdc_tx() с требуемым для передачи символом.
 		}
 		break;
+	case USBD_EP_CDC_INb & 0x7F:
+		{
+			//unsigned n = VIRTUAL_COM_PORT_DATA_SIZE;
+			//while (usbd_cdc_txenabled != 0 && n --)	// при отсутствии данных usbd_cdc_txenabled устанавливается в 0
+			//	HARDWARE_CDC_ONTXCHAR((void *) Instance);		// отсюда вызовется usbd_cdc_tx() с требуемым для передачи символом.
+		}
+		break;
 #endif /* WITHUSBCDC */
 
 	default:
@@ -2747,6 +2754,20 @@ usbd_handler_brdy_bulk_out8(PCD_TypeDef * const Instance, uint_fast8_t pipe, uin
 			}
 		}
 		break;
+
+	case USBD_EP_CDC_OUTb & 0x7F:
+		//debug_printf_P(PSTR("status of c_fifo%u CFIFOCTR=%04X\n"), pipe, Instance->CFIFOCTR);
+		//if (usbd_cdc_rxenabled != 0)
+		{
+			unsigned size8 = (Instance->CFIFOCTR & USB_CFIFOCTR_DTLN) / MASK2LSB(USB_CFIFOCTR_DTLN);
+			while (size8 --)
+			{
+				const uint_fast8_t c = Instance->CFIFO.UINT8 [R_IO_HH];	// HH=3
+				//HARDWARE_CDC_ONRXCHAR(c);
+				//debug_printf_P(PSTR("rx=%02x "), c);
+			}
+		}
+		break;
 #endif /* WITHUSBCDC */
 
 	default:
@@ -2783,6 +2804,13 @@ usbd_handler_nrdy(PCD_TypeDef * const Instance, uint_fast8_t pipe)
 		volatile uint16_t * const PIPEnCTR = (& Instance->PIPE1CTR) + (pipe - 1);
 
 		if (pipe == HARDWARE_USBD_PIPE_CDC_IN)
+		{
+			//* PIPEnCTR = (* PIPEnCTR & ~ 0x03) | 0x0003;	// NAK->STALL
+			//* PIPEnCTR = (* PIPEnCTR & ~ 0x03) | 0x0002;	// NAK->STALL
+			//* PIPEnCTR = (* PIPEnCTR & ~ 0x03) | 0x0001;	// STALL->BUF
+		}
+
+		if (pipe == HARDWARE_USBD_PIPE_CDC_INb)
 		{
 			//* PIPEnCTR = (* PIPEnCTR & ~ 0x03) | 0x0003;	// NAK->STALL
 			//* PIPEnCTR = (* PIPEnCTR & ~ 0x03) | 0x0002;	// NAK->STALL

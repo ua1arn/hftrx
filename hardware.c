@@ -8232,13 +8232,6 @@ arm_cpu_CMx_initialize_NVIC(void)
 //#define INTC_LEVEL_SENSITIVE    (0)     /* Level sense  */
 //#define INTC_EDGE_TRIGGER       (1)     /* Edge trigger */
 
-static void r7s721_intc_initialize(void);
-
-//void r7s721_handler_interrupt(uint32_t icciar);
-
-//void r7s721_ttb_initialize(void);
-//void r7s721_ttb_map(uintptr_t va,	/* virtual address */uintptr_t la	/* linear (physical) address */);
-
 /* ==== Interrupt detection ==== */
 
 static void Userdef_INTC_Dummy_Interrupt(void)
@@ -8358,6 +8351,8 @@ static void r7s721_intc_initialize(void)
     uint16_t offset;
     volatile uint32_t * addr;
 
+	//GIC_Enable();	// инициализирует не совсем так как надо для работы
+
 	/* default interrut handlers setup */
     for (offset = 0; offset < IRQ_GIC_LINE_COUNT; ++ offset)
     {
@@ -8408,6 +8403,46 @@ static void r7s721_intc_initialize(void)
     	* (addr + offset) = 0xFFFFFFFFuL;
     }
 
+	//GIC_Enable();	// инициализирует не совсем так как надо для работы
+if (0)
+{
+	// а так работает...
+  uint32_t i;
+  uint32_t priority_field;
+
+  //A reset sets all bits in the IGROUPRs corresponding to the SPIs to 0,
+  //configuring all of the interrupts as Secure.
+
+  //Disable interrupt forwarding
+  GIC_DisableInterface();
+
+  /* Priority level is implementation defined.
+   To determine the number of priority bits implemented write 0xFF to an IPRIORITYR
+   priority field and read back the value stored.*/
+  GIC_SetPriority((IRQn_Type)0U, 0xFFU);
+  priority_field = GIC_GetPriority((IRQn_Type)0U);
+
+  //SGI and PPI
+  for (i = 0U; i < 32U; i++)
+  {
+    if(i > 15U) {
+      //Set level-sensitive (and N-N model) for PPI
+      GIC_SetConfiguration((IRQn_Type)i, 0U);
+    }
+    //Disable SGI and PPI interrupts
+    GIC_DisableIRQ((IRQn_Type)i);
+    //Set priority
+    GIC_SetPriority((IRQn_Type)i, priority_field/2U);
+  }
+  //Enable interface
+  GIC_EnableInterface();
+  //Set binary point to 0
+  GIC_SetBinaryPoint(0U);
+  //Set priority mask
+  GIC_SetInterfacePriorityMask(0xFFU);
+}
+
+
     /* Interrupt Priority Mask Register setting */
     /* Enable priorities for all interrupts */
     GIC_SetInterfacePriorityMask(ARM_CA9_ENCODE_PRIORITY(31));	// GICC_PMR
@@ -8424,7 +8459,6 @@ static void r7s721_intc_initialize(void)
     /* Distributor Control Register setting */
     //INTC.ICDDCR = 0x00000001uL;
 	GIC_EnableDistributor();	// check GICDistributor->CTLR a same for INTC.ICDDCR
-
 }
 
 /******************************************************************************
