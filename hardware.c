@@ -7617,6 +7617,7 @@ void IRQHandler(void)
 */
 #endif
 
+#if 0
  
 /** \brief  Set CSSELR
  */
@@ -7624,22 +7625,6 @@ __STATIC_FORCEINLINE void __set_CSSELR(uint32_t value)
 {
 //  __ASM volatile("MCR p15, 2, %0, c0, c0, 0" : : "r"(value) : "memory");
   __set_CP(15, 2, value, 0, 0, 0);
-}
-
-/* Set Vector Base Address Register to point to application's vector table */
-static void CP15_set_vbase_address(uint32_t val)
-{
-	__asm volatile("mcr p15, 0, %0, c12, c0, 0 @ set vector base address"
-	  : : "r" (val) : "cc");
-	__ISB();
-}
-
-/* Set Monitor Vector Base Address Register */
-static void CP15_set_mvbase_address(uint32_t val)
-{
-	__asm volatile("mcr p15, 0, %0, c12, c0, 1 @ set monitor vector base address"
-	  : : "r" (val) : "cc");
-	__ISB();
 }
 
 /** \brief Get MVBAR
@@ -7675,7 +7660,7 @@ This function returns the value of the Vector Base Address Register.
 
 
 */
- __STATIC_FORCEINLINE uint32_t __get_VBARxxx(void)
+ __STATIC_FORCEINLINE uint32_t __get_VBAR(void)
  {
  uint32_t result;
  __get_CP(15, 0, result, 12, 0, 0);
@@ -7689,11 +7674,12 @@ This function assigns the given value to the Vector Base Address Register.
 
 
 */
- __STATIC_FORCEINLINE void __set_VBARxxx(uint32_t vbar)
+ __STATIC_FORCEINLINE void __set_VBAR(uint32_t vbar)
  {
  __set_CP(15, 0, vbar, 12, 0, 0);
  }
 
+#endif
 
 static void arm_hardware_VFPEnable(void)
 {
@@ -8694,7 +8680,7 @@ void cpu_initialize(void)
 	//CP15_set_vbase_address((unsigned int) & __isr_vector__); // Set Vector Base Address Register
 	//CP15_set_mvbase_address((unsigned int) & __isr_vector__);	//  Set Monitor Vector Base Address Register
 
-	__set_VBARxxx(0);	 // Set Vector Base Address Register
+	__set_VBAR(0);	 // Set Vector Base Address Register
 	//CP15_set_vbase_address(0); // Set Vector Base Address Register
 
 	__set_MVBAR(0);	 // Set Vector Base Address Register
