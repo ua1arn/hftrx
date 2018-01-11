@@ -729,8 +729,7 @@ static void CMEMSGF(int erno, FLOAT_t * datap)
 	* datap = 0;
 }
 
-
-static const FLOAT_t LOGF(FLOAT_t x)
+FLOAT_t local_log(FLOAT_t x)
 {
 	static const FLOAT_t C1 = ((FLOAT_t) 0.693359375);		/* C1 + C2 should represent log 2 to	*/
 	static const FLOAT_t C2 = ((FLOAT_t) -2.12194440054690583e-4);	/* more than machine precision	*/
@@ -778,7 +777,7 @@ static const FLOAT_t LOGF(FLOAT_t x)
 #define MAXEXP 2031		/* (MAX_EXP * 16) - 1			*/
 #define MINEXP (-2047)		/* (MIN_EXP * 16) - 1			*/
 
-const FLOAT_t POWF(FLOAT_t x, FLOAT_t y)
+FLOAT_t local_pow(FLOAT_t x, FLOAT_t y)
 {
 
 	static const FLOAT_t a1[] = {
@@ -828,13 +827,13 @@ const FLOAT_t POWF(FLOAT_t x, FLOAT_t y)
     int iw1, m, p;
 
     if (y == 0)
-		return(1.0);
+		return 1;
     if (x <= 0) 
 	{
 		if (x == 0) 
 		{
 			if (y > 0)
-			return(x);
+				return(x);
 			CMEMSGF(FP_POWO, &y);
 			return(HUGE);
 		}
@@ -868,7 +867,7 @@ const FLOAT_t POWF(FLOAT_t x, FLOAT_t y)
     w = w1 + u1 * y1;
     w1 = (FLOAT_t)0.0625 * (FLOAT_t)((int)(16 * w));
     w2 += (w - w1);
-    w = (FLOAT_t)0.0625 * (double)((int)(16 * w2));
+    w = (FLOAT_t)0.0625 * (FLOAT_t)((int)(16 * w2));
     iw1 = 16 * (w1 + w);
     w2 -= w;
     while (w2 > 0) 

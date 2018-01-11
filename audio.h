@@ -135,13 +135,16 @@
 
 
 #if WITHINTEGRATEDDSP
+
 	#if 0 && CPUSTYLE_R7S721 && (__ARM_FP & 0x08)
 
 		typedef double FLOAT_t;
 
 		#define LOG10F	log10
-		#define //LOGF	log
-		#define //POWF	pow
+		//#define LOGF	log
+		//#define POWF	pow
+		#define LOGF	local_log
+		#define POWF	local_pow
 		#define SINF	sin
 		#define COSF	cos
 		#define ATAN2F	atan2
@@ -166,6 +169,8 @@
 		#define LOG10F	log10f
 		//#define LOGF	logf
 		//#define POWF	powf
+		#define LOGF	local_log
+		#define POWF	local_pow
 		#define SINF	sinf
 		#define COSF	cosf
 		#define ATAN2F	atan2f
@@ -207,6 +212,8 @@
 	FLOAT32P_t modem_get_tx_iq(uint_fast8_t suspend);
 	uint_fast8_t getsampmlemike(INT32P_t * v);			/* получить очередной оцифрованый сэмпл с микрофона */
 
+	FLOAT_t local_log(FLOAT_t x);
+	FLOAT_t local_pow(FLOAT_t x, FLOAT_t y);
 
 #endif /* WITHINTEGRATEDDSP */
 
