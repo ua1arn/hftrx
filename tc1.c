@@ -6531,7 +6531,7 @@ updateboard(
 		#if ! defined (CODEC1_TYPE) && WITHUSBHW && WITHUSBUAC
 			/* если конфигурация без автнонмного аудиокодека - все входы модулятора получают звук с USB AUDIO */
 			const uint_fast8_t txaudio = BOARD_TXAUDIO_USB;
-		#elif defined (WITHBBOXMIKESRC)
+		#elif WITHBBOX && defined (WITHBBOXMIKESRC)
 			const uint_fast8_t txaudio = WITHBBOXMIKESRC;
 		#else /* defined (WITHBBOXMIKESRC) */
 			const uint_fast8_t txaudio = gtxaudio [txmode];
