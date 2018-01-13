@@ -361,6 +361,7 @@ uint8_t bandf2_calc(
 	CTLREGMODE_STORCH_V2 || \
 	CTLREGMODE_STORCH_V3 || \
 	CTLREGMODE_STORCH_V4 ||		/* modem only v2 */ \
+	CTLREGMODE_STORCH_V5 ||		/* mimni RX */ \
 	CTLREGMODE_RAVENDSP_V9 || /* renesas */ \
 	CTLREGMODE_RAVENDSP_V2 || /* renesas */ \
 	CTLREGMODE_RAVENDSP_V8 || /* modem only */ \
