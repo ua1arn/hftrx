@@ -310,7 +310,8 @@ void board_set_swaprts(uint_fast8_t v);	/* если используется конвертор на Rafael
 void buffers_set_uacinalt(uint_fast8_t v);	/* выбор альтернативной конфигурации для UAC IN interface */
 void buffers_set_uacoutalt(uint_fast8_t v);	/* выбор альтернативной конфигурации для UAC OUT interface */
 void buffers_set_uacinrtsalt(uint_fast8_t v);	/* выбор альтернативной конфигурации для UAC IN interface */
-void board_set_dacscale(uint_fast8_t n);	/* Использование амплитуды сигнала с ЦАП передатчика - 0..100% */
+void board_set_lo6(int_fast32_t f);
+void board_set_fullbw6(int_fast16_t f);	/* Установка частоты среза фильтров ПЧ в алгоритме Уивера - параметр полная полоса пропускания */
 
 void board_set_aflowcutrx(int_fast16_t v);		/* Нижняя частота среза фильтра НЧ */
 void board_set_afhighcutrx(int_fast16_t v);	/* Верхняя частота среза фильтра НЧ */

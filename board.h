@@ -84,8 +84,6 @@ void board_set_pabias(uint_fast8_t n);	/* установить ток покоя выходного каскада
 void board_set_bandfonhpf(uint_fast8_t n);	/* установить код выбора диапазонного фильтра, с которого включается ФВЧ перед УВЧ в SW20xx */
 void board_set_bandfonuhf(uint_fast8_t n);	/* Установить код диапазонного фильтра, на котором вкдючать UHF */
 void board_set_if4lsb(uint_fast8_t v);	/* требуется для приемников прямого преобразования */
-void board_set_lo6(int_fast32_t f);
-void board_set_fullbw6(int_fast16_t f);	/* Установка частоты среза фильтров ПЧ в алгоритме Уивера - параметр полная полоса пропускания */
 //void board_set_fltsofter(uint_fast8_t n);/* Код управления сглаживанием скатов фильтра основной селекции на приёме */
 void board_set_narrow(uint_fast8_t v);	/* установка режима према телеграфа (НЧ) */
 void board_set_notch(uint_fast8_t v);		/* не нулевой аргумент - включение НЧ режекторного фильтра */
@@ -99,7 +97,7 @@ void board_set_dactest(uint_fast8_t v);	/* вместо выхода интерполятора к ЦАП пер
 void board_set_tx_inh_enable(uint_fast8_t v);	/* разрешение реакции на вход tx_inh */
 void board_set_dither(uint_fast8_t v);	/* управление зашумлением в LCT2088 */
 void board_set_adcrand(uint_fast8_t v);	/* управление интерфейсом в LCT2088 */
-void board_set_dacscale(uint_fast8_t n);	/* Управление умножителем в тракте сигнала передатчика */
+void board_set_dacscale(uint_fast8_t n);	/* Использование амплитуды сигнала с ЦАП передатчика - 0..100% */
 void board_set_dac1(uint_fast8_t v);	/* подстройка опорного генератора */
 void board_set_bglight(uint_fast8_t v);	/* Включение подсветки дисплея */
 void board_set_kblight(uint_fast8_t v);	/* Включение подсветки клавиатуры */
