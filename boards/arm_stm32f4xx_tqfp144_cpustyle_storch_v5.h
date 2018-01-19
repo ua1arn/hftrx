@@ -340,9 +340,15 @@
 	#define PTT_TARGET_PIN				(GPIOD->IDR)
 	#define PTT_BIT_PTT					(1U << 12)		// PD12
 
+	// TX INHIBIT
+	#define TXINHIBIT_PIN				(GPIOB->IDR)
+	#define TXINHIBIT_PTT					(1U << 11)		// PB11
+
 	#define HARDWARE_GET_PTT() ((PTT_TARGET_PIN & PTT_BIT_PTT) == 0)
 	#define PTT_INITIALIZE() \
 		do { \
+			arm_hardware_piob_inputs(TXINHIBIT_PTT); \
+			arm_hardware_piob_updown(0, TXINHIBIT_PTT); \
 			arm_hardware_piod_inputs(PTT_BIT_PTT); \
 			arm_hardware_piod_updown(PTT_BIT_PTT, 0); \
 		} while (0)
