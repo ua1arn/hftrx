@@ -292,18 +292,15 @@
 		} while (0)
 	#endif /* WITHSDHCHW4BIT */
 
-	#define HARDWARE_SDIO_WP_BIT	(1U << 1)	/* PD1 - SDIO_WP */
 	#define HARDWARE_SDIO_CD_BIT	(1U << 0)	/* PD0 - SDIO_SENSE */
 
 	#define HARDWARE_SDIOSENSE_INITIALIZE()	do { \
-			arm_hardware_piod_inputs(HARDWARE_SDIO_WP_BIT); /* PD1 - SDIO_WP */ \
-			arm_hardware_piod_updown(HARDWARE_SDIO_WP_BIT, 0); \
 			arm_hardware_piod_inputs(HARDWARE_SDIO_CD_BIT); /* PD0 - SDIO_SENSE */ \
 			arm_hardware_piod_updown(HARDWARE_SDIO_CD_BIT, 0); \
 	} while (0)
 
 	#define HARDWARE_SDIOSENSE_CD() ((GPIOD->IDR & HARDWARE_SDIO_CD_BIT) == 0)	/* получить состояние датчика CARD PRESENT */
-	#define HARDWARE_SDIOSENSE_WP() ((GPIOD->IDR & HARDWARE_SDIO_WP_BIT) != 0)	/* получить состояние датчика CARD WRITE PROTECT */
+	#define HARDWARE_SDIOSENSE_WP() (0)	/* получить состояние датчика CARD WRITE PROTECT */
 
 	#define HARDWARE_SDIOPOWER_C(v)	do { GPIOE->BSRR = BSRR_C(v); __DSB(); } while (0)
 	#define HARDWARE_SDIOPOWER_S(v)	do { GPIOE->BSRR = BSRR_S(v); __DSB(); } while (0)
