@@ -10705,6 +10705,10 @@ static RAMFUNC FLOAT32P_t baseband_modulator(
 	case DSPCTL_MODE_TX_SSB:
 	case DSPCTL_MODE_TX_FREEDV:
 		{
+#if WITHTXDACFULL
+			//shape *= (FLOAT_t) M_SQRT2;
+			shape *= 2;
+#endif /* WITHTXDACFULL */
 			// vi - audio sample in range [- txlevelfence.. + txlevelfence]
 			//const FLOAT32P_t vfb = scalepair_int32(get_int32_aflo_delta(0, pathi), vi * shape);
 			const FLOAT32P_t vfb = scalepair(get_float_aflo_delta(0, pathi), vi * shape);
