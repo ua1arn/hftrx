@@ -5360,7 +5360,7 @@ void hardware_sdhost_initialize(void)
 		GIC_EnableIRQ(int_id);
 	}
 
-	HARDWARE_SDHI0_INITIALIZE();	// Подсоединить контроллер к выводам процессора
+	HARDWARE_SDIO_INITIALIZE();	// Подсоединить контроллер к выводам процессора
 
 #elif CPUSTYLE_STM32F4XX 
 

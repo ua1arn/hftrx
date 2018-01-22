@@ -82,10 +82,12 @@ static void sd_power_enable(
 
 static void sd_power_cycle(void)
 {
+	HARDWARE_SDIO_HANGOFF();
 	sd_power_enable(0);	// off
-	local_delay_ms(100);
+	local_delay_ms(200);
 	sd_power_enable(1);	// and ON
 	local_delay_ms(50);
+	HARDWARE_SDIO_INITIALIZE();
 }
 
 void sdcardhw_initialize(void)

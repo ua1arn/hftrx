@@ -264,13 +264,25 @@
 	#define HARDWARE_SDIO_WP_BIT	(1U << 6)	/* P3_6 SD_WP_0 */
 	#define HARDWARE_SDIO_CD_BIT	(1U << 7)	/* P3_7 SD_CD_0 */
 
-	#define HARDWARE_SDHI0_INITIALIZE() do { \
+	#define HARDWARE_SDIO_INITIALIZE() do { \
 		arm_hardware_pio3_alternative(1U << 0, R7S721_PIOALT_2); /* P3_0 SD_D2_0 */ \
 		arm_hardware_pio3_alternative(1U << 1, R7S721_PIOALT_2); /* P3_1 SD_D3_0 */ \
 		arm_hardware_pio3_alternative(1U << 2, R7S721_PIOALT_2); /* P3_2 SD_CMD_0 */ \
 		arm_hardware_pio3_alternative(1U << 3, R7S721_PIOALT_2); /* P3_3 SD_CLK_0 */ \
 		arm_hardware_pio3_alternative(1U << 4, R7S721_PIOALT_2); /* P3_4 SD_D0_0 */ \
 		arm_hardware_pio3_alternative(1U << 5, R7S721_PIOALT_2); /* P3_5 SD_D1_0 */ \
+		/* arm_hardware_pio3_alternative(HARDWARE_SDIO_WP_BIT, R7S721_PIOALT_2); */ /* P3_6 SD_WP_0 */ \
+		/* arm_hardware_pio3_alternative(HARDWARE_SDIO_CD_BIT, R7S721_PIOALT_2); */ /* P3_7 SD_CD_0 */ \
+	} while (0)
+
+	/* отключить процессор от SD карты - чтобы при выполнении power cycle не возникало фантомное питание через сигналы управления. */
+	#define HARDWARE_SDIO_HANGOFF()	do { \
+		arm_hardware_pio3_inputs(1U << 0); /* P3_0 SD_D2_0 */ \
+		arm_hardware_pio3_inputs(1U << 1); /* P3_1 SD_D3_0 */ \
+		arm_hardware_pio3_inputs(1U << 2); /* P3_2 SD_CMD_0 */ \
+		arm_hardware_pio3_inputs(1U << 3); /* P3_3 SD_CLK_0 */ \
+		arm_hardware_pio3_inputs(1U << 4); /* P3_4 SD_D0_0 */ \
+		arm_hardware_pio3_inputs(1U << 5); /* P3_5 SD_D1_0 */ \
 		/* arm_hardware_pio3_alternative(HARDWARE_SDIO_WP_BIT, R7S721_PIOALT_2); */ /* P3_6 SD_WP_0 */ \
 		/* arm_hardware_pio3_alternative(HARDWARE_SDIO_CD_BIT, R7S721_PIOALT_2); */ /* P3_7 SD_CD_0 */ \
 	} while (0)

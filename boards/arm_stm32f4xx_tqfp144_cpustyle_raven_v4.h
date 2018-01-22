@@ -443,6 +443,15 @@
 		arm_hardware_piob_inputs(SPI_MISO_BIT); \
 	} while (0)
 
+#define HARDWARE_SDIO_INITIALIZE() do { \
+		SPIIO_INITIALIZE(); \
+	} while (0)
+/* отключить процессор от SD карты - чтобы при выполнении power cycle не возникало фантомное питание через сигналы управления. */
+#define HARDWARE_SDIO_HANGOFF()	do { \
+		arm_hardware_piob_inputs(SPI_MISO_BIT | SPI_MOSI_BIT | SPI_SCLK_BIT); \
+		arm_hardware_piob_updown(0, SPI_MISO_BIT | SPI_MOSI_BIT | SPI_SCLK_BIT); \
+	} while (0)
+
 #define HARDWARE_SDIOSENSE_INITIALIZE()	do { \
 	} while (0)
 
