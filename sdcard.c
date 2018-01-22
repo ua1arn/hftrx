@@ -2524,12 +2524,15 @@ DSTATUS SD_Initialize (
 	BYTE drv				/* Physical drive nmuber (0..) */
 )
 {
-	//debug_printf_P(PSTR("disk_initialize: drv=%d\n"), (int) drv);
+	debug_printf_P(PSTR("SD_Initialize: drv=%d\n"), (int) drv);
 	if (1)
 	{
 #if WITHSDHCHW
 		if (HARDWARE_SDIOSENSE_CD() == 0)
+		{
+			debug_printf_P(PSTR("SD_Initialize: STA_NODISK\n"));
 			return STA_NODISK;
+		}
 		//if (HARDWARE_SDIOSENSE_WP() != 0)
 		//	return STA_PROTECT;
 		char ec = sd_initialize2();
