@@ -6553,7 +6553,7 @@ updateboard(
 		#endif /* WITHUSEDUALWATCH */
 		#if WITHUSBUAC
 			board_set_uacmike(gdatamode || getcattxdata() || txaudio == BOARD_TXAUDIO_USB);	/* на вход трансивера берутся аудиоданные с USB виртуальной платы, а не с микрофона */
-			board_set_uacplayer(guacplayer);/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
+			board_set_uacplayer((gtx && gdatamode) || guacplayer);/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
 			#if WITHRTS96 || WITHRTS192 || WITHTRANSPARENTIQ
 				board_set_swapiq(gswapiq);	/* Поменять местами I и Q сэмплы в потоке RTS96 */
 			#endif /* WITHRTS96 || WITHRTS192 || WITHTRANSPARENTIQ */
