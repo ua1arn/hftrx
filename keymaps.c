@@ -798,7 +798,7 @@ const struct qmkey qmdefs [NQMKEYS] =
 
 	// матрица слева от индикатора - ряд 3 по счету слева - снизу вверх */
 	{ KIF_NONE,		KBD_CODE_BKIN,			KBD_CODE_BKIN_HOLDED, 	' ', },		// BREAK-IN
-	{ KIF_NONE,		KBD_CODE_LDSPTGL,		KBD_CODE_16,			' ', },		// SPK
+	{ KIF_NONE,		KBD_CODE_LDSPTGL,		KBD_CODE_DATATOGGLE,	' ', },		// SPK/DATA
 	{ KIF_NONE,		KBD_CODE_ATT,			KBD_CODE_PAMP, 			' ', },		// ATT/PRE
 	{ KIF_NONE,		KBD_CODE_A_EX_B,			KBD_CODE_18, 		' ', },		// A/B
 
@@ -841,7 +841,7 @@ const struct qmkey qmdefs [NQMKEYS] =
 
 	// матрица слева от индикатора - ряд 3 по счету слева - снизу вверх */
 	{ KIF_NONE,		KBD_CODE_BKIN,			KBD_CODE_BKIN_HOLDED, 	' ', },		// BREAK-IN
-	{ KIF_NONE,		KBD_CODE_LDSPTGL,		KBD_CODE_16,			' ', },		// SPK
+	{ KIF_NONE,		KBD_CODE_LDSPTGL,		KBD_CODE_DATATOGGLE,	' ', },		// SPK/DATA
 	{ KIF_NONE,		KBD_CODE_ATT,			KBD_CODE_PAMP, 			' ', },		// ATT/PRE
 	{ KIF_NONE,		KBD_CODE_A_EX_B,		KBD_CODE_18, 			' ', },		// A/B
 

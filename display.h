@@ -640,7 +640,7 @@ uint_fast8_t hamradio_get_rec_value(void);	// AUDIO recording state
 uint_fast8_t hamradio_get_amfm_highcut100_value(void);	// текущее значение верхней частоты среза НЧ фильтра АМ/ЧМ (в сотнях герц)
 uint_fast8_t hamradio_get_samdelta10(int_fast32_t * p, uint_fast8_t pathi);		/* Получить значение отклонения частоты с точностью 0.1 герца */
 uint_fast8_t hamradio_get_usbh_active(void);
-
+uint_fast8_t hamradio_get_datamode(void);	// источник звука для передачи - USB AUDIO
 
 #define SWRMIN 10	// минимум - соответствует SWR = 1.0, точность = 0.1
 

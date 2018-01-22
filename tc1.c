@@ -2282,6 +2282,7 @@ struct nvmap
 	uint8_t gmikeagcgain;	/* Максимальное усидение АРУ микрофона */
 	uint8_t gmikehclip;		/* Ограничитель */
 	#if WITHUSBUAC
+		uint8_t gdatamode;	/* передача звука с USB вместо обычного источника */
 		uint8_t guacplayer;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
 		#if WITHRTS96 || WITHRTS192 || WITHTRANSPARENTIQ
 			uint8_t gswapiq;		/* Поменять местами I и Q сэмплы в потоке RTS96 */
@@ -2604,6 +2605,7 @@ filter_t fi_2p0_455 =
 #define RMT_MBAND_BASE offsetof(struct nvmap, gmband)		/* ячейка памяти фиксированных частот */
 
 #define RMT_MAINSUBRXMODE_BASE	offsetof(struct nvmap, mainsubrxmode)
+#define RMT_DATAMODE_BASE	offsetof(struct nvmap, gdatamode)
 
 
 #define RMT_AGC_BASE(i)	offsetof(struct nvmap, modes[(i)].agc)
@@ -2957,6 +2959,9 @@ enum
 	uint_fast8_t wflfence = 50;
 
 #if WITHUSBUAC
+	static uint_fast8_t gdatamode;	/* передача звука с USB вместо обычного источника */
+	uint_fast8_t hamradio_get_datamode(void) { return gdatamode; }
+
 	static uint_fast8_t guacplayer;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
 	#if WITHRTS96 || WITHRTS192 || WITHTRANSPARENTIQ
 		static uint_fast8_t  gswapiq;		/* Поменять местами I и Q сэмплы в потоке RTS96 */
@@ -4922,7 +4927,6 @@ loadsavedstate(void)
 	//gnotch = loadvfy8up(RMT_NOTCH_BASE, 0, NOTCHMODE_COUNT - 1, gnotch);
 	//gnotchfreq = loadvfy16up(RMT_NOTCHFREQ_BASE, WITHNOTCHFREQMIN, WITHNOTCHFREQMAX, gnotchfreq);
 #endif /* WITHNOTCHONOFF */
-
 	menuset = loadvfy8up(RMT_MENUSET_BASE, 0, display_getpagesmax(), menuset);		/* вытаскиваем номер субменю, с которым работаем сейчас */
 #if WITHSPLIT
 	gsplitmode = loadvfy8up(RMT_SPLITMODE_BASE, 0, VFOMODES_COUNT - 1, gsplitmode); /* (vfo/vfoa/vfob/mem) */
@@ -4953,6 +4957,9 @@ loadsavedstate(void)
 
 #if WITHIF4DSP
 
+	#if WITHUSBUAC && WITHTX
+		gdatamode = loadvfy8up(RMT_DATAMODE_BASE, 0, 1, gdatamode);
+	#endif /* WITHUSBUAC && WITHTX */
 	// Загрузка позиции выбора полосы пропускания и значений границ для всех режимов работы
 	// Сохранение происходит при модификации в обработчика нажатия клавиши BW
 	bwseti_load();
@@ -6545,7 +6552,7 @@ updateboard(
 			board_set_mainsubrxmode(getactualmaisubrx());		// Левый/правый, A - main RX, B - sub RX
 		#endif /* WITHUSEDUALWATCH */
 		#if WITHUSBUAC
-			board_set_uacmike(getcattxdata() || txaudio == BOARD_TXAUDIO_USB);	/* на вход трансивера берутся аудиоданные с USB виртуальной платы, а не с микрофона */
+			board_set_uacmike(gdatamode || getcattxdata() || txaudio == BOARD_TXAUDIO_USB);	/* на вход трансивера берутся аудиоданные с USB виртуальной платы, а не с микрофона */
 			board_set_uacplayer(guacplayer);/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
 			#if WITHRTS96 || WITHRTS192 || WITHTRANSPARENTIQ
 				board_set_swapiq(gswapiq);	/* Поменять местами I и Q сэмплы в потоке RTS96 */
@@ -7202,6 +7209,20 @@ uif_key_changebw(void)
 	save_i8(RMT_BWSETPOS_BASE(bwseti), bwsetpos [bwseti]);	/* только здесь сохраняем новый фильтр для режима */
 	updateboard(1, 1);
 }
+
+#if WITHUSBUAC
+
+/* переключение источника звука с USB или обычного для данного режима */
+static void 
+uif_key_click_datamode(void)
+{
+	gdatamode = calc_next(gdatamode, 0, 1);
+	save_i8(RMT_DATAMODE_BASE, gdatamode);
+	updateboard(1, 0);
+}
+
+#endif /* WITHUSBUAC */
+
 
 #else /* WITHIF4DSP */
 /* Переключение фильтров приёмника
@@ -13403,6 +13424,12 @@ process_key_menuset_common(uint_fast8_t kbch)
 		return 1;	/* клавиша уже обработана */
 #endif /* WITHVOX */
 
+#if WITHIF4DSP && WITHUSBUAC && WITHDATAMODE
+	case KBD_CODE_DATATOGGLE:
+		uif_key_click_datamode();
+		return 1;	/* клавиша уже обработана */
+#endif /* WITHIF4DSP && WITHUSBUAC && WITHDATAMODE */
+
 #endif /* WITHTX */
 
 #if WITHUSEDUALWATCH
@@ -13550,6 +13577,7 @@ process_key_menuset_common(uint_fast8_t kbch)
 		uif_key_click_menubyname("NTCH FRQ", KBD_CODE_NOTCHTOGGLE);
 		return 1;
 #endif /* WITHNOTCHFREQ */
+
 
 #if WITHAUTOTUNER && KEYB_UA3DKC
 	case KBD_CODE_TUNERTYPE:	// переключение типа согласующего устройства

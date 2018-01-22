@@ -583,6 +583,30 @@ static void display_notch3(
 #endif /* WITHNOTCHONOFF || WITHNOTCHFREQ */
 }
 
+
+
+// Отображение режима передачи аудио с USB
+static void display_datamode4(
+	uint_fast8_t x, 
+	uint_fast8_t y, 
+	void * pv
+	)
+{
+#if WITHTX
+	#if WITHIF4DSP && WITHUSBUAC && WITHDATAMODE
+		const uint_fast8_t state = hamradio_get_datamode();
+		static const FLASHMEM char text_data [] = "DATA";
+		static const FLASHMEM char text_null [] = "    ";
+		#if LCDMODE_COLORED
+			const FLASHMEM char * const labels [2] = { text_data, text_data, };
+		#else /* LCDMODE_COLORED */
+			const FLASHMEM char * const labels [2] = { text_null, text_data, };
+		#endif /* LCDMODE_COLORED */
+		display2_text_P(x, y, labels, colorsfg_2state, colorsbg_2state, state);
+	#endif /* WITHIF4DSP && WITHUSBUAC && WITHDATAMODE */
+#endif /* WITHTX */
+}
+
 // Отображение режима автонастройки
 static void display_atu3(
 	uint_fast8_t x, 
@@ -3493,7 +3517,9 @@ enum
 		{	25, 0,	display_notch5,		REDRM_MODE, PGALL, },
 		//{	25, 0,	display_ant5,		REDRM_MODE, PGALL, },
 		{	26, 3,	display_atu3,		REDRM_MODE, PGALL, },
+		//{	26, 3,	display_xxxxxx,		REDRM_MODE, PGALL, },
 		{	26, 5,	display_byp3,		REDRM_MODE, PGALL, },
+		{	26, 7,	display_datamode4,	REDRM_MODE, PGALL, },
 		{	26, 7,	display_voxtune3,	REDRM_MODE, PGALL, },	// VOX
 		{	26,	9,	display_vfomode3,	REDRM_MODE, PGALL, },	// SPLIT
 		{	26, 11,	display_mainsub3,	REDRM_MODE, PGALL, },	// main/sub RX
