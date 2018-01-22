@@ -3519,7 +3519,7 @@ enum
 		{	26, 3,	display_atu3,		REDRM_MODE, PGALL, },
 		//{	26, 3,	display_xxxxxx,		REDRM_MODE, PGALL, },
 		{	26, 5,	display_byp3,		REDRM_MODE, PGALL, },
-		{	26, 7,	display_datamode4,	REDRM_MODE, PGALL, },
+		{	26, 5,	display_datamode4,	REDRM_MODE, PGALL, },
 		{	26, 7,	display_voxtune3,	REDRM_MODE, PGALL, },	// VOX
 		{	26,	9,	display_vfomode3,	REDRM_MODE, PGALL, },	// SPLIT
 		{	26, 11,	display_mainsub3,	REDRM_MODE, PGALL, },	// main/sub RX
