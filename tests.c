@@ -5345,6 +5345,16 @@ void hightests(void)
 		board_rtc_setdate(2015, 9, 14);
 	}
 #endif
+#if 0 && WITHDEBUG && WITHSDHCHW
+	{
+		// sd card sensors test
+		HARDWARE_SDIOSENSE_INITIALIZE();
+		for (;;)
+		{
+			debug_printf_P(PSTR("SD sensors: CD=%d, WP=%d\n"), HARDWARE_SDIOSENSE_CD(), HARDWARE_SDIOSENSE_WP());
+		}
+	}
+#endif
 #if 0 && WITHDEBUG && WITHUSEAUDIOREC
 	// SD CARD low level functions test
 	{
