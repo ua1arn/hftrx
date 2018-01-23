@@ -2129,6 +2129,44 @@ static uint_fast8_t sdhost_sdcard_ReadSectors(
 		}
 	}
 }
+
+static uint_fast8_t sdhost_sdcard_checkversion(void)
+{
+	uint_fast32_t resp;
+
+	const unsigned COUNTLIMIT = 16;
+	unsigned count;
+	for (count = 0; count < COUNTLIMIT; ++ count)
+	{
+		sdhost_no_resp(encode_cmd(SD_CMD_GO_IDLE_STATE), 0x00000000uL);	// CMD0
+		sdhost_get_none_resp();
+
+		sdhost_short_resp(encode_cmd(SDIO_SEND_IF_COND), SD_CHECK_PATTERN);	// CMD8 -> R7 (Card interface condition)
+		if (sdhost_get_R7(SDIO_SEND_IF_COND, & resp) == 0)	// R7: (Card interface condition)
+		{
+			sdhost_SDType = SD_HIGH_CAPACITY;
+			sdhost_CardType = SDIO_STD_CAPACITY_SD_CARD_V2_0; /*!< SD Card 2.0 */
+
+			debug_printf_P(PSTR("SD CARD is V2, R1 resp: stuff=%08lX\n"), resp);
+			return 0;
+		}
+	}
+	/* не получается... */
+
+	sdhost_SDType = SD_STD_CAPACITY;
+	sdhost_CardType = SDIO_STD_CAPACITY_SD_CARD_V1_1; /*!< SD Card 1.0 */
+
+	sdhost_short_resp(encode_cmd(SD_CMD_APP_CMD), sdhost_sdcard_RCA << 16);	// CMD55 APP_CMD
+	if (sdhost_get_R1(SD_CMD_APP_CMD, & resp) != 0)
+	{
+		
+		debug_printf_P(PSTR("sdhost_sdcard_poweron failure\n"));
+		return 1;
+	}
+	debug_printf_P(PSTR("SD CARD is V1, R1 resp: stuff=%08lX\n"), resp);
+	return 0;
+}
+
 static uint_fast8_t sdhost_sdcard_poweron(void)
 {
 	uint_fast32_t resp;
@@ -2136,31 +2174,9 @@ static uint_fast8_t sdhost_sdcard_poweron(void)
 	debug_printf_P(PSTR("SD CARD power on start\n"));
 	sdhost_sdcard_RCA = 0;
 
-	sdhost_no_resp(encode_cmd(SD_CMD_GO_IDLE_STATE), 0x00000000uL);	// CMD0
-	sdhost_get_none_resp();
 
-	sdhost_short_resp(encode_cmd(SDIO_SEND_IF_COND), SD_CHECK_PATTERN);	// CMD8 -> R7 (Card interface condition)
-	if (sdhost_get_R7(SDIO_SEND_IF_COND, & resp) == 0)	// R7: (Card interface condition)
-	{
-		sdhost_SDType = SD_HIGH_CAPACITY;
-		sdhost_CardType = SDIO_STD_CAPACITY_SD_CARD_V2_0; /*!< SD Card 2.0 */
-
-		debug_printf_P(PSTR("SD CARD is V2, R1 resp: stuff=%08lX\n"), resp);
-	}
-	else
-	{
-		sdhost_SDType = SD_STD_CAPACITY;
-		sdhost_CardType = SDIO_STD_CAPACITY_SD_CARD_V1_1; /*!< SD Card 1.0 */
-
-		sdhost_short_resp(encode_cmd(SD_CMD_APP_CMD), sdhost_sdcard_RCA << 16);	// CMD55 APP_CMD
-		if (sdhost_get_R1(SD_CMD_APP_CMD, & resp) != 0)
-		{
-			
-			debug_printf_P(PSTR("sdhost_sdcard_poweron failure\n"));
-			return 1;
-		}
-		debug_printf_P(PSTR("SD CARD is V1, R1 resp: stuff=%08lX\n"), resp);
-	}
+	if (sdhost_sdcard_checkversion() != 0)
+		return 1;
 
 	debug_printf_P(PSTR("Set voltage conditions\n"));
 
