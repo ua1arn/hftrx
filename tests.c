@@ -5347,7 +5347,40 @@ void hightests(void)
 #endif
 #if 0 && WITHDEBUG && WITHSDHCHW
 	{
-		// sd card sensors test
+		// SD card control lines test
+		HARDWARE_SDIOPOWER_INITIALIZE();
+		HARDWARE_SDIOPOWER_SET(1);
+
+		arm_hardware_piod_outputs((1U << 2), 1 * (1U << 2));	/* PD2 - SDIO_CMD	*/
+		arm_hardware_pioc_outputs((1U << 12), 1 * (1U << 12));	/* PC12 - SDIO_CK	*/
+		arm_hardware_pioc_outputs((1U << 8), 1 * (1U << 8));	/* PC8 - SDIO_D0	*/
+		arm_hardware_pioc_outputs((1U << 9), 1 * (1U << 9));	/* PC9 - SDIO_D1	*/
+		arm_hardware_pioc_outputs((1U << 10), 1 * (1U << 10));	/* PC10 - SDIO_D2	*/
+		arm_hardware_pioc_outputs((1U << 11), 1 * (1U << 11));	/* PC11 - SDIO_D3	*/
+
+		int i;
+		for (i = 0;; ++ i)
+		{
+			int f0 = (i & (1 << 0)) != 0;
+			int f1 = (i & (1 << 1)) != 0;
+			int f2 = (i & (1 << 2)) != 0;
+			int f3 = (i & (1 << 3)) != 0;
+			int f4 = (i & (1 << 4)) != 0;
+			int f5 = (i & (1 << 5)) != 0;
+
+			arm_hardware_piod_outputs((1U << 2), f0 * (1U << 2));	/* PD2 - SDIO_CMD	*/
+			arm_hardware_pioc_outputs((1U << 12), f1 * (1U << 12));	/* PC12 - SDIO_CK	*/
+			arm_hardware_pioc_outputs((1U << 8), f2 * (1U << 8));	/* PC8 - SDIO_D0	*/
+			arm_hardware_pioc_outputs((1U << 9), f3 * (1U << 9));	/* PC9 - SDIO_D1	*/
+			arm_hardware_pioc_outputs((1U << 10), f4 * (1U << 10));	/* PC10 - SDIO_D2	*/
+			arm_hardware_pioc_outputs((1U << 11), f5 * (1U << 11));	/* PC11 - SDIO_D3	*/
+
+		}
+	}
+#endif
+#if 0 && WITHDEBUG && WITHSDHCHW
+	{
+		// SD card sensors test
 		HARDWARE_SDIOSENSE_INITIALIZE();
 		for (;;)
 		{
