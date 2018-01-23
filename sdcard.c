@@ -724,7 +724,7 @@ static uint_fast8_t sdhost_dpsm_wait(uint_fast8_t txmode)
 			return 0;
 	}
 	debug_printf_P(PSTR("sdhost_dpsm_wait error, STA=%08lX, w=%u\n"), SDMMC1->STA, w);
-	SDMMC1->ICR = SDMMC1->STA & errmask;
+	//SDMMC1->ICR = SDMMC1->STA & errmask;
 	return 1;
 
 #elif CPUSTYLE_STM32F4XX
@@ -1359,7 +1359,6 @@ static uint_fast8_t sdhost_get_resp(void)
 		if ((sta & SDMMC_STA_BUSYD0END) != 0)
 			break;
 #endif /* CPUSTYLE_STM32H7XX */
-		debug_printf_P(PSTR("sdhost_get_resp wait, STA=%08lX\n"), SDMMC1->STA);
 	}
 	if (ec != 0)
 	{
@@ -2031,7 +2030,7 @@ static uint_fast8_t sdhost_sdcard_ReadSectors(
 
 	if (count == 1)
 	{
-		debug_printf_P(PSTR("read one block\n"));
+		//debug_printf_P(PSTR("read one block\n"));
 		// read one block
 		sdhost_dpsm_prepare(0, 512 * count, 9);		// подготовка к обмену data path state machine - при чтении перед выдачей команды
 		TP();
@@ -2042,7 +2041,6 @@ static uint_fast8_t sdhost_sdcard_ReadSectors(
 
 		// read block
 		sdhost_short_resp(encode_cmd(SD_CMD_READ_SINGLE_BLOCK), sector * sdhost_getaddresmultiplier());	// CMD17
-		TP();
 		if (sdhost_get_R1(SD_CMD_READ_SINGLE_BLOCK, & resp) != 0)
 		{
 			TP();
@@ -2051,7 +2049,6 @@ static uint_fast8_t sdhost_sdcard_ReadSectors(
 			debug_printf_P(PSTR("SD_CMD_READ_SINGLE_BLOCK error\n"));
 			return 1;
 		}
-		TP();
 		if (sdhost_dpsm_wait(0) != 0)
 		{
 			TP();
@@ -2070,15 +2067,15 @@ static uint_fast8_t sdhost_sdcard_ReadSectors(
 		}
 		else
 		{
-			TP();
+			//TP();
 			sdhost_dpsm_wait_fifo_empty();
-			TP();
+			//TP();
 			return 0;
 		}
 	}
 	else
 	{
-		debug_printf_P(PSTR("read multiple blocks: count=%d\n"), count);
+		//debug_printf_P(PSTR("read multiple blocks: count=%d\n"), count);
 		// read multiple blocks
 		sdhost_dpsm_prepare(0, 512 * count, 9);		// подготовка к обмену data path state machine - при чтении перед выдачей команды
 		//arm_hardware_invalidate((uint32_t) buff, 512 * count);		// Сейчас в эту память будем читать по DMA
