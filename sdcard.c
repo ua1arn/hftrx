@@ -711,7 +711,7 @@ static uint_fast8_t sdhost_dpsm_wait(uint_fast8_t txmode)
 	return 0;
 
 #elif CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
-	TP();
+
 	unsigned w;
 	w = 0;
 	const uint_fast32_t errmask = (SDMMC_STA_DCRCFAIL | SDMMC_STA_RXOVERR | SDMMC_STA_TXUNDERR | SDMMC_STA_DTIMEOUT);
@@ -2033,11 +2033,11 @@ static uint_fast8_t sdhost_sdcard_ReadSectors(
 		//debug_printf_P(PSTR("read one block\n"));
 		// read one block
 		sdhost_dpsm_prepare(0, 512 * count, 9);		// подготовка к обмену data path state machine - при чтении перед выдачей команды
-		TP();
+		//TP();
 		//arm_hardware_invalidate((uint32_t) buff, 512 * count);		// Сейчас в эту память будем читать по DMA
 		/* СТРАННО, но помогло! */arm_hardware_flush_invalidate((uintptr_t) buff, 512 * count);	// Сейчас эту память будем записывать по DMA, потом содержимое не требуется
 		DMA_SDIO_setparams((uintptr_t) buff, 512, count, 0);
-		TP();
+		//TP();
 
 		// read block
 		sdhost_short_resp(encode_cmd(SD_CMD_READ_SINGLE_BLOCK), sector * sdhost_getaddresmultiplier());	// CMD17
@@ -2151,6 +2151,7 @@ static uint_fast8_t sdhost_sdcard_poweron(void)
 	{
 		sdhost_SDType = SD_STD_CAPACITY;
 		sdhost_CardType = SDIO_STD_CAPACITY_SD_CARD_V1_1; /*!< SD Card 1.0 */
+
 		sdhost_short_resp(encode_cmd(SD_CMD_APP_CMD), sdhost_sdcard_RCA << 16);	// CMD55 APP_CMD
 		if (sdhost_get_R1(SD_CMD_APP_CMD, & resp) != 0)
 		{
@@ -2163,24 +2164,25 @@ static uint_fast8_t sdhost_sdcard_poweron(void)
 
 	debug_printf_P(PSTR("Set voltage conditions\n"));
 
+	const unsigned COUNTLIMIT = 500;
 	unsigned count;
-	for (count = 0; count < 500; ++ count)
+	for (count = 0; count < COUNTLIMIT; ++ count)
 	{
 #if WITHSDHCHW
 		if (sdhost_short_acmd_resp_R3(SD_CMD_SD_APP_OP_COND, SD_VOLTAGE_WINDOW_SD | sdhost_SDType, & resp) != 0)	// ACMD41
 		{
 			debug_printf_P(PSTR("voltage send process: sdhost_short_acmd_resp_R3(SD_CMD_SD_APP_OP_COND) failure\n"));
-			break;
+			return 1;
 		}
 #else /* WITHSDHCHW */
 		sdhost_short_resp(encode_cmd(58), 0);	// CMD58
 		if (sdhost_get_R3(& resp) != 0)	// Response of ACMD41 (R3)
 		{
 			debug_printf_P(PSTR("Set voltage conditions error\n"));
-			break;
+			return 1;
 		}
 #endif /* WITHSDHCHW */
- 		debug_printf_P(PSTR("voltage send waiting: R3 resp: stuff=%08lX\n"), resp);
+ 		//debug_printf_P(PSTR("voltage send waiting: R3 resp: stuff=%08lX\n"), resp);
 		if ((resp & (1UL << 31)) == 0)	// check for voltage range is okay
 			continue;
 		debug_printf_P(PSTR("voltage send okay: R3 resp: stuff=%08lX\n"), resp);
@@ -2189,10 +2191,11 @@ static uint_fast8_t sdhost_sdcard_poweron(void)
             sdhost_CardType = SDIO_HIGH_CAPACITY_SD_CARD;
 			debug_printf_P(PSTR("SD CARD is high capacity\n"));
 		}
-		break;
+		debug_printf_P(PSTR("SD CARD power on done, no errors\n"));
+		return 0;
 	}
-	debug_printf_P(PSTR("SD CARD power on done\n"));
-	return 0;
+	debug_printf_P(PSTR("SD CARD power on done, error\n"));
+	return 1;
 }
 
 static uint_fast8_t sdhost_read_registers_acmd(uint16_t acmd, uint8_t * buff, unsigned size, unsigned lenpower, unsigned sizeofarray)
