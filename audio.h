@@ -149,7 +149,8 @@
 		#define COSF	cos
 		#define ATAN2F	atan2
 		#define ATANF	atan
-		#define EXPF	exp
+		//#define EXPF	exp
+		#define EXPF	local_exp
 		#define FABSF	fabs
 		#define SQRTF	sqrt
 		#define FMAXF	fmax
@@ -175,7 +176,8 @@
 		#define COSF	cosf
 		#define ATAN2F	atan2f
 		#define ATANF	atanf
-		#define EXPF	expf
+		//#define EXPF	expf
+		#define EXPF	local_exp
 		#define FABSF	fabsf
 		#define SQRTF	sqrtf
 		#define FMAXF	fmaxf

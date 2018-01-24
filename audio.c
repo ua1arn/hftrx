@@ -716,11 +716,39 @@ static FLOAT32P_t get_float4_iflo(void)
 
 //////////////////////////////////////////
 
-#define FP_NLOG 12      /* Log argument zero or negative    */
+#if 1
 
-#define FP_POWN 20      /* Negative argument in pow     */   
-#define FP_POWO 21      /* Result of pow overflows      */   
-#define FP_POWU 22      /* Result of pow underflows     */
+// функции дл€ замены стандартной библиотеки
+
+#define FP_OPER 1		/* FPU op code error			*/
+#define FP_ZDIV 2		/* FPU divide by zero			*/
+#define FP_FTOI 3		/* FPU float to integer conv error	*/
+#define FP_OFLO 4		/* FPU overflow				*/
+#define FP_UFLO 5		/* FPU underflow			*/
+#define FP_UDEF 6		/* FPU undefined variable (-0)		*/
+#define FP_BIGI 7		/* Atof input too large			*/
+#define FP_BADC 8		/* Bad character in atof input string	*/
+#define FP_NESQ 9		/* Square root of negative number	*/
+#define FP_LEXP	10		/* Exp argument too large		*/
+#define FP_SEXP 11		/* Exp argument too small		*/
+#define FP_NLOG 12		/* Log argument zero or negative	*/
+#define FP_TANE 13		/* Argument of tan too large		*/
+#define FP_TRIG 14		/* Argument of sin/cos too large	*/
+#define FP_ATAN 15		/* Atan2 arguments both zero		*/
+#define FP_COTE 16		/* Argument of cotan too small		*/
+#define FP_ARSC 17		/* Bad argument for asin/acos		*/
+#define FP_SINH 18		/* Argument of sinh too large		*/
+#define FP_COSH 19		/* Argument of cosh too large		*/
+#define FP_POWN 20		/* Negative argument in pow		*/
+#define FP_POWO 21		/* Result of pow overflows		*/
+#define FP_POWU 22		/* Result of pow underflows		*/
+
+#define LOG_HUGE ((FLOAT_t) 0.880296919311130543E+02)	/* log of HUGE		*/
+#define LOG_TINY ((FLOAT_t) -0.887228391116729997E+02)	/* log of TINY		*/
+
+#define LOGBE2 ((FLOAT_t) 0.69314718055994530942)	/* log of 2 to base e		*/
+#define LOGB2E ((FLOAT_t) 1.44269504088896341)	/* log of e to base 2		*/
+
 #define HUGE ((FLOAT_t) 0.170141183460469230E+39)   /* largest no = 2**+127     */
 
 
@@ -734,12 +762,12 @@ FLOAT_t local_log(FLOAT_t x)
 	static const FLOAT_t C1 = ((FLOAT_t) 0.693359375);		/* C1 + C2 should represent log 2 to	*/
 	static const FLOAT_t C2 = ((FLOAT_t) -2.12194440054690583e-4);	/* more than machine precision	*/
 
-	static const FLOAT_t log_a0 = -0.641249434237455811e+2;
-	static const FLOAT_t log_a1 =  0.163839435630215342e+2;
-	static const FLOAT_t log_a2 = -0.789561128874912573e+0;
-	static const FLOAT_t log_b0 = -0.769499321084948798e+3;
-	static const FLOAT_t log_b1 =  0.312032220919245328e+3;
-	static const FLOAT_t log_b2 = -0.356679777390346462e+2;
+	static const FLOAT_t a0 = -0.641249434237455811e+2;
+	static const FLOAT_t a1 =  0.163839435630215342e+2;
+	static const FLOAT_t a2 = -0.789561128874912573e+0;
+	static const FLOAT_t b0 = -0.769499321084948798e+3;
+	static const FLOAT_t b1 =  0.312032220919245328e+3;
+	static const FLOAT_t b2 = -0.356679777390346462e+2;
 
     FLOAT_t a, b, f, r, w, z;
     int n;
@@ -767,12 +795,14 @@ FLOAT_t local_log(FLOAT_t x)
     }
     z = a / b;
     w = z * z;
-    a = (log_a2 * w + log_a1) * w + log_a0;
-    b = ((w + log_b2) * w + log_b1) * w + log_b0;
+    a = (a2 * w + a1) * w + a0;
+    b = ((w + b2) * w + b1) * w + b0;
     r = z + z * w * a / b;
     z = n;
     return ((z * C2 + r) + z * C1);
 }
+
+// from ftp://ftp.update.uu.se/pub/pdp11/rt/cmath/pow.c
 
 #define MAXEXP 2031		/* (MAX_EXP * 16) - 1			*/
 #define MINEXP (-2047)		/* (MIN_EXP * 16) - 1			*/
@@ -894,6 +924,54 @@ FLOAT_t local_pow(FLOAT_t x, FLOAT_t y)
     return LDEXPF(z, m);
 
 }
+
+// from: ftp://ftp.update.uu.se/pub/pdp11/rt/cmath/exp.c
+
+
+FLOAT_t local_exp(FLOAT_t x)
+{
+	static const FLOAT_t EPS2 = ((FLOAT_t) 6.93889401e-18);	/* exp(eps) = 1.0 to m/c precision	*/
+	static const FLOAT_t C1 = ((FLOAT_t) 0.693359375);		/* C1 + C2 should represent log 2 to	*/
+
+	static const FLOAT_t C2 = ((FLOAT_t) -2.12194440054690583e-4);	/* more than machine precision	*/
+	static const FLOAT_t p0 = 0.249999999999999993e0;
+	static const FLOAT_t p1 = 0.694360001511792852e-2;
+	static const FLOAT_t p2 = 0.165203300268279130e-4;
+	static const FLOAT_t q0 = 0.5;
+	static const FLOAT_t q1 = 0.555538666969001188e-1;
+	static const FLOAT_t q2 = 0.495862884905441294e-3;
+
+    FLOAT_t g, gp, q, xn, z;
+    int n;
+
+/* check for exponent too large, if so print argument and return large no */
+    if (x >= LOG_HUGE){
+		CMEMSGF(FP_LEXP, & x);
+		return(HUGE);
+    }
+/* check for exponent underflow, if so call error system (set at warning
+   level) and return zero */
+    if (x < LOG_TINY){
+		CMEMSGF(FP_SEXP, & x);
+		return (0);
+    }
+    if (x < EPS2 && x > - EPS2)
+		return 1;
+    z = x * LOGB2E;
+    if (z < 0)
+		n = z - (FLOAT_t)0.5;
+    else
+		n = z + (FLOAT_t)0.5;
+    xn = n;
+    g = (x - xn * C1) - xn * C2;
+    z = g * g;
+    gp = ((p2 * z + p1) * z + p0) * g;
+    q = (q2 * z + q1) * z + q0;
+    return(LDEXPF((FLOAT_t) 0.5 + gp / (q - gp), ++n));
+}
+
+#endif
+
 //////////////////////////////////////////
 
 // ѕреобразовать отношение напр€жений выраженное в "разах" к децибелам.
