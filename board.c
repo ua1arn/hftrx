@@ -1480,7 +1480,8 @@ prog_ctrlreg(uint_fast8_t plane)
 	/* регистр управления (74HC595), расположенный на плате синтезатора */
 	RBBIT(007, glob_mikemute);			/* pin 07:  */
 	RBBIT(006, glob_tx && glob_txcw);	/* pin 06: 	*/
-	RBVAL(000, glob_filter, 6);			/* pin 15, 01, 02, 03: 	RX IF FILTER (low 4 bits), pin , 4, 5: TX IF filter (bits 5 & 6). */
+	RBBIT(005, glob_autotune);			/* pin 5: tune mode */
+	RBVAL(000, glob_filter, 5);			/* pin 15, 01, 02, 03: 	RX IF FILTER (low 4 bits), pin , 4, TX IF filter (bit 5). */
 
 	spi_select(target, CTLREG_SPIMODE);
 	prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
