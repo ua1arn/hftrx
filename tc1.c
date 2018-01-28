@@ -6596,7 +6596,7 @@ updateboard(
 		#if WITHMIC1LEVEL
 			board_set_mik1level(mik1level);
 		#endif /* WITHMIC1LEVEL */
-			board_set_autotune(reqautotune);
+		board_set_autotune(reqautotune);
 		board_set_amdepth(gamdepth);	/* Глубина модуляции в АМ - 0..100% */
 		board_set_dacscale(gdacscale);	/* Использование амплитуды сигнала с ЦАП передатчика - 0..100% */
 	#endif /* WITHTX */
