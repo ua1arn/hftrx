@@ -3530,7 +3530,7 @@ enum
 	{
 		{	0,	0,	display_txrxstate2, REDRM_MODE, PGALL, },
 		{	7,	0,	display_att4,		REDRM_MODE, PGALL, },
-		{	12, 0,	display_pre3,		REDRM_MODE, PGALL, },
+		{	12, 0,	display_preovf3,	REDRM_BARS, PGALL, },
 		{	17, 0,	display_agc3,		REDRM_MODE, PGALL, },
 		{	21, 0,	display_rxbw3,		REDRM_MODE, PGALL, },	// 3.1 / 0,5 / WID / NAR
 
