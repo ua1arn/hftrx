@@ -731,7 +731,7 @@ static const char FLASHMEM
 	strFlashNormal [] = "NOR";
 
 
-/* НЧ фильтр пеердатчика пока не связан с переклбчением режимов */
+/* НЧ фильтр пеердатчика пока не связан с переключением режимов */
 static uint_fast8_t	gssbtxhighcut100 = 3400 / BWGRANHIGH;	/* Верхняя частота среза фильтра НЧ по передаче */
 static uint_fast8_t	gssbtxlowcut10 = 300 / BWGRANLOW;		/* Нижняя частота среза фильтра НЧ по передаче */
 
@@ -10578,7 +10578,7 @@ static const FLASHMEM struct menudef menutable [] =
 	},
 	{
 		"SSBTX HI", 6, 1, 0,	ISTEP1,		/* Подстройка полосы пропускания - TX SSB */
-		ITEM_VALUE,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+		ITEM_VALUE,
 		8, 58, 		// 0.8 kHz-5.8 kHz
 		offsetof(struct nvmap, gssbtxhighcut100),
 		NULL,
@@ -10587,7 +10587,7 @@ static const FLASHMEM struct menudef menutable [] =
 	},
 	{
 		"SSBTX LO", 7, 2, 0,	ISTEP1,		/* подстройка полосы пропускания - TX SSB */
-		ITEM_VALUE,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+		ITEM_VALUE,
 		5, 70,		// 50 Hz..700 Hz
 		offsetof(struct nvmap, gssbtxlowcut10),
 		NULL,
