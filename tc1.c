@@ -2209,6 +2209,7 @@ struct nvmap
 	uint8_t	ggrpnotch; // последний посещённый пункт группы
 	uint8_t gnotch;
 	uint16_t gnotchfreq;
+	uint16_t gnotchwidth;
 #endif /* WITHNOTCHFREQ */
 
 #if WITHRFSG
@@ -2762,6 +2763,7 @@ static uint_fast8_t gusefast;
 #elif WITHNOTCHFREQ
 	static uint_fast8_t gnotch;
 	static uint_fast16_t gnotchfreq = 1000;
+	static uint_fast16_t gnotchwidth = 500;
 #endif /* WITHNOTCHFREQ */
 
 #if WITHSPLIT
@@ -6334,7 +6336,7 @@ updateboard(
 				board_set_notchnarrow(notchmodes [gnotch].code && pamodetempl->nar);
 			#elif WITHNOTCHFREQ
 				board_set_notch_on(notchmodes [gnotch].code);
-				board_set_notch_width(500);
+				board_set_notch_width(gnotchwidth);
 				board_set_notch_freq(gnotchfreq);
 			#endif /* WITHNOTCHFREQ */
 			#if WITHIF4DSP
@@ -11109,6 +11111,15 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		WITHNOTCHFREQMIN, WITHNOTCHFREQMAX,
 		offsetof(struct nvmap, gnotchfreq),	/* центральная частота NOTCH */
 		& gnotchfreq,
+		NULL,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	{
+		"NTCH WDT", 7, 0, 0,	ISTEP50,		/* полоса режекции NOTCH. */
+		ITEM_VALUE,
+		100, 1000,
+		offsetof(struct nvmap, gnotchwidth),	/* полоса режекции NOTCH */
+		& gnotchwidth,
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
 	},
