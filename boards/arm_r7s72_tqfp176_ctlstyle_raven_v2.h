@@ -183,7 +183,7 @@
 	#define WITHDSPEXTDDC 1			/* Квадратуры получаются внешней аппаратурой */
 	#define WITHDSPEXTFIR 1			/* Фильтрация квадратур осуществляется внешней аппаратурой */
 	#define WITHIF4DSP	1	// "Дятел"
-	#define WITHTXDACFULL	1		/* полное использование разрядности ЦАП */
+	//#define WITHTXDACFULL	1		/* полное использование разрядности ЦАП */
 
 	#if 0
 		#define WITHBBOX	1	// Black Box mode - устройство без органов управления

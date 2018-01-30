@@ -81,7 +81,7 @@
 	//#define WITHDEBUG		1	/* ќтладочна€ печать через COM-порт. Ѕез CAT (WITHCAT) */
 	#define WITHVIBROPLEX	1	/* возможность эмул€ции передачи виброплексом */
 	//#define WITHONLYBANDS 1		/* ѕерестройка может быть ограничена любительскими диапазонами */
-	#define WITHBCBANDS	1		/* в таблице диапазонов присутствуют вещательные диапазоны */
+	//#define WITHBCBANDS	1		/* в таблице диапазонов присутствуют вещательные диапазоны */
 	#define WITHWARCBANDS	1	/* ¬ таблице диапазонов присутствуют HF WARC диапазоны */
 	#define WITHSLEEPTIMER	1	/* выключить индикатор и вывод звука по истечениии указанного времени */
 	// --- Ёти строки можно отключать, уменьша€ функциональность готового издели€
@@ -91,12 +91,12 @@
 
 
 	/* что за пам€ть настроек и частот используетс€ в контроллере */
-	#define NVRAM_TYPE NVRAM_TYPE_FM25XXXX	// SERIAL FRAM AUTODETECT
+	//#define NVRAM_TYPE NVRAM_TYPE_FM25XXXX	// SERIAL FRAM AUTODETECT
 	//#define NVRAM_TYPE NVRAM_TYPE_FM25L04	// “ак же при использовании FM25040A - 5 вольт, 512 байт
 	//#define NVRAM_TYPE NVRAM_TYPE_FM25L16
 	//#define NVRAM_TYPE NVRAM_TYPE_FM25L64
 	//#define NVRAM_TYPE NVRAM_TYPE_FM25L256	// FM25L256, FM25W256
-	//#define NVRAM_TYPE NVRAM_TYPE_CPUEEPROM
+	#define NVRAM_TYPE NVRAM_TYPE_CPUEEPROM
 
 	//#define NVRAM_TYPE NVRAM_TYPE_AT25040A
 	//#define NVRAM_TYPE NVRAM_TYPE_AT25L16
