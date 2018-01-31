@@ -136,7 +136,8 @@
 
 	// --- вариации прошивки, специфические для разных частот
 
-	#define CTLREGMODE_STORCH_V1	1	/* "Воронёнок" с DSP и FPGA, SD-CARD, dual watch & PA on board */
+	// Сигналы DIN8 дублируются на разъеме управления тюнером
+	#define CTLREGMODE_STORCH_V1_R4DR	1	/* "Воронёнок" с DSP и FPGA, SD-CARD, dual watch & PA on board */
 
 	//#define WITHPOWERTRIM		1	// Имеется управление мощностью
 	//#define WITHPOWERTRIMMIN	10	// Нижний предел регулировки (показываетый на дисплее)
