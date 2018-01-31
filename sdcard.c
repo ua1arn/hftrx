@@ -2160,7 +2160,7 @@ static uint_fast8_t sdhost_sdcard_checkversion(void)
 	if (sdhost_get_R1(SD_CMD_APP_CMD, & resp) != 0)
 	{
 		
-		debug_printf_P(PSTR("sdhost_sdcard_poweron failure\n"));
+		debug_printf_P(PSTR("sdhost_sdcard_checkversion failure\n"));
 		return 1;
 	}
 	debug_printf_P(PSTR("SD CARD is V1, R1 resp: stuff=%08lX\n"), resp);
