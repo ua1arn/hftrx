@@ -1181,6 +1181,8 @@ static void display_currlevel5alt(
 	} while (lowhalf --);
 #endif /* WITHCURRLEVEL && WITHCPUADCHW */
 }
+
+// Отображение уровня сигнала в dBm
 static void display_siglevel7(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
@@ -1193,6 +1195,25 @@ static void display_siglevel7(
 
 	char buff [32];
 	local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("%-+4d" "dBm"), tracemax - UINT8_MAX);
+	(void) v;
+	const char * const labels [1] = { buff, };
+	display2_text(x, y, labels, colorsfg_1state, colorsbg_1state, 0);
+#endif /* WITHIF4DSP */
+}
+
+// Отображение уровня сигнала в dBm (без единиц измерения).
+static void display_siglevel4(
+	uint_fast8_t x, 
+	uint_fast8_t y, 
+	void * pv
+	)
+{
+#if WITHIF4DSP
+	uint_fast8_t tracemax;
+	uint_fast8_t v = board_getsmeter(& tracemax, 0, UINT8_MAX, 0);
+
+	char buff [32];
+	local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("%-+4d"), tracemax - UINT8_MAX);
 	(void) v;
 	const char * const labels [1] = { buff, };
 	display2_text(x, y, labels, colorsfg_1state, colorsbg_1state, 0);
@@ -3521,7 +3542,7 @@ enum
 		PG1 = REDRSUBSET(DPAGE1),
 		PG2 = REDRSUBSET(DPAGE2),
 		PGALL = PG0 | PG1 | PG2 | REDRSUBSET_MENU,
-		PGLATCH = PGALL,
+		PGLATCH = PGALL,	// страницы, на которых возмодно отображение водопада или панорамы.
 		PGunused
 	};
 	#define DISPLC_WIDTH	9	// количество цифр в отображении частоты
@@ -3561,6 +3582,7 @@ enum
 		{	0,	9,	display2_waterfall,	REDRM_BARS, PG2, },// Отображение водопада
 
 		{	0,	17,	display_time8,		REDRM_BARS, PGALL, },	// TIME
+		{	9, 17,	display_siglevel4,	REDRM_BARS, PGALL, },	// signal level
 #if CTLSTYLE_RA4YBO || CTLSTYLE_RA4YBO_V3
 		{	19, 17,	display_currlevel5alt, REDRM_VOLT, PGALL, },	// PA drain current dd.d without "A"
 #else
