@@ -7018,7 +7018,13 @@ HAL_StatusTypeDef HAL_PCD_EP_SetStall(PCD_HandleTypeDef *hpcd, uint8_t ep_addr)
 {
   USB_OTG_EPTypeDef *ep;
   
-  if ((0x80 & ep_addr) == 0x80)
+ if ((ep_addr & 0x0F) > hpcd->Init.dev_endpoints)
+  {
+	 ASSERT(0);
+    return HAL_ERROR;
+  }
+
+ if ((0x80 & ep_addr) == 0x80)
   {
     ep = & hpcd->IN_ep [ep_addr & 0x7F];
   }
@@ -7053,7 +7059,13 @@ HAL_StatusTypeDef HAL_PCD_EP_ClrStall(PCD_HandleTypeDef *hpcd, uint8_t ep_addr)
 {
   USB_OTG_EPTypeDef * ep;
   
-  if ((0x80 & ep_addr) != 0)
+ if ((ep_addr & 0x0F) > hpcd->Init.dev_endpoints)
+  {
+	 ASSERT(0);
+    return HAL_ERROR;
+  }
+
+ if ((0x80 & ep_addr) != 0)
   {
     ep = & hpcd->IN_ep [ep_addr & 0x7F];
   }
@@ -10049,7 +10061,9 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
       for (i = 0; i < hpcd->Init.dev_endpoints ; ++ i)
       {
         USBx_INEP(i)->DIEPINT = 0xFF;
+        USBx_INEP(i)->DIEPCTL &= ~USB_OTG_DIEPCTL_STALL;
         USBx_OUTEP(i)->DOEPINT = 0xFF;
+        USBx_OUTEP(i)->DOEPCTL &= ~USB_OTG_DOEPCTL_STALL;
       }
       USBx_DEVICE->DAINT = 0xFFFFFFFF;
       USBx_DEVICE->DAINTMSK |= (1uL << USB_OTG_DAINTMSK_IEPM_Pos) | (1uL << USB_OTG_DAINTMSK_OEPM_Pos);
@@ -11981,6 +11995,17 @@ HAL_StatusTypeDef USB_HC_StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_HCTypeDe
   /* Set host channel enable */
   tmpreg = USBx_HC(hc->ch_num)->HCCHAR;
   tmpreg &= ~USB_OTG_HCCHAR_CHDIS;
+
+  /* make sure to set the correct ep direction */
+  if (hc->ep_is_in)
+  {
+    tmpreg |= USB_OTG_HCCHAR_EPDIR;
+  }
+  else
+  {
+     tmpreg &= ~USB_OTG_HCCHAR_EPDIR;
+  }
+  
   tmpreg |= USB_OTG_HCCHAR_CHENA;
   USBx_HC(hc->ch_num)->HCCHAR = tmpreg;
   
