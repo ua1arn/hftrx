@@ -21,7 +21,7 @@
 #define WITHSPISW 	1	/* Использование программного управления SPI. */
 
 //#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
-#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
+//#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 
 #define WITHI2SHW	1	/* Использование SSIF0 I2S 2*16 bit - аудио кодек */
 #define WITHSAI1HW	1	/* Использование SSIF1 I2S 8*32 bit - FPGA IF codec */
