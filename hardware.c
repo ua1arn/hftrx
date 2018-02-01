@@ -959,6 +959,40 @@ void hardware_twi_master_configure(void)
 	// Enable the I2Cx peripheral
 	I2C1->CR1 |= I2C_CR1_PE;
 
+#elif CPUSTYLE_STM32H7XX
+	//конфигурирую непосредствено ≤2—
+	RCC->APB1LENR |= (RCC_APB1LENR_I2C1EN); //вкл тактирование контроллера I2C
+	__DSB();
+
+	// Disable the I2Cx peripheral
+	I2C1->CR1 &= ~ I2C_CR1_PE;
+	while ((I2C1->CR1 & I2C_CR1_PE) != 0)
+		;
+
+	// Set timings. Asuming I2CCLK is 50 MHz (APB1 clock source)
+	I2C1->TIMINGR = 
+		//0x00912732 |		// Discovery BSP code from ST examples
+		0x00913742 |		// подобрано дл€ 400 к√ц
+		4 * (1uL << I2C_TIMINGR_PRESC_Pos) |			// prescaler, was: 0
+		0;
+
+
+
+	// Use 7-bit addresses
+	I2C1->CR2 &= ~ I2C_CR2_ADD10;
+
+	// Enable auto-end mode
+	//I2C1->CR2 |= I2C_CR2_AUTOEND;
+
+	// Disable the analog filter
+	I2C1->CR1 |= I2C_CR1_ANFOFF;
+
+	// Disable NOSTRETCH
+	I2C1->CR1 |= I2C_CR1_NOSTRETCH;
+
+	// Enable the I2Cx peripheral
+	I2C1->CR1 |= I2C_CR1_PE;
+
 #else
 	#error Undefined CPUSTYLE_XXX
 #endif
@@ -4099,7 +4133,7 @@ void hardware_spi_disconnect(void)
 
 	SPI1->CR1 &= ~ SPI_CR1_SPE;
 
-	#if WITHTWIHW
+	#if WITHTWIHW && ! CPUSTYLE_STM32H7XX
 		// Silicon errata: 
 		// 2.6.7 I2C1 with SPI1 remapped and used in master mode
 		// Workaround:
