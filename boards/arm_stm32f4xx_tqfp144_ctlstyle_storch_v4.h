@@ -120,7 +120,7 @@
 		#define DIRECT_122M88_X1	1	/* Тактовый генератор 122.880 МГц */	
 		//#define BANDSELSTYLERE_UPCONV56M	1	/* Up-conversion with working band .030..56 MHz */
 		#define BANDSELSTYLERE_UHF_137M_174M	1	/* UHF 137..174 MHz */
-		#define DEFAULTDIALFREQ	145775000L
+		#define DEFAULTDIALFREQ	144725000L
 	#endif
 	#define FQMODEL_FPGA		1	// FPGA + IQ over I2S
 
@@ -278,7 +278,7 @@
 	//#define WITHRTSNOAUDIO 1		/* передача квадратур по USB в компютер, звукового режима нет */
 	#define WITHRTS96 1		/* вместо выходного аудиосигнала передача квадратур по USB */
 	//#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
-	#define WITHTXDACFULL	1		/* полное использование разрядности ЦАП */
+	//#define WITHTXDACFULL	1		/* полное использование разрядности ЦАП */
 
 	#if 0
 		#define WITHUSBHEADSET 1	/* трансивер работает USB гарнитурой для компютера - режим тестирования */
@@ -331,8 +331,8 @@
 	#define WITHIFSHIFT	1	/* используется IF SHIFT */
 	//#define WITHIFSHIFTOFFSET	(-250)	/* Начальное занчение IF SHIFT */
 	//#define WITHPBT		1	/* используется PBT (если LO3 есть) */
-	//#define WITHMODEM		1	/* Устройство работает как радиомодем с последовательным интерфейсом */
-	#define WITHCAT		1	/* используется CAT */
+	#define WITHMODEM		1	/* Устройство работает как радиомодем с последовательным интерфейсом */
+	//#define WITHCAT		1	/* используется CAT */
 	//#define WITHDEBUG		1	/* Отладочная печать через COM-порт. Без CAT (WITHCAT) */
 	//#define WITHFREEDV	1	/* поддержка режима FreeDV - http://freedv.org/ */ 
 	//#define WITHNMEA		1	/* используется NMEA parser */

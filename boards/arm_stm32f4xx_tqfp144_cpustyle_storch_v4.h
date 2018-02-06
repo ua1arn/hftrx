@@ -61,8 +61,8 @@
 
 #elif WITHMODEM
 
-	#define WITHMODEM_CDC	1
-	//#define WITHMODEM_USART2	1
+	//#define WITHMODEM_CDC	1
+	#define WITHMODEM_USART2	1
 
 	//#define WITHCAT_CDC		1	/* использовать виртуальный воследовательный порт на USB соединении */
 	//#define WITHCAT_USART2		1

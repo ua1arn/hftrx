@@ -62,11 +62,16 @@ static const uint_fast32_t MODEM_SIZE_BITS = 10;
 
 enum { TXBPSKPAGES = 2 };
 
+#define	MODEMBINADDRESSSIZE	12		// байтов в буфере адреса
+
 typedef struct txbpskholder_tag
 {
 	unsigned activetxbpsksize;		// количество достоверных байтов в буфере
 	uint8_t activetxbpskdata [MODEMBUFFERSIZE8];	// буфер с данными для передачи
 } txdataholder_t;
+
+static uint8_t ownaddressbuff [MODEMBINADDRESSSIZE];		// свой собственный адрес
+static uint_fast8_t mastermode;		// 0 – slave, 1 - master
 
 static txdataholder_t bhs [TXBPSKPAGES];
 static volatile uint_fast8_t activetxbpskpage;
@@ -393,7 +398,9 @@ static void modem_placenextchartosend(uint_fast8_t page, uint_fast8_t c)
 
 // Вызывается из обработчика - NMEA PARSER
 // Начать передачу (конец накопления дянных на передачу)
-static void modem_flushsend(uint_fast8_t page)
+static void modem_flushsend(
+	uint_fast8_t page
+	)
 {
 	if (page >= TXBPSKPAGES)
 		return;
@@ -751,7 +758,20 @@ void modem_set_mode(uint_fast8_t modemmode)
 void modem_initialze(void)
 {
 #if CTLREGMODE_STORCH_V4
-	arm_hardware_piof_inputs(0x00FF);
+	// формирование буфера собственного адреса
+	const uint32_t * const uidbase = (const uint32_t *) UID_BASE;
+	ownaddressbuff [0x00] = uidbase [0] >> 24;
+	ownaddressbuff [0x01] = uidbase [0] >> 16;
+	ownaddressbuff [0x02] = uidbase [0] >> 8;
+	ownaddressbuff [0x03] = uidbase [0] >> 0;
+	ownaddressbuff [0x04] = uidbase [1] >> 24;
+	ownaddressbuff [0x05] = uidbase [1] >> 16;
+	ownaddressbuff [0x06] = uidbase [1] >> 8;
+	ownaddressbuff [0x07] = uidbase [1] >> 0;
+	ownaddressbuff [0x08] = uidbase [2] >> 24;
+	ownaddressbuff [0x09] = uidbase [2] >> 16;
+	ownaddressbuff [0x0A] = uidbase [2] >> 8;
+	ownaddressbuff [0x0B] = uidbase [2] >> 0;
 #endif /* CTLREGMODE_STORCH_V4 */
 
 	bpsk_demod_initialize();
@@ -764,7 +784,7 @@ enum nmeaparser_states
 {
 	NMEAST_INITIALIZED,
 	NMEAST_OPENED,	// встретился символ '$'
-	NMEAST_CHSHI,	// прём старшего ссимвола контрольной суммы
+	NMEAST_CHSHI,	// прём старшего символа контрольной суммы
 	NMEAST_CHSLO,	// приём младшего символа контрольной суммы
 
 
@@ -899,6 +919,22 @@ static int numamps001(int val)	// Ток в десятках милиампер (до 2.55 ампера), мож
 	return val % 100;
 }
 
+
+static int 
+isownaddressmatch(
+	uint8_t * buff,
+	size_t len
+	)
+{
+#if CTLREGMODE_STORCH_V4
+	if (len < (MODEMBINADDRESSSIZE * 2))
+		return 0;	// сообщение меньше чем надо для двух полей адреса - не совпало
+	return memcmp(ownaddressbuff, buff + len - MODEMBINADDRESSSIZE * 2, MODEMBINADDRESSSIZE) == 0;
+#else /* CTLREGMODE_STORCH_V4 */
+	return 1;
+#endif /* CTLREGMODE_STORCH_V4 */
+}
+
 void modem_spool(void)
 {
 	size_t len;
@@ -917,7 +953,6 @@ void modem_spool(void)
 		const uint32_t * const uidbase = (const uint32_t *) UID_BASE;
 		const uint_fast8_t volt = hamradio_get_volt_value();	// Напряжение в сотнях милливольт т.е. 151 = 15.1 вольта
 		const int_fast16_t drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (до 2.55 ампера), может быть отрицательным
-		const uint_fast8_t address = (GPIOF->IDR & 0x00FF);
 		const size_t len = local_snprintf_P(buff, sizeof buff / sizeof buff [0], 
 			PSTR("$GPMDR,"
 			"%ld,"	// type of information
@@ -925,7 +960,7 @@ void modem_spool(void)
 			"%ld,"	// baudrate * 100
 			"%d.%d,"	// voltage
 			"%+d.%02d,"	// current
-			"%ld,"	// address
+			"%d,"	// mastermode
 			"%08lX%08lX%08lX,"	// uid
 			"%d*"),  
 			2L, 
@@ -933,11 +968,11 @@ void modem_spool(void)
 			(long) hamradio_get_modem_baudrate100(), 
 			numvolts1(volt), numvolts01(volt),
 			numamps1(drain), numamps001(drain),
-			address,
+			mastermode != 0,
 			(unsigned long) uidbase [0], (unsigned long) uidbase [1], (unsigned long) uidbase [2], 
 			seq ++
 			);
-#else
+#else /* CTLREGMODE_STORCH_V4 */
 		// ADACTA version
 		const size_t len = local_snprintf_P(buff, sizeof buff / sizeof buff [0], 
 			PSTR("$GPMDR,%ld,%ld,%u,%u,%d,%d*"),  
@@ -948,7 +983,7 @@ void modem_spool(void)
 			gettxstate(), 
 			modem_rx_state
 			);
-#endif
+#endif /* CTLREGMODE_STORCH_V4 */
 		unsigned xorv = calcxorv(buff + 1, len - 1);
 		const size_t len2 = local_snprintf_P(buff + len, sizeof buff / sizeof buff [0] - len, PSTR("%02X\r\n"), xorv);
 		qput(0xff);
@@ -961,11 +996,14 @@ void modem_spool(void)
 		if (len != 0)
 		{
 			//  Если есть буфер с принятыми данными - передать в компьютер
-			size_t pos = 0;
-			int index = 0;
-			do
-				pos += nmeaparser_sendbin_buffer(index ++, buff + pos, len - pos);
-			while (pos < len);
+			if (mastermode != 0 || isownaddressmatch(buff, len))
+			{
+				size_t pos = 0;
+				int index = 0;
+				do
+					pos += nmeaparser_sendbin_buffer(index ++, buff + pos, len - pos);
+				while (pos < len);
+			}
 		}
 		releasemodembuffer(buff);
 	}
@@ -1083,7 +1121,7 @@ void modem_parsechar(uint_fast8_t c)
 					switch (code)
 					{
 					case 1:
-						/// заполняем буфер
+						// заполняем буфер
 						{
 
 							char * const buff = nmeaparser_get_buff(3);
@@ -1097,6 +1135,34 @@ void modem_parsechar(uint_fast8_t c)
 							}
 						}
 						break;
+					case 2:
+						// Ранее накопленные данные передать с указанием адреса получателя
+						{
+							char * const buff = nmeaparser_get_buff(3);
+							const size_t j = strlen(buff);
+							unsigned i;
+							for (i = 0; (i + 1) < j && i < (MODEMBINADDRESSSIZE * 2); i += 2)
+							{
+								unsigned v = hex2int(buff [i + 0]);
+								v = v * 16 + hex2int(buff [i + 1]);
+								modem_placenextchartosend(page, v);
+							}
+#if CTLREGMODE_STORCH_V4
+							// target addrss
+							for (; i < (MODEMBINADDRESSSIZE * 2); i += 2)
+							{
+								modem_placenextchartosend(page, 0);
+							}
+							// sender's address
+							for (i = 0; i < MODEMBINADDRESSSIZE; ++ i)
+							{
+								modem_placenextchartosend(page, ownaddressbuff [i]);
+							}
+#endif /* CTLREGMODE_STORCH_V4 */
+							modem_flushsend(page);
+						}
+						break;
+
 					}
 				}
 				else if (nmeaparser_param >= 3)
@@ -1105,8 +1171,23 @@ void modem_parsechar(uint_fast8_t c)
 					switch (code)
 					{
 					case 2:
-						// Ранее накопленные данные передать
-						modem_flushsend(p2);
+						// Ранее накопленные данные передать к мастеру (без указания адреса олучателя)
+						{
+#if CTLREGMODE_STORCH_V4
+							unsigned i;
+							// target address
+							for (i = 0; i < MODEMBINADDRESSSIZE; ++ i)
+							{
+								modem_placenextchartosend(p2, 0);
+							}
+							// sender's address
+							for (i = 0; i < MODEMBINADDRESSSIZE; ++ i)
+							{
+								modem_placenextchartosend(p2, ownaddressbuff [i]);
+							}
+#endif /* CTLREGMODE_STORCH_V4 */
+							modem_flushsend(p2);
+						}
 						break;
 
 					case 3:
@@ -1136,6 +1217,13 @@ void modem_parsechar(uint_fast8_t c)
 						{
 							modemmode = p2;
 							paramschangedmode = 1;
+						}
+						break;
+					case 7:
+						// Установить режтм арбты себя в режиме мастер (1) или слэйв (0) - 0 по включению питания
+						// 0 – slave, 1 - master
+						{
+							mastermode = p2;
 						}
 						break;
 					}
