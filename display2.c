@@ -1201,8 +1201,9 @@ static void display_siglevel7(
 #endif /* WITHIF4DSP */
 }
 
-// Отображение уровня сигнала в dBm (без единиц измерения).
-static void display_siglevel4(
+// Отображение уровня сигнала в баллах шкалы S
+// S9+60
+static void display_siglevel5(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
 	void * pv
@@ -1213,8 +1214,51 @@ static void display_siglevel4(
 	uint_fast8_t v = board_getsmeter(& tracemax, 0, UINT8_MAX, 0);
 
 	char buff [32];
-	local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("%-+4d"), tracemax - UINT8_MAX);
+	const int s9level = - 73;
+	const int s9step = 6;
+	const int alevel = tracemax - UINT8_MAX;
+
 	(void) v;
+	if (alevel < (s9level - s9step * 9))
+	{
+		local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("S0   "));
+	}
+	else if (alevel < (s9level - s9step * 7))
+	{
+		local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("S1   "));
+	}
+	else if (alevel < (s9level - s9step * 6))
+	{
+		local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("S2   "));
+	}
+	else if (alevel < (s9level - s9step * 5))
+	{
+		local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("S3   "));
+	}
+	else if (alevel < (s9level - s9step * 4))
+	{
+		local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("S4   "));
+	}
+	else if (alevel < (s9level - s9step * 3))
+	{
+		local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("S5   "));
+	}
+	else if (alevel < (s9level - s9step * 2))
+	{
+		local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("S6   "));
+	}
+	else if (alevel < (s9level - s9step * 1))
+	{
+		local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("S7   "));
+	}
+	else if (alevel < (s9level - s9step * 0))
+	{
+		local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("S8   "));
+	}
+	else
+	{
+		local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("S9+%02d"), alevel - s9level);
+	}
 	const char * const labels [1] = { buff, };
 	display2_text(x, y, labels, colorsfg_1state, colorsbg_1state, 0);
 #endif /* WITHIF4DSP */
@@ -3582,7 +3626,7 @@ enum
 		{	0,	9,	display2_waterfall,	REDRM_BARS, PG2, },// Отображение водопада
 
 		{	0,	17,	display_time8,		REDRM_BARS, PGALL, },	// TIME
-		{	9, 17,	display_siglevel4,	REDRM_BARS, PGALL, },	// signal level
+		{	9, 17,	display_siglevel5,	REDRM_BARS, PGALL, },	// signal level in S points
 #if CTLSTYLE_RA4YBO || CTLSTYLE_RA4YBO_V3
 		{	19, 17,	display_currlevel5alt, REDRM_VOLT, PGALL, },	// PA drain current dd.d without "A"
 #else
