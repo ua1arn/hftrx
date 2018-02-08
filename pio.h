@@ -181,7 +181,10 @@ void arm_hardware_piod_onchangeinterrupt(unsigned long ipins, unsigned long rais
 void arm_hardware_pioe_onchangeinterrupt(unsigned long ipins, unsigned long raise, unsigned long fall, uint32_t priority);
 void arm_hardware_piof_onchangeinterrupt(unsigned long ipins, unsigned long raise, unsigned long fall, uint32_t priority);
 void arm_hardware_piog_onchangeinterrupt(unsigned long ipins, unsigned long raise, unsigned long fall, uint32_t priority);
-
+void arm_hardware_pioh_onchangeinterrupt(unsigned long ipins, unsigned long raise, unsigned long fall, uint32_t priority);
+void arm_hardware_pioi_onchangeinterrupt(unsigned long ipins, unsigned long raise, unsigned long fall, uint32_t priority);
+void arm_hardware_pioj_onchangeinterrupt(unsigned long ipins, unsigned long raise, unsigned long fall, uint32_t priority);
+void arm_hardware_piok_onchangeinterrupt(unsigned long ipins, unsigned long raise, unsigned long fall, uint32_t priority);
 
 void arm_hardware_pioa_altfn2(unsigned long opins, unsigned af);
 void arm_hardware_piob_altfn2(unsigned long opins, unsigned af);

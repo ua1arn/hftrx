@@ -4234,6 +4234,41 @@ arm_hardware_piog_altfn50(unsigned long opins, unsigned af)
 
 #if defined (GPIOH)
 
+
+void 
+arm_hardware_pioh_inputs(unsigned long ipins)
+{
+#if CPUSTYLE_STM32F1XX
+
+	RCC->APB2ENR |= RCC_APB2ENR_IOPHEN;	/* I/O port H clock enable */
+	__DSB();
+	GPIOE->BSRR = BSRR_S(ipins);	/* ƒл€ включени€ pull-up при CNFy[1:0] = 10 */	\
+	arm_stm32f10x_hardware_pio_prog(GPIOH, ipins, 2, 0);	/* ”становить CNF=2 и MODE=0 дл€ указанных битов */
+
+#elif (CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX)
+
+	RCC->AHB1ENR |= RCC_AHB1ENR_GPIOHEN;	/* I/O port H clock enable */
+	__DSB();
+	// ”становка режима выводов
+	arm_stm32f30x_hardware_pio_prog(GPIOH, ipins, 0, 1, 1, 0);	/* mode, speed, pupdr, typer */
+
+#elif (CPUSTYLE_STM32H7XX)
+
+	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOHEN;	/* I/O port H clock enable */
+	__DSB();
+	// ”становка режима выводов
+	arm_stm32f30x_hardware_pio_prog(GPIOH, ipins, 0, 1, 1, 0);	/* mode, speed, pupdr, typer */
+
+#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX
+
+	RCC->AHBENR |= RCC_AHBENR_GPIOHEN;	/* I/O port H clock enable */
+	__DSB();
+	// ”становка режима выводов
+	arm_stm32f30x_hardware_pio_prog(GPIOH, ipins, 0, 1, 1, 0);	/* mode, speed, pupdr, typer */
+
+#endif
+}
+
 /* подключаем к периферии, 2 ћ√ц, push-pull */
 void 
 arm_hardware_pioh_altfn2(unsigned long opins, unsigned af)
@@ -5125,7 +5160,7 @@ arm_hardware_pioa_updown(unsigned long up, unsigned long down)
 {
 #if CPUSTYLE_STM32F1XX
 	arm_stm32f10x_hardware_pio_pupdr(GPIOA, up, down);
-#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX
+#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
 	arm_stm32f30x_hardware_pio_pupdr(GPIOA, up, down);
 #endif
 }
@@ -5136,7 +5171,7 @@ arm_hardware_piob_updown(unsigned long up, unsigned long down)
 {
 #if CPUSTYLE_STM32F1XX
 	arm_stm32f10x_hardware_pio_pupdr(GPIOB, up, down);
-#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX
+#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
 	arm_stm32f30x_hardware_pio_pupdr(GPIOB, up, down);
 #endif
 }
@@ -5147,7 +5182,7 @@ arm_hardware_pioc_updown(unsigned long up, unsigned long down)
 {
 #if CPUSTYLE_STM32F1XX
 	arm_stm32f10x_hardware_pio_pupdr(GPIOC, up, down);
-#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX
+#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
 	arm_stm32f30x_hardware_pio_pupdr(GPIOC, up, down);
 #endif
 }
@@ -5158,7 +5193,7 @@ arm_hardware_piod_updown(unsigned long up, unsigned long down)
 {
 #if CPUSTYLE_STM32F1XX
 	arm_stm32f10x_hardware_pio_pupdr(GPIOD, up, down);
-#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX
+#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
 	arm_stm32f30x_hardware_pio_pupdr(GPIOD, up, down);
 #endif
 }
@@ -5169,7 +5204,7 @@ arm_hardware_pioe_updown(unsigned long up, unsigned long down)
 {
 #if CPUSTYLE_STM32F1XX
 	arm_stm32f10x_hardware_pio_pupdr(GPIOE, up, down);
-#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX
+#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
 	arm_stm32f30x_hardware_pio_pupdr(GPIOE, up, down);
 #endif
 }
@@ -5182,7 +5217,7 @@ arm_hardware_piof_updown(unsigned long up, unsigned long down)
 {
 #if CPUSTYLE_STM32F1XX
 	arm_stm32f10x_hardware_pio_pupdr(GPIOF, up, down);
-#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX
+#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
 	arm_stm32f30x_hardware_pio_pupdr(GPIOF, up, down);
 #endif
 }
@@ -5197,12 +5232,72 @@ arm_hardware_piog_updown(unsigned long up, unsigned long down)
 {
 #if CPUSTYLE_STM32F1XX
 	arm_stm32f10x_hardware_pio_pupdr(GPIOG, up, down);
-#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX
+#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
 	arm_stm32f30x_hardware_pio_pupdr(GPIOG, up, down);
 #endif
 }
 
 #endif /* defined (GPIOG) */
+
+#if defined (GPIOH)
+
+/* включение подт€гивающих резисторов к питанию (up) или к земле (down). */
+void 
+arm_hardware_pioh_updown(unsigned long up, unsigned long down)
+{
+#if CPUSTYLE_STM32F1XX
+	arm_stm32f10x_hardware_pio_pupdr(GPIOH, up, down);
+#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
+	arm_stm32f30x_hardware_pio_pupdr(GPIOH, up, down);
+#endif
+}
+
+#endif /* defined (GPIOH) */
+
+#if defined (GPIOI)
+
+/* включение подт€гивающих резисторов к питанию (up) или к земле (down). */
+void 
+arm_hardware_pioi_updown(unsigned long up, unsigned long down)
+{
+#if CPUSTYLE_STM32F1XX
+	arm_stm32f10x_hardware_pio_pupdr(GPIOI, up, down);
+#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
+	arm_stm32f30x_hardware_pio_pupdr(GPIOI, up, down);
+#endif
+}
+
+#endif /* defined (GPIOI) */
+
+#if defined (GPIOJ)
+
+/* включение подт€гивающих резисторов к питанию (up) или к земле (down). */
+void 
+arm_hardware_pioj_updown(unsigned long up, unsigned long down)
+{
+#if CPUSTYLE_STM32F1XX
+	arm_stm32f10x_hardware_pio_pupdr(GPIOJ, up, down);
+#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
+	arm_stm32f30x_hardware_pio_pupdr(GPIOJ, up, down);
+#endif
+}
+
+#endif /* defined (GPIOJ) */
+
+#if defined (GPIOK)
+
+/* включение подт€гивающих резисторов к питанию (up) или к земле (down). */
+void 
+arm_hardware_piok_updown(unsigned long up, unsigned long down)
+{
+#if CPUSTYLE_STM32F1XX
+	arm_stm32f10x_hardware_pio_pupdr(GPIOK, up, down);
+#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
+	arm_stm32f30x_hardware_pio_pupdr(GPIOK, up, down);
+#endif
+}
+
+#endif /* defined (GPIOK) */
 
 /* отключение подт€гивающих резисторов. */
 void 
@@ -5210,7 +5305,7 @@ arm_hardware_pioa_updownoff(unsigned long ipins)
 {
 #if CPUSTYLE_STM32F1XX
 	arm_stm32f10x_hardware_pio_pupoff(GPIOA, ipins);
-#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX
+#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
 	arm_stm32f30x_hardware_pio_pupoff(GPIOA, ipins);
 #endif
 }
@@ -5221,7 +5316,7 @@ arm_hardware_piob_updownoff(unsigned long ipins)
 {
 #if CPUSTYLE_STM32F1XX
 	arm_stm32f10x_hardware_pio_pupoff(GPIOB, ipins);
-#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX
+#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
 	arm_stm32f30x_hardware_pio_pupoff(GPIOB, ipins);
 #endif
 }
@@ -5232,7 +5327,7 @@ arm_hardware_pioc_updownoff(unsigned long ipins)
 {
 #if CPUSTYLE_STM32F1XX
 	arm_stm32f10x_hardware_pio_pupoff(GPIOC, ipins);
-#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX
+#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
 	arm_stm32f30x_hardware_pio_pupoff(GPIOC, ipins);
 #endif
 }
@@ -5243,7 +5338,7 @@ arm_hardware_piod_updownoff(unsigned long ipins)
 {
 #if CPUSTYLE_STM32F1XX
 	arm_stm32f10x_hardware_pio_pupoff(GPIOD, ipins);
-#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX
+#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
 	arm_stm32f30x_hardware_pio_pupoff(GPIOD, ipins);
 #endif
 }
@@ -5254,7 +5349,7 @@ arm_hardware_pioe_updownoff(unsigned long ipins)
 {
 #if CPUSTYLE_STM32F1XX
 	arm_stm32f10x_hardware_pio_pupoff(GPIOE, ipins);
-#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX
+#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
 	arm_stm32f30x_hardware_pio_pupoff(GPIOE, ipins);
 #endif
 }
@@ -5267,7 +5362,7 @@ arm_hardware_piof_updownoff(unsigned long ipins)
 {
 #if CPUSTYLE_STM32F1XX
 	arm_stm32f10x_hardware_pio_pupoff(GPIOF, ipins);
-#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX
+#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
 	arm_stm32f30x_hardware_pio_pupoff(GPIOF, ipins);
 #endif
 }
@@ -5282,12 +5377,73 @@ arm_hardware_piog_updownoff(unsigned long ipins)
 {
 #if CPUSTYLE_STM32F1XX
 	arm_stm32f10x_hardware_pio_pupoff(GPIOG, ipins);
-#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX
+#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
 	arm_stm32f30x_hardware_pio_pupoff(GPIOG, ipins);
 #endif
 }
 
 #endif /* defined (GPIOG) */
+
+
+#if defined (GPIOH)
+
+/* отключение подт€гивающих резисторов. */
+void 
+arm_hardware_pioh_updownoff(unsigned long ipins)
+{
+#if CPUSTYLE_STM32F1XX
+	arm_stm32f10x_hardware_pio_pupoff(GPIOH, ipins);
+#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
+	arm_stm32f30x_hardware_pio_pupoff(GPIOH, ipins);
+#endif
+}
+
+#endif /* defined (GPIOH) */
+
+#if defined (GPIOI)
+
+/* отключение подт€гивающих резисторов. */
+void 
+arm_hardware_pioi_updownoff(unsigned long ipins)
+{
+#if CPUSTYLE_STM32F1XX
+	arm_stm32f10x_hardware_pio_pupoff(GPIOI, ipins);
+#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
+	arm_stm32f30x_hardware_pio_pupoff(GPIOI, ipins);
+#endif
+}
+
+#endif /* defined (GPIOI) */
+
+#if defined (GPIOJ)
+
+/* отключение подт€гивающих резисторов. */
+void 
+arm_hardware_pioj_updownoff(unsigned long ipins)
+{
+#if CPUSTYLE_STM32F1XX
+	arm_stm32f10x_hardware_pio_pupoff(GPIOJ, ipins);
+#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
+	arm_stm32f30x_hardware_pio_pupoff(GPIOJ, ipins);
+#endif
+}
+
+#endif /* defined (GPIOJ) */
+
+#if defined (GPIOK)
+
+/* отключение подт€гивающих резисторов. */
+void 
+arm_hardware_piok_updownoff(unsigned long ipins)
+{
+#if CPUSTYLE_STM32F1XX
+	arm_stm32f10x_hardware_pio_pupoff(GPIOK, ipins);
+#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
+	arm_stm32f30x_hardware_pio_pupoff(GPIOK, ipins);
+#endif
+}
+
+#endif /* defined (GPIOK) */
 
 
 /* разрешить прерывание по изменению состо€ни€ указанных битов порта */
@@ -5450,6 +5606,25 @@ arm_hardware_piog_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 }
 
 #endif /* defined (GPIOG) */
+
+#if defined (GPIOH)
+// эти функции не мен€ют программирование выводов (на ввод или на вывод),
+// только подключают прерывани€. “ребуетс€ иногда прерывани€ по переходу выводов присоединЄнных к периферии.
+void 
+arm_hardware_pioh_onchangeinterrupt(unsigned long ipins, unsigned long raise, unsigned long fall, uint32_t priority)
+{
+#if CPUSTYLE_STM32F1XX
+
+	arm_stm32f10x_hardware_pio_onchangeinterrupt(ipins, raise, fall, AFIO_EXTICR1_EXTI0_PH, priority);	// PORT G
+
+#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
+
+	arm_stm32f30x_hardware_pio_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PH, priority);	// PORT G
+
+#endif
+}
+
+#endif /* defined (GPIOH) */
 
 #elif CPUSTYPE_TMS320F2833X
 
