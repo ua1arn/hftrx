@@ -290,6 +290,38 @@ LCD_AF_GPIOConfig(void)
 	arm_hardware_piok_altfn50((1U << 5), GPIO_AF_LTDC);		// B6
 	arm_hardware_piok_altfn50((1U << 6), GPIO_AF_LTDC);		// B7
 
+#elif CTLSTYLE_STORCH_V6
+
+	// COMTROL SIGNALS
+	arm_hardware_pioi_altfn50((1U << 9), GPIO_AF_LTDC);		// VSYNC
+	arm_hardware_pioi_altfn50((1U << 10), GPIO_AF_LTDC);	// HSYNC
+	arm_hardware_pioe_altfn50((1U << 13), GPIO_AF_LTDC);		// DE
+	arm_hardware_pioe_altfn50((1U << 14), GPIO_AF_LTDC);	// CLK
+
+	// REG
+	arm_hardware_pioh_altfn50((1U << 8), GPIO_AF_LTDC);		// R2
+	arm_hardware_pioh_altfn50((1U << 9), GPIO_AF_LTDC);		// R3
+	arm_hardware_pioh_altfn50((1U << 10), GPIO_AF_LTDC);	// R4
+	arm_hardware_pioh_altfn50((1U << 11), GPIO_AF_LTDC);	// R5
+	arm_hardware_pioh_altfn50((1U << 12), GPIO_AF_LTDC);	// R6
+	arm_hardware_piog_altfn50((1U << 6), GPIO_AF_LTDC);		// R7
+
+	// GREEN
+	arm_hardware_pioh_altfn50((1U << 13), GPIO_AF_LTDC);		// G2
+	arm_hardware_pioh_altfn50((1U << 14), GPIO_AF_LTDC);	// G3
+	arm_hardware_pioh_altfn50((1U << 15), GPIO_AF_LTDC);	// G4
+	arm_hardware_pioi_altfn50((1U << 0), GPIO_AF_LTDC);		// G5
+	arm_hardware_pioi_altfn50((1U << 1), GPIO_AF_LTDC);		// G6
+	arm_hardware_pioi_altfn50((1U << 2), GPIO_AF_LTDC);		// G7
+
+	// BLUE
+	arm_hardware_piog_altfn50((1U << 10), GPIO_AF_LTDC);	// B2
+	arm_hardware_piog_altfn50((1U << 11), GPIO_AF_LTDC);	// B3
+	arm_hardware_piog_altfn50((1U << 12), GPIO_AF_LTDC9);	// B4
+	arm_hardware_pioi_altfn50((1U << 5), GPIO_AF_LTDC);		// B5
+	arm_hardware_pioi_altfn50((1U << 6), GPIO_AF_LTDC);		// B6
+	arm_hardware_pioi_altfn50((1U << 7), GPIO_AF_LTDC);		// B7
+
 #else
 
 	#error Wrong CTLSTYLE_xxx for use LCDMODE_LTDC
@@ -575,6 +607,15 @@ arm_hardware_ltdc_initialize(void)
 	/* Initialize the LCD */
 	//LCD_Init();
 
+#if CPUSTYLE_STM32H7XX
+	/* Enable the LTDC Clock */
+	RCC->APB3ENR |= RCC_APB3ENR_LTDCEN;	/* LTDC clock enable */
+	__DSB();
+
+	/* Enable the DMA2D Clock */
+	RCC->AHB3ENR |= RCC_AHB3ENR_DMA2DEN;	/* DMA2D clock enable */
+	__DSB();
+#else /* CPUSTYLE_STM32H7XX */
 	/* Enable the LTDC Clock */
 	RCC->APB2ENR |= RCC_APB2ENR_LTDCEN;	/* LTDC clock enable */
 	__DSB();
@@ -582,6 +623,7 @@ arm_hardware_ltdc_initialize(void)
 	/* Enable the DMA2D Clock */
 	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2DEN;	/* DMA2D clock enable */
 	__DSB();
+#endif /* CPUSTYLE_STM32H7XX */
 
 	/* Configure the LCD Control pins */
 	LCD_AF_GPIOConfig();  

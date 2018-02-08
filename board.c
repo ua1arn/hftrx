@@ -3542,6 +3542,43 @@ prog_ctrlreg(uint_fast8_t plane)
 	}
 }
 
+#elif CTLREGMODE_STORCH_V6	// USB FS, USB HS, DSP и FPGA, DUAL WATCH, SD-CARD mimi rx board
+// Rmainunit_v5la.pcb STM32H743IIT6, TFT 4.3", 2xmini-USB, mini SD-CARD, NAU8822L и FPGA EP4CE22E22I7N
+
+#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
+
+// "Storch" с USB, DSP и FPGA, SD-CARD
+static void 
+//NOINLINEAT
+prog_ctrlreg(uint_fast8_t plane)
+{
+	prog_fpga_ctrlreg(targetfpga1);	// FPGA control register
+
+	// rеgisters chain control register
+	{
+		const uint_fast8_t lcdblcode = (glob_bglight - WITHLCDBACKLIGHTMIN);
+		const spitarget_t target = targetctl1;
+
+		rbtype_t rbbuff [2] = { 0 };
+
+		// DD16 STP08CP05TTR в управлении диапазонными фильтрами приёмника
+		RBVAL(0010, glob_tx ? 0 : (1U << glob_bandf), 8);		// D1: 1, D7..D1: band select бит выбора диапазонного фильтра приёмника
+
+		// DD14 STP08CP05TTR рядом с DIN8
+		RBBIT(0007, ! glob_reset_n);		// D7: NMEA reset
+		RBVAL(0005, glob_att, 2);			/* D5:D5: 12 dB and 6 dB attenuator control */
+		RBBIT(0004,  glob_bandf == 0);		/* D4: средневолновый ФНЧ - управление реле на выходе фильтров */
+		RBBIT(0003, lcdblcode & 0x02);		/* D3	- LCD backlight */
+		RBBIT(0002, lcdblcode & 0x02);		/* D2	- LCD backlight */
+		RBBIT(0001, lcdblcode & 0x01);		/* D2:D1 - LCD backlight */
+		RBBIT(0000, glob_kblight);			/* D0: keyboard backlight */
+
+		spi_select(target, CTLREG_SPIMODE);
+		prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
+		spi_unselect(target);
+	}
+}
+
 #elif CTLREGMODE_OLEG4Z_V1	// USB FS, USB HS, DSP и FPGA, DUAL WATCH, SD-CARD & PA on board
 
 #define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
@@ -5799,6 +5836,8 @@ static void board_fpga_loader_PS(void)
 	#elif CTLSTYLE_STORCH_V4 && (DDS1_CLK_MUL == 1)
 		#include "rbf/rbfimage_v7_2ch.h"	// same as CTLSTYLE_RAVENDSP_V7
 	#elif CTLSTYLE_STORCH_V5 && (DDS1_CLK_MUL == 1)
+		#include "rbf/rbfimage_v7_2ch.h"	// same as CTLSTYLE_RAVENDSP_V7
+	#elif CTLSTYLE_STORCH_V6 && (DDS1_CLK_MUL == 1)
 		#include "rbf/rbfimage_v7_2ch.h"	// same as CTLSTYLE_RAVENDSP_V7
 	#elif CTLSTYLE_OLEG4Z_V1 && (DDS1_CLK_MUL == 1)
 		#include "rbf/rbfimage_oleg4z.h"	// same as CTLSTYLE_RAVENDSP_V7, 1 RX & WFM
