@@ -295,7 +295,7 @@ LCD_AF_GPIOConfig(void)
 	// COMTROL SIGNALS
 	arm_hardware_pioi_altfn50((1U << 9), GPIO_AF_LTDC);		// VSYNC
 	arm_hardware_pioi_altfn50((1U << 10), GPIO_AF_LTDC);	// HSYNC
-	arm_hardware_pioe_altfn50((1U << 13), GPIO_AF_LTDC);		// DE
+	arm_hardware_pioe_altfn50((1U << 13), GPIO_AF_LTDC);	// DE
 	arm_hardware_pioe_altfn50((1U << 14), GPIO_AF_LTDC);	// CLK
 
 	// REG
@@ -307,7 +307,7 @@ LCD_AF_GPIOConfig(void)
 	arm_hardware_piog_altfn50((1U << 6), GPIO_AF_LTDC);		// R7
 
 	// GREEN
-	arm_hardware_pioh_altfn50((1U << 13), GPIO_AF_LTDC);		// G2
+	arm_hardware_pioh_altfn50((1U << 13), GPIO_AF_LTDC);	// G2
 	arm_hardware_pioh_altfn50((1U << 14), GPIO_AF_LTDC);	// G3
 	arm_hardware_pioh_altfn50((1U << 15), GPIO_AF_LTDC);	// G4
 	arm_hardware_pioi_altfn50((1U << 0), GPIO_AF_LTDC);		// G5
@@ -321,6 +321,11 @@ LCD_AF_GPIOConfig(void)
 	arm_hardware_pioi_altfn50((1U << 5), GPIO_AF_LTDC);		// B5
 	arm_hardware_pioi_altfn50((1U << 6), GPIO_AF_LTDC);		// B6
 	arm_hardware_pioi_altfn50((1U << 7), GPIO_AF_LTDC);		// B7
+
+	// step-up backlight converter
+	arm_hardware_pioe_outputs((1U << 0), (1U << 0));		// PE0 - enable backlight
+	arm_hardware_piob_opendrain((1U << 9) | (1U << 8), (1U << 9) | (1U << 8));		// PB9:PB8 - backlight current adjust
+
 
 #else
 
