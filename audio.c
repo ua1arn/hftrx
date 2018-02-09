@@ -8550,6 +8550,8 @@ static FLOAT_t MAKETAUIF(FLOAT_t t)
 	return 1 - step;
 }
 
+// Аргумент: постоянная времени цепи в секундах
+// Результат: 1 - мгновенно, 0 - никогда
 static FLOAT_t MAKETAUAF(FLOAT_t t)
 {
 	if (t == 0)
@@ -8657,6 +8659,26 @@ static void agc_parameters_update(volatile agcparams_t * const agcp, FLOAT_t gai
 	agcp->chargespeedslow = MAKETAUIF((int) glob_agc_t1 [pathi] * (FLOAT_t) 0.001);	// в милисекундах
 	agcp->dischargespeedslow = MAKETAUIF((int) glob_agc_t2 [pathi] * (FLOAT_t) 0.1);	// в сотнях милисекунд (0.1 секунды)
 	agcp->hungticks = NSAITICKS(glob_agc_thung [pathi] * 100);			// в сотнях милисекунд (0.1 секунды)
+
+	agcp->gainlimit = gainlimit;
+	agcp->agcfactor = flatgain ? (FLOAT_t) -1 : agc_calcagcfactor(glob_agcrate [pathi]);
+
+	//debug_printf_P(PSTR("agc_parameters_update: dischargespeedfast=%f, chargespeedfast=%f\n"), agcp->dischargespeedfast, agcp->chargespeedfast);
+}
+
+// Установка параметров S-метра приёмника
+
+static void agc_smeter_parameters_update(volatile agcparams_t * const agcp, FLOAT_t gainlimit, uint_fast8_t pathi)
+{
+	const uint_fast8_t flatgain = glob_agcrate [pathi] == UINT8_MAX;
+
+	agcp->agcoff = (glob_agc == BOARD_AGCCODE_OFF);
+
+	agcp->dischargespeedfast = MAKETAUIF((int) glob_agc_t4 [pathi] * (FLOAT_t) 0.001);	// в милисекундах
+
+	agcp->chargespeedslow = MAKETAUIF((FLOAT_t) 0.015);	// 15 mS
+	agcp->dischargespeedslow = MAKETAUIF((FLOAT_t) 0.3);	// 300 mS
+	agcp->hungticks = NSAITICKS(800);			// в сотнях милисекунд (0.8 секунды)
 
 	agcp->gainlimit = gainlimit;
 	agcp->agcfactor = flatgain ? (FLOAT_t) -1 : agc_calcagcfactor(glob_agcrate [pathi]);
@@ -10301,7 +10323,7 @@ static void agc_state_initialize(volatile agcstate_t * st, const volatile agcpar
 
 // Для работы функции performagc требуется siglevel, больште значения которого 
 // соответствуют большим уровням сигнала. может быть отрицательным
-static RAMFUNC FLOAT_t agccalcstraingth(const volatile agcparams_t * const agcp, FLOAT_t siglevel)
+static RAMFUNC FLOAT_t agccalcstrength(const volatile agcparams_t * const agcp, FLOAT_t siglevel)
 {
 	const FLOAT_t f0 = agcp->levelfence;
 	const FLOAT_t m0 = agcp->mininput;
@@ -10326,7 +10348,7 @@ static RAMFUNC FLOAT_t agccalcgain(const volatile agcparams_t * const agcp, FLOA
 
 // По отфильтрованому в соответствии с заданными временныме параметрами показатлю
 // силы сигнала получаем относительный уровень (логарифмированный)
-static RAMFUNC FLOAT_t agccalcstraingthlog10(const volatile agcparams_t * const agcp, FLOAT_t streingth)
+static RAMFUNC FLOAT_t agccalcstrengthlog10(const volatile agcparams_t * const agcp, FLOAT_t streingth)
 {
 	return streingth / agclogof10;	// уже логарифмировано
 }
@@ -10347,9 +10369,11 @@ static RAMFUNC FLOAT_t agc_getsiglevel(
 // Инициализация сделана для того, чтобы поместить эти переменные в обюласть CCM памяти
 // Присвоение осмысленных значений производится в соответствующих функциях инициализации.
 
+static volatile agcstate_t rxsmeterstate = { 0, };	//
 static volatile agcstate_t rxagcstate [NTRX] = { { 0, } };	// На каждый приёмник
 static volatile agcstate_t txagcstate = { 0, };
 
+static volatile agcparams_t rxsmeterparams = { 0, };
 static volatile agcparams_t rxagcparams [NPROF] [NTRX] = { { { 0, } } };
 static volatile agcparams_t txagcparams [NPROF] = { { 0, } };
 static volatile uint_fast8_t gwagcprofrx = 0;	// work profile - индекс конфигурационной информации, испольуемый для работы */
@@ -10378,6 +10402,9 @@ static void agc_initialize(void)
 		comp_parameters_initialize(& txagcparams [profile]);
 		agc_state_initialize(& txagcstate, & txagcparams [profile]);
 	}
+	// s-meter
+	agc_parameters_initialize(& rxsmeterparams);
+	agc_state_initialize(& rxsmeterstate, & rxsmeterparams);
 
 #if WITHDSPEXTDDC
 
@@ -10431,9 +10458,17 @@ static RAMFUNC FLOAT_t agc_forvard_float(
 
 	const volatile agcparams_t * const agcp = & rxagcparams [gwagcprofrx] [pathi];
 	volatile agcstate_t * const st = & rxagcstate [pathi];
+	//BEGIN_STAMP();
+	const FLOAT_t strength = agccalcstrength(agcp, siglevel0);	// получение логарифмического хначения уровня сигнала
+	//END_STAMP();
+	if (pathi == 0)
+	{
+		// Этот канал приемника отвечает за показ S-метра
+		performagc(& rxsmeterparams, & rxsmeterstate, strength);	// измеритель уровня сигнала
+	}
 
 	//BEGIN_STAMP();
-	performagc(agcp, st, agccalcstraingth(agcp, siglevel0));	// измеритель уровня сигнала
+	performagc(agcp, st, strength);	// измеритель уровня сигнала
 	//END_STAMP();
 
 	//BEGIN_STAMP();
@@ -10451,14 +10486,14 @@ static void agc_reset(
 	)
 {
 	return;
-	volatile agcstate_t * const st = & rxagcstate [pathi];
-	const volatile agcparams_t * const agcp = & rxagcparams [gwagcprofrx] [pathi];
+	volatile agcparams_t * const agcp = & rxsmeterparams;
+	volatile agcstate_t * const st = & rxsmeterstate;
 	const FLOAT_t m0 = agcp->mininput;
 	global_disableIRQ();
 	st->agcfastcap = m0;
 	st->agcslowcap = m0;
 	global_enableIRQ();
-#if ! CTLSTYLE_V1D
+#if ! CTLSTYLE_V1D		// не Плата STM32F429I-DISCO с процессором STM32F429ZIT6 - на ней приема нет
 	for (;;)
 	{
 		local_delay_ms(1);
@@ -10478,13 +10513,13 @@ static FLOAT_t agc_forvard_getstreigthlog10(
 	uint_fast8_t pathi
 	)
 {
-	volatile agcparams_t * const agcp = & rxagcparams [gwagcprofrx] [pathi];
-	volatile const agcstate_t * const st = & rxagcstate [pathi];
+	volatile agcparams_t * const agcp = & rxsmeterparams;
+	volatile const agcstate_t * const st = & rxsmeterstate;
 
-	const FLOAT_t fltstraingthfast = performagcresultfast(st);	// измеритель уровня сигнала
-	const FLOAT_t fltstraingthslow = performagcresultslow(st);	// измеритель уровня сигнала
-	* tracemax = agccalcstraingthlog10(agcp, fltstraingthslow);
-	return agccalcstraingthlog10(agcp, fltstraingthfast);
+	const FLOAT_t fltstrengthfast = performagcresultfast(st);	// измеритель уровня сигнала
+	const FLOAT_t fltstrengthslow = performagcresultslow(st);	// измеритель уровня сигнала
+	* tracemax = agccalcstrengthlog10(agcp, fltstrengthslow);
+	return agccalcstrengthlog10(agcp, fltstrengthfast);
 }
 
 /* получить значение уровня сигнала в децибелах, отступая от upper */
@@ -10527,7 +10562,7 @@ static RAMFUNC FLOAT_t txmikeagc(FLOAT_t vi)
 		const FLOAT_t siglevel0 = FABSF(vi);
 		volatile agcstate_t * const st = & txagcstate;
 
-		performagc(agcp, st, agccalcstraingth(agcp, siglevel0));	// измеритель уровня сигнала
+		performagc(agcp, st, agccalcstrength(agcp, siglevel0));	// измеритель уровня сигнала
 		const FLOAT_t gain = agccalcgain(agcp, performagcresultslow(st));
 		vi *= gain;
 	}
@@ -12466,6 +12501,17 @@ rxparam_update(uint_fast8_t profile, uint_fast8_t pathi)
 		
 		agc_parameters_update(& rxagcparams [profile] [pathi], manualrfgain, pathi);	// приёмник #0,#1
 	}
+
+	// Параметры S-метра приёмника
+	{
+		const int gainmax = glob_digigainmax;	// Верхний предел регулировки усиления
+		const int gainmin = 0;	// Нижний предел регулировки усиления
+		const int gaindb = ((gainmax - gainmin) * (int) (glob_rfgain - BOARD_RFGAIN_MIN) / (int) (BOARD_RFGAIN_MAX - BOARD_RFGAIN_MIN)) + gainmin;	// -20..+100 dB
+		const FLOAT_t manualrfgain = db2ratio(gaindb);
+		
+		agc_smeter_parameters_update(& rxsmeterparams, manualrfgain, 0);	// как у приемника #0
+	}
+
 
 	// Параметры SAM приёмника
 	{
