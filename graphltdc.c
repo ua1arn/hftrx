@@ -414,6 +414,9 @@ static void LCD_LayerInit(
 	)
 {
 	const unsigned rowsize = sizeof framebuff [0];	// размер одной строки в байтах
+	const unsigned rowsize2 = (sizeof (PACKEDCOLOR_T) * DIM_SECOND);
+	ASSERT(rowsize == rowsize2);
+
 	LTDC_Layer_InitTypeDef LTDC_Layer_InitStruct; 
 	/* Windowing configuration */
 	/* In this case all the active display area is used to display a picture then :
@@ -462,7 +465,7 @@ static void LCD_LayerInit(
 	LTDC_Layer_InitStruct.LTDC_CFBLineNumber = DIM_FIRST;
 
 	/* Start Address configuration : the LCD Frame buffer is defined on SDRAM */    
-	LTDC_Layer_InitStruct.LTDC_CFBStartAdress = (unsigned long) & framebuff;
+	LTDC_Layer_InitStruct.LTDC_CFBStartAdress = (uintptr_t) & framebuff;
 	//LTDC_Layer1->CFBAR = (uint32_t) & framebuff;
 
 	/* Initialize LTDC layer 1 */
@@ -472,7 +475,7 @@ static void LCD_LayerInit(
 	//LTDC_LayerCmd(LTDC_Layer1, ENABLE); 
 	//LTDC_LayerCmd(LTDC_Layer2, ENABLE);
 	/* Enable LTDC_Layer by setting LEN bit */
-	LTDC_Layer1->CR |= (uint32_t)LTDC_LxCR_LEN;
+	LTDC_Layer1->CR |= (uint32_t) LTDC_LxCR_LEN;
 
 	/* LTDC configuration reload */  
 }
@@ -480,8 +483,9 @@ static void LCD_LayerInit(
 void
 arm_hardware_ltdc_initialize(void)
 {
-	const int rowsize = (sizeof framebuff [0]);	// размер одной строки в байтах
-
+	const unsigned rowsize = sizeof framebuff [0];	// размер одной строки в байтах
+	const unsigned rowsize2 = (sizeof (PACKEDCOLOR_T) * DIM_SECOND);
+	ASSERT(rowsize == rowsize2);
 
 	/* Initialize the LCD */
 	//LCD_Init();
@@ -591,6 +595,7 @@ arm_hardware_ltdc_initialize(void)
 		VFP = 4,					/* Vertical front porch       */
 	};
 #else
+	#error Unsupported LCDMODE_xxx
 #endif
 
 	LTDC_InitStruct.LTDC_HSPolarity = LTDC_HSPolarity_AL;     
@@ -637,15 +642,15 @@ arm_hardware_ltdc_initialize(void)
 
 	LCD_LayerInit(HSYNC + HBP, VSYNC + VBP);
 
-	LTDC->SRCR = LTDC_SRCR_IMR;
+	LTDC->SRCR = LTDC_SRCR_IMR;	/*!< Immediately Reload. */
 
 
 	/* LCD Log initialization */
 	//LCD_LOG_Init(); 
 
 	LTDC_Layer1->CFBLR = 
-		((rowsize << 16) & LTDC_LxCFBLR_CFBP) | 
-		(((rowsize + 3) << 0) & LTDC_LxCFBLR_CFBLL) |
+		((rowsize << LTDC_LxCFBLR_CFBP_Pos) & LTDC_LxCFBLR_CFBP) | 
+		(((rowsize + 3) << LTDC_LxCFBLR_CFBLL_Pos) & LTDC_LxCFBLR_CFBLL) |
 		0;
 	LTDC_Layer1->CFBAR = (uint32_t) & framebuff;
 	//LTDC_Layer2->CFBAR = (uint32_t) & framebuff;
@@ -660,7 +665,7 @@ arm_hardware_ltdc_initialize(void)
 #endif /* LCDMODE_LTDC_L8 */
 
 	/* LTDC reload configuration */  
-	LTDC->SRCR = LTDC_SRCR_IMR;
+	LTDC->SRCR = LTDC_SRCR_IMR;	/*!< Immediately Reload. */
 }
 
 #endif /* CPUSTYLE_STM32F && LCDMODE_LTDC */
