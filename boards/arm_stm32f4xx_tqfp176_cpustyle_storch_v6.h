@@ -187,22 +187,22 @@
 #if WITHI2SHW
 	// Инициализируются I2S2 и I2S3
 	#define I2S2HW_INITIALIZE() do { \
-		arm_hardware_piob_altfn2(1U << 12,	AF_SPI2); /* PB12 I2S2_WS	*/ \
-		arm_hardware_piob_altfn2(1U << 10,	AF_SPI2); /* PB10 I2S2_CK	*/ \
-		arm_hardware_pioc_altfn2(1U << 3,	AF_SPI2); /* PC3 I2S2_SD - передача */ \
-		arm_hardware_pioa_altfn2(1U << 15,	AF_SPI3); /* PA15 I2S3_WS	*/ \
-		arm_hardware_piob_altfn2(1U << 3,	AF_SPI3); /* PB3 I2S3_CK	*/ \
-		arm_hardware_piob_altfn2(1U << 2,	7 /* AF_7 */); /* PB2 I2S3_SD, - приём от кодека */ \
+		arm_hardware_piob_altfn2(1uL << 12,	AF_SPI2); /* PB12 I2S2_WS	*/ \
+		arm_hardware_piob_altfn2(1uL << 10,	AF_SPI2); /* PB10 I2S2_CK	*/ \
+		arm_hardware_pioc_altfn2(1uL << 3,	AF_SPI2); /* PC3 I2S2_SD - передача */ \
+		arm_hardware_pioa_altfn2(1uL << 15,	AF_SPI3); /* PA15 I2S3_WS	*/ \
+		arm_hardware_piob_altfn2(1uL << 3,	AF_SPI3); /* PB3 I2S3_CK	*/ \
+		arm_hardware_piob_altfn2(1uL << 2,	7 /* AF_7 */); /* PB2 I2S3_SD, - приём от кодека */ \
 	} while (0)
 #endif /* WITHSAI1HW */
 
 #if WITHSAI1HW
 	#define SAI1HW_INITIALIZE()	do { \
-		/*arm_hardware_pioe_altfn20(1U << 2, AF_SAI); */	/* PE2 - SAI1_MCK_A - 12.288 MHz	*/ \
-		arm_hardware_pioe_altfn2(1U << 4,	AF_SAI);			/* PE4 - SAI1_FS_A	- 48 kHz	*/ \
-		arm_hardware_pioe_altfn20(1U << 5,	AF_SAI);			/* PE5 - SAI1_SCK_A	*/ \
-		arm_hardware_pioe_altfn2(1U << 6,	AF_SAI);			/* PE6 - SAI1_SD_A	(i2s data to codec)	*/ \
-		arm_hardware_pioe_altfn2(1U << 3,	AF_SAI);			/* PE3 - SAI1_SD_B	(i2s data from codec)	*/ \
+		/*arm_hardware_pioe_altfn20(1uL << 2, AF_SAI); */	/* PE2 - SAI1_MCK_A - 12.288 MHz	*/ \
+		arm_hardware_pioe_altfn2(1uL << 4,	AF_SAI);			/* PE4 - SAI1_FS_A	- 48 kHz	*/ \
+		arm_hardware_pioe_altfn20(1uL << 5,	AF_SAI);			/* PE5 - SAI1_SCK_A	*/ \
+		arm_hardware_pioe_altfn2(1uL << 6,	AF_SAI);			/* PE6 - SAI1_SD_A	(i2s data to codec)	*/ \
+		arm_hardware_pioe_altfn2(1uL << 3,	AF_SAI);			/* PE3 - SAI1_SD_B	(i2s data from codec)	*/ \
 	} while (0)
 #endif /* WITHSAI1HW */
 
@@ -212,11 +212,11 @@
 	из внешних сигналов требуется только SAI2_SD_A 
 	*/
 	#define SAI2HW_INITIALIZE()	do { \
-		/* arm_hardware_pioe_altfn20(1U << 0, AF_SAI2); */	/* PE0 - SAI2_MCK_A - 12.288 MHz	*/ \
-		/* arm_hardware_piod_altfn2(1U << 12, AF_SAI2); */	/* PD12 - SAI2_FS_A	- 48 kHz	*/ \
-		/* arm_hardware_piod_altfn20(1U << 13, AF_SAI2); */	/* PD13 - SAI2_SCK_A	*/ \
-		/* arm_hardware_piod_altfn2(1U << 11, AF_SAI2); */	/* PD11 - SAI2_SD_A	(i2s data to codec)	*/ \
-		/* arm_hardware_pioe_altfn2(1U << 11, AF_SAI2);	*/ /* PE11 - SAI2_SD_B	(i2s data from codec)	*/ \
+		/* arm_hardware_pioe_altfn20(1uL << 0, AF_SAI2); */	/* PE0 - SAI2_MCK_A - 12.288 MHz	*/ \
+		/* arm_hardware_piod_altfn2(1uL << 12, AF_SAI2); */	/* PD12 - SAI2_FS_A	- 48 kHz	*/ \
+		/* arm_hardware_piod_altfn20(1uL << 13, AF_SAI2); */	/* PD13 - SAI2_SCK_A	*/ \
+		/* arm_hardware_piod_altfn2(1uL << 11, AF_SAI2); */	/* PD11 - SAI2_SD_A	(i2s data to codec)	*/ \
+		/* arm_hardware_pioe_altfn2(1uL << 11, AF_SAI2);	*/ /* PE11 - SAI2_SD_B	(i2s data from codec)	*/ \
 	} while (0)
 #endif /* WITHSAI1HW */
 
@@ -274,46 +274,46 @@
 #if WITHSDHCHW
 	#if WITHSDHCHW4BIT
 		#define HARDWARE_SDIO_INITIALIZE()	do { \
-			arm_hardware_piod_altfn50(1U << 2, AF_SDIO);	/* PD2 - SDIO_CMD	*/ \
-			arm_hardware_pioc_altfn50(1U << 12, AF_SDIO);	/* PC12 - SDIO_CK	*/ \
-			arm_hardware_pioc_altfn50(1U << 8, AF_SDIO);	/* PC8 - SDIO_D0	*/ \
-			arm_hardware_pioc_altfn50(1U << 9, AF_SDIO);	/* PC9 - SDIO_D1	*/ \
-			arm_hardware_pioc_altfn50(1U << 10, AF_SDIO);	/* PC10 - SDIO_D2	*/ \
-			arm_hardware_pioc_altfn50(1U << 11, AF_SDIO);	/* PC11 - SDIO_D3	*/ \
+			arm_hardware_piod_altfn50(1uL << 2, AF_SDIO);	/* PD2 - SDIO_CMD	*/ \
+			arm_hardware_pioc_altfn50(1uL << 12, AF_SDIO);	/* PC12 - SDIO_CK	*/ \
+			arm_hardware_pioc_altfn50(1uL << 8, AF_SDIO);	/* PC8 - SDIO_D0	*/ \
+			arm_hardware_pioc_altfn50(1uL << 9, AF_SDIO);	/* PC9 - SDIO_D1	*/ \
+			arm_hardware_pioc_altfn50(1uL << 10, AF_SDIO);	/* PC10 - SDIO_D2	*/ \
+			arm_hardware_pioc_altfn50(1uL << 11, AF_SDIO);	/* PC11 - SDIO_D3	*/ \
 		} while (0)
 		/* отключить процессор от SD карты - чтобы при выполнении power cycle не возникало фантомное питание через сигналы управления. */
 		#define HARDWARE_SDIO_HANGOFF()	do { \
-			arm_hardware_piod_inputs(1U << 2);	/* PD2 - SDIO_CMD	*/ \
-			arm_hardware_pioc_inputs(1U << 12);	/* PC12 - SDIO_CK	*/ \
-			arm_hardware_pioc_inputs(1U << 8);	/* PC8 - SDIO_D0	*/ \
-			arm_hardware_pioc_inputs(1U << 9);	/* PC9 - SDIO_D1	*/ \
-			arm_hardware_pioc_inputs(1U << 10);	/* PC10 - SDIO_D2	*/ \
-			arm_hardware_pioc_inputs(1U << 11);	/* PC11 - SDIO_D3	*/ \
-			arm_hardware_piod_updown(0, 1U << 2);	/* PD2 - SDIO_CMD	*/ \
-			arm_hardware_pioc_updown(0, 1U << 12);	/* PC12 - SDIO_CK	*/ \
-			arm_hardware_pioc_updown(0, 1U << 8);	/* PC8 - SDIO_D0	*/ \
-			arm_hardware_pioc_updown(0, 1U << 9);	/* PC9 - SDIO_D1	*/ \
-			arm_hardware_pioc_updown(0, 1U << 10);	/* PC10 - SDIO_D2	*/ \
-			arm_hardware_pioc_updown(0, 1U << 11);	/* PC11 - SDIO_D3	*/ \
+			arm_hardware_piod_inputs(1uL << 2);	/* PD2 - SDIO_CMD	*/ \
+			arm_hardware_pioc_inputs(1uL << 12);	/* PC12 - SDIO_CK	*/ \
+			arm_hardware_pioc_inputs(1uL << 8);	/* PC8 - SDIO_D0	*/ \
+			arm_hardware_pioc_inputs(1uL << 9);	/* PC9 - SDIO_D1	*/ \
+			arm_hardware_pioc_inputs(1uL << 10);	/* PC10 - SDIO_D2	*/ \
+			arm_hardware_pioc_inputs(1uL << 11);	/* PC11 - SDIO_D3	*/ \
+			arm_hardware_piod_updown(0, 1uL << 2);	/* PD2 - SDIO_CMD	*/ \
+			arm_hardware_pioc_updown(0, 1uL << 12);	/* PC12 - SDIO_CK	*/ \
+			arm_hardware_pioc_updown(0, 1uL << 8);	/* PC8 - SDIO_D0	*/ \
+			arm_hardware_pioc_updown(0, 1uL << 9);	/* PC9 - SDIO_D1	*/ \
+			arm_hardware_pioc_updown(0, 1uL << 10);	/* PC10 - SDIO_D2	*/ \
+			arm_hardware_pioc_updown(0, 1uL << 11);	/* PC11 - SDIO_D3	*/ \
 		} while (0)
 	#else /* WITHSDHCHW4BIT */
 		#define HARDWARE_SDIO_INITIALIZE()	do { \
-			arm_hardware_piod_altfn50(1U << 2, AF_SDIO);	/* PD2 - SDIO_CMD	*/ \
-			arm_hardware_pioc_altfn50(1U << 12, AF_SDIO);	/* PC12 - SDIO_CK	*/ \
-			arm_hardware_pioc_altfn50(1U << 8, AF_SDIO);	/* PC8 - SDIO_D0	*/ \
+			arm_hardware_piod_altfn50(1uL << 2, AF_SDIO);	/* PD2 - SDIO_CMD	*/ \
+			arm_hardware_pioc_altfn50(1uL << 12, AF_SDIO);	/* PC12 - SDIO_CK	*/ \
+			arm_hardware_pioc_altfn50(1uL << 8, AF_SDIO);	/* PC8 - SDIO_D0	*/ \
 		} while (0)
 		/* отключить процессор от SD карты - чтобы при выполнении power cycle не возникало фантомное питание через сигналы управления. */
 		#define HARDWARE_SDIO_HANGOFF()	do { \
-			arm_hardware_piod_inputs(1U << 2);	/* PD2 - SDIO_CMD	*/ \
-			arm_hardware_pioc_inputs(1U << 12);	/* PC12 - SDIO_CK	*/ \
-			arm_hardware_pioc_inputs(1U << 8);	/* PC8 - SDIO_D0	*/ \
-			arm_hardware_piod_updown(0, 1U << 2);	/* PD2 - SDIO_CMD	*/ \
-			arm_hardware_pioc_updown(0, 1U << 12);	/* PC12 - SDIO_CK	*/ \
-			arm_hardware_pioc_updown(0, 1U << 8);	/* PC8 - SDIO_D0	*/ \
+			arm_hardware_piod_inputs(1uL << 2);	/* PD2 - SDIO_CMD	*/ \
+			arm_hardware_pioc_inputs(1uL << 12);	/* PC12 - SDIO_CK	*/ \
+			arm_hardware_pioc_inputs(1uL << 8);	/* PC8 - SDIO_D0	*/ \
+			arm_hardware_piod_updown(0, 1uL << 2);	/* PD2 - SDIO_CMD	*/ \
+			arm_hardware_pioc_updown(0, 1uL << 12);	/* PC12 - SDIO_CK	*/ \
+			arm_hardware_pioc_updown(0, 1uL << 8);	/* PC8 - SDIO_D0	*/ \
 		} while (0)
 	#endif /* WITHSDHCHW4BIT */
 
-	#define HARDWARE_SDIO_CD_BIT	(1U << 7)	/* PG7 - SDIO_SENSE */
+	#define HARDWARE_SDIO_CD_BIT	(1uL << 7)	/* PG7 - SDIO_SENSE */
 
 	#define HARDWARE_SDIOSENSE_INITIALIZE()	do { \
 			arm_hardware_piog_inputs(HARDWARE_SDIO_CD_BIT); /* PG7 - SDIO_SENSE */ \
@@ -359,11 +359,11 @@
 
 	// PTT input - PD10
 	#define PTT_TARGET_PIN				(GPIOD->IDR)
-	#define PTT_BIT_PTT					(1U << 13)		// PD13 - PTT
+	#define PTT_BIT_PTT					(1uL << 13)		// PD13 - PTT
 
 	// TX INHIBIT
 	#define HARDWARE_TXINHIBIT_PIN		(GPIOD->IDR)
-	#define HARDWARE_TXINHIBIT_BIT		(1U << 10)		// PD10 - TX INHIBIT
+	#define HARDWARE_TXINHIBIT_BIT		(1uL << 10)		// PD10 - TX INHIBIT
 
 	// получить бит запрета передачи (от усилителя мощности)
 	#define HARDWARE_GET_TXINH() ((HARDWARE_TXINHIBIT_PIN & HARDWARE_TXINHIBIT_BIT) != 0)
@@ -383,8 +383,8 @@
 #if WITHELKEY
 	// Electronic key inputs
 	#define ELKEY_TARGET_PIN			(GPIOD->IDR)
-	#define ELKEY_BIT_LEFT				(1U << 11)		// PD11
-	#define ELKEY_BIT_RIGHT				(1U << 12)		// PD12
+	#define ELKEY_BIT_LEFT				(1uL << 11)		// PD11
+	#define ELKEY_BIT_RIGHT				(1uL << 12)		// PD12
 
 	#define ELKEY_INITIALIZE() \
 		do { \
@@ -397,19 +397,19 @@
 // IOUPDATE = PA15
 //#define SPI_IOUPDATE_PORT_C(v)	do { GPIOA->BSRR = BSRR_C(v); __DSB(); } while (0)
 //#define SPI_IOUPDATE_PORT_S(v)	do { GPIOA->BSRR = BSRR_S(v); __DSB(); } while (0)
-//#define SPI_IOUPDATE_BIT		(1U << 15)	// * PA15
+//#define SPI_IOUPDATE_BIT		(1uL << 15)	// * PA15
 
 #if WITHSPIHW || WITHSPISW
 	// Набор определений для работы без внешнего дешифратора
 	#define SPI_ALLCS_PORT_S(v)	do { GPIOG->BSRR = BSRR_S(v); __DSB(); } while (0)
 	#define SPI_ALLCS_PORT_C(v)	do { GPIOG->BSRR = BSRR_C(v); __DSB(); } while (0)
 
-	#define SPI_CSEL_PG15	(1U << 15)	// PG15 ext1
-	#define SPI_CSEL_PG8	(1U << 4)	// PG4 nvmem FM25L16B
-	#define SPI_CSEL_PG3	(1U << 3)	// PG7 board control registers chain
-	#define SPI_CSEL_PG2	(1U << 2)	// PG6 on-board codec1 NAU8822L
-	#define SPI_CSEL_PG1	(1U << 1)	// PG1 FPGA control registers CS1
-	#define SPI_CSEL_PG0	(1U << 0)	// PG0 FPGA control registers CS2
+	#define SPI_CSEL_PG15	(1uL << 15)	// PG15 ext1
+	#define SPI_CSEL_PG8	(1uL << 4)	// PG4 nvmem FM25L16B
+	#define SPI_CSEL_PG3	(1uL << 3)	// PG7 board control registers chain
+	#define SPI_CSEL_PG2	(1uL << 2)	// PG6 on-board codec1 NAU8822L
+	#define SPI_CSEL_PG1	(1uL << 1)	// PG1 FPGA control registers CS1
+	#define SPI_CSEL_PG0	(1uL << 0)	// PG0 FPGA control registers CS2
 
 	// Здесь должны быть перечислены все биты формирования CS в устройстве.
 	#define SPI_ALLCS_BITS ( \
@@ -454,14 +454,14 @@
 	// MOSI & SCK port
 	#define SPI_TARGET_SCLK_PORT_C(v)	do { GPIOA->BSRR = BSRR_C(v); __DSB(); } while (0)
 	#define SPI_TARGET_SCLK_PORT_S(v)	do { GPIOA->BSRR = BSRR_S(v); __DSB(); } while (0)
-	#define	SPI_SCLK_BIT			(1U << 5)	// * PA5 бит, через который идет синхронизация SPI
+	#define	SPI_SCLK_BIT			(1uL << 5)	// * PA5 бит, через который идет синхронизация SPI
 
 	#define SPI_TARGET_MOSI_PORT_C(v)	do { GPIOB->BSRR = BSRR_C(v); __DSB(); } while (0)
 	#define SPI_TARGET_MOSI_PORT_S(v)	do { GPIOB->BSRR = BSRR_S(v); __DSB(); } while (0)
-	#define	SPI_MOSI_BIT			(1U << 5)	// * PB5 бит, через который идет вывод (или ввод в случае двунаправленного SPI).
+	#define	SPI_MOSI_BIT			(1uL << 5)	// * PB5 бит, через который идет вывод (или ввод в случае двунаправленного SPI).
 
 	#define SPI_TARGET_MISO_PIN		(GPIOB->IDR)
-	#define	SPI_MISO_BIT			(1U << 4)	// * PB4 бит, через который идет ввод с SPI.
+	#define	SPI_MISO_BIT			(1uL << 4)	// * PB4 бит, через который идет ввод с SPI.
 
 	#define SPIIO_INITIALIZE() do { \
 			arm_hardware_pioa_outputs(SPI_SCLK_BIT, SPI_SCLK_BIT); \
@@ -485,12 +485,12 @@
 		} while (0)
 
 	#define HARDWARE_USART1_INITIALIZE() do { \
-			arm_hardware_pioa_altfn2((1U << 9) | (1U << 10), AF_USART1); /* PA9: TX DATA line (2 MHz), PA10: RX data line */ \
-			arm_hardware_pioa_updown((1U << 10), 0);	/* PA10: pull-up RX data */ \
+			arm_hardware_pioa_altfn2((1uL << 9) | (1uL << 10), AF_USART1); /* PA9: TX DATA line (2 MHz), PA10: RX data line */ \
+			arm_hardware_pioa_updown((1uL << 10), 0);	/* PA10: pull-up RX data */ \
 		} while (0)
 	#define HARDWARE_USART2_INITIALIZE() do { \
-			arm_hardware_piod_altfn2((1U << 5) | (1U << 6), AF_USART2); /* PD5: TX DATA line (2 MHz), PD6: RX data line */ \
-			arm_hardware_piod_updown((1U << 6), 0);	/* PD6: pull-up RX data */ \
+			arm_hardware_piod_altfn2((1uL << 5) | (1uL << 6), AF_USART2); /* PD5: TX DATA line (2 MHz), PD6: RX data line */ \
+			arm_hardware_piod_updown((1uL << 6), 0);	/* PD6: pull-up RX data */ \
 		} while (0)
 
 #endif
@@ -535,17 +535,17 @@
 	/* outputs */
 	#define FPGA_NCONFIG_PORT_S(v)	do { GPIOE->BSRR = BSRR_S(v); __DSB(); } while (0)
 	#define FPGA_NCONFIG_PORT_C(v)	do { GPIOE->BSRR = BSRR_C(v); __DSB(); } while (0)
-	#define FPGA_NCONFIG_BIT		(1UL << 13)	/* PE13 bit conneced to nCONFIG pin ALTERA FPGA */
+	#define FPGA_NCONFIG_BIT		(1UL << 11)	/* PE11 bit conneced to nCONFIG pin ALTERA FPGA */
 
 	/* inputs */
 	#define FPGA_CONF_DONE_INPUT	(GPIOE->IDR)
-	#define FPGA_CONF_DONE_BIT		(1UL << 14)	/* PE14 bit conneced to CONF_DONE pin ALTERA FPGA */
+	#define FPGA_CONF_DONE_BIT		(1UL << 12)	/* PE12 bit conneced to CONF_DONE pin ALTERA FPGA */
 
 	#define FPGA_NSTATUS_INPUT		(GPIOE->IDR)
 	#define FPGA_NSTATUS_BIT		(1UL << 15)	/* PE15 bit conneced to NSTATUS pin ALTERA FPGA */
 
 	#define FPGA_INIT_DONE_INPUT	(GPIOE->IDR)
-	#define FPGA_INIT_DONE_BIT		(1UL << 12)	/* PE12 bit conneced to INIT_DONE pin ALTERA FPGA */
+	#define FPGA_INIT_DONE_BIT		(1UL << 10)	/* PE10 bit conneced to INIT_DONE pin ALTERA FPGA */
 
 	/* Инициадизация выводов GPIO процессора для получения состояния и управлением загрузкой FPGA */
 	#define HARDWARE_FPGA_LOADER_INITIALIZE() do { \
@@ -570,18 +570,18 @@
 	// Биты доступа к массиву коэффициентов FIR фильтра в FPGA
 	#define TARGET_FPGA_FIR_CLK_PORT_C(v)	do { GPIOE->BSRR = BSRR_C(v); __DSB(); } while (0)
 	#define TARGET_FPGA_FIR_CLK_PORT_S(v)	do { GPIOE->BSRR = BSRR_S(v); __DSB(); } while (0)
-	#define TARGET_FPGA_FIR_CLK_BIT (1U << 7)	/* PE7 - fir CLK */
+	#define TARGET_FPGA_FIR_CLK_BIT (1uL << 7)	/* PE7 - fir CLK */
 
-	#define TARGET_FPGA_FIR1_WE_PORT_C(v)	do { GPIOE->BSRR = BSRR_C(v); __DSB(); } while (0)
-	#define TARGET_FPGA_FIR1_WE_PORT_S(v)	do { GPIOE->BSRR = BSRR_S(v); __DSB(); } while (0)
-	#define TARGET_FPGA_FIR1_WE_BIT (1U << 8)	/* PE8 - fir1 WE */
+	#define TARGET_FPGA_FIR1_WE_PORT_C(v)	do { GPIOH->BSRR = BSRR_C(v); __DSB(); } while (0)
+	#define TARGET_FPGA_FIR1_WE_PORT_S(v)	do { GPIOH->BSRR = BSRR_S(v); __DSB(); } while (0)
+	#define TARGET_FPGA_FIR1_WE_BIT (1uL << 6)	/* PH6 - fir1 WE */
 
-	#define TARGET_FPGA_FIR2_WE_PORT_C(v)	do { GPIOE->BSRR = BSRR_C(v); __DSB(); } while (0)
-	#define TARGET_FPGA_FIR2_WE_PORT_S(v)	do { GPIOE->BSRR = BSRR_S(v); __DSB(); } while (0)
-	#define TARGET_FPGA_FIR2_WE_BIT (1U << 9)	/* PE9 - fir2 WE */
+	#define TARGET_FPGA_FIR2_WE_PORT_C(v)	do { GPIOH->BSRR = BSRR_C(v); __DSB(); } while (0)
+	#define TARGET_FPGA_FIR2_WE_PORT_S(v)	do { GPIOH->BSRR = BSRR_S(v); __DSB(); } while (0)
+	#define TARGET_FPGA_FIR2_WE_BIT (1uL << 7)	/* PH7 - fir2 WE */
 
 	#define TARGET_FPGA_FIR_INITIALIZE() do { \
-			arm_hardware_pioe_outputs(TARGET_FPGA_FIR1_WE_BIT, TARGET_FPGA_FIR1_WE_BIT); \
+			arm_hardware_pioh_outputs(TARGET_FPGA_FIR1_WE_BIT, TARGET_FPGA_FIR1_WE_BIT); \
 			arm_hardware_pioe_outputs(TARGET_FPGA_FIR2_WE_BIT, TARGET_FPGA_FIR2_WE_BIT); \
 			arm_hardware_pioe_outputs(TARGET_FPGA_FIR_CLK_BIT, TARGET_FPGA_FIR_CLK_BIT); \
 		} while (0)
@@ -618,7 +618,7 @@
 #if WITHUSBHW
 	#define TARGET_USBFS_VBUSON_PORT_C(v)	do { GPIOA->BSRR = BSRR_C(v); __DSB(); } while (0)
 	#define TARGET_USBFS_VBUSON_PORT_S(v)	do { GPIOA->BSRR = BSRR_S(v); __DSB(); } while (0)
-	#define TARGET_USBFS_VBUSON_BIT (1U << 8)	// PA8 - нулём включение питания для device
+	#define TARGET_USBFS_VBUSON_BIT (1uL << 8)	// PA8 - нулём включение питания для device
 	/**USB_OTG_FS GPIO Configuration    
 	PA9     ------> USB_OTG_FS_VBUS
 	PA10     ------> USB_OTG_FS_ID
@@ -626,9 +626,9 @@
 	PA12     ------> USB_OTG_FS_DP 
 	*/
 	#define	USBD_FS_INITIALIZE() do { \
-		arm_hardware_pioa_altfn50((1U << 10) | (1U << 11) | (1U << 12), AF_OTGFS);			/* PA10, PA11, PA12 - USB_OTG_FS	*/ \
-		arm_hardware_pioa_inputs(1U << 9);		/* PA9 - USB_OTG_FS_VBUS */ \
-		arm_hardware_pioa_updownoff((1U << 9) | (1U << 10) |  (1U << 11) | (1U << 12)); \
+		arm_hardware_pioa_altfn50((1uL << 10) | (1uL << 11) | (1uL << 12), AF_OTGFS);			/* PA10, PA11, PA12 - USB_OTG_FS	*/ \
+		arm_hardware_pioa_inputs(1uL << 9);		/* PA9 - USB_OTG_FS_VBUS */ \
+		arm_hardware_pioa_updownoff((1uL << 9) | (1uL << 10) |  (1uL << 11) | (1uL << 12)); \
 		arm_hardware_pioa_outputs(TARGET_USBFS_VBUSON_BIT, TARGET_USBFS_VBUSON_BIT); \
 		} while (0)
 
@@ -645,9 +645,9 @@
 	PB15     ------> USB_OTG_HS_DP 
 	*/
 	#define	USBD_HS_FS_INITIALIZE() do { \
-		arm_hardware_piob_altfn50((1U << 14) | (1U << 15), AF_OTGHS_FS);			/* PB14, PB15 - USB_OTG_HS	*/ \
-		arm_hardware_piob_inputs(1U << 13);		/* PB13 - USB_OTG_HS_VBUS */ \
-		arm_hardware_piob_updownoff((1U << 13) | (1U << 14) | (1U << 15)); \
+		arm_hardware_piob_altfn50((1uL << 14) | (1uL << 15), AF_OTGHS_FS);			/* PB14, PB15 - USB_OTG_HS	*/ \
+		arm_hardware_piob_inputs(1uL << 13);		/* PB13 - USB_OTG_HS_VBUS */ \
+		arm_hardware_piob_updownoff((1uL << 13) | (1uL << 14) | (1uL << 15)); \
 		} while (0)
 
 	#define	USBD_HS_ULPI_INITIALIZE() do { \
