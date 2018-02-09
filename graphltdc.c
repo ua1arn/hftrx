@@ -208,132 +208,6 @@ typedef struct
                                                  This parameter must range from 0x000 to 0x7FF. */
 } LTDC_Layer_InitTypeDef;
 
-static void 
-LCD_AF_GPIOConfig(void)
-{
-	enum
-	{
-		GPIO_AF_LTDC = 14,  /* LCD-TFT Alternate Function mapping */
-		GPIO_AF_LTDC9 = 9  /* LCD-TFT Alternate Function mapping */
-	};
-#if CTLSTYLE_V1D
-
-
-	//arm_hardware_piof_outputs((1U << 10), 1 * (1U << 10));	// PF10 DE=constant high
-
-	/* GPIOs Configuration */
-	/*
-	+------------------------+-----------------------+----------------------------+
-	+                       LCD pins assignment                                   +
-	+------------------------+-----------------------+----------------------------+
-	|  LCD_TFT R2 <-> PC.10  |  LCD_TFT G2 <-> PA.06 |  LCD_TFT B2 <-> PD.06      |
-	|  LCD_TFT R3 <-> PB.00! |  LCD_TFT G3 <-> PG.10!|  LCD_TFT B3 <-> PG.11      |
-	|  LCD_TFT R4 <-> PA.11  |  LCD_TFT G4 <-> PB.10 |  LCD_TFT B4 <-> PG.12!     |
-	|  LCD_TFT R5 <-> PA.12  |  LCD_TFT G5 <-> PB.11 |  LCD_TFT B5 <-> PA.03      |
-	|  LCD_TFT R6 <-> PB.01! |  LCD_TFT G6 <-> PC.07 |  LCD_TFT B6 <-> PB.08      |
-	|  LCD_TFT R7 <-> PG.06  |  LCD_TFT G7 <-> PD.03 |  LCD_TFT B7 <-> PB.09      |
-	-------------------------------------------------------------------------------
-			|  LCD_TFT HSYNC <-> PC.06  | LCDTFT VSYNC <->  PA.04 |
-			|  LCD_TFT CLK   <-> PG.07  | LCD_TFT DE   <->  PF.10 |
-			-------------------------------------------------------
-
-	*/
-	// AF_14
-	arm_hardware_pioa_altfn50((1U << 3) | (1U << 4) | (1U << 6) | (1U << 11) | (1U << 12), GPIO_AF_LTDC);
-	arm_hardware_piob_altfn50((1U << 8) | (1U << 9) | (1U << 10) | (1U << 11), GPIO_AF_LTDC);
-	arm_hardware_pioc_altfn50((1U << 6) | (1U << 7) | (1U << 12), GPIO_AF_LTDC);
-	arm_hardware_piod_altfn50((1U << 3) | (1U << 6), GPIO_AF_LTDC);
-	arm_hardware_piof_altfn50((1U << 10), GPIO_AF_LTDC);
-	arm_hardware_piog_altfn50((1U << 6) | (1U << 7) | (1U << 11), GPIO_AF_LTDC);
-	// AF_9
-	arm_hardware_piob_altfn50((1U << 0) | (1U << 1), GPIO_AF_LTDC9);
-	arm_hardware_piog_altfn50((1U << 10) | (1U << 12), GPIO_AF_LTDC9);
-
-#elif CTLSTYLE_V3D
-
-	arm_hardware_pioi_outputs((1U << 12), 1 * (1U << 12));	// PI12 DISP=constant high
-
-	// COMTROL SIGNALS
-	arm_hardware_pioi_altfn50((1U << 9), GPIO_AF_LTDC);		// VSYNC
-	arm_hardware_pioi_altfn50((1U << 10), GPIO_AF_LTDC);	// HSYNC
-	arm_hardware_pioi_altfn50((1U << 14), GPIO_AF_LTDC);	// CLK
-	//arm_hardware_piok_outputs((1U << 7), 1 * (1U << 7));		// DE = constant 1
-	arm_hardware_piok_altfn50((1U << 7), GPIO_AF_LTDC);		// DE
-
-	// REG
-	arm_hardware_pioi_altfn50((1U << 15), GPIO_AF_LTDC);	// R0
-	arm_hardware_pioj_altfn50((1U << 0), GPIO_AF_LTDC);		// R1
-	arm_hardware_pioj_altfn50((1U << 1), GPIO_AF_LTDC);		// R2
-	arm_hardware_pioj_altfn50((1U << 2), GPIO_AF_LTDC);		// R3
-	arm_hardware_pioj_altfn50((1U << 3), GPIO_AF_LTDC);		// R4
-	arm_hardware_pioj_altfn50((1U << 4), GPIO_AF_LTDC);		// R5
-	arm_hardware_pioj_altfn50((1U << 5), GPIO_AF_LTDC);		// R6
-	arm_hardware_pioj_altfn50((1U << 6), GPIO_AF_LTDC);		// R7
-
-	// GREEN
-	arm_hardware_pioj_altfn50((1U << 7), GPIO_AF_LTDC);		// G0
-	arm_hardware_pioj_altfn50((1U << 8), GPIO_AF_LTDC);		// G1
-	arm_hardware_pioj_altfn50((1U << 9), GPIO_AF_LTDC);		// G2
-	arm_hardware_pioj_altfn50((1U << 10), GPIO_AF_LTDC);	// G3
-	arm_hardware_pioj_altfn50((1U << 11), GPIO_AF_LTDC);	// G4
-	arm_hardware_piok_altfn50((1U << 0), GPIO_AF_LTDC);		// G5
-	arm_hardware_piok_altfn50((1U << 1), GPIO_AF_LTDC);		// G6
-	arm_hardware_piok_altfn50((1U << 2), GPIO_AF_LTDC);		// G7
-
-	// BLUE
-	arm_hardware_pioe_altfn50((1U << 4), GPIO_AF_LTDC);		// B0
-	arm_hardware_pioj_altfn50((1U << 13), GPIO_AF_LTDC);	// B1
-	arm_hardware_pioj_altfn50((1U << 14), GPIO_AF_LTDC);	// B2
-	arm_hardware_pioj_altfn50((1U << 15), GPIO_AF_LTDC);	// B3
-	arm_hardware_piog_altfn50((1U << 12), GPIO_AF_LTDC9);	// B4
-	arm_hardware_piok_altfn50((1U << 4), GPIO_AF_LTDC);		// B5
-	arm_hardware_piok_altfn50((1U << 5), GPIO_AF_LTDC);		// B6
-	arm_hardware_piok_altfn50((1U << 6), GPIO_AF_LTDC);		// B7
-
-#elif CTLSTYLE_STORCH_V6
-
-	// COMTROL SIGNALS
-	arm_hardware_pioi_altfn50((1U << 9), GPIO_AF_LTDC);		// VSYNC
-	arm_hardware_pioi_altfn50((1U << 10), GPIO_AF_LTDC);	// HSYNC
-	arm_hardware_pioe_altfn50((1U << 13), GPIO_AF_LTDC);	// DE
-	arm_hardware_pioe_altfn50((1U << 14), GPIO_AF_LTDC);	// CLK
-
-	// REG
-	arm_hardware_pioh_altfn50((1U << 8), GPIO_AF_LTDC);		// R2
-	arm_hardware_pioh_altfn50((1U << 9), GPIO_AF_LTDC);		// R3
-	arm_hardware_pioh_altfn50((1U << 10), GPIO_AF_LTDC);	// R4
-	arm_hardware_pioh_altfn50((1U << 11), GPIO_AF_LTDC);	// R5
-	arm_hardware_pioh_altfn50((1U << 12), GPIO_AF_LTDC);	// R6
-	arm_hardware_piog_altfn50((1U << 6), GPIO_AF_LTDC);		// R7
-
-	// GREEN
-	arm_hardware_pioh_altfn50((1U << 13), GPIO_AF_LTDC);	// G2
-	arm_hardware_pioh_altfn50((1U << 14), GPIO_AF_LTDC);	// G3
-	arm_hardware_pioh_altfn50((1U << 15), GPIO_AF_LTDC);	// G4
-	arm_hardware_pioi_altfn50((1U << 0), GPIO_AF_LTDC);		// G5
-	arm_hardware_pioi_altfn50((1U << 1), GPIO_AF_LTDC);		// G6
-	arm_hardware_pioi_altfn50((1U << 2), GPIO_AF_LTDC);		// G7
-
-	// BLUE
-	arm_hardware_piog_altfn50((1U << 10), GPIO_AF_LTDC);	// B2
-	arm_hardware_piog_altfn50((1U << 11), GPIO_AF_LTDC);	// B3
-	arm_hardware_piog_altfn50((1U << 12), GPIO_AF_LTDC9);	// B4
-	arm_hardware_pioi_altfn50((1U << 5), GPIO_AF_LTDC);		// B5
-	arm_hardware_pioi_altfn50((1U << 6), GPIO_AF_LTDC);		// B6
-	arm_hardware_pioi_altfn50((1U << 7), GPIO_AF_LTDC);		// B7
-
-	// step-up backlight converter
-	arm_hardware_pioe_outputs((1U << 0), (1U << 0));		// PE0 - enable backlight
-	arm_hardware_piob_opendrain((1U << 9) | (1U << 8), (1U << 9) | (1U << 8));		// PB9:PB8 - backlight current adjust
-
-
-#else
-
-	#error Wrong CTLSTYLE_xxx for use LCDMODE_LTDC
-
-#endif
-}
-
 #if LCDMODE_LTDC_L24
 
 	#define SCALE_H 3
@@ -631,7 +505,7 @@ arm_hardware_ltdc_initialize(void)
 #endif /* CPUSTYLE_STM32H7XX */
 
 	/* Configure the LCD Control pins */
-	LCD_AF_GPIOConfig();  
+	HARDWARE_LTDC_INITIALIZE();	// подключение к вывоам процессора сигналов периферийного контроллера
 
 	/* Enable Pixel Clock --------------------------------------------------------*/
 
