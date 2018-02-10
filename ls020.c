@@ -546,6 +546,17 @@ display_gotoxy(uint_fast8_t x, uint_fast8_t y)
 	ls020_set_addr_column((DIM_X - 1) - (x * CHAR_W), y * CHAR_H); // Rotate 180 degrees
 #endif /* LCDMODE_LS020_TOPDOWN */
 }
+// Координаты в пикселях
+void display_plotfrom(uint_fast16_t x, uint_fast16_t y)
+{
+#if	LCDMODE_LS020_TOPDOWN
+	// Перевёрнутое изображение
+	ls020_set_addr_column(x, (DIM_Y - 1) - y); // Rotate 180 degrees
+#else /* LCDMODE_LS020_TOPDOWN */
+	// прямое изображение
+	ls020_set_addr_column((DIM_X - 1) - (x), y); // Rotate 180 degrees
+#endif /* LCDMODE_LS020_TOPDOWN */
+}
 
 /* аппаратный сброс дисплея - перед инициализаций */
 /* вызывается при разрешённых прерываниях. */

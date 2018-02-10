@@ -805,6 +805,14 @@ display_gotoxy(uint_fast8_t x, uint_fast8_t y)
 	ili9225_set_addr_column(x * CHAR_W);
 }
 
+// Координаты в пикселях
+void display_plotfrom(uint_fast16_t x, uint_fast16_t y)
+{
+	ili9225_y = y;
+	ili9225_set_addr_column(x);
+}
+
+
 static void display_lcd_reset(uint_fast8_t v)
 {
 	board_lcd_reset(v); 	// Pull RST pin up/down

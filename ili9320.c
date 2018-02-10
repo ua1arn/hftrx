@@ -669,6 +669,20 @@ display_gotoxy(uint_fast8_t x, uint_fast8_t y)
 #endif	/* LCDMODE_ILI9320_TOPDOWN */
 }
 
+// Координаты в пикселях
+void display_plotfrom(uint_fast16_t x, uint_fast16_t y)
+{
+#if LCDMODE_ILI9320_TOPDOWN
+	/* перевёрнутое изображение */
+	saved_y = (DIM_Y - 1) - (y);
+	ili9320_set_graddr((x));
+#else /* LCDMODE_ILI9320_TOPDOWN */
+	/* нормальное изображение */
+	saved_y = (y);
+	ili9320_set_graddr((DIM_X - 1) - (x));
+#endif	/* LCDMODE_ILI9320_TOPDOWN */
+}
+
 /* аппаратный сброс дисплея - перед инициализаций */
 /* вызывается при разрешённых прерываниях. */
 void display_reset(void)

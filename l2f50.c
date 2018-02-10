@@ -621,6 +621,20 @@ display_gotoxy(uint_fast8_t x, uint_fast8_t y)
 	#endif /* LCDMODE_L2F50_TOPDOWN */
 }
 
+//  оординаты в пиксел€х
+void display_plotfrom(uint_fast16_t x, uint_fast16_t y)
+{
+	#if	LCDMODE_L2F50_TOPDOWN
+		// нормально смотрим - выводы диспле€ справа
+		l2f50_windowy = (DIM_Y - 1) - y;
+		l2f50_windowx = (DIM_X - 1 - x);
+	#else /* LCDMODE_L2F50_TOPDOWN */
+		// нормально смотрим - выводы диспле€ слева
+		l2f50_windowy = (y);
+		l2f50_windowx = (x);
+	#endif /* LCDMODE_L2F50_TOPDOWN */
+}
+
 /* аппаратный сброс диспле€ - перед инициализаций */
 /* вызываетс€ при разрешЄнных прерывани€х. */
 void

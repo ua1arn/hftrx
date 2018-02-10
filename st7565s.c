@@ -535,6 +535,16 @@ display_gotoxy(uint_fast8_t x, uint_fast8_t y)
 #endif /* LCDMODE_ST7565S_TOPDOWN */
 }
 
+// Координаты в пикселях
+void display_plotfrom(uint_fast16_t x, uint_fast16_t y)
+{
+#if LCDMODE_ST7565S_TOPDOWN || LCDMODE_PTE1206_TOPDOWN
+	st7565s_set_addr_column(x + (132 - DIM_X), DIM_Y / CHAR_H - 1 - (y / CHAR_H));
+#else /* LCDMODE_ST7565S_TOPDOWN */
+	st7565s_set_addr_column(x, DIM_Y / CHAR_H - 1 - (y / CHAR_H));
+#endif /* LCDMODE_ST7565S_TOPDOWN */
+}
+
 
 /* аппаратный сброс дисплея - перед инициализаций */
 /* вызывается при разрешённых прерываниях. */

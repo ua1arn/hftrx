@@ -617,6 +617,11 @@ display_gotoxy(uint_fast8_t x, uint_fast8_t y)
 {
 	pcf8535_set_addr_column(x * CHAR_W, y);
 }
+// Координаты в пикселях
+void display_plotfrom(uint_fast16_t x, uint_fast16_t y)
+{
+	pcf8535_set_addr_column(x, y / CHAR_H);
+}
 
 /* аппаратный сброс дисплея - перед инициализаций */
 /* вызывается при разрешённых прерываниях. */

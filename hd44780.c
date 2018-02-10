@@ -791,6 +791,12 @@ display_gotoxy(uint_fast8_t x, uint_fast8_t y)
 	hd44780_gotoaddr(addr + x);
 }
 
+// Координаты в пикселях
+void display_plotfrom(uint_fast16_t x, uint_fast16_t y)
+{
+}
+
+
 /* аппаратный сброс дисплея - перед инициализаций */
 /* вызывается при разрешённых прерываниях. */
 void

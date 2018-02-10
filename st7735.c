@@ -1246,6 +1246,15 @@ display_gotoxy(uint_fast8_t x, uint_fast8_t y)
 	st7735_y = y * CHAR_H;		/* переход от символьных координат к экранным */
 	st7735_set_addr_column(x * CHAR_W);
 }
+
+// Координаты в пикселях
+void display_plotfrom(uint_fast16_t x, uint_fast16_t y)
+{
+	st7735_y = y;		/* переход от символьных координат к экранным */
+	st7735_set_addr_column(x);
+}
+
+
 #endif /* ! LCDMODE_LTDC */
 
 /* аппаратный сброс дисплея - перед инициализаций */
