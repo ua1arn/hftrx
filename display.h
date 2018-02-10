@@ -480,7 +480,7 @@ void display_wrdata2_end(void);
 void display_put_char_small2(uint_fast8_t c, uint_fast8_t lowhalf);
 // полоса индикатора
 void display_wrdatabar_begin(void);
-void display_barcolumn(uint_fast8_t pattern);
+void display_barcolumn(uint_fast8_t pattern);	// Выдать восемь цветных пикселей, младший бит - самый верхний в растре
 void display_wrdatabar_end(void);
 // большие и средние цифры (частота)
 void display_wrdatabig_begin(void);

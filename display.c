@@ -150,7 +150,7 @@ void display_showbuffer(
 		// выдача горихонтальной полосы
 		display_wrdatabar_begin();
 		for (pos = 0; pos < dx; ++ pos)
-			display_barcolumn(p [pos]);
+			display_barcolumn(p [pos]);	// Выдать восемь цветных пикселей, младший бит - самый верхний в растре
 		display_wrdatabar_end();
 	} while (lowhalf --);
 
@@ -348,70 +348,55 @@ void display_setcolors3(COLOR_T fg, COLOR_T bg, COLOR_T fgbg)
 	display_setcolors(fg, bg);
 }
 
-// последовательно, по вертикали размещаем пиксели
+// Выдать один цветной пиксель
 static void 
-//NOINLINEAT
-ltdc_vertical_pixel(
-	uint_fast8_t v
+ltdc_horizontal_pix1color(
+	uint_fast8_t cgcol,
+	uint_fast8_t cgrow,
+	PACKEDCOLOR_T color
 	)
 {
-	framebuff [ltdc_first + ltdc_secondoffs] [ltdc_second] = v ? ltdc_fg : ltdc_bg;
-	if (++ ltdc_secondoffs >= ltdc_h)
-	{
-		ltdc_secondoffs = 0;
-		++ ltdc_second;
-	}
+	// размещаем пиксели по горизонтали
+	framebuff [ltdc_first + cgrow] [ltdc_second + cgcol] = color;
 }
 
 
-// Выдать один цветных пиксель
+// Выдать один цветной пиксель (фон/символ)
 static void 
-//NOINLINEAT
 ltdc_horizontal_pix1(
 	uint_fast8_t cgcol,
 	uint_fast8_t cgrow,
 	uint_fast8_t v
 	)
 {
-	// размещаем пиксели по гшоризонтали
-	framebuff [ltdc_first + cgrow] [ltdc_second + cgcol] = v ? ltdc_fg : ltdc_bg;
+	ltdc_horizontal_pix1color(cgcol, cgrow, v ? ltdc_fg : ltdc_bg);
 }
 
 
-// Выдать восемь цветных пикселей
+// Выдать восемь цветных пикселей, младший бит - самый верхний в растре
 static void 
-//NOINLINEAT
 ltdc_vertical_pix8(
 	uint_fast8_t v
 	)
 {
-#if LCDMODE_LTDC_L24
+	const FLASHMEM PACKEDCOLOR_T * const pcl = (* byte2run) [v];
 
-	ltdc_vertical_pixel(v & 0x01);
-	ltdc_vertical_pixel(v & 0x02);
-	ltdc_vertical_pixel(v & 0x04);
-	ltdc_vertical_pixel(v & 0x08);
-	ltdc_vertical_pixel(v & 0x10);
-	ltdc_vertical_pixel(v & 0x20);
-	ltdc_vertical_pixel(v & 0x40);
-	ltdc_vertical_pixel(v & 0x80);
+#if LCDMODE_LTDC_L24 || LCDMODE_LQ043T3DX02K
 
-#elif LCDMODE_LQ043T3DX02K
-
-	ltdc_horizontal_pix1(0, 0, v & 0x01);
-	ltdc_horizontal_pix1(0, 1, v & 0x02);
-	ltdc_horizontal_pix1(0, 2, v & 0x04);
-	ltdc_horizontal_pix1(0, 3, v & 0x08);
-	ltdc_horizontal_pix1(0, 4, v & 0x10);
-	ltdc_horizontal_pix1(0, 5, v & 0x20);
-	ltdc_horizontal_pix1(0, 6, v & 0x40);
-	ltdc_horizontal_pix1(0, 7, v & 0x80);
+	ltdc_horizontal_pix1color(0, 0, pcl [0]);
+	ltdc_horizontal_pix1color(0, 1, pcl [1]);
+	ltdc_horizontal_pix1color(0, 2, pcl [2]);
+	ltdc_horizontal_pix1color(0, 3, pcl [3]);
+	ltdc_horizontal_pix1color(0, 4, pcl [4]);
+	ltdc_horizontal_pix1color(0, 5, pcl [5]);
+	ltdc_horizontal_pix1color(0, 6, pcl [6]);
+	ltdc_horizontal_pix1color(0, 7, pcl [7]);
 
 	++ ltdc_second;
 
 #else /* LCDMODE_LTDC_L24 */
-	// размещаем пиксели по гшоризонтали
-	memcpy(& framebuff [ltdc_first] [ltdc_second + ltdc_secondoffs], (* byte2run) [v], sizeof (* byte2run) [v]);
+	// размещаем пиксели по горизонтали
+	memcpy(& framebuff [ltdc_first] [ltdc_second + ltdc_secondoffs], pcl, sizeof (* byte2run) [v]);
 	if ((ltdc_secondoffs += 8) >= ltdc_h)
 	{
 		ltdc_secondoffs -= ltdc_h;
@@ -429,7 +414,7 @@ ltdc_horizontal_pix8(
 	uint_fast8_t v
 	)
 {
-	// размещаем пиксели по гшоризонтали
+	// размещаем пиксели по горизонтали
 	memcpy(& framebuff [ltdc_first + cgrow] [ltdc_second + cgcol], (* byte2run) [v], sizeof (* byte2run) [v]);
 }
 
@@ -538,7 +523,7 @@ static void ltdc_vertical_put_char_small(char cc)
 	const FLASHMEM uint8_t * p = & ls020_smallfont [c][0];
 	
 	for (; i < NBYTES; ++ i)
-		ltdc_vertical_pix8(p [i]);	// Выдать восемь цветных пикселей
+		ltdc_vertical_pix8(p [i]);	// Выдать восемь цветных пикселей, младший бит - самый верхний в растре
 }
 
 // Вызов этой функции только внутри display_wrdatabig_begin() и display_wrdatabig_end();
@@ -552,7 +537,7 @@ static void ltdc_vertical_put_char_big(char cc)
 	const FLASHMEM uint8_t * p = & ls020_bigfont [c][0];
 	
 	for (; i < NBYTES; ++ i)
-		ltdc_vertical_pix8(p [i]);	// Выдать восемь цветных пикселей
+		ltdc_vertical_pix8(p [i]);	// Выдать восемь цветных пикселей, младший бит - самый верхний в растре
 }
 
 // Вызов этой функции только внутри display_wrdatabig_begin() и display_wrdatabig_end();
@@ -564,7 +549,7 @@ static void ltdc_vertical_put_char_half(char cc)
 	const FLASHMEM uint8_t * p = & ls020_halffont [c][0];
 	
 	for (; i < NBYTES; ++ i)
-		ltdc_vertical_pix8(p [i]);	// Выдать восемь цветных пикселей
+		ltdc_vertical_pix8(p [i]);	// Выдать восемь цветных пикселей, младший бит - самый верхний в растре
 }
 
 #endif /* LCDMODE_LQ043T3DX02K */
@@ -645,9 +630,10 @@ void display_wrdatabar_begin(void)
 	ltdc_h = CHAR_H;
 }
 
+// Выдать восемь цветных пикселей, младший бит - самый верхний в растре
 void display_barcolumn(uint_fast8_t pattern)
 {
-	ltdc_vertical_pix8(pattern);
+	ltdc_vertical_pix8(pattern);	// Выдать восемь цветных пикселей, младший бит - самый верхний в растре
 }
 
 void display_wrdatabar_end(void)
