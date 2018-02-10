@@ -361,7 +361,13 @@ display_gotoxy(uint_fast8_t x, uint_fast8_t y)
 {
 	uc1608_set_addr_column(x * CHAR_W, y);
 }
- 
+
+// Координаты в пикселях
+void display_plotfrom(uint_fast16_t x, uint_fast16_t y)
+{
+	uc1608_set_addr_column(x, y / CHAR_H);
+}
+
 static void uc1608_resetdelay(void)
 {
 	local_delay_ms(150); // Delay 50 ms
