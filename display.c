@@ -379,10 +379,21 @@ ltdc_vertical_pix8(
 	uint_fast8_t v
 	)
 {
+
+#if LCDMODE_LTDC_L24
+
+	ltdc_horizontal_pix1(0, 0, v & 0x01);
+	ltdc_horizontal_pix1(0, 1, v & 0x02);
+	ltdc_horizontal_pix1(0, 2, v & 0x04);
+	ltdc_horizontal_pix1(0, 3, v & 0x08);
+	ltdc_horizontal_pix1(0, 4, v & 0x10);
+	ltdc_horizontal_pix1(0, 5, v & 0x20);
+	ltdc_horizontal_pix1(0, 6, v & 0x40);
+	ltdc_horizontal_pix1(0, 7, v & 0x80);
+
+#elif LCDMODE_LQ043T3DX02K
+
 	const FLASHMEM PACKEDCOLOR_T * const pcl = (* byte2run) [v];
-
-#if LCDMODE_LTDC_L24 || LCDMODE_LQ043T3DX02K
-
 	ltdc_horizontal_pix1color(0, 0, pcl [0]);
 	ltdc_horizontal_pix1color(0, 1, pcl [1]);
 	ltdc_horizontal_pix1color(0, 2, pcl [2]);
@@ -396,6 +407,7 @@ ltdc_vertical_pix8(
 
 #else /* LCDMODE_LTDC_L24 */
 	// размещаем пиксели по горизонтали
+	const FLASHMEM PACKEDCOLOR_T * const pcl = (* byte2run) [v];
 	memcpy(& framebuff [ltdc_first] [ltdc_second + ltdc_secondoffs], pcl, sizeof (* byte2run) [v]);
 	if ((ltdc_secondoffs += 8) >= ltdc_h)
 	{
