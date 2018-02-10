@@ -4929,7 +4929,7 @@ void hightests(void)
 {
 #if 1 && defined (__GNUC__)
 	{
-		debug_printf_P(PSTR("__GNUC__=%d, __GNUC_MINOR__=%d\nx"), (int) __GNUC__, (int) __GNUC_MINOR__);
+		debug_printf_P(PSTR("__GNUC__=%d, __GNUC_MINOR__=%d\n"), (int) __GNUC__, (int) __GNUC_MINOR__);
 	}
 #endif
 #if 0
