@@ -363,6 +363,21 @@ ltdc_vertical_pixel(
 	}
 }
 
+
+// Выдать один цветных пиксель
+static void 
+//NOINLINEAT
+ltdc_horizontal_pix1(
+	uint_fast8_t cgcol,
+	uint_fast8_t cgrow,
+	uint_fast8_t v
+	)
+{
+	// размещаем пиксели по гшоризонтали
+	framebuff [ltdc_first + cgrow] [ltdc_second + cgcol] = v ? ltdc_fg : ltdc_bg;
+}
+
+
 // Выдать восемь цветных пикселей
 static void 
 //NOINLINEAT
@@ -380,6 +395,19 @@ ltdc_vertical_pix8(
 	ltdc_vertical_pixel(v & 0x20);
 	ltdc_vertical_pixel(v & 0x40);
 	ltdc_vertical_pixel(v & 0x80);
+
+#elif LCDMODE_LQ043T3DX02K
+
+	ltdc_horizontal_pix1(0, 0, v & 0x01);
+	ltdc_horizontal_pix1(0, 1, v & 0x02);
+	ltdc_horizontal_pix1(0, 2, v & 0x04);
+	ltdc_horizontal_pix1(0, 3, v & 0x08);
+	ltdc_horizontal_pix1(0, 4, v & 0x10);
+	ltdc_horizontal_pix1(0, 5, v & 0x20);
+	ltdc_horizontal_pix1(0, 6, v & 0x40);
+	ltdc_horizontal_pix1(0, 7, v & 0x80);
+
+	++ ltdc_second;
 
 #else /* LCDMODE_LTDC_L24 */
 	// размещаем пиксели по гшоризонтали
@@ -403,19 +431,6 @@ ltdc_horizontal_pix8(
 {
 	// размещаем пиксели по гшоризонтали
 	memcpy(& framebuff [ltdc_first + cgrow] [ltdc_second + cgcol], (* byte2run) [v], sizeof (* byte2run) [v]);
-}
-
-// Выдать один цветных пиксель
-static void 
-//NOINLINEAT
-ltdc_horizontal_pix1(
-	uint_fast8_t cgcol,
-	uint_fast8_t cgrow,
-	uint_fast8_t v
-	)
-{
-	// размещаем пиксели по гшоризонтали
-	framebuff [ltdc_first + cgrow] [ltdc_second + cgcol] = v ? ltdc_fg : ltdc_bg;
 }
 
 static uint_fast8_t
