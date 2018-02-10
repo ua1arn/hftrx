@@ -474,6 +474,7 @@ void display_clear(void);
 void display_setcolors(COLOR_T fg, COLOR_T bg);
 void display_setcolors3(COLOR_T fg, COLOR_T bg, COLOR_T bgfg);	// bgfg - цвет для отрисовки антиалиасинга
 void display_gotoxy(uint_fast8_t x, uint_fast8_t y);
+void display_plotfrom(uint_fast16_t x, uint_fast16_t y);	// Координаты в пикселях
 // самый маленький шрифт
 void display_wrdata2_begin(void);
 void display_wrdata2_end(void);
@@ -493,17 +494,20 @@ void display_put_char_small(uint_fast8_t c, uint_fast8_t lowhalf);
 void display_wrdata_end(void);
 
 #if LCDMODE_S1D13781
-	// биты 'ktvtynf буфера распологаются на экране горизонтально
+	// биты слова буфера располагаются на экране горизонтально
+	// старший битт левее
 	typedef uint16_t GX_t;	/* тип элмента буфера */
-	#define GXSIZE(dx, dy)	(dy * ((dx + 15) / 16))
+	#define GXSIZE(dx, dy)	((dy) * (((dx) + 15) / 16))
 	//#define GXROW(buff, dx, dy, y)	((dx + 7) / 16 * 2)
 #else	/* LCDMODE_S1D13781 */
-	// биты байта буфера распологаются на экране вертикально
+	// биты байта буфера располагаются на экране вертикально
+	// младший сверху (на цветном дисплее).
+	// старший сврху (на монохромном дисплее).
 	typedef uint8_t GX_t;	/* тип элемента буфера */
-	#define GXSIZE(dx, dy)	(dx * ((dy + 7) / 8))
+	#define GXSIZE(dx, dy)	((dx) * (((dy) + 7) / 8))
 #endif	/* LCDMODE_S1D13781 */
 
-// отрисовать буфер на дисплее.
+/* выдать на дисплей монохромный буфер с размерами dx * dy битов */
 void display_showbuffer(
 	const GX_t * buffer,
 	unsigned dx,	// пиксели
@@ -511,6 +515,7 @@ void display_showbuffer(
 	uint_fast8_t col,	// сетка
 	uint_fast8_t row	// сетка
 	);
+/* выдать на дисплей монохромный буфер с размерами dx * dy битов */
 void display_showbufferXXX(
 	const GX_t * buffer,
 	unsigned dx,	// пиксели

@@ -2155,6 +2155,7 @@ display_wrdatabar_end(void)
 
 // отрисовать буфер на дисплее.
 // работа с буфером в видеопамяти с начальным смещением scratchbufbase
+/* выдать на дисплей монохромный буфер с размерами dx * dy битов */
 void display_showbufferXXX(
 	const GX_t * buffer,
 	unsigned dx,	// пиксели

@@ -5269,9 +5269,10 @@ void hightests(void)
 		} while (lowhalf --);
 	#endif
 
-		display_setcolors(COLOR_WHITE, COLOR_BLUE);
+		display_setcolors(COLOR_WHITE, COLOR_BLACK);
 		
-		memset(scr, 0x00, sizeof scr);
+		memset(scr, 0xFF, sizeof scr);
+		display_showbuffer(scr, dx, dy, DBX_0, DBY_1);
 		int phase = 0;
 		int count = 0;
 		const int top = (DIM_X - bufY);
@@ -5283,19 +5284,19 @@ void hightests(void)
 			// рисование линии
 			unsigned i;
 			for (i = 0; i < bufY; ++ i)
-				display_pixelbuffer(scr, dx, dy, i + loop, i);
+				display_pixelbuffer(scr, dx, dy, i + loop, i);		// погасить точку
 
-			display_showbufferXXX(scr, dx, dy, DBX_0, DBY_1);
+			display_showbuffer(scr, dx, dy, DBX_0, DBY_1);
 			//local_delay_ms(25);
 			if (++ count >= 1000)
 			{
 				count = 0;
 				phase = ! phase;
 				if (phase)
-					display_setcolors(COLOR_YELLOW, COLOR_BLUE);
+					display_setcolors(COLOR_YELLOW, COLOR_BLACK);
 				else
-					display_setcolors(COLOR_RED, COLOR_BLUE);
-				memset(scr, 0x00, sizeof scr);
+					display_setcolors(COLOR_RED, COLOR_BLACK);
+				memset(scr, 0xFF, sizeof scr);
 			}
 			
 		}
@@ -5866,7 +5867,7 @@ void hightests(void)
 		}
 	}
 #endif
-#if 0 && WITHDEBUG
+#if 0
 	// отображение картинок
 	eink_lcd_backlight(1);
 
@@ -5909,11 +5910,11 @@ void hightests(void)
 	{
 	
 		check_poweroff();
-		memset(scr, 0x00, sizeof scr);
+		memset(scr, 0xFF, sizeof scr);
 		// рисование линии
 		unsigned i;
 		for (i = 0; i < bufY; ++ i)
-			display_pixelbuffer(scr [0], dx, dy, i + loop, i);
+			display_pixelbuffer(scr [0], dx, dy, i + loop, i);		// погасить точку
 
 		display_showbuffer(scr [0], dx, dy, DBX_0, DBY_1);
 		local_delay_ms(25);

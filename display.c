@@ -140,14 +140,16 @@ void display_showbuffer(
 
 #else /* LCDMODE_S1D13781 */
 
-	uint_fast8_t lowhalf = (dy + 7) / 8 - 1;
+	uint_fast8_t lowhalf = (dy) / 8 - 1;
+	if (lowhalf == 0)
+		return;
 	do
 	{
 		uint_fast8_t pos;
 		const unsigned char * const p = buffer + lowhalf * dx;	// начало данных горизонтальной полосы в памяти
-			
-		display_gotoxy(col, row + lowhalf);		// курсор в начало первой строки
-		// выдача горихонтальной полосы
+		//debug_printf_P(PSTR("display_showbuffer: col=%d, row=%d, lowhalf=%d\n"), col, row, lowhalf);
+		display_plotfrom(GRID2X(col), GRID2Y(row) + lowhalf * 8);		// курсор в начало первой строки
+		// выдача горизонтальной полосы
 		display_wrdatabar_begin();
 		for (pos = 0; pos < dx; ++ pos)
 			display_barcolumn(p [pos]);	// Выдать восемь цветных пикселей, младший бит - самый верхний в растре
@@ -157,7 +159,32 @@ void display_showbuffer(
 #endif /* LCDMODE_S1D13781 */
 }
 
-/* поставить точку в буфере кадра */
+#if LCDMODE_S1D13781
+
+	static const uint_fast16_t mapcolumn [16] =
+	{
+		0x0001, 0x0002, 0x0004, 0x0008, 0x0010, 0x0020, 0x0040, 0x0080, // биты для манипуляций с видеобуфером
+		0x0100, 0x0200, 0x0400, 0x0800, 0x1000, 0x2000, 0x4000, 0x8000,
+	};
+
+#elif LCDMODE_UC1608 || LCDMODE_UC1601
+
+	/* старшие биты соответствуют верхним пикселям изображения */
+	static const uint_fast8_t mapcolumn [8] =
+	{
+		0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01, // биты для манипуляций с видеобуфером
+	};
+#else /* LCDMODE_UC1608 || LCDMODE_UC1601 */
+
+	/* младшие биты соответствуют верхним пикселям изображения */
+	static const uint_fast8_t mapcolumn [8] =
+	{
+		0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, // биты для манипуляций с видеобуфером
+	};
+
+#endif /* LCDMODE_UC1608 || LCDMODE_UC1601 */
+
+// погасить точку
 void display_pixelbuffer(
 	GX_t * buffer,
 	uint_fast16_t dx,	
@@ -168,34 +195,25 @@ void display_pixelbuffer(
 {
 #if LCDMODE_S1D13781
 
-	static const uint_fast16_t map [16] =
-	{
-		0x0001, 0x0002, 0x0004, 0x0008, 0x0010, 0x0020, 0x0040, 0x0080, // биты для манипуляций с видеобуфером
-		0x0100, 0x0200, 0x0400, 0x0800, 0x1000, 0x2000, 0x4000, 0x8000,
-	};
 	//row = (dy - 1) - row;		// смена направления
 	GX_t * const rowstart = buffer + row * ((dx + 15) / 16);	// начало данных строки растра в памяти
 	GX_t * const p = rowstart + col / 16;	
-	//* p |= map [col % 16];	// установить точку
-	* p &= ~ map [col % 16];	// погасить точку
-	//* p ^= map [col % 16];	// инвертировать точку
+	//* p |= mapcolumn [col % 16];	// установить точку
+	* p &= ~ mapcolumn [col % 16];	// погасить точку
+	//* p ^= mapcolumn [col % 16];	// инвертировать точку
 
 #else /* LCDMODE_S1D13781 */
 
-	static const uint_fast8_t map [8] =
-	{
-		0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01, // биты для манипуляций с видеобуфером
-	};
 	//row = (dy - 1) - row;		// смена направления
 	uint8_t * const p = buffer + (row / 8) * dx + col;	// начало данных горизонтальной полосы в памяти
-	//* p |= map [row % 8];	// установить точку
-	* p &= ~ map [row % 8];	// погасить точку
-	//* p ^= map [row % 8];	// инвертировать точку
+	//* p |= mapcolumn [row % 8];	// установить точку
+	* p &= ~ mapcolumn [row % 8];	// погасить точку
+	//* p ^= mapcolumn [row % 8];	// инвертировать точку
 
 #endif /* LCDMODE_S1D13781 */
 }
 
-/* поставить точку в буфере кадра */
+/* Исключающее ИЛИ с точкой в растре */
 void display_pixelbuffer_xor(
 	GX_t * buffer,
 	uint_fast16_t dx,	
@@ -205,30 +223,20 @@ void display_pixelbuffer_xor(
 	)
 {
 #if LCDMODE_S1D13781
-
-	static const uint_fast16_t map [16] =
-	{
-		0x0001, 0x0002, 0x0004, 0x0008, 0x0010, 0x0020, 0x0040, 0x0080, // биты для манипуляций с видеобуфером
-		0x0100, 0x0200, 0x0400, 0x0800, 0x1000, 0x2000, 0x4000, 0x8000,
-	};
 	//row = (dy - 1) - row;		// смена направления
 	GX_t * const rowstart = buffer + row * ((dx + 15) / 16);	// начало данных строки растра в памяти
 	GX_t * const p = rowstart + col / 16;	
-	//* p |= map [col % 16];	// установить точку
-	//* p &= ~ map [col % 16];	// погасить точку
-	* p ^= map [col % 16];	// инвертировать точку
+	//* p |= mapcolumn [col % 16];	// установить точку
+	//* p &= ~ mapcolumn [col % 16];	// погасить точку
+	* p ^= mapcolumn [col % 16];	// инвертировать точку
 
 #else /* LCDMODE_S1D13781 */
 
-	static const uint_fast8_t map [8] =
-	{
-		0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01, // биты для манипуляций с видеобуфером
-	};
 	//row = (dy - 1) - row;		// смена направления
 	uint8_t * const p = buffer + (row / 8) * dx + col;	// начало данных горизонтальной полосы в памяти
-	//* p |= map [row % 8];	// установить точку
-	//* p &= ~ map [row % 8];	// погасить точку
-	* p ^= map [row % 8];	// инвертировать точку
+	//* p |= mapcolumn [row % 8];	// установить точку
+	//* p &= ~ mapcolumn [row % 8];	// погасить точку
+	* p ^= mapcolumn [row % 8];	// инвертировать точку
 
 #endif /* LCDMODE_S1D13781 */
 }
@@ -303,9 +311,9 @@ static PACKEDCOLOR_T ltdc_fg, ltdc_bg;
 static const FLASHMEM PACKEDCOLOR_T (* byte2run) [256][8] = & byte2run_COLOR_WHITE_COLOR_BLACK;
 #endif /* ! LCDMODE_LTDC_L24 */
 
-static unsigned ltdc_first, ltdc_second;
-static unsigned ltdc_h;
-static unsigned ltdc_secondoffs;
+static unsigned ltdc_first, ltdc_second;	// в пикселях
+static unsigned ltdc_h;						// высота символа (полосы) в пикселях
+static unsigned ltdc_secondoffs;			// в пикселях
 
 void display_setcolors(COLOR_T fg, COLOR_T bg)
 {
@@ -351,20 +359,21 @@ void display_setcolors3(COLOR_T fg, COLOR_T bg, COLOR_T fgbg)
 // Выдать один цветной пиксель
 static void 
 ltdc_horizontal_pix1color(
-	uint_fast8_t cgcol,
+	uint_fast8_t cgcol,		// смещение в пикселях относительно координат, поставленных display_gotoxy
 	uint_fast8_t cgrow,
 	PACKEDCOLOR_T color
 	)
 {
 	// размещаем пиксели по горизонтали
-	framebuff [ltdc_first + cgrow] [ltdc_second + cgcol] = color;
+	//debug_printf_P(PSTR("framebuff=%p, ltdc_first=%d, cgrow=%d, ltdc_second=%d, ltdc_secondoffs=%d, cgcol=%d\n"), framebuff, ltdc_first, cgrow, ltdc_second, ltdc_secondoffs, cgcol);
+	framebuff [ltdc_first + cgrow] [ltdc_second + ltdc_secondoffs + cgcol] = color;
 }
 
 
 // Выдать один цветной пиксель (фон/символ)
 static void 
 ltdc_horizontal_pix1(
-	uint_fast8_t cgcol,
+	uint_fast8_t cgcol,		// смещение в пикселях относительно координат, поставленных display_gotoxy
 	uint_fast8_t cgrow,
 	uint_fast8_t v
 	)
@@ -403,12 +412,12 @@ ltdc_vertical_pix8(
 	ltdc_horizontal_pix1color(0, 6, pcl [6]);
 	ltdc_horizontal_pix1color(0, 7, pcl [7]);
 
-	++ ltdc_second;
+	++ ltdc_secondoffs;
 
 #else /* LCDMODE_LTDC_L24 */
 	// размещаем пиксели по горизонтали
 	const FLASHMEM PACKEDCOLOR_T * const pcl = (* byte2run) [v];
-	memcpy(& framebuff [ltdc_first] [ltdc_second + ltdc_secondoffs], pcl, sizeof (* byte2run) [v]);
+	memcpy(& framebuff [ltdc_first] [ltdc_second + ltdc_secondoffs], pcl, sizeof (PACKEDCOLOR_T) * 8);
 	if ((ltdc_secondoffs += 8) >= ltdc_h)
 	{
 		ltdc_secondoffs -= ltdc_h;
@@ -613,6 +622,24 @@ void display_gotoxy(uint_fast8_t x, uint_fast8_t y)
 	ltdc_first = x * CHAR_W;
 	ltdc_second = y * CHAR_H;
 #endif
+	//debug_printf_P(PSTR("display_gotoxy: CHAR_H=%d, CHAR_W=%d, x=%d, y=%d, ltdc_first=%d, ltdc_second=%d\n"), CHAR_H, CHAR_W, x, y, ltdc_first, ltdc_second);
+	ASSERT(ltdc_first < DIM_FIRST);
+	ASSERT(ltdc_second < DIM_SECOND);
+}
+
+// Координаты в пикселях
+void display_plotfrom(uint_fast16_t x, uint_fast16_t y)
+{
+#if LCDMODE_ILI8961 || LCDMODE_LQ043T3DX02K
+	ltdc_second = x;
+	ltdc_first = y;
+#else
+	ltdc_first = x;
+	ltdc_second = y;
+#endif
+	//debug_printf_P(PSTR("display_gotoxy: CHAR_H=%d, CHAR_W=%d, x=%d, y=%d, ltdc_first=%d, ltdc_second=%d\n"), CHAR_H, CHAR_W, x, y, ltdc_first, ltdc_second);
+	ASSERT(ltdc_first < DIM_FIRST);
+	ASSERT(ltdc_second < DIM_SECOND);
 }
 
 // самый маленький шрифт
@@ -639,7 +666,7 @@ void display_put_char_small2(uint_fast8_t c, uint_fast8_t lowhalf)
 void display_wrdatabar_begin(void)
 {
 	ltdc_secondoffs = 0;
-	ltdc_h = CHAR_H;
+	ltdc_h = 8;
 }
 
 // Выдать восемь цветных пикселей, младший бит - самый верхний в растре
