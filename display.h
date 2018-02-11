@@ -593,6 +593,15 @@ void display_colorbuffer_set(
 	uint_fast16_t row,	// вертикальная координата пикселя (0..dy-1) сверху вниз
 	COLOR_T color
 	);
+// Поставить цветную точку.
+void display_colorbuffer_xor(
+	PACKEDCOLOR_T * buffer,
+	uint_fast16_t dx,	
+	uint_fast16_t dy,
+	uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
+	uint_fast16_t row,	// вертикальная координата пикселя (0..dy-1) сверху вниз
+	COLOR_T color
+	);
 
 
 /* копирование содержимого окна с перекрытием для водопада */

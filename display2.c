@@ -3364,7 +3364,7 @@ enum
 	#define SMALLCHARH 16 /* Font height */
 
 	#if DSTYLE_UR3LMZMOD && WITHONEATTONEAMP
-
+		// TFT панель 320 * 240
 		enum
 		{
 			BDTH_ALLRX = 20,	// ширина зоны для отображение полосы на индикаторе
@@ -3406,7 +3406,7 @@ enum
 			{	0, 0,	display_txrxstate2, REDRM_MODE, REDRSUBSET(DPAGE0), },
 			{	3, 0,	display_voxtune3,	REDRM_MODE, REDRSUBSET(DPAGE0), },
 			{	7, 0,	display_att4,		REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	12, 0,	display_pre3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
+			{	12, 0,	display_preovf3,	REDRM_MODE, REDRSUBSET(DPAGE0), },
 			{	16, 0,	display_lockstate1, REDRM_MODE, REDRSUBSET(DPAGE0), },
 			{	19, 0,	display_rxbw3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 
@@ -3431,12 +3431,13 @@ enum
 		};
 
 	#else /* DSTYLE_UR3LMZMOD && WITHONEATTONEAMP */
-
+		// TFT панель 320 * 240
+		// для Аиста
 		enum
 		{
-			BDCV_ALLRX = 7,		// количество ячеек, отведенное под S-метр, панораму, иные отображения
-			BDTH_ALLRX = 17,	// ширина зоны для отображение полосы на индикаторе
-			BDTH_RIGHTRX = 6,	// ширина индикатора плюсов
+			BDCV_ALLRX = 8,		// количество строк, отведенное под S-метр, панораму, иные отображения
+			BDTH_ALLRX = 24,	// ширина зоны для отображение полосы на индикаторе
+			BDTH_RIGHTRX = 16,	// ширина индикатора плюсов
 			BDTH_LEFTRX = BDTH_ALLRX - BDTH_RIGHTRX,	// ширина индикатора баллов
 			BDTH_SPACERX = 0,
 		#if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
@@ -3461,64 +3462,78 @@ enum
 		};
 		#define SWRMAX	(SWRMIN * 40 / 10)	// 4.0 - значение на полной шкале
 
-		enum {
+		enum 
+		{
 			DPAGE0,					// Страница, в которой отображаются основные (или все) 
+			DPAGE1,					// Страница, в которой отображается спектр 
+			DPAGE2,					// Страница, в которой отображается водопад
 			DISPLC_MODCOUNT
+		};
+		enum {
+			PG0 = REDRSUBSET(DPAGE0),
+			PG1 = REDRSUBSET(DPAGE1),
+			PG2 = REDRSUBSET(DPAGE2),
+			PGALL = PG0 | PG1 | PG2 | REDRSUBSET_MENU,
+			PGLATCH = PGALL,	// страницы, на которых возможно отображение водопада или панорамы.
+			PGunused
 		};
 		#define DISPLC_WIDTH	8	// количество цифр в отображении частоты
 		#define DISPLC_RJ		1	// количество скрытых справа цифр в отображении частоты
 		static const FLASHMEM struct dzone dzones [] =
 		{
-			{	0, 0,	display_txrxstate2, REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	3, 0,	display_voxtune3,	REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	7, 0,	display_att4,		REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	12, 0,	display_pre3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
+			{	0,	0,	display_txrxstate2, REDRM_MODE, PGALL, },
+			{	3,	0,	display_voxtune3,	REDRM_MODE, PGALL, },
+			{	7,	0,	display_att4,		REDRM_MODE, PGALL, },
+			{	12, 0,	display_preovf3,	REDRM_MODE, PGALL, },
 		#if WITHDSPEXTDDC
-			{	16, 0,	display_ovf3,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// ovf/pre
+			{	16, 0,	display_ovf3,		REDRM_BARS, PGALL, },	// ovf/pre
 		#endif /* WITHDSPEXTDDC */
-			{	20, 0,	display_lockstate4, REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	25, 0,	display_agc3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	29, 0,	display_rxbw3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
+			{	20, 0,	display_lockstate4, REDRM_MODE, PGALL, },
+			{	25, 0,	display_agc3,		REDRM_MODE, PGALL, },
+			{	29, 0,	display_rxbw3,		REDRM_MODE, PGALL, },
 
-			{	0, 8,	display_freqXbig_a, REDRM_FREQ, REDRSUBSET(DPAGE0), },
-			{	29, 8,	display_mode3_a,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
-
-			{	1, 16,	display2_bars,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// S-METER, SWR-METER, POWER-METER
-		#if WITHIF4DSP
-			{	25, 16,	display_siglevel7,	REDRM_BARS, REDRSUBSET(DPAGE0), },	// signal level
-		#endif /* WITHIF4DSP */
-
-			{	0, 19,	display_vfomode5,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// SPLIT
-			{	6, 19,	display_freqX_b,	REDRM_FREQB, REDRSUBSET(DPAGE0), },
+			{	0,	8,	display_freqXbig_a, REDRM_FREQ, PGALL, },
+			{	29, 8,	display_mode3_a,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
+			//---
+			{	0,	16,	display_vfomode5,	REDRM_MODE, PGALL, },	// SPLIT
+			{	6,	16,	display_freqX_b,	REDRM_FREQB, PGALL, },
 		#if WITHUSEDUALWATCH
-			{	25, 19,	display_mainsub3, REDRM_MODE, REDRSUBSET(DPAGE0), },	// main/sub RX
+			{	25, 16,	display_mainsub3,	REDRM_MODE, PGALL, },	// main/sub RX
 		#endif /* WITHUSEDUALWATCH */
-			{	29, 19,	display_mode3_b,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
+			{	29, 16,	display_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
+			//---
+			{	0,	19,	dsp_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
+			{	0,	19,	display2_bars,		REDRM_BARS, PG0, },	// S-METER, SWR-METER, POWER-METER
+			{	0,	19,	display2_spectrum,	REDRM_BARS, PG1, },// Отображение спектра
+			{	0,	19,	display2_waterfall,	REDRM_BARS, PG2, },// Отображение водопада
 
+		#if WITHIF4DSP
+			{	25, 19,	display_siglevel7,	REDRM_BARS, PGALL, },	// signal level
+		#endif /* WITHIF4DSP */
+			//---
 		#if WITHSAM
-			{	22, 25,	display_samfreqdelta8, REDRM_BARS, REDRSUBSET(DPAGE0), },	/* Получить информацию об ошибке настройки в режиме SAM */
+			//{	22, 25,	display_samfreqdelta8, REDRM_BARS, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
 		#endif /* WITHSAM */
 
 		#if WITHVOLTLEVEL
-			{	0, 28,	display_voltlevelV5, REDRM_VOLT, REDRSUBSET_MENU | REDRSUBSET(DPAGE0), },	// voltmeter with "V"
+			{	0, 28,	display_voltlevelV5, REDRM_VOLT, PGALL, },	// voltmeter with "V"
 		#endif /* WITHVOLTLEVEL */
 		#if WITHCURRLEVEL
-			{	6, 28,	display_currlevelA6, REDRM_VOLT, REDRSUBSET_MENU | REDRSUBSET(DPAGE0), },	// amphermeter with "A"
+			{	6, 28,	display_currlevelA6, REDRM_VOLT, PGALL, },	// amphermeter with "A"
 		#endif /* WITHCURRLEVEL */
 		#if defined (RTC1_TYPE)
-			{	13, 28,	display_time8,		REDRM_BARS, REDRSUBSET_MENU | REDRSUBSET(DPAGE0), },	// TIME
+			{	13, 28,	display_time8,		REDRM_BARS, PGALL, },	// TIME
 		#endif /* defined (RTC1_TYPE) */
 		#if WITHUSEAUDIOREC
-			{	25, 28,	display_rec3,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// Отображение режима записи аудио фрагмента
+			{	25, 28,	display_rec3,		REDRM_BARS, PGALL, },	// Отображение режима записи аудио фрагмента
 		#endif /* WITHUSEAUDIOREC */
 		#if WITHMENU
-			{	0, 0,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
-			{	0, 2,	display_menu_lblc3,	REDRM_MLBL, REDRSUBSET_MENU, },	// код редактируемого параметра
-			{	4, 2,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
-			{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
+			{	0, 19,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
+			{	0, 21,	display_menu_lblc3,	REDRM_MLBL, REDRSUBSET_MENU, },	// код редактируемого параметра
+			{	4, 21,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
 			{	9,	24,	display_freqmeter10,	REDRM_VOLT, REDRSUBSET_MENU, },	// отладочная функция измерителя опорной частоты
 		#if WITHSAM
-			{	9, 21,	display_samfreqdelta8, REDRM_BARS, REDRSUBSET_MENU, },	/* Получить информацию об ошибке настройки в режиме SAM */
+			{	9, 26,	display_samfreqdelta8, REDRM_BARS, REDRSUBSET_MENU, },	/* Получить информацию об ошибке настройки в режиме SAM */
 		#endif /* WITHSAM */
 		#endif /* WITHMENU */
 		};
@@ -3575,8 +3590,8 @@ enum
 	enum 
 	{
 		DPAGE0,					// Страница, в которой отображаются основные (или все) 
-		DPAGE1,					// Страница, в которой отображаются основные (или все) 
-		DPAGE2,					// Страница, в которой отображаются основные (или все) 
+		DPAGE1,					// Страница, в которой отображается спектр 
+		DPAGE2,					// Страница, в которой отображается водопад
 		DISPLC_MODCOUNT
 	};
 
@@ -3586,7 +3601,7 @@ enum
 		PG1 = REDRSUBSET(DPAGE1),
 		PG2 = REDRSUBSET(DPAGE2),
 		PGALL = PG0 | PG1 | PG2 | REDRSUBSET_MENU,
-		PGLATCH = PGALL,	// страницы, на которых возмодно отображение водопада или панорамы.
+		PGLATCH = PGALL,	// страницы, на которых возможно отображение водопада или панорамы.
 		PGunused
 	};
 	#define DISPLC_WIDTH	9	// количество цифр в отображении частоты
@@ -4064,6 +4079,10 @@ static void wfpalette_initialize(void)
 	}
 }
 
+
+#define EEAVERAGE 1
+#define EEMAXIMUM 0
+
 // формирование данных спектра для последующего отображения
 // спектра или водопада
 static void dsp_latchwaterfall(
@@ -4123,14 +4142,20 @@ void display2_spectrum(
 	)
 {
 
-	memset(sharedscr, 0xFF, sizeof sharedscr);			// рисование сспособом погасить точку
 	if (hamradio_get_tx() == 0)
 	{
 
 		uint_fast16_t x;
+		uint_fast16_t y;
 
+	#if LCDMODE_S1D13781
+		// Спектр на цветных дисплеях
+
+	#elif LCDMODE_UC1608 || LCDMODE_UC1601
+		// Спектр на монохромных дисплеях
 		// формирование растра
 		// маркер центральной частоты обзора
+		memset(sharedscr, 0xFF, sizeof sharedscr);			// рисование сспособом погасить точку
 		for (x = 0; x < WFDY; ++ x)
 		{
 			display_pixelbuffer(sharedscr, WFDX, WFDY, WFDX / 2, x);	// погасить точку
@@ -4139,7 +4164,7 @@ void display2_spectrum(
 		// отображение спектра
 		for (x = 0; x < WFDX; ++ x)
 		{
-#if 1
+		#if EEAVERAGE
 			// усреднение
 			FLOAT_t mag = 0;
 			uint_fast8_t h;
@@ -4148,7 +4173,7 @@ void display2_spectrum(
 
 			// логарифм - в вертикальную координату
 			const int val = dsp_mag2y(mag / AVGLEN, WFDY);
-#elif 0
+		#elif EEMAXIMUM
 			// максимум
 			FLOAT_t mag = 0;
 			uint_fast8_t h;
@@ -4157,22 +4182,67 @@ void display2_spectrum(
 
 			// логарифм - в вертикальную координату
 			const int val = dsp_mag2y(mag, WFDY);
-#else
+		#else
 			// без усреднения
 			// логарифм - в вертикальную координату
 			const int val = dsp_mag2y(spavgarray [spavgrow ] [x], WFDY);
-#endif
+		#endif
 			// Формирование графика
 			int zv = (WFDY - 1) - val;
 			int z;
 			for (z = WFDY - 1; z >= zv; -- z)
 				display_pixelbuffer_xor(sharedscr, WFDX, WFDY, x, z);	// xor точку
 		}
+		display_setcolors(COLOR_GRAY, COLOR_BLUE);
+		display_showbuffer(sharedscr, WFDX, WFDY, x0, y0);
+	#else /* */
+		// Спектр на цветных дисплеях
+		//display_colorbuffer_fill(sharedscr, WFDX, WFDY, COLOR_DARKGREEN);
+		// отображение спектра
+		for (x = 0; x < WFDX; ++ x)
+		{
+		#if EEAVERAGE
+			// усреднение
+			FLOAT_t mag = 0;
+			uint_fast8_t h;
+			for (h = 0; h < AVGLEN; ++ h)
+				mag += spavgarray [(spavgrow + h) % SPAVGSIZE] [x];
+
+			// логарифм - в вертикальную координату
+			const int val = dsp_mag2y(mag / AVGLEN, WFDY);
+		#elif EEMAXIMUM
+			// максимум
+			FLOAT_t mag = 0;
+			uint_fast8_t h;
+			for (h = 0; h < MAXHISTLEN; ++ h)
+				mag = FMAXF(mag, spavgarray [(spavgrow + h) % SPAVGSIZE] [x]);
+
+			// логарифм - в вертикальную координату
+			const int val = dsp_mag2y(mag, WFDY);
+		#else
+			// без усреднения
+			// логарифм - в вертикальную координату
+			const int val = dsp_mag2y(spavgarray [spavgrow ] [x], WFDY);
+		#endif
+			// Формирование графика
+			int zv = (WFDY - 1) - val;
+			int z;
+			for (z = WFDY - 1; z >= zv; -- z)
+				display_colorbuffer_set(sharedscr, WFDX, WFDY, x, z, COLOR_BLUE);	// точку сигнала
+			// формирование фона растра
+			for (; z >= 0; -- z)
+				display_colorbuffer_set(sharedscr, WFDX, WFDY, x, z, COLOR_WHITE);	// точку фона
+		}
+		// маркер центральной частоты обзора
+		// xor линию
+		for (y = 0; y < WFDY; ++ y)
+		{
+			display_colorbuffer_xor(sharedscr, WFDX, WFDY, WFDX / 2, y, COLOR_RED); 
+		}
+		display_colorbuffer_show(sharedscr, WFDX, WFDY, GRID2X(x0), GRID2Y(y0));
+	#endif
 	}
 
-
-	display_setcolors(COLOR_GRAY, COLOR_BLUE);
-	display_showbuffer(sharedscr, WFDX, WFDY, x0, y0);
 }
 
 // отображение водопада
@@ -4246,18 +4316,41 @@ void display2_waterfall(
 		{
 			for (y = 0; y < WFDY; ++ y)
 			{
-				const uint8_t v = wfarray [(wfrow + y) % WFDY] [x];
+				const uint_fast8_t v = wfarray [(wfrow + y) % WFDY] [x];
 				if (v > wflfence)
 					display_pixelbuffer(sharedscr, WFDX, WFDY, x, y);	// погасить точку
 			}
 		}
 	}
 
-
 	display_setcolors(COLOR_GRAY, COLOR_BLUE);
 	display_showbuffer(sharedscr, WFDX, WFDY, x0, y0);
 
-#else /* LCDMODE_S1D13781 */
+#else /* */
+	// следы спектра ("водопад") на цветных дисплеях
+
+	if (hamradio_get_tx() == 0)
+	{
+		uint_fast16_t x, y;
+
+
+		// формирование растра
+		// следы спектра ("водопад")
+		for (x = 0; x < WFDX; ++ x)
+		{
+			for (y = 0; y < WFDY; ++ y)
+			{
+				display_colorbuffer_set(sharedscr, WFDX, WFDY, x, y, wfpalette [wfarray [(wfrow + y) % WFDY] [x]]);
+			}
+		}
+		// маркер центральной частоты обзора
+		for (y = 0; y < WFDY; ++ y)
+		{
+			display_colorbuffer_xor(sharedscr, WFDX, WFDY, WFDX / 2, y, COLOR_RED);
+		}
+	}
+
+	display_colorbuffer_show(sharedscr, WFDX, WFDY, GRID2X(x0), GRID2Y(y0));
 
 #endif /* LCDMODE_S1D13781 */
 }
