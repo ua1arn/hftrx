@@ -291,6 +291,50 @@ static void ili9225_pixel_p3(
 #endif
 }
 
+static void ili9225_colorpixel_p1(
+	COLOR_T color
+	)
+{
+#if LCDMODE_PARALEAL
+	ili9225_write_data(color);
+#elif WITHSPIEXT16
+	hardware_spi_b16_p1(color);
+#else
+	spi_progval8_p1(color >> 8);	// смотреть бит TRI а регистре 03
+	spi_progval8_p2(color >> 0);	// смотреть бит TRI а регистре 03
+#endif
+}
+
+static void ili9225_colorpixel_p2(
+	COLOR_T color
+	)
+{
+#if LCDMODE_PARALEAL
+	ili9225_write_data(color);
+#elif WITHSPIEXT16
+	hardware_spi_b16_p2(color);
+#else
+	spi_progval8_p2(color >> 8);	// смотреть бит TRI а регистре 03
+	spi_progval8_p2(color >> 0);	// смотреть бит TRI а регистре 03
+#endif
+}
+
+static void ili9225_colorpixel_p3(
+	COLOR_T color
+	)
+{
+#if LCDMODE_PARALEAL
+	ili9225_write_data(color);
+#elif WITHSPIEXT16
+	hardware_spi_b16_p2(color);
+	hardware_spi_complete_b16();
+#else
+	spi_progval8_p2(color >> 8);	// смотреть бит TRI а регистре 03
+	spi_progval8_p2(color >> 0);	// смотреть бит TRI а регистре 03
+	spi_complete(targetlcd);
+#endif
+}
+
 // Выдать восемь цветных пикселей
 static void 
 ili9225_pix8(
@@ -832,7 +876,21 @@ void display_plot(
 	uint_fast16_t dy
 	)
 {
-
+	uint_fast32_t len = (uint_fast32_t) dx * dy;	// количество элементов
+#if WITHSPIEXT16 && WITHSPIHWDMA
+	// Переача в индикатор по DMA	
+	arm_hardware_flush((uintptr_t) buffer, len * sizeof (* buffer));	// количество байтоа
+	hardware_spi_master_send_frame_16b(buffer, len);
+#else /* WITHSPIEXT16 */
+	if (len >= 3)
+	{
+		ili9225_colorpixel_p1(* buffer ++);
+		len -= 2;
+		while (len --)
+			ili9225_colorpixel_p2(* buffer ++);
+		ili9225_colorpixel_p3(* buffer ++);
+	}
+#endif /* WITHSPIEXT16 */
 }
 
 
