@@ -813,6 +813,29 @@ void display_plotfrom(uint_fast16_t x, uint_fast16_t y)
 }
 
 
+void display_plotstart(
+	uint_fast16_t height	// Высота окна в пикселях
+	)
+{
+	ili9225_set_strype(height);
+	ili9225_put_char_begin();
+}
+
+void display_plotstop(void)
+{
+	ili9225_put_char_end();
+}
+
+void display_plot(
+	const PACKEDCOLOR_T * buffer, 
+	uint_fast16_t dx,	// Размеры окна в пикселях
+	uint_fast16_t dy
+	)
+{
+
+}
+
+
 static void display_lcd_reset(uint_fast8_t v)
 {
 	board_lcd_reset(v); 	// Pull RST pin up/down

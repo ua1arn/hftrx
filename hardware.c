@@ -4424,7 +4424,7 @@ void hardware_spi_master_send_frame(
 void hardware_spi_master_send_frame_16b(
 	//spitarget_t target,	/* addressing to chip */
 	const uint16_t * buffer, 
-	unsigned int size
+	unsigned int size		/* количество пересылаемых 16-ти битных элементов */
 	)
 {
 	hardware_spi_master_setdma16bit();

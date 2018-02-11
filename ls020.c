@@ -558,6 +558,29 @@ void display_plotfrom(uint_fast16_t x, uint_fast16_t y)
 #endif /* LCDMODE_LS020_TOPDOWN */
 }
 
+void display_plotstart(
+	uint_fast16_t height	// Высота окна в пикселях
+	)
+{
+	ls020_set_windowh(height);
+	ls020_put_char_begin();
+}
+
+void display_plotstop(void)
+{
+	ls020_put_char_end();
+}
+
+void display_plot(
+	const PACKEDCOLOR_T * buffer, 
+	uint_fast16_t dx,	// Размеры окна в пикселях
+	uint_fast16_t dy
+	)
+{
+
+}
+
+
 /* аппаратный сброс дисплея - перед инициализаций */
 /* вызывается при разрешённых прерываниях. */
 void

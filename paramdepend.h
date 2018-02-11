@@ -287,7 +287,7 @@
 
 	#endif
 
-	#define TICKS_FREQUENCY		(200uL * 1) // at ARM - 400 Hz
+	#define TICKS_FREQUENCY		200uL	// at ARM - 200 Hz
 
 	// ADC clock frequency: 1..20 MHz
 	#define SCL_CLOCK	400000uL	/* 400 kHz I2C/TWI speed */
@@ -295,7 +295,7 @@
 	//#define SPISPEED (PCLK1_FREQ / 16)	/* 3.5 MHz на SCLK - требуемая скорость передачи по SPI */
 	//#define SPISPEED (PCLK1_FREQ / 8)	/* 7 MHz на SCLK - требуемая скорость передачи по SPI */
 	#define SPISPEED (PCLK1_FREQ / 4)	/* 14 MHz на SCLK - требуемая скорость передачи по SPI */
-	#define SPISPEEDUFAST 24000000uL//(PCLK1_FREQ / 2)	/* 28 на SCLK - требуемая скорость передачи по SPI */
+	#define SPISPEEDUFAST 48000000uL//(PCLK1_FREQ / 2)	/* 28 на SCLK - требуемая скорость передачи по SPI */
 	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
 	#define	SPISPEED100k	100000uL	/* 400 kHz для низкоскоростных микросхем */
 

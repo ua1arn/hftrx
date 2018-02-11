@@ -546,6 +546,27 @@ void display_plotfrom(uint_fast16_t x, uint_fast16_t y)
 }
 
 
+void display_plotstart(
+	uint_fast16_t height	// Высота окна в пикселях
+	)
+{
+
+}
+
+void display_plot(
+	const PACKEDCOLOR_T * buffer, 
+	uint_fast16_t dx,	// Размеры окна в пикселях
+	uint_fast16_t dy
+	)
+{
+
+}
+
+void display_plotstop(void)
+{
+
+}
+
 /* аппаратный сброс дисплея - перед инициализаций */
 /* вызывается при разрешённых прерываниях. */
 void

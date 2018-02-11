@@ -1435,7 +1435,7 @@ struct dzone
 
 /* struct dzone subset field values */
 
-#define REDRSUBSET(scr)		(1U << (scr))	// сдвиги соответствуют номеру отображаемого набора элементов
+#define REDRSUBSET(page)		(1U << (page))	// сдвиги соответствуют номеру отображаемого набора элементов
 #define REDRSUBSET_ALL ( \
 		REDRSUBSET(0) | \
 		REDRSUBSET(1) | \
@@ -4113,6 +4113,8 @@ static void dsp_latchwaterfall(
 	}
 }
 
+static GX_t sharedscr [GXSIZE(WFDX, WFDY)];
+
 // отображение спектроанализатора
 void display2_spectrum(
 	uint_fast8_t x0, 
@@ -4120,9 +4122,8 @@ void display2_spectrum(
 	void * pv
 	)
 {
-	GX_t scr [GXSIZE(WFDX, WFDY)];
 
-	memset(scr, 0xFF, sizeof scr);			// рисование сспособом погасить точку
+	memset(sharedscr, 0xFF, sizeof sharedscr);			// рисование сспособом погасить точку
 	if (hamradio_get_tx() == 0)
 	{
 
@@ -4132,7 +4133,7 @@ void display2_spectrum(
 		// маркер центральной частоты обзора
 		for (x = 0; x < WFDY; ++ x)
 		{
-			display_pixelbuffer(scr, WFDX, WFDY, WFDX / 2, x);	// погасить точку
+			display_pixelbuffer(sharedscr, WFDX, WFDY, WFDX / 2, x);	// погасить точку
 		}
 
 		// отображение спектра
@@ -4165,13 +4166,13 @@ void display2_spectrum(
 			int zv = (WFDY - 1) - val;
 			int z;
 			for (z = WFDY - 1; z >= zv; -- z)
-				display_pixelbuffer_xor(scr, WFDX, WFDY, x, z);	// xor точку
+				display_pixelbuffer_xor(sharedscr, WFDX, WFDY, x, z);	// xor точку
 		}
 	}
 
 
 	display_setcolors(COLOR_GRAY, COLOR_BLUE);
-	display_showbuffer(scr, WFDX, WFDY, x0, y0);
+	display_showbuffer(sharedscr, WFDX, WFDY, x0, y0);
 }
 
 // отображение водопада
@@ -4226,9 +4227,8 @@ void display2_waterfall(
 
 #elif LCDMODE_UC1608 || LCDMODE_UC1601
 	// следы спектра ("водопад") на монохромных дисплеях
-	GX_t scr [GXSIZE(WFDX, WFDY)];
 
-	memset(scr, 0xFF, sizeof scr);			// рисование сспособом погасить точку
+	memset(sharedscr, 0xFF, sizeof sharedscr);			// рисование сспособом погасить точку
 
 	if (hamradio_get_tx() == 0)
 	{
@@ -4239,7 +4239,7 @@ void display2_waterfall(
 		// маркер центральной частоты обзора
 		for (y = 0; y < WFDY; ++ y)
 		{
-			display_pixelbuffer(scr, WFDX, WFDY, WFDX / 2, y);	// погасить точку
+			display_pixelbuffer(sharedscr, WFDX, WFDY, WFDX / 2, y);	// погасить точку
 		}
 		// следы спектра ("водопад")
 		for (x = 0; x < WFDX; ++ x)
@@ -4248,14 +4248,14 @@ void display2_waterfall(
 			{
 				const uint8_t v = wfarray [(wfrow + y) % WFDY] [x];
 				if (v > wflfence)
-					display_pixelbuffer(scr, WFDX, WFDY, x, y);	// погасить точку
+					display_pixelbuffer(sharedscr, WFDX, WFDY, x, y);	// погасить точку
 			}
 		}
 	}
 
 
 	display_setcolors(COLOR_GRAY, COLOR_BLUE);
-	display_showbuffer(scr, WFDX, WFDY, x0, y0);
+	display_showbuffer(sharedscr, WFDX, WFDY, x0, y0);
 
 #else /* LCDMODE_S1D13781 */
 

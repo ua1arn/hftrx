@@ -635,6 +635,29 @@ void display_plotfrom(uint_fast16_t x, uint_fast16_t y)
 	#endif /* LCDMODE_L2F50_TOPDOWN */
 }
 
+void display_plotstart(
+	uint_fast16_t height	// Высота окна в пикселях
+	)
+{
+	l2f50_set_windowh(height);
+	l2f50_put_char_begin();
+}
+
+void display_plotstop(void)
+{
+	l2f50_put_char_end();
+}
+
+void display_plot(
+	const PACKEDCOLOR_T * buffer, 
+	uint_fast16_t dx,	// Размеры окна в пикселях
+	uint_fast16_t dy
+	)
+{
+
+}
+
+
 /* аппаратный сброс дисплея - перед инициализаций */
 /* вызывается при разрешённых прерываниях. */
 void

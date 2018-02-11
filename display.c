@@ -146,7 +146,7 @@ void display_showbuffer(
 	do
 	{
 		uint_fast8_t pos;
-		const unsigned char * const p = buffer + lowhalf * dx;	// начало данных горизонтальной полосы в памяти
+		const GX_t * const p = buffer + lowhalf * dx;	// начало данных горизонтальной полосы в памяти
 		//debug_printf_P(PSTR("display_showbuffer: col=%d, row=%d, lowhalf=%d\n"), col, row, lowhalf);
 		display_plotfrom(GRID2X(col), GRID2Y(row) + lowhalf * 8);		// курсор в начало первой строки
 		// выдача горизонтальной полосы
@@ -184,6 +184,60 @@ void display_showbuffer(
 
 #endif /* LCDMODE_UC1608 || LCDMODE_UC1601 */
 
+// начальная инициализация буфера
+void display_colorbuffer_fill(
+	PACKEDCOLOR_T * buffer,
+	uint_fast16_t dx,	
+	uint_fast16_t dy,
+	COLOR_T color
+	)
+{
+	uint_fast32_t len = (uint_fast32_t) dx * dy;
+	if (sizeof (PACKEDCOLOR_T) == 1)
+	{
+		memset(buffer, color, len);
+	}
+	else
+	{
+		while (len --)
+			* buffer ++ = color;
+	}
+}
+
+// поставить цветную точку.
+void display_colorbuffer_set(
+	PACKEDCOLOR_T * buffer,
+	uint_fast16_t dx,	
+	uint_fast16_t dy,
+	uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
+	uint_fast16_t row,	// вертикальная координата пикселя (0..dy-1) сверху вниз
+	COLOR_T color
+	)
+{
+#if 1
+	// индекс младшей размерности перебирает вертикальную координату дисплея
+	buffer [dy * col + row] = color;
+#else
+	// индекс младшей размерности перебирает горизонтальную координату дисплея
+	buffer [dx * row + col] = color;
+#endif
+}
+
+// Выдать буфер на дисплей
+void display_colorbuffer_show(
+	const PACKEDCOLOR_T * buffer,
+	uint_fast16_t dx,	
+	uint_fast16_t dy,
+	uint_fast16_t col,	// горизонтальная координата левого верхнего угла на экране (0..dx-1) слева направо
+	uint_fast16_t row	// вертикальная координата левого верхнего угла на экране (0..dy-1) сверху вниз
+	)
+{
+	display_plotfrom(col, row);
+	display_plotstart(dy);
+	display_plot(buffer, dx, dy);
+	display_plotstop();
+}
+
 // погасить точку
 void display_pixelbuffer(
 	GX_t * buffer,
@@ -205,7 +259,7 @@ void display_pixelbuffer(
 #else /* LCDMODE_S1D13781 */
 
 	//row = (dy - 1) - row;		// смена направления
-	uint8_t * const p = buffer + (row / 8) * dx + col;	// начало данных горизонтальной полосы в памяти
+	GX_t * const p = buffer + (row / 8) * dx + col;	// начало данных горизонтальной полосы в памяти
 	//* p |= mapcolumn [row % 8];	// установить точку
 	* p &= ~ mapcolumn [row % 8];	// погасить точку
 	//* p ^= mapcolumn [row % 8];	// инвертировать точку
@@ -233,7 +287,7 @@ void display_pixelbuffer_xor(
 #else /* LCDMODE_S1D13781 */
 
 	//row = (dy - 1) - row;		// смена направления
-	uint8_t * const p = buffer + (row / 8) * dx + col;	// начало данных горизонтальной полосы в памяти
+	GX_t * const p = buffer + (row / 8) * dx + col;	// начало данных горизонтальной полосы в памяти
 	//* p |= mapcolumn [row % 8];	// установить точку
 	//* p &= ~ mapcolumn [row % 8];	// погасить точку
 	* p ^= mapcolumn [row % 8];	// инвертировать точку
@@ -611,6 +665,7 @@ void display_clear(void)
 	}
 
 #endif /* LCDMODE_LTDC_L8 */
+	arm_hardware_flush((uintptr_t) framebuff, (uint_fast32_t) DIM_FIRST * DIM_SECOND);
 }
 
 void display_gotoxy(uint_fast8_t x, uint_fast8_t y)
@@ -640,6 +695,27 @@ void display_plotfrom(uint_fast16_t x, uint_fast16_t y)
 	//debug_printf_P(PSTR("display_gotoxy: CHAR_H=%d, CHAR_W=%d, x=%d, y=%d, ltdc_first=%d, ltdc_second=%d\n"), CHAR_H, CHAR_W, x, y, ltdc_first, ltdc_second);
 	ASSERT(ltdc_first < DIM_FIRST);
 	ASSERT(ltdc_second < DIM_SECOND);
+}
+
+void display_plotstart(
+	uint_fast16_t height	// Высота окна в пикселях
+	)
+{
+
+}
+
+void display_plot(
+	const GX_t * buffer, 
+	uint_fast16_t dx,	// Размеры окна в пикселях
+	uint_fast16_t dy
+	)
+{
+
+}
+
+void display_plotstop(void)
+{
+
 }
 
 // самый маленький шрифт

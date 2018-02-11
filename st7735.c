@@ -72,15 +72,11 @@
 
 #endif /* DSTYLE_G_X320_Y240 */
 
-#define DISPLAY_UFAST (WITHFPGAWAIT_AS || WITHFPGALOAD_PS || WITHDSPEXTFIR)
-
 
 #define ST7735_SPIMODE		SPIC_MODE3
-#if DISPLAY_UFAST
-	#define ST7735_SPISPEED		SPIC_SPEEDUFAST
-#else /* DISPLAY_UFAST */
-	#define ST7735_SPISPEED		SPIC_SPEEDFAST
-#endif /* DISPLAY_UFAST */
+//#define ST7735_SPISPEED		SPIC_SPEED10M	// в описнии контроллера ILI9341 минимальный период указан 100 nS
+//#define ST7735_SPISPEED		SPIC_SPEED10M	// в описнии контроллера ST7735 минимальный период указан 150 nS
+#define ST7735_SPISPEED		SPIC_SPEED25M
 
 // Условие использования оптимизированных функций обращения к SPI
 #define WITHSPIEXT16 (WITHSPIHW && WITHSPI16BIT)
@@ -246,6 +242,62 @@ st7735_pixel_p3(
 		spi_progval8_p2(targetlcd, bkcolor.second);	
 		spi_complete(targetlcd);
 	}
+
+#endif /* WITHSPIEXT16 */
+}
+
+static void 
+//NOINLINEAT
+st7735_colorpixel_p1(
+	COLOR_T color
+	)
+{
+#if WITHSPIEXT16
+
+	hardware_spi_b16_p1(color);
+
+#else /* WITHSPIEXT16 */
+
+	spi_progval8_p1(targetlcd, color >> 8);	
+	spi_progval8_p2(targetlcd, color >> 0);	
+
+#endif /* WITHSPIEXT16 */
+}
+
+static void 
+//NOINLINEAT
+st7735_colorpixel_p2(
+	COLOR_T color
+	)
+{
+#if WITHSPIEXT16
+
+	hardware_spi_b16_p2(color);
+
+#else /* WITHSPIEXT16 */
+
+	spi_progval8_p2(targetlcd, color >> 8);	
+	spi_progval8_p2(targetlcd, color >> 0);	
+
+#endif /* WITHSPIEXT16 */
+}
+
+static void 
+//NOINLINEAT
+st7735_colorpixel_p3(
+	COLOR_T color
+	)
+{
+#if WITHSPIEXT16
+
+	hardware_spi_b16_p2(color);
+	spi_complete(targetlcd);
+
+#else /* WITHSPIEXT16 */
+
+	spi_progval8_p2(targetlcd, color >> 8);	
+	spi_progval8_p2(targetlcd, color >> 0);	
+	spi_complete(targetlcd);
 
 #endif /* WITHSPIEXT16 */
 }
@@ -1112,11 +1164,8 @@ static void st7735_switchtorgb(void)
 /* вызывается при разрешённых прерываниях. */
 void display_initialize(void)
 {
-	#if DISPLAY_UFAST
-		hardware_spi_master_setfreq(SPIC_SPEEDUFAST, SPISPEEDUFAST);
-	#else /* DISPLAY_UFAST */
-		hardware_spi_master_setfreq(SPIC_SPEEDFAST, SPISPEED);
-	#endif /* DISPLAY_UFAST */
+	hardware_spi_master_setfreq(SPIC_SPEED10M, 10000000uL);
+	hardware_spi_master_setfreq(SPIC_SPEED25M, 25000000uL);
 
 	st7735_initialize();
 	#if LCDMODE_LTDC
@@ -1254,6 +1303,41 @@ void display_plotfrom(uint_fast16_t x, uint_fast16_t y)
 	st7735_set_addr_column(x);
 }
 
+void display_plotstart(
+	uint_fast16_t height	// Высота окна в пикселях
+	)
+{
+	st7735_set_strype(height);
+	st7735_put_char_begin();
+}
+
+void display_plotstop(void)
+{
+	st7735_put_char_end();
+}
+
+void display_plot(
+	const PACKEDCOLOR_T * buffer, 
+	uint_fast16_t dx,	// Размеры окна в пикселях
+	uint_fast16_t dy
+	)
+{
+	uint_fast32_t len = (uint_fast32_t) dx * dy;	// количество элементов
+#if WITHSPIEXT16 && WITHSPIHWDMA
+	// Переача в индикатор по DMA	
+	arm_hardware_flush((uintptr_t) buffer, len * sizeof (* buffer));	// количество байтоа
+	hardware_spi_master_send_frame_16b(buffer, len);
+#else /* WITHSPIEXT16 */
+	if (len >= 3)
+	{
+		st7735_colorpixel_p1(* buffer ++);
+		len -= 2;
+		while (len --)
+			st7735_colorpixel_p2(* buffer ++);
+		st7735_colorpixel_p3(* buffer ++);
+	}
+#endif /* WITHSPIEXT16 */
+}
 
 #endif /* ! LCDMODE_LTDC */
 
