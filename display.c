@@ -216,13 +216,13 @@ void display_colorbuffer_set(
 {
 	ASSERT(col < dx);
 	ASSERT(row < dy);
-#if 1
-	// индекс младшей размерности перебирает вертикальную координату дисплея
-	buffer [dy * col + row] = color;
-#else
+#if LCDMODE_HORFILL
 	// индекс младшей размерности перебирает горизонтальную координату дисплея
 	buffer [dx * row + col] = color;
-#endif
+#else /* LCDMODE_HORFILL */
+	// индекс младшей размерности перебирает вертикальную координату дисплея
+	buffer [dy * col + row] = color;
+#endif /* LCDMODE_HORFILL */
 }
 
 // поставить цветную точку.
@@ -237,13 +237,13 @@ void display_colorbuffer_xor(
 {
 	ASSERT(col < dx);
 	ASSERT(row < dy);
-#if 1
-	// индекс младшей размерности перебирает вертикальную координату дисплея
-	buffer [dy * col + row] ^= color;
-#else
+#if LCDMODE_HORFILL
 	// индекс младшей размерности перебирает горизонтальную координату дисплея
 	buffer [dx * row + col] ^= color;
-#endif
+#else /* LCDMODE_HORFILL */
+	// индекс младшей размерности перебирает вертикальную координату дисплея
+	buffer [dy * col + row] ^= color;
+#endif /* LCDMODE_HORFILL */
 }
 
 // Выдать буфер на дисплей

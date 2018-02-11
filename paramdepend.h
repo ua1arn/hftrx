@@ -899,6 +899,7 @@
 	#define DIM_X 480
 	#define DIM_Y 272
 	#define LCDMODE_COLORED	1
+	#define LCDMODE_HORFILL	1
 	#define LTDC_DOTCLK	9000000uL	// частота пикселей при работе с интерфейсом RGB
 #endif /* LCDMODE_S1D13781 */
 
@@ -908,6 +909,7 @@
 	#define DIM_X 480
 	#define DIM_Y 272
 	#define LCDMODE_COLORED	1
+	#define LCDMODE_HORFILL	1
 #endif /* LCDMODE_S1D13781 */
 
 #if LCDMODE_TIC154 || LCDMODE_TIC218

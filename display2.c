@@ -3436,7 +3436,7 @@ enum
 		enum
 		{
 			BDCV_ALLRX = 8,		// количество строк, отведенное под S-метр, панораму, иные отображения
-			BDTH_ALLRX = 24,	// ширина зоны для отображение полосы на индикаторе
+			BDTH_ALLRX = 26,	// ширина зоны для отображение полосы на индикаторе
 			BDTH_RIGHTRX = 16,	// ширина индикатора плюсов
 			BDTH_LEFTRX = BDTH_ALLRX - BDTH_RIGHTRX,	// ширина индикатора баллов
 			BDTH_SPACERX = 0,
@@ -3465,15 +3465,21 @@ enum
 		enum 
 		{
 			DPAGE0,					// Страница, в которой отображаются основные (или все) 
+		#if WITHIF4DSP
 			DPAGE1,					// Страница, в которой отображается спектр 
 			DPAGE2,					// Страница, в которой отображается водопад
+		#endif /* WITHIF4DSP */
 			DISPLC_MODCOUNT
 		};
 		enum {
 			PG0 = REDRSUBSET(DPAGE0),
+		#if WITHIF4DSP
 			PG1 = REDRSUBSET(DPAGE1),
 			PG2 = REDRSUBSET(DPAGE2),
 			PGALL = PG0 | PG1 | PG2 | REDRSUBSET_MENU,
+		#else /* WITHIF4DSP */
+			PGALL = PG0 | REDRSUBSET_MENU,
+		#endif /* WITHIF4DSP */
 			PGLATCH = PGALL,	// страницы, на которых возможно отображение водопада или панорамы.
 			PGunused
 		};
@@ -3502,13 +3508,13 @@ enum
 		#endif /* WITHUSEDUALWATCH */
 			{	29, 16,	display_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
 			//---
-			{	0,	19,	dsp_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
 			{	0,	19,	display2_bars,		REDRM_BARS, PG0, },	// S-METER, SWR-METER, POWER-METER
+		#if WITHIF4DSP
+			{	0,	19,	dsp_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
 			{	0,	19,	display2_spectrum,	REDRM_BARS, PG1, },// Отображение спектра
 			{	0,	19,	display2_waterfall,	REDRM_BARS, PG2, },// Отображение водопада
 
-		#if WITHIF4DSP
-			{	25, 19,	display_siglevel7,	REDRM_BARS, PGALL, },	// signal level
+			{	27, 19,	display_siglevel5,	REDRM_BARS, PGALL, },	// signal level
 		#endif /* WITHIF4DSP */
 			//---
 		#if WITHSAM
@@ -4144,7 +4150,6 @@ void display2_spectrum(
 
 	if (hamradio_get_tx() == 0)
 	{
-
 		uint_fast16_t x;
 		uint_fast16_t y;
 
