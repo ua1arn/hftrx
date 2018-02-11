@@ -3980,8 +3980,9 @@ static COLOR_T wfpalette [PALETTESIZE];
 extern uint_fast8_t wflfence;
 
 // Код взят из проекта Malamute
-static void wfpalette_initialize(int type)
+static void wfpalette_initialize(void)
 {
+	int type = 0;
 	int i;
 	int a = 0;
 
@@ -4105,7 +4106,7 @@ static void dsp_latchwaterfall(
 		const int val = dsp_mag2y(mag, PALETTESIZE);
 #else
 		// без усреднения для водопада
-		const int val = dsp_mag2y(spavgarray [spavgrow ] [x], PALETTESIZE);
+		const int val = dsp_mag2y(spavgarray [spavgrow] [x], PALETTESIZE);
 #endif
 		// запись в буфер водопада
 		wfarray [wfrow] [x] = val;
@@ -4182,50 +4183,49 @@ void display2_waterfall(
 {
 #if LCDMODE_S1D13781
 
-#if 1
-	// следы спектра ("водопад")
-	// сдвигаем вниз, отрисовываем только верхню строку
-	uint_fast16_t x;
-	display_scroll_down(GRID2X(x0), GRID2Y(y0), WFDX, WFDY, 1);
-	while (display_getreadystate() == 0)
-		;
-	x = 0;
-	display_putpixel_1(GRID2X(x0) + x, GRID2Y(y0) + 0, wfpalette [wfarray [wfrow] [x]]);
-	for (x = 1; x < WFDX; ++ x)
-		display_putpixel_2(wfpalette [wfarray [wfrow] [x]]);
-	display_putpixel_complere();
-#elif 0
-	// следы спектра ("водопад")
-	// сдвигаем вверх, отрисовываем только нижнюю строку
-	uint_fast16_t x;
-	display_scroll_up(GRID2X(x0), GRID2Y(y0), WFDX, WFDY, 1);
-	while (display_getreadystate() == 0)
-		;
-	x = 0;
-	display_putpixel_1(GRID2X(x0) + x, GRID2Y(y0) + WFDY - 1, wfpalette [wfarray [wfrow] [x]]);
-	for (x = 1; x < WFDX; ++ x)
-		display_putpixel_2(wfpalette [wfarray [(wfrow + 0) % WFDY] [x]]);
-	display_putpixel_complere();
-#else
-	// следы спектра ("водопад")
-	// отрисовываем весь экран
-	while (display_getreadystate() == 0)
-		;
-	uint_fast16_t x, y;
-	for (y = 0; y < WFDY; ++ y)
-	{
-		// отрисовка горизонтальными линиями
+	#if 1
+		// следы спектра ("водопад")
+		// сдвигаем вниз, отрисовываем только верхню строку
+		uint_fast16_t x;
+		display_scroll_down(GRID2X(x0), GRID2Y(y0), WFDX, WFDY, 1);
+		while (display_getreadystate() == 0)
+			;
 		x = 0;
-		display_putpixel_1(GRID2X(x0) + x, GRID2Y(y0) + y, wfpalette [wfarray [(wfrow + y) % WFDY] [x]]);
+		display_putpixel_1(GRID2X(x0) + x, GRID2Y(y0) + 0, wfpalette [wfarray [wfrow] [x]]);
 		for (x = 1; x < WFDX; ++ x)
-			display_putpixel_2(wfpalette [wfarray [(wfrow + y) % WFDY] [x]]);
+			display_putpixel_2(wfpalette [wfarray [wfrow] [x]]);
 		display_putpixel_complere();
-	}
-#endif
+	#elif 0
+		// следы спектра ("фонтан")
+		// сдвигаем вверх, отрисовываем только нижнюю строку
+		uint_fast16_t x;
+		display_scroll_up(GRID2X(x0), GRID2Y(y0), WFDX, WFDY, 1);
+		while (display_getreadystate() == 0)
+			;
+		x = 0;
+		display_putpixel_1(GRID2X(x0) + x, GRID2Y(y0) + WFDY - 1, wfpalette [wfarray [wfrow] [x]]);
+		for (x = 1; x < WFDX; ++ x)
+			display_putpixel_2(wfpalette [wfarray [(wfrow + 0) % WFDY] [x]]);
+		display_putpixel_complere();
+	#else
+		// следы спектра ("водопад")
+		// отрисовываем весь экран
+		while (display_getreadystate() == 0)
+			;
+		uint_fast16_t x, y;
+		for (y = 0; y < WFDY; ++ y)
+		{
+			// отрисовка горизонтальными линиями
+			x = 0;
+			display_putpixel_1(GRID2X(x0) + x, GRID2Y(y0) + y, wfpalette [wfarray [(wfrow + y) % WFDY] [x]]);
+			for (x = 1; x < WFDX; ++ x)
+				display_putpixel_2(wfpalette [wfarray [(wfrow + y) % WFDY] [x]]);
+			display_putpixel_complere();
+		}
+	#endif
 
-#else /* LCDMODE_S1D13781 */
-
-	// следы спектра ("водопад")
+#elif LCDMODE_UC1608 || LCDMODE_UC1601
+	// следы спектра ("водопад") на монохромных дисплеях
 	GX_t scr [GXSIZE(WFDX, WFDY)];
 
 	memset(scr, 0xFF, sizeof scr);			// рисование сспособом погасить точку
@@ -4256,6 +4256,8 @@ void display2_waterfall(
 
 	display_setcolors(COLOR_GRAY, COLOR_BLUE);
 	display_showbuffer(scr, WFDX, WFDY, x0, y0);
+
+#else /* LCDMODE_S1D13781 */
 
 #endif /* LCDMODE_S1D13781 */
 }
@@ -4405,7 +4407,7 @@ void display2_bgreset(void)
 
 #if WITHINTEGRATEDDSP && (WITHRTS96 || WITHRTS192) && ! LCDMODE_HD44780
 	// инициализация палитры волопада
-	wfpalette_initialize(0);
+	wfpalette_initialize();
 #endif /* WITHINTEGRATEDDSP && (WITHRTS96 || WITHRTS192) */
 }
 
