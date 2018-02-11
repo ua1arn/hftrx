@@ -5280,7 +5280,6 @@ void hightests(void)
 		for (loop = 0; ;loop = loop < top ? loop + 1 : 0)
 		{
 		
-			//memset(scr, 0x00, sizeof scr);
 			// рисование линии
 			unsigned i;
 			for (i = 0; i < bufY; ++ i)
@@ -5288,7 +5287,7 @@ void hightests(void)
 
 			display_showbuffer(scr, dx, dy, DBX_0, DBY_1);
 			//local_delay_ms(25);
-			if (++ count >= 1000)
+			if (++ count > top)
 			{
 				count = 0;
 				phase = ! phase;
