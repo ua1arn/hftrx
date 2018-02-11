@@ -22,8 +22,8 @@
 	#define SCL_CLOCK	400000uL	/* 400 kHz I2C/TWI speed */
 
 	#define SPISPEED (4UL * 1000 * 1000)	/* 4 MHz на SCLK - требуемая скорость передачи по SPI */
-	#define	SPISPEED400k	400uL	/* 400 kHz для низкоскоростных микросхем */
-	#define	SPISPEED100k	100uL	/* 400 kHz для низкоскоростных микросхем */
+	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
+	#define	SPISPEED100k	100000uL	/* 400 kHz для низкоскоростных микросхем */
 
 	#define ARM_REALTIME_PRIORITY	AT91C_AIC_PRIOR_HIGHEST 
 	#define ARM_SYSTEM_PRIORITY		AT91C_AIC_PRIOR_LOWEST 
@@ -59,8 +59,8 @@
 	#define SCL_CLOCK	400000uL	/* 400 kHz I2C/TWI speed */
 
 	#define SPISPEED (PCLK1_FREQ / 4)	/* 12 MHz на SCLK - требуемая скорость передачи по SPI */
-	#define	SPISPEED400k	400uL	/* 400 kHz для низкоскоростных микросхем */
-	#define	SPISPEED100k	100uL	/* 400 kHz для низкоскоростных микросхем */
+	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
+	#define	SPISPEED100k	100000uL	/* 400 kHz для низкоскоростных микросхем */
 
 	#define ADCVREF_CPU	33		// 3.3 volt
 	#define DACVREF_CPU	33		// 3.3 volt
@@ -100,8 +100,8 @@
 	#define SCL_CLOCK	400000uL	/* 400 kHz I2C/TWI speed */
 
 	#define SPISPEED (PCLK1_FREQ / 1)	/* 8 MHz на SCLK - требуемая скорость передачи по SPI */
-	#define	SPISPEED400k	400uL	/* 400 kHz для низкоскоростных микросхем */
-	#define	SPISPEED100k	100uL	/* 400 kHz для низкоскоростных микросхем */
+	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
+	#define	SPISPEED100k	100000uL	/* 400 kHz для низкоскоростных микросхем */
 
 	#define ADCVREF_CPU	30		// 3.3 volt
 	#define DACVREF_CPU	33		// 3.3 volt
@@ -128,7 +128,7 @@
 
 	#define SPISPEED (PCLK1_FREQ / 4)	/* 9.0 MHz на SCLK - требуемая скорость передачи по SPI */
 	#define TICKS_FREQUENCY		(200uL * 1) // at ARM - 200 Hz
-	#define	SPISPEED100k	100uL	/* 400 kHz для низкоскоростных микросхем */
+	#define	SPISPEED100k	100000uL	/* 400 kHz для низкоскоростных микросхем */
 
 	// ADC clock frequency: 1..20 MHz
 	#define ADC_FREQ	2000000uL	/* тактовая частота SAR преобразователя АЦП. */
@@ -296,8 +296,8 @@
 	//#define SPISPEED (PCLK1_FREQ / 8)	/* 7 MHz на SCLK - требуемая скорость передачи по SPI */
 	#define SPISPEED (PCLK1_FREQ / 4)	/* 14 MHz на SCLK - требуемая скорость передачи по SPI */
 	#define SPISPEEDUFAST 24000000uL//(PCLK1_FREQ / 2)	/* 28 на SCLK - требуемая скорость передачи по SPI */
-	#define	SPISPEED400k	400uL	/* 400 kHz для низкоскоростных микросхем */
-	#define	SPISPEED100k	100uL	/* 400 kHz для низкоскоростных микросхем */
+	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
+	#define	SPISPEED100k	100000uL	/* 400 kHz для низкоскоростных микросхем */
 
 	#define ADCVREF_CPU	33		// 3.3 volt
 	#define DACVREF_CPU	33		// 3.3 volt
@@ -345,8 +345,8 @@
 	#define SCL_CLOCK	400000uL	/* 400 kHz I2C/TWI speed */
 
 	#define SPISPEED (4UL * 1000 * 1000)	/* 4 MHz на SCLK - требуемая скорость передачи по SPI */
-	#define	SPISPEED400k	400uL	/* 400 kHz для низкоскоростных микросхем */
-	#define	SPISPEED100k	100uL	/* 400 kHz для низкоскоростных микросхем */
+	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
+	#define	SPISPEED100k	100000uL	/* 400 kHz для низкоскоростных микросхем */
 
 	#define ADCVREF_CPU	33		// 3.3 volt
 	//#define HARDWARE_DACBITS 12	/* ЦАП работает с 12-битными значениями */
@@ -374,8 +374,8 @@
 	#define SCL_CLOCK	400000uL	/* 400 kHz I2C/TWI speed */
 
 	#define SPISPEED (4UL * 1000 * 1000)	/* 4 MHz на SCLK - требуемая скорость передачи по SPI */
-	#define	SPISPEED400k	400uL	/* 400 kHz для низкоскоростных микросхем */
-	#define	SPISPEED100k	100uL	/* 400 kHz для низкоскоростных микросхем */
+	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
+	#define	SPISPEED100k	100000uL	/* 400 kHz для низкоскоростных микросхем */
 
 	#define ADCVREF_CPU	33		// 3.3 volt
 	//#define HARDWARE_DACBITS 12	/* ЦАП работает с 12-битными значениями */
@@ -392,8 +392,8 @@
 	#define SCL_CLOCK  400000uL	/* 400 kHz I2C/TWI speed */
 
 	#define SPISPEED (4UL * 1000 * 1000)	/* 4 MHz на SCLK - требуемая скорость передачи по SPI */
-	#define	SPISPEED400k	400uL	/* 400 kHz для низкоскоростных микросхем */
-	#define	SPISPEED100k	100uL	/* 400 kHz для низкоскоростных микросхем */
+	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
+	#define	SPISPEED100k	100000uL	/* 400 kHz для низкоскоростных микросхем */
 
 	#define TICKS_FREQUENCY		200U // 200 Hz
 
@@ -413,8 +413,8 @@
 	#define CPU_FREQ 72000000	// частота периферии (процессорная после деления).
 	#define SCL_CLOCK  400000uL	/* 400 kHz I2C/TWI speed */
 	#define SPISPEED (4UL * 1000 * 1000)	/* 4 MHz на SCLK - требуемая скорость передачи по SPI */
-	#define	SPISPEED400k	400uL	/* 400 kHz для низкоскоростных микросхем */
-	#define	SPISPEED100k	100uL	/* 400 kHz для низкоскоростных микросхем */
+	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
+	#define	SPISPEED100k	100000uL	/* 400 kHz для низкоскоростных микросхем */
 
 	#define TICKS_FREQUENCY		200U // 200 Hz
 
@@ -440,8 +440,8 @@
 	//#define SCL_CLOCK  40000uL	/* 40 kHz I2C/TWI speed */
 
 	#define SPISPEED (CPU_FREQ / 2) /* 4 (5) MHz на SCLK - требуемая скорость передачи по SPI */
-	#define	SPISPEED400k	400uL	/* 400 kHz для низкоскоростных микросхем */
-	#define	SPISPEED100k	100uL	/* 400 kHz для низкоскоростных микросхем */
+	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
+	#define	SPISPEED100k	100000uL	/* 400 kHz для низкоскоростных микросхем */
 
 	#define ADC_FREQ	250000uL	/* тактовая частота SAR преобразователя АЦП. */
 
@@ -477,8 +477,8 @@
 	#define SCL_CLOCK  400000uL	/* 400 kHz I2C/TWI speed */
 
 	#define SPISPEED (8000000) /* 4 (5) MHz на SCLK - требуемая скорость передачи по SPI */
-	#define	SPISPEED400k	400uL	/* 400 kHz для низкоскоростных микросхем */
-	#define	SPISPEED100k	100uL	/* 400 kHz для низкоскоростных микросхем */
+	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
+	#define	SPISPEED100k	100000uL	/* 400 kHz для низкоскоростных микросхем */
 
 	#define ADC_FREQ	125000uL	/* тактовая частота SAR преобразователя АЦП. */
 
@@ -514,8 +514,8 @@
 
 	#define SPISPEED 8000000uL	/* 8 MHz (10.5) на SCLK - требуемая скорость передачи по SPI */
 	#define SPISPEEDUFAST (P1CLOCK_FREQ / 3)	// 20 MHz
-	#define	SPISPEED400k	400uL	/* 400 kHz для низкоскоростных микросхем */
-	#define	SPISPEED100k	100uL	/* 400 kHz для низкоскоростных микросхем */
+	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
+	#define	SPISPEED100k	100000uL	/* 400 kHz для низкоскоростных микросхем */
 
 	#define ADCVREF_CPU	33		// 3.3 volt
 	#define HARDWARE_ADCBITS 12	/* АЦП работает с 12-битными значениями */
