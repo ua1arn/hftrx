@@ -5228,7 +5228,6 @@ void hightests(void)
 #if 0
 	{
 		// Движущиеся картинки
-		display_setcolors(COLOR_GREEN, COLOR_BLACK);
 		enum 
 		{ 
 			topreserved = 10,
@@ -5238,10 +5237,12 @@ void hightests(void)
 			DBX_0 = CHARS2GRID(0), 
 			DBY_1 = ROWS2GRID(topreserved)
 		};
-		static unsigned char scr [GXSIZE(dx, dy)];
+		debug_printf_P(PSTR("test: dx=%d, dy=%d\n"), dx, dy);
+		static PACKEDCOLOR_T scr [GXSIZE(dx, dy)];
 
 
 		/* отображение надписей самым маленьким шрифтом (8 точек) */
+		display_setcolors(COLOR_GREEN, COLOR_BLACK);
 		uint_fast8_t lowhalf2 = HALFCOUNT_SMALL2 - 1;
 		do
 		{
@@ -5256,6 +5257,7 @@ void hightests(void)
 		} while (lowhalf2 --);
 	#if 1
 		/* отображение надписей маленьким шрифтом (16 точек) */
+		display_setcolors(COLOR_GREEN, COLOR_BLACK);
 		uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 		do
 		{
@@ -5268,6 +5270,39 @@ void hightests(void)
 
 		} while (lowhalf --);
 	#endif
+
+	#if LCDMODE_COLORED
+
+		display_colorbuffer_fill(scr, dx, dy, COLOR_WHITE);
+		display_colorbuffer_show(scr, dx, dy, 0, GRID2Y(topreserved));
+		//for (;;)
+		//	;
+		int phase = 0;
+		int count = 0;
+		const int top = (DIM_X - bufY);
+		unsigned loop;
+		for (loop = 0; ;loop = loop < top ? loop + 1 : 0)
+		{
+		
+			// рисование линии
+			unsigned i;
+			for (i = 0; i < bufY; ++ i)
+				display_colorbuffer_set(scr, dx, dy, i + loop, i, COLOR_BLUE);		// поставить точку
+
+			display_colorbuffer_show(scr, dx, dy, 0, GRID2Y(topreserved));
+			//local_delay_ms(25);
+			if (++ count > top)
+			{
+				count = 0;
+				phase = ! phase;
+				if (phase)
+					display_colorbuffer_fill(scr, dx, dy, COLOR_YELLOW);
+				else
+					display_colorbuffer_fill(scr, dx, dy, COLOR_RED);
+			}
+			
+		}
+	#else /* LCDMODE_COLORED */
 
 		display_setcolors(COLOR_WHITE, COLOR_BLACK);
 		
@@ -5299,6 +5334,7 @@ void hightests(void)
 			}
 			
 		}
+	#endif /* LCDMODE_COLORED */
 	}
 #endif
 #if 0 && WITHDEBUG
