@@ -4275,6 +4275,25 @@ portholder_t hardware_spi_complete_b8(void)	/* дождаться готовности */
 
 #if WITHSPIHWDMA
 
+static hardware_spi_master_setdma8bit(void)
+{
+#if CPUSTYLE_STM32F4XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
+	DMA2_Stream3->CR = (DMA2_Stream3->CR & ~ (DMA_SxCR_MSIZE | DMA_SxCR_PSIZE)) |
+		(0 * DMA_SxCR_MSIZE_0) |	// длина в памяти - 8bit
+		(0 * DMA_SxCR_PSIZE_0) |	// длина в SPI_DR- 8bit
+		0;
+#endif
+}
+
+static hardware_spi_master_setdma16bit(void)
+{
+#if CPUSTYLE_STM32F4XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
+	DMA2_Stream3->CR = (DMA2_Stream3->CR & ~ (DMA_SxCR_MSIZE | DMA_SxCR_PSIZE)) |
+		(1 * DMA_SxCR_MSIZE_0) |	// длина в памяти - 16bit
+		(1 * DMA_SxCR_PSIZE_0) |	// длина в SPI_DR- 16bit
+		0;
+#endif
+}
 // Send a frame of bytes via SPI
 void hardware_spi_master_send_frame(
 	//spitarget_t target,	/* addressing to chip */
@@ -4282,6 +4301,133 @@ void hardware_spi_master_send_frame(
 	unsigned int size
 	)
 {
+	hardware_spi_master_setdma8bit();
+#if CPUSTYLE_SAM9XE
+
+	AT91C_BASE_SPI1->SPI_TPR = (unsigned long) buffer;
+	AT91C_BASE_SPI1->SPI_TCR = size;	// запуск передатчика
+
+	while ((AT91C_BASE_SPI1->SPI_SR & AT91C_SPI_ENDTX) == 0)
+		;
+	// дождаться, пока последний байт выйдет из передатчика
+	while ((AT91C_BASE_SPI1->SPI_SR & AT91C_SPI_TXEMPTY) == 0)
+		;
+	// сбростить возможно имеющийся флаг готовности приёмника
+	(void) AT91C_BASE_SPI1->SPI_RDR;
+
+#elif CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
+
+	SPI->SPI_TPR = (unsigned long) buffer;
+	SPI->SPI_TCR = size;	// запуск передатчика
+
+	while ((SPI->SPI_SR & SPI_SR_ENDTX) == 0)
+		;
+	// дождаться, пока последний байт выйдет из передатчика
+	while ((SPI->SPI_SR & SPI_SR_TXEMPTY) == 0)
+		;
+	// сбростить возможно имеющийся флаг готовности приёмника
+	(void) SPI->SPI_RDR;
+
+#elif CPUSTYLE_AT91SAM7S
+
+	AT91C_BASE_SPI->SPI_TPR = (unsigned long) buffer;
+	AT91C_BASE_SPI->SPI_TCR = size;	// запуск передатчика
+
+	while ((AT91C_BASE_SPI->SPI_SR & AT91C_SPI_ENDTX) == 0)
+		;
+	// дождаться, пока последний байт выйдет из передатчика
+	while ((AT91C_BASE_SPI->SPI_SR & AT91C_SPI_TXEMPTY) == 0)
+		;
+	// сбростить возможно имеющийся флаг готовности приёмника
+	(void) AT91C_BASE_SPI->SPI_RDR;
+
+#elif CPUSTYLE_STM32F4XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
+	// buffer should be allocated in RAM, not in CCM or FLASH
+
+	/*
+	if (((uint32_t) buffer & 0xFF000000) == CCMDATARAM_BASE)
+	{
+		debug_printf_P(PSTR("hardware_spi_master_send_frame: use CCM\n"));
+		// Safe version
+		prog_spi_send_frame(target, buffer, size);
+		return;
+	}
+	*/
+
+	// DMA2: SPI1_TX: Stream 3: Channel 3
+#if CPUSTYLE_STM32H7XX
+	SPI1->CFG1 |= SPI_CFG1_TXDMAEN; // DMA по передаче
+#else /* CPUSTYLE_STM32H7XX */
+	SPI1->CR2 |= SPI_CR2_TXDMAEN; // DMA по передаче
+#endif /* CPUSTYLE_STM32H7XX */
+
+	DMA2_Stream3->M0AR = (unsigned long) buffer;
+	DMA2_Stream3->NDTR = (DMA2_Stream3->NDTR & ~ DMA_SxNDT) |
+		(size * DMA_SxNDT_0);
+	DMA2_Stream3->CR |= DMA_SxCR_EN;		// перезапуск DMA
+
+	// Дожидаемся завершения обмена передающего канала DMA
+	while ((DMA2->LISR & DMA_LISR_TCIF3) == 0)	// ожидаем завершения обмена по соответствушему stream
+		;
+	DMA2->LIFCR = DMA_LIFCR_CTCIF3;		// сбросил флаг соответствующий stream
+	//DMA2_waitTC(3);	// ожидаем завершения обмена по соответствушему stream
+
+#if CPUSTYLE_STM32H7XX
+
+	//while ((SPI1->SR & SPI_SR_TXC) == 0)	
+	//	;
+	//while ((SPI1->SR & SPI_SR_BSY) != 0)	
+	//	;
+	//(void) SPI1->RXDR;	/* clear SPI_SR_RXNE in status register */
+
+#else /* CPUSTYLE_STM32H7XX */
+
+	while ((SPI1->SR & SPI_SR_TXE) == 0)	
+		;
+	while ((SPI1->SR & SPI_SR_BSY) != 0)	
+		;
+	(void) SPI1->DR;	/* clear SPI_SR_RXNE in status register */
+
+#endif /* CPUSTYLE_STM32H7XX */
+
+
+#if CPUSTYLE_STM32H7XX
+	SPI1->CFG1 &= ~ SPI_CFG1_TXDMAEN; // запретить DMA по передаче
+#else /* CPUSTYLE_STM32H7XX */
+	SPI1->CR2 &= ~ SPI_CR2_TXDMAEN; // запретить DMA по передаче
+#endif /* CPUSTYLE_STM32H7XX */
+
+#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX
+	#warning TODO: implement SPI over DMA
+
+	//prog_spi_send_frame(target, buffer, size);
+
+#elif CPUSTYLE_STM32F1XX
+	#warning TODO: implement SPI over DMA
+
+	//prog_spi_send_frame(target, buffer, size);
+
+#elif CPUSTYLE_ATXMEGA
+	#warning TODO: implement SPI over DMA
+	
+	//prog_spi_send_frame(target, buffer, size);
+
+#elif CPUSTYLE_R7S721
+	#warning TODO: Add code for R7S721 SPI DMA support
+
+#else
+	#error Undefined CPUSTYLE_xxxx
+#endif
+
+}
+// Send a frame of 16-bit words via SPI
+void hardware_spi_master_send_frame_16b(
+	//spitarget_t target,	/* addressing to chip */
+	const uint16_t * buffer, 
+	unsigned int size
+	)
+{
+	hardware_spi_master_setdma16bit();
 #if CPUSTYLE_SAM9XE
 
 	AT91C_BASE_SPI1->SPI_TPR = (unsigned long) buffer;

@@ -3407,6 +3407,7 @@ static char mmcWriteSectors(
 			spi_complete(targetsdcard);
 
 			// clock the actual data transfer and transmitt the bytes
+			arm_hardware_flush((uintptr_t) base, MMC_SECTORSIZE);
 			spi_send_frame(targetsdcard, buff, MMC_SECTORSIZE);
 
 			// put CRC bytes (not really needed by us, but required by MMC)
@@ -3491,6 +3492,7 @@ static char mmcWriteSectors(
 
 
 				// clock the actual data transfer and transmitt the bytes
+				arm_hardware_flush((uintptr_t) base, MMC_SECTORSIZE);
 				spi_send_frame(targetsdcard, buff, MMC_SECTORSIZE);
 
 				// put CRC bytes (not really needed by us, but required by MMC)

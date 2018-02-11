@@ -459,5 +459,6 @@ portholder_t hardware_spi_complete_b16(void);	/* дождаться готовности передача 1
 void hardware_spi_master_read_frame(uint8_t * pBuffer, unsigned int size);
 // Send a frame of bytes via SPI
 void hardware_spi_master_send_frame(const uint8_t * pBuffer, unsigned int size);
+void hardware_spi_master_send_frame_16b(const uint16_t * pBuffer, unsigned int size);
 
 #endif // SPIFUNCS_H_INCLUDED
