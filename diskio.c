@@ -10,7 +10,7 @@
 #include <ctype.h>
 #include <string.h>
 
-#if WITHUSEAUDIOREC
+#if WITHUSESDCARD
 
 #include "board.h"
 #include "sdcard.h"

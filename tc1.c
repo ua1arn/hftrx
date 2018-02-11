@@ -14195,8 +14195,10 @@ hamradio_initialize(void)
 
 #if WITHUSESDCARD
 	sdcardhw_initialize();
-	sdcardinitialize();			// перевод state machine в начальное состояние
 #endif /* WITHUSESDCARD */
+#if WITHUSEAUDIOREC
+	sdcardinitialize();			// перевод state machine в начальное состояние
+#endif /* WITHUSEAUDIOREC */
 
 #if WITHMODEM
 	modem_initialze();
