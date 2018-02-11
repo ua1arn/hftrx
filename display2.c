@@ -4150,99 +4150,113 @@ void display2_spectrum(
 
 	if (hamradio_get_tx() == 0)
 	{
-		uint_fast16_t x;
-		uint_fast16_t y;
 
-	#if LCDMODE_S1D13781
-		// Спектр на цветных дисплеях
-
-	#elif LCDMODE_UC1608 || LCDMODE_UC1601
+	#if LCDMODE_UC1608 || LCDMODE_UC1601 || LCDMODE_S1D13781
 		// Спектр на монохромных дисплеях
-		// формирование растра
-		// маркер центральной частоты обзора
-		memset(sharedscr, 0xFF, sizeof sharedscr);			// рисование сспособом погасить точку
-		for (x = 0; x < WFDY; ++ x)
+		if (hamradio_get_tx() == 0)
 		{
-			display_pixelbuffer(sharedscr, WFDX, WFDY, WFDX / 2, x);	// погасить точку
+			uint_fast16_t x;
+			uint_fast16_t y;
+			// формирование растра
+			// маркер центральной частоты обзора
+			memset(sharedscr, 0xFF, sizeof sharedscr);			// рисование способом погасить точку
+			for (x = 0; x < WFDY; ++ x)
+			{
+				display_pixelbuffer(sharedscr, WFDX, WFDY, WFDX / 2, x);	// погасить точку
+			}
+
+			// отображение спектра
+			for (x = 0; x < WFDX; ++ x)
+			{
+			#if EEAVERAGE
+				// усреднение
+				FLOAT_t mag = 0;
+				uint_fast8_t h;
+				for (h = 0; h < AVGLEN; ++ h)
+					mag += spavgarray [(spavgrow + h) % SPAVGSIZE] [x];
+
+				// логарифм - в вертикальную координату
+				const int val = dsp_mag2y(mag / AVGLEN, WFDY);
+			#elif EEMAXIMUM
+				// максимум
+				FLOAT_t mag = 0;
+				uint_fast8_t h;
+				for (h = 0; h < MAXHISTLEN; ++ h)
+					mag = FMAXF(mag, spavgarray [(spavgrow + h) % SPAVGSIZE] [x]);
+
+				// логарифм - в вертикальную координату
+				const int val = dsp_mag2y(mag, WFDY);
+			#else
+				// без усреднения
+				// логарифм - в вертикальную координату
+				const int val = dsp_mag2y(spavgarray [spavgrow ] [x], WFDY);
+			#endif
+				// Формирование графика
+				int zv = (WFDY - 1) - val;
+				int z;
+				for (z = WFDY - 1; z >= zv; -- z)
+					display_pixelbuffer_xor(sharedscr, WFDX, WFDY, x, z);	// xor точку
+			}
 		}
-
-		// отображение спектра
-		for (x = 0; x < WFDX; ++ x)
+		else
 		{
-		#if EEAVERAGE
-			// усреднение
-			FLOAT_t mag = 0;
-			uint_fast8_t h;
-			for (h = 0; h < AVGLEN; ++ h)
-				mag += spavgarray [(spavgrow + h) % SPAVGSIZE] [x];
-
-			// логарифм - в вертикальную координату
-			const int val = dsp_mag2y(mag / AVGLEN, WFDY);
-		#elif EEMAXIMUM
-			// максимум
-			FLOAT_t mag = 0;
-			uint_fast8_t h;
-			for (h = 0; h < MAXHISTLEN; ++ h)
-				mag = FMAXF(mag, spavgarray [(spavgrow + h) % SPAVGSIZE] [x]);
-
-			// логарифм - в вертикальную координату
-			const int val = dsp_mag2y(mag, WFDY);
-		#else
-			// без усреднения
-			// логарифм - в вертикальную координату
-			const int val = dsp_mag2y(spavgarray [spavgrow ] [x], WFDY);
-		#endif
-			// Формирование графика
-			int zv = (WFDY - 1) - val;
-			int z;
-			for (z = WFDY - 1; z >= zv; -- z)
-				display_pixelbuffer_xor(sharedscr, WFDX, WFDY, x, z);	// xor точку
+			memset(sharedscr, 0xFF, sizeof sharedscr);			// рисование способом погасить точку
 		}
 		display_setcolors(COLOR_GRAY, COLOR_BLUE);
 		display_showbuffer(sharedscr, WFDX, WFDY, x0, y0);
+
 	#else /* */
+
 		// Спектр на цветных дисплеях
-		//display_colorbuffer_fill(sharedscr, WFDX, WFDY, COLOR_DARKGREEN);
-		// отображение спектра
-		for (x = 0; x < WFDX; ++ x)
+		if (hamradio_get_tx() == 0)
 		{
-		#if EEAVERAGE
-			// усреднение
-			FLOAT_t mag = 0;
-			uint_fast8_t h;
-			for (h = 0; h < AVGLEN; ++ h)
-				mag += spavgarray [(spavgrow + h) % SPAVGSIZE] [x];
+			uint_fast16_t x;
+			uint_fast16_t y;
+			// отображение спектра
+			for (x = 0; x < WFDX; ++ x)
+			{
+			#if EEAVERAGE
+				// усреднение
+				FLOAT_t mag = 0;
+				uint_fast8_t h;
+				for (h = 0; h < AVGLEN; ++ h)
+					mag += spavgarray [(spavgrow + h) % SPAVGSIZE] [x];
 
-			// логарифм - в вертикальную координату
-			const int val = dsp_mag2y(mag / AVGLEN, WFDY);
-		#elif EEMAXIMUM
-			// максимум
-			FLOAT_t mag = 0;
-			uint_fast8_t h;
-			for (h = 0; h < MAXHISTLEN; ++ h)
-				mag = FMAXF(mag, spavgarray [(spavgrow + h) % SPAVGSIZE] [x]);
+				// логарифм - в вертикальную координату
+				const int val = dsp_mag2y(mag / AVGLEN, WFDY);
+			#elif EEMAXIMUM
+				// максимум
+				FLOAT_t mag = 0;
+				uint_fast8_t h;
+				for (h = 0; h < MAXHISTLEN; ++ h)
+					mag = FMAXF(mag, spavgarray [(spavgrow + h) % SPAVGSIZE] [x]);
 
-			// логарифм - в вертикальную координату
-			const int val = dsp_mag2y(mag, WFDY);
-		#else
-			// без усреднения
-			// логарифм - в вертикальную координату
-			const int val = dsp_mag2y(spavgarray [spavgrow ] [x], WFDY);
-		#endif
-			// Формирование графика
-			int zv = (WFDY - 1) - val;
-			int z;
-			for (z = WFDY - 1; z >= zv; -- z)
-				display_colorbuffer_set(sharedscr, WFDX, WFDY, x, z, COLOR_BLUE);	// точку сигнала
-			// формирование фона растра
-			for (; z >= 0; -- z)
-				display_colorbuffer_set(sharedscr, WFDX, WFDY, x, z, COLOR_WHITE);	// точку фона
+				// логарифм - в вертикальную координату
+				const int val = dsp_mag2y(mag, WFDY);
+			#else
+				// без усреднения
+				// логарифм - в вертикальную координату
+				const int val = dsp_mag2y(spavgarray [spavgrow ] [x], WFDY);
+			#endif
+				// Формирование графика
+				int zv = (WFDY - 1) - val;
+				int z;
+				for (z = WFDY - 1; z >= zv; -- z)
+					display_colorbuffer_set(sharedscr, WFDX, WFDY, x, z, COLOR_BLUE);	// точку сигнала
+				// формирование фона растра
+				for (; z >= 0; -- z)
+					display_colorbuffer_set(sharedscr, WFDX, WFDY, x, z, COLOR_WHITE);	// точку фона
+			}
+			// маркер центральной частоты обзора
+			// xor линию
+			for (y = 0; y < WFDY; ++ y)
+			{
+				display_colorbuffer_xor(sharedscr, WFDX, WFDY, WFDX / 2, y, COLOR_RED); 
+			}
 		}
-		// маркер центральной частоты обзора
-		// xor линию
-		for (y = 0; y < WFDY; ++ y)
+		else
 		{
-			display_colorbuffer_xor(sharedscr, WFDX, WFDY, WFDX / 2, y, COLOR_RED); 
+			display_colorbuffer_fill(sharedscr, WFDX, WFDY, COLOR_GRAY);
 		}
 		display_colorbuffer_show(sharedscr, WFDX, WFDY, GRID2X(x0), GRID2Y(y0));
 	#endif
@@ -4303,7 +4317,7 @@ void display2_waterfall(
 #elif LCDMODE_UC1608 || LCDMODE_UC1601
 	// следы спектра ("водопад") на монохромных дисплеях
 
-	memset(sharedscr, 0xFF, sizeof sharedscr);			// рисование сспособом погасить точку
+	memset(sharedscr, 0xFF, sizeof sharedscr);			// рисование способом погасить точку
 
 	if (hamradio_get_tx() == 0)
 	{
@@ -4354,7 +4368,10 @@ void display2_waterfall(
 			display_colorbuffer_xor(sharedscr, WFDX, WFDY, WFDX / 2, y, COLOR_RED);
 		}
 	}
-
+	else
+	{
+		display_colorbuffer_fill(sharedscr, WFDX, WFDY, COLOR_GRAY);
+	}
 	display_colorbuffer_show(sharedscr, WFDX, WFDY, GRID2X(x0), GRID2Y(y0));
 
 #endif /* LCDMODE_S1D13781 */
