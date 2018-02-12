@@ -4495,14 +4495,18 @@ void hardware_spi_master_send_frame(
 
 #elif CPUSTYLE_R7S721
 
-	DMAC15.N0TB_n = size * sizeof (* buffer);	// размер в байтах
+	DMAC15.N0TB_n = (uint_fast32_t) size * sizeof (* buffer);	// размер в байтах
 	DMAC15.N0SA_n = (uintptr_t) buffer;			// source address
 	DMAC15.CHCTRL_n = DMAC15_CHCTRL_n_SETEN;		// SETEN
 	/* ждем окончани€ пересылки */
 	//local_delay_ms(50);
-	while ((DMAC15.CHSTAT_n & DMAC15_CHSTAT_n_END) == 0)	// END
+	while ((DMAC15.CHSTAT_n & DMAC15_CHSTAT_n_TC) == 0)	// TC
+	//while ((DMAC15.CHSTAT_n & DMAC15_CHSTAT_n_END) == 0)	// END
 		;
 	DMAC15.CHCTRL_n = DMAC15_CHCTRL_n_CLREN;		// CLREN
+	DMAC15.CHCTRL_n = DMAC15_CHCTRL_n_CLRTC;		// CLRTC
+	DMAC15.CHCTRL_n = DMAC15_CHCTRL_n_CLREND;		// CLREND
+
 	// —бросить буферы
 	RSPI0.SPBFCR =		/* Buffer Control Register (SPBFCR) */
 		(1U << 7) |		// TXRST - TX buffer reset
@@ -4634,14 +4638,18 @@ void hardware_spi_master_send_frame_16b(
 
 #elif CPUSTYLE_R7S721
 
-	DMAC15.N0TB_n = size * sizeof (* buffer);	// размер в байтах
+	DMAC15.N0TB_n = (uint_fast32_t) size * sizeof (* buffer);	// размер в байтах
 	DMAC15.N0SA_n = (uintptr_t) buffer;			// source address
 	DMAC15.CHCTRL_n = DMAC15_CHCTRL_n_SETEN;		// SETEN
 	/* ждем окончани€ пересылки */
 	//local_delay_ms(50);
-	while ((DMAC15.CHSTAT_n & DMAC15_CHSTAT_n_END) == 0)	// END
+	while ((DMAC15.CHSTAT_n & DMAC15_CHSTAT_n_TC) == 0)	// TC
+	//while ((DMAC15.CHSTAT_n & DMAC15_CHSTAT_n_END) == 0)	// END
 		;
 	DMAC15.CHCTRL_n = DMAC15_CHCTRL_n_CLREN;		// CLREN
+	DMAC15.CHCTRL_n = DMAC15_CHCTRL_n_CLRTC;		// CLRTC
+	DMAC15.CHCTRL_n = DMAC15_CHCTRL_n_CLREND;		// CLREND
+
 	// —бросить буферы
 	RSPI0.SPBFCR =		/* Buffer Control Register (SPBFCR) */
 		(1U << 7) |		// TXRST - TX buffer reset
