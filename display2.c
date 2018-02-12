@@ -4138,7 +4138,7 @@ static void dsp_latchwaterfall(
 	}
 }
 
-static GX_t sharedscr [GXSIZE(WFDX, WFDY)];
+static ALIGNX_BEGIN GX_t sharedscr [GXSIZE(WFDX, WFDY)] ALIGNX_END;
 
 // отображение спектроанализатора
 void display2_spectrum(
@@ -4258,20 +4258,6 @@ void display2_spectrum(
 		{
 			display_colorbuffer_fill(sharedscr, WFDX, WFDY, COLOR_GRAY);
 		}
-		#if 0
-			display_colorbuffer_set(sharedscr, WFDX, WFDY, 0, 0, COLOR_RED);	// поставить точку
-			display_colorbuffer_set(sharedscr, WFDX, WFDY, 0, 1, COLOR_GREEN);	// поставить точку
-			display_colorbuffer_set(sharedscr, WFDX, WFDY, 0, 2, COLOR_BLUE);	// поставить точку
-			display_colorbuffer_set(sharedscr, WFDX, WFDY, 0, 20, COLOR_RED);	// поставить точку
-			display_colorbuffer_set(sharedscr, WFDX, WFDY, 0, 21, COLOR_GREEN);	// поставить точку
-			display_colorbuffer_set(sharedscr, WFDX, WFDY, 0, 22, COLOR_BLUE);	// поставить точку
-			display_colorbuffer_set(sharedscr, WFDX, WFDY, 4, 0, COLOR_RED);	// поставить точку
-			display_colorbuffer_set(sharedscr, WFDX, WFDY, 4, 1, COLOR_GREEN);	// поставить точку
-			display_colorbuffer_set(sharedscr, WFDX, WFDY, 4, 2, COLOR_BLUE);	// поставить точку
-			display_colorbuffer_set(sharedscr, WFDX, WFDY, 4, 20, COLOR_RED);	// поставить точку
-			display_colorbuffer_set(sharedscr, WFDX, WFDY, 4, 21, COLOR_GREEN);	// поставить точку
-			display_colorbuffer_set(sharedscr, WFDX, WFDY, 4, 22, COLOR_BLUE);	// поставить точку
-		#endif
 		display_colorbuffer_show(sharedscr, WFDX, WFDY, GRID2X(x0), GRID2Y(y0));
 	#endif
 	}
@@ -4386,20 +4372,6 @@ void display2_waterfall(
 	{
 		display_colorbuffer_fill(sharedscr, WFDX, WFDY, COLOR_GRAY);
 	}
-#if 0
-	display_colorbuffer_set(sharedscr, WFDX, WFDY, 0, 0, COLOR_RED);	// поставить точку
-	display_colorbuffer_set(sharedscr, WFDX, WFDY, 0, 1, COLOR_GREEN);	// поставить точку
-	display_colorbuffer_set(sharedscr, WFDX, WFDY, 0, 2, COLOR_BLUE);	// поставить точку
-	display_colorbuffer_set(sharedscr, WFDX, WFDY, 0, 20, COLOR_RED);	// поставить точку
-	display_colorbuffer_set(sharedscr, WFDX, WFDY, 0, 21, COLOR_GREEN);	// поставить точку
-	display_colorbuffer_set(sharedscr, WFDX, WFDY, 0, 22, COLOR_BLUE);	// поставить точку
-	display_colorbuffer_set(sharedscr, WFDX, WFDY, 4, 0, COLOR_RED);	// поставить точку
-	display_colorbuffer_set(sharedscr, WFDX, WFDY, 4, 1, COLOR_GREEN);	// поставить точку
-	display_colorbuffer_set(sharedscr, WFDX, WFDY, 4, 2, COLOR_BLUE);	// поставить точку
-	display_colorbuffer_set(sharedscr, WFDX, WFDY, 4, 20, COLOR_RED);	// поставить точку
-	display_colorbuffer_set(sharedscr, WFDX, WFDY, 4, 21, COLOR_GREEN);	// поставить точку
-	display_colorbuffer_set(sharedscr, WFDX, WFDY, 4, 22, COLOR_BLUE);	// поставить точку
-#endif
 	display_colorbuffer_show(sharedscr, WFDX, WFDY, GRID2X(x0), GRID2Y(y0));
 
 #endif /* LCDMODE_S1D13781 */

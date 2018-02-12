@@ -5238,7 +5238,7 @@ void hightests(void)
 			DBY_1 = ROWS2GRID(topreserved)
 		};
 		debug_printf_P(PSTR("test: dx=%d, dy=%d\n"), dx, dy);
-		static PACKEDCOLOR_T scr [GXSIZE(dx, dy)];
+		static ALIGNX_BEGIN PACKEDCOLOR_T scr [GXSIZE(dx, dy)] ALIGNX_END;
 
 
 		/* отображение надписей самым маленьким шрифтом (8 точек) */
@@ -5908,7 +5908,7 @@ void hightests(void)
 
 	/* буфер размером x=64, y=112 точек */
 	enum { bufY = DIM_Y - 8, dx = DIM_X, dy = /*24 */ bufY, DBX_0 = 0, DBY_1 = 1};
-	static unsigned char scr [GXSIZE(dx, dy)];
+	static ALIGNX_BEGIN PACKEDCOLOR_T scr [GXSIZE(dx, dy)] ALIGNX_END;
 
 
 	/* отображение надписей самым маленьким шрифтом (8 точек) */

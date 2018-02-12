@@ -3731,7 +3731,7 @@ void hardware_spi_master_initialize(void)
 		(1U << 7) |		// TXRST - TX buffer reset
 		(1U << 6) |		// RXRST - TX buffer reset
 		0;
-	// Hfphtibnm буферы
+	// Разрешить буферы
 	RSPI0.SPBFCR =		/* Buffer Control Register (SPBFCR) */
 		(3U << 4) |		// TX buffer trigger level = 0
 		0;
@@ -4342,7 +4342,7 @@ portholder_t hardware_spi_complete_b8(void)	/* дождаться готовности */
 
 #if WITHSPIHWDMA
 
-static void hardware_spi_master_setdma8bit(void)
+static void hardware_spi_master_setdma8bit_tx(void)
 {
 #if CPUSTYLE_STM32F4XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
 	DMA2_Stream3->CR = (DMA2_Stream3->CR & ~ (DMA_SxCR_MSIZE | DMA_SxCR_PSIZE)) |
@@ -4352,14 +4352,16 @@ static void hardware_spi_master_setdma8bit(void)
 #elif CPUSTYLE_R7S721
 	DMAC15.N0DA_n = (uint32_t) & RSPI0.SPDR.UINT8 [R_IO_LL];	// Fixed destination address for 8-bit transfers
 	//DMAC15.N0DA_n = (uint32_t) & RSPI0.SPDR.UINT16 [R_IO_L];	// Fixed destination address for 16-bit transfers
-	DMAC15.CHCFG_n = (DMAC15.CHCFG_n & ~ (DMAC15_CHCFG_n_DDS | DMAC15_CHCFG_n_SDS)) |
+	DMAC15.CHCFG_n = (DMAC15.CHCFG_n & ~ (DMAC15_CHCFG_n_DDS | DMAC15_CHCFG_n_SDS | DMAC15_CHCFG_n_DAD | DMAC15_CHCFG_n_SAD)) |
 		0 * (1U << DMAC15_CHCFG_n_DDS_SHIFT) |	// DDS	2: 32 bits, 1: 16 bits (Destination Data Size)
 		0 * (1U << DMAC15_CHCFG_n_SDS_SHIFT) |	// SDS	2: 32 bits, 1: 16 bits (Source Data Size)
+		1 * (1U << DMAC15_CHCFG_n_DAD_SHIFT) |		// DAD	1: Fixed destination address
+		0 * (1U << DMAC15_CHCFG_n_SAD_SHIFT) |		// SAD	0: Increment source address
 		0;
 #endif
 }
 
-static void hardware_spi_master_setdma16bit(void)
+static void hardware_spi_master_setdma16bit_tx(void)
 {
 #if CPUSTYLE_STM32F4XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
 	DMA2_Stream3->CR = (DMA2_Stream3->CR & ~ (DMA_SxCR_MSIZE | DMA_SxCR_PSIZE)) |
@@ -4369,9 +4371,11 @@ static void hardware_spi_master_setdma16bit(void)
 #elif CPUSTYLE_R7S721
 	//DMAC15.N0DA_n = (uint32_t) & RSPI0.SPDR.UINT8 [R_IO_LL];	// Fixed destination address for 8-bit transfers
 	DMAC15.N0DA_n = (uint32_t) & RSPI0.SPDR.UINT16 [R_IO_L];	// Fixed destination address for 16-bit transfers
-	DMAC15.CHCFG_n = (DMAC15.CHCFG_n & ~ (DMAC15_CHCFG_n_DDS | DMAC15_CHCFG_n_SDS)) |
+	DMAC15.CHCFG_n = (DMAC15.CHCFG_n & ~ (DMAC15_CHCFG_n_DDS | DMAC15_CHCFG_n_SDS | DMAC15_CHCFG_n_DAD | DMAC15_CHCFG_n_SAD)) |
 		1 * (1U << DMAC15_CHCFG_n_DDS_SHIFT) |	// DDS	2: 32 bits, 1: 16 bits (Destination Data Size)
 		1 * (1U << DMAC15_CHCFG_n_SDS_SHIFT) |	// SDS	2: 32 bits, 1: 16 bits (Source Data Size)
+		1 * (1U << DMAC15_CHCFG_n_DAD_SHIFT) |		// DAD	1: Fixed destination address
+		0 * (1U << DMAC15_CHCFG_n_SAD_SHIFT) |		// SAD	0: Increment source address
 		0;
 #endif
 }
@@ -4382,7 +4386,7 @@ void hardware_spi_master_send_frame(
 	unsigned int size
 	)
 {
-	hardware_spi_master_setdma8bit();
+	hardware_spi_master_setdma8bit_tx();
 #if CPUSTYLE_SAM9XE
 
 	AT91C_BASE_SPI1->SPI_TPR = (unsigned long) buffer;
@@ -4495,23 +4499,21 @@ void hardware_spi_master_send_frame(
 
 #elif CPUSTYLE_R7S721
 
+	RSPI0.SPBFCR |= RSPIn_SPBFCR_RXRST;		// Запретить прием
+
 	DMAC15.N0TB_n = (uint_fast32_t) size * sizeof (* buffer);	// размер в байтах
 	DMAC15.N0SA_n = (uintptr_t) buffer;			// source address
 	DMAC15.CHCTRL_n = DMAC15_CHCTRL_n_SETEN;		// SETEN
+
 	/* ждем окончания пересылки */
-	//local_delay_ms(50);
-	while ((DMAC15.CHSTAT_n & DMAC15_CHSTAT_n_TC) == 0)	// TC
-	//while ((DMAC15.CHSTAT_n & DMAC15_CHSTAT_n_END) == 0)	// END
+	while ((DMAC15.CHSTAT_n & DMAC15_CHSTAT_n_END) == 0)	// END
 		;
+
 	DMAC15.CHCTRL_n = DMAC15_CHCTRL_n_CLREN;		// CLREN
 	DMAC15.CHCTRL_n = DMAC15_CHCTRL_n_CLRTC;		// CLRTC
 	DMAC15.CHCTRL_n = DMAC15_CHCTRL_n_CLREND;		// CLREND
 
-	// Сбросить буферы
-	RSPI0.SPBFCR =		/* Buffer Control Register (SPBFCR) */
-		(1U << 7) |		// TXRST - TX buffer reset
-		(1U << 6) |		// RXRST - TX buffer reset
-		0;
+	RSPI0.SPBFCR &= ~ RSPIn_SPBFCR_RXRST;		// Разрешить прием
 
 #else
 	#error Undefined CPUSTYLE_xxxx
@@ -4525,7 +4527,7 @@ void hardware_spi_master_send_frame_16b(
 	unsigned int size		/* количество пересылаемых 16-ти битных элементов */
 	)
 {
-	hardware_spi_master_setdma16bit();
+	hardware_spi_master_setdma16bit_tx();
 #if CPUSTYLE_SAM9XE
 
 	AT91C_BASE_SPI1->SPI_TPR = (unsigned long) buffer;
@@ -4638,26 +4640,21 @@ void hardware_spi_master_send_frame_16b(
 
 #elif CPUSTYLE_R7S721
 
+	RSPI0.SPBFCR |= RSPIn_SPBFCR_RXRST;		// Запретить прием
+
 	DMAC15.N0TB_n = (uint_fast32_t) size * sizeof (* buffer);	// размер в байтах
 	DMAC15.N0SA_n = (uintptr_t) buffer;			// source address
 	DMAC15.CHCTRL_n = DMAC15_CHCTRL_n_SETEN;		// SETEN
+
 	/* ждем окончания пересылки */
 	while ((DMAC15.CHSTAT_n & DMAC15_CHSTAT_n_END) == 0)	// END
-	{
-		while (RSPI0.SPSR & 0x80)
-			(void) RSPI0.SPDR.UINT16 [R_IO_L];
-	}
-	while (RSPI0.SPSR & 0x80)
-		(void) RSPI0.SPDR.UINT16 [R_IO_L];
+		;
+
 	DMAC15.CHCTRL_n = DMAC15_CHCTRL_n_CLREN;		// CLREN
 	DMAC15.CHCTRL_n = DMAC15_CHCTRL_n_CLRTC;		// CLRTC
 	DMAC15.CHCTRL_n = DMAC15_CHCTRL_n_CLREND;		// CLREND
 
-	// Сбросить буферы
-	//RSPI0.SPBFCR =		/* Buffer Control Register (SPBFCR) */
-	//	(1U << 7) |		// TXRST - TX buffer reset
-	//	(1U << 6) |		// RXRST - TX buffer reset
-	//	0;
+	RSPI0.SPBFCR &= ~ RSPIn_SPBFCR_RXRST;		// Разрешить прием
 
 #else
 	#error Undefined CPUSTYLE_xxxx
