@@ -197,6 +197,17 @@ void display_colorbuffer_fill(
 	{
 		memset(buffer, color, len);
 	}
+	else if ((len & 0x03) == 0)
+	{
+		len /= 4;
+		while (len --)
+		{
+			* buffer ++ = color;
+			* buffer ++ = color;
+			* buffer ++ = color;
+			* buffer ++ = color;
+		}
+	}
 	else
 	{
 		while (len --)

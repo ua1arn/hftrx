@@ -3745,11 +3745,11 @@ void hardware_spi_master_initialize(void)
 
 #if WITHSPIHWDMA
 	{
-		const uint_fast8_t id = 15;	// 15: DMAC15
+		enum { id = 15 };	// 15: DMAC15
 		// DMAC15
 		/* Set Destination Start Address */
-		DMAC15.N0DA_n = (uint32_t) & RSPI0.SPDR.UINT8 [R_IO_LL];	// Fixed destination address for 8-bit transfers
-		//DMAC15.N0DA_n = (uint32_t) & RSPI0.SPDR.UINT16 [R_IO_L];	// Fixed destination address for 16-bit transfers
+		//DMAC15.N0DA_n = (uint32_t) & RSPI0.SPDR.UINT8 [R_IO_LL];	// Fixed destination address for 8-bit transfers
+		DMAC15.N0DA_n = (uint32_t) & RSPI0.SPDR.UINT16 [R_IO_L];	// Fixed destination address for 16-bit transfers
 
 		/* Set Transfer Size */
 		//DMAC15.N0TB_n = DMABUFFSIZE16 * sizeof (int16_t);	// размер в байтах
@@ -3759,33 +3759,33 @@ void hardware_spi_master_initialize(void)
 		// SPTI0 (transmit data empty)
 		const uint_fast8_t mid = 0x48;	
 		const uint_fast8_t rid = 1;		
-		const uint_fast8_t tm = 0;		
+		const uint_fast8_t tm = 0;		// single transfer mode
 		const uint_fast8_t am = 2;		
 		const uint_fast8_t lvl = 1;		
-		const uint_fast8_t reqd = 1;	
 		const uint_fast8_t hien = 1;	
+		const uint_fast8_t reqd = 1;	
 
 		DMAC15.CHCFG_n =
-			0 * (1U << 31) |	// DMS	0: Register mode
-			0 * (1U << 30) |	// REN	0: Does not continue DMA transfers.
-			0 * (1U << 29) |	// RSW	1: Inverts RSEL automatically after a DMA transaction.
-			0 * (1U << 28) |	// RSEL	0: Executes the Next0 Register Set
-			0 * (1U << 27) |	// SBE	0: Stops the DMA transfer without sweeping the buffer (initial value).
-			0 * (1U << 24) |	// DEM	0: Does not mask the DMA transfer end interrupt - прерывания каждый раз после TC
-			tm * (1U << 22) |	// TM	0: Single transfer mode - берётся из Table 9.4
-			1 * (1U << 21) |	// DAD	1: Fixed destination address
-			0 * (1U << 20) |	// SAD	0: Increment source address
-			1 * (1U << 16) |	// DDS	2: 32 bits, 1: 16 bits (Destination Data Size)
-			1 * (1U << 12) |	// SDS	2: 32 bits, 1: 16 bits (Source Data Size)
-			am * (1U << 8) |	// AM	1: ACK mode: Level mode (active until the transfer request from an on-chip peripheral module
-			lvl * (1U << 6) |	// LVL	1: Detects based on the level.
-			hien * (1U << 5) |	// HIEN	1: When LVL = 1: Detects a request when the signal is at the High level.
-			reqd * (1U << 3) |	// REQD		Request Direction
-			(id & 0x07) * (1U << 0) |		// SEL	0: CH0/CH8
+			0 * (1U << DMAC15_CHCFG_n_DMS_SHIFT) |		// DMS	0: Register mode
+			1 * (1U << DMAC15_CHCFG_n_REN_SHIFT) |		// REN	1: Continues DMA transfers.
+			0 * (1U << DMAC15_CHCFG_n_RSW_SHIFT) |		// RSW	1: Inverts RSEL automatically after a DMA transaction.
+			0 * (1U << DMAC15_CHCFG_n_RSEL_SHIFT) |		// RSEL	0: Executes the Next0 Register Set
+			0 * (1U << DMAC15_CHCFG_n_SBE_SHIFT) |		// SBE	0: Stops the DMA transfer without sweeping the buffer (initial value).
+			0 * (1U << DMAC15_CHCFG_n_DEM_SHIFT) |		// DEM	0: Does not mask the DMA transfer end interrupt - прерывания каждый раз после TC
+			tm * (1U << DMAC15_CHCFG_n_TM_SHIFT) |		// TM	0: Single transfer mode - берётся из Table 9.4
+			1 * (1U << DMAC15_CHCFG_n_DAD_SHIFT) |		// DAD	1: Fixed destination address
+			0 * (1U << DMAC15_CHCFG_n_SAD_SHIFT) |		// SAD	0: Increment source address
+			1 * (1U << DMAC15_CHCFG_n_DDS_SHIFT) |		// DDS	2: 32 bits, 1: 16 bits (Destination Data Size)
+			1 * (1U << DMAC15_CHCFG_n_SDS_SHIFT) |		// SDS	2: 32 bits, 1: 16 bits (Source Data Size)
+			am * (1U << DMAC15_CHCFG_n_AM_SHIFT) |		// AM	1: ACK mode: Level mode (active until the transfer request from an on-chip peripheral module
+			lvl * (1U << DMAC15_CHCFG_n_LVL_SHIFT) |	// LVL	1: Detects based on the level.
+			hien * (1U << DMAC15_CHCFG_n_HIEN_SHIFT) |	// HIEN	1: When LVL = 1: Detects a request when the signal is at the High level.
+			reqd * (1U << DMAC15_CHCFG_n_REQD_SHIFT) |	// REQD		Request Direction
+			(id & 0x07) * (1U << DMAC15_CHCFG_n_SEL_SHIFT) |		// SEL	0: CH0/CH8
 			0;
 
 		enum { dmarsshift = (id & 0x01) * 16 };
-		DMAC1415.DMARS = (DMAC1415.DMARS & ~ (0xFFul << dmarsshift)) |
+		DMAC1415.DMARS = (DMAC1415.DMARS & ~ (0x1FFul << dmarsshift)) |
 			mid * (1U << (2 + dmarsshift)) |		// MID
 			rid * (1U << (0 + dmarsshift)) |		// RID
 			0;
@@ -4640,8 +4640,15 @@ void hardware_spi_master_send_frame_16b(
 
 	DMAC15.N0TB_n = (uint_fast32_t) size * sizeof (* buffer);	// размер в байтах
 	DMAC15.N0SA_n = (uintptr_t) buffer;			// source address
+	debug_printf_P(PSTR("N0TB_n=%ld\n"), (uint_fast32_t) DMAC15.N0TB_n);
+	debug_printf_P(PSTR("CRTB_n=%ld, CHSTAT_n=%08lX\n"), (uint_fast32_t) DMAC15.CRTB_n, (uint_fast32_t) DMAC15.CHSTAT_n);
 	DMAC15.CHCTRL_n = DMAC15_CHCTRL_n_SETEN;		// SETEN
 	/* ждем окончания пересылки */
+	unsigned w = 100;
+	for (;w --;)
+		debug_printf_P(PSTR(" CRTB_n=%ld, CHSTAT_n=%08lX\n"), (uint_fast32_t) DMAC15.CRTB_n, (uint_fast32_t) DMAC15.CHSTAT_n);
+	for (;;)
+		;
 	//local_delay_ms(50);
 	while ((DMAC15.CHSTAT_n & DMAC15_CHSTAT_n_TC) == 0)	// TC
 	//while ((DMAC15.CHSTAT_n & DMAC15_CHSTAT_n_END) == 0)	// END
