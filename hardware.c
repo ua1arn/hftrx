@@ -3739,8 +3739,8 @@ void hardware_spi_master_initialize(void)
 	RSPI0.SPCR =		/* Control Register (SPCR) */
 		(1U << 3) |		// MSTR - master
 		(1U << 6) |		// SPE - Function Enable
-		//(1U << 5) |		// SPTIE  - Transmit Interrupt Enable (for DMA transfers)
-		//(1U << 7) |		// SPRIE  - Receive Interrupt Enable (for DMA transfers)
+		(1U << 5) |		// SPTIE  - Transmit Interrupt Enable (for DMA transfers)
+		(1U << 7) |		// SPRIE  - Receive Interrupt Enable (for DMA transfers)
 		0;
 
 #if WITHSPIHWDMA
@@ -4503,6 +4503,11 @@ void hardware_spi_master_send_frame(
 	while ((DMAC15.CHSTAT_n & DMAC15_CHSTAT_n_END) == 0)	// END
 		;
 	DMAC15.CHCTRL_n = DMAC15_CHCTRL_n_CLREN;		// CLREN
+	// —бросить буферы
+	RSPI0.SPBFCR =		/* Buffer Control Register (SPBFCR) */
+		(1U << 7) |		// TXRST - TX buffer reset
+		(1U << 6) |		// RXRST - TX buffer reset
+		0;
 
 #else
 	#error Undefined CPUSTYLE_xxxx
@@ -4637,6 +4642,11 @@ void hardware_spi_master_send_frame_16b(
 	while ((DMAC15.CHSTAT_n & DMAC15_CHSTAT_n_END) == 0)	// END
 		;
 	DMAC15.CHCTRL_n = DMAC15_CHCTRL_n_CLREN;		// CLREN
+	// —бросить буферы
+	RSPI0.SPBFCR =		/* Buffer Control Register (SPBFCR) */
+		(1U << 7) |		// TXRST - TX buffer reset
+		(1U << 6) |		// RXRST - TX buffer reset
+		0;
 
 #else
 	#error Undefined CPUSTYLE_xxxx
