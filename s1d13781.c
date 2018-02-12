@@ -589,15 +589,16 @@ static void s1d13781_setcolor(COLOR_T fgcolor, COLOR_T bgcolor)
 static uint_fast32_t shadow_dstaddr;
 
 
+
 static void s1d13781_gotoxy(
-	uint_fast8_t x, 
-	uint_fast8_t y
+	uint_fast32_t x,	// горизонтальна€ координата в пиксел€х
+	uint_fast32_t y		// вертикальна€ координата в пиксел€х
 	)
 {
 	// PIPMEMSTART
 	// вычисление начального адреса в видеопам€ти
-	shadow_dstaddr = S1D_PHYSICAL_VMEM_ADDR + (uint_fast32_t) GRID2X(x) * (S1D_DISPLAY_BPP / 8) + (uint_fast32_t) GRID2Y(y) * S1D_DISPLAY_SCANLINE_BYTES;
-	//shadow_dstaddr = PIPMEMSTART + (uint_fast32_t) GRID2X(x) * (S1D_DISPLAY_BPP / 8) + (uint_fast32_t) GRID2Y(y) * S1D_DISPLAY_SCANLINE_BYTES;
+	shadow_dstaddr = S1D_PHYSICAL_VMEM_ADDR + x * (S1D_DISPLAY_BPP / 8) + y * S1D_DISPLAY_SCANLINE_BYTES;
+	//shadow_dstaddr = PIPMEMSTART + x * (S1D_DISPLAY_BPP / 8) + y) * S1D_DISPLAY_SCANLINE_BYTES;
 }
 
 
@@ -1356,19 +1357,11 @@ void display_putpixel(
 }
 
 void display_putpixel_1(
-	uint_fast16_t x,	// pixels
-	uint_fast16_t y,	// pixels
 	COLOR_T color
 	)
 {
-	// вычисление начального адреса в видеопам€ти
-	const uint_fast32_t dstaddr = S1D_PHYSICAL_VMEM_ADDR + x * (S1D_DISPLAY_BPP / 8) + (uint_fast32_t) y * S1D_DISPLAY_SCANLINE_BYTES;
-
-
 #if S1D_DISPLAY_BPP == 24
 
-	spi_select2(targetlcd, S1D13781_SPIMODE, S1D13781_SPIC_SPEED);	/* Enable SPI */
-	set_addrwr_8bit_p1p2(dstaddr);
 	spi_progval8_p2(targetlcd, color >> 0);
 	spi_progval8_p2(targetlcd, color >> 8);
 	spi_progval8_p2(targetlcd, color >> 16);
@@ -1377,15 +1370,10 @@ void display_putpixel_1(
 
 	#if WITHSPIEXT16
 
-		hardware_spi_connect_b16(S1D13781_SPIC_SPEED, S1D13781_SPIMODE);		// если есть возможность - работаем в 16-ти битном режиме
-		prog_select(targetlcd);
-		set_addw_16bit_p1p2(dstaddr);
 		hardware_spi_b16_p2(color);
 
 	#else /* WITHSPI16BIT */
 
-		spi_select2(targetlcd, S1D13781_SPIMODE, S1D13781_SPIC_SPEED);	/* Enable SPI */
-		set_addrwr_8bit_p1p2(dstaddr);
 		spi_progval8_p2(targetlcd, color >> 0);
 		spi_progval8_p2(targetlcd, color >> 8);
 
@@ -1393,8 +1381,6 @@ void display_putpixel_1(
 
 #elif S1D_DISPLAY_BPP == 8
 
-	spi_select2(targetlcd, S1D13781_SPIMODE, S1D13781_SPIC_SPEED);	/* Enable SPI */
-	set_addrwr_8bit_p1p2(dstaddr);
 	spi_progval8_p2(targetlcd, color >> 0);
 
 #endif
@@ -1431,7 +1417,7 @@ void display_putpixel_2(
 
 }
 
-void display_putpixel_complere(void)
+void display_putpixel_complete(void)
 {
 #if S1D_DISPLAY_BPP == 24
 
@@ -1442,7 +1428,7 @@ void display_putpixel_complere(void)
 
 	#if WITHSPIEXT16
 
-		spi_complete(targetlcd);
+		hardware_spi_complete_b16(targetlcd);
 		prog_unselect(targetlcd);
 		hardware_spi_disconnect();
 
@@ -2250,15 +2236,93 @@ display_put_char_small2(uint_fast8_t c, uint_fast8_t lowhalf)
 	//uint8_t x = h * CHAR_W;
 	//uint8_t y = Y_DIM - 5 - (v * CHAR_H);
 
-static uint_fast8_t stored_xgrid, stored_ygrid;
+static uint_fast8_t stored_xgrid, stored_ygrid;	// используетс€ в display_dispbar
 
 void
 display_gotoxy(uint_fast8_t x, uint_fast8_t y)
 {
-	stored_xgrid = x;
-	stored_ygrid = y;
+	stored_xgrid = x;	// используетс€ в display_dispbar
+	stored_ygrid = y;	// используетс€ в display_dispbar
 
-	s1d13781_gotoxy(x, y);		// устанавливаем позицию в символьных координатах
+	s1d13781_gotoxy(GRID2X(x), GRID2Y(y));		// устанавливаем позицию в символьных координатах
+}
+
+/* работа с цветным буфером */
+void display_plotfrom(
+	uint_fast16_t x, 
+	uint_fast16_t y	//  оординаты в пиксел€х
+	)
+{
+	// вычисление начального адреса в видеопам€ти
+	const uint_fast32_t dstaddr = S1D_PHYSICAL_VMEM_ADDR + x * (S1D_DISPLAY_BPP / 8) + (uint_fast32_t) y * S1D_DISPLAY_SCANLINE_BYTES;
+
+
+#if S1D_DISPLAY_BPP == 24
+
+	spi_select2(targetlcd, S1D13781_SPIMODE, S1D13781_SPIC_SPEED);	/* Enable SPI */
+	set_addrwr_8bit_p1p2(dstaddr);
+
+#elif S1D_DISPLAY_BPP == 16
+
+	#if WITHSPIEXT16
+
+		hardware_spi_connect_b16(S1D13781_SPIC_SPEED, S1D13781_SPIMODE);		// если есть возможность - работаем в 16-ти битном режиме
+		prog_select(targetlcd);
+		set_addw_16bit_p1p2(dstaddr);
+
+	#else /* WITHSPI16BIT */
+
+		spi_select2(targetlcd, S1D13781_SPIMODE, S1D13781_SPIC_SPEED);	/* Enable SPI */
+		set_addrwr_8bit_p1p2(dstaddr);
+
+	#endif /* WITHSPI16BIT */
+
+#elif S1D_DISPLAY_BPP == 8
+
+	spi_select2(targetlcd, S1D13781_SPIMODE, S1D13781_SPIC_SPEED);	/* Enable SPI */
+	set_addrwr_8bit_p1p2(dstaddr);
+
+#endif
+
+}
+
+
+void display_plotstart(
+	uint_fast16_t height	// ¬ысота окна в пиксел€х
+	)
+{
+	// дождатьс€ выполнени€ предидущей команды BitBlt engine.
+	if (bitblt_waitbusy() != 0)
+	{
+	}
+}
+
+void display_plot(
+	const PACKEDCOLOR_T * buffer, 
+	uint_fast16_t dx,	// –азмеры окна в пиксел€х
+	uint_fast16_t dy
+	)
+{
+	uint_fast32_t len = (uint_fast32_t) dx * dy;	// количество элементов
+#if WITHSPIEXT16 && WITHSPIHWDMA
+	// ѕереача в индикатор по DMA	
+	arm_hardware_flush((uintptr_t) buffer, len * sizeof (* buffer));	// количество байтоа
+	hardware_spi_master_send_frame_16b(buffer, len);
+#else /* WITHSPIEXT16 */
+	if (len >= 2)
+	{
+		display_putpixel_1(* buffer ++);
+		len -= 1;
+		while (len --)
+			display_putpixel_2(* buffer ++);
+		display_putpixel_complete();
+	}
+#endif /* WITHSPIEXT16 */
+}
+
+void display_plotstop(void)
+{
+	spi_unselect(targetlcd);
 }
 
 // ¬ызовы этой функции (или группу вызовов) требуетс€ "обрамить" парой вызовов

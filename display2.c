@@ -22,7 +22,7 @@ struct editfreq
 {
 	uint_fast32_t freq;
 	uint_fast8_t blinkpos;		// позиция (степень 10) редактируесого символа
-	uint_fast8_t blinkstate;	// в месте редактируемого символа отображается почёркивание (0 - пробел)
+	uint_fast8_t blinkstate;	// в месте редактируемого символа отображается подчёркивание (0 - пробел)
 };
 #endif /* WITHDIRECTFREQENER */
 
@@ -4281,10 +4281,11 @@ void display2_waterfall(
 		while (display_getreadystate() == 0)
 			;
 		x = 0;
-		display_putpixel_1(GRID2X(x0) + x, GRID2Y(y0) + 0, wfpalette [wfarray [wfrow] [x]]);
+		display_plotfrom(GRID2X(x0) + x, GRID2Y(y0) + 0);
+		display_putpixel_1(wfpalette [wfarray [wfrow] [x]]);
 		for (x = 1; x < WFDX; ++ x)
 			display_putpixel_2(wfpalette [wfarray [wfrow] [x]]);
-		display_putpixel_complere();
+		display_putpixel_complete();
 	#elif 0
 		// следы спектра ("фонтан")
 		// сдвигаем вверх, отрисовываем только нижнюю строку
@@ -4293,10 +4294,11 @@ void display2_waterfall(
 		while (display_getreadystate() == 0)
 			;
 		x = 0;
-		display_putpixel_1(GRID2X(x0) + x, GRID2Y(y0) + WFDY - 1, wfpalette [wfarray [wfrow] [x]]);
+		display_plotfrom(GRID2X(x0) + x, GRID2Y(y0) + WFDY - 1);
+		display_putpixel_1(wfpalette [wfarray [wfrow] [x]]);
 		for (x = 1; x < WFDX; ++ x)
 			display_putpixel_2(wfpalette [wfarray [(wfrow + 0) % WFDY] [x]]);
-		display_putpixel_complere();
+		display_putpixel_complete();
 	#else
 		// следы спектра ("водопад")
 		// отрисовываем весь экран
@@ -4307,10 +4309,11 @@ void display2_waterfall(
 		{
 			// отрисовка горизонтальными линиями
 			x = 0;
-			display_putpixel_1(GRID2X(x0) + x, GRID2Y(y0) + y, wfpalette [wfarray [(wfrow + y) % WFDY] [x]]);
+			display_plotfrom(GRID2X(x0) + x, GRID2Y(y0) + y);
+			display_putpixel_1(wfpalette [wfarray [(wfrow + y) % WFDY] [x]]);
 			for (x = 1; x < WFDX; ++ x)
 				display_putpixel_2(wfpalette [wfarray [(wfrow + y) % WFDY] [x]]);
-			display_putpixel_complere();
+			display_putpixel_complete();
 		}
 	#endif
 
@@ -4553,7 +4556,7 @@ void display_dispfreq_ab(
 void display_dispfreq_a2(
 	uint_fast32_t freq,
 	uint_fast8_t blinkpos,		// позиция (степень 10) редактируесого символа
-	uint_fast8_t blinkstate,	// в месте редактируемого символа отображается почёркивание (0 - пробел)
+	uint_fast8_t blinkstate,	// в месте редактируемого символа отображается подчёркивание (0 - пробел)
 	uint_fast8_t menuset	/* индекс режима отображения (0..DISPLC_MODCOUNT - 1) */
 	)
 {

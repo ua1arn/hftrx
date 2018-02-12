@@ -359,7 +359,7 @@ void display2_bgreset(void);	// сброс state machine отображения дисплея
 void display_dispfreq_a2(
 	uint_fast32_t freq,
 	uint_fast8_t blinkpos,		// позиция (степень 10) редактируесого символа
-	uint_fast8_t blinkstate,	// в месте редактируемого символа отображается почёркивание (0 - пробел)
+	uint_fast8_t blinkstate,	// в месте редактируемого символа отображается подчёркивание (0 - пробел)
 	uint_fast8_t menuset	/* индекс режима отображения (0..3) */
 	);
 
@@ -558,8 +558,6 @@ void display_putpixel(
 	);
 
 void display_putpixel_1(
-	uint_fast16_t x,
-	uint_fast16_t y,
 	COLOR_T color
 	);
 
@@ -567,7 +565,7 @@ void display_putpixel_2(
 	COLOR_T color
 	);
 
-void display_putpixel_complere(void);
+void display_putpixel_complete(void);
 
 // начальная инициализация буфера
 void display_colorbuffer_fill(
