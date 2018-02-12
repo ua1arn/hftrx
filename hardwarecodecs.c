@@ -2047,7 +2047,7 @@ static void r7s721_ssif0_dmarx_initialize(void)
 		0;
 
 	enum { dmarsshift = (id & 0x01) * 16 };
-	DMAC01.DMARS = (DMAC01.DMARS & ~ (0xFFul << dmarsshift)) |
+	DMAC01.DMARS = (DMAC01.DMARS & ~ (0x1FFul << dmarsshift)) |
 		mid * (1U << (2 + dmarsshift)) |		// MID
 		rid * (1U << (0 + dmarsshift)) |		// RID
 		0;
@@ -2118,7 +2118,7 @@ static void r7s721_ssif0_dmatx_initialize(void)
 		0;
 
 	enum { dmarsshift = (id & 0x01) * 16 };
-	DMAC01.DMARS = (DMAC01.DMARS & ~ (0xFFul << dmarsshift)) |
+	DMAC01.DMARS = (DMAC01.DMARS & ~ (0x1FFul << dmarsshift)) |
 		mid * (1U << (2 + dmarsshift)) |		// MID
 		rid * (1U << (0 + dmarsshift)) |		// RID
 		0;
@@ -2313,7 +2313,7 @@ static void r7s721_ssif1_dmarx_initialize(void)
 		0;
 
 	enum { dmarsshift = (id & 0x01) * 16 };
-	DMAC23.DMARS = (DMAC23.DMARS & ~ (0xFFul << dmarsshift)) |
+	DMAC23.DMARS = (DMAC23.DMARS & ~ (0x1FFul << dmarsshift)) |
 		mid * (1U << (2 + dmarsshift)) |		// MID
 		rid * (1U << (0 + dmarsshift)) |		// RID
 		0;
@@ -2341,7 +2341,7 @@ static void r7s721_ssif1_dmarx_initialize(void)
 
 static void r7s721_ssif1_dmatx_initialize(void)
 {
-	const uint_fast8_t id = 3;	// 3: DMAC3
+	enum { id = 3 };	// 3: DMAC3
 	// DMAC3
    /* Set Source Start Address */
 	DMAC3.N0SA_n = dma_flush32tx(allocate_dmabuffer32tx());
@@ -2382,8 +2382,9 @@ static void r7s721_ssif1_dmatx_initialize(void)
 		reqd * (1U << 3) |	// REQD		Request Direction
 		(id & 0x07) * (1U << 0) |		// SEL	0: CH0/CH8
 		0;
+
 	enum { dmarsshift = (id & 0x01) * 16 };
-	DMAC23.DMARS = (DMAC23.DMARS & ~ (0xFFul << dmarsshift)) |
+	DMAC23.DMARS = (DMAC23.DMARS & ~ (0x1FFul << dmarsshift)) |
 		mid * (1U << (2 + dmarsshift)) |		// MID
 		rid * (1U << (0 + dmarsshift)) |		// RID
 		0;
@@ -2509,7 +2510,7 @@ static RAMFUNC_NONILINE void r7s721_ssif2_rxdma_handler(void)
 
 static void r7s721_ssif2_dmarx_initialize(void)
 {
-	const uint_fast8_t id = 4;	// 4: DMAC4
+	enum { id = 4 };	// 4: DMAC4
 	// DMAC4
 	/* Set Source Start Address */
     DMAC4.N0SA_n = (uint32_t) & SSIF2.SSIFRDR;	// Fixed source address
@@ -2552,7 +2553,7 @@ static void r7s721_ssif2_dmarx_initialize(void)
 		0;
 
 	enum { dmarsshift = (id & 0x01) * 16 };
-	DMAC45.DMARS = (DMAC45.DMARS & ~ (0xFFul << dmarsshift)) |
+	DMAC45.DMARS = (DMAC45.DMARS & ~ (0x1FFul << dmarsshift)) |
 		mid * (1U << (2 + dmarsshift)) |		// MID
 		rid * (1U << (0 + dmarsshift)) |		// RID
 		0;
@@ -2942,7 +2943,7 @@ static void r7s721_usb0_dma1_dmatx_initialize(void)
 		0;
 
 	enum { dmarsshift = (id & 0x01) * 16 };
-	DMAC1213.DMARS = (DMAC1213.DMARS & ~ (0xFFul << dmarsshift)) |
+	DMAC1213.DMARS = (DMAC1213.DMARS & ~ (0x1FFul << dmarsshift)) |
 		mid * (1U << (2 + dmarsshift)) |		// MID
 		rid * (1U << (0 + dmarsshift)) |		// RID
 		0;
@@ -3019,7 +3020,7 @@ static void r7s721_usb0_dma0_dmarx_initialize(void)
 
 	DMAC13.CHCFG_n =
 		0 * (1U << 31) |	// DMS	0: Register mode
-		1 * (1U << 30) |	// REN	0: Does not continue DMA transfers.
+		1 * (1U << 30) |	// REN	1: Continues DMA transfers.
 		1 * (1U << 29) |	// RSW	1: Inverts RSEL automatically after a DMA transaction.
 		0 * (1U << 28) |	// RSEL	0: Executes the Next0 Register Set
 		0 * (1U << 27) |	// SBE	0: Stops the DMA transfer without sweeping the buffer (initial value).
@@ -3037,7 +3038,7 @@ static void r7s721_usb0_dma0_dmarx_initialize(void)
 		0;
 
 	enum { dmarsshift = (id & 0x01) * 16 };
-	DMAC1213.DMARS = (DMAC1213.DMARS & ~ (0xFFul << dmarsshift)) |
+	DMAC1213.DMARS = (DMAC1213.DMARS & ~ (0x1FFul << dmarsshift)) |
 		mid * (1U << (2 + dmarsshift)) |		// MID
 		rid * (1U << (0 + dmarsshift)) |		// RID
 		0;

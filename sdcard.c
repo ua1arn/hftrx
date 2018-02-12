@@ -428,7 +428,7 @@ static void DMA_SDIO_setparams(
 			0;
 
 		enum { dmarsshift = (id & 0x01) * 16 };
-		DMAC1415.DMARS = (DMAC1415.DMARS & ~ (0xFFul << dmarsshift)) |
+		DMAC1415.DMARS = (DMAC1415.DMARS & ~ (0x1FFul << dmarsshift)) |
 			mid * (1U << (2 + dmarsshift)) |		// MID
 			rid * (1U << (0 + dmarsshift)) |		// RID
 			0;
@@ -471,7 +471,7 @@ static void DMA_SDIO_setparams(
 			0;
 
 		enum { dmarsshift = (id & 0x01) * 16 };
-		DMAC1415.DMARS = (DMAC1415.DMARS & ~ (0xFFul << dmarsshift)) |
+		DMAC1415.DMARS = (DMAC1415.DMARS & ~ (0x1FFul << dmarsshift)) |
 			mid * (1U << (2 + dmarsshift)) |		// MID
 			rid * (1U << (0 + dmarsshift)) |		// RID
 			0;
