@@ -3739,7 +3739,74 @@ void hardware_spi_master_initialize(void)
 	RSPI0.SPCR =		/* Control Register (SPCR) */
 		(1U << 3) |		// MSTR - master
 		(1U << 6) |		// SPE - Function Enable
+		//(1U << 5) |		// SPTIE  - Transmit Interrupt Enable (for DMA transfers)
+		//(1U << 7) |		// SPRIE  - Receive Interrupt Enable (for DMA transfers)
 		0;
+
+#if WITHSPIHWDMA
+	{
+		const uint_fast8_t id = 15;	// 15: DMAC15
+		// DMAC15
+		/* Set Destination Start Address */
+		DMAC15.N0DA_n = (uint32_t) & RSPI0.SPDR.UINT8 [R_IO_LL];	// Fixed destination address for 8-bit transfers
+		//DMAC15.N0DA_n = (uint32_t) & RSPI0.SPDR.UINT16 [R_IO_L];	// Fixed destination address for 16-bit transfers
+
+		/* Set Transfer Size */
+		//DMAC15.N0TB_n = DMABUFFSIZE16 * sizeof (int16_t);	// размер в байтах
+		//DMAC15.N1TB_n = DMABUFFSIZE16 * sizeof (int16_t);	// размер в байтах
+
+		// Values from Table 9.4 On-Chip Peripheral Module Requests
+		// SPTI0 (transmit data empty)
+		const uint_fast8_t mid = 0x48;	
+		const uint_fast8_t rid = 1;		
+		const uint_fast8_t tm = 0;		
+		const uint_fast8_t am = 2;		
+		const uint_fast8_t lvl = 1;		
+		const uint_fast8_t reqd = 1;	
+		const uint_fast8_t hien = 1;	
+
+		DMAC15.CHCFG_n =
+			0 * (1U << 31) |	// DMS	0: Register mode
+			0 * (1U << 30) |	// REN	0: Does not continue DMA transfers.
+			0 * (1U << 29) |	// RSW	1: Inverts RSEL automatically after a DMA transaction.
+			0 * (1U << 28) |	// RSEL	0: Executes the Next0 Register Set
+			0 * (1U << 27) |	// SBE	0: Stops the DMA transfer without sweeping the buffer (initial value).
+			0 * (1U << 24) |	// DEM	0: Does not mask the DMA transfer end interrupt - прерывания каждый раз после TC
+			tm * (1U << 22) |	// TM	0: Single transfer mode - берётся из Table 9.4
+			1 * (1U << 21) |	// DAD	1: Fixed destination address
+			0 * (1U << 20) |	// SAD	0: Increment source address
+			1 * (1U << 16) |	// DDS	2: 32 bits, 1: 16 bits (Destination Data Size)
+			1 * (1U << 12) |	// SDS	2: 32 bits, 1: 16 bits (Source Data Size)
+			am * (1U << 8) |	// AM	1: ACK mode: Level mode (active until the transfer request from an on-chip peripheral module
+			lvl * (1U << 6) |	// LVL	1: Detects based on the level.
+			hien * (1U << 5) |	// HIEN	1: When LVL = 1: Detects a request when the signal is at the High level.
+			reqd * (1U << 3) |	// REQD		Request Direction
+			(id & 0x07) * (1U << 0) |		// SEL	0: CH0/CH8
+			0;
+
+		enum { dmarsshift = (id & 0x01) * 16 };
+		DMAC1415.DMARS = (DMAC1415.DMARS & ~ (0xFFul << dmarsshift)) |
+			mid * (1U << (2 + dmarsshift)) |		// MID
+			rid * (1U << (0 + dmarsshift)) |		// RID
+			0;
+
+		DMAC815.DCTRL_0_7 = (DMAC815.DCTRL_0_7 & ~ (/*(1U << 1) | */(1U << 0))) |
+			//1 * (1U << 1) |		// LVINT	1: Level output
+			1 * (1U << 0) |		// PR		1: Round robin mode
+			0;
+
+		{
+			//const uint16_t int_id = DMAINT15_IRQn;
+			//r7s721_intc_registintfunc(int_id, r7s721_usb0_dma1_dmatx_handler);
+			//GIC_SetPriority(int_id, ARM_REALTIME_PRIORITY);
+			//GIC_EnableIRQ(int_id);
+		}
+
+		DMAC15.CHCTRL_n = DMAC15_CHCTRL_n_SWRST;		// SWRST
+		DMAC15.CHCTRL_n = DMAC15_CHCTRL_n_CLRINTMSK;	// CLRINTMSK
+		//DMAC15.CHCTRL_n = DMAC15_CHCTRL_n_SETEN;		// SETEN
+	}
+#endif /* WITHSPIHWDMA */
 
 	SPIIO_INITIALIZE();
 #else
@@ -4275,22 +4342,36 @@ portholder_t hardware_spi_complete_b8(void)	/* дождаться готовности */
 
 #if WITHSPIHWDMA
 
-static hardware_spi_master_setdma8bit(void)
+static void hardware_spi_master_setdma8bit(void)
 {
 #if CPUSTYLE_STM32F4XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
 	DMA2_Stream3->CR = (DMA2_Stream3->CR & ~ (DMA_SxCR_MSIZE | DMA_SxCR_PSIZE)) |
 		(0 * DMA_SxCR_MSIZE_0) |	// длина в памяти - 8bit
 		(0 * DMA_SxCR_PSIZE_0) |	// длина в SPI_DR- 8bit
 		0;
+#elif CPUSTYLE_R7S721
+	DMAC15.N0DA_n = (uint32_t) & RSPI0.SPDR.UINT8 [R_IO_LL];	// Fixed destination address for 8-bit transfers
+	//DMAC15.N0DA_n = (uint32_t) & RSPI0.SPDR.UINT16 [R_IO_L];	// Fixed destination address for 16-bit transfers
+	DMAC15.CHCFG_n = (DMAC15.CHCFG_n & ~ (DMAC15_CHCFG_n_DDS | DMAC15_CHCFG_n_SDS)) |
+		0 * (1U << DMAC15_CHCFG_n_DDS_SHIFT) |	// DDS	2: 32 bits, 1: 16 bits (Destination Data Size)
+		0 * (1U << DMAC15_CHCFG_n_SDS_SHIFT) |	// SDS	2: 32 bits, 1: 16 bits (Source Data Size)
+		0;
 #endif
 }
 
-static hardware_spi_master_setdma16bit(void)
+static void hardware_spi_master_setdma16bit(void)
 {
 #if CPUSTYLE_STM32F4XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
 	DMA2_Stream3->CR = (DMA2_Stream3->CR & ~ (DMA_SxCR_MSIZE | DMA_SxCR_PSIZE)) |
 		(1 * DMA_SxCR_MSIZE_0) |	// длина в памяти - 16bit
 		(1 * DMA_SxCR_PSIZE_0) |	// длина в SPI_DR- 16bit
+		0;
+#elif CPUSTYLE_R7S721
+	//DMAC15.N0DA_n = (uint32_t) & RSPI0.SPDR.UINT8 [R_IO_LL];	// Fixed destination address for 8-bit transfers
+	DMAC15.N0DA_n = (uint32_t) & RSPI0.SPDR.UINT16 [R_IO_L];	// Fixed destination address for 16-bit transfers
+	DMAC15.CHCFG_n = (DMAC15.CHCFG_n & ~ (DMAC15_CHCFG_n_DDS | DMAC15_CHCFG_n_SDS)) |
+		1 * (1U << DMAC15_CHCFG_n_DDS_SHIFT) |	// DDS	2: 32 bits, 1: 16 bits (Destination Data Size)
+		1 * (1U << DMAC15_CHCFG_n_SDS_SHIFT) |	// SDS	2: 32 bits, 1: 16 bits (Source Data Size)
 		0;
 #endif
 }
@@ -4355,11 +4436,11 @@ void hardware_spi_master_send_frame(
 	*/
 
 	// DMA2: SPI1_TX: Stream 3: Channel 3
-#if CPUSTYLE_STM32H7XX
-	SPI1->CFG1 |= SPI_CFG1_TXDMAEN; // DMA по передаче
-#else /* CPUSTYLE_STM32H7XX */
-	SPI1->CR2 |= SPI_CR2_TXDMAEN; // DMA по передаче
-#endif /* CPUSTYLE_STM32H7XX */
+	#if CPUSTYLE_STM32H7XX
+		SPI1->CFG1 |= SPI_CFG1_TXDMAEN; // DMA по передаче
+	#else /* CPUSTYLE_STM32H7XX */
+		SPI1->CR2 |= SPI_CR2_TXDMAEN; // DMA по передаче
+	#endif /* CPUSTYLE_STM32H7XX */
 
 	DMA2_Stream3->M0AR = (unsigned long) buffer;
 	DMA2_Stream3->NDTR = (DMA2_Stream3->NDTR & ~ DMA_SxNDT) |
@@ -4372,30 +4453,30 @@ void hardware_spi_master_send_frame(
 	DMA2->LIFCR = DMA_LIFCR_CTCIF3;		// сбросил флаг соответствующий stream
 	//DMA2_waitTC(3);	// ожидаем завершения обмена по соответствушему stream
 
-#if CPUSTYLE_STM32H7XX
+	#if CPUSTYLE_STM32H7XX
 
-	//while ((SPI1->SR & SPI_SR_TXC) == 0)	
-	//	;
-	//while ((SPI1->SR & SPI_SR_BSY) != 0)	
-	//	;
-	//(void) SPI1->RXDR;	/* clear SPI_SR_RXNE in status register */
+		//while ((SPI1->SR & SPI_SR_TXC) == 0)	
+		//	;
+		//while ((SPI1->SR & SPI_SR_BSY) != 0)	
+		//	;
+		//(void) SPI1->RXDR;	/* clear SPI_SR_RXNE in status register */
 
-#else /* CPUSTYLE_STM32H7XX */
+	#else /* CPUSTYLE_STM32H7XX */
 
-	while ((SPI1->SR & SPI_SR_TXE) == 0)	
-		;
-	while ((SPI1->SR & SPI_SR_BSY) != 0)	
-		;
-	(void) SPI1->DR;	/* clear SPI_SR_RXNE in status register */
+		while ((SPI1->SR & SPI_SR_TXE) == 0)	
+			;
+		while ((SPI1->SR & SPI_SR_BSY) != 0)	
+			;
+		(void) SPI1->DR;	/* clear SPI_SR_RXNE in status register */
 
-#endif /* CPUSTYLE_STM32H7XX */
+	#endif /* CPUSTYLE_STM32H7XX */
 
 
-#if CPUSTYLE_STM32H7XX
-	SPI1->CFG1 &= ~ SPI_CFG1_TXDMAEN; // запретить DMA по передаче
-#else /* CPUSTYLE_STM32H7XX */
-	SPI1->CR2 &= ~ SPI_CR2_TXDMAEN; // запретить DMA по передаче
-#endif /* CPUSTYLE_STM32H7XX */
+	#if CPUSTYLE_STM32H7XX
+		SPI1->CFG1 &= ~ SPI_CFG1_TXDMAEN; // запретить DMA по передаче
+	#else /* CPUSTYLE_STM32H7XX */
+		SPI1->CR2 &= ~ SPI_CR2_TXDMAEN; // запретить DMA по передаче
+	#endif /* CPUSTYLE_STM32H7XX */
 
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX
 	#warning TODO: implement SPI over DMA
@@ -4413,7 +4494,15 @@ void hardware_spi_master_send_frame(
 	//prog_spi_send_frame(target, buffer, size);
 
 #elif CPUSTYLE_R7S721
-	#warning TODO: Add code for R7S721 SPI DMA support
+
+	DMAC15.N0TB_n = size * sizeof (* buffer);	// размер в байтах
+	DMAC15.N0SA_n = (uintptr_t) buffer;			// source address
+	DMAC15.CHCTRL_n = DMAC15_CHCTRL_n_SETEN;		// SETEN
+	/* ждем окончания пересылки */
+	//local_delay_ms(50);
+	while ((DMAC15.CHSTAT_n & DMAC15_CHSTAT_n_END) == 0)	// END
+		;
+	DMAC15.CHCTRL_n = DMAC15_CHCTRL_n_CLREN;		// CLREN
 
 #else
 	#error Undefined CPUSTYLE_xxxx
@@ -4481,11 +4570,11 @@ void hardware_spi_master_send_frame_16b(
 	*/
 
 	// DMA2: SPI1_TX: Stream 3: Channel 3
-#if CPUSTYLE_STM32H7XX
-	SPI1->CFG1 |= SPI_CFG1_TXDMAEN; // DMA по передаче
-#else /* CPUSTYLE_STM32H7XX */
-	SPI1->CR2 |= SPI_CR2_TXDMAEN; // DMA по передаче
-#endif /* CPUSTYLE_STM32H7XX */
+	#if CPUSTYLE_STM32H7XX
+		SPI1->CFG1 |= SPI_CFG1_TXDMAEN; // DMA по передаче
+	#else /* CPUSTYLE_STM32H7XX */
+		SPI1->CR2 |= SPI_CR2_TXDMAEN; // DMA по передаче
+	#endif /* CPUSTYLE_STM32H7XX */
 
 	DMA2_Stream3->M0AR = (unsigned long) buffer;
 	DMA2_Stream3->NDTR = (DMA2_Stream3->NDTR & ~ DMA_SxNDT) |
@@ -4498,30 +4587,30 @@ void hardware_spi_master_send_frame_16b(
 	DMA2->LIFCR = DMA_LIFCR_CTCIF3;		// сбросил флаг соответствующий stream
 	//DMA2_waitTC(3);	// ожидаем завершения обмена по соответствушему stream
 
-#if CPUSTYLE_STM32H7XX
+	#if CPUSTYLE_STM32H7XX
 
-	//while ((SPI1->SR & SPI_SR_TXC) == 0)	
-	//	;
-	//while ((SPI1->SR & SPI_SR_BSY) != 0)	
-	//	;
-	//(void) SPI1->RXDR;	/* clear SPI_SR_RXNE in status register */
+		//while ((SPI1->SR & SPI_SR_TXC) == 0)	
+		//	;
+		//while ((SPI1->SR & SPI_SR_BSY) != 0)	
+		//	;
+		//(void) SPI1->RXDR;	/* clear SPI_SR_RXNE in status register */
 
-#else /* CPUSTYLE_STM32H7XX */
+	#else /* CPUSTYLE_STM32H7XX */
 
-	while ((SPI1->SR & SPI_SR_TXE) == 0)	
-		;
-	while ((SPI1->SR & SPI_SR_BSY) != 0)	
-		;
-	(void) SPI1->DR;	/* clear SPI_SR_RXNE in status register */
+		while ((SPI1->SR & SPI_SR_TXE) == 0)	
+			;
+		while ((SPI1->SR & SPI_SR_BSY) != 0)	
+			;
+		(void) SPI1->DR;	/* clear SPI_SR_RXNE in status register */
 
-#endif /* CPUSTYLE_STM32H7XX */
+	#endif /* CPUSTYLE_STM32H7XX */
 
 
-#if CPUSTYLE_STM32H7XX
-	SPI1->CFG1 &= ~ SPI_CFG1_TXDMAEN; // запретить DMA по передаче
-#else /* CPUSTYLE_STM32H7XX */
-	SPI1->CR2 &= ~ SPI_CR2_TXDMAEN; // запретить DMA по передаче
-#endif /* CPUSTYLE_STM32H7XX */
+	#if CPUSTYLE_STM32H7XX
+		SPI1->CFG1 &= ~ SPI_CFG1_TXDMAEN; // запретить DMA по передаче
+	#else /* CPUSTYLE_STM32H7XX */
+		SPI1->CR2 &= ~ SPI_CR2_TXDMAEN; // запретить DMA по передаче
+	#endif /* CPUSTYLE_STM32H7XX */
 
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX
 	#warning TODO: implement SPI over DMA
@@ -4539,7 +4628,15 @@ void hardware_spi_master_send_frame_16b(
 	//prog_spi_send_frame(target, buffer, size);
 
 #elif CPUSTYLE_R7S721
-	#warning TODO: Add code for R7S721 SPI DMA support
+
+	DMAC15.N0TB_n = size * sizeof (* buffer);	// размер в байтах
+	DMAC15.N0SA_n = (uintptr_t) buffer;			// source address
+	DMAC15.CHCTRL_n = DMAC15_CHCTRL_n_SETEN;		// SETEN
+	/* ждем окончания пересылки */
+	//local_delay_ms(50);
+	while ((DMAC15.CHSTAT_n & DMAC15_CHSTAT_n_END) == 0)	// END
+		;
+	DMAC15.CHCTRL_n = DMAC15_CHCTRL_n_CLREN;		// CLREN
 
 #else
 	#error Undefined CPUSTYLE_xxxx
@@ -4688,7 +4785,7 @@ void hardware_spi_master_read_frame(
 	//prog_spi_read_frame(target, buffer, size);
 
 #elif CPUSTYLE_R7S721
-	#warning TODO: Add code for R7S721 SPI DMA support
+	#warning TODO: Add code for R7S721 SPI DMA support to hardware_spi_master_read_frame
 
 	HARDWARE_SPI_DISCONNECT_MOSI();	// выход данных в "1"
 
