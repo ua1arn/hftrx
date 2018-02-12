@@ -3767,7 +3767,7 @@ void hardware_spi_master_initialize(void)
 
 		DMAC15.CHCFG_n =
 			0 * (1U << DMAC15_CHCFG_n_DMS_SHIFT) |		// DMS	0: Register mode
-			1 * (1U << DMAC15_CHCFG_n_REN_SHIFT) |		// REN	1: Continues DMA transfers.
+			0 * (1U << DMAC15_CHCFG_n_REN_SHIFT) |		// REN	0: Does not continue DMA transfers.
 			0 * (1U << DMAC15_CHCFG_n_RSW_SHIFT) |		// RSW	1: Inverts RSEL automatically after a DMA transaction.
 			0 * (1U << DMAC15_CHCFG_n_RSEL_SHIFT) |		// RSEL	0: Executes the Next0 Register Set
 			0 * (1U << DMAC15_CHCFG_n_SBE_SHIFT) |		// SBE	0: Stops the DMA transfer without sweeping the buffer (initial value).
@@ -4624,44 +4624,40 @@ void hardware_spi_master_send_frame_16b(
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX
 	#warning TODO: implement SPI over DMA
 
-	//prog_spi_send_frame(target, buffer, size);
+	//prog_spi_send_frame_b16(target, buffer, size);
 
 #elif CPUSTYLE_STM32F1XX
 	#warning TODO: implement SPI over DMA
 
-	//prog_spi_send_frame(target, buffer, size);
+	//prog_spi_send_frame_b16(target, buffer, size);
 
 #elif CPUSTYLE_ATXMEGA
 	#warning TODO: implement SPI over DMA
 	
-	//prog_spi_send_frame(target, buffer, size);
+	//prog_spi_send_frame_b16(target, buffer, size);
 
 #elif CPUSTYLE_R7S721
 
 	DMAC15.N0TB_n = (uint_fast32_t) size * sizeof (* buffer);	// размер в байтах
 	DMAC15.N0SA_n = (uintptr_t) buffer;			// source address
-	debug_printf_P(PSTR("N0TB_n=%ld\n"), (uint_fast32_t) DMAC15.N0TB_n);
-	debug_printf_P(PSTR("CRTB_n=%ld, CHSTAT_n=%08lX\n"), (uint_fast32_t) DMAC15.CRTB_n, (uint_fast32_t) DMAC15.CHSTAT_n);
 	DMAC15.CHCTRL_n = DMAC15_CHCTRL_n_SETEN;		// SETEN
 	/* ждем окончани€ пересылки */
-	unsigned w = 100;
-	for (;w --;)
-		debug_printf_P(PSTR(" CRTB_n=%ld, CHSTAT_n=%08lX\n"), (uint_fast32_t) DMAC15.CRTB_n, (uint_fast32_t) DMAC15.CHSTAT_n);
-	for (;;)
-		;
-	//local_delay_ms(50);
-	while ((DMAC15.CHSTAT_n & DMAC15_CHSTAT_n_TC) == 0)	// TC
-	//while ((DMAC15.CHSTAT_n & DMAC15_CHSTAT_n_END) == 0)	// END
-		;
+	while ((DMAC15.CHSTAT_n & DMAC15_CHSTAT_n_END) == 0)	// END
+	{
+		while (RSPI0.SPSR & 0x80)
+			(void) RSPI0.SPDR.UINT16 [R_IO_L];
+	}
+	while (RSPI0.SPSR & 0x80)
+		(void) RSPI0.SPDR.UINT16 [R_IO_L];
 	DMAC15.CHCTRL_n = DMAC15_CHCTRL_n_CLREN;		// CLREN
 	DMAC15.CHCTRL_n = DMAC15_CHCTRL_n_CLRTC;		// CLRTC
 	DMAC15.CHCTRL_n = DMAC15_CHCTRL_n_CLREND;		// CLREND
 
 	// —бросить буферы
-	RSPI0.SPBFCR =		/* Buffer Control Register (SPBFCR) */
-		(1U << 7) |		// TXRST - TX buffer reset
-		(1U << 6) |		// RXRST - TX buffer reset
-		0;
+	//RSPI0.SPBFCR =		/* Buffer Control Register (SPBFCR) */
+	//	(1U << 7) |		// TXRST - TX buffer reset
+	//	(1U << 6) |		// RXRST - TX buffer reset
+	//	0;
 
 #else
 	#error Undefined CPUSTYLE_xxxx
