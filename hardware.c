@@ -4509,6 +4509,10 @@ void hardware_spi_master_send_frame(
 	while ((DMAC15.CHSTAT_n & DMAC15_CHSTAT_n_END) == 0)	// END
 		;
 
+	/* ждем окончания пеердачи последнего элемента */
+	while ((RSPI0.SPSR & RSPIn_SPSR_TEND) == 0)	// TEND bit
+		;
+
 	DMAC15.CHCTRL_n = DMAC15_CHCTRL_n_CLREN;		// CLREN
 	DMAC15.CHCTRL_n = DMAC15_CHCTRL_n_CLRTC;		// CLRTC
 	DMAC15.CHCTRL_n = DMAC15_CHCTRL_n_CLREND;		// CLREND
@@ -4518,8 +4522,8 @@ void hardware_spi_master_send_frame(
 #else
 	#error Undefined CPUSTYLE_xxxx
 #endif
-
 }
+
 // Send a frame of 16-bit words via SPI
 void hardware_spi_master_send_frame_16b(
 	//spitarget_t target,	/* addressing to chip */
@@ -4650,6 +4654,10 @@ void hardware_spi_master_send_frame_16b(
 	while ((DMAC15.CHSTAT_n & DMAC15_CHSTAT_n_END) == 0)	// END
 		;
 
+	/* ждем окончания пеердачи последнего элемента */
+	while ((RSPI0.SPSR & RSPIn_SPSR_TEND) == 0)	// TEND bit
+		;
+
 	DMAC15.CHCTRL_n = DMAC15_CHCTRL_n_CLREN;		// CLREN
 	DMAC15.CHCTRL_n = DMAC15_CHCTRL_n_CLRTC;		// CLRTC
 	DMAC15.CHCTRL_n = DMAC15_CHCTRL_n_CLREND;		// CLREND
@@ -4659,7 +4667,6 @@ void hardware_spi_master_send_frame_16b(
 #else
 	#error Undefined CPUSTYLE_xxxx
 #endif
-
 }
 
 // Read a frame of bytes via SPI
