@@ -3982,10 +3982,8 @@ static void display2_legend(
 
 enum 
 {
-	wfwidth = CHARS2GRID(BDTH_ALLRX), 
-	wfheight = BDCV_ALLRX,			// размер по вертикали в ячейках адресации
-	WFDX = GRID2X(wfwidth), 
-	WFDY = GRID2Y(wfheight)
+	WFDX = GRID2X(CHARS2GRID(BDTH_ALLRX)),	// размер по горизонтали в пикселях
+	WFDY = GRID2Y(BDCV_ALLRX)				// размер по вертикали в пикселях
 };
 
 enum { AVGLEN = 2 };
@@ -3997,7 +3995,7 @@ static uint_fast8_t spavgrow;				// строка, в которую последней занесены данные
 static uint8_t wfarray [WFDY] [WFDX];	// массив "водопада"
 static uint_fast16_t wfrow;				// строка, в которую последней занесены данные
 enum { PALETTESIZE = 256 };
-static COLOR_T wfpalette [PALETTESIZE];
+static PACKEDCOLOR_T wfpalette [PALETTESIZE];
 extern uint_fast8_t wflfence;
 
 // Код взят из проекта Malamute
