@@ -2164,14 +2164,14 @@ void display_showbufferXXX(
 		s1d13781_select();
 		set_addrwr(scratchbufbase);
 
-#if WITHSPIEXT16 && WITHSPIHWDMA
+	#if WITHSPIEXT16 && WITHSPIHWDMA
 
-	// Переача в индикатор по DMA	
-	const uint_fast32_t len = (uint_fast32_t) dx * dy;
-	arm_hardware_flush((uintptr_t) buffer, len * sizeof (* buffer));	// количество байтоа
-	hardware_spi_master_send_frame_16b(buffer, len);
+		// Переача в индикатор по DMA	
+		const uint_fast32_t len = (uint_fast32_t) dx * dy;
+		arm_hardware_flush((uintptr_t) buffer, len * sizeof (* buffer));	// количество байтоа
+		hardware_spi_master_send_frame_16b(buffer, len);
 
-#else /* WITHSPIEXT16 && WITHSPIHWDMA */
+	#else /* WITHSPIEXT16 && WITHSPIHWDMA */
 
 		uint_fast16_t row, col;
 		for (row = 0; row < dy; ++ row)
@@ -2191,7 +2191,7 @@ void display_showbufferXXX(
 		}
 		set_data16complete();
 
-#endif /* WITHSPIEXT16 && WITHSPIHWDMA */
+	#endif /* WITHSPIEXT16 && WITHSPIHWDMA */
 		s1d13781_unselect();
 
 		//s1d13781_wrcmd8(REG80_BLT_CTRL_0, 0x80);	// BitBlt reset
@@ -2317,7 +2317,7 @@ void display_plot(
 	// Переача в индикатор по DMA	
 	arm_hardware_flush((uintptr_t) buffer, len * sizeof (* buffer));	// количество байтоа
 	hardware_spi_master_send_frame_16b(buffer, len);
-#else /* WITHSPIEXT16 */
+#else /* WITHSPIEXT16 && WITHSPIHWDMA */
 	if (len >= 2)
 	{
 		display_putpixel_1(* buffer ++);
@@ -2326,7 +2326,7 @@ void display_plot(
 			display_putpixel_2(* buffer ++);
 		display_putpixel_complete();
 	}
-#endif /* WITHSPIEXT16 */
+#endif /* WITHSPIEXT16 && WITHSPIHWDMA */
 }
 
 void display_plotstop(void)
