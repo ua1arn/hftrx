@@ -621,6 +621,7 @@ bitblt_chargen_big(
 	// set bitblt rectangle width and height (pixels) registers.
 	s1d13781_wrcmd16(REG92_BLT_WIDTH, w);
 	s1d13781_wrcmd8(REG80_BLT_CTRL_0, 0x01);	// BitBlt start
+	bitblt_waitbusy();
 }
 
 /* заполнение картинкой с помощью BitBlt engine
@@ -647,6 +648,7 @@ bitblt_picture(
 		s1d13781_wrcmd32_pair(REG92_BLT_WIDTH, h, w);
 		s1d13781_wrcmd8(REG86_BLT_CMD, 0x04);	// 0x04 - move with color expand
 		s1d13781_wrcmd8(REG80_BLT_CTRL_0, 0x01);	// BitBlt start
+		bitblt_waitbusy();
 	}
 }
 
@@ -688,6 +690,7 @@ display_scroll_down(
 		s1d13781_wrcmd32_pair(REG92_BLT_WIDTH, h - n, w);
 		s1d13781_wrcmd8(REG86_BLT_CMD, 0x01);	// 0x01 - move negative
 		s1d13781_wrcmd8(REG80_BLT_CTRL_0, 0x01);	// BitBlt start
+		bitblt_waitbusy();
 	}
 }
 	
@@ -729,6 +732,7 @@ display_scroll_up(
 		s1d13781_wrcmd32_pair(REG92_BLT_WIDTH, h - n, w);
 		s1d13781_wrcmd8(REG86_BLT_CMD, 0x00);	// 0x00 - move positive
 		s1d13781_wrcmd8(REG80_BLT_CTRL_0, 0x01);	// BitBlt start
+		bitblt_waitbusy();
 	}
 }
 	
@@ -1160,6 +1164,7 @@ bitblt_chargen_small(
 	// set source address
 	s1d13781_wrcmd32(REG88_BLT_SSADDR_0, srcaddr);		// bits of address
 	s1d13781_wrcmd8(REG80_BLT_CTRL_0, 0x01);	// BitBlt start
+	bitblt_waitbusy();
 }
 
 
@@ -2166,7 +2171,7 @@ void display_showbufferXXX(
 
 		// Переача в индикатор по DMA	
 		const uint_fast32_t len = (uint_fast32_t) dx * dy;
-		arm_hardware_flush((uintptr_t) buffer, len * sizeof (* buffer));	// количество байтоа
+		arm_hardware_flush((uintptr_t) buffer, len * sizeof (* buffer));	// количество байтов
 		hardware_spi_master_send_frame_16b(buffer, len);
 
 	#else /* WITHSPIEXT16 && WITHSPIHWDMA */
@@ -2201,6 +2206,7 @@ void display_showbufferXXX(
 		s1d13781_wrcmd32_pair(REG92_BLT_WIDTH, dy, dx);	// set bitblt rectangle width and height (pixels) registers.
 		//s1d13781_wrcmd8(REG86_BLT_CMD, 0x04);	// перенесено в 'begin' - 0x04 - move with color expand
 		s1d13781_wrcmd8(REG80_BLT_CTRL_0, 0x01);	// BitBlt start
+		bitblt_waitbusy();
 	}
 }
 
@@ -2313,7 +2319,7 @@ void display_plot(
 	uint_fast32_t len = (uint_fast32_t) dx * dy;	// количество элементов
 #if WITHSPIEXT16 && WITHSPIHWDMA
 	// Переача в индикатор по DMA	
-	arm_hardware_flush((uintptr_t) buffer, len * sizeof (* buffer));	// количество байтоа
+	arm_hardware_flush((uintptr_t) buffer, len * sizeof (* buffer));	// количество байтов
 	hardware_spi_master_send_frame_16b(buffer, len);
 #else /* WITHSPIEXT16 && WITHSPIHWDMA */
 	if (len >= 2)

@@ -1325,7 +1325,7 @@ void display_plot(
 	uint_fast32_t len = (uint_fast32_t) dx * dy;	// количество элементов
 #if WITHSPIEXT16 && WITHSPIHWDMA
 	// Переача в индикатор по DMA	
-	arm_hardware_flush((uintptr_t) buffer, len * sizeof (* buffer));	// количество байтоа
+	arm_hardware_flush((uintptr_t) buffer, len * sizeof (* buffer));	// количество байтов
 	hardware_spi_master_send_frame_16b(buffer, len);
 #else /* WITHSPIEXT16 */
 	if (len >= 3)
