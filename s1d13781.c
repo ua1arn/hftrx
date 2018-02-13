@@ -100,8 +100,9 @@
 #endif /* S1D13781_SPI_UFAST */
 
 // Условие использования оптимизированных функций обращения к SPI
-//#define WITHSPIEXT16 (WITHSPIHW && WITHSPI16BIT)
+#define WITHSPIEXT16 (WITHSPIHW && WITHSPI16BIT)
 
+#undef WITHSPIHWDMA
 
 #if LCDMODE_S1D13781_TOPDOWN
 	#define S1D13781_SETFLAGS (0x02 << 3)	// для перевёрнутого изображения
@@ -1329,7 +1330,7 @@ static void display_putpixel(
 		prog_select(targetlcd);
 		set_addw_16bit_p1p2(dstaddr);
 		hardware_spi_b16_p2(color);
-		spi_complete(targetlcd);
+		hardware_spi_complete_b16();
 		prog_unselect(targetlcd);
 		hardware_spi_disconnect();
 
@@ -1428,7 +1429,7 @@ static void display_putpixel_complete(void)
 
 	#if WITHSPIEXT16
 
-		hardware_spi_complete_b16(targetlcd);
+		hardware_spi_complete_b16();
 
 	#else /* WITHSPI16BIT */
 
@@ -2162,6 +2163,16 @@ void display_showbufferXXX(
 		// перенос монохромного растра в видеопамять
 		s1d13781_select();
 		set_addrwr(scratchbufbase);
+
+#if WITHSPIEXT16 && WITHSPIHWDMA
+
+	// Переача в индикатор по DMA	
+	const uint_fast32_t len = (uint_fast32_t) dx * dy;
+	arm_hardware_flush((uintptr_t) buffer, len * sizeof (* buffer));	// количество байтоа
+	hardware_spi_master_send_frame_16b(buffer, len);
+
+#else /* WITHSPIEXT16 && WITHSPIHWDMA */
+
 		uint_fast16_t row, col;
 		for (row = 0; row < dy; ++ row)
 		{
@@ -2179,6 +2190,8 @@ void display_showbufferXXX(
 			}
 		}
 		set_data16complete();
+
+#endif /* WITHSPIEXT16 && WITHSPIHWDMA */
 		s1d13781_unselect();
 
 		//s1d13781_wrcmd8(REG80_BLT_CTRL_0, 0x80);	// BitBlt reset
