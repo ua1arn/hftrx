@@ -2763,6 +2763,7 @@ usbd_handler_brdy_bulk_out8(PCD_TypeDef * const Instance, uint_fast8_t pipe, uin
 			while (size8 --)
 			{
 				const uint_fast8_t c = Instance->CFIFO.UINT8 [R_IO_HH];	// HH=3
+				(void) c;
 				//HARDWARE_CDC_ONRXCHAR(c);
 				//debug_printf_P(PSTR("rx=%02x "), c);
 			}
