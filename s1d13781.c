@@ -91,7 +91,7 @@
 
 #define S1D13781_SPIMODE SPIC_MODE3		/* допустим только MODE3, MODE2 не работает с этим контроллером */
 
-//#define S1D13781_SPI_UFAST (WITHFPGAWAIT_AS || WITHFPGALOAD_PS || WITHDSPEXTFIR)
+#define S1D13781_SPI_UFAST (WITHFPGAWAIT_AS || WITHFPGALOAD_PS || WITHDSPEXTFIR)
 
 #if S1D13781_SPI_UFAST
 	#define S1D13781_SPIC_SPEED		SPIC_SPEEDUFAST
@@ -101,8 +101,6 @@
 
 // Условие использования оптимизированных функций обращения к SPI
 #define WITHSPIEXT16 (WITHSPIHW && WITHSPI16BIT)
-
-#undef WITHSPIHWDMA
 
 #if LCDMODE_S1D13781_TOPDOWN
 	#define S1D13781_SETFLAGS (0x02 << 3)	// для перевёрнутого изображения
@@ -2164,7 +2162,7 @@ void display_showbufferXXX(
 		s1d13781_select();
 		set_addrwr(scratchbufbase);
 
-	#if WITHSPIEXT16 && WITHSPIHWDMA
+	#if 0//WITHSPIEXT16 && WITHSPIHWDMA
 
 		// Переача в индикатор по DMA	
 		const uint_fast32_t len = (uint_fast32_t) dx * dy;
@@ -2324,6 +2322,11 @@ void display_plot(
 		len -= 1;
 		while (len --)
 			display_putpixel_2(* buffer ++);
+		display_putpixel_complete();
+	}
+	else
+	{
+		display_putpixel_1(* buffer ++);
 		display_putpixel_complete();
 	}
 #endif /* WITHSPIEXT16 && WITHSPIHWDMA */
