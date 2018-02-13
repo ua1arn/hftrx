@@ -551,22 +551,6 @@ void display_pixelbuffer_xor(
 	uint_fast16_t y	// вертикальная координата пикселя (0..dy-1) сверху вниз
 	);
 
-void display_putpixel(
-	uint_fast16_t x,
-	uint_fast16_t y,
-	COLOR_T color
-	);
-
-void display_putpixel_1(
-	COLOR_T color
-	);
-
-void display_putpixel_2(
-	COLOR_T color
-	);
-
-void display_putpixel_complete(void);
-
 // начальная инициализация буфера
 void display_colorbuffer_fill(
 	PACKEDCOLOR_T * buffer,

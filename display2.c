@@ -4264,6 +4264,18 @@ void display2_spectrum(
 
 }
 
+static void display_wfputrow(const uint8_t * p, uint_fast16_t len)
+{
+	ALIGNX_BEGIN PACKEDCOLOR_T b [len] ALIGNX_END;
+	uint_fast16_t x; 
+	for (x = 0; x < len; ++ x)
+		b [x] = wfpalette [* p ++];
+	// маркер центральной частоты обзора
+
+	b [len / 2] ^= COLOR_RED;
+	display_plot(b, len, 1);
+}
+
 // отображение водопада
 void display2_waterfall(
 	uint_fast8_t x0, 
@@ -4282,10 +4294,8 @@ void display2_waterfall(
 			;
 		x = 0;
 		display_plotfrom(GRID2X(x0) + x, GRID2Y(y0) + 0);
-		display_putpixel_1(wfpalette [wfarray [wfrow] [x]]);
-		for (x = 1; x < WFDX; ++ x)
-			display_putpixel_2(wfpalette [wfarray [wfrow] [x]]);
-		display_putpixel_complete();
+		display_wfputrow(& wfarray [wfrow] [0], WFDX);
+		display_plotstop();
 	#elif 0
 		// следы спектра ("фонтан")
 		// сдвигаем вверх, отрисовываем только нижнюю строку
@@ -4295,10 +4305,8 @@ void display2_waterfall(
 			;
 		x = 0;
 		display_plotfrom(GRID2X(x0) + x, GRID2Y(y0) + WFDY - 1);
-		display_putpixel_1(wfpalette [wfarray [wfrow] [x]]);
-		for (x = 1; x < WFDX; ++ x)
-			display_putpixel_2(wfpalette [wfarray [(wfrow + 0) % WFDY] [x]]);
-		display_putpixel_complete();
+		display_wfputrow(& wfarray [wfrow] [0], WFDX);
+		display_plotstop();
 	#else
 		// следы спектра ("водопад")
 		// отрисовываем весь экран
@@ -4310,10 +4318,8 @@ void display2_waterfall(
 			// отрисовка горизонтальными линиями
 			x = 0;
 			display_plotfrom(GRID2X(x0) + x, GRID2Y(y0) + y);
-			display_putpixel_1(wfpalette [wfarray [(wfrow + y) % WFDY] [x]]);
-			for (x = 1; x < WFDX; ++ x)
-				display_putpixel_2(wfpalette [wfarray [(wfrow + y) % WFDY] [x]]);
-			display_putpixel_complete();
+			display_wfputrow(& wfarray [(wfrow + y) % WFDY] [0], WFDX);
+			display_plotstop();
 		}
 	#endif
 

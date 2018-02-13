@@ -1301,7 +1301,7 @@ display_getreadystate(void)
 	return bitblt_getbusyflag() == 0;
 }
 
-void display_putpixel(
+static void display_putpixel(
 	uint_fast16_t x,
 	uint_fast16_t y,
 	COLOR_T color
@@ -1356,37 +1356,7 @@ void display_putpixel(
 
 }
 
-void display_putpixel_1(
-	COLOR_T color
-	)
-{
-#if S1D_DISPLAY_BPP == 24
-
-	spi_progval8_p2(targetlcd, color >> 0);
-	spi_progval8_p2(targetlcd, color >> 8);
-	spi_progval8_p2(targetlcd, color >> 16);
-
-#elif S1D_DISPLAY_BPP == 16
-
-	#if WITHSPIEXT16
-
-		hardware_spi_b16_p2(color);
-
-	#else /* WITHSPI16BIT */
-
-		spi_progval8_p2(targetlcd, color >> 0);
-		spi_progval8_p2(targetlcd, color >> 8);
-
-	#endif /* WITHSPI16BIT */
-
-#elif S1D_DISPLAY_BPP == 8
-
-	spi_progval8_p2(targetlcd, color >> 0);
-
-#endif
-
-}
-void display_putpixel_2(
+static void display_putpixel_1(
 	COLOR_T color
 	)
 {
@@ -1417,32 +1387,58 @@ void display_putpixel_2(
 
 }
 
-void display_putpixel_complete(void)
+static void display_putpixel_2(
+	COLOR_T color
+	)
+{
+#if S1D_DISPLAY_BPP == 24
+
+	spi_progval8_p2(targetlcd, color >> 0);
+	spi_progval8_p2(targetlcd, color >> 8);
+	spi_progval8_p2(targetlcd, color >> 16);
+
+#elif S1D_DISPLAY_BPP == 16
+
+	#if WITHSPIEXT16
+
+		hardware_spi_b16_p2(color);
+
+	#else /* WITHSPI16BIT */
+
+		spi_progval8_p2(targetlcd, color >> 0);
+		spi_progval8_p2(targetlcd, color >> 8);
+
+	#endif /* WITHSPI16BIT */
+
+#elif S1D_DISPLAY_BPP == 8
+
+	spi_progval8_p2(targetlcd, color >> 0);
+
+#endif
+
+}
+
+static void display_putpixel_complete(void)
 {
 #if S1D_DISPLAY_BPP == 24
 
 	spi_complete(targetlcd);
-	spi_unselect(targetlcd);			// или в байтовом (8-битном) режиме.
 
 #elif S1D_DISPLAY_BPP == 16
 
 	#if WITHSPIEXT16
 
 		hardware_spi_complete_b16(targetlcd);
-		prog_unselect(targetlcd);
-		hardware_spi_disconnect();
 
 	#else /* WITHSPI16BIT */
 
 		spi_complete(targetlcd);
-		spi_unselect(targetlcd);
 
 	#endif /* WITHSPI16BIT */
 
 #elif S1D_DISPLAY_BPP == 8
 
 	spi_complete(targetlcd);
-	spi_unselect(targetlcd);
 
 #endif
 }
@@ -2322,7 +2318,28 @@ void display_plot(
 
 void display_plotstop(void)
 {
+#if S1D_DISPLAY_BPP == 24
+
+	spi_unselect(targetlcd);			// или в байтовом (8-битном) режиме.
+
+#elif S1D_DISPLAY_BPP == 16
+
+	#if WITHSPIEXT16
+
+		prog_unselect(targetlcd);
+		hardware_spi_disconnect();
+
+	#else /* WITHSPI16BIT */
+
+		spi_unselect(targetlcd);
+
+	#endif /* WITHSPI16BIT */
+
+#elif S1D_DISPLAY_BPP == 8
+
 	spi_unselect(targetlcd);
+
+#endif
 }
 
 // Вызовы этой функции (или группу вызовов) требуется "обрамить" парой вызовов
