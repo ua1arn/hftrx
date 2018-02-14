@@ -3432,14 +3432,14 @@ static void DMA2_SPI1_RX_initialize(void)
 	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;//включил DMA2 
 	__DSB();
 
-#if CPUSTYLE_STM32H7XX
-	enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
-	DMAMUX1_Channel11->CCR = 37 * DMAMUX_CxCR_DMAREQ_ID_0;	// SPI1_RX
-	DMA2_Stream0->PAR = (uint32_t) & SPI1->RXDR;
-#else /* CPUSTYLE_STM32H7XX */
-	const uint_fast8_t ch = 3;
-	DMA2_Stream0->PAR = (uint32_t) & SPI1->DR;
-#endif /* CPUSTYLE_STM32H7XX */
+	#if CPUSTYLE_STM32H7XX
+		enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
+		DMAMUX1_Channel11->CCR = 37 * DMAMUX_CxCR_DMAREQ_ID_0;	// SPI1_RX
+		DMA2_Stream0->PAR = (uintptr_t) & SPI1->RXDR;
+	#else /* CPUSTYLE_STM32H7XX */
+		const uint_fast8_t ch = 3;
+		DMA2_Stream0->PAR = (uintptr_t) & SPI1->DR;
+	#endif /* CPUSTYLE_STM32H7XX */
 
 	DMA2_Stream0->FCR &= ~ DMA_SxFCR_DMDIS;	// use Direct mode
 	//DMA2_Stream0->FCR |= DMA_SxFCR_DMDIS;	// Direct mode disabled
@@ -3450,8 +3450,8 @@ static void DMA2_SPI1_RX_initialize(void)
 		(0 * DMA_SxCR_PL_0) |		// Priority level - low
 		(0 * DMA_SxCR_DIR_0) |		// 00: Peripheral-to-memory
 		(1 * DMA_SxCR_MINC) |		// инкремент адреса памяти
-		(0 * DMA_SxCR_MSIZE_0) |	// длина в памяти - 8 bit
-		(0 * DMA_SxCR_PSIZE_0) |	// длина в DR - 8 bit
+		(0 * DMA_SxCR_MSIZE_0) |	// длина в памяти - 8 bit - устанавливается перед обменом
+		(0 * DMA_SxCR_PSIZE_0) |	// длина в DR - 8 bit - устанавливается перед обменом
 		//(1 * DMA_SxCR_CIRC) |		// циклический режим не требуется при DBM
 		(0 * DMA_SxCR_CT) |			// M0AR selected
 		//(1 * DMA_SxCR_DBM) |		// double buffer mode seelcted
@@ -3467,14 +3467,14 @@ static void DMA2_SPI1_TX_initialize(void)
 	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;	// включил DMA2 
 	__DSB();
 
-#if CPUSTYLE_STM32H7XX
-	enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
-	DMAMUX1_Channel11->CCR = 38 * DMAMUX_CxCR_DMAREQ_ID_0;	// SPI1_TX
-	DMA2_Stream3->PAR = (uint32_t) & SPI1->TXDR;
-#else /* CPUSTYLE_STM32H7XX */
-	const uint_fast8_t ch = 3;
-	DMA2_Stream3->PAR = (uint32_t) & SPI1->DR;
-#endif /* CPUSTYLE_STM32H7XX */
+	#if CPUSTYLE_STM32H7XX
+		enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
+		DMAMUX1_Channel11->CCR = 38 * DMAMUX_CxCR_DMAREQ_ID_0;	// SPI1_TX
+		DMA2_Stream3->PAR = (uintptr_t) & SPI1->TXDR;
+	#else /* CPUSTYLE_STM32H7XX */
+		const uint_fast8_t ch = 3;
+		DMA2_Stream3->PAR = (uintptr_t) & SPI1->DR;
+	#endif /* CPUSTYLE_STM32H7XX */
 
 
 	DMA2_Stream3->FCR &= ~ DMA_SxFCR_DMDIS;	// use direct mode
@@ -3486,8 +3486,8 @@ static void DMA2_SPI1_TX_initialize(void)
 		(0 * DMA_SxCR_PL_0) |		// Priority level - low
 		(1 * DMA_SxCR_DIR_0) |		// направление - память - периферия
 		(1 * DMA_SxCR_MINC) |		// инкремент адреса памяти
-		(0 * DMA_SxCR_MSIZE_0) |	// длина в памяти - 8bit
-		(0 * DMA_SxCR_PSIZE_0) |	// длина в SPI_DR- 8bit
+		(0 * DMA_SxCR_MSIZE_0) |	// длина в памяти - 8bit - устанавливается перед обменом
+		(0 * DMA_SxCR_PSIZE_0) |	// длина в SPI_DR- 8bit - устанавливается перед обменом
 		//(1 * DMA_SxCR_CIRC) |		// циклический режим не требуется при DBM
 		(0 * DMA_SxCR_CT) |			// M0AR selected
 		//(1 * DMA_SxCR_DBM) |		// double buffer mode seelcted
@@ -3663,8 +3663,8 @@ void hardware_spi_master_initialize(void)
 	SPI1->CR2 = 0x0000;	// SPI_CR2_SSOE;             //очистить второй управляющий регистр
 
 	#if WITHSPIHWDMA
-		DMA2_SPI1_TX_initialize();	// канал 3
-		DMA2_SPI1_RX_initialize();	// канал 3
+		DMA2_SPI1_TX_initialize();	// stream 3, канал 3
+		DMA2_SPI1_RX_initialize();	// stream 0. канал 3
 	#endif /* WITHSPIHWDMA */
 
 	/* настраиваем в режиме disconnect */
@@ -3683,8 +3683,8 @@ void hardware_spi_master_initialize(void)
 	SPI1->CR2 = 0x0000;	// SPI_CR2_SSOE;             //очистить второй управляющий регистр
 
 	#if WITHSPIHWDMA
-		DMA2_SPI1_TX_initialize();	// канал 3
-		DMA2_SPI1_RX_initialize();	// канал 3
+		DMA2_SPI1_TX_initialize();	// stream 3, канал 3
+		DMA2_SPI1_RX_initialize();	// stream 0. канал 3
 	#endif /* WITHSPIHWDMA */
 
 	/* настраиваем в режиме disconnect */
@@ -3699,8 +3699,8 @@ void hardware_spi_master_initialize(void)
 	//SPI1->CR2 = 0x0000;
 
 	#if WITHSPIHWDMA
-		DMA2_SPI1_TX_initialize();	// канал 3
-		DMA2_SPI1_RX_initialize();	// канал 3
+		DMA2_SPI1_TX_initialize();	// stream 3, канал 3
+		DMA2_SPI1_RX_initialize();	// stream 0. канал 3
 	#endif /* WITHSPIHWDMA */
 
 	/* настраиваем в режиме disconnect */
@@ -4346,7 +4346,8 @@ static void
 hardware_spi_master_setdma8bit_rx(void)
 {
 #if CPUSTYLE_STM32F4XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
-	DMA2_Stream3->CR = (DMA2_Stream3->CR & ~ (DMA_SxCR_MSIZE | DMA_SxCR_PSIZE)) |
+	// DMA2: SPI1_RX: Stream 0: Channel 3
+	DMA2_Stream0->CR = (DMA2_Stream0->CR & ~ (DMA_SxCR_MSIZE | DMA_SxCR_PSIZE)) |
 		(0 * DMA_SxCR_MSIZE_0) |	// длина в памяти - 8bit
 		(0 * DMA_SxCR_PSIZE_0) |	// длина в SPI_DR- 8bit
 		0;
@@ -4366,7 +4367,8 @@ static void
 hardware_spi_master_setdma16bit_rx(void)
 {
 #if CPUSTYLE_STM32F4XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
-	DMA2_Stream3->CR = (DMA2_Stream3->CR & ~ (DMA_SxCR_MSIZE | DMA_SxCR_PSIZE)) |
+	// DMA2: SPI1_RX: Stream 0: Channel 3
+	DMA2_Stream0->CR = (DMA2_Stream0->CR & ~ (DMA_SxCR_MSIZE | DMA_SxCR_PSIZE)) |
 		(1 * DMA_SxCR_MSIZE_0) |	// длина в памяти - 16bit
 		(1 * DMA_SxCR_PSIZE_0) |	// длина в SPI_DR- 16bit
 		0;
@@ -4386,6 +4388,7 @@ static void
 hardware_spi_master_setdma8bit_tx(void)
 {
 #if CPUSTYLE_STM32F4XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
+	// DMA2: SPI1_TX: Stream 3: Channel 3
 	DMA2_Stream3->CR = (DMA2_Stream3->CR & ~ (DMA_SxCR_MSIZE | DMA_SxCR_PSIZE)) |
 		(0 * DMA_SxCR_MSIZE_0) |	// длина в памяти - 8bit
 		(0 * DMA_SxCR_PSIZE_0) |	// длина в SPI_DR- 8bit
@@ -4406,6 +4409,7 @@ static void
 hardware_spi_master_setdma16bit_tx(void)
 {
 #if CPUSTYLE_STM32F4XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
+	// DMA2: SPI1_TX: Stream 3: Channel 3
 	DMA2_Stream3->CR = (DMA2_Stream3->CR & ~ (DMA_SxCR_MSIZE | DMA_SxCR_PSIZE)) |
 		(1 * DMA_SxCR_MSIZE_0) |	// длина в памяти - 16bit
 		(1 * DMA_SxCR_PSIZE_0) |	// длина в SPI_DR- 16bit
@@ -4489,7 +4493,7 @@ hardware_spi_master_send_frame_8bpartial(
 		SPI1->CR2 |= SPI_CR2_TXDMAEN; // DMA по передаче
 	#endif /* CPUSTYLE_STM32H7XX */
 
-	DMA2_Stream3->M0AR = (unsigned long) buffer;
+	DMA2_Stream3->M0AR = (uintptr_t) buffer;
 	DMA2_Stream3->NDTR = (DMA2_Stream3->NDTR & ~ DMA_SxNDT) |
 		(size * DMA_SxNDT_0);
 	DMA2_Stream3->CR |= DMA_SxCR_EN;		// перезапуск DMA
@@ -4636,7 +4640,7 @@ hardware_spi_master_send_frame_16bpartial(
 		SPI1->CR2 |= SPI_CR2_TXDMAEN; // DMA по передаче
 	#endif /* CPUSTYLE_STM32H7XX */
 
-	DMA2_Stream3->M0AR = (unsigned long) buffer;
+	DMA2_Stream3->M0AR = (uintptr_t) buffer;
 	DMA2_Stream3->NDTR = (DMA2_Stream3->NDTR & ~ DMA_SxNDT) |
 		(size * DMA_SxNDT_0);
 	DMA2_Stream3->CR |= DMA_SxCR_EN;		// перезапуск DMA
@@ -4791,26 +4795,26 @@ hardware_spi_master_read_frame_8bpartial(
 	HARDWARE_SPI_DISCONNECT_MOSI();	// выход данных в "1"
 
 	// DMA2: SPI1_RX: Stream 0: Channel 3
-#if CPUSTYLE_STM32H7XX
-	SPI1->CFG1 |= SPI_CFG1_RXDMAEN; // DMA по приему (master)
-#else /* CPUSTYLE_STM32H7XX */
-	SPI1->CR2 |= SPI_CR2_RXDMAEN; // DMA по приему (master)
-#endif /* CPUSTYLE_STM32H7XX */
+	#if CPUSTYLE_STM32H7XX
+		SPI1->CFG1 |= SPI_CFG1_RXDMAEN; // DMA по приему (master)
+	#else /* CPUSTYLE_STM32H7XX */
+		SPI1->CR2 |= SPI_CR2_RXDMAEN; // DMA по приему (master)
+	#endif /* CPUSTYLE_STM32H7XX */
 
-	DMA2_Stream0->M0AR = (unsigned long) buffer;
+	DMA2_Stream0->M0AR = (uintptr_t) buffer;
 	DMA2_Stream0->NDTR = (DMA2_Stream0->NDTR & ~ DMA_SxNDT) |
 		(size * DMA_SxNDT_0) |
 		0;
 	DMA2_Stream0->CR |= DMA_SxCR_EN;		// перезапуск DMA
 
 	// DMA2: SPI1_TX: Stream 3: Channel 3
-#if CPUSTYLE_STM32H7XX
-	SPI1->CFG1 |= SPI_CFG1_TXDMAEN; // DMA по передаче
-#else /* CPUSTYLE_STM32H7XX */
-	SPI1->CR2 |= SPI_CR2_TXDMAEN; // DMA по передаче
-#endif /* CPUSTYLE_STM32H7XX */
+	#if CPUSTYLE_STM32H7XX
+		SPI1->CFG1 |= SPI_CFG1_TXDMAEN; // DMA по передаче
+	#else /* CPUSTYLE_STM32H7XX */
+		SPI1->CR2 |= SPI_CR2_TXDMAEN; // DMA по передаче
+	#endif /* CPUSTYLE_STM32H7XX */
 
-	DMA2_Stream3->M0AR = (unsigned long) buffer;
+	DMA2_Stream3->M0AR = (uintptr_t) buffer;
 	DMA2_Stream3->NDTR = (DMA2_Stream3->NDTR & ~ DMA_SxNDT) |
 		(size * DMA_SxNDT_0) |
 		0;
@@ -4828,17 +4832,17 @@ hardware_spi_master_read_frame_8bpartial(
 	DMA2->LIFCR = DMA_LIFCR_CTCIF0;		// сбросил флаг соответствующий stream
 	//DMA2_waitTC(0);	// ожидаем завершения обмена по соответствушему stream
 
-#if CPUSTYLE_STM32H7XX
+	#if CPUSTYLE_STM32H7XX
 
-	SPI1->CFG1 &= ~ SPI_CFG1_TXDMAEN; // DMA по передаче (master)
-	SPI1->CFG1 &= ~ SPI_CFG1_RXDMAEN; // DMA по приему (master)
+		SPI1->CFG1 &= ~ SPI_CFG1_TXDMAEN; // DMA по передаче (master)
+		SPI1->CFG1 &= ~ SPI_CFG1_RXDMAEN; // DMA по приему (master)
 
-#else /* CPUSTYLE_STM32H7XX */
+	#else /* CPUSTYLE_STM32H7XX */
 
-	SPI1->CR2 &= ~ SPI_CR2_TXDMAEN; // DMA по передаче (master)
-	SPI1->CR2 &= ~ SPI_CR2_RXDMAEN; // DMA по приему (master)
+		SPI1->CR2 &= ~ SPI_CR2_TXDMAEN; // DMA по передаче (master)
+		SPI1->CR2 &= ~ SPI_CR2_RXDMAEN; // DMA по приему (master)
 
-#endif /* CPUSTYLE_STM32H7XX */
+	#endif /* CPUSTYLE_STM32H7XX */
 
 	HARDWARE_SPI_CONNECT_MOSI();	// Возвращаем в обычный режим работы
 
