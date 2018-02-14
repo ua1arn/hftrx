@@ -75,9 +75,9 @@
 
 
 #define ST7735_SPIMODE		SPIC_MODE3
-#define ST7735_SPISPEED		SPIC_SPEED10M	// в описнии контроллера ILI9341 минимальный период указан 100 nS
+//#define ST7735_SPISPEED		SPIC_SPEED10M	// в описнии контроллера ILI9341 минимальный период указан 100 nS
 //#define ST7735_SPISPEED		SPIC_SPEED10M	// в описнии контроллера ST7735 минимальный период указан 150 nS
-//#define ST7735_SPISPEED		SPIC_SPEED25M
+#define ST7735_SPISPEED		SPIC_SPEED25M
 
 // Условие использования оптимизированных функций обращения к SPI
 #define WITHSPIEXT16 (WITHSPIHW && WITHSPI16BIT)
@@ -1335,6 +1335,11 @@ void display_plot(
 		len -= 2;
 		while (len --)
 			st7735_colorpixel_p2(* buffer ++);
+		st7735_colorpixel_p3(* buffer ++);
+	}
+	else if (len == 2)
+	{
+		st7735_colorpixel_p1(* buffer ++);
 		st7735_colorpixel_p3(* buffer ++);
 	}
 #endif /* WITHSPIEXT16 */
