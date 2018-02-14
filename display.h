@@ -260,21 +260,21 @@
 #endif /* LCDMODE_LTDC */
 
 
-#if LCDMODE_S1D13781
+#if 0//LCDMODE_S1D13781
 	// биты слова буфера располагаются на экране горизонтально
 	// старший битт левее
 	typedef uint16_t GX_t;	/* тип элмента буфера */
-	#define GXSIZE(dx, dy)	((dy) * (((dx) + 15) / 16))
+	#define GXSIZE(dx, dy)	((dy) * (((unsigned long) (dx) + 15) / 16))
 	//#define GXROW(buff, dx, dy, y)	((dx + 7) / 16 * 2)
 #elif LCDMODE_COLORED
 	// пиксели буфера располагаются на экране вертикально
 	typedef PACKEDCOLOR_T GX_t;	/* тип элемента буфера */
-	#define GXSIZE(dx, dy)	((dx) * (dy))
+	#define GXSIZE(dx, dy)	((unsigned long) (dx) * (dy))
 #else	/* LCDMODE_S1D13781 */
 	// биты байта буфера располагаются на экране вертикально
 	// старший сврху (на монохромном дисплее).
 	typedef uint8_t GX_t;	/* тип элемента буфера */
-	#define GXSIZE(dx, dy)	((dx) * (((dy) + 7) / 8))
+	#define GXSIZE(dx, dy)	((dx) * (((unsigned long) (dy) + 7) / 8))
 #endif	/* */
 
 // определение основных цветов

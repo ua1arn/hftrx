@@ -876,7 +876,7 @@ void display_plot(
 	uint_fast16_t dy
 	)
 {
-	uint_fast32_t len = (uint_fast32_t) dx * dy;	// количество элементов
+	uint_fast32_t len = GXSIZE(dx, dy);	// количество элементов
 #if WITHSPIEXT16 && WITHSPIHWDMA
 	// Передача в индикатор по DMA	
 	arm_hardware_flush((uintptr_t) buffer, len * sizeof (* buffer));	// количество байтов

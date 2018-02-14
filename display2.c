@@ -4354,7 +4354,6 @@ void display2_waterfall(
 
 #else /* */
 	// следы спектра ("водопад") на цветных дисплеях
-
 	if (hamradio_get_tx() == 0)
 	{
 		uint_fast16_t x, y;
