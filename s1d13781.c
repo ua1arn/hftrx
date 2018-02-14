@@ -2257,6 +2257,7 @@ display_put_char_small2(uint_fast8_t c, uint_fast8_t lowhalf)
 	//uint8_t y = Y_DIM - 5 - (v * CHAR_H);
 
 static uint_fast8_t stored_xgrid, stored_ygrid;	// используется в display_dispbar
+static uint_fast16_t stored_xplot, stored_yplot;	// используется в display_dispbar
 
 void
 display_gotoxy(uint_fast8_t x, uint_fast8_t y)
@@ -2273,45 +2274,8 @@ void display_plotfrom(
 	uint_fast16_t y	// Координаты в пикселях
 	)
 {
-	// дождаться выполнения предидущей команды BitBlt engine.
-	if (bitblt_waitbusy() != 0)
-	{
-		// вычисление начального адреса в видеопамяти
-		const uint_fast32_t dstaddr = S1D_PHYSICAL_VMEM_ADDR + x * (S1D_DISPLAY_BPP / 8) + (uint_fast32_t) y * S1D_DISPLAY_SCANLINE_BYTES;
-
-
-	#if S1D_DISPLAY_BPP == 24
-
-		spi_select2(targetlcd, S1D13781_SPIMODE, S1D13781_SPIC_SPEED);	/* Enable SPI */
-		set_addrwr_8bit_p1p2_nc(dstaddr);
-		spi_complete();
-
-	#elif S1D_DISPLAY_BPP == 16
-
-		#if WITHSPIEXT16
-
-			hardware_spi_connect_b16(S1D13781_SPIC_SPEED, S1D13781_SPIMODE);		// если есть возможность - работаем в 16-ти битном режиме
-			prog_select(targetlcd);
-			set_addw_16bit_p1p2_nc(dstaddr);
-			hardware_spi_complete_b16();
-
-		#else /* WITHSPI16BIT */
-
-			spi_select2(targetlcd, S1D13781_SPIMODE, S1D13781_SPIC_SPEED);	/* Enable SPI */
-			set_addrwr_8bit_p1p2_nc(dstaddr);
-			spi_complete();
-
-		#endif /* WITHSPI16BIT */
-
-	#elif S1D_DISPLAY_BPP == 8
-
-		spi_select2(targetlcd, S1D13781_SPIMODE, S1D13781_SPIC_SPEED);	/* Enable SPI */
-		set_addrwr_8bit_p1p2_nc(dstaddr);
-		spi_complete();
-
-	#endif
-	}
-
+	stored_xplot = x;	// используется в display_plot
+	stored_yplot = y;	// используется в display_plot
 }
 
 
@@ -2325,60 +2289,85 @@ void display_plotstart(
 	}
 }
 
-// сейчас только одна строка работает
 void display_plot(
 	const PACKEDCOLOR_T * buffer, 
 	uint_fast16_t dx,	// Размеры окна в пикселях
 	uint_fast16_t dy
 	)
 {
-	uint_fast32_t len = GXSIZE(dx, dy);	// количество элементов
-	ASSERT(dy == 1);
 #if 0//WITHSPIEXT16 && WITHSPIHWDMA
 	// Передача в индикатор по DMA	
-	arm_hardware_flush((uintptr_t) buffer, len * sizeof (* buffer));	// количество байтов
-	hardware_spi_master_send_frame_16b(buffer, len);
-#else /* WITHSPIEXT16 && WITHSPIHWDMA */
-	if (len >= 2)
-	{
-		display_putpixel_1(* buffer ++);
-		len -= 1;
-		while (len --)
-			display_putpixel_2(* buffer ++);
-		display_putpixel_complete();
-	}
-	else
-	{
-		display_putpixel_1(* buffer ++);
-		display_putpixel_complete();
-	}
+	arm_hardware_flush((uintptr_t) buffer, GXSIZE(dx, dy) * sizeof (* buffer));	// количество байтов
 #endif /* WITHSPIEXT16 && WITHSPIHWDMA */
+
+	// вычисление начального адреса в видеопамяти
+	uint_fast32_t dstaddr = S1D_PHYSICAL_VMEM_ADDR + (uint_fast32_t) stored_xplot * (S1D_DISPLAY_BPP / 8) + (uint_fast32_t) stored_yplot * S1D_DISPLAY_SCANLINE_BYTES;
+	for (; dy --; dstaddr += S1D_DISPLAY_SCANLINE_BYTES)
+	{
+		/* начать пересылку по SPI */
+	#if S1D_DISPLAY_BPP == 24
+		spi_select2(targetlcd, S1D13781_SPIMODE, S1D13781_SPIC_SPEED);	/* Enable SPI */
+		set_addrwr_8bit_p1p2_nc(dstaddr);
+		spi_complete();
+	#elif S1D_DISPLAY_BPP == 16
+		#if WITHSPIEXT16
+			hardware_spi_connect_b16(S1D13781_SPIC_SPEED, S1D13781_SPIMODE);		// если есть возможность - работаем в 16-ти битном режиме
+			prog_select(targetlcd);
+			set_addw_16bit_p1p2_nc(dstaddr);
+			hardware_spi_complete_b16();
+		#else /* WITHSPI16BIT */
+			spi_select2(targetlcd, S1D13781_SPIMODE, S1D13781_SPIC_SPEED);	/* Enable SPI */
+			set_addrwr_8bit_p1p2_nc(dstaddr);
+			spi_complete();
+		#endif /* WITHSPI16BIT */
+	#elif S1D_DISPLAY_BPP == 8
+		spi_select2(targetlcd, S1D13781_SPIMODE, S1D13781_SPIC_SPEED);	/* Enable SPI */
+		set_addrwr_8bit_p1p2_nc(dstaddr);
+		spi_complete();
+	#endif
+	}
+
+	/* произвести пересылку по SPI */
+	{
+		uint_fast32_t len = dx;	// количество элементов
+	#if 0//WITHSPIEXT16 && WITHSPIHWDMA
+		// Передача в индикатор по DMA	
+		hardware_spi_master_send_frame_16b(buffer, len);
+		buffer += len;
+	#else /* WITHSPIEXT16 && WITHSPIHWDMA */
+		if (len >= 2)
+		{
+			display_putpixel_1(* buffer ++);
+			len -= 1;
+			while (len --)
+				display_putpixel_2(* buffer ++);
+			display_putpixel_complete();
+		}
+		else if (len == 1)
+		{
+			display_putpixel_1(* buffer ++);
+			display_putpixel_complete();
+		}
+	#endif /* WITHSPIEXT16 && WITHSPIHWDMA */
+	}
+
+	/* закончить пересылку по SPI */
+	#if S1D_DISPLAY_BPP == 24
+		spi_unselect(targetlcd);			// или в байтовом (8-битном) режиме.
+	#elif S1D_DISPLAY_BPP == 16
+		#if WITHSPIEXT16
+			prog_unselect(targetlcd);
+			hardware_spi_disconnect();
+		#else /* WITHSPI16BIT */
+			spi_unselect(targetlcd);
+		#endif /* WITHSPI16BIT */
+	#elif S1D_DISPLAY_BPP == 8
+		spi_unselect(targetlcd);
+	#endif
 }
 
 void display_plotstop(void)
 {
-#if S1D_DISPLAY_BPP == 24
-
-	spi_unselect(targetlcd);			// или в байтовом (8-битном) режиме.
-
-#elif S1D_DISPLAY_BPP == 16
-
-	#if WITHSPIEXT16
-
-		prog_unselect(targetlcd);
-		hardware_spi_disconnect();
-
-	#else /* WITHSPI16BIT */
-
-		spi_unselect(targetlcd);
-
-	#endif /* WITHSPI16BIT */
-
-#elif S1D_DISPLAY_BPP == 8
-
-	spi_unselect(targetlcd);
-
-#endif
 }
 
 // Вызовы этой функции (или группу вызовов) требуется "обрамить" парой вызовов
