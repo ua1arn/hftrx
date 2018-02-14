@@ -140,29 +140,29 @@ s1d13781_unselect(void)
 // 0x88 - 16 bit write
 // 0xc8 - 16 bit read
 
-// Sets address for writes
+// Sets address for writes and complete spi transfer
 static void set_addrwr(
 	uint_fast32_t addr
 	)
 {
-	#if WITHSPIEXT16
-		// 19 bit address
-		// 16 bit data write
-		const uint_fast32_t v = (addr) | 0x88000000UL;
+#if WITHSPIEXT16
+	// 19 bit address
+	// 16 bit data write
+	const uint_fast32_t v = (addr) | 0x88000000UL;
 
-		hardware_spi_b16_p1(v >> 16);
-		hardware_spi_b16_p2(v >> 0);
-		hardware_spi_complete_b16();
+	hardware_spi_b16_p1(v >> 16);
+	hardware_spi_b16_p2(v >> 0);
+	hardware_spi_complete_b16();
 
-	#else /* WITHSPIEXT16 */
-		// 19 bit address
-		// 8 bit data write
-		spi_progval8_p1(targetlcd, 0x80);		// 8 bit write
-		spi_progval8_p2(targetlcd, addr >> 16);
-		spi_progval8_p2(targetlcd, addr >> 8);
-		spi_progval8_p2(targetlcd, addr >> 0);
-		spi_complete(targetlcd);
-	#endif /* WITHSPIEXT16 */
+#else /* WITHSPIEXT16 */
+	// 19 bit address
+	// 8 bit data write
+	spi_progval8_p1(targetlcd, 0x80);		// 8 bit write
+	spi_progval8_p2(targetlcd, addr >> 16);
+	spi_progval8_p2(targetlcd, addr >> 8);
+	spi_progval8_p2(targetlcd, addr >> 0);
+	spi_complete(targetlcd);
+#endif /* WITHSPIEXT16 */
 }
 
 // Commands:
@@ -172,7 +172,7 @@ static void set_addrwr(
 // 0xc8 - 16 bit read
 
 // Sets address for writes in to controller's registers
-static void set_addw_p1p2_registers(
+static void set_addw_p1p2_registers_nc(
 	uint_fast8_t addr
 	)
 {
@@ -202,7 +202,7 @@ static void set_addw_p1p2_registers(
 // 0xc8 - 16 bit read
 
 // Sets address for writes in to controller's Video RAM
-static void set_addrwr_8bit_p1p2(
+static void set_addrwr_8bit_p1p2_nc(
 	uint_fast32_t addr
 	)
 {
@@ -224,7 +224,7 @@ static void set_addrwr_8bit_p1p2(
 // 0xc8 - 16 bit read
 
 // Sets address for writes in to controller's Video RAM
-static void set_addw_16bit_p1p2(
+static void set_addw_16bit_p1p2_nc(
 	uint_fast32_t addr
 	)
 {
@@ -361,7 +361,7 @@ static void s1d13781_wrcmd8(uint_fast8_t reg, uint_fast8_t val)
 {
 	s1d13781_select();
 
-	set_addw_p1p2_registers(reg);
+	set_addw_p1p2_registers_nc(reg);
 	#if WITHSPIEXT16
 		hardware_spi_b16_p2(val);
 		hardware_spi_complete_b16();
@@ -376,7 +376,7 @@ static void s1d13781_wrcmd16(uint_fast8_t reg, uint_fast16_t val)
 {
 	s1d13781_select();
 
-	set_addw_p1p2_registers(reg);
+	set_addw_p1p2_registers_nc(reg);
 	#if WITHSPIEXT16
 		hardware_spi_b16_p2(val);
 		hardware_spi_complete_b16();
@@ -393,7 +393,7 @@ static void s1d13781_wrcmd32(uint_fast8_t reg, uint_fast32_t val)
 {
 	s1d13781_select();
 
-	set_addw_p1p2_registers(reg);
+	set_addw_p1p2_registers_nc(reg);
 	#if WITHSPIEXT16
 		hardware_spi_b16_p2(val >> 0);
 		hardware_spi_b16_p2(val >> 16);
@@ -414,7 +414,7 @@ static void s1d13781_wrcmd32_pair(uint_fast8_t reg, uint_fast16_t high, uint_fas
 {
 	s1d13781_select();
 
-	set_addw_p1p2_registers(reg);
+	set_addw_p1p2_registers_nc(reg);
 	#if WITHSPIEXT16
 		hardware_spi_b16_p2(low);
 		hardware_spi_b16_p2(high);
@@ -754,7 +754,7 @@ static void chargen_beginofchar(void)
 	chargen_bitacc = 0;
 
 	s1d13781_select();
-	set_addrwr(chargen_addr);
+	set_addrwr(chargen_addr);	// Sets address for writes and complete spi transfer
 
 }
 
@@ -1065,7 +1065,7 @@ loadlut(
 	uint_fast16_t color;
 
 	s1d13781_select();
-	set_addrwr(addr);
+	set_addrwr(addr);	// Sets address for writes and complete spi transfer
 
 	for (color = 0; color < S1D_PALETTE_SIZE; ++ color)
 	{
@@ -1321,7 +1321,7 @@ static void display_putpixel(
 #if S1D_DISPLAY_BPP == 24
 
 	spi_select2(targetlcd, S1D13781_SPIMODE, S1D13781_SPIC_SPEED);	/* Enable SPI */
-	set_addrwr_8bit_p1p2(dstaddr);
+	set_addrwr_8bit_p1p2_nc(dstaddr);
 	spi_progval8_p2(targetlcd, color >> 0);
 	spi_progval8_p2(targetlcd, color >> 8);
 	spi_progval8_p2(targetlcd, color >> 16);
@@ -1334,7 +1334,7 @@ static void display_putpixel(
 
 		hardware_spi_connect_b16(S1D13781_SPIC_SPEED, S1D13781_SPIMODE);		// если есть возможность - работаем в 16-ти битном режиме
 		prog_select(targetlcd);
-		set_addw_16bit_p1p2(dstaddr);
+		set_addw_16bit_p1p2_nc(dstaddr);
 		hardware_spi_b16_p2(color);
 		hardware_spi_complete_b16();
 		prog_unselect(targetlcd);
@@ -1343,7 +1343,7 @@ static void display_putpixel(
 	#else /* WITHSPI16BIT */
 
 		spi_select2(targetlcd, S1D13781_SPIMODE, S1D13781_SPIC_SPEED);	/* Enable SPI */
-		set_addrwr_8bit_p1p2(dstaddr);
+		set_addrwr_8bit_p1p2_nc(dstaddr);
 		spi_progval8_p2(targetlcd, color >> 0);
 		spi_progval8_p2(targetlcd, color >> 8);
 		spi_complete(targetlcd);
@@ -1354,7 +1354,7 @@ static void display_putpixel(
 #elif S1D_DISPLAY_BPP == 8
 
 	spi_select2(targetlcd, S1D13781_SPIMODE, S1D13781_SPIC_SPEED);	/* Enable SPI */
-	set_addrwr_8bit_p1p2(dstaddr);
+	set_addrwr_8bit_p1p2_nc(dstaddr);
 	spi_progval8_p2(targetlcd, color >> 0);
 	spi_complete(targetlcd);
 	spi_unselect(targetlcd);
@@ -1369,7 +1369,7 @@ static void display_putpixel_1(
 {
 #if S1D_DISPLAY_BPP == 24
 
-	spi_progval8_p2(targetlcd, color >> 0);
+	spi_progval8_p1(targetlcd, color >> 0);
 	spi_progval8_p2(targetlcd, color >> 8);
 	spi_progval8_p2(targetlcd, color >> 16);
 
@@ -1377,18 +1377,18 @@ static void display_putpixel_1(
 
 	#if WITHSPIEXT16
 
-		hardware_spi_b16_p2(color);
+		hardware_spi_b16_p1(color);
 
 	#else /* WITHSPI16BIT */
 
-		spi_progval8_p2(targetlcd, color >> 0);
+		spi_progval8_p1(targetlcd, color >> 0);
 		spi_progval8_p2(targetlcd, color >> 8);
 
 	#endif /* WITHSPI16BIT */
 
 #elif S1D_DISPLAY_BPP == 8
 
-	spi_progval8_p2(targetlcd, color >> 0);
+	spi_progval8_p1(targetlcd, color >> 0);
 
 #endif
 
@@ -2156,46 +2156,53 @@ void display_showbufferXXX(
 	// дождаться выполнения предидущей команды BitBlt engine.
 	if (bitblt_waitbusy() != 0)
 	{
-		s1d13781_wrcmdcolor(REG96_BLT_BGCOLOR_0, stored_bgcolor);
-		s1d13781_wrcmdcolor(REG9A_BLT_FGCOLOR_0, stored_fgcolor);
-		s1d13781_colorexpand();
 		// вычисление начального адреса в видеопамяти
 		const uint_fast32_t dstaddr = S1D_PHYSICAL_VMEM_ADDR + (uint_fast32_t) GRID2X(x) * (S1D_DISPLAY_BPP / 8) + (uint_fast32_t) GRID2Y(y) * S1D_DISPLAY_SCANLINE_BYTES;
 
-		uint_fast8_t init = 1;
-		// перенос монохромного растра в видеопамять
-		s1d13781_select();
-		set_addrwr(scratchbufbase);
+		ASSERT((dx % 16) == 0);
 
-	#if 0//WITHSPIEXT16 && WITHSPIHWDMA
-
-		// Передача в индикатор по DMA	
-		const uint_fast32_t len = (uint_fast32_t) dx * dy;
-		arm_hardware_flush((uintptr_t) buffer, len * sizeof (* buffer));	// количество байтов
-		hardware_spi_master_send_frame_16b(buffer, len);
-
-	#else /* WITHSPIEXT16 && WITHSPIHWDMA */
-
-		uint_fast16_t row, col;
-		for (row = 0; row < dy; ++ row)
+		if ((dx % 16) == 0 && sizeof (* buffer) == 2)
 		{
-			const GX_t * const rowstart = buffer + row * ((dx + 15) / 16);	// начало данных строки растра в памяти
-			for (col = 0; col < dx; col += 16)
-			{
-				const uint_fast16_t v = rowstart [col / 16];
-				if (init)
-				{
-					set_data16_p1(v);
-					init = 0;
-				}
-				else
-					set_data16_p2(v);
-			}
-		}
-		set_data16complete();
 
-	#endif /* WITHSPIEXT16 && WITHSPIHWDMA */
-		s1d13781_unselect();
+			uint_fast8_t init = 1;
+			// перенос монохромного растра в видеопамять
+			s1d13781_select();
+			set_addrwr(scratchbufbase);// Sets address for writes and complete spi transfer
+
+		#if 0//WITHSPIEXT16 && WITHSPIHWDMA
+			// Обратить внимание, передается растр, где младшицй бит левее.
+		// Передача в индикатор по DMA	
+			const uint_fast32_t len = (uint_fast32_t) dx / 16 * dy;
+			arm_hardware_flush((uintptr_t) buffer, len * sizeof (* buffer));	// количество байтов
+			hardware_spi_master_send_frame_16b(buffer, len);
+
+		#else /* WITHSPIEXT16 && WITHSPIHWDMA */
+
+				uint_fast16_t row, col;
+				for (row = 0; row < dy; ++ row)
+				{
+					const GX_t * const rowstart = buffer + row * ((dx + 15) / 16);	// начало данных строки растра в памяти
+					for (col = 0; col < dx; col += 16)
+					{
+						const uint_fast16_t v = rowstart [col / 16];
+						if (init)
+						{
+							set_data16_p1(v);
+							init = 0;
+						}
+						else
+							set_data16_p2(v);
+					}
+				}
+				set_data16complete();
+
+		#endif /* WITHSPIEXT16 && WITHSPIHWDMA */
+			s1d13781_unselect();
+		}
+
+		s1d13781_wrcmdcolor(REG96_BLT_BGCOLOR_0, stored_bgcolor);
+		s1d13781_wrcmdcolor(REG9A_BLT_FGCOLOR_0, stored_fgcolor);
+		s1d13781_colorexpand();
 
 		//s1d13781_wrcmd8(REG80_BLT_CTRL_0, 0x80);	// BitBlt reset
 		bitblt_setdstaddr(dstaddr);
@@ -2273,7 +2280,8 @@ void display_plotfrom(
 #if S1D_DISPLAY_BPP == 24
 
 	spi_select2(targetlcd, S1D13781_SPIMODE, S1D13781_SPIC_SPEED);	/* Enable SPI */
-	set_addrwr_8bit_p1p2(dstaddr);
+	set_addrwr_8bit_p1p2_nc(dstaddr);
+	spi_complete();
 
 #elif S1D_DISPLAY_BPP == 16
 
@@ -2281,19 +2289,22 @@ void display_plotfrom(
 
 		hardware_spi_connect_b16(S1D13781_SPIC_SPEED, S1D13781_SPIMODE);		// если есть возможность - работаем в 16-ти битном режиме
 		prog_select(targetlcd);
-		set_addw_16bit_p1p2(dstaddr);
+		set_addw_16bit_p1p2_nc(dstaddr);
+		hardware_spi_complete_b16();
 
 	#else /* WITHSPI16BIT */
 
 		spi_select2(targetlcd, S1D13781_SPIMODE, S1D13781_SPIC_SPEED);	/* Enable SPI */
-		set_addrwr_8bit_p1p2(dstaddr);
+		set_addrwr_8bit_p1p2_nc(dstaddr);
+		spi_complete();
 
 	#endif /* WITHSPI16BIT */
 
 #elif S1D_DISPLAY_BPP == 8
 
 	spi_select2(targetlcd, S1D13781_SPIMODE, S1D13781_SPIC_SPEED);	/* Enable SPI */
-	set_addrwr_8bit_p1p2(dstaddr);
+	set_addrwr_8bit_p1p2_nc(dstaddr);
+	spi_complete();
 
 #endif
 
