@@ -226,7 +226,7 @@ st7735_pixel_p3(
 #if WITHSPIEXT16
 
 	hardware_spi_b16_p2(fg ? fgcolor : bkcolor);
-	spi_complete(targetlcd);
+	hardware_spi_complete_b16();
 
 #else /* WITHSPIEXT16 */
 
@@ -291,7 +291,7 @@ st7735_colorpixel_p3(
 #if WITHSPIEXT16
 
 	hardware_spi_b16_p2(color);
-	spi_complete(targetlcd);
+	hardware_spi_complete_b16();
 
 #else /* WITHSPIEXT16 */
 
@@ -393,7 +393,7 @@ st7735_pixelsmooth_p3(
 		hardware_spi_b16_p2(fgcolor);
 	else
 		hardware_spi_b16_p2(bkcolor);
-	spi_complete(targetlcd);
+	hardware_spi_complete_b16();
 
 #else /* WITHSPIEXT16 */
 

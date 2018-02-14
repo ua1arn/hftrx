@@ -90,14 +90,7 @@
 #include "./fonts/S1D13781_font_big.c"
 
 #define S1D13781_SPIMODE SPIC_MODE3		/* допустим только MODE3, MODE2 не работает с этим контроллером */
-
-#define S1D13781_SPI_UFAST (WITHFPGAWAIT_AS || WITHFPGALOAD_PS || WITHDSPEXTFIR)
-
-#if S1D13781_SPI_UFAST
-	#define S1D13781_SPIC_SPEED		SPIC_SPEEDUFAST
-#else /* S1D13781_SPI_UFAST */
-	#define S1D13781_SPIC_SPEED		SPIC_SPEEDFAST
-#endif /* S1D13781_SPI_UFAST */
+#define S1D13781_SPIC_SPEED		SPIC_SPEED10M
 
 // Условие использования оптимизированных функций обращения к SPI
 #define WITHSPIEXT16 (WITHSPIHW && WITHSPI16BIT)
@@ -262,13 +255,12 @@ static uint_fast8_t set_addr_p1p2_registers_getval8(
 		// 19 bit address
 		// 16 bit data read
 		//const uint_fast32_t v = ((S1D_PHYSICAL_REG_ADDR + addr) & 0x0007FFFF) | 0xC8000000;
-		const uint_fast32_t v = (S1D_PHYSICAL_REG_ADDR + addr) | 0xC8000000UL;
+		const uint_fast32_t v = (S1D_PHYSICAL_REG_ADDR + addr) | 0xC0000000uL;
 
 		hardware_spi_b16_p1(v >> 16);
 		hardware_spi_b16_p2(v >> 0);
-		hardware_spi_b16_p2(0xffff);	// dummy read
-		hardware_spi_b16_p2(0xffff);	// read status
-		return hardware_spi_complete_b16();	// read status
+		hardware_spi_b16_p2(0xffff);	// dummy read & read status (8-but value read)
+		return hardware_spi_complete_b16() & 0xFF;	// read status
 
 	#else /* WITHSPIEXT16 */
 		// 19 bit address
@@ -283,6 +275,11 @@ static uint_fast8_t set_addr_p1p2_registers_getval8(
 	#endif /* WITHSPIEXT16 */
 }
 
+// Commands:
+// 0x80 - 8 bit write
+// 0xc0 - 8 bit read
+// 0x88 - 16 bit write
+// 0xc8 - 16 bit read
 static uint_fast16_t set_addr_p1p2_registers_getval16(
 	uint_fast8_t addr
 	)
@@ -367,10 +364,11 @@ static void s1d13781_wrcmd8(uint_fast8_t reg, uint_fast8_t val)
 	set_addw_p1p2_registers(reg);
 	#if WITHSPIEXT16
 		hardware_spi_b16_p2(val);
+		hardware_spi_complete_b16();
 	#else /* WITHSPIEXT16 */
 		spi_progval8_p2(targetlcd, val);
+		spi_complete(targetlcd);
 	#endif /* WITHSPIEXT16 */
-	spi_complete(targetlcd);
 
 	s1d13781_unselect();
 }
@@ -381,12 +379,13 @@ static void s1d13781_wrcmd16(uint_fast8_t reg, uint_fast16_t val)
 	set_addw_p1p2_registers(reg);
 	#if WITHSPIEXT16
 		hardware_spi_b16_p2(val);
+		hardware_spi_complete_b16();
 	#else /* WITHSPI16BIT */
 		spi_progval8_p2(targetlcd, val >> 0);
 		spi_progval8_p2(targetlcd, val >> 8);
+		spi_complete(targetlcd);
 	#endif /* WITHSPI16BIT */
 
-	spi_complete(targetlcd);
 	s1d13781_unselect();
 }
 
@@ -398,13 +397,14 @@ static void s1d13781_wrcmd32(uint_fast8_t reg, uint_fast32_t val)
 	#if WITHSPIEXT16
 		hardware_spi_b16_p2(val >> 0);
 		hardware_spi_b16_p2(val >> 16);
+		hardware_spi_complete_b16();
 	#else /* WITHSPIEXT16 */
 		spi_progval8_p2(targetlcd, val >> 0);
 		spi_progval8_p2(targetlcd, val >> 8);
 		spi_progval8_p2(targetlcd, val >> 16);
 		spi_progval8_p2(targetlcd, val >> 24);
+		spi_complete(targetlcd);
 	#endif /* WITHSPIEXT16 */
-	spi_complete(targetlcd);
 
 	s1d13781_unselect();
 }
@@ -418,13 +418,14 @@ static void s1d13781_wrcmd32_pair(uint_fast8_t reg, uint_fast16_t high, uint_fas
 	#if WITHSPIEXT16
 		hardware_spi_b16_p2(low);
 		hardware_spi_b16_p2(high);
+		hardware_spi_complete_b16();
 	#else /* WITHSPIEXT16 */
 		spi_progval8_p2(targetlcd, low >> 0);
 		spi_progval8_p2(targetlcd, low >> 8);
 		spi_progval8_p2(targetlcd, high >> 0);
 		spi_progval8_p2(targetlcd, high >> 8);
+		spi_complete(targetlcd);
 	#endif /* WITHSPIEXT16 */
-	spi_complete(targetlcd);
 
 	s1d13781_unselect();
 }
@@ -537,6 +538,8 @@ bitblt_waitbusy(void)
 	if (s1d13781_missing != 0)
 		return 0;
 
+	bitblt_getbusyflag();
+	bitblt_getbusyflag();
 	while (bitblt_getbusyflag() != 0)
 		;
 	return 1;
@@ -1897,11 +1900,8 @@ static void s1d13781_initialize(void)
 /* вызывается при разрешённых прерываниях. */
 void display_initialize(void)
 {
-	#if S1D13781_SPI_UFAST
-		hardware_spi_master_setfreq(SPIC_SPEEDUFAST, SPISPEEDUFAST);
-	#else /* S1D13781_SPI_UFAST */
-		hardware_spi_master_setfreq(SPIC_SPEEDFAST, SPISPEED);
-	#endif /* S1D13781_SPI_UFAST */
+	hardware_spi_master_setfreq(SPIC_SPEED10M, 10000000uL);
+	hardware_spi_master_setfreq(SPIC_SPEED25M, 25000000uL);
 
 	const uint_fast16_t prodcode = getprodcode();
 	debug_printf_P(PSTR("display_initialize: product code = 0x%04x (expected 0x0050)\n"), (unsigned) prodcode);
@@ -2169,7 +2169,7 @@ void display_showbufferXXX(
 
 	#if 0//WITHSPIEXT16 && WITHSPIHWDMA
 
-		// Переача в индикатор по DMA	
+		// Передача в индикатор по DMA	
 		const uint_fast32_t len = (uint_fast32_t) dx * dy;
 		arm_hardware_flush((uintptr_t) buffer, len * sizeof (* buffer));	// количество байтов
 		hardware_spi_master_send_frame_16b(buffer, len);
@@ -2317,8 +2317,8 @@ void display_plot(
 	)
 {
 	uint_fast32_t len = (uint_fast32_t) dx * dy;	// количество элементов
-#if WITHSPIEXT16 && WITHSPIHWDMA
-	// Переача в индикатор по DMA	
+#if 0//WITHSPIEXT16 && WITHSPIHWDMA
+	// Передача в индикатор по DMA	
 	arm_hardware_flush((uintptr_t) buffer, len * sizeof (* buffer));	// количество байтов
 	hardware_spi_master_send_frame_16b(buffer, len);
 #else /* WITHSPIEXT16 && WITHSPIHWDMA */

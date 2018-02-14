@@ -456,9 +456,10 @@ portholder_t hardware_spi_complete_b16(void);	/* дождаться готовности передача 1
 
 // Read a frame of bytes via SPI
 // На сигнале MOSI при это должно обеспачиваться состояние логической "1" для корректной работы SD CARD
-void hardware_spi_master_read_frame(uint8_t * pBuffer, unsigned int size);
+void hardware_spi_master_read_frame(uint8_t * pBuffer, uint_fast32_t size);
+void hardware_spi_master_read_frame_16b(uint16_t * pBuffer, uint_fast32_t size);
 // Send a frame of bytes via SPI
-void hardware_spi_master_send_frame(const uint8_t * pBuffer, unsigned int size);
-void hardware_spi_master_send_frame_16b(const uint16_t * pBuffer, unsigned int size);
+void hardware_spi_master_send_frame(const uint8_t * pBuffer, uint_fast32_t size);
+void hardware_spi_master_send_frame_16b(const uint16_t * pBuffer, uint_fast32_t size);
 
 #endif // SPIFUNCS_H_INCLUDED

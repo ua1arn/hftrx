@@ -4342,7 +4342,48 @@ portholder_t hardware_spi_complete_b8(void)	/* дождаться готовности */
 
 #if WITHSPIHWDMA
 
-static void hardware_spi_master_setdma8bit_tx(void)
+static void 
+hardware_spi_master_setdma8bit_rx(void)
+{
+#if CPUSTYLE_STM32F4XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
+	DMA2_Stream3->CR = (DMA2_Stream3->CR & ~ (DMA_SxCR_MSIZE | DMA_SxCR_PSIZE)) |
+		(0 * DMA_SxCR_MSIZE_0) |	// длина в памяти - 8bit
+		(0 * DMA_SxCR_PSIZE_0) |	// длина в SPI_DR- 8bit
+		0;
+#elif CPUSTYLE_R7S721
+	DMAC15.N0SA_n = (uint32_t) & RSPI0.SPDR.UINT8 [R_IO_LL];	// Fixed destination address for 8-bit transfers
+	//DMAC15.N0SA_n = (uint32_t) & RSPI0.SPDR.UINT16 [R_IO_L];	// Fixed destination address for 16-bit transfers
+	DMAC15.CHCFG_n = (DMAC15.CHCFG_n & ~ (DMAC15_CHCFG_n_DDS | DMAC15_CHCFG_n_SDS | DMAC15_CHCFG_n_DAD | DMAC15_CHCFG_n_SAD)) |
+		0 * (1U << DMAC15_CHCFG_n_DDS_SHIFT) |	// DDS	2: 32 bits, 1: 16 bits (Destination Data Size)
+		0 * (1U << DMAC15_CHCFG_n_SDS_SHIFT) |	// SDS	2: 32 bits, 1: 16 bits (Source Data Size)
+		0 * (1U << DMAC15_CHCFG_n_DAD_SHIFT) |		// DAD	0: Increment destination address
+		1 * (1U << DMAC15_CHCFG_n_SAD_SHIFT) |		// SAD	1: Fixed source address
+		0;
+#endif
+}
+
+static void 
+hardware_spi_master_setdma16bit_rx(void)
+{
+#if CPUSTYLE_STM32F4XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
+	DMA2_Stream3->CR = (DMA2_Stream3->CR & ~ (DMA_SxCR_MSIZE | DMA_SxCR_PSIZE)) |
+		(1 * DMA_SxCR_MSIZE_0) |	// длина в памяти - 16bit
+		(1 * DMA_SxCR_PSIZE_0) |	// длина в SPI_DR- 16bit
+		0;
+#elif CPUSTYLE_R7S721
+	//DMAC15.N0SA_n = (uint32_t) & RSPI0.SPDR.UINT8 [R_IO_LL];	// Fixed source address for 8-bit transfers
+	DMAC15.N0SA_n = (uint32_t) & RSPI0.SPDR.UINT16 [R_IO_L];	// Fixed source address for 16-bit transfers
+	DMAC15.CHCFG_n = (DMAC15.CHCFG_n & ~ (DMAC15_CHCFG_n_DDS | DMAC15_CHCFG_n_SDS | DMAC15_CHCFG_n_DAD | DMAC15_CHCFG_n_SAD)) |
+		1 * (1U << DMAC15_CHCFG_n_DDS_SHIFT) |	// DDS	2: 32 bits, 1: 16 bits (Destination Data Size)
+		1 * (1U << DMAC15_CHCFG_n_SDS_SHIFT) |	// SDS	2: 32 bits, 1: 16 bits (Source Data Size)
+		0 * (1U << DMAC15_CHCFG_n_DAD_SHIFT) |		// DAD	0: Increment destination address
+		1 * (1U << DMAC15_CHCFG_n_SAD_SHIFT) |		// SAD	1: Fixed source address
+		0;
+#endif
+}
+
+static void 
+hardware_spi_master_setdma8bit_tx(void)
 {
 #if CPUSTYLE_STM32F4XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
 	DMA2_Stream3->CR = (DMA2_Stream3->CR & ~ (DMA_SxCR_MSIZE | DMA_SxCR_PSIZE)) |
@@ -4361,7 +4402,8 @@ static void hardware_spi_master_setdma8bit_tx(void)
 #endif
 }
 
-static void hardware_spi_master_setdma16bit_tx(void)
+static void 
+hardware_spi_master_setdma16bit_tx(void)
 {
 #if CPUSTYLE_STM32F4XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
 	DMA2_Stream3->CR = (DMA2_Stream3->CR & ~ (DMA_SxCR_MSIZE | DMA_SxCR_PSIZE)) |
@@ -4379,14 +4421,15 @@ static void hardware_spi_master_setdma16bit_tx(void)
 		0;
 #endif
 }
+
 // Send a frame of bytes via SPI
-void hardware_spi_master_send_frame(
+static void 
+hardware_spi_master_send_frame_8bpartial(
 	//spitarget_t target,	/* addressing to chip */
 	const uint8_t * buffer, 
-	unsigned int size
+	uint_fast32_t size		/* количество пересылаемых 8-ти битных элементов */
 	)
 {
-	hardware_spi_master_setdma8bit_tx();
 #if CPUSTYLE_SAM9XE
 
 	AT91C_BASE_SPI1->SPI_TPR = (unsigned long) buffer;
@@ -4523,15 +4566,17 @@ void hardware_spi_master_send_frame(
 	#error Undefined CPUSTYLE_xxxx
 #endif
 }
+
+#if WITHSPI16BIT
 
 // Send a frame of 16-bit words via SPI
-void hardware_spi_master_send_frame_16b(
+static void 
+hardware_spi_master_send_frame_16bpartial(
 	//spitarget_t target,	/* addressing to chip */
 	const uint16_t * buffer, 
-	unsigned int size		/* количество пересылаемых 16-ти битных элементов */
+	uint_fast32_t size		/* количество пересылаемых 16-ти битных элементов */
 	)
 {
-	hardware_spi_master_setdma16bit_tx();
 #if CPUSTYLE_SAM9XE
 
 	AT91C_BASE_SPI1->SPI_TPR = (unsigned long) buffer;
@@ -4668,13 +4713,16 @@ void hardware_spi_master_send_frame_16b(
 	#error Undefined CPUSTYLE_xxxx
 #endif
 }
+
+#endif /* WITHSPI16BIT */
 
 // Read a frame of bytes via SPI
 // На сигнале MOSI при это должно обеспачиваться состояние логической "1" для корректной работы SD CARD
-void hardware_spi_master_read_frame(
+static void 
+hardware_spi_master_read_frame_8bpartial(
 	//spitarget_t target,	/* addressing to chip */
 	uint8_t * buffer, 
-	unsigned int size
+	uint_fast32_t size		/* количество пересылаемых 8-ти битных элементов */
 	)
 {
 #if CPUSTYLE_SAM9XE
@@ -4819,6 +4867,92 @@ void hardware_spi_master_read_frame(
 #else
 	#error Undefined CPUSTYLE_xxxx
 
+#endif
+}
+
+
+#if WITHSPI16BIT
+
+void hardware_spi_master_send_frame_16b(
+	//spitarget_t target,	/* addressing to chip */
+	const uint16_t * buffer, 
+	uint_fast32_t size		/* количество пересылаемых 16-ти битных элементов */
+	)
+{
+	hardware_spi_master_setdma16bit_tx();
+#if CPUSTYLE_R7S721
+	hardware_spi_master_send_frame_16bpartial(bufffer, size)
+#else
+	unsigned long score;
+	for (score = 0; score < size; )
+	{
+		const uint_fast16_t chunk = ulmin(size - score, 0xFF00uL);
+		hardware_spi_master_send_frame_16bpartial(buffer + score, chunk);
+		score += chunk;
+	}
+#endif
+}
+
+void hardware_spi_master_read_frame_16b(
+	//spitarget_t target,	/* addressing to chip */
+	uint16_t * buffer, 
+	uint_fast32_t size		/* количество пересылаемых 16-ти битных элементов */
+	)
+{
+	hardware_spi_master_setdma16bit_rx();
+#if CPUSTYLE_R7S721
+	hardware_spi_master_read_frame_16bpartial(bufffer, size)
+#else
+	unsigned long score;
+	for (score = 0; score < size; )
+	{
+		const uint_fast16_t chunk = ulmin(size - score, 0xFF00uL);
+		hardware_spi_master_read_frame_16bpartial(buffer + score, chunk);
+		score += chunk;
+	}
+#endif
+}
+
+#endif /* WITHSPI16BIT */
+
+void hardware_spi_master_send_frame(
+	//spitarget_t target,	/* addressing to chip */
+	const uint8_t * buffer, 
+	uint_fast32_t size		/* количество пересылаемых 8-ти битных элементов */
+	)
+{
+	hardware_spi_master_setdma8bit_tx();
+#if CPUSTYLE_R7S721
+	hardware_spi_master_send_frame_8bpartial(bufffer, size)
+#else
+	unsigned long score;
+	for (score = 0; score < size; )
+	{
+		const uint_fast16_t chunk = ulmin(size - score, 0xFF00uL);
+		hardware_spi_master_send_frame_8bpartial(buffer + score, chunk);
+		score += chunk;
+	}
+#endif
+}
+
+
+void hardware_spi_master_read_frame(
+	//spitarget_t target,	/* addressing to chip */
+	uint8_t * buffer, 
+	uint_fast32_t size		/* количество пересылаемых 8-ти битных элементов */
+	)
+{
+	hardware_spi_master_setdma8bit_rx();
+#if CPUSTYLE_R7S721
+	hardware_spi_master_read_frame_partial(bufffer, size)
+#else
+	unsigned long score;
+	for (score = 0; score < size; )
+	{
+		const uint_fast16_t chunk = ulmin(size - score, 0xFF00uL);
+		hardware_spi_master_read_frame_partial(buffer + score, chunk);
+		score += chunk;
+	}
 #endif
 }
 
