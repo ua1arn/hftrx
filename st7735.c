@@ -7,6 +7,7 @@
 // TFT панель 160 * 128 HY-1.8-SPI
 // Кроме того, этот файл для обслуживания LCDMODE_ILI9163
 /* Индикатор 160*128 с контроллером Sitronix ST7735 */
+/* Индикатор 320*240 с контроллером ILITEK ILI9341 */
 
 // Original copyright:
 /***************************************************
@@ -74,9 +75,9 @@
 
 
 #define ST7735_SPIMODE		SPIC_MODE3
-//#define ST7735_SPISPEED		SPIC_SPEED10M	// в описнии контроллера ILI9341 минимальный период указан 100 nS
+#define ST7735_SPISPEED		SPIC_SPEED10M	// в описнии контроллера ILI9341 минимальный период указан 100 nS
 //#define ST7735_SPISPEED		SPIC_SPEED10M	// в описнии контроллера ST7735 минимальный период указан 150 nS
-#define ST7735_SPISPEED		SPIC_SPEED25M
+//#define ST7735_SPISPEED		SPIC_SPEED25M
 
 // Условие использования оптимизированных функций обращения к SPI
 #define WITHSPIEXT16 (WITHSPIHW && WITHSPI16BIT)
