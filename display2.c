@@ -3998,6 +3998,10 @@ enum { PALETTESIZE = 256 };
 static PACKEDCOLOR_T wfpalette [PALETTESIZE];
 extern uint_fast8_t wflfence;
 
+#define COLOR_CENTERMAKER	COLOR_RED
+#define COLOR_WAERFALLBG	COLOR_WHITE
+#define COLOR_WAERFALLFG	COLOR_BLUE
+
 // Код взят из проекта Malamute
 static void wfpalette_initialize(void)
 {
@@ -4200,7 +4204,7 @@ void display2_spectrum(
 		{
 			memset(sharedscr, 0xFF, sizeof sharedscr);			// рисование способом погасить точку
 		}
-		display_setcolors(COLOR_GRAY, COLOR_BLUE);
+		display_setcolors(COLOR_WAERFALLBG, COLOR_WAERFALLFG);
 		display_showbuffer(sharedscr, WFDX, WFDY, x0, y0);
 
 	#else /* */
@@ -4240,16 +4244,16 @@ void display2_spectrum(
 				int zv = (WFDY - 1) - val;
 				int z;
 				for (z = WFDY - 1; z >= zv; -- z)
-					display_colorbuffer_set(sharedscr, WFDX, WFDY, x, z, COLOR_BLUE);	// точку сигнала
+					display_colorbuffer_set(sharedscr, WFDX, WFDY, x, z, COLOR_WAERFALLFG);	// точку сигнала
 				// формирование фона растра
 				for (; z >= 0; -- z)
-					display_colorbuffer_set(sharedscr, WFDX, WFDY, x, z, COLOR_WHITE);	// точку фона
+					display_colorbuffer_set(sharedscr, WFDX, WFDY, x, z, COLOR_WAERFALLBG);	// точку фона
 			}
 			// маркер центральной частоты обзора
 			// xor линию
 			for (y = 0; y < WFDY; ++ y)
 			{
-				display_colorbuffer_xor(sharedscr, WFDX, WFDY, WFDX / 2, y, COLOR_RED); 
+				display_colorbuffer_xor(sharedscr, WFDX, WFDY, WFDX / 2, y, COLOR_CENTERMAKER); 
 			}
 		}
 		else
@@ -4262,16 +4266,18 @@ void display2_spectrum(
 
 }
 
-static void display_wfputrow(const uint8_t * p, uint_fast16_t len)
+static void display_wfputrow(const uint8_t * p)
 {
-	ALIGNX_BEGIN PACKEDCOLOR_T b [len] ALIGNX_END;
+	enum { dx = WFDX, dy = 1 };
+	static ALIGNX_BEGIN GX_t b [GXSIZE(dx, dy)] ALIGNX_END;
 	uint_fast16_t x; 
-	for (x = 0; x < len; ++ x)
-		b [x] = wfpalette [* p ++];
-	// маркер центральной частоты обзора
+	for (x = 0; x < dx; ++ x)
+		display_colorbuffer_set(b, dx, dy, x, 0, wfpalette [p [x]]);
 
-	b [len / 2] ^= COLOR_RED;
-	display_plot(b, len, 1);
+	// маркер центральной частоты обзора
+	display_colorbuffer_xor(b, dx, dy, dx / 2, 0, COLOR_CENTERMAKER);
+
+	display_plot(b, dx, dy);
 }
 
 // отображение водопада
@@ -4292,7 +4298,8 @@ void display2_waterfall(
 			;
 		x = 0;
 		display_plotfrom(GRID2X(x0) + x, GRID2Y(y0) + 0);
-		display_wfputrow(& wfarray [wfrow] [0], WFDX);
+		display_plotstart(1);
+		display_wfputrow(& wfarray [wfrow] [0]);	// display_plot inside for one row
 		display_plotstop();
 	#elif 0
 		// следы спектра ("фонтан")
@@ -4303,7 +4310,8 @@ void display2_waterfall(
 			;
 		x = 0;
 		display_plotfrom(GRID2X(x0) + x, GRID2Y(y0) + WFDY - 1);
-		display_wfputrow(& wfarray [wfrow] [0], WFDX);
+		display_plotstart(1);
+		display_wfputrow(& wfarray [wfrow] [0]);	// display_plot inside for one row
 		display_plotstop();
 	#else
 		// следы спектра ("водопад")
@@ -4316,7 +4324,8 @@ void display2_waterfall(
 			// отрисовка горизонтальными линиями
 			x = 0;
 			display_plotfrom(GRID2X(x0) + x, GRID2Y(y0) + y);
-			display_wfputrow(& wfarray [(wfrow + y) % WFDY] [0], WFDX);
+			display_plotstart(1);
+			display_wfputrow(& wfarray [(wfrow + y) % WFDY] [0]);	// display_plot inside for one row
 			display_plotstop();
 		}
 	#endif

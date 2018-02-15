@@ -2291,7 +2291,7 @@ void display_plotstart(
 
 void display_plot(
 	const PACKEDCOLOR_T * buffer, 
-	uint_fast16_t dx,	// Размеры окна в пикселях
+	const uint_fast16_t dx,	// Размеры окна в пикселях
 	uint_fast16_t dy
 	)
 {
