@@ -758,6 +758,8 @@ void modem_set_mode(uint_fast8_t modemmode)
 void modem_initialze(void)
 {
 #if CTLREGMODE_STORCH_V4
+	arm_hardware_piof_inputs(0x00FF);
+	mastermode = (GPIOF->IDR & 0x01) == 0;
 	// формирование буфера собственного адреса
 	const uint32_t * const uidbase = (const uint32_t *) UID_BASE;
 	ownaddressbuff [0x00] = uidbase [0] >> 24;
