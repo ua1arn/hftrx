@@ -455,18 +455,6 @@ void display_pwrmeter(
 	uint_fast8_t maxpwrcali		// значение для отклонения на всю шкалу
 	);
 
-void display2_spectrum(
-	uint_fast8_t x, 
-	uint_fast8_t y, 
-	void * pv
-	);
-
-void display2_waterfall(
-	uint_fast8_t x, 
-	uint_fast8_t y, 
-	void * pv
-	);
-
 #define WSIGNFLAG 0x80	// отображается плюс или минус в зависимости от знака значения
 #define WMINUSFLAG 0x40	// отображается пробел или минус в зависимости от знака значения
 #define WWIDTHFLAG 0x3F	// оставшиеся биты под ширину поля

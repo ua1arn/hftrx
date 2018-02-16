@@ -34,6 +34,18 @@ static void dsp_latchwaterfall(
 	void * pv
 	);
 
+static void display2_spectrum(
+	uint_fast8_t x, 
+	uint_fast8_t y, 
+	void * pv
+	);
+
+static void display2_waterfall(
+	uint_fast8_t x, 
+	uint_fast8_t y, 
+	void * pv
+	);
+
 // Отображение шкалы S-метра и других измерителей
 static void display2_legend(
 	uint_fast8_t x, 
@@ -4013,7 +4025,7 @@ static void wfpalette_initialize(void)
 	{
 		for (i = 0; i < 42; ++ i)
 		{
-			wfpalette [a + i] = TFTRGB(0, 0, (int) (POWF((FLOAT_t) 0.095 * i, 4)));
+			wfpalette [a + i] = TFTRGB(0, 0, (int) (powf((float) 0.095 * i, 4)));
 		}
 		a += i;
 		for (i = 0; i < 42; ++ i)
@@ -4023,7 +4035,7 @@ static void wfpalette_initialize(void)
 		a += i;
 		for (i = 0; i < 42; ++ i)
 		{
-			wfpalette [a + i] = TFTRGB(0, 255, (int)(((FLOAT_t) 0.39 * (41 - i )) * ((FLOAT_t) 0.39 * (41 - i))) );
+			wfpalette [a + i] = TFTRGB(0, 255, (int)(((float) 0.39 * (41 - i )) * ((float) 0.39 * (41 - i))) );
 		}
 		a += i;
 		for (i = 0; i < 42; ++ i)
@@ -4050,7 +4062,7 @@ static void wfpalette_initialize(void)
 		for (i = 0; i < 64; ++ i)
 		{
 			// для i = 0..15 результат формулы = ноль
-			wfpalette [a + i] = TFTRGB(0, 0, (int) (POWF((FLOAT_t) 0.0625 * i, 4)));	// проверить результат перед попыткой применить целочисленные вычисления!
+			wfpalette [a + i] = TFTRGB(0, 0, (int) (powf((float) 0.0625 * i, 4)));	// проверить результат перед попыткой применить целочисленные вычисления!
 		}
 		a += i;
 		// a = 64
@@ -4143,7 +4155,7 @@ static void dsp_latchwaterfall(
 static ALIGNX_BEGIN GX_t sharedscr [GXSIZE(WFDX, WFDY)] ALIGNX_END;
 
 // отображение спектроанализатора
-void display2_spectrum(
+static void display2_spectrum(
 	uint_fast8_t x0, 
 	uint_fast8_t y0, 
 	void * pv
@@ -4281,7 +4293,7 @@ static void display_wfputrow(const uint8_t * p)
 }
 
 // отображение водопада
-void display2_waterfall(
+static void display2_waterfall(
 	uint_fast8_t x0, 
 	uint_fast8_t y0, 
 	void * pv
@@ -4401,7 +4413,7 @@ static void dsp_latchwaterfall(
 {
 }
 
-void display2_spectrum(
+static void display2_spectrum(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
 	void * pv
@@ -4409,7 +4421,7 @@ void display2_spectrum(
 {
 }
 
-void display2_waterfall(
+static void display2_waterfall(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
 	void * pv
