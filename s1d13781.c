@@ -1305,6 +1305,8 @@ static void rectangle3d(
 uint_fast8_t
 display_getreadystate(void)
 {
+	bitblt_getbusyflag();
+	bitblt_getbusyflag();
 	return bitblt_getbusyflag() == 0;
 }
 
@@ -2325,31 +2327,30 @@ void display_plot(
 		set_addrwr_8bit_p1p2_nc(dstaddr);
 		spi_complete();
 	#endif
-	}
 
-	/* произвести пересылку по SPI */
-	{
-		uint_fast32_t len = dx;	// количество элементов
-	#if 0//WITHSPIEXT16 && WITHSPIHWDMA
-		// Передача в индикатор по DMA	
-		hardware_spi_master_send_frame_16b(buffer, len);
-		buffer += len;
-	#else /* WITHSPIEXT16 && WITHSPIHWDMA */
-		if (len >= 2)
+		/* произвести пересылку по SPI */
 		{
-			display_putpixel_1(* buffer ++);
-			len -= 1;
-			while (len --)
-				display_putpixel_2(* buffer ++);
-			display_putpixel_complete();
+			uint_fast32_t len = dx;	// количество элементов
+		#if 0//WITHSPIEXT16 && WITHSPIHWDMA
+			// Передача в индикатор по DMA	
+			hardware_spi_master_send_frame_16b(buffer, len);
+			buffer += len;
+		#else /* WITHSPIEXT16 && WITHSPIHWDMA */
+			if (len >= 2)
+			{
+				display_putpixel_1(* buffer ++);
+				len -= 1;
+				while (len --)
+					display_putpixel_2(* buffer ++);
+				display_putpixel_complete();
+			}
+			else if (len == 1)
+			{
+				display_putpixel_1(* buffer ++);
+				display_putpixel_complete();
+			}
+		#endif /* WITHSPIEXT16 && WITHSPIHWDMA */
 		}
-		else if (len == 1)
-		{
-			display_putpixel_1(* buffer ++);
-			display_putpixel_complete();
-		}
-	#endif /* WITHSPIEXT16 && WITHSPIHWDMA */
-	}
 
 	/* закончить пересылку по SPI */
 	#if S1D_DISPLAY_BPP == 24
@@ -2364,6 +2365,7 @@ void display_plot(
 	#elif S1D_DISPLAY_BPP == 8
 		spi_unselect(targetlcd);
 	#endif
+	}
 }
 
 void display_plotstop(void)

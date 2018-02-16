@@ -4669,6 +4669,9 @@ hardware_spi_master_send_frame_16bpartial(
 
 	#endif /* CPUSTYLE_STM32H7XX */
 
+	DMA2_Stream3->CR &= ~ DMA_SxCR_EN;
+	while ((DMA2_Stream3->CR &  DMA_SxCR_EN) != 0)
+		;
 
 	#if CPUSTYLE_STM32H7XX
 		SPI1->CFG1 &= ~ SPI_CFG1_TXDMAEN; // запретить DMA по передаче
