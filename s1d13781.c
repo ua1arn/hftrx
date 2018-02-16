@@ -230,8 +230,8 @@ static void set_addw_16bit_p1p2_nc(
 {
 	// 19 bit address
 	// 16 bit data write
-	//const uint_fast32_t v = ((addr) & 0x0007FFFF) | 0x88000000;
-	const uint_fast32_t v = (addr) | 0x88000000UL;
+	//const uint_fast32_t v = ((addr) & 0x0007FFFFuL) | 0x88000000uL;
+	const uint_fast32_t v = (addr) | 0x88000000uL;
 
 
 	hardware_spi_b16_p1(v >> 16);

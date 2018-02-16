@@ -4581,7 +4581,23 @@ hardware_spi_master_send_frame_16bpartial(
 	uint_fast32_t size		/* количество пересылаемых 16-ти битных элементов */
 	)
 {
-#if CPUSTYLE_SAM9XE
+#if 0
+	// имитация
+	if (size == 1)
+	{
+		hardware_spi_b16_p1(* buffer);
+		hardware_spi_complete_b16();
+	}
+	else
+	{
+		hardware_spi_b16_p1(* buffer ++);
+		size -= 1;
+		while (size --)
+			hardware_spi_b16_p2(* buffer ++);
+		hardware_spi_complete_b16();
+	}
+
+#elif CPUSTYLE_SAM9XE
 
 	AT91C_BASE_SPI1->SPI_TPR = (unsigned long) buffer;
 	AT91C_BASE_SPI1->SPI_TCR = size;	// запуск передатчика
@@ -4877,7 +4893,6 @@ hardware_spi_master_read_frame_8bpartial(
 #endif
 }
 
-
 #if WITHSPI16BIT
 
 void hardware_spi_master_send_frame_16b(
@@ -4888,9 +4903,16 @@ void hardware_spi_master_send_frame_16b(
 {
 	hardware_spi_master_setdma16bit_tx();
 #if CPUSTYLE_R7S721
-	hardware_spi_master_send_frame_16bpartial(bufffer, size)
+	// в этом процессоре счетчик байтов 32-х разрядный
+	uint_fast32_t score;
+	for (score = 0; score < size; )
+	{
+		const uint_fast32_t chunk = ulmin(size - score, 0x7FFFFF00uL);
+		hardware_spi_master_send_frame_16bpartial(buffer + score, chunk);
+		score += chunk;
+	}
 #else
-	unsigned long score;
+	uint_fast32_t score;
 	for (score = 0; score < size; )
 	{
 		const uint_fast16_t chunk = ulmin(size - score, 0xFF00uL);
@@ -4908,9 +4930,16 @@ void hardware_spi_master_read_frame_16b(
 {
 	hardware_spi_master_setdma16bit_rx();
 #if CPUSTYLE_R7S721
-	hardware_spi_master_read_frame_16bpartial(bufffer, size)
+	// в этом процессоре счетчик байтов 32-х разрядный
+	uint_fast32_t score;
+	for (score = 0; score < size; )
+	{
+		const uint_fast32_t chunk = ulmin(size - score, 0x7FFFFF00uL);
+		hardware_spi_master_read_frame_16bpartial(buffer + score, chunk);
+		score += chunk;
+	}
 #else
-	unsigned long score;
+	uint_fast32_t score;
 	for (score = 0; score < size; )
 	{
 		const uint_fast16_t chunk = ulmin(size - score, 0xFF00uL);
@@ -4932,7 +4961,7 @@ void hardware_spi_master_send_frame(
 #if CPUSTYLE_R7S721
 	hardware_spi_master_send_frame_8bpartial(bufffer, size)
 #else
-	unsigned long score;
+	uint_fast32_t score;
 	for (score = 0; score < size; )
 	{
 		const uint_fast16_t chunk = ulmin(size - score, 0xFF00uL);
@@ -4951,13 +4980,13 @@ void hardware_spi_master_read_frame(
 {
 	hardware_spi_master_setdma8bit_rx();
 #if CPUSTYLE_R7S721
-	hardware_spi_master_read_frame_partial(bufffer, size)
+	hardware_spi_master_read_frame_8bpartial(bufffer, size)
 #else
-	unsigned long score;
+	uint_fast32_t score;
 	for (score = 0; score < size; )
 	{
 		const uint_fast16_t chunk = ulmin(size - score, 0xFF00uL);
-		hardware_spi_master_read_frame_partial(buffer + score, chunk);
+		hardware_spi_master_read_frame_8bpartial(buffer + score, chunk);
 		score += chunk;
 	}
 #endif
