@@ -5238,7 +5238,6 @@ void hightests(void)
 			DBY_1 = ROWS2GRID(topreserved)
 		};
 		debug_printf_P(PSTR("test: dx=%d, dy=%d\n"), dx, dy);
-		static ALIGNX_BEGIN PACKEDCOLOR_T scr [GXSIZE(dx, dy)] ALIGNX_END;
 
 
 		/* отображение надписей самым маленьким шрифтом (8 точек) */
@@ -5273,6 +5272,8 @@ void hightests(void)
 
 	#if LCDMODE_COLORED
 
+		static ALIGNX_BEGIN PACKEDCOLOR_T scr [GXSIZE(dx, dy)] ALIGNX_END;
+
 		display_colorbuffer_fill(scr, dx, dy, COLOR_WHITE);
 		display_colorbuffer_show(scr, dx, dy, 0, GRID2Y(topreserved));
 		//for (;;)
@@ -5303,6 +5304,8 @@ void hightests(void)
 			
 		}
 	#else /* LCDMODE_COLORED */
+
+		static ALIGNX_BEGIN GX_t scr [MGSIZE(dx, dy)] ALIGNX_END;
 
 		display_setcolors(COLOR_WHITE, COLOR_BLACK);
 		

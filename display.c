@@ -136,7 +136,7 @@ void display_showbuffer(
 {
 #if LCDMODE_S1D13781
 
-	display_showbufferXXX(buffer, dx, dy, col, row);
+	display_showbuffer_b16(buffer, dx, dy, col, row);
 
 #else /* LCDMODE_S1D13781 */
 
@@ -161,6 +161,7 @@ void display_showbuffer(
 
 #if LCDMODE_S1D13781
 
+	// младший ьит левее
 	static const uint_fast16_t mapcolumn [16] =
 	{
 		0x0001, 0x0002, 0x0004, 0x0008, 0x0010, 0x0020, 0x0040, 0x0080, // биты дл€ манипул€ций с видеобуфером
@@ -170,6 +171,7 @@ void display_showbuffer(
 #elif LCDMODE_UC1608 || LCDMODE_UC1601
 
 	/* старшие биты соответствуют верхним пиксел€м изображени€ */
+	// млдший бит ниже в растре
 	static const uint_fast8_t mapcolumn [8] =
 	{
 		0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01, // биты дл€ манипул€ций с видеобуфером
@@ -177,6 +179,7 @@ void display_showbuffer(
 #else /* LCDMODE_UC1608 || LCDMODE_UC1601 */
 
 	/* младшие биты соответствуют верхним пиксел€м изображени€ */
+	// млдший бит выше в растре
 	static const uint_fast8_t mapcolumn [8] =
 	{
 		0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, // биты дл€ манипул€ций с видеобуфером
@@ -739,7 +742,7 @@ void display_plotstart(
 }
 
 void display_plot(
-	const GX_t * buffer, 
+	const PACKEDCOLOR_T * buffer, 
 	uint_fast16_t dx,	// –азмеры окна в пиксел€х
 	uint_fast16_t dy
 	)

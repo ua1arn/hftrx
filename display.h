@@ -260,21 +260,24 @@
 #endif /* LCDMODE_LTDC */
 
 
-#if 0//LCDMODE_S1D13781
+#if LCDMODE_S1D13781
 	// биты слова буфера располагаются на экране горизонтально
 	// старший битт левее
-	typedef uint16_t GX_t;	/* тип элмента буфера */
-	#define GXSIZE(dx, dy)	((dy) * (((unsigned long) (dx) + 15) / 16))
-	//#define GXROW(buff, dx, dy, y)	((dx + 7) / 16 * 2)
+	typedef uint16_t GX_t;	/* тип элмента буфера для выдачи монохромного растра */
+	#define MGSIZE(dx, dy)	((dx) * (((unsigned long) (dy) + 15) / 16))	// размер буфера для монохромного растра
+	#define GXSIZE(dx, dy)	((unsigned long) (dx) * (dy))	// размер буфера для цветного растра
 #elif LCDMODE_COLORED
-	// пиксели буфера располагаются на экране вертикально
-	typedef PACKEDCOLOR_T GX_t;	/* тип элемента буфера */
-	#define GXSIZE(dx, dy)	((unsigned long) (dx) * (dy))
+	// биты слова буфера располагаются на экране горизонтально
+	// старший битт левее
+	typedef uint8_t GX_t;	/* тип элмента буфера для выдачи монохромного растра */
+	#define MGSIZE(dx, dy)	((dx) * (((unsigned long) (dy) + 7) / 8))	// размер буфера для монохромного растра
+	#define GXSIZE(dx, dy)	((unsigned long) (dx) * (dy))	// размер буфера для цветного растра
 #else	/* LCDMODE_S1D13781 */
-	// биты байта буфера располагаются на экране вертикально
-	// старший сврху (на монохромном дисплее).
-	typedef uint8_t GX_t;	/* тип элемента буфера */
-	#define GXSIZE(dx, dy)	((dx) * (((unsigned long) (dy) + 7) / 8))
+	// биты слова буфера располагаются на экране горизонтально
+	// старший битт левее
+	typedef uint8_t GX_t;	/* тип элмента буфера для выдачи монохромного растра */
+	#define MGSIZE(dx, dy)	((dx) * (((unsigned long) (dy) + 7) / 8))	// размер буфера для монохромного растра
+	#define GXSIZE(dx, dy)	((unsigned long) (dx) * (dy))	// размер буфера для цветного растра
 #endif	/* */
 
 // определение основных цветов
@@ -514,7 +517,7 @@ void display_showbuffer(
 	uint_fast8_t row	// сетка
 	);
 /* выдать на дисплей монохромный буфер с размерами dx * dy битов */
-void display_showbufferXXX(
+void display_showbuffer_b16(
 	const GX_t * buffer,
 	unsigned dx,	// пиксели
 	unsigned dy,	// пиксели
