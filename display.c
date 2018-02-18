@@ -136,7 +136,7 @@ void display_showbuffer(
 {
 #if LCDMODE_S1D13781
 
-	display_showbuffer_b16(buffer, dx, dy, col, row);
+	s1d13781_showbuffer(buffer, dx, dy, col, row);
 
 #else /* LCDMODE_S1D13781 */
 

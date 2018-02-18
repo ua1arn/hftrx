@@ -517,7 +517,7 @@ void display_showbuffer(
 	uint_fast8_t row	// сетка
 	);
 /* выдать на дисплей монохромный буфер с размерами dx * dy битов */
-void display_showbuffer_b16(
+void s1d13781_showbuffer(
 	const GX_t * buffer,
 	unsigned dx,	// пиксели
 	unsigned dy,	// пиксели

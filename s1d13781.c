@@ -136,8 +136,8 @@ s1d13781_unselect(void)
 
 // Commands:
 // 0x80 - 8 bit write
-// 0xc0 - 8 bit read
 // 0x88 - 16 bit write
+// 0xc0 - 8 bit read
 // 0xc8 - 16 bit read
 
 // Sets address for writes and complete spi transfer
@@ -148,7 +148,7 @@ static void set_addrwr(
 #if WITHSPIEXT16
 	// 19 bit address
 	// 16 bit data write
-	const uint_fast32_t v = (addr) | 0x88000000UL;
+	const uint_fast32_t v = (addr) | 0x88000000uL;
 
 	hardware_spi_b16_p1(v >> 16);
 	hardware_spi_b16_p2(v >> 0);
@@ -2134,7 +2134,7 @@ display_wrdatabar_end(void)
 // отрисовать буфер на дисплее.
 // работа с буфером в видеопамяти с начальным смещением scratchbufbase
 /* выдать на дисплей монохромный буфер с размерами dx * dy битов */
-void display_showbuffer_b16(
+void s1d13781_showbuffer(
 	const GX_t * buffer,
 	unsigned dx,	// пиксели
 	unsigned dy,	// пиксели
