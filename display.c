@@ -8,6 +8,7 @@
 //
 
 #include "hardware.h"
+#include "spifuncs.h"	// hardware_spi_master_send_frame
 
 #include "display.h"
 #include "formats.h"
@@ -140,6 +141,10 @@ void display_showbuffer(
 
 #else /* LCDMODE_S1D13781 */
 
+	#if WITHSPIHWDMA && (LCDMODE_UC1608 | 0)
+		arm_hardware_flush((uintptr_t) buffer, MGSIZE(dx, dy));	// количество байтов
+	#endif
+
 	uint_fast8_t lowhalf = (dy) / 8 - 1;
 	if (lowhalf == 0)
 		return;
@@ -151,8 +156,12 @@ void display_showbuffer(
 		display_plotfrom(GRID2X(col), GRID2Y(row) + lowhalf * 8);		// курсор в начало первой строки
 		// выдача горизонтальной полосы
 		display_wrdatabar_begin();
+	#if WITHSPIHWDMA && (LCDMODE_UC1608 | 0)
+		hardware_spi_master_send_frame(p, dx);
+	#else
 		for (pos = 0; pos < dx; ++ pos)
 			display_barcolumn(p [pos]);	// Выдать восемь цветных пикселей, младший бит - самый верхний в растре
+	#endif
 		display_wrdatabar_end();
 	} while (lowhalf --);
 

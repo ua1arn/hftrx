@@ -5230,7 +5230,7 @@ void hightests(void)
 		// Движущиеся картинки
 		enum 
 		{ 
-			topreserved = 10,
+			topreserved = 6,
 			bufY = DIM_Y - GRID2Y(ROWS2GRID(topreserved)), 
 			dx = DIM_X, dy = bufY, 
 			// куда выводить
@@ -5270,7 +5270,7 @@ void hightests(void)
 		} while (lowhalf --);
 	#endif
 
-	#if LCDMODE_COLORED
+	#if 0//LCDMODE_COLORED
 
 		static ALIGNX_BEGIN PACKEDCOLOR_T scr [GXSIZE(dx, dy)] ALIGNX_END;
 
