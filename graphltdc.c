@@ -483,9 +483,12 @@ static void LCD_LayerInit(
 void
 arm_hardware_ltdc_initialize(void)
 {
+	debug_printf_P(PSTR("arm_hardware_ltdc_initialize start\n"));
+
 	const unsigned rowsize = sizeof framebuff [0];	// размер одной строки в байтах
 	const unsigned rowsize2 = (sizeof (PACKEDCOLOR_T) * DIM_SECOND);
 	ASSERT(rowsize == rowsize2);
+	debug_printf_P(PSTR("arm_hardware_ltdc_initialize: framebuff=%p, rowsize=%u\n"), framebuff, rowsize);
 
 	/* Initialize the LCD */
 	//LCD_Init();
@@ -509,7 +512,7 @@ arm_hardware_ltdc_initialize(void)
 #endif /* CPUSTYLE_STM32H7XX */
 
 	/* Configure the LCD Control pins */
-	HARDWARE_LTDC_INITIALIZE();	// подключение к вывоам процессора сигналов периферийного контроллера
+	HARDWARE_LTDC_INITIALIZE();	// подключение к выводам процессора сигналов периферийного контроллера
 
 	/* Enable Pixel Clock --------------------------------------------------------*/
 
@@ -666,6 +669,8 @@ arm_hardware_ltdc_initialize(void)
 
 	/* LTDC reload configuration */  
 	LTDC->SRCR = LTDC_SRCR_IMR;	/*!< Immediately Reload. */
+
+	debug_printf_P(PSTR("arm_hardware_ltdc_initialize done\n"));
 }
 
 #endif /* CPUSTYLE_STM32F && LCDMODE_LTDC */

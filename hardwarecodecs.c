@@ -620,6 +620,7 @@ hardware_i2s2_master_tx_initialize(void)		/* инициализация I2S2, STM32F4xx */
 static void 
 hardware_i2s3_slave_rx_initialize(void)		/* инициализация I2S3 STM32F4xx */
 {
+	debug_printf_P(PSTR("hardware_i2s3_slave_rx_initialize\n"));
 #if CPUSTYLE_STM32H7XX
 	RCC->APB1LENR |= RCC_APB1LENR_SPI3EN; // Подать тактирование   
 	__DSB();
@@ -648,7 +649,7 @@ hardware_i2s3_slave_rx_initialize(void)		/* инициализация I2S3 STM32F4xx */
 	// Подключить I2S к выводам процессора
 	I2S2HW_INITIALIZE();
 
-	debug_printf_P(PSTR("hardware_i2s3_slave_rx_initialize\n"));
+	debug_printf_P(PSTR("hardware_i2s3_slave_rx_initialize done\n"));
 }
 
 #endif /* WITHI2SHWRXSLAVE */
@@ -987,6 +988,7 @@ static void hardware_sai1_sai2_clock_selection(void)
 			;
 	#endif /* defined (STM32F446xx) */
 #endif /* WITHSAICLOCKFROMI2S */
+	debug_printf_P(PSTR("hardware_sai1_sai2_clock_selection done\n"));
 }
 
 #endif /* WITHSAI1HW || WITHSAI2HW */
@@ -2669,12 +2671,12 @@ void hardware_audiocodec_enable(void)
 // Интерфейс к НЧ кодеку
 void hardware_audiocodec_initialize(void)
 {
-	//debug_printf_P(PSTR("hardware_audiocodec_initialize start\n"));
+	debug_printf_P(PSTR("hardware_audiocodec_initialize start\n"));
 
 	audiocodechw.initialize_rx();
 	audiocodechw.initialize_tx();
 
-	//debug_printf_P(PSTR("hardware_audiocodec_initialize done\n"));
+	debug_printf_P(PSTR("hardware_audiocodec_initialize done\n"));
 }
 
 #endif /* WITHI2SHW */
@@ -2695,12 +2697,12 @@ void hardware_fpgacodec_enable(void)
 // Если есть WITHSAICLOCKFROMI2S	- это инициализируется после I2S
 void hardware_fpgacodec_initialize(void)
 {
-	//debug_printf_P(PSTR("hardware_fpgacodec_initialize start\n"));
+	debug_printf_P(PSTR("hardware_fpgacodec_initialize start\n"));
 
 	fpgacodechw.initialize_rx();
 	fpgacodechw.initialize_tx();
 
-	//debug_printf_P(PSTR("hardware_fpgacodec_initialize done\n"));
+	debug_printf_P(PSTR("hardware_fpgacodec_initialize done\n"));
 }
 
 #endif /* WITHSAI1HW */
@@ -2765,6 +2767,7 @@ void hardware_fpgaspectrum_initialize(void)
 
 void hardware_dac_initialize(void)		/* инициализация DAC на STM32F4xx */
 {
+	debug_printf_P(PSTR("hardware_dac_initialize start\n"));
 #if CPUSTYLE_STM32H7XX
 
 	RCC->APB1LENR |= RCC_APB1LENR_DAC12EN; //подать тактирование 
@@ -2777,6 +2780,7 @@ void hardware_dac_initialize(void)		/* инициализация DAC на STM32F4xx */
 
 #endif
 	HARDWARE_DAC_INITIALIZE();	/* включить нужные каналы */
+	debug_printf_P(PSTR("hardware_dac_initialize done\n"));
 }
 // вывод 12-битного значения на ЦАП - канал 1
 void hardware_dac_ch1_setvalue(uint_fast16_t v)

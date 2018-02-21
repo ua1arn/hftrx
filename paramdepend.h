@@ -893,7 +893,7 @@
 #endif /* LCDMODE_RDX0154 */
 
 
-#if LCDMODE_LQ043T3DX02K		/* PSP-1000 with S1D113780 */
+#if LCDMODE_LQ043T3DX02K		/* PSP-1000 with S1D113780, or attached to LTDC hardware controller */
 	//#define LCDMODE_HARD_SPI	1	/* SPI interface */
 	//#define LCDMODE_SPI_RN	1	/* SPI only, with Reset, no Address need */
 	#define DIM_X 480

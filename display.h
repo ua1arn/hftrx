@@ -242,6 +242,7 @@
 
 	#else /* LCDMODE_LTDC_L8 */
 
+		//#define LCDMODE_RGB565 1
 		typedef uint_fast16_t COLOR_T;
 		typedef uint16_t PACKEDCOLOR_T;
 
@@ -678,12 +679,14 @@ uint_fast8_t hamradio_get_datamode(void);	// источник звука для передачи - USB A
 	typedef PACKEDCOLOR_T FRAMEBUFF_T [DIM_FIRST][DIM_SECOND];	//L8 (8-bit Luminance or CLUT)
 
 	#if CPUSTYLE_R7S721
-		#define SDRAM_BANK_ADDR     ((uint32_t)0x20200000)
+		#define SDRAM_BANK_ADDR     ((uintptr_t) 0x20200000)
+	#elif STM32H743xx
+		#define SDRAM_BANK_ADDR     ((uintptr_t) 0x30000000)
 	#elif CPUSTYLE_STM32F4XX
-		#define SDRAM_BANK_ADDR     ((uint32_t)0xD0000000)
+		#define SDRAM_BANK_ADDR     ((uintptr_t) 0xD0000000)
 	#endif
 
-	#if LCDMODE_LTDCSDRAMBUFF
+	#if defined (SDRAM_BANK_ADDR) || LCDMODE_LTDCSDRAMBUFF
 		#define framebuff (* (FRAMEBUFF_T *) SDRAM_BANK_ADDR)
 	#else /* LCDMODE_LTDCSDRAMBUFF */
 		#define framebuff (framebuff0)

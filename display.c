@@ -14,9 +14,9 @@
 #include "formats.h"
 #include <string.h>
 
-#if LCDMODE_LTDC
+#if LCDMODE_LTDC && ! defined (SDRAM_BANK_ADDR)
 	// буфер экрана
-	FRAMEBUFF_T framebuff0;	//L8 (8-bit Luminance or CLUT)
+	ALIGNX_BEGIN FRAMEBUFF_T framebuff0 ALIGNX_END;	//L8 (8-bit Luminance or CLUT)
 #endif /* LCDMODE_LTDC */
 
 #if LCDMODE_COLORED
@@ -349,6 +349,7 @@ void display_pixelbuffer_xor(
 /* вызывается при запрещённых прерываниях. */
 void display_hardware_initialize(void)
 {
+	debug_printf_P(PSTR("display_hardware_initialize start\n"));
 
 #if LCDMODE_LTDC 
 	#if LCDMODE_LTDCSDRAMBUFF
@@ -368,6 +369,7 @@ void display_hardware_initialize(void)
 		DISPLAY_BUS_INITIALIZE();	// see LCD_CONTROL_INITIALIZE, LCD_DATA_INITIALIZE_WRITE
 	#endif /* LCDMODE_HD44780 && (LCDMODE_SPI == 0) */
 #endif
+	debug_printf_P(PSTR("display_hardware_initialize done\n"));
 }
 
 #if LCDMODE_LTDC

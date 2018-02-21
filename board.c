@@ -5951,6 +5951,8 @@ static void board_fpga_loader_wait_AS(void)
 
 void board_fpga_fir_initialize(void)
 {
+	debug_printf_P(PSTR("board_fpga_fir_initialize start\n"));
+
 	TARGET_FPGA_FIR_INITIALIZE();
 
 	hardware_spi_master_setfreq(SPIC_SPEEDUFAST, SPISPEEDUFAST);
@@ -5962,6 +5964,8 @@ void board_fpga_fir_initialize(void)
 	board_update();
 	board_set_flt_reset_n(1);	// снять сигнал сброса
 	board_update();
+
+	debug_printf_P(PSTR("board_fpga_fir_initialize done\n"));
 }
 
 static void board_fpga_fir_strobe(void)	// FIR index
