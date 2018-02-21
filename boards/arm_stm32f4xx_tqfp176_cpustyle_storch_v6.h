@@ -672,7 +672,8 @@
 		/* Control & synchronisation signals */ \
 		arm_hardware_pioi_altfn50((1U << 9), GPIO_AF_LTDC);		/* VSYNC */ \
 		arm_hardware_pioi_altfn50((1U << 10), GPIO_AF_LTDC);	/* HSYNC */ \
-		arm_hardware_pioe_altfn50((1U << 13), GPIO_AF_LTDC);	/* DE */ \
+		/* arm_hardware_pioe_altfn50((1U << 13), GPIO_AF_LTDC); */	/* DE */ \
+		arm_hardware_pioe_outputs((1U << 13), (1U << 13));	/* DE=1 (DISP, pin 31) */ \
 		arm_hardware_pioe_altfn50((1U << 14), GPIO_AF_LTDC);	/* CLK */ \
 		/* RED */ \
 		arm_hardware_pioh_altfn50((1U << 8), GPIO_AF_LTDC);		/* R2 */ \
