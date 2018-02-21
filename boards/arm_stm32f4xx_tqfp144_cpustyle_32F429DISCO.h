@@ -563,6 +563,10 @@ enum
 				arm_hardware_piob_altfn50((1U << 0) | (1U << 1), GPIO_AF_LTDC9); \
 				arm_hardware_piog_altfn50((1U << 10) | (1U << 12), GPIO_AF_LTDC9); \
 			} while (0)
+		/* управление состоянием сигнала DISP панели */
+		#define HARDWARE_LTDC_SET_DISP(state) do { \
+		} while (0)
+
 	#endif /* LCDMODE_LTDC */
 
 #endif /* ARM_STM32FXXX_TQFP144_CPUSTYLE_V8C_H_INCLUDED */

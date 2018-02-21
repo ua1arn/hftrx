@@ -673,7 +673,7 @@
 		arm_hardware_pioi_altfn50((1U << 9), GPIO_AF_LTDC);		/* VSYNC */ \
 		arm_hardware_pioi_altfn50((1U << 10), GPIO_AF_LTDC);	/* HSYNC */ \
 		/* arm_hardware_pioe_altfn50((1U << 13), GPIO_AF_LTDC); */	/* DE */ \
-		arm_hardware_pioe_outputs((1U << 13), (1U << 13));	/* DE=1 (DISP, pin 31) */ \
+		arm_hardware_pioe_outputs((1U << 13), 0 * (1U << 13));	/* DE=0 (DISP, pin 31) */ \
 		arm_hardware_pioe_altfn50((1U << 14), GPIO_AF_LTDC);	/* CLK */ \
 		/* RED */ \
 		arm_hardware_pioh_altfn50((1U << 8), GPIO_AF_LTDC);		/* R2 */ \
@@ -699,6 +699,14 @@
 		/* step-up backlight converter */ \
 		arm_hardware_pioe_outputs((1U << 0), (1U << 0));		/* PE0 - enable backlight */ \
 		arm_hardware_piob_opendrain((1U << 9) | (1U << 8), (1U << 9) | (1U << 8));	/* PB9:PB8 - backlight current adjust */ \
+	} while (0)
+	/* управление состоянием сигнала DISP панели */
+	#define HARDWARE_LTDC_SET_DISP(state) do { \
+		const uint32_t VSYNC = (1U << 9); \
+		const uint32_t mask = (1U << 13); \
+		while ((GPIOI->IDR & VSYNC) != 0) ; /* дождаться 0 */ \
+		while ((GPIOI->IDR & VSYNC) == 0) ; /* дождаться 1 */ \
+		arm_hardware_pioe_outputs(mask, ((state) != 0) * mask);	/* DE=DISP, pin 31 - можно менять только при VSYNC=1 */ \
 	} while (0)
 #endif /* LCDMODE_LTDC */
 

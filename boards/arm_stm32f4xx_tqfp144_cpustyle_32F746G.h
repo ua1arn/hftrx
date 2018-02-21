@@ -654,7 +654,7 @@
 		GPIO_AF_LTDC9 = 9  /* LCD-TFT Alternate Function mapping */
 	};
 	#define HARDWARE_LTDC_INITIALIZE() do { \
-		arm_hardware_pioi_outputs((1U << 12), 1 * (1U << 12));	/* PI12 DISP=constant high */ \
+		arm_hardware_pioi_outputs((1U << 12), 0 * (1U << 12));	/* PI12 DISP=constant high */ \
 		/* Control & synchronisation signals */ \
 		arm_hardware_pioi_altfn50((1U << 9), GPIO_AF_LTDC);		/* VSYNC */ \
 		arm_hardware_pioi_altfn50((1U << 10), GPIO_AF_LTDC);	/* HSYNC */ \
@@ -688,6 +688,14 @@
 		arm_hardware_piok_altfn50((1U << 5), GPIO_AF_LTDC);		/* B6 */ \
 		arm_hardware_piok_altfn50((1U << 6), GPIO_AF_LTDC);		/* B7 */ \
 		} while (0)
+	/* управление состоянием сигнала DISP панели */
+	#define HARDWARE_LTDC_SET_DISP(state) do { \
+		const uint32_t VSYNC = (1U << 9); \
+		const uint32_t mask = (1U << 12); \
+		while ((GPIOI->IDR & VSYNC) != 0) ; /* дождаться 0 */ \
+		while ((GPIOI->IDR & VSYNC) == 0) ; /* дождаться 1 */ \
+		arm_hardware_pioi_outputs(mask, ((state) != 0) * mask);	/* DE=DISP, pin 31 - можно менять только при VSYNC=1 */ \
+	} while (0)
 #endif /* LCDMODE_LTDC */
 
 #endif /* ARM_STM32F4XX_TQFP144_CPUSTYLE_32F746G_H_INCLUDED */
