@@ -7026,7 +7026,6 @@ lowlevel_stm32h7xx_pll_initialize(void)
 	RCC->PLLCKSELR = (RCC->PLLCKSELR & ~ RCC_PLLCKSELR_DIVM1) | 
 		((REF1_DIV << RCC_PLLCKSELR_DIVM1_Pos) & RCC_PLLCKSELR_DIVM1) |	// Reference divider - не требуетс€ корректировань число
 		0;
-		
 	// 
 	const uint32_t stm32h7xx_pllq = calcdivround2(PLL_FREQ, 48000000uL);	//  ак было сделано при инициализации PLL
 	RCC->PLL1DIVR = (RCC->PLL1DIVR & ~ (RCC_PLL1DIVR_N1 | RCC_PLL1DIVR_P1 | RCC_PLL1DIVR_Q1)) |
@@ -7045,12 +7044,39 @@ lowlevel_stm32h7xx_pll_initialize(void)
 		0 * RCC_PLLCFGR_PLL1RGE_0 |	// 00: The PLL1 input (ref1_ck) clock range frequency is between 1 and 2 MHz
 		0;
 
-	RCC->CR |= RCC_CR_PLLON;				// ¬ключил PLL
+	RCC->CR |= RCC_CR_PLL1ON;				// ¬ключил PLL
 
 
-	while ((RCC->CR & RCC_CR_PLLRDY) == 0)	// пока заработает PLL
+	while ((RCC->CR & RCC_CR_PLL1RDY) == 0)	// пока заработает PLL
 		;
 
+#if LCDMODE_LTDC && ! WITHUSEPLL3
+	#error WITHUSEPLL3 should be defined if LCDMODE_LTDC used.
+#endif /* LCDMODE_LTDC && ! WITHUSEPLL3 */
+
+#if WITHUSEPLL3
+
+	RCC->PLLCKSELR = (RCC->PLLCKSELR & ~ RCC_PLLCKSELR_DIVM3) | 
+		((REF1_DIV << RCC_PLLCKSELR_DIVM3_Pos) & RCC_PLLCKSELR_DIVM3) |	// Reference divider - не требуетс€ корректировань число
+		0;
+	// 
+	const uint32_t ltdc_divr = calcdivround2(PLL_FREQ, 66000000uL);
+	RCC->PLL3DIVR = (RCC->PLL3DIVR & ~ (RCC_PLL3DIVR_N3 | RCC_PLL3DIVR_R3)) |
+		(((REF1_MUL - 1) << RCC_PLL3DIVR_N3_Pos) & RCC_PLL3DIVR_N3) |
+		(((ltdc_divr - 1) << RCC_PLL3DIVR_R3_Pos) & RCC_PLL3DIVR_R3) |	// нужно дл€ нормального переключени€ SPI clock USB clock
+		0;
+	RCC->PLLCFGR = (RCC->PLLCFGR & ~ (RCC_PLLCFGR_DIVR3EN | RCC_PLLCFGR_PLL3RGE)) |
+		RCC_PLLCFGR_DIVR3EN |	// This bit can be written only when the PLL3 is disabled (PLL3ON = С0Т and PLL3RDY = С0Т).
+		0 * RCC_PLLCFGR_PLL3RGE_0 |	// 00: The PLL1 input (ref1_ck) clock range frequency is between 1 and 2 MHz
+		0;
+
+	RCC->CR |= RCC_CR_PLL3ON;				// ¬ключил PLL3
+
+
+	while ((RCC->CR & RCC_CR_PLL3RDY) == 0)	// пока заработает PLL
+		;
+
+#endif /* WITHUSEPLL3 */
 
 	const portholder_t flash_acr_latency = HARDWARE_FLASH_LATENCY; // «адержка дл€ работы с пам€тью 5 WS for 168 MHz at 3.3 volt
 	/* Ѕлок настройки ‘ЋЁЎ */

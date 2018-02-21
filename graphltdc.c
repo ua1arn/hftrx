@@ -305,55 +305,55 @@ static void
 LTDC_LayerInit(LTDC_Layer_TypeDef* LTDC_Layerx, const LTDC_Layer_InitTypeDef* LTDC_Layer_InitStruct)
 {
 
-  uint32_t whsppos = 0;
-  uint32_t wvsppos = 0;
-  uint32_t dcgreen = 0;
-  uint32_t dcred = 0;
-  uint32_t dcalpha = 0;
-  uint32_t cfbp = 0;
+	uint32_t whsppos = 0;
+	uint32_t wvsppos = 0;
+	uint32_t dcgreen = 0;
+	uint32_t dcred = 0;
+	uint32_t dcalpha = 0;
+	uint32_t cfbp = 0;
 
-  /* Configures the horizontal start and stop position */
-  whsppos = LTDC_Layer_InitStruct->LTDC_HorizontalStop << 16;
-  LTDC_Layerx->WHPCR &= ~(LTDC_LxWHPCR_WHSTPOS | LTDC_LxWHPCR_WHSPPOS);
-  LTDC_Layerx->WHPCR |= (LTDC_Layer_InitStruct->LTDC_HorizontalStart | whsppos);
+	/* Configures the horizontal start and stop position */
+	whsppos = LTDC_Layer_InitStruct->LTDC_HorizontalStop << 16;
+	LTDC_Layerx->WHPCR &= ~(LTDC_LxWHPCR_WHSTPOS | LTDC_LxWHPCR_WHSPPOS);
+	LTDC_Layerx->WHPCR |= (LTDC_Layer_InitStruct->LTDC_HorizontalStart | whsppos);
 
-  /* Configures the vertical start and stop position */
-  wvsppos = LTDC_Layer_InitStruct->LTDC_VerticalStop << 16;
-  LTDC_Layerx->WVPCR &= ~(LTDC_LxWVPCR_WVSTPOS | LTDC_LxWVPCR_WVSPPOS);
-  LTDC_Layerx->WVPCR |= (LTDC_Layer_InitStruct->LTDC_VerticalStart | wvsppos);
+	/* Configures the vertical start and stop position */
+	wvsppos = LTDC_Layer_InitStruct->LTDC_VerticalStop << 16;
+	LTDC_Layerx->WVPCR &= ~(LTDC_LxWVPCR_WVSTPOS | LTDC_LxWVPCR_WVSPPOS);
+	LTDC_Layerx->WVPCR |= (LTDC_Layer_InitStruct->LTDC_VerticalStart | wvsppos);
 
-  /* Specifies the pixel format */
-  LTDC_Layerx->PFCR &= ~(LTDC_LxPFCR_PF);
-  LTDC_Layerx->PFCR |= (LTDC_Layer_InitStruct->LTDC_PixelFormat);
+	/* Specifies the pixel format */
+	LTDC_Layerx->PFCR &= ~(LTDC_LxPFCR_PF);
+	LTDC_Layerx->PFCR |= (LTDC_Layer_InitStruct->LTDC_PixelFormat);
 
-  /* Configures the default color values */
-  dcgreen = (LTDC_Layer_InitStruct->LTDC_DefaultColorGreen << 8);
-  dcred = (LTDC_Layer_InitStruct->LTDC_DefaultColorRed << 16);
-  dcalpha = (LTDC_Layer_InitStruct->LTDC_DefaultColorAlpha << 24);
-  LTDC_Layerx->DCCR &=  ~(LTDC_LxDCCR_DCBLUE | LTDC_LxDCCR_DCGREEN | LTDC_LxDCCR_DCRED | LTDC_LxDCCR_DCALPHA);
-  LTDC_Layerx->DCCR |= (LTDC_Layer_InitStruct->LTDC_DefaultColorBlue | dcgreen | \
-                        dcred | dcalpha);
+	/* Configures the default color values */
+	dcgreen = (LTDC_Layer_InitStruct->LTDC_DefaultColorGreen << 8);
+	dcred = (LTDC_Layer_InitStruct->LTDC_DefaultColorRed << 16);
+	dcalpha = (LTDC_Layer_InitStruct->LTDC_DefaultColorAlpha << 24);
+	LTDC_Layerx->DCCR &=  ~(LTDC_LxDCCR_DCBLUE | LTDC_LxDCCR_DCGREEN | LTDC_LxDCCR_DCRED | LTDC_LxDCCR_DCALPHA);
+	LTDC_Layerx->DCCR |= (LTDC_Layer_InitStruct->LTDC_DefaultColorBlue | dcgreen | \
+						dcred | dcalpha);
 
-  /* Specifies the constant alpha value */      
-  LTDC_Layerx->CACR &= ~(LTDC_LxCACR_CONSTA);
-  LTDC_Layerx->CACR |= (LTDC_Layer_InitStruct->LTDC_ConstantAlpha);
+	/* Specifies the constant alpha value */      
+	LTDC_Layerx->CACR &= ~(LTDC_LxCACR_CONSTA);
+	LTDC_Layerx->CACR |= (LTDC_Layer_InitStruct->LTDC_ConstantAlpha);
 
-  /* Specifies the blending factors */
-  LTDC_Layerx->BFCR &= ~(LTDC_LxBFCR_BF2 | LTDC_LxBFCR_BF1);
-  LTDC_Layerx->BFCR |= (LTDC_Layer_InitStruct->LTDC_BlendingFactor_1 | LTDC_Layer_InitStruct->LTDC_BlendingFactor_2);
+	/* Specifies the blending factors */
+	LTDC_Layerx->BFCR &= ~(LTDC_LxBFCR_BF2 | LTDC_LxBFCR_BF1);
+	LTDC_Layerx->BFCR |= (LTDC_Layer_InitStruct->LTDC_BlendingFactor_1 | LTDC_Layer_InitStruct->LTDC_BlendingFactor_2);
 
-  /* Configures the color frame buffer start address */
-  LTDC_Layerx->CFBAR &= ~(LTDC_LxCFBAR_CFBADD);
-  LTDC_Layerx->CFBAR |= (LTDC_Layer_InitStruct->LTDC_CFBStartAdress);
+	/* Configures the color frame buffer start address */
+	LTDC_Layerx->CFBAR &= ~(LTDC_LxCFBAR_CFBADD);
+	LTDC_Layerx->CFBAR |= (LTDC_Layer_InitStruct->LTDC_CFBStartAdress);
 
-  /* Configures the color frame buffer pitch in byte */
-  cfbp = (LTDC_Layer_InitStruct->LTDC_CFBPitch << 16);
-  LTDC_Layerx->CFBLR  &= ~(LTDC_LxCFBLR_CFBLL | LTDC_LxCFBLR_CFBP);
-  LTDC_Layerx->CFBLR  |= (LTDC_Layer_InitStruct->LTDC_CFBLineLength | cfbp);
+	/* Configures the color frame buffer pitch in byte */
+	cfbp = (LTDC_Layer_InitStruct->LTDC_CFBPitch << 16);
+	LTDC_Layerx->CFBLR  &= ~(LTDC_LxCFBLR_CFBLL | LTDC_LxCFBLR_CFBP);
+	LTDC_Layerx->CFBLR  |= (LTDC_Layer_InitStruct->LTDC_CFBLineLength | cfbp);
 
-  /* Configures the frame buffer line number */
-  LTDC_Layerx->CFBLNR  &= ~(LTDC_LxCFBLNR_CFBLNBR);
-  LTDC_Layerx->CFBLNR  |= (LTDC_Layer_InitStruct->LTDC_CFBLineNumber);
+	/* Configures the frame buffer line number */
+	LTDC_Layerx->CFBLNR  &= ~(LTDC_LxCFBLNR_CFBLNBR);
+	LTDC_Layerx->CFBLNR  |= (LTDC_Layer_InitStruct->LTDC_CFBLineNumber);
 
 }
 /**
@@ -367,45 +367,44 @@ LTDC_LayerInit(LTDC_Layer_TypeDef* LTDC_Layerx, const LTDC_Layer_InitTypeDef* LT
 
 static void LTDC_Init(LTDC_InitTypeDef* LTDC_InitStruct)
 {
-  uint32_t horizontalsync = 0;
-  uint32_t accumulatedHBP = 0;
-  uint32_t accumulatedactiveW = 0;
-  uint32_t totalwidth = 0;
-  uint32_t backgreen = 0;
-  uint32_t backred = 0;
+	uint32_t horizontalsync = 0;
+	uint32_t accumulatedHBP = 0;
+	uint32_t accumulatedactiveW = 0;
+	uint32_t totalwidth = 0;
+	uint32_t backgreen = 0;
+	uint32_t backred = 0;
 
-  /* Sets Synchronization size */
-  LTDC->SSCR &= ~(LTDC_SSCR_VSH | LTDC_SSCR_HSW);
-  horizontalsync = (LTDC_InitStruct->LTDC_HorizontalSync << LTDC_SSCR_HSW_Pos);
-  LTDC->SSCR |= (horizontalsync | LTDC_InitStruct->LTDC_VerticalSync);
+	/* Sets Synchronization size */
+	LTDC->SSCR &= ~(LTDC_SSCR_VSH | LTDC_SSCR_HSW);
+	horizontalsync = (LTDC_InitStruct->LTDC_HorizontalSync << LTDC_SSCR_HSW_Pos);
+	LTDC->SSCR |= (horizontalsync | LTDC_InitStruct->LTDC_VerticalSync);
 
-  /* Sets Accumulated Back porch */
-  LTDC->BPCR &= ~(LTDC_BPCR_AVBP | LTDC_BPCR_AHBP);
-  accumulatedHBP = (LTDC_InitStruct->LTDC_AccumulatedHBP << LTDC_BPCR_AHBP_Pos);
-  LTDC->BPCR |= (accumulatedHBP | LTDC_InitStruct->LTDC_AccumulatedVBP);
+	/* Sets Accumulated Back porch */
+	LTDC->BPCR &= ~(LTDC_BPCR_AVBP | LTDC_BPCR_AHBP);
+	accumulatedHBP = (LTDC_InitStruct->LTDC_AccumulatedHBP << LTDC_BPCR_AHBP_Pos);
+	LTDC->BPCR |= (accumulatedHBP | LTDC_InitStruct->LTDC_AccumulatedVBP);
 
-  /* Sets Accumulated Active Width */
-  LTDC->AWCR &= ~(LTDC_AWCR_AAH | LTDC_AWCR_AAW);
-  accumulatedactiveW = (LTDC_InitStruct->LTDC_AccumulatedActiveW << LTDC_AWCR_AAW_Pos);
-  LTDC->AWCR |= (accumulatedactiveW | LTDC_InitStruct->LTDC_AccumulatedActiveH);
+	/* Sets Accumulated Active Width */
+	LTDC->AWCR &= ~(LTDC_AWCR_AAH | LTDC_AWCR_AAW);
+	accumulatedactiveW = (LTDC_InitStruct->LTDC_AccumulatedActiveW << LTDC_AWCR_AAW_Pos);
+	LTDC->AWCR |= (accumulatedactiveW | LTDC_InitStruct->LTDC_AccumulatedActiveH);
 
-  /* Sets Total Width */
-  LTDC->TWCR &= ~(LTDC_TWCR_TOTALH | LTDC_TWCR_TOTALW);
-  totalwidth = (LTDC_InitStruct->LTDC_TotalWidth << LTDC_TWCR_TOTALW_Pos);
-  LTDC->TWCR |= (totalwidth | LTDC_InitStruct->LTDC_TotalHeigh);
+	/* Sets Total Width */
+	LTDC->TWCR &= ~(LTDC_TWCR_TOTALH | LTDC_TWCR_TOTALW);
+	totalwidth = (LTDC_InitStruct->LTDC_TotalWidth << LTDC_TWCR_TOTALW_Pos);
+	LTDC->TWCR |= (totalwidth | LTDC_InitStruct->LTDC_TotalHeigh);
 
-  //LTDC->GCR &= (uint32_t)GCR_MASK;
-  LTDC->GCR = 0;
-  LTDC->GCR |=  (uint32_t)(LTDC_InitStruct->LTDC_HSPolarity | LTDC_InitStruct->LTDC_VSPolarity |
-                           LTDC_InitStruct->LTDC_DEPolarity | LTDC_InitStruct->LTDC_PCPolarity);
+	//LTDC->GCR &= (uint32_t)GCR_MASK;
+	LTDC->GCR = 0;
+	LTDC->GCR |=  (uint32_t)(LTDC_InitStruct->LTDC_HSPolarity | LTDC_InitStruct->LTDC_VSPolarity |
+			   LTDC_InitStruct->LTDC_DEPolarity | LTDC_InitStruct->LTDC_PCPolarity);
 
-  /* sets the background color value */
-  backgreen = (LTDC_InitStruct->LTDC_BackgroundGreenValue << 8);
-  backred = (LTDC_InitStruct->LTDC_BackgroundRedValue << 16);
+	/* sets the background color value */
+	backgreen = (LTDC_InitStruct->LTDC_BackgroundGreenValue << 8);
+	backred = (LTDC_InitStruct->LTDC_BackgroundRedValue << 16);
 
-  LTDC->BCCR &= ~(LTDC_BCCR_BCBLUE | LTDC_BCCR_BCGREEN | LTDC_BCCR_BCRED);
-  LTDC->BCCR |= (backred | backgreen | LTDC_InitStruct->LTDC_BackgroundBlueValue);
-
+	LTDC->BCCR &= ~(LTDC_BCCR_BCBLUE | LTDC_BCCR_BCGREEN | LTDC_BCCR_BCRED);
+	LTDC->BCCR |= (backred | backgreen | LTDC_InitStruct->LTDC_BackgroundBlueValue);
 }
 
 static void LCD_LayerInit(
@@ -490,6 +489,14 @@ arm_hardware_ltdc_initialize(void)
 	ASSERT(rowsize == rowsize2);
 	debug_printf_P(PSTR("arm_hardware_ltdc_initialize: framebuff=%p, rowsize=%u\n"), framebuff, rowsize);
 
+	framebuff [0][0] = 1;
+	ASSERT(framebuff [0][0] == 1);
+	framebuff [0][1] = 2;
+	ASSERT(framebuff [0][1] == 2);
+	framebuff [0][0] = 3;
+	ASSERT(framebuff [0][0] == 3);
+	framebuff [0][1] = 4;
+	ASSERT(framebuff [0][1] == 4);
 	/* Initialize the LCD */
 	//LCD_Init();
 
