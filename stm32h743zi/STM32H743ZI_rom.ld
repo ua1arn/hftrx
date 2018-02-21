@@ -3,16 +3,13 @@
 /* Linker script to configure memory regions. */
 MEMORY
 {
-  FLASH (rx) : ORIGIN = 0x08000000, LENGTH = 2048K	/* FLASH on AXIM interface */
-  RAM (rwx)  : ORIGIN = 0x24000000, LENGTH = 512K	/* 864K */ /* RAM_D1 + RAM_D2 + RAM_D3 */
-  DTCM (rwx) : ORIGIN = 0x20000000, LENGTH = 128K	/* DTCM Data DTCM-RAM */
-  ITCM (rwx) : ORIGIN = 0x00000000, LENGTH = 64K	/* ITCM-RAM */
+	DTCMRAM (rwx) : ORIGIN = 0x20000000, LENGTH = 128K	/* DTCMRAM Data DTCMRAM-RAM */
+	RAM_D1 (xrw)  : ORIGIN = 0x24000000, LENGTH = 512K
+	RAM_D2 (xrw)  : ORIGIN = 0x30000000, LENGTH = 288K	/* frame buffer */
+	RAM_D3 (xrw)  : ORIGIN = 0x38000000, LENGTH = 64K
+	ITCMRAM (rwx) : ORIGIN = 0x00000000, LENGTH = 64K	/* ITCMRAM-RAM */
 
-/*
-  RAM_D1 (xrw)      : ORIGIN = 0x24000000, LENGTH = 512K
-  RAM_D2 (xrw)      : ORIGIN = 0x30000000, LENGTH = 288K
-  RAM_D3 (xrw)      : ORIGIN = 0x38000000, LENGTH = 64K
-*/
+	FLASH (rx)    : ORIGIN = 0x08000000, LENGTH = 2048K	/* FLASH on AXIM interface */
 }
 
 /* Library configurations */
@@ -165,7 +162,7 @@ SECTIONS
 		/* All data end */
 		__data_end__ = .;
 
-	} > DTCM /*RAM*/
+	} > DTCMRAM /*RAM_D1*/
 
 	. = __etext + __data_end__ - __data_start__;
 
@@ -183,7 +180,7 @@ SECTIONS
 
 		. = ALIGN(4);
 		__itcmdata_end__ = .;
-	} > ITCM
+	} > ITCMRAM
 
 	. = __ramfunctext + __itcmdata_end__ - __itcmdata_start__;
 
@@ -195,7 +192,7 @@ SECTIONS
 		*(COMMON)
 		. = ALIGN(32);
 		__bss_end__ = .;
-	} > RAM
+	} > RAM_D1
 
 	.heap (COPY):
 	{
@@ -204,7 +201,7 @@ SECTIONS
 		end = __end__;
 		KEEP(*(.heap*))
 		__HeapLimit = .;
-	} > RAM
+	} > RAM_D1
 
 	/* .stack_dummy section doesn't contains any symbols. It is only
 	 * used for linker to calculate size of stack sections, and assign
@@ -212,19 +209,19 @@ SECTIONS
 	.stack_dummy (COPY):
 	{
 		KEEP(*(.stack*))
-	} > DTCM /*RAM*/
+	} > DTCMRAM /*RAM_D1*/
 
 	/* Set stack top to end of RAM, and stack limit move down by
 	 * size of stack_dummy section */
-	__StackTop = ORIGIN(DTCM) + LENGTH(DTCM);	/* was: RAM */
+	__StackTop = ORIGIN(DTCMRAM) + LENGTH(DTCMRAM);	/* was: RAM_D1 */
 	__StackLimit = __StackTop - SIZEOF(.stack_dummy);
 	PROVIDE(__stack = __StackTop);
 
-	PROVIDE(__itcm_start__ = ORIGIN(ITCM));
-	PROVIDE(__itcm_end__ = ORIGIN(ITCM) + LENGTH(ITCM));
+	PROVIDE(__itcm_start__ = ORIGIN(ITCMRAM));
+	PROVIDE(__itcm_end__ = ORIGIN(ITCMRAM) + LENGTH(ITCMRAM));
 
-	PROVIDE(__dtcm_start__ = ORIGIN(DTCM));
-	PROVIDE(__dtcm_end__ = ORIGIN(DTCM) + LENGTH(DTCM));
+	PROVIDE(__dtcm_start__ = ORIGIN(DTCMRAM));
+	PROVIDE(__dtcm_end__ = ORIGIN(DTCMRAM) + LENGTH(DTCMRAM));
 
 	/* Check if data + heap + stack exceeds RAM limit */
 	/*ASSERT(__StackLimit >= __HeapLimit, "region RAM overflowed with stack") */
