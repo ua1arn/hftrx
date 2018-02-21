@@ -7057,17 +7057,22 @@ lowlevel_stm32h7xx_pll_initialize(void)
 #if WITHUSEPLL3 && defined (LTDC_DOTCLK)
 
 	RCC->PLLCKSELR = (RCC->PLLCKSELR & ~ RCC_PLLCKSELR_DIVM3) | 
-		((REF1_DIV << RCC_PLLCKSELR_DIVM3_Pos) & RCC_PLLCKSELR_DIVM3) |	// Reference divider - не требуетс€ корректировань число
+		((REF3_DIV << RCC_PLLCKSELR_DIVM3_Pos) & RCC_PLLCKSELR_DIVM3) |	// Reference divider - не требуетс€ корректировань число
 		0;
 	// 
-	const uint32_t ltdc_divr = calcdivround2(PLL_FREQ, LTDC_DOTCLK);
+	const uint32_t ltdc_divr = calcdivround2(PLL3_FREQ, LTDC_DOTCLK);
 	RCC->PLL3DIVR = (RCC->PLL3DIVR & ~ (RCC_PLL3DIVR_N3 | RCC_PLL3DIVR_R3)) |
-		(((REF1_MUL - 1) << RCC_PLL3DIVR_N3_Pos) & RCC_PLL3DIVR_N3) |
+		(((REF3_MUL - 1) << RCC_PLL3DIVR_N3_Pos) & RCC_PLL3DIVR_N3) |
 		(((ltdc_divr - 1) << RCC_PLL3DIVR_R3_Pos) & RCC_PLL3DIVR_R3) |	// нужно дл€ нормального переключени€ SPI clock USB clock
 		0;
-	RCC->PLLCFGR = (RCC->PLLCFGR & ~ (RCC_PLLCFGR_DIVR3EN | RCC_PLLCFGR_PLL3RGE)) |
+	RCC->PLLCFGR = (RCC->PLLCFGR & ~ (RCC_PLLCFGR_DIVR3EN | RCC_PLLCFGR_PLL3RGE | RCC_PLLCFGR_PLL3VCOSEL)) |
 		RCC_PLLCFGR_DIVR3EN |	// This bit can be written only when the PLL3 is disabled (PLL3ON = С0Т and PLL3RDY = С0Т).
-		0 * RCC_PLLCFGR_PLL3RGE_0 |	// 00: The PLL1 input (ref1_ck) clock range frequency is between 1 and 2 MHz
+#if PLL3_FREQ >= 150000000uL && PLL3_FREQ <= 420000000uL
+		1 * RCC_PLLCFGR_PLL3VCOSEL |	// 1: Medium VCO range: 150 to 420 MHz
+#else
+		0 * RCC_PLLCFGR_PLL3VCOSEL |	// 0: Wide VCO range: 192 to 836 MHz (default after reset)
+#endif
+		0 * RCC_PLLCFGR_PLL3RGE_0 |	// 00: The PLL3 input (ref3_ck) clock range frequency is between 1 and 2 MHz
 		0;
 
 	RCC->CR |= RCC_CR_PLL3ON;				// ¬ключил PLL3

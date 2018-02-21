@@ -11809,7 +11809,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 	#endif /* LCDMODE_COLORED */
 	{
-		"ADC FS  ", 3 + WSIGNFLAG, 1, 0,	ISTEP1,		/* диапазон ручной регулировки цифрового усиления - максимальное значение */
+		"ADC FS  ", 3 + WSIGNFLAG, 1, 0,	ISTEP1,		/* Калиьровка S-метра - момент перегрузки */
 		ITEM_VALUE,
 		0, FSADCPOWEROFFSET10 * 2, 		// -40..+40 dBm
 		offsetof(struct nvmap, gfsadcpower10),
@@ -11827,7 +11827,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"IFGN MAX", 7, 0, 0,	ISTEP1,		/* диапазон ручной регулировки цифрового усиления - максимальное значение */
+		"IFGN MAX", 7, 0, 0,	ISTEP1,		/* диапазон ручной (или автоматической) регулировки цифрового усиления - максимальное значение */
 		ITEM_VALUE,
 		40, 100, 		// 40..100 dB
 		offsetof(struct nvmap, gdigigainmax),

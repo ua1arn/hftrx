@@ -29,6 +29,7 @@
 		// при наличии внешнего кварцевого резонатора
 		#define WITHCPUXTAL 12000000uL	/* На процессоре установлен кварц 12.000 МГц */
 		#define REF1_DIV 6			// ref freq = 2.0000 MHz
+		#define REF3_DIV 6			// ref freq = 2.0000 MHz
 
 		#if defined(STM32F767xx)
 			// normal operation frequency
@@ -41,6 +42,7 @@
 		#elif CPUSTYLE_STM32H7XX
 			// normal operation frequency
 			#define REF1_MUL 384		// 2*384.000 MHz (192 <= PLLN <= 432)
+			#define REF3_MUL 135		// 2*135.000 MHz (192 <= PLLN <= 432)
 			#define HARDWARE_FLASH_LATENCY FLASH_ACR_LATENCY_2WS
 		#endif
 
@@ -61,8 +63,10 @@
 		#elif CPUSTYLE_STM32H7XX
 			// тактирование от внутреннего RC генератора 64 МГц
 			#define REF1_DIV 32			// ref freq = 2.000 MHz
+			#define REF3_DIV 32			// ref freq = 2.000 MHz
 			// normal operation frequency
-			#define REF1_MUL 384			// 2*384.000 MHz (192 <= PLLN <= 432)
+			#define REF1_MUL 384		// 2*384.000 MHz (192 <= PLLN <= 432)
+			#define REF3_MUL 135		// 2*135.000 MHz (192 <= PLLN <= 432)
 			#define HARDWARE_FLASH_LATENCY FLASH_ACR_LATENCY_2WS
 		#endif
 
