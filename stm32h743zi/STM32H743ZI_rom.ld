@@ -4,8 +4,8 @@
 MEMORY
 {
 	DTCMRAM (rwx) : ORIGIN = 0x20000000, LENGTH = 128K	/* DTCMRAM Data DTCMRAM-RAM */
-	RAM_D1 (xrw)  : ORIGIN = 0x24000000, LENGTH = 512K
-	RAM_D2 (xrw)  : ORIGIN = 0x30000000, LENGTH = 288K	/* frame buffer */
+	RAM_D1 (xrw)  : ORIGIN = 0x24000000, LENGTH = 512K	/* LTDC frame buffer */
+	RAM_D2 (xrw)  : ORIGIN = 0x30000000, LENGTH = 288K
 	RAM_D3 (xrw)  : ORIGIN = 0x38000000, LENGTH = 64K
 	ITCMRAM (rwx) : ORIGIN = 0x00000000, LENGTH = 64K	/* ITCMRAM-RAM */
 
@@ -162,7 +162,7 @@ SECTIONS
 		/* All data end */
 		__data_end__ = .;
 
-	} > DTCMRAM /*RAM_D1*/
+	} > DTCMRAM /*RAM_D2*/
 
 	. = __etext + __data_end__ - __data_start__;
 
@@ -192,7 +192,7 @@ SECTIONS
 		*(COMMON)
 		. = ALIGN(32);
 		__bss_end__ = .;
-	} > RAM_D1
+	} > RAM_D2
 
 	.heap (COPY):
 	{
@@ -201,7 +201,7 @@ SECTIONS
 		end = __end__;
 		KEEP(*(.heap*))
 		__HeapLimit = .;
-	} > RAM_D1
+	} > RAM_D2
 
 	/* .stack_dummy section doesn't contains any symbols. It is only
 	 * used for linker to calculate size of stack sections, and assign
@@ -209,11 +209,11 @@ SECTIONS
 	.stack_dummy (COPY):
 	{
 		KEEP(*(.stack*))
-	} > DTCMRAM /*RAM_D1*/
+	} > DTCMRAM /*RAM_D2*/
 
 	/* Set stack top to end of RAM, and stack limit move down by
 	 * size of stack_dummy section */
-	__StackTop = ORIGIN(DTCMRAM) + LENGTH(DTCMRAM);	/* was: RAM_D1 */
+	__StackTop = ORIGIN(DTCMRAM) + LENGTH(DTCMRAM);	/* was: RAM_D2 */
 	__StackLimit = __StackTop - SIZEOF(.stack_dummy);
 	PROVIDE(__stack = __StackTop);
 
