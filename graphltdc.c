@@ -490,13 +490,14 @@ arm_hardware_ltdc_initialize(void)
 	debug_printf_P(PSTR("arm_hardware_ltdc_initialize: framebuff=%p, rowsize=%u\n"), framebuff, rowsize);
 
 	framebuff [0][0] = 1;
-	ASSERT(framebuff [0][0] == 1);
 	framebuff [0][1] = 2;
+	framebuff [0][2] = 3;
+	framebuff [0][3] = 4;
+
+	ASSERT(framebuff [0][0] == 1);
 	ASSERT(framebuff [0][1] == 2);
-	framebuff [0][0] = 3;
-	ASSERT(framebuff [0][0] == 3);
-	framebuff [0][1] = 4;
-	ASSERT(framebuff [0][1] == 4);
+	ASSERT(framebuff [0][2] == 3);
+	ASSERT(framebuff [0][3] == 4);
 	/* Initialize the LCD */
 	//LCD_Init();
 

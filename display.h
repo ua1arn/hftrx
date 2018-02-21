@@ -666,8 +666,8 @@ uint_fast8_t hamradio_get_datamode(void);	// источник звука для передачи - USB A
 
 #define SWRMIN 10	// минимум - соответствует SWR = 1.0, точность = 0.1
 
-
 #if LCDMODE_LTDC
+
 	#if LCDMODE_ILI8961 || LCDMODE_LQ043T3DX02K
 		#define DIM_FIRST DIM_Y
 		#define DIM_SECOND DIM_X
@@ -676,14 +676,15 @@ uint_fast8_t hamradio_get_datamode(void);	// источник звука для передачи - USB A
 		#define DIM_SECOND DIM_Y
 	#endif
 
-	typedef PACKEDCOLOR_T FRAMEBUFF_T [DIM_FIRST][DIM_SECOND];	//L8 (8-bit Luminance or CLUT)
+	typedef PACKEDCOLOR_T FRAMEBUFF_T [DIM_FIRST][DIM_SECOND];
 
 	#if CPUSTYLE_R7S721
 		#define SDRAM_BANK_ADDR     ((uintptr_t) 0x20200000)
 	#elif STM32H743xx
-		//#define SDRAM_BANK_ADDR     ((uintptr_t) 0x30000000)
+		//#define SDRAM_BANK_ADDR     ((uintptr_t) D2_AXISRAM_BASE)
+		//#define SDRAM_BANK_ADDR     ((uintptr_t) D2_AHBSRAM_BASE)
 	#elif CPUSTYLE_STM32F4XX
-		#define SDRAM_BANK_ADDR     ((uintptr_t) 0xD0000000)
+		//#define SDRAM_BANK_ADDR     ((uintptr_t) 0xD0000000)
 	#endif
 
 	#if defined (SDRAM_BANK_ADDR) || LCDMODE_LTDCSDRAMBUFF

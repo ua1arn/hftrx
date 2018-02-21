@@ -7023,6 +7023,44 @@ lowlevel_stm32h7xx_pll_initialize(void)
 
 	#endif /* WITHCPUXTAL */
 
+	// D1 domain Core prescaler (to CPU)
+	RCC->D1CFGR = (RCC->D1CFGR & ~ (RCC_D1CFGR_D1CPRE)) |	
+		0 * RCC_D1CFGR_D1CPRE_0 |	// not divided
+		0;
+	(void) RCC->D1CFGR;
+
+	// D1 domain AHB prescaler
+	RCC->D1CFGR = (RCC->D1CFGR & ~ (RCC_D1CFGR_HPRE)) |
+		8 * RCC_D1CFGR_HPRE_0 |		// 1000: rcc_hclk3 = sys_d1cpre_ck / 2
+		0;
+	(void) RCC->D1CFGR;
+
+	// D1 domain APB3 prescaler
+	RCC->D1CFGR = (RCC->D1CFGR & ~ (RCC_D1CFGR_D1PPRE)) |
+		4 * RCC_D1CFGR_D1PPRE_0 |	// 100: rcc_pclk3 = rcc_hclk3 / 2
+		0;
+	(void) RCC->D1CFGR;
+
+	// D2 domain APB1 prescaler
+	RCC->D2CFGR = (RCC->D2CFGR & ~ (RCC_D2CFGR_D2PPRE1)) |
+		4 * RCC_D2CFGR_D2PPRE1_0 |	// 100: rcc_pclk1 = rcc_hclk1 / 2	
+		0;
+	(void) RCC->D2CFGR;
+
+	// D2 domain APB2 prescaler
+	RCC->D2CFGR = (RCC->D2CFGR & ~ (RCC_D2CFGR_D2PPRE2)) |
+		5 * RCC_D2CFGR_D2PPRE2_0 |	// 100: rcc_pclk2 = rcc_hclk1 / 2
+		0;
+	(void) RCC->D2CFGR;
+
+	// D3 domain APB4 prescaler
+	RCC->D3CFGR = (RCC->D3CFGR & ~ (RCC_D3CFGR_D3PPRE)) |
+		4 * RCC_D3CFGR_D3PPRE_0 |	// 100: rcc_pclk4 = rcc_hclk4 / 2
+		0;
+	(void) RCC->D3CFGR;
+
+
+	// PLL1 setup
 	RCC->PLLCKSELR = (RCC->PLLCKSELR & ~ RCC_PLLCKSELR_DIVM1) | 
 		((REF1_DIV << RCC_PLLCKSELR_DIVM1_Pos) & RCC_PLLCKSELR_DIVM1) |	// Reference divider - не требуется корректировань число
 		0;
@@ -7093,31 +7131,6 @@ lowlevel_stm32h7xx_pll_initialize(void)
 
 	while ((FLASH->ACR & FLASH_ACR_LATENCY) != flash_acr_latency)
 		;
-
-	// D1 domain Core prescaler (to CPU)
-	RCC->D1CFGR = (RCC->D1CFGR & ~ (RCC_D1CFGR_D1CPRE)) |	
-		0 * RCC_D1CFGR_D1CPRE_0 |	// not divided
-		0;
-	// D1 domain AHB prescaler
-	RCC->D1CFGR = (RCC->D1CFGR & ~ (RCC_D1CFGR_HPRE)) |
-		8 * RCC_D1CFGR_HPRE_0 |		// 1000: rcc_hclk3 = sys_d1cpre_ck / 2
-		0;
-	// D1 domain APB3 prescaler
-	RCC->D1CFGR = (RCC->D1CFGR & ~ (RCC_D1CFGR_D1PPRE)) |
-		4 * RCC_D1CFGR_D1PPRE_0 |	// 100: rcc_pclk3 = rcc_hclk3 / 2
-		0;
-	// D2 domain APB1 prescaler
-	RCC->D2CFGR = (RCC->D2CFGR & ~ (RCC_D2CFGR_D2PPRE1)) |
-		4 * RCC_D2CFGR_D2PPRE1_0 |	// 100: rcc_pclk1 = rcc_hclk1 / 2	
-		0;
-	// D2 domain APB2 prescaler
-	RCC->D2CFGR = (RCC->D2CFGR & ~ (RCC_D2CFGR_D2PPRE2)) |
-		5 * RCC_D2CFGR_D2PPRE2_0 |	// 100: rcc_pclk2 = rcc_hclk1 / 2
-		0;
-	// D3 domain APB4 prescaler
-	RCC->D3CFGR = (RCC->D3CFGR & ~ (RCC_D3CFGR_D3PPRE)) |
-		4 * RCC_D3CFGR_D3PPRE_0 |	// 100: rcc_pclk4 = rcc_hclk4 / 2
-		0;
 
 	RCC->CFGR = (RCC->CFGR & ~ (RCC_CFGR_SW)) |
 		RCC_CFGR_SW_PLL1 | // PLL as system clock
