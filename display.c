@@ -466,9 +466,11 @@ ltdc_horizontal_pix1color(
 	PACKEDCOLOR_T color
 	)
 {
+	PACKEDCOLOR_T * const p = & framebuff [ltdc_first + cgrow] [ltdc_second + ltdc_secondoffs + cgcol];
 	// размещаем пиксели по горизонтали
 	//debug_printf_P(PSTR("framebuff=%p, ltdc_first=%d, cgrow=%d, ltdc_second=%d, ltdc_secondoffs=%d, cgcol=%d\n"), framebuff, ltdc_first, cgrow, ltdc_second, ltdc_secondoffs, cgcol);
-	framebuff [ltdc_first + cgrow] [ltdc_second + ltdc_secondoffs + cgcol] = color;
+	* p = color;
+	arm_hardware_flush((uintptr_t) p, sizeof * p);
 }
 
 
@@ -520,6 +522,7 @@ ltdc_vertical_pix8(
 	// размещаем пиксели по горизонтали
 	const FLASHMEM PACKEDCOLOR_T * const pcl = (* byte2run) [v];
 	memcpy(& framebuff [ltdc_first] [ltdc_second + ltdc_secondoffs], pcl, sizeof (PACKEDCOLOR_T) * 8);
+	arm_hardware_flush((uintptr_t) & framebuff [ltdc_first] [ltdc_second + ltdc_secondoffs], sizeof (PACKEDCOLOR_T) * 8);
 	if ((ltdc_secondoffs += 8) >= ltdc_h)
 	{
 		ltdc_secondoffs -= ltdc_h;
@@ -713,7 +716,7 @@ void display_clear(void)
 	}
 
 #endif /* LCDMODE_LTDC_L8 */
-	arm_hardware_flush((uintptr_t) framebuff, (uint_fast32_t) DIM_FIRST * DIM_SECOND);
+	arm_hardware_flush((uintptr_t) framebuff, sizeof framebuff);
 }
 
 void display_gotoxy(uint_fast8_t x, uint_fast8_t y)

@@ -636,7 +636,7 @@ arm_hardware_ltdc_initialize(void)
 	/* Configure accumulated active height */
 	LTDC_InitStruct.LTDC_AccumulatedActiveH = (HEIGHT + VSYNC + VBP - 1);
 	/* Configure total height */
-	LTDC_InitStruct.LTDC_TotalHeigh = (HEIGHT + 1 * VSYNC + VBP + VFP - 1);
+	LTDC_InitStruct.LTDC_TotalHeigh = (HEIGHT + VSYNC + VBP + VFP - 1);
 
 	LTDC_Init(&LTDC_InitStruct);
 
@@ -662,8 +662,8 @@ arm_hardware_ltdc_initialize(void)
 		((rowsize << LTDC_LxCFBLR_CFBP_Pos) & LTDC_LxCFBLR_CFBP) | 
 		(((rowsize + 3) << LTDC_LxCFBLR_CFBLL_Pos) & LTDC_LxCFBLR_CFBLL) |
 		0;
-	LTDC_Layer1->CFBAR = (uint32_t) & framebuff;
-	//LTDC_Layer2->CFBAR = (uint32_t) & framebuff;
+	LTDC_Layer1->CFBAR = (uintptr_t) & framebuff;
+	//LTDC_Layer2->CFBAR = (uintptr_t) & framebuff;
 
 	/* Enable the LTDC */
 	LTDC->GCR |= LTDC_GCR_LTDCEN;

@@ -1805,14 +1805,14 @@ static void s1d13781_initialize(void)
         { REG20_PANEL_SET,                      0x00CD },		// 18 bit panel, DE fixed high
         { REG22_DISP_SET,                       0x0001 | 0x0100 },	// TE pin disable
 
-        { REG24_HDISP,                          0x003C },
-        { REG26_HNDP,                           0x002D },
-        { REG28_VDISP,                          0x0110 },
-        { REG2A_VNDP,                           0x000E },
-        { REG2C_HSW,                            0x0029 },
-        { REG2E_HPS,                            0x0002 },
-        { REG30_VSW,                            0x000A },
-        { REG32_VPS,                            0x0002 },
+        { REG24_HDISP,                          0x003C },	// Horizontal Display Width Register
+        { REG26_HNDP,                           0x002D },	// Horizontal Non-Display Period Register
+        { REG28_VDISP,                          0x0110 },	// Vertical Display Height Register
+        { REG2A_VNDP,                           0x000E },	// Vertical Non-Display Period Register
+        { REG2C_HSW,                            0x0029 },	// HS Pulse Width Register
+        { REG2E_HPS,                            0x0002 },	// HS Pulse Start Position Register
+        { REG30_VSW,                            0x000A },	// VS Pulse Width Register
+        { REG32_VPS,                            0x0002 },	// VS Pulse Start Position Register
 
         { REG42_MAIN_SADDR_0,                   0xffff & (S1D_PHYSICAL_VMEM_ADDR >> 0) },
         { REG44_MAIN_SADDR_1,                   0xffff & (S1D_PHYSICAL_VMEM_ADDR >> 16) },
