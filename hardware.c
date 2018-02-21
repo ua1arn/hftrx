@@ -7054,13 +7054,13 @@ lowlevel_stm32h7xx_pll_initialize(void)
 	#error WITHUSEPLL3 should be defined if LCDMODE_LTDC used.
 #endif /* LCDMODE_LTDC && ! WITHUSEPLL3 */
 
-#if WITHUSEPLL3
+#if WITHUSEPLL3 && defined (LTDC_DOTCLK)
 
 	RCC->PLLCKSELR = (RCC->PLLCKSELR & ~ RCC_PLLCKSELR_DIVM3) | 
 		((REF1_DIV << RCC_PLLCKSELR_DIVM3_Pos) & RCC_PLLCKSELR_DIVM3) |	// Reference divider - не требуется корректировань число
 		0;
 	// 
-	const uint32_t ltdc_divr = calcdivround2(PLL_FREQ, 66000000uL);
+	const uint32_t ltdc_divr = calcdivround2(PLL_FREQ, LTDC_DOTCLK);
 	RCC->PLL3DIVR = (RCC->PLL3DIVR & ~ (RCC_PLL3DIVR_N3 | RCC_PLL3DIVR_R3)) |
 		(((REF1_MUL - 1) << RCC_PLL3DIVR_N3_Pos) & RCC_PLL3DIVR_N3) |
 		(((ltdc_divr - 1) << RCC_PLL3DIVR_R3_Pos) & RCC_PLL3DIVR_R3) |	// нужно для нормального переключения SPI clock USB clock
@@ -7076,7 +7076,7 @@ lowlevel_stm32h7xx_pll_initialize(void)
 	while ((RCC->CR & RCC_CR_PLL3RDY) == 0)	// пока заработает PLL
 		;
 
-#endif /* WITHUSEPLL3 */
+#endif /* WITHUSEPLL3 && defined (LTDC_DOTCLK) */
 
 	const portholder_t flash_acr_latency = HARDWARE_FLASH_LATENCY; // Задержка для работы с памятью 5 WS for 168 MHz at 3.3 volt
 	/* Блок настройки ФЛЭШ */
