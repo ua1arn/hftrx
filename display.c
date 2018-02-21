@@ -761,7 +761,27 @@ void display_plot(
 	uint_fast16_t dy
 	)
 {
+#if LCDMODE_HORFILL
+	while (dy --)
+	{
+		PACKEDCOLOR_T * const p = & framebuff [ltdc_first] [ltdc_second];
+		memcpy(p, buffer, dx * sizeof * buffer);
+		arm_hardware_flush((uintptr_t) p, dx * sizeof * buffer);
+		buffer += dx;
 
+		++ ltdc_first;
+	}
+#else /* LCDMODE_HORFILL */
+	while (dx --)
+	{
+		PACKEDCOLOR_T * const p = & framebuff [ltdc_first] [ltdc_second];
+		memcpy(p, buffer, dy * sizeof * buffer);
+		arm_hardware_flush((uintptr_t) p, dy * sizeof * buffer);
+		buffer += dy;
+
+		++ ltdc_first;
+	}
+#endif /* LCDMODE_HORFILL */
 }
 
 void display_plotstop(void)

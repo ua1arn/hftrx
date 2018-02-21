@@ -1029,6 +1029,7 @@
 	#define DIM_X 320
 	#define DIM_Y 240
 	#define LCDMODE_COLORED	1
+	#define LCDMODE_HORFILL	1
 	#define LTDC_DOTCLK	24000000uL	// частота пикселей при работе с интерфейсом RGB (в результате оказалось 7.2 ћ√ц)
 #endif
 

@@ -4004,8 +4004,13 @@ enum { SPAVGSIZE = 5 };	// max(AVGLEN, MAXHISTLEN)
 static FLOAT_t spavgarray [SPAVGSIZE] [WFDX];	// массив для усреднения
 static uint_fast8_t spavgrow;				// строка, в которую последней занесены данные
 
-static uint8_t wfarray [WFDY] [WFDX];	// массив "водопада"
-static uint_fast16_t wfrow;				// строка, в которую последней занесены данные
+#if 1
+	static uint8_t wfarray [WFDY] [WFDX];	// массив "водопада"
+	static uint_fast16_t wfrow;				// строка, в которую последней занесены данные
+#else
+	static uint8_t wfarray [1] [WFDX];	// массив "водопада"
+	enum { wfrow = 0 };				// строка, в которую последней занесены данные
+#endif
 enum { PALETTESIZE = 256 };
 static PACKEDCOLOR_T wfpalette [PALETTESIZE];
 extern uint_fast8_t wflfence;
@@ -4122,7 +4127,10 @@ static void dsp_latchwaterfall(
 	spavgrow = (spavgrow == 0) ? (SPAVGSIZE - 1) : (spavgrow - 1);
 	dsp_getspectrumrow(& spavgarray [spavgrow] [0], WFDX);
 
+#if 1
 	wfrow = (wfrow == 0) ? (WFDY - 1) : (wfrow - 1);
+#endif
+
 	// запоминание информации спектра для водопада
 	for (x = 0; x < WFDX; ++ x)
 	{
