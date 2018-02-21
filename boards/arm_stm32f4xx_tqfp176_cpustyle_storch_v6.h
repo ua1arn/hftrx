@@ -357,9 +357,14 @@
 		do { \
 		} while (0)
 
-	// PTT input - PD10
+	// PTT input - PD13
+	// PTT2 input - PD0
+
 	#define PTT_TARGET_PIN				(GPIOD->IDR)
 	#define PTT_BIT_PTT					(1uL << 13)		// PD13 - PTT
+
+	#define PTT2_TARGET_PIN				(GPIOD->IDR)
+	#define PTT2_BIT_PTT				(1uL << 0)		// PD13 - PTT2
 
 	// TX INHIBIT
 	#define HARDWARE_TXINHIBIT_PIN		(GPIOD->IDR)
@@ -369,13 +374,16 @@
 	#define HARDWARE_GET_TXINH() ((HARDWARE_TXINHIBIT_PIN & HARDWARE_TXINHIBIT_BIT) != 0)
 
 	// получить бит запроса оператором перехода на пердачу
-	#define HARDWARE_GET_PTT() ((PTT_TARGET_PIN & PTT_BIT_PTT) == 0)
+	#define HARDWARE_GET_PTT() ((PTT_TARGET_PIN & PTT_BIT_PTT) == 0 || (PTT2_TARGET_PIN & PTT2_BIT_PTT) == 0)
+
 	#define PTT_INITIALIZE() \
 		do { \
 			arm_hardware_piod_inputs(HARDWARE_TXINHIBIT_BIT); \
 			arm_hardware_piod_updown(0, HARDWARE_TXINHIBIT_BIT); \
 			arm_hardware_piod_inputs(PTT_BIT_PTT); \
 			arm_hardware_piod_updown(PTT_BIT_PTT, 0); \
+			arm_hardware_piod_inputs(PTT2_BIT_PTT); \
+			arm_hardware_piod_updown(PTT2_BIT_PTT, 0); \
 		} while (0)
 
 #endif /* WITHTX */
