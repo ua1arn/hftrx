@@ -196,6 +196,58 @@ void display_showbuffer(
 
 #endif /* LCDMODE_UC1608 || LCDMODE_UC1601 */
 
+
+/* заполнение указанного прямоугольника на экране одним цветом */
+static void 
+dma2d_fillrect(
+	PACKEDCOLOR_T * buffer,
+	uint_fast16_t x0,
+	uint_fast16_t y0,
+	uint_fast16_t dx,
+	uint_fast16_t dy,
+	PACKEDCOLOR_T color
+	)
+{
+#if defined (DMA2D)
+
+	// just writes the color defined in the DMA2D_OCOLR register 
+	// to the area located at the address pointed by the DMA2D_OMAR 
+	// and defined in the DMA2D_NLR and DMA2D_OOR.
+
+#if LCDMODE_HORFILL
+
+	DMA2D->OMAR = (uintptr_t) (buffer + y0 * dx + x0);
+	DMA2D->NLR = (DMA2D->NLR & ~ (DMA2D_NLR_NL | DMA2D_NLR_PL)) |
+		(dy << DMA2D_NLR_NL_Pos) |
+		(dx << DMA2D_NLR_PL_Pos) |
+		0;
+	DMA2D->OOR = (DMA2D->OOR & ~ (DMA2D_OOR_LO)) |
+		(0 < DMA2D_OOR_LO_Pos) |
+		0;
+#else /* LCDMODE_HORFILL */
+
+#endif /* LCDMODE_HORFILL */
+
+	DMA2D->OCOLR = 
+		color |
+		0;
+	DMA2D->OPFCCR = (DMA2D->OPFCCR & ~ (DMA2D_OPFCCR_CM)) |
+		2 * DMA2D_OPFCCR_CM_0 |	/* 010: RGB565 */
+		0;
+
+	DMA2D->CR = (DMA2D->CR & ~ (DMA2D_CR_MODE)) |
+		3 * DMA2D_CR_MODE_0 |	// 11: Register-to-memory (no FG nor BG, only output stage active)
+		1 * DMA2D_CR_START |
+		0;
+
+	/* ожидаем выполнения операции */
+	while ((DMA2D->CR & DMA2D_CR_START) != 0)
+		;
+
+#endif /* defined (DMA2D) */
+}
+
+
 // начальная инициализация буфера
 void display_colorbuffer_fill(
 	PACKEDCOLOR_T * buffer,
@@ -204,6 +256,12 @@ void display_colorbuffer_fill(
 	COLOR_T color
 	)
 {
+#if defined (DMA2D)
+
+	dma2d_fillrect(buffer, 0, 0, dx, dy, color);
+
+#else /* defined (DMA2D) */
+
 	uint_fast32_t len = (uint_fast32_t) dx * dy;
 	if (sizeof (PACKEDCOLOR_T) == 1)
 	{
@@ -225,6 +283,8 @@ void display_colorbuffer_fill(
 		while (len --)
 			* buffer ++ = color;
 	}
+
+#endif /* defined (DMA2D) */
 }
 
 // поставить цветную точку.
@@ -686,10 +746,15 @@ void display_clear(void)
 {
 	const COLOR_T bg = display_getbgcolor();
 
-#if LCDMODE_LTDC_L8
+#if defined (DMA2D)
+
+	dma2d_fillrect(framebuff [0], 0, 0, DIM_X, DIM_Y, bg);
+
+#elif LCDMODE_LTDC_L8
 
 	memset(framebuff, bg, DIM_FIRST * DIM_SECOND);
 	//memset(framebuff, COLOR_WHITE, DIM_FIRST * DIM_SECOND);	// debug version
+	arm_hardware_flush((uintptr_t) framebuff, sizeof framebuff);
 
 #elif LCDMODE_LTDC_L24
 
@@ -705,6 +770,7 @@ void display_clear(void)
 			framebuff [i][j] = c;
 	}
 
+	arm_hardware_flush((uintptr_t) framebuff, sizeof framebuff);
 #else /* LCDMODE_LTDC_L8 */
 
 	unsigned i, j;
@@ -715,8 +781,9 @@ void display_clear(void)
 			framebuff [i][j] = bg;
 	}
 
-#endif /* LCDMODE_LTDC_L8 */
 	arm_hardware_flush((uintptr_t) framebuff, sizeof framebuff);
+
+#endif /* LCDMODE_LTDC_L8 */
 }
 
 void display_gotoxy(uint_fast8_t x, uint_fast8_t y)
