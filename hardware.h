@@ -408,7 +408,12 @@ void hardware_adc_initialize(void);
 	#define FLASHMEM //__flash
 	#define FLASHMEMINIT	__attribute__((section(".init"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
 	#define NOINLINEAT // __attribute__((noinline))
-	#define RAMNOINIT_D1	__attribute__((section(".noinit"))) /* ра=мещение в памяти SRAM_D1 */
+
+	#if CPUSTYLE_STM32H7XX
+		#define RAMNOINIT_D1	__attribute__((section(".noinit"))) /* ра=мещение в памяти SRAM_D1 */
+	#else /* CPUSTYLE_STM32H7XX */
+		#define RAMNOINIT_D1
+	#endif /* CPUSTYLE_STM32H7XX */
 
 	#if CPUSTYLE_R7S721
 		#define RAMFUNC_NONILINE // __attribute__((__section__(".ramfunc"), noinline))  
@@ -456,6 +461,7 @@ void hardware_adc_initialize(void);
 	#endif
 	#define RAMFUNC_NONILINE // __attribute__((__section__(".ramfunc"), noinline))  
 	#define RAMFUNC			 // __attribute__((__section__(".ramfunc")))  
+	#define RAMNOINIT_D1
 	#define ATTRWEAK __attribute__ ((weak))
 
 #elif CPUSTYPE_TMS320F2833X
@@ -478,6 +484,7 @@ void hardware_adc_initialize(void);
 	#define NOINLINEAT // __attribute__((noinline))
 	#define RAMFUNC_NONILINE // __attribute__((__section__(".ramfunc"), noinline))  
 	#define RAMFUNC			 // __attribute__((__section__(".ramfunc")))  
+	#define RAMNOINIT_D1
 	#define ATTRWEAK __attribute__ ((weak))
 
 #else
