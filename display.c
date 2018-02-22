@@ -196,6 +196,79 @@ void display_showbuffer(
 
 #endif /* LCDMODE_UC1608 || LCDMODE_UC1601 */
 
+#define DMA2D_AMTCR_DT_VALUE 2
+
+/* копирование содержимого окна с перекрытием для водопада */
+void
+display_scroll_down(
+	uint_fast16_t x0,	// левый верхний угол окна
+	uint_fast16_t y0,	// левый верхний угол окна
+	uint_fast16_t w, 	// до 65535 пикселей - ширина окна
+	uint_fast16_t h, 	// до 65535 пикселей - высота окна
+	uint_fast16_t n		// количество строк прокрутки
+	)
+{
+#if defined (DMA2D)
+#if LCDMODE_HORFILL
+	/*
+	In memory-to-memory mode, the DMA2D does not perform any graphical data
+	transformation. The foreground input FIFO acts as a buffer and the data are transferred
+	from the source memory location defined in DMA2D_FGMAR to the destination memory
+	location pointed by DMA2D_OMAR.
+	The color mode programmed in the CM[3:0] bits of the DMA2D_FGPFCCR register defines
+	the number of bits per pixel for both input and output.
+	The size of the area to be transferred is defined by the DMA2D_NLR and DMA2D_FGOR
+	registers for the source, and by DMA2D_NLR and DMA2D_OOR registers for the
+	destination.
+	*/
+
+	const PACKEDCOLOR_T * src = & framebuff [y0] [x0];
+	PACKEDCOLOR_T * dst = & framebuff [y0] [x0];
+
+	DMA2D->FGMAR = (uintptr_t) src;
+	DMA2D->OMAR = (uintptr_t) dst;
+
+#else /* LCDMODE_HORFILL */
+#endif /* LCDMODE_HORFILL */
+
+	DMA2D->FGPFCCR = (DMA2D->FGPFCCR & ~ (DMA2D_FGPFCCR_CM)) |
+		2 * DMA2D_OPFCCR_CM_0 |	/* 010: RGB565 */
+		0;
+
+	/* set AXI master timer */
+	DMA2D->AMTCR = (DMA2D->AMTCR & ~ (DMA2D_AMTCR_DT | DMA2D_AMTCR_EN)) |
+		(DMA2D_AMTCR_DT_VALUE << DMA2D_AMTCR_DT_Pos) |
+		1 * DMA2D_AMTCR_EN |
+		0;
+	/* запустить операцию */
+	DMA2D->CR = (DMA2D->CR & ~ (DMA2D_CR_MODE)) |
+		0 * DMA2D_CR_MODE_0 |	// 00: Memory-to-memory (FG fetch only)
+		1 * DMA2D_CR_START |
+		0;
+
+	/* ожидаем выполнения операции */
+	while ((DMA2D->CR & DMA2D_CR_START) != 0)
+		;
+
+#endif /* defined (DMA2D) */
+}
+
+/* копирование содержимого окна с перекрытием для водопада */
+void
+display_scroll_up(
+	uint_fast16_t x0,	// левый верхний угол окна
+	uint_fast16_t y0,	// левый верхний угол окна
+	uint_fast16_t w, 	// до 65535 пикселей - ширина окна
+	uint_fast16_t h, 	// до 65535 пикселей - высота окна
+	uint_fast16_t n		// количество строк прокрутки
+	)
+{
+#if defined (DMA2D)
+#if LCDMODE_HORFILL
+#else /* LCDMODE_HORFILL */
+#endif /* LCDMODE_HORFILL */
+#endif /* defined (DMA2D) */
+}
 
 /* заполнение указанного прямоугольника на экране одним цветом */
 static void 
@@ -235,6 +308,13 @@ dma2d_fillrect(
 		2 * DMA2D_OPFCCR_CM_0 |	/* 010: RGB565 */
 		0;
 
+	/* set AXI master timer */
+	DMA2D->AMTCR = (DMA2D->AMTCR & ~ (DMA2D_AMTCR_DT | DMA2D_AMTCR_EN)) |
+		(DMA2D_AMTCR_DT_VALUE << DMA2D_AMTCR_DT_Pos) |
+		1 * DMA2D_AMTCR_EN |
+		0;
+
+	/* запустить операцию */
 	DMA2D->CR = (DMA2D->CR & ~ (DMA2D_CR_MODE)) |
 		3 * DMA2D_CR_MODE_0 |	// 11: Register-to-memory (no FG nor BG, only output stage active)
 		1 * DMA2D_CR_START |
@@ -338,10 +418,58 @@ void display_colorbuffer_show(
 	uint_fast16_t row	// вертикальная координата левого верхнего угла на экране (0..dy-1) сверху вниз
 	)
 {
+#if defined (DMA2D)
+
+	arm_hardware_flush((uintptr_t) buffer, (uint_fast32_t) dx * dy * sizeof * buffer);
+
+#if LCDMODE_HORFILL
+
+	/* тсходный растр */
+	DMA2D->FGMAR = (uintptr_t) buffer;
+	DMA2D->FGOR = (DMA2D->FGOR & ~ (DMA2D_FGOR_LO)) |
+		(0 << DMA2D_FGOR_LO_Pos) |
+		0;
+	/* целевой растр */
+	DMA2D->OMAR = (uintptr_t) & framebuff [row] [col];
+	DMA2D->OOR = (DMA2D->OOR & ~ (DMA2D_OOR_LO)) |
+		((DIM_X - dx) << DMA2D_OOR_LO_Pos) |
+		0;
+	/* размер пересылаемого растра */
+	DMA2D->NLR = (DMA2D->NLR & ~ (DMA2D_NLR_NL | DMA2D_NLR_PL)) |
+		(dy << DMA2D_NLR_NL_Pos) |
+		(dx << DMA2D_NLR_PL_Pos) |
+		0;
+	/* формат пикселя */
+	DMA2D->FGPFCCR = (DMA2D->FGPFCCR & ~ (DMA2D_FGPFCCR_CM)) |
+		2 * DMA2D_OPFCCR_CM_0 |	/* 010: RGB565 */
+		0;
+
+	/* set AXI master timer */
+	DMA2D->AMTCR = (DMA2D->AMTCR & ~ (DMA2D_AMTCR_DT | DMA2D_AMTCR_EN)) |
+		(DMA2D_AMTCR_DT_VALUE << DMA2D_AMTCR_DT_Pos) |
+		1 * DMA2D_AMTCR_EN |
+		0;
+
+	/* запустить операцию */
+	DMA2D->CR = (DMA2D->CR & ~ (DMA2D_CR_MODE)) |
+		0 * DMA2D_CR_MODE_0 |	// 00: Memory-to-memory (FG fetch only)
+		1 * DMA2D_CR_START |
+		0;
+
+	/* ожидаем выполнения операции */
+	while ((DMA2D->CR & DMA2D_CR_START) != 0)
+		;
+
+
+#else /* LCDMODE_HORFILL */
+
+#endif /* LCDMODE_HORFILL */
+#else /* defined (DMA2D) */
 	display_plotfrom(col, row);
 	display_plotstart(dy);
 	display_plot(buffer, dx, dy);
 	display_plotstop();
+#endif /* defined (DMA2D) */
 }
 
 // погасить точку
