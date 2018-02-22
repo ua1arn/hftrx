@@ -391,7 +391,7 @@ void buffers_initialize(void)
 
 	#if WITHRTS192
 
-		static voice192rts_t voicesarray192rts [4];
+		RAMNOINIT_D1 static voice192rts_t voicesarray192rts [4];
 
 		ASSERT(offsetof(voice16_t, buff) == offsetof(voice192rts_t, buff));
 		ASSERT(offsetof(voice16_t, tag) == offsetof(voice192rts_t, tag));
@@ -407,7 +407,7 @@ void buffers_initialize(void)
 
 	#elif WITHRTS96
 
-		static voice96rts_t voicesarray96rts [4];
+		RAMNOINIT_D1 static voice96rts_t voicesarray96rts [4];
 
 		ASSERT(offsetof(voice16_t, buff) == offsetof(voice96rts_t, buff));
 		ASSERT(offsetof(voice16_t, tag) == offsetof(voice96rts_t, tag));
@@ -453,15 +453,17 @@ void buffers_initialize(void)
 #if WITHUSEAUDIOREC
 
 	#if CPUSTYLE_R7S721
-		static records16_t recordsarray16 [8];
+		RAMNOINIT_D1 static records16_t recordsarray16 [16];
 	#elif defined (STM32F767xx)
-		static records16_t recordsarray16 [8];
+		RAMNOINIT_D1 static records16_t recordsarray16 [16];
 	#elif defined (STM32F746xx)
-		static records16_t recordsarray16 [8];
+		RAMNOINIT_D1 static records16_t recordsarray16 [16];
 	#elif defined (STM32F429xx)
-		static records16_t recordsarray16 [8];
+		RAMNOINIT_D1 static records16_t recordsarray16 [16];
+	#elif defined (STM32H743xx)
+		RAMNOINIT_D1 static records16_t recordsarray16 [48];
 	#else
-		static records16_t recordsarray16 [8];
+		RAMNOINIT_D1 static records16_t recordsarray16 [16];
 	#endif
 
 	/* Подготовка буферов для записи на SD CARD */

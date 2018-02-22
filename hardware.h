@@ -408,6 +408,7 @@ void hardware_adc_initialize(void);
 	#define FLASHMEM //__flash
 	#define FLASHMEMINIT	__attribute__((section(".init"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
 	#define NOINLINEAT // __attribute__((noinline))
+	#define RAMNOINIT_D1	__attribute__((section(".noinit"))) /* ра=мещение в памяти SRAM_D1 */
 
 	#if CPUSTYLE_R7S721
 		#define RAMFUNC_NONILINE // __attribute__((__section__(".ramfunc"), noinline))  

@@ -156,7 +156,7 @@ DWORD get_fattime (void)
 #if WITHUSEAUDIOREC
 ///////////////////////////////////////////////////
 
-static FIL wav_file;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
+static RAMNOINIT_D1 FIL wav_file;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
 static FSIZE_t wav_lengthpos_riff;	/* position for write length at RIFF header */
 static FSIZE_t wav_lengthpos_data;	/* position for write length at data subchunk*/
 static unsigned long wave_num_bytes;
@@ -430,7 +430,7 @@ static FRESULT write_wav_tail(void)
 // See also: http://en.wikipedia.org/wiki/RF64
 
 static uint_fast32_t wave_irecorded;
-static FATFS wave_Fatfs;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
+static RAMNOINIT_D1 FATFS wave_Fatfs;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
 
 static uint_fast8_t waveUnmount(void)
 {
