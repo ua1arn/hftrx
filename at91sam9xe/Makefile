@@ -176,13 +176,11 @@ ROM: $(OBJS) $(PROJECT)_rom.elf $(PROJECT)_rom.hex
 
 %ram.elf: $(OBJS)
 	$(CC) $(OBJS) $(LDFLAGS_RAM) $(LIBS) -o $@
-	$(TRGT)size $@
-	-avr-size --mcu=$(MCU) -C $@
+	$(TRGT)size --format=sysv --radix=16 $@
 
 %rom.elf: $(OBJS)
 	$(CC) $(OBJS) $(LDFLAGS_ROM) $(LIBS) -o $@
-	$(TRGT)size $@
-	-avr-size --mcu=$(MCU) -C $@
+	$(TRGT)size --format=sysv --radix=16 $@
 
 %hex: %elf
 	$(HEX) $< $@
