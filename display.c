@@ -21,6 +21,21 @@
 
 #define DMA2D_AMTCR_DT_VALUE 2
 
+#if LCDMODE_LTDC
+
+	#if LCDMODE_LTDC_L24
+		#define DMA2D_FGPFCCR_CM_VALUE	(1 * DMA2D_FGPFCCR_CM_0)	/* 0001: RGB888 */
+		#define DMA2D_OPFCCR_CM_VALUE	(1 * DMA2D_FGPFCCR_CM_0)	/* 001: RGB888 */
+	#elif LCDMODE_LTDC_L8
+		#define DMA2D_FGPFCCR_CM_VALUE	(5 * DMA2D_FGPFCCR_CM_0)	/* 0101: L8 */
+		//#define DMA2D_OPFCCR_CM_VALUE	(x * DMA2D_FGPFCCR_CM_0)	/* not supported */
+	#else /* LCDMODE_LTDC_L8 */
+		#define DMA2D_FGPFCCR_CM_VALUE	(2 * DMA2D_FGPFCCR_CM_0)	/* 0010: RGB565 */
+		#define DMA2D_OPFCCR_CM_VALUE	(2 * DMA2D_FGPFCCR_CM_0)	/* 010: RGB565 */
+	#endif /* LCDMODE_LTDC_L8 */
+
+#endif /* LCDMODE_LTDC */
+
 /* заполнение  прямоугольного буфера цветом */
 static void 
 dma2d_fillrect(
@@ -30,7 +45,7 @@ dma2d_fillrect(
 	PACKEDCOLOR_T color
 	)
 {
-#if defined (DMA2D) && LCDMODE_LTDC
+#if defined (DMA2D) && LCDMODE_LTDC && ! LCDMODE_LTDC_L8
 
 	// just writes the color defined in the DMA2D_OCOLR register 
 	// to the area located at the address pointed by the DMA2D_OMAR 
@@ -53,7 +68,7 @@ dma2d_fillrect(
 		0;
 
 	DMA2D->OPFCCR = (DMA2D->OPFCCR & ~ (DMA2D_OPFCCR_CM)) |
-		2 * DMA2D_OPFCCR_CM_0 |	/* 010: RGB565 */
+		DMA2D_OPFCCR_CM_VALUE |	/* Color mode - framebuffer pixel format */
 		0;
 
 	/* set AXI master timer */
@@ -260,11 +275,11 @@ void display_colorbuffer_fill(
 	COLOR_T color
 	)
 {
-#if defined (DMA2D) && LCDMODE_LTDC
+#if defined (DMA2D) && LCDMODE_LTDC && ! LCDMODE_LTDC_L8
 
 	dma2d_fillrect(buffer, dx, dy, color);
 
-#else /* defined (DMA2D) && LCDMODE_LTDC */
+#else /* defined (DMA2D) && LCDMODE_LTDC && ! LCDMODE_LTDC_L8 */
 
 	uint_fast32_t len = (uint_fast32_t) dx * dy;
 	if (sizeof (PACKEDCOLOR_T) == 1)
@@ -288,7 +303,7 @@ void display_colorbuffer_fill(
 			* buffer ++ = color;
 	}
 
-#endif /* defined (DMA2D) && LCDMODE_LTDC */
+#endif /* defined (DMA2D) && LCDMODE_LTDC && ! LCDMODE_LTDC_L8 */
 }
 
 // поставить цветную точку.
@@ -365,7 +380,7 @@ void display_colorbuffer_show(
 		0;
 	/* формат пикселя */
 	DMA2D->FGPFCCR = (DMA2D->FGPFCCR & ~ (DMA2D_FGPFCCR_CM)) |
-		2 * DMA2D_OPFCCR_CM_0 |	/* 010: RGB565 */
+		DMA2D_FGPFCCR_CM_VALUE |	/* Color mode - framebuffer pixel format */
 		0;
 
 	/* set AXI master timer */
@@ -825,7 +840,7 @@ display_scroll_down(
 		0;
 	/* формат пикселя */
 	DMA2D->FGPFCCR = (DMA2D->FGPFCCR & ~ (DMA2D_FGPFCCR_CM)) |
-		2 * DMA2D_OPFCCR_CM_0 |	/* 010: RGB565 */
+		DMA2D_FGPFCCR_CM_VALUE |	/* Color mode - framebuffer pixel format */
 		0;
 
 	/* set AXI master timer */
@@ -890,7 +905,7 @@ display_scroll_up(
 		0;
 	/* формат пикселя */
 	DMA2D->FGPFCCR = (DMA2D->FGPFCCR & ~ (DMA2D_FGPFCCR_CM)) |
-		2 * DMA2D_OPFCCR_CM_0 |	/* 010: RGB565 */
+		DMA2D_FGPFCCR_CM_VALUE |	/* Color mode - framebuffer pixel format */
 		0;
 
 	/* set AXI master timer */
@@ -920,7 +935,7 @@ void display_clear(void)
 {
 	const COLOR_T bg = display_getbgcolor();
 
-#if defined (DMA2D) && LCDMODE_LTDC
+#if defined (DMA2D) && LCDMODE_LTDC && ! LCDMODE_LTDC_L8
 
 	dma2d_fillrect(framebuff [0], DIM_X, DIM_Y, bg);
 
