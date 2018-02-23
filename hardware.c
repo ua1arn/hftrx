@@ -1142,6 +1142,7 @@ static RAMFUNC void spool_adcdonebundle(void)
 	}
 
 	#if CPUSTYLE_STM32L0XX
+
 	void ATTRWEAK EXTI0_1_IRQHandler(void)
 	{
 		const portholder_t pr = EXTI->PR & (EXTI_IMR_IM0 | EXTI_IMR_IM1);
@@ -1174,13 +1175,7 @@ static RAMFUNC void spool_adcdonebundle(void)
 		stm32fxxx_pinirq(pr);
 	}
 
-	void ATTRWEAK EXTI0_1_IRQHandler(void)
-	{
-		const portholder_t pr = EXTI_D1->PR1 & (EXTI_PR1_PR0 | EXTI_PR1_PR1);
-		EXTI_D1->PR1 = pr;		// reset all existing requests
-		stm32fxxx_pinirq(pr);
-	}
-
+	
 	void ATTRWEAK EXTI1_IRQHandler(void)
 	{
 		const portholder_t pr = EXTI_D1->PR1 & (EXTI_PR1_PR1);
@@ -1191,24 +1186,6 @@ static RAMFUNC void spool_adcdonebundle(void)
 	void ATTRWEAK EXTI2_IRQHandler(void)
 	{
 		const portholder_t pr = EXTI_D1->PR1 & (EXTI_PR1_PR2);
-		EXTI_D1->PR1 = pr;		// reset all existing requests
-		stm32fxxx_pinirq(pr);
-	}
-
-	void ATTRWEAK EXTI2_3_IRQHandler(void)
-	{
-		const portholder_t pr = EXTI_D1->PR1 & (EXTI_PR1_PR2 | EXTI_PR1_PR3);
-		EXTI_D1->PR1 = pr;		// reset all existing requests
-		stm32fxxx_pinirq(pr);
-	}
-
-	void ATTRWEAK EXTI4_15_IRQHandler(void)
-	{
-		const portholder_t pr = EXTI_D1->PR1 & (
-				EXTI_PR1_PR15 | EXTI_PR1_PR14 | EXTI_PR1_PR13 | EXTI_PR1_PR12 | 
-				EXTI_PR1_PR11 | EXTI_PR1_PR10 | EXTI_PR1_PR9 | EXTI_PR1_PR8 | 
-				EXTI_PR1_PR7 | EXTI_PR1_PR6 | EXTI_PR1_PR5 | EXTI_PR1_PR4
-				);
 		EXTI_D1->PR1 = pr;		// reset all existing requests
 		stm32fxxx_pinirq(pr);
 	}
@@ -1750,7 +1727,7 @@ hardware_get_encoder2_bits(void)
 #if WITHENCODER && ENCODER2_BITS && defined (ENCODER2_SHIFT)
 	return (ENCODER2_INPUT_PORT & ENCODER2_BITS) >> ENCODER2_SHIFT;	// Биты валкодера #2
 #elif WITHENCODER && ENCODER2_BITS
-	const portholder_t v = ENCODER_INPUT2_PORT;
+	const portholder_t v = ENCODER2_INPUT_PORT;
 	return ((v & ENCODER2_BITA) != 0) * 2 + ((v & ENCODER2_BITB) != 0);	// Биты идут не подряд
 #else /* WITHENCODER */
 	return 0;

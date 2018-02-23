@@ -817,161 +817,165 @@ void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority,
 
 		#endif /* CPUSTYLE_STM32H7XX */
 
-			#if CPUSTYLE_STM32L0XX
-				if ((ipins & (EXTI_IMR_IM1 | EXTI_IMR_IM0)) != 0)
-				{
-					NVIC_SetPriority(EXTI0_1_IRQn, priority);
-					NVIC_EnableIRQ(EXTI0_1_IRQn);		// enable EXTI0_1_IRQHandler();
-				}
-				else if ((ipins & (EXTI_IMR_IM2 | EXTI_IMR_IM3)) != 0)
-				{
-					NVIC_SetPriority(EXTI2_3_IRQn, priority);
-					NVIC_EnableIRQ(EXTI2_3_IRQn);		// enable EXTI2_3_IRQHandler();
-				}
-				else
-				{
-					NVIC_SetPriority(EXTI4_15_IRQn, priority);
-					NVIC_EnableIRQ(EXTI4_15_IRQn);		// enable EXTI4_15_IRQHandler();
-				}
-			#elif CPUSTYLE_STM32F0XX
-				if ((ipins & (EXTI_IMR_MR1 | EXTI_IMR_MR0)) != 0)
-				{
-					NVIC_SetPriority(EXTI0_1_IRQn, priority);
-					NVIC_EnableIRQ(EXTI0_1_IRQn);		// enable EXTI0_1_IRQHandler();
-				}
-				else if ((ipins & (EXTI_IMR_MR2 | EXTI_IMR_MR3)) != 0)
-				{
-					NVIC_SetPriority(EXTI2_3_IRQn, priority);
-					NVIC_EnableIRQ(EXTI2_3_IRQn);		// enable EXTI2_3_IRQHandler();
-				}
-				else
-				{
-					NVIC_SetPriority(EXTI4_15_IRQn, priority);
-					NVIC_EnableIRQ(EXTI4_15_IRQn);		// enable EXTI4_15_IRQHandler();
-				}
-			#elif CPUSTYLE_STM32F7XX
+		#if CPUSTYLE_STM32L0XX
 
-				if ((ipins & (EXTI_IMR_MR0)) != 0)
-				{
-					NVIC_SetPriority(EXTI0_IRQn, priority);
-					NVIC_EnableIRQ(EXTI0_IRQn);		// enable EXTI0_IRQHandler();
-				}
-				if ((ipins & (EXTI_IMR_MR1)) != 0)
-				{
-					NVIC_SetPriority(EXTI1_IRQn, priority);
-					NVIC_EnableIRQ(EXTI1_IRQn);		// enable EXTI1_IRQHandler();
-				}
-				if ((ipins & (EXTI_IMR_MR2)) != 0)
-				{
+			if ((ipins & (EXTI_IMR_IM1 | EXTI_IMR_IM0)) != 0)
+			{
+				NVIC_SetPriority(EXTI0_1_IRQn, priority);
+				NVIC_EnableIRQ(EXTI0_1_IRQn);		// enable EXTI0_1_IRQHandler();
+			}
+			else if ((ipins & (EXTI_IMR_IM2 | EXTI_IMR_IM3)) != 0)
+			{
+				NVIC_SetPriority(EXTI2_3_IRQn, priority);
+				NVIC_EnableIRQ(EXTI2_3_IRQn);		// enable EXTI2_3_IRQHandler();
+			}
+			else
+			{
+				NVIC_SetPriority(EXTI4_15_IRQn, priority);
+				NVIC_EnableIRQ(EXTI4_15_IRQn);		// enable EXTI4_15_IRQHandler();
+			}
+
+		#elif CPUSTYLE_STM32F0XX
+
+			if ((ipins & (EXTI_IMR_MR1 | EXTI_IMR_MR0)) != 0)
+			{
+				NVIC_SetPriority(EXTI0_1_IRQn, priority);
+				NVIC_EnableIRQ(EXTI0_1_IRQn);		// enable EXTI0_1_IRQHandler();
+			}
+			else if ((ipins & (EXTI_IMR_MR2 | EXTI_IMR_MR3)) != 0)
+			{
+				NVIC_SetPriority(EXTI2_3_IRQn, priority);
+				NVIC_EnableIRQ(EXTI2_3_IRQn);		// enable EXTI2_3_IRQHandler();
+			}
+			else
+			{
+				NVIC_SetPriority(EXTI4_15_IRQn, priority);
+				NVIC_EnableIRQ(EXTI4_15_IRQn);		// enable EXTI4_15_IRQHandler();
+			}
+
+		#elif CPUSTYLE_STM32F7XX
+
+			if ((ipins & (EXTI_IMR_MR0)) != 0)
+			{
+				NVIC_SetPriority(EXTI0_IRQn, priority);
+				NVIC_EnableIRQ(EXTI0_IRQn);		// enable EXTI0_IRQHandler();
+			}
+			if ((ipins & (EXTI_IMR_MR1)) != 0)
+			{
+				NVIC_SetPriority(EXTI1_IRQn, priority);
+				NVIC_EnableIRQ(EXTI1_IRQn);		// enable EXTI1_IRQHandler();
+			}
+			if ((ipins & (EXTI_IMR_MR2)) != 0)
+			{
+				NVIC_SetPriority(EXTI2_IRQn, priority);
+				NVIC_EnableIRQ(EXTI2_IRQn);		// enable EXTI2_IRQHandler();
+			}
+			if ((ipins & (EXTI_IMR_MR3)) != 0)
+			{
+				NVIC_SetPriority(EXTI3_IRQn, priority);
+				NVIC_EnableIRQ(EXTI3_IRQn);		// enable EXTI3_IRQHandler();
+			}
+			if ((ipins & (EXTI_IMR_MR4)) != 0)
+			{
+				NVIC_SetPriority(EXTI4_IRQn, priority);
+				NVIC_EnableIRQ(EXTI4_IRQn);		// enable EXTI4_IRQHandler();
+			}
+			if ((ipins & (EXTI_IMR_MR9 | EXTI_IMR_MR8 | EXTI_IMR_MR7 | EXTI_IMR_MR6 | EXTI_IMR_MR5)) != 0)
+			{
+				NVIC_SetPriority(EXTI9_5_IRQn, priority);
+				NVIC_EnableIRQ(EXTI9_5_IRQn);	// enable EXTI9_5_IRQHandler();
+			}
+			if ((ipins & (EXTI_IMR_MR15 | EXTI_IMR_MR14 | EXTI_IMR_MR14 | EXTI_IMR_MR12 | EXTI_IMR_MR11 | EXTI_IMR_MR10)) != 0)
+			{
+				NVIC_SetPriority(EXTI15_10_IRQn, priority);
+				NVIC_EnableIRQ(EXTI15_10_IRQn);	// enable EXTI15_10_IRQHandler();
+			}
+			else
+			{
+				//NVIC_SetPriority(EXTI4_15_IRQn, priority);
+				//NVIC_EnableIRQ(EXTI4_15_IRQn);		// enable EXTI4_15_IRQHandler();
+			}
+
+		#elif CPUSTYLE_STM32H7XX
+
+			if ((ipins & EXTI_IMR1_IM0) != 0)
+			{
+				NVIC_SetPriority(EXTI0_IRQn, priority);
+				NVIC_EnableIRQ(EXTI0_IRQn);		// enable EXTI0_IRQHandler();
+			}
+			if ((ipins & EXTI_IMR1_IM1) != 0)
+			{
+				NVIC_SetPriority(EXTI1_IRQn, priority);
+				NVIC_EnableIRQ(EXTI1_IRQn);		// enable EXTI1_IRQHandler();
+			}
+			if ((ipins & EXTI_IMR1_IM2) != 0)
+			{
+				NVIC_SetPriority(EXTI2_IRQn, priority);
+				NVIC_EnableIRQ(EXTI2_IRQn);		// enable EXTI2_IRQHandler();
+			}
+			if ((ipins & EXTI_IMR1_IM3) != 0)
+			{
+				NVIC_SetPriority(EXTI3_IRQn, priority);
+				NVIC_EnableIRQ(EXTI3_IRQn);		// enable EXTI3_IRQHandler();
+			}
+			if ((ipins & EXTI_IMR1_IM4) != 0)
+			{
+				NVIC_SetPriority(EXTI4_IRQn, priority);
+				NVIC_EnableIRQ(EXTI4_IRQn);		// enable EXTI4_IRQHandler();
+			}
+			if ((ipins & (EXTI_IMR1_IM9 | EXTI_IMR1_IM8 | EXTI_IMR1_IM7 | EXTI_IMR1_IM6 | EXTI_IMR1_IM5)) != 0)
+			{
+				NVIC_SetPriority(EXTI9_5_IRQn, priority);
+				NVIC_EnableIRQ(EXTI9_5_IRQn);	// enable EXTI9_5_IRQHandler();
+			}
+			if ((ipins & (EXTI_IMR1_IM15 | EXTI_IMR1_IM14 | EXTI_IMR1_IM14 | EXTI_IMR1_IM12 | EXTI_IMR1_IM11 | EXTI_IMR1_IM10)) != 0)
+			{
+				NVIC_SetPriority(EXTI15_10_IRQn, priority);
+				NVIC_EnableIRQ(EXTI15_10_IRQn);	// enable EXTI15_10_IRQHandler();
+			}
+
+		#else /* CPUSTYLE_STM32F0XX */
+			if ((ipins & EXTI_IMR_MR0) != 0)
+			{
+				NVIC_SetPriority(EXTI0_IRQn, priority);
+				NVIC_EnableIRQ(EXTI0_IRQn);		// enable EXTI0_IRQHandler();
+			}
+			if ((ipins & EXTI_IMR_MR1) != 0)
+			{
+				NVIC_SetPriority(EXTI1_IRQn, priority);
+				NVIC_EnableIRQ(EXTI1_IRQn);		// enable EXTI1_IRQHandler();
+			}
+			if ((ipins & EXTI_IMR_MR2) != 0)
+			{
+				#if CPUSTYLE_STM32F4XX
 					NVIC_SetPriority(EXTI2_IRQn, priority);
 					NVIC_EnableIRQ(EXTI2_IRQn);		// enable EXTI2_IRQHandler();
-				}
-				if ((ipins & (EXTI_IMR_MR3)) != 0)
-				{
-					NVIC_SetPriority(EXTI3_IRQn, priority);
-					NVIC_EnableIRQ(EXTI3_IRQn);		// enable EXTI3_IRQHandler();
-				}
-				if ((ipins & (EXTI_IMR_MR4)) != 0)
-				{
-					NVIC_SetPriority(EXTI4_IRQn, priority);
-					NVIC_EnableIRQ(EXTI4_IRQn);		// enable EXTI4_IRQHandler();
-				}
-				if ((ipins & (EXTI_IMR_MR9 | EXTI_IMR_MR8 | EXTI_IMR_MR7 | EXTI_IMR_MR6 | EXTI_IMR_MR5)) != 0)
-				{
-					NVIC_SetPriority(EXTI9_5_IRQn, priority);
-					NVIC_EnableIRQ(EXTI9_5_IRQn);	// enable EXTI9_5_IRQHandler();
-				}
-				if ((ipins & (EXTI_IMR_MR15 | EXTI_IMR_MR14 | EXTI_IMR_MR14 | EXTI_IMR_MR12 | EXTI_IMR_MR11 | EXTI_IMR_MR10)) != 0)
-				{
-					NVIC_SetPriority(EXTI15_10_IRQn, priority);
-					NVIC_EnableIRQ(EXTI15_10_IRQn);	// enable EXTI15_10_IRQHandler();
-				}
-				else
-				{
-					//NVIC_SetPriority(EXTI4_15_IRQn, priority);
-					//NVIC_EnableIRQ(EXTI4_15_IRQn);		// enable EXTI4_15_IRQHandler();
-				}
-
-			#elif CPUSTYLE_STM32H7XX
-
-				if ((ipins & EXTI_IMR1_IM0) != 0)
-				{
-					NVIC_SetPriority(EXTI0_IRQn, priority);
-					NVIC_EnableIRQ(EXTI0_IRQn);		// enable EXTI0_IRQHandler();
-				}
-				if ((ipins & EXTI_IMR1_IM1) != 0)
-				{
-					NVIC_SetPriority(EXTI1_IRQn, priority);
-					NVIC_EnableIRQ(EXTI1_IRQn);		// enable EXTI1_IRQHandler();
-				}
-				if ((ipins & EXTI_IMR1_IM2) != 0)
-				{
-					NVIC_SetPriority(EXTI2_IRQn, priority);
-					NVIC_EnableIRQ(EXTI2_IRQn);		// enable EXTI2_IRQHandler();
-				}
-				if ((ipins & EXTI_IMR1_IM3) != 0)
-				{
-					NVIC_SetPriority(EXTI3_IRQn, priority);
-					NVIC_EnableIRQ(EXTI3_IRQn);		// enable EXTI3_IRQHandler();
-				}
-				if ((ipins & EXTI_IMR1_IM4) != 0)
-				{
-					NVIC_SetPriority(EXTI4_IRQn, priority);
-					NVIC_EnableIRQ(EXTI4_IRQn);		// enable EXTI4_IRQHandler();
-				}
-				if ((ipins & (EXTI_IMR1_IM9 | EXTI_IMR1_IM8 | EXTI_IMR1_IM7 | EXTI_IMR1_IM6 | EXTI_IMR1_IM5)) != 0)
-				{
-					NVIC_SetPriority(EXTI9_5_IRQn, priority);
-					NVIC_EnableIRQ(EXTI9_5_IRQn);	// enable EXTI9_5_IRQHandler();
-				}
-				if ((ipins & (EXTI_IMR1_IM15 | EXTI_IMR1_IM14 | EXTI_IMR1_IM14 | EXTI_IMR1_IM12 | EXTI_IMR1_IM11 | EXTI_IMR1_IM10)) != 0)
-				{
-					NVIC_SetPriority(EXTI15_10_IRQn, priority);
-					NVIC_EnableIRQ(EXTI15_10_IRQn);	// enable EXTI15_10_IRQHandler();
-				}
-
-			#else /* CPUSTYLE_STM32F0XX */
-				if ((ipins & EXTI_IMR_MR0) != 0)
-				{
-					NVIC_SetPriority(EXTI0_IRQn, priority);
-					NVIC_EnableIRQ(EXTI0_IRQn);		// enable EXTI0_IRQHandler();
-				}
-				if ((ipins & EXTI_IMR_MR1) != 0)
-				{
-					NVIC_SetPriority(EXTI1_IRQn, priority);
-					NVIC_EnableIRQ(EXTI1_IRQn);		// enable EXTI1_IRQHandler();
-				}
-				if ((ipins & EXTI_IMR_MR2) != 0)
-				{
-					#if CPUSTYLE_STM32F4XX
-						NVIC_SetPriority(EXTI2_IRQn, priority);
-						NVIC_EnableIRQ(EXTI2_IRQn);		// enable EXTI2_IRQHandler();
-					#else
-						NVIC_SetPriority(EXTI2_TS_IRQn, priority);
-						NVIC_EnableIRQ(EXTI2_TS_IRQn);		// enable EXTI2_IRQHandler();
-					#endif
-				}
-				if ((ipins & EXTI_IMR_MR3) != 0)
-				{
-					NVIC_SetPriority(EXTI3_IRQn, priority);
-					NVIC_EnableIRQ(EXTI3_IRQn);		// enable EXTI3_IRQHandler();
-				}
-				if ((ipins & EXTI_IMR_MR4) != 0)
-				{
-					NVIC_SetPriority(EXTI4_IRQn, priority);
-					NVIC_EnableIRQ(EXTI4_IRQn);		// enable EXTI4_IRQHandler();
-				}
-				if ((ipins & (EXTI_IMR_MR9 | EXTI_IMR_MR8 | EXTI_IMR_MR7 | EXTI_IMR_MR6 | EXTI_IMR_MR5)) != 0)
-				{
-					NVIC_SetPriority(EXTI9_5_IRQn, priority);
-					NVIC_EnableIRQ(EXTI9_5_IRQn);	// enable EXTI9_5_IRQHandler();
-				}
-				if ((ipins & (EXTI_IMR_MR15 | EXTI_IMR_MR14 | EXTI_IMR_MR14 | EXTI_IMR_MR12 | EXTI_IMR_MR11 | EXTI_IMR_MR10)) != 0)
-				{
-					NVIC_SetPriority(EXTI15_10_IRQn, priority);
-					NVIC_EnableIRQ(EXTI15_10_IRQn);	// enable EXTI15_10_IRQHandler();
-				}
-			#endif /* CPUSTYLE_STM32F0XX */
+				#else
+					NVIC_SetPriority(EXTI2_TS_IRQn, priority);
+					NVIC_EnableIRQ(EXTI2_TS_IRQn);		// enable EXTI2_IRQHandler();
+				#endif
+			}
+			if ((ipins & EXTI_IMR_MR3) != 0)
+			{
+				NVIC_SetPriority(EXTI3_IRQn, priority);
+				NVIC_EnableIRQ(EXTI3_IRQn);		// enable EXTI3_IRQHandler();
+			}
+			if ((ipins & EXTI_IMR_MR4) != 0)
+			{
+				NVIC_SetPriority(EXTI4_IRQn, priority);
+				NVIC_EnableIRQ(EXTI4_IRQn);		// enable EXTI4_IRQHandler();
+			}
+			if ((ipins & (EXTI_IMR_MR9 | EXTI_IMR_MR8 | EXTI_IMR_MR7 | EXTI_IMR_MR6 | EXTI_IMR_MR5)) != 0)
+			{
+				NVIC_SetPriority(EXTI9_5_IRQn, priority);
+				NVIC_EnableIRQ(EXTI9_5_IRQn);	// enable EXTI9_5_IRQHandler();
+			}
+			if ((ipins & (EXTI_IMR_MR15 | EXTI_IMR_MR14 | EXTI_IMR_MR14 | EXTI_IMR_MR12 | EXTI_IMR_MR11 | EXTI_IMR_MR10)) != 0)
+			{
+				NVIC_SetPriority(EXTI15_10_IRQn, priority);
+				NVIC_EnableIRQ(EXTI15_10_IRQn);	// enable EXTI15_10_IRQHandler();
+			}
+		#endif /* CPUSTYLE_STM32F0XX */
 
 		}
 
@@ -5615,11 +5619,11 @@ arm_hardware_pioh_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 {
 #if CPUSTYLE_STM32F1XX
 
-	arm_stm32f10x_hardware_pio_onchangeinterrupt(ipins, raise, fall, AFIO_EXTICR1_EXTI0_PH, priority);	// PORT G
+	arm_stm32f10x_hardware_pio_onchangeinterrupt(ipins, raise, fall, AFIO_EXTICR1_EXTI0_PH, priority);	// PORT H
 
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
 
-	arm_stm32f30x_hardware_pio_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PH, priority);	// PORT G
+	arm_stm32f30x_hardware_pio_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PH, priority);	// PORT H
 
 #endif
 }
