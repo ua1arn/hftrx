@@ -699,9 +699,22 @@
 		arm_hardware_pioi_altfn50((1U << 6), GPIO_AF_LTDC);		/* B6 */ \
 		arm_hardware_pioi_altfn50((1U << 7), GPIO_AF_LTDC);		/* B7 */ \
 		/* step-up backlight converter */ \
-		arm_hardware_pioe_outputs((1U << 0), (1U << 0));		/* PE0 - enable backlight */ \
-		arm_hardware_piob_opendrain((1U << 9) | (1U << 8), (1U << 9) | (1U << 8));	/* PB9:PB8 - backlight current adjust */ \
+		arm_hardware_pioe_outputs((1U << 0), 1 * (1U << 0));		/* PE0 - enable backlight */ \
+		arm_hardware_piob_opendrain((1U << 9) | (1U << 8), 0 * (1U << 9) | 0 * (1U << 8));	/* PB9:PB8 - backlight current adjust */ \
 	} while (0)
+	/* установка яркости и включение/выключение преобразователя подсветки */
+	#define HARDWARE_LTDC_SET_BL(en, level) do { \
+		const portholder_t enmask = (1U << 0); /* PE0 */ \
+		const portholder_t opins = (1U << 9) | (1U << 8); /* PB9:PB8 */ \
+		const portholder_t initialstate = (~ (level) & 0x03) << 8; \
+		GPIOE->BSRR = (en) ? BSRR_S(enmask) : BSRR_C(enmask); /* backlight control on/off */ \
+		GPIOB->BSRR = \
+			BSRR_S((initialstate) & (opins)) | /* set bits */ \
+			BSRR_C(~ (initialstate) & (opins)) | /* reset bits */ \
+			0; \
+		__DSB(); \
+	} while (0)
+
 	/* управление состоянием сигнала DISP панели */
 	#define HARDWARE_LTDC_SET_DISP(state) do { \
 		const uint32_t VSYNC = (1U << 9); \
@@ -711,5 +724,17 @@
 		arm_hardware_pioe_outputs(mask, ((state) != 0) * mask);	/* DE=DISP, pin 31 - можно менять только при VSYNC=1 */ \
 	} while (0)
 #endif /* LCDMODE_LTDC */
+
+#if LCDMODE_LQ043T3DX02K
+	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея 
+	#define WITHLCDBACKLIGHTMIN	0	// Нижний предел регулировки (показываетый на дисплее)
+	#define WITHLCDBACKLIGHTMAX	4	// Верхний предел регулировки (показываетый на дисплее)
+	#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры 
+#else
+	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея 
+	#define WITHLCDBACKLIGHTMIN	0	// Нижний предел регулировки (показываетый на дисплее)
+	#define WITHLCDBACKLIGHTMAX	3	// Верхний предел регулировки (показываетый на дисплее)
+	#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры 
+#endif
 
 #endif /* ARM_STM32F4XX_TQFP176_CPUSTYLE_STORCH_V6_H_INCLUDED */

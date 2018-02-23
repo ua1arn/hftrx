@@ -127,11 +127,6 @@
 	#define WITHPOWERTRIMMIN	10	// Ќижний предел регулировки (показываетый на дисплее)
 	#define WITHPOWERTRIMMAX	100	// ¬ерхний предел регулировки (показываетый на дисплее)
 
-	#define WITHLCDBACKLIGHT	1	// »меетс€ управление подсветкой диспле€ 
-	#define WITHLCDBACKLIGHTMIN	0	// Ќижний предел регулировки (показываетый на дисплее)
-	#define WITHLCDBACKLIGHTMAX	3	// ¬ерхний предел регулировки (показываетый на дисплее)
-	#define WITHKBDBACKLIGHT	1	// »меетс€ управление подсветкой клавиатуры 
-
 	//#define WITHPABIASTRIM		1	// имеетс€ управление током оконечного каскада усидител€ мощности передатчика
 	#define	WITHPABIASMIN		0
 	#define	WITHPABIASMAX		255
