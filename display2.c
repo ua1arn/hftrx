@@ -4311,7 +4311,7 @@ static void display2_waterfall(
 
 	#if 1
 		// следы спектра ("водопад")
-		// сдвигаем вниз, отрисовываем только верхню строку
+		// сдвигаем вниз, отрисовываем только верхнюю строку
 		uint_fast16_t x;
 		display_scroll_down(GRID2X(x0), GRID2Y(y0), WFDX, WFDY, 1);
 		while (display_getreadystate() == 0)
@@ -4326,7 +4326,7 @@ static void display2_waterfall(
 		while (display_getreadystate() == 0)
 			;
 		x = 0;
-		display_wfputrow((GRID2X(x0) + x, GRID2Y(y0) + WFDY - 1, & wfarray [wfrow] [0]);	// display_plot inside for one row
+		display_wfputrow(GRID2X(x0) + x, GRID2Y(y0) + WFDY - 1, & wfarray [wfrow] [0]);	// display_plot inside for one row
 	#else
 		// следы спектра ("водопад")
 		// отрисовываем весь экран
