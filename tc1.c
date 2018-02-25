@@ -96,6 +96,7 @@ display_redrawbars(
 
 static uint_fast8_t gtx;	/* текущее состояние прием или передача */
 static uint_fast8_t gcwpitch10 = 700 / CWPITCHSCALE;	/* тон при приеме телеграфа или самоконтроль (в десятках герц) */
+static uint_fast8_t gsquelch;	/* squelch level */
 
 #if WITHDSPEXTDDC	/* "Воронёнок" с DSP и FPGA */
 
@@ -2287,6 +2288,7 @@ struct nvmap
 	uint8_t	gsidetonelevel;	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
 	uint8_t	gsubtonelevel;	/* Уровень сигнала CTCSS в процентах - 0%..100% */
 	uint8_t gdigigainmax;	/* диапазон ручной регулировки цифрового усиления - максимальное значение */
+	uint8_t gsquelch;		/* уровень открытия шумоподавителя */
 	uint8_t gvad605;		/* напряжение на AD605 (управление усилением тракта ПЧ */
 	uint16_t gfsadcpower10;	/*	Мощность, соответствующая full scale от IF ADC (с тояностью 0.1 дБмВт */
 	#if ! WITHPOTGAIN
@@ -2702,7 +2704,6 @@ static uint_fast8_t gvfosplit [2];	// At index 0: RX VFO A or B, at index 1: TX 
 // Параметры, выставляемые в update board
 // кэш установленных параметров.
 static uint_fast8_t gsubmode;		/* код текущего режима */
-static uint_fast8_t gsquelch;	/* squelch level */
 static uint_fast8_t gmode;		/* текущий код группы режимов */
 static uint_fast8_t gfi;			/* номер фильтра (сквозной) для текущего режима */
 static uint_fast16_t gstep;
@@ -11996,6 +11997,17 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		& gdigigainmax,	// 8 bit
 		getzerobase, /* складывается со смещением и отображается */
 	},
+#if WITHIF4DSP
+	{
+		"SQUELCH ", 7, 0, 0,	ISTEP1,		/* squelch level */
+		ITEM_VALUE,
+		0, 255, 
+		offsetof(struct nvmap, gsquelch),	/* уровень сигнала болше которого открывается шумодав */
+		NULL,
+		& gsquelch,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+#endif /* WITHIF4DSP */
 #if CTLSTYLE_RAVENDSP_V1 || WITHEXTERNALDDSP
 	{
 		"AD605 GN", 7, 0, 0,	ISTEP1,		/* напряжение на AD605 (управление усилением тракта ПЧ */

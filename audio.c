@@ -10480,6 +10480,16 @@ static RAMFUNC FLOAT_t agc_forvard_float(
 	return gain;
 }
 
+static FLOAT_t manualsquelch [NTRX] = { 0, };
+
+static RAMFUNC int agc_squelchopen(
+	uint_fast8_t pathi
+	)
+{
+	volatile agcstate_t * const st = & rxagcstate [pathi];
+	const FLOAT_t fltstrengthslow = performagcresultslow(st);	// измеритель уровня сигнала
+	return fltstrengthslow > manualsquelch [pathi];
+}
 // Функция для S-метра - получение десятичного логарифма уровня сигнала от FS
 /* Вызывается из user-mode программы */
 static void agc_reset(
@@ -11348,7 +11358,7 @@ static RAMFUNC_NONILINE FLOAT_t baseband_demodulator(
 			r = 0;
 		break;
 	}
-	return r;
+	return r * agc_squelchopen(pathi);
 }
 
 // Расширение знакового 24/32 битного числа (left justified) до 32 бит
@@ -12524,6 +12534,12 @@ rxparam_update(uint_fast8_t profile, uint_fast8_t pathi)
 		const FLOAT_t tauI = (FLOAT_t) 1.4; // original 1.4;  
 		create_amd(& amds [pathi], 0, - pll, + pll, zeta, omegaN, tauR, tauI);
 	}
+
+	// шумодав
+	{
+		manualsquelch [pathi] = agccalcstrength(& rxagcparams [profile] [pathi], POWF(2, WITHIFADCWIDTH - 9) * (int) glob_squelch);
+	}
+
 	// шумодав NFM
 	nbfence = POWF(2, WITHIFADCWIDTH - 8) * (int) glob_nfm_sql_lelel;	// glob_nfm_sql_lelel: 0..255
 

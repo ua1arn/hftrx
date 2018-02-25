@@ -4714,6 +4714,160 @@ hardware_spi_master_send_frame_16bpartial(
 #endif
 }
 
+// Read a frame of bytes via SPI
+// На сигнале MOSI при это должно обеспачиваться состояние логической "1" для корректной работы SD CARD
+static void 
+hardware_spi_master_read_frame_16bpartial(
+	//spitarget_t target,	/* addressing to chip */
+	uint16_t * buffer, 
+	uint_fast32_t size		/* количество пересылаемых 16-ти битных элементов */
+	)
+{
+#if CPUSTYLE_SAM9XE
+
+	HARDWARE_SPI_DISCONNECT_MOSI();	// выход данных в "1"
+
+	AT91C_BASE_SPI1->SPI_TPR = (unsigned long) buffer;
+	AT91C_BASE_SPI1->SPI_RPR = (unsigned long) buffer;
+	AT91C_BASE_SPI1->SPI_RCR = size;	// разрешить работу приёмника
+	AT91C_BASE_SPI1->SPI_TCR = size;	// запуск передатчика (выдача синхронизации)
+
+	while ((AT91C_BASE_SPI1->SPI_SR & AT91C_SPI_ENDRX) == 0)	// было TX
+		;
+	// дождаться, пока последний байт выйдет из передатчика
+	while ((AT91C_BASE_SPI1->SPI_SR & AT91C_SPI_TXEMPTY) == 0)
+		;
+
+	HARDWARE_SPI_CONNECT_MOSI();	// Возвращаем в обычный режим работы
+
+#elif CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
+
+	HARDWARE_SPI_DISCONNECT_MOSI();	// выход данных в "1"
+
+	SPI->SPI_TPR = (unsigned long) buffer;
+	SPI->SPI_RPR = (unsigned long) buffer;
+	SPI->SPI_RCR = size;	// разрешить работу приёмника
+	SPI->SPI_TCR = size;	// запуск передатчика (выдача синхронизации)
+
+	while ((SPI->SPI_SR & SPI_SR_ENDRX) == 0)	// было TX
+		;
+	// дождаться, пока последний байт выйдет из передатчика
+	while ((SPI->SPI_SR & SPI_SR_TXEMPTY) == 0)
+		;
+
+	HARDWARE_SPI_CONNECT_MOSI();	// Возвращаем в обычный режим работы
+
+#elif CPUSTYLE_AT91SAM7S
+
+	HARDWARE_SPI_DISCONNECT_MOSI();	// выход данных в "1"
+
+	AT91C_BASE_SPI->SPI_TPR = (unsigned long) buffer;
+	AT91C_BASE_SPI->SPI_RPR = (unsigned long) buffer;
+	AT91C_BASE_SPI->SPI_RCR = size;	// разрешить работу приёмника
+	AT91C_BASE_SPI->SPI_TCR = size;	// запуск передатчика (выдача синхронизации)
+
+	while ((AT91C_BASE_SPI->SPI_SR & AT91C_SPI_ENDRX) == 0)	// было TX
+		;
+	// дождаться, пока последний байт выйдет из передатчика
+	while ((AT91C_BASE_SPI->SPI_SR & AT91C_SPI_TXEMPTY) == 0)
+		;
+
+	HARDWARE_SPI_CONNECT_MOSI();	// Возвращаем в обычный режим работы
+
+#elif CPUSTYLE_STM32F4XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
+	
+	/*
+	if (((uint32_t) buffer & 0xFF000000) == CCMDATARAM_BASE)
+	{
+		debug_printf_P(PSTR("hardware_spi_master_read_frame: use CCM\n"));
+		// Safe version
+		prog_spi_read_frame(target, buffer, size);
+		return;
+	}
+	*/
+
+	HARDWARE_SPI_DISCONNECT_MOSI();	// выход данных в "1"
+
+	// DMA2: SPI1_RX: Stream 0: Channel 3
+	#if CPUSTYLE_STM32H7XX
+		SPI1->CFG1 |= SPI_CFG1_RXDMAEN; // DMA по приему (master)
+	#else /* CPUSTYLE_STM32H7XX */
+		SPI1->CR2 |= SPI_CR2_RXDMAEN; // DMA по приему (master)
+	#endif /* CPUSTYLE_STM32H7XX */
+
+	DMA2_Stream0->M0AR = (uintptr_t) buffer;
+	DMA2_Stream0->NDTR = (DMA2_Stream0->NDTR & ~ DMA_SxNDT) |
+		(size * DMA_SxNDT_0) |
+		0;
+	DMA2_Stream0->CR |= DMA_SxCR_EN;		// перезапуск DMA
+
+	// DMA2: SPI1_TX: Stream 3: Channel 3
+	#if CPUSTYLE_STM32H7XX
+		SPI1->CFG1 |= SPI_CFG1_TXDMAEN; // DMA по передаче
+	#else /* CPUSTYLE_STM32H7XX */
+		SPI1->CR2 |= SPI_CR2_TXDMAEN; // DMA по передаче
+	#endif /* CPUSTYLE_STM32H7XX */
+
+	DMA2_Stream3->M0AR = (uintptr_t) buffer;
+	DMA2_Stream3->NDTR = (DMA2_Stream3->NDTR & ~ DMA_SxNDT) |
+		(size * DMA_SxNDT_0) |
+		0;
+	DMA2_Stream3->CR |= DMA_SxCR_EN;		// запуск DMA передатчика (выдача синхронизации)
+
+	// Дожидаемся завершения обмена передающего канала DMA
+	while ((DMA2->LISR & DMA_LISR_TCIF3) == 0)	// ожидаем завершения обмена по соответствушему stream
+		;
+	DMA2->LIFCR = DMA_LIFCR_CTCIF3;		// сбросил флаг соответствующий stream
+	//DMA2_waitTC(3);	// ожидаем завершения обмена по соответствушему stream
+
+	// Дожидаемся завершения обмена принимающего канала DMA
+	while ((DMA2->LISR & DMA_LISR_TCIF0) == 0)	// ожидаем завершения обмена по соответствушему stream
+		;
+	DMA2->LIFCR = DMA_LIFCR_CTCIF0;		// сбросил флаг соответствующий stream
+	//DMA2_waitTC(0);	// ожидаем завершения обмена по соответствушему stream
+
+	#if CPUSTYLE_STM32H7XX
+
+		SPI1->CFG1 &= ~ SPI_CFG1_TXDMAEN; // DMA по передаче (master)
+		SPI1->CFG1 &= ~ SPI_CFG1_RXDMAEN; // DMA по приему (master)
+
+	#else /* CPUSTYLE_STM32H7XX */
+
+		SPI1->CR2 &= ~ SPI_CR2_TXDMAEN; // DMA по передаче (master)
+		SPI1->CR2 &= ~ SPI_CR2_RXDMAEN; // DMA по приему (master)
+
+	#endif /* CPUSTYLE_STM32H7XX */
+
+	HARDWARE_SPI_CONNECT_MOSI();	// Возвращаем в обычный режим работы
+
+#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX
+	#warning TODO: implement SPI over DMA
+
+	//prog_spi_read_frame(target, buffer, size);
+
+#elif CPUSTYLE_STM32F1XX
+	#warning TODO: implement SPI over DMA
+
+	//prog_spi_read_frame(target, buffer, size);
+
+#elif CPUSTYLE_ATXMEGA
+	#warning TODO: implement SPI over DMA
+	
+	//prog_spi_read_frame(target, buffer, size);
+
+#elif CPUSTYLE_R7S721
+	#warning TODO: Add code for R7S721 SPI DMA support to hardware_spi_master_read_frame_16bpartial
+
+	HARDWARE_SPI_DISCONNECT_MOSI();	// выход данных в "1"
+
+	HARDWARE_SPI_CONNECT_MOSI();	// Возвращаем в обычный режим работы
+
+#else
+	#error Undefined CPUSTYLE_xxxx
+
+#endif
+}
+
 #endif /* WITHSPI16BIT */
 
 // Read a frame of bytes via SPI
@@ -4858,7 +5012,7 @@ hardware_spi_master_read_frame_8bpartial(
 	//prog_spi_read_frame(target, buffer, size);
 
 #elif CPUSTYLE_R7S721
-	#warning TODO: Add code for R7S721 SPI DMA support to hardware_spi_master_read_frame
+	#warning TODO: Add code for R7S721 SPI DMA support to hardware_spi_master_read_frame_8bpartial
 
 	HARDWARE_SPI_DISCONNECT_MOSI();	// выход данных в "1"
 
@@ -4936,7 +5090,7 @@ void hardware_spi_master_send_frame(
 {
 	hardware_spi_master_setdma8bit_tx();
 #if CPUSTYLE_R7S721
-	hardware_spi_master_send_frame_8bpartial(bufffer, size)
+	hardware_spi_master_send_frame_8bpartial(buffer, size);
 #else
 	uint_fast32_t score;
 	for (score = 0; score < size; )
@@ -4957,7 +5111,7 @@ void hardware_spi_master_read_frame(
 {
 	hardware_spi_master_setdma8bit_rx();
 #if CPUSTYLE_R7S721
-	hardware_spi_master_read_frame_8bpartial(bufffer, size)
+	hardware_spi_master_read_frame_8bpartial(buffer, size);
 #else
 	uint_fast32_t score;
 	for (score = 0; score < size; )
