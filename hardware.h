@@ -705,7 +705,8 @@ void r7s721_intc_registintfunc(uint_fast16_t int_id, void (* func)(void));
 	#define HARDWARE_USBD_PIPE_CDC_INTb	7	//
 #endif /* CPUSTYLE_R7S721 */
 
-#define MSGBUFFERSIZE8 12
+#define CATPCOUNTSIZE (13)
+#define MSGBUFFERSIZE8 (9 + CATPCOUNTSIZE)
 
 enum messagetypes
 {

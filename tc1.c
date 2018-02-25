@@ -172,9 +172,10 @@ enum
 	CAT_PT_INDEX,		// ptanswer()
 	CAT_IF_INDEX,		// ifanswer()
 	CAT_FW_INDEX,		// fwanswer()
-#if CTLSTYLE_OLEG4Z_V1
-	CAT_ZZINDEX,		// zzanswer()
-#endif /* CTLSTYLE_OLEG4Z_V1 */
+#if CTLSTYLE_V1D || CTLSTYLE_OLEG4Z_V1
+	CAT_ZZ_INDEX,		// zzanswer()
+	CAT_SQ_INDEX,		// sqanswer()
+#endif /* CTLSTYLE_V1D || CTLSTYLE_OLEG4Z_V1 */
 	CAT_BADCOMMAND_INDEX,		// badcommandanswer()
 	//
 	CAT_MAX_INDEX
@@ -763,7 +764,7 @@ typedef struct
 	const char FLASHMEM * labels [BWSET_WIDTHS];	// названия фильтров
 } bwsetsc_t;
 
-static const bwlimits_t bwlimits_cw = { 1, 40, 190, 0, 0,  };
+static const bwlimits_t bwlimits_cw = { 1, 10, 180, 0, 0,  };
 static const bwlimits_t bwlimits_am = { 1, WITHAMLOW10MIN, WITHAMLOW10MAX, WITHAMHIGH100MIN, WITHAMHIGH100MAX,  };
 static const bwlimits_t bwlimits_ssb = { 1, WITHSSBLOW10MIN, WITHSSBLOW10MAX, WITHSSBHIGH100MIN, WITHSSBHIGH100MAX, };
 
@@ -2701,6 +2702,7 @@ static uint_fast8_t gvfosplit [2];	// At index 0: RX VFO A or B, at index 1: TX 
 // Параметры, выставляемые в update board
 // кэш установленных параметров.
 static uint_fast8_t gsubmode;		/* код текущего режима */
+static uint_fast8_t gsquelch;	/* squelch level */
 static uint_fast8_t gmode;		/* текущий код группы режимов */
 static uint_fast8_t gfi;			/* номер фильтра (сквозной) для текущего режима */
 static uint_fast16_t gstep;
@@ -6364,6 +6366,7 @@ updateboard(
 				board_set_agc_thung(gagc_thung10 [agcseti]);	// hold time (hung time) in 0.1 sec
 				board_set_nfm_sql_lelel(tdsp_nfm_sql_level);
 				board_set_nfm_sql_off(tdsp_nfm_sql_off);
+				board_set_squelch(gsquelch);
 			#endif /* WITHIF4DSP */
 			} /* tx == 0 */
 
@@ -8402,7 +8405,7 @@ void cat2_parsechar(uint_fast8_t c)
 	static uint_fast8_t catcommand2;
 	static uint_fast8_t cathasparam;
 	static uint_fast32_t catparam;	// В случае команды KY здесь счётчик количества символов. Иначе - значение параметра.
-	static uint_fast8_t catp [3];
+	static uint_fast8_t catp [CATPCOUNTSIZE];
 	static uint_fast8_t catpcount;
 
    // debug_printf_P(PSTR("c=%02x, catstatein=%d, c1=%02X, c2=%02X\n"), c, catstatein, catcommand1, catcommand2);
@@ -8447,7 +8450,7 @@ void cat2_parsechar(uint_fast8_t c)
 		{
 			cathasparam = 1;
 			catparam = catparam * 10 + (c - '0');
-			if (catpcount < sizeof catp / sizeof catp [0])
+			if (catpcount < (sizeof catp / sizeof catp [0]))
 				catp [catpcount ++] = c;
 		}
 		else if (c == ';')
@@ -8457,6 +8460,7 @@ void cat2_parsechar(uint_fast8_t c)
 			uint8_t * buff;
 			if (takemsgbufferfree_low(& buff) != 0)
 			{
+				uint_fast8_t i;
 				// check MSGBUFFERSIZE8 valie
 				buff [0] = catcommand1;
 				buff [1] = catcommand2;
@@ -8467,9 +8471,8 @@ void cat2_parsechar(uint_fast8_t c)
 				buff [6] = (catparam >> 0) & 0xFF;
 				
 				buff [8] = catpcount;
-				buff [9] = catp [0];
-				buff [10] = catp [1];
-				buff [11] = catp [2];
+				for (i = 0; i < catpcount; ++ i)
+					buff [9 + i] = catp [i];
 
 				placesemsgbuffer_low(MSGT_CAT, buff);
 			}
@@ -8693,21 +8696,50 @@ static void fwanswer(uint_fast8_t arg)
 	cat_answer(len);
 }
 
-#if CTLSTYLE_OLEG4Z_V1
+#if CTLSTYLE_V1D || CTLSTYLE_OLEG4Z_V1
 static void zzanswer(uint_fast8_t arg)
 {
-	static const FLASHMEM char fmt_1 [] =
+	//ZZmLLLLUUUUSSSS
+	static const FLASHMEM char fmt_4 [] =
 		"ZZ"			// 2 characters - status information code
-		"%04d"			// P42 4 characters - DSP filtering bandwidth.
-		";";				// 1 char - line terminator
+		"%1d"			// 1 char - mode
+		"%04d"			// right
+		"%04d"			// left
+		"%03d"			// slope
+		";";			// 1 char - line terminator
+
+	const uint_fast8_t submode = findkenwoodsubmode(arg, SUBMODE_USB);	/* поиск по кенвудовскому номеру */
+	const FLASHMEM struct modetempl * const pmodet = getmodetempl(submode);
+	const uint_fast8_t bwseti = pmodet->bwseti;
+	const uint_fast8_t pos = bwsetpos [bwseti];
+	const bwprop_t * const p = bwsetsc [bwseti].prop [pos];
 
 	// answer mode
-	const uint_fast8_t len = local_snprintf_P(cat_ask_buffer, CAT_ASKBUFF_SIZE, fmt_1,
-		(int) getkenwoodfw(gsubmode, gfi) // полоса пропускания в герцах или код полосы пропускания
+	const uint_fast8_t len = local_snprintf_P(cat_ask_buffer, CAT_ASKBUFF_SIZE, fmt_4,
+		(int) arg,
+		(int) p->left10_width10,
+		(int) p->right100,
+		(int) p->afresponce
 		);
 	cat_answer(len);
 }
-#endif /* CTLSTYLE_OLEG4Z_V1 */
+
+static void sqanswer(uint_fast8_t arg)
+{
+	static const FLASHMEM char fmt_2 [] =
+		"SQ"			// 2 characters - status information code
+		"%1d"			// P1 always 0
+		"%03d"			// P2 0..255 Squelch level
+		";";				// 1 char - line terminator
+
+	// answer mode
+	const uint_fast8_t len = local_snprintf_P(cat_ask_buffer, CAT_ASKBUFF_SIZE, fmt_2,
+		(int) arg,
+		(int) gsquelch
+		);
+	cat_answer(len);
+}
+#endif /* CTLSTYLE_V1D || CTLSTYLE_OLEG4Z_V1 */
 
 
 #if WITHCATEXT && WITHELKEY
@@ -9210,9 +9242,10 @@ static canapfn catanswers [CAT_MAX_INDEX] =
 	ptanswer,
 	ifanswer,
 	fwanswer,
-#if CTLSTYLE_OLEG4Z_V1
+#if CTLSTYLE_V1D || CTLSTYLE_OLEG4Z_V1
 	zzanswer,
-#endif /* CTLSTYLE_OLEG4Z_V1 */
+	sqanswer,
+#endif /* CTLSTYLE_V1D || CTLSTYLE_OLEG4Z_V1 */
 	badcommandanswer,
 };
 
@@ -9236,6 +9269,19 @@ cat_answer_forming(void)
 	}
 }
 
+static int 
+scanint(
+	const uint8_t * p,	// массив символов
+	uint_fast8_t n	// количество символов
+	)
+{
+	int v = 0;
+	while (n -- && isdigit((unsigned char) * p))
+	{
+		v = v * 10 + * p ++ - '0';
+	}
+	return v;
+}
 
 /* возврат ненуля - была какая-либо команда
 	требуется обновление дисплея */
@@ -9456,7 +9502,7 @@ processcatmsg(
 		{
 			const uint_fast32_t v = catparam;
 			// Минимальный тон телеграфа - 400 герц.
-			gcwpitch10 = vfy32up(v, 0, 12 + 1, 6) * 5 + 40; 
+			gcwpitch10 = vfy32up(v, 0, 14, 6) * 5 + 40; 
 			updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
 			rc = 1;
 		}
@@ -9742,7 +9788,7 @@ processcatmsg(
 		{
 			// Скорость передачи от 10 до 60 WPM (в TS-590 от 4 до 60).
 #if ! WITHPOTWPM
-			elkeywpm = vfy32up(catparam, CWWPMMIN, CWWPMMAX + 1, 20); 
+			elkeywpm = vfy32up(catparam, CWWPMMIN, CWWPMMAX, 20); 
 #endif /* ! WITHPOTWPM */
 			updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
 		}
@@ -9752,20 +9798,40 @@ processcatmsg(
 		}
 	}
 #endif	/* WITHCATEXT */
-#if CTLSTYLE_OLEG4Z_V1
+#if CTLSTYLE_V1D || CTLSTYLE_OLEG4Z_V1
 	else if (match2('Z', 'Z'))
 	{
 		if (cathasparam != 0)
 		{
-			if (catpcount == 1)
+			if (catpcount == 13)
 			{
-				//ZZmLLLLUUUUSSSS
-				catchangesplit(catp [0] == '1', 0);
+				// Format: ZZmLLLLUUUUSSS
+				const uint_fast32_t v = catp [0] - '0';
+				const uint_fast8_t submode = findkenwoodsubmode(v, UINT8_MAX);	/* поиск по кенвудовскому номеру */
+				if (submode == UINT8_MAX)
+				{
+					cat_answer_request(CAT_BADCOMMAND_INDEX);
+				}
+				else
+				{
+					const FLASHMEM struct modetempl * const pmodet = getmodetempl(submode);
+					//ZZmLLLLUUUUSSSS
+					const uint_fast8_t bwseti = pmodet->bwseti;
+					const uint_fast8_t pos = bwsetpos [bwseti];
+					bwprop_t * const p = bwsetsc [bwseti].prop [pos];
+					p->left10_width10 = vfy32up(scanint(catp + 1, 4), p->limits->left10_width10_low,p->limits->left10_width10_high, p->left10_width10);
+					p->right100 = vfy32up(scanint(catp + 5, 4), p->limits->right100_low, p->limits->right100_high, p->right100);
+					if (p->type == BWSET_WIDE)
+						p->afresponce = vfy32up(scanint(catp + 9, 3), AFRESPONCEMIN, AFRESPONCEMAX, p->afresponce);
+					updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
+					rc = 1;
+				}
 			}
-			else if (catpcount == 3)
+			else if (catpcount == 1)
 			{
-				const int_fast8_t sign = 0 - (catp [1] == '1');	// P2: 0: plus direction
-				catchangesplit(catp [0] == '1', sign * (catp [2] - '0'));
+				const uint_fast32_t v = catp [0] - '0';
+				cat_answerparam_map [CAT_ZZ_INDEX] = v;
+				cat_answer_request(CAT_ZZ_INDEX);	// zzanswer
 			}
 			else
 			{
@@ -9775,26 +9841,42 @@ processcatmsg(
 			//const uint_fast32_t v = catparam;
 			//catchangefreq(vfy32up(v, TUNE_BOTTOM, TUNE_TOP - 1, gfreqs [bi]), gtx);
 			//updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
-			rc = 1;
-
-			const uint_fast32_t v = catparam;
-
-			const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
-			const uint_fast8_t defsubmode = findkenwoodsubmode(v, gsubmode);	/* поиск по кенвудовскому номеру */
-			//defsubmode = getdefaultbandsubmode(gfreqs [bi]);		/* режим по-умолчанию для частоты - USB или LSB */
-			// todo: не очень хорошо, если locatesubmode не находит режима, она обнуляет row.
-			const uint_fast8_t defcol = locatesubmode(defsubmode, & gmoderows [bi]);	/* строка/колонка для SSB. Что делать, если не нашли? */
-			putmodecol(gmoderows [bi], defcol, bi);	/* внести новое значение в битовую маску */
-			updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
-
-			rc = 1;
 		}
 		else
 		{
-			cat_answer_request(CAT_ZZINDEX);
+			cat_answer_request(CAT_BADCOMMAND_INDEX);
 		}
 	}
-#endif /* CTLSTYLE_OLEG4Z_V1 */
+	else if (match2('S', 'Q'))
+	{
+		if (cathasparam != 0)
+		{
+			if (catpcount == 4)
+			{
+				const int p1 = vfy32up(scanint(catp + 0, 1), 0, 0, 0);
+				const int p2 = vfy32up(scanint(catp + 1, 3), 0, 255, 0);
+				gsquelch = p2;
+				updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
+				rc = 1;
+			}
+			else if (catpcount == 1)
+			{
+				const int p1 = vfy32up(scanint(catp + 0, 1), 0, 0, 0);
+				cat_answerparam_map [CAT_SQ_INDEX] = p1;
+				cat_answer_request(CAT_SQ_INDEX);	// sqanswer
+				rc = 1;
+			}
+			else
+			{
+				cat_answer_request(CAT_BADCOMMAND_INDEX);
+			}
+		}
+		else
+		{
+			cat_answer_request(CAT_BADCOMMAND_INDEX);
+		}
+	}
+#endif /* CTLSTYLE_V1D || CTLSTYLE_OLEG4Z_V1 */
 	else
 	{
 		// нераспознанная команда - ожидание следующей.

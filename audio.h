@@ -299,6 +299,7 @@ void board_set_agc_t2(uint_fast8_t v);	/* подстройка параметра АРУ */
 void board_set_agc_t4(uint_fast8_t v);	/* подстройка параметра АРУ */
 void board_set_agc_thung(uint_fast8_t v);	/* подстройка параметра АРУ */
 void board_set_nfm_sql_lelel(uint_fast8_t v);	/* уровень открывания шумоподавителя NFM */
+void board_set_squelch(uint_fast8_t v);	/* уровень открывания шумоподавителя */
 void board_set_nfm_sql_off(uint_fast8_t v);	/* отключение шумоподавителя NFM */
 void board_set_notch_freq(uint_fast16_t n);	/* частота NOTCH фильтра */
 void board_set_notch_width(uint_fast16_t n);	/* полоса NOTCH фильтра */

@@ -111,6 +111,7 @@ static int_fast32_t		glob_lo6 [2] = { 0, 0 };
 
 static uint_fast8_t 	glob_nfm_sql_lelel = 127;
 static uint_fast8_t 	glob_nfm_sql_off = 0;
+static uint_fast8_t 	glob_squelch;
 
 static uint_fast8_t 	glob_swapiq = 0;	// поменять местами I и Q сэмплы в потоке RTS96
 
@@ -13011,6 +13012,16 @@ board_set_nfm_sql_lelel(uint_fast8_t n)	/* уровень открывания шумоподавителя NFM
 	if (glob_nfm_sql_lelel != n)
 	{
 		glob_nfm_sql_lelel = n;
+		board_dsp1regchanged();
+	}
+}
+
+void 
+board_set_squelch(uint_fast8_t n)	/* уровень открывания шумоподавителя */
+{
+	if (glob_squelch != n)
+	{
+		glob_squelch = n;
 		board_dsp1regchanged();
 	}
 }
