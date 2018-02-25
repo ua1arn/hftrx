@@ -12537,7 +12537,7 @@ rxparam_update(uint_fast8_t profile, uint_fast8_t pathi)
 
 	// шумодав
 	{
-		manualsquelch [pathi] = agccalcstrength(& rxagcparams [profile] [pathi], POWF(2, WITHIFADCWIDTH - 9) * (int) glob_squelch);
+		manualsquelch [pathi] = agccalcstrength(& rxagcparams [profile] [pathi], POWF(2, WITHIFADCWIDTH - 9 - 6) * (int) glob_squelch);
 	}
 
 	// шумодав NFM

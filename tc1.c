@@ -11712,6 +11712,15 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #endif /* WITHMUTEALL && WITHTX */
 #if WITHIF4DSP
 	{
+		"SQUELCH ", 7, 0, 0,	ISTEP1,		/* squelch level */
+		ITEM_VALUE,
+		0, 255, 
+		offsetof(struct nvmap, gsquelch),	/* уровень сигнала болше которого открывается шумодав */
+		NULL,
+		& gsquelch,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	{
 		"SDTN LVL", 7, 0, 0,	ISTEP1,		/* Select the CW sidetone or keypad sound output level.. */
 		ITEM_VALUE,
 		0, 100, 
@@ -11997,17 +12006,6 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		& gdigigainmax,	// 8 bit
 		getzerobase, /* складывается со смещением и отображается */
 	},
-#if WITHIF4DSP
-	{
-		"SQUELCH ", 7, 0, 0,	ISTEP1,		/* squelch level */
-		ITEM_VALUE,
-		0, 255, 
-		offsetof(struct nvmap, gsquelch),	/* уровень сигнала болше которого открывается шумодав */
-		NULL,
-		& gsquelch,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-#endif /* WITHIF4DSP */
 #if CTLSTYLE_RAVENDSP_V1 || WITHEXTERNALDDSP
 	{
 		"AD605 GN", 7, 0, 0,	ISTEP1,		/* напряжение на AD605 (управление усилением тракта ПЧ */
