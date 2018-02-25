@@ -15,7 +15,7 @@
 #define ARM_STM32F4XX_TQFP144_CTLSTYLE_STORCH_V3_H_INCLUDED 1
 
 	#if ! defined(STM32F767xx)
-		//#error Wrong CPU selected. STM32F767xx expected
+		#error Wrong CPU selected. STM32F767xx expected
 	#endif /* ! defined(STM32F767xx) */
 
 	//#define WITHSAICLOCKFROMI2S 1	/* Блок SAI1 тактируется от PLL I2S */

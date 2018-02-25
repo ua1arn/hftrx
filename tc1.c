@@ -172,6 +172,9 @@ enum
 	CAT_PT_INDEX,		// ptanswer()
 	CAT_IF_INDEX,		// ifanswer()
 	CAT_FW_INDEX,		// fwanswer()
+#if CTLSTYLE_OLEG4Z_V1
+	CAT_ZZINDEX,		// zzanswer()
+#endif /* CTLSTYLE_OLEG4Z_V1 */
 	CAT_BADCOMMAND_INDEX,		// badcommandanswer()
 	//
 	CAT_MAX_INDEX
@@ -181,7 +184,7 @@ static uint_fast8_t cat_answer_map [CAT_MAX_INDEX];
 static uint_fast8_t cat_answerparam_map [CAT_MAX_INDEX];
 
 
-static uint_fast32_t savedbaudrate;	// Скорость, на которую в последний раз юыл запрограммирован порт.
+static uint_fast32_t savedbaudrate;	// Скорость, на которую в последний раз был запрограммирован порт.
 
 static void 
 cat_set_speed(uint_fast32_t baudrate)
@@ -735,8 +738,17 @@ static const char FLASHMEM
 static uint_fast8_t	gssbtxhighcut100 = 3400 / BWGRANHIGH;	/* Верхняя частота среза фильтра НЧ по передаче */
 static uint_fast8_t	gssbtxlowcut10 = 300 / BWGRANLOW;		/* Нижняя частота среза фильтра НЧ по передаче */
 
+// Частоты перестройки границ полосы пропускания
 typedef struct
 {
+	uint_fast16_t granulation;
+	uint_fast8_t left10_width10_low, left10_width10_high;	// пределы изменения параметров
+	uint_fast8_t right100_low, right100_high;	// пределы изменения параметров
+} bwlimits_t;
+
+typedef struct
+{
+	const bwlimits_t * limits;
 	uint_fast8_t type;		// BWSET_NARROW/BWSET_WIDE
 	uint_fast8_t left10_width10, right100;	// left выполняет роль width для телеграфных (BWSET_NARROW) фильтров
 	//uint_fast8_t fltsofter;
@@ -751,17 +763,21 @@ typedef struct
 	const char FLASHMEM * labels [BWSET_WIDTHS];	// названия фильтров
 } bwsetsc_t;
 
+static const bwlimits_t bwlimits_cw = { 1, 40, 190, 0, 0,  };
+static const bwlimits_t bwlimits_am = { 1, WITHAMLOW10MIN, WITHAMLOW10MAX, WITHAMHIGH100MIN, WITHAMHIGH100MAX,  };
+static const bwlimits_t bwlimits_ssb = { 1, WITHSSBLOW10MIN, WITHSSBLOW10MAX, WITHSSBHIGH100MIN, WITHSSBHIGH100MAX, };
+
 // Частоты границ полосы пропускания
 // эти значения могут модифицироваться через меню
-static bwprop_t bwprop_cwnarrow = { BWSET_NARROW, 300 / BWGRANLOW, 0, - 0 + AFRESPONCESHIFT, };
-static bwprop_t bwprop_cwwide = { BWSET_NARROW, 600 / BWGRANLOW, 0, - 0 + AFRESPONCESHIFT, };
-static bwprop_t bwprop_ssbwide = { BWSET_WIDE, 300 / BWGRANLOW, 3400 / BWGRANHIGH, - 36 + AFRESPONCESHIFT,	};
-static bwprop_t bwprop_ssbnarrow = { BWSET_WIDE, 400 / BWGRANLOW, 2900 / BWGRANHIGH, - 36 + AFRESPONCESHIFT,	};
-static bwprop_t bwprop_amwide = { BWSET_WIDE, 100 / BWGRANLOW, 4000 / BWGRANHIGH, - 36 + AFRESPONCESHIFT,	};
-static bwprop_t bwprop_amnarrow = { BWSET_WIDE, 100 / BWGRANLOW, 3400 / BWGRANHIGH, - 36 + AFRESPONCESHIFT,	};
-static bwprop_t bwprop_digiwide = { BWSET_WIDE, 300 / BWGRANLOW, 3400 / BWGRANHIGH, - 0 + AFRESPONCESHIFT,	};
-static bwprop_t bwprop_nfmnarrow = { BWSET_WIDE, 300 / BWGRANLOW, 3400 / BWGRANHIGH, - 36 + AFRESPONCESHIFT,	};
-static bwprop_t bwprop_nfmwide = { BWSET_WIDE, 300 / BWGRANLOW, 4000 / BWGRANHIGH, - 36 + AFRESPONCESHIFT,	};
+static bwprop_t bwprop_cwnarrow = { & bwlimits_cw, BWSET_NARROW, 300 / BWGRANLOW, 0, - 0 + AFRESPONCESHIFT, };
+static bwprop_t bwprop_cwwide = { & bwlimits_cw, BWSET_NARROW, 600 / BWGRANLOW, 0, - 0 + AFRESPONCESHIFT, };
+static bwprop_t bwprop_ssbwide = { & bwlimits_ssb, BWSET_WIDE, 300 / BWGRANLOW, 3400 / BWGRANHIGH, - 36 + AFRESPONCESHIFT,	};
+static bwprop_t bwprop_ssbnarrow = { & bwlimits_ssb, BWSET_WIDE, 400 / BWGRANLOW, 2900 / BWGRANHIGH, - 36 + AFRESPONCESHIFT,	};
+static bwprop_t bwprop_amwide = { & bwlimits_ssb, BWSET_WIDE, 100 / BWGRANLOW, 4000 / BWGRANHIGH, - 36 + AFRESPONCESHIFT,	};
+static bwprop_t bwprop_amnarrow = { & bwlimits_am, BWSET_WIDE, 100 / BWGRANLOW, 3400 / BWGRANHIGH, - 36 + AFRESPONCESHIFT,	};
+static bwprop_t bwprop_digiwide = { & bwlimits_ssb, BWSET_WIDE, 300 / BWGRANLOW, 3400 / BWGRANHIGH, - 0 + AFRESPONCESHIFT,	};
+static bwprop_t bwprop_nfmnarrow = { & bwlimits_am, BWSET_WIDE, 300 / BWGRANLOW, 3400 / BWGRANHIGH, - 36 + AFRESPONCESHIFT,	};
+static bwprop_t bwprop_nfmwide = { & bwlimits_am, BWSET_WIDE, 300 / BWGRANLOW, 4000 / BWGRANHIGH, - 36 + AFRESPONCESHIFT,	};
 
 // Способ представления частот и количество профилей полосы пропускания,
 // а так же названия полос пропускания для отображения
@@ -8677,6 +8693,23 @@ static void fwanswer(uint_fast8_t arg)
 	cat_answer(len);
 }
 
+#if CTLSTYLE_OLEG4Z_V1
+static void zzanswer(uint_fast8_t arg)
+{
+	static const FLASHMEM char fmt_1 [] =
+		"ZZ"			// 2 characters - status information code
+		"%04d"			// P42 4 characters - DSP filtering bandwidth.
+		";";				// 1 char - line terminator
+
+	// answer mode
+	const uint_fast8_t len = local_snprintf_P(cat_ask_buffer, CAT_ASKBUFF_SIZE, fmt_1,
+		(int) getkenwoodfw(gsubmode, gfi) // полоса пропускания в герцах или код полосы пропускания
+		);
+	cat_answer(len);
+}
+#endif /* CTLSTYLE_OLEG4Z_V1 */
+
+
 #if WITHCATEXT && WITHELKEY
 
 static void kyanswer(uint_fast8_t arg)
@@ -9177,6 +9210,9 @@ static canapfn catanswers [CAT_MAX_INDEX] =
 	ptanswer,
 	ifanswer,
 	fwanswer,
+#if CTLSTYLE_OLEG4Z_V1
+	zzanswer,
+#endif /* CTLSTYLE_OLEG4Z_V1 */
 	badcommandanswer,
 };
 
@@ -9716,6 +9752,49 @@ processcatmsg(
 		}
 	}
 #endif	/* WITHCATEXT */
+#if CTLSTYLE_OLEG4Z_V1
+	else if (match2('Z', 'Z'))
+	{
+		if (cathasparam != 0)
+		{
+			if (catpcount == 1)
+			{
+				//ZZmLLLLUUUUSSSS
+				catchangesplit(catp [0] == '1', 0);
+			}
+			else if (catpcount == 3)
+			{
+				const int_fast8_t sign = 0 - (catp [1] == '1');	// P2: 0: plus direction
+				catchangesplit(catp [0] == '1', sign * (catp [2] - '0'));
+			}
+			else
+			{
+				cat_answer_request(CAT_BADCOMMAND_INDEX);
+			}
+			//const uint_fast8_t bi = getbankindex_ab(1);	/* VFO B bank index */
+			//const uint_fast32_t v = catparam;
+			//catchangefreq(vfy32up(v, TUNE_BOTTOM, TUNE_TOP - 1, gfreqs [bi]), gtx);
+			//updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
+			rc = 1;
+
+			const uint_fast32_t v = catparam;
+
+			const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
+			const uint_fast8_t defsubmode = findkenwoodsubmode(v, gsubmode);	/* поиск по кенвудовскому номеру */
+			//defsubmode = getdefaultbandsubmode(gfreqs [bi]);		/* режим по-умолчанию для частоты - USB или LSB */
+			// todo: не очень хорошо, если locatesubmode не находит режима, она обнуляет row.
+			const uint_fast8_t defcol = locatesubmode(defsubmode, & gmoderows [bi]);	/* строка/колонка для SSB. Что делать, если не нашли? */
+			putmodecol(gmoderows [bi], defcol, bi);	/* внести новое значение в битовую маску */
+			updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
+
+			rc = 1;
+		}
+		else
+		{
+			cat_answer_request(CAT_ZZINDEX);
+		}
+	}
+#endif /* CTLSTYLE_OLEG4Z_V1 */
 	else
 	{
 		// нераспознанная команда - ожидание следующей.
@@ -10429,7 +10508,7 @@ static const FLASHMEM struct menudef menutable [] =
 	{
 		"SSB HI W", 6, 1, 0,	ISTEP1,		/* Подстройка полосы пропускания - SSB WIDE */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		8, 58, 		// 0.8 kHz-5.8 kHz
+		WITHSSBHIGH100MIN, WITHSSBHIGH100MAX, 		// 0.8 kHz-5.8 kHz
 		RMT_BWPROPSRIGHT_BASE(BWPROPI_SSBWIDE),
 		NULL,
 		& bwprop_ssbwide.right100,
@@ -10438,7 +10517,7 @@ static const FLASHMEM struct menudef menutable [] =
 	{
 		"SSB LO W", 7, 2, 0,	ISTEP5,		/* Подстройка полосы пропускания - SSB WIDE */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		5, 70, 		// 50 Hz-700 Hz
+		WITHSSBLOW10MIN, WITHSSBLOW10MAX, 		// 50 Hz-700 Hz
 		RMT_BWPROPSLEFT_BASE(BWPROPI_SSBWIDE),
 		NULL,
 		& bwprop_ssbwide.left10_width10,
@@ -10467,7 +10546,7 @@ static const FLASHMEM struct menudef menutable [] =
 	{
 		"SSB HI N", 6, 1, 0,	ISTEP1,		/* Подстройка полосы пропускания - SSB NARROW */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		8, 58, 		// 0.8 kHz-5.8 kHz
+		WITHSSBHIGH100MIN, WITHSSBHIGH100MAX, 		// 0.8 kHz-5.8 kHz
 		RMT_BWPROPSRIGHT_BASE(BWPROPI_SSBNARROW),
 		NULL,
 		& bwprop_ssbnarrow.right100,
@@ -10476,7 +10555,7 @@ static const FLASHMEM struct menudef menutable [] =
 	{
 		"SSB LO N", 7, 2, 0,	ISTEP5,		/* Подстройка полосы пропускания - SSB NARROW */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		5, 70, 		// 50 Hz-700 Hz
+		WITHSSBLOW10MIN, WITHSSBLOW10MAX, 		// 50 Hz-700 Hz
 		RMT_BWPROPSLEFT_BASE(BWPROPI_SSBNARROW),
 		NULL,
 		& bwprop_ssbnarrow.left10_width10,
@@ -10514,7 +10593,7 @@ static const FLASHMEM struct menudef menutable [] =
 	{
 		"AM LO W ", 7, 2, 0,	ISTEP5,		/* подстройка полосы пропускания - AM WIDE */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		5, 70,
+		WITHAMLOW10MIN, WITHAMLOW10MAX,
 		RMT_BWPROPSLEFT_BASE(BWPROPI_AMWIDE),
 		NULL,
 		& bwprop_amwide.left10_width10,
@@ -10552,7 +10631,7 @@ static const FLASHMEM struct menudef menutable [] =
 	{
 		"AM LO N ", 7, 2, 0,	ISTEP5,		/* подстройка полосы пропускания - AM NARROW */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		5, 70,
+		WITHAMLOW10MIN, WITHAMLOW10MAX,
 		RMT_BWPROPSLEFT_BASE(BWPROPI_AMNARROW),
 		NULL,
 		& bwprop_amnarrow.left10_width10,
