@@ -96,8 +96,9 @@ display_redrawbars(
 
 static uint_fast8_t gtx;	/* текущее состо€ние прием или передача */
 static uint_fast8_t gcwpitch10 = 700 / CWPITCHSCALE;	/* тон при приеме телеграфа или самоконтроль (в дес€тках герц) */
+#if WITHIF4DSP
 static uint_fast8_t gsquelch;	/* squelch level */
-
+#endif /* WITHIF4DSP */
 #if WITHDSPEXTDDC	/* "¬оронЄнок" с DSP и FPGA */
 
 /*
@@ -175,8 +176,10 @@ enum
 	CAT_FW_INDEX,		// fwanswer()
 #if CTLSTYLE_V1D || CTLSTYLE_OLEG4Z_V1
 	CAT_ZZ_INDEX,		// zzanswer()
-	CAT_SQ_INDEX,		// sqanswer()
 #endif /* CTLSTYLE_V1D || CTLSTYLE_OLEG4Z_V1 */
+#if WITHIF4DSP
+	CAT_SQ_INDEX,		// sqanswer()
+#endif /* WITHIF4DSP */
 	CAT_BADCOMMAND_INDEX,		// badcommandanswer()
 	//
 	CAT_MAX_INDEX
@@ -8724,6 +8727,9 @@ static void zzanswer(uint_fast8_t arg)
 		);
 	cat_answer(len);
 }
+#endif /* CTLSTYLE_V1D || CTLSTYLE_OLEG4Z_V1 */
+
+#if WITHIF4DSP
 
 static void sqanswer(uint_fast8_t arg)
 {
@@ -8740,7 +8746,7 @@ static void sqanswer(uint_fast8_t arg)
 		);
 	cat_answer(len);
 }
-#endif /* CTLSTYLE_V1D || CTLSTYLE_OLEG4Z_V1 */
+#endif /* WITHIF4DSP */
 
 
 #if WITHCATEXT && WITHELKEY
@@ -9245,6 +9251,8 @@ static canapfn catanswers [CAT_MAX_INDEX] =
 	fwanswer,
 #if CTLSTYLE_V1D || CTLSTYLE_OLEG4Z_V1
 	zzanswer,
+#endif /* CTLSTYLE_V1D || CTLSTYLE_OLEG4Z_V1 */
+#if WITHIF4DSP
 	sqanswer,
 #endif /* CTLSTYLE_V1D || CTLSTYLE_OLEG4Z_V1 */
 	badcommandanswer,
@@ -9848,6 +9856,8 @@ processcatmsg(
 			cat_answer_request(CAT_BADCOMMAND_INDEX);
 		}
 	}
+#endif /* CTLSTYLE_V1D || CTLSTYLE_OLEG4Z_V1 */
+#if WITHIF4DSP
 	else if (match2('S', 'Q'))
 	{
 		if (cathasparam != 0)
@@ -9877,7 +9887,7 @@ processcatmsg(
 			cat_answer_request(CAT_BADCOMMAND_INDEX);
 		}
 	}
-#endif /* CTLSTYLE_V1D || CTLSTYLE_OLEG4Z_V1 */
+#endif /* WITHIF4DSP */
 	else
 	{
 		// нераспознанна€ команда - ожидание следующей.
