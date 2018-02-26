@@ -12537,7 +12537,11 @@ rxparam_update(uint_fast8_t profile, uint_fast8_t pathi)
 
 	// шумодав
 	{
-		manualsquelch [pathi] = agccalcstrength(& rxagcparams [profile] [pathi], POWF(2, WITHIFADCWIDTH - 9 - 6) * (int) glob_squelch);
+		const volatile agcparams_t * const agcp = & rxsmeterparams;
+
+		const FLOAT_t upper = agccalcstrength(agcp, agcp->levelfence);
+		const FLOAT_t lower = agccalcstrength(agcp, agcp->mininput);
+		manualsquelch [pathi] = (int) glob_squelch * (upper - lower) / 255 + lower;
 	}
 
 	// шумодав NFM
