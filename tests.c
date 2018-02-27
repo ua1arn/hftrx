@@ -3795,8 +3795,8 @@ static void sdcard_test(void)
 {
 	const unsigned long MMC_SUCCESS2 = 0x00;
 	unsigned long lba_sector = 0;
-	static ALIGNX_BEGIN unsigned char sectbuffr [MMC_SECTORSIZE] ALIGNX_END;
-	static ALIGNX_BEGIN unsigned char sectbuffw [MMC_SECTORSIZE] ALIGNX_END;
+	static RAMNOINIT_D1 ALIGNX_BEGIN unsigned char sectbuffr [MMC_SECTORSIZE] ALIGNX_END;
+	static RAMNOINIT_D1 ALIGNX_BEGIN unsigned char sectbuffw [MMC_SECTORSIZE] ALIGNX_END;
 
 	debug_printf_P(PSTR("Test SD card\n"));
 	mmcInitialize();
