@@ -46,7 +46,7 @@ struct st_sdhi
 	volatile uint8_t	dummy5 [12];
 	volatile uint16_t	EXT_SWAP;			/* 	Swap control register					0xE804E0F0 0xE804E8F0  */
 	volatile uint8_t	dummy6 [14];
-};
+} r_io_sdhi_t;
 
 #define SDHI0    (*(struct st_sdhi    *)0xE804E000uL) /* SDHI */
 #define SDHI1    (*(struct st_sdhi    *)0xE804E800uL) /* SDHI */

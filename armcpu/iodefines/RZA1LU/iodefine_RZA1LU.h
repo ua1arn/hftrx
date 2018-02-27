@@ -60,4 +60,5 @@
 #include "iodefines/usb20_iodefine.h"                           /* (V3.00l) */
 #include "iodefines/vdc5_iodefine.h"                            /* (V3.00l) */
 #include "iodefines/wdt_iodefine.h"                             /* (V3.00l) */
+#include "iodefines/sdhi_iodefine.h"                             /* */
 #endif
