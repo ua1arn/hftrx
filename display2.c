@@ -1787,6 +1787,9 @@ enum
 
 	#if defined (RTC1_TYPE)
 		{	0, 1,	display_time8,		REDRM_BARS, REDRSUBSET(DPAGE_TIME), },	// TIME
+	#if WITHUSEDUALWATCH
+		{	9, 1,	display_mainsub3,	REDRM_BARS, REDRSUBSET(DPAGE_TIME), },	// main/sub RX
+	#endif /* WITHUSEDUALWATCH */
 	#if WITHUSEAUDIOREC
 		{	13, 1,	display_rec3,		REDRM_BARS, REDRSUBSET(DPAGE_TIME), },	// Отображение режима записи аудио фрагмента
 	#endif /* WITHUSEAUDIOREC */
