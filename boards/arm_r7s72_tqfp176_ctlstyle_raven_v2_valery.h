@@ -161,8 +161,8 @@
 	#define WITHSAI1_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
 	#define WITHSAI1_FRAMEBITS 256	// Полный размер фрейма для двух квадратур - канал трансивера
 
-	//#define WITHRTS192	1		// Есть канал спектроанализатора - не забыть включить WITHSAI2HW
-	#define WITHRTS96		1		/* в данной версии FPGA не поддерживается. вместо выходного аудиосигнала передача квадратур по USB */
+	#define WITHRTS192	1		// Есть канал спектроанализатора - не забыть включить WITHSAI2HW
+	//#define WITHRTS96		1		/* в данной версии FPGA не поддерживается. вместо выходного аудиосигнала передача квадратур по USB */
 
 	#define WITHSAI2_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
 	#define WITHSAI2_FRAMEBITS 64	// Полный размер фрейма для двух квадратур по 24 бита - канал спектроанализатора
@@ -212,8 +212,8 @@
 	#define WITHUSEAUDIORECCLASSIC	1	// стандартный формат записи, без "дыр"
 	//#define WITHUSEAUDIOREC2CH	1	// Запись звука на SD CARD в стерео
 
-	//#define WITHUSEDUALWATCH	1	// Второй приемник
-	//#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
+	#define WITHUSEDUALWATCH	1	// Второй приемник
+	#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
 
 	// FPGA section
 	//#define	WITHFPGAWAIT_AS	1	/* FPGA загружается из собственной микросхемы загрузчика - дождаться окончания загрузки перед инициализацией SPI в процессоре */
