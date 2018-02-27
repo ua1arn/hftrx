@@ -8408,7 +8408,6 @@ void cat2_parsechar(uint_fast8_t c)
 	static uint_fast8_t catcommand1;
 	static uint_fast8_t catcommand2;
 	static uint_fast8_t cathasparam;
-	static uint_fast32_t catparam;	// В случае команды KY здесь счётчик количества символов. Иначе - значение параметра.
 	static uint_fast8_t catp [CATPCOUNTSIZE];
 	static uint_fast8_t catpcount;
 
@@ -8434,7 +8433,7 @@ void cat2_parsechar(uint_fast8_t c)
 		{
 			catstatein = CATSTATE_WAITMORSE;
 			cathasparam = 0;	// строка была - 1, иначе - 0
-			catparam = 0;	// здесь счётчик количества символов.
+			catpcount = 0;
 			cathasparamerror = 0;
 		}
 #endif	/* WITHTX */
@@ -8442,7 +8441,6 @@ void cat2_parsechar(uint_fast8_t c)
 		{
 			catstatein = CATSTATE_WAITPARAM;
 			cathasparam = 0;
-			catparam = 0;	// Значение параметра
 			//cathasparamerror = 0;
 			catpcount = 0;
 		}
@@ -8453,7 +8451,6 @@ void cat2_parsechar(uint_fast8_t c)
 		if (isdigit((unsigned char) c))
 		{
 			cathasparam = 1;
-			catparam = catparam * 10 + (c - '0');
 			if (catpcount < (sizeof catp / sizeof catp [0]))
 				catp [catpcount ++] = c;
 		}
@@ -8469,10 +8466,6 @@ void cat2_parsechar(uint_fast8_t c)
 				buff [0] = catcommand1;
 				buff [1] = catcommand2;
 				buff [2] = cathasparam;
-				buff [3] = (catparam >> 24) & 0xFF;
-				buff [4] = (catparam >> 16) & 0xFF;
-				buff [5] = (catparam >> 8) & 0xFF;
-				buff [6] = (catparam >> 0) & 0xFF;
 				
 				buff [8] = catpcount;
 				for (i = 0; i < catpcount; ++ i)
@@ -8497,7 +8490,7 @@ void cat2_parsechar(uint_fast8_t c)
 		else if (c != ';')
 		{
 			cathasparam = 1;	// признак наличия символов для передачи
-			if (catparam == 0 && c == '0')
+			if (catpcount == 0 && c == '0')
 			{
 				sendmorsepos [0] = inpmorselength [0] = 0;	// очистить буфер передачи морзе.
 				sendmorsepos [1] = inpmorselength [1] = 0;	// очистить буфер передачи морзе.
@@ -8509,10 +8502,10 @@ void cat2_parsechar(uint_fast8_t c)
 				// Данные ещё не переданы - не портим буфер. Будет передана ошибка.
 				cathasparamerror = 1;
 			}
-			else if (catparam < (sizeof morsestring [morsefill] / sizeof morsestring [morsefill][0]))
+			else if (catpcount < (sizeof morsestring [morsefill] / sizeof morsestring [morsefill][0]))
 			{
 				/* запоминаем очередной символ для передачи */
-				morsestring [morsefill] [catparam ++] = ascii_toupper(c);
+				morsestring [morsefill] [catpcount ++] = ascii_toupper(c);
 			}
 			else
 			{
@@ -8534,10 +8527,10 @@ void cat2_parsechar(uint_fast8_t c)
 			else if (cathasparam != 0)
 			{
 				/* более одного символа (включая пробелы в конце) - первый игнорируется */
-				if (catparam > 1)
+				if (catpcount > 1)
 				{
 					/* устанавливаем индексы для передачи */
-					inpmorselength  [morsefill] = catparam;
+					inpmorselength  [morsefill] = catpcount;
 					sendmorsepos  [morsefill] = 1;	/* Первый символ в буфере - пробел */
 
 					morseswitchnext();	/* переключение на следующий буфер, если можно */
@@ -9278,14 +9271,14 @@ cat_answer_forming(void)
 	}
 }
 
-static int 
-scanint(
+static uint_fast32_t 
+catscanint(
 	const uint8_t * p,	// массив символов
-	uint_fast8_t n	// количество символов
+	uint_fast8_t width	// количество символов
 	)
 {
-	int v = 0;
-	while (n -- && isdigit((unsigned char) * p))
+	uint_fast32_t v = 0;
+	while (width -- && isdigit((unsigned char) * p))
 	{
 		v = v * 10 + * p ++ - '0';
 	}
@@ -9300,7 +9293,6 @@ processcatmsg(
 	uint_fast8_t catcommand1,
 	uint_fast8_t catcommand2,
 	uint_fast8_t cathasparam,
-	uint_fast32_t catparam,	// В случае команды KY здесь счётчик количества символов. Иначе - значение параметра.
 	uint_fast8_t catpcount,	// количество символов за кодом команды
 	const uint8_t * catp	// массив символов
 	)
@@ -9308,6 +9300,7 @@ processcatmsg(
 	//debug_printf_P(PSTR("processcatmsg: c1=%02X, c2=%02X, chp=%d, cp=%lu\n"), catcommand1, catcommand2, cathasparam, catparam);
 	#define match2(ch1, ch2) (catcommand1 == (ch1) && catcommand2 == (ch2))
 	uint_fast8_t rc = 0;
+	const uint_fast32_t catparam = catscanint(catp, catpcount);
 	
 #if WITHCAT
 	if (match2('I', 'D'))
@@ -9410,6 +9403,52 @@ processcatmsg(
 			cat_answer_request(CAT_FB_INDEX);
 		}
 	}
+	else if (match2('P', 'T'))
+	{
+		if (cathasparam != 0)
+		{
+			const uint_fast32_t v = catparam;
+			// Минимальный тон телеграфа - 400 герц.
+			gcwpitch10 = vfy32up(v, 0, 14, 6) * 5 + 40; 
+			updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
+			rc = 1;
+		}
+		else
+		{
+			cat_answer_request(CAT_PT_INDEX);
+		}
+	}
+	else if (match2('M', 'D'))
+	{
+		if (cathasparam != 0)
+		{
+			const uint_fast32_t v = catparam;
+
+			const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
+			const uint_fast8_t defsubmode = findkenwoodsubmode(v, gsubmode);	/* поиск по кенвудовскому номеру */
+			//defsubmode = getdefaultbandsubmode(gfreqs [bi]);		/* режим по-умолчанию для частоты - USB или LSB */
+			// todo: не очень хорошо, если locatesubmode не находит режима, она обнуляет row.
+			const uint_fast8_t defcol = locatesubmode(defsubmode, & gmoderows [bi]);	/* строка/колонка для SSB. Что делать, если не нашли? */
+			putmodecol(gmoderows [bi], defcol, bi);	/* внести новое значение в битовую маску */
+			updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
+
+			rc = 1;
+		}
+		else
+		{
+			cat_answer_request(CAT_MD_INDEX);
+		}
+	}
+	else if (match2('I', 'F'))
+	{
+		if (cathasparam)
+		{
+		}
+		else
+		{
+			cat_answer_request(CAT_IF_INDEX);
+		}
+	}
 #if WITHSPLITEX
 	else if (match2('S', 'P'))
 	{
@@ -9505,52 +9544,6 @@ processcatmsg(
 		}
 	}
 #endif /* WITHSPLITEX */
-	else if (match2('P', 'T'))
-	{
-		if (cathasparam != 0)
-		{
-			const uint_fast32_t v = catparam;
-			// Минимальный тон телеграфа - 400 герц.
-			gcwpitch10 = vfy32up(v, 0, 14, 6) * 5 + 40; 
-			updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
-			rc = 1;
-		}
-		else
-		{
-			cat_answer_request(CAT_PT_INDEX);
-		}
-	}
-	else if (match2('M', 'D'))
-	{
-		if (cathasparam != 0)
-		{
-			const uint_fast32_t v = catparam;
-
-			const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
-			const uint_fast8_t defsubmode = findkenwoodsubmode(v, gsubmode);	/* поиск по кенвудовскому номеру */
-			//defsubmode = getdefaultbandsubmode(gfreqs [bi]);		/* режим по-умолчанию для частоты - USB или LSB */
-			// todo: не очень хорошо, если locatesubmode не находит режима, она обнуляет row.
-			const uint_fast8_t defcol = locatesubmode(defsubmode, & gmoderows [bi]);	/* строка/колонка для SSB. Что делать, если не нашли? */
-			putmodecol(gmoderows [bi], defcol, bi);	/* внести новое значение в битовую маску */
-			updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
-
-			rc = 1;
-		}
-		else
-		{
-			cat_answer_request(CAT_MD_INDEX);
-		}
-	}
-	else if (match2('I', 'F'))
-	{
-		if (cathasparam)
-		{
-		}
-		else
-		{
-			cat_answer_request(CAT_IF_INDEX);
-		}
-	}
 #if WITHCATEXT
 #if WITHIF4DSP
 	else if (match2('N', 'T'))
@@ -9563,7 +9556,37 @@ processcatmsg(
 		// Adjusts the Notch Frequency of the Manual Notch Filter.
 		cat_answer_request(CAT_BADCOMMAND_INDEX);
 	}
-#endif
+	else if (match2('S', 'Q'))
+	{
+		// Squelch level set/report
+		if (cathasparam != 0)
+		{
+			if (catpcount == 4)
+			{
+				//const uint_fast32_t p1 = vfy32up(catscanint(catp + 0, 1), 0, 0, 0);
+				const uint_fast32_t p2 = vfy32up(catscanint(catp + 1, 3), 0, 255, 0);
+				gsquelch = p2;
+				updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
+				rc = 1;
+			}
+			else if (catpcount == 1)
+			{
+				const uint_fast32_t p1 = vfy32up(catscanint(catp + 0, 1), 0, 0, 0);
+				cat_answerparam_map [CAT_SQ_INDEX] = p1;
+				cat_answer_request(CAT_SQ_INDEX);	// sqanswer
+				rc = 1;
+			}
+			else
+			{
+				cat_answer_request(CAT_BADCOMMAND_INDEX);
+			}
+		}
+		else
+		{
+			cat_answer_request(CAT_BADCOMMAND_INDEX);
+		}
+	}
+#endif /* WITHIF4DSP */
 	else if (match2('R', 'A'))
 	{
 		// Attenuator status set/query
@@ -9828,10 +9851,10 @@ processcatmsg(
 					const uint_fast8_t bwseti = pmodet->bwseti;
 					const uint_fast8_t pos = bwsetpos [bwseti];
 					bwprop_t * const p = bwsetsc [bwseti].prop [pos];
-					p->left10_width10 = vfy32up(scanint(catp + 1, 4), p->limits->left10_width10_low,p->limits->left10_width10_high, p->left10_width10);
-					p->right100 = vfy32up(scanint(catp + 5, 4), p->limits->right100_low, p->limits->right100_high, p->right100);
+					p->left10_width10 = vfy32up(catscanint(catp + 1, 4), p->limits->left10_width10_low,p->limits->left10_width10_high, p->left10_width10);
+					p->right100 = vfy32up(catscanint(catp + 5, 4), p->limits->right100_low, p->limits->right100_high, p->right100);
 					if (p->type == BWSET_WIDE)
-						p->afresponce = vfy32up(scanint(catp + 9, 3), AFRESPONCEMIN, AFRESPONCEMAX, p->afresponce);
+						p->afresponce = vfy32up(catscanint(catp + 9, 3), AFRESPONCEMIN, AFRESPONCEMAX, p->afresponce);
 					updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
 					rc = 1;
 				}
@@ -9857,37 +9880,6 @@ processcatmsg(
 		}
 	}
 #endif /* CTLSTYLE_V1D || CTLSTYLE_OLEG4Z_V1 */
-#if WITHIF4DSP
-	else if (match2('S', 'Q'))
-	{
-		if (cathasparam != 0)
-		{
-			if (catpcount == 4)
-			{
-				const int p1 = vfy32up(scanint(catp + 0, 1), 0, 0, 0);
-				const int p2 = vfy32up(scanint(catp + 1, 3), 0, 255, 0);
-				gsquelch = p2;
-				updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
-				rc = 1;
-			}
-			else if (catpcount == 1)
-			{
-				const int p1 = vfy32up(scanint(catp + 0, 1), 0, 0, 0);
-				cat_answerparam_map [CAT_SQ_INDEX] = p1;
-				cat_answer_request(CAT_SQ_INDEX);	// sqanswer
-				rc = 1;
-			}
-			else
-			{
-				cat_answer_request(CAT_BADCOMMAND_INDEX);
-			}
-		}
-		else
-		{
-			cat_answer_request(CAT_BADCOMMAND_INDEX);
-		}
-	}
-#endif /* WITHIF4DSP */
 	else
 	{
 		// нераспознанная команда - ожидание следующей.
@@ -10133,11 +10125,7 @@ processmessages(uint_fast8_t * kbch, uint_fast8_t * kbready, uint_fast8_t inmenu
 			// check MSGBUFFERSIZE8 valie
 			// 12 bytes as parameter
 			//debug_printf_P(PSTR("processmessages: MSGT_CAT\n"));
-			uint_fast32_t v = buff [3];
-			v = v * 256 + buff [4];
-			v = v * 256 + buff [5];
-			v = v * 256 + buff [6];
-			if (processcatmsg(buff [0], buff [1], buff [2], v, buff [8], buff + 9))
+			if (processcatmsg(buff [0], buff [1], buff [2], buff [8], buff + 9))
 				display_redrawfreqmodesbars(inmenu);			/* Обновление дисплея - всё, включая частоту */
 		}
 #endif /* WITHCAT */
