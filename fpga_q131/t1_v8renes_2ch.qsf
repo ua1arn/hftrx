@@ -171,7 +171,6 @@ set_global_assignment -name OUTPUT_IO_TIMING_FAR_END_VMEAS "HALF SIGNAL SWING" -
 # end ENTITY(tc1_top_v5_2ch)
 # --------------------------
 set_location_assignment PIN_76 -to dac_clk_alt
-set_location_assignment PIN_142 -to i2s2_ck
 set_location_assignment PIN_28 -to fpga_ovf
 set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to dac_sleep -disable
 set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to cpu_miso -disable
@@ -263,5 +262,5 @@ set_instance_assignment -name IO_MAXIMUM_TOGGLE_RATE "1 MHz" -to adc_pga
 set_instance_assignment -name IO_MAXIMUM_TOGGLE_RATE "1 MHz" -to adc_shdn
 set_instance_assignment -name IO_MAXIMUM_TOGGLE_RATE "10 MHz" -to cpu_miso
 set_instance_assignment -name IO_MAXIMUM_TOGGLE_RATE "1 MHz" -to dac_sleep
-set_instance_assignment -name IO_MAXIMUM_TOGGLE_RATE "5 MHz" -to sai1_sd_b
+set_instance_assignment -name IO_MAXIMUM_TOGGLE_RATE "10 MHz" -to ssidata2
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top

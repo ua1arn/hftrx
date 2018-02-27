@@ -24,9 +24,9 @@ arch_reload_coef_sgl_clock : 0
 arch_num_mbs : 2
 arch_no_sym : 1
 num_bank_set : 1
-length : 369
-num_cycles : 3
-arch_pipeline : 1
+length : 333
+num_cycles : 1
+arch_pipeline : 3
 poly_type : 2
 poly_fact : 10
 device_family : 21

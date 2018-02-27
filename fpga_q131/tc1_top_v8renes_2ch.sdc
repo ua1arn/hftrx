@@ -61,6 +61,7 @@ derive_clock_uncertainty
 # tpd constraints
 #set_input_delay -clock  "clockfromadc"  -min [expr { - 0.8}] [get_ports {adc_data[*] adc_ovfl}]
 #set_input_delay -clock  "clockfromadc"  -max [expr { + 0.8}] [get_ports {adc_data[*] adc_ovfl}]
+
 #**************************************************************
 # Set Clock Latency
 #**************************************************************
