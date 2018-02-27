@@ -516,12 +516,13 @@ static void DMA_SDIO_setparams(
 #elif CPUSTYLE_STM32H7XX
 	// в процессоре для обмена с SDIO используется выделенный блок DMA
 
-	SDMMC1->CMD |= SDMMC_CMD_CMDTRANS;
+	ASSERT((SDMMC1->STA & SDMMC_STA_DPSMACT) == 0);
+
 	SDMMC1->IDMACTRL = SDMMC_IDMA_IDMAEN;
 	SDMMC1->IDMABASE0 = addr;
 	//SDMMC1->IDMABSIZE = (SDMMC1->IDMABSIZE & ~ (SDMMC_IDMABSIZE_IDMABNDT)) |
 	//	(((length0 * count / 32) << SDMMC_IDMABSIZE_IDMABNDT_Pos) & SDMMC_IDMABSIZE_IDMABNDT_Msk) |
-	//	0;
+	//0;
 
 #elif CPUSTYLE_STM32F7XX || CPUSTYLE_STM32F4XX
 
@@ -668,7 +669,6 @@ static void DMA_sdio_cancel(void)
 
 #elif CPUSTYLE_STM32H7XX
 	// в процессоре для обмена с SDIO используется выделенный блок DMA
-	SDMMC1->CMD &= ~ SDMMC_CMD_CMDTRANS;
 	SDMMC1->IDMACTRL &= ~ SDMMC_IDMA_IDMAEN;
 
 #elif CPUSTYLE_STM32F7XX || CPUSTYLE_STM32F4XX
@@ -763,7 +763,6 @@ static void sdhost_dpsm_wait_fifo_empty(void)
 		//if ((fifocnt & SDMMC_FIFOCNT_FIFOCOUNT) == 0)
 			break;
 	}
-	SDMMC1->CMD &= ~ SDMMC_CMD_CMDTRANS;
 
 #elif CPUSTYLE_STM32F7XX
 
@@ -977,7 +976,6 @@ static void sdhost_no_resp(uint_fast16_t cmd, uint_fast32_t arg)
 
 	SDMMC1->ARG = arg;
 	SDMMC1->CMD = 
-		(SDMMC1->CMD & SDMMC_CMD_CMDTRANS) |
 		(SDMMC_CMD_CMDINDEX & cmd) |
 		0 * SDMMC_CMD_WAITRESP_0 |	// 0: no response, 1: short response, 3: long response
 		0 * SDMMC_CMD_WAITINT |
@@ -1016,7 +1014,7 @@ static void sdhost_no_resp(uint_fast16_t cmd, uint_fast32_t arg)
 }
 
 // Запустить на выполнение команду, возвращающую short responce
-static void sdhost_short_resp(uint_fast16_t cmd, uint_fast32_t arg)
+static void sdhost_short_resp2(uint_fast16_t cmd, uint_fast32_t arg, uint_fast8_t dtransfer)
 {
 #if ! WITHSDHCHW
 // SPI SD CARD (MMC SD)
@@ -1044,7 +1042,7 @@ static void sdhost_short_resp(uint_fast16_t cmd, uint_fast32_t arg)
 #elif CPUSTYLE_R7S721
 
 	while ((SDHI0.SD_INFO2 & (1uL << 14)) != 0)	// CBSY
-		; //debug_printf_P(PSTR("sdhost_short_resp: CBSY\n"));
+		; //debug_printf_P(PSTR("sdhost_short_resp2: CBSY\n"));
 
 	SDHI0.SD_INFO1_MASK = 0xFFFE;
 	SDHI0.SD_INFO2_MASK = 0x7F80;
@@ -1058,8 +1056,8 @@ static void sdhost_short_resp(uint_fast16_t cmd, uint_fast32_t arg)
 
 	SDMMC1->ARG = arg;
 	SDMMC1->CMD = 
-		(SDMMC1->CMD & SDMMC_CMD_CMDTRANS) |
 		(SDMMC_CMD_CMDINDEX & cmd) |
+		dtransfer * SDMMC_CMD_CMDTRANS |
 		1 * SDMMC_CMD_WAITRESP_0 |	// 0: no response, 1: short response, 3: long response
 		0 * SDMMC_CMD_WAITINT |
 		0 * SDMMC_CMD_WAITPEND |
@@ -1094,6 +1092,12 @@ static void sdhost_short_resp(uint_fast16_t cmd, uint_fast32_t arg)
 #else
 	#error Wrong CPUSTYLE_xxx
 #endif
+}
+
+// Команда без пересылки данных
+static void sdhost_short_resp(uint_fast16_t cmd, uint_fast32_t arg)
+{
+	sdhost_short_resp2(cmd, arg, 0);
 }
 
 // Запустить на выполнение команду, возвращающую long responce
@@ -1139,7 +1143,6 @@ static void sdhost_long_resp(uint_fast16_t cmd, uint_fast32_t arg)
 
 	SDMMC1->ARG = arg;
 	SDMMC1->CMD = 
-		(SDMMC1->CMD & SDMMC_CMD_CMDTRANS) |
 		(SDMMC_CMD_CMDINDEX & cmd) |
 		3 * SDMMC_CMD_WAITRESP_0 |	// 0: no response, 1: short response, 3: long response
 		0 * SDMMC_CMD_WAITINT |
@@ -1253,9 +1256,11 @@ static uint_fast8_t sdhost_get_none_resp(void)
 			ec = 1;
 		if ((sta & SDMMC_STA_CMDSENT) != 0)
 			break;
-#if CPUSTYLE_STM32H7XX
+#if defined (SDMMC_STA_DTIMEOUT)
 		if ((sta & SDMMC_STA_DTIMEOUT) != 0)
 			ec = 1;
+#endif /* defined (SDMMC_STA_DTIMEOUT) */
+#if CPUSTYLE_STM32H7XX
 		if ((sta & SDMMC_STA_BUSYD0END) != 0)
 			break;
 #endif /* CPUSTYLE_STM32H7XX */
@@ -1353,16 +1358,18 @@ static uint_fast8_t sdhost_get_resp(void)
 			ec = 1;
 		if ((sta & SDMMC_STA_CMDREND) != 0)
 			break;
-#if CPUSTYLE_STM32H7XX
+#if defined (SDMMC_STA_DTIMEOUT)
 		if ((sta & SDMMC_STA_DTIMEOUT) != 0)
 			ec = 1;
+#endif /* defined (SDMMC_STA_DTIMEOUT) */
+#if CPUSTYLE_STM32H7XX
 		if ((sta & SDMMC_STA_BUSYD0END) != 0)
 			break;
 #endif /* CPUSTYLE_STM32H7XX */
 	}
 	if (ec != 0)
 	{
-			//debug_printf_P(PSTR("sdhost_get_resp error, STA=%08lX\n"), SDMMC1->STA);
+		debug_printf_P(PSTR("sdhost_get_resp error, STA=%08lX\n"), SDMMC1->STA);
 	}
 	SDMMC1->ICR = SDMMC_ICR_CMDRENDC;
 	// Если была ошибка CRC при приёме ответа - сбросить её
@@ -1463,9 +1470,11 @@ static uint_fast8_t sdhost_get_resp_nocrc(void)
 			break; //ec = 1;
 		if ((sta & SDMMC_STA_CMDREND) != 0)
 			break;
-#if CPUSTYLE_STM32H7XX
+#if defined (SDMMC_STA_DTIMEOUT)
 		if ((sta & SDMMC_STA_DTIMEOUT) != 0)
 			ec = 1;
+#endif /* defined (SDMMC_STA_DTIMEOUT) */
+#if CPUSTYLE_STM32H7XX
 		if ((sta & SDMMC_STA_BUSYD0END) != 0)
 			break;
 #endif /* CPUSTYLE_STM32H7XX */
@@ -1826,12 +1835,12 @@ static uint_fast32_t sdhost_getblocksize(void)
 
 // Выдать префиксную команду APP_CMD и следующую за ней ACMDxxx
 // Получить R1 responce
-static uint_fast8_t sdhost_short_acmd_resp_R1(uint_fast8_t cmd, uint_fast32_t arg, uint_fast32_t * resp)
+static uint_fast8_t sdhost_short_acmd_resp_R1(uint_fast8_t cmd, uint_fast32_t arg, uint_fast32_t * resp, uint_fast8_t dtransfer)
 {
 	sdhost_short_resp(encode_cmd(SD_CMD_APP_CMD), sdhost_sdcard_RCA << 16);
 	if (sdhost_get_R1(SD_CMD_APP_CMD, resp) != 0)
 		return 1;
-	sdhost_short_resp(encode_appcmd(cmd), arg);
+	sdhost_short_resp2(encode_appcmd(cmd), arg, dtransfer);
 	return sdhost_get_R1(cmd, resp);
 }
 
@@ -1890,7 +1899,7 @@ static uint_fast8_t sdhost_sdcard_WriteSectors(
 		DMA_SDIO_setparams((uintptr_t) buff, 512, count, 1);
 
 		// write block
-		sdhost_short_resp(encode_cmd(SD_CMD_WRITE_SINGLE_BLOCK), sector * sdhost_getaddresmultiplier());	// CMD24
+		sdhost_short_resp2(encode_cmd(SD_CMD_WRITE_SINGLE_BLOCK), sector * sdhost_getaddresmultiplier(), 1);	// CMD24
 		if (sdhost_get_R1(SD_CMD_WRITE_SINGLE_BLOCK, & resp) != 0)
 		{
 			DMA_sdio_cancel();
@@ -1924,7 +1933,7 @@ static uint_fast8_t sdhost_sdcard_WriteSectors(
 
 		// Pre-erased Setting prior to a Multiple Block Write Operation
 		// Setting a number of write blocks to be pre-erased (ACMD23)
-		if (sdhost_short_acmd_resp_R1(SD_CMD_SD_APP_SET_NWB_PREERASED, count & 0x7FFFFF, & resp) != 0) // ACMD23
+		if (sdhost_short_acmd_resp_R1(SD_CMD_SD_APP_SET_NWB_PREERASED, count & 0x7FFFFF, & resp, 0) != 0) // ACMD23
 		{
 			debug_printf_P(PSTR("SD_CMD_SD_APP_SET_NWB_PREERASED error\n"));
 			return 1;
@@ -1950,7 +1959,7 @@ static uint_fast8_t sdhost_sdcard_WriteSectors(
 		}
 
 		// write blocks
-		sdhost_short_resp(encode_cmd(SD_CMD_WRITE_MULT_BLOCK), sector * sdhost_getaddresmultiplier());	// CMD25
+		sdhost_short_resp2(encode_cmd(SD_CMD_WRITE_MULT_BLOCK), sector * sdhost_getaddresmultiplier(), 1);	// CMD25
 		if (sdhost_get_R1(SD_CMD_WRITE_MULT_BLOCK, & resp) != 0)
 		{
 			DMA_sdio_cancel();
@@ -2040,36 +2049,28 @@ static uint_fast8_t sdhost_sdcard_ReadSectors(
 		//TP();
 
 		// read block
-		sdhost_short_resp(encode_cmd(SD_CMD_READ_SINGLE_BLOCK), sector * sdhost_getaddresmultiplier());	// CMD17
+		sdhost_short_resp2(encode_cmd(SD_CMD_READ_SINGLE_BLOCK), sector * sdhost_getaddresmultiplier(), 1);	// CMD17
 		if (sdhost_get_R1(SD_CMD_READ_SINGLE_BLOCK, & resp) != 0)
 		{
-			TP();
 			DMA_sdio_cancel();
-			TP();
 			debug_printf_P(PSTR("SD_CMD_READ_SINGLE_BLOCK error\n"));
 			return 1;
 		}
 		if (sdhost_dpsm_wait(0) != 0)
 		{
-			TP();
 			DMA_sdio_cancel();
-			TP();
 			debug_printf_P(PSTR("sdhost_sdcard_ReadSectors 1: sdhost_dpsm_wait error\n"));
 			return 1;
 		}
 		else if (DMA_sdio_waitdone() != 0)
 		{
-			TP();
 			DMA_sdio_cancel();
-			TP();
 			debug_printf_P(PSTR("sdhost_sdcard_ReadSectors 1: DMA_sdio_waitdone error\n"));
 			return 1;
 		}
 		else
 		{
-			//TP();
 			sdhost_dpsm_wait_fifo_empty();
-			//TP();
 			return 0;
 		}
 	}
@@ -2093,7 +2094,7 @@ static uint_fast8_t sdhost_sdcard_ReadSectors(
 			}
 		}
 		// read block
-		sdhost_short_resp(encode_cmd(SD_CMD_READ_MULT_BLOCK), sector * sdhost_getaddresmultiplier());	// CMD18
+		sdhost_short_resp2(encode_cmd(SD_CMD_READ_MULT_BLOCK), sector * sdhost_getaddresmultiplier(), 1);	// CMD18
 		if (sdhost_get_R1(SD_CMD_READ_MULT_BLOCK, & resp) != 0)
 		{
 			DMA_sdio_cancel();
@@ -2233,7 +2234,7 @@ static uint_fast8_t sdhost_read_registers_acmd(uint16_t acmd, uint8_t * buff, un
 	DMA_SDIO_setparams((uintptr_t) buff, size, 1, 0);
 
 	// read block
-	if (sdhost_short_acmd_resp_R1(acmd, 0, & resp) != 0)	// ACMD51
+	if (sdhost_short_acmd_resp_R1(acmd, 0, & resp, 1) != 0)	// ACMD51
 	{
 		DMA_sdio_cancel();
 		debug_printf_P(PSTR("sdhost_read_registers_acmd: sdhost_get_R1 (acmd=0x%02lX) error\n"), acmd);
@@ -2317,7 +2318,7 @@ static uint_fast8_t sdhost_sdcard_identification(void)
 	sdhost_use_cmd23 = 0;
 	sdhost_use_cmd20 = 0;
 #if 0 && WITHSDHCHW
-	RAMNOINIT_D1 ALIGNX_BEGIN uint8_t sdhost_sdcard_SCR [32] ALIGNX_END;	// надо только 8 байт, но какая-то проюлема с кэш - работает при 32 и более
+	static RAMNOINIT_D1 ALIGNX_BEGIN uint8_t sdhost_sdcard_SCR [32] ALIGNX_END;	// надо только 8 байт, но какая-то проюлема с кэш - работает при 32 и более
 
 	if (sdhost_read_registers_acmd(SD_CMD_SD_APP_SEND_SCR, sdhost_sdcard_SCR, 8, 3, sizeof sdhost_sdcard_SCR) == 0)		// ACMD51
 	{
@@ -2356,7 +2357,7 @@ static uint_fast8_t sdhost_sdcard_identification(void)
 	if (bussupport4b != 0)
 	{
 		// Set 4 bit bus width
-		if (sdhost_short_acmd_resp_R1(SD_CMD_APP_SD_SET_BUSWIDTH, 0x0002, & resp) != 0) // ACMD6
+		if (sdhost_short_acmd_resp_R1(SD_CMD_APP_SD_SET_BUSWIDTH, 0x0002, & resp, 0) != 0) // ACMD6
 		{
 			debug_printf_P(PSTR("SD_CMD_APP_SD_SET_BUSWIDTH error\n"));
 			return 1;
