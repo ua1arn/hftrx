@@ -5908,9 +5908,9 @@ void hardware_sdhost_setspeed(unsigned long ticksfreq)
 	// Использование автоматического расчёта делителя
 	// Источником тактирования SDMMC сейчас установлен внутренний генератор 48 МГц
 	//const uint32_t stm32f4xx_48mhz = PLL_FREQ / stm32h7xx_pllq;
-	const unsigned value = ulmin(calcdivround2(SDMMCCLK, ticksfreq) - 2, 255);
+	const unsigned value = ulmin(calcdivround2(SDMMCCLK / 2, ticksfreq), 0x03FF);
 
-	//debug_printf_P(PSTR("hardware_sdhost_setspeed: stm32h7xx_pllq=%lu, freq=%lu\n"), (unsigned long) stm32h7xx_pllq, stm32f4xx_48mhz);
+	debug_printf_P(PSTR("hardware_sdhost_setspeed: stm32h7xx_pllq=%lu, SDMMCCLK=%lu, PLL_FREQ=%lu\n"), (unsigned long) stm32h7xx_pllq, SDMMCCLK, PLL_FREQ);
 	debug_printf_P(PSTR("hardware_sdhost_setspeed: CLKCR_CLKDIV=%lu\n"), (unsigned long) value);
 
 	SDMMC1->CLKCR = (SDMMC1->CLKCR & ~ (SDMMC_CLKCR_CLKDIV)) |
@@ -7333,7 +7333,7 @@ lowlevel_stm32h7xx_pll_initialize(void)
 
 // Настроить выход PLLQ на 48 МГц, подключить SDMMC и USB к нему.
 // Настройка делителя делается при инициализации PLL, здесь измениь делитель не получается.
-// Версия для STM32H7
+// Версия для STM32H7 возвращает текушее значение делитедя.
 uint_fast32_t arm_hardware_stm32f7xx_pllq_initialize(void)
 {
 	const uint32_t stm32h7xx_pllq = ((RCC->PLL1DIVR & RCC_PLL1DIVR_Q1) >> RCC_PLL1DIVR_Q1_Pos) + 1;
