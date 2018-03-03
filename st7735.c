@@ -1345,6 +1345,12 @@ void display_plot(
 #endif /* WITHSPIEXT16 */
 }
 
+uint_fast8_t
+display_getreadystate(void)
+{
+	return 1;
+}
+
 #endif /* ! LCDMODE_LTDC */
 
 /* аппаратный сброс дисплея - перед инициализаций */
@@ -1382,12 +1388,6 @@ void display_discharge(void)
 	writecommand(ST7735_DISPOFF);
 	writecommand(ST7735_SLPIN);
 	spi_unselect(targetlcd);		/* Disable SPI */
-}
-
-uint_fast8_t
-display_getreadystate(void)
-{
-	return 1;
 }
 
 #endif /* LCDMODE_ST7735 || LCDMODE_ILI9163 || LCDMODE_ILI9341 */

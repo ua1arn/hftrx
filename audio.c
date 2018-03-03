@@ -11946,6 +11946,25 @@ dsp_rasterinitialize(void)
 	toplogdb = LOG10F((FLOAT_t) INT32_MAX / waterfalrange);
 }
 
+#else /* (WITHRTS96 || WITHRTS192) && ! WITHTRANSPARENTIQ */
+
+void dsp_getspectrumrow(
+	FLOAT_t * const hbase,
+	uint_fast16_t dx	// pixel X width of display window
+	)
+{
+	uint_fast16_t x;
+	for (x = 0; x < dx; ++ x)
+	{
+		hbase [x] = 0;
+	}
+}
+
+int dsp_mag2y(FLOAT_t mag, uint_fast16_t dy)
+{
+	return 0;
+}
+
 #endif /* (WITHRTS96 || WITHRTS192) && ! WITHTRANSPARENTIQ */
 
 #if WITHDSPEXTDDC
