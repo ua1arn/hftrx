@@ -10740,6 +10740,11 @@ static RAMFUNC FLOAT_t preparevi(
 		vi0f = - mikefence;
 #endif
 
+	// VOX detector и разрядная цепь
+	// Поддержка работы VOX
+	charge2(& mikeinlevel, FABSF(vi0f), 
+		(mikeinlevel < vi0f) ? VOXCHARGE : VOXDISCHARGE);
+
 	switch (dspmode)
 	{
 	case DSPCTL_MODE_TX_BPSK:
@@ -10757,10 +10762,6 @@ static RAMFUNC FLOAT_t preparevi(
 		{
 		case BOARD_TXAUDIO_MIKE:
 		case BOARD_TXAUDIO_LINE:
-			// VOX detector и разрядная цепь
-			// Поддержка работы VOX
-			charge2(& mikeinlevel, FABSF(vi0f), 
-				(mikeinlevel < vi0f) ? VOXCHARGE : VOXDISCHARGE);
 			// источник - микрофон
 			// дополнительно работает ограничитель.
 			// see glob_mik1level (0..100)
@@ -10768,10 +10769,6 @@ static RAMFUNC FLOAT_t preparevi(
 
 		case BOARD_TXAUDIO_USB:
 		default:
-			// VOX detector и разрядная цепь
-			// Поддержка работы VOX
-			charge2(& mikeinlevel, FABSF(vi0f), 
-				(mikeinlevel < vi0f) ? VOXCHARGE : VOXDISCHARGE);
 			// источник - LINE IN или USB
 			// see glob_mik1level (0..100)
 			return injectsubtone(vi0f * txlevelfenceSSB / mikefence, ctcss); //* TXINSCALE; // источник сигнала - микрофон
