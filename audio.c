@@ -10732,19 +10732,6 @@ static RAMFUNC FLOAT_t preparevi(
 {
 	FLOAT_t vi0f = vi0;
 
-#if 0
-	// Устранение выхода за пределы разрядной сетки
-	if (vi0f > mikefence)
-		vi0f = mikefence;
-	else if (vi0f < - mikefence)
-		vi0f = - mikefence;
-#endif
-
-	// VOX detector и разрядная цепь
-	// Поддержка работы VOX
-	charge2(& mikeinlevel, FABSF(vi0f), 
-		(mikeinlevel < vi0f) ? VOXCHARGE : VOXDISCHARGE);
-
 	switch (dspmode)
 	{
 	case DSPCTL_MODE_TX_BPSK:
@@ -11501,14 +11488,20 @@ static INT32P_t loopbacktestaudio(INT32P_t vi0, uint_fast8_t dspmode, FLOAT_t sh
 
 #endif /* WITHLOOPBACKTEST */
 
-static RAMFUNC INT32P_t getsampmlemike2(void)			/* получить очередной оцифрованый сэмпл с микрофона */
+/* получить очередной оцифрованый сэмпл с микрофона или USB AUDIO канала. 16-bit samples */
+static RAMFUNC INT32P_t getsampmlemike2(void)			
 {
 	INT32P_t v;
 	if (getsampmlemike(& v) == 0)
 	{
 		v.IV = 0;
-		v.IV = 0;
+		v.QV = 0;
 	}
+	// VOX detector и разрядная цепь
+	// Поддержка работы VOX
+	const FLOAT_t vi0f = FMAXF(FABSF(v.IV), FABSF(v.QV));
+	charge2(& mikeinlevel, vi0f, (mikeinlevel < vi0f) ? VOXCHARGE : VOXDISCHARGE);
+
 	return v;
 }
 
