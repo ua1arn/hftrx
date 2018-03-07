@@ -10755,17 +10755,26 @@ static RAMFUNC FLOAT_t preparevi(
 		// Источник нормируется к txlevelfenceSSB
 		switch (glob_txaudio)
 		{
-		//case BOARD_TXAUDIO_MIKE:
-		//case BOARD_TXAUDIO_LINE:
-		//case BOARD_TXAUDIO_USB:
+		case BOARD_TXAUDIO_MIKE:
+		case BOARD_TXAUDIO_LINE:
+			// VOX detector и разрядная цепь
+			// Поддержка работы VOX
+			charge2(& mikeinlevel, FABSF(vi0f), 
+				(mikeinlevel < vi0f) ? VOXCHARGE : VOXDISCHARGE);
+			// источник - микрофон
+			// дополнительно работает ограничитель.
+			// see glob_mik1level (0..100)
+			return injectsubtone(txmikeagc(vi0f * txlevelfenceSSB / mikefence), ctcss); //* TXINSCALE; // источник сигнала - микрофон
+
+		case BOARD_TXAUDIO_USB:
 		default:
 			// VOX detector и разрядная цепь
 			// Поддержка работы VOX
 			charge2(& mikeinlevel, FABSF(vi0f), 
 				(mikeinlevel < vi0f) ? VOXCHARGE : VOXDISCHARGE);
-			// источник - микрофон, LINE IN или USB
+			// источник - LINE IN или USB
 			// see glob_mik1level (0..100)
-			return injectsubtone(txmikeagc(vi0f * txlevelfenceSSB / mikefence), ctcss); //* TXINSCALE; // источник сигнала - микрофон
+			return injectsubtone(vi0f * txlevelfenceSSB / mikefence, ctcss); //* TXINSCALE; // источник сигнала - микрофон
 
 		case BOARD_TXAUDIO_NOISE:
 			// источник - шум
@@ -12663,7 +12672,7 @@ void dsp_initialize(void)
 	txlevelfenceNFM = txlevelfence;
 	txlevelfenceCW = txlevelfence;
 #else /* WITHTXDACFULL */
-	txlevelfenceBPSK = txlevelfence / 2;
+	txlevelfenceBPSK = txlevelfence / (FLOAT_t) 1.5;
 	txlevelfenceNFM = txlevelfence / 2;
 	txlevelfenceCW = txlevelfence / 2;
 #endif /* WITHTXDACFULL */
