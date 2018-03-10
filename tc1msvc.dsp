@@ -1598,6 +1598,10 @@ SOURCE=.\boards\atmega_cpu_ua3dkc.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\boards\atmega_cpustyle_RA4YBO_AM0.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\boards\atmega_cpustyle_RV9CQQ.h
 # End Source File
 # Begin Source File
@@ -1651,6 +1655,10 @@ SOURCE=.\boards\atmega_ctl_ua3dkc.h
 # Begin Source File
 
 SOURCE=.\boards\atmega_ctlstyle_ra4ybo.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\boards\atmega_ctlstyle_RA4YBO_AM0.h
 # End Source File
 # Begin Source File
 

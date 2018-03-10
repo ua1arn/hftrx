@@ -2451,6 +2451,14 @@ void elkey_spool_dots(void);	/* электронный ключ - вызывается с периодом 1/ELKEY
 	#define DDS3_CLK_MUL	1 		/* Умножитель в DDS3 */
 #endif	/* DIRECT_40M0_X1 */
 
+#if DIRECT_20M0_X1
+	#define LO1MODE_DIRECT	1
+	#define REFERENCE_FREQ	20000000ul
+	#define DDS1_CLK_MUL	1 		/* Умножитель в DDS1 */
+	#define DDS2_CLK_MUL	1		/* Умножитель в DDS2 */
+	#define DDS3_CLK_MUL	1 		/* Умножитель в DDS3 */
+#endif	/* DIRECT_20M0_X1 */
+
 #if DIRECT_25M0_X1
 	#define LO1MODE_DIRECT	1
 	#define REFERENCE_FREQ	25000000ul
