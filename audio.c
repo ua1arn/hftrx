@@ -10370,7 +10370,7 @@ static RAMFUNC FLOAT_t agc_getsiglevel(
 // Инициализация сделана для того, чтобы поместить эти переменные в обюласть CCM памяти
 // Присвоение осмысленных значений производится в соответствующих функциях инициализации.
 
-static volatile agcstate_t rxsmeterstate = { 0, };	//
+static volatile agcstate_t rxsmeterstate [NTRX] = { { 0, } };	// На каждый приёмник
 static volatile agcstate_t rxagcstate [NTRX] = { { 0, } };	// На каждый приёмник
 static volatile agcstate_t txagcstate = { 0, };
 
@@ -10397,15 +10397,15 @@ static void agc_initialize(void)
 
 			agc_parameters_initialize(& rxagcparams [profile] [pathi]);
 			agc_state_initialize(& rxagcstate [pathi], & rxagcparams [profile] [pathi]);
+			// s-meter
+			agc_parameters_initialize(& rxsmeterparams);
+			agc_state_initialize(& rxsmeterstate [pathi], & rxsmeterparams);
 		}
 
 		// Микрофон всегда с flatgain=1
 		comp_parameters_initialize(& txagcparams [profile]);
 		agc_state_initialize(& txagcstate, & txagcparams [profile]);
 	}
-	// s-meter
-	agc_parameters_initialize(& rxsmeterparams);
-	agc_state_initialize(& rxsmeterstate, & rxsmeterparams);
 
 #if WITHDSPEXTDDC
 
@@ -10462,11 +10462,9 @@ static RAMFUNC FLOAT_t agc_forvard_float(
 	//BEGIN_STAMP();
 	const FLOAT_t strength = agccalcstrength(agcp, siglevel0);	// получение логарифмического хначения уровня сигнала
 	//END_STAMP();
-	if (pathi == 0)
-	{
-		// Этот канал приемника отвечает за показ S-метра
-		performagc(& rxsmeterparams, & rxsmeterstate, strength);	// измеритель уровня сигнала
-	}
+
+	// показ S-метра
+	performagc(& rxsmeterparams, & rxsmeterstate [pathi], strength);	// измеритель уровня сигнала
 
 	//BEGIN_STAMP();
 	performagc(agcp, st, strength);	// измеритель уровня сигнала
@@ -10496,9 +10494,8 @@ static void agc_reset(
 	uint_fast8_t pathi
 	)
 {
-	return;
 	volatile agcparams_t * const agcp = & rxsmeterparams;
-	volatile agcstate_t * const st = & rxsmeterstate;
+	volatile agcstate_t * const st = & rxsmeterstate [pathi];
 	const FLOAT_t m0 = agcp->mininput;
 	global_disableIRQ();
 	st->agcfastcap = m0;
@@ -10525,7 +10522,7 @@ static FLOAT_t agc_forvard_getstreigthlog10(
 	)
 {
 	volatile agcparams_t * const agcp = & rxsmeterparams;
-	volatile const agcstate_t * const st = & rxsmeterstate;
+	volatile const agcstate_t * const st = & rxsmeterstate [pathi];
 
 	const FLOAT_t fltstrengthfast = performagcresultfast(st);	// измеритель уровня сигнала
 	const FLOAT_t fltstrengthslow = performagcresultslow(st);	// измеритель уровня сигнала
