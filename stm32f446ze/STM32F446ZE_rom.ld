@@ -171,6 +171,13 @@ SECTIONS
 		__bss_end__ = .;
 	} > RAM
 
+	.noinit :
+	{
+		. = ALIGN(32);
+		*(.noinit)
+		. = ALIGN(32);
+	} > RAM
+
 	.heap (COPY):
 	{
 		__HeapBase = .;

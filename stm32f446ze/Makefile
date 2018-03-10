@@ -26,7 +26,7 @@ AS   = $(TRGT)gcc -x assembler-with-cpp
 HEX  = $(CP) -O ihex -R .noinit -R .bss
 BIN  = $(CP) -O binary 
 
-CMSISDIR = ../../CMSIS_5-5.2.0/CMSIS
+CMSISDIR = ../../CMSIS_5-5.3.0/CMSIS
 
 # Define optimisation level here
 OPT = -Ofast
