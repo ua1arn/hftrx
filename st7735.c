@@ -160,6 +160,8 @@ static void st7735_setcolor(COLOR_T fg, COLOR_T bg, COLOR_T transient)
 		byte2run = & byte2run_COLOR_RED_COLOR_BLACK;
 	else if (fg == COLOR_GREEN && bg == COLOR_BLACK)
 		byte2run = & byte2run_COLOR_GREEN_COLOR_BLACK;
+	else if (fg == COLOR_WHITE && bg == COLOR_DARKGREEN)
+		byte2run = & byte2run_COLOR_WHITE_COLOR_DARKGREEN;
 	else
 		byte2run = & byte2run_COLOR_WHITE_COLOR_BLACK;
 
