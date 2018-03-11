@@ -6261,7 +6261,7 @@ void board_init_io(void)
 	/* FPGA загружается процессором с помощью SPI */
 	board_fpga_loader_initialize();
 	board_fpga_loader_PS();
-#endif /* WITHFPGAWAIT_AS */
+#endif /* WITHFPGALOAD_PS */
 
 	board_update_initial();		// Обнуление теневых переменных, синхронизация регистров с теневыми переменными.
 	board_reset();			/* формирование импульса на reset_n */
