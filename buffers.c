@@ -903,8 +903,9 @@ static RAMFUNC unsigned getsamplemsuacout(
 	static uint_fast8_t part = 0;
 	static uint16_t * datas [NPARTS] = { NULL, NULL };		// начальный адрес пары сэмплов во входном буфере
 	static unsigned sizes [NPARTS] = { 0, 0 };			// количество сэмплов во входном буфере
+	// исправляемая погрешность = 0.02% - один сэмпл добавить/убрать на 5000 сэмплов
+	enum { SKIPPED = 5000 / (DMABUFFSIZE16 / DMABUFSTEP16) };
 
-	enum { SKIPPED = 64 };	// исправляемая погрешность 1/57/64 = 0.027% = approx. 2.7e-4
 	static unsigned skipsense = SKIPPED;
 
 	LOCK(& locklist16);
