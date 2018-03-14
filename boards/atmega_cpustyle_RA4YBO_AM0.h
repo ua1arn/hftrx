@@ -99,7 +99,7 @@
 	#define PTT_TARGET_PORT PORTD
 	#define PTT_TARGET_DDR DDRD
 	#define PTT_TARGET_PIN PIND
-	#define PTT_BIT_PTT (1U << PD4)
+	#define PTT_BIT_PTT (1U << PIND4)
 
 	#if WITHCAT || WITHNMEA
 
@@ -446,7 +446,7 @@
 		MCUCR = 0x05; \
 		MCUCSR = 0x00; \
 		GIFR = 0xC0; \
-		ENCODER_TARGET_PORT |= ENCODER_BITS; /* PULL-UP */  \
+		/* ENCODER_TARGET_PORT |= ENCODER_BITS; */ /* PULL-UP */  \
 		ENCODER_DIRECTION_PORT &= ~ ENCODER_BITS; \
 	} while (0)
 

@@ -1377,6 +1377,24 @@ uint_fast8_t getexitkey(void)
 	return KBD_CODE_DISPMODE;
 }
 
+#elif KEYBSTYLE_RA4YBO_AM0
+
+const struct qmkey qmdefs [NQMKEYS] =
+{
+	{ KIF_NONE,		KBD_CODE_ATT, KBD_CODE_MAX, },
+	{ KIF_NONE,		KBD_CODE_BAND_UP, KBD_CODE_MAX, },
+	{ KIF_NONE,		KBD_CODE_MAX, KBD_CODE_MAX, },
+	{ KIF_NONE,		KBD_CODE_MAX, KBD_CODE_MAX, },
+	{ KIF_EXTMENU,	KBD_CODE_BW, KBD_CODE_MENU, },
+	{ KIF_NONE,		KBD_CODE_MAX, KBD_CODE_MAX, },
+};
+
+uint_fast8_t getexitkey(void)
+{
+	return KBD_CODE_BW;
+}
+
+
 #elif KEYB_RA4YBO
 
 /*

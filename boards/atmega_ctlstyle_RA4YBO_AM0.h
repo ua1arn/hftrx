@@ -49,7 +49,7 @@
 	#define CTLREGSTYLE_SW2012CN	1	// управляющие регистры SW2012MINI c цветным дисплеем и регулировкой выходной мощности
 	//#define CTLREGSTYLE_SW2012CN_RN3ZOB 1 // с платой автотюнера
 
-	#define DSTYLE_UR3LMZMOD	1
+	//#define DSTYLE_UR3LMZMOD	1
 	//#define	FONTSTYLE_ITALIC	1	//
 	// --- вариации прошивки, специфические для разных плат
 
@@ -59,7 +59,7 @@
 	// +++ Особые варианты расположения кнопок на клавиатуре
 	//#define KEYB_RA1AGG	1	/* расположение кнопок для корпуса, сделанного RA1AGG - три группы по четыре линейки кнопок друг за другом в один ряд. */
 	//#define KEYB_UA1CEI	1	/* расположение кнопок для UA1CEI */
-	#define KEYBSTYLE_SW2012CN5	1
+	#define KEYBSTYLE_RA4YBO_AM0	1
 	// --- Особые варианты расположения кнопок на клавиатуре
 
 	// +++ Одна из этих строк определяет тип дисплея, для которого компилируется прошивка
@@ -102,8 +102,8 @@
 	// +++ Эти строки можно отключать, уменьшая функциональность готового изделия
 	#define WITHTX		1	/* включено управление передатчиком - сиквенсор, электронный ключ. */
 	//#define WITHPBT		1	/* используется PBT */
-	#define WITHIFSHIFT	1	/* используется IF SHIFT */
-	#define WITHIFSHIFTOFFSET	(-250)	/* Начальное занчение IF SHIFT */
+	//#define WITHIFSHIFT	1	/* используется IF SHIFT */
+	//#define WITHIFSHIFTOFFSET	(-250)	/* Начальное занчение IF SHIFT */
 	//#define WITHCAT		1	/* используется CAT */
 	//#define WITHVOX		1	/* используется VOX */
 	#if 1
@@ -202,8 +202,8 @@
 
 #define WITHSPLIT	1	/* управление режимами расстройки одной кнопкой */
 //#define WITHSPLITEX	1	/* Трехкнопочное управление режимами расстройки */
-#define WITHCATEXT	1	/* Расширенный набор команд CAT */
-#define WITHELKEY	1
+//#define WITHCATEXT	1	/* Расширенный набор команд CAT */
+//#define WITHELKEY	1
 //#define WITHKBDENCODER 1	// перестройка частоты кнопками
 #define WITHKEYBOARD 1	/* в данном устройстве есть клавиатура */
 #define KEYBOARD_USE_ADC	1	/* на одной линии установлено  четыре  клавиши. на vref - 6.8K, далее 2.2К, 4.7К и 13K. */
