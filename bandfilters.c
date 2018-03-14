@@ -343,17 +343,17 @@ uint8_t bandf2_calc(
 	const unsigned long M10 = 1000uL * 100;
 	const fseltype_t f = (fseltype_t) (freq >> BANDDIVPOWER);
 
-	if (f < (fseltype_t) ((20 * M10) >> BANDDIVPOWER))
+	if (f < (fseltype_t) ((24 * M10) >> BANDDIVPOWER))
 		return 0;	// XS18 PIN 02
 	if (f < (fseltype_t) ((39 * M10) >> BANDDIVPOWER))
 		return 1;	// XS18 PIN 04
-	if (f < (fseltype_t) ((73 * M10) >> BANDDIVPOWER))
+	if (f < (fseltype_t) ((74 * M10) >> BANDDIVPOWER))
 		return 2;	// XS18 PIN 06
-	if (f < (fseltype_t) ((145 * M10) >> BANDDIVPOWER))
+	if (f < (fseltype_t) ((148 * M10) >> BANDDIVPOWER))
 		return 3;	// XS18 PIN 08
-	if (f < (fseltype_t) ((185 * M10) >> BANDDIVPOWER))
+	if (f < (fseltype_t) ((220 * M10) >> BANDDIVPOWER))
 		return 4;	// XS18 PIN 10
-	if (f < (fseltype_t) ((297 * M10) >> BANDDIVPOWER))
+	if (f < (fseltype_t) ((300 * M10) >> BANDDIVPOWER))
 		return 5;	// XS18 PIN 12
 	return 6;		// XS18 PIN 14 (PIN 16 - PTT)
 
