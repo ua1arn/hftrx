@@ -82,7 +82,7 @@ calcdivround2(
 	uint_fast32_t freq		/* требуемая частота на выходе делителя, в герцах. */
 	)
 {
-	return (ref + freq / 2) / freq;
+	return (fref < freq) ? 1 : ((ref + freq / 2) / freq);
 }
 
 #if CPUSTYLE_STM32F
@@ -1127,12 +1127,12 @@ static RAMFUNC void spool_adcdonebundle(void)
 			spool_elkeyinputsbundle();
 		}
 	#endif /* WITHELKEY && defined (ELKEY_BIT_LEFT) && defined (ELKEY_BIT_RIGHT) */
-	#if WITHENCODER && ENCODER_BITS
+	#if WITHENCODER && defined (ENCODER_BITS)
 		if ((pr & ENCODER_BITS) != 0)
 		{
 			spool_encinterrupt();	/* прерывание по изменению сигнала на входах от валкодера #1*/
 		}
-	#endif /* WITHENCODER && ENCODER_BITS */
+	#endif /* WITHENCODER && defined (ENCODER_BITS) */
 	#if WITHENCODER && ENCODER2_BITS
 		if ((pr & ENCODER2_BITS) != 0)
 		{
@@ -1708,9 +1708,9 @@ hardware_encoder_initialize(void)
 uint_fast8_t 
 hardware_get_encoder_bits(void)
 {
-#if WITHENCODER && ENCODER_BITS && defined (ENCODER_SHIFT)
+#if WITHENCODER && defined (ENCODER_BITS) && defined (ENCODER_SHIFT)
 	return (ENCODER_INPUT_PORT & ENCODER_BITS) >> ENCODER_SHIFT;	// Биты валкодера #1
-#elif WITHENCODER && ENCODER_BITS
+#elif WITHENCODER && defined (ENCODER_BITS)
 	const portholder_t v = ENCODER_INPUT_PORT;
 	return ((v & ENCODER_BITA) != 0) * 2 + ((v & ENCODER_BITB) != 0);	// Биты идут не подряд
 #else /* WITHENCODER */
