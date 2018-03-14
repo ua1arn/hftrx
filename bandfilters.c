@@ -321,12 +321,13 @@ uint8_t bandf2_calc(
 	uint_fast32_t freq
 	 )
 {
-	const unsigned long M = 1000uL * 1000;
 
 #if \
 	CTLREGSTYLE_SW2013SF_V2 || \
 	CTLREGSTYLE_SW2013SF_V3 || \
 	0
+
+	const unsigned long M = 1000uL * 1000;
 	const fseltype_t f = (fseltype_t) (freq >> BANDDIVPOWER);
 	if (f < (fseltype_t) ((3 * M) >> BANDDIVPOWER))
 		return 0;
@@ -339,16 +340,22 @@ uint8_t bandf2_calc(
 	CTLREGMODE_STORCH_V2_UA1CEI || \
 	0
 
-	if (freq < 2 * M)	return 0x00;		// din8: 1.8 == 1
-	if (freq < 5 * M)	return 0x01;		// din8: 3.5 == 2
-	if (freq < 8 * M)	return 0x02;		// din8: 7 == 3
-	if (freq < 12 * M)	return 0x03;		// din8: 10 == 4
-	if (freq < 16 * M)	return 0x04;		// din8: 14 == 5
-	if (freq < 19 * M)	return 0x05;		// din8: 18 == 6
-	if (freq < 22 * M)	return 0x06;		// din8: 21 == 7
-	if (freq < 26 * M)	return 0x07;		// din8: 24 == 8
-	if (freq < 32 * M)	return 0x08;		// din8: 28 == 9
-	return 0x0F;							// din8: остальные: 0x00
+	const unsigned long M10 = 1000uL * 100;
+	const fseltype_t f = (fseltype_t) (freq >> BANDDIVPOWER);
+
+	if (f < (fseltype_t) ((20 * M10) >> BANDDIVPOWER))
+		return 0;	// XS18 PIN 02
+	if (f < (fseltype_t) ((39 * M10) >> BANDDIVPOWER))
+		return 1;	// XS18 PIN 04
+	if (f < (fseltype_t) ((73 * M10) >> BANDDIVPOWER))
+		return 2;	// XS18 PIN 06
+	if (f < (fseltype_t) ((145 * M10) >> BANDDIVPOWER))
+		return 3;	// XS18 PIN 08
+	if (f < (fseltype_t) ((185 * M10) >> BANDDIVPOWER))
+		return 4;	// XS18 PIN 10
+	if (f < (fseltype_t) ((297 * M10) >> BANDDIVPOWER))
+		return 5;	// XS18 PIN 12
+	return 6;		// XS18 PIN 14 (PIN 16 - PTT)
 
 #elif \
 	CTLREGMODE_RAVENDSP_V1 || /* Трансивер Вороненок с IF DSP трактом */ \
@@ -369,6 +376,8 @@ uint8_t bandf2_calc(
 	CTLREGMODE_RAVENDSP_V8 || /* modem only */ \
 	1 || \
 	0
+
+	const unsigned long M = 1000uL * 1000;
 	const fseltype_t f = (fseltype_t) (freq >> BANDDIVPOWER);
 	if (f < (fseltype_t) ((3 * M) >> BANDDIVPOWER))
 		return 0;	// pin 02

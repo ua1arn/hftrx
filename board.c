@@ -3362,12 +3362,13 @@ prog_ctrlreg(uint_fast8_t plane)
 		/* --- Управление согласующим устройством */
 
 #endif
-		// DD17 STP08CP05TTR на разъём управления LPF
-		RBBIT(0047, glob_antenna);		// D7: - XS18 PIN 16 - antenns select бит выбора антенны (0 - ANT1, 1 - ANT2)
-		RBBIT(0046, ! (! glob_txtune && glob_tx));	// D6: - XS18 PIN 14 - PTT positive не в режиме tune
-		RBBIT(0045, ! glob_txtune && glob_tx);		// D5: - XS18 PIN 12 - PTT negative не в режиме tune
-		RBBIT(0044, glob_txtune);					// D4: - XS18 PIN 10 - находимся в режиме передачи тональнка для настройки
-		//RBVAL(0040, 1U << glob_bandf2, 7);		// D0..D6: band select бит выбора диапазонного фильтра передатчика
+		// DD21 SN74HC595PW на разъём управления LPF
+		//RBBIT(0047, glob_antenna);		// D7: - XS18 PIN 16 - antenns select бит выбора антенны (0 - ANT1, 1 - ANT2)
+		//RBBIT(0046, ! (! glob_txtune && glob_tx));	// D6: - XS18 PIN 14 - PTT positive не в режиме tune
+		//RBBIT(0045, ! glob_txtune && glob_tx);		// D5: - XS18 PIN 12 - PTT negative не в режиме tune
+		//RBBIT(0044, glob_txtune);					// D4: - XS18 PIN 10 - находимся в режиме передачи тональнка для настройки
+		RBBIT(0047, txgated);		// D7 - XS18 PIN 16: PTT
+		RBVAL(0040, 1U << glob_bandf2, 7);		// D0..D6: band select бит выбора диапазонного фильтра передатчика
 
 		// DD16 STP08CP05TTR в управлении диапазонными фильтрами приёмника
 		RBVAL(0031, glob_tx ? 0 : (1U << glob_bandf) >> 1, 7);		// D1: 1, D7..D1: band select бит выбора диапазонного фильтра приёмника
