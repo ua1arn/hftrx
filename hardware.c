@@ -78,11 +78,11 @@ static unsigned long ulmax(
 static uint_fast32_t 
 NOINLINEAT
 calcdivround2(
-	uint_fast32_t ref,		/* частота на входе делителя, в герцах. */
-	uint_fast32_t freq		/* требуемая частота на выходе делителя, в герцах. */
+	uint_fast32_t ref,	/* частота на входе делителя, в герцах. */
+	uint_fast32_t freq	/* требуемая частота на выходе делителя, в герцах. */
 	)
 {
-	return (fref < freq) ? 1 : ((ref + freq / 2) / freq);
+	return (ref < freq) ? 1 : ((ref + freq / 2) / freq);
 }
 
 #if CPUSTYLE_STM32F
