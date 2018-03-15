@@ -336,7 +336,8 @@
 	//#define WITHPWRLIN	1	/* Индикатор выходной мощности показывает напряжение а не мощность */
 	#define WITHBARS		1	/* отображение S-метра и SWR-метра */
 	#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
-	#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
+	#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада драйвера */
+	//#define WITHCURRLEVEL2	1	/* отображение тока оконечного каскада 100W */
 	//#define WITHSWLMODE	1	/* поддержка запоминания множества частот в swl-mode */
 	#define WITHVIBROPLEX	1	/* возможность эмуляции передачи виброплексом */
 	#define WITHSPKMUTE		1	/* управление выключением динамика */
@@ -457,6 +458,9 @@
 	#if WITHCURRLEVEL
 		PASENSEIX = 2,		// PA2 PA current sense - ACS712-05 chip
 	#endif /* WITHCURRLEVEL */
+	#if WITHCURRLEVEL2
+		PASENSEIX2 = 2,		// PA2 PA current sense - ACS712-30 chip
+	#endif /* WITHCURRLEVEL2 */
 
 	#if WITHSWRMTR
 		PWRI = 14,			// PC4

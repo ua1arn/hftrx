@@ -7385,31 +7385,58 @@ uint_fast8_t hamradio_get_volt_value(void)
 
 #endif /* WITHVOLTLEVEL */
 
-#if WITHCURRLEVEL && WITHCPUADCHW
+#if (WITHCURRLEVEL || WITHCURRLEVEL2) && WITHCPUADCHW
 
 // Ток в десятках милиампер (может быть отрицательным)
 // PA current sense - ACS712ELCTR-05B-T chip
 // PA current sense - ACS712ELCTR-30B-T chip
 int_fast16_t hamradio_get_pacurrent_value(void)
 {
+#if WITHCURRLEVEL
 	// Чувствительность датчиков:
 	// x05B - 0.185 V/A
 	// x20A - 0.100 V/A
 	// x30A - 0.066 V/A
 
-#if CTLSTYLE_RA4YBO_V3
-	// x30A - 0.066 V/A
-	enum { 
-		sens = 66,			// millivolts / ampher
-		scale = 100			// результат - в десятых долях ампера
-	};
-#else /* CTLSTYLE_RA4YBO_V3 */
+	#if CTLSTYLE_RA4YBO_V3
+		// x30A - 0.066 V/A
+		enum { 
+			sens = 66,			// millivolts / ampher
+			scale = 100			// результат - в десятых долях ампера
+		};
+	#else /* CTLSTYLE_RA4YBO_V3 */
+		// x05B - 0.185 V/A
+		enum { 
+			sens = 185,			// millivolts / ampher
+			scale = 100			// результат - в сотых долях ампера
+		};
+	#endif /* CTLSTYLE_RA4YBO_V3 */
+
+	const uint_fast8_t adci = PASENSEIX;
+
+#elif WITHCURRLEVEL2
+	// Чувствительность датчиков:
 	// x05B - 0.185 V/A
-	enum { 
-		sens = 185,			// millivolts / ampher
-		scale = 100			// результат - в сотых долях ампера
-	};
-#endif /* CTLSTYLE_RA4YBO_V3 */
+	// x20A - 0.100 V/A
+	// x30A - 0.066 V/A
+
+	#if 1
+		// x30A - 0.066 V/A
+		enum { 
+			sens = 66,			// millivolts / ampher
+			scale = 100			// результат - в десятых долях ампера
+		};
+	#else /*  */
+		// x05B - 0.185 V/A
+		enum { 
+			sens = 185,			// millivolts / ampher
+			scale = 100			// результат - в сотых долях ампера
+		};
+	#endif /*  */
+
+	const uint_fast8_t adci = PASENSEIX2;
+
+#endif
 
 #if WITHREFSENSOR
 	// Измерение опрного напряжения
@@ -7430,6 +7457,7 @@ int_fast16_t hamradio_get_pacurrent_value(void)
 #else
 	static const long midpoint = 2516uL * scale;
 #endif
+
 	int curr10 = ((long) midpoint - (long) vsense + sens / 2) / sens;
 
 	//debug_printf_P(PSTR("voltage vsense=%lu, midpoint=%lu, delta=%d mV, current=%d * 10 mA\n"), vsense, midpoint, v / scale, curr10);
