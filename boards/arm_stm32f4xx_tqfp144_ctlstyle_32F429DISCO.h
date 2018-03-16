@@ -397,7 +397,7 @@
 		//#define WITHMODESETSMART 1	/* в заваисмости от частоты меняется боковая, используется вместе с WITHFIXEDBFO */
 		//#define WITHMODESETFULL 1
 		#define WITHMODESETFULLNFM 1
-		//#define WITHWFM	1			/* используется WFM */
+		#define WITHWFM	1			/* используется WFM */
 		/* все возможные в данной конфигурации фильтры */
 		#define IF3_FMASK	(IF3_FMASK_0P5 | IF3_FMASK_3P1)
 		/* все возможные в данной конфигурации фильтры для передачи */

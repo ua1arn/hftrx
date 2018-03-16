@@ -8880,7 +8880,6 @@ scaletopointssmeter(
 #endif
 }
 
-
 static void smanswer(uint_fast8_t arg)
 {
 	// s-meter state answer
@@ -8931,6 +8930,7 @@ static void smanswer(uint_fast8_t arg)
 	}
 
 }
+
 static void raanswer(uint_fast8_t arg)
 {
 	// RX attenuator
@@ -8942,11 +8942,12 @@ static void raanswer(uint_fast8_t arg)
 
 	// answer mode
 	const uint_fast8_t len = local_snprintf_P(cat_ask_buffer, CAT_ASKBUFF_SIZE, fmt_1,
-		(int) (gatts [getbankindex_tx(0)] != 0)
+		(int) gatts [getbankindex_tx(0)]
 
 		);
 	cat_answer(len);
 }
+
 static void paanswer(uint_fast8_t arg)
 {
 #if ! WITHONEATTONEAMP
@@ -8969,6 +8970,7 @@ static void paanswer(uint_fast8_t arg)
 		);
 	cat_answer(len);
 }
+
 #if WITHANTSELECT
 
 static void ananswer(uint_fast8_t arg)
