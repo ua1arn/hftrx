@@ -5858,6 +5858,8 @@ restart:
 		const size_t rbflength = sizeof rbfimage / sizeof rbfimage [0];
 		/* After power up, the Cyclone IV device holds nSTATUS low during POR delay. */
 
+		FPGA_NCONFIG_PORT_S(FPGA_NCONFIG_BIT);
+		local_delay_ms(1);
 		/* 1) Выставить "1" на nCONFIG */
 		//debug_printf_P(PSTR("fpga: FPGA_NCONFIG_BIT=1\n"));
 		FPGA_NCONFIG_PORT_C(FPGA_NCONFIG_BIT);
