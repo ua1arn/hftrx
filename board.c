@@ -5850,6 +5850,9 @@ static void board_fpga_loader_PS(void)
 		#error Missing FPGA image file
 	#endif
 
+restart:
+	;
+	unsigned long w = 1000;
 	do {
 		debug_printf_P(PSTR("fpga: board_fpga_loader_PS start\n"));
 		const size_t rbflength = sizeof rbfimage / sizeof rbfimage [0];
@@ -5861,12 +5864,20 @@ static void board_fpga_loader_PS(void)
 		/* x) Дождаться "0" на nSTATUS */
 		//debug_printf_P(PSTR("fpga: waiting for FPGA_NSTATUS_BIT==0\n"));
 		while (board_fpga_get_NSTATUS() != 0)
-				;
+		{
+			local_delay_ms(1);
+			if (-- w == 0)
+				goto restart;
+		}
 		FPGA_NCONFIG_PORT_S(FPGA_NCONFIG_BIT);
 		/* 2) Дождаться "1" на nSTATUS */
 		//debug_printf_P(PSTR("fpga: waiting for FPGA_NSTATUS_BIT==1\n"));
 		while (board_fpga_get_NSTATUS() == 0)
-			;
+		{
+			local_delay_ms(1);
+			if (-- w == 0)
+				goto restart;
+		}
 		/* 3) Выдать байты (бладший бит .rbf файла первым) */
 		//debug_printf_P(PSTR("fpga: start sending RBF image (%lu of 16-bit words)\n"), rbflength);
 		if (rbflength != 0)
@@ -5912,7 +5923,11 @@ static void board_fpga_loader_PS(void)
 	//debug_printf_P(PSTR("fpga: board_fpga_loader_PS done\n"));
 	/* проверяем, проинициализировалась ли FPGA (вошла в user mode). */
 	while (HARDWARE_FPGA_IS_USER_MODE() == 0)
-		;
+	{
+		local_delay_ms(1);
+		if (-- w == 0)
+			goto restart;
+	}
 	debug_printf_P(PSTR("fpga: board_fpga_loader_PS: usermode okay\n"));
 #endif /* (WITHSPIHW && WITHSPI16BIT) */	// for skip in test configurations
 }
