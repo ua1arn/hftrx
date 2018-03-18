@@ -13851,9 +13851,9 @@ processkeyboard(uint_fast8_t kbch)
 			editfreqmode = 0;
 			return 1;
 		}
-		if (kbch == KBD_CODE_DEL && blinkpos < DISPLAY_LEFTBLINKPOS)
+		if ((c == '#' || kbch == KBD_CODE_DEL) && blinkpos < DISPLAY_LEFTBLINKPOS)
 		{
-			blinkpos += 1;	// 
+			blinkpos += 1;	/* перемещаемся на одну позицию левее */
 			updateboard(1, 0);
 			return 1;
 		}
