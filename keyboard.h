@@ -38,7 +38,6 @@ enum
 
 	KBD_CODE_ENTERFREQ,		// переход в режим прямого ввода частоты
 	KBD_CODE_ENTERFREQDONE,	// выход
-	KBD_CODE_DEL,			// стирание последнего введенного символа
 
 	KBD_CODE_VOXTOGGLE,	
 	KBD_CODE_PWRTOGGLE,

@@ -656,7 +656,7 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE,		KBD_CODE_ATT,		KBD_CODE_PAMP,			' ', },	// #3: F1
 
 	{ KIF_NONE,		KBD_CODE_ENTERFREQ,	KBD_CODE_ENTERFREQDONE, ' ', },	// #4: Enter
-	{ KIF_SLOW,		KBD_CODE_DEL,		KBD_CODE_DEL, 			'#', },	// #5: DEL
+	{ KIF_SLOW,		KBD_CODE_5,			KBD_CODE_MAX, 			'#', },	// #5: DEL
 	{ KIF_SLOW,		KBD_CODE_6,			KBD_CODE_MAX, 			'0', },	// #6: 0
 	{ KIF_NONE,		KBD_CODE_7,			KBD_CODE_MAX,			'9', },	// #7: 9
 
