@@ -7158,7 +7158,7 @@ nestedirqtest(void)
 		GIC_SetPriority(int_id, ARM_REALTIME_PRIORITY);		/* ==== Set priority of OS timer interrupt to 5 ==== */
 		GIC_EnableIRQ(int_id);		/* ==== Validate OS timer interrupt ==== */
 	}
-#if ENCODER_BITS
+#if defined (ENCODER_BITS)
 	#if CTLSTYLE_RAVENDSP_V9
 		do { \
 			arm_hardware_pio2_alternative(ENCODER_BITS, R7S721_PIOALT_4); \
@@ -7175,7 +7175,7 @@ nestedirqtest(void)
 			arm_hardware_irqn_interrupt(6, 3, ARM_SYSTEM_PRIORITY, spool_encinterruptR); /* IRQ6, both edges */ \
 		} while (0);
 	#endif
-#endif /* ENCODER_BITS */
+#endif /* defined (ENCODER_BITS) */
 	debug_printf_P(PSTR("ICCRPR=%02x cpsr=%08lx* \n"), GICC_RPR, __get_CPSR());
 	//hw_swi();
 	global_enableIRQ();
