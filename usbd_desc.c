@@ -284,10 +284,10 @@ static unsigned UAC_AudioControlIT_IN(uint_fast8_t fill, uint8_t * buff, unsigne
 	{
 		// 4.3.2.1 Input Terminal Descriptor 
 		const uint_fast16_t wTerminalType = AUDIO_TERMINAL_RADIO_RECEIVER;
-		const uint_fast8_t bNrChannels = 2;//HARDWARE_USBD_AUDIO_IN_CHANNELS;
+		const uint_fast8_t bNrChannels = HARDWARE_USBD_AUDIO_IN_CHANNELS;
 		const uint_fast16_t wChannelConfig = bNrChannels == 1 ? 
-			0x0004 : // Center Front
-			0x0003;	// Left Front & Right Front
+			AUDIO_CHANNEL_M : // Mono
+			(AUDIO_CHANNEL_L | AUDIO_CHANNEL_R);	// Left Front & Right Front
 		// ¬ызов дл€ заполнени€, а не только дл€ проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = AUDIO_INTERFACE_DESCRIPTOR_TYPE; // CS_INTERFACE Descriptor Type
@@ -317,10 +317,10 @@ static unsigned UAC_AudioControlIT_INRTS(uint_fast8_t fill, uint8_t * buff, unsi
 	{
 		// 4.3.2.1 Input Terminal Descriptor 
 		const uint_fast16_t wTerminalType = AUDIO_TERMINAL_RADIO_RECEIVER;
-		const uint_fast8_t bNrChannels = 2;//HARDWARE_USBD_AUDIO_IN_CHANNELS;
+		const uint_fast8_t bNrChannels = HARDWARE_USBD_AUDIO_IN_CHANNELS_RTS; // дл€ канала со спектром всегда стерео. но это не тут указано
 		const uint_fast16_t wChannelConfig = bNrChannels == 1 ? 
-			0x0004 : // Center Front
-			0x0003;	// Left Front & Right Front
+			AUDIO_CHANNEL_M : // Mono
+			(AUDIO_CHANNEL_L | AUDIO_CHANNEL_R);	// Left Front & Right Front
 		// ¬ызов дл€ заполнени€, а не только дл€ проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = AUDIO_INTERFACE_DESCRIPTOR_TYPE; // CS_INTERFACE Descriptor Type
@@ -360,8 +360,8 @@ static unsigned UAC_AudioControlIT_OUT(
 		const uint_fast16_t wTerminalType = AUDIO_TERMINAL_USB_STREAMING;
 		const uint_fast8_t bNrChannels = HARDWARE_USBD_AUDIO_OUT_CHANNELS;
 		const uint_fast16_t wChannelConfig = bNrChannels == 1 ? 
-			0x0004 : // Center Front
-			0x0003;	// Left Front & Right Front
+			AUDIO_CHANNEL_M : // Mono
+			(AUDIO_CHANNEL_L | AUDIO_CHANNEL_R);	// Left Front & Right Front
 
 		* buff ++ = length;									/* bLength */
 		* buff ++ = AUDIO_INTERFACE_DESCRIPTOR_TYPE;		/* bDescriptorType */
@@ -375,7 +375,7 @@ static unsigned UAC_AudioControlIT_OUT(
 		* buff ++ = LO_BYTE(wChannelConfig);                /* wChannelConfig 0x0003  Front Left; Front Right */
 		* buff ++ = HI_BYTE(wChannelConfig);
 		* buff ++ = STRING_ID_Left;							/* iChannelNames */
-		* buff ++ = STRING_ID_d0 + offset;							/* iTerminal - по€вл€етс€ как pop-up в панели управлени€ ASIO4ALL */
+		* buff ++ = STRING_ID_d0 + offset;					/* iTerminal - по€вл€етс€ как pop-up в панели управлени€ ASIO4ALL */
 		/* 12 bytes*/
 	}
 	return length;
@@ -869,7 +869,7 @@ static unsigned UAC_r9fill_26_rts96(uint_fast8_t fill, uint8_t * buff, unsigned 
 		* buff ++ = AUDIO_INTERFACE_DESCRIPTOR_TYPE;// CS_INTERFACE Descriptor Type (bDescriptorType) 0x24
 		* buff ++ = AUDIO_STREAMING_FORMAT_TYPE;   // FORMAT_TYPE subtype. (bDescriptorSubtype) 0x02
 		* buff ++ = AUDIO_FORMAT_TYPE_I;							/* bFormatType */
-		* buff ++ = HARDWARE_USBD_AUDIO_IN_CHANNELS_RTS96;		/* bNrChannels */
+		* buff ++ = HARDWARE_USBD_AUDIO_IN_CHANNELS_RTS;		/* bNrChannels */
 		* buff ++ = (HARDWARE_USBD_AUDIO_IN_SAMPLEBITS_RTS96 + 7) / 8; /* bSubFrameSize :  2 Bytes per frame (16bits) */
 		* buff ++ = HARDWARE_USBD_AUDIO_IN_SAMPLEBITS_RTS96;		/* bBitResolution (16-bits per sample) */
 		* buff ++ = 1;										/* bSamFreqType only one frequency supported */
@@ -925,7 +925,7 @@ static unsigned UAC_r9fill_26_rts192(uint_fast8_t fill, uint8_t * buff, unsigned
 		* buff ++ = AUDIO_INTERFACE_DESCRIPTOR_TYPE;// CS_INTERFACE Descriptor Type (bDescriptorType) 0x24
 		* buff ++ = AUDIO_STREAMING_FORMAT_TYPE;   // FORMAT_TYPE subtype. (bDescriptorSubtype) 0x02
 		* buff ++ = AUDIO_FORMAT_TYPE_I;							/* bFormatType */
-		* buff ++ = HARDWARE_USBD_AUDIO_IN_CHANNELS_RTS192;		/* bNrChannels */
+		* buff ++ = HARDWARE_USBD_AUDIO_IN_CHANNELS_RTS;		/* bNrChannels */
 		* buff ++ = (HARDWARE_USBD_AUDIO_IN_SAMPLEBITS_RTS192 + 7) / 8; /* bSubFrameSize :  2 Bytes per frame (16bits) */
 		* buff ++ = HARDWARE_USBD_AUDIO_IN_SAMPLEBITS_RTS192;		/* bBitResolution (16-bits per sample) */
 		* buff ++ = 1;										/* bSamFreqType only one frequency supported */
