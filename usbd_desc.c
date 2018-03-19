@@ -1504,9 +1504,11 @@ static unsigned fill_CDCACM_function_a(uint_fast8_t fill, uint8_t * p, unsigned 
 
 #if WITHUSBCDCEEM
 
-#if 1
-static unsigned CDCEEM_InterfaceAssociationDescriptor(uint_fast8_t fill, uint8_t * buff, unsigned maxsize
-													  )
+static unsigned CDCEEM_InterfaceAssociationDescriptor(
+	uint_fast8_t fill, 
+	uint8_t * buff, 
+	unsigned maxsize
+	)
 {
 	const uint_fast8_t length = 8;
 	ASSERT(maxsize >= length);
@@ -1530,7 +1532,6 @@ static unsigned CDCEEM_InterfaceAssociationDescriptor(uint_fast8_t fill, uint8_t
 	}
 	return length;
 }
-#endif
 
 // Информация о типе требуемого драйвера берется отсюда по кодам в bInterfaceClass, bInterfaceSubclass, bInterfaceProtocol
 static unsigned CDCEEM_r9fill_24(uint_fast8_t fill, uint8_t * buff, unsigned maxsize, 
