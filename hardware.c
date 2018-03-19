@@ -1147,12 +1147,14 @@ static RAMFUNC void spool_adcdonebundle(void)
 	{
 		const portholder_t pr = EXTI->PR & (EXTI_IMR_IM0 | EXTI_IMR_IM1);
 		EXTI->PR = pr;		// reset all existing requests
+		(void) EXTI->PR;
 		stm32fxxx_pinirq(pr);
 	}
 	void ATTRWEAK EXTI2_3_IRQHandler(void)
 	{
 		const portholder_t pr = EXTI->PR & (EXTI_IMR_IM2 | EXTI_IMR_IM3);
 		EXTI->PR = pr;		// reset all existing requests
+		(void) EXTI->PR;
 		stm32fxxx_pinirq(pr);
 	}
 	void ATTRWEAK EXTI4_15_IRQHandler(void)
@@ -1163,6 +1165,7 @@ static RAMFUNC void spool_adcdonebundle(void)
 				EXTI_IMR_IM7 | EXTI_IMR_IM6 | EXTI_IMR_IM5 | EXTI_IMR_IM4
 				);
 		EXTI->PR = pr;		// reset all existing requests
+		(void) EXTI->PR;
 		stm32fxxx_pinirq(pr);
 	}
 
@@ -1172,6 +1175,7 @@ static RAMFUNC void spool_adcdonebundle(void)
 	{
 		const portholder_t pr = EXTI_D1->PR1 & (EXTI_PR1_PR0);
 		EXTI_D1->PR1 = pr;		// reset all existing requests
+		(void) EXTI_D1->PR1;
 		stm32fxxx_pinirq(pr);
 	}
 
@@ -1180,6 +1184,7 @@ static RAMFUNC void spool_adcdonebundle(void)
 	{
 		const portholder_t pr = EXTI_D1->PR1 & (EXTI_PR1_PR1);
 		EXTI_D1->PR1 = pr;		// reset all existing requests
+		(void) EXTI_D1->PR1;
 		stm32fxxx_pinirq(pr);
 	}
 
@@ -1187,6 +1192,7 @@ static RAMFUNC void spool_adcdonebundle(void)
 	{
 		const portholder_t pr = EXTI_D1->PR1 & (EXTI_PR1_PR2);
 		EXTI_D1->PR1 = pr;		// reset all existing requests
+		(void) EXTI_D1->PR1;
 		stm32fxxx_pinirq(pr);
 	}
 
@@ -1194,6 +1200,7 @@ static RAMFUNC void spool_adcdonebundle(void)
 	{
 		const portholder_t pr = EXTI_D1->PR1 & (EXTI_PR1_PR3);
 		EXTI_D1->PR1 = pr;		// reset all existing requests
+		(void) EXTI_D1->PR1;
 		stm32fxxx_pinirq(pr);
 	}
 
@@ -1201,6 +1208,7 @@ static RAMFUNC void spool_adcdonebundle(void)
 	{
 		const portholder_t pr = EXTI_D1->PR1 & (EXTI_PR1_PR4);
 		EXTI_D1->PR1 = pr;		// reset all existing requests
+		(void) EXTI_D1->PR1;
 		stm32fxxx_pinirq(pr);
 	}
 
@@ -1208,12 +1216,14 @@ static RAMFUNC void spool_adcdonebundle(void)
 	{
 		const portholder_t pr = EXTI_D1->PR1 & (EXTI_PR1_PR9 | EXTI_PR1_PR8 | EXTI_PR1_PR7 | EXTI_PR1_PR6 | EXTI_PR1_PR5);
 		EXTI_D1->PR1 = pr;		// reset all existing requests
+		(void) EXTI_D1->PR1;
 		stm32fxxx_pinirq(pr);
 	}
 	void ATTRWEAK EXTI15_10_IRQHandler(void)
 	{
 		const portholder_t pr = EXTI_D1->PR1 & (EXTI_PR1_PR15 | EXTI_PR1_PR14 | EXTI_PR1_PR13 | EXTI_PR1_PR12 | EXTI_PR1_PR11 | EXTI_PR1_PR10);
 		EXTI_D1->PR1 = pr;		// reset all existing requests
+		(void) EXTI_D1->PR1;
 		stm32fxxx_pinirq(pr);
 	}
 
@@ -1223,6 +1233,7 @@ static RAMFUNC void spool_adcdonebundle(void)
 	{
 		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR0);
 		EXTI->PR = pr;		// reset all existing requests
+		(void) EXTI->PR;
 		stm32fxxx_pinirq(pr);
 	}
 
@@ -1230,6 +1241,7 @@ static RAMFUNC void spool_adcdonebundle(void)
 	{
 		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR0 | EXTI_IMR_MR1);
 		EXTI->PR = pr;		// reset all existing requests
+		(void) EXTI->PR;
 		stm32fxxx_pinirq(pr);
 	}
 
@@ -1237,6 +1249,7 @@ static RAMFUNC void spool_adcdonebundle(void)
 	{
 		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR1);
 		EXTI->PR = pr;		// reset all existing requests
+		(void) EXTI->PR;
 		stm32fxxx_pinirq(pr);
 	}
 
@@ -1244,6 +1257,7 @@ static RAMFUNC void spool_adcdonebundle(void)
 	{
 		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR2);
 		EXTI->PR = pr;		// reset all existing requests
+		(void) EXTI->PR;
 		stm32fxxx_pinirq(pr);
 	}
 
@@ -1251,6 +1265,7 @@ static RAMFUNC void spool_adcdonebundle(void)
 	{
 		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR2 | EXTI_IMR_MR3);
 		EXTI->PR = pr;		// reset all existing requests
+		(void) EXTI->PR;
 		stm32fxxx_pinirq(pr);
 	}
 
@@ -1262,6 +1277,7 @@ static RAMFUNC void spool_adcdonebundle(void)
 				EXTI_IMR_MR7 | EXTI_IMR_MR6 | EXTI_IMR_MR5 | EXTI_IMR_MR4
 				);
 		EXTI->PR = pr;		// reset all existing requests
+		(void) EXTI->PR;
 		stm32fxxx_pinirq(pr);
 	}
 
@@ -1269,6 +1285,7 @@ static RAMFUNC void spool_adcdonebundle(void)
 	{
 		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR3);
 		EXTI->PR = pr;		// reset all existing requests
+		(void) EXTI->PR;
 		stm32fxxx_pinirq(pr);
 	}
 
@@ -1276,6 +1293,7 @@ static RAMFUNC void spool_adcdonebundle(void)
 	{
 		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR4);
 		EXTI->PR = pr;		// reset all existing requests
+		(void) EXTI->PR;
 		stm32fxxx_pinirq(pr);
 	}
 
@@ -1283,12 +1301,14 @@ static RAMFUNC void spool_adcdonebundle(void)
 	{
 		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR9 | EXTI_IMR_MR8 | EXTI_IMR_MR7 | EXTI_IMR_MR6 | EXTI_IMR_MR5);
 		EXTI->PR = pr;		// reset all existing requests
+		(void) EXTI->PR;
 		stm32fxxx_pinirq(pr);
 	}
 	void ATTRWEAK EXTI15_10_IRQHandler(void)
 	{
 		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR15 | EXTI_IMR_MR14 | EXTI_IMR_MR13 | EXTI_IMR_MR12 | EXTI_IMR_MR11 | EXTI_IMR_MR10);
 		EXTI->PR = pr;		// reset all existing requests
+		(void) EXTI->PR;
 		stm32fxxx_pinirq(pr);
 	}
 	#endif

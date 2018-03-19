@@ -64,12 +64,9 @@ static void DMA1_SPI3_RX_initialize(void)
 
 }
 
-// Прерывание по нарастающему фронту на PA15
 // todo: разобраться с заполнением буфера, если ожидаем меньше, чем нам передали.
-void EXTI15_10_IRQHandler(void)
+static RAMFUNC void stm32fxxx_pinirq_SPISLAVE(portholder_t pr)
 {
-	const portholder_t pr = EXTI->PR & (EXTI_IMR_MR15 | EXTI_IMR_MR14 | EXTI_IMR_MR14 | EXTI_IMR_MR12 | EXTI_IMR_MR11 | EXTI_IMR_MR10);
-	EXTI->PR = pr;		// reset all existing requests
 	if ((pr & EXTI_PR_PR15) != 0)
 	{
 		const unsigned len = DSPCTL_BUFSIZE - DMA1_Stream0->NDTR;
@@ -91,6 +88,15 @@ void EXTI15_10_IRQHandler(void)
 		DMA1_Stream0->CR |= DMA_SxCR_EN;	// перезапуск DMA
 		hardware_spi_slave_callback(spi3rxbuf16, len);
 	}
+}
+
+// Прерывание по нарастающему фронту на PA15
+void EXTI15_10_IRQHandler(void)
+{
+	const portholder_t pr = EXTI->PR & (EXTI_IMR_MR15 | EXTI_IMR_MR14 | EXTI_IMR_MR14 | EXTI_IMR_MR12 | EXTI_IMR_MR11 | EXTI_IMR_MR10);
+	EXTI->PR = pr;		// reset all existing requests
+	(void) EXTI->PR;
+	stm32fxxx_pinirq_SPISLAVE(pr);s
 }
 
 #endif /* CPUSTYLE_STM32F4XX */
