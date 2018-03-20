@@ -459,6 +459,7 @@ static unsigned UAC_AudioFeatureUnit(
 		AUDIO_CONTROL_VOLUME |
 		//AUDIO_CONTROL_AUTOMATIC_GAIN |
 		//AUDIO_CONTROL_GRAPHIC_EQUALIZER |
+		//AUDIO_CONTROL_LOUDNESS |		// "Custom" property page added
 		0;
 
 	const uint_fast8_t n = 1; // 1: Only master channel controls, 3: master, left and right

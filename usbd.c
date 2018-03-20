@@ -2892,7 +2892,7 @@ usbd_handler_brdy8_dcp_out(PCD_TypeDef * const Instance, uint_fast8_t pipe)
 		{
 			const uint_fast8_t interfacev = LO_BYTE(gReqIndex);
 			const uint_fast8_t terminalID = HI_BYTE(gReqIndex);
-			const uint_fast8_t controlID = HI_BYTE(gReqValue);
+			const uint_fast8_t controlID = HI_BYTE(gReqValue);	// AUDIO_MUTE_CONTROL, AUDIO_VOLUME_CONTROL, ...
 			terminalsprops [terminalID] [controlID] = ep0databuffout [0];
 			debug_printf_P(PSTR("AUDIO_REQUEST_SET_CUR: interfacev=%u, %u=%u\n"), interfacev, terminalID, ep0databuffout [0]);
 		}
@@ -3320,7 +3320,7 @@ static void usbdFunctionReq_seq1(PCD_TypeDef * const Instance, uint_fast8_t ReqT
 		case INTERFACE_AUDIO_CONTROL_0:	// AUDIO control interface
 			{
 				const uint_fast8_t terminalID = HI_BYTE(ReqIndex);
-				const uint_fast8_t controlID = HI_BYTE(gReqValue);
+				const uint_fast8_t controlID = HI_BYTE(gReqValue);	// AUDIO_MUTE_CONTROL, AUDIO_VOLUME_CONTROL, ...
 				switch (ReqRequest)
 				{
 				case AUDIO_REQUEST_GET_CUR:
@@ -8310,7 +8310,7 @@ static void USBD_UACCDC_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef  *r
 			case INTERFACE_AUDIO_CONTROL_0:	// AUDIO control interface
 				{
 					const uint_fast8_t terminalID = HI_BYTE(req->wIndex);
-					const uint_fast8_t controlID = HI_BYTE(req->wValue);
+					const uint_fast8_t controlID = HI_BYTE(req->wValue);	// AUDIO_MUTE_CONTROL, AUDIO_VOLUME_CONTROL, ...
 					switch (req->bRequest)
 					{
 					case AUDIO_REQUEST_GET_CUR:
