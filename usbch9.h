@@ -238,23 +238,20 @@ enum
 {
 	TERMINAL_ID_UNDEFINED = 0,
 
-	TERMINAL_ID_IT_1,	// USB Speaker Input Terminal
+	TERMINAL_ID_IT_1 = 10,	// USB Speaker Input Terminal
+	TERMINAL_ID_OT_3 = 15,	// Output Terminal AUDIO_TERMINAL_RADIO_TRANSMITTER
+	TERMINAL_ID_FU_5 = 20,	// Audio Feature Unit in transmitter path (audio)
 
-	TERMINAL_ID_OT_3,	// Output Terminal AUDIO_TERMINAL_RADIO_TRANSMITTER
+	TERMINAL_ID_IT_2 = 30,	// Input Terminal (AUDIO) AUDIO_TERMINAL_RADIO_RECEIVER
+	TERMINAL_ID_OT_4 = 35,	// Output Terminal
+	TERMINAL_ID_FU_AUDIO = 40,	// Audio Feature Unit in RX path
 
-	TERMINAL_ID_FU_5,	// Audio Feature Unit
+	TERMINAL_ID_ITRTS_2 = 70,	// Input Terminal (AUDIO) AUDIO_TERMINAL_RADIO_RECEIVER
+	TERMINAL_ID_OTRTS_4 = 75,	// Output Terminal
+	TERMINAL_ID_FU_RTS = 80,		// Audio Feature Unit in RX spectrum path
 
-	TERMINAL_ID_IT_2,	// Input Terminal (AUDIO) AUDIO_TERMINAL_RADIO_RECEIVER
 
-	TERMINAL_ID_OT_4,	// Output Terminal
-
-	TERMINAL_ID_ITRTS_2,	// Input Terminal (AUDIO) AUDIO_TERMINAL_RADIO_RECEIVER
-
-	TERMINAL_ID_OTRTS_4,	// Output Terminal
-
-	//TERMINAL_ID_FU_5c,	// Audio Feature Unit
-
-	TERMINAL_ID_SELECTOR_6,	// Input selector - вынесено из-за неудобства использовани€: значение провер€етс€
+	TERMINAL_ID_SELECTOR_6 = 150,	// Input selector - вынесено из-за неудобства использовани€: значение провер€етс€
 
 	TERMINAL_ID_count
 };
@@ -386,7 +383,7 @@ enum
 	STRING_ID_z0, /*  */
 	STRING_ID_z1, /*  */
 
-	STRING_ID_b,	// tag for USB Speaker Audio Feature Unit Descriptor
+	//STRING_ID_b,	// tag for USB Speaker Audio Feature Unit Descriptor
 
 	STRING_ID_Left, STRING_ID_Right,	// »дут подр€д
 

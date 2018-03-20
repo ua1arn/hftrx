@@ -284,7 +284,7 @@ static unsigned UAC_AudioControlIT_IN(uint_fast8_t fill, uint8_t * buff, unsigne
 	{
 		// 4.3.2.1 Input Terminal Descriptor 
 		const uint_fast16_t wTerminalType = AUDIO_TERMINAL_RADIO_RECEIVER;
-		const uint_fast8_t bNrChannels = HARDWARE_USBD_AUDIO_IN_CHANNELS;
+		const uint_fast8_t bNrChannels = 1;//HARDWARE_USBD_AUDIO_IN_CHANNELS;
 		const uint_fast16_t wChannelConfig = bNrChannels == 1 ? 
 			AUDIO_CHANNEL_M : // Mono
 			(AUDIO_CHANNEL_L | AUDIO_CHANNEL_R);	// Left Front & Right Front
@@ -317,7 +317,7 @@ static unsigned UAC_AudioControlIT_INRTS(uint_fast8_t fill, uint8_t * buff, unsi
 	{
 		// 4.3.2.1 Input Terminal Descriptor 
 		const uint_fast16_t wTerminalType = AUDIO_TERMINAL_RADIO_RECEIVER;
-		const uint_fast8_t bNrChannels = HARDWARE_USBD_AUDIO_IN_CHANNELS_RTS; // для канала со спектром всегда стерео. но это не тут указано
+		const uint_fast8_t bNrChannels = 1;//HARDWARE_USBD_AUDIO_IN_CHANNELS_RTS; // для канала со спектром всегда стерео. но это не тут указано
 		const uint_fast16_t wChannelConfig = bNrChannels == 1 ? 
 			AUDIO_CHANNEL_M : // Mono
 			(AUDIO_CHANNEL_L | AUDIO_CHANNEL_R);	// Left Front & Right Front
@@ -334,7 +334,7 @@ static unsigned UAC_AudioControlIT_INRTS(uint_fast8_t fill, uint8_t * buff, unsi
 		* buff ++ = LO_BYTE(wChannelConfig);   /* bmChannelConfig size = 4 bytes Mono sets no position bits */
 		* buff ++ = HI_BYTE(wChannelConfig);
 		* buff ++ = 0;							/* iChannelNames */
-		* buff ++ = STRING_ID_IQSPECTRUM;						// iTerminal - Index of a string descriptor, describing the Input Terminal. Receiver Output
+		* buff ++ = STRING_ID_IQSPECTRUM;		// iTerminal - Index of a string descriptor, describing the Input Terminal. Receiver Output
 
 	}
 	return length;
@@ -358,7 +358,7 @@ static unsigned UAC_AudioControlIT_OUT(
 	{
 		// 4.3.2.1 Input Terminal Descriptor 
 		const uint_fast16_t wTerminalType = AUDIO_TERMINAL_USB_STREAMING;
-		const uint_fast8_t bNrChannels = HARDWARE_USBD_AUDIO_OUT_CHANNELS;
+		const uint_fast8_t bNrChannels = 1;//HARDWARE_USBD_AUDIO_OUT_CHANNELS;
 		const uint_fast16_t wChannelConfig = bNrChannels == 1 ? 
 			AUDIO_CHANNEL_M : // Mono
 			(AUDIO_CHANNEL_L | AUDIO_CHANNEL_R);	// Left Front & Right Front
@@ -443,6 +443,7 @@ static unsigned UAC_AudioSelectorUnit_IN(
 
 // Audio Control Feature Unit Descriptor 
 // See 4.3.2.5 Feature Unit Descriptor for details
+// В нашем случае используется для подавления отображения раздельных элементов регулировки уровня по каналам
 static unsigned UAC_AudioFeatureUnit(
 	uint_fast8_t fill, uint8_t * buff, unsigned maxsize,
 	uint_fast8_t bUnitID,
@@ -454,14 +455,13 @@ static unsigned UAC_AudioFeatureUnit(
 	// в пути сигнала данного источника звука.
 	// Не может быть нулём.
 	const uint_fast32_t bmaControls = 
-		//AUDIO_CONTROL_MUTE |
-		//AUDIO_CONTROL_VOLUME |
-		AUDIO_CONTROL_AUTOMATIC_GAIN |
+		AUDIO_CONTROL_MUTE |
+		AUDIO_CONTROL_VOLUME |
+		//AUDIO_CONTROL_AUTOMATIC_GAIN |
 		//AUDIO_CONTROL_GRAPHIC_EQUALIZER |
 		0;
 
-	uint_fast8_t i;
-	const uint_fast8_t n = 3; // 1: Only master channel controls, 3: master, left and right
+	const uint_fast8_t n = 1; // 1: Only master channel controls, 3: master, left and right
 	const uint_fast8_t bControlSize = 2;	/* Достаточно, чтобы вместить все определенные для bmaControls биты */
 	const uint_fast8_t length = 7 + bControlSize * n;
 	ASSERT(maxsize >= length);
@@ -469,6 +469,7 @@ static unsigned UAC_AudioFeatureUnit(
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
+		uint_fast8_t i;
 		// See 4.3.2.5 Feature Unit Descriptor for details
 		* buff ++ = length;							/* bLength */
 		* buff ++ = AUDIO_INTERFACE_DESCRIPTOR_TYPE;/* bDescriptorType */
@@ -486,7 +487,7 @@ static unsigned UAC_AudioFeatureUnit(
 				v >>= 8;
 			}
 		}
-		* buff ++ = STRING_ID_b;                    /* iTerminal */
+		* buff ++ = 0;//STRING_ID_b;                    /* iTerminal */
 		/* 10 byte*/
 	}
 	return length;
@@ -526,17 +527,26 @@ static unsigned UAC_AudioControlOT_OUT(
 	return length;
 }
 
+#define WITHUSENOFU 1	// без использования Feature Unit
+
 // Заполнение схемы ввода звука
 // IN data flow
 static unsigned UAC_AudioControlIfCircuitIN(uint_fast8_t fill, uint8_t * p, unsigned maxsize, uint_fast8_t offset)
 {
 	unsigned n = 0;
 
-	if (1)
+	if (WITHUSENOFU)
 	{
 		// Только один источник для компьютера
 		n += UAC_AudioControlIT_IN(fill, p + n, maxsize - n, TERMINAL_ID_IT_2 + offset, offset);	/* AUDIO_TERMINAL_RADIO_RECEIVER */
 		n += UAC_AudioControlOT_IN(fill, p + n, maxsize - n,  TERMINAL_ID_OT_4 + offset, TERMINAL_ID_IT_2 + offset, offset);	/* AUDIO_TERMINAL_USB_STREAMING Terminal Descriptor TERMINAL_ID_IT_2 -> TERMINAL_ID_OT_4 */
+	}
+	else
+	{
+		// Только один источник для компьютера
+		n += UAC_AudioControlIT_IN(fill, p + n, maxsize - n, TERMINAL_ID_IT_2 + offset, offset);	/* AUDIO_TERMINAL_RADIO_RECEIVER */
+		n += UAC_AudioFeatureUnit(fill, p + n, maxsize - n, TERMINAL_ID_FU_AUDIO + offset, TERMINAL_ID_IT_2 + offset);	/* USB microphone Audio Feature Unit Descriptor TERMINAL_ID_IT_1 -> TERMINAL_ID_FU_AUDIO */
+		n += UAC_AudioControlOT_IN(fill, p + n, maxsize - n,  TERMINAL_ID_OT_4 + offset, TERMINAL_ID_FU_AUDIO + offset, offset);	/* AUDIO_TERMINAL_USB_STREAMING Terminal Descriptor TERMINAL_ID_FU_AUDIO -> TERMINAL_ID_OT_4 */
 	}
 
 	return n;
@@ -549,7 +559,7 @@ static unsigned UAC_AudioControlIfCircuitOUT(uint_fast8_t fill, uint8_t * p, uns
 {
 	unsigned n = 0;
 
-	if (1)
+	if (WITHUSENOFU)
 	{
 		// без feature unit между IT и OT
 		n += UAC_AudioControlIT_OUT(fill, p + n, maxsize - n, TERMINAL_ID_IT_1 + offset, offset);	/* AUDIO_TERMINAL_USB_STREAMING Input Terminal Descriptor TERMINAL_ID_IT_1 + offset */
@@ -557,9 +567,29 @@ static unsigned UAC_AudioControlIfCircuitOUT(uint_fast8_t fill, uint8_t * p, uns
 	}
 	else
 	{
-		n += UAC_AudioControlIT_OUT(fill, p + n, maxsize - n, TERMINAL_ID_IT_1 + offset, offset);	/* AUDIO_TERMINAL_USB_STREAMING Input Terminal Descriptor TERMINAL_ID_IT_1 + offset */
-		n += UAC_AudioFeatureUnit(fill, p + n, maxsize - n, TERMINAL_ID_FU_5 + offset, TERMINAL_ID_IT_1 + offset);	/* USB Speaker Audio Feature Unit Descriptor TERMINAL_ID_IT_1 + offset -> TERMINAL_ID_FU_5 + offset + offset */
-		n += UAC_AudioControlOT_OUT(fill, p + n, maxsize - n, TERMINAL_ID_OT_3 + offset, TERMINAL_ID_FU_5 + offset);	/* AUDIO_TERMINAL_RADIO_TRANSMITTER Output Terminal Descriptor TERMINAL_ID_IT_1 + offset -> TERMINAL_ID_OT_3 + offset */
+		n += UAC_AudioControlIT_OUT(fill, p + n, maxsize - n, TERMINAL_ID_IT_1 + offset, offset);	/* AUDIO_TERMINAL_USB_STREAMING Input Terminal Descriptor TERMINAL_ID_IT_1 */
+		n += UAC_AudioFeatureUnit(fill, p + n, maxsize - n, TERMINAL_ID_FU_5 + offset, TERMINAL_ID_IT_1 + offset);	/* USB Speaker Audio Feature Unit Descriptor TERMINAL_ID_IT_1 -> TERMINAL_ID_FU_5 */
+		n += UAC_AudioControlOT_OUT(fill, p + n, maxsize - n, TERMINAL_ID_OT_3 + offset, TERMINAL_ID_FU_5 + offset);	/* AUDIO_TERMINAL_RADIO_TRANSMITTER Output Terminal Descriptor TERMINAL_ID_FU_5 -> TERMINAL_ID_OT_3 */
+	}
+
+	return n;
+}
+
+static unsigned UAC_AudioControlIfCircuitINRTS(uint_fast8_t fill, uint8_t * p, unsigned maxsize, uint_fast8_t offset)
+{
+	unsigned n = 0;
+
+	if (WITHUSENOFU)
+	{
+		// Только один источник для компьютера
+		n += UAC_AudioControlIT_INRTS(fill, p + n, maxsize - n, TERMINAL_ID_ITRTS_2 + offset, offset);	/* AUDIO_TERMINAL_RADIO_RECEIVER */
+		n += UAC_AudioControlOT_IN(fill, p + n, maxsize - n,  TERMINAL_ID_OTRTS_4 + offset, TERMINAL_ID_ITRTS_2 + offset, offset);	/* AUDIO_TERMINAL_USB_STREAMING Terminal Descriptor TERMINAL_ID_IT_2 -> TERMINAL_ID_OT_4 */
+	}
+	else
+	{
+		n += UAC_AudioControlIT_INRTS(fill, p + n, maxsize - n, TERMINAL_ID_ITRTS_2 + offset, offset);	/* AUDIO_TERMINAL_RADIO_RECEIVER */
+		n += UAC_AudioFeatureUnit(fill, p + n, maxsize - n, TERMINAL_ID_FU_RTS + offset, TERMINAL_ID_ITRTS_2 + offset);	/* USB microphone Audio Feature Unit Descriptor TERMINAL_ID_IT_1 -> TERMINAL_ID_FU_RTS */
+		n += UAC_AudioControlOT_IN(fill, p + n, maxsize - n,  TERMINAL_ID_OTRTS_4 + offset, TERMINAL_ID_FU_RTS + offset, offset);	/* AUDIO_TERMINAL_USB_STREAMING Terminal Descriptor TERMINAL_ID_IT_2 -> TERMINAL_ID_OT_4 */
 	}
 
 	return n;
@@ -575,20 +605,6 @@ static unsigned UAC_AudioControlIfCircuits(uint_fast8_t fill, uint8_t * p, unsig
 	return n;
 }
 
-
-static unsigned UAC_AudioControlIfCircuitINRTS(uint_fast8_t fill, uint8_t * p, unsigned maxsize, uint_fast8_t offset)
-{
-	unsigned n = 0;
-
-	if (1)
-	{
-		// Только один источник для компьютера
-		n += UAC_AudioControlIT_INRTS(fill, p + n, maxsize - n, TERMINAL_ID_ITRTS_2 + offset, offset);	/* AUDIO_TERMINAL_RADIO_RECEIVER */
-		n += UAC_AudioControlOT_IN(fill, p + n, maxsize - n,  TERMINAL_ID_OTRTS_4 + offset, TERMINAL_ID_ITRTS_2 + offset, offset);	/* AUDIO_TERMINAL_USB_STREAMING Terminal Descriptor TERMINAL_ID_IT_2 -> TERMINAL_ID_OT_4 */
-	}
-
-	return n;
-}
 
 /* USB Speaker Class-specific AC Interface Descriptor */
 // Audio Control Interface Header Descriptor 
@@ -1013,6 +1029,7 @@ static unsigned UAC_AudioStreamingIf(uint_fast8_t fill, uint8_t * buff, unsigned
 
 #if WITHUSBUAC3
 
+// UNUSED
 static unsigned UAC_AudioControlIfCircuitsAUDIOandRTS(uint_fast8_t fill, uint8_t * p, unsigned maxsize, uint_fast8_t offset)
 {
 	unsigned n = 0;
@@ -1024,7 +1041,8 @@ static unsigned UAC_AudioControlIfCircuitsAUDIOandRTS(uint_fast8_t fill, uint8_t
 }
 
 // AUDIO48 and RTS output audio function
-static unsigned fill_UACINOUT48andRTS_function(uint_fast8_t fill, uint8_t * p, unsigned maxsize, int highspeed, uint_fast8_t offset)
+// не используется - так как запуск HDSDR & ASIO4ALL сьивает акдиоканал
+static unsigned fill_UACINOUT48andRTS_function_UNUSED(uint_fast8_t fill, uint8_t * p, unsigned maxsize, int highspeed, uint_fast8_t offset)
 {
 	unsigned n = 0;
 	const uint_fast8_t controlifv = INTERFACE_AUDIO_CONTROL_0;
@@ -2520,7 +2538,7 @@ static const struct stringtempl strtemplates [] =
 	{ STRING_ID_a0, "Storch TRX Voice", },	// tag for Interface Descriptor 0/0 Audio
 	{ STRING_ID_a1, "Storch TRX Spectrum", },	// tag for Interface Descriptor 0/0 Audio
 
-	{ STRING_ID_b, "xxx_id11", },	// tag for USB Speaker Audio Feature Unit Descriptor
+	//{ STRING_ID_b, "xxx_id11", },	// tag for USB Speaker Audio Feature Unit Descriptor
 
 	{ STRING_ID_d0, "Transmitter Input1", },	// Audio Control Input Terminal Descriptor 
 	{ STRING_ID_d1, "Transmitter Input2", },	// Audio Control Input Terminal Descriptor 

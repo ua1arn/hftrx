@@ -65,15 +65,8 @@ void usbd_diagnostics(void)
 }
 
 
-static uint_fast8_t mikemux_cur = 1;	// current value of TERMINAL_ID_SELECTOR_6 terminal (input data selector)
+static uint_fast8_t terminalsprops [256] [16];
 
-static void setmikeaux(uint_fast8_t val)
-{
-	// val==2: Headset Microphone selected
-	// val==1: Receiver Output selected
-	if (val >= 1 && val <= TERMINAL_ID_SELECTOR_6_INPUTS)
-		mikemux_cur = val;
-}
 
 #if WITHUSBUAC
 
@@ -2899,8 +2892,8 @@ usbd_handler_brdy8_dcp_out(PCD_TypeDef * const Instance, uint_fast8_t pipe)
 		{
 			const uint_fast8_t interfacev = LO_BYTE(gReqIndex);
 			const uint_fast8_t terminalID = HI_BYTE(gReqIndex);
-			if (terminalID == TERMINAL_ID_SELECTOR_6)
-				setmikeaux(ep0databuffout [0]);
+			const uint_fast8_t controlID = HI_BYTE(gReqValue);
+			terminalsprops [terminalID] [controlID] = ep0databuffout [0];
 			debug_printf_P(PSTR("AUDIO_REQUEST_SET_CUR: interfacev=%u, %u=%u\n"), interfacev, terminalID, ep0databuffout [0]);
 		}
 		break;
@@ -3322,19 +3315,17 @@ static void usbdFunctionReq_seq1(PCD_TypeDef * const Instance, uint_fast8_t ReqT
 
 #if WITHUSBUAC
 	#if WITHUSBUAC3
-		case INTERFACE_AUDIO_CONTROL_1:
-			{
-			}
-			break;
+		case INTERFACE_AUDIO_CONTROL_1:	/* AUDIO spectrum control interface */
 	#endif /* WITHUSBUAC3 */
 		case INTERFACE_AUDIO_CONTROL_0:	// AUDIO control interface
 			{
 				const uint_fast8_t terminalID = HI_BYTE(ReqIndex);
+				const uint_fast8_t controlID = HI_BYTE(gReqValue);
 				switch (ReqRequest)
 				{
 				case AUDIO_REQUEST_GET_CUR:
 					debug_printf_P(PSTR("AUDIO_REQUEST_GET_CUR: interfacev=%u,  %u\n"), interfacev, terminalID);
-					buff [interfacev] [0] = terminalID == TERMINAL_ID_SELECTOR_6 ? mikemux_cur : 0;
+					buff [interfacev] [0] = terminalsprops [terminalID] [controlID];
 					control_transmit(Instance, buff [interfacev], ulmin16(ARRAY_SIZE(buff [interfacev]), ReqLength));
 					return;
 
@@ -3346,7 +3337,7 @@ static void usbdFunctionReq_seq1(PCD_TypeDef * const Instance, uint_fast8_t ReqT
 
 				case AUDIO_REQUEST_GET_MAX:
 					debug_printf_P(PSTR("AUDIO_REQUEST_GET_MAX: interfacev=%u,  %u\n"), interfacev, terminalID);
-					buff [interfacev] [0] = terminalID == TERMINAL_ID_SELECTOR_6 ? TERMINAL_ID_SELECTOR_6_INPUTS : 96;
+					buff [interfacev] [0] = terminalID == TERMINAL_ID_SELECTOR_6 ? TERMINAL_ID_SELECTOR_6_INPUTS : 100;
 					control_transmit(Instance, buff [interfacev], ulmin16(ARRAY_SIZE(buff [interfacev]), ReqLength));
 					return;
 
@@ -3398,10 +3389,8 @@ static void usbdFunctionReq_seq3(PCD_TypeDef * const Instance, uint_fast8_t ReqT
 	{
 #if WITHUSBUAC
 	#if WITHUSBUAC3
-	case INTERFACE_AUDIO_CONTROL_1:
-		break;
+	case INTERFACE_AUDIO_CONTROL_1:	/* AUDIO spectrum control interface */
 	#endif /* WITHUSBUAC3 */
-
 	case INTERFACE_AUDIO_CONTROL_0:	// AUDIO control interface
 		{
 			//const uint_fast8_t terminalID = HI_BYTE(ReqIndex);
@@ -4281,7 +4270,7 @@ static void usbd_handle_resume(PCD_TypeDef * const Instance)
 	dwDTERate [INTERFACE_CDC_CONTROL_3b] = 115200;
 #endif /* WITHUSBCDC */
 #if WITHUSBUAC
-	mikemux_cur = 1;
+	terminalsprops [TERMINAL_ID_SELECTOR_6] [AUDIO_CONTROL_UNDEFINED] = 1;
 	buffers_set_uacinalt(altinterfaces [INTERFACE_AUDIO_MIKE_2]);
 	buffers_set_uacoutalt(altinterfaces [INTERFACE_AUDIO_SPK_1]);
 	#if WITHUSBUAC3
@@ -4306,7 +4295,7 @@ static void usbd_handle_suspend(PCD_TypeDef * const Instance)
 	HARDWARE_CDC_ONDISCONNECT();
 #endif /* WITHUSBCDC */
 #if WITHUSBUAC
-	mikemux_cur = 1;
+	terminalsprops [TERMINAL_ID_SELECTOR_6] [AUDIO_CONTROL_UNDEFINED] = 1;
 	buffers_set_uacinalt(altinterfaces [INTERFACE_AUDIO_MIKE_2]);
 	buffers_set_uacoutalt(altinterfaces [INTERFACE_AUDIO_SPK_1]);
 	#if WITHUSBUAC3
@@ -4611,7 +4600,7 @@ static void usbd_classDeInit(USBD_HandleTypeDef *pdev, uint_fast8_t cfgidx)
 		}
 #endif /* WITHUSBUAC3 */
 
-		mikemux_cur = 1;
+		terminalsprops [TERMINAL_ID_SELECTOR_6] [AUDIO_CONTROL_UNDEFINED] = 1;
 		buffers_set_uacinalt(altinterfaces [INTERFACE_AUDIO_MIKE_2]);
 		buffers_set_uacoutalt(altinterfaces [INTERFACE_AUDIO_SPK_1]);
 	#if WITHUSBUAC3
@@ -7970,7 +7959,7 @@ static USBD_StatusTypeDef USBD_SetClassConfig(USBD_HandleTypeDef  *pdev, uint8_t
 #endif /* WITHUSBCDCEEM */
 
 #if WITHUSBUAC
-	mikemux_cur = 1;
+	terminalsprops [TERMINAL_ID_SELECTOR_6] [AUDIO_CONTROL_UNDEFINED] = 1;
 	{
 		buffers_set_uacinalt(altinterfaces [INTERFACE_AUDIO_MIKE_2]);
 		buffers_set_uacoutalt(altinterfaces [INTERFACE_AUDIO_SPK_1]);
@@ -8316,19 +8305,17 @@ static void USBD_UACCDC_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef  *r
 	#endif /* WITHUSBCDC */
 	#if WITHUSBUAC
 		#if WITHUSBUAC3
-			case INTERFACE_AUDIO_CONTROL_1:
-				{
-				}
-				break;
+			case INTERFACE_AUDIO_CONTROL_1:	/* AUDIO spectrum control interface */
 		#endif /* WITHUSBUAC3 */
 			case INTERFACE_AUDIO_CONTROL_0:	// AUDIO control interface
 				{
 					const uint_fast8_t terminalID = HI_BYTE(req->wIndex);
+					const uint_fast8_t controlID = HI_BYTE(req->wValue);
 					switch (req->bRequest)
 					{
 					case AUDIO_REQUEST_GET_CUR:
 						debug_printf_P(PSTR("USBD_UACCDC_Setup: AUDIO_REQUEST_GET_CUR: interfacev=%u, %u\n"), interfacev, terminalID);
-						buff [interfacev] [0] = terminalID == TERMINAL_ID_SELECTOR_6 ? mikemux_cur : 0;
+						buff [interfacev] [0] = terminalsprops [terminalID] [controlID];
 						USBD_CtlSendData(pdev, buff [interfacev], ulmin16(ARRAY_SIZE(buff [interfacev]), req->wLength));
 						break;
 
@@ -8340,7 +8327,7 @@ static void USBD_UACCDC_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef  *r
 
 					case AUDIO_REQUEST_GET_MAX:
 						debug_printf_P(PSTR("USBD_UACCDC_Setup: AUDIO_REQUEST_GET_MAX: interfacev=%u, %u\n"), interfacev, terminalID);
-						buff [interfacev] [0] = terminalID == TERMINAL_ID_SELECTOR_6 ? TERMINAL_ID_SELECTOR_6_INPUTS : 96;
+						buff [interfacev] [0] = terminalID == TERMINAL_ID_SELECTOR_6 ? TERMINAL_ID_SELECTOR_6_INPUTS : 100;
 						USBD_CtlSendData(pdev, buff [interfacev], ulmin16(ARRAY_SIZE(buff [interfacev]), req->wLength));
 						break;
 
@@ -8469,7 +8456,7 @@ static void USBD_UACCDC_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef  *r
 	#if WITHUSBUAC
 
 		#if WITHUSBUAC3
-			case INTERFACE_AUDIO_CONTROL_1:
+			case INTERFACE_AUDIO_CONTROL_1:	/* AUDIO spectrum control interface */
 		#endif /* WITHUSBUAC3 */
 			case INTERFACE_AUDIO_CONTROL_0:	// AUDIO control interface
 				{
@@ -9348,7 +9335,6 @@ USBD_StatusTypeDef USBD_LL_DataOutStage(USBD_HandleTypeDef *pdev, uint8_t epnum,
 #if WITHUSBUAC
 		#if WITHUSBUAC3
 						case INTERFACE_AUDIO_CONTROL_1:	// AUDIO control interface
-							break;
 		#endif /* WITHUSBUAC3 */
 						case INTERFACE_AUDIO_CONTROL_0:	// AUDIO control interface
 						switch (pdev->request.bRequest)
@@ -9356,29 +9342,17 @@ USBD_StatusTypeDef USBD_LL_DataOutStage(USBD_HandleTypeDef *pdev, uint8_t epnum,
 						case AUDIO_REQUEST_SET_CUR:	
 							{
 								const uint_fast8_t terminalID = HI_BYTE(pdev->request.wIndex);
-								if (terminalID == TERMINAL_ID_SELECTOR_6)
-								{
-									setmikeaux(ep0databuffout [0]);
-									debug_printf_P(PSTR("USBD_LL_DataOutStage: AUDIO_REQUEST_SET_CUR: interfacev=%u, %u=%u\n"), interfacev, terminalID, ep0databuffout [0]);
-								}
-								else
-								{
-									debug_printf_P(PSTR("USBD_LL_DataOutStage: yyy1: interfacev=%u, %u=%u\n"), interfacev, terminalID, ep0databuffout [0]);
-								}
+								const uint_fast8_t controlID = HI_BYTE(pdev->request.wValue);	// AUDIO_MUTE_CONTROL, AUDIO_VOLUME_CONTROL, ...
+								terminalsprops [terminalID] [controlID] = ep0databuffout [0];
+								debug_printf_P(PSTR("USBD_LL_DataOutStage: AUDIO_REQUEST_SET_CUR: interfacev=%u, %u/%u=%u\n"), interfacev, terminalID, controlID, ep0databuffout [0]);
 							}
 							break;
 
 						default:
 							{
 								const uint_fast8_t terminalID = HI_BYTE(pdev->request.wIndex);
-								if (terminalID == TERMINAL_ID_SELECTOR_6)
-								{
-									debug_printf_P(PSTR("USBD_LL_DataOutStage: xxx2: interfacev=%u, %u=%u\n"), interfacev, terminalID, ep0databuffout [0]);
-								}
-								else
-								{
-									debug_printf_P(PSTR("USBD_LL_DataOutStage: yyy2: interfacev=%u, %u=%u\n"), interfacev, terminalID, ep0databuffout [0]);
-								}
+								const uint_fast8_t controlID = HI_BYTE(pdev->request.wValue);	// AUDIO_MUTE_CONTROL, AUDIO_VOLUME_CONTROL, ...
+								debug_printf_P(PSTR("USBD_LL_DataOutStage: xxx2: interfacev=%u, %u/%u=%u\n"), interfacev, terminalID, controlID, ep0databuffout [0]);
 							}
 							break;
 						}
@@ -9388,7 +9362,8 @@ USBD_StatusTypeDef USBD_LL_DataOutStage(USBD_HandleTypeDef *pdev, uint8_t epnum,
 					default:
 						{
 							const uint_fast8_t terminalID = HI_BYTE(pdev->request.wIndex);
-							debug_printf_P(PSTR("USBD_LL_DataOutStage: xxx3: interfacev=%u, %u=%u\n"), interfacev, terminalID, ep0databuffout [0]);
+							const uint_fast8_t controlID = HI_BYTE(pdev->request.wValue);	// AUDIO_MUTE_CONTROL, AUDIO_VOLUME_CONTROL, ...
+							debug_printf_P(PSTR("USBD_LL_DataOutStage: xxx3: interfacev=%u, %u/%u=%u\n"), interfacev, terminalID, controlID, ep0databuffout [0]);
 						}
 						break;
 
