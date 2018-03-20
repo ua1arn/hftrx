@@ -65,10 +65,10 @@ void usbd_diagnostics(void)
 }
 
 
-static uint_fast8_t terminalsprops [256] [16];
-
 
 #if WITHUSBUAC
+
+	static uint_fast8_t terminalsprops [256] [16];
 
 	static uintptr_t uacinaddr = 0;
 	static uint_fast16_t uacinsize = 0;
