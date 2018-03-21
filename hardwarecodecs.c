@@ -42,7 +42,8 @@ static void hardware_dummy_enable(void)
 #endif /* WITHRTS192 && ! WITHSAI2HW */
 
 // Сейчас в эту память будем читать по DMA
-static uintptr_t dma_invalidate16rx(uintptr_t addr)
+static uintptr_t 
+dma_invalidate16rx(uintptr_t addr)
 {
 	//arm_hardware_invalidate(addr, DMABUFFSIZE16 * sizeof (uint16_t));
 	arm_hardware_flush_invalidate(addr, DMABUFFSIZE16 * sizeof (uint16_t));
@@ -51,14 +52,16 @@ static uintptr_t dma_invalidate16rx(uintptr_t addr)
 
 // Сейчас эта память будет записываться по DMA куда-то
 // Потом содержимое не требуется
-uintptr_t dma_flush16tx(uintptr_t addr)
+static uintptr_t 
+dma_flush16tx(uintptr_t addr)
 {
 	arm_hardware_flush_invalidate(addr, DMABUFFSIZE16 * sizeof (uint16_t));
 	return addr;
 }
 
 // Сейчас в эту память будем читать по DMA
-static uintptr_t dma_invalidate192rts(uintptr_t addr)
+static uintptr_t
+dma_invalidate192rts(uintptr_t addr)
 {
 	//arm_hardware_invalidate(addr, DMABUFFSIZE192RTS * sizeof (uint8_t));
 	arm_hardware_flush_invalidate(addr, DMABUFFSIZE192RTS * sizeof (uint8_t));
@@ -67,14 +70,16 @@ static uintptr_t dma_invalidate192rts(uintptr_t addr)
 
 // Сейчас эта память будет записываться по DMA куда-то
 // Потом содержимое не требуется
-uintptr_t dma_flushxrtstx(uintptr_t addr, unsigned long size)
+static uintptr_t
+dma_flushxrtstx(uintptr_t addr, unsigned long size)
 {
 	//arm_hardware_invalidate(addr, size);
 	arm_hardware_flush_invalidate(addr, size);
 	return addr;
 }
 // Сейчас в эту память будем читать по DMA
-static uintptr_t dma_invalidate32rx(uintptr_t addr)
+static uintptr_t 
+dma_invalidate32rx(uintptr_t addr)
 {
 	//arm_hardware_invalidate(addr, DMABUFFSIZE32RX * sizeof (uint32_t));
 	arm_hardware_flush_invalidate(addr, DMABUFFSIZE32RX * sizeof (uint32_t));
@@ -1987,7 +1992,7 @@ static void r7s721_ssif0_txdma(void)
 	// Indicates the register set currently selected in register mode.
 	// 0: Next0 Register Set
 	// 1: Next1 Register Set
-	const uint_fast8_t b = (DMAC1.CHSTAT_n & (1U << DMAC1_CHSTAT_n_SR_SHIFT)) != 0;	// SR
+	const uint_fast8_t b = (DMAC1.CHSTAT_n & DMAC1_CHSTAT_n_SR) != 0;	// SR
 	if (b != 0)
 	{
 		release_dmabuffer16(DMAC1.N0SA_n);
@@ -2223,7 +2228,6 @@ static const codechw_t audiocodechw =
 
 static void r7s721_ssif1_txdma(void)
 {
-	//dbg_putchar('t');
 	DMAC3.CHCFG_n |= DMAC3_CHCFG_n_REN;	// REN bit
 	// SR (bt 7)
 	// Indicates the register set currently selected in register mode.
@@ -2906,8 +2910,6 @@ static void r7s721_usb0_dma1_dmatx_initialize(void)
 	const uint_fast8_t id = 12;	// 12: DMAC12
 	// DMAC12
 	/* Set Source Start Address */
-	//DMAC12.N0SA_n = dma_flush16tx(allocate_dmabuffer16());
-	//DMAC12.N1SA_n = dma_flush16tx(allocate_dmabuffer16());
 
     /* Set Destination Start Address */
     DMAC12.N0DA_n = (uint32_t) & USB200.D1FIFO.UINT32;	// Fixed destination address
@@ -2928,28 +2930,28 @@ static void r7s721_usb0_dma1_dmatx_initialize(void)
 	const uint_fast8_t hien = 1;	
 
 	DMAC12.CHCFG_n =
-		0 * (1U << 31) |	// DMS	0: Register mode
-		0 * (1U << 30) |	// REN	0: Does not continue DMA transfers.
-		0 * (1U << 29) |	// RSW	1: Inverts RSEL automatically after a DMA transaction.
-		0 * (1U << 28) |	// RSEL	0: Executes the Next0 Register Set
-		0 * (1U << 27) |	// SBE	0: Stops the DMA transfer without sweeping the buffer (initial value).
-		0 * (1U << 24) |	// DEM	0: Does not mask the DMA transfer end interrupt - прерывания каждый раз после TC
-		tm * (1U << 22) |	// TM	0: Single transfer mode - берётся из Table 9.4
-		1 * (1U << 21) |	// DAD	1: Fixed destination address
-		0 * (1U << 20) |	// SAD	0: Increment source address
-		2 * (1U << 16) |	// DDS	2: 32 bits, 1: 16 bits (Destination Data Size)
-		2 * (1U << 12) |	// SDS	2: 32 bits, 1: 16 bits (Source Data Size)
-		am * (1U << 8) |	// AM	1: ACK mode: Level mode (active until the transfer request from an on-chip peripheral module
-		lvl * (1U << 6) |	// LVL	1: Detects based on the level.
-		hien * (1U << 5) |	// HIEN	1: When LVL = 1: Detects a request when the signal is at the High level.
-		reqd * (1U << 3) |	// REQD		Request Direction
-		(id & 0x07) * (1U << 0) |		// SEL	0: CH0/CH8
+		0 * (1U << DMAC12_CHCFG_n_DMS_SHIFT) |		// DMS	0: Register mode
+		0 * (1U << DMAC12_CHCFG_n_REN_SHIFT) |		// REN	0: Does not continue DMA transfers.
+		0 * (1U << DMAC12_CHCFG_n_RSW_SHIFT) |		// RSW	1: Inverts RSEL automatically after a DMA transaction.
+		0 * (1U << DMAC12_CHCFG_n_RSEL_SHIFT) |		// RSEL	0: Executes the Next0 Register Set
+		0 * (1U << DMAC12_CHCFG_n_SBE_SHIFT) |		// SBE	0: Stops the DMA transfer without sweeping the buffer (initial value).
+		0 * (1U << DMAC12_CHCFG_n_DEM_SHIFT) |		// DEM	0: Does not mask the DMA transfer end interrupt - прерывания каждый раз после TC
+		tm * (1U << DMAC12_CHCFG_n_TM_SHIFT) |		// TM	0: Single transfer mode - берётся из Table 9.4
+		1 * (1U << DMAC12_CHCFG_n_DAD_SHIFT) |		// DAD	1: Fixed destination address
+		0 * (1U << DMAC12_CHCFG_n_SAD_SHIFT) |		// SAD	0: Increment source address
+		2 * (1U << DMAC12_CHCFG_n_DDS_SHIFT) |		// DDS	2: 32 bits, 1: 16 bits (Destination Data Size)
+		2 * (1U << DMAC12_CHCFG_n_SDS_SHIFT) |		// SDS	2: 32 bits, 1: 16 bits (Source Data Size)
+		am * (1U << DMAC12_CHCFG_n_AM_SHIFT) |		// AM	1: ACK mode: Level mode (active until the transfer request from an on-chip peripheral module
+		lvl * (1U << DMAC12_CHCFG_n_LVL_SHIFT) |	// LVL	1: Detects based on the level.
+		hien * (1U << DMAC12_CHCFG_n_HIEN_SHIFT) |	// HIEN	1: When LVL = 1: Detects a request when the signal is at the High level.
+		reqd * (1U << DMAC12_CHCFG_n_REQD_SHIFT) |	// REQD		Request Direction
+		(id & 0x07) * (1U << DMAC12_CHCFG_n_SEL_SHIFT) | // SEL	0: CH0/CH8
 		0;
 
 	enum { dmarsshift = (id & 0x01) * 16 };
-	DMAC1213.DMARS = (DMAC1213.DMARS & ~ (0x1FFul << dmarsshift)) |
-		mid * (1U << (2 + dmarsshift)) |		// MID
-		rid * (1U << (0 + dmarsshift)) |		// RID
+	DMAC1213.DMARS = (DMAC1213.DMARS & ~ ((DMAC1213_DMARS_CH12_MID | DMAC1213_DMARS_CH12_RID) << dmarsshift)) |
+		mid * (1U << (DMAC1213_DMARS_CH12_MID_SHIFT + dmarsshift)) |		// MID
+		rid * (1U << (DMAC1213_DMARS_CH12_RID_SHIFT + dmarsshift)) |		// RID
 		0;
 
     DMAC815.DCTRL_0_7 = (DMAC815.DCTRL_0_7 & ~ (/*(1U << 1) | */(1U << 0))) |
@@ -2978,13 +2980,15 @@ static USBALIGN_BEGIN uint8_t uacoutbuff1 [VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT] USB
 
 static RAMFUNC_NONILINE void r7s721_usb0_dma0_dmarx_handler(void)
 {
+	// Enable switch to next regidters set
+	DMAC13.CHCFG_n |= DMAC13_CHCFG_n_REN;	// REN bit
 	// SR (bt 7)
 	// Indicates the register set currently selected in register mode.
 	// 0: Next0 Register Set
 	// 1: Next1 Register Set
 	const uint_fast8_t b = (DMAC13.CHSTAT_n & DMAC13_CHSTAT_n_SR) != 0;	// SR
-	// Enable switch to next regidters set
-	DMAC13.CHCFG_n |= DMAC13_CHCFG_n_REN;	// REN bit
+	// Фаза в данном случае отличается от проверенной на передаче в кодек (функция r7s721_ssif0_txdma). 
+	// Прием с автопереключением больше нигде не подтвержден.
 	if (b == 0)
 	{
 		uacout_buffer_save(uacoutbuff0, VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT);

@@ -107,8 +107,8 @@
 
 #endif /* WITHDSPEXTDDC */
 
-#define DMABUFCLUSTER	8	// Cделано небольшое кодичество - чтобы не пропускало прерывания от валкодера при обработке звука
-#define DMABUFCLUSTER	8	// Cделано небольшое кодичество - чтобы не пропускало прерывания от валкодера при обработке звука
+#define DMABUFCLUSTER	8	// Cделано небольшое количество - чтобы не пропускало прерывания от валкодера при обработке звука
+#define DMABUFMULT		7
 
 #if ! WITHI2SHW
 
@@ -116,14 +116,14 @@
 	// количество сэмплов в DMABUFFSIZE32RX и DMABUFFSIZE16 должно быть одинаковым.
 	// Обеспечить вызовы функции buffers_resample(void)
 
-	#define DMABUFFSIZE32RX (DMABUFCLUSTER * DMABUFSTEP32RX * 7)
-	#define DMABUFFSIZE32TX (DMABUFCLUSTER * DMABUFSTEP32TX * 7 * 4)
-	#define DMABUFFSIZE16 (DMABUFCLUSTER * DMABUFSTEP16 * 7)	/* размер под USB ENDPOINT PACKET SIZE В буфере помещаются пары значений - стерео кодек */
+	#define DMABUFFSIZE32RX (DMABUFCLUSTER * DMABUFSTEP32RX * DMABUFMULT)
+	#define DMABUFFSIZE32TX (DMABUFCLUSTER * DMABUFSTEP32TX * DMABUFMULT * 4)
+	#define DMABUFFSIZE16 (DMABUFCLUSTER * DMABUFSTEP16 * DMABUFMULT)	/* размер под USB ENDPOINT PACKET SIZE В буфере помещаются пары значений - стерео кодек */
 
 #else /* ! WITHI2SHW */
 	#define DMABUFFSIZE32RX (DMABUFCLUSTER * DMABUFSTEP32RX)
 	#define DMABUFFSIZE32TX (DMABUFCLUSTER * DMABUFSTEP32TX * 4)
-	#define DMABUFFSIZE16 (DMABUFCLUSTER * DMABUFSTEP16 * 7)	/* размер под USB ENDPOINT PACKET SIZE В буфере помещаются пары значений - стерео кодек */
+	#define DMABUFFSIZE16 (DMABUFCLUSTER * DMABUFSTEP16 * DMABUFMULT)	/* размер под USB ENDPOINT PACKET SIZE В буфере помещаются пары значений - стерео кодек */
 #endif /* ! WITHI2SHW */
 
 // Параметры для канала передачи Real Time Spectrum - stereo, 32 bit, 192 kS/S
@@ -241,9 +241,6 @@ void refreshDMA_uacin(void); // Канал DMA ещё занят - оставляем в очереди, иначе
 uintptr_t getfilled_dmabuffer32tx_main(void);
 uintptr_t getfilled_dmabuffer32tx_sub(void);
 uintptr_t getfilled_dmabuffer16phones(void);
-
-uintptr_t dma_flush16tx(uintptr_t addr);
-uintptr_t dma_flushxrtstx(uintptr_t addr, unsigned long size);
 
 void dsp_extbuffer32rx(const uint32_t * buff);	// RX
 
@@ -417,7 +414,6 @@ void uacout_buffer_save(const uint8_t * buff, uint_fast16_t size);
 
 	// stereo, 24 bit samples
 	#define HARDWARE_USBD_AUDIO_IN_SAMPLEBITS_RTS96		24
-	#define HARDWARE_USBD_AUDIO_IN_CHANNELS_RTS		2
 	#define VIRTUAL_AUDIO_PORT_DATA_SIZE_IN_RTS96		(DMABUFFSIZE96RTS * sizeof (uint8_t))
 
 	#define HSINTERVAL_RTS96 4	// endpoint descriptor parameters
@@ -429,13 +425,14 @@ void uacout_buffer_save(const uint8_t * buff, uint_fast16_t size);
 	// По каналу real-time спектра стерео, 32 бит, 192 кГц - 288*2*4 = 2304 байта
 	// stereo, 32 bit samples
 	#define HARDWARE_USBD_AUDIO_IN_SAMPLEBITS_RTS192	32
-	#define HARDWARE_USBD_AUDIO_IN_CHANNELS_RTS		2
 	#define VIRTUAL_AUDIO_PORT_DATA_SIZE_IN_RTS192		(DMABUFFSIZE192RTS * sizeof (int8_t))
 
 	#define HSINTERVAL_RTS192 3	// 500 us
 	#define FSINTERVAL_RTS192 1
 
 #endif /* WITHRTS192 */
+
+#define HARDWARE_USBD_AUDIO_IN_CHANNELS_RTS		2	// I/Q всегда стерео
 
 // stereo, 16 bit samples
 // По звуковому каналу передается стерео, 16 бит, 48 кГц - 288 байт размер данных в ендпонтт

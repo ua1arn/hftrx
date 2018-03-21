@@ -680,7 +680,6 @@ RAMFUNC static void buffers_savetoresampling(voice16_t * p)
 	UNLOCK(& locklist16);
 }
 
-
 static uint_fast8_t isaudio48(void)
 {
 #if WITHUSBHW && WITHUSBUAC
@@ -1901,12 +1900,13 @@ void uacout_buffer_stop(void)
 }
 
 /* вызыватся из не-realtime функции обработчика прерывания */
+// Работает на ARM_SYSTEM_PRIORITY
 void uacout_buffer_save(const uint8_t * buff, uint_fast16_t size)
 {
 	const size_t dmabuffer16size = DMABUFFSIZE16 * sizeof (uint16_t);	// размер в байтах
 
 #if WITHUABUACOUTAUDIO48MONO
-	//return;
+
 	for (;;)
 	{
 		const uint_fast16_t insamples = size / 2;	// количество сэмплов во входном буфере
