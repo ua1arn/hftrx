@@ -2969,14 +2969,15 @@ static void r7s721_usb0_dma1_dmatx_initialize(void)
 	//DMAC12.CHCTRL_n = 1 * (1U << 0);		// SETEN
 }
 
-static USBALIGN_BEGIN uint8_t uacoutbuff [2] [VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT] USBALIGN_END;
+static USBALIGN_BEGIN uint8_t uacoutbuff0 [VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT] USBALIGN_END;
+static USBALIGN_BEGIN uint8_t uacoutbuff1 [VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT] USBALIGN_END;
 
 // USB AUDIO
 // DMA по приему USB0 DMA0 - обработчик прерывания
 
-static RAMFUNC_NONILINE void r7s721_usb0_dma0_dmarx_handlerNew(void)
+static RAMFUNC_NONILINE void r7s721_usb0_dma0_dmarx_handler(void)
 {
-	DMAC13.CHCFG_n |= (1U << DMAC13_CHCFG_n_REN_SHIFT);	// REN bit
+	DMAC13.CHCFG_n |= DMAC13_CHCFG_n_REN;	// REN bit
 	// SR (bt 7)
 	// Indicates the register set currently selected in register mode.
 	// 0: Next0 Register Set
@@ -2984,24 +2985,22 @@ static RAMFUNC_NONILINE void r7s721_usb0_dma0_dmarx_handlerNew(void)
 	const uint_fast8_t b = (DMAC13.CHSTAT_n & DMAC13_CHSTAT_n_SR) != 0;	// SR
 	if (b != 0)
 	{
-		//processing_dmabuffer16rxuac(DMAC13.N0DA_n);
-		//DMAC13.N0DA_n = dma_invalidate16rx(allocate_dmabuffer16());
-		uacout_buffer_save(uacoutbuff [0], VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT);
-		arm_hardware_flush_invalidate((uintptr_t) uacoutbuff [0], VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT);
+		arm_hardware_flush_invalidate((uintptr_t) uacoutbuff0, VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT);
+		uacout_buffer_save(uacoutbuff0, VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT);
+		arm_hardware_flush_invalidate((uintptr_t) uacoutbuff0, VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT);
 	}
 	else
 	{
-		//processing_dmabuffer16rxuac(DMAC13.N1DA_n);
-		//DMAC13.N1DA_n = dma_invalidate16rx(allocate_dmabuffer16());
-		uacout_buffer_save(uacoutbuff [1], VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT);
-		arm_hardware_flush_invalidate((uintptr_t) uacoutbuff [1], VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT);
+		arm_hardware_flush_invalidate((uintptr_t) uacoutbuff1, VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT);
+		uacout_buffer_save(uacoutbuff1, VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT);
+		arm_hardware_flush_invalidate((uintptr_t) uacoutbuff1, VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT);
 	}
 }
 
 // USB AUDIO
 // DMA по приёму usb0_dma0
 
-static void r7s721_usb0_dma0_dmarx_initializeNew(void)
+static void r7s721_usb0_dma0_dmarx_initialize(void)
 {
 	const uint_fast8_t id = 13;		// 13: DMAC13
 	// DMAC13
@@ -3010,13 +3009,11 @@ static void r7s721_usb0_dma0_dmarx_initializeNew(void)
     DMAC13.N0SA_n = (uint32_t) & USB200.D0FIFO.UINT32;	// Fixed source address
     DMAC13.N1SA_n = (uint32_t) & USB200.D0FIFO.UINT32;	// Fixed source address
 
-	arm_hardware_flush_invalidate((uintptr_t) uacoutbuff [0], VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT);
-	arm_hardware_flush_invalidate((uintptr_t) uacoutbuff [1], VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT);
+	arm_hardware_flush_invalidate((uintptr_t) uacoutbuff0, VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT);
+	arm_hardware_flush_invalidate((uintptr_t) uacoutbuff1, VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT);
 
-    /* Set Destination Start Address */
-	DMAC13.N0DA_n = (uintptr_t) uacoutbuff [0];
-	DMAC13.N1DA_n = (uintptr_t) uacoutbuff [1];
-
+	DMAC13.N0DA_n = (uintptr_t) uacoutbuff0;
+	DMAC13.N1DA_n = (uintptr_t) uacoutbuff1;
     /* Set Transfer Size */
     DMAC13.N0TB_n = VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT;	// размер в байтах
     DMAC13.N1TB_n = VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT;	// размер в байтах
@@ -3063,103 +3060,8 @@ static void r7s721_usb0_dma0_dmarx_initializeNew(void)
 
 	{
 		const uint16_t int_id = DMAINT13_IRQn;
-		r7s721_intc_registintfunc(int_id, r7s721_usb0_dma0_dmarx_handlerNew);
-		GIC_SetPriority(int_id, ARM_SYSTEM_PRIORITY);
-		GIC_EnableIRQ(int_id);
-	}
-
-	DMAC13.CHCTRL_n = 1 * (1U << 3);		// SWRST
-	DMAC13.CHCTRL_n = 1 * (1U << 17);	// CLRINTMSK
-	DMAC13.CHCTRL_n = 1 * (1U << 0);		// SETEN
-}
-
-// USB AUDIO
-// DMA по приему USB0 DMA0 - обработчик прерывания
-
-static RAMFUNC_NONILINE void r7s721_usb0_dma0_dmarx_handler(void)
-{
-	DMAC13.CHCFG_n |= (1U << DMAC13_CHCFG_n_REN_SHIFT);	// REN bit
-	// SR (bt 7)
-	// Indicates the register set currently selected in register mode.
-	// 0: Next0 Register Set
-	// 1: Next1 Register Set
-	const uint_fast8_t b = (DMAC13.CHSTAT_n & DMAC13_CHSTAT_n_SR) != 0;	// SR
-	if (b != 0)
-	{
-		processing_dmabuffer16rxuac(DMAC13.N0DA_n);
-		DMAC13.N0DA_n = dma_invalidate16rx(allocate_dmabuffer16());
-	}
-	else
-	{
-		processing_dmabuffer16rxuac(DMAC13.N1DA_n);
-		DMAC13.N1DA_n = dma_invalidate16rx(allocate_dmabuffer16());
-	}
-}
-
-// USB AUDIO
-// DMA по приёму usb0_dma0
-
-static void r7s721_usb0_dma0_dmarx_initialize(void)
-{
-	const uint_fast8_t id = 13;		// 13: DMAC13
-	// DMAC13
-	/* Set Source Start Address */
-	/* регистры USB PIPE (HARDWARE_USBD_PIPE_ISOC_OUT) */
-    DMAC13.N0SA_n = (uint32_t) & USB200.D0FIFO.UINT32;	// Fixed source address
-    DMAC13.N1SA_n = (uint32_t) & USB200.D0FIFO.UINT32;	// Fixed source address
-
-    /* Set Destination Start Address */
-	DMAC13.N0DA_n = dma_invalidate16rx(allocate_dmabuffer16());
-	DMAC13.N1DA_n = dma_invalidate16rx(allocate_dmabuffer16());
-
-    /* Set Transfer Size */
-    DMAC13.N0TB_n = DMABUFFSIZE16 * sizeof (uint16_t);	// размер в байтах
-    DMAC13.N1TB_n = DMABUFFSIZE16 * sizeof (uint16_t);	// размер в байтах
-
-	// Values from Table 9.4 On-Chip Peripheral Module Requests
-	// USB0_DMA0 (channel 0 receive FIFO full)
-	const uint_fast8_t mid = 0x20;	
-	const uint_fast8_t rid = 3;		
-	const uint_fast8_t tm = 0;		
-	const uint_fast8_t am = 2;		
-	const uint_fast8_t lvl = 1;		
-	const uint_fast8_t reqd = 0;
-	const uint_fast8_t hien = 1;	
-
-	DMAC13.CHCFG_n =
-		0 * (1U << 31) |	// DMS	0: Register mode
-		1 * (1U << 30) |	// REN	1: Continues DMA transfers.
-		1 * (1U << 29) |	// RSW	1: Inverts RSEL automatically after a DMA transaction.
-		0 * (1U << 28) |	// RSEL	0: Executes the Next0 Register Set
-		0 * (1U << 27) |	// SBE	0: Stops the DMA transfer without sweeping the buffer (initial value).
-		0 * (1U << 24) |	// DEM	0: Does not mask the DMA transfer end interrupt - прерывания каждый раз после TC
-		tm * (1U << 22) |	// TM	0: Single transfer mode - берётся из Table 9.4
-		0 * (1U << 21) |	// DAD	0: Increment destination address
-		1 * (1U << 20) |	// SAD	1: Fixed source address
-		2 * (1U << 16) |	// DDS	2: 32 bits, 1: 16 bits (Destination Data Size)
-		2 * (1U << 12) |	// SDS	2: 32 bits, 1: 16 bits (Source Data Size)
-		am * (1U << 8) |	// AM	1: ACK mode: Level mode (active until the transfer request from an on-chip peripheral module
-		lvl * (1U << 6) |	// LVL	1: Detects based on the level.
-		hien * (1U << 5) |	// HIEN	1: When LVL = 1: Detects a request when the signal is at the High level.
-		reqd * (1U << 3) |	// REQD		Request Direction
-		(id & 0x07) * (1U << 0) |		// SEL	0: CH0/CH8
-		0;
-
-	enum { dmarsshift = (id & 0x01) * 16 };
-	DMAC1213.DMARS = (DMAC1213.DMARS & ~ (0x1FFul << dmarsshift)) |
-		mid * (1U << (2 + dmarsshift)) |		// MID
-		rid * (1U << (0 + dmarsshift)) |		// RID
-		0;
-
-    DMAC815.DCTRL_0_7 = (DMAC815.DCTRL_0_7 & ~ (/*(1U << 1) | */(1U << 0))) |
-		//1 * (1U << 1) |		// LVINT	1: Level output
-		1 * (1U << 0) |		// PR		1: Round robin mode
-		0;
-
-	{
-		const uint16_t int_id = DMAINT13_IRQn;
 		r7s721_intc_registintfunc(int_id, r7s721_usb0_dma0_dmarx_handler);
-		GIC_SetPriority(int_id, ARM_REALTIME_PRIORITY);
+		GIC_SetPriority(int_id, ARM_SYSTEM_PRIORITY);
 		GIC_EnableIRQ(int_id);
 	}
 
@@ -3200,7 +3102,6 @@ void hardware_usbd_dma_initialize(void)
 #if CPUSTYLE_R7S721
 #if WITHUSBUAC
 	r7s721_usb0_dma0_dmarx_initialize();
-	//r7s721_usb0_dma0_dmarx_initializeNew();
 	r7s721_usb0_dma1_dmatx_initialize();
 #endif /* WITHUSBUAC */
 #elif CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX

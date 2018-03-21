@@ -453,15 +453,11 @@ void uacout_buffer_save(const uint8_t * buff, uint_fast16_t size);
 	#define HARDWARE_USBD_AUDIO_OUT_CHANNELS	2
 #endif /* WITHUABUACOUTAUDIO48MONO */
 
-#if CPUSTYLE_R7S721
-	// используются буферы аудиосистемы
-	#define VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT		(DMABUFFSIZE16 * sizeof (uint16_t))
-#else /* CPUSTYLE_R7S721 */
-	// используются свои буферы
-	#define VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT	( \
-		((ARMI2SRATE100 + 99) / 100000) * ((HARDWARE_USBD_AUDIO_OUT_SAMPLEBITS * HARDWARE_USBD_AUDIO_OUT_CHANNELS + 7) / 8) \
+// используются свои буферы
+#define VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT	( \
+	((ARMI2SRATE100 + 99) / 100000) * \
+	((HARDWARE_USBD_AUDIO_OUT_SAMPLEBITS * HARDWARE_USBD_AUDIO_OUT_CHANNELS + 7) / 8) \
 	)
-#endif /* CPUSTYLE_R7S721 */
 
 #define HARDWARE_USBD_AUDIO_IN_CHANNELS	2	/* для всех каналов в IN направлении */
 
