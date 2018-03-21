@@ -284,7 +284,7 @@ static unsigned UAC_AudioControlIT_IN(uint_fast8_t fill, uint8_t * buff, unsigne
 	{
 		// 4.3.2.1 Input Terminal Descriptor 
 		const uint_fast16_t wTerminalType = AUDIO_TERMINAL_RADIO_RECEIVER;
-		const uint_fast8_t bNrChannels = 1;//HARDWARE_USBD_AUDIO_IN_CHANNELS;
+		const uint_fast8_t bNrChannels = HARDWARE_USBD_AUDIO_IN_CHANNELS;
 		const uint_fast16_t wChannelConfig = bNrChannels == 1 ? 
 			AUDIO_CHANNEL_M : // Mono
 			(AUDIO_CHANNEL_L | AUDIO_CHANNEL_R);	// Left Front & Right Front
@@ -317,7 +317,7 @@ static unsigned UAC_AudioControlIT_INRTS(uint_fast8_t fill, uint8_t * buff, unsi
 	{
 		// 4.3.2.1 Input Terminal Descriptor 
 		const uint_fast16_t wTerminalType = AUDIO_TERMINAL_RADIO_RECEIVER;
-		const uint_fast8_t bNrChannels = 1;//HARDWARE_USBD_AUDIO_IN_CHANNELS_RTS; // для канала со спектром всегда стерео. но это не тут указано
+		const uint_fast8_t bNrChannels = HARDWARE_USBD_AUDIO_IN_CHANNELS_RTS; // для канала со спектром всегда стерео. но это не тут указано
 		const uint_fast16_t wChannelConfig = bNrChannels == 1 ? 
 			AUDIO_CHANNEL_M : // Mono
 			(AUDIO_CHANNEL_L | AUDIO_CHANNEL_R);	// Left Front & Right Front
@@ -358,7 +358,7 @@ static unsigned UAC_AudioControlIT_OUT(
 	{
 		// 4.3.2.1 Input Terminal Descriptor 
 		const uint_fast16_t wTerminalType = AUDIO_TERMINAL_USB_STREAMING;
-		const uint_fast8_t bNrChannels = 1;//HARDWARE_USBD_AUDIO_OUT_CHANNELS;
+		const uint_fast8_t bNrChannels = HARDWARE_USBD_AUDIO_OUT_CHANNELS;
 		const uint_fast16_t wChannelConfig = bNrChannels == 1 ? 
 			AUDIO_CHANNEL_M : // Mono
 			(AUDIO_CHANNEL_L | AUDIO_CHANNEL_R);	// Left Front & Right Front
@@ -528,7 +528,7 @@ static unsigned UAC_AudioControlOT_OUT(
 	return length;
 }
 
-#define WITHUSENOFU 1	// 1 - без использования Feature Unit, 0 - с использованием, игнорирование управления громкостью
+#define WITHUSENOFU 0	// 1 - без использования Feature Unit, 0 - с использованием, игнорирование управления громкостью
 
 // Заполнение схемы ввода звука
 // IN data flow
