@@ -2974,6 +2974,7 @@ static USBALIGN_BEGIN uint8_t uacoutbuff1 [VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT] USB
 
 // USB AUDIO
 // DMA по приему USB0 DMA0 - обработчик прерывани€
+// –аботает на ARM_SYSTEM_PRIORITY
 
 static RAMFUNC_NONILINE void r7s721_usb0_dma0_dmarx_handler(void)
 {
@@ -2983,15 +2984,13 @@ static RAMFUNC_NONILINE void r7s721_usb0_dma0_dmarx_handler(void)
 	// 0: Next0 Register Set
 	// 1: Next1 Register Set
 	const uint_fast8_t b = (DMAC13.CHSTAT_n & DMAC13_CHSTAT_n_SR) != 0;	// SR
-	if (b != 0)
+	if (b == 0)
 	{
-		arm_hardware_flush_invalidate((uintptr_t) uacoutbuff0, VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT);
 		uacout_buffer_save(uacoutbuff0, VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT);
 		arm_hardware_flush_invalidate((uintptr_t) uacoutbuff0, VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT);
 	}
 	else
 	{
-		arm_hardware_flush_invalidate((uintptr_t) uacoutbuff1, VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT);
 		uacout_buffer_save(uacoutbuff1, VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT);
 		arm_hardware_flush_invalidate((uintptr_t) uacoutbuff1, VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT);
 	}
@@ -3002,6 +3001,9 @@ static RAMFUNC_NONILINE void r7s721_usb0_dma0_dmarx_handler(void)
 
 static void r7s721_usb0_dma0_dmarx_initialize(void)
 {
+	arm_hardware_flush_invalidate((uintptr_t) uacoutbuff0, VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT);
+	arm_hardware_flush_invalidate((uintptr_t) uacoutbuff1, VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT);
+
 	const uint_fast8_t id = 13;		// 13: DMAC13
 	// DMAC13
 	/* Set Source Start Address */
@@ -3009,11 +3011,10 @@ static void r7s721_usb0_dma0_dmarx_initialize(void)
     DMAC13.N0SA_n = (uint32_t) & USB200.D0FIFO.UINT32;	// Fixed source address
     DMAC13.N1SA_n = (uint32_t) & USB200.D0FIFO.UINT32;	// Fixed source address
 
-	arm_hardware_flush_invalidate((uintptr_t) uacoutbuff0, VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT);
-	arm_hardware_flush_invalidate((uintptr_t) uacoutbuff1, VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT);
-
+	/* Set Destination Start Address */
 	DMAC13.N0DA_n = (uintptr_t) uacoutbuff0;
 	DMAC13.N1DA_n = (uintptr_t) uacoutbuff1;
+
     /* Set Transfer Size */
     DMAC13.N0TB_n = VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT;	// размер в байтах
     DMAC13.N1TB_n = VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT;	// размер в байтах
