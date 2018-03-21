@@ -18,9 +18,6 @@
 
 static uint_fast8_t notseq;
 
-#define USBALIGN_BEGIN __attribute__ ((aligned (32)))
-#define USBALIGN_END /* nothing */
-
 #include "usb200.h"
 #include "usbch9.h"
 

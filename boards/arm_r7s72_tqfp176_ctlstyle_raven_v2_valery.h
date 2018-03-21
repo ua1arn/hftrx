@@ -182,6 +182,10 @@
 	//#define WITHTXDACFULL	1		/* полное использование разрядности ЦАП */
 
 	#if 0
+		#define WITHUSBHEADSET 1	/* трансивер работает USB гарнитурой для компютера - режим тестирования */
+		#define WITHBBOX	1	// Black Box mode - устройство без органов управления
+		#define	WITHBBOXMIKESRC	BOARD_TXAUDIO_USB
+	#elif 0
 		#define WITHBBOX	1	// Black Box mode - устройство без органов управления
 		#define	WITHBBOXFREQ	26985000L		// частота после включения
 		//#define	WITHBBOXFREQ	(26985000L - 260)		// частота после включения - 135 коррекция частоты платы с  122.88 для попадания в приём платы с 100 МГц генератором без коррекции

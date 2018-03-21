@@ -528,7 +528,7 @@ static unsigned UAC_AudioControlOT_OUT(
 	return length;
 }
 
-#define WITHUSENOFU 1	// без использования Feature Unit
+#define WITHUSENOFU 1	// 1 - без использования Feature Unit, 0 - с использованием, игнорирование управления громкостью
 
 // Заполнение схемы ввода звука
 // IN data flow

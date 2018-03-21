@@ -1871,7 +1871,7 @@ static uint_fast16_t ulmin16(uint_fast16_t a, uint_fast16_t b)
 	return a < b ? a : b;
 }
 
-static uintptr_t uacoutaddr;	// address of VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT bytes
+static uintptr_t uacoutaddr;	// address of DMABUFFSIZE16 * sizeof (uint16_t) bytes
 static uint_fast16_t uacoutbufflevel;	// количество байтовЮ на которые заполнен буфер
 
 /* вызывается при запрещённых прерываниях. */
@@ -1881,13 +1881,13 @@ void uacout_buffer_initialize(void)
 	uacoutbufflevel = 0;
 }
 
-/* вызыватся из не-realtime функции обработчика прерывания */
+/* вызыватся из ARM_SYSTEM_PRIORITY функции обработчика прерывания */
 void uacout_buffer_start(void)
 {
 	if (uacoutaddr)
 		TP();
 }
-/* вызыватся из не-realtime функции обработчика прерывания */
+/* вызыватся из ARM_SYSTEM_PRIORITY функции обработчика прерывания */
 void uacout_buffer_stop(void)
 {
 	if (uacoutaddr != 0)

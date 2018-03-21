@@ -410,4 +410,59 @@ void uacout_buffer_stop(void);
 void uacout_buffer_save(const uint8_t * buff, uint_fast16_t size);
 
 
+#define USBALIGN_BEGIN __attribute__ ((aligned (32)))
+#define USBALIGN_END /* nothing */
+
+#if WITHRTS96
+
+	// stereo, 24 bit samples
+	#define HARDWARE_USBD_AUDIO_IN_SAMPLEBITS_RTS96		24
+	#define HARDWARE_USBD_AUDIO_IN_CHANNELS_RTS		2
+	#define VIRTUAL_AUDIO_PORT_DATA_SIZE_IN_RTS96		(DMABUFFSIZE96RTS * sizeof (uint8_t))
+
+	#define HSINTERVAL_RTS96 4	// endpoint descriptor parameters
+	#define FSINTERVAL_RTS96 1
+
+#endif /* WITHRTS96 */
+#if WITHRTS192
+
+	// ѕо каналу real-time спектра стерео, 32 бит, 192 к√ц - 288*2*4 = 2304 байта
+	// stereo, 32 bit samples
+	#define HARDWARE_USBD_AUDIO_IN_SAMPLEBITS_RTS192	32
+	#define HARDWARE_USBD_AUDIO_IN_CHANNELS_RTS		2
+	#define VIRTUAL_AUDIO_PORT_DATA_SIZE_IN_RTS192		(DMABUFFSIZE192RTS * sizeof (int8_t))
+
+	#define HSINTERVAL_RTS192 3	// 500 us
+	#define FSINTERVAL_RTS192 1
+
+#endif /* WITHRTS192 */
+
+// stereo, 16 bit samples
+// ѕо звуковому каналу передаетс€ стерео, 16 бит, 48 к√ц - 288 байт размер данных в ендпонтт
+#define HARDWARE_USBD_AUDIO_IN_SAMPLEBITS_AUDIO48	16
+#define HARDWARE_USBD_AUDIO_IN_CHANNELS_AUDIO48		2
+#define VIRTUAL_AUDIO_PORT_DATA_SIZE_IN_AUDIO48		(DMABUFFSIZE16 * sizeof (uint16_t))
+
+#define HSINTERVAL_AUDIO48 4	// endpoint descriptor parameters - дл€ обеспечсени€ 1 к√ц периода
+#define FSINTERVAL_AUDIO48 1
+
+#define HARDWARE_USBD_AUDIO_OUT_SAMPLEBITS	16
+#if WITHUABUACOUTAUDIO48MONO
+	#define HARDWARE_USBD_AUDIO_OUT_CHANNELS	1
+#else /* WITHUABUACOUTAUDIO48MONO */
+	#define HARDWARE_USBD_AUDIO_OUT_CHANNELS	2
+#endif /* WITHUABUACOUTAUDIO48MONO */
+
+#if CPUSTYLE_R7S721
+	// используютс€ буферы аудиосистемы
+	#define VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT		(DMABUFFSIZE16 * sizeof (uint16_t))
+#else /* CPUSTYLE_R7S721 */
+	// используютс€ свои буферы
+	#define VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT	( \
+		((ARMI2SRATE100 + 99) / 100000) * ((HARDWARE_USBD_AUDIO_OUT_SAMPLEBITS * HARDWARE_USBD_AUDIO_OUT_CHANNELS + 7) / 8) \
+	)
+#endif /* CPUSTYLE_R7S721 */
+
+#define HARDWARE_USBD_AUDIO_IN_CHANNELS	2	/* дл€ всех каналов в IN направлении */
+
 #endif /* AUDIO_H_INCLUDED */
