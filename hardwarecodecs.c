@@ -1958,7 +1958,7 @@ enum
 
 static RAMFUNC_NONILINE void r7s721_ssif0_rxdma(void)
 {
-	DMAC0.CHCFG_n |= (1U << DMAC0_CHCFG_n_REN_SHIFT);	// REN bit
+	DMAC0.CHCFG_n |= DMAC0_CHCFG_n_REN;	// REN bit
 	// SR (bt 7)
 	// Indicates the register set currently selected in register mode.
 	// 0: Next0 Register Set
@@ -1982,7 +1982,7 @@ static RAMFUNC_NONILINE void r7s721_ssif0_rxdma(void)
 
 static void r7s721_ssif0_txdma(void)
 {
-	DMAC1.CHCFG_n |= (1U << DMAC1_CHCFG_n_REN_SHIFT);	// REN bit
+	DMAC1.CHCFG_n |= DMAC1_CHCFG_n_REN;	// REN bit
 	// SR (bt 7)
 	// Indicates the register set currently selected in register mode.
 	// 0: Next0 Register Set
@@ -2224,7 +2224,7 @@ static const codechw_t audiocodechw =
 static void r7s721_ssif1_txdma(void)
 {
 	//dbg_putchar('t');
-	DMAC3.CHCFG_n |= (1U << DMAC3_CHCFG_n_REN_SHIFT);	// REN bit
+	DMAC3.CHCFG_n |= DMAC3_CHCFG_n_REN;	// REN bit
 	// SR (bt 7)
 	// Indicates the register set currently selected in register mode.
 	// 0: Next0 Register Set
@@ -2248,7 +2248,7 @@ static void r7s721_ssif1_txdma(void)
 
 static RAMFUNC_NONILINE void r7s721_ssif1_rxdma(void)
 {
-	DMAC2.CHCFG_n |= (1U << DMAC2_CHCFG_n_REN_SHIFT);	// REN bit
+	DMAC2.CHCFG_n |= DMAC2_CHCFG_n_REN;	// REN bit
 	// SR (bt 7)
 	// Indicates the register set currently selected in register mode.
 	// 0: Next0 Register Set
@@ -2489,7 +2489,7 @@ static const codechw_t fpgacodechw =
 
 static RAMFUNC_NONILINE void r7s721_ssif2_rxdma_handler(void)
 {
-	DMAC4.CHCFG_n |= (1U << DMAC4_CHCFG_n_REN_SHIFT);	// REN bit
+	DMAC4.CHCFG_n |= DMAC4_CHCFG_n_REN;	// REN bit
 	// SR (bt 7)
 	// Indicates the register set currently selected in register mode.
 	// 0: Next0 Register Set
@@ -2978,12 +2978,13 @@ static USBALIGN_BEGIN uint8_t uacoutbuff1 [VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT] USB
 
 static RAMFUNC_NONILINE void r7s721_usb0_dma0_dmarx_handler(void)
 {
-	DMAC13.CHCFG_n |= DMAC13_CHCFG_n_REN;	// REN bit
 	// SR (bt 7)
 	// Indicates the register set currently selected in register mode.
 	// 0: Next0 Register Set
 	// 1: Next1 Register Set
 	const uint_fast8_t b = (DMAC13.CHSTAT_n & DMAC13_CHSTAT_n_SR) != 0;	// SR
+	// Enable switch to next regidters set
+	DMAC13.CHCFG_n |= DMAC13_CHCFG_n_REN;	// REN bit
 	if (b == 0)
 	{
 		uacout_buffer_save(uacoutbuff0, VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT);
