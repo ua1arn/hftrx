@@ -4939,7 +4939,7 @@ loadsavedstate(void)
 	gusefast = loadvfy8up(RMT_USEFAST_BASE, 0, 1, gusefast);	/* переключение в режим крупного шага */
 #endif /* WITHUSEFAST */
 #if WITHUSEDUALWATCH
-	mainsubrxmode = loadvfy8up(RMT_MAINSUBRXMODE_BASE, 0, 1, MAINSUBRXMODE_COUNT - 1);	/* состояние dual watch */
+	mainsubrxmode = loadvfy8up(RMT_MAINSUBRXMODE_BASE, 0, MAINSUBRXMODE_COUNT - 1, mainsubrxmode);	/* состояние dual watch */
 #endif /* WITHUSEDUALWATCH */
 #if WITHPOWERLPHP
 	gpwr = loadvfy8up(RMT_PWR_BASE, 0, PWRMODE_COUNT - 1, gpwr);
