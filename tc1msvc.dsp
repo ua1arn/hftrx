@@ -1446,6 +1446,10 @@ SOURCE=.\boards\arm_stm32f4xx_tqfp144_ctlstyle_storch_v3.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\boards\arm_stm32f4xx_tqfp144_ctlstyle_storch_v3_hansolo.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\boards\arm_stm32f4xx_tqfp144_ctlstyle_storch_v3_headset.h
 # End Source File
 # Begin Source File
