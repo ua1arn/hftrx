@@ -2270,6 +2270,7 @@ struct nvmap
 	uint8_t	ggrpagc; // последний посещённый пункт группы
 	uint8_t	ggrpagcssb; // последний посещённый пункт группы
 	uint8_t	ggrpagccw; // последний посещённый пункт группы
+	uint8_t	ggrpagcdigi; // последний посещённый пункт группы
 	uint8_t bwsetpos [BWSETI_COUNT];	/* выбор одной из полос пропускания */
 
 	uint8_t bwpropsleft [BWPROPI_COUNT];	/* значения границ полосы пропускания */
@@ -12155,6 +12156,62 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		offsetof(struct nvmap, afsets [AGCSETI_CW].agc_t4),	/* время разряда быстрой цепи АРУ */
 		NULL,
 		& gagc_t4 [AGCSETI_CW],
+		getzerobase, /* складывается со смещением и отображается */
+	},
+#if ! WITHFLATMENU
+	{
+		"AGC DIGI", 0, 0, 0, 0,	
+		ITEM_GROUP, 
+		0, 0, 
+		offsetof(struct nvmap, ggrpagcdigi),
+		NULL,
+		NULL,
+		NULL,
+	},
+#endif /* ! WITHFLATMENU */
+	{
+		"AGC RATE", 7, 0, 0,	ISTEP1,		/* подстройка параметра АРУ через меню. */
+		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+		1, 80, 
+		offsetof(struct nvmap, afsets [AGCSETI_DIGI].agc_rate),	/* На N децибел изменения входного сигнала происходит 1 дБ выходного */
+		NULL,
+		& gagc_rate [AGCSETI_DIGI],
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	{
+		"AGC HUNG", 6, 1, 0,	ISTEP1,		/* подстройка параметра АРУ (время удержания медленной цепи) через меню. */
+		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+		0, 250, 
+		offsetof(struct nvmap, afsets [AGCSETI_DIGI].agc_thung10),	/* время удержания медленной цепи АРУ */
+		NULL,
+		& gagc_thung10 [AGCSETI_DIGI],
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	{
+		"AGC T1  ", 7, 0, 0,	ISTEP10,		/* подстройка параметра АРУ (время срабатывания медленной цепи) через меню. */
+		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+		10, 250, 
+		offsetof(struct nvmap, afsets [AGCSETI_DIGI].agc_t1),	/* время срабатывания медленной цепи АРУ */
+		NULL,
+		& gagc_t1 [AGCSETI_DIGI],
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	{
+		"AGC T2  ", 6, 1, 0,	ISTEP1,		/* подстройка параметра АРУ (время разряда медленной цепи) через меню. */
+		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+		1, 100, 
+		offsetof(struct nvmap, afsets [AGCSETI_DIGI].agc_release10),	/* время разряда медленной цепи АРУ */
+		NULL,
+		& gagc_release10 [AGCSETI_DIGI],
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	{
+		"AGC T4  ", 7, 0, 0,	ISTEP10,		/* подстройка параметра АРУ (время разряда быстрой цепи) через меню. */
+		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+		10, 250, 
+		offsetof(struct nvmap, afsets [AGCSETI_DIGI].agc_t4),	/* время разряда быстрой цепи АРУ */
+		NULL,
+		& gagc_t4 [AGCSETI_DIGI],
 		getzerobase, /* складывается со смещением и отображается */
 	},
 #endif /* WITHIF4DSP */
