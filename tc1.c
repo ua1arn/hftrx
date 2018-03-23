@@ -3447,7 +3447,7 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий клавиш - 880 Гц - 
 		9600 * 100uL,	// 9,6k baud		#22
 	};
 
-	static uint_fast8_t gmodemspeed = 7;	// индекс в таблице скоростей передачи - #5: 300 baud, #7: 600 baud, #9: 1k baud
+	static uint_fast8_t gmodemspeed = 10;	// индекс в таблице скоростей передачи - #5: 300 baud, #7: 600 baud, #9: 1k baud
 	static uint_fast8_t gmodemmode;		// применяемая модуляция
 
 	uint_fast32_t hamradio_get_modem_baudrate100(void)
@@ -5716,7 +5716,7 @@ getif6bw(
 #if WITHMODEM
 	case MODE_MODEM:
 		// для передачи берется из таблицы
-		return (uint_fast64_t) modembr2int100 [gmodemspeed] * 2 * 14 / 100 / 10;	// bw=symbol rate * 1.4
+		return (uint_fast64_t) modembr2int100 [gmodemspeed] * 28 / 100 / 10;	// bw=symbol rate * 1.4
 
 #endif /* WITHMODEM */
 

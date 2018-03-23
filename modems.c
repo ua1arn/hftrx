@@ -490,6 +490,12 @@ static void qputs(const char * s, int n)
 #define RXDECIMATEDSR100 (ARMI2SRATE100 / 6)	//1000	/* decmated sample rate: RX mode */
 
 
+enum 
+{
+	BITFILTERLENGTH = 16,	// не трогать
+	DECMAX = 48				// максимальное соотношение частоты выборок и децимированной частоты
+};
+
 static uint_fast32_t bps31_tx_bitrateFTW = 0;
 
 
@@ -552,12 +558,6 @@ static long m_DecPtr;
 static long m_DecSize;
 static unsigned short m_DecPhase;
 static unsigned short m_DecFreq;			//fraction of m_SampleRate
-
-enum 
-{
-	BITFILTERLENGTH = 16,
-	DECMAX = 48				// максимальное соотношение частоты выборок и децимированной частоты
-};
 
 static void bpsk_demod_initialize(void)
 {
@@ -758,7 +758,9 @@ void modem_set_mode(uint_fast8_t modemmode)
 void modem_initialze(void)
 {
 #if CTLREGMODE_STORCH_V4
-	arm_hardware_piof_inputs(0x00FF);
+	arm_hardware_piof_outputs(0x0002, 0x0002);
+	arm_hardware_piof_inputs(0x0001);
+	local_delay_ms(100);
 	mastermode = (GPIOF->IDR & 0x01) == 0;
 	// формирование буфера собственного адреса
 	const uint32_t * const uidbase = (const uint32_t *) UID_BASE;

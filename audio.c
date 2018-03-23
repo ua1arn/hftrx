@@ -13381,6 +13381,8 @@ void board_set_lo6(int_fast32_t f)
 /* Установка частоты среза фильтров ПЧ в алгоритме Уивера - параметр полная полоса пропускания */
 void board_set_fullbw6(int_fast16_t n)
 {
+	const int_fast16_t bw6limit = ARMSAIRATE - 2;
+	n = (n == INT16_MAX || n <= bw6limit) ? n : INT16_MAX;
 	if (glob_fullbw6 [glob_trxpath] != n)
 	{
 		glob_fullbw6 [glob_trxpath] = n;
