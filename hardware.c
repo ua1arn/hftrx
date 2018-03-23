@@ -6813,17 +6813,20 @@ lowlevel_stm32f4xx_pll_initialize(void)
 		3 * PWR_CR_VOS_0 |
 		0;
 
-	// Over Drive enable  
-	PWR->CR |= PWR_CR_ODEN;
-	__DSB();
-	while((PWR->CSR & PWR_CSR_ODRDY) == 0)
-		;
-	// Over Drive switch enabled 
-	PWR->CR |= PWR_CR_ODSWEN;
-	__DSB();
-	while((PWR->CSR & PWR_CSR_ODSWRDY) == 0)
-		;
-#endif
+	#if defined (PWR_CR_ODEN)
+		// Over Drive enable  
+		PWR->CR |= PWR_CR_ODEN;
+		__DSB();
+		while((PWR->CSR & PWR_CSR_ODRDY) == 0)
+			;
+		// Over Drive switch enabled 
+		PWR->CR |= PWR_CR_ODSWEN;
+		__DSB();
+		while((PWR->CSR & PWR_CSR_ODSWRDY) == 0)
+			;
+	#endif /* defined (PWR_CR_ODEN) */
+
+#endif /* (PWR_CR_VOS_0) */
 
 	while ((RCC->CR & RCC_CR_PLLRDY) == 0)	// пока заработает PLL
 		;

@@ -9994,11 +9994,17 @@ static int inside(int low, int val, int high)
 	return val;
 }
 
+static int_fast16_t audio_validatebw6(int_fast16_t n)
+{
+	const int_fast16_t bw6limit = ARMSAIRATE - 2;
+	return (n == INT16_MAX || n < bw6limit) ? n : INT16_MAX;
+}
+
 // Установка параметров тракта приёмника
 static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 {
 	const uint_fast8_t dspmode = glob_dspmodes [pathi];
-	const uint_fast16_t fullbw6 = glob_fullbw6 [pathi];
+	const uint_fast16_t fullbw6 = audio_validatebw6(glob_fullbw6 [pathi]);
 #if WITHDSPEXTDDC
 	#if WITHDSPLOCALFIR
 		const FLOAT_t rxfiltergain = 1;
@@ -13381,8 +13387,6 @@ void board_set_lo6(int_fast32_t f)
 /* Установка частоты среза фильтров ПЧ в алгоритме Уивера - параметр полная полоса пропускания */
 void board_set_fullbw6(int_fast16_t n)
 {
-	const int_fast16_t bw6limit = ARMSAIRATE - 2;
-	n = (n == INT16_MAX || n <= bw6limit) ? n : INT16_MAX;
 	if (glob_fullbw6 [glob_trxpath] != n)
 	{
 		glob_fullbw6 [glob_trxpath] = n;

@@ -14290,6 +14290,20 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
 
 	}
 
+#elif defined (STM32F40_41xxx)
+
+	const uint_fast32_t stm32f4xx_pllq = arm_hardware_stm32f7xx_pllq_initialize();	// Настроить выход PLLQ на 48 МГц
+	debug_printf_P(PSTR("HAL_PCD_MspInit: stm32f4xx_pllq=%lu, freq=%lu\n"), (unsigned long) stm32f4xx_pllq, PLL_FREQ / stm32f4xx_pllq);
+
+	USBD_FS_INITIALIZE();
+	RCC->AHB2ENR |= RCC_AHB2ENR_OTGFSEN;	/* USB/OTG FS  */
+	(void) RCC->AHB2ENR;
+	RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN;	/* USB/OTG FS companion - VBUS? */
+	(void) RCC->APB2ENR;
+
+	NVIC_SetPriority(OTG_FS_IRQn, ARM_SYSTEM_PRIORITY);
+	NVIC_EnableIRQ(OTG_FS_IRQn);	// OTG_FS_IRQHandler() enable
+
 #elif CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX
 
 	if (hpcd->Instance == USB_OTG_HS)
