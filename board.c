@@ -3604,10 +3604,7 @@ prog_ctrlreg(uint_fast8_t plane)
 		//xvr = 0;
 		const spitarget_t target = targetctl1;
 
-		rbtype_t rbbuff [7] = { 0 };
-
-		RBBIT(0021, xvr);				/* pin 03:индикатор передачи */
-		RBVAL(0026, glob_att, 2);			/* D7:D6: 12 dB and 6 dB attenuator control */
+		rbtype_t rbbuff [2] = { 0 };
 
 		// U12 SN74HC595PW в управлении диапазонными фильтрами приёмника
 		RBVAL(0011, bandmask, 7);		// QB..QH: band select бит выбора диапазонного фильтра передатчика
