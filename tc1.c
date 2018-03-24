@@ -983,12 +983,24 @@ struct afsetitempl
 	uint_fast8_t agc_thung10; // = 3;	// 0.1 S hung time (0.3 S recomennded).
 };
 
+#define AGC_RATE_FLAT	(UINT8_MAX - 1)
+#if CTLSTYLE_OLEG4Z_V1
+	/* во всех режимах "плоская" АРУ */
+	#define AGC_RATE_SSB	AGC_RATE_FLAT //(UINT8_MAX - 1)
+	#define AGC_RATE_DIGI	AGC_RATE_FLAT //(UINT8_MAX - 1)
+	#define AGC_RATE_DRM	AGC_RATE_FLAT //(UINT8_MAX - 1)
+#else /* CTLSTYLE_OLEG4Z_V1 */
+	#define AGC_RATE_SSB	(10)
+	#define AGC_RATE_DIGI	(3)
+	#define AGC_RATE_DRM	(20)
+#endif /* CTLSTYLE_OLEG4Z_V1 */
+
 
 static FLASHMEM const struct afsetitempl aft [AGCSETI_COUNT] =
 {
 	//AGCSETI_SSB,
 	{
-		10,		// agc_rate
+		AGC_RATE_SSB,		// agc_rate
 		120,	// agc_t1
 		5,		// agc_release10
 		50,		// agc_t4
@@ -996,7 +1008,7 @@ static FLASHMEM const struct afsetitempl aft [AGCSETI_COUNT] =
 	},
 	//AGCSETI_CW,
 	{
-		10,		// agc_rate
+		AGC_RATE_SSB,		// agc_rate
 		120,	// agc_t1
 		1,		// agc_release10
 		50,		// agc_t4
@@ -1004,7 +1016,7 @@ static FLASHMEM const struct afsetitempl aft [AGCSETI_COUNT] =
 	},
 	//AGCSETI_FLAT,
 	{
-		UINT8_MAX - 1,		// agc_rate
+		AGC_RATE_FLAT,		// agc_rate
 		120,	// agc_t1
 		1,		// agc_release10
 		50,		// agc_t4
@@ -1012,7 +1024,7 @@ static FLASHMEM const struct afsetitempl aft [AGCSETI_COUNT] =
 	},
 	//AGCSETI_DRM,
 	{
-		20,		// agc_rate
+		AGC_RATE_DRM,		// agc_rate
 		120,	// agc_t1
 		1,		// agc_release10
 		50,		// agc_t4
@@ -1020,7 +1032,7 @@ static FLASHMEM const struct afsetitempl aft [AGCSETI_COUNT] =
 	},
 	//AGCSETI_DIGI,
 	{
-		3,		// agc_rate
+		AGC_RATE_DIGI,		// agc_rate
 		120,	// agc_t1
 		1,		// agc_release10
 		50,		// agc_t4
