@@ -234,6 +234,8 @@
 	#define targetext1 SPI_CSEL2 	/* external devices control */
 	#define targetctl1 SPI_CSEL3 	/* control register */
 	#define targetnvram SPI_CSEL4  	/* serial nvram */
+	#define targetlcd targetext1
+	#define targetuc1608 targetext1
 
 	/* коды фильтров второй ПЧ, выдаваемые на дешифраторы */
 	#define BOARD_FILTER_0P5		BOARD_FILTERCODE_1	/* 0.5 or 0.3 kHz filter */
