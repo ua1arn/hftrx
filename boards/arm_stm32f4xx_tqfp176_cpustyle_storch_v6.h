@@ -69,11 +69,13 @@
 #define LS020_RS_INITIALIZE() \
 	do { \
 		arm_hardware_piof_outputs2m(LS020_RS, LS020_RS); \
+		arm_hardware_pioe_outputs((1U << 0), 0 * (1U << 0));		/* PE0 - enable backlight */ \
 	} while (0)
 
 #define LS020_RESET_INITIALIZE() \
 	do { \
 		arm_hardware_piof_outputs2m(LS020_RST, LS020_RST); \
+		arm_hardware_pioe_outputs((1U << 0), 0 * (1U << 0));		/* PE0 - enable backlight */ \
 	} while (0)
 
 #if LCDMODE_SPI_NA
@@ -136,6 +138,7 @@
 	#define LCD_CONTROL_INITIALIZE() \
 		do { \
 			arm_hardware_piof_outputs2m(LCD_STROBE_BIT | WRITEE_BIT | ADDRES_BIT, 0); \
+			arm_hardware_pioe_outputs((1U << 0), 0 * (1U << 0));		/* PE0 - enable backlight */ \
 		} while (0)
 	/* инициализация управляющих выходов процессора для управления HD44780 - WE=0 */
 	#define LCD_CONTROL_INITIALIZE_WEEZERO() \
