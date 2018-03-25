@@ -86,6 +86,10 @@
 #define ST7735_COLMOD  	0x3A
 #define ST7735_MADCTL	0x36
 
+#define ILI9341_VSCRDEF				0x33//Vertical Scrolling Definition
+//#define ILI9341_MAC				0x36
+#define ILI9341_VSCRSADD			0x37//Vertical Scrolling Start Address
+
 #define ST7735_IDLEOFF	0x38
 #define ST7735_IDLEON	0x39
 
