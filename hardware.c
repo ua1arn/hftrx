@@ -1010,7 +1010,8 @@ static void hardware_adc_startonescan(void);		// хотя бы один вход (s-метр) есть
 */
 static RAMFUNC void spool_elkeybundle(void)
 {
-	elkey_spool_dots();		// вызывается с периодом 1/ELKEY_DISCRETE от длительности точки
+	spool_0p128();
+	//elkey_spool_dots();		// вызывается с периодом 1/ELKEY_DISCRETE от длительности точки
 }
 
 /* 
@@ -5671,6 +5672,92 @@ void hardware_elkey_set_speed(uint_fast32_t ticksfreq)
 	#error Undefined CPUSTYLE_XXX
 #endif
 }
+
+
+void hardware_elkey_set_speed128(uint_fast32_t ticksfreq, int scale)
+{
+#if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
+
+	// Использование автоматического расчёта предделителя
+	unsigned value;
+	const uint_fast8_t prei = calcdivider(scale * calcdivround(ticksfreq), ATSAM3S_TIMER_WIDTH, ATSAM3S_TIMER_TAPS, & value, 1);
+	TC0->TC_CHANNEL [2].TC_CMR =
+		(TC0->TC_CHANNEL [2].TC_CMR & ~ TC_CMR_TCCLKS_Msk) | tc_cmr_tcclks [prei];
+	TC0->TC_CHANNEL [2].TC_RC = value;	// программирование полного периода
+
+#elif CPUSTYLE_AT91SAM7S
+
+	// Использование автоматического расчёта предделителя
+	unsigned value;
+	const uint_fast8_t prei = calcdivider(scale * calcdivround(ticksfreq), AT91SAM7_TIMER_WIDTH, AT91SAM7_TIMER_TAPS, & value, 1);
+	AT91C_BASE_TCB->TCB_TC2.TC_CMR =
+		(AT91C_BASE_TCB->TCB_TC2.TC_CMR & ~ AT91C_TC_CLKS) | tc_cmr_clks [prei];
+	AT91C_BASE_TCB->TCB_TC2.TC_RC = value;	// программирование полного периода
+
+#elif CPUSTYLE_ATMEGA
+
+	// Использование автоматического расчёта предделителя
+	unsigned value;
+	const uint_fast8_t prei = calcdivider(scale * calcdivround(ticksfreq), ATMEGA_TIMER1_WIDTH, ATMEGA_TIMER1_TAPS, & value, 1);
+	// WGM12 = WGMn2 bit in timer 1
+	// (1U << WGM12) - mode4: CTC
+	TCCR1B = (1U << WGM12) | (prei + 1);	// прескалер
+	OCR1A = value;	// делитель - программирование полного периода
+
+#elif CPUSTYLE_ATXMEGA
+
+	// Использование автоматического расчёта предделителя
+	unsigned value;
+	const uint_fast8_t prei = calcdivider(scale * calcdivround(ticksfreq), ATXMEGA_TIMER_WIDTH, ATXMEGA_TIMER_TAPS, & value, 1);
+
+	// программирование таймера
+	TCC1.CCA = value;	// timer/counter C1, compare register A, see TCC1_CCA_vect
+	TCC1.CTRLA = (prei + 1);
+	TCC1.CTRLB = (TC_WGMODE_FRQ_gc);
+	TCC1.INTCTRLB = (TC_CCAINTLVL_MED_gc);
+	// разрешение прерываний на входе в PMIC
+	PMIC.CTRL |= (PMIC_HILVLEN_bm | PMIC_MEDLVLEN_bm | PMIC_LOLVLEN_bm);
+	
+#elif CPUSTYLE_STM32H7XX
+	// TIM2 & TIM5 on CPUSTYLE_STM32F4XX have 32-bit CNT and ARR registers
+	// TIM7 located on APB1
+	// TIM7 on APB1
+	// Use basic timer
+	unsigned value;
+	const uint_fast8_t prei = calcdivider(scale * calcdivround_pclk1_timers(ticksfreq), STM32F_TIM3_TIMER_WIDTH, STM32F_TIM3_TIMER_TAPS, & value, 1);
+
+	TIM3->PSC = ((1UL << prei) - 1) & TIM_PSC_PSC;
+	TIM3->ARR = value;
+	TIM3->CR1 = TIM_CR1_CEN | TIM_CR1_ARPE; /* разрешить перезагрузку и включить таймер = перенесено в установку скорости - если счётчик успевал превысить значение ARR - считал до конца */
+
+#elif CPUSTYLE_STM32F
+	// TIM2 & TIM5 on CPUSTYLE_STM32F4XX have 32-bit CNT and ARR registers
+	// TIM7 located on APB1
+	// TIM7 on APB1
+	// Use basic timer
+	unsigned value;
+	const uint_fast8_t prei = calcdivider(scale * calcdivround_pclk2(ticksfreq), STM32F_TIM3_TIMER_WIDTH, STM32F_TIM3_TIMER_TAPS, & value, 1);
+
+	TIM3->PSC = ((1UL << prei) - 1) & TIM_PSC_PSC;
+	TIM3->ARR = value;
+	TIM3->CR1 = TIM_CR1_CEN | TIM_CR1_ARPE; /* разрешить перезагрузку и включить таймер = перенесено в установку скорости - если счётчик успевал превысить значение ARR - считал до конца */
+
+#elif CPUSTYLE_R7S721
+
+	// OSTM1
+	OSTM1.OSTMnCMP = scale * calcdivround_p0clock(ticksfreq) - 1;
+
+	OSTM1.OSTMnCTL = (OSTM1.OSTMnCTL & ~ 0x03) |
+		0 * (1U << 1) |	// Interval Timer Mode
+		1 * (1U << 0) |	// Enables the interrupts when counting starts.
+		0;
+
+#else
+	#error Undefined CPUSTYLE_XXX
+#endif
+}
+
+
 #endif /* WITHELKEY */
 
 

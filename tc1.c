@@ -14532,6 +14532,120 @@ dspcontrol_mainloop(void)
 }
 #endif /* WITHSPISLAVE */
 
+#define NFREQS 4
+// . Частота - Dial USB + 1500 Гц
+// 3. Передаем со скоростью Opera05: 0.128 s  на ВСЕХ частотах.
+//3570     CH1TST
+static const char msg1 [] = "11011010100110010101011001010101101001101010011010100110100110010110011010101010100101100110100110101001011010100110100110010110011010010110101010101001100110010110010101011010101010101001010101010101010110011010100110011010100110101010011";
+//5358    CH2TST
+static const char msg2 [] = "11011010101001011010100101100101010101101010010101010101010101101010011010101001101001010110100101010110011010100101100110011001100110101010101010011001011001011010100101011010101010100110011001100101101001011010101001101001101001011001011";
+//7037    CH3TST
+static const char msg3 [] = "11011010101001100101010110010101011001101010011010011001101010011001101010101001011010011001100110011010011010100101011001011010101001101010101010011001011010011001011001101010101010010101011010101001010110011010101010011010010110011010101";
+//10134   CH4TST
+static const char msg4 [] = "11011010101010101010010101100110100101101010011001101001011010101001011010101001100110101010011001100110011010100101010101010101011010101010101010010101010110101001011010011010101010011001011010010110100101011010101001100101010110010110011";
+//14063   CH5TST
+//static const char msg5 [] = "11011010101001010101100110100110101001101010010101100110101010011010011010101001101001101001101010101001011010100110011001100101101010100110101010010110011010100110011010011010101010011010101001011001101010011010101010010101101001101010101";
+
+static unsigned long freqs [NFREQS] = 
+{
+	(3570 * 1000uL) + 1500,
+	(5358 * 1000uL) + 1500,
+	(7037 * 1000uL) + 1500,
+	(10134 * 1000uL) + 1500,
+	//(14063 * 1000uL) + 1500,
+};
+
+static const char * const msgs [NFREQS] =
+{
+	msg1,
+	msg2,
+	msg3,
+	msg4,
+	//msg5,
+};
+
+static int getkeydn(int msg, int pos)
+{
+	return msgs [msg][pos] == '1';
+}
+
+static setmsgkeys(int pos)
+{
+	int msg;
+	for (msg = 0; msg < NFREQS; ++ msg)
+	{
+		synth_lo1_setfrequ(msg, getkeydn(msg, pos) * freqs [msg], getlo1div(gtx));
+	}
+}
+
+static volatile int flag128;
+
+void spool_0p128(void)
+{
+	flag128 = 1;
+}
+
+static int getevent128ms(void)
+{
+	disableIRQ();
+	int f = flag128;
+	flag128 = 0;
+	enableIRQ();
+	return f;
+}
+
+static void
+hamradio_mainloop_OPERA4(void)
+{
+	int msgpos;
+	int msglen = strlen(msgs [0]);
+	gtx = 0;
+	uint_fast32_t dfreq = 7000000uL;
+
+
+	updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
+	
+	synth_lo1_setfrequ(0, 0, getlo1div(gtx));
+	synth_lo1_setfrequ(1, 0, getlo1div(gtx));
+	synth_lo1_setfrequ(2, 0, getlo1div(gtx));
+	synth_lo1_setfrequ(3, 0, getlo1div(gtx));
+
+	updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
+	seq_txrequest(0, 1);	// press PTT
+	while (seq_get_txstate() == 0)
+		;
+	seq_ask_txstate(1);
+	gtx = 1;
+	updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
+
+	hardware_elkey_set_speed128(1000, 128);	// периол 0.128 
+	synth_rts1_setfreq(0, 0);
+
+	synth_lo1_setfrequ(0, 0, getlo1div(gtx));
+	synth_lo1_setfrequ(1, 0, getlo1div(gtx));
+	synth_lo1_setfrequ(2, 0, getlo1div(gtx));
+	synth_lo1_setfrequ(3, 0, getlo1div(gtx));
+
+	for (msgpos = 0;;)
+	{
+		while (getevent128ms() == 0)
+			;
+		setmsgkeys(msgpos);
+		msgpos = ((msgpos + 1) >= msglen) ? 0 : (msgpos + 1);
+		if (msgpos == 0)
+		{
+			setmsgkeys(msglen);
+			long ticks = (5L * 60 * 1000) / 128 - msglen;
+			while (ticks --)
+			{
+				while (getevent128ms() == 0)
+					;
+			}
+
+		}
+	}
+}
+
 #if CTLSTYLE_V1H
 
 static void df(
@@ -15078,6 +15192,8 @@ main(void)
 	hightests();		/* подпрограммы для тестирования аппаратуры */
 
 #if 0
+	hamradio_mainloop_OPERA4();
+#elif 0
 	siggen_mainloop();
 #elif 0
 	hamradio_mainloop_beacon();

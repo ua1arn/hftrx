@@ -130,6 +130,7 @@
 
 	#define FQMODEL_FPGA		1	// FPGA + IQ over I2S
 	#define WITHIF4DSP	1	// "Дятел"
+	#define WITHTXDACFULL	1		/* полное использование разрядности ЦАП */
 
 	#if 1
 		#define DIRECT_80M0_X1		1	/* Тактовый генератор на плате 80.0 МГц */	

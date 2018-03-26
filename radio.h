@@ -576,6 +576,7 @@ uint_fast8_t hardware_getshutdown(void);	/* возвращаем запрос на выключение - от
 
 void hardware_elkey_timer_initialize(void);
 void hardware_elkey_set_speed(uint_fast32_t ticksfreq);
+void hardware_elkey_set_speed128(uint_fast32_t ticksfreq, int scale);
 void hardware_elkey_ports_initialize(void); // Инициализация входов электронного ключа, входа CAT_DTR
 void hardware_ptt_port_initialize(void);	// Инициализация входа PTT, входа CAT_RTS
 
@@ -588,6 +589,7 @@ void dsp_txpath_set(portholder_t txpathstate);
 
 /* сиквенсор приём-передача - и по таймерным и по 1/ELKEY_DISCRETE точки */
 void elkey_spool_dots(void);	/* электронный ключ - вызывается с периодом 1/ELKEY_DISCRETE от длительности точки. */
+void spool_0p128(void);	// OPERA support
 /* Коды описывающие преобразования спектра в тракте */
 #define LOCODE_UPPER	0	/* При преобразовании на этом гетеродине происходит инверсия спектра */
 #define LOCODE_LOWER	1	/* При преобразовании на этом гетеродине нет инверсии спектра */
