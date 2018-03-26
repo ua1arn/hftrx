@@ -245,18 +245,6 @@ static void synth_integer1_setfreq(
 }
 #endif
 
-static void synth_direct1_setfreq_sub(
-	uint_fast32_t f,	/* частота, которую хотим получить на выходе DDS */
-	uint_fast8_t od,	/* делитель перед подачей на смеситель (1, 2, 4, 8...) */
-	uint_fast8_t om		/* умножитель перед подачей на смеситель (1, 2, 4, 8...) */
-	)
-{
-#if defined(DDS1_TYPE)
-	const ftw_t ph1 = freq2ftw(f, dds1refdiv * od, dds1ref * (uint_fast64_t) om);    /* преобразование требуемой частоты в фазу */
-	prog_dds1_ftw_sub(& ph1);
-#endif
-}
-
 #elif LO1MODE_FIXSCALE
 
 /* 	DDS выдает частоту сравнения для фазового детектора, 
@@ -374,14 +362,20 @@ static void synth_direct1_setfreq(
 	//debug_printf_P(PSTR("synth_direct1_setfreq: pathi=%u, freq=%lu\n"), pathi, f);
 #if defined(DDS1_TYPE)
 	const ftw_t ph1 = freq2ftw(f, dds1refdiv * od, dds1ref * (uint_fast64_t) om);    /* преобразование требуемой частоты в фазу */
-	if (pathi != 0)
+	switch (pathi)
 	{
-		prog_dds1_ftw_sub(& ph1);
-	}
-	else
-	{
-		//prog_dds1_ftw_sub(& ph1);
+	case 0:
 		prog_dds1_ftw(& ph1);
+		break;
+	case 1:
+		prog_dds1_ftw_sub(& ph1);
+		break;
+	case 2:
+		prog_dds1_ftw_sub3(& ph1);
+		break;
+	case 3:
+		prog_dds1_ftw_sub4(& ph1);
+		break;
 	}
 #endif
 }

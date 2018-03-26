@@ -24,6 +24,8 @@ uint_fast32_t getvcoranges(uint_fast8_t vco, uint_fast8_t top);	/* функция для н
 
 void prog_dds1_ftw(const ftw_t * value);
 void prog_dds1_ftw_sub(const ftw_t * value);
+void prog_dds1_ftw_sub3(const ftw_t * value);
+void prog_dds1_ftw_sub4(const ftw_t * value);
 void prog_dds1_ftw_noioupdate(const ftw_t * value);
 void prog_dds2_ftw(const ftw_t * value);
 void prog_dds3_ftw(const ftw_t * value);

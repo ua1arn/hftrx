@@ -5083,6 +5083,26 @@ prog_dds1_ftw_sub(const ftw_t * value)
 #endif
 }
 
+// interface functiom
+void 
+prog_dds1_ftw_sub3(const ftw_t * value)
+{
+#if (DDS1_TYPE == DDS_TYPE_FPGAV1)
+	prog_fpga_freq3(targetfpga1, value);
+	prog_pulse_ioupdate();
+#endif
+}
+
+// interface functiom
+void 
+prog_dds1_ftw_sub4(const ftw_t * value)
+{
+#if (DDS1_TYPE == DDS_TYPE_FPGAV1)
+	prog_fpga_freq4(targetfpga1, value);
+	prog_pulse_ioupdate();
+#endif
+}
+
 void 
 prog_dds1_ftw(const ftw_t * value)
 {

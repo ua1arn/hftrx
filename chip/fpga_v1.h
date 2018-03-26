@@ -15,6 +15,8 @@ extern const phase_t phase_0;
 #define FPGA_DECODE_NCO2	(1u << 2)
 #define FPGA_DECODE_NCORTS	(1u << 3)
 #define FPGA_DECODE_FQMETER	(0)
+#define FPGA_DECODE_NCO3	(1u << 4)
+#define FPGA_DECODE_NCO4	(1u << 5)
 
 
 /* programming FPGA SPI registers */
@@ -73,7 +75,6 @@ static uint_fast32_t prog_fpga_getfqmeter(
 
 #endif /* WITHFQMETER */
 
-
 static void prog_fpga_freq2(
 	spitarget_t target,		/* addressing to chip */
 	const phase_t * val		/* FTW parameter for NCO */
@@ -88,6 +89,54 @@ static void prog_fpga_freq2(
 	rbtype_t rbbuff [5] = { 0 };	
 
 	RBVAL8(040, FPGA_DECODE_NCO2);
+	RBVAL8(030, v32 >> 24);
+	RBVAL8(020, v32 >> 16);
+	RBVAL8(010, v32 >> 8);
+	RBVAL8(000, v32 >> 0);
+
+	spi_select2(target, CTLREG_SPIMODE, SPIC_SPEEDUFAST);
+	prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
+	spi_unselect(target);
+}
+
+static void prog_fpga_freq3(
+	spitarget_t target,		/* addressing to chip */
+	const phase_t * val		/* FTW parameter for NCO */
+	)
+{
+#if FTW_RESOLUTION >= 32
+	const uint_fast32_t v32 = (* val) >> (FTW_RESOLUTION - 32);
+#else
+	const uint_fast32_t v32 = (* val) << (32 - FTW_RESOLUTION);
+#endif
+
+	rbtype_t rbbuff [5] = { 0 };	
+
+	RBVAL8(040, FPGA_DECODE_NCO3);
+	RBVAL8(030, v32 >> 24);
+	RBVAL8(020, v32 >> 16);
+	RBVAL8(010, v32 >> 8);
+	RBVAL8(000, v32 >> 0);
+
+	spi_select2(target, CTLREG_SPIMODE, SPIC_SPEEDUFAST);
+	prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
+	spi_unselect(target);
+}
+
+static void prog_fpga_freq4(
+	spitarget_t target,		/* addressing to chip */
+	const phase_t * val		/* FTW parameter for NCO */
+	)
+{
+#if FTW_RESOLUTION >= 32
+	const uint_fast32_t v32 = (* val) >> (FTW_RESOLUTION - 32);
+#else
+	const uint_fast32_t v32 = (* val) << (32 - FTW_RESOLUTION);
+#endif
+
+	rbtype_t rbbuff [5] = { 0 };	
+
+	RBVAL8(040, FPGA_DECODE_NCO4);
 	RBVAL8(030, v32 >> 24);
 	RBVAL8(020, v32 >> 16);
 	RBVAL8(010, v32 >> 8);
