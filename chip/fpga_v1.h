@@ -21,9 +21,10 @@ extern const phase_t phase_0;
 
 /* programming FPGA SPI registers */
 
-static void prog_fpga_freq1(
+static void prog_fpga_freqX(
 	spitarget_t target,		/* addressing to chip */
-	const phase_t * val		/* FTW parameter for NCO */
+	const phase_t * val,		/* FTW parameter for NCO */
+	uint_fast8_t addr
 	)
 {
 #if FTW_RESOLUTION >= 32
@@ -34,7 +35,7 @@ static void prog_fpga_freq1(
 
 	rbtype_t rbbuff [5] = { 0 };	
 
-	RBVAL8(040, FPGA_DECODE_NCO1);
+	RBVAL8(040, addr);
 	RBVAL8(030, v32 >> 24);
 	RBVAL8(020, v32 >> 16);
 	RBVAL8(010, v32 >> 8);
@@ -45,58 +46,20 @@ static void prog_fpga_freq1(
 	spi_unselect(target);
 }
 
-#if WITHFQMETER
-
-static uint_fast32_t prog_fpga_getfqmeter(
-	spitarget_t target		/* addressing to chip */
+static void prog_fpga_freq1(
+	spitarget_t target,		/* addressing to chip */
+	const phase_t * val		/* FTW parameter for NCO */
 	)
 {
-	uint_fast8_t v0, v1, v2, v3;
-	uint_fast8_t pps;
-
-	spi_select2(target, CTLREG_SPIMODE, SPIC_SPEEDUFAST);	// В FPGA регистр тактируется не в прямую
-
-	v0 = spi_read_byte(target, 0x00);
-	v1 = spi_read_byte(target, 0x00);
-	v2 = spi_read_byte(target, 0x00);
-	v3 = spi_read_byte(target, 0x00);
-	pps = spi_read_byte(target, FPGA_DECODE_FQMETER);		// состояние входа PPS
-
-	spi_unselect(target);
-
-	(void) pps;
-	return 
-		(uint_fast32_t) v0 << 24 | 
-		(uint_fast32_t) v1 << 16 | 
-		(uint_fast32_t) v2 << 8 | 
-		(uint_fast32_t) v3 << 0 | 
-		0;
+	prog_fpga_freqX(target, val, FPGA_DECODE_NCO1);
 }
-
-#endif /* WITHFQMETER */
 
 static void prog_fpga_freq2(
 	spitarget_t target,		/* addressing to chip */
 	const phase_t * val		/* FTW parameter for NCO */
 	)
 {
-#if FTW_RESOLUTION >= 32
-	const uint_fast32_t v32 = (* val) >> (FTW_RESOLUTION - 32);
-#else
-	const uint_fast32_t v32 = (* val) << (32 - FTW_RESOLUTION);
-#endif
-
-	rbtype_t rbbuff [5] = { 0 };	
-
-	RBVAL8(040, FPGA_DECODE_NCO2);
-	RBVAL8(030, v32 >> 24);
-	RBVAL8(020, v32 >> 16);
-	RBVAL8(010, v32 >> 8);
-	RBVAL8(000, v32 >> 0);
-
-	spi_select2(target, CTLREG_SPIMODE, SPIC_SPEEDUFAST);
-	prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-	spi_unselect(target);
+	prog_fpga_freqX(target, val, FPGA_DECODE_NCO2);
 }
 
 static void prog_fpga_freq3(
@@ -104,23 +67,7 @@ static void prog_fpga_freq3(
 	const phase_t * val		/* FTW parameter for NCO */
 	)
 {
-#if FTW_RESOLUTION >= 32
-	const uint_fast32_t v32 = (* val) >> (FTW_RESOLUTION - 32);
-#else
-	const uint_fast32_t v32 = (* val) << (32 - FTW_RESOLUTION);
-#endif
-
-	rbtype_t rbbuff [5] = { 0 };	
-
-	RBVAL8(040, FPGA_DECODE_NCO3);
-	RBVAL8(030, v32 >> 24);
-	RBVAL8(020, v32 >> 16);
-	RBVAL8(010, v32 >> 8);
-	RBVAL8(000, v32 >> 0);
-
-	spi_select2(target, CTLREG_SPIMODE, SPIC_SPEEDUFAST);
-	prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-	spi_unselect(target);
+	prog_fpga_freqX(target, val, FPGA_DECODE_NCO3);
 }
 
 static void prog_fpga_freq4(
@@ -128,23 +75,7 @@ static void prog_fpga_freq4(
 	const phase_t * val		/* FTW parameter for NCO */
 	)
 {
-#if FTW_RESOLUTION >= 32
-	const uint_fast32_t v32 = (* val) >> (FTW_RESOLUTION - 32);
-#else
-	const uint_fast32_t v32 = (* val) << (32 - FTW_RESOLUTION);
-#endif
-
-	rbtype_t rbbuff [5] = { 0 };	
-
-	RBVAL8(040, FPGA_DECODE_NCO4);
-	RBVAL8(030, v32 >> 24);
-	RBVAL8(020, v32 >> 16);
-	RBVAL8(010, v32 >> 8);
-	RBVAL8(000, v32 >> 0);
-
-	spi_select2(target, CTLREG_SPIMODE, SPIC_SPEEDUFAST);
-	prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-	spi_unselect(target);
+	prog_fpga_freqX(target, val, FPGA_DECODE_NCO4);
 }
 
 static void prog_fpga_freq1_rts(
@@ -152,23 +83,7 @@ static void prog_fpga_freq1_rts(
 	const phase_t * val		/* FTW parameter for NCO */
 	)
 {
-#if FTW_RESOLUTION >= 32
-	const uint_fast32_t v32 = (* val) >> (FTW_RESOLUTION - 32);
-#else
-	const uint_fast32_t v32 = (* val) << (32 - FTW_RESOLUTION);
-#endif
-
-	rbtype_t rbbuff [5] = { 0 };	
-
-	RBVAL8(040, FPGA_DECODE_NCORTS);
-	RBVAL8(030, v32 >> 24);
-	RBVAL8(020, v32 >> 16);
-	RBVAL8(010, v32 >> 8);
-	RBVAL8(000, v32 >> 0);
-
-	spi_select2(target, CTLREG_SPIMODE, SPIC_SPEEDUFAST);
-	prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-	spi_unselect(target);
+	prog_fpga_freqX(target, val, FPGA_DECODE_NCORTS);
 }
 
 
@@ -204,6 +119,38 @@ prog_fpga_ctrlreg(
 	prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 	spi_unselect(target);
 }
+
+
+#if WITHFQMETER
+
+static uint_fast32_t prog_fpga_getfqmeter(
+	spitarget_t target		/* addressing to chip */
+	)
+{
+	uint_fast8_t v0, v1, v2, v3;
+	uint_fast8_t pps;
+
+	spi_select2(target, CTLREG_SPIMODE, SPIC_SPEEDUFAST);	// В FPGA регистр тактируется не в прямую
+
+	v0 = spi_read_byte(target, 0x00);
+	v1 = spi_read_byte(target, 0x00);
+	v2 = spi_read_byte(target, 0x00);
+	v3 = spi_read_byte(target, 0x00);
+	pps = spi_read_byte(target, FPGA_DECODE_FQMETER);		// состояние входа PPS
+
+	spi_unselect(target);
+
+	(void) pps;
+	return 
+		(uint_fast32_t) v0 << 24 | 
+		(uint_fast32_t) v1 << 16 | 
+		(uint_fast32_t) v2 << 8 | 
+		(uint_fast32_t) v3 << 0 | 
+		0;
+}
+
+#endif /* WITHFQMETER */
+
 
 static void prog_fpga_initialize(
 	spitarget_t target		/* addressing to chip */
