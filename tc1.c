@@ -14532,6 +14532,8 @@ dspcontrol_mainloop(void)
 }
 #endif /* WITHSPISLAVE */
 
+#if WITHOPERA4BEACON
+
 #define NFREQS 4
 // . Частота - Dial USB + 1500 Гц
 // 3. Передаем со скоростью Opera05: 0.128 s  на ВСЕХ частотах.
@@ -14645,6 +14647,8 @@ hamradio_mainloop_OPERA4(void)
 		}
 	}
 }
+
+#endif /* WITHOPERA4BEACON */
 
 #if CTLSTYLE_V1H
 
@@ -15191,7 +15195,7 @@ main(void)
 	hamradio_initialize();
 	hightests();		/* подпрограммы для тестирования аппаратуры */
 
-#if 0
+#if WITHOPERA4BEACON
 	hamradio_mainloop_OPERA4();
 #elif 0
 	siggen_mainloop();

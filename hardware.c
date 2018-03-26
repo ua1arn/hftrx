@@ -1010,8 +1010,10 @@ static void hardware_adc_startonescan(void);		// хотя бы один вход (s-метр) есть
 */
 static RAMFUNC void spool_elkeybundle(void)
 {
+#if WITHOPERA4BEACON
 	spool_0p128();
-	//elkey_spool_dots();		// вызывается с периодом 1/ELKEY_DISCRETE от длительности точки
+#endif
+	elkey_spool_dots();		// вызывается с периодом 1/ELKEY_DISCRETE от длительности точки
 }
 
 /* 
