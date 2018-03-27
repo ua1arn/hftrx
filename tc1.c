@@ -6553,7 +6553,9 @@ updateboard(
 		board_set_antenna(antmodes [gantennas [rxbi]].code [gtx]);
 	#endif /* WITHANTSELECT */
 	#if WITHELKEY
-		board_set_wpm(elkeywpm);	/* скорость электронного ключа */
+		#if ! WITHOPERA4BEACON
+			board_set_wpm(elkeywpm);	/* скорость электронного ключа */
+		#endif /* ! WITHOPERA4BEACON */
 		#if WITHVIBROPLEX
 			elkey_set_slope(elkeyslopeenable ? elkeyslope : 0);	/* скорость уменьшения длительности точки и паузы - имитация виброплекса */
 		#endif /* WITHVIBROPLEX */
@@ -14535,6 +14537,7 @@ dspcontrol_mainloop(void)
 #if WITHOPERA4BEACON
 
 #define NFREQS 4
+#define FREQTEMPO	128	// 128 ms интервал
 // . Частота - Dial USB + 1500 Гц
 // 3. Передаем со скоростью Opera05: 0.128 s  на ВСЕХ частотах.
 //3570     CH1TST
@@ -14596,48 +14599,43 @@ static int getevent128ms(void)
 	return f;
 }
 
+static void dumbtx(int tx)
+{
+	seq_txrequest(0, tx);	// press PTT
+	while (seq_get_txstate() != tx)
+		;
+	gtx = tx;
+	gdactest = tx;
+	updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
+
+	seq_ask_txstate(tx);
+
+}
+
 static void
 hamradio_mainloop_OPERA4(void)
 {
 	int msgpos;
 	int msglen = strlen(msgs [0]);
 	gtx = 0;
-	uint_fast32_t dfreq = 7000000uL;
-
 
 	updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
+	hardware_elkey_set_speed128(1000, FREQTEMPO);	// период 0.128 секунды
 	
-	synth_lo1_setfrequ(0, 0, getlo1div(gtx));
-	synth_lo1_setfrequ(1, 0, getlo1div(gtx));
-	synth_lo1_setfrequ(2, 0, getlo1div(gtx));
-	synth_lo1_setfrequ(3, 0, getlo1div(gtx));
-
-	updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
-	seq_txrequest(0, 1);	// press PTT
-	while (seq_get_txstate() == 0)
-		;
-	seq_ask_txstate(1);
-	gtx = 1;
-	updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
-
-	hardware_elkey_set_speed128(1000, 128);	// периол 0.128 
-	synth_rts1_setfreq(0, 0);
-
-	synth_lo1_setfrequ(0, 0, getlo1div(gtx));
-	synth_lo1_setfrequ(1, 0, getlo1div(gtx));
-	synth_lo1_setfrequ(2, 0, getlo1div(gtx));
-	synth_lo1_setfrequ(3, 0, getlo1div(gtx));
-
 	for (msgpos = 0;;)
 	{
 		while (getevent128ms() == 0)
 			;
+		dumbtx(1);
 		setmsgkeys(msgpos);
 		msgpos = ((msgpos + 1) >= msglen) ? 0 : (msgpos + 1);
 		if (msgpos == 0)
 		{
-			setmsgkeys(msglen);
-			long ticks = (5L * 60 * 1000) / 128 - msglen;
+			while (getevent128ms() == 0)
+				;
+			setmsgkeys(msglen);	// выключить формирование - превести на частоту 0 все каналы
+			dumbtx(0);
+			unsigned long ticks = (5uL * 60 * 1000) / FREQTEMPO - msglen - 2;
 			while (ticks --)
 			{
 				while (getevent128ms() == 0)
