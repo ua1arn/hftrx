@@ -521,10 +521,10 @@ static void DMA_SDIO_setparams(
 	SDMMC1->DCTRL |= SDMMC_DCTRL_FIFORST;
 	SDMMC1->DCTRL &= ~ SDMMC_DCTRL_FIFORST;
 
-	SDMMC1->CMD |= SDMMC_CMD_CMDTRANS;
+	//SDMMC1->CMD |= SDMMC_CMD_CMDTRANS;
 	ASSERT((SDMMC1->STA & SDMMC_STA_DPSMACT) == 0);
 
-	SDMMC1->IDMACTRL |= SDMMC_IDMA_IDMAEN;
+	//SDMMC1->IDMACTRL = SDMMC_IDMA_IDMAEN;
 	SDMMC1->IDMABASE0 = addr;
 	//SDMMC1->IDMABSIZE = (SDMMC1->IDMABSIZE & ~ (SDMMC_IDMABSIZE_IDMABNDT)) |
 	//	(((length0 * count / 32) << SDMMC_IDMABSIZE_IDMABNDT_Pos) & SDMMC_IDMABSIZE_IDMABNDT_Msk) |
@@ -677,7 +677,7 @@ static void DMA_sdio_cancel(void)
 	// в процессоре для обмена с SDIO используется выделенный блок DMA
 	SDMMC1->CMD = SDMMC_CMD_CMDSTOP;
 
-	SDMMC1->IDMACTRL &= ~ SDMMC_IDMA_IDMAEN;
+	SDMMC1->IDMACTRL = 0; //&= ~ SDMMC_IDMA_IDMAEN;
 
 #elif CPUSTYLE_STM32F7XX || CPUSTYLE_STM32F4XX
 
@@ -808,7 +808,7 @@ static void sdhost_dpsm_prepare(uint_fast8_t txmode, uint_fast32_t len, uint_fas
 	SDMMC1->DTIMER = 0x03FFFFFF;
 
 	SDMMC1->DLEN = (SDMMC1->DLEN & ~ (SDMMC_DLEN_DATALENGTH)) |
-		(len & SDMMC_DLEN_DATALENGTH) |
+		((len << SDMMC_DLEN_DATALENGTH_Pos) & SDMMC_DLEN_DATALENGTH) |
 		0;
 
 	SDMMC1->DCTRL = (SDMMC1->DCTRL & ~ (SDMMC_DCTRL_DTEN | SDMMC_DCTRL_DTDIR | SDMMC_DCTRL_DTMODE | SDMMC_DCTRL_DBLOCKSIZE | SDMMC_DCTRL_RWSTART | SDMMC_DCTRL_RWSTOP | SDMMC_DCTRL_RWMOD | SDMMC_DCTRL_SDIOEN | SDMMC_DCTRL_BOOTACKEN)) |
@@ -1066,15 +1066,15 @@ static void sdhost_short_resp2(uint_fast16_t cmd, uint_fast32_t arg, uint_fast8_
 
 	SDMMC1->ARG = arg;
 	SDMMC1->CMD = 
-		dtransfer * SDMMC_CMD_CMDTRANS |
+	//	dtransfer * SDMMC_CMD_CMDTRANS |
 		0;
 	if (dtransfer)
 	{
-		ASSERT(SDMMC1->CMD & SDMMC_CMD_CMDTRANS);
+	//	ASSERT(SDMMC1->CMD & SDMMC_CMD_CMDTRANS);
 	}
-	SDMMC1->CMD |= 
+	SDMMC1->CMD = 
 		(SDMMC_CMD_CMDINDEX & cmd) |
-		dtransfer * SDMMC_CMD_CMDTRANS |
+		//dtransfer * SDMMC_CMD_CMDTRANS |
 		(nocrc ? 2 : 1) * SDMMC_CMD_WAITRESP_0 |	// 0: no response, 1: short response, 2: short response no CRC, 3: long response
 		0 * SDMMC_CMD_WAITINT |
 		0 * SDMMC_CMD_WAITPEND |
@@ -1083,7 +1083,7 @@ static void sdhost_short_resp2(uint_fast16_t cmd, uint_fast32_t arg, uint_fast8_
 		0;
 	if (dtransfer)
 	{
-		ASSERT(SDMMC1->CMD & SDMMC_CMD_CMDTRANS);
+	//	ASSERT(SDMMC1->CMD & SDMMC_CMD_CMDTRANS);
 	}
 
 #elif CPUSTYLE_STM32F7XX
@@ -1390,7 +1390,7 @@ static uint_fast8_t sdhost_get_resp(void)
 	}
 	if (ec != 0)
 	{
-		debug_printf_P(PSTR("sdhost_get_resp error, STA=%08lX\n"), SDMMC1->STA);
+		debug_printf_P(PSTR("sdhost_get_resp error, STA=%08lX, DCOUNT=%08lX\n"), SDMMC1->STA, SDMMC1->DCOUNT & SDMMC_DCOUNT_DATACOUNT);
 	}
 	SDMMC1->ICR = SDMMC_ICR_CMDRENDC;
 	// Если была ошибка CRC при приёме ответа - сбросить её
@@ -1399,6 +1399,10 @@ static uint_fast8_t sdhost_get_resp(void)
 	// Если была ошибка таймаута при приёме ответа - сбросить её
 	if ((SDMMC1->STA & SDMMC_STA_CTIMEOUT) != 0)
 		SDMMC1->ICR = SDMMC_ICR_CTIMEOUTC;
+#if defined (SDMMC_STA_DTIMEOUT)
+	if ((SDMMC1->STA & SDMMC_STA_DTIMEOUT) != 0)
+		SDMMC1->ICR = SDMMC_ICR_DTIMEOUTC;
+#endif /* defined (SDMMC_STA_DTIMEOUT) */
 
 	SDMMC1->ICR = SDIO_STATIC_FLAGS;
 	return ec;

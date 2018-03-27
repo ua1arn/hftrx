@@ -5865,14 +5865,14 @@ static void board_fpga_loader_PS(void)
 		#include "rbf/rbfimage_v7_1ch.h"	//
 	//#elif CTLSTYLE_STORCH_V4 && (DDS1_CLK_MUL == 1)	// modem v2
 	//	#include "rbf/rbfimage_v7_2ch.h"	// same as CTLSTYLE_RAVENDSP_V7
-	#elif CTLSTYLE_STORCH_V5 && ! WITHUSEDUALWATCH && (DDS1_CLK_MUL == 1)
+	#elif CTLSTYLE_STORCH_V5 && ! WITHUSEDUALWATCH && (DDS1_CLK_MUL == 1)		// mini
 		#include "rbf/rbfimage_v7_1ch.h"	//
-	#elif CTLSTYLE_STORCH_V5 && (DDS1_CLK_MUL == 1)
-		#include "rbf/rbfimage_v7_2ch.h"	// same as CTLSTYLE_RAVENDSP_V7
-	#elif CTLSTYLE_STORCH_V6 && ! WITHUSEDUALWATCH && (DDS1_CLK_MUL == 1)
+	#elif CTLSTYLE_STORCH_V5 && (DDS1_CLK_MUL == 1)		// mini
+		#include "rbf/rbfimage_v7a_2ch.h"	// same as CTLSTYLE_RAVENDSP_V7
+	#elif CTLSTYLE_STORCH_V6 && ! WITHUSEDUALWATCH && (DDS1_CLK_MUL == 1)		// mini
 		#include "rbf/rbfimage_v7_1ch.h"	//
-	#elif CTLSTYLE_STORCH_V6 && (DDS1_CLK_MUL == 1)
-		#include "rbf/rbfimage_v7_2ch.h"	// same as CTLSTYLE_RAVENDSP_V7
+	#elif CTLSTYLE_STORCH_V6 && (DDS1_CLK_MUL == 1)		// mini
+		#include "rbf/rbfimage_v7a_2ch.h"	// same as CTLSTYLE_STORCH_V6
 	#elif CTLSTYLE_OLEG4Z_V1 && (DDS1_CLK_MUL == 1)
 		#include "rbf/rbfimage_oleg4z.h"	// same as CTLSTYLE_RAVENDSP_V7, 1 RX & WFM
 	#else
