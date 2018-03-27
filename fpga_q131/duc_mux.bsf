@@ -20,9 +20,9 @@ applicable agreement for further details.
 */
 (header "symbol" (version "1.2"))
 (symbol
-	(rect 16 16 216 208)
+	(rect 16 16 216 240)
 	(text "duc_mux" (rect 5 0 56 14)(font "Arial" (font_size 8)))
-	(text "inst" (rect 8 176 25 188)(font "Arial" ))
+	(text "inst" (rect 8 208 25 220)(font "Arial" ))
 	(port
 		(pt 0 32)
 		(input)
@@ -80,6 +80,20 @@ applicable agreement for further details.
 		(line (pt 0 144)(pt 16 144))
 	)
 	(port
+		(pt 0 160)
+		(input)
+		(text "bpsk_data" (rect 0 0 59 14)(font "Arial" (font_size 8)))
+		(text "bpsk_data" (rect 21 155 80 169)(font "Arial" (font_size 8)))
+		(line (pt 0 160)(pt 16 160))
+	)
+	(port
+		(pt 0 176)
+		(input)
+		(text "bpsk_enable" (rect 0 0 71 14)(font "Arial" (font_size 8)))
+		(text "bpsk_enable" (rect 21 171 92 185)(font "Arial" (font_size 8)))
+		(line (pt 0 176)(pt 16 176))
+	)
+	(port
 		(pt 200 32)
 		(output)
 		(text "OUTI[13..0]" (rect 0 0 62 14)(font "Arial" (font_size 8)))
@@ -94,6 +108,6 @@ applicable agreement for further details.
 		(line (pt 200 48)(pt 184 48))
 	)
 	(drawing
-		(rectangle (rect 16 16 184 176))
+		(rectangle (rect 16 16 184 208))
 	)
 )

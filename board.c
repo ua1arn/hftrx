@@ -90,6 +90,7 @@ static uint_fast8_t 	glob_txgate = 1;	// разрешение драйвера и оконечного усилит
 static uint_fast8_t		glob_flt_reset_n;	// сброс фильтров в FPGA DSP
 static uint_fast8_t		glob_dactest;		/* вместо выхода интерполятора к ЦАП передатчика подключается выход NCO */
 static uint_fast8_t		glob_tx_inh_enable;	/* разрешение реакции FPGA на вход tx_inh */
+static uint_fast8_t		glob_tx_bpsk_enable;	/* разрешение прямого формирования модуляции в FPGA */
 static uint_fast8_t		glob_adcfifo;
 static uint_fast8_t		glob_xvrtr;
 static uint_fast8_t		glob_dacstraight;	// Требуется формирование кода для ЦАП в режиме беззнакового кода
@@ -4627,6 +4628,18 @@ board_set_tx_inh_enable(uint_fast8_t v)
 	if (glob_tx_inh_enable != n)
 	{
 		glob_tx_inh_enable = n;
+		board_ctlreg1changed();
+	}
+}
+
+/* разрешение прямого формирования модуляции в FPGA */
+void
+board_set_tx_bpsk_enable(uint_fast8_t v)
+{
+	uint_fast8_t n = v != 0;
+	if (glob_tx_bpsk_enable != n)
+	{
+		glob_tx_bpsk_enable = n;
 		board_ctlreg1changed();
 	}
 }

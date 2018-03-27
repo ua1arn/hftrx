@@ -3459,7 +3459,7 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий клавиш - 880 √ц - 
 		9600 * 100uL,	// 9,6k baud		#22
 	};
 
-	static uint_fast8_t gmodemspeed = 10;	// индекс в таблице скоростей передачи - #5: 300 baud, #7: 600 baud, #9: 1k baud
+	static uint_fast8_t gmodemspeed = 22;	// индекс в таблице скоростей передачи - #5: 300 baud, #7: 600 baud, #9: 1k baud
 	static uint_fast8_t gmodemmode;		// примен€ема€ модул€ци€
 
 	uint_fast32_t hamradio_get_modem_baudrate100(void)
@@ -6403,6 +6403,7 @@ updateboard(
 				board_set_dactest(gdactest);		/* вместо выхода интерпол€тора к ÷јѕ передатчика подключаетс€ выход NCO */
 				board_set_dacstraight(gdacstraight);	/* “ребуетс€ формирование кода дл€ ÷јѕ в режиме беззнакового кода */
 				board_set_tx_inh_enable(gtxinhenable);				/* разрешение реакции на вход tx_inh */
+				board_set_tx_bpsk_enable(pamodetempl->dspmode [gtx] == DSPCTL_MODE_TX_BPSK);	/* разрешение пр€мого формировани€ модул€ции в FPGA */				/* разрешение пр€мого формировани€ модул€ции в FPGA  */
 			#endif /* WITHDSPEXTDDC */
 		#else /* WITHIF4DSP */
 			board_set_if4lsb(mixXlsbs [4]);	/* дл€ пр€мого преобразовани€ - управление детектором - или выбор фильтра LSB дл€ конфигураций с фиксированным 3-м гетеродином */

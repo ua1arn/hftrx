@@ -486,15 +486,8 @@ static void qputs(const char * s, int n)
 
 // ARMI2SRATE - скорость обмена квадратурами с рпадиотрактом
 
-#define RXDECIMATEDSR (ARMI2SRATE / 6)	//1000	/* decmated sample rate: RX mode */
-#define RXDECIMATEDSR100 (ARMI2SRATE100 / 6)	//1000	/* decmated sample rate: RX mode */
-
-
-enum 
-{
-	BITFILTERLENGTH = 16,	// не трогать
-	DECMAX = 48				// максимальное соотношение частоты выборок и децимированной частоты
-};
+#define RXDECIMATEDSR (ARMI2SRATE / 1)	//1000	/* decmated sample rate: RX mode */
+#define RXDECIMATEDSR100 (ARMI2SRATE100 / 1)	//1000	/* decmated sample rate: RX mode */
 
 static uint_fast32_t bps31_tx_bitrateFTW = 0;
 
@@ -554,8 +547,6 @@ static unsigned short m_RxBitPhase;
 static unsigned short m_RxBitFreqFTW;
 
 
-static long m_DecPtr;
-static long m_DecSize;
 static unsigned short m_DecPhase;
 static unsigned short m_DecFreq;			//fraction of m_SampleRate
 
@@ -563,12 +554,11 @@ static void bpsk_demod_initialize(void)
 {
 
 	m_RxBitPhase = 0;
-	m_DecSize = (int)((ARMI2SRATE + RXDECIMATEDSR / 2) / RXDECIMATEDSR);	//number of samples in 500th of a second
 	//These are a binary fraction--the binary point is to the left of the MSB
 	m_DecFreq = (unsigned short)(0x10000 * (FLOAT_t) RXDECIMATEDSR / (FLOAT_t) ARMI2SRATE);
 
 
-	//debug_printf_P(PSTR("bpsk_demod_initialize: m_RxBitFreqFTW=%d, m_DecSize=%d, m_DecFreq=%d, m_RxBitFreqFTW=%d\n"), m_RxBitFreqFTW, m_DecSize, m_DecFreq, m_RxBitFreqFTW);
+	//debug_printf_P(PSTR("bpsk_demod_initialize: m_RxBitFreqFTW=%d, m_DecFreq=%d, m_RxBitFreqFTW=%d\n"), m_RxBitFreqFTW, m_DecFreq, m_RxBitFreqFTW);
 }
 
 // демодулятор BPSK
@@ -583,59 +573,35 @@ static void demod_bpsk2(int_fast32_t i, int_fast32_t q, int level)
 	oldq = q;
 }
 
-typedef long SAMPLEHOLDER_T;
-	//saved values for bit synchronization filter taps
-static SAMPLEHOLDER_T m_RxAmpFil[BITFILTERLENGTH];
 
-//saved state for moving averages used to get from m_SampleRate down to 500 Hz
-static SAMPLEHOLDER_T	m_IDecFil1[DECMAX];
-static SAMPLEHOLDER_T m_QDecFil1[DECMAX];
-static SAMPLEHOLDER_T m_IDecFil2[DECMAX];
-static SAMPLEHOLDER_T m_QDecFil2[DECMAX];
-static SAMPLEHOLDER_T m_QSum1;
-static SAMPLEHOLDER_T m_QSum2;
-static SAMPLEHOLDER_T m_ISum1;
-static SAMPLEHOLDER_T m_ISum2;
-
-static void ApplyFastFilter(
-				SAMPLEHOLDER_T Value,
-				SAMPLEHOLDER_T	* Sum1p,
-				SAMPLEHOLDER_T * Sum2p,
-				SAMPLEHOLDER_T *Hist1,
-				SAMPLEHOLDER_T *Hist2)
-{
-	assert(m_DecPtr < DECMAX);
-	assert(m_DecPtr < DECMAX);
-	//moving average applied twice
-	(* Sum1p) += Value - Hist1[m_DecPtr];
-	Hist1[m_DecPtr] = Value;
-	(* Sum2p) += (* Sum1p) - Hist2[m_DecPtr];
-	Hist2[m_DecPtr] = (* Sum1p);
-}
 
 
 static void demod_bpsk(int_fast32_t RxSin, int_fast32_t RxCos)
 {
-	long NextPhase;
-	//moving averages take the fast sample rate down to 500 Hz
-	ApplyFastFilter(RxCos >> 6, & m_ISum1, & m_ISum2, m_IDecFil1, m_IDecFil2);
-	ApplyFastFilter(RxSin >> 6, & m_QSum1, & m_QSum2, m_QDecFil1, m_QDecFil2);
 
-	if (++m_DecPtr >= m_DecSize)
-		m_DecPtr = 0;
-	assert(m_DecPtr < DECMAX);
+	enum 
+	{
+		BITFILTERLENGTH = 16,	// не трогать
+	};
+
+	typedef long SAMPLEHOLDER_T;
+		//saved values for bit synchronization filter taps
+	static SAMPLEHOLDER_T m_RxAmpFil [BITFILTERLENGTH];
+
+	long NextPhase;
 
 	NextPhase = (long) m_DecPhase + (long)m_DecFreq;
 	m_DecPhase = (unsigned short)NextPhase;
 	if (NextPhase > 0xFFFF)
 	{	
-		const SAMPLEHOLDER_T ISum = m_ISum2;
-		const SAMPLEHOLDER_T QSum = m_QSum2;
+		const SAMPLEHOLDER_T ISum = RxSin;
+		const SAMPLEHOLDER_T QSum = RxCos;
 
 		long NextSymPhase;	//long enough to contain the 17th bit when 16 bit adds overflow
 		int	level = 30;
 		long ampl = (ISum >> 16) * (ISum >> 16) + (QSum >> 16) * (QSum >> 16);
 
+		// логарифм по основнияю 2
 		while (ampl > 0)
 		{
 			level += 1;
@@ -644,13 +610,13 @@ static void demod_bpsk(int_fast32_t RxSin, int_fast32_t RxCos)
 
 		//Select 1 of 16
 		int BitPhaseInt = m_RxBitPhase >> 12;
-		m_RxAmpFil[BitPhaseInt] = (SAMPLEHOLDER_T)level;
+		m_RxAmpFil [BitPhaseInt] = (SAMPLEHOLDER_T)level;
 
 		int i;
 		ampl = 0;
 		for (i = 0; i < BITFILTERLENGTH/2; i += 1)
 		{
-			ampl += m_RxAmpFil[i] - m_RxAmpFil[i + (BITFILTERLENGTH/2)];
+			ampl += m_RxAmpFil[i] - m_RxAmpFil [i + (BITFILTERLENGTH/2)];
 		}
 
 		//The correction is the amplitude times a synchronization gain, which is empirical.
@@ -686,7 +652,15 @@ void modem_demod_iq(FLOAT32P_t iq)
 		break;
 	}
 }
+// Интерфейсная функция модулятора
+// Вызыается с частотой ARMI2SRATE герц
+int modem_get_tx_b(
+	uint_fast8_t suspend	// передавать модему ещё рано - не полностью завершено формирование огибающей
+	)
+{
 
+	return pbsk_get_phase(suspend);	
+}
 // Интерфейсная функция модулятора
 // Вызыается с частотой ARMI2SRATE герц
 FLOAT32P_t modem_get_tx_iq(

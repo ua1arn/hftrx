@@ -97,6 +97,7 @@ prog_fpga_ctrlreg(
 
 	RBVAL8(040, FPGA_DECODE_CTLREG);
 
+	RBBIT(17, glob_tx_bpsk_enable);			/* b16: tx_bpsk_enable - разрешение прямого формирования модуляции в FPGA */
 	RBBIT(16, glob_tx_inh_enable);			/* b16: tx_inh_enable - разрешение реакции на вход tx_inh */
 	RBBIT(15, glob_dactest);				/* b15: dactest */
 	RBBIT(14, ! glob_sleep && glob_xvrtr);	/* b14: xvrtr_enable */

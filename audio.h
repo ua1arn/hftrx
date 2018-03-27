@@ -212,6 +212,7 @@
 
 	void modem_demod_iq(FLOAT32P_t iq);
 	FLOAT32P_t modem_get_tx_iq(uint_fast8_t suspend);
+	int modem_get_tx_b(uint_fast8_t suspend);
 	uint_fast8_t getsampmlemike(INT32P_t * v);			/* получить очередной оцифрованый сэмпл с микрофона */
 
 	FLOAT_t local_log(FLOAT_t x);

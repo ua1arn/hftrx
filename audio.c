@@ -10881,6 +10881,19 @@ static RAMFUNC void processafadcsampleiq(
 	FLOAT_t vi = preparevi(vi0.IV, dspmode, ctcss);	// vi нормирован к разрядности выходного ЦАП
 	if (isdspmodetx(dspmode))
 	{
+#if WITHMODEM
+		if (dspmode == DSPCTL_MODE_TX_BPSK)
+		{
+	//#if WITHMODEMIQLOOPBACK
+	//		modem_demod_iq(vfb);	// debug loopback
+	//#endif /* WITHMODEMIQLOOPBACK */
+			const int vv = modem_get_tx_b(getTxShapeNotComplete()) ? 0 : - 1;	// txiq[63] управляет инверсией сигнала переж АЦП
+			savesampleout32stereo(vv, vv);
+			return;
+		}
+#endif /* WITHMODEM */
+
+		
 		vi = filter_fir_tx_MIKE(vi, 0);
 #if WITHDSPLOCALFIR
 		const FLOAT32P_t vfb = filter_firp_tx_SSB_IQ(baseband_modulator(vi, dspmode, shape));
