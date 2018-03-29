@@ -396,6 +396,16 @@ static void modem_placenextchartosend(uint_fast8_t page, uint_fast8_t c)
 	}
 }
 
+// call from modem_spool - timer irq handler
+static unsigned modem_getbuffsize(uint_fast8_t page)
+{
+	if (page >= TXBPSKPAGES)
+		return 0;
+	txdataholder_t * const bh = & bhs [page];
+	return bh->activetxbpsksize;
+}
+
+
 // Вызывается из обработчика - NMEA PARSER
 // Начать передачу (конец накопления дянных на передачу)
 static void modem_flushsend(
@@ -940,6 +950,8 @@ void modem_spool(void)
 			"%+d.%02d,"	// current
 			"%d,"	// mastermode
 			"%08lX%08lX%08lX,"	// uid
+			"%u,"	// buff0
+			"%u,"	// buff1
 			"%d*"),  
 			2L, 
 			(long) hamradio_get_freq_rx(), 
@@ -948,6 +960,8 @@ void modem_spool(void)
 			numamps1(drain), numamps001(drain),
 			mastermode != 0,
 			(unsigned long) uidbase [0], (unsigned long) uidbase [1], (unsigned long) uidbase [2], 
+			modem_getbuffsize(0),
+			modem_getbuffsize(1),
 			seq ++
 			);
 #else /* CTLREGMODE_STORCH_V4 */

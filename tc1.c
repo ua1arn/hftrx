@@ -2000,10 +2000,7 @@ get_band_bandset(vindex_t b)	/* b: диапазон в таблице bandsmap */
 	#if WITHMODEM
 		static const uint_fast8_t modes [][5] =
 		{
-			{ 2, SUBMODE_LSB, SUBMODE_USB, },
-			{ 2, SUBMODE_CWR, SUBMODE_CW, },
-			{ 4, SUBMODE_AM, SUBMODE_CWZ, SUBMODE_DRM, SUBMODE_BPSK, },
-			{ 3, SUBMODE_NFM, SUBMODE_DGU, SUBMODE_DGL, },
+			{ 1, SUBMODE_BPSK, },
 		};
 	#elif WITHSAM
 	static const uint_fast8_t modes [][5] =
@@ -3459,7 +3456,7 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий клавиш - 880 Гц - 
 		9600 * 100uL,	// 9,6k baud		#22
 	};
 
-	static uint_fast8_t gmodemspeed = 22;	// индекс в таблице скоростей передачи - #5: 300 baud, #7: 600 baud, #9: 1k baud
+	static uint_fast8_t gmodemspeed = 20;	// индекс в таблице скоростей передачи - #5: 300 baud, #7: 600 baud, #9: 1k baud
 	static uint_fast8_t gmodemmode;		// применяемая модуляция
 
 	uint_fast32_t hamradio_get_modem_baudrate100(void)
