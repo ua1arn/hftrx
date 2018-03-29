@@ -3534,7 +3534,8 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBVAL(0010, glob_tx ? 0 : (1U << glob_bandf), 8);		// D1: 1, D7..D1: band select бит выбора диапазонного фильтра приёмника
 
 		// DD14 STP08CP05TTR рядом с DIN8
-		RBBIT(0007, ! glob_reset_n);		// D7: NMEA reset
+		//RBBIT(0007, ! glob_reset_n);		// D7: NMEA reset
+		RBBIT(0007, glob_tx);				// D7: PTT out for UA1CEI
 		RBVAL(0005, glob_att, 2);			/* D5:D5: 12 dB and 6 dB attenuator control */
 		RBBIT(0004,  glob_bandf == 0);		/* D4: средневолновый ФНЧ - управление реле на выходе фильтров */
 		RBBIT(0003, lcdblcode & 0x02);		/* D3	- LCD backlight */
