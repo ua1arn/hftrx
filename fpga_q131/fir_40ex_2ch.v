@@ -134,7 +134,7 @@ endmodule
 // Retrieval info:      <PRIVATE name = "number_of_sets" value="1"  type="INTEGER"  enable="1" />
 // Retrieval info:      <PRIVATE name = "output_full_bit_width" value="55"  type="INTEGER"  enable="1" />
 // Retrieval info:      <PRIVATE name = "output_full_bits_right_of_binary_point" value="53"  type="INTEGER"  enable="1" />
-// Retrieval info:      <PRIVATE name = "coefficient_reload_bit_width" value="24"  type="INTEGER"  enable="1" />
+// Retrieval info:      <PRIVATE name = "coefficient_reload_bit_width" value="23"  type="INTEGER"  enable="1" />
 // Retrieval info:      <PRIVATE name = "logic_cell" value="2178"  type="INTEGER"  enable="1" />
 // Retrieval info:      <PRIVATE name = "m512" value="0"  type="INTEGER"  enable="1" />
 // Retrieval info:      <PRIVATE name = "m4k" value="0"  type="INTEGER"  enable="1" />

@@ -42,17 +42,18 @@ USE lpm.all;
 ENTITY lpm_mult_modulator IS
 	PORT
 	(
+		clken		: IN STD_LOGIC ;
 		clock		: IN STD_LOGIC ;
 		dataa		: IN STD_LOGIC_VECTOR (1 DOWNTO 0);
 		datab		: IN STD_LOGIC_VECTOR (13 DOWNTO 0);
-		result		: OUT STD_LOGIC_VECTOR (14 DOWNTO 0)
+		result		: OUT STD_LOGIC_VECTOR (15 DOWNTO 0)
 	);
 END lpm_mult_modulator;
 
 
 ARCHITECTURE SYN OF lpm_mult_modulator IS
 
-	SIGNAL sub_wire0	: STD_LOGIC_VECTOR (14 DOWNTO 0);
+	SIGNAL sub_wire0	: STD_LOGIC_VECTOR (15 DOWNTO 0);
 
 
 
@@ -68,29 +69,31 @@ ARCHITECTURE SYN OF lpm_mult_modulator IS
 	);
 	PORT (
 			clock	: IN STD_LOGIC ;
-			dataa	: IN STD_LOGIC_VECTOR (1 DOWNTO 0);
 			datab	: IN STD_LOGIC_VECTOR (13 DOWNTO 0);
-			result	: OUT STD_LOGIC_VECTOR (14 DOWNTO 0)
+			clken	: IN STD_LOGIC ;
+			dataa	: IN STD_LOGIC_VECTOR (1 DOWNTO 0);
+			result	: OUT STD_LOGIC_VECTOR (15 DOWNTO 0)
 	);
 	END COMPONENT;
 
 BEGIN
-	result    <= sub_wire0(14 DOWNTO 0);
+	result    <= sub_wire0(15 DOWNTO 0);
 
 	lpm_mult_component : lpm_mult
 	GENERIC MAP (
-		lpm_hint => "MAXIMIZE_SPEED=9",
-		lpm_pipeline => 1,
+		lpm_hint => "DEDICATED_MULTIPLIER_CIRCUITRY=YES,MAXIMIZE_SPEED=9",
+		lpm_pipeline => 2,
 		lpm_representation => "SIGNED",
 		lpm_type => "LPM_MULT",
 		lpm_widtha => 2,
 		lpm_widthb => 14,
-		lpm_widthp => 15
+		lpm_widthp => 16
 	)
 	PORT MAP (
 		clock => clock,
-		dataa => dataa,
 		datab => datab,
+		clken => clken,
+		dataa => dataa,
 		result => sub_wire0
 	);
 
@@ -101,11 +104,11 @@ END SYN;
 -- ============================================================
 -- CNX file retrieval info
 -- ============================================================
--- Retrieval info: PRIVATE: AutoSizeResult NUMERIC "0"
+-- Retrieval info: PRIVATE: AutoSizeResult NUMERIC "1"
 -- Retrieval info: PRIVATE: B_isConstant NUMERIC "0"
 -- Retrieval info: PRIVATE: ConstantB NUMERIC "0"
 -- Retrieval info: PRIVATE: INTENDED_DEVICE_FAMILY STRING "Cyclone IV E"
--- Retrieval info: PRIVATE: LPM_PIPELINE NUMERIC "1"
+-- Retrieval info: PRIVATE: LPM_PIPELINE NUMERIC "2"
 -- Retrieval info: PRIVATE: Latency NUMERIC "1"
 -- Retrieval info: PRIVATE: SYNTH_WRAPPER_GEN_POSTFIX STRING "0"
 -- Retrieval info: PRIVATE: SignedMult NUMERIC "1"
@@ -113,27 +116,29 @@ END SYN;
 -- Retrieval info: PRIVATE: ValidConstant NUMERIC "0"
 -- Retrieval info: PRIVATE: WidthA NUMERIC "2"
 -- Retrieval info: PRIVATE: WidthB NUMERIC "14"
--- Retrieval info: PRIVATE: WidthP NUMERIC "15"
+-- Retrieval info: PRIVATE: WidthP NUMERIC "16"
 -- Retrieval info: PRIVATE: aclr NUMERIC "0"
--- Retrieval info: PRIVATE: clken NUMERIC "0"
+-- Retrieval info: PRIVATE: clken NUMERIC "1"
 -- Retrieval info: PRIVATE: new_diagram STRING "1"
 -- Retrieval info: PRIVATE: optimize NUMERIC "1"
 -- Retrieval info: LIBRARY: lpm lpm.lpm_components.all
--- Retrieval info: CONSTANT: LPM_HINT STRING "MAXIMIZE_SPEED=9"
--- Retrieval info: CONSTANT: LPM_PIPELINE NUMERIC "1"
+-- Retrieval info: CONSTANT: LPM_HINT STRING "DEDICATED_MULTIPLIER_CIRCUITRY=YES,MAXIMIZE_SPEED=9"
+-- Retrieval info: CONSTANT: LPM_PIPELINE NUMERIC "2"
 -- Retrieval info: CONSTANT: LPM_REPRESENTATION STRING "SIGNED"
 -- Retrieval info: CONSTANT: LPM_TYPE STRING "LPM_MULT"
 -- Retrieval info: CONSTANT: LPM_WIDTHA NUMERIC "2"
 -- Retrieval info: CONSTANT: LPM_WIDTHB NUMERIC "14"
--- Retrieval info: CONSTANT: LPM_WIDTHP NUMERIC "15"
+-- Retrieval info: CONSTANT: LPM_WIDTHP NUMERIC "16"
+-- Retrieval info: USED_PORT: clken 0 0 0 0 INPUT NODEFVAL "clken"
 -- Retrieval info: USED_PORT: clock 0 0 0 0 INPUT NODEFVAL "clock"
 -- Retrieval info: USED_PORT: dataa 0 0 2 0 INPUT NODEFVAL "dataa[1..0]"
 -- Retrieval info: USED_PORT: datab 0 0 14 0 INPUT NODEFVAL "datab[13..0]"
--- Retrieval info: USED_PORT: result 0 0 15 0 OUTPUT NODEFVAL "result[14..0]"
+-- Retrieval info: USED_PORT: result 0 0 16 0 OUTPUT NODEFVAL "result[15..0]"
+-- Retrieval info: CONNECT: @clken 0 0 0 0 clken 0 0 0 0
 -- Retrieval info: CONNECT: @clock 0 0 0 0 clock 0 0 0 0
 -- Retrieval info: CONNECT: @dataa 0 0 2 0 dataa 0 0 2 0
 -- Retrieval info: CONNECT: @datab 0 0 14 0 datab 0 0 14 0
--- Retrieval info: CONNECT: result 0 0 15 0 @result 0 0 15 0
+-- Retrieval info: CONNECT: result 0 0 16 0 @result 0 0 16 0
 -- Retrieval info: GEN_FILE: TYPE_NORMAL lpm_mult_modulator.vhd TRUE
 -- Retrieval info: GEN_FILE: TYPE_NORMAL lpm_mult_modulator.inc FALSE
 -- Retrieval info: GEN_FILE: TYPE_NORMAL lpm_mult_modulator.cmp FALSE

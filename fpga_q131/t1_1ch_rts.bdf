@@ -3816,6 +3816,38 @@ applicable agreement for further details.
 		(rectangle (rect 16 16 184 208))
 	)
 )
+(symbol
+	(rect -2976 -976 -2912 -928)
+	(text "AND2" (rect 1 0 25 10)(font "Arial" (font_size 6)))
+	(text "inst81" (rect 3 37 32 49)(font "Arial" ))
+	(port
+		(pt 0 16)
+		(input)
+		(text "IN1" (rect 2 7 19 19)(font "Courier New" (bold))(invisible))
+		(text "IN1" (rect 2 7 19 19)(font "Courier New" (bold))(invisible))
+		(line (pt 0 16)(pt 14 16))
+	)
+	(port
+		(pt 0 32)
+		(input)
+		(text "IN2" (rect 2 23 19 35)(font "Courier New" (bold))(invisible))
+		(text "IN2" (rect 2 23 19 35)(font "Courier New" (bold))(invisible))
+		(line (pt 0 32)(pt 14 32))
+	)
+	(port
+		(pt 64 24)
+		(output)
+		(text "OUT" (rect 48 15 65 27)(font "Courier New" (bold))(invisible))
+		(text "OUT" (rect 48 15 65 27)(font "Courier New" (bold))(invisible))
+		(line (pt 42 24)(pt 64 24))
+	)
+	(drawing
+		(line (pt 14 12)(pt 30 12))
+		(line (pt 14 37)(pt 31 37))
+		(line (pt 14 12)(pt 14 37))
+		(arc (pt 31 37)(pt 30 12)(rect 18 12 43 37))
+	)
+)
 (connector
 	(pt -3024 -512)
 	(pt -3008 -512)
@@ -5487,11 +5519,6 @@ applicable agreement for further details.
 	(pt -1896 -488)
 )
 (connector
-	(text "tx_inh_h" (rect -2870 -968 -2829 -956)(font "Arial" ))
-	(pt -2872 -952)
-	(pt -2816 -952)
-)
-(connector
 	(pt -2696 -952)
 	(pt -2600 -952)
 )
@@ -5841,6 +5868,20 @@ applicable agreement for further details.
 	(text "txiq[63]" (rect -1958 -488 -1922 -476)(font "Arial" ))
 	(pt -1896 -472)
 	(pt -1960 -472)
+)
+(connector
+	(pt -2816 -952)
+	(pt -2912 -952)
+)
+(connector
+	(text "tx_inh_h" (rect -3038 -976 -2997 -964)(font "Arial" ))
+	(pt -3040 -960)
+	(pt -2976 -960)
+)
+(connector
+	(text "tx_inh_enable" (rect -3038 -960 -2971 -948)(font "Arial" ))
+	(pt -2976 -944)
+	(pt -3040 -944)
 )
 (junction (pt -3024 -696))
 (junction (pt -2384 -696))
