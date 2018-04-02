@@ -14552,9 +14552,9 @@ static const char msg4 [] = "110110101010101010100101011001101001011010100110011
 static unsigned long freqs [NFREQS] = 
 {
 	(3570 * 1000uL) + 1500,
-	(5358 * 1000uL) + 1500,
-	(7037 * 1000uL) + 1500,
-	(10134 * 1000uL) + 1500,
+	(5359 * 1000uL) + 1500,
+	(7036 * 1000uL) + 1500,
+	(10133 * 1000uL) + 1500,
 	//(14063 * 1000uL) + 1500,
 };
 
@@ -14633,7 +14633,7 @@ hamradio_mainloop_OPERA4(void)
 				;
 			setmsgkeys(msglen);	// выключить формирование - превести на частоту 0 все каналы
 			dumbtx(0);
-			unsigned long ticks = (5uL * 60 * 1000) / FREQTEMPO - msglen - 2;
+			unsigned long ticks = (2uL * 60 * 1000) / FREQTEMPO - msglen - 2;
 			while (ticks --)
 			{
 				while (getevent128ms() == 0)

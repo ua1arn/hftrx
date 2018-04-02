@@ -1,4 +1,4 @@
-/* $Id: $ */
+/* $Id$ */
 /* GENERATED FILE - DO NOT EDIT */
 /* Source file '..\fpga_q131\output_files\t1_v7_1ch.rbf' */
 static const FLASHMEMINIT uint16_t rbfimage [] =
