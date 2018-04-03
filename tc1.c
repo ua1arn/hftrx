@@ -126,7 +126,7 @@ static uint_fast8_t getbankindex_tx(uint_fast8_t tx);
 static uint_fast8_t getbankindex_ab_fordisplay(uint_fast8_t ab);
 static void updateboard(uint_fast8_t full, uint_fast8_t mute);
 static uint_fast8_t getsubmode(uint_fast8_t bi);		/* bi: vfo bank index */
-static uint_fast8_t getactualmaisubrx(void);
+static uint_fast8_t getactualmainsubrx(void);
 
 #if WITHCAT
 
@@ -4626,7 +4626,7 @@ getbankindex_ab_fordisplay(const uint_fast8_t ab)
 #if WITHUSEDUALWATCH
 
 static uint_fast8_t
-getactualmaisubrx(void)
+getactualmainsubrx(void)
 {
 #if WITHSPLIT || WITHSPLITEX
 
@@ -6587,7 +6587,7 @@ updateboard(
 		board_set_gvad605(gvad605);			/* напряжение на AD605 (управление усилением тракта ПЧ */
 		board_set_fsadcpower10(gfsadcpower10 - FSADCPOWEROFFSET10);	/*	Мощность, соответствующая full scale от IF ADC */
 		#if WITHUSEDUALWATCH
-			board_set_mainsubrxmode(getactualmaisubrx());		// Левый/правый, A - main RX, B - sub RX
+			board_set_mainsubrxmode(getactualmainsubrx());		// Левый/правый, A - main RX, B - sub RX
 		#endif /* WITHUSEDUALWATCH */
 		#if WITHUSBUAC
 			board_set_uacmike(gdatamode || getcattxdata() || txaudio == BOARD_TXAUDIO_USB);	/* на вход трансивера берутся аудиоданные с USB виртуальной платы, а не с микрофона */
@@ -8257,7 +8257,7 @@ static uint_fast8_t sendmorsepos [2];
 #if WITHCATEXT && WITHELKEY
 	static void cat_set_kyanswer(uint_fast8_t force);
 	static uint_fast8_t cathasparamerror;
-	static unsigned char morsestring [2][25];
+	static RAMNOINIT_D1 unsigned char morsestring [2][25];
 #endif
 
 static uint_fast8_t catstatein = CATSTATE_HALTED;
@@ -8340,7 +8340,7 @@ static cat_answervariable(const char * p, uint_fast8_t len)
 //#define CAT_ASKBUFF_SIZE (43 + 28)
 #define CAT_ASKBUFF_SIZE (43)
 
-static char cat_ask_buffer [CAT_ASKBUFF_SIZE];
+static RAMNOINIT_D1 char cat_ask_buffer [CAT_ASKBUFF_SIZE];
 
 static void 
 //NOINLINEAT
