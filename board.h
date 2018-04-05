@@ -19,6 +19,8 @@ void board_init_io(void);
 void board_init_chips(void);
 void board_init_chips2(void);
 uint_fast8_t boad_fpga_adcoverflow(void);	/* получения признака переполнения АЦП приёмного тракта */
+uint_fast8_t boad_mike_adcoverflow(void);	/* получения признака переполнения АЦП микрофонного тракта */
+
 
 uint_fast32_t getvcoranges(uint_fast8_t vco, uint_fast8_t top);	/* функция для настройки ГУН */
 

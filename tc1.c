@@ -8261,7 +8261,7 @@ static uint_fast8_t sendmorsepos [2];
 #if WITHCATEXT && WITHELKEY
 	static void cat_set_kyanswer(uint_fast8_t force);
 	static uint_fast8_t cathasparamerror;
-	static RAMNOINIT_D1 unsigned char morsestring [2][25];
+	static unsigned char morsestring [2][25];
 #endif
 
 static uint_fast8_t catstatein = CATSTATE_HALTED;
@@ -8344,7 +8344,7 @@ static cat_answervariable(const char * p, uint_fast8_t len)
 //#define CAT_ASKBUFF_SIZE (43 + 28)
 #define CAT_ASKBUFF_SIZE (43)
 
-static RAMNOINIT_D1 char cat_ask_buffer [CAT_ASKBUFF_SIZE];
+static char cat_ask_buffer [CAT_ASKBUFF_SIZE];
 
 static void 
 //NOINLINEAT

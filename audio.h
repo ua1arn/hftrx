@@ -131,7 +131,7 @@
 #define DMABUFFSIZE192RTS (128/*288*/ * DMABUFSTEP192RTS)
 
 #define DMABUFSTEP96RTS 6	// 6: стерео по 24 бит
-#define DMABUFFSIZE96RTS 600 //((96 + 4) * DMABUFSTEP96RTS)		// 588 - должно быть кратно 4 байтам - дл€ работы DMA в Renesas
+#define DMABUFFSIZE96RTS 588 //((96 + 4) * DMABUFSTEP96RTS)		// 588 - должно быть кратно 4 байтам - дл€ работы DMA в Renesas
 
 
 #if WITHINTEGRATEDDSP
@@ -366,6 +366,7 @@ uint_fast8_t dsp_getsmeter(uint_fast8_t * tracemax, uint_fast8_t lower, uint_fas
 uint_fast8_t dsp_getvox(void);	/* получить значение от детектора VOX */
 uint_fast8_t dsp_getavox(void);	/* получить значение от детектора Anti-VOX */
 uint_fast8_t dsp_getfreqdelta10(int_fast32_t * p, uint_fast8_t pathi);	/* ѕолучить значение отклонени€ частоты с точностью 0.1 герца */
+uint_fast8_t dsp_getmikeadcoverflow(void); /* получени€ признака переполнени€ ј÷ѕ микрофонного тракта */
 
 void dsp_speed_diagnostics(void);	/* DSP speed test */
 void buffers_diagnostics(void);

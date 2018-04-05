@@ -2468,11 +2468,11 @@ prog_ctrlreg(uint_fast8_t plane)
 	const uint_fast8_t fm = 0;
 	const uint_fast8_t am = 0;
 	const uint_fast8_t detector = BOARD_DETECTOR_SSB;
-#else
+#else /* WITHIF4DSP */
 	const uint_fast8_t fm = glob_af_input == BOARD_DETECTOR_FM;	// FM mode activated
 	const uint_fast8_t am = glob_af_input == BOARD_DETECTOR_AM;	// AM mode activated
 	const uint_fast8_t detector = glob_af_input;
-#endif
+#endif /* WITHIF4DSP */
 
 #if defined (LO1MODE_HYBRID) || defined (LO1MODE_FIXSCALE)
 	const uint_fast8_t vcomask = (1U << glob_vco);
@@ -6286,13 +6286,24 @@ void boart_tgl_firprofile(
 	board_update_ctrlreg_hack();
 }
 
+/* получения признака переполнения АЦП приёмного тракта */
 uint_fast8_t boad_fpga_adcoverflow(void)
 {
-#if TARGET_FPGA_OVF_BIT != 0
+#if defined (TARGET_FPGA_OVF_GET)
 	return TARGET_FPGA_OVF_GET;
-#else
+#else /* defined (TARGET_FPGA_OVF_GET) */
 	return 0;
-#endif /* TARGET_FPGA_OVF_BIT != 0 */
+#endif /* defined (TARGET_FPGA_OVF_GET) */
+}
+
+/* получения признака переполнения АЦП микрофонного тракта */
+uint_fast8_t boad_mike_adcoverflow(void)
+{
+#if WITHIF4DSP
+	return dsp_getmikeadcoverflow();
+#else /* WITHIF4DSP */
+	return 0;
+#endif /* WITHIF4DSP */
 }
 
 /* инициализация при запрещённых прерываниях.

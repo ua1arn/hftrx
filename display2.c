@@ -917,6 +917,11 @@ static void display_ovf3(
 		display_setcolors(BGCOLOR, OVFCOLOR);
 		display_at_P(x, y, PSTR("OVF"));
 	}
+	else if (boad_mike_adcoverflow() != 0)
+	{
+		display_setcolors(BGCOLOR, OVFCOLOR);
+		display_at_P(x, y, PSTR("MIK"));
+	}
 	else
 	{
 		display_setcolors(BGCOLOR, BGCOLOR);
@@ -936,6 +941,11 @@ static void display_preovf3(
 	{
 		display_setcolors(OVFCOLOR, BGCOLOR);
 		display_at_P(x, y, PSTR("OVF"));
+	}
+	else if (boad_mike_adcoverflow() != 0)
+	{
+		display_setcolors(BGCOLOR, OVFCOLOR);
+		display_at_P(x, y, PSTR("MIK"));
 	}
 	else
 	{
@@ -3421,7 +3431,7 @@ enum
 			{	0, 0,	display_txrxstate2, REDRM_MODE, REDRSUBSET(DPAGE0), },
 			{	3, 0,	display_voxtune3,	REDRM_MODE, REDRSUBSET(DPAGE0), },
 			{	7, 0,	display_att4,		REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	12, 0,	display_preovf3,	REDRM_MODE, REDRSUBSET(DPAGE0), },
+			{	12, 0,	display_preovf3,	REDRM_BARS, REDRSUBSET(DPAGE0), },
 			{	16, 0,	display_lockstate1, REDRM_MODE, REDRSUBSET(DPAGE0), },
 			{	19, 0,	display_rxbw3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 
@@ -3505,7 +3515,7 @@ enum
 			{	0,	0,	display_txrxstate2, REDRM_MODE, PGALL, },
 			{	3,	0,	display_voxtune3,	REDRM_MODE, PGALL, },
 			{	7,	0,	display_att4,		REDRM_MODE, PGALL, },
-			{	12, 0,	display_preovf3,	REDRM_MODE, PGALL, },
+			{	12, 0,	display_pre3,		REDRM_MODE, PGALL, },
 		#if WITHDSPEXTDDC
 			{	16, 0,	display_ovf3,		REDRM_BARS, PGALL, },	// ovf/pre
 		#endif /* WITHDSPEXTDDC */
@@ -4004,7 +4014,7 @@ enum
 enum { AVGLEN = 2 };
 enum { MAXHISTLEN = 5 };
 enum { SPAVGSIZE = 5 };	// max(AVGLEN, MAXHISTLEN)
-static FLOAT_t spavgarray [SPAVGSIZE] [WFDX];	// массив для усреднения
+static RAMNOINIT_D1 FLOAT_t spavgarray [SPAVGSIZE] [WFDX];	// массив для усреднения
 static uint_fast8_t spavgrow;				// строка, в которую последней занесены данные
 
 #if 1
@@ -4015,7 +4025,7 @@ static uint_fast8_t spavgrow;				// строка, в которую последней занесены данные
 	enum { wfrow = 0 };				// строка, в которую последней занесены данные
 #endif
 enum { PALETTESIZE = 256 };
-static PACKEDCOLOR_T wfpalette [PALETTESIZE];
+static RAMNOINIT_D1 PACKEDCOLOR_T wfpalette [PALETTESIZE];
 extern uint_fast8_t wflfence;
 
 #define COLOR_CENTERMAKER	COLOR_RED

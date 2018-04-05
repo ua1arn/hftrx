@@ -8792,6 +8792,12 @@ uint_fast8_t dsp_getavox(void)
 	return 0;
 }
 
+/* получения признака переполнения АЦП микрофонного тракта */
+uint_fast8_t dsp_getmikeadcoverflow(void)
+{
+	return 0;
+}
+
 static void voxmeter_initialize(void)
 {
 	VOXCHARGE = MAKETAUAF0();	// Пиковый детектор со временем зарада 0
