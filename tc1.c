@@ -2248,9 +2248,9 @@ struct nvmap
 
 	uint8_t displayfreqsfps;		/* скорость обновления индикатора частоты */
 	uint8_t displaybarsfps;	/* скорость обновления S-метра */
-#if WITHWARCBANDS
+#if WITHBCBANDS
 	uint8_t bandsetbcast;	/* Broadcasting radio bands */
-#endif /* WITHWARCBANDS */
+#endif /* WITHBCBANDS */
 	uint8_t bandset11m;	/* CB radio band */
 #if TUNE_6MBAND
 	uint8_t bandset6m;	/* используется ли диапазон 6 метров */
@@ -2811,9 +2811,10 @@ static uint_fast8_t gusefast;
 
 #if WITHWARCBANDS
 	enum { bandsethamwarc = 1 };	/* WARC HAM radio bands */
-#else
+#else /* WITHWARCBANDS */
 	enum { bandsethamwarc = 0 };	/* WARC HAM radio bands */
 #endif /* WITHWARCBANDS */
+
 //static uint_fast8_t bandsetham = 1;	/* HAM radio bands */
 static uint_fast8_t bandsetbcast = 0;	/* Broadcast radio bands */
 static uint_fast8_t bandset11m;
