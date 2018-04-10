@@ -12719,7 +12719,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		& bandset11m,
 		getzerobase, /* складывается со смещением и отображается */
 	},
-#if WITHWARCBANDS
+#if WITHBCBANDS
 	{
 		"BAND BC ", 7, 0, RJ_YES,	ISTEP1,	
 		ITEM_VALUE,
@@ -12729,7 +12729,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		& bandsetbcast,
 		getzerobase, /* складывается со смещением и отображается */
 	},
-#endif /* WITHWARCBANDS */
+#endif /* WITHBCBANDS */
 
 #if CTLSTYLE_SW2011ALL
 #if TUNE_6MBAND
