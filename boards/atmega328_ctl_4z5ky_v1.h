@@ -44,6 +44,7 @@
 		//#define IF3_MODEL IF3_TYPE_9000
 		//#define IF3_MODEL IF3_TYPE_8000
 		#define IF3_MODEL IF3_TYPE_8868
+		//#define IF3_MODEL IF3_TYPE_5000
 		//#define IF3_MODEL IF3_TYPE_6000
 		//#define IF3_MODEL IF3_TYPE_8192
 		//#define IF3_MODEL IF3_TYPE_5645	// Drake R-4C and Drake T-4XC (Drake Twins) - 5645 kHz

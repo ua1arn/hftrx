@@ -6,10 +6,8 @@
 // UA1ARN
 //
 // Трансивер с DSP обработкой "Аист" на процессоре 
-// STM32H743ZIT6, STM32F746ZGT6 кодеком NAU8822L и FPGA EP4CE22E22I7N
-// с функцией DUAL WATCH
-// 2xUSB
-// Rmainunit_v5em.pcb, Rmainunit_v5jm.pcb
+// STM32H743ZIT6, STM32F746ZGT6 и FPGA EP4CE22E22I7N
+// Rmainunit_v5im.pcb modem v2
 
 #ifndef ARM_STM32F4XX_TQFP144_CTLSTYLE_STORCH_V4_H_INCLUDED
 #define ARM_STM32F4XX_TQFP144_CTLSTYLE_STORCH_V4_H_INCLUDED 1
@@ -168,7 +166,7 @@
 
 	// +++ Особые варианты расположения кнопок на клавиатуре
 	//#define KEYB_RAVEN20_V5	1		/* 5 линий клавиатуры: расположение кнопок для Воробей с DSP обработкой */
-	#define KEYB_FPAMEL20_V0A	1	/* 20 конпок на 5 линий - плата rfrontpanel_v0 + LCDMODE_UC1608 в нормальном расположении с новым расположением */
+	#define KEYB_FPAMEL20_V0A	1	/* 20 кнопок на 5 линий - плата rfrontpanel_v0 + LCDMODE_UC1608 в нормальном расположении с новым расположением */
 	// --- Особые варианты расположения кнопок на клавиатуре
 	#define WITHSPLIT	1	/* управление режимами расстройки одной кнопкой */
 	//#define WITHSPLITEX	1	/* Трехкнопочное управление режимами расстройки */
@@ -278,7 +276,7 @@
 	//#define WITHRTSNOAUDIO 1		/* передача квадратур по USB в компютер, звукового режима нет */
 	#define WITHRTS96 1		/* вместо выходного аудиосигнала передача квадратур по USB */
 	//#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
-	//#define WITHTXDACFULL	1		/* полное использование разрядности ЦАП */
+	#define WITHTXDACFULL	1		/* полное использование разрядности ЦАП */
 
 	#if 0
 		#define WITHUSBHEADSET 1	/* трансивер работает USB гарнитурой для компютера - режим тестирования */

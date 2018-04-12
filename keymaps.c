@@ -732,7 +732,7 @@ uint_fast8_t getexitkey(void)
 
 #elif KEYB_FPAMEL20_V0
 
-/* 20 конпок на 5 линий - плата rfrontpanel_v0 + LCDMODE_UC1608 в нормальном расположении */
+/* 20 кнопок на 5 линий - плата rfrontpanel_v0 + LCDMODE_UC1608 в нормальном расположении */
 const struct qmkey qmdefs [NQMKEYS] =
 {
 	// ! ряд справа от индикатора - снизу вверх */
@@ -774,7 +774,7 @@ uint_fast8_t getexitkey(void)
 
 #elif KEYB_FPAMEL20_V0A
 
-/* 20 конпок на 5 линий - плата rfrontpanel_v0 + LCDMODE_UC1608 в нормальном расположении */
+/* 20 кнопок на 5 линий - плата rfrontpanel_v0 + LCDMODE_UC1608 в нормальном расположении */
 /* Новый вариант под корпус с надписями от RK1AQ */
 const struct qmkey qmdefs [NQMKEYS] =
 {
@@ -817,10 +817,10 @@ uint_fast8_t getexitkey(void)
 
 #elif KEYB_FPAMEL20_V3
 
-/* 30 конпок на 5 линий - плата rfrontpanel_v3 + LCDMODE_S1D13781 & LCDMODE_LQ043T3DX02K в нормальном расположении */
+/* 30 кнопок на 5 линий - плата rfrontpanel_v3 + LCDMODE_S1D13781 & LCDMODE_LQ043T3DX02K в нормальном расположении */
 const struct qmkey qmdefs [NQMKEYS] =
 {
-	// ряд справа от индикатора - снизу вверх */
+	// справа от индикатора, крайний правый (дальний от инлдикатора) - снизу вверх */
 	{ KIF_NONE,		KBD_CODE_LOCK,			KBD_CODE_LOCK_HOLDED, 	' ', },		// LOCK
 	{ KIF_SLOW,		KBD_CODE_BAND_DOWN,		KBD_CODE_BAND_DOWN, 	' ', },		// BAND DOWN
 	{ KIF_SLOW,		KBD_CODE_BAND_UP,		KBD_CODE_BAND_UP, 		' ', },		// BAND UP
@@ -828,7 +828,7 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE,		KBD_CODE_1,				KBD_CODE_2,				' ', },
 	{ KIF_NONE,		KBD_CODE_3,				KBD_CODE_4,				' ', },
 
-	// матрица слева от индикатора - ряд 1 по счету слева - снизу вверх */
+	// Cлева от индикатора - ряд 1 по счету слева - снизу вверх */
 	{ KIF_EXTMENU,	KBD_CODE_DISPMODE,		KBD_CODE_MENU, 			' ', },		// DISPLAY/MENU
 	{ KIF_NONE,		KBD_CODE_MOX,			KBD_CODE_TXTUNE,		' ', },		// MOX/TUNE
 	{ KIF_NONE,		KBD_CODE_ATUBYPASS,		KBD_CODE_ATUSTART,		' ', },		// TUNER BYP/ATU START
@@ -836,7 +836,7 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE,		KBD_CODE_5,				KBD_CODE_6,				' ', },
 	{ KIF_NONE,		KBD_CODE_7,				KBD_CODE_8,				' ', },
 
-	// матрица слева от индикатора - ряд 4 по счету слева - снизу вверх */
+	// справа от индикатора, второй от края - снизу вверх */
 	{ KIF_NONE,		KBD_CODE_MENU_CWSPEED,	KBD_CODE_11, 			' ', },		// CW SPEED
 	{ KIF_NONE,		KBD_CODE_NOTCHTOGGLE,	KBD_CODE_NOTCHFREQ, 	' ', },		// NOTCH
 	{ KIF_NONE,		KBD_CODE_BW,			KBD_CODE_13, 			' ', },		// BW/AGC не выключается с клавиатуры
@@ -844,7 +844,7 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE,		KBD_CODE_9,				KBD_CODE_10,			' ', },
 	{ KIF_NONE,		KBD_CODE_11,			KBD_CODE_12,			' ', },
 
-	// матрица слева от индикатора - ряд 3 по счету слева - снизу вверх */
+	// справа от индикатора, ближний к индикатиору - снизу вверх */
 	{ KIF_NONE,		KBD_CODE_BKIN,			KBD_CODE_BKIN_HOLDED, 	' ', },		// BREAK-IN
 	{ KIF_NONE,		KBD_CODE_LDSPTGL,		KBD_CODE_DATATOGGLE,	' ', },		// SPK/DATA
 	{ KIF_NONE,		KBD_CODE_ATT,			KBD_CODE_PAMP, 			' ', },		// ATT/PRE
@@ -852,7 +852,7 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE,		KBD_CODE_13,			KBD_CODE_14,			' ', },
 	{ KIF_NONE,		KBD_CODE_15,			KBD_CODE_16,			' ', },
 
-	// матрица слева от индикатора - ряд 2 по счету слева - снизу вверх */
+	// Cлева от индикатора - ряд 2 по счету слева - снизу вверх */
 	{ KIF_NONE,		KBD_CODE_VOXTOGGLE,		KBD_CODE_MAX,			' ', },		// VOX
 	{ KIF_NONE,		KBD_CODE_RECORDTOGGLE,	KBD_CODE_RECORD_HOLDED,	' ', },		// REC
 	{ KIF_NONE,		KBD_CODE_ANTENNA,		KBD_CODE_21, 			' ', },		// ANTEMMA
@@ -869,7 +869,7 @@ uint_fast8_t getexitkey(void)
 
 #elif KEYB_FPAMEL20_V0A_RA1AGO
 
-/* 20 конпок на 5 линий - перевернутые */
+/* 20 кнопок на 5 линий - перевернутые */
 const struct qmkey qmdefs [NQMKEYS] =
 {
 	// ! ряд слева от индикатора - сверху вниз */
@@ -911,7 +911,7 @@ uint_fast8_t getexitkey(void)
 
 #elif KEYB_FPAMEL20_V0A_UA1CEI
 
-/* 20 конпок на 5 линий - плата rfrontpanel_v0 + LCDMODE_UC1608 в нормальном расположении */
+/* 20 кнопок на 5 линий - плата rfrontpanel_v0 + LCDMODE_UC1608 в нормальном расположении */
 /* Новый вариант под корпус с надписями от RK1AQ */
 const struct qmkey qmdefs [NQMKEYS] =
 {
