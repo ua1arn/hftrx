@@ -13568,6 +13568,9 @@ process_key_menuset0(uint_fast8_t kbch)
 	case KBD_CODE_BAND_3M5: 
 		uif_key_click_banddjump(3500000L);
 		return 1;	// требуется обновление индикатора
+	case KBD_CODE_BAND_5M3:
+		uif_key_click_banddjump(5351500L);
+		return 1;	// требуется обновление индикатора
 	case KBD_CODE_BAND_7M0: 
 		uif_key_click_banddjump(7000000L);
 		return 1;	// требуется обновление индикатора
@@ -13588,6 +13591,9 @@ process_key_menuset0(uint_fast8_t kbch)
 		return 1;	// требуется обновление индикатора
 	case KBD_CODE_BAND_28M0:
 		uif_key_click_banddjump(28000000L);
+		return 1;	// требуется обновление индикатора
+	case KBD_CODE_BAND_50M0:
+		uif_key_click_banddjump(50100000L);
 		return 1;	// требуется обновление индикатора
 #endif /* WITHDIRECTBANDS */
 
