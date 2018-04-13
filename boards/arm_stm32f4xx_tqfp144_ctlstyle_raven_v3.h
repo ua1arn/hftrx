@@ -170,7 +170,10 @@
 	//#define KEYB_VERTICAL_REV_RU6BK	1	/* расположение кнопок для плат "Воробей" и "Колибри" */
 	//#define KEYBOARD_USE_ADC6	1	/* шесть кнопок на каждом входе ADCx */
 	//#define KEYB_M0SERG	1	/* расположение кнопок для Serge Moisseyev */
+	//#define KEYB_FPAMEL20_V0A	1	/* 20 кнопок на 5 линий - плата rfrontpanel_v0 + LCDMODE_UC1608 в нормальном расположении с новым расположением */
 	// --- Особые варианты расположения кнопок на клавиатуре
+	#define WITHSPLIT	1	/* управление режимами расстройки одной кнопкой */
+	//#define WITHSPLITEX	1	/* Трехкнопочное управление режимами расстройки */
 
 	// +++ Одна из этих строк определяет тип дисплея, для которого компилируется прошивка
 	//#define LCDMODE_HARD_SPI	1	/* LCD over SPI line */
@@ -368,8 +371,6 @@
 	/* фильтры, для которых стоит признак HAVE */
 	#define IF3_FHAVE	( IF3_FMASK_0P5 | IF3_FMASK_3P1 /*| IF3_FMASK_6P0 | IF3_FMASK_8P0*/)
 
-	#define WITHSPLIT	1	/* управление режимами расстройки одной кнопкой */
-	//#define WITHSPLITEX	1	/* Трехкнопочное управление режимами расстройки */
 	#define WITHCATEXT	1	/* Расширенный набор команд CAT */
 	#define WITHELKEY	1
 	#define WITHKBDENCODER 1	// перестройка частоты кнопками

@@ -34,21 +34,26 @@
 	// обратить внимание на REF1_MUL 168 или 216
 
 	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
-	#define WITHUSBHWVBUSSENSE	1	/* используется предопределенный вывод VBUS_SENSE */
+	//#define WITHUSBHWVBUSSENSE	1	/* используется предопределенный вывод VBUS_SENSE */
 	//#define WITHUSBHWHIGHSPEED	1	/* Используется встроенная в процессор поддержка USB HS */
 	//#define WITHUSBHWHIGHSPEEDDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
 	#define WITHUSBHW_DEVICE	USB_OTG_FS	/* на этом устройстве поддерживается функцилнальность DEVUCE	*/
 
 	#define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
+	#define WITHUSBUAC3		1	/* формируются три канала передачи звука */
+	#define WITHUABUACOUTAUDIO48MONO	1	/* для уменьшения размера буферов в endpoints */
 
-	#define WITHUSBCDC		1	/* использовать виртуальный последовательный порт на USB соединении */
+	#define WITHUSBCDC		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
 	//#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
 	//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
 	//#define WITHUSBHID		1	/* HID использовать Human Interface Device на USB соединении */
 
+	//#define WITHUART2HW	1	/* Используется периферийный контроллер последовательного порта #2 */
+
 	#define WITHCAT_CDC		1	/* использовать виртуальный воследовательный порт на USB соединении */
 	#define WITHMODEM_CDC	1
-	#define WITHDEBUG_CDC	1
+	//#define WITHDEBUG_CDC	1
+	//#define WITHNMEA_CDC		1	/* порт подключения GPS/GLONASS */
 
 #else
 	// Оригинальный вариант - только с CAT серез UART1 и FT232RL

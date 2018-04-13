@@ -10763,7 +10763,9 @@ static RAMFUNC FLOAT_t preparevi(
 			// see glob_mik1level (0..100)
 			return injectsubtone(txmikeagc(vi0f * txlevelfenceSSB / mikefence), ctcss); //* TXINSCALE; // источник сигнала - микрофон
 
+#if WITHUSBUAC
 		case BOARD_TXAUDIO_USB:
+#endif /* WITHUSBUAC */
 		default:
 			// источник - LINE IN или USB
 			// see glob_mik1level (0..100)
