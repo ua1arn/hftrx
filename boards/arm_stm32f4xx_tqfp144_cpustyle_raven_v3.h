@@ -29,7 +29,7 @@
 #define WITHCPUDACHW	1	/* использование DAC */
 #define WITHCPUADCHW 	1	/* использование ADC */
 
-#if 0
+#if 1
 	// С переделками - с USB
 	// обратить внимание на REF1_MUL 168 или 216
 
@@ -516,34 +516,6 @@
 		} while (0)
 #endif /* WITHCPUADCHW */
 
-// Назначения входов АЦП процессора.
-enum 
-{ 
-#if WITHTEMPSENSOR
-	TEMPIX = 16,		// ADC1->CR2 |= ADC_CR2_TSVREFE;	// для тестов
-#endif
-
-#if WITHPOTGAIN
-	POTIFGAIN = 10,		// PC0 IF GAIN
-	POTAFGAIN = 11,		// PC1 AF GAIN
-#endif /* WITHPOTGAIN */
-
-#if WITHPOTWPM
-	POTWPM = 12,		// PC2 потенциометр управления скоростью передачи в телеграфе
-#endif /* WITHPOTWPM */
-
-	POTAUX1 = 13,		// PC3 AUX1
-	POTAUX2 = 14,		// PC4 AUX2
-	ALCINIX = 15,		// PC5 ALC IN
-
-#if WITHSWRMTR
-	PWRI = 9,			// PB1
-	FWD = 9, REF = 8,	// PB0	SWR-meter
-#endif /* WITHSWRMTR */
-	KI0 = 0, KI1 = 1, KI2 = 2, KI3 = 3, KI4 = 6, KI5 = 7	// клавиатура
-};
-
-#define KI_COUNT 6	// количество используемых под клавиатуру входов АЦП
 
 #if WITHUSBHW
 	/**USB_OTG_FS GPIO Configuration    

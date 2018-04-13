@@ -162,7 +162,7 @@
 	#define	FONTSTYLE_ITALIC	1	// Использовать альтернативный шрифт
 
 	// +++ Особые варианты расположения кнопок на клавиатуре
-	#define KEYB_RAVEN24	1	/* расположение кнопок для Воробей с DSP обработкой */
+	//#define KEYB_RAVEN24	1	/* расположение кнопок для Воробей с DSP обработкой */
 	//#define KEYB_VERTICAL_REV	1	/* расположение кнопок для плат "Воробей" и "Колибри" */
 	//#define KEYB_VERTICAL_REV_TOPDOWN	1	/* расположение кнопок для ПЕРЕВЁРНУТЫХ плат "Воробей" и "Колибри" */
 	//#define KEYB_VERTICAL	1	/* расположение кнопок для плат "Павлин" */
@@ -170,7 +170,7 @@
 	//#define KEYB_VERTICAL_REV_RU6BK	1	/* расположение кнопок для плат "Воробей" и "Колибри" */
 	//#define KEYBOARD_USE_ADC6	1	/* шесть кнопок на каждом входе ADCx */
 	//#define KEYB_M0SERG	1	/* расположение кнопок для Serge Moisseyev */
-	//#define KEYB_FPAMEL20_V0A	1	/* 20 кнопок на 5 линий - плата rfrontpanel_v0 + LCDMODE_UC1608 в нормальном расположении с новым расположением */
+	#define KEYB_FPAMEL20_V0A	1	/* 20 кнопок на 5 линий - плата rfrontpanel_v0 + LCDMODE_UC1608 в нормальном расположении с новым расположением */
 	// --- Особые варианты расположения кнопок на клавиатуре
 	#define WITHSPLIT	1	/* управление режимами расстройки одной кнопкой */
 	//#define WITHSPLITEX	1	/* Трехкнопочное управление режимами расстройки */
@@ -184,7 +184,7 @@
 	//#define LCDMODE_WH1604	1	/* тип применяемого индикатора 16*4 */
 	//#define LCDMODE_WH2004	1	/* тип применяемого индикатора 20*4 */
 	//#define LCDMODE_RDX0077	1	/* Индикатор 128*64 с контроллером UC1601.  */
-	#define LCDMODE_RDX0154	1	/* Индикатор 132*64 с контроллером UC1601. */
+	//#define LCDMODE_RDX0154	1	/* Индикатор 132*64 с контроллером UC1601. */
 	//#define LCDMODE_RDX0120	1	/* Индикатор 64*32 с контроллером UC1601.  */
 	//#define LCDMODE_UC1601S_XMIRROR	1	/* Индикатор 132*64 с контроллером UC1601.  */
 	//#define LCDMODE_UC1601S_TOPDOWN	1	/* LCDMODE_RDX0154 - перевернуть изображение */
@@ -204,7 +204,7 @@
 	//#define LCDMODE_S1D13781_TOPDOWN	1	/* LCDMODE_S1D13781 - перевернуть изображение */
 	//#define LCDMODE_ILI9225	1	/* Индикатор 220*176 SF-TC220H-9223A-N_IC_ILI9225C_2011-01-15 с контроллером ILI9225С */
 	//#define LCDMODE_ILI9225_TOPDOWN	1	/* LCDMODE_ILI9225 - перевернуть изображение (для выводов слева от экрана) */
-	//#define LCDMODE_UC1608	1		/* Индикатор 240*128 с контроллером UC1608.- монохромный */
+	#define LCDMODE_UC1608	1		/* Индикатор 240*128 с контроллером UC1608.- монохромный */
 	//#define LCDMODE_UC1608_TOPDOWN	1	/* LCDMODE_UC1608 - перевернуть изображение (для выводов сверху) */
 	//#define LCDMODE_ST7735	1	/* Индикатор 160*128 с контроллером Sitronix ST7735 - TFT панель 160 * 128 HY-1.8-SPI */
 	//#define LCDMODE_ST7735_TOPDOWN	1	/* LCDMODE_ST7735 - перевернуть изображение (для выводов справа) */
@@ -256,7 +256,7 @@
 	//#define WITHLOOPBACKTEST	1
 	//#define WITHMODEMIQLOOPBACK	1	/* модем получает собственные передаваемые квадратуры */
 	//#define WITHDACSTRAIGHT 1	/* Требуется формирование кода для ЦАП в режиме беззнакового кода */
-	//#define WITHRTS96 1		/* кроме выходного аудиосигнала передача квадратур по USB */
+	#define WITHRTS96 1		/* кроме выходного аудиосигнала передача квадратур по USB */
 	//#define WITHRTSNOAUDIO 1		/* передача квадратур по USB в компютер, звукового режима нет */
 	//#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
 
@@ -376,5 +376,43 @@
 	#define WITHKBDENCODER 1	// перестройка частоты кнопками
 	#define WITHKEYBOARD 1	/* в данном устройстве есть клавиатура */
 	#define KEYBOARD_USE_ADC	1	/* на одной линии установлено  четыре  клавиши. на vref - 6.8K, далее 2.2К, 4.7К и 13K. */
+
+#if KEYB_FPAMEL20_V0A
+	#define KI_COUNT 5	// количество используемых под клавиатуру входов АЦП
+#else
+	#define KI_COUNT 6	// количество используемых под клавиатуру входов АЦП
+#endif
+// Назначения входов АЦП процессора.
+enum 
+{ 
+#if WITHTEMPSENSOR
+	TEMPIX = 16,		// ADC1->CR2 |= ADC_CR2_TSVREFE;	// для тестов
+#endif
+
+#if WITHPOTGAIN
+	POTIFGAIN = 10,		// PC0 IF GAIN
+	POTAFGAIN = 11,		// PC1 AF GAIN
+#endif /* WITHPOTGAIN */
+
+#if WITHPOTWPM
+	POTWPM = 12,		// PC2 потенциометр управления скоростью передачи в телеграфе
+#endif /* WITHPOTWPM */
+
+	POTAUX1 = 13,		// PC3 AUX1
+	POTAUX2 = 14,		// PC4 AUX2
+	ALCINIX = 15,		// PC5 ALC IN
+
+#if WITHSWRMTR
+	PWRI = 9,			// PB1
+	FWD = 9, REF = 8,	// PB0	SWR-meter
+#endif /* WITHSWRMTR */
+
+#if KI_COUNT == 6
+	KI0 = 0, KI1 = 1, KI2 = 2, KI3 = 3, KI4 = 6, KI5 = 7	// клавиатура
+#else
+	KI0 = 0, KI1 = 1, KI2 = 2, KI3 = 3, KI4 = 6	// клавиатура
+#endif
+};
+
 
 #endif /* ARM_STM32F4XX_TQFP144_CTLSTYLE_RAVEN_V3_H_INCLUDED */
