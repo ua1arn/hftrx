@@ -36,8 +36,8 @@ arch_num_mbs     : 2
 arch_no_sym      : 1
 num_bank_set    : 1
 num_mac         : 0
-num_cycles      : 1
-arch_pipeline      : 3
+num_cycles      : 3
+arch_pipeline      : 1
 poly_type       : 2
 poly_fact       : 10
 device_family   : 21
@@ -54,11 +54,11 @@ atlantic_out    : MASTER
 atlantic_in     : MASTER 
 fir_bit_width   : 55
 num_coef_mem     : 9
-coef_mem_width  : 10
+coef_mem_width  : 11
 coef_mem_addr   : 4
 num_coef_one_mem : 1
 fmax			: 0
-num_lc			: 1489
+num_lc			: 1015
 num_m4k			: 5
 num_m512			: 0
 num_MRAM			: 0

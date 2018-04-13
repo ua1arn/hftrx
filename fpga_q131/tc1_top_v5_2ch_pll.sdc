@@ -23,7 +23,7 @@
 #
 #************************************************************
 create_clock -name "clockfromadc" -period 125MHz [get_ports {adc_clka}]
-create_clock -name "ref122800" -period 125MHz [get_ports {refclk_in}]
+#create_clock -name "ref122800" -period 125MHz [get_ports {refclk_in}]
 
 create_clock -name "sclk_clock" -period 25MHz [get_ports {cpu_sclk}]
 create_clock -name "fpga_ctl_cs_clock" -period 25MHz [get_ports {fpga_ctl_cs}]

@@ -238,7 +238,6 @@ set_global_assignment -name SDC_FILE tc1_top_v5_2ch_pll.sdc
 set_global_assignment -name BSF_FILE LTC2208_input.bsf
 set_global_assignment -name QIP_FILE lpm_shiftreg_8.qip
 set_global_assignment -name QIP_FILE lpm_counter_i2sclocls.qip
-set_global_assignment -name BDF_FILE avalon_to_i2s.bdf
 set_global_assignment -name QIP_FILE lpm_shiftreg_32.qip
 set_global_assignment -name QIP_FILE lpm_counter1.qip
 set_global_assignment -name BDF_FILE t1_2ch_rts96.bdf
