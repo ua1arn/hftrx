@@ -6134,7 +6134,16 @@ void hardware_sdhost_initialize(void)
 #elif CPUSTYLE_STM32H7XX
 
 	RCC->AHB3ENR |= RCC_AHB3ENR_SDMMC1EN;   // подаем тактирование на SDMMC1
+	(void) RCC->AHB3ENR;
 	__DSB();
+
+	SDMMC1->IDMACTRL |= SDMMC_IDMA_IDMAEN;
+	ASSERT((SDMMC1->IDMACTRL & SDMMC_IDMA_IDMAEN) != 0);
+	SDMMC1->IDMABASE0 = 0xdeadbeef;
+	//debug_printf_P(PSTR("SDMMC1->IDMABASE0=%08lx\n"), SDMMC1->IDMABASE0);
+	//ASSERT(SDMMC1->IDMABASE0 == 0xdeadbeef);
+
+	HARDWARE_SDIO_INITIALIZE();	// ѕодсоединить контроллер к выводам процессора
 	
 	// hwrdware flow control отключен - от этого зависит проверка состо€ни€ txfifo & rxfifo
 	SDMMC1->CLKCR =
@@ -6152,10 +6161,7 @@ void hardware_sdhost_initialize(void)
 
 	NVIC_SetPriority(SDMMC1_IRQn, ARM_SYSTEM_PRIORITY);
 	NVIC_EnableIRQ(SDMMC1_IRQn);	// SDIO_IRQHandler() enable
-	NVIC_SetPriority(DMA2_Stream6_IRQn, ARM_SYSTEM_PRIORITY);
-	NVIC_EnableIRQ(DMA2_Stream6_IRQn);	// DMA2_Stream6_IRQHandler() enable
 
-	HARDWARE_SDIO_INITIALIZE();	// ѕодсоединить контроллер к выводам процессора
 	// разрешить тактирование карты пам€ти
 	SDMMC1->POWER = 3 * SDMMC_POWER_PWRCTRL_0;
 

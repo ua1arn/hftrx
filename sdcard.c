@@ -517,18 +517,29 @@ static void DMA_SDIO_setparams(
 #elif CPUSTYLE_STM32H7XX
 	// в процессоре для обмена с SDIO используется выделенный блок DMA
 
-	ASSERT((SDMMC1->IDMACTRL & SDMMC_IDMA_IDMAEN) == 0);
-	SDMMC1->DCTRL |= SDMMC_DCTRL_FIFORST;
-	SDMMC1->DCTRL &= ~ SDMMC_DCTRL_FIFORST;
+	//ASSERT((SDMMC1->IDMACTRL & SDMMC_IDMA_IDMAEN) == 0);
+	//SDMMC1->DCTRL |= SDMMC_DCTRL_FIFORST;
+	//SDMMC1->DCTRL &= ~ SDMMC_DCTRL_FIFORST;
 
-	//SDMMC1->CMD |= SDMMC_CMD_CMDTRANS;
+	//SDMMC1->CMD = SDMMC_CMD_CMDSTOP;
+	TP();
+	debug_printf_P(PSTR("SDMMC1->CMD=%08lx (cmd=%02x)\n"), SDMMC1->CMD, SDMMC1->CMD & SDMMC_CMD_CMDINDEX);
+	while ((SDMMC1->STA & SDMMC_STA_CPSMACT) != 0)
+		;
+	TP();
+	debug_printf_P(PSTR("SDMMC1->CMD=%08lx (cmd=%02x)\n"), SDMMC1->CMD, SDMMC1->CMD & SDMMC_CMD_CMDINDEX);
 	ASSERT((SDMMC1->STA & SDMMC_STA_DPSMACT) == 0);
+	ASSERT((SDMMC1->STA & SDMMC_STA_CPSMACT) == 0);
 
-	//SDMMC1->IDMACTRL = SDMMC_IDMA_IDMAEN;
+
+	//SDMMC1->IDMACTRL |= SDMMC_IDMA_IDMAEN;
 	SDMMC1->IDMABASE0 = addr;
 	//SDMMC1->IDMABSIZE = (SDMMC1->IDMABSIZE & ~ (SDMMC_IDMABSIZE_IDMABNDT)) |
 	//	(((length0 * count / 32) << SDMMC_IDMABSIZE_IDMABNDT_Pos) & SDMMC_IDMABSIZE_IDMABNDT_Msk) |
 	//0;
+	debug_printf_P(PSTR("SDMMC1->IDMABASE0=%08lx\n"), SDMMC1->IDMABASE0);
+	ASSERT((SDMMC1->IDMACTRL & SDMMC_IDMA_IDMAEN) != 0);
+	ASSERT(SDMMC1->IDMABASE0 == addr);
 
 #elif CPUSTYLE_STM32F7XX || CPUSTYLE_STM32F4XX
 
@@ -675,9 +686,9 @@ static void DMA_sdio_cancel(void)
 
 #elif CPUSTYLE_STM32H7XX
 	// в процессоре для обмена с SDIO используется выделенный блок DMA
-	SDMMC1->CMD = SDMMC_CMD_CMDSTOP;
+	//SDMMC1->CMD = SDMMC_CMD_CMDSTOP;
 
-	SDMMC1->IDMACTRL = 0; //&= ~ SDMMC_IDMA_IDMAEN;
+	//SDMMC1->IDMACTRL = 0; //&= ~ SDMMC_IDMA_IDMAEN;
 
 #elif CPUSTYLE_STM32F7XX || CPUSTYLE_STM32F4XX
 
@@ -903,6 +914,20 @@ static uint_fast16_t encode_cmd(uint_fast8_t cmd)
 	default:
 		break;
 	}
+#elif CPUSTYLE_STM32H7XX
+	switch (cmd)
+	{
+	case SD_CMD_WRITE_SINGLE_BLOCK:
+	case SD_CMD_WRITE_MULT_BLOCK:
+	case SD_CMD_READ_SINGLE_BLOCK:
+	case SD_CMD_READ_MULT_BLOCK:
+		return cmd | SDMMC_CMD_CMDTRANS;
+	case SD_CMD_STOP_TRANSMISSION:
+		return cmd | SDMMC_CMD_CMDSTOP;
+	default:
+		break;
+	}
+
 #endif
 	return cmd;
 }
@@ -939,6 +964,15 @@ static uint_fast16_t encode_appcmd(uint_fast8_t cmd)
 
 	default:
 		return (cmd & 0x3f) | R7S721_SD_CMD_ACMD_bm;
+	}
+#elif CPUSTYLE_STM32H7XX
+	switch (cmd)
+	{
+	case SD_CMD_SD_APP_SEND_SCR:
+	case SD_CMD_SD_APP_STATUS:
+		return cmd | SDMMC_CMD_CMDTRANS;
+	default:
+		break;
 	}
 #endif
 	return cmd;
@@ -986,7 +1020,7 @@ static void sdhost_no_resp(uint_fast16_t cmd, uint_fast32_t arg)
 
 	SDMMC1->ARG = arg;
 	SDMMC1->CMD = 
-		(SDMMC_CMD_CMDINDEX & cmd) |
+		cmd |
 		0 * SDMMC_CMD_WAITRESP_0 |	// 0: no response, 1: short response, 3: long response
 		0 * SDMMC_CMD_WAITINT |
 		0 * SDMMC_CMD_WAITPEND |
@@ -998,7 +1032,7 @@ static void sdhost_no_resp(uint_fast16_t cmd, uint_fast32_t arg)
 
 	SDMMC1->ARG = arg;
 	SDMMC1->CMD = 
-		(SDMMC_CMD_CMDINDEX & cmd) |
+		cmd |
 		0 * SDMMC_CMD_WAITRESP_0 |	// 0: no response, 1: short response, 3: long response
 		0 * SDMMC_CMD_WAITINT |
 		0 * SDMMC_CMD_WAITPEND |
@@ -1066,31 +1100,19 @@ static void sdhost_short_resp2(uint_fast16_t cmd, uint_fast32_t arg, uint_fast8_
 
 	SDMMC1->ARG = arg;
 	SDMMC1->CMD = 
-	//	dtransfer * SDMMC_CMD_CMDTRANS |
-		0;
-	if (dtransfer)
-	{
-	//	ASSERT(SDMMC1->CMD & SDMMC_CMD_CMDTRANS);
-	}
-	SDMMC1->CMD = 
-		(SDMMC_CMD_CMDINDEX & cmd) |
-		//dtransfer * SDMMC_CMD_CMDTRANS |
+		cmd |
 		(nocrc ? 2 : 1) * SDMMC_CMD_WAITRESP_0 |	// 0: no response, 1: short response, 2: short response no CRC, 3: long response
 		0 * SDMMC_CMD_WAITINT |
 		0 * SDMMC_CMD_WAITPEND |
 		1 * SDMMC_CMD_CPSMEN |
 		//0 * SDMMC_CMD_SDIOSUSPEND |
 		0;
-	if (dtransfer)
-	{
-	//	ASSERT(SDMMC1->CMD & SDMMC_CMD_CMDTRANS);
-	}
 
 #elif CPUSTYLE_STM32F7XX
 
 	SDMMC1->ARG = arg;
 	SDMMC1->CMD = 
-		(SDMMC_CMD_CMDINDEX & cmd) |
+		cmd |
 		1 * SDMMC_CMD_WAITRESP_0 |	// 0: no response, 1: short response, 3: long response
 		0 * SDMMC_CMD_WAITINT |
 		0 * SDMMC_CMD_WAITPEND |
@@ -1164,7 +1186,7 @@ static void sdhost_long_resp(uint_fast16_t cmd, uint_fast32_t arg)
 
 	SDMMC1->ARG = arg;
 	SDMMC1->CMD = 
-		(SDMMC_CMD_CMDINDEX & cmd) |
+		cmd |
 		3 * SDMMC_CMD_WAITRESP_0 |	// 0: no response, 1: short response, 3: long response
 		0 * SDMMC_CMD_WAITINT |
 		0 * SDMMC_CMD_WAITPEND |
@@ -1176,7 +1198,7 @@ static void sdhost_long_resp(uint_fast16_t cmd, uint_fast32_t arg)
 
 	SDMMC1->ARG = arg;
 	SDMMC1->CMD = 
-		(SDMMC_CMD_CMDINDEX & cmd) |
+		cmd |
 		3 * SDMMC_CMD_WAITRESP_0 |	// 0: no response, 1: short response, 3: long response
 		0 * SDMMC_CMD_WAITINT |
 		0 * SDMMC_CMD_WAITPEND |
@@ -2431,6 +2453,7 @@ char sd_initialize2(void)
 {
 	sd_power_cycle();
 
+	debug_printf_P(PSTR("hardware_sdhost_setspeed to 400 kHz\n"));
 	hardware_sdhost_setspeed(400000uL);
 	hardware_sdhost_setbuswidth(0);		// 1-bit width
 	if (sdhost_sdcard_poweron() == 0)
