@@ -517,7 +517,8 @@ static void DMA_SDIO_setparams(
 #elif CPUSTYLE_STM32H7XX
 	// в процессоре для обмена с SDIO используется выделенный блок DMA
 
-	//ASSERT((SDMMC1->IDMACTRL & SDMMC_IDMA_IDMAEN) == 0);
+#if 0
+	ASSERT((SDMMC1->IDMACTRL & SDMMC_IDMA_IDMAEN) == 0);
 	//SDMMC1->DCTRL |= SDMMC_DCTRL_FIFORST;
 	//SDMMC1->DCTRL &= ~ SDMMC_DCTRL_FIFORST;
 
@@ -532,7 +533,7 @@ static void DMA_SDIO_setparams(
 	ASSERT((SDMMC1->STA & SDMMC_STA_CPSMACT) == 0);
 
 
-	//SDMMC1->IDMACTRL |= SDMMC_IDMA_IDMAEN;
+	SDMMC1->IDMACTRL |= SDMMC_IDMA_IDMAEN;
 	SDMMC1->IDMABASE0 = addr;
 	//SDMMC1->IDMABSIZE = (SDMMC1->IDMABSIZE & ~ (SDMMC_IDMABSIZE_IDMABNDT)) |
 	//	(((length0 * count / 32) << SDMMC_IDMABSIZE_IDMABNDT_Pos) & SDMMC_IDMABSIZE_IDMABNDT_Msk) |
@@ -540,6 +541,7 @@ static void DMA_SDIO_setparams(
 	debug_printf_P(PSTR("SDMMC1->IDMABASE0=%08lx\n"), SDMMC1->IDMABASE0);
 	ASSERT((SDMMC1->IDMACTRL & SDMMC_IDMA_IDMAEN) != 0);
 	ASSERT(SDMMC1->IDMABASE0 == addr);
+#endif
 
 #elif CPUSTYLE_STM32F7XX || CPUSTYLE_STM32F4XX
 
@@ -688,7 +690,7 @@ static void DMA_sdio_cancel(void)
 	// в процессоре для обмена с SDIO используется выделенный блок DMA
 	//SDMMC1->CMD = SDMMC_CMD_CMDSTOP;
 
-	//SDMMC1->IDMACTRL = 0; //&= ~ SDMMC_IDMA_IDMAEN;
+	SDMMC1->IDMACTRL &= ~ SDMMC_IDMA_IDMAEN;
 
 #elif CPUSTYLE_STM32F7XX || CPUSTYLE_STM32F4XX
 
@@ -806,7 +808,7 @@ static void sdhost_dpsm_wait_fifo_empty(void)
 }
 
 // подготовка к обмену data path state machine
-static void sdhost_dpsm_prepare(uint_fast8_t txmode, uint_fast32_t len, uint_fast32_t lenpower)
+static void sdhost_dpsm_prepare(uintptr_t addr, uint_fast8_t txmode, uint_fast32_t len, uint_fast32_t lenpower)
 {
 #if ! WITHSDHCHW
 // SPI SD CARD (MMC SD)
@@ -816,22 +818,25 @@ static void sdhost_dpsm_prepare(uint_fast8_t txmode, uint_fast32_t len, uint_fas
 
 #elif CPUSTYLE_STM32H7XX
 
-	SDMMC1->DTIMER = 0x03FFFFFF;
+
+	SDMMC1->IDMACTRL |= SDMMC_IDMA_IDMAEN;
+	SDMMC1->IDMABASE0 = addr;
+	//SDMMC1->IDMABSIZE = (SDMMC1->IDMABSIZE & ~ (SDMMC_IDMABSIZE_IDMABNDT)) |
+	//	(((length0 * count / 32) << SDMMC_IDMABSIZE_IDMABNDT_Pos) & SDMMC_IDMABSIZE_IDMABNDT_Msk) |
+	//0;
+	debug_printf_P(PSTR("SDMMC1->IDMABASE0=%08lx\n"), SDMMC1->IDMABASE0);
+	ASSERT((SDMMC1->IDMACTRL & SDMMC_IDMA_IDMAEN) != 0);
+	ASSERT(SDMMC1->IDMABASE0 == addr);
 
 	SDMMC1->DLEN = (SDMMC1->DLEN & ~ (SDMMC_DLEN_DATALENGTH)) |
 		((len << SDMMC_DLEN_DATALENGTH_Pos) & SDMMC_DLEN_DATALENGTH) |
 		0;
+	SDMMC1->DTIMER = 0x03FFFFFF;
 
-	SDMMC1->DCTRL = (SDMMC1->DCTRL & ~ (SDMMC_DCTRL_DTEN | SDMMC_DCTRL_DTDIR | SDMMC_DCTRL_DTMODE | SDMMC_DCTRL_DBLOCKSIZE | SDMMC_DCTRL_RWSTART | SDMMC_DCTRL_RWSTOP | SDMMC_DCTRL_RWMOD | SDMMC_DCTRL_SDIOEN | SDMMC_DCTRL_BOOTACKEN)) |
-		1 * SDMMC_DCTRL_DTEN |		// Data transfer enabled bit
+	SDMMC1->DCTRL =
+		SDMMC_DCTRL_DTEN |		// Data transfer enabled bit
 		! txmode * SDMMC_DCTRL_DTDIR |		// 1: From card to controller.
-		0 * SDMMC_DCTRL_DTMODE |		// 0: Block data transfer ending on block count.
-		////1 * SDMMC_DCTRL_DMAEN |
 		lenpower * SDMMC_DCTRL_DBLOCKSIZE_0 |	// 9: 512 bytes, 3: 8 bytes
-		//0 * SDMMC_DCTRL_RWSTART |
-		//0 * SDMMC_DCTRL_RWSTOP |
-		//1 * SDMMC_DCTRL_RWMOD |			// 1: Read Wait control using SDMMC_CK
-		//0 * SDMMC_DCTRL_SDIOEN |		// If this bit is set, the DPSM performs an SD I/O-card-specific operation.
 		0;
 
 #elif CPUSTYLE_STM32F7XX
@@ -1954,7 +1959,7 @@ static uint_fast8_t sdhost_sdcard_WriteSectors(
 			return 1;
 		}
 
-		sdhost_dpsm_prepare(1, 512 * count, 9);		// подготовка к обмену data path state machine - при записи после выдачи команды
+		sdhost_dpsm_prepare((uintptr_t) buff, 1, 512 * count, 9);		// подготовка к обмену data path state machine - при записи после выдачи команды
 
 		if (sdhost_dpsm_wait(1) != 0)
 		{
@@ -2014,7 +2019,7 @@ static uint_fast8_t sdhost_sdcard_WriteSectors(
 			return 1;
 		}
 
-		sdhost_dpsm_prepare(1, 512 * count, 9);		// подготовка к обмену data path state machine - при записи после выдачи команды
+		sdhost_dpsm_prepare((uintptr_t) buff, 1, 512 * count, 9);		// подготовка к обмену data path state machine - при записи после выдачи команды
 
 		if (sdhost_dpsm_wait(1) != 0)
 		{
@@ -2088,7 +2093,7 @@ static uint_fast8_t sdhost_sdcard_ReadSectors(
 	{
 		//debug_printf_P(PSTR("read one block\n"));
 		// read one block
-		sdhost_dpsm_prepare(0, 512 * count, 9);		// подготовка к обмену data path state machine - при чтении перед выдачей команды
+		sdhost_dpsm_prepare((uintptr_t) buff, 0, 512 * count, 9);		// подготовка к обмену data path state machine - при чтении перед выдачей команды
 		//TP();
 		//arm_hardware_invalidate((uint32_t) buff, 512 * count);		// Сейчас в эту память будем читать по DMA
 		/* СТРАННО, но помогло! */arm_hardware_flush_invalidate((uintptr_t) buff, 512 * count);	// Сейчас эту память будем записывать по DMA, потом содержимое не требуется
@@ -2125,7 +2130,7 @@ static uint_fast8_t sdhost_sdcard_ReadSectors(
 	{
 		//debug_printf_P(PSTR("read multiple blocks: count=%d\n"), count);
 		// read multiple blocks
-		sdhost_dpsm_prepare(0, 512 * count, 9);		// подготовка к обмену data path state machine - при чтении перед выдачей команды
+		sdhost_dpsm_prepare((uintptr_t) buff, 0, 512 * count, 9);		// подготовка к обмену data path state machine - при чтении перед выдачей команды
 		//arm_hardware_invalidate((uint32_t) buff, 512 * count);		// Сейчас в эту память будем читать по DMA
 		/* СТРАННО, но помогло! */arm_hardware_flush_invalidate((uintptr_t) buff, 512 * count);	// Сейчас эту память будем записывать по DMA, потом содержимое не требуется
 		DMA_SDIO_setparams((uintptr_t) buff, 512, count, 0);
@@ -2275,7 +2280,7 @@ static uint_fast8_t sdhost_read_registers_acmd(uint16_t acmd, uint8_t * buff, un
 	
 	//debug_printf_P(PSTR("sdhost_sdcard_ReadSectors: sdhost_CardType=%08lX, sdhost_SDType=%08lX\n"), (unsigned long) sdhost_CardType, (unsigned long) sdhost_SDType);
 
-	sdhost_dpsm_prepare(0, size, lenpower);		// подготовка к обмену data path state machine - при чтенииперед выдачей команды
+	sdhost_dpsm_prepare((uintptr_t) buff, 0, size, lenpower);		// подготовка к обмену data path state machine - при чтенииперед выдачей команды
 	//arm_hardware_invalidate((uint32_t) buff, size * 1);		// Сейчас в эту память будем читать по DMA
 	/* СТРАННО, но помогло! */arm_hardware_flush_invalidate((uintptr_t) buff, sizeofarray);	// Сейчас эту память будем записывать по DMA, потом содержимое не требуется
 	DMA_SDIO_setparams((uintptr_t) buff, size, 1, 0);

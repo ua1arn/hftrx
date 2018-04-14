@@ -6137,8 +6137,8 @@ void hardware_sdhost_initialize(void)
 	(void) RCC->AHB3ENR;
 	__DSB();
 
-	SDMMC1->IDMACTRL |= SDMMC_IDMA_IDMAEN;
-	ASSERT((SDMMC1->IDMACTRL & SDMMC_IDMA_IDMAEN) != 0);
+	//SDMMC1->IDMACTRL |= SDMMC_IDMA_IDMAEN;
+	//ASSERT((SDMMC1->IDMACTRL & SDMMC_IDMA_IDMAEN) != 0);
 	SDMMC1->IDMABASE0 = 0xdeadbeef;
 	//debug_printf_P(PSTR("SDMMC1->IDMABASE0=%08lx\n"), SDMMC1->IDMABASE0);
 	//ASSERT(SDMMC1->IDMABASE0 == 0xdeadbeef);
@@ -6147,13 +6147,13 @@ void hardware_sdhost_initialize(void)
 	
 	// hwrdware flow control отключен - от этого зависит проверка состояния txfifo & rxfifo
 	SDMMC1->CLKCR =
-		////?????1 * SDMMC_CLKCR_CLKEN |
-		(255 & SDMMC_CLKCR_CLKDIV) |
+		SDMMC_CLKCR_CLKDIV |
 	#if WITHSDHCHW4BIT
 		1 * SDMMC_CLKCR_WIDBUS_0 |	// 01: 4-wide bus mode: SDMMC_D[3:0] used
 	#endif /* WITHSDHCHW4BIT */
 		//1 * SDMMC_CLKCR_HWFC_EN |
 		1 * SDMMC_CLKCR_PWRSAV |		// выключается clock без обращений
+		1 * SDMMC_CLKCR_HWFC_EN |
 		0;
 
 	hardware_sdhost_setbuswidth(0);
