@@ -45,9 +45,7 @@
 
 	#define	MODEL_DIRECT	1	/* использовать прямой синтез, а не гибридный */
 	
-	#define CTLSTYLE_SW2012_MINI 1
-	#define CTLREGSTYLE_SW2012CN	1	// управляющие регистры SW2012MINI c цветным дисплеем и регулировкой выходной мощности
-	//#define CTLREGSTYLE_SW2012CN_RN3ZOB 1 // с платой автотюнера
+	#define CTLREGSTYLE_RA4YBO_AM0	1
 
 	//#define DSTYLE_UR3LMZMOD	1
 	//#define	FONTSTYLE_ITALIC	1	//
@@ -121,7 +119,7 @@
 	//#define WITHVIBROPLEX	1	/* возможность эмуляции передачи виброплексом */
 
 	#define WITHMENU 	1	/* функциональность меню может быть отключена - если настраивать нечего */
-	//#define WITHDEBUG		1	/* Отладочная печать через COM-порт. Без CAT (WITHCAT) */
+	#define WITHDEBUG		1	/* Отладочная печать через COM-порт. Без CAT (WITHCAT) */
 	#define WITHSAMEBFO	1	/* использование общих настроек BFO для приёма и передачи */
 	//#define WITHBCBANDS	1		/* в таблице диапазонов присутствуют вещательные диапазоны */
 	#define WITHWARCBANDS	1	/* В таблице диапазонов присутствуют HF WARC диапазоны */
@@ -225,6 +223,22 @@ enum
 
 #define VOLTLEVEL_UPPER		43	// 4.3 kOhm - верхний резистор делителя датчика напряжения
 #define VOLTLEVEL_LOWER		10	// 1.0 kOhm - нижний резистор
+
+#define WITHATT2_6DB		1	// Управление двухкаскадным аттенюатором без управления УВЧ
+#define WITHAGCMODENONE		1	/* Режимами АРУ не управляем */
+
+/* коды входов коммутатора источников сигнала для УНЧ приёмника */
+#define BOARD_DETECTOR_MUTE 0
+#define BOARD_DETECTOR_SSB 	0
+#define BOARD_DETECTOR_AM 	0
+#define BOARD_DETECTOR_FM 	0
+#define BOARD_DETECTOR_TUNE 0x00	/* конфигурация платы для режима TUNE (CWZ на передачу) */
+/* коды фильтров второй ПЧ, выдаваемые на дешифраторы */
+#define	BOARD_FILTERCODE_0	0
+#define	BOARD_FILTERCODE_1	0
+#define	BOARD_FILTERCODE_2	0
+#define	BOARD_FILTERCODE_3	0
+
 
 
 #endif /* ATMEGA_CTLSTYLE_V9CN6_H_INCLUDED */

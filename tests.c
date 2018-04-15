@@ -7211,7 +7211,7 @@ void lowtests(void)
 		HARDWARE_DEBUG_INITIALIZE();
 		HARDWARE_DEBUG_SET_SPEED(DEBUGSPEED);
 		//for (;;)
-		dbg_puts_impl_P(PSTR("Version " __DATE__ " " __TIME__ " debug session starts.\n"));
+		dbg_puts_impl_P(PSTR("Version " __DATE__ " " __TIME__ " 2 debug session starts.\n"));
 		#if 0
 			// выдача повторяющегося символа для тестирования скорости передачи, если ошибочная инициализация
 			for (;;)
@@ -7268,7 +7268,7 @@ void lowtests(void)
 		hardware_uart1_initialize();
 		hardware_uart1_set_speed(DEBUGSPEED);
 		//for (;;)
-		dbg_puts_impl_P(PSTR("Version " __DATE__ " " __TIME__ " debug session starts.\n"));
+		dbg_puts_impl_P(PSTR("Version " __DATE__ " " __TIME__ " 3 debug session starts.\n"));
 		// выдача повторяющегося символа для тестирования скорости передачи, если ошибочная инициализация
 		//for (;;)
 		//	dbg_putchar(0xff);

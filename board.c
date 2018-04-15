@@ -704,9 +704,55 @@ prog_ctrlreg(uint_fast8_t plane)
 // управляющие регистры SW2012MINI COLOR 2 c цветным дисплеем ILI9163 и регулировкой выходной мощности
 // управляющие регистры SW2016MINI
 
-#if WITHAUTOTUNER
+	#if WITHAUTOTUNER
 
-	#if SHORTSET7 || FULLSET7
+		#if SHORTSET7 || FULLSET7
+			static void 
+			prog_ctrlreg(uint_fast8_t plane)
+			{
+				const spitarget_t target = targetctl1;
+				//const uint_fast8_t fm = glob_af_input == BOARD_DETECTOR_FM;	// FM mode activated
+				//const uint_fast8_t am = glob_af_input == BOARD_DETECTOR_AM;	// AM mode activated
+
+				rbtype_t rbbuff [3] = { 0 };
+
+			#if 1
+				/* +++ Управление согласующим устройством - версия схемы от pedchenk.lena@rambler.ru ы*/
+				/* регистр управления массивом конденсаторов */
+				RBBIT(027, glob_tuner_bypass ? 0 : glob_tuner_type);		/* pin 7: TYPE OF TUNER 	*/
+				RBVAL(020, glob_tuner_bypass ? 0 : revbits8(glob_tuner_C) >> 1, 7);/* pin 6..1, 15: Capacitors tuner bank 	*/
+				/* регистр управления наборной индуктивностью. */
+				RBBIT(017, ! glob_tuner_bypass);		// pin 7: обход СУ
+				RBVAL(010, glob_tuner_bypass ? 0 : revbits8(glob_tuner_L) >> 1, 7);/* Inductors tuner bank 	*/
+				/* --- Управление согласующим устройством */
+			#else
+				/* +++ Управление согласующим устройством */
+				/* регистр управления массивом конденсаторов */
+				RBVAL(021, glob_tuner_bypass ? 0 : revbits8(glob_tuner_C) >> 1, 7);/* pin 7..1: Capacitors tuner bank 	*/
+				RBBIT(020, glob_tuner_bypass ? 0 : glob_tuner_type);		/* pin 15: TYPE OF TUNER 	*/
+				/* регистр управления наборной индуктивностью. */
+				RBBIT(017, glob_tuner_bypass);		// pin 01: обход СУ
+				RBVAL(010, glob_tuner_bypass ? 0 : glob_tuner_L, 7);			/* Inductors tuner bank 	*/
+				/* --- Управление согласующим устройством */
+			#endif
+				/* регистр управления (74HC595), расположенный на плате синтезатора */
+				RBVAL(006, glob_opowerlevel - WITHPOWERTRIMMIN, 2);								/* d6..d7: spare or power level */
+				RBBIT(005, glob_tx);				/* pin 05: d5: TX2 */
+				RBBIT(004, glob_tx ? glob_txcw : glob_filter);			/* pin 04: d4: CW - на приёме - НЧ фильтр. */
+				RBBIT(003, glob_att);				/* pin 03: d3: ATT */
+				RBBIT(002, glob_preamp);			/* pin 02: d2 - PRE */
+				RBBIT(001, glob_bandf >= glob_bandfonhpf);		/* pin 01: d1 - bnd2 signal */
+				RBBIT(000, ! glob_reset_n);		/* pin 15: d0 in control register - ad9951 RESET */
+
+				spi_select(target, CTLREG_SPIMODE);
+				prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
+				spi_unselect(target);
+			}
+		#elif SHORTSET8 || FULLSET8
+			#error CTLREGSTYLE_SW2012CN && WITHAUTOTUNER && (SHORTSET8 || FULLSET8) not supported
+		#endif
+	#else /* WITHAUTOTUNER */
+
 		static void 
 		prog_ctrlreg(uint_fast8_t plane)
 		{
@@ -716,25 +762,12 @@ prog_ctrlreg(uint_fast8_t plane)
 
 			rbtype_t rbbuff [3] = { 0 };
 
-		#if 1
-			/* +++ Управление согласующим устройством - версия схемы от pedchenk.lena@rambler.ru ы*/
-			/* регистр управления массивом конденсаторов */
-			RBBIT(027, glob_tuner_bypass ? 0 : glob_tuner_type);		/* pin 7: TYPE OF TUNER 	*/
-			RBVAL(020, glob_tuner_bypass ? 0 : revbits8(glob_tuner_C) >> 1, 7);/* pin 6..1, 15: Capacitors tuner bank 	*/
-			/* регистр управления наборной индуктивностью. */
-			RBBIT(017, ! glob_tuner_bypass);		// pin 7: обход СУ
-			RBVAL(010, glob_tuner_bypass ? 0 : revbits8(glob_tuner_L) >> 1, 7);/* Inductors tuner bank 	*/
-			/* --- Управление согласующим устройством */
-		#else
-			/* +++ Управление согласующим устройством */
-			/* регистр управления массивом конденсаторов */
-			RBVAL(021, glob_tuner_bypass ? 0 : revbits8(glob_tuner_C) >> 1, 7);/* pin 7..1: Capacitors tuner bank 	*/
-			RBBIT(020, glob_tuner_bypass ? 0 : glob_tuner_type);		/* pin 15: TYPE OF TUNER 	*/
-			/* регистр управления наборной индуктивностью. */
-			RBBIT(017, glob_tuner_bypass);		// pin 01: обход СУ
-			RBVAL(010, glob_tuner_bypass ? 0 : glob_tuner_L, 7);			/* Inductors tuner bank 	*/
-			/* --- Управление согласующим устройством */
-		#endif
+			/* регистр управления (74HC595), дополнительный. Диапазоны выводятся по просьбе Геннадия из Николаева. */
+			//RBVAL(014, (glob_bandf - 0), 4);		/* d4..d7 - band selection d0..d7 */
+			//RBBIT(013, glob_af_input == BOARD_DETECTOR_WFM);	/* pin 07: d3: WFM mode */
+			//RBVAL(011, 0x00, 2);								/* d2..d1: spare */
+			//RBBIT(010, glob_lcdreset);			/* pin 15: d0: lctl0 */
+
 			/* регистр управления (74HC595), расположенный на плате синтезатора */
 			RBVAL(006, glob_opowerlevel - WITHPOWERTRIMMIN, 2);								/* d6..d7: spare or power level */
 			RBBIT(005, glob_tx);				/* pin 05: d5: TX2 */
@@ -748,42 +781,17 @@ prog_ctrlreg(uint_fast8_t plane)
 			prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 			spi_unselect(target);
 		}
-	#elif SHORTSET8 || FULLSET8
-		#error CTLREGSTYLE_SW2012CN && WITHAUTOTUNER && (SHORTSET8 || FULLSET8) not supported
-	#endif
-#else /* WITHAUTOTUNER */
+#endif /* WITHAUTOTUNER */
+
+#elif CTLREGSTYLE_RA4YBO_AM0
+
+	#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 
 	static void 
 	prog_ctrlreg(uint_fast8_t plane)
 	{
-		const spitarget_t target = targetctl1;
-		//const uint_fast8_t fm = glob_af_input == BOARD_DETECTOR_FM;	// FM mode activated
-		//const uint_fast8_t am = glob_af_input == BOARD_DETECTOR_AM;	// AM mode activated
 
-		rbtype_t rbbuff [3] = { 0 };
-
-		/* регистр управления (74HC595), дополнительный. Диапазоны выводятся по просьбе Геннадия из Николаева. */
-		//RBVAL(014, (glob_bandf - 0), 4);		/* d4..d7 - band selection d0..d7 */
-		//RBBIT(013, glob_af_input == BOARD_DETECTOR_WFM);	/* pin 07: d3: WFM mode */
-		//RBVAL(011, 0x00, 2);								/* d2..d1: spare */
-		//RBBIT(010, glob_lcdreset);			/* pin 15: d0: lctl0 */
-
-		/* регистр управления (74HC595), расположенный на плате синтезатора */
-		RBVAL(006, glob_opowerlevel - WITHPOWERTRIMMIN, 2);								/* d6..d7: spare or power level */
-		RBBIT(005, glob_tx);				/* pin 05: d5: TX2 */
-		RBBIT(004, glob_tx ? glob_txcw : glob_filter);			/* pin 04: d4: CW - на приёме - НЧ фильтр. */
-		RBBIT(003, glob_att);				/* pin 03: d3: ATT */
-		RBBIT(002, glob_preamp);			/* pin 02: d2 - PRE */
-		RBBIT(001, glob_bandf >= glob_bandfonhpf);		/* pin 01: d1 - bnd2 signal */
-		RBBIT(000, ! glob_reset_n);		/* pin 15: d0 in control register - ad9951 RESET */
-
-		spi_select(target, CTLREG_SPIMODE);
-		prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-		spi_unselect(target);
 	}
-#endif /* WITHAUTOTUNER */
-
-
 
 #elif CTLREGSTYLE_SW2012CN_RN3ZOB
 // с автотюнером
@@ -4159,7 +4167,7 @@ board_update_ctrlreg(void)
 	uint_fast8_t plane;
 	for (plane = 0; plane < BOARD_NPLANES; ++ plane)
 		prog_ctrlreg(plane); 	/* управление приемником */
-}
+	}
 
 #endif
 
