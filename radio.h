@@ -1861,6 +1861,9 @@ void spool_0p128(void);	// OPERA support
 	#elif BANDSELSTYLE_LADVABEST
 		#define TUNE_BOTTOM 1600000L			/* нижн€€ частота настройки */
 		#define TUNE_TOP 56000000L
+	#elif BANDSELSTYLERE_RA4YBO_AM0
+		#define TUNE_BOTTOM 500000L			/* нижн€€ частота настройки */
+		#define TUNE_TOP 10500000L		
 	#else
 		#error Strange BANDSELSTYLExxx
 	#endif

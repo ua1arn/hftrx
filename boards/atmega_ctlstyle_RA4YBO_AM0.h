@@ -33,8 +33,9 @@
 		//#define DIRECT_60M0_X6		1	/* Board hardware configuration */
 		//#define DIRECT_125M0_X3		1	/* Board hardware configuration */
 
+		#define BANDSELSTYLERE_RA4YBO_AM0	1
 		//#define BANDSELSTYLERE_LOCONV32M	1
-		#define BANDSELSTYLERE_LOCONV32M_NLB	1	/* Down-conversion with working band 1.6..32 MHz */
+		//#define BANDSELSTYLERE_LOCONV32M_NLB	1	/* Down-conversion with working band 1.6..32 MHz */
 		//#define BANDSELSTYLE_LADVABEST	1		/* Down-conversion with working band 1.6..56 MHz */
 		// Выбор ПЧ
 		//#define IF3_MODEL IF3_TYPE_9000
@@ -104,6 +105,8 @@
 	//#define WITHIFSHIFTOFFSET	(-250)	/* Начальное занчение IF SHIFT */
 	//#define WITHCAT		1	/* используется CAT */
 	//#define WITHVOX		1	/* используется VOX */
+	//#define WITHDEBUG		1	/* Отладочная печать через COM-порт. Без CAT (WITHCAT) */
+
 	#if 1
 		#define WITHPWRMTR	1	/* Индикатор выходной мощности или */
 		#define WITHPWRLIN	1	/* Индикатор выходной мощности показывает напряжение а не мощность */
@@ -119,7 +122,6 @@
 	//#define WITHVIBROPLEX	1	/* возможность эмуляции передачи виброплексом */
 
 	#define WITHMENU 	1	/* функциональность меню может быть отключена - если настраивать нечего */
-	#define WITHDEBUG		1	/* Отладочная печать через COM-порт. Без CAT (WITHCAT) */
 	#define WITHSAMEBFO	1	/* использование общих настроек BFO для приёма и передачи */
 	//#define WITHBCBANDS	1		/* в таблице диапазонов присутствуют вещательные диапазоны */
 	#define WITHWARCBANDS	1	/* В таблице диапазонов присутствуют HF WARC диапазоны */
@@ -157,17 +159,8 @@
 	#define FTW_RESOLUTION 32	/* разрядность FTW выбранного DDS */
 
 	// Тип синтезатора
-	#if 1
-		// Поздняя версия - всё на Si5351A
-		#define WITHSI5351AREPLACE 1
-	#else
-		// Ранняя версия
-		#define DDS1_TYPE DDS_TYPE_AD9951
-		//#define PLL1_TYPE PLL_TYPE_SI570
-		//#define PLL1_FRACTIONAL_LENGTH	28	/* Si570: lower 28 bits is a fractional part */
-		//#define DDS2_TYPE DDS_TYPE_AD9835
-		#define DDS2_TYPE DDS_TYPE_AD9834
-	#endif
+	// всё на Si5351A
+	#define WITHSI5351AREPLACE 1
 
 	/* Board hardware configuration */
 
@@ -176,20 +169,14 @@
 	#define DDS2_CLK_DIV	1		/* Делитель опорной частоты перед подачей в DDS2 */
 
 	/* Назначение адресов на SPI шине */
-	#define targetdds1 SPI_CSEL0	/* DDS1 - LO1 generator */
-	#define targetdds2 SPI_CSEL1	/* DDS2 - LO3 generator */
+	//#define targetdds1 SPI_CSEL0	/* DDS1 - LO1 generator */
+	//#define targetdds2 SPI_CSEL1	/* DDS2 - LO3 generator */
 	//#define targetpll1 SPI_CSEL2	/* ADF4001 after DDS1 - divide by r1 and scale to n1. Для двойной DDS первого гетеродина - вторая DDS */
-	#define targetlcd SPI_CSEL2 	/* LCD over SPI line devices control */
-	#define targetuc1608 SPI_CSEL255	/* LCD with positive chip select signal	*/
+	//#define targetlcd SPI_CSEL2 	/* LCD over SPI line devices control */
+	//#define targetuc1608 SPI_CSEL255	/* LCD with positive chip select signal	*/
 	//#define targetpll2 SPI_CSEL3	/* ADF4001 - fixed 2-nd LO generate or LO1 divider */ 
 	#define targetctl1 SPI_CSEL4	/* control register */
 	#define targetnvram SPI_CSEL5 	/* serial nvram */
-
-	/* коды фильтров второй ПЧ, выдаваемые на дешифраторы */
-	#define BOARD_FILTER_0P5		BOARD_FILTERCODE_1	/* 0.5 or 0.3 kHz filter */
-	#define BOARD_FILTER_1P8		BOARD_FILTERCODE_1	/* 1.8 kHz filter - установлен вместо фильтра 0.5 */
-	#define BOARD_FILTER_2P7		BOARD_FILTERCODE_0	/* 3.1 or 2.75 kHz filter */
-	//#define BOARD_FILTER_WFM		2	/* 3.1 or 2.75 kHz filter */
 
 	#define WITHMODESETMIXONLY3 1
 	//#define WITHMODESETMIXONLY3AM 1
@@ -198,46 +185,53 @@
 	#define IF3_FMASKTX (IF3_FMASK_2P7)
 	#define IF3_FHAVE (IF3_FMASK_2P7 | IF3_FMASK_0P5)
 
-#define WITHSPLIT	1	/* управление режимами расстройки одной кнопкой */
-//#define WITHSPLITEX	1	/* Трехкнопочное управление режимами расстройки */
-//#define WITHCATEXT	1	/* Расширенный набор команд CAT */
-//#define WITHELKEY	1
-//#define WITHKBDENCODER 1	// перестройка частоты кнопками
-#define WITHKEYBOARD 1	/* в данном устройстве есть клавиатура */
-#define KEYBOARD_USE_ADC	1	/* на одной линии установлено  четыре  клавиши. на vref - 6.8K, далее 2.2К, 4.7К и 13K. */
-#define KEYBOARD_USE_ADC6_V1	1	/* шесть кнопок на каждом входе ADCx */
+	#define WITHSPLIT	1	/* управление режимами расстройки одной кнопкой */
+	//#define WITHSPLITEX	1	/* Трехкнопочное управление режимами расстройки */
+	//#define WITHCATEXT	1	/* Расширенный набор команд CAT */
+	//#define WITHELKEY	1
+	//#define WITHKBDENCODER 1	// перестройка частоты кнопками
+	#define WITHKEYBOARD 1	/* в данном устройстве есть клавиатура */
+	#define KEYBOARD_USE_ADC	1	/* на одной линии установлено  четыре  клавиши. на vref - 6.8K, далее 2.2К, 4.7К и 13K. */
+	#define KEYBOARD_USE_ADC6_V1	1	/* шесть кнопок на каждом входе ADCx */
 
-// Назначения входов АЦП процессора.
-enum 
-{ 
-	//VOLTSOURCE = 2, // Средняя точка делителя напряжения, для АКБ
-#if WITHBARS
-	SMETERIX = 3,	// S-meter
-	PWRI = 5,		// Индикатор мощности передатчика
-	//FWD = 4, REF = 3,	// SWR-meter
-#endif /* WITHBARS */
-	KI0 = 6, // клавиатура
-};
+	// Назначения входов АЦП процессора.
+	enum 
+	{ 
+		//VOLTSOURCE = 2, // Средняя точка делителя напряжения, для АКБ
+	#if WITHBARS
+		SMETERIX = 3,	// S-meter
+		PWRI = 5,		// Индикатор мощности передатчика
+		//FWD = 4, REF = 3,	// SWR-meter
+	#endif /* WITHBARS */
+		KI0 = 6, // клавиатура
+	};
 
-#define KI_COUNT 1	// количество используемых под клавиатуру входов АЦП
+	#define KI_COUNT 1	// количество используемых под клавиатуру входов АЦП
 
-#define VOLTLEVEL_UPPER		43	// 4.3 kOhm - верхний резистор делителя датчика напряжения
-#define VOLTLEVEL_LOWER		10	// 1.0 kOhm - нижний резистор
+	#define VOLTLEVEL_UPPER		43	// 4.3 kOhm - верхний резистор делителя датчика напряжения
+	#define VOLTLEVEL_LOWER		10	// 1.0 kOhm - нижний резистор
 
-#define WITHATT2_6DB		1	// Управление двухкаскадным аттенюатором без управления УВЧ
-#define WITHAGCMODENONE		1	/* Режимами АРУ не управляем */
+	#define WITHATT2_6DB		1	// Управление двухкаскадным аттенюатором без управления УВЧ
+	#define WITHAGCMODENONE		1	/* Режимами АРУ не управляем */
 
-/* коды входов коммутатора источников сигнала для УНЧ приёмника */
-#define BOARD_DETECTOR_MUTE 0
-#define BOARD_DETECTOR_SSB 	0
-#define BOARD_DETECTOR_AM 	0
-#define BOARD_DETECTOR_FM 	0
-#define BOARD_DETECTOR_TUNE 0x00	/* конфигурация платы для режима TUNE (CWZ на передачу) */
-/* коды фильтров второй ПЧ, выдаваемые на дешифраторы */
-#define	BOARD_FILTERCODE_0	0
-#define	BOARD_FILTERCODE_1	0
-#define	BOARD_FILTERCODE_2	0
-#define	BOARD_FILTERCODE_3	0
+
+	/* коды фильтров второй ПЧ, выдаваемые на дешифраторы */
+	#define BOARD_FILTER_0P5		BOARD_FILTERCODE_1	/* 0.5 or 0.3 kHz filter */
+	#define BOARD_FILTER_1P8		BOARD_FILTERCODE_1	/* 1.8 kHz filter - установлен вместо фильтра 0.5 */
+	#define BOARD_FILTER_2P7		BOARD_FILTERCODE_0	/* 3.1 or 2.75 kHz filter */
+	//#define BOARD_FILTER_WFM		2	/* 3.1 or 2.75 kHz filter */
+
+	/* коды входов коммутатора источников сигнала для УНЧ приёмника */
+	#define BOARD_DETECTOR_MUTE 0
+	#define BOARD_DETECTOR_SSB 	0
+	#define BOARD_DETECTOR_AM 	0
+	#define BOARD_DETECTOR_FM 	0
+	#define BOARD_DETECTOR_TUNE 0x00	/* конфигурация платы для режима TUNE (CWZ на передачу) */
+	/* коды фильтров второй ПЧ, выдаваемые на дешифраторы */
+	#define	BOARD_FILTERCODE_0	0
+	#define	BOARD_FILTERCODE_1	0
+	#define	BOARD_FILTERCODE_2	0
+	#define	BOARD_FILTERCODE_3	0
 
 
 

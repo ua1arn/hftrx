@@ -790,7 +790,21 @@ prog_ctrlreg(uint_fast8_t plane)
 	static void 
 	prog_ctrlreg(uint_fast8_t plane)
 	{
+		const spitarget_t target = targetctl1;
+		rbtype_t rbbuff [3] = { 0 };
+		
+		RBBIT(007, 0);				// полоса
+		RBBIT(006, 0);				// ревербератор
+		RBBIT(005, 0);				// эквалайзер
 
+		RBBIT(004, glob_bandf);		// 0: меньше 2 ћ√ц, 1 - выше
+		RBVAL(002, glob_att, 2);				/* ATT */
+		RBBIT(001, glob_tx);
+		RBBIT(000, glob_mikemute);
+
+		spi_select(target, CTLREG_SPIMODE);
+		prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
+		spi_unselect(target);
 	}
 
 #elif CTLREGSTYLE_SW2012CN_RN3ZOB

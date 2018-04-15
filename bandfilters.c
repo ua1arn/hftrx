@@ -283,6 +283,10 @@
 		FQMODEL_FMRADIO || \
 		0
 	// В этих аппаратах не требовалось выбирать диапазонные фильтры
+#elif \
+	BANDSELSTYLERE_RA4YBO_AM0 || \
+	0
+	// Вычисления производятся в bandf_calc
 #else
 	#error No band selection hardware supported
 #endif
@@ -426,11 +430,19 @@ uint8_t bandf_calc(
 		return middle + 1;
 	}
 	return bottom != 0 ? (sizeof board_bandfs / sizeof board_bandfs [0]): 0;
+
+#elif \
+	BANDSELSTYLERE_RA4YBO_AM0 || \
+	0
+
+	const unsigned long M = 1000uL * 1000;
+	const fseltype_t f = (fseltype_t) (freq >> BANDDIVPOWER);
+
+	if (f < (fseltype_t) ((2 * M) >> BANDDIVPOWER))
+		return 0;
+	return 1;
+
 #else /* BANDCALCS */
 	return 0;
 #endif /* BANDCALCS */
 }
-
-
-
-
