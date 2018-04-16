@@ -350,6 +350,32 @@ enum {
 	{
 		{ 0, "   " },	// три символа нужны для стирания надписи OVF если используется индикация в одном месте с PRE
 	};
+#elif WITHATT2_10DB
+	/* Управление двухкаскадным аттенюатором с затуханиями 0 - 10 - 20 - 30 dB без УВЧ */
+
+	/* строки, выводимые на индикатор для обозначения режимов.
+	 */
+
+	static const FLASHMEM struct {
+		unsigned char code;
+		char label [5];
+	}  attmodes [] =
+	{
+		{ 0, "    " },
+		{ 1, "10dB" },
+		{ 2, "20dB" },
+		{ 3, "30dB" },
+	};
+
+	/* строки, выводимые на индикатор для обозначения режимов.
+	 */
+	static const FLASHMEM struct {
+		unsigned char code;
+		char label [4];
+	}  pampmodes [] =
+	{
+		{ 0, "   " },	// три символа нужны для стирания надписи OVF если используется индикация в одном месте с PRE
+	};
 #elif WITHATT1PRE1
 
 	static const FLASHMEM struct {
@@ -1966,6 +1992,11 @@ get_band_bandset(vindex_t b)	/* b: диапазон в таблице bandsmap */
 		{ 2, SUBMODE_CWR, SUBMODE_CW, },
 		{ 3, SUBMODE_DGU, SUBMODE_DGL, SUBMODE_CWZ, },
 	};
+#elif WITHMODESAMONLY
+	static const uint_fast8_t modes [][2] =
+	{
+		{ 1, SUBMODE_AM, },
+	};
 #elif WITHMODESETMIXONLY3AM
 	static const uint_fast8_t modes [][4] =
 	{
@@ -2565,7 +2596,8 @@ filter_t fi_2p0_455 =
 
 #if CTLSTYLE_RA4YBO
 	uint8_t gaffilter;		/* включение ФНЧ на приёме в аппарате RA4YBO */
-#elif CTLSTYLE_RA4YBO_V1 || CTLSTYLE_RA4YBO_V2
+#elif CTLSTYLE_RA4YBO_V1 || CTLSTYLE_RA4YBO_V2 || KEYBSTYLE_RA4YBO_AM0
+	uint8_t gaffilter;		/* включение ФНЧ на приёме в аппарате RA4YBO */
 	uint8_t guser1;
 	uint8_t guser2;
 	uint8_t guser3;
@@ -3311,7 +3343,7 @@ static uint_fast8_t gmodecolmaps4 [2] [4];	/* индексом 1-й размерности используе
 										/* маска режимов работы (тройки бит, указывают номер позиции в каждой строке) */
 #if CTLSTYLE_RA4YBO
 	static uint_fast8_t  gaffilter;		/* включение ФНЧ на приёме в аппарате RA4YBO */
-#elif CTLSTYLE_RA4YBO_V1 || CTLSTYLE_RA4YBO_V2 || CTLSTYLE_RA4YBO_V3
+#elif CTLSTYLE_RA4YBO_V1 || CTLSTYLE_RA4YBO_V2 || CTLSTYLE_RA4YBO_V3 || KEYBSTYLE_RA4YBO_AM0
 	static uint_fast8_t  guser1;
 	static uint_fast8_t  guser2;
 	static uint_fast8_t  guser3;
@@ -4979,7 +5011,7 @@ loadsavedstate(void)
 #endif /* WITHSPKMUTE */
 #if CTLSTYLE_RA4YBO
 	gaffilter = loadvfy8up(RMT_AFFILTER_BASE, 0, 1, gaffilter);	/* включение ФНЧ на приёме в аппарате RA4YBO */
-#elif CTLSTYLE_RA4YBO_V1 || CTLSTYLE_RA4YBO_V2
+#elif CTLSTYLE_RA4YBO_V1 || CTLSTYLE_RA4YBO_V2 || KEYBSTYLE_RA4YBO_AM0
 	guser1 = loadvfy8up(RMT_USER1_BASE, 0, 1, guser1);
 	guser2 = loadvfy8up(RMT_USER2_BASE, 0, 1, guser2);
 	guser3 = loadvfy8up(RMT_USER3_BASE, 0, 1, guser3);
@@ -6456,6 +6488,12 @@ updateboard(
 			prog_dac1_a_value(gtxpower [amode]);		// power level
 			prog_dac1_b_value(gtx ? gtxcompr [amode] : 0x00);		// compression level
 
+		#elif KEYBSTYLE_RA4YBO_AM0
+
+			board_set_user1(guser1);
+			board_set_user2(guser2);
+			board_set_user3(guser3);
+
 		#elif CTLREGMODE_RA4YBO_V1
 
 			prog_dac1_b_value(255 - gtxpower [amode]);		// power level
@@ -7184,7 +7222,7 @@ uif_key_affilter(void)
 // обработчики кнопок клавиатуры
 //////////////////////////
 
-#elif CTLSTYLE_RA4YBO_V1 || CTLSTYLE_RA4YBO_V2 || CTLSTYLE_RA4YBO_V3
+#elif CTLSTYLE_RA4YBO_V1 || CTLSTYLE_RA4YBO_V2 || CTLSTYLE_RA4YBO_V3 || KEYBSTYLE_RA4YBO_AM0
 
 static void 
 uif_key_user1(void)
@@ -7194,7 +7232,6 @@ uif_key_user1(void)
 	updateboard(1, 0);
 }
 
-/*
 static void 
 uif_key_user2(void)
 {
@@ -7209,7 +7246,6 @@ uif_key_user3(void)
 	save_i8(RMT_USER3_BASE, guser3);
 	updateboard(1, 0);
 }
-*/
 
 static void 
 uif_key_user4(void)
@@ -13776,6 +13812,19 @@ process_key_menuset_common(uint_fast8_t kbch)
 		return 1;	/* клавиша уже обработана */
 
 #endif /* CTLSTYLE_RA4YBO_V1 || CTLSTYLE_RA4YBO_V2*/
+
+#if KEYBSTYLE_RA4YBO_AM0
+
+	case KBD_CODE_USER1:
+		uif_key_user1();
+		return 1;	/* клавиша уже обработана */
+	case KBD_CODE_USER2:
+		uif_key_user2();
+		return 1;	/* клавиша уже обработана */
+	case KBD_CODE_USER3:
+		uif_key_user3();
+		return 1;	/* клавиша уже обработана */
+#endif /* KEYBSTYLE_RA4YBO_AM0 */
 
 #if WITHELKEY
 

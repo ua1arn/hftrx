@@ -793,9 +793,9 @@ prog_ctrlreg(uint_fast8_t plane)
 		const spitarget_t target = targetctl1;
 		rbtype_t rbbuff [3] = { 0 };
 		
-		RBBIT(007, 0);				// полоса
-		RBBIT(006, 0);				// ревербератор
-		RBBIT(005, 0);				// эквалайзер
+		RBBIT(007, glob_user1);				// полоса
+		RBBIT(006, glob_user2);				// ревербератор
+		RBBIT(005, glob_user3);				// эквалайзер
 
 		RBBIT(004, glob_bandf);		// 0: меньше 2 МГц, 1 - выше
 		RBVAL(002, glob_att, 2);				/* ATT */

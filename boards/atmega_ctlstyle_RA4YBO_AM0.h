@@ -33,6 +33,7 @@
 		//#define DIRECT_60M0_X6		1	/* Board hardware configuration */
 		//#define DIRECT_125M0_X3		1	/* Board hardware configuration */
 
+		#define DEFAULTDIALFREQ	1440000L
 		#define BANDSELSTYLERE_RA4YBO_AM0	1
 		//#define BANDSELSTYLERE_LOCONV32M	1
 		//#define BANDSELSTYLERE_LOCONV32M_NLB	1	/* Down-conversion with working band 1.6..32 MHz */
@@ -178,7 +179,8 @@
 	#define targetctl1 SPI_CSEL4	/* control register */
 	#define targetnvram SPI_CSEL5 	/* serial nvram */
 
-	#define WITHMODESETMIXONLY3 1
+	#define WITHMODESAMONLY 1
+	//#define WITHMODESETMIXONLY3 1
 	//#define WITHMODESETMIXONLY3AM 1
 
 	#define IF3_FMASK (IF3_FMASK_2P7 | /*IF3_FMASK_1P8 | */IF3_FMASK_0P5)
@@ -211,7 +213,7 @@
 	#define VOLTLEVEL_UPPER		43	// 4.3 kOhm - верхний резистор делителя датчика напряжения
 	#define VOLTLEVEL_LOWER		10	// 1.0 kOhm - нижний резистор
 
-	#define WITHATT2_6DB		1	// Управление двухкаскадным аттенюатором без управления УВЧ
+	#define WITHATT2_10DB		1	// Управление двухкаскадным аттенюатором без управления УВЧ
 	#define WITHAGCMODENONE		1	/* Режимами АРУ не управляем */
 
 
