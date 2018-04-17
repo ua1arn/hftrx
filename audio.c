@@ -11299,6 +11299,7 @@ static RAMFUNC_NONILINE FLOAT_t baseband_demodulator(
 			const FLOAT32P_t af = get_float_aflo_delta(0, pathi);	// средняя частота выходного спектра
 			r = (vp1.QV * af.QV + vp1.IV * af.IV); // переносим на выходную частоту ("+" - без инверсии).
 			r = r * rxoutdenom;
+			r *= agc_squelchopen(pathi);
 		}
 		break;
 
@@ -11333,6 +11334,7 @@ static RAMFUNC_NONILINE FLOAT_t baseband_demodulator(
 				const int nbopen = getholdmax3() < nbfence;
 				r = (nbopen != 0) ? r : (r / 16);
 			}
+			r *= agc_squelchopen(pathi);
 		}
 		else
 			r = 0;
@@ -11349,6 +11351,7 @@ static RAMFUNC_NONILINE FLOAT_t baseband_demodulator(
 			const FLOAT_t sample = SQRTF(vp1.IV * vp1.IV + vp1.QV * vp1.QV);// * (FLOAT_t) 0.5; //M_SQRT1_2;
 			//saved_delta_fi [pathi] = demodulator_FM(vp2, pathi);	// погрешность настройки - требуется фильтровать ФНЧ
 			r = sample * rxoutdenom;
+			r *= agc_squelchopen(pathi);
 		}
 		else
 			r = 0;
@@ -11370,12 +11373,13 @@ static RAMFUNC_NONILINE FLOAT_t baseband_demodulator(
 			// Демодуляция SАМ
 			const FLOAT_t sample = demodulator_SAM(vp1, pathi);
 			r = sample * rxoutdenom;
+			r *= agc_squelchopen(pathi);
 		}
 		else
 			r = 0;
 		break;
 	}
-	return r * agc_squelchopen(pathi);
+	return r;
 }
 
 // Расширение знакового 24/32 битного числа (left justified) до 32 бит
