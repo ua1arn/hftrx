@@ -10458,8 +10458,8 @@ agc_delaysignal(
 }
 
 // АРУ вперёд для floaing-point тракта
-// получение усиления
-static RAMFUNC FLOAT_t agc_forvard_float(
+// получение измеренного уровня сигнала
+static RAMFUNC FLOAT_t agc_measure_float(
 	const uint_fast8_t dspmode, 
 	FLOAT32P_t sampleiq, 
 	uint_fast8_t pathi
@@ -10482,22 +10482,33 @@ static RAMFUNC FLOAT_t agc_forvard_float(
 	performagc(agcp, st, strength);	// измеритель уровня сигнала
 	//END_STAMP();
 
+	END_STAMP3();
+	return performagcresultslow(st);
+}
+
+// АРУ вперёд для floaing-point тракта
+// получение усиления
+static RAMFUNC FLOAT_t agc_getgain_float(
+	FLOAT_t fltstrengthslow,
+	uint_fast8_t pathi
+	)
+{
+	const volatile agcparams_t * const agcp = & rxagcparams [gwagcprofrx] [pathi];
+
 	//BEGIN_STAMP();
-	const FLOAT_t gain = agccalcgain(agcp, performagcresultslow(st));
+	const FLOAT_t gain = agccalcgain(agcp, fltstrengthslow);
 	//END_STAMP();
 
-	END_STAMP3();
 	return gain;
 }
 
 static FLOAT_t manualsquelch [NTRX] = { 0, };
 
 static RAMFUNC int agc_squelchopen(
+	FLOAT_t fltstrengthslow,
 	uint_fast8_t pathi
 	)
 {
-	volatile agcstate_t * const st = & rxagcstate [pathi];
-	const FLOAT_t fltstrengthslow = performagcresultslow(st);	// измеритель уровня сигнала
 	return fltstrengthslow > manualsquelch [pathi];
 }
 // Функция для S-метра - получение десятичного логарифма уровня сигнала от FS
@@ -11294,12 +11305,13 @@ static RAMFUNC_NONILINE FLOAT_t baseband_demodulator(
 	case DSPCTL_MODE_RX_FREEDV:
 		{
 			// use floating point
-			const FLOAT_t gain = agc_forvard_float(dspmode, vp0f, pathi);
+			const FLOAT_t fltstrengthslow = agc_measure_float(dspmode, vp0f, pathi);
+			const FLOAT_t gain = agc_getgain_float(fltstrengthslow, pathi);
 			const FLOAT32P_t vp1 = scalepair(agc_delaysignal(vp0f, pathi), gain);
 			const FLOAT32P_t af = get_float_aflo_delta(0, pathi);	// средняя частота выходного спектра
 			r = (vp1.QV * af.QV + vp1.IV * af.IV); // переносим на выходную частоту ("+" - без инверсии).
 			r = r * rxoutdenom;
-			r *= agc_squelchopen(pathi);
+			r *= agc_squelchopen(fltstrengthslow, pathi);
 		}
 		break;
 
@@ -11307,7 +11319,8 @@ static RAMFUNC_NONILINE FLOAT_t baseband_demodulator(
 	case DSPCTL_MODE_RX_BPSK:
 		if (pathi == 0)
 		{
-			/*const FLOAT_t gain = */agc_forvard_float(dspmode, vp0f, pathi);	// для отображения S-метра
+			/*const FLOAT_t fltstrengthslow = */ agc_measure_float(dspmode, vp0f, pathi);
+			//const FLOAT_t gain = agc_getgain_float(fltstrengthslow, pathi);
 			//INT32P_t vp0i32;
 			//saved_delta_fi [pathi] = demodulator_FM(vp0f, pathi);	// погрешность настройки - требуется фильтровать ФНЧ
 			modem_demod_iq(vp0f);
@@ -11320,7 +11333,8 @@ static RAMFUNC_NONILINE FLOAT_t baseband_demodulator(
 		if (/*DUALRXFLT || */pathi == 0)
 		{
 			// Демодуляция NBFM
-			/*const FLOAT_t gain = */agc_forvard_float(dspmode, vp0f, pathi);	// для отображения S-метра
+			const FLOAT_t fltstrengthslow = agc_measure_float(dspmode, vp0f, pathi);
+			//const FLOAT_t gain = agc_getgain_float(fltstrengthslow, pathi);
 			saved_delta_fi [pathi] = demodulator_FM(vp0f, pathi);	// погрешность настройки - требуется фильтровать ФНЧ
 			//const int fdelta10 = ((int64_t) saved_delta_fi [pathi] * ARMSAIRATE * 10) >> 32;	// Отклнение частоты в 0.1 герц единицах
 			// значение для прослушивания
@@ -11334,7 +11348,7 @@ static RAMFUNC_NONILINE FLOAT_t baseband_demodulator(
 				const int nbopen = getholdmax3() < nbfence;
 				r = (nbopen != 0) ? r : (r / 16);
 			}
-			r *= agc_squelchopen(pathi);
+			r *= agc_squelchopen(fltstrengthslow, pathi);
 		}
 		else
 			r = 0;
@@ -11345,13 +11359,14 @@ static RAMFUNC_NONILINE FLOAT_t baseband_demodulator(
 		{
 			/* AM demodulation */
 			// Здесь, имея квадратурные сигналы vp1.IV и vp1.QV, начинаем демодуляции
-			const FLOAT_t gain = agc_forvard_float(dspmode, vp0f, pathi);
+			const FLOAT_t fltstrengthslow = agc_measure_float(dspmode, vp0f, pathi);
+			const FLOAT_t gain = agc_getgain_float(fltstrengthslow, pathi);
 			const FLOAT32P_t vp1 = scalepair(agc_delaysignal(vp0f, pathi), gain);
 			// Демодуляция АМ
 			const FLOAT_t sample = SQRTF(vp1.IV * vp1.IV + vp1.QV * vp1.QV);// * (FLOAT_t) 0.5; //M_SQRT1_2;
 			//saved_delta_fi [pathi] = demodulator_FM(vp2, pathi);	// погрешность настройки - требуется фильтровать ФНЧ
 			r = sample * rxoutdenom;
-			r *= agc_squelchopen(pathi);
+			r *= agc_squelchopen(fltstrengthslow, pathi);
 		}
 		else
 			r = 0;
@@ -11366,14 +11381,15 @@ static RAMFUNC_NONILINE FLOAT_t baseband_demodulator(
 		{
 			/* synchronous AM demodulation */
 			// Здесь, имея квадратурные сигналы vp1.IV и vp1.QV, начинаем демодуляции
-			const FLOAT_t gain = agc_forvard_float(dspmode, vp0f, pathi);
+			const FLOAT_t fltstrengthslow = agc_measure_float(dspmode, vp0f, pathi);
+			const FLOAT_t gain = agc_getgain_float(fltstrengthslow, pathi);
 			const FLOAT32P_t vp1 = scalepair(agc_delaysignal(vp0f, pathi), gain);
 			//const FLOAT_t sample = SQRTF(vp1.IV * vp1.IV + vp1.QV * vp1.QV) * (FLOAT_t) 0.5; //M_SQRT1_2;
 			//saved_delta_fi [pathi] = demodulator_FM(vp2, pathi);	// погрешность настройки - требуется фильтровать ФНЧ
 			// Демодуляция SАМ
 			const FLOAT_t sample = demodulator_SAM(vp1, pathi);
 			r = sample * rxoutdenom;
-			r *= agc_squelchopen(pathi);
+			r *= agc_squelchopen(fltstrengthslow, pathi);
 		}
 		else
 			r = 0;

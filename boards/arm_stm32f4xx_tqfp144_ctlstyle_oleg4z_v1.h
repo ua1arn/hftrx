@@ -213,8 +213,8 @@
 
 	#define ENCRES_DEFAULT ENCRES_128
 	//#define ENCRES_DEFAULT ENCRES_24
-	#define WITHDIRECTFREQENER	1 //(! CTLSTYLE_SW2011ALL && ! CTLSTYLE_UA3DKC)
-	#define	WITHENCODER	1	/* для изменения частоты имеется енкодер */
+	//#define WITHDIRECTFREQENER	1 //(! CTLSTYLE_SW2011ALL && ! CTLSTYLE_UA3DKC)
+	//#define	WITHENCODER	1	/* для изменения частоты имеется енкодер */
 
 	/* Board hardware configuration */
 	//#define CODEC1_TYPE CODEC_TYPE_TLV320AIC23B
@@ -359,8 +359,8 @@
 	// --- Эти строки можно отключать, уменьшая функциональность готового изделия
 
 	//#define LO1PHASES	1		/* Прямой синтез первого гетеродина двумя DDS с програмимруемым сдвигом фазы */
-	#define DEFPREAMPSTATE 	1	/* УВЧ по умолчанию включён (1) или выключен (0) */
-	#define WITHFANTIMER	1	/* выключающийся по таймеру вентилятор в усилителе мощности */
+	#define DEFPREAMPSTATE 	0	/* УВЧ по умолчанию включён (1) или выключен (0) */
+	//#define WITHFANTIMER	1	/* выключающийся по таймеру вентилятор в усилителе мощности */
 
 	/* что за память настроек и частот используется в контроллере */
 	//#define NVRAM_TYPE NVRAM_TYPE_FM25XXXX	// SERIAL FRAM AUTODETECT
@@ -396,7 +396,7 @@
 	#define DDS1_CLK_DIV	1		/* Делитель опорной частоты перед подачей в DDS1 */
 
 	/* Назначение адресов на SPI шине */
-	#define targetdds1	SPI_CSEL_PG0 	/* FPGA NCO1 */
+	//#define targetdds1	SPI_CSEL_PG0 	/* FPGA NCO1 */
 	#define targetext1	SPI_CSEL_PG15 	/* external devices control */
 	#define targetctl1	SPI_CSEL_PG7 	/* control register as a chain of registers */
 	#define targetfpga1	SPI_CSEL_PG1 	/* control register in FPGA */
@@ -405,7 +405,7 @@
 	#define targetuc1608 targetext1	/* LCD with positive chip select signal	*/
 
 	#define targetnvram SPI_CSEL_PG8  	/* serial nvram */
-	#define targetcodec1 SPI_CSEL_PG6 	/* NAU8822L */
+	//#define targetcodec1 SPI_CSEL_PG6 	/* NAU8822L */
 
 	#define WITHMODESETFULLNFMWFM 1
 
@@ -423,7 +423,7 @@
 	//#define WITHELKEY	1
 	//#define WITHKBDENCODER 1	// перестройка частоты кнопками
 	//#define WITHKEYBOARD 1	/* в данном устройстве есть клавиатура */
-	#define KEYBOARD_USE_ADC	1	/* на одной линии установлено  четыре  клавиши. на vref - 6.8K, далее 2.2К, 4.7К и 13K. */
+	//#define KEYBOARD_USE_ADC	1	/* на одной линии установлено  четыре  клавиши. на vref - 6.8K, далее 2.2К, 4.7К и 13K. */
 
 	#define VOLTLEVEL_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика напряжения
 	#define VOLTLEVEL_LOWER		10	// 1.0 kOhm - нижний резистор

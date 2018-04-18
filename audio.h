@@ -107,23 +107,30 @@
 
 #endif /* WITHDSPEXTDDC */
 
-#define DMABUFCLUSTER	8	// Cделано небольшое количество - чтобы не пропускало прерывания от валкодера при обработке звука
-#define DMABUFMULT		7
+#define MSOUTSAMPLES	((ARMI2SRATE100 + 99) / 100000)	/* количество сэмплов за милисекунду в UAC OUT */
+#define MSINSAMPLES		50 //(MSOUTSAMPLES + 2)	/* количество сэмплов за милисекунду в UAC IN */
+
+#define DMABUFFSIZE16 (MSINSAMPLES * DMABUFSTEP16)	/* размер под USB ENDPOINT PACKET SIZE В буфере помещаются пары значений - стерео кодек */
 
 #if ! WITHI2SHW
+
+	#define NNNDERATE 5
+
+	#define DMABUFCLUSTER	(MSINSAMPLES / NNNDERATE)	// Cделано небольшое количество - чтобы не пропускало прерывания от валкодера при обработке звука
 
 	// Конфигурации без аудиокодека
 	// количество сэмплов в DMABUFFSIZE32RX и DMABUFFSIZE16 должно быть одинаковым.
 	// Обеспечить вызовы функции buffers_resample(void)
 
-	#define DMABUFFSIZE32RX (DMABUFCLUSTER * DMABUFSTEP32RX * DMABUFMULT)
-	#define DMABUFFSIZE32TX (DMABUFCLUSTER * DMABUFSTEP32TX * DMABUFMULT * 4)
-	#define DMABUFFSIZE16 (DMABUFCLUSTER * DMABUFSTEP16 * DMABUFMULT)	/* размер под USB ENDPOINT PACKET SIZE В буфере помещаются пары значений - стерео кодек */
-
-#else /* ! WITHI2SHW */
 	#define DMABUFFSIZE32RX (DMABUFCLUSTER * DMABUFSTEP32RX)
 	#define DMABUFFSIZE32TX (DMABUFCLUSTER * DMABUFSTEP32TX * 4)
-	#define DMABUFFSIZE16 (DMABUFCLUSTER * DMABUFSTEP16 * DMABUFMULT)	/* размер под USB ENDPOINT PACKET SIZE В буфере помещаются пары значений - стерео кодек */
+
+#else /* ! WITHI2SHW */
+
+	#define DMABUFCLUSTER	8	// Cделано небольшое количество - чтобы не пропускало прерывания от валкодера при обработке звука
+
+	#define DMABUFFSIZE32RX (DMABUFCLUSTER * DMABUFSTEP32RX)
+	#define DMABUFFSIZE32TX (DMABUFCLUSTER * DMABUFSTEP32TX * 4)
 #endif /* ! WITHI2SHW */
 
 // Параметры для канала передачи Real Time Spectrum - stereo, 32 bit, 192 kS/S
@@ -131,8 +138,56 @@
 #define DMABUFFSIZE192RTS (128/*288*/ * DMABUFSTEP192RTS)
 
 #define DMABUFSTEP96RTS 6	// 6: стерео по 24 бит
-#define DMABUFFSIZE96RTS 600 //((96 + 4) * DMABUFSTEP96RTS)		// 588 - должно быть кратно 4 байтам - для работы DMA в Renesas
+#define DMABUFFSIZE96RTS 588 //((96 + 4) * DMABUFSTEP96RTS)		// 588 - должно быть кратно 4 байтам - для работы DMA в Renesas
 
+
+#if WITHRTS96
+
+	// stereo, 24 bit samples
+	#define HARDWARE_USBD_AUDIO_IN_SAMPLEBITS_RTS96		24
+	#define VIRTUAL_AUDIO_PORT_DATA_SIZE_IN_RTS96		(DMABUFFSIZE96RTS * sizeof (uint8_t))
+
+	#define HSINTERVAL_RTS96 4	// endpoint descriptor parameters
+	#define FSINTERVAL_RTS96 1
+
+#endif /* WITHRTS96 */
+#if WITHRTS192
+
+	// По каналу real-time спектра стерео, 32 бит, 192 кГц - 288*2*4 = 2304 байта
+	// stereo, 32 bit samples
+	#define HARDWARE_USBD_AUDIO_IN_SAMPLEBITS_RTS192	32
+	#define VIRTUAL_AUDIO_PORT_DATA_SIZE_IN_RTS192		(DMABUFFSIZE192RTS * sizeof (int8_t))
+
+	#define HSINTERVAL_RTS192 3	// 500 us
+	#define FSINTERVAL_RTS192 1
+
+#endif /* WITHRTS192 */
+
+#define HARDWARE_USBD_AUDIO_IN_CHANNELS_RTS		2	// I/Q всегда стерео
+
+// stereo, 16 bit samples
+// По звуковому каналу передается стерео, 16 бит, 48 кГц - 288 байт размер данных в ендпонтт
+#define HARDWARE_USBD_AUDIO_IN_SAMPLEBITS_AUDIO48	16
+#define HARDWARE_USBD_AUDIO_IN_CHANNELS_AUDIO48		2
+#define VIRTUAL_AUDIO_PORT_DATA_SIZE_IN_AUDIO48		(DMABUFFSIZE16 * sizeof (uint16_t))
+
+#define HSINTERVAL_AUDIO48 4	// endpoint descriptor parameters - для обеспечсения 1 кГц периода
+#define FSINTERVAL_AUDIO48 1
+
+#define HARDWARE_USBD_AUDIO_OUT_SAMPLEBITS	16
+#if WITHUABUACOUTAUDIO48MONO
+	#define HARDWARE_USBD_AUDIO_OUT_CHANNELS	1
+#else /* WITHUABUACOUTAUDIO48MONO */
+	#define HARDWARE_USBD_AUDIO_OUT_CHANNELS	2
+#endif /* WITHUABUACOUTAUDIO48MONO */
+
+// используются свои буферы
+#define VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT	( \
+	MSOUTSAMPLES * \
+	((HARDWARE_USBD_AUDIO_OUT_SAMPLEBITS * HARDWARE_USBD_AUDIO_OUT_CHANNELS + 7) / 8) \
+	)
+
+#define HARDWARE_USBD_AUDIO_IN_CHANNELS	2	/* для всех каналов в IN направлении */
 
 #if WITHINTEGRATEDDSP
 
@@ -411,53 +466,5 @@ void uacout_buffer_save(const uint8_t * buff, uint_fast16_t size);
 
 #define USBALIGN_BEGIN __attribute__ ((aligned (32)))
 #define USBALIGN_END /* nothing */
-
-#if WITHRTS96
-
-	// stereo, 24 bit samples
-	#define HARDWARE_USBD_AUDIO_IN_SAMPLEBITS_RTS96		24
-	#define VIRTUAL_AUDIO_PORT_DATA_SIZE_IN_RTS96		(DMABUFFSIZE96RTS * sizeof (uint8_t))
-
-	#define HSINTERVAL_RTS96 4	// endpoint descriptor parameters
-	#define FSINTERVAL_RTS96 1
-
-#endif /* WITHRTS96 */
-#if WITHRTS192
-
-	// По каналу real-time спектра стерео, 32 бит, 192 кГц - 288*2*4 = 2304 байта
-	// stereo, 32 bit samples
-	#define HARDWARE_USBD_AUDIO_IN_SAMPLEBITS_RTS192	32
-	#define VIRTUAL_AUDIO_PORT_DATA_SIZE_IN_RTS192		(DMABUFFSIZE192RTS * sizeof (int8_t))
-
-	#define HSINTERVAL_RTS192 3	// 500 us
-	#define FSINTERVAL_RTS192 1
-
-#endif /* WITHRTS192 */
-
-#define HARDWARE_USBD_AUDIO_IN_CHANNELS_RTS		2	// I/Q всегда стерео
-
-// stereo, 16 bit samples
-// По звуковому каналу передается стерео, 16 бит, 48 кГц - 288 байт размер данных в ендпонтт
-#define HARDWARE_USBD_AUDIO_IN_SAMPLEBITS_AUDIO48	16
-#define HARDWARE_USBD_AUDIO_IN_CHANNELS_AUDIO48		2
-#define VIRTUAL_AUDIO_PORT_DATA_SIZE_IN_AUDIO48		(DMABUFFSIZE16 * sizeof (uint16_t))
-
-#define HSINTERVAL_AUDIO48 4	// endpoint descriptor parameters - для обеспечсения 1 кГц периода
-#define FSINTERVAL_AUDIO48 1
-
-#define HARDWARE_USBD_AUDIO_OUT_SAMPLEBITS	16
-#if WITHUABUACOUTAUDIO48MONO
-	#define HARDWARE_USBD_AUDIO_OUT_CHANNELS	1
-#else /* WITHUABUACOUTAUDIO48MONO */
-	#define HARDWARE_USBD_AUDIO_OUT_CHANNELS	2
-#endif /* WITHUABUACOUTAUDIO48MONO */
-
-// используются свои буферы
-#define VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT	( \
-	((ARMI2SRATE100 + 99) / 100000) * \
-	((HARDWARE_USBD_AUDIO_OUT_SAMPLEBITS * HARDWARE_USBD_AUDIO_OUT_CHANNELS + 7) / 8) \
-	)
-
-#define HARDWARE_USBD_AUDIO_IN_CHANNELS	2	/* для всех каналов в IN направлении */
 
 #endif /* AUDIO_H_INCLUDED */

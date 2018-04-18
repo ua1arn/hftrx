@@ -1418,7 +1418,12 @@ void RAMFUNC processing_dmabuffer32rx(uintptr_t addr)
 	UNLOCK(& locklist32);
 
 #if WITHUSBUAC && ! WITHI2SHW
-	buffers_resample();		// формирование одного буфера синхронного потока из N несинхронного
+	static int n = NNNDERATE;
+	if (n -- == 0)
+	{
+		n = NNNDERATE;
+		buffers_resample();		// формирование одного буфера синхронного потока из N несинхронного
+	}
 #endif /* WITHUSBUAC */
 }
 

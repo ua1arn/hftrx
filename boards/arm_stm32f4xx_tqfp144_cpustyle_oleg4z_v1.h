@@ -23,12 +23,12 @@
 //#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 #define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 
-//#define WITHI2SHW	1	/* Использование I2S - аудиокодек на I2S2 и I2S2_alt	*/
+//#define WITHI2SHW	1	/* Использование I2S - аудиокодек на I2S2 и I2S3	*/
 #define WITHSAI1HW	1	/* Использование SAI1 - FPGA или IF codec	*/
 //#define WITHSAI2HW	1	/* Использование SAI2 - FPGA или IF codec	*/
 
-#define WITHCPUDACHW	1	/* использование встроенного в процессор DAC */
-#define WITHCPUADCHW 	1	/* использование встроенного в процессор ADC */
+//#define WITHCPUDACHW	1	/* использование встроенного в процессор DAC */
+//#define WITHCPUADCHW 	1	/* использование встроенного в процессор ADC */
 
 //#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
 //#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
