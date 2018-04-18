@@ -44,6 +44,7 @@
 #define WITHUSBHW_DEVICE	USB_OTG_HS	/* на этом устройстве поддерживается функцилнальность DEVUCE	*/
 //#define WITHUSBHW_HOST		USB_OTG_FS
 //#define WITHUSBHOST	1	/* debug */
+//#define WITHUABUACOUTAUDIO48MONO	1	/* для уменьшения размера буферов в endpoints */
 
 //#define WITHUART1HW	1	/* PA9, PA10 Используется периферийный контроллер последовательного порта #1 */
 #define WITHUART2HW	1	/* PD5, PD6 Используется периферийный контроллер последовательного порта #2 */
