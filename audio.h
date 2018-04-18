@@ -107,8 +107,10 @@
 
 #endif /* WITHDSPEXTDDC */
 
-#define MSOUTSAMPLES	((ARMI2SRATE100 + 99) / 100000)	/* количество сэмплов за милисекунду в UAC OUT */
-#define MSINSAMPLES		50 //(MSOUTSAMPLES + 2)	/* количество сэмплов за милисекунду в UAC IN */
+/* константы. С запасом чтобы работало и при тактовой 125 МГц на FPGA при децимации 2560. */
+/* Кроме того, MSINSAMPLES должно делиться на NNNDERATE без остатка */
+#define MSOUTSAMPLES	50 /* количество сэмплов за милисекунду в UAC OUT */
+#define MSINSAMPLES		50 /* количество сэмплов за милисекунду в UAC IN */
 
 #define DMABUFFSIZE16 (MSINSAMPLES * DMABUFSTEP16)	/* размер под USB ENDPOINT PACKET SIZE В буфере помещаются пары значений - стерео кодек */
 
@@ -138,7 +140,7 @@
 #define DMABUFFSIZE192RTS (128/*288*/ * DMABUFSTEP192RTS)
 
 #define DMABUFSTEP96RTS 6	// 6: стерео по 24 бит
-#define DMABUFFSIZE96RTS 588 //((96 + 4) * DMABUFSTEP96RTS)		// 588 - должно быть кратно 4 байтам - для работы DMA в Renesas
+#define DMABUFFSIZE96RTS 600 //((96 + 4) * DMABUFSTEP96RTS)		// 588 - должно быть кратно 4 байтам - для работы DMA в Renesas
 
 
 #if WITHRTS96

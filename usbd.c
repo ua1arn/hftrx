@@ -7454,7 +7454,7 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 	uint_fast16_t base4 = 0;
 #if WITHUSBCDC
 	// параметры TX FIFO для ендпоинтов, в которые никогда не будут идти данные для передачи
-	const uint_fast16_t size4dummy = bigbuff ? 0x10 : 4;
+	const uint_fast16_t size4dummy = 0x10;//bigbuff ? 0x10 : 4;
 	last4 -= size4dummy;
 	const uint_fast16_t last4dummy = last4;
 #endif /* WITHUSBCDC */
