@@ -140,7 +140,7 @@
 #define DMABUFFSIZE192RTS (128/*288*/ * DMABUFSTEP192RTS)
 
 #define DMABUFSTEP96RTS 6	// 6: стерео по 24 бит
-#define DMABUFFSIZE96RTS 600 //((96 + 4) * DMABUFSTEP96RTS)		// 588 - должно быть кратно 4 байтам - для работы DMA в Renesas
+#define DMABUFFSIZE96RTS (MSINSAMPLES * 2 * DMABUFSTEP96RTS) //((96 + 4) * DMABUFSTEP96RTS)		// 588 - должно быть кратно 4 байтам - для работы DMA в Renesas
 
 
 #if WITHRTS96
