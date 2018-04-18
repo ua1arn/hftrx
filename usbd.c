@@ -7491,8 +7491,8 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 		ASSERT(last4 >= size4);
 		last4 -= size4;
 		instance->DIEPTXF [pipe - 1] = usbd_makeTXFSIZ(last4, size4);
+		debug_printf_P(PSTR("usbd_fifo_initialize2 - UAC %u bytes: 4*(full4-last4)=%u\n"), 4 * size4, 4 * (full4 - last4));
 	}
-	debug_printf_P(PSTR("usbd_fifo_initialize2 - UAC: 4*(full4-last4)=%u\n"), 4 * (full4 - last4));
 #if WITHUSBUAC3
 	{
 		/* endpoint передачи звука (спектра) в компютер */
@@ -7505,8 +7505,8 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 		ASSERT(last4 >= size4);
 		last4 -= size4;
 		instance->DIEPTXF [pipe - 1] = usbd_makeTXFSIZ(last4, size4);
+		debug_printf_P(PSTR("usbd_fifo_initialize3 - UAC3 %u bytes: 4*(full4-last4)=%u\n"), 4 * size4, 4 * (full4 - last4));
 	}
-	debug_printf_P(PSTR("usbd_fifo_initialize3 - UAC3: 4*(full4-last4)=%u\n"), 4 * (full4 - last4));
 #endif /* WITHUSBUAC3 */
 #endif /* WITHUSBUAC */
 
@@ -7546,8 +7546,8 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 			last4 -= size4;
 			instance->DIEPTXF [pipe - 1] = usbd_makeTXFSIZ(last4, size4);
 			instance->DIEPTXF [pipeint - 1] = usbd_makeTXFSIZ(last4dummy, size4dummy);
+			debug_printf_P(PSTR("usbd_fifo_initialize4 CDC %u bytes: 4*(full4-last4)=%u\n"), 4 * size4, 4 * (full4 - last4));
 		}
-	debug_printf_P(PSTR("usbd_fifo_initialize4 CDC: 4*(full4-last4)=%u\n"), 4 * (full4 - last4));
 	}
 
 #endif /* WITHUSBCDC */
@@ -7574,12 +7574,12 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 		ASSERT(last4 >= size4);
 		last4 -= size4;
 		instance->DIEPTXF [pipe - 1] = usbd_makeTXFSIZ(last4, size4);
+		debug_printf_P(PSTR("usbd_fifo_initialize5 EEM %u bytes: 4*(full4-last4)=%u\n"), 4 * size4, 4 * (full4 - last4));
 	}
-	debug_printf_P(PSTR("usbd_fifo_initialize5 EEM: 4*(full4-last4)=%u\n"), 4 * (full4 - last4));
 #endif /* WITHUSBCDCEEM */
 
 #if WITHUSBCDCECM
-	debug_printf_P(PSTR("usbd_fifo_initialize6 ECM: 4*(full4-last4)=%u\n"), 4 * (full4 - last4));
+	debug_printf_P(PSTR("usbd_fifo_initialize6 ECM %u bytes: 4*(full4-last4)=%u\n"), 4 * size4, 4 * (full4 - last4));
 #endif /* WITHUSBCDCECM */
 
 #if WITHUSBHID && 0
@@ -7591,8 +7591,8 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 		ASSERT(last4 >= size4);
 		last4 -= size4;
 		instance->DIEPTXF [pipe - 1] = usbd_makeTXFSIZ(last4, size4);
+		debug_printf_P(PSTR("usbd_fifo_initialize7 HID %u bytes: 4*(full4-last4)=%u\n"), 4 * size4, 4 * (full4 - last4));
 	}
-	debug_printf_P(PSTR("usbd_fifo_initialize7 HID: 4*(full4-last4)=%u\n"), 4 * (full4 - last4));
 #endif /* WITHUSBHID */
 
 	debug_printf_P(PSTR("usbd_fifo_initialize8: 4*(full4-last4)=%u\n"), 4 * (full4 - last4));
@@ -7604,8 +7604,8 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 		ASSERT(last4 >= size4);
 		last4 -= size4;
 		instance->DIEPTXF0_HNPTXFSIZ = usbd_makeTXFSIZ(last4, size4);
+		debug_printf_P(PSTR("usbd_fifo_initialize9 TX FIFO %u bytes: 4*(full4-last4)=%u\n"), 4 * size4, 4 * (full4 - last4));
 	}
-	debug_printf_P(PSTR("usbd_fifo_initialize9 TX FIFO: 4*(full4-last4)=%u\n"), 4 * (full4 - last4));
 	/* control endpoint RX FIFO */
 	{
 		/* Установить размер RX FIFO -  теперь все что осталоь - используем last4 вместо size4 */
@@ -7620,7 +7620,7 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 				1 +
 				addplaces;
 
-		debug_printf_P(PSTR("usbd_fifo_initialize10 RX FIFO: size4*4=%u bytes, 4*(full4-last4)=%u bytes\n"), 4 * size4, 4 * (full4 - last4));
+		debug_printf_P(PSTR("usbd_fifo_initialize10 RX FIFO %u bytes: 4*(full4-last4)=%u bytes\n"), 4 * size4, 4 * (full4 - last4));
 		ASSERT(last4 >= size4);
 		instance->GRXFSIZ = (instance->GRXFSIZ & ~ USB_OTG_GRXFSIZ_RXFD) |
 			(last4 << USB_OTG_GRXFSIZ_RXFD_Pos) |	// was: size4 - то что осталось
