@@ -327,7 +327,7 @@ applicable agreement for further details.
 )
 (pin
 	(output)
-	(rect 1264 680 1440 696)
+	(rect 1264 624 1440 640)
 	(text "OUTPUT" (rect 1 0 39 10)(font "Arial" (font_size 6)))
 	(text "sai1_sck_a" (rect 90 0 145 12)(font "Arial" ))
 	(pt 0 8)
@@ -340,11 +340,11 @@ applicable agreement for further details.
 		(line (pt 82 8)(pt 78 12))
 		(line (pt 78 12)(pt 82 8))
 	)
-	(annotation_block (location)(rect 1472 680 1520 696))
+	(annotation_block (location)(rect 1472 624 1520 640))
 )
 (pin
 	(output)
-	(rect 1264 704 1440 720)
+	(rect 1264 648 1440 664)
 	(text "OUTPUT" (rect 1 0 39 10)(font "Arial" (font_size 6)))
 	(text "sai1_fs_a" (rect 90 0 138 12)(font "Arial" ))
 	(pt 0 8)
@@ -357,41 +357,7 @@ applicable agreement for further details.
 		(line (pt 82 8)(pt 78 12))
 		(line (pt 78 12)(pt 82 8))
 	)
-	(annotation_block (location)(rect 1472 704 1520 720))
-)
-(pin
-	(output)
-	(rect 1264 648 1440 664)
-	(text "OUTPUT" (rect 1 0 39 10)(font "Arial" (font_size 6)))
-	(text "i2s2_ws" (rect 90 0 128 12)(font "Arial" ))
-	(pt 0 8)
-	(drawing
-		(line (pt 0 8)(pt 52 8))
-		(line (pt 52 4)(pt 78 4))
-		(line (pt 52 12)(pt 78 12))
-		(line (pt 52 12)(pt 52 4))
-		(line (pt 78 4)(pt 82 8))
-		(line (pt 82 8)(pt 78 12))
-		(line (pt 78 12)(pt 82 8))
-	)
-	(annotation_block (location)(rect 1472 648 1528 664))
-)
-(pin
-	(output)
-	(rect 1264 616 1440 632)
-	(text "OUTPUT" (rect 1 0 39 10)(font "Arial" (font_size 6)))
-	(text "i2s2_ck" (rect 90 0 127 12)(font "Arial" ))
-	(pt 0 8)
-	(drawing
-		(line (pt 0 8)(pt 52 8))
-		(line (pt 52 4)(pt 78 4))
-		(line (pt 52 12)(pt 78 12))
-		(line (pt 52 12)(pt 52 4))
-		(line (pt 78 4)(pt 82 8))
-		(line (pt 82 8)(pt 78 12))
-		(line (pt 78 12)(pt 82 8))
-	)
-	(annotation_block (location)(rect 1472 616 1520 632))
+	(annotation_block (location)(rect 1472 648 1520 664))
 )
 (pin
 	(output)
@@ -610,7 +576,7 @@ applicable agreement for further details.
 	)
 )
 (symbol
-	(rect 1080 696 1128 728)
+	(rect 1080 640 1128 672)
 	(text "NOT" (rect 1 0 21 10)(font "Arial" (font_size 6)))
 	(text "inst19" (rect 3 21 32 33)(font "Arial" ))
 	(port
@@ -1126,35 +1092,6 @@ applicable agreement for further details.
 	(pt 1304 232)
 )
 (connector
-	(pt 1064 712)
-	(pt 1080 712)
-)
-(connector
-	(pt 1184 688)
-	(pt 1264 688)
-)
-(connector
-	(pt 1264 656)
-	(pt 1224 656)
-)
-(connector
-	(pt 1224 712)
-	(pt 1224 656)
-)
-(connector
-	(pt 1224 712)
-	(pt 1264 712)
-)
-(connector
-	(text "i2s_ws" (rect 1090 696 1123 708)(font "Arial" ))
-	(pt 1128 712)
-	(pt 1168 712)
-)
-(connector
-	(pt 1168 712)
-	(pt 1224 712)
-)
-(connector
 	(pt 1304 184)
 	(pt 1280 184)
 )
@@ -1229,14 +1166,6 @@ applicable agreement for further details.
 (connector
 	(pt 1184 344)
 	(pt 1304 344)
-)
-(connector
-	(pt 1304 328)
-	(pt 1168 328)
-)
-(connector
-	(pt 1168 328)
-	(pt 1168 712)
 )
 (connector
 	(pt 1304 312)
@@ -1322,34 +1251,6 @@ applicable agreement for further details.
 (connector
 	(pt 1520 528)
 	(pt 1520 488)
-)
-(connector
-	(pt 1184 344)
-	(pt 1184 592)
-)
-(connector
-	(pt 1184 592)
-	(pt 1184 688)
-)
-(connector
-	(pt 1064 712)
-	(pt 1064 656)
-)
-(connector
-	(pt 976 656)
-	(pt 1064 656)
-)
-(connector
-	(pt 1264 624)
-	(pt 1256 624)
-)
-(connector
-	(pt 1256 624)
-	(pt 1256 640)
-)
-(connector
-	(pt 1256 640)
-	(pt 976 640)
 )
 (connector
 	(pt 976 592)
@@ -1464,8 +1365,39 @@ applicable agreement for further details.
 	(pt 1688 616)
 	(pt 1648 616)
 )
-(junction (pt 1224 712))
-(junction (pt 1168 712))
+(connector
+	(pt 1184 632)
+	(pt 1264 632)
+)
+(connector
+	(pt 1304 328)
+	(pt 1168 328)
+)
+(connector
+	(pt 1168 328)
+	(pt 1168 656)
+)
+(connector
+	(pt 976 656)
+	(pt 1080 656)
+)
+(connector
+	(pt 1184 344)
+	(pt 1184 592)
+)
+(connector
+	(pt 1184 592)
+	(pt 1184 632)
+)
+(connector
+	(text "i2s_ws" (rect 1090 640 1123 652)(font "Arial" ))
+	(pt 1128 656)
+	(pt 1168 656)
+)
+(connector
+	(pt 1168 656)
+	(pt 1264 656)
+)
 (junction (pt 1496 776))
 (junction (pt 1568 248))
 (junction (pt 1192 72))
@@ -1473,3 +1405,4 @@ applicable agreement for further details.
 (junction (pt 1448 544))
 (junction (pt 1672 424))
 (junction (pt 1544 488))
+(junction (pt 1168 656))
