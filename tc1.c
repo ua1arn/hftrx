@@ -174,7 +174,7 @@ enum
 	CAT_PT_INDEX,		// ptanswer()
 	CAT_IF_INDEX,		// ifanswer()
 	CAT_FW_INDEX,		// fwanswer()
-#if CTLSTYLE_V1D || CTLSTYLE_OLEG4Z_V1
+#if WITHIF4DSP//CTLSTYLE_V1D || CTLSTYLE_OLEG4Z_V1 || 1
 	CAT_ZZ_INDEX,		// zzanswer()
 #endif /* CTLSTYLE_V1D || CTLSTYLE_OLEG4Z_V1 */
 #if WITHIF4DSP
@@ -1678,7 +1678,9 @@ static const FLASHMEM uint_fast8_t encresols [] =
 	#define BANDFUSBFREQ	9000000L	/* Выше этой частоты по умолчанию используется USB */
 #endif
 /* BANDMIDDLE - граница, по которой происходит разделение двух обзорных диапазонов */
-#if CTLSTYLE_SW2011ALL
+#if defined (BANDMIDDLE)
+
+#elif CTLSTYLE_SW2011ALL
 
 	#define BANDMIDDLE	15000000L
 	#define UPPER_DEF	19000000L
@@ -4283,6 +4285,9 @@ existingband(
 {
 	const uint_fast8_t bandset = get_band_bandset(b);
 
+	if (get_band_bottom(b) >= TUNE_TOP || get_band_top(b) < TUNE_BOTTOM)
+		return 0;
+
 	switch (bandset)
 	{
 	default:
@@ -4749,6 +4754,9 @@ uint_fast32_t hamradio_get_freq_b(void)
 
 	enum { withonlybands = 0 };
 
+#if WITHONLYBANDS
+	#error Remove WITHONLYBANDS from configuration - not supported
+#endif /* WITHONLYBANDS */
 
 /* функция для выполнения условия перестройки только в любительских диапазонах */
 static int_fast32_t
@@ -6736,6 +6744,25 @@ updateboard(
 		board_update();		/* вывести забуферированные изменения в регистры */
 	} // full2 != 0
 	
+#if CTLSTYLE_RA4YBO_AM0
+	{
+		const int pathi = 0;
+		const uint_fast8_t bi = getbankindex_pathi(pathi);
+		const int_fast32_t freq = gfreqs [bi];
+		const uint_fast32_t lo1 = synth_freq2lo1(freq, pathi);	
+		if (gtx)
+		{
+			synth_lo1_setfreq(pathi, 0, getlo1div(gtx)); /* установка частоты первого гетеродина */
+			synth_lo4_setfreq(pathi, getlo0(lo0hint) - freq, getlo1div(gtx), 1);
+		}
+		else
+		{
+			synth_lo1_setfreq(pathi, lo1, getlo1div(gtx)); /* установка частоты первого гетеродина */
+			synth_lo4_setfreq(pathi, 0, getlo1div(gtx), 0);
+		}
+	}
+#else /* CTLSTYLE_RA4YBO_AM0 */
+
 	if (userfsg)
 	{
 		const uint_fast8_t bi = getbankindex_tx(gtx);
@@ -6757,7 +6784,7 @@ updateboard(
 			synth_rts1_setfreq(pathi, getlo0(lo0hint) - freq);	// Установка центральной частоты панорамного индикатора
 		}
 	}
-
+#endif /* CTLSTYLE_RA4YBO_AM0 */
 	if (full2 != 0 && (mute != 0 || gtx != 0))
 	{
 		for (pathi = 0; pathi < pathn; ++ pathi)
@@ -8775,7 +8802,7 @@ static void fwanswer(uint_fast8_t arg)
 	cat_answer(len);
 }
 
-#if CTLSTYLE_V1D || CTLSTYLE_OLEG4Z_V1
+#if WITHIF4DSP//CTLSTYLE_V1D || CTLSTYLE_OLEG4Z_V1 || 1
 static void zzanswer(uint_fast8_t arg)
 {
 	//ZZmLLLLUUUUSSSS
@@ -9326,7 +9353,7 @@ static canapfn catanswers [CAT_MAX_INDEX] =
 	ptanswer,
 	ifanswer,
 	fwanswer,
-#if CTLSTYLE_V1D || CTLSTYLE_OLEG4Z_V1
+#if WITHIF4DSP//CTLSTYLE_V1D || CTLSTYLE_OLEG4Z_V1 || 1
 	zzanswer,
 #endif /* CTLSTYLE_V1D || CTLSTYLE_OLEG4Z_V1 */
 #if WITHIF4DSP
@@ -9914,7 +9941,7 @@ processcatmsg(
 		}
 	}
 #endif	/* WITHCATEXT */
-#if CTLSTYLE_V1D || CTLSTYLE_OLEG4Z_V1
+#if WITHIF4DSP//CTLSTYLE_V1D || CTLSTYLE_OLEG4Z_V1 || 1
 	else if (match2('Z', 'Z'))
 	{
 		if (cathasparam != 0)
