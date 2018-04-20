@@ -1,0 +1,53 @@
+Thu Apr 19 23:27:08 MSK 2018  [debug] AvalonLogSystem initialized using logfile 'cic_64_2iq.log'
+Thu Apr 19 23:27:08 MSK 2018   [info] ************************************************************** 
+Thu Apr 19 23:27:08 MSK 2018   [info] Starting Jakarta Velocity v1.4
+Thu Apr 19 23:27:08 MSK 2018   [info] RuntimeInstance initializing.
+Thu Apr 19 23:27:08 MSK 2018   [info] Default Properties File: org\apache\velocity\runtime\defaults\velocity.properties
+Thu Apr 19 23:27:08 MSK 2018   [info] Trying to use logger class org.apache.velocity.runtime.log.AvalonLogSystem
+Thu Apr 19 23:27:08 MSK 2018   [info] Using logger class org.apache.velocity.runtime.log.AvalonLogSystem
+Thu Apr 19 23:27:08 MSK 2018   [info] Default ResourceManager initializing. (class org.apache.velocity.runtime.resource.ResourceManagerImpl)
+Thu Apr 19 23:27:08 MSK 2018   [info] Resource Loader Instantiated: org.apache.velocity.runtime.resource.loader.FileResourceLoader
+Thu Apr 19 23:27:08 MSK 2018   [info] FileResourceLoader : initialization starting.
+Thu Apr 19 23:27:08 MSK 2018   [info] FileResourceLoader : adding path 'c:/altera/13.1/ip/altera/cic/lib/\template'
+Thu Apr 19 23:27:08 MSK 2018   [info] FileResourceLoader : adding path '.'
+Thu Apr 19 23:27:08 MSK 2018   [info] FileResourceLoader : initialization complete.
+Thu Apr 19 23:27:08 MSK 2018   [info] Resource Loader Instantiated: org.apache.velocity.runtime.resource.loader.JarResourceLoader
+Thu Apr 19 23:27:08 MSK 2018   [info] JarResourceLoader : initialization starting.
+Thu Apr 19 23:27:08 MSK 2018   [info] JarResourceLoader # of paths : 0
+Thu Apr 19 23:27:08 MSK 2018   [info] JarResourceLoader : initialization complete.
+Thu Apr 19 23:27:08 MSK 2018   [info] Resource Loader Instantiated: org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
+Thu Apr 19 23:27:08 MSK 2018   [info] ClasspathResourceLoader : initialization starting.
+Thu Apr 19 23:27:08 MSK 2018   [info] ClasspathResourceLoader : initialization complete.
+Thu Apr 19 23:27:08 MSK 2018   [info] ResourceCache : initialized. (class org.apache.velocity.runtime.resource.ResourceCacheImpl)
+Thu Apr 19 23:27:08 MSK 2018   [info] Default ResourceManager initialization complete.
+Thu Apr 19 23:27:08 MSK 2018   [info] Loaded System Directive: org.apache.velocity.runtime.directive.Literal
+Thu Apr 19 23:27:08 MSK 2018   [info] Loaded System Directive: org.apache.velocity.runtime.directive.Macro
+Thu Apr 19 23:27:08 MSK 2018   [info] Loaded System Directive: org.apache.velocity.runtime.directive.Parse
+Thu Apr 19 23:27:08 MSK 2018   [info] Loaded System Directive: org.apache.velocity.runtime.directive.Include
+Thu Apr 19 23:27:08 MSK 2018   [info] Loaded System Directive: org.apache.velocity.runtime.directive.Foreach
+Thu Apr 19 23:27:08 MSK 2018   [info] Created: 20 parsers.
+Thu Apr 19 23:27:08 MSK 2018   [info] Velocimacro : initialization starting.
+Thu Apr 19 23:27:08 MSK 2018   [info] Velocimacro : adding VMs from VM library template : VM_global_library.vm
+Thu Apr 19 23:27:08 MSK 2018   [info] Velocimacro : added new VM : #listall( list ) : source = VM_global_library.vm
+Thu Apr 19 23:27:08 MSK 2018   [info] Velocimacro : added new VM : #listlist( list ) : source = VM_global_library.vm
+Thu Apr 19 23:27:08 MSK 2018   [info] ResourceManager : found VM_global_library.vm with loader org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
+Thu Apr 19 23:27:08 MSK 2018   [info] Velocimacro :  VM library template macro registration complete.
+Thu Apr 19 23:27:08 MSK 2018   [info] Velocimacro : allowInline = true : VMs can be defined inline in templates
+Thu Apr 19 23:27:08 MSK 2018   [info] Velocimacro : allowInlineToOverride = false : VMs defined inline may NOT replace previous VM definitions
+Thu Apr 19 23:27:08 MSK 2018   [info] Velocimacro : allowInlineLocal = false : VMs defined inline will be  global in scope if allowed.
+Thu Apr 19 23:27:08 MSK 2018   [info] Velocimacro : messages on  : VM system will output logging messages
+Thu Apr 19 23:27:08 MSK 2018   [info] Velocimacro : autoload off  : VM system will not automatically reload global library macros
+Thu Apr 19 23:27:08 MSK 2018   [info] Velocimacro : initialization complete.
+Thu Apr 19 23:27:08 MSK 2018   [info] Velocity successfully started.
+Thu Apr 19 23:27:10 MSK 2018   [info] ResourceManager : found cic_dec_miso_vhdl_template.vm with loader org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
+Thu Apr 19 23:27:10 MSK 2018   [info] ResourceManager : found cic_template_header.vm with loader org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
+Thu Apr 19 23:27:10 MSK 2018   [info] ResourceManager : found alt_license_vhdl.txt with loader org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
+Thu Apr 19 23:27:10 MSK 2018   [info] ResourceManager : found cic_ast_wrapper.vm with loader org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
+Thu Apr 19 23:27:10 MSK 2018   [info] ResourceManager : found run_quartus_tcl.vm with loader org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
+Thu Apr 19 23:27:10 MSK 2018   [info] ResourceManager : found alt_license_tcl.txt with loader org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
+Thu Apr 19 23:27:10 MSK 2018   [info] ResourceManager : found cic_nativelink_tcl.vm with loader org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
+Thu Apr 19 23:27:10 MSK 2018   [info] ResourceManager : found alt_license_tcl.txt with loader org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
+Thu Apr 19 23:27:10 MSK 2018   [info] ResourceManager : found cic_dec_vhdl_tb.vm with loader org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
+Thu Apr 19 23:27:10 MSK 2018   [info] ResourceManager : found alt_license_vhdl.txt with loader org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
+Thu Apr 19 23:27:10 MSK 2018   [info] ResourceManager : found cic_fir_comp_coef.vm with loader org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
+Thu Apr 19 23:27:10 MSK 2018   [info] ResourceManager : found alt_license_matlab.txt with loader org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader

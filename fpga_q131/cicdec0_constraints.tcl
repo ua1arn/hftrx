@@ -56,6 +56,6 @@ proc add_fir_constraints {args} {
 	set_global_assignment -name "AUTO_SHIFT_REGISTER_RECOGNITION" -entity "tsadd_lpm_reg_top_cen" "OFF"
 	set_global_assignment -name "AUTO_SHIFT_REGISTER_RECOGNITION" -entity "sadd_lpm_reg_top_cen" "OFF"
 	set_global_assignment -name "AUTO_SHIFT_REGISTER_RECOGNITION" -entity "mlu_nd_lc" "OFF"
-	set_global_assignment -name "DSP_BLOCK_BALANCING" -entity "cicdec0_st" "AUTO"
+	set_global_assignment -name "DSP_BLOCK_BALANCING" -entity "cicdec0_st" "DSP BLOCKS"
 }
 add_fir_constraints

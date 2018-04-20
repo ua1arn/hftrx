@@ -24,7 +24,7 @@ INPUTS coef_we;
 PATTERN
 0> 0 
 ;
-INPUTS coef_in[31..0];
+INPUTS coef_in[22..0];
 PATTERN
 0> 0 
 ;

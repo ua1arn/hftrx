@@ -1471,28 +1471,12 @@ applicable agreement for further details.
 	(pt 1064 -296)
 )
 (connector
-	(pt 944 -496)
-	(pt 944 -296)
-)
-(connector
 	(pt 992 -360)
 	(pt 1064 -360)
 )
 (connector
 	(pt 992 -312)
 	(pt 1064 -312)
-)
-(connector
-	(pt 936 -520)
-	(pt 936 -496)
-)
-(connector
-	(pt 336 -520)
-	(pt 936 -520)
-)
-(connector
-	(pt 936 -496)
-	(pt 944 -496)
 )
 (connector
 	(pt 768 -384)
@@ -1548,6 +1532,14 @@ applicable agreement for further details.
 (connector
 	(pt 1648 -72)
 	(pt 1672 -72)
+)
+(connector
+	(pt 336 -520)
+	(pt 944 -520)
+)
+(connector
+	(pt 944 -520)
+	(pt 944 -296)
 )
 (junction (pt 640 8))
 (junction (pt 640 56))

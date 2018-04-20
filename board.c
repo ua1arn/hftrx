@@ -793,9 +793,9 @@ prog_ctrlreg(uint_fast8_t plane)
 		const spitarget_t target = targetctl1;
 		rbtype_t rbbuff [3] = { 0 };
 		
-		RBBIT(007, glob_user1);				// полоса
+		RBBIT(007, glob_filter);				// полоса
 		RBBIT(006, glob_user2);				// ревербератор
-		RBBIT(005, glob_user3);				// эквалайзер
+		RBBIT(005, glob_user1);				// эквалайзер
 
 		RBBIT(004, glob_bandf);		// 0: меньше 2 МГц, 1 - выше
 		RBVAL(002, glob_att, 2);				/* ATT */
@@ -5878,7 +5878,7 @@ static void board_fpga_loader_PS(void)
 	#elif CTLSTYLE_RAVENDSP_V6 && (DDS1_CLK_MUL == 1)
 		#include "rbf/rbfimage_v6_2ch.h"	// CTLSTYLE_RAVENDSP_V6
 	#elif CTLSTYLE_RAVENDSP_V7 && (DDS1_CLK_MUL == 1)
-		#include "rbf/rbfimage_v7_2ch.h"	// CTLSTYLE_RAVENDSP_V7
+		#include "rbf/rbfimage_v7a_2ch.h"	// CTLSTYLE_RAVENDSP_V7
 	#elif CTLSTYLE_RAVENDSP_V8 && (DDS1_CLK_MUL == 1)
 		#include "rbf/rbfimage_v8.h"
 	#elif CTLSTYLE_RAVENDSP_V9 && (DDS1_CLK_MUL == 1)
@@ -5890,15 +5890,15 @@ static void board_fpga_loader_PS(void)
 	#elif CTLSTYLE_STORCH_V1 && ! WITHUSEDUALWATCH && (DDS1_CLK_MUL == 1)
 		#include "rbf/rbfimage_v7_1ch.h"	//
 	#elif CTLSTYLE_STORCH_V1 && (DDS1_CLK_MUL == 1)
-		#include "rbf/rbfimage_v7_2ch.h"	// same as CTLSTYLE_RAVENDSP_V7
+		#include "rbf/rbfimage_v7a_2ch.h"	// same as CTLSTYLE_RAVENDSP_V7
 	#elif CTLSTYLE_STORCH_V2 && ! WITHUSEDUALWATCH && (DDS1_CLK_MUL == 1)
 		#include "rbf/rbfimage_v7_1ch.h"	//
 	#elif CTLSTYLE_STORCH_V2 && (DDS1_CLK_MUL == 1)
-		#include "rbf/rbfimage_v7_2ch.h"	// same as CTLSTYLE_RAVENDSP_V7
+		#include "rbf/rbfimage_v7a_2ch.h"	// same as CTLSTYLE_RAVENDSP_V7
 	#elif CTLSTYLE_STORCH_V3 && ! WITHUSEDUALWATCH && (DDS1_CLK_MUL == 1)
 		#include "rbf/rbfimage_v7_1ch.h"	//
 	#elif CTLSTYLE_STORCH_V3 && (DDS1_CLK_MUL == 1)
-		#include "rbf/rbfimage_v7_2ch.h"	// same as CTLSTYLE_RAVENDSP_V7
+		#include "rbf/rbfimage_v7a_2ch.h"	// same as CTLSTYLE_RAVENDSP_V7
 	#elif CTLSTYLE_STORCH_V4 && ! WITHUSEDUALWATCH && (DDS1_CLK_MUL == 1)	// modem v2
 		#include "rbf/rbfimage_v7_1ch.h"	//
 	//#elif CTLSTYLE_STORCH_V4 && (DDS1_CLK_MUL == 1)	// modem v2
@@ -6093,7 +6093,7 @@ static void sendbatch(uint_fast8_t ifir)
 // two banks, symmetrical 961:
 // coef_seq.exe fir_normalized_coeff961_lpf_1550.txt fir_normalized_coeff961_lpf_1550_reseq_b.txt MCV M4K MSYM 128 2 SGL 1 32
 //
-static void single_rate_out_write_mcv(const int_fast32_t * coef, unsigned coef_length)
+static void single_rate_out_write_mcv(const int_fast32_t * coef, unsigned coef_length, int coef_bit_width)
 {
 
 	enum coef_store_type { LC, M512, M4K, DUMMY, AUTO };
@@ -6106,7 +6106,7 @@ static void single_rate_out_write_mcv(const int_fast32_t * coef, unsigned coef_l
 	const int sym = 1;
 	const enum poly_type poly_type = SGL;
 	const int num_cycles = 256;
-	const int coef_bit_width = 32;
+	//const int coef_bit_width = 25;
 
 	int mcv_coef_length;
 	int mcv_reload_zero_insert;
@@ -6250,7 +6250,7 @@ static void single_rate_out_write_mcv(const int_fast32_t * coef, unsigned coef_l
 /* Выдача расчитанных параметров фильтра в FPGA (симметричные) */
 void board_fpga_fir_send(
 	const uint_fast8_t ifir,	// номер FIR фильтра в FPGA
-	const int_fast32_t * const k, unsigned Ntap
+	const int_fast32_t * const k, unsigned Ntap, unsigned CWidth
 	)
 {
 #if (WITHSPIHW && WITHSPI16BIT)	// for skip in test configurations
@@ -6277,7 +6277,7 @@ void board_fpga_fir_send(
 	board_fpga_fir_coef(0x00000000);	// 2-nd dummy
 
 	//single_rate_out_write_ser(k, Ntap / 2 + 1); // NtapCoeffs(Ntap);
-	single_rate_out_write_mcv(k, Ntap); // NtapCoeffs(Ntap);
+	single_rate_out_write_mcv(k, Ntap, CWidth); // NtapCoeffs(Ntap);
 	//sendbatch();
 	//prog_unselect(targetfir1);
 	switch (ifir)

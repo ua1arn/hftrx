@@ -1862,8 +1862,10 @@ void spool_0p128(void);	// OPERA support
 		#define TUNE_BOTTOM 1600000L			/* нижн€€ частота настройки */
 		#define TUNE_TOP 56000000L
 	#elif BANDSELSTYLERE_RA4YBO_AM0
-		#define TUNE_BOTTOM 150000L			/* нижн€€ частота настройки */
-		#define TUNE_TOP 2000000L			/* 2 MHz - верх */	
+		#define TUNE_BOTTOM 150000L			/* 150 kHz нижн€€ частота настройки */
+		#define TUNE_TOP 4000000L			/* 4 MHz - верх */	
+		#define BANDMIDDLE	2200000L
+		#define UPPER_DEF	2200000L
 	#else
 		#error Strange BANDSELSTYLExxx
 	#endif

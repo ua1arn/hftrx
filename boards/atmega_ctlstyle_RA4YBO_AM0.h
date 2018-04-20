@@ -183,9 +183,9 @@
 	//#define WITHMODESETMIXONLY3 1
 	//#define WITHMODESETMIXONLY3AM 1
 
-	#define IF3_FMASK (IF3_FMASK_2P7 | /*IF3_FMASK_1P8 | */IF3_FMASK_0P5)
-	#define IF3_FMASKTX (IF3_FMASK_2P7)
-	#define IF3_FHAVE (IF3_FMASK_2P7 | IF3_FMASK_0P5)
+	#define IF3_FMASK (IF3_FMASK_6P0 | IF3_FMASK_2P7 | /*IF3_FMASK_1P8 | */IF3_FMASK_0P5)
+	#define IF3_FMASKTX (IF3_FMASK_6P0 | IF3_FMASK_2P7)
+	#define IF3_FHAVE (IF3_FMASK_6P0 | IF3_FMASK_2P7 | IF3_FMASK_0P5)
 
 	#define WITHSPLIT	1	/* управление режимами расстройки одной кнопкой */
 	//#define WITHSPLITEX	1	/* Трехкнопочное управление режимами расстройки */
@@ -218,9 +218,10 @@
 
 
 	/* коды фильтров второй ПЧ, выдаваемые на дешифраторы */
-	#define BOARD_FILTER_0P5		BOARD_FILTERCODE_1	/* 0.5 or 0.3 kHz filter */
-	#define BOARD_FILTER_1P8		BOARD_FILTERCODE_1	/* 1.8 kHz filter - установлен вместо фильтра 0.5 */
+	#define BOARD_FILTER_0P5		BOARD_FILTERCODE_0	/* 0.5 or 0.3 kHz filter */
+	#define BOARD_FILTER_1P8		BOARD_FILTERCODE_0	/* 1.8 kHz filter - установлен вместо фильтра 0.5 */
 	#define BOARD_FILTER_2P7		BOARD_FILTERCODE_0	/* 3.1 or 2.75 kHz filter */
+	#define BOARD_FILTER_6P0		BOARD_FILTERCODE_1	/* 3.1 or 2.75 kHz filter */
 	//#define BOARD_FILTER_WFM		2	/* 3.1 or 2.75 kHz filter */
 
 	/* коды входов коммутатора источников сигнала для УНЧ приёмника */
@@ -231,9 +232,9 @@
 	#define BOARD_DETECTOR_TUNE 0x00	/* конфигурация платы для режима TUNE (CWZ на передачу) */
 	/* коды фильтров второй ПЧ, выдаваемые на дешифраторы */
 	#define	BOARD_FILTERCODE_0	0
-	#define	BOARD_FILTERCODE_1	0
-	#define	BOARD_FILTERCODE_2	0
-	#define	BOARD_FILTERCODE_3	0
+	#define	BOARD_FILTERCODE_1	1
+	#define	BOARD_FILTERCODE_2	1
+	#define	BOARD_FILTERCODE_3	1
 
 
 

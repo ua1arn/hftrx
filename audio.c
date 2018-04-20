@@ -292,10 +292,10 @@ static int_fast8_t		glob_swaprts;		// управление боковой выхода спектроанализато
 
 #if WITHDSPEXTFIR || WITHDSPEXTDDC
 
-	#define HARDWARE_FIRSHIFT	31	// fractional part: format is S0.31
 
 	// Параметры фильтров в случае использования FPGA с фильтром на квадратурных каналах
 	#define Ntap_trxi_IQ		1535	// Фильтр в FPGA
+	#define HARDWARE_COEFWIDTH	23		// Разрядность коэффициентов. format is S0.22
 
 	// Фильтр для квадратурных каналов приёмника и передатчика в FPGA (целочисленный).
 	// Параметры для передачи в FPGA
@@ -9387,7 +9387,7 @@ static void fir_design_bandpass_freq(FLOAT_t * dCoeff, int iCoefNum, int iCutLow
 // преобразование к целым
 static void fir_design_copy_integers(int_fast32_t * lCoeff, const FLOAT_t * dCoeff, int iCoefNum)
 {
-	const FLOAT_t scaleout = POWF(2, HARDWARE_FIRSHIFT);
+	const FLOAT_t scaleout = POWF(2, HARDWARE_COEFWIDTH - 1);
 	int iCnt;
 	const int j = NtapCoeffs(iCoefNum);
 	// копируем результат.
@@ -9407,7 +9407,7 @@ static void fir_design_integer_lowpass_scaled(int_fast32_t *lCoeff, const FLOAT_
 // преобразование к целым
 static void fir_design_copy_integersL(int_fast32_t * lCoeff, const double * dCoeff, int iCoefNum)
 {
-	const double scaleout = pow(2, HARDWARE_FIRSHIFT);
+	const double scaleout = pow(2, HARDWARE_COEFWIDTH - 1);
 	int iCnt;
 	const int j = NtapCoeffs(iCoefNum);
 	// копируем результат.
@@ -10063,7 +10063,7 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 #if WITHDSPEXTDDC && WITHDSPEXTFIR
 	// загрузка коэффициентов фильтра в FPGA
 	//writecoefs(FIRCoef_trxi_IQ, Ntap_trxi_IQ);	/* печать коэффициентов фильтра */
-	board_fpga_fir_send(pathi, FIRCoef_trxi_IQ, Ntap_trxi_IQ);		/* загрузить массив коэффициентов в FPGA */
+	board_fpga_fir_send(pathi, FIRCoef_trxi_IQ, Ntap_trxi_IQ, HARDWARE_COEFWIDTH);		/* загрузить массив коэффициентов в FPGA */
 	boart_tgl_firprofile(pathi);
 #endif /* WITHDSPEXTDDC && WITHDSPEXTFIR */
 }

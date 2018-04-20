@@ -1708,6 +1708,52 @@ enum
 		{	0, 0,	display_freqchr_a,	REDRM_FREQ, REDRSUBSET_ALL, },	// частота для символьных дисплеев
 	};
 
+#elif DSTYLE_T_X16_Y2 && CTLSTYLE_RA4YBO_AM0
+
+	enum
+	{
+		BDTH_ALLRX = 9,	// ширина зоны для отображение полосы на индикаторе
+		BDTH_RIGHTRX = 4,	// ширина индикатора плюсов
+		BDTH_LEFTRX = BDTH_ALLRX - BDTH_RIGHTRX,	// ширина индикатора баллов
+		BDTH_SPACERX = 0,
+		//
+	#if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
+		BDTH_ALLSWR = 4,
+		BDTH_SPACESWR = 1,
+		BDTH_ALLPWR = 4,
+		BDTH_SPACEPWR = 0
+	#else /* WITHSHOWSWRPWR */
+		BDTH_ALLSWR = BDTH_ALLRX,
+		BDTH_SPACESWR = BDTH_SPACERX,
+		BDTH_ALLPWR = BDTH_ALLRX,
+		BDTH_SPACEPWR = BDTH_SPACERX
+	#endif /* WITHSHOWSWRPWR */
+	};
+	#define SWRMAX	40	// 4.0 - значение на полной шкале
+	enum {
+		DPAGE0,					// Страница, в которой отображаются основные (или все) 
+		//
+		DISPLC_MODCOUNT
+	};
+
+	#define DISPLC_WIDTH	6	// количество цифр в отображении частоты
+	#define DISPLC_RJ		1	// количество скрытых справа цифр в отображении частоты
+	static const FLASHMEM struct dzone dzones [] =
+	{
+		{	0, 0,	display_freqchr_a,	REDRM_FREQ, REDRSUBSET(DPAGE0), },	// частота для символьных дисплеев
+		{	8, 0,	display_lockstate1,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// состояние блокировки валкодера
+		{	9, 0,	display_att4,		REDRM_MODE, REDRSUBSET(DPAGE0), },
+		{	14, 1,	display_txrxstate2,	REDRM_MODE, REDRSUBSET(DPAGE0), },
+		{	10, 1,	display_rxbw3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
+		{	0, 1,	display2_bars,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// S-METER, SWR-METER, POWER-METER
+	#if WITHMENU 
+		{	0, 0,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
+		{	0, 1,	display_menu_lblc3,	REDRM_MLBL, REDRSUBSET_MENU, },	// код редактируемого параметра
+		{	4, 1,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
+		{	9, 0,	display_lockstate1,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
+	#endif /* WITHMENU */
+	};
+
 #elif DSTYLE_T_X16_Y2
 
 	enum
