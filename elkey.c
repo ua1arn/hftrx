@@ -824,17 +824,6 @@ void elkey_initialize(void)
 
 }
 
-#else
-
-void elkey_initialize(void)
-{
-}
-
-void 
-elkey_spool_dots(void)
-{
-}
-
 #endif
 
 

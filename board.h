@@ -257,6 +257,7 @@ uint_fast8_t board_get_adcch(uint_fast8_t index);	/* получить канал АЦП но индек
 
 void board_adc_store_data(uint_fast8_t i, adcvalholder_t v);
 void board_adc_filtering(void);	// Функция вызывается из обработчика прерывания после получения значения от последнего канала АЦП
+void adcfilters_initialize(void);
 
 void 
 modemchangefreq(

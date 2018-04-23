@@ -1012,7 +1012,7 @@ static RAMFUNC void spool_elkeybundle(void)
 {
 #if WITHOPERA4BEACON
 	spool_0p128();
-#else /* WITHOPERA4BEACON */
+#elif WITHELKEY
 	elkey_spool_dots();		// вызывается с периодом 1/ELKEY_DISCRETE от длительности точки
 #endif /* WITHOPERA4BEACON */
 }

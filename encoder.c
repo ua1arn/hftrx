@@ -405,7 +405,6 @@ void encoder_initialize(void)
 	//enchistindex = 0;
 	//tichist [enchistindex] = 0;
 	//enchist [enchistindex] = 0;
-	//hardware_encoder_initialize(); // moved to main
 
 
 	old_val = hardware_get_encoder_bits();	/* —осто€ние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */

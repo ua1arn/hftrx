@@ -8218,45 +8218,6 @@ display_redrawfreqmodesbars(
 }
 
 
-/*
-	ƒл€ некоторых каналов ј÷ѕ вклю€аем фильтрацию значений.
-	ƒл€ потенциометров на регулировках устран€етс€ дребезг значений.
- */
-static void
-adcfilters_initialize(void)
-{
-#if WITHCPUADCHW
-	#if WITHPOTPOWER
-		hardware_set_adc_filter(POTPOWER, HARDWARE_ADCFILTER_HISTERESIS2);
-	#endif /* WITHPOTPOWER */
-	#if WITHPOTWPM
-		hardware_set_adc_filter(POTWPM, HARDWARE_ADCFILTER_HISTERESIS2);
-	#endif /* WITHPOTWPM */
-	#if WITHPOTPBT
-		hardware_set_adc_filter(POTPBT, HARDWARE_ADCFILTER_HISTERESIS2);
-	#endif /* WITHPOTPBT */
-	#if WITHPOTIFSHIFT
-		hardware_set_adc_filter(POTIFSHIFT, HARDWARE_ADCFILTER_HISTERESIS2);	// регулировка IF SHIFT
-	#endif /* WITHPOTIFSHIFT */
-	#if WITHPOTGAIN
-		hardware_set_adc_filter(POTIFGAIN, HARDWARE_ADCFILTER_HISTERESIS2);
-		hardware_set_adc_filter(POTAFGAIN, HARDWARE_ADCFILTER_HISTERESIS2);
-		//hardware_set_adc_filterLPF(POTIFGAIN, HARDWARE_ADCFILTER_LPF_DENOM / 2);
-		//hardware_set_adc_filterLPF(POTAFGAIN, HARDWARE_ADCFILTER_LPF_DENOM / 2);
-	#endif /* WITHPOTGAIN */
-	#if WITHPOTNOTCH && WITHNOTCHFREQ
-		hardware_set_adc_filter(POTNOTCH, HARDWARE_ADCFILTER_HISTERESIS2);		// регулировка частоты NOTCH фильтра
-	#endif /* WITHPOTNOTCH && WITHNOTCHFREQ */
-	#if WITHBARS && ! WITHINTEGRATEDDSP
-		hardware_set_adc_filter(SMETERIX, HARDWARE_ADCFILTER_TRACETOP3S);
-	#endif /* WITHBARS && ! WITHINTEGRATEDDSP */
-	#if WITHTX && (WITHSWRMTR || WITHPWRMTR)
-		hardware_set_adc_filter(PWRI, HARDWARE_ADCFILTER_AVERAGEPWR);	// ¬ключить фильтр
-		//hardware_set_adc_filter(PWRI, HARDWARE_ADCFILTER_DIRECT);		// ќтключить фильтр
-	#endif /* WITHTX && (WITHSWRMTR || WITHPWRMTR) */
-#endif /* WITHCPUADCHW */
-}
-
 static void 
 directctlupdate(uint_fast8_t inmenu)
 {
@@ -14250,16 +14211,18 @@ lowinitialize(void)
 #if WITHKEYBOARD
 	board_kbd_initialize();
 #endif /* WITHKEYBOARD */
-	board_adc_initialize();
-	hardware_encoder_initialize();
 	hardware_timer_initialize(TICKS_FREQUENCY);
 
 #if WITHLFM
 	hardware_lfm_timer_initialize();
 	hardware_lfm_setupdatefreq(20);
 #endif /* WITHLFM */
+#if WITHENCODER
 	encoder_initialize();
+#endif /* WITHENCODER */
+#if WITHELKEY
 	elkey_initialize();
+#endif /* WITHELKEY */
 	seq_initialize();
 	vox_initialize();		/* подготовка работы задержек переключени€ приЄм-передача */
 #if WITHSDHCHW
@@ -14269,8 +14232,9 @@ lowinitialize(void)
 #if WITHCAT
 	processcat_initialize();
 #endif
+#if WITHKEYBOARD
 	kbd_initialize();
-	adcfilters_initialize();
+#endif /* WITHKEYBOARD */
 
 #if WITHDEBUG
 	dbg_puts_impl_P(PSTR("Most of hardware initialized.\n"));

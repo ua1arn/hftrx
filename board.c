@@ -6385,6 +6385,14 @@ void board_init_io(void)
 #if WITHDSPEXTFIR
 	board_fpga_fir_initialize();	// порт формировани€ стробов перезагрузки коэффициентов FIR фильтра в FPGA
 #endif /* WITHDSPEXTFIR */
+#if WITHENCODER
+	hardware_encoder_initialize();
+#endif /* WITHENCODER */
+
+#if WITHCPUADCHW
+	board_adc_initialize();
+	adcfilters_initialize();
+#endif /* WITHCPUADCHW */
 }
 
 #if defined (RTC1_TYPE)
@@ -7778,6 +7786,42 @@ void board_adc_store_data(uint_fast8_t adci, adcvalholder_t v)
 	adc_data_raw [adci] = v;
 }
 
+/*
+	ƒл€ некоторых каналов ј÷ѕ вклю€аем фильтрацию значений.
+	ƒл€ потенциометров на регулировках устран€етс€ дребезг значений.
+ */
+void
+adcfilters_initialize(void)
+{
+	#if WITHPOTPOWER
+		hardware_set_adc_filter(POTPOWER, HARDWARE_ADCFILTER_HISTERESIS2);
+	#endif /* WITHPOTPOWER */
+	#if WITHPOTWPM
+		hardware_set_adc_filter(POTWPM, HARDWARE_ADCFILTER_HISTERESIS2);
+	#endif /* WITHPOTWPM */
+	#if WITHPOTPBT
+		hardware_set_adc_filter(POTPBT, HARDWARE_ADCFILTER_HISTERESIS2);
+	#endif /* WITHPOTPBT */
+	#if WITHPOTIFSHIFT
+		hardware_set_adc_filter(POTIFSHIFT, HARDWARE_ADCFILTER_HISTERESIS2);	// регулировка IF SHIFT
+	#endif /* WITHPOTIFSHIFT */
+	#if WITHPOTGAIN
+		hardware_set_adc_filter(POTIFGAIN, HARDWARE_ADCFILTER_HISTERESIS2);
+		hardware_set_adc_filter(POTAFGAIN, HARDWARE_ADCFILTER_HISTERESIS2);
+		//hardware_set_adc_filterLPF(POTIFGAIN, HARDWARE_ADCFILTER_LPF_DENOM / 2);
+		//hardware_set_adc_filterLPF(POTAFGAIN, HARDWARE_ADCFILTER_LPF_DENOM / 2);
+	#endif /* WITHPOTGAIN */
+	#if WITHPOTNOTCH && WITHNOTCHFREQ
+		hardware_set_adc_filter(POTNOTCH, HARDWARE_ADCFILTER_HISTERESIS2);		// регулировка частоты NOTCH фильтра
+	#endif /* WITHPOTNOTCH && WITHNOTCHFREQ */
+	#if WITHBARS && ! WITHINTEGRATEDDSP
+		hardware_set_adc_filter(SMETERIX, HARDWARE_ADCFILTER_TRACETOP3S);
+	#endif /* WITHBARS && ! WITHINTEGRATEDDSP */
+	#if WITHTX && (WITHSWRMTR || WITHPWRMTR)
+		hardware_set_adc_filter(PWRI, HARDWARE_ADCFILTER_AVERAGEPWR);	// ¬ключить фильтр
+		//hardware_set_adc_filter(PWRI, HARDWARE_ADCFILTER_DIRECT);		// ќтключить фильтр
+	#endif /* WITHTX && (WITHSWRMTR || WITHPWRMTR) */
+}
 
 
 #if WITHSWRMTR || WITHPWRMTR
@@ -7901,14 +7945,6 @@ void board_adc_filtering(void)
 			break;
 		}
 	}
-}
-
-#else /* WITHCPUADCHW */
-
-/* stub function */
-
-void board_adc_initialize(void)
-{
 }
 
 #endif /* WITHCPUADCHW */
