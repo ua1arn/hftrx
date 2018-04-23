@@ -1802,7 +1802,7 @@ static void s1d13781_initialize(void)
 
         { REG16_INTCLK,                         CLKDIV - 1 },	// clkdiv - 1
         { REG04_POWER_SAVE,                     0x0002 },
-        { REG20_PANEL_SET,                      0x00CD },		// 18 bit panel, DE fixed high
+        { REG20_PANEL_SET,                      0x008D },		// 18 bit panel, DE fixed low
         { REG22_DISP_SET,                       0x0001 | 0x0100 },	// TE pin disable
 
         { REG24_HDISP,                          0x003C },	// Horizontal Display Width Register
@@ -1885,8 +1885,12 @@ static void s1d13781_initialize(void)
 	s1d13781_setcolor(COLOR_WHITE, display_getbgcolor());
 }
 
-
-
+/* установить DE в требуемое состояние */
+static void
+s1d13781_set_DE(uint_fast8_t state)
+{
+	s1d13781_wrcmd16(REG20_PANEL_SET, state ? 0x00CD : 0x008D);	// 18 bit panel, DE fixed high/fixed low
+}
 
 
 /* вызывается при разрешённых прерываниях. */
@@ -1902,6 +1906,9 @@ void display_initialize(void)
 		s1d13781_missing = 1;
 	}
 	s1d13781_initialize();
+	s1d13781_set_DE(0);
+	local_delay_ms(60);
+	s1d13781_set_DE(1);
 }
 
 void display_set_contrast(uint_fast8_t v)
