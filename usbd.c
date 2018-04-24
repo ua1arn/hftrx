@@ -924,7 +924,7 @@ static USBD_StatusTypeDef  USBD_LL_StallEP (USBD_HandleTypeDef *pdev, uint8_t ep
 USBD_StatusTypeDef  USBD_LL_ClearStallEP (USBD_HandleTypeDef *pdev, uint8_t ep_addr);   
 uint8_t             USBD_LL_IsStallEP (USBD_HandleTypeDef *pdev, uint8_t ep_addr);   
 USBD_StatusTypeDef  USBD_LL_SetUSBAddress (USBD_HandleTypeDef *pdev, uint8_t dev_addr);   
-USBD_StatusTypeDef  USBD_LL_Transmit (USBD_HandleTypeDef *pdev, 
+USBD_StatusTypeDef  USBD_LL_Transmit(USBD_HandleTypeDef *pdev, 
                                       uint_fast8_t  ep_addr,                                      
                                       const uint8_t  *pbuf,
                                       uint_fast32_t  size);
@@ -7788,7 +7788,7 @@ USBD_StatusTypeDef  USBD_LL_SetUSBAddress (USBD_HandleTypeDef *pdev, uint8_t dev
   * @param  size: Data size    
   * @retval USBD Status
   */
-USBD_StatusTypeDef  USBD_LL_Transmit (USBD_HandleTypeDef *pdev, 
+USBD_StatusTypeDef  USBD_LL_Transmit(USBD_HandleTypeDef *pdev, 
                                       uint_fast8_t  ep_addr,                                      
                                       const uint8_t  *pbuf,
                                       uint_fast32_t  size)
@@ -8083,7 +8083,7 @@ USBD_StatusTypeDef  USBD_CtlSendStatus (USBD_HandleTypeDef  *pdev)
   pdev->ep0_state = USBD_EP0_STATUS_IN;
   
  /* Start the transfer */
-  USBD_LL_Transmit (pdev, 0x00, NULL, 0);   
+  USBD_LL_Transmit(pdev, 0x00, NULL, 0);   
   
   return USBD_OK;
 }
@@ -8100,7 +8100,7 @@ USBD_StatusTypeDef  USBD_CtlReceiveStatus (USBD_HandleTypeDef  *pdev)
   pdev->ep0_state = USBD_EP0_STATUS_OUT; 
   
  /* Start the transfer */  
-  USBD_LL_PrepareReceive ( pdev,
+  USBD_LL_PrepareReceive( pdev,
                     0,
                     NULL,
                     0);  
@@ -8122,11 +8122,11 @@ USBD_StatusTypeDef  USBD_CtlSendData (USBD_HandleTypeDef  *pdev,
                                uint16_t len)
 {
 	/* Set EP0 State */
-	pdev->ep0_state          = USBD_EP0_DATA_IN;                                      
+	pdev->ep0_state = USBD_EP0_DATA_IN;                                      
 	pdev->ep_in[0].total_length = len;
-	pdev->ep_in[0].rem_length   = len;
+	pdev->ep_in[0].rem_length = len;
 	/* Start the transfer */
-	USBD_LL_Transmit (pdev, 0x00, pbuf, len);  
+	USBD_LL_Transmit(pdev, 0x00, pbuf, len);  
 
 	return USBD_OK;
 }
@@ -8144,46 +8144,10 @@ USBD_StatusTypeDef  USBD_CtlContinueSendData (USBD_HandleTypeDef  *pdev,
                                        uint16_t len)
 {
 	/* Start the next transfer */
-	USBD_LL_Transmit (pdev, 0x00, pbuf, len);   
+	USBD_LL_Transmit(pdev, 0x00, pbuf, len);   
 
 	return USBD_OK;
 }
-
-
-
-/** @defgroup USBD_REQ_Private_FunctionPrototypes
-  * @{
-  */ 
-static void USBD_GetDescriptor(USBD_HandleTypeDef *pdev, 
-                               USBD_SetupReqTypedef *req);
-
-static void USBD_SetAddress(USBD_HandleTypeDef *pdev, 
-                            USBD_SetupReqTypedef *req);
-
-static void USBD_SetConfig(USBD_HandleTypeDef *pdev, 
-                           USBD_SetupReqTypedef *req);
-
-static void USBD_GetConfig(USBD_HandleTypeDef *pdev, 
-                           USBD_SetupReqTypedef *req);
-
-static void USBD_GetStatus(USBD_HandleTypeDef *pdev, 
-                           USBD_SetupReqTypedef *req);
-
-static void USBD_SetFeature(USBD_HandleTypeDef *pdev, 
-                            USBD_SetupReqTypedef *req);
-
-static void USBD_ClrFeature(USBD_HandleTypeDef *pdev, 
-                            USBD_SetupReqTypedef *req);
-
-
-/**
-  * @}
-  */ 
-
-
-/** @defgroup USBD_REQ_Private_Functions
-  * @{
-  */ 
 
 /**
 * @brief  USBD_CtlError 
@@ -8205,66 +8169,12 @@ static void USBD_CtlError( USBD_HandleTypeDef *pdev,
 }
 
 
-
-/**
-* @brief  USBD_StdDevReq
-*         Handle standard usb device requests
-* @param  pdev: device instance
-* @param  req: usb request
-* @retval status
-*/
-USBD_StatusTypeDef  USBD_StdDevReq (USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef  *req)
-{
-	//debug_printf_P(PSTR("USBD_StdDevReq: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), 
-	//	req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
-	//debug_printf_P(PSTR("USBD_StdDevReq:\n"));
-	USBD_StatusTypeDef ret = USBD_OK;  
-
-	switch (req->bRequest) 
-	{
-	case USB_REQ_GET_DESCRIPTOR: 
-		USBD_GetDescriptor(pdev, req) ;
-		break;
-
-	case USB_REQ_SET_ADDRESS:                      
-		USBD_SetAddress(pdev, req);
-		break;
-
-	case USB_REQ_SET_CONFIGURATION:                    
-		USBD_SetConfig (pdev, req);
-		break;
-
-	case USB_REQ_GET_CONFIGURATION:                 
-		USBD_GetConfig (pdev, req);
-		break;
-
-	case USB_REQ_GET_STATUS:                                  
-		USBD_GetStatus (pdev, req);
-		break;
-
-	case USB_REQ_SET_FEATURE:   
-		USBD_SetFeature (pdev, req);    
-		break;
-
-	case USB_REQ_CLEAR_FEATURE:                                   
-		USBD_ClrFeature (pdev, req);
-		break;
-
-	default:  
-		TP();
-		USBD_CtlError(pdev, req);
-		break;
-	}
-
-	return ret;
-}
-
-static void USBD_UACCDC_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef  *req)
+static void USBD_ClassXXX_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef  *req)
 {
 	static USBALIGN_BEGIN uint8_t buff [INTERFACE_count] [32] USBALIGN_END;	// was: 7
 	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
 
-	//debug_printf_P(PSTR("USBD_UACCDC_Setup: interfacev=%02X\n"), interfacev);
+	//debug_printf_P(PSTR("USBD_ClassXXX_Setup: interfacev=%02X\n"), interfacev);
 	if ((req->bmRequest & USB_REQ_TYPE_DIR) != 0)
 	{
 		// IN direction
@@ -8280,7 +8190,7 @@ static void USBD_UACCDC_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef  *r
 					switch (req->bRequest)
 					{
 					case CDC_GET_LINE_CODING:
-						//debug_printf_P(PSTR("USBD_UACCDC_Setup: GET_LINE_CODING, dwDTERate=%lu\n"), (unsigned long) dwDTERate [interfacev]);
+						//debug_printf_P(PSTR("USBD_ClassXXX_Setup: GET_LINE_CODING, dwDTERate=%lu\n"), (unsigned long) dwDTERate [interfacev]);
 						buff [interfacev] [0] = LO_BYTE(dwDTERate [interfacev]);	// dwDTERate
 						buff [interfacev] [1] = HI_BYTE(dwDTERate [interfacev]);
 						buff [interfacev] [2] = HI_24BY(dwDTERate [interfacev]);
@@ -8311,31 +8221,31 @@ static void USBD_UACCDC_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef  *r
 					switch (req->bRequest)
 					{
 					case AUDIO_REQUEST_GET_CUR:
-						debug_printf_P(PSTR("USBD_UACCDC_Setup: AUDIO_REQUEST_GET_CUR: interfacev=%u, %u\n"), interfacev, terminalID);
+						debug_printf_P(PSTR("USBD_ClassXXX_Setup: AUDIO_REQUEST_GET_CUR: interfacev=%u, %u\n"), interfacev, terminalID);
 						buff [interfacev] [0] = terminalsprops [terminalID] [controlID];
 						USBD_CtlSendData(pdev, buff [interfacev], ulmin16(ARRAY_SIZE(buff [interfacev]), req->wLength));
 						break;
 
 					case AUDIO_REQUEST_GET_MIN:
-						debug_printf_P(PSTR("USBD_UACCDC_Setup: USBD_StdItfReq: AUDIO_REQUEST_GET_MIN: interfacev=%u, %u\n"), interfacev, terminalID);
+						debug_printf_P(PSTR("USBD_ClassXXX_Setup: USBD_StdItfReq: AUDIO_REQUEST_GET_MIN: interfacev=%u, %u\n"), interfacev, terminalID);
 						buff [interfacev] [0] = terminalID == TERMINAL_ID_SELECTOR_6 ? 1 : 0;
 						USBD_CtlSendData(pdev, buff [interfacev], ulmin16(ARRAY_SIZE(buff [interfacev]), req->wLength));
 						break;
 
 					case AUDIO_REQUEST_GET_MAX:
-						debug_printf_P(PSTR("USBD_UACCDC_Setup: AUDIO_REQUEST_GET_MAX: interfacev=%u, %u\n"), interfacev, terminalID);
+						debug_printf_P(PSTR("USBD_ClassXXX_Setup: AUDIO_REQUEST_GET_MAX: interfacev=%u, %u\n"), interfacev, terminalID);
 						buff [interfacev] [0] = terminalID == TERMINAL_ID_SELECTOR_6 ? TERMINAL_ID_SELECTOR_6_INPUTS : 100;
 						USBD_CtlSendData(pdev, buff [interfacev], ulmin16(ARRAY_SIZE(buff [interfacev]), req->wLength));
 						break;
 
 					case AUDIO_REQUEST_GET_RES:
-						debug_printf_P(PSTR("USBD_UACCDC_Setup: AUDIO_REQUEST_GET_RES: interfacev=%u, %u\n"), interfacev, terminalID);
+						debug_printf_P(PSTR("USBD_ClassXXX_Setup: AUDIO_REQUEST_GET_RES: interfacev=%u, %u\n"), interfacev, terminalID);
 						buff [interfacev] [0] = 1;
 						USBD_CtlSendData(pdev, buff [interfacev], ulmin16(ARRAY_SIZE(buff [interfacev]), req->wLength));
 						break;
 
 					default:
-						debug_printf_P(PSTR("USBD_UACCDC_Setup: default path 2: req->bRequest=%02X\n"), req->bRequest);
+						debug_printf_P(PSTR("USBD_ClassXXX_Setup: default path 2: req->bRequest=%02X\n"), req->bRequest);
 						TP();
 						USBD_CtlError(pdev, req);
 						break;
@@ -8346,7 +8256,7 @@ static void USBD_UACCDC_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef  *r
 	#endif /* WITHUSBUAC */
 
 			default:
-				debug_printf_P(PSTR("USBD_UACCDC_Setup: default path 3: interfacev=%02X\n"), interfacev);
+				debug_printf_P(PSTR("USBD_ClassXXX_Setup: default path 3: interfacev=%02X\n"), interfacev);
 				TP();
 				USBD_CtlError(pdev, req);
 				break;
@@ -8362,7 +8272,7 @@ static void USBD_UACCDC_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef  *r
 			switch (req->bRequest)
 			{      
 			case USB_REQ_GET_INTERFACE :
-				//debug_printf_P(PSTR("USBD_StdItfReq: USB_REQ_TYPE_STANDARD USB_REQ_GET_INTERFACE dir=%02X interfacev=%d\n"), req->bmRequest & 0x80, interfacev);
+				//debug_printf_P(PSTR("USBD_ClassXXX_Setup: USB_REQ_TYPE_STANDARD USB_REQ_GET_INTERFACE dir=%02X interfacev=%d\n"), req->bmRequest & 0x80, interfacev);
 				if (interfacev < INTERFACE_count)
 				{
 					buff [interfacev] [0] = altinterfaces [interfacev];
@@ -8381,7 +8291,7 @@ static void USBD_UACCDC_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef  *r
 					{
 #if WITHUSBHID
 					case HID_REPORT_DESC:
-						debug_printf_P(PSTR("USBD_StdItfReq: USB_REQ_TYPE_STANDARD USB_REQ_GET_DESCRIPTOR dir=%02X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), req->bmRequest & 0x80, req->wValue, req->wIndex, req->wLength);
+						debug_printf_P(PSTR("USBD_ClassXXX_Setup: USB_REQ_TYPE_STANDARD USB_REQ_GET_DESCRIPTOR dir=%02X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), req->bmRequest & 0x80, req->wValue, req->wIndex, req->wLength);
 						if (HIDReportDescrTbl [0].size != 0 && interfacev == INTERFACE_HID_CONTROL_7)
 						{
 							USBD_CtlSendData(pdev, HIDReportDescrTbl [0].data, HIDReportDescrTbl [0].size);
@@ -8430,12 +8340,12 @@ static void USBD_UACCDC_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef  *r
 				{
 				case CDC_SET_CONTROL_LINE_STATE:
 					// Выполнение этого запроса не требует дополнительного чтения данных
-					//debug_printf_P(PSTR("USBD_StdItfReq: CDC_SET_CONTROL_LINE_STATE, wValue=%04X\n"), req->wValue);
+					//debug_printf_P(PSTR("USBD_ClassXXX_Setup: CDC_SET_CONTROL_LINE_STATE, wValue=%04X\n"), req->wValue);
 					usb_cdc_control_state [interfacev] = req->wValue;
 					break;
 
 				default:
-					//debug_printf_P(PSTR("USBD_StdItfReq: bRequest=%02X, wValue=%04X, wLength=%04X\n"), req->bRequest, req->wValue, req->wLength);
+					//debug_printf_P(PSTR("USBD_ClassXXX_Setup: bRequest=%02X, wValue=%04X, wLength=%04X\n"), req->bRequest, req->wValue, req->wLength);
 					//TP();
 					break;
 				}
@@ -8461,7 +8371,7 @@ static void USBD_UACCDC_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef  *r
 					switch (req->bRequest)
 					{
 					default:
-						//debug_printf_P(PSTR("USBD_StdItfReq: OUT: INTERFACE_AUDIO_CONTROL_0: ???? = %02X\n"), req->bRequest);
+						//debug_printf_P(PSTR("USBD_ClassXXX_Setup: OUT: INTERFACE_AUDIO_CONTROL_0: ???? = %02X\n"), req->bRequest);
 						break;
 					}
 				}
@@ -8482,11 +8392,11 @@ static void USBD_UACCDC_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef  *r
 				{
 				case CDC_SET_CONTROL_LINE_STATE:
 					// Выполнение этого запроса не требует дополнительного чтения данных
-					debug_printf_P(PSTR("USBD_StdItfReq: INTERFACE_CDCEEM_DATA_6 CDC_SET_CONTROL_LINE_STATE, wValue=%04X\n"), req->wValue);
+					debug_printf_P(PSTR("USBD_ClassXXX_Setup: INTERFACE_CDCEEM_DATA_6 CDC_SET_CONTROL_LINE_STATE, wValue=%04X\n"), req->wValue);
 					//usb_cdc_control_state [interfacev] = req->wValue;
 					break;
 				default:
-					debug_printf_P(PSTR("USBD_StdItfReq: INTERFACE_CDCEEM_DATA_6: bRequest=%02X, wIndex=%04X, wLength=%04X\n"), req->bRequest, req->wIndex, req->wLength);
+					debug_printf_P(PSTR("USBD_ClassXXX_Setup: INTERFACE_CDCEEM_DATA_6: bRequest=%02X, wIndex=%04X, wLength=%04X\n"), req->bRequest, req->wIndex, req->wLength);
 					break;
 				}
 				if (req->wLength != 0)
@@ -8506,11 +8416,11 @@ static void USBD_UACCDC_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef  *r
 				{
 				//case CDC_SET_CONTROL_LINE_STATE:
 					// Выполнение этого запроса не требует дополнительного чтения данных
-					//debug_printf_P(PSTR("USBD_StdItfReq: INTERFACE_HID_CONTROL_7 CDC_SET_CONTROL_LINE_STATE, wValue=%04X\n"), req->wValue);
+					//debug_printf_P(PSTR("USBD_ClassXXX_Setup: INTERFACE_HID_CONTROL_7 CDC_SET_CONTROL_LINE_STATE, wValue=%04X\n"), req->wValue);
 					//usb_cdc_control_state [interfacev] = req->wValue;
 					//break;
 				default:
-					debug_printf_P(PSTR("USBD_StdItfReq: INTERFACE_HID_CONTROL_7: bRequest=%02X, wIndex=%04X, wLength=%04X\n"), req->bRequest, req->wIndex, req->wLength);
+					debug_printf_P(PSTR("USBD_ClassXXX_Setup: INTERFACE_HID_CONTROL_7: bRequest=%02X, wIndex=%04X, wLength=%04X\n"), req->bRequest, req->wIndex, req->wLength);
 					break;
 				}
 				if (req->wLength != 0)
@@ -8539,7 +8449,7 @@ static void USBD_UACCDC_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef  *r
 			switch (req->bRequest)
 			{      
 			case USB_REQ_SET_INTERFACE :
-				//debug_printf_P(PSTR("USBD_StdItfReq: USB_REQ_TYPE_STANDARD USB_REQ_SET_INTERFACE interfacev=%d, value=%d\n"), interfacev, LO_BYTE(req->wValue));
+				//debug_printf_P(PSTR("USBD_ClassXXX_Setup: USB_REQ_TYPE_STANDARD USB_REQ_SET_INTERFACE interfacev=%d, value=%d\n"), interfacev, LO_BYTE(req->wValue));
 				if (interfacev < INTERFACE_count)
 					altinterfaces [interfacev] = LO_BYTE(req->wValue);
 				switch (interfacev)
@@ -8569,15 +8479,15 @@ static void USBD_UACCDC_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef  *r
 
 		#if WITHUSBCDCEEM
 				//case INTERFACE_CDCECM_CONTROL_5:	// CDC ECM interfacei
-				//	debug_printf_P(PSTR("USBD_UACCDC_Setup: INTERFACE_CDCECM_CONTROL_5 set interfacev=%02X to %02X\n"), interfacev, LO_BYTE(req->wValue));
+				//	debug_printf_P(PSTR("USBD_ClassXXX_Setup: INTERFACE_CDCECM_CONTROL_5 set interfacev=%02X to %02X\n"), interfacev, LO_BYTE(req->wValue));
 				//	break;
 				case INTERFACE_CDCEEM_DATA_6:	// CDC ECM interfacei
-					debug_printf_P(PSTR("USBD_UACCDC_Setup: INTERFACE_CDCEEM_DATA_6: set interfacev=%02X to %02X\n"), interfacev, LO_BYTE(req->wValue));
+					debug_printf_P(PSTR("USBD_ClassXXX_Setup: INTERFACE_CDCEEM_DATA_6: set interfacev=%02X to %02X\n"), interfacev, LO_BYTE(req->wValue));
 					break;
 		#endif /* WITHUSBCDCEEM */
 		#if WITHUSBHID
 				//case INTERFACE_HID_CONTROL_7:	// HID interfacei
-				//	debug_printf_P(PSTR("USBD_UACCDC_Setup: INTERFACE_HID_CONTROL_7: set interfacev=%02X to %02X\n"), interfacev, LO_BYTE(req->wValue));
+				//	debug_printf_P(PSTR("USBD_ClassXXX_Setup: INTERFACE_HID_CONTROL_7: set interfacev=%02X to %02X\n"), interfacev, LO_BYTE(req->wValue));
 				//	break;
 		#endif /* WITHUSBHID */
 				default:
@@ -8588,13 +8498,13 @@ static void USBD_UACCDC_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef  *r
 				break;
 
 			case USB_REQ_SET_FEATURE:
-				debug_printf_P(PSTR("USBD_StdItfReq: USB_REQ_TYPE_STANDARD USB_REQ_SET_FEATURE interfacev=%d, value=%d\n"), interfacev, LO_BYTE(req->wValue));
+				debug_printf_P(PSTR("USBD_ClassXXX_Setup: USB_REQ_TYPE_STANDARD USB_REQ_SET_FEATURE interfacev=%d, value=%d\n"), interfacev, LO_BYTE(req->wValue));
 				USBD_CtlSendStatus(pdev);
 				break;
 
 			// Добавлено для WITHUSBHID
 			case USB_REQ_CLEAR_FEATURE:
-				debug_printf_P(PSTR("USBD_StdItfReq: USB_REQ_TYPE_STANDARD USB_REQ_CLEAR_FEATURE interfacev=%d, value=%d\n"), interfacev, LO_BYTE(req->wValue));
+				debug_printf_P(PSTR("USBD_ClassXXX_Setup: USB_REQ_TYPE_STANDARD USB_REQ_CLEAR_FEATURE interfacev=%d, value=%d\n"), interfacev, LO_BYTE(req->wValue));
 				USBD_CtlSendStatus(pdev);
 				break;
 
@@ -8632,7 +8542,7 @@ USBD_StatusTypeDef  USBD_StdItfReq (USBD_HandleTypeDef *pdev, USBD_SetupReqTyped
 	case USBD_STATE_CONFIGURED:
 		if (1) // (LO_BYTE(req->wIndex) <= USBD_MAX_NUM_INTERFACES) 
 		{
-			USBD_UACCDC_Setup(pdev, req);
+			USBD_ClassXXX_Setup(pdev, req);
 #if 0
 #endif
 			if (pdev->pClass != NULL)
@@ -8677,7 +8587,7 @@ USBD_StatusTypeDef  USBD_StdEPReq (USBD_HandleTypeDef *pdev, USBD_SetupReqTypede
   /* Check if it is a class request */
   if ((req->bmRequest & 0x60) == 0x20)
   {
-		USBD_UACCDC_Setup(pdev, req);
+		USBD_ClassXXX_Setup(pdev, req);
 #if 0
 #endif
 	  if (pdev->pClass != NULL)
@@ -8711,7 +8621,7 @@ USBD_StatusTypeDef  USBD_StdEPReq (USBD_HandleTypeDef *pdev, USBD_SetupReqTypede
           
         }
       }
-	USBD_UACCDC_Setup(pdev, req);
+	USBD_ClassXXX_Setup(pdev, req);
 #if 0
 #endif
 	  if (pdev->pClass != NULL)
@@ -8746,7 +8656,7 @@ USBD_StatusTypeDef  USBD_StdEPReq (USBD_HandleTypeDef *pdev, USBD_SetupReqTypede
         if ((ep_addr & 0x7F) != 0x00) 
         {        
           USBD_LL_ClearStallEP(pdev, ep_addr);
-		USBD_UACCDC_Setup(pdev, req);
+		USBD_ClassXXX_Setup(pdev, req);
 #if 0
 #endif
 		  if (pdev->pClass != NULL)
@@ -9160,7 +9070,7 @@ static void USBD_SetFeature(USBD_HandleTypeDef *pdev,
 	if (req->wValue == USB_FEATURE_REMOTE_WAKEUP)
 	{
 		pdev->dev_remote_wakeup = 1;  
-		USBD_UACCDC_Setup(pdev, req);
+		USBD_ClassXXX_Setup(pdev, req);
 #if 0
 #endif
 		  if (pdev->pClass != NULL)
@@ -9188,7 +9098,7 @@ static void USBD_ClrFeature(USBD_HandleTypeDef *pdev,
 		if (req->wValue == USB_FEATURE_REMOTE_WAKEUP) 
 		{
 			pdev->dev_remote_wakeup = 0; 
-		USBD_UACCDC_Setup(pdev, req);
+			USBD_ClassXXX_Setup(pdev, req);
 #if 0
 #endif
 			if (pdev->pClass != NULL)
@@ -9204,6 +9114,60 @@ static void USBD_ClrFeature(USBD_HandleTypeDef *pdev,
 	}
 }
 
+
+
+/**
+* @brief  USBD_StdDevReq
+*         Handle standard usb device requests
+* @param  pdev: device instance
+* @param  req: usb request
+* @retval status
+*/
+USBD_StatusTypeDef  USBD_StdDevReq (USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef  *req)
+{
+	//debug_printf_P(PSTR("USBD_StdDevReq: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), 
+	//	req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
+	//debug_printf_P(PSTR("USBD_StdDevReq:\n"));
+	USBD_StatusTypeDef ret = USBD_OK;  
+
+	switch (req->bRequest) 
+	{
+	case USB_REQ_GET_DESCRIPTOR: 
+		USBD_GetDescriptor(pdev, req) ;
+		break;
+
+	case USB_REQ_SET_ADDRESS:                      
+		USBD_SetAddress(pdev, req);
+		break;
+
+	case USB_REQ_SET_CONFIGURATION:                    
+		USBD_SetConfig (pdev, req);
+		break;
+
+	case USB_REQ_GET_CONFIGURATION:                 
+		USBD_GetConfig (pdev, req);
+		break;
+
+	case USB_REQ_GET_STATUS:                                  
+		USBD_GetStatus (pdev, req);
+		break;
+
+	case USB_REQ_SET_FEATURE:   
+		USBD_SetFeature (pdev, req);    
+		break;
+
+	case USB_REQ_CLEAR_FEATURE:                                   
+		USBD_ClrFeature (pdev, req);
+		break;
+
+	default:  
+		TP();
+		USBD_CtlError(pdev, req);
+		break;
+	}
+
+	return ret;
+}
 /**
 * @brief  USBD_SetupStage 
 *         Handle the setup stage
