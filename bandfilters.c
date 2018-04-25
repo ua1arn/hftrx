@@ -341,9 +341,9 @@ uint8_t bandf2_calc(
 		return 2;
 	return 3;
 #elif \
-	CTLREGMODE_STORCH_V2_UA1CEI || \
+	CTLREGMODE_STORCH_V2 || \
 	0
-
+	/* плата усилителя 2*RD100 */
 	const unsigned long M10 = 1000uL * 100;
 	const fseltype_t f = (fseltype_t) (freq >> BANDDIVPOWER);
 
@@ -370,7 +370,6 @@ uint8_t bandf2_calc(
 	CTLREGMODE_RAVENDSP_V7 || \
 	CTLREGMODE_STORCH_V1 || \
 	CTLREGMODE_STORCH_V1_R4DR || \
-	CTLREGMODE_STORCH_V2 || \
 	CTLREGMODE_STORCH_V3 || \
 	CTLREGMODE_STORCH_V4 ||		/* modem only v2 */ \
 	CTLREGMODE_STORCH_V5 ||		/* mimni RX */ \
