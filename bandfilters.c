@@ -434,10 +434,10 @@ uint8_t bandf_calc(
 	BANDSELSTYLERE_RA4YBO_AM0 || \
 	0
 
-	const unsigned long M = 1000uL * 1000;
+	const unsigned long M01 = 100uL * 1000;
 	const fseltype_t f = (fseltype_t) (freq >> BANDDIVPOWER);
 
-	if (f < (fseltype_t) ((2 * M) >> BANDDIVPOWER))
+	if (f < (fseltype_t) ((22 * M01) >> BANDDIVPOWER))
 		return 0;
 	return 1;
 
