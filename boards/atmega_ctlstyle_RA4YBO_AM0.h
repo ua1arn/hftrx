@@ -135,11 +135,6 @@
 	//#define LO1PHASES	1		/* Прямой синтез первого гетеродина двумя DDS с програмимруемым сдвигом фазы */
 	#define DEFPREAMPSTATE 	0	/* УВЧ по умолчанию включён (1) или выключен (0) */
 
-	// Пользовательские варианты конфигурации.
-	#define BANDSELSTYLERE_SW20XX 1
-	//#define BANDSELSTYLERE_RX3QSP 1	/* Специальный вариант диапазонных фильтров по запросу RX3QSP */
-	//#define BANDSELSTYLERE_R3PAV 1        /* 8 диапазонных ФНЧ где 12м и 10м совмещенны для дешифратора 74HCT238 ftp://shodtech.net/SW2012/%D0%A4%D0%9D%D0%A7/ */
-
 	/* что за память настроек и частот используется в контроллере */
 	//#define NVRAM_TYPE NVRAM_TYPE_FM25XXXX	// SERIAL FRAM AUTODETECT
 	#define NVRAM_TYPE NVRAM_TYPE_FM25L04	// Так же при использовании FM25040A - 5 вольт, 512 байт
