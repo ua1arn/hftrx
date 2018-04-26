@@ -163,7 +163,7 @@ static void tlv320aic23_setvolume(uint_fast16_t gain, uint_fast8_t mute, uint_fa
 static void tlv320aic23_lineinput(uint_fast8_t v, uint_fast8_t mikebust20db, uint_fast16_t mikegain, uint_fast16_t linegain)
 {
 	//debug_printf_P(PSTR("tlv320aic23_lineinput: glob_mik1level=%d\n"), mikegain);
-	(void) mikegain;	// управления усилдением микрофона в этом кодеке нет
+	(void) mikegain;	// управления усилением микрофона в этом кодеке нет
 	if (v != 0)
 	{
 		uint_fast8_t level = (linegain - WITHLINEINGAINMIN) * (TLV320AIC23_IN_VOL_MAX - TLV320AIC23_IN_VOL_MIN) / (WITHLINEINGAINMAX - WITHLINEINGAINMIN) + TLV320AIC23_IN_VOL_MIN;
