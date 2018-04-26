@@ -150,6 +150,7 @@ static void tlv320aic23_initialize_slave_fullduplex(void)
 static void tlv320aic23_setvolume(uint_fast16_t gain, uint_fast8_t mute, uint_fast8_t mutespk)
 {
 	uint_fast8_t level = (gain - BOARD_AFGAIN_MIN) * (TLV320AIC23_OUT_VOL_MAX - TLV320AIC23_OUT_VOL_MIN) / (BOARD_AFGAIN_MAX - BOARD_AFGAIN_MIN) + TLV320AIC23_OUT_VOL_MIN;
+	(void) mutespk;	// управления громкостью на линейном выходе в этом кодеке нет
 	tlv320aic23_setreg(TLV320AIC23_LCHNVOL, 
 		(mute == 0) * (level & TLV320AIC23_OUT_VOL_MASK) |
 		TLV320AIC23_LRS_ENABLED |	/* левый и правый одновременно */
