@@ -8715,13 +8715,13 @@ arm_cpu_initialize(void)
 {
 #if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7
 
-	#if WITHDEBUG
+	#if WITHDEBUG && WITHINTEGRATEDDSP
 		// Поддержка для функций диагностики быстродействия BEGINx_STAMP/ENDx_STAMP - audio.c
 		CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
 		DWT->LAR = 0xC5ACCE55;	// Key value for unlock
 		DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
 		DWT->LAR = 0x00000000;	// Key value for lock
-	#endif /* WITHDEBUG */
+	#endif /* WITHDEBUG && WITHINTEGRATEDDSP */
 
 	#if (__FPU_PRESENT == 1) && (__FPU_USED == 1)
 

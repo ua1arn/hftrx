@@ -23,33 +23,34 @@
 //#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 //#define WITHCPUADCHW 	1	/* использование ADC */
 
-#define WITHUSBHW_DEVICE		USB_OTG_HS
+#define WITHUSBHW_DEVICE		USB_OTG_FS
 #define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
-//#define WITHUSBHWVBUSSENSE	1	/* используется предопределенный вывод VBUS_SENSE */
-#define WITHUSBHWHIGHSPEED	1	/* Используется встроенная в процессор поддержка USB HS */
+#define WITHUSBHWVBUSSENSE	1	/* используется предопределенный вывод VBUS_SENSE */
+//#define WITHUSBHWHIGHSPEED	1	/* Используется встроенная в процессор поддержка USB HS */
 //#define WITHUSBHWHIGHSPEEDDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
 
 #if WITHUSBHW
 	#define WITHCAT_CDC		1	/* использовать виртуальный воследовательный порт на USB соединении */
 	#define WITHMODEM_CDC	1
 	//#define WITHCAT_USART2		1
-	#define WITHUART1HW	1	/* Используется периферийный контроллер последовательного порта #1 */
-	#define WITHDEBUG_USART1	1
-	#define WITHNMEA_USART1		1	/* порт подключения GPS/GLONASS */
+	#define WITHUART2HW	1	/* Используется периферийный контроллер последовательного порта #2 */
+	#define WITHDEBUG_USART2	1
+	#define WITHNMEA_USART2		1	/* порт подключения GPS/GLONASS */
 	//#define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
 
-	#define WITHUSBCDC		1	/* использовать виртуальный последовательный порт на USB соединении */
+	#define WITHUSBHID		1	/* использовать виртуальный последовательный порт на USB соединении */
+	#define WITHUSBCDCEEM		1	/* использовать виртуальный последовательный порт на USB соединении */
 
 #else
 
-	#define WITHUART1HW	1	/* Используется периферийный контроллер последовательного порта #1 */
-	//#define WITHUART2HW	1	/* Используется периферийный контроллер последовательного порта #2 */
+	//#define WITHUART1HW	1	/* Используется периферийный контроллер последовательного порта #1 */
+	#define WITHUART2HW	1	/* Используется периферийный контроллер последовательного порта #2 */
 
 	//#define WITHCAT_CDC		1	/* использовать виртуальный воследовательный порт на USB соединении */
-	#define WITHCAT_USART1		1
-	#define WITHDEBUG_USART1	1
-	#define WITHMODEM_USART1	1
-	#define WITHNMEA_USART1		1
+	#define WITHCAT_USART2		1
+	#define WITHDEBUG_USART2	1
+	#define WITHMODEM_USART2	1
+	#define WITHNMEA_USART2		1
 
 #endif
 
@@ -310,6 +311,11 @@
 			arm_hardware_piob_updown(ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT, 0); \
 		} while (0)
 #endif
+
+#define HARDWARE_USART2_INITIALIZE() do { \
+		arm_hardware_pioa_altfn2((1uL << 2) | (1uL << 3), AF_USART2); /* PA2: TX DATA line (2 MHz), PA3: RX data line */ \
+		arm_hardware_pioa_updown((1uL << 3), 0);	/* PA3: pull-up RX data */ \
+	} while (0)
 
 //#define SPI_IOUPDATE_PORT_C(v)	do { GPIOC->BSRR = BSRR_C(v); } while (0)
 //#define SPI_IOUPDATE_PORT_S(v)	do { GPIOC->BSRR = BSRR_S(v); } while (0)

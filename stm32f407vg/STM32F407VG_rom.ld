@@ -4,7 +4,7 @@
 MEMORY
 {
   FLASH (rx) : ORIGIN = 0x08000000, LENGTH = 1024k
-  RAM (rwx)  : ORIGIN = 0x20000000, LENGTH = 128k
+  RAM (rwx)  : ORIGIN = 0x20000000, LENGTH = 112k
   CCM (rwx)  : ORIGIN = 0x10000000, LENGTH = 64k	/* CCM */
 }
 

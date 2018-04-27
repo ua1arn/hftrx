@@ -19,7 +19,7 @@
 	//#define WITHUSESAIPLL	1	/* SAI PLL	*/
 	//#define WITHUSESAII2S	1	/* I2S PLL	*/
 
-	#if 1
+	#if 0
 		// при наличии внешнего кварцевого резонатора
 		#define WITHCPUXTAL 8000000UL	/* На процессоре установлен кварц 8.000 МГц */
 		#define REF1_DIV 4			// ref freq = 2.000 MHz
@@ -45,7 +45,8 @@
 			#define HARDWARE_FLASH_LATENCY FLASH_ACR_LATENCY_6WS	// overvlocking
 		#else
 			// normal operation frequency
-			#define REF1_MUL 180		// 2*180.000 MHz (192 <= PLLN <= 432)
+			//#define REF1_MUL 180		// 2*180.000 MHz (192 <= PLLN <= 432)
+			#define REF1_MUL 168	// for USB
 			#define HARDWARE_FLASH_LATENCY FLASH_ACR_LATENCY_5WS	// Задержка для работы с памятью 5 WS for 168 MHz at 3.3 volt
 		#endif
 	#endif
@@ -252,7 +253,7 @@
 	//#define WITHIFSHIFT	1	/* используется IF SHIFT */
 	//#define WITHIFSHIFTOFFSET	(-250)	/* Начальное занчение IF SHIFT */
 	//#define WITHPBT		1	/* используется PBT (если LO3 есть) */
-	#define WITHCAT		1	/* используется CAT */
+	//#define WITHCAT		1	/* используется CAT */
 	#define WITHDEBUG		1	/* Отладочная печать через COM-порт. Без CAT (WITHCAT) */
 	//#define WITHBEACON	1	/* Используется режим маяка */
 	//#define WITHVOX		1	/* используется VOX */
