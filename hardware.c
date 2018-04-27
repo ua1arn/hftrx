@@ -11016,13 +11016,15 @@ void Reset_Handler(void)
 	}
 #endif
 #if 0
-	// PB6 signal
-	enum { WORKMASK = 1ul << 6 };
-	arm_hardware_piob_outputs(WORKMASK, WORKMASK);
+	// PD13 signal
+	enum { WORKMASK	 = 1ul << 13 };
+	arm_hardware_piod_outputs(WORKMASK, WORKMASK);
 
 	for (;;)
 	{
-		GPIOB->ODR ^= WORKMASK;	// Debug LEDs
+		arm_hardware_piod_outputs(WORKMASK, 1 * WORKMASK);
+		hardware_spi_io_delay();
+		arm_hardware_piod_outputs(WORKMASK, 0 * WORKMASK);
 		hardware_spi_io_delay();
 	}
 #endif
@@ -11045,13 +11047,15 @@ void Reset_Handler(void)
 	}
 #endif
 #if 0
-	// PB6 signal
-	enum { WORKMASK = 1ul << 6 };
-	arm_hardware_piob_outputs(WORKMASK, WORKMASK);
+	// PD13 signal
+	enum { WORKMASK = 1ul << 13 };
+	arm_hardware_piod_outputs(WORKMASK, WORKMASK);
 
 	for (;;)
 	{
-		GPIOB->ODR ^= WORKMASK;	// Debug LEDs
+		arm_hardware_piod_outputs(WORKMASK, 1 * WORKMASK);
+		hardware_spi_io_delay();
+		arm_hardware_piod_outputs(WORKMASK, 0 * WORKMASK);
 		hardware_spi_io_delay();
 	}
 #endif
@@ -11119,14 +11123,18 @@ void Reset_Handler(void)
 	}
 #endif
 #if 0
-	// PB6 signal
-	enum { WORKMASK = 1ul << 6 };
-	arm_hardware_piob_outputs(WORKMASK, WORKMASK);
+	// PD13 signal
+	enum { WORKMASK	 = 1ul << 13 };
+	arm_hardware_piod_outputs(WORKMASK, WORKMASK);
 
 	for (;;)
 	{
-		GPIOB->ODR ^= WORKMASK;	// Debug LEDs
+		arm_hardware_piod_outputs(WORKMASK, 1 * WORKMASK);
 		hardware_spi_io_delay();
+		local_delay_ms(300);
+		arm_hardware_piod_outputs(WORKMASK, 0 * WORKMASK);
+		hardware_spi_io_delay();
+		local_delay_ms(300);
 	}
 #endif
 #if 0

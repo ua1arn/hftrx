@@ -7208,6 +7208,23 @@ void lowtests(void)
 #endif /* CPUSTYLE_R7S721 */
 #if 0
 	{
+		// PD13 signal pulses
+		enum { WORKMASK	 = 1ul << 13 };
+		arm_hardware_piod_outputs(WORKMASK, WORKMASK);
+
+		for (;;)
+		{
+			arm_hardware_piod_outputs(WORKMASK, 1 * WORKMASK);
+			hardware_spi_io_delay();
+			local_delay_ms(300);
+			arm_hardware_piod_outputs(WORKMASK, 0 * WORKMASK);
+			hardware_spi_io_delay();
+			local_delay_ms(300);
+		}
+	}
+#endif
+#if 0
+	{
 		HARDWARE_DEBUG_INITIALIZE();
 		HARDWARE_DEBUG_SET_SPEED(DEBUGSPEED);
 		//for (;;)

@@ -325,15 +325,15 @@
 
 #if 1
 	// Набор определений для работы без внешнего дешифратора
-	#define SPI_ADDRESS_PORT_S(v)	do { GPIOC->BSRR = BSRR_S(v); __DSB(); } while (0)
-	#define SPI_ADDRESS_PORT_C(v)	do { GPIOC->BSRR = BSRR_C(v); __DSB(); } while (0)
+	#define SPI_ADDRESS_PORT_S(v)	do { GPIOE->BSRR = BSRR_S(v); __DSB(); } while (0)
+	#define SPI_ADDRESS_PORT_C(v)	do { GPIOE->BSRR = BSRR_C(v); __DSB(); } while (0)
 	
 
 	#define SPI_CSEL0	0	//(GPIO_ODR_ODR0)	/* NPCS0 */
 	#define SPI_CSEL1	0	//(GPIO_ODR_ODR0)	/* LED */
 	#define SPI_CSEL2	0	//(GPIO_ODR_ODR0)	/* LED */
 	#define SPI_CSEL3	0	//(GPIO_ODR_ODR0)	/* LED */ 
-	#define SPI_CSEL4	((1u << 2))	/* LCD */ 
+	#define SPI_CSEL4	((1u << 3))	/* MEMS */ 
 	#define SPI_CSEL5	0	//(GPIO_ODR_ODR16)	/*  */
 	#define SPI_CSEL6	0	//(GPIO_ODR_ODR17)	/* */
 	#define SPI_CSEL7	0	//(GPIO_ODR_ODR18) 	/*  */
@@ -364,13 +364,13 @@
 	#define SPI_ALLCS_BITS	0		// требуется для указания того, что работа с прямым выбором CS (без дешифратора) не требуется
 #endif
 // Набор определений для работы без внешнего дешифратора
-#define SPI_ALLCS_PORT_S(v)	do { GPIOG->BSRR = BSRR_S(v); __DSB(); } while (0)
-#define SPI_ALLCS_PORT_C(v)	do { GPIOG->BSRR = BSRR_C(v); __DSB(); } while (0)
+#define SPI_ALLCS_PORT_S(v)	do { GPIOE->BSRR = BSRR_S(v); __DSB(); } while (0)
+#define SPI_ALLCS_PORT_C(v)	do { GPIOE->BSRR = BSRR_C(v); __DSB(); } while (0)
 
 /* инициализация лиий выбора периферийных микросхем */
 #define SPI_ALLCS_INITIALIZE() \
 	do { \
-		arm_hardware_pioa_outputs2m(SPI_ALLCS_BITS, SPI_ALLCS_BITS); \
+		arm_hardware_pioe_outputs2m(SPI_ALLCS_BITS, SPI_ALLCS_BITS); \
 	} while (0)
 /* инициализация сигналов управлдения дешифратором CS */
 #define SPI_ADDRESS_AEN_INITIALIZE() \
@@ -395,21 +395,20 @@
 // SPI1 hardware used.
 
 // MOSI & SCK port
-// STM32F303: SPI1_NSS can be placed on PA4 or PA15
-#define SPI_TARGET_SCLK_PORT_C(v)	do { GPIOB->BSRR = BSRR_C(v); __DSB(); } while (0)
-#define SPI_TARGET_SCLK_PORT_S(v)	do { GPIOB->BSRR = BSRR_S(v); __DSB(); } while (0)
-#define SPI_TARGET_MOSI_PORT_C(v)	do { GPIOB->BSRR = BSRR_C(v); __DSB(); } while (0)
-#define SPI_TARGET_MOSI_PORT_S(v)	do { GPIOB->BSRR = BSRR_S(v); __DSB(); } while (0)
+#define SPI_TARGET_SCLK_PORT_C(v)	do { GPIOA->BSRR = BSRR_C(v); __DSB(); } while (0)
+#define SPI_TARGET_SCLK_PORT_S(v)	do { GPIOA->BSRR = BSRR_S(v); __DSB(); } while (0)
+#define SPI_TARGET_MOSI_PORT_C(v)	do { GPIOA->BSRR = BSRR_C(v); __DSB(); } while (0)
+#define SPI_TARGET_MOSI_PORT_S(v)	do { GPIOA->BSRR = BSRR_S(v); __DSB(); } while (0)
 
-#define	SPI_SCLK_BIT			(1U << 3)	// * PB3 бит, через который идет синхронизация SPI
-#define	SPI_MOSI_BIT			(1U << 5)	// * PB5 бит, через который идет вывод (или ввод в случае двунаправленного SPI).
+#define	SPI_SCLK_BIT			(1U << 5)	// * PA5 бит, через который идет синхронизация SPI
+#define	SPI_MOSI_BIT			(1U << 7)	// * PA7 бит, через который идет вывод (или ввод в случае двунаправленного SPI).
 
-#define SPI_TARGET_MISO_PIN		(GPIOB->IDR)		// was PINA 
-#define	SPI_MISO_BIT			(1U << 4)	// * PB4 бит, через который идет ввод с SPI.
+#define SPI_TARGET_MISO_PIN		(GPIOA->IDR)		// was PINA 
+#define	SPI_MISO_BIT			(1U << 6)	// * PA6 бит, через который идет ввод с SPI.
 
 	#define SPIIO_INITIALIZE() do { \
-			arm_hardware_piob_outputs(SPI_MOSI_BIT | SPI_SCLK_BIT, SPI_MOSI_BIT | SPI_SCLK_BIT); \
-			arm_hardware_piob_inputs(SPI_MISO_BIT); \
+			arm_hardware_pioa_outputs(SPI_MOSI_BIT | SPI_SCLK_BIT, SPI_MOSI_BIT | SPI_SCLK_BIT); \
+			arm_hardware_pioa_inputs(SPI_MISO_BIT); \
 		} while (0)
 
 //#define SIDETONE_TARGET_BIT		(1u << 8)	// output TIM4_CH3 (PB8, base mapping)
