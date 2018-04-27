@@ -987,6 +987,9 @@ void spool_0p128(void);	// OPERA support
 	#elif BANDSELSTYLE_OLEG4Z
 		#define TUNE_BOTTOM 20000L		/* 20 kHz нижн€€ частота настройки */
 		#define TUNE_TOP 1700000000L	/* 1.7 GHz верхн€€ частота настройки */
+	#elif BANDSELSTYLE_OLEG4Z_V2
+		#define TUNE_BOTTOM 20000L		/* 20 kHz нижн€€ частота настройки */
+		#define TUNE_TOP 1700000000L	/* 1.7 GHz верхн€€ частота настройки */
 	#elif BANDSELSTYLERE_UHF_137M_174M
 		#define TUNE_BOTTOM 137000000L		/* нижн€€ частота настройки */
 		#define TUNE_TOP 174000000L			/* верхн€€ частота настройки */

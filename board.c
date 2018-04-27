@@ -3560,6 +3560,69 @@ prog_ctrlreg(uint_fast8_t plane)
 	}
 }
 
+#elif CTLREGMODE_OLEG4Z_V2	// USB FS, USB HS, DSP и FPGA, DUAL WATCH, SD-CARD & PA on board
+
+#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
+
+static uint_fast8_t adj8bits(uint_fast8_t v)
+{
+	uint_fast8_t b0 = (v & 0x80) != 0;
+	return ((v & 0x7F) << 1) | b0;
+}
+
+// "Storch" с USB, DSP и FPGA, SD-CARD
+static void 
+//NOINLINEAT
+prog_ctrlreg(uint_fast8_t plane)
+{
+	prog_fpga_ctrlreg(targetfpga1);	// FPGA control register
+
+	// rеgisters chain control register
+	{
+		enum { STARTNUX = 14 };
+		enum { RF1, RF2, RF3, RF4, RF5, RF6 };
+		uint_fast8_t xvr = glob_bandf >= 11;
+		//uint_fast32_t xvtr_bandmask = ((uint_fast32_t) 1U << 4);	// See R820T_IFFREQ
+		uint_fast32_t bandmask = (uint_fast32_t) 1U << glob_bandf;
+		static const uint_fast8_t xltIN [] =  { RF5, RF4, RF3, RF2, RF1, RF6, RF6, RF6, RF6, RF6, RF6, RF6};	// каналы входного клммутатора
+		static const uint_fast8_t xltOUT [] = { RF4, RF1, RF5, RF2, RF3, RF6, RF6, RF6, RF6, RF6, RF6, RF6};	// каналы выходного коммутатора
+		const uint_fast8_t uhfmuxIN = xltIN [glob_bandf - STARTNUX];		// U2 HMC252AQS24E - BPF_ON_17,BPF_ON_16,BPF_ON_15
+		const uint_fast8_t uhfmuxOUT = xltOUT [glob_bandf - STARTNUX];		// U3 HMC252AQS24E - BPF_ON_20, BPF_ON_19, BPF_ON_18
+		const uint_fast8_t bpfon15 = (uhfmuxIN & 0x01) != 0;
+		const uint_fast8_t bpfon16 = (uhfmuxIN & 0x02) != 0;
+		const uint_fast8_t bpfon17 = (uhfmuxIN & 0x04) != 0;
+		const uint_fast8_t bpfon18 = (uhfmuxOUT & 0x01) != 0;
+		const uint_fast8_t bpfon19 = (uhfmuxOUT & 0x02) != 0;
+		const uint_fast8_t bpfon20 = (uhfmuxOUT & 0x04) != 0;
+
+		//bandmask = 0;
+		//xvr = 0;
+		const spitarget_t target = targetctl1;
+
+		rbtype_t rbbuff [4] = { 0 };
+
+		RBBIT(030, bpfon20);	
+
+		RBVAL(026, glob_att, 2);			// HF ATT
+		RBVAL(024, ~ glob_att, 2);			// UHF ATT
+		RBBIT(023, bpfon19);
+		RBBIT(022, bpfon18);
+		RBBIT(021, bpfon17);
+		RBBIT(020, xvr);	
+
+		RBBIT(017, bpfon15);
+		RBVAL(011, bandmask >> 8, 6);
+		RBBIT(010, bpfon16);
+
+		RBVAL(000, adj8bits(bandmask >> 0), 8);
+		//RBBIT(0007, 1);	
+
+		spi_select(target, CTLREG_SPIMODE);
+		prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
+		spi_unselect(target);
+	}
+}
+
 #elif CTLREGMODE_RAVENDSP_V8	// Rmainunit_v6bm modem only
 
 #define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */

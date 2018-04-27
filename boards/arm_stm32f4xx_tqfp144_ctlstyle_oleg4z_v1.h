@@ -120,13 +120,15 @@
 		//#define DIRECT_125M0_X1		1	/* Тактовый генератор на плате 125.0 МГц */	
 		#define DIRECT_122M88_X1	1	/* Тактовый генератор 122.880 МГц */	
 		//#define BANDSELSTYLERE_UPCONV56M	1	/* Up-conversion with working band .030..56 MHz */
-		#define BANDSELSTYLE_OLEG4Z	1	/* Up-conversion with working band .030..56 MHz */
+		//#define BANDSELSTYLE_OLEG4Z	1	/* Up-conversion with working band .030..56 MHz */
+		#define BANDSELSTYLE_OLEG4Z_V2	1
 	#endif
 	#define FQMODEL_FPGA		1	// FPGA + IQ over I2S
 
 	// --- вариации прошивки, специфические для разных частот
 
-	#define CTLREGMODE_OLEG4Z_V1	1	/* "Воронёнок" с DSP и FPGA, SD-CARD, dual watch & PA on board */
+	//#define CTLREGMODE_OLEG4Z_V1	1	/* "Воронёнок" с DSP и FPGA, SD-CARD, dual watch & PA on board */
+	#define CTLREGMODE_OLEG4Z_V2	1	/* "Воронёнок" с DSP и FPGA, SD-CARD, dual watch & PA on board */
 
 	#define WITHPOWERTRIM		1	// Имеется управление мощностью
 	#define WITHPOWERTRIMMIN	10	// Нижний предел регулировки (показываетый на дисплее)
