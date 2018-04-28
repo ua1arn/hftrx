@@ -96,39 +96,19 @@
 	/* модели синтезаторов - схемы частотообразования */
 
 	/* Версии частотных схем - с преобразованием "наверх" */
-	//#define FQMODEL_45_IF8868_UHF430	1	// SW2011
-	//#define FQMODEL_73050		1	// 1-st IF=73.050, 2-nd IF=0.455 MHz
-	//#define FQMODEL_73050_IF0P5		1	// 1-st IF=73.050, 2-nd IF=0.5 MHz
-	//#define FQMODEL_80455		1	// 1-st IF=80.455, 2-nd IF=0.455 MHz
-	//#define FQMODEL_64455_IF0P5		1	// 1-st IF=64.455, 2-nd IF=0.5 MHz
-	//#define FQMODEL_70455		1	// 1-st IF=70.455, 2-nd IF=0.455 MHz
-	//#define FQMODEL_70200		1	// 1-st if = 70.2 MHz, 2-nd IF-200 kHz
-	//#define FQMODEL_60700_IF05	1	// 60.7 -> 10.7 -> 0.5
-	//#define FQMODEL_60725_IF05	1	// 60.725 -> 10.725 -> 0.5
-	//#define FQMODEL_60700_IF02	1	// 60.7 -> 10.7 -> 0.2
-	//#define FQMODEL_70200		1	// 1-st if = 70.2 MHz, 2-nd IF-200 kHz
+	#define DIRECT_122M88_X1	1	/* Тактовый генератор 122.880 МГц */	
+	#define FQMODEL_FPGA		1	// FPGA + IQ over I2S
 
 	// +++ вариации прошивки, специфические для разных частот опорного генератора
 	#if 0
-		#define DIRECT_80M0_X1		1	/* Тактовый генератор на плате 80.0 МГц */	
-		//#define DIRECT_72M595_X1	1	/* Тактовый генератор 122.880 МГц */	
-		#define BANDSELSTYLERE_UPCONV56M_36M	1	/* Up-conversion with working band .030..36 MHz */
-	#elif 0
-		#define DIRECT_100M0_X1		1	/* Тактовый генератор на плате 100.0 МГц */	
-		#define BANDSELSTYLERE_UPCONV56M_45M	1	/* Up-conversion with working band .030..45 MHz */
+		#define BANDSELSTYLE_OLEG4Z	1	/* Up-conversion with working band .030..56 MHz */
+		#define CTLREGMODE_OLEG4Z_V1	1	/* "Воронёнок" с DSP и FPGA, SD-CARD, dual watch & PA on board */
 	#else
-		//#define DIRECT_125M0_X1		1	/* Тактовый генератор на плате 125.0 МГц */	
-		#define DIRECT_122M88_X1	1	/* Тактовый генератор 122.880 МГц */	
-		//#define BANDSELSTYLERE_UPCONV56M	1	/* Up-conversion with working band .030..56 MHz */
-		//#define BANDSELSTYLE_OLEG4Z	1	/* Up-conversion with working band .030..56 MHz */
 		#define BANDSELSTYLE_OLEG4Z_V2	1
+		#define CTLREGMODE_OLEG4Z_V2	1	/* "Воронёнок" с DSP и FPGA, SD-CARD, dual watch & PA on board */
 	#endif
-	#define FQMODEL_FPGA		1	// FPGA + IQ over I2S
 
 	// --- вариации прошивки, специфические для разных частот
-
-	//#define CTLREGMODE_OLEG4Z_V1	1	/* "Воронёнок" с DSP и FPGA, SD-CARD, dual watch & PA on board */
-	#define CTLREGMODE_OLEG4Z_V2	1	/* "Воронёнок" с DSP и FPGA, SD-CARD, dual watch & PA on board */
 
 	#define WITHPOWERTRIM		1	// Имеется управление мощностью
 	#define WITHPOWERTRIMMIN	10	// Нижний предел регулировки (показываетый на дисплее)
