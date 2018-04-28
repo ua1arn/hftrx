@@ -876,9 +876,9 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_SLOW,		KBD_CODE_BAND_DOWN,		KBD_CODE_BAND_DOWN, 	' ', },		// BAND DOWN
 	{ KIF_SLOW,		KBD_CODE_BAND_UP,		KBD_CODE_BAND_UP, 		' ', },		// BAND UP
 	{ KIF_NONE,		KBD_CODE_MENU_CWSPEED,	KBD_CODE_11, 			' ', },		// CW SPEED
-	{ KIF_NONE,		KBD_CODE_BAND_24M9,	KBD_CODE_BAND_24M9, 	'8', },	// 15
-	{ KIF_NONE,		KBD_CODE_BAND_14M0, KBD_CODE_BAND_14M0,		'5', },	// 11
-	{ KIF_NONE,		KBD_CODE_BAND_5M3, KBD_CODE_BAND_5M3,		'5', },	// 11
+	{ KIF_NONE,		KBD_CODE_BAND_24M9,		KBD_CODE_BAND_24M9, 	'8', },	// 15
+	{ KIF_NONE,		KBD_CODE_BAND_14M0,		KBD_CODE_BAND_14M0,		'5', },	// 11
+	{ KIF_NONE,		KBD_CODE_BAND_5M3,		KBD_CODE_BAND_5M3,		'5', },	// 11
 
 	// Cлева от индикатора - ряд 1 по счету слева - снизу вверх */
 	{ KIF_EXTMENU,	KBD_CODE_DISPMODE,		KBD_CODE_MENU, 			' ', },		// DISPLAY/MENU
@@ -892,7 +892,7 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE,		KBD_CODE_LOCK,			KBD_CODE_LOCK_HOLDED, 	' ', },		// LOCK
 	{ KIF_EXTMENU,	KBD_CODE_DISPMODE,		KBD_CODE_MENU, 			' ', },		// DISPLAY/MENU
 	{ KIF_NONE,		KBD_CODE_BKIN,			KBD_CODE_BKIN_HOLDED, 	' ', },		// BREAK-IN
-	{ KIF_NONE,		KBD_CODE_BAND_5M3, KBD_CODE_BAND_5M3,		'5', },	// 11
+	{ KIF_NONE,		KBD_CODE_BAND_5M3,		KBD_CODE_BAND_5M3,		'5', },	// 11
 	{ KIF_NONE,		KBD_CODE_MODE,			KBD_CODE_MODEMOD, 		' ', },		// MODE/SUBMODE
 	{ KIF_NONE,		KBD_CODE_1,				KBD_CODE_2,				' ', },
 	{ KIF_NONE,		KBD_CODE_3,				KBD_CODE_4,				' ', },
@@ -905,7 +905,7 @@ const struct qmkey qmdefs [NQMKEYS] =
 	// справа от индикатора, ближний к индикатиору - снизу вверх */
 	{ KIF_NONE,		KBD_CODE_LDSPTGL,		KBD_CODE_DATATOGGLE,	' ', },		// SPK/DATA
 	{ KIF_NONE,		KBD_CODE_ATT,			KBD_CODE_PAMP, 			' ', },		// ATT/PRE
-	{ KIF_NONE,		KBD_CODE_A_EX_B,			KBD_CODE_18, 		' ', },		// A/B
+	{ KIF_NONE,		KBD_CODE_A_EX_B,		KBD_CODE_18, 			' ', },		// A/B
 	{ KIF_NONE,		KBD_CODE_13,			KBD_CODE_14,			' ', },
 	{ KIF_NONE,		KBD_CODE_15,			KBD_CODE_16,			' ', },
 
