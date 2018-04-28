@@ -7579,7 +7579,7 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 #endif /* WITHUSBCDCEEM */
 
 #if WITHUSBCDCECM
-	debug_printf_P(PSTR("usbd_fifo_initialize6 ECM %u bytes: 4*(full4-last4)=%u\n"), 4 * size4, 4 * (full4 - last4));
+	//debug_printf_P(PSTR("usbd_fifo_initialize6 ECM %u bytes: 4*(full4-last4)=%u\n"), 4 * size4, 4 * (full4 - last4));
 #endif /* WITHUSBCDCECM */
 
 #if WITHUSBHID && 0
