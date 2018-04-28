@@ -19,7 +19,7 @@
 	//#define WITHUSESAIPLL	1	/* SAI PLL	*/
 	//#define WITHUSESAII2S	1	/* I2S PLL	*/
 
-	#if 1
+	#if 0
 		// при наличии внешнего кварцевого резонатора
 		#define WITHCPUXTAL 8000000UL	/* На процессоре установлен кварц 8.000 МГц */
 		#define REF1_DIV 4			// ref freq = 2.000 MHz
@@ -285,7 +285,7 @@
 
 	/* что за память настроек и частот используется в контроллере */
 	//#define NVRAM_TYPE NVRAM_TYPE_FM25XXXX	// SERIAL FRAM AUTODETECT
-	#define NVRAM_TYPE NVRAM_TYPE_FM25L04	// Так же при использовании FM25040A - 5 вольт, 512 байт
+	//#define NVRAM_TYPE NVRAM_TYPE_FM25L04	// Так же при использовании FM25040A - 5 вольт, 512 байт
 	//#define NVRAM_TYPE NVRAM_TYPE_FM25L16
 	//#define NVRAM_TYPE NVRAM_TYPE_FM25L64
 	//#define NVRAM_TYPE NVRAM_TYPE_FM25L256	// FM25L256, FM25W256
@@ -294,8 +294,8 @@
 	//#define NVRAM_TYPE NVRAM_TYPE_AT25040A
 	//#define NVRAM_TYPE NVRAM_TYPE_AT25L16
 	//#define NVRAM_TYPE NVRAM_TYPE_AT25256A
-	//#define NVRAM_TYPE NVRAM_TYPE_BKPSRAM	// Область памяти с батарейным питанием
-	#define HARDWARE_IGNORENONVRAM	1		// отладка на платах где нет никакого NVRAM
+	#define NVRAM_TYPE NVRAM_TYPE_BKPSRAM	// Область памяти с батарейным питанием
+	//#define HARDWARE_IGNORENONVRAM	1		// отладка на платах где нет никакого NVRAM
 
 	// End of NVRAM definitions section
 	#define FTW_RESOLUTION 32	/* разрядность FTW выбранного DDS */
