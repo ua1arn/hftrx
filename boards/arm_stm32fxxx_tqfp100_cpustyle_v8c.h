@@ -25,7 +25,7 @@
 
 #define WITHUSBHW_DEVICE		USB_OTG_FS
 #define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
-#define WITHUSBHWVBUSSENSE	1	/* используется предопределенный вывод VBUS_SENSE */
+//#define WITHUSBHWVBUSSENSE	1	/* используется предопределенный вывод VBUS_SENSE */
 //#define WITHUSBHWHIGHSPEED	1	/* Используется встроенная в процессор поддержка USB HS */
 //#define WITHUSBHWHIGHSPEEDDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
 
@@ -39,8 +39,9 @@
 	//#define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
 
 	//#define WITHUSBCDC		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
-	//#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
-	#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
+	#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
+	#define WITHUSBRNDIS	1	/* RNDIS использовать RNDIS на USB соединении */
+	//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
 	//#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
 
 #else

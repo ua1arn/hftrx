@@ -50,6 +50,7 @@
 #define USB_DEVICE_CLASS_PRINTER               0x07
 #define USB_DEVICE_CLASS_STORAGE               0x08
 #define USB_DEVICE_CLASS_HUB                   0x09
+#define USB_DEVICE_CLASS_WIRELESS_CONTROLLER   0xE0
 #define USB_DEVICE_CLASS_MISCELLANEOUS         0xEF
 #define USB_DEVICE_CLASS_VENDOR_SPECIFIC       0xFF
 
@@ -117,6 +118,7 @@
 #define USB_REQUEST_SYNC_FRAME                    0x0C
 
 /* defined USB device classes */
+/*
 #define USB_DEVICE_CLASS_RESERVED           0x00
 #define USB_DEVICE_CLASS_AUDIO              0x01
 #define USB_DEVICE_CLASS_COMMUNICATIONS     0x02
@@ -130,7 +132,7 @@
 #define USB_DEVICE_CLASS_TMC                0xFE
 #define USB_DEVICE_CLASS_VENDOR_SPECIFIC    0xFF
 
-
+*/
 
 #define CS_INTERFACE                 0x24
 

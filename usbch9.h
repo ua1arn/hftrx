@@ -104,6 +104,11 @@ enum
 	USBD_EP_CDCECM_INT,	// CDC INT События ком-порта в компьютер из TRX
 #endif /* WITHUSBCDCECM */
 
+#if WITHUSBRNDIS
+	USBD_EP_RNDIS_INT,
+	USBD_EP_RNDIS_IN,
+#endif /* WITHUSBRNDIS */
+
 #if WITHUSBCDC
 	USBD_EP_CDC_IN,		// CDC IN Данные ком-порта в компьютер из TRX
 	USBD_EP_CDC_INb,	// CDC IN Данные ком-порта в компьютер из TRX
@@ -140,6 +145,10 @@ enum
 	USBD_EP_CDCECM_OUT,	// CDC OUT Данные ком-порта от компьютера в TRX
 #endif /* WITHUSBCDCECM */
 
+#if WITHUSBRNDIS
+	USBD_EP_RNDIS_OUT,
+#endif /* WITHUSBRNDIS */
+
 #if WITHUSBCDC
 	USBD_EP_CDC_OUT,	// CDC OUT Данные ком-порта от компьютера в TRX
 	USBD_EP_CDC_OUTb,	// CDC OUT Данные ком-порта от компьютера в TRX
@@ -164,6 +173,11 @@ enum
 #if WITHUSBHID
 	#define HIDMOUSE_INT_DATA_SIZE 4
 #endif /* WITHUSBHID */
+
+#if WITHUSBRNDIS
+	#define USBD_RNDIS_INT_SIZE	8	// interrupt data
+	#define USBD_RNDIS_BUFSIZE	64	// bulk data
+#endif /* WITHUSBRNDIS */
 
 
 //#elif CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX
@@ -248,6 +262,11 @@ enum
 	INTERFACE_CDCECM_DATA_6,	/* CDC ECM/CDC EEM data Interface */
 #endif /* WITHUSBCDCECM */
 
+#if WITHUSBRNDIS
+	INTERFACE_RNDIS_CONTROL_5,	/* RNDIS control Interface */
+	INTERFACE_RNDIS_DATA_6,		/* RNDIS data Interface */
+#endif /* WITHUSBRNDIS */
+
 #if WITHUSBHID
 	INTERFACE_HID_CONTROL_7,	/* HID control Interface */
 #endif /* WITHUSBHID */
@@ -259,6 +278,7 @@ enum
 #define INTERFACE_CDCEEM_count 1	/* количество интерфейсов в одном CDC EEM */
 #define INTERFACE_CDCECM_count 2	/* количество интерфейсов в одном CDC EEM */
 #define INTERFACE_HID_count 1	/* количество интерфейсов в одном HID */
+#define INTERFACE_RNDIS_count 2	/* количество интерфейсов в одном RNDIS */
 
 
 enum

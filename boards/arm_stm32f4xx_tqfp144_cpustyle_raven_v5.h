@@ -53,11 +53,13 @@
 
 	#define WITHUSBCDC		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
 	//#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
+	//#define WITHUSBRNDIS	1	/* RNDIS использовать RNDIS на USB соединении */
 	//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
 	//#define WITHUSBHID		1	/* HID использовать Human Interface Device на USB соединении */
 
 	#define WITHCAT_CDC		1	/* использовать виртуальный воследовательный порт на USB соединении */
 	#define WITHMODEM_CDC	1
+
 
 	#define WITHDEBUG_USART2	1
 	#define WITHNMEA_USART2		1

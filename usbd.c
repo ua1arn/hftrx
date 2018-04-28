@@ -96,6 +96,12 @@ static volatile uint_fast16_t usb_cdc_control_state [INTERFACE_count];
 
 #endif /* WITHUSBCDCEEM */
 
+#if WITHUSBRNDIS
+
+	static USBALIGN_BEGIN uint8_t rndisbuffout [USBD_RNDIS_BUFSIZE] USBALIGN_END;
+
+#endif /* WITHUSBRNDIS */
+	
 static USBALIGN_BEGIN uint8_t ep0databuffout [USB_OTG_MAX_EP0_SIZE] USBALIGN_END;
 
 
@@ -2704,7 +2710,11 @@ usbd_handler_brdy_bulk_in8(PCD_TypeDef * const Instance, uint_fast8_t pipe, uint
 		break;
 #endif /* WITHUSBCDC */
 
+#if WITHUSBRNDIS
+#endif /* WITHUSBRNDIS */
+
 	default:
+		TP();
 		break;
 	}
 
@@ -4402,6 +4412,8 @@ static void r7s721_usbiX_handler(PCD_TypeDef * const Instance)
 		if ((brdysts & (1U << HARDWARE_USBD_PIPE_CDC_INb)) != 0)	
 			usbd_handler_brdy_bulk_in8(Instance, HARDWARE_USBD_PIPE_CDC_INb, USBD_EP_CDC_INb);
 #endif /* WITHUSBCDC */
+#if WITHUSBRNDIS
+#endif /* WITHUSBRNDIS */
 	}
 	if ((intsts0 & (1uL << USB_INTSTS0_DVST_SHIFT)) != 0)	// DVSE
 	{
@@ -4573,6 +4585,12 @@ static void usbd_classDeInit(USBD_HandleTypeDef *pdev, uint_fast8_t cfgidx)
 	USBD_LL_CloseEP(pdev, USBD_EP_CDCEEM_OUT);
 	cdceemout_initialize();
 #endif /* WITHUSBCDCEEM */
+
+#if WITHUSBRNDIS
+	USBD_LL_CloseEP(pdev, USBD_EP_RNDIS_IN);
+	USBD_LL_CloseEP(pdev, USBD_EP_RNDIS_INT);
+	USBD_LL_CloseEP(pdev, USBD_EP_RNDIS_OUT);
+#endif /* WITHUSBRNDIS */
 
 #if WITHUSBUAC
 	{
@@ -7452,12 +7470,12 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 	const uint_fast16_t full4 = fullsize / 4;
 	uint_fast16_t last4 = full4;
 	uint_fast16_t base4 = 0;
-#if WITHUSBCDC
+#if WITHUSBCDC || WITHUSBRNDIS
 	// параметры TX FIFO дл€ ендпоинтов, в которые никогда не будут идти данные дл€ передачи
 	const uint_fast16_t size4dummy = 0x10;//bigbuff ? 0x10 : 4;
 	last4 -= size4dummy;
 	const uint_fast16_t last4dummy = last4;
-#endif /* WITHUSBCDC */
+#endif /* WITHUSBCDC || WITHUSBRNDIS */
 
 	debug_printf_P(PSTR("usbd_fifo_initialize1: 4*(full4-last4)=%u\n"), 4 * (full4 - last4));
 
@@ -7582,6 +7600,28 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 	//debug_printf_P(PSTR("usbd_fifo_initialize6 ECM %u bytes: 4*(full4-last4)=%u\n"), 4 * size4, 4 * (full4 - last4));
 #endif /* WITHUSBCDCECM */
 
+#if WITHUSBRNDIS
+	{
+		/* полнофункциональное устройство */
+		const uint_fast8_t pipeint = USBD_EP_RNDIS_INT & 0x7F;
+		const uint_fast8_t pipe = USBD_EP_RNDIS_IN & 0x7F;
+
+		numoutendpoints += 1;
+		const int ncdceemindatapackets = 4 * mul2, ncdceemoutdatapackets = 4;
+
+		maxoutpacketsize4 = ulmax16(maxoutpacketsize4, ncdceemoutdatapackets * size2buff4(USBD_RNDIS_BUFSIZE));
+
+
+		const uint_fast16_t size4 = ncdceemindatapackets * (size2buff4(USBD_RNDIS_BUFSIZE) + add3tx);
+		ASSERT(last4 >= size4);
+		last4 -= size4;
+		instance->DIEPTXF [pipe - 1] = usbd_makeTXFSIZ(last4, size4);
+		instance->DIEPTXF [pipeint - 1] = usbd_makeTXFSIZ(last4dummy, size4dummy);
+		debug_printf_P(PSTR("usbd_fifo_initialize7 RNDIS %u bytes: 4*(full4-last4)=%u\n"), 4 * size4, 4 * (full4 - last4));
+	}
+#endif /* WITHUSBRNDIS */
+
+
 #if WITHUSBHID && 0
 	{
 		/* ... устройство */
@@ -7591,11 +7631,11 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 		ASSERT(last4 >= size4);
 		last4 -= size4;
 		instance->DIEPTXF [pipe - 1] = usbd_makeTXFSIZ(last4, size4);
-		debug_printf_P(PSTR("usbd_fifo_initialize7 HID %u bytes: 4*(full4-last4)=%u\n"), 4 * size4, 4 * (full4 - last4));
+		debug_printf_P(PSTR("usbd_fifo_initialize8 HID %u bytes: 4*(full4-last4)=%u\n"), 4 * size4, 4 * (full4 - last4));
 	}
 #endif /* WITHUSBHID */
 
-	debug_printf_P(PSTR("usbd_fifo_initialize8: 4*(full4-last4)=%u\n"), 4 * (full4 - last4));
+	debug_printf_P(PSTR("usbd_fifo_initialize9: 4*(full4-last4)=%u\n"), 4 * (full4 - last4));
 	
 	/* control endpoint TX FIFO */
 	{
@@ -7604,7 +7644,7 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 		ASSERT(last4 >= size4);
 		last4 -= size4;
 		instance->DIEPTXF0_HNPTXFSIZ = usbd_makeTXFSIZ(last4, size4);
-		debug_printf_P(PSTR("usbd_fifo_initialize9 TX FIFO %u bytes: 4*(full4-last4)=%u\n"), 4 * size4, 4 * (full4 - last4));
+		debug_printf_P(PSTR("usbd_fifo_initialize10 TX FIFO %u bytes: 4*(full4-last4)=%u\n"), 4 * size4, 4 * (full4 - last4));
 	}
 	/* control endpoint RX FIFO */
 	{
@@ -7620,7 +7660,7 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 				1 +
 				addplaces;
 
-		debug_printf_P(PSTR("usbd_fifo_initialize10 RX FIFO %u bytes: 4*(full4-last4)=%u bytes\n"), 4 * size4, 4 * (full4 - last4));
+		debug_printf_P(PSTR("usbd_fifo_initialize11 RX FIFO %u bytes: 4*(full4-last4)=%u bytes\n"), 4 * size4, 4 * (full4 - last4));
 		ASSERT(last4 >= size4);
 		instance->GRXFSIZ = (instance->GRXFSIZ & ~ USB_OTG_GRXFSIZ_RXFD) |
 			(last4 << USB_OTG_GRXFSIZ_RXFD_Pos) |	// was: size4 - то что осталось
@@ -7954,6 +7994,22 @@ static USBD_StatusTypeDef USBD_SetClassConfig(USBD_HandleTypeDef  *pdev, uint8_t
 
 	cdceemout_initialize();
 #endif /* WITHUSBCDCEEM */
+
+#if WITHUSBRNDIS
+	USBD_LL_OpenEP(pdev,
+		   USBD_EP_RNDIS_IN,
+		   USBD_EP_TYPE_BULK,
+		   USBD_RNDIS_BUFSIZE);
+
+	USBD_LL_Transmit(pdev, USBD_EP_RNDIS_IN, NULL, 0);
+	/* cdc Open EP OUT */
+	USBD_LL_OpenEP(pdev, USBD_EP_RNDIS_OUT, USBD_EP_TYPE_BULK, USBD_RNDIS_BUFSIZE);
+	/* RNDIS Open EP interrupt */
+	USBD_LL_OpenEP(pdev, USBD_EP_RNDIS_INT, USBD_EP_TYPE_INTR, USBD_RNDIS_INT_SIZE);
+
+	/* RNDIS Prepare Out endpoint to receive 1st packet */ 
+	USBD_LL_PrepareReceive(pdev, USBD_EP_RNDIS_OUT, rndisbuffout,  USBD_RNDIS_BUFSIZE);     
+#endif /* WITHUSBRNDIS */
 
 #if WITHUSBUAC
 	terminalsprops [TERMINAL_ID_SELECTOR_6] [AUDIO_CONTROL_UNDEFINED] = 1;
@@ -8409,6 +8465,30 @@ static void USBD_ClassXXX_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef  
 				}
 				break;
 	#endif /* WITHUSBCDCEEM */
+
+	#if WITHUSBRNDIS
+			case INTERFACE_RNDIS_CONTROL_5:	// RNDIS control
+				switch (req->bRequest)
+				{
+				//case CDC_SET_CONTROL_LINE_STATE:
+					// ¬ыполнение этого запроса не требует дополнительного чтени€ данных
+				//	debug_printf_P(PSTR("USBD_ClassXXX_Setup: INTERFACE_RNDIS_CONTROL_5 CDC_SET_CONTROL_LINE_STATE, wValue=%04X\n"), req->wValue);
+					//usb_cdc_control_state [interfacev] = req->wValue;
+				//	break;
+				default:
+					debug_printf_P(PSTR("USBD_ClassXXX_Setup: INTERFACE_RNDIS_CONTROL_5: bRequest=%02X, wIndex=%04X, wLength=%04X\n"), req->bRequest, req->wIndex, req->wLength);
+					break;
+				}
+				if (req->wLength != 0)
+				{
+					USBD_CtlPrepareRx(pdev, ep0databuffout, ulmin16(ARRAY_SIZE(ep0databuffout), req->wLength));
+				}
+				else
+				{
+					USBD_CtlSendStatus(pdev);
+				}
+				break;
+	#endif /* WITHUSBRNDIS */
 
 	#if WITHUSBHID
 			case INTERFACE_HID_CONTROL_7:	// USB HID interfacei
@@ -9292,6 +9372,17 @@ USBD_StatusTypeDef USBD_LL_DataOutStage(USBD_HandleTypeDef *pdev, uint8_t epnum,
 						}
 						break;
 #endif /* WITHUSBCDC */
+#if WITHUSBRNDIS
+					case INTERFACE_RNDIS_CONTROL_5:	// RNDIS control
+						switch (pdev->request.bRequest)
+						{
+
+						default:
+							debug_printf_P(PSTR("USBD_LL_DataOutStage: xxx2: interfacev=%u, bRequest=%u\n"), interfacev, pdev->request.bRequest);
+							break;
+						}
+						break;
+#endif /* WITHUSBRNDIS */
 
 #if WITHUSBUAC
 		#if WITHUSBUAC3
@@ -9313,7 +9404,7 @@ USBD_StatusTypeDef USBD_LL_DataOutStage(USBD_HandleTypeDef *pdev, uint8_t epnum,
 							{
 								const uint_fast8_t terminalID = HI_BYTE(pdev->request.wIndex);
 								const uint_fast8_t controlID = HI_BYTE(pdev->request.wValue);	// AUDIO_MUTE_CONTROL, AUDIO_VOLUME_CONTROL, ...
-								debug_printf_P(PSTR("USBD_LL_DataOutStage: xxx2: interfacev=%u, %u/%u=%u\n"), interfacev, terminalID, controlID, ep0databuffout [0]);
+								debug_printf_P(PSTR("USBD_LL_DataOutStage: xxx3: interfacev=%u, %u/%u=%u\n"), interfacev, terminalID, controlID, ep0databuffout [0]);
 							}
 							break;
 						}
@@ -9324,7 +9415,7 @@ USBD_StatusTypeDef USBD_LL_DataOutStage(USBD_HandleTypeDef *pdev, uint8_t epnum,
 						{
 							const uint_fast8_t terminalID = HI_BYTE(pdev->request.wIndex);
 							const uint_fast8_t controlID = HI_BYTE(pdev->request.wValue);	// AUDIO_MUTE_CONTROL, AUDIO_VOLUME_CONTROL, ...
-							debug_printf_P(PSTR("USBD_LL_DataOutStage: xxx3: interfacev=%u, %u/%u=%u\n"), interfacev, terminalID, controlID, ep0databuffout [0]);
+							debug_printf_P(PSTR("USBD_LL_DataOutStage: xxx4: interfacev=%u, %u/%u=%u\n"), interfacev, terminalID, controlID, ep0databuffout [0]);
 						}
 						break;
 
@@ -9385,6 +9476,14 @@ USBD_StatusTypeDef USBD_LL_DataOutStage(USBD_HandleTypeDef *pdev, uint8_t epnum,
 			USBD_LL_PrepareReceive(pdev, USB_ENDPOINT_OUT(epnum), cdceemoutbuff, USBD_CDCEEM_BUFSIZE);      
 			break;
 #endif /* WITHUSBCDCEEM */
+
+#if WITHUSBRNDIS
+		case USBD_EP_RNDIS_OUT:
+			//cdceemout_buffer_save(rndisbuffout, USBD_LL_GetRxDataSize(pdev, epnum));
+			/* Prepare Out endpoint to receive next cdc eem data packet */
+			USBD_LL_PrepareReceive(pdev, USB_ENDPOINT_OUT(epnum), rndisbuffout, USBD_RNDIS_BUFSIZE);      
+			break;
+#endif /* WITHUSBRNDIS */
 		default:
 			TP();
 			break;
@@ -9550,6 +9649,7 @@ USBD_StatusTypeDef USBD_LL_DataInStage(USBD_HandleTypeDef *pdev, uint8_t epnum, 
 			break;
 #endif /* WITHUSBUAC3 */
 #endif /* WITHUSBUAC */
+
 #if WITHUSBCDCEEM
 		case (USBD_EP_CDCEEM_IN & 0x7F):
 			//USBD_LL_Transmit(pdev, USBD_EP_CDCEEM_IN, NULL, 0);
@@ -9557,6 +9657,10 @@ USBD_StatusTypeDef USBD_LL_DataInStage(USBD_HandleTypeDef *pdev, uint8_t epnum, 
 			//debug_printf_P(PSTR("Endpoint: USBD_EP_CDCEEM_IN\n"));
 			break;
 #endif /* WITHUSBCDCEEM */
+
+#if WITHUSBRNDIS
+#endif /* WITHUSBRNDIS */
+
 		default:
 			TP();
 			break;
