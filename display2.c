@@ -1743,7 +1743,7 @@ enum
 		{	0, 0,	display_freqchr_a,	REDRM_FREQ, REDRSUBSET(DPAGE0), },	// частота для символьных дисплеев
 		{	8, 0,	display_att4,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 		{	13, 0,	display_rxbw3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
-		{	0, 1,	display2_bars,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// S-METER, SWR-METER, POWER-METER
+		{	0, 1,	display2_bars_amv0,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// S-METER, SWR-METER, POWER-METER
 	#if WITHMENU 
 		{	0, 0,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
 		{	0, 1,	display_menu_lblc3,	REDRM_MLBL, REDRSUBSET_MENU, },	// код редактируемого параметра
@@ -3898,6 +3898,41 @@ void display_swrmeter(
 	// v = 10..40 for swr 1..4
 	// swr10 = 0..30 for swr 1..4
 	const uint_fast8_t mapleftval = display_mapbar(swr10, 0, fullscale, 0, swr10, fullscale);
+
+	//debug_printf_P(PSTR("swr10=%d, mapleftval=%d, fs=%d\n"), swr10, mapleftval, display_getmaxswrlimb());
+
+	display_bars_address_swr(x, y, CHARS2GRID(0));
+
+	display_setcolors(SWRCOLOR, BGCOLOR);
+
+	display_wrdatabar_begin();
+	display_dispbar(BDTH_ALLSWR, mapleftval, fullscale, fullscale, PATTERN_BAR_FULL, PATTERN_BAR_FULL, PATTERN_BAR_EMPTYFULL);
+	display_wrdatabar_end();
+
+	if (BDTH_SPACESWR != 0)
+	{
+		// заполняем пустое место за индикаторм КСВ
+		display_bars_address_swr(x, y, CHARS2GRID(BDTH_ALLSWR));
+		display_wrdatabar_begin();
+		display_dispbar(BDTH_SPACESWR, 0, 1, 1, PATTERN_SPACE, PATTERN_SPACE, PATTERN_SPACE);
+		display_wrdatabar_end();
+	}
+
+#endif /* WITHBARS */
+}
+
+// Вызывается из display2_bars_amv0 (версия для CTLSTYLE_RA4YBO_AM0)
+// координаьы для общего блока PWR & SWR
+// используется место для SWR
+void display_modulationmeter(  
+	uint_fast8_t x, 
+	uint_fast8_t y, 
+	uint_fast8_t value,
+	uint_fast8_t fullscale
+	)
+{
+#if WITHBARS
+	const uint_fast8_t mapleftval = display_mapbar(value, 0, fullscale, 0, value, fullscale);
 
 	//debug_printf_P(PSTR("swr10=%d, mapleftval=%d, fs=%d\n"), swr10, mapleftval, display_getmaxswrlimb());
 

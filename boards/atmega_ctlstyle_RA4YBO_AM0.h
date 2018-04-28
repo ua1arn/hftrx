@@ -108,7 +108,7 @@
 	//#define WITHVOX		1	/* используется VOX */
 	//#define WITHDEBUG		1	/* Отладочная печать через COM-порт. Без CAT (WITHCAT) */
 
-	#if 1
+	#if 0
 		#define WITHPWRMTR	1	/* Индикатор выходной мощности или */
 		#define WITHPWRLIN	1	/* Индикатор выходной мощности показывает напряжение а не мощность */
 	#else
@@ -198,7 +198,7 @@
 	#if WITHBARS
 		SMETERIX = 3,	// S-meter
 		PWRI = 5,		// Индикатор мощности передатчика
-		//FWD = 4, REF = 3,	// SWR-meter
+		FWD = 5, REF = 3,	// SWR-meter (REF=3 - вход уровня модуляции )
 	#endif /* WITHBARS */
 		KI0 = 6, // клавиатура
 	};

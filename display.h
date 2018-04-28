@@ -407,6 +407,14 @@ display2_bars(
 	void * pv
 	);
 
+// Вызывается из display2.c (версия для CTLSTYLE_RA4YBO_AM0)
+void 
+display2_bars_amv0(
+	uint_fast8_t x, 
+	uint_fast8_t y, 
+	void * pv
+	);
+
 // Вызывается из display2.c
 // значение параметра
 void display_menu_valxx(
@@ -447,6 +455,14 @@ void display_swrmeter(
 	adcvalholder_t forward, 
 	adcvalholder_t reflected, // скорректированное
 	uint_fast16_t minforward
+	);
+
+// Вызывается из display2_bars_amv0 (версия для CTLSTYLE_RA4YBO_AM0)
+void display_modulationmeter(  
+	uint_fast8_t x, 
+	uint_fast8_t y, 
+	uint_fast8_t value,
+	uint_fast8_t maxvalue
 	);
 
 void display_pwrmeter(
