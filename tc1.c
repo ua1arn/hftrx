@@ -8139,6 +8139,47 @@ display2_bars(
 #endif /* WITHBARS */
 }
 
+#if CTLSTYLE_RA4YBO_AM0
+
+// S-METER, SWR-METER, POWER-METER
+/* отображение S-метра или SWR-метра на приЄме или передаче */
+// ¬ызываетс€ из display2.c (верси€ дл€ CTLSTYLE_RA4YBO_AM0)
+void 
+display2_bars_amv0(
+	uint_fast8_t x, 
+	uint_fast8_t y, 
+	void * pv
+	)
+{
+#if WITHBARS
+	if (gtx)
+	{
+#if WITHTX
+	#if (WITHSWRMTR || WITHSHOWSWRPWR)
+		uint_fast8_t pwrtrace;
+		const uint_fast8_t pwr = board_getpwrmeter(& pwrtrace);
+		const uint_fast8_t modulaton = board_getadc_filtered_u8(REF, 0, UINT8_MAX);
+		display_modulationmeter(x, y, modulaton, UINT8_MAX);
+		display_pwrmeter(x, y, pwr, pwrtrace, maxpwrcali);
+	#elif WITHPWRMTR
+		uint_fast8_t pwrtrace;
+		const uint_fast8_t pwr = board_getpwrmeter(& pwrtrace);
+		display_pwrmeter(x, y, pwr, pwrtrace, maxpwrcali);
+	#endif
+
+#endif
+	}
+	else
+	{
+		uint_fast8_t tracemax;
+		uint_fast8_t v = board_getsmeter(& tracemax, 0, UINT8_MAX, 0);
+		display_smeter(x, y, v, tracemax, s9level, s9delta, s9_60_delta);
+	}
+#endif /* WITHBARS */
+}
+
+#endif /* CTLSTYLE_RA4YBO_AM0 */
+
 // --- display2.c stuff
 
 /* обновление динамической части отображени€ - S-метра или SWR-метра и volt-метра. */
@@ -8935,8 +8976,8 @@ static void smanswer(uint_fast8_t arg)
 	// код SM9 введен дл€ получени€ "сырого" уровн€.
 	static const FLASHMEM char fmt9_1 [] =
 		"SM"			// 2 characters - status information code
-		"9"				// 1 char - Always 0
-		"%+d"				// 4 chars - s-meter points (0000..0030)
+		"9"				// 1 char - Always 9
+		"%+d"				// level in dBm
 		";";				// 1 char - line terminator
 
 	uint_fast8_t tracemax;
@@ -8958,7 +8999,7 @@ static void smanswer(uint_fast8_t arg)
 	case 9:
 		{
 			// answer mode
-			int level = (tracemax - UINT8_MAX);
+			int level = ((int) v - (int) UINT8_MAX);
 			if (level < - 170)
 				level = - 170;
 			else if (level > 20)

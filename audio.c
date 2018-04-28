@@ -10519,7 +10519,8 @@ static void agc_reset(
 {
 	volatile agcparams_t * const agcp = & rxsmeterparams;
 	volatile agcstate_t * const st = & rxsmeterstate [pathi];
-	const FLOAT_t m0 = agcp->mininput;
+	FLOAT_t m0 = agcp->mininput;
+	FLOAT_t m1;
 	global_disableIRQ();
 	st->agcfastcap = m0;
 	st->agcslowcap = m0;
@@ -10532,6 +10533,18 @@ static void agc_reset(
 		const FLOAT_t v = performagcresultslow(st);
 		global_enableIRQ();
 		if (v != m0)
+		{
+			m1 = v;
+			break;
+		}
+	}
+	for (;;)
+	{
+		local_delay_ms(1);
+		global_disableIRQ();
+		const FLOAT_t v = performagcresultslow(st);
+		global_enableIRQ();
+		if (v != m1)
 			break;
 	}
 #endif
@@ -10560,8 +10573,8 @@ uint_fast8_t
 dsp_getsmeter(uint_fast8_t * tracemax, uint_fast8_t lower, uint_fast8_t upper, uint_fast8_t clean)
 {
 	const uint_fast8_t pathi = 0;	// тракт, испольуемый для показа s-метра
-	if (clean != 0)
-		agc_reset(pathi);
+	//if (clean != 0)
+	//	agc_reset(pathi);
 	FLOAT_t tmaxf;
 	int level = upper + (int) (agc_forvard_getstreigthlog10(& tmaxf, pathi) * 200 + (glob_fsadcpower10 + 5)) / 10;	// преобразование в децибелы и отступаем от правой границы шкалы
 	int tmax = upper + (int) (tmaxf * 200 + (glob_fsadcpower10 + 5)) / 10;
