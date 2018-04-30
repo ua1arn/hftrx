@@ -1134,13 +1134,21 @@ static RAMFUNC void spool_adcdonebundle(void)
 	#if WITHENCODER && defined (ENCODER_BITS)
 		if ((pr & ENCODER_BITS) != 0)
 		{
+		#if WITHENCODERSWAP
+			spool_encinterrupt2();	/* прерывание по изменению сигнала на входах от валкодера #2*/
+		#else /* WITHENCODERSWAP */
 			spool_encinterrupt();	/* прерывание по изменению сигнала на входах от валкодера #1*/
+		#endif /* WITHENCODERSWAP */
 		}
 	#endif /* WITHENCODER && defined (ENCODER_BITS) */
 	#if WITHENCODER && ENCODER2_BITS
 		if ((pr & ENCODER2_BITS) != 0)
 		{
+		#if WITHENCODERSWAP
+			spool_encinterrupt();	/* прерывание по изменению сигнала на входах от валкодера #1*/
+		#else /* WITHENCODERSWAP */
 			spool_encinterrupt2();	/* прерывание по изменению сигнала на входах от валкодера #2*/
+		#endif /* WITHENCODERSWAP */
 		}
 	#endif /* WITHENCODER && ENCODER2_BITS */
 	}
@@ -1729,8 +1737,13 @@ hardware_encoder_initialize(void)
 /* Чтение состояния выходов валкодера #1 - в два младших бита */
 /* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
 
-uint_fast8_t 
-hardware_get_encoder_bits(void)
+#if WITHENCODERSWAP
+	uint_fast8_t 
+	hardware_get_encoder2_bits(void)
+#else /* WITHENCODERSWAP */
+	uint_fast8_t 
+	hardware_get_encoder_bits(void)
+#endif /* WITHENCODERSWAP */
 {
 #if WITHENCODER && defined (ENCODER_BITS) && defined (ENCODER_SHIFT)
 	return (ENCODER_INPUT_PORT & ENCODER_BITS) >> ENCODER_SHIFT;	// Биты валкодера #1
@@ -1745,8 +1758,13 @@ hardware_get_encoder_bits(void)
 /* Чтение состояния выходов валкодера #2 - в два младших бита */
 /* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
 
-uint_fast8_t 
-hardware_get_encoder2_bits(void)
+#if WITHENCODERSWAP
+	uint_fast8_t 
+	hardware_get_encoder_bits(void)
+#else /* WITHENCODERSWAP */
+	uint_fast8_t 
+	hardware_get_encoder2_bits(void)
+#endif /* WITHENCODERSWAP */
 {
 #if WITHENCODER && ENCODER2_BITS && defined (ENCODER2_SHIFT)
 	return (ENCODER2_INPUT_PORT & ENCODER2_BITS) >> ENCODER2_SHIFT;	// Биты валкодера #2
