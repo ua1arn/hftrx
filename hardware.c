@@ -8506,7 +8506,7 @@ static void vfp_access_enable(void)
 * Return Value : none
 *******************************************************************************/
 static 
-__attribute__((section(".init")))
+FLASHMEMINIT
 void CPG_Init(void)
 {
     /* standby_mode_en bit of Power Control Register setting */
@@ -8728,7 +8728,7 @@ uint_fast32_t cpu_getdebugticks(void)
 */
 // watchdog disable, clock initialize, cache enable
 void 
-__attribute__((section(".init")))
+FLASHMEMINIT
 arm_cpu_initialize(void)
 {
 #if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7
