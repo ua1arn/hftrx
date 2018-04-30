@@ -800,8 +800,8 @@ static const bwlimits_t bwlimits_ssb = { 1, WITHSSBLOW10MIN, WITHSSBLOW10MAX, WI
 
 // Частоты границ полосы пропускания
 // эти значения могут модифицироваться через меню
-static bwprop_t bwprop_cwnarrow = { & bwlimits_cw, BWSET_NARROW, 300 / BWGRANLOW, 0, - 0 + AFRESPONCESHIFT, };
-static bwprop_t bwprop_cwwide = { & bwlimits_cw, BWSET_NARROW, 600 / BWGRANLOW, 0, - 0 + AFRESPONCESHIFT, };
+static bwprop_t bwprop_cwnarrow = { & bwlimits_cw, BWSET_NARROW, 200 / BWGRANLOW, 0, - 0 + AFRESPONCESHIFT, };
+static bwprop_t bwprop_cwwide = { & bwlimits_cw, BWSET_NARROW, 500 / BWGRANLOW, 0, - 0 + AFRESPONCESHIFT, };
 static bwprop_t bwprop_ssbwide = { & bwlimits_ssb, BWSET_WIDE, 300 / BWGRANLOW, 3400 / BWGRANHIGH, - 36 + AFRESPONCESHIFT,	};
 static bwprop_t bwprop_ssbnarrow = { & bwlimits_ssb, BWSET_WIDE, 400 / BWGRANLOW, 2900 / BWGRANHIGH, - 36 + AFRESPONCESHIFT,	};
 static bwprop_t bwprop_amwide = { & bwlimits_ssb, BWSET_WIDE, 100 / BWGRANLOW, 4000 / BWGRANHIGH, - 36 + AFRESPONCESHIFT,	};
@@ -8159,12 +8159,12 @@ display2_bars_amv0(
 		uint_fast8_t pwrtrace;
 		const uint_fast8_t pwr = board_getpwrmeter(& pwrtrace);
 		const uint_fast8_t modulaton = board_getadc_filtered_u8(REF, 0, UINT8_MAX);
-		display_modulationmeter(x, y, modulaton, UINT8_MAX);
-		display_pwrmeter(x, y, pwr, pwrtrace, maxpwrcali);
+		display_modulationmeter_amv0(x, y, modulaton, UINT8_MAX);
+		display_pwrmeter_amv0(x, y, pwr, pwrtrace, maxpwrcali);
 	#elif WITHPWRMTR
 		uint_fast8_t pwrtrace;
 		const uint_fast8_t pwr = board_getpwrmeter(& pwrtrace);
-		display_pwrmeter(x, y, pwr, pwrtrace, maxpwrcali);
+		display_pwrmeter_amv0(x, y, pwr, pwrtrace, maxpwrcali);
 	#endif
 
 #endif
@@ -8173,7 +8173,7 @@ display2_bars_amv0(
 	{
 		uint_fast8_t tracemax;
 		uint_fast8_t v = board_getsmeter(& tracemax, 0, UINT8_MAX, 0);
-		display_smeter(x, y, v, tracemax, s9level, s9delta, s9_60_delta);
+		display_smeter_amv0(x, y, v, tracemax, s9level, s9delta, s9_60_delta);
 	}
 #endif /* WITHBARS */
 }
@@ -13913,8 +13913,24 @@ process_key_menuset_common(uint_fast8_t kbch)
 		uif_key_lockencoder();
 		return 1;	/* клавиша уже обработана */
 
-	//case KBD_CODE_LOCK_HOLDED:
-	//	return 1;	/* клавиша уже обработана */
+	case KBD_CODE_LOCK_HOLDED:
+#if WITHLCDBACKLIGHT
+		{
+			switch (bglight)
+			{
+			case WITHLCDBACKLIGHTMAX:
+				bglight = WITHLCDBACKLIGHTMIN;
+				break;
+			default:
+			case WITHLCDBACKLIGHTMIN:
+				bglight = WITHLCDBACKLIGHTMAX;
+				break;
+			}
+			save_i8(offsetof(struct nvmap, bglight), bglight);
+			updateboard(1, 0);
+		}
+#endif /* WITHLCDBACKLIGHT */
+		return 1;	/* клавиша уже обработана */
 
 #if WITHUSEFAST
 	case KBD_CODE_USEFAST:

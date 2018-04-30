@@ -449,6 +449,16 @@ void display_smeter(
 	uint_fast8_t delta2		// s9+50 - s9 delta
 	);
 
+void display_smeter_amv0(
+	uint_fast8_t x, 
+	uint_fast8_t y, 
+	uint_fast8_t value,
+	uint_fast8_t tracemax,
+	uint_fast8_t level9,	// s9 level
+	uint_fast8_t delta1,	// s9 - s0 delta
+	uint_fast8_t delta2		// s9+50 - s9 delta
+	);
+
 void display_swrmeter(  
 	uint_fast8_t x, 
 	uint_fast8_t y, 
@@ -458,7 +468,7 @@ void display_swrmeter(
 	);
 
 // Вызывается из display2_bars_amv0 (версия для CTLSTYLE_RA4YBO_AM0)
-void display_modulationmeter(  
+void display_modulationmeter_amv0(  
 	uint_fast8_t x, 
 	uint_fast8_t y, 
 	uint_fast8_t value,
@@ -466,6 +476,14 @@ void display_modulationmeter(
 	);
 
 void display_pwrmeter(
+	uint_fast8_t x, 
+	uint_fast8_t y, 
+	uint_fast8_t pwr, 
+	uint_fast8_t tracemax, 
+	uint_fast8_t maxpwrcali		// значение для отклонения на всю шкалу
+	);
+
+void display_pwrmeter_amvo(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
 	uint_fast8_t pwr, 

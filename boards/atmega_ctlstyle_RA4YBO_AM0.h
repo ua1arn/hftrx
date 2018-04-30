@@ -192,13 +192,16 @@
 	#define KEYBOARD_USE_ADC6_V1	1	/* шесть кнопок на каждом входе ADCx */
 
 	// Назначения входов АЦП процессора.
+	// PA3 - s-meter
+	// PA4 - modulation
+	// PA5 - power meter
 	enum 
 	{ 
 		//VOLTSOURCE = 2, // Средняя точка делителя напряжения, для АКБ
 	#if WITHBARS
 		SMETERIX = 3,	// S-meter
 		PWRI = 5,		// Индикатор мощности передатчика
-		FWD = 5, REF = 3,	// SWR-meter (REF=3 - вход уровня модуляции )
+		FWD = 5, REF = 4,	// SWR-meter (REF=4 - вход уровня модуляции )
 	#endif /* WITHBARS */
 		KI0 = 6, // клавиатура
 	};

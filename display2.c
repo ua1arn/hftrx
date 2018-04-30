@@ -1712,7 +1712,7 @@ enum
 
 	enum
 	{
-		BDTH_ALLRX = 16,	// ширина зоны для отображение полосы на индикаторе
+		BDTH_ALLRX = 15,	// ширина зоны для отображение полосы на индикаторе
 		BDTH_RIGHTRX = 5,	// ширина индикатора плюсов
 		BDTH_LEFTRX = BDTH_ALLRX - BDTH_RIGHTRX,	// ширина индикатора баллов
 		BDTH_SPACERX = 0,
@@ -1720,7 +1720,7 @@ enum
 	#if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
 		BDTH_ALLSWR = 7,
 		BDTH_SPACESWR = 1,
-		BDTH_ALLPWR = 8,
+		BDTH_ALLPWR = 7,
 		BDTH_SPACEPWR = 0
 	#else /* WITHSHOWSWRPWR */
 		BDTH_ALLSWR = BDTH_ALLRX,
@@ -1743,7 +1743,7 @@ enum
 		{	0, 0,	display_freqchr_a,	REDRM_FREQ, REDRSUBSET(DPAGE0), },	// частота для символьных дисплеев
 		{	8, 0,	display_att4,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 		{	13, 0,	display_rxbw3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
-		{	0, 1,	display2_bars_amv0,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// S-METER, SWR-METER, POWER-METER
+		{	1, 1,	display2_bars_amv0,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// S-METER, SWR-METER, POWER-METER
 	#if WITHMENU 
 		{	0, 0,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
 		{	0, 1,	display_menu_lblc3,	REDRM_MLBL, REDRSUBSET_MENU, },	// код редактируемого параметра
@@ -3924,7 +3924,7 @@ void display_swrmeter(
 // Вызывается из display2_bars_amv0 (версия для CTLSTYLE_RA4YBO_AM0)
 // координаьы для общего блока PWR & SWR
 // используется место для SWR
-void display_modulationmeter(  
+void display_modulationmeter_amv0(  
 	uint_fast8_t x, 
 	uint_fast8_t y, 
 	uint_fast8_t value,
@@ -3935,6 +3935,10 @@ void display_modulationmeter(
 	const uint_fast8_t mapleftval = display_mapbar(value, 0, fullscale, 0, value, fullscale);
 
 	//debug_printf_P(PSTR("swr10=%d, mapleftval=%d, fs=%d\n"), swr10, mapleftval, display_getmaxswrlimb());
+
+	display_setcolors(SWRCOLOR, BGCOLOR);
+	display_bars_address_swr(x - 1, y, CHARS2GRID(0));
+	display_string_P(PSTR("M"), 0);
 
 	display_bars_address_swr(x, y, CHARS2GRID(0));
 
@@ -3950,6 +3954,97 @@ void display_modulationmeter(
 		display_bars_address_swr(x, y, CHARS2GRID(BDTH_ALLSWR));
 		display_wrdatabar_begin();
 		display_dispbar(BDTH_SPACESWR, 0, 1, 1, PATTERN_SPACE, PATTERN_SPACE, PATTERN_SPACE);
+		display_wrdatabar_end();
+	}
+
+#endif /* WITHBARS */
+}
+// координаьы для общего блока PWR & SWR
+// Вызывается из display2_bars_amv0 (версия для CTLSTYLE_RA4YBO_AM0)
+void display_pwrmeter_amv0(  
+	uint_fast8_t x, 
+	uint_fast8_t y, 
+	uint_fast8_t value,			// текущее значение
+	uint_fast8_t tracemax,		// max hold значение
+	uint_fast8_t maxpwrcali		// значение для отклонения на всю шкалу
+	)
+{
+#if WITHBARS
+	const uint_fast16_t fullscale = display_getpwrfullwidth();	// количество точек в отображении мощности на диспле
+#if WITHPWRLIN
+	uint_fast8_t v = (uint_fast32_t) value * fullscale / ((uint_fast32_t) maxpwrcali);
+	uint_fast8_t t = (uint_fast32_t) tracemax * fullscale / ((uint_fast32_t) maxpwrcali);
+#else /* WITHPWRLIN */
+	uint_fast8_t v = (uint_fast32_t) value * value * fullscale / ((uint_fast32_t) maxpwrcali * maxpwrcali);
+	uint_fast8_t t = (uint_fast32_t) tracemax * tracemax * fullscale / ((uint_fast32_t) maxpwrcali * maxpwrcali);
+#endif /* WITHPWRLIN */
+	const uint_fast8_t mapleftval = display_mapbar(v, 0, fullscale, 0, v, fullscale);
+	const uint_fast8_t mapleftmax = display_mapbar(t, 0, fullscale, fullscale, t, fullscale); // fullscale - invisible
+
+	display_setcolors(PWRCOLOR, BGCOLOR);
+	display_bars_address_pwr(x - 1, y, CHARS2GRID(0));
+	display_string_P(PSTR("P"), 0);
+
+	display_bars_address_pwr(x, y, CHARS2GRID(0));
+
+	display_setcolors(PWRCOLOR, BGCOLOR);
+
+	display_wrdatabar_begin();
+	display_dispbar(BDTH_ALLPWR, mapleftval, mapleftmax, fullscale, PATTERN_BAR_HALF, PATTERN_BAR_FULL, PATTERN_BAR_EMPTYHALF);
+	display_wrdatabar_end();
+
+	if (BDTH_SPACEPWR != 0)
+	{
+		// заполняем пустое место за индикаторм мощности
+		display_bars_address_pwr(x, y, CHARS2GRID(BDTH_ALLPWR));
+		display_wrdatabar_begin();
+		display_dispbar(BDTH_SPACEPWR, 0, 1, 1, PATTERN_SPACE, PATTERN_SPACE, PATTERN_SPACE);
+		display_wrdatabar_end();
+	}
+
+#endif /* WITHBARS */
+}
+
+void display_smeter_amv0(
+	uint_fast8_t x, 
+	uint_fast8_t y, 
+	uint_fast8_t value,		// текущее значение
+	uint_fast8_t tracemax,	// метка запомненного максимума
+	uint_fast8_t level9,	// s9 level
+	uint_fast8_t delta1,	// s9 - s0 delta
+	uint_fast8_t delta2)	// s9+50 - s9 delta
+{
+#if WITHBARS
+	tracemax = value > tracemax ? value : tracemax;	// защита от рассогласования значений
+	//delta1 = delta1 > level9 ? level9 : delta1;
+	
+	const uint_fast8_t leftmin = level9 - delta1;
+	const uint_fast8_t mapleftval = display_mapbar(value, leftmin, level9, 0, value - leftmin, delta1);
+	const uint_fast8_t mapleftmax = display_mapbar(tracemax, leftmin, level9, delta1, tracemax - leftmin, delta1); // delta1 - invisible
+	const uint_fast8_t maprightval = display_mapbar(value, level9, level9 + delta2, 0, value - level9, delta2);
+	const uint_fast8_t maprightmax = display_mapbar(tracemax, level9, level9 + delta2, delta2, tracemax - level9, delta2); // delta2 - invisible
+
+	display_setcolors(LCOLOR, BGCOLOR);
+	display_bars_address_rx(x - 1, y, CHARS2GRID(0));
+	display_string_P(PSTR("S"), 0);
+
+	display_bars_address_rx(x, y, CHARS2GRID(0));
+	display_setcolors(LCOLOR, BGCOLOR);
+	display_wrdatabar_begin();
+	display_dispbar(BDTH_LEFTRX, mapleftval, mapleftmax, delta1, PATTERN_BAR_HALF, PATTERN_BAR_FULL, PATTERN_BAR_EMPTYHALF);		//ниже 9 баллов ничего
+	display_wrdatabar_end();
+	//
+	display_bars_address_rx(x, y, CHARS2GRID(BDTH_LEFTRX));
+	display_setcolors(RCOLOR, BGCOLOR);
+	display_wrdatabar_begin();
+	display_dispbar(BDTH_RIGHTRX, maprightval, maprightmax, delta2, PATTERN_BAR_FULL, PATTERN_BAR_FULL, PATTERN_BAR_EMPTYFULL);		// выше 9 баллов ничего нет.
+	display_wrdatabar_end();
+
+	if (BDTH_SPACERX != 0)
+	{
+		display_bars_address_pwr(x, y, CHARS2GRID(BDTH_ALLRX));
+		display_wrdatabar_begin();
+		display_dispbar(BDTH_SPACERX, 0, 1, 1, PATTERN_SPACE, PATTERN_SPACE, PATTERN_SPACE);
 		display_wrdatabar_end();
 	}
 
