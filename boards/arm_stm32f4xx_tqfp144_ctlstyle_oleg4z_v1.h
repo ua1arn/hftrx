@@ -100,7 +100,7 @@
 	#define FQMODEL_FPGA		1	// FPGA + IQ over I2S
 
 	// +++ вариации прошивки, специфические для разных частот опорного генератора
-	#if 0
+	#if 1
 		#define BANDSELSTYLE_OLEG4Z	1	/* Up-conversion with working band .030..56 MHz */
 		#define CTLREGMODE_OLEG4Z_V1	1	/* "Воронёнок" с DSP и FPGA, SD-CARD, dual watch & PA on board */
 	#else
