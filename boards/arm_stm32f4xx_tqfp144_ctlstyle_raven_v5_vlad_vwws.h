@@ -139,7 +139,7 @@
 	#define WITHIF4DSP	1	// "Дятел"
 	#define WITHTXDACFULL	1		/* полное использование разрядности ЦАП */
 
-	#if 1
+	#if 0
 		#define DIRECT_80M0_X1		1	/* Тактовый генератор на плате 80.0 МГц */	
 		#define BANDSELSTYLERE_UPCONV56M_36M	1	/* Up-conversion with working band .030..36 MHz */
 	#elif 0
