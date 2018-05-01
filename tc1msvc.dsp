@@ -1366,6 +1366,10 @@ SOURCE=.\boards\arm_stm32f4xx_tqfp144_ctlstyle_raven_v5_RA0CGS.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\boards\arm_stm32f4xx_tqfp144_ctlstyle_raven_v5_RU7L.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\boards\arm_stm32f4xx_tqfp144_ctlstyle_raven_v5_vlad_vwws.h
 # End Source File
 # Begin Source File
