@@ -6362,13 +6362,9 @@ void board_init_io(void)
 #if WITHDSPEXTFIR
 	board_fpga_fir_initialize();	// порт формирования стробов перезагрузки коэффициентов FIR фильтра в FPGA
 #endif /* WITHDSPEXTFIR */
-#if WITHENCODER
-	hardware_encoder_initialize();
-#endif /* WITHENCODER */
 
 #if WITHCPUADCHW
 	board_adc_initialize();
-	adcfilters_initialize();
 #endif /* WITHCPUADCHW */
 }
 
@@ -7629,26 +7625,6 @@ uint_fast8_t board_get_adcch(uint_fast8_t i)
 	return adcinputs [i];
 }
 
-
-void board_adc_initialize(void)
-{
-	if (board_get_adcinputs() == 0)
-		return;
-#if WITHDEBUG
-	// Отладочная печать таблицы входов АЦП, используемых в работе
-	{
-		uint_fast8_t i;
-		/* какие из каналов включать.. */
-		debug_printf_P(PSTR("ADCINPUTS_COUNT=%d: "), (int) board_get_adcinputs());
-		for (i = 0; i < board_get_adcinputs(); ++ i)
-		{
-			debug_printf_P(PSTR("%d%c"), board_get_adcch(i), (i + 1) == board_get_adcinputs() ? '\n' : ',');
-		}
-	}
-#endif
-	hardware_adc_initialize();
-}
-
 static volatile adcvalholder_t adc_data_raw [HARDWARE_ADCINPUTS];		// Максимальное количество - бывает на STM32 (с учётом TEMP SENSOR)
 static adcvalholder_t adc_data_filtered [HARDWARE_ADCINPUTS];		// Максимальное количество - бывает на STM32 (с учётом TEMP SENSOR)
 static uint_fast8_t adc_data_smoothed_u8 [HARDWARE_ADCINPUTS];		// Максимальное количество - бывает на STM32 (с учётом TEMP SENSOR)
@@ -7740,14 +7716,14 @@ uint_fast32_t board_getadc_unfiltered_u32(uint_fast8_t adci, uint_fast32_t lower
 }
 
 /* установить способ фильтрации данных (в момент выборки их регистра АЦП */
-void hardware_set_adc_filter(uint_fast8_t adci, uint_fast8_t v)
+static void hardware_set_adc_filter(uint_fast8_t adci, uint_fast8_t v)
 {
 	ASSERT(adci < HARDWARE_ADCINPUTS);
 	adc_filter [adci] = v;
 }
 
 /* Установить способ фильтрации данных LPF и частоту среза - параметр 1.0..0.0, умноженное на HARDWARE_ADCFILTER_LPF_DENOM */
-void hardware_set_adc_filterLPF(uint_fast8_t adci, uint_fast8_t k)
+static void hardware_set_adc_filterLPF(uint_fast8_t adci, uint_fast8_t k)
 {
 	ASSERT(adci < HARDWARE_ADCINPUTS);
 	adc_filter [adci] = HARDWARE_ADCFILTER_LPF;
@@ -7763,42 +7739,6 @@ void board_adc_store_data(uint_fast8_t adci, adcvalholder_t v)
 	adc_data_raw [adci] = v;
 }
 
-/*
-	Для некоторых каналов АЦП вклюяаем фильтрацию значений.
-	Для потенциометров на регулировках устраняется дребезг значений.
- */
-void
-adcfilters_initialize(void)
-{
-	#if WITHPOTPOWER
-		hardware_set_adc_filter(POTPOWER, HARDWARE_ADCFILTER_HISTERESIS2);
-	#endif /* WITHPOTPOWER */
-	#if WITHPOTWPM
-		hardware_set_adc_filter(POTWPM, HARDWARE_ADCFILTER_HISTERESIS2);
-	#endif /* WITHPOTWPM */
-	#if WITHPOTPBT
-		hardware_set_adc_filter(POTPBT, HARDWARE_ADCFILTER_HISTERESIS2);
-	#endif /* WITHPOTPBT */
-	#if WITHPOTIFSHIFT
-		hardware_set_adc_filter(POTIFSHIFT, HARDWARE_ADCFILTER_HISTERESIS2);	// регулировка IF SHIFT
-	#endif /* WITHPOTIFSHIFT */
-	#if WITHPOTGAIN
-		hardware_set_adc_filter(POTIFGAIN, HARDWARE_ADCFILTER_HISTERESIS2);
-		hardware_set_adc_filter(POTAFGAIN, HARDWARE_ADCFILTER_HISTERESIS2);
-		//hardware_set_adc_filterLPF(POTIFGAIN, HARDWARE_ADCFILTER_LPF_DENOM / 2);
-		//hardware_set_adc_filterLPF(POTAFGAIN, HARDWARE_ADCFILTER_LPF_DENOM / 2);
-	#endif /* WITHPOTGAIN */
-	#if WITHPOTNOTCH && WITHNOTCHFREQ
-		hardware_set_adc_filter(POTNOTCH, HARDWARE_ADCFILTER_HISTERESIS2);		// регулировка частоты NOTCH фильтра
-	#endif /* WITHPOTNOTCH && WITHNOTCHFREQ */
-	#if WITHBARS && ! WITHINTEGRATEDDSP
-		hardware_set_adc_filter(SMETERIX, HARDWARE_ADCFILTER_TRACETOP3S);
-	#endif /* WITHBARS && ! WITHINTEGRATEDDSP */
-	#if WITHTX && (WITHSWRMTR || WITHPWRMTR)
-		hardware_set_adc_filter(PWRI, HARDWARE_ADCFILTER_AVERAGEPWR);	// Включить фильтр
-		//hardware_set_adc_filter(PWRI, HARDWARE_ADCFILTER_DIRECT);		// Отключить фильтр
-	#endif /* WITHTX && (WITHSWRMTR || WITHPWRMTR) */
-}
 
 
 #if WITHSWRMTR || WITHPWRMTR
@@ -7922,6 +7862,65 @@ void board_adc_filtering(void)
 			break;
 		}
 	}
+}
+
+
+/*
+	Для некоторых каналов АЦП вклюяаем фильтрацию значений.
+	Для потенциометров на регулировках устраняется дребезг значений.
+ */
+static void
+adcfilters_initialize(void)
+{
+	#if WITHPOTPOWER
+		hardware_set_adc_filter(POTPOWER, HARDWARE_ADCFILTER_HISTERESIS2);
+	#endif /* WITHPOTPOWER */
+	#if WITHPOTWPM
+		hardware_set_adc_filter(POTWPM, HARDWARE_ADCFILTER_HISTERESIS2);
+	#endif /* WITHPOTWPM */
+	#if WITHPOTPBT
+		hardware_set_adc_filter(POTPBT, HARDWARE_ADCFILTER_HISTERESIS2);
+	#endif /* WITHPOTPBT */
+	#if WITHPOTIFSHIFT
+		hardware_set_adc_filter(POTIFSHIFT, HARDWARE_ADCFILTER_HISTERESIS2);	// регулировка IF SHIFT
+	#endif /* WITHPOTIFSHIFT */
+	#if WITHPOTGAIN
+		hardware_set_adc_filter(POTIFGAIN, HARDWARE_ADCFILTER_HISTERESIS2);
+		hardware_set_adc_filter(POTAFGAIN, HARDWARE_ADCFILTER_HISTERESIS2);
+		//hardware_set_adc_filterLPF(POTIFGAIN, HARDWARE_ADCFILTER_LPF_DENOM / 2);
+		//hardware_set_adc_filterLPF(POTAFGAIN, HARDWARE_ADCFILTER_LPF_DENOM / 2);
+	#endif /* WITHPOTGAIN */
+	#if WITHPOTNOTCH && WITHNOTCHFREQ
+		hardware_set_adc_filter(POTNOTCH, HARDWARE_ADCFILTER_HISTERESIS2);		// регулировка частоты NOTCH фильтра
+	#endif /* WITHPOTNOTCH && WITHNOTCHFREQ */
+	#if WITHBARS && ! WITHINTEGRATEDDSP
+		hardware_set_adc_filter(SMETERIX, HARDWARE_ADCFILTER_TRACETOP3S);
+	#endif /* WITHBARS && ! WITHINTEGRATEDDSP */
+	#if WITHTX && (WITHSWRMTR || WITHPWRMTR)
+		hardware_set_adc_filter(PWRI, HARDWARE_ADCFILTER_AVERAGEPWR);	// Включить фильтр
+		//hardware_set_adc_filter(PWRI, HARDWARE_ADCFILTER_DIRECT);		// Отключить фильтр
+	#endif /* WITHTX && (WITHSWRMTR || WITHPWRMTR) */
+}
+
+
+void board_adc_initialize(void)
+{
+	if (board_get_adcinputs() == 0)
+		return;
+#if WITHDEBUG
+	// Отладочная печать таблицы входов АЦП, используемых в работе
+	{
+		uint_fast8_t i;
+		/* какие из каналов включать.. */
+		debug_printf_P(PSTR("ADCINPUTS_COUNT=%d: "), (int) board_get_adcinputs());
+		for (i = 0; i < board_get_adcinputs(); ++ i)
+		{
+			debug_printf_P(PSTR("%d%c"), board_get_adcch(i), (i + 1) == board_get_adcinputs() ? '\n' : ',');
+		}
+	}
+#endif
+	hardware_adc_initialize();
+	adcfilters_initialize();
 }
 
 #endif /* WITHCPUADCHW */

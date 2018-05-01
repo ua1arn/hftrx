@@ -14268,6 +14268,9 @@ lowinitialize(void)
 #if WITHKEYBOARD
 	board_kbd_initialize();
 #endif /* WITHKEYBOARD */
+#if WITHENCODER
+	hardware_encoder_initialize();	//  todo: разобраться - вызов перенесен сюда из board_init_io - иначе не собирается под Cortex-A9.
+#endif /* WITHENCODER */
 	hardware_timer_initialize(TICKS_FREQUENCY);
 
 #if WITHLFM

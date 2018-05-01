@@ -257,7 +257,6 @@ uint_fast8_t board_get_adcch(uint_fast8_t index);	/* получить канал АЦП но индек
 
 void board_adc_store_data(uint_fast8_t i, adcvalholder_t v);
 void board_adc_filtering(void);	// Функция вызывается из обработчика прерывания после получения значения от последнего канала АЦП
-void adcfilters_initialize(void);
 
 void 
 modemchangefreq(
@@ -299,9 +298,8 @@ uint_fast32_t board_getadc_unfiltered_u32(uint_fast8_t i, uint_fast32_t lower, u
 adcvalholder_t board_getadc_filtered_truevalue(uint_fast8_t i);	/* получить значение от АЦП */
 adcvalholder_t board_getadc_unfiltered_truevalue(uint_fast8_t i);	/* получить значение от АЦП */
 adcvalholder_t board_getadc_fsval(uint_fast8_t i);	/* получить максимальное возможное значение от АЦП */
-void hardware_set_adc_filter(uint_fast8_t i, uint_fast8_t v);	/* установить способ фильтрации данных (в момент выборки их регистра АЦП */
-
-void hardware_set_adc_filterLPF(uint_fast8_t i, uint_fast8_t k);	/* Установить способ фильтрации LPF и частоту среза - параметр 1.0..0.0, умноженное на HARDWARE_ADCFILTER_LPF_DENOM */
+//void hardware_set_adc_filter(uint_fast8_t i, uint_fast8_t v);	/* установить способ фильтрации данных (в момент выборки их регистра АЦП */
+//void hardware_set_adc_filterLPF(uint_fast8_t i, uint_fast8_t k);	/* Установить способ фильтрации LPF и частоту среза - параметр 1.0..0.0, умноженное на HARDWARE_ADCFILTER_LPF_DENOM */
 #define HARDWARE_ADCFILTER_LPF_DENOM	128		/* положение фиксированной точки при фильтрации HARDWARE_ADCFILTER_LPF */
 
 enum
