@@ -1918,6 +1918,8 @@ static unsigned RNDIS_InterfaceAssociationDescriptor(uint_fast8_t fill, uint8_t 
 
 /*Interface Descriptor*/
 // Interface Descriptor 0/0 Wireless Controller, 1 Endpoint
+//  Communication Class INTERFACE descriptor          
+// https://msdn.microsoft.com/en-US/library/ee485851(v=winembedded.60).aspx
 static unsigned RNDIS_InterfaceDescriptorControlIf(uint_fast8_t fill, uint8_t * buff, unsigned maxsize)
 {
 	const uint_fast8_t length = 9;
@@ -1940,47 +1942,22 @@ static unsigned RNDIS_InterfaceDescriptorControlIf(uint_fast8_t fill, uint8_t * 
 	return length;
 }
 
-/* Data class interface descriptor*/
-// USBLyzer: Interface Descriptor 1/0 CDC Data, 2 Endpoints
-static unsigned RNDIS_InterfaceDescriptorDataIf(uint_fast8_t fill, uint8_t * buff, unsigned maxsize)
-{
-	const uint_fast8_t length = 9;
-	ASSERT(maxsize >= length);
-	if (maxsize < length)
-		return 0;
-	if (fill != 0 && buff != NULL)
-	{
-		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
-		* buff ++ = length;						  /* bLength */
-		* buff ++ = USB_INTERFACE_DESCRIPTOR_TYPE;  /* bDescriptorType: */
-		* buff ++ = INTERFACE_RNDIS_DATA_6;			 /* bInterfaceNumber: Number of Interface */
-		* buff ++ = 0;		/* bAlternateSetting: Alternate setting  - zero-based index  */
-		* buff ++ = 0x02;   /* bNumEndpoints: Two endpoints used: data in and data out */
-		* buff ++ = CDC_DATA_INTERFACE_CLASS;   /* bInterfaceClass: CDC */
-		* buff ++ = 0x00;   /* bInterfaceSubClass: */
-		* buff ++ = 0x00;   /* bInterfaceProtocol: */
-		* buff ++ = STRING_ID_0;   /* iInterface: */
-	}
-	return length;
-}
-
-
-/* Union Functional Descriptor */
-// Union Functional Descriptor 
-static unsigned RNDIS_UnionFunctionalDescriptor(uint_fast8_t fill, uint8_t * buff, unsigned maxsize)
+/* Header Functional Descriptor */
+static unsigned RNDIS_r9fill_31(uint_fast8_t fill, uint8_t * buff, unsigned maxsize)
 {
 	const uint_fast8_t length = 5;
 	ASSERT(maxsize >= length);
 	if (maxsize < length)
 		return 0;
 	if (fill != 0 && buff != NULL)
-	{
+	{ 
+		const uint_fast16_t bcdCDC = CDC_V1_10;	/* bcdCDC: spec release number */
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
-		* buff ++ = length;						/* bFunctionLength */
-		* buff ++ = CS_INTERFACE;				/* bDescriptorType: CS_INTERFACE */
-		* buff ++ = 0x06;						/* bDescriptorSubtype: Union func desc */
-		* buff ++ = INTERFACE_RNDIS_CONTROL_5;	/* bMasterInterface: Communication class interface -  Zero based index of the interface in this configuration (bInterfaceNum) */
-		* buff ++ = INTERFACE_RNDIS_DATA_6;	/* bSlaveInterface0: Data Class Interface -  Zero based index of the interface in this configuration (bInterfaceNum) */
+		* buff ++ = length;						  /* bLength */
+		* buff ++ = CDC_INTERFACE_DESCRIPTOR_TYPE;   /* bDescriptorType: CS_INTERFACE */
+		* buff ++ = 0x00;   /* bDescriptorSubtype: Header Func Desc */
+		* buff ++ = LO_BYTE(bcdCDC);			/* bcdCDC: spec release number */
+		* buff ++ = HI_BYTE(bcdCDC);
 	}
 	return length;
 }
@@ -2002,6 +1979,46 @@ static unsigned RNDIS_r9fill_32(uint_fast8_t fill, uint8_t * buff, unsigned maxs
 		* buff ++ = 0x01;   /* bDescriptorSubtype: Call Management Func Desc */
 		* buff ++ = 0x00;   /* bmCapabilities: D0+D1 */
 		* buff ++ = INTERFACE_RNDIS_DATA_6;   /* bDataInterface: Zero based index of the interface in this configuration.(bInterfaceNum) */
+	}
+	return length;
+}
+
+// Abstract Control Management Functional Descriptor
+static unsigned RNDIS_r9fill_33(uint_fast8_t fill, uint8_t * buff, unsigned maxsize)
+{
+	const uint_fast8_t length = 4;
+	ASSERT(maxsize >= length);
+	if (maxsize < length)
+		return 0;
+	if (fill != 0 && buff != NULL)
+	{
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
+		// defined in PSTN120.pdf 5.3.2 Abstract Control Management Functional Descriptor 
+		* buff ++ = length;						  /* bLength */
+		* buff ++ = CS_INTERFACE;   /* bDescriptorType: CS_INTERFACE */
+		* buff ++ = 0x02;   /* bDescriptorSubtype: Abstract Control Management desc */
+		* buff ++ = 0x00;   /* bmCapabilities 0x00: Requests/notifications not supported */
+	}
+	return length;
+}
+
+
+/* Union Functional Descriptor */
+// Union Functional Descriptor 
+static unsigned RNDIS_UnionFunctionalDescriptor(uint_fast8_t fill, uint8_t * buff, unsigned maxsize)
+{
+	const uint_fast8_t length = 5;
+	ASSERT(maxsize >= length);
+	if (maxsize < length)
+		return 0;
+	if (fill != 0 && buff != NULL)
+	{
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
+		* buff ++ = length;						/* bFunctionLength */
+		* buff ++ = CS_INTERFACE;				/* bDescriptorType: CS_INTERFACE */
+		* buff ++ = 0x06;						/* bDescriptorSubtype: Union func desc */
+		* buff ++ = INTERFACE_RNDIS_CONTROL_5;	/* bMasterInterface: Communication class interface -  Zero based index of the interface in this configuration (bInterfaceNum) */
+		* buff ++ = INTERFACE_RNDIS_DATA_6;	/* bSlaveInterface0: Data Class Interface -  Zero based index of the interface in this configuration (bInterfaceNum) */
 	}
 	return length;
 }
@@ -2030,44 +2047,26 @@ static unsigned RNDIS_r9fill_35(uint_fast8_t fill, uint8_t * buff, unsigned maxs
 	return length;
 }
 
-/* Header Functional Descriptor */
-static unsigned RNDIS_r9fill_31(uint_fast8_t fill, uint8_t * buff, unsigned maxsize)
+/* Data class interface descriptor*/
+// USBLyzer: Interface Descriptor 1/0 CDC Data, 2 Endpoints
+static unsigned RNDIS_InterfaceDescriptorDataIf(uint_fast8_t fill, uint8_t * buff, unsigned maxsize)
 {
-	const uint_fast8_t length = 5;
-	ASSERT(maxsize >= length);
-	if (maxsize < length)
-		return 0;
-	if (fill != 0 && buff != NULL)
-	{ 
-		const uint_fast16_t bcdCDC = CDC_V1_10;	/* bcdCDC: spec release number */
-		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
-		* buff ++ = length;						  /* bLength */
-		* buff ++ = CDC_INTERFACE_DESCRIPTOR_TYPE;   /* bDescriptorType: CS_INTERFACE */
-		* buff ++ = 0x00;   /* bDescriptorSubtype: Header Func Desc */
-		* buff ++ = LO_BYTE(bcdCDC);			/* bcdCDC: spec release number */
-		* buff ++ = HI_BYTE(bcdCDC);
-	}
-	return length;
-}
-
-// Endpoint Descriptor
-static unsigned RNDIS_r9fill_37(uint_fast8_t fill, uint8_t * buff, unsigned maxsize, uint_fast8_t bEndpointAddress)
-{
-	const uint_fast8_t length = 7;
+	const uint_fast8_t length = 9;
 	ASSERT(maxsize >= length);
 	if (maxsize < length)
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(USBD_RNDIS_BUFSIZE);
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
-		* buff ++ = length;							/* bLength */
-		* buff ++ = USB_ENDPOINT_DESCRIPTOR_TYPE;   /* bDescriptorType: Endpoint */
-		* buff ++ = bEndpointAddress;				/* bEndpointAddress: (OUT2) */
-		* buff ++ = USB_ENDPOINT_TYPE_BULK;   		/* bmAttributes: Bulk */
-		* buff ++ = LO_BYTE(wMaxPacketSize);        /* wMaxPacketSize */
-		* buff ++ = HI_BYTE(wMaxPacketSize); 
-		* buff ++ = 0x00;    						/* bInterval: ignore for Bulk transfer */
+		* buff ++ = length;						  /* bLength */
+		* buff ++ = USB_INTERFACE_DESCRIPTOR_TYPE;  /* bDescriptorType: */
+		* buff ++ = INTERFACE_RNDIS_DATA_6;			 /* bInterfaceNumber: Number of Interface */
+		* buff ++ = 0;		/* bAlternateSetting: Alternate setting  - zero-based index  */
+		* buff ++ = 0x02;   /* bNumEndpoints: Two endpoints used: data in and data out */
+		* buff ++ = CDC_DATA_INTERFACE_CLASS;   /* bInterfaceClass: CDC */
+		* buff ++ = 0x00;   /* bInterfaceSubClass: */
+		* buff ++ = 0x00;   /* bInterfaceProtocol: */
+		* buff ++ = STRING_ID_0;   /* iInterface: */
 	}
 	return length;
 }
@@ -2095,6 +2094,28 @@ static unsigned RNDIS_r9fill_38(uint_fast8_t fill, uint8_t * buff, unsigned maxs
 	return length;
 }
 
+// Endpoint Descriptor
+static unsigned RNDIS_r9fill_37(uint_fast8_t fill, uint8_t * buff, unsigned maxsize, uint_fast8_t bEndpointAddress)
+{
+	const uint_fast8_t length = 7;
+	ASSERT(maxsize >= length);
+	if (maxsize < length)
+		return 0;
+	if (fill != 0 && buff != NULL)
+	{
+		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(USBD_RNDIS_BUFSIZE);
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
+		* buff ++ = length;							/* bLength */
+		* buff ++ = USB_ENDPOINT_DESCRIPTOR_TYPE;   /* bDescriptorType: Endpoint */
+		* buff ++ = bEndpointAddress;				/* bEndpointAddress: (OUT2) */
+		* buff ++ = USB_ENDPOINT_TYPE_BULK;   		/* bmAttributes: Bulk */
+		* buff ++ = LO_BYTE(wMaxPacketSize);        /* wMaxPacketSize */
+		* buff ++ = HI_BYTE(wMaxPacketSize); 
+		* buff ++ = 0x00;    						/* bInterval: ignore for Bulk transfer */
+	}
+	return length;
+}
+
 
 /* CDC Ethernet Control Model */
 static unsigned fill_RNDIS_function(uint_fast8_t fill, uint8_t * p, unsigned maxsize, int highspeed)
@@ -2106,16 +2127,13 @@ static unsigned fill_RNDIS_function(uint_fast8_t fill, uint8_t * p, unsigned max
 	// Interface Descriptor 0/0 Wireless Controller, 1 Endpoint
 	//  Communication Class INTERFACE descriptor          https://msdn.microsoft.com/en-US/library/ee485851(v=winembedded.60).aspx
 	n += RNDIS_InterfaceDescriptorControlIf(fill, p + n, maxsize - n);	/* INTERFACE_CDC_CONTROL_3a Interface Descriptor 3/0 CDC Control, 1 Endpoint */
-
 	//  Functional Descriptors for Communication Class Interface per RNDIS spec.
 	// Header Functional Descriptor
 	n += RNDIS_r9fill_31(fill, p + n, maxsize - n);
-
 	// Call Management Functional Descriptor
 	n += RNDIS_r9fill_32(fill, p + n, maxsize - n);
-
 	// Abstract Control Management Functional Descriptor
-	n += fill_pattern_descriptor(fill, p + n, maxsize - n, "\x04" "\x24" "\x02" "\x00", 4);
+	n += RNDIS_r9fill_33(fill, p + n, maxsize - n);
 	// Union Functional Descriptor
 	n += RNDIS_UnionFunctionalDescriptor(fill, p + n, maxsize - n);
 	// Endpoint Descriptor 81 1 In, Interrupt, 1 ms
