@@ -2955,13 +2955,14 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 	{
 		// Формирование MAC адреса данного устройства
 		// TODO: При модификации не забыть про достоверность значений
+		const uint_fast8_t id = STRING_ID_MACADDRESS;
 		char b [64];
 		local_snprintf_P(b, ARRAY_SIZE(b), PSTR("F835DDA0C873"));
 		// Unic serial number
 		score += fill_align4(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score);
 		partlen = fill_string_descriptor(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score, b);
-		StringDescrTbl [STRING_ID_MACADDRESS].size = partlen;
-		StringDescrTbl [STRING_ID_MACADDRESS].data = alldescbuffer + score;
+		StringDescrTbl [id].size = partlen;
+		StringDescrTbl [id].data = alldescbuffer + score;
 		score += partlen;
 	}
 #endif /* WITHUSBCDCECM */
@@ -2969,36 +2970,39 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 #if CPUSTYLE_STM32F && CTLSTYLE_SW2011ALL
 	{
 		// на трансиверае SW20xx минимальная привязка к уникальным особенностям трансивера
+		const uint_fast8_t id = STRING_ID_3;
 		char b [64];
 		local_snprintf_P(b, ARRAY_SIZE(b), PSTR("SN:19640302_%lu"), (unsigned long) BUILD_ID);
 		// Unic serial number
 		score += fill_align4(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score);
 		partlen = fill_string_descriptor(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score, b);
-		StringDescrTbl [STRING_ID_3].size = partlen;
-		StringDescrTbl [STRING_ID_3].data = alldescbuffer + score;
+		StringDescrTbl [id].size = partlen;
+		StringDescrTbl [id].data = alldescbuffer + score;
 		score += partlen;
 	}
 #elif CPUSTYLE_STM32F && defined(UID_BASE)
 	{
+		const uint_fast8_t id = STRING_ID_3;
 		const uint32_t * const base = (const uint32_t *) UID_BASE;
 		char b [64];
 		local_snprintf_P(b, ARRAY_SIZE(b), PSTR("SN:%08lX%08lX%08lX_%lu_%lu"), (unsigned long) base [0], (unsigned long) base [1], (unsigned long) base [2], (unsigned long) (REFERENCE_FREQ * DDS1_CLK_MUL), (unsigned long) BUILD_ID);
 		// Unic serial number
 		score += fill_align4(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score);
 		partlen = fill_string_descriptor(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score, b);
-		StringDescrTbl [STRING_ID_3].size = partlen;
-		StringDescrTbl [STRING_ID_3].data = alldescbuffer + score;
+		StringDescrTbl [id].size = partlen;
+		StringDescrTbl [id].data = alldescbuffer + score;
 		score += partlen;
 	}
 #else
 	{
+		const uint_fast8_t id = STRING_ID_3;
 		char b [64];
 		local_snprintf_P(b, ARRAY_SIZE(b), PSTR("SN:19640302_%lu_%lu"), (unsigned long) (REFERENCE_FREQ * DDS1_CLK_MUL), (unsigned long) BUILD_ID);
 		// Unic serial number
 		score += fill_align4(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score);
 		partlen = fill_string_descriptor(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score, b);
-		StringDescrTbl [STRING_ID_3].size = partlen;
-		StringDescrTbl [STRING_ID_3].data = alldescbuffer + score;
+		StringDescrTbl [id].size = partlen;
+		StringDescrTbl [id].data = alldescbuffer + score;
 		score += partlen;
 	}
 #endif /* CPUSTYLE_STM32F && defined(UID_BASE) */
