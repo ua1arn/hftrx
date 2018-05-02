@@ -8224,13 +8224,35 @@ static void USBD_CtlError( USBD_HandleTypeDef *pdev,
 	USBD_LL_StallEP(pdev, 0);
 }
 
+/* получить 32-бит значение */
+static uint_fast32_t
+USBD_peek_u32(
+	const uint8_t * buff
+	)
+{
+	return
+		((uint_fast32_t) buff [3] << 24) + 
+		((uint_fast32_t) buff [2] << 16) + 
+		((uint_fast32_t) buff [1] << 8) + 
+		((uint_fast32_t) buff [0] << 0);
+}
+
+/* записать в буфер для ответа 32-бит значение */
+static void USBD_poke_u32(uint8_t * buff, uint_fast32_t v)
+{
+	buff [0] = LO_BYTE(v);
+	buff [1] = HI_BYTE(v);
+	buff [2] = HI_24BY(v);
+	buff [3] = HI_32BY(v);
+}
 
 static void USBD_ClassXXX_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef  *req)
 {
-	static USBALIGN_BEGIN uint8_t buff [INTERFACE_count] [32] USBALIGN_END;	// was: 7
+	static USBALIGN_BEGIN uint8_t buff [32] USBALIGN_END;	// was: 7
 	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
 
-	//debug_printf_P(PSTR("USBD_ClassXXX_Setup: interfacev=%02X\n"), interfacev);
+	//debug_printf_P(PSTR("USBD_ClassXXX_Setup: bRequest=%02X, wIndex=%04X, wLength=%04X (interfacev=%02X)\n"), req->bRequest, req->wIndex, req->wLength, interfacev);
+
 	if ((req->bmRequest & USB_REQ_TYPE_DIR) != 0)
 	{
 		// IN direction
@@ -8247,13 +8269,10 @@ static void USBD_ClassXXX_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef  
 					{
 					case CDC_GET_LINE_CODING:
 						//debug_printf_P(PSTR("USBD_ClassXXX_Setup: GET_LINE_CODING, dwDTERate=%lu\n"), (unsigned long) dwDTERate [interfacev]);
-						buff [interfacev] [0] = LO_BYTE(dwDTERate [interfacev]);	// dwDTERate
-						buff [interfacev] [1] = HI_BYTE(dwDTERate [interfacev]);
-						buff [interfacev] [2] = HI_24BY(dwDTERate [interfacev]);
-						buff [interfacev] [3] = HI_32BY(dwDTERate [interfacev]);
-						buff [interfacev] [4] = 0;	// 1 stop bit
-						buff [interfacev] [5] = 0;	// parity=none
-						buff [interfacev] [6] = 8;	// bDataBits 
+						USBD_poke_u32(& buff [0], dwDTERate [interfacev]); // dwDTERate
+						buff [4] = 0;	// 1 stop bit
+						buff [5] = 0;	// parity=none
+						buff [6] = 8;	// bDataBits 
 
 						USBD_CtlSendData(pdev, buff [interfacev], ulmin16(7, req->wLength));
 						break;
@@ -8278,26 +8297,26 @@ static void USBD_ClassXXX_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef  
 					{
 					case AUDIO_REQUEST_GET_CUR:
 						debug_printf_P(PSTR("USBD_ClassXXX_Setup: AUDIO_REQUEST_GET_CUR: interfacev=%u, %u\n"), interfacev, terminalID);
-						buff [interfacev] [0] = terminalsprops [terminalID] [controlID];
-						USBD_CtlSendData(pdev, buff [interfacev], ulmin16(ARRAY_SIZE(buff [interfacev]), req->wLength));
+						buff [0] = terminalsprops [terminalID] [controlID];
+						USBD_CtlSendData(pdev, buff, ulmin16(ARRAY_SIZE(buff), req->wLength));
 						break;
 
 					case AUDIO_REQUEST_GET_MIN:
 						debug_printf_P(PSTR("USBD_ClassXXX_Setup: USBD_StdItfReq: AUDIO_REQUEST_GET_MIN: interfacev=%u, %u\n"), interfacev, terminalID);
-						buff [interfacev] [0] = terminalID == TERMINAL_ID_SELECTOR_6 ? 1 : 0;
-						USBD_CtlSendData(pdev, buff [interfacev], ulmin16(ARRAY_SIZE(buff [interfacev]), req->wLength));
+						buff [0] = terminalID == TERMINAL_ID_SELECTOR_6 ? 1 : 0;
+						USBD_CtlSendData(pdev, buff, ulmin16(ARRAY_SIZE(buff), req->wLength));
 						break;
 
 					case AUDIO_REQUEST_GET_MAX:
 						debug_printf_P(PSTR("USBD_ClassXXX_Setup: AUDIO_REQUEST_GET_MAX: interfacev=%u, %u\n"), interfacev, terminalID);
-						buff [interfacev] [0] = terminalID == TERMINAL_ID_SELECTOR_6 ? TERMINAL_ID_SELECTOR_6_INPUTS : 100;
-						USBD_CtlSendData(pdev, buff [interfacev], ulmin16(ARRAY_SIZE(buff [interfacev]), req->wLength));
+						buff [0] = terminalID == TERMINAL_ID_SELECTOR_6 ? TERMINAL_ID_SELECTOR_6_INPUTS : 100;
+						USBD_CtlSendData(pdev, buff, ulmin16(ARRAY_SIZE(buff), req->wLength));
 						break;
 
 					case AUDIO_REQUEST_GET_RES:
 						debug_printf_P(PSTR("USBD_ClassXXX_Setup: AUDIO_REQUEST_GET_RES: interfacev=%u, %u\n"), interfacev, terminalID);
-						buff [interfacev] [0] = 1;
-						USBD_CtlSendData(pdev, buff [interfacev], ulmin16(ARRAY_SIZE(buff [interfacev]), req->wLength));
+						buff [0] = 1;
+						USBD_CtlSendData(pdev, buff, ulmin16(ARRAY_SIZE(buff), req->wLength));
 						break;
 
 					default:
@@ -8331,8 +8350,8 @@ static void USBD_ClassXXX_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef  
 				//debug_printf_P(PSTR("USBD_ClassXXX_Setup: USB_REQ_TYPE_STANDARD USB_REQ_GET_INTERFACE dir=%02X interfacev=%d\n"), req->bmRequest & 0x80, interfacev);
 				if (interfacev < INTERFACE_count)
 				{
-					buff [interfacev] [0] = altinterfaces [interfacev];
-					USBD_CtlSendData(pdev, buff [interfacev], ulmin16(ARRAY_SIZE(buff [interfacev]), req->wLength));
+					buff [0] = altinterfaces [interfacev];
+					USBD_CtlSendData(pdev, buff, ulmin16(ARRAY_SIZE(buff), req->wLength));
 				}
 				else
 				{
@@ -9316,6 +9335,44 @@ static void cdc2out_buffer_save(
 
 #endif /* WITHUSBCDC */
 
+#define RNDIS_MAJOR_VERSION	1
+#define RNDIS_MINOR_VERSION 0
+
+#define RNDIS_STATUS_SUCCESS            0x00000000
+#define RNDIS_STATUS_FAILURE            0xC0000001
+#define RNDIS_STATUS_INVALID_DATA       0xC0010015
+#define RNDIS_STATUS_NOT_SUPPORTED      0xC00000BB
+#define RNDIS_STATUS_MEDIA_CONNECT      0x4001000B
+#define RNDIS_STATUS_MEDIA_DISCONNECT   0x4001000C
+
+
+/* Message set for Connectionless (802.3) Devices */
+#define REMOTE_NDIS_PACKET_MSG          0x00000001
+#define REMOTE_NDIS_INITIALIZE_MSG      0x00000002
+#define REMOTE_NDIS_HALT_MSG            0x00000003
+#define REMOTE_NDIS_QUERY_MSG           0x00000004
+#define REMOTE_NDIS_SET_MSG             0x00000005
+#define REMOTE_NDIS_RESET_MSG           0x00000006
+#define REMOTE_NDIS_INDICATE_STATUS_MSG 0x00000007
+#define REMOTE_NDIS_KEEPALIVE_MSG       0x00000008
+#define REMOTE_NDIS_INITIALIZE_CMPLT    0x80000002
+#define REMOTE_NDIS_QUERY_CMPLT         0x80000004
+#define REMOTE_NDIS_SET_CMPLT           0x80000005
+#define REMOTE_NDIS_RESET_CMPLT         0x80000006
+#define REMOTE_NDIS_KEEPALIVE_CMPLT     0x80000008
+
+#define RNDIS_MTU                                       3000                           // MTU value
+#define ETH_LINK_SPEED                                  12000000                       // bits per sec
+//#define RNDIS_VENDOR                                    "fetisov"                      // NIC vendor name
+#define STATION_HWADDR                                  0x30,0x89,0x84,0x6A,0x96,0xAA  // station MAC
+#define PERMANENT_HWADDR                                0x30,0x89,0x84,0x6A,0x96,0xAA  // permanent MAC
+
+#define ETH_HEADER_SIZE                 14
+#define ETH_MIN_PACKET_SIZE             60
+#define ETH_MAX_PACKET_SIZE             (ETH_HEADER_SIZE + RNDIS_MTU)
+#define RNDIS_HEADER_SIZE               44//sizeof(rndis_data_packet_t)
+#define RNDIS_RX_BUFFER_SIZE            (ETH_MAX_PACKET_SIZE + RNDIS_HEADER_SIZE)
+
 /**
 * @brief  USBD_DataOutStage 
 *         Handle data OUT stage
@@ -9325,6 +9382,7 @@ static void cdc2out_buffer_save(
 */
 USBD_StatusTypeDef USBD_LL_DataOutStage(USBD_HandleTypeDef *pdev, uint8_t epnum, uint8_t *pdata)
 {
+	static USBALIGN_BEGIN uint8_t resp [52] USBALIGN_END;
 	//debug_printf_P(PSTR("USBD_LL_DataOutStage:\n"));
 
 	if (epnum == 0) 
@@ -9357,11 +9415,7 @@ USBD_StatusTypeDef USBD_LL_DataOutStage(USBD_HandleTypeDef *pdev, uint8_t epnum,
 						switch (pdev->request.bRequest)
 						{
 						case CDC_SET_LINE_CODING:
-							dwDTERate [interfacev] = 
-								((uint_fast32_t) ep0databuffout [3] << 24) + 
-								((uint_fast32_t) ep0databuffout [2] << 16) + 
-								((uint_fast32_t) ep0databuffout [1] << 8) + 
-								((uint_fast32_t) ep0databuffout [0] << 0);
+							dwDTERate [interfacev] = USBD_peek_u32(& ep0databuffout [0]);
 
 								//debug_printf_P(PSTR("USBD_LL_DataOutStage: CDC_SET_LINE_CODING: interfacev=%u, dwDTERate=%lu, bits=%u (size=%u)\n"), interfacev, dwDTERate [interfacev], ep0databuffout [6], USBD_LL_GetRxDataSize(pdev, epnum));
 							break;
@@ -9376,9 +9430,37 @@ USBD_StatusTypeDef USBD_LL_DataOutStage(USBD_HandleTypeDef *pdev, uint8_t epnum,
 					case INTERFACE_RNDIS_CONTROL_5:	// RNDIS control
 						switch (pdev->request.bRequest)
 						{
+						case 0x00:
+							debug_printf_P(PSTR("USBD_LL_DataOutStage: xx02: interfacev=%u, bRequest=%u, wLength=%u, MessageType=%08lX, MessageId=%08lX\n"), interfacev, pdev->request.bRequest, pdev->request.wLength, USBD_peek_u32(& ep0databuffout [8]));
+							switch (USBD_peek_u32(& ep0databuffout [8]))
+							{
+							case REMOTE_NDIS_INITIALIZE_MSG:
+								// Prepare REMOTE_NDIS_INITIALIZE_CMPLT
+								// https://msdn.microsoft.com/library/windows/hardware/ff570621
+								USBD_poke_u32(& resp [0], REMOTE_NDIS_INITIALIZE_CMPLT);	// MessageType
+								USBD_poke_u32(& resp [4], 52);	// MessageLength
+								USBD_poke_u32(& resp [8], USBD_peek_u32(& ep0databuffout [8]));	// RequestId <- MessageId
+								USBD_poke_u32(& resp [12], 0);	// Status RNDIS_STATUS_SUCCESS
+								USBD_poke_u32(& resp [16], RNDIS_MAJOR_VERSION);	// MajorVersion
+								USBD_poke_u32(& resp [20], RNDIS_MINOR_VERSION);	// MinorVersion
+								USBD_poke_u32(& resp [24], 0x00000001);	// DeviceFlags
+								USBD_poke_u32(& resp [28], 0x00000000);	// Medium 0 - RNDIS_MEDIUM_802_3 
+								USBD_poke_u32(& resp [32], 1);	// MaxPacketsPerMessage
+								USBD_poke_u32(& resp [36], RNDIS_RX_BUFFER_SIZE);	// MaxTransferSize
+								USBD_poke_u32(& resp [40], 0);	// PacketAlignmentFactor
+								USBD_poke_u32(& resp [44], 0);	// AFListOffset
+								USBD_poke_u32(& resp [48], 0);	// AFListSize
+								USBD_CtlSendData(pdev, resp, 52);
+								return USBD_OK;
+
+							default:
+								TP();
+								break;
+							} // switch по типу RNDIS сообщения
+							break;
 
 						default:
-							debug_printf_P(PSTR("USBD_LL_DataOutStage: xxx2: interfacev=%u, bRequest=%u\n"), interfacev, pdev->request.bRequest);
+							debug_printf_P(PSTR("USBD_LL_DataOutStage: xxx2: interfacev=%u, bRequest=%u, wLength=%u\n"), interfacev, pdev->request.bRequest, pdev->request.wLength);
 							break;
 						}
 						break;

@@ -1356,7 +1356,7 @@ static unsigned CDC_UnionFunctionalDescriptor_a(uint_fast8_t fill, uint8_t * buf
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						/* bFunctionLength */
 		* buff ++ = CS_INTERFACE;				/* bDescriptorType: CS_INTERFACE */
-		* buff ++ = 0x06;						/* bDescriptorSubtype: Union func desc */
+		* buff ++ = CDC_UNION;						/* bDescriptorSubtype: Union func desc */
 		* buff ++ = INTERFACE_CDC_CONTROL_3a + offset * INTERFACE_CDCACM_count;	/* bMasterInterface: Communication class interface -  Zero based index of the interface in this configuration (bInterfaceNum) */
 		* buff ++ = INTERFACE_CDC_DATA_4a + offset * INTERFACE_CDCACM_count;		/* bSlaveInterface0: Data Class Interface -  Zero based index of the interface in this configuration (bInterfaceNum) */
 	}
@@ -1710,7 +1710,7 @@ static unsigned CDCECM_UnionFunctionalDescriptor(uint_fast8_t fill, uint8_t * bu
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						/* bFunctionLength */
 		* buff ++ = CS_INTERFACE;				/* bDescriptorType: CS_INTERFACE */
-		* buff ++ = 0x06;						/* bDescriptorSubtype: Union func desc */
+		* buff ++ = CDC_UNION;						/* bDescriptorSubtype: Union func desc */
 		* buff ++ = INTERFACE_CDCECM_CONTROL_5;	/* bMasterInterface: Communication class interface -  Zero based index of the interface in this configuration (bInterfaceNum) */
 		* buff ++ = INTERFACE_CDCECM_DATA_6;	/* bSlaveInterface0: Data Class Interface -  Zero based index of the interface in this configuration (bInterfaceNum) */
 	}
@@ -1934,8 +1934,8 @@ static unsigned RNDIS_InterfaceDescriptorControlIf(uint_fast8_t fill, uint8_t * 
 		* buff ++ = INTERFACE_RNDIS_CONTROL_5;   /* bInterfaceNumber: Number of Interface */
 		* buff ++ = 0;		/* bAlternateSetting: Alternate setting  - zero-based index */
 		* buff ++ = 0x01;   /* bNumEndpoints: One endpoints used (interrupt type) */
-		* buff ++ = 0xE0;	/* bInterfaceClass: Wireless Controller */
-		* buff ++ = 1;		/* bInterfaceSubClass: RF Controller */
+		* buff ++ = USB_DEVICE_CLASS_WIRELESS_CONTROLLER;	/* bInterfaceClass: Wireless Controller */
+		* buff ++ = 0x01;						// bFunctionSubClass - RF Controller
 		* buff ++ = 0x03;   /* bInterfaceProtocol - Remote NDIS */
 		* buff ++ = STRING_ID_0;   /* iInterface */
 	}
@@ -1978,7 +1978,7 @@ static unsigned RNDIS_r9fill_32(uint_fast8_t fill, uint8_t * buff, unsigned maxs
 		* buff ++ = CS_INTERFACE;   /* bDescriptorType: CS_INTERFACE */
 		* buff ++ = 0x01;   /* bDescriptorSubtype: Call Management Func Desc */
 		* buff ++ = 0x00;   /* bmCapabilities: D0+D1 */
-		* buff ++ = INTERFACE_RNDIS_DATA_6;   /* bDataInterface: Zero based index of the interface in this configuration.(bInterfaceNum) */
+		* buff ++ = 0; //INTERFACE_RNDIS_DATA_6;   /* bDataInterface: Zero based index of the interface in this configuration.(bInterfaceNum) */
 	}
 	return length;
 }
@@ -2016,7 +2016,7 @@ static unsigned RNDIS_UnionFunctionalDescriptor(uint_fast8_t fill, uint8_t * buf
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						/* bFunctionLength */
 		* buff ++ = CS_INTERFACE;				/* bDescriptorType: CS_INTERFACE */
-		* buff ++ = 0x06;						/* bDescriptorSubtype: Union func desc */
+		* buff ++ = CDC_UNION;						/* bDescriptorSubtype: Union func desc */
 		* buff ++ = INTERFACE_RNDIS_CONTROL_5;	/* bMasterInterface: Communication class interface -  Zero based index of the interface in this configuration (bInterfaceNum) */
 		* buff ++ = INTERFACE_RNDIS_DATA_6;	/* bSlaveInterface0: Data Class Interface -  Zero based index of the interface in this configuration (bInterfaceNum) */
 	}
@@ -2500,6 +2500,10 @@ static unsigned fill_Configuration_main_group(uint_fast8_t fill, uint8_t * p, un
 	unsigned n = 0;
 	unsigned offset;
 
+#if WITHUSBRNDIS
+	n += fill_RNDIS_function(fill, p + n, maxsize - n, highspeed);
+#endif /* WITHUSBRNDIS */
+
 #if WITHUSBUAC
 #if WITHUSBUAC3
 		n += fill_UACINOUT48_function(fill, p + n, maxsize - n, highspeed, 0);
@@ -2526,10 +2530,6 @@ static unsigned fill_Configuration_main_group(uint_fast8_t fill, uint8_t * p, un
 #if WITHUSBCDCECM
 	n += fill_CDCECM_function(fill, p + n, maxsize - n, highspeed);
 #endif /* WITHUSBCDCECM */
-
-#if WITHUSBRNDIS
-	n += fill_RNDIS_function(fill, p + n, maxsize - n, highspeed);
-#endif /* WITHUSBRNDIS */
 
 #if WITHUSBHID
 	n += fill_HID_XXXX_function(fill, p + n, maxsize - n, highspeed);

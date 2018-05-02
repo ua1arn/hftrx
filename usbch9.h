@@ -230,6 +230,12 @@ enum
 /* Последовательность в данном enum должна соответствовать порядку использования в fill_Configuration_main_group */
 enum
 {
+
+#if WITHUSBRNDIS
+	INTERFACE_RNDIS_CONTROL_5,	/* RNDIS control Interface */
+	INTERFACE_RNDIS_DATA_6,		/* RNDIS data Interface */
+#endif /* WITHUSBRNDIS */
+
 #if WITHUSBUAC
 	#if WITHUSBUAC3
 		INTERFACE_AUDIO_CONTROL_0,		/* AUDIO transmitter input control interface */
@@ -237,10 +243,12 @@ enum
 		INTERFACE_AUDIO_MIKE_2,		/* USB receiver output  Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3)*/ //zero-bandwidth interface
 		/* */INTERFACE_AUDIO_CONTROL_1,		/* AUDIO spectrum control interface */
 		INTERFACE_AUDIO_RTS_3,		/* USB spectrum Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3)*/ //zero-bandwidth interface
+		//INTERFACE_AUDIO_last = INTERFACE_AUDIO_CONTROL_0 + 3,
 	#else
 		INTERFACE_AUDIO_CONTROL_0,		/* AUDIO control interface */
 		INTERFACE_AUDIO_SPK_1,		/* USB Speaker Standard AS Interface Descriptor - Audio Streaming Zero Bandwith */
 		INTERFACE_AUDIO_MIKE_2,		/* USB Microphone Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3)*/ //zero-bandwidth interface
+		//INTERFACE_AUDIO_last = INTERFACE_AUDIO_CONTROL_0 + 2,
 	#endif
 #endif /* WITHUSBUAC */
 
@@ -262,10 +270,7 @@ enum
 	INTERFACE_CDCECM_DATA_6,	/* CDC ECM/CDC EEM data Interface */
 #endif /* WITHUSBCDCECM */
 
-#if WITHUSBRNDIS
-	INTERFACE_RNDIS_CONTROL_5,	/* RNDIS control Interface */
-	INTERFACE_RNDIS_DATA_6,		/* RNDIS data Interface */
-#endif /* WITHUSBRNDIS */
+// old rndis posiion is here
 
 #if WITHUSBHID
 	INTERFACE_HID_CONTROL_7,	/* HID control Interface */
@@ -280,6 +285,7 @@ enum
 #define INTERFACE_HID_count 1	/* количество интерфейсов в одном HID */
 #define INTERFACE_RNDIS_count 2	/* количество интерфейсов в одном RNDIS */
 
+//#define INTERFACE_UAC_count (INTERFACE_AUDIO_last - INTERFACE_AUDIO_CONTROL_0)
 
 enum
 {
