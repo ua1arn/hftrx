@@ -9948,7 +9948,7 @@ processcatmsg(
 	{
 		if (cathasparam != 0)
 		{
-			if (catpcount == 13)
+			if (catpcount == 12)
 			{
 				// Format: ZZmLLLLUUUUSSS
 				const uint_fast32_t v = catp [0] - '0';
