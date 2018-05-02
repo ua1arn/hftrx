@@ -86,6 +86,12 @@ struct descholder
 enum
 {
 	ep0inxxx = 0x80,
+
+#if WITHUSBRNDIS
+	USBD_EP_RNDIS_INT,
+	USBD_EP_RNDIS_IN,
+#endif /* WITHUSBRNDIS */
+
 #if WITHUSBUAC
 	#if WITHUSBUAC3
 		USBD_EP_AUDIO_IN,	// ISOC IN Аудиоданные в компьютер из TRX
@@ -104,11 +110,6 @@ enum
 	USBD_EP_CDCECM_INT,	// CDC INT События ком-порта в компьютер из TRX
 #endif /* WITHUSBCDCECM */
 
-#if WITHUSBRNDIS
-	USBD_EP_RNDIS_INT,
-	USBD_EP_RNDIS_IN,
-#endif /* WITHUSBRNDIS */
-
 #if WITHUSBCDC
 	USBD_EP_CDC_IN,		// CDC IN Данные ком-порта в компьютер из TRX
 	USBD_EP_CDC_INb,	// CDC IN Данные ком-порта в компьютер из TRX
@@ -122,6 +123,8 @@ enum
 #if WITHUSBHID
 	//USBD_EP_HIDMOUSE_INT,	// HID INT События манипулятора в компьютер из TRX
 #endif /* WITHUSBHID */
+
+	//
 	epincount
 };
 
@@ -129,6 +132,11 @@ enum
 enum
 {
 	ep0outxxx = 0x00,
+
+#if WITHUSBRNDIS
+	USBD_EP_RNDIS_OUT,
+#endif /* WITHUSBRNDIS */
+
 #if WITHUSBUAC
 	#if WITHUSBUAC3
 		USBD_EP_AUDIO_OUT,
@@ -145,15 +153,13 @@ enum
 	USBD_EP_CDCECM_OUT,	// CDC OUT Данные ком-порта от компьютера в TRX
 #endif /* WITHUSBCDCECM */
 
-#if WITHUSBRNDIS
-	USBD_EP_RNDIS_OUT,
-#endif /* WITHUSBRNDIS */
-
 #if WITHUSBCDC
 	USBD_EP_CDC_OUT,	// CDC OUT Данные ком-порта от компьютера в TRX
 	USBD_EP_CDC_OUTb,	// CDC OUT Данные ком-порта от компьютера в TRX
 	USBD_EP_CDC_OUTlast = USBD_EP_CDC_OUT + WITHUSBHWCDC_N - 1,
 #endif /* WITHUSBCDC */
+
+	//
 	epoutcount
 };
 
@@ -269,8 +275,6 @@ enum
 	INTERFACE_CDCECM_CONTROL_5,	/* CDC ECM control Interface */
 	INTERFACE_CDCECM_DATA_6,	/* CDC ECM/CDC EEM data Interface */
 #endif /* WITHUSBCDCECM */
-
-// old rndis posiion is here
 
 #if WITHUSBHID
 	INTERFACE_HID_CONTROL_7,	/* HID control Interface */

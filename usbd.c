@@ -108,6 +108,16 @@ static USBALIGN_BEGIN uint8_t ep0databuffout [USB_OTG_MAX_EP0_SIZE] USBALIGN_END
 // Состояние - выбранные альтернативные конфигурации по каждому интерфейсу USB configuration descriptor
 static uint8_t altinterfaces [INTERFACE_count];
 
+static uint_fast32_t ulmin32(uint_fast32_t a, uint_fast32_t b)
+{
+	return a < b ? a : b;
+}
+
+static uint_fast32_t ulmax32(uint_fast32_t a, uint_fast32_t b)
+{
+	return a > b ? a : b;
+}
+
 static uint_fast16_t ulmin16(uint_fast16_t a, uint_fast16_t b)
 {
 	return a < b ? a : b;
@@ -116,6 +126,28 @@ static uint_fast16_t ulmin16(uint_fast16_t a, uint_fast16_t b)
 static uint_fast16_t ulmax16(uint_fast16_t a, uint_fast16_t b)
 {
 	return a > b ? a : b;
+}
+
+/* получить 32-бит значение */
+static uint_fast32_t
+USBD_peek_u32(
+	const uint8_t * buff
+	)
+{
+	return
+		((uint_fast32_t) buff [3] << 24) + 
+		((uint_fast32_t) buff [2] << 16) + 
+		((uint_fast32_t) buff [1] << 8) + 
+		((uint_fast32_t) buff [0] << 0);
+}
+
+/* записать в буфер для ответа 32-бит значение */
+static void USBD_poke_u32(uint8_t * buff, uint_fast32_t v)
+{
+	buff [0] = LO_BYTE(v);
+	buff [1] = HI_BYTE(v);
+	buff [2] = HI_24BY(v);
+	buff [3] = HI_32BY(v);
 }
 
 #if WITHUSBUAC
@@ -2884,11 +2916,7 @@ usbd_handler_brdy8_dcp_out(PCD_TypeDef * const Instance, uint_fast8_t pipe)
 	case CDC_SET_LINE_CODING:
 		{
 			const uint_fast8_t interfacev = LO_BYTE(gReqIndex);
-			dwDTERate [interfacev] = 
-				((uint_fast32_t) ep0databuffout [3] << 24) + 
-				((uint_fast32_t) ep0databuffout [2] << 16) + 
-				((uint_fast32_t) ep0databuffout [1] << 8) + 
-				((uint_fast32_t) ep0databuffout [0] << 0);
+			dwDTERate [interfacev] = USBD_peek_u32(& ep0databuffout [0]);
 			//debug_printf_P(PSTR("CDC_SET_LINE_CODING: interfacev=%u, dwDTERate=%lu, bits=%u\n"), interfacev, dwDTERate [interfacev], ep0databuffout [6]);
 		}
 		break;
@@ -3300,10 +3328,7 @@ static void usbdFunctionReq_seq1(PCD_TypeDef * const Instance, uint_fast8_t ReqT
 			{
 			case CDC_GET_LINE_CODING:
 				//debug_printf_P(PSTR("GET_LINE_CODING, dwDTERate=%lu\n"), (unsigned long) dwDTERate [interfacev]);
-				buff [interfacev] [0] = LO_BYTE(dwDTERate [interfacev]);	// dwDTERate
-				buff [interfacev] [1] = HI_BYTE(dwDTERate [interfacev]);
-				buff [interfacev] [2] = HI_24BY(dwDTERate [interfacev]);
-				buff [interfacev] [3] = HI_32BY(dwDTERate [interfacev]);
+				USBD_poke_u32(& buff [interfacev] [0], dwDTERate [interfacev]); // dwDTERate
 				buff [interfacev] [4] = 0;	// 1 stop bit
 				buff [interfacev] [5] = 0;	// parity=none
 				buff [interfacev] [6] = 8;	// bDataBits 
@@ -7966,8 +7991,8 @@ static USBD_StatusTypeDef USBD_SetClassConfig(USBD_HandleTypeDef  *pdev, uint8_t
 	}
 
     /* CDC Prepare Out endpoint to receive 1st packet */ 
-    USBD_LL_PrepareReceive(pdev, USBD_EP_CDC_OUT, cdc1buffout,  VIRTUAL_COM_PORT_DATA_SIZE);     
-    USBD_LL_PrepareReceive(pdev, USBD_EP_CDC_OUTb, cdc2buffout,  VIRTUAL_COM_PORT_DATA_SIZE);     
+    USBD_LL_PrepareReceive(pdev, USB_ENDPOINT_OUT(USBD_EP_CDC_OUT), cdc1buffout,  VIRTUAL_COM_PORT_DATA_SIZE);     
+    USBD_LL_PrepareReceive(pdev, USB_ENDPOINT_OUT(USBD_EP_CDC_OUTb), cdc2buffout,  VIRTUAL_COM_PORT_DATA_SIZE);     
  	//USBD_LL_StallEP(pdev, USBD_EP_CDC_OUTb); // нельзя
 	
 	usb_cdc_control_state [INTERFACE_CDC_CONTROL_3a] = 0;
@@ -7990,7 +8015,7 @@ static USBD_StatusTypeDef USBD_SetClassConfig(USBD_HandleTypeDef  *pdev, uint8_t
     USBD_LL_OpenEP(pdev, USBD_EP_CDCEEM_OUT, USBD_EP_TYPE_BULK, USBD_CDCEEM_BUFSIZE);
 
     /* CDC Prepare Out endpoint to receive 1st packet */ 
-    USBD_LL_PrepareReceive(pdev, USBD_EP_CDCEEM_OUT, cdceemoutbuff,  USBD_CDCEEM_BUFSIZE);     
+    USBD_LL_PrepareReceive(pdev, USB_ENDPOINT_OUT(USBD_EP_CDCEEM_OUT), cdceemoutbuff,  USBD_CDCEEM_BUFSIZE);     
 
 	cdceemout_initialize();
 #endif /* WITHUSBCDCEEM */
@@ -8008,7 +8033,7 @@ static USBD_StatusTypeDef USBD_SetClassConfig(USBD_HandleTypeDef  *pdev, uint8_t
 	USBD_LL_OpenEP(pdev, USBD_EP_RNDIS_INT, USBD_EP_TYPE_INTR, USBD_RNDIS_INT_SIZE);
 
 	/* RNDIS Prepare Out endpoint to receive 1st packet */ 
-	USBD_LL_PrepareReceive(pdev, USBD_EP_RNDIS_OUT, rndisbuffout,  USBD_RNDIS_BUFSIZE);     
+	USBD_LL_PrepareReceive(pdev, USB_ENDPOINT_OUT(USBD_EP_RNDIS_OUT), rndisbuffout,  USBD_RNDIS_BUFSIZE);     
 #endif /* WITHUSBRNDIS */
 
 #if WITHUSBUAC
@@ -8043,7 +8068,7 @@ static USBD_StatusTypeDef USBD_SetClassConfig(USBD_HandleTypeDef  *pdev, uint8_t
 					   VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT);
 
 	   /* UAC Prepare Out endpoint to receive 1st packet */ 
-		USBD_LL_PrepareReceive(pdev, USBD_EP_AUDIO_OUT, uacoutbuff, VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT);
+		USBD_LL_PrepareReceive(pdev, USB_ENDPOINT_OUT(USBD_EP_AUDIO_OUT), uacoutbuff, VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT);
 	}
 	uacout_buffer_start();
 #endif /* WITHUSBUAC */
@@ -8224,34 +8249,12 @@ static void USBD_CtlError( USBD_HandleTypeDef *pdev,
 	USBD_LL_StallEP(pdev, 0);
 }
 
-/* получить 32-бит значение */
-static uint_fast32_t
-USBD_peek_u32(
-	const uint8_t * buff
-	)
-{
-	return
-		((uint_fast32_t) buff [3] << 24) + 
-		((uint_fast32_t) buff [2] << 16) + 
-		((uint_fast32_t) buff [1] << 8) + 
-		((uint_fast32_t) buff [0] << 0);
-}
-
-/* записать в буфер для ответа 32-бит значение */
-static void USBD_poke_u32(uint8_t * buff, uint_fast32_t v)
-{
-	buff [0] = LO_BYTE(v);
-	buff [1] = HI_BYTE(v);
-	buff [2] = HI_24BY(v);
-	buff [3] = HI_32BY(v);
-}
-
 static void USBD_ClassXXX_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef  *req)
 {
 	static USBALIGN_BEGIN uint8_t buff [32] USBALIGN_END;	// was: 7
 	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
 
-	//debug_printf_P(PSTR("USBD_ClassXXX_Setup: bRequest=%02X, wIndex=%04X, wLength=%04X (interfacev=%02X)\n"), req->bRequest, req->wIndex, req->wLength, interfacev);
+	debug_printf_P(PSTR("USBD_ClassXXX_Setup: bRequest=%02X, wIndex=%04X, wLength=%04X (interfacev=%02X)\n"), req->bRequest, req->wIndex, req->wLength, interfacev);
 
 	if ((req->bmRequest & USB_REQ_TYPE_DIR) != 0)
 	{
@@ -8577,9 +8580,6 @@ static void USBD_ClassXXX_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef  
 		#endif /* WITHUSBUAC */
 
 		#if WITHUSBCDCEEM
-				//case INTERFACE_CDCECM_CONTROL_5:	// CDC ECM interfacei
-				//	debug_printf_P(PSTR("USBD_ClassXXX_Setup: INTERFACE_CDCECM_CONTROL_5 set interfacev=%02X to %02X\n"), interfacev, LO_BYTE(req->wValue));
-				//	break;
 				case INTERFACE_CDCEEM_DATA_6:	// CDC ECM interfacei
 					debug_printf_P(PSTR("USBD_ClassXXX_Setup: INTERFACE_CDCEEM_DATA_6: set interfacev=%02X to %02X\n"), interfacev, LO_BYTE(req->wValue));
 					break;
@@ -9335,6 +9335,16 @@ static void cdc2out_buffer_save(
 
 #endif /* WITHUSBCDC */
 
+#if WITHUSBRNDIS
+
+static void rndisout_buffer_save(
+	const uint8_t * data, 
+	uint_fast16_t length
+	)
+{
+	TP();
+}
+
 #define RNDIS_MAJOR_VERSION	1
 #define RNDIS_MINOR_VERSION 0
 
@@ -9372,6 +9382,8 @@ static void cdc2out_buffer_save(
 #define ETH_MAX_PACKET_SIZE             (ETH_HEADER_SIZE + RNDIS_MTU)
 #define RNDIS_HEADER_SIZE               44//sizeof(rndis_data_packet_t)
 #define RNDIS_RX_BUFFER_SIZE            (ETH_MAX_PACKET_SIZE + RNDIS_HEADER_SIZE)
+
+#endif /* WITHUSBRNDIS */
 
 /**
 * @brief  USBD_DataOutStage 
@@ -9431,8 +9443,17 @@ USBD_StatusTypeDef USBD_LL_DataOutStage(USBD_HandleTypeDef *pdev, uint8_t epnum,
 						switch (pdev->request.bRequest)
 						{
 						case 0x00:
-							debug_printf_P(PSTR("USBD_LL_DataOutStage: xx02: interfacev=%u, bRequest=%u, wLength=%u, MessageType=%08lX, MessageId=%08lX\n"), interfacev, pdev->request.bRequest, pdev->request.wLength, USBD_peek_u32(& ep0databuffout [8]));
-							switch (USBD_peek_u32(& ep0databuffout [8]))
+							debug_printf_P(
+								PSTR("USBD_LL_DataOutStage: xx02: interfacev=%u, bRequest=%u, wLength=%u, MessageType=%08lX, MessageLength=%08lX, MessageId=%08lX, MaxTransferSize=%lu\n"), 
+								interfacev, 
+								pdev->request.bRequest, 
+								pdev->request.wLength, 
+								USBD_peek_u32(& ep0databuffout [0]), 
+								USBD_peek_u32(& ep0databuffout [4]), 
+								USBD_peek_u32(& ep0databuffout [8]),
+								USBD_peek_u32(& ep0databuffout [20])
+								);
+							switch (USBD_peek_u32(& ep0databuffout [0]))
 							{
 							case REMOTE_NDIS_INITIALIZE_MSG:
 								// Prepare REMOTE_NDIS_INITIALIZE_CMPLT
@@ -9440,10 +9461,10 @@ USBD_StatusTypeDef USBD_LL_DataOutStage(USBD_HandleTypeDef *pdev, uint8_t epnum,
 								USBD_poke_u32(& resp [0], REMOTE_NDIS_INITIALIZE_CMPLT);	// MessageType
 								USBD_poke_u32(& resp [4], 52);	// MessageLength
 								USBD_poke_u32(& resp [8], USBD_peek_u32(& ep0databuffout [8]));	// RequestId <- MessageId
-								USBD_poke_u32(& resp [12], 0);	// Status RNDIS_STATUS_SUCCESS
-								USBD_poke_u32(& resp [16], RNDIS_MAJOR_VERSION);	// MajorVersion
-								USBD_poke_u32(& resp [20], RNDIS_MINOR_VERSION);	// MinorVersion
-								USBD_poke_u32(& resp [24], 0x00000001);	// DeviceFlags
+								USBD_poke_u32(& resp [12], RNDIS_STATUS_SUCCESS);	// Status RNDIS_STATUS_SUCCESS
+								USBD_poke_u32(& resp [16], ulmin32(RNDIS_MAJOR_VERSION, USBD_peek_u32(& ep0databuffout [12])));	// MajorVersion
+								USBD_poke_u32(& resp [20], ulmin32(RNDIS_MINOR_VERSION, USBD_peek_u32(& ep0databuffout [16])));	// MinorVersion
+								USBD_poke_u32(& resp [24], 0x00000001);	// DeviceFlags RNDIS_DF_CONNECTIONLESS 
 								USBD_poke_u32(& resp [28], 0x00000000);	// Medium 0 - RNDIS_MEDIUM_802_3 
 								USBD_poke_u32(& resp [32], 1);	// MaxPacketsPerMessage
 								USBD_poke_u32(& resp [36], RNDIS_RX_BUFFER_SIZE);	// MaxTransferSize
@@ -9516,7 +9537,7 @@ USBD_StatusTypeDef USBD_LL_DataOutStage(USBD_HandleTypeDef *pdev, uint8_t epnum,
 	} 
 	else if (pdev->dev_state == USBD_STATE_CONFIGURED)
 	{
-		//debug_printf_P(PSTR("USBD_LL_DataOutStage: epnum=%02X\n"), epnum);
+		debug_printf_P(PSTR("USBD_LL_DataOutStage: epnum=%02X\n"), epnum);
 		switch (epnum)
 		{
 #if WITHUSBCDC
@@ -9561,11 +9582,12 @@ USBD_StatusTypeDef USBD_LL_DataOutStage(USBD_HandleTypeDef *pdev, uint8_t epnum,
 
 #if WITHUSBRNDIS
 		case USBD_EP_RNDIS_OUT:
-			//cdceemout_buffer_save(rndisbuffout, USBD_LL_GetRxDataSize(pdev, epnum));
-			/* Prepare Out endpoint to receive next cdc eem data packet */
+			rndisout_buffer_save(rndisbuffout, USBD_LL_GetRxDataSize(pdev, epnum));
+			/* Prepare Out endpoint to receive next rndis data packet */
 			USBD_LL_PrepareReceive(pdev, USB_ENDPOINT_OUT(epnum), rndisbuffout, USBD_RNDIS_BUFSIZE);      
 			break;
 #endif /* WITHUSBRNDIS */
+
 		default:
 			TP();
 			break;
