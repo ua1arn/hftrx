@@ -3990,7 +3990,7 @@ static const FLASHMEM submodeprops_t submodes [SUBMODE_COUNT] =
 		0,			/* полоса фильтра режима, возвращаемая через CAT */
 		"DGU", 
 	},
-#if WITHMODESETFULLNFM || WITHMODESETMIXONLY3NFM	// чтобы через CAT не включился этот режтим - если нет - в комментарии.
+#if WITHMODESETFULLNFM || WITHMODESETMIXONLY3NFM || WITHMODESETFULLNFMWFM	// чтобы через CAT не включился этот режтим - если нет - в комментарии.
 	/* SUBMODE_NFM */
 	{	
 		QMODEF_SMARTLSB,
@@ -3999,7 +3999,7 @@ static const FLASHMEM submodeprops_t submodes [SUBMODE_COUNT] =
 		0,			/* полоса фильтра режима, возвращаемая через CAT */
 		"NFM",
 	},
-#endif /* WITHMODESETFULLNFM || WITHMODESETMIXONLY3NFM */
+#endif /* WITHMODESETFULLNFM || WITHMODESETMIXONLY3NFM || WITHMODESETFULLNFMWFM  */
 #if WITHWFM || WITHMODESETFULLNFMWFM
 	/* SUBMODE_WFM */
 	{	
