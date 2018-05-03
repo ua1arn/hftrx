@@ -1325,7 +1325,7 @@ static unsigned CDCACM_InterfaceDescriptorControlIf_a(uint_fast8_t fill, uint8_t
 
 /* Call Managment Functional Descriptor */
 // Call Management Functional Descriptor 
-static unsigned r9fill_32_a(uint_fast8_t fill, uint8_t * buff, unsigned maxsize, uint_fast8_t offset)
+static unsigned CDCACM_r9fill_32_a(uint_fast8_t fill, uint8_t * buff, unsigned maxsize, uint_fast8_t offset)
 {
 	const uint_fast8_t length = 5;
 	ASSERT(maxsize >= length);
@@ -1338,7 +1338,7 @@ static unsigned r9fill_32_a(uint_fast8_t fill, uint8_t * buff, unsigned maxsize,
 		* buff ++ = CS_INTERFACE;   /* bDescriptorType: CS_INTERFACE */
 		* buff ++ = 0x01;   /* bDescriptorSubtype: Call Management Func Desc */
 		* buff ++ = 0x00;   /* bmCapabilities: D0+D1 */
-		* buff ++ = INTERFACE_CDC_CONTROL_3a + offset * INTERFACE_CDCACM_count;   /* bDataInterface: Zero based index of the interface in this configuration.(bInterfaceNum) */
+		* buff ++ = INTERFACE_CDC_DATA_4a + offset * INTERFACE_CDCACM_count;   /* bDataInterface: Zero based index of the interface in this configuration.(bInterfaceNum) */
 	}
 	return length;
 }
@@ -1507,7 +1507,7 @@ static unsigned fill_CDCACM_function_a(uint_fast8_t fill, uint8_t * p, unsigned 
 	n += CDCACM_InterfaceAssociationDescriptor_a(fill, p + n, maxsize - n, offset);	/* CDC: Interface Association Descriptor Abstract Control Model */
 	n += CDCACM_InterfaceDescriptorControlIf_a(fill, p + n, maxsize - n, offset);	/* INTERFACE_CDC_CONTROL_3a Interface Descriptor 3/0 CDC Control, 1 Endpoint */
 	n += r9fill_31(fill, p + n, maxsize - n);	/* Header Functional Descriptor*/
-	n += r9fill_32_a(fill, p + n, maxsize - n, offset);	/* Call Managment Functional Descriptor*/
+	n += CDCACM_r9fill_32_a(fill, p + n, maxsize - n, offset);	/* Call Managment Functional Descriptor*/
 	n += r9fill_33(fill, p + n, maxsize - n);	/* ACM Functional Descriptor */
 	n += CDC_UnionFunctionalDescriptor_a(fill, p + n, maxsize - n, offset);	/* Union Functional Descriptor INTERFACE_CDC_CONTROL_3a & INTERFACE_CDC_DATA_4a */
 	n += r9fill_35(fill, p + n, maxsize - n, highspeed, USB_ENDPOINT_IN(intnep));	/* Endpoint Descriptor 86 6 In, Interrupt */
@@ -1910,7 +1910,7 @@ static unsigned RNDIS_InterfaceAssociationDescriptor(uint_fast8_t fill, uint8_t 
 		* buff ++ = USB_DEVICE_CLASS_WIRELESS_CONTROLLER;	// bFunctionClass: CDC
 		* buff ++ = 0x01;						// bFunctionSubClass - RF Controller
 		* buff ++ = 0x03;						// bFunctionProtocol - Remote NDIS
-		* buff ++ = STRING_ID_0;				// iFunction - CDC Ethernet Control Model (ECM)
+		* buff ++ = STRING_ID_RNDIS;			// iFunction - Remote NDIS
 	}
 	return length;
 }
@@ -1978,7 +1978,7 @@ static unsigned RNDIS_r9fill_32(uint_fast8_t fill, uint8_t * buff, unsigned maxs
 		* buff ++ = CS_INTERFACE;   /* bDescriptorType: CS_INTERFACE */
 		* buff ++ = 0x01;   /* bDescriptorSubtype: Call Management Func Desc */
 		* buff ++ = 0x00;   /* bmCapabilities: D0+D1 */
-		* buff ++ = 0; //INTERFACE_RNDIS_DATA_6;   /* bDataInterface: Zero based index of the interface in this configuration.(bInterfaceNum) */
+		* buff ++ = INTERFACE_RNDIS_DATA_6;   /* bDataInterface: Zero based index of the interface in this configuration.(bInterfaceNum) */
 	}
 	return length;
 }
@@ -2799,6 +2799,7 @@ static const struct stringtempl strtemplates [] =
 	{ STRING_ID_4b, "Storch TRX CTL", },
 	{ STRING_ID_5, "Storch TRX CDC EEM", },
 	{ STRING_ID_5a, "Storch TRX CDC ECM", },
+	{ STRING_ID_RNDIS, "Storch TRX Remote NDIS", },
 
 	{ STRING_ID_a0, "Storch TRX Voice", },	// tag for Interface Descriptor 0/0 Audio
 	{ STRING_ID_a1, "Storch TRX Spectrum", },	// tag for Interface Descriptor 0/0 Audio

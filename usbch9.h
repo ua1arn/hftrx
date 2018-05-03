@@ -101,15 +101,6 @@ enum
 	#endif
 #endif /* WITHUSBUAC */
 
-#if WITHUSBCDCEEM
-	USBD_EP_CDCEEM_IN,	// CDC IN Данные ком-порта в компьютер из TRX
-#endif /* WITHUSBCDCEEM */
-
-#if WITHUSBCDCECM
-	USBD_EP_CDCECM_IN,	// CDC IN Данные ком-порта в компьютер из TRX
-	USBD_EP_CDCECM_INT,	// CDC INT События ком-порта в компьютер из TRX
-#endif /* WITHUSBCDCECM */
-
 #if WITHUSBCDC
 	USBD_EP_CDC_IN,		// CDC IN Данные ком-порта в компьютер из TRX
 	USBD_EP_CDC_INb,	// CDC IN Данные ком-порта в компьютер из TRX
@@ -119,6 +110,15 @@ enum
 	USBD_EP_CDC_INTb,	// CDC INT События ком-порта в компьютер из TRX
 	USBD_EP_CDC_INTlast = USBD_EP_CDC_INT + WITHUSBHWCDC_N - 1,
 #endif /* WITHUSBCDC */
+
+#if WITHUSBCDCEEM
+	USBD_EP_CDCEEM_IN,	// CDC IN Данные ком-порта в компьютер из TRX
+#endif /* WITHUSBCDCEEM */
+
+#if WITHUSBCDCECM
+	USBD_EP_CDCECM_IN,	// CDC IN Данные ком-порта в компьютер из TRX
+	USBD_EP_CDCECM_INT,	// CDC INT События ком-порта в компьютер из TRX
+#endif /* WITHUSBCDCECM */
 
 #if WITHUSBHID
 	//USBD_EP_HIDMOUSE_INT,	// HID INT События манипулятора в компьютер из TRX
@@ -145,6 +145,12 @@ enum
 	#endif
 #endif /* WITHUSBUAC */
 
+#if WITHUSBCDC
+	USBD_EP_CDC_OUT,	// CDC OUT Данные ком-порта от компьютера в TRX
+	USBD_EP_CDC_OUTb,	// CDC OUT Данные ком-порта от компьютера в TRX
+	USBD_EP_CDC_OUTlast = USBD_EP_CDC_OUT + WITHUSBHWCDC_N - 1,
+#endif /* WITHUSBCDC */
+
 #if WITHUSBCDCEEM
 	USBD_EP_CDCEEM_OUT,	// CDC OUT Данные ком-порта от компьютера в TRX
 #endif /* WITHUSBCDCEEM */
@@ -153,12 +159,8 @@ enum
 	USBD_EP_CDCECM_OUT,	// CDC OUT Данные ком-порта от компьютера в TRX
 #endif /* WITHUSBCDCECM */
 
-#if WITHUSBCDC
-	USBD_EP_CDC_OUT,	// CDC OUT Данные ком-порта от компьютера в TRX
-	USBD_EP_CDC_OUTb,	// CDC OUT Данные ком-порта от компьютера в TRX
-	USBD_EP_CDC_OUTlast = USBD_EP_CDC_OUT + WITHUSBHWCDC_N - 1,
-#endif /* WITHUSBCDC */
-
+#if WITHUSBHID
+#endif /* WITHUSBHID */
 	//
 	epoutcount
 };
@@ -168,6 +170,10 @@ enum
 	#define VIRTUAL_COM_PORT_DATA_SIZE			64
 #endif /* WITHUSBCDC */
 
+#if WITHUSBHID
+	#define HIDMOUSE_INT_DATA_SIZE 4
+#endif /* WITHUSBHID */
+
 #if WITHUSBCDCEEM
 	#define USBD_CDCEEM_BUFSIZE	64
 #endif /* WITHUSBCDCEEM */
@@ -175,10 +181,6 @@ enum
 #if WITHUSBCDCECM
 	#define USBD_CDCECM_BUFSIZE	64
 #endif /* WITHUSBCDCECM */
-
-#if WITHUSBHID
-	#define HIDMOUSE_INT_DATA_SIZE 4
-#endif /* WITHUSBHID */
 
 #if WITHUSBRNDIS
 	#define USBD_RNDIS_INT_SIZE	8	// interrupt data
@@ -363,6 +365,7 @@ enum
 
 	STRING_ID_Left, STRING_ID_Right,	// Идут подряд
 
+	STRING_ID_RNDIS,
 	STRING_ID_HIDa,
 	STRING_ID_IQSPECTRUM,
 	// 
