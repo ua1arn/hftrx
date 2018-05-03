@@ -8337,9 +8337,15 @@ static void USBD_ClassXXX_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef  
 			case INTERFACE_RNDIS_CONTROL_5:	// RNDIS control
 				switch (req->bRequest)
 				{
-				default:
+				case 0x01:	// GET_ENCAPSULATED_RESPONSE 
 					debug_printf_P(PSTR("USBD_ClassXXX_Setup IN: INTERFACE_RNDIS_CONTROL_5: bRequest=%02X, wIndex=%04X, wLength=%04X\n"), req->bRequest, req->wIndex, req->wLength);
 					USBD_CtlSendData(pdev, ep0resp, ulmin16(ep0resplength, ulmin16(ARRAY_SIZE(ep0resp), req->wLength)));
+					break;
+
+				default:
+					debug_printf_P(PSTR("USBD_ClassXXX_Setup IN: INTERFACE_RNDIS_CONTROL_5: GET_ENCAPSULATED_RESPONSE: bRequest=%02X, wIndex=%04X, wLength=%04X\n"), req->bRequest, req->wIndex, req->wLength);
+					ep0resp [0] = 0;
+					USBD_CtlSendData(pdev, ep0resp, ulmin16(1, ulmin16(ARRAY_SIZE(ep0resp), req->wLength)));
 					break;
 				}
 				break;
@@ -8381,7 +8387,7 @@ static void USBD_ClassXXX_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef  
 					{
 #if WITHUSBHID
 					case HID_REPORT_DESC:
-						debug_printf_P(PSTR("USBD_ClassXXX_Setup: USB_REQ_TYPE_STANDARD USB_REQ_GET_DESCRIPTOR dir=%02X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), req->bmRequest & 0x80, req->wValue, req->wIndex, req->wLength);
+						debug_printf_P(PSTR("USBD_ClassXXX_Setup IN: USB_REQ_TYPE_STANDARD USB_REQ_GET_DESCRIPTOR dir=%02X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), req->bmRequest & 0x80, req->wValue, req->wIndex, req->wLength);
 						if (HIDReportDescrTbl [0].size != 0 && interfacev == INTERFACE_HID_CONTROL_7)
 						{
 							USBD_CtlSendData(pdev, HIDReportDescrTbl [0].data, HIDReportDescrTbl [0].size);
