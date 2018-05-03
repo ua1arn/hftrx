@@ -9585,7 +9585,6 @@ USBD_StatusTypeDef USBD_LL_DataOutStage(USBD_HandleTypeDef *pdev, uint8_t epnum,
 	} 
 	else if (pdev->dev_state == USBD_STATE_CONFIGURED)
 	{
-		debug_printf_P(PSTR("USBD_LL_DataOutStage: epnum=%02X\n"), epnum);
 		switch (epnum)
 		{
 #if WITHUSBCDC
@@ -9637,6 +9636,7 @@ USBD_StatusTypeDef USBD_LL_DataOutStage(USBD_HandleTypeDef *pdev, uint8_t epnum,
 #endif /* WITHUSBRNDIS */
 
 		default:
+			debug_printf_P(PSTR("USBD_LL_DataOutStage: epnum=%02X\n"), epnum);
 			TP();
 			break;
 		}
