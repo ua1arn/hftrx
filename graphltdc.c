@@ -482,12 +482,15 @@ static void LCD_LayerInit(
 void
 arm_hardware_ltdc_initialize(void)
 {
+	pipparams_t pip;
 	debug_printf_P(PSTR("arm_hardware_ltdc_initialize start\n"));
 
 	const unsigned rowsize = sizeof framebuff [0];	// размер одной строки в байтах
 	const unsigned rowsize2 = (sizeof (PACKEDCOLOR_T) * DIM_SECOND);
 	ASSERT(rowsize == rowsize2);
 	debug_printf_P(PSTR("arm_hardware_ltdc_initialize: framebuff=%p, rowsize=%u\n"), framebuff, rowsize);
+	display2_getpipparams(& pip);
+	debug_printf_P(PSTR("arm_hardware_ltdc_initialize: pip: x/y=%u/%u, w/h=%u/%u\n"), pip.x, pip.y, pip.w, pip.w);
 
 	/*
 	framebuff [0][0] = 1;
@@ -687,5 +690,13 @@ arm_hardware_ltdc_initialize(void)
 
 	debug_printf_P(PSTR("arm_hardware_ltdc_initialize done\n"));
 }
+
+void arm_hardware_ltdc_set_pip(void * p)
+{
+#if LCDMODE_LTDC_PIP16
+	LTDC_Layer2->CFBAR = (uintptr_t) p;
+#endif /* LCDMODE_LTDC_PIP16 */
+}
+
 
 #endif /* CPUSTYLE_STM32F && LCDMODE_LTDC */
