@@ -3729,6 +3729,14 @@ enum
 	#endif /* WITHMENU */
 	};
 
+	/* получить координаты окна с панорамой и/или водопадом. */
+	void display2_getpipparams(pipparams_t * p)
+	{
+		p->x = GRID2X(0);	// позиция верхнего левого угла в пикселях
+		p->y = GRID2Y(10);	// позиция верхнего левого угла в пикселях
+		p->w = GRID2X(CHARS2GRID(BDTH_ALLRX));	// размер по горизонтали в пикселях
+		p->h = GRID2Y(BDCV_ALLRX);				// размер по вертикали в пикселях
+	}
 #else
 	#error TODO: to be implemented
 #endif /* LCDMODE_LS020 */

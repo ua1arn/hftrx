@@ -354,6 +354,14 @@
 uint_fast8_t display_getpagesmax(void);	// количество разных вариантов отображения (menuset)
 uint_fast8_t display_getfreqformat(uint_fast8_t * prjv);	// получить параметры отображения частоты (для функции прямого ввода)
 
+typedef struct pipparams_tag
+{
+	uint_fast16_t x, y, w, h;	// в пикселях
+
+} pipparams_t;
+
+void display2_getpipparams(pipparams_t * p);	/* получить координаты окна с панорамой и/или водопадом. */
+
 
 void display2_bgprocess(void);	// выполнение шагов state machine отображения дисплея
 void display2_bgreset(void);	// сброс state machine отображения дисплея
