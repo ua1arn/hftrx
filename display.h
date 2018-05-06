@@ -592,6 +592,7 @@ void display_colorbuffer_fill(
 	uint_fast16_t dy,
 	COLOR_T color
 	);
+
 // Выдать цветной буфер на дисплей
 void display_colorbuffer_show(
 	const PACKEDCOLOR_T * buffer,
@@ -600,6 +601,14 @@ void display_colorbuffer_show(
 	uint_fast16_t col,	// горизонтальная координата левого верхнего угла на экране (0..dx-1) слева направо
 	uint_fast16_t row	// вертикальная координата левого верхнего угла на экране (0..dy-1) сверху вниз
 	);
+
+// установить данный буфер как область для PIP
+void display_colorbuffer_pip(
+	const PACKEDCOLOR_T * buffer,
+	uint_fast16_t dx,	
+	uint_fast16_t dy
+	);
+
 // Поставить цветную точку.
 void display_colorbuffer_set(
 	PACKEDCOLOR_T * buffer,

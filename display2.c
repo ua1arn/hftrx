@@ -33,6 +33,11 @@ static void dsp_latchwaterfall(
 	uint_fast8_t y, 
 	void * pv
 	);
+static void display2_waterfallbg(
+	uint_fast8_t x0, 
+	uint_fast8_t y0, 
+	void * pv
+	);
 
 static void display2_spectrum(
 	uint_fast8_t x, 
@@ -3142,6 +3147,9 @@ enum
 			{	0,	10,	display2_legend,	REDRM_MODE, PG0, },	// Отображение оцифровки шкалы S-метра
 			/* ---------------------------------- */
 			{	0,	9,	dsp_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
+		#if LCDMODE_LTDC_PIP16
+			{	0,	9,	display2_waterfallbg,REDRM_MODE,	PG1 | PG2, },
+		#endif /* LCDMODE_LTDC_PIP16 */
 			{	0,	9,	display2_spectrum,	REDRM_BARS, PG1, },// Отображение оцифровки шкалы S-метра
 			{	0,	9,	display2_waterfall,	REDRM_BARS, PG2, },// Отображение водопада
 			/* ---------------------------------- */
@@ -3264,6 +3272,9 @@ enum
 			{	0,	10,	display2_legend,	REDRM_MODE, PG0, },	// Отображение оцифровки шкалы S-метра
 			/* ---------------------------------- */
 			{	0,	9,	dsp_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
+		#if LCDMODE_LTDC_PIP16
+			{	0,	9,	display2_waterfallbg,REDRM_MODE,	PG1 | PG2, },
+		#endif /* LCDMODE_LTDC_PIP16 */
 			{	0,	9,	display2_spectrum,	REDRM_BARS, PG1, },// Отображение оцифровки шкалы S-метра
 			{	0,	9,	display2_waterfall,	REDRM_BARS, PG2, },// Отображение водопада
 			/* ---------------------------------- */
@@ -3403,6 +3414,9 @@ enum
 		#if WITHDSPEXTDDC
 
 			{	0,	9,	dsp_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
+		#if LCDMODE_LTDC_PIP16
+			{	0,	9,	display2_waterfallbg,REDRM_MODE,	PG1 | PG2, },
+		#endif /* LCDMODE_LTDC_PIP16 */
 			{	0,	9,	display2_spectrum,	REDRM_BARS, PG1, },// Отображение оцифровки шкалы S-метра
 			{	0,	9,	display2_waterfall,	REDRM_BARS, PG2, },// Отображение водопада
 		#else /* WITHDSPEXTDDC */
@@ -3599,6 +3613,9 @@ enum
 			{	0,	19,	display2_bars,		REDRM_BARS, PG0, },	// S-METER, SWR-METER, POWER-METER
 		#if WITHIF4DSP
 			{	0,	19,	dsp_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
+		#if LCDMODE_LTDC_PIP16
+			{	0,	19,	display2_waterfallbg,REDRM_MODE,	PG1 | PG2, },
+		#endif /* LCDMODE_LTDC_PIP16 */
 			{	0,	19,	display2_spectrum,	REDRM_BARS, PG1, },// Отображение спектра
 			{	0,	19,	display2_waterfall,	REDRM_BARS, PG2, },// Отображение водопада
 
@@ -3732,6 +3749,9 @@ enum
 		{	0,	10,	display2_bars,		REDRM_BARS, PG0, },	// S-METER, SWR-METER, POWER-METER
 
 		{	0,	9,	dsp_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
+	#if LCDMODE_LTDC_PIP16
+		{	0,	9,	display2_waterfallbg,REDRM_MODE,	PG1 | PG2, },
+	#endif /* LCDMODE_LTDC_PIP16 */
 		{	0,	9,	display2_spectrum,	REDRM_BARS, PG1, },// Отображение спектра
 		{	0,	9,	display2_waterfall,	REDRM_BARS, PG2, },// Отображение водопада
 
@@ -4213,6 +4233,8 @@ enum
 	WFDY = GRID2Y(BDCV_ALLRX)				// размер по вертикали в пикселях
 };
 
+static ALIGNX_BEGIN PACKEDCOLOR_T wfcolorscr [GXSIZE(WFDX, WFDY)] ALIGNX_END;
+
 enum { AVGLEN = 2 };
 enum { MAXHISTLEN = 5 };
 enum { SPAVGSIZE = 5 };	// max(AVGLEN, MAXHISTLEN)
@@ -4376,6 +4398,20 @@ static void dsp_latchwaterfall(
 	}
 }
 
+
+#if LCDMODE_LTDC_PIP16
+// Прямоугольник закрашивается ключевым цветом 
+static void display2_waterfallbg(
+	uint_fast8_t x0, 
+	uint_fast8_t y0, 
+	void * pv
+	)
+{
+	display_colorbuffer_fill(wfcolorscr, WFDX, WFDY, COLOR_KEY);
+	display_colorbuffer_show(wfcolorscr, WFDX, WFDY, GRID2X(x0), GRID2Y(y0));
+}
+#endif /* LCDMODE_LTDC_PIP16 */
+
 // отображение спектроанализатора
 static void display2_spectrum(
 	uint_fast8_t x0, 
@@ -4383,7 +4419,6 @@ static void display2_spectrum(
 	void * pv
 	)
 {
-
 #if LCDMODE_UC1608 || LCDMODE_UC1601 || LCDMODE_S1D13781
 	// Спектр на монохромных дисплеях 
 	// или на цвентых,где есть возможность раскаски растровоцй картинки.
@@ -4445,7 +4480,6 @@ static void display2_spectrum(
 
 	// Спектр на цветных дисплеях, не поддерживающих ускоренного 
 	// построения изображения по bitmap с раскрашиванием
-	static ALIGNX_BEGIN PACKEDCOLOR_T wfcolorscr [GXSIZE(WFDX, WFDY)] ALIGNX_END;
 	if (hamradio_get_tx() == 0)
 	{
 		uint_fast16_t x;

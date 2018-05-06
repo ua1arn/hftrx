@@ -17,7 +17,6 @@
 
 #if CPUSTYLE_STM32F && LCDMODE_LTDC
 
-//#define GCR_MASK                     ((uint32_t)0x0FFE888F)  /* LTDC GCR Mask */
 /** @defgroup LTDC_Pixelformat 
   * @{
   */
@@ -363,25 +362,18 @@ static void LTDC_Init(LTDC_InitTypeDef* LTDC_InitStruct)
 	LTDC->AWCR |= (accumulatedactiveW | LTDC_InitStruct->LTDC_AccumulatedActiveH);
 
 	/* Sets Total Width */
-	LTDC->TWCR &= ~(LTDC_TWCR_TOTALH | LTDC_TWCR_TOTALW);
+	LTDC->TWCR &= ~ (LTDC_TWCR_TOTALH | LTDC_TWCR_TOTALW);
 	totalwidth = (LTDC_InitStruct->LTDC_TotalWidth << LTDC_TWCR_TOTALW_Pos);
 	LTDC->TWCR |= (totalwidth | LTDC_InitStruct->LTDC_TotalHeigh);
 
-	//LTDC->GCR &= (uint32_t)GCR_MASK;
 	LTDC->GCR = 0;
 	LTDC->GCR |=  (uint32_t)(LTDC_InitStruct->LTDC_HSPolarity | LTDC_InitStruct->LTDC_VSPolarity |
 			   LTDC_InitStruct->LTDC_DEPolarity | LTDC_InitStruct->LTDC_PCPolarity);
 
 	/* sets the background color value */
-	LTDC->BCCR = LTDC_InitStruct->LTDC_BackgroundColor;
-}
-
-static void LCD_LayerSetColorKey(
-	LTDC_Layer_TypeDef* LTDC_Layerx, 
-	PACKEDCOLOR_T color
-	)
-{
-	LTDC_Layerx->CKCR = color;
+	LTDC->BCCR = (LTDC->BCCR & ~ (LTDC_BCCR_BCBLUE_Msk | LTDC_BCCR_BCGREEN_Msk | LTDC_BCCR_BCRED_Msk)) |
+		LTDC_InitStruct->LTDC_BackgroundColor |
+		0;
 }
 
 static void LCD_LayerInit(
@@ -412,7 +404,7 @@ static void LCD_LayerInit(
 	/* Alpha constant (255 totally opaque) */
 	LTDC_Layer_InitStruct.LTDC_ConstantAlpha = 255; 
 	/* Default Color configuration (configure A,R,G,B component values) */          
-	LTDC_Layer_InitStruct.LTDC_DefaultColor = COLOR_GREEN;        
+	LTDC_Layer_InitStruct.LTDC_DefaultColor = 0;        
 	/* Configure blending factors */       
 	LTDC_Layer_InitStruct.LTDC_BlendingFactor_1 = LTDC_BlendingFactor1_CA;    
 	LTDC_Layer_InitStruct.LTDC_BlendingFactor_2 = LTDC_BlendingFactor2_CA;
@@ -449,6 +441,23 @@ static void LCD_LayerInit(
 	/* LTDC configuration reload */  
 }
 
+/* Изменение настроек для работы слоя как "верхнего" при формированиии наложения */
+static void LCD_LayerInitTop(
+	LTDC_Layer_TypeDef* LTDC_Layerx
+	)
+{
+
+	LTDC_Layerx->CKCR = COLOR_KEY;		/* через пиксели указанного цвета в TOP_LAYER видны пиксели из BOTTOM_LAYER */
+	LTDC_Layerx->CR |= LTDC_LxCR_COLKEN;	
+}
+
+/* Изменение настроек для работы слоя как "нижнего" при формированиии наложения */
+static void LCD_LayerInitBottom(
+	LTDC_Layer_TypeDef* LTDC_Layerx
+	)
+{
+}
+
 #define TOP_LAYER	LTDC_Layer2
 #define BOTTOM_LAYER	LTDC_Layer1		// PIP layer
 
@@ -462,19 +471,7 @@ arm_hardware_ltdc_initialize(void)
 	//ASSERT(rowsize == rowsize2);
 	debug_printf_P(PSTR("arm_hardware_ltdc_initialize: framebuff=%p\n"), framebuff);
 
-	/*
-	framebuff [0][0] = 1;
-	framebuff [0][1] = 2;
-	framebuff [0][2] = 3;
-	framebuff [0][3] = 4;
-
-	ASSERT(framebuff [0][0] == 1);
-	ASSERT(framebuff [0][1] == 2);
-	ASSERT(framebuff [0][2] == 3);
-	ASSERT(framebuff [0][3] == 4);
-	*/
 	/* Initialize the LCD */
-	//LCD_Init();
 
 #if CPUSTYLE_STM32H7XX
 	/* Enable the LTDC Clock */
@@ -497,24 +494,6 @@ arm_hardware_ltdc_initialize(void)
 	/* Configure the LCD Control pins */
 	HARDWARE_LTDC_INITIALIZE();	// подключение к выводам процессора сигналов периферийного контроллера
 
-	/* Enable Pixel Clock --------------------------------------------------------*/
-
-	/* Configure PLLSAI prescalers for LCD */
-	/* PLLSAI_VCO Input = HSE_VALUE/PLL_M = 1 Mhz */
-	/* PLLSAI_VCO Output = PLLSAI_VCO Input * PLLSAI_N = 192 Mhz */
-	/* PLLLCDCLK = PLLSAI_VCO Output/PLLSAI_R = 192/3 = 64 Mhz */
-	/* LTDC clock frequency = PLLLCDCLK / RCC_PLLSAIDivR = 64/8 = 8 Mhz */
-	//RCC_PLLSAIConfig(192, 7, 3);
-	//RCC_LTDCCLKDivConfig(RCC_PLLSAIDivR_Div8);
-
-	/* Enable PLLSAI Clock */
-	//RCC_PLLSAICmd(ENABLE);
-	/* Wait for PLLSAI activation */
-	//while(RCC_GetFlagStatus(RCC_FLAG_PLLSAIRDY) == RESET)
-	//{
-	//}
-
-
 	/* LTDC Initialization -------------------------------------------------------*/
 	LTDC_InitTypeDef LTDC_InitStruct;
 
@@ -527,10 +506,8 @@ arm_hardware_ltdc_initialize(void)
 	  */    
 	enum
 	{
-
 		WIDTH = 480,				/* LCD PIXEL WIDTH            */
 		HEIGHT = 272,			/* LCD PIXEL HEIGHT           */
-
 		/** 
 		  * @brief  RK043FN48H Timing  
 		  */     
@@ -546,7 +523,6 @@ arm_hardware_ltdc_initialize(void)
 	// HHT270C-8961-6A6 (320*240)
 	enum
 	{
-
 		WIDTH = 320 * 3,				/* LCD PIXEL WIDTH            */
 		HEIGHT = 240,			/* LCD PIXEL HEIGHT           */
 
@@ -621,7 +597,7 @@ arm_hardware_ltdc_initialize(void)
 	LTDC_InitStruct.LTDC_TotalHeigh = (HEIGHT + VSYNC + VBP + VFP - 1);
 
 	/* Configure R,G,B component values for LCD background color */                   
-	LTDC_InitStruct.LTDC_BackgroundColor = COLOR_BLUE;     
+	LTDC_InitStruct.LTDC_BackgroundColor = 0;		// all 0 - black
 
 	LTDC_Init(&LTDC_InitStruct);
 
@@ -648,12 +624,13 @@ arm_hardware_ltdc_initialize(void)
 
 #endif /* LCDMODE_LTDC_L8 */
 
-#if 0//LCDMODE_LTDC_PIP16
-	LCD_LayerSetColorKey(TOP_LAYER, COLOR_KEY);	/* через пиксели указанного цвета в TOP_LAYER видны пиксели из BOTTOM_LAYER */
-	TOP_LAYER->CR |= LTDC_LxCR_COLKEN;	
+#if LCDMODE_LTDC_PIP16
+
+	LCD_LayerInitTop(TOP_LAYER);	// довести инициализацию
 
 	// Bottom layer
 	LCD_LayerInit(BOTTOM_LAYER, HSYNC + HBP, VSYNC + VBP, & pipwnd, LTDC_Pixelformat_RGB565, 1);
+	LCD_LayerInitBottom(BOTTOM_LAYER);	// довести инициализацию
 #endif /* LCDMODE_LTDC_PIP16 */
 
 	LTDC->SRCR = LTDC_SRCR_IMR;	/*!< Immediately Reload. */

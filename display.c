@@ -348,6 +348,17 @@ void display_colorbuffer_xor(
 #endif /* LCDMODE_HORFILL */
 }
 
+// установить данный буфер как область для PIP
+void display_colorbuffer_pip(
+	const PACKEDCOLOR_T * buffer,
+	uint_fast16_t dx,	
+	uint_fast16_t dy
+	)
+{
+	arm_hardware_flush((uintptr_t) buffer, (uint_fast32_t) dx * dy * sizeof * buffer);
+	arm_hardware_ltdc_set_pip((uintptr_t) buffer);
+}
+
 // Выдать буфер на дисплей
 void display_colorbuffer_show(
 	const PACKEDCOLOR_T * buffer,
@@ -360,7 +371,6 @@ void display_colorbuffer_show(
 #if defined (DMA2D) && LCDMODE_LTDC
 
 	arm_hardware_flush((uintptr_t) buffer, (uint_fast32_t) dx * dy * sizeof * buffer);
-	arm_hardware_ltdc_set_pip((uintptr_t) buffer);
 
 #if LCDMODE_HORFILL
 
