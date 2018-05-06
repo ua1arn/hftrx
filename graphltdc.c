@@ -415,7 +415,7 @@ static void LCD_LayerInit(
 	uint32_t LTDC_PixelFormat
 	)
 {
-	const unsigned rowsize = sizeof (PACKEDCOLOR_T) * wnd->w;	// размер одной строки в байтах
+	const unsigned rowsize = (sizeof (PACKEDCOLOR_T) * wnd->w);	// размер одной строки в байтах
 
 	LTDC_Layer_InitTypeDef LTDC_Layer_InitStruct; 
 	/* Windowing configuration */
@@ -425,9 +425,9 @@ static void LCD_LayerInit(
 	Vertical start   = vertical synchronization + vertical back porch     = 4
 	Vertical stop   = Vertical start + window height -1  = 4 + 320 -1      */      
 	LTDC_Layer_InitStruct.LTDC_HorizontalStart = hs;
-	LTDC_Layer_InitStruct.LTDC_HorizontalStop = (DIM_SECOND * SCALE_H + hs - 1); 
+	LTDC_Layer_InitStruct.LTDC_HorizontalStop = (wnd->w * SCALE_H + hs - 1); 
 	LTDC_Layer_InitStruct.LTDC_VerticalStart = vs;
-	LTDC_Layer_InitStruct.LTDC_VerticalStop = (DIM_FIRST + vs - 1);
+	LTDC_Layer_InitStruct.LTDC_VerticalStop = (wnd->h + vs - 1);
 
 	/* Pixel Format configuration*/
 	LTDC_Layer_InitStruct.LTDC_PixelFormat = LTDC_PixelFormat;
@@ -456,7 +456,7 @@ static void LCD_LayerInit(
 	LTDC_Layer_InitStruct.LTDC_CFBPitch = rowsize; // (DIM_SECOND * 2);
 
 	/* Configure the number of lines */  
-	LTDC_Layer_InitStruct.LTDC_CFBLineNumber = DIM_FIRST;
+	LTDC_Layer_InitStruct.LTDC_CFBLineNumber = wnd->h;
 
 	/* Start Address configuration : the LCD Frame buffer is defined on SDRAM */    
 	LTDC_Layer_InitStruct.LTDC_CFBStartAdress = (uintptr_t) & framebuff;
@@ -662,7 +662,7 @@ arm_hardware_ltdc_initialize(void)
 	#endif /* LCDMODE_LTDC_L8 */
 
 	LCD_LayerInit(LTDC_Layer1, HSYNC + HBP, VSYNC + VBP, & mainwnd, LTDC_PixelFormat);
-	LCD_LayerInit(LTDC_Layer2, HSYNC + HBP, VSYNC + VBP, & pipwnd, LTDC_Pixelformat_RGB565);
+	//LCD_LayerInit(LTDC_Layer2, HSYNC + HBP, VSYNC + VBP, & pipwnd, LTDC_Pixelformat_RGB565);
 
 	LTDC->SRCR = LTDC_SRCR_IMR;	/*!< Immediately Reload. */
 
