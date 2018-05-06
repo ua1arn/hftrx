@@ -408,13 +408,14 @@ static void LTDC_Init(LTDC_InitTypeDef* LTDC_InitStruct)
 }
 
 static void LCD_LayerInit(
+	LTDC_Layer_TypeDef* LTDC_Layerx, 
 	unsigned hs,	// same as AccumulatedHBP + 1
-	unsigned vs		// same as LTDC_AccumulatedVBP + 1
+	unsigned vs,		// same as LTDC_AccumulatedVBP + 1
+	const pipparams_t * wnd,
+	uint32_t LTDC_PixelFormat
 	)
 {
-	const unsigned rowsize = sizeof framebuff [0];	// размер одной строки в байтах
-	const unsigned rowsize2 = (sizeof (PACKEDCOLOR_T) * DIM_SECOND);
-	ASSERT(rowsize == rowsize2);
+	const unsigned rowsize = sizeof (PACKEDCOLOR_T) * wnd->w;	// размер одной строки в байтах
 
 	LTDC_Layer_InitTypeDef LTDC_Layer_InitStruct; 
 	/* Windowing configuration */
@@ -429,13 +430,7 @@ static void LCD_LayerInit(
 	LTDC_Layer_InitStruct.LTDC_VerticalStop = (DIM_FIRST + vs - 1);
 
 	/* Pixel Format configuration*/
-	#if LCDMODE_LTDC_L8
-		LTDC_Layer_InitStruct.LTDC_PixelFormat = LTDC_Pixelformat_L8;
-	#elif LCDMODE_LTDC_L24
-		LTDC_Layer_InitStruct.LTDC_PixelFormat = LTDC_Pixelformat_L8;
-	#else /* LCDMODE_LTDC_L8 */
-		LTDC_Layer_InitStruct.LTDC_PixelFormat = LTDC_Pixelformat_RGB565;
-	#endif /* LCDMODE_LTDC_L8 */
+	LTDC_Layer_InitStruct.LTDC_PixelFormat = LTDC_PixelFormat;
 	/* Alpha constant (255 totally opaque) */
 	LTDC_Layer_InitStruct.LTDC_ConstantAlpha = 255; 
 	/* Default Color configuration (configure A,R,G,B component values) */          
@@ -468,13 +463,13 @@ static void LCD_LayerInit(
 	//LTDC_Layer1->CFBAR = (uint32_t) & framebuff;
 
 	/* Initialize LTDC layer 1 */
-	LTDC_LayerInit(LTDC_Layer1, &LTDC_Layer_InitStruct);
+	LTDC_LayerInit(LTDC_Layerx, & LTDC_Layer_InitStruct);
 
 	/* Enable foreground & background Layers */
 	//LTDC_LayerCmd(LTDC_Layer1, ENABLE); 
 	//LTDC_LayerCmd(LTDC_Layer2, ENABLE);
 	/* Enable LTDC_Layer by setting LEN bit */
-	LTDC_Layer1->CR |= (uint32_t) LTDC_LxCR_LEN;
+	LTDC_Layerx->CR |= (uint32_t) LTDC_LxCR_LEN;
 
 	/* LTDC configuration reload */  
 }
@@ -482,15 +477,17 @@ static void LCD_LayerInit(
 void
 arm_hardware_ltdc_initialize(void)
 {
-	pipparams_t pip;
+	pipparams_t mainwnd = { 0, 0, DIM_SECOND, DIM_FIRST };
+	pipparams_t pipwnd;
 	debug_printf_P(PSTR("arm_hardware_ltdc_initialize start\n"));
 
-	const unsigned rowsize = sizeof framebuff [0];	// размер одной строки в байтах
-	const unsigned rowsize2 = (sizeof (PACKEDCOLOR_T) * DIM_SECOND);
-	ASSERT(rowsize == rowsize2);
-	debug_printf_P(PSTR("arm_hardware_ltdc_initialize: framebuff=%p, rowsize=%u\n"), framebuff, rowsize);
-	display2_getpipparams(& pip);
-	debug_printf_P(PSTR("arm_hardware_ltdc_initialize: pip: x/y=%u/%u, w/h=%u/%u\n"), pip.x, pip.y, pip.w, pip.w);
+	//const unsigned rowsize = sizeof framebuff [0];	// размер одной строки в байтах
+	//const unsigned rowsize2 = (sizeof (PACKEDCOLOR_T) * DIM_SECOND);
+	//ASSERT(rowsize == rowsize2);
+	debug_printf_P(PSTR("arm_hardware_ltdc_initialize: framebuff=%p\n"), framebuff);
+	display2_getpipparams(& pipwnd);
+
+	debug_printf_P(PSTR("arm_hardware_ltdc_initialize: pip: x/y=%u/%u, w/h=%u/%u\n"), pipwnd.x, pipwnd.y, pipwnd.w, pipwnd.w);
 
 	/*
 	framebuff [0][0] = 1;
@@ -651,25 +648,23 @@ arm_hardware_ltdc_initialize(void)
 	LTDC_InitStruct.LTDC_BackgroundGreenValue = 0;          
 	LTDC_InitStruct.LTDC_BackgroundBlueValue = 0; 
 
-	LTDC_Init(&LTDC_InitStruct);
+	LTDC_Init(& LTDC_InitStruct);
 
 
 	/* LTDC initialization end ---------------------------------------------------*/
+	/* Pixel Format configuration*/
+	#if LCDMODE_LTDC_L8
+		const uint32_t LTDC_PixelFormat = LTDC_Pixelformat_L8;
+	#elif LCDMODE_LTDC_L24
+		const uint32_t LTDC_PixelFormat = LTDC_Pixelformat_L8;
+	#else /* LCDMODE_LTDC_L8 */
+		const uint32_t LTDC_PixelFormat = LTDC_Pixelformat_RGB565;
+	#endif /* LCDMODE_LTDC_L8 */
 
-	LCD_LayerInit(HSYNC + HBP, VSYNC + VBP);
+	LCD_LayerInit(LTDC_Layer1, HSYNC + HBP, VSYNC + VBP, & mainwnd, LTDC_PixelFormat);
+	LCD_LayerInit(LTDC_Layer2, HSYNC + HBP, VSYNC + VBP, & pipwnd, LTDC_Pixelformat_RGB565);
 
 	LTDC->SRCR = LTDC_SRCR_IMR;	/*!< Immediately Reload. */
-
-
-	/* LCD Log initialization */
-	//LCD_LOG_Init(); 
-
-	LTDC_Layer1->CFBLR = 
-		((rowsize << LTDC_LxCFBLR_CFBP_Pos) & LTDC_LxCFBLR_CFBP) | 
-		(((rowsize + 3) << LTDC_LxCFBLR_CFBLL_Pos) & LTDC_LxCFBLR_CFBLL) |
-		0;
-	LTDC_Layer1->CFBAR = (uintptr_t) & framebuff;
-	//LTDC_Layer2->CFBAR = (uintptr_t) & framebuff;
 
 	/* Enable the LTDC */
 	LTDC->GCR |= LTDC_GCR_LTDCEN;
