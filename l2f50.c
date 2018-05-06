@@ -417,9 +417,9 @@ static void l2f50_initialize(void)
 
 	l2f50_writeCmd(DATCTL);  //DATCTL Data Control (data handling in RAM)
 	#if	LCDMODE_L2F50_TOPDOWN
-		l2f50_writeData(0x2A); // 565 mode
+		l2f50_writeData(0x2A); // RGB565 mode
 	#else /* LCDMODE_L2F50_TOPDOWN */
-		l2f50_writeData(0x2B); // 565 mode
+		l2f50_writeData(0x2B); // RGB565 mode
 	#endif /* LCDMODE_L2F50_TOPDOWN */
 
 	spi_unselect(targetlcd);

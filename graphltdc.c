@@ -196,7 +196,6 @@ typedef struct
 
 #if LCDMODE_LTDC_L24
 
-	#define SCALE_H 3
 
 // Создаём палитру выполняющую просто трансляцию значения 
 static void
@@ -222,7 +221,6 @@ fillLUT_L24(
 }
 
 #elif LCDMODE_LTDC_L8
-	#define SCALE_H 1
 
 static void
 fillLUT_L8(
@@ -271,7 +269,6 @@ fillLUT_L8(
 	LTDC_Layerx->CR |= LTDC_LxCR_CLUTEN;
 }
 #else
-	#define SCALE_H 1
 
 #endif /* LCDMODE_LTDC_L8 */
 
@@ -392,7 +389,8 @@ static void LCD_LayerInit(
 	unsigned hs,	// same as AccumulatedHBP + 1
 	unsigned vs,		// same as LTDC_AccumulatedVBP + 1
 	const pipparams_t * wnd,
-	uint32_t LTDC_PixelFormat
+	uint32_t LTDC_PixelFormat,
+	unsigned scale_h
 	)
 {
 	const unsigned rowsize = (sizeof (PACKEDCOLOR_T) * wnd->w);	// размер одной строки в байтах
@@ -404,8 +402,8 @@ static void LCD_LayerInit(
 	Horizontal stop = Horizontal start + window width -1 = 30 + 240 -1
 	Vertical start   = vertical synchronization + vertical back porch     = 4
 	Vertical stop   = Vertical start + window height -1  = 4 + 320 -1      */      
-	LTDC_Layer_InitStruct.LTDC_HorizontalStart = hs + wnd->x * SCALE_H;
-	LTDC_Layer_InitStruct.LTDC_HorizontalStop = hs + wnd->x * SCALE_H + wnd->w * SCALE_H - 1; 
+	LTDC_Layer_InitStruct.LTDC_HorizontalStart = hs + wnd->x * scale_h;
+	LTDC_Layer_InitStruct.LTDC_HorizontalStop = hs + wnd->x * scale_h + wnd->w * scale_h - 1; 
 	LTDC_Layer_InitStruct.LTDC_VerticalStart = vs + wnd->y;
 	LTDC_Layer_InitStruct.LTDC_VerticalStop = vs + wnd->y + wnd->h - 1;
 
@@ -633,16 +631,16 @@ arm_hardware_ltdc_initialize(void)
 #if LCDMODE_LTDC_L24
 
 	fillLUT_L24(LTDC_Layer2);	// прямая трансляция всех байтов из памяти на выход. загрузка палитры - имеет смысл до Reload
-	LCD_LayerInit(LTDC_Layer2, HSYNC + HBP, VSYNC + VBP, & mainwnd, LTDC_Pixelformat_L8);
+	LCD_LayerInit(LTDC_Layer2, HSYNC + HBP, VSYNC + VBP, & mainwnd, LTDC_Pixelformat_L8, 3);
 
 #elif LCDMODE_LTDC_L8
 
 	fillLUT_L8(LTDC_Layer2);	// загрузка палитры - имеет смысл до Reload
-	LCD_LayerInit(LTDC_Layer2, HSYNC + HBP, VSYNC + VBP, & mainwnd, LTDC_Pixelformat_L8);
+	LCD_LayerInit(LTDC_Layer2, HSYNC + HBP, VSYNC + VBP, & mainwnd, LTDC_Pixelformat_L8, 1);
 
 #else
 	/* Без палитры */
-	LCD_LayerInit(LTDC_Layer2, HSYNC + HBP, VSYNC + VBP, & mainwnd, LTDC_Pixelformat_RGB565);
+	LCD_LayerInit(LTDC_Layer2, HSYNC + HBP, VSYNC + VBP, & mainwnd, LTDC_Pixelformat_RGB565, 1);
 
 #endif /* LCDMODE_LTDC_L8 */
 
