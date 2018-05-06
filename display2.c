@@ -4246,7 +4246,7 @@ PACKEDCOLOR_T * getnextpip(void)
 enum { AVGLEN = 2 };
 enum { MAXHISTLEN = 5 };
 enum { SPAVGSIZE = 5 };	// max(AVGLEN, MAXHISTLEN)
-static RAMNOINIT_D1 FLOAT_t spavgarray [SPAVGSIZE] [WFDX];	// массив для усреднения
+static FLOAT_t spavgarray [SPAVGSIZE] [WFDX];	// массив для усреднения
 static uint_fast8_t spavgrow;				// строка, в которую последней занесены данные
 
 #if 1
@@ -4257,7 +4257,7 @@ static uint_fast8_t spavgrow;				// строка, в которую последней занесены данные
 	enum { wfrow = 0 };				// строка, в которую последней занесены данные
 #endif
 enum { PALETTESIZE = 256 };
-static RAMNOINIT_D1 PACKEDCOLOR_T wfpalette [PALETTESIZE];
+static PACKEDCOLOR_T wfpalette [PALETTESIZE];
 extern uint_fast8_t wflfence;
 
 #define COLOR_CENTERMAKER	COLOR_RED
