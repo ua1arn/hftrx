@@ -3683,13 +3683,13 @@ enum
 	static const FLASHMEM struct dzone dzones [] =
 	{
 		{	0,	0,	display_txrxstate2, REDRM_MODE, PGALL, },
-		{	7,	0,	display_att4,		REDRM_MODE, PGALL, },
-		{	12, 0,	display_preovf3,	REDRM_BARS, PGALL, },
-		{	17, 0,	display_agc3,		REDRM_MODE, PGALL, },
+		{	3,	0,	display_ant5,		REDRM_MODE, PGALL, },
+		{	9,	0,	display_att4,		REDRM_MODE, PGALL, },
+		{	14,	0,	display_preovf3,	REDRM_BARS, PGALL, },
+		//{	17, 0,	display_agc3,		REDRM_MODE, PGALL, },
 		{	21, 0,	display_rxbw3,		REDRM_MODE, PGALL, },	// 3.1 / 0,5 / WID / NAR
 
 		{	25, 0,	display_notch5,		REDRM_MODE, PGALL, },
-		//{	25, 0,	display_ant5,		REDRM_MODE, PGALL, },
 		{	26, 3,	display_atu3,		REDRM_MODE, PGALL, },
 		{	26, 5,	display_byp3,		REDRM_MODE, PGALL, },
 		{	26, 7,	display_voxtune3,	REDRM_MODE, PGALL, },	// VOX
@@ -3715,7 +3715,7 @@ enum
 		{	0,	9,	display2_waterfall,	REDRM_BARS, PG2, },// Отображение водопада
 
 		{	0,	17,	display_time8,		REDRM_BARS, PGALL, },	// TIME
-		{	9, 17,	display_siglevel5,	REDRM_BARS, PGALL, },	// signal level in S points
+		{	9,	17,	display_siglevel5,	REDRM_BARS, PGALL, },	// signal level in S points
 #if CTLSTYLE_RA4YBO || CTLSTYLE_RA4YBO_V3
 		{	19, 17,	display_currlevel5alt, REDRM_VOLT, PGALL, },	// PA drain current dd.d without "A"
 #else

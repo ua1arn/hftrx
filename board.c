@@ -5854,6 +5854,8 @@ static void board_fpga_loader_PS(void)
 		#include "rbf/rbfimage_v5_2ch.h"	// CTLSTYLE_RAVENDSP_V5
 	#elif CTLSTYLE_RAVENDSP_V6 && (DDS1_CLK_MUL == 1)
 		#include "rbf/rbfimage_v6_2ch.h"	// CTLSTYLE_RAVENDSP_V6
+	#elif CTLSTYLE_RAVENDSP_V7 && ! WITHUSEDUALWATCH && (DDS1_CLK_MUL == 1)
+		#include "rbf/rbfimage_v7_1ch.h"	//
 	#elif CTLSTYLE_RAVENDSP_V7 && (DDS1_CLK_MUL == 1)
 		#include "rbf/rbfimage_v7a_2ch.h"	// CTLSTYLE_RAVENDSP_V7
 	#elif CTLSTYLE_RAVENDSP_V8 && (DDS1_CLK_MUL == 1)

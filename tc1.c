@@ -7211,6 +7211,17 @@ uif_key_lockencoder(void)
 	updateboard(1, 0);
 }
 
+#if WITHBCBANDS
+/* переход в режим переключения по вещательным диапазонам */
+static void
+uif_key_genham(void)
+{
+	bandsetbcast = calc_next(bandsetbcast, 0, 1);
+	save_i8(offsetof(struct nvmap, bandsetbcast), bandsetbcast);
+	updateboard(1, 0);
+}
+#endif /* WITHBCBANDS */
+
 #if WITHUSEFAST
 /* переключение в режим крупного шага */
 static void 
@@ -13931,6 +13942,13 @@ process_key_menuset_common(uint_fast8_t kbch)
 		}
 #endif /* WITHLCDBACKLIGHT */
 		return 1;	/* клавиша уже обработана */
+
+#if WITHBCBANDS
+	case KBD_CODE_GEN_HAM:
+		uif_key_genham();
+		return 1;	/* клавиша уже обработана */
+#endif /* WITHBCBANDS */
+
 
 #if WITHUSEFAST
 	case KBD_CODE_USEFAST:

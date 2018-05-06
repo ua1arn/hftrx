@@ -772,6 +772,48 @@ uint_fast8_t getexitkey(void)
 	return KBD_CODE_DISPMODE;
 }
 
+#elif KEYB_FPAMEL20_V0A_UY5UM
+
+/* 20 кнопок на 5 линий - плата rfrontpanel_v0 + LCDMODE_UC1608 в нормальном расположении */
+/* Ќовый вариант под корпус с надпис€ми от RK1AQ */
+const struct qmkey qmdefs [NQMKEYS] =
+{
+	// ! р€д справа от индикатора - снизу вверх */
+	{ KIF_NONE,		KBD_CODE_LOCK,			KBD_CODE_GEN_HAM,		' ', },		// LOCK / GEN_HAM
+	{ KIF_SLOW,		KBD_CODE_BAND_DOWN,		KBD_CODE_BAND_DOWN, 	' ', },		// BAND DOWN
+	{ KIF_SLOW,		KBD_CODE_BAND_UP,		KBD_CODE_BAND_UP, 		' ', },		// BAND UP
+	{ KIF_NONE,		KBD_CODE_MODE,			KBD_CODE_MODEMOD, 		' ', },		// MODE/SUBMODE
+
+	// ! матрица слева от индикатора - р€д 1 по счету слева - снизу вверх */
+	{ KIF_EXTMENU,	KBD_CODE_DISPMODE,		KBD_CODE_MENU, 			' ', },		// DISPLAY/MENU
+	{ KIF_NONE,		KBD_CODE_MOX,			KBD_CODE_TXTUNE,		' ', },		// MOX/TUNE
+	{ KIF_NONE,		KBD_CODE_ATUBYPASS,		KBD_CODE_ATUSTART,		' ', },		// TUNER BYP/ATU START
+	{ KIF_ERASE,	KBD_CODE_SPLIT,			KBD_CODE_SPLIT_HOLDED,		' ', },		// SPLIT/SPLIT OFF
+
+	// ! матрица слева от индикатора - р€д 4 по счету слева - снизу вверх */
+	{ KIF_NONE,		KBD_CODE_MENU_CWSPEED,	KBD_CODE_11, 			' ', },		// CW SPEED
+	{ KIF_NONE,		KBD_CODE_NOTCHTOGGLE,	KBD_CODE_NOTCHFREQ, 	' ', },		// NOTCH
+	{ KIF_NONE,		KBD_CODE_BW,			KBD_CODE_13, 			' ', },		// BW/AGC не выключаетс€ с клавиатуры
+	{ KIF_NONE,		KBD_CODE_DWATCHTOGGLE,	KBD_CODE_DWATCHTOGGLE,	' ', },		// DUAL
+
+	// матрица слева от индикатора - р€д 3 по счету слева - снизу вверх */
+	{ KIF_NONE,		KBD_CODE_BKIN,			KBD_CODE_GEN_HAM, 		' ', },		// BREAK-IN
+	{ KIF_NONE,		KBD_CODE_LDSPTGL,		KBD_CODE_DATATOGGLE,	' ', },		// SPK/DATA
+	{ KIF_NONE,		KBD_CODE_ATT,			KBD_CODE_PAMP, 			' ', },		// ATT/PRE
+	{ KIF_NONE,		KBD_CODE_A_EX_B,			KBD_CODE_18, 		' ', },		// A/B
+
+	// матрица слева от индикатора - р€д 2 по счету слева - снизу вверх */
+	{ KIF_NONE,		KBD_CODE_VOXTOGGLE,		KBD_CODE_MAX,			' ', },		// VOX
+	{ KIF_NONE,		KBD_CODE_RECORDTOGGLE,	KBD_CODE_RECORD_HOLDED,	' ', },		// REC
+	{ KIF_NONE,		KBD_CODE_ANTENNA,		KBD_CODE_19, 			' ', },		// ANTEMMA
+	{ KIF_NONE,		KBD_CODE_A_EQ_B,			KBD_CODE_21, 		' ', },		// A=B
+
+};
+
+uint_fast8_t getexitkey(void)
+{
+	return KBD_CODE_DISPMODE;
+}
 #elif KEYB_FPAMEL20_V0A
 
 /* 20 кнопок на 5 линий - плата rfrontpanel_v0 + LCDMODE_UC1608 в нормальном расположении */
