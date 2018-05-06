@@ -32,6 +32,15 @@
   * @{
   */
 
+/*
+This register defines the blending factors F1 and F2.
+The general blending formula is: BC = BF1 x C + BF2 x Cs
+• BC = Blended color
+• BF1 = Blend Factor 1
+• C = Current layer color
+• BF2 = Blend Factor 2
+• Cs = subjacent layers blended color
+*/
 #define LTDC_BlendingFactor1_CA                       ((uint32_t)0x00000400)
 #define LTDC_BlendingFactor1_PAxCA                    ((uint32_t)0x00000600)
 
@@ -442,24 +451,24 @@ static void LCD_LayerInit(
 }
 
 /* Изменение настроек для работы слоя как "верхнего" при формированиии наложения */
-static void LCD_LayerInitTop(
+static void LCD_LayerInitMain(
 	LTDC_Layer_TypeDef* LTDC_Layerx
 	)
 {
 
-	LTDC_Layerx->CKCR = COLOR_KEY;		/* через пиксели указанного цвета в TOP_LAYER видны пиксели из BOTTOM_LAYER */
-	LTDC_Layerx->CR |= LTDC_LxCR_COLKEN;	
+	//LTDC_Layerx->CKCR = COLOR_KEY;		/* через пиксели указанного цвета в LAYER_MAIN видны пиксели из LAYER_PIP */
+	//LTDC_Layerx->CR |= LTDC_LxCR_COLKEN;	
 }
 
 /* Изменение настроек для работы слоя как "нижнего" при формированиии наложения */
-static void LCD_LayerInitBottom(
+static void LCD_LayerInitPIP(
 	LTDC_Layer_TypeDef* LTDC_Layerx
 	)
 {
 }
 
-#define TOP_LAYER	LTDC_Layer2
-#define BOTTOM_LAYER	LTDC_Layer1		// PIP layer
+#define LAYER_PIP	LTDC_Layer2		// PIP layer
+#define LAYER_MAIN	LTDC_Layer1
 
 void
 arm_hardware_ltdc_initialize(void)
@@ -610,27 +619,27 @@ arm_hardware_ltdc_initialize(void)
 	// Bottom layer - LTDC_Layer1
 #if LCDMODE_LTDC_L24
 
-	fillLUT_L24(TOP_LAYER);	// прямая трансляция всех байтов из памяти на выход. загрузка палитры - имеет смысл до Reload
-	LCD_LayerInit(TOP_LAYER, HSYNC + HBP, VSYNC + VBP, & mainwnd, LTDC_Pixelformat_L8, 3);
+	fillLUT_L24(LAYER_MAIN);	// прямая трансляция всех байтов из памяти на выход. загрузка палитры - имеет смысл до Reload
+	LCD_LayerInit(LAYER_MAIN, HSYNC + HBP, VSYNC + VBP, & mainwnd, LTDC_Pixelformat_L8, 3);
 
 #elif LCDMODE_LTDC_L8
 
-	fillLUT_L8(TOP_LAYER);	// загрузка палитры - имеет смысл до Reload
-	LCD_LayerInit(TOP_LAYER, HSYNC + HBP, VSYNC + VBP, & mainwnd, LTDC_Pixelformat_L8, 1);
+	fillLUT_L8(LAYER_MAIN);	// загрузка палитры - имеет смысл до Reload
+	LCD_LayerInit(LAYER_MAIN, HSYNC + HBP, VSYNC + VBP, & mainwnd, LTDC_Pixelformat_L8, 1);
 
 #else
 	/* Без палитры */
-	LCD_LayerInit(TOP_LAYER, HSYNC + HBP, VSYNC + VBP, & mainwnd, LTDC_Pixelformat_RGB565, 1);
+	LCD_LayerInit(LAYER_MAIN, HSYNC + HBP, VSYNC + VBP, & mainwnd, LTDC_Pixelformat_RGB565, 1);
 
 #endif /* LCDMODE_LTDC_L8 */
 
 #if LCDMODE_LTDC_PIP16
 
-	LCD_LayerInitTop(TOP_LAYER);	// довести инициализацию
+	LCD_LayerInitMain(LAYER_MAIN);	// довести инициализацию
 
 	// Bottom layer
-	LCD_LayerInit(BOTTOM_LAYER, HSYNC + HBP, VSYNC + VBP, & pipwnd, LTDC_Pixelformat_RGB565, 1);
-	LCD_LayerInitBottom(BOTTOM_LAYER);	// довести инициализацию
+	LCD_LayerInit(LAYER_PIP, HSYNC + HBP, VSYNC + VBP, & pipwnd, LTDC_Pixelformat_RGB565, 1);
+	LCD_LayerInitPIP(LAYER_PIP);	// довести инициализацию
 #endif /* LCDMODE_LTDC_PIP16 */
 
 	LTDC->SRCR = LTDC_SRCR_IMR;	/*!< Immediately Reload. */
@@ -654,7 +663,7 @@ arm_hardware_ltdc_initialize(void)
 void arm_hardware_ltdc_set_pip(uintptr_t p)
 {
 #if LCDMODE_LTDC_PIP16
-	BOTTOM_LAYER->CFBAR = p;
+	LAYER_PIP->CFBAR = p;
 	LTDC->SRCR = LTDC_SRCR_VBR;	/* Vertical Blanking Reload. */
 #endif /* LCDMODE_LTDC_PIP16 */
 }

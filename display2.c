@@ -4530,7 +4530,11 @@ static void display2_spectrum(
 	{
 		display_colorbuffer_fill(wfcolorscr, WFDX, WFDY, COLOR_GRAY);
 	}
+#if LCDMODE_LTDC_PIP16
+	display_colorbuffer_pip(wfcolorscr, WFDX, WFDY);
+#else /* LCDMODE_LTDC_PIP16 */
 	display_colorbuffer_show(wfcolorscr, WFDX, WFDY, GRID2X(x0), GRID2Y(y0));
+#endif /* LCDMODE_LTDC_PIP16 */
 #endif
 }
 
@@ -4625,7 +4629,7 @@ static void display2_waterfall(
 
 #else /* */
 	// следы спектра ("водопад") на цветных дисплеях
-	static ALIGNX_BEGIN PACKEDCOLOR_T wfcolorscr [GXSIZE(WFDX, WFDY)] ALIGNX_END;
+	//static ALIGNX_BEGIN PACKEDCOLOR_T wfcolorscr [GXSIZE(WFDX, WFDY)] ALIGNX_END;
 
 	if (hamradio_get_tx() == 0)
 	{
@@ -4652,10 +4656,16 @@ static void display2_waterfall(
 	{
 		display_colorbuffer_fill(wfcolorscr, WFDX, WFDY, COLOR_GRAY);
 	}
+
+#if LCDMODE_LTDC_PIP16
+	display_colorbuffer_pip(wfcolorscr, WFDX, WFDY);
+#else /* LCDMODE_LTDC_PIP16 */
 	display_colorbuffer_show(wfcolorscr, WFDX, WFDY, GRID2X(x0), GRID2Y(y0));
+#endif /* LCDMODE_LTDC_PIP16 */
 
 #endif /* LCDMODE_S1D13781 */
 }
+
 #else /* WITHINTEGRATEDDSP && (WITHRTS96 || WITHRTS192) */
 
 static void dsp_latchwaterfall(
