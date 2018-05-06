@@ -404,10 +404,10 @@ static void LCD_LayerInit(
 	Horizontal stop = Horizontal start + window width -1 = 30 + 240 -1
 	Vertical start   = vertical synchronization + vertical back porch     = 4
 	Vertical stop   = Vertical start + window height -1  = 4 + 320 -1      */      
-	LTDC_Layer_InitStruct.LTDC_HorizontalStart = hs;
-	LTDC_Layer_InitStruct.LTDC_HorizontalStop = (wnd->w * SCALE_H + hs - 1); 
-	LTDC_Layer_InitStruct.LTDC_VerticalStart = vs;
-	LTDC_Layer_InitStruct.LTDC_VerticalStop = (wnd->h + vs - 1);
+	LTDC_Layer_InitStruct.LTDC_HorizontalStart = hs + wnd->x * SCALE_H;
+	LTDC_Layer_InitStruct.LTDC_HorizontalStop = hs + wnd->x * SCALE_H + wnd->w * SCALE_H - 1; 
+	LTDC_Layer_InitStruct.LTDC_VerticalStart = vs + wnd->y;
+	LTDC_Layer_InitStruct.LTDC_VerticalStop = vs + wnd->y + wnd->h - 1;
 
 	/* Pixel Format configuration*/
 	LTDC_Layer_InitStruct.LTDC_PixelFormat = LTDC_PixelFormat;
