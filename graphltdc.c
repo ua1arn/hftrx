@@ -449,6 +449,9 @@ static void LCD_LayerInit(
 	/* LTDC configuration reload */  
 }
 
+#define TOP_LAYER	LTDC_Layer2
+#define BOTTOM_LAYER	LTDC_Layer1		// PIP layer
+
 void
 arm_hardware_ltdc_initialize(void)
 {
@@ -627,29 +630,30 @@ arm_hardware_ltdc_initialize(void)
 
 	/* LTDC initialization end ---------------------------------------------------*/
 
-	// Top layer
+	// Top layer - LTDC_Layer2
+	// Bottom layer - LTDC_Layer1
 #if LCDMODE_LTDC_L24
 
-	fillLUT_L24(LTDC_Layer1);	// прямая трансляция всех байтов из памяти на выход. загрузка палитры - имеет смысл до Reload
-	LCD_LayerInit(LTDC_Layer1, HSYNC + HBP, VSYNC + VBP, & mainwnd, LTDC_Pixelformat_L8, 3);
+	fillLUT_L24(TOP_LAYER);	// прямая трансляция всех байтов из памяти на выход. загрузка палитры - имеет смысл до Reload
+	LCD_LayerInit(TOP_LAYER, HSYNC + HBP, VSYNC + VBP, & mainwnd, LTDC_Pixelformat_L8, 3);
 
 #elif LCDMODE_LTDC_L8
 
-	fillLUT_L8(LTDC_Layer1);	// загрузка палитры - имеет смысл до Reload
-	LCD_LayerInit(LTDC_Layer1, HSYNC + HBP, VSYNC + VBP, & mainwnd, LTDC_Pixelformat_L8, 1);
+	fillLUT_L8(TOP_LAYER);	// загрузка палитры - имеет смысл до Reload
+	LCD_LayerInit(TOP_LAYER, HSYNC + HBP, VSYNC + VBP, & mainwnd, LTDC_Pixelformat_L8, 1);
 
 #else
 	/* Без палитры */
-	LCD_LayerInit(LTDC_Layer1, HSYNC + HBP, VSYNC + VBP, & mainwnd, LTDC_Pixelformat_RGB565, 1);
+	LCD_LayerInit(TOP_LAYER, HSYNC + HBP, VSYNC + VBP, & mainwnd, LTDC_Pixelformat_RGB565, 1);
 
 #endif /* LCDMODE_LTDC_L8 */
 
 #if 0//LCDMODE_LTDC_PIP16
-	LCD_LayerSetColorKey(LTDC_Layer1, COLOR_KEY);	/* через пиксели указанного цвета в layer2 видны пиксели из layer1 */
-	LTDC_Layer1->CR |= LTDC_LxCR_COLKEN;	
+	LCD_LayerSetColorKey(TOP_LAYER, COLOR_KEY);	/* через пиксели указанного цвета в TOP_LAYER видны пиксели из BOTTOM_LAYER */
+	TOP_LAYER->CR |= LTDC_LxCR_COLKEN;	
 
 	// Bottom layer
-	LCD_LayerInit(LTDC_Layer2, HSYNC + HBP, VSYNC + VBP, & pipwnd, LTDC_Pixelformat_RGB565, 1);
+	LCD_LayerInit(BOTTOM_LAYER, HSYNC + HBP, VSYNC + VBP, & pipwnd, LTDC_Pixelformat_RGB565, 1);
 #endif /* LCDMODE_LTDC_PIP16 */
 
 	LTDC->SRCR = LTDC_SRCR_IMR;	/*!< Immediately Reload. */
@@ -669,10 +673,11 @@ arm_hardware_ltdc_initialize(void)
 	debug_printf_P(PSTR("arm_hardware_ltdc_initialize done\n"));
 }
 
-void arm_hardware_ltdc_set_pip(void * p)
+/* set bottom buffer start */
+void arm_hardware_ltdc_set_pip(uintptr_t p)
 {
 #if LCDMODE_LTDC_PIP16
-	LTDC_Layer2->CFBAR = (uintptr_t) p;
+	BOTTOM_LAYER->CFBAR = p;
 	LTDC->SRCR = LTDC_SRCR_VBR;	/* Vertical Blanking Reload. */
 #endif /* LCDMODE_LTDC_PIP16 */
 }

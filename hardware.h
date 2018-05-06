@@ -636,7 +636,7 @@ uint32_t hardware_get_random(void);
 
 void arm_hardware_ltdc_initialize(void);	// STM32F4xxx with LCD-TFT Controller (LTDC)
 void arm_hardware_sdram_initialize(void);
-void arm_hardware_ltdc_set_pip(void * p);	// set PIP framebuffer address
+void arm_hardware_ltdc_set_pip(uintptr_t addr);	// set PIP framebuffer address
 
 uint_fast8_t usbd_cdc_getrts(void);
 uint_fast8_t usbd_cdc_getdtr(void);

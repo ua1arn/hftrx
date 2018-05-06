@@ -360,7 +360,7 @@ void display_colorbuffer_show(
 #if defined (DMA2D) && LCDMODE_LTDC
 
 	arm_hardware_flush((uintptr_t) buffer, (uint_fast32_t) dx * dy * sizeof * buffer);
-	arm_hardware_ltdc_set_pip(buffer);
+	arm_hardware_ltdc_set_pip((uintptr_t) buffer);
 
 #if LCDMODE_HORFILL
 
