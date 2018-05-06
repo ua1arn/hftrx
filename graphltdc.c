@@ -685,7 +685,7 @@ arm_hardware_ltdc_initialize(void)
 
 	// While “VSYNC” is “Low”, don’t change “DISP” signal “Low” to “High”. 
 	HARDWARE_LTDC_SET_DISP(0);
-	local_delay_ms(20);
+	local_delay_ms(50);
 	HARDWARE_LTDC_SET_DISP(1);
 
 	debug_printf_P(PSTR("arm_hardware_ltdc_initialize done\n"));
