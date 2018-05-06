@@ -412,7 +412,7 @@ static void LCD_LayerInit(
 	/* Alpha constant (255 totally opaque) */
 	LTDC_Layer_InitStruct.LTDC_ConstantAlpha = 255; 
 	/* Default Color configuration (configure A,R,G,B component values) */          
-	LTDC_Layer_InitStruct.LTDC_DefaultColor = COLOR_BLACK;        
+	LTDC_Layer_InitStruct.LTDC_DefaultColor = COLOR_GREEN;        
 	/* Configure blending factors */       
 	LTDC_Layer_InitStruct.LTDC_BlendingFactor_1 = LTDC_BlendingFactor1_CA;    
 	LTDC_Layer_InitStruct.LTDC_BlendingFactor_2 = LTDC_BlendingFactor2_CA;
@@ -581,7 +581,7 @@ arm_hardware_ltdc_initialize(void)
 	#error Unsupported LCDMODE_xxx
 #endif
 
-	pipparams_t mainwnd = { 0, 0, WIDTH, HEIGHT };
+	pipparams_t mainwnd = { 0, 0, DIM_SECOND, DIM_FIRST };
 	pipparams_t pipwnd;
 	display2_getpipparams(& pipwnd);
 
@@ -618,7 +618,7 @@ arm_hardware_ltdc_initialize(void)
 	LTDC_InitStruct.LTDC_TotalHeigh = (HEIGHT + VSYNC + VBP + VFP - 1);
 
 	/* Configure R,G,B component values for LCD background color */                   
-	LTDC_InitStruct.LTDC_BackgroundColor = COLOR_BLACK;     
+	LTDC_InitStruct.LTDC_BackgroundColor = COLOR_BLUE;     
 
 	LTDC_Init(&LTDC_InitStruct);
 
@@ -630,26 +630,26 @@ arm_hardware_ltdc_initialize(void)
 	// Top layer
 #if LCDMODE_LTDC_L24
 
-	fillLUT_L24(LTDC_Layer2);	// прямая трансляция всех байтов из памяти на выход. загрузка палитры - имеет смысл до Reload
-	LCD_LayerInit(LTDC_Layer2, HSYNC + HBP, VSYNC + VBP, & mainwnd, LTDC_Pixelformat_L8, 3);
+	fillLUT_L24(LTDC_Layer1);	// прямая трансляция всех байтов из памяти на выход. загрузка палитры - имеет смысл до Reload
+	LCD_LayerInit(LTDC_Layer1, HSYNC + HBP, VSYNC + VBP, & mainwnd, LTDC_Pixelformat_L8, 3);
 
 #elif LCDMODE_LTDC_L8
 
-	fillLUT_L8(LTDC_Layer2);	// загрузка палитры - имеет смысл до Reload
-	LCD_LayerInit(LTDC_Layer2, HSYNC + HBP, VSYNC + VBP, & mainwnd, LTDC_Pixelformat_L8, 1);
+	fillLUT_L8(LTDC_Layer1);	// загрузка палитры - имеет смысл до Reload
+	LCD_LayerInit(LTDC_Layer1, HSYNC + HBP, VSYNC + VBP, & mainwnd, LTDC_Pixelformat_L8, 1);
 
 #else
 	/* Без палитры */
-	LCD_LayerInit(LTDC_Layer2, HSYNC + HBP, VSYNC + VBP, & mainwnd, LTDC_Pixelformat_RGB565, 1);
+	LCD_LayerInit(LTDC_Layer1, HSYNC + HBP, VSYNC + VBP, & mainwnd, LTDC_Pixelformat_RGB565, 1);
 
 #endif /* LCDMODE_LTDC_L8 */
 
 #if 0//LCDMODE_LTDC_PIP16
-	LCD_LayerSetColorKey(LTDC_Layer2, COLOR_KEY);
-	LTDC_Layer2->CR |= LTDC_LxCR_COLKEN;	/* через пиксели указанного цвета в layer2 видны пиксели из layer1 */
+	LCD_LayerSetColorKey(LTDC_Layer1, COLOR_KEY);	/* через пиксели указанного цвета в layer2 видны пиксели из layer1 */
+	LTDC_Layer1->CR |= LTDC_LxCR_COLKEN;	
 
 	// Bottom layer
-	LCD_LayerInit(LTDC_Layer1, HSYNC + HBP, VSYNC + VBP, & pipwnd, LTDC_Pixelformat_RGB565);
+	LCD_LayerInit(LTDC_Layer2, HSYNC + HBP, VSYNC + VBP, & pipwnd, LTDC_Pixelformat_RGB565, 1);
 #endif /* LCDMODE_LTDC_PIP16 */
 
 	LTDC->SRCR = LTDC_SRCR_IMR;	/*!< Immediately Reload. */
@@ -673,6 +673,7 @@ void arm_hardware_ltdc_set_pip(void * p)
 {
 #if LCDMODE_LTDC_PIP16
 	LTDC_Layer2->CFBAR = (uintptr_t) p;
+	LTDC->SRCR = LTDC_SRCR_VBR;	/* Vertical Blanking Reload. */
 #endif /* LCDMODE_LTDC_PIP16 */
 }
 

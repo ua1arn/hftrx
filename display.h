@@ -326,6 +326,8 @@
 #define COLOR_BROWN   TFTRGB(0xA5, 0x2A, 0x2A)	// коричневый
 #define COLOR_PEAR    TFTRGB(0xD1, 0xE2, 0x31)	// грушевый
 
+#define COLOR_KEY	TFTRGB(0xA0, 0, 0xA0)	// ÷вет дл€ прозрачных пикселей
+
 // ÷вета используемые дл€ отображени€
 // различных элементов на экране.
 

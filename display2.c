@@ -4479,7 +4479,7 @@ static void display2_spectrum(
 #endif
 }
 
-// отрисовка вновь появившихся жанных на водопаде (в случае использования аппаратного scroll видеопамяти).
+// отрисовка вновь появившихся данных на водопаде (в случае использования аппаратного scroll видеопамяти).
 static void display_wfputrow(uint_fast16_t x, uint_fast16_t y, const uint8_t * p)
 {
 	enum { dx = WFDX, dy = 1 };
