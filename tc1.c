@@ -7220,6 +7220,12 @@ uif_key_genham(void)
 	save_i8(offsetof(struct nvmap, bandsetbcast), bandsetbcast);
 	updateboard(1, 0);
 }
+
+uint_fast8_t hamradio_get_genham_value(void)
+{
+	return bandsetbcast;
+}
+
 #endif /* WITHBCBANDS */
 
 #if WITHUSEFAST

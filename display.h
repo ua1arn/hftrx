@@ -678,6 +678,7 @@ void display_at_P(uint_fast8_t x, uint_fast8_t y, const FLASHMEM char * s); // В
 uint_fast8_t hamradio_get_tx(void);
 int_fast32_t hamradio_get_pbtvalue(void);	// Для отображения на дисплее
 uint_fast8_t hamradio_get_atuvalue(void);
+uint_fast8_t hamradio_get_genham_value(void);
 uint_fast8_t hamradio_get_bypvalue(void);
 uint_fast8_t hamradio_get_lockvalue(void);	// текущее состояние LOCK
 uint_fast8_t hamradio_get_usefastvalue(void);	// текущее состояние FAST

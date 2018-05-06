@@ -661,6 +661,26 @@ static void display_atu3(
 #endif /* WITHTX */
 }
 
+
+// Отображение режима автонастройки
+static void display_genham1(
+	uint_fast8_t x, 
+	uint_fast8_t y, 
+	void * pv
+	)
+{
+#if WITHBCBANDS
+
+	const uint_fast8_t state = hamradio_get_genham_value();
+
+	static const FLASHMEM char text_pau [] = "G";
+	static const FLASHMEM char text_rec [] = "H";
+	const FLASHMEM char * const labels [2] = { text_pau, text_rec };
+	display2_text_P(x, y, labels, colorsfg_2state, colorsbg_2state, state);
+
+#endif /* WITHBCBANDS */
+}
+
 // Отображение режима обхода тюнера
 static void display_byp3(
 	uint_fast8_t x, 
@@ -3686,6 +3706,7 @@ enum
 		{	3,	0,	display_ant5,		REDRM_MODE, PGALL, },
 		{	9,	0,	display_att4,		REDRM_MODE, PGALL, },
 		{	14,	0,	display_preovf3,	REDRM_BARS, PGALL, },
+		{	18,	0,	display_genham1,	REDRM_BARS, PGALL, },
 		//{	17, 0,	display_agc3,		REDRM_MODE, PGALL, },
 		{	21, 0,	display_rxbw3,		REDRM_MODE, PGALL, },	// 3.1 / 0,5 / WID / NAR
 
