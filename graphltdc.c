@@ -144,14 +144,9 @@ typedef struct
   uint32_t LTDC_TotalHeigh;                 /*!< configures the total heigh. This parameter 
                                                  must range from LTDC_AccumulatedActiveH to 0x7FF. */
             
-  uint32_t LTDC_BackgroundRedValue;         /*!< configures the background red value.
-                                                 This parameter must range from 0x00 to 0xFF. */
 
-  uint32_t LTDC_BackgroundGreenValue;       /*!< configures the background green value.
-                                                 This parameter must range from 0x00 to 0xFF. */ 
+  PACKEDCOLOR_T LTDC_BackgroundColor;         /*!< configures the background  */
 
-   uint32_t LTDC_BackgroundBlueValue;       /*!< configures the background blue value.
-                                                 This parameter must range from 0x00 to 0xFF. */
 } LTDC_InitTypeDef;
 
 /** 
@@ -178,17 +173,8 @@ typedef struct
   uint32_t LTDC_ConstantAlpha;              /*!< Specifies the constant alpha used for blending.
                                                  This parameter must range from 0x00 to 0xFF. */
 
-  uint32_t LTDC_DefaultColorBlue;           /*!< Configures the default blue value.
-                                                 This parameter must range from 0x00 to 0xFF. */
+  PACKEDCOLOR_T LTDC_DefaultColor;           /*!< Configures the default color value.. */
 
-  uint32_t LTDC_DefaultColorGreen;          /*!< Configures the default green value.
-                                                 This parameter must range from 0x00 to 0xFF. */
-            
-  uint32_t LTDC_DefaultColorRed;            /*!< Configures the default red value.
-                                                 This parameter must range from 0x00 to 0xFF. */
-
-  uint32_t LTDC_DefaultColorAlpha;          /*!< Configures the default alpha value.
-                                                 This parameter must range from 0x00 to 0xFF. */
 
   uint32_t LTDC_BlendingFactor_1;           /*!< Select the blending factor 1. This parameter 
                                                  can be one of value of @ref LTDC_BlendingFactor1 */
@@ -307,9 +293,6 @@ LTDC_LayerInit(LTDC_Layer_TypeDef* LTDC_Layerx, const LTDC_Layer_InitTypeDef* LT
 
 	uint32_t whsppos = 0;
 	uint32_t wvsppos = 0;
-	uint32_t dcgreen = 0;
-	uint32_t dcred = 0;
-	uint32_t dcalpha = 0;
 	uint32_t cfbp = 0;
 
 	/* Configures the horizontal start and stop position */
@@ -327,12 +310,7 @@ LTDC_LayerInit(LTDC_Layer_TypeDef* LTDC_Layerx, const LTDC_Layer_InitTypeDef* LT
 	LTDC_Layerx->PFCR |= (LTDC_Layer_InitStruct->LTDC_PixelFormat);
 
 	/* Configures the default color values */
-	dcgreen = (LTDC_Layer_InitStruct->LTDC_DefaultColorGreen << 8);
-	dcred = (LTDC_Layer_InitStruct->LTDC_DefaultColorRed << 16);
-	dcalpha = (LTDC_Layer_InitStruct->LTDC_DefaultColorAlpha << 24);
-	LTDC_Layerx->DCCR &=  ~(LTDC_LxDCCR_DCBLUE | LTDC_LxDCCR_DCGREEN | LTDC_LxDCCR_DCRED | LTDC_LxDCCR_DCALPHA);
-	LTDC_Layerx->DCCR |= (LTDC_Layer_InitStruct->LTDC_DefaultColorBlue | dcgreen | \
-						dcred | dcalpha);
+	LTDC_Layerx->DCCR = LTDC_Layer_InitStruct->LTDC_DefaultColor;
 
 	/* Specifies the constant alpha value */      
 	LTDC_Layerx->CACR &= ~(LTDC_LxCACR_CONSTA);
@@ -371,8 +349,6 @@ static void LTDC_Init(LTDC_InitTypeDef* LTDC_InitStruct)
 	uint32_t accumulatedHBP = 0;
 	uint32_t accumulatedactiveW = 0;
 	uint32_t totalwidth = 0;
-	uint32_t backgreen = 0;
-	uint32_t backred = 0;
 
 	/* Sets Synchronization size */
 	LTDC->SSCR &= ~(LTDC_SSCR_VSH | LTDC_SSCR_HSW);
@@ -400,11 +376,7 @@ static void LTDC_Init(LTDC_InitTypeDef* LTDC_InitStruct)
 			   LTDC_InitStruct->LTDC_DEPolarity | LTDC_InitStruct->LTDC_PCPolarity);
 
 	/* sets the background color value */
-	backgreen = (LTDC_InitStruct->LTDC_BackgroundGreenValue << 8);
-	backred = (LTDC_InitStruct->LTDC_BackgroundRedValue << 16);
-
-	LTDC->BCCR &= ~(LTDC_BCCR_BCBLUE | LTDC_BCCR_BCGREEN | LTDC_BCCR_BCRED);
-	LTDC->BCCR |= (backred | backgreen | LTDC_InitStruct->LTDC_BackgroundBlueValue);
+	LTDC->BCCR = LTDC_InitStruct->LTDC_BackgroundColor;
 }
 
 static void LCD_LayerSetColorKey(
@@ -442,10 +414,7 @@ static void LCD_LayerInit(
 	/* Alpha constant (255 totally opaque) */
 	LTDC_Layer_InitStruct.LTDC_ConstantAlpha = 255; 
 	/* Default Color configuration (configure A,R,G,B component values) */          
-	LTDC_Layer_InitStruct.LTDC_DefaultColorBlue = 0;        
-	LTDC_Layer_InitStruct.LTDC_DefaultColorGreen = 0;       
-	LTDC_Layer_InitStruct.LTDC_DefaultColorRed = 0;         
-	LTDC_Layer_InitStruct.LTDC_DefaultColorAlpha = 0;
+	LTDC_Layer_InitStruct.LTDC_DefaultColor = COLOR_BLACK;        
 	/* Configure blending factors */       
 	LTDC_Layer_InitStruct.LTDC_BlendingFactor_1 = LTDC_BlendingFactor1_CA;    
 	LTDC_Layer_InitStruct.LTDC_BlendingFactor_2 = LTDC_BlendingFactor2_CA;
@@ -650,40 +619,39 @@ arm_hardware_ltdc_initialize(void)
 	/* Configure total height */
 	LTDC_InitStruct.LTDC_TotalHeigh = (HEIGHT + VSYNC + VBP + VFP - 1);
 
-	LTDC_Init(&LTDC_InitStruct);
-
 	/* Configure R,G,B component values for LCD background color */                   
-	LTDC_InitStruct.LTDC_BackgroundRedValue = 0;            
-	LTDC_InitStruct.LTDC_BackgroundGreenValue = 0;          
-	LTDC_InitStruct.LTDC_BackgroundBlueValue = 0; 
+	LTDC_InitStruct.LTDC_BackgroundColor = COLOR_BLACK;     
+
+	LTDC_Init(&LTDC_InitStruct);
 
 	LTDC_Init(& LTDC_InitStruct);
 
 
 	/* LTDC initialization end ---------------------------------------------------*/
-	/* Pixel Format configuration*/
-	#if LCDMODE_LTDC_L8
-		const uint32_t LTDC_PixelFormat = LTDC_Pixelformat_L8;
-	#elif LCDMODE_LTDC_L24
-		const uint32_t LTDC_PixelFormat = LTDC_Pixelformat_L8;
-	#else /* LCDMODE_LTDC_L8 */
-		const uint32_t LTDC_PixelFormat = LTDC_Pixelformat_RGB565;
-	#endif /* LCDMODE_LTDC_L8 */
 
 	// Top layer
 #if LCDMODE_LTDC_L24
+
 	fillLUT_L24(LTDC_Layer2);	// прямая трансляция всех байтов из памяти на выход. загрузка палитры - имеет смысл до Reload
+	LCD_LayerInit(LTDC_Layer2, HSYNC + HBP, VSYNC + VBP, & mainwnd, LTDC_Pixelformat_L8);
+
 #elif LCDMODE_LTDC_L8
+
 	fillLUT_L8(LTDC_Layer2);	// загрузка палитры - имеет смысл до Reload
+	LCD_LayerInit(LTDC_Layer2, HSYNC + HBP, VSYNC + VBP, & mainwnd, LTDC_Pixelformat_L8);
+
+#else
+	/* Без палитры */
+	LCD_LayerInit(LTDC_Layer2, HSYNC + HBP, VSYNC + VBP, & mainwnd, LTDC_Pixelformat_RGB565);
+
 #endif /* LCDMODE_LTDC_L8 */
-	LCD_LayerInit(LTDC_Layer2, HSYNC + HBP, VSYNC + VBP, & mainwnd, LTDC_PixelFormat);
 
 #if 0//LCDMODE_LTDC_PIP16
-	LCD_LayerSetColorKey(LTDC_Layer2, TFTRGB(77, 77, 77));
-	//LTDC_Layer2->CR |= LTDC_LxCR_COLKEN;	/* через пиксели указанного цвета в layer2 видны пиксели из layer1 */
+	LCD_LayerSetColorKey(LTDC_Layer2, COLOR_KEY);
+	LTDC_Layer2->CR |= LTDC_LxCR_COLKEN;	/* через пиксели указанного цвета в layer2 видны пиксели из layer1 */
 
-	// Borrom layer
-	//LCD_LayerInit(LTDC_Layer1, HSYNC + HBP, VSYNC + VBP, & pipwnd, LTDC_Pixelformat_RGB565);
+	// Bottom layer
+	LCD_LayerInit(LTDC_Layer1, HSYNC + HBP, VSYNC + VBP, & pipwnd, LTDC_Pixelformat_RGB565);
 #endif /* LCDMODE_LTDC_PIP16 */
 
 	LTDC->SRCR = LTDC_SRCR_IMR;	/*!< Immediately Reload. */
