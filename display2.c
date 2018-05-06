@@ -3774,7 +3774,7 @@ enum
 	void display2_getpipparams(pipparams_t * p)
 	{
 		p->x = GRID2X(0);	// позиция верхнего левого угла в пикселях
-		p->y = GRID2Y(10);	// позиция верхнего левого угла в пикселях
+		p->y = GRID2Y(9);	// позиция верхнего левого угла в пикселях
 		p->w = GRID2X(CHARS2GRID(BDTH_ALLRX));	// размер по горизонтали в пикселях
 		p->h = GRID2Y(BDCV_ALLRX);				// размер по вертикали в пикселях
 	}
@@ -4233,7 +4233,15 @@ enum
 	WFDY = GRID2Y(BDCV_ALLRX)				// размер по вертикали в пикселях
 };
 
-static ALIGNX_BEGIN PACKEDCOLOR_T wfcolorscr [GXSIZE(WFDX, WFDY)] ALIGNX_END;
+static RAMNOINIT_D1 ALIGNX_BEGIN PACKEDCOLOR_T colorpip0 [GXSIZE(WFDX, WFDY)] ALIGNX_END;
+static RAMNOINIT_D1 ALIGNX_BEGIN PACKEDCOLOR_T colorpip1 [GXSIZE(WFDX, WFDY)] ALIGNX_END;
+
+PACKEDCOLOR_T * getnextpip(void)
+{
+	static int phase;
+	phase = ! phase;
+	return phase ? colorpip0 : colorpip1;
+}
 
 enum { AVGLEN = 2 };
 enum { MAXHISTLEN = 5 };
@@ -4407,8 +4415,8 @@ static void display2_waterfallbg(
 	void * pv
 	)
 {
-	display_colorbuffer_fill(wfcolorscr, WFDX, WFDY, COLOR_KEY);
-	display_colorbuffer_show(wfcolorscr, WFDX, WFDY, GRID2X(x0), GRID2Y(y0));
+	//display_colorbuffer_fill(colorpip, WFDX, WFDY, COLOR_KEY);
+	//display_colorbuffer_show(colorpip, WFDX, WFDY, GRID2X(x0), GRID2Y(y0));
 }
 #endif /* LCDMODE_LTDC_PIP16 */
 
@@ -4478,6 +4486,7 @@ static void display2_spectrum(
 
 #else /* */
 
+	PACKEDCOLOR_T * const colorpip = getnextpip();
 	// Спектр на цветных дисплеях, не поддерживающих ускоренного 
 	// построения изображения по bitmap с раскрашиванием
 	if (hamradio_get_tx() == 0)
@@ -4514,27 +4523,27 @@ static void display2_spectrum(
 			int zv = (WFDY - 1) - val;
 			int z;
 			for (z = WFDY - 1; z >= zv; -- z)
-				display_colorbuffer_set(wfcolorscr, WFDX, WFDY, x, z, COLOR_WAERFALLFG);	// точку сигнала
+				display_colorbuffer_set(colorpip, WFDX, WFDY, x, z, COLOR_WAERFALLFG);	// точку сигнала
 			// формирование фона растра
 			for (; z >= 0; -- z)
-				display_colorbuffer_set(wfcolorscr, WFDX, WFDY, x, z, COLOR_WAERFALLBG);	// точку фона
+				display_colorbuffer_set(colorpip, WFDX, WFDY, x, z, COLOR_WAERFALLBG);	// точку фона
 		}
 		// маркер центральной частоты обзора
 		// xor линию
 		for (y = 0; y < WFDY; ++ y)
 		{
-			display_colorbuffer_xor(wfcolorscr, WFDX, WFDY, WFDX / 2, y, COLOR_CENTERMAKER); 
+			display_colorbuffer_xor(colorpip, WFDX, WFDY, WFDX / 2, y, COLOR_CENTERMAKER); 
 		}
 	}
 	else
 	{
-		display_colorbuffer_fill(wfcolorscr, WFDX, WFDY, COLOR_GRAY);
+		display_colorbuffer_fill(colorpip, WFDX, WFDY, COLOR_GRAY);
 	}
 
 #if LCDMODE_LTDC_PIP16
-	display_colorbuffer_pip(wfcolorscr, WFDX, WFDY);
+	display_colorbuffer_pip(colorpip, WFDX, WFDY);
 #else /* LCDMODE_LTDC_PIP16 */
-	display_colorbuffer_show(wfcolorscr, WFDX, WFDY, GRID2X(x0), GRID2Y(y0));
+	display_colorbuffer_show(colorpip, WFDX, WFDY, GRID2X(x0), GRID2Y(y0));
 #endif /* LCDMODE_LTDC_PIP16 */
 #endif
 }
@@ -4630,8 +4639,8 @@ static void display2_waterfall(
 
 #else /* */
 	// следы спектра ("водопад") на цветных дисплеях
-	//static ALIGNX_BEGIN PACKEDCOLOR_T wfcolorscr [GXSIZE(WFDX, WFDY)] ALIGNX_END;
 
+	PACKEDCOLOR_T * const colorpip = getnextpip();
 	if (hamradio_get_tx() == 0)
 	{
 
@@ -4644,24 +4653,24 @@ static void display2_waterfall(
 		{
 			for (y = 0; y < WFDY; ++ y)
 			{
-				display_colorbuffer_set(wfcolorscr, WFDX, WFDY, x, y, wfpalette [wfarray [(wfrow + y) % WFDY] [x]]);
+				display_colorbuffer_set(colorpip, WFDX, WFDY, x, y, wfpalette [wfarray [(wfrow + y) % WFDY] [x]]);
 			}
 		}
 		// маркер центральной частоты обзора
 		for (y = 0; y < WFDY; ++ y)
 		{
-			display_colorbuffer_xor(wfcolorscr, WFDX, WFDY, WFDX / 2, y, COLOR_RED);
+			display_colorbuffer_xor(colorpip, WFDX, WFDY, WFDX / 2, y, COLOR_RED);
 		}
 	}
 	else
 	{
-		display_colorbuffer_fill(wfcolorscr, WFDX, WFDY, COLOR_GRAY);
+		display_colorbuffer_fill(colorpip, WFDX, WFDY, COLOR_GRAY);
 	}
 
 #if LCDMODE_LTDC_PIP16
-	display_colorbuffer_pip(wfcolorscr, WFDX, WFDY);
+	display_colorbuffer_pip(colorpip, WFDX, WFDY);
 #else /* LCDMODE_LTDC_PIP16 */
-	display_colorbuffer_show(wfcolorscr, WFDX, WFDY, GRID2X(x0), GRID2Y(y0));
+	display_colorbuffer_show(colorpip, WFDX, WFDY, GRID2X(x0), GRID2Y(y0));
 #endif /* LCDMODE_LTDC_PIP16 */
 
 #endif /* LCDMODE_S1D13781 */

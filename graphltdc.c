@@ -663,7 +663,7 @@ arm_hardware_ltdc_initialize(void)
 
 
 	/* LTDC reload configuration */  
-	LTDC->SRCR = LTDC_SRCR_IMR;	/*!< Immediately Reload. */
+	LTDC->SRCR = LTDC_SRCR_IMR;	/* Immediately Reload. */
 
 	// While “VSYNC” is “Low”, don’t change “DISP” signal “Low” to “High”. 
 	HARDWARE_LTDC_SET_DISP(0);
