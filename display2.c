@@ -673,9 +673,9 @@ static void display_genham1(
 
 	const uint_fast8_t state = hamradio_get_genham_value();
 
-	static const FLASHMEM char text_pau [] = "G";
-	static const FLASHMEM char text_rec [] = "H";
-	const FLASHMEM char * const labels [2] = { text_pau, text_rec };
+	static const FLASHMEM char text_ham [] = "H";
+	static const FLASHMEM char text_gen [] = "G";
+	const FLASHMEM char * const labels [2] = { text_ham, text_gen };
 	display2_text_P(x, y, labels, colorsfg_2state, colorsbg_2state, state);
 
 #endif /* WITHBCBANDS */
