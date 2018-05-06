@@ -318,8 +318,9 @@ LTDC_LayerInit(LTDC_Layer_TypeDef* LTDC_Layerx, const LTDC_Layer_InitTypeDef* LT
 	LTDC_Layerx->DCCR = LTDC_Layer_InitStruct->LTDC_DefaultColor;
 
 	/* Specifies the constant alpha value */      
-	LTDC_Layerx->CACR &= ~(LTDC_LxCACR_CONSTA);
-	LTDC_Layerx->CACR |= (LTDC_Layer_InitStruct->LTDC_ConstantAlpha);
+	LTDC_Layerx->CACR = (LTDC_Layerx->CACR & ~ (LTDC_LxCACR_CONSTA)) |
+		(LTDC_Layer_InitStruct->LTDC_ConstantAlpha << LTDC_LxCACR_CONSTA_Pos) |
+		0;
 
 	/* Specifies the blending factors */
 	LTDC_Layerx->BFCR &= ~(LTDC_LxBFCR_BF2 | LTDC_LxBFCR_BF1);
@@ -458,6 +459,9 @@ static void LCD_LayerInitMain(
 
 	//LTDC_Layerx->CKCR = COLOR_KEY;		/* через пиксели указанного цвета в LAYER_MAIN видны пиксели из LAYER_PIP */
 	//LTDC_Layerx->CR |= LTDC_LxCR_COLKEN;	
+	LTDC_Layerx->CACR = (LTDC_Layerx->CACR & ~ (LTDC_LxCACR_CONSTA)) |
+		(0 << LTDC_LxCACR_CONSTA_Pos) |	/* Alpha constant (255 totally opaque) */
+		0;
 }
 
 /* Изменение настроек для работы слоя как "нижнего" при формированиии наложения */
@@ -465,6 +469,9 @@ static void LCD_LayerInitPIP(
 	LTDC_Layer_TypeDef* LTDC_Layerx
 	)
 {
+	LTDC_Layerx->CACR = (LTDC_Layerx->CACR & ~ (LTDC_LxCACR_CONSTA)) |
+		(0 << LTDC_LxCACR_CONSTA_Pos) |	/* Alpha constant (255 totally opaque) */
+		0;
 }
 
 #define LAYER_PIP	LTDC_Layer2		// PIP layer
