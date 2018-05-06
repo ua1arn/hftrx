@@ -407,6 +407,14 @@ static void LTDC_Init(LTDC_InitTypeDef* LTDC_InitStruct)
 	LTDC->BCCR |= (backred | backgreen | LTDC_InitStruct->LTDC_BackgroundBlueValue);
 }
 
+static void LCD_LayerSetColorKey(
+	LTDC_Layer_TypeDef* LTDC_Layerx, 
+	PACKEDCOLOR_T color
+	)
+{
+	LTDC_Layerx->CKCR = color;
+}
+
 static void LCD_LayerInit(
 	LTDC_Layer_TypeDef* LTDC_Layerx, 
 	unsigned hs,	// same as AccumulatedHBP + 1
@@ -469,7 +477,7 @@ static void LCD_LayerInit(
 	//LTDC_LayerCmd(LTDC_Layer1, ENABLE); 
 	//LTDC_LayerCmd(LTDC_Layer2, ENABLE);
 	/* Enable LTDC_Layer by setting LEN bit */
-	LTDC_Layerx->CR |= (uint32_t) LTDC_LxCR_LEN;
+	LTDC_Layerx->CR |= LTDC_LxCR_LEN;
 
 	/* LTDC configuration reload */  
 }
@@ -477,17 +485,12 @@ static void LCD_LayerInit(
 void
 arm_hardware_ltdc_initialize(void)
 {
-	pipparams_t mainwnd = { 0, 0, DIM_SECOND, DIM_FIRST };
-	pipparams_t pipwnd;
 	debug_printf_P(PSTR("arm_hardware_ltdc_initialize start\n"));
 
 	//const unsigned rowsize = sizeof framebuff [0];	// размер одной строки в байтах
 	//const unsigned rowsize2 = (sizeof (PACKEDCOLOR_T) * DIM_SECOND);
 	//ASSERT(rowsize == rowsize2);
 	debug_printf_P(PSTR("arm_hardware_ltdc_initialize: framebuff=%p\n"), framebuff);
-	display2_getpipparams(& pipwnd);
-
-	debug_printf_P(PSTR("arm_hardware_ltdc_initialize: pip: x/y=%u/%u, w/h=%u/%u\n"), pipwnd.x, pipwnd.y, pipwnd.w, pipwnd.w);
 
 	/*
 	framebuff [0][0] = 1;
@@ -611,6 +614,12 @@ arm_hardware_ltdc_initialize(void)
 	#error Unsupported LCDMODE_xxx
 #endif
 
+	pipparams_t mainwnd = { 0, 0, WIDTH, HEIGHT };
+	pipparams_t pipwnd;
+	display2_getpipparams(& pipwnd);
+
+	debug_printf_P(PSTR("arm_hardware_ltdc_initialize: pip: x/y=%u/%u, w/h=%u/%u\n"), pipwnd.x, pipwnd.y, pipwnd.w, pipwnd.h);
+
 	LTDC_InitStruct.LTDC_HSPolarity = LTDC_HSPolarity_AL;     
 	//LTDC_InitStruct.LTDC_HSPolarity = LTDC_HSPolarity_AH;     
 	/* Initialize the vertical synchronization polarity as active low */  
@@ -661,19 +670,27 @@ arm_hardware_ltdc_initialize(void)
 		const uint32_t LTDC_PixelFormat = LTDC_Pixelformat_RGB565;
 	#endif /* LCDMODE_LTDC_L8 */
 
-	LCD_LayerInit(LTDC_Layer1, HSYNC + HBP, VSYNC + VBP, & mainwnd, LTDC_PixelFormat);
-	//LCD_LayerInit(LTDC_Layer2, HSYNC + HBP, VSYNC + VBP, & pipwnd, LTDC_Pixelformat_RGB565);
+	// Top layer
+#if LCDMODE_LTDC_L24
+	fillLUT_L24(LTDC_Layer2);	// прямая трансляция всех байтов из памяти на выход. загрузка палитры - имеет смысл до Reload
+#elif LCDMODE_LTDC_L8
+	fillLUT_L8(LTDC_Layer2);	// загрузка палитры - имеет смысл до Reload
+#endif /* LCDMODE_LTDC_L8 */
+	LCD_LayerInit(LTDC_Layer2, HSYNC + HBP, VSYNC + VBP, & mainwnd, LTDC_PixelFormat);
+
+#if 0//LCDMODE_LTDC_PIP16
+	LCD_LayerSetColorKey(LTDC_Layer2, TFTRGB(77, 77, 77));
+	//LTDC_Layer2->CR |= LTDC_LxCR_COLKEN;	/* через пиксели указанного цвета в layer2 видны пиксели из layer1 */
+
+	// Borrom layer
+	//LCD_LayerInit(LTDC_Layer1, HSYNC + HBP, VSYNC + VBP, & pipwnd, LTDC_Pixelformat_RGB565);
+#endif /* LCDMODE_LTDC_PIP16 */
 
 	LTDC->SRCR = LTDC_SRCR_IMR;	/*!< Immediately Reload. */
 
 	/* Enable the LTDC */
 	LTDC->GCR |= LTDC_GCR_LTDCEN;
 
-#if LCDMODE_LTDC_L24
-	fillLUT_L24(LTDC_Layer1);	// прямая трансляция всех байтов из памяти на выход. загрузка палитры - имеет смысл до Reload
-#elif LCDMODE_LTDC_L8
-	fillLUT_L8(LTDC_Layer1);	// загрузка палитры - имеет смысл до Reload
-#endif /* LCDMODE_LTDC_L8 */
 
 	/* LTDC reload configuration */  
 	LTDC->SRCR = LTDC_SRCR_IMR;	/*!< Immediately Reload. */
