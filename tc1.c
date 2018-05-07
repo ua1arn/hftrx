@@ -8154,6 +8154,10 @@ display2_bars(
 		display_smeter(x, y, v, tracemax, s9level, s9delta, s9_60_delta);
 	}
 #endif /* WITHBARS */
+#if LCDMODE_LTDC_PIP16
+	arm_hardware_ltdc_pip_off();
+#endif /* LCDMODE_LTDC_PIP16 */
+
 }
 
 #if CTLSTYLE_RA4YBO_AM0

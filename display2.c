@@ -4223,6 +4223,9 @@ static void display2_legend(
 
 	} while (lowhalf --);
 #endif /* defined(SMETERMAP) */
+#if LCDMODE_LTDC_PIP16
+	arm_hardware_ltdc_pip_off();
+#endif /* LCDMODE_LTDC_PIP16 */
 }
 
 #if WITHINTEGRATEDDSP && (WITHRTS96 || WITHRTS192) && ! LCDMODE_HD44780
@@ -4233,14 +4236,22 @@ enum
 	WFDY = GRID2Y(BDCV_ALLRX)				// размер по вертикали в пикселях
 };
 
-static RAMNOINIT_D1 ALIGNX_BEGIN PACKEDCOLOR_T colorpip0 [GXSIZE(WFDX, WFDY)] ALIGNX_END;
-static RAMNOINIT_D1 ALIGNX_BEGIN PACKEDCOLOR_T colorpip1 [GXSIZE(WFDX, WFDY)] ALIGNX_END;
 
 PACKEDCOLOR_T * getnextpip(void)
 {
+#if LCDMODE_LTDC_PIP16
+	static RAMNOINIT_D1 ALIGNX_BEGIN PACKEDCOLOR_T colorpips [2] [GXSIZE(WFDX, WFDY)] ALIGNX_END;
+
 	static int phase;
 	phase = ! phase;
-	return phase ? colorpip0 : colorpip1;
+	return colorpips [phase];
+
+#else /* LCDMODE_LTDC_PIP16 */
+
+	static RAMNOINIT_D1 ALIGNX_BEGIN PACKEDCOLOR_T colorpip0 [GXSIZE(WFDX, WFDY)] ALIGNX_END;
+
+	return colorpip0;
+#endif /* LCDMODE_LTDC_PIP16 */
 }
 
 enum { AVGLEN = 2 };
@@ -4415,6 +4426,7 @@ static void display2_waterfallbg(
 	void * pv
 	)
 {
+	dma2d_fillrect2(GRID2X(x0), GRID2Y(y0), WFDX, WFDY, COLOR_KEY);
 	//display_colorbuffer_fill(colorpip, WFDX, WFDY, COLOR_KEY);
 	//display_colorbuffer_show(colorpip, WFDX, WFDY, GRID2X(x0), GRID2Y(y0));
 }

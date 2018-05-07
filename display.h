@@ -593,6 +593,17 @@ void display_colorbuffer_fill(
 	COLOR_T color
 	);
 
+void 
+dma2d_fillrect2(
+	//uint_fast16_t dx,
+	//uint_fast16_t dy,
+	uint_fast16_t x,
+	uint_fast16_t y,
+	uint_fast16_t w,
+	uint_fast16_t h,
+	PACKEDCOLOR_T color
+	);
+
 // Выдать цветной буфер на дисплей
 void display_colorbuffer_show(
 	const PACKEDCOLOR_T * buffer,
