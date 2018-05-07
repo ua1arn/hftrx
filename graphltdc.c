@@ -41,8 +41,8 @@ The general blending formula is: BC = BF1 x C + BF2 x Cs
 • BF2 = Blend Factor 2
 • Cs = subjacent layers blended color
 */
-#define LTDC_BlendingFactor1_CA                       ((uint32_t)0x00000400)
-#define LTDC_BlendingFactor1_PAxCA                    ((uint32_t)0x00000600)
+#define LTDC_BlendingFactor1_CA                       (4 << LTDC_LxBFCR_BF1_Pos)	//((uint32_t)0x00000400)
+#define LTDC_BlendingFactor1_PAxCA                    (6 << LTDC_LxBFCR_BF1_Pos)	//((uint32_t)0x00000600)
 
 /**
   * @}
@@ -52,8 +52,8 @@ The general blending formula is: BC = BF1 x C + BF2 x Cs
   * @{
   */
 
-#define LTDC_BlendingFactor2_CA                       ((uint32_t)0x00000005)
-#define LTDC_BlendingFactor2_PAxCA                    ((uint32_t)0x00000007)
+#define LTDC_BlendingFactor2_CA                       (5 << LTDC_LxBFCR_BF2_Pos)	//((uint32_t)0x00000005)
+#define LTDC_BlendingFactor2_PAxCA                    (7 << LTDC_LxBFCR_BF2_Pos)	//((uint32_t)0x00000007)
 
 /**
   * @}
@@ -417,8 +417,8 @@ static void LCD_LayerInit(
 	/* Default Color configuration (configure A,R,G,B component values) */          
 	LTDC_Layer_InitStruct.LTDC_DefaultColor = 0; // transparent=прозрачный black color. outside active layer area        
 	/* Configure blending factors */       
-	LTDC_Layer_InitStruct.LTDC_BlendingFactor_1 = LTDC_BlendingFactor1_CA;    
-	LTDC_Layer_InitStruct.LTDC_BlendingFactor_2 = LTDC_BlendingFactor2_CA;
+	LTDC_Layer_InitStruct.LTDC_BlendingFactor_1 = LTDC_BlendingFactor1_CA; // умножитель для пикселя из текущего слоя
+	LTDC_Layer_InitStruct.LTDC_BlendingFactor_2 = LTDC_BlendingFactor2_CA; // умножитель для пикселя из расположенного ниже слоя
 
 	/* the length of one line of pixels in bytes + 3 then :
 	Line Lenth = Active high width x number of bytes per pixel + 3 
@@ -475,6 +475,7 @@ static void LCD_LayerInitMain(
 	)
 {
 	// преобразование из упакованного пикселя RGB565 по правилам pfc LTDC
+	// в требующийся RGB888
 	const unsigned long key = COLOR_KEY;
 	const unsigned long keyr = (key >> 11) & 0x1F;
 	const unsigned long keyg = (key >> 6) & 0x3F;
