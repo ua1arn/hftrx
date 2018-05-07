@@ -4426,7 +4426,7 @@ static void display2_waterfallbg(
 	void * pv
 	)
 {
-	dma2d_fillrect2(GRID2X(x0), GRID2Y(y0), WFDX, WFDY, COLOR_KEY);
+	//dma2d_fillrect2(GRID2X(x0), GRID2Y(y0), WFDX, WFDY, COLOR_KEY);
 	//display_colorbuffer_fill(colorpip, WFDX, WFDY, COLOR_KEY);
 	//display_colorbuffer_show(colorpip, WFDX, WFDY, GRID2X(x0), GRID2Y(y0));
 }
