@@ -4248,7 +4248,7 @@ static PACKEDCOLOR_T * getnextpip(void)
 
 #else /* LCDMODE_LTDC_PIP16 */
 
-	static RAMNOINIT_D1 ALIGNX_BEGIN PACKEDCOLOR_T colorpip0 [GXSIZE(WFDX, WFDY)] ALIGNX_END;
+	static ALIGNX_BEGIN PACKEDCOLOR_T colorpip0 [GXSIZE(WFDX, WFDY)] ALIGNX_END;
 
 	return colorpip0;
 #endif /* LCDMODE_LTDC_PIP16 */
@@ -4426,7 +4426,7 @@ static void display2_waterfallbg(
 	void * pv
 	)
 {
-	//dma2d_fillrect2(GRID2X(x0), GRID2Y(y0), WFDX, WFDY, COLOR_KEY);
+	dma2d_fillrect2(& framebuff [0][0], DIM_X, DIM_Y, GRID2X(x0), GRID2Y(y0), WFDX, WFDY, COLOR_KEY);
 	//display_colorbuffer_fill(colorpip, WFDX, WFDY, COLOR_KEY);
 	//display_colorbuffer_show(colorpip, WFDX, WFDY, GRID2X(x0), GRID2Y(y0));
 }

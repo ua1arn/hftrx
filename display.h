@@ -595,8 +595,9 @@ void display_colorbuffer_fill(
 
 void 
 dma2d_fillrect2(
-	//uint_fast16_t dx,
-	//uint_fast16_t dy,
+	const PACKEDCOLOR_T * buffer,
+	uint_fast16_t dx,
+	uint_fast16_t dy,
 	uint_fast16_t x,
 	uint_fast16_t y,
 	uint_fast16_t w,

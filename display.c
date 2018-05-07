@@ -36,65 +36,12 @@
 
 #endif /* LCDMODE_LTDC */
 
-/* заполнение  прямоугольного буфера цветом */
-static void 
-dma2d_fillrect(
-	PACKEDCOLOR_T * buffer,
-	uint_fast16_t dx,
-	uint_fast16_t dy,
-	PACKEDCOLOR_T color
-	)
-{
-#if defined (DMA2D) && LCDMODE_LTDC && ! LCDMODE_LTDC_L8
-
-	// just writes the color defined in the DMA2D_OCOLR register 
-	// to the area located at the address pointed by the DMA2D_OMAR 
-	// and defined in the DMA2D_NLR and DMA2D_OOR.
-
-	arm_hardware_invalidate((uintptr_t) buffer, (uint_fast32_t) dx * dy * sizeof (* buffer));
-
-	DMA2D->OMAR = (uintptr_t) buffer;
-	DMA2D->OOR = (DMA2D->OOR & ~ (DMA2D_OOR_LO)) |
-		(0 < DMA2D_OOR_LO_Pos) |
-		0;
-
-	DMA2D->NLR = (DMA2D->NLR & ~ (DMA2D_NLR_NL | DMA2D_NLR_PL)) |
-		(dy << DMA2D_NLR_NL_Pos) |
-		(dx << DMA2D_NLR_PL_Pos) |
-		0;
-
-	DMA2D->OCOLR = 
-		color |
-		0;
-
-	DMA2D->OPFCCR = (DMA2D->OPFCCR & ~ (DMA2D_OPFCCR_CM)) |
-		DMA2D_OPFCCR_CM_VALUE |	/* Color mode - framebuffer pixel format */
-		0;
-
-	/* set AXI master timer */
-	DMA2D->AMTCR = (DMA2D->AMTCR & ~ (DMA2D_AMTCR_DT | DMA2D_AMTCR_EN)) |
-		(DMA2D_AMTCR_DT_VALUE << DMA2D_AMTCR_DT_Pos) |
-		1 * DMA2D_AMTCR_EN |
-		0;
-
-	/* запустить операцию */
-	DMA2D->CR = (DMA2D->CR & ~ (DMA2D_CR_MODE)) |
-		3 * DMA2D_CR_MODE_0 |	// 11: Register-to-memory (no FG nor BG, only output stage active)
-		1 * DMA2D_CR_START |
-		0;
-
-	/* ожидаем выполнения операции */
-	while ((DMA2D->CR & DMA2D_CR_START) != 0)
-		;
-
-#endif /* defined (DMA2D) && LCDMODE_LTDC */
-}
-
-/* заполнение  прямоугольного буфера цветом */
+/* заполнение прямоугольной области буфера цветом */
 void 
 dma2d_fillrect2(
-	//uint_fast16_t dx,
-	//uint_fast16_t dy,
+	const PACKEDCOLOR_T * buffer,
+	uint_fast16_t dx,
+	uint_fast16_t dy,
 	uint_fast16_t col,
 	uint_fast16_t row,
 	uint_fast16_t w,
@@ -108,12 +55,12 @@ dma2d_fillrect2(
 	// to the area located at the address pointed by the DMA2D_OMAR 
 	// and defined in the DMA2D_NLR and DMA2D_OOR.
 
-	arm_hardware_invalidate((uintptr_t) framebuff, (uint_fast32_t) DIM_X * DIM_Y * sizeof (PACKEDCOLOR_T));
+	arm_hardware_flush((uintptr_t) buffer, GXSIZE(dx, dy));
 
 	/* целевой растр */
-	DMA2D->OMAR = (uintptr_t) & framebuff [row] [col];
+	DMA2D->OMAR = (uintptr_t) & buffer [row * dx + col];
 	DMA2D->OOR = (DMA2D->OOR & ~ (DMA2D_OOR_LO)) |
-		((DIM_X - w) << DMA2D_OOR_LO_Pos) |
+		((dx - w) << DMA2D_OOR_LO_Pos) |
 		0;
 
 	DMA2D->NLR = (DMA2D->NLR & ~ (DMA2D_NLR_NL | DMA2D_NLR_PL)) |
@@ -146,6 +93,19 @@ dma2d_fillrect2(
 		;
 
 #endif /* defined (DMA2D) && LCDMODE_LTDC */
+}
+
+
+/* заполнение прямоугольного буфера цветом */
+static void 
+dma2d_fillrect(
+	PACKEDCOLOR_T * buffer,
+	uint_fast16_t dx,
+	uint_fast16_t dy,
+	PACKEDCOLOR_T color
+	)
+{
+	dma2d_fillrect2(buffer, dx, dy, 0, 0, dx, dy, color);
 }
 
 #if LCDMODE_COLORED
@@ -428,7 +388,7 @@ void display_colorbuffer_show(
 {
 #if defined (DMA2D) && LCDMODE_LTDC
 
-	arm_hardware_flush((uintptr_t) buffer, (uint_fast32_t) dx * dy * sizeof * buffer);
+	arm_hardware_flush((uintptr_t) buffer, GXSIZE(dx, dy));
 
 #if LCDMODE_HORFILL
 
@@ -471,6 +431,7 @@ void display_colorbuffer_show(
 #else /* LCDMODE_HORFILL */
 
 #endif /* LCDMODE_HORFILL */
+
 #else /* defined (DMA2D) && LCDMODE_LTDC */
 	display_plotfrom(col, row);
 	display_plotstart(dy);
@@ -1008,7 +969,7 @@ void display_clear(void)
 
 #if defined (DMA2D) && LCDMODE_LTDC && ! LCDMODE_LTDC_L8
 
-	dma2d_fillrect(framebuff [0], DIM_X, DIM_Y, bg);
+	dma2d_fillrect(& framebuff [0] [0], DIM_X, DIM_Y, bg);
 
 #elif LCDMODE_LTDC_L8
 
