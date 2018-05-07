@@ -452,12 +452,29 @@ static void LCD_LayerInit(
 	/* LTDC configuration reload */  
 }
 
+
+#define WITHUSELTDCTRANSPARENCY	0
+
+#if WITHUSELTDCTRANSPARENCY
+
+// работа с прозрачностью над зоной PIP
+#define LAYER_PIP	LTDC_Layer1		// PIP layer
+#define LAYER_MAIN	LTDC_Layer2
+
+#else /* WITHUSELTDCTRANSPARENCY */
+
+// PIP перекрывает слой под ним
+#define LAYER_PIP	LTDC_Layer2		// PIP layer
+#define LAYER_MAIN	LTDC_Layer1
+
+#endif /* WITHUSELTDCTRANSPARENCY */
+
 /* Изменение настроек для работы слоя как "верхнего" при формированиии наложения */
 static void LCD_LayerInitMain(
 	LTDC_Layer_TypeDef* LTDC_Layerx
 	)
 {
-	// преобразования для формата RGB565
+	// преобразование из упакованного пикселя RGB565 по правилам pfc LTDC
 	const unsigned long key = COLOR_KEY;
 	const unsigned long keyr = (key >> 11) & 0x1F;
 	const unsigned long keyg = (key >> 6) & 0x3F;
@@ -472,7 +489,9 @@ static void LCD_LayerInitMain(
 		(keybpfc << LTDC_LxCKCR_CKBLUE_Pos) |
 		0;
 
-	//LTDC_Layerx->CR |= LTDC_LxCR_COLKEN;	
+#if WITHUSELTDCTRANSPARENCY
+	LTDC_Layerx->CR |= LTDC_LxCR_COLKEN;	
+#endif /* WITHUSELTDCTRANSPARENCY */
 
 #if 1
 	// alpha канал если в видеобуфере не хранится значение в каждом пикселе
@@ -494,18 +513,6 @@ static void LCD_LayerInitPIP(
 		0;
 #endif
 }
-
-#if 0
-// работа с прозрачностью над зоной PIP
-#define LAYER_PIP	LTDC_Layer1		// PIP layer
-#define LAYER_MAIN	LTDC_Layer2
-
-#else
-// PIP перекрывает слой под ним
-#define LAYER_PIP	LTDC_Layer2		// PIP layer
-#define LAYER_MAIN	LTDC_Layer1
-
-#endif
 
 void
 arm_hardware_ltdc_initialize(void)
