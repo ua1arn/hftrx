@@ -39,12 +39,12 @@
 /* заполнение прямоугольной области буфера цветом */
 void 
 dma2d_fillrect2(
-	const PACKEDCOLOR_T * buffer,
-	uint_fast16_t dx,
+	PACKEDCOLOR_T * buffer,
+	uint_fast16_t dx,	// размеры буфера
 	uint_fast16_t dy,
-	uint_fast16_t col,
+	uint_fast16_t col,	// позиция окна в буфере,
 	uint_fast16_t row,
-	uint_fast16_t w,
+	uint_fast16_t w,	// размер окна
 	uint_fast16_t h,
 	PACKEDCOLOR_T color
 	)
