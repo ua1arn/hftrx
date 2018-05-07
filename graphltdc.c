@@ -457,9 +457,23 @@ static void LCD_LayerInitMain(
 	LTDC_Layer_TypeDef* LTDC_Layerx
 	)
 {
+	// преобразования для формата RGB565
+	const unsigned long key = COLOR_KEY;
+	const unsigned long keyr = (key >> 11) & 0x1F;
+	const unsigned long keyg = (key >> 6) & 0x3F;
+	const unsigned long keyb = (key >> 0) & 0x1F;
+	const unsigned long keyrpfc = ((keyr << 3) | (keyr >> 3)) & 0xFF;
+	const unsigned long keygpfc = ((keyg << 2) | (keyg >> 4)) & 0xFF;
+	const unsigned long keybpfc = ((keyb << 3) | (keyb >> 3)) & 0xFF;
 
-	//LTDC_Layerx->CKCR = COLOR_KEY;		/* через пиксели указанного цвета в LAYER_MAIN видны пиксели из LAYER_PIP */
+	LTDC_Layerx->CKCR = 
+		(keyrpfc << LTDC_LxCKCR_CKRED_Pos) |
+		(keygpfc << LTDC_LxCKCR_CKGREEN_Pos) |
+		(keybpfc << LTDC_LxCKCR_CKBLUE_Pos) |
+		0;
+
 	//LTDC_Layerx->CR |= LTDC_LxCR_COLKEN;	
+
 #if 1
 	// alpha канал если в видеобуфере не хранится значение в каждом пикселе
 	LTDC_Layerx->CACR = (LTDC_Layerx->CACR & ~ (LTDC_LxCACR_CONSTA)) |
@@ -481,8 +495,17 @@ static void LCD_LayerInitPIP(
 #endif
 }
 
+#if 0
+// работа с прозрачностью над зоной PIP
+#define LAYER_PIP	LTDC_Layer1		// PIP layer
+#define LAYER_MAIN	LTDC_Layer2
+
+#else
+// PIP перекрывает слой под ним
 #define LAYER_PIP	LTDC_Layer2		// PIP layer
 #define LAYER_MAIN	LTDC_Layer1
+
+#endif
 
 void
 arm_hardware_ltdc_initialize(void)

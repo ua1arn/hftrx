@@ -4427,9 +4427,8 @@ static void display2_waterfallbg(
 	)
 {
 	dma2d_fillrect2(& framebuff [0][0], DIM_X, DIM_Y, GRID2X(x0), GRID2Y(y0), WFDX, WFDY, COLOR_KEY);
-	//display_colorbuffer_fill(colorpip, WFDX, WFDY, COLOR_KEY);
-	//display_colorbuffer_show(colorpip, WFDX, WFDY, GRID2X(x0), GRID2Y(y0));
 }
+
 #endif /* LCDMODE_LTDC_PIP16 */
 
 // отображение спектроанализатора
