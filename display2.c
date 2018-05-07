@@ -4237,14 +4237,14 @@ enum
 };
 
 
-PACKEDCOLOR_T * getnextpip(void)
+static PACKEDCOLOR_T * getnextpip(void)
 {
 #if LCDMODE_LTDC_PIP16
-	static RAMNOINIT_D1 ALIGNX_BEGIN PACKEDCOLOR_T colorpips [2] [GXSIZE(WFDX, WFDY)] ALIGNX_END;
 
+	static RAMNOINIT_D1 ALIGNX_BEGIN PACKEDCOLOR_T colorpips [2] [GXSIZE(WFDX, WFDY)] ALIGNX_END;
 	static int phase;
-	phase = ! phase;
-	return colorpips [phase];
+
+	return colorpips [phase = ! phase];
 
 #else /* LCDMODE_LTDC_PIP16 */
 
