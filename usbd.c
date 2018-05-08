@@ -9487,7 +9487,8 @@ void rndis_query_cmplt(USBD_HandleTypeDef  *pdev, int status, const void *data, 
 	USBD_poke_u32(& ep0resp [16], size);	// InformationBufferLength
 	USBD_poke_u32(& ep0resp [20], 16);	// InformationBufferOffset
 
-	memcpy(& ep0resp [24], data, size);
+	if (data != NULL)
+		memcpy(& ep0resp [24], data, size);
 
 	response_available(pdev);
 }
@@ -9581,9 +9582,8 @@ void rndis_handle_set_msg(void  *pdev)
 	}
 	*/
 
-	uint_fast32_t MessageLength = 16;
 	USBD_poke_u32(& ep0resp [0], REMOTE_NDIS_SET_CMPLT);	// MessageType
-	USBD_poke_u32(& ep0resp [4], MessageLength);	// MessageLength
+	USBD_poke_u32(& ep0resp [4], 16);	// MessageLength
 	USBD_poke_u32(& ep0resp [8], RequestId);	// RequestId <- MessageId
 	USBD_poke_u32(& ep0resp [12], RNDIS_STATUS_SUCCESS);	// Status
 
