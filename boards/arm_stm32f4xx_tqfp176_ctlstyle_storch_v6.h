@@ -163,13 +163,13 @@
 	// --- ќсобые варианты расположени€ кнопок на клавиатуре
 	#define WITHSPLIT	1	/* управление режимами расстройки одной кнопкой */
 	//#define WITHSPLITEX	1	/* “рехкнопочное управление режимами расстройки */
-	//#define WITHENCODERSWAP	1	/* помен€ть местами енкодеры */
+	#define WITHENCODERSWAP	1	/* помен€ть местами енкодеры */
 
 	// +++ ќдна из этих строк определ€ет тип диспле€, дл€ которого компилируетс€ прошивка
 	//#define LCDMODE_HARD_SPI	1	/* LCD over SPI line */
 	#define LCDMODE_LTDC	1		/* Use STM32F4xxx with LCD-TFT Controller (LTDC), also need LCDMODE_ILI9341 */
 	//#define LCDMODE_LTDC_L8		1	/* используетс€ 8 бит на пиксель представление экрана. »наче - 16 бит - RGB565. */
-	#define LCDMODE_LTDC_PIP16	1	/* используетс€ PIP с форматом 16 бит - RGB565 */
+	//#define LCDMODE_LTDC_PIP16	1	/* используетс€ PIP с форматом 16 бит - RGB565 */
 	//#define LCDMODE_WH2002	1	/* тип примен€емого индикатора 20*2, возможно вместе с LCDMODE_HARD_SPI */
 	//#define LCDMODE_WH1602	1	/* тип примен€емого индикатора 16*2 */
 	//#define LCDMODE_WH1604	1	/* тип примен€емого индикатора 16*4 */
