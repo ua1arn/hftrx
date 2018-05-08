@@ -9420,7 +9420,7 @@ const uint32_t OIDSupportedList[] =
   OID_GEN_VENDOR_ID,
   OID_GEN_VENDOR_DESCRIPTION,
   OID_GEN_VENDOR_DRIVER_VERSION,
-//  OID_GEN_CURRENT_PACKET_FILTER,
+  OID_GEN_CURRENT_PACKET_FILTER,
   //    OID_GEN_CURRENT_LOOKAHEAD,
   //    OID_GEN_DRIVER_VERSION,
   OID_GEN_MAXIMUM_TOTAL_SIZE,
@@ -9542,6 +9542,11 @@ void rndis_query(USBD_HandleTypeDef  *pdev)
 	}
 }
 
+
+void rndis_handle_config_parm(const char *data, int keyoffset, int valoffset, int keylen, int vallen)
+{
+}
+
 // https://docs.microsoft.com/en-us/windows-hardware/drivers/network/remote-ndis-set-msg
 void rndis_handle_set_msg(void  *pdev)
 {
@@ -9591,34 +9596,30 @@ void rndis_handle_set_msg(void  *pdev)
 	switch (oid)
 	{
 		/* Parameters set up in 'Advanced' tab */
-#if 0
 		case OID_GEN_RNDIS_CONFIG_PARAMETER:
 			{
-                rndis_config_parameter_t *p;
-				char *ptr = (char *)m;
-				ptr += sizeof(rndis_generic_msg_t);
-				ptr += m->InformationBufferOffset;
-				p = (rndis_config_parameter_t *)ptr;
-				rndis_handle_config_parm(ptr, p->ParameterNameOffset, p->ParameterValueOffset, p->ParameterNameLength, p->ParameterValueLength);
+                //rndis_config_parameter_t *p;
+				//char *ptr = (char *)m;
+				//ptr += sizeof(rndis_generic_msg_t);
+				//ptr += m->InformationBufferOffset;
+				//p = (rndis_config_parameter_t *)ptr;
+				//rndis_handle_config_parm(ptr, p->ParameterNameOffset, p->ParameterValueOffset, p->ParameterNameLength, p->ParameterValueLength);
 			}
 			break;
-#endif
 
-#if 0
 		/* Mandatory general OIDs */
 		case OID_GEN_CURRENT_PACKET_FILTER:
-			oid_packet_filter = *INFBUF;
-			if (oid_packet_filter)
-			{
-				rndis_packetFilter(oid_packet_filter);
-				rndis_state = rndis_data_initialized;
-			}
-			else
-			{
-				rndis_state = rndis_initialized;
-			}
+			//oid_packet_filter = *INFBUF;
+			//if (oid_packet_filter)
+			//{
+			//	rndis_packetFilter(oid_packet_filter);
+			//	rndis_state = rndis_data_initialized;
+			//}
+			//else
+			//{
+			//	rndis_state = rndis_initialized;
+			//}
 			break;
-#endif
 
 		case OID_GEN_CURRENT_LOOKAHEAD:
 			break;
