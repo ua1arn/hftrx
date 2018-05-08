@@ -103,7 +103,7 @@ static volatile uint_fast16_t usb_cdc_control_state [INTERFACE_count];
 #endif /* WITHUSBRNDIS */
 	
 static USBALIGN_BEGIN uint8_t ep0databuffout [USB_OTG_MAX_EP0_SIZE] USBALIGN_END;
-static USBALIGN_BEGIN uint8_t ep0resp [52] USBALIGN_END;
+static USBALIGN_BEGIN uint8_t ep0resp [256] USBALIGN_END;
 static uint_fast16_t ep0resplength;
 
 // Состояние - выбранные альтернативные конфигурации по каждому интерфейсу USB configuration descriptor
@@ -9356,6 +9356,8 @@ static void cdc2out_buffer_save(
 
 #if WITHUSBRNDIS
 
+#include "ndis.h"
+
 static void rndisout_buffer_save(
 	const uint8_t * data, 
 	uint_fast16_t length
@@ -9392,7 +9394,7 @@ static void rndisout_buffer_save(
 
 #define RNDIS_MTU                                       3000                           // MTU value
 #define ETH_LINK_SPEED                                  12000000                       // bits per sec
-//#define RNDIS_VENDOR                                    "fetisov"                      // NIC vendor name
+#define RNDIS_VENDOR                                    "MGS1"                      // NIC vendor name
 #define STATION_HWADDR                                  0x30,0x89,0x84,0x6A,0x96,0xAA  // station MAC
 #define PERMANENT_HWADDR                                0x30,0x89,0x84,0x6A,0x96,0xAA  // permanent MAC
 
@@ -9402,7 +9404,316 @@ static void rndisout_buffer_save(
 #define RNDIS_HEADER_SIZE               44//sizeof(rndis_data_packet_t)
 #define RNDIS_RX_BUFFER_SIZE            (ETH_MAX_PACKET_SIZE + RNDIS_HEADER_SIZE)
 
+const uint32_t OIDSupportedList[] = 
+{
+  OID_GEN_SUPPORTED_LIST,
+  OID_GEN_HARDWARE_STATUS,
+  OID_GEN_MEDIA_SUPPORTED,
+  OID_GEN_MEDIA_IN_USE,
+  //    OID_GEN_MAXIMUM_LOOKAHEAD,
+  OID_GEN_MAXIMUM_FRAME_SIZE,
+  OID_GEN_LINK_SPEED,
+  //    OID_GEN_TRANSMIT_BUFFER_SPACE,
+  //    OID_GEN_RECEIVE_BUFFER_SPACE,
+  OID_GEN_TRANSMIT_BLOCK_SIZE,
+  OID_GEN_RECEIVE_BLOCK_SIZE,
+  OID_GEN_VENDOR_ID,
+  OID_GEN_VENDOR_DESCRIPTION,
+  OID_GEN_VENDOR_DRIVER_VERSION,
+//  OID_GEN_CURRENT_PACKET_FILTER,
+  //    OID_GEN_CURRENT_LOOKAHEAD,
+  //    OID_GEN_DRIVER_VERSION,
+  OID_GEN_MAXIMUM_TOTAL_SIZE,
+  OID_GEN_PROTOCOL_OPTIONS,
+  OID_GEN_MAC_OPTIONS,
+  OID_GEN_MEDIA_CONNECT_STATUS,
+  OID_GEN_MAXIMUM_SEND_PACKETS,
+  OID_802_3_PERMANENT_ADDRESS,
+  OID_802_3_CURRENT_ADDRESS,
+  OID_802_3_MULTICAST_LIST,
+  OID_802_3_MAXIMUM_LIST_SIZE,
+  OID_802_3_MAC_OPTIONS
+};
+#define OID_LIST_LENGTH (sizeof(OIDSupportedList) / sizeof(*OIDSupportedList))
+
+typedef enum rnids_state_e {
+	rndis_uninitialized,
+	rndis_initialized,
+	rndis_data_initialized
+} rndis_state_t;
+
+typedef struct {
+	uint32_t		txok;
+	uint32_t		rxok;
+	uint32_t		txbad;
+	uint32_t		rxbad;
+} usb_eth_stat_t;
+
+
+uint8_t station_hwaddr[6] = { STATION_HWADDR };
+uint8_t permanent_hwaddr[6] = { PERMANENT_HWADDR };
+usb_eth_stat_t usb_eth_stat = { 0, 0, 0, 0 };
+rndis_state_t rndis_state = rndis_uninitialized;
+uint32_t oid_packet_filter = 0x0000000;
+
+  static const char *rndis_vendor = RNDIS_VENDOR;
+
+void response_available(USBD_HandleTypeDef *pdev)
+{
+	static USBALIGN_BEGIN uint8_t resp [8] USBALIGN_END;
+
+	USBD_poke_u32(& resp [0], 0x00000001);
+	USBD_poke_u32(& resp [4], 0x00000000);
+
+	USBD_LL_Transmit(pdev, USBD_EP_RNDIS_INT, resp, 8);
+}
+
+// https://docs.microsoft.com/en-us/windows-hardware/drivers/network/remote-ndis-query-cmplt
+void rndis_query_cmplt32(USBD_HandleTypeDef  *pdev, int status, uint_fast32_t data)
+{
+	USBD_poke_u32(& ep0resp [0], REMOTE_NDIS_QUERY_CMPLT);	// MessageType
+	USBD_poke_u32(& ep0resp [4], 28);	// MessageLength
+	USBD_poke_u32(& ep0resp [8], USBD_peek_u32(& ep0databuffout [8]));	// RequestId <- MessageId
+	USBD_poke_u32(& ep0resp [12], status);	// Status
+	USBD_poke_u32(& ep0resp [16], 4);	// InformationBufferLength
+	USBD_poke_u32(& ep0resp [20], 16);	// InformationBufferOffset
+
+	USBD_poke_u32(& ep0resp [24], data);	// data
+
+	ep0resplength = 28;
+	response_available(pdev);
+}
+
+// https://docs.microsoft.com/en-us/windows-hardware/drivers/network/remote-ndis-query-cmplt
+void rndis_query_cmplt(USBD_HandleTypeDef  *pdev, int status, const void *data, int size)
+{
+	USBD_poke_u32(& ep0resp [0], REMOTE_NDIS_QUERY_CMPLT);	// MessageType
+	USBD_poke_u32(& ep0resp [4], 24 + size);	// MessageLength
+	USBD_poke_u32(& ep0resp [8], USBD_peek_u32(& ep0databuffout [8]));	// RequestId <- MessageId
+	USBD_poke_u32(& ep0resp [12], status);	// Status
+	USBD_poke_u32(& ep0resp [16], size);	// InformationBufferLength
+	USBD_poke_u32(& ep0resp [20], 16);	// InformationBufferOffset
+
+	memcpy(& ep0resp [24], data, size);
+
+	ep0resplength = 24 + size;
+	response_available(pdev);
+}
+
+// https://docs.microsoft.com/en-us/windows-hardware/drivers/network/remote-ndis-query-msg
+void rndis_query(USBD_HandleTypeDef  *pdev)
+{
+	const uint_fast32_t oid = USBD_peek_u32(& ep0databuffout [12]);
+
+	switch (oid)
+	{
+	case OID_GEN_SUPPORTED_LIST:         rndis_query_cmplt(pdev, RNDIS_STATUS_SUCCESS, OIDSupportedList, 4 * OID_LIST_LENGTH); return;
+	case OID_GEN_VENDOR_DRIVER_VERSION:  rndis_query_cmplt32(pdev, RNDIS_STATUS_SUCCESS, 0x00001000);  return;
+	case OID_802_3_CURRENT_ADDRESS:      rndis_query_cmplt(pdev, RNDIS_STATUS_SUCCESS, &station_hwaddr, 6); return;
+	case OID_802_3_PERMANENT_ADDRESS:    rndis_query_cmplt(pdev, RNDIS_STATUS_SUCCESS, &permanent_hwaddr, 6); return;
+	case OID_GEN_MEDIA_SUPPORTED:        rndis_query_cmplt32(pdev, RNDIS_STATUS_SUCCESS, NDIS_MEDIUM_802_3); return;
+	case OID_GEN_MEDIA_IN_USE:           rndis_query_cmplt32(pdev, RNDIS_STATUS_SUCCESS, NDIS_MEDIUM_802_3); return;
+	case OID_GEN_PHYSICAL_MEDIUM:        rndis_query_cmplt32(pdev, RNDIS_STATUS_SUCCESS, NDIS_MEDIUM_802_3); return;
+	case OID_GEN_HARDWARE_STATUS:        rndis_query_cmplt32(pdev, RNDIS_STATUS_SUCCESS, 0); return;
+	case OID_GEN_LINK_SPEED:             rndis_query_cmplt32(pdev, RNDIS_STATUS_SUCCESS, ETH_LINK_SPEED / 100); return;
+	case OID_GEN_VENDOR_ID:              rndis_query_cmplt32(pdev, RNDIS_STATUS_SUCCESS, 0x00FFFFFF); return;
+	case OID_GEN_VENDOR_DESCRIPTION:     rndis_query_cmplt(pdev, RNDIS_STATUS_SUCCESS, rndis_vendor, strlen(rndis_vendor) + 1); return;
+	case OID_GEN_CURRENT_PACKET_FILTER:  rndis_query_cmplt32(pdev, RNDIS_STATUS_SUCCESS, oid_packet_filter); return;
+	case OID_GEN_MAXIMUM_FRAME_SIZE:     rndis_query_cmplt32(pdev, RNDIS_STATUS_SUCCESS, ETH_MAX_PACKET_SIZE - ETH_HEADER_SIZE); return;
+	case OID_GEN_MAXIMUM_TOTAL_SIZE:     rndis_query_cmplt32(pdev, RNDIS_STATUS_SUCCESS, ETH_MAX_PACKET_SIZE); return;
+	case OID_GEN_TRANSMIT_BLOCK_SIZE:    rndis_query_cmplt32(pdev, RNDIS_STATUS_SUCCESS, ETH_MAX_PACKET_SIZE); return;
+	case OID_GEN_RECEIVE_BLOCK_SIZE:     rndis_query_cmplt32(pdev, RNDIS_STATUS_SUCCESS, ETH_MAX_PACKET_SIZE); return;
+	case OID_GEN_MEDIA_CONNECT_STATUS:   rndis_query_cmplt32(pdev, RNDIS_STATUS_SUCCESS, NDIS_MEDIA_STATE_CONNECTED); return;
+	//	case OID_GEN_CURRENT_LOOKAHEAD:      rndis_query_cmplt32(pdev, RNDIS_STATUS_SUCCESS, RNDIS_RX_BUFFER_SIZE); return;
+	case OID_GEN_RNDIS_CONFIG_PARAMETER: rndis_query_cmplt32(pdev, RNDIS_STATUS_SUCCESS, 0); return;
+	case OID_802_3_MAXIMUM_LIST_SIZE:    rndis_query_cmplt32(pdev, RNDIS_STATUS_SUCCESS, 1); return;
+	case OID_802_3_MULTICAST_LIST:       rndis_query_cmplt32(pdev, RNDIS_STATUS_NOT_SUPPORTED, 0); return;
+	case OID_802_3_MAC_OPTIONS:          rndis_query_cmplt32(pdev, RNDIS_STATUS_NOT_SUPPORTED, 0); return;
+	case OID_GEN_MAC_OPTIONS:            rndis_query_cmplt32(pdev, RNDIS_STATUS_SUCCESS, /*MAC_OPT*/ 0); return;
+	case OID_802_3_RCV_ERROR_ALIGNMENT:  rndis_query_cmplt32(pdev, RNDIS_STATUS_SUCCESS, 0); return;
+	case OID_802_3_XMIT_ONE_COLLISION:   rndis_query_cmplt32(pdev, RNDIS_STATUS_SUCCESS, 0); return;
+	case OID_802_3_XMIT_MORE_COLLISIONS: rndis_query_cmplt32(pdev, RNDIS_STATUS_SUCCESS, 0); return;
+	case OID_GEN_XMIT_OK:                rndis_query_cmplt32(pdev, RNDIS_STATUS_SUCCESS, usb_eth_stat.txok); return;
+	case OID_GEN_RCV_OK:                 rndis_query_cmplt32(pdev, RNDIS_STATUS_SUCCESS, usb_eth_stat.rxok); return;
+	case OID_GEN_RCV_ERROR:              rndis_query_cmplt32(pdev, RNDIS_STATUS_SUCCESS, usb_eth_stat.rxbad); return;
+	case OID_GEN_XMIT_ERROR:             rndis_query_cmplt32(pdev, RNDIS_STATUS_SUCCESS, usb_eth_stat.txbad); return;
+	case OID_GEN_RCV_NO_BUFFER:          rndis_query_cmplt32(pdev, RNDIS_STATUS_SUCCESS, 0); return;
+	default:                             rndis_query_cmplt(pdev, RNDIS_STATUS_FAILURE, NULL, 0); return;
+	}
+}
+
+// https://docs.microsoft.com/en-us/windows-hardware/drivers/network/remote-ndis-set-msg
+void rndis_handle_set_msg(void  *pdev)
+{
+	//rndis_set_cmplt_t *c;
+	//rndis_set_msg_t *m;
+	const uint_fast32_t oid = USBD_peek_u32(& ep0databuffout [12]);
+	const uint_fast32_t RequestId = USBD_peek_u32(& ep0databuffout [8]);
+
+	//c = (rndis_set_cmplt_t *)encapsulated_buffer;
+	//m = (rndis_set_msg_t *)encapsulated_buffer;
+
+	/* Never have longer parameter names than PARM_NAME_LENGTH */
+	/*
+	char parmname[PARM_NAME_LENGTH+1];
+	uint8_t i;
+	int8_t parmlength;
+	*/
+
+	/* The parameter name seems to be transmitted in uint16_t, but */
+	/* we want this in uint8_t. Hence have to throw out some info... */
+
+	/*
+	if (CFGBUF->ParameterNameLength > (PARM_NAME_LENGTH*2))
+	{
+		parmlength = PARM_NAME_LENGTH * 2;
+	}
+	else
+	{
+		parmlength = CFGBUF->ParameterNameLength;
+	}
+	i = 0;
+	while (parmlength > 0)
+	{
+		// Convert from uint16_t to char array.
+		parmname[i] = (char)*(PARMNAME + 2*i); // FSE! FIX IT!
+		parmlength -= 2;
+		i++;
+	}
+	*/
+
+	USBD_poke_u32(& ep0resp [0], REMOTE_NDIS_SET_CMPLT);	// MessageType
+	USBD_poke_u32(& ep0resp [4], 16);	// MessageLength
+	USBD_poke_u32(& ep0resp [8], RequestId);	// RequestId <- MessageId
+	USBD_poke_u32(& ep0resp [12], RNDIS_STATUS_SUCCESS);	// Status
+	ep0resplength = 16;
+
+	switch (oid)
+	{
+		/* Parameters set up in 'Advanced' tab */
+#if 0
+		case OID_GEN_RNDIS_CONFIG_PARAMETER:
+			{
+                rndis_config_parameter_t *p;
+				char *ptr = (char *)m;
+				ptr += sizeof(rndis_generic_msg_t);
+				ptr += m->InformationBufferOffset;
+				p = (rndis_config_parameter_t *)ptr;
+				rndis_handle_config_parm(ptr, p->ParameterNameOffset, p->ParameterValueOffset, p->ParameterNameLength, p->ParameterValueLength);
+			}
+			break;
+#endif
+
+#if 0
+		/* Mandatory general OIDs */
+		case OID_GEN_CURRENT_PACKET_FILTER:
+			oid_packet_filter = *INFBUF;
+			if (oid_packet_filter)
+			{
+				rndis_packetFilter(oid_packet_filter);
+				rndis_state = rndis_data_initialized;
+			}
+			else
+			{
+				rndis_state = rndis_initialized;
+			}
+			break;
+#endif
+
+		case OID_GEN_CURRENT_LOOKAHEAD:
+			break;
+
+		case OID_GEN_PROTOCOL_OPTIONS:
+			break;
+
+		/* Mandatory 802_3 OIDs */
+		case OID_802_3_MULTICAST_LIST:
+			break;
+
+		/* Power Managment: fails for now */
+		case OID_PNP_ADD_WAKE_UP_PATTERN:
+		case OID_PNP_REMOVE_WAKE_UP_PATTERN:
+		case OID_PNP_ENABLE_WAKE_UP:
+		default:
+			USBD_poke_u32(& ep0resp [12], RNDIS_STATUS_FAILURE);	// Status
+			break;
+	}
+
+	response_available(pdev);
+}
+
+static void rndis_parse(USBD_HandleTypeDef *pdev)
+{
+	const uint_fast32_t MessageType = USBD_peek_u32(& ep0databuffout [0]);
+	const uint_fast32_t RequestId = USBD_peek_u32(& ep0databuffout [8]);
+	// See https://docs.microsoft.com/en-us/windows-hardware/drivers/network/remote-ndis-control-messages
+	switch (MessageType)
+	{
+	case REMOTE_NDIS_INITIALIZE_MSG:	// https://msdn.microsoft.com/en-us/library/windows/hardware/ff570624	
+		// Prepare REMOTE_NDIS_INITIALIZE_CMPLT
+		// https://msdn.microsoft.com/library/windows/hardware/ff570621
+		USBD_poke_u32(& ep0resp [0], REMOTE_NDIS_INITIALIZE_CMPLT);	// MessageType
+		USBD_poke_u32(& ep0resp [4], 52);	// MessageLength
+		USBD_poke_u32(& ep0resp [8], RequestId);	// RequestId <- MessageId
+		USBD_poke_u32(& ep0resp [12], RNDIS_STATUS_SUCCESS);	// Status RNDIS_STATUS_SUCCESS
+		USBD_poke_u32(& ep0resp [16], ulmin32(RNDIS_MAJOR_VERSION, USBD_peek_u32(& ep0databuffout [12])));	// MajorVersion
+		USBD_poke_u32(& ep0resp [20], ulmin32(RNDIS_MINOR_VERSION, USBD_peek_u32(& ep0databuffout [16])));	// MinorVersion
+		USBD_poke_u32(& ep0resp [24], 0x00000001);	// DeviceFlags RNDIS_DF_CONNECTIONLESS 
+		USBD_poke_u32(& ep0resp [28], 0x00000000);	// Medium 0 - RNDIS_MEDIUM_802_3 
+		USBD_poke_u32(& ep0resp [32], 1);	// MaxPacketsPerMessage
+		USBD_poke_u32(& ep0resp [36], RNDIS_RX_BUFFER_SIZE);	// MaxTransferSize
+		USBD_poke_u32(& ep0resp [40], 0);	// PacketAlignmentFactor
+		USBD_poke_u32(& ep0resp [44], 0);	// AFListOffset
+		USBD_poke_u32(& ep0resp [48], 0);	// AFListSize
+
+		ep0resplength = 52;
+
+		response_available(pdev);
+
+		break;
+
+	case REMOTE_NDIS_QUERY_MSG:	// https://docs.microsoft.com/en-us/windows-hardware/drivers/network/remote-ndis-query-msg
+		//debug_printf_P(PSTR("USBD_LL_DataOutStage: xx03: Oid=%08lX\n"), USBD_peek_u32(& ep0databuffout [12]));
+		rndis_query(pdev);
+		break;
+
+
+	case REMOTE_NDIS_SET_MSG:
+		// https://docs.microsoft.com/en-us/windows-hardware/drivers/network/remote-ndis-set-msg
+		// https://docs.microsoft.com/en-us/windows-hardware/drivers/network/remote-ndis-set-cmplt
+		rndis_handle_set_msg(pdev);
+		break;
+
+	case REMOTE_NDIS_RESET_MSG:
+		USBD_poke_u32(& ep0resp [0], REMOTE_NDIS_RESET_CMPLT);	// MessageType
+		USBD_poke_u32(& ep0resp [4], 16);	// MessageLength
+		USBD_poke_u32(& ep0resp [8], RequestId);	// RequestId <- MessageId
+		USBD_poke_u32(& ep0resp [12], RNDIS_STATUS_SUCCESS);	// Status RNDIS_STATUS_SUCCESS
+		ep0resplength = 16;
+		// We have data to send back
+		response_available(pdev);
+		break;
+
+	case REMOTE_NDIS_KEEPALIVE_MSG:
+		// https://docs.microsoft.com/en-us/windows-hardware/drivers/network/remote-ndis-keepalive-cmplt
+		USBD_poke_u32(& ep0resp [0], REMOTE_NDIS_KEEPALIVE_CMPLT);	// MessageType
+		USBD_poke_u32(& ep0resp [4], 16);	// MessageLength
+		USBD_poke_u32(& ep0resp [8], RequestId);	// RequestId <- MessageId
+		USBD_poke_u32(& ep0resp [12], RNDIS_STATUS_SUCCESS);	// Status RNDIS_STATUS_SUCCESS
+		ep0resplength = 16;
+		// We have data to send back
+		response_available(pdev);
+		break;
+
+	default:
+		TP();
+		break;
+
+	} // switch по типу RNDIS сообщения
+}
+
 #endif /* WITHUSBRNDIS */
+
 
 /**
 * @brief  USBD_DataOutStage 
@@ -9470,62 +9781,7 @@ USBD_StatusTypeDef USBD_LL_DataOutStage(USBD_HandleTypeDef *pdev, uint8_t epnum,
 								USBD_peek_u32(& ep0databuffout [8]),
 								USBD_peek_u32(& ep0databuffout [20])
 								);
-
-							// See https://docs.microsoft.com/en-us/windows-hardware/drivers/network/remote-ndis-control-messages
-							switch (USBD_peek_u32(& ep0databuffout [0]))
-							{
-							case REMOTE_NDIS_INITIALIZE_MSG:	// https://msdn.microsoft.com/en-us/library/windows/hardware/ff570624	
-								// Prepare REMOTE_NDIS_INITIALIZE_CMPLT
-								// https://msdn.microsoft.com/library/windows/hardware/ff570621
-								USBD_poke_u32(& ep0resp [0], REMOTE_NDIS_INITIALIZE_CMPLT);	// MessageType
-								USBD_poke_u32(& ep0resp [4], 52);	// MessageLength
-								USBD_poke_u32(& ep0resp [8], USBD_peek_u32(& ep0databuffout [8]));	// RequestId <- MessageId
-								USBD_poke_u32(& ep0resp [12], RNDIS_STATUS_SUCCESS);	// Status RNDIS_STATUS_SUCCESS
-								USBD_poke_u32(& ep0resp [16], ulmin32(RNDIS_MAJOR_VERSION, USBD_peek_u32(& ep0databuffout [12])));	// MajorVersion
-								USBD_poke_u32(& ep0resp [20], ulmin32(RNDIS_MINOR_VERSION, USBD_peek_u32(& ep0databuffout [16])));	// MinorVersion
-								USBD_poke_u32(& ep0resp [24], 0x00000001);	// DeviceFlags RNDIS_DF_CONNECTIONLESS 
-								USBD_poke_u32(& ep0resp [28], 0x00000000);	// Medium 0 - RNDIS_MEDIUM_802_3 
-								USBD_poke_u32(& ep0resp [32], 1);	// MaxPacketsPerMessage
-								USBD_poke_u32(& ep0resp [36], RNDIS_RX_BUFFER_SIZE);	// MaxTransferSize
-								USBD_poke_u32(& ep0resp [40], 0);	// PacketAlignmentFactor
-								USBD_poke_u32(& ep0resp [44], 0);	// AFListOffset
-								USBD_poke_u32(& ep0resp [48], 0);	// AFListSize
-
-								ep0resplength = 52;
-
-								USBD_LL_Transmit(pdev, 
-									USBD_EP_RNDIS_INT,
-									(uint8_t *)"\x01\x00\x00\x00\x00\x00\x00\x00",
-									8);
-
-								break;
-
-							case REMOTE_NDIS_QUERY_MSG:	// https://docs.microsoft.com/en-us/windows-hardware/drivers/network/remote-ndis-query-msg
-								debug_printf_P(PSTR("USBD_LL_DataOutStage: xx03: Oid=%08lX\n"), USBD_peek_u32(& ep0databuffout [12]));
-								// Prepare REMOTE_NDIS_QUERY_CMPLT - see https://docs.microsoft.com/en-us/windows-hardware/drivers/network/remote-ndis-query-cmplt
-								USBD_poke_u32(& ep0resp [0], REMOTE_NDIS_QUERY_CMPLT);	// MessageType
-								USBD_poke_u32(& ep0resp [4], 28);	// MessageLength
-								USBD_poke_u32(& ep0resp [8], USBD_peek_u32(& ep0databuffout [8]));	// RequestId <- MessageId
-								USBD_poke_u32(& ep0resp [12], RNDIS_STATUS_SUCCESS);	// Status
-								USBD_poke_u32(& ep0resp [16], 4);	// InformationBufferLength
-								USBD_poke_u32(& ep0resp [20], 16);	// InformationBufferOffset
-
-								USBD_poke_u32(& ep0resp [24], 0);	// data
-
-								ep0resplength = 28;
-
-								USBD_LL_Transmit(pdev, 
-									USBD_EP_RNDIS_INT,
-									(uint8_t *)"\x01\x00\x00\x00\x00\x00\x00\x00",
-									8);
-								
-								break;
-
-
-							default:
-								TP();
-								break;
-							} // switch по типу RNDIS сообщения
+							rndis_parse(pdev);
 							break;
 
 						default:
