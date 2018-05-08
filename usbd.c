@@ -104,7 +104,6 @@ static volatile uint_fast16_t usb_cdc_control_state [INTERFACE_count];
 	
 static USBALIGN_BEGIN uint8_t ep0databuffout [USB_OTG_MAX_EP0_SIZE] USBALIGN_END;
 static USBALIGN_BEGIN uint8_t ep0resp [256] USBALIGN_END;
-static uint_fast16_t ep0resplength;
 
 // Состояние - выбранные альтернативные конфигурации по каждому интерфейсу USB configuration descriptor
 static uint8_t altinterfaces [INTERFACE_count];
@@ -8339,7 +8338,7 @@ static void USBD_ClassXXX_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef  
 				{
 				case 0x01:	// GET_ENCAPSULATED_RESPONSE 
 					debug_printf_P(PSTR("USBD_ClassXXX_Setup IN: INTERFACE_RNDIS_CONTROL_5: bRequest=%02X, wIndex=%04X, wLength=%04X\n"), req->bRequest, req->wIndex, req->wLength);
-					USBD_CtlSendData(pdev, ep0resp, ulmin16(ep0resplength, ulmin16(ARRAY_SIZE(ep0resp), req->wLength)));
+					USBD_CtlSendData(pdev, ep0resp, ulmin16( USBD_peek_u32(& ep0resp [4]), ulmin16(ARRAY_SIZE(ep0resp), req->wLength)));
 					break;
 
 				default:
@@ -9358,14 +9357,6 @@ static void cdc2out_buffer_save(
 
 #include "ndis.h"
 
-static void rndisout_buffer_save(
-	const uint8_t * data, 
-	uint_fast16_t length
-	)
-{
-	TP();
-}
-
 #define RNDIS_MAJOR_VERSION	1
 #define RNDIS_MINOR_VERSION 0
 
@@ -9404,6 +9395,29 @@ static void rndisout_buffer_save(
 #define RNDIS_HEADER_SIZE               44//sizeof(rndis_data_packet_t)
 #define RNDIS_RX_BUFFER_SIZE            (ETH_MAX_PACKET_SIZE + RNDIS_HEADER_SIZE)
 
+
+typedef enum rnids_state_e {
+	rndis_uninitialized,
+	rndis_initialized,
+	rndis_data_initialized
+} rndis_state_t;
+
+typedef struct {
+	uint32_t		txok;
+	uint32_t		rxok;
+	uint32_t		txbad;
+	uint32_t		rxbad;
+} usb_eth_stat_t;
+
+
+uint8_t station_hwaddr[6] = { STATION_HWADDR };
+uint8_t permanent_hwaddr[6] = { PERMANENT_HWADDR };
+usb_eth_stat_t usb_eth_stat = { 0, 0, 0, 0 };
+rndis_state_t rndis_state = rndis_uninitialized;
+uint32_t oid_packet_filter = 0x0000000;
+
+  static const char *rndis_vendor = RNDIS_VENDOR;
+
 const uint32_t OIDSupportedList[] = 
 {
   OID_GEN_SUPPORTED_LIST,
@@ -9436,28 +9450,6 @@ const uint32_t OIDSupportedList[] =
 };
 #define OID_LIST_LENGTH (sizeof(OIDSupportedList) / sizeof(*OIDSupportedList))
 
-typedef enum rnids_state_e {
-	rndis_uninitialized,
-	rndis_initialized,
-	rndis_data_initialized
-} rndis_state_t;
-
-typedef struct {
-	uint32_t		txok;
-	uint32_t		rxok;
-	uint32_t		txbad;
-	uint32_t		rxbad;
-} usb_eth_stat_t;
-
-
-uint8_t station_hwaddr[6] = { STATION_HWADDR };
-uint8_t permanent_hwaddr[6] = { PERMANENT_HWADDR };
-usb_eth_stat_t usb_eth_stat = { 0, 0, 0, 0 };
-rndis_state_t rndis_state = rndis_uninitialized;
-uint32_t oid_packet_filter = 0x0000000;
-
-  static const char *rndis_vendor = RNDIS_VENDOR;
-
 void response_available(USBD_HandleTypeDef *pdev)
 {
 	static USBALIGN_BEGIN uint8_t resp [8] USBALIGN_END;
@@ -9471,8 +9463,9 @@ void response_available(USBD_HandleTypeDef *pdev)
 // https://docs.microsoft.com/en-us/windows-hardware/drivers/network/remote-ndis-query-cmplt
 void rndis_query_cmplt32(USBD_HandleTypeDef  *pdev, int status, uint_fast32_t data)
 {
+	uint_fast32_t MessageLength = 28;
 	USBD_poke_u32(& ep0resp [0], REMOTE_NDIS_QUERY_CMPLT);	// MessageType
-	USBD_poke_u32(& ep0resp [4], 28);	// MessageLength
+	USBD_poke_u32(& ep0resp [4], MessageLength);	// MessageLength
 	USBD_poke_u32(& ep0resp [8], USBD_peek_u32(& ep0databuffout [8]));	// RequestId <- MessageId
 	USBD_poke_u32(& ep0resp [12], status);	// Status
 	USBD_poke_u32(& ep0resp [16], 4);	// InformationBufferLength
@@ -9480,15 +9473,15 @@ void rndis_query_cmplt32(USBD_HandleTypeDef  *pdev, int status, uint_fast32_t da
 
 	USBD_poke_u32(& ep0resp [24], data);	// data
 
-	ep0resplength = 28;
 	response_available(pdev);
 }
 
 // https://docs.microsoft.com/en-us/windows-hardware/drivers/network/remote-ndis-query-cmplt
 void rndis_query_cmplt(USBD_HandleTypeDef  *pdev, int status, const void *data, int size)
 {
+	uint_fast32_t MessageLength = 24 + size;
 	USBD_poke_u32(& ep0resp [0], REMOTE_NDIS_QUERY_CMPLT);	// MessageType
-	USBD_poke_u32(& ep0resp [4], 24 + size);	// MessageLength
+	USBD_poke_u32(& ep0resp [4], MessageLength);	// MessageLength
 	USBD_poke_u32(& ep0resp [8], USBD_peek_u32(& ep0databuffout [8]));	// RequestId <- MessageId
 	USBD_poke_u32(& ep0resp [12], status);	// Status
 	USBD_poke_u32(& ep0resp [16], size);	// InformationBufferLength
@@ -9496,7 +9489,6 @@ void rndis_query_cmplt(USBD_HandleTypeDef  *pdev, int status, const void *data, 
 
 	memcpy(& ep0resp [24], data, size);
 
-	ep0resplength = 24 + size;
 	response_available(pdev);
 }
 
@@ -9554,6 +9546,8 @@ void rndis_handle_set_msg(void  *pdev)
 	//rndis_set_msg_t *m;
 	const uint_fast32_t oid = USBD_peek_u32(& ep0databuffout [12]);
 	const uint_fast32_t RequestId = USBD_peek_u32(& ep0databuffout [8]);
+	const uint_fast32_t InformationBufferLength = USBD_peek_u32(& ep0databuffout [16]);
+	const uint_fast32_t InformationBufferOffset = USBD_peek_u32(& ep0databuffout [20]);
 
 	//c = (rndis_set_cmplt_t *)encapsulated_buffer;
 	//m = (rndis_set_msg_t *)encapsulated_buffer;
@@ -9587,11 +9581,11 @@ void rndis_handle_set_msg(void  *pdev)
 	}
 	*/
 
+	uint_fast32_t MessageLength = 16;
 	USBD_poke_u32(& ep0resp [0], REMOTE_NDIS_SET_CMPLT);	// MessageType
-	USBD_poke_u32(& ep0resp [4], 16);	// MessageLength
+	USBD_poke_u32(& ep0resp [4], MessageLength);	// MessageLength
 	USBD_poke_u32(& ep0resp [8], RequestId);	// RequestId <- MessageId
 	USBD_poke_u32(& ep0resp [12], RNDIS_STATUS_SUCCESS);	// Status
-	ep0resplength = 16;
 
 	switch (oid)
 	{
@@ -9609,6 +9603,7 @@ void rndis_handle_set_msg(void  *pdev)
 
 		/* Mandatory general OIDs */
 		case OID_GEN_CURRENT_PACKET_FILTER:
+			oid_packet_filter = USBD_peek_u32(& ep0databuffout [InformationBufferOffset + 8]);
 			//oid_packet_filter = *INFBUF;
 			//if (oid_packet_filter)
 			//{
@@ -9643,7 +9638,15 @@ void rndis_handle_set_msg(void  *pdev)
 	response_available(pdev);
 }
 
-static void rndis_parse(USBD_HandleTypeDef *pdev)
+static void rndisout_buffer_save(
+	const uint8_t * data, 
+	uint_fast16_t length
+	)
+{
+	TP();
+}
+
+static void usbd_rndis_ep0_recv(USBD_HandleTypeDef *pdev)
 {
 	const uint_fast32_t MessageType = USBD_peek_u32(& ep0databuffout [0]);
 	const uint_fast32_t RequestId = USBD_peek_u32(& ep0databuffout [8]);
@@ -9667,8 +9670,6 @@ static void rndis_parse(USBD_HandleTypeDef *pdev)
 		USBD_poke_u32(& ep0resp [44], 0);	// AFListOffset
 		USBD_poke_u32(& ep0resp [48], 0);	// AFListSize
 
-		ep0resplength = 52;
-
 		response_available(pdev);
 
 		break;
@@ -9690,7 +9691,6 @@ static void rndis_parse(USBD_HandleTypeDef *pdev)
 		USBD_poke_u32(& ep0resp [4], 16);	// MessageLength
 		USBD_poke_u32(& ep0resp [8], RequestId);	// RequestId <- MessageId
 		USBD_poke_u32(& ep0resp [12], RNDIS_STATUS_SUCCESS);	// Status RNDIS_STATUS_SUCCESS
-		ep0resplength = 16;
 		// We have data to send back
 		response_available(pdev);
 		break;
@@ -9701,7 +9701,6 @@ static void rndis_parse(USBD_HandleTypeDef *pdev)
 		USBD_poke_u32(& ep0resp [4], 16);	// MessageLength
 		USBD_poke_u32(& ep0resp [8], RequestId);	// RequestId <- MessageId
 		USBD_poke_u32(& ep0resp [12], RNDIS_STATUS_SUCCESS);	// Status RNDIS_STATUS_SUCCESS
-		ep0resplength = 16;
 		// We have data to send back
 		response_available(pdev);
 		break;
@@ -9772,17 +9771,7 @@ USBD_StatusTypeDef USBD_LL_DataOutStage(USBD_HandleTypeDef *pdev, uint8_t epnum,
 						switch (pdev->request.bRequest)
 						{
 						case 0x00:
-							debug_printf_P(
-								PSTR("USBD_LL_DataOutStage: xx02: interfacev=%u, bRequest=%u, wLength=%u, MessageType=%08lX, MessageLength=%08lX, MessageId=%08lX, MaxTransferSize=%lu\n"), 
-								interfacev, 
-								pdev->request.bRequest, 
-								pdev->request.wLength, 
-								USBD_peek_u32(& ep0databuffout [0]), 
-								USBD_peek_u32(& ep0databuffout [4]), 
-								USBD_peek_u32(& ep0databuffout [8]),
-								USBD_peek_u32(& ep0databuffout [20])
-								);
-							rndis_parse(pdev);
+							usbd_rndis_ep0_recv(pdev);
 							break;
 
 						default:
