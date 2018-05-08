@@ -8337,12 +8337,12 @@ static void USBD_ClassXXX_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef  
 				switch (req->bRequest)
 				{
 				case 0x01:	// GET_ENCAPSULATED_RESPONSE 
-					debug_printf_P(PSTR("USBD_ClassXXX_Setup IN: INTERFACE_RNDIS_CONTROL_5: bRequest=%02X, wIndex=%04X, wLength=%04X\n"), req->bRequest, req->wIndex, req->wLength);
+					debug_printf_P(PSTR("USBD_ClassXXX_Setup IN: INTERFACE_RNDIS_CONTROL_5: GET_ENCAPSULATED_RESPONSE: bRequest=%02X, wIndex=%04X, wLength=%04X\n"), req->bRequest, req->wIndex, req->wLength);
 					USBD_CtlSendData(pdev, ep0resp, ulmin16( USBD_peek_u32(& ep0resp [4]), ulmin16(ARRAY_SIZE(ep0resp), req->wLength)));
 					break;
 
 				default:
-					debug_printf_P(PSTR("USBD_ClassXXX_Setup IN: INTERFACE_RNDIS_CONTROL_5: GET_ENCAPSULATED_RESPONSE: bRequest=%02X, wIndex=%04X, wLength=%04X\n"), req->bRequest, req->wIndex, req->wLength);
+					debug_printf_P(PSTR("USBD_ClassXXX_Setup IN: INTERFACE_RNDIS_CONTROL_5: xxx: bRequest=%02X, wIndex=%04X, wLength=%04X\n"), req->bRequest, req->wIndex, req->wLength);
 					ep0resp [0] = 0;
 					USBD_CtlSendData(pdev, ep0resp, ulmin16(1, ulmin16(ARRAY_SIZE(ep0resp), req->wLength)));
 					break;
@@ -9671,6 +9671,8 @@ static void usbd_rndis_ep0_recv(USBD_HandleTypeDef *pdev)
 		USBD_poke_u32(& ep0resp [48], 0);	// AFListSize
 
 		response_available(pdev);
+
+		rndis_state = rndis_initialized;
 
 		break;
 
