@@ -9770,7 +9770,7 @@ static void rndisout_buffer_save(
 	uint_fast16_t length
 	)
 {
-	usb_eth_stat.rxok++;
+	//usb_eth_stat.rxok++;
 	//TP();
 }
 
