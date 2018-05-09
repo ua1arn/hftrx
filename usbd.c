@@ -98,12 +98,90 @@ static volatile uint_fast16_t usb_cdc_control_state [INTERFACE_count];
 
 #if WITHUSBRNDIS
 
+	#include "list.h"
+
 	static USBALIGN_BEGIN uint8_t rndisbuffout [USBD_RNDIS_BUFSIZE] USBALIGN_END;
+
+	#define RNDIS_RESP_SIZE 256
+	typedef ALIGNX_BEGIN struct rndis_resp
+	{
+		LIST_ENTRY item;
+		ALIGNX_BEGIN int8_t buff [256] ALIGNX_END;
+	} ALIGNX_END rndis_resp_t;
+
+	static LIST_ENTRY rndis_resp_freelist;
+	static LIST_ENTRY rndis_resp_readylist;
+
+	static int8_t * rndis_resp_ptr = NULL;
+
+	static void rndis_resp_initialize(void)
+	{
+		static rndis_resp_t buffs [16];
+		uint_fast8_t i;
+
+		InitializeListHead(& rndis_resp_readylist);		// список для выдачи в канал USB
+		InitializeListHead(& rndis_resp_freelist);	// Незаполненные
+		for (i = 0; i < (sizeof buffs / sizeof buffs [0]); ++ i)
+		{
+			rndis_resp_t * const p = & buffs [i];
+			InsertHeadList(& rndis_resp_freelist, & p->item);
+		}
+		rndis_resp_ptr = NULL;
+	}
+	// получить незаполненный буфер
+	static uint_fast8_t rndis_resp_allocate(uint8_t ** p)
+	{
+		if (! IsListEmpty(& rndis_resp_freelist))
+		{
+			PLIST_ENTRY t = RemoveTailList(& rndis_resp_freelist);
+			* p = CONTAINING_RECORD(t, rndis_resp_t, item);
+			return 1;
+		}
+		* p = NULL;
+		return 0;
+	}
+
+	// получиь готовый к передаче
+	static uint_fast8_t rndis_resp_ready(uint8_t ** p)
+	{
+		if (! IsListEmpty(& rndis_resp_readylist))
+		{
+			PLIST_ENTRY t = RemoveTailList(& rndis_resp_readylist);
+			* p = CONTAINING_RECORD(t, rndis_resp_t, item);
+			return 1;
+		}
+		* p = NULL;
+		return 0;
+	}
+
+	// освободить буфер
+	static uint_fast8_t rndis_resp_release(uint8_t * addr)
+	{
+		rndis_resp_t * const p = CONTAINING_RECORD(addr, rndis_resp_t, buff);
+		InsertHeadList(& rndis_resp_freelist, & p->item);
+	}
+
+	// записть готовый к передаче
+	static uint_fast8_t rndis_resp_tosensd(uint8_t * addr)
+	{
+		rndis_resp_t * const p = CONTAINING_RECORD(addr, rndis_resp_t, buff);
+		InsertHeadList(& rndis_resp_readylist, & p->item);
+	}
+
+
+	static void rndis_resp_cleanup(void)
+	{
+		if (rndis_resp_ptr != NULL)
+		{
+			rndis_resp_release(rndis_resp_ptr);
+			rndis_resp_ptr = NULL;
+		}
+	}
 
 #endif /* WITHUSBRNDIS */
 	
 static USBALIGN_BEGIN uint8_t ep0databuffout [USB_OTG_MAX_EP0_SIZE] USBALIGN_END;
-static USBALIGN_BEGIN uint8_t ep0resp [256] USBALIGN_END;
+//static USBALIGN_BEGIN uint8_t * ep0resp [256] USBALIGN_END;
 
 // Состояние - выбранные альтернативные конфигурации по каждому интерфейсу USB configuration descriptor
 static uint8_t altinterfaces [INTERFACE_count];
@@ -4615,6 +4693,7 @@ static void usbd_classDeInit(USBD_HandleTypeDef *pdev, uint_fast8_t cfgidx)
 	USBD_LL_CloseEP(pdev, USBD_EP_RNDIS_IN);
 	USBD_LL_CloseEP(pdev, USBD_EP_RNDIS_INT);
 	USBD_LL_CloseEP(pdev, USBD_EP_RNDIS_OUT);
+	rndis_resp_cleanup();
 #endif /* WITHUSBRNDIS */
 
 #if WITHUSBUAC
@@ -8021,6 +8100,8 @@ static USBD_StatusTypeDef USBD_SetClassConfig(USBD_HandleTypeDef  *pdev, uint8_t
 #endif /* WITHUSBCDCEEM */
 
 #if WITHUSBRNDIS
+	rndis_resp_initialize();
+
 	USBD_LL_OpenEP(pdev,
 		   USBD_EP_RNDIS_IN,
 		   USBD_EP_TYPE_BULK,
@@ -8338,13 +8419,30 @@ static void USBD_ClassXXX_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef  
 				{
 				case 0x01:	// GET_ENCAPSULATED_RESPONSE 
 					debug_printf_P(PSTR("USBD_ClassXXX_Setup IN: INTERFACE_RNDIS_CONTROL_5: GET_ENCAPSULATED_RESPONSE: bRequest=%02X, wIndex=%04X, wLength=%04X\n"), req->bRequest, req->wIndex, req->wLength);
-					USBD_CtlSendData(pdev, ep0resp, ulmin16( USBD_peek_u32(& ep0resp [4]), ulmin16(ARRAY_SIZE(ep0resp), req->wLength)));
+					{
+						if (rndis_resp_ptr != NULL)
+						{
+							rndis_resp_release(rndis_resp_ptr);
+							rndis_resp_ptr = NULL;
+						}
+						if (rndis_resp_ready(& rndis_resp_ptr))
+							USBD_CtlSendData(pdev, rndis_resp_ptr, ulmin16( USBD_peek_u32(& rndis_resp_ptr [4]), ulmin16(RNDIS_RESP_SIZE, req->wLength)));
+						else
+						{
+							static USBALIGN_BEGIN uint8_t * ep0resp [1] USBALIGN_END;
+							ep0resp [0] = 0;
+							USBD_CtlSendData(pdev, ep0resp, ulmin16(1, ulmin16(RNDIS_RESP_SIZE, req->wLength)));
+						}
+					}
 					break;
 
 				default:
 					debug_printf_P(PSTR("USBD_ClassXXX_Setup IN: INTERFACE_RNDIS_CONTROL_5: xxx: bRequest=%02X, wIndex=%04X, wLength=%04X\n"), req->bRequest, req->wIndex, req->wLength);
-					ep0resp [0] = 0;
-					USBD_CtlSendData(pdev, ep0resp, ulmin16(1, ulmin16(ARRAY_SIZE(ep0resp), req->wLength)));
+					{
+						static USBALIGN_BEGIN uint8_t * ep0resp [1] USBALIGN_END;
+						ep0resp [0] = 0;
+						USBD_CtlSendData(pdev, ep0resp, ulmin16(1, ulmin16(1, req->wLength)));
+					}
 					break;
 				}
 				break;
@@ -9395,7 +9493,6 @@ static void cdc2out_buffer_save(
 #define RNDIS_HEADER_SIZE               44//sizeof(rndis_data_packet_t)
 #define RNDIS_RX_BUFFER_SIZE            (ETH_MAX_PACKET_SIZE + RNDIS_HEADER_SIZE)
 
-#include "list.h"
 
 typedef enum rnids_state_e {
 	rndis_uninitialized,
@@ -9410,77 +9507,6 @@ typedef struct {
 	uint32_t		rxbad;
 } usb_eth_stat_t;
 
-typedef ALIGNX_BEGIN struct rndis_resp
-{
-	LIST_ENTRY item;
-	ALIGNX_BEGIN int8_t buff [256] ALIGNX_END;
-} ALIGNX_END rndis_resp_t;
-
-static LIST_ENTRY rndis_resp_freelist;
-static LIST_ENTRY rndis_resp_readylist;
-
-static int8_t * rndis_resp_ptr = NULL;
-
-static void rndis_resp_initialize(void)
-{
-	rndis_resp_t buffs [4];
-	uint_fast8_t i;
-
-	InitializeListHead(& rndis_resp_readylist);		// список для выдачи в канал USB
-	InitializeListHead(& rndis_resp_freelist);	// Незаполненные
-	for (i = 0; i < (sizeof buffs / sizeof buffs [0]); ++ i)
-	{
-		rndis_resp_t * const p = & buffs [i];
-		InsertHeadList(& rndis_resp_freelist, & p->item);
-	}
-}
-// получить незаполненный буфер
-static uint_fast8_t rndis_resp_allocate(uint8_t ** p)
-{
-	if (! IsListEmpty(& rndis_resp_freelist))
-	{
-		PLIST_ENTRY t = RemoveTailList(& rndis_resp_freelist);
-		* p = CONTAINING_RECORD(t, rndis_resp_t, item);
-		return 1;
-	}
-	return 0;
-}
-
-// получиь готовый к передаче
-static uint_fast8_t rndis_resp_ready(uint8_t ** p)
-{
-	if (! IsListEmpty(& rndis_resp_readylist))
-	{
-		PLIST_ENTRY t = RemoveTailList(& rndis_resp_readylist);
-		* p = CONTAINING_RECORD(t, rndis_resp_t, item);
-		return 1;
-	}
-	return 0;
-}
-
-// освободить буфер
-static uint_fast8_t rndis_resp_release(uint8_t * addr)
-{
-	rndis_resp_t * const p = CONTAINING_RECORD(addr, rndis_resp_t, buff);
-	InsertHeadList(& rndis_resp_freelist, & p->item);
-}
-
-// записть готовый к передаче
-static uint_fast8_t rndis_resp_tosensd(uint8_t * addr)
-{
-	rndis_resp_t * const p = CONTAINING_RECORD(addr, rndis_resp_t, buff);
-	InsertHeadList(& rndis_resp_readylist, & p->item);
-}
-
-
-static void rndis_resp_cleanup(void)
-{
-	if (rndis_resp_ptr != NULL)
-	{
-		rndis_resp_release(rndis_resp_ptr);
-		rndis_resp_ptr = NULL;
-	}
-}
 
 uint8_t station_hwaddr[6] = { STATION_HWADDR };
 uint8_t permanent_hwaddr[6] = { PERMANENT_HWADDR };
@@ -9535,6 +9561,9 @@ void response_available(USBD_HandleTypeDef *pdev)
 // https://docs.microsoft.com/en-us/windows-hardware/drivers/network/remote-ndis-query-cmplt
 void rndis_query_cmplt32(USBD_HandleTypeDef  *pdev, int status, uint_fast32_t data)
 {
+	uint8_t * ep0resp;
+	if (! rndis_resp_allocate(& ep0resp))
+		return;
 	uint_fast32_t MessageLength = 28;
 	USBD_poke_u32(& ep0resp [0], REMOTE_NDIS_QUERY_CMPLT);	// MessageType
 	USBD_poke_u32(& ep0resp [4], MessageLength);	// MessageLength
@@ -9544,13 +9573,16 @@ void rndis_query_cmplt32(USBD_HandleTypeDef  *pdev, int status, uint_fast32_t da
 	USBD_poke_u32(& ep0resp [20], 16);	// InformationBufferOffset
 
 	USBD_poke_u32(& ep0resp [24], data);	// data
-
+	rndis_resp_tosensd(ep0resp);
 	response_available(pdev);
 }
 
 // https://docs.microsoft.com/en-us/windows-hardware/drivers/network/remote-ndis-query-cmplt
 void rndis_query_cmplt(USBD_HandleTypeDef * pdev, int status, const void * data, int size)
 {
+	uint8_t * ep0resp;
+	if (! rndis_resp_allocate(& ep0resp))
+		return;
 	const uint_fast32_t MessageLength = 24 + size;
 	if (MessageLength > 256)
 		return;
@@ -9564,6 +9596,7 @@ void rndis_query_cmplt(USBD_HandleTypeDef * pdev, int status, const void * data,
 	if (data != NULL && MessageLength <= 256)
 		memcpy(& ep0resp [24], data, size);
 
+	rndis_resp_tosensd(ep0resp);
 	response_available(pdev);
 }
 
@@ -9656,6 +9689,10 @@ void rndis_handle_set_msg(void  *pdev)
 	}
 	*/
 
+	uint8_t * ep0resp;
+	if (! rndis_resp_allocate(& ep0resp))
+		return;
+
 	USBD_poke_u32(& ep0resp [0], REMOTE_NDIS_SET_CMPLT);	// MessageType
 	USBD_poke_u32(& ep0resp [4], 16);	// MessageLength
 	USBD_poke_u32(& ep0resp [8], RequestId);	// RequestId <- MessageId
@@ -9709,6 +9746,7 @@ void rndis_handle_set_msg(void  *pdev)
 			break;
 	}
 
+	rndis_resp_tosensd(ep0resp);
 	response_available(pdev);
 }
 
@@ -9728,26 +9766,32 @@ static void usbd_rndis_ep0_recv(USBD_HandleTypeDef *pdev)
 	switch (MessageType)
 	{
 	case REMOTE_NDIS_INITIALIZE_MSG:	// https://msdn.microsoft.com/en-us/library/windows/hardware/ff570624	
-		// Prepare REMOTE_NDIS_INITIALIZE_CMPLT
-		// https://msdn.microsoft.com/library/windows/hardware/ff570621
-		USBD_poke_u32(& ep0resp [0], REMOTE_NDIS_INITIALIZE_CMPLT);	// MessageType
-		USBD_poke_u32(& ep0resp [4], 52);	// MessageLength
-		USBD_poke_u32(& ep0resp [8], RequestId);	// RequestId <- MessageId
-		USBD_poke_u32(& ep0resp [12], RNDIS_STATUS_SUCCESS);	// Status RNDIS_STATUS_SUCCESS
-		USBD_poke_u32(& ep0resp [16], ulmin32(RNDIS_MAJOR_VERSION, USBD_peek_u32(& ep0databuffout [12])));	// MajorVersion
-		USBD_poke_u32(& ep0resp [20], ulmin32(RNDIS_MINOR_VERSION, USBD_peek_u32(& ep0databuffout [16])));	// MinorVersion
-		USBD_poke_u32(& ep0resp [24], 0x00000001);	// DeviceFlags RNDIS_DF_CONNECTIONLESS 
-		USBD_poke_u32(& ep0resp [28], 0x00000000);	// Medium 0 - RNDIS_MEDIUM_802_3 
-		USBD_poke_u32(& ep0resp [32], 1);	// MaxPacketsPerMessage
-		USBD_poke_u32(& ep0resp [36], RNDIS_RX_BUFFER_SIZE);	// MaxTransferSize
-		USBD_poke_u32(& ep0resp [40], 0);	// PacketAlignmentFactor
-		USBD_poke_u32(& ep0resp [44], 0);	// AFListOffset
-		USBD_poke_u32(& ep0resp [48], 0);	// AFListSize
+		{
+			uint8_t * ep0resp;
+			if (! rndis_resp_allocate(& ep0resp))
+				return;
+			// Prepare REMOTE_NDIS_INITIALIZE_CMPLT
+			// https://msdn.microsoft.com/library/windows/hardware/ff570621
+			USBD_poke_u32(& ep0resp [0], REMOTE_NDIS_INITIALIZE_CMPLT);	// MessageType
+			USBD_poke_u32(& ep0resp [4], 52);	// MessageLength
+			USBD_poke_u32(& ep0resp [8], RequestId);	// RequestId <- MessageId
+			USBD_poke_u32(& ep0resp [12], RNDIS_STATUS_SUCCESS);	// Status RNDIS_STATUS_SUCCESS
+			USBD_poke_u32(& ep0resp [16], ulmin32(RNDIS_MAJOR_VERSION, USBD_peek_u32(& ep0databuffout [12])));	// MajorVersion
+			USBD_poke_u32(& ep0resp [20], ulmin32(RNDIS_MINOR_VERSION, USBD_peek_u32(& ep0databuffout [16])));	// MinorVersion
+			USBD_poke_u32(& ep0resp [24], 0x00000001);	// DeviceFlags RNDIS_DF_CONNECTIONLESS 
+			USBD_poke_u32(& ep0resp [28], 0x00000000);	// Medium 0 - RNDIS_MEDIUM_802_3 
+			USBD_poke_u32(& ep0resp [32], 1);	// MaxPacketsPerMessage
+			USBD_poke_u32(& ep0resp [36], RNDIS_RX_BUFFER_SIZE);	// MaxTransferSize
+			USBD_poke_u32(& ep0resp [40], 0);	// PacketAlignmentFactor
+			USBD_poke_u32(& ep0resp [44], 0);	// AFListOffset
+			USBD_poke_u32(& ep0resp [48], 0);	// AFListSize
 
-		response_available(pdev);
+			rndis_resp_tosensd(ep0resp);
+			response_available(pdev);
 
-		rndis_state = rndis_initialized;
+			rndis_state = rndis_initialized;
 
+		}
 		break;
 
 	case REMOTE_NDIS_QUERY_MSG:	// https://docs.microsoft.com/en-us/windows-hardware/drivers/network/remote-ndis-query-msg
@@ -9763,22 +9807,34 @@ static void usbd_rndis_ep0_recv(USBD_HandleTypeDef *pdev)
 		break;
 
 	case REMOTE_NDIS_RESET_MSG:
-		USBD_poke_u32(& ep0resp [0], REMOTE_NDIS_RESET_CMPLT);	// MessageType
-		USBD_poke_u32(& ep0resp [4], 16);	// MessageLength
-		USBD_poke_u32(& ep0resp [8], RequestId);	// RequestId <- MessageId
-		USBD_poke_u32(& ep0resp [12], RNDIS_STATUS_SUCCESS);	// Status RNDIS_STATUS_SUCCESS
-		// We have data to send back
-		response_available(pdev);
+		{
+			uint8_t * ep0resp;
+			if (! rndis_resp_allocate(& ep0resp))
+				return;
+			USBD_poke_u32(& ep0resp [0], REMOTE_NDIS_RESET_CMPLT);	// MessageType
+			USBD_poke_u32(& ep0resp [4], 16);	// MessageLength
+			USBD_poke_u32(& ep0resp [8], RequestId);	// RequestId <- MessageId
+			USBD_poke_u32(& ep0resp [12], RNDIS_STATUS_SUCCESS);	// Status RNDIS_STATUS_SUCCESS
+			// We have data to send back
+			rndis_resp_tosensd(ep0resp);
+			response_available(pdev);
+		}
 		break;
 
 	case REMOTE_NDIS_KEEPALIVE_MSG:
 		// https://docs.microsoft.com/en-us/windows-hardware/drivers/network/remote-ndis-keepalive-cmplt
-		USBD_poke_u32(& ep0resp [0], REMOTE_NDIS_KEEPALIVE_CMPLT);	// MessageType
-		USBD_poke_u32(& ep0resp [4], 16);	// MessageLength
-		USBD_poke_u32(& ep0resp [8], RequestId);	// RequestId <- MessageId
-		USBD_poke_u32(& ep0resp [12], RNDIS_STATUS_SUCCESS);	// Status RNDIS_STATUS_SUCCESS
-		// We have data to send back
-		response_available(pdev);
+		{
+			uint8_t * ep0resp;
+			if (! rndis_resp_allocate(& ep0resp))
+				return;
+			USBD_poke_u32(& ep0resp [0], REMOTE_NDIS_KEEPALIVE_CMPLT);	// MessageType
+			USBD_poke_u32(& ep0resp [4], 16);	// MessageLength
+			USBD_poke_u32(& ep0resp [8], RequestId);	// RequestId <- MessageId
+			USBD_poke_u32(& ep0resp [12], RNDIS_STATUS_SUCCESS);	// Status RNDIS_STATUS_SUCCESS
+			// We have data to send back
+			rndis_resp_tosensd(ep0resp);
+			response_available(pdev);
+		}
 		break;
 
 	default:
