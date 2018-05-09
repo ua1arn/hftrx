@@ -9419,6 +9419,8 @@ typedef ALIGNX_BEGIN struct rndis_resp
 static LIST_ENTRY rndis_resp_freelist;
 static LIST_ENTRY rndis_resp_readylist;
 
+static int8_t * rndis_resp_ptr = NULL;
+
 static void rndis_resp_initialize(void)
 {
 	rndis_resp_t buffs [4];
@@ -9432,29 +9434,52 @@ static void rndis_resp_initialize(void)
 		InsertHeadList(& rndis_resp_freelist, & p->item);
 	}
 }
-
 // получить незаполненный буфер
 static uint_fast8_t rndis_resp_allocate(uint8_t ** p)
 {
-
+	if (! IsListEmpty(& rndis_resp_freelist))
+	{
+		PLIST_ENTRY t = RemoveTailList(& rndis_resp_freelist);
+		* p = CONTAINING_RECORD(t, rndis_resp_t, item);
+		return 1;
+	}
+	return 0;
 }
 
-// получиь готовый к пере
+// получиь готовый к передаче
 static uint_fast8_t rndis_resp_ready(uint8_t ** p)
 {
-
+	if (! IsListEmpty(& rndis_resp_readylist))
+	{
+		PLIST_ENTRY t = RemoveTailList(& rndis_resp_readylist);
+		* p = CONTAINING_RECORD(t, rndis_resp_t, item);
+		return 1;
+	}
+	return 0;
 }
 
 // освободить буфер
-static uint_fast8_t rndis_resp_release(uint8_t * p)
+static uint_fast8_t rndis_resp_release(uint8_t * addr)
 {
-
+	rndis_resp_t * const p = CONTAINING_RECORD(addr, rndis_resp_t, buff);
+	InsertHeadList(& rndis_resp_freelist, & p->item);
 }
 
 // записть готовый к передаче
-static uint_fast8_t rndis_resp_tosensd(uint8_t * p)
+static uint_fast8_t rndis_resp_tosensd(uint8_t * addr)
 {
+	rndis_resp_t * const p = CONTAINING_RECORD(addr, rndis_resp_t, buff);
+	InsertHeadList(& rndis_resp_readylist, & p->item);
+}
 
+
+static void rndis_resp_cleanup(void)
+{
+	if (rndis_resp_ptr != NULL)
+	{
+		rndis_resp_release(rndis_resp_ptr);
+		rndis_resp_ptr = NULL;
+	}
 }
 
 uint8_t station_hwaddr[6] = { STATION_HWADDR };
