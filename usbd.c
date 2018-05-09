@@ -10137,7 +10137,14 @@ USBD_StatusTypeDef USBD_LL_DataInStage(USBD_HandleTypeDef *pdev, uint8_t epnum, 
 			USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), cdc2buffin, cdc2buffinlevel);
 			cdc2buffinlevel = 0;
 			break;
+
+		case (USBD_EP_CDC_INT & 0x7F):
+			break;
+
+		case (USBD_EP_CDC_INTb & 0x7F):
+			break;
 #endif /* WITHUSBCDC */
+
 #if WITHUSBUAC
 		case ((USBD_EP_AUDIO_IN) & 0x7F):
 			if (uacinaddr != 0)
