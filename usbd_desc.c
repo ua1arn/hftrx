@@ -2129,7 +2129,7 @@ static unsigned fill_RNDIS_function(uint_fast8_t fill, uint8_t * p, unsigned max
 	n += RNDIS_InterfaceDescriptorControlIf(fill, p + n, maxsize - n);	/* INTERFACE_CDC_CONTROL_3a Interface Descriptor 3/0 CDC Control, 1 Endpoint */
 	//  Functional Descriptors for Communication Class Interface per RNDIS spec.
 	// Header Functional Descriptor
-	n += RNDIS_r9fill_31(fill, p + n, maxsize - n);
+	////n += RNDIS_r9fill_31(fill, p + n, maxsize - n);
 	// Call Management Functional Descriptor
 	n += RNDIS_r9fill_32(fill, p + n, maxsize - n);
 	// Abstract Control Management Functional Descriptor

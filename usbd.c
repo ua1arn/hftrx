@@ -9395,6 +9395,7 @@ static void cdc2out_buffer_save(
 #define RNDIS_HEADER_SIZE               44//sizeof(rndis_data_packet_t)
 #define RNDIS_RX_BUFFER_SIZE            (ETH_MAX_PACKET_SIZE + RNDIS_HEADER_SIZE)
 
+#include "list.h"
 
 typedef enum rnids_state_e {
 	rndis_uninitialized,
@@ -9409,6 +9410,52 @@ typedef struct {
 	uint32_t		rxbad;
 } usb_eth_stat_t;
 
+typedef ALIGNX_BEGIN struct rndis_resp
+{
+	LIST_ENTRY item;
+	ALIGNX_BEGIN int8_t buff [256] ALIGNX_END;
+} ALIGNX_END rndis_resp_t;
+
+static LIST_ENTRY rndis_resp_freelist;
+static LIST_ENTRY rndis_resp_readylist;
+
+static void rndis_resp_initialize(void)
+{
+	rndis_resp_t buffs [4];
+	uint_fast8_t i;
+
+	InitializeListHead(& rndis_resp_readylist);		// список для выдачи в канал USB
+	InitializeListHead(& rndis_resp_freelist);	// Незаполненные
+	for (i = 0; i < (sizeof buffs / sizeof buffs [0]); ++ i)
+	{
+		rndis_resp_t * const p = & buffs [i];
+		InsertHeadList(& rndis_resp_freelist, & p->item);
+	}
+}
+
+// получить незаполненный буфер
+static uint_fast8_t rndis_resp_allocate(uint8_t ** p)
+{
+
+}
+
+// получиь готовый к пере
+static uint_fast8_t rndis_resp_ready(uint8_t ** p)
+{
+
+}
+
+// освободить буфер
+static uint_fast8_t rndis_resp_release(uint8_t * p)
+{
+
+}
+
+// записть готовый к передаче
+static uint_fast8_t rndis_resp_tosensd(uint8_t * p)
+{
+
+}
 
 uint8_t station_hwaddr[6] = { STATION_HWADDR };
 uint8_t permanent_hwaddr[6] = { PERMANENT_HWADDR };
@@ -9477,9 +9524,11 @@ void rndis_query_cmplt32(USBD_HandleTypeDef  *pdev, int status, uint_fast32_t da
 }
 
 // https://docs.microsoft.com/en-us/windows-hardware/drivers/network/remote-ndis-query-cmplt
-void rndis_query_cmplt(USBD_HandleTypeDef  *pdev, int status, const void *data, int size)
+void rndis_query_cmplt(USBD_HandleTypeDef * pdev, int status, const void * data, int size)
 {
-	uint_fast32_t MessageLength = 24 + size;
+	const uint_fast32_t MessageLength = 24 + size;
+	if (MessageLength > 256)
+		return;
 	USBD_poke_u32(& ep0resp [0], REMOTE_NDIS_QUERY_CMPLT);	// MessageType
 	USBD_poke_u32(& ep0resp [4], MessageLength);	// MessageLength
 	USBD_poke_u32(& ep0resp [8], USBD_peek_u32(& ep0databuffout [8]));	// RequestId <- MessageId
@@ -9487,7 +9536,7 @@ void rndis_query_cmplt(USBD_HandleTypeDef  *pdev, int status, const void *data, 
 	USBD_poke_u32(& ep0resp [16], size);	// InformationBufferLength
 	USBD_poke_u32(& ep0resp [20], 16);	// InformationBufferOffset
 
-	if (data != NULL)
+	if (data != NULL && MessageLength <= 256)
 		memcpy(& ep0resp [24], data, size);
 
 	response_available(pdev);
