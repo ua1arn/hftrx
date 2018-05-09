@@ -116,7 +116,7 @@ static volatile uint_fast16_t usb_cdc_control_state [INTERFACE_count];
 
 	static void rndis_resp_initialize(void)
 	{
-		static rndis_resp_t buffs [16];
+		static RAMNOINIT_D1 rndis_resp_t buffs [4];
 		uint_fast8_t i;
 
 		InitializeListHead(& rndis_resp_readylist);		// список для выдачи в канал USB
@@ -7574,12 +7574,12 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 	const uint_fast16_t full4 = fullsize / 4;
 	uint_fast16_t last4 = full4;
 	uint_fast16_t base4 = 0;
-#if WITHUSBCDC || WITHUSBRNDIS
+#if WITHUSBCDC
 	// параметры TX FIFO для ендпоинтов, в которые никогда не будут идти данные для передачи
 	const uint_fast16_t size4dummy = 0x10;//bigbuff ? 0x10 : 4;
 	last4 -= size4dummy;
 	const uint_fast16_t last4dummy = last4;
-#endif /* WITHUSBCDC || WITHUSBRNDIS */
+#endif /* WITHUSBCDC */
 
 	debug_printf_P(PSTR("usbd_fifo_initialize1: 4*(full4-last4)=%u\n"), 4 * (full4 - last4));
 
@@ -7711,17 +7711,22 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 		const uint_fast8_t pipe = USBD_EP_RNDIS_IN & 0x7F;
 
 		numoutendpoints += 1;
-		const int ncdceemindatapackets = 4 * mul2, ncdceemoutdatapackets = 4;
+		const int nrndismindatapackets = 4 * mul2, nrndismoutdatapackets = 4, nrndismintpackets = 4;
 
-		maxoutpacketsize4 = ulmax16(maxoutpacketsize4, ncdceemoutdatapackets * size2buff4(USBD_RNDIS_BUFSIZE));
+		maxoutpacketsize4 = ulmax16(maxoutpacketsize4, nrndismoutdatapackets * size2buff4(USBD_RNDIS_BUFSIZE));
 
 
-		const uint_fast16_t size4 = ncdceemindatapackets * (size2buff4(USBD_RNDIS_BUFSIZE) + add3tx);
+		const uint_fast16_t size4 = nrndismindatapackets * (size2buff4(USBD_RNDIS_BUFSIZE) + add3tx);
 		ASSERT(last4 >= size4);
 		last4 -= size4;
 		instance->DIEPTXF [pipe - 1] = usbd_makeTXFSIZ(last4, size4);
-		instance->DIEPTXF [pipeint - 1] = usbd_makeTXFSIZ(last4dummy, size4dummy);
 		debug_printf_P(PSTR("usbd_fifo_initialize7 RNDIS %u bytes: 4*(full4-last4)=%u\n"), 4 * size4, 4 * (full4 - last4));
+
+		const uint_fast16_t size4int = nrndismintpackets * (size2buff4(USBD_RNDIS_INT_SIZE) + add3tx);
+		ASSERT(last4 >= size4int);
+		last4 -= size4int;
+		instance->DIEPTXF [pipeint - 1] = usbd_makeTXFSIZ(last4, size4int);
+		debug_printf_P(PSTR("usbd_fifo_initialize7 RNDIS INT %u bytes: 4*(full4-last4)=%u\n"), 4 * size4int, 4 * (full4 - last4));
 	}
 #endif /* WITHUSBRNDIS */
 
@@ -8429,7 +8434,7 @@ static void USBD_ClassXXX_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef  
 							USBD_CtlSendData(pdev, rndis_resp_ptr, ulmin16( USBD_peek_u32(& rndis_resp_ptr [4]), ulmin16(RNDIS_RESP_SIZE, req->wLength)));
 						else
 						{
-							static USBALIGN_BEGIN uint8_t * ep0resp [1] USBALIGN_END;
+							static RAMNOINIT_D1 USBALIGN_BEGIN uint8_t * ep0resp [1] USBALIGN_END;
 							ep0resp [0] = 0;
 							USBD_CtlSendData(pdev, ep0resp, ulmin16(1, ulmin16(RNDIS_RESP_SIZE, req->wLength)));
 						}
@@ -8439,7 +8444,7 @@ static void USBD_ClassXXX_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef  
 				default:
 					debug_printf_P(PSTR("USBD_ClassXXX_Setup IN: INTERFACE_RNDIS_CONTROL_5: xxx: bRequest=%02X, wIndex=%04X, wLength=%04X\n"), req->bRequest, req->wIndex, req->wLength);
 					{
-						static USBALIGN_BEGIN uint8_t * ep0resp [1] USBALIGN_END;
+						static RAMNOINIT_D1 USBALIGN_BEGIN uint8_t * ep0resp [1] USBALIGN_END;
 						ep0resp [0] = 0;
 						USBD_CtlSendData(pdev, ep0resp, ulmin16(1, ulmin16(1, req->wLength)));
 					}
@@ -9550,7 +9555,7 @@ const uint32_t OIDSupportedList[] =
 
 void response_available(USBD_HandleTypeDef *pdev)
 {
-	static USBALIGN_BEGIN uint8_t resp [8] USBALIGN_END;
+	static RAMNOINIT_D1 USBALIGN_BEGIN uint8_t resp [8] USBALIGN_END;
 
 	USBD_poke_u32(& resp [0], 0x00000001);
 	USBD_poke_u32(& resp [4], 0x00000000);
@@ -10195,8 +10200,8 @@ USBD_StatusTypeDef USBD_LL_DataInStage(USBD_HandleTypeDef *pdev, uint8_t epnum, 
 			break;
 
 		case (USBD_EP_RNDIS_INT & 0x7F):
-			USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), NULL, 0);
-			//debug_printf_P(PSTR("USBD_LL_DataInStage: USBD_EP_RNDIS_IN\n"));
+			//USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), NULL, 0);
+			//debug_printf_P(PSTR("USBD_LL_DataInStage: USBD_EP_RNDIS_INT\n"));
 			break;
 #endif /* WITHUSBRNDIS */
 
