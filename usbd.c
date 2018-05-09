@@ -106,7 +106,7 @@ static volatile uint_fast16_t usb_cdc_control_state [INTERFACE_count];
 	typedef ALIGNX_BEGIN struct rndis_resp
 	{
 		LIST_ENTRY item;
-		ALIGNX_BEGIN int8_t buff [256] ALIGNX_END;
+		ALIGNX_BEGIN int8_t buff [RNDIS_RESP_SIZE] ALIGNX_END;
 	} ALIGNX_END rndis_resp_t;
 
 	static LIST_ENTRY rndis_resp_freelist;
@@ -9555,12 +9555,12 @@ const uint32_t OIDSupportedList[] =
 
 void response_available(USBD_HandleTypeDef *pdev)
 {
-	static RAMNOINIT_D1 USBALIGN_BEGIN uint8_t resp [8] USBALIGN_END;
+	static RAMNOINIT_D1 USBALIGN_BEGIN uint8_t resp [USBD_RNDIS_INT_SIZE] USBALIGN_END;
 
 	USBD_poke_u32(& resp [0], 0x00000001);
 	USBD_poke_u32(& resp [4], 0x00000000);
 
-	USBD_LL_Transmit(pdev, USBD_EP_RNDIS_INT, resp, 8);
+	USBD_LL_Transmit(pdev, USBD_EP_RNDIS_INT, resp, USBD_RNDIS_INT_SIZE);
 }
 
 // https://docs.microsoft.com/en-us/windows-hardware/drivers/network/remote-ndis-query-cmplt
@@ -9569,10 +9569,11 @@ void rndis_query_cmplt32(USBD_HandleTypeDef  *pdev, int status, uint_fast32_t da
 	uint8_t * ep0resp;
 	if (! rndis_resp_allocate(& ep0resp))
 		return;
-	uint_fast32_t MessageLength = 28;
+	const uint_fast32_t RequestId = USBD_peek_u32(& ep0databuffout [8]);
+	const uint_fast32_t MessageLength = 28;
 	USBD_poke_u32(& ep0resp [0], REMOTE_NDIS_QUERY_CMPLT);	// MessageType
 	USBD_poke_u32(& ep0resp [4], MessageLength);	// MessageLength
-	USBD_poke_u32(& ep0resp [8], USBD_peek_u32(& ep0databuffout [8]));	// RequestId <- MessageId
+	USBD_poke_u32(& ep0resp [8], RequestId);	// RequestId <- MessageId
 	USBD_poke_u32(& ep0resp [12], status);	// Status
 	USBD_poke_u32(& ep0resp [16], 4);	// InformationBufferLength
 	USBD_poke_u32(& ep0resp [20], 16);	// InformationBufferOffset
@@ -9588,17 +9589,19 @@ void rndis_query_cmplt(USBD_HandleTypeDef * pdev, int status, const void * data,
 	uint8_t * ep0resp;
 	if (! rndis_resp_allocate(& ep0resp))
 		return;
+	const uint_fast32_t RequestId = USBD_peek_u32(& ep0databuffout [8]);
 	const uint_fast32_t MessageLength = 24 + size;
-	if (MessageLength > 256)
+	ASSERT(MessageLength <= RNDIS_RESP_SIZE);
+	if (MessageLength > RNDIS_RESP_SIZE)
 		return;
 	USBD_poke_u32(& ep0resp [0], REMOTE_NDIS_QUERY_CMPLT);	// MessageType
 	USBD_poke_u32(& ep0resp [4], MessageLength);	// MessageLength
-	USBD_poke_u32(& ep0resp [8], USBD_peek_u32(& ep0databuffout [8]));	// RequestId <- MessageId
+	USBD_poke_u32(& ep0resp [8], RequestId);	// RequestId <- MessageId
 	USBD_poke_u32(& ep0resp [12], status);	// Status
 	USBD_poke_u32(& ep0resp [16], size);	// InformationBufferLength
-	USBD_poke_u32(& ep0resp [20], 16);	// InformationBufferOffset
+	USBD_poke_u32(& ep0resp [20], size ? 16 : 0);	// InformationBufferOffset
 
-	if (data != NULL && MessageLength <= 256)
+	if (size != 0 && data != NULL && MessageLength <= 256)
 		memcpy(& ep0resp [24], data, size);
 
 	rndis_resp_tosensd(ep0resp);
@@ -9698,6 +9701,7 @@ void rndis_handle_set_msg(void  *pdev)
 	if (! rndis_resp_allocate(& ep0resp))
 		return;
 
+	// https://docs.microsoft.com/en-us/windows-hardware/drivers/network/remote-ndis-set-cmplt
 	USBD_poke_u32(& ep0resp [0], REMOTE_NDIS_SET_CMPLT);	// MessageType
 	USBD_poke_u32(& ep0resp [4], 16);	// MessageLength
 	USBD_poke_u32(& ep0resp [8], RequestId);	// RequestId <- MessageId
