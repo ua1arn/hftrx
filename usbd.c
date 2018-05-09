@@ -106,13 +106,13 @@ static volatile uint_fast16_t usb_cdc_control_state [INTERFACE_count];
 	typedef ALIGNX_BEGIN struct rndis_resp
 	{
 		LIST_ENTRY item;
-		ALIGNX_BEGIN int8_t buff [RNDIS_RESP_SIZE] ALIGNX_END;
+		ALIGNX_BEGIN uint8_t buff [RNDIS_RESP_SIZE] ALIGNX_END;
 	} ALIGNX_END rndis_resp_t;
 
 	static LIST_ENTRY rndis_resp_freelist;
 	static LIST_ENTRY rndis_resp_readylist;
 
-	static int8_t * rndis_resp_ptr = NULL;
+	static uint8_t * rndis_resp_ptr = NULL;
 
 	static void rndis_resp_initialize(void)
 	{
@@ -129,40 +129,42 @@ static volatile uint_fast16_t usb_cdc_control_state [INTERFACE_count];
 		rndis_resp_ptr = NULL;
 	}
 	// получить незаполненный буфер
-	static uint_fast8_t rndis_resp_allocate(uint8_t ** p)
+	static uint_fast8_t rndis_resp_allocate(uint8_t ** pv)
 	{
 		if (! IsListEmpty(& rndis_resp_freelist))
 		{
 			PLIST_ENTRY t = RemoveTailList(& rndis_resp_freelist);
-			* p = CONTAINING_RECORD(t, rndis_resp_t, item);
+			rndis_resp_t * p = CONTAINING_RECORD(t, rndis_resp_t, item);
+			* pv = p->buff;
 			return 1;
 		}
-		* p = NULL;
+		* pv = NULL;
 		return 0;
 	}
 
 	// получиь готовый к передаче
-	static uint_fast8_t rndis_resp_ready(uint8_t ** p)
+	static uint_fast8_t rndis_resp_ready(uint8_t ** pv)
 	{
 		if (! IsListEmpty(& rndis_resp_readylist))
 		{
 			PLIST_ENTRY t = RemoveTailList(& rndis_resp_readylist);
-			* p = CONTAINING_RECORD(t, rndis_resp_t, item);
+			rndis_resp_t * p = CONTAINING_RECORD(t, rndis_resp_t, item);
+			* pv = p->buff;
 			return 1;
 		}
-		* p = NULL;
+		* pv = NULL;
 		return 0;
 	}
 
 	// освободить буфер
-	static uint_fast8_t rndis_resp_release(uint8_t * addr)
+	static void rndis_resp_release(uint8_t * addr)
 	{
 		rndis_resp_t * const p = CONTAINING_RECORD(addr, rndis_resp_t, buff);
 		InsertHeadList(& rndis_resp_freelist, & p->item);
 	}
 
 	// записть готовый к передаче
-	static uint_fast8_t rndis_resp_tosensd(uint8_t * addr)
+	static void rndis_resp_tosensd(uint8_t * addr)
 	{
 		rndis_resp_t * const p = CONTAINING_RECORD(addr, rndis_resp_t, buff);
 		InsertHeadList(& rndis_resp_readylist, & p->item);
@@ -8340,7 +8342,7 @@ static void USBD_ClassXXX_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef  
 	static USBALIGN_BEGIN uint8_t buff [32] USBALIGN_END;	// was: 7
 	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
 
-	debug_printf_P(PSTR("USBD_ClassXXX_Setup: bRequest=%02X, wIndex=%04X, wLength=%04X, wValue=%04X (interfacev=%02X)\n"), req->bRequest, req->wIndex, req->wLength, req->wValue, interfacev);
+	//debug_printf_P(PSTR("USBD_ClassXXX_Setup: bRequest=%02X, wIndex=%04X, wLength=%04X, wValue=%04X (interfacev=%02X)\n"), req->bRequest, req->wIndex, req->wLength, req->wValue, interfacev);
 
 	if ((req->bmRequest & USB_REQ_TYPE_DIR) != 0)
 	{
@@ -8423,7 +8425,7 @@ static void USBD_ClassXXX_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef  
 				switch (req->bRequest)
 				{
 				case 0x01:	// GET_ENCAPSULATED_RESPONSE 
-					debug_printf_P(PSTR("USBD_ClassXXX_Setup IN: INTERFACE_RNDIS_CONTROL_5: GET_ENCAPSULATED_RESPONSE: bRequest=%02X, wIndex=%04X, wLength=%04X\n"), req->bRequest, req->wIndex, req->wLength);
+					//debug_printf_P(PSTR("USBD_ClassXXX_Setup IN: INTERFACE_RNDIS_CONTROL_5: GET_ENCAPSULATED_RESPONSE: bRequest=%02X, wIndex=%04X, wLength=%04X\n"), req->bRequest, req->wIndex, req->wLength);
 					{
 						if (rndis_resp_ptr != NULL)
 						{
@@ -8431,10 +8433,14 @@ static void USBD_ClassXXX_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef  
 							rndis_resp_ptr = NULL;
 						}
 						if (rndis_resp_ready(& rndis_resp_ptr))
+						{
+							//TP();
 							USBD_CtlSendData(pdev, rndis_resp_ptr, ulmin16( USBD_peek_u32(& rndis_resp_ptr [4]), ulmin16(RNDIS_RESP_SIZE, req->wLength)));
+						}
 						else
 						{
-							static RAMNOINIT_D1 USBALIGN_BEGIN uint8_t * ep0resp [1] USBALIGN_END;
+							//TP();
+							static RAMNOINIT_D1 USBALIGN_BEGIN uint8_t ep0resp [1] USBALIGN_END;
 							ep0resp [0] = 0;
 							USBD_CtlSendData(pdev, ep0resp, ulmin16(1, ulmin16(RNDIS_RESP_SIZE, req->wLength)));
 						}
@@ -8444,7 +8450,7 @@ static void USBD_ClassXXX_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef  
 				default:
 					debug_printf_P(PSTR("USBD_ClassXXX_Setup IN: INTERFACE_RNDIS_CONTROL_5: xxx: bRequest=%02X, wIndex=%04X, wLength=%04X\n"), req->bRequest, req->wIndex, req->wLength);
 					{
-						static RAMNOINIT_D1 USBALIGN_BEGIN uint8_t * ep0resp [1] USBALIGN_END;
+						static RAMNOINIT_D1 USBALIGN_BEGIN uint8_t ep0resp [1] USBALIGN_END;
 						ep0resp [0] = 0;
 						USBD_CtlSendData(pdev, ep0resp, ulmin16(1, ulmin16(1, req->wLength)));
 					}
@@ -8618,7 +8624,7 @@ static void USBD_ClassXXX_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef  
 					//usb_cdc_control_state [interfacev] = req->wValue;
 				//	break;
 				default:
-					debug_printf_P(PSTR("USBD_ClassXXX_Setup OUT: INTERFACE_RNDIS_CONTROL_5: bRequest=%02X, wIndex=%04X, wLength=%04X\n"), req->bRequest, req->wIndex, req->wLength);
+					//debug_printf_P(PSTR("USBD_ClassXXX_Setup OUT: INTERFACE_RNDIS_CONTROL_5: bRequest=%02X, wIndex=%04X, wLength=%04X\n"), req->bRequest, req->wIndex, req->wLength);
 					break;
 				}
 				if (req->wLength != 0)
@@ -9764,7 +9770,8 @@ static void rndisout_buffer_save(
 	uint_fast16_t length
 	)
 {
-	TP();
+	usb_eth_stat.rxok++;
+	//TP();
 }
 
 static void usbd_rndis_ep0_recv(USBD_HandleTypeDef *pdev)
