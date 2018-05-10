@@ -4695,7 +4695,8 @@ static void usbd_classDeInit(USBD_HandleTypeDef *pdev, uint_fast8_t cfgidx)
 	USBD_LL_CloseEP(pdev, USBD_EP_RNDIS_IN);
 	USBD_LL_CloseEP(pdev, USBD_EP_RNDIS_INT);
 	USBD_LL_CloseEP(pdev, USBD_EP_RNDIS_OUT);
-	rndis_resp_cleanup();
+	//rndis_resp_cleanup();
+	rndis_resp_initialize();
 #endif /* WITHUSBRNDIS */
 
 #if WITHUSBUAC
