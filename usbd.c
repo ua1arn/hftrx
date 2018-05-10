@@ -116,7 +116,7 @@ static volatile uint_fast16_t usb_cdc_control_state [INTERFACE_count];
 
 	static void rndis_resp_initialize(void)
 	{
-		static RAMNOINIT_D1 rndis_resp_t buffs [3];
+		static RAMNOINIT_D1 rndis_resp_t buffs [2];
 		uint_fast8_t i;
 
 		InitializeListHead(& rndis_resp_readylist);		// список для выдачи в канал USB
@@ -9666,12 +9666,12 @@ static void rndis_query(USBD_HandleTypeDef  *pdev)
 }
 
 
-static void rndis_handle_config_parm(const char *data, int keyoffset, int valoffset, int keylen, int vallen)
+static void rndis_handle_config_parm(const char * data, int keyoffset, int valoffset, int keylen, int vallen)
 {
 }
 
 // https://docs.microsoft.com/en-us/windows-hardware/drivers/network/remote-ndis-set-msg
-static void rndis_handle_set_msg(void  *pdev)
+static void rndis_handle_set_msg(void * pdev)
 {
 	//rndis_set_cmplt_t *c;
 	//rndis_set_msg_t *m;
