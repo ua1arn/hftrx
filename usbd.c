@@ -116,7 +116,7 @@ static volatile uint_fast16_t usb_cdc_control_state [INTERFACE_count];
 
 	static void rndis_resp_initialize(void)
 	{
-		static RAMNOINIT_D1 rndis_resp_t buffs [4];
+		static RAMNOINIT_D1 rndis_resp_t buffs [3];
 		uint_fast8_t i;
 
 		InitializeListHead(& rndis_resp_readylist);		// список для выдачи в канал USB
@@ -9493,7 +9493,6 @@ static void cdc2out_buffer_save(
 #define REMOTE_NDIS_KEEPALIVE_CMPLT     0x80000008
 
 #define RNDIS_MTU                                       3000                           // MTU value
-#define ETH_LINK_SPEED                                  12000000                       // bits per sec
 #define RNDIS_VENDOR                                    "MGS1"                      // NIC vendor name
 #define STATION_HWADDR                                  0x30,0x89,0x84,0x6A,0x96,0xAA  // station MAC
 #define PERMANENT_HWADDR                                0x30,0x89,0x84,0x6A,0x96,0xAA  // permanent MAC
@@ -9519,15 +9518,15 @@ typedef struct {
 } usb_eth_stat_t;
 
 
-uint8_t station_hwaddr[6] = { STATION_HWADDR };
-uint8_t permanent_hwaddr[6] = { PERMANENT_HWADDR };
-usb_eth_stat_t usb_eth_stat = { 0, 0, 0, 0 };
-rndis_state_t rndis_state = rndis_uninitialized;
-uint32_t oid_packet_filter = 0x0000000;
+static uint8_t station_hwaddr[6] = { STATION_HWADDR };
+static uint8_t permanent_hwaddr[6] = { PERMANENT_HWADDR };
+static usb_eth_stat_t usb_eth_stat = { 0, 0, 0, 0 };
+static rndis_state_t rndis_state = rndis_uninitialized;
+static uint32_t oid_packet_filter = 0x0000000;
 
-  static const char *rndis_vendor = RNDIS_VENDOR;
+static const char *rndis_vendor = RNDIS_VENDOR;
 
-const uint32_t OIDSupportedList[] = 
+static const uint32_t OIDSupportedList[] = 
 {
   OID_GEN_SUPPORTED_LIST,
   OID_GEN_HARDWARE_STATUS,
@@ -9559,7 +9558,7 @@ const uint32_t OIDSupportedList[] =
 };
 #define OID_LIST_LENGTH (sizeof(OIDSupportedList) / sizeof(*OIDSupportedList))
 
-void response_available(USBD_HandleTypeDef *pdev)
+static void response_available(USBD_HandleTypeDef *pdev)
 {
 	static RAMNOINIT_D1 USBALIGN_BEGIN uint8_t resp [USBD_RNDIS_INT_SIZE] USBALIGN_END;
 
@@ -9570,7 +9569,7 @@ void response_available(USBD_HandleTypeDef *pdev)
 }
 
 // https://docs.microsoft.com/en-us/windows-hardware/drivers/network/remote-ndis-query-cmplt
-void rndis_query_cmplt32(USBD_HandleTypeDef  *pdev, int status, uint_fast32_t data)
+static void rndis_query_cmplt32(USBD_HandleTypeDef  *pdev, int status, uint_fast32_t data)
 {
 	uint8_t * ep0resp;
 	if (! rndis_resp_allocate(& ep0resp))
@@ -9590,7 +9589,7 @@ void rndis_query_cmplt32(USBD_HandleTypeDef  *pdev, int status, uint_fast32_t da
 }
 
 // https://docs.microsoft.com/en-us/windows-hardware/drivers/network/remote-ndis-query-cmplt
-void rndis_query_cmplt(USBD_HandleTypeDef * pdev, int status, const void * data, int size)
+static void rndis_query_cmplt(USBD_HandleTypeDef * pdev, int status, const void * data, int size)
 {
 	uint8_t * ep0resp;
 	if (! rndis_resp_allocate(& ep0resp))
@@ -9615,9 +9614,19 @@ void rndis_query_cmplt(USBD_HandleTypeDef * pdev, int status, const void * data,
 }
 
 // https://docs.microsoft.com/en-us/windows-hardware/drivers/network/remote-ndis-query-msg
-void rndis_query(USBD_HandleTypeDef  *pdev)
+static void rndis_query(USBD_HandleTypeDef  *pdev)
 {
 	const uint_fast32_t oid = USBD_peek_u32(& ep0databuffout [12]);
+	uint_fast32_t eth_link_speed = 12000000uL;
+	switch (pdev->dev_speed)
+	{
+	case USBD_SPEED_HIGH:
+		eth_link_speed = 480000000uL;
+		break;
+	case USBD_SPEED_LOW:
+		eth_link_speed = 6000000uL;
+		break;
+	}
 
 	switch (oid)
 	{
@@ -9629,7 +9638,7 @@ void rndis_query(USBD_HandleTypeDef  *pdev)
 	case OID_GEN_MEDIA_IN_USE:           rndis_query_cmplt32(pdev, RNDIS_STATUS_SUCCESS, NDIS_MEDIUM_802_3); return;
 	case OID_GEN_PHYSICAL_MEDIUM:        rndis_query_cmplt32(pdev, RNDIS_STATUS_SUCCESS, NDIS_MEDIUM_802_3); return;
 	case OID_GEN_HARDWARE_STATUS:        rndis_query_cmplt32(pdev, RNDIS_STATUS_SUCCESS, 0); return;
-	case OID_GEN_LINK_SPEED:             rndis_query_cmplt32(pdev, RNDIS_STATUS_SUCCESS, ETH_LINK_SPEED / 100); return;
+	case OID_GEN_LINK_SPEED:             rndis_query_cmplt32(pdev, RNDIS_STATUS_SUCCESS, eth_link_speed / 100); return;
 	case OID_GEN_VENDOR_ID:              rndis_query_cmplt32(pdev, RNDIS_STATUS_SUCCESS, 0x00FFFFFF); return;
 	case OID_GEN_VENDOR_DESCRIPTION:     rndis_query_cmplt(pdev, RNDIS_STATUS_SUCCESS, rndis_vendor, strlen(rndis_vendor) + 1); return;
 	case OID_GEN_CURRENT_PACKET_FILTER:  rndis_query_cmplt32(pdev, RNDIS_STATUS_SUCCESS, oid_packet_filter); return;
@@ -9657,12 +9666,12 @@ void rndis_query(USBD_HandleTypeDef  *pdev)
 }
 
 
-void rndis_handle_config_parm(const char *data, int keyoffset, int valoffset, int keylen, int vallen)
+static void rndis_handle_config_parm(const char *data, int keyoffset, int valoffset, int keylen, int vallen)
 {
 }
 
 // https://docs.microsoft.com/en-us/windows-hardware/drivers/network/remote-ndis-set-msg
-void rndis_handle_set_msg(void  *pdev)
+static void rndis_handle_set_msg(void  *pdev)
 {
 	//rndis_set_cmplt_t *c;
 	//rndis_set_msg_t *m;
