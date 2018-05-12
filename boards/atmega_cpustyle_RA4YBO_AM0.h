@@ -14,7 +14,7 @@
 #define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 //#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 
-//#define WITHSPIHW 	1	/* Использование аппаратного контроллера SPI */
+#define WITHSPIHW 	1	/* Использование аппаратного контроллера SPI */
 #define WITHSPISW 	1	/* Использование программного контроллера SPI */
 #define WITHCPUADCHW 	1	/* использование ADC */
 
@@ -38,7 +38,7 @@
 //#endif
 
 #if F_CPU != 8000000
-	#error Set F_CPU right value in project file
+	//#error Set F_CPU right value in project file
 #endif
 
 
@@ -227,6 +227,8 @@
 		} while (0)
 
 	#define HARDWARE_SPI_CONNECT() do { \
+			/* PB4(~SS) должен быть выходом. SPI_NAEN_BIT - разрешение дешифратора. */ \
+			HARDWARE_OUTPUT_INITIALIZE(PORTB, DDRB, (1U << PB4), (1U << PB4)); \
 		} while (0)
 
 	#define HARDWARE_SPI_DISCONNECT() do { \
@@ -236,9 +238,10 @@
 	// Separated MOSI and MISO signals, only supported if WITHSPIHW used
 	#define SPIIO_INITIALIZE() do { \
 			HARDWARE_INPUT_INITIALIZE(SPI_TARGET_MISO_PORT, SPI_TARGET_MISO_DDR, SPI_MISO_BIT, SPI_MISO_BIT); /* enable pull-up on MISO */ \
-			/* PB4(~SS) должен быть выходом. SPI_NAEN_BIT - разрешение дешифратора. */ \
 			HARDWARE_OUTPUT_INITIALIZE(SPI_TARGET_SCLK_PORT, SPI_TARGET_SCLK_DDR, SPI_SCLK_BIT, SPI_SCLK_BIT); \
 			HARDWARE_OUTPUT_INITIALIZE(SPI_TARGET_MOSI_PORT, SPI_TARGET_MOSI_DDR, SPI_MOSI_BIT, SPI_MOSI_BIT); \
+			/* PB4(~SS) должен быть выходом. SPI_NAEN_BIT - разрешение дешифратора. */ \
+			HARDWARE_OUTPUT_INITIALIZE(PORTB, DDRB, (1U << PB4), (1U << PB4)); \
 		} while (0)
 
 	#define TARGET_TWI_TWCK_PORT PORTC
