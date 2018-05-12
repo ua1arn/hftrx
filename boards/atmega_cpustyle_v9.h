@@ -278,6 +278,8 @@
 		} while (0)
 
 	#define HARDWARE_SPI_CONNECT() do { \
+			/* PB4(~SS) должен быть выходом. SPI_NAEN_BIT - разрешение дешифратора. */ \
+			HARDWARE_OUTPUT_INITIALIZE(PORTB, DDRB, (1U << PB4), (1U << PB4)); \
 		} while (0)
 
 	#define HARDWARE_SPI_DISCONNECT() do { \
@@ -290,6 +292,8 @@
 			/* PB4(~SS) должен быть выходом. SPI_NAEN_BIT - разрешение дешифратора. */ \
 			HARDWARE_OUTPUT_INITIALIZE(SPI_TARGET_SCLK_PORT, SPI_TARGET_SCLK_DDR, SPI_SCLK_BIT, SPI_SCLK_BIT); \
 			HARDWARE_OUTPUT_INITIALIZE(SPI_TARGET_MOSI_PORT, SPI_TARGET_MOSI_DDR, SPI_MOSI_BIT, SPI_MOSI_BIT); \
+			/* PB4(~SS) должен быть выходом. SPI_NAEN_BIT - разрешение дешифратора. */ \
+			HARDWARE_OUTPUT_INITIALIZE(PORTB, DDRB, (1U << PB4), (1U << PB4)); \
 		} while (0)
 
 	#define TARGET_TWI_TWCK_PORT PORTC
