@@ -93,6 +93,45 @@ static volatile uint_fast16_t usb_cdc_control_state [INTERFACE_count];
 
 	static USBALIGN_BEGIN uint8_t cdc_ep0databuffout [USB_OTG_MAX_EP0_SIZE] USBALIGN_END;
 
+
+	/* хранимое значение после получения CDC_SET_CONTROL_LINE_STATE */
+	/* Биты: RTS = 0x02, DTR = 0x01 */
+
+	// Обычно используется для переключения на передачу (PTT)
+	uint_fast8_t usbd_cdc_getrts(void)
+	{
+		return 
+			((usb_cdc_control_state [INTERFACE_CDC_CONTROL_3a] & CDC_ACTIVATE_CARRIER) != 0) ||
+			((usb_cdc_control_state [INTERFACE_CDC_CONTROL_3b] & CDC_ACTIVATE_CARRIER) != 0) ||
+			0;
+	}
+
+	// Обычно используется для телеграфной манипуляции (KEYDOWN)
+	uint_fast8_t usbd_cdc_getdtr(void)
+	{
+		return 
+			((usb_cdc_control_state [INTERFACE_CDC_CONTROL_3a] & CDC_DTE_PRESENT) != 0) ||
+			((usb_cdc_control_state [INTERFACE_CDC_CONTROL_3b] & CDC_DTE_PRESENT) != 0) ||
+			0;
+	}
+
+	static volatile uint_fast8_t usbd_cdc_txenabled = 0;	/* виртуальный флаг разрешения прерывания по готовности передатчика - HARDWARE_CDC_ONTXCHAR*/
+
+	/* Разрешение/запрещение прерывания по передаче символа */
+	void usbd_cdc_enabletx(uint_fast8_t state)	/* вызывается из обработчика прерываний */
+	{
+		usbd_cdc_txenabled = state;
+	}
+
+	static volatile uint_fast8_t usbd_cdc_rxenabled = 0;	/* виртуальный флаг разрешения прерывания по приёму символа - HARDWARE_CDC_ONRXCHAR */
+
+	/* вызывается из обработчика прерываний или при запрещённых прерываниях. */
+	/* Разрешение/запрещение прерываний про приёму символа */
+	void usbd_cdc_enablerx(uint_fast8_t state)	/* вызывается из обработчика прерываний */
+	{
+		usbd_cdc_rxenabled = state;
+	}
+
 #endif /* WITHUSBCDC */
 
 #if WITHUSBCDCEEM
@@ -970,47 +1009,6 @@ static USBD_StatusTypeDef  USBD_LL_Start(USBD_HandleTypeDef *pdev);
 
 
 
-#if WITHUSBCDC
-
-/* хранимое значение после получения CDC_SET_CONTROL_LINE_STATE */
-/* Биты: RTS = 0x02, DTR = 0x01 */
-
-// Обычно используется для переключения на передачу (PTT)
-uint_fast8_t usbd_cdc_getrts(void)
-{
-	return 
-		((usb_cdc_control_state [INTERFACE_CDC_CONTROL_3a] & CDC_ACTIVATE_CARRIER) != 0) ||
-		((usb_cdc_control_state [INTERFACE_CDC_CONTROL_3b] & CDC_ACTIVATE_CARRIER) != 0) ||
-		0;
-}
-
-// Обычно используется для телеграфной манипуляции (KEYDOWN)
-uint_fast8_t usbd_cdc_getdtr(void)
-{
-	return 
-		((usb_cdc_control_state [INTERFACE_CDC_CONTROL_3a] & CDC_DTE_PRESENT) != 0) ||
-		((usb_cdc_control_state [INTERFACE_CDC_CONTROL_3b] & CDC_DTE_PRESENT) != 0) ||
-		0;
-}
-
-static volatile uint_fast8_t usbd_cdc_txenabled = 0;	/* виртуальный флаг разрешения прерывания по готовности передатчика - HARDWARE_CDC_ONTXCHAR*/
-
-/* Разрешение/запрещение прерывания по передаче символа */
-void usbd_cdc_enabletx(uint_fast8_t state)	/* вызывается из обработчика прерываний */
-{
-	usbd_cdc_txenabled = state;
-}
-
-static volatile uint_fast8_t usbd_cdc_rxenabled = 0;	/* виртуальный флаг разрешения прерывания по приёму символа - HARDWARE_CDC_ONRXCHAR */
-
-/* вызывается из обработчика прерываний или при запрещённых прерываниях. */
-/* Разрешение/запрещение прерываний про приёму символа */
-void usbd_cdc_enablerx(uint_fast8_t state)	/* вызывается из обработчика прерываний */
-{
-	usbd_cdc_rxenabled = state;
-}
-
-#endif /* WITHUSBCDC */
 
 
 /** @defgroup USBD_CORE_Exported_FunctionsPrototype
