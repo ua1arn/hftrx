@@ -73,6 +73,9 @@ void usbd_diagnostics(void)
 	static uint_fast16_t uacinrtssize = 0;
 
 	static USBALIGN_BEGIN uint8_t uacoutbuff [VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT] USBALIGN_END;
+
+	static USBALIGN_BEGIN uint8_t uac_ep0databuffout [USB_OTG_MAX_EP0_SIZE] USBALIGN_END;
+
 #endif /* WITHUSBUAC */
 
  
@@ -88,11 +91,14 @@ static volatile uint_fast16_t usb_cdc_control_state [INTERFACE_count];
 	static USBALIGN_BEGIN uint8_t cdc2buffin [VIRTUAL_COM_PORT_DATA_SIZE] USBALIGN_END;
 	static uint_fast16_t cdc2buffinlevel;
 
+	static USBALIGN_BEGIN uint8_t cdc_ep0databuffout [USB_OTG_MAX_EP0_SIZE] USBALIGN_END;
+
 #endif /* WITHUSBCDC */
 
 #if WITHUSBCDCEEM
 
 	static USBALIGN_BEGIN uint8_t cdceemoutbuff [USBD_CDCEEM_BUFSIZE] USBALIGN_END;
+	static USBALIGN_BEGIN uint8_t cdceem_ep0databuffout [USB_OTG_MAX_EP0_SIZE] USBALIGN_END;
 
 #endif /* WITHUSBCDCEEM */
 
@@ -101,6 +107,7 @@ static volatile uint_fast16_t usb_cdc_control_state [INTERFACE_count];
 	#include "list.h"
 
 	static USBALIGN_BEGIN uint8_t rndisbuffout [USBD_RNDIS_BUFSIZE] USBALIGN_END;
+	static USBALIGN_BEGIN uint8_t rndis_ep0databuffout [USB_OTG_MAX_EP0_SIZE] USBALIGN_END;
 
 	#define RNDIS_RESP_SIZE 256
 	typedef ALIGNX_BEGIN struct rndis_resp
@@ -180,11 +187,9 @@ static volatile uint_fast16_t usb_cdc_control_state [INTERFACE_count];
 		}
 	}
 
+
 #endif /* WITHUSBRNDIS */
 	
-static USBALIGN_BEGIN uint8_t ep0databuffout [USB_OTG_MAX_EP0_SIZE] USBALIGN_END;
-//static USBALIGN_BEGIN uint8_t * ep0resp [256] USBALIGN_END;
-
 // Состояние - выбранные альтернативные конфигурации по каждому интерфейсу USB configuration descriptor
 static uint8_t altinterfaces [INTERFACE_count];
 
@@ -2987,17 +2992,15 @@ static uint_fast32_t dwDTERate [INTERFACE_count];
 static void
 usbd_handler_brdy8_dcp_out(PCD_TypeDef * const Instance, uint_fast8_t pipe)
 {
-	unsigned count = usbd_read_data(Instance, pipe, ep0databuffout, sizeof ep0databuffout / sizeof ep0databuffout [0]);
-	(void) count;
-
 	switch (gReqRequest)
 	{
 #if WITHUSBCDC
 	case CDC_SET_LINE_CODING:
 		{
+			//unsigned count = usbd_read_data(Instance, pipe, cdc_ep0databuffout, sizeof cdc_ep0databuffout / sizeof cdc_ep0databuffout [0]);
 			const uint_fast8_t interfacev = LO_BYTE(gReqIndex);
-			dwDTERate [interfacev] = USBD_peek_u32(& ep0databuffout [0]);
-			//debug_printf_P(PSTR("CDC_SET_LINE_CODING: interfacev=%u, dwDTERate=%lu, bits=%u\n"), interfacev, dwDTERate [interfacev], ep0databuffout [6]);
+			dwDTERate [interfacev] = USBD_peek_u32(& cdc_ep0databuffout [0]);
+			//debug_printf_P(PSTR("CDC_SET_LINE_CODING: interfacev=%u, dwDTERate=%lu, bits=%u\n"), interfacev, dwDTERate [interfacev], cdc_ep0databuffout [6]);
 		}
 		break;
 #endif /* WITHUSBCDC */
@@ -3005,11 +3008,12 @@ usbd_handler_brdy8_dcp_out(PCD_TypeDef * const Instance, uint_fast8_t pipe)
 #if WITHUSBUAC
 	case AUDIO_REQUEST_SET_CUR:
 		{
+			//unsigned count = usbd_read_data(Instance, pipe, uac_ep0databuffout, sizeof uac_ep0databuffout / sizeof uac_ep0databuffout [0]);
 			const uint_fast8_t interfacev = LO_BYTE(gReqIndex);
 			const uint_fast8_t terminalID = HI_BYTE(gReqIndex);
 			const uint_fast8_t controlID = HI_BYTE(gReqValue);	// AUDIO_MUTE_CONTROL, AUDIO_VOLUME_CONTROL, ...
-			terminalsprops [terminalID] [controlID] = ep0databuffout [0];
-			debug_printf_P(PSTR("AUDIO_REQUEST_SET_CUR: interfacev=%u, %u=%u\n"), interfacev, terminalID, ep0databuffout [0]);
+			terminalsprops [terminalID] [controlID] = uac_ep0databuffout [0];
+			debug_printf_P(PSTR("AUDIO_REQUEST_SET_CUR: interfacev=%u, %u=%u\n"), interfacev, terminalID, uac_ep0databuffout [0]);
 		}
 		break;
 #endif /* WITHUSBUAC */
@@ -8557,7 +8561,7 @@ static void USBD_ClassXXX_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef  
 
 				if (req->wLength != 0)
 				{
-					USBD_CtlPrepareRx(pdev, ep0databuffout, ulmin16(ARRAY_SIZE(ep0databuffout), req->wLength));
+					USBD_CtlPrepareRx(pdev, cdc_ep0databuffout, ulmin16(ARRAY_SIZE(cdc_ep0databuffout), req->wLength));
 				}
 				else
 				{
@@ -8583,7 +8587,7 @@ static void USBD_ClassXXX_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef  
 
 				if (req->wLength != 0)
 				{
-					USBD_CtlPrepareRx (pdev, ep0databuffout, ulmin16(ARRAY_SIZE(ep0databuffout), req->wLength));
+					USBD_CtlPrepareRx (pdev, uac_ep0databuffout, ulmin16(ARRAY_SIZE(uac_ep0databuffout), req->wLength));
 				}
 				else
 				{
@@ -8606,7 +8610,7 @@ static void USBD_ClassXXX_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef  
 				}
 				if (req->wLength != 0)
 				{
-					USBD_CtlPrepareRx(pdev, ep0databuffout, ulmin16(ARRAY_SIZE(ep0databuffout), req->wLength));
+					USBD_CtlPrepareRx(pdev, cdceem_ep0databuffout, ulmin16(ARRAY_SIZE(cdceem_ep0databuffout), req->wLength));
 				}
 				else
 				{
@@ -8630,7 +8634,7 @@ static void USBD_ClassXXX_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef  
 				}
 				if (req->wLength != 0)
 				{
-					USBD_CtlPrepareRx(pdev, ep0databuffout, ulmin16(ARRAY_SIZE(ep0databuffout), req->wLength));
+					USBD_CtlPrepareRx(pdev, rndis_ep0databuffout, ulmin16(ARRAY_SIZE(rndis_ep0databuffout), req->wLength));
 				}
 				else
 				{
@@ -8654,7 +8658,7 @@ static void USBD_ClassXXX_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef  
 				}
 				if (req->wLength != 0)
 				{
-					USBD_CtlPrepareRx(pdev, ep0databuffout, ulmin16(ARRAY_SIZE(ep0databuffout), req->wLength));
+					USBD_CtlPrepareRx(pdev, hid_ep0databuffout, ulmin16(ARRAY_SIZE(hid_ep0databuffout), req->wLength));
 				}
 				else
 				{
@@ -9575,7 +9579,7 @@ static void rndis_query_cmplt32(USBD_HandleTypeDef  *pdev, int status, uint_fast
 	uint8_t * ep0resp;
 	if (! rndis_resp_allocate(& ep0resp))
 		return;
-	const uint_fast32_t RequestId = USBD_peek_u32(& ep0databuffout [8]);
+	const uint_fast32_t RequestId = USBD_peek_u32(& rndis_ep0databuffout [8]);
 	const uint_fast32_t MessageLength = 28;
 	USBD_poke_u32(& ep0resp [0], REMOTE_NDIS_QUERY_CMPLT);	// MessageType
 	USBD_poke_u32(& ep0resp [4], MessageLength);	// MessageLength
@@ -9595,7 +9599,7 @@ static void rndis_query_cmplt(USBD_HandleTypeDef * pdev, int status, const void 
 	uint8_t * ep0resp;
 	if (! rndis_resp_allocate(& ep0resp))
 		return;
-	const uint_fast32_t RequestId = USBD_peek_u32(& ep0databuffout [8]);
+	const uint_fast32_t RequestId = USBD_peek_u32(& rndis_ep0databuffout [8]);
 	const uint_fast32_t MessageLength = 24 + size;
 	ASSERT(MessageLength <= RNDIS_RESP_SIZE);
 	if (MessageLength > RNDIS_RESP_SIZE)
@@ -9617,7 +9621,7 @@ static void rndis_query_cmplt(USBD_HandleTypeDef * pdev, int status, const void 
 // https://docs.microsoft.com/en-us/windows-hardware/drivers/network/remote-ndis-query-msg
 static void rndis_query(USBD_HandleTypeDef  *pdev)
 {
-	const uint_fast32_t oid = USBD_peek_u32(& ep0databuffout [12]);
+	const uint_fast32_t oid = USBD_peek_u32(& rndis_ep0databuffout [12]);
 	uint_fast32_t eth_link_speed = 12000000uL;
 	switch (pdev->dev_speed)
 	{
@@ -9626,6 +9630,9 @@ static void rndis_query(USBD_HandleTypeDef  *pdev)
 		break;
 	case USBD_SPEED_LOW:
 		eth_link_speed = 6000000uL;
+		break;
+	case USBD_SPEED_FULL:
+		eth_link_speed = 12000000uL;
 		break;
 	}
 
@@ -9676,10 +9683,10 @@ static void rndis_handle_set_msg(void * pdev)
 {
 	//rndis_set_cmplt_t *c;
 	//rndis_set_msg_t *m;
-	const uint_fast32_t oid = USBD_peek_u32(& ep0databuffout [12]);
-	const uint_fast32_t RequestId = USBD_peek_u32(& ep0databuffout [8]);
-	const uint_fast32_t InformationBufferLength = USBD_peek_u32(& ep0databuffout [16]);
-	const uint_fast32_t InformationBufferOffset = USBD_peek_u32(& ep0databuffout [20]);
+	const uint_fast32_t oid = USBD_peek_u32(& rndis_ep0databuffout [12]);
+	const uint_fast32_t RequestId = USBD_peek_u32(& rndis_ep0databuffout [8]);
+	const uint_fast32_t InformationBufferLength = USBD_peek_u32(& rndis_ep0databuffout [16]);
+	const uint_fast32_t InformationBufferOffset = USBD_peek_u32(& rndis_ep0databuffout [20]);
 
 	//c = (rndis_set_cmplt_t *)encapsulated_buffer;
 	//m = (rndis_set_msg_t *)encapsulated_buffer;
@@ -9739,7 +9746,7 @@ static void rndis_handle_set_msg(void * pdev)
 
 		/* Mandatory general OIDs */
 		case OID_GEN_CURRENT_PACKET_FILTER:
-			oid_packet_filter = USBD_peek_u32(& ep0databuffout [InformationBufferOffset + 8]);
+			oid_packet_filter = USBD_peek_u32(& rndis_ep0databuffout [InformationBufferOffset + 8]);
 			//oid_packet_filter = *INFBUF;
 			//if (oid_packet_filter)
 			//{
@@ -9786,8 +9793,8 @@ static void rndisout_buffer_save(
 
 static void usbd_rndis_ep0_recv(USBD_HandleTypeDef *pdev)
 {
-	const uint_fast32_t MessageType = USBD_peek_u32(& ep0databuffout [0]);
-	const uint_fast32_t RequestId = USBD_peek_u32(& ep0databuffout [8]);
+	const uint_fast32_t MessageType = USBD_peek_u32(& rndis_ep0databuffout [0]);
+	const uint_fast32_t RequestId = USBD_peek_u32(& rndis_ep0databuffout [8]);
 	// See https://docs.microsoft.com/en-us/windows-hardware/drivers/network/remote-ndis-control-messages
 	switch (MessageType)
 	{
@@ -9802,8 +9809,8 @@ static void usbd_rndis_ep0_recv(USBD_HandleTypeDef *pdev)
 			USBD_poke_u32(& ep0resp [4], 52);	// MessageLength
 			USBD_poke_u32(& ep0resp [8], RequestId);	// RequestId <- MessageId
 			USBD_poke_u32(& ep0resp [12], RNDIS_STATUS_SUCCESS);	// Status RNDIS_STATUS_SUCCESS
-			USBD_poke_u32(& ep0resp [16], ulmin32(RNDIS_MAJOR_VERSION, USBD_peek_u32(& ep0databuffout [12])));	// MajorVersion
-			USBD_poke_u32(& ep0resp [20], ulmin32(RNDIS_MINOR_VERSION, USBD_peek_u32(& ep0databuffout [16])));	// MinorVersion
+			USBD_poke_u32(& ep0resp [16], ulmin32(RNDIS_MAJOR_VERSION, USBD_peek_u32(& rndis_ep0databuffout [12])));	// MajorVersion
+			USBD_poke_u32(& ep0resp [20], ulmin32(RNDIS_MINOR_VERSION, USBD_peek_u32(& rndis_ep0databuffout [16])));	// MinorVersion
 			USBD_poke_u32(& ep0resp [24], 0x00000001);	// DeviceFlags RNDIS_DF_CONNECTIONLESS 
 			USBD_poke_u32(& ep0resp [28], 0x00000000);	// Medium 0 - RNDIS_MEDIUM_802_3 
 			USBD_poke_u32(& ep0resp [32], 1);	// MaxPacketsPerMessage
@@ -9821,7 +9828,7 @@ static void usbd_rndis_ep0_recv(USBD_HandleTypeDef *pdev)
 		break;
 
 	case REMOTE_NDIS_QUERY_MSG:	// https://docs.microsoft.com/en-us/windows-hardware/drivers/network/remote-ndis-query-msg
-		//debug_printf_P(PSTR("USBD_LL_DataOutStage: xx03: Oid=%08lX\n"), USBD_peek_u32(& ep0databuffout [12]));
+		//debug_printf_P(PSTR("USBD_LL_DataOutStage: xx03: Oid=%08lX\n"), USBD_peek_u32(& rndis_ep0databuffout [12]));
 		rndis_query(pdev);
 		break;
 
@@ -9914,8 +9921,8 @@ USBD_StatusTypeDef USBD_LL_DataOutStage(USBD_HandleTypeDef *pdev, uint8_t epnum,
 						switch (pdev->request.bRequest)
 						{
 						case CDC_SET_LINE_CODING:
-							//debug_printf_P(PSTR("USBD_LL_DataOutStage: CDC_SET_LINE_CODING: interfacev=%u, dwDTERate=%lu, bits=%u (size=%u)\n"), interfacev, USBD_peek_u32(& ep0databuffout [0]), ep0databuffout [6], USBD_LL_GetRxDataSize(pdev, epnum));
-							dwDTERate [interfacev] = USBD_peek_u32(& ep0databuffout [0]);
+							//debug_printf_P(PSTR("USBD_LL_DataOutStage: CDC_SET_LINE_CODING: interfacev=%u, dwDTERate=%lu, bits=%u (size=%u)\n"), interfacev, USBD_peek_u32(& cdc_ep0databuffout [0]), cdc_ep0databuffout [6], USBD_LL_GetRxDataSize(pdev, epnum));
+							dwDTERate [interfacev] = USBD_peek_u32(& cdc_ep0databuffout [0]);
 							break;
 
 						default:
@@ -9950,8 +9957,8 @@ USBD_StatusTypeDef USBD_LL_DataOutStage(USBD_HandleTypeDef *pdev, uint8_t epnum,
 							{
 								const uint_fast8_t terminalID = HI_BYTE(pdev->request.wIndex);
 								const uint_fast8_t controlID = HI_BYTE(pdev->request.wValue);	// AUDIO_MUTE_CONTROL, AUDIO_VOLUME_CONTROL, ...
-								terminalsprops [terminalID] [controlID] = ep0databuffout [0];
-								debug_printf_P(PSTR("USBD_LL_DataOutStage: AUDIO_REQUEST_SET_CUR: interfacev=%u, %u/%u=%u\n"), interfacev, terminalID, controlID, ep0databuffout [0]);
+								terminalsprops [terminalID] [controlID] = uac_ep0databuffout [0];
+								debug_printf_P(PSTR("USBD_LL_DataOutStage: AUDIO_REQUEST_SET_CUR: interfacev=%u, %u/%u=%u\n"), interfacev, terminalID, controlID, uac_ep0databuffout [0]);
 							}
 							break;
 
@@ -9959,7 +9966,7 @@ USBD_StatusTypeDef USBD_LL_DataOutStage(USBD_HandleTypeDef *pdev, uint8_t epnum,
 							{
 								const uint_fast8_t terminalID = HI_BYTE(pdev->request.wIndex);
 								const uint_fast8_t controlID = HI_BYTE(pdev->request.wValue);	// AUDIO_MUTE_CONTROL, AUDIO_VOLUME_CONTROL, ...
-								debug_printf_P(PSTR("USBD_LL_DataOutStage: xxx3: interfacev=%u, %u/%u=%u\n"), interfacev, terminalID, controlID, ep0databuffout [0]);
+								debug_printf_P(PSTR("USBD_LL_DataOutStage: xxx3: interfacev=%u, %u/%u=%u\n"), interfacev, terminalID, controlID, uac_ep0databuffout [0]);
 							}
 							break;
 						}
@@ -9968,9 +9975,7 @@ USBD_StatusTypeDef USBD_LL_DataOutStage(USBD_HandleTypeDef *pdev, uint8_t epnum,
 					
 					default:
 						{
-							const uint_fast8_t terminalID = HI_BYTE(pdev->request.wIndex);
-							const uint_fast8_t controlID = HI_BYTE(pdev->request.wValue);	// AUDIO_MUTE_CONTROL, AUDIO_VOLUME_CONTROL, ...
-							debug_printf_P(PSTR("USBD_LL_DataOutStage: xxx4: interfacev=%u, %u/%u=%u\n"), interfacev, terminalID, controlID, ep0databuffout [0]);
+							debug_printf_P(PSTR("USBD_LL_DataOutStage: xxx4: interfacev=%u\n"), interfacev);
 						}
 						break;
 
