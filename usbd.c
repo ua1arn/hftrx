@@ -8540,6 +8540,16 @@ static void USBD_ClassXXX_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef  
 		switch (req->bmRequest & USB_REQ_TYPE_MASK)
 		{
 		case USB_REQ_TYPE_CLASS:
+	#if WITHUSBCDC
+	#endif /* WITHUSBCDC */
+	#if WITHUSBUAC
+	#endif /* WITHUSBUAC */
+	#if WITHUSBCDCEEM
+	#endif /* WITHUSBCDCEEM */
+	#if WITHUSBRNDIS
+	#endif /* WITHUSBRNDIS */
+	#if WITHUSBHID
+	#endif /* WITHUSBHID */
 			switch (interfacev)
 			{
 	#if WITHUSBCDC
