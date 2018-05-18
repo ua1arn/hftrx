@@ -2680,7 +2680,7 @@ static unsigned fill_devcaps_ContainerID(uint_fast8_t fill, uint8_t * buff, unsi
 	return length;
 }
 
-static unsigned fill_DevCaps_group(uint_fast8_t fill, uint8_t * p, unsigned maxsize)
+static unsigned fill_DevCaps_group(uint_fast8_t fill, uint8_t * p, unsigned maxsize, uint_fast8_t bNumDeviceCaps)
 {
 	unsigned n = 0;
 	// Device Capability Descriptor - USB 2.0 Extension 
@@ -2689,13 +2689,16 @@ static unsigned fill_DevCaps_group(uint_fast8_t fill, uint8_t * p, unsigned maxs
 	//n += fill_devcaps_ContainerID(fill, p + n, maxsize - n);
 	// Device Capability Descriptor - Container ID 
 	n += fill_devcaps_ContainerID(fill, p + n, maxsize - n);
+
+	ASSERT(bNumDeviceCaps == 2);
 	return n;
 }
 
 static unsigned fill_BinaryDeviceObjectStore_descriptor(uint8_t * buff, unsigned maxsize)
 {
+	const uint_fast8_t bNumDeviceCaps = 2;
 	unsigned length = 5;
-	unsigned totalsize = length + fill_DevCaps_group(0, buff, maxsize - length);
+	unsigned totalsize = length + fill_DevCaps_group(0, buff, maxsize - length, bNumDeviceCaps);
 	ASSERT(maxsize >= length);
 	if (maxsize < length)
 		return 0;
@@ -2706,8 +2709,8 @@ static unsigned fill_BinaryDeviceObjectStore_descriptor(uint8_t * buff, unsigned
 		* buff ++ = USB_BOS_TYPE;							/*  1:bDescriptorType */
 		* buff ++ = LO_BYTE(totalsize);						/* wTotalLength length of packed config descr. (16 bit) */
 		* buff ++ = HI_BYTE(totalsize);						/* wTotalLength length of packed config descr. (16 bit) */
-		* buff ++ = 2;										/*  4:bNumDeviceCaps */
-		fill_DevCaps_group(1, buff, maxsize - length);
+		* buff ++ = bNumDeviceCaps;										/*  4:bNumDeviceCaps */
+		fill_DevCaps_group(1, buff, maxsize - length, bNumDeviceCaps);
 	}
 	return totalsize;
 }
