@@ -1061,10 +1061,8 @@ static void display_vfomode3(
 	void * pv
 	)
 {
-	const char * text = hamradio_get_vfomode3_value();
-
-	display_setcolors(MODECOLOR, BGCOLOR);
-	display_at(x, y, text);
+	const char * const labels [1] = { hamradio_get_vfomode3_value(), };
+	display2_text(x, y, labels, colorsfg_1state, colorsbg_1state, 0);
 }
 
 // VFO mode
@@ -3728,10 +3726,10 @@ enum
 		{	21, 0,	display_rxbw3,		REDRM_MODE, PGALL, },	// 3.1 / 0,5 / WID / NAR
 
 		{	25, 0,	display_notch5,		REDRM_MODE, PGALL, },
-		{	26, 3,	display_atu3,		REDRM_MODE, PGALL, },
-		{	26, 5,	display_byp3,		REDRM_MODE, PGALL, },
-		{	26, 7,	display_voxtune3,	REDRM_MODE, PGALL, },	// VOX
-		{	26,	9,	display_vfomode3,	REDRM_MODE, PGALL, },	// SPLIT
+		{	26,	3,	display_vfomode3,	REDRM_MODE, PGALL, },	// SPLIT
+		{	26, 5,	display_voxtune3,	REDRM_MODE, PGALL, },	// VOX
+		{	26, 7,	display_atu3,		REDRM_MODE, PGALL, },
+		{	26, 9,	display_byp3,		REDRM_MODE, PGALL, },
 		{	26, 11,	display_mainsub3,	REDRM_MODE, PGALL, },	// main/sub RX
 		{	26, 13,	display_rec3,		REDRM_BARS, PGALL, },	// Отображение режима записи аудио фрагмента
 		{	26, 15,	display_lockstate4, REDRM_MODE, PGALL, },	// LOCK

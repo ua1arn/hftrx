@@ -840,15 +840,15 @@ const struct qmkey qmdefs [NQMKEYS] =
 
 	// матрица слева от индикатора - ряд 3 по счету слева - снизу вверх */
 	{ KIF_NONE,		KBD_CODE_BKIN,			KBD_CODE_BKIN_HOLDED, 	' ', },		// BREAK-IN
-	{ KIF_NONE,		KBD_CODE_LDSPTGL,		KBD_CODE_DATATOGGLE,	' ', },		// SPK/DATA
+	{ KIF_NONE,		KBD_CODE_LDSPTGL,		KBD_CODE_15,			' ', },		// SPK
 	{ KIF_NONE,		KBD_CODE_ATT,			KBD_CODE_PAMP, 			' ', },		// ATT/PRE
-	{ KIF_NONE,		KBD_CODE_A_EX_B,			KBD_CODE_18, 		' ', },		// A/B
+	{ KIF_NONE,		KBD_CODE_A_EX_B,		KBD_CODE_17, 			' ', },		// A/B
 
 	// матрица слева от индикатора - ряд 2 по счету слева - снизу вверх */
-	{ KIF_NONE,		KBD_CODE_VOXTOGGLE,		KBD_CODE_MAX,			' ', },		// VOX
+	{ KIF_NONE,		KBD_CODE_VOXTOGGLE,		KBD_CODE_DATATOGGLE,	' ', },		// VOX/DATA
 	{ KIF_NONE,		KBD_CODE_RECORDTOGGLE,	KBD_CODE_RECORD_HOLDED,	' ', },		// REC
 	{ KIF_NONE,		KBD_CODE_ANTENNA,		KBD_CODE_19, 			' ', },		// ANTEMMA
-	{ KIF_NONE,		KBD_CODE_A_EQ_B,			KBD_CODE_21, 		' ', },		// A=B
+	{ KIF_NONE,		KBD_CODE_A_EQ_B,		KBD_CODE_21, 			' ', },		// A=B
 
 };
 
