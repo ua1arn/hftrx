@@ -79,6 +79,93 @@
 	#endif
 #endif /* WITHUSBUAC && WITHUSBUAC3 */
 
+enum
+{
+	STRING_ID_0 = 0, /* Language ID */
+
+	STRING_ID_1, /* Manufacturer */
+	STRING_ID_2, /* Product */
+	STRING_ID_3, /* SerialNumber */
+
+	// USB CDC strings
+	STRING_ID_4a, /*  */
+	STRING_ID_4b, /*  */
+
+	STRING_ID_5,
+	STRING_ID_5a,
+	STRING_ID_MACADDRESS,	// iMacAddress
+
+	// USB UAC strings
+	STRING_ID_a0, /* tag for Interface Descriptor 0/0 Audio */
+	STRING_ID_a1, /* tag for Interface Descriptor 0/0 Spectrum */
+
+	STRING_ID_d0,
+	STRING_ID_d1,
+
+	STRING_ID_e0,
+	STRING_ID_e1,
+
+	STRING_ID_x0, /*  */
+	STRING_ID_x1, /*  */
+
+	STRING_ID_y0, /*  */
+	STRING_ID_y1, /*  */
+
+	STRING_ID_z0, /*  */
+	STRING_ID_z1, /*  */
+
+	//STRING_ID_b,	// tag for USB Speaker Audio Feature Unit Descriptor
+
+	STRING_ID_Left, STRING_ID_Right,	// Идут подряд
+
+	STRING_ID_RNDIS,
+	STRING_ID_HIDa,
+	STRING_ID_IQSPECTRUM,
+	// 
+	STRING_ID_count
+};
+
+struct stringtempl
+{
+	uint_fast8_t id;
+	const char * str;
+};
+
+static const struct stringtempl strtemplates [] =
+{
+	{ STRING_ID_1, "MicroGenSF", },		// Manufacturer
+	{ STRING_ID_2, "Storch TRX", },	// Product
+	{ STRING_ID_4a, "Storch TRX CAT", },
+	{ STRING_ID_4b, "Storch TRX CTL", },
+	{ STRING_ID_5, "Storch TRX CDC EEM", },
+	{ STRING_ID_5a, "Storch TRX CDC ECM", },
+	{ STRING_ID_RNDIS, "Storch TRX Remote NDIS", },
+
+	{ STRING_ID_a0, "Storch TRX Voice", },	// tag for Interface Descriptor 0/0 Audio
+	{ STRING_ID_a1, "Storch TRX Spectrum", },	// tag for Interface Descriptor 0/0 Audio
+
+	//{ STRING_ID_b, "xxx_id11", },	// tag for USB Speaker Audio Feature Unit Descriptor
+
+	{ STRING_ID_d0, "Transmitter Input1", },	// Audio Control Input Terminal Descriptor 
+	{ STRING_ID_d1, "Transmitter Input2", },	// Audio Control Input Terminal Descriptor 
+
+	{ STRING_ID_e0, "Receiver Output 1", },	// Audio Control Output Terminal Descriptor 
+	{ STRING_ID_e1, "Receiver Output 2", },	// Audio Control Output Terminal Descriptor 
+
+	{ STRING_ID_x0, "xxxx In 1", },	// Audio Control Output Terminal Descriptor 
+	{ STRING_ID_x1, "xxxx In 2", },	// Audio Control Output Terminal Descriptor 
+
+	{ STRING_ID_y0, "yyyy In 1", },	// Audio Control Output Terminal Descriptor 
+	{ STRING_ID_y1, "yyyy In 2", },	// Audio Control Output Terminal Descriptor 
+
+	{ STRING_ID_z0, "zzzz In 1", },	// Audio Control Output Terminal Descriptor 
+	{ STRING_ID_z1, "zzzz In 2", },	// Audio Control Output Terminal Descriptor 
+
+	{ STRING_ID_Left, "USB", },	// tag for USB Speaker Audio Feature Unit Descriptor
+	{ STRING_ID_Right, "LSB", },	// tag for USB Speaker Audio Feature Unit Descriptor
+	{ STRING_ID_HIDa, "HID xxx", },
+	{ STRING_ID_IQSPECTRUM, "RX IQ Output", },
+};
 #if 0
 
 static int
@@ -2788,48 +2875,6 @@ static unsigned fill_wstring_descriptor(uint8_t * buff, unsigned maxsize, const 
 	return length;
 }
 
-struct stringtempl
-{
-	uint_fast8_t id;
-	const char * str;
-};
-
-static const struct stringtempl strtemplates [] =
-{
-	{ STRING_ID_1, "MicroGenSF", },		// Manufacturer
-	{ STRING_ID_2, "Storch TRX", },	// Product
-	{ STRING_ID_4a, "Storch TRX CAT", },
-	{ STRING_ID_4b, "Storch TRX CTL", },
-	{ STRING_ID_5, "Storch TRX CDC EEM", },
-	{ STRING_ID_5a, "Storch TRX CDC ECM", },
-	{ STRING_ID_RNDIS, "Storch TRX Remote NDIS", },
-
-	{ STRING_ID_a0, "Storch TRX Voice", },	// tag for Interface Descriptor 0/0 Audio
-	{ STRING_ID_a1, "Storch TRX Spectrum", },	// tag for Interface Descriptor 0/0 Audio
-
-	//{ STRING_ID_b, "xxx_id11", },	// tag for USB Speaker Audio Feature Unit Descriptor
-
-	{ STRING_ID_d0, "Transmitter Input1", },	// Audio Control Input Terminal Descriptor 
-	{ STRING_ID_d1, "Transmitter Input2", },	// Audio Control Input Terminal Descriptor 
-
-	{ STRING_ID_e0, "Receiver Output 1", },	// Audio Control Output Terminal Descriptor 
-	{ STRING_ID_e1, "Receiver Output 2", },	// Audio Control Output Terminal Descriptor 
-
-	{ STRING_ID_x0, "xxxx In 1", },	// Audio Control Output Terminal Descriptor 
-	{ STRING_ID_x1, "xxxx In 2", },	// Audio Control Output Terminal Descriptor 
-
-	{ STRING_ID_y0, "yyyy In 1", },	// Audio Control Output Terminal Descriptor 
-	{ STRING_ID_y1, "yyyy In 2", },	// Audio Control Output Terminal Descriptor 
-
-	{ STRING_ID_z0, "zzzz In 1", },	// Audio Control Output Terminal Descriptor 
-	{ STRING_ID_z1, "zzzz In 2", },	// Audio Control Output Terminal Descriptor 
-
-	{ STRING_ID_Left, "USB", },	// tag for USB Speaker Audio Feature Unit Descriptor
-	{ STRING_ID_Right, "LSB", },	// tag for USB Speaker Audio Feature Unit Descriptor
-	{ STRING_ID_HIDa, "HID xxx", },
-	{ STRING_ID_IQSPECTRUM, "RX IQ Output", },
-};
-
 
 static ALIGNX_BEGIN uint8_t alldescbuffer [2048] ALIGNX_END;
 
@@ -2841,6 +2886,12 @@ struct descholder OtherSpeedConfigurationTbl [1];
 struct descholder DeviceQualifierTbl [1];
 struct descholder BinaryDeviceObjectStoreTbl [1];
 struct descholder HIDReportDescrTbl [1];
+
+
+uint_fast8_t usbd_get_stringsdesc_count(void)
+{
+	return ARRAY_SIZE(StringDescrTbl);
+}
 
 
 // Динамическое формирование дескрипторов

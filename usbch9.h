@@ -326,58 +326,13 @@ enum
 	UACINRTSALT_top
 };
 
-enum
-{
-	STRING_ID_0 = 0, /* Language ID */
-
-	STRING_ID_1, /* Manufacturer */
-	STRING_ID_2, /* Product */
-	STRING_ID_3, /* SerialNumber */
-
-	// USB CDC strings
-	STRING_ID_4a, /*  */
-	STRING_ID_4b, /*  */
-
-	STRING_ID_5,
-	STRING_ID_5a,
-	STRING_ID_MACADDRESS,	// iMacAddress
-
-	// USB UAC strings
-	STRING_ID_a0, /* tag for Interface Descriptor 0/0 Audio */
-	STRING_ID_a1, /* tag for Interface Descriptor 0/0 Spectrum */
-
-	STRING_ID_d0,
-	STRING_ID_d1,
-
-	STRING_ID_e0,
-	STRING_ID_e1,
-
-	STRING_ID_x0, /*  */
-	STRING_ID_x1, /*  */
-
-	STRING_ID_y0, /*  */
-	STRING_ID_y1, /*  */
-
-	STRING_ID_z0, /*  */
-	STRING_ID_z1, /*  */
-
-	//STRING_ID_b,	// tag for USB Speaker Audio Feature Unit Descriptor
-
-	STRING_ID_Left, STRING_ID_Right,	// Идут подряд
-
-	STRING_ID_RNDIS,
-	STRING_ID_HIDa,
-	STRING_ID_IQSPECTRUM,
-	// 
-	STRING_ID_count
-};
-
-extern struct descholder StringDescrTbl [STRING_ID_count];
+extern struct descholder StringDescrTbl [];
 extern struct descholder ConfigDescrTbl [1];
 extern struct descholder DeviceDescrTbl [1];
 extern struct descholder DeviceQualifierTbl [1];
 extern struct descholder OtherSpeedConfigurationTbl [1];
 extern struct descholder BinaryDeviceObjectStoreTbl [1];
 extern struct descholder HIDReportDescrTbl [1];
+uint_fast8_t usbd_get_stringsdesc_count(void);
 
 #endif  /* __CHAP_9_H__ */

@@ -3109,13 +3109,13 @@ static void usb0_function_GetDescriptor(PCD_TypeDef * const Instance, uint_fast8
 	const unsigned index = LO_BYTE(ReqValue);
 	switch (HI_BYTE(ReqValue))
 	{
-	case 1:
+	case USB_DESC_TYPE_DEVICE:
 		// device Descriptor 
 		//debug_printf_P(PSTR("usb0_function_GetDescriptor: ReqTypeRecip=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
 		control_transmit(Instance, DeviceDescrTbl [0].data, ulmin16(ReqLength, DeviceDescrTbl [0].size));
 		break;
 
-	case 2:
+	case USB_DESC_TYPE_CONFIGURATION:
 		// Configuration Descriptor
 		//debug_printf_P(PSTR("usb0_function_GetDescriptor: ReqTypeRecip=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
 		if (index < ARRAY_SIZE(ConfigDescrTbl))
@@ -3124,7 +3124,7 @@ static void usb0_function_GetDescriptor(PCD_TypeDef * const Instance, uint_fast8
 			stall_ep0(Instance);
 		break;
 
-	case 3:
+	case USB_DESC_TYPE_STRING:
 		// String Descriptor
 		//debug_printf_P(PSTR("usb0_function_GetDescriptor: ReqTypeRecip=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
 		switch (index)
@@ -3140,13 +3140,13 @@ static void usb0_function_GetDescriptor(PCD_TypeDef * const Instance, uint_fast8
 			stall_ep0(Instance);
 			return;
 		}
-		if (index < ARRAY_SIZE(StringDescrTbl) && StringDescrTbl [index].size != 0)
+		if (index < usbd_get_stringsdesc_count() && StringDescrTbl [index].size != 0)
 			control_transmit(Instance, StringDescrTbl [index].data, ulmin16(ReqLength, StringDescrTbl [index].size));
 		else
 			stall_ep0(Instance);
 		break;
 
-	case 6:
+	case USB_DESC_TYPE_DEVICE_QUALIFIER:
 		// Device Qualifier descriptor
 		//debug_printf_P(PSTR("usb0_function_GetDescriptor: ReqTypeRecip=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
 		if (index < ARRAY_SIZE(DeviceQualifierTbl) && DeviceQualifierTbl [index].size != 0)
@@ -3155,11 +3155,18 @@ static void usb0_function_GetDescriptor(PCD_TypeDef * const Instance, uint_fast8
 			stall_ep0(Instance);
 		break;
 
-	case 7:
+	case USB_DESC_TYPE_OTHER_SPEED_CONFIGURATION:
 		// Other Speed Configuration descriptor
 		//debug_printf_P(PSTR("usb0_function_GetDescriptor: ReqTypeRecip=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
 		if (index < ARRAY_SIZE(OtherSpeedConfigurationTbl) && OtherSpeedConfigurationTbl [index].size)
 			control_transmit(Instance, OtherSpeedConfigurationTbl [index].data, ulmin16(ReqLength, OtherSpeedConfigurationTbl [index].size));
+		else
+			stall_ep0(Instance);
+		break;
+
+	case USB_DESC_TYPE_BOS:
+		if (index < ARRAY_SIZE(BinaryDeviceObjectStoreTbl) && BinaryDeviceObjectStoreTbl [index].size)
+			control_transmit(Instance, BinaryDeviceObjectStoreTbl [index].data, ulmin16(ReqLength, BinaryDeviceObjectStoreTbl [index].size));
 		else
 			stall_ep0(Instance);
 		break;
@@ -9014,7 +9021,7 @@ static void USBD_GetDescriptor(USBD_HandleTypeDef *pdev,
 			return;
 
 		default:
-			if (index < ARRAY_SIZE(StringDescrTbl) && StringDescrTbl [index].size != 0)
+			if (index < usbd_get_stringsdesc_count() && StringDescrTbl [index].size != 0)
 			{
 				len = StringDescrTbl [index].size;
 				pbuf = StringDescrTbl [index].data;
