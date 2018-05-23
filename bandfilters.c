@@ -367,7 +367,9 @@ uint8_t bandf2_calc(
 		return 2;
 	return 3;
 #elif \
+	CTLREGMODE_STORCH_V1 || \
 	CTLREGMODE_STORCH_V2 || \
+	CTLREGMODE_STORCH_V3 || \
 	0
 	/* плата усилителя 2*RD100 */
 	const unsigned long M10 = 1000uL * 100;
@@ -394,9 +396,7 @@ uint8_t bandf2_calc(
 	CTLREGMODE_RAVENDSP_V5 || \
 	CTLREGMODE_RAVENDSP_V6 || \
 	CTLREGMODE_RAVENDSP_V7 || \
-	CTLREGMODE_STORCH_V1 || \
 	CTLREGMODE_STORCH_V1_R4DR || \
-	CTLREGMODE_STORCH_V3 || \
 	CTLREGMODE_STORCH_V4 ||		/* modem only v2 */ \
 	CTLREGMODE_STORCH_V5 ||		/* mimni RX */ \
 	CTLREGMODE_STORCH_V6 ||		/* mimni RX + TFT 4.3" */ \

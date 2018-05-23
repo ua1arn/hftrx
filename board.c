@@ -3124,7 +3124,7 @@ prog_ctrlreg(uint_fast8_t plane)
 #endif
 		const uint_fast8_t txgated = glob_tx && glob_txgate;
 		// DD17 STP08CP05TTR на разъём управления LPF
-		RBBIT(0047, glob_antenna);		// D7: antenns select бит выбора антенны (0 - ANT1, 1 - ANT2)
+		RBBIT(0047, txgated);		// D7 - XS18 PIN 16: PTT
 		RBVAL(0040, 1U << glob_bandf2, 7);		// D0..D6: band select бит выбора диапазонного фильтра передатчика
 
 		// DD16 STP08CP05TTR в управлении диапазонными фильтрами приёмника
@@ -3300,10 +3300,6 @@ prog_ctrlreg(uint_fast8_t plane)
 
 #endif
 		// DD21 SN74HC595PW на разъём управления LPF
-		//RBBIT(0047, glob_antenna);		// D7: - XS18 PIN 16 - antenns select бит выбора антенны (0 - ANT1, 1 - ANT2)
-		//RBBIT(0046, ! (! glob_txtune && glob_tx));	// D6: - XS18 PIN 14 - PTT positive не в режиме tune
-		//RBBIT(0045, ! glob_txtune && glob_tx);		// D5: - XS18 PIN 12 - PTT negative не в режиме tune
-		//RBBIT(0044, glob_txtune);					// D4: - XS18 PIN 10 - находимся в режиме передачи тональнка для настройки
 		RBBIT(0047, txgated);		// D7 - XS18 PIN 16: PTT
 		RBVAL(0040, 1U << glob_bandf2, 7);		// D0..D6: band select бит выбора диапазонного фильтра передатчика
 
@@ -3321,7 +3317,7 @@ prog_ctrlreg(uint_fast8_t plane)
 
 		// DD18 SN74HC595PW рядом с DIN8
 		RBNULL(0014, 4);
-		RBVAL(0010, (glob_bandf2 + 1), 4);			/* D3:D0: DIN8 EXT PA band select */
+		RBVAL(0010, glob_bandf2, 4);			/* D3:D0: DIN8 EXT PA band select */
 
 		// DD14 STP08CP05TTR рядом с DIN8
 		RBBIT(0007, ! glob_reset_n);		// D7: NMEA reset
@@ -3389,15 +3385,15 @@ prog_ctrlreg(uint_fast8_t plane)
 		/* --- Управление согласующим устройством */
 
 #endif
-		// DD17 STP08CP05TTR на разъём управления LPF
-		RBBIT(0047, glob_antenna);		// D7: antenns select бит выбора антенны (0 - ANT1, 1 - ANT2)
+		// DD21 SN74HC595PW + ULN2003APW на разъём управления LPF
+		RBBIT(0047, txgated);		// D7 - XS18 PIN 16: PTT
 		RBVAL(0040, 1U << glob_bandf2, 7);		// D0..D6: band select бит выбора диапазонного фильтра передатчика
 
-		// DD16 STP08CP05TTR в управлении диапазонными фильтрами приёмника
+		// DD20 SN74HC595PW в управлении диапазонными фильтрами приёмника
 		RBVAL(0031, glob_tx ? 0 : (1U << glob_bandf) >> 1, 7);		// D1: 1, D7..D1: band select бит выбора диапазонного фильтра приёмника
 		RBBIT(0030, txgated);		// D0: включение подачи смещения на выходной каскад усилителя мощности
 
-		// DD15 STP08CP05TTR в управлении диапазонными фильтрами приёмника
+		// DD19 SN74HC595PW в управлении диапазонными фильтрами приёмника
 		RBVAL(0026, glob_att, 2);			/* D7:D6: 12 dB and 6 dB attenuator control */
 		RBVAL(0024, ~ (txgated ? powerxlat [glob_stage1level] : HARDWARE_OPA2674I_SHUTDOWN), 2);	// A1..A0 of OPA2674I-14D in stage 1
 		RBBIT(0023, glob_fanflag);			/* D3: PA FAN */
