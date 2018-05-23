@@ -100,7 +100,7 @@
 	#define FQMODEL_FPGA		1	// FPGA + IQ over I2S
 
 	// +++ вариации прошивки, специфические для разных частот опорного генератора
-	#if 1
+	#if 0
 		#define BANDSELSTYLE_OLEG4Z	1	/* Up-conversion with working band .030..56 MHz */
 		#define CTLREGMODE_OLEG4Z_V1	1	/* "Воронёнок" с DSP и FPGA, SD-CARD, dual watch & PA on board */
 	#else
@@ -246,6 +246,7 @@
 	//#define WITHRTSNOAUDIO 1		/* передача квадратур по USB в компютер, звукового режима нет */
 	#define WITHRTS96 1		/* вместо выходного аудиосигнала передача квадратур по USB */
 	//#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
+	#define WITHUSBNOUNIQUE	1	/* не использовать индивидуальный SERIAL NUMBER */
 
 	#if 0
 		#define WITHUSBHEADSET 1	/* трансивер работает USB гарнитурой для компютера - режим тестирования */

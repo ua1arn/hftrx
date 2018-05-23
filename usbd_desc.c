@@ -3018,7 +3018,7 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 	}
 #endif /* WITHUSBCDCECM */
 
-#if CPUSTYLE_STM32F && CTLSTYLE_SW2011ALL
+#if CTLSTYLE_SW2011ALL || WITHUSBNOUNIQUE
 	{
 		// на трансиверае SW20xx минимальная привязка к уникальным особенностям трансивера
 		const uint_fast8_t id = STRING_ID_3;
