@@ -174,12 +174,14 @@ enum
 
 #if WITHUSBCDCECM
 	#define USBD_CDCECM_INT_SIZE	8	// interrupt data
-	#define USBD_CDCECM_BUFSIZE	64
+	#define USBD_CDCECM_IN_BUFSIZE	64
+	#define USBD_CDCECM_OUT_BUFSIZE	64
 #endif /* WITHUSBCDCECM */
 
 #if WITHUSBRNDIS
 	#define USBD_RNDIS_INT_SIZE	8	// interrupt data
-	#define USBD_RNDIS_BUFSIZE	64	// bulk data
+	#define USBD_RNDIS_IN_BUFSIZE	64	// bulk data
+	#define USBD_RNDIS_OUT_BUFSIZE	64	// bulk data
 #endif /* WITHUSBRNDIS */
 
 
