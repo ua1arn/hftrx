@@ -4,6 +4,8 @@
 // UA1ARN
 //
 // Поддержка ST M41T81 real time clock
+// M41T81M6,M41T81M6F
+// M41T81SM6,M41T81SM6F
 //
 #ifndef M41T81_H_INCLUDED
 #define M41T81_H_INCLUDED
