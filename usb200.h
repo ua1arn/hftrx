@@ -30,6 +30,7 @@
 #define USB_OTG_DESCRIPTOR_TYPE                     9
 #define USB_DEBUG_DESCRIPTOR_TYPE                  10
 #define USB_INTERFACE_ASSOCIATION_DESCRIPTOR_TYPE  11 
+#define USB_DEVICE_CAPABITY_DESCRIPTOR_TYPE                           0x10
 
 /* Wireless USB extension Descriptor Type. */
 #define USB_SECURITY_TYPE                          12
@@ -158,8 +159,6 @@
 #define USB_ENDPOINT_TYPE_BULK		                  0x02
 #define USB_ENDPOINT_TYPE_INTERRUPT	                  0x03
 #define AUDIO_ENDPOINT_GENERAL                        0x01
-
-#define USB_DEVICE_CAPABITY_DESCRIPTOR_TYPE                           0x10
 
 
 /* USB 2.0 defined Feature Selectors (wValue in Set_Feature setup pkt) */

@@ -53,12 +53,6 @@ void    cdc_send_break(void);
 void    cdc_send_encapsulated_command(void);
 void    cdc_get_encapsulated_command(void);
 
-struct descholder
-{
-	const uint8_t * data;
-	unsigned size;
-};
-
 // STM32F429:
 //	valid EPs: dcp, 0x01/0x81, 0x02/0x82, 0x03/0x83 
 // STM32F446, STM32F746:
@@ -116,8 +110,8 @@ enum
 #endif /* WITHUSBCDCEEM */
 
 #if WITHUSBCDCECM
-	USBD_EP_CDCECM_IN,	// CDC IN Данные ком-порта в компьютер из TRX
 	USBD_EP_CDCECM_INT,	// CDC INT События ком-порта в компьютер из TRX
+	USBD_EP_CDCECM_IN,	// CDC IN Данные ком-порта в компьютер из TRX
 #endif /* WITHUSBCDCECM */
 
 #if WITHUSBHID
@@ -179,6 +173,7 @@ enum
 #endif /* WITHUSBCDCEEM */
 
 #if WITHUSBCDCECM
+	#define USBD_CDCECM_INT_SIZE	8	// interrupt data
 	#define USBD_CDCECM_BUFSIZE	64
 #endif /* WITHUSBCDCECM */
 
@@ -324,6 +319,13 @@ enum
 #endif /* WITHUSBUAC3 */
 	//
 	UACINRTSALT_top
+};
+
+
+struct descholder
+{
+	const uint8_t * data;
+	unsigned size;
 };
 
 extern struct descholder StringDescrTbl [];
