@@ -3597,7 +3597,7 @@ prog_ctrlreg(uint_fast8_t plane)
 
 		rbtype_t rbbuff [4] = { 0 };
 
-		RBBIT(030, bpfon20);	
+		RBBIT(031, bpfon20);	
 
 		RBVAL(026, glob_att, 2);			// HF ATT
 		RBVAL(024, ~ glob_att, 2);			// UHF ATT
