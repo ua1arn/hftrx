@@ -153,6 +153,7 @@
 	//#define NVRAM_TYPE NVRAM_TYPE_AT25256A
 
 	// End of NVRAM definitions section
+	//#define RTC1_TYPE RTC_TYPE_M41T81	/* ST M41T81M6/M41T81SM6F RTC clock chip with I2C interface */
 
 	/* Аппаратура контроллера SW2011 */
 	//#define WITHLO1LEVELADJ		1	/* включено управление уровнем (амплитудой) LO1 */

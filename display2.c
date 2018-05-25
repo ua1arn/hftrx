@@ -2398,15 +2398,19 @@ enum
 			//{	0, 0,	display_pre3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 			//{	0, 0,	display_agc3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 
-			{	0, 3,	display_freqX_a,	REDRM_FREQ, REDRSUBSET(DPAGE0), },
+			{	0,	3,	display_freqX_a,	REDRM_FREQ, REDRSUBSET(DPAGE0), },
 			{	17, 5,	display_mode3_a,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
 
-			{	0, 8,	display_vfomode3,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// SPLIT
-			{	7, 8,	display_freqX_b,	REDRM_FREQB, REDRSUBSET(DPAGE0), },
+			{	0,	8,	display_vfomode3,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// SPLIT
+			{	7,	8,	display_freqX_b,	REDRM_FREQB, REDRSUBSET(DPAGE0), },
 			{	17, 8,	display_mode3_b,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
 
-			{	0, 11,	display_atu3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	4, 11,	display_byp3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
+		#if defined (RTC1_TYPE)
+			{	0,	11,	display_time5,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// TIME
+			//{	0,	11,	display_time8,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// TIME
+		#endif /* defined (RTC1_TYPE) */
+			{	0,	11,	display_atu3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
+			{	4,	11,	display_byp3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 			{	15, 11,	display_voltlevelV5, REDRM_VOLT, REDRSUBSET(DPAGE0), },	// voltmeter with "V"
 
 			{	0, 13,	display2_bars,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// S-METER, SWR-METER, POWER-METER
@@ -2471,6 +2475,10 @@ enum
 			{	7,	9,	display_freqX_b,	REDRM_FREQB, REDRSUBSET(DPAGE0), },
 			{	17, 9,	display_mode3_b,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
 
+		#if defined (RTC1_TYPE)
+			{	0,	12,	display_time5,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// TIME
+			//{	0,	12,	display_time8,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// TIME
+		#endif /* defined (RTC1_TYPE) */
 			{	0,	12,	display_atu3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 			{	4,	12,	display_byp3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 			{	8,	12,	display_voltlevelV5, REDRM_VOLT, REDRSUBSET(DPAGE0), },	// voltmeter with "V"
