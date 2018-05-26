@@ -3434,7 +3434,7 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий клавиш - 880 Гц - 
 
 	static uint_fast8_t tdsp_nfm_sql_level = 127;	// NFM NB level
 	static uint_fast8_t tdsp_nfm_sql_off = 1;	// отключить шумодав
-	static uint_fast8_t gcwedgetime = 4;			/* Время нарастания/спада огибающей телеграфа при передаче - в 1 мс */
+	static uint_fast8_t gcwedgetime = 5;			/* Время нарастания/спада огибающей телеграфа при передаче - в 1 мс */
 	static uint_fast8_t gsidetonelevel = 15;	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
 	static uint_fast8_t gsubtonelevel = 10;	/* Уровень сигнала CTCSS в процентах - 0%..100% */
 #if CTLSTYLE_OLEG4Z_V1
