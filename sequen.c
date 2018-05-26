@@ -565,7 +565,7 @@ void seq_set_rxtxdelay(
 void seq_initialize(void)
 {
 
-	hardware_ptt_port_initialize();
+	hardware_ptt_port_initialize();		// инициализация входов управления режимом передачи и запрета передачи
 
 	hardware_txpath_initialize();
 	//seq_set_txgate_P(txgfva0, sdtnva0);	// Сделано статической инициализацией

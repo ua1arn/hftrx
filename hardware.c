@@ -1575,7 +1575,6 @@ uint_fast8_t
 hardware_getshutdown(void)
 {
 #if CPUSTYLE_STM32F1XX || CPUSTYLE_STM32F30X || CPUSTYLE_STM32L0XX
-	//return hardware_get_ptt();
 	//return hardware_reqshutdown;
 	return (PWR->CR & PWR_CR_PVDE) && (PWR->CSR & PWR_CSR_PVDO);
 

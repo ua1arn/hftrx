@@ -364,10 +364,20 @@
 		do { \
 		} while (0)
 
+	// TXDISABLE input - PB11
+	#define TXDISABLE_TARGET_PIN				(GPIOB->IDR)
+	#define TXDISABLE_BIT_TXDISABLE				(1U << 11)		// PB11
+	// получить бит запрета передачи (от усилителя мощности)
+	#define HARDWARE_GET_TXDISABLE() ((TXDISABLE_TARGET_PIN & TXDISABLE_BIT_TXDISABLE) != 0)
+	#define TXDISABLE_INITIALIZE() \
+		do { \
+			arm_hardware_piob_inputs(TXDISABLE_BIT_TXDISABLE); \
+			arm_hardware_piob_updown(0, TXDISABLE_BIT_TXDISABLE); \
+		} while (0)
+
 	// PTT input - PD10
 	#define PTT_TARGET_PIN				(GPIOD->IDR)
 	#define PTT_BIT_PTT					(1U << 12)		// PD12
-
 	#define HARDWARE_GET_PTT() ((PTT_TARGET_PIN & PTT_BIT_PTT) == 0)
 	#define PTT_INITIALIZE() \
 		do { \

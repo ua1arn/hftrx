@@ -578,10 +578,11 @@ void hardware_elkey_timer_initialize(void);
 void hardware_elkey_set_speed(uint_fast32_t ticksfreq);
 void hardware_elkey_set_speed128(uint_fast32_t ticksfreq, int scale);
 void hardware_elkey_ports_initialize(void); // Инициализация входов электронного ключа, входа CAT_DTR
-void hardware_ptt_port_initialize(void);	// Инициализация входа PTT, входа CAT_RTS
+void hardware_ptt_port_initialize(void);	// Инициализация входа PTT, входа CAT_RTS и TXDISABLE
 
 uint_fast8_t hardware_elkey_getpaddle(uint_fast8_t reverse);
 uint_fast8_t hardware_get_ptt(void);
+uint_fast8_t hardware_get_txdisable(void);
 
 void hardware_txpath_initialize(void);
 void hardware_txpath_set(portholder_t txpathstate);

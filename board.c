@@ -3577,19 +3577,22 @@ prog_ctrlreg(uint_fast8_t plane)
 	{
 		enum { STARTNUX = 14 };
 		enum { RF1, RF2, RF3, RF4, RF5, RF6 };
+		const uint_fast8_t rfi = glob_bandf >= STARTNUX ? (glob_bandf - STARTNUX) : 5;
 		uint_fast8_t xvr = glob_bandf >= 11;
 		//uint_fast32_t xvtr_bandmask = ((uint_fast32_t) 1U << 4);	// See R820T_IFFREQ
 		uint_fast32_t bandmask = (uint_fast32_t) 1U << glob_bandf;
-		static const uint_fast8_t xltIN [] =  { RF5, RF4, RF3, RF2, RF1, RF6, RF6, RF6, RF6, RF6, RF6, RF6};	// êàíàëû âõîäíîãî êëììóòàòîğà
-		static const uint_fast8_t xltOUT [] = { RF4, RF1, RF5, RF2, RF3, RF6, RF6, RF6, RF6, RF6, RF6, RF6};	// êàíàëû âûõîäíîãî êîììóòàòîğà
-		const uint_fast8_t uhfmuxIN = xltIN [glob_bandf - STARTNUX];		// U2 HMC252AQS24E - BPF_ON_17,BPF_ON_16,BPF_ON_15
-		const uint_fast8_t uhfmuxOUT = xltOUT [glob_bandf - STARTNUX];		// U3 HMC252AQS24E - BPF_ON_20, BPF_ON_19, BPF_ON_18
+		static const uint_fast8_t xltIN [] =  { RF5, RF4, RF3, RF2, RF1, /* */ RF6, RF6, RF6, RF6, RF6, RF6, RF6};	// êàíàëû âõîäíîãî êëììóòàòîğà HMC252AQS24E
+		static const uint_fast8_t xltOUT [] = { RF4, RF1, RF5, RF2, RF3, /* */ RF6, RF6, RF6, RF6, RF6, RF6, RF6};	// êàíàëû âûõîäíîãî êîììóòàòîğà HMC252AQS24E
+		const uint_fast8_t uhfmuxIN = xltIN [rfi];		// U2 HMC252AQS24E - BPF_ON_17,BPF_ON_16,BPF_ON_15
+		const uint_fast8_t uhfmuxOUT = xltOUT [rfi];		// U3 HMC252AQS24E - BPF_ON_20, BPF_ON_19, BPF_ON_18
 		const uint_fast8_t bpfon15 = (uhfmuxIN & 0x01) != 0;
 		const uint_fast8_t bpfon16 = (uhfmuxIN & 0x02) != 0;
 		const uint_fast8_t bpfon17 = (uhfmuxIN & 0x04) != 0;
 		const uint_fast8_t bpfon18 = (uhfmuxOUT & 0x01) != 0;
 		const uint_fast8_t bpfon19 = (uhfmuxOUT & 0x02) != 0;
 		const uint_fast8_t bpfon20 = (uhfmuxOUT & 0x04) != 0;
+
+		debug_printf_P(PSTR("prog_ctrlreg: glob_bandf=%u, uhfmuxIN=%02X, uhfmuxOUT=%02X\n"), glob_bandf, uhfmuxIN, uhfmuxOUT);
 
 		//bandmask = 0;
 		//xvr = 0;
@@ -7011,14 +7014,27 @@ hardware_get_ptt(void)
 #endif /*  */
 }
 
-// Èíèöèàëèçàöèÿ âõîäà PTT, âõîäà CAT_RTS
+/* ôóíêöèÿ âûçûâàåòñÿ èç îáğàáîò÷èêîâ ïğåğûâàíèÿ èëè ïğè çàïğåù¸ííûõ ïğåğûâàíèÿõ. */
+uint_fast8_t 
+hardware_get_txdisable(void)
+{
+#if defined (HARDWARE_GET_TXDISABLE)
+	return HARDWARE_GET_TXDISABLE();
+#else /*  */
+	return 0;
+#endif /*  */
+}
+
+// Èíèöèàëèçàöèÿ âõîäà PTT, âõîäà CAT_RTS è TXDISABLE
 void 
 hardware_ptt_port_initialize(void)
 {
 #if defined (PTT_INITIALIZE)
 	PTT_INITIALIZE();
 #endif
-
+#if defined (TXDISABLE_INITIALIZE)
+	TXDISABLE_INITIALIZE();
+#endif
 #if WITHCAT
 	FROMCAT_RTS_INITIALIZE();
 #endif /* WITHCAT */
