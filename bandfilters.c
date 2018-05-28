@@ -261,11 +261,11 @@
 		(fseltype_t) (50000000uL >> BANDDIVPOWER),	// #11 BPF_ON_12	50 MHz-120 MHz
 		(fseltype_t) (120000000uL >> BANDDIVPOWER),	// #12 BPF_ON_13	120 MHz-265 MHz
 		(fseltype_t) (260000000uL >> BANDDIVPOWER),	// #13 BPF_ON_14	260 MHz-390 MHz
-		(fseltype_t) (350000000uL >> BANDDIVPOWER),	// #14 	350-520 MHz
-		(fseltype_t) (390000000uL >> BANDDIVPOWER),	// #15 	520-700 MHz
-		(fseltype_t) (700000000uL >> BANDDIVPOWER),	// #16 	700-900 MHz
-		(fseltype_t) (900000000uL >> BANDDIVPOWER),	// #17 	900-1200 MHz
-		(fseltype_t) (1200000000uL >> BANDDIVPOWER),// #18 	1200-1700 MHz
+		(fseltype_t) (350000000uL >> BANDDIVPOWER),	// #14 0	350-520 MHz
+		(fseltype_t) (390000000uL >> BANDDIVPOWER),	// #15 1	520-700 MHz
+		(fseltype_t) (700000000uL >> BANDDIVPOWER),	// #16 2	700-900 MHz
+		(fseltype_t) (900000000uL >> BANDDIVPOWER),	// #17 3	900-1200 MHz
+		(fseltype_t) (1200000000uL >> BANDDIVPOWER),// #18 4	1200-1700 MHz
 	};
 	#define BANDCALCS	(sizeof board_bandfs / sizeof board_bandfs [0])	/* Размерность массива границ диапазонов и необходимость функции поиска по нему. */
 
