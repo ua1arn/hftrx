@@ -14,7 +14,7 @@
 #define ARM_STM32F4XX_TQFP144_CTLSTYLE_RAVEN_V5_H_INCLUDED 1
 
 	#if ! defined(STM32F767xx)
-		#error Wrong CPU selected. STM32F767xx expected
+		//#error Wrong CPU selected. STM32F767xx expected
 	#endif /* ! defined(STM32F767xx) */
 	#if ! defined(STM32F746xx)
 		//#error Wrong CPU selected. STM32F746xx expected
@@ -28,7 +28,7 @@
 	//#define WITHUSESAIPLL	1	/* SAI PLL	*/
 	//#define WITHUSESAII2S	1	/* I2S PLL	*/
 
-	#if 0
+	#if 1
 		// при наличии внешнего кварцевого резонатора
 		// ua1asb, ua1cei
 		#define WITHCPUXTAL 12000000uL	/* На процессоре установлен кварц 12.000 МГц */
