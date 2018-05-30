@@ -2678,8 +2678,8 @@ enum
 			BDTH_ALLPWR = BDTH_ALLRX,
 			BDTH_SPACEPWR = BDTH_SPACERX,
 		#endif /* WITHSHOWSWRPWR */
-			BDCV_ALLRX = ROWS2GRID(1)		// количество ячееек, отведенное под S-метр, панораму, иные отображения
-		};
+			BDCV_WFLRX = ROWS2GRID(1),		// количество ячееек, отведенное под S-метр, панораму, иные отображения
+			BDCV_SPMRX = BDCV_WFLRX,	// вертикальный размер спектра в ячейках		};
 		enum
 		{
 			PATTERN_SPACE = 0x00,	/* очищаем место за SWR и PWR метром этим символом */
@@ -3068,7 +3068,8 @@ enum
 
 		enum
 		{
-			BDCV_ALLRX = 7,		// количество ячеек, отведенное под S-метр, панораму, иные отображения
+			BDCV_WFLRX = 7,		// количество ячеек, отведенное под S-метр, панораму, иные отображения
+			BDCV_SPMRX = BDCV_WFLRX,	// вертикальный размер спектра в ячейках
 			BDTH_ALLRX = 30,	// ширина зоны для отображение полосы на индикаторе
 			BDTH_LEFTRX = 15,	// ширина индикатора баллов
 			BDTH_RIGHTRX = BDTH_ALLRX - BDTH_LEFTRX,	// ширина индикатора плюсов 
@@ -3195,7 +3196,8 @@ enum
 
 		enum
 		{
-			BDCV_ALLRX = 7,		// количество ячеек, отведенное под S-метр, панораму, иные отображения
+			BDCV_WFLRX = 7,		// количество ячеек, отведенное под S-метр, панораму, иные отображения
+			BDCV_SPMRX = BDCV_WFLRX,	// вертикальный размер спектра в ячейках
 			BDTH_ALLRX = 30,	// ширина зоны для отображение полосы на индикаторе
 			BDTH_LEFTRX = 15,	// ширина индикатора баллов
 			BDTH_RIGHTRX = BDTH_ALLRX - BDTH_LEFTRX,	// ширина индикатора плюсов 
@@ -3321,7 +3323,8 @@ enum
 
 		enum
 		{
-			BDCV_ALLRX = 7,		// количество ячеек, отведенное под S-метр, панораму, иные отображения
+			BDCV_WFLRX = 7,		// количество ячеек, отведенное под S-метр, панораму, иные отображения
+			BDCV_SPMRX = BDCV_WFLRX,	// вертикальный размер спектра в ячейках
 			BDTH_ALLRX = 30,	// ширина зоны для отображение полосы на индикаторе
 			BDTH_LEFTRX = 15,	// ширина индикатора баллов
 			BDTH_RIGHTRX = BDTH_ALLRX - BDTH_LEFTRX,	// ширина индикатора плюсов 
@@ -3543,7 +3546,8 @@ enum
 		// для Аиста
 		enum
 		{
-			BDCV_ALLRX = 8,		// количество строк, отведенное под S-метр, панораму, иные отображения
+			BDCV_WFLRX = 8,		// количество строк, отведенное под S-метр, панораму, иные отображения
+			BDCV_SPMRX = BDCV_WFLRX,	// вертикальный размер спектра в ячейках
 			BDTH_ALLRX = 26,	// ширина зоны для отображение полосы на индикаторе
 			BDTH_RIGHTRX = 16,	// ширина индикатора плюсов
 			BDTH_LEFTRX = BDTH_ALLRX - BDTH_RIGHTRX,	// ширина индикатора баллов
@@ -3692,7 +3696,8 @@ enum
 		BDTH_ALLPWR = BDTH_ALLRX,
 		BDTH_SPACEPWR = BDTH_SPACERX,
 	#endif /* WITHSHOWSWRPWR */
-		BDCV_ALLRX = ROWS2GRID(7)		// количество ячееек, отведенное под S-метр, панораму, иные отображения
+		BDCV_WFLRX = ROWS2GRID(7),		// количество ячееек, отведенное под S-метр, панораму, иные отображения
+		BDCV_SPMRX = BDCV_WFLRX			// вертикальный размер спектра в ячейках
 	};
 
 	enum
@@ -3782,7 +3787,7 @@ enum
 		p->x = GRID2X(0);	// позиция верхнего левого угла в пикселях
 		p->y = GRID2Y(9);	// позиция верхнего левого угла в пикселях
 		p->w = GRID2X(CHARS2GRID(BDTH_ALLRX));	// размер по горизонтали в пикселях
-		p->h = GRID2Y(BDCV_ALLRX);				// размер по вертикали в пикселях
+		p->h = GRID2Y(BDCV_WFLRX);				// размер по вертикали в пикселях
 	}
 #else
 	#error TODO: to be implemented
@@ -4239,7 +4244,8 @@ static void display2_legend(
 enum 
 {
 	WFDX = GRID2X(CHARS2GRID(BDTH_ALLRX)),	// размер по горизонтали в пикселях
-	WFDY = GRID2Y(BDCV_ALLRX)				// размер по вертикали в пикселях
+	WFDY = GRID2Y(BDCV_WFLRX),				// размер по вертикали в пикселях части отведенной водопаду
+	SPDY = GRID2Y(BDCV_SPMRX)				// размер по вертикали в пикселях части отведенной спектру
 };
 
 
@@ -4447,7 +4453,7 @@ static void display2_spectrum(
 #if LCDMODE_UC1608 || LCDMODE_UC1601 || LCDMODE_S1D13781
 	// Спектр на монохромных дисплеях 
 	// или на цвентых,где есть возможность раскаски растровоцй картинки.
-	static ALIGNX_BEGIN GX_t wfmonoscr [MGSIZE(WFDX, WFDY)] ALIGNX_END;
+	static ALIGNX_BEGIN GX_t spectrmonoscr [MGSIZE(WFDX, SPDY)] ALIGNX_END;
 
 	if (hamradio_get_tx() == 0)
 	{
@@ -4455,10 +4461,10 @@ static void display2_spectrum(
 		uint_fast16_t y;
 		// формирование растра
 		// маркер центральной частоты обзора
-		memset(wfmonoscr, 0xFF, sizeof wfmonoscr);			// рисование способом погасить точку
-		for (x = 0; x < WFDY; ++ x)
+		memset(spectrmonoscr, 0xFF, sizeof spectrmonoscr);			// рисование способом погасить точку
+		for (x = 0; x < SPDY; ++ x)
 		{
-			display_pixelbuffer(wfmonoscr, WFDX, WFDY, WFDX / 2, x);	// погасить точку
+			display_pixelbuffer(spectrmonoscr, WFDX, SPDY, WFDX / 2, x);	// погасить точку
 		}
 
 		// отображение спектра
@@ -4472,7 +4478,7 @@ static void display2_spectrum(
 				mag += spavgarray [(spavgrow + h) % SPAVGSIZE] [x];
 
 			// логарифм - в вертикальную координату
-			const int val = dsp_mag2y(mag / AVGLEN, WFDY);
+			const int val = dsp_mag2y(mag / AVGLEN, SPDY);
 		#elif EEMAXIMUM
 			// максимум
 			FLOAT_t mag = 0;
@@ -4481,25 +4487,25 @@ static void display2_spectrum(
 				mag = FMAXF(mag, spavgarray [(spavgrow + h) % SPAVGSIZE] [x]);
 
 			// логарифм - в вертикальную координату
-			const int val = dsp_mag2y(mag, WFDY);
+			const int val = dsp_mag2y(mag, SPDY);
 		#else
 			// без усреднения
 			// логарифм - в вертикальную координату
-			const int val = dsp_mag2y(spavgarray [spavgrow ] [x], WFDY);
+			const int val = dsp_mag2y(spavgarray [spavgrow ] [x], SPDY);
 		#endif
 			// Формирование графика
-			int zv = (WFDY - 1) - val;
+			int zv = (SPDY - 1) - val;
 			int z;
-			for (z = WFDY - 1; z >= zv; -- z)
-				display_pixelbuffer_xor(wfmonoscr, WFDX, WFDY, x, z);	// xor точку
+			for (z = SPDY - 1; z >= zv; -- z)
+				display_pixelbuffer_xor(spectrmonoscr, WFDX, SPDY, x, z);	// xor точку
 		}
 	}
 	else
 	{
-		memset(wfmonoscr, 0xFF, sizeof wfmonoscr);			// рисование способом погасить точку
+		memset(spectrmonoscr, 0xFF, sizeof spectrmonoscr);			// рисование способом погасить точку
 	}
 	display_setcolors(COLOR_WAERFALLBG, COLOR_WAERFALLFG);
-	display_showbuffer(wfmonoscr, WFDX, WFDY, x0, y0);
+	display_showbuffer(spectrmonoscr, WFDX, SPDY, x0, y0);
 
 #else /* */
 
@@ -4521,7 +4527,7 @@ static void display2_spectrum(
 				mag += spavgarray [(spavgrow + h) % SPAVGSIZE] [x];
 
 			// логарифм - в вертикальную координату
-			const int val = dsp_mag2y(mag / AVGLEN, WFDY);
+			const int val = dsp_mag2y(mag / AVGLEN, SPDY);
 		#elif EEMAXIMUM
 			// максимум
 			FLOAT_t mag = 0;
@@ -4530,37 +4536,37 @@ static void display2_spectrum(
 				mag = FMAXF(mag, spavgarray [(spavgrow + h) % SPAVGSIZE] [x]);
 
 			// логарифм - в вертикальную координату
-			const int val = dsp_mag2y(mag, WFDY);
+			const int val = dsp_mag2y(mag, SPDY);
 		#else
 			// без усреднения
 			// логарифм - в вертикальную координату
-			const int val = dsp_mag2y(spavgarray [spavgrow ] [x], WFDY);
+			const int val = dsp_mag2y(spavgarray [spavgrow ] [x], SPDY);
 		#endif
 			// Формирование графика
 			int zv = (WFDY - 1) - val;
 			int z;
 			for (z = WFDY - 1; z >= zv; -- z)
-				display_colorbuffer_set(colorpip, WFDX, WFDY, x, z, COLOR_WAERFALLFG);	// точку сигнала
+				display_colorbuffer_set(colorpip, WFDX, SPDY, x, z, COLOR_WAERFALLFG);	// точку сигнала
 			// формирование фона растра
 			for (; z >= 0; -- z)
-				display_colorbuffer_set(colorpip, WFDX, WFDY, x, z, COLOR_WAERFALLBG);	// точку фона
+				display_colorbuffer_set(colorpip, WFDX, SPDY, x, z, COLOR_WAERFALLBG);	// точку фона
 		}
 		// маркер центральной частоты обзора
 		// xor линию
 		for (y = 0; y < WFDY; ++ y)
 		{
-			display_colorbuffer_xor(colorpip, WFDX, WFDY, WFDX / 2, y, COLOR_CENTERMAKER); 
+			display_colorbuffer_xor(colorpip, WFDX, SPDY, WFDX / 2, y, COLOR_CENTERMAKER); 
 		}
 	}
 	else
 	{
-		display_colorbuffer_fill(colorpip, WFDX, WFDY, COLOR_GRAY);
+		display_colorbuffer_fill(colorpip, WFDX, SPDY, COLOR_GRAY);
 	}
 
 #if LCDMODE_LTDC_PIP16
-	display_colorbuffer_pip(colorpip, WFDX, WFDY);
+	display_colorbuffer_pip(colorpip, WFDX, SPDY);
 #else /* LCDMODE_LTDC_PIP16 */
-	display_colorbuffer_show(colorpip, WFDX, WFDY, GRID2X(x0), GRID2Y(y0));
+	display_colorbuffer_show(colorpip, WFDX, SPDY, GRID2X(x0), GRID2Y(y0));
 #endif /* LCDMODE_LTDC_PIP16 */
 #endif
 }
