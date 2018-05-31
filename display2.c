@@ -51,6 +51,12 @@ static void display2_waterfall(
 	void * pv
 	);
 
+static void display2_colorbuffer(
+	uint_fast8_t x, 
+	uint_fast8_t y, 
+	void * pv
+	);
+
 // Отображение шкалы S-метра и других измерителей
 static void display2_legend(
 	uint_fast8_t x, 
@@ -2678,8 +2684,12 @@ enum
 			BDTH_ALLPWR = BDTH_ALLRX,
 			BDTH_SPACEPWR = BDTH_SPACERX,
 		#endif /* WITHSHOWSWRPWR */
-			BDCV_WFLRX = ROWS2GRID(1),		// количество ячееек, отведенное под S-метр, панораму, иные отображения
-			BDCV_SPMRX = BDCV_WFLRX,	// вертикальный размер спектра в ячейках		};
+			BDCV_ALLRX = ROWS2GRID(1),		// количество ячееек, отведенное под S-метр, панораму, иные отображения
+			BDCV_SPMRX = BDCV_ALLRX,	// вертикальный размер спектра в ячейках		};
+			BDCV_WFLRX = BDCV_ALLRX,	// вертикальный размер водопада в ячейках		};
+			BDCO_SPMRX = 0,	// смещение спектра по вертикали в ячейках от начала общего поля
+			BDCO_WFLRX = 0	// смещение водопада по вертикали в ячейках от начала общего поля
+		};
 		enum
 		{
 			PATTERN_SPACE = 0x00,	/* очищаем место за SWR и PWR метром этим символом */
@@ -3068,8 +3078,12 @@ enum
 
 		enum
 		{
-			BDCV_WFLRX = 7,		// количество ячеек, отведенное под S-метр, панораму, иные отображения
-			BDCV_SPMRX = BDCV_WFLRX,	// вертикальный размер спектра в ячейках
+			BDCV_ALLRX = 7,			// количество ячееек, отведенное под S-метр, панораму, иные отображения
+			BDCV_SPMRX = BDCV_ALLRX,	// вертикальный размер спектра в ячейках		};
+			BDCV_WFLRX = BDCV_ALLRX,	// вертикальный размер водопада в ячейках		};
+			BDCO_SPMRX = 0,	// смещение спектра по вертикали в ячейках от начала общего поля
+			BDCO_WFLRX = 0,	// смещение водопада по вертикали в ячейках от начала общего поля
+
 			BDTH_ALLRX = 30,	// ширина зоны для отображение полосы на индикаторе
 			BDTH_LEFTRX = 15,	// ширина индикатора баллов
 			BDTH_RIGHTRX = BDTH_ALLRX - BDTH_LEFTRX,	// ширина индикатора плюсов 
@@ -3159,6 +3173,7 @@ enum
 		#endif /* LCDMODE_LTDC_PIP16 */
 			{	0,	9,	display2_spectrum,	REDRM_BARS, PG1, },// Отображение оцифровки шкалы S-метра
 			{	0,	9,	display2_waterfall,	REDRM_BARS, PG2, },// Отображение водопада
+			{	0,	9,	display2_colorbuffer,REDRM_BARS,	PG1 | PG2, },
 			/* ---------------------------------- */
 		#if defined (RTC1_TYPE)
 			{	0,	14,	display_time5,		REDRM_BARS, PG0, },	// TIME
@@ -3196,8 +3211,11 @@ enum
 
 		enum
 		{
-			BDCV_WFLRX = 7,		// количество ячеек, отведенное под S-метр, панораму, иные отображения
-			BDCV_SPMRX = BDCV_WFLRX,	// вертикальный размер спектра в ячейках
+			BDCV_ALLRX = 7,			// количество ячееек, отведенное под S-метр, панораму, иные отображения
+			BDCV_SPMRX = BDCV_ALLRX,	// вертикальный размер спектра в ячейках		};
+			BDCV_WFLRX = BDCV_ALLRX,	// вертикальный размер водопада в ячейках		};
+			BDCO_SPMRX = 0,	// смещение спектра по вертикали в ячейках от начала общего поля
+			BDCO_WFLRX = 0,	// смещение водопада по вертикали в ячейках от начала общего поля
 			BDTH_ALLRX = 30,	// ширина зоны для отображение полосы на индикаторе
 			BDTH_LEFTRX = 15,	// ширина индикатора баллов
 			BDTH_RIGHTRX = BDTH_ALLRX - BDTH_LEFTRX,	// ширина индикатора плюсов 
@@ -3285,6 +3303,7 @@ enum
 		#endif /* LCDMODE_LTDC_PIP16 */
 			{	0,	9,	display2_spectrum,	REDRM_BARS, PG1, },// Отображение оцифровки шкалы S-метра
 			{	0,	9,	display2_waterfall,	REDRM_BARS, PG2, },// Отображение водопада
+			{	0,	9,	display2_colorbuffer,REDRM_BARS,	PG1 | PG2, },
 			/* ---------------------------------- */
 		#if defined (RTC1_TYPE)
 			{	0,	14,	display_time5,		REDRM_BARS, PG0, },	// TIME
@@ -3323,8 +3342,11 @@ enum
 
 		enum
 		{
-			BDCV_WFLRX = 7,		// количество ячеек, отведенное под S-метр, панораму, иные отображения
-			BDCV_SPMRX = BDCV_WFLRX,	// вертикальный размер спектра в ячейках
+			BDCV_ALLRX = 7,			// количество ячееек, отведенное под S-метр, панораму, иные отображения
+			BDCV_SPMRX = BDCV_ALLRX,	// вертикальный размер спектра в ячейках		};
+			BDCV_WFLRX = BDCV_ALLRX,	// вертикальный размер водопада в ячейках		};
+			BDCO_SPMRX = 0,	// смещение спектра по вертикали в ячейках от начала общего поля
+			BDCO_WFLRX = 0,	// смещение водопада по вертикали в ячейках от начала общего поля
 			BDTH_ALLRX = 30,	// ширина зоны для отображение полосы на индикаторе
 			BDTH_LEFTRX = 15,	// ширина индикатора баллов
 			BDTH_RIGHTRX = BDTH_ALLRX - BDTH_LEFTRX,	// ширина индикатора плюсов 
@@ -3428,6 +3450,7 @@ enum
 		#endif /* LCDMODE_LTDC_PIP16 */
 			{	0,	9,	display2_spectrum,	REDRM_BARS, PG1, },// Отображение оцифровки шкалы S-метра
 			{	0,	9,	display2_waterfall,	REDRM_BARS, PG2, },// Отображение водопада
+			{	0,	9,	display2_colorbuffer,REDRM_BARS,	PG1 | PG2, },
 		#else /* WITHDSPEXTDDC */
 			{	27, 12,	display_atu3,		REDRM_MODE, PGALL, },	// ATU
 			{	27, 14,	display_byp3,		REDRM_MODE, PGALL, },	// BYP
@@ -3546,8 +3569,14 @@ enum
 		// для Аиста
 		enum
 		{
+			BDCV_ALLRX = 9,	// общая высота, отведенная под S-метр, панораму, водопад и иные отображения
+
+			BDCO_SPMRX = 0,	// смещение спектра по вертикали в ячейках от начала общего поля
 			BDCV_SPMRX = 4,	// вертикальный размер спектра в ячейках
-			BDCV_WFLRX = 5,		// количество строк, отведенное под S-метр, панораму, иные отображения
+
+			BDCO_WFLRX = 4,	// смещение водопада по вертикали в ячейках от начала общего поля
+			BDCV_WFLRX = 5,	// вертикальный размер водопада в ячейках
+
 			BDTH_ALLRX = 26,	// ширина зоны для отображение полосы на индикаторе
 			BDTH_RIGHTRX = 16,	// ширина индикатора плюсов
 			BDTH_LEFTRX = BDTH_ALLRX - BDTH_RIGHTRX,	// ширина индикатора баллов
@@ -3625,7 +3654,8 @@ enum
 			{	0,	18,	display2_waterfallbg,REDRM_MODE,	PG1, },
 		#endif /* LCDMODE_LTDC_PIP16 */
 			{	0,	18 + 0,				display2_spectrum,	REDRM_BARS, PG1, },// Отображение спектра
-			{	0,	18 + BDCV_SPMRX,	display2_waterfall,	REDRM_BARS, PG1, },// Отображение водопада
+			{	0,	18 + BDCO_SPMRX,	display2_waterfall,	REDRM_BARS, PG1, },// Отображение водопада
+			{	0,	18,	display2_colorbuffer,	REDRM_BARS,	PG1, },
 
 			{	27, 18,	display_siglevel5,	REDRM_BARS, PGALL, },	// signal level
 		#endif /* WITHIF4DSP */
@@ -3694,7 +3724,11 @@ enum
 		BDTH_ALLPWR = BDTH_ALLRX,
 		BDTH_SPACEPWR = BDTH_SPACERX,
 	#endif /* WITHSHOWSWRPWR */
-		BDCV_WFLRX = ROWS2GRID(7),		// количество ячееек, отведенное под S-метр, панораму, иные отображения
+		BDCV_ALLRX = ROWS2GRID(7),	// количество ячееек, отведенное под S-метр, панораму, иные отображения
+		BDCV_SPMRX = BDCV_ALLRX,	// вертикальный размер спектра в ячейках		};
+		BDCV_WFLRX = BDCV_ALLRX,	// вертикальный размер водопада в ячейках		};
+		BDCO_SPMRX = 0,	// смещение спектра по вертикали в ячейках от начала общего поля
+		BDCO_WFLRX = 0,	// смещение водопада по вертикали в ячейках от начала общего поля
 		BDCV_SPMRX = BDCV_WFLRX			// вертикальный размер спектра в ячейках
 	};
 
@@ -3763,6 +3797,7 @@ enum
 	#endif /* LCDMODE_LTDC_PIP16 */
 		{	0,	9,	display2_spectrum,	REDRM_BARS, PG1, },// Отображение спектра
 		{	0,	9,	display2_waterfall,	REDRM_BARS, PG2, },// Отображение водопада
+		{	0,	9,	display2_colorbuffer,	REDRM_BARS,	PG1 | PG2, },
 
 		{	0,	17,	display_time8,		REDRM_BARS, PGALL, },	// TIME
 		{	9,	17,	display_siglevel5,	REDRM_BARS, PGALL, },	// signal level in S points
@@ -4242,41 +4277,34 @@ static void display2_legend(
 enum 
 {
 	WFDX = GRID2X(CHARS2GRID(BDTH_ALLRX)),	// размер по горизонтали в пикселях
+	ALLDY = GRID2Y(BDCV_ALLRX),				// размер по вертикали в пикселях части отведенной водопаду
 	WFDY = GRID2Y(BDCV_WFLRX),				// размер по вертикали в пикселях части отведенной водопаду
-	SPDY = GRID2Y(BDCV_SPMRX)				// размер по вертикали в пикселях части отведенной спектру
+	WFY0 = GRID2Y(BDCO_WFLRX),				// смещение по вертикали в пикселях части отведенной водопаду
+	SPDY = GRID2Y(BDCV_SPMRX),				// размер по вертикали в пикселях части отведенной спектру
+	SPY0 = GRID2Y(BDCO_SPMRX)				// смещение по вертикали в пикселях части отведенной спектру
 };
 
-
-static PACKEDCOLOR_T * getnextpipwfl(void)
-{
 #if LCDMODE_LTDC_PIP16
 
-	static RAMNOINIT_D1 ALIGNX_BEGIN PACKEDCOLOR_T colorpips [2] [GXSIZE(WFDX, WFDY)] ALIGNX_END;
-	static int phase;
+	static RAMNOINIT_D1 ALIGNX_BEGIN PACKEDCOLOR_T colorpips [2] [GXSIZE(WFDX, ALLDY)] ALIGNX_END;
+	static int pipphase;
 
-	return colorpips [phase = ! phase];
+	static void nextpip(void)
+	{
+		pipphase = ! pipphase;
+	}
 
 #else /* LCDMODE_LTDC_PIP16 */
 
-	static ALIGNX_BEGIN PACKEDCOLOR_T colorpip0 [GXSIZE(WFDX, WFDY)] ALIGNX_END;
+	static ALIGNX_BEGIN PACKEDCOLOR_T colorpip0 [GXSIZE(WFDX, ALLDY)] ALIGNX_END;
 
-	return colorpip0;
 #endif /* LCDMODE_LTDC_PIP16 */
-}
 
-static PACKEDCOLOR_T * getnextpipspectrum(void)
+static PACKEDCOLOR_T * getscratchpip(void)
 {
 #if LCDMODE_LTDC_PIP16
-
-	static RAMNOINIT_D1 ALIGNX_BEGIN PACKEDCOLOR_T colorpips [2] [GXSIZE(WFDX, WFDY)] ALIGNX_END;
-	static int phase;
-
-	return colorpips [phase = ! phase];
-
+	return colorpips [pipphase];
 #else /* LCDMODE_LTDC_PIP16 */
-
-	static ALIGNX_BEGIN PACKEDCOLOR_T colorpip0 [GXSIZE(WFDX, SPDY)] ALIGNX_END;
-
 	return colorpip0;
 #endif /* LCDMODE_LTDC_PIP16 */
 }
@@ -4524,7 +4552,7 @@ static void display2_spectrum(
 
 #else /* */
 
-	PACKEDCOLOR_T * const colorpip = getnextpipspectrum();
+	PACKEDCOLOR_T * const colorpip = getscratchpip();
 	// Спектр на цветных дисплеях, не поддерживающих ускоренного 
 	// построения изображения по bitmap с раскрашиванием
 	if (hamradio_get_tx() == 0)
@@ -4561,28 +4589,19 @@ static void display2_spectrum(
 			int zv = (SPDY - 1) - val;
 			int z;
 			for (z = SPDY - 1; z >= zv; -- z)
-				display_colorbuffer_set(colorpip, WFDX, SPDY, x, z, COLOR_WAERFALLFG);	// точку сигнала
+				display_colorbuffer_set(colorpip, WFDX, ALLDY, x, z + SPY0, COLOR_WAERFALLFG);	// точку сигнала
 			// формирование фона растра
 			for (; z >= 0; -- z)
-				display_colorbuffer_set(colorpip, WFDX, SPDY, x, z, COLOR_WAERFALLBG);	// точку фона
+				display_colorbuffer_set(colorpip, WFDX, ALLDY, x, z + SPY0, COLOR_WAERFALLBG);	// точку фона
 		}
 		// маркер центральной частоты обзора
 		// xor линию
 		for (y = 0; y < SPDY; ++ y)
 		{
-			display_colorbuffer_xor(colorpip, WFDX, SPDY, WFDX / 2, y, COLOR_CENTERMAKER); 
+			display_colorbuffer_xor(colorpip, WFDX, ALLDY, WFDX / 2, y + SPY0, COLOR_CENTERMAKER); 
 		}
 	}
-	else
-	{
-		display_colorbuffer_fill(colorpip, WFDX, SPDY, COLOR_GRAY);
-	}
 
-#if LCDMODE_LTDC_PIP16
-	display_colorbuffer_pip(colorpip, WFDX, SPDY);
-#else /* LCDMODE_LTDC_PIP16 */
-	display_colorbuffer_show(colorpip, WFDX, SPDY, GRID2X(x0), GRID2Y(y0));
-#endif /* LCDMODE_LTDC_PIP16 */
 #endif
 }
 
@@ -4678,7 +4697,7 @@ static void display2_waterfall(
 #else /* */
 	// следы спектра ("водопад") на цветных дисплеях
 
-	PACKEDCOLOR_T * const colorpip = getnextpipwfl();
+	PACKEDCOLOR_T * const colorpip = getscratchpip();
 	if (hamradio_get_tx() == 0)
 	{
 
@@ -4691,26 +4710,46 @@ static void display2_waterfall(
 		{
 			for (y = 0; y < WFDY; ++ y)
 			{
-				display_colorbuffer_set(colorpip, WFDX, WFDY, x, y, wfpalette [wfarray [(wfrow + y) % WFDY] [x]]);
+				display_colorbuffer_set(colorpip, WFDX, ALLDY, x, y + WFY0, wfpalette [wfarray [(wfrow + y) % WFDY] [x]]);
 			}
 		}
 		// маркер центральной частоты обзора
 		for (y = 0; y < WFDY; ++ y)
 		{
-			display_colorbuffer_xor(colorpip, WFDX, WFDY, WFDX / 2, y, COLOR_RED);
+			display_colorbuffer_xor(colorpip, WFDX, ALLDY, WFDX / 2, y + WFY0, COLOR_RED);
 		}
+	}
+
+#endif /* LCDMODE_S1D13781 */
+}
+
+// отображение ранее подготовленного буфера
+static void display2_colorbuffer(
+	uint_fast8_t x0, 
+	uint_fast8_t y0, 
+	void * pv
+	)
+{
+#if LCDMODE_S1D13781
+#elif LCDMODE_UC1608 || LCDMODE_UC1601
+#else /* */
+
+	PACKEDCOLOR_T * const colorpip = getscratchpip();
+
+	if (hamradio_get_tx() == 0)
+	{
 	}
 	else
 	{
-		display_colorbuffer_fill(colorpip, WFDX, WFDY, COLOR_GRAY);
+		display_colorbuffer_fill(colorpip, WFDX, ALLDY, COLOR_GRAY);
 	}
 
 #if LCDMODE_LTDC_PIP16
-	display_colorbuffer_pip(colorpip, WFDX, WFDY);
+	display_colorbuffer_pip(colorpip, WFDX, ALLDY);
+	nextpip();
 #else /* LCDMODE_LTDC_PIP16 */
-	display_colorbuffer_show(colorpip, WFDX, WFDY, GRID2X(x0), GRID2Y(y0));
+	display_colorbuffer_show(colorpip, WFDX, ALLDY, GRID2X(x0), GRID2Y(y0));
 #endif /* LCDMODE_LTDC_PIP16 */
-
 #endif /* LCDMODE_S1D13781 */
 }
 
@@ -4735,6 +4774,15 @@ static void display2_spectrum(
 static void display2_waterfall(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
+	void * pv
+	)
+{
+}
+
+// отображение ранее подготовленного буфера
+static void display2_colorbuffer(
+	uint_fast8_t x0, 
+	uint_fast8_t y0, 
 	void * pv
 	)
 {
