@@ -3547,7 +3547,7 @@ enum
 		enum
 		{
 			BDCV_SPMRX = 4,	// вертикальный размер спектра в ячейках
-			BDCV_WFLRX = 4,		// количество строк, отведенное под S-метр, панораму, иные отображения
+			BDCV_WFLRX = 5,		// количество строк, отведенное под S-метр, панораму, иные отображения
 			BDTH_ALLRX = 26,	// ширина зоны для отображение полосы на индикаторе
 			BDTH_RIGHTRX = 16,	// ширина индикатора плюсов
 			BDTH_LEFTRX = BDTH_ALLRX - BDTH_RIGHTRX,	// ширина индикатора баллов
@@ -3611,23 +3611,23 @@ enum
 			{	0,	8,	display_freqXbig_a, REDRM_FREQ, PGALL, },
 			{	29, 8,	display_mode3_a,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
 			//---
-			{	0,	16,	display_vfomode5,	REDRM_MODE, PGALL, },	// SPLIT
-			{	6,	16,	display_freqX_b,	REDRM_FREQB, PGALL, },
+			{	0,	15,	display_vfomode5,	REDRM_MODE, PGALL, },	// SPLIT
+			{	6,	15,	display_freqX_b,	REDRM_FREQB, PGALL, },
 		#if WITHUSEDUALWATCH
-			{	25, 16,	display_mainsub3,	REDRM_MODE, PGALL, },	// main/sub RX
+			{	25, 15,	display_mainsub3,	REDRM_MODE, PGALL, },	// main/sub RX
 		#endif /* WITHUSEDUALWATCH */
-			{	29, 16,	display_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
+			{	29, 15,	display_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
 			//---
-			{	0,	19,	display2_bars,		REDRM_BARS, PG0, },	// S-METER, SWR-METER, POWER-METER
+			{	0,	18,	display2_bars,		REDRM_BARS, PG0, },	// S-METER, SWR-METER, POWER-METER
 		#if WITHIF4DSP
-			{	0,	19,	dsp_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
+			{	0,	18,	dsp_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
 		#if LCDMODE_LTDC_PIP16
-			{	0,	19,	display2_waterfallbg,REDRM_MODE,	PG1, },
+			{	0,	18,	display2_waterfallbg,REDRM_MODE,	PG1, },
 		#endif /* LCDMODE_LTDC_PIP16 */
-			{	0,	19 + 0,				display2_spectrum,	REDRM_BARS, PG1, },// Отображение спектра
-			{	0,	19 + BDCV_SPMRX,	display2_waterfall,	REDRM_BARS, PG1, },// Отображение водопада
+			{	0,	18 + 0,				display2_spectrum,	REDRM_BARS, PG1, },// Отображение спектра
+			{	0,	18 + BDCV_SPMRX,	display2_waterfall,	REDRM_BARS, PG1, },// Отображение водопада
 
-			{	27, 19,	display_siglevel5,	REDRM_BARS, PGALL, },	// signal level
+			{	27, 18,	display_siglevel5,	REDRM_BARS, PGALL, },	// signal level
 		#endif /* WITHIF4DSP */
 			//---
 		#if WITHSAM
@@ -4243,12 +4243,11 @@ enum
 {
 	WFDX = GRID2X(CHARS2GRID(BDTH_ALLRX)),	// размер по горизонтали в пикселях
 	WFDY = GRID2Y(BDCV_WFLRX),				// размер по вертикали в пикселях части отведенной водопаду
-	SPDY = GRID2Y(BDCV_SPMRX),				// размер по вертикали в пикселях части отведенной спектру
-	WFSPDY = WFDY > SPDY ? WFDY : SPDY
+	SPDY = GRID2Y(BDCV_SPMRX)				// размер по вертикали в пикселях части отведенной спектру
 };
 
 
-static PACKEDCOLOR_T * getnextpip(void)
+static PACKEDCOLOR_T * getnextpipwfl(void)
 {
 #if LCDMODE_LTDC_PIP16
 
@@ -4259,7 +4258,24 @@ static PACKEDCOLOR_T * getnextpip(void)
 
 #else /* LCDMODE_LTDC_PIP16 */
 
-	static ALIGNX_BEGIN PACKEDCOLOR_T colorpip0 [GXSIZE(WFDX, WFSPDY)] ALIGNX_END;
+	static ALIGNX_BEGIN PACKEDCOLOR_T colorpip0 [GXSIZE(WFDX, WFDY)] ALIGNX_END;
+
+	return colorpip0;
+#endif /* LCDMODE_LTDC_PIP16 */
+}
+
+static PACKEDCOLOR_T * getnextpipspectrum(void)
+{
+#if LCDMODE_LTDC_PIP16
+
+	static RAMNOINIT_D1 ALIGNX_BEGIN PACKEDCOLOR_T colorpips [2] [GXSIZE(WFDX, WFDY)] ALIGNX_END;
+	static int phase;
+
+	return colorpips [phase = ! phase];
+
+#else /* LCDMODE_LTDC_PIP16 */
+
+	static ALIGNX_BEGIN PACKEDCOLOR_T colorpip0 [GXSIZE(WFDX, SPDY)] ALIGNX_END;
 
 	return colorpip0;
 #endif /* LCDMODE_LTDC_PIP16 */
@@ -4508,7 +4524,7 @@ static void display2_spectrum(
 
 #else /* */
 
-	PACKEDCOLOR_T * const colorpip = getnextpip();
+	PACKEDCOLOR_T * const colorpip = getnextpipspectrum();
 	// Спектр на цветных дисплеях, не поддерживающих ускоренного 
 	// построения изображения по bitmap с раскрашиванием
 	if (hamradio_get_tx() == 0)
@@ -4545,21 +4561,21 @@ static void display2_spectrum(
 			int zv = (SPDY - 1) - val;
 			int z;
 			for (z = SPDY - 1; z >= zv; -- z)
-				display_colorbuffer_set(colorpip, WFDX, WFSPDY, x, z, COLOR_WAERFALLFG);	// точку сигнала
+				display_colorbuffer_set(colorpip, WFDX, SPDY, x, z, COLOR_WAERFALLFG);	// точку сигнала
 			// формирование фона растра
 			for (; z >= 0; -- z)
-				display_colorbuffer_set(colorpip, WFDX, WFSPDY, x, z, COLOR_WAERFALLBG);	// точку фона
+				display_colorbuffer_set(colorpip, WFDX, SPDY, x, z, COLOR_WAERFALLBG);	// точку фона
 		}
 		// маркер центральной частоты обзора
 		// xor линию
-		for (y = 0; y < WFDY; ++ y)
+		for (y = 0; y < SPDY; ++ y)
 		{
-			display_colorbuffer_xor(colorpip, WFDX, WFSPDY, WFDX / 2, y, COLOR_CENTERMAKER); 
+			display_colorbuffer_xor(colorpip, WFDX, SPDY, WFDX / 2, y, COLOR_CENTERMAKER); 
 		}
 	}
 	else
 	{
-		display_colorbuffer_fill(colorpip, WFDX, WFSPDY, COLOR_GRAY);
+		display_colorbuffer_fill(colorpip, WFDX, SPDY, COLOR_GRAY);
 	}
 
 #if LCDMODE_LTDC_PIP16
@@ -4662,7 +4678,7 @@ static void display2_waterfall(
 #else /* */
 	// следы спектра ("водопад") на цветных дисплеях
 
-	PACKEDCOLOR_T * const colorpip = getnextpip();
+	PACKEDCOLOR_T * const colorpip = getnextpipwfl();
 	if (hamradio_get_tx() == 0)
 	{
 
@@ -4675,18 +4691,18 @@ static void display2_waterfall(
 		{
 			for (y = 0; y < WFDY; ++ y)
 			{
-				display_colorbuffer_set(colorpip, WFDX, WFSPDY, x, y, wfpalette [wfarray [(wfrow + y) % WFDY] [x]]);
+				display_colorbuffer_set(colorpip, WFDX, WFDY, x, y, wfpalette [wfarray [(wfrow + y) % WFDY] [x]]);
 			}
 		}
 		// маркер центральной частоты обзора
 		for (y = 0; y < WFDY; ++ y)
 		{
-			display_colorbuffer_xor(colorpip, WFDX, WFSPDY, WFDX / 2, y, COLOR_RED);
+			display_colorbuffer_xor(colorpip, WFDX, WFDY, WFDX / 2, y, COLOR_RED);
 		}
 	}
 	else
 	{
-		display_colorbuffer_fill(colorpip, WFDX, WFSPDY, COLOR_GRAY);
+		display_colorbuffer_fill(colorpip, WFDX, WFDY, COLOR_GRAY);
 	}
 
 #if LCDMODE_LTDC_PIP16
