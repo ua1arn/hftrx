@@ -3451,8 +3451,10 @@ static void DMA2_SPI1_RX_initialize(void)
 	__DSB();
 
 	#if CPUSTYLE_STM32H7XX
+		// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
+		// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
 		enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
-		DMAMUX1_Channel11->CCR = 37 * DMAMUX_CxCR_DMAREQ_ID_0;	// SPI1_RX
+		DMAMUX1_Channel8->CCR = 37 * DMAMUX_CxCR_DMAREQ_ID_0;	// SPI1_RX
 		DMA2_Stream0->PAR = (uintptr_t) & SPI1->RXDR;
 	#else /* CPUSTYLE_STM32H7XX */
 		const uint_fast8_t ch = 3;
@@ -3486,6 +3488,8 @@ static void DMA2_SPI1_TX_initialize(void)
 	__DSB();
 
 	#if CPUSTYLE_STM32H7XX
+		// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
+		// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
 		enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
 		DMAMUX1_Channel11->CCR = 38 * DMAMUX_CxCR_DMAREQ_ID_0;	// SPI1_TX
 		DMA2_Stream3->PAR = (uintptr_t) & SPI1->TXDR;
@@ -4452,7 +4456,7 @@ hardware_spi_master_send_frame_8bpartial(
 	uint_fast32_t size		/* количество пересылаемых 8-ти битных элементов */
 	)
 {
-#if CPUSTYLE_STM32H7XX
+#if 0
 	// имитация
 	if (size == 1)
 	{
@@ -4615,7 +4619,7 @@ hardware_spi_master_send_frame_16bpartial(
 	uint_fast32_t size		/* количество пересылаемых 16-ти битных элементов */
 	)
 {
-#if CPUSTYLE_STM32H7XX
+#if 0
 	// имитация
 	if (size == 1)
 	{

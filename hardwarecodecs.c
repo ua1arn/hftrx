@@ -253,6 +253,8 @@ DMA_I2S2_TX_initialize(void)
 	__DSB();
 
 #if CPUSTYLE_STM32H7XX
+	// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
+	// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
 	enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
 	DMAMUX1_Channel4->CCR = 40 * DMAMUX_CxCR_DMAREQ_ID_0;	// SPI2_TX
 	DMA1_Stream4->PAR = (uint32_t) & SPI2->TXDR;
@@ -340,6 +342,8 @@ DMA_I2S3_RX_initialize(void)
 	__DSB();
 
 #if CPUSTYLE_STM32H7XX
+	// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
+	// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
 	enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
 	DMAMUX1_Channel0->CCR = 61 * DMAMUX_CxCR_DMAREQ_ID_0;	// SPI3_RX
 	DMA1_Stream0->PAR = (uint32_t) & SPI3->RXDR;
@@ -1068,6 +1072,8 @@ static void DMA_SAI1_A_TX_initialize(void)
 	__DSB();
 
 #if CPUSTYLE_STM32H7XX
+	// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
+	// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
 	enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
 	DMAMUX1_Channel9->CCR = 87 * DMAMUX_CxCR_DMAREQ_ID_0;	// SAI1_A
 #else /* CPUSTYLE_STM32H7XX */
@@ -1117,6 +1123,8 @@ static void DMA_SAI1_B_RX_initialize(void)
 	enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
 	//const uint_fast8_t muxi = 88;	// SAI1_B
 	//stm32h7xx_dma2mux(muxi, 0x05);
+	// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
+	// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
 	DMAMUX1_Channel13->CCR = 88 * DMAMUX_CxCR_DMAREQ_ID_0;
 #else /* CPUSTYLE_STM32H7XX */
 	const uint_fast8_t ch = 0;
