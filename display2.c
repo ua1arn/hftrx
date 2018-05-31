@@ -4276,7 +4276,7 @@ static void display2_legend(
 
 enum 
 {
-	WFDX = GRID2X(CHARS2GRID(BDTH_ALLRX)),	// размер по горизонтали в пикселях
+	ALLDX = GRID2X(CHARS2GRID(BDTH_ALLRX)),	// размер по горизонтали в пикселях
 	ALLDY = GRID2Y(BDCV_ALLRX),				// размер по вертикали в пикселях части отведенной водопаду
 	WFDY = GRID2Y(BDCV_WFLRX),				// размер по вертикали в пикселях части отведенной водопаду
 	WFY0 = GRID2Y(BDCO_WFLRX),				// смещение по вертикали в пикселях части отведенной водопаду
@@ -4286,7 +4286,7 @@ enum
 
 #if LCDMODE_LTDC_PIP16
 
-	static RAMNOINIT_D1 ALIGNX_BEGIN PACKEDCOLOR_T colorpips [2] [GXSIZE(WFDX, ALLDY)] ALIGNX_END;
+	static RAMNOINIT_D1 ALIGNX_BEGIN PACKEDCOLOR_T colorpips [2] [GXSIZE(ALLDX, ALLDY)] ALIGNX_END;
 	static int pipphase;
 
 	static void nextpip(void)
@@ -4296,7 +4296,7 @@ enum
 
 #else /* LCDMODE_LTDC_PIP16 */
 
-	static ALIGNX_BEGIN PACKEDCOLOR_T colorpip0 [GXSIZE(WFDX, ALLDY)] ALIGNX_END;
+	static ALIGNX_BEGIN PACKEDCOLOR_T colorpip0 [GXSIZE(ALLDX, ALLDY)] ALIGNX_END;
 
 #endif /* LCDMODE_LTDC_PIP16 */
 
@@ -4312,14 +4312,14 @@ static PACKEDCOLOR_T * getscratchpip(void)
 enum { AVGLEN = 2 };
 enum { MAXHISTLEN = 5 };
 enum { SPAVGSIZE = 5 };	// max(AVGLEN, MAXHISTLEN)
-static FLOAT_t spavgarray [SPAVGSIZE] [WFDX];	// массив для усреднения
+static FLOAT_t spavgarray [SPAVGSIZE] [ALLDX];	// массив для усреднения
 static uint_fast8_t spavgrow;				// строка, в которую последней занесены данные
 
 #if 1
-	static uint8_t wfarray [WFDY] [WFDX];	// массив "водопада"
+	static uint8_t wfarray [WFDY] [ALLDX];	// массив "водопада"
 	static uint_fast16_t wfrow;				// строка, в которую последней занесены данные
 #else
-	static uint8_t wfarray [1] [WFDX];	// массив "водопада"
+	static uint8_t wfarray [1] [ALLDX];	// массив "водопада"
 	enum { wfrow = 0 };				// строка, в которую последней занесены данные
 #endif
 enum { PALETTESIZE = 256 };
@@ -4436,14 +4436,14 @@ static void dsp_latchwaterfall(
 
 	// запоминание информации спектра для спектрограммы
 	spavgrow = (spavgrow == 0) ? (SPAVGSIZE - 1) : (spavgrow - 1);
-	dsp_getspectrumrow(& spavgarray [spavgrow] [0], WFDX);
+	dsp_getspectrumrow(& spavgarray [spavgrow] [0], ALLDX);
 
 #if 1
 	wfrow = (wfrow == 0) ? (WFDY - 1) : (wfrow - 1);
 #endif
 
 	// запоминание информации спектра для водопада
-	for (x = 0; x < WFDX; ++ x)
+	for (x = 0; x < ALLDX; ++ x)
 	{
 #if 0
 		// усреднение
@@ -4481,7 +4481,7 @@ static void display2_waterfallbg(
 	void * pv
 	)
 {
-	dma2d_fillrect2(& framebuff [0][0], DIM_X, DIM_Y, GRID2X(x0), GRID2Y(y0), WFDX, WFDY, COLOR_KEY);
+	dma2d_fillrect2(& framebuff [0][0], DIM_X, DIM_Y, GRID2X(x0), GRID2Y(y0), ALLDX, WFDY, COLOR_KEY);
 }
 
 #endif /* LCDMODE_LTDC_PIP16 */
@@ -4496,7 +4496,7 @@ static void display2_spectrum(
 #if LCDMODE_UC1608 || LCDMODE_UC1601 || LCDMODE_S1D13781
 	// Спектр на монохромных дисплеях 
 	// или на цвентых,где есть возможность раскаски растровоцй картинки.
-	static ALIGNX_BEGIN GX_t spectrmonoscr [MGSIZE(WFDX, SPDY)] ALIGNX_END;
+	static ALIGNX_BEGIN GX_t spectrmonoscr [MGSIZE(ALLDX, SPDY)] ALIGNX_END;
 
 	if (hamradio_get_tx() == 0)
 	{
@@ -4507,11 +4507,11 @@ static void display2_spectrum(
 		memset(spectrmonoscr, 0xFF, sizeof spectrmonoscr);			// рисование способом погасить точку
 		for (x = 0; x < SPDY; ++ x)
 		{
-			display_pixelbuffer(spectrmonoscr, WFDX, SPDY, WFDX / 2, x);	// погасить точку
+			display_pixelbuffer(spectrmonoscr, ALLDX, SPDY, ALLDX / 2, x);	// погасить точку
 		}
 
 		// отображение спектра
-		for (x = 0; x < WFDX; ++ x)
+		for (x = 0; x < ALLDX; ++ x)
 		{
 		#if EEAVERAGE
 			// усреднение
@@ -4540,7 +4540,7 @@ static void display2_spectrum(
 			int zv = (SPDY - 1) - val;
 			int z;
 			for (z = SPDY - 1; z >= zv; -- z)
-				display_pixelbuffer_xor(spectrmonoscr, WFDX, SPDY, x, z);	// xor точку
+				display_pixelbuffer_xor(spectrmonoscr, ALLDX, SPDY, x, z);	// xor точку
 		}
 	}
 	else
@@ -4548,7 +4548,7 @@ static void display2_spectrum(
 		memset(spectrmonoscr, 0xFF, sizeof spectrmonoscr);			// рисование способом погасить точку
 	}
 	display_setcolors(COLOR_WAERFALLBG, COLOR_WAERFALLFG);
-	display_showbuffer(spectrmonoscr, WFDX, SPDY, x0, y0);
+	display_showbuffer(spectrmonoscr, ALLDX, SPDY, x0, y0);
 
 #else /* */
 
@@ -4560,7 +4560,7 @@ static void display2_spectrum(
 		uint_fast16_t x;
 		uint_fast16_t y;
 		// отображение спектра
-		for (x = 0; x < WFDX; ++ x)
+		for (x = 0; x < ALLDX; ++ x)
 		{
 		#if EEAVERAGE
 			// усреднение
@@ -4589,16 +4589,16 @@ static void display2_spectrum(
 			int zv = (SPDY - 1) - val;
 			int z;
 			for (z = SPDY - 1; z >= zv; -- z)
-				display_colorbuffer_set(colorpip, WFDX, ALLDY, x, z + SPY0, COLOR_WAERFALLFG);	// точку сигнала
+				display_colorbuffer_set(colorpip, ALLDX, ALLDY, x, z + SPY0, COLOR_WAERFALLFG);	// точку сигнала
 			// формирование фона растра
 			for (; z >= 0; -- z)
-				display_colorbuffer_set(colorpip, WFDX, ALLDY, x, z + SPY0, COLOR_WAERFALLBG);	// точку фона
+				display_colorbuffer_set(colorpip, ALLDX, ALLDY, x, z + SPY0, COLOR_WAERFALLBG);	// точку фона
 		}
 		// маркер центральной частоты обзора
 		// xor линию
 		for (y = 0; y < SPDY; ++ y)
 		{
-			display_colorbuffer_xor(colorpip, WFDX, ALLDY, WFDX / 2, y + SPY0, COLOR_CENTERMAKER); 
+			display_colorbuffer_xor(colorpip, ALLDX, ALLDY, ALLDX / 2, y + SPY0, COLOR_CENTERMAKER); 
 		}
 	}
 
@@ -4608,7 +4608,7 @@ static void display2_spectrum(
 // отрисовка вновь появившихся данных на водопаде (в случае использования аппаратного scroll видеопамяти).
 static void display_wfputrow(uint_fast16_t x, uint_fast16_t y, const uint8_t * p)
 {
-	enum { dx = WFDX, dy = 1 };
+	enum { dx = ALLDX, dy = 1 };
 	static ALIGNX_BEGIN PACKEDCOLOR_T b [GXSIZE(dx, dy)] ALIGNX_END;
 	uint_fast16_t xp; 
 	for (xp = 0; xp < dx; ++ xp)
@@ -4633,7 +4633,7 @@ static void display2_waterfall(
 		// следы спектра ("водопад")
 		// сдвигаем вниз, отрисовываем только верхнюю строку
 		uint_fast16_t x;
-		display_scroll_down(GRID2X(x0), GRID2Y(y0), WFDX, WFDY, 1);
+		display_scroll_down(GRID2X(x0), GRID2Y(y0), ALLDX, WFDY, 1);
 		while (display_getreadystate() == 0)
 			;
 		x = 0;
@@ -4642,7 +4642,7 @@ static void display2_waterfall(
 		// следы спектра ("фонтан")
 		// сдвигаем вверх, отрисовываем только нижнюю строку
 		uint_fast16_t x;
-		display_scroll_up(GRID2X(x0), GRID2Y(y0), WFDX, WFDY, 1);
+		display_scroll_up(GRID2X(x0), GRID2Y(y0), ALLDX, WFDY, 1);
 		while (display_getreadystate() == 0)
 			;
 		x = 0;
@@ -4664,7 +4664,7 @@ static void display2_waterfall(
 #elif LCDMODE_UC1608 || LCDMODE_UC1601
 	// следы спектра ("водопад") на монохромных дисплеях
 
-	static ALIGNX_BEGIN GX_t wfmonoscr [MGSIZE(WFDX, WFDY)] ALIGNX_END;
+	static ALIGNX_BEGIN GX_t wfmonoscr [MGSIZE(ALLDX, WFDY)] ALIGNX_END;
 	memset(wfmonoscr, 0xFF, sizeof wfmonoscr);			// рисование способом погасить точку
 
 	if (hamradio_get_tx() == 0)
@@ -4677,22 +4677,22 @@ static void display2_waterfall(
 		// маркер центральной частоты обзора
 		for (y = 0; y < WFDY; ++ y)
 		{
-			display_pixelbuffer(wfmonoscr, WFDX, WFDY, WFDX / 2, y);	// погасить точку
+			display_pixelbuffer(wfmonoscr, ALLDX, WFDY, ALLDX / 2, y);	// погасить точку
 		}
 		// следы спектра ("водопад")
-		for (x = 0; x < WFDX; ++ x)
+		for (x = 0; x < ALLDX; ++ x)
 		{
 			for (y = 0; y < WFDY; ++ y)
 			{
 				const uint_fast8_t v = wfarray [(wfrow + y) % WFDY] [x];
 				if (v > wflfence)
-					display_pixelbuffer(wfmonoscr, WFDX, WFDY, x, y);	// погасить точку
+					display_pixelbuffer(wfmonoscr, ALLDX, WFDY, x, y);	// погасить точку
 			}
 		}
 	}
 
 	display_setcolors(COLOR_GRAY, COLOR_BLUE);
-	display_showbuffer(wfmonoscr, WFDX, WFDY, x0, y0);
+	display_showbuffer(wfmonoscr, ALLDX, WFDY, x0, y0);
 
 #else /* */
 	// следы спектра ("водопад") на цветных дисплеях
@@ -4706,17 +4706,17 @@ static void display2_waterfall(
 
 		// формирование растра
 		// следы спектра ("водопад")
-		for (x = 0; x < WFDX; ++ x)
+		for (x = 0; x < ALLDX; ++ x)
 		{
 			for (y = 0; y < WFDY; ++ y)
 			{
-				display_colorbuffer_set(colorpip, WFDX, ALLDY, x, y + WFY0, wfpalette [wfarray [(wfrow + y) % WFDY] [x]]);
+				display_colorbuffer_set(colorpip, ALLDX, ALLDY, x, y + WFY0, wfpalette [wfarray [(wfrow + y) % WFDY] [x]]);
 			}
 		}
 		// маркер центральной частоты обзора
 		for (y = 0; y < WFDY; ++ y)
 		{
-			display_colorbuffer_xor(colorpip, WFDX, ALLDY, WFDX / 2, y + WFY0, COLOR_RED);
+			display_colorbuffer_xor(colorpip, ALLDX, ALLDY, ALLDX / 2, y + WFY0, COLOR_RED);
 		}
 	}
 
@@ -4741,14 +4741,14 @@ static void display2_colorbuffer(
 	}
 	else
 	{
-		display_colorbuffer_fill(colorpip, WFDX, ALLDY, COLOR_GRAY);
+		display_colorbuffer_fill(colorpip, ALLDX, ALLDY, COLOR_GRAY);
 	}
 
 #if LCDMODE_LTDC_PIP16
-	display_colorbuffer_pip(colorpip, WFDX, ALLDY);
+	display_colorbuffer_pip(colorpip, ALLDX, ALLDY);
 	nextpip();
 #else /* LCDMODE_LTDC_PIP16 */
-	display_colorbuffer_show(colorpip, WFDX, ALLDY, GRID2X(x0), GRID2Y(y0));
+	display_colorbuffer_show(colorpip, ALLDX, ALLDY, GRID2X(x0), GRID2Y(y0));
 #endif /* LCDMODE_LTDC_PIP16 */
 #endif /* LCDMODE_S1D13781 */
 }
