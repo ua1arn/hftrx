@@ -3546,8 +3546,8 @@ enum
 		// для Аиста
 		enum
 		{
-			BDCV_WFLRX = 8,		// количество строк, отведенное под S-метр, панораму, иные отображения
-			BDCV_SPMRX = BDCV_WFLRX,	// вертикальный размер спектра в ячейках
+			BDCV_SPMRX = 4,	// вертикальный размер спектра в ячейках
+			BDCV_WFLRX = 4,		// количество строк, отведенное под S-метр, панораму, иные отображения
 			BDTH_ALLRX = 26,	// ширина зоны для отображение полосы на индикаторе
 			BDTH_RIGHTRX = 16,	// ширина индикатора плюсов
 			BDTH_LEFTRX = BDTH_ALLRX - BDTH_RIGHTRX,	// ширина индикатора баллов
@@ -3578,8 +3578,7 @@ enum
 		{
 			DPAGE0,					// Страница, в которой отображаются основные (или все) 
 		#if WITHIF4DSP
-			DPAGE1,					// Страница, в которой отображается спектр 
-			DPAGE2,					// Страница, в которой отображается водопад
+			DPAGE1,					// Страница, в которой отображается спектр иводопад
 		#endif /* WITHIF4DSP */
 			DISPLC_MODCOUNT
 		};
@@ -3587,8 +3586,7 @@ enum
 			PG0 = REDRSUBSET(DPAGE0),
 		#if WITHIF4DSP
 			PG1 = REDRSUBSET(DPAGE1),
-			PG2 = REDRSUBSET(DPAGE2),
-			PGALL = PG0 | PG1 | PG2 | REDRSUBSET_MENU,
+			PGALL = PG0 | PG1 | REDRSUBSET_MENU,
 		#else /* WITHIF4DSP */
 			PGALL = PG0 | REDRSUBSET_MENU,
 		#endif /* WITHIF4DSP */
@@ -3624,10 +3622,10 @@ enum
 		#if WITHIF4DSP
 			{	0,	19,	dsp_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
 		#if LCDMODE_LTDC_PIP16
-			{	0,	19,	display2_waterfallbg,REDRM_MODE,	PG1 | PG2, },
+			{	0,	19,	display2_waterfallbg,REDRM_MODE,	PG1, },
 		#endif /* LCDMODE_LTDC_PIP16 */
-			{	0,	19,	display2_spectrum,	REDRM_BARS, PG1, },// Отображение спектра
-			{	0,	19,	display2_waterfall,	REDRM_BARS, PG2, },// Отображение водопада
+			{	0,	19 + 0,				display2_spectrum,	REDRM_BARS, PG1, },// Отображение спектра
+			{	0,	19 + BDCV_SPMRX,	display2_waterfall,	REDRM_BARS, PG1, },// Отображение водопада
 
 			{	27, 19,	display_siglevel5,	REDRM_BARS, PGALL, },	// signal level
 		#endif /* WITHIF4DSP */
@@ -4245,7 +4243,8 @@ enum
 {
 	WFDX = GRID2X(CHARS2GRID(BDTH_ALLRX)),	// размер по горизонтали в пикселях
 	WFDY = GRID2Y(BDCV_WFLRX),				// размер по вертикали в пикселях части отведенной водопаду
-	SPDY = GRID2Y(BDCV_SPMRX)				// размер по вертикали в пикселях части отведенной спектру
+	SPDY = GRID2Y(BDCV_SPMRX),				// размер по вертикали в пикселях части отведенной спектру
+	WFSPDY = WFDY > SPDY ? WFDY : SPDY
 };
 
 
@@ -4260,7 +4259,7 @@ static PACKEDCOLOR_T * getnextpip(void)
 
 #else /* LCDMODE_LTDC_PIP16 */
 
-	static ALIGNX_BEGIN PACKEDCOLOR_T colorpip0 [GXSIZE(WFDX, WFDY)] ALIGNX_END;
+	static ALIGNX_BEGIN PACKEDCOLOR_T colorpip0 [GXSIZE(WFDX, WFSPDY)] ALIGNX_END;
 
 	return colorpip0;
 #endif /* LCDMODE_LTDC_PIP16 */
@@ -4543,24 +4542,24 @@ static void display2_spectrum(
 			const int val = dsp_mag2y(spavgarray [spavgrow ] [x], SPDY);
 		#endif
 			// Формирование графика
-			int zv = (WFDY - 1) - val;
+			int zv = (SPDY - 1) - val;
 			int z;
-			for (z = WFDY - 1; z >= zv; -- z)
-				display_colorbuffer_set(colorpip, WFDX, SPDY, x, z, COLOR_WAERFALLFG);	// точку сигнала
+			for (z = SPDY - 1; z >= zv; -- z)
+				display_colorbuffer_set(colorpip, WFDX, WFSPDY, x, z, COLOR_WAERFALLFG);	// точку сигнала
 			// формирование фона растра
 			for (; z >= 0; -- z)
-				display_colorbuffer_set(colorpip, WFDX, SPDY, x, z, COLOR_WAERFALLBG);	// точку фона
+				display_colorbuffer_set(colorpip, WFDX, WFSPDY, x, z, COLOR_WAERFALLBG);	// точку фона
 		}
 		// маркер центральной частоты обзора
 		// xor линию
 		for (y = 0; y < WFDY; ++ y)
 		{
-			display_colorbuffer_xor(colorpip, WFDX, SPDY, WFDX / 2, y, COLOR_CENTERMAKER); 
+			display_colorbuffer_xor(colorpip, WFDX, WFSPDY, WFDX / 2, y, COLOR_CENTERMAKER); 
 		}
 	}
 	else
 	{
-		display_colorbuffer_fill(colorpip, WFDX, SPDY, COLOR_GRAY);
+		display_colorbuffer_fill(colorpip, WFDX, WFSPDY, COLOR_GRAY);
 	}
 
 #if LCDMODE_LTDC_PIP16
@@ -4676,18 +4675,18 @@ static void display2_waterfall(
 		{
 			for (y = 0; y < WFDY; ++ y)
 			{
-				display_colorbuffer_set(colorpip, WFDX, WFDY, x, y, wfpalette [wfarray [(wfrow + y) % WFDY] [x]]);
+				display_colorbuffer_set(colorpip, WFDX, WFSPDY, x, y, wfpalette [wfarray [(wfrow + y) % WFDY] [x]]);
 			}
 		}
 		// маркер центральной частоты обзора
 		for (y = 0; y < WFDY; ++ y)
 		{
-			display_colorbuffer_xor(colorpip, WFDX, WFDY, WFDX / 2, y, COLOR_RED);
+			display_colorbuffer_xor(colorpip, WFDX, WFSPDY, WFDX / 2, y, COLOR_RED);
 		}
 	}
 	else
 	{
-		display_colorbuffer_fill(colorpip, WFDX, WFDY, COLOR_GRAY);
+		display_colorbuffer_fill(colorpip, WFDX, WFSPDY, COLOR_GRAY);
 	}
 
 #if LCDMODE_LTDC_PIP16
