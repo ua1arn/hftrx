@@ -4544,11 +4544,11 @@ hardware_spi_master_send_frame_8bpartial(
 
 	#if CPUSTYLE_STM32H7XX
 
-		//while ((SPI1->SR & SPI_SR_TXC) == 0)	
-		//	;
+		while ((SPI1->SR & SPI_SR_TXC) == 0)	
+			;
 		//while ((SPI1->SR & SPI_SR_BSY) != 0)	
 		//	;
-		//(void) SPI1->RXDR;	/* clear SPI_SR_RXNE in status register */
+		(void) SPI1->RXDR;	/* clear SPI_SR_RXNE in status register */
 
 	#else /* CPUSTYLE_STM32H7XX */
 
@@ -4707,11 +4707,11 @@ hardware_spi_master_send_frame_16bpartial(
 
 	#if CPUSTYLE_STM32H7XX
 
-		//while ((SPI1->SR & SPI_SR_TXC) == 0)	
-		//	;
+		while ((SPI1->SR & SPI_SR_TXC) == 0)	
+			;
 		//while ((SPI1->SR & SPI_SR_BSY) != 0)	
 		//	;
-		//(void) SPI1->RXDR;	/* clear SPI_SR_RXNE in status register */
+		(void) SPI1->RXDR;	/* clear SPI_SR_RXNE in status register */
 
 	#else /* CPUSTYLE_STM32H7XX */
 
