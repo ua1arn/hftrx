@@ -4452,7 +4452,23 @@ hardware_spi_master_send_frame_8bpartial(
 	uint_fast32_t size		/* количество пересылаемых 8-ти битных элементов */
 	)
 {
-#if CPUSTYLE_SAM9XE
+#if CPUSTYLE_STM32H7XX
+	// имитаци€
+	if (size == 1)
+	{
+		hardware_spi_b8_p1(* buffer);
+		hardware_spi_complete_b8();
+	}
+	else
+	{
+		hardware_spi_b8_p1(* buffer ++);
+		size -= 1;
+		while (size --)
+			hardware_spi_b8_p2(* buffer ++);
+		hardware_spi_complete_b8();
+	}
+
+#elif CPUSTYLE_SAM9XE
 
 	AT91C_BASE_SPI1->SPI_TPR = (unsigned long) buffer;
 	AT91C_BASE_SPI1->SPI_TCR = size;	// запуск передатчика
@@ -4599,7 +4615,7 @@ hardware_spi_master_send_frame_16bpartial(
 	uint_fast32_t size		/* количество пересылаемых 16-ти битных элементов */
 	)
 {
-#if 0
+#if CPUSTYLE_STM32H7XX
 	// имитаци€
 	if (size == 1)
 	{
