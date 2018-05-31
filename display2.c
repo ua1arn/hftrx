@@ -3653,8 +3653,8 @@ enum
 		#if LCDMODE_LTDC_PIP16
 			{	0,	18,	display2_waterfallbg,REDRM_MODE,	PG1, },
 		#endif /* LCDMODE_LTDC_PIP16 */
-			{	0,	18 + 0,				display2_spectrum,	REDRM_BARS, PG1, },// Отображение спектра
-			{	0,	18 + BDCO_SPMRX,	display2_waterfall,	REDRM_BARS, PG1, },// Отображение водопада
+			{	0,	18,	display2_spectrum,	REDRM_BARS, PG1, },// Отображение спектра
+			{	0,	18,	display2_waterfall,	REDRM_BARS, PG1, },// Отображение водопада
 			{	0,	18,	display2_colorbuffer,	REDRM_BARS,	PG1, },
 
 			{	27, 18,	display_siglevel5,	REDRM_BARS, PGALL, },	// signal level
@@ -4481,7 +4481,7 @@ static void display2_waterfallbg(
 	void * pv
 	)
 {
-	dma2d_fillrect2(& framebuff [0][0], DIM_X, DIM_Y, GRID2X(x0), GRID2Y(y0), ALLDX, WFDY, COLOR_KEY);
+	dma2d_fillrect2(& framebuff [0][0], DIM_X, DIM_Y, GRID2X(x0), GRID2Y(y0), ALLDX, ALLDY, COLOR_KEY);
 }
 
 #endif /* LCDMODE_LTDC_PIP16 */
@@ -4548,11 +4548,14 @@ static void display2_spectrum(
 		memset(spectrmonoscr, 0xFF, sizeof spectrmonoscr);			// рисование способом погасить точку
 	}
 	display_setcolors(COLOR_WAERFALLBG, COLOR_WAERFALLFG);
-	display_showbuffer(spectrmonoscr, ALLDX, SPDY, x0, y0);
+	display_showbuffer(spectrmonoscr, ALLDX, SPDY, x0, y0 + SPY0);
 
 #else /* */
 
 	PACKEDCOLOR_T * const colorpip = getscratchpip();
+	(void) x0;
+	(void) y0;
+	(void) pv;
 	// Спектр на цветных дисплеях, не поддерживающих ускоренного 
 	// построения изображения по bitmap с раскрашиванием
 	if (hamradio_get_tx() == 0)
@@ -4633,20 +4636,20 @@ static void display2_waterfall(
 		// следы спектра ("водопад")
 		// сдвигаем вниз, отрисовываем только верхнюю строку
 		uint_fast16_t x;
-		display_scroll_down(GRID2X(x0), GRID2Y(y0), ALLDX, WFDY, 1);
+		display_scroll_down(GRID2X(x0), GRID2Y(y0) + WFY0, ALLDX, WFDY, 1);
 		while (display_getreadystate() == 0)
 			;
 		x = 0;
-		display_wfputrow(GRID2X(x0) + x, GRID2Y(y0) + 0, & wfarray [wfrow] [0]);	// display_plot inside for one row
+		display_wfputrow(GRID2X(x0) + x, GRID2Y(y0) + 0 + WFY0, & wfarray [wfrow] [0]);	// display_plot inside for one row
 	#elif 0
 		// следы спектра ("фонтан")
 		// сдвигаем вверх, отрисовываем только нижнюю строку
 		uint_fast16_t x;
-		display_scroll_up(GRID2X(x0), GRID2Y(y0), ALLDX, WFDY, 1);
+		display_scroll_up(GRID2X(x0), GRID2Y(y0) + WFY0, ALLDX, WFDY, 1);
 		while (display_getreadystate() == 0)
 			;
 		x = 0;
-		display_wfputrow(GRID2X(x0) + x, GRID2Y(y0) + WFDY - 1, & wfarray [wfrow] [0]);	// display_plot inside for one row
+		display_wfputrow(GRID2X(x0) + x, GRID2Y(y0) + WFDY - 1 + WFY0, & wfarray [wfrow] [0]);	// display_plot inside for one row
 	#else
 		// следы спектра ("водопад")
 		// отрисовываем весь экран
@@ -4657,7 +4660,7 @@ static void display2_waterfall(
 		{
 			// отрисовка горизонтальными линиями
 			x = 0;
-			display_wfputrow(GRID2X(x0) + x, GRID2Y(y0) + y, & wfarray [(wfrow + y) % WFDY] [0]);	// display_plot inside for one row
+			display_wfputrow(GRID2X(x0) + x, GRID2Y(y0) + y + WFY0, & wfarray [(wfrow + y) % WFDY] [0]);	// display_plot inside for one row
 		}
 	#endif
 
@@ -4692,12 +4695,15 @@ static void display2_waterfall(
 	}
 
 	display_setcolors(COLOR_GRAY, COLOR_BLUE);
-	display_showbuffer(wfmonoscr, ALLDX, WFDY, x0, y0);
+	display_showbuffer(wfmonoscr, ALLDX, WFDY, x0, y0 + WFY0);
 
 #else /* */
 	// следы спектра ("водопад") на цветных дисплеях
-
 	PACKEDCOLOR_T * const colorpip = getscratchpip();
+	(void) x0;
+	(void) y0;
+	(void) pv;
+
 	if (hamradio_get_tx() == 0)
 	{
 
