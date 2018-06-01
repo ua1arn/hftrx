@@ -3171,9 +3171,9 @@ enum
 		#if LCDMODE_LTDC_PIP16
 			{	0,	9,	display2_waterfallbg,REDRM_MODE,	PG1 | PG2, },
 		#endif /* LCDMODE_LTDC_PIP16 */
-			{	0,	9,	display2_spectrum,	REDRM_BARS, PG1, },// Отображение оцифровки шкалы S-метра
-			{	0,	9,	display2_waterfall,	REDRM_BARS, PG2, },// Отображение водопада
-			{	0,	9,	display2_colorbuffer,REDRM_BARS,	PG1 | PG2, },
+			{	0,	9,	display2_spectrum,	REDRM_BARS, PG1, },// подготовка изображения спектра
+			{	0,	9,	display2_waterfall,	REDRM_BARS, PG2, },// подготовка изображения водопада
+			{	0,	9,	display2_colorbuffer,REDRM_BARS,	PG1 | PG2, },// Отображение водопада и/или спектра
 			/* ---------------------------------- */
 		#if defined (RTC1_TYPE)
 			{	0,	14,	display_time5,		REDRM_BARS, PG0, },	// TIME
@@ -3301,9 +3301,9 @@ enum
 		#if LCDMODE_LTDC_PIP16
 			{	0,	9,	display2_waterfallbg,REDRM_MODE,	PG1 | PG2, },
 		#endif /* LCDMODE_LTDC_PIP16 */
-			{	0,	9,	display2_spectrum,	REDRM_BARS, PG1, },// Отображение оцифровки шкалы S-метра
-			{	0,	9,	display2_waterfall,	REDRM_BARS, PG2, },// Отображение водопада
-			{	0,	9,	display2_colorbuffer,REDRM_BARS,	PG1 | PG2, },
+			{	0,	9,	display2_spectrum,	REDRM_BARS, PG1, },// подготовка изображения спектра
+			{	0,	9,	display2_waterfall,	REDRM_BARS, PG2, },// подготовка изображения водопада
+			{	0,	9,	display2_colorbuffer,REDRM_BARS,	PG1 | PG2, },// Отображение водопада и/или спектра
 			/* ---------------------------------- */
 		#if defined (RTC1_TYPE)
 			{	0,	14,	display_time5,		REDRM_BARS, PG0, },	// TIME
@@ -3448,9 +3448,9 @@ enum
 		#if LCDMODE_LTDC_PIP16
 			{	0,	9,	display2_waterfallbg,REDRM_MODE,	PG1 | PG2, },
 		#endif /* LCDMODE_LTDC_PIP16 */
-			{	0,	9,	display2_spectrum,	REDRM_BARS, PG1, },// Отображение оцифровки шкалы S-метра
-			{	0,	9,	display2_waterfall,	REDRM_BARS, PG2, },// Отображение водопада
-			{	0,	9,	display2_colorbuffer,REDRM_BARS,	PG1 | PG2, },
+			{	0,	9,	display2_spectrum,	REDRM_BARS, PG1, },// подготовка изображения спектра
+			{	0,	9,	display2_waterfall,	REDRM_BARS, PG2, },// подготовка изображения водопада
+			{	0,	9,	display2_colorbuffer,REDRM_BARS,	PG1 | PG2, },// Отображение водопада и/или спектра
 		#else /* WITHDSPEXTDDC */
 			{	27, 12,	display_atu3,		REDRM_MODE, PGALL, },	// ATU
 			{	27, 14,	display_byp3,		REDRM_MODE, PGALL, },	// BYP
@@ -3653,9 +3653,9 @@ enum
 		#if LCDMODE_LTDC_PIP16
 			{	0,	18,	display2_waterfallbg,REDRM_MODE,	PG1, },
 		#endif /* LCDMODE_LTDC_PIP16 */
-			{	0,	18,	display2_spectrum,	REDRM_BARS, PG1, },// Отображение спектра
-			{	0,	18,	display2_waterfall,	REDRM_BARS, PG1, },// Отображение водопада
-			{	0,	18,	display2_colorbuffer,	REDRM_BARS,	PG1, },
+			{	0,	18,	display2_spectrum,	REDRM_BARS, PG1, },// подготовка изображения спектра
+			{	0,	18,	display2_waterfall,	REDRM_BARS, PG1, },// подготовка изображения водопада
+			{	0,	18,	display2_colorbuffer,	REDRM_BARS,	PG1, },// Отображение водопада и/или спектра
 
 			{	27, 18,	display_siglevel5,	REDRM_BARS, PGALL, },	// signal level
 		#endif /* WITHIF4DSP */
@@ -3728,8 +3728,7 @@ enum
 		BDCV_SPMRX = BDCV_ALLRX,	// вертикальный размер спектра в ячейках		};
 		BDCV_WFLRX = BDCV_ALLRX,	// вертикальный размер водопада в ячейках		};
 		BDCO_SPMRX = 0,	// смещение спектра по вертикали в ячейках от начала общего поля
-		BDCO_WFLRX = 0,	// смещение водопада по вертикали в ячейках от начала общего поля
-		BDCV_SPMRX = BDCV_WFLRX			// вертикальный размер спектра в ячейках
+		BDCO_WFLRX = 0	// смещение водопада по вертикали в ячейках от начала общего поля
 	};
 
 	enum
@@ -3795,9 +3794,9 @@ enum
 	#if LCDMODE_LTDC_PIP16
 		{	0,	9,	display2_waterfallbg,REDRM_MODE,	PG1 | PG2, },
 	#endif /* LCDMODE_LTDC_PIP16 */
-		{	0,	9,	display2_spectrum,	REDRM_BARS, PG1, },// Отображение спектра
-		{	0,	9,	display2_waterfall,	REDRM_BARS, PG2, },// Отображение водопада
-		{	0,	9,	display2_colorbuffer,	REDRM_BARS,	PG1 | PG2, },
+		{	0,	9,	display2_spectrum,	REDRM_BARS, PG1, },// подготовка изображения спектра
+		{	0,	9,	display2_waterfall,	REDRM_BARS, PG2, },// подготовка изображения водопада
+		{	0,	9,	display2_colorbuffer,	REDRM_BARS,	PG1 | PG2, },// Отображение водопада и/или спектра
 
 		{	0,	17,	display_time8,		REDRM_BARS, PGALL, },	// TIME
 		{	9,	17,	display_siglevel5,	REDRM_BARS, PGALL, },	// signal level in S points
@@ -4486,7 +4485,7 @@ static void display2_waterfallbg(
 
 #endif /* LCDMODE_LTDC_PIP16 */
 
-// отображение спектроанализатора
+// подготовка изображения спектра
 static void display2_spectrum(
 	uint_fast8_t x0, 
 	uint_fast8_t y0, 
@@ -4623,7 +4622,7 @@ static void display_wfputrow(uint_fast16_t x, uint_fast16_t y, const uint8_t * p
 	display_colorbuffer_show(b, dx, dy, x, y);
 }
 
-// отображение водопада
+// подготовка изображения водопада
 static void display2_waterfall(
 	uint_fast8_t x0, 
 	uint_fast8_t y0, 
@@ -4730,6 +4729,7 @@ static void display2_waterfall(
 }
 
 // отображение ранее подготовленного буфера
+// Отображение водопада и/или спектра
 static void display2_colorbuffer(
 	uint_fast8_t x0, 
 	uint_fast8_t y0, 
