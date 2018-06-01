@@ -7675,7 +7675,7 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 		{
 			#if WITHUSBUAC
 				#if WITHUSBUAC3
-					const int ncdcindatapackets = 1 * mul2, ncdcoutdatapackets = 2;
+					const int ncdcindatapackets = 1 * mul2, ncdcoutdatapackets = 2; // may be set to 3
 				#elif WITHRTS96 || WITHRTS192
 					const int ncdcindatapackets = 2 * mul2, ncdcoutdatapackets = 2;
 				#else /* WITHRTS96 || WITHRTS192 */
@@ -7698,6 +7698,7 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 	}
 
 #endif /* WITHUSBCDC */
+
 #if WITHUSBCDCEEM
 	{
 		/* полнофункциональное устройство */
@@ -7816,7 +7817,7 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 				1 +
 				addplaces;
 
-		debug_printf_P(PSTR("usbd_fifo_initialize11 RX FIFO %u bytes: 4*(full4-last4)=%u bytes\n"), 4 * size4, 4 * (full4 - last4));
+		debug_printf_P(PSTR("usbd_fifo_initialize11 RX FIFO %u bytes: 4*(full4-last4)=%u bytes (last4=%u, size4=%u)\n"), 4 * size4, 4 * (full4 - last4), last4, size4);
 		ASSERT(last4 >= size4);
 		instance->GRXFSIZ = (instance->GRXFSIZ & ~ USB_OTG_GRXFSIZ_RXFD) |
 			(last4 << USB_OTG_GRXFSIZ_RXFD_Pos) |	// was: size4 - то что осталось
