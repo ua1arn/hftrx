@@ -7601,8 +7601,8 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 	uint_fast16_t base4 = 0;
 #if WITHUSBCDC
 	// параметры TX FIFO для ендпоинтов, в которые никогда не будут идти данные для передачи
-	const uint_fast16_t size4dummy = 0x10;//bigbuff ? 0x10 : 4;
-	last4 -= size4dummy;
+	const uint_fast16_t size4dummy = 0;//0x10;//bigbuff ? 0x10 : 4;
+	//last4 -= size4dummy;
 	const uint_fast16_t last4dummy = last4;
 #endif /* WITHUSBCDC */
 
@@ -7666,7 +7666,7 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 		numoutendpoints += 1;
 		if (bigbuff == 0 && i > 0)
 		{
-			// на маленьких контроллерах только первый USB CDC модет передавать данные
+			// на маленьких контроллерах только первый USB CDC может обмениваться данными
 			instance->DIEPTXF [pipe - 1] = usbd_makeTXFSIZ(last4dummy, size4dummy);
 			instance->DIEPTXF [pipeint - 1] = usbd_makeTXFSIZ(last4dummy, size4dummy);
 
@@ -7675,11 +7675,11 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 		{
 			#if WITHUSBUAC
 				#if WITHUSBUAC3
-					const int ncdcindatapackets = 1 * mul2, ncdcoutdatapackets = 2; // may be set to 3
+					const int ncdcindatapackets = 1 * mul2, ncdcoutdatapackets = 3;
 				#elif WITHRTS96 || WITHRTS192
-					const int ncdcindatapackets = 2 * mul2, ncdcoutdatapackets = 2;
+					const int ncdcindatapackets = 2 * mul2, ncdcoutdatapackets = 3;
 				#else /* WITHRTS96 || WITHRTS192 */
-					const int ncdcindatapackets = 2 * mul2, ncdcoutdatapackets = 2;
+					const int ncdcindatapackets = 2 * mul2, ncdcoutdatapackets = 3;
 				#endif /* WITHRTS96 || WITHRTS192 */
 			#else /* WITHUSBUAC */
 				const int ncdcindatapackets = 4, ncdcoutdatapackets = 4;

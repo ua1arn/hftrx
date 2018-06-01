@@ -1418,10 +1418,12 @@ void RAMFUNC processing_dmabuffer32rx(uintptr_t addr)
 	UNLOCK(& locklist32);
 
 #if WITHUSBUAC && ! WITHI2SHW
-	static int n = NNNDERATE;
-	if (n -- == 0)
+	static unsigned rx32adc = 0;
+	const unsigned CNT = (DMABUFFSIZE16 / DMABUFSTEP16);	// фиксированное число сэмплов во входном буфере
+	rx32adc += sizeof p->buff / sizeof p->buff [0] / DMABUFSTEP32RX;	// в буфере пары сэмплов по четыре байта
+	if (rx32adc >= CNT)
 	{
-		n = NNNDERATE;
+		rx32adc -= CNT;
 		buffers_resample();		// формирование одного буфера синхронного потока из N несинхронного
 	}
 #endif /* WITHUSBUAC */

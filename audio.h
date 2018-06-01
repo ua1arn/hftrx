@@ -107,33 +107,16 @@
 
 #endif /* WITHDSPEXTDDC */
 
-/* константы. С запасом чтобы работало и при тактовой 125 МГц на FPGA при децимации 2560. */
-/* Кроме того, MSINSAMPLES должно делиться на NNNDERATE без остатка */
-#define MSOUTSAMPLES	50 /* количество сэмплов за милисекунду в UAC OUT */
-#define MSINSAMPLES		50 /* количество сэмплов за милисекунду в UAC IN */
+/* константы. С запасом чтобы работало и при тактовой 125 МГц на FPGA при децимации 2560 = 48.828125 kHz sample rate */
+#define MSOUTSAMPLES	49 /* количество сэмплов за милисекунду в UAC OUT */
+#define MSINSAMPLES		(MSOUTSAMPLES + 1) /* количество сэмплов за милисекунду в UAC IN */
 
 #define DMABUFFSIZE16 (MSINSAMPLES * DMABUFSTEP16)	/* размер под USB ENDPOINT PACKET SIZE В буфере помещаются пары значений - стерео кодек */
 
-#if ! WITHI2SHW
+#define DMABUFCLUSTER	8	// Cделано небольшое количество - для взаимодействия с формирователем электронного ключа
 
-	#define NNNDERATE 5
-
-	#define DMABUFCLUSTER	(MSINSAMPLES / NNNDERATE)	// Cделано небольшое количество - чтобы не пропускало прерывания от валкодера при обработке звука
-
-	// Конфигурации без аудиокодека
-	// количество сэмплов в DMABUFFSIZE32RX и DMABUFFSIZE16 должно быть одинаковым.
-	// Обеспечить вызовы функции buffers_resample(void)
-
-	#define DMABUFFSIZE32RX (DMABUFCLUSTER * DMABUFSTEP32RX)
-	#define DMABUFFSIZE32TX (DMABUFCLUSTER * DMABUFSTEP32TX * 4)
-
-#else /* ! WITHI2SHW */
-
-	#define DMABUFCLUSTER	8	// Cделано небольшое количество - чтобы не пропускало прерывания от валкодера при обработке звука
-
-	#define DMABUFFSIZE32RX (DMABUFCLUSTER * DMABUFSTEP32RX)
-	#define DMABUFFSIZE32TX (DMABUFCLUSTER * DMABUFSTEP32TX * 4)
-#endif /* ! WITHI2SHW */
+#define DMABUFFSIZE32RX (DMABUFCLUSTER * DMABUFSTEP32RX)
+#define DMABUFFSIZE32TX (DMABUFCLUSTER * DMABUFSTEP32TX * 4)
 
 // Параметры для канала передачи Real Time Spectrum - stereo, 32 bit, 192 kS/S
 #define DMABUFSTEP192RTS 8	// 8: стерео по 32 бит, 6: стерео по 24 бит
