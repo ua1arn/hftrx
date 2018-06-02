@@ -3725,10 +3725,10 @@ enum
 		BDTH_SPACEPWR = BDTH_SPACERX,
 	#endif /* WITHSHOWSWRPWR */
 		BDCV_ALLRX = ROWS2GRID(7),	// количество ячееек, отведенное под S-метр, панораму, иные отображения
-		BDCV_SPMRX = BDCV_ALLRX,	// вертикальный размер спектра в ячейках		};
-		BDCV_WFLRX = BDCV_ALLRX,	// вертикальный размер водопада в ячейках		};
-		BDCO_SPMRX = 0,	// смещение спектра по вертикали в ячейках от начала общего поля
-		BDCO_WFLRX = 0	// смещение водопада по вертикали в ячейках от начала общего поля
+		BDCV_SPMRX = ROWS2GRID(3),	// вертикальный размер спектра в ячейках		};
+		BDCV_WFLRX = ROWS2GRID(4),	// вертикальный размер водопада в ячейках		};
+		BDCO_SPMRX = ROWS2GRID(0),	// смещение спектра по вертикали в ячейках от начала общего поля
+		BDCO_WFLRX = ROWS2GRID(3)	// смещение водопада по вертикали в ячейках от начала общего поля
 	};
 
 	enum
@@ -3743,8 +3743,7 @@ enum
 	enum 
 	{
 		DPAGE0,					// Страница, в которой отображаются основные (или все) 
-		DPAGE1,					// Страница, в которой отображается спектр 
-		DPAGE2,					// Страница, в которой отображается водопад
+		DPAGE1,					// Страница, в которой отображается спектр и водопад
 		DISPLC_MODCOUNT
 	};
 
@@ -3752,8 +3751,7 @@ enum
 	{
 		PG0 = REDRSUBSET(DPAGE0),
 		PG1 = REDRSUBSET(DPAGE1),
-		PG2 = REDRSUBSET(DPAGE2),
-		PGALL = PG0 | PG1 | PG2 | REDRSUBSET_MENU,
+		PGALL = PG0 | PG1 | REDRSUBSET_MENU,
 		PGLATCH = PGALL,	// страницы, на которых возможно отображение водопада или панорамы.
 		PGunused
 	};
@@ -3792,11 +3790,11 @@ enum
 
 		{	0,	9,	dsp_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
 	#if LCDMODE_LTDC_PIP16
-		{	0,	9,	display2_waterfallbg,REDRM_MODE,	PG1 | PG2, },
+		{	0,	9,	display2_waterfallbg,REDRM_MODE,	PG1, },
 	#endif /* LCDMODE_LTDC_PIP16 */
 		{	0,	9,	display2_spectrum,	REDRM_BARS, PG1, },// подготовка изображения спектра
-		{	0,	9,	display2_waterfall,	REDRM_BARS, PG2, },// подготовка изображения водопада
-		{	0,	9,	display2_colorbuffer,	REDRM_BARS,	PG1 | PG2, },// Отображение водопада и/или спектра
+		{	0,	9,	display2_waterfall,	REDRM_BARS, PG1, },// подготовка изображения водопада
+		{	0,	9,	display2_colorbuffer,	REDRM_BARS,	PG1, },// Отображение водопада и/или спектра
 
 		{	0,	17,	display_time8,		REDRM_BARS, PGALL, },	// TIME
 		{	9,	17,	display_siglevel5,	REDRM_BARS, PGALL, },	// signal level in S points
