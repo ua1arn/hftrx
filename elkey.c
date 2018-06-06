@@ -75,10 +75,9 @@ typedef struct elkey_tag
 
 #if WITHVIBROPLEX
 	uint_fast8_t vibroplex_slope /* = 0 */;		// скорость уменьшения длительности точки и паузы
-	uint_fast8_t vibroplex_derate;		// целочисленная часть "уменьшителя" длительности
-
 	uint_fast8_t vibroplex_grade;		// Накопитель (целая и дробная часть) "уменьшителя"
 #endif /* WITHVIBROPLEX */
+	uint_fast8_t vibroplex_derate;		// целочисленная часть "уменьшителя" длительности
 } elkey_t;
 
 
@@ -87,7 +86,7 @@ static uint_fast8_t elkey_straight_flags;
 
 static elkey_t elkey0;	// ручной ключ
 #if WITHCAT && WITHCATEXT
-static elkey_t elkey1;	// CAT (команды KY, KS, ...) ключ
+	static elkey_t elkey1;	// CAT (команды KY, KS, ...) ключ
 #endif /* WITHCAT && WITHCATEXT */
 
 #define DASHFLAG 	0x01
@@ -106,61 +105,58 @@ static uint_fast8_t delay_space;	// 10
 static uint_fast8_t delay_dash;	// 30
 
 
-#if WITHVIBROPLEX
-
-	enum { DERATE_QUOTANT = 2 };
 	
-// скорость уменьшения длительности точки и паузы - имитация виброплекса
-void elkeyx_set_slope(elkey_t * const elkey, uint_fast8_t slope)
-{
-	disableIRQ();
-	if (elkey->vibroplex_slope > slope)
+#if WITHVIBROPLEX
+	enum { ELKEY_DERATE_QUOTANT = 2 };
+
+	// скорость уменьшения длительности точки и паузы - имитация виброплекса
+	void elkeyx_set_slope(elkey_t * const elkey, uint_fast8_t slope)
 	{
-		elkey->vibroplex_grade = 0;
-		elkey->vibroplex_derate = 0;
+		disableIRQ();
+		if (elkey->vibroplex_slope > slope)
+		{
+			elkey->vibroplex_grade = 0;
+			elkey->vibroplex_derate = 0;
+		}
+		elkey->vibroplex_slope = slope;
+		enableIRQ();
 	}
-	elkey->vibroplex_slope = slope;
-	enableIRQ();
+
+	static void elkey_vibroplex_next(elkey_t * const elkey)
+	{
+		if (elkey->vibroplex_grade < (ELKEY_DERATE_QUOTANT * 3 * ELKEY_DISCRETE / 10))	// уменьшать не более чем на 0.3 от начальной длительности точки
+		{
+			elkey->vibroplex_grade += elkey->vibroplex_slope;
+			elkey->vibroplex_derate = elkey->vibroplex_grade / ELKEY_DERATE_QUOTANT;
+		}
+	}
+
+#else /* WITHVIBROPLEX */
+
+	static void elkey_vibroplex_next(elkey_t * const elkey)
+	{
+	}
+
+#endif /* WITHVIBROPLEX */
+
+static void elkey_vibroplex_reset(elkey_t * const elkey)
+{
+#if WITHVIBROPLEX
+	elkey->vibroplex_grade = 0;
+#endif /* WITHVIBROPLEX */
+	elkey->vibroplex_derate = 0;
 }
+
 
 void elkey_set_slope(uint_fast8_t slope)
 {
+#if WITHVIBROPLEX
 	elkeyx_set_slope(& elkey0, slope);
 #if WITHCAT && WITHCATEXT
 	elkeyx_set_slope(& elkey1, slope);
 #endif /* WITHCAT && WITHCATEXT */
-}
-
-static void elkey_vibroplex_next(elkey_t * const elkey)
-{
-	if (elkey->vibroplex_grade < (DERATE_QUOTANT * 3 * ELKEY_DISCRETE / 10))	// уменьшать не более чем на 0.3 от начальной длительности точки
-	{
-		elkey->vibroplex_grade += elkey->vibroplex_slope;
-		elkey->vibroplex_derate = elkey->vibroplex_grade / DERATE_QUOTANT;
-	}
-}
-
-static void elkey_vibroplex_reset(elkey_t * const elkey)
-{
-	elkey->vibroplex_grade = 0;
-	elkey->vibroplex_derate = 0;
-}
-
-#else /* WITHVIBROPLEX */
-	void elkey_set_slope(uint_fast8_t slope)
-	{
-	}
-
-	#define elkey_vibroplex_reset(elkey) do { } while (0)
-	#define elkey_vibroplex_next(elkey) do { } while (0)
-	#define elkey->vibroplex_derate 0
-
 #endif /* WITHVIBROPLEX */
-#endif /* WITHELKEY */
-
-
-
-#if WITHELKEY
+}
 
 /* с поддержкой функии передачи азбуки Морзе через CAT */
 enum
@@ -491,12 +487,6 @@ get_morse(
 
 }
 
-#endif /* WITHELKEY */
-
-
-
-#if WITHELKEY
-
 enum { DOTS20IGNORE = 4 * ELKEY_DISCRETE / 10 };	// время игнорирования 0.4 от длительности точки
 
 // проверка состояния манипулятора
@@ -577,33 +567,6 @@ setnextstate(
 	elkey->ticks = 0;
 }
 
-static uint_fast8_t
-elkey_externaltext(elkey_t * const elkey)
-{
-	const uint_fast8_t ch = elkey_getnextcw();	// Получение символа для передачи (только верхний регистр)
-
-	if (ch != '\0')
-	{
-		elkey->morse = get_morse(ch);		// получение битовой маски последовательности элементов данного знака.
-
-		switch (elkey->morse & ELMASK)	// обработка первого элемента знака
-		{
-		case MDASH:
-			setnextstate(elkey, ELKEY_STATE_AUTO_ELEMENT_DASH, delay_dash);
-			break;
-		case MDIT:
-			setnextstate(elkey, ELKEY_STATE_AUTO_ELEMENT_DIT, delay_dit - elkey->vibroplex_derate);
-			elkey_vibroplex_next(elkey);
-			break;
-		case MSPACE:	// между словами семь интервалов
-			setnextstate(elkey, ELKEY_STATE_AUTO_SPACE2, delay_words - delay_space);	/* задержка delay_space уже была после окончания предидущей буквы */
-			break;
-		}
-		return 1;	/* нажатия манипулятора при этом не обрабатываются. */
-	}
-	return 0;
-}
-
 // служба времени обработчика электронного телеграфного ключа
 // вызывается с периодом 1/ELKEY_DISCRETE от длительности точки.
 static uint_fast8_t 
@@ -638,11 +601,6 @@ void elkeyx_spool_dots(elkey_t * const elkey, uint_fast8_t paddle)
 	// CW на электронном ключе
 	switch (elkey->state)
 	{
-	case ELKEY_STATE_AUTO_INITIALIZE:	// ничего не передается
-		elkey_vibroplex_reset(elkey);	// копирование начальных параметров формирования элементов. При vibroplex уменьшаем.
-		elkey_externaltext(& elkey1);
-		break;
-
 	case ELKEY_STATE_INITIALIZE:	// ничего не передается
 		elkey_vibroplex_reset(elkey);	// копирование начальных параметров формирования элементов. При vibroplex уменьшаем.
 		/* проверка нажатия для передачи */
@@ -658,6 +616,34 @@ void elkeyx_spool_dots(elkey_t * const elkey, uint_fast8_t paddle)
 		break;	/* end of case ELKEY_STATE_INITIALIZE */
 
 #if WITHTX && WITHCAT && WITHCATEXT
+
+	case ELKEY_STATE_AUTO_INITIALIZE:	// ничего не передается
+		elkey_vibroplex_reset(elkey);	// копирование начальных параметров формирования элементов. При vibroplex уменьшаем.
+		{
+			const uint_fast8_t ch = elkey_getnextcw();	// Получение символа для передачи (только верхний регистр)
+
+			if (ch != '\0')
+			{
+				elkey->morse = get_morse(ch);		// получение битовой маски последовательности элементов данного знака.
+
+				switch (elkey->morse & ELMASK)	// обработка первого элемента знака
+				{
+				case MDASH:
+					setnextstate(elkey, ELKEY_STATE_AUTO_ELEMENT_DASH, delay_dash);
+					break;
+				case MDIT:
+					setnextstate(elkey, ELKEY_STATE_AUTO_ELEMENT_DIT, delay_dit - elkey->vibroplex_derate);
+					elkey_vibroplex_next(elkey);
+					break;
+				case MSPACE:	// между словами семь интервалов
+					setnextstate(elkey, ELKEY_STATE_AUTO_SPACE2, delay_words - delay_space);	/* задержка delay_space уже была после окончания предидущей буквы */
+					break;
+				}
+			}
+		}
+		break;
+
+
 	case ELKEY_STATE_AUTO_ELEMENT_DIT:	// сейчас передается элемент знака
 		if (ovf)
 		{
@@ -845,7 +831,11 @@ void elkeyx_initialize(elkey_t * const elkey, uint_fast8_t state)
 #if WITHCAT && WITHCATEXT
 	elkey->morse = 0;
 #endif /* WITHCAT && WITHCATEXT */
-
+#if WITHVIBROPLEX
+	elkey->vibroplex_slope = 0;
+	elkey->vibroplex_grade = 0;
+#endif /* WITHVIBROPLEX */
+	elkey->vibroplex_derate = 0;
 }
 /* инициализация сиквенсора и телеграфного ключа. Выполняется при запрещённых прерываниях. */
 void elkey_initialize(void)
@@ -858,7 +848,7 @@ void elkey_initialize(void)
 #endif /* WITHCAT && WITHCATEXT */
 }
 
-#endif
+#endif /* WITHELKEY */
 
 /* обработка меню - установить скорость и отношениея тире к точке (в десятках процентов). */
 /* Стандартное соотношение (3:1) - 30 */
