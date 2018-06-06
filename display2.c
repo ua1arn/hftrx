@@ -4328,7 +4328,7 @@ extern uint_fast8_t wflfence;
 //#define COLOR_WAERFALLFG	COLOR_BLUE
 //#define COLOR_WAERFALLFENCE	COLOR_YELLOW
 #define COLOR_SPECTRUMBG	COLOR_DARKBLUE
-#define COLOR_SPECTRUMFG	COLOR_YELLOW
+#define COLOR_SPECTRUMFG	COLOR_GREEN
 
 // Код взят из проекта Malamute
 static void wfpalette_initialize(void)
