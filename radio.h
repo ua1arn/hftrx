@@ -536,6 +536,7 @@ void hardware_cw_diagnostics(
 */
 enum
 {
+	ELKEY_PADDLE_NONE = 0x00,
 	ELKEY_PADDLE_DIT = 0x01,
 	ELKEY_PADDLE_DASH = 0x02,
 };

@@ -6947,7 +6947,7 @@ void board_init_chips2(void)
 uint_fast8_t 
 hardware_elkey_getpaddle(uint_fast8_t reverse)
 {
-	uint_fast8_t r = 0;
+	uint_fast8_t r = ELKEY_PADDLE_NONE;
 
 #if (ELKEY_BIT_RIGHT != 0) || (ELKEY_BIT_LEFT != 0)
 
