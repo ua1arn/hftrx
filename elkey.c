@@ -19,6 +19,7 @@
 //
 
 enum {
+	//
 	ELKEY_STATE_INITIALIZE,	// ничего не передаётся - начальное состояние сиквенсора
 
 	ELKEY_STATE_ACTIVE_DIT,	// сейчас передаётся элемент знака
@@ -32,6 +33,7 @@ enum {
 	ELKEY_STATE_SPACE,	// сейчас отсчитывается время после передачи элемента знака
 	ELKEY_STATE_SPACE2,		// сейчас отсчитывается время после ОДИНОЧНОЙ паузы
 
+#if WITHCAT && WITHCATEXT
 	//
 	ELKEY_STATE_AUTO_INITIALIZE,	// ничего не передаётся - начальное состояние сиквенсора
 	ELKEY_STATE_AUTO_ELEMENT_DIT,
@@ -39,6 +41,7 @@ enum {
 	ELKEY_STATE_AUTO_SPACE,
 	ELKEY_STATE_AUTO_SPACE2,
 	ELKEY_STATE_AUTO_NEXT,
+#endif /* WITHCAT && WITHCATEXT */
 
 	//
 	ELKEY_STATE_MAX		// неиспользуемое число
@@ -55,6 +58,7 @@ static const FLASHMEM uint_fast8_t elkeyout [ELKEY_STATE_MAX] =
 	0, // ELKEY_STATE_SPACE_WITH_PENDING_DASH,	// появилось нажатие тире в процессе ожидания за знаком (или было ранее).
 	0, // ELKEY_STATE_SPACE,	// сейчас отсчитывается время после передачи элемента знака
 	0, // ELKEY_STATE_SPACE2,		// сейчас отсчитывается время после ОДИНОЧНОЙ паузы
+#if WITHCAT && WITHCATEXT
 	//
 	0, // ELKEY_STATE_AUTO_INITIALIZE,	// ничего не передаётся - начальное состояние сиквенсора
 	1, // ELKEY_STATE_AUTO_ELEMENT_DIT,
@@ -62,6 +66,7 @@ static const FLASHMEM uint_fast8_t elkeyout [ELKEY_STATE_MAX] =
 	0, // ELKEY_STATE_AUTO_SPACE,
 	0, // ELKEY_STATE_AUTO_SPACE2,
 	0, // ELKEY_STATE_AUTO_NEXT,
+#endif /* WITHCAT && WITHCATEXT */
 };
 
 
@@ -615,7 +620,7 @@ void elkeyx_spool_dots(elkey_t * const elkey, uint_fast8_t paddle)
 		}
 		break;	/* end of case ELKEY_STATE_INITIALIZE */
 
-#if WITHTX && WITHCAT && WITHCATEXT
+#if WITHCAT && WITHCATEXT
 
 	case ELKEY_STATE_AUTO_INITIALIZE:	// ничего не передается
 		elkey_vibroplex_reset(elkey);	// копирование начальных параметров формирования элементов. При vibroplex уменьшаем.
