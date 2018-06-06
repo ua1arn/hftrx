@@ -1382,10 +1382,6 @@ void RAMFUNC processing_dmabuffer16rx(uintptr_t addr)
 #endif /* WITHBUFFERSDEBUG */
 	voice16_t * const p = CONTAINING_RECORD(addr, voice16_t, buff);
 	buffers_savefrommikeadc(p);
-
-#if WITHUSBUAC && WITHI2SHW
-	buffers_resample();		// формирование одного буфера синхронного потока из N несинхронного
-#endif /* WITHUSBUAC */
 }
 
 // Этой функцией пользуются обработчики прерываний DMA
@@ -1404,12 +1400,14 @@ void RAMFUNC processing_dmabuffer16rxuac(uintptr_t addr)
 // обработать буфер после оцифровки IF ADC (MAIN RX/SUB RX)
 void RAMFUNC processing_dmabuffer32rx(uintptr_t addr)
 {
+	enum { CNT16 = DMABUFFSIZE16 / DMABUFSTEP16 };
+	enum { CNT32RX = DMABUFFSIZE32RX / DMABUFSTEP32RX };
 	ASSERT(addr != 0);
 	voice32rx_t * const p = CONTAINING_RECORD(addr, voice32rx_t, buff);
 #if WITHBUFFERSDEBUG
 	++ n1;
 	// подсчёт скорости в сэмплах за секунду
-	debugcount_rx32adc += sizeof p->buff / sizeof p->buff [0] / DMABUFSTEP32RX;	// в буфере пары сэмплов по четыре байта
+	debugcount_rx32adc += CNT32RX;	// в буфере пары сэмплов по четыре байта
 #endif /* WITHBUFFERSDEBUG */
 	dsp_extbuffer32rx(p->buff);
 
@@ -1417,14 +1415,13 @@ void RAMFUNC processing_dmabuffer32rx(uintptr_t addr)
 	InsertHeadList2(& voicesfree32rx, & p->item);
 	UNLOCK(& locklist32);
 
-#if WITHUSBUAC && ! WITHI2SHW
+#if WITHUSBUAC
 	static unsigned rx32adc = 0;
-	const unsigned CNT = (DMABUFFSIZE16 / DMABUFSTEP16);	// фиксированное число сэмплов во входном буфере
-	rx32adc += sizeof p->buff / sizeof p->buff [0] / DMABUFSTEP32RX;	// в буфере пары сэмплов по четыре байта
-	if (rx32adc >= CNT)
+	rx32adc += CNT32RX; 
+	while (rx32adc >= CNT16)
 	{
-		rx32adc -= CNT;
 		buffers_resample();		// формирование одного буфера синхронного потока из N несинхронного
+		rx32adc -= CNT16;
 	}
 #endif /* WITHUSBUAC */
 }
