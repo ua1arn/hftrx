@@ -115,7 +115,7 @@ static uint_fast8_t delay_dash;	// 30
 	enum { ELKEY_DERATE_QUOTANT = 2 };
 
 	// скорость уменьшения длительности точки и паузы - имитация виброплекса
-	void elkeyx_set_slope(elkey_t * const elkey, uint_fast8_t slope)
+	static void elkeyx_set_slope(elkey_t * const elkey, uint_fast8_t slope)
 	{
 		disableIRQ();
 		if (elkey->vibroplex_slope > slope)
@@ -620,89 +620,6 @@ void elkeyx_spool_dots(elkey_t * const elkey, uint_fast8_t paddle)
 		}
 		break;	/* end of case ELKEY_STATE_INITIALIZE */
 
-#if WITHCAT && WITHCATEXT
-
-	case ELKEY_STATE_AUTO_INITIALIZE:	// ничего не передается
-		elkey_vibroplex_reset(elkey);	// копирование начальных параметров формирования элементов. При vibroplex уменьшаем.
-		{
-			const uint_fast8_t ch = elkey_getnextcw();	// Получение символа для передачи (только верхний регистр)
-
-			if (ch != '\0')
-			{
-				elkey->morse = get_morse(ch);		// получение битовой маски последовательности элементов данного знака.
-
-				switch (elkey->morse & ELMASK)	// обработка первого элемента знака
-				{
-				case MDASH:
-					setnextstate(elkey, ELKEY_STATE_AUTO_ELEMENT_DASH, delay_dash);
-					break;
-				case MDIT:
-					setnextstate(elkey, ELKEY_STATE_AUTO_ELEMENT_DIT, delay_dit - elkey->vibroplex_derate);
-					elkey_vibroplex_next(elkey);
-					break;
-				case MSPACE:	// между словами семь интервалов
-					setnextstate(elkey, ELKEY_STATE_AUTO_SPACE2, delay_words - delay_space);	/* задержка delay_space уже была после окончания предидущей буквы */
-					break;
-				}
-			}
-		}
-		break;
-
-
-	case ELKEY_STATE_AUTO_ELEMENT_DIT:	// сейчас передается элемент знака
-		if (ovf)
-		{
-			// произошло переполнене - конец интервала
-			setnextstate(elkey, ELKEY_STATE_AUTO_SPACE, delay_space - elkey->vibroplex_derate);	/* задержка за элеметом знака */
-			elkey_vibroplex_next(elkey);
-		}
-		break;
-
-	case ELKEY_STATE_AUTO_ELEMENT_DASH:	// сейчас передается элемент знака
-		if (ovf)
-		{
-			// произошло переполнене - конец интервала
-			setnextstate(elkey, ELKEY_STATE_AUTO_SPACE, delay_space);	/* задержка за элеметом знака */
-			elkey_vibroplex_reset(elkey);	// копирование начальных параметров формирования элементов. При vibroplex уменьшаем.
-		}
-		break;
-
-	case ELKEY_STATE_AUTO_SPACE:	// сейчас отсчитывается время после передачи элмента
-		if (ovf)
-		{
-			// произошло переполнене - конец интервала
-			// законился интервал после передачи знака.
-			// следующий элемент
-			elkey->morse >>= ELSIZE;
-			switch (elkey->morse & ELMASK)
-			{
-			case MDASH:
-				setnextstate(elkey, ELKEY_STATE_AUTO_ELEMENT_DASH, delay_dash);
-				elkey_vibroplex_reset(elkey);	// копирование начальных параметров формирования элементов. При vibroplex уменьшаем.
-				break;
-			case MDIT:
-				setnextstate(elkey, ELKEY_STATE_AUTO_ELEMENT_DIT, delay_dit - elkey->vibroplex_derate);
-				elkey_vibroplex_next(elkey);
-				break;
-			default:
-				// отработать паузу за снаком
-				setnextstate(elkey, ELKEY_STATE_AUTO_SPACE2, delay_dash - delay_space);	// or -1
-				elkey_vibroplex_reset(elkey);	// копирование начальных параметров формирования элементов. При vibroplex уменьшаем.
-				break;
-			}
-		}
-		break;
-
-	case ELKEY_STATE_AUTO_SPACE2:	// сейчас отсчитывается время после передачи элмента
-		if (ovf)
-		{
-			// В обычом режиме переход к начальному состоянию
-			setnextstate(elkey, ELKEY_STATE_AUTO_INITIALIZE, 0);
-		}
-		break;
-
-#endif /* WITHCAT && WITHCATEXT */
-
 	case ELKEY_STATE_ACTIVE_DIT:	// сейчас передается элемент знака
 		if (ovf)
 		{
@@ -814,9 +731,93 @@ void elkeyx_spool_dots(elkey_t * const elkey, uint_fast8_t paddle)
 			setnextstate(elkey, ELKEY_STATE_ACTIVE_DASH, delay_dash);
 		}
 		break;
+
+#if WITHCAT && WITHCATEXT
+
+	case ELKEY_STATE_AUTO_INITIALIZE:	// ничего не передается
+		elkey_vibroplex_reset(elkey);	// копирование начальных параметров формирования элементов. При vibroplex уменьшаем.
+		{
+			const uint_fast8_t ch = elkey_getnextcw();	// Получение символа для передачи (только верхний регистр)
+
+			if (ch != '\0')
+			{
+				elkey->morse = get_morse(ch);		// получение битовой маски последовательности элементов данного знака.
+
+				switch (elkey->morse & ELMASK)	// обработка первого элемента знака
+				{
+				case MDASH:
+					setnextstate(elkey, ELKEY_STATE_AUTO_ELEMENT_DASH, delay_dash);
+					break;
+				case MDIT:
+					setnextstate(elkey, ELKEY_STATE_AUTO_ELEMENT_DIT, delay_dit - elkey->vibroplex_derate);
+					elkey_vibroplex_next(elkey);
+					break;
+				case MSPACE:	// между словами семь интервалов
+					setnextstate(elkey, ELKEY_STATE_AUTO_SPACE2, delay_words - delay_space);	/* задержка delay_space уже была после окончания предидущей буквы */
+					break;
+				}
+			}
+		}
+		break;
+
+
+	case ELKEY_STATE_AUTO_ELEMENT_DIT:	// сейчас передается элемент знака
+		if (ovf)
+		{
+			// произошло переполнене - конец интервала
+			setnextstate(elkey, ELKEY_STATE_AUTO_SPACE, delay_space - elkey->vibroplex_derate);	/* задержка за элеметом знака */
+			elkey_vibroplex_next(elkey);
+		}
+		break;
+
+	case ELKEY_STATE_AUTO_ELEMENT_DASH:	// сейчас передается элемент знака
+		if (ovf)
+		{
+			// произошло переполнене - конец интервала
+			setnextstate(elkey, ELKEY_STATE_AUTO_SPACE, delay_space);	/* задержка за элеметом знака */
+			elkey_vibroplex_reset(elkey);	// копирование начальных параметров формирования элементов. При vibroplex уменьшаем.
+		}
+		break;
+
+	case ELKEY_STATE_AUTO_SPACE:	// сейчас отсчитывается время после передачи элмента
+		if (ovf)
+		{
+			// произошло переполнене - конец интервала
+			// законился интервал после передачи знака.
+			// следующий элемент
+			elkey->morse >>= ELSIZE;
+			switch (elkey->morse & ELMASK)
+			{
+			case MDASH:
+				setnextstate(elkey, ELKEY_STATE_AUTO_ELEMENT_DASH, delay_dash);
+				elkey_vibroplex_reset(elkey);	// копирование начальных параметров формирования элементов. При vibroplex уменьшаем.
+				break;
+			case MDIT:
+				setnextstate(elkey, ELKEY_STATE_AUTO_ELEMENT_DIT, delay_dit - elkey->vibroplex_derate);
+				elkey_vibroplex_next(elkey);
+				break;
+			default:
+				// отработать паузу за снаком
+				setnextstate(elkey, ELKEY_STATE_AUTO_SPACE2, delay_dash - delay_space);	// or -1
+				elkey_vibroplex_reset(elkey);	// копирование начальных параметров формирования элементов. При vibroplex уменьшаем.
+				break;
+			}
+		}
+		break;
+
+	case ELKEY_STATE_AUTO_SPACE2:	// сейчас отсчитывается время после передачи элмента
+		if (ovf)
+		{
+			// В обычом режиме переход к начальному состоянию
+			setnextstate(elkey, ELKEY_STATE_AUTO_INITIALIZE, 0);
+		}
+		break;
+
+#endif /* WITHCAT && WITHCATEXT */
 	}
 }
 
+// Вызывается с периодом 1/ELKEY_DISCRETE от длительности точки 
 void elkey_spool_dots(void)
 {
 	elkeyx_spool_dots(& elkey0, hardware_elkey_getpaddle(elkey_reverse));
