@@ -4324,9 +4324,11 @@ static PACKEDCOLOR_T wfpalette [PALETTESIZE];
 extern uint_fast8_t wflfence;
 
 #define COLOR_CENTERMAKER	COLOR_RED
-#define COLOR_WAERFALLBG	COLOR_WHITE
-#define COLOR_WAERFALLFG	COLOR_BLUE
-#define COLOR_WAERFALLFENCE	COLOR_YELLOW
+//#define COLOR_WAERFALLBG	COLOR_WHITE
+//#define COLOR_WAERFALLFG	COLOR_BLUE
+//#define COLOR_WAERFALLFENCE	COLOR_YELLOW
+#define COLOR_SPECTRUMBG	COLOR_DARKBLUE
+#define COLOR_SPECTRUMFG	COLOR_YELLOW
 
 // Код взят из проекта Malamute
 static void wfpalette_initialize(void)
@@ -4502,9 +4504,10 @@ static void display2_spectrum(
 		// формирование растра
 		// маркер центральной частоты обзора
 		memset(spectrmonoscr, 0xFF, sizeof spectrmonoscr);			// рисование способом погасить точку
-		for (x = 0; x < SPDY; ++ x)
+		// центральная частота
+		for (y = 0; y < SPDY; ++ y)
 		{
-			display_pixelbuffer(spectrmonoscr, ALLDX, SPDY, ALLDX / 2, x);	// погасить точку
+			display_pixelbuffer(spectrmonoscr, ALLDX, SPDY, ALLDX / 2, y);	// погасить точку
 		}
 
 		// отображение спектра
@@ -4534,17 +4537,16 @@ static void display2_spectrum(
 			const int val = dsp_mag2y(spavgarray [spavgrow ] [x], SPDY);
 		#endif
 			// Формирование графика
-			int zv = (SPDY - 1) - val;
-			int z;
-			for (z = SPDY - 1; z >= zv; -- z)
-				display_pixelbuffer_xor(spectrmonoscr, ALLDX, SPDY, x, z);	// xor точку
+			const int yv = (SPDY - 1) - val;
+			for (y = SPDY - 1; y >= yv; -- y)
+				display_pixelbuffer_xor(spectrmonoscr, ALLDX, SPDY, x, y);	// xor точку
 		}
 	}
 	else
 	{
 		memset(spectrmonoscr, 0xFF, sizeof spectrmonoscr);			// рисование способом погасить точку
 	}
-	display_setcolors(COLOR_WAERFALLBG, COLOR_WAERFALLFG);
+	display_setcolors(COLOR_SPECTRUMBG, COLOR_SPECTRUMFG);
 	display_showbuffer(spectrmonoscr, ALLDX, SPDY, x0, y0 + SPY0);
 
 #else /* */
@@ -4587,12 +4589,11 @@ static void display2_spectrum(
 		#endif
 			// Формирование графика
 			int zv = (SPDY - 1) - val;
-			int z;
-			for (z = SPDY - 1; z >= zv; -- z)
-				display_colorbuffer_set(colorpip, ALLDX, ALLDY, x, z + SPY0, COLOR_WAERFALLFG);	// точку сигнала
+			for (y = SPDY - 1; y >= yv; -- y)
+				display_colorbuffer_set(colorpip, ALLDX, ALLDY, x, y + SPY0, COLOR_SPECTRUMFG);	// точку сигнала
 			// формирование фона растра
-			for (; z >= 0; -- z)
-				display_colorbuffer_set(colorpip, ALLDX, ALLDY, x, z + SPY0, COLOR_WAERFALLBG);	// точку фона
+			for (; y >= 0; -- y)
+				display_colorbuffer_set(colorpip, ALLDX, ALLDY, x, y + SPY0, COLOR_SPECTRUMBG);	// точку фона
 		}
 		// маркер центральной частоты обзора
 		// xor линию
