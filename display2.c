@@ -4588,7 +4588,7 @@ static void display2_spectrum(
 			const int val = dsp_mag2y(spavgarray [spavgrow ] [x], SPDY);
 		#endif
 			// Формирование графика
-			int zv = (SPDY - 1) - val;
+			const int yv = (SPDY - 1) - val;	// отображаемый уровень
 			for (y = SPDY - 1; y >= yv; -- y)
 				display_colorbuffer_set(colorpip, ALLDX, ALLDY, x, y + SPY0, COLOR_SPECTRUMFG);	// точку сигнала
 			// формирование фона растра
