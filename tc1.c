@@ -11418,6 +11418,27 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	#endif /* ! WITHPOTNOTCH */
+#elif WITHNOTCHONOFF
+#if ! WITHFLATMENU
+	{
+		"NOTCH   ", 0, 0, 0, 0,	
+		ITEM_GROUP, 
+		0, 0, 
+		offsetof(struct nvmap, ggrpnotch),
+		NULL,
+		NULL,
+		NULL,
+	},
+#endif /* ! WITHFLATMENU */
+	{
+		"NOTCH   ", 7, 2, RJ_ON,	ISTEP1,		/* управление режимом NOTCH */
+		ITEM_VALUE,
+		0, NOTCHMODE_COUNT - 1,
+		RMT_NOTCH_BASE,							/* управление режимом NOTCH */
+		NULL,
+		& gnotch,
+		getzerobase, /* складывается со смещением и отображается */
+	},
 #endif /* WITHNOTCHFREQ */
 
 #if defined (IF3_MODEL) && (IF3_MODEL != IF3_TYPE_DCRX)
