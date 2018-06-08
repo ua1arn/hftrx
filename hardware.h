@@ -380,7 +380,6 @@
 #define NTICKSADC01(t_uS01) ((uint_fast16_t) (((uint_fast32_t) (t_uS01) * ADC_FREQ + 5) / 10000000))
 
 
-void arm_cpu_initialize(void);	// функция вызывается из start-up до копирования всех "быстрых" функций и до инициализации переменных
 void cpu_initialize(void);
 void cpu_initdone(void);	// секция init больше не нужна
 uint_fast32_t cpu_getdebugticks(void);	// получение из аппаратного счетчика монотонно увеличивающегося кода
@@ -407,6 +406,7 @@ void hardware_adc_initialize(void);
 
 	#define FLASHMEM //__flash
 	#define FLASHMEMINIT	__attribute__((section(".init"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
+	#define FLASHMEMINITFUNC	__attribute__((section(".init"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
 	#define RAMNOINIT_D1	__attribute__((section(".noinit"))) /* размещение в памяти SRAM_D1 */
 	#define NOINLINEAT // __attribute__((noinline))
 
@@ -447,6 +447,7 @@ void hardware_adc_initialize(void);
  
 	#define FLASHMEM __flash
 	#define FLASHMEMINIT	__flash	/* не требуется быстрый доступ - например образ загружаемый в FPGA */
+	#define FLASHMEMINITFUNC	/* не требуется быстрый доступ - например образ загружаемый в FPGA */
 
 	#if (FLASHEND > 0x7FFF)	
 		// нет нужды экономить память FLASH
@@ -474,6 +475,7 @@ void hardware_adc_initialize(void);
 
 	#define FLASHMEM //__flash
 	#define FLASHMEMINIT	/* не требуется быстрый доступ - например образ загружаемый в FPGA */
+	#define FLASHMEMINITFUNC	/* не требуется быстрый доступ - например образ загружаемый в FPGA */
 
 	// нет нужды экономить память FLASH
 	#define NOINLINEAT // __attribute__((noinline))
