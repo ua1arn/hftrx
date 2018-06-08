@@ -906,26 +906,28 @@ elkey_set_mode(
 #endif /* WITHELKEY */
 }
 
-
 // интерфейсная функция - получение состояния выхода электронного ключа ("нажатие") для сиквенсора
 // функция должна возвращать 0 или 1 и никак не другие значения
+// вызывается из обработчика прерываний.
 uint_fast8_t 
 elkey_get_output(void)
 {
 #if WITHELKEY	
 	const uint_fast8_t pv = hardware_elkey_getpaddle(elkey_reverse);
-#endif /* WITHELKEY */
 	const uint_fast8_t r = 
-#if WITHELKEY	
-		elkeyout [elkey0.state] != 0 || dash_manual(pv) || dit_manual(pv) ||	/* формируется прямым считыванием признака нажатия. */
-#endif /* WITHELKEY */
-#if WITHCAT	
+		elkeyout [elkey0.state] != 0 || 
+		dash_manual(pv) || /* формируется прямым считыванием признака нажатия. */
+		dit_manual(pv) ||	/* формируется прямым считыванием признака нажатия. */
+  #if WITHCAT	
 	#if WITHCATEXT
 		elkeyout [elkey1.state] != 0 ||
 	#endif	/* WITHCATEXT */
 		cat_get_keydown() ||
-#endif	/* WITHCAT */
+  #endif	/* WITHCAT */
 		0;
 
 	return r;
+#else /* WITHELKEY */
+	return 0;
+#endif /* WITHELKEY */
 }
