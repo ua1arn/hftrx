@@ -44,6 +44,8 @@ SECTIONS
 	.text :
 	{
 		KEEP(*(.init))
+		KEEP(*(.initfunc))
+		KEEP(*(.initdata))
 		KEEP(*(.fini))
 	} > FLASH
 
@@ -125,8 +127,7 @@ SECTIONS
 
 		*(vtable)
 		*(.data*)
-	   . = ALIGN(4);	/* two lines added by ua1arn */
-		*(.ramfunc)
+	   . = ALIGN(4);	/* one line added by ua1arn */
 
 		. = ALIGN(4);
 		/* preinit data */
