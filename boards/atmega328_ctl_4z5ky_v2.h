@@ -154,6 +154,7 @@
 	//#define WITHSWLMODE	1	/* поддержка запоминания множества частот в swl-mode */
 	//#define WITHPOTWPM		1	/* используется регулировка скорости передачи в телеграфе потенциометром */
 	//#define WITHVIBROPLEX	1	/* возможность эмуляции передачи виброплексом */
+	#define WITHNOTCHONOFF		1	/* notch on/off */
 
 	#define WITHMENU 	1	/* функциональность меню может быть отключена - если настраивать нечего */
 	//#define WITHDEBUG		1	/* Отладочная печать через COM-порт. Без CAT (WITHCAT) */

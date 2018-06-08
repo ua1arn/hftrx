@@ -22,9 +22,9 @@
 	// Выбор диапазонных фильтров
 	#define BANDSELSTYLERE_LOCONV32M_NLB	1	/* Down-conversion with working band 1.6..32 MHz */
 	//#define DIRECT_125M0_X1		1
-	//#define DIRECT_80M0_X1		1
+	#define DIRECT_80M0_X1		1
 	//#define DIRECT_50M0_X1		1
-	#define DIRECT_75M0_X1		1
+	//#define DIRECT_75M0_X1		1
 	//#define DIRECT_66M0_X1		1
 	//#define DIRECT_48M0_X1		1
 	//#define DIRECT_44M0_X1		1
@@ -171,6 +171,7 @@
 	//#define WITHSWLMODE	1	/* поддержка запоминания множества частот в swl-mode */
 	//#define WITHPOTWPM		1	/* используется регулировка скорости передачи в телеграфе потенциометром */
 	//#define WITHVIBROPLEX	1	/* возможность эмуляции передачи виброплексом */
+	#define WITHNOTCHONOFF		1	/* notch on/off */
 
 	#define WITHMENU 	1	/* функциональность меню может быть отключена - если настраивать нечего */
 	//#define WITHDEBUG		1	/* Отладочная печать через COM-порт. Без CAT (WITHCAT) */
