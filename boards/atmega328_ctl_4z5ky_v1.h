@@ -22,9 +22,9 @@
 	// Выбор диапазонных фильтров
 	#define BANDSELSTYLERE_LOCONV32M_NLB	1	/* Down-conversion with working band 1.6..32 MHz */
 	//#define DIRECT_125M0_X1		1
-	#define DIRECT_80M0_X1		1
+	//#define DIRECT_80M0_X1		1
 	//#define DIRECT_50M0_X1		1
-	//#define DIRECT_75M0_X1		1
+	#define DIRECT_75M0_X1		1
 	//#define DIRECT_66M0_X1		1
 	//#define DIRECT_48M0_X1		1
 	//#define DIRECT_44M0_X1		1
@@ -71,7 +71,8 @@
 	#define FQMODEL_DCTRX		1	// прямое преобразование
 	// Выбор диапазонных фильтров
 	#define BANDSELSTYLERE_LOCONV32M_NLB	1	/* Down-conversion with working band 1.6..32 MHz */
-	#define DIRECT_50M0_X1		1
+	#define DIRECT_75M0_X1		1
+	//#define DIRECT_50M0_X1		1
 	//#define DIRECT_44M0_X1		1
 	//#define DIRECT_48M0_X1		1
 #endif
@@ -177,7 +178,7 @@
 	//#define WITHDEBUG		1	/* Отладочная печать через COM-порт. Без CAT (WITHCAT) */
 	#define WITHFIXEDBFO	1	/* Переворот боковых за счёт 1-го гетродина (особенно, если нет подстраиваемого BFO) */
 	//#define WITHDUALFLTR	1	/* Переворот боковых за счёт переключения фильтра верхней или нижней боковой полосы */
-	//#define WITHSAMEBFO	1	/* использование общих настроек BFO для приёма и передачи */
+	#define WITHSAMEBFO	1	/* использование общих настроек BFO для приёма и передачи */
 	//#define WITHONLYBANDS 1		/* Перестройка может быть ограничена любительскими диапазонами */
 	//#define WITHBCBANDS	1		/* в таблице диапазонов присутствуют вещательные диапазоны */
 	#define WITHWARCBANDS	1	/* В таблице диапазонов присутствуют HF WARC диапазоны */
