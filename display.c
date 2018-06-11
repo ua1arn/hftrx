@@ -1051,21 +1051,23 @@ void display_plot(
 	)
 {
 #if LCDMODE_HORFILL
+	const size_t len = dx * sizeof * buffer;
 	while (dy --)
 	{
 		PACKEDCOLOR_T * const p = & framebuff [ltdc_first] [ltdc_second];
-		memcpy(p, buffer, dx * sizeof * buffer);
-		arm_hardware_flush((uintptr_t) p, dx * sizeof * buffer);
+		memcpy(p, buffer, len);
+		arm_hardware_flush((uintptr_t) p, len);
 		buffer += dx;
 
 		++ ltdc_first;
 	}
 #else /* LCDMODE_HORFILL */
+	const size_t len = dy * sizeof * buffer;
 	while (dx --)
 	{
 		PACKEDCOLOR_T * const p = & framebuff [ltdc_first] [ltdc_second];
-		memcpy(p, buffer, dy * sizeof * buffer);
-		arm_hardware_flush((uintptr_t) p, dy * sizeof * buffer);
+		memcpy(p, buffer, len);
+		arm_hardware_flush((uintptr_t) p, len);
 		buffer += dy;
 
 		++ ltdc_first;
