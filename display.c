@@ -55,7 +55,7 @@ dma2d_fillrect2(
 	// to the area located at the address pointed by the DMA2D_OMAR 
 	// and defined in the DMA2D_NLR and DMA2D_OOR.
 
-	arm_hardware_flush((uintptr_t) buffer, GXSIZE(dx, dy));
+	arm_hardware_flush((uintptr_t) buffer, sizeof (* buffer) * GXSIZE(dx, dy));
 
 	/* целевой растр */
 	DMA2D->OMAR = (uintptr_t) & buffer [row * dx + col];
@@ -231,7 +231,7 @@ void display_showbuffer(
 #else /* LCDMODE_S1D13781 */
 
 	#if WITHSPIHWDMA && (LCDMODE_UC1608 | 0)
-		arm_hardware_flush((uintptr_t) buffer, MGSIZE(dx, dy));	// количество байтов
+		arm_hardware_flush((uintptr_t) buffer, sizeof (* buffer) * MGSIZE(dx, dy));	// количество байтов
 	#endif
 
 	uint_fast8_t lowhalf = (dy) / 8 - 1;
@@ -388,7 +388,7 @@ void display_colorbuffer_show(
 {
 #if defined (DMA2D) && LCDMODE_LTDC
 
-	arm_hardware_flush((uintptr_t) buffer, GXSIZE(dx, dy));
+	arm_hardware_flush((uintptr_t) buffer, sizeof (* buffer) * GXSIZE(dx, dy));
 
 #if LCDMODE_HORFILL
 
