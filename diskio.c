@@ -161,6 +161,7 @@ static FSIZE_t wav_lengthpos_riff;	/* position for write length at RIFF header *
 static FSIZE_t wav_lengthpos_data;	/* position for write length at data subchunk*/
 static unsigned long wave_num_bytes;
 static const unsigned int bytes_per_sample = 2;	/* 2: 16-bit samples */
+static const unsigned long wFormatTag = 0x01;	/* 1 - integers, 3 - float */
 #if WITHUSEAUDIOREC2CH
 static const unsigned int num_channels = 2;	/* 2: stereo */
 #else /* WITHUSEAUDIOREC2CH */
@@ -342,7 +343,7 @@ static FRESULT write_wav_header(const char * filename, unsigned int sample_rate)
 		if (rc != FR_OK)
 			break;
 		/* Это начало данных для учёта в SubChunk1Size */
-		/* offs 0x0014 */ rc = write_little_endian(0x01, 2);    /* wFormatTag PCM is format 1 */
+		/* offs 0x0014 */ rc = write_little_endian(wFormatTag, 2);    /* wFormatTag PCM is format 1 */
 		if (rc != FR_OK)
 			break;
 		/* offs 0x0016 */ rc = write_little_endian(num_channels, 2);	/* wChannels */
