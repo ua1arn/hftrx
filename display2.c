@@ -4324,11 +4324,9 @@ static PACKEDCOLOR_T wfpalette [PALETTESIZE];
 extern uint_fast8_t wflfence;
 
 #define COLOR_CENTERMAKER	COLOR_RED
-//#define COLOR_WAERFALLBG	COLOR_WHITE
-//#define COLOR_WAERFALLFG	COLOR_BLUE
-//#define COLOR_WAERFALLFENCE	COLOR_YELLOW
 #define COLOR_SPECTRUMBG	COLOR_DARKBLUE
 #define COLOR_SPECTRUMFG	COLOR_GREEN
+#define COLOR_SPECTRUMFENCE	COLOR_WHITE
 
 //  од вз€т из проекта Malamute
 static void wfpalette_initialize(void)
@@ -4494,7 +4492,7 @@ static void display2_spectrum(
 {
 #if LCDMODE_UC1608 || LCDMODE_UC1601 || LCDMODE_S1D13781
 	// —пектр на монохромных диспле€х 
-	// или на цвентых,где есть возможность раскаски растровоцй картинки.
+	// или на цвентых,где есть возможность раскаски растровой картинки.
 	static ALIGNX_BEGIN GX_t spectrmonoscr [MGSIZE(ALLDX, SPDY)] ALIGNX_END;
 
 	if (hamradio_get_tx() == 0)
@@ -4550,7 +4548,6 @@ static void display2_spectrum(
 	display_showbuffer(spectrmonoscr, ALLDX, SPDY, x0, y0 + SPY0);
 
 #else /* */
-
 	PACKEDCOLOR_T * const colorpip = getscratchpip();
 	(void) x0;
 	(void) y0;
@@ -4588,12 +4585,18 @@ static void display2_spectrum(
 			const int val = dsp_mag2y(spavgarray [spavgrow ] [x], SPDY);
 		#endif
 			// ‘ормирование графика
-			const int yv = (SPDY - 1) - val;	// отображаемый уровень
-			for (y = SPDY - 1; y >= yv; -- y)
-				display_colorbuffer_set(colorpip, ALLDX, ALLDY, x, y + SPY0, COLOR_SPECTRUMFG);	// точку сигнала
+			const uint_fast16_t yv = (SPDY - 1) - val;	// отображаемый уровень
 			// формирование фона растра
-			for (; y >= 0; -- y)
+			for (y = 0; y < yv && y < SPDY; ++ y)
 				display_colorbuffer_set(colorpip, ALLDX, ALLDY, x, y + SPY0, COLOR_SPECTRUMBG);	// точку фона
+			if (y == yv && y < SPDY)
+			{
+				display_colorbuffer_set(colorpip, ALLDX, ALLDY, x, y + SPY0, COLOR_SPECTRUMFENCE);	// точку на границе
+				++ y;
+			}
+			// формирование зан€той области растра
+			for (; y < SPDY; ++ y)
+				display_colorbuffer_set(colorpip, ALLDX, ALLDY, x, y + SPY0, COLOR_SPECTRUMFG);	// точку спектра
 		}
 		// маркер центральной частоты обзора
 		// xor линию
