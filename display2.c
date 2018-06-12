@@ -3755,7 +3755,11 @@ enum
 		PGLATCH = PGALL,	// страницы, на которых возможно отображение водопада или панорамы.
 		PGunused
 	};
-	#define DISPLC_WIDTH	9	// количество цифр в отображении частоты
+	#if TUNE_TOP > 100000000uL
+		#define DISPLC_WIDTH	9	// количество цифр в отображении частоты
+	#else
+		#define DISPLC_WIDTH	8	// количество цифр в отображении частоты
+	#endif
 	#define DISPLC_RJ		0	// количество скрытых справа цифр в отображении частоты
 	static const FLASHMEM struct dzone dzones [] =
 	{

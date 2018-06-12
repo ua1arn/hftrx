@@ -890,7 +890,7 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE,		KBD_CODE_BKIN,			KBD_CODE_BKIN_HOLDED, 	' ', },		// BREAK-IN
 	{ KIF_NONE,		KBD_CODE_LDSPTGL,		KBD_CODE_DATATOGGLE,	' ', },		// SPK/DATA
 	{ KIF_NONE,		KBD_CODE_ATT,			KBD_CODE_PAMP, 			' ', },		// ATT/PRE
-	{ KIF_NONE,		KBD_CODE_A_EX_B,			KBD_CODE_18, 		' ', },		// A/B
+	{ KIF_NONE,		KBD_CODE_A_EX_B,		KBD_CODE_18, 			' ', },		// A/B
 	{ KIF_NONE,		KBD_CODE_13,			KBD_CODE_14,			' ', },
 	{ KIF_NONE,		KBD_CODE_15,			KBD_CODE_16,			' ', },
 
@@ -914,39 +914,39 @@ uint_fast8_t getexitkey(void)
 /* 30 кнопок на 5 линий - плата rfrontpanel_v3 + LCDMODE_S1D13781 & LCDMODE_LQ043T3DX02K в нормальном расположении */
 const struct qmkey qmdefs [NQMKEYS] =
 {
-	// !!! справа от индикатора, крайний правый (дальний от инлдикатора) - снизу вверх */
+	// RRR справа от индикатора, крайний правый (дальний от инлдикатора) - снизу вверх */
 	{ KIF_SLOW,		KBD_CODE_BAND_DOWN,		KBD_CODE_BAND_DOWN, 	' ', },		// BAND DOWN
 	{ KIF_SLOW,		KBD_CODE_BAND_UP,		KBD_CODE_BAND_UP, 		' ', },		// BAND UP
-	{ KIF_NONE,		KBD_CODE_MENU_CWSPEED,	KBD_CODE_11, 			'#', },		// CW SPEED
-	{ KIF_NONE,		KBD_CODE_BAND_24M9,		KBD_CODE_BAND_24M9, 	'9', },		//
-	{ KIF_NONE,		KBD_CODE_BAND_14M0,		KBD_CODE_BAND_14M0,		'6', },		//
+	{ KIF_ERASE,	KBD_CODE_SPLIT,			KBD_CODE_SPLIT_HOLDED, 	'#', },		// SPLIT/SPLIT OFF
+	{ KIF_NONE,		KBD_CODE_BAND_24M9,		KBD_CODE_MENU_CWSPEED, 	'9', },		// CW SPEED
+	{ KIF_NONE,		KBD_CODE_BAND_14M0,		KBD_CODE_1,				'6', },		//
 	{ KIF_NONE,		KBD_CODE_BAND_5M3,		KBD_CODE_A_EX_B,		'3', },		// A/B
 
-	// Cлева от индикатора - ряд 1 по счету слева - снизу вверх */
+	// LLL Cлева от индикатора - ряд 1 по счету слева - снизу вверх */
 	{ KIF_NONE,		KBD_CODE_MOX,			KBD_CODE_TXTUNE,		' ', },		// MOX/TUNE
 	{ KIF_NONE,		KBD_CODE_ATUBYPASS,		KBD_CODE_ATUSTART,		' ', },		// TUNER BYP/ATU START
-	{ KIF_NONE,		KBD_CODE_RECORDTOGGLE,	KBD_CODE_RECORD_HOLDED,	' ', },		// REC
+	{ KIF_NONE,		KBD_CODE_RECORDTOGGLE,	KBD_CODE_RECORD_HOLDED,	' ', },		// REC/SD FORMAT
 	{ KIF_NONE,		KBD_CODE_NOTCHTOGGLE,	KBD_CODE_NOTCHFREQ, 	' ', },		// NOTCH
 	{ KIF_NONE,		KBD_CODE_PAMP,			KBD_CODE_5, 			' ', },		// PRE
 	{ KIF_NONE,		KBD_CODE_ATT,			KBD_CODE_6,				' ', },		// ATT
 
-	// !!! справа от индикатора, второй от края - снизу вверх */
+	// RRR справа от индикатора, второй от края - снизу вверх */
 	{ KIF_NONE,		KBD_CODE_LOCK,			KBD_CODE_LOCK_HOLDED, 	' ', },		// LOCK
-	{ KIF_NONE,		KBD_CODE_DISPMODE,		KBD_CODE_7, 			' ', },		// DISPLAY/ BAND
+	{ KIF_NONE,		KBD_CODE_ENTERFREQ,		KBD_CODE_ENTERFREQDONE,	' ', },		// enter frequency
 	{ KIF_NONE,		KBD_CODE_BAND_50M0,		KBD_CODE_BKIN,			'0', },		// BREAK-IN
-	{ KIF_NONE,		KBD_CODE_BAND_21M0,		KBD_CODE_LDSPTGL,		'8', },		// SPK/DATA
+	{ KIF_NONE,		KBD_CODE_BAND_21M0,		KBD_CODE_LDSPTGL,		'8', },		// Seaker on/off
 	{ KIF_NONE,		KBD_CODE_BAND_10M1,		KBD_CODE_BAND_10M1,		'5', },		// 11
 	{ KIF_NONE,		KBD_CODE_BAND_3M5,		KBD_CODE_A_EQ_B,		'2', },		// A=B
 
-	// !!! справа от индикатора, ближний к индикатиору - снизу вверх */
-	{ KIF_EXTMENU,	KBD_CODE_MENU,			KBD_CODE_17, 			' ', },		// MENU
+	// RRR справа от индикатора, ближний к индикатиору - снизу вверх */
+	{ KIF_EXTMENU,	KBD_CODE_DISPMODE,		KBD_CODE_MENU,			' ', },		// MENU
 	{ KIF_NONE,		KBD_CODE_A_EX_B,		KBD_CODE_18, 			' ', },		// A/B
 	{ KIF_NONE,		KBD_CODE_BAND_28M0,		KBD_CODE_VOXTOGGLE,		'.', },		// VOX
-	{ KIF_NONE,		KBD_CODE_BAND_18M0,		KBD_CODE_14,			'7', },
+	{ KIF_NONE,		KBD_CODE_BAND_18M0,		KBD_CODE_DATATOGGLE,	'7', },		// DATA MODE
 	{ KIF_NONE,		KBD_CODE_BAND_7M0,		KBD_CODE_ANTENNA,		'4', },		// ANTEMMA
-	{ KIF_ERASE,	KBD_CODE_BAND_1M8,		KBD_CODE_15,			'1', },		// SPLIT/SPLIT OFF
+	{ KIF_NONE,		KBD_CODE_BAND_1M8,		KBD_CODE_15,			'1', },		//
 
-	// Cлева от индикатора - ряд 2 по счету слева - снизу вверх */
+	// LLL Cлева от индикатора - ряд 2 по счету слева - снизу вверх */
 	{ KIF_NONE,		KBD_CODE_BW,			KBD_CODE_13, 			' ', },		// BW/AGC не выключается с клавиатуры
 	{ KIF_NONE,		KBD_CODE_BW,			KBD_CODE_13, 			' ', },		// BW/AGC не выключается с клавиатуры
 	{ KIF_NONE,		KBD_CODE_MODE,			KBD_CODE_MODEMOD, 		' ', },		// MODE/SUBMODE
