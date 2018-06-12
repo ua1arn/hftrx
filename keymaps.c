@@ -917,10 +917,10 @@ const struct qmkey qmdefs [NQMKEYS] =
 	// !!! справа от индикатора, крайний правый (дальний от инлдикатора) - снизу вверх */
 	{ KIF_SLOW,		KBD_CODE_BAND_DOWN,		KBD_CODE_BAND_DOWN, 	' ', },		// BAND DOWN
 	{ KIF_SLOW,		KBD_CODE_BAND_UP,		KBD_CODE_BAND_UP, 		' ', },		// BAND UP
-	{ KIF_NONE,		KBD_CODE_MENU_CWSPEED,	KBD_CODE_11, 			' ', },		// CW SPEED
-	{ KIF_NONE,		KBD_CODE_BAND_24M9,		KBD_CODE_BAND_24M9, 	'8', },		//
-	{ KIF_NONE,		KBD_CODE_BAND_14M0,		KBD_CODE_BAND_14M0,		'5', },		//
-	{ KIF_NONE,		KBD_CODE_BAND_5M3,		KBD_CODE_A_EX_B,		'5', },		// A/B
+	{ KIF_NONE,		KBD_CODE_MENU_CWSPEED,	KBD_CODE_11, 			'#', },		// CW SPEED
+	{ KIF_NONE,		KBD_CODE_BAND_24M9,		KBD_CODE_BAND_24M9, 	'9', },		//
+	{ KIF_NONE,		KBD_CODE_BAND_14M0,		KBD_CODE_BAND_14M0,		'6', },		//
+	{ KIF_NONE,		KBD_CODE_BAND_5M3,		KBD_CODE_A_EX_B,		'3', },		// A/B
 
 	// Cлева от индикатора - ряд 1 по счету слева - снизу вверх */
 	{ KIF_NONE,		KBD_CODE_MOX,			KBD_CODE_TXTUNE,		' ', },		// MOX/TUNE
@@ -933,18 +933,18 @@ const struct qmkey qmdefs [NQMKEYS] =
 	// !!! справа от индикатора, второй от края - снизу вверх */
 	{ KIF_NONE,		KBD_CODE_LOCK,			KBD_CODE_LOCK_HOLDED, 	' ', },		// LOCK
 	{ KIF_NONE,		KBD_CODE_DISPMODE,		KBD_CODE_7, 			' ', },		// DISPLAY/ BAND
-	{ KIF_NONE,		KBD_CODE_BAND_50M0,		KBD_CODE_BKIN,			' ', },		// BREAK-IN
-	{ KIF_NONE,		KBD_CODE_BAND_21M0,		KBD_CODE_LDSPTGL,		' ', },		// SPK/DATA
-	{ KIF_NONE,		KBD_CODE_BAND_10M1,		KBD_CODE_BAND_10M1,		'5', },	// 11
-	{ KIF_NONE,		KBD_CODE_BAND_3M5,		KBD_CODE_A_EQ_B,		' ', },		// A=B
+	{ KIF_NONE,		KBD_CODE_BAND_50M0,		KBD_CODE_BKIN,			'0', },		// BREAK-IN
+	{ KIF_NONE,		KBD_CODE_BAND_21M0,		KBD_CODE_LDSPTGL,		'8', },		// SPK/DATA
+	{ KIF_NONE,		KBD_CODE_BAND_10M1,		KBD_CODE_BAND_10M1,		'5', },		// 11
+	{ KIF_NONE,		KBD_CODE_BAND_3M5,		KBD_CODE_A_EQ_B,		'2', },		// A=B
 
 	// !!! справа от индикатора, ближний к индикатиору - снизу вверх */
 	{ KIF_EXTMENU,	KBD_CODE_MENU,			KBD_CODE_17, 			' ', },		// MENU
 	{ KIF_NONE,		KBD_CODE_A_EX_B,		KBD_CODE_18, 			' ', },		// A/B
-	{ KIF_NONE,		KBD_CODE_BAND_28M0,		KBD_CODE_VOXTOGGLE,		' ', },		// VOX
-	{ KIF_NONE,		KBD_CODE_BAND_18M0,		KBD_CODE_14,			' ', },
-	{ KIF_NONE,		KBD_CODE_BAND_7M0,		KBD_CODE_ANTENNA,		' ', },		// ANTEMMA
-	{ KIF_ERASE,	KBD_CODE_BAND_1M8,		KBD_CODE_15,			' ', },		// SPLIT/SPLIT OFF
+	{ KIF_NONE,		KBD_CODE_BAND_28M0,		KBD_CODE_VOXTOGGLE,		'.', },		// VOX
+	{ KIF_NONE,		KBD_CODE_BAND_18M0,		KBD_CODE_14,			'7', },
+	{ KIF_NONE,		KBD_CODE_BAND_7M0,		KBD_CODE_ANTENNA,		'4', },		// ANTEMMA
+	{ KIF_ERASE,	KBD_CODE_BAND_1M8,		KBD_CODE_15,			'1', },		// SPLIT/SPLIT OFF
 
 	// Cлева от индикатора - ряд 2 по счету слева - снизу вверх */
 	{ KIF_NONE,		KBD_CODE_BW,			KBD_CODE_13, 			' ', },		// BW/AGC не выключается с клавиатуры
