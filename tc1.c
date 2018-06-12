@@ -2030,7 +2030,15 @@ get_band_bandset(vindex_t b)	/* b: диапазон в таблице bandsmap */
 		{ 4, SUBMODE_NFM, SUBMODE_WFM, SUBMODE_DGU, SUBMODE_DGL, },
 	};
 #elif WITHMODESETFULLNFM
-	#if WITHMODEM
+	#if KEYB_FPAMEL20_V3
+	static const uint_fast8_t modes [][4] =
+		{
+			{ 2, SUBMODE_LSB, SUBMODE_USB, },				// ROW 0
+			{ 2, SUBMODE_CWR, SUBMODE_CW, },				// ROW 1
+			{ 3, SUBMODE_AM, SUBMODE_CWZ, SUBMODE_DRM, },	// ROW 2
+			{ 3, SUBMODE_NFM, SUBMODE_DGU, SUBMODE_DGL, },	// ROW 3
+		};
+	#elif WITHMODEM
 		static const uint_fast8_t modes [][5] =
 		{
 			{ 1, SUBMODE_BPSK, },
@@ -7010,6 +7018,74 @@ uif_key_click_moderow(void)
 	/* пытаемся обратиться за битами - они, взоможно, заменяться значением defcol */
 	(void) getmodecol(gmoderows [bi], modes [gmoderows [bi]][0] - 1, defcol, bi); /* Возможно, значение modecolmap бует откорректировано. */
 
+	/* переустановка частот всех гетеродинов после смены режимов */
+	/* gband должен быть уже известен */
+	gsubmodechange(getsubmode(bi), bi); /* если надо - сохранение частоты в текущем VFO */
+	updateboard(1, 1);
+}
+
+///////////////////////////
+// обработчики кнопок клавиатуры
+//////////////////////////
+/* переход по "столбцу" режимов - быстрое нажатие */
+/* switch to next moderow */
+static void 
+uif_key_click_moderows(uint_fast8_t moderow)
+{
+	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
+	const uint_fast8_t rowchanged = (gmoderows [bi] != moderow);
+	uint_fast8_t defrow = gmoderows [bi] = moderow;		/* строка таблицы режимов, которую покидаем */
+	uint_fast8_t defcol = getmodecol(defrow, modes [defrow][0] - 1, 0, bi);	/* выборка из битовой маски. Возможно, значение modecolmap бует откорректировано.  */
+	const uint_fast8_t forcelsb = getforcelsb(gfreqs [bi]);
+
+#if WITHMODESETSMART
+	defcol = locatesubmode(SUBMODE_SSBSMART, & defrow);
+#else /* WITHMODESETSMART */
+	if (gsubmode == SUBMODE_USB)		// если текущий режим USB - ищемм CW
+		defcol = locatesubmode(SUBMODE_CW, & defrow);
+	else if (gsubmode == SUBMODE_LSB)	// если текущий режим LSB - ищемм CWR
+		defcol = locatesubmode(SUBMODE_CWR, & defrow);
+	else if (gsubmode == SUBMODE_DGU)	// если текущий режим LSB - ищемм CWR
+		defcol = locatesubmode(SUBMODE_USB, & defrow);
+	else if (gsubmode == SUBMODE_DGL)	// если текущий режим LSB - ищемм CWR
+		defcol = locatesubmode(SUBMODE_LSB, & defrow);
+	#if WITHMODESETFULLNFM
+	else if (gsubmode == SUBMODE_AM)	// если текущий режим AM - ищемм FM
+		defcol = locatesubmode(SUBMODE_NFM, & defrow);
+	#endif
+	else								// в остальных случаях ищем режим по умолчанию для данного диапазона частот
+		defcol = locatesubmode(forcelsb ? SUBMODE_LSB : SUBMODE_USB, & defrow);
+#endif /* WITHMODESETSMART */	
+	/* если переходим не на строку с найденными режимаим */
+	if (defrow != gmoderows [bi])
+		defcol = 0;	/* default value (other cases, then switch from usb to cw, from lsb to cwr) */
+	/* пытаемся обратиться за битами - они, взоможно, заменяться значением defcol */
+	(void) getmodecol(gmoderows [bi], modes [gmoderows [bi]][0] - 1, defcol, bi); /* Возможно, значение modecolmap бует откорректировано. */
+
+	/* переустановка частот всех гетеродинов после смены режимов */
+	/* gband должен быть уже известен */
+	gsubmodechange(getsubmode(bi), bi); /* если надо - сохранение частоты в текущем VFO */
+	updateboard(1, 1);
+}
+
+///////////////////////////
+// обработчики кнопок клавиатуры
+//////////////////////////
+/* переход по "строке" режимов - удержанное нажатие */
+// step to next modecol
+static void 
+uif_key_hold_modecols(uint_fast8_t moderow)
+{
+	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
+	if (gmoderows [bi] != moderow)	/* строка таблицы запомненных режимов */
+	{
+		uif_key_click_moderows(moderow);
+		return;
+	}
+
+	uint_fast8_t modecol = getmodecol(moderow, modes [moderow][0] - 1, 0, bi);	/* выборка из битовой маски. Возможно, значение modecolmap бует откорректировано.  */
+	modecol = calc_next(modecol, 0, modes [moderow][0] - 1);
+	putmodecol(moderow, modecol, bi);	/* внести новое значение в битовую маску */
 	/* переустановка частот всех гетеродинов после смены режимов */
 	/* gband должен быть уже известен */
 	gsubmodechange(getsubmode(bi), bi); /* если надо - сохранение частоты в текущем VFO */
@@ -13948,6 +14024,57 @@ process_key_menuset_common(uint_fast8_t kbch)
 		uif_key_hold_modecol();
 		return 1;	/* клавиша уже обработана */
 
+#if WITHDIRECTBANDS
+
+	case KBD_CODE_MODE_0:
+		/* переход по "столбцу" режимов - быстрое нажатие */
+		/* switch to next moderow */
+		uif_key_click_moderows(0);
+		return 1;	/* клавиша уже обработана */
+
+	case KBD_CODE_MODE_1:
+		/* переход по "столбцу" режимов - быстрое нажатие */
+		/* switch to next moderow */
+		uif_key_click_moderows(1);
+		return 1;	/* клавиша уже обработана */
+
+	case KBD_CODE_MODE_2:
+		/* переход по "столбцу" режимов - быстрое нажатие */
+		/* switch to next moderow */
+		uif_key_click_moderows(2);
+		return 1;	/* клавиша уже обработана */
+
+	case KBD_CODE_MODE_3:
+		/* переход по "столбцу" режимов - быстрое нажатие */
+		/* switch to next moderow */
+		uif_key_click_moderows(3);
+		return 1;	/* клавиша уже обработана */
+
+	case KBD_CODE_MODEMOD_0:
+		/* переход по "строке" режимов - удержанное нажатие */
+		// step to next modecol
+		uif_key_hold_modecols(0);
+		return 1;	/* клавиша уже обработана */
+
+	case KBD_CODE_MODEMOD_1:
+		/* переход по "строке" режимов - удержанное нажатие */
+		// step to next modecol
+		uif_key_hold_modecols(1);
+		return 1;	/* клавиша уже обработана */
+
+	case KBD_CODE_MODEMOD_2:
+		/* переход по "строке" режимов - удержанное нажатие */
+		// step to next modecol
+		uif_key_hold_modecols(2);
+		return 1;	/* клавиша уже обработана */
+
+	case KBD_CODE_MODEMOD_3:
+		/* переход по "строке" режимов - удержанное нажатие */
+		// step to next modecol
+		uif_key_hold_modecols(3);
+		return 1;	/* клавиша уже обработана */
+
+#endif /* WITHDIRECTBANDS */
 
 	case KBD_CODE_LOCK:
 		/* блокировка валкодера

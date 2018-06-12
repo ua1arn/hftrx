@@ -28,6 +28,12 @@ enum
 
 	KBD_CODE_MENU,
 	KBD_CODE_MODE, KBD_CODE_MODEMOD,	// переключение режимов - первый код при коротком нажатии, второй - при удержанном
+#if WITHDIRECTBANDS
+	KBD_CODE_MODE_3, KBD_CODE_MODEMOD_3,
+	KBD_CODE_MODE_2, KBD_CODE_MODEMOD_2,
+	KBD_CODE_MODE_1, KBD_CODE_MODEMOD_1,
+	KBD_CODE_MODE_0, KBD_CODE_MODEMOD_0,
+#endif /* WITHDIRECTBANDS */
 	KBD_CODE_LOCK,
 	KBD_CODE_USEFAST,
 	KBD_CODE_AFNARROW,		// переключить УНЧ в режим узкой полосы
