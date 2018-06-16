@@ -82,7 +82,7 @@
 	//#define WITHPBT		1	/* используетс€ PBT */
 	#define WITHIFSHIFT	1	/* используетс€ IF SHIFT */
 	#define WITHIFSHIFTOFFSET	(-250)	/* Ќачальное занчение IF SHIFT */
-	#define WITHCAT		1	/* используетс€ CAT */
+	//#define WITHCAT		1	/* используетс€ CAT */
 	//#define WITHVOX		1	/* используетс€ VOX */
 	#if 1
 		#define WITHPWRMTR	1	/* »ндикатор выходной мощности или */
