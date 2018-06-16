@@ -300,8 +300,8 @@ static void ili9225_colorpixel_p1(
 #elif WITHSPIEXT16
 	hardware_spi_b16_p1(color);
 #else
-	spi_progval8_p1(color >> 8);	// смотреть бит TRI а регистре 03
-	spi_progval8_p2(color >> 0);	// смотреть бит TRI а регистре 03
+	spi_progval8_p1(targetlcd, color >> 8);	// смотреть бит TRI а регистре 03
+	spi_progval8_p2(targetlcd, color >> 0);	// смотреть бит TRI а регистре 03
 #endif
 }
 
@@ -314,8 +314,8 @@ static void ili9225_colorpixel_p2(
 #elif WITHSPIEXT16
 	hardware_spi_b16_p2(color);
 #else
-	spi_progval8_p2(color >> 8);	// смотреть бит TRI а регистре 03
-	spi_progval8_p2(color >> 0);	// смотреть бит TRI а регистре 03
+	spi_progval8_p2(targetlcd, color >> 8);	// смотреть бит TRI а регистре 03
+	spi_progval8_p2(targetlcd, color >> 0);	// смотреть бит TRI а регистре 03
 #endif
 }
 
@@ -329,8 +329,8 @@ static void ili9225_colorpixel_p3(
 	hardware_spi_b16_p2(color);
 	hardware_spi_complete_b16();
 #else
-	spi_progval8_p2(color >> 8);	// смотреть бит TRI а регистре 03
-	spi_progval8_p2(color >> 0);	// смотреть бит TRI а регистре 03
+	spi_progval8_p2(targetlcd, color >> 8);	// смотреть бит TRI а регистре 03
+	spi_progval8_p2(targetlcd, color >> 0);	// смотреть бит TRI а регистре 03
 	spi_complete(targetlcd);
 #endif
 }
