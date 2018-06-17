@@ -103,9 +103,10 @@ void board_set_tx_bpsk_enable(uint_fast8_t v);	/* разрешение прямого формировани
 void board_set_dither(uint_fast8_t v);	/* управление зашумлением в LCT2088 */
 void board_set_adcrand(uint_fast8_t v);	/* управление интерфейсом в LCT2088 */
 void board_set_dacscale(uint_fast8_t n);	/* Использование амплитуды сигнала с ЦАП передатчика - 0..100% */
-void board_set_dac1(uint_fast8_t v);	/* подстройка опорного генератора */
-void board_set_bglight(uint_fast8_t v);	/* Включение подсветки дисплея */
+void board_set_dac1(uint_fast8_t n);	/* подстройка опорного генератора */
+void board_set_bglight(uint_fast8_t n);	/* Включение подсветки дисплея */
 void board_set_kblight(uint_fast8_t v);	/* Включение подсветки клавиатуры */
+void board_set_blfreq(uint_fast8_t n);	/* установка делителя для формирования рабочей частоты преобразователя подсветки */
 void board_set_txcw(uint_fast8_t v);	/* Включение передачи в обход балансного модулятора */
 void board_set_txgate(uint_fast8_t v);	/* разрешение драйвера и оконечного усилителя */
 void board_set_scalelo1(uint_fast8_t n);	/* SW-2011-RDX */

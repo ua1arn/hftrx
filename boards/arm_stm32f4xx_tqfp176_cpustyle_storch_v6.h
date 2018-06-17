@@ -706,6 +706,7 @@
 		/* step-up backlight converter */ \
 		arm_hardware_pioe_outputs((1U << 0), 1 * (1U << 0));		/* PE0 - enable backlight */ \
 		arm_hardware_piob_opendrain((1U << 9) | (1U << 8), 0 * (1U << 9) | 0 * (1U << 8));	/* PB9:PB8 - backlight current adjust */ \
+		arm_hardware_piof_altfn50((1U << 6), AF_TIM1); /* TIM16_CH1 - PF6 */ \
 	} while (0)
 	/* установка яркости и включение/выключение преобразователя подсветки */
 	#define HARDWARE_LTDC_SET_BL(en, level) do { \
