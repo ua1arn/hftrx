@@ -1141,7 +1141,7 @@ static RAMFUNC void spool_adcdonebundle(void)
 		#endif /* WITHENCODERSWAP */
 		}
 	#endif /* WITHENCODER && defined (ENCODER_BITS) */
-	#if WITHENCODER && ENCODER2_BITS
+	#if WITHENCODER && defined (ENCODER2_BITS)
 		if ((pr & ENCODER2_BITS) != 0)
 		{
 		#if WITHENCODERSWAP
