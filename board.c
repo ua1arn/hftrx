@@ -67,7 +67,7 @@ static uint_fast8_t 	glob_mikemute;		// отключить аудиовход балансного модулятор
 static uint_fast8_t 	glob_vox;
 #if WITHLCDBACKLIGHT
 static uint_fast8_t 	glob_bglight = WITHLCDBACKLIGHTMAX;
-static uint_fast8_t 	glob_blfreq = UINT8_MAX;
+static uint_fast32_t 	glob_blfreq = UINT32_MAX;
 #endif /* WITHLCDBACKLIGHT */
 #if WITHKBDBACKLIGHT
 static uint_fast8_t 	glob_kblight = 1;
@@ -4540,13 +4540,14 @@ board_set_bglight(uint_fast8_t n)
 
 /* установка делителя для формирования рабочей частоты преобразователя подсветки */
 void 
-board_set_blfreq(uint_fast8_t n)	
+board_set_blfreq(uint_fast32_t n)	
 {
 	// TIM16_CH1 - PF6
 	if (glob_blfreq != n)
 	{
 		glob_blfreq = n;
-		board_ctlreg1changed();
+		//board_ctlreg1changed();
+		hardware_blfreq_setfreq(n);
 	}
 }
 

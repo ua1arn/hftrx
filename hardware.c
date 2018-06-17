@@ -3014,6 +3014,39 @@ hardware_adc_startonescan(void)
 
 #endif /* WITHCPUADCHW */
 
+
+#if CTLSTYLE_STORCH_V6
+	/* TIM16_CH1 - PF6 */
+	void hardware_blfreq_initialize(void)
+	{
+		RCC->APB2ENR |= RCC_APB2ENR_TIM16EN;   //подаем тактирование на TIM16
+		__DSB();
+
+		TIM16->CCMR1 = 
+			3 * TIM_CCMR1_OC1M_0 |	// для кодов более 7 использовать TIM_CCMR1_OC1M_3. Output Compare 1 Mode = 3
+			0;
+		TIM16->CCER = TIM_CCER_CC1E;
+		//TIM16->DIER = TIM_DIER_UIE;        	 // разрешить событие от таймера
+		TIM16->BDTR = TIM_BDTR_MOE;
+	}
+
+	/* TIM16_CH1 - PF6 */
+	void hardware_blfreq_setfreq(uint_fast32_t v)
+	{
+		unsigned value;	/* делитель */
+		const uint_fast8_t prei = calcdivider(v, STM32F_TIM4_TIMER_WIDTH, STM32F_TIM4_TIMER_TAPS, & value, 1);
+		TIM16->PSC = ((1UL << prei) - 1) & TIM_PSC_PSC;
+
+		TIM16->ARR = value;
+		//TIM16->CR1 = TIM_CR1_CEN | TIM_CR1_ARPE; /* разрешить перезагрузку и включить таймер = перенесено в установку скорости - если счётчик успевал превысить значение ARR - считал до конца */
+
+		//TIM16->CCR1 = (value / 2) & TIM_CCR1_CCR1;	// TIM16_CH1 - wave output
+		//TIM16->ARR = value;
+		TIM16->CR1 = TIM_CR1_CEN | TIM_CR1_ARPE;	/* разрешить перезагрузку и включить таймер */
+	}
+
+#endif /* CTLSTYLE_STORCH_V6 */
+
 #if SIDETONE_TARGET_BIT != 0
 
 
@@ -3323,8 +3356,8 @@ hardware_beep_initialize(void)
 	RCC->APB1ENR |= RCC_APB1ENR_TIM4EN;   //подаем тактирование на TIM4
 	__DSB();
 
-	TIM4->CCER = TIM_CCER_CC3E;
 	TIM4->CCMR2 = TIM_CCMR2_OC3M_0 | TIM_CCMR2_OC3M_1 | TIM_CCMR2_OC3M_2;	// Output Compare 3 Mode
+	TIM4->CCER = TIM_CCER_CC3E;
 	
 	HARDWARE_SIDETONE_INITIALIZE();
 
@@ -8259,8 +8292,8 @@ void hardware_tim21_initialize(void)
 	RCC->APB2ENR |= RCC_APB2ENR_TIM21EN;   // подаем тактирование на TIM2 & TIM5
 	__DSB();
 
-	TIM21->CCER = TIM_CCER_CC2E;
 	TIM21->CCMR1 = TIM_CCMR1_OC2M_0 | TIM_CCMR1_OC2M_1 | TIM_CCMR1_OC2M_2;	// Output Compare 3 Mode
+	TIM21->CCER = TIM_CCER_CC2E;
 	HARDWARE_ALTERNATE_INITIALIZE();	 /* PA3 - TIM21_CH2 output  */
 
 	//TIM3->DIER = TIM_DIER_UIE;        	 // разрешить событие от таймера

@@ -2245,7 +2245,7 @@ struct nvmap
 #endif /* defined (DEFAULT_LCD_CONTRAST) */
 #if WITHLCDBACKLIGHT
 	uint8_t bglight;
-	uint8_t blfreq;
+	uint16_t blfreq;
 #endif /* WITHLCDBACKLIGHT */
 #if WITHKBDBACKLIGHT
 	uint8_t kblight;
@@ -2906,7 +2906,7 @@ static uint_fast8_t displaybarsfps = DISPLAYSWR_FPS;
 
 #if WITHLCDBACKLIGHT
 	static uint_fast8_t bglight = WITHLCDBACKLIGHTMAX;
-	static uint_fast8_t blfreq = 0;
+	static uint_fast16_t blfreq = 10;
 #else /* WITHLCDBACKLIGHT */
 	enum { bglight = 0 };
 #endif /* WITHLCDBACKLIGHT */
@@ -10599,12 +10599,12 @@ static const FLASHMEM struct menudef menutable [] =
 #if WITHLCDBACKLIGHT
 	#if CTLSTYLE_STORCH_V6
 		{
-			"BL FREQ ", 7, 0, 0,	ISTEP1,	
+			"BL DIV  ", 7, 0, 0,	ISTEP1,	
 			ITEM_VALUE,
-			0, 77, 
+			4, UINT16_MAX, 
 			offsetof(struct nvmap, blfreq),
-			NULL,
 			& blfreq,
+			NULL,
 			getzerobase, /* складывается со смещением и отображается */
 		},
 	#endif /* CTLSTYLE_STORCH_V6 */
