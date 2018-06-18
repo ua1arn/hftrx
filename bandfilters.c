@@ -372,22 +372,43 @@ uint8_t bandf2_calc(
 	CTLREGMODE_STORCH_V3 || \
 	0
 	/* плата усилителя 2*RD100 */
-	const unsigned long M10 = 1000uL * 100;
+	const unsigned long M0p1 = 1000uL * 100;
 	const fseltype_t f = (fseltype_t) (freq >> BANDDIVPOWER);
 
-	if (f < (fseltype_t) ((24 * M10) >> BANDDIVPOWER))
+	if (f < (fseltype_t) ((24 * M0p1) >> BANDDIVPOWER))
 		return 0;	// XS18 PIN 02
-	if (f < (fseltype_t) ((39 * M10) >> BANDDIVPOWER))
+	if (f < (fseltype_t) ((39 * M0p1) >> BANDDIVPOWER))
 		return 1;	// XS18 PIN 04
-	if (f < (fseltype_t) ((74 * M10) >> BANDDIVPOWER))
+	if (f < (fseltype_t) ((74 * M0p1) >> BANDDIVPOWER))
 		return 2;	// XS18 PIN 06
-	if (f < (fseltype_t) ((148 * M10) >> BANDDIVPOWER))
+	if (f < (fseltype_t) ((148 * M0p1) >> BANDDIVPOWER))
 		return 3;	// XS18 PIN 08
-	if (f < (fseltype_t) ((220 * M10) >> BANDDIVPOWER))
+	if (f < (fseltype_t) ((220 * M0p1) >> BANDDIVPOWER))
 		return 4;	// XS18 PIN 10
-	if (f < (fseltype_t) ((300 * M10) >> BANDDIVPOWER))
+	if (f < (fseltype_t) ((300 * M0p1) >> BANDDIVPOWER))
 		return 5;	// XS18 PIN 12
 	return 6;		// XS18 PIN 14 (PIN 16 - PTT)
+
+#elif \
+	CTLREGMODE_STORCH_V6 ||		/* mimni RX + TFT 4.3" */ \
+	0
+	/* TUNER & PA board 2*RD16 by avbelnn@yandex.ru */
+	const unsigned long M0p1 = 1000uL * 100;
+	const fseltype_t f = (fseltype_t) (freq >> BANDDIVPOWER);
+
+	if (f < (fseltype_t) ((24 * M0p1) >> BANDDIVPOWER))
+		return 0;	// BPF1 actime
+	if (f < (fseltype_t) ((39 * M0p1) >> BANDDIVPOWER))
+		return 1;	// BPF2 actime
+	if (f < (fseltype_t) ((74 * M0p1) >> BANDDIVPOWER))
+		return 2;	// BPF3 actime
+	if (f < (fseltype_t) ((148 * M0p1) >> BANDDIVPOWER))
+		return 3;	// BPF4 actime
+	if (f < (fseltype_t) ((220 * M0p1) >> BANDDIVPOWER))
+		return 4;	// BPF5 actime
+	if (f < (fseltype_t) ((300 * M0p1) >> BANDDIVPOWER))
+		return 5;	// BPF6 actime
+	return 6;		// BPF7 actime
 
 #elif \
 	CTLREGMODE_RAVENDSP_V1 || /* Трансивер Вороненок с IF DSP трактом */ \
@@ -399,7 +420,6 @@ uint8_t bandf2_calc(
 	CTLREGMODE_STORCH_V1_R4DR || \
 	CTLREGMODE_STORCH_V4 ||		/* modem only v2 */ \
 	CTLREGMODE_STORCH_V5 ||		/* mimni RX */ \
-	CTLREGMODE_STORCH_V6 ||		/* mimni RX + TFT 4.3" */ \
 	CTLREGMODE_RAVENDSP_V9 || /* renesas */ \
 	CTLREGMODE_RAVENDSP_V2 || /* renesas */ \
 	CTLREGMODE_RAVENDSP_V8 || /* modem only */ \
