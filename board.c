@@ -3499,7 +3499,22 @@ prog_ctrlreg(uint_fast8_t plane)
 		const uint_fast8_t lcdblcode = (glob_bglight - WITHLCDBACKLIGHTMIN);
 		const spitarget_t target = targetctl1;
 
-		rbtype_t rbbuff [2] = { 0 };
+		rbtype_t rbbuff [6] = { 0 };
+
+#if WITHAUTOTUNER
+		RBBIT(0057, 0);	// REZ4
+		RBBIT(0056, 0);	// REZ3
+		RBBIT(0055, 0);	// REZ2_OC
+		RBBIT(0054, 0);	// REZ1_OC
+		RBBIT(0053, 0);	// HP/LP
+		RBBIT(0052, glob_tx);
+		RBBIT(0051, glob_fanflag);	// FAN
+		RBVAL(0042, 1U << glob_bandf2, 7);	// BPF7..BPF1 (fences: 2.4 MHz, 3.9 MHz, 7.4 MHz, 14.8 MHz, 22 MHz, 30 MHz, 50 MHz)
+		RBBIT(0041, glob_tuner_type);		// TY
+		RBBIT(0040, ! glob_tuner_bypass);	// в обесточенном состоянии - режим BYPASS
+		RBVAL8(0030, glob_tuner_C);
+		RBVAL8(0020, glob_tuner_L);
+#endif /* WITHAUTOTUNER */
 
 		// DD16 STP08CP05TTR в управлении диапазонными фильтрами приёмника
 		RBVAL(0010, glob_tx ? 0 : (1U << glob_bandf), 8);		// D1: 1, D7..D1: band select бит выбора диапазонного фильтра приёмника
