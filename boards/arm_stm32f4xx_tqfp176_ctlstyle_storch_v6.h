@@ -337,8 +337,8 @@
 	//#define WITHPWRMTR	1	/* Индикатор выходной мощности или */
 	//#define WITHPWRLIN	1	/* Индикатор выходной мощности показывает напряжение а не мощность */
 	#define WITHBARS		1	/* отображение S-метра и SWR-метра */
-	//#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
-	//#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
+	#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
+	#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
 	//#define WITHSWLMODE	1	/* поддержка запоминания множества частот в swl-mode */
 	#define WITHVIBROPLEX	1	/* возможность эмуляции передачи виброплексом */
 	#define WITHSPKMUTE		1	/* управление выключением динамика */
