@@ -559,6 +559,16 @@ dash_manual(
 }
 
 
+static uint_fast8_t
+elkey_manual(void)
+{
+	const uint_fast8_t pv = hardware_elkey_getpaddle(elkey_reverse);
+
+	return
+		dash_manual(pv) || /* формируется прямым считыванием признака нажатия. */
+		dit_manual(pv);	/* формируется прямым считыванием признака нажатия. */
+}
+
 // перейти к состоянию и установить таймер. Сбросить текущий таймер.
 static void 
 NOINLINEAT
@@ -913,11 +923,9 @@ uint_fast8_t
 elkey_get_output(void)
 {
 #if WITHELKEY	
-	const uint_fast8_t pv = hardware_elkey_getpaddle(elkey_reverse);
 	const uint_fast8_t r = 
 		elkeyout [elkey0.state] != 0 || 
-		dash_manual(pv) || /* формируется прямым считыванием признака нажатия. */
-		dit_manual(pv) ||	/* формируется прямым считыванием признака нажатия. */
+		elkey_manual() ||
   #if WITHCAT	
 	#if WITHCATEXT
 		elkeyout [elkey1.state] != 0 ||
