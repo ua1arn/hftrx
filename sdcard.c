@@ -3684,17 +3684,15 @@ DSTATUS MMC_Initialize (
 	BYTE drv				/* Physical drive nmuber (0..) */
 )
 {
-	//debug_printf_P(PSTR("disk_initialize: drv=%d\n"), (int) drv);
+	//debug_printf_P(PSTR("MMC_Initialize: drv=%d\n"), (int) drv);
 	if (1)
 	{
-#if WITHSDHCHW
 		if (HARDWARE_SDIOSENSE_CD() == 0)
 			return STA_NODISK;
 		//if (HARDWARE_SDIOSENSE_WP() != 0)
 		//	return STA_PROTECT;
 		char ec = mmc_detectcard();
 		return (ec == MMC_SUCCESS) ? 0 : STA_NODISK;	// STA_NOINIT or STA_NODISK or STA_PROTECT
-#endif /* WITHSDHCHW */
 	}
 	return STA_NODISK;
 }
@@ -3707,13 +3705,11 @@ DSTATUS MMC_Status (
 	//debug_printf_P(PSTR("disk_status: drv=%d\n"), (int) drv);
 	if (1)
 	{
-#if WITHSDHCHW
 		if (HARDWARE_SDIOSENSE_CD() == 0)
 			return STA_NODISK;
 		if (HARDWARE_SDIOSENSE_WP() != 0)
 			return STA_PROTECT;
 		return 0;	// STA_NOINIT or STA_NODISK or STA_PROTECT
-#endif /* WITHSDHCHW */
 	}
 	return STA_NODISK;
 }

@@ -3764,6 +3764,7 @@ static BYTE targetdrv = 0;
 static char mmcInitialize(void)
 {
 	DSTATUS st = disk_initialize (targetdrv);				/* Physical drive nmuber (0..) */
+	//debug_printf_P(PSTR("disk_initialize code=%02X\n"), st);
 	return st != RES_OK;
 }
 
@@ -3772,6 +3773,7 @@ static char mmcInitialize(void)
 static char mmcReadSector(uint_fast32_t sector, unsigned char *pBuffer)
 {
 	DSTATUS st = disk_read(targetdrv, pBuffer, sector, 1);
+	//debug_printf_P(PSTR("disk_read code=%02X\n"), st);
 	return st != RES_OK;
 }
 //#define 
@@ -3781,6 +3783,7 @@ static char mmcReadSector(uint_fast32_t sector, unsigned char *pBuffer)
 static char mmcWriteSector(uint_fast32_t sector, const unsigned char *pBuffer)
 {
 	DSTATUS st = disk_write(targetdrv, pBuffer, sector, 1);
+	//debug_printf_P(PSTR("disk_write code=%02X\n"), st);
 	return st != RES_OK;
 }
 
@@ -5417,13 +5420,15 @@ void hightests(void)
 		}
 	}
 #endif
-#if 0 && WITHDEBUG && WITHSDHCHW
+#if 0 && WITHDEBUG
 	{
+		debug_printf_P(PSTR("SD sensors test\n"));
 		// SD card sensors test
 		HARDWARE_SDIOSENSE_INITIALIZE();
 		for (;;)
 		{
 			debug_printf_P(PSTR("SD sensors: CD=%d, WP=%d\n"), HARDWARE_SDIOSENSE_CD(), HARDWARE_SDIOSENSE_WP());
+			local_delay_ms(50);
 		}
 	}
 #endif
@@ -7235,7 +7240,7 @@ void lowtests(void)
 				dbg_putchar(0xf0);
 		#endif
 		// тестирование приёма и передачи символов
-		for (;0;)
+		for (;1;)
 		{
 			char c;
 			if (dbg_getchar(& c))
@@ -7282,8 +7287,8 @@ void lowtests(void)
 #if 0
 	{
 		// FPU test
-		hardware_uart1_initialize();
-		hardware_uart1_set_speed(DEBUGSPEED);
+		HARDWARE_DEBUG_INITIALIZE();
+		HARDWARE_DEBUG_SET_SPEED(DEBUGSPEED);
 		//for (;;)
 		dbg_puts_impl_P(PSTR("Version " __DATE__ " " __TIME__ " 3 debug session starts.\n"));
 		// выдача повторяющегося символа для тестирования скорости передачи, если ошибочная инициализация

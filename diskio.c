@@ -60,6 +60,7 @@ DSTATUS disk_initialize (
 	BYTE drv				/* Physical drive nmuber (0..) */
 )
 {
+	//debug_printf_P(PSTR("disk_initialize drv=%u (n=%u)\n"), drv, (sizeof drvfuncs / sizeof drvfuncs [0]));
 	if (drv < (sizeof drvfuncs / sizeof drvfuncs [0]))
 		return drvfuncs [drv]->Initialize(drv);	// detect media
 	return STA_NODISK;
