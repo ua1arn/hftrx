@@ -4356,7 +4356,7 @@ static vindex_t
 //NOINLINEAT
 getfreqband(const uint_fast32_t freq)
 {
-	uint_fast8_t i;
+	vindex_t i;
 
 	for (i = 0; i < (sizeof bandsmap / sizeof bandsmap [0]); ++ i)
 	{
