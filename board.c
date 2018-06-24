@@ -3506,7 +3506,7 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBBIT(0056, 0);	// REZ3
 		RBBIT(0055, 0);	// REZ2_OC
 		RBBIT(0054, 0);	// REZ1_OC
-		RBBIT(0053, 0);	// HP/LP
+		RBBIT(0053, ! (glob_tx && ! glob_autotune));	// HP/LP: 0: high power, 1: low power
 		RBBIT(0052, glob_tx);
 		RBBIT(0051, glob_fanflag);	// FAN
 		RBVAL(0042, 1U << glob_bandf2, 7);	// BPF7..BPF1 (fences: 2.4 MHz, 3.9 MHz, 7.4 MHz, 14.8 MHz, 22 MHz, 30 MHz, 50 MHz)
