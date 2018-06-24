@@ -1888,7 +1888,7 @@ static FLASHMEM struct bandrange  const bandsmap [] =
 #define XBANDS_COUNT 2	/* два обзорных диапазона */
 #define HBANDS_COUNT ((sizeof bandsmap / sizeof bandsmap [0]) - XBANDS_COUNT - VFOS_COUNT)
 #define VFOS_BASE ((sizeof bandsmap / sizeof bandsmap [0]) - VFOS_COUNT)
-
+#define XBANDS_BASE	HBANDS_COUNT	/* перва€ из двух €чеек с обзорными диапазонами */
 #define MBANDS_BASE (HBANDS_COUNT + XBANDS_COUNT + VFOS_COUNT)	/* перва€ €чейка с фиксированными настройками */
 
 
@@ -4447,8 +4447,8 @@ getnext_ham_band(
 	/* когда дополнительных диапазонов станет больше двух,
 	   сделаю циклы.
 	   */
-	const uint_fast32_t xfreq0 = loadvfy32freq(HBANDS_COUNT + 0);	// частота в обзорном диапазоне 0
-	const uint_fast32_t xfreq1 = loadvfy32freq(HBANDS_COUNT + 1);	// частота в обзорном диапазоне 1
+	const uint_fast32_t xfreq0 = loadvfy32freq(XBANDS_BASE + 0);	// частота в обзорном диапазоне 0
+	const uint_fast32_t xfreq1 = loadvfy32freq(XBANDS_BASE + 1);	// частота в обзорном диапазоне 1
 	const vindex_t xsel0 = getfreqband(xfreq0);		// не принадлежит ли частота какому-то диапазону
 	const vindex_t xsel1 = getfreqband(xfreq1);		// не принадлежит ли частота какому-то диапазону
 
@@ -4518,8 +4518,8 @@ getprev_ham_band(
 	/* когда дополнительных диапазонов станет больше двух,
 	   сделаю циклы.
 	   */
-	const uint_fast32_t xfreq0 = loadvfy32freq(HBANDS_COUNT + 0);	// частота в обзорном диапазоне 0
-	const uint_fast32_t xfreq1 = loadvfy32freq(HBANDS_COUNT + 1);	// частота в обзорном диапазоне 1
+	const uint_fast32_t xfreq0 = loadvfy32freq(XBANDS_BASE + 0);	// частота в обзорном диапазоне 0
+	const uint_fast32_t xfreq1 = loadvfy32freq(XBANDS_BASE + 1);	// частота в обзорном диапазоне 1
 	const vindex_t xsel0 = getfreqband(xfreq0);		// не принадлежит ли частота какому-то диапазону
 	const vindex_t xsel1 = getfreqband(xfreq1);		// не принадлежит ли частота какому-то диапазону
 
