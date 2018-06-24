@@ -1888,7 +1888,8 @@ static FLASHMEM struct bandrange  const bandsmap [] =
 #define XBANDS_COUNT 2	/* два обзорных диапазона */
 #define HBANDS_COUNT ((sizeof bandsmap / sizeof bandsmap [0]) - XBANDS_COUNT - VFOS_COUNT)
 #define VFOS_BASE ((sizeof bandsmap / sizeof bandsmap [0]) - VFOS_COUNT)
-#define XBANDS_BASE	HBANDS_COUNT	/* перва€ из двух €чеек с обзорными диапазонами */
+#define XBANDS_BASE0	(HBANDS_COUNT + 0)	/* перва€ из двух €чеек с обзорными диапазонами */
+#define XBANDS_BASE1	(HBANDS_COUNT + 1)	/* втора€ из двух €чеек с обзорными диапазонами */
 #define MBANDS_BASE (HBANDS_COUNT + XBANDS_COUNT + VFOS_COUNT)	/* перва€ €чейка с фиксированными настройками */
 
 
@@ -4447,8 +4448,8 @@ getnext_ham_band(
 	/* когда дополнительных диапазонов станет больше двух,
 	   сделаю циклы.
 	   */
-	const uint_fast32_t xfreq0 = loadvfy32freq(XBANDS_BASE + 0);	// частота в обзорном диапазоне 0
-	const uint_fast32_t xfreq1 = loadvfy32freq(XBANDS_BASE + 1);	// частота в обзорном диапазоне 1
+	const uint_fast32_t xfreq0 = loadvfy32freq(XBANDS_BASE0);	// частота в обзорном диапазоне 0
+	const uint_fast32_t xfreq1 = loadvfy32freq(XBANDS_BASE1);	// частота в обзорном диапазоне 1
 	const vindex_t xsel0 = getfreqband(xfreq0);		// не принадлежит ли частота какому-то диапазону
 	const vindex_t xsel1 = getfreqband(xfreq1);		// не принадлежит ли частота какому-то диапазону
 
@@ -4460,25 +4461,25 @@ getnext_ham_band(
 
 	do
 	{
-		if (b == (HBANDS_COUNT + 0) && xprev0 == xprev1 && xnext0 == xnext1 && xsel1 >= HBANDS_COUNT)
+		if (b == XBANDS_BASE0 && xprev0 == xprev1 && xnext0 == xnext1 && xsel1 >= HBANDS_COUNT)
 		{
 			/* обработка ситуацию "из обзорного - в обзорный диапазон",
 			если запомненна€ частота нового обзорного диапазона не попадает на выделенный диапазон */
-			b = HBANDS_COUNT + 1;
+			b = XBANDS_BASE1;
 			continue;
 		}
 		if (b == xprev0 && xsel0 >= HBANDS_COUNT)
 		{
 			// текуща€ €вл€етс€ предшествующей дл€ xfreq0
 			/* переходим в обзорный диапазон 0 */
-			b = HBANDS_COUNT + 0;
+			b = XBANDS_BASE0;
 			continue;
 		}
 		if (b == xprev1 && xsel1 >= HBANDS_COUNT)
 		{
 			// текуща€ €вл€етс€ предшествующей дл€ xfreq1
 			/* переходим в обзорный диапазон 1 */
-			b = HBANDS_COUNT + 1;
+			b = XBANDS_BASE1;
 			continue;
 		}
 		if (b < HBANDS_COUNT)
@@ -4489,13 +4490,13 @@ getnext_ham_band(
 			while (! existingband(b));
 			continue;
 		}
-		if (b == HBANDS_COUNT + 0)
+		if (b == XBANDS_BASE0)
 		{
 			// текуща€ частота - обзорный 0
 			b = xnext0;
 			continue;
 		}
-		if (b == HBANDS_COUNT + 1)
+		if (b == XBANDS_BASE1)
 		{
 			// текуща€ частота - обзорный 1
 			b = xnext1;
@@ -4518,8 +4519,8 @@ getprev_ham_band(
 	/* когда дополнительных диапазонов станет больше двух,
 	   сделаю циклы.
 	   */
-	const uint_fast32_t xfreq0 = loadvfy32freq(XBANDS_BASE + 0);	// частота в обзорном диапазоне 0
-	const uint_fast32_t xfreq1 = loadvfy32freq(XBANDS_BASE + 1);	// частота в обзорном диапазоне 1
+	const uint_fast32_t xfreq0 = loadvfy32freq(XBANDS_BASE0);	// частота в обзорном диапазоне 0
+	const uint_fast32_t xfreq1 = loadvfy32freq(XBANDS_BASE1);	// частота в обзорном диапазоне 1
 	const vindex_t xsel0 = getfreqband(xfreq0);		// не принадлежит ли частота какому-то диапазону
 	const vindex_t xsel1 = getfreqband(xfreq1);		// не принадлежит ли частота какому-то диапазону
 
@@ -4531,24 +4532,24 @@ getprev_ham_band(
 
 	do
 	{
-		if (b == (HBANDS_COUNT + 1) && xprev0 == xprev1 && xnext0 == xnext1 && xsel0 >= HBANDS_COUNT)
+		if (b == XBANDS_BASE1 && xprev0 == xprev1 && xnext0 == xnext1 && xsel0 >= HBANDS_COUNT)
 		{
 			/* обработка ситуацию "из обзорного - в обзорный диапазон",
 			если запомненна€ частота нового обзорного диапазона не попадает на выделенный диапазон */
-			b = HBANDS_COUNT + 0;
+			b = XBANDS_BASE0;
 			continue;
 
 		}
 		if (b == xnext0 && xsel0 >= HBANDS_COUNT)
 		{
 			/* переходим в обзорный диапазон 0 */
-			b = HBANDS_COUNT + 0;
+			b = XBANDS_BASE0;
 			continue;
 		}
 		if (b == xnext1 && xsel1 >= HBANDS_COUNT)
 		{
 			/* переходим в обзорный диапазон 1 */
-			b = HBANDS_COUNT + 1;
+			b = XBANDS_BASE1;
 			continue;
 		}
 		if (b < HBANDS_COUNT)
@@ -4559,13 +4560,13 @@ getprev_ham_band(
 			while (! existingband(b));
 			continue;
 		}
-		if (b == (HBANDS_COUNT + 0))
+		if (b == (XBANDS_BASE0))
 		{
 			// текуща€ частота - обзорный 0
 			b = xprev0;
 			continue;
 		}
-		if (b == (HBANDS_COUNT + 1))
+		if (b == (XBANDS_BASE1))
 		{
 			// текуща€ частота - обзорный 1
 			b = xprev1;
