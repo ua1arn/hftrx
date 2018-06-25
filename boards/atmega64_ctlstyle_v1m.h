@@ -303,6 +303,7 @@
 	//#define targetpll1 SPI_CSEL1
 
 	//#define RTC1_TYPE RTC_TYPE_M41T81	/* ST M41T81M6 RTC clock chip with I2C interface */
+	//#define RTC1_TYPE RTC_TYPE_DS1307	/* MAXIM DS1307/DS3231 RTC clock chip with I2C interface */
 
 	#define DDS1_CLK_DIV	1		/* Делитель опорной частоты перед подачей в DDS1 */
 	#define DDS2_CLK_DIV	1		/* Делитель опорной частоты перед подачей в DDS2 */

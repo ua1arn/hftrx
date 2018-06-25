@@ -256,6 +256,8 @@ int gettxstate(void) { return glob_tx; }
 		#include "chip/rtcstm32f4xx.h"
 	#elif (RTC1_TYPE == RTC_TYPE_DS1305)
 		#include "chip/ds1305.h"
+	#elif (RTC1_TYPE == RTC_TYPE_DS1307)
+		#include "chip/ds1307.h"
 	#endif /* (RTC1_TYPE == RTC_TYPE_M41T81) */
 #endif /* defined(RTC1_TYPE) */
 

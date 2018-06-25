@@ -754,10 +754,11 @@
 #define CODEC_TYPE_WM8994		41	// CIRRUS LOGIC WM8994ECS/R
 
 #define RTC_TYPE_DS1305		42	/* MAXIM DS1305EN RTC clock chip with SPI interface */
-#define RTC_TYPE_M41T81		43	/* ST M41T81M6/M41T81SM6F RTC clock chip with I2C interface */
-#define RTC_TYPE_STM32F4xx	44	/* STM32F4xx internal RTC peripherial */
-#define RTC_TYPE_STM32F0xx	45	/* STM32F0xx internal RTC peripherial */
-#define RTC_TYPE_STM32L0xx	46	/* STM32L0xx internal RTC peripherial */
+#define RTC_TYPE_DS1307		43	/* MAXIM DS1307/DS3231 RTC clock chip with I2C interface */
+#define RTC_TYPE_M41T81		44	/* ST M41T81M6/M41T81SM6F RTC clock chip with I2C interface */
+#define RTC_TYPE_STM32F4xx	45	/* STM32F4xx internal RTC peripherial */
+#define RTC_TYPE_STM32F0xx	46	/* STM32F0xx internal RTC peripherial */
+#define RTC_TYPE_STM32L0xx	47	/* STM32L0xx internal RTC peripherial */
 
 #define TSC_TYPE_TSC2046	48	// Resistive touch screen controller TI TSC2046
 #define TSC_TYPE_STMPE811	49	// Resistive touch screen controller ST STMPE811

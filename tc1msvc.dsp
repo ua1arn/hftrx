@@ -1106,6 +1106,10 @@ SOURCE=.\chip\ds1305.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\chip\ds1307.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\chip\fpga_v1.h
 # End Source File
 # Begin Source File

@@ -5381,15 +5381,18 @@ gsubmodechange(
 
 
 #if defined (RTC1_TYPE)
+
 	static uint_fast16_t grtcyear;
 	static uint_fast8_t grtcmonth, grtcday;
 	static uint_fast8_t grtchour, grtcminute, grtcsecounds;
 
 	static uint_fast8_t grtcstrobe;
 	static uint_fast8_t grtcstrobe_shadow;
+
 	static void getstamprtc(void)
 	{
 		grtcstrobe = 0;
+		grtcstrobe_shadow = 0;
 		board_rtc_getdatetime(& grtcyear, & grtcmonth, & grtcday, & grtchour, & grtcminute, & grtcsecounds);
 	}
 
@@ -5397,10 +5400,11 @@ gsubmodechange(
 	{
 		if (val != grtcstrobe_shadow && val != 0)
 		{
-			grtcstrobe_shadow = val;
 			board_rtc_setdatetime(grtcyear, grtcmonth, grtcday, grtchour, grtcminute, 0);
 		}
+		grtcstrobe_shadow = val;
 	}
+
 #endif /* defined (RTC1_TYPE) */
 
 
