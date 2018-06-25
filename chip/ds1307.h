@@ -77,7 +77,7 @@ void board_rtc_settime(
 }
 
 void board_rtc_setdatetime(
-	uint_fast8_t year,
+	uint_fast16_t year,
 	uint_fast8_t month,	// 1..12
 	uint_fast8_t dayofmonth,
 	uint_fast8_t hours,
@@ -100,7 +100,7 @@ void board_rtc_setdatetime(
 
 
 void board_rtc_setdate(
-	uint_fast8_t year,
+	uint_fast16_t year,
 	uint_fast8_t month,	// 1..12
 	uint_fast8_t dayofmonth
 	)
@@ -115,7 +115,7 @@ void board_rtc_setdate(
 }
 
 void board_rtc_getdate(
-	uint_fast8_t * year,
+	uint_fast16_t * year,
 	uint_fast8_t * month,
 	uint_fast8_t * dayofmonth
 	)
@@ -147,7 +147,7 @@ void board_rtc_gettime(
 }
 
 void board_rtc_getdatetime(
-	uint_fast8_t * year,
+	uint_fast16_t * year,
 	uint_fast8_t * month,	// 01-12
 	uint_fast8_t * dayofmonth,
 	uint_fast8_t * hour,
@@ -171,7 +171,7 @@ void board_rtc_getdatetime(
 /* возврат не-0 если требуется начальная загрузка значений */
 uint_fast8_t board_rtc_chip_initialize(void)
 {
-	uint_fast8_t isec;
+	//uint_fast8_t isec;
 	i2c_start(DS1307_ADDRESS_W);
 	i2c_write(0x0E); //DS3231
 	i2c_write(0x00); //EOSC=0,BBSQW=0,CONV=0,RS2=0,RS1=0,INTCN=0,A2IE=0,A1IE=0
