@@ -3,7 +3,7 @@
 // автор Гена Завидовский mgs2001@mail.ru
 // UA1ARN
 //
-// Поддержка DS1307 real time clock - tnx for UR3QTD
+// Поддержка DS1307/DS3231 real time clock - tnx for UR3QTD
 //
 #ifndef M41T81_H_INCLUDED
 #define M41T81_H_INCLUDED
@@ -18,8 +18,8 @@ static void ds1307_readbuff(
 	)
 {
 	i2c_start(DS1307_ADDRESS_W);
-	//i2c_write_withrestart(r);	// register address
-	i2c_write(r);
+	i2c_write_withrestart(r);	// register address
+	//i2c_write(r);
 	i2c_start(DS1307_ADDRESS_R);
 	if (n == 1)
 	{
@@ -93,7 +93,7 @@ void board_rtc_setdatetime(
 	i2c_write(ds1307_bin2bcd(2));
 	i2c_write(ds1307_bin2bcd(dayofmonth));
 	i2c_write(ds1307_bin2bcd(month));
-	i2c_write(ds1307_bin2bcd(year));//year
+	i2c_write(ds1307_bin2bcd(year - 2000));//year
 	i2c_waitsend();
 	i2c_stop();
 }
@@ -109,7 +109,7 @@ void board_rtc_setdate(
 	i2c_write(0x04);	// register address
 	i2c_write(ds1307_bin2bcd(dayofmonth));
 	i2c_write(ds1307_bin2bcd(month));
-	i2c_write(ds1307_bin2bcd(year));
+	i2c_write(ds1307_bin2bcd(year - 2000));
 	i2c_waitsend();
 	i2c_stop();
 }
@@ -125,7 +125,7 @@ void board_rtc_getdate(
 
 	ds1307_readbuff(b, sizeof b / sizeof b[0], r);
 
-	* year = ds1307_bcd2bin(b[2]);		// r=6
+	* year = 2000 + ds1307_bcd2bin(b[2]);		// r=6
 	* month = ds1307_bcd2bin(b[1]);	// r=5 01-12
 	* dayofmonth = ds1307_bcd2bin(b[0]);		// r=4
 }
@@ -160,7 +160,7 @@ void board_rtc_getdatetime(
 
 	ds1307_readbuff(b, sizeof b / sizeof b[0], r);
 
-	* year = ds1307_bcd2bin(b[6]);// r=6
+	* year = 2000 + ds1307_bcd2bin(b[6]);// r=6
 	* month = ds1307_bcd2bin(b[5]);		// r=5
 	* dayofmonth = ds1307_bcd2bin(b[4]);// r=4
 	* hour = ds1307_bcd2bin(b[2]);		// r=2
