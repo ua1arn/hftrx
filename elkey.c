@@ -581,6 +581,8 @@ setnextstate(
 	elkey->state = state;
 	elkey->maxticks = ticks;
 	elkey->ticks = 0;
+	elkey->ignore_dash = 0;
+	elkey->ignore_dit = 0;
 }
 
 // служба времени обработчика электронного телеграфного ключа
