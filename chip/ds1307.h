@@ -52,13 +52,15 @@ static void ds1307_writebuff(
 // input value 0x00..0x99, return value 0..99
 static uint_fast8_t ds1307_bcd2bin(uint_fast8_t v)
 {
-	return (((v & 0xF0)>>4)*10 + (v & 0x0F));
+	const div_t d = div(v, 16);
+	return d.quot * 10 + d.rem;
 }
 
 // input value: 0..99, return value 0x00..0x99
 static uint_fast8_t ds1307_bin2bcd(uint_fast8_t v)
 {
-	return ((v%10) | ((v/10)<<4));
+	const div_t d = div(v, 10);
+	return d.quot * 16 + d.rem;
 }
 
 void board_rtc_settime(
@@ -87,13 +89,13 @@ void board_rtc_setdatetime(
 {
 	i2c_start(DS1307_ADDRESS_W);
 	i2c_write(0x00);	// register address
-	i2c_write(ds1307_bin2bcd(secounds));
-	i2c_write(ds1307_bin2bcd(minutes));
-	i2c_write(ds1307_bin2bcd(hours));
-	i2c_write(ds1307_bin2bcd(2));
-	i2c_write(ds1307_bin2bcd(dayofmonth));
-	i2c_write(ds1307_bin2bcd(month));
-	i2c_write(ds1307_bin2bcd(year - 2000));//year
+	i2c_write(ds1307_bin2bcd(secounds));	// 0
+	i2c_write(ds1307_bin2bcd(minutes));		// 1
+	i2c_write(ds1307_bin2bcd(hours));		// 2
+	i2c_write(0x02);						// 3
+	i2c_write(ds1307_bin2bcd(dayofmonth));	// 4
+	i2c_write(ds1307_bin2bcd(month));		// 5
+	i2c_write(ds1307_bin2bcd(year % 100));	// 6 year
 	i2c_waitsend();
 	i2c_stop();
 }
@@ -109,7 +111,7 @@ void board_rtc_setdate(
 	i2c_write(0x04);	// register address
 	i2c_write(ds1307_bin2bcd(dayofmonth));
 	i2c_write(ds1307_bin2bcd(month));
-	i2c_write(ds1307_bin2bcd(year - 2000));
+	i2c_write(ds1307_bin2bcd(year % 100));
 	i2c_waitsend();
 	i2c_stop();
 }
@@ -173,7 +175,7 @@ uint_fast8_t board_rtc_chip_initialize(void)
 {
 	//uint_fast8_t isec;
 	i2c_start(DS1307_ADDRESS_W);
-	i2c_write(0x0E); //DS3231
+	i2c_write(0x0E); // r=14 DS3231
 	i2c_write(0x00); //EOSC=0,BBSQW=0,CONV=0,RS2=0,RS1=0,INTCN=0,A2IE=0,A1IE=0
 	i2c_stop();
 		
