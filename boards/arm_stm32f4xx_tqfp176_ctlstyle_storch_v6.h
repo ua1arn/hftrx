@@ -164,6 +164,7 @@
 	#define WITHSPLIT	1	/* управление режимами расстройки одной кнопкой */
 	//#define WITHSPLITEX	1	/* Трехкнопочное управление режимами расстройки */
 	#define WITHENCODERSWAP	1	/* поменять местами енкодеры */
+	//#define WITHSEPARATEWFL	1	/* без совмещения на одном экрание водопада и панорамы */
 
 	// +++ Одна из этих строк определяет тип дисплея, для которого компилируется прошивка
 	//#define LCDMODE_HARD_SPI	1	/* LCD over SPI line */
@@ -261,7 +262,7 @@
 	//#define	WITHFPGAWAIT_AS	1	/* FPGA загружается из собственной микросхемы загрузчика - дождаться окончания загрузки перед инициализацией SPI в процессоре */
 	#define	WITHFPGALOAD_PS	1	/* FPGA загружается процессором с помощью SPI */
 
-	//#define WITHUSEDUALWATCH	1	// Второй приемник
+	#define WITHUSEDUALWATCH	1	// Второй приемник
 	//#define WITHLOOPBACKTEST	1	/* прослушивание микрофонного входа, генераторов */
 	//#define WITHMODEMIQLOOPBACK	1	/* модем получает собственные передаваемые квадратуры */
 
