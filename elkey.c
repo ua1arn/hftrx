@@ -76,7 +76,8 @@ typedef struct elkey_tag
 	uint_fast16_t morse;	// текущий передаваемый знак
 	uint_fast8_t ticks;
 	uint_fast8_t maxticks;
-	uint_fast8_t ignore_count;	/* задержка восстановления чувствительности к нажатиям манипулятора после окончания формирования элемента знака. */
+	uint_fast8_t ignore_dit;	/* задержка восстановления чувствительности к нажатиям манипулятора после окончания формирования элемента знака. */
+	uint_fast8_t ignore_dash;	/* задержка восстановления чувствительности к нажатиям манипулятора после окончания формирования элемента знака. */
 
 #if WITHVIBROPLEX
 	uint_fast8_t vibroplex_slope /* = 0 */;		// скорость уменьшения длительности точки и паузы
@@ -504,7 +505,7 @@ dit_auto(
 	uint_fast8_t pl /* hardware paddle value */
 	)
 {
-	if (elkey->ignore_count != 0)
+	if (elkey->ignore_dit != 0)
 		return 0;
 	if ((pl & ELKEY_PADDLE_DIT) == 0)
 		return 0;
@@ -521,7 +522,7 @@ dash_auto(
 	uint_fast8_t pl /* hardware paddle value */
 	)
 {
-	if (elkey->ignore_count != 0)
+	if (elkey->ignore_dash != 0)
 		return 0;
 	if ((pl & ELKEY_PADDLE_DASH) == 0)
 		return 0;
@@ -599,8 +600,10 @@ void elkeyx_spool_dots(elkey_t * const elkey, uint_fast8_t paddle)
 {
 	/* часть электронного ключа */
 	// защитный интервал, в течении которого игнорируется нажатие ключа после начала паузы
-	if (elkey->ignore_count != 0)
-		-- elkey->ignore_count;
+	if (elkey->ignore_dit != 0)
+		-- elkey->ignore_dit;
+	if (elkey->ignore_dash != 0)
+		-- elkey->ignore_dash;
 
 
 	// обработка состояний электронного ключа
@@ -635,7 +638,7 @@ void elkeyx_spool_dots(elkey_t * const elkey, uint_fast8_t paddle)
 		{
 			// произошло переполнене - конец интервала
 			setnextstate(elkey, ELKEY_STATE_SPACE, delay_space - elkey->vibroplex_derate);
-			elkey->ignore_count = DOTS20IGNORE;
+			elkey->ignore_dit = DOTS20IGNORE;
 			elkey_vibroplex_next(elkey);
 		}
 		else if (dash_auto(elkey, paddle))
@@ -651,7 +654,7 @@ void elkeyx_spool_dots(elkey_t * const elkey, uint_fast8_t paddle)
 		{
 			// произошло переполнене - конец интервала
 			setnextstate(elkey, ELKEY_STATE_SPACE, delay_space);
-			elkey->ignore_count = DOTS20IGNORE;
+			elkey->ignore_dash = DOTS20IGNORE;
 		}
 		else if (dit_auto(elkey, paddle))
 		{
