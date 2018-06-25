@@ -123,13 +123,13 @@ void board_rtc_getdate(
 	)
 {
 	const uint_fast8_t r = 0x04;	// Addr
-	uint_fast8_t b[3];
+	uint_fast8_t b [3];
 
-	ds1307_readbuff(b, sizeof b / sizeof b[0], r);
+	ds1307_readbuff(b, sizeof b / sizeof b [0], r);
 
-	* year = 2000 + ds1307_bcd2bin(b[2]);		// r=6
-	* month = ds1307_bcd2bin(b[1]);	// r=5 01-12
-	* dayofmonth = ds1307_bcd2bin(b[0]);		// r=4
+	* year = 2000 + ds1307_bcd2bin(b [2]);		// r=6
+	* month = ds1307_bcd2bin(b [1]);	// r=5 01-12
+	* dayofmonth = ds1307_bcd2bin(b [0]);		// r=4
 }
 
 void board_rtc_gettime(
@@ -139,13 +139,13 @@ void board_rtc_gettime(
 	)
 {
 	const uint_fast8_t r = 0x00;	// Addr
-	uint_fast8_t b[3];
+	uint_fast8_t b [3];
 
-	ds1307_readbuff(b, sizeof b / sizeof b[0], r);
+	ds1307_readbuff(b, sizeof b / sizeof b [0], r);
 
-	* hour = ds1307_bcd2bin(b[2]);		// r=2
-	* minute = ds1307_bcd2bin(b[1]);	// r=1
-	* secounds = ds1307_bcd2bin(b[0]);	// r=0
+	* hour = ds1307_bcd2bin(b [2]);		// r=2
+	* minute = ds1307_bcd2bin(b [1]);	// r=1
+	* secounds = ds1307_bcd2bin(b [0]);	// r=0
 }
 
 void board_rtc_getdatetime(
@@ -158,16 +158,16 @@ void board_rtc_getdatetime(
 	)
 {
 	const uint_fast8_t r = 0x00;
-	uint_fast8_t b[7];
+	uint_fast8_t b [7];
 
-	ds1307_readbuff(b, sizeof b / sizeof b[0], r);
+	ds1307_readbuff(b, sizeof b / sizeof b [0], r);
 
-	* year = 2000 + ds1307_bcd2bin(b[6]);// r=6
-	* month = ds1307_bcd2bin(b[5]);		// r=5
-	* dayofmonth = ds1307_bcd2bin(b[4]);// r=4
-	* hour = ds1307_bcd2bin(b[2]);		// r=2
-	* minute = ds1307_bcd2bin(b[1]);	// r=1
-	* secounds = ds1307_bcd2bin(b[0]);	// r=0
+	* year = 2000 + ds1307_bcd2bin(b [6]);// r=6
+	* month = ds1307_bcd2bin(b [5]);		// r=5
+	* dayofmonth = ds1307_bcd2bin(b [4]);// r=4
+	* hour = ds1307_bcd2bin(b [2]);		// r=2
+	* minute = ds1307_bcd2bin(b [1]);	// r=1
+	* secounds = ds1307_bcd2bin(b [0]);	// r=0
 }
 
 /* возврат не-0 если требуется начальная загрузка значений */
