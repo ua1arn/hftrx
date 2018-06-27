@@ -497,5 +497,60 @@ uint8_t bandf3_calc(
 	uint_fast32_t freq
 	 )
 {
-	return bandf2_calc(freq);
+#if \
+	CTLSTYLE_RAVENDSP_V3 || \
+	CTLSTYLE_RAVENDSP_V4 || \
+	CTLSTYLE_RAVENDSP_V5 || \
+	CTLSTYLE_RAVENDSP_V6 || \
+	CTLSTYLE_RAVENDSP_V7 || \
+	CTLSTYLE_RAVENDSP_V9 || \
+	CTLSTYLE_RAVENDSP_V2 || \
+	CTLSTYLE_STORCH_V1 || \
+	CTLSTYLE_STORCH_V2 || \
+	CTLSTYLE_STORCH_V3 || \
+	0
+	// те трансиверы, у которых есть выход ACC
+
+	/* границы диапазонов дл€ управлени€ через разъем ACC */
+	/* FT-891 style */
+	static fseltype_t board_band3fs [] =
+	{
+		(fseltype_t) (  1700000UL >> BANDDIVPOWER),
+		(fseltype_t) (  2500000UL >> BANDDIVPOWER),
+		(fseltype_t) (  4100000UL >> BANDDIVPOWER),
+		(fseltype_t) (  7500000UL >> BANDDIVPOWER),
+		(fseltype_t) ( 11500000UL >> BANDDIVPOWER),
+		(fseltype_t) ( 14500000UL >> BANDDIVPOWER),
+		(fseltype_t) ( 20900000UL >> BANDDIVPOWER),
+		(fseltype_t) ( 21500000UL >> BANDDIVPOWER),
+		(fseltype_t) ( 25500000UL >> BANDDIVPOWER),
+		(fseltype_t) ( 41500000UL >> BANDDIVPOWER), 
+		(fseltype_t) ( 56000000UL >> BANDDIVPOWER), 
+	};
+
+  	const fseltype_t freqloc = (fseltype_t) (freq >> BANDDIVPOWER);	// приведЄнна€ к нужной размерности частота приЄма
+
+	uint_fast8_t bottom = 0;
+	uint_fast8_t top = (sizeof board_band3fs / sizeof board_band3fs [0]) - 1;
+	// ƒвоичный поиск
+	while (bottom < top)
+	{
+		const uint_fast8_t middle = (top - bottom) / 2 + bottom;
+
+		if (board_band3fs [middle] > freqloc)
+		{
+			top = middle;	// нижн€€ граница диапазона значений текущего элемента сравнени€ больше значени€ поиска - продолжаем поиск в нижней половине
+			continue;
+		}
+		if (board_band3fs [middle + 1] < freqloc)	
+		{
+			bottom = middle + 1;
+			continue;
+		}
+		return middle + 1;
+	}
+	return bottom != 0 ? (sizeof board_band3fs / sizeof board_band3fs [0]): 0;
+#else
+	return 0; //bandf2_calc(freq);
+#endif
 }
