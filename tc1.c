@@ -6196,6 +6196,7 @@ updateboard(
 #else /* CTLSTYLE_IGOR */
 	static uint_fast8_t bandfhint = UINT8_MAX;
 	static uint_fast8_t bandf2hint = UINT8_MAX;
+	static uint_fast8_t bandf3hint = UINT8_MAX;	// управление через разъем ACC
 #endif /* CTLSTYLE_IGOR */
 
 	uint_fast8_t full2 = full; 
@@ -6222,6 +6223,7 @@ updateboard(
 	#else /* CTLSTYLE_IGOR */
 		full2 |= flagne_u8(& bandfhint, bandf_calc(freq));
 		full2 |= flagne_u8(& bandf2hint, bandf2_calc(freq));
+		full2 |= flagne_u8(& bandf3hint, bandf3_calc(freq));
 	#endif /* CTLSTYLE_IGOR */
 		full2 |= flagne_u8(& lo0side, getsidelo0(freq));	// LOCODE_UPPER, LOCODE_LOWER or LOCODE_TARGETED
 		full2 |= flagne_u32(& lo0hint, gethintlo0(freq, lo0side));
@@ -6694,6 +6696,7 @@ updateboard(
 	#else /* CTLSTYLE_IGOR */
 		board_set_bandf(bandfhint);		/* включение нужного полосового фильтра - возможно переключение УВЧ */
 		board_set_bandf2(bandf2hint);	/* включение нужного полосового фильтра (ФНЧ) передатчика */
+		board_set_bandf3(bandf3hint);	/* управление через разъем ACC */
 	#endif /* CTLSTYLE_IGOR */
 
 	#if WITHTX

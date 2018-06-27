@@ -6573,6 +6573,7 @@ void hightests(void)
 							board_set_antenna(ant);
 							board_set_bandf(bandf);	
 							board_set_bandf2(bandf);
+							board_set_bandf3(bandf);
 							board_set_preamp(pre);
 							board_update();		/* вывести забуферированные изменения в регистры */
 							local_delay_ms(100);

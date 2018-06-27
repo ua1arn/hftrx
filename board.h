@@ -83,6 +83,7 @@ void board_set_nfmnbon(uint_fast8_t v);	/* Включние noise blanker на SW2014FM */
 void board_set_filter(uint_fast16_t v);
 void board_set_bandf(uint_fast8_t n);	/*  диапазонный фильтр приёмника */
 void board_set_bandf2(uint_fast8_t n);	/* диапазонный фильтр передатчика */
+void board_set_bandf3(uint_fast8_t n);	/* управление через разъем ACC */
 void board_set_bcdfreq100k(uint_fast16_t bcdfreq);	/* Для выбора диапазона - частота с дискретностью 100 кГц */
 void board_set_pabias(uint_fast8_t n);	/* установить ток покоя выходного каскада передатчика */
 void board_set_bandfonhpf(uint_fast8_t n);	/* установить код выбора диапазонного фильтра, с которого включается ФВЧ перед УВЧ в SW20xx */
@@ -171,6 +172,7 @@ void boart_tgl_firprofile(uint_fast8_t ifir);	/* поменять местами значение загру
 void bandf_calc_initialize(void);
 uint8_t bandf_calc(uint_fast32_t freq);	/* получить номер диапазонного фильтра по частоте */
 uint8_t bandf2_calc(uint_fast32_t freq);	/* получить номер диапазонного фильтра передатчика по частоте */
+uint8_t bandf3_calc(uint_fast32_t freq);	/* получить код для управления через разъем ACC */
 
 void board_rtc_getdate(
 	uint_fast16_t * year,

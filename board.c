@@ -112,6 +112,7 @@ static uint_fast8_t 	glob_lo2xtal;
 
 static uint_fast8_t 	glob_bandf;		/* код диапазонного фильтра приёмника */
 static uint_fast8_t 	glob_bandf2;	/* код диапазонного фильтра передатчика */
+static uint_fast8_t 	glob_bandf3;	/* управление через разъем ACC */
 static uint_fast8_t		glob_pabias;	/* ток покоя выходного каскада передатчика */
 static uint_fast8_t 	glob_bandfonhpf = 5;	/* код диапазонного фильтра передатчика, начиная с которого включается ФВЧ перед УВЧ а SW20xx */
 static uint_fast8_t 	glob_bandfonuhf;
@@ -2650,7 +2651,7 @@ prog_rxctrlreg(uint_fast8_t plane)
 
 		// SN74HC595PW рядом с DIN8
 		RBNULL(014, 4);
-		RBVAL(010, glob_bandf2, 4);			/* D3:D0: DIN8 PA band select */
+		RBVAL(010, glob_bandf3, 4);			/* D3:D0: DIN8 PA band select */
 
 		// STP08CP05TTR рядом с DIN8
 		RBNULL(007, 1);
@@ -2746,7 +2747,7 @@ prog_rxctrlreg(uint_fast8_t plane)
 
 		// SN74HC595PW рядом с DIN8
 		RBNULL(014, 4);
-		RBVAL(010, glob_bandf2, 4);			/* D3:D0: DIN8 PA band select */
+		RBVAL(010, glob_bandf3, 4);			/* D3:D0: DIN8 PA band select */
 
 		// STP08CP05TTR рядом с DIN8
 		RBNULL(007, 1);
@@ -2871,7 +2872,7 @@ prog_rxctrlreg(uint_fast8_t plane)
 
 		// SN74HC595PW рядом с DIN8
 		RBNULL(0014, 4);
-		RBVAL(0010, glob_bandf2, 4);			/* D3:D0: DIN8 PA band select */
+		RBVAL(0010, glob_bandf3, 4);			/* D3:D0: DIN8 PA band select */
 
 		// STP08CP05TTR рядом с DIN8
 		RBBIT(0007, glob_fanflag);			// D7: TX FAN
@@ -2970,7 +2971,7 @@ prog_ctrlreg(uint_fast8_t plane)
 
 		// SN74HC595PW рядом с DIN8
 		RBNULL(0014, 4);
-		RBVAL(0010, glob_bandf2, 4);			/* D3:D0: DIN8 PA band select */
+		RBVAL(0010, glob_bandf3, 4);			/* D3:D0: DIN8 PA band select */
 
 		// STP08CP05TTR рядом с DIN8
 		RBBIT(0007, glob_fanflag);			// D7: TX FAN
@@ -3058,7 +3059,7 @@ prog_ctrlreg(uint_fast8_t plane)
 
 		// DD21 SN74HC595PW рядом с DIN8
 		RBNULL(0014, 4);
-		RBVAL(0010, glob_bandf2, 4);			/* D3:D0: DIN8 PA band select */
+		RBVAL(0010, glob_bandf3, 4);			/* D3:D0: DIN8 PA band select */
 
 		// DD5 STP08CP05TTR рядом с DIN8
 		RBBIT(0007, glob_fanflag);			// D7: TX FAN
@@ -3144,7 +3145,7 @@ prog_ctrlreg(uint_fast8_t plane)
 
 		// DD18 SN74HC595PW рядом с DIN8
 		RBNULL(0014, 4);
-		RBVAL(0010, glob_bandf2, 4);			/* D3:D0: DIN8 EXT PA band select */
+		RBVAL(0010, glob_bandf3, 4);			/* D3:D0: DIN8 EXT PA band select */
 
 		// DD14 STP08CP05TTR рядом с DIN8
 		//RBBIT(0007, ! glob_reset_n);		// D7: NMEA reset
@@ -3233,7 +3234,7 @@ prog_ctrlreg(uint_fast8_t plane)
 
 		// DD18 SN74HC595PW рядом с DIN8
 		RBNULL(0014, 4);
-		RBVAL(0010, glob_bandf2, 4);			/* D3:D0: DIN8 EXT PA band select */
+		RBVAL(0010, glob_bandf3, 4);			/* D3:D0: DIN8 EXT PA band select */
 
 		// DD14 STP08CP05TTR рядом с DIN8
 		//RBBIT(0007, ! glob_reset_n);		// D7: NMEA reset
@@ -3320,7 +3321,7 @@ prog_ctrlreg(uint_fast8_t plane)
 
 		// DD18 SN74HC595PW рядом с DIN8
 		RBNULL(0014, 4);
-		RBVAL(0010, glob_bandf2, 4);			/* D3:D0: DIN8 EXT PA band select */
+		RBVAL(0010, glob_bandf3, 4);			/* D3:D0: DIN8 EXT PA band select */
 
 		// DD14 STP08CP05TTR рядом с DIN8
 		RBBIT(0007, ! glob_reset_n);		// D7: NMEA reset
@@ -3406,7 +3407,7 @@ prog_ctrlreg(uint_fast8_t plane)
 
 		// DD18 SN74HC595PW рядом с DIN8
 		RBNULL(0014, 4);
-		RBVAL(0010, glob_bandf2, 4);			/* D3:D0: DIN8 EXT PA band select */
+		RBVAL(0010, glob_bandf3, 4);			/* D3:D0: DIN8 EXT PA band select */
 
 		// DD14 STP08CP05TTR рядом с DIN8
 		RBBIT(0007, ! glob_reset_n);		// D7: NMEA reset
@@ -4348,13 +4349,24 @@ board_set_bandfonuhf(uint_fast8_t n)
 }
 
 
-/* установить код выбора диапазонного фильтра (или ФНЧ) передатчика*/
+/* установить код выбора диапазонного фильтра (или ФНЧ) передатчика */
 void 
 board_set_bandf2(uint_fast8_t n)
 {
 	if (glob_bandf2 != n)
 	{
 		glob_bandf2 = n;
+		board_ctlreg1changed();
+	}
+}
+
+/* управление через разъем ACC */
+void 
+board_set_bandf3(uint_fast8_t n)
+{
+	if (glob_bandf3 != n)
+	{
+		glob_bandf3 = n;
 		board_ctlreg1changed();
 	}
 }

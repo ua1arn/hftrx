@@ -491,3 +491,11 @@ uint8_t bandf_calc(
 	return 0;
 #endif /* BANDCALCS */
 }
+
+/* получить код для управления через разъем ACC */
+uint8_t bandf3_calc(
+	uint_fast32_t freq
+	 )
+{
+	return bandf2_calc(freq);
+}
