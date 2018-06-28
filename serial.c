@@ -37,9 +37,9 @@
 	{
 		const uint_fast32_t sr = USART1->SR;
 
-		if (sr & (USART_SR_RXNE | USART_SR_ORE))
+		if (sr & (USART_SR_RXNE | USART_SR_ORE | USART_SR_FE | USART_SR_NE))
 			HARDWARE_UART1_ONRXCHAR(USART1->DR);
-		if (sr & USART_SR_ORE)
+		if (sr & (USART_SR_ORE | USART_SR_FE | USART_SR_NE))
 			HARDWARE_UART1_ONOVERFLOW();
 		if (sr & USART_SR_TXE)
 			HARDWARE_UART1_ONTXCHAR(USART1);
@@ -551,7 +551,7 @@ hardware_usart1_getchar(char * cp)
 
 #elif CPUSTYLE_STM32F1XX || CPUSTYLE_STM32F4XX
 
-	if ((USART1->SR & (USART_SR_RXNE | USART_SR_ORE)) == 0)
+	if ((USART1->SR & (USART_SR_RXNE | USART_SR_ORE | USART_SR_FE | USART_SR_NE)) == 0)
 		return 0;
 	* cp = USART1->DR;
 
@@ -1047,9 +1047,9 @@ void hardware_uart1_initialize(void)
 	{
 		const uint_fast32_t sr = USART2->SR;
 
-		if (sr & (USART_SR_RXNE | USART_SR_ORE))
+		if (sr & (USART_SR_RXNE | USART_SR_ORE | USART_SR_FE | USART_SR_NE))
 			HARDWARE_UART2_ONRXCHAR(USART2->DR);
-		if (sr & USART_SR_ORE)
+		if (sr & (USART_SR_ORE | USART_SR_FE | USART_SR_NE))
 			HARDWARE_UART2_ONOVERFLOW();
 		if (sr & USART_SR_TXE)
 			HARDWARE_UART2_ONTXCHAR(USART2);
@@ -1555,7 +1555,7 @@ hardware_usart2_getchar(char * cp)
 
 #elif CPUSTYLE_STM32F1XX || CPUSTYLE_STM32F4XX
 
-	if ((USART2->SR & (USART_SR_RXNE | USART_SR_ORE)) == 0)
+	if ((USART2->SR & (USART_SR_RXNE | USART_SR_ORE | USART_SR_FE | USART_SR_NE)) == 0)
 		return 0;
 	* cp = USART2->DR;
 
