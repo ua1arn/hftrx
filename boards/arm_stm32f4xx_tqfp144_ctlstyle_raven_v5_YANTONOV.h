@@ -278,7 +278,7 @@
 	//#define WITHMODEMIQLOOPBACK	1	/* модем получает собственные передаваемые квадратуры */
 	#define WITHRTS96 1		/* вместо выходного аудиосигнала передача квадратур по USB */
 	#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
-	#define WITHOPERA4BEACON	1	/* работа маяком в OPERA */
+	//#define WITHOPERA4BEACON	1	/* работа маяком в OPERA */
 
 	#if 0
 		#define WITHBBOX	1	// Black Box mode - устройство без органов управления
