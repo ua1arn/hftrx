@@ -3218,7 +3218,7 @@ prog_ctrlreg(uint_fast8_t plane)
 		//RBVAL(0040, 1U << glob_bandf2, 7);		// D0..D6: band select бит выбора диапазонного фильтра передатчика
 		RBBIT(0045, glob_fanflag);			// 12: D5: PA FAN
 		RBBIT(0044, glob_tx);				// 10: D4: TX ANT relay
-		RBVAL(0040, ~ glob_bandf2, 4);		// 02, 04, 06, 08: D0..D3: band select
+		RBVAL(0040, ~ glob_bandf3, 4);		// 02, 04, 06, 08: D0..D3: band select
 
 		// DD16 STP08CP05TTR в управлении диапазонными фильтрами приёмника
 		RBVAL(0031, glob_tx ? 0 : (1U << glob_bandf) >> 1, 7);		// D1: 1, D7..D1: band select бит выбора диапазонного фильтра приёмника
