@@ -10311,7 +10311,7 @@ static void modem_update(void)
 	modem_set_speed(glob_modem_speed100);
 	modem_set_mode(glob_modem_mode);
 
-	debug_printf_P(PSTR("modem_update: modem_speed100=%d.%02d, modem_mode=%d\n"), (int) (glob_modem_speed100 / 100), (int) (glob_modem_speed100 % 100), (int) (glob_modem_speed100 % 100), (int) glob_modem_mode);
+	debug_printf_P(PSTR("modem_update: modem_speed100=%d.%02d, modem_mode=%d\n"), (int) (glob_modem_speed100 / 100), (int) (glob_modem_speed100 % 100), (int) glob_modem_mode);
 #endif /* WITHMODEM */
 }
 
