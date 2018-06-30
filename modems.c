@@ -559,7 +559,7 @@ static void bpsk_demod_initialize(void)
 }
 
 // демодулятор BPSK
-static void demod_bpsk2(int_fast32_t i, int_fast32_t q, int level)
+static void demod_bpsk2_symbol(int_fast32_t i, int_fast32_t q, int level)
 {
 	static int_fast32_t oldi, oldq;
 	const int_fast64_t dot = (int_fast64_t) oldi * i + (int_fast64_t) oldq * q;
@@ -621,7 +621,7 @@ static void demod_bpsk(int_fast32_t RxSin, int_fast32_t RxCos)
 		if (NextSymPhase > 0xFFFF)
 		{
 			//We're at the centre of the bit:  31.25 Hz
-			demod_bpsk2(ISum, QSum, level);
+			demod_bpsk2_symbol(ISum, QSum, level);
 		}
 	}
 }
@@ -647,6 +647,7 @@ void modem_demod_iq(FLOAT32P_t iq)
 }
 // Интерфейсная функция модулятора
 // Вызыается с частотой ARMI2SRATE герц
+// версия для высокоскоростных модемов
 int modem_get_tx_b(
 	uint_fast8_t suspend	// передавать модему ещё рано - не полностью завершено формирование огибающей
 	)
@@ -656,6 +657,7 @@ int modem_get_tx_b(
 }
 // Интерфейсная функция модулятора
 // Вызыается с частотой ARMI2SRATE герц
+// версия для низкоскоростных модемов
 FLOAT32P_t modem_get_tx_iq(
 	uint_fast8_t suspend	// передавать модему ещё рано - не полностью завершено формирование огибающей
 	)
