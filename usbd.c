@@ -10157,7 +10157,7 @@ void
 usbd_cdc_tx(void * ctx, uint_fast8_t c)
 {
 	//USBD_HandleTypeDef * const pdev = ctx;
-
+	ASSERT(cdc1buffinlevel < VIRTUAL_COM_PORT_DATA_SIZE);
 	cdc1buffin [cdc1buffinlevel ++] = c;
 }
 
@@ -10240,7 +10240,7 @@ USBD_StatusTypeDef USBD_LL_DataInStage(USBD_HandleTypeDef *pdev, uint8_t epnum, 
 		{
 #if WITHUSBCDC
 		case (USBD_EP_CDC_IN & 0x7F):
-			while (usbd_cdc_txenabled && (cdc1buffinlevel < (sizeof cdc1buffin / sizeof cdc1buffin [0])))
+			while (usbd_cdc_txenabled && (cdc1buffinlevel < VIRTUAL_COM_PORT_DATA_SIZE))
 			{
 				HARDWARE_CDC_ONTXCHAR(pdev);	// при отсутствии данных usbd_cdc_txenabled устанавливается в 0
 			}
@@ -10249,7 +10249,7 @@ USBD_StatusTypeDef USBD_LL_DataInStage(USBD_HandleTypeDef *pdev, uint8_t epnum, 
 			break;
 
 		case (USBD_EP_CDC_INb & 0x7F):
-			//while (usbd_cdc_txenabled && (cdc2buffinlevel < (sizeof cdc2buffin / sizeof cdc2buffin [0])))
+			//while (usbd_cdc_txenabled && (cdc2buffinlevel < VIRTUAL_COM_PORT_DATA_SIZE))
 			//{
 			//	HARDWARE_CDC_ONTXCHAR(pdev);	// при отсутствии данных usbd_cdc_txenabled устанавливается в 0
 			//}

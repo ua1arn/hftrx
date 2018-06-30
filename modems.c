@@ -456,6 +456,7 @@ static uint_fast8_t	qput(uint_fast8_t c)
 	{
 		queue [qpt] = c;
 		qp = next;
+		HARDWARE_MODEM_ENABLETX(1);
 		return 1;
 	}
 	return 0;
@@ -482,13 +483,8 @@ static uint_fast8_t qempty(void)
 // Передать массив символов
 static void qputs(const char * s, int n)
 {
-	const int f = n != 0;
 	while (n --)
 		qput(* s ++);
-
-	if (f)
-		HARDWARE_MODEM_ENABLETX(1);
-
 }
 
 // RX
@@ -808,7 +804,7 @@ static char * nmeaparser_get_buff(uint_fast8_t field)
 	}
 }
 
-static unsigned char calcxorv(
+static uint_fast8_t calcxorv(
 	const char * s,
 	size_t len
 	)
@@ -819,7 +815,7 @@ static unsigned char calcxorv(
 	return r & 0xff;
 }
 
-static unsigned char hex2int(uint_fast8_t c)
+static uint_fast8_t hex2int(uint_fast8_t c)
 {
 	if (isdigit(c))
 		return c - '0';
@@ -834,9 +830,8 @@ static size_t nmeaparser_sendbin_buffer(int index, const uint8_t * databuff, siz
 {
 	static const char bin2hex [] = "0123456789ABCDEF";
 	size_t pos;
-	char buff [NMEA_CHARSBIG + 30];
+	static char buff [NMEA_CHARSBIG + 30];
 	const size_t size = sizeof buff / sizeof buff [0];
-	const size_t TAILLEN = (1 + 2 + 2 + 1);	// *HH\r\n\0 at end
 	// Формирование заголовка
 	size_t len = local_snprintf_P(
 		buff, 
@@ -846,12 +841,15 @@ static size_t nmeaparser_sendbin_buffer(int index, const uint8_t * databuff, siz
 		(int) index
 		);
 
+	qput(0xff);
+	qputs(buff, len);
+
 	// Формирование тела данных
-	for (pos = 0; pos < datalen && len < (size - len - TAILLEN) && pos < 64; )
+	for (pos = 0; pos < datalen && pos < 64; )
 	{
 		const uint_fast8_t v = (uint8_t) databuff [pos ++];
-		buff [len ++] = bin2hex [v / 16];
-		buff [len ++] = bin2hex [v % 16];
+		qput(bin2hex [v / 16]);
+		qput(bin2hex [v % 16]);
 	}
 	// Добавление разделителя
 	buff [len ++] = '*';
@@ -859,16 +857,12 @@ static size_t nmeaparser_sendbin_buffer(int index, const uint8_t * databuff, siz
 	// Подсчет контрольной суммы
 	{
 		const uint_fast8_t v = calcxorv(buff + 1, len - 1);
-		buff [len ++] = bin2hex [v / 16];
-		buff [len ++] = bin2hex [v % 16];
+		qput(bin2hex [v / 16]);
+		qput(bin2hex [v % 16]);
 	}
-
-	buff [len ++] = '\r';
-	buff [len ++] = '\n';
-	buff [len] = '\0';
 		
-	qput(0xff);
-	qputs(buff, len);
+	qput('\r');
+	qput('\n');
 	return pos;
 }
 
