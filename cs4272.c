@@ -92,7 +92,7 @@ static void cs4272_setreg(
 #endif
 }
 
-// MCLK долже уже подаваться в момент инициализации
+// MCLK должен уже подаваться в момент инициализации
 static void cs4272_initialize_fullduplex(void)
 {
 	board_codec2_nreset(1);	// Выставить сигнал сброса
