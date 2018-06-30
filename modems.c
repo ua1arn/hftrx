@@ -494,11 +494,6 @@ static void qputs(const char * s, int n)
 // RX
 // ---------
 
-// ARMI2SRATE - скорость обмена квадратурами с рпадиотрактом
-
-#define RXDECIMATEDSR (ARMI2SRATE / 1)	//1000	/* decmated sample rate: RX mode */
-#define RXDECIMATEDSR100 (ARMI2SRATE100 / 1)	//1000	/* decmated sample rate: RX mode */
-
 static uint_fast32_t bps31_tx_bitrateFTW = 0;
 
 
@@ -556,19 +551,11 @@ static volatile uint_fast32_t	glob_modemspeed100;	// скорость передачи с точност
 static unsigned short m_RxBitPhase;
 static unsigned short m_RxBitFreqFTW;
 
-
-static unsigned short m_DecPhase;
-static unsigned short m_DecFreq;			//fraction of m_SampleRate
-
 static void bpsk_demod_initialize(void)
 {
-
 	m_RxBitPhase = 0;
-	//These are a binary fraction--the binary point is to the left of the MSB
-	m_DecFreq = (unsigned short)(0x10000 * (FLOAT_t) RXDECIMATEDSR / (FLOAT_t) ARMI2SRATE);
 
-
-	//debug_printf_P(PSTR("bpsk_demod_initialize: m_RxBitFreqFTW=%d, m_DecFreq=%d, m_RxBitFreqFTW=%d\n"), m_RxBitFreqFTW, m_DecFreq, m_RxBitFreqFTW);
+	//debug_printf_P(PSTR("bpsk_demod_initialize: m_RxBitFreqFTW=%d\n"), m_RxBitFreqFTW);
 }
 
 // демодулятор BPSK
@@ -598,16 +585,10 @@ static void demod_bpsk(int_fast32_t RxSin, int_fast32_t RxCos)
 		//saved values for bit synchronization filter taps
 	static SAMPLEHOLDER_T m_RxAmpFil [BITFILTERLENGTH];
 
-	long NextPhase;
-
-	NextPhase = (long) m_DecPhase + (long)m_DecFreq;
-	m_DecPhase = (unsigned short)NextPhase;
-	if (NextPhase > 0xFFFF)
 	{	
 		const SAMPLEHOLDER_T ISum = RxSin;
 		const SAMPLEHOLDER_T QSum = RxCos;
 
-		long NextSymPhase;	//long enough to contain the 17th bit when 16 bit adds overflow
 		int	level = 30;
 		long ampl = (ISum >> 16) * (ISum >> 16) + (QSum >> 16) * (QSum >> 16);
 
@@ -619,7 +600,8 @@ static void demod_bpsk(int_fast32_t RxSin, int_fast32_t RxCos)
 		}
 
 		//Select 1 of 16
-		int BitPhaseInt = m_RxBitPhase >> 12;
+		const int BitPhaseInt = m_RxBitPhase >> 12;
+		ASSERT(BitPhaseInt < BITFILTERLENGTH);
 		m_RxAmpFil [BitPhaseInt] = (SAMPLEHOLDER_T)level;
 
 		int i;
@@ -630,8 +612,9 @@ static void demod_bpsk(int_fast32_t RxSin, int_fast32_t RxCos)
 		}
 
 		//The correction is the amplitude times a synchronization gain, which is empirical.
-		long BitPhaseCorrection = (long) (ampl * 4);
+		const long BitPhaseCorrection = (long) (ampl * 4);
 
+		long NextSymPhase;	//long enough to contain the 17th bit when 16 bit adds overflow
 		NextSymPhase = (long)m_RxBitPhase + (long) m_RxBitFreqFTW - BitPhaseCorrection;
 		m_RxBitPhase = (unsigned short)NextSymPhase;
 
@@ -711,8 +694,7 @@ static void modem_set_tx_speed(uint_fast32_t speed100)
 static void modem_set_rx_speed(uint_fast32_t speed100)
 {
 	// RX
-	// RXDECIMATEDSR - decimated ARMI2SRATE
-	m_RxBitFreqFTW = (((uint_fast64_t) speed100 << 16) / (RXDECIMATEDSR100));
+	m_RxBitFreqFTW = (((uint_fast64_t) speed100 << 16) / (ARMI2SRATE100));
 }
 
 
@@ -741,11 +723,17 @@ void modem_set_mode(uint_fast8_t modemmode)
 /* вызывается при разрешённых прерываниях. */
 void modem_initialze(void)
 {
+	// получение признака работы MASTER
 #if CTLREGMODE_STORCH_V4
 	arm_hardware_piof_outputs(0x0002, 0x0002);
 	arm_hardware_piof_inputs(0x0001);
 	local_delay_ms(100);
 	mastermode = (GPIOF->IDR & 0x01) == 0;
+#else
+	mastermode = 1;
+#endif /* CTLREGMODE_STORCH_V4 */
+
+#if defined (UID_BASE)
 	// формирование буфера собственного адреса
 	const uint32_t * const uidbase = (const uint32_t *) UID_BASE;
 	ownaddressbuff [0x00] = uidbase [0] >> 24;
@@ -760,7 +748,7 @@ void modem_initialze(void)
 	ownaddressbuff [0x09] = uidbase [2] >> 16;
 	ownaddressbuff [0x0A] = uidbase [2] >> 8;
 	ownaddressbuff [0x0B] = uidbase [2] >> 0;
-#endif /* CTLREGMODE_STORCH_V4 */
+#endif
 
 	bpsk_demod_initialize();
 
