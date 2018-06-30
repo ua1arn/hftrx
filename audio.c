@@ -10916,10 +10916,14 @@ static RAMFUNC void processafadcsampleiq(
 #if WITHMODEM
 		if (dspmode == DSPCTL_MODE_TX_BPSK)
 		{
-	//#if WITHMODEMIQLOOPBACK
-	//		modem_demod_iq(vfb);	// debug loopback
-	//#endif /* WITHMODEMIQLOOPBACK */
-			const int vv = modem_get_tx_b(getTxShapeNotComplete()) ? 0 : - 1;	// txiq[63] управляет инверсией сигнала переж АЦП
+			// высокоскоростной модем. До вызова baseband_modulator и в нём modem_get_tx_iq дело не доходит.
+			const int txb = modem_get_tx_b(getTxShapeNotComplete());
+	#if WITHMODEMIQLOOPBACK
+			const int_fast32_t ph = (1 - txb * 2);
+			const FLOAT32P_t iq = { { ph, ph } };
+			modem_demod_iq(iq);	// debug loopback
+	#endif /* WITHMODEMIQLOOPBACK */
+			const int vv = txb ? 0 : - 1;	// txiq[63] управляет инверсией сигнала переж АЦП
 			savesampleout32stereo(vv, vv);
 			return;
 		}
