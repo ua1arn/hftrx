@@ -3233,7 +3233,7 @@ enum
 
 	// Напряжение fullscale = VREF * 5.3 = 3.3 * 5.3 = 17.5 вольта: сверху 4.3 килоом, синзу 1.0 килоом
 	// в схеме датчика делитель: сверху 4.3 килоома, снизу 1 килоом.
-	// ADCVREF_CPU - в сотнях миливольт.
+	// ADCVREF_CPU - в сотнях милливольт.
 
 	static uint_fast8_t voltcalibr = (ADCVREF_CPU * (VOLTLEVEL_UPPER + VOLTLEVEL_LOWER) + VOLTLEVEL_LOWER / 2) / VOLTLEVEL_LOWER;		// Напряжение fullscale - что показать при ADCVREF_CPU вольт на входе АЦП
 
