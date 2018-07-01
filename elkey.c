@@ -24,8 +24,6 @@ enum {
 
 	ELKEY_STATE_ACTIVE_DIT,	// сейчас передаётся элемент знака
 	ELKEY_STATE_ACTIVE_DASH,	// сейчас передаётся элемент знака
-	ELKEY_STATE_ACTIVE_AP_DIT,	// сейчас передаётся элемент знака
-	ELKEY_STATE_ACTIVE_AP_DASH,	// сейчас передаётся элемент знака
 	ELKEY_STATE_ACTIVE_WITH_PENDING_DIT,	// появилось нажатие точки в процессе передачи элемента
 	ELKEY_STATE_ACTIVE_WITH_PENDING_DASH,	// появилось нажатие тире в процессе передачи элемента
 
@@ -54,8 +52,6 @@ static const FLASHMEM uint_fast8_t elkeyout [ELKEY_STATE_MAX] =
 	0, // ELKEY_STATE_INITIALIZE,	// ничего не передаётся - начальное состояние сиквенсора
 	1, // ELKEY_STATE_ACTIVE_DIT,	// сейчас передаётся элемент знака
 	1, // ELKEY_STATE_ACTIVE_DASH,	// сейчас передаётся элемент знака
-	1, // ELKEY_STATE_ACTIVE_AP_DIT,	// сейчас передаётся элемент знака
-	1, // ELKEY_STATE_ACTIVE_AP_DASH,	// сейчас передаётся элемент знака
 	1, // ELKEY_STATE_ACTIVE_WITH_PENDING_DIT,	// появилось нажатие точки в процессе передачи элемента
 	1, // ELKEY_STATE_ACTIVE_WITH_PENDING_DASH,	// появилось нажатие тире в процессе передачи элемента
 	0, // ELKEY_STATE_SPACE_WITH_PENDING_DIT,	// появилось нажатие точки в процессе ожидания за знаком (или было ранее).
@@ -669,34 +665,6 @@ void elkeyx_spool_dots(elkey_t * const elkey, uint_fast8_t paddle)
 		}
 		break;
 
-	case ELKEY_STATE_ACTIVE_AP_DIT:	// сейчас передается элемент знака
-		if (ovf)
-		{
-			// произошло переполнене - конец интервала
-			setnextstate(elkey, ELKEY_STATE_SPACE, delay_space - elkey->vibroplex_derate);
-			elkey_vibroplex_next(elkey);
-		}
-		else if (dash_auto(elkey, paddle))
-		{
-			//delay_pending = delay_dash;
-			elkey->state = ELKEY_STATE_ACTIVE_WITH_PENDING_DASH;
-			elkey_vibroplex_reset(elkey);	// копирование начальных параметров формирования элементов. При vibroplex уменьшаем.
-		}
-		break;
-
-	case ELKEY_STATE_ACTIVE_AP_DASH:	// сейчас передается элемент знака
-		if (ovf)
-		{
-			// произошло переполнене - конец интервала
-			setnextstate(elkey, ELKEY_STATE_SPACE, delay_space);
-		}
-		else if (dit_auto(elkey, paddle))
-		{
-			//delay_pending = delay_dit;
-			elkey->state = ELKEY_STATE_ACTIVE_WITH_PENDING_DIT;
-		}
-		break;
-
 	case ELKEY_STATE_ACTIVE_WITH_PENDING_DASH:	// сейчас передается элемент знака
 		if (ovf)
 		{
@@ -766,7 +734,7 @@ void elkeyx_spool_dots(elkey_t * const elkey, uint_fast8_t paddle)
 		if (ovf)
 		{
 			// пауза закончилась
-			setnextstate(elkey, ELKEY_STATE_ACTIVE_AP_DIT, delay_dit - elkey->vibroplex_derate);
+			setnextstate(elkey, ELKEY_STATE_ACTIVE_DIT, delay_dit - elkey->vibroplex_derate);
 			elkey_vibroplex_next(elkey);
 		}
 		break;
@@ -775,7 +743,7 @@ void elkeyx_spool_dots(elkey_t * const elkey, uint_fast8_t paddle)
 		if (ovf)
 		{
 			// пауза закончилась
-			setnextstate(elkey, ELKEY_STATE_ACTIVE_AP_DASH, delay_dash);
+			setnextstate(elkey, ELKEY_STATE_ACTIVE_DASH, delay_dash);
 		}
 		break;
 
