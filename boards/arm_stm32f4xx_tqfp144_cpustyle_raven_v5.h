@@ -57,7 +57,7 @@
 	//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
 	//#define WITHUSBHID		1	/* HID использовать Human Interface Device на USB соединении */
 
-	#define WITHCAT_CDC		1	/* использовать виртуальный воследовательный порт на USB соединении */
+	#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
 	#define WITHMODEM_CDC	1
 
 
