@@ -7560,7 +7560,7 @@ static uint_fast16_t size2buff4(uint_fast16_t size)
 static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsize, uint_fast8_t bigbuff)
 {
 	uint_fast8_t i;
-	const int add3tx = bigbuff ? 3 : 0;	// tx fifo add places
+	const int add3tx = bigbuff ? 3 : 1;	// tx fifo add places
 	const int mul2 = bigbuff ? 3 : 1;	// tx fifo buffers
 	PCD_TypeDef * const instance = hpcd->Instance;
 
@@ -10240,6 +10240,13 @@ USBD_StatusTypeDef USBD_LL_DataInStage(USBD_HandleTypeDef *pdev, uint8_t epnum, 
 		{
 #if WITHUSBCDC
 		case (USBD_EP_CDC_IN & 0x7F):
+	#if 0
+			// test usb tx fifo initialization
+			#define TLENNNN (VIRTUAL_COM_PORT_DATA_SIZE - 0)
+			memset(cdc1buffin, '$', TLENNNN);
+			USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), cdc1buffin, TLENNNN);
+			break;
+	#endif
 			while (usbd_cdc_txenabled && (cdc1buffinlevel < VIRTUAL_COM_PORT_DATA_SIZE))
 			{
 				HARDWARE_CDC_ONTXCHAR(pdev);	// при отсутствии данных usbd_cdc_txenabled устанавливается в 0
