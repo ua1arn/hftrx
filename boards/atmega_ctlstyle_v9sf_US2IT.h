@@ -7,6 +7,7 @@
 // UA1ARN
 //
 
+// ATMEGA644
 // Описание для трансивера SW2012SF - с цветным дисплеем SF-TC220H-9223A-N и двухступенчатым управлением выходной мощностью.
 
 #ifndef ATMEGA_CTLSTYLE_V9SF_US2IT_H_INCLUDED
@@ -136,6 +137,9 @@
 
 	// End of NVRAM definitions section
 
+	//#define RTC1_TYPE RTC_TYPE_M41T81	/* ST M41T81M6/M41T81SM6F RTC clock chip with I2C interface */
+	#define RTC1_TYPE RTC_TYPE_DS1307	/* MAXIM DS1307/DS3231 RTC clock chip with I2C interface */
+
 	/* Аппаратура контроллера SW2011 */
 	//#define WITHLO1LEVELADJ		1	/* включено управление уровнем (амплитудой) LO1 */
 
@@ -179,50 +183,50 @@
 	#define IF3_FMASKTX (IF3_FMASK_2P7)
 	#define IF3_FHAVE (IF3_FMASK_2P7 | IF3_FMASK_0P5)
 
-#define WITHSPLIT	1	/* управление режимами расстройки одной кнопкой */
-//#define WITHSPLITEX	1	/* Трехкнопочное управление режимами расстройки */
-#define WITHCATEXT	1	/* Расширенный набор команд CAT */
-#define WITHELKEY	1
-//#define WITHKBDENCODER 1	// перестройка частоты кнопками
-#define WITHKEYBOARD 1	/* в данном устройстве есть клавиатура */
-#define KEYBOARD_USE_ADC	1	/* на одной линии установлено  четыре  клавиши. на vref - 6.8K, далее 2.2К, 4.7К и 13K. */
+	#define WITHSPLIT	1	/* управление режимами расстройки одной кнопкой */
+	//#define WITHSPLITEX	1	/* Трехкнопочное управление режимами расстройки */
+	#define WITHCATEXT	1	/* Расширенный набор команд CAT */
+	#define WITHELKEY	1
+	//#define WITHKBDENCODER 1	// перестройка частоты кнопками
+	#define WITHKEYBOARD 1	/* в данном устройстве есть клавиатура */
+	#define KEYBOARD_USE_ADC	1	/* на одной линии установлено  четыре  клавиши. на vref - 6.8K, далее 2.2К, 4.7К и 13K. */
 
-// Назначения входов АЦП процессора.
-enum 
-{ 
-#if WITHBARS
-	SMETERIX = 1,	// S-meter
-	#if WITHPWRMTR
-		PWRI = 0,		// Индикатор мощности передатчика
+	// Назначения входов АЦП процессора.
+	enum 
+	{ 
+	#if WITHBARS
+		SMETERIX = 1,	// S-meter
+		#if WITHPWRMTR
+			PWRI = 0,		// Индикатор мощности передатчика
+		#endif
+		#if WITHSWRMTR && 0	// Обычный вариант
+			PWRI = 0,		// Индикатор мощности передатчика
+			FWD = 4, REF = 3,	// SWR-meter
+		#endif
+		#if WITHSWRMTR && 1	// US2IT
+			PWRI = 4,		// Индикатор мощности передатчика
+			FWD = 4, REF = 3,	// SWR-meter
+		#endif
+	#endif /* WITHBARS */
+
+	#if WITHVOLTLEVEL 
+		VOLTSOURCE = 2, // Средняя точка делителя напряжения, для АКБ
+	#endif /* WITHVOLTLEVEL */
+
+
+	#if WITHVOX
+		// Ну хотя бы ADC2 и ADC3. (c) US2IT
+		VOXIX = 2, AVOXIX = 3,	// VOX
 	#endif
-	#if WITHSWRMTR && 0	// Обычный вариант
-		PWRI = 0,		// Индикатор мощности передатчика
-		FWD = 4, REF = 3,	// SWR-meter
+	#if WITHPOTWPM
+		POTWPM = 4,		// потенциометр управления скоростью передачи в телеграфе
 	#endif
-	#if WITHSWRMTR && 1	// US2IT
-		PWRI = 4,		// Индикатор мощности передатчика
-		FWD = 4, REF = 3,	// SWR-meter
-	#endif
-#endif /* WITHBARS */
+		 KI0 = 5, KI1 = 6, KI2 = 7	// клавиатура
+	};
 
-#if WITHVOLTLEVEL 
-	VOLTSOURCE = 2, // Средняя точка делителя напряжения, для АКБ
-#endif /* WITHVOLTLEVEL */
+	#define VOLTLEVEL_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика напряжения
+	#define VOLTLEVEL_LOWER		10	// 1.0 kOhm - нижний резистор
 
-
-#if WITHVOX
-	// Ну хотя бы ADC2 и ADC3. (c) US2IT
-	VOXIX = 2, AVOXIX = 3,	// VOX
-#endif
-#if WITHPOTWPM
-	POTWPM = 4,		// потенциометр управления скоростью передачи в телеграфе
-#endif
-	 KI0 = 5, KI1 = 6, KI2 = 7	// клавиатура
-};
-
-#define VOLTLEVEL_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика напряжения
-#define VOLTLEVEL_LOWER		10	// 1.0 kOhm - нижний резистор
-
-#define KI_COUNT 3	// количество используемых под клавиатуру входов АЦП
+	#define KI_COUNT 3	// количество используемых под клавиатуру входов АЦП
 
 #endif /* ATMEGA_CTLSTYLE_V9SF_US2IT_H_INCLUDED */

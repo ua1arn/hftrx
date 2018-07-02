@@ -2808,6 +2808,9 @@ enum
 
 			{	0, 20,	display_lockstate4, REDRM_MODE, REDRSUBSET(DPAGE0), },
 			{	9, 20,	display_voxtune4,	REDRM_MODE, REDRSUBSET(DPAGE0), },
+		#if defined (RTC1_TYPE)
+			{	14, 20,	display_time5,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// TIME HH:MM
+		#endif /* defined (RTC1_TYPE) */
 			{	14, 20,	display_atu3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 			{	18, 20,	display_byp3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 			{	22, 20,	display_voltlevelV5, REDRM_VOLT, REDRSUBSET(DPAGE0), },	// voltmeter
@@ -2886,6 +2889,9 @@ enum
 
 			{	0, 20,	display_lockstate4, REDRM_MODE, REDRSUBSET(DPAGE0), },
 			{	9, 20,	display_voxtune4,	REDRM_MODE, REDRSUBSET(DPAGE0), },
+		#if defined (RTC1_TYPE)
+			{	14, 20,	display_time5,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// TIME HH:MM
+		#endif /* defined (RTC1_TYPE) */
 			{	14, 20,	display_atu3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 			{	18, 20,	display_byp3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 			{	22, 20,	display_voltlevelV5, REDRM_VOLT, REDRSUBSET(DPAGE0), },	// voltmeter
