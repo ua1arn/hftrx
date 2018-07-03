@@ -23,7 +23,6 @@
 	#define FQMODEL_45_IF6000_UHF144	1	// SW2011
 	//#define FQMODEL_TRX8M		1	// Первая низкая ПЧ 8 МГц, 6 МГц, 5.5 МГц и другие
 	#define	MODEL_DIRECT	1	/* использовать прямой синтез, а не гибридный */
-	//#define CTLREGSTYLE_SW2013SF_V2	1	// for US2IT управляющие регистры c регулировкой подсветки (без управления диапазонами)
 	#define CTLREGSTYLE_SW2013SF_V3	1	// 7-bit tuner for US2IT управляющие регистры c регулировкой подсветки (без управления диапазонами)
 
 	//#define WITHCAT_CDC		1	/* использовать виртуальный воследовательный порт на USB соединении */
@@ -44,6 +43,37 @@
 	//#define KEYB_UA1CEI	1	/* расположение кнопок для UA1CEI */
 	#define KEYBSTYLE_SW2013SF_US2IT	1
 	// --- Особые варианты расположения кнопок на клавиатуре
+
+	#define SHORTSET7 1
+	#define WITHPOWERLPHP		1	// Имеется переключение и отображение HP / LP
+	#define WITHPOWERTRIMMIN	0	// Нижний предел регулировки
+	#define WITHPOWERTRIMMAX	1	// Верхний предел регулировки
+	#define	WITHMUTEALL			1	// Отключение микрофона во всех режимах
+	//#define WITHONEATTONEAMP	1	/* только одно положение аттенюатора и УВЧ - "по кругу". */
+	#define WITHATT1PRE1		1	// Управление УВЧ и одиночным аттенюатором
+	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея 
+	#define WITHLCDBACKLIGHTMIN	1	// Нижний предел регулировки (показываетый на дисплее)
+	#define WITHLCDBACKLIGHTMAX	4	// Верхний предел регулировки (показываетый на дисплее)
+
+	//#define	BOARD_AGCCODE_0		0x00
+	//#define	BOARD_AGCCODE_1		0x01
+	#define WITHAGCMODENONE		1	/* Режимами АРУ не управляем */
+	#define BOARD_AGCCODE_OFF	0
+
+	/* коды входов коммутатора источников сигнала для УНЧ приёмника */
+	#define BOARD_DETECTOR_MUTE 0x00
+	#define BOARD_DETECTOR_SSB 0x00
+	#define BOARD_DETECTOR_AM 0x00
+	#define BOARD_DETECTOR_FM 0x00
+	#define BOARD_DETECTOR_WFM 0x00
+	#define BOARD_DETECTOR_TUNE 0x00	/* конфигурация платы для режима TUNE (CWZ на передачу) */
+
+	/* коды фильтров второй ПЧ, выдаваемые на дешифраторы */
+	#define	BOARD_FILTERCODE_0	0x00
+	#define	BOARD_FILTERCODE_1	0x01
+
+	#define	WITHAUTOTUNER	1	/* Есть функция автотюнера */
+
 
 	// +++ Одна из этих строк определяет тип дисплея, для которого компилируется прошивка
 	//#define LCDMODE_HARD_SPI	1		/* LCD over SPI line */
