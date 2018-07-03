@@ -1434,6 +1434,7 @@ static void display_time5(
 }
 
 // Печать времени - только часы и минуты, без секунд
+// Jan-01 13:40
 static void display_datetime12(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
@@ -2885,13 +2886,14 @@ enum
 			{	24, 11,	display_mode3_b,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
 
 			{	0, 14,	display2_bars,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// S-METER, SWR-METER, POWER-METER
-			{	0, 17,	display2_legend,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// Отображение оцифровки шкалы S-метра
+			{	0, 16,	display2_legend,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// Отображение оцифровки шкалы S-метра
 
+		#if defined (RTC1_TYPE)
+			{	0, 18,	display_datetime12,	REDRM_BARS, REDRSUBSET(DPAGE0), },	// DATE&TIME Jan-01 13:40
+			//{	0, 18,	display_time5,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// TIME HH:MM
+		#endif /* defined (RTC1_TYPE) */
 			{	0, 20,	display_lockstate4, REDRM_MODE, REDRSUBSET(DPAGE0), },
 			{	9, 20,	display_voxtune4,	REDRM_MODE, REDRSUBSET(DPAGE0), },
-		#if defined (RTC1_TYPE)
-			{	14, 20,	display_time5,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// TIME HH:MM
-		#endif /* defined (RTC1_TYPE) */
 			{	14, 20,	display_atu3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 			{	18, 20,	display_byp3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 			{	22, 20,	display_voltlevelV5, REDRM_VOLT, REDRSUBSET(DPAGE0), },	// voltmeter
@@ -3061,7 +3063,7 @@ enum
 	#endif /* WITHVOLTLEVEL  */
 	#if defined (RTC1_TYPE)
 			//{	18,	14,	display_time8,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// TIME
-			{	18,	14,	display_datetime12,	REDRM_BARS, REDRSUBSET(DPAGE0), },	// TIME
+			{	18,	14,	display_datetime12,	REDRM_BARS, REDRSUBSET(DPAGE0), },	// DATE&TIME Jan-01 13:40
 	#endif /* defined (RTC1_TYPE) */
 		#if WITHNOTCHONOFF || WITHNOTCHFREQ
 			{	27, 14,	display_notch3, REDRM_MODE, PG0, },	// 3.7
