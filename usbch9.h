@@ -222,7 +222,10 @@ enum
 };
 
 #define TERMINAL_ID_SELECTOR_6_INPUTS 2
+
 #define	WITHPLAINDESCROPTOR	1		/* не используется множество конфигураций */
+
+#if WITHPLAINDESCROPTOR
 
 #if WITHUSBUAC
 	#if WITHUSBUAC3
@@ -290,6 +293,110 @@ enum
 
 //#define INTERFACE_UAC_count (INTERFACE_AUDIO_last - INTERFACE_AUDIO_CONTROL_0)
 
+#else /* WITHPLAINDESCROPTOR */
+
+	#if WITHUSBUAC
+		#if WITHUSBUAC3
+			//#define INTERFACE_UAC_count 2	/* количество интерфейсов в одном UAC */
+		#else /* WITHUSBUAC3 */
+			#define INTERFACE_UAC_count 3	/* количество интерфейсов в одном UAC */
+		#endif /* WITHUSBUAC3 */
+	#endif /* WITHUSBUAC */
+
+#if WITHUSBRNDIS
+	enum
+	{
+
+		INTERFACE_RNDIS_CONTROL_5,	/* RNDIS control Interface */
+		INTERFACE_RNDIS_DATA_6,		/* RNDIS data Interface */
+	};
+#endif /* WITHUSBRNDIS */
+#if WITHUSBUAC
+	enum
+	{
+
+		#if WITHUSBUAC3
+			INTERFACE_AUDIO_CONTROL_0,		/* AUDIO transmitter input control interface */
+			INTERFACE_AUDIO_SPK_1,			/* USB Speaker Standard AS Interface Descriptor - Audio Streaming Zero Bandwith */
+			INTERFACE_AUDIO_MIKE_2,		/* USB receiver output  Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3)*/ //zero-bandwidth interface
+			/* */INTERFACE_AUDIO_CONTROL_1,		/* AUDIO spectrum control interface */
+			INTERFACE_AUDIO_RTS_3,		/* USB spectrum Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3)*/ //zero-bandwidth interface
+			//INTERFACE_AUDIO_last = INTERFACE_AUDIO_CONTROL_0 + 3,
+		#else
+			INTERFACE_AUDIO_CONTROL_0,		/* AUDIO control interface */
+			INTERFACE_AUDIO_SPK_1,		/* USB Speaker Standard AS Interface Descriptor - Audio Streaming Zero Bandwith */
+			INTERFACE_AUDIO_MIKE_2,		/* USB Microphone Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3)*/ //zero-bandwidth interface
+			//INTERFACE_AUDIO_last = INTERFACE_AUDIO_CONTROL_0 + 2,
+		#endif
+	};
+#endif /* WITHUSBUAC */
+#if WITHUSBCDC
+	enum
+	{
+
+		INTERFACE_CDC_base,
+		INTERFACE_CDC_CONTROL_3a = INTERFACE_CDC_base,	/* CDC ACM control Interface */
+		INTERFACE_CDC_DATA_4a,		/* CDC ACM data Interface */
+		INTERFACE_CDC_CONTROL_3b,	/* CDC ACM control Interface */
+		INTERFACE_CDC_DATA_4b,		/* CDC ACM data Interface */
+		INTERFACE_CDC_last = INTERFACE_CDC_base + WITHUSBHWCDC_N * 2 - 1,
+	};
+#endif /* WITHUSBCDC */
+#if WITHUSBCDCEEM
+	enum
+	{
+
+		INTERFACE_CDCEEM_DATA_6,	/* CDC ECM/CDC EEM data Interface */
+	};
+#endif /* WITHUSBCDCEEM */
+#if WITHUSBCDCECM
+	enum
+	{
+		INTERFACE_CDCECM_CONTROL_5,	/* CDC ECM control Interface */
+		INTERFACE_CDCECM_DATA_6,	/* CDC ECM/CDC EEM data Interface */
+	};
+	#endif /* WITHUSBCDCECM */
+#if WITHUSBHID
+	enum
+	{
+		INTERFACE_HID_CONTROL_7,	/* HID control Interface */
+		//
+	};
+#endif /* WITHUSBHID */
+
+
+	#define INTERFACE_CDCACM_count 2	/* количество интерфейсов в одном CDC */
+	#define INTERFACE_CDCEEM_count 1	/* количество интерфейсов в одном CDC EEM */
+	#define INTERFACE_CDCECM_count 2	/* количество интерфейсов в одном CDC ECM */
+	#define INTERFACE_HID_count 1	/* количество интерфейсов в одном HID */
+	#define INTERFACE_RNDIS_count 2	/* количество интерфейсов в одном RNDIS */
+
+	enum
+	{
+		UNUSED_cfgidx = 0,
+		// sequence of IDs should be same as used in usbd_descriptors_initialize
+		CDCECM_cfgidx = 1,
+		RNDIS_cfgidx = 2,
+		//
+		UNUSED2_cfgidx
+	};
+
+	#define INTERFACE_count 4 //(MAX(INTERFACE_RNDIS_count, INTERFACE_CDCECM_count))
+
+#endif /* WITHPLAINDESCROPTOR */
+
+	/*---------- -----------*/
+//#define USBD_MAX_NUM_INTERFACES     7	// ?
+/*---------- -----------*/
+//#define USBD_MAX_NUM_CONFIGURATION     3
+/*---------- -----------*/
+#define USBD_DEBUG_LEVEL     0
+/*---------- -----------*/
+#define USBD_LPM_ENABLED     0
+/*---------- -----------*/
+#define USBD_SELF_POWERED     0
+
+
 enum
 {
 	UACINALT_NONE = 0,
@@ -330,11 +437,13 @@ struct descholder
 	unsigned size;
 };
 
+#define USBD_CONFIGCOUNT 4
+
 extern struct descholder StringDescrTbl [];
-extern struct descholder ConfigDescrTbl [1];
-extern struct descholder DeviceDescrTbl [1];
-extern struct descholder DeviceQualifierTbl [1];
-extern struct descholder OtherSpeedConfigurationTbl [1];
+extern struct descholder ConfigDescrTbl [USBD_CONFIGCOUNT];
+extern struct descholder DeviceDescrTbl [USBD_CONFIGCOUNT];
+extern struct descholder DeviceQualifierTbl [USBD_CONFIGCOUNT];
+extern struct descholder OtherSpeedConfigurationTbl [USBD_CONFIGCOUNT];
 extern struct descholder BinaryDeviceObjectStoreTbl [1];
 extern struct descholder HIDReportDescrTbl [1];
 uint_fast8_t usbd_get_stringsdesc_count(void);

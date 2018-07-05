@@ -3125,7 +3125,10 @@ static void usb0_function_GetDescriptor(PCD_TypeDef * const Instance, uint_fast8
 	case USB_DESC_TYPE_CONFIGURATION:
 		// Configuration Descriptor
 		//debug_printf_P(PSTR("usb0_function_GetDescriptor: ReqTypeRecip=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
-		control_transmit(Instance, ConfigDescrTbl [0].data, ulmin16(ReqLength, ConfigDescrTbl [0].size));
+		if (index < ARRAY_SIZE(ConfigDescrTbl))
+			control_transmit(Instance, ConfigDescrTbl [index].data, ulmin16(ReqLength, ConfigDescrTbl [index].size));
+		else
+			stall_ep0(Instance);
 		break;
 
 	case USB_DESC_TYPE_STRING:
@@ -7346,17 +7349,6 @@ static HAL_StatusTypeDef PCD_WriteEmptyTxFifo(PCD_HandleTypeDef *hpcd, uint32_t 
   * @{
   */ 
 
-/*---------- -----------*/
-#define USBD_MAX_NUM_INTERFACES     7	// ?
-/*---------- -----------*/
-#define USBD_MAX_NUM_CONFIGURATION     3
-/*---------- -----------*/
-#define USBD_DEBUG_LEVEL     0
-/*---------- -----------*/
-#define USBD_LPM_ENABLED     0
-/*---------- -----------*/
-#define USBD_SELF_POWERED     1
-
 
 static void Error_Handler(void);
 
@@ -9048,8 +9040,9 @@ static void USBD_GetDescriptor(USBD_HandleTypeDef *pdev,
 {
 	uint16_t len;
 	const uint8_t *pbuf;
+	const uint_fast8_t index = LO_BYTE(req->wValue);
 
-	//debug_printf_P(PSTR("USBD_GetDescriptor: %02X\n"), HI_BYTE(req->wValue));
+	debug_printf_P(PSTR("USBD_GetDescriptor: %02X, wLength=%04X (%d dec), ix=%u\n"), HI_BYTE(req->wValue), req->wLength, req->wLength, LO_BYTE(req->wValue));
 
 	switch (HI_BYTE(req->wValue))
 	{ 
@@ -9059,14 +9052,22 @@ static void USBD_GetDescriptor(USBD_HandleTypeDef *pdev,
 		break;
 
 	case USB_DESC_TYPE_CONFIGURATION:     
-		len = ConfigDescrTbl [0].size;
-		pbuf = ConfigDescrTbl [0].data;
+		if (index < ARRAY_SIZE(ConfigDescrTbl) && ConfigDescrTbl [index].size != 0)
+		{
+			len = ConfigDescrTbl [index].size;
+			pbuf = ConfigDescrTbl [index].data;
+		}
+		else
+		{
+			TP();
+			USBD_CtlError(pdev, req);
+			return;
+		}
 		break;
 
 	case USB_DESC_TYPE_STRING:
 		{
 			const uint_fast16_t LangID = LO_BYTE(req->wIndex);
-			const uint_fast8_t index = LO_BYTE(req->wValue);
 			switch (index)
 			{
 			case 0x65:
@@ -9104,24 +9105,24 @@ static void USBD_GetDescriptor(USBD_HandleTypeDef *pdev,
 		break;
 
 	case USB_DESC_TYPE_DEVICE_QUALIFIER:
-		if (DeviceQualifierTbl [0].size != 0)
+		if (index < ARRAY_SIZE(DeviceQualifierTbl) && DeviceQualifierTbl [index].size != 0)
 		{
-			len = DeviceQualifierTbl [0].size;
-			pbuf = DeviceQualifierTbl [0].data;
+			len = DeviceQualifierTbl [index].size;
+			pbuf = DeviceQualifierTbl [index].data;
 		}
 		else
 		{
-			//TP();
+			TP();
 			USBD_CtlError(pdev, req);
 			return;
 		}
 		break;
 
 	case USB_DESC_TYPE_OTHER_SPEED_CONFIGURATION:
-		if(pdev->dev_speed == USBD_SPEED_HIGH && OtherSpeedConfigurationTbl [0].size != 0)   
+		if (pdev->dev_speed == USBD_SPEED_HIGH && index < ARRAY_SIZE(DeviceQualifierTbl) && DeviceQualifierTbl [index].size != 0)
 		{
-			len = OtherSpeedConfigurationTbl [0].size;
-			pbuf = OtherSpeedConfigurationTbl [0].data;
+			len = OtherSpeedConfigurationTbl [index].size;
+			pbuf = OtherSpeedConfigurationTbl [index].data;
 		}
 		else
 		{
@@ -9214,9 +9215,9 @@ static void USBD_SetConfig(USBD_HandleTypeDef *pdev,
 {
 
 	const uint8_t  cfgidx = LO_BYTE(req->wValue);                 
-	//debug_printf_P(PSTR("USBD_SetConfig: cfgidx=%d, pdev->dev_state=%d\n"), cfgidx, pdev->dev_state);
+	debug_printf_P(PSTR("USBD_SetConfig: cfgidx=%d, pdev->dev_state=%d\n"), cfgidx, pdev->dev_state);
 
-	if (cfgidx > USBD_MAX_NUM_CONFIGURATION ) 
+	if (0) // (cfgidx > USBD_MAX_NUM_CONFIGURATION ) 
 	{            
 		TP();
 		USBD_CtlError(pdev, req);                              
