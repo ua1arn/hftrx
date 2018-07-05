@@ -2902,8 +2902,6 @@ uint_fast8_t usbd_get_stringsdesc_count(void)
 /* вызываетс€ при запрещЄнных прерывани€х. */
 void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 {
-	uint_fast8_t index;
-	unsigned partlen;
 	unsigned score = 0;
 
 	static const struct
@@ -2922,30 +2920,36 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 	};
 	const uint_fast8_t bNumConfigurations = ARRAY_SIZE(funcs);
 
-							  // Device Descriptor
-	score += fill_align4(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score);
-	partlen = fill_Device_descriptor(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score, bNumConfigurations);
-	//partlen = fill_pattern_descriptor(1, alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score, fullSpdDesc, sizeof fullSpdDesc);
-	DeviceDescrTbl [0].size = partlen;
-	DeviceDescrTbl [0].data = alldescbuffer + score;
-	score += partlen;
-
-	// Configuration Descriptors list
-	//ASSERT(ARRAY_SIZE(ConfigDescrTbl) >= bNumConfigurations);
-	score += fill_align4(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score);
-	partlen = 0;
-	for (index = 0; index < bNumConfigurations; ++ index)
 	{
-		// Configuration Descriptor
-		partlen += fill_Configuration_descriptor(alldescbuffer + score + partlen, ARRAY_SIZE(alldescbuffer) - (score + partlen), 0, funcs [index].confvalue, funcs [index].count, funcs [index].fp);
-		//partlen = fill_pattern_descriptor(1, alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score, fullSpdConfDesc, sizeof fullSpdConfDesc);
+		// Device Descriptor
+		unsigned partlen;
+		score += fill_align4(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score);
+		partlen = fill_Device_descriptor(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score, bNumConfigurations);
+		//partlen = fill_pattern_descriptor(1, alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score, fullSpdDesc, sizeof fullSpdDesc);
+		DeviceDescrTbl [0].size = partlen;
+		DeviceDescrTbl [0].data = alldescbuffer + score;
+		score += partlen;
 	}
-	ConfigDescrTbl [0].size = partlen;
-	ConfigDescrTbl [0].data = alldescbuffer + score;
-	score += partlen;
+
+	{
+		// Configuration Descriptors list
+		unsigned partlen;
+		uint_fast8_t index;
+		score += fill_align4(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score);
+		partlen = 0;
+		for (index = 0; index < bNumConfigurations; ++ index)
+		{
+			// Configuration Descriptor
+			partlen += fill_Configuration_descriptor(alldescbuffer + score + partlen, ARRAY_SIZE(alldescbuffer) - (score + partlen), HSdesc, funcs [index].confvalue, funcs [index].count, funcs [index].fp);
+		}
+		ConfigDescrTbl [0].size = partlen;
+		ConfigDescrTbl [0].data = alldescbuffer + score;
+		score += partlen;
+	}
 
 	if (HSdesc != 0)
 	{
+		unsigned partlen;
 		// Device Qualifier
 		score += fill_align4(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score);
 		partlen = fill_DeviceQualifier_descriptor(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score);
@@ -2961,12 +2965,21 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 			The structure of the other_speed_configuration is identical to a 
 			configuration descriptor.
 		*/
-		// Other Speed Configuration
-		score += fill_align4(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score);
-		partlen = fill_Configuration_descriptor(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score, 0, 0x01, INTERFACE_count, fill_Configuration_main_group);
-		OtherSpeedConfigurationTbl [0].size = partlen;
-		OtherSpeedConfigurationTbl [0].data = alldescbuffer + score;
-		score += partlen;
+		{
+			// Other Speed Configuration descriptors list
+			unsigned partlen;
+			uint_fast8_t index;
+			score += fill_align4(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score);
+			partlen = 0;
+			for (index = 0; index < bNumConfigurations; ++ index)
+			{
+				// Configuration Descriptor
+				partlen += fill_Configuration_descriptor(alldescbuffer + score + partlen, ARRAY_SIZE(alldescbuffer) - (score + partlen), ! HSdesc, funcs [index].confvalue, funcs [index].count, funcs [index].fp);
+			}
+			OtherSpeedConfigurationTbl [0].size = partlen;
+			OtherSpeedConfigurationTbl [0].data = alldescbuffer + score;
+			score += partlen;
+		}
 #endif
 	}
 	else
@@ -2983,6 +2996,7 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 	// Binary Device Object Store (BOS) Descriptor
 	if (USB_FUNCTION_BCD_USB > 0x0200)
 	{
+		unsigned partlen;
 		score += fill_align4(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score);
 		partlen = fill_BinaryDeviceObjectStore_descriptor(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score);
 		BinaryDeviceObjectStoreTbl [0].size = partlen;
@@ -2995,29 +3009,34 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 		BinaryDeviceObjectStoreTbl [0].data = NULL;
 	}
 
-	// Language ID (mandatory)
-	score += fill_align4(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score);
-	partlen = fill_langid_descriptor(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score, UNICODE_ENGLISH);
-	StringDescrTbl [STRING_ID_0].size = partlen;
-	StringDescrTbl [STRING_ID_0].data = alldescbuffer + score;
-	score += partlen;
-
-	// All string IDs, except serial number
-	unsigned i;
-	for (i = 0; i < ARRAY_SIZE(strtemplates); ++ i)
+	// String descriptors
 	{
-		const uint_fast8_t id = strtemplates [i].id;
-		ASSERT(id < ARRAY_SIZE(StringDescrTbl));
-
+		// Language ID (mandatory)
+		unsigned partlen;
 		score += fill_align4(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score);
-		partlen = fill_string_descriptor(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score, strtemplates [i].str);
-		StringDescrTbl [id].size = partlen;
-		StringDescrTbl [id].data = alldescbuffer + score;
+		partlen = fill_langid_descriptor(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score, UNICODE_ENGLISH);
+		StringDescrTbl [STRING_ID_0].size = partlen;
+		StringDescrTbl [STRING_ID_0].data = alldescbuffer + score;
 		score += partlen;
+
+		// All string IDs, except serial number
+		unsigned i;
+		for (i = 0; i < ARRAY_SIZE(strtemplates); ++ i)
+		{
+			const uint_fast8_t id = strtemplates [i].id;
+			ASSERT(id < ARRAY_SIZE(StringDescrTbl));
+
+			score += fill_align4(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score);
+			partlen = fill_string_descriptor(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score, strtemplates [i].str);
+			StringDescrTbl [id].size = partlen;
+			StringDescrTbl [id].data = alldescbuffer + score;
+			score += partlen;
+		}
 	}
 
 #if WITHUSBHID
 	{
+		unsigned partlen;
 		const uint_fast8_t id = 0;
 		ASSERT(id < ARRAY_SIZE(HIDReportDescrTbl));
 
@@ -3031,11 +3050,12 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 	
 #if WITHUSBCDCECM
 	{
+		unsigned partlen;
 		// ‘ормирование MAC адреса данного устройства
 		// TODO: ѕри модификации не забыть про достоверность значений
 		const uint_fast8_t id = STRING_ID_MACADDRESS;
 		char b [64];
-		local_snprintf_P(b, ARRAY_SIZE(b), PSTR("F835DDA0C873"));
+		local_snprintf_P(b, ARRAY_SIZE(b), PSTR("3089846A96AB"));
 		// Unic serial number
 		score += fill_align4(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score);
 		partlen = fill_string_descriptor(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score, b);
@@ -3048,6 +3068,7 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 #if CTLSTYLE_SW2011ALL || WITHUSBNOUNIQUE
 	{
 		// на трансиверае SW20xx минимальна€ прив€зка к уникальным особенност€м трансивера
+		unsigned partlen;
 		const uint_fast8_t id = STRING_ID_3;
 		char b [64];
 		local_snprintf_P(b, ARRAY_SIZE(b), PSTR("SN:19640302_%lu"), (unsigned long) BUILD_ID);
@@ -3060,6 +3081,7 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 	}
 #elif CPUSTYLE_STM32F && defined(UID_BASE)
 	{
+		unsigned partlen;
 		const uint_fast8_t id = STRING_ID_3;
 		const uint32_t * const base = (const uint32_t *) UID_BASE;
 		char b [64];
@@ -3073,6 +3095,7 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 	}
 #else
 	{
+		unsigned partlen;
 		const uint_fast8_t id = STRING_ID_3;
 		char b [64];
 		local_snprintf_P(b, ARRAY_SIZE(b), PSTR("SN:19640302_%lu_%lu"), (unsigned long) (REFERENCE_FREQ * DDS1_CLK_MUL), (unsigned long) BUILD_ID);
@@ -3084,6 +3107,7 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 		score += partlen;
 	}
 #endif /* CPUSTYLE_STM32F && defined(UID_BASE) */
+
 	arm_hardware_flush_invalidate((uintptr_t) alldescbuffer, score);
 	debug_printf_P(PSTR("usbd_descriptors_initialize: total length=%u\n"), score);
 }
