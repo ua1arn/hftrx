@@ -2619,11 +2619,18 @@ static unsigned fill_Configuration_main_group(uint_fast8_t fill, uint8_t * p, un
 	return n;
 }
 
+typedef unsigned (* fill_func_t)(uint_fast8_t fill, uint8_t * p, unsigned maxsize, int highspeed);
+
 // Only for high speed capable devices 
 // Other Speed Configuration descriptor - pass highspeed=1
 // For all devices
 // Configuration descriptor - pass highspeed=0
-static unsigned fill_Configuration_descriptor(uint8_t * buff, unsigned maxsize, int highspeed)
+static unsigned fill_Configuration_descriptor(
+		uint8_t * buff, unsigned maxsize, int highspeed,
+		const uint_fast8_t bConfigurationValue, // = 0x01;
+		const uint_fast8_t bNumInterfaces, // = INTERFACE_count;
+		const fill_func_t fill_main_group	// fill functional descriptor(s)
+		)
 {
 #if WITHUSBHWHIGHSPEED && WITHUSBHWHIGHSPEEDDESC
 	const int highspeedEPs = 1;
@@ -2631,9 +2638,7 @@ static unsigned fill_Configuration_descriptor(uint8_t * buff, unsigned maxsize, 
 	const int highspeedEPs = 0;
 #endif /* WITHUSBHWHIGHSPEED && WITHUSBHWHIGHSPEEDDESC */
 	unsigned length = 9;
-	unsigned totalsize = length + fill_Configuration_main_group(0, buff, maxsize - length, highspeedEPs);
-
-	const uint_fast8_t bNumInterfaces = INTERFACE_count;
+	unsigned totalsize = length + fill_main_group(0, buff, maxsize - length, highspeedEPs);
 	ASSERT(maxsize >= length);
 	if (maxsize < length)
 		return 0;
@@ -2645,18 +2650,18 @@ static unsigned fill_Configuration_descriptor(uint8_t * buff, unsigned maxsize, 
 		* buff ++ = LO_BYTE(totalsize);		/* length of packed config descr. (16 bit) */
 		* buff ++ = HI_BYTE(totalsize);		/* length of packed config descr. (16 bit) */
 		* buff ++ = bNumInterfaces;			/* bNumInterfaces  */
-		* buff ++ = 0x01;                   /* bConfigurationValue */
-		* buff ++ = 0x00;                   /* iConfiguration */
+		* buff ++ = bConfigurationValue;    /* bConfigurationValue - Value to use as an argument to the SetConfiguration() request to select this configuration */
+		* buff ++ = STRING_ID_0;       		/* iConfiguration - Index of string descriptor describing this configuration */
 		* buff ++ = 0xC0;                   /* bmAttributes  BUS Powred, self powered */
 		* buff ++ = USB_CONFIG_POWER_MA(250);/* bMaxPower = 250 mA. Сделано как попытка улучшить работу через активные USB изоляторы для обеспечения их питания. */
 
-		fill_Configuration_main_group(1, buff, maxsize - length, highspeedEPs);
+		fill_main_group(1, buff, maxsize - length, highspeedEPs);
 	}
 	return totalsize;
 }
 
 // Device Descriptor
-static unsigned fill_Device_descriptor(uint8_t * buff, unsigned maxsize)
+static unsigned fill_Device_descriptor(uint8_t * buff, unsigned maxsize, uint_fast8_t bNumConfigurations)
 {
 	const unsigned length = 18;
 	ASSERT(maxsize >= length);
@@ -2682,7 +2687,7 @@ static unsigned fill_Device_descriptor(uint8_t * buff, unsigned maxsize)
 		* buff ++ = STRING_ID_1;                        /* 14:iManufacturer */
 		* buff ++ = STRING_ID_2;                        /* 15:iProduct */
 		* buff ++ = STRING_ID_3;                        /* 16:iSerialNumber */
-		* buff ++ = 1;                                  /* 17:bNumConfigurations */
+		* buff ++ = bNumConfigurations;                 /* 17:bNumConfigurations */
 	}
 	return length;
 }
@@ -2897,21 +2902,44 @@ uint_fast8_t usbd_get_stringsdesc_count(void)
 /* вызывается при запрещённых прерываниях. */
 void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 {
+	uint_fast8_t index;
 	unsigned partlen;
 	unsigned score = 0;
 
-	// Device Descriptor
+	static const struct
+	{
+		fill_func_t fp;
+		uint_fast8_t count;
+		uint_fast8_t confvalue;
+	} funcs [] =
+	{
+#if WITHPLAINDESCROPTOR
+			{ fill_Configuration_main_group,	INTERFACE_count, 1, }	// bConfigurationValue = 1
+#else /* WITHPLAINDESCROPTOR */
+			{ fill_RNDIS_function,		INTERFACE_RNDIS_count, 	RNDIS_cfgidx, },	// bConfigurationValue = 1
+			{ fill_CDCECM_function,		INTERFACE_CDCECM_count, CDCECM_cfgidx },	// bConfigurationValue = 2
+#endif /* WITHPLAINDESCROPTOR */
+	};
+	const uint_fast8_t bNumConfigurations = ARRAY_SIZE(funcs);
+
+							  // Device Descriptor
 	score += fill_align4(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score);
-	partlen = fill_Device_descriptor(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score);
+	partlen = fill_Device_descriptor(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score, bNumConfigurations);
 	//partlen = fill_pattern_descriptor(1, alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score, fullSpdDesc, sizeof fullSpdDesc);
 	DeviceDescrTbl [0].size = partlen;
 	DeviceDescrTbl [0].data = alldescbuffer + score;
 	score += partlen;
 
-	// Configuration Descriptor
+	// Configuration Descriptors list
+	//ASSERT(ARRAY_SIZE(ConfigDescrTbl) >= bNumConfigurations);
 	score += fill_align4(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score);
-	partlen = fill_Configuration_descriptor(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score, 0);
-	//partlen = fill_pattern_descriptor(1, alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score, fullSpdConfDesc, sizeof fullSpdConfDesc);
+	partlen = 0;
+	for (index = 0; index < bNumConfigurations; ++ index)
+	{
+		// Configuration Descriptor
+		partlen += fill_Configuration_descriptor(alldescbuffer + score + partlen, ARRAY_SIZE(alldescbuffer) - (score + partlen), 0, funcs [index].confvalue, funcs [index].count, funcs [index].fp);
+		//partlen = fill_pattern_descriptor(1, alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score, fullSpdConfDesc, sizeof fullSpdConfDesc);
+	}
 	ConfigDescrTbl [0].size = partlen;
 	ConfigDescrTbl [0].data = alldescbuffer + score;
 	score += partlen;
@@ -2935,7 +2963,7 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 		*/
 		// Other Speed Configuration
 		score += fill_align4(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score);
-		partlen = fill_Configuration_descriptor(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score, 0);
+		partlen = fill_Configuration_descriptor(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score, 0, 0x01, INTERFACE_count, fill_Configuration_main_group);
 		OtherSpeedConfigurationTbl [0].size = partlen;
 		OtherSpeedConfigurationTbl [0].data = alldescbuffer + score;
 		score += partlen;

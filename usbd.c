@@ -3125,10 +3125,7 @@ static void usb0_function_GetDescriptor(PCD_TypeDef * const Instance, uint_fast8
 	case USB_DESC_TYPE_CONFIGURATION:
 		// Configuration Descriptor
 		//debug_printf_P(PSTR("usb0_function_GetDescriptor: ReqTypeRecip=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
-		if (index < ARRAY_SIZE(ConfigDescrTbl))
-			control_transmit(Instance, ConfigDescrTbl [index].data, ulmin16(ReqLength, ConfigDescrTbl [index].size));
-		else
-			stall_ep0(Instance);
+		control_transmit(Instance, ConfigDescrTbl [0].data, ulmin16(ReqLength, ConfigDescrTbl [0].size));
 		break;
 
 	case USB_DESC_TYPE_STRING:
@@ -9051,67 +9048,59 @@ static void USBD_GetDescriptor(USBD_HandleTypeDef *pdev,
 {
 	uint16_t len;
 	const uint8_t *pbuf;
-	const uint_fast8_t index = LO_BYTE(req->wValue);
 
 	//debug_printf_P(PSTR("USBD_GetDescriptor: %02X\n"), HI_BYTE(req->wValue));
 
 	switch (HI_BYTE(req->wValue))
 	{ 
 	case USB_DESC_TYPE_DEVICE:
-		{
-			len = DeviceDescrTbl [0].size;
-			pbuf = DeviceDescrTbl [0].data;
-		}
+		len = DeviceDescrTbl [0].size;
+		pbuf = DeviceDescrTbl [0].data;
 		break;
 
 	case USB_DESC_TYPE_CONFIGURATION:     
-		if (index < ARRAY_SIZE(ConfigDescrTbl) && ConfigDescrTbl [index].size != 0)
-		{
-			len = ConfigDescrTbl [index].size;
-			pbuf = ConfigDescrTbl [index].data;
-		}
-		else
-		{
-			TP();
-			USBD_CtlError(pdev, req);
-			return;
-		}
+		len = ConfigDescrTbl [0].size;
+		pbuf = ConfigDescrTbl [0].data;
 		break;
 
 	case USB_DESC_TYPE_STRING:
-		switch (index)
 		{
-		case 0x65:
-		case 0xF8:
-			// Запрос появляется при запуске MixW2
-			//len = StringDescrTbl [STRING_ID_7].size;
-			//pbuf = StringDescrTbl [STRING_ID_7].data;
-			//break;
-			TP();
-			USBD_CtlError(pdev, req);
-			return;
-
-		case 0xEE:
-			// Microsoft OS String Descriptor, ReqLength=0x12
-			TP();
-			USBD_CtlError(pdev, req);
-			return;
-
-		default:
-			if (index < usbd_get_stringsdesc_count() && StringDescrTbl [index].size != 0)
+			const uint_fast16_t LangID = LO_BYTE(req->wIndex);
+			const uint_fast8_t index = LO_BYTE(req->wValue);
+			switch (index)
 			{
-				len = StringDescrTbl [index].size;
-				pbuf = StringDescrTbl [index].data;
-			}
-			else
-			{
+			case 0x65:
+			case 0xF8:
+				// Запрос появляется при запуске MixW2
+				//len = StringDescrTbl [STRING_ID_7].size;
+				//pbuf = StringDescrTbl [STRING_ID_7].data;
+				//break;
 				TP();
-				debug_printf_P(PSTR("USBD_GetDescriptor: %02X\n"), HI_BYTE(req->wValue));
 				USBD_CtlError(pdev, req);
 				return;
-			}
-			break;
-		} /* case */
+
+			case 0xEE:
+				// Microsoft OS String Descriptor, ReqLength=0x12
+				TP();
+				USBD_CtlError(pdev, req);
+				return;
+
+			default:
+				if (index < usbd_get_stringsdesc_count() && StringDescrTbl [index].size != 0)
+				{
+					len = StringDescrTbl [index].size;
+					pbuf = StringDescrTbl [index].data;
+				}
+				else
+				{
+					TP();
+					debug_printf_P(PSTR("USBD_GetDescriptor: %02X\n"), HI_BYTE(req->wValue));
+					USBD_CtlError(pdev, req);
+					return;
+				}
+				break;
+			} /* case */
+		}
 		break;
 
 	case USB_DESC_TYPE_DEVICE_QUALIFIER:
@@ -9164,7 +9153,7 @@ static void USBD_GetDescriptor(USBD_HandleTypeDef *pdev,
 
 	if ((len != 0) && (req->wLength != 0))
 	{
-		USBD_CtlSendData (pdev, pbuf, ulmin16(len , req->wLength));
+		USBD_CtlSendData (pdev, pbuf, ulmin16(len, req->wLength));
 	}
 
 }
