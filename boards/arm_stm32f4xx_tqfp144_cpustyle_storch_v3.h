@@ -505,12 +505,20 @@
 #define HARDWARE_SIDETONE_INITIALIZE() do { \
 	} while (0)
 
+/* PF10: pull-up second encoder button */
+#define KBD_MASK (1U << 10)	// PF10
+#define KBD_TARGET_PIN (GPIOF->IDR)
+
 #if KEYBOARD_USE_ADC
+
 	#define HARDWARE_KBD_INITIALIZE() do { \
+			arm_hardware_piof_inputs(KBD_MASK); \
+			arm_hardware_piof_updown(KBD_MASK, 0);	/* PF10: pull-up second encoder button */ \
 		} while (0)
 #else
 	#define HARDWARE_KBD_INITIALIZE() do { \
-		arm_hardware_pioa_inputs(KBD_MASK); \
+			arm_hardware_pioa_inputs(KBD_MASK); \
+			arm_hardware_piof_updown(KBD_MASK, 0);	/* PF10: pull-up second encoder button */ \
 		} while (0)
 #endif
 

@@ -10,16 +10,16 @@
 #if WITHKEYBOARD
 
 #if KEYBOARD_USE_ADC
-
+	// добавочная единица - последний элемент для кнопки валколера
 	#if KEYBOARD_USE_ADC6_V1
-		#define NQMKEYS (KI_COUNT * 6)		// сейчас обслуживается до 18-ти кнопок.
+		#define NQMKEYS (KI_COUNT * 6 + 1)		// сейчас обслуживается до 18-ти кнопок.
 	#elif KEYBOARD_USE_ADC6
-		#define NQMKEYS (KI_COUNT * 6)		// сейчас обслуживается до 18-ти кнопок.
+		#define NQMKEYS (KI_COUNT * 6 + 1)		// сейчас обслуживается до 18-ти кнопок.
 	#else /* KEYBOARD_USE_ADC6 */
-		#define NQMKEYS (KI_COUNT * 4)		// сейчас обслуживается до 12-ти кнопок.
+		#define NQMKEYS (KI_COUNT * 4 + 1)		// сейчас обслуживается до 12-ти кнопок.
 	#endif /* KEYBOARD_USE_ADC6 */
 #else
-	#define NQMKEYS (12)		// сейчас обслуживается до 12-ти кнопок.
+	#define NQMKEYS (12 + 1)		// сейчас обслуживается до 12-ти кнопок.
 #endif
 
 
@@ -259,6 +259,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 	//{ KIF_NONE,		KBD_CODE_MAX,		KBD_CODE_MAX, },
 	//{	KIF_NONE, 		KBD_CODE_MAX, 		KBD_CODE_MAX, },
 	//{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, },
+	// дополнительный элемент
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, },
 };
 
 uint_fast8_t getexitkey(void)
@@ -293,6 +295,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 	//{ KIF_NONE,		KBD_CODE_MAX,		KBD_CODE_MAX, },
 	//{	KIF_NONE, 		KBD_CODE_MAX, 		KBD_CODE_MAX, },
 	//{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, },
+	// дополнительный элемент
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, },
 };
 
 uint_fast8_t getexitkey(void)
@@ -326,6 +330,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 	//{ KIF_NONE,		KBD_CODE_MAX,		KBD_CODE_MAX, },
 	//{	KIF_NONE, 		KBD_CODE_MAX, 		KBD_CODE_MAX, },
 	//{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, },
+	// дополнительный элемент
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, },
 };
 
 uint_fast8_t getexitkey(void)
@@ -357,6 +363,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{	KIF_NONE, 		KBD_CODE_MOX,		KBD_CODE_TXTUNE, },		// TX/TUNE
 	{ 	KIF_NONE,		KBD_CODE_BW,		KBD_CODE_MAX, },
 	{	KIF_NONE, 		KBD_CODE_MAX, 		KBD_CODE_MAX, },
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, },
+	// дополнительный элемент
 	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, },
 };
 
@@ -391,6 +399,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ 	KIF_NONE,		KBD_CODE_AGC,		KBD_CODE_MAX, },
 	{	KIF_NONE, 		KBD_CODE_LDSPTGL, 	KBD_CODE_MAX, },
 	{	KIF_NONE, 		KBD_CODE_NOTCHTOGGLE,		KBD_CODE_MAX, },
+	// дополнительный элемент
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, },
 };
 
 uint_fast8_t getexitkey(void)
@@ -417,6 +427,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_SLOW,		KBD_CODE_BAND_DOWN,KBD_CODE_MAX, },
 	{ KIF_ERASE,	KBD_CODE_SPLIT, KBD_CODE_SPLIT_HOLDED, },
 	{ KIF_NONE,		KBD_CODE_MAX, KBD_CODE_MAX, },
+	// дополнительный элемент
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, },
 };
 
 uint_fast8_t getexitkey(void)
@@ -441,6 +453,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_SLOW,		KBD_CODE_BAND_DOWN,KBD_CODE_MAX, },
 	{ KIF_ERASE,	KBD_CODE_SPLIT, KBD_CODE_SPLIT_HOLDED, },
 	{ KIF_NONE,		KBD_CODE_MAX, KBD_CODE_MAX, },
+	// дополнительный элемент
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, },
 };
 
 uint_fast8_t getexitkey(void)
@@ -470,6 +484,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE,		KBD_CODE_USER2,		KBD_CODE_MAX, },
 	{ KIF_NONE,		KBD_CODE_USER3,		KBD_CODE_MAX, },
 	{ KIF_NONE,		KBD_CODE_USER4,		KBD_CODE_MAX, },
+	// дополнительный элемент
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, },
 };
 
 uint_fast8_t getexitkey(void)
@@ -504,6 +520,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 	//{	KIF_FAST, 		ENC_CODE_STEP_DOWN, ENC_CODE_STEP_DOWN, },
 	//{	KIF_FAST, 		ENC_CODE_STEP_UP, 	ENC_CODE_STEP_UP, },
 	//{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, },
+	// дополнительный элемент
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, },
 };
 
 uint_fast8_t getexitkey(void)
@@ -538,6 +556,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 	//{	KIF_FAST, 		ENC_CODE_STEP_DOWN, ENC_CODE_STEP_DOWN, },
 	//{	KIF_FAST, 		ENC_CODE_STEP_UP, 	ENC_CODE_STEP_UP, },
 	//{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, },
+	// дополнительный элемент
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, },
 };
 
 uint_fast8_t getexitkey(void)
@@ -564,6 +584,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE, KBD_CODE_MAX,	KBD_CODE_MAX, },	
 	{ KIF_NONE, KBD_CODE_MAX,	KBD_CODE_MAX, },	
 	{ KIF_NONE, KBD_CODE_MAX,	KBD_CODE_MAX, },	
+	// дополнительный элемент
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, },
 };
 
 uint_fast8_t getexitkey(void)
@@ -594,6 +616,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE,KBD_CODE_MAX,KBD_CODE_MAX, },
 	{ KIF_ERASE,KBD_CODE_SPLIT,KBD_CODE_SPLIT_HOLDED, },
 	{ KIF_EXTMENU,KBD_CODE_DISPMODE,KBD_CODE_MENU, },
+	// дополнительный элемент
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, },
 };
 
 uint_fast8_t getexitkey(void)
@@ -638,6 +662,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE,		KBD_CODE_ENTERFREQ,	KBD_CODE_ENTERFREQDONE, '7', },
 	//{ KIF_FAST,		ENC_CODE_STEP_DOWN,	ENC_CODE_STEP_DOWN, 	'#', },
 	{ KIF_NONE,		KBD_CODE_DWATCHTOGGLE, KBD_CODE_DWATCHTOGGLE, '#', },
+	// дополнительный элемент
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 };
 
 uint_fast8_t getexitkey(void)
@@ -680,6 +706,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE,		KBD_CODE_22,		KBD_CODE_MAX,			'2', },	// #22: 2
 	{ KIF_NONE,		KBD_CODE_23,		KBD_CODE_MAX,			'1', },	// #23: 1
 
+	// дополнительный элемент
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 };
 
 uint_fast8_t getexitkey(void)
@@ -723,6 +751,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE,		KBD_CODE_ENTERFREQ,	KBD_CODE_ENTERFREQDONE, '7', },
 	//{ KIF_FAST,		ENC_CODE_STEP_DOWN,	ENC_CODE_STEP_DOWN, 	'#', },
 	{ KIF_NONE,		KBD_CODE_DWATCHTOGGLE, KBD_CODE_DWATCHTOGGLE, '#', },
+	// дополнительный элемент
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 };
 
 uint_fast8_t getexitkey(void)
@@ -735,36 +765,38 @@ uint_fast8_t getexitkey(void)
 /* 20 кнопок на 5 линий - плата rfrontpanel_v0 + LCDMODE_UC1608 в нормальном расположении */
 const struct qmkey qmdefs [NQMKEYS] =
 {
-	// ! ряд справа от индикатора - снизу вверх */
+	/* ! ряд справа от индикатора - снизу вверх */
 	{ KIF_NONE,		KBD_CODE_LOCK,		KBD_CODE_LOCK_HOLDED, 	' ', },
 	{ KIF_SLOW,		KBD_CODE_BAND_DOWN,	KBD_CODE_BAND_DOWN, 	' ', },
 	{ KIF_SLOW,		KBD_CODE_BAND_UP,	KBD_CODE_BAND_UP, 		' ', },
 	{ KIF_NONE,		KBD_CODE_MODE,		KBD_CODE_MODEMOD, 		' ', },
 
-	// ! матрица слева от индикатора - ряд 1 по счету слева - снизу вверх */
+	/* ! матрица слева от индикатора - ряд 1 по счету слева - снизу вверх */
 	{ KIF_NONE,		KBD_CODE_RECORDTOGGLE, KBD_CODE_RECORD_HOLDED, ' ', },
 	{ KIF_NONE,		KBD_CODE_MOX,		KBD_CODE_TXTUNE, 	' ', },
 	{ KIF_NONE,		KBD_CODE_DWATCHTOGGLE, KBD_CODE_DWATCHTOGGLE, ' ', },
 	{ KIF_EXTMENU,	KBD_CODE_DISPMODE,	KBD_CODE_MENU, 		' ', },
 
-	// ! матрица слева от индикатора - ряд 4 по счету слева - снизу вверх */
+	/* ! матрица слева от индикатора - ряд 4 по счету слева - снизу вверх */
 	{ KIF_NONE,		KBD_CODE_ENTERFREQ,	KBD_CODE_ENTERFREQDONE, '#', },
 	{ KIF_NONE,		KBD_CODE_BW,		KBD_CODE_MAX, 			'9', },	// AGC не выключается с клавиатуры
 	{ KIF_NONE,		KBD_CODE_ATT,		KBD_CODE_PAMP, 			'6', },
 	{ KIF_NONE,		KBD_CODE_23,		KBD_CODE_23, 			'3', },
 
-	// матрица слева от индикатора - ряд 3 по счету слева - снизу вверх */
+	/* матрица слева от индикатора - ряд 3 по счету слева - снизу вверх */
 	{ KIF_NONE,		KBD_CODE_LDSPTGL,		KBD_CODE_22,	'0', },
 	{ KIF_NONE,		KBD_CODE_21,		KBD_CODE_21, 		'9', },
 	{ KIF_NONE,		KBD_CODE_20,		KBD_CODE_20, 		'5', },
 	{ KIF_ERASE,	KBD_CODE_SPLIT,		KBD_CODE_SPLIT_HOLDED, '2', },
 
-	// матрица слева от индикатора - ряд 2 по счету слева - снизу вверх */
+	/* матрица слева от индикатора - ряд 2 по счету слева - снизу вверх */
 	{ KIF_NONE,		KBD_CODE_ATUBYPASS,	KBD_CODE_ATUSTART, '*', },		// BYP/ATU
 	{ KIF_NONE,		KBD_CODE_19,	KBD_CODE_19, 		'7', },
 	{ KIF_NONE,		KBD_CODE_18,	KBD_CODE_18,		'4', },
 	{ KIF_NONE,		KBD_CODE_ANTENNA,	KBD_CODE_17, 		'1', },
 
+	/* кнопка дополнительного валкодера */
+	{ KIF_NONE,		KBD_CODE_21,		KBD_CODE_22, 		' ', },
 };
 
 uint_fast8_t getexitkey(void)
@@ -778,36 +810,38 @@ uint_fast8_t getexitkey(void)
 /* Новый вариант под корпус с надписями от RK1AQ */
 const struct qmkey qmdefs [NQMKEYS] =
 {
-	// ! ряд справа от индикатора - снизу вверх */
+	/* ! ряд справа от индикатора - снизу вверх */
 	{ KIF_NONE,		KBD_CODE_LOCK,			KBD_CODE_GEN_HAM,		' ', },		// LOCK / GEN_HAM
 	{ KIF_SLOW,		KBD_CODE_BAND_DOWN,		KBD_CODE_BAND_DOWN, 	' ', },		// BAND DOWN
 	{ KIF_SLOW,		KBD_CODE_BAND_UP,		KBD_CODE_BAND_UP, 		' ', },		// BAND UP
 	{ KIF_NONE,		KBD_CODE_MODE,			KBD_CODE_MODEMOD, 		' ', },		// MODE/SUBMODE
 
-	// ! матрица слева от индикатора - ряд 1 по счету слева - снизу вверх */
+	/* ! матрица слева от индикатора - ряд 1 по счету слева - снизу вверх */
 	{ KIF_EXTMENU,	KBD_CODE_DISPMODE,		KBD_CODE_MENU, 			' ', },		// DISPLAY/MENU
 	{ KIF_NONE,		KBD_CODE_MOX,			KBD_CODE_TXTUNE,		' ', },		// MOX/TUNE
 	{ KIF_NONE,		KBD_CODE_ATUBYPASS,		KBD_CODE_ATUSTART,		' ', },		// TUNER BYP/ATU START
 	{ KIF_ERASE,	KBD_CODE_SPLIT,			KBD_CODE_SPLIT_HOLDED,		' ', },		// SPLIT/SPLIT OFF
 
-	// ! матрица слева от индикатора - ряд 4 по счету слева - снизу вверх */
+	/* ! матрица слева от индикатора - ряд 4 по счету слева - снизу вверх */
 	{ KIF_NONE,		KBD_CODE_MENU_CWSPEED,	KBD_CODE_11, 			' ', },		// CW SPEED
 	{ KIF_NONE,		KBD_CODE_NOTCHTOGGLE,	KBD_CODE_NOTCHFREQ, 	' ', },		// NOTCH
 	{ KIF_NONE,		KBD_CODE_BW,			KBD_CODE_13, 			' ', },		// BW/AGC не выключается с клавиатуры
 	{ KIF_NONE,		KBD_CODE_DWATCHTOGGLE,	KBD_CODE_DWATCHTOGGLE,	' ', },		// DUAL
 
-	// матрица слева от индикатора - ряд 3 по счету слева - снизу вверх */
+	/* матрица слева от индикатора - ряд 3 по счету слева - снизу вверх */
 	{ KIF_NONE,		KBD_CODE_BKIN,			KBD_CODE_GEN_HAM, 		' ', },		// BREAK-IN
 	{ KIF_NONE,		KBD_CODE_LDSPTGL,		KBD_CODE_DATATOGGLE,	' ', },		// SPK/DATA
 	{ KIF_NONE,		KBD_CODE_ATT,			KBD_CODE_PAMP, 			' ', },		// ATT/PRE
 	{ KIF_NONE,		KBD_CODE_A_EX_B,			KBD_CODE_18, 		' ', },		// A/B
 
-	// матрица слева от индикатора - ряд 2 по счету слева - снизу вверх */
+	/* матрица слева от индикатора - ряд 2 по счету слева - снизу вверх */
 	{ KIF_NONE,		KBD_CODE_VOXTOGGLE,		KBD_CODE_MAX,			' ', },		// VOX
 	{ KIF_NONE,		KBD_CODE_RECORDTOGGLE,	KBD_CODE_RECORD_HOLDED,	' ', },		// REC
 	{ KIF_NONE,		KBD_CODE_ANTENNA,		KBD_CODE_19, 			' ', },		// ANTEMMA
 	{ KIF_NONE,		KBD_CODE_A_EQ_B,			KBD_CODE_21, 		' ', },		// A=B
 
+	/* кнопка дополнительного валкодера */
+	{ KIF_NONE,		KBD_CODE_21,		KBD_CODE_22, 		' ', },
 };
 
 uint_fast8_t getexitkey(void)
@@ -820,36 +854,39 @@ uint_fast8_t getexitkey(void)
 /* Новый вариант под корпус с надписями от RK1AQ */
 const struct qmkey qmdefs [NQMKEYS] =
 {
-	// ! ряд справа от индикатора - снизу вверх */
+	/* ! ряд справа от индикатора - снизу вверх */
 	{ KIF_NONE,		KBD_CODE_LOCK,			KBD_CODE_LOCK_HOLDED, 	' ', },		// LOCK
 	{ KIF_SLOW,		KBD_CODE_BAND_DOWN,		KBD_CODE_BAND_DOWN, 	' ', },		// BAND DOWN
 	{ KIF_SLOW,		KBD_CODE_BAND_UP,		KBD_CODE_BAND_UP, 		' ', },		// BAND UP
 	{ KIF_NONE,		KBD_CODE_MODE,			KBD_CODE_MODEMOD, 		' ', },		// MODE/SUBMODE
 
-	// ! матрица слева от индикатора - ряд 1 по счету слева - снизу вверх */
+	/* ! матрица слева от индикатора - ряд 1 по счету слева - снизу вверх */
 	{ KIF_EXTMENU,	KBD_CODE_DISPMODE,		KBD_CODE_MENU, 			' ', },		// DISPLAY/MENU
 	{ KIF_NONE,		KBD_CODE_MOX,			KBD_CODE_TXTUNE,		' ', },		// MOX/TUNE
 	{ KIF_NONE,		KBD_CODE_ATUBYPASS,		KBD_CODE_ATUSTART,		' ', },		// TUNER BYP/ATU START
 	{ KIF_ERASE,	KBD_CODE_SPLIT,			KBD_CODE_SPLIT_HOLDED,		' ', },		// SPLIT/SPLIT OFF
 
-	// ! матрица слева от индикатора - ряд 4 по счету слева - снизу вверх */
+	/* ! матрица слева от индикатора - ряд 4 по счету слева - снизу вверх */
 	{ KIF_NONE,		KBD_CODE_MENU_CWSPEED,	KBD_CODE_11, 			' ', },		// CW SPEED
 	{ KIF_NONE,		KBD_CODE_NOTCHTOGGLE,	KBD_CODE_NOTCHFREQ, 	' ', },		// NOTCH
 	{ KIF_NONE,		KBD_CODE_BW,			KBD_CODE_13, 			' ', },		// BW/AGC не выключается с клавиатуры
 	{ KIF_NONE,		KBD_CODE_DWATCHTOGGLE,	KBD_CODE_DWATCHTOGGLE,	' ', },		// DUAL
 
-	// матрица слева от индикатора - ряд 3 по счету слева - снизу вверх */
+	/* матрица слева от индикатора - ряд 3 по счету слева - снизу вверх */
 	{ KIF_NONE,		KBD_CODE_BKIN,			KBD_CODE_BKIN_HOLDED, 	' ', },		// BREAK-IN
 	{ KIF_NONE,		KBD_CODE_LDSPTGL,		KBD_CODE_15,			' ', },		// SPK
 	{ KIF_NONE,		KBD_CODE_ATT,			KBD_CODE_PAMP, 			' ', },		// ATT/PRE
 	{ KIF_NONE,		KBD_CODE_A_EX_B,		KBD_CODE_17, 			' ', },		// A/B
 
-	// матрица слева от индикатора - ряд 2 по счету слева - снизу вверх */
+	/* матрица слева от индикатора - ряд 2 по счету слева - снизу вверх */
 	{ KIF_NONE,		KBD_CODE_VOXTOGGLE,		KBD_CODE_DATATOGGLE,	' ', },		// VOX/DATA
 	{ KIF_NONE,		KBD_CODE_RECORDTOGGLE,	KBD_CODE_RECORD_HOLDED,	' ', },		// REC
 	{ KIF_NONE,		KBD_CODE_ANTENNA,		KBD_CODE_19, 			' ', },		// ANTEMMA
 	{ KIF_NONE,		KBD_CODE_A_EQ_B,		KBD_CODE_21, 			' ', },		// A=B
 
+
+	/* кнопка дополнительного валкодера */
+	{ KIF_NONE,		KBD_CODE_21,		KBD_CODE_22, 		' ', },
 };
 
 uint_fast8_t getexitkey(void)
@@ -862,7 +899,7 @@ uint_fast8_t getexitkey(void)
 /* 30 кнопок на 5 линий - плата rfrontpanel_v3 + LCDMODE_S1D13781 & LCDMODE_LQ043T3DX02K в нормальном расположении */
 const struct qmkey qmdefs [NQMKEYS] =
 {
-	// справа от индикатора, крайний правый (дальний от инлдикатора) - снизу вверх */
+	/* справа от индикатора, крайний правый (дальний от инлдикатора) - снизу вверх */
 	{ KIF_NONE,		KBD_CODE_LOCK,			KBD_CODE_LOCK_HOLDED, 	' ', },		// LOCK
 	{ KIF_SLOW,		KBD_CODE_BAND_DOWN,		KBD_CODE_BAND_DOWN, 	' ', },		// BAND DOWN
 	{ KIF_SLOW,		KBD_CODE_BAND_UP,		KBD_CODE_BAND_UP, 		' ', },		// BAND UP
@@ -870,7 +907,7 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE,		KBD_CODE_1,				KBD_CODE_2,				' ', },
 	{ KIF_NONE,		KBD_CODE_3,				KBD_CODE_4,				' ', },
 
-	// Cлева от индикатора - ряд 1 по счету слева - снизу вверх */
+	/* Cлева от индикатора - ряд 1 по счету слева - снизу вверх */
 	{ KIF_EXTMENU,	KBD_CODE_DISPMODE,		KBD_CODE_MENU, 			' ', },		// DISPLAY/MENU
 	{ KIF_NONE,		KBD_CODE_MOX,			KBD_CODE_TXTUNE,		' ', },		// MOX/TUNE
 	{ KIF_NONE,		KBD_CODE_ATUBYPASS,		KBD_CODE_ATUSTART,		' ', },		// TUNER BYP/ATU START
@@ -878,7 +915,7 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE,		KBD_CODE_5,				KBD_CODE_6,				' ', },
 	{ KIF_NONE,		KBD_CODE_7,				KBD_CODE_8,				' ', },
 
-	// справа от индикатора, второй от края - снизу вверх */
+	/* справа от индикатора, второй от края - снизу вверх */
 	{ KIF_NONE,		KBD_CODE_MENU_CWSPEED,	KBD_CODE_11, 			' ', },		// CW SPEED
 	{ KIF_NONE,		KBD_CODE_NOTCHTOGGLE,	KBD_CODE_NOTCHFREQ, 	' ', },		// NOTCH
 	{ KIF_NONE,		KBD_CODE_BW,			KBD_CODE_13, 			' ', },		// BW/AGC не выключается с клавиатуры
@@ -886,7 +923,7 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE,		KBD_CODE_9,				KBD_CODE_10,			' ', },
 	{ KIF_NONE,		KBD_CODE_11,			KBD_CODE_12,			' ', },
 
-	// справа от индикатора, ближний к индикатиору - снизу вверх */
+	/* справа от индикатора, ближний к индикатиору - снизу вверх */
 	{ KIF_NONE,		KBD_CODE_BKIN,			KBD_CODE_BKIN_HOLDED, 	' ', },		// BREAK-IN
 	{ KIF_NONE,		KBD_CODE_LDSPTGL,		KBD_CODE_DATATOGGLE,	' ', },		// SPK/DATA
 	{ KIF_NONE,		KBD_CODE_ATT,			KBD_CODE_PAMP, 			' ', },		// ATT/PRE
@@ -894,7 +931,7 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE,		KBD_CODE_13,			KBD_CODE_14,			' ', },
 	{ KIF_NONE,		KBD_CODE_15,			KBD_CODE_16,			' ', },
 
-	// Cлева от индикатора - ряд 2 по счету слева - снизу вверх */
+	/* Cлева от индикатора - ряд 2 по счету слева - снизу вверх */
 	{ KIF_NONE,		KBD_CODE_VOXTOGGLE,		KBD_CODE_MAX,			' ', },		// VOX
 	{ KIF_NONE,		KBD_CODE_RECORDTOGGLE,	KBD_CODE_RECORD_HOLDED,	' ', },		// REC
 	{ KIF_NONE,		KBD_CODE_ANTENNA,		KBD_CODE_21, 			' ', },		// ANTEMMA
@@ -902,6 +939,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE,		KBD_CODE_17,			KBD_CODE_18,			' ', },
 	{ KIF_NONE,		KBD_CODE_19,			KBD_CODE_20,			' ', },
 
+	/* кнопка дополнительного валкодера */
+	{ KIF_NONE,		KBD_CODE_21,		KBD_CODE_22, 		' ', },
 };
 
 uint_fast8_t getexitkey(void)
@@ -914,7 +953,7 @@ uint_fast8_t getexitkey(void)
 /* 30 кнопок на 5 линий - плата rfrontpanel_v3 + LCDMODE_S1D13781 & LCDMODE_LQ043T3DX02K в нормальном расположении */
 const struct qmkey qmdefs [NQMKEYS] =
 {
-	// RRR справа от индикатора, крайний правый (дальний от инлдикатора) - снизу вверх */
+	/* RRR справа от индикатора, крайний правый (дальний от инлдикатора) - снизу вверх */
 	{ KIF_SLOW,		KBD_CODE_BAND_DOWN,		KBD_CODE_BAND_DOWN, 	' ', },		// BAND DOWN
 	{ KIF_SLOW,		KBD_CODE_BAND_UP,		KBD_CODE_BAND_UP, 		' ', },		// BAND UP
 	{ KIF_ERASE,	KBD_CODE_SPLIT,			KBD_CODE_SPLIT_HOLDED, 	'#', },		// SPLIT/SPLIT OFF
@@ -922,7 +961,7 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE,		KBD_CODE_BAND_14M0,		KBD_CODE_1,				'6', },		//
 	{ KIF_NONE,		KBD_CODE_BAND_5M3,		KBD_CODE_A_EX_B,		'3', },		// A/B
 
-	// LLL Cлева от индикатора - ряд 1 по счету слева - снизу вверх */
+	/* LLL Cлева от индикатора - ряд 1 по счету слева - снизу вверх */
 	{ KIF_NONE,		KBD_CODE_MOX,			KBD_CODE_TXTUNE,		' ', },		// MOX/TUNE
 	{ KIF_NONE,		KBD_CODE_ATUBYPASS,		KBD_CODE_ATUSTART,		' ', },		// TUNER BYP/ATU START
 	{ KIF_NONE,		KBD_CODE_RECORDTOGGLE,	KBD_CODE_RECORD_HOLDED,	' ', },		// REC/SD FORMAT
@@ -930,7 +969,7 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE,		KBD_CODE_PAMP,			KBD_CODE_5, 			' ', },		// PRE
 	{ KIF_NONE,		KBD_CODE_ATT,			KBD_CODE_6,				' ', },		// ATT
 
-	// RRR справа от индикатора, второй от края - снизу вверх */
+	/* RRR справа от индикатора, второй от края - снизу вверх */
 	{ KIF_NONE,		KBD_CODE_LOCK,			KBD_CODE_LOCK_HOLDED, 	' ', },		// LOCK
 	{ KIF_NONE,		KBD_CODE_ENTERFREQ,		KBD_CODE_ENTERFREQDONE,	' ', },		// enter frequency
 	{ KIF_NONE,		KBD_CODE_BAND_50M0,		KBD_CODE_BKIN,			'0', },		// BREAK-IN
@@ -938,7 +977,7 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE,		KBD_CODE_BAND_10M1,		KBD_CODE_BAND_10M1,		'5', },		// 11
 	{ KIF_NONE,		KBD_CODE_BAND_3M5,		KBD_CODE_A_EQ_B,		'2', },		// A=B
 
-	// RRR справа от индикатора, ближний к индикатиору - снизу вверх */
+	/* RRR справа от индикатора, ближний к индикатиору - снизу вверх */
 	{ KIF_EXTMENU,	KBD_CODE_DISPMODE,		KBD_CODE_MENU,			' ', },		// MENU
 	{ KIF_NONE,		KBD_CODE_A_EX_B,		KBD_CODE_10, 			' ', },		// A/B
 	{ KIF_NONE,		KBD_CODE_BAND_28M0,		KBD_CODE_VOXTOGGLE,		'.', },		// VOX
@@ -946,7 +985,7 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE,		KBD_CODE_BAND_7M0,		KBD_CODE_ANTENNA,		'4', },		// ANTEMMA
 	{ KIF_NONE,		KBD_CODE_BAND_1M8,		KBD_CODE_11,			'1', },		//
 
-	// LLL Cлева от индикатора - ряд 2 по счету слева - снизу вверх */
+	/* LLL Cлева от индикатора - ряд 2 по счету слева - снизу вверх */
 	{ KIF_NONE,		KBD_CODE_BW,			KBD_CODE_12, 			' ', },		// BW/AGC не выключается с клавиатуры
 	{ KIF_NONE,		KBD_CODE_BW,			KBD_CODE_13, 			' ', },		// BW/AGC не выключается с клавиатуры
 	{ KIF_NONE,		KBD_CODE_MODE_3,		KBD_CODE_MODEMOD_3, 	' ', },		// MODE/SUBMODE
@@ -954,6 +993,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE,		KBD_CODE_MODE_1,		KBD_CODE_MODEMOD_1, 	' ', },		// MODE/SUBMODE
 	{ KIF_NONE,		KBD_CODE_MODE_0,		KBD_CODE_MODEMOD_0, 	' ', },		// MODE/SUBMODE
 
+	/* кнопка дополнительного валкодера */
+	{ KIF_NONE,		KBD_CODE_21,		KBD_CODE_22, 		' ', },
 };
 
 uint_fast8_t getexitkey(void)
@@ -966,36 +1007,38 @@ uint_fast8_t getexitkey(void)
 /* 20 кнопок на 5 линий - перевернутые */
 const struct qmkey qmdefs [NQMKEYS] =
 {
-	// ! ряд слева от индикатора - сверху вниз */
+	/* ! ряд слева от индикатора - сверху вниз */
 	{ KIF_NONE,		KBD_CODE_MODE,			KBD_CODE_MODEMOD, 		' ', },		// MODE/SUBMODE
 	{ KIF_SLOW,		KBD_CODE_BAND_UP,		KBD_CODE_BAND_UP, 		' ', },		// BAND UP
 	{ KIF_SLOW,		KBD_CODE_BAND_DOWN,		KBD_CODE_BAND_DOWN, 	' ', },		// BAND DOWN
 	{ KIF_NONE,		KBD_CODE_LOCK,			KBD_CODE_LOCK_HOLDED, 	' ', },		// LOCK
 
-	// ! матрица справа от индикатора - ряд 1 4 по счету справа - сверху вниз */
+	/* ! матрица справа от индикатора - ряд 1 4 по счету справа - сверху вниз */
 	{ KIF_NONE,		KBD_CODE_DWATCHTOGGLE,	KBD_CODE_DWATCHTOGGLE,	'3', },		// DUAL
 	{ KIF_NONE,		KBD_CODE_BW,			KBD_CODE_13, 			'6', },		// BW/AGC не выключается с клавиатуры
 	{ KIF_NONE,		KBD_CODE_NOTCHTOGGLE,	KBD_CODE_NOTCHFREQ, 	'9', },		// NOTCH
 	{ KIF_NONE,		KBD_CODE_MENU_CWSPEED,	KBD_CODE_11, 			'#', },		// CW SPEED
 
-	// ! матрица справа от индикатора - ряд 4 1 по счету справа - сверху вниз */
+	/* ! матрица справа от индикатора - ряд 4 1 по счету справа - сверху вниз */
 	{ KIF_ERASE,	KBD_CODE_SPLIT,			KBD_CODE_SPLIT_HOLDED,	' ', },		// SPLIT/SPLIT OFF
 	{ KIF_NONE,		KBD_CODE_ATUBYPASS,		KBD_CODE_ATUSTART,		' ', },		// TUNER BYP/ATU START
 	{ KIF_NONE,		KBD_CODE_MOX,			KBD_CODE_TXTUNE,		' ', },		// MOX/TUNE
 	{ KIF_EXTMENU,	KBD_CODE_DISPMODE,		KBD_CODE_MENU, 			' ', },		// DISPLAY/MENU
 
-	// матрица справа от индикатора - ряд 3 2 по счету справа - сверху вниз */
+	/* матрица справа от индикатора - ряд 3 2 по счету справа - сверху вниз */
 	{ KIF_NONE,		KBD_CODE_A_EQ_B,		KBD_CODE_21, 			'1', },		// A=B
 	{ KIF_NONE,		KBD_CODE_ANTENNA,		KBD_CODE_19, 			'4', },		// ANTEMMA
 	{ KIF_NONE,		KBD_CODE_RECORDTOGGLE,	KBD_CODE_RECORD_HOLDED,	'7', },		// REC
 	{ KIF_NONE,		KBD_CODE_ENTERFREQ,		KBD_CODE_ENTERFREQDONE,	'*', },		// direct frequencu enter
 
-	// матрица справа от индикатора - ряд 2 3 по счету справа - сверху вниз */
+	/* матрица справа от индикатора - ряд 2 3 по счету справа - сверху вниз */
 	{ KIF_NONE,		KBD_CODE_A_EX_B,			KBD_CODE_18, 		'2', },		// A/B
 	{ KIF_NONE,		KBD_CODE_ATT,			KBD_CODE_PAMP, 			'5', },		// ATT/PRE
 	{ KIF_NONE,		KBD_CODE_LDSPTGL,		KBD_CODE_DATATOGGLE,	'8', },		// SPK/DATA
 	{ KIF_NONE,		KBD_CODE_BKIN,			KBD_CODE_BKIN_HOLDED, 	'0', },		// BREAK-IN
 
+	/* кнопка дополнительного валкодера */
+	{ KIF_NONE,		KBD_CODE_21,		KBD_CODE_22, 		' ', },
 };
 
 uint_fast8_t getexitkey(void)
@@ -1009,36 +1052,38 @@ uint_fast8_t getexitkey(void)
 /* Новый вариант под корпус с надписями от RK1AQ */
 const struct qmkey qmdefs [NQMKEYS] =
 {
-	// ! ряд справа от индикатора - снизу вверх */
+	/* ! ряд справа от индикатора - снизу вверх */
 	{ KIF_NONE,		KBD_CODE_USEFAST,	KBD_CODE_LOCK, 		' ', },
 	{ KIF_SLOW,		KBD_CODE_BAND_DOWN,		KBD_CODE_BAND_DOWN, 	' ', },		// BAND DOWN
 	{ KIF_SLOW,		KBD_CODE_BAND_UP,		KBD_CODE_BAND_UP, 		' ', },		// BAND UP
 	{ KIF_NONE,		KBD_CODE_MODE,			KBD_CODE_MODEMOD, 		' ', },		// MODE/SUBMODE
 
-	// ! матрица слева от индикатора - ряд 1 по счету слева - снизу вверх */
+	/* ! матрица слева от индикатора - ряд 1 по счету слева - снизу вверх */
 	{ KIF_EXTMENU,	KBD_CODE_DISPMODE,		KBD_CODE_MENU, 			' ', },		// DISPLAY/MENU
 	{ KIF_NONE,		KBD_CODE_MOX,			KBD_CODE_TXTUNE,		' ', },		// MOX/TUNE
 	{ KIF_NONE,		KBD_CODE_ATUBYPASS,		KBD_CODE_ATUSTART,		' ', },		// TUNER BYP/ATU START
 	{ KIF_ERASE,	KBD_CODE_SPLIT,			KBD_CODE_SPLIT_HOLDED,		' ', },		// SPLIT/SPLIT OFF
 
-	// ! матрица слева от индикатора - ряд 4 по счету слева - снизу вверх */
+	/* ! матрица слева от индикатора - ряд 4 по счету слева - снизу вверх */
 	{ KIF_NONE,		KBD_CODE_MENU_CWSPEED,	KBD_CODE_11, 			' ', },		// CW SPEED
 	{ KIF_NONE,		KBD_CODE_NOTCHTOGGLE,	KBD_CODE_NOTCHFREQ, 	' ', },		// NOTCH
 	{ KIF_NONE,		KBD_CODE_BW,			KBD_CODE_13, 			' ', },		// BW/AGC не выключается с клавиатуры
 	{ KIF_NONE,		KBD_CODE_DWATCHTOGGLE,	KBD_CODE_DWATCHTOGGLE,	' ', },		// DUAL
 
-	// матрица слева от индикатора - ряд 3 по счету слева - снизу вверх */
+	/* матрица слева от индикатора - ряд 3 по счету слева - снизу вверх */
 	{ KIF_NONE,		KBD_CODE_BKIN,			KBD_CODE_BKIN_HOLDED, 	' ', },		// BREAK-IN
 	{ KIF_NONE,		KBD_CODE_LDSPTGL,		KBD_CODE_DATATOGGLE,	' ', },		// SPK/DATA
 	{ KIF_NONE,		KBD_CODE_ATT,			KBD_CODE_PAMP, 			' ', },		// ATT/PRE
 	{ KIF_NONE,		KBD_CODE_A_EX_B,		KBD_CODE_18, 			' ', },		// A/B
 
-	// матрица слева от индикатора - ряд 2 по счету слева - снизу вверх */
+	/* матрица слева от индикатора - ряд 2 по счету слева - снизу вверх */
 	{ KIF_NONE,		KBD_CODE_VOXTOGGLE,		KBD_CODE_MAX,			' ', },		// VOX
 	{ KIF_NONE,		KBD_CODE_RECORDTOGGLE,	KBD_CODE_RECORD_HOLDED,	' ', },		// REC
 	{ KIF_NONE,		KBD_CODE_ANTENNA,		KBD_CODE_19, 			' ', },		// ANTEMMA
 	{ KIF_NONE,		KBD_CODE_A_EQ_B,		KBD_CODE_21, 			' ', },		// A=B
 
+	/* кнопка дополнительного валкодера */
+	{ KIF_NONE,		KBD_CODE_21,		KBD_CODE_22, 		' ', },
 };
 
 uint_fast8_t getexitkey(void)
@@ -1066,6 +1111,9 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_ERASE,	KBD_CODE_SPLIT,		KBD_CODE_SPLIT_HOLDED, 	'4', },
 	{ KIF_NONE,		KBD_CODE_ENTERFREQ,	KBD_CODE_ENTERFREQDONE, '7', },
 	{ KIF_FAST,		ENC_CODE_STEP_DOWN,	ENC_CODE_STEP_DOWN, 	'#', },
+
+	/* кнопка дополнительного валкодера */
+	{ KIF_NONE,		KBD_CODE_21,		KBD_CODE_22, 		' ', },
 };
 
 uint_fast8_t getexitkey(void)
@@ -1093,6 +1141,9 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE,		KBD_CODE_9,		KBD_CODE_9, 	'4', },
 	{ KIF_NONE,		KBD_CODE_10,	KBD_CODE_10, 	'7', },
 	{ KIF_NONE,		KBD_CODE_11,	KBD_CODE_11, 	'#', },
+
+	/* кнопка дополнительного валкодера */
+	{ KIF_NONE,		KBD_CODE_21,		KBD_CODE_22, 		' ', },
 };
 
 uint_fast8_t getexitkey(void)
@@ -1119,6 +1170,9 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_SLOW,		KBD_CODE_BAND_DOWN,	KBD_CODE_BAND_DOWN, 	'3', },
 	{ KIF_SLOW,		KBD_CODE_BAND_UP,	KBD_CODE_BAND_UP, 		'6', },
 	{ KIF_NONE,		KBD_CODE_MODE,		KBD_CODE_MODEMOD, 		'9', },
+
+	/* кнопка дополнительного валкодера */
+	{ KIF_NONE,		KBD_CODE_21,		KBD_CODE_22, 		' ', },
 };
 
 uint_fast8_t getexitkey(void)
@@ -1146,6 +1200,9 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_ERASE,	KBD_CODE_9,			KBD_CODE_9, 	'4', },
 	{ KIF_NONE,		KBD_CODE_ENTERFREQ,	KBD_CODE_ENTERFREQDONE, '7', },
 	{ KIF_FAST,		ENC_CODE_STEP_DOWN,	ENC_CODE_STEP_DOWN, 	'#', },
+
+	/* кнопка дополнительного валкодера */
+	{ KIF_NONE,		KBD_CODE_21,		KBD_CODE_22, 		' ', },
 };
 
 uint_fast8_t getexitkey(void)
@@ -1197,6 +1254,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE,		KBD_CODE_BAND_24M9,	KBD_CODE_BAND_24M9, 	'8', },	// 15
 	{ KIF_NONE,		KBD_CODE_BAND_28M0,	KBD_CODE_BAND_28M0, 	'9', },	// 16
 	{ KIF_NONE,		KBD_CODE_ENTERFREQ,	KBD_CODE_ENTERFREQDONE, '0', },	// 17
+	// дополнительный элемент
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 };
 
 uint_fast8_t getexitkey(void)
@@ -1252,6 +1311,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE,		KBD_CODE_3,			KBD_CODE_3, 			'4', }, // S4
 	{ KIF_NONE,		KBD_CODE_4,			KBD_CODE_4, 			'5', },	// S5
 	{ KIF_NONE,		KBD_CODE_5,			KBD_CODE_5, 			'6', },	// S6
+	// дополнительный элемент
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 };
 
 uint_fast8_t getexitkey(void)
@@ -1279,6 +1340,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_ERASE,	KBD_CODE_SPLIT,		KBD_CODE_SPLIT_HOLDED, 	'4', },
 	{ KIF_NONE,		KBD_CODE_ENTERFREQ,	KBD_CODE_ENTERFREQDONE, '7', },
 	{ KIF_NONE,		KBD_CODE_LOCK,		KBD_CODE_LOCK_HOLDED, 	'0', },
+	// дополнительный элемент
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 };
 
 uint_fast8_t getexitkey(void)
@@ -1306,6 +1369,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_SLOW,		KBD_CODE_BAND_DOWN,	KBD_CODE_BAND_DOWN, 	'9', },
 	{ KIF_SLOW,		KBD_CODE_BAND_UP,	KBD_CODE_BAND_UP, 		'6', },
 	{ KIF_NONE,		KBD_CODE_MODE,		KBD_CODE_MODEMOD, 		'3', },
+	// дополнительный элемент
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 };
 
 uint_fast8_t getexitkey(void)
@@ -1333,6 +1398,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_SLOW,		KBD_CODE_BAND_DOWN,	KBD_CODE_BAND_DOWN, 	'9', },
 	{ KIF_SLOW,		KBD_CODE_BAND_UP,	KBD_CODE_BAND_UP, 		'6', },
 	{ KIF_NONE,		KBD_CODE_MODE,		KBD_CODE_MODEMOD, 		'3', },
+	// дополнительный элемент
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 };
 
 uint_fast8_t getexitkey(void)
@@ -1363,6 +1430,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE, KBD_CODE_MAX, KBD_CODE_MAX,  },
 	{ KIF_NONE, KBD_CODE_MAX, KBD_CODE_MAX,  },
 	{ KIF_NONE, KBD_CODE_MAX, KBD_CODE_MAX,  },
+	// дополнительный элемент
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 };
 
 uint_fast8_t getexitkey(void)
@@ -1390,6 +1459,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE, KBD_CODE_MAX, KBD_CODE_MAX,  },
 	{ KIF_NONE, KBD_CODE_GEN_HAM, KBD_CODE_GEN_HAM,  },
 	{ KIF_NONE, KBD_CODE_MOX, KBD_CODE_TXTUNE,  },
+	// дополнительный элемент
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 };
 
 uint_fast8_t getexitkey(void)
@@ -1418,6 +1489,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE, KBD_CODE_ATT, KBD_CODE_PAMP,  },
 	{ KIF_NONE, KBD_CODE_MODE, KBD_CODE_MODEMOD,  },
 	{ KIF_NONE, KBD_CODE_BW, KBD_CODE_AGC,  },
+	// дополнительный элемент
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 };
 
 uint_fast8_t getexitkey(void)
@@ -1444,6 +1517,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE,  KBD_CODE_LOCK,  KBD_CODE_LOCK_HOLDED,   },
 	{ KIF_EXTMENU, KBD_CODE_DISPMODE,  KBD_CODE_MENU,   },
 	{ KIF_NONE,  KBD_CODE_BW,  KBD_CODE_AGC,   },
+	// дополнительный элемент
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 };
 
 uint_fast8_t getexitkey(void)
@@ -1532,6 +1607,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE,	KBD_CODE_VOXTOGGLE,	KBD_CODE_MAX, },
 	{ KIF_SLOW, KBD_CODE_CWSPEEDDOWN, 	KBD_CODE_CWSPEEDDOWN, },
 	{ KIF_SLOW, KBD_CODE_CWSPEEDUP, 	KBD_CODE_CWSPEEDUP, },
+	// дополнительный элемент
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 };
 
 uint_fast8_t getexitkey(void)
@@ -1558,6 +1635,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE, KBD_CODE_MOX, KBD_CODE_TXTUNE, '6', },
 	{ KIF_SLOW, KBD_CODE_BAND_UP, KBD_CODE_BAND_UP, '9', },
 	{ KIF_FAST, ENC_CODE_STEP_UP, ENC_CODE_STEP_UP, '#', },
+	// дополнительный элемент
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 };
 
 uint_fast8_t getexitkey(void)
@@ -1575,6 +1654,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE,		KBD_CODE_USER2, KBD_CODE_MAX, },		// ревербератор
 	{ KIF_NONE,		KBD_CODE_USER1, KBD_CODE_MAX, },		// эквалайзер
 	{ KIF_NONE,		KBD_CODE_MAX, KBD_CODE_MAX, },
+	// дополнительный элемент
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 };
 
 uint_fast8_t getexitkey(void)
@@ -1616,6 +1697,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_SLOW, KBD_CODE_BAND_DOWN, KBD_CODE_BAND_DOWN, '4' },
 	{ KIF_NONE, KBD_CODE_MODE, KBD_CODE_MODEMOD, '7' },
 	{ KIF_ERASE, KBD_CODE_SPLIT, KBD_CODE_SPLIT_HOLDED, '*' },
+	// дополнительный элемент
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 };
 
 uint_fast8_t getexitkey(void)
@@ -1646,6 +1729,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE,	KBD_CODE_USER2,	KBD_CODE_MAX, ' ' },
 	{ KIF_NONE,	KBD_CODE_ATUBYPASS,	KBD_CODE_ATUSTART, },		// BYP/ATU
 	{ KIF_NONE,	KBD_CODE_IFSHIFT,	KBD_CODE_MAX, ' ' },
+	// дополнительный элемент
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 };
 
 uint_fast8_t getexitkey(void)
@@ -1676,6 +1761,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE,	KBD_CODE_USER2,	KBD_CODE_MAX, ' ' },
 	{ KIF_NONE,	KBD_CODE_USER3,	KBD_CODE_MAX, ' ' },
 	{ KIF_NONE,	KBD_CODE_USER4,	KBD_CODE_MAX, ' ' },
+	// дополнительный элемент
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 };
 
 uint_fast8_t getexitkey(void)
@@ -1714,6 +1801,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_ERASE, KBD_CODE_SPLIT, KBD_CODE_SPLIT_HOLDED, '*' },
 	{ KIF_NONE,	KBD_CODE_USER5,	KBD_CODE_MAX, ' ' },	// reverb
 	{ KIF_NONE, KBD_CODE_MAX, KBD_CODE_MAX, ' '  },		// клавиша отсутствует
+	// дополнительный элемент
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 };
 
 uint_fast8_t getexitkey(void)
@@ -1750,6 +1839,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE, KBD_CODE_TUNERTYPE, KBD_CODE_TUNERTYPE, ' '  },		// TUNER TYPE
 	{ KIF_SLOW4, KBD_CODE_CAP_UP, KBD_CODE_CAP_UP, ' '  },		// С++
 	{ KIF_SLOW4, KBD_CODE_CAP_DOWN, KBD_CODE_CAP_DOWN, ' '  },		// С--
+	// дополнительный элемент
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 };
 
 uint_fast8_t getexitkey(void)
@@ -1780,6 +1871,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE, KBD_CODE_MOX, KBD_CODE_TXTUNE, '0'  },
 	{ KIF_FAST, ENC_CODE_STEP_DOWN, ENC_CODE_STEP_DOWN, ' '  },
 	{ KIF_FAST, ENC_CODE_STEP_UP, ENC_CODE_STEP_UP, ' '  },
+	// дополнительный элемент
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 };
 
 uint_fast8_t getexitkey(void)
@@ -1810,6 +1903,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE, KBD_CODE_MOX, KBD_CODE_TXTUNE, '0'  },					// MOX
 	{ KIF_NONE,	KBD_CODE_ATUBYPASS,	KBD_CODE_ATUSTART, ' ' },		// BYP/ATU: was PWR
 	{ KIF_NONE, KBD_CODE_LDSPTGL, KBD_CODE_4, ' '  },				// SPEAKER
+	// дополнительный элемент
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 };
 
 uint_fast8_t getexitkey(void)
@@ -1837,6 +1932,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE, KBD_CODE_9, KBD_CODE_9,  },
 	{ KIF_NONE, KBD_CODE_10, KBD_CODE_10,  },
 	{ KIF_NONE, KBD_CODE_11, KBD_CODE_11,  },
+	// дополнительный элемент
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 };
 
 uint_fast8_t getexitkey(void)
@@ -1870,6 +1967,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_SLOW,		KBD_CODE_BAND_DOWN,		KBD_CODE_BAND_DOWN, 	' ', },
 	{ KIF_SLOW,		KBD_CODE_BAND_UP,		KBD_CODE_BAND_UP, 		' ', },
 	{ KIF_SLOW,		KBD_CODE_17,			KBD_CODE_17,			' ', },
+	// дополнительный элемент
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 };
 
 uint_fast8_t getexitkey(void)
@@ -1919,6 +2018,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE,		KBD_CODE_MODE,		KBD_CODE_MODEMOD, 		' ', },
 	{ KIF_EXTMENU,	KBD_CODE_TXTUNE,	KBD_CODE_MENU, 			' ', },
 	{ KIF_NONE,		KBD_CODE_MAX,		KBD_CODE_MAX, ' '  },		// клавиша отсутствует
+	// дополнительный элемент
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 };
 
 uint_fast8_t getexitkey(void)
@@ -1940,6 +2041,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE, KBD_CODE_MAX, KBD_CODE_MAX,  },
 	{ KIF_NONE, KBD_CODE_MAX, KBD_CODE_MAX,  },
 	{ KIF_NONE, KBD_CODE_MAX, KBD_CODE_MAX,  },
+	// дополнительный элемент
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 };
 
 #else
@@ -1964,6 +2067,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_SLOW, KBD_CODE_9, KBD_CODE_9,  },
 	{ KIF_SLOW, KBD_CODE_10, KBD_CODE_10,  },
 	{ KIF_SLOW, KBD_CODE_11, KBD_CODE_11,  },
+	// дополнительный элемент
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 };
 
 uint_fast8_t getexitkey(void)

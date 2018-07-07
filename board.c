@@ -8140,9 +8140,12 @@ board_get_pressed_key(void)
 			return ki * NK + v;
 		}
 	}
-	return KEYBOARD_NOKEY;
+	enum { AKBDEND = KI_COUNT * NK };
+#else	/* KEYBOARD_USE_ADC */
+	enum { AKBDEND = 0 };
+#endif	/* KEYBOARD_USE_ADC */
 
-#else
+#if KBD_MASK
 
 	uint_fast8_t i;
 	uint_fast8_t bitpos;
@@ -8150,7 +8153,7 @@ board_get_pressed_key(void)
 	const portholder_t v = ~ KBD_TARGET_PIN;
 	portholder_t srcmask = KBD_MASK;
 	
-	for (bitpos = 0, i = 0; srcmask != 0; ++ bitpos, srcmask >>= 1)
+	for (bitpos = 0, i = AKBDEND; srcmask != 0; ++ bitpos, srcmask >>= 1)
 	{
 		const portholder_t mask = (portholder_t)1 << bitpos;
 		if ((srcmask & 0x01) == 0)
@@ -8161,8 +8164,10 @@ board_get_pressed_key(void)
 		}
 		++ i;
 	}
+
+#endif	/* KBD_MASK */
+
 	return KEYBOARD_NOKEY;
-#endif	/* KEYBOARD_USE_ADC */
 }
 
 
