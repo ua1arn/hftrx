@@ -9181,7 +9181,7 @@ static void USBD_SetAddress(USBD_HandleTypeDef *pdev,
 		} 
 		else 
 		{
-			const uint8_t dev_addr = LO_BYTE(req->wValue) & 0x7F;     
+			const uint_fast8_t dev_addr = LO_BYTE(req->wValue) & 0x7F;     
 			pdev->dev_address = dev_addr;
 			USBD_LL_SetUSBAddress(pdev, dev_addr);               
 			USBD_CtlSendStatus(pdev);                         
@@ -9214,78 +9214,69 @@ static void USBD_SetConfig(USBD_HandleTypeDef *pdev,
                            USBD_SetupReqTypedef *req)
 {
 
-	const uint8_t  cfgidx = LO_BYTE(req->wValue);                 
+	const uint_fast8_t  cfgidx = LO_BYTE(req->wValue);                 
 	debug_printf_P(PSTR("USBD_SetConfig: cfgidx=%d, pdev->dev_state=%d\n"), cfgidx, pdev->dev_state);
 
-	if (0) // (cfgidx > USBD_MAX_NUM_CONFIGURATION ) 
-	{            
-		TP();
-		USBD_CtlError(pdev, req);                              
-	} 
-	else 
+	switch (pdev->dev_state) 
 	{
-		switch (pdev->dev_state) 
-		{
-		case USBD_STATE_ADDRESSED:
-			if (cfgidx) 
-			{                                			   							   							   				
-				pdev->dev_config [0] = cfgidx;
-				pdev->dev_state = USBD_STATE_CONFIGURED;
-				if(USBD_SetClassConfig(pdev, cfgidx) == USBD_FAIL)
-				{
-					TP();
-					USBD_CtlError(pdev, req);  
-					return;
-				}
-				//TP();
-				USBD_CtlSendStatus(pdev);
-			}
-			else 
+	case USBD_STATE_ADDRESSED:
+		if (cfgidx) 
+		{                                			   							   							   				
+			pdev->dev_config [0] = cfgidx;
+			pdev->dev_state = USBD_STATE_CONFIGURED;
+			if(USBD_SetClassConfig(pdev, cfgidx) == USBD_FAIL)
 			{
-				//TP();
-				USBD_CtlSendStatus(pdev);
+				TP();
+				USBD_CtlError(pdev, req);  
+				return;
 			}
-			break;
-
-		case USBD_STATE_CONFIGURED:
-			if (cfgidx == 0) 
-			{                           
-				pdev->dev_state = USBD_STATE_ADDRESSED;
-				pdev->dev_config [0] = cfgidx;          
-				USBD_ClrClassConfig(pdev, cfgidx);
-				USBD_CtlSendStatus(pdev);
-
-				//TP();
-			} 
-			else if (cfgidx != pdev->dev_config [0]) 
-			{
-				//TP();
-				/* Clear old configuration */
-				USBD_ClrClassConfig(pdev, pdev->dev_config [0]);
-
-				/* set new configuration */
-				pdev->dev_config [0] = cfgidx;
-				if(USBD_SetClassConfig(pdev, cfgidx) == USBD_FAIL)
-				{
-					TP();
-					USBD_CtlError(pdev, req);  
-					return;
-				}
-				USBD_CtlSendStatus(pdev);
-				//TP();
-			}
-			else
-			{
-				USBD_CtlSendStatus(pdev);
-				//TP();
-			}
-			break;
-
-		default:	
-			TP();
-			USBD_CtlError(pdev, req);                     
-			break;
+			//TP();
+			USBD_CtlSendStatus(pdev);
 		}
+		else 
+		{
+			//TP();
+			USBD_CtlSendStatus(pdev);
+		}
+		break;
+
+	case USBD_STATE_CONFIGURED:
+		if (cfgidx == 0) 
+		{                           
+			pdev->dev_state = USBD_STATE_ADDRESSED;
+			pdev->dev_config [0] = cfgidx;          
+			USBD_ClrClassConfig(pdev, cfgidx);
+			USBD_CtlSendStatus(pdev);
+		} 
+		else if (cfgidx != pdev->dev_config [0]) 
+		{
+			//TP();
+			/* Clear old configuration */
+			USBD_ClrClassConfig(pdev, pdev->dev_config [0]);
+
+			/* set new configuration */
+			pdev->dev_config [0] = cfgidx;
+			if(USBD_SetClassConfig(pdev, cfgidx) == USBD_FAIL)
+			{
+				TP();
+				USBD_CtlError(pdev, req);  
+				return;
+			}
+			USBD_CtlSendStatus(pdev);
+			//TP();
+		}
+		else
+		{
+			// Set same configuration
+			USBD_CtlSendStatus(pdev);
+			//TP();
+		}
+		break;
+
+	default:	
+		TP();
+		USBD_CtlError(pdev, req);                     
+		break;
 	}
 }
 
@@ -10436,7 +10427,7 @@ USBD_StatusTypeDef USBD_LL_Resume(USBD_HandleTypeDef  *pdev)
 
 USBD_StatusTypeDef USBD_LL_SOF(USBD_HandleTypeDef  *pdev)
 {
-	if(pdev->dev_state == USBD_STATE_CONFIGURED)
+	if (pdev->dev_state == USBD_STATE_CONFIGURED)
 	{
 #if 0
 #endif
