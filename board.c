@@ -2440,7 +2440,7 @@ prog_ctrlreg(uint_fast8_t plane)
 
 	/* регистр управления (74HC595), ближе к процессору */
 	RBBIT(007, glob_mikemute);						/* pin 7 */
-	RBBIT(006, glob_tx || ( BOARD_DETECTOR_MUTE == glob_af_input);	/* pin 6: RXAF mute */
+	RBBIT(006, glob_tx || ( BOARD_DETECTOR_MUTE == glob_af_input));	/* pin 6: RXAF mute */
 	RBBIT(005, glob_if4lsb);						/* pin 5 For DC rx: LSB mode */
 	RBBIT(004, glob_tx && glob_txcw);				/* pin 4 */
 	RBVAL(001, glob_filter, 3);						/* pin 1 2 3 - filter selection */
