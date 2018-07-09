@@ -2580,7 +2580,7 @@ DRESULT SD_Get_Sector_Count (
 	DWORD  *buff	/* Data buffer to store read data */
 	)
 {
-	* buff = SD_ReadCardSize() / _MAX_SS;
+	* buff = SD_ReadCardSize() / FF_MAX_SS;
 	return RES_OK;
 }
 
@@ -3605,7 +3605,7 @@ DRESULT MMC_Get_Sector_Count (
 	DWORD  *buff	/* Data buffer to store read data */
 	)
 {
-	* buff = MMC_ReadCardSize() / _MAX_SS;
+	* buff = MMC_ReadCardSize() / FF_MAX_SS;
 	return RES_OK;
 }
 

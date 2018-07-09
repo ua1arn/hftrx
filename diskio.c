@@ -42,7 +42,7 @@ static const struct drvfunc * const drvfuncs [] =
  */
 
 
-#if _MULTI_PARTITION	/* Volume - Partition resolution table */
+#if FF_MULTI_PARTITION	/* Volume - Partition resolution table */
 PARTITION VolToPart[] = {
 	{0, 0},	/* "0:" <== Disk# 0, auto detect */
 	{1, 0},	/* "1:" <== Disk# 1, auto detect */
@@ -53,7 +53,7 @@ PARTITION VolToPart[] = {
 	{4, 0},	/* "6:" <== Disk# 4, auto detect */
 	{5, 0}	/* "7:" <== Disk# 5, auto detect */
 };
-#endif
+#endif /* FF_MULTI_PARTITION */
 
 /* Check physical drive status */
 DSTATUS disk_initialize (
@@ -456,7 +456,7 @@ static uint_fast8_t waveMount(void)
 static uint_fast8_t wave_startrecording(void)
 {
 	FRESULT rc;				/* Result code */
-	char fname [_MAX_LFN + 1];
+	char fname [FF_MAX_LFN + 1];
 
 #if defined (RTC1_TYPE)
 
@@ -738,7 +738,7 @@ void sdcardbgprocess(void)
 
 void sdcardformat(void)
 {
-	ALIGNX_BEGIN BYTE work [_MAX_SS] ALIGNX_END;
+	ALIGNX_BEGIN BYTE work [FF_MAX_SS] ALIGNX_END;
 	FRESULT rc;  
 
 	switch (sdstate)

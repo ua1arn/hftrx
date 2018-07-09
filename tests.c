@@ -3459,7 +3459,7 @@ static const uint8_t pe2014 [] =
 struct fb
 {
 #if _USE_LFN
-    char lfn [_MAX_LFN + 1];   /* Buffer to store the LFN */
+    char lfn [FF_MAX_LFN + 1];   /* Buffer to store the LFN */
 #endif
 	FILINFO fno;					/* File information object */
 };
@@ -3470,13 +3470,13 @@ void fb_initialize(struct fb * p)
 	//p->fno.lfname = p->lfnamebuff;
     //char *fn;   /* This function is assuming non-Unicode cfg. */
 #if 0// _USE_LFN
-    ///*static */char lfn[_MAX_LFN + 1];   /* Buffer to store the LFN */
+    ///*static */char lfn[FF_MAX_LFN + 1];   /* Buffer to store the LFN */
     p->fno.lfname = p->lfn;
     p->fno.lfsize = sizeof p->lfn;
 #endif
 }
 
-static char FATFSALIGN_BEGIN rbuff [_MAX_SS * 4] FATFSALIGN_END;		// буфер записи - при совпадении с _MAX_SS нельзя располагать в Cortex-M4 CCM
+static char FATFSALIGN_BEGIN rbuff [FF_MAX_SS * 4] FATFSALIGN_END;		// буфер записи - при совпадении с _MAX_SS нельзя располагать в Cortex-M4 CCM
 
 
 static void showprogress(
@@ -3650,7 +3650,7 @@ static const char * fb_getname(const struct fb * p)
 
 static void fb_print(const struct fb * p, int x, int y, int selected)
 {
-	char buff [100 + _MAX_LFN + 1];
+	char buff [100 + FF_MAX_LFN + 1];
 	const char * fn = fb_getname(p);
 	if (p->fno.fattrib & AM_DIR)
 	{
@@ -3686,7 +3686,7 @@ void displfiles_buff(const char* path)
     //FILINFO fno;
     DIR dir;
 #if _USE_LFN
-    ///*static */char lfn[_MAX_LFN + 1];   /* Buffer to store the LFN */
+    ///*static */char lfn[FF_MAX_LFN + 1];   /* Buffer to store the LFN */
     //fno.lfname = lfn;
     //fno.lfsize = sizeof lfn;
 #endif
@@ -3974,7 +3974,7 @@ static void sdcard_filesystest(void)
 {
 	static FATFS Fatfs;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
 	static const char testfile [] = "readme.txt";
-	char testlog [_MAX_LFN + 1];
+	char testlog [FF_MAX_LFN + 1];
 	//int nlog = 0;
 
 	debug_printf_P(PSTR("FAT FS test.\n"));

@@ -702,10 +702,6 @@ SOURCE=.\buffers.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\ccsbcs.c
-# End Source File
-# Begin Source File
-
 SOURCE=.\cs4272.c
 # End Source File
 # Begin Source File
@@ -731,6 +727,14 @@ SOURCE=.\encoder.c
 # Begin Source File
 
 SOURCE=.\ff.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\ffsystem.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\ffunicode.c
 # End Source File
 # Begin Source File
 
