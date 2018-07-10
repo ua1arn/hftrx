@@ -10131,10 +10131,6 @@ static USBD_StatusTypeDef USBD_XXX_DataOut (USBD_HandleTypeDef *pdev, uint_fast8
 	return USBD_OK;
 }
 
-static USBD_StatusTypeDef USBD_XXX_EP0_RxReady (USBD_HandleTypeDef *pdev)
-{
-	return USBD_OK;
-}
 /**
 * @brief  USBD_DataOutStage
 *         Handle data OUT stage
@@ -14791,13 +14787,13 @@ static const USBD_ClassTypeDef USBD_dispatch [INTERFACE_count] =
 
 #endif
 
-static const USBD_ClassTypeDef USBD_AUDIO =
+static const USBD_ClassTypeDef USBD_CLASS_XXX =
 {
 	USBD_XXX_Init,	// Init
 	USBD_XXX_DeInit,	// DeInit
 	USBD_XXX_Setup,		// Setup
 	NULL,	//USBD_XXX_EP0_TxSent,	// EP0_TxSent
-	USBD_XXX_EP0_RxReady,	// RxReady
+	NULL,	//USBD_XXX_EP0_RxReady,	// RxReady
 	USBD_XXX_DataIn,	// DataIn
 	USBD_XXX_DataOut,	// DataOut
 	NULL,	//USBD_XXX_SOF,	// SOF
@@ -15302,7 +15298,7 @@ static void hardware_usbd_initialize(void)
 	#endif /* WITHUSBHWHIGHSPEED */
 
 	USBD_Init2(& hUsbDevice, ifhs);
-	USBD_AddClass(& hUsbDevice, & USBD_AUDIO);
+	USBD_AddClass(& hUsbDevice, & USBD_CLASS_XXX);
 	//USBD_AddClass(& hUsbDevice, & USBD_CDC0);
 	//USBD_AddClass(& hUsbDevice, & USBD_CDC1);
 }
