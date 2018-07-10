@@ -141,6 +141,34 @@ static volatile uint_fast16_t usb_cdc_control_state [INTERFACE_count];
 		cdc1buffin [cdc1buffinlevel ++] = c;
 	}
 
+	/* использование буфера принятых данных */
+	static void cdc1out_buffer_save(
+		const uint8_t * data, 
+		uint_fast16_t length
+		)
+	{
+		unsigned i;
+
+		for (i = 0; usbd_cdc_rxenabled && i < length; ++ i)
+		{
+			HARDWARE_CDC_ONRXCHAR(data [i]);
+		}
+	}
+
+	/* использование буфера принятых данных */
+	static void cdc2out_buffer_save(
+		const uint8_t * data, 
+		uint_fast16_t length
+		)
+	{
+		unsigned i;
+
+		for (i = 0; usbd_cdc_rxenabled && i < length; ++ i)
+		{
+			//HARDWARE_CDC_ONRXCHAR(data [i]);
+		}
+	}
+
 #endif /* WITHUSBCDC */
 
 #if WITHUSBCDCEEM
@@ -7924,7 +7952,252 @@ uint32_t USBD_LL_GetRxDataSize  (USBD_HandleTypeDef *pdev, uint8_t  ep_addr)
   return HAL_PCD_EP_GetRxCount((PCD_HandleTypeDef*) pdev->pData, ep_addr);
 }
 
+/** @defgroup USBD_CORE_Private_Functions
+* @{
+*/
+/**
+  * @brief  USBD_Start
+  *         Start the USB Device Core.
+  * @param  pdev: Device Handle
+  * @retval USBD Status
+  */
+static USBD_StatusTypeDef  USBD_Start  (USBD_HandleTypeDef *pdev)
+{
 
+  /* Start the low level driver  */
+  USBD_LL_Start(pdev);
+
+  return USBD_OK;
+}
+/**
+  * @brief  USBD_Stop
+  *         Stop the USB Device Core.
+  * @param  pdev: Device Handle
+  * @retval USBD Status
+  */
+USBD_StatusTypeDef  USBD_Stop   (USBD_HandleTypeDef *pdev)
+{
+	/* Free Class Resources */
+	uint_fast8_t di;
+	for (di = 0; di < pdev->nClasses; ++ di)
+	{
+		/* for each device function */
+		const USBD_ClassTypeDef * const pClass = pdev->pClasses [di];
+		pClass->DeInit(pdev, pdev->dev_config [0]);
+	}
+
+	/* Stop the low level driver  */
+	USBD_LL_Stop(pdev);
+
+	return USBD_OK;
+}
+
+/**
+* @brief  USBD_RunTestMode
+*         Launch test mode process
+* @param  pdev: device instance
+* @retval status
+*/
+static USBD_StatusTypeDef  USBD_RunTestMode (USBD_HandleTypeDef  *pdev)
+{
+  return USBD_OK;
+}
+
+
+/**
+* @brief  USBD_SetClassConfig
+*        Configure device and start the interfacei
+* @param  pdev: device instance
+* @param  cfgidx: configuration index
+* @retval status
+*/
+
+static USBD_StatusTypeDef USBD_SetClassConfig(USBD_HandleTypeDef  *pdev, uint_fast8_t cfgidx)
+{
+	USBD_StatusTypeDef   ret = pdev->nClasses == 0 ? USBD_FAIL : USBD_OK;
+	uint_fast8_t di;
+
+	for (di = 0; di < pdev->nClasses; ++ di)
+	{
+		/* for each device function */
+		const USBD_ClassTypeDef * const pClass = pdev->pClasses [di];
+		if (pClass != NULL)
+		{
+			/* Set configuration  and Start the Class*/
+			if (pClass->Init(pdev, cfgidx) != USBD_OK)
+			{
+				ret = USBD_FAIL;
+			}
+		}
+	}
+	return ret;
+}
+
+/**
+* @brief  USBD_ClrClassConfig
+*         Clear current configuration
+* @param  pdev: device instance
+* @param  cfgidx: configuration index
+* @retval status: USBD_StatusTypeDef
+*/
+static USBD_StatusTypeDef USBD_ClrClassConfig(USBD_HandleTypeDef  *pdev, uint_fast8_t cfgidx)
+{
+	/* Clear configuration  and De-initialize the Class process*/
+	uint_fast8_t di;
+	for (di = 0; di < pdev->nClasses; ++ di)
+	{
+		/* for each device function */
+		const USBD_ClassTypeDef * const pClass = pdev->pClasses [di];
+		pClass->DeInit(pdev, cfgidx);
+	}
+	return USBD_OK;
+}
+
+
+/**
+* @brief  USBD_CtlPrepareRx
+*         receive data on the ctl pipe
+* @param  pdev: device instance
+* @param  buff: pointer to data buffer
+* @param  len: length of data to be received
+* @retval status
+*/
+static USBD_StatusTypeDef  USBD_CtlPrepareRx (USBD_HandleTypeDef  *pdev,
+                                  uint8_t *pbuf,
+                                  uint16_t len)
+{
+  /* Set EP0 State */
+  pdev->ep0_state = USBD_EP0_DATA_OUT;
+  pdev->ep_out[0].total_length = len;
+  pdev->ep_out[0].rem_length   = len;
+  /* Start the transfer */
+  USBD_LL_PrepareReceive (pdev,
+                          0,
+                          pbuf,
+                         len);
+
+  return USBD_OK;
+}
+
+/**
+* @brief  USBD_CtlContinueRx
+*         continue receive data on the ctl pipe
+* @param  pdev: device instance
+* @param  buff: pointer to data buffer
+* @param  len: length of data to be received
+* @retval status
+*/
+USBD_StatusTypeDef  USBD_CtlContinueRx (USBD_HandleTypeDef  *pdev,
+                                          uint8_t *pbuf,
+                                          uint16_t len)
+{
+
+	USBD_LL_PrepareReceive (pdev,
+					  0,
+					  pbuf,
+					  len);
+	return USBD_OK;
+}
+/**
+* @brief  USBD_CtlSendStatus
+*         send zero lzngth packet on the ctl pipe
+* @param  pdev: device instance
+* @retval status
+*/
+USBD_StatusTypeDef  USBD_CtlSendStatus (USBD_HandleTypeDef  *pdev)
+{
+
+  /* Set EP0 State */
+  pdev->ep0_state = USBD_EP0_STATUS_IN;
+
+ /* Start the transfer */
+  USBD_LL_Transmit(pdev, 0x00, NULL, 0);
+
+  return USBD_OK;
+}
+
+/**
+* @brief  USBD_CtlReceiveStatus
+*         receive zero lzngth packet on the ctl pipe
+* @param  pdev: device instance
+* @retval status
+*/
+USBD_StatusTypeDef  USBD_CtlReceiveStatus (USBD_HandleTypeDef  *pdev)
+{
+  /* Set EP0 State */
+  pdev->ep0_state = USBD_EP0_STATUS_OUT;
+
+ /* Start the transfer */
+  USBD_LL_PrepareReceive( pdev,
+                    0,
+                    NULL,
+                    0);
+
+  return USBD_OK;
+}
+
+
+/**
+* @brief  USBD_CtlSendData
+*         send data on the ctl pipe
+* @param  pdev: device instance
+* @param  buff: pointer to data buffer
+* @param  len: length of data to be sent
+* @retval status
+*/
+USBD_StatusTypeDef  USBD_CtlSendData (USBD_HandleTypeDef  *pdev,
+                              const uint8_t *pbuf,
+                               uint16_t len)
+{
+	/* Set EP0 State */
+	pdev->ep0_state = USBD_EP0_DATA_IN;
+	pdev->ep_in[0].total_length = len;
+	pdev->ep_in[0].rem_length = len;
+	/* Start the transfer */
+	USBD_LL_Transmit(pdev, 0x00, pbuf, len);
+
+	return USBD_OK;
+}
+
+/**
+* @brief  USBD_CtlContinueSendData
+*         continue sending data on the ctl pipe
+* @param  pdev: device instance
+* @param  buff: pointer to data buffer
+* @param  len: length of data to be sent
+* @retval status
+*/
+USBD_StatusTypeDef  USBD_CtlContinueSendData (USBD_HandleTypeDef  *pdev,
+                                       const uint8_t *pbuf,
+                                       uint16_t len)
+{
+	/* Start the next transfer */
+	USBD_LL_Transmit(pdev, 0x00, pbuf, len);
+
+	return USBD_OK;
+}
+
+/**
+* @brief  USBD_CtlError
+*         Handle USB low level Error
+* @param  pdev: device instance
+* @param  req: usb request
+* @retval None
+*/
+
+static void USBD_CtlError( USBD_HandleTypeDef *pdev,
+                            USBD_SetupReqTypedef *req)
+{
+#if 0
+	debug_printf_P(PSTR("USBD_CtlError: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"),
+		req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
+#endif
+	USBD_LL_StallEP(pdev, 0x80);
+	USBD_LL_StallEP(pdev, 0);
+}
+
+
+/* +++ CLASS interface functions */
 static USBD_StatusTypeDef USBD_XXX_Init(USBD_HandleTypeDef *pdev, uint_fast8_t cfgidx)
 {
 	uint8_t offset;
@@ -8150,250 +8423,6 @@ static USBD_StatusTypeDef USBD_XXX_DeInit(USBD_HandleTypeDef *pdev, uint_fast8_t
 }
 
 
-/** @defgroup USBD_CORE_Private_Functions
-* @{
-*/ 
-/**
-  * @brief  USBD_Start 
-  *         Start the USB Device Core.
-  * @param  pdev: Device Handle
-  * @retval USBD Status
-  */
-static USBD_StatusTypeDef  USBD_Start  (USBD_HandleTypeDef *pdev)
-{
-  
-  /* Start the low level driver  */
-  USBD_LL_Start(pdev); 
-  
-  return USBD_OK;  
-}
-/**
-  * @brief  USBD_Stop 
-  *         Stop the USB Device Core.
-  * @param  pdev: Device Handle
-  * @retval USBD Status
-  */
-USBD_StatusTypeDef  USBD_Stop   (USBD_HandleTypeDef *pdev)
-{
-	/* Free Class Resources */
-	uint_fast8_t di;
-	for (di = 0; di < pdev->nClasses; ++ di)
-	{
-		/* for each device function */
-		const USBD_ClassTypeDef * const pClass = pdev->pClasses [di];
-		pClass->DeInit(pdev, pdev->dev_config [0]);
-	}
-
-	/* Stop the low level driver  */
-	USBD_LL_Stop(pdev); 
-
-	return USBD_OK;  
-}
-
-/**
-* @brief  USBD_RunTestMode 
-*         Launch test mode process
-* @param  pdev: device instance
-* @retval status
-*/
-static USBD_StatusTypeDef  USBD_RunTestMode (USBD_HandleTypeDef  *pdev) 
-{
-  return USBD_OK;
-}
-
-
-/**
-* @brief  USBD_SetClassConfig 
-*        Configure device and start the interfacei
-* @param  pdev: device instance
-* @param  cfgidx: configuration index
-* @retval status
-*/
-
-static USBD_StatusTypeDef USBD_SetClassConfig(USBD_HandleTypeDef  *pdev, uint_fast8_t cfgidx)
-{
-	USBD_StatusTypeDef   ret = pdev->nClasses == 0 ? USBD_FAIL : USBD_OK;
-	uint_fast8_t di;
-
-	for (di = 0; di < pdev->nClasses; ++ di)
-	{
-		/* for each device function */
-		const USBD_ClassTypeDef * const pClass = pdev->pClasses [di];
-		if (pClass != NULL)
-		{
-			/* Set configuration  and Start the Class*/
-			if (pClass->Init(pdev, cfgidx) != USBD_OK)
-			{
-				ret = USBD_FAIL;
-			}
-		}
-	}
-	return ret;
-}
-
-/**
-* @brief  USBD_ClrClassConfig 
-*         Clear current configuration
-* @param  pdev: device instance
-* @param  cfgidx: configuration index
-* @retval status: USBD_StatusTypeDef
-*/
-static USBD_StatusTypeDef USBD_ClrClassConfig(USBD_HandleTypeDef  *pdev, uint_fast8_t cfgidx)
-{
-	/* Clear configuration  and De-initialize the Class process*/
-	uint_fast8_t di;
-	for (di = 0; di < pdev->nClasses; ++ di)
-	{
-		/* for each device function */
-		const USBD_ClassTypeDef * const pClass = pdev->pClasses [di];
-		pClass->DeInit(pdev, cfgidx);
-	}
-	return USBD_OK;
-}
-
-
-/**
-* @brief  USBD_CtlPrepareRx
-*         receive data on the ctl pipe
-* @param  pdev: device instance
-* @param  buff: pointer to data buffer
-* @param  len: length of data to be received
-* @retval status
-*/
-static USBD_StatusTypeDef  USBD_CtlPrepareRx (USBD_HandleTypeDef  *pdev,
-                                  uint8_t *pbuf,                                  
-                                  uint16_t len)
-{
-  /* Set EP0 State */
-  pdev->ep0_state = USBD_EP0_DATA_OUT; 
-  pdev->ep_out[0].total_length = len;
-  pdev->ep_out[0].rem_length   = len;
-  /* Start the transfer */
-  USBD_LL_PrepareReceive (pdev,
-                          0,
-                          pbuf,
-                         len);
-  
-  return USBD_OK;
-}
-
-/**
-* @brief  USBD_CtlContinueRx
-*         continue receive data on the ctl pipe
-* @param  pdev: device instance
-* @param  buff: pointer to data buffer
-* @param  len: length of data to be received
-* @retval status
-*/
-USBD_StatusTypeDef  USBD_CtlContinueRx (USBD_HandleTypeDef  *pdev, 
-                                          uint8_t *pbuf,                                          
-                                          uint16_t len)
-{
-
-	USBD_LL_PrepareReceive (pdev,
-					  0,                     
-					  pbuf,                         
-					  len);
-	return USBD_OK;
-}
-/**
-* @brief  USBD_CtlSendStatus
-*         send zero lzngth packet on the ctl pipe
-* @param  pdev: device instance
-* @retval status
-*/
-USBD_StatusTypeDef  USBD_CtlSendStatus (USBD_HandleTypeDef  *pdev)
-{
-
-  /* Set EP0 State */
-  pdev->ep0_state = USBD_EP0_STATUS_IN;
-  
- /* Start the transfer */
-  USBD_LL_Transmit(pdev, 0x00, NULL, 0);   
-  
-  return USBD_OK;
-}
-
-/**
-* @brief  USBD_CtlReceiveStatus
-*         receive zero lzngth packet on the ctl pipe
-* @param  pdev: device instance
-* @retval status
-*/
-USBD_StatusTypeDef  USBD_CtlReceiveStatus (USBD_HandleTypeDef  *pdev)
-{
-  /* Set EP0 State */
-  pdev->ep0_state = USBD_EP0_STATUS_OUT; 
-  
- /* Start the transfer */  
-  USBD_LL_PrepareReceive( pdev,
-                    0,
-                    NULL,
-                    0);  
-
-  return USBD_OK;
-}
-
-
-/**
-* @brief  USBD_CtlSendData
-*         send data on the ctl pipe
-* @param  pdev: device instance
-* @param  buff: pointer to data buffer
-* @param  len: length of data to be sent
-* @retval status
-*/
-USBD_StatusTypeDef  USBD_CtlSendData (USBD_HandleTypeDef  *pdev, 
-                              const uint8_t *pbuf,
-                               uint16_t len)
-{
-	/* Set EP0 State */
-	pdev->ep0_state = USBD_EP0_DATA_IN;                                      
-	pdev->ep_in[0].total_length = len;
-	pdev->ep_in[0].rem_length = len;
-	/* Start the transfer */
-	USBD_LL_Transmit(pdev, 0x00, pbuf, len);  
-
-	return USBD_OK;
-}
-
-/**
-* @brief  USBD_CtlContinueSendData
-*         continue sending data on the ctl pipe
-* @param  pdev: device instance
-* @param  buff: pointer to data buffer
-* @param  len: length of data to be sent
-* @retval status
-*/
-USBD_StatusTypeDef  USBD_CtlContinueSendData (USBD_HandleTypeDef  *pdev, 
-                                       const uint8_t *pbuf,
-                                       uint16_t len)
-{
-	/* Start the next transfer */
-	USBD_LL_Transmit(pdev, 0x00, pbuf, len);   
-
-	return USBD_OK;
-}
-
-/**
-* @brief  USBD_CtlError 
-*         Handle USB low level Error
-* @param  pdev: device instance
-* @param  req: usb request
-* @retval None
-*/
-
-static void USBD_CtlError( USBD_HandleTypeDef *pdev,
-                            USBD_SetupReqTypedef *req)
-{
-#if 0
-	debug_printf_P(PSTR("USBD_CtlError: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), 
-		req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
-#endif
-	USBD_LL_StallEP(pdev, 0x80);
-	USBD_LL_StallEP(pdev, 0);
-}
-
 static USBD_StatusTypeDef USBD_XXX_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef *req)
 {
 	static USBALIGN_BEGIN uint8_t buff [32] USBALIGN_END;	// was: 7
@@ -8420,7 +8449,7 @@ static USBD_StatusTypeDef USBD_XXX_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReq
 						USBD_poke_u32(& buff [0], dwDTERate [interfacev]); // dwDTERate
 						buff [4] = 0;	// 1 stop bit
 						buff [5] = 0;	// parity=none
-						buff [6] = 8;	// bDataBits 
+						buff [6] = 8;	// bDataBits
 
 						USBD_CtlSendData(pdev, buff, ulmin16(7, req->wLength));
 						break;
@@ -8481,7 +8510,7 @@ static USBD_StatusTypeDef USBD_XXX_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReq
 			case INTERFACE_RNDIS_CONTROL_5:	// RNDIS control
 				switch (req->bRequest)
 				{
-				case 0x01:	// GET_ENCAPSULATED_RESPONSE 
+				case 0x01:	// GET_ENCAPSULATED_RESPONSE
 					//debug_printf_P(PSTR("USBD_ClassXXX_Setup IN: INTERFACE_RNDIS_CONTROL_5: GET_ENCAPSULATED_RESPONSE: bRequest=%02X, wIndex=%04X, wLength=%04X\n"), req->bRequest, req->wIndex, req->wLength);
 					{
 						if (rndis_resp_ptr != NULL)
@@ -8531,7 +8560,7 @@ static USBD_StatusTypeDef USBD_XXX_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReq
 
 		case USB_REQ_TYPE_STANDARD:
 			switch (req->bRequest)
-			{      
+			{
 			case USB_REQ_GET_INTERFACE :
 				//debug_printf_P(PSTR("USBD_ClassXXX_Setup IN: USB_REQ_TYPE_STANDARD USB_REQ_GET_INTERFACE dir=%02X interfacev=%d\n"), req->bmRequest & 0x80, interfacev);
 				if (interfacev < INTERFACE_count)
@@ -8767,7 +8796,7 @@ static USBD_StatusTypeDef USBD_XXX_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReq
 
 		case USB_REQ_TYPE_STANDARD:
 			switch (req->bRequest)
-			{      
+			{
 			case USB_REQ_SET_INTERFACE :
 				//debug_printf_P(PSTR("USBD_ClassXXX_Setup: USB_REQ_TYPE_STANDARD USB_REQ_SET_INTERFACE interfacev=%d, value=%d\n"), interfacev, LO_BYTE(req->wValue));
 				if (interfacev < INTERFACE_count)
@@ -8839,6 +8868,194 @@ static USBD_StatusTypeDef USBD_XXX_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReq
 	}
 	return USBD_OK;
 }
+
+static USBD_StatusTypeDef USBD_XXX_DataIn (USBD_HandleTypeDef *pdev, uint_fast8_t epnum)
+{
+	// epnum without direction bit
+	//debug_printf_P(PSTR("USBD_LL_DataInStage: IN: epnum=%02X\n"), epnum);
+	switch (epnum)
+	{
+#if WITHUSBCDC
+	case (USBD_EP_CDC_IN & 0x7F):
+#if 0
+		// test usb tx fifo initialization
+		#define TLENNNN (VIRTUAL_COM_PORT_DATA_SIZE - 0)
+		memset(cdc1buffin, '$', TLENNNN);
+		USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), cdc1buffin, TLENNNN);
+		break;
+#endif
+		while (usbd_cdc_txenabled && (cdc1buffinlevel < ARRAY_SIZE(cdc1buffin)))
+		{
+			HARDWARE_CDC_ONTXCHAR(pdev);	// при отсутствии данных usbd_cdc_txenabled устанавливается в 0
+		}
+		USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), cdc1buffin, cdc1buffinlevel);
+		cdc1buffinlevel = 0;
+		break;
+
+	case (USBD_EP_CDC_INb & 0x7F):
+		//while (usbd_cdc_txenabled && (cdc2buffinlevel < ARRAY_SIZE(cdc2buffin)))
+		//{
+		//	HARDWARE_CDC_ONTXCHAR(pdev);	// при отсутствии данных usbd_cdc_txenabled устанавливается в 0
+		//}
+		USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), cdc2buffin, cdc2buffinlevel);
+		cdc2buffinlevel = 0;
+		break;
+
+	case (USBD_EP_CDC_INT & 0x7F):
+		break;
+
+	case (USBD_EP_CDC_INTb & 0x7F):
+		break;
+#endif /* WITHUSBCDC */
+
+#if WITHUSBUAC
+	case ((USBD_EP_AUDIO_IN) & 0x7F):
+		if (uacinaddr != 0)
+		{
+			global_disableIRQ();
+			release_dmabufferx(uacinaddr);
+			global_enableIRQ();
+		}
+
+		global_disableIRQ();
+		uacinaddr = getfilled_dmabufferx(& uacinsize);
+		global_enableIRQ();
+
+		if (uacinaddr != 0)
+		{
+			USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), (const uint8_t *) uacinaddr, uacinsize);
+		}
+		else
+		{
+			USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), NULL, 0);
+		}
+		break;
+#if WITHUSBUAC3
+	case ((USBD_EP_RTS_IN) & 0x7F):
+		if (uacinrtsaddr != 0)
+		{
+			global_disableIRQ();
+			release_dmabufferx(uacinrtsaddr);
+			global_enableIRQ();
+		}
+
+		global_disableIRQ();
+		uacinrtsaddr = getfilled_dmabufferxrts(& uacinrtssize);
+		global_enableIRQ();
+
+		if (uacinrtsaddr != 0)
+		{
+			USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), (const uint8_t *) uacinrtsaddr, uacinrtssize);
+		}
+		else
+		{
+			USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), NULL, 0);
+		}
+		break;
+#endif /* WITHUSBUAC3 */
+#endif /* WITHUSBUAC */
+
+#if WITHUSBCDCEEM
+	case (USBD_EP_CDCEEM_IN & 0x7F):
+		//USBD_LL_Transmit(pdev, USBD_EP_CDCEEM_IN, NULL, 0);
+		USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), & dbd, sizeof dbd);
+		//debug_printf_P(PSTR("USBD_LL_DataInStage: USBD_EP_CDCEEM_IN\n"));
+		break;
+#endif /* WITHUSBCDCEEM */
+
+#if WITHUSBRNDIS
+	case (USBD_EP_RNDIS_IN & 0x7F):
+		USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), NULL, 0);
+		//debug_printf_P(PSTR("USBD_LL_DataInStage: USBD_EP_RNDIS_IN\n"));
+		break;
+
+	case (USBD_EP_RNDIS_INT & 0x7F):
+		//USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), NULL, 0);
+		//debug_printf_P(PSTR("USBD_LL_DataInStage: USBD_EP_RNDIS_INT\n"));
+		break;
+#endif /* WITHUSBRNDIS */
+
+#if WITHUSBCDCECM
+	case (USBD_EP_CDCECM_IN & 0x7F):
+		USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), NULL, 0);
+		//debug_printf_P(PSTR("USBD_LL_DataInStage: USBD_EP_CDCECM_IN\n"));
+		break;
+
+	case (USBD_EP_CDCECM_INT & 0x7F):
+		//USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), NULL, 0);
+		//debug_printf_P(PSTR("USBD_LL_DataInStage: USBD_EP_CDCECM_INT\n"));
+		break;
+#endif /* WITHUSBCDCECM */
+
+	default:
+		TP();
+		debug_printf_P(PSTR("USBD_LL_DataInStage: epnum=%02x\n"), epnum);
+		break;
+	}
+	return USBD_OK;
+}
+
+static USBD_StatusTypeDef USBD_XXX_DataOut (USBD_HandleTypeDef *pdev, uint_fast8_t epnum)
+{
+	switch (epnum)
+	{
+#if WITHUSBCDC
+	case USBD_EP_CDC_OUT:
+		/* CDC EP OUT */
+		// use CDC data
+		//debug_printf_P(PSTR("0:%u "), USBD_LL_GetRxDataSize(pdev, epnum));
+		cdc1out_buffer_save(cdc1buffout, USBD_LL_GetRxDataSize(pdev, epnum));	/* использование буфера принятых данных */
+		//memcpy(cdc1buffin, cdc1buffout, cdc1buffinlevel = USBD_LL_GetRxDataSize(pdev, epnum));
+		/* Prepare Out endpoint to receive next cdc data packet */
+		USBD_LL_PrepareReceive(pdev, USB_ENDPOINT_OUT(epnum), cdc1buffout, VIRTUAL_COM_PORT_OUT_DATA_SIZE);
+		break;
+
+	case USBD_EP_CDC_OUTb:
+		/* CDC EP OUT */
+		// use CDC data
+		//debug_printf_P(PSTR("1:%u "), USBD_LL_GetRxDataSize(pdev, epnum));
+		cdc2out_buffer_save(cdc2buffout, USBD_LL_GetRxDataSize(pdev, epnum));	/* использование буфера принятых данных */
+		//memcpy(cdc2buffin, cdc2buffout, cdc2buffinlevel = USBD_LL_GetRxDataSize(pdev, epnum));
+		/* Prepare Out endpoint to receive next cdc data packet */
+		USBD_LL_PrepareReceive(pdev, USB_ENDPOINT_OUT(epnum), cdc2buffout, VIRTUAL_COM_PORT_OUT_DATA_SIZE);
+		break;
+#endif /* WITHUSBCDC */
+
+#if WITHUSBUAC
+	case USBD_EP_AUDIO_OUT:
+		/* UAC EP OUT */
+		// use audio data
+		uacout_buffer_save(uacoutbuff, USBD_LL_GetRxDataSize(pdev, epnum));
+		/* Prepare Out endpoint to receive next audio data packet */
+		USBD_LL_PrepareReceive(pdev, USB_ENDPOINT_OUT(epnum), uacoutbuff, VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT);
+		break;
+#endif /* WITHUSBUAC */
+
+#if WITHUSBCDCEEM
+	case USBD_EP_CDCEEM_OUT:
+		cdceemout_buffer_save(cdceembuffout, USBD_LL_GetRxDataSize(pdev, epnum));
+		/* Prepare Out endpoint to receive next cdc eem data packet */
+		USBD_LL_PrepareReceive(pdev, USB_ENDPOINT_OUT(epnum), cdceembuffout, USBD_CDCEEM_BUFSIZE);
+		break;
+#endif /* WITHUSBCDCEEM */
+
+#if WITHUSBRNDIS
+	case USBD_EP_RNDIS_OUT:
+		rndisout_buffer_save(rndisbuffout, USBD_LL_GetRxDataSize(pdev, epnum));
+		/* Prepare Out endpoint to receive next rndis data packet */
+		USBD_LL_PrepareReceive(pdev, USB_ENDPOINT_OUT(epnum), rndisbuffout, USBD_RNDIS_OUT_BUFSIZE);
+		break;
+#endif /* WITHUSBRNDIS */
+
+	default:
+		debug_printf_P(PSTR("USBD_XXX_DataOut: epnum=%02X\n"), epnum);
+		TP();
+		break;
+	}
+	return USBD_OK;
+}
+
+/* --- CLASS interface functions */
 
 /**
 * @brief  USBD_StdItfReq
@@ -9499,39 +9716,6 @@ USBD_StatusTypeDef USBD_LL_SetupStage(USBD_HandleTypeDef *pdev, const uint32_t *
 	return USBD_OK;  
 }
 
-
-#if WITHUSBCDC
-
-/* использование буфера принятых данных */
-static void cdc1out_buffer_save(
-	const uint8_t * data, 
-	uint_fast16_t length
-	)
-{
-	unsigned i;
-
-	for (i = 0; usbd_cdc_rxenabled && i < length; ++ i)
-	{
-		HARDWARE_CDC_ONRXCHAR(data [i]);
-	}
-}
-
-/* использование буфера принятых данных */
-static void cdc2out_buffer_save(
-	const uint8_t * data, 
-	uint_fast16_t length
-	)
-{
-	unsigned i;
-
-	for (i = 0; usbd_cdc_rxenabled && i < length; ++ i)
-	{
-		//HARDWARE_CDC_ONRXCHAR(data [i]);
-	}
-}
-
-#endif /* WITHUSBCDC */
-
 #if WITHUSBRNDIS
 
 #include "ndis.h"
@@ -9944,192 +10128,6 @@ static void usbd_rndis_ep0_recv(USBD_HandleTypeDef *pdev)
 }
 
 #endif /* WITHUSBRNDIS */
-
-static USBD_StatusTypeDef USBD_XXX_DataIn (USBD_HandleTypeDef *pdev, uint_fast8_t epnum)
-{
-	// epnum without direction bit
-	//debug_printf_P(PSTR("USBD_LL_DataInStage: IN: epnum=%02X\n"), epnum);
-	switch (epnum)
-	{
-#if WITHUSBCDC
-	case (USBD_EP_CDC_IN & 0x7F):
-#if 0
-		// test usb tx fifo initialization
-		#define TLENNNN (VIRTUAL_COM_PORT_DATA_SIZE - 0)
-		memset(cdc1buffin, '$', TLENNNN);
-		USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), cdc1buffin, TLENNNN);
-		break;
-#endif
-		while (usbd_cdc_txenabled && (cdc1buffinlevel < ARRAY_SIZE(cdc1buffin)))
-		{
-			HARDWARE_CDC_ONTXCHAR(pdev);	// при отсутствии данных usbd_cdc_txenabled устанавливается в 0
-		}
-		USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), cdc1buffin, cdc1buffinlevel);
-		cdc1buffinlevel = 0;
-		break;
-
-	case (USBD_EP_CDC_INb & 0x7F):
-		//while (usbd_cdc_txenabled && (cdc2buffinlevel < ARRAY_SIZE(cdc2buffin)))
-		//{
-		//	HARDWARE_CDC_ONTXCHAR(pdev);	// при отсутствии данных usbd_cdc_txenabled устанавливается в 0
-		//}
-		USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), cdc2buffin, cdc2buffinlevel);
-		cdc2buffinlevel = 0;
-		break;
-
-	case (USBD_EP_CDC_INT & 0x7F):
-		break;
-
-	case (USBD_EP_CDC_INTb & 0x7F):
-		break;
-#endif /* WITHUSBCDC */
-
-#if WITHUSBUAC
-	case ((USBD_EP_AUDIO_IN) & 0x7F):
-		if (uacinaddr != 0)
-		{
-			global_disableIRQ();
-			release_dmabufferx(uacinaddr);
-			global_enableIRQ();
-		}
-
-		global_disableIRQ();
-		uacinaddr = getfilled_dmabufferx(& uacinsize);
-		global_enableIRQ();
-
-		if (uacinaddr != 0)
-		{
-			USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), (const uint8_t *) uacinaddr, uacinsize);
-		}
-		else
-		{
-			USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), NULL, 0);
-		}
-		break;
-#if WITHUSBUAC3
-	case ((USBD_EP_RTS_IN) & 0x7F):
-		if (uacinrtsaddr != 0)
-		{
-			global_disableIRQ();
-			release_dmabufferx(uacinrtsaddr);
-			global_enableIRQ();
-		}
-
-		global_disableIRQ();
-		uacinrtsaddr = getfilled_dmabufferxrts(& uacinrtssize);
-		global_enableIRQ();
-
-		if (uacinrtsaddr != 0)
-		{
-			USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), (const uint8_t *) uacinrtsaddr, uacinrtssize);
-		}
-		else
-		{
-			USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), NULL, 0);
-		}
-		break;
-#endif /* WITHUSBUAC3 */
-#endif /* WITHUSBUAC */
-
-#if WITHUSBCDCEEM
-	case (USBD_EP_CDCEEM_IN & 0x7F):
-		//USBD_LL_Transmit(pdev, USBD_EP_CDCEEM_IN, NULL, 0);
-		USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), & dbd, sizeof dbd);
-		//debug_printf_P(PSTR("USBD_LL_DataInStage: USBD_EP_CDCEEM_IN\n"));
-		break;
-#endif /* WITHUSBCDCEEM */
-
-#if WITHUSBRNDIS
-	case (USBD_EP_RNDIS_IN & 0x7F):
-		USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), NULL, 0);
-		//debug_printf_P(PSTR("USBD_LL_DataInStage: USBD_EP_RNDIS_IN\n"));
-		break;
-
-	case (USBD_EP_RNDIS_INT & 0x7F):
-		//USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), NULL, 0);
-		//debug_printf_P(PSTR("USBD_LL_DataInStage: USBD_EP_RNDIS_INT\n"));
-		break;
-#endif /* WITHUSBRNDIS */
-
-#if WITHUSBCDCECM
-	case (USBD_EP_CDCECM_IN & 0x7F):
-		USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), NULL, 0);
-		//debug_printf_P(PSTR("USBD_LL_DataInStage: USBD_EP_CDCECM_IN\n"));
-		break;
-
-	case (USBD_EP_CDCECM_INT & 0x7F):
-		//USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), NULL, 0);
-		//debug_printf_P(PSTR("USBD_LL_DataInStage: USBD_EP_CDCECM_INT\n"));
-		break;
-#endif /* WITHUSBCDCECM */
-
-	default:
-		TP();
-		debug_printf_P(PSTR("USBD_LL_DataInStage: epnum=%02x\n"), epnum);
-		break;
-	}
-	return USBD_OK;
-}
-
-static USBD_StatusTypeDef USBD_XXX_DataOut (USBD_HandleTypeDef *pdev, uint_fast8_t epnum)
-{
-	switch (epnum)
-	{
-#if WITHUSBCDC
-	case USBD_EP_CDC_OUT:
-		/* CDC EP OUT */
-		// use CDC data
-		//debug_printf_P(PSTR("0:%u "), USBD_LL_GetRxDataSize(pdev, epnum));
-		cdc1out_buffer_save(cdc1buffout, USBD_LL_GetRxDataSize(pdev, epnum));	/* использование буфера принятых данных */
-		//memcpy(cdc1buffin, cdc1buffout, cdc1buffinlevel = USBD_LL_GetRxDataSize(pdev, epnum));
-		/* Prepare Out endpoint to receive next cdc data packet */
-		USBD_LL_PrepareReceive(pdev, USB_ENDPOINT_OUT(epnum), cdc1buffout, VIRTUAL_COM_PORT_OUT_DATA_SIZE);
-		break;
-
-	case USBD_EP_CDC_OUTb:
-		/* CDC EP OUT */
-		// use CDC data
-		//debug_printf_P(PSTR("1:%u "), USBD_LL_GetRxDataSize(pdev, epnum));
-		cdc2out_buffer_save(cdc2buffout, USBD_LL_GetRxDataSize(pdev, epnum));	/* использование буфера принятых данных */
-		//memcpy(cdc2buffin, cdc2buffout, cdc2buffinlevel = USBD_LL_GetRxDataSize(pdev, epnum));
-		/* Prepare Out endpoint to receive next cdc data packet */
-		USBD_LL_PrepareReceive(pdev, USB_ENDPOINT_OUT(epnum), cdc2buffout, VIRTUAL_COM_PORT_OUT_DATA_SIZE);
-		break;
-#endif /* WITHUSBCDC */
-
-#if WITHUSBUAC
-	case USBD_EP_AUDIO_OUT:
-		/* UAC EP OUT */
-		// use audio data
-		uacout_buffer_save(uacoutbuff, USBD_LL_GetRxDataSize(pdev, epnum));
-		/* Prepare Out endpoint to receive next audio data packet */
-		USBD_LL_PrepareReceive(pdev, USB_ENDPOINT_OUT(epnum), uacoutbuff, VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT);
-		break;
-#endif /* WITHUSBUAC */
-
-#if WITHUSBCDCEEM
-	case USBD_EP_CDCEEM_OUT:
-		cdceemout_buffer_save(cdceembuffout, USBD_LL_GetRxDataSize(pdev, epnum));
-		/* Prepare Out endpoint to receive next cdc eem data packet */
-		USBD_LL_PrepareReceive(pdev, USB_ENDPOINT_OUT(epnum), cdceembuffout, USBD_CDCEEM_BUFSIZE);
-		break;
-#endif /* WITHUSBCDCEEM */
-
-#if WITHUSBRNDIS
-	case USBD_EP_RNDIS_OUT:
-		rndisout_buffer_save(rndisbuffout, USBD_LL_GetRxDataSize(pdev, epnum));
-		/* Prepare Out endpoint to receive next rndis data packet */
-		USBD_LL_PrepareReceive(pdev, USB_ENDPOINT_OUT(epnum), rndisbuffout, USBD_RNDIS_OUT_BUFSIZE);
-		break;
-#endif /* WITHUSBRNDIS */
-
-	default:
-		debug_printf_P(PSTR("USBD_XXX_DataOut: epnum=%02X\n"), epnum);
-		TP();
-		break;
-	}
-	return USBD_OK;
-}
 
 /**
 * @brief  USBD_DataOutStage
@@ -14800,6 +14798,23 @@ static const USBD_ClassTypeDef USBD_CLASS_XXX =
 	NULL,	//USBD_XXX_IsoINIncomplete,	// IsoINIncomplete
 	NULL,	//USBD_XXX_IsoOUTIncomplete,	// IsoOUTIncomplete
 };
+
+/*
+static const USBD_ClassTypeDef USBD_CLASS_AUDIO =
+{
+	USBD_AUDIO_Init,	// Init
+	USBD_AUDIO_DeInit,	// DeInit
+	USBD_AUDIO_Setup,		// Setup
+	NULL,	//USBD_XXX_EP0_TxSent,	// EP0_TxSent
+	NULL,	//USBD_XXX_EP0_RxReady,	// RxReady
+	USBD_AUDIO_DataIn,	// DataIn
+	USBD_AUDIO_DataOut,	// DataOut
+	NULL,	//USBD_XXX_SOF,	// SOF
+	NULL,	//USBD_XXX_IsoINIncomplete,	// IsoINIncomplete
+	NULL,	//USBD_XXX_IsoOUTIncomplete,	// IsoOUTIncomplete
+};
+
+*/
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
 
 /**
@@ -15299,7 +15314,7 @@ static void hardware_usbd_initialize(void)
 
 	USBD_Init2(& hUsbDevice, ifhs);
 	USBD_AddClass(& hUsbDevice, & USBD_CLASS_XXX);
-	//USBD_AddClass(& hUsbDevice, & USBD_CDC0);
+	//USBD_AddClass(& hUsbDevice, & USBD_CLASS_AUDIO);
 	//USBD_AddClass(& hUsbDevice, & USBD_CDC1);
 }
 
