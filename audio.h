@@ -158,8 +158,11 @@
 #define HARDWARE_USBD_AUDIO_IN_CHANNELS_AUDIO48		2
 #define VIRTUAL_AUDIO_PORT_DATA_SIZE_IN_AUDIO48		(DMABUFFSIZE16 * sizeof (uint16_t))
 
-#define HSINTERVAL_AUDIO48 4	// endpoint descriptor parameters - дл€ обеспечсени€ 1 к√ц периода
+#define HSINTERVAL_AUDIO48 4	// endpoint descriptor parameters - дл€ обеспечени€ 1 к√ц периода
 #define FSINTERVAL_AUDIO48 1
+
+#define HSINTERVAL_32MS 9	// endpoint descriptor parameters - дл€ обеспечени€ 32 ms периода
+#define FSINTERVAL_32MS 32
 
 #define HARDWARE_USBD_AUDIO_OUT_SAMPLEBITS	16
 #if WITHUABUACOUTAUDIO48MONO
