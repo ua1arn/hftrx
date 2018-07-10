@@ -288,58 +288,50 @@ int gettxstate(void) { return glob_tx; }
 static void 
 prog_gpioreg(void)
 {
-///////////////////////
-// LCD reset bit
-#if LS020_RST
 
+#if LS020_RST
+	// LCD reset bit
 	if (glob_lcdreset != 0)
 		LS020_RESET_PORT_S(LS020_RST);
 	else
 		LS020_RESET_PORT_C(LS020_RST);
-
 #endif /* LS020_RST */
 
-///////////////////////
-// CODEC2 reset
 #if TARGET_CS4272_RESET_BIT
-
+	// CODEC2 reset
 	if (glob_codec2_nreset == 0)
 		TARGET_CS4272_RESET_PORT_S(TARGET_CS4272_RESET_BIT);
 	else
 		TARGET_CS4272_RESET_PORT_C(TARGET_CS4272_RESET_BIT);
-
 #endif /* TARGET_CS4272_RESET_BIT */
 
-///////////////////////
-// DDS RESET
 #if TARGET_DDSRESET_BIT
-
+	// DDS RESET
 	if (glob_reset_n == 0)
 		TARGET_DDSRESET_PORT_S(TARGET_DDSRESET_BIT);
 	else
 		TARGET_DDSRESET_PORT_C(TARGET_DDSRESET_BIT);
-
 #endif /* TARGET_DDSRESET_BIT */
 
-///////////////////////
-// Band select
-	#if defined (TARGET_BAND_DATA_SET)
-		TARGET_BAND_DATA_SET(glob_bandf);
-	#endif /* defined (TARGET_BAND_DATA_SET) */
-	///////////////////////
+#if defined (TARGET_BAND_DATA_SET)
+	// Band select
+	TARGET_BAND_DATA_SET(glob_bandf);
+#endif /* defined (TARGET_BAND_DATA_SET) */
+
+#if defined (HARDWARE_SDIOPOWER_SET)
 	// SD CARD POWER ENABLE BIT
-	#if defined (HARDWARE_SDIOPOWER_SET)
-		HARDWARE_SDIOPOWER_SET(glob_sdcardpoweron);
-	#endif /* defined (HARDWARE_SDIOPOWER_SET) */
+	HARDWARE_SDIOPOWER_SET(glob_sdcardpoweron);
+#endif /* defined (HARDWARE_SDIOPOWER_SET) */
 
+#if defined (TARGET_USBFS_VBUSON_SET)
 	// USB FLASH POWER ENABLE BIT
-	#if defined (TARGET_USBFS_VBUSON_SET)
-		TARGET_USBFS_VBUSON_SET(glob_usbflashpoweron);
-	#endif /* defined (TARGET_USBFS_VBUSON_SET) */
+	TARGET_USBFS_VBUSON_SET(glob_usbflashpoweron);
+#endif /* defined (TARGET_USBFS_VBUSON_SET) */
 
-	#if defined (HARDWARE_LTDC_SET_BL)
-		HARDWARE_LTDC_SET_BL(WITHLCDBACKLIGHTMIN != glob_bglight, glob_bglight - (WITHLCDBACKLIGHTMIN + 1));
-	#endif /* defined (HARDWARE_LTDC_SET_BL) */
+#if defined (HARDWARE_LTDC_SET_BL)
+	// €ркость подсветки
+	HARDWARE_LTDC_SET_BL(WITHLCDBACKLIGHTMIN != glob_bglight, glob_bglight - (WITHLCDBACKLIGHTMIN + 1));
+#endif /* defined (HARDWARE_LTDC_SET_BL) */
 }
 
 
