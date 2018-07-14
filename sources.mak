@@ -33,7 +33,7 @@ SRC += \
  twi.c \
  pio.c \
  tlv320aic23.c cs4272.c nau8822.c wm8994.c \
- hardwarecodecs.c buffers.c audio.c spislave.c modems.c \
+ hardwarecodecs.c buffers.c audio.c fft.c spislave.c modems.c \
  sdcard.c \
  diskio.c ff.c ffsystem.c ffunicode.c \
  tc1.c tests.c

@@ -241,6 +241,34 @@
 
 	#endif
 
+
+/* from "C Language Algorithms for Digital Signal Processing"
+   by Paul M. Embree and Bruce Kimble, Prentice Hall, 1991 */
+
+	
+struct Complex
+{
+	FLOAT_t real;
+	FLOAT_t imag;
+};
+
+#if CPUSTYLE_R7S721
+	#define FFTSizeFiltersM 10
+	#define FFTSizeSpectrumM 10
+#else
+	#define FFTSizeFiltersM 10
+	#define FFTSizeSpectrumM 10
+#endif
+
+
+#define FFTSizeFilters (1 << (FFTSizeFiltersM))
+#define FFTSizeSpectrum (1 << (FFTSizeSpectrumM))
+
+
+void FFT_initialize(void);
+void FFT(struct Complex *x, int n, int m);
+void IFFT(struct Complex *x, int n, int m);
+
 	/* для возможности работы с функциями сопроцессора NEON - vld1_f32 например */
 	#define IV ivqv [0]
 	#define QV ivqv [1]
