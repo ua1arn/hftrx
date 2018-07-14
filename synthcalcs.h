@@ -9,7 +9,7 @@
 
 #include "hardware.h"
 
-#include <stdbool.h>
+//#include <stdbool.h>
 #include <stdint.h>
 
 extern const phase_t r1_ph; // = SYNTH_R1;
