@@ -6207,10 +6207,12 @@ void hardware_spi_slave_callback(uint8_t * buff, uint_fast8_t len)
 		board_set_dspmodeA(buff [DSPCTL_OFFSET_MODEA]);
 		board_set_dspmodeB(buff [DSPCTL_OFFSET_MODEB]);
 		board_set_agc(buff [DSPCTL_OFFSET_AGCOFF] ? BOARD_AGCCODE_OFF : BOARD_AGCCODE_ON);
-#if ! WITHPOTGAIN
+#if ! WITHPOTIFGAIN
 		board_set_rfgain(buff [DSPCTL_OFFSET_RFGAIN_HI * 256] + buff [DSPCTL_OFFSET_RFGAIN_LO]);
+#endif /* ! WITHPOTIFGAIN */
+#if ! WITHPOTAFGAIN
 		board_set_afgain(buff [DSPCTL_OFFSET_AFGAIN_HI * 256] + buff [DSPCTL_OFFSET_AFGAIN_LO]);
-#endif /* ! WITHPOTGAIN */
+#endif /* ! WITHPOTAFGAIN */
 		board_set_afmute(buff [DSPCTL_OFFSET_AFMUTE]);
 		board_set_agc_t1(buff [DSPCTL_OFFSET_AGC_T1]);
 		board_set_agc_t2(buff [DSPCTL_OFFSET_AGC_T2]);

@@ -347,7 +347,8 @@
 	#define WITHDATAMODE	1	/* управление с клавиатуры передачей с USB AUDIO канала */
 	// Есть ли регулировка параметров потенциометрами
 	////#define WITHPOTWPM		1	/* используется регулировка скорости передачи в телеграфе потенциометром */
-	#define WITHPOTGAIN		1	/* регуляторы усиления на потенциометрах */
+	#define WITHPOTIFGAIN		1	/* регуляторы усиления ПЧ на потенциометрах */
+	#define WITHPOTAFGAIN		1	/* регуляторы усиления НЧ на потенциометрах */
 	//#define WITHPOTPOWER	1	/* регулятор мощности на потенциометре */
 	//#define WITHANTSELECT	1	// Управление переключением антенн
 
@@ -443,10 +444,12 @@
 		VOLTSOURCE = 8,		// PB0 Средняя точка делителя напряжения, для АКБ
 	#endif /* WITHVOLTLEVEL */
 
-	#if WITHPOTGAIN
+	#if WITHPOTIFGAIN
 		POTIFGAIN = 3,		// PA2 IF GAIN
+	#endif /* WITHPOTIFGAIN */
+	#if WITHPOTAFGAIN
 		POTAFGAIN = 7,		// PA7 AF GAIN
-	#endif /* WITHPOTGAIN */
+	#endif /* WITHPOTAFGAIN */
 
 	#if WITHPOTWPM
 		POTWPM = 6,			// PA6 потенциометр управления скоростью передачи в телеграфе

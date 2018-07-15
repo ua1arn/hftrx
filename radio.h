@@ -63,6 +63,11 @@ enum
 	#endif
 #endif
 
+#if WITHPOTGAIN	// Для совместимости с теми конфигурациями, где разрешются регулировки только парой
+	#define WITHPOTIFGAIN		1	/* регуляторы усиления ПЧ на потенциометрах */
+	#define WITHPOTAFGAIN		1	/* регуляторы усиления НЧ на потенциометрах */
+#endif /* WITHPOTGAIN */
+
 #if ELKEY328
 	#define CWWPMMIN	12 //328 10
 	#define CWWPMMAX	30 //328 60
@@ -71,15 +76,18 @@ enum
 	#define CWWPMMAX	60
 #endif
 
-#if WITHPOTGAIN
+#if WITHPOTIFGAIN
 	#define	BOARD_RFGAIN_MIN	0		/* код управления усилением ВЧ тракта */
 	#define	BOARD_RFGAIN_MAX	255		/* код управления усилением ВЧ тракта */
-#else /* WITHPOTGAIN */
+#else /* WITHPOTIFGAIN */
 	#define	BOARD_RFGAIN_MIN	0		/* код управления усилением ВЧ тракта */
 	#define	BOARD_RFGAIN_MAX	100		/* код управления усилением ВЧ тракта */
+#endif /* WITHPOTIFGAIN */
+
+#if ! WITHPOTAFGAIN
 	#define	BOARD_AFGAIN_MIN	0		/* код управления усилением НЧ тракта */
 	#define	BOARD_AFGAIN_MAX	100		/* код управления усилением НЧ тракта */
-#endif /* WITHPOTGAIN */
+#endif /* !WITHPOTAFGAIN */
 
 #define	WITHLINEINGAINMIN	0		/* код управления усилением входа с линии */
 #define	WITHLINEINGAINMAX	100		/* код управления усилением входа с линии */
@@ -132,7 +140,7 @@ enum
 	#define DDS2_CLK_DIV	1		/* Делитель опорной частоты перед подачей в DDS2 */
 #endif
 
-#define WITHPOTFILTERS (WITHPOTWPM || WITHPOTGAIN || WITHPOTPBT || WITHPOTIFSHIFT || WITHPOTPOWER || CTLSTYLE_RA4YBO_V3)
+#define WITHPOTFILTERS (WITHPOTWPM || WITHPOTIFGAIN || WITHPOTAFGAIN || WITHPOTPBT || WITHPOTIFSHIFT || WITHPOTPOWER || CTLSTYLE_RA4YBO_V3)
 
 
 extern uint_fast8_t glob_agc;

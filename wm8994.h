@@ -4830,10 +4830,10 @@
 	#define WITHAFCODEC1HAVEPROC	1	/* кодек имеет управление обработкой микрофонного сигнала */
 	#define WITHAFCODEC1HAVELINEINLEVEL	1	/* кодек имеет управление усилением с линейного входа */
 	#define	HARDWARE_CODEC1_NPROCPARAMS	5
-	#if WITHPOTGAIN
+	#if WITHPOTAFGAIN
 		#define	BOARD_AFGAIN_MIN	WM8994L_OUT_VOL_MIN		/* код управления усилением НЧ тракта */
 		#define	BOARD_AFGAIN_MAX	WM8994L_OUT_VOL_MAX		/* код управления усилением НЧ тракта */
-	#endif /* WITHPOTGAIN */
+	#endif /* WITHPOTAFGAIN */
 #endif /* defined (CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L) */
 
 #endif	/* WM8994_H_INCLUDED */

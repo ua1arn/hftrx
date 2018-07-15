@@ -7591,10 +7591,12 @@ static const uint_fast8_t adcinputs [] =
 	VOLTSIX,
 #endif /* WITHVOLTSENSOR */
 
-#if WITHPOTGAIN
+#if WITHPOTIFGAIN
 	POTIFGAIN,
+#endif /* WITHPOTIFGAIN */
+#if WITHPOTAFGAIN
 	POTAFGAIN,
-#endif /* WITHPOTGAIN */
+#endif /* WITHPOTAFGAIN */
 #if WITHCURRLEVEL
 	PASENSEIX,		// PA or driver current sense - ACS712-05 chip
 #endif /* WITHCURRLEVEL */
@@ -7934,12 +7936,14 @@ adcfilters_initialize(void)
 	#if WITHPOTIFSHIFT
 		hardware_set_adc_filter(POTIFSHIFT, HARDWARE_ADCFILTER_HISTERESIS2);	// регулировка IF SHIFT
 	#endif /* WITHPOTIFSHIFT */
-	#if WITHPOTGAIN
+	#if WITHPOTIFGAIN
 		hardware_set_adc_filter(POTIFGAIN, HARDWARE_ADCFILTER_HISTERESIS2);
-		hardware_set_adc_filter(POTAFGAIN, HARDWARE_ADCFILTER_HISTERESIS2);
 		//hardware_set_adc_filterLPF(POTIFGAIN, HARDWARE_ADCFILTER_LPF_DENOM / 2);
+	#endif /* WITHPOTIFGAIN */
+	#if WITHPOTAFGAIN
+		hardware_set_adc_filter(POTAFGAIN, HARDWARE_ADCFILTER_HISTERESIS2);
 		//hardware_set_adc_filterLPF(POTAFGAIN, HARDWARE_ADCFILTER_LPF_DENOM / 2);
-	#endif /* WITHPOTGAIN */
+	#endif /* WITHPOTAFGAIN */
 	#if WITHPOTNOTCH && WITHNOTCHFREQ
 		hardware_set_adc_filter(POTNOTCH, HARDWARE_ADCFILTER_HISTERESIS2);		// регулировка частоты NOTCH фильтра
 	#endif /* WITHPOTNOTCH && WITHNOTCHFREQ */

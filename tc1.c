@@ -2347,10 +2347,12 @@ struct nvmap
 	uint8_t gsquelch;		/* уровень открытия шумоподавителя */
 	uint8_t gvad605;		/* напряжение на AD605 (управление усилением тракта ПЧ */
 	uint16_t gfsadcpower10;	/*	Мощность, соответствующая full scale от IF ADC (с тояностью 0.1 дБмВт */
-	#if ! WITHPOTGAIN
+	#if ! WITHPOTAFGAIN
 		uint16_t afgain1;	// Параметр для регулировки уровня на выходе аудио-ЦАП
+	#endif /* ! WITHPOTAFGAIN */
+	#if ! WITHPOTIFGAIN
 		uint16_t rfgain1;	// Параметр для регулировки усиления по ПЧ
-	#endif /* ! WITHPOTGAIN */
+	#endif /* ! WITHPOTIFGAIN */
 	uint16_t glineamp;	// усиление с LINE IN
 	uint8_t gmikebust20db;	// предусилитель микрофона
 	uint8_t gmikeagc;	/* Включение программной АРУ перед модулятором */
@@ -8385,10 +8387,12 @@ directctlupdate(uint_fast8_t inmenu)
 	#if WITHPOTWPM
 		changed |= flagne_u8(& elkeywpm, board_getadc_filtered_u8(POTWPM, CWWPMMIN, CWWPMMAX));
 	#endif /* WITHPOTWPM */
-	#if WITHPOTGAIN
-		changed |= flagne_u16(& afgain1, board_getadc_filtered_u16(POTAFGAIN, BOARD_AFGAIN_MIN, BOARD_AFGAIN_MAX));	// Параметр для регулировки уровня на выходе аудио-ЦАП
+	#if WITHPOTIFGAIN
 		changed |= flagne_u16(& rfgain1, board_getadc_filtered_u16(POTIFGAIN, BOARD_RFGAIN_MIN, BOARD_RFGAIN_MAX));	// Параметр для регулировки усидения ПЧ
-	#endif /* WITHPOTGAIN */
+	#endif /* WITHPOTIFGAIN */
+	#if WITHPOTAFGAIN
+		changed |= flagne_u16(& afgain1, board_getadc_filtered_u16(POTAFGAIN, BOARD_AFGAIN_MIN, BOARD_AFGAIN_MAX));	// Параметр для регулировки уровня на выходе аудио-ЦАП
+	#endif /* WITHPOTAFGAIN */
 	#if WITHPBT && WITHPOTPBT
 		/* установка gpbtoffset PBTMIN, PBTMAX, midscale = PBTHALF */
 		changed |= flagne_u16(& gpbtoffset, board_getadc_filtered_u16(POTPBT, PBTMIN, PBTMAX) / 10 * 10);
@@ -12561,7 +12565,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 #endif /* WITHRFSG */
 #if WITHIF4DSP
-#if ! WITHPOTGAIN
+#if ! WITHPOTAFGAIN
 	{
 		"AF GAIN ", 7, 0, 0,	ISTEP1,	
 		ITEM_VALUE,
@@ -12571,6 +12575,8 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
 	},
+#endif /* ! WITHPOTAFGAIN */
+#if ! WITHPOTIFGAIN
 	{
 		"RF GAIN ", 7, 0, 0,	ISTEP1,	
 		ITEM_VALUE,
@@ -12580,7 +12586,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
 	},
-#endif /* WITHPOTGAIN */
+#endif /* ! WITHPOTIFGAIN */
 #endif /* WITHIF4DSP */
 #if WITHENCODER
 	{

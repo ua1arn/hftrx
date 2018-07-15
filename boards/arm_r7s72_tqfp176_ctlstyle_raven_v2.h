@@ -247,7 +247,8 @@
 
 	// Есть ли регулировка параметров потенциометрами
 	////#define WITHPOTWPM		1	/* используется регулировка скорости передачи в телеграфе потенциометром */
-	#define WITHPOTGAIN		1	/* регуляторы усиления на потенциометрах */
+	#define WITHPOTIFGAIN		1	/* регуляторы усиления ПЧ на потенциометрах */
+	#define WITHPOTAFGAIN		1	/* регуляторы усиления НЧ на потенциометрах */
 	#define WITHSLEEPTIMER	1	/* выключить индикатор и вывод звука по истечениии указанного времени */
 
 	#define WITHMENU 	1	/* функциональность меню может быть отключена - если настраивать нечего */
@@ -315,10 +316,12 @@
 	// Назначения входов АЦП процессора.
 	enum 
 	{ 
-	#if WITHPOTGAIN
+	#if WITHPOTIFGAIN
 		POTIFGAIN = 0,		// ADC0 IF GAIN
+	#endif /* WITHPOTIFGAIN */
+	#if WITHPOTAFGAIN
 		POTAFGAIN = 1,		// ADC1 AF GAIN
-	#endif /* WITHPOTGAIN */
+	#endif /* WITHPOTAFGAIN */
 
 	#if WITHPOTWPM
 		POTWPM = 2,		// ADC2 потенциометр управления скоростью передачи в телеграфе
