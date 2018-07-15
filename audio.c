@@ -5492,8 +5492,9 @@ prog_dsplreg(void)
 	buff [DSPCTL_OFFSET_MODEB] = glob_dspmodes [1];
 	buff [DSPCTL_OFFSET_AFGAIN_HI] = glob_afgain >> 8;
 	buff [DSPCTL_OFFSET_AFGAIN_LO] = glob_afgain;
+	buff [DSPCTL_OFFSET_IFGAIN_HI] = glob_ifgain >> 8;
+	buff [DSPCTL_OFFSET_IFGAIN_LO] = glob_ifgain;
 	buff [DSPCTL_OFFSET_AFMUTE] = glob_afmute;	/* отключить звук в наушниках и динамиках */
-	buff [DSPCTL_OFFSET_RFGAIN_LO] = glob_ifgain;
 	buff [DSPCTL_OFFSET_AGCOFF] = (glob_agc == BOARD_AGCCODE_OFF);
 	buff [DSPCTL_OFFSET_MICLEVEL_HI] = glob_mik1level >> 8;
 	buff [DSPCTL_OFFSET_MICLEVEL_LO] = glob_mik1level;
@@ -5536,10 +5537,7 @@ prog_dsplreg(void)
 	buff [DSPCTL_OFFSET_MIKEAGCSCALE] = glob_mikeagcscale;
 
 	spi_select(target, DSPREG_SPIMODE);
-	spi_progval8_p1(target, buff [0]);
-	for (i = 1; i < (sizeof buff / sizeof buff [0]); ++ i)
-		spi_progval8_p2(target, buff [i]);
-	spi_complete(target);
+	prog_spi_send_frame(target, buff, sizeof buff / sizeof buff [0]);
 	spi_unselect(target);
 }
 
@@ -6208,10 +6206,10 @@ void hardware_spi_slave_callback(uint8_t * buff, uint_fast8_t len)
 		board_set_dspmodeB(buff [DSPCTL_OFFSET_MODEB]);
 		board_set_agc(buff [DSPCTL_OFFSET_AGCOFF] ? BOARD_AGCCODE_OFF : BOARD_AGCCODE_ON);
 #if ! WITHPOTIFGAIN
-		board_set_ifgain(buff [DSPCTL_OFFSET_RFGAIN_HI * 256] + buff [DSPCTL_OFFSET_RFGAIN_LO]);
+		board_set_ifgain(buff [DSPCTL_OFFSET_IFGAIN_HI] * 256 + buff [DSPCTL_OFFSET_IFGAIN_LO]);
 #endif /* ! WITHPOTIFGAIN */
 #if ! WITHPOTAFGAIN
-		board_set_afgain(buff [DSPCTL_OFFSET_AFGAIN_HI * 256] + buff [DSPCTL_OFFSET_AFGAIN_LO]);
+		board_set_afgain(buff [DSPCTL_OFFSET_AFGAIN_HI] * 256 + buff [DSPCTL_OFFSET_AFGAIN_LO]);
 #endif /* ! WITHPOTAFGAIN */
 		board_set_afmute(buff [DSPCTL_OFFSET_AFMUTE]);
 		board_set_agc_t1(buff [DSPCTL_OFFSET_AGC_T1]);
