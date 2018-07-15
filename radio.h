@@ -77,11 +77,11 @@ enum
 #endif
 
 #if WITHPOTIFGAIN
-	#define	BOARD_RFGAIN_MIN	0		/* код управления усилением ВЧ тракта */
-	#define	BOARD_RFGAIN_MAX	255		/* код управления усилением ВЧ тракта */
+	#define	BOARD_IFGAIN_MIN	0		/* код управления усилением ВЧ тракта */
+	#define	BOARD_IFGAIN_MAX	255		/* код управления усилением ВЧ тракта */
 #else /* WITHPOTIFGAIN */
-	#define	BOARD_RFGAIN_MIN	0		/* код управления усилением ВЧ тракта */
-	#define	BOARD_RFGAIN_MAX	100		/* код управления усилением ВЧ тракта */
+	#define	BOARD_IFGAIN_MIN	0		/* код управления усилением ВЧ тракта */
+	#define	BOARD_IFGAIN_MAX	100		/* код управления усилением ВЧ тракта */
 #endif /* WITHPOTIFGAIN */
 
 #if ! WITHPOTAFGAIN

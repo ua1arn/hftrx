@@ -89,7 +89,7 @@
 //
 
 static uint_fast8_t		glob_trxpath = 0;			/* Тракт, к которому относятся все последующие вызовы. При перередаяе используется индекс 0 */
-static uint_fast16_t 	glob_rfgain = BOARD_RFGAIN_MIN;
+static uint_fast16_t 	glob_ifgain = BOARD_IFGAIN_MIN;
 static uint_fast8_t 	glob_dspmodes [2] = { DSPCTL_MODE_IDLE, DSPCTL_MODE_IDLE, };
 
 static uint_fast8_t		glob_agcrate [2] = { 20, 20 }; //10	// 10 дБ изменение входного на 1 дБ выходного
@@ -5234,7 +5234,7 @@ rxparam_update(uint_fast8_t profile, uint_fast8_t pathi)
 	{
 		const int gainmax = glob_digigainmax;	// Верхний предел регулировки усиления
 		const int gainmin = 0;	// Нижний предел регулировки усиления
-		const int gaindb = ((gainmax - gainmin) * (int) (glob_rfgain - BOARD_RFGAIN_MIN) / (int) (BOARD_RFGAIN_MAX - BOARD_RFGAIN_MIN)) + gainmin;	// -20..+100 dB
+		const int gaindb = ((gainmax - gainmin) * (int) (glob_ifgain - BOARD_IFGAIN_MIN) / (int) (BOARD_IFGAIN_MAX - BOARD_IFGAIN_MIN)) + gainmin;	// -20..+100 dB
 		const FLOAT_t manualrfgain = db2ratio(gaindb);
 		
 		agc_parameters_update(& rxagcparams [profile] [pathi], manualrfgain, pathi);	// приёмник #0,#1
@@ -5244,7 +5244,7 @@ rxparam_update(uint_fast8_t profile, uint_fast8_t pathi)
 	{
 		const int gainmax = glob_digigainmax;	// Верхний предел регулировки усиления
 		const int gainmin = 0;	// Нижний предел регулировки усиления
-		const int gaindb = ((gainmax - gainmin) * (int) (glob_rfgain - BOARD_RFGAIN_MIN) / (int) (BOARD_RFGAIN_MAX - BOARD_RFGAIN_MIN)) + gainmin;	// -20..+100 dB
+		const int gaindb = ((gainmax - gainmin) * (int) (glob_ifgain - BOARD_IFGAIN_MIN) / (int) (BOARD_IFGAIN_MAX - BOARD_IFGAIN_MIN)) + gainmin;	// -20..+100 dB
 		const FLOAT_t manualrfgain = db2ratio(gaindb);
 		
 		agc_smeter_parameters_update(& rxsmeterparams, manualrfgain, 0);	// как у приемника #0
@@ -5493,7 +5493,7 @@ prog_dsplreg(void)
 	buff [DSPCTL_OFFSET_AFGAIN_HI] = glob_afgain >> 8;
 	buff [DSPCTL_OFFSET_AFGAIN_LO] = glob_afgain;
 	buff [DSPCTL_OFFSET_AFMUTE] = glob_afmute;	/* отключить звук в наушниках и динамиках */
-	buff [DSPCTL_OFFSET_RFGAIN_LO] = glob_rfgain;
+	buff [DSPCTL_OFFSET_RFGAIN_LO] = glob_ifgain;
 	buff [DSPCTL_OFFSET_AGCOFF] = (glob_agc == BOARD_AGCCODE_OFF);
 	buff [DSPCTL_OFFSET_MICLEVEL_HI] = glob_mik1level >> 8;
 	buff [DSPCTL_OFFSET_MICLEVEL_LO] = glob_mik1level;
@@ -5694,11 +5694,11 @@ board_set_fsadcpower10(int_fast16_t v)
 }
 
 void
-board_set_rfgain(uint_fast16_t v)
+board_set_ifgain(uint_fast16_t v)
 {
-	if (glob_rfgain != v)
+	if (glob_ifgain != v)
 	{
-		glob_rfgain = v;
+		glob_ifgain = v;
 		board_dsp1regchanged();
 	}
 }
@@ -6208,7 +6208,7 @@ void hardware_spi_slave_callback(uint8_t * buff, uint_fast8_t len)
 		board_set_dspmodeB(buff [DSPCTL_OFFSET_MODEB]);
 		board_set_agc(buff [DSPCTL_OFFSET_AGCOFF] ? BOARD_AGCCODE_OFF : BOARD_AGCCODE_ON);
 #if ! WITHPOTIFGAIN
-		board_set_rfgain(buff [DSPCTL_OFFSET_RFGAIN_HI * 256] + buff [DSPCTL_OFFSET_RFGAIN_LO]);
+		board_set_ifgain(buff [DSPCTL_OFFSET_RFGAIN_HI * 256] + buff [DSPCTL_OFFSET_RFGAIN_LO]);
 #endif /* ! WITHPOTIFGAIN */
 #if ! WITHPOTAFGAIN
 		board_set_afgain(buff [DSPCTL_OFFSET_AFGAIN_HI * 256] + buff [DSPCTL_OFFSET_AFGAIN_LO]);

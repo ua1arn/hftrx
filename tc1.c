@@ -3030,7 +3030,7 @@ enum
 
 #if WITHIF4DSP
 	static uint_fast16_t afgain1 = BOARD_AFGAIN_MAX;	// Усиление НЧ на максимуме
-	static uint_fast16_t rfgain1 = BOARD_RFGAIN_MAX;	// Усиление ПЧ на максимуме
+	static uint_fast16_t rfgain1 = BOARD_IFGAIN_MAX;	// Усиление ПЧ на максимуме
 	static uint_fast16_t glineamp = WITHLINEINGAINMAX;	// усиление с LINE IN
 	static uint_fast8_t gmikebust20db;	// предусилитель микрофона
 	static uint_fast8_t gmikeagc = 1;	/* Включение программной АРУ перед модулятором */
@@ -6640,7 +6640,7 @@ updateboard(
 
 	#if WITHIF4DSP
 		board_set_afgain(sleepflag == 0 ? afgain1 : BOARD_AFGAIN_MIN);	// Параметр для регулировки уровня на выходе аудио-ЦАП
-		board_set_rfgain(sleepflag == 0  ? rfgain1 : BOARD_RFGAIN_MIN);	// Параметр для регулировки усидения ПЧ
+		board_set_ifgain(sleepflag == 0  ? rfgain1 : BOARD_IFGAIN_MIN);	// Параметр для регулировки усидения ПЧ
 
 		#if ! defined (CODEC1_TYPE) && WITHUSBHW && WITHUSBUAC
 			/* если конфигурация без автнонмного аудиокодека - все входы модулятора получают звук с USB AUDIO */
@@ -8388,7 +8388,7 @@ directctlupdate(uint_fast8_t inmenu)
 		changed |= flagne_u8(& elkeywpm, board_getadc_filtered_u8(POTWPM, CWWPMMIN, CWWPMMAX));
 	#endif /* WITHPOTWPM */
 	#if WITHPOTIFGAIN
-		changed |= flagne_u16(& rfgain1, board_getadc_filtered_u16(POTIFGAIN, BOARD_RFGAIN_MIN, BOARD_RFGAIN_MAX));	// Параметр для регулировки усидения ПЧ
+		changed |= flagne_u16(& rfgain1, board_getadc_filtered_u16(POTIFGAIN, BOARD_IFGAIN_MIN, BOARD_IFGAIN_MAX));	// Параметр для регулировки усидения ПЧ
 	#endif /* WITHPOTIFGAIN */
 	#if WITHPOTAFGAIN
 		changed |= flagne_u16(& afgain1, board_getadc_filtered_u16(POTAFGAIN, BOARD_AFGAIN_MIN, BOARD_AFGAIN_MAX));	// Параметр для регулировки уровня на выходе аудио-ЦАП
@@ -12580,7 +12580,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	{
 		"RF GAIN ", 7, 0, 0,	ISTEP1,	
 		ITEM_VALUE,
-		BOARD_RFGAIN_MIN, BOARD_RFGAIN_MAX, 					// Усиление ПЧ/ВЧ в процентах
+		BOARD_IFGAIN_MIN, BOARD_IFGAIN_MAX, 					// Усиление ПЧ/ВЧ в процентах
 		offsetof(struct nvmap, rfgain1),
 		& rfgain1,
 		NULL,
