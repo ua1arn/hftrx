@@ -283,9 +283,15 @@ void IFFT(struct Complex *x, int n, int m);
 		int_fast32_t ivqv [2];
 	} INT32P_t;
 
-	void modem_demod_iq(FLOAT32P_t iq);
-	FLOAT32P_t modem_get_tx_iq(uint_fast8_t suspend);
-	int modem_get_tx_b(uint_fast8_t suspend);
+
+uint_fast8_t modem_getnextbit(
+	uint_fast8_t suspend	// передавать модему ещё рано - не полностью завершено формирование огибающей
+	 );
+// обработка бита на приёме
+void
+modem_frames_decode(
+	uint_fast8_t v
+	);
 	uint_fast8_t getsampmlemike(INT32P_t * v);			/* получить очередной оцифрованый сэмпл с микрофона */
 
 	FLOAT_t local_log(FLOAT_t x);

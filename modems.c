@@ -278,12 +278,11 @@ static uint_fast8_t modem_frame_getnextbit(
 		break;
 	}
 
-
 	return v;
 }
 
 // обработка бита на приёме
-static void
+void
 modem_frames_decode(
 	uint_fast8_t v
 	)
@@ -487,19 +486,6 @@ static void qputs(const char * s, int n)
 		qput(* s ++);
 }
 
-// RX
-// ---------
-
-static uint_fast32_t bps31_tx_bitrateFTW = 0;
-
-
-// Возвращает не-0 каждые 32 мс (31.25 Гц) - вызывается с частотой ARMI2SRATE
-static int bpsk31_phase_tick(void)
-{
-	static uint_fast32_t bps31_tx_bitrateNCO;
-	auto uint_fast32_t old = bps31_tx_bitrateNCO;
-	return ((bps31_tx_bitrateNCO += bps31_tx_bitrateFTW) < old);
-}
 
 /* функция вызывается из пользовательской программы. */
 // вызывается из user mode
@@ -516,205 +502,12 @@ modem_get_ptt(void)
 }
 
 
-static uint_fast8_t modem_getnextbit(
+uint_fast8_t modem_getnextbit(
 	uint_fast8_t suspend	// передавать модему ещё рано - не полностью завершено формирование огибающей
 	 )
 {
 	modem_tx_frame_nextstate(suspend);
 	return modem_frame_getnextbit(suspend);
-}
-
-
-// return 0/1 for 0/PI
-static 
-uint_fast8_t 
-pbsk_get_phase(
-	uint_fast8_t suspend	// передавать модему ещё рано - не полностью завершено формирование огибающей
-	)
-{
-	static uint_fast8_t phase;
-
-	if (bpsk31_phase_tick() && modem_getnextbit(suspend))
-	{
-		phase = ! phase;
-	}
-	return phase;
-}
-
-static volatile uint_fast8_t	glob_modemmode;		// применяемая модуляция (bpsk/qpsk)
-static volatile uint_fast32_t	glob_modemspeed100;	// скорость передачи с точностью 1/100 бод
-
-static unsigned short m_RxBitPhase;
-static unsigned short m_RxBitFreqFTW;
-
-static void bpsk_demod_initialize(void)
-{
-	m_RxBitPhase = 0;
-
-	//debug_printf_P(PSTR("bpsk_demod_initialize: m_RxBitFreqFTW=%d\n"), m_RxBitFreqFTW);
-}
-
-// демодулятор BPSK
-static void demod_bpsk2_symbol(int_fast32_t i, int_fast32_t q, int level)
-{
-	static int_fast32_t oldi, oldq;
-	const int_fast64_t dot = (int_fast64_t) oldi * i + (int_fast64_t) oldq * q;
-	const int_fast8_t bitv = ! (dot > 0);
-	modem_frames_decode(bitv);
-
-	oldi = i;
-	oldq = q;
-}
-
-
-
-
-static void demod_bpsk(int_fast32_t RxSin, int_fast32_t RxCos)
-{
-
-	enum 
-	{
-		BITFILTERLENGTH = 16,	// не трогать
-	};
-
-	typedef long SAMPLEHOLDER_T;
-		//saved values for bit synchronization filter taps
-	static SAMPLEHOLDER_T m_RxAmpFil [BITFILTERLENGTH];
-
-	{	
-		const SAMPLEHOLDER_T ISum = RxSin;
-		const SAMPLEHOLDER_T QSum = RxCos;
-
-		int	level = 30;
-		long ampl = (ISum >> 16) * (ISum >> 16) + (QSum >> 16) * (QSum >> 16);
-
-		// логарифм по основнияю 2
-		while (ampl > 0)
-		{
-			level += 1;
-			ampl >>= 1;
-		}
-
-		//Select 1 of 16
-		const int BitPhaseInt = m_RxBitPhase >> 12;
-		ASSERT(BitPhaseInt < BITFILTERLENGTH);
-		m_RxAmpFil [BitPhaseInt] = (SAMPLEHOLDER_T)level;
-
-		int i;
-		ampl = 0;
-		for (i = 0; i < BITFILTERLENGTH/2; i += 1)
-		{
-			ampl += m_RxAmpFil[i] - m_RxAmpFil [i + (BITFILTERLENGTH/2)];
-		}
-
-		//The correction is the amplitude times a synchronization gain, which is empirical.
-		const long BitPhaseCorrection = (long) (ampl * 4);
-
-		long NextSymPhase;	//long enough to contain the 17th bit when 16 bit adds overflow
-		NextSymPhase = (long)m_RxBitPhase + (long) m_RxBitFreqFTW - BitPhaseCorrection;
-		m_RxBitPhase = (unsigned short)NextSymPhase;
-
-		if (NextSymPhase > 0xFFFF)
-		{
-			//We're at the centre of the bit:  31.25 Hz
-			demod_bpsk2_symbol(ISum, QSum, level);
-		}
-	}
-}
-
-/////////////////////////////
-// Интерфейсная функция демодулятора
-// Вызыается с частотой ARMI2SRATE герц
-// iq - квадратура, полученная от радиотракта
-
-void modem_demod_iq(FLOAT32P_t iq)
-{
-	switch (glob_modemmode)
-	{
-	case 0:
-		// BPSK
-		demod_bpsk(iq.IV, iq.QV);
-		break;
-	case 1:
-		// QPSK
-		//demod_qpsk(iq.IV, iq.QV);
-		break;
-	}
-}
-// Интерфейсная функция модулятора
-// Вызыается с частотой ARMI2SRATE герц
-// версия для высокоскоростных модемов
-int modem_get_tx_b(
-	uint_fast8_t suspend	// передавать модему ещё рано - не полностью завершено формирование огибающей
-	)
-{
-
-	return pbsk_get_phase(suspend);	
-}
-// Интерфейсная функция модулятора
-// Вызыается с частотой ARMI2SRATE герц
-// версия для низкоскоростных модемов
-FLOAT32P_t modem_get_tx_iq(
-	uint_fast8_t suspend	// передавать модему ещё рано - не полностью завершено формирование огибающей
-	)
-{
-	switch (glob_modemmode)
-	{
-	case 0:
-		// BPSK
-		{
-			const int_fast32_t ph = (1 - pbsk_get_phase(suspend) * 2);
-			const FLOAT32P_t iq = { { ph, ph } };
-			return iq;
-		}
-	case 1:
-		// QPSK
-		{
-			const FLOAT32P_t iq = { { 1, 0 } };
-			return iq;
-		}
-	default:
-		{
-			const FLOAT32P_t iq = { { 1, 0 } };
-			return iq;
-		}
-
-	}
-}
-
-
-static void modem_set_tx_speed(uint_fast32_t speed100)
-{
-	// TX
-	bps31_tx_bitrateFTW = ((uint_fast64_t) speed100 << 32) / (ARMI2SRATE100);
-}
-
-static void modem_set_rx_speed(uint_fast32_t speed100)
-{
-	// RX
-	m_RxBitFreqFTW = (((uint_fast64_t) speed100 << 16) / (ARMI2SRATE100));
-}
-
-
-/* Установить скорость, параметр с точностью 1/100 бод */
-void modem_set_speed(uint_fast32_t speed100)
-{
-	if (glob_modemspeed100 != speed100)
-	{
-		glob_modemspeed100 = speed100;
-
-		modem_set_tx_speed(speed100);
-		modem_set_rx_speed(speed100);
-	}
-}
-
-/* Установить модуляцию для модема */
-void modem_set_mode(uint_fast8_t modemmode)
-{
-	if (glob_modemmode != modemmode)
-	{
-		glob_modemmode = modemmode;	
-	}
 }
 
 
@@ -747,10 +540,6 @@ void modem_initialze(void)
 	ownaddressbuff [0x0A] = uidbase [2] >> 8;
 	ownaddressbuff [0x0B] = uidbase [2] >> 0;
 #endif
-
-	bpsk_demod_initialize();
-
-	modem_set_speed(3125);		// default value: 31.25 baud
 }
 
 
