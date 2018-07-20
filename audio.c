@@ -2958,7 +2958,7 @@ static void audio_update(const uint_fast8_t spf, uint_fast8_t pathi)
 // RX
 // ---------
 
-static uint_fast32_t bps31_tx_bitrateFTW = 0;
+static uint_fast32_t g_TxBitFreqFTW = 0;
 
 
 // Возвращает не-0 каждые 32 мс (31.25 Гц) - вызывается с частотой ARMI2SRATE
@@ -2966,7 +2966,7 @@ static int bpsk31_phase_tick(void)
 {
 	static uint_fast32_t bps31_tx_bitrateNCO;
 	auto uint_fast32_t old = bps31_tx_bitrateNCO;
-	return ((bps31_tx_bitrateNCO += bps31_tx_bitrateFTW) < old);
+	return ((bps31_tx_bitrateNCO += g_TxBitFreqFTW) < old);
 }
 
 // return 0/1 for 0/PI
@@ -2988,8 +2988,8 @@ pbsk_get_phase(
 static volatile uint_fast8_t	glob_modemmode;		// применяемая модуляция (bpsk/qpsk)
 static volatile uint_fast32_t	glob_modemspeed100;	// скорость передачи с точностью 1/100 бод
 
-static unsigned short m_RxBitPhase;
-static unsigned short m_RxBitFreqFTW;
+static uint16_t m_RxBitPhase;
+static uint16_t g_RxBitFreqFTW;
 
 // демодулятор BPSK
 static void demod_bpsk2_symbol(int_fast32_t i, int_fast32_t q, int level)
@@ -3048,7 +3048,7 @@ static void demod_bpsk(int_fast32_t RxSin, int_fast32_t RxCos)
 		const long BitPhaseCorrection = (long) (ampl * 4);
 
 		long NextSymPhase;	//long enough to contain the 17th bit when 16 bit adds overflow
-		NextSymPhase = (long)m_RxBitPhase + (long) m_RxBitFreqFTW - BitPhaseCorrection;
+		NextSymPhase = (long)m_RxBitPhase + (long) g_RxBitFreqFTW - BitPhaseCorrection;
 		m_RxBitPhase = (unsigned short)NextSymPhase;
 
 		if (NextSymPhase > 0xFFFF)
@@ -3123,18 +3123,19 @@ static FLOAT32P_t modem_get_tx_iq(
 static void modem_set_tx_speed(uint_fast32_t speed100)
 {
 	// TX
-	bps31_tx_bitrateFTW = ((uint_fast64_t) speed100 << 32) / (ARMI2SRATE100);
+	g_TxBitFreqFTW = ((uint_fast64_t) speed100 << 32) / (ARMI2SRATE100);
 }
 
 static void modem_set_rx_speed(uint_fast32_t speed100)
 {
 	// RX
-	m_RxBitFreqFTW = (((uint_fast64_t) speed100 << 16) / (ARMI2SRATE100));
+	g_RxBitFreqFTW = (((uint_fast64_t) speed100 << 16) / (ARMI2SRATE100));
 }
 
 
 /* Установить скорость, параметр с точностью 1/100 бод */
-void modem_set_speed(uint_fast32_t speed100)
+static void 
+modem_set_speed(uint_fast32_t speed100)
 {
 	if (glob_modemspeed100 != speed100)
 	{

@@ -454,11 +454,7 @@ void usbd_diagnostics(void);
 void dtmftest(void);
 
 void modem_initialze(void);
-void modem_set_speed(uint_fast32_t speed100);	/* ”становить скорость, параметр с точностью 1/100 бод */
-void modem_set_mode(uint_fast8_t mode);			/* ”становить модул€цию дл€ модема */
-void modem_rxpump(void);						// вызываетс€ из user-mode программы
 uint_fast8_t modem_get_ptt(void);
-
 
 /* »нтерфейс к AF кодеку */
 typedef struct codec1if_tag
