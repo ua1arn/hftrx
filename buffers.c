@@ -816,6 +816,8 @@ buffers_savetouacin(voice16_t * p)
 
 #endif /* WITHUSBUAC */
 
+#if WITHI2SHW
+
 // получить пустой буфер (с "тишиной")
 static RAMFUNC voice16_t *
 buffers_getsilence(void)
@@ -843,6 +845,7 @@ buffers_savefromrxout(voice16_t * p)
 	else
 		buffers_savetophones(p);
 }
+#endif /* WITHI2SHW */
 
 // приняли данные от USB AUDIO
 static RAMFUNC void
@@ -1469,6 +1472,7 @@ uintptr_t getfilled_dmabuffer32tx_sub(void)
 	return allocate_dmabuffer32tx();
 }
 
+#if WITHI2SHW
 // Этой функцией пользуются обработчики прерываний DMA
 // получить буфер для передачи через AF DAC
 uintptr_t getfilled_dmabuffer16phones(void)
@@ -1492,6 +1496,7 @@ uintptr_t getfilled_dmabuffer16phones(void)
 #endif /* WITHBUFFERSDEBUG */
 	return getfilled_dmabuffer16silence();		// аварийная ветка - работает первые несколько раз
 }
+#endif /* WITHI2SHW */
 
 //////////////////////////////////////////
 // Поэлементное заполнение буфера IF DAC
