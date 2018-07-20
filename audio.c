@@ -3144,7 +3144,6 @@ void modem_set_speed(uint_fast32_t speed100)
 		modem_set_rx_speed(speed100);
 	}
 }
-#endif /* WITHMODEM */
 
 /* ”становить модул€цию дл€ модема */
 void modem_set_mode(uint_fast8_t modemmode)
@@ -3154,6 +3153,7 @@ void modem_set_mode(uint_fast8_t modemmode)
 		glob_modemmode = modemmode;	
 	}
 }
+#endif /* WITHMODEM */
 
 static void modem_update(void)
 {
