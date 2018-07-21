@@ -4819,7 +4819,7 @@ hardware_spi_master_read_frame_16bpartial(
 {
 #if CPUSTYLE_SAM9XE
 
-	HARDWARE_SPI_DISCONNECT_MOSI();	// выход данных в "1"
+	HARDWARE_SPI_DISCONNECT_MOSI();	// выход данных в "1" - для нормальной работы SD CARD
 
 	AT91C_BASE_SPI1->SPI_TPR = (unsigned long) buffer;
 	AT91C_BASE_SPI1->SPI_RPR = (unsigned long) buffer;
@@ -4836,7 +4836,7 @@ hardware_spi_master_read_frame_16bpartial(
 
 #elif CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
-	HARDWARE_SPI_DISCONNECT_MOSI();	// выход данных в "1"
+	HARDWARE_SPI_DISCONNECT_MOSI();	// выход данных в "1" - для нормальной работы SD CARD
 
 	SPI->SPI_TPR = (unsigned long) buffer;
 	SPI->SPI_RPR = (unsigned long) buffer;
@@ -4853,7 +4853,7 @@ hardware_spi_master_read_frame_16bpartial(
 
 #elif CPUSTYLE_AT91SAM7S
 
-	HARDWARE_SPI_DISCONNECT_MOSI();	// выход данных в "1"
+	HARDWARE_SPI_DISCONNECT_MOSI();	// выход данных в "1" - для нормальной работы SD CARD
 
 	AT91C_BASE_SPI->SPI_TPR = (unsigned long) buffer;
 	AT91C_BASE_SPI->SPI_RPR = (unsigned long) buffer;
@@ -4880,7 +4880,7 @@ hardware_spi_master_read_frame_16bpartial(
 	}
 	*/
 
-	HARDWARE_SPI_DISCONNECT_MOSI();	// выход данных в "1"
+	HARDWARE_SPI_DISCONNECT_MOSI();	// выход данных в "1" - для нормальной работы SD CARD
 
 	// DMA2: SPI1_RX: Stream 0: Channel 3
 	#if CPUSTYLE_STM32H7XX
@@ -4952,7 +4952,7 @@ hardware_spi_master_read_frame_16bpartial(
 #elif CPUSTYLE_R7S721
 	#warning TODO: Add code for R7S721 SPI DMA support to hardware_spi_master_read_frame_16bpartial
 
-	HARDWARE_SPI_DISCONNECT_MOSI();	// выход данных в "1"
+	HARDWARE_SPI_DISCONNECT_MOSI();	// выход данных в "1" - для нормальной работы SD CARD
 
 	HARDWARE_SPI_CONNECT_MOSI();	// Возвращаем в обычный режим работы
 
@@ -4975,7 +4975,7 @@ hardware_spi_master_read_frame_8bpartial(
 {
 #if CPUSTYLE_SAM9XE
 
-	HARDWARE_SPI_DISCONNECT_MOSI();	// выход данных в "1"
+	HARDWARE_SPI_DISCONNECT_MOSI();	// выход данных в "1" - для нормальной работы SD CARD
 
 	AT91C_BASE_SPI1->SPI_TPR = (unsigned long) buffer;
 	AT91C_BASE_SPI1->SPI_RPR = (unsigned long) buffer;
@@ -4992,7 +4992,7 @@ hardware_spi_master_read_frame_8bpartial(
 
 #elif CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
-	HARDWARE_SPI_DISCONNECT_MOSI();	// выход данных в "1"
+	HARDWARE_SPI_DISCONNECT_MOSI();	// выход данных в "1" - для нормальной работы SD CARD
 
 	SPI->SPI_TPR = (unsigned long) buffer;
 	SPI->SPI_RPR = (unsigned long) buffer;
@@ -5009,7 +5009,7 @@ hardware_spi_master_read_frame_8bpartial(
 
 #elif CPUSTYLE_AT91SAM7S
 
-	HARDWARE_SPI_DISCONNECT_MOSI();	// выход данных в "1"
+	HARDWARE_SPI_DISCONNECT_MOSI();	// выход данных в "1" - для нормальной работы SD CARD
 
 	AT91C_BASE_SPI->SPI_TPR = (unsigned long) buffer;
 	AT91C_BASE_SPI->SPI_RPR = (unsigned long) buffer;
@@ -5036,7 +5036,7 @@ hardware_spi_master_read_frame_8bpartial(
 	}
 	*/
 
-	HARDWARE_SPI_DISCONNECT_MOSI();	// выход данных в "1"
+	HARDWARE_SPI_DISCONNECT_MOSI();	// выход данных в "1" - для нормальной работы SD CARD
 
 	// DMA2: SPI1_RX: Stream 0: Channel 3
 	#if CPUSTYLE_STM32H7XX
@@ -5108,7 +5108,7 @@ hardware_spi_master_read_frame_8bpartial(
 #elif CPUSTYLE_R7S721
 	#warning TODO: Add code for R7S721 SPI DMA support to hardware_spi_master_read_frame_8bpartial
 
-	HARDWARE_SPI_DISCONNECT_MOSI();	// выход данных в "1"
+	HARDWARE_SPI_DISCONNECT_MOSI();	// выход данных в "1" - для нормальной работы SD CARD
 
 	HARDWARE_SPI_CONNECT_MOSI();	// Возвращаем в обычный режим работы
 
