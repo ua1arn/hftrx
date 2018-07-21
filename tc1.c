@@ -2620,6 +2620,8 @@ filter_t fi_2p0_455 =
 #elif CTLSTYLE_RA4YBO_V3
 	uint8_t gaffilter;		/* включение ФНЧ на приёме в аппарате RA4YBO */
 	uint8_t guser1;
+	uint8_t guser2;
+	uint8_t guser3;
 	uint8_t guser4;
 	uint8_t guser5;
 #endif /* CTLSTYLE_RA4YBO_V1 || CTLSTYLE_RA4YBO_V2 || CTLSTYLE_RA4YBO_V3 */
