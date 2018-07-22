@@ -65,6 +65,7 @@
 #define LS020_RESET_INITIALIZE() \
 	do { \
 	arm_hardware_pioc_outputs2m(LS020_RST, LS020_RST); \
+	arm_hardware_piob_outputs2m(1u << 9, 0); /* backlight enable */ \
 	} while (0)
 
 
@@ -156,19 +157,26 @@
 
 #if WITHENCODER
 
-	// Выводы подключения енкодера
+	// Выводы подключения енкодера #1
+	#define ENCODER_INPUT_PORT	(GPIOE->IDR) 
+	#define ENCODER_BITA		(1u << 2)		// PE2
+	#define ENCODER_BITB		(1u << 3)		// PE3
+	#define ENCODER_BITS		(ENCODER_BITA | ENCODER_BITB)
 
-	// Encoder inputs: PB15 - PHASE A, PB14 = PHASE B
-	#define ENCODER_INPUT_PORT			GPIOB->IDR
-	#define ENCODER_BITS ((1u << 15) | (1u << 14))
-	#define ENCODER_SHIFT 14
-
+	// Выводы подключения енкодера #2
+	#define ENCODER2_INPUT_PORT	(GPIOH->IDR) 
+	#define ENCODER2_BITA		(1u << 4)		// PE4
+	#define ENCODER2_BITB		(1u << 5)		// PE5
+	#define ENCODER2_BITS		(ENCODER2_BITA | ENCODER2_BITB)
 
 	#define ENCODER_INITIALIZE() \
 		do { \
-			arm_hardware_piob_inputs(ENCODER_BITS); \
-			arm_hardware_piob_updown(ENCODER_BITS, 0); \
-			arm_hardware_piob_onchangeinterrupt(ENCODER_BITS, ENCODER_BITS, ENCODER_BITS, ARM_OVERREALTIME_PRIORITY); \
+			arm_hardware_pioe_inputs(ENCODER_BITS); \
+			arm_hardware_pioe_updown(ENCODER_BITS, 0); \
+			arm_hardware_pioe_onchangeinterrupt(ENCODER_BITS, ENCODER_BITS, ENCODER_BITS, ARM_OVERREALTIME_PRIORITY); \
+			arm_hardware_pioe_inputs(ENCODER2_BITS); \
+			arm_hardware_pioe_updown(ENCODER2_BITS, 0); \
+			arm_hardware_pioe_onchangeinterrupt(ENCODER2_BITS, ENCODER2_BITS, ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY); \
 		} while (0)
 
 #endif
@@ -279,8 +287,8 @@
 	// Electronic key inputs
 	//#define ELKEY_TARGET_PORT			GPIOF->PIO_ODSR
 	#define ELKEY_TARGET_PIN			(GPIOB->IDR)	// was PINA 
-	#define ELKEY_BIT_LEFT				(1u << 10)	//GPIO_ODR_ODR14
-	#define ELKEY_BIT_RIGHT				(1u << 11)	//GPIO_ODR_ODR15
+	#define ELKEY_BIT_LEFT				(1u << 4)	// PB4
+	#define ELKEY_BIT_RIGHT				(1u << 5)	// PB5
 
 	#define ELKEY_INITIALIZE() \
 		do { \

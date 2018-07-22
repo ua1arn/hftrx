@@ -227,12 +227,12 @@
 	#define WITHSPLIT	1	/* управление режимами расстройки одной кнопкой */
 	//#define WITHSPLITEX	1	/* Трехкнопочное управление режимами расстройки */
 	#define WITHCATEXT	1	/* Расширенный набор команд CAT */
-	//#define WITHELKEY	1
+	#define WITHELKEY	1
 	//#define WITHKBDENCODER 1	// перестройка частоты кнопками
 	//#define WITHKEYBOARD 1	/* в данном устройстве есть клавиатура */
 	//#define KEYBOARD_USE_ADC	1	/* на одной линии установлено  четыре  клавиши. на vref - 6.8K, далее 2.2К, 4.7К и 13K. */
-	//#define WITHENCODER	1	/* для изменения частоты имеется енкодер */
-	//#define WITHNESTEDINTERRUPTS	1	/* используется при наличии real-time части. */
+	#define WITHENCODER	1	/* для изменения частоты имеется енкодер */
+	#define WITHNESTEDINTERRUPTS	1	/* используется при наличии real-time части. */
 	#define WITHINTEGRATEDDSP		1	/* в программу включена инициализация и запуск DSP части. */
 	#define WITHIF4DSP	1	// "Дятел"
 	//#define WITHEXTERNALDDSP		1	/* имеется управление внешней DSP платой. */
@@ -310,6 +310,8 @@
 	//#define DDS2_TYPE DDS_TYPE_AD9851
 	//#define PLL2_TYPE PLL_TYPE_CMX992
 	//#define DDS3_TYPE DDS_TYPE_AD9834
+	#define RTC1_TYPE RTC_TYPE_STM32F4xx	/* STM32F4xx/STM32F7xx internal RTC peripherial */
+	#define WITHRTCLSI 1	/* запуск LSI (без кварца) */
 
 	//#define DDS1_TYPE DDS_TYPE_ATTINY2313
 	//#define PLL1_TYPE PLL_TYPE_LM7001

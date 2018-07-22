@@ -5553,6 +5553,64 @@ arm_hardware_pioc_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 #endif
 }
 
+#if defined (GPIOD) || defined (PIOD)
+
+// эти функции не мен€ют программирование выводов (на ввод или на вывод),
+// только подключают прерывани€. “ребуетс€ иногда прерывани€ по переходу выводов присоединЄнных к периферии.
+void 
+arm_hardware_piod_onchangeinterrupt(unsigned long ipins, unsigned long raise, unsigned long fall, uint32_t priority)
+{
+#if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
+
+	PIOD->PIO_IFER = (ipins);	// glitch filter enable
+	(void) PIOD->PIO_ISR; // consume interrupt request
+	PIOD->PIO_IER = (ipins);	// interrupt on change pin enable
+
+	NVIC_SetPriority(PIOD_IRQn, priority);
+	NVIC_EnableIRQ(PIOD_IRQn);		// enable PIOE_Handler();
+
+
+#elif CPUSTYLE_STM32F1XX
+
+	arm_stm32f10x_hardware_pio_onchangeinterrupt(ipins, raise, fall, AFIO_EXTICR1_EXTI0_PD, priority);	// PORT D
+
+#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
+
+	arm_stm32f30x_hardware_pio_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PD, priority);	// PORT D
+
+#endif
+}
+#endif /* defined (GPIOD) || defined (PIOD) */
+
+#if defined (GPIOE) || defined (PIOE)
+
+// эти функции не мен€ют программирование выводов (на ввод или на вывод),
+// только подключают прерывани€. “ребуетс€ иногда прерывани€ по переходу выводов присоединЄнных к периферии.
+void 
+arm_hardware_pioe_onchangeinterrupt(unsigned long ipins, unsigned long raise, unsigned long fall, uint32_t priority)
+{
+#if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
+
+	PIOE->PIO_IFER = (ipins);	// glitch filter enable
+	(void) PIOE->PIO_ISR; // consume interrupt request
+	PIOE->PIO_IER = (ipins);	// interrupt on change pin enable
+
+	NVIC_SetPriority(PIOE_IRQn, priority);
+	NVIC_EnableIRQ(PIOE_IRQn);		// enable PIOE_Handler();
+
+
+#elif CPUSTYLE_STM32F1XX
+
+	arm_stm32f10x_hardware_pio_onchangeinterrupt(ipins, raise, fall, AFIO_EXTICR1_EXTI0_PE, priority);	// PORT E
+
+#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
+
+	arm_stm32f30x_hardware_pio_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PE, priority);	// PORT E
+
+#endif
+}
+#endif /* defined (GPIOE) */
+
 #if defined (GPIOF)
 
 // эти функции не мен€ют программирование выводов (на ввод или на вывод),
@@ -5572,7 +5630,7 @@ arm_hardware_piof_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 
 #elif CPUSTYLE_STM32F1XX
 
-	arm_stm32f10x_hardware_pio_onchangeinterrupt(ipins, raise, fall, AFIO_EXTICR1_EXTI0_PF, priority);	// PORT F
+	arm_stm32f10x_hardware_pio_onchangeinterrupt(ipins, raise, fall, AFIO_EXTICR1_EXTI0_PF, priority);	// PORT E
 
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
 
