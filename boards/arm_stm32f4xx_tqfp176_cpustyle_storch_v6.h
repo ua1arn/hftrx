@@ -163,13 +163,13 @@
 
 #if WITHENCODER
 
-	// Выводы подключения енкодера
+	// Выводы подключения енкодера #1
 	#define ENCODER_INPUT_PORT	(GPIOH->IDR) 
 	#define ENCODER_BITA		(1u << 2)		// PH2
 	#define ENCODER_BITB		(1u << 3)		// PH3
 	#define ENCODER_BITS		(ENCODER_BITA | ENCODER_BITB)
 
-	// Выводы подключения енкодера
+	// Выводы подключения енкодера #2
 	#define ENCODER2_INPUT_PORT	(GPIOH->IDR) 
 	#define ENCODER2_BITA		(1u << 4)		// PH4
 	#define ENCODER2_BITB		(1u << 5)		// PH5

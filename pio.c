@@ -5609,9 +5609,9 @@ arm_hardware_pioe_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 
 #endif
 }
-#endif /* defined (GPIOE) */
+#endif /* defined (GPIOE) || defined (PIOE) */
 
-#if defined (GPIOF)
+#if defined (GPIOF) || defined (PIOF)
 
 // эти функции не мен€ют программирование выводов (на ввод или на вывод),
 // только подключают прерывани€. “ребуетс€ иногда прерывани€ по переходу выводов присоединЄнных к периферии.
@@ -5630,7 +5630,7 @@ arm_hardware_piof_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 
 #elif CPUSTYLE_STM32F1XX
 
-	arm_stm32f10x_hardware_pio_onchangeinterrupt(ipins, raise, fall, AFIO_EXTICR1_EXTI0_PF, priority);	// PORT E
+	arm_stm32f10x_hardware_pio_onchangeinterrupt(ipins, raise, fall, AFIO_EXTICR1_EXTI0_PF, priority);	// PORT F
 
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
 
@@ -5638,7 +5638,7 @@ arm_hardware_piof_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 
 #endif
 }
-#endif /* defined (GPIOF) */
+#endif /* defined (GPIOF) || defined (PIOF) */
 
 #if defined (GPIOG)
 // эти функции не мен€ют программирование выводов (на ввод или на вывод),
