@@ -33,7 +33,7 @@
 	#define WITHCAT_CDC		1	/* использовать виртуальный воследовательный порт на USB соединении */
 	#define WITHMODEM_CDC	1
 	//#define WITHCAT_USART2		1
-	#define WITHUART2HW	1	/* Используется периферийный контроллер последовательного порта #2 */
+	//#define WITHUART2HW	1	/* Используется периферийный контроллер последовательного порта #2 */
 	#define WITHDEBUG_USART2	1
 	#define WITHNMEA_USART2		1	/* порт подключения GPS/GLONASS */
 	#define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
@@ -47,7 +47,7 @@
 #else
 
 	//#define WITHUART1HW	1	/* Используется периферийный контроллер последовательного порта #1 */
-	#define WITHUART2HW	1	/* Используется периферийный контроллер последовательного порта #2 */
+	//#define WITHUART2HW	1	/* Используется периферийный контроллер последовательного порта #2 */
 
 	//#define WITHCAT_CDC		1	/* использовать виртуальный воследовательный порт на USB соединении */
 	#define WITHCAT_USART2		1
@@ -65,7 +65,7 @@
 #define LS020_RESET_INITIALIZE() \
 	do { \
 	arm_hardware_pioc_outputs2m(LS020_RST, LS020_RST); \
-	arm_hardware_piob_outputs2m(1u << 9, 0); /* backlight enable */ \
+	arm_hardware_piob_outputs2m(1u << 9, 0); /* PB9 backlight enable */ \
 	} while (0)
 
 

@@ -311,7 +311,7 @@
 	//#define PLL2_TYPE PLL_TYPE_CMX992
 	//#define DDS3_TYPE DDS_TYPE_AD9834
 	#define RTC1_TYPE RTC_TYPE_STM32F4xx	/* STM32F4xx/STM32F7xx internal RTC peripherial */
-	#define WITHRTCLSI 1	/* запуск LSI (без кварца) */
+	//#define WITHRTCLSI 1	/* запуск LSI (без кварца) */
 
 	//#define DDS1_TYPE DDS_TYPE_ATTINY2313
 	//#define PLL1_TYPE PLL_TYPE_LM7001
