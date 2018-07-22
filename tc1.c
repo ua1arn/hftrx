@@ -4076,9 +4076,9 @@ enum
 { 
 	CATSTATE_HALTED,
 	CATSTATE_WAITPARAM,		/* состояние ожидания приёма параметра (кончается по приёму ';' */
-#if WITHCATEXT && WITHTX && WITHELKEY
+#if WITHCATEXT && WITHELKEY
 	CATSTATE_WAITMORSE,		/* состояние ожидания приёма символа за KY */
-#endif /* WITHTX */
+#endif /* WITHCATEXT && WITHELKEY */
 	CATSTATE_WAITCOMMAND1,	/* состояние ожидания приёма первого байта команды */
 	CATSTATE_WAITCOMMAND2	/* состояние ожидания приёма второго байта команды */
 };
@@ -8443,7 +8443,7 @@ static uint_fast8_t sendmorsepos [2];
 	static void cat_set_kyanswer(uint_fast8_t force);
 	static uint_fast8_t cathasparamerror;
 	static unsigned char morsestring [2][25];
-#endif
+#endif /* WITHCATEXT && WITHELKEY */
 
 static uint_fast8_t catstatein = CATSTATE_HALTED;
 
@@ -8654,7 +8654,7 @@ void cat2_parsechar(uint_fast8_t c)
 			cat_answer_map [CAT_BADCOMMAND_INDEX] = 1;	// второй символ не буква, а ';' - преждевременный конец команды
 			catstatein = CATSTATE_WAITCOMMAND1;
 		}
-#if WITHCATEXT && WITHTX && WITHELKEY
+#if WITHCATEXT && WITHELKEY
 		else if (catcommand1 == 'K' && catcommand2 == 'Y')
 		{
 			catstatein = CATSTATE_WAITMORSE;
@@ -8662,7 +8662,7 @@ void cat2_parsechar(uint_fast8_t c)
 			catpcount = 0;
 			cathasparamerror = 0;
 		}
-#endif	/* WITHTX */
+#endif	/* WITHCATEXT && WITHELKEY */
 		else
 		{
 			catstatein = CATSTATE_WAITPARAM;
@@ -8707,7 +8707,7 @@ void cat2_parsechar(uint_fast8_t c)
 		}
 		break;
 
-#if WITHCATEXT && WITHTX && WITHELKEY
+#if WITHCATEXT && WITHELKEY
 	case CATSTATE_WAITMORSE:
 		if (c == '\0')	// такой симвоь недопустим
 		{
@@ -8770,7 +8770,7 @@ void cat2_parsechar(uint_fast8_t c)
 			catstatein = CATSTATE_WAITCOMMAND1;	/* в user-mode нечего делать - ответ не формируем  */
 		}
 		break;
-#endif /* WITHTX */
+#endif /* WITHCATEXT && WITHELKEY */
 	}
 }
 
@@ -10040,7 +10040,7 @@ processcatmsg(
 			cat_answer_request(CAT_FW_INDEX);
 		}
 	}
-#if WITHCATEXT && WITHTX && WITHELKEY
+#if WITHCATEXT && WITHELKEY
 	else if (match2('K', 'S'))
 	{
 		// keyer speed
