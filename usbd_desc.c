@@ -1388,7 +1388,7 @@ static unsigned CDCACM_InterfaceAssociationDescriptor_a(uint_fast8_t fill, uint8
 
 /*Interface Descriptor*/
 // USBLyzer: Interface Descriptor 3/0 CDC Control, 1 Endpoint 
-static unsigned CDCACM_InterfaceDescriptorControlIf_a(uint_fast8_t fill, uint8_t * buff, unsigned maxsize, uint_fast8_t offset)
+static unsigned CDCACM_InterfaceDescriptorControlIf_a(uint_fast8_t fill, uint8_t * buff, unsigned maxsize, uint_fast8_t offset, uint_fast8_t bNumEndpoints)
 {
 	const uint_fast8_t length = 9;
 	ASSERT(maxsize >= length);
@@ -1401,7 +1401,7 @@ static unsigned CDCACM_InterfaceDescriptorControlIf_a(uint_fast8_t fill, uint8_t
 		* buff ++ = USB_INTERFACE_DESCRIPTOR_TYPE;  /* bDescriptorType: Interface */  /* Interface descriptor type */
 		* buff ++ = INTERFACE_CDC_CONTROL_3a + offset * INTERFACE_CDCACM_count;   /* bInterfaceNumber: Number of Interface */
 		* buff ++ = 0;		/* bAlternateSetting: Alternate setting  - zero-based index */
-		* buff ++ = 0x01;   /* bNumEndpoints: One endpoints used (interrupt type) */
+		* buff ++ = bNumEndpoints;   /* bNumEndpoints: One endpoints used (interrupt type) */
 		* buff ++ = CDC_COMMUNICATION_INTERFACE_CLASS;   /* bInterfaceClass: Communication Interface Class */
 		* buff ++ = 0x02;   /* bInterfaceSubClass: Abstract Control Model */
 		* buff ++ = 0x01;   /* bInterfaceProtocol: Common AT commands */
@@ -1592,7 +1592,7 @@ static unsigned fill_CDCACM_function_a(uint_fast8_t fill, uint8_t * p, unsigned 
 
 	// CDC
 	n += CDCACM_InterfaceAssociationDescriptor_a(fill, p + n, maxsize - n, offset);	/* CDC: Interface Association Descriptor Abstract Control Model */
-	n += CDCACM_InterfaceDescriptorControlIf_a(fill, p + n, maxsize - n, offset);	/* INTERFACE_CDC_CONTROL_3a Interface Descriptor 3/0 CDC Control, 1 Endpoint */
+	n += CDCACM_InterfaceDescriptorControlIf_a(fill, p + n, maxsize - n, offset, 0x01);	/* INTERFACE_CDC_CONTROL_3a Interface Descriptor 3/0 CDC Control, 1 Endpoint */
 	n += r9fill_31(fill, p + n, maxsize - n);	/* Header Functional Descriptor*/
 	n += CDCACM_r9fill_32_a(fill, p + n, maxsize - n, offset);	/* Call Managment Functional Descriptor*/
 	n += r9fill_33(fill, p + n, maxsize - n);	/* ACM Functional Descriptor */
