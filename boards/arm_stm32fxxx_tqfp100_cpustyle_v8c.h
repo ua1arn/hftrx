@@ -14,19 +14,19 @@
 //#define HARDWARE_ARM_USEUSART0 1		// US0: PA5/PA6 pins
 //#define HARDWARE_ARM_USEUSART1 1		// US1: PA21/PA22 pins
 
-//#define WITHSPI16BIT	1		/* возможно использование 16-ти битных слов при обмене по SPI */
-//#define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
+#define WITHSPI16BIT	1		/* возможно использование 16-ти битных слов при обмене по SPI */
+#define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
 //#define WITHSPIHWDMA 	1	/* Использование DMA при обмене по SPI */
-#define WITHSPISW 	1	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */
+//#define WITHSPISW 	1	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */
 
 //#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 //#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 //#define WITHCPUADCHW 	1	/* использование ADC */
 
-#define WITHUSBHW_DEVICE		USB_OTG_HS
+#define WITHUSBHW_DEVICE		USB_OTG_FS
 #define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
-#define WITHUSBHWVBUSSENSE	1	/* используется предопределенный вывод VBUS_SENSE */
-#define WITHUSBHWHIGHSPEED	1	/* Используется встроенная в процессор поддержка USB HS */
+//#define WITHUSBHWVBUSSENSE	1	/* используется предопределенный вывод VBUS_SENSE */
+//#define WITHUSBHWHIGHSPEED	1	/* Используется встроенная в процессор поддержка USB HS */
 //#define WITHUSBHWHIGHSPEEDDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
 
 #if WITHUSBHW
@@ -36,12 +36,12 @@
 	#define WITHUART2HW	1	/* Используется периферийный контроллер последовательного порта #2 */
 	#define WITHDEBUG_USART2	1
 	#define WITHNMEA_USART2		1	/* порт подключения GPS/GLONASS */
-	//#define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
+	#define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
 
-	//#define WITHUSBCDC		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
+	#define WITHUSBCDC		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
 	//#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
-	#define WITHUSBRNDIS	1	/* RNDIS использовать Remote NDIS на USB соединении */
-	#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
+	//#define WITHUSBRNDIS	1	/* RNDIS использовать Remote NDIS на USB соединении */
+	//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
 	//#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
 
 #else
@@ -68,114 +68,88 @@
 	} while (0)
 
 
-#if LCDMODE_ILI9320 || LCDMODE_S1D13781
+#if LCDMODE_SPI_NA
+	// эти контроллеры требуют только RS
 
+	#define LS020_RS_PORT_S(v)		do { GPIOC->BSRR = BSRR_S(v); __DSB(); } while (0)
+	#define LS020_RS_PORT_C(v)		do { GPIOC->BSRR = BSRR_C(v); __DSB(); } while (0)
+	#define LS020_RS			(1u << 4)			// PC4 RS signal
+
+#elif LCDMODE_SPI_RN
 	// эти контроллеры требуют только RESET
+
 	#define LS020_RESET_PORT_S(v)		do { GPIOC->BSRR = BSRR_S(v); __DSB(); } while (0)
 	#define LS020_RESET_PORT_C(v)		do { GPIOC->BSRR = BSRR_C(v); __DSB(); } while (0)
-	#define LS020_RST			(1u << 8)			// D6 signal in HD44780 socket
+	#define LS020_RST			(1u << 5)			// PC5 RST signal
 
-#elif LCDMODE_LS020 || LCDMODE_LPH88 || LCDMODE_S1D13781 || LCDMODE_ILI9225 || LCDMODE_ST7735 || LCDMODE_ST7565S || LCDMODE_ILI9163
-
+#elif LCDMODE_SPI_RA
 	// Эти контроллеры требуют RESET и RS
-	#define LS020_RESET_PORT_S(v)		do { GPIOC->BSRR = BSRR_S(v); __DSB(); } while (0)
-	#define LS020_RESET_PORT_C(v)		do { GPIOC->BSRR = BSRR_C(v); __DSB(); } while (0)
-	#define LS020_RST			(1u << 8)			// D6 signal in HD44780 socket
+	// LCDMODE_UC1608
 
 	#define LS020_RS_PORT_S(v)		do { GPIOC->BSRR = BSRR_S(v); __DSB(); } while (0)
 	#define LS020_RS_PORT_C(v)		do { GPIOC->BSRR = BSRR_C(v); __DSB(); } while (0)
-	#define LS020_RS			(1u << 9)			// D7 signal in HD44780 socket
+	#define LS020_RS			(1u << 4)			// PC4 RS signal
 
-#elif LCDMODE_UC1608
-
-	// Эти контроллеры требуют RESET и RS, а так же положительный чипселект (формируется на том же выводе что и EE РВ44780
 	#define LS020_RESET_PORT_S(v)		do { GPIOC->BSRR = BSRR_S(v); __DSB(); } while (0)
 	#define LS020_RESET_PORT_C(v)		do { GPIOC->BSRR = BSRR_C(v); __DSB(); } while (0)
-	#define LS020_RST			(1u << 8)			// D6 signal in HD44780 socket
-
-	#define LS020_RS_PORT_S(v)		do { GPIOC->BSRR = BSRR_S(v); __DSB(); } while (0)
-	#define LS020_RS_PORT_C(v)		do { GPIOC->BSRR = BSRR_C(v); __DSB(); } while (0)
-	#define LS020_RS			(1u << 9)			// D7 signal in HD44780 socket
-
-	#define UC1608_CSP_PORT_S(v)		do { GPIOC->BSRR = BSRR_S(v); __DSB(); } while (0)
-	#define UC1608_CSP_PORT_C(v)		do { GPIOC->BSRR = BSRR_C(v); __DSB(); } while (0)
-	#define UC1608_CSP			(1u << 13)			// E signal in HD44780 socket
-	#define SPI_CSEL255			255				// по этому чипселекту выбираем положительным сигналом
-
-	#define UC1608_CSP_INITIALIZE() do { \
-			arm_hardware_pioc_outputs(UC1608_CSP, 0); \
-		} while (0)
+	#define LS020_RST			(1u << 5)			// PC5 RST signal
 
 #elif LCDMODE_HD44780 && (LCDMODE_SPI == 0)
 
-	// Выводы подключения ЖКИ индикатора WH2002 или аналогичного HD44780.
-	//#define LCD_DATA_PORT			GPIOA->ODR	
-	#define LCD_DATA_INPUT			GPIOC->IDR
-
-	//#define LCD_DIRECTION_PORT			GPIOA->PIO_OSR
-	//#define LCD_DATA_DIRECTION_S		GPIOA->PIO_OER
-	//#define LCD_DATA_DIRECTION_C		GPIOA->PIO_ODR
-
 	// E (enable) bit
-	#define LCD_STROBE_PORT_S(v)		do { GPIOС->BSRR = BSRR_S(v); __DSB(); } while (0)
-	#define LCD_STROBE_PORT_C(v)		do { GPIOС->BSRR = BSRR_C(v); __DSB(); } while (0)
+	#define LCD_STROBE_PORT_S(v)		do { GPIOC->BSRR = BSRR_S(v); __DSB(); } while (0)
+	#define LCD_STROBE_PORT_C(v)		do { GPIOC->BSRR = BSRR_C(v); __DSB(); } while (0)
+	#define LCD_STROBE_BIT			(1u << 6)	// PF6
 
-	// RS & WE bits
-	#define LCD_RS_PORT_S(v)		do { GPIOС->BSRR = BSRR_S(v); __DSB(); } while (0)
-	#define LCD_RS_PORT_C(v)		do { GPIOС->BSRR = BSRR_C(v); __DSB(); } while (0)
-	#define LCD_WE_PORT_S(v)		do { GPIOС->BSRR = BSRR_S(v); __DSB(); } while (0)
-	#define LCD_WE_PORT_C(v)		do { GPIOС->BSRR = BSRR_C(v); __DSB(); } while (0)
-	#define LCD_STROBE_BIT			(1u << 13)
+	// RS (address, register select) bit
+	#define LCD_RS_PORT_S(v)		do { GPIOC->BSRR = BSRR_S(v); __DSB(); } while (0)
+	#define LCD_RS_PORT_C(v)		do { GPIOC->BSRR = BSRR_C(v); __DSB(); } while (0)
+	#define ADDRES_BIT				(1u << 4)	// PF4 - bit in RS port
 
-	#define WRITEE_BIT				(1u << 11)
-	//#define WRITEE_BIT_ZERO				GPIO_ODR_ODR11
+	// WE (write enable) bit
+	#define LCD_WE_PORT_S(v)		do { GPIOC->BSRR = BSRR_S(v); __DSB(); } while (0)
+	#define LCD_WE_PORT_C(v)		do { GPIOC->BSRR = BSRR_C(v); __DSB(); } while (0)
+	#define WRITEE_BIT				(1u << 5)	// PF5 - bit in 
 	
-	#define ADDRES_BIT				(1u << 10)
-
-	#define LCD_DATAS_BITS			((1u << 9) | (1u << 8) | (1u << 7) | (1u << 6))
-	#define LCD_DATAS_BIT_LOW		6		// какой бит данных младший в слове считанном с порта
+	// Выводы подключения ЖКИ индикатора WH2002 или аналогичного HD44780.
+	#define LCD_DATA_INPUT			(GPIOF->IDR)
+	#define LCD_DATAS_BITS			((1u << 3) | (1u << 2) | (1u << 1) | (1u << 0))	// PF3..PF0
+	#define LCD_DATAS_BIT_LOW		0		// какой бит данных младший в слове считанном с порта
 
 	#define DISPLAY_BUS_DATA_GET() ((LCD_DATA_INPUT & LCD_DATAS_BITS) >> LCD_DATAS_BIT_LOW) /* получить данные с шины LCD */
 	#define DISPLAY_BUS_DATA_SET(v) do { /* выдача данных (не сдвинуьых) */ \
 			const portholder_t t = (portholder_t) (v) << LCD_DATAS_BIT_LOW; \
-			GPIOC->BSRR = BSRR_S(t & LCD_DATAS_BITS) | BSRR_C(~ t & LCD_DATAS_BITS); \
+			GPIOF->BSRR = BSRR_S(t & LCD_DATAS_BITS) | BSRR_C(~ t & LCD_DATAS_BITS); \
 			__DSB(); \
 		} while (0)
+
 
 	/* инициализация управляющих выходов процессора для управления HD44780 - полный набор выходов */
 	#define LCD_CONTROL_INITIALIZE() \
 		do { \
-			arm_hardware_pioc_outputs2m(LCD_STROBE_BIT | WRITEE_BIT | ADDRES_BIT, 0); \
+			arm_hardware_piof_outputs2m(LCD_STROBE_BIT | WRITEE_BIT | ADDRES_BIT, 0); \
+			arm_hardware_pioe_outputs((1U << 0), 0 * (1U << 0));		/* PE0 - enable backlight */ \
 		} while (0)
 	/* инициализация управляющих выходов процессора для управления HD44780 - WE=0 */
 	#define LCD_CONTROL_INITIALIZE_WEEZERO() \
 		do { \
-			arm_hardware_pioc_outputs2m(LCD_STROBE_BIT | WRITEE_BIT_ZERO | ADDRES_BIT, 0); \
+			arm_hardware_piof_outputs2m(LCD_STROBE_BIT | WRITEE_BIT_ZERO | ADDRES_BIT, 0); \
 		} while (0)
 	/* инициализация управляющих выходов процессора для управления HD44780 - WE отсутствует - сигнал к индикатору заземлён */
 	#define LCD_CONTROL_INITIALIZE_WEENONE() \
 		do { \
-			arm_hardware_pioc_outputs2m(LCD_STROBE_BIT | ADDRES_BIT, 0); \
+			arm_hardware_piof_outputs2m(LCD_STROBE_BIT | ADDRES_BIT, 0); \
 		} while (0)
 
 	#define LCD_DATA_INITIALIZE_READ() \
 		do { \
-			arm_hardware_pioc_inputs(LCD_DATAS_BITS);	/* переключить порт на чтение с выводов */ \
+			arm_hardware_piof_inputs(LCD_DATAS_BITS);	/* переключить порт на чтение с выводов */ \
 		} while (0)
 
 	#define LCD_DATA_INITIALIZE_WRITE(v) \
 		do { \
-			arm_hardware_pioc_outputs2m(LCD_DATAS_BITS, (v) << LCD_DATAS_BIT_LOW);	/* открыть выходы порта */ \
+			arm_hardware_piof_outputs2m(LCD_DATAS_BITS, (v) << LCD_DATAS_BIT_LOW);	/* открыть выходы порта */ \
 		} while (0)
-
-#elif LCDMODE_UC1601 || LCDMODE_PCF8535
-
-	//#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
-
-	#define LS020_RESET_PORT_S(v)		do { GPIOC->BSRR = BSRR_S(v); __DSB(); } while (0)
-	#define LS020_RESET_PORT_C(v)		do { GPIOC->BSRR = BSRR_C(v); __DSB(); } while (0)
-	//#define LS020_RS	GPIO_ODR_ODR9			// D7 signal in HD44780 socket
-	#define LS020_RST	(1u << 8)			// D6 signal in HD44780 socket
 
 #endif
 
@@ -328,15 +302,15 @@
 
 #if 1
 	// Набор определений для работы без внешнего дешифратора
-	#define SPI_ADDRESS_PORT_S(v)	do { GPIOE->BSRR = BSRR_S(v); __DSB(); } while (0)
-	#define SPI_ADDRESS_PORT_C(v)	do { GPIOE->BSRR = BSRR_C(v); __DSB(); } while (0)
+	#define SPI_ADDRESS_PORT_S(v)	do { GPIOB->BSRR = BSRR_S(v); __DSB(); } while (0)
+	#define SPI_ADDRESS_PORT_C(v)	do { GPIOB->BSRR = BSRR_C(v); __DSB(); } while (0)
 	
 
 	#define SPI_CSEL0	0	//(GPIO_ODR_ODR0)	/* NPCS0 */
 	#define SPI_CSEL1	0	//(GPIO_ODR_ODR0)	/* LED */
 	#define SPI_CSEL2	0	//(GPIO_ODR_ODR0)	/* LED */
 	#define SPI_CSEL3	0	//(GPIO_ODR_ODR0)	/* LED */ 
-	#define SPI_CSEL4	((1u << 3))	/* MEMS */ 
+	#define SPI_CSEL4	((1u << 0))	/* PB0 - display */ 
 	#define SPI_CSEL5	0	//(GPIO_ODR_ODR16)	/*  */
 	#define SPI_CSEL6	0	//(GPIO_ODR_ODR17)	/* */
 	#define SPI_CSEL7	0	//(GPIO_ODR_ODR18) 	/*  */
@@ -367,13 +341,13 @@
 	#define SPI_ALLCS_BITS	0		// требуется для указания того, что работа с прямым выбором CS (без дешифратора) не требуется
 #endif
 // Набор определений для работы без внешнего дешифратора
-#define SPI_ALLCS_PORT_S(v)	do { GPIOE->BSRR = BSRR_S(v); __DSB(); } while (0)
-#define SPI_ALLCS_PORT_C(v)	do { GPIOE->BSRR = BSRR_C(v); __DSB(); } while (0)
+#define SPI_ALLCS_PORT_S(v)	do { GPIOB->BSRR = BSRR_S(v); __DSB(); } while (0)
+#define SPI_ALLCS_PORT_C(v)	do { GPIOB->BSRR = BSRR_C(v); __DSB(); } while (0)
 
 /* инициализация лиий выбора периферийных микросхем */
 #define SPI_ALLCS_INITIALIZE() \
 	do { \
-		arm_hardware_pioe_outputs2m(SPI_ALLCS_BITS, SPI_ALLCS_BITS); \
+		arm_hardware_piob_outputs2m(SPI_ALLCS_BITS, SPI_ALLCS_BITS); \
 	} while (0)
 /* инициализация сигналов управлдения дешифратором CS */
 #define SPI_ADDRESS_AEN_INITIALIZE() \
@@ -410,8 +384,24 @@
 #define	SPI_MISO_BIT			(1U << 6)	// * PA6 бит, через который идет ввод с SPI.
 
 	#define SPIIO_INITIALIZE() do { \
-			arm_hardware_pioa_outputs(SPI_MOSI_BIT | SPI_SCLK_BIT, SPI_MOSI_BIT | SPI_SCLK_BIT); \
+			arm_hardware_pioa_outputs(SPI_SCLK_BIT, SPI_SCLK_BIT); \
+			arm_hardware_pioa_outputs(SPI_MOSI_BIT, SPI_MOSI_BIT); \
 			arm_hardware_pioa_inputs(SPI_MISO_BIT); \
+		} while (0)
+	#define HARDWARE_SPI_CONNECT() do { \
+			arm_hardware_pioa_altfn20(SPI_MOSI_BIT | SPI_MISO_BIT, AF_SPI1); /* В этих процессорах и входы и выходы перекдючаются на ALT FN */ \
+			arm_hardware_pioa_altfn20(SPI_SCLK_BIT, AF_SPI1); /* В этих процессорах и входы и выходы перекдючаются на ALT FN */ \
+		} while (0)
+	#define HARDWARE_SPI_DISCONNECT() do { \
+			arm_hardware_pioa_outputs(SPI_SCLK_BIT, SPI_SCLK_BIT); \
+			arm_hardware_pioa_outputs(SPI_MOSI_BIT, SPI_MOSI_BIT); \
+			arm_hardware_pioa_inputs(SPI_MISO_BIT); \
+		} while (0)
+	#define HARDWARE_SPI_CONNECT_MOSI() do { \
+			arm_hardware_pioa_altfn20(SPI_MOSI_BIT, AF_SPI1);	/* PIO disable for MOSI bit (SD CARD read support) */ \
+		} while (0)
+	#define HARDWARE_SPI_DISCONNECT_MOSI() do { \
+			arm_hardware_pioa_outputs(SPI_MOSI_BIT, SPI_MOSI_BIT);	/* PIO enable for MOSI bit (SD CARD read support)  */ \
 		} while (0)
 
 //#define SIDETONE_TARGET_BIT		(1u << 8)	// output TIM4_CH3 (PB8, base mapping)

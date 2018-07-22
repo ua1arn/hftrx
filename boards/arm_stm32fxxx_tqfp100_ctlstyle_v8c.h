@@ -117,7 +117,7 @@
 	//#define DIRECT_50M0_X8		1	/* Board hardware configuration */
 	#define DIRECT_100M0_X4		1	/* Board hardware configuration */
 	#define BANDSELSTYLERE_LOCONV32M	1	/* Down-conversion with working band .030..32 MHz */
-	//#define WITHIF4DSP	1	// "Дятел"
+	#define WITHIF4DSP	1	// "Дятел"
 	//#define DEFAULT_DSP_IF	12000
 	//#define WITHEXTERNALDDSP		1	/* имеется управление внешней DSP платой. */
 	#define MODEL_DIRECT	1	/* использовать прямой синтез, а не гибридный */
@@ -161,7 +161,7 @@
 	#define CTLREGSTYLE_NOCTLREG	1		/* управляющий регистр на SPI отсутствует */
 	#define WITHAGCMODENONE		1	/* Режимами АРУ не управляем */
 	#define WITHPREAMPATT2_6DB		1	// Управление УВЧ и двухкаскадным аттенюатором с затуханиями 0 - 6 - 12 - 18 dB */
-	#define BOARD_AGCCODE_OFF 0
+	#define BOARD_AGCCODE_OFF 0x01
 	//#define DSTYLE_UR3LMZMOD	1	// Тестирование - расположение элементов экрана в трансиверах UR3LMZ
 	//#define	FONTSTYLE_ITALIC	1	// Использовать альтернативный шрифт
 
@@ -233,14 +233,15 @@
 	//#define KEYBOARD_USE_ADC	1	/* на одной линии установлено  четыре  клавиши. на vref - 6.8K, далее 2.2К, 4.7К и 13K. */
 	//#define WITHENCODER	1	/* для изменения частоты имеется енкодер */
 	//#define WITHNESTEDINTERRUPTS	1	/* используется при наличии real-time части. */
-	//#define WITHINTEGRATEDDSP		1	/* в программу включена инициализация и запуск DSP части. */
-	//#define WITHIF4DSP	1	// "Дятел"
+	#define WITHINTEGRATEDDSP		1	/* в программу включена инициализация и запуск DSP части. */
+	#define WITHIF4DSP	1	// "Дятел"
 	//#define WITHEXTERNALDDSP		1	/* имеется управление внешней DSP платой. */
 	//#define WITHLOOPBACKTEST	1
 	//#define DEFAULT_DSP_IF	12000
 	//#define WITHDSPEXTDDC 1			/* Квадратуры получаются внешней аппаратурой */
-	///#define WITHDSPEXTFIR 1			/* Фильтрация квадратур осуществляется внешней аппаратурой */
-	//#define WITHDSPLOCALFIR 1			/* Фильтрация квадратур осуществляется процессором */
+	//#define WITHDSPEXTFIR 1			/* Фильтрация квадратур осуществляется внешней аппаратурой */
+	#define WITHDSPLOCALFIR 1			/* Фильтрация квадратур осуществляется процессором */
+	#define WITHRTS96 1		/* вместо выходного аудиосигнала передача квадратур по USB */
 
 	#define WITHIFDACWIDTH	32		// 1 бит знак и 31 бит значащих
 	#define WITHIFADCWIDTH	32		// 1 бит знак и 31 бит значащих
@@ -253,7 +254,7 @@
 	//#define WITHIFSHIFT	1	/* используется IF SHIFT */
 	//#define WITHIFSHIFTOFFSET	(-250)	/* Начальное занчение IF SHIFT */
 	//#define WITHPBT		1	/* используется PBT (если LO3 есть) */
-	//#define WITHCAT		1	/* используется CAT */
+	#define WITHCAT		1	/* используется CAT */
 	//#define WITHDEBUG		1	/* Отладочная печать через COM-порт. Без CAT (WITHCAT) */
 	//#define WITHBEACON	1	/* Используется режим маяка */
 	//#define WITHVOX		1	/* используется VOX */
@@ -270,7 +271,7 @@
 	#define WITHMENU 	1	/* функциональность меню может быть отключена - если настраивать нечего */
 	//#define WITHFIXEDBFO	1	/* Переворот боковых за счёт 1-го гетродина (особенно, если нет подстраиваемого BFO) */
 	//#define WITHDUALFLTR	1	/* Переворот боковых за счёт переключения фильтра верхней или нижней боковой полосы */
-	//#define WITHSAMEBFO	1	/* использование общих настроек BFO для приёма и передачи */
+	#define WITHSAMEBFO	1	/* использование общих настроек BFO для приёма и передачи */
 	//#define WITHONLYBANDS 1		/* Перестройка может быть ограничена любительскими диапазонами */
 	#define WITHBCBANDS	1		/* в таблице диапазонов присутствуют вещательные диапазоны */
 	#define WITHWARCBANDS	1	/* В таблице диапазонов присутствуют HF WARC диапазоны */
