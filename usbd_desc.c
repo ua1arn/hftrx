@@ -242,6 +242,27 @@ static uint_fast16_t encodeMaxPacketSize(uint_fast32_t size)
 		return (0x02 << 11) | ((size + 2) / 3);	// 683..1024
 }
 
+
+/* Header Functional Descriptor */
+static unsigned r9fill_31(uint_fast8_t fill, uint8_t * buff, unsigned maxsize)
+{
+	const uint_fast8_t length = 5;
+	ASSERT(maxsize >= length);
+	if (maxsize < length)
+		return 0;
+	if (fill != 0 && buff != NULL)
+	{ 
+		const uint_fast16_t bcdCDC = CDC_V1_10;	/* bcdCDC: spec release number */
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
+		* buff ++ = length;						  /* bLength */
+		* buff ++ = CDC_INTERFACE_DESCRIPTOR_TYPE;   /* bDescriptorType: CS_INTERFACE */
+		* buff ++ = 0x00;   /* bDescriptorSubtype: Header Func Desc */
+		* buff ++ = LO_BYTE(bcdCDC);			/* bcdCDC: spec release number */
+		* buff ++ = HI_BYTE(bcdCDC);
+	}
+	return length;
+}
+
 #if WITHUSBUAC
 
 #if 0
@@ -1403,8 +1424,8 @@ static unsigned CDCACM_InterfaceDescriptorControlIf_a(uint_fast8_t fill, uint8_t
 		* buff ++ = 0;		/* bAlternateSetting: Alternate setting  - zero-based index */
 		* buff ++ = bNumEndpoints;   /* bNumEndpoints: One endpoints used (interrupt type) */
 		* buff ++ = CDC_COMMUNICATION_INTERFACE_CLASS;   /* bInterfaceClass: Communication Interface Class */
-		* buff ++ = 0x02;   /* bInterfaceSubClass: Abstract Control Model */
-		* buff ++ = 0x01;   /* bInterfaceProtocol: Common AT commands */
+		* buff ++ = CDC_ABSTRACT_CONTROL_MODEL;   /* bInterfaceSubClass: Abstract Control Model */
+		* buff ++ = CDC_PROTOCOL_COMMON_AT_COMMANDS;   /* bInterfaceProtocol: Common AT commands */
 		* buff ++ = STRING_ID_0;   /* iInterface */
 	}
 	return length;
@@ -1474,29 +1495,9 @@ static unsigned CDC_InterfaceDescriptorDataIf_a(uint_fast8_t fill, uint8_t * buf
 	return length;
 }
 
-/* Header Functional Descriptor */
-static unsigned r9fill_31(uint_fast8_t fill, uint8_t * buff, unsigned maxsize)
-{
-	const uint_fast8_t length = 5;
-	ASSERT(maxsize >= length);
-	if (maxsize < length)
-		return 0;
-	if (fill != 0 && buff != NULL)
-	{ 
-		const uint_fast16_t bcdCDC = CDC_V1_10;	/* bcdCDC: spec release number */
-		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
-		* buff ++ = length;						  /* bLength */
-		* buff ++ = CDC_INTERFACE_DESCRIPTOR_TYPE;   /* bDescriptorType: CS_INTERFACE */
-		* buff ++ = 0x00;   /* bDescriptorSubtype: Header Func Desc */
-		* buff ++ = LO_BYTE(bcdCDC);			/* bcdCDC: spec release number */
-		* buff ++ = HI_BYTE(bcdCDC);
-	}
-	return length;
-}
-
 /* ACM Functional Descriptor */
 // Abstract Control Management Functional Descriptor
-static unsigned r9fill_33(uint_fast8_t fill, uint8_t * buff, unsigned maxsize)
+static unsigned CDCACM_r9fill_33(uint_fast8_t fill, uint8_t * buff, unsigned maxsize)
 {
 	const uint_fast8_t length = 4;
 	ASSERT(maxsize >= length);
@@ -1595,7 +1596,7 @@ static unsigned fill_CDCACM_function_a(uint_fast8_t fill, uint8_t * p, unsigned 
 	n += CDCACM_InterfaceDescriptorControlIf_a(fill, p + n, maxsize - n, offset, 0x01);	/* INTERFACE_CDC_CONTROL_3a Interface Descriptor 3/0 CDC Control, 1 Endpoint */
 	n += r9fill_31(fill, p + n, maxsize - n);	/* Header Functional Descriptor*/
 	n += CDCACM_r9fill_32_a(fill, p + n, maxsize - n, offset);	/* Call Managment Functional Descriptor*/
-	n += r9fill_33(fill, p + n, maxsize - n);	/* ACM Functional Descriptor */
+	n += CDCACM_r9fill_33(fill, p + n, maxsize - n);	/* ACM Functional Descriptor */
 	n += CDC_UnionFunctionalDescriptor_a(fill, p + n, maxsize - n, offset);	/* Union Functional Descriptor INTERFACE_CDC_CONTROL_3a & INTERFACE_CDC_DATA_4a */
 	n += r9fill_35(fill, p + n, maxsize - n, highspeed, USB_ENDPOINT_IN(intnep));	/* Endpoint Descriptor 86 6 In, Interrupt */
 
@@ -1837,26 +1838,6 @@ static unsigned CDCECM_EthernetNetworkingFunctionalDescriptor(uint_fast8_t fill,
 }
 
 
-/* Header Functional Descriptor */
-static unsigned CDCECM_r9fill_31(uint_fast8_t fill, uint8_t * buff, unsigned maxsize)
-{
-	const uint_fast8_t length = 5;
-	ASSERT(maxsize >= length);
-	if (maxsize < length)
-		return 0;
-	if (fill != 0 && buff != NULL)
-	{ 
-		const uint_fast16_t bcdCDC = CDC_V1_10;	/* bcdCDC: spec release number */
-		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
-		* buff ++ = length;						  /* bLength */
-		* buff ++ = CDC_INTERFACE_DESCRIPTOR_TYPE;   /* bDescriptorType: CS_INTERFACE */
-		* buff ++ = 0x00;   /* bDescriptorSubtype: Header Func Desc */
-		* buff ++ = LO_BYTE(bcdCDC);			/* bcdCDC: spec release number */
-		* buff ++ = HI_BYTE(bcdCDC);
-	}
-	return length;
-}
-
 /* Endpoint 3 Descriptor */
 // Endpoint Descriptor 86 6 In, Interrupt
 
@@ -1961,7 +1942,7 @@ static unsigned fill_CDCECM_function(uint_fast8_t fill, uint8_t * p, unsigned ma
 
 	n += CDCECM_InterfaceAssociationDescriptor(fill, p + n, maxsize - n);	/* CDC: Interface Association Descriptor Abstract Control Model */
 	n += CDCECM_InterfaceDescriptorControlIf(fill, p + n, maxsize - n);	/* INTERFACE_CDC_CONTROL_3a Interface Descriptor 3/0 CDC Control, 1 Endpoint */
-	n += CDCECM_r9fill_31(fill, p + n, maxsize - n);	/* Header Functional Descriptor*/
+	n += r9fill_31(fill, p + n, maxsize - n);	/* Header Functional Descriptor*/
 	n += CDCECM_UnionFunctionalDescriptor(fill, p + n, maxsize - n);	/* Union Functional Descriptor INTERFACE_CDC_CONTROL_3a & INTERFACE_CDC_DATA_4a */
 	n += CDCECM_EthernetNetworkingFunctionalDescriptor(fill, p + n, maxsize - n);	/* Union Functional Descriptor INTERFACE_CDC_CONTROL_3a & INTERFACE_CDC_DATA_4a */
 	n += CDCECM_r9fill_35(fill, p + n, maxsize - n, highspeed, USB_ENDPOINT_IN(USBD_EP_CDCECM_INT));	/* Endpoint Descriptor 86 6 In, Interrupt */
@@ -2027,27 +2008,6 @@ static unsigned RNDIS_InterfaceDescriptorControlIf(uint_fast8_t fill, uint8_t * 
 	}
 	return length;
 }
-
-/* Header Functional Descriptor */
-static unsigned RNDIS_r9fill_31(uint_fast8_t fill, uint8_t * buff, unsigned maxsize)
-{
-	const uint_fast8_t length = 5;
-	ASSERT(maxsize >= length);
-	if (maxsize < length)
-		return 0;
-	if (fill != 0 && buff != NULL)
-	{ 
-		const uint_fast16_t bcdCDC = CDC_V1_10;	/* bcdCDC: spec release number */
-		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
-		* buff ++ = length;						  /* bLength */
-		* buff ++ = CDC_INTERFACE_DESCRIPTOR_TYPE;   /* bDescriptorType: CS_INTERFACE */
-		* buff ++ = 0x00;   /* bDescriptorSubtype: Header Func Desc */
-		* buff ++ = LO_BYTE(bcdCDC);			/* bcdCDC: spec release number */
-		* buff ++ = HI_BYTE(bcdCDC);
-	}
-	return length;
-}
-
 
 /* Call Managment Functional Descriptor */
 // Call Management Functional Descriptor 
@@ -2215,7 +2175,7 @@ static unsigned fill_RNDIS_function(uint_fast8_t fill, uint8_t * p, unsigned max
 	n += RNDIS_InterfaceDescriptorControlIf(fill, p + n, maxsize - n);	/* INTERFACE_CDC_CONTROL_3a Interface Descriptor 3/0 CDC Control, 1 Endpoint */
 	//  Functional Descriptors for Communication Class Interface per RNDIS spec.
 	// Header Functional Descriptor
-	////n += RNDIS_r9fill_31(fill, p + n, maxsize - n);
+	////n += r9fill_31(fill, p + n, maxsize - n);
 	// Call Management Functional Descriptor
 	n += RNDIS_r9fill_32(fill, p + n, maxsize - n);
 	// Abstract Control Management Functional Descriptor

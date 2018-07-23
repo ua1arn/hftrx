@@ -8331,6 +8331,7 @@ static USBD_StatusTypeDef USBD_XXX_Init(USBD_HandleTypeDef *pdev, uint_fast8_t c
 
 static USBD_StatusTypeDef USBD_XXX_DeInit(USBD_HandleTypeDef *pdev, uint_fast8_t cfgidx)
 {
+	uint_fast8_t offset;
 	//debug_printf_P(PSTR("USBD_XXX_DeInit\n"));
 
 	USB_OTG_GlobalTypeDef * const USBx = ((PCD_HandleTypeDef *) pdev->pData)->Instance;
@@ -8346,13 +8347,12 @@ static USBD_StatusTypeDef USBD_XXX_DeInit(USBD_HandleTypeDef *pdev, uint_fast8_t
 
 #if WITHUSBCDC
 
-	USBD_LL_CloseEP(pdev, USBD_EP_CDC_IN);
-	USBD_LL_CloseEP(pdev, USBD_EP_CDC_OUT);
-	USBD_LL_CloseEP(pdev, USBD_EP_CDC_INT);
-
-	USBD_LL_CloseEP(pdev, USBD_EP_CDC_INb);
-	USBD_LL_CloseEP(pdev, USBD_EP_CDC_OUTb);
-	USBD_LL_CloseEP(pdev, USBD_EP_CDC_INTb);
+ 	for (offset = 0; offset < WITHUSBHWCDC_N; ++ offset)
+	{
+		USBD_LL_CloseEP(pdev, USBD_EP_CDC_IN + offset);
+		USBD_LL_CloseEP(pdev, USBD_EP_CDC_OUT + offset);
+		USBD_LL_CloseEP(pdev, USBD_EP_CDC_INT + offset);
+	}
 
 	HARDWARE_CDC_ONDISCONNECT();
 	/* при потере связи с host снять запрос на передачу */
