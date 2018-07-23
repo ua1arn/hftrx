@@ -8298,7 +8298,6 @@ static USBD_StatusTypeDef USBD_XXX_Init(USBD_HandleTypeDef *pdev, uint_fast8_t c
 
 		/* uac Open EP IN */
 		USBD_LL_OpenEP(pdev, USBD_EP_AUDIO_IN, USBD_EP_TYPE_ISOC, usbd_getuacinmaxpacket());	// was: VIRTUAL_AUDIO_PORT_DATA_SIZE_IN
-
   		USBD_LL_Transmit(pdev, USBD_EP_AUDIO_IN, NULL, 0);
 	}
 
@@ -8308,7 +8307,6 @@ static USBD_StatusTypeDef USBD_XXX_Init(USBD_HandleTypeDef *pdev, uint_fast8_t c
 
 		/* uac Open EP IN */
 		USBD_LL_OpenEP(pdev, USBD_EP_RTS_IN, USBD_EP_TYPE_ISOC, usbd_getuacinrtsmaxpacket());	// was: VIRTUAL_AUDIO_PORT_DATA_SIZE_IN
-
   		USBD_LL_Transmit(pdev, USBD_EP_RTS_IN, NULL, 0);
 	}
  
@@ -8340,10 +8338,6 @@ static USBD_StatusTypeDef USBD_XXX_DeInit(USBD_HandleTypeDef *pdev, uint_fast8_t
 	USB_FlushRxFifo(USBx);
 
 	memset(altinterfaces, 0, sizeof altinterfaces);
-
-#if WITHUSBCDCEEM
-	cdceemout_initialize();
-#endif /* WITHUSBCDCEEM */
 
 #if WITHUSBCDC
 
@@ -8394,6 +8388,7 @@ static USBD_StatusTypeDef USBD_XXX_DeInit(USBD_HandleTypeDef *pdev, uint_fast8_t
 			global_enableIRQ();
 			uacinaddr = 0;
 		}
+		buffers_set_uacinalt(altinterfaces [INTERFACE_AUDIO_MIKE_2]);
 
 #if WITHUSBUAC3
 		USBD_LL_CloseEP(pdev, USBD_EP_RTS_IN);
@@ -8404,15 +8399,12 @@ static USBD_StatusTypeDef USBD_XXX_DeInit(USBD_HandleTypeDef *pdev, uint_fast8_t
 			global_enableIRQ();
 			uacinrtsaddr = 0;
 		}
+		buffers_set_uacinrtsalt(altinterfaces [INTERFACE_AUDIO_RTS_3]);
 #endif /* WITHUSBUAC3 */
 
-		terminalsprops [TERMINAL_ID_SELECTOR_6] [AUDIO_CONTROL_UNDEFINED] = 1;
-		buffers_set_uacinalt(altinterfaces [INTERFACE_AUDIO_MIKE_2]);
-		buffers_set_uacoutalt(altinterfaces [INTERFACE_AUDIO_SPK_1]);
-	#if WITHUSBUAC3
-		buffers_set_uacinrtsalt(altinterfaces [INTERFACE_AUDIO_RTS_3]);
-	#endif /* WITHUSBUAC3 */
 		USBD_LL_CloseEP(pdev, USBD_EP_AUDIO_OUT);
+		terminalsprops [TERMINAL_ID_SELECTOR_6] [AUDIO_CONTROL_UNDEFINED] = 1;
+		buffers_set_uacoutalt(altinterfaces [INTERFACE_AUDIO_SPK_1]);
 		uacout_buffer_stop();
 	}
   
