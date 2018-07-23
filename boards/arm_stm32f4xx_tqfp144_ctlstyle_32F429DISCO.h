@@ -12,7 +12,7 @@
 #define PION_DSP_CTLSTYLE_V1_H_INCLUDED 1
 
 	#if ! defined(STM32F429xx)
-		#error Wrong CPU selected. STM32F746xx expected
+		#error Wrong CPU selected. STM32F429xx expected
 	#endif /* ! defined(STM32F429xx) */
 
 	//#define WITHSAICLOCKFROMI2S	1	/* Блок SAI1 тактируется от PLL I2S */
