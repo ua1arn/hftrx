@@ -21,7 +21,6 @@
 /**
   * @brief  FMC SDRAM Bank address
   */   
-#define SDRAM_BANK_ADDR     ((uint32_t)0xD0000000)
   
 /**
   * @brief  FMC SDRAM Memory Width
@@ -2851,11 +2850,11 @@ FlagStatus FMC_GetFlagStatus(uint32_t FMC_Bank, uint32_t FMC_FLAG)
   
   if(FMC_Bank == FMC_Bank2_NAND)
   {
-    tmpsr = FMC_Bank2->SR2;
+    tmpsr = FMC_Bank2_3->SR2;
   }  
   else if(FMC_Bank == FMC_Bank3_NAND)
   {
-    tmpsr = FMC_Bank3->SR3;
+    tmpsr = FMC_Bank2_3->SR3;
   }
   else if(FMC_Bank == FMC_Bank4_PCCARD)
   {

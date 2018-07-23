@@ -752,12 +752,12 @@ uint_fast8_t hamradio_get_datamode(void);	// источник звука для передачи - USB A
 		//#define SDRAM_BANK_ADDR     ((uintptr_t) 0xD0000000)
 	#endif
 
-	#if defined (SDRAM_BANK_ADDR) || LCDMODE_LTDCSDRAMBUFF
+	#if defined (SDRAM_BANK_ADDR) && LCDMODE_LTDCSDRAMBUFF && LCDMODE_LTDC
 		#define framebuff (* (FRAMEBUFF_T *) SDRAM_BANK_ADDR)
-	#else /* LCDMODE_LTDCSDRAMBUFF */
+	#else /* defined (SDRAM_BANK_ADDR) && LCDMODE_LTDCSDRAMBUFF && LCDMODE_LTDC */
 		#define framebuff (framebuff0)
 		extern FRAMEBUFF_T framebuff0;	//L8 (8-bit Luminance or CLUT)
-	#endif /* LCDMODE_LTDCSDRAMBUFF */
+	#endif /* defined (SDRAM_BANK_ADDR) && LCDMODE_LTDCSDRAMBUFF && LCDMODE_LTDC */
 
 
 #endif /* LCDMODE_LTDC */

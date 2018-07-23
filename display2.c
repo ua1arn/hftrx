@@ -3695,6 +3695,15 @@ enum
 		#endif /* WITHMENU */
 		};
 
+		/* получить координаты окна с панорамой и/или водопадом. */
+		void display2_getpipparams(pipparams_t * p)
+		{
+			p->x = GRID2X(0);	// позиция верхнего левого угла в пикселях
+			p->y = GRID2Y(18);	// позиция верхнего левого угла в пикселях
+			p->w = GRID2X(CHARS2GRID(BDTH_ALLRX));	// размер по горизонтали в пикселях
+			p->h = GRID2Y(BDCV_WFLRX);				// размер по вертикали в пикселях
+		}
+
 	#endif /* DSTYLE_UR3LMZMOD && WITHONEATTONEAMP */
 
 #elif DSTYLE_G_X480_Y272
