@@ -3514,9 +3514,9 @@ enum
 			BDTH_LEFTRX = BDTH_ALLRX - BDTH_RIGHTRX,	// ширина индикатора баллов
 			BDTH_SPACERX = 0,
 		#if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
-			BDTH_ALLSWR = 3,
+			BDTH_ALLSWR = 5,
 			BDTH_SPACESWR = 1,
-			BDTH_ALLPWR = 16,
+			BDTH_ALLPWR = 10,
 			BDTH_SPACEPWR = 0
 		#else /* WITHSHOWSWRPWR */
 			BDTH_ALLSWR = BDTH_ALLRX,
@@ -3526,8 +3526,9 @@ enum
 		#endif /* WITHSHOWSWRPWR */
 		};
 		#define SMETERMAP "1 3 5 7 9 + 20 40 60"
+		#define SWRPWRMAP "1 2 3  0%   |   100%" 
 		#define POWERMAP  "0 10 20 40 60 80 100"
-		#define SWRMAX	(SWRMIN * 40 / 10)	// 4.0 - значение на полной шкале
+		#define SWRMAX	(SWRMIN * 30 / 10)	// 3.0 - значение на полной шкале
 		enum
 		{
 			PATTERN_SPACE = 0x00,	/* очищаем место за SWR и PWR метром этим символом */
