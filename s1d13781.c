@@ -2304,18 +2304,18 @@ void display_plot(
 
 	#if S1D_DISPLAY_BPP == 24
 		set_addrwr_8bit_p1p2_nc(shadow_dstaddr);
-		spi_complete();
+		spi_complete(targetlcd);
 	#elif S1D_DISPLAY_BPP == 16
 		#if WITHSPIEXT16
 			set_addw_16bit_p1p2_nc(shadow_dstaddr);
 			hardware_spi_complete_b16();
 		#else /* WITHSPI16BIT */
 			set_addrwr_8bit_p1p2_nc(shadow_dstaddr);
-			spi_complete();
+			spi_complete(targetlcd);
 		#endif /* WITHSPI16BIT */
 	#elif S1D_DISPLAY_BPP == 8
 		set_addrwr_8bit_p1p2_nc(shadow_dstaddr);
-		spi_complete();
+		spi_complete(targetlcd);
 	#endif
 
 		/* произвести пересылку по SPI */
