@@ -503,9 +503,10 @@ enum
 
 #if WITHUSBHW
 	/**USB_OTG_HS GPIO Configuration    
-	PB13     ------> USB_OTG_HS_VBUS
-	PB14     ------> USB_OTG_HS_DM
-	PB15     ------> USB_OTG_HS_DP 
+	PB12  OTG_HS_ID
+	PB13  USB_OTG_HS_VBUS
+	PB14  USB_OTG_HS_DM
+	PB15  USB_OTG_HS_DP 
 	*/
 	#define	USBD_HS_FS_INITIALIZE() do { \
 		arm_hardware_piob_altfn50((1U << 14) | (1U << 15), AF_OTGHS_FS);			/* PB14, PB15 - USB_OTG_HS	*/ \
