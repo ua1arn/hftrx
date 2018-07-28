@@ -398,6 +398,10 @@ board_gpio_init(void)
 	#if defined (HARDWARE_KBD_INITIALIZE)
 		HARDWARE_KBD_INITIALIZE();
 	#endif /* defined (HARDWARE_KBD_INITIALIZE) */
+	/* макроопределение, которое должно включить в себя все инициализации */
+	#if defined (HARDWARE_INITIALIZE)
+		HARDWARE_INITIALIZE();
+	#endif /* defined (HARDWARE_INITIALIZE) */
 }
 
 #if WITHSPISLAVE

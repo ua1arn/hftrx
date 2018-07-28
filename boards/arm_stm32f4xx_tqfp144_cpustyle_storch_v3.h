@@ -49,7 +49,7 @@
 //#define WITHUSBHOST	1	/* debug */
 
 //#define WITHUART1HW	1	/* PA9, PA10 Используется периферийный контроллер последовательного порта #1 */
-#define WITHUART2HW	1	/* PD5, PD6 Используется периферийный контроллер последовательного порта #2 */
+//#define WITHUART2HW	1	/* PD5, PD6 Используется периферийный контроллер последовательного порта #2 */
 
 #define WITHCAT_CDC		1	/* использовать виртуальный воследовательный порт на USB соединении */
 #define WITHMODEM_CDC	1
@@ -388,14 +388,17 @@
 		} while (0)
 
 	#if ! WITHUSEPARALELDISPLAY
-		// TUNE input - PF8
-		#define TUNE_TARGET_PIN				(GPIOF->IDR)
-		#define TUNE_BIT_TUNE					(1U << 8)		// PF8
+		#if WITHUART2HW
+			#error Disable WITHUART2HW
+		#endif
+		// TUNE input - PD5
+		#define TUNE_TARGET_PIN				(GPIOD->IDR)
+		#define TUNE_BIT_TUNE					(1U << 5)		// PD5
 		#define HARDWARE_GET_TUNE() ((TUNE_TARGET_PIN & TUNE_BIT_TUNE) == 0)
 		#define TUNE_INITIALIZE() \
 			do { \
-				arm_hardware_piof_inputs(TUNE_BIT_TUNE); \
-				arm_hardware_piof_updown(TUNE_BIT_TUNE, 0); \
+				arm_hardware_piod_inputs(TUNE_BIT_TUNE); \
+				arm_hardware_piod_updown(TUNE_BIT_TUNE, 0); \
 			} while (0)
 	#endif /* ! WITHUSEPARALELDISPLAY */
 
@@ -679,5 +682,11 @@
 		} while (0)
 #endif /* WITHUSBHW */
 
+	/* макроопределение, которое должно включить в себя все инициализации */
+	#define	HARDWARE_INITIALIZE() do { \
+		HARDWARE_SIDETONE_INITIALIZE(); \
+		HARDWARE_KBD_INITIALIZE(); \
+		HARDWARE_DAC_INITIALIZE(); \
+		} while (0)
 
 #endif /* ARM_STM32F4XX_TQFP144_CPUSTYLE_STORCH_V3_H_INCLUDED */

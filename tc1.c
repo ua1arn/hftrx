@@ -6493,13 +6493,14 @@ updateboard(
 			seq_set_txgate_P(pamodetempl->txgfva, pamodetempl->sdtnva);		/* как должен переключаться тракт на передачу */
 			board_set_txtune(gtx && getactualtune());	/* находимся в режиме передачи тональнка для настройки */
 
+			const uint_fast8_t downpower = reqautotune || hardware_get_tune();
 			#if WITHPOTPOWER
 				// gopowerlevel устанавливается в таймерном обработчике по состоянию потенциометра
-				board_set_opowerlevel(reqautotune ? WITHPOWERTRIMMIN : gopowerlevel);			/* установить выходную мощность передатчика WITHPOWERTRIMMIN..WITHPOWERTRIMMAX */
+				board_set_opowerlevel(downpower ? WITHPOWERTRIMMIN : gopowerlevel);			/* установить выходную мощность передатчика WITHPOWERTRIMMIN..WITHPOWERTRIMMAX */
 			#elif WITHPOWERTRIM
-				board_set_opowerlevel(reqautotune ? WITHPOWERTRIMMIN : gopowerlevel);			/* установить выходную мощность передатчика WITHPOWERTRIMMIN..WITHPOWERTRIMMAX */
+				board_set_opowerlevel(downpower ? WITHPOWERTRIMMIN : gopowerlevel);			/* установить выходную мощность передатчика WITHPOWERTRIMMIN..WITHPOWERTRIMMAX */
 			#elif WITHPOWERLPHP
-				board_set_opowerlevel(reqautotune ? WITHPOWERTRIMMIN : pwrmodes [gpwr].code);
+				board_set_opowerlevel(downpower ? WITHPOWERTRIMMIN : pwrmodes [gpwr].code);
 			#endif /* WITHPOWERLPHP */
 		#if WITHPABIASTRIM
 			board_set_pabias(gpabias);	// Подстройка тока оконечного каскада передатчика
