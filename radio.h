@@ -591,6 +591,7 @@ void hardware_ptt_port_initialize(void);	// Инициализация входа PTT, входа CAT_R
 
 uint_fast8_t hardware_elkey_getpaddle(uint_fast8_t reverse);
 uint_fast8_t hardware_get_ptt(void);
+uint_fast8_t hardware_get_tune(void);	/* запрос от внешней аппаратуры на переход в режим TUNE */
 uint_fast8_t hardware_get_txdisable(void);
 
 void hardware_txpath_initialize(void);

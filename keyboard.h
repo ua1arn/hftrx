@@ -175,6 +175,5 @@ uint_fast8_t getexitkey(void);
 #define KEYBOARD_NOKEY UINT8_MAX
 
 uint_fast8_t board_get_pressed_key(void);	// Если ничего - возвращаем KEYBOARD_NOKEY
-void board_kbd_initialize(void);
 
 #endif /* KEYBOARD_H_INCLUDED */

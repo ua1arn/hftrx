@@ -394,6 +394,10 @@ board_gpio_init(void)
 	#if HARDWARE_SDIOPOWER_BIT
 		HARDWARE_SDIOPOWER_INITIALIZE();
 	#endif /* HARDWARE_SDIOPOWER_BIT */
+
+	#if defined (HARDWARE_KBD_INITIALIZE)
+		HARDWARE_KBD_INITIALIZE();
+	#endif /* defined (HARDWARE_KBD_INITIALIZE) */
 }
 
 #if WITHSPISLAVE
@@ -7050,6 +7054,19 @@ hardware_get_ptt(void)
 #endif /*  */
 }
 
+/* функция вызывается из пользовательской программы. */
+uint_fast8_t 
+hardware_get_tune(void)
+{
+#if WITHBBOX && defined (WITHBBOXTUNE)
+	return WITHBBOXTUNE;	// автоматический переход в режим настройки
+#elif defined (HARDWARE_GET_TUNE)
+	return HARDWARE_GET_TUNE();
+#else /*  */
+	return 0;
+#endif /*  */
+}
+
 /* функция вызывается из обработчиков прерывания или при запрещённых прерываниях. */
 uint_fast8_t 
 hardware_get_txdisable(void)
@@ -7067,10 +7084,13 @@ hardware_ptt_port_initialize(void)
 {
 #if defined (PTT_INITIALIZE)
 	PTT_INITIALIZE();
-#endif
+#endif /* defined (PTT_INITIALIZE) */
+#if defined (TUNE_INITIALIZE)
+	TUNE_INITIALIZE();
+#endif /* defined (TUNE_INITIALIZE) */
 #if defined (TXDISABLE_INITIALIZE)
 	TXDISABLE_INITIALIZE();
-#endif
+#endif /* defined (TXDISABLE_INITIALIZE) */
 #if WITHCAT
 	FROMCAT_RTS_INITIALIZE();
 #endif /* WITHCAT */
@@ -8166,12 +8186,6 @@ board_get_pressed_key(void)
 	return KEYBOARD_NOKEY;
 }
 
-
-void 
-board_kbd_initialize(void)
-{
-	HARDWARE_KBD_INITIALIZE();
-}
 
 #endif /* WITHKEYBOARD */
 

@@ -108,6 +108,8 @@
 
 #elif LCDMODE_HD44780 && (LCDMODE_SPI == 0)
 
+	#define WITHUSEPARALELDISPLAY	1
+
 	// E (enable) bit
 	#define LCD_STROBE_PORT_S(v)		do { GPIOF->BSRR = BSRR_S(v); __DSB(); } while (0)
 	#define LCD_STROBE_PORT_C(v)		do { GPIOF->BSRR = BSRR_C(v); __DSB(); } while (0)
@@ -385,6 +387,18 @@
 			arm_hardware_piod_updown(PTT_BIT_PTT, 0); \
 		} while (0)
 
+	#if ! WITHUSEPARALELDISPLAY
+		// TUNE input - PF8
+		#define TUNE_TARGET_PIN				(GPIOF->IDR)
+		#define TUNE_BIT_TUNE					(1U << 8)		// PF8
+		#define HARDWARE_GET_TUNE() ((TUNE_TARGET_PIN & TUNE_BIT_TUNE) == 0)
+		#define TUNE_INITIALIZE() \
+			do { \
+				arm_hardware_piof_inputs(TUNE_BIT_TUNE); \
+				arm_hardware_piof_updown(TUNE_BIT_TUNE, 0); \
+			} while (0)
+	#endif /* ! WITHUSEPARALELDISPLAY */
+
 #endif /* WITHTX */
 
 #if WITHELKEY
@@ -505,22 +519,19 @@
 #define HARDWARE_SIDETONE_INITIALIZE() do { \
 	} while (0)
 
-/* PF10: pull-up second encoder button */
-#define KBD_MASK (1U << 10)	// PF10
-#define KBD_TARGET_PIN (GPIOF->IDR)
-
-#if KEYBOARD_USE_ADC
+#if ! WITHUSEPARALELDISPLAY
+	/* PF10: pull-up second encoder button */
+	#define KBD_MASK (1U << 10)	// PF10
+	#define KBD_TARGET_PIN (GPIOF->IDR)
 
 	#define HARDWARE_KBD_INITIALIZE() do { \
 			arm_hardware_piof_inputs(KBD_MASK); \
 			arm_hardware_piof_updown(KBD_MASK, 0);	/* PF10: pull-up second encoder button */ \
 		} while (0)
-#else
+#else /* ! WITHUSEPARALELDISPLAY */
 	#define HARDWARE_KBD_INITIALIZE() do { \
-			arm_hardware_pioa_inputs(KBD_MASK); \
-			arm_hardware_piof_updown(KBD_MASK, 0);	/* PF10: pull-up second encoder button */ \
 		} while (0)
-#endif
+#endif /* ! WITHUSEPARALELDISPLAY */
 
 #if 1 // WITHTWISW
 	#define TARGET_TWI_TWCK_PORT_C(v) do { GPIOB->BSRR = BSRR_C(v); __DSB(); } while (0)

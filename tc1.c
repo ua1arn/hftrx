@@ -5996,7 +5996,7 @@ getlo4ref(
 static uint_fast8_t
 getactualtune(void)
 {
-	return tunemode || (catenable && cattunemode) || reqautotune;
+	return tunemode || (catenable && cattunemode) || reqautotune || hardware_get_tune();
 }
 
 // вызывается из user mode - признак передачи в режиме данных
@@ -14472,9 +14472,6 @@ lowinitialize(void)
 #if WITHUSBHW
 	board_usb_initialize();		// USB device and host support
 #endif /* WITHUSBHW */
-#if WITHKEYBOARD
-	board_kbd_initialize();
-#endif /* WITHKEYBOARD */
 #if WITHENCODER
 	hardware_encoder_initialize();	//  todo: разобраться - вызов перенесен сюда из board_init_io - иначе не собирается под Cortex-A9.
 #endif /* WITHENCODER */
