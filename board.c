@@ -328,10 +328,10 @@ prog_gpioreg(void)
 	TARGET_USBFS_VBUSON_SET(glob_usbflashpoweron);
 #endif /* defined (TARGET_USBFS_VBUSON_SET) */
 
-#if defined (HARDWARE_LTDC_SET_BL)
+#if defined (HARDWARE_BL_SET)
 	// €ркость подсветки
-	HARDWARE_LTDC_SET_BL(WITHLCDBACKLIGHTMIN != glob_bglight, glob_bglight - (WITHLCDBACKLIGHTMIN + 1));
-#endif /* defined (HARDWARE_LTDC_SET_BL) */
+	HARDWARE_BL_SET(WITHLCDBACKLIGHTMIN != glob_bglight, glob_bglight - (WITHLCDBACKLIGHTMIN + 1));
+#endif /* defined (HARDWARE_BL_SET) */
 }
 
 

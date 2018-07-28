@@ -669,6 +669,27 @@
 		} while (0)
 #endif /* WITHUSBHW */
 
+	#define	HARDWARE_BL_INITIALIZE() do { \
+		/* step-up backlight converter */ \
+		arm_hardware_pioe_outputs((1U << 0), 1 * (1U << 0));		/* PE0 - enable backlight */ \
+		arm_hardware_piob_opendrain((1U << 9) | (1U << 8), 0 * (1U << 9) | 0 * (1U << 8));	/* PB9:PB8 - backlight current adjust */ \
+		arm_hardware_piof_altfn50((1U << 6), AF_TIM1); /* TIM16_CH1 - PF6 */ \
+		hardware_blfreq_initialize(); \
+		} while (0)
+
+	/* установка €ркости и включение/выключение преобразовател€ подсветки */
+	#define HARDWARE_BL_SET(en, level) do { \
+		const portholder_t enmask = (1U << 0); /* PE0 */ \
+		const portholder_t opins = (1U << 9) | (1U << 8); /* PB9:PB8 */ \
+		const portholder_t initialstate = (~ (level) & 0x03) << 8; \
+		GPIOE->BSRR = (en) ? BSRR_S(enmask) : BSRR_C(enmask); /* backlight control on/off */ \
+		GPIOB->BSRR = \
+			BSRR_S((initialstate) & (opins)) | /* set bits */ \
+			BSRR_C(~ (initialstate) & (opins)) | /* reset bits */ \
+			0; \
+		__DSB(); \
+	} while (0)
+
 #if LCDMODE_LTDC
 	enum
 	{
@@ -704,23 +725,6 @@
 		arm_hardware_pioi_altfn50((1U << 5), GPIO_AF_LTDC);		/* B5 */ \
 		arm_hardware_pioi_altfn50((1U << 6), GPIO_AF_LTDC);		/* B6 */ \
 		arm_hardware_pioi_altfn50((1U << 7), GPIO_AF_LTDC);		/* B7 */ \
-		/* step-up backlight converter */ \
-		arm_hardware_pioe_outputs((1U << 0), 1 * (1U << 0));		/* PE0 - enable backlight */ \
-		arm_hardware_piob_opendrain((1U << 9) | (1U << 8), 0 * (1U << 9) | 0 * (1U << 8));	/* PB9:PB8 - backlight current adjust */ \
-		arm_hardware_piof_altfn50((1U << 6), AF_TIM1); /* TIM16_CH1 - PF6 */ \
-		hardware_blfreq_initialize(); \
-	} while (0)
-	/* установка €ркости и включение/выключение преобразовател€ подсветки */
-	#define HARDWARE_LTDC_SET_BL(en, level) do { \
-		const portholder_t enmask = (1U << 0); /* PE0 */ \
-		const portholder_t opins = (1U << 9) | (1U << 8); /* PB9:PB8 */ \
-		const portholder_t initialstate = (~ (level) & 0x03) << 8; \
-		GPIOE->BSRR = (en) ? BSRR_S(enmask) : BSRR_C(enmask); /* backlight control on/off */ \
-		GPIOB->BSRR = \
-			BSRR_S((initialstate) & (opins)) | /* set bits */ \
-			BSRR_C(~ (initialstate) & (opins)) | /* reset bits */ \
-			0; \
-		__DSB(); \
 	} while (0)
 
 	/* управление состо€нием сигнала DISP панели */
@@ -750,6 +754,7 @@
 		HARDWARE_SIDETONE_INITIALIZE(); \
 		HARDWARE_KBD_INITIALIZE(); \
 		HARDWARE_DAC_INITIALIZE(); \
+		HARDWARE_BL_INITIALIZE(); \
 		} while (0)
 
 #endif /* ARM_STM32F4XX_TQFP176_CPUSTYLE_STORCH_V6_H_INCLUDED */
