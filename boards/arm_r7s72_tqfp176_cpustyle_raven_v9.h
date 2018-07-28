@@ -648,27 +648,34 @@
 			} while (0)
 #endif /* WITHDSPEXTFIR */
 
-/* получение состояния переполнения АЦП */
-#define TARGET_FPGA_OVF_BIT		(1u << 1)	// P6_1
-#define TARGET_FPGA_OVF_GET		((R7S721_INPUT_PORT(6) & TARGET_FPGA_OVF_BIT) == 0)	// 1 - overflow active
-#define TARGET_FPGA_OVF_INITIALIZE() do { \
-			arm_hardware_pio6_inputs(TARGET_FPGA_OVF_BIT); \
+	/* получение состояния переполнения АЦП */
+	#define TARGET_FPGA_OVF_BIT		(1u << 1)	// P6_1
+	#define TARGET_FPGA_OVF_GET		((R7S721_INPUT_PORT(6) & TARGET_FPGA_OVF_BIT) == 0)	// 1 - overflow active
+	#define TARGET_FPGA_OVF_INITIALIZE() do { \
+				arm_hardware_pio6_inputs(TARGET_FPGA_OVF_BIT); \
+			} while (0)
+
+	#if KEYBOARD_USE_ADC
+		#define HARDWARE_KBD_INITIALIZE() do { \
+			} while (0)
+	#else
+		#define KBD_TARGET_PIN (R7S721_INPUT_PORT(1))
+
+		#define KBD_MASK 0 //(0x01 | 0x02)	// все используемые биты
+		#define HARDWARE_KBD_INITIALIZE() do { \
+			arm_hardware_pio1_inputs(KBD_MASK); \
+			} while (0)
+	#endif
+
+	#define HARDWARE_ADC_INITIALIZE(ainmask) do { \
+			arm_hardware_pio1_alternative((ainmask) << 8, R7S721_PIOALT_1);	/* P1_8..P1_15 - AN0..AN7 inputs */ \
 		} while (0)
 
-#if KEYBOARD_USE_ADC
-	#define HARDWARE_KBD_INITIALIZE() do { \
+	/* макроопределение, которое должно включить в себя все инициализации */
+	#define	HARDWARE_INITIALIZE() do { \
+		HARDWARE_SIDETONE_INITIALIZE(); \
+		HARDWARE_KBD_INITIALIZE(); \
+		HARDWARE_DAC_INITIALIZE(); \
 		} while (0)
-#else
-	#define KBD_TARGET_PIN (R7S721_INPUT_PORT(1))
-
-	#define KBD_MASK 0 //(0x01 | 0x02)	// все используемые биты
-	#define HARDWARE_KBD_INITIALIZE() do { \
-		arm_hardware_pio1_inputs(KBD_MASK); \
-		} while (0)
-#endif
-
-#define HARDWARE_ADC_INITIALIZE(ainmask) do { \
-		arm_hardware_pio1_alternative((ainmask) << 8, R7S721_PIOALT_1);	/* P1_8..P1_15 - AN0..AN7 inputs */ \
-	} while (0)
 
 #endif /* ARM_R7S72_TQFP176_CPUSTYLE_RAVEN_V9_H_INCLUDED */

@@ -660,4 +660,11 @@
 #endif /* WITHUSBHW */
 
 
+	/* макроопределение, которое должно включить в себя все инициализации */
+	#define	HARDWARE_INITIALIZE() do { \
+		HARDWARE_SIDETONE_INITIALIZE(); \
+		HARDWARE_KBD_INITIALIZE(); \
+		HARDWARE_DAC_INITIALIZE(); \
+		} while (0)
+
 #endif /* ARM_STM32F4XX_TQFP144_CPUSTYLE_STORCH_V5_H_INCLUDED */
