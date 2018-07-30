@@ -2557,7 +2557,8 @@ filter_t fi_2p0_455 =
 
 	#if WITHPOTPOWER
 	#elif WITHPOWERTRIM
-		uint8_t gopowerlevel;/* выходная мощность WITHPOWERTRIMMIN..WITHPOWERTRIMMAX */
+		uint8_t gnormalpower;/* мощность WITHPOWERTRIMMIN..WITHPOWERTRIMMAX */
+		uint8_t gotunerpower;/* мощность при работе автоматического согласующего устройства WITHPOWERTRIMMIN..WITHPOWERTRIMMAX */
 	#endif /* WITHPOWERTRIM */
 	#if WITHPABIASTRIM
 		uint8_t gpabias;	/* ток оконечного каскада передатчика */
@@ -3145,7 +3146,8 @@ enum
 	#endif /* WITHSUBTONES */
 
 	#if WITHPOWERTRIM
-		static uint_fast8_t gopowerlevel = WITHPOWERTRIMMAX;
+		static uint_fast8_t gnormalpower = WITHPOWERTRIMMAX;
+		static uint_fast8_t gotunerpower = WITHPOWERTRIMMIN; /* мощность при работе автоматического согласующего устройства */
 	#endif /* WITHPOWERTRIM */
 	#if WITHPABIASTRIM
 		#if defined (WITHBBOXPABIAS)
@@ -6495,12 +6497,12 @@ updateboard(
 
 			const uint_fast8_t downpower = reqautotune || hardware_get_tune();
 			#if WITHPOTPOWER
-				// gopowerlevel устанавливается в таймерном обработчике по состоянию потенциометра
-				board_set_opowerlevel(downpower ? WITHPOWERTRIMMIN : gopowerlevel);			/* установить выходную мощность передатчика WITHPOWERTRIMMIN..WITHPOWERTRIMMAX */
+				// gnormalpower устанавливается в таймерном обработчике по состоянию потенциометра
+				board_set_opowerlevel(downpower ? gotunerpower : gnormalpower);			/* установить выходную мощность передатчика WITHPOWERTRIMMIN..WITHPOWERTRIMMAX */
 			#elif WITHPOWERTRIM
-				board_set_opowerlevel(downpower ? WITHPOWERTRIMMIN : gopowerlevel);			/* установить выходную мощность передатчика WITHPOWERTRIMMIN..WITHPOWERTRIMMAX */
+				board_set_opowerlevel(downpower ? gotunerpower : gnormalpower);			/* установить выходную мощность передатчика WITHPOWERTRIMMIN..WITHPOWERTRIMMAX */
 			#elif WITHPOWERLPHP
-				board_set_opowerlevel(downpower ? WITHPOWERTRIMMIN : pwrmodes [gpwr].code);
+				board_set_opowerlevel(downpower ? gotunerpower : pwrmodes [gpwr].code);
 			#endif /* WITHPOWERLPHP */
 		#if WITHPABIASTRIM
 			board_set_pabias(gpabias);	// Подстройка тока оконечного каскада передатчика
@@ -8385,7 +8387,7 @@ directctlupdate(uint_fast8_t inmenu)
 		// +++ получение состояния органов управления */
 #if WITHCPUADCHW
 	#if WITHPOTPOWER
-		changed |= flagne_u8(& gopowerlevel, board_getadc_filtered_u8(POTPOWER, WITHPOWERTRIMMIN, WITHPOWERTRIMMAX));	// регулировка мощности
+		changed |= flagne_u8(& gnormalpower, board_getadc_filtered_u8(POTPOWER, WITHPOWERTRIMMIN, WITHPOWERTRIMMAX));	// регулировка мощности
 	#endif /* WITHPOTPOWER */
 	#if WITHPOTWPM
 		changed |= flagne_u8(& elkeywpm, board_getadc_filtered_u8(POTWPM, CWWPMMIN, CWWPMMAX));
@@ -11759,19 +11761,28 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #endif /* WITHFANTIMER */
 #endif /* WITHTX */
 #if WITHTX
-#if ! WITHPOTPOWER
 #if WITHPOWERTRIM
+  #if ! WITHPOTPOWER
 	{
-		"TX POWER", 7, 0, 0,	ISTEP1,	
+		"TX POWER", 7, 0, 0,	ISTEP1,		/* мощность при обычной работе на передачу */
 		ITEM_VALUE,
 		WITHPOWERTRIMMIN, WITHPOWERTRIMMAX,
-		offsetof(struct nvmap, gopowerlevel),
+		offsetof(struct nvmap, gnormalpower),
 		NULL,
-		& gopowerlevel,
+		& gnormalpower,
+		getzerobase, 
+	},
+  #endif /* ! WITHPOTPOWER */
+	{
+		"ATU PWR ", 7, 0, 0,	ISTEP1,		/* мощность при работе автоматического согласующего устройства */
+		ITEM_VALUE,
+		WITHPOWERTRIMMIN, WITHPOWERTRIMMAX,
+		offsetof(struct nvmap, gotunerpower),
+		NULL,
+		& gotunerpower,
 		getzerobase, 
 	},
 #endif /* WITHPOWERTRIM */
-#endif /* ! WITHPOTPOWER */
 	{
 		"TX GATE ", 7, 0, RJ_ON,	ISTEP1,	
 		ITEM_VALUE,
