@@ -2212,6 +2212,9 @@ struct bandinfo
 struct nvmap
 {
 	uint8_t lockmode;			/* блокировка валкодера */
+#if WITHLCDBACKLIGHT
+	uint8_t dimmmode;			/* выключение подсветки дисплея с клавиатуры */
+#endif /* WITHLCDBACKLIGHT */
 #if WITHUSEFAST
 	uint8_t gusefast;			/* переключение в режим крупного шага */
 #endif /* WITHUSEFAST */
@@ -2678,6 +2681,7 @@ filter_t fi_2p0_455 =
 #define RMT_GROUP_BASE offsetof(struct nvmap, ggroup)		/* байт - последняя группа меню, с которой работали */
 #define RMT_SIGNATURE_BASE(i) offsetof(struct nvmap, signature [(i)])			/* расположение сигнатуры */
 #define RMT_LOCKMODE_BASE offsetof(struct nvmap, lockmode)		/* признак блокировки валкодера */
+#define RMT_DIMMMODE_BASE offsetof(struct nvmap, dimmmode)		/* выключение подсветки дисплея с клавиатуры */
 #define RMT_USEFAST_BASE offsetof(struct nvmap, gusefast)		/* переключение в режим крупного шага */
 #define RMT_AFFILTER_BASE offsetof(struct nvmap, gaffilter)		/* включение ФНЧ на приёме в аппарате RA4YBO */
 #define RMT_LOUDSP_BASE offsetof(struct nvmap, gloudsp)		/* включение ФНЧ на приёме в аппарате RA4YBO */
@@ -2834,6 +2838,11 @@ static uint_fast8_t gagcmode;
 #endif
 
 static uint_fast8_t lockmode;
+#if WITHLCDBACKLIGHT
+	static uint_fast8_t dimmmode;
+#else /* WITHLCDBACKLIGHT */
+	enum { dimmmode = 0 };
+#endif /* WITHLCDBACKLIGHT */
 static uint_fast8_t gusefast;
 
 #if WITHPOWERLPHP
@@ -5006,6 +5015,9 @@ static void
 loadsavedstate(void)
 {
 	lockmode = loadvfy8up(RMT_LOCKMODE_BASE, 0, 1, lockmode);	/* вытаскиваем признак блокировки валкодера */
+#if WITHLCDBACKLIGHT
+	dimmmode = loadvfy8up(RMT_DIMMMODE_BASE, 0, 1, dimmmode);	/* выключение подсветки дисплея с клавиатуры */
+#endif /* WITHLCDBACKLIGHT */
 #if WITHUSEFAST
 	gusefast = loadvfy8up(RMT_USEFAST_BASE, 0, 1, gusefast);	/* переключение в режим крупного шага */
 #endif /* WITHUSEFAST */
@@ -6727,10 +6739,10 @@ updateboard(
 		#if CTLSTYLE_STORCH_V6
 			board_set_blfreq(blfreq);
 		#endif /* CTLSTYLE_STORCH_V6 */
-		board_set_bglight((dimmflag || sleepflag) ? WITHLCDBACKLIGHTMIN : bglight);		/* подсветка дисплея  */
+		board_set_bglight((dimmflag || sleepflag || dimmmode) ? WITHLCDBACKLIGHTMIN : bglight);		/* подсветка дисплея  */
 	#endif /* WITHLCDBACKLIGHT */
 	#if WITHKBDBACKLIGHT
-		board_set_kblight((dimmflag || sleepflag) ? 0 : kblight);			/* подсвтка клавиатуры */
+		board_set_kblight((dimmflag || sleepflag || dimmmode) ? 0 : kblight);			/* подсвтка клавиатуры */
 	#endif /* WITHKBDBACKLIGHT */
 	#if WITHNBONOFF
 		board_set_nfmnbon(lockmode);	/* Включние noise blanker на SW2014FM */
@@ -14128,17 +14140,8 @@ process_key_menuset_common(uint_fast8_t kbch)
 	case KBD_CODE_LOCK_HOLDED:
 #if WITHLCDBACKLIGHT
 		{
-			switch (bglight)
-			{
-			case WITHLCDBACKLIGHTMAX:
-				bglight = WITHLCDBACKLIGHTMIN;
-				break;
-			default:
-			case WITHLCDBACKLIGHTMIN:
-				bglight = WITHLCDBACKLIGHTMAX;
-				break;
-			}
-			save_i8(offsetof(struct nvmap, bglight), bglight);
+			dimmmode = calc_next(dimmmode, 0, 1);
+			save_i8(RMT_DIMMMODE_BASE, dimmmode);
 			updateboard(1, 0);
 		}
 #endif /* WITHLCDBACKLIGHT */
