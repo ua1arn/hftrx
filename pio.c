@@ -718,10 +718,12 @@ void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority,
 		// pupdr: 0:no pulls, 1:pull-up, 2: pull-down, 3:reserved
 		#define arm_stm32f30x_hardware_pio_pupdr(gpio, up, down) \
 		  do { \
-			const portholder_t up3 = power2(up);	\
-			const portholder_t down3 = power2(down);	\
-			(gpio)->PUPDR = ((gpio)->PUPDR & ~ (up3 * GPIO_PUPDR_PUPDR0)) | up3 * (1) * GPIO_PUPDR_PUPDR0_0; \
-			(gpio)->PUPDR = ((gpio)->PUPDR & ~ (down3 * GPIO_PUPDR_PUPDR0)) | down3 * (2) * GPIO_PUPDR_PUPDR0_0; \
+			const portholder_t up3 = power2(up); \
+			const portholder_t down3 = power2(down); \
+			(gpio)->PUPDR = ((gpio)->PUPDR & ~ ((up3 | down3) * GPIO_PUPDR_PUPDR0)) | \
+				up3 * (1) * GPIO_PUPDR_PUPDR0_0 | \
+				down3 * (2) * GPIO_PUPDR_PUPDR0_0 | \
+				0; \
 		  } while (0)
 		// отключение встроенной подтяжки на входе (так как программирование на ввод в данной библиотеке всегда включает подтяжку
 		// pupdr: 0:no pulls, 1:pull-up, 2: pull-down, 3:reserved
