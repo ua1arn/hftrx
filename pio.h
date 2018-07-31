@@ -275,6 +275,8 @@ void arm_hardware_pio6_inputs(unsigned long ipins);
 void arm_hardware_pio7_inputs(unsigned long ipins);
 void arm_hardware_pio8_inputs(unsigned long ipins);
 void arm_hardware_pio9_inputs(unsigned long ipins);
+void arm_hardware_pio10_inputs(unsigned long ipins);
+void arm_hardware_pio11_inputs(unsigned long ipins);
 
 // R7S721 ports
 void arm_hardware_pio0_outputs(unsigned long opins, unsigned long initialstate);
@@ -287,6 +289,8 @@ void arm_hardware_pio6_outputs(unsigned long opins, unsigned long initialstate);
 void arm_hardware_pio7_outputs(unsigned long opins, unsigned long initialstate);
 void arm_hardware_pio8_outputs(unsigned long opins, unsigned long initialstate);
 void arm_hardware_pio9_outputs(unsigned long opins, unsigned long initialstate);
+void arm_hardware_pio10_outputs(unsigned long opins, unsigned long initialstate);
+void arm_hardware_pio11_outputs(unsigned long opins, unsigned long initialstate);
 
 // R7S721 peripherials
 void arm_hardware_pio1_alternative(unsigned long iopins, unsigned alt);
@@ -298,6 +302,8 @@ void arm_hardware_pio6_alternative(unsigned long iopins, unsigned alt);
 void arm_hardware_pio7_alternative(unsigned long iopins, unsigned alt);
 void arm_hardware_pio8_alternative(unsigned long iopins, unsigned alt);
 void arm_hardware_pio9_alternative(unsigned long iopins, unsigned alt);
+void arm_hardware_pio10_alternative(unsigned long iopins, unsigned alt);
+void arm_hardware_pio11_alternative(unsigned long iopins, unsigned alt);
 
 // R7S721 pin change interrupts
 void arm_hardware_piojp0_onchangeinterrupt(unsigned long ipins, int edge, uint32_t priority, void (* vector)(void));

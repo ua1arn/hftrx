@@ -209,6 +209,19 @@ void arm_hardware_pio9_inputs(unsigned long ipins)
 	r7s721_pio_inputs(9, ipins);
 }
 
+#if CPUSTYLE_R7S721001	// RZ/A1H
+
+void arm_hardware_pio10_inputs(unsigned long ipins)
+{
+	r7s721_pio_inputs(10, ipins);
+}
+
+void arm_hardware_pio11_inputs(unsigned long ipins)
+{
+	r7s721_pio_inputs(11, ipins);
+}
+#endif /* CPUSTYLE_R7S721001 */
+
 // outputs
 void arm_hardware_pio1_outputs(unsigned long opins, unsigned long initialstate)
 {
@@ -255,6 +268,19 @@ void arm_hardware_pio9_outputs(unsigned long opins, unsigned long initialstate)
 	r7s721_pio_outputs(9, opins, initialstate);
 }
 
+#if CPUSTYLE_R7S721001	// RZ/A1H
+
+void arm_hardware_pio10_outputs(unsigned long opins, unsigned long initialstate)
+{
+	r7s721_pio_outputs(10, opins, initialstate);
+}
+
+void arm_hardware_pio11_outputs(unsigned long opins, unsigned long initialstate)
+{
+	r7s721_pio_outputs(11, opins, initialstate);
+}
+#endif /* CPUSTYLE_R7S721001 */
+
 // alternative
 void arm_hardware_pio1_alternative(unsigned long iopins, unsigned alt)
 {
@@ -300,6 +326,19 @@ void arm_hardware_pio9_alternative(unsigned long iopins, unsigned alt)
 {
 	r7s721_pio_alternative(9, iopins, alt);
 }
+
+#if CPUSTYLE_R7S721001	// RZ/A1H
+
+void arm_hardware_pio10_alternative(unsigned long iopins, unsigned alt)
+{
+	r7s721_pio_alternative(10, iopins, alt);
+}
+
+void arm_hardware_pio11_alternative(unsigned long iopins, unsigned alt)
+{
+	r7s721_pio_alternative(11, iopins, alt);
+}
+#endif /* CPUSTYLE_R7S721001 */
 
 // pin change interrupts
 void arm_hardware_piojp0_onchangeinterrupt(unsigned long ipins, int edge, uint32_t priority, void (* vector)(void))
@@ -523,9 +562,11 @@ void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority,
 	/* Установка начального состояния битов  в GPIO STM32F4X */
 	#define arm_stm32f4xx_hardware_pio_setstate(gpio, opins, initialstate) \
 	  do { \
+		const portholder_t op = (opins); \
+		const portholder_t is = (initialstate); \
 		(gpio)->BSRR = \
-			BSRR_S((initialstate) & (opins)) | /* set bits */ \
-			BSRR_C(~ (initialstate) & (opins)) | /* reset bits */ \
+			BSRR_S((is) & (op)) | /* set bits */ \
+			BSRR_C(~ (is) & (op)) | /* reset bits */ \
 			0; \
 		} while (0)
 
@@ -665,8 +706,9 @@ void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority,
 		// speed: 0:low speed, 1:maximum speed, 2:fast speed, 3:high speed
 		// pupdr: 0:no pulls, 1:pull-up, 2: pull-down, 3:reserved
 		// type: 0: Output push-pull, 1: output open-drain,
-		#define arm_stm32f30x_hardware_pio_prog(gpio, iomask, moder, speed, pupdr, typer) \
+		#define arm_stm32f30x_hardware_pio_prog(gpio, iomask0, moder, speed, pupdr, typer) \
 		  do { \
+			const portholder_t iomask = (iomask0);	\
 			const portholder_t mask3 = power2(iomask);	\
 			(gpio)->MODER = ((gpio)->MODER & ~ (mask3 * GPIO_MODER_MODER0)) | mask3 * (moder) * GPIO_MODER_MODER0_0; \
 			(gpio)->OSPEEDR = ((gpio)->OSPEEDR & ~ (mask3 * GPIO_OSPEEDER_OSPEEDR0)) | mask3 * (speed) * GPIO_OSPEEDER_OSPEEDR0_0; \
@@ -681,7 +723,7 @@ void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority,
 			(gpio)->PUPDR = ((gpio)->PUPDR & ~ (up3 * GPIO_PUPDR_PUPDR0)) | up3 * (1) * GPIO_PUPDR_PUPDR0_0; \
 			(gpio)->PUPDR = ((gpio)->PUPDR & ~ (down3 * GPIO_PUPDR_PUPDR0)) | down3 * (2) * GPIO_PUPDR_PUPDR0_0; \
 		  } while (0)
-		// отключение встроенной подтяжки на входе (так как программирование на ввод всегда включает подтяжку
+		// отключение встроенной подтяжки на входе (так как программирование на ввод в данной библиотеке всегда включает подтяжку
 		// pupdr: 0:no pulls, 1:pull-up, 2: pull-down, 3:reserved
 		#define arm_stm32f30x_hardware_pio_pupoff(gpio, ipins) \
 		  do { \
@@ -714,8 +756,9 @@ void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority,
 		*/
 		#define arm_stm32f30x_hardware_pio_altfn(gpio, opins, afn) \
 			{ \
-				const portholder_t lo = power4((opins) >> 0); \
-				const portholder_t hi = power4((opins) >> 8); \
+				const portholder_t op = (opins); \
+				const portholder_t lo = power4((op) >> 0); \
+				const portholder_t hi = power4((op) >> 8); \
 				(gpio)->AFR [0] = ((gpio)->AFR [0] & ~ (lo * 0x0f)) | (lo * (afn)); \
 				(gpio)->AFR [1] = ((gpio)->AFR [1] & ~ (hi * 0x0f)) | (hi * (afn)); \
 			} while (0)
