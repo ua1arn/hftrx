@@ -661,6 +661,12 @@
 			arm_hardware_pio1_alternative((ainmask) << 8, R7S721_PIOALT_1);	/* P1_8..P1_15 - AN0..AN7 inputs */ \
 		} while (0)
 
+	#define HARDWARE_DAC_INITIALIZE() do { \
+		} while (0)
+
+	#define HARDWARE_SIDETONE_INITIALIZE() do { \
+		} while (0)
+
 	/* макроопределение, которое должно включить в себя все инициализации */
 	#define	HARDWARE_INITIALIZE() do { \
 		HARDWARE_SIDETONE_INITIALIZE(); \
