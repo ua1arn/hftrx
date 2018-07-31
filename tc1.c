@@ -2609,7 +2609,7 @@ filter_t fi_2p0_455 =
 	uint8_t gbigstep;		/* больщой шаг валкодера */
 	uint8_t ghiresdiv;		/* во сколько раз уменьшаем разрешение валкодера. */
 #if WITHSPKMUTE
-	uint8_t gloudsp;		/* включение динамика */
+	uint8_t gmutespkr;		/* выключение динамика */
 #endif /* WITHSPKMUTE */
 
 #if CTLSTYLE_RA4YBO
@@ -2684,7 +2684,7 @@ filter_t fi_2p0_455 =
 #define RMT_DIMMMODE_BASE offsetof(struct nvmap, dimmmode)		/* выключение подсветки дисплея с клавиатуры */
 #define RMT_USEFAST_BASE offsetof(struct nvmap, gusefast)		/* переключение в режим крупного шага */
 #define RMT_AFFILTER_BASE offsetof(struct nvmap, gaffilter)		/* включение ФНЧ на приёме в аппарате RA4YBO */
-#define RMT_LOUDSP_BASE offsetof(struct nvmap, gloudsp)		/* включение ФНЧ на приёме в аппарате RA4YBO */
+#define RMT_MUTELOUDSP_BASE offsetof(struct nvmap, gmutespkr)		/* включение ФНЧ на приёме в аппарате RA4YBO */
 
 #define RMT_SPLITMODE_BASE offsetof(struct nvmap, splitmode)		/* (vfo/vfoa/vfob/mem) */
 #define RMT_VFOAB_BASE offsetof(struct nvmap, vfoab)		/* (vfoa/vfob) */
@@ -3366,7 +3366,7 @@ static uint_fast8_t gmoderows [2];		/* индексом используется результат функции g
 										/* номер режима работы в маске (номер тройки бит) */
 static uint_fast8_t gmodecolmaps4 [2] [4];	/* индексом 1-й размерности используется результат функции getbankindex_xxx(tx) */
 #if WITHSPKMUTE
-	static uint_fast8_t gloudsp;		/*  */
+	static uint_fast8_t gmutespkr;		/*  выключение динамика */
 #endif /* WITHSPKMUTE */
 										/* маска режимов работы (тройки бит, указывают номер позиции в каждой строке) */
 #if CTLSTYLE_RA4YBO
@@ -5044,7 +5044,7 @@ loadsavedstate(void)
 	gvfoab = loadvfy8up(RMT_VFOAB_BASE, 0, VFOS_COUNT - 1, gvfoab); /* (vfoa/vfob) */
 #endif /* WITHSPLIT */
 #if WITHSPKMUTE
-	gloudsp = loadvfy8up(RMT_LOUDSP_BASE, 0, 1, gloudsp);	/*  */
+	gmutespkr = loadvfy8up(RMT_MUTELOUDSP_BASE, 0, 1, gmutespkr);	/*  выключение динамика */
 #endif /* WITHSPKMUTE */
 #if CTLSTYLE_RA4YBO
 	gaffilter = loadvfy8up(RMT_AFFILTER_BASE, 0, 1, gaffilter);	/* включение ФНЧ на приёме в аппарате RA4YBO */
@@ -6749,7 +6749,7 @@ updateboard(
 	#endif /* WITHNBONOFF */
 
 	#if WITHSPKMUTE
-		board_set_loudspeaker(gloudsp);
+		board_set_loudspeaker(gmutespkr); /*  выключение динамика */
 	#endif /* WITHSPKMUTE */
 
 	#if WITHAUTOTUNER
@@ -7352,8 +7352,8 @@ uif_key_usefast(void)
 static void 
 uif_key_loudsp(void)
 {
-	gloudsp = calc_next(gloudsp, 0, 1);
-	save_i8(RMT_LOUDSP_BASE, gloudsp);
+	gmutespkr = calc_next(gmutespkr, 0, 1);
+	save_i8(RMT_MUTELOUDSP_BASE, gmutespkr);
 	updateboard(1, 0);
 }
 #endif /* WITHSPKMUTE */
