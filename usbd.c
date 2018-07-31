@@ -132,15 +132,16 @@ static volatile uint_fast16_t usb_cdc_control_state [INTERFACE_count];
 		usbd_cdc_rxenabled = state;
 	}
 
+#if CPUSTYLE_STM32F
 	/* передача символа после прерывания о готовности передатчика - вызывается из HARDWARE_CDC_ONTXCHAR */
 	void
 	usbd_cdc_tx(void * ctx, uint_fast8_t c)
 	{
 		//USBD_HandleTypeDef * const pdev = ctx;
-		ASSERT(cdc1buffinlevel < VIRTUAL_COM_PORT_DATA_SIZE);
+		ASSERT(cdc1buffinlevel < VIRTUAL_COM_PORT_IN_DATA_SIZE);
 		cdc1buffin [cdc1buffinlevel ++] = c;
 	}
-
+#endif /* CPUSTYLE_STM32F */
 	/* использование буфера принятых данных */
 	static void cdc1out_buffer_save(
 		const uint8_t * data, 
@@ -2845,14 +2846,14 @@ usbd_handler_brdy_bulk_in8(PCD_TypeDef * const Instance, uint_fast8_t pipe, uint
 #if WITHUSBCDC
 	case USBD_EP_CDC_IN & 0x7F:
 		{
-			unsigned n = VIRTUAL_COM_PORT_DATA_SIZE;
+			unsigned n = VIRTUAL_COM_PORT_IN_DATA_SIZE;
 			while (usbd_cdc_txenabled != 0 && n --)	// при отсутствии данных usbd_cdc_txenabled устанавливается в 0
 				HARDWARE_CDC_ONTXCHAR((void *) Instance);		// отсюда вызовется usbd_cdc_tx() с требуемым для передачи символом.
 		}
 		break;
 	case USBD_EP_CDC_INb & 0x7F:
 		{
-			//unsigned n = VIRTUAL_COM_PORT_DATA_SIZE;
+			//unsigned n = VIRTUAL_COM_PORT_IN_DATA_SIZE;
 			//while (usbd_cdc_txenabled != 0 && n --)	// при отсутствии данных usbd_cdc_txenabled устанавливается в 0
 			//	HARDWARE_CDC_ONTXCHAR((void *) Instance);		// отсюда вызовется usbd_cdc_tx() с требуемым для передачи символом.
 		}
@@ -4158,10 +4159,10 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 			1 * (1u << USB_PIPECFG_TYPE_SHIFT) |			// TYPE 1: Bulk transfer
 			1 * (1u << 9) |				// DBLB
 			0;
-		const unsigned bufsize64 = (VIRTUAL_COM_PORT_DATA_SIZE + 63) / 64;
+		const unsigned bufsize64 = (VIRTUAL_COM_PORT_OUT_DATA_SIZE + 63) / 64;
 
 		Instance->PIPEBUF = ((bufsize64 - 1) << USB_PIPEBUF_BUFSIZE_SHIFT) | (bufnumb64 << USB_PIPEBUF_BUFNMB_SHIFT);
-		Instance->PIPEMAXP = VIRTUAL_COM_PORT_DATA_SIZE << USB_PIPEMAXP_MXPS_SHIFT;
+		Instance->PIPEMAXP = VIRTUAL_COM_PORT_OUT_DATA_SIZE << USB_PIPEMAXP_MXPS_SHIFT;
 		bufnumb64 += bufsize64 * 2; // * 2 for DBLB
 		ASSERT(bufnumb64 <= 0x100);
 
@@ -4185,10 +4186,10 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 			1 * (1u << USB_PIPECFG_TYPE_SHIFT) |		// TYPE 1: Bulk transfer
 			1 * USB_PIPECFG_DBLB |		// DBLB
 			0;
-		const unsigned bufsize64 = (VIRTUAL_COM_PORT_DATA_SIZE + 63) / 64;
+		const unsigned bufsize64 = (VIRTUAL_COM_PORT_IN_DATA_SIZE + 63) / 64;
 
 		Instance->PIPEBUF = ((bufsize64 - 1) << USB_PIPEBUF_BUFSIZE_SHIFT) | (bufnumb64 << USB_PIPEBUF_BUFNMB_SHIFT);
-		Instance->PIPEMAXP = VIRTUAL_COM_PORT_DATA_SIZE << USB_PIPEMAXP_MXPS_SHIFT;
+		Instance->PIPEMAXP = VIRTUAL_COM_PORT_IN_DATA_SIZE << USB_PIPEMAXP_MXPS_SHIFT;
 		bufnumb64 += bufsize64 * 2; // * 2 for DBLB
 		ASSERT(bufnumb64 <= 0x100);
 
@@ -4238,9 +4239,9 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 			1 * (1u << USB_PIPECFG_TYPE_SHIFT) |			// TYPE 1: Bulk transfer
 			1 * (1u << 9) |				// DBLB
 			0;
-		const unsigned bufsize64 = (VIRTUAL_COM_PORT_DATA_SIZE + 63) / 64;
+		const unsigned bufsize64 = (VIRTUAL_COM_PORT_OUT_DATA_SIZE + 63) / 64;
 		Instance->PIPEBUF = ((bufsize64 - 1) << USB_PIPEBUF_BUFSIZE_SHIFT) | (bufnumb64 << USB_PIPEBUF_BUFNMB_SHIFT);
-		Instance->PIPEMAXP = VIRTUAL_COM_PORT_DATA_SIZE << USB_PIPEMAXP_MXPS_SHIFT;
+		Instance->PIPEMAXP = VIRTUAL_COM_PORT_OUT_DATA_SIZE << USB_PIPEMAXP_MXPS_SHIFT;
 		bufnumb64 += bufsize64 * 2; // * 2 for DBLB
 		ASSERT(bufnumb64 <= 0x100);
 
@@ -4264,9 +4265,9 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 			1 * (1u << USB_PIPECFG_TYPE_SHIFT) |		// TYPE 1: Bulk transfer
 			1 * USB_PIPECFG_DBLB |		// DBLB
 			0;
-		const unsigned bufsize64 = (VIRTUAL_COM_PORT_DATA_SIZE + 63) / 64;
+		const unsigned bufsize64 = (VIRTUAL_COM_PORT_IN_DATA_SIZE + 63) / 64;
 		Instance->PIPEBUF = ((bufsize64 - 1) << USB_PIPEBUF_BUFSIZE_SHIFT) | (bufnumb64 << USB_PIPEBUF_BUFNMB_SHIFT);
-		Instance->PIPEMAXP = VIRTUAL_COM_PORT_DATA_SIZE << USB_PIPEMAXP_MXPS_SHIFT;
+		Instance->PIPEMAXP = VIRTUAL_COM_PORT_IN_DATA_SIZE << USB_PIPEMAXP_MXPS_SHIFT;
 		bufnumb64 += bufsize64 * 2; // * 2 for DBLB
 		ASSERT(bufnumb64 <= 0x100);
 
@@ -8871,7 +8872,7 @@ static USBD_StatusTypeDef USBD_XXX_DataIn (USBD_HandleTypeDef *pdev, uint_fast8_
 	case (USBD_EP_CDC_IN & 0x7F):
 #if 0
 		// test usb tx fifo initialization
-		#define TLENNNN (VIRTUAL_COM_PORT_DATA_SIZE - 0)
+		#define TLENNNN (VIRTUAL_COM_PORT_IN_DATA_SIZE - 0)
 		memset(cdc1buffin, '$', TLENNNN);
 		USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), cdc1buffin, TLENNNN);
 		break;
@@ -14777,6 +14778,8 @@ static const USBD_ClassTypeDef USBD_dispatch [INTERFACE_count] =
 
 #endif
 
+#if CPUSTYLE_STM32F
+
 static const USBD_ClassTypeDef USBD_CLASS_XXX =
 {
 	USBD_XXX_Init,	// Init
@@ -14805,8 +14808,11 @@ static const USBD_ClassTypeDef USBD_CLASS_AUDIO =
 	NULL,	//USBD_XXX_IsoINIncomplete,	// IsoINIncomplete
 	NULL,	//USBD_XXX_IsoOUTIncomplete,	// IsoOUTIncomplete
 };
-
 */
+
+#endif /* CPUSTYLE_STM32F */
+
+
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
 
 /**
@@ -15305,9 +15311,11 @@ static void hardware_usbd_initialize(void)
 	#endif /* WITHUSBHWHIGHSPEED */
 
 	USBD_Init2(& hUsbDevice, ifhs);
+#if CPUSTYLE_STM32F
 	USBD_AddClass(& hUsbDevice, & USBD_CLASS_XXX);
 	//USBD_AddClass(& hUsbDevice, & USBD_CLASS_AUDIO);
 	//USBD_AddClass(& hUsbDevice, & USBD_CDC1);
+#endif /* CPUSTYLE_STM32F */
 }
 
 /* вызывается при запрещённых прерываниях. */
