@@ -3469,7 +3469,7 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий клавиш - 880 Гц - 
 	static uint_fast8_t gdigigainmax = 86;	/* диапазон ручной регулировки цифрового усиления - максимальное значение */
 #endif /* CTLSTYLE_OLEG4Z_V1 */
 	static uint_fast8_t gvad605 = 180; //UINT8_MAX;	/* напряжение на AD605 (управление усилением тракта ПЧ */
-	static uint_fast16_t gfsadcpower10 = (+ 0) + FSADCPOWEROFFSET10;	// для соответствия HDSDR мощность, соответствующая full scale от IF ADC
+	static uint_fast16_t gfsadcpower10 = (- 130) + FSADCPOWEROFFSET10;	// для соответствия HDSDR мощность, соответствующая full scale от IF ADC
 	//static uint_fast16_t gfsadcpower10 = (- 200) + FSADCPOWEROFFSET10;	// мощность, соответствующая full scale от IF ADC
 	#if WITHDSPEXTDDC	/* "Воронёнок" с DSP и FPGA */
 		static uint_fast8_t gdither;		/* управление зашумлением в LCT2088 */
