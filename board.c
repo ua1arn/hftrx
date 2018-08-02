@@ -84,7 +84,6 @@ static uint_fast8_t 	glob_lo1scale = 1;
 static uint_fast8_t 	glob_affilter;
 
 static uint_fast8_t 	glob_dac1value [2];
-static uint_fast8_t 	glob_txtune;		/* находимся в режиме передачи тональнка для настройки */
 static uint_fast8_t 	glob_txcw;			// находимся в режиме передачи телеграфа
 static uint_fast8_t 	glob_txgate = 1;	// разрешение драйвера и оконечного усилителя
 
@@ -4804,17 +4803,6 @@ board_set_txcw(uint_fast8_t v)	/* Включение передачи в обход балансного модулято
 	if (glob_txcw != n)
 	{
 		glob_txcw = n;
-		board_ctlreg1changed();
-	}
-}
-
-void
-board_set_txtune(uint_fast8_t v)	/* находимся в режиме передачи тональнка для настройки */
-{
-	const uint_fast8_t n = v != 0;
-	if (glob_txtune != n)
-	{
-		glob_txtune = n;
 		board_ctlreg1changed();
 	}
 }

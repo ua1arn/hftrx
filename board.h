@@ -111,7 +111,6 @@ void board_set_blfreq(uint_fast32_t n);	/* установка делителя для формирования р
 void board_set_txcw(uint_fast8_t v);	/* Включение передачи в обход балансного модулятора */
 void board_set_txgate(uint_fast8_t v);	/* разрешение драйвера и оконечного усилителя */
 void board_set_scalelo1(uint_fast8_t n);	/* SW-2011-RDX */
-void board_set_txtune(uint_fast8_t v);	/* находимся в режиме передачи тональнка для настройки */
 void board_set_tuner_C(uint_fast8_t n);	/* установка значение конденсатора в согласующем устройстве */
 void board_set_tuner_L(uint_fast8_t n);	/* установка значение индуктивности в согласующем устройстве */
 void board_set_tuner_type(uint_fast8_t v);	/* вариант повышающего/понижающего согласования */

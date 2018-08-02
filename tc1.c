@@ -6505,7 +6505,6 @@ updateboard(
 			#endif /* WITHVOX */
 			board_set_mikemute(gmuteall || getactualtune() || getmodetempl(txsubmode)->mute);	/* отключить микрофонный усилитель */
 			seq_set_txgate_P(pamodetempl->txgfva, pamodetempl->sdtnva);		/* как должен переключаться тракт на передачу */
-			board_set_txtune(gtx && getactualtune());	/* находимся в режиме передачи тональнка для настройки */
 
 			const uint_fast8_t downpower = reqautotune || hardware_get_tune();
 			#if WITHPOTPOWER
