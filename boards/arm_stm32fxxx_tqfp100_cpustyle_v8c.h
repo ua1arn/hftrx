@@ -259,7 +259,7 @@
 	// PTT input
 
 	#define PTT_TARGET_PIN				(GPIOB->IDR) // was PINA 
-	#define PTT_BIT_PTT					(1u << 9)	// PB9
+	#define PTT_BIT_PTT					(1u << 11)	// PB11
 
 	#define HARDWARE_GET_PTT() ((PTT_TARGET_PIN & PTT_BIT_PTT) == 0)
 	#define PTT_INITIALIZE() \
