@@ -186,32 +186,19 @@
 
 #if WITHCAT || WITHNMEA
 	// CAT control lines
-	#define FROMCAT_TARGET_PIN_RTS		GPIOA->IDR // was PINA 
-	#define FROMCAT_BIT_RTS				(1u << 11)	/* сигнал RTS от FT232RL	*/
-
-	/* манипул€ци€ от порта RS-232, сигнал PPS от GPS/GLONASS/GALILEO модул€ */
-	#define FROMCAT_TARGET_PIN_DTR		GPIOA->IDR // was PINA 
-	#define FROMCAT_BIT_DTR				(1u << 12)	/* сигнал DTR от FT232RL	*/
-
 	/* манипул€ци€ от порта RS-232 */
 	#define FROMCAT_DTR_INITIALIZE() \
 		do { \
-			arm_hardware_pioa_inputs(FROMCAT_BIT_DTR); \
-			arm_hardware_pioa_updown(FROMCAT_BIT_DTR, 0); \
 		} while (0)
 
 	/* переход на передачу от порта RS-232 */
 	#define FROMCAT_RTS_INITIALIZE() \
 		do { \
-			arm_hardware_pioa_inputs(FROMCAT_BIT_RTS); \
-			arm_hardware_pioa_updown(FROMCAT_BIT_RTS, 0); \
 		} while (0)
 
 	/* сигнал PPS от GPS/GLONASS/GALILEO модул€ */
 	#define NMEA_INITIALIZE() \
 		do { \
-			arm_hardware_pioa_inputs(FROMCAT_BIT_DTR); \
-			arm_hardware_pioa_onchangeinterrupt(FROMCAT_BIT_DTR, FROMCAT_BIT_DTR, FROMCAT_BIT_DTR, ARM_SYSTEM_PRIORITY); \
 		} while (0)
 #endif
 
@@ -227,8 +214,8 @@
 	#if 1
 
 		// ”правление передатчиком - сигналы TXPATH_ENABLE (PC12) и TXPATH_ENABLE_CW (PC13) - активны при нуле на выходе.
-		#define TXPATH_BIT_ENABLE_SSB		(1u << 12)
-		#define TXPATH_BIT_ENABLE_CW		(1u << 13)
+		#define TXPATH_BIT_ENABLE_SSB		0//(1u << 12)
+		#define TXPATH_BIT_ENABLE_CW		0//(1u << 13)
 		#define TXPATH_BITS_ENABLE	(TXPATH_BIT_ENABLE_SSB | TXPATH_BIT_ENABLE_CW)
 
 		// ѕодготовленные управл€ющие слова
@@ -272,7 +259,7 @@
 	// PTT input
 
 	#define PTT_TARGET_PIN				(GPIOB->IDR) // was PINA 
-	#define PTT_BIT_PTT					(1u << 9)
+	#define PTT_BIT_PTT					(1u << 9)	// PB9
 
 	#define HARDWARE_GET_PTT() ((PTT_TARGET_PIN & PTT_BIT_PTT) == 0)
 	#define PTT_INITIALIZE() \
@@ -424,8 +411,8 @@
 	#define TARGET_TWI_PORT_C(v) do { GPIOB->BSRR = BSRR_C(v); __DSB(); } while (0)
 	#define TARGET_TWI_PORT_S(v) do { GPIOB->BSRR = BSRR_S(v); __DSB(); } while (0)
 	#define TARGET_TWI_PIN		GPIOB->IDR)
-	#define TARGET_TWI_TWCK		(1u << 6)
-	#define TARGET_TWI_TWD		(1u << 7)
+	#define TARGET_TWI_TWCK		(1u << 6)		// PB6
+	#define TARGET_TWI_TWD		(1u << 7)		// PB7
 //#endif
 	// »нициализаци€ битов портов ввода-вывода дл€ программной реализации I2C
 	#define	TWISOFT_INITIALIZE() do { \
@@ -486,5 +473,9 @@
 		} while (0)
 #endif /* WITHUSBHW */
 
+
+	/* макроопределение, которое должно включить в себ€ все инициализации */
+	#define	HARDWARE_INITIALIZE() do { \
+		} while (0)
 
 #endif /* ARM_STM32FXXX_TQFP64_CPUSTYLE_V8C_H_INCLUDED */
