@@ -7059,6 +7059,7 @@ hardware_get_ptt(void)
 }
 
 /* функция вызывается из пользовательской программы. */
+/* запрос от внешней аппаратуры на переход в режим TUNE */
 uint_fast8_t 
 hardware_get_tune(void)
 {
@@ -7195,6 +7196,17 @@ hardware_txpath_initialize(void)
 
 #endif
 }
+
+#else /* WITHTX */
+
+/* функция вызывается из пользовательской программы. */
+/* запрос от внешней аппаратуры на переход в режим TUNE */
+uint_fast8_t 
+hardware_get_tune(void)
+{
+	return 0;
+}
+
 
 #endif /* WITHTX */
 
