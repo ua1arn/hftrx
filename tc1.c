@@ -10409,11 +10409,12 @@ static void
 processtxrequest(void)
 {
 #if WITHTX
-	uint_fast8_t r = 0;
+	uint_fast8_t txreq = 0;
+	uint_fast8_t tunreq = 0;
 #if WITHSECTOGGLE
 	if (sectoggle)
 	{
-		r = 1;
+		txreq = 1;
 	}
 #endif /* WITHSECTOGGLE */
 	if (moxmode || hardware_get_ptt())	// тангента, педаль
@@ -10421,29 +10422,35 @@ processtxrequest(void)
 #if WITHCAT	
 		cat_reset_ptt();	// снять программный запрос на передачу - "залипший" запрос.
 #endif	/* WITHCAT */
-		r = 1;
+		txreq = 1;
 	}
 #if WITHBEACON	
 	if (beacon_get_ptt())
 	{
-		r = 1;
+		txreq = 1;
 	}
 #endif	/* WITHCAT */
 #if WITHCAT	
 	if (cat_get_ptt())
 	{
-		r = 1;
+		txreq = 1;
 	}
 #endif	/* WITHCAT */
 #if WITHMODEM
 	if (modem_get_ptt())
 	{
-		r = 1;
+		txreq = 1;
 	}
 #endif	/* WITHMODEM */
+	if (moxmode)
+	{
+		txreq = 1;
+	}
 	if (getactualtune())
-		r = 1;
-	seq_txrequest(r, r || moxmode);
+	{
+		tunreq = 1;
+	}
+	seq_txrequest(tunreq, tunreq || txreq);
 #endif /* WITHTX */
 }
 
