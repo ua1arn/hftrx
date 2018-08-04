@@ -9248,7 +9248,7 @@ static void USBD_GetDescriptor(USBD_HandleTypeDef *pdev,
 	const uint8_t *pbuf;
 	const uint_fast8_t index = LO_BYTE(req->wValue);
 
-	debug_printf_P(PSTR("USBD_GetDescriptor: %02X, wLength=%04X (%d dec), ix=%u\n"), HI_BYTE(req->wValue), req->wLength, req->wLength, LO_BYTE(req->wValue));
+	//debug_printf_P(PSTR("USBD_GetDescriptor: %02X, wLength=%04X (%d dec), ix=%u\n"), HI_BYTE(req->wValue), req->wLength, req->wLength, LO_BYTE(req->wValue));
 
 	switch (HI_BYTE(req->wValue))
 	{ 
