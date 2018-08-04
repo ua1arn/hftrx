@@ -383,6 +383,13 @@
 			arm_hardware_piod_updown(PTT_BIT_PTT, 0); \
 		} while (0)
 
+#else /* WITHTX */
+	#define TXDISABLE_INITIALIZE() \
+		do { \
+		} while (0)
+	#define PTT_INITIALIZE() \
+		do { \
+		} while (0)
 #endif /* WITHTX */
 
 #if WITHELKEY
@@ -665,6 +672,7 @@
 		HARDWARE_SIDETONE_INITIALIZE(); \
 		HARDWARE_KBD_INITIALIZE(); \
 		HARDWARE_DAC_INITIALIZE(); \
+		TXDISABLE_INITIALIZE(); \
 		} while (0)
 
 #endif /* ARM_STM32F4XX_TQFP144_CPUSTYLE_STORCH_V5_H_INCLUDED */

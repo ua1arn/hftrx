@@ -392,7 +392,14 @@
 		} while (0)
 	// ---
 
+#else /* WITHTX */
 
+	#define TXDISABLE_INITIALIZE() \
+		do { \
+		} while (0)
+	#define PTT_INITIALIZE() \
+		do { \
+		} while (0)
 #endif /* WITHTX */
 
 #if WITHELKEY
@@ -755,6 +762,7 @@
 		HARDWARE_KBD_INITIALIZE(); \
 		HARDWARE_DAC_INITIALIZE(); \
 		HARDWARE_BL_INITIALIZE(); \
+		TXDISABLE_INITIALIZE(); \
 		} while (0)
 
 #endif /* ARM_STM32F4XX_TQFP176_CPUSTYLE_STORCH_V6_H_INCLUDED */

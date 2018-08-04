@@ -387,21 +387,31 @@
 			arm_hardware_piod_updown(PTT_BIT_PTT, 0); \
 		} while (0)
 
-	#if ! WITHUSEPARALELDISPLAY
+	//#if ! WITHUSEPARALELDISPLAY
 		#if WITHUART2HW
-			#error Disable WITHUART2HW
-		#endif
-		// TUNE input - PD5
-		#define TUNE_TARGET_PIN				(GPIOD->IDR)
-		#define TUNE_BIT_TUNE					(1U << 5)		// PD5
-		#define HARDWARE_GET_TUNE() ((TUNE_TARGET_PIN & TUNE_BIT_TUNE) == 0)
-		#define TUNE_INITIALIZE() \
-			do { \
-				arm_hardware_piod_inputs(TUNE_BIT_TUNE); \
-				arm_hardware_piod_updown(TUNE_BIT_TUNE, 0); \
-			} while (0)
-	#endif /* ! WITHUSEPARALELDISPLAY */
-
+			#warning Disable WITHUART2HW
+			#define TUNE_INITIALIZE() \
+				do { \
+				} while (0)
+		#else /* WITHUART2HW */
+			// TUNE input - PD5
+			#define TUNE_TARGET_PIN				(GPIOD->IDR)
+			#define TUNE_BIT_TUNE					(1U << 5)		// PD5
+			#define HARDWARE_GET_TUNE() ((TUNE_TARGET_PIN & TUNE_BIT_TUNE) == 0)
+			#define TUNE_INITIALIZE() \
+				do { \
+					arm_hardware_piod_inputs(TUNE_BIT_TUNE); \
+					arm_hardware_piod_updown(TUNE_BIT_TUNE, 0); \
+				} while (0)
+		#endif /* WITHUART2HW */
+	//#endif /* ! WITHUSEPARALELDISPLAY */
+#else /* WITHTX */
+	#define TXDISABLE_INITIALIZE() \
+		do { \
+		} while (0)
+	#define PTT_INITIALIZE() \
+		do { \
+		} while (0)
 #endif /* WITHTX */
 
 #if WITHELKEY
@@ -687,6 +697,8 @@
 		HARDWARE_SIDETONE_INITIALIZE(); \
 		HARDWARE_KBD_INITIALIZE(); \
 		HARDWARE_DAC_INITIALIZE(); \
+		TUNE_INITIALIZE(); \
+		TXDISABLE_INITIALIZE(); \
 		} while (0)
 
 #endif /* ARM_STM32F4XX_TQFP144_CPUSTYLE_STORCH_V3_H_INCLUDED */

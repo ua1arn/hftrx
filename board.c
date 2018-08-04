@@ -7078,12 +7078,6 @@ hardware_ptt_port_initialize(void)
 #if defined (PTT_INITIALIZE)
 	PTT_INITIALIZE();
 #endif /* defined (PTT_INITIALIZE) */
-#if defined (TUNE_INITIALIZE)
-	TUNE_INITIALIZE();
-#endif /* defined (TUNE_INITIALIZE) */
-#if defined (TXDISABLE_INITIALIZE)
-	TXDISABLE_INITIALIZE();
-#endif /* defined (TXDISABLE_INITIALIZE) */
 #if WITHCAT
 	FROMCAT_RTS_INITIALIZE();
 #endif /* WITHCAT */
