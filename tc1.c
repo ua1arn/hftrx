@@ -7589,6 +7589,25 @@ uint_fast8_t hamradio_get_volt_value(void)
 
 #endif /* WITHVOLTLEVEL */
 
+static uint_fast16_t 
+mcp3208_read(
+	spitarget_t target,
+	uint_fast8_t diff,
+	uint_fast8_t adci
+	)
+{
+	uint_fast8_t v1, v2;
+	const uint_fast8_t ch = adci & 0x07;
+	
+	spi_select2(target, SPIC_MODE3, SPIC_SPEED100k);
+	spi_read_byte(target, 0x04 | (diff ? 0x00 : 0x02) | (ch >> 2));
+	v1 = spi_read_byte(target, (ch << 6));
+	v2 = spi_read_byte(target, 0xFF);
+	spi_unselect(target);
+
+	return (v1 * 256 + v2) & 0x0FFF;
+}
+
 #if (WITHCURRLEVEL || WITHCURRLEVEL2) && WITHCPUADCHW
 
 // Ток в десятках милиампер (может быть отрицательным)
@@ -7596,6 +7615,28 @@ uint_fast8_t hamradio_get_volt_value(void)
 // PA current sense - ACS712ELCTR-30B-T chip
 int_fast16_t hamradio_get_pacurrent_value(void)
 {
+#if 0
+
+
+	// x30A - 0.066 V/A
+	enum { 
+		sens = 66,			// millivolts / ampher
+		scale = 100			// результат - в десятых долях ампера
+	};
+
+	const uint_fast8_t adci = 0;	// CH0=IN-, CH1=IN+
+	const uint_fast8_t diff = 0;
+	static const long fullscale2 = 5000uL * scale;
+	uint_fast16_t vsenseZ = mcp3208_read(targetext2, diff, adci);
+	uint_fast16_t vsense2 = (unsigned long) vsenseZ * fullscale2 / 4095;
+
+	static const long midpoint2 = 2500uL * scale;
+	int curr10a = ((long) midpoint2 - (long) vsense2 + sens / 2) / sens;
+
+	return curr10a;
+
+#else
+
 #if WITHCURRLEVEL
 	// Чувствительность датчиков:
 	// x05B - 0.185 V/A
@@ -7667,6 +7708,7 @@ int_fast16_t hamradio_get_pacurrent_value(void)
 	//debug_printf_P(PSTR("voltage vsense=%lu, midpoint=%lu, delta=%d mV, current=%d * 10 mA\n"), vsense, midpoint, v / scale, curr10);
 
 	return curr10;
+#endif
 }
 
 #endif /* WITHCURRLEVEL && WITHCPUADCHW */

@@ -340,6 +340,7 @@
 	#define WITHBARS		1	/* отображение S-метра и SWR-метра */
 	#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
 	#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
+	//#define WITHCURRLEVEL2	1	/* отображение тока оконечного каскада 100W */
 	//#define WITHSWLMODE	1	/* поддержка запоминания множества частот в swl-mode */
 	#define WITHVIBROPLEX	1	/* возможность эмуляции передачи виброплексом */
 	#define WITHSPKMUTE		1	/* управление выключением динамика */
@@ -399,7 +400,8 @@
 	#define DDS1_CLK_DIV	1		/* Делитель опорной частоты перед подачей в DDS1 */
 
 	/* Назначение адресов на SPI шине */
-	#define targetext1	SPI_CSEL_PG15 	/* external devices control */
+	#define targetext1	SPI_CSEL_PG15 	/* LCD external devices control */
+	#define targetext2	SPI_CSEL_PG14 	/* ADC external devices control */
 	#define targetctl1	SPI_CSEL_PG7 	/* control register as a chain of registers */
 	#define targetfpga1	SPI_CSEL_PG1 	/* control register in FPGA */
 
@@ -458,7 +460,9 @@
 
 		ALCINIX = 9,		// PB1 ALC IN
 
-	#if WITHCURRLEVEL
+	#if WITHCURRLEVEL2
+		PASENSEIX2 = 2,		// PA2 PA current sense - ACS712-05 chip
+	#elif WITHCURRLEVEL
 		PASENSEIX = 2,		// PA2 PA current sense - ACS712-05 chip
 	#endif /* WITHCURRLEVEL */
 

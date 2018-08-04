@@ -7621,12 +7621,11 @@ static const uint_fast8_t adcinputs [] =
 #if WITHPOTAFGAIN
 	POTAFGAIN,
 #endif /* WITHPOTAFGAIN */
-#if WITHCURRLEVEL
-	PASENSEIX,		// PA or driver current sense - ACS712-05 chip
-#endif /* WITHCURRLEVEL */
 #if WITHCURRLEVEL2
 	PASENSEIX2,		// 100W PA current sense - ACS712-30 chip
-#endif /* WITHCURRLEVEL2 */
+#elif WITHCURRLEVEL
+	PASENSEIX,		// PA or driver current sense - ACS712-05 chip
+#endif /* WITHCURRLEVEL */
 
 #if KEYBOARD_USE_ADC
 
