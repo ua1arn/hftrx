@@ -7589,6 +7589,7 @@ uint_fast8_t hamradio_get_volt_value(void)
 
 #endif /* WITHVOLTLEVEL */
 
+// Read ADC MCP3204/MCP3208
 static uint_fast16_t 
 mcp3208_read(
 	spitarget_t target,

@@ -27,7 +27,7 @@ enum
 	SPIC_SPEEDUC1608,	// SPISPEED for UC1608 should be less then 7.1 MHz
 #endif /* LCDMODE_UC1608 */
 #if defined (SPISPEED100k)
-	SPIC_SPEED100k,		// 100 kHz
+	SPIC_SPEED100k,		// 100 kHz for MICROCHIP MCP3204/MCP3208
 #endif /* defined (SPISPEED100k) */
 	//
 	SPIC_SPEEDS_COUNT
