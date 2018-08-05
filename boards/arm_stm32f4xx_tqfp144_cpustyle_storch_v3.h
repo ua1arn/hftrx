@@ -49,7 +49,7 @@
 //#define WITHUSBHOST	1	/* debug */
 
 //#define WITHUART1HW	1	/* PA9, PA10 »спользуетс€ периферийный контроллер последовательного порта #1 */
-//#define WITHUART2HW	1	/* PD5, PD6 »спользуетс€ периферийный контроллер последовательного порта #2 */
+#define WITHUART2HW	1	/* PD5, PD6 »спользуетс€ периферийный контроллер последовательного порта #2 */
 
 #define WITHCAT_CDC		1	/* использовать виртуальный воследовательный порт на USB соединении */
 #define WITHMODEM_CDC	1
@@ -286,6 +286,12 @@
 			arm_hardware_pioc_altfn50(1U << 9, AF_SDIO);	/* PC9 - SDIO_D1	*/ \
 			arm_hardware_pioc_altfn50(1U << 10, AF_SDIO);	/* PC10 - SDIO_D2	*/ \
 			arm_hardware_pioc_altfn50(1U << 11, AF_SDIO);	/* PC11 - SDIO_D3	*/ \
+			arm_hardware_piod_updown(1U << 2, 0);	/* PD2 - SDIO_CMD	*/ \
+			arm_hardware_pioc_updown(1U << 12, 0);	/* PC12 - SDIO_CK	*/ \
+			arm_hardware_pioc_updown(1U << 8, 0);	/* PC8 - SDIO_D0	*/ \
+			arm_hardware_pioc_updown(1U << 9, 0);	/* PC9 - SDIO_D1	*/ \
+			arm_hardware_pioc_updown(1U << 10, 0);	/* PC10 - SDIO_D2	*/ \
+			arm_hardware_pioc_updown(1U << 11, 0);	/* PC11 - SDIO_D3	*/ \
 		} while (0)
 		/* отключить процессор от SD карты - чтобы при выполнении power cycle не возникало фантомное питание через сигналы управлени€. */
 		#define HARDWARE_SDIO_HANGOFF()	do { \
@@ -307,6 +313,9 @@
 			arm_hardware_piod_altfn50(1U << 2, AF_SDIO);	/* PD2 - SDIO_CMD	*/ \
 			arm_hardware_pioc_altfn50(1U << 12, AF_SDIO);	/* PC12 - SDIO_CK	*/ \
 			arm_hardware_pioc_altfn50(1U << 8, AF_SDIO);	/* PC8 - SDIO_D0	*/ \
+			arm_hardware_piod_updown(1U << 2, 0);	/* PD2 - SDIO_CMD	*/ \
+			arm_hardware_pioc_updown(1U << 12, 0);	/* PC12 - SDIO_CK	*/ \
+			arm_hardware_pioc_updown(1U << 8, 0);	/* PC8 - SDIO_D0	*/ \
 		} while (0)
 		/* отключить процессор от SD карты - чтобы при выполнении power cycle не возникало фантомное питание через сигналы управлени€. */
 		#define HARDWARE_SDIO_HANGOFF()	do { \
@@ -389,7 +398,7 @@
 
 	//#if ! WITHUSEPARALELDISPLAY
 		#if WITHUART2HW
-			#warning Disable WITHUART2HW
+			//#warning Disable WITHUART2HW
 			#define TUNE_INITIALIZE() \
 				do { \
 				} while (0)

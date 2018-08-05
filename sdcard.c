@@ -2233,7 +2233,7 @@ static uint_fast8_t sdhost_sdcard_poweron(void)
 
 	debug_printf_P(PSTR("Set voltage conditions\n"));
 
-	const unsigned COUNTLIMIT = 500;
+	const unsigned COUNTLIMIT = 10000;
 	unsigned count;
 	for (count = 0; count < COUNTLIMIT; ++ count)
 	{
