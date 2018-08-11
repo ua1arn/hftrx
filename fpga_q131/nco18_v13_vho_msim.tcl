@@ -3,7 +3,7 @@ write transcript nco_vho_transcript
 if {[file exist [project env]] > 0} {
 project close
 }
-if {[file exist "C:/user/SVN/tc1/fpga_q13_copy/nco18_v13.mpf"] == 0} {
+if {[file exist "C:/user/SVN/tc1/fpga_q131/nco18_v13.mpf"] == 0} {
   project new [pwd] nco18_v13
 } else	{
 project open nco18_v13
