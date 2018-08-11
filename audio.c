@@ -3749,7 +3749,7 @@ static RAMFUNC int_fast32_t iq2tx(int_fast32_t v)
 #if WITHDSPEXTDDC
 
 
-// ПЕРЕДАЧА
+// Передатчик - формирование одного сэмпда (пары I/Q).
 // обрабатывается 16 битное (WITHAFADCWIDTH) число
 // используется в случае внешнего DUC
 static RAMFUNC void processafadcsampleiq(
@@ -4960,6 +4960,7 @@ getmonitx(
 }
 
 // Обработка полученного от DMA буфера с выборками или квадратурами (или двухканальный приём).
+// Вызывается на ARM_REALTIME_PRIORITY уровне.
 void RAMFUNC dsp_extbuffer32rx(const uint32_t * buff)
 {
 	ASSERT(buff != NULL);
@@ -5032,7 +5033,7 @@ void RAMFUNC dsp_extbuffer32rx(const uint32_t * buff)
 		//dual.IV = vi.IV; //get_lout16();
 		dual.IV = get_lout16();
 		dual.QV = 0;
-		processafadcsampleiq(dual, dspmodeA, shape, ctcss);	// обработка одного сэмпла с микрофона
+		processafadcsampleiq(dual, dspmodeA, shape, ctcss);	// Передатчик - формирование одного сэмпда (пары I/Q).
 		// Тестирование распознавания DTMF
 		if (dtmfbi < DTMF_STEPS)
 		{
@@ -5049,7 +5050,7 @@ void RAMFUNC dsp_extbuffer32rx(const uint32_t * buff)
 	#if WITHLOOPBACKTEST
 
 		const INT32P_t dual = loopbacktestaudio(vi, dspmodeA, shape);
-		processafadcsampleiq(dual, dspmodeA, shape, ctcss);	// обработка одного сэмпла с микрофона
+		processafadcsampleiq(dual, dspmodeA, shape, ctcss);	// Передатчик - формирование одного сэмпда (пары I/Q).
 		//
 		// Тестирование источников и потребителей звука
 		recordsampleSD(dual.IV, dual.QV);	// Запись демодулированного сигнала без озвучки клавиш
@@ -5067,7 +5068,7 @@ void RAMFUNC dsp_extbuffer32rx(const uint32_t * buff)
 
 	#elif WITHUSEDUALWATCH
 
-		processafadcsampleiq(vi, dspmodeA, shape, ctcss);	// Передатчик - обработка одного сэмпла с микрофона
+		processafadcsampleiq(vi, dspmodeA, shape, ctcss);	// Передатчик - формирование одного сэмпда (пары I/Q).
 		//
 		// Двухканальный приёмник
 
@@ -5187,7 +5188,7 @@ void RAMFUNC dsp_extbuffer32rx(const uint32_t * buff)
 
 	#else /* WITHUSEDUALWATCH */
 
-		processafadcsampleiq(vi, dspmodeA, shape, ctcss);	// Передатчик - обработка одного сэмпла с микрофона
+		processafadcsampleiq(vi, dspmodeA, shape, ctcss);	// Передатчик - формирование одного сэмпда (пары I/Q).
 		// Одноканальный приёмник
 
 		if (dspmodeA == DSPCTL_MODE_RX_WFM)

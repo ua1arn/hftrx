@@ -1401,6 +1401,7 @@ void RAMFUNC processing_dmabuffer16rxuac(uintptr_t addr)
 
 // Этой функцией пользуются обработчики прерываний DMA
 // обработать буфер после оцифровки IF ADC (MAIN RX/SUB RX)
+// Вызывается на ARM_REALTIME_PRIORITY уровне.
 void RAMFUNC processing_dmabuffer32rx(uintptr_t addr)
 {
 	enum { CNT16 = DMABUFFSIZE16 / DMABUFSTEP16 };
@@ -1501,10 +1502,8 @@ uintptr_t getfilled_dmabuffer16phones(void)
 //////////////////////////////////////////
 // Поэлементное заполнение буфера IF DAC
 
-// Вызывается из ARM_SYSTEM_PRIORITY обработчика прерывания
-// заполнение в моно режиме - два канала с одинаковыми значениями
+// Вызывается из ARM_REALTIME_PRIORITY обработчика прерывания
 // 32 bit, signed
-// SAI интерфейс поддерживает mono режим самостоятельно - не требуется дублировать выборки.
 void savesampleout32stereo(int_fast32_t ch0, int_fast32_t ch1)
 {
 	LOCK(& locklist32);
