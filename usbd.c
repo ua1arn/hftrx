@@ -3030,7 +3030,7 @@ usbd_handler_brdy8_dcp_out(PCD_TypeDef * const Instance, uint_fast8_t pipe)
 #if WITHUSBCDC
 	case CDC_SET_LINE_CODING:
 		{
-			//unsigned count = usbd_read_data(Instance, pipe, cdc_ep0databuffout, sizeof cdc_ep0databuffout / sizeof cdc_ep0databuffout [0]);
+			unsigned count = usbd_read_data(Instance, pipe, cdc_ep0databuffout, sizeof cdc_ep0databuffout / sizeof cdc_ep0databuffout [0]);
 			const uint_fast8_t interfacev = LO_BYTE(gReqIndex);
 			dwDTERate [interfacev] = USBD_peek_u32(& cdc_ep0databuffout [0]);
 			//debug_printf_P(PSTR("CDC_SET_LINE_CODING: interfacev=%u, dwDTERate=%lu, bits=%u\n"), interfacev, dwDTERate [interfacev], cdc_ep0databuffout [6]);
@@ -3041,7 +3041,7 @@ usbd_handler_brdy8_dcp_out(PCD_TypeDef * const Instance, uint_fast8_t pipe)
 #if WITHUSBUAC
 	case AUDIO_REQUEST_SET_CUR:
 		{
-			//unsigned count = usbd_read_data(Instance, pipe, uac_ep0databuffout, sizeof uac_ep0databuffout / sizeof uac_ep0databuffout [0]);
+			unsigned count = usbd_read_data(Instance, pipe, uac_ep0databuffout, sizeof uac_ep0databuffout / sizeof uac_ep0databuffout [0]);
 			const uint_fast8_t interfacev = LO_BYTE(gReqIndex);
 			const uint_fast8_t terminalID = HI_BYTE(gReqIndex);
 			const uint_fast8_t controlID = HI_BYTE(gReqValue);	// AUDIO_MUTE_CONTROL, AUDIO_VOLUME_CONTROL, ...
