@@ -31,7 +31,7 @@ end
 N=length(phi_inc_i);
 numch = 1.0;
 apr = 32.0;
-apri = 19.0;
+apri = 18.0;
 mpr = 17.0;
 aprp = 16.0;
 aprf = 32.0;

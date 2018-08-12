@@ -119,7 +119,7 @@ END SYN;
 -- Retrieval info:      <PRIVATE name = "FREQ_VALUE" value="51"  type="STRING"  enable="1" />
 -- Retrieval info:      <PRIVATE name = "MPR" value="17"  type="STRING"  enable="1" />
 -- Retrieval info:      <PRIVATE name = "APR" value="32"  type="STRING"  enable="1" />
--- Retrieval info:      <PRIVATE name = "APRI" value="19"  type="STRING"  enable="1" />
+-- Retrieval info:      <PRIVATE name = "APRI" value="18"  type="STRING"  enable="1" />
 -- Retrieval info:      <PRIVATE name = "FSAMP_UNIT" value="MHz"  type="STRING"  enable="1" />
 -- Retrieval info:      <PRIVATE name = "FSAMP_MULT" value="1e6"  type="STRING"  enable="1" />
 -- Retrieval info:      <PRIVATE name = "FREQ_UNIT" value="MHz"  type="STRING"  enable="1" />
@@ -155,13 +155,13 @@ END SYN;
 -- Retrieval info:      <PRIVATE name = "RSVF" value="nco18_v13_sin_f.v"  type="STRING"  enable="1" />
 -- Retrieval info:      <PRIVATE name = "RSHF" value="nco18_v13_sin_f.hex"  type="STRING"  enable="1" />
 -- Retrieval info:      <PRIVATE name = "MAXC" value="8704"  type="STRING"  enable="1" />
--- Retrieval info:      <PRIVATE name = "MAXF" value="17408"  type="STRING"  enable="1" />
+-- Retrieval info:      <PRIVATE name = "MAXF" value="8704"  type="STRING"  enable="1" />
 -- Retrieval info:      <PRIVATE name = "RAWC" value="9"  type="STRING"  enable="1" />
--- Retrieval info:      <PRIVATE name = "RAWF" value="10"  type="STRING"  enable="1" />
+-- Retrieval info:      <PRIVATE name = "RAWF" value="9"  type="STRING"  enable="1" />
 -- Retrieval info:      <PRIVATE name = "RNWC" value="512"  type="STRING"  enable="1" />
--- Retrieval info:      <PRIVATE name = "RNWF" value="1024"  type="STRING"  enable="1" />
+-- Retrieval info:      <PRIVATE name = "RNWF" value="512"  type="STRING"  enable="1" />
 -- Retrieval info:      <PRIVATE name = "RDW" value="17"  type="STRING"  enable="1" />
--- Retrieval info:      <PRIVATE name = "NUM_LCELLS" value="2171"  type="STRING"  enable="1" />
+-- Retrieval info:      <PRIVATE name = "NUM_LCELLS" value="2170"  type="STRING"  enable="1" />
 -- Retrieval info:      <PRIVATE name = "NUM_MEM_BITS" value="26112"  type="STRING"  enable="1" />
 -- Retrieval info:      <PRIVATE name = "NUM_EABS" value="3"  type="STRING"  enable="1" />
 -- Retrieval info:      <PRIVATE name = "NUM_DSP_BLOCKS" value="8"  type="STRING"  enable="1" />
