@@ -323,6 +323,22 @@ applicable agreement for further details.
 		(line (pt 78 12)(pt 82 8))
 	)
 )
+(pin
+	(output)
+	(rect 736 840 912 856)
+	(text "OUTPUT" (rect 1 0 39 10)(font "Arial" (font_size 6)))
+	(text "mode_wfm" (rect 90 0 144 12)(font "Arial" ))
+	(pt 0 8)
+	(drawing
+		(line (pt 0 8)(pt 52 8))
+		(line (pt 52 4)(pt 78 4))
+		(line (pt 52 12)(pt 78 12))
+		(line (pt 52 12)(pt 52 4))
+		(line (pt 78 4)(pt 82 8))
+		(line (pt 82 8)(pt 78 12))
+		(line (pt 78 12)(pt 82 8))
+	)
+)
 (symbol
 	(rect 496 288 544 320)
 	(text "WIRE" (rect 1 0 24 10)(font "Arial" (font_size 6)))
@@ -755,6 +771,30 @@ applicable agreement for further details.
 		(line (pt 14 25)(pt 32 16))
 	)
 )
+(symbol
+	(rect 496 832 544 864)
+	(text "WIRE" (rect 1 0 24 10)(font "Arial" (font_size 6)))
+	(text "inst96" (rect 3 21 32 33)(font "Arial" ))
+	(port
+		(pt 0 16)
+		(input)
+		(text "IN" (rect 2 7 13 19)(font "Courier New" (bold))(invisible))
+		(text "IN" (rect 2 7 13 19)(font "Courier New" (bold))(invisible))
+		(line (pt 0 16)(pt 14 16))
+	)
+	(port
+		(pt 48 16)
+		(output)
+		(text "OUT" (rect 32 7 49 19)(font "Courier New" (bold))(invisible))
+		(text "OUT" (rect 32 7 49 19)(font "Courier New" (bold))(invisible))
+		(line (pt 32 16)(pt 48 16))
+	)
+	(drawing
+		(line (pt 14 7)(pt 32 16))
+		(line (pt 14 25)(pt 14 7))
+		(line (pt 14 25)(pt 32 16))
+	)
+)
 (connector
 	(text "SPIDATA[31..0]" (rect 232 240 309 252)(font "Arial" ))
 	(pt 240 256)
@@ -1013,8 +1053,18 @@ applicable agreement for further details.
 	(pt 496 784)
 )
 (connector
-	(pt 544 816)
+	(pt 360 848)
+	(pt 360 872)
+	(bus)
+)
+(connector
+	(text "SPIDATA[18]" (rect 410 832 474 844)(font "Arial" ))
+	(pt 360 848)
+	(pt 496 848)
+)
+(connector
 	(pt 736 816)
+	(pt 544 816)
 )
 (connector
 	(text "SPIDATA[17]" (rect 410 800 474 812)(font "Arial" ))
@@ -1028,8 +1078,12 @@ applicable agreement for further details.
 )
 (connector
 	(pt 360 816)
-	(pt 360 832)
+	(pt 360 848)
 	(bus)
+)
+(connector
+	(pt 544 848)
+	(pt 736 848)
 )
 (junction (pt 360 272))
 (junction (pt 360 304))
@@ -1049,3 +1103,4 @@ applicable agreement for further details.
 (junction (pt 360 752))
 (junction (pt 360 784))
 (junction (pt 360 816))
+(junction (pt 360 848))
