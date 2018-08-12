@@ -3196,7 +3196,7 @@ enum
 
 #if WITHBARS
 	#if (WITHSWRMTR || WITHSHOWSWRPWR)
-		static uint_fast16_t minforward = 40;
+		static uint_fast16_t minforward = (1U << HARDWARE_ADCBITS) / 8;
 		static uint_fast8_t swrcalibr = 100;	/* калибровочный параметр SWR-метра */
 	#endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
 	#if WITHPWRMTR || WITHSWRMTR
