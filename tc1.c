@@ -2558,9 +2558,10 @@ filter_t fi_2p0_455 =
 		uint8_t bkinenable;	/* автоматическое управление передатчиком (от телеграфного манипулятора) */
 	#endif /* WITHELKEY */
 
-	#if WITHPOTPOWER
-	#elif WITHPOWERTRIM
-		uint8_t gnormalpower;/* мощность WITHPOWERTRIMMIN..WITHPOWERTRIMMAX */
+	#if WITHPOWERTRIM
+		#if ! WITHPOTPOWER
+			uint8_t gnormalpower;/* мощность WITHPOWERTRIMMIN..WITHPOWERTRIMMAX */
+		#endif /* ! WITHPOTPOWER */
 		uint8_t gotunerpower;/* мощность при работе автоматического согласующего устройства WITHPOWERTRIMMIN..WITHPOWERTRIMMAX */
 	#endif /* WITHPOWERTRIM */
 	#if WITHPABIASTRIM
@@ -7627,7 +7628,7 @@ int_fast16_t hamradio_get_pacurrent_value(void)
 
 	const uint_fast8_t adci = 0;	// CH0=IN-, CH1=IN+
 	const uint_fast8_t diff = 0;
-	static const long fullscale2 = 5000uL * scale;
+	static const long fullscale2 = 3300uL * scale;
 	uint_fast16_t vsenseZ = mcp3208_read(targetext2, diff, adci);
 	uint_fast16_t vsense2 = (unsigned long) vsenseZ * fullscale2 / 4095;
 
