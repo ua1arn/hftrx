@@ -320,6 +320,12 @@
 			arm_hardware_pioc_altfn50(1U << 9, AF_SDIO);	/* PC9 - SDIO_D1	*/ \
 			arm_hardware_pioc_altfn50(1U << 10, AF_SDIO);	/* PC10 - SDIO_D2	*/ \
 			arm_hardware_pioc_altfn50(1U << 11, AF_SDIO);	/* PC11 - SDIO_D3	*/ \
+			arm_hardware_piod_updown(1U << 2, 0);	/* PD2 - SDIO_CMD	*/ \
+			arm_hardware_pioc_updown(1U << 12, 0);	/* PC12 - SDIO_CK	*/ \
+			arm_hardware_pioc_updown(1U << 8, 0);	/* PC8 - SDIO_D0	*/ \
+			arm_hardware_pioc_updown(1U << 9, 0);	/* PC9 - SDIO_D1	*/ \
+			arm_hardware_pioc_updown(1U << 10, 0);	/* PC10 - SDIO_D2	*/ \
+			arm_hardware_pioc_updown(1U << 11, 0);	/* PC11 - SDIO_D3	*/ \
 		} while (0)
 		/* отключить процессор от SD карты - чтобы при выполнении power cycle не возникало фантомное питание через сигналы управления. */
 		#define HARDWARE_SDIO_HANGOFF()	do { \
@@ -341,6 +347,9 @@
 			arm_hardware_piod_altfn50(1U << 2, AF_SDIO);	/* PD2 - SDIO_CMD	*/ \
 			arm_hardware_pioc_altfn50(1U << 12, AF_SDIO);	/* PC12 - SDIO_CK	*/ \
 			arm_hardware_pioc_altfn50(1U << 8, AF_SDIO);	/* PC8 - SDIO_D0	*/ \
+			arm_hardware_piod_updown(1U << 2, 0);	/* PD2 - SDIO_CMD	*/ \
+			arm_hardware_pioc_updown(1U << 12, 0);	/* PC12 - SDIO_CK	*/ \
+			arm_hardware_pioc_updown(1U << 8, 0);	/* PC8 - SDIO_D0	*/ \
 		} while (0)
 		/* отключить процессор от SD карты - чтобы при выполнении power cycle не возникало фантомное питание через сигналы управления. */
 		#define HARDWARE_SDIO_HANGOFF()	do { \
@@ -636,6 +645,9 @@
 		} while (0)
 	#define HARDWARE_DAC_ALC(v) do { /* вывод 12-битного значения на ЦАП - канал 1 */ \
 			DAC1->DHR12R1 = (v); /* DAC1 set value */ \
+		} while (0)
+#else /* WITHCPUDACHW */
+	#define HARDWARE_DAC_INITIALIZE() do { \
 		} while (0)
 #endif /* WITHCPUDACHW */
 
