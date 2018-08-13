@@ -568,5 +568,9 @@
 	#endif /* SPI_IOUPDATE_BIT != 0 */
 
 #endif /* CPUSTYLE_ATMEGA || CPUSTYLE_ATXMEGA */
+	/* макроопределение, которое должно включить в себя все инициализации */
+	#define	HARDWARE_INITIALIZE() do { \
+		TARGET_BAND_DATA_INITIALIZE(); \
+		} while (0)
 
 #endif /* ATMEGA_CPUSTYLE_RV9CQQ_H_INCLUDED */

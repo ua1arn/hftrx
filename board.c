@@ -289,49 +289,49 @@ static void
 prog_gpioreg(void)
 {
 
-#if LS020_RST
-	// LCD reset bit
-	if (glob_lcdreset != 0)
-		LS020_RESET_PORT_S(LS020_RST);
-	else
-		LS020_RESET_PORT_C(LS020_RST);
-#endif /* LS020_RST */
+	#if LS020_RST
+		// LCD reset bit
+		if (glob_lcdreset != 0)
+			LS020_RESET_PORT_S(LS020_RST);
+		else
+			LS020_RESET_PORT_C(LS020_RST);
+	#endif /* LS020_RST */
 
-#if TARGET_CS4272_RESET_BIT
-	// CODEC2 reset
-	if (glob_codec2_nreset == 0)
-		TARGET_CS4272_RESET_PORT_S(TARGET_CS4272_RESET_BIT);
-	else
-		TARGET_CS4272_RESET_PORT_C(TARGET_CS4272_RESET_BIT);
-#endif /* TARGET_CS4272_RESET_BIT */
+	#if TARGET_CS4272_RESET_BIT
+		// CODEC2 reset
+		if (glob_codec2_nreset == 0)
+			TARGET_CS4272_RESET_PORT_S(TARGET_CS4272_RESET_BIT);
+		else
+			TARGET_CS4272_RESET_PORT_C(TARGET_CS4272_RESET_BIT);
+	#endif /* TARGET_CS4272_RESET_BIT */
 
-#if TARGET_DDSRESET_BIT
-	// DDS RESET
-	if (glob_reset_n == 0)
-		TARGET_DDSRESET_PORT_S(TARGET_DDSRESET_BIT);
-	else
-		TARGET_DDSRESET_PORT_C(TARGET_DDSRESET_BIT);
-#endif /* TARGET_DDSRESET_BIT */
+	#if TARGET_DDSRESET_BIT
+		// DDS RESET
+		if (glob_reset_n == 0)
+			TARGET_DDSRESET_PORT_S(TARGET_DDSRESET_BIT);
+		else
+			TARGET_DDSRESET_PORT_C(TARGET_DDSRESET_BIT);
+	#endif /* TARGET_DDSRESET_BIT */
 
-#if defined (TARGET_BAND_DATA_SET)
-	// Band select
-	TARGET_BAND_DATA_SET(glob_bandf);
-#endif /* defined (TARGET_BAND_DATA_SET) */
+	#if defined (TARGET_BAND_DATA_SET)
+		// Band select
+		TARGET_BAND_DATA_SET(glob_bandf);
+	#endif /* defined (TARGET_BAND_DATA_SET) */
 
-#if defined (HARDWARE_SDIOPOWER_SET)
-	// SD CARD POWER ENABLE BIT
-	HARDWARE_SDIOPOWER_SET(glob_sdcardpoweron);
-#endif /* defined (HARDWARE_SDIOPOWER_SET) */
+	#if defined (HARDWARE_SDIOPOWER_SET)
+		// SD CARD POWER ENABLE BIT
+		HARDWARE_SDIOPOWER_SET(glob_sdcardpoweron);
+	#endif /* defined (HARDWARE_SDIOPOWER_SET) */
 
-#if defined (TARGET_USBFS_VBUSON_SET)
-	// USB FLASH POWER ENABLE BIT
-	TARGET_USBFS_VBUSON_SET(glob_usbflashpoweron);
-#endif /* defined (TARGET_USBFS_VBUSON_SET) */
+	#if defined (TARGET_USBFS_VBUSON_SET)
+		// USB FLASH POWER ENABLE BIT
+		TARGET_USBFS_VBUSON_SET(glob_usbflashpoweron);
+	#endif /* defined (TARGET_USBFS_VBUSON_SET) */
 
-#if defined (HARDWARE_BL_SET)
-	// €ркость подсветки
-	HARDWARE_BL_SET(WITHLCDBACKLIGHTMIN != glob_bglight, glob_bglight - (WITHLCDBACKLIGHTMIN + 1));
-#endif /* defined (HARDWARE_BL_SET) */
+	#if defined (HARDWARE_BL_SET)
+		// €ркость подсветки
+		HARDWARE_BL_SET(WITHLCDBACKLIGHTMIN != glob_bglight, glob_bglight - (WITHLCDBACKLIGHTMIN + 1));
+	#endif /* defined (HARDWARE_BL_SET) */
 }
 
 
@@ -385,10 +385,6 @@ board_gpio_init(void)
 		arm_hardware_piob_outputs(WORKMASK, WORKMASK);
 	}
 	#endif /* ARM_STM32L051_TQFP32_CPUSTYLE_V1_H_INCLUDED */
-	// band selection
-	#if TARGET_BAND_DATAS_BITS
-		TARGET_BAND_DATA_INITIALIZE();
-	#endif /* BAND_DATAS_BITS */
 	///////////////////////
 	// SD CARD POWER ENABLE BIT
 	#if HARDWARE_SDIOPOWER_BIT
@@ -402,6 +398,10 @@ board_gpio_init(void)
 	#if defined (HARDWARE_INITIALIZE)
 		HARDWARE_INITIALIZE();
 	#endif /* defined (HARDWARE_INITIALIZE) */
+
+	#if defined (TARGET_FPGA_OVF_INITIALIZE)
+		TARGET_FPGA_OVF_INITIALIZE();
+	#endif /* defined (TARGET_FPGA_OVF_INITIALIZE) */
 }
 
 #if WITHSPISLAVE
@@ -6361,10 +6361,6 @@ void board_init_io(void)
 	board_fpga_loader_initialize();
 	board_fpga_loader_wait_AS();
 #endif /* WITHFPGAWAIT_AS */
-
-#if TARGET_FPGA_OVF_BIT != 0
-	TARGET_FPGA_OVF_INITIALIZE();
-#endif /* TARGET_FPGA_OVF_BIT != 0 */
 
 
 #if WITHTWIHW || WITHTWISW
