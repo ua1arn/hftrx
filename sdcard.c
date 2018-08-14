@@ -825,18 +825,18 @@ static void sdhost_dpsm_prepare(uintptr_t addr, uint_fast8_t txmode, uint_fast32
 	//	(((length0 * count / 32) << SDMMC_IDMABSIZE_IDMABNDT_Pos) & SDMMC_IDMABSIZE_IDMABNDT_Msk) |
 	//0;
 	debug_printf_P(PSTR("SDMMC1->IDMABASE0=%08lx\n"), SDMMC1->IDMABASE0);
-	ASSERT((SDMMC1->IDMACTRL & SDMMC_IDMA_IDMAEN) != 0);
+	ASSERT((SDMMC1->IDMACTRL & SDMMC_IDMA_IDMAEN_Msk) != 0);
 	ASSERT(SDMMC1->IDMABASE0 == addr);
 
-	SDMMC1->DLEN = (SDMMC1->DLEN & ~ (SDMMC_DLEN_DATALENGTH)) |
-		((len << SDMMC_DLEN_DATALENGTH_Pos) & SDMMC_DLEN_DATALENGTH) |
+	SDMMC1->DLEN = (SDMMC1->DLEN & ~ (SDMMC_DLEN_DATALENGTH_Msk)) |
+		((len << SDMMC_DLEN_DATALENGTH_Pos) & SDMMC_DLEN_DATALENGTH_Msk) |
 		0;
 	SDMMC1->DTIMER = 0x03FFFFFF;
 
 	SDMMC1->DCTRL =
-		SDMMC_DCTRL_DTEN |		// Data transfer enabled bit
-		! txmode * SDMMC_DCTRL_DTDIR |		// 1: From card to controller.
-		lenpower * SDMMC_DCTRL_DBLOCKSIZE_0 |	// 9: 512 bytes, 3: 8 bytes
+		SDMMC_DCTRL_DTEN_Msk |		// Data transfer enabled bit
+		! txmode * SDMMC_DCTRL_DTDIR_Msk |		// 1: From card to controller.
+		((lenpower * SDMMC_DCTRL_DBLOCKSIZE_0) & SDMMC_DCTRL_DBLOCKSIZE_Msk) |	// 9: 512 bytes, 3: 8 bytes
 		0;
 
 #elif CPUSTYLE_STM32F7XX
@@ -846,10 +846,10 @@ static void sdhost_dpsm_prepare(uintptr_t addr, uint_fast8_t txmode, uint_fast32
 	SDMMC1->DLEN = (len & SDMMC_DLEN_DATALENGTH);
 
 	SDMMC1->DCTRL =
-		1 * SDMMC_DCTRL_DTEN |		// Data transfer enabled bit
-		! txmode * SDMMC_DCTRL_DTDIR |		// 1: From card to controller.
-		0 * SDMMC_DCTRL_DTMODE |		// 0: Block data transfer
-		1 * SDMMC_DCTRL_DMAEN |
+		1 * SDMMC_DCTRL_DTEN_Msk |		// Data transfer enabled bit
+		! txmode * SDMMC_DCTRL_DTDIR_Msk |		// 1: From card to controller.
+		0 * SDMMC_DCTRL_DTMODE_Msk |		// 0: Block data transfer
+		1 * SDMMC_DCTRL_DMAEN_Msk |
 		lenpower * SDMMC_DCTRL_DBLOCKSIZE_0 |	// 9: 512 bytes, 3: 8 bytes
 		//0 * SDMMC_DCTRL_RWSTART |
 		//0 * SDMMC_DCTRL_RWSTOP |
