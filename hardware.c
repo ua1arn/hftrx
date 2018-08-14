@@ -1041,7 +1041,6 @@ static RAMFUNC void spool_systimerbundle1(void)
 	seq_spool_ticks();
 #if WITHENCODER
 	enc_spool();	// таймер для динамического изменения шага перестройки
-	enc2_spool();	// таймер для динамического изменения шага перестройки (валкодер #2)
 #endif /* WITHENCODER */
 	display_spool();	// отсчёт времени по запрещению обновления дисплея при вращении валкодера
 #if WITHMODEM 
@@ -1051,6 +1050,7 @@ static RAMFUNC void spool_systimerbundle1(void)
 	board_usb_spool();
 #endif /* WITHUSBHW */
 	buffers_spool();
+	spool_encinterrupt2();	/* прерывание по изменению сигнала на входах от валкодера #2*/
 	// Формирование секундного прерывания
 	if (++ spool_1stickcount >= TICKS1000MS)
 	{
@@ -1159,14 +1159,14 @@ static RAMFUNC void spool_adcdonebundle(void)
 	{
 		const portholder_t pr = EXTI->PR & (EXTI_IMR_IM0 | EXTI_IMR_IM1);
 		EXTI->PR = pr;		// reset all existing requests
-		(void) EXTI->PR;
+		//(void) EXTI->PR;
 		stm32fxxx_pinirq(pr);
 	}
 	void ATTRWEAK EXTI2_3_IRQHandler(void)
 	{
 		const portholder_t pr = EXTI->PR & (EXTI_IMR_IM2 | EXTI_IMR_IM3);
 		EXTI->PR = pr;		// reset all existing requests
-		(void) EXTI->PR;
+		//(void) EXTI->PR;
 		stm32fxxx_pinirq(pr);
 	}
 	void ATTRWEAK EXTI4_15_IRQHandler(void)
@@ -1177,7 +1177,7 @@ static RAMFUNC void spool_adcdonebundle(void)
 				EXTI_IMR_IM7 | EXTI_IMR_IM6 | EXTI_IMR_IM5 | EXTI_IMR_IM4
 				);
 		EXTI->PR = pr;		// reset all existing requests
-		(void) EXTI->PR;
+		//(void) EXTI->PR;
 		stm32fxxx_pinirq(pr);
 	}
 
@@ -1245,7 +1245,7 @@ static RAMFUNC void spool_adcdonebundle(void)
 	{
 		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR0);
 		EXTI->PR = pr;		// reset all existing requests
-		(void) EXTI->PR;
+		//(void) EXTI->PR;
 		stm32fxxx_pinirq(pr);
 	}
 
@@ -1253,7 +1253,7 @@ static RAMFUNC void spool_adcdonebundle(void)
 	{
 		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR0 | EXTI_IMR_MR1);
 		EXTI->PR = pr;		// reset all existing requests
-		(void) EXTI->PR;
+		//(void) EXTI->PR;
 		stm32fxxx_pinirq(pr);
 	}
 
@@ -1261,7 +1261,7 @@ static RAMFUNC void spool_adcdonebundle(void)
 	{
 		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR1);
 		EXTI->PR = pr;		// reset all existing requests
-		(void) EXTI->PR;
+		//(void) EXTI->PR;
 		stm32fxxx_pinirq(pr);
 	}
 
@@ -1269,7 +1269,7 @@ static RAMFUNC void spool_adcdonebundle(void)
 	{
 		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR2);
 		EXTI->PR = pr;		// reset all existing requests
-		(void) EXTI->PR;
+		//(void) EXTI->PR;
 		stm32fxxx_pinirq(pr);
 	}
 
@@ -1277,7 +1277,7 @@ static RAMFUNC void spool_adcdonebundle(void)
 	{
 		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR2 | EXTI_IMR_MR3);
 		EXTI->PR = pr;		// reset all existing requests
-		(void) EXTI->PR;
+		//(void) EXTI->PR;
 		stm32fxxx_pinirq(pr);
 	}
 
@@ -1289,7 +1289,7 @@ static RAMFUNC void spool_adcdonebundle(void)
 				EXTI_IMR_MR7 | EXTI_IMR_MR6 | EXTI_IMR_MR5 | EXTI_IMR_MR4
 				);
 		EXTI->PR = pr;		// reset all existing requests
-		(void) EXTI->PR;
+		//(void) EXTI->PR;
 		stm32fxxx_pinirq(pr);
 	}
 
@@ -1297,7 +1297,7 @@ static RAMFUNC void spool_adcdonebundle(void)
 	{
 		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR3);
 		EXTI->PR = pr;		// reset all existing requests
-		(void) EXTI->PR;
+		//(void) EXTI->PR;
 		stm32fxxx_pinirq(pr);
 	}
 
@@ -1305,7 +1305,7 @@ static RAMFUNC void spool_adcdonebundle(void)
 	{
 		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR4);
 		EXTI->PR = pr;		// reset all existing requests
-		(void) EXTI->PR;
+		//(void) EXTI->PR;
 		stm32fxxx_pinirq(pr);
 	}
 
@@ -1313,14 +1313,14 @@ static RAMFUNC void spool_adcdonebundle(void)
 	{
 		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR9 | EXTI_IMR_MR8 | EXTI_IMR_MR7 | EXTI_IMR_MR6 | EXTI_IMR_MR5);
 		EXTI->PR = pr;		// reset all existing requests
-		(void) EXTI->PR;
+		//(void) EXTI->PR;
 		stm32fxxx_pinirq(pr);
 	}
 	void ATTRWEAK EXTI15_10_IRQHandler(void)
 	{
 		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR15 | EXTI_IMR_MR14 | EXTI_IMR_MR13 | EXTI_IMR_MR12 | EXTI_IMR_MR11 | EXTI_IMR_MR10);
 		EXTI->PR = pr;		// reset all existing requests
-		(void) EXTI->PR;
+		//(void) EXTI->PR;
 		stm32fxxx_pinirq(pr);
 	}
 	#endif

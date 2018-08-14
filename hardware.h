@@ -500,7 +500,6 @@ void hardware_adc_initialize(void);
 
 // вызываетс€ с частотой TICKS_FREQUENCY (например, 200 √ц) с запрещенными прерывани€ми.
 void enc_spool(void);
-void enc2_spool(void);
 void kbd_spool(void);
 void display_spool(void);	// отсчЄт времени по запрещению обновлени€ диспле€ при вращении валкодера
 void board_usb_spool(void);

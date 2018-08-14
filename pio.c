@@ -874,8 +874,10 @@ void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority,
 				NVIC_SetPriority(EXTI2_3_IRQn, priority);
 				NVIC_EnableIRQ(EXTI2_3_IRQn);		// enable EXTI2_3_IRQHandler();
 			}
-			else
-			{
+			else if ((ipins & (EXTI_IMR_IM4 | EXTI_IMR_IM5 | EXTI_IMR_IM6 | EXTI_IMR_IM7 | EXTI_IMR_IM8 | 
+							EXTI_IMR_IM9 | EXTI_IMR_IM10 | EXTI_IMR_IM11 | EXTI_IMR_IM12 | EXTI_IMR_IM13 | 
+							EXTI_IMR_IM14 | EXTI_IMR_IM15)) != 0)
+			
 				NVIC_SetPriority(EXTI4_15_IRQn, priority);
 				NVIC_EnableIRQ(EXTI4_15_IRQn);		// enable EXTI4_15_IRQHandler();
 			}
@@ -892,7 +894,9 @@ void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority,
 				NVIC_SetPriority(EXTI2_3_IRQn, priority);
 				NVIC_EnableIRQ(EXTI2_3_IRQn);		// enable EXTI2_3_IRQHandler();
 			}
-			else
+			else if ((ipins & (EXTI_MRR_MR4 | EXTI_MRR_MR5 | EXTI_MRR_MR6 | EXTI_MRR_MR7 | EXTI_MRR_MR8 | 
+							EXTI_MRR_MR9 | EXTI_MRR_MR10 | EXTI_MRR_MR11 | EXTI_MRR_MR12 | EXTI_MRR_MR13 | 
+							EXTI_MRR_MR14 | EXTI_MRR_MR15)) != 0)
 			{
 				NVIC_SetPriority(EXTI4_15_IRQn, priority);
 				NVIC_EnableIRQ(EXTI4_15_IRQn);		// enable EXTI4_15_IRQHandler();

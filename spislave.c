@@ -95,7 +95,7 @@ void EXTI15_10_IRQHandler(void)
 {
 	const portholder_t pr = EXTI->PR & (EXTI_IMR_MR15 | EXTI_IMR_MR14 | EXTI_IMR_MR14 | EXTI_IMR_MR12 | EXTI_IMR_MR11 | EXTI_IMR_MR10);
 	EXTI->PR = pr;		// reset all existing requests
-	(void) EXTI->PR;
+	//(void) EXTI->PR;
 	stm32fxxx_pinirq_SPISLAVE(pr);s
 }
 

@@ -22,8 +22,8 @@
 static volatile uint32_t position1;		/* накопитель от валкодера - знаковое число */
 static volatile uint32_t position2;		/* накопитель от валкодера - знаковое число */
 #else /* WITHHARDINTERLOCK */
-static int position1;		/* накопитель от валкодера - знаковое число */
-static int position2;		/* накопитель от валкодера - знаковое число */
+static volatile int position1;		/* накопитель от валкодера - знаковое число */
+static volatile int position2;		/* накопитель от валкодера - знаковое число */
 #endif /* WITHHARDINTERLOCK */
 #if WITHKBDENCODER
 static int position_kbd;	/* накопитель от клавиатуры - знаковое число */
@@ -96,8 +96,10 @@ static int safegetposition1(void)
 	while (__STREXW(0, & position1));
 	return (int32_t) r;
 #else /* WITHHARDINTERLOCK */
+	global_disableIRQ();
 	int r = position1;
 	position1 = 0;
+	global_enableIRQ();
 	return r;
 #endif /* WITHHARDINTERLOCK */
 }
@@ -111,8 +113,10 @@ static int safegetposition2(void)
 	while (__STREXW(0, & position2));
 	return (int32_t) r;
 #else /* WITHHARDINTERLOCK */
+	global_disableIRQ();
 	int r = position2;
 	position2 = 0;
+	global_enableIRQ();
 	return r;
 #endif /* WITHHARDINTERLOCK */
 }
@@ -154,9 +158,8 @@ static int backup_rotate;
 static int rotate2;
 static int backup_rotate2;
 
-#define HISTLEN 4	
-//#define TICKSMAX NTICKS(250)	// 50 ticks
-#define TICKSMAX NTICKS(125)	// 25 ticks
+#define HISTLEN 4		// кое-где дальше есть код, в неявном виде использующий это значение
+#define TICKSMAX NTICKS(125)
 
 static unsigned enchist [HISTLEN];	
 static uint_fast8_t tichist;	// Должно поместиться число от 0 до TICKSMAX включительно
@@ -183,11 +186,11 @@ void encoder_set_resolution(uint_fast8_t v, uint_fast8_t encdynamic)
 void	
 enc_spool(void)
 {
-	const int p1 = safegetposition1();
-	const int p2 = safegetposition_kbd();
+	const int p1 = safegetposition1();	// Валкодер #1
+	const int p1kbd = safegetposition_kbd();
 	rotate1 += p1;		/* учёт количества импульсов (для прямого отсчёта) */
 #if WITHKBDENCODER
-	rotate_kbd += p2;		/* учёт количества импульсов (для прямого отсчёта) */
+	rotate_kbd += p1kbd;		/* учёт количества импульсов (для прямого отсчёта) */
 #endif
 
 	/* запоминание данных для расчёта скорости вращения валкодера */
@@ -195,22 +198,17 @@ enc_spool(void)
 	   включившемся ускорении пользователь меняет направление - движется назад к пропущенной частоте. при этом для 
 	   предсказуемости перестройки ускорение не должно изменяться.
 	*/
-	enchist [enchistindex] += abs(p1) + abs(p2);
-	if (++ tichist >= TICKSMAX)	// уменьшение предела - уменьшат "постояную времени" измерителя скорости валкодера
+	enchist [enchistindex] += abs(p1) + abs(p1kbd);
+	if (++ tichist >= TICKSMAX)	// уменьшение предела - уменьшает "постояную времени" измерителя скорости валкодера
 	{	
 		tichist  = 0;
 		enchistindex = (enchistindex + 1) % HISTLEN;
 		enchist [enchistindex] = 0;		// Очередная ячейка накопления шагов очищается перед использованием.
 	}
-}
 
-// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
-// Расчёт средней скорости вращения валкодера (подготовка данных для расчёта вне прерываний).
-void	
-enc2_spool(void)
-{
-	const int p1 = safegetposition2();
-	rotate2 += p1;		/* учёт количества импульсов (для прямого отсчёта) */
+	// Валкодер #2
+	const int p2 = safegetposition2();
+	rotate2 += p2;		/* учёт количества импульсов (для прямого отсчёта) */
 }
 
 /* Обработка данных от валколдера */
@@ -223,7 +221,7 @@ void encoder_clear(void)
 	rotate1 = 0;
 	rotate_kbd = 0;
 
-
+	// HISTLEN == 4
 	enchist [0] = enchist [1] = enchist [2] = enchist [3] = 0; 
 	tichist = 0;
 
@@ -245,6 +243,7 @@ encoder_get_snapshot(
 
 	// параметры изменерения скорости не модифицируем
 	// 1. количество шагов за время измерения
+	// HISTLEN == 4
 	s =
 		enchist [0] + enchist [1] + enchist [2] + enchist [3]; // количество шагов валкодера за время наблюдений
 	// 2. Время измерения
