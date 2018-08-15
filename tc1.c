@@ -3474,7 +3474,12 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий клавиш - 880 Гц - 
 	//static uint_fast16_t gfsadcpower10 = (- 200) + FSADCPOWEROFFSET10;	// мощность, соответствующая full scale от IF ADC
 	#if WITHDSPEXTDDC	/* "Воронёнок" с DSP и FPGA */
 		static uint_fast8_t gdither;		/* управление зашумлением в LCT2088 */
-		static uint_fast8_t gadcrand;		/* управление интерфейсом в LCT2088 */
+		#if ADC1_TYPE == ADC_TYPE_AD9246
+			static uint_fast8_t gadcrand = 0;		/* управление интерфейсом в LCT2088 */
+		#else /* ADC1_TYPE == ADC_TYPE_AD9246 */
+			static uint_fast8_t gadcrand = 1;		/* управление интерфейсом в LCT2088 */
+		#endif /* ADC1_TYPE == ADC_TYPE_AD9246 */
+
 		static uint_fast8_t gadcfifo = 1;
 		static uint_fast8_t gdactest;
 		#if WITHDACSTRAIGHT
