@@ -459,7 +459,7 @@ typedef int32_t ncoftwi_t;
 #define NCOFTWBITS 32	// количество битов в ncoftw_t
 #define ASH (NCOFTWBITS - TABLELOG2)	// 22 = 32 - log2(number of items in sintable)
 #define FTW2ANGLEI(ftw)	((uint32_t) (ftw) >> ASH)
-#define FTW2ANGLEQ(ftw)	((uint32_t) ((ftw) + 0x40000000L) >> ASH)	// опережает на четверть оборота
+#define FTW2ANGLEQ(ftw)	((uint32_t) ((ftw) + 0x40000000L) >> ASH)	// косинус опережает на четверть оборота
 #define FTWROUND(ftw) ((uint32_t) (ftw))
 #define FTWAF001(freq) (((int_fast64_t) (freq) << NCOFTWBITS) / ARMI2SRATE100)
 #define FTWAF(freq) (((int_fast64_t) (freq) << NCOFTWBITS) / ARMI2SRATE)
@@ -704,10 +704,10 @@ static ncoftw_t angle_iflo = 0;
 // Получение квадратурных значений для данной частоты
 static FLOAT32P_t get_float4_iflo(void)
 {
-	static const FLOAT_t sintable4f_fs [4] = { + 0, + 1, + 0, - 1 };
+	static const FLOAT_t sintable4f [4] = { + 0, + 1, + 0, - 1 };
 	FLOAT32P_t v;
-	v.IV = (sintable4f_fs [FTW2ANGLEI(angle_iflo) >> (TABLELOG2 - 2)]);
-	v.QV = (sintable4f_fs [FTW2ANGLEQ(angle_iflo) >> (TABLELOG2 - 2)]);
+	v.IV = (sintable4f [FTW2ANGLEI(angle_iflo) >> (TABLELOG2 - 2)]);
+	v.QV = (sintable4f [FTW2ANGLEQ(angle_iflo) >> (TABLELOG2 - 2)]);
 	angle_iflo = FTWROUND(angle_iflo + anglestep_iflo);
 	return v;
 }
