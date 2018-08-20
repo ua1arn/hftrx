@@ -5269,7 +5269,7 @@ void RAMFUNC dsp_extbuffer32rx(const uint32_t * buff)
 //////////////////////////////////////////
 // glob_cwedgetime - длительность нарастани€/спада огибающей CW (и сигнала самоконтрол€) в единицах милисекунд
 
-static unsigned enveloplen = NSAITICKS(5) + 1;	/* »змен€етс€ через меню. */
+static volatile unsigned enveloplen0 = NSAITICKS(5) + 1;	/* »змен€етс€ через меню. */
 static unsigned shapeSidetonePos = 0;
 static volatile uint_fast8_t shapeSidetoneInpit = 0;
 
@@ -5278,28 +5278,18 @@ static volatile uint_fast8_t cwgateflag = 0;
 static volatile uint_fast8_t rxgateflag = 0;
 
 // 0..1
-static RAMFUNC FLOAT_t peakshapef(unsigned shapePos)	/* shapePos: от 0 до enveloplen включительно. */
+static RAMFUNC FLOAT_t peakshapef(unsigned shapePos)	/* shapePos: от 0 до enveloplen0 включительно. */
 {
-#if 1
-	// new version - pure sinusoidal envelop
 	const ftw_t halfcircle = (ftw_t) 1U << (NCOFTWBITS - 1);
-	const FLOAT_t v = (1 - peekvalf(FTW2ANGLEQ((uint_fast64_t) shapePos * halfcircle / enveloplen))) * (FLOAT_t) 0.5;	// v = - cos(angle)
+	const FLOAT_t v = (1 - peekvalf(FTW2ANGLEQ((uint_fast64_t) shapePos * halfcircle / enveloplen0))) * (FLOAT_t) 0.5;	// v = - cos(angle)
 	return v;
-#else
-	// old version
-	const FLOAT_t halflevel = (FLOAT_t) 0.5;
-	const unsigned halflen = sizeof sintable4f_fs / sizeof sintable4f_fs [0] - 1;	// таблица дл€ одного квадранта
-	const unsigned i = shapePos * (halflen * 2 - 1) / enveloplen;
-	const FLOAT_t v = (i <= halflen) ? (halflevel - sintable4f_fs [halflen - i] * halflevel) : (halflevel + sintable4f_fs [i - halflen] * halflevel);
-	// ¬озведение в степень 4 - иде€ от Oleg Skidan
-	return v * v * v * v;
-#endif
 }
 
 // ‘ормирование огибающей дл€ самоконтрола
 // 0..1
 static RAMFUNC FLOAT_t shapeSidetoneStep(void)
 {
+	const unsigned enveloplen = enveloplen0;
 	/* при регулировке длительности нарастани€/спада из меню текуща€ позици€ не корректируетс€ */
 	if (shapeSidetoneInpit >= enveloplen)
 		shapeSidetoneInpit = enveloplen;
@@ -5317,6 +5307,7 @@ static RAMFUNC FLOAT_t shapeSidetoneStep(void)
 // 0..1
 static RAMFUNC FLOAT_t shapeCWEnvelopStep(void)
 {
+	const unsigned enveloplen = enveloplen0;
 	/* при регулировке длительности нарастани€/спада из меню текуща€ позици€ не корректируетс€ */
 	if (shapeCWEnvelopPos >= enveloplen)
 		shapeCWEnvelopPos = enveloplen;
@@ -5332,6 +5323,7 @@ static RAMFUNC FLOAT_t shapeCWEnvelopStep(void)
 // ¬озврат признака того, что передавать модему ещЄ рано - не полностью завершено формирование огибающей
 static RAMFUNC uint_fast8_t getTxShapeNotComplete(void)
 {
+	const unsigned enveloplen = enveloplen0;
 	/* при регулировке длительности нарастани€/спада из меню текуща€ позици€ не корректируетс€ */
 	if (shapeCWEnvelopPos >= enveloplen)
 		shapeCWEnvelopPos = enveloplen;
@@ -5532,7 +5524,7 @@ static void
 trxparam_update(void)
 {
 	// CW & sidetone edge
-	enveloplen = NSAITICKS(glob_cwedgetime) + 1;		/* количество сэмплов, за которое мен€етс€ огибающа€ */
+	enveloplen0 = NSAITICKS(glob_cwedgetime) + 1;		/* количество сэмплов, за которое мен€етс€ огибающа€ */
 
 }
 
