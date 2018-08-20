@@ -5278,14 +5278,22 @@ static volatile uint_fast8_t cwgateflag = 0;
 static volatile uint_fast8_t rxgateflag = 0;
 
 // 0..1
-static RAMFUNC FLOAT_t peakshapef(unsigned shapePos)	/* 0 <= shapePos <= enveloplen */
+static RAMFUNC FLOAT_t peakshapef(unsigned shapePos)	/* shapePos: от 0 до enveloplen включительно. */
 {
+#if 1
+	// new version - pure sinusoidal envelop
+	const ftw_t halfcircle = (ftw_t) 1U << (NCOFTWBITS - 1);
+	const FLOAT_t v = (1 - peekvalf(FTW2ANGLEQ((uint_fast64_t) shapePos * halfcircle / enveloplen))) * (FLOAT_t) 0.5;	// v = - cos(angle)
+	return v;
+#else
+	// old version
 	const FLOAT_t halflevel = (FLOAT_t) 0.5;
 	const unsigned halflen = sizeof sintable4f_fs / sizeof sintable4f_fs [0] - 1;	// таблица дл€ одного квадранта
 	const unsigned i = shapePos * (halflen * 2 - 1) / enveloplen;
 	const FLOAT_t v = (i <= halflen) ? (halflevel - sintable4f_fs [halflen - i] * halflevel) : (halflevel + sintable4f_fs [i - halflen] * halflevel);
 	// ¬озведение в степень 4 - иде€ от Oleg Skidan
 	return v * v * v * v;
+#endif
 }
 
 // ‘ормирование огибающей дл€ самоконтрола
