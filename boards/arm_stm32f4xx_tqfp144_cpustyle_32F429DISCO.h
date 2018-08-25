@@ -555,14 +555,14 @@ enum
 			GPIO_AF_LTDC9 = 9  /* LCD-TFT Alternate Function mapping */
 		};
 		#define HARDWARE_LTDC_INITIALIZE() do { \
-				arm_hardware_pioa_altfn50((1U << 3) | (1U << 4) | (1U << 6) | (1U << 11) | (1U << 12), GPIO_AF_LTDC); \
-				arm_hardware_piob_altfn50((1U << 8) | (1U << 9) | (1U << 10) | (1U << 11), GPIO_AF_LTDC); \
-				arm_hardware_pioc_altfn50((1U << 6) | (1U << 7) | (1U << 12), GPIO_AF_LTDC); \
-				arm_hardware_piod_altfn50((1U << 3) | (1U << 6), GPIO_AF_LTDC); \
-				arm_hardware_piof_altfn50((1U << 10), GPIO_AF_LTDC); \
-				arm_hardware_piog_altfn50((1U << 6) | (1U << 7) | (1U << 11), GPIO_AF_LTDC); \
-				arm_hardware_piob_altfn50((1U << 0) | (1U << 1), GPIO_AF_LTDC9); \
-				arm_hardware_piog_altfn50((1U << 10) | (1U << 12), GPIO_AF_LTDC9); \
+				arm_hardware_pioa_altfn20((1U << 3) | (1U << 4) | (1U << 6) | (1U << 11) | (1U << 12), GPIO_AF_LTDC); \
+				arm_hardware_piob_altfn20((1U << 8) | (1U << 9) | (1U << 10) | (1U << 11), GPIO_AF_LTDC); \
+				arm_hardware_pioc_altfn20((1U << 6) | (1U << 7) | (1U << 12), GPIO_AF_LTDC); \
+				arm_hardware_piod_altfn20((1U << 3) | (1U << 6), GPIO_AF_LTDC); \
+				arm_hardware_piof_altfn20((1U << 10), GPIO_AF_LTDC); \
+				arm_hardware_piog_altfn20((1U << 6) | (1U << 7) | (1U << 11), GPIO_AF_LTDC); \
+				arm_hardware_piob_altfn20((1U << 0) | (1U << 1), GPIO_AF_LTDC9); \
+				arm_hardware_piog_altfn20((1U << 10) | (1U << 12), GPIO_AF_LTDC9); \
 			} while (0)
 		/* управление состоянием сигнала DISP панели */
 		#define HARDWARE_LTDC_SET_DISP(state) do { \

@@ -656,37 +656,37 @@
 	#define HARDWARE_LTDC_INITIALIZE() do { \
 		arm_hardware_pioi_outputs((1U << 12), 0 * (1U << 12));	/* PI12 DISP=constant high */ \
 		/* Control & synchronisation signals */ \
-		arm_hardware_pioi_altfn50((1U << 9), GPIO_AF_LTDC);		/* VSYNC */ \
-		arm_hardware_pioi_altfn50((1U << 10), GPIO_AF_LTDC);	/* HSYNC */ \
-		arm_hardware_pioi_altfn50((1U << 14), GPIO_AF_LTDC);	/* CLK */ \
-		arm_hardware_piok_altfn50((1U << 7), GPIO_AF_LTDC);		/* DE */ \
+		arm_hardware_pioi_altfn20((1U << 9), GPIO_AF_LTDC);		/* VSYNC */ \
+		arm_hardware_pioi_altfn20((1U << 10), GPIO_AF_LTDC);	/* HSYNC */ \
+		arm_hardware_pioi_altfn20((1U << 14), GPIO_AF_LTDC);	/* CLK */ \
+		arm_hardware_piok_altfn20((1U << 7), GPIO_AF_LTDC);		/* DE */ \
 		/* RED */ \
-		arm_hardware_pioi_altfn50((1U << 15), GPIO_AF_LTDC);	/* R0 */ \
-		arm_hardware_pioj_altfn50((1U << 0), GPIO_AF_LTDC);		/* R1 */ \
-		arm_hardware_pioj_altfn50((1U << 1), GPIO_AF_LTDC);		/* R2 */ \
-		arm_hardware_pioj_altfn50((1U << 2), GPIO_AF_LTDC);		/* R3 */ \
-		arm_hardware_pioj_altfn50((1U << 3), GPIO_AF_LTDC);		/* R4 */ \
-		arm_hardware_pioj_altfn50((1U << 4), GPIO_AF_LTDC);		/* R5 */ \
-		arm_hardware_pioj_altfn50((1U << 5), GPIO_AF_LTDC);		/* R6 */ \
-		arm_hardware_pioj_altfn50((1U << 6), GPIO_AF_LTDC);		/* R7 */ \
+		arm_hardware_pioi_altfn20((1U << 15), GPIO_AF_LTDC);	/* R0 */ \
+		arm_hardware_pioj_altfn20((1U << 0), GPIO_AF_LTDC);		/* R1 */ \
+		arm_hardware_pioj_altfn20((1U << 1), GPIO_AF_LTDC);		/* R2 */ \
+		arm_hardware_pioj_altfn20((1U << 2), GPIO_AF_LTDC);		/* R3 */ \
+		arm_hardware_pioj_altfn20((1U << 3), GPIO_AF_LTDC);		/* R4 */ \
+		arm_hardware_pioj_altfn20((1U << 4), GPIO_AF_LTDC);		/* R5 */ \
+		arm_hardware_pioj_altfn20((1U << 5), GPIO_AF_LTDC);		/* R6 */ \
+		arm_hardware_pioj_altfn20((1U << 6), GPIO_AF_LTDC);		/* R7 */ \
 		/* GREEN */ \
-		arm_hardware_pioj_altfn50((1U << 7), GPIO_AF_LTDC);		/* G0 */ \
-		arm_hardware_pioj_altfn50((1U << 8), GPIO_AF_LTDC);		/* G1 */ \
-		arm_hardware_pioj_altfn50((1U << 9), GPIO_AF_LTDC);		/* G2 */ \
-		arm_hardware_pioj_altfn50((1U << 10), GPIO_AF_LTDC);	/* G3 */ \
-		arm_hardware_pioj_altfn50((1U << 11), GPIO_AF_LTDC);	/* G4 */ \
-		arm_hardware_piok_altfn50((1U << 0), GPIO_AF_LTDC);		/* G5 */ \
-		arm_hardware_piok_altfn50((1U << 1), GPIO_AF_LTDC);		/* G6 */ \
-		arm_hardware_piok_altfn50((1U << 2), GPIO_AF_LTDC);		/* G7 */ \
+		arm_hardware_pioj_altfn20((1U << 7), GPIO_AF_LTDC);		/* G0 */ \
+		arm_hardware_pioj_altfn20((1U << 8), GPIO_AF_LTDC);		/* G1 */ \
+		arm_hardware_pioj_altfn20((1U << 9), GPIO_AF_LTDC);		/* G2 */ \
+		arm_hardware_pioj_altfn20((1U << 10), GPIO_AF_LTDC);	/* G3 */ \
+		arm_hardware_pioj_altfn20((1U << 11), GPIO_AF_LTDC);	/* G4 */ \
+		arm_hardware_piok_altfn20((1U << 0), GPIO_AF_LTDC);		/* G5 */ \
+		arm_hardware_piok_altfn20((1U << 1), GPIO_AF_LTDC);		/* G6 */ \
+		arm_hardware_piok_altfn20((1U << 2), GPIO_AF_LTDC);		/* G7 */ \
 		/* BLUE */ \
-		arm_hardware_pioe_altfn50((1U << 4), GPIO_AF_LTDC);		/* B0 */ \
-		arm_hardware_pioj_altfn50((1U << 13), GPIO_AF_LTDC);	/* B1 */ \
-		arm_hardware_pioj_altfn50((1U << 14), GPIO_AF_LTDC);	/* B2 */ \
-		arm_hardware_pioj_altfn50((1U << 15), GPIO_AF_LTDC);	/* B3 */ \
-		arm_hardware_piog_altfn50((1U << 12), GPIO_AF_LTDC9);	/* B4 */ \
-		arm_hardware_piok_altfn50((1U << 4), GPIO_AF_LTDC);		/* B5 */ \
-		arm_hardware_piok_altfn50((1U << 5), GPIO_AF_LTDC);		/* B6 */ \
-		arm_hardware_piok_altfn50((1U << 6), GPIO_AF_LTDC);		/* B7 */ \
+		arm_hardware_pioe_altfn20((1U << 4), GPIO_AF_LTDC);		/* B0 */ \
+		arm_hardware_pioj_altfn20((1U << 13), GPIO_AF_LTDC);	/* B1 */ \
+		arm_hardware_pioj_altfn20((1U << 14), GPIO_AF_LTDC);	/* B2 */ \
+		arm_hardware_pioj_altfn20((1U << 15), GPIO_AF_LTDC);	/* B3 */ \
+		arm_hardware_piog_altfn20((1U << 12), GPIO_AF_LTDC9);	/* B4 */ \
+		arm_hardware_piok_altfn20((1U << 4), GPIO_AF_LTDC);		/* B5 */ \
+		arm_hardware_piok_altfn20((1U << 5), GPIO_AF_LTDC);		/* B6 */ \
+		arm_hardware_piok_altfn20((1U << 6), GPIO_AF_LTDC);		/* B7 */ \
 		} while (0)
 	/* управление состоянием сигнала DISP панели */
 	#define HARDWARE_LTDC_SET_DISP(state) do { \
