@@ -40,7 +40,7 @@ enum
 	KBD_CODE_TXTUNE,
 	KBD_CODE_ATUSTART,
 	KBD_CODE_ATUBYPASS,
-	KBD_CODE_DISPMODE,		// переклчение набора отображаемой на дисплее информации
+	KBD_CODE_DISPMODE,		// переключение набора отображаемой на дисплее информации
 
 	KBD_CODE_ENTERFREQ,		// переход в режим прямого ввода частоты
 	KBD_CODE_ENTERFREQDONE,	// выход
