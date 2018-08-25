@@ -469,6 +469,7 @@ enum
 	BOARD_RXMAINSUB_A_B,	// Левый - A, правый - B
 	BOARD_RXMAINSUB_B_A,
 	BOARD_RXMAINSUB_B_B,
+	BOARD_RXMAINSUB_TWO,	// в оба аудиоканала поступает сумма выходов приемников.
 	//
 	BOARD_RXMAINSUB_count
 };

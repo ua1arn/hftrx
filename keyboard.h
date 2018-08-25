@@ -54,6 +54,7 @@ enum
 	KBD_CODE_LDSPTGL,
 	KBD_CODE_DATATOGGLE,
 	KBD_CODE_DWATCHTOGGLE,
+	KBD_CODE_DWATCHHOLD,
 	KBD_CODE_AMBANDPASSUP,	// Подстройка верхней частоты среза НЧ фильтра в режиме АМ
 	KBD_CODE_AMBANDPASSDOWN,	// Подстройка верхней частоты среза НЧ фильтра в режиме АМ
 

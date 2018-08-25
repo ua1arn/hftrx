@@ -614,6 +614,7 @@ static const FLASHMEM struct {
 	{ BOARD_RXMAINSUB_B_A, "B/A", },
 	{ BOARD_RXMAINSUB_B_B, "B/B", },	
 	{ BOARD_RXMAINSUB_A_A, "A/A", },		
+	{ BOARD_RXMAINSUB_TWO, "A&B", },	// в оба аудиоканала поступает сумма выходов приемников.		
 };
 
 #endif /* WITHUSEDUALWATCH */
@@ -14017,6 +14018,9 @@ process_key_menuset_common(uint_fast8_t kbch)
 #endif /* WITHTX */
 
 #if WITHUSEDUALWATCH
+	case KBD_CODE_DWATCHHOLD:
+		return 1;	/* клавиша уже обработана */
+
 	case KBD_CODE_DWATCHTOGGLE:
 		uif_key_mainsubrx();
 		return 1;	/* клавиша уже обработана */

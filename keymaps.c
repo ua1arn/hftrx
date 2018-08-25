@@ -661,7 +661,7 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_ERASE,	KBD_CODE_SPLIT,		KBD_CODE_SPLIT_HOLDED, 	'4', },
 	{ KIF_NONE,		KBD_CODE_ENTERFREQ,	KBD_CODE_ENTERFREQDONE, '7', },
 	//{ KIF_FAST,		ENC_CODE_STEP_DOWN,	ENC_CODE_STEP_DOWN, 	'#', },
-	{ KIF_NONE,		KBD_CODE_DWATCHTOGGLE, KBD_CODE_DWATCHTOGGLE, '#', },
+	{ KIF_NONE,		KBD_CODE_DWATCHTOGGLE, KBD_CODE_DWATCHHOLD, '#', },
 	// дополнительный элемент
 	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 };
@@ -750,7 +750,7 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_ERASE,	KBD_CODE_SPLIT,		KBD_CODE_SPLIT_HOLDED, 	'4', },
 	{ KIF_NONE,		KBD_CODE_ENTERFREQ,	KBD_CODE_ENTERFREQDONE, '7', },
 	//{ KIF_FAST,		ENC_CODE_STEP_DOWN,	ENC_CODE_STEP_DOWN, 	'#', },
-	{ KIF_NONE,		KBD_CODE_DWATCHTOGGLE, KBD_CODE_DWATCHTOGGLE, '#', },
+	{ KIF_NONE,		KBD_CODE_DWATCHTOGGLE, KBD_CODE_DWATCHHOLD, '#', },
 	// дополнительный элемент
 	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 };
@@ -774,7 +774,7 @@ const struct qmkey qmdefs [NQMKEYS] =
 	/* ! матрица слева от индикатора - ряд 1 по счету слева - снизу вверх */
 	{ KIF_NONE,		KBD_CODE_RECORDTOGGLE, KBD_CODE_RECORD_HOLDED, ' ', },
 	{ KIF_NONE,		KBD_CODE_MOX,		KBD_CODE_TXTUNE, 	' ', },
-	{ KIF_NONE,		KBD_CODE_DWATCHTOGGLE, KBD_CODE_DWATCHTOGGLE, ' ', },
+	{ KIF_NONE,		KBD_CODE_DWATCHTOGGLE, KBD_CODE_DWATCHHOLD, ' ', },
 	{ KIF_EXTMENU,	KBD_CODE_DISPMODE,	KBD_CODE_MENU, 		' ', },
 
 	/* ! матрица слева от индикатора - ряд 4 по счету слева - снизу вверх */
@@ -826,7 +826,7 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE,		KBD_CODE_MENU_CWSPEED,	KBD_CODE_11, 			' ', },		// CW SPEED
 	{ KIF_NONE,		KBD_CODE_NOTCHTOGGLE,	KBD_CODE_NOTCHFREQ, 	' ', },		// NOTCH
 	{ KIF_NONE,		KBD_CODE_BW,			KBD_CODE_13, 			' ', },		// BW/AGC не выключается с клавиатуры
-	{ KIF_NONE,		KBD_CODE_DWATCHTOGGLE,	KBD_CODE_DWATCHTOGGLE,	' ', },		// DUAL
+	{ KIF_NONE,		KBD_CODE_DWATCHTOGGLE,	KBD_CODE_DWATCHHOLD,	' ', },		// DUAL
 
 	/* матрица слева от индикатора - ряд 3 по счету слева - снизу вверх */
 	{ KIF_NONE,		KBD_CODE_BKIN,			KBD_CODE_GEN_HAM, 		' ', },		// BREAK-IN
@@ -870,7 +870,7 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE,		KBD_CODE_MENU_CWSPEED,	KBD_CODE_11, 			' ', },		// CW SPEED
 	{ KIF_NONE,		KBD_CODE_NOTCHTOGGLE,	KBD_CODE_NOTCHFREQ, 	' ', },		// NOTCH
 	{ KIF_NONE,		KBD_CODE_BW,			KBD_CODE_13, 			' ', },		// BW/AGC не выключается с клавиатуры
-	{ KIF_NONE,		KBD_CODE_DWATCHTOGGLE,	KBD_CODE_DWATCHTOGGLE,	' ', },		// DUAL
+	{ KIF_NONE,		KBD_CODE_DWATCHTOGGLE,	KBD_CODE_DWATCHHOLD,	' ', },		// DUAL
 
 	/* матрица слева от индикатора - ряд 3 по счету слева - снизу вверх */
 	{ KIF_NONE,		KBD_CODE_BKIN,			KBD_CODE_BKIN_HOLDED, 	' ', },		// BREAK-IN
@@ -919,7 +919,7 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE,		KBD_CODE_MENU_CWSPEED,	KBD_CODE_11, 			' ', },		// CW SPEED
 	{ KIF_NONE,		KBD_CODE_NOTCHTOGGLE,	KBD_CODE_NOTCHFREQ, 	' ', },		// NOTCH
 	{ KIF_NONE,		KBD_CODE_BW,			KBD_CODE_13, 			' ', },		// BW/AGC не выключается с клавиатуры
-	{ KIF_NONE,		KBD_CODE_DWATCHTOGGLE,	KBD_CODE_DWATCHTOGGLE,	' ', },		// DUAL
+	{ KIF_NONE,		KBD_CODE_DWATCHTOGGLE,	KBD_CODE_DWATCHHOLD,	' ', },		// DUAL
 	{ KIF_NONE,		KBD_CODE_9,				KBD_CODE_10,			' ', },
 	{ KIF_NONE,		KBD_CODE_11,			KBD_CODE_12,			' ', },
 
@@ -1014,7 +1014,7 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE,		KBD_CODE_LOCK,			KBD_CODE_LOCK_HOLDED, 	' ', },		// LOCK
 
 	/* ! матрица справа от индикатора - ряд 1 4 по счету справа - сверху вниз */
-	{ KIF_NONE,		KBD_CODE_DWATCHTOGGLE,	KBD_CODE_DWATCHTOGGLE,	'3', },		// DUAL
+	{ KIF_NONE,		KBD_CODE_DWATCHTOGGLE,	KBD_CODE_DWATCHHOLD,	'3', },		// DUAL
 	{ KIF_NONE,		KBD_CODE_BW,			KBD_CODE_13, 			'6', },		// BW/AGC не выключается с клавиатуры
 	{ KIF_NONE,		KBD_CODE_NOTCHTOGGLE,	KBD_CODE_NOTCHFREQ, 	'9', },		// NOTCH
 	{ KIF_NONE,		KBD_CODE_MENU_CWSPEED,	KBD_CODE_11, 			'#', },		// CW SPEED
@@ -1068,7 +1068,7 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE,		KBD_CODE_MENU_CWSPEED,	KBD_CODE_11, 			' ', },		// CW SPEED
 	{ KIF_NONE,		KBD_CODE_NOTCHTOGGLE,	KBD_CODE_NOTCHFREQ, 	' ', },		// NOTCH
 	{ KIF_NONE,		KBD_CODE_BW,			KBD_CODE_13, 			' ', },		// BW/AGC не выключается с клавиатуры
-	{ KIF_NONE,		KBD_CODE_DWATCHTOGGLE,	KBD_CODE_DWATCHTOGGLE,	' ', },		// DUAL
+	{ KIF_NONE,		KBD_CODE_DWATCHTOGGLE,	KBD_CODE_DWATCHHOLD,	' ', },		// DUAL
 
 	/* матрица слева от индикатора - ряд 3 по счету слева - снизу вверх */
 	{ KIF_NONE,		KBD_CODE_BKIN,			KBD_CODE_BKIN_HOLDED, 	' ', },		// BREAK-IN
