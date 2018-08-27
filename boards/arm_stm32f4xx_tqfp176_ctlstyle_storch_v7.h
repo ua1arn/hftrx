@@ -401,14 +401,15 @@
 	#define DDS1_CLK_DIV	1		/* Делитель опорной частоты перед подачей в DDS1 */
 
 	/* Назначение адресов на SPI шине */
-	#define targetext1	SPI_CSEL_PG15 	/* external devices control */
+	#define targetext1	SPI_CSEL_PG15 	/* external devices control on front panel */
+	#define targetext2	SPI_CSEL_PG14 	/* external devices control */
 	#define targetctl1	SPI_CSEL_PG3 	/* control register as a chain of registers */
 	#define targetfpga1	SPI_CSEL_PG1 	/* control register in FPGA */
 
 	#define targetlcd	targetext1 	/* LCD over SPI line devices control */ 
 	#define targetuc1608 targetext1	/* LCD with positive chip select signal	*/
 
-	#define targetnvram SPI_CSEL_PG8  	/* serial nvram */
+	#define targetnvram SPI_CSEL_PG4  	/* serial nvram */
 	#define targetcodec1 SPI_CSEL_PG2 	/* NAU8822L */
 
 	#define WITHMODESETFULLNFM 1

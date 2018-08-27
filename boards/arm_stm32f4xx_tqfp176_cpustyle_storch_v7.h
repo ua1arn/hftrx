@@ -104,60 +104,7 @@
 
 #elif LCDMODE_HD44780 && (LCDMODE_SPI == 0)
 
-	// E (enable) bit
-	#define LCD_STROBE_PORT_S(v)		do { GPIOF->BSRR = BSRR_S(v); __DSB(); } while (0)
-	#define LCD_STROBE_PORT_C(v)		do { GPIOF->BSRR = BSRR_C(v); __DSB(); } while (0)
-	#define LCD_STROBE_BIT			(1u << 6)	// PF6
-
-	// RS (address, register select) bit
-	#define LCD_RS_PORT_S(v)		do { GPIOF->BSRR = BSRR_S(v); __DSB(); } while (0)
-	#define LCD_RS_PORT_C(v)		do { GPIOF->BSRR = BSRR_C(v); __DSB(); } while (0)
-	#define ADDRES_BIT				(1u << 4)	// PF4 - bit in RS port
-
-	// WE (write enable) bit
-	#define LCD_WE_PORT_S(v)		do { GPIOF->BSRR = BSRR_S(v); __DSB(); } while (0)
-	#define LCD_WE_PORT_C(v)		do { GPIOF->BSRR = BSRR_C(v); __DSB(); } while (0)
-	#define WRITEE_BIT				(1u << 5)	// PF5 - bit in 
-	
-	// Выводы подключения ЖКИ индикатора WH2002 или аналогичного HD44780.
-	#define LCD_DATA_INPUT			(GPIOF->IDR)
-	#define LCD_DATAS_BITS			((1u << 3) | (1u << 2) | (1u << 1) | (1u << 0))	// PF3..PF0
-	#define LCD_DATAS_BIT_LOW		0		// какой бит данных младший в слове считанном с порта
-
-	#define DISPLAY_BUS_DATA_GET() ((LCD_DATA_INPUT & LCD_DATAS_BITS) >> LCD_DATAS_BIT_LOW) /* получить данные с шины LCD */
-	#define DISPLAY_BUS_DATA_SET(v) do { /* выдача данных (не сдвинуьых) */ \
-			const portholder_t t = (portholder_t) (v) << LCD_DATAS_BIT_LOW; \
-			GPIOF->BSRR = BSRR_S(t & LCD_DATAS_BITS) | BSRR_C(~ t & LCD_DATAS_BITS); \
-			__DSB(); \
-		} while (0)
-
-
-	/* инициализация управляющих выходов процессора для управления HD44780 - полный набор выходов */
-	#define LCD_CONTROL_INITIALIZE() \
-		do { \
-			arm_hardware_piof_outputs2m(LCD_STROBE_BIT | WRITEE_BIT | ADDRES_BIT, 0); \
-			arm_hardware_pioe_outputs((1U << 0), 0 * (1U << 0));		/* PE0 - enable backlight */ \
-		} while (0)
-	/* инициализация управляющих выходов процессора для управления HD44780 - WE=0 */
-	#define LCD_CONTROL_INITIALIZE_WEEZERO() \
-		do { \
-			arm_hardware_piof_outputs2m(LCD_STROBE_BIT | WRITEE_BIT_ZERO | ADDRES_BIT, 0); \
-		} while (0)
-	/* инициализация управляющих выходов процессора для управления HD44780 - WE отсутствует - сигнал к индикатору заземлён */
-	#define LCD_CONTROL_INITIALIZE_WEENONE() \
-		do { \
-			arm_hardware_piof_outputs2m(LCD_STROBE_BIT | ADDRES_BIT, 0); \
-		} while (0)
-
-	#define LCD_DATA_INITIALIZE_READ() \
-		do { \
-			arm_hardware_piof_inputs(LCD_DATAS_BITS);	/* переключить порт на чтение с выводов */ \
-		} while (0)
-
-	#define LCD_DATA_INITIALIZE_WRITE(v) \
-		do { \
-			arm_hardware_piof_outputs2m(LCD_DATAS_BITS, (v) << LCD_DATAS_BIT_LOW);	/* открыть выходы порта */ \
-		} while (0)
+	#error Unsupported LCDMODE_HD44780
 
 #endif
 
@@ -165,14 +112,14 @@
 
 	// Выводы подключения енкодера #1
 	#define ENCODER_INPUT_PORT	(GPIOH->IDR) 
-	#define ENCODER_BITA		(1u << 2)		// PH2
-	#define ENCODER_BITB		(1u << 3)		// PH3
+	#define ENCODER_BITA		(1u << 4)		// PH4
+	#define ENCODER_BITB		(1u << 5)		// PH5
 	#define ENCODER_BITS		(ENCODER_BITA | ENCODER_BITB)
 
 	// Выводы подключения енкодера #2
 	#define ENCODER2_INPUT_PORT	(GPIOH->IDR) 
-	#define ENCODER2_BITA		(1u << 4)		// PH4
-	#define ENCODER2_BITB		(1u << 5)		// PH5
+	#define ENCODER2_BITA		(1u << 2)		// PH2
+	#define ENCODER2_BITB		(1u << 3)		// PH3
 	#define ENCODER2_BITS		(ENCODER2_BITA | ENCODER2_BITB)
 
 	#define ENCODER_INITIALIZE() \
@@ -316,15 +263,18 @@
 		} while (0)
 	#endif /* WITHSDHCHW4BIT */
 
-	#define HARDWARE_SDIO_CD_BIT	(1uL << 7)	/* PG7 - SDIO_SENSE */
+	#define HARDWARE_SDIO_WP_BIT	(1U << 8)	/* PG8 - SDIO_WP */
+	#define HARDWARE_SDIO_CD_BIT	(1U << 7)	/* PG7 - SDIO_SENSE */
 
 	#define HARDWARE_SDIOSENSE_INITIALIZE()	do { \
-			arm_hardware_piog_inputs(HARDWARE_SDIO_CD_BIT); /* PG7 - SDIO_SENSE */ \
+			arm_hardware_piog_inputs(HARDWARE_SDIO_WP_BIT); /* PD1 - SDIO_WP */ \
+			arm_hardware_piog_updown(HARDWARE_SDIO_WP_BIT, 0); \
+			arm_hardware_piog_inputs(HARDWARE_SDIO_CD_BIT); /* PD0 - SDIO_SENSE */ \
 			arm_hardware_piog_updown(HARDWARE_SDIO_CD_BIT, 0); \
 	} while (0)
 
 	#define HARDWARE_SDIOSENSE_CD() ((GPIOG->IDR & HARDWARE_SDIO_CD_BIT) == 0)	/* получить состояние датчика CARD PRESENT */
-	#define HARDWARE_SDIOSENSE_WP() (0)	/* получить состояние датчика CARD WRITE PROTECT */
+	#define HARDWARE_SDIOSENSE_WP() ((GPIOG->IDR & HARDWARE_SDIO_WP_BIT) != 0)	/* получить состояние датчика CARD WRITE PROTECT */
 
 	#define HARDWARE_SDIOPOWER_C(v)	do { GPIOC->BSRR = BSRR_C(v); __DSB(); } while (0)
 	#define HARDWARE_SDIOPOWER_S(v)	do { GPIOC->BSRR = BSRR_S(v); __DSB(); } while (0)
@@ -380,7 +330,7 @@
 	#define PTT_TARGET_PIN				(GPIOD->IDR)
 	#define PTT_BIT_PTT					(1uL << 13)		// PD13 - PTT
 	#define PTT2_TARGET_PIN				(GPIOD->IDR)
-	#define PTT2_BIT_PTT				(1uL << 0)		// PD13 - PTT2
+	#define PTT2_BIT_PTT				(1uL << 8)		// PD8 - PTT2
 	// получить бит запроса оператором перехода на пердачу
 	#define HARDWARE_GET_PTT() ((PTT_TARGET_PIN & PTT_BIT_PTT) == 0 || (PTT2_TARGET_PIN & PTT2_BIT_PTT) == 0)
 	#define PTT_INITIALIZE() \
@@ -426,8 +376,9 @@
 	#define SPI_ALLCS_PORT_S(v)	do { GPIOG->BSRR = BSRR_S(v); __DSB(); } while (0)
 	#define SPI_ALLCS_PORT_C(v)	do { GPIOG->BSRR = BSRR_C(v); __DSB(); } while (0)
 
-	#define SPI_CSEL_PG15	(1uL << 15)	// PG15 ext1
-	#define SPI_CSEL_PG8	(1uL << 4)	// PG4 nvmem FM25L16B
+	#define SPI_CSEL_PG15	(1uL << 15)	// PG15 ext1 on front panel
+	#define SPI_CSEL_PG14	(1uL << 14)	// PG14 ext2(not connected now)
+	#define SPI_CSEL_PG4	(1uL << 4)	// PG4 nvmem FM25L16B
 	#define SPI_CSEL_PG3	(1uL << 3)	// PG7 board control registers chain
 	#define SPI_CSEL_PG2	(1uL << 2)	// PG6 on-board codec1 NAU8822L
 	#define SPI_CSEL_PG1	(1uL << 1)	// PG1 FPGA control registers CS1
@@ -435,12 +386,13 @@
 
 	// Здесь должны быть перечислены все биты формирования CS в устройстве.
 	#define SPI_ALLCS_BITS ( \
-		SPI_CSEL_PG15	| 	/* PG15 ext1 */ \
-		SPI_CSEL_PG8	| 	/* PG8 nvmem FM25L16B */ \
-		SPI_CSEL_PG3	| 	/* PG7 board control registers chain */ \
-		SPI_CSEL_PG2	| 	/* PG6 on-board codec1 NAU8822L */ \
+		SPI_CSEL_PG15	| 	/* PG15 ext1 on front panel */ \
+		SPI_CSEL_PG14	|	/* PA100W on-board ADC (not connected on this board) */ \
+		SPI_CSEL_PG4	| 	/* PG4 nvmem FM25L16B */ \
+		SPI_CSEL_PG3	| 	/* PG3 board control registers chain */ \
+		SPI_CSEL_PG2	| 	/* PG2 on-board codec1 NAU8822L */ \
 		SPI_CSEL_PG1	| 	/* PG1 FPGA control registers CS1 */ \
-		SPI_CSEL_PG0	| 	/* PG1 FPGA control registers CS2 */ \
+		SPI_CSEL_PG0	| 	/* PG0 FPGA control registers CS2 */ \
 		0)
 
 	#define SPI_ALLCS_BITSNEG 0		// Выходы, активные при "1"
@@ -520,14 +472,22 @@
 #define HARDWARE_SIDETONE_INITIALIZE() do { \
 	} while (0)
 
-#if KEYBOARD_USE_ADC
+#if WITHKEYBOARD
+	/* PF10: pull-up second encoder button */
+	#define KBD_MASK (1U << 0)	// PF0
+	#define KBD_TARGET_PIN (GPIOF->IDR)
+
+	#define HARDWARE_KBD_INITIALIZE() do { \
+			arm_hardware_piof_inputs(KBD_MASK); \
+			arm_hardware_piof_updown(KBD_MASK, 0);	/* PF10: pull-up second encoder button */ \
+		} while (0)
+
+#else /* WITHKEYBOARD */
+
 	#define HARDWARE_KBD_INITIALIZE() do { \
 		} while (0)
-#else
-	#define HARDWARE_KBD_INITIALIZE() do { \
-		arm_hardware_pioa_inputs(KBD_MASK); \
-		} while (0)
-#endif
+
+#endif /* WITHKEYBOARD */
 
 #if 1 // WITHTWISW
 	#define TARGET_TWI_TWCK_PORT_C(v) do { GPIOB->BSRR = BSRR_C(v); __DSB(); } while (0)
@@ -638,9 +598,9 @@
 #endif /* WITHCPUADCHW */
 
 #if WITHUSBHW
-	#define TARGET_USBFS_VBUSON_PORT_C(v)	do { GPIOA->BSRR = BSRR_C(v); __DSB(); } while (0)
-	#define TARGET_USBFS_VBUSON_PORT_S(v)	do { GPIOA->BSRR = BSRR_S(v); __DSB(); } while (0)
-	#define TARGET_USBFS_VBUSON_BIT (1uL << 8)	// PA8 - нулём включение питания для device
+	#define TARGET_USBFS_VBUSON_PORT_C(v)	do { GPIOC->BSRR = BSRR_C(v); __DSB(); } while (0)
+	#define TARGET_USBFS_VBUSON_PORT_S(v)	do { GPIOC->BSRR = BSRR_S(v); __DSB(); } while (0)
+	#define TARGET_USBFS_VBUSON_BIT (1uL << 6)	// PC6 - нулём включение питания для device
 	/**USB_OTG_FS GPIO Configuration    
 	PA9     ------> USB_OTG_FS_VBUS
 	PA10     ------> USB_OTG_FS_ID
@@ -648,10 +608,10 @@
 	PA12     ------> USB_OTG_FS_DP 
 	*/
 	#define	USBD_FS_INITIALIZE() do { \
-		arm_hardware_pioa_altfn50((1uL << 10) | (1uL << 11) | (1uL << 12), AF_OTGFS);			/* PA10, PA11, PA12 - USB_OTG_FS	*/ \
+		arm_hardware_pioa_altfn50(/*(1uL << 10) | */ (1uL << 11) | (1uL << 12), AF_OTGFS);			/* PA10, PA11, PA12 - USB_OTG_FS	*/ \
 		arm_hardware_pioa_inputs(1uL << 9);		/* PA9 - USB_OTG_FS_VBUS */ \
-		arm_hardware_pioa_updownoff((1uL << 9) | (1uL << 10) |  (1uL << 11) | (1uL << 12)); \
-		arm_hardware_pioa_outputs(TARGET_USBFS_VBUSON_BIT, TARGET_USBFS_VBUSON_BIT); \
+		arm_hardware_pioa_updownoff((1uL << 9) | /*(1uL << 10) |  */ (1uL << 11) | (1uL << 12)); \
+		arm_hardware_pioc_outputs(TARGET_USBFS_VBUSON_BIT, TARGET_USBFS_VBUSON_BIT); \
 		} while (0)
 
 	#define TARGET_USBFS_VBUSON_SET(on)	do { \
@@ -678,19 +638,19 @@
 
 	#define	HARDWARE_BL_INITIALIZE() do { \
 		/* step-up backlight converter */ \
-		arm_hardware_pioe_outputs((1U << 0), 1 * (1U << 0));		/* PE0 - enable backlight */ \
-		arm_hardware_piob_opendrain((1U << 9) | (1U << 8), 0 * (1U << 9) | 0 * (1U << 8));	/* PB9:PB8 - backlight current adjust */ \
+		arm_hardware_piof_outputs((1U << 1), 1 * (1U << 1));		/* PF1 - enable backlight */ \
+		arm_hardware_piof_opendrain((1U << 3) | (1U << 2), 0 * (1U << 3) | 0 * (1U << 2));	/* PF3:PF2 - backlight current adjust */ \
 		arm_hardware_piof_altfn50((1U << 6), AF_TIM1); /* TIM16_CH1 - PF6 */ \
 		hardware_blfreq_initialize(); \
 		} while (0)
 
 	/* установка яркости и включение/выключение преобразователя подсветки */
 	#define HARDWARE_BL_SET(en, level) do { \
-		const portholder_t enmask = (1U << 0); /* PE0 */ \
-		const portholder_t opins = (1U << 9) | (1U << 8); /* PB9:PB8 */ \
-		const portholder_t initialstate = (~ (level) & 0x03) << 8; \
-		GPIOE->BSRR = (en) ? BSRR_S(enmask) : BSRR_C(enmask); /* backlight control on/off */ \
-		GPIOB->BSRR = \
+		const portholder_t enmask = (1U << 0); /* PF1 */ \
+		const portholder_t opins = (1U << 3) | (1U << 2); /* PF3:PF2 */ \
+		const portholder_t initialstate = (~ (level) & 0x03) << 2; \
+		GPIOF->BSRR = (en) ? BSRR_S(enmask) : BSRR_C(enmask); /* backlight control on/off */ \
+		GPIOF->BSRR = \
 			BSRR_S((initialstate) & (opins)) | /* set bits */ \
 			BSRR_C(~ (initialstate) & (opins)) | /* reset bits */ \
 			0; \
