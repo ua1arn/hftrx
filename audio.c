@@ -2886,6 +2886,7 @@ static void audio_setup_mike(const uint_fast8_t spf)
 		CTLSTYLE_STORCH_V4 || \
 		CTLSTYLE_STORCH_V5 || \
 		CTLSTYLE_STORCH_V6 || \
+		CTLSTYLE_STORCH_V7 || \
 		CTLSTYLE_OLEG4Z_V1 || \
 		0
 

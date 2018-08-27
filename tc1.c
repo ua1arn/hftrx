@@ -6743,9 +6743,9 @@ updateboard(
 		board_setfanflag(! fanpaflag);
 	#endif /* WITHFANTIMER */
 	#if WITHLCDBACKLIGHT
-		#if CTLSTYLE_STORCH_V6
+		#if CTLSTYLE_STORCH_V6 || CTLSTYLE_STORCH_V7
 			board_set_blfreq(blfreq);
-		#endif /* CTLSTYLE_STORCH_V6 */
+		#endif /* CTLSTYLE_STORCH_V6 || CTLSTYLE_STORCH_V7 */
 		board_set_bglight((dimmflag || sleepflag || dimmmode) ? WITHLCDBACKLIGHTMIN : bglight);		/* подсветка дисплея  */
 	#endif /* WITHLCDBACKLIGHT */
 	#if WITHKBDBACKLIGHT
@@ -10682,7 +10682,7 @@ static const FLASHMEM struct menudef menutable [] =
 	},
 #endif /* defined (DEFAULT_LCD_CONTRAST) */
 #if WITHLCDBACKLIGHT
-	#if CTLSTYLE_STORCH_V6
+	#if CTLSTYLE_STORCH_V6 || CTLSTYLE_STORCH_V7
 		{
 			"BL DIV  ", 7, 0, 0,	ISTEP1,	
 			ITEM_VALUE,
@@ -10692,7 +10692,7 @@ static const FLASHMEM struct menudef menutable [] =
 			NULL,
 			getzerobase, /* складывается со смещением и отображается */
 		},
-	#endif /* CTLSTYLE_STORCH_V6 */
+	#endif /* CTLSTYLE_STORCH_V6 || CTLSTYLE_STORCH_V7*/
 	{
 		"LCD LIGH", 7, 0, 0,	ISTEP1,	
 		ITEM_VALUE,

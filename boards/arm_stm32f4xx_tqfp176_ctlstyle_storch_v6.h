@@ -1,4 +1,4 @@
-/* $Id: arm_stm32f4xx_tqfp144_ctlstyle_storch_v3.h 6039 2018-01-03 23:17:49Z gena $ */
+/* $Id$ */
 /* board-specific CPU attached signals */
 //
 // Проект HF Dream Receiver (КВ приёмник мечты)

@@ -3425,6 +3425,92 @@ prog_ctrlreg(uint_fast8_t plane)
 	}
 }
 
+#elif CTLREGMODE_STORCH_V7
+
+#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
+
+// "Storch" с USB, DSP и FPGA, SD-CARD, TFT 4.3"
+static void 
+//NOINLINEAT
+prog_ctrlreg(uint_fast8_t plane)
+{
+	prog_fpga_ctrlreg(targetfpga1);	// FPGA control register
+
+	// rеgisters chain control register
+	{
+		const uint_fast8_t lcdblcode = (glob_bglight - WITHLCDBACKLIGHTMIN);
+		//Current Output at Full Power A1 = 1, A0 = 1, VO = 0 ±500 ±380 ±350 ±320 mA min A
+		//Current Output at Power Cutback A1 = 1, A0 = 0, VO = 0 ±450 ±350 ±320 ±300 mA min A
+		//Current Output at Idle Power A1 = 0, A0 = 1, VO = 0 ±100 ±60 ±55 ±50 mA min A
+
+		enum
+		{
+			HARDWARE_OPA2674I_FULLPOWER = 0x03,
+			HARDWARE_OPA2674I_POWERCUTBACK = 0x02,
+			HARDWARE_OPA2674I_IDLEPOWER = 0x01,
+			HARDWARE_OPA2674I_SHUTDOWN = 0x00
+		};
+		static const FLASHMEM uint_fast8_t powerxlat [] =
+		{
+			HARDWARE_OPA2674I_IDLEPOWER,
+			HARDWARE_OPA2674I_POWERCUTBACK,
+			HARDWARE_OPA2674I_FULLPOWER,
+		};
+		const spitarget_t target = targetctl1;
+
+		rbtype_t rbbuff [8] = { 0 };
+		const uint_fast8_t txgated = glob_tx && glob_txgate;
+
+#if 0
+		/* +++ Управление согласующим устройством */
+		/* дополнительный регистр */
+		RBBIT(0073, glob_tx);				/* pin 03:индикатор передачи */
+		RBBIT(0072, glob_antenna);			// pin 02: выбор антенны (0 - ANT1, 1 - ANT2)
+		RBBIT(0071, ! glob_tuner_bypass);		// pin 01: обход СУ (1 - работа)
+		RBBIT(0070, glob_tuner_bypass ? 0 : glob_tuner_type);		/* pin 15: TYPE OF TUNER 	*/
+		/* регистр управления массивом конденсаторов */
+		RBVAL8(0060, glob_tuner_bypass ? 0 : glob_tuner_C);			/* Capacitors tuner bank 	*/
+		/* регистр управления наборной индуктивностью. */
+		RBVAL8(0050, glob_tuner_bypass ? 0 : glob_tuner_L);			/* Inductors tuner bank 	*/
+		/* --- Управление согласующим устройством */
+
+#endif
+		// DD21 SN74HC595PW + ULN2003APW на разъём управления LPF
+		RBBIT(0047, txgated);		// D7 - XS18 PIN 16: PTT
+		RBVAL(0040, 1U << glob_bandf2, 7);		// D0..D6: band select бит выбора диапазонного фильтра передатчика
+
+		// DD20 SN74HC595PW в управлении диапазонными фильтрами приёмника
+		RBVAL(0031, glob_tx ? 0 : (1U << glob_bandf) >> 1, 7);		// D1: 1, D7..D1: band select бит выбора диапазонного фильтра приёмника
+		RBBIT(0030, txgated);		// D0: включение подачи смещения на выходной каскад усилителя мощности
+
+		// DD19 SN74HC595PW в управлении диапазонными фильтрами приёмника
+		RBVAL(0026, glob_att, 2);			/* D7:D6: 12 dB and 6 dB attenuator control */
+		RBVAL(0024, ~ (txgated ? powerxlat [glob_stage1level] : HARDWARE_OPA2674I_SHUTDOWN), 2);	// A1..A0 of OPA2674I-14D in stage 1
+		RBBIT(0023, glob_fanflag);			/* D3: PA FAN */
+		RBBIT(0022, glob_bandf == 0);		// D2: средневолновый ФНЧ - управление реле на выходе фильтров
+		RBBIT(0021, glob_tx);				// D1: TX ANT relay
+		RBBIT(0020, glob_bandf == 0);		// D0: средневолновый ФНЧ - управление реле на входе
+
+		// DD18 SN74HC595PW рядом с DIN8
+		RBNULL(0014, 4);
+		RBVAL(0010, glob_bandf3, 4);			/* D3:D0: DIN8 EXT PA band select */
+
+		// DD14 STP08CP05TTR рядом с DIN8
+		RBBIT(0007, ! glob_reset_n);		// D7: NMEA reset
+		RBBIT(0006, glob_tx);				// D6: DIN8 EXT PTT signal
+		RBBIT(0005, 0);						// D5: not used
+		RBBIT(0004, 0);						/* D4: not used */
+		RBBIT(0003, lcdblcode & 0x02);		/* D3	- LCD backlight */
+		RBBIT(0002, lcdblcode & 0x02);		/* D2	- LCD backlight */
+		RBBIT(0001, lcdblcode & 0x01);		/* D2:D1 - LCD backlight */
+		RBBIT(0000, glob_kblight);			/* D0: keyboard backlight */
+
+		spi_select(target, CTLREG_SPIMODE);
+		prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
+		spi_unselect(target);
+	}
+}
+
 #elif CTLREGMODE_STORCH_V4
 // Modem v2
 #define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
@@ -5932,7 +6018,11 @@ static void board_fpga_loader_PS(void)
 	#elif CTLSTYLE_STORCH_V6 && ! WITHUSEDUALWATCH && (DDS1_CLK_MUL == 1)		// mini
 		#include "rbf/rbfimage_v7_1ch.h"	//
 	#elif CTLSTYLE_STORCH_V6 && (DDS1_CLK_MUL == 1)		// mini
-		#include "rbf/rbfimage_v7a_2ch.h"	// same as CTLSTYLE_STORCH_V6
+		#include "rbf/rbfimage_v7a_2ch.h"	// same as CTLSTYLE_RAVENDSP_V7
+	#elif CTLSTYLE_STORCH_V7 && ! WITHUSEDUALWATCH && (DDS1_CLK_MUL == 1)		// mini
+		#include "rbf/rbfimage_v7_1ch.h"	//
+	#elif CTLSTYLE_STORCH_V7 && (DDS1_CLK_MUL == 1)		// mini
+		#include "rbf/rbfimage_v7a_2ch.h"	// same as CTLSTYLE_RAVENDSP_V7
 	#elif CTLSTYLE_OLEG4Z_V1 && (DDS1_CLK_MUL == 1)
 		#include "rbf/rbfimage_oleg4z.h"	// same as CTLSTYLE_RAVENDSP_V7, 1 RX & WFM
 	#else

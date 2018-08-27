@@ -3015,7 +3015,7 @@ hardware_adc_startonescan(void)
 #endif /* WITHCPUADCHW */
 
 
-#if CTLSTYLE_STORCH_V6
+#if CTLSTYLE_STORCH_V6 || CTLSTYLE_STORCH_V7
 	/* TIM16_CH1 - PF6 */
 	void hardware_blfreq_initialize(void)
 	{
@@ -3045,7 +3045,7 @@ hardware_adc_startonescan(void)
 		TIM16->CR1 = TIM_CR1_CEN | TIM_CR1_ARPE;	/* разрешить перезагрузку и включить таймер */
 	}
 
-#endif /* CTLSTYLE_STORCH_V6 */
+#endif /* CTLSTYLE_STORCH_V6 || CTLSTYLE_STORCH_V7 */
 
 #if SIDETONE_TARGET_BIT != 0
 

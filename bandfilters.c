@@ -370,6 +370,7 @@ uint8_t bandf2_calc(
 	CTLREGMODE_STORCH_V1 || \
 	CTLREGMODE_STORCH_V2 || \
 	CTLREGMODE_STORCH_V3 || \
+	CTLREGMODE_STORCH_V7 || \
 	0
 	/* плата усилителя 2*RD100 */
 	const unsigned long M0p1 = 1000uL * 100;
