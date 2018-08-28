@@ -188,8 +188,10 @@
 		#define LOG10F	log10
 		//#define LOGF	log
 		//#define POWF	pow
+		//#define LOG2F	log2
 		#define LOGF	local_log
 		#define POWF	local_pow
+		#define LOG2F	local_log2
 		#define SINF	sin
 		#define COSF	cos
 		#define ATAN2F	atan2
@@ -215,8 +217,10 @@
 		#define LOG10F	log10f
 		//#define LOGF	logf
 		//#define POWF	powf
+		//#define LOG2F	log2f
 		#define LOGF	local_log
 		#define POWF	local_pow
+		#define LOG2F	local_log2
 		#define SINF	sinf
 		#define COSF	cosf
 		#define ATAN2F	atan2f
