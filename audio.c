@@ -3178,7 +3178,7 @@ static void agc_state_initialize(volatile agcstate_t * st, const volatile agcpar
 	const FLOAT_t level = FMINF(FMAXF(m0, siglevel), f0);	// работаем в диапазоне от 1 до f
 	const FLOAT_t ratio = (agcp->agcoff ? m0 : level) / f0;
 
-	const FLOAT_t streingth_log = logf(ratio);
+	const FLOAT_t streingth_log = LOGF(ratio);
 	const FLOAT_t caplevel = streingth_log;
 
 	st->agcfastcap = caplevel;
