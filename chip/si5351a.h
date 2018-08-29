@@ -195,7 +195,7 @@ struct FREQ {
   uint32_t fmax;
 };
 
-static const FLASHMEM struct FREQ FLASHMEM freqs [] = {
+static const FLASHMEM struct FREQ freqs [] = {
   { 4, SI5351a_R_DIV_1,		1,		100000000,  200000000 },
   { 4, SI5351a_R_DIV_2,		2,		50000000,  100000000 },	
   { 4, SI5351a_R_DIV_4,		4,		25000000,  50000000 },
