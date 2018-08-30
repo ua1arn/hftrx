@@ -367,6 +367,27 @@ uint8_t bandf2_calc(
 		return 2;
 	return 3;
 #elif \
+	(CTLREGMODE_STORCH_V1 && ARM_STM32F4XX_TQFP144_CTLSTYLE_STORCH_V1_R4DZ_H_INCLUDED) || \
+	0
+	/* плата усилителя 2*RD100 */
+	// R4DZ version: 1.8-2.0  3.5-4.0,   7-7.2,   10-10.2.  14-18.2    21-30
+	const unsigned long M0p1 = 1000uL * 100;
+	const fseltype_t f = (fseltype_t) (freq >> BANDDIVPOWER);
+
+	if (f < (fseltype_t) ((24 * M0p1) >> BANDDIVPOWER))
+		return 0;	// XS18 PIN 02
+	if (f < (fseltype_t) ((39 * M0p1) >> BANDDIVPOWER))
+		return 1;	// XS18 PIN 04
+	if (f < (fseltype_t) ((74 * M0p1) >> BANDDIVPOWER))
+		return 2;	// XS18 PIN 06
+	if (f < (fseltype_t) ((128 * M0p1) >> BANDDIVPOWER))
+		return 3;	// XS18 PIN 08
+	if (f < (fseltype_t) ((200 * M0p1) >> BANDDIVPOWER))
+		return 4;	// XS18 PIN 08
+	if (f < (fseltype_t) ((300 * M0p1) >> BANDDIVPOWER))
+		return 5;	// XS18 PIN 12
+	return 6;		// XS18 PIN 14 (PIN 16 - PTT)
+#elif \
 	CTLREGMODE_STORCH_V1 || \
 	CTLREGMODE_STORCH_V2 || \
 	CTLREGMODE_STORCH_V3 || \
@@ -499,6 +520,7 @@ uint8_t bandf3_calc(
 	 )
 {
 #if \
+	1 || \
 	CTLSTYLE_RAVENDSP_V3 || \
 	CTLSTYLE_RAVENDSP_V4 || \
 	CTLSTYLE_RAVENDSP_V5 || \
