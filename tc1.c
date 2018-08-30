@@ -2559,12 +2559,12 @@ filter_t fi_2p0_455 =
 		uint8_t bkinenable;	/* автоматическое управление передатчиком (от телеграфного манипулятора) */
 	#endif /* WITHELKEY */
 
-	#if WITHPOWERTRIM
+	#if WITHPOWERTRIM || WITHPOWERLPHP
 		#if ! WITHPOTPOWER
 			uint8_t gnormalpower;/* мощность WITHPOWERTRIMMIN..WITHPOWERTRIMMAX */
 		#endif /* ! WITHPOTPOWER */
 		uint8_t gotunerpower;/* мощность при работе автоматического согласующего устройства WITHPOWERTRIMMIN..WITHPOWERTRIMMAX */
-	#endif /* WITHPOWERTRIM */
+	#endif /* WITHPOWERTRIM || WITHPOWERLPHP */
 	#if WITHPABIASTRIM
 		uint8_t gpabias;	/* ток оконечного каскада передатчика */
 	#endif /* WITHPABIASTRIM */
@@ -3156,10 +3156,10 @@ enum
 		static uint_fast8_t gsbtonenable;	// разрешить формирование subtone
 	#endif /* WITHSUBTONES */
 
-	#if WITHPOWERTRIM
+	#if WITHPOWERTRIM || WITHPOWERLPHP
 		static uint_fast8_t gnormalpower = WITHPOWERTRIMMAX;
 		static uint_fast8_t gotunerpower = WITHPOWERTRIMMIN; /* мощность при работе автоматического согласующего устройства */
-	#endif /* WITHPOWERTRIM */
+	#endif /* WITHPOWERTRIM || WITHPOWERLPHP */
 	#if WITHPABIASTRIM
 		#if defined (WITHBBOXPABIAS)
 			static uint_fast8_t gpabias = WITHBBOXPABIAS; //WITHPABIASMIN;	/* ток оконечного каскада передатчика */
@@ -10567,6 +10567,7 @@ enum
 	RJ_MDMSPEED,	/* параметр - скорость модема */
 	RJ_MDMMODE,		/* параметр - тип модуляции модема */
 	RJ_MONTH,		/* параметр - месяц 1..12 */
+	RJ_POWER,		/* отображние мощности HP/LP */
 	//
 	RJ_notused
 };
@@ -11844,6 +11845,27 @@ filter_t fi_2p0_455 =	// strFlash2p0
   #endif /* ! WITHPOTPOWER */
 	{
 		"ATU PWR ", 7, 0, 0,	ISTEP1,		/* мощность при работе автоматического согласующего устройства */
+		ITEM_VALUE,
+		WITHPOWERTRIMMIN, WITHPOWERTRIMMAX,
+		offsetof(struct nvmap, gotunerpower),
+		NULL,
+		& gotunerpower,
+		getzerobase, 
+	},
+#elif WITHPOWERLPHP
+  #if ! WITHPOTPOWER
+	{
+		"TX POWER", 7, 0, RJ_POWER,	ISTEP1,		/* мощность при обычной работе на передачу */
+		ITEM_VALUE,
+		WITHPOWERTRIMMIN, WITHPOWERTRIMMAX,
+		offsetof(struct nvmap, gnormalpower),
+		NULL,
+		& gnormalpower,
+		getzerobase, 
+	},
+  #endif /* ! WITHPOTPOWER */
+	{
+		"ATU PWR ", 7, 0, RJ_POWER,	ISTEP1,		/* мощность при работе автоматического согласующего устройства */
 		ITEM_VALUE,
 		WITHPOWERTRIMMIN, WITHPOWERTRIMMAX,
 		offsetof(struct nvmap, gotunerpower),
@@ -13470,6 +13492,11 @@ void display_menu_valxx(
 		}
 		break;
 #endif /* WITHELKEY */
+#if WITHPOWERLPHP
+	case RJ_POWER:	/* отображние мощности HP/LP */
+			display_menu_string_P(x, y, pwrmodes [value].label, width, comma);
+		break;
+#endif /* WITHPOWERLPHP */
 
 	default:
 		display_menu_digit(x, y, value, width, comma, rj);
