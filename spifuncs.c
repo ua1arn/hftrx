@@ -166,7 +166,7 @@ spi_cs_enable(
 		if ((target & SPI_ALLCS_BITSNEG) != 0)
 			SPI_ALLCS_PORT_S(target & SPI_ALLCS_BITSNEG);
 		else if ((target & SPI_ALLCS_BITS) != 0)
-			SPI_ALLCS_PORT_C(SPI_ALLCS_BITS & (target ^ SPI_ALLCS_BITSNEG));
+			SPI_ALLCS_PORT_C(target & SPI_ALLCS_BITS);
 	#elif SPI_ALLCS_BITS != 0
 		if ((target & SPI_ALLCS_BITS) != 0)
 			SPI_ALLCS_PORT_C(target);
