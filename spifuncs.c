@@ -584,15 +584,12 @@ void spi_initialize(void)
 
 	hardware_spi_master_setfreq(SPIC_SPEEDFAST, SPISPEED);
 
-#if defined (SPISPEED400k)
+#if defined (SPISPEED400k) || defined (SPISPEED100k)
+	hardware_spi_master_setfreq(SPIC_SPEED100k, SPISPEED100k);		// 100 kHz for MICROCHIP MCP3204/MCP3208
 	hardware_spi_master_setfreq(SPIC_SPEED400k, SPISPEED400k);
 	hardware_spi_master_setfreq(SPIC_SPEED10M, 10000000uL);	/* 10 MHz для ILI9341 */
 	hardware_spi_master_setfreq(SPIC_SPEED25M, 25000000uL);	/* 25 MHz  */
-#endif /* defined (SPISPEED400k) */
-
-#if defined (SPISPEED100k)
-	hardware_spi_master_setfreq(SPIC_SPEED100k, SPISPEED100k);		// 100 kHz for MICROCHIP MCP3204/MCP3208
-#endif /* defined (SPISPEED100k) */
+#endif /* (SPISPEED400k) || defined (SPISPEED100k) */
 
 }
 

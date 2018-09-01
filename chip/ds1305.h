@@ -10,6 +10,7 @@
 #define DS1305_H_INCLUDED
 
 #define DS1305_SPIMODE SPIC_MODE3
+#define DS1305_SPISPEED	SPIC_SPEED100k//SPIC_SPEED400k
 
 enum
 {
@@ -27,7 +28,7 @@ static void ds1305_readbuff(
 {
 	const spitarget_t target = targetrtc1;		/* addressing to chip */
 
-	spi_select2(target, DS1305_SPIMODE, SPIC_SPEED400k);
+	spi_select2(target, DS1305_SPIMODE, DS1305_SPISPEED);
 
 	spi_progval8_p1(target, addr & 0x7F);	// D7=0: read mode
 	spi_complete(target);
@@ -48,7 +49,7 @@ static void ds1305_writebuff(
 {
 	const spitarget_t target = targetrtc1;		/* addressing to chip */
 
-	spi_select2(target, DS1305_SPIMODE, SPIC_SPEED400k);
+	spi_select2(target, DS1305_SPIMODE, DS1305_SPISPEED);
 
 	spi_progval8_p1(target, addr | 0x80);	// D7=1: write mode
 	spi_complete(target);
@@ -226,7 +227,8 @@ uint_fast8_t board_rtc_chip_initialize(void)
 {
 	uint_fast8_t eosc;
 
-	hardware_spi_master_setfreq(SPIC_SPEED400k, SPISPEED400k);	// Slow clock speed (for chips like LM7001 or DS1305EN)
+	//hardware_spi_master_setfreq(SPIC_SPEED400k, SPISPEED400k);	// Slow clock speed (for chips like LM7001 or DS1305EN)
+	//hardware_spi_master_setfreq(SPIC_SPEED100k, SPISPEED100k);	// Slow clock speed (for chips like LM7001 or DS1305EN)
 
 	uint8_t b [1];
 

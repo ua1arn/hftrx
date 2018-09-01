@@ -83,9 +83,9 @@ prog_lm7001_divider(
 }
 
 static void 
-prog_lm7001_divider(
+prog_lm7001_initialize(
 	spitarget_t target	/* addressing to chip */
 {
-	hardware_spi_master_setfreq(SPIC_SPEED400k, SPISPEED400k);	// Slow clock speed (for chips like LM7001 or DS1305EN)
+	//hardware_spi_master_setfreq(SPIC_SPEED400k, SPISPEED400k);	// Slow clock speed (for chips like LM7001 or DS1305EN)
 }
 #endif /* LM7001_C_INCLUDED */

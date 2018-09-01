@@ -1896,8 +1896,8 @@ s1d13781_set_DE(uint_fast8_t state)
 /* вызывается при разрешённых прерываниях. */
 void display_initialize(void)
 {
-	hardware_spi_master_setfreq(SPIC_SPEED10M, 10000000uL);
-	hardware_spi_master_setfreq(SPIC_SPEED25M, 25000000uL);
+	//hardware_spi_master_setfreq(SPIC_SPEED10M, 10000000uL);
+	//hardware_spi_master_setfreq(SPIC_SPEED25M, 25000000uL);
 
 	const uint_fast16_t prodcode = getprodcode();
 	debug_printf_P(PSTR("display_initialize: product code = 0x%04x (expected 0x0050)\n"), (unsigned) prodcode);

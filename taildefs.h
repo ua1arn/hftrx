@@ -11,11 +11,12 @@
 
 enum
 {
-#if defined (SPISPEED400k)
+#if (SPISPEED400k) || defined (SPISPEED100k)
+	SPIC_SPEED100k,		// 100 kHz for MICROCHIP MCP3204/MCP3208
 	SPIC_SPEED400k,
 	SPIC_SPEED10M,	/* 10 MHz для ILI9341 */
 	SPIC_SPEED25M,	/* 25 MHz  */
-#endif /* defined (SPISPEED400k) */
+#endif /* (SPISPEED400k) || defined (SPISPEED100k) */
 	SPIC_SPEEDFAST,
 #if WITHFPGAWAIT_AS || WITHFPGALOAD_PS || WITHDSPEXTFIR
 	SPIC_SPEEDUFAST,	// Скорость для загрузки FPGA
@@ -26,9 +27,6 @@ enum
 #if LCDMODE_UC1608
 	SPIC_SPEEDUC1608,	// SPISPEED for UC1608 should be less then 7.1 MHz
 #endif /* LCDMODE_UC1608 */
-#if defined (SPISPEED100k)
-	SPIC_SPEED100k,		// 100 kHz for MICROCHIP MCP3204/MCP3208
-#endif /* defined (SPISPEED100k) */
 	//
 	SPIC_SPEEDS_COUNT
 } spi_speeds_t;

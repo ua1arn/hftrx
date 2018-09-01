@@ -1167,8 +1167,8 @@ static void st7735_switchtorgb(void)
 /* вызывается при разрешённых прерываниях. */
 void display_initialize(void)
 {
-	hardware_spi_master_setfreq(SPIC_SPEED10M, 10000000uL);
-	hardware_spi_master_setfreq(SPIC_SPEED25M, 25000000uL);
+	//hardware_spi_master_setfreq(SPIC_SPEED10M, 10000000uL);
+	//hardware_spi_master_setfreq(SPIC_SPEED25M, 25000000uL);
 
 	st7735_initialize();
 	#if LCDMODE_LTDC
