@@ -433,7 +433,8 @@ void display_set_contrast(uint_fast8_t v)
 /* вызывается при разрешённых прерываниях. */
 void display_initialize(void)
 {
-	//hardware_spi_master_setfreq(SPIC_SPEEDUC1608, SPISPEEDUC1608);	// SPISPEED for UC1608 should be less then 7.1 MHz
+	// не убирать - в общей инициализации нет!
+	hardware_spi_master_setfreq(SPIC_SPEEDUC1608, SPISPEEDUC1608);	// SPISPEED for UC1608 should be less then 7.1 MHz
 
 	uc1608_write_cmd(0xe2);	// System reset
 	uc1608_resetdelay();

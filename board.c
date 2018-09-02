@@ -3697,7 +3697,7 @@ prog_ctrlreg(uint_fast8_t plane)
 		const uint_fast8_t bpfon19 = (uhfmuxOUT & 0x02) != 0;
 		const uint_fast8_t bpfon20 = (uhfmuxOUT & 0x04) != 0;
 
-		debug_printf_P(PSTR("prog_ctrlreg: glob_bandf=%u, uhfmuxIN=%02X, uhfmuxOUT=%02X\n"), glob_bandf, uhfmuxIN, uhfmuxOUT);
+		//debug_printf_P(PSTR("prog_ctrlreg: glob_bandf=%u, uhfmuxIN=%02X, uhfmuxOUT=%02X\n"), glob_bandf, uhfmuxIN, uhfmuxOUT);
 
 		//bandmask = 0;
 		//xvr = 0;
