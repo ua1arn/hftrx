@@ -351,7 +351,7 @@ int r820t_freq_get_idx(uint32_t freq_mhz)
 
 #if 1
 
-static bool r820t_is_power_enabled(void)
+static int r820t_is_power_enabled(void)
 {
   uint8_t value;
   value = 1;
@@ -359,20 +359,20 @@ static bool r820t_is_power_enabled(void)
   {
     if(r820t_state_standby == 0)
     {
-      return true;
+      return 1;
     } else
     {
-      return false;
+      return 0;
     }
   } else
   {
-    return false;
+    return 0;
   }
 }
 
 #else
 
-__attribute__ ((always_inline)) static inline bool r820t_is_power_enabled(void)
+__attribute__ ((always_inline)) static inline int r820t_is_power_enabled(void)
 {
   uint32_t port_num;
   uint32_t pin_num;
@@ -387,14 +387,14 @@ __attribute__ ((always_inline)) static inline bool r820t_is_power_enabled(void)
   {
     if(r820t_state_standby == 0)
     {
-      return true;
+      return 1;
     } else
     {
-      return false;
+      return 0;
     }
   } else
   {
-    return false;
+    return 0;
   }
 }
 
@@ -407,7 +407,7 @@ void airspy_r820t_write_init(const uint8_t* data)
 {
   uint_fast8_t i;
 
-  if(r820t_is_power_enabled() == true)
+  if(r820t_is_power_enabled())
   {
     //i2c1_tx_start();
     i2c_start(R820T_I2C_ADDR | I2C_WRITE);
@@ -427,12 +427,12 @@ void airspy_r820t_write_init(const uint8_t* data)
  * Read from one or more contiguous registers. data[0] should be the first
  * register number, one or more values follow.
  */
- const uint8_t lut[16] = { 0x0, 0x8, 0x4, 0xc, 0x2, 0xa, 0x6, 0xe,
+static const uint8_t bitrev_lut[16] = { 0x0, 0x8, 0x4, 0xc, 0x2, 0xa, 0x6, 0xe,
       0x1, 0x9, 0x5, 0xd, 0x3, 0xb, 0x7, 0xf };
 
 static uint8_t r82xx_bitrev(uint8_t byte)
 {
- return (lut[byte & 0xf] << 4) | lut[byte >> 4];
+ return (bitrev_lut[byte & 0xf] << 4) | bitrev_lut[byte >> 4];
 }
 
 void airspy_r820t_read(r820t_priv_t *priv, uint8_t* const data, const uint8_t data_count)
@@ -440,7 +440,7 @@ void airspy_r820t_read(r820t_priv_t *priv, uint8_t* const data, const uint8_t da
   int i;
   uint_fast8_t val;
 
-  if(r820t_is_power_enabled() == true)
+  if(r820t_is_power_enabled())
   {
     /* read the value */
     //i2c1_tx_start();
@@ -483,7 +483,7 @@ void airspy_r820t_read(r820t_priv_t *priv, uint8_t* const data, const uint8_t da
 /* write to single register (return 0 if success) */
 void airspy_r820t_write_single(r820t_priv_t *priv, uint8_t reg, uint8_t val)
 {
-  if(r820t_is_power_enabled() == true)
+  if(r820t_is_power_enabled())
   {
     //i2c1_tx_start();
     i2c_start(R820T_I2C_ADDR | I2C_WRITE);
@@ -783,11 +783,11 @@ int r820t_set_pll(r820t_priv_t *priv, uint32_t freq)
 	}
 
 	if (!(data[2] & 0x40)) {
-		//priv->has_lock = false;
+		//priv->has_lock = 0;
 		return 0;
 	}
 
-	//priv->has_lock = true;
+	//priv->has_lock = 1;
 	debug_printf_P("r820t_set_pll: tuner has lock at frequency %d kHz\n", freq);
 
 	/* set pll autotune = 8kHz */
@@ -967,7 +967,7 @@ void r820t_set_if_bandwidth(r820t_priv_t *priv, uint8_t bw)
 /* write to single register but do not update priv (return 0 if success) */
 static void airspy_r820t_write_direct(uint8_t reg, uint8_t val)
 {
-  if(r820t_is_power_enabled() == true)
+  if(r820t_is_power_enabled())
   {
     //i2c1_tx_start();
     i2c_start(R820T_I2C_ADDR | I2C_WRITE);

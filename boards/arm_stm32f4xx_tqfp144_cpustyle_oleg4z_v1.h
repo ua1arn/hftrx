@@ -463,17 +463,11 @@
 
 #endif
 
-#define HARDWARE_SIDETONE_INITIALIZE() do { \
-	} while (0)
+	#define HARDWARE_SIDETONE_INITIALIZE() do { \
+		} while (0)
 
-#if KEYBOARD_USE_ADC
 	#define HARDWARE_KBD_INITIALIZE() do { \
 		} while (0)
-#else
-	#define HARDWARE_KBD_INITIALIZE() do { \
-		arm_hardware_pioa_inputs(KBD_MASK); \
-		} while (0)
-#endif
 
 #if /*WITHTWIHW || */WITHTWISW
 	#define TARGET_TWI_TWCK_PORT_C(v) do { GPIOF->BSRR = BSRR_C(v); __DSB(); } while (0)
