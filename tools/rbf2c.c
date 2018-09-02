@@ -64,6 +64,7 @@ int main(int argc, char* argv[])
 		if (pos != 0)
 			fprintf(fpo, "\n");
 		fprintf(fpo, "};\n");
+		fprintf(fpo, "/* %u bytes converted to %u words. */\n", bytes, words);
 		fclose(fpo);
 		//fprintf(stdout, "static const size_t rbflength = sizeof rbfimage / sizeof rbfimage [0]; /* %u 16-bit words (0x%08lx)*/\n", words, words);
 		fprintf(stderr, "file '%s', %u bytes converted to %u words.\n", argv [1], bytes, words);
