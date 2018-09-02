@@ -45,7 +45,12 @@
 #define USB_FUNCTION_VENDOR_ID	0xFFFF	// Generic
 //#define USB_FUNCTION_VENDOR_ID	0x041C	// Altera Corp.
 //#define USB_FUNCTION_VENDOR_ID	0x04d9	// Holtek Semiconductor, Inc.
-#define USB_FUNCTION_PRODUCT_ID	0x0736
+#if CTLSTYLE_OLEG4Z_V1
+	#define USB_FUNCTION_PRODUCT_ID	0x0737
+#else /* CTLSTYLE_OLEG4Z_V1 */
+	#define USB_FUNCTION_PRODUCT_ID	0x0736
+#endif /* CTLSTYLE_OLEG4Z_V1 */
+
 
 // From STMicroelectronics Comunication Device Class driver (CDC) INF FILE:
 //#define USB_FUNCTION_VENDOR_ID	0x0483	// STM
@@ -142,7 +147,11 @@ static const struct stringtempl strtemplates [] =
 	{ STRING_ID_RNDIS, "Storch TRX Remote NDIS", },
 
 	{ STRING_ID_a0, "Storch TRX Voice", },	// tag for Interface Descriptor 0/0 Audio
+#if CTLSTYLE_OLEG4Z_V1
+	{ STRING_ID_a1, "Storch TRX Spectre", },	// tag for Interface Descriptor 0/0 Audio
+#else /* CTLSTYLE_OLEG4Z_V1 */
 	{ STRING_ID_a1, "Storch TRX Spectrum", },	// tag for Interface Descriptor 0/0 Audio
+#endif /* CTLSTYLE_OLEG4Z_V1 */
 
 	//{ STRING_ID_b, "xxx_id11", },	// tag for USB Speaker Audio Feature Unit Descriptor
 
@@ -164,7 +173,11 @@ static const struct stringtempl strtemplates [] =
 	{ STRING_ID_Left, "USB", },	// tag for USB Speaker Audio Feature Unit Descriptor
 	{ STRING_ID_Right, "LSB", },	// tag for USB Speaker Audio Feature Unit Descriptor
 	{ STRING_ID_HIDa, "HID xxx", },
+#if CTLSTYLE_OLEG4Z_V1
+	{ STRING_ID_IQSPECTRUM, "Storch TRX Spectre", },	// tag for Interface Descriptor 0/0 Audio
+#else /* CTLSTYLE_OLEG4Z_V1 */
 	{ STRING_ID_IQSPECTRUM, "RX IQ Output", },
+#endif /* CTLSTYLE_OLEG4Z_V1 */
 };
 #if 0
 
@@ -3042,7 +3055,7 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 		StringDescrTbl [id].data = alldescbuffer + score;
 		score += partlen;
 	}
-#elif CPUSTYLE_STM32F && defined(UID_BASE)
+#elif CPUSTYLE_STM32F && defined(UID_BASE) && ! CTLSTYLE_OLEG4Z_V1
 	{
 		unsigned partlen;
 		const uint_fast8_t id = STRING_ID_3;
