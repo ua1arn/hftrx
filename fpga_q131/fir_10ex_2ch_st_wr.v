@@ -26,12 +26,12 @@
 module fir_10ex_2ch_st_wr(clk, rst, clk_en, input_ch_id,
 output_ch_id,
 rdy_to_ld, done, data_in, fir_result);
-parameter OUT_WIDTH = 56;
+parameter OUT_WIDTH = 55;
 parameter IN_WIDTH = 32;
 parameter FACTOR = 10;
-parameter ACCUM_WIDTH = 56;
+parameter ACCUM_WIDTH = 55;
 parameter CH_WIDTH = 1;
-parameter MSB_RM = 2;
+parameter MSB_RM = 1;
 parameter LSB_RM = 22;
 parameter COEF_SET_WIDTH = 4;
                                                                      
@@ -115,8 +115,8 @@ mr_lcstore_wr u4(.clk(clk),
                                              
 defparam u4.WIDTH = OUT_WIDTH;				
                                               
-wire [55:0]fir_int_res_fill;
-assign fir_int_res_fill =  fir_int_res[55 :0];
+wire [54:0]fir_int_res_fill;
+assign fir_int_res_fill =  fir_int_res[54 :0];
 parameter TOT_WIDTH = ACCUM_WIDTH;
 assign fir_result = fir_int_res_fill[TOT_WIDTH-MSB_RM-1:LSB_RM];
                                               

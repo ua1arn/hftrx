@@ -10145,7 +10145,6 @@ processcatmsg(
 				}
 				else
 				{
-#if 0
 					const FLASHMEM struct modetempl * const pmodet = getmodetempl(submode);
 					//ZZmLLLLUUUUSSSS
 					const uint_fast8_t bwseti = pmodet->bwseti;
@@ -10156,7 +10155,6 @@ processcatmsg(
 					if (p->type == BWSET_WIDE)
 						p->afresponce = vfy32up(catscanint(catp + 9, 3), AFRESPONCEMIN, AFRESPONCEMAX, p->afresponce);
 					updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
-#endif
 					rc = 1;
 				}
 			}

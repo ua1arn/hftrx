@@ -228,7 +228,7 @@ set_global_assignment -name MISC_FILE [file join $::quartus(qip_path) fir_10ex_2
 set_global_assignment -name MISC_FILE [file join $::quartus(qip_path) fir_10ex_2ch_constraints.tcl ]
 set_global_assignment -name MISC_FILE [file join $::quartus(qip_path) fir_10ex_2ch_nativelink.tcl ]
 set_global_assignment -name MISC_FILE [file join $::quartus(qip_path) fir_10ex_2ch_zero.hex ]
-set_global_assignment -name MISC_FILE [file join $::quartus(qip_path) fir_10ex_2ch_coef_[0..19].hex ]
+set_global_assignment -name MISC_FILE [file join $::quartus(qip_path) fir_10ex_2ch_coef_[0..9].hex ]
 set_global_assignment -name MISC_FILE [file join $::quartus(qip_path) fir_10ex_2ch_mlab.m ]
 set_global_assignment -name MISC_FILE [file join $::quartus(qip_path) fir_10ex_2ch_model.m ]
 set_global_assignment -name MISC_FILE [file join $::quartus(qip_path) fir_10ex_2ch.vec ]

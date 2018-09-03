@@ -21,7 +21,7 @@ applicable agreement for further details.
 (header "symbol" (version "1.2"))
 (symbol
 	(rect 0 0 144 80)
-	(text "lpm_counter_mod4" (rect 18 0 147 16)(font "Arial" (font_size 10)))
+	(text "lpm_counter_mod2" (rect 18 0 147 16)(font "Arial" (font_size 10)))
 	(text "inst" (rect 8 64 25 76)(font "Arial" ))
 	(port
 		(pt 0 32)
@@ -47,9 +47,9 @@ applicable agreement for further details.
 	(port
 		(pt 144 40)
 		(output)
-		(text "q[1..0]" (rect 0 0 35 14)(font "Arial" (font_size 8)))
-		(text "q[1..0]" (rect 95 33 123 46)(font "Arial" (font_size 8)))
-		(line (pt 144 40)(pt 128 40)(line_width 3))
+		(text "q[0]" (rect 0 0 21 14)(font "Arial" (font_size 8)))
+		(text "q[0]" (rect 107 33 123 46)(font "Arial" (font_size 8)))
+		(line (pt 144 40)(pt 128 40))
 	)
 	(drawing
 		(text "up counter" (rect 84 22 211 55)(font "Arial" ))

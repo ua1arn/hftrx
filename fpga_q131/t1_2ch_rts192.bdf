@@ -298,7 +298,7 @@ applicable agreement for further details.
 		(line (pt 82 8)(pt 78 12))
 		(line (pt 78 12)(pt 82 8))
 	)
-	(annotation_block (location)(rect -1232 1248 -1176 1264))
+	(annotation_block (location)(rect -1032 1024 -976 1040))
 )
 (pin
 	(output)
