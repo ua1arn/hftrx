@@ -24111,3 +24111,4 @@ static const FLASHMEMINIT uint16_t rbfimage [] =
  0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF,
  0xFFFF,
 };
+/* 385697 bytes converted to 192849 words. */

@@ -1,6 +1,6 @@
 % units default to ns %
 START 0 ;
-STOP 146425 ;
+STOP 267005 ;
 INTERVAL 5 ;
 INPUTS clk ;
 PATTERN
@@ -14,8 +14,8 @@ PATTERN
 INPUTS data_in[31..0];
 PATTERN         % test Inpluse %
 0>     0
-625>  1
-725>  0       % absolute time vector values %
+1725>  1
+2045>  0       % absolute time vector values %
 ;
 INPUTS clk_en;
 PATTERN

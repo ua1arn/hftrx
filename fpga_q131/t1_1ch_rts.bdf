@@ -4554,10 +4554,6 @@ applicable agreement for further details.
 	(pt -2096 200)
 )
 (connector
-	(pt -2096 176)
-	(pt -2096 200)
-)
-(connector
 	(pt -2152 144)
 	(pt -2136 144)
 )
@@ -4801,69 +4797,12 @@ applicable agreement for further details.
 	(pt -2712 -496)
 )
 (connector
-	(pt -2352 88)
-	(pt -2352 272)
-	(bus)
-)
-(connector
-	(pt -1992 -8)
-	(pt -1992 192)
-	(bus)
-)
-(connector
-	(text "flt_reset_n" (rect -2006 160 -1953 172)(font "Arial" ))
-	(pt -2008 176)
-	(pt -1936 176)
-)
-(connector
-	(pt -1992 192)
-	(pt -1936 192)
-	(bus)
-)
-(connector
-	(pt -2008 208)
-	(pt -1936 208)
-)
-(connector
-	(pt -2096 240)
-	(pt -1936 240)
-)
-(connector
-	(pt -2112 256)
-	(pt -1936 256)
-)
-(connector
-	(pt -2352 272)
-	(pt -1936 272)
-	(bus)
-)
-(connector
-	(pt -1936 160)
-	(pt -1952 160)
-)
-(connector
 	(pt -2712 -152)
 	(pt -1976 -152)
 )
 (connector
-	(pt -1936 224)
-	(pt -1976 224)
-)
-(connector
-	(pt -2096 200)
-	(pt -2096 240)
-)
-(connector
 	(pt -2072 216)
 	(pt -2112 216)
-)
-(connector
-	(pt -2112 192)
-	(pt -2112 216)
-)
-(connector
-	(pt -2112 216)
-	(pt -2112 256)
 )
 (connector
 	(pt -2280 176)
@@ -5427,14 +5366,6 @@ applicable agreement for further details.
 	(pt -1920 -40)
 )
 (connector
-	(pt -1952 -112)
-	(pt -1952 -40)
-)
-(connector
-	(pt -1952 -40)
-	(pt -1952 160)
-)
-(connector
 	(text "flt_reset_n" (rect -2038 -40 -1985 -28)(font "Arial" ))
 	(pt -2024 -24)
 	(pt -1920 -24)
@@ -5446,14 +5377,6 @@ applicable agreement for further details.
 (connector
 	(pt -1976 24)
 	(pt -1920 24)
-)
-(connector
-	(pt -1976 -152)
-	(pt -1976 24)
-)
-(connector
-	(pt -1976 24)
-	(pt -1976 224)
 )
 (connector
 	(pt -2136 40)
@@ -5503,23 +5426,6 @@ applicable agreement for further details.
 	(bus)
 )
 (connector
-	(pt -1664 160)
-	(pt -1592 160)
-	(bus)
-)
-(connector
-	(pt -1664 176)
-	(pt -1608 176)
-)
-(connector
-	(pt -1664 192)
-	(pt -1560 192)
-)
-(connector
-	(pt -1664 240)
-	(pt -1608 240)
-)
-(connector
 	(pt -2624 -128)
 	(pt -1424 -128)
 )
@@ -5530,10 +5436,6 @@ applicable agreement for further details.
 (connector
 	(pt -1424 -128)
 	(pt -1424 88)
-)
-(connector
-	(pt -1608 176)
-	(pt -1608 96)
 )
 (connector
 	(pt -1592 176)
@@ -5547,15 +5449,6 @@ applicable agreement for further details.
 (connector
 	(pt -1608 208)
 	(pt -1560 208)
-)
-(connector
-	(pt -1592 160)
-	(pt -1592 176)
-	(bus)
-)
-(connector
-	(pt -1608 240)
-	(pt -1608 208)
 )
 (connector
 	(pt -1608 80)
@@ -5820,26 +5713,6 @@ applicable agreement for further details.
 	(color 255 0 0)
 )
 (connector
-	(pt -2368 88)
-	(pt -2352 88)
-	(bus)
-)
-(connector
-	(pt -2352 88)
-	(pt -1936 88)
-	(bus)
-)
-(connector
-	(pt -2368 -8)
-	(pt -1992 -8)
-	(bus)
-)
-(connector
-	(pt -1992 -8)
-	(pt -1920 -8)
-	(bus)
-)
-(connector
 	(pt -3432 944)
 	(pt -3560 944)
 )
@@ -5892,6 +5765,133 @@ applicable agreement for further details.
 	(text "mode_wfm" (rect -3278 1304 -3224 1316)(font "Arial" ))
 	(pt -3320 1320)
 	(pt -3224 1320)
+)
+(connector
+	(pt -2352 88)
+	(pt -2352 272)
+	(bus)
+)
+(connector
+	(pt -1992 -8)
+	(pt -1992 192)
+	(bus)
+)
+(connector
+	(text "flt_reset_n" (rect -2006 160 -1953 172)(font "Arial" ))
+	(pt -2008 176)
+	(pt -1936 176)
+)
+(connector
+	(pt -1992 192)
+	(pt -1936 192)
+	(bus)
+)
+(connector
+	(pt -1560 192)
+	(pt -1664 192)
+)
+(connector
+	(pt -2008 208)
+	(pt -1936 208)
+)
+(connector
+	(pt -2096 240)
+	(pt -1936 240)
+)
+(connector
+	(pt -2112 256)
+	(pt -1936 256)
+)
+(connector
+	(pt -2352 272)
+	(pt -1936 272)
+	(bus)
+)
+(connector
+	(pt -1952 160)
+	(pt -1936 160)
+)
+(connector
+	(pt -1976 224)
+	(pt -1936 224)
+)
+(connector
+	(pt -1592 160)
+	(pt -1664 160)
+	(bus)
+)
+(connector
+	(pt -1608 176)
+	(pt -1664 176)
+)
+(connector
+	(pt -1608 240)
+	(pt -1664 240)
+)
+(connector
+	(pt -1608 96)
+	(pt -1608 176)
+)
+(connector
+	(pt -1592 176)
+	(pt -1592 160)
+	(bus)
+)
+(connector
+	(pt -1608 208)
+	(pt -1608 240)
+)
+(connector
+	(pt -2368 88)
+	(pt -2352 88)
+	(bus)
+)
+(connector
+	(pt -2352 88)
+	(pt -1936 88)
+	(bus)
+)
+(connector
+	(pt -2368 -8)
+	(pt -1992 -8)
+	(bus)
+)
+(connector
+	(pt -1992 -8)
+	(pt -1920 -8)
+	(bus)
+)
+(connector
+	(pt -2096 176)
+	(pt -2096 200)
+)
+(connector
+	(pt -2096 200)
+	(pt -2096 240)
+)
+(connector
+	(pt -2112 192)
+	(pt -2112 216)
+)
+(connector
+	(pt -2112 216)
+	(pt -2112 256)
+)
+(connector
+	(pt -1952 -112)
+	(pt -1952 -40)
+)
+(connector
+	(pt -1952 -40)
+	(pt -1952 160)
+)
+(connector
+	(pt -1976 -152)
+	(pt -1976 24)
+)
+(connector
+	(pt -1976 24)
+	(pt -1976 224)
 )
 (junction (pt -3024 -696))
 (junction (pt -2384 -696))
