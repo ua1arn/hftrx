@@ -146,7 +146,7 @@ static uint_fast8_t		glob_dacscale = 100;	/* Ќа какую часть (в процентах) от пол
 static uint_fast8_t 	glob_digigainmax = 96;
 static uint_fast8_t		glob_gvad605 = UINT8_MAX;	/* напр€жение на AD605 (управление усилением тракта ѕ„ */
 
-static int glob_fsadcpower10 = 0;	// мощность, соответствующа€ full scale от IF ADC с точностью 0.1 дЅм¬т
+static int_fast16_t		glob_fsadcpower10 = 0;	// мощность, соответствующа€ full scale от IF ADC с точностью 0.1 дЅм¬т
 
 static uint_fast8_t		glob_modem_mode;		// примен€ема€ модул€ци€
 static uint_fast32_t	glob_modem_speed100 = 3125;	// скорость передачи с точностью 1/100 бод

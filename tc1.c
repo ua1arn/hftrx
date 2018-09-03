@@ -2350,7 +2350,7 @@ struct nvmap
 	uint8_t gdigigainmax;	/* диапазон ручной регулировки цифрового усиления - максимальное значение */
 	uint8_t gsquelch;		/* уровень открытия шумоподавителя */
 	uint8_t gvad605;		/* напряжение на AD605 (управление усилением тракта ПЧ */
-	uint16_t gfsadcpower10;	/*	Мощность, соответствующая full scale от IF ADC (с тояностью 0.1 дБмВт */
+	uint16_t gfsadcpower10 [2];	/*	Мощность, соответствующая full scale от IF ADC (с тояностью 0.1 дБмВт */
 	#if ! WITHPOTAFGAIN
 		uint16_t afgain1;	// Параметр для регулировки уровня на выходе аудио-ЦАП
 	#endif /* ! WITHPOTAFGAIN */
@@ -3454,7 +3454,7 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий клавиш - 880 Гц - 
 
 #if WITHIF4DSP
 
-	#define FSADCPOWEROFFSET10 400
+	#define FSADCPOWEROFFSET10 500
 	static int_fast32_t getfsasdcbase10(void)
 	{
 		return - FSADCPOWEROFFSET10;
@@ -3471,8 +3471,11 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий клавиш - 880 Гц - 
 	static uint_fast8_t gdigigainmax = 86;	/* диапазон ручной регулировки цифрового усиления - максимальное значение */
 #endif /* CTLSTYLE_OLEG4Z_V1 */
 	static uint_fast8_t gvad605 = 180; //UINT8_MAX;	/* напряжение на AD605 (управление усилением тракта ПЧ */
-	static uint_fast16_t gfsadcpower10 = (- 130) + FSADCPOWEROFFSET10;	// для соответствия HDSDR мощность, соответствующая full scale от IF ADC
-	//static uint_fast16_t gfsadcpower10 = (- 200) + FSADCPOWEROFFSET10;	// мощность, соответствующая full scale от IF ADC
+	static uint_fast16_t gfsadcpower10 [2] = 
+	{
+		(- 130) + FSADCPOWEROFFSET10,	// для соответствия HDSDR мощность, соответствующая full scale от IF ADC
+		(- 330) + FSADCPOWEROFFSET10,	// с конвертором
+	};
 	#if WITHDSPEXTDDC	/* "Воронёнок" с DSP и FPGA */
 		static uint_fast8_t gdither;		/* управление зашумлением в LCT2088 */
 		#if ADC1_TYPE == ADC_TYPE_AD9246
@@ -6678,7 +6681,7 @@ updateboard(
 		board_set_detector(BOARD_DETECTOR_SSB);		/* Всегда смесительный детектор */
 		board_set_digigainmax(gdigigainmax);
 		board_set_gvad605(gvad605);			/* напряжение на AD605 (управление усилением тракта ПЧ */
-		board_set_fsadcpower10(gfsadcpower10 - FSADCPOWEROFFSET10);	/*	Мощность, соответствующая full scale от IF ADC */
+		board_set_fsadcpower10((int_fast16_t) gfsadcpower10 [lo0side != LOCODE_INVALID] - (int_fast16_t) FSADCPOWEROFFSET10);	/*	Мощность, соответствующая full scale от IF ADC */
 		#if WITHUSEDUALWATCH
 			board_set_mainsubrxmode(getactualmainsubrx());		// Левый/правый, A - main RX, B - sub RX
 		#endif /* WITHUSEDUALWATCH */
@@ -12343,9 +12346,18 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	{
 		"ADC FS  ", 3 + WSIGNFLAG, 1, 0,	ISTEP1,		/* Калиьровка S-метра - момент перегрузки */
 		ITEM_VALUE,
-		0, FSADCPOWEROFFSET10 * 2, 		// -40..+40 dBm
-		offsetof(struct nvmap, gfsadcpower10),
-		& gfsadcpower10,	// 16 bit
+		0, FSADCPOWEROFFSET10 * 2, 		// -50..+50 dBm
+		offsetof(struct nvmap, gfsadcpower10 [0]),
+		& gfsadcpower10 [0],	// 16 bit
+		NULL,
+		getfsasdcbase10, /* складывается со смещением и отображается */
+	},
+	{
+		"ADC FSXV", 3 + WSIGNFLAG, 1, 0,	ISTEP1,		/* с колнвертором Калиьровка S-метра - момент перегрузки */
+		ITEM_VALUE,
+		0, FSADCPOWEROFFSET10 * 2, 		// -50..+50 dBm
+		offsetof(struct nvmap, gfsadcpower10 [1]),
+		& gfsadcpower10 [1],	// 16 bit
 		NULL,
 		getfsasdcbase10, /* складывается со смещением и отображается */
 	},
