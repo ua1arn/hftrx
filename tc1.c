@@ -761,6 +761,7 @@ enum
 
 
 static const char FLASHMEM 
+	strFlashWFM [] = "WFM",
 	strFlashWide [] = "WID",
 	strFlashNarrow [] = "NAR",
 	strFlashNormal [] = "NOR";
@@ -798,6 +799,7 @@ typedef struct
 static const bwlimits_t bwlimits_cw = { 1, 10, 180, 0, 0,  };
 static const bwlimits_t bwlimits_am = { 1, WITHAMLOW10MIN, WITHAMLOW10MAX, WITHAMHIGH100MIN, WITHAMHIGH100MAX,  };
 static const bwlimits_t bwlimits_ssb = { 1, WITHSSBLOW10MIN, WITHSSBLOW10MAX, WITHSSBHIGH100MIN, WITHSSBHIGH100MAX, };
+static const bwlimits_t bwlimits_wfm = { 1, WITHWFMLOW10MIN, WITHWFMLOW10MAX, WITHWFMHIGH100MIN, WITHWFMHIGH100MAX, };
 
 // Частоты границ полосы пропускания
 // эти значения могут модифицироваться через меню
@@ -810,6 +812,7 @@ static bwprop_t bwprop_amnarrow = { & bwlimits_am, BWSET_WIDE, 100 / BWGRANLOW, 
 static bwprop_t bwprop_digiwide = { & bwlimits_ssb, BWSET_WIDE, 300 / BWGRANLOW, 3400 / BWGRANHIGH, - 0 + AFRESPONCESHIFT,	};
 static bwprop_t bwprop_nfmnarrow = { & bwlimits_am, BWSET_WIDE, 300 / BWGRANLOW, 3400 / BWGRANHIGH, - 36 + AFRESPONCESHIFT,	};
 static bwprop_t bwprop_nfmwide = { & bwlimits_am, BWSET_WIDE, 300 / BWGRANLOW, 4000 / BWGRANHIGH, - 36 + AFRESPONCESHIFT,	};
+static bwprop_t bwprop_wfm = { & bwlimits_wfm, BWSET_WIDE, WITHWFMLOW10DEF, WITHWFMHIGH100DEF, + 18 + AFRESPONCESHIFT,	};
 
 // Способ представления частот и количество профилей полосы пропускания,
 // а так же названия полос пропускания для отображения
@@ -821,7 +824,7 @@ static const FLASHMEM bwsetsc_t bwsetsc [BWSETI_COUNT] =
 	{ 1, { & bwprop_amwide, & bwprop_amnarrow, }, { strFlashWide, strFlashNarrow, }, },	// BWSETI_AM
 	{ 1, { & bwprop_nfmwide, & bwprop_nfmnarrow, }, { strFlashWide, strFlashNarrow, }, },	// BWSETI_NFM
 	{ 0, { & bwprop_amwide, }, { strFlashNormal, }, },	// BWSETI_DRM
-	{ 0, { & bwprop_amwide, }, { strFlashNormal, }, },	// BWSETI_WFM
+	{ 0, { & bwprop_wfm, }, { strFlashWFM, }, },	// BWSETI_WFM
 };
 
 // выбранная полоса пропускания в каждом режиме
@@ -10142,6 +10145,7 @@ processcatmsg(
 				}
 				else
 				{
+#if 0
 					const FLASHMEM struct modetempl * const pmodet = getmodetempl(submode);
 					//ZZmLLLLUUUUSSSS
 					const uint_fast8_t bwseti = pmodet->bwseti;
@@ -10152,6 +10156,7 @@ processcatmsg(
 					if (p->type == BWSET_WIDE)
 						p->afresponce = vfy32up(catscanint(catp + 9, 3), AFRESPONCEMIN, AFRESPONCEMAX, p->afresponce);
 					updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
+#endif
 					rc = 1;
 				}
 			}
