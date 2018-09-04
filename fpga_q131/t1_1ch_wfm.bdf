@@ -360,7 +360,7 @@ applicable agreement for further details.
 )
 (pin
 	(output)
-	(rect -608 -736 -432 -720)
+	(rect -632 -736 -456 -720)
 	(text "OUTPUT" (rect 1 0 39 10)(font "Arial" (font_size 6)))
 	(text "i2s1_sdo" (rect 90 0 133 12)(font "Arial" ))
 	(pt 0 8)
@@ -2764,62 +2764,6 @@ applicable agreement for further details.
 	)
 )
 (symbol
-	(rect -720 -784 -640 -688)
-	(text "lpm_mux1sync" (rect 2 0 105 16)(font "Arial" (font_size 10)))
-	(text "inst34" (rect 8 80 37 92)(font "Arial" ))
-	(port
-		(pt 0 40)
-		(input)
-		(text "data1" (rect 0 0 31 14)(font "Arial" (font_size 8)))
-		(text "data1" (rect 4 26 35 40)(font "Arial" (font_size 8)))
-		(line (pt 0 40)(pt 32 40))
-	)
-	(port
-		(pt 0 56)
-		(input)
-		(text "data0" (rect 0 0 31 14)(font "Arial" (font_size 8)))
-		(text "data0" (rect 4 42 35 56)(font "Arial" (font_size 8)))
-		(line (pt 0 56)(pt 32 56))
-	)
-	(port
-		(pt 0 72)
-		(input)
-		(text "clock" (rect 0 0 29 14)(font "Arial" (font_size 8)))
-		(text "clock" (rect 4 58 33 72)(font "Arial" (font_size 8)))
-		(line (pt 0 72)(pt 32 72))
-	)
-	(port
-		(pt 40 96)
-		(input)
-		(text "sel" (rect 0 0 14 16)(font "Arial" (font_size 8))(vertical))
-		(text "sel" (rect 33 67 47 83)(font "Arial" (font_size 8))(vertical))
-		(line (pt 40 96)(pt 40 84))
-	)
-	(port
-		(pt 80 56)
-		(output)
-		(text "result" (rect 0 0 31 14)(font "Arial" (font_size 8)))
-		(text "result" (rect 50 42 81 56)(font "Arial" (font_size 8)))
-		(line (pt 80 56)(pt 48 56))
-	)
-	(drawing
-		(line (pt 32 24)(pt 32 88))
-		(line (pt 32 24)(pt 48 32))
-		(line (pt 32 88)(pt 48 80))
-		(line (pt 48 32)(pt 48 80))
-		(line (pt 0 0)(pt 82 0))
-		(line (pt 82 0)(pt 82 98))
-		(line (pt 0 98)(pt 82 98))
-		(line (pt 0 0)(pt 0 98))
-		(line (pt 32 66)(pt 38 72))
-		(line (pt 38 72)(pt 32 78))
-		(line (pt 0 0)(pt 0 0))
-		(line (pt 0 0)(pt 0 0))
-		(line (pt 0 0)(pt 0 0))
-		(line (pt 0 0)(pt 0 0))
-	)
-)
-(symbol
 	(rect -2080 992 -1936 1072)
 	(text "lpm_counter_mod2" (rect 18 0 147 16)(font "Arial" (font_size 10)))
 	(text "inst3" (rect 8 64 31 76)(font "Arial" ))
@@ -4494,14 +4438,6 @@ applicable agreement for further details.
 	(pt -952 -384)
 )
 (connector
-	(pt -744 -712)
-	(pt -744 -776)
-)
-(connector
-	(pt -760 -416)
-	(pt -728 -416)
-)
-(connector
 	(pt -936 -320)
 	(pt -952 -320)
 )
@@ -5029,14 +4965,6 @@ applicable agreement for further details.
 	(pt -96 240)
 )
 (connector
-	(pt -744 -712)
-	(pt -720 -712)
-)
-(connector
-	(pt -728 -744)
-	(pt -720 -744)
-)
-(connector
 	(pt -3824 1288)
 	(pt -3888 1288)
 )
@@ -5047,23 +4975,6 @@ applicable agreement for further details.
 (connector
 	(pt -3808 1256)
 	(pt -3888 1256)
-)
-(connector
-	(pt -760 -728)
-	(pt -720 -728)
-)
-(connector
-	(text "mode_wfm" (rect -646 -672 -592 -660)(font "Arial" ))
-	(pt -680 -656)
-	(pt -592 -656)
-)
-(connector
-	(pt -680 -688)
-	(pt -680 -656)
-)
-(connector
-	(pt -640 -728)
-	(pt -608 -728)
 )
 (connector
 	(pt -912 616)
@@ -5139,15 +5050,6 @@ applicable agreement for further details.
 (connector
 	(pt -952 -776)
 	(pt -952 -728)
-)
-(connector
-	(text "clk_122880" (rect -1086 -792 -1031 -780)(font "Arial" ))
-	(pt -1088 -776)
-	(pt -952 -776)
-)
-(connector
-	(pt -952 -776)
-	(pt -744 -776)
 )
 (connector
 	(pt -952 -416)
@@ -5253,14 +5155,6 @@ applicable agreement for further details.
 (connector
 	(pt -728 -568)
 	(pt -584 -568)
-)
-(connector
-	(pt -728 -744)
-	(pt -728 -568)
-)
-(connector
-	(pt -728 -568)
-	(pt -728 -416)
 )
 (connector
 	(pt -1920 368)
@@ -5393,6 +5287,27 @@ applicable agreement for further details.
 	(pt -1920 368)
 	(color 255 0 0)
 )
+(connector
+	(text "clk_122880" (rect -1086 -792 -1031 -780)(font "Arial" ))
+	(pt -1088 -776)
+	(pt -952 -776)
+)
+(connector
+	(pt -952 -776)
+	(pt -768 -776)
+)
+(connector
+	(pt -760 -728)
+	(pt -632 -728)
+)
+(connector
+	(pt -760 -416)
+	(pt -728 -416)
+)
+(connector
+	(pt -728 -416)
+	(pt -728 -568)
+)
 (junction (pt -3024 -696))
 (junction (pt -2544 -696))
 (junction (pt -2608 -480))
@@ -5460,7 +5375,6 @@ applicable agreement for further details.
 (junction (pt -952 -320))
 (junction (pt -952 -352))
 (junction (pt -952 -776))
-(junction (pt -728 -568))
 (text "decode[31..0]" (rect -3174 896 -3107 908)(font "Arial" ))
 (text "Previous" (rect -1920 840 -1871 854)(font "Arial" (font_size 8)))
 (text "Current" (rect -1920 936 -1878 950)(font "Arial" (font_size 8)))
