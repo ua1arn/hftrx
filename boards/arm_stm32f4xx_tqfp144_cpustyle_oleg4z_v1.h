@@ -25,7 +25,7 @@
 
 //#define WITHI2SHW	1	/* Использование I2S - аудиокодек на I2S2 и I2S3	*/
 #define WITHSAI1HW	1	/* Использование SAI1 - FPGA или IF codec	*/
-//#define WITHSAI2HW	1	/* Использование SAI2 - FPGA или IF codec	*/
+#define WITHSAI2HW	1	/* Использование SAI2 - FPGA или IF codec	*/
 
 //#define WITHCPUDACHW	1	/* использование встроенного в процессор DAC */
 //#define WITHCPUADCHW 	1	/* использование встроенного в процессор ADC */

@@ -353,11 +353,13 @@ uintptr_t getfilled_dmabuffer32tx_sub(void);
 uintptr_t getfilled_dmabuffer16phones(void);
 
 void dsp_extbuffer32rx(const uint32_t * buff);	// RX
+void dsp_extbuffer32wfm(const uint32_t * buff);	// RX
 
 void processing_dmabuffer16rx(uintptr_t addr);	// обработать буфер после оцифровки AF ADC
 void processing_dmabuffer16rxuac(uintptr_t addr);	// обработать буфер после приёма пакета с USB AUDIO
 void processing_dmabuffer32rx(uintptr_t addr);
 void processing_dmabuffer32rts(uintptr_t addr);
+void processing_dmabuffer32wfm(uintptr_t addr);
 
 void savesamplerecord16SD(int_fast16_t ch0, int_fast16_t ch1); /* to SD CARD */
 void savesamplerecord16uacin(int_fast16_t ch0, int_fast16_t ch1); /* to USB AUDIO */

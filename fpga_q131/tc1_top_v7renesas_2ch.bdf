@@ -344,7 +344,7 @@ applicable agreement for further details.
 )
 (pin
 	(output)
-	(rect 1024 24 1200 40)
+	(rect 1024 40 1200 56)
 	(text "OUTPUT" (rect 1 0 39 10)(font "Arial" (font_size 6)))
 	(text "adc_shdn" (rect 90 0 137 12)(font "Arial" ))
 	(pt 0 8)
@@ -357,11 +357,11 @@ applicable agreement for further details.
 		(line (pt 82 8)(pt 78 12))
 		(line (pt 78 12)(pt 82 8))
 	)
-	(annotation_block (location)(rect 1576 104 1632 120))
+	(annotation_block (location)(rect 1576 120 1632 136))
 )
 (pin
 	(output)
-	(rect 1024 -24 1200 -8)
+	(rect 1024 -8 1200 8)
 	(text "OUTPUT" (rect 1 0 39 10)(font "Arial" (font_size 6)))
 	(text "adc_dith" (rect 90 0 131 12)(font "Arial" ))
 	(pt 0 8)
@@ -374,11 +374,11 @@ applicable agreement for further details.
 		(line (pt 82 8)(pt 78 12))
 		(line (pt 78 12)(pt 82 8))
 	)
-	(annotation_block (location)(rect 1576 56 1632 72))
+	(annotation_block (location)(rect 1576 72 1632 88))
 )
 (pin
 	(output)
-	(rect 1024 -8 1200 8)
+	(rect 1024 8 1200 24)
 	(text "OUTPUT" (rect 1 0 39 10)(font "Arial" (font_size 6)))
 	(text "adc_rand" (rect 90 0 134 12)(font "Arial" ))
 	(pt 0 8)
@@ -391,11 +391,11 @@ applicable agreement for further details.
 		(line (pt 82 8)(pt 78 12))
 		(line (pt 78 12)(pt 82 8))
 	)
-	(annotation_block (location)(rect 1576 72 1624 88))
+	(annotation_block (location)(rect 1576 88 1624 104))
 )
 (pin
 	(output)
-	(rect 1024 8 1200 24)
+	(rect 1024 24 1200 40)
 	(text "OUTPUT" (rect 1 0 39 10)(font "Arial" (font_size 6)))
 	(text "adc_pga" (rect 90 0 131 12)(font "Arial" ))
 	(pt 0 8)
@@ -408,7 +408,7 @@ applicable agreement for further details.
 		(line (pt 82 8)(pt 78 12))
 		(line (pt 78 12)(pt 82 8))
 	)
-	(annotation_block (location)(rect 1576 88 1624 104))
+	(annotation_block (location)(rect 1576 104 1624 120))
 )
 (pin
 	(output)
@@ -1102,44 +1102,51 @@ applicable agreement for further details.
 	(port
 		(pt 232 128)
 		(output)
-		(text "i2s_ready" (rect 0 0 56 14)(font "Arial" (font_size 8)))
-		(text "i2s_ready" (rect 155 123 211 137)(font "Arial" (font_size 8)))
+		(text "i2s2_sdo" (rect 0 0 51 14)(font "Arial" (font_size 8)))
+		(text "i2s2_sdo" (rect 160 123 211 137)(font "Arial" (font_size 8)))
 		(line (pt 232 128)(pt 216 128))
 	)
 	(port
 		(pt 232 144)
 		(output)
-		(text "adcdith" (rect 0 0 41 14)(font "Arial" (font_size 8)))
-		(text "adcdith" (rect 170 139 211 153)(font "Arial" (font_size 8)))
+		(text "i2s_ready" (rect 0 0 56 14)(font "Arial" (font_size 8)))
+		(text "i2s_ready" (rect 155 139 211 153)(font "Arial" (font_size 8)))
 		(line (pt 232 144)(pt 216 144))
 	)
 	(port
 		(pt 232 160)
 		(output)
-		(text "adcrand" (rect 0 0 47 14)(font "Arial" (font_size 8)))
-		(text "adcrand" (rect 164 155 211 169)(font "Arial" (font_size 8)))
+		(text "adcdith" (rect 0 0 41 14)(font "Arial" (font_size 8)))
+		(text "adcdith" (rect 170 155 211 169)(font "Arial" (font_size 8)))
 		(line (pt 232 160)(pt 216 160))
 	)
 	(port
 		(pt 232 176)
 		(output)
-		(text "adcpga" (rect 0 0 42 14)(font "Arial" (font_size 8)))
-		(text "adcpga" (rect 169 171 211 185)(font "Arial" (font_size 8)))
+		(text "adcrand" (rect 0 0 47 14)(font "Arial" (font_size 8)))
+		(text "adcrand" (rect 164 171 211 185)(font "Arial" (font_size 8)))
 		(line (pt 232 176)(pt 216 176))
 	)
 	(port
 		(pt 232 192)
 		(output)
-		(text "adc_shdn" (rect 0 0 56 14)(font "Arial" (font_size 8)))
-		(text "adc_shdn" (rect 155 187 211 201)(font "Arial" (font_size 8)))
+		(text "adcpga" (rect 0 0 42 14)(font "Arial" (font_size 8)))
+		(text "adcpga" (rect 169 187 211 201)(font "Arial" (font_size 8)))
 		(line (pt 232 192)(pt 216 192))
 	)
 	(port
 		(pt 232 208)
 		(output)
-		(text "xvrtron" (rect 0 0 41 14)(font "Arial" (font_size 8)))
-		(text "xvrtron" (rect 170 203 211 217)(font "Arial" (font_size 8)))
+		(text "adc_shdn" (rect 0 0 56 14)(font "Arial" (font_size 8)))
+		(text "adc_shdn" (rect 155 203 211 217)(font "Arial" (font_size 8)))
 		(line (pt 232 208)(pt 216 208))
+	)
+	(port
+		(pt 232 224)
+		(output)
+		(text "xvrtron" (rect 0 0 41 14)(font "Arial" (font_size 8)))
+		(text "xvrtron" (rect 170 219 211 233)(font "Arial" (font_size 8)))
+		(line (pt 232 224)(pt 216 224))
 	)
 	(drawing
 		(rectangle (rect 16 16 216 272))
@@ -1182,31 +1189,6 @@ applicable agreement for further details.
 	(pt 1056 152)
 )
 (connector
-	(pt 968 152)
-	(pt 944 152)
-)
-(connector
-	(pt 928 184)
-	(pt 928 32)
-)
-(connector
-	(pt 1056 184)
-	(pt 928 184)
-)
-(connector
-	(pt 1056 216)
-	(pt 912 216)
-)
-(connector
-	(pt 912 -112)
-	(pt 912 216)
-)
-(connector
-	(text "i2s_ready" (rect 994 80 1042 92)(font "Arial" ))
-	(pt 984 96)
-	(pt 1032 96)
-)
-(connector
 	(text "clk_122880" (rect 130 248 185 260)(font "Arial" ))
 	(pt 200 264)
 	(pt 128 264)
@@ -1220,50 +1202,6 @@ applicable agreement for further details.
 (connector
 	(pt 1024 -48)
 	(pt 896 -48)
-)
-(connector
-	(pt 944 -64)
-	(pt 896 -64)
-)
-(connector
-	(pt 944 152)
-	(pt 944 -64)
-)
-(connector
-	(pt 1024 -16)
-	(pt 896 -16)
-)
-(connector
-	(pt 1024 0)
-	(pt 896 0)
-)
-(connector
-	(pt 1024 16)
-	(pt 896 16)
-)
-(connector
-	(pt 984 -32)
-	(pt 896 -32)
-)
-(connector
-	(pt 984 96)
-	(pt 984 -32)
-)
-(connector
-	(pt 896 -112)
-	(pt 912 -112)
-)
-(connector
-	(pt 912 -112)
-	(pt 984 -112)
-)
-(connector
-	(pt 896 32)
-	(pt 928 32)
-)
-(connector
-	(pt 928 32)
-	(pt 1024 32)
 )
 (connector
 	(pt 896 -80)
@@ -1409,9 +1347,78 @@ applicable agreement for further details.
 	(pt 616 -240)
 	(pt 640 -240)
 )
+(connector
+	(pt 968 152)
+	(pt 944 152)
+)
+(connector
+	(pt 928 184)
+	(pt 928 48)
+)
+(connector
+	(pt 1056 184)
+	(pt 928 184)
+)
+(connector
+	(pt 1056 216)
+	(pt 912 216)
+)
+(connector
+	(pt 912 -112)
+	(pt 912 216)
+)
+(connector
+	(text "i2s_ready" (rect 994 96 1042 108)(font "Arial" ))
+	(pt 984 112)
+	(pt 1032 112)
+)
+(connector
+	(pt 896 -64)
+	(pt 944 -64)
+)
+(connector
+	(pt 944 152)
+	(pt 944 -64)
+)
+(connector
+	(pt 984 112)
+	(pt 984 -16)
+)
+(connector
+	(pt 896 -16)
+	(pt 984 -16)
+)
+(connector
+	(pt 896 -112)
+	(pt 912 -112)
+)
+(connector
+	(pt 912 -112)
+	(pt 984 -112)
+)
+(connector
+	(pt 896 48)
+	(pt 928 48)
+)
+(connector
+	(pt 928 48)
+	(pt 1024 48)
+)
+(connector
+	(pt 896 0)
+	(pt 1024 0)
+)
+(connector
+	(pt 896 16)
+	(pt 1024 16)
+)
+(connector
+	(pt 896 32)
+	(pt 1024 32)
+)
 (junction (pt 1032 152))
-(junction (pt 912 -112))
-(junction (pt 928 32))
 (junction (pt 776 376))
 (junction (pt 640 -240))
 (junction (pt 640 -128))
+(junction (pt 912 -112))
+(junction (pt 928 48))

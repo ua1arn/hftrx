@@ -233,9 +233,11 @@ static int_fast8_t		glob_swaprts;		// управление боковой выхода спектроанализато
 		} while (0);
 
 
+	//static uint32_t dd [4];
 	/* DSP speed test */
 	void dsp_speed_diagnostics(void)
 	{
+		//debug_printf_P(PSTR("data=%08lX,%08lX,%08lX,%08lX\n"), dd [0], dd [1], dd [2], dd [3]);
 		debug_printf_P(PSTR("dtcount=%" PRIuFAST32 ", dtmax=%" PRIuFAST32 ", dtlast=%" PRIuFAST32 ", "), dtcount, dtmax, dtlast);
 		debug_printf_P(PSTR("dtcount2=%" PRIuFAST32 ", dtmax2=%" PRIuFAST32 ", dtlast2=%" PRIuFAST32 ", "), dtcount2, dtmax2, dtlast2);
 		debug_printf_P(PSTR("dtcount3=%" PRIuFAST32 ", dtmax3=%" PRIuFAST32 ", dtlast3=%" PRIuFAST32 "\n"), dtcount3, dtmax3, dtlast3);
@@ -5149,6 +5151,56 @@ getmonitx(
 		return mike;
 	}
 }
+// Обработка полученного от DMA буфера с выборками или квадратурами (или двухканальный приём).
+// Вызывается на ARM_REALTIME_PRIORITY уровне.
+void RAMFUNC dsp_extbuffer32wfm(const uint32_t * buff)
+{
+	ASSERT(buff != NULL);
+	ASSERT(gwprof < NPROF);
+	const uint_fast8_t dspmodeA = globDSPMode [gwprof] [0];
+	const uint_fast8_t tx = isdspmodetx(dspmodeA);
+	unsigned i;
+	const FLOAT_t sdtn = 0;
+
+	//memcpy(dd, buff, sizeof dd);
+
+	for (i = 0; i < DMABUFFSIZE32RX; i += DMABUFSTEP32RX)
+	{
+		if (dspmodeA == DSPCTL_MODE_RX_WFM)
+		{
+			//FLOAT_t a0 = demod_WFMi(packw32(buff [i + DMABUF32RTS0I], buff [i + DMABUF32RTS0Q]));
+			//FLOAT_t a1 = demod_WFMi(packw32(buff [i + DMABUF32RTS1I], buff [i + DMABUF32RTS1Q]));
+			//const FLOAT_t left = (a0 + a1) / 2;// (int_fast32_t) buff [i + DMABUF32RX1I] * rxgate;		// Расширяем 24-х битные числа до 32 бит
+
+			//FLOAT_t a0 = demod_WFM(buff [i + DMABUF32RTS0I], buff [i + DMABUF32RTS0Q]);
+			//FLOAT_t a1 = demod_WFM(buff [i + DMABUF32RTS1I], buff [i + DMABUF32RTS1Q]);
+			//const FLOAT_t left = (a0 + a1) / 2 * nfmoutscale; //(a0 + a1);// (int_fast32_t) buff [i + DMABUF32RX1I] * rxgate;		// Расширяем 24-х битные числа до 32 бит
+
+#if 1
+			FLOAT_t a0 = demod_WFM(buff [i + DMABUF32RXWFM0I], buff [i + DMABUF32RXWFM0Q]);
+			FLOAT_t a1 = demod_WFM(buff [i + DMABUF32RXWFM1I], buff [i + DMABUF32RXWFM1Q]);
+			FLOAT_t a2 = demod_WFM(buff [i + DMABUF32RXWFM2I], buff [i + DMABUF32RXWFM2Q]);
+			FLOAT_t a3 = demod_WFM(buff [i + DMABUF32RXWFM3I], buff [i + DMABUF32RXWFM3Q]);
+			const FLOAT_t left = (a0 + a1 + a2 + a3) / 4 * nfmoutscale; //(a0 + a1);// (int_fast32_t) buff [i + DMABUF32RX1I] * rxgate;		// Расширяем 24-х битные числа до 32 бит
+#else
+			FLOAT_t a0 = demod_WFMi(packw32(buff [i + DMABUF32RXWFM0I], buff [i + DMABUF32RXWFM0Q]));
+			FLOAT_t a1 = demod_WFMi(packw32(buff [i + DMABUF32RXWFM1I], buff [i + DMABUF32RXWFM1Q]));
+			FLOAT_t a2 = demod_WFMi(packw32(buff [i + DMABUF32RXWFM2I], buff [i + DMABUF32RXWFM2Q]));
+			FLOAT_t a3 = demod_WFMi(packw32(buff [i + DMABUF32RXWFM3I], buff [i + DMABUF32RXWFM3Q]));
+			const FLOAT_t left = (a0 + a1 + a2 + a3) / 4;
+#endif
+			/* прием WFM (демодуляция в FPGA, только без WITHUSEDUALWATCH)	*/
+			//const FLOAT_t right = (int_fast32_t) buff [i + DMABUF32RX1Q] * rxgate;		// Расширяем 24-х битные числа до 32 бит
+			BEGIN_STAMP2();
+			const FLOAT_t leftFiltered = filterRxAudio_rxA(left, dspmodeA);
+			//const FLOAT_t leftFiltered = filterRxAudio_rxA(get_lout16(), dspmodeA);	// TODO: debug
+			END_STAMP2();
+			recordsampleSD(leftFiltered, leftFiltered);	// Запись демодулированного сигнала без озвучки клавиш
+			recordsampleUAC(leftFiltered, leftFiltered);	// Запись в UAC демодулированного сигнала без озвучки клавиш
+			savesampleout16stereo(injectsidetone(leftFiltered, sdtn), injectsidetone(leftFiltered, sdtn));
+		}
+	}
+}
 
 // Обработка полученного от DMA буфера с выборками или квадратурами (или двухканальный приём).
 // Вызывается на ARM_REALTIME_PRIORITY уровне.
@@ -5236,15 +5288,8 @@ void RAMFUNC dsp_extbuffer32rx(const uint32_t * buff)
 #elif WITHDSPEXTDDC
 	// Режимы трансиверов с внешним DDC
 
-	if (dspmodeA == DSPCTL_MODE_RX_WFM)
-	{
-		savesampleout96stereo(0, 0);
-		savesampleout96stereo(0, 0);
-	}
-	else
-	{
-		saverts96(buff + i);	// использование данных о спектре, передаваемых в общем фрейме
-	}
+	saverts96(buff + i);	// использование данных о спектре, передаваемых в общем фрейме
+
 	#if WITHLOOPBACKTEST
 
 		const INT32P_t dual = loopbacktestaudio(vi, dspmodeA, shape);
@@ -5424,36 +5469,14 @@ void RAMFUNC dsp_extbuffer32rx(const uint32_t * buff)
 
 		if (dspmodeA == DSPCTL_MODE_RX_WFM)
 		{
-			//FLOAT_t a0 = demod_WFMi(packw32(buff [i + DMABUF32RTS0I], buff [i + DMABUF32RTS0Q]));
-			//FLOAT_t a1 = demod_WFMi(packw32(buff [i + DMABUF32RTS1I], buff [i + DMABUF32RTS1Q]));
-			//const FLOAT_t left = (a0 + a1) / 2;// (int_fast32_t) buff [i + DMABUF32RX1I] * rxgate;		// Расширяем 24-х битные числа до 32 бит
-
-			//FLOAT_t a0 = demod_WFM(buff [i + DMABUF32RTS0I], buff [i + DMABUF32RTS0Q]);
-			//FLOAT_t a1 = demod_WFM(buff [i + DMABUF32RTS1I], buff [i + DMABUF32RTS1Q]);
-			//const FLOAT_t left = (a0 + a1) / 2 * nfmoutscale; //(a0 + a1);// (int_fast32_t) buff [i + DMABUF32RX1I] * rxgate;		// Расширяем 24-х битные числа до 32 бит
-
-#if 1
-			FLOAT_t a0 = demod_WFM(buff [i + DMABUF32RXWFM0I], buff [i + DMABUF32RXWFM0Q]);
-			FLOAT_t a1 = demod_WFM(buff [i + DMABUF32RXWFM1I], buff [i + DMABUF32RXWFM1Q]);
-			FLOAT_t a2 = demod_WFM(buff [i + DMABUF32RXWFM2I], buff [i + DMABUF32RXWFM2Q]);
-			FLOAT_t a3 = demod_WFM(buff [i + DMABUF32RXWFM3I], buff [i + DMABUF32RXWFM3Q]);
-			const FLOAT_t left = (a0 + a1 + a2 + a3) / 4 * nfmoutscale; //(a0 + a1);// (int_fast32_t) buff [i + DMABUF32RX1I] * rxgate;		// Расширяем 24-х битные числа до 32 бит
-#else
-			FLOAT_t a0 = demod_WFMi(packw32(buff [i + DMABUF32RXWFM0I], buff [i + DMABUF32RXWFM0Q]));
-			FLOAT_t a1 = demod_WFMi(packw32(buff [i + DMABUF32RXWFM1I], buff [i + DMABUF32RXWFM1Q]));
-			FLOAT_t a2 = demod_WFMi(packw32(buff [i + DMABUF32RXWFM2I], buff [i + DMABUF32RXWFM2Q]));
-			FLOAT_t a3 = demod_WFMi(packw32(buff [i + DMABUF32RXWFM3I], buff [i + DMABUF32RXWFM3Q]));
-			const FLOAT_t left = (a0 + a1 + a2 + a3) / 4;
-#endif
-			/* прием WFM (демодуляция в FPGA, только без WITHUSEDUALWATCH)	*/
-			//const FLOAT_t right = (int_fast32_t) buff [i + DMABUF32RX1Q] * rxgate;		// Расширяем 24-х битные числа до 32 бит
+#if ! WITHSAI2HW
 			BEGIN_STAMP2();
-			const FLOAT_t leftFiltered = filterRxAudio_rxA(left, dspmodeA);
-			//const FLOAT_t leftFiltered = filterRxAudio_rxA(get_lout16(), dspmodeA);	// TODO: debug
+			const FLOAT_t leftFiltered = 0;
 			END_STAMP2();
 			recordsampleSD(leftFiltered, leftFiltered);	// Запись демодулированного сигнала без озвучки клавиш
 			recordsampleUAC(leftFiltered, leftFiltered);	// Запись в UAC демодулированного сигнала без озвучки клавиш
 			savesampleout16stereo(injectsidetone(leftFiltered, sdtn), injectsidetone(leftFiltered, sdtn));
+#endif /* ! WITHSAI2HW */
 		}
 		else if (dspmodeA == DSPCTL_MODE_RX_ISB)
 		{

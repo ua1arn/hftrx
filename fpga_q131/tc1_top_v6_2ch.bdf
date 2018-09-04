@@ -293,7 +293,7 @@ applicable agreement for further details.
 )
 (pin
 	(output)
-	(rect 768 256 944 272)
+	(rect 768 272 944 288)
 	(text "OUTPUT" (rect 1 0 39 10)(font "Arial" (font_size 6)))
 	(text "adc_shdn" (rect 90 0 137 12)(font "Arial" ))
 	(pt 0 8)
@@ -306,11 +306,11 @@ applicable agreement for further details.
 		(line (pt 82 8)(pt 78 12))
 		(line (pt 78 12)(pt 82 8))
 	)
-	(annotation_block (location)(rect 1120 288 1176 304))
+	(annotation_block (location)(rect 1120 304 1176 320))
 )
 (pin
 	(output)
-	(rect 768 208 944 224)
+	(rect 768 224 944 240)
 	(text "OUTPUT" (rect 1 0 39 10)(font "Arial" (font_size 6)))
 	(text "adc_dith" (rect 90 0 131 12)(font "Arial" ))
 	(pt 0 8)
@@ -323,11 +323,11 @@ applicable agreement for further details.
 		(line (pt 82 8)(pt 78 12))
 		(line (pt 78 12)(pt 82 8))
 	)
-	(annotation_block (location)(rect 1120 240 1176 256))
+	(annotation_block (location)(rect 1120 256 1176 272))
 )
 (pin
 	(output)
-	(rect 768 224 944 240)
+	(rect 768 240 944 256)
 	(text "OUTPUT" (rect 1 0 39 10)(font "Arial" (font_size 6)))
 	(text "adc_rand" (rect 90 0 134 12)(font "Arial" ))
 	(pt 0 8)
@@ -340,11 +340,11 @@ applicable agreement for further details.
 		(line (pt 82 8)(pt 78 12))
 		(line (pt 78 12)(pt 82 8))
 	)
-	(annotation_block (location)(rect 1120 256 1168 272))
+	(annotation_block (location)(rect 1120 272 1168 288))
 )
 (pin
 	(output)
-	(rect 768 240 944 256)
+	(rect 768 256 944 272)
 	(text "OUTPUT" (rect 1 0 39 10)(font "Arial" (font_size 6)))
 	(text "adc_pga" (rect 90 0 131 12)(font "Arial" ))
 	(pt 0 8)
@@ -357,7 +357,7 @@ applicable agreement for further details.
 		(line (pt 82 8)(pt 78 12))
 		(line (pt 78 12)(pt 82 8))
 	)
-	(annotation_block (location)(rect 1120 272 1168 288))
+	(annotation_block (location)(rect 1120 288 1168 304))
 )
 (pin
 	(output)
@@ -1161,44 +1161,51 @@ applicable agreement for further details.
 	(port
 		(pt 232 128)
 		(output)
-		(text "i2s_ready" (rect 0 0 56 14)(font "Arial" (font_size 8)))
-		(text "i2s_ready" (rect 155 123 211 137)(font "Arial" (font_size 8)))
+		(text "i2s2_sdo" (rect 0 0 51 14)(font "Arial" (font_size 8)))
+		(text "i2s2_sdo" (rect 160 123 211 137)(font "Arial" (font_size 8)))
 		(line (pt 232 128)(pt 216 128))
 	)
 	(port
 		(pt 232 144)
 		(output)
-		(text "adcdith" (rect 0 0 41 14)(font "Arial" (font_size 8)))
-		(text "adcdith" (rect 170 139 211 153)(font "Arial" (font_size 8)))
+		(text "i2s_ready" (rect 0 0 56 14)(font "Arial" (font_size 8)))
+		(text "i2s_ready" (rect 155 139 211 153)(font "Arial" (font_size 8)))
 		(line (pt 232 144)(pt 216 144))
 	)
 	(port
 		(pt 232 160)
 		(output)
-		(text "adcrand" (rect 0 0 47 14)(font "Arial" (font_size 8)))
-		(text "adcrand" (rect 164 155 211 169)(font "Arial" (font_size 8)))
+		(text "adcdith" (rect 0 0 41 14)(font "Arial" (font_size 8)))
+		(text "adcdith" (rect 170 155 211 169)(font "Arial" (font_size 8)))
 		(line (pt 232 160)(pt 216 160))
 	)
 	(port
 		(pt 232 176)
 		(output)
-		(text "adcpga" (rect 0 0 42 14)(font "Arial" (font_size 8)))
-		(text "adcpga" (rect 169 171 211 185)(font "Arial" (font_size 8)))
+		(text "adcrand" (rect 0 0 47 14)(font "Arial" (font_size 8)))
+		(text "adcrand" (rect 164 171 211 185)(font "Arial" (font_size 8)))
 		(line (pt 232 176)(pt 216 176))
 	)
 	(port
 		(pt 232 192)
 		(output)
-		(text "adc_shdn" (rect 0 0 56 14)(font "Arial" (font_size 8)))
-		(text "adc_shdn" (rect 155 187 211 201)(font "Arial" (font_size 8)))
+		(text "adcpga" (rect 0 0 42 14)(font "Arial" (font_size 8)))
+		(text "adcpga" (rect 169 187 211 201)(font "Arial" (font_size 8)))
 		(line (pt 232 192)(pt 216 192))
 	)
 	(port
 		(pt 232 208)
 		(output)
-		(text "xvrtron" (rect 0 0 41 14)(font "Arial" (font_size 8)))
-		(text "xvrtron" (rect 170 203 211 217)(font "Arial" (font_size 8)))
+		(text "adc_shdn" (rect 0 0 56 14)(font "Arial" (font_size 8)))
+		(text "adc_shdn" (rect 155 203 211 217)(font "Arial" (font_size 8)))
 		(line (pt 232 208)(pt 216 208))
+	)
+	(port
+		(pt 232 224)
+		(output)
+		(text "xvrtron" (rect 0 0 41 14)(font "Arial" (font_size 8)))
+		(text "xvrtron" (rect 170 219 211 233)(font "Arial" (font_size 8)))
+		(line (pt 232 224)(pt 216 224))
 	)
 	(drawing
 		(rectangle (rect 16 16 216 272))
@@ -1233,46 +1240,6 @@ applicable agreement for further details.
 	(pt 776 384)
 )
 (connector
-	(pt 640 216)
-	(pt 768 216)
-)
-(connector
-	(pt 640 232)
-	(pt 768 232)
-)
-(connector
-	(pt 640 248)
-	(pt 768 248)
-)
-(connector
-	(pt 712 384)
-	(pt 688 384)
-)
-(connector
-	(pt 672 416)
-	(pt 672 264)
-)
-(connector
-	(pt 800 416)
-	(pt 672 416)
-)
-(connector
-	(pt 800 448)
-	(pt 656 448)
-)
-(connector
-	(pt 656 120)
-	(pt 656 448)
-)
-(connector
-	(pt 640 168)
-	(pt 688 168)
-)
-(connector
-	(pt 688 168)
-	(pt 688 384)
-)
-(connector
 	(pt 760 384)
 	(pt 776 384)
 )
@@ -1281,29 +1248,8 @@ applicable agreement for further details.
 	(pt 800 384)
 )
 (connector
-	(pt 640 120)
-	(pt 656 120)
-)
-(connector
-	(pt 656 120)
-	(pt 728 120)
-)
-(connector
-	(pt 640 264)
-	(pt 672 264)
-)
-(connector
-	(pt 672 264)
-	(pt 768 264)
-)
-(connector
 	(pt 752 480)
 	(pt 800 480)
-)
-(connector
-	(text "i2s_ready" (rect 714 184 762 196)(font "Arial" ))
-	(pt 640 200)
-	(pt 744 200)
 )
 (connector
 	(pt 640 152)
@@ -1527,12 +1473,73 @@ applicable agreement for further details.
 	(pt 352 104)
 	(pt 352 120)
 )
+(connector
+	(pt 712 384)
+	(pt 688 384)
+)
+(connector
+	(pt 672 416)
+	(pt 672 280)
+)
+(connector
+	(pt 800 416)
+	(pt 672 416)
+)
+(connector
+	(pt 800 448)
+	(pt 656 448)
+)
+(connector
+	(pt 656 120)
+	(pt 656 448)
+)
+(connector
+	(pt 640 168)
+	(pt 688 168)
+)
+(connector
+	(pt 688 168)
+	(pt 688 384)
+)
+(connector
+	(pt 640 120)
+	(pt 656 120)
+)
+(connector
+	(pt 656 120)
+	(pt 728 120)
+)
+(connector
+	(text "i2s_ready" (rect 714 200 762 212)(font "Arial" ))
+	(pt 640 216)
+	(pt 744 216)
+)
+(connector
+	(pt 640 232)
+	(pt 768 232)
+)
+(connector
+	(pt 640 248)
+	(pt 768 248)
+)
+(connector
+	(pt 640 264)
+	(pt 768 264)
+)
+(connector
+	(pt 640 280)
+	(pt 672 280)
+)
+(connector
+	(pt 672 280)
+	(pt 768 280)
+)
 (junction (pt 776 384))
 (junction (pt 656 120))
-(junction (pt 672 264))
 (junction (pt 360 656))
 (junction (pt 320 880))
 (junction (pt 352 24))
 (junction (pt 320 528))
 (junction (pt 304 656))
 (junction (pt 352 104))
+(junction (pt 672 280))

@@ -13,6 +13,9 @@
 #ifndef ARM_STM32F4XX_TQFP144_CTLSTYLE_RAVEN_V5_H_INCLUDED
 #define ARM_STM32F4XX_TQFP144_CTLSTYLE_RAVEN_V5_H_INCLUDED 1
 
+	#if ! defined(STM32H743xx)
+		//#error Wrong CPU selected. STM32H743xx expected
+	#endif /* ! defined(STM32F767xx) */
 	#if ! defined(STM32F767xx)
 		//#error Wrong CPU selected. STM32F767xx expected
 	#endif /* ! defined(STM32F767xx) */
@@ -30,79 +33,46 @@
 
 	#if 1
 		// при наличии внешнего кварцевого резонатора
-		// ua1asb, ua1cei
 		#define WITHCPUXTAL 12000000uL	/* На процессоре установлен кварц 12.000 МГц */
 		#define REF1_DIV 6			// ref freq = 2.0000 MHz
 
 		#if defined(STM32F767xx)
 			// normal operation frequency
 			#define REF1_MUL 216		// 2*216.000 MHz (192 <= PLLN <= 432)
-			#define HARDWARE_FLASH_LATENCY FLASH_ACR_LATENCY_6WS	// overvlocking
+			#define HARDWARE_FLASH_LATENCY FLASH_ACR_LATENCY_6WS
 		#elif CPUSTYLE_STM32F7XX
 			// normal operation frequency
 			#define REF1_MUL 216		// 2*216.000 MHz (192 <= PLLN <= 432)
-			#define HARDWARE_FLASH_LATENCY FLASH_ACR_LATENCY_7WS	// overvlocking
-		#elif CPUSTYLE_STM32F4XX
+			#define HARDWARE_FLASH_LATENCY FLASH_ACR_LATENCY_7WS
+		#elif CPUSTYLE_STM32H7XX
 			// normal operation frequency
-			#define REF1_MUL 192		// 2*192.000 MHz (192 <= PLLN <= 432)
-			#define HARDWARE_FLASH_LATENCY FLASH_ACR_LATENCY_5WS	// Задержка для работы с памятью 5 WS for 168 MHz at 3.3 volt
-		#endif
-
-	#elif 0
-		// при наличии внешнего кварцевого резонатора
-		// For AUGUST
-		#define WITHCPUXTAL 16000000uL	/* На процессоре установлен кварц 16.000 МГц */
-		#define REF1_DIV 8			// ref freq = 2.0000 MHz
-
-		#if defined(STM32F767xx)
-			// normal operation frequency
-			#define REF1_MUL 216		// 2*216.000 MHz (192 <= PLLN <= 432)
-			#define HARDWARE_FLASH_LATENCY FLASH_ACR_LATENCY_6WS	// overvlocking
-		#elif CPUSTYLE_STM32F7XX
-			// normal operation frequency
-			#define REF1_MUL 216		// 2*216.000 MHz (192 <= PLLN <= 432)
-			#define HARDWARE_FLASH_LATENCY FLASH_ACR_LATENCY_7WS	// overvlocking
-		#elif CPUSTYLE_STM32F4XX
-			// normal operation frequency
-			#define REF1_MUL 192		// 2*192.000 MHz (192 <= PLLN <= 432)
-			#define HARDWARE_FLASH_LATENCY FLASH_ACR_LATENCY_5WS	// Задержка для работы с памятью 5 WS for 168 MHz at 3.3 volt
-		#endif
-
-	#elif 0
-		// при наличии внешнего кварцевого резонатора
-		#define WITHCPUXTAL 18432000uL	/* На процессоре установлен кварц 18.432 МГц */
-		#define REF1_DIV 18			// ref freq = 1.024 MHz
-
-		#if CPUSTYLE_STM32F7XX
-			// normal operation frequency
-			#define REF1_MUL 421		// 2*xxx.000 MHz (192 <= PLLN <= 432)
-			#define HARDWARE_FLASH_LATENCY FLASH_ACR_LATENCY_7WS	// overvlocking
-		#elif CPUSTYLE_STM32F4XX
-			// normal operation frequency
-			#define REF1_MUL 351		// 2*179.712 MHz (192 <= PLLN <= 432)
-			#define HARDWARE_FLASH_LATENCY FLASH_ACR_LATENCY_5WS	// Задержка для работы с памятью 5 WS for 168 MHz at 3.3 volt
+			#define REF1_MUL 384		// 2*384.000 MHz (192 <= PLLN <= 432)
+			#define HARDWARE_FLASH_LATENCY FLASH_ACR_LATENCY_2WS
 		#endif
 
 	#else
-		// тактирование от внутреннего RC генератора 16 МГц
-		#define REF1_DIV 8			// ref freq = 2.000 MHz
 
 		#if defined(STM32F767xx)
+			// тактирование от внутреннего RC генератора 16 МГц
+			#define REF1_DIV 8			// ref freq = 2.000 MHz
 			// normal operation frequency
 			#define REF1_MUL 216		// 2*216.000 MHz (192 <= PLLN <= 432)
-			#define HARDWARE_FLASH_LATENCY FLASH_ACR_LATENCY_6WS	// overvlocking
+			#define HARDWARE_FLASH_LATENCY FLASH_ACR_LATENCY_6WS
 		#elif CPUSTYLE_STM32F7XX
+			// тактирование от внутреннего RC генератора 16 МГц
+			#define REF1_DIV 8			// ref freq = 2.000 MHz
 			// normal operation frequency
 			#define REF1_MUL 216		// 2*216.000 MHz (192 <= PLLN <= 432)
-			#define HARDWARE_FLASH_LATENCY FLASH_ACR_LATENCY_7WS	// overvlocking
-		#elif CPUSTYLE_STM32F4XX
+			#define HARDWARE_FLASH_LATENCY FLASH_ACR_LATENCY_7WS
+		#elif CPUSTYLE_STM32H7XX
+			// тактирование от внутреннего RC генератора 64 МГц
+			#define REF1_DIV 32			// ref freq = 2.000 MHz
 			// normal operation frequency
-			#define REF1_MUL 192		// 2*192.000 MHz (192 <= PLLN <= 432)
-			#define HARDWARE_FLASH_LATENCY FLASH_ACR_LATENCY_5WS	// Задержка для работы с памятью 5 WS for 168 MHz at 3.3 volt
+			#define REF1_MUL 384			// 2*384.000 MHz (192 <= PLLN <= 432)
+			#define HARDWARE_FLASH_LATENCY FLASH_ACR_LATENCY_2WS
 		#endif
 
 	#endif
-
 
 	#if WITHI2SCLOCKFROMPIN
 		#define FPGADECIMATION 2560
@@ -262,9 +232,11 @@
 	//#define CODEC_TYPE_CS4272_STANDALONE	1
 
 	#define WITHSAI1_FRAMEBITS 256	// Полный размер фрейма
-	//#define WITHSAI2_FRAMEBITS 64	// Полный размер фрейма для двух квадратур по 24 бита - канал спектроанализатора
 	#define WITHSAI1_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
-	//#define WITHSAI2_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
+
+	#define WITHSAI2_FRAMEBITS 256	// Полный размер фрейма для двух квадратур по 24 бита - канал спектроанализатора
+	#define WITHSAI2_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
+
 	#define WITHI2S_FORMATI2S_PHILIPS 1	// Возможно использование при передаче данных в кодек, подключенный к наушникам и микрофону
 	#define WITHI2SHWRXSLAVE	1		// Приёмный канал I2S (микрофон) используюся в SLAVE MODE
 	#define WITHI2SHWTXSLAVE	1		// Передающий канал I2S (наушники) используюся в SLAVE MODE

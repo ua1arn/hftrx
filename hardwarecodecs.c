@@ -1441,13 +1441,13 @@ void RAMFUNC_NONILINE DMA2_Stream7_IRQHandler(void)
 #else /* WITHSUSBSPKONLY */
 		if (b != 0)
 		{
-			processing_dmabuffer32rts(DMA2_Stream7->M0AR);
-			DMA2_Stream7->M0AR = dma_invalidate192rts(allocate_dmabuffer192rts());
+			processing_dmabuffer32wfm(DMA2_Stream7->M0AR);
+			DMA2_Stream7->M0AR = dma_invalidate32rx(allocate_dmabuffer32rx());
 		}
 		else
 		{
-			processing_dmabuffer32rts(DMA2_Stream7->M1AR);
-			DMA2_Stream7->M1AR = dma_invalidate192rts(allocate_dmabuffer192rts());
+			processing_dmabuffer32wfm(DMA2_Stream7->M1AR);
+			DMA2_Stream7->M1AR = dma_invalidate32rx(allocate_dmabuffer32rx());
 		}
 #endif /* WITHSUSBSPKONLY */
 		DMA2->HIFCR = DMA_HIFCR_CTCIF7;	// Clear TC interrupt flag соответствующий stream
@@ -1503,10 +1503,18 @@ void DMA2_Stream4_IRQHandler(void)
 // Use arm_hardware_flush
 static void DMA_SAI2_A_TX_initializeXXX(void)
 {
-	const uint_fast8_t ch = 3;
 
 	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;//включил DMA2 
 	__DSB();
+
+	#if CPUSTYLE_STM32H7XX
+		// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
+		// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
+		enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
+		DMAMUX1_Channel12->CCR = 89 * DMAMUX_CxCR_DMAREQ_ID_0;	// SAI2_A
+	#else /* CPUSTYLE_STM32H7XX */
+		const uint_fast8_t ch = 3;
+	#endif /* CPUSTYLE_STM32H7XX */
 
 	DMA2_Stream4->PAR = (uint32_t) & SAI2_Block_A->DR;
 	DMA2_Stream4->M0AR = dma_flush32tx(allocate_dmabuffer32tx());
@@ -1541,10 +1549,17 @@ static void DMA_SAI2_A_TX_initializeXXX(void)
 // Use arm_hardware_flush
 static void DMA_SAI2_A_TX_initializeAUDIO48(void)
 {
-	const uint_fast8_t ch = 3;
-
 	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;//включил DMA2 
 	__DSB();
+
+	#if CPUSTYLE_STM32H7XX
+		// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
+		// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
+		enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
+		DMAMUX1_Channel12->CCR = 89 * DMAMUX_CxCR_DMAREQ_ID_0;	// SAI2_A
+	#else /* CPUSTYLE_STM32H7XX */
+		const uint_fast8_t ch = 3;
+	#endif /* CPUSTYLE_STM32H7XX */
 
 	DMA2_Stream4->PAR = (uint32_t) & SAI2_Block_A->DR;
 	DMA2_Stream4->M0AR = dma_flush32tx(allocate_dmabuffer32tx());
@@ -1580,12 +1595,20 @@ static void DMA_SAI2_A_TX_initializeAUDIO48(void)
 // Use arm_hardware_invalidate
 static void DMA_SAI2_B_RX_initializeRTS96(void)
 {
-	/* DMA2	Stream7	Channel 0 */ 
-	const uint_fast8_t ch = 0;
 	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;//включил DMA2 
 	__DSB();
 
-	DMA2_Stream7->PAR = (uint32_t) & SAI2_Block_B->DR;
+	#if CPUSTYLE_STM32H7XX
+		// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
+		// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
+		enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
+		DMAMUX1_Channel15->CCR = 90 * DMAMUX_CxCR_DMAREQ_ID_0;	// SAI2_B
+	#else /* CPUSTYLE_STM32H7XX */
+		/* DMA2	Stream7	Channel 0 */ 
+		const uint_fast8_t ch = 0;
+	#endif /* CPUSTYLE_STM32H7XX */
+
+	DMA2_Stream7->PAR = (uintptr_t) & SAI2_Block_B->DR;
 	DMA2_Stream7->M0AR = dma_invalidate192rts(allocate_dmabuffer192rts());
 	DMA2_Stream7->M1AR = dma_invalidate192rts(allocate_dmabuffer192rts());
 	DMA2_Stream7->NDTR = (DMA2_Stream7->NDTR & ~ DMA_SxNDT) |
@@ -1619,12 +1642,20 @@ static void DMA_SAI2_B_RX_initializeRTS96(void)
 // Use arm_hardware_invalidate
 static void DMA_SAI2_B_RX_initializeAUDIO48(void)
 {
-	/* DMA2	Stream7	Channel 0 */ 
-	const uint_fast8_t ch = 0;
 	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;//включил DMA2 
 	__DSB();
 
-	DMA2_Stream7->PAR = (uint32_t) & SAI2_Block_B->DR;
+	#if CPUSTYLE_STM32H7XX
+		// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
+		// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
+		enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
+		DMAMUX1_Channel15->CCR = 90 * DMAMUX_CxCR_DMAREQ_ID_0;	// SAI2_B
+	#else /* CPUSTYLE_STM32H7XX */
+		/* DMA2	Stream7	Channel 0 */ 
+		const uint_fast8_t ch = 0;
+	#endif /* CPUSTYLE_STM32H7XX */
+
+	DMA2_Stream7->PAR = (uintptr_t) & SAI2_Block_B->DR;
 	DMA2_Stream7->M0AR = dma_invalidate32rx(allocate_dmabuffer32rx());
 	DMA2_Stream7->M1AR = dma_invalidate32rx(allocate_dmabuffer32rx());
 	DMA2_Stream7->NDTR = (DMA2_Stream7->NDTR & ~ DMA_SxNDT) |
@@ -1681,9 +1712,9 @@ static void hardware_sai2_slave_fullduplex_initialize(void)
 		(0 * SAI_xCR1_MONO) |	// stereo MODE - with IQ pairs - see DMABUFFSIZE32
 		(1 * SAI_xCR1_DMAEN) |	// 1: DMA enable 
 		(1 * SAI_xCR1_CKSTR) |	// 0: данные на выходе меняются по нарастающему фронту, 1: по спадающему
-		(2 * SAI_xCR1_DS_0) |	// 010: 8 bits
+		(7 * SAI_xCR1_DS_0) |	// 6: data size - 24 bit, 7: 32 bit, 4: 16 bit
 		(0 * SAI_xCR1_PRTCFG_0) |	// 0: free protocol
-		(1 * SAI_xCR1_NODIV) |	// 1: no MCKDIV value
+		//(1 * SAI_xCR1_NODIV) |	// 1: no MCKDIV value
 		0;
 
 	// SAI_xCR1_SYNCEN values:
@@ -1766,8 +1797,9 @@ static void hardware_sai2_slave_fullduplex_initialize(void)
 	debug_printf_P(PSTR("hardware_sai2_slave_fullduplex_initialize done\n"));
 }
 
+#if WITHSUSBSPKONLY
 
-static void hardware_sai2_master_fullduplex_initialize(void)		/* инициализация SAI1 на STM32F4xx */
+static void hardware_sai2_master_fullduplex_initialize(void)		/* инициализация SAI2 на STM32F4xx */
 {
 	hardware_sai1_sai2_clock_selection();
 
@@ -1881,6 +1913,8 @@ static void hardware_sai2_master_fullduplex_initialize(void)		/* инициализация S
 	SAI2HW_INITIALIZE();
 }
 
+#endif /* WITHSUSBSPKONLY */
+
 static void hardware_sai2_enable(void)		/* разрешение работы SAI2 на STM32F4xx */
 {
 	// при dual watch используется SAI2, но
@@ -1896,6 +1930,55 @@ static void hardware_sai2_enable(void)		/* разрешение работы SAI2 на STM32F4xx *
 	SAI2_Block_A->CR1 |= SAI_xCR1_SAIEN;
 }
 
+/* DMA для прёма по SAI_2_B  - инициализация */
+//	RX	SAI2_B	DMA2	Stream7	Channel 0	
+// Use arm_hardware_invalidate
+static void DMA_SAI2_B_RX_initializeWFM(void)
+{
+	debug_printf_P(PSTR("DMA_SAI2_B_RX_initializeWFM start.\n"));
+
+	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;//включил DMA2 
+	__DSB();
+
+	#if CPUSTYLE_STM32H7XX
+		// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
+		// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
+		enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
+		DMAMUX1_Channel15->CCR = 90 * DMAMUX_CxCR_DMAREQ_ID_0;	// SAI2_B
+	#else /* CPUSTYLE_STM32H7XX */
+		/* DMA2	Stream7	Channel 0 */ 
+		const uint_fast8_t ch = 0;
+	#endif /* CPUSTYLE_STM32H7XX */
+
+	DMA2_Stream7->PAR = (uintptr_t) & SAI2_Block_B->DR;
+	DMA2_Stream7->M0AR = dma_invalidate32rx(allocate_dmabuffer32rx());
+	DMA2_Stream7->M1AR = dma_invalidate32rx(allocate_dmabuffer32rx());
+	DMA2_Stream7->NDTR = (DMA2_Stream7->NDTR & ~ DMA_SxNDT) |
+		(DMABUFFSIZE32RX * DMA_SxNDT_0);
+
+	DMA2_Stream7->FCR &= ~ DMA_SxFCR_DMDIS;	// use direct mode
+	DMA2_Stream7->CR =
+		ch * DMA_SxCR_CHSEL_0 | // канал
+		0 * DMA_SxCR_MBURST_0 |	// 0: single transfer
+		0 * DMA_SxCR_PBURST_0 |	// 0: single transfer
+		0 * DMA_SxCR_DIR_0 |	// 00: Peripheral-to-memory
+		1 * DMA_SxCR_MINC |		//инкремент памяти
+		2 * DMA_SxCR_MSIZE_0 | //длина в памяти - 32 bit
+		2 * DMA_SxCR_PSIZE_0 | //длина в DR - 32 bit
+		2 * DMA_SxCR_PL_0 |		// Priority level - High
+		0 * DMA_SxCR_CT |	// M0AR selected
+		1 * DMA_SxCR_DBM |	 // double buffer mode seelcted
+		0;
+
+	DMA2->HIFCR = (DMA_HIFCR_CTCIF7 /*| DMA_HIFCR_CTEIF7 */);	// Clear TC interrupt flag соответствующий stream
+	DMA2_Stream7->CR |= (DMA_SxCR_TCIE /* | DMA_SxCR_TEIE */);	// прерывания от DMA по TC и TE
+
+	NVIC_SetPriority(DMA2_Stream7_IRQn, ARM_REALTIME_PRIORITY);
+	NVIC_EnableIRQ(DMA2_Stream7_IRQn);	// DMA2_Stream7_IRQHandler() enable
+
+	DMA2_Stream7->CR |= DMA_SxCR_EN;
+	debug_printf_P(PSTR("DMA_SAI2_B_RX_initializeWFM done.\n"));
+}
 
 #if WITHSUSBSPKONLY
 static const codechw_t audiocodechw =
@@ -1908,6 +1991,19 @@ static const codechw_t audiocodechw =
 	hardware_dummy_enable,
 	"sai2-audiocodechw"
 };
+#else
+	// other CPUs
+static const codechw_t fpgaspectrumhwwfm =
+{
+	hardware_sai2_slave_fullduplex_initialize,	// added...
+	hardware_dummy_initialize,
+	DMA_SAI2_B_RX_initializeWFM,
+	hardware_dummy_initialize,
+	hardware_sai2_enable,
+	hardware_dummy_enable,
+	"sai2-fpga spectrum for WFM"
+};
+
 #endif /* WITHSUSBSPKONLY */
 
 
@@ -2664,15 +2760,15 @@ static const codechw_t fpgaspectrumhw =
 
 #else
 	// other CPUs
-static const codechw_t fpgaspectrumhw =
+static const codechw_t fpgaspectrumhwwfm =
 {
 	hardware_sai2_slave_fullduplex_initialize,	// added...
 	hardware_dummy_initialize,
-	DMA_SAI2_B_RX_initialize,
+	DMA_SAI2_B_RX_initializeWFM,
 	hardware_dummy_initialize,
 	hardware_sai2_enable,
 	hardware_dummy_enable,
-	"sai2-fpga spectrum"
+	"sai2-fpga spectrum for WFM"
 };
 
 #endif /* CPUSTYLE_STM32F */
@@ -2761,9 +2857,9 @@ void hardware_fpgaspectrum_initialize(void)
 // Интерфейс к источнику данных о спектре
 void hardware_fpgaspectrum_enable(void)
 {
-	fpgaspectrumhw.initializedma_rx();
+	fpgaspectrumhwwfm.initializedma_rx();
 	//fpgaspectrumhw.initializedma_tx();
-	fpgaspectrumhw.enable_rx();
+	fpgaspectrumhwwfm.enable_rx();
 	//fpgaspectrumhw.enable_tx();
 }
 
@@ -2772,9 +2868,9 @@ void hardware_fpgaspectrum_enable(void)
 // Если есть WITHSAICLOCKFROMI2S	- это инициализируется после I2S
 void hardware_fpgaspectrum_initialize(void)
 {
-	debug_printf_P(PSTR("hardware_fpgaspectrum_initialize start: %s\n"), audiocodechw.label);
+	debug_printf_P(PSTR("hardware_fpgaspectrum_initialize start: %s\n"), fpgaspectrumhwwfm.label);
 
-	fpgaspectrumhw.initialize_rx();
+	fpgaspectrumhwwfm.initialize_rx();
 	//fpgaspectrumhw.initialize_tx();
 
 	debug_printf_P(PSTR("hardware_fpgaspectrum_initialize done\n"));

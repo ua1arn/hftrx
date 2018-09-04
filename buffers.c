@@ -202,7 +202,7 @@ static LIST_ENTRY msgsfree8;		// Свободные буферы
 static LIST_ENTRY msgsready8;		// Заполненные - готовые к обработке
 
 #if WITHBUFFERSDEBUG
-	static volatile unsigned n1, n2, n3, n4, n5, n6;
+	static volatile unsigned n1, n1wfm, n2, n3, n4, n5, n6;
 	static volatile unsigned e1, e2, e3, e4, e5, e6;
 	static volatile unsigned nbadd, nbdel, nbzero;
 
@@ -214,6 +214,7 @@ static LIST_ENTRY msgsready8;		// Заполненные - готовые к обработке
 	static volatile unsigned debugcount_rtsadc;
 	static volatile unsigned debugcount_uacin;
 	static volatile unsigned debugcount_rx32adc;
+	static volatile unsigned debugcount_rx32wfm;
 	static volatile unsigned debugcount_tx32dac;
 	
 #endif /* WITHBUFFERSDEBUG */
@@ -274,7 +275,7 @@ void buffers_diagnostics(void)
 #endif
 
 #if 1 && WITHDEBUG && WITHINTEGRATEDDSP && WITHBUFFERSDEBUG
-	debug_printf_P(PSTR("n1=%u, n2=%u, n3=%u, n4=%u, n5=%u, n6=%u\n"), n1, n2, n3, n4, n5, n6);
+	debug_printf_P(PSTR("n1=%u, n1wfm=%u, n2=%u, n3=%u, n4=%u, n5=%u, n6=%u\n"), n1, n1wfm, n2, n3, n4, n5, n6);
 	debug_printf_P(PSTR("e1=%u, e2=%u, e3=%u, e4=%u, e5=%u, e6=%u\n"), e1, e2, e3, e4, e5, e6);
 
 	{
@@ -284,16 +285,18 @@ void buffers_diagnostics(void)
 		const unsigned phonesdac = getresetval(& debugcount_phonesdac);
 		const unsigned rtsadc = getresetval(& debugcount_rtsadc);
 		const unsigned rx32adc = getresetval(& debugcount_rx32adc);
+		const unsigned rx32wfm = getresetval(& debugcount_rx32wfm);
 		const unsigned tx32dac = getresetval(& debugcount_tx32dac);
 		const unsigned uacin = getresetval(& debugcount_uacin);
 
-		debug_printf_P(PSTR("uacout=%u, uacin=%u, mikeadc=%u, phonesdac=%u, rtsadc=%u rx32adc=%u tx32dac=%u\n"), 
+		debug_printf_P(PSTR("uacout=%u, uacin=%u, mikeadc=%u, phonesdac=%u, rtsadc=%u rx32adc=%u rx32wfm=%u tx32dac=%u\n"), 
 			uacout * 10000 / ms10, 
 			uacin * 10000 / ms10, 
 			mikeadc * 10000 / ms10, 
 			phonesdac * 10000 / ms10, 
 			rtsadc * 10000 / ms10, 
 			rx32adc * 10000 / ms10, 
+			rx32wfm * 10000 / ms10, 
 			tx32dac * 10000 / ms10
 			);
 	}
@@ -441,7 +444,7 @@ void buffers_initialize(void)
 		InsertHeadList2(& voicesfree32tx, & p->item);
 	}
 
-	static voice32rx_t voicesarray32rx [2];
+	static voice32rx_t voicesarray32rx [6];	// без WFM надо 2
 
 	InitializeListHead2(& voicesfree32rx);	// Незаполненные
 	for (i = 0; i < (sizeof voicesarray32rx / sizeof voicesarray32rx [0]); ++ i)
@@ -1428,6 +1431,28 @@ void RAMFUNC processing_dmabuffer32rx(uintptr_t addr)
 		rx32adc -= CNT16;
 	}
 #endif /* WITHUSBUAC */
+}
+
+// Этой функцией пользуются обработчики прерываний DMA
+// обработать буфер после оцифровки IF ADC (MAIN RX/SUB RX)
+// Вызывается на ARM_REALTIME_PRIORITY уровне.
+void RAMFUNC processing_dmabuffer32wfm(uintptr_t addr)
+{
+	//enum { CNT16 = DMABUFFSIZE16 / DMABUFSTEP16 };
+	enum { CNT32RX = DMABUFFSIZE32RX / DMABUFSTEP32RX };
+	ASSERT(addr != 0);
+	voice32rx_t * const p = CONTAINING_RECORD(addr, voice32rx_t, buff);
+#if WITHBUFFERSDEBUG
+	++ n1wfm;
+	// подсчёт скорости в сэмплах за секунду
+	debugcount_rx32wfm += CNT32RX;	// в буфере пары сэмплов по четыре байта
+#endif /* WITHBUFFERSDEBUG */
+	dsp_extbuffer32wfm(p->buff);
+
+	LOCK(& locklist32);
+	InsertHeadList2(& voicesfree32rx, & p->item);
+	UNLOCK(& locklist32);
+
 }
 
 #if WITHRTS192
