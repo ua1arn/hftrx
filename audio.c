@@ -5112,8 +5112,8 @@ static uint_fast32_t packw32(uint_fast32_t i, uint_fast32_t q)
 
 static FLOAT_t
 demod_WFM(
-	int_fast32_t i,
-	int_fast32_t q
+	int32_t i,
+	int32_t q
 	)
 {
 	if (i == 0 && q == 0)
@@ -5426,15 +5426,26 @@ void RAMFUNC dsp_extbuffer32rx(const uint32_t * buff)
 		{
 			//FLOAT_t a0 = demod_WFMi(packw32(buff [i + DMABUF32RTS0I], buff [i + DMABUF32RTS0Q]));
 			//FLOAT_t a1 = demod_WFMi(packw32(buff [i + DMABUF32RTS1I], buff [i + DMABUF32RTS1Q]));
+			//const FLOAT_t left = (a0 + a1) / 2;// (int_fast32_t) buff [i + DMABUF32RX1I] * rxgate;		// Расширяем 24-х битные числа до 32 бит
 
+			//FLOAT_t a0 = demod_WFM(buff [i + DMABUF32RTS0I], buff [i + DMABUF32RTS0Q]);
+			//FLOAT_t a1 = demod_WFM(buff [i + DMABUF32RTS1I], buff [i + DMABUF32RTS1Q]);
+			//const FLOAT_t left = (a0 + a1) / 2 * nfmoutscale; //(a0 + a1);// (int_fast32_t) buff [i + DMABUF32RX1I] * rxgate;		// Расширяем 24-х битные числа до 32 бит
+
+#if 1
 			FLOAT_t a0 = demod_WFM(buff [i + DMABUF32RXWFM0I], buff [i + DMABUF32RXWFM0Q]);
 			FLOAT_t a1 = demod_WFM(buff [i + DMABUF32RXWFM1I], buff [i + DMABUF32RXWFM1Q]);
 			FLOAT_t a2 = demod_WFM(buff [i + DMABUF32RXWFM2I], buff [i + DMABUF32RXWFM2Q]);
 			FLOAT_t a3 = demod_WFM(buff [i + DMABUF32RXWFM3I], buff [i + DMABUF32RXWFM3Q]);
-
+			const FLOAT_t left = (a0 + a1 + a2 + a3) / 4 * nfmoutscale; //(a0 + a1);// (int_fast32_t) buff [i + DMABUF32RX1I] * rxgate;		// Расширяем 24-х битные числа до 32 бит
+#else
+			FLOAT_t a0 = demod_WFMi(packw32(buff [i + DMABUF32RXWFM0I], buff [i + DMABUF32RXWFM0Q]));
+			FLOAT_t a1 = demod_WFMi(packw32(buff [i + DMABUF32RXWFM1I], buff [i + DMABUF32RXWFM1Q]));
+			FLOAT_t a2 = demod_WFMi(packw32(buff [i + DMABUF32RXWFM2I], buff [i + DMABUF32RXWFM2Q]));
+			FLOAT_t a3 = demod_WFMi(packw32(buff [i + DMABUF32RXWFM3I], buff [i + DMABUF32RXWFM3Q]));
+			const FLOAT_t left = (a0 + a1 + a2 + a3) / 4;
+#endif
 			/* прием WFM (демодуляция в FPGA, только без WITHUSEDUALWATCH)	*/
-			//const FLOAT_t left = a0; //(a0 + a1 + a2 + a3) / 4;// (int_fast32_t) buff [i + DMABUF32RX1I] * rxgate;		// Расширяем 24-х битные числа до 32 бит
-			const FLOAT_t left = a0 * nfmoutscale; //(a0 + a1);// (int_fast32_t) buff [i + DMABUF32RX1I] * rxgate;		// Расширяем 24-х битные числа до 32 бит
 			//const FLOAT_t right = (int_fast32_t) buff [i + DMABUF32RX1Q] * rxgate;		// Расширяем 24-х битные числа до 32 бит
 			BEGIN_STAMP2();
 			const FLOAT_t leftFiltered = filterRxAudio_rxA(left, dspmodeA);

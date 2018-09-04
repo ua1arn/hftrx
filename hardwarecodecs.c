@@ -134,9 +134,9 @@ enum
 	#if WITHSAI2_FRAMEBITS == 256
 		// FPGA версия
 		#if WITHUSEDUALWATCH
-			SLOTEN_RX_SAI2 = 0x0033,
+			SLOTEN_RX_SAI2 = 0x00FF,
 		#else /* WITHUSEDUALWATCH */
-			SLOTEN_RX_SAI2 = 0x0011,
+			SLOTEN_RX_SAI2 = 0x00FF,
 		#endif /* WITHUSEDUALWATCH */
 
 		// На передачу во всех версиях FPGA используется один и тот же блок
@@ -2664,6 +2664,16 @@ static const codechw_t fpgaspectrumhw =
 
 #else
 	// other CPUs
+static const codechw_t fpgaspectrumhw =
+{
+	hardware_sai2_slave_fullduplex_initialize,	// added...
+	hardware_dummy_initialize,
+	DMA_SAI2_B_RX_initialize,
+	hardware_dummy_initialize,
+	hardware_sai2_enable,
+	hardware_dummy_enable,
+	"sai2-fpga spectrum"
+};
 
 #endif /* CPUSTYLE_STM32F */
 
