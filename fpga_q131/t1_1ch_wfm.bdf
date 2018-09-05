@@ -360,7 +360,7 @@ applicable agreement for further details.
 )
 (pin
 	(output)
-	(rect -360 -96 -184 -80)
+	(rect -592 -96 -416 -80)
 	(text "OUTPUT" (rect 1 0 39 10)(font "Arial" (font_size 6)))
 	(text "i2s_wfmout" (rect 90 0 146 12)(font "Arial" ))
 	(pt 0 8)
@@ -3200,7 +3200,7 @@ applicable agreement for further details.
 	(annotation_block (parameter)(rect -608 184 -410 254))
 )
 (symbol
-	(rect -448 -104 -400 -72)
+	(rect -680 -104 -632 -72)
 	(text "ALT_OUTBUF_TRI" (rect 1 0 81 10)(font "Arial" (font_size 6)))
 	(text "inst32" (rect 3 21 32 33)(font "Arial" ))
 	(port
@@ -3228,62 +3228,6 @@ applicable agreement for further details.
 		(line (pt 14 25)(pt 14 7))
 		(line (pt 14 25)(pt 32 16))
 		(line (pt 14 7)(pt 32 16))
-	)
-)
-(symbol
-	(rect -664 -672 -584 -576)
-	(text "lpm_mux1sync" (rect 2 0 105 16)(font "Arial" (font_size 10)))
-	(text "inst" (rect 8 80 25 92)(font "Arial" ))
-	(port
-		(pt 0 40)
-		(input)
-		(text "data1" (rect 0 0 31 14)(font "Arial" (font_size 8)))
-		(text "data1" (rect 4 26 35 40)(font "Arial" (font_size 8)))
-		(line (pt 0 40)(pt 32 40))
-	)
-	(port
-		(pt 0 56)
-		(input)
-		(text "data0" (rect 0 0 31 14)(font "Arial" (font_size 8)))
-		(text "data0" (rect 4 42 35 56)(font "Arial" (font_size 8)))
-		(line (pt 0 56)(pt 32 56))
-	)
-	(port
-		(pt 0 72)
-		(input)
-		(text "clock" (rect 0 0 29 14)(font "Arial" (font_size 8)))
-		(text "clock" (rect 4 58 33 72)(font "Arial" (font_size 8)))
-		(line (pt 0 72)(pt 32 72))
-	)
-	(port
-		(pt 40 96)
-		(input)
-		(text "sel" (rect 0 0 14 16)(font "Arial" (font_size 8))(vertical))
-		(text "sel" (rect 33 67 47 83)(font "Arial" (font_size 8))(vertical))
-		(line (pt 40 96)(pt 40 84))
-	)
-	(port
-		(pt 80 56)
-		(output)
-		(text "result" (rect 0 0 31 14)(font "Arial" (font_size 8)))
-		(text "result" (rect 50 42 81 56)(font "Arial" (font_size 8)))
-		(line (pt 80 56)(pt 48 56))
-	)
-	(drawing
-		(line (pt 32 24)(pt 32 88))
-		(line (pt 32 24)(pt 48 32))
-		(line (pt 32 88)(pt 48 80))
-		(line (pt 48 32)(pt 48 80))
-		(line (pt 0 0)(pt 82 0))
-		(line (pt 82 0)(pt 82 98))
-		(line (pt 0 98)(pt 82 98))
-		(line (pt 0 0)(pt 0 98))
-		(line (pt 32 66)(pt 38 72))
-		(line (pt 38 72)(pt 32 78))
-		(line (pt 0 0)(pt 0 0))
-		(line (pt 0 0)(pt 0 0))
-		(line (pt 0 0)(pt 0 0))
-		(line (pt 0 0)(pt 0 0))
 	)
 )
 (symbol
@@ -4888,10 +4832,6 @@ applicable agreement for further details.
 	(pt -936 -728)
 )
 (connector
-	(pt -952 -776)
-	(pt -952 -728)
-)
-(connector
 	(pt -1920 368)
 	(pt -1904 368)
 )
@@ -5088,19 +5028,6 @@ applicable agreement for further details.
 	(bus)
 )
 (connector
-	(pt -400 -88)
-	(pt -360 -88)
-)
-(connector
-	(pt -424 -104)
-	(pt -424 -160)
-)
-(connector
-	(text "mode_wfm" (rect -390 -176 -336 -164)(font "Arial" ))
-	(pt -424 -160)
-	(pt -336 -160)
-)
-(connector
 	(text "wfm64_tm_valid" (rect -1014 24 -933 36)(font "Arial" ))
 	(pt -1016 40)
 	(pt -920 40)
@@ -5120,56 +5047,6 @@ applicable agreement for further details.
 (connector
 	(pt -920 8)
 	(pt -920 40)
-)
-(connector
-	(pt -664 -616)
-	(pt -744 -616)
-)
-(connector
-	(pt -744 -616)
-	(pt -744 -728)
-)
-(connector
-	(pt -664 -600)
-	(pt -728 -600)
-)
-(connector
-	(pt -728 -600)
-	(pt -728 -776)
-)
-(connector
-	(text "clk_122880" (rect -1086 -792 -1031 -780)(font "Arial" ))
-	(pt -1088 -776)
-	(pt -952 -776)
-)
-(connector
-	(pt -952 -776)
-	(pt -728 -776)
-)
-(connector
-	(pt -664 -632)
-	(pt -712 -632)
-)
-(connector
-	(text "mode_wfm" (rect -590 -560 -536 -548)(font "Arial" ))
-	(pt -624 -544)
-	(pt -536 -544)
-)
-(connector
-	(pt -624 -576)
-	(pt -624 -544)
-)
-(connector
-	(pt -712 -88)
-	(pt -712 -632)
-)
-(connector
-	(pt -728 -88)
-	(pt -712 -88)
-)
-(connector
-	(pt -712 -88)
-	(pt -448 -88)
 )
 (connector
 	(pt -1072 512)
@@ -5377,12 +5254,34 @@ applicable agreement for further details.
 	(bus)
 )
 (connector
-	(pt -760 -728)
-	(pt -744 -728)
+	(text "clk_122880" (rect -1086 -792 -1031 -780)(font "Arial" ))
+	(pt -1088 -776)
+	(pt -952 -776)
 )
 (connector
-	(pt -744 -728)
+	(pt -952 -776)
+	(pt -952 -728)
+)
+(connector
+	(pt -760 -728)
 	(pt -648 -728)
+)
+(connector
+	(pt -632 -88)
+	(pt -592 -88)
+)
+(connector
+	(pt -656 -104)
+	(pt -656 -160)
+)
+(connector
+	(text "mode_wfm" (rect -622 -176 -568 -164)(font "Arial" ))
+	(pt -656 -160)
+	(pt -568 -160)
+)
+(connector
+	(pt -728 -88)
+	(pt -680 -88)
 )
 (junction (pt -3024 -696))
 (junction (pt -2544 -696))
@@ -5436,12 +5335,9 @@ applicable agreement for further details.
 (junction (pt -1320 320))
 (junction (pt -1320 440))
 (junction (pt -2152 1024))
-(junction (pt -952 -776))
 (junction (pt -920 8))
 (junction (pt -920 40))
 (junction (pt -920 -24))
-(junction (pt -712 -88))
-(junction (pt -744 -728))
 (junction (pt -1088 536))
 (junction (pt -848 536))
 (junction (pt -848 320))
