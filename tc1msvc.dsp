@@ -1154,6 +1154,10 @@ SOURCE=.\chip\r820t.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\chip\r820t2.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\chip\rffc5071.h
 # End Source File
 # Begin Source File
