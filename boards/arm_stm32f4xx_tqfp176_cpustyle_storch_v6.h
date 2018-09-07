@@ -163,17 +163,19 @@
 
 #if WITHENCODER
 
-	// Выводы подключения енкодера #1
-	#define ENCODER_INPUT_PORT	(GPIOH->IDR) 
-	#define ENCODER_BITA		(1u << 2)		// PH2
-	#define ENCODER_BITB		(1u << 3)		// PH3
-	#define ENCODER_BITS		(ENCODER_BITA | ENCODER_BITB)
-
 	// Выводы подключения енкодера #2
 	#define ENCODER2_INPUT_PORT	(GPIOH->IDR) 
-	#define ENCODER2_BITA		(1u << 4)		// PH4
-	#define ENCODER2_BITB		(1u << 5)		// PH5
+	#define ENCODER2_BITA		(1u << 2)		// PH2
+	#define ENCODER2_BITB		(1u << 3)		// PH3
+
+	// Выводы подключения енкодера #1
+	#define ENCODER_INPUT_PORT	(GPIOH->IDR) 
+	#define ENCODER_BITA		(1u << 4)		// PH4
+	#define ENCODER_BITB		(1u << 5)		// PH5
+
+
 	#define ENCODER2_BITS		(ENCODER2_BITA | ENCODER2_BITB)
+	#define ENCODER_BITS		(ENCODER_BITA | ENCODER_BITB)
 
 	#define ENCODER_INITIALIZE() \
 		do { \
@@ -182,7 +184,7 @@
 			arm_hardware_pioh_onchangeinterrupt(ENCODER_BITS, ENCODER_BITS, ENCODER_BITS, ARM_OVERREALTIME_PRIORITY); \
 			arm_hardware_pioh_inputs(ENCODER2_BITS); \
 			arm_hardware_pioh_updown(ENCODER2_BITS, 0); \
-			arm_hardware_pioh_onchangeinterrupt(0 * ENCODER2_BITS, ENCODER2_BITS, ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY); \
+			/* arm_hardware_pioh_onchangeinterrupt(ENCODER2_BITS, ENCODER2_BITS, ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY); */ \
 		} while (0)
 
 #endif
