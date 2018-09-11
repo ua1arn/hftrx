@@ -1823,6 +1823,14 @@ static FLASHMEM struct bandrange  const bandsmap [] =
 #endif
 	{ BMF(3900000L), 			BMF(4000000L), 			BMF(3900000L), 	BANDMAPSUBMODE_AM | BANDSETF_BCAST, BANDGROUP_COUNT, },		/*  */
 	{ BMF(4750000L), 			BMF(5060000L), 			BMF(4750000L), 	BANDMAPSUBMODE_AM | BANDSETF_BCAST, BANDGROUP_COUNT, },		/*  */
+	/*
+		Частотный план диапазона 5 MHZ ( 60m ) 
+		Диапазон: 5351.5-5.366.5 khz 
+		1. 5.351.5- CW -полоса 200 hz . 
+		2. 5.354.0, 5.357.0, 5.360.0, 5.363.0 - ALL MODE полоса 2700 hz. 
+		3. 5366.0 - weak signal полоса 20 hz. 
+		На самом деле "цифра" около 5,357,0, CW 5.351.5 и выше SSB около 5.360.0
+	*/
 	{ BMF(5298000L), 			BMF(5408000L), 			BMF(5351500L), 	BANDMAPSUBMODE_CW | BANDSETF_HAMWARC, BANDGROUP_COUNT, },		/* 60-meters band */
 	{ BMF(5730000L), 			BMF(6295000L), 			BMF(5730000L), 	BANDMAPSUBMODE_AM | BANDSETF_BCAST, BANDGROUP_COUNT, },		/*  */
 	{ BMF(6890000L), 			BMF(6990000L), 	BMF(6890000L), 	BANDMAPSUBMODE_AM | BANDSETF_BCAST,  BANDGROUP_COUNT, },		/*  */
