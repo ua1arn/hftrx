@@ -698,10 +698,10 @@
 
 	/* управление состоянием сигнала DISP панели */
 	#define HARDWARE_LTDC_SET_DISP(state) do { \
-		const uint32_t VSYNC = (1U << 9); \
-		const uint32_t mask = (1U << 13); \
-		while ((GPIOI->IDR & VSYNC) != 0) ; /* дождаться 0 */ \
-		while ((GPIOI->IDR & VSYNC) == 0) ; /* дождаться 1 */ \
+		const uint32_t mask = (1U << 13); /* PE13 */ \
+		/* const uint32_t VSYNC = (1U << 9); */ /* PI9 */ \
+		/* while ((GPIOI->IDR & VSYNC) != 0) ; */ /* схема синхронизации стоит на плате дисплея. дождаться 0 */ \
+		/* while ((GPIOI->IDR & VSYNC) == 0) ; */ /* дождаться 1 */ \
 		arm_hardware_pioe_outputs(mask, ((state) != 0) * mask);	/* DE=DISP, pin 31 - можно менять только при VSYNC=1 */ \
 	} while (0)
 #endif /* LCDMODE_LTDC */

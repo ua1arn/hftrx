@@ -2934,7 +2934,7 @@ static uint_fast8_t displaybarsfps = DISPLAYSWR_FPS;
 
 #if WITHLCDBACKLIGHT
 	static uint_fast8_t bglight = WITHLCDBACKLIGHTMAX;
-	static uint_fast16_t blfreq = 10;
+	static uint_fast16_t blfreq = 62;	/* делится частота внутреннего генератора 48 МГц */
 #else /* WITHLCDBACKLIGHT */
 	enum { bglight = 0 };
 #endif /* WITHLCDBACKLIGHT */
