@@ -721,8 +721,6 @@
 	#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры 
 #endif
 
-	#define WITHDCDCFREQCTL	1		// Имеется управление частотой преобразователей блока питания и/или подсветки дисплея
-
 	/* макроопределение, которое должно включить в себя все инициализации */
 	#define	HARDWARE_INITIALIZE() do { \
 		HARDWARE_SIDETONE_INITIALIZE(); \

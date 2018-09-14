@@ -684,10 +684,15 @@
 		arm_hardware_piob_opendrain((1U << 9) | (1U << 8), 0 * (1U << 9) | 0 * (1U << 8));	/* PB9:PB8 - backlight current adjust */ \
 		} while (0)
 
+#if WITHDCDCFREQCTL
 	#define	HARDWARE_DCDC_INITIALIZE() do { \
 		arm_hardware_piof_altfn2((1U << 6), AF_TIM1); /* TIM16_CH1 - PF6 */ \
 		hardware_blfreq_initialize(); \
 		} while (0)
+#else /* WITHDCDCFREQCTL */
+	#define	HARDWARE_DCDC_INITIALIZE() do { \
+		} while (0)
+#endif /* WITHDCDCFREQCTL */
 
 	/* установка яркости и включение/выключение преобразователя подсветки */
 	#define HARDWARE_BL_SET(en, level) do { \
@@ -760,8 +765,6 @@
 	#define WITHLCDBACKLIGHTMAX	3	// Верхний предел регулировки (показываетый на дисплее)
 	#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры 
 #endif
-
-	#define WITHDCDCFREQCTL	1		// Имеется управление частотой преобразователей блока питания и/или подсветки дисплея
 
 	/* макроопределение, которое должно включить в себя все инициализации */
 	#define	HARDWARE_INITIALIZE() do { \
