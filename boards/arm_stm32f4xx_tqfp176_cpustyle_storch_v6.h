@@ -682,7 +682,10 @@
 		/* step-up backlight converter */ \
 		arm_hardware_pioe_outputs((1U << 0), 1 * (1U << 0));		/* PE0 - enable backlight */ \
 		arm_hardware_piob_opendrain((1U << 9) | (1U << 8), 0 * (1U << 9) | 0 * (1U << 8));	/* PB9:PB8 - backlight current adjust */ \
-		arm_hardware_piof_altfn50((1U << 6), AF_TIM1); /* TIM16_CH1 - PF6 */ \
+		} while (0)
+
+	#define	HARDWARE_DCDC_INITIALIZE() do { \
+		arm_hardware_piof_altfn2((1U << 6), AF_TIM1); /* TIM16_CH1 - PF6 */ \
 		hardware_blfreq_initialize(); \
 		} while (0)
 
@@ -758,12 +761,15 @@
 	#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры 
 #endif
 
+	#define WITHDCDCFREQCTL	1		// Имеется управление частотой преобразователей блока питания и/или подсветки дисплея
+
 	/* макроопределение, которое должно включить в себя все инициализации */
 	#define	HARDWARE_INITIALIZE() do { \
 		HARDWARE_SIDETONE_INITIALIZE(); \
 		HARDWARE_KBD_INITIALIZE(); \
 		HARDWARE_DAC_INITIALIZE(); \
 		HARDWARE_BL_INITIALIZE(); \
+		HARDWARE_DCDC_INITIALIZE(); \
 		TXDISABLE_INITIALIZE(); \
 		} while (0)
 

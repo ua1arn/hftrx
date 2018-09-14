@@ -2261,8 +2261,10 @@ struct nvmap
 #endif /* defined (DEFAULT_LCD_CONTRAST) */
 #if WITHLCDBACKLIGHT
 	uint8_t bglight;
-	uint16_t blfreq;
 #endif /* WITHLCDBACKLIGHT */
+#if WITHDCDCFREQCTL
+	uint16_t blfreq;
+#endif /* WITHDCDCFREQCTL */
 #if WITHKBDBACKLIGHT
 	uint8_t kblight;
 #endif /* WITHKBDBACKLIGHT */
@@ -2928,13 +2930,16 @@ static uint_fast8_t alignmode;		/* режимы дл€ настройки аппаратной части (0-норм
 	enum { gcontrast = 0 };
 #endif
 
+#if WITHDCDCFREQCTL
+	static uint_fast16_t blfreq = 62;	/* делитс€ частота внутреннего генератора 48 ћ√ц */
+#endif /* WITHDCDCFREQCTL */
+
 static const uint_fast8_t displaymodesfps = DISPLAYMODES_FPS;
 static uint_fast8_t displayfreqsfps = DISPLAY_FPS;
 static uint_fast8_t displaybarsfps = DISPLAYSWR_FPS;
 
 #if WITHLCDBACKLIGHT
 	static uint_fast8_t bglight = WITHLCDBACKLIGHTMAX;
-	static uint_fast16_t blfreq = 62;	/* делитс€ частота внутреннего генератора 48 ћ√ц */
 #else /* WITHLCDBACKLIGHT */
 	enum { bglight = 0 };
 #endif /* WITHLCDBACKLIGHT */
@@ -6756,10 +6761,10 @@ updateboard(
 	#if WITHFANTIMER
 		board_setfanflag(! fanpaflag);
 	#endif /* WITHFANTIMER */
+#if WITHDCDCFREQCTL
+	board_set_blfreq(blfreq);
+#endif /* WITHDCDCFREQCTL */
 	#if WITHLCDBACKLIGHT
-		#if CTLSTYLE_STORCH_V6 || CTLSTYLE_STORCH_V7
-			board_set_blfreq(blfreq);
-		#endif /* CTLSTYLE_STORCH_V6 || CTLSTYLE_STORCH_V7 */
 		board_set_bglight((dimmflag || sleepflag || dimmmode) ? WITHLCDBACKLIGHTMIN : bglight);		/* подсветка диспле€  */
 	#endif /* WITHLCDBACKLIGHT */
 	#if WITHKBDBACKLIGHT
@@ -10696,18 +10701,18 @@ static const FLASHMEM struct menudef menutable [] =
 		getzerobase, /* складываетс€ со смещением и отображаетс€ */
 	},
 #endif /* defined (DEFAULT_LCD_CONTRAST) */
+#if WITHDCDCFREQCTL
+	{
+		"BL DIV  ", 7, 0, 0,	ISTEP1,	
+		ITEM_VALUE,
+		4, UINT16_MAX, 
+		offsetof(struct nvmap, blfreq),
+		& blfreq,
+		NULL,
+		getzerobase, /* складываетс€ со смещением и отображаетс€ */
+	},
+#endif /* WITHDCDCFREQCTL */
 #if WITHLCDBACKLIGHT
-	#if CTLSTYLE_STORCH_V6 || CTLSTYLE_STORCH_V7
-		{
-			"BL DIV  ", 7, 0, 0,	ISTEP1,	
-			ITEM_VALUE,
-			4, UINT16_MAX, 
-			offsetof(struct nvmap, blfreq),
-			& blfreq,
-			NULL,
-			getzerobase, /* складываетс€ со смещением и отображаетс€ */
-		},
-	#endif /* CTLSTYLE_STORCH_V6 || CTLSTYLE_STORCH_V7*/
 	{
 		"LCD LIGH", 7, 0, 0,	ISTEP1,	
 		ITEM_VALUE,
