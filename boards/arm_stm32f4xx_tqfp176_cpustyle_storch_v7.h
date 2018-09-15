@@ -644,10 +644,15 @@
 		arm_hardware_piof_opendrain((1U << 3) | (1U << 2), 0 * (1U << 3) | 0 * (1U << 2));	/* PF3:PF2 - backlight current adjust */ \
 		} while (0)
 
+#if WITHDCDCFREQCTL
 	#define	HARDWARE_DCDC_INITIALIZE() do { \
 		arm_hardware_piof_altfn2((1U << 6), AF_TIM1); /* TIM16_CH1 - PF6 */ \
 		hardware_blfreq_initialize(); \
 		} while (0)
+#else /* WITHDCDCFREQCTL */
+	#define	HARDWARE_DCDC_INITIALIZE() do { \
+		} while (0)
+#endif /* WITHDCDCFREQCTL */
 
 	/* установка яркости и включение/выключение преобразователя подсветки */
 	#define HARDWARE_BL_SET(en, level) do { \
