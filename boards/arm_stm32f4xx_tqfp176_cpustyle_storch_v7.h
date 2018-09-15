@@ -343,6 +343,15 @@
 			arm_hardware_piod_updown(PTT2_BIT_PTT, 0); \
 		} while (0)
 	// ---
+	// TUNE input - PD9
+	#define TUNE_TARGET_PIN				(GPIOD->IDR)
+	#define TUNE_BIT_TUNE					(1U << 9)		// PD9
+	#define HARDWARE_GET_TUNE() ((TUNE_TARGET_PIN & TUNE_BIT_TUNE) == 0)
+	#define TUNE_INITIALIZE() \
+		do { \
+			arm_hardware_piod_inputs(TUNE_BIT_TUNE); \
+			arm_hardware_piod_updown(TUNE_BIT_TUNE, 0); \
+		} while (0)
 
 #else /* WITHTX */
 
@@ -350,6 +359,9 @@
 		do { \
 		} while (0)
 	#define PTT_INITIALIZE() \
+		do { \
+		} while (0)
+	#define TUNE_INITIALIZE() \
 		do { \
 		} while (0)
 #endif /* WITHTX */
@@ -734,6 +746,7 @@
 		HARDWARE_BL_INITIALIZE(); \
 		HARDWARE_DCDC_INITIALIZE(); \
 		TXDISABLE_INITIALIZE(); \
+		TUNE_INITIALIZE(); \
 		} while (0)
 
 #endif /* ARM_STM32F4XX_TQFP176_CPUSTYLE_STORCH_V6_H_INCLUDED */
