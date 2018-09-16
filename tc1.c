@@ -730,7 +730,7 @@ struct micproc
 } __attribute__ ((packed));	// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
 
 
-static mikproc_t micprocs [] =
+static mikproc_t micprofiles [] =
 {
 	{
 		0,
@@ -742,7 +742,25 @@ static mikproc_t micprocs [] =
 	},
 };
 
-#define NMICPROCS (sizeof micprocs / sizeof micprocs [0])
+#define NMICPROFILES (sizeof micprofiles / sizeof micprofiles [0])
+
+// индекс номера банка параметров обработки звука для данного режима
+enum
+{
+	TXAPROFIG_CW,
+	TXAPROFIG_SSB,
+	TXAPROFIG_DIGI,
+	TXAPROFIG_AM,
+	TXAPROFIG_NFM,
+	TXAPROFIG_DRM,
+	TXAPROFIG_WFM,
+	//
+	TXAPROFIG_count
+};
+
+
+static uint_fast8_t gtxaprofiles [TXAPROFIG_count];	// индекс профиля для группы режимов передачи - значения 0..NMICPROFILES-1
+
 
 // параметры фильтра на приеме
 
@@ -781,7 +799,7 @@ enum
 	BWSETI_DRM,
 	BWSETI_WFM,
 	//
-	BWSETI_COUNT
+	BWSETI_count
 };
 
 /*
@@ -848,7 +866,7 @@ static bwprop_t bwprop_wfm = { & bwlimits_wfm, BWSET_WIDE, WITHWFMLOW10DEF, WITH
 
 // Способ представления частот и количество профилей полосы пропускания,
 // а так же названия полос пропускания для отображения
-static const FLASHMEM bwsetsc_t bwsetsc [BWSETI_COUNT] =
+static const FLASHMEM bwsetsc_t bwsetsc [BWSETI_count] =
 {
 	{ 2, { & bwprop_cwwide, & bwprop_cwnarrow, & bwprop_ssbwide, }, { strFlashWide, strFlashNarrow, strFlashNormal, }, },	// BWSETI_CW
 	{ 1, { & bwprop_ssbwide, & bwprop_ssbnarrow, }, { strFlashWide, strFlashNarrow, }, },	// BWSETI_SSB
@@ -860,7 +878,7 @@ static const FLASHMEM bwsetsc_t bwsetsc [BWSETI_COUNT] =
 };
 
 // выбранная полоса пропускания в каждом режиме
-static uint_fast8_t bwsetpos [BWSETI_COUNT];
+static uint_fast8_t bwsetpos [BWSETI_count];
 
 // индекс банка полос пропускания для данного режима
 enum
@@ -875,11 +893,11 @@ enum
 	BWPROPI_NFMNARROW,
 	BWPROPI_NFMWIDE,	
 	//
-	BWPROPI_COUNT
+	BWPROPI_count
 };
 
 // Используется для обмена с NVRAN параметрами фильтров
-static bwprop_t * const FLASHMEM bwprops [BWPROPI_COUNT] =
+static bwprop_t * const FLASHMEM bwprops [BWPROPI_count] =
 {
 	& bwprop_cwnarrow,	// BWPROPI_CWNARROW,
 	& bwprop_cwwide,	// BWPROPI_CWWIDE,	
@@ -1240,11 +1258,12 @@ struct modetempl
 	uint_fast8_t bwseti;			// индекс банка полос пропускания для данного режима
 	int_fast16_t bw6s [2];			// фиксированная полоса пропускания в DSP (if6) для данного режима (если не ноль).
 	uint_fast8_t txaudio;			// источник звукового сигнала для данного режима
+	uint_fast8_t txaprofgp;		// группа профилей обработки звука
 	uint_fast8_t agcseti;			// параметры слухового приема
 #else /* WITHIF4DSP */
 	uint_fast8_t detector [2];		/* код детектора RX и TX */
 #endif /* WITHIF4DSP */
-	//char label [4];					// для контроля правильности инициализации структуры
+	char label [4];					// для контроля правильности инициализации структуры
 };
 
 // modes
@@ -1277,11 +1296,12 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 		BWSETI_CW,				// индекс банка полос пропускания для данного режима
 		{ 0, INT16_MAX, },	// фиксированная полоса пропускания в DSP (if6) для данного режима (если не ноль).
 		BOARD_TXAUDIO_MIKE,		// источник звукового сигнала для данного режима
+		TXAPROFIG_CW,				// группа профилей обработки звука
 		AGCSETI_CW,
 #else /* WITHIF4DSP */
 		{ BOARD_DETECTOR_SSB, BOARD_DETECTOR_SSB, },		/* ssb detector used */
 #endif /* WITHIF4DSP */
-		//"CW",
+		"CW",
 	},
 	/* MODE_SSB */
 	{
@@ -1308,11 +1328,12 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 		BWSETI_SSB,				// индекс банка полос пропускания для данного режима
 		{ 0, 0, },	// фиксированная полоса пропускания в DSP (if6) для данного режима (если не ноль).
 		BOARD_TXAUDIO_MIKE,		// источник звукового сигнала для данного режима
+		TXAPROFIG_SSB,				// группа профилей обработки звука
 		AGCSETI_SSB,
 #else /* WITHIF4DSP */
 		{ BOARD_DETECTOR_SSB, BOARD_DETECTOR_SSB, },		/* ssb detector used */
 #endif /* WITHIF4DSP */
-		//"SSB",
+		"SSB",
 	},
 	/* MODE_AM */
 	{
@@ -1339,11 +1360,12 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 		BWSETI_AM,				// индекс банка полос пропускания для данного режима
 		{ 0, INT16_MAX, },	// фиксированная полоса пропускания в DSP (if6) для данного режима (если не ноль).
 		BOARD_TXAUDIO_MIKE,		// источник звукового сигнала для данного режима
+		TXAPROFIG_AM,				// группа профилей обработки звука
 		AGCSETI_FLAT,
 #else /* WITHIF4DSP */
 		{ BOARD_DETECTOR_AM, BOARD_DETECTOR_AM, }, 		/* AM detector used */
 #endif /* WITHIF4DSP */
-		//"AM",
+		"AM",
 	},
 #if WITHSAM
 	/* MODE_SAM  synchronous AM demodulation */
@@ -1371,11 +1393,12 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 		BWSETI_AM,				// индекс банка полос пропускания для данного режима
 		{ 0, INT16_MAX, },	// фиксированная полоса пропускания в DSP (if6) для данного режима (если не ноль).
 		BOARD_TXAUDIO_MIKE,		// источник звукового сигнала для данного режима
+		TXAPROFIG_AM,				// группа профилей обработки звука
 		AGCSETI_FLAT,
 #else /* WITHIF4DSP */
 		{ BOARD_DETECTOR_AM, BOARD_DETECTOR_AM, }, 		/* AM detector used */
 #endif /* WITHIF4DSP */
-		//"AM",
+		"SAM",
 	},
 #endif /* WITHSAM */
 	/* MODE_NFM */
@@ -1403,11 +1426,12 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 		BWSETI_NFM,				// индекс банка полос пропускания для данного режима
 		{ 9000, INT16_MAX, },	// фиксированная полоса пропускания в DSP (if6) для данного режима (если не ноль).
 		BOARD_TXAUDIO_MIKE,		// источник звукового сигнала для данного режима
+		TXAPROFIG_NFM,				// группа профилей обработки звука
 		AGCSETI_FLAT,
 #else /* WITHIF4DSP */
 		{ BOARD_DETECTOR_FM, BOARD_DETECTOR_FM, }, 		/* FM detector used */
 #endif /* WITHIF4DSP */
-		//"NFM",
+		"NFM",
 	},
 	/* MODE_DRM */
 	{
@@ -1434,11 +1458,12 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 		BWSETI_DRM,				// индекс банка полос пропускания для данного режима
 		{ 12000, INT16_MAX, },	// фиксированная полоса пропускания в DSP (if6) для данного режима (если не ноль).
 		BOARD_TXAUDIO_MUTE,		// источник звукового сигнала для данного режима
+		TXAPROFIG_AM,				// группа профилей обработки звука
 		AGCSETI_DRM,
 #else /* WITHIF4DSP */
 		{ BOARD_DETECTOR_MUTE, BOARD_DETECTOR_MUTE, },		/* ssb detector used */
 #endif /* WITHIF4DSP */
-		//"DRM",
+		"DRM",
 	},
 	/* MODE_CWZ - этот режим при передаче используется во время TUNE. */	
 	{
@@ -1465,11 +1490,12 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 		BWSETI_SSB,				// индекс банка полос пропускания для данного режима
 		{ 0, INT16_MAX, },	// фиксированная полоса пропускания в DSP (if6) для данного режима (если не ноль).
 		BOARD_TXAUDIO_MUTE,		// источник звукового сигнала для данного режима
+		TXAPROFIG_SSB,				// группа профилей обработки звука
 		AGCSETI_SSB,
 #else /* WITHIF4DSP */
 		{ BOARD_DETECTOR_SSB, BOARD_DETECTOR_TUNE, },		/* ssb detector used */
 #endif /* WITHIF4DSP */
-		//"CWZ",
+		"CWZ",
 	},
 #if WITHWFM || WITHMODESETFULLNFMWFM
 	/* WFM mode if=10.7 MHz */
@@ -1498,11 +1524,12 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 		BWSETI_WFM,				// индекс банка полос пропускания для данного режима
 		{ INT16_MAX, INT16_MAX, },	// bypass, фиксированная полоса пропускания в DSP (if6) для данного режима (если не ноль).
 		BOARD_TXAUDIO_MUTE,		// источник звукового сигнала для данного режима
+		TXAPROFIG_SSB,				// группа профилей обработки звука
 		AGCSETI_SSB,
 #else /* WITHIF4DSP */
 		{ BOARD_DETECTOR_WFM, BOARD_DETECTOR_WFM, },		/* WFM detector used */
 #endif /* WITHIF4DSP */
-		//"WFM",
+		"WFM",
 	},
 #endif /* WITHWFM || WITHMODESETFULLNFMWFM */
 	/* MODE_DIGI */
@@ -1534,11 +1561,12 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 	#else /* WITHUSBUAC */
 		BOARD_TXAUDIO_MIKE,		// источник звукового сигнала для данного режима
 	#endif /* WITHUSBUAC */
+		TXAPROFIG_DIGI,				// группа профилей обработки звука
 		AGCSETI_DIGI,
 #else /* WITHIF4DSP */
 		{ BOARD_DETECTOR_SSB, BOARD_DETECTOR_SSB, },		/* ssb detector used */
 #endif /* WITHIF4DSP */
-		//"DIG",
+		"DIG",
 	},
 	/* MODE_RTTY */
 	{
@@ -1569,11 +1597,12 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 	#else /* WITHUSBUAC */
 		BOARD_TXAUDIO_MIKE,		// источник звукового сигнала для данного режима
 	#endif /* WITHUSBUAC */
+		TXAPROFIG_DIGI,				// группа профилей обработки звука
 		AGCSETI_DIGI,
 #else /* WITHIF4DSP */
 		{ BOARD_DETECTOR_SSB, BOARD_DETECTOR_SSB, }, 		/* ssb detector used */
 #endif /* WITHIF4DSP */
-		//"TTY",
+		"TTY",
 	},
 #if WITHMODEM
 	/* MODE_MODEM */
@@ -1601,11 +1630,12 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 		BWSETI_SSB,		// индекс банка полос пропускания для данного режима
 		{ 0, INT16_MAX, },	// фиксированная полоса пропускания в DSP (if6) для данного режима (если не ноль).
 		BOARD_TXAUDIO_MUTE,		// источник звукового сигнала для данного режима
+		TXAPROFIG_SSB,				// группа профилей обработки звука
 		AGCSETI_SSB,
 #else /* WITHIF4DSP */
 		{ BOARD_DETECTOR_SSB, BOARD_DETECTOR_SSB, }, 		/* ssb detector used */
 #endif /* WITHIF4DSP */
-		//"MDM",
+		"MDM",
 	},
 #endif /* WITHMODEM */
 	/* MODE_ISB */
@@ -1637,11 +1667,12 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 	#else /* WITHUSBUAC */
 		BOARD_TXAUDIO_MIKE,		// источник звукового сигнала для данного режима
 	#endif /* WITHUSBUAC */
+		TXAPROFIG_SSB,				// группа профилей обработки звука
 		AGCSETI_SSB,
 #else /* WITHIF4DSP */
 		{ BOARD_DETECTOR_SSB, BOARD_DETECTOR_SSB, },		/* ssb detector used */
 #endif /* WITHIF4DSP */
-		//"ISB",
+		"ISB",
 	},
 #if WITHFREEDV
 	/* MODE_FREEDV */
@@ -1669,11 +1700,12 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 		BWSETI_SSB,		// индекс банка полос пропускания для данного режима
 		{ 0, 0, },	// фиксированная полоса пропускания в DSP (if6) для данного режима (если не ноль).
 		BOARD_TXAUDIO_MIKE,		// источник звукового сигнала для данного режима
+		TXAPROFIG_SSB,				// группа профилей обработки звука
 		AGCSETI_SSB,
 #else /* WITHIF4DSP */
 		{ BOARD_DETECTOR_SSB, BOARD_DETECTOR_SSB, }, 		/* ssb detector used */
 #endif /* WITHIF4DSP */
-		//"FDV",
+		"FDV",
 	},
 #endif /* WITHFREEDV */
 };
@@ -2219,8 +2251,7 @@ struct modeprops
 #endif /* CTLSTYLE_RA4YBO || CTLSTYLE_RA4YBO_V1 || CTLSTYLE_RA4YBO_V2*/
 
 #if WITHIF4DSP
-	/* источник звука для передачи */
-	uint8_t txaudio;
+	uint8_t txaudio;	/* источник звука для передачи */
 #endif /* WITHIF4DSP */
 
 } __attribute__ ((packed));// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
@@ -2372,12 +2403,12 @@ struct nvmap
 	uint8_t	ggrpagcssb; // последний посещённый пункт группы
 	uint8_t	ggrpagccw; // последний посещённый пункт группы
 	uint8_t	ggrpagcdigi; // последний посещённый пункт группы
-	uint8_t bwsetpos [BWSETI_COUNT];	/* выбор одной из полос пропускания */
+	uint8_t bwsetpos [BWSETI_count];	/* выбор одной из полос пропускания */
 
-	uint8_t bwpropsleft [BWPROPI_COUNT];	/* значения границ полосы пропускания */
-	uint8_t bwpropsright [BWPROPI_COUNT];	/* значения границ полосы пропускания */
-	uint8_t bwpropsfltsofter [BWPROPI_COUNT];	/* Код управления сглаживанием скатов фильтра основной селекции на приёме */
-	uint8_t bwpropsafresponce [BWPROPI_COUNT];	/* Наклон АЧХ */
+	uint8_t bwpropsleft [BWPROPI_count];	/* значения границ полосы пропускания */
+	uint8_t bwpropsright [BWPROPI_count];	/* значения границ полосы пропускания */
+	uint8_t bwpropsfltsofter [BWPROPI_count];	/* Код управления сглаживанием скатов фильтра основной селекции на приёме */
+	uint8_t bwpropsafresponce [BWPROPI_count];	/* Наклон АЧХ */
 	uint8_t gssbtxlowcut10;		/* Нижняя частота среза фильтра НЧ при передаче */
 	uint8_t gssbtxhighcut100;	/* Верхняя частота среза фильтра НЧ при передаче */
 
@@ -2421,7 +2452,7 @@ struct nvmap
 	#endif /* WITHAFCODEC1HAVEPROC */
 #endif /* WITHIF4DSP */
 
-	struct micproc gmicprocs [NMICPROCS];
+	struct micproc gmicprocs [NMICPROFILES];
 
 #if WITHDSPEXTDDC	/* "Воронёнок" с DSP и FPGA */
 	uint8_t	ggrprfadc; // последний посещённый пункт группы
@@ -2717,6 +2748,8 @@ filter_t fi_2p0_455 =
 #endif	/* (LO3_SIDE != LOCODE_INVALID) && LO3_FREQADJ */
 
 	struct modeprops modes [MODE_COUNT];
+	uint8_t txaprofile [TXAPROFIG_count];	/* параметры обработки звука перед модулятором */
+
 	struct bandinfo bands [HBANDS_COUNT + XBANDS_COUNT + VFOS_COUNT + MBANDS_COUNT];
 #if	WITHDIRECTBANDS
 	uint8_t	bandgroup [BANDGROUP_COUNT];	/* последний диапазон в группе, куда был переход по кнопке диапазона (индекс в bands). */
@@ -2749,7 +2782,8 @@ filter_t fi_2p0_455 =
 
 #define RMT_TXPOWER_BASE(i)	offsetof(struct nvmap, modes[(i)].txpower)
 #define RMT_TXCOMPR_BASE(i)	offsetof(struct nvmap, modes[(i)].txcompr)
-#define RMT_MIKESRC_BASE(i) offsetof(struct nvmap, modes[(i)].txaudio)
+#define RMT_TXAUDIO_BASE(i) offsetof(struct nvmap, modes[(i)].txaudio)
+#define RMT_TXAPROFIGLE_BASE(i) offsetof(struct nvmap, txaprofile[(i)])
 
 #define RMT_BANDGROUP(i) offsetof(struct nvmap, bandgroup[(i)])	/* последний диапазон в группе, куда был переход по кнопке диапазона (индекс в bands). */
 #define RMT_BFREQ_BASE(i) offsetof(struct nvmap, bands[(i)].freq)			/* последняя частота, на которую настроились (4 байта) */
@@ -5025,7 +5059,7 @@ static void
 bwseti_load(void)
 {
 	uint_fast8_t bwprop;
-	for (bwprop = 0; bwprop < BWPROPI_COUNT; ++ bwprop)
+	for (bwprop = 0; bwprop < BWPROPI_count; ++ bwprop)
 	{
 		// Значения границ полос пропускания
 		bwprop_t * const p = bwprops [bwprop];
@@ -5044,7 +5078,7 @@ bwseti_load(void)
 		}
 	}
 	uint_fast8_t bwseti;
-	for (bwseti = 0; bwseti < BWSETI_COUNT; ++ bwseti)
+	for (bwseti = 0; bwseti < BWSETI_count; ++ bwseti)
 	{
 		// индекс выбранной полосы
 		bwsetpos [bwseti] = loadvfy8up(RMT_BWSETPOS_BASE(bwseti), 0, bwsetsc [bwseti].last, bwsetpos [bwseti]);
@@ -5072,14 +5106,21 @@ agcseti_load(void)
 /* чтение из NVRAM параметров профилей обработки сигнала перед модулятором */
 static void micproc_load(void)
 {
+	uint_fast8_t proci;
 	uint_fast8_t i;
 
-	for (i = 0; i < NMICPROCS; ++ i)
+	for (proci = 0; proci < NMICPROFILES; ++ proci)
 	{
-		mikproc_t * const p = & micprocs [i];
+		mikproc_t * const p = & micprofiles [proci];
 
-		p->comp = loadvfy8up(offsetof(struct nvmap, gmicprocs [i].comp), 0, 1, p->comp);
-		p->complevel = loadvfy8up(offsetof(struct nvmap, gmicprocs [i].complevel), 0, 1, p->complevel);
+		p->comp = loadvfy8up(offsetof(struct nvmap, gmicprocs [proci].comp), 0, 1, p->comp);
+		p->complevel = loadvfy8up(offsetof(struct nvmap, gmicprocs [proci].complevel), 0, 1, p->complevel);
+	}
+
+	/* загрузка настроек - профиль аудиообработки для групп режимов работы */
+	for (i = 0; i < TXAPROFIG_count; ++ i)
+	{
+		gtxaprofiles [i] = loadvfy8up(RMT_TXAPROFIGLE_BASE(i), 0, NMICPROFILES - 1, gtxaprofiles [i]);
 	}
 }
 
@@ -5165,7 +5206,7 @@ loadsavedstate(void)
 	#endif /* CTLSTYLE_RA4YBO || CTLSTYLE_RA4YBO_V1 || CTLSTYLE_RA4YBO_V3 */
 	#if WITHIF4DSP
 		// источник звука
-		gtxaudio [mode] =		loadvfy8up(RMT_MIKESRC_BASE(mode), 0, BOARD_TXAUDIO_count - 1, mdt [mode].txaudio);
+		gtxaudio [mode] = loadvfy8up(RMT_TXAUDIO_BASE(mode), 0, BOARD_TXAUDIO_count - 1, mdt [mode].txaudio);
 	#endif /* WITHIF4DSP */
 	}
 }
@@ -6735,6 +6776,8 @@ updateboard(
 	#if WITHIF4DSP
 		board_set_afgain(sleepflag == 0 ? afgain1 : BOARD_AFGAIN_MIN);	// Параметр для регулировки уровня на выходе аудио-ЦАП
 		board_set_ifgain(sleepflag == 0  ? rfgain1 : BOARD_IFGAIN_MIN);	// Параметр для регулировки усидения ПЧ
+
+		const uint_fast8_t txaprofile = gtxaprofiles [getmodetempl(txsubmode)->txaprofgp];	// значения 0..NMICPROFILES-1
 
 		#if ! defined (CODEC1_TYPE) && WITHUSBHW && WITHUSBUAC
 			/* если конфигурация без автнонмного аудиокодека - все входы модулятора получают звук с USB AUDIO */
@@ -12177,7 +12220,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		"MIKE SSB", 7, 0, RJ_TXAUDIO,	ISTEP1,	
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */		
 		0, BOARD_TXAUDIO_count - 1, 					// при SSB/AM/FM передача с тестовых источников
-		RMT_MIKESRC_BASE(MODE_SSB),
+		RMT_TXAUDIO_BASE(MODE_SSB),
 		NULL,
 		& gtxaudio [MODE_SSB],
 		getzerobase, /* складывается со смещением и отображается */
@@ -12186,7 +12229,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		"MIKE DIG", 7, 0, RJ_TXAUDIO,	ISTEP1,	
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, BOARD_TXAUDIO_count - 1, 					// при SSB/AM/FM передача с тестовых источников
-		RMT_MIKESRC_BASE(MODE_DIGI),
+		RMT_TXAUDIO_BASE(MODE_DIGI),
 		NULL,
 		& gtxaudio [MODE_DIGI],
 		getzerobase, /* складывается со смещением и отображается */
@@ -12195,7 +12238,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		"MIKE AM ", 7, 0, RJ_TXAUDIO,	ISTEP1,	
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, BOARD_TXAUDIO_count - 1, 					// при SSB/AM/FM передача с тестовых источников
-		RMT_MIKESRC_BASE(MODE_AM),
+		RMT_TXAUDIO_BASE(MODE_AM),
 		NULL,
 		& gtxaudio [MODE_AM],
 		getzerobase, /* складывается со смещением и отображается */
@@ -12204,7 +12247,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		"MIKE FM ", 7, 0, RJ_TXAUDIO,	ISTEP1,	
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, BOARD_TXAUDIO_count - 1, 					// при SSB/AM/FM передача с тестовых источников
-		RMT_MIKESRC_BASE(MODE_NFM),
+		RMT_TXAUDIO_BASE(MODE_NFM),
 		NULL,
 		& gtxaudio [MODE_NFM],
 		getzerobase, /* складывается со смещением и отображается */
