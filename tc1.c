@@ -714,6 +714,38 @@ loadvfy32(
 
 #if WITHIF4DSP
 
+// профиль ацдиопроцессора
+
+typedef struct mikproc_tag
+{
+	uint_fast8_t comp;
+	uint_fast8_t complevel;
+} mikproc_t;
+
+/* Хранимые в NVRAM параметры обработки сигнала перед модулятором */
+struct micproc
+{
+	uint8_t comp;
+	uint8_t complevel;
+} __attribute__ ((packed));	// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
+
+
+static mikproc_t micprocs [] =
+{
+	{
+		0,
+		0,
+	},
+	{
+		0,
+		0,
+	},
+};
+
+#define NMICPROCS (sizeof micprocs / sizeof micprocs [0])
+
+// параметры фильтра на приеме
+
 #define AFRESPONCESHIFT 192
 #define AFRESPONCEMIN 0
 #define AFRESPONCEMAX (AFRESPONCESHIFT + 18)	// -96..+18
@@ -2388,6 +2420,8 @@ struct nvmap
 		uint8_t gmikeequalizerparams [HARDWARE_CODEC1_NPROCPARAMS];	// Эквалайзер 80Hz 230Hz 650Hz 	1.8kHz 5.3kHz
 	#endif /* WITHAFCODEC1HAVEPROC */
 #endif /* WITHIF4DSP */
+
+	struct micproc gmicprocs [NMICPROCS];
 
 #if WITHDSPEXTDDC	/* "Воронёнок" с DSP и FPGA */
 	uint8_t	ggrprfadc; // последний посещённый пункт группы
@@ -5034,6 +5068,22 @@ agcseti_load(void)
 	}
 }
 
+
+/* чтение из NVRAM параметров профилей обработки сигнала перед модулятором */
+static void micproc_load(void)
+{
+	uint_fast8_t i;
+
+	for (i = 0; i < NMICPROCS; ++ i)
+	{
+		mikproc_t * const p = & micprocs [i];
+
+		p->comp = loadvfy8up(offsetof(struct nvmap, gmicprocs [i].comp), 0, 1, p->comp);
+		p->complevel = loadvfy8up(offsetof(struct nvmap, gmicprocs [i].complevel), 0, 1, p->complevel);
+	}
+}
+
+
 #endif /* WITHIF4DSP */
 
 // split, lock, s-meter display
@@ -5098,8 +5148,9 @@ loadsavedstate(void)
 	// Сохранение происходит при модификации в обработчика нажатия клавиши BW
 	bwseti_load();
 
-	/* загрузка параметров слухового приема */
-	agcseti_load();
+	
+	agcseti_load();	/* загрузка параметров слухового приема */
+	micproc_load();	/* чтение из NVRAM параметров профилей обработки сигнала перед модулятором */
 
 #endif /* WITHIF4DSP */
 
