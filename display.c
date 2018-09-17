@@ -1011,11 +1011,11 @@ void display_clear(void)
 void display_gotoxy(uint_fast8_t x, uint_fast8_t y)
 {
 #if LCDMODE_ILI8961 || LCDMODE_LQ043T3DX02K
-	ltdc_second = x * CHAR_W;
-	ltdc_first = y * CHAR_H;
+	ltdc_second = GRID2X(x);
+	ltdc_first = GRID2Y(y);
 #else
-	ltdc_first = x * CHAR_W;
-	ltdc_second = y * CHAR_H;
+	ltdc_first = GRID2X(x);
+	ltdc_second = GRID2Y(y);
 #endif
 	//debug_printf_P(PSTR("display_gotoxy: CHAR_H=%d, CHAR_W=%d, x=%d, y=%d, ltdc_first=%d, ltdc_second=%d\n"), CHAR_H, CHAR_W, x, y, ltdc_first, ltdc_second);
 	ASSERT(ltdc_first < DIM_FIRST);

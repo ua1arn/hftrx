@@ -1192,7 +1192,7 @@ static void s1d13781_put_char_small(char cc)
 	{
 		bitblt_setdstaddr(shadow_dstaddr);
 		bitblt_chargen_small(getsmallcharbase(cc));
-		s1d13781_next_column(CHAR_W);
+		s1d13781_next_column(GRID2X(CHARS2GRID(1)));
 	}
 }
 

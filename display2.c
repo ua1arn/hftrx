@@ -3742,7 +3742,7 @@ enum
 		BDTH_ALLPWR = BDTH_ALLRX,
 		BDTH_SPACEPWR = BDTH_SPACERX,
 	#endif /* WITHSHOWSWRPWR */
-		BDCV_ALLRX = ROWS2GRID(7),	// количество ячееек, отведенное под S-метр, панораму, иные отображения
+		BDCV_ALLRX = ROWS2GRID(21),	// количество ячееек, отведенное под S-метр, панораму, иные отображения
 	#if WITHSEPARATEWFL
 		/* без совмещения на одном экрание водопада и панорамы */
 		BDCV_SPMRX = BDCV_ALLRX,	// вертикальный размер спектра в ячейках		};
@@ -3751,10 +3751,10 @@ enum
 		BDCO_WFLRX = ROWS2GRID(0)	// смещение водопада по вертикали в ячейках от начала общего поля
 	#else /* WITHSEPARATEWFL */
 		/* совмещение на одном экрание водопада и панорамы */
-		BDCV_SPMRX = ROWS2GRID(3),	// вертикальный размер спектра в ячейках		};
-		BDCV_WFLRX = ROWS2GRID(4),	// вертикальный размер водопада в ячейках		};
+		BDCV_SPMRX = ROWS2GRID(9),	// вертикальный размер спектра в ячейках		};
+		BDCV_WFLRX = ROWS2GRID(12),	// вертикальный размер водопада в ячейках		};
 		BDCO_SPMRX = ROWS2GRID(0),	// смещение спектра по вертикали в ячейках от начала общего поля
-		BDCO_WFLRX = ROWS2GRID(3)	// смещение водопада по вертикали в ячейках от начала общего поля
+		BDCO_WFLRX = ROWS2GRID(9)	// смещение водопада по вертикали в ячейках от начала общего поля
 	#endif /* WITHSEPARATEWFL */
 	};
 
@@ -3826,46 +3826,46 @@ enum
 		{	21, 0,	display_rxbw3,		REDRM_MODE, PGALL, },	// 3.1 / 0,5 / WID / NAR
 
 		{	25, 0,	display_notch5,		REDRM_MODE, PGALL, },
-		{	26,	3,	display_vfomode3,	REDRM_MODE, PGALL, },	// SPLIT
-		{	26, 5,	display_voxtune3,	REDRM_MODE, PGALL, },	// VOX
-		{	26, 7,	display_atu3,		REDRM_MODE, PGALL, },
-		{	26, 9,	display_byp3,		REDRM_MODE, PGALL, },
-		{	26, 11,	display_mainsub3,	REDRM_MODE, PGALL, },	// main/sub RX
-		{	26, 13,	display_rec3,		REDRM_BARS, PGALL, },	// Отображение режима записи аудио фрагмента
-		{	26, 15,	display_lockstate4, REDRM_MODE, PGALL, },	// LOCK
-		{	25, 17,	display_voltlevelV5, REDRM_VOLT, PGALL, },	// voltmeter with "V"
+		{	26,	9,	display_vfomode3,	REDRM_MODE, PGALL, },	// SPLIT
+		{	26, 15,	display_voxtune3,	REDRM_MODE, PGALL, },	// VOX
+		{	26, 21,	display_atu3,		REDRM_MODE, PGALL, },
+		{	26, 27,	display_byp3,		REDRM_MODE, PGALL, },
+		{	26, 33,	display_mainsub3,	REDRM_MODE, PGALL, },	// main/sub RX
+		{	26, 39,	display_rec3,		REDRM_BARS, PGALL, },	// Отображение режима записи аудио фрагмента
+		{	26, 45,	display_lockstate4, REDRM_MODE, PGALL, },	// LOCK
+		{	25, 51,	display_voltlevelV5, REDRM_VOLT, PGALL, },	// voltmeter with "V"
 
 		
-		{	0,	2,	display_freqX_a,	REDRM_FREQ, PGALL, },	// Частота (большие цифры)
-		{	21, 3,	display_mode3_a,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
-		{	21, 5,	display_datamode3,	REDRM_MODE, PGALL, },	// DATA mode indicator
+		{	0,	6,	display_freqX_a,	REDRM_FREQ, PGALL, },	// Частота (большие цифры)
+		{	21, 9,	display_mode3_a,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
+		{	21, 15,	display_datamode3,	REDRM_MODE, PGALL, },	// DATA mode indicator
 
-		{	9,	7,	display_freqX_b,	REDRM_FREQB, PGALL, },
-		{	21, 7,	display_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
+		{	9,	21,	display_freqX_b,	REDRM_FREQB, PGALL, },
+		{	21, 21,	display_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
 
-		{	0,	9,	display2_legend,	REDRM_MODE, PG0, },// Отображение оцифровки шкалы S-метра
-		{	0,	10,	display2_bars,		REDRM_BARS, PG0, },	// S-METER, SWR-METER, POWER-METER
+		{	0,	27,	display2_legend,	REDRM_MODE, PG0, },// Отображение оцифровки шкалы S-метра
+		{	0,	30,	display2_bars,		REDRM_BARS, PG0, },	// S-METER, SWR-METER, POWER-METER
 
-		{	0,	9,	dsp_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
+		{	0,	27,	dsp_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
 	#if LCDMODE_LTDC_PIP16
-		{	0,	9,	display2_waterfallbg,REDRM_MODE,	PGWFL | PGSPE, },
+		{	0,	27,	display2_waterfallbg,REDRM_MODE,	PGWFL | PGSPE, },
 	#endif /* LCDMODE_LTDC_PIP16 */
-		{	0,	9,	display2_spectrum,	REDRM_BARS, PGSPE, },// подготовка изображения спектра
-		{	0,	9,	display2_waterfall,	REDRM_BARS, PGWFL, },// подготовка изображения водопада
-		{	0,	9,	display2_colorbuff,	REDRM_BARS,	PGWFL | PGSPE, },// Отображение водопада и/или спектра
+		{	0,	27,	display2_spectrum,	REDRM_BARS, PGSPE, },// подготовка изображения спектра
+		{	0,	27,	display2_waterfall,	REDRM_BARS, PGWFL, },// подготовка изображения водопада
+		{	0,	27,	display2_colorbuff,	REDRM_BARS,	PGWFL | PGSPE, },// Отображение водопада и/или спектра
 
-		{	0,	17,	display_time8,		REDRM_BARS, PGALL, },	// TIME
-		{	9,	17,	display_siglevel5,	REDRM_BARS, PGALL, },	// signal level in S points
+		{	0,	51,	display_time8,		REDRM_BARS, PGALL, },	// TIME
+		{	9,	51,	display_siglevel5,	REDRM_BARS, PGALL, },	// signal level in S points
 #if CTLSTYLE_RA4YBO || CTLSTYLE_RA4YBO_V3
-		{	19, 17,	display_currlevel5alt, REDRM_VOLT, PGALL, },	// PA drain current dd.d without "A"
+		{	19, 51,	display_currlevel5alt, REDRM_VOLT, PGALL, },	// PA drain current dd.d without "A"
 #else
-		{	19, 17,	display_currlevel5, REDRM_VOLT, PGALL, },	// PA drain current d.dd without "A"
+		{	19, 51,	display_currlevel5, REDRM_VOLT, PGALL, },	// PA drain current d.dd without "A"
 #endif
 
 	#if WITHMENU
-		{	0,	9,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
-		{	0,	11,	display_menu_lblc3,	REDRM_MLBL, REDRSUBSET_MENU, },	// код редактируемого параметра
-		{	4,	11,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
+		{	0,	27,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
+		{	0,	33,	display_menu_lblc3,	REDRM_MLBL, REDRSUBSET_MENU, },	// код редактируемого параметра
+		{	4,	33,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
 	#endif /* WITHMENU */
 	};
 
@@ -3943,9 +3943,8 @@ display_dispbar(
 {
 	//enum { DISPLAY_BAR_LEVELS = 6 };	// количество градаций в одном знакоместе
 
-	enum { NCOLS = CHAR_W };
 	value = value < 0 ? 0 : value;
-	const uint_fast16_t wfull = width * NCOLS;
+	const uint_fast16_t wfull = GRID2X(width);
 	const uint_fast16_t wpart = (uint_fast32_t) wfull * value / topvalue;
 	const uint_fast16_t wmark = (uint_fast32_t) wfull * tracevalue / topvalue;
 	uint_fast8_t i = 0;
