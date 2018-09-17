@@ -322,9 +322,11 @@
 		/* TUNER & PA board 2*RD16 by avbelnn@yandex.ru */
 		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
 		#define SHORTSET8	1	
-		#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
-		#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
 	#endif
+
+	#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
+	#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
+
 	#define WITHIFSHIFT	1	/* используется IF SHIFT */
 	//#define WITHIFSHIFTOFFSET	(-250)	/* Начальное занчение IF SHIFT */
 	//#define WITHPBT		1	/* используется PBT (если LO3 есть) */
