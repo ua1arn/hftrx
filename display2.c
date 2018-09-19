@@ -3702,7 +3702,7 @@ enum
 			p->x = GRID2X(0);	// позиция верхнего левого угла в пикселях
 			p->y = GRID2Y(18);	// позиция верхнего левого угла в пикселях
 			p->w = GRID2X(CHARS2GRID(BDTH_ALLRX));	// размер по горизонтали в пикселях
-			p->h = GRID2Y(BDCV_WFLRX);				// размер по вертикали в пикселях
+			p->h = GRID2Y(BDCV_ALLRX);				// размер по вертикали в пикселях
 		}
 
 	#endif /* DSTYLE_UR3LMZMOD && WITHONEATTONEAMP */
@@ -3874,7 +3874,7 @@ enum
 		p->x = GRID2X(0);	// позиция верхнего левого угла в пикселях
 		p->y = GRID2Y(27);	// позиция верхнего левого угла в пикселях
 		p->w = GRID2X(CHARS2GRID(BDTH_ALLRX));	// размер по горизонтали в пикселях
-		p->h = GRID2Y(BDCV_WFLRX);				// размер по вертикали в пикселях
+		p->h = GRID2Y(BDCV_ALLRX);				// размер по вертикали в пикселях
 	}
 #else
 	#error TODO: to be implemented
