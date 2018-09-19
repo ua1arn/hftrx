@@ -4339,7 +4339,7 @@ enum
 
 #if LCDMODE_LTDC_PIP16
 
-	static RAMNOINIT_D1 ALIGNX_BEGIN PACKEDCOLOR_T colorpips [2] [GXSIZE(ALLDX, ALLDY)] ALIGNX_END;
+	static RAMNOINIT_D1 ALIGNX_BEGIN uint16_t colorpips [2] [GXSIZE(ALLDX, ALLDY)] ALIGNX_END;
 	static int pipphase;
 
 	static void nextpip(void)
@@ -4365,18 +4365,18 @@ static PACKEDCOLOR_T * getscratchpip(void)
 enum { AVGLEN = 2 };
 enum { MAXHISTLEN = 5 };
 enum { SPAVGSIZE = 5 };	// max(AVGLEN, MAXHISTLEN)
-static FLOAT_t spavgarray [SPAVGSIZE] [ALLDX];	// массив для усреднения
+static FLOAT_t spavgarray [SPAVGSIZE][ALLDX];	// массив для усреднения
 static uint_fast8_t spavgrow;				// строка, в которую последней занесены данные
 
 #if 1
-	static uint8_t wfarray [WFDY] [ALLDX];	// массив "водопада"
+	static uint8_t wfarray [WFDY][ALLDX];	// массив "водопада"
 	static uint_fast16_t wfrow;				// строка, в которую последней занесены данные
 #else
-	static uint8_t wfarray [1] [ALLDX];	// массив "водопада"
+	static uint8_t wfarray [1][ALLDX];	// массив "водопада"
 	enum { wfrow = 0 };				// строка, в которую последней занесены данные
 #endif
 enum { PALETTESIZE = 256 };
-static PACKEDCOLOR_T wfpalette [PALETTESIZE];
+static uint_fast16_t wfpalette [PALETTESIZE];
 extern uint_fast8_t wflfence;
 
 #define COLOR_CENTERMAKER	COLOR_RED
@@ -4395,32 +4395,32 @@ static void wfpalette_initialize(void)
 	{
 		for (i = 0; i < 42; ++ i)
 		{
-			wfpalette [a + i] = TFTRGB(0, 0, (int) (powf((float) 0.095 * i, 4)));
+			wfpalette [a + i] = TFTRGB565(0, 0, (int) (powf((float) 0.095 * i, 4)));
 		}
 		a += i;
 		for (i = 0; i < 42; ++ i)
 		{
-			wfpalette [a + i] = TFTRGB(0, i * 6, 255);
+			wfpalette [a + i] = TFTRGB565(0, i * 6, 255);
 		}
 		a += i;
 		for (i = 0; i < 42; ++ i)
 		{
-			wfpalette [a + i] = TFTRGB(0, 255, (int)(((float) 0.39 * (41 - i )) * ((float) 0.39 * (41 - i))) );
+			wfpalette [a + i] = TFTRGB565(0, 255, (int)(((float) 0.39 * (41 - i )) * ((float) 0.39 * (41 - i))) );
 		}
 		a += i;
 		for (i = 0; i < 42; ++ i)
 		{
-			wfpalette [a + i] = TFTRGB(i * 6, 255, 0);
+			wfpalette [a + i] = TFTRGB565(i * 6, 255, 0);
 		}
 		a += i;
 		for (i = 0; i < 42; ++ i)
 		{
-			wfpalette [a + i] = TFTRGB(255, (41 - i) * 6, 0);
+			wfpalette [a + i] = TFTRGB565(255, (41 - i) * 6, 0);
 		}
 		a += i;
 		for (i = 0; i < 42; ++ i)
 		{
-			wfpalette [a + i] = TFTRGB(255, 0, i * 6);
+			wfpalette [a + i] = TFTRGB565(255, 0, i * 6);
 		}
 		a += i;
 		// a = 252
@@ -4432,37 +4432,37 @@ static void wfpalette_initialize(void)
 		for (i = 0; i < 64; ++ i)
 		{
 			// для i = 0..15 результат формулы = ноль
-			wfpalette [a + i] = TFTRGB(0, 0, (int) (powf((float) 0.0625 * i, 4)));	// проверить результат перед попыткой применить целочисленные вычисления!
+			wfpalette [a + i] = TFTRGB565(0, 0, (int) (powf((float) 0.0625 * i, 4)));	// проверить результат перед попыткой применить целочисленные вычисления!
 		}
 		a += i;
 		// a = 64
 		for (i = 0; i < 32; ++ i)
 		{
-			wfpalette [a + i] = TFTRGB(0, i * 8, 255);
+			wfpalette [a + i] = TFTRGB565(0, i * 8, 255);
 		}
 		a += i;
 		// a = 96
 		for (i = 0; i < 32; ++ i)
 		{
-			wfpalette [a + i] = TFTRGB(0, 255, 255 - i * 8);
+			wfpalette [a + i] = TFTRGB565(0, 255, 255 - i * 8);
 		}
 		a += i;
 		// a = 128
 		for (i = 0; i < 32; ++ i)
 		{
-			wfpalette [a + i] = TFTRGB(i * 8, 255, 0);
+			wfpalette [a + i] = TFTRGB565(i * 8, 255, 0);
 		}
 		a += i;
 		// a = 160
 		for (i = 0; i<64; ++ i)
 		{
-			wfpalette [a + i] = TFTRGB(255, 255 - i * 4, 0);
+			wfpalette [a + i] = TFTRGB565(255, 255 - i * 4, 0);
 		}
 		a += i;
 		// a = 224
 		for (i = 0; i < 32; ++ i)
 		{
-			wfpalette [a + i] = TFTRGB(255, 0, i * 8);
+			wfpalette [a + i] = TFTRGB565(255, 0, i * 8);
 		}
 		a += i;
 		// a = 256

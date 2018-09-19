@@ -240,6 +240,17 @@
 				) \
 			)
 
+		// для формирования растра с изображением водопада и спектра
+		// RRRRRRR.GGGGGGGG.BBBBBBBB
+		#define TFTRGB565(red, green, blue) \
+			(  (unsigned long) \
+				(	\
+					(((unsigned long) (red) << 16) & 0xFF0000ul)  | \
+					(((unsigned long) (green) << 8) & 0xFF00ul) | \
+					(((unsigned long) (blue) << 0) & 0xFFul) \
+				) \
+			)
+
 	#else /* LCDMODE_LTDC_L8 */
 
 		//#define LCDMODE_RGB565 1
@@ -255,6 +266,9 @@
 					(((uint_fast16_t) (blue) >> 3) &  0x001f) \
 				) \
 			)
+
+		// для формирования растра с изображением водопада и спектра
+		#define TFTRGB565 TFTRGB
 
 	#endif /* LCDMODE_LTDC_L8 */
 

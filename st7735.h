@@ -40,6 +40,9 @@
 			) \
 		)
 
+	// для формирования растра с изображением водопада и спектра
+	#define TFTRGB565 TFTRGB
+
 #else /* LCDMODE_LTDC */
 	//#define LCDMODE_RGB565 1
 
@@ -55,6 +58,9 @@
 				(((uint_fast16_t) (blue) >> 3) &  0x001f) \
 			) \
 		)
+
+	// для формирования растра с изображением водопада и спектра
+	#define TFTRGB565 TFTRGB
 
 #endif /* LCDMODE_LTDC */
 

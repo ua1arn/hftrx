@@ -393,10 +393,11 @@ static void LCD_LayerInit(
 	unsigned vs,		// same as LTDC_AccumulatedVBP + 1
 	const pipparams_t * wnd,
 	uint32_t LTDC_PixelFormat,
-	unsigned scale_h
+	unsigned scale_h,
+	unsigned pixelsize	// для расчета размера строки в байтах
 	)
 {
-	const unsigned rowsize = (sizeof (PACKEDCOLOR_T) * wnd->w);	// размер одной строки в байтах
+	const unsigned rowsize = (pixelsize * wnd->w);	// размер одной строки в байтах
 
 	LTDC_Layer_InitTypeDef LTDC_Layer_InitStruct; 
 	/* Windowing configuration */
@@ -453,7 +454,7 @@ static void LCD_LayerInit(
 }
 
 
-#define WITHUSELTDCTRANSPARENCY	0
+//#define WITHUSELTDCTRANSPARENCY	1
 
 #if WITHUSELTDCTRANSPARENCY
 
@@ -464,8 +465,8 @@ static void LCD_LayerInit(
 #else /* WITHUSELTDCTRANSPARENCY */
 
 // PIP перекрывает слой под ним
-#define LAYER_PIP	LTDC_Layer2		// PIP layer
-#define LAYER_MAIN	LTDC_Layer1
+#define LAYER_PIP	LTDC_Layer2		// PIP layer = RGB565 format
+#define LAYER_MAIN	LTDC_Layer1		// L8 or RGB565 format
 
 #endif /* WITHUSELTDCTRANSPARENCY */
 
@@ -665,16 +666,16 @@ arm_hardware_ltdc_initialize(void)
 #if LCDMODE_LTDC_L24
 
 	fillLUT_L24(LAYER_MAIN);	// прямая трансляция всех байтов из памяти на выход. загрузка палитры - имеет смысл до Reload
-	LCD_LayerInit(LAYER_MAIN, HSYNC + HBP, VSYNC + VBP, & mainwnd, LTDC_Pixelformat_L8, 3);
+	LCD_LayerInit(LAYER_MAIN, HSYNC + HBP, VSYNC + VBP, & mainwnd, LTDC_Pixelformat_L8, 3, sizeof (PACKEDCOLOR_T));
 
 #elif LCDMODE_LTDC_L8
 
 	fillLUT_L8(LAYER_MAIN);	// загрузка палитры - имеет смысл до Reload
-	LCD_LayerInit(LAYER_MAIN, HSYNC + HBP, VSYNC + VBP, & mainwnd, LTDC_Pixelformat_L8, 1);
+	LCD_LayerInit(LAYER_MAIN, HSYNC + HBP, VSYNC + VBP, & mainwnd, LTDC_Pixelformat_L8, 1, sizeof (PACKEDCOLOR_T));
 
 #else
 	/* Без палитры */
-	LCD_LayerInit(LAYER_MAIN, HSYNC + HBP, VSYNC + VBP, & mainwnd, LTDC_Pixelformat_RGB565, 1);
+	LCD_LayerInit(LAYER_MAIN, HSYNC + HBP, VSYNC + VBP, & mainwnd, LTDC_Pixelformat_RGB565, 1, sizeof (PACKEDCOLOR_T));
 
 #endif /* LCDMODE_LTDC_L8 */
 
@@ -683,7 +684,7 @@ arm_hardware_ltdc_initialize(void)
 	LCD_LayerInitMain(LAYER_MAIN);	// довести инициализацию
 
 	// Bottom layer
-	LCD_LayerInit(LAYER_PIP, HSYNC + HBP, VSYNC + VBP, & pipwnd, LTDC_Pixelformat_RGB565, 1);
+	LCD_LayerInit(LAYER_PIP, HSYNC + HBP, VSYNC + VBP, & pipwnd, LTDC_Pixelformat_RGB565, 1, sizeof (uint16_t));
 	LCD_LayerInitPIP(LAYER_PIP);	// довести инициализацию
 
 #endif /* LCDMODE_LTDC_PIP16 */
