@@ -150,18 +150,20 @@ static void st7735_setcolor(COLOR_T fg, COLOR_T bg, COLOR_T transient)
 
 #if 0
 
-	if (fg == COLOR_YELLOW && bg == COLOR_BLACK)
+	if (fg == COLOR_WHITE && bg == COLOR_DARKGREEN)
+		byte2run = & byte2run_COLOR_WHITE_COLOR_DARKGREEN;
+	else if (fg == COLOR_YELLOW && bg == COLOR_BLACK)
 		byte2run = & byte2run_COLOR_YELLOW_COLOR_BLACK;
-	else if (fg == COLOR_BLACK && bg == COLOR_RED)
-		byte2run = & byte2run_COLOR_BLACK_COLOR_RED;
+	else if (fg == COLOR_WHITE && bg == COLOR_BLACK)
+		byte2run = & byte2run_COLOR_WHITE_COLOR_BLACK;
 	else if (fg == COLOR_BLACK && bg == COLOR_GREEN)
 		byte2run = & byte2run_COLOR_BLACK_COLOR_GREEN;
-	else if (fg == COLOR_RED && bg == COLOR_BLACK)
-		byte2run = & byte2run_COLOR_RED_COLOR_BLACK;
+	else if (fg == COLOR_BLACK && bg == COLOR_RED)
+		byte2run = & byte2run_COLOR_BLACK_COLOR_RED;
 	else if (fg == COLOR_GREEN && bg == COLOR_BLACK)
 		byte2run = & byte2run_COLOR_GREEN_COLOR_BLACK;
-	else if (fg == COLOR_WHITE && bg == COLOR_DARKGREEN)
-		byte2run = & byte2run_COLOR_WHITE_COLOR_DARKGREEN;
+	else if (fg == COLOR_RED && bg == COLOR_BLACK)
+		byte2run = & byte2run_COLOR_RED_COLOR_BLACK;
 	else
 		byte2run = & byte2run_COLOR_WHITE_COLOR_BLACK;
 
