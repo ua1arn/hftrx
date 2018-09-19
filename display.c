@@ -38,15 +38,15 @@
 
 /* заполнение прямоугольной области буфера цветом */
 void 
-dma2d_fillrect2(
-	PACKEDCOLOR_T * buffer,
+dma2d_fillrect2_RGB565(
+	PACKEDCOLOR565_T * buffer,
 	uint_fast16_t dx,	// размеры буфера
 	uint_fast16_t dy,
 	uint_fast16_t col,	// позиция окна в буфере,
 	uint_fast16_t row,
 	uint_fast16_t w,	// размер окна
 	uint_fast16_t h,
-	PACKEDCOLOR_T color
+	PACKEDCOLOR565_T color
 	)
 {
 #if defined (DMA2D) && LCDMODE_LTDC && ! LCDMODE_LTDC_L8
@@ -99,13 +99,13 @@ dma2d_fillrect2(
 /* заполнение прямоугольного буфера цветом */
 static void 
 dma2d_fillrect(
-	PACKEDCOLOR_T * buffer,
+	PACKEDCOLOR565_T * buffer,
 	uint_fast16_t dx,
 	uint_fast16_t dy,
-	PACKEDCOLOR_T color
+	PACKEDCOLOR565_T color
 	)
 {
-	dma2d_fillrect2(buffer, dx, dy, 0, 0, dx, dy, color);
+	dma2d_fillrect2_RGB565(buffer, dx, dy, 0, 0, dx, dy, color);
 }
 
 #if LCDMODE_COLORED
@@ -287,7 +287,7 @@ void display_showbuffer(
 
 // начальная инициализация буфера
 void display_colorbuffer_fill(
-	PACKEDCOLOR_T * buffer,
+	PACKEDCOLOR565_T * buffer,
 	uint_fast16_t dx,	
 	uint_fast16_t dy,
 	COLOR_T color
@@ -347,7 +347,7 @@ void display_colorbuffer_set(
 
 // поставить цветную точку.
 void display_colorbuffer_xor(
-	PACKEDCOLOR_T * buffer,
+	PACKEDCOLOR565_T * buffer,
 	uint_fast16_t dx,	
 	uint_fast16_t dy,
 	uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
@@ -368,7 +368,7 @@ void display_colorbuffer_xor(
 
 // установить данный буфер как область для PIP
 void display_colorbuffer_pip(
-	const PACKEDCOLOR_T * buffer,
+	const PACKEDCOLOR565_T * buffer,
 	uint_fast16_t dx,	
 	uint_fast16_t dy
 	)
@@ -379,7 +379,7 @@ void display_colorbuffer_pip(
 
 // Выдать буфер на дисплей
 void display_colorbuffer_show(
-	const PACKEDCOLOR_T * buffer,
+	const PACKEDCOLOR565_T * buffer,
 	uint_fast16_t dx,	
 	uint_fast16_t dy,
 	uint_fast16_t col,	// горизонтальная координата левого верхнего угла на экране (0..dx-1) слева направо

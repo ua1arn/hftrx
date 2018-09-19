@@ -5275,7 +5275,7 @@ void hightests(void)
 
 	#if 0//LCDMODE_COLORED
 
-		static ALIGNX_BEGIN PACKEDCOLOR_T scr [GXSIZE(dx, dy)] ALIGNX_END;
+		static ALIGNX_BEGIN PACKEDCOLOR565_T scr [GXSIZE(dx, dy)] ALIGNX_END;
 
 		display_colorbuffer_fill(scr, dx, dy, COLOR_WHITE);
 		display_colorbuffer_show(scr, dx, dy, 0, GRID2Y(topreserved));

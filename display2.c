@@ -4339,7 +4339,7 @@ enum
 
 #if LCDMODE_LTDC_PIP16
 
-	static RAMNOINIT_D1 ALIGNX_BEGIN uint16_t colorpips [2] [GXSIZE(ALLDX, ALLDY)] ALIGNX_END;
+	static RAMNOINIT_D1 ALIGNX_BEGIN PACKEDCOLOR565_T colorpips [2] [GXSIZE(ALLDX, ALLDY)] ALIGNX_END;
 	static int pipphase;
 
 	static void nextpip(void)
@@ -4353,7 +4353,7 @@ enum
 
 #endif /* LCDMODE_LTDC_PIP16 */
 
-static PACKEDCOLOR_T * getscratchpip(void)
+static PACKEDCOLOR565_T * getscratchpip(void)
 {
 #if LCDMODE_LTDC_PIP16
 	return colorpips [pipphase];
@@ -4376,7 +4376,7 @@ static uint_fast8_t spavgrow;				// строка, в которую последней занесены данные
 	enum { wfrow = 0 };				// строка, в которую последней занесены данные
 #endif
 enum { PALETTESIZE = 256 };
-static uint_fast16_t wfpalette [PALETTESIZE];
+static PACKEDCOLOR565_T wfpalette [PALETTESIZE];
 extern uint_fast8_t wflfence;
 
 #define COLOR_CENTERMAKER	COLOR_RED
@@ -4534,7 +4534,7 @@ static void display2_waterfallbg(
 	void * pv
 	)
 {
-	dma2d_fillrect2(& framebuff [0][0], DIM_X, DIM_Y, GRID2X(x0), GRID2Y(y0), ALLDX, ALLDY, COLOR_KEY);
+	dma2d_fillrect2_RGB565(& framebuff [0][0], DIM_X, DIM_Y, GRID2X(x0), GRID2Y(y0), ALLDX, ALLDY, COLOR_KEY);
 }
 
 #endif /* LCDMODE_LTDC_PIP16 */
@@ -4604,7 +4604,7 @@ static void display2_spectrum(
 	display_showbuffer(spectrmonoscr, ALLDX, SPDY, x0, y0 + SPY0);
 
 #else /* */
-	PACKEDCOLOR_T * const colorpip = getscratchpip();
+	PACKEDCOLOR565_T * const colorpip = getscratchpip();
 	(void) x0;
 	(void) y0;
 	(void) pv;
@@ -4669,7 +4669,7 @@ static void display2_spectrum(
 static void display_wfputrow(uint_fast16_t x, uint_fast16_t y, const uint8_t * p)
 {
 	enum { dx = ALLDX, dy = 1 };
-	static ALIGNX_BEGIN PACKEDCOLOR_T b [GXSIZE(dx, dy)] ALIGNX_END;
+	static ALIGNX_BEGIN PACKEDCOLOR565_T b [GXSIZE(dx, dy)] ALIGNX_END;
 	uint_fast16_t xp; 
 	for (xp = 0; xp < dx; ++ xp)
 		display_colorbuffer_set(b, dx, dy, xp, 0, wfpalette [p [xp]]);
@@ -4756,7 +4756,7 @@ static void display2_waterfall(
 
 #else /* */
 	// следы спектра ("водопад") на цветных дисплеях
-	PACKEDCOLOR_T * const colorpip = getscratchpip();
+	PACKEDCOLOR565_T * const colorpip = getscratchpip();
 	(void) x0;
 	(void) y0;
 	(void) pv;
@@ -4798,7 +4798,7 @@ static void display2_colorbuff(
 #elif LCDMODE_UC1608 || LCDMODE_UC1601
 #else /* */
 
-	PACKEDCOLOR_T * const colorpip = getscratchpip();
+	PACKEDCOLOR565_T * const colorpip = getscratchpip();
 
 	if (hamradio_get_tx() == 0)
 	{

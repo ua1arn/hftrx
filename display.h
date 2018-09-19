@@ -228,6 +228,7 @@
 		/* При использовании frame buffer цвета восьмибитные */
 		typedef uint_fast8_t COLOR_T;
 		typedef uint8_t PACKEDCOLOR_T;
+		typedef uint16_t PACKEDCOLOR565_T;
 
 
 		// RRRGGGBB
@@ -256,6 +257,7 @@
 		//#define LCDMODE_RGB565 1
 		typedef uint_fast16_t COLOR_T;
 		typedef uint16_t PACKEDCOLOR_T;
+		typedef uint16_t PACKEDCOLOR565_T;
 
 		// RRRR.RGGG.GGGB.BBBB
 		#define TFTRGB(red, green, blue) \
@@ -600,28 +602,31 @@ void display_pixelbuffer_xor(
 	);
 
 // начальная инициализация буфера
+// Формат RGB565
 void display_colorbuffer_fill(
-	PACKEDCOLOR_T * buffer,
+	PACKEDCOLOR565_T * buffer,
 	uint_fast16_t dx,	
 	uint_fast16_t dy,
 	COLOR_T color
 	);
 
+// Формат RGB565
 void 
-dma2d_fillrect2(
-	PACKEDCOLOR_T * buffer,
+dma2d_fillrect2_RGB565(
+	PACKEDCOLOR565_T * buffer,
 	uint_fast16_t dx,	// размеры буфера
 	uint_fast16_t dy,
 	uint_fast16_t x,	// позиция окна в буфере
 	uint_fast16_t y,
 	uint_fast16_t w,	// размер окна
 	uint_fast16_t h,
-	PACKEDCOLOR_T color
+	PACKEDCOLOR565_T color
 	);
 
 // Выдать цветной буфер на дисплей
+// Формат RGB565
 void display_colorbuffer_show(
-	const PACKEDCOLOR_T * buffer,
+	const PACKEDCOLOR565_T * buffer,
 	uint_fast16_t dx,	
 	uint_fast16_t dy,
 	uint_fast16_t col,	// горизонтальная координата левого верхнего угла на экране (0..dx-1) слева направо
@@ -629,24 +634,28 @@ void display_colorbuffer_show(
 	);
 
 // установить данный буфер как область для PIP
+// Формат RGB565
 void display_colorbuffer_pip(
-	const PACKEDCOLOR_T * buffer,
+	const PACKEDCOLOR565_T * buffer,
 	uint_fast16_t dx,	
 	uint_fast16_t dy
 	);
 
 // Поставить цветную точку.
+// Формат RGB565
 void display_colorbuffer_set(
-	PACKEDCOLOR_T * buffer,
+	PACKEDCOLOR565_T * buffer,
 	uint_fast16_t dx,	
 	uint_fast16_t dy,
 	uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
 	uint_fast16_t row,	// вертикальная координата пикселя (0..dy-1) сверху вниз
 	COLOR_T color
 	);
+
 // Поставить цветную точку.
+// Формат RGB565
 void display_colorbuffer_xor(
-	PACKEDCOLOR_T * buffer,
+	PACKEDCOLOR565_T * buffer,
 	uint_fast16_t dx,	
 	uint_fast16_t dy,
 	uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
