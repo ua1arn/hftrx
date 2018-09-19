@@ -326,7 +326,7 @@ void display_colorbuffer_fill(
 
 // поставить цветную точку.
 void display_colorbuffer_set(
-	PACKEDCOLOR_T * buffer,
+	PACKEDCOLOR565_T * buffer,
 	uint_fast16_t dx,	
 	uint_fast16_t dy,
 	uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо

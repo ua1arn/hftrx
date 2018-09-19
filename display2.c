@@ -4534,7 +4534,7 @@ static void display2_waterfallbg(
 	void * pv
 	)
 {
-	dma2d_fillrect2_RGB565(& framebuff [0][0], DIM_X, DIM_Y, GRID2X(x0), GRID2Y(y0), ALLDX, ALLDY, COLOR_KEY);
+	//dma2d_fillrect2_RGB565(& framebuff [0][0], DIM_X, DIM_Y, GRID2X(x0), GRID2Y(y0), ALLDX, ALLDY, COLOR_KEY);
 }
 
 #endif /* LCDMODE_LTDC_PIP16 */
