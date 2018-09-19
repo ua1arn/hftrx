@@ -33,30 +33,21 @@ static void dsp_latchwaterfall(
 	uint_fast8_t y, 
 	void * pv
 	);
-static void display2_waterfallbg(
-	uint_fast8_t x0, 
-	uint_fast8_t y0, 
-	void * pv
-	);
-
 static void display2_spectrum(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
 	void * pv
 	);
-
 static void display2_waterfall(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
 	void * pv
 	);
-
 static void display2_colorbuff(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
 	void * pv
 	);
-
 // Отображение шкалы S-метра и других измерителей
 static void display2_legend(
 	uint_fast8_t x, 
@@ -4364,10 +4355,10 @@ enum { PALETTESIZE = 256 };
 static PACKEDCOLOR565_T wfpalette [PALETTESIZE];
 extern uint_fast8_t wflfence;
 
-#define COLOR_CENTERMAKER	COLOR_RED
-#define COLOR_SPECTRUMBG	COLOR_DARKBLUE
-#define COLOR_SPECTRUMFG	COLOR_GREEN
-#define COLOR_SPECTRUMFENCE	COLOR_WHITE
+#define COLOR565_CENTERMAKER	TFTRGB565(0xFF, 0x00, 0x00)	//COLOR_RED
+#define COLOR565_SPECTRUMBG	TFTRGB565(0x00, 0x00, 0x8B)	//COLOR_DARKBLUE
+#define COLOR565_SPECTRUMFG	TFTRGB565(0x00, 0xFF, 0x00)	//COLOR_GREEN
+#define COLOR565_SPECTRUMFENCE	TFTRGB565(0xFF, 0xFF, 0xFF)	//COLOR_WHITE
 
 // Код взят из проекта Malamute
 static void wfpalette_initialize(void)
@@ -4571,7 +4562,7 @@ static void display2_spectrum(
 	{
 		memset(spectrmonoscr, 0xFF, sizeof spectrmonoscr);			// рисование способом погасить точку
 	}
-	display_setcolors(COLOR_SPECTRUMBG, COLOR_SPECTRUMFG);
+	display_setcolors(COLOR565_SPECTRUMBG, COLOR565_SPECTRUMFG);
 	display_showbuffer(spectrmonoscr, ALLDX, SPDY, x0, y0 + SPY0);
 
 #else /* */
@@ -4615,21 +4606,21 @@ static void display2_spectrum(
 			const uint_fast16_t yv = (SPDY - 1) - val;	// отображаемый уровень
 			// формирование фона растра
 			for (y = 0; y < yv && y < SPDY; ++ y)
-				display_colorbuffer_set(colorpip, ALLDX, ALLDY, x, y + SPY0, COLOR_SPECTRUMBG);	// точку фона
+				display_colorbuffer_set(colorpip, ALLDX, ALLDY, x, y + SPY0, COLOR565_SPECTRUMBG);	// точку фона
 			if (y == yv && y < SPDY)
 			{
-				display_colorbuffer_set(colorpip, ALLDX, ALLDY, x, y + SPY0, COLOR_SPECTRUMFENCE);	// точку на границе
+				display_colorbuffer_set(colorpip, ALLDX, ALLDY, x, y + SPY0, COLOR565_SPECTRUMFENCE);	// точку на границе
 				++ y;
 			}
 			// формирование занятой области растра
 			for (; y < SPDY; ++ y)
-				display_colorbuffer_set(colorpip, ALLDX, ALLDY, x, y + SPY0, COLOR_SPECTRUMFG);	// точку спектра
+				display_colorbuffer_set(colorpip, ALLDX, ALLDY, x, y + SPY0, COLOR565_SPECTRUMFG);	// точку спектра
 		}
 		// маркер центральной частоты обзора
 		// xor линию
 		for (y = 0; y < SPDY; ++ y)
 		{
-			display_colorbuffer_xor(colorpip, ALLDX, ALLDY, ALLDX / 2, y + SPY0, COLOR_CENTERMAKER); 
+			display_colorbuffer_xor(colorpip, ALLDX, ALLDY, ALLDX / 2, y + SPY0, COLOR565_CENTERMAKER); 
 		}
 	}
 
@@ -4646,7 +4637,7 @@ static void display_wfputrow(uint_fast16_t x, uint_fast16_t y, const uint8_t * p
 		display_colorbuffer_set(b, dx, dy, xp, 0, wfpalette [p [xp]]);
 
 	// маркер центральной частоты обзора
-	display_colorbuffer_xor(b, dx, dy, dx / 2, 0, COLOR_CENTERMAKER);
+	display_colorbuffer_xor(b, dx, dy, dx / 2, 0, COLOR565_CENTERMAKER);
 
 	display_colorbuffer_show(b, dx, dy, x, y);
 }
@@ -4750,7 +4741,7 @@ static void display2_waterfall(
 		// маркер центральной частоты обзора
 		for (y = 0; y < WFDY; ++ y)
 		{
-			display_colorbuffer_xor(colorpip, ALLDX, ALLDY, ALLDX / 2, y + WFY0, COLOR_RED);
+			display_colorbuffer_xor(colorpip, ALLDX, ALLDY, ALLDX / 2, y + WFY0, COLOR565_CENTERMAKER);
 		}
 	}
 

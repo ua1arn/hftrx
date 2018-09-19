@@ -228,6 +228,7 @@
 		/* При использовании frame buffer цвета восьмибитные */
 		typedef uint_fast8_t COLOR_T;
 		typedef uint8_t PACKEDCOLOR_T;
+		typedef uint_fast16_t COLOR565_T;
 		typedef uint16_t PACKEDCOLOR565_T;
 
 
@@ -242,13 +243,13 @@
 			)
 
 		// для формирования растра с изображением водопада и спектра
-		// RRRRRRR.GGGGGGGG.BBBBBBBB
+		// RRRR.RGGG.GGGB.BBBB
 		#define TFTRGB565(red, green, blue) \
-			(  (unsigned long) \
+			(  (uint_fast16_t) \
 				(	\
-					(((unsigned long) (red) << 16) & 0xFF0000ul)  | \
-					(((unsigned long) (green) << 8) & 0xFF00ul) | \
-					(((unsigned long) (blue) << 0) & 0xFFul) \
+					(((uint_fast16_t) (red) << 8) &   0xf800)  | \
+					(((uint_fast16_t) (green) << 3) & 0x07e0) | \
+					(((uint_fast16_t) (blue) >> 3) &  0x001f) \
 				) \
 			)
 
@@ -257,6 +258,7 @@
 		//#define LCDMODE_RGB565 1
 		typedef uint_fast16_t COLOR_T;
 		typedef uint16_t PACKEDCOLOR_T;
+		typedef uint_fast16_t COLOR565_T;
 		typedef uint16_t PACKEDCOLOR565_T;
 
 		// RRRR.RGGG.GGGB.BBBB
@@ -607,7 +609,7 @@ void display_colorbuffer_fill(
 	PACKEDCOLOR565_T * buffer,
 	uint_fast16_t dx,	
 	uint_fast16_t dy,
-	COLOR_T color
+	COLOR565_T color
 	);
 
 // Формат RGB565
@@ -620,7 +622,7 @@ dma2d_fillrect2_RGB565(
 	uint_fast16_t y,
 	uint_fast16_t w,	// размер окна
 	uint_fast16_t h,
-	PACKEDCOLOR565_T color
+	COLOR565_T color
 	);
 
 // Выдать цветной буфер на дисплей
@@ -649,7 +651,7 @@ void display_colorbuffer_set(
 	uint_fast16_t dy,
 	uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
 	uint_fast16_t row,	// вертикальная координата пикселя (0..dy-1) сверху вниз
-	COLOR_T color
+	COLOR565_T color
 	);
 
 // Поставить цветную точку.
@@ -660,7 +662,7 @@ void display_colorbuffer_xor(
 	uint_fast16_t dy,
 	uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
 	uint_fast16_t row,	// вертикальная координата пикселя (0..dy-1) сверху вниз
-	COLOR_T color
+	COLOR565_T color
 	);
 
 

@@ -46,7 +46,7 @@ dma2d_fillrect2_RGB565(
 	uint_fast16_t row,
 	uint_fast16_t w,	// размер окна
 	uint_fast16_t h,
-	PACKEDCOLOR565_T color
+	COLOR565_T color
 	)
 {
 #if defined (DMA2D) && LCDMODE_LTDC
@@ -102,7 +102,7 @@ dma2d_fillrect(
 	PACKEDCOLOR565_T * buffer,
 	uint_fast16_t dx,
 	uint_fast16_t dy,
-	PACKEDCOLOR565_T color
+	COLOR565_T color
 	)
 {
 	dma2d_fillrect2_RGB565(buffer, dx, dy, 0, 0, dx, dy, color);
@@ -290,14 +290,14 @@ void display_colorbuffer_fill(
 	PACKEDCOLOR565_T * buffer,
 	uint_fast16_t dx,	
 	uint_fast16_t dy,
-	COLOR_T color
+	COLOR565_T color
 	)
 {
-#if defined (DMA2D) && LCDMODE_LTDC && ! LCDMODE_LTDC_L8
+#if defined (DMA2D) && LCDMODE_LTDC
 
 	dma2d_fillrect(buffer, dx, dy, color);
 
-#else /* defined (DMA2D) && LCDMODE_LTDC && ! LCDMODE_LTDC_L8 */
+#else /* defined (DMA2D) && LCDMODE_LTDC */
 
 	uint_fast32_t len = (uint_fast32_t) dx * dy;
 	if (sizeof (PACKEDCOLOR_T) == 1)
@@ -331,7 +331,7 @@ void display_colorbuffer_set(
 	uint_fast16_t dy,
 	uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
 	uint_fast16_t row,	// вертикальная координата пикселя (0..dy-1) сверху вниз
-	COLOR_T color
+	COLOR565_T color
 	)
 {
 	ASSERT(col < dx);
@@ -352,7 +352,7 @@ void display_colorbuffer_xor(
 	uint_fast16_t dy,
 	uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
 	uint_fast16_t row,	// вертикальная координата пикселя (0..dy-1) сверху вниз
-	COLOR_T color
+	COLOR565_T color
 	)
 {
 	ASSERT(col < dx);
