@@ -49,7 +49,7 @@ dma2d_fillrect2_RGB565(
 	PACKEDCOLOR565_T color
 	)
 {
-#if defined (DMA2D) && LCDMODE_LTDC && ! LCDMODE_LTDC_L8
+#if defined (DMA2D) && LCDMODE_LTDC
 
 	// just writes the color defined in the DMA2D_OCOLR register 
 	// to the area located at the address pointed by the DMA2D_OMAR 
@@ -73,7 +73,7 @@ dma2d_fillrect2_RGB565(
 		0;
 
 	DMA2D->OPFCCR = (DMA2D->OPFCCR & ~ (DMA2D_OPFCCR_CM)) |
-		DMA2D_OPFCCR_CM_VALUE |	/* Color mode - framebuffer pixel format */
+		(2 * DMA2D_FGPFCCR_CM_0) |	/* 010: RGB565 Color mode - framebuffer pixel format */
 		0;
 
 	/* set AXI master timer */

@@ -3176,9 +3176,6 @@ enum
 			{	0,	10,	display2_legend,	REDRM_MODE, PG0, },	// Отображение оцифровки шкалы S-метра
 			/* ---------------------------------- */
 			{	0,	9,	dsp_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
-		#if LCDMODE_LTDC_PIP16
-			{	0,	9,	display2_waterfallbg,REDRM_MODE,	PG1 | PG2, },
-		#endif /* LCDMODE_LTDC_PIP16 */
 			{	0,	9,	display2_spectrum,	REDRM_BARS, PG1, },// подготовка изображения спектра
 			{	0,	9,	display2_waterfall,	REDRM_BARS, PG2, },// подготовка изображения водопада
 			{	0,	9,	display2_colorbuff,REDRM_BARS,	PG1 | PG2, },// Отображение водопада и/или спектра
@@ -3306,9 +3303,6 @@ enum
 			{	0,	10,	display2_legend,	REDRM_MODE, PG0, },	// Отображение оцифровки шкалы S-метра
 			/* ---------------------------------- */
 			{	0,	9,	dsp_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
-		#if LCDMODE_LTDC_PIP16
-			{	0,	9,	display2_waterfallbg,REDRM_MODE,	PG1 | PG2, },
-		#endif /* LCDMODE_LTDC_PIP16 */
 			{	0,	9,	display2_spectrum,	REDRM_BARS, PG1, },// подготовка изображения спектра
 			{	0,	9,	display2_waterfall,	REDRM_BARS, PG2, },// подготовка изображения водопада
 			{	0,	9,	display2_colorbuff,REDRM_BARS,	PG1 | PG2, },// Отображение водопада и/или спектра
@@ -3453,9 +3447,6 @@ enum
 		#if WITHDSPEXTDDC
 
 			{	0,	9,	dsp_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
-		#if LCDMODE_LTDC_PIP16
-			{	0,	9,	display2_waterfallbg,REDRM_MODE,	PG1 | PG2, },
-		#endif /* LCDMODE_LTDC_PIP16 */
 			{	0,	9,	display2_spectrum,	REDRM_BARS, PG1, },// подготовка изображения спектра
 			{	0,	9,	display2_waterfall,	REDRM_BARS, PG2, },// подготовка изображения водопада
 			{	0,	9,	display2_colorbuff,REDRM_BARS,	PG1 | PG2, },// Отображение водопада и/или спектра
@@ -3659,9 +3650,6 @@ enum
 			{	0,	18,	display2_bars,		REDRM_BARS, PG0, },	// S-METER, SWR-METER, POWER-METER
 		#if WITHIF4DSP
 			{	0,	18,	dsp_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
-		#if LCDMODE_LTDC_PIP16
-			{	0,	18,	display2_waterfallbg,REDRM_MODE,	PG1, },
-		#endif /* LCDMODE_LTDC_PIP16 */
 			{	0,	18,	display2_spectrum,	REDRM_BARS, PG1, },// подготовка изображения спектра
 			{	0,	18,	display2_waterfall,	REDRM_BARS, PG1, },// подготовка изображения водопада
 			{	0,	18,	display2_colorbuff,	REDRM_BARS,	PG1, },// Отображение водопада и/или спектра
@@ -3846,9 +3834,6 @@ enum
 		{	0,	30,	display2_bars,		REDRM_BARS, PG0, },	// S-METER, SWR-METER, POWER-METER
 
 		{	0,	27,	dsp_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
-	#if LCDMODE_LTDC_PIP16
-		{	0,	27,	display2_waterfallbg,REDRM_MODE,	PGWFL | PGSPE, },
-	#endif /* LCDMODE_LTDC_PIP16 */
 		{	0,	27,	display2_spectrum,	REDRM_BARS, PGSPE, },// подготовка изображения спектра
 		{	0,	27,	display2_waterfall,	REDRM_BARS, PGWFL, },// подготовка изображения водопада
 		{	0,	27,	display2_colorbuff,	REDRM_BARS,	PGWFL | PGSPE, },// Отображение водопада и/или спектра
@@ -4524,20 +4509,6 @@ static void dsp_latchwaterfall(
 		wfarray [wfrow] [x] = val;
 	}
 }
-
-
-#if LCDMODE_LTDC_PIP16
-// Прямоугольник закрашивается ключевым цветом 
-static void display2_waterfallbg(
-	uint_fast8_t x0, 
-	uint_fast8_t y0, 
-	void * pv
-	)
-{
-	//dma2d_fillrect2_RGB565(& framebuff [0][0], DIM_X, DIM_Y, GRID2X(x0), GRID2Y(y0), ALLDX, ALLDY, COLOR_KEY);
-}
-
-#endif /* LCDMODE_LTDC_PIP16 */
 
 // подготовка изображения спектра
 static void display2_spectrum(
