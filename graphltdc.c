@@ -666,12 +666,10 @@ arm_hardware_ltdc_initialize(void)
 	// Bottom layer - LTDC_Layer1
 #if LCDMODE_LTDC_L24
 
-	fillLUT_L24(LAYER_MAIN);	// пр€ма€ трансл€ци€ всех байтов из пам€ти на выход. загрузка палитры - имеет смысл до Reload
 	LCD_LayerInit(LAYER_MAIN, HSYNC + HBP, VSYNC + VBP, & mainwnd, LTDC_Pixelformat_L8, 3, sizeof (PACKEDCOLOR_T));
 
 #elif LCDMODE_LTDC_L8
 
-	fillLUT_L8(LAYER_MAIN);	// загрузка палитры - имеет смысл до Reload
 	LCD_LayerInit(LAYER_MAIN, HSYNC + HBP, VSYNC + VBP, & mainwnd, LTDC_Pixelformat_L8, 1, sizeof (PACKEDCOLOR_T));
 
 #else
@@ -695,11 +693,16 @@ arm_hardware_ltdc_initialize(void)
 	/* Enable the LTDC */
 	LTDC->GCR |= LTDC_GCR_LTDCEN;
 
+#if LCDMODE_LTDC_L24
+	fillLUT_L24(LAYER_MAIN);	// пр€ма€ трансл€ци€ всех ьайтов из пам€ти на выход. загрузка палитры - имеет смысл до Reload
+#elif LCDMODE_LTDC_L8
+	fillLUT_L8(LAYER_MAIN);	// загрузка палитры - имеет смысл до Reload
+#endif /* LCDMODE_LTDC_L8 */
 
 	/* LTDC reload configuration */  
 	LTDC->SRCR = LTDC_SRCR_IMR;	/* Immediately Reload. */
 
-	// While УVSYNCФ is УLowФ, donТt change УDISPФ signal УLowФ to УHighФ. 
+	// LQ043T3DX02K rules: While УVSYNCФ is УLowФ, donТt change УDISPФ signal УLowФ to УHighФ. 
 	HARDWARE_LTDC_SET_DISP(0);
 	local_delay_ms(150);
 	HARDWARE_LTDC_SET_DISP(1);
