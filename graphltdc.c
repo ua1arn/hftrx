@@ -268,10 +268,11 @@ fillLUT_L8(
 		}
 		/* запись значений в регистры палитры */
 		LTDC_Layerx->CLUTWR = 
-			((color << 24) & LTDC_LxCLUTWR_CLUTADD) |
-			((r << 16) & LTDC_LxCLUTWR_RED) |
-			((g << 8) & LTDC_LxCLUTWR_GREEN) |
-			((b << 0) & LTDC_LxCLUTWR_BLUE);
+			((color << LTDC_LxCLUTWR_CLUTADD_Pos) & LTDC_LxCLUTWR_CLUTADD) |
+			((r << LTDC_LxCLUTWR_RED_Pos) & LTDC_LxCLUTWR_RED) |
+			((g << LTDC_LxCLUTWR_GREEN_Pos) & LTDC_LxCLUTWR_GREEN) |
+			((b << LTDC_LxCLUTWR_BLUE_Pos) & LTDC_LxCLUTWR_BLUE) |
+			0;
 	}
 
 	LTDC_Layerx->CR |= LTDC_LxCR_CLUTEN;
