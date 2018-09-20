@@ -1826,7 +1826,7 @@ const FLASHMEM PACKEDCOLOR_T byte2run_COLOR_RED_COLOR_BLACK [256][8] =
  { COLOR_BLACK, COLOR_RED, COLOR_RED, COLOR_RED, COLOR_RED, COLOR_RED, COLOR_RED, COLOR_RED, },	/* 0xFE */
  { COLOR_RED, COLOR_RED, COLOR_RED, COLOR_RED, COLOR_RED, COLOR_RED, COLOR_RED, COLOR_RED, },	/* 0xFF */
 };
-/*
+/* Template of programm. Copy in to display_setcolors function.
 if (fg == COLOR_WHITE && bg == COLOR_DARKGREEN)
 	byte2run = & byte2run_COLOR_WHITE_COLOR_DARKGREEN;
 else if (fg == COLOR_YELLOW && bg == COLOR_BLACK)
