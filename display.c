@@ -259,7 +259,7 @@ void display_showbuffer(
 
 #if LCDMODE_S1D13781
 
-	// младший ьит левее
+	// младший бит левее
 	static const uint_fast16_t mapcolumn [16] =
 	{
 		0x0001, 0x0002, 0x0004, 0x0008, 0x0010, 0x0020, 0x0040, 0x0080, // биты для манипуляций с видеобуфером
@@ -543,9 +543,9 @@ void display_hardware_initialize(void)
 
 #elif DSTYLE_G_X480_Y272
 	// в знакогенераторе изображения символов "по горизонтали"
-	#include "./fonts/S1D13781_font_small.c"
-	#include "./fonts/S1D13781_font_half.c"
-	#include "./fonts/S1D13781_font_big.c"
+	#include "./fonts/S1D13781_font_small_LTDC.c"
+	#include "./fonts/S1D13781_font_half_LTDC.c"
+	#include "./fonts/S1D13781_font_big_LTDC.c"
 
 #else /*  */
 	// в знакогенераторе изображения символов "по вертикалти"
@@ -681,7 +681,7 @@ ltdc_vertical_pix8(
 #else /* LCDMODE_LTDC_L24 */
 	// размещаем пиксели по горизонтали
 	const FLASHMEM PACKEDCOLOR_T * const pcl = (* byte2run) [v];
-	memcpy(& framebuff [ltdc_first] [ltdc_second + ltdc_secondoffs], pcl, sizeof (PACKEDCOLOR_T) * 8);
+	memcpy(& framebuff [ltdc_first] [ltdc_second + ltdc_secondoffs], pcl, sizeof (* pcl) * 8);
 	arm_hardware_flush((uintptr_t) & framebuff [ltdc_first] [ltdc_second + ltdc_secondoffs], sizeof (PACKEDCOLOR_T) * 8);
 	if ((ltdc_secondoffs += 8) >= ltdc_h)
 	{
@@ -697,11 +697,13 @@ static void
 ltdc_horizontal_pix8(
 	uint_fast8_t cgcol,
 	uint_fast8_t cgrow,
-	uint_fast8_t v
+	uint_fast8_t v,
+	uint_fast8_t w	// 1..8
 	)
 {
 	// размещаем пиксели по горизонтали
-	memcpy(& framebuff [ltdc_first + cgrow] [ltdc_second + cgcol], (* byte2run) [v], sizeof (* byte2run) [v]);
+	const FLASHMEM PACKEDCOLOR_T * const pcl = (* byte2run) [v];
+	memcpy(& framebuff [ltdc_first + cgrow] [ltdc_second + cgcol], pcl, sizeof (* pcl) * w);
 }
 
 static uint_fast8_t
@@ -735,67 +737,61 @@ static void ltdc_horizontal_put_char_small(char cc)
 	for (cgrow = 0; cgrow < SMALLCHARH; ++ cgrow)
 	{
 		uint_fast8_t cgcol;
-		for (cgcol = 0; cgcol < 8 * (sizeof S1D13781_smallfont [0][0] / sizeof S1D13781_smallfont [0][0][0]); cgcol += 8)
+		for (cgcol = 0; cgcol < 8 * (sizeof S1D13781_smallfont_LTDC [0][0] / sizeof S1D13781_smallfont_LTDC [0][0][0]); cgcol += 8)
 		{
-			const FLASHMEM uint8_t * p = & S1D13781_smallfont [c][cgrow] [cgcol / 8];
-			ltdc_horizontal_pix8(cgcol, cgrow, * p);	// заполнить пикселями, раскрасив
+			const FLASHMEM uint8_t * p = & S1D13781_smallfont_LTDC [c][cgrow] [cgcol / 8];
+			ltdc_horizontal_pix8(cgcol, cgrow, * p, 8);	// заполнить пикселями, раскрасив
 		}
 	}
 	ltdc_second += SMALLCHARW;
 }
 
 // NARROWCHARSTARTCOLUMN - начальная колонка в большом знакогенераторе (исходном битмапе в ПЗУ)
+static uint_fast8_t ulmin8(
+	uint_fast8_t a,
+	uint_fast8_t b)
+{
+	return a < b ? a : b;
+}
 
 // Вызов этой функции только внутри display_wrdatabig_begin() и display_wrdatabig_end();
 static void ltdc_horizontal_put_char_big(char cc)
 {
-	enum { NHALFS = (sizeof S1D13781_bigfont [0] / sizeof S1D13781_bigfont [0][0]) };
-	const uint_fast8_t startcol = ((cc == '.' || cc == '#') ? NARROWCHARSTARTCOLUMN : 0);	// начальная колонка знакогенератора, откуда начинать.
+	const uint_fast8_t width = ((cc == '.' || cc == '#') ? NARROWCHARSWIDTH  : BIGCHARW);	// полнаяширина символа в пикселях
     const uint_fast8_t c = bigfont_decode((unsigned char) cc);
-	uint_fast8_t lowhalf;
-	for (lowhalf = 0; lowhalf < NHALFS; ++ lowhalf)
+	uint_fast8_t cgrow;
+	for (cgrow = 0; cgrow < BIGCHARH; ++ cgrow)
 	{
-		uint_fast8_t cgrow;
-		for (cgrow = 0; cgrow < 8 && (lowhalf * 8 + cgrow) < BIGCHARH; ++ cgrow)
+		enum { CGROWBYTES = (sizeof S1D13781_bigfont_LTDC [0][0] / sizeof S1D13781_bigfont_LTDC [0][0][0]) };
+		uint_fast8_t cgcol;
+		for (cgcol = 0; cgcol < width; cgcol += 8)
 		{
-			uint_fast8_t i = startcol;
-			enum { NCOLS = (sizeof S1D13781_bigfont [0][0] / sizeof S1D13781_bigfont [0][0][0]) };
-			const FLASHMEM uint8_t * p = & S1D13781_bigfont [c][lowhalf][0];
-
-			for (; i < NCOLS; ++ i)
-			{
-				const uint_fast8_t v = p [i] & (1U << cgrow);
-				ltdc_pixel(i - startcol, cgrow + lowhalf * 8, v);
-			}
+			uint_fast8_t w = ulmin8(width - cgcol, 8);
+			const FLASHMEM uint8_t * p = & S1D13781_bigfont_LTDC [c][cgrow] [cgcol / 8];
+			ltdc_horizontal_pix8(cgcol, cgrow, * p, w);	// заполнить пикселями, раскрасив
 		}
 	}
-	ltdc_second += BIGCHARW - startcol;
+	ltdc_second += width;
 }
 
 // Вызов этой функции только внутри display_wrdatabig_begin() и display_wrdatabig_end();
 static void ltdc_horizontal_put_char_half(char cc)
 {
-	enum { NHALFS = (sizeof S1D13781_halffont [0] / sizeof S1D13781_halffont [0][0]) };
-	const uint_fast8_t startcol = 0;	// начальная колонка знакогенератора, откуда начинать.
+	const uint_fast8_t width = HALFCHARW;
     const uint_fast8_t c = bigfont_decode((unsigned char) cc);
-	uint_fast8_t lowhalf;
-	for (lowhalf = 0; lowhalf < NHALFS; ++ lowhalf)
+	uint_fast8_t cgrow;
+	for (cgrow = 0; cgrow < HALFCHARH; ++ cgrow)
 	{
-		uint_fast8_t cgrow;
-		for (cgrow = 0; cgrow < 8 && (lowhalf * 8 + cgrow) < HALFCHARH; ++ cgrow)
+		enum { CGROWBYTES = (sizeof S1D13781_halffont_LTDC [0][0] / sizeof S1D13781_halffont_LTDC [0][0][0]) };
+		uint_fast8_t cgcol;
+		for (cgcol = 0; cgcol < width; cgcol += 8)
 		{
-			uint_fast8_t i = startcol;
-			enum { NCOLS = (sizeof S1D13781_halffont [0][0] / sizeof S1D13781_halffont [0][0][0]) };
-			const FLASHMEM uint8_t * p = & S1D13781_halffont [c][lowhalf][0];
-
-			for (; i < NCOLS; ++ i)
-			{
-				const uint_fast8_t v = p [i] & (1U << cgrow);
-				ltdc_pixel(i - startcol, cgrow + lowhalf * 8, v);
-			}
+			uint_fast8_t w = ulmin8(width - cgcol, 8);
+			const FLASHMEM uint8_t * p = & S1D13781_halffont_LTDC [c][cgrow] [cgcol / 8];
+			ltdc_horizontal_pix8(cgcol, cgrow, * p, w);	// заполнить пикселями, раскрасив
 		}
 	}
-	ltdc_second += HALFCHARW - startcol;
+	ltdc_second += width;
 }
 
 #else /* LCDMODE_LQ043T3DX02K */
