@@ -620,7 +620,7 @@ void display_setcolors3(COLOR_T fg, COLOR_T bg, COLOR_T fgbg)
 
 // Выдать один цветной пиксель
 static void 
-ltdc_horizontal_pix1color(
+ltdc_pix1color(
 	uint_fast8_t cgcol,		// смещение в пикселях относительно координат, поставленных display_gotoxy
 	uint_fast8_t cgrow,
 	PACKEDCOLOR_T color
@@ -636,13 +636,13 @@ ltdc_horizontal_pix1color(
 
 // Выдать один цветной пиксель (фон/символ)
 static void 
-ltdc_horizontal_pix1(
+ltdc_pixel(
 	uint_fast8_t cgcol,		// смещение в пикселях относительно координат, поставленных display_gotoxy
 	uint_fast8_t cgrow,
-	uint_fast8_t v
+	uint_fast8_t v			// 0 - цвет background, иначе - foreground
 	)
 {
-	ltdc_horizontal_pix1color(cgcol, cgrow, v ? ltdc_fg : ltdc_bg);
+	ltdc_pix1color(cgcol, cgrow, v ? ltdc_fg : ltdc_bg);
 }
 
 
@@ -653,28 +653,28 @@ ltdc_vertical_pix8(
 	)
 {
 
-#if LCDMODE_LTDC_L24
+#if LCDMODE_LTDC_L24 || LCDMODE_LQ043T3DX02K
 
-	ltdc_horizontal_pix1(0, 0, v & 0x01);
-	ltdc_horizontal_pix1(0, 1, v & 0x02);
-	ltdc_horizontal_pix1(0, 2, v & 0x04);
-	ltdc_horizontal_pix1(0, 3, v & 0x08);
-	ltdc_horizontal_pix1(0, 4, v & 0x10);
-	ltdc_horizontal_pix1(0, 5, v & 0x20);
-	ltdc_horizontal_pix1(0, 6, v & 0x40);
-	ltdc_horizontal_pix1(0, 7, v & 0x80);
+	ltdc_pixel(0, 0, v & 0x01);
+	ltdc_pixel(0, 1, v & 0x02);
+	ltdc_pixel(0, 2, v & 0x04);
+	ltdc_pixel(0, 3, v & 0x08);
+	ltdc_pixel(0, 4, v & 0x10);
+	ltdc_pixel(0, 5, v & 0x20);
+	ltdc_pixel(0, 6, v & 0x40);
+	ltdc_pixel(0, 7, v & 0x80);
 
 #elif LCDMODE_LQ043T3DX02K
 
 	const FLASHMEM PACKEDCOLOR_T * const pcl = (* byte2run) [v];
-	ltdc_horizontal_pix1color(0, 0, pcl [0]);
-	ltdc_horizontal_pix1color(0, 1, pcl [1]);
-	ltdc_horizontal_pix1color(0, 2, pcl [2]);
-	ltdc_horizontal_pix1color(0, 3, pcl [3]);
-	ltdc_horizontal_pix1color(0, 4, pcl [4]);
-	ltdc_horizontal_pix1color(0, 5, pcl [5]);
-	ltdc_horizontal_pix1color(0, 6, pcl [6]);
-	ltdc_horizontal_pix1color(0, 7, pcl [7]);
+	ltdc_pix1color(0, 0, pcl [0]);
+	ltdc_pix1color(0, 1, pcl [1]);
+	ltdc_pix1color(0, 2, pcl [2]);
+	ltdc_pix1color(0, 3, pcl [3]);
+	ltdc_pix1color(0, 4, pcl [4]);
+	ltdc_pix1color(0, 5, pcl [5]);
+	ltdc_pix1color(0, 6, pcl [6]);
+	ltdc_pix1color(0, 7, pcl [7]);
 
 	++ ltdc_secondoffs;
 
@@ -765,7 +765,7 @@ static void ltdc_horizontal_put_char_big(char cc)
 			for (; i < NCOLS; ++ i)
 			{
 				const uint_fast8_t v = p [i] & (1U << cgrow);
-				ltdc_horizontal_pix1(i - startcol, cgrow + lowhalf * 8, v);
+				ltdc_pixel(i - startcol, cgrow + lowhalf * 8, v);
 			}
 		}
 	}
@@ -791,7 +791,7 @@ static void ltdc_horizontal_put_char_half(char cc)
 			for (; i < NCOLS; ++ i)
 			{
 				const uint_fast8_t v = p [i] & (1U << cgrow);
-				ltdc_horizontal_pix1(i - startcol, cgrow + lowhalf * 8, v);
+				ltdc_pixel(i - startcol, cgrow + lowhalf * 8, v);
 			}
 		}
 	}
