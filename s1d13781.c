@@ -756,6 +756,14 @@ static void chargen_beginofchar(void)
 
 }
 
+static void chargen_flush(void)
+{
+	set_data16(chargen_bitacc);
+	chargen_addr += 2;
+	chargen_bitpos = 0;
+	chargen_bitacc = 0;
+}	
+
 static void chargen_putbit(uint_fast8_t f)
 {
 	if (chargen_addr >= S1D_PHYSICAL_VMEM_SIZE)
@@ -767,25 +775,14 @@ static void chargen_putbit(uint_fast8_t f)
 	}
 
 	if (++ chargen_bitpos >= 16)
-	{
-		set_data16(chargen_bitacc);
-		chargen_addr += 2;
-		chargen_bitpos = 0;
-		chargen_bitacc = 0;
-	}	
-
+		chargen_flush();
 }
 
 
 static void chargen_endofchar(void)
 {
 	if ((chargen_addr < S1D_PHYSICAL_VMEM_SIZE) && (chargen_bitpos != 0))
-	{
-		set_data16(chargen_bitacc);
-		chargen_addr += 2;
-		chargen_bitpos = 0;
-		chargen_bitacc = 0;
-	}	
+		chargen_flush();
 
 	s1d13781_unselect();
 }
