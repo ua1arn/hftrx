@@ -12,6 +12,10 @@
 
 #include "hardware.h"	/* зависящие от процессора функции работы с портами */
 
+
+typedef uint_fast16_t COLOR565_T;
+typedef uint16_t PACKEDCOLOR565_T;
+
 #if LCDMODE_UC1601
 
 	#include "uc1601s.h"
@@ -228,8 +232,6 @@
 		/* При использовании frame buffer цвета восьмибитные */
 		typedef uint_fast8_t COLOR_T;
 		typedef uint8_t PACKEDCOLOR_T;
-		typedef uint_fast16_t COLOR565_T;
-		typedef uint16_t PACKEDCOLOR565_T;
 
 
 		// RRRGGGBB
@@ -258,8 +260,6 @@
 		//#define LCDMODE_RGB565 1
 		typedef uint_fast16_t COLOR_T;
 		typedef uint16_t PACKEDCOLOR_T;
-		typedef uint_fast16_t COLOR565_T;
-		typedef uint16_t PACKEDCOLOR565_T;
 
 		// RRRR.RGGG.GGGB.BBBB
 		#define TFTRGB(red, green, blue) \
@@ -277,7 +277,6 @@
 	#endif /* LCDMODE_LTDC_L8 */
 
 #endif /* LCDMODE_LTDC */
-
 
 #if LCDMODE_S1D13781
 	// биты слова буфера располагаются на экране горизонтально

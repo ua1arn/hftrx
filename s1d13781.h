@@ -98,6 +98,8 @@
 			) \
 		)
 
+	#define TFTRGB565 TFTRGB
+
 #elif S1D_DISPLAY_BPP == 24
 
 	typedef uint_fast32_t COLOR_T;

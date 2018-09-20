@@ -85,7 +85,7 @@
 #define REGFLAG_END_OF_TABLE 0xFF     // End of Registers Marker
 
 
-#include "./fonts/S1D13781_font_small.c"
+#include "./fonts/S1D13781_font_small_LTDC.c"
 #include "./fonts/S1D13781_font_half.c"
 #include "./fonts/S1D13781_font_big.c"
 
@@ -101,9 +101,9 @@
 	#define S1D13781_SETFLAGS (0x00 << 3)
 #endif
 
-#define BIGCHARWIDTH (sizeof S1D13781_bigfont [0][0] / sizeof S1D13781_bigfont [0][0][0])
-#define HALFCHARWIDTH (sizeof S1D13781_halffont [0][0] / sizeof S1D13781_halffont [0][0][0])
-#define BIGCHARHEIGHT (8 * (sizeof S1D13781_bigfont [0] / sizeof S1D13781_bigfont [0][0]))
+#define BIGCHARWIDTH BIGCHARW	//(sizeof S1D13781_bigfont [0][0] / sizeof S1D13781_bigfont [0][0][0])
+#define HALFCHARWIDTH HALFCHARW	//(sizeof S1D13781_halffont [0][0] / sizeof S1D13781_halffont [0][0][0])
+#define BIGCHARHEIGHT BIGCHARH	//(8 * (sizeof S1D13781_bigfont [0] / sizeof S1D13781_bigfont [0][0]))
 
 #define SMALLCHARWIDTH SMALLCHARW
 #define SMALLCHARHEIGHT	SMALLCHARH
@@ -962,7 +962,7 @@ static void loadchargens(void)
 				//uint_fast8_t i = 0;
 				//uint_fast8_t i = (cc == '.' || cc == '#') ? 12 : 0;	// начальная колонка знакогенератора, откуда начинать.
 				//const uint_fast8_t c = halffont_decode((unsigned char) cc);
-				const FLASHMEM uint8_t * p = & S1D13781_smallfont [c][cgrow][cgcol / 8];
+				const FLASHMEM uint8_t * p = & S1D13781_smallfont_LTDC [c][cgrow][cgcol / 8];
 
 				const uint_fast8_t v = * p & (1U << (cgcol % 8));
 				chargen_putbit(v);
@@ -989,7 +989,7 @@ static void loadchargens(void)
 				//uint_fast8_t i = 0;
 				//uint_fast8_t i = (cc == '.' || cc == '#') ? 12 : 0;	// начальная колонка знакогенератора, откуда начинать.
 				//const uint_fast8_t c = halffont_decode((unsigned char) cc);
-				const FLASHMEM uint8_t * p = & S1D13781_smallfont [c][cgrow][cgcol / 8];
+				const FLASHMEM uint8_t * p = & S1D13781_smallfont_LTDC [c][cgrow][cgcol / 8];
 
 				const uint_fast8_t v = * p & (1U << (cgcol % 8));
 				chargen_putbit(v);
@@ -1218,6 +1218,7 @@ static void s1d13781_put_char_big(char cc)
 		// '#' - узкий пробел
 		if (cc == '.' || cc == '#')
 		{
+			// Use NARROWCHARSWIDTH
 			const unsigned NARROWCHARWIDTH = (BIGCHARWIDTH - NARROWCHARSTARTCOLUMN);
 			bitblt_chargen_big(NARROWCHARWIDTH, getnarrowcharbase(cc));
 			s1d13781_next_column(NARROWCHARWIDTH);

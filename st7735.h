@@ -29,8 +29,6 @@
 
 	typedef uint_fast16_t COLOR_T;
 	typedef uint16_t PACKEDCOLOR_T;
-	typedef uint_fast16_t COLOR565_T;
-	typedef uint16_t PACKEDCOLOR565_T;
 
 	// BBBB.BGGG.GGGR.RRRR
 	#define TFTRGB(red, green, blue) \
@@ -50,8 +48,6 @@
 
 	typedef uint_fast16_t COLOR_T;
 	typedef uint16_t PACKEDCOLOR_T;
-	typedef uint_fast16_t COLOR565_T;
-	typedef uint16_t PACKEDCOLOR565_T;
 
 	// RRRR.RGGG.GGGB.BBBB
 	#define TFTRGB(red, green, blue) \
