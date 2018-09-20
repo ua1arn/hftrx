@@ -716,7 +716,7 @@ void arm_hardware_ltdc_pip_set(uintptr_t p)
 #if LCDMODE_LTDC_PIP16
 	LAYER_PIP->CFBAR = p;
 	LAYER_PIP->CR |= LTDC_LxCR_LEN;
-	LTDC->SRCR = LTDC_SRCR_VBR;	/* Vertical Blanking Reload. */
+	LTDC->SRCR = LTDC_SRCR_IMR; //LTDC_SRCR_VBR;	/* Vertical Blanking Reload. */
 #endif /* LCDMODE_LTDC_PIP16 */
 }
 
@@ -724,7 +724,7 @@ void arm_hardware_ltdc_pip_off(void)	// set PIP framebuffer address
 {
 #if LCDMODE_LTDC_PIP16
 	LAYER_PIP->CR &= ~ LTDC_LxCR_LEN;
-	LTDC->SRCR = LTDC_SRCR_VBR;	/* Vertical Blanking Reload. */
+	LTDC->SRCR = LTDC_SRCR_IMR; //LTDC_SRCR_VBR;	/* Vertical Blanking Reload. */
 #endif /* LCDMODE_LTDC_PIP16 */
 }
 #endif /* CPUSTYLE_STM32F && LCDMODE_LTDC */
