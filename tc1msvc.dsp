@@ -2050,15 +2050,15 @@ SOURCE=.\fonts\ls020_font_small.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\fonts\S1D13781_font_big.c
+SOURCE=.\fonts\S1D13781_font_big_LTDC.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\fonts\S1D13781_font_half.c
+SOURCE=.\fonts\S1D13781_font_half_LTDC.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\fonts\S1D13781_font_small.c
+SOURCE=.\fonts\S1D13781_font_small_LTDC.c
 # End Source File
 # Begin Source File
 

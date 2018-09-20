@@ -757,7 +757,7 @@ static uint_fast8_t ulmin8(
 // Вызов этой функции только внутри display_wrdatabig_begin() и display_wrdatabig_end();
 static void ltdc_horizontal_put_char_big(char cc)
 {
-	const uint_fast8_t width = ((cc == '.' || cc == '#') ? NARROWCHARSWIDTH  : BIGCHARW);	// полнаяширина символа в пикселях
+	const uint_fast8_t width = ((cc == '.' || cc == '#') ? BIGCHARW_NARRW  : BIGCHARW);	// полнаяширина символа в пикселях
     const uint_fast8_t c = bigfont_decode((unsigned char) cc);
 	uint_fast8_t cgrow;
 	for (cgrow = 0; cgrow < BIGCHARH; ++ cgrow)

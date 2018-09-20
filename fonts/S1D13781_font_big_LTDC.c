@@ -3,7 +3,7 @@
  */
 #define BIGCHARH 64 /* Font height */
 #define BIGCHARW 36 /* Font width */
-#define NARROWCHARSWIDTH 12
+#define BIGCHARW_NARRW 12
 static const FLASHMEM uint8_t S1D13781_bigfont_LTDC [13][64][5] = 
 {
 	{
