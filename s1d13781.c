@@ -778,6 +778,20 @@ static void chargen_putbit(uint_fast8_t f)
 		chargen_flush();
 }
 
+static 
+void
+chargen_putbits(
+	const FLASHMEM uint8_t * raster, 
+	uint_fast8_t width
+	)
+{
+	uint_fast8_t col;
+	for (col = 0; col < width; ++ col)
+	{
+		chargen_putbit((1uL << (col % 8)) & raster [col / 8]);
+	}
+}
+
 
 static void chargen_endofchar(void)
 {
@@ -814,7 +828,7 @@ bigfont_decode(uint_fast8_t c)
 
 static uint_fast8_t
 //NOINLINEAT
-ascii_decode(uint_fast8_t c)
+smallfont_decode(uint_fast8_t c)
 {
 	return c - ' ';
 }
@@ -860,14 +874,7 @@ static void loadchargens(void)
 		chargen_beginofchar();
 		for (cgrow = 0; cgrow < BIGCHARH; ++ cgrow)
 		{
-			uint_fast8_t cgcol;
-			for (cgcol = 0; cgcol < BIGCHARW_NARROW; ++ cgcol)
-			{
-				const FLASHMEM uint8_t * const p = & S1D13781_bigfont_LTDC [cv][cgrow] [cgcol / 8];
-
-				const uint_fast8_t v = * p & (1U << (cgcol % 8));
-				chargen_putbit(v);
-			}
+			chargen_putbits(S1D13781_bigfont_LTDC [cv][cgrow], BIGCHARW_NARROW);
 		}
 		chargen_endofchar();
 		narrowchargenstep = chargen_addr - a;
@@ -885,14 +892,7 @@ static void loadchargens(void)
 		chargen_beginofchar();
 		for (cgrow = 0; cgrow < BIGCHARH; ++ cgrow)
 		{
-			uint_fast8_t cgcol;
-			for (cgcol = 0; cgcol < BIGCHARW; ++ cgcol)
-			{
-				const FLASHMEM uint8_t * const p = & S1D13781_bigfont_LTDC [c] [cgrow] [cgcol / 8];
-
-				const uint_fast8_t v = * p & (1U << (cgcol % 8));
-				chargen_putbit(v);
-			}
+			chargen_putbits(S1D13781_bigfont_LTDC [c] [cgrow], BIGCHARW);
 		}
 		chargen_endofchar();
 		bigchargenstep = chargen_addr - a;
@@ -910,14 +910,7 @@ static void loadchargens(void)
 		chargen_beginofchar();
 		for (cgrow = 0; cgrow < HALFCHARH; ++ cgrow)
 		{
-			uint_fast8_t cgcol;
-			for (cgcol = 0; cgcol < HALFCHARW; ++ cgcol)
-			{
-				const FLASHMEM uint8_t * const p = & S1D13781_halffont_LTDC [c] [cgrow] [cgcol / 8];
-
-				const uint_fast8_t v = * p & (1U << (cgcol % 8));
-				chargen_putbit(v);
-			}
+			chargen_putbits(S1D13781_halffont_LTDC [c] [cgrow], HALFCHARW);
 		}
 		chargen_endofchar();
 		halfchargenstep = chargen_addr - a;
@@ -934,14 +927,7 @@ static void loadchargens(void)
 		uint_fast8_t cgrow;
 		for (cgrow = 0; cgrow < SMALLCHARH; ++ cgrow)
 		{
-			uint_fast8_t cgcol;
-			for (cgcol = 0; cgcol < SMALLCHARW; ++ cgcol)
-			{
-				const FLASHMEM uint8_t * const p = & S1D13781_smallfont_LTDC [c] [cgrow] [cgcol / 8];
-
-				const uint_fast8_t v = * p & (1U << (cgcol % 8));
-				chargen_putbit(v);
-			}
+			chargen_putbits(S1D13781_smallfont_LTDC [c] [cgrow], SMALLCHARW);
 		}
 		chargen_endofchar();
 		smallchargenstep = chargen_addr - a;
@@ -958,14 +944,7 @@ static void loadchargens(void)
 		uint_fast8_t cgrow;
 		for (cgrow = 0; cgrow < SMALLCHARH; ++ cgrow)
 		{
-			uint_fast8_t cgcol;
-			for (cgcol = 0; cgcol < SMALLCHARW; ++ cgcol)
-			{
-				const FLASHMEM uint8_t * const p = & S1D13781_smallfont_LTDC [c] [cgrow] [cgcol / 8];
-
-				const uint_fast8_t v = * p & (1U << (cgcol % 8));
-				chargen_putbit(v);
-			}
+			chargen_putbits(S1D13781_smallfont_LTDC [c] [cgrow], SMALLCHARW);
 		}
 		chargen_endofchar();
 		smallchargenstep2 = chargen_addr - a;
@@ -1005,14 +984,14 @@ static uint_fast32_t getsmallcharbase(
 	char cc	// символ для отображения
 	)
 {
-	return smallchargenbase + ascii_decode(cc) * smallchargenstep;
+	return smallchargenbase + smallfont_decode(cc) * smallchargenstep;
 }
 
 static uint_fast32_t getsmallcharbase2(
 	char cc	// символ для отображения
 	)
 {
-	return smallchargenbase2 + ascii_decode(cc) * smallchargenstep2;
+	return smallchargenbase2 + smallfont_decode(cc) * smallchargenstep2;
 }
 
 
