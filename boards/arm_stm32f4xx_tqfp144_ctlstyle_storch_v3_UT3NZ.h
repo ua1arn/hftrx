@@ -336,8 +336,8 @@
 	//#define WITHNMEA		1	/* используется NMEA parser */
 	//#define WITHBEACON	1	/* Используется режим маяка */
 	#define WITHVOX			1	/* используется VOX */
-	#define WITHSHOWSWRPWR 1	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
-	#define WITHSWRMTR	1		/* Измеритель КСВ */
+	//#define WITHSHOWSWRPWR 1	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
+	//#define WITHSWRMTR	1		/* Измеритель КСВ */
 	//#define WITHPWRMTR	1	/* Индикатор выходной мощности или */
 	//#define WITHPWRLIN	1	/* Индикатор выходной мощности показывает напряжение а не мощность */
 	#define WITHBARS		1	/* отображение S-метра и SWR-метра */
@@ -348,10 +348,11 @@
 	#define WITHVIBROPLEX	1	/* возможность эмуляции передачи виброплексом */
 	#define WITHSPKMUTE		1	/* управление выключением динамика */
 	// Есть ли регулировка параметров потенциометрами
-	////#define WITHPOTWPM		1	/* используется регулировка скорости передачи в телеграфе потенциометром */
-	#define WITHPOTIFGAIN		1	/* регуляторы усиления ПЧ на потенциометрах */
+	#define WITHPOTWPM		1	/* используется регулировка скорости передачи в телеграфе потенциометром */
+	//#define WITHPOTIFGAIN		1	/* регуляторы усиления ПЧ на потенциометрах */
 	#define WITHPOTAFGAIN		1	/* регуляторы усиления НЧ на потенциометрах */
-	//#define WITHPOTPOWER	1	/* регулятор мощности на потенциометре */
+	#define WITHPOTPOWER	1	/* регулятор мощности на потенциометре */
+	#define WITHPOTNOTCH	1	/* используется регулировка частоты NOTCH фильтрач потенциометром */
 	//#define WITHANTSELECT	1	// Управление переключением антенн
 
 	#define WITHMENU 	1	/* функциональность меню может быть отключена - если настраивать нечего */
@@ -434,6 +435,15 @@
 	#define VOLTLEVEL_LOWER		10	// 1.0 kOhm - нижний резистор
 
 
+/*
+
+	WPM 1-скорость cw
+
+	AF 2-громкость нч
+	RF 3-мощность tx
+	REFL 4-ничего
+	FORWARD 5-NOTCH
+*/
 	// Назначения входов АЦП процессора.
 	enum 
 	{ 
@@ -458,8 +468,11 @@
 		POTWPM = 6,			// PA6 потенциометр управления скоростью передачи в телеграфе
 	#endif /* WITHPOTWPM */
 	#if WITHPOTPOWER
-		POTPOWER = 6,			// регулировка мощности
+		POTPOWER = 3,			// регулировка мощности
 	#endif /* WITHPOTPOWER */
+	#if WITHPOTNOTCH
+		POTNOTCH = 14,			// регулировка частоты NOTCH фильтра
+	#endif /* WITHPOTNOTCH */
 
 		ALCINIX = 9,		// PB1 ALC IN
 
