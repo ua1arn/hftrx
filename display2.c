@@ -4501,6 +4501,12 @@ static void dsp_latchwaterfall(
 	}
 }
 
+#if WITHDISPLAYNOFILLSPECTRUM
+	static uint_fast8_t glob_nofill = 1;
+#else /* WITHDISPLAYNOFILLSPECTRUM */
+	static uint_fast8_t glob_nofill;
+#endif /* WITHDISPLAYNOFILLSPECTRUM */
+
 // подготовка изображения спектра
 static void display2_spectrum(
 	uint_fast8_t x0, 
@@ -4554,8 +4560,15 @@ static void display2_spectrum(
 		#endif
 			// Формирование графика
 			const int yv = (SPDY - 1) - val;
-			for (y = SPDY - 1; y >= yv; -- y)
-				display_pixelbuffer_xor(spectrmonoscr, ALLDX, SPDY, x, y);	// xor точку
+			if (glob_nofill != 0)
+			{
+				display_pixelbuffer_xor(spectrmonoscr, ALLDX, SPDY, x, yv);	// xor точку
+			}
+			else
+			{
+				for (y = SPDY - 1; y >= yv; -- y)
+					display_pixelbuffer_xor(spectrmonoscr, ALLDX, SPDY, x, y);	// xor точку
+			}
 		}
 	}
 	else
@@ -4612,9 +4625,18 @@ static void display2_spectrum(
 				display_colorbuffer_set(colorpip, ALLDX, ALLDY, x, y + SPY0, COLOR565_SPECTRUMFENCE);	// точку на границе
 				++ y;
 			}
-			// формирование занятой области растра
-			for (; y < SPDY; ++ y)
-				display_colorbuffer_set(colorpip, ALLDX, ALLDY, x, y + SPY0, COLOR565_SPECTRUMFG);	// точку спектра
+			if (glob_nofill != 0)
+			{
+				// под спектром цветом фона спектра
+				for (; y < SPDY; ++ y)
+					display_colorbuffer_set(colorpip, ALLDX, ALLDY, x, y + SPY0, COLOR565_SPECTRUMBG);	// точку спектра
+			}
+			else
+			{
+				// формирование занятой области растра
+				for (; y < SPDY; ++ y)
+					display_colorbuffer_set(colorpip, ALLDX, ALLDY, x, y + SPY0, COLOR565_SPECTRUMFG);	// точку спектра
+			}
 		}
 		// маркер центральной частоты обзора
 		// xor линию
