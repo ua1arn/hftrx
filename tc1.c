@@ -3010,7 +3010,35 @@ static uint_fast8_t alignmode;		/* режимы дл€ настройки аппаратной части (0-норм
 		uint_fast32_t freq
 		)
 	{
-		return dcdcrefdiv;
+		struct FREQ 
+		{
+			uint_fast16_t dcdcdiv;
+			uint32_t fmin;
+			uint32_t fmax;
+		};
+		static const FLASHMEM struct FREQ freqs [] = {
+		  { 63, 6900000,  UINT32_MAX },
+		  { 62, 0,		6900000 },	
+		};
+
+		uint_fast8_t high = (sizeof freqs / sizeof freqs [0]);
+		uint_fast8_t low = 0;
+		uint_fast8_t middle;	// результат поиска
+
+		// ƒвоичный поиск
+		while (low < high)
+		{
+			middle = (high - low) / 2 + low;
+			if (freq < freqs [middle].fmin)	// нижн€€ граница не включаетс€ - дл€ обеспечени€ формального попадани€ частоты DCO в рабочий диапазон
+				low = middle + 1;
+			else if (freq >= freqs [middle].fmax)
+				high = middle;		// переходим к поиску в меньших индексах
+			else
+				goto found;
+		}
+
+	found: 
+		return freqs [middle].dcdcdiv;
 	}
 
 #endif /* WITHDCDCFREQCTL */
