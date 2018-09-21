@@ -6873,9 +6873,9 @@ updateboard(
 	#if WITHFANTIMER
 		board_setfanflag(! fanpaflag);
 	#endif /* WITHFANTIMER */
-#if WITHDCDCFREQCTL
-	board_set_blfreq(bldividerout);
-#endif /* WITHDCDCFREQCTL */
+	#if WITHDCDCFREQCTL
+		board_set_blfreq(bldividerout);
+	#endif /* WITHDCDCFREQCTL */
 	#if WITHLCDBACKLIGHT
 		board_set_bglight((dimmflag || sleepflag || dimmmode) ? WITHLCDBACKLIGHTMIN : bglight);		/* подсветка дисплея  */
 	#endif /* WITHLCDBACKLIGHT */
