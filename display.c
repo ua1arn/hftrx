@@ -737,9 +737,9 @@ static void ltdc_horizontal_put_char_small(char cc)
 	for (cgrow = 0; cgrow < SMALLCHARH; ++ cgrow)
 	{
 		uint_fast8_t cgcol;
-		for (cgcol = 0; cgcol < 8 * (sizeof S1D13781_smallfont_LTDC [0][0] / sizeof S1D13781_smallfont_LTDC [0][0][0]); cgcol += 8)
+		for (cgcol = 0; cgcol < 8 * (sizeof S1D13781_smallfont_LTDC [0] [0] / sizeof S1D13781_smallfont_LTDC [0] [0][0]); cgcol += 8)
 		{
-			const FLASHMEM uint8_t * p = & S1D13781_smallfont_LTDC [c][cgrow] [cgcol / 8];
+			const FLASHMEM uint8_t * const p = & S1D13781_smallfont_LTDC [c] [cgrow] [cgcol / 8];
 			ltdc_horizontal_pix8(cgcol, cgrow, * p, 8);	// заполнить пикселями, раскрасив
 		}
 	}
@@ -757,17 +757,16 @@ static uint_fast8_t ulmin8(
 // Вызов этой функции только внутри display_wrdatabig_begin() и display_wrdatabig_end();
 static void ltdc_horizontal_put_char_big(char cc)
 {
-	const uint_fast8_t width = ((cc == '.' || cc == '#') ? BIGCHARW_NARRW  : BIGCHARW);	// полнаяширина символа в пикселях
+	const uint_fast8_t width = ((cc == '.' || cc == '#') ? BIGCHARW_NARROW  : BIGCHARW);	// полнаяширина символа в пикселях
     const uint_fast8_t c = bigfont_decode((unsigned char) cc);
 	uint_fast8_t cgrow;
 	for (cgrow = 0; cgrow < BIGCHARH; ++ cgrow)
 	{
-		enum { CGROWBYTES = (sizeof S1D13781_bigfont_LTDC [0][0] / sizeof S1D13781_bigfont_LTDC [0][0][0]) };
 		uint_fast8_t cgcol;
 		for (cgcol = 0; cgcol < width; cgcol += 8)
 		{
 			uint_fast8_t w = ulmin8(width - cgcol, 8);
-			const FLASHMEM uint8_t * p = & S1D13781_bigfont_LTDC [c][cgrow] [cgcol / 8];
+			const FLASHMEM uint8_t * const p = & S1D13781_bigfont_LTDC [c] [cgrow] [cgcol / 8];
 			ltdc_horizontal_pix8(cgcol, cgrow, * p, w);	// заполнить пикселями, раскрасив
 		}
 	}
@@ -782,12 +781,11 @@ static void ltdc_horizontal_put_char_half(char cc)
 	uint_fast8_t cgrow;
 	for (cgrow = 0; cgrow < HALFCHARH; ++ cgrow)
 	{
-		enum { CGROWBYTES = (sizeof S1D13781_halffont_LTDC [0][0] / sizeof S1D13781_halffont_LTDC [0][0][0]) };
 		uint_fast8_t cgcol;
 		for (cgcol = 0; cgcol < width; cgcol += 8)
 		{
 			uint_fast8_t w = ulmin8(width - cgcol, 8);
-			const FLASHMEM uint8_t * p = & S1D13781_halffont_LTDC [c][cgrow] [cgcol / 8];
+			const FLASHMEM uint8_t * const p = & S1D13781_halffont_LTDC [c] [cgrow] [cgcol / 8];
 			ltdc_horizontal_pix8(cgcol, cgrow, * p, w);	// заполнить пикселями, раскрасив
 		}
 	}
@@ -801,8 +799,8 @@ static void ltdc_vertical_put_char_small(char cc)
 {
 	uint_fast8_t i = 0;
 	const uint_fast8_t c = ascii_decode((unsigned char) cc);
-	enum { NBYTES = (sizeof ls020_smallfont [0] / sizeof ls020_smallfont [0][0]) };
-	const FLASHMEM uint8_t * p = & ls020_smallfont [c][0];
+	enum { NBYTES = (sizeof ls020_smallfont [0] / sizeof ls020_smallfont [0] [0]) };
+	const FLASHMEM uint8_t * const p = & ls020_smallfont [c] [0];
 	
 	for (; i < NBYTES; ++ i)
 		ltdc_vertical_pix8(p [i]);	// Выдать восемь цветных пикселей, младший бит - самый верхний в растре
@@ -815,8 +813,8 @@ static void ltdc_vertical_put_char_big(char cc)
 	enum { NBV = (BIGCHARH / 8) }; // сколько байтов в одной вертикали
 	uint_fast8_t i = NBV * ((cc == '.' || cc == '#') ? 12 : 0);	// начальная колонка знакогенератора, откуда начинать.
     const uint_fast8_t c = bigfont_decode((unsigned char) cc);
-	enum { NBYTES = (sizeof ls020_bigfont [0] / sizeof ls020_bigfont [0][0]) };
-	const FLASHMEM uint8_t * p = & ls020_bigfont [c][0];
+	enum { NBYTES = (sizeof ls020_bigfont [0] / sizeof ls020_bigfont [0] [0]) };
+	const FLASHMEM uint8_t * const p = & ls020_bigfont [c] [0];
 	
 	for (; i < NBYTES; ++ i)
 		ltdc_vertical_pix8(p [i]);	// Выдать восемь цветных пикселей, младший бит - самый верхний в растре
@@ -827,8 +825,8 @@ static void ltdc_vertical_put_char_half(char cc)
 {
 	uint_fast8_t i = 0;
     const uint_fast8_t c = bigfont_decode((unsigned char) cc);
-	enum { NBYTES = (sizeof ls020_halffont [0] / sizeof ls020_halffont [0][0]) };
-	const FLASHMEM uint8_t * p = & ls020_halffont [c][0];
+	enum { NBYTES = (sizeof ls020_halffont [0] / sizeof ls020_halffont [0] [0]) };
+	const FLASHMEM uint8_t * const p = & ls020_halffont [c] [0];
 	
 	for (; i < NBYTES; ++ i)
 		ltdc_vertical_pix8(p [i]);	// Выдать восемь цветных пикселей, младший бит - самый верхний в растре

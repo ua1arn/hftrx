@@ -861,12 +861,9 @@ static void loadchargens(void)
 		for (cgrow = 0; cgrow < BIGCHARH; ++ cgrow)
 		{
 			uint_fast8_t cgcol;
-			for (cgcol = 0; cgcol < BIGCHARW_NARRW; ++ cgcol)
+			for (cgcol = 0; cgcol < BIGCHARW_NARROW; ++ cgcol)
 			{
-				//uint_fast8_t i = 0;
-				//uint_fast8_t i = (cc == '.' || cc == '#') ? 12 : 0;	// начальная колонка знакогенератора, откуда начинать.
-				//const uint_fast8_t c = halffont_decode((unsigned char) cc);
-				const FLASHMEM uint8_t * p = & S1D13781_bigfont_LTDC [cv][cgrow][cgcol / 8];
+				const FLASHMEM uint8_t * const p = & S1D13781_bigfont_LTDC [cv][cgrow] [cgcol / 8];
 
 				const uint_fast8_t v = * p & (1U << (cgcol % 8));
 				chargen_putbit(v);
@@ -891,10 +888,7 @@ static void loadchargens(void)
 			uint_fast8_t cgcol;
 			for (cgcol = 0; cgcol < BIGCHARW; ++ cgcol)
 			{
-				//uint_fast8_t i = 0;
-				//uint_fast8_t i = (cc == '.' || cc == '#') ? 12 : 0;	// начальная колонка знакогенератора, откуда начинать.
-				//const uint_fast8_t c = halffont_decode((unsigned char) cc);
-				const FLASHMEM uint8_t * p = & S1D13781_bigfont_LTDC [c][cgrow][cgcol / 8];
+				const FLASHMEM uint8_t * const p = & S1D13781_bigfont_LTDC [c] [cgrow] [cgcol / 8];
 
 				const uint_fast8_t v = * p & (1U << (cgcol % 8));
 				chargen_putbit(v);
@@ -919,10 +913,7 @@ static void loadchargens(void)
 			uint_fast8_t cgcol;
 			for (cgcol = 0; cgcol < HALFCHARW; ++ cgcol)
 			{
-				//uint_fast8_t i = 0;
-				//uint_fast8_t i = (cc == '.' || cc == '#') ? 12 : 0;	// начальная колонка знакогенератора, откуда начинать.
-				//const uint_fast8_t c = halffont_decode((unsigned char) cc);
-				const FLASHMEM uint8_t * p = & S1D13781_halffont_LTDC [c][cgrow][cgcol / 8];
+				const FLASHMEM uint8_t * const p = & S1D13781_halffont_LTDC [c] [cgrow] [cgcol / 8];
 
 				const uint_fast8_t v = * p & (1U << (cgcol % 8));
 				chargen_putbit(v);
@@ -946,10 +937,7 @@ static void loadchargens(void)
 			uint_fast8_t cgcol;
 			for (cgcol = 0; cgcol < SMALLCHARW; ++ cgcol)
 			{
-				//uint_fast8_t i = 0;
-				//uint_fast8_t i = (cc == '.' || cc == '#') ? 12 : 0;	// начальная колонка знакогенератора, откуда начинать.
-				//const uint_fast8_t c = halffont_decode((unsigned char) cc);
-				const FLASHMEM uint8_t * p = & S1D13781_smallfont_LTDC [c][cgrow][cgcol / 8];
+				const FLASHMEM uint8_t * const p = & S1D13781_smallfont_LTDC [c] [cgrow] [cgcol / 8];
 
 				const uint_fast8_t v = * p & (1U << (cgcol % 8));
 				chargen_putbit(v);
@@ -973,10 +961,7 @@ static void loadchargens(void)
 			uint_fast8_t cgcol;
 			for (cgcol = 0; cgcol < SMALLCHARW; ++ cgcol)
 			{
-				//uint_fast8_t i = 0;
-				//uint_fast8_t i = (cc == '.' || cc == '#') ? 12 : 0;	// начальная колонка знакогенератора, откуда начинать.
-				//const uint_fast8_t c = halffont_decode((unsigned char) cc);
-				const FLASHMEM uint8_t * p = & S1D13781_smallfont_LTDC [c][cgrow][cgcol / 8];
+				const FLASHMEM uint8_t * const p = & S1D13781_smallfont_LTDC [c] [cgrow] [cgcol / 8];
 
 				const uint_fast8_t v = * p & (1U << (cgcol % 8));
 				chargen_putbit(v);
@@ -1205,8 +1190,8 @@ static void s1d13781_put_char_big(char cc)
 		// '#' - узкий пробел
 		if (cc == '.' || cc == '#')
 		{
-			bitblt_chargen_big(BIGCHARW_NARRW, getnarrowcharbase(cc));
-			s1d13781_next_column(BIGCHARW_NARRW);
+			bitblt_chargen_big(BIGCHARW_NARROW, getnarrowcharbase(cc));
+			s1d13781_next_column(BIGCHARW_NARROW);
 		}
 		else
 		{
