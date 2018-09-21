@@ -2326,7 +2326,7 @@ struct nvmap
 	uint8_t bglight;
 #endif /* WITHLCDBACKLIGHT */
 #if WITHDCDCFREQCTL
-	uint16_t blfreq;
+	uint16_t dcdcrefdiv;
 #endif /* WITHDCDCFREQCTL */
 #if WITHKBDBACKLIGHT
 	uint8_t kblight;
@@ -2999,7 +2999,20 @@ static uint_fast8_t alignmode;		/* режимы дл€ настройки аппаратной части (0-норм
 #endif
 
 #if WITHDCDCFREQCTL
-	static uint_fast16_t blfreq = 62;	/* делитс€ частота внутреннего генератора 48 ћ√ц */
+	static uint_fast16_t dcdcrefdiv = 62;	/* делитс€ частота внутреннего генератора 48 ћ√ц */
+
+	/* 
+		получение делител€ частоты дл€ синхронизации DC-DC конверторов 
+		дл€ исключени€ попадани€ в полосу обзора панорамы гармоник этой частоты. 
+	*/
+	static uint_fast16_t
+	getbldivider(
+		uint_fast32_t freq
+		)
+	{
+		return dcdcrefdiv;
+	}
+
 #endif /* WITHDCDCFREQCTL */
 
 static const uint_fast8_t displaymodesfps = DISPLAYMODES_FPS;
@@ -6326,7 +6339,9 @@ updateboard(
 	static uint_fast8_t lo2hint [2];
 	const uint_fast8_t lo3side = LO3_SIDE;
 	static uint_fast8_t forcelsb [2];
-
+#if WITHDCDCFREQCTL
+	static uint_fast16_t bldividerout = UINT16_MAX;
+#endif /* WITHDCDCFREQCTL */
 #if CTLSTYLE_IGOR
 	static uint_fast16_t bandf100khint = UINT16_MAX;
 #else /* CTLSTYLE_IGOR */
@@ -6349,6 +6364,9 @@ updateboard(
 		full2 |= flagne_u8(& lo1side [pathi], getsidelo1(freq));	// LOCODE_UPPER, LOCODE_LOWER or LOCODE_TARGETED
 		full2 |= flagne_u8(& lo2hint [pathi], gethintlo2(freq));
 		full2 |= flagne_u8(& forcelsb [pathi], getforcelsb(freq));
+#if WITHDCDCFREQCTL
+		full2 |= flagne_u16(& bldividerout, getbldivider(freq));
+#endif /* WITHDCDCFREQCTL */
 	}
 	// параметры, не имеющие специфики дл€ разных приемников
 	{
@@ -6856,7 +6874,7 @@ updateboard(
 		board_setfanflag(! fanpaflag);
 	#endif /* WITHFANTIMER */
 #if WITHDCDCFREQCTL
-	board_set_blfreq(blfreq);
+	board_set_blfreq(bldividerout);
 #endif /* WITHDCDCFREQCTL */
 	#if WITHLCDBACKLIGHT
 		board_set_bglight((dimmflag || sleepflag || dimmmode) ? WITHLCDBACKLIGHTMIN : bglight);		/* подсветка диспле€  */
@@ -10797,11 +10815,11 @@ static const FLASHMEM struct menudef menutable [] =
 #endif /* defined (DEFAULT_LCD_CONTRAST) */
 #if WITHDCDCFREQCTL
 	{
-		"BL DIV  ", 7, 0, 0,	ISTEP1,	
+		"DCDC DIV", 7, 0, 0,	ISTEP1,	
 		ITEM_VALUE,
 		4, UINT16_MAX, 
-		offsetof(struct nvmap, blfreq),
-		& blfreq,
+		offsetof(struct nvmap, dcdcrefdiv),
+		& dcdcrefdiv,
 		NULL,
 		getzerobase, /* складываетс€ со смещением и отображаетс€ */
 	},
