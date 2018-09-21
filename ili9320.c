@@ -263,7 +263,7 @@ bigfont_decode(uint_fast8_t c)
 
 
 static uint_fast8_t
-ascii_decode(uint_fast8_t c)
+smallfont_decode(uint_fast8_t c)
 {
 	return c - ' ';
 }
@@ -273,7 +273,7 @@ ascii_decode(uint_fast8_t c)
 static void ili9320_put_char_fast(char cc, uint_fast8_t lowhalf)
 {
 	uint_fast8_t i = 0;
-	const uint_fast8_t c = ascii_decode((unsigned char) cc);
+	const uint_fast8_t c = smallfont_decode((unsigned char) cc);
 	enum { NBYTES = (sizeof ILI9320_smallfont [0] / sizeof ILI9320_smallfont [0][0]) };
 	const FLASHMEM uint8_t * const p = & ILI9320_smallfont [c][0];
 	for (; i < NBYTES; ++ i)

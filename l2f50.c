@@ -318,7 +318,7 @@ bigfont_decode(uint_fast8_t c)
 
 
 static uint_fast8_t
-ascii_decode(uint_fast8_t c)
+smallfont_decode(uint_fast8_t c)
 {
 	return c - ' ';
 }
@@ -326,7 +326,7 @@ ascii_decode(uint_fast8_t c)
 // Вызов этой функции только внутри display_wrdata_begin() и display_wrdata_end();
 static void ls020_put_char_small(char cc)
 {
-	const uint_fast8_t c = ascii_decode((unsigned char) cc);
+	const uint_fast8_t c = smallfont_decode((unsigned char) cc);
 	enum { NBYTES = (sizeof ls020_smallfont [0] / sizeof ls020_smallfont [0][0]) };
 	//enum { NCOLS = (sizeof uc1608_smallfont[0][0] / sizeof uc1608_smallfont[0][0][0]) };
 	const FLASHMEM uint8_t * const p = & ls020_smallfont [c][0];

@@ -139,7 +139,7 @@ bigfont_decode(uint_fast8_t c)
 
 static uint_fast8_t 
 //NOINLINEAT
-ascii_decode(uint_fast8_t c)
+smallfont_decode(uint_fast8_t c)
 {
 	return c - ' ';
 }
@@ -153,7 +153,7 @@ static void
 uc1601s_put_char_small(char cc)
 {
 	uint_fast8_t i = 0;
-    const uint_fast8_t c = ascii_decode((unsigned char) cc);
+    const uint_fast8_t c = smallfont_decode((unsigned char) cc);
 	enum { NCOLS = (sizeof uc1601s_font[0] / sizeof uc1601s_font[0][0]) };
 	const FLASHMEM uint8_t * const p = & uc1601s_font[c][0];
 
