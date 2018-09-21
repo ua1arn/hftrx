@@ -4502,6 +4502,7 @@ static void dsp_latchwaterfall(
 }
 
 #if WITHDISPLAYNOFILLSPECTRUM
+	/* не заливать заполнением площадь под графиком спектра */
 	static uint_fast8_t glob_nofill = 1;
 #else /* WITHDISPLAYNOFILLSPECTRUM */
 	static uint_fast8_t glob_nofill;
