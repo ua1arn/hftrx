@@ -3016,9 +3016,10 @@ static uint_fast8_t alignmode;		/* режимы дл€ настройки аппаратной части (0-норм
 			uint32_t fmin;
 			uint32_t fmax;
 		};
+		// пока дл€ проверки работоспособности. “аблицу надо расчитать.
 		static const FLASHMEM struct FREQ freqs [] = {
-		  { 63, 6900000,  UINT32_MAX },
-		  { 62, 0,		6900000 },	
+		  { 63, 6900000uL,  UINT32_MAX },
+		  { 62, 0,		6900000uL },	
 		};
 
 		uint_fast8_t high = (sizeof freqs / sizeof freqs [0]);
