@@ -486,12 +486,25 @@ prog_select_init(void)
 	spi_hwinit255();
 #endif /* SPI_CSEL255 */
 
+#if defined (SPI_ALLCS_INITIALIZE)
 	SPI_ALLCS_INITIALIZE();		/* инициализация лиий выбора периферийных микросхем */
-	SPI_ADDRESS_AEN_INITIALIZE();	/* инициализация сигналов управлдения дешифратором CS */
-	SPI_ADDRESS_NAEN_INITIALIZE();	/* инициализация сигналов управлдения дешифратором CS */
+#endif /* defined (SPI_ALLCS_INITIALIZE) */
 
+#if defined (SPI_ADDRESS_AEN_INITIALIZE)
+	SPI_ADDRESS_AEN_INITIALIZE();	/* инициализация сигналов управлдения дешифратором CS */
+#endif /* defined (SPI_ADDRESS_AEN_INITIALIZE) */
+
+#if defined (SPI_ADDRESS_NAEN_INITIALIZE)
+	SPI_ADDRESS_NAEN_INITIALIZE();	/* инициализация сигналов управлдения дешифратором CS */
+#endif /* defined (SPI_ADDRESS_NAEN_INITIALIZE) */
+
+#if defined (SPI_IOUPDATE_INITIALIZE)
 	SPI_IOUPDATE_INITIALIZE();
+#endif /* defined (SPI_IOUPDATE_INITIALIZE) */
+
+#if defined (SPI_IORESET_INITIALIZE)
 	SPI_IORESET_INITIALIZE();
+#endif /* defined (SPI_IORESET_INITIALIZE) */
 
 	//spi_to_write(target);
 	spi_cs_disable();	// chip select inactive

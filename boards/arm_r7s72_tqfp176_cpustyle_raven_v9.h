@@ -517,23 +517,6 @@
 		arm_hardware_pio7_outputs(SPI_ALLCS_BITS, SPI_ALLCS_BITS ^ SPI_ALLCS_BITSNEG); \
 	} while (0)
 
-/* инициализация сигналов управлдения дешифратором CS */
-#define SPI_ADDRESS_NAEN_INITIALIZE() \
-	do { \
-	} while (0)
-/* инициализация сигналов управлдения дешифратором CS */
-#define SPI_ADDRESS_AEN_INITIALIZE() \
-	do { \
-	} while (0)
-/* инициализация сигнала IOUPDATE на DDS */
-/* начальное состояние = 1 */
-#define SPI_IOUPDATE_INITIALIZE() \
-	do { \
-	} while (0)
-#define SPI_IORESET_INITIALIZE() \
-	do { \
-	} while (0)
-
 // reset кодека
 ////#define TARGET_CS4272_RESET_PORT_S(v)		do { R7S721_TARGET_PORT_S(7, v); } while (0)
 ////#define TARGET_CS4272_RESET_PORT_C(v)		do { R7S721_TARGET_PORT_C(7, v); } while (0)

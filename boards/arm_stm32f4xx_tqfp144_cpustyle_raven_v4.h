@@ -409,23 +409,6 @@
 		arm_hardware_piog_outputs(SPI_ALLCS_BITS, SPI_ALLCS_BITS ^ SPI_ALLCS_BITSNEG); \
 	} while (0)
 
-/* инициализация сигналов управлдения дешифратором CS */
-#define SPI_ADDRESS_NAEN_INITIALIZE() \
-	do { \
-	} while (0)
-/* инициализация сигналов управлдения дешифратором CS */
-#define SPI_ADDRESS_AEN_INITIALIZE() \
-	do { \
-	} while (0)
-/* инициализация сигнала IOUPDATE на DDS */
-/* начальное состояние = 1 */
-#define SPI_IOUPDATE_INITIALIZE() \
-	do { \
-	} while (0)
-#define SPI_IORESET_INITIALIZE() \
-	do { \
-	} while (0)
-
 // MOSI & SCK port
 #define SPI_TARGET_SCLK_PORT_C(v)	do { GPIOB->BSRR = BSRR_C(v); __DSB(); } while (0)
 #define SPI_TARGET_SCLK_PORT_S(v)	do { GPIOB->BSRR = BSRR_S(v); __DSB(); } while (0)

@@ -323,18 +323,12 @@
 	do { \
 		arm_hardware_pioe_outputs2m(SPI_NAEN_BIT | SPI_ADDRESS_BITS, SPI_NAEN_BIT); \
 	} while (0)
-/* инициализация сигналов управлдения дешифратором CS */
-#define SPI_ADDRESS_AEN_INITIALIZE() \
-	do { \
-	} while (0)
+
 /* инициализация сигнала IOUPDATE на DDS */
 /* начальное состояние = 1 */
 #define SPI_IOUPDATE_INITIALIZE() \
 	do { \
 		arm_hardware_pioa_outputs2m(SPI_IOUPDATE_BIT, SPI_IOUPDATE_BIT); \
-	} while (0)
-#define SPI_IORESET_INITIALIZE() \
-	do { \
 	} while (0)
 
 
