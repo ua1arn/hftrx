@@ -2450,9 +2450,11 @@ struct nvmap
 		uint8_t gmikeequalizer;	// включение обработки сигнала с микрофона (эффекты, эквалайзер, ...)
 		uint8_t gmikeequalizerparams [HARDWARE_CODEC1_NPROCPARAMS];	// Эквалайзер 80Hz 230Hz 650Hz 	1.8kHz 5.3kHz
 	#endif /* WITHAFCODEC1HAVEPROC */
-#endif /* WITHIF4DSP */
 
 	struct micproc gmicprocs [NMICPROFILES];
+	uint8_t txaprofile [TXAPROFIG_count];	/* параметры обработки звука перед модулятором */
+#endif /* WITHIF4DSP */
+
 
 #if WITHDSPEXTDDC	/* "Воронёнок" с DSP и FPGA */
 	uint8_t	ggrprfadc; // последний посещённый пункт группы
@@ -2748,7 +2750,6 @@ filter_t fi_2p0_455 =
 #endif	/* (LO3_SIDE != LOCODE_INVALID) && LO3_FREQADJ */
 
 	struct modeprops modes [MODE_COUNT];
-	uint8_t txaprofile [TXAPROFIG_count];	/* параметры обработки звука перед модулятором */
 
 	struct bandinfo bands [HBANDS_COUNT + XBANDS_COUNT + VFOS_COUNT + MBANDS_COUNT];
 #if	WITHDIRECTBANDS
