@@ -2326,7 +2326,7 @@ struct nvmap
 	uint8_t bglight;
 #endif /* WITHLCDBACKLIGHT */
 #if WITHDCDCFREQCTL
-	uint16_t dcdcrefdiv;
+	//uint16_t dcdcrefdiv;
 #endif /* WITHDCDCFREQCTL */
 #if WITHKBDBACKLIGHT
 	uint8_t kblight;
@@ -2999,7 +2999,7 @@ static uint_fast8_t alignmode;		/* режимы дл€ настройки аппаратной части (0-норм
 #endif
 
 #if WITHDCDCFREQCTL
-	static uint_fast16_t dcdcrefdiv = 62;	/* делитс€ частота внутреннего генератора 48 ћ√ц */
+	//static uint_fast16_t dcdcrefdiv = 62;	/* делитс€ частота внутреннего генератора 48 ћ√ц */
 
 	/* 
 		получение делител€ частоты дл€ синхронизации DC-DC конверторов 
@@ -13467,6 +13467,9 @@ void display_menu_lblc3(
 	)
 {
 	const FLASHMEM struct menudef * const mp = (const FLASHMEM struct menudef *) pv;
+#if LCDMODE_LTDC_PIP16
+	arm_hardware_ltdc_pip_off();
+#endif /* LCDMODE_LTDC_PIP16 */
 	char buff [4];
 	const uint_fast8_t index = (int) (mp - menutable);
 	if (ismenusuitable(mp, ITEM_GROUP))
@@ -13492,6 +13495,9 @@ void display_menu_lblng(
 	)
 {
 	const FLASHMEM struct menudef * const mp = (const FLASHMEM struct menudef *) pv;
+#if LCDMODE_LTDC_PIP16
+	arm_hardware_ltdc_pip_off();
+#endif /* LCDMODE_LTDC_PIP16 */
 	if (ismenusuitable(mp, ITEM_VALUE) == 0)
 		return;
 	display_setcolors(MENUCOLOR, BGCOLOR);
@@ -13507,6 +13513,9 @@ void display_menu_lblst(
 	)
 {
 	const FLASHMEM struct menudef * const mp = (const FLASHMEM struct menudef *) pv;
+#if LCDMODE_LTDC_PIP16
+	arm_hardware_ltdc_pip_off();
+#endif /* LCDMODE_LTDC_PIP16 */
 	display_setcolors(MENUCOLOR, BGCOLOR);
 	display_at_P(x, y, mp->qlabel);
 }
@@ -13520,6 +13529,9 @@ void display_menu_group(
 	)
 {
 	const FLASHMEM struct menudef * mp = (const FLASHMEM struct menudef *) pv;
+#if LCDMODE_LTDC_PIP16
+	arm_hardware_ltdc_pip_off();
+#endif /* LCDMODE_LTDC_PIP16 */
 	while (ismenusuitable(mp, ITEM_GROUP) == 0)
 		-- mp;
 	display_setcolors(MENUGROUPCOLOR, BGCOLOR);
@@ -13543,6 +13555,9 @@ void display_menu_valxx(
 	const uint_fast16_t * const pv16 = mp->qpval16;
 	const uint_fast8_t * const pv8 = mp->qpval8;
 
+#if LCDMODE_LTDC_PIP16
+	arm_hardware_ltdc_pip_off();
+#endif /* LCDMODE_LTDC_PIP16 */
 	if (ismenusuitable(mp, ITEM_VALUE) == 0)
 		return;
 	// получение значени€ дл€ отображени€
