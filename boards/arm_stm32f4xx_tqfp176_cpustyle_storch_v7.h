@@ -651,11 +651,11 @@
 
 	/* установка яркости и включение/выключение преобразователя подсветки */
 	#define HARDWARE_BL_SET(en, level) do { \
-		const portholder_t enmask = (1U << 0); /* PF1 */ \
+		const portholder_t enmask = (1U << 1); /* PF1 */ \
 		const portholder_t opins = (1U << 3) | (1U << 2); /* PF3:PF2 */ \
 		const portholder_t initialstate = (~ (level) & 0x03) << 2; \
-		GPIOF->BSRR = (en) ? BSRR_S(enmask) : BSRR_C(enmask); /* backlight control on/off */ \
 		GPIOF->BSRR = \
+			((en) ? BSRR_S(enmask) : BSRR_C(enmask)) | /* backlight control on/off */ \
 			BSRR_S((initialstate) & (opins)) | /* set bits */ \
 			BSRR_C(~ (initialstate) & (opins)) | /* reset bits */ \
 			0; \
