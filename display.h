@@ -367,6 +367,7 @@ typedef uint16_t PACKEDCOLOR565_T;
 //#define FRQCOLOR GRAY
 #define FRQCOLOR COLOR_YELLOW // GOLD
 
+#define MENUGROUPCOLOR COLOR_BLUE
 #define MENUCOLOR COLOR_WHITE
 #define MNUVALCOLOR COLOR_WHITE
 
@@ -443,6 +444,14 @@ display2_bars_amv0(
 	);
 
 // Вызывается из display2.c
+// группа, в которой находится редактируемый параметр
+void display_menu_group(
+	uint_fast8_t x, 
+	uint_fast8_t y, 
+	void * pv
+	);
+
+// Вызывается из display2.c
 // значение параметра
 void display_menu_valxx(
 	uint_fast8_t x, 
@@ -451,8 +460,17 @@ void display_menu_valxx(
 	);
 
 // Вызывается из display2.c
-// название редактируемого параметра
+// название редактируемого параметра или группы
 void display_menu_lblst(
+	uint_fast8_t x, 
+	uint_fast8_t y, 
+	void * pv
+	);
+
+// Вызывается из display2.c
+// название редактируемого параметра
+// если группа - ничего не отображаем
+void display_menu_lblng(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
 	void * pv

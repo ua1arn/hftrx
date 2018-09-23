@@ -13472,7 +13472,7 @@ void display_menu_lblc3(
 	if (ismenusuitable(mp, ITEM_GROUP))
 	{
 		display_setcolors(MENUCOLOR, BGCOLOR);
-		display_at_P(x, y, PSTR("-->"));
+		display_at_P(x, y, PSTR("---"));
 		return;
 	}
 
@@ -13484,6 +13484,22 @@ void display_menu_lblc3(
 
 // Вызывается из display2.c
 // название редактируемого параметра
+// если группа - ничего не отображаем
+void display_menu_lblng(
+	uint_fast8_t x, 
+	uint_fast8_t y, 
+	void * pv
+	)
+{
+	const FLASHMEM struct menudef * const mp = (const FLASHMEM struct menudef *) pv;
+	if (ismenusuitable(mp, ITEM_VALUE) == 0)
+		return;
+	display_setcolors(MENUCOLOR, BGCOLOR);
+	display_at_P(x, y, mp->qlabel);
+}
+
+// Вызывается из display2.c
+// название редактируемого параметра или группы
 void display_menu_lblst(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
@@ -13494,6 +13510,22 @@ void display_menu_lblst(
 	display_setcolors(MENUCOLOR, BGCOLOR);
 	display_at_P(x, y, mp->qlabel);
 }
+
+// Вызывается из display2.c
+// группа, в которой находится редактируемый параметр
+void display_menu_group(
+	uint_fast8_t x, 
+	uint_fast8_t y, 
+	void * pv
+	)
+{
+	const FLASHMEM struct menudef * mp = (const FLASHMEM struct menudef *) pv;
+	while (ismenusuitable(mp, ITEM_GROUP) == 0)
+		-- mp;
+	display_setcolors(MENUGROUPCOLOR, BGCOLOR);
+	display_at_P(x, y, mp->qlabel);
+}
+
 
 // Вызывается из display2.c
 // значение параметра
