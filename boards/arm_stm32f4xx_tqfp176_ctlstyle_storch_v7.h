@@ -325,7 +325,6 @@
 	#endif
 
 	#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
-	#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
 
 	#define WITHIFSHIFT	1	/* используется IF SHIFT */
 	//#define WITHIFSHIFTOFFSET	(-250)	/* Начальное занчение IF SHIFT */
@@ -336,9 +335,12 @@
 	//#define WITHFREEDV	1	/* поддержка режима FreeDV - http://freedv.org/ */ 
 	//#define WITHNMEA		1	/* используется NMEA parser */
 	//#define WITHBEACON	1	/* Используется режим маяка */
-	#define WITHVOX			1	/* используется VOX */
-	#define WITHSHOWSWRPWR 1	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
-	#define WITHSWRMTR	1		/* Измеритель КСВ */
+	#if WITHTX
+		#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
+		#define WITHVOX			1	/* используется VOX */
+		#define WITHSHOWSWRPWR 1	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
+		#define WITHSWRMTR	1		/* Измеритель КСВ */
+	#endif /* WITHTX */
 	//#define WITHPWRMTR	1	/* Индикатор выходной мощности или */
 	//#define WITHPWRLIN	1	/* Индикатор выходной мощности показывает напряжение а не мощность */
 	#define WITHBARS		1	/* отображение S-метра и SWR-метра */
