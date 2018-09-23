@@ -29,16 +29,16 @@ DefaultDestDir	= 12; Default install directory is \drivers or \IOSubSys
 ;--------------------------------------------------------------------------
 
 [DeviceList.NT]
-%DESCRIPTION1%	= DriverInstall,USB\VID_FFFF&PID_0736
-%DESCRIPTION1%	= DriverInstall,USB\VID_FFFF&PID_0737
+%DESCRIPTION1%	= DriverInstall,USB\VID_FFFF&PID_0737&MI_00
+%DESCRIPTION2%	= DriverInstall,USB\VID_FFFF&PID_0737&MI_02
 
 [DeviceList.NTia64]
-%DESCRIPTION1%	= DriverInstall,USB\VID_FFFF&PID_0736
-%DESCRIPTION1%	= DriverInstall,USB\VID_FFFF&PID_0737
+%DESCRIPTION1%	= DriverInstall,USB\VID_FFFF&PID_0737&MI_00
+%DESCRIPTION2%	= DriverInstall,USB\VID_FFFF&PID_0737&MI_02
 
 [DeviceList.NTamd64]
-%DESCRIPTION1%	= DriverInstall,USB\VID_FFFF&PID_0736
-%DESCRIPTION1%	= DriverInstall,USB\VID_FFFF&PID_0737
+%DESCRIPTION1%	= DriverInstall,USB\VID_FFFF&PID_0737&MI_00
+%DESCRIPTION2%	= DriverInstall,USB\VID_FFFF&PID_0737&MI_02
 
 ;---------------------------------------------------------------------------------------
 ; 32 bit section for Windows 2000/2003/XP/Vista/7
@@ -123,7 +123,8 @@ SERVICE="USB-232 Emulation Driver"
 
 ;COMPANY	= "PROTTOSS Electronic Laboratory"
 ;MFGNAME	= "PROTTOSS"
-DESCRIPTION1 = "Storch HF TRX CAT 1.0"
+DESCRIPTION1 = "Storch TRX CAT"
+DESCRIPTION2 = "Storch TRX CTL"
 ;DESCRIPTION2 = "PROTTOSS ucGoZilla AVR500V2"
 ;DESCRIPTION3 = "PROTTOSS ucGoZilla AVRJTAG2"
 ;SERVICE	= "ucGoZilla"

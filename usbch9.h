@@ -232,7 +232,7 @@ enum
 	#if WITHUSBUAC3
 		//#define INTERFACE_UAC_count 2	/* количество интерфейсов в одном UAC */
 	#else /* WITHUSBUAC3 */
-		#define INTERFACE_UAC_count 3	/* количество интерфейсов в одном UAC */
+		//#define INTERFACE_UAC_count 3	/* количество интерфейсов в одном UAC */
 	#endif /* WITHUSBUAC3 */
 #endif /* WITHUSBUAC */
 
@@ -245,22 +245,6 @@ enum
 	INTERFACE_RNDIS_DATA_6,		/* RNDIS data Interface */
 #endif /* WITHUSBRNDIS */
 
-#if WITHUSBUAC
-	#if WITHUSBUAC3
-		INTERFACE_AUDIO_CONTROL_0,		/* AUDIO transmitter input control interface */
-		INTERFACE_AUDIO_SPK_1,			/* USB Speaker Standard AS Interface Descriptor - Audio Streaming Zero Bandwith */
-		INTERFACE_AUDIO_MIKE_2,		/* USB receiver output  Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3)*/ //zero-bandwidth interface
-		/* */INTERFACE_AUDIO_CONTROL_1,		/* AUDIO spectrum control interface */
-		INTERFACE_AUDIO_RTS_3,		/* USB spectrum Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3)*/ //zero-bandwidth interface
-		//INTERFACE_AUDIO_last = INTERFACE_AUDIO_CONTROL_0 + 3,
-	#else
-		INTERFACE_AUDIO_CONTROL_0,		/* AUDIO control interface */
-		INTERFACE_AUDIO_SPK_1,		/* USB Speaker Standard AS Interface Descriptor - Audio Streaming Zero Bandwith */
-		INTERFACE_AUDIO_MIKE_2,		/* USB Microphone Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3)*/ //zero-bandwidth interface
-		//INTERFACE_AUDIO_last = INTERFACE_AUDIO_CONTROL_0 + 2,
-	#endif
-#endif /* WITHUSBUAC */
-
 #if WITHUSBCDC
 	INTERFACE_CDC_base,
 	INTERFACE_CDC_CONTROL_3a = INTERFACE_CDC_base,	/* CDC ACM control Interface */
@@ -269,6 +253,24 @@ enum
 	INTERFACE_CDC_DATA_4b,		/* CDC ACM data Interface */
 	INTERFACE_CDC_last = INTERFACE_CDC_base + WITHUSBHWCDC_N * 2 - 1,
 #endif /* WITHUSBCDC */
+
+#if WITHUSBUAC
+	#if WITHUSBUAC3
+		INTERFACE_AUDIO_CONTROL_MIKE,		/* AUDIO receiever out control interface */
+		INTERFACE_AUDIO_MIKE,		/* USB receiver output  Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3)*/ //zero-bandwidth interface
+		INTERFACE_AUDIO_CONTROL_RTS,		/* AUDIO spectrum control interface */
+		INTERFACE_AUDIO_RTS,		/* USB spectrum Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3)*/ //zero-bandwidth interface
+		//INTERFACE_AUDIO_last = INTERFACE_AUDIO_CONTROL_SPK + 3,
+	#else /* WITHUSBUAC3 */
+		INTERFACE_AUDIO_CONTROL_MIKE,		/* AUDIO receiever out control interface */
+		INTERFACE_AUDIO_MIKE,		/* USB Microphone Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3)*/ //zero-bandwidth interface
+		//INTERFACE_AUDIO_last = INTERFACE_AUDIO_CONTROL_SPK + 2,
+	#endif /* WITHUSBUAC3 */
+	//#if WITHTX
+		INTERFACE_AUDIO_CONTROL_SPK,		/* AUDIO transmitter input control interface */
+		INTERFACE_AUDIO_SPK,			/* USB Speaker Standard AS Interface Descriptor - Audio Streaming Zero Bandwith */
+	//#endif /* WITHTX */
+#endif /* WITHUSBUAC */
 
 #if WITHUSBCDCEEM
 	INTERFACE_CDCEEM_DATA_6,	/* CDC ECM/CDC EEM data Interface */
@@ -292,7 +294,7 @@ enum
 #define INTERFACE_HID_count 1	/* количество интерфейсов в одном HID */
 #define INTERFACE_RNDIS_count 2	/* количество интерфейсов в одном RNDIS */
 
-//#define INTERFACE_UAC_count (INTERFACE_AUDIO_last - INTERFACE_AUDIO_CONTROL_0)
+//#define INTERFACE_UAC_count (INTERFACE_AUDIO_last - INTERFACE_AUDIO_CONTROL_SPK)
 
 #else /* WITHPLAINDESCROPTOR */
 
@@ -300,7 +302,7 @@ enum
 		#if WITHUSBUAC3
 			//#define INTERFACE_UAC_count 2	/* количество интерфейсов в одном UAC */
 		#else /* WITHUSBUAC3 */
-			#define INTERFACE_UAC_count 3	/* количество интерфейсов в одном UAC */
+			//#define INTERFACE_UAC_count 3	/* количество интерфейсов в одном UAC */
 		#endif /* WITHUSBUAC3 */
 	#endif /* WITHUSBUAC */
 
@@ -317,17 +319,17 @@ enum
 	{
 
 		#if WITHUSBUAC3
-			INTERFACE_AUDIO_CONTROL_0,		/* AUDIO transmitter input control interface */
-			INTERFACE_AUDIO_SPK_1,			/* USB Speaker Standard AS Interface Descriptor - Audio Streaming Zero Bandwith */
-			INTERFACE_AUDIO_MIKE_2,		/* USB receiver output  Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3)*/ //zero-bandwidth interface
-			/* */INTERFACE_AUDIO_CONTROL_1,		/* AUDIO spectrum control interface */
-			INTERFACE_AUDIO_RTS_3,		/* USB spectrum Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3)*/ //zero-bandwidth interface
-			//INTERFACE_AUDIO_last = INTERFACE_AUDIO_CONTROL_0 + 3,
+			INTERFACE_AUDIO_CONTROL_SPK,		/* AUDIO transmitter input control interface */
+			INTERFACE_AUDIO_SPK,			/* USB Speaker Standard AS Interface Descriptor - Audio Streaming Zero Bandwith */
+			INTERFACE_AUDIO_MIKE,		/* USB receiver output  Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3)*/ //zero-bandwidth interface
+			INTERFACE_AUDIO_CONTROL_RTS,		/* AUDIO spectrum control interface */
+			INTERFACE_AUDIO_RTS,		/* USB spectrum Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3)*/ //zero-bandwidth interface
+			//INTERFACE_AUDIO_last = INTERFACE_AUDIO_CONTROL_SPK + 3,
 		#else
-			INTERFACE_AUDIO_CONTROL_0,		/* AUDIO control interface */
-			INTERFACE_AUDIO_SPK_1,		/* USB Speaker Standard AS Interface Descriptor - Audio Streaming Zero Bandwith */
-			INTERFACE_AUDIO_MIKE_2,		/* USB Microphone Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3)*/ //zero-bandwidth interface
-			//INTERFACE_AUDIO_last = INTERFACE_AUDIO_CONTROL_0 + 2,
+			INTERFACE_AUDIO_CONTROL_SPK,		/* AUDIO control interface */
+			INTERFACE_AUDIO_SPK,		/* USB Speaker Standard AS Interface Descriptor - Audio Streaming Zero Bandwith */
+			INTERFACE_AUDIO_MIKE,		/* USB Microphone Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3)*/ //zero-bandwidth interface
+			//INTERFACE_AUDIO_last = INTERFACE_AUDIO_CONTROL_SPK + 2,
 		#endif
 	};
 #endif /* WITHUSBUAC */
