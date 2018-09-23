@@ -231,6 +231,7 @@ void display_showbuffer(
 #else /* LCDMODE_S1D13781 */
 
 	#if WITHSPIHWDMA && (LCDMODE_UC1608 | 0)
+		// на LCDMODE_S1D13781 почему-то DMA сбивает контроллер
 		arm_hardware_flush((uintptr_t) buffer, sizeof (* buffer) * MGSIZE(dx, dy));	// количество байтов
 	#endif
 
@@ -246,6 +247,7 @@ void display_showbuffer(
 		// выдача горизонтальной полосы
 		display_wrdatabar_begin();
 	#if WITHSPIHWDMA && (LCDMODE_UC1608 | 0)
+		// на LCDMODE_S1D13781 почему-то DMA сбивает контроллер
 		hardware_spi_master_send_frame(p, dx);
 	#else
 		for (pos = 0; pos < dx; ++ pos)
@@ -648,13 +650,15 @@ ltdc_pixel(
 
 // Выдать восемь цветных пикселей, младший бит - самый верхний в растре
 static void 
-ltdc_vertical_pix8(
-	uint_fast8_t v
+ltdc_vertical_pixN(
+	uint_fast8_t v,		// pattern
+	uint_fast8_t w		// number of lower bits used in pattern
 	)
 {
 
 #if LCDMODE_LTDC_L24 || LCDMODE_LQ043T3DX02K
 
+	// TODO: для паттернов шире чем восемь бит, повторить нужное число раз.
 	ltdc_pixel(0, 0, v & 0x01);
 	ltdc_pixel(0, 1, v & 0x02);
 	ltdc_pixel(0, 2, v & 0x04);
@@ -664,25 +668,14 @@ ltdc_vertical_pix8(
 	ltdc_pixel(0, 6, v & 0x40);
 	ltdc_pixel(0, 7, v & 0x80);
 
-#elif LCDMODE_LQ043T3DX02K
-
-	const FLASHMEM PACKEDCOLOR_T * const pcl = (* byte2run) [v];
-	ltdc_pix1color(0, 0, pcl [0]);
-	ltdc_pix1color(0, 1, pcl [1]);
-	ltdc_pix1color(0, 2, pcl [2]);
-	ltdc_pix1color(0, 3, pcl [3]);
-	ltdc_pix1color(0, 4, pcl [4]);
-	ltdc_pix1color(0, 5, pcl [5]);
-	ltdc_pix1color(0, 6, pcl [6]);
-	ltdc_pix1color(0, 7, pcl [7]);
-
 	++ ltdc_secondoffs;
 
 #else /* LCDMODE_LTDC_L24 */
 	// размещаем пиксели по горизонтали
+	// TODO: для паттернов шире чем восемь бит, повторить нужное число раз.
 	const FLASHMEM PACKEDCOLOR_T * const pcl = (* byte2run) [v];
-	memcpy(& framebuff [ltdc_first] [ltdc_second + ltdc_secondoffs], pcl, sizeof (* pcl) * 8);
-	arm_hardware_flush((uintptr_t) & framebuff [ltdc_first] [ltdc_second + ltdc_secondoffs], sizeof (PACKEDCOLOR_T) * 8);
+	memcpy(& framebuff [ltdc_first] [ltdc_second + ltdc_secondoffs], pcl, sizeof (* pcl) * w);
+	arm_hardware_flush((uintptr_t) & framebuff [ltdc_first] [ltdc_second + ltdc_secondoffs], sizeof (PACKEDCOLOR_T) * w);
 	if ((ltdc_secondoffs += 8) >= ltdc_h)
 	{
 		ltdc_secondoffs -= ltdc_h;
@@ -790,7 +783,7 @@ static void ltdc_vertical_put_char_small(char cc)
 	const FLASHMEM uint8_t * const p = & ls020_smallfont [c] [0];
 	
 	for (; i < NBYTES; ++ i)
-		ltdc_vertical_pix8(p [i]);	// Выдать восемь цветных пикселей, младший бит - самый верхний в растре
+		ltdc_vertical_pixN(p [i], 8);	// Выдать восемь цветных пикселей, младший бит - самый верхний в растре
 }
 
 // Вызов этой функции только внутри display_wrdatabig_begin() и display_wrdatabig_end();
@@ -804,7 +797,7 @@ static void ltdc_vertical_put_char_big(char cc)
 	const FLASHMEM uint8_t * const p = & ls020_bigfont [c] [0];
 	
 	for (; i < NBYTES; ++ i)
-		ltdc_vertical_pix8(p [i]);	// Выдать восемь цветных пикселей, младший бит - самый верхний в растре
+		ltdc_vertical_pixN(p [i], 8);	// Выдать восемь цветных пикселей, младший бит - самый верхний в растре
 }
 
 // Вызов этой функции только внутри display_wrdatabig_begin() и display_wrdatabig_end();
@@ -816,7 +809,7 @@ static void ltdc_vertical_put_char_half(char cc)
 	const FLASHMEM uint8_t * const p = & ls020_halffont [c] [0];
 	
 	for (; i < NBYTES; ++ i)
-		ltdc_vertical_pix8(p [i]);	// Выдать восемь цветных пикселей, младший бит - самый верхний в растре
+		ltdc_vertical_pixN(p [i], 8);	// Выдать восемь цветных пикселей, младший бит - самый верхний в растре
 }
 
 #endif /* LCDMODE_LQ043T3DX02K */
@@ -1093,7 +1086,7 @@ void display_wrdatabar_begin(void)
 // Выдать восемь цветных пикселей, младший бит - самый верхний в растре
 void display_barcolumn(uint_fast8_t pattern)
 {
-	ltdc_vertical_pix8(pattern);	// Выдать восемь цветных пикселей, младший бит - самый верхний в растре
+	ltdc_vertical_pixN(pattern, 8);	// Выдать восемь цветных пикселей, младший бит - самый верхний в растре
 }
 
 void display_wrdatabar_end(void)
