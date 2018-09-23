@@ -1993,7 +1993,7 @@ static const codechw_t audiocodechw =
 };
 #else
 	// other CPUs
-static const codechw_t fpgaspectrumhwwfm =
+static const codechw_t fpgaspectrumhw =
 {
 	hardware_sai2_slave_fullduplex_initialize,	// added...
 	hardware_dummy_initialize,
@@ -2760,7 +2760,7 @@ static const codechw_t fpgaspectrumhw =
 
 #else
 	// other CPUs
-static const codechw_t fpgaspectrumhwwfm =
+static const codechw_t fpgaspectrumhw =
 {
 	hardware_sai2_slave_fullduplex_initialize,	// added...
 	hardware_dummy_initialize,
@@ -2857,9 +2857,9 @@ void hardware_fpgaspectrum_initialize(void)
 // Интерфейс к источнику данных о спектре
 void hardware_fpgaspectrum_enable(void)
 {
-	fpgaspectrumhwwfm.initializedma_rx();
+	fpgaspectrumhw.initializedma_rx();
 	//fpgaspectrumhw.initializedma_tx();
-	fpgaspectrumhwwfm.enable_rx();
+	fpgaspectrumhw.enable_rx();
 	//fpgaspectrumhw.enable_tx();
 }
 
@@ -2868,11 +2868,9 @@ void hardware_fpgaspectrum_enable(void)
 // Если есть WITHSAICLOCKFROMI2S	- это инициализируется после I2S
 void hardware_fpgaspectrum_initialize(void)
 {
-	debug_printf_P(PSTR("hardware_fpgaspectrum_initialize start: %s\n"), fpgaspectrumhwwfm.label);
-
-	fpgaspectrumhwwfm.initialize_rx();
+	debug_printf_P(PSTR("hardware_fpgaspectrum_initialize start: %s\n"), fpgaspectrumhw.label);
+	fpgaspectrumhw.initialize_rx();
 	//fpgaspectrumhw.initialize_tx();
-
 	debug_printf_P(PSTR("hardware_fpgaspectrum_initialize done\n"));
 }
 #endif /* WITHSUSBSPKONLY */
