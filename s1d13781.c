@@ -2199,9 +2199,6 @@ display_put_char_small2(uint_fast8_t c, uint_fast8_t lowhalf)
 	s1d13781_put_char_small(c);
 }
 
-	//uint8_t x = h * CHAR_W;
-	//uint8_t y = Y_DIM - 5 - (v * CHAR_H);
-
 static uint_fast8_t stored_xgrid, stored_ygrid;	// используется в display_dispbar
 
 void
