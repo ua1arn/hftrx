@@ -195,12 +195,12 @@
 	//#define LCDMODE_ILI9163_TOPDOWN	1	/* LCDMODE_ILI9163 - перевернуть изображение (дл€ выводов справа, лента диспле€ слева) */
 	//#define LCDMODE_L2F50	1	/* »ндикатор 176*132 с контроллером Epson L2F50126 */
 	//#define LCDMODE_L2F50_TOPDOWN	1	/* ѕереворот изображени € в случае LCDMODE_L2F50 */
-	//#define LCDMODE_S1D13781	1	/* »нндикатор 480*272 с контроллером Epson S1D13781 */
+	#define LCDMODE_S1D13781	1	/* »нндикатор 480*272 с контроллером Epson S1D13781 */
 	//#define LCDMODE_S1D13781_TOPDOWN	1	/* LCDMODE_S1D13781 - перевернуть изображение */
 	#define LCDMODE_S1D13781_REFOSC_MHZ	50	/* „астота генератора, установленного на контроллере диспле€ */
 	//#define LCDMODE_ILI9225	1	/* »ндикатор 220*176 SF-TC220H-9223A-N_IC_ILI9225C_2011-01-15 с контроллером ILI9225— */
 	//#define LCDMODE_ILI9225_TOPDOWN	1	/* LCDMODE_ILI9225 - перевернуть изображение (дл€ выводов слева от экрана) */
-	#define LCDMODE_UC1608	1		/* »ндикатор 240*128 с контроллером UC1608.- монохромный */
+	//#define LCDMODE_UC1608	1		/* »ндикатор 240*128 с контроллером UC1608.- монохромный */
 	//#define LCDMODE_UC1608_TOPDOWN	1	/* LCDMODE_UC1608 - перевернуть изображение (дл€ выводов сверху) */
 	//#define LCDMODE_ST7735	1	/* »ндикатор 160*128 с контроллером Sitronix ST7735 - TFT панель 160 * 128 HY-1.8-SPI */
 	//#define LCDMODE_ST7735_TOPDOWN	1	/* LCDMODE_ST7735 - перевернуть изображение (дл€ выводов справа) */
