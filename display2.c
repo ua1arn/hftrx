@@ -610,6 +610,22 @@ static void display_notch5(
 #endif /* WITHNOTCHONOFF || WITHNOTCHFREQ */
 }
 
+// Отображение частоты NOCH
+static void display_notchfreq5(
+	uint_fast8_t x, 
+	uint_fast8_t y, 
+	void * pv
+	)
+{
+#if WITHNOTCHONOFF || WITHNOTCHFREQ
+	int_fast32_t freq;
+	const uint_fast8_t state = hamradio_get_notchvalue(& freq);
+	char s [6];
+	local_snprintf_P(s, sizeof s / sizeof s [0], PSTR("%5lu"), freq);
+	display_2states(x, y, state, s, text_nul5);
+#endif /* WITHNOTCHONOFF || WITHNOTCHFREQ */
+}
+
 // Отображение режима NOCH ON/OFF
 static void display_notch3(
 	uint_fast8_t x, 
@@ -3804,7 +3820,7 @@ enum
 		{	21, 0,	display_rxbw3,		REDRM_MODE, PGALL, },	// 3.1 / 0,5 / WID / NAR
 
 		{	25, 0,	display_notch5,		REDRM_MODE, PGALL, },	// NOTCH
-		{	25,	5,	display_XXXXX5,		REDRM_MODE, PGALL, },	// placeholder
+		{	25,	5,	display_notchfreq5,		REDRM_MODE, PGALL, },	// placeholder
 		{	26,	10,	display_vfomode3,	REDRM_MODE, PGALL, },	// SPLIT
 		{	26, 15,	display_voxtune3,	REDRM_MODE, PGALL, },	// VOX
 		{	26, 20,	display_atu3,		REDRM_MODE, PGALL, },
