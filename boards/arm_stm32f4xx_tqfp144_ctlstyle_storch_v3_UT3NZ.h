@@ -336,8 +336,8 @@
 	//#define WITHNMEA		1	/* используется NMEA parser */
 	//#define WITHBEACON	1	/* Используется режим маяка */
 	#define WITHVOX			1	/* используется VOX */
-	//#define WITHSHOWSWRPWR 1	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
-	//#define WITHSWRMTR	1		/* Измеритель КСВ */
+	#define WITHSHOWSWRPWR 1	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
+	#define WITHSWRMTR	1		/* Измеритель КСВ */
 	//#define WITHPWRMTR	1	/* Индикатор выходной мощности или */
 	//#define WITHPWRLIN	1	/* Индикатор выходной мощности показывает напряжение а не мощность */
 	#define WITHBARS		1	/* отображение S-метра и SWR-метра */
@@ -471,7 +471,7 @@
 		POTPOWER = 3,			// регулировка мощности
 	#endif /* WITHPOTPOWER */
 	#if WITHPOTNOTCH
-		POTNOTCH = 14,			// регулировка частоты NOTCH фильтра
+		POTNOTCH = 9,			// регулировка частоты NOTCH фильтра
 	#endif /* WITHPOTNOTCH */
 
 		ALCINIX = 9,		// PB1 ALC IN
