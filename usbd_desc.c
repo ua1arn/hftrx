@@ -716,10 +716,10 @@ static unsigned UAC_AudioControlIfCircuitINRTS(uint_fast8_t fill, uint8_t * p, u
 
 /* USB Speaker Class-specific AC Interface Descriptor */
 // Audio Control Interface Header Descriptor 
-static unsigned UACINOUT_AudioControlIfHeader(
+static unsigned UAC_AudioControlIfHeader(
 	uint_fast8_t fill, uint8_t * buff, unsigned maxsize,
-	const uint_fast8_t * coll,
-	uint_fast8_t bInCollection,
+	const uint_fast8_t * coll,		// array of data interfaces in this functional device
+	uint_fast8_t bInCollection,		// size of array
 	unsigned (* audiocontrolifcircuits)(uint_fast8_t fill, uint8_t * p, unsigned maxsize, uint_fast8_t offset),
 	uint_fast8_t offset
 	)
@@ -1149,7 +1149,7 @@ static unsigned fill_UACIN48_function(uint_fast8_t fill, uint8_t * p, unsigned m
 	n += UAC_InterfaceAssociationDescriptor(fill, p + n, maxsize - n, controlifv, 2, offset);	/* INTERFACE_AUDIO_CONTROL_SPK Interface Association Descriptor Audio */
 	// INTERFACE_AUDIO_CONTROL_SPK - audio conntrol interface
 	n += r9fill_3(fill, p + n, maxsize - n, controlifv, 0x00, offset);	/* INTERFACE_AUDIO_CONTROL_SPK - Interface Descriptor 0/0 Audio, 0 Endpoints */
-	n += UACINOUT_AudioControlIfHeader(fill, p + n, maxsize - n, & mikeifv, 1, UAC_AudioControlIfCircuitIN48, offset);	/* bcdADC Audio Control Interface Header Descriptor */
+	n += UAC_AudioControlIfHeader(fill, p + n, maxsize - n, & mikeifv, 1, UAC_AudioControlIfCircuitIN48, offset);	/* bcdADC Audio Control Interface Header Descriptor */
 
 	// IN data flow: USB Microphone
 	// INTERFACE_AUDIO_MIKE - audio streaming interface
@@ -1178,7 +1178,7 @@ static unsigned fill_UACINRTS_function(uint_fast8_t fill, uint8_t * p, unsigned 
 	// IN data flow: USB Microphone
 	// INTERFACE_AUDIO_MIKE - audio streaming interface
 	n += r9fill_3(fill, p + n, maxsize - n, rtscontrolifv, 0x00, offset);	/* INTERFACE_AUDIO_CONTROL_RTS - Interface Descriptor 0/0 Audio, 0 Endpoints */
-	n += UACINOUT_AudioControlIfHeader(fill, p + n, maxsize - n, & rtsifv, 1, UAC_AudioControlIfCircuitINRTS, offset);	/* bcdADC Audio Control Interface Header Descriptor */
+	n += UAC_AudioControlIfHeader(fill, p + n, maxsize - n, & rtsifv, 1, UAC_AudioControlIfCircuitINRTS, offset);	/* bcdADC Audio Control Interface Header Descriptor */
 	n += r9fill_24(fill, p + n, maxsize - n, rtsifv, UACINRTSALT_NONE, 0, offset);	/* USB Microphone Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3) */ //zero-bandwidth interface
 
 #if WITHRTS96
@@ -1224,7 +1224,7 @@ static unsigned fill_UACIN48_INRTS_function(uint_fast8_t fill, uint8_t * p, unsi
 	n += UAC_InterfaceAssociationDescriptor(fill, p + n, maxsize - n, controlifv, 2, offset);	/* INTERFACE_AUDIO_CONTROL_SPK Interface Association Descriptor Audio */
 	// INTERFACE_AUDIO_CONTROL_SPK - audio conntrol interface
 	n += r9fill_3(fill, p + n, maxsize - n, controlifv, 0x00, offset);	/* INTERFACE_AUDIO_CONTROL_SPK - Interface Descriptor 0/0 Audio, 0 Endpoints */
-	n += UACINOUT_AudioControlIfHeader(fill, p + n, maxsize - n, & mikeifv, 1, UAC_AudioControlIfCircuitIN48_INRTS, offset);	/* bcdADC Audio Control Interface Header Descriptor */
+	n += UAC_AudioControlIfHeader(fill, p + n, maxsize - n, & mikeifv, 1, UAC_AudioControlIfCircuitIN48_INRTS, offset);	/* bcdADC Audio Control Interface Header Descriptor */
 
 	// IN data flow: USB Microphone
 	// INTERFACE_AUDIO_MIKE - audio streaming interface
@@ -1273,7 +1273,7 @@ static unsigned fill_UACOUT48_function(uint_fast8_t fill, uint8_t * p, unsigned 
 	n += UAC_InterfaceAssociationDescriptor(fill, p + n, maxsize - n, controlifv, 2, offset);	/* INTERFACE_AUDIO_CONTROL_SPK Interface Association Descriptor Audio */
 	// INTERFACE_AUDIO_CONTROL_SPK - audio conntrol interface
 	n += r9fill_3(fill, p + n, maxsize - n, controlifv, 0x00, offset);	/* INTERFACE_AUDIO_CONTROL_SPK - Interface Descriptor 0/0 Audio, 0 Endpoints */
-	n += UACINOUT_AudioControlIfHeader(fill, p + n, maxsize - n, & modulatorifv, 1, UAC_AudioControlIfCircuitOUT48, offset);	/* bcdADC Audio Control Interface Header Descriptor */
+	n += UAC_AudioControlIfHeader(fill, p + n, maxsize - n, & modulatorifv, 1, UAC_AudioControlIfCircuitOUT48, offset);	/* bcdADC Audio Control Interface Header Descriptor */
 
 	// OUT data flow: USB Speaker
 	// INTERFACE_AUDIO_SPK - audio streaming interface
