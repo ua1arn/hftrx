@@ -2982,7 +2982,7 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 		StringDescrTbl [id].data = alldescbuffer + score;
 		score += partlen;
 	}
-#elif CPUSTYLE_STM32F && defined(UID_BASE) && ! CTLSTYLE_OLEG4Z_V1
+#elif 0 //CPUSTYLE_STM32F && defined(UID_BASE)
 	{
 		unsigned partlen;
 		const uint_fast8_t id = STRING_ID_3;

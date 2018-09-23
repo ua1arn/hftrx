@@ -10842,7 +10842,7 @@ static const FLASHMEM struct menudef menutable [] =
 		getzerobase, /* складывается со смещением и отображается */
 	},
 #endif /* defined (DEFAULT_LCD_CONTRAST) */
-#if WITHDCDCFREQCTL
+#if 0//WITHDCDCFREQCTL
 	{
 		"DCDC DIV", 7, 0, 0,	ISTEP1,	
 		ITEM_VALUE,
