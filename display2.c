@@ -3802,8 +3802,9 @@ enum
 			PG1 = REDRSUBSET(DPAGE1),
 			PGALL = PG0 | PG1 | REDRSUBSET_MENU,
 			PGLATCH = PGALL,	// страницы, на которых возможно отображение водопада или панорамы.
-			PGWFL = PG1,
-			PGSPE = PG1,
+			PGWFL = PG0,	// страница отображения водопада
+			PGSPE = PG0,	// страница отображения панорамы
+			PGSWR = PG1,	// страница отоюражения S-meter и SWR-meter
 			PGunused
 		};
 	#endif /* WITHSEPARATEWFL */
@@ -3825,7 +3826,7 @@ enum
 		{	21, 0,	display_rxbw3,		REDRM_MODE, PGALL, },	// 3.1 / 0,5 / WID / NAR
 
 		{	25, 0,	display_notch5,		REDRM_MODE, PGALL, },	// NOTCH
-		{	25,	5,	display_notchfreq5,		REDRM_MODE, PGALL, },	// placeholder
+		{	25,	5,	display_notchfreq5,	REDRM_BARS, PGALL, },	// placeholder
 		{	25,	10,	display_vfomode5,	REDRM_MODE, PGALL, },	// SPLIT
 		{	26, 15,	display_voxtune3,	REDRM_MODE, PGALL, },	// VOX
 		{	26, 20,	display_atu3,		REDRM_MODE, PGALL, },
@@ -3845,8 +3846,8 @@ enum
 		{	9,	20,	display_freqX_b,	REDRM_FREQB, PGALL, },	// SUB FREQ
 		{	21, 20,	display_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
 
-		{	0,	25,	display2_legend,	REDRM_MODE, PG0, },// Отображение оцифровки шкалы S-метра
-		{	0,	30,	display2_bars,		REDRM_BARS, PG0, },	// S-METER, SWR-METER, POWER-METER
+		{	0,	25,	display2_legend,	REDRM_MODE, PGSWR, },// Отображение оцифровки шкалы S-метра
+		{	0,	30,	display2_bars,		REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
 
 		{	0,	25,	dsp_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
 		{	0,	25,	display2_spectrum,	REDRM_BARS, PGSPE, },// подготовка изображения спектра
