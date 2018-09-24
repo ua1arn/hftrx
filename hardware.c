@@ -8733,6 +8733,7 @@ void arm_hardware_flush_invalidate(uintptr_t base, size_t size)
 
 #endif /* CPUSTYLE_ARM_CM7 */
 
+
 // получение из аппаратного счетчика монотонно увеличивающегося кода
 // see arm_cpu_initialize() in hardware.c
 uint_fast32_t cpu_getdebugticks(void)
@@ -8756,6 +8757,11 @@ uint_fast32_t cpu_getdebugticks(void)
 #endif
 }
 
+// call after __preinit_array_xxx and before __init_array_xxx passing
+void 
+_init(void) 
+{
+}
 
 
 /* функция вызывается из start-up до копирования в SRAM всех "быстрых" функций и до инициализации переменных
@@ -11046,6 +11052,8 @@ extern unsigned long __bss_start__, __bss_end__, __data_end__, __data_start__, _
 #endif
 
 extern int main(void);
+extern void __libc_init_array(void);
+
 /** \endcond */
 /**
  * \brief This is the code that gets called on processor reset.
@@ -11201,6 +11209,8 @@ void Reset_Handler(void)
 		local_delay_ms(300);
 	}
 #endif
+	//SystemInit();
+	__libc_init_array();	// invoke constructors
     /* Branch to main function */
     main();
 

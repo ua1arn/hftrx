@@ -91,6 +91,7 @@ FIQAddr:       .word FIQHandler
    
    .global Reset_Handler
    .extern main
+   .extern __libc_init_array
    .extern arm_cpu_initialize
 /****************************************************************************/
 /*                           Reset handler                                  */
@@ -166,6 +167,11 @@ bss_clear_loop:
    //bic   r0, r0, #I_BIT | F_BIT     /* Enable FIQ and IRQ interrupt */
    //msr   cpsr, r0
    
+   ldr   r2, =__libc_init_array
+   mov   lr, pc
+   bx    r2     /* And jump... */
+
+
    mov   r0, #0 /* No arguments */
    mov   r1, #0 /* No arguments */
    ldr   r2, =main
