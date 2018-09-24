@@ -5028,6 +5028,8 @@ getmonitx(
 		return mike;
 	}
 }
+
+#if WITHDSPEXTDDC
 // Обработка полученного от DMA буфера с выборками или квадратурами (или двухканальный приём).
 // Вызывается на ARM_REALTIME_PRIORITY уровне.
 void RAMFUNC dsp_extbuffer32wfm(const uint32_t * buff)
@@ -5063,6 +5065,8 @@ void RAMFUNC dsp_extbuffer32wfm(const uint32_t * buff)
 		}
 	}
 }
+
+#endif /* WITHDSPEXTDDC */
 
 // Обработка полученного от DMA буфера с выборками или квадратурами (или двухканальный приём).
 // Вызывается на ARM_REALTIME_PRIORITY уровне.
