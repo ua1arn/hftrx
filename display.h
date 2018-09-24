@@ -761,8 +761,8 @@ const FLASHMEM char * hamradio_get_agc3_value_P(void);	// RX agc time - 3-х букв
 const FLASHMEM char * hamradio_get_agc4_value_P(void);	// RX agc time - 4-х буквенные абревиатуры
 const FLASHMEM char * hamradio_get_ant5_value_P(void);	// antenna
 const FLASHMEM char * hamradio_get_mainsubrxmode3_value_P(void);	// текущее состояние DUAL WATCH
-const char * hamradio_get_vfomode3_value(void);	// VFO mode
-const char * hamradio_get_vfomode5_value(void);	// VFO mode
+const char * hamradio_get_vfomode3_value(uint_fast8_t * flag);	// VFO mode
+const char * hamradio_get_vfomode5_value(uint_fast8_t * flag);	// VFO mode
 uint_fast8_t hamradio_get_volt_value(void);	// Вольты в десятых долях
 int_fast16_t hamradio_get_pacurrent_value(void);	// Ток в десятках милиампер, может быть отрицательным
 const FLASHMEM char * hamradio_get_hplp_value_P(void);	// HP/LP

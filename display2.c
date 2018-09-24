@@ -649,9 +649,9 @@ static void display_vfomode3(
 	void * pv
 	)
 {
-	const char * const label = hamradio_get_vfomode3_value();
-	const uint_fast8_t state = 1;
-	display_2states(x, y, state, label, text_nul3);
+	uint_fast8_t state;
+	const char * const labels [1] = { hamradio_get_vfomode3_value(& state), };
+	display2_text(x, y, labels, colorsfg_1state, colorsbg_1state, 0);
 }
 
 
@@ -662,9 +662,9 @@ static void display_vfomode5(
 	void * pv
 	)
 {
-	const char * const label = hamradio_get_vfomode5_value();
-	const uint_fast8_t state = 1;
-	display_2states(x, y, state, label, text_nul5);
+	uint_fast8_t state;
+	const char * const labels [1] = { hamradio_get_vfomode5_value(& state), };
+	display2_text(x, y, labels, colorsfg_1state, colorsbg_1state, 0);
 }
 
 static void display_XXXXX3(
@@ -1103,7 +1103,8 @@ static void display_vfomode1(
 	void * pv
 	)
 {
-	const char * text = hamradio_get_vfomode3_value();
+	uint_fast8_t state;
+	const char * const label = hamradio_get_vfomode3_value(& state);
 
 	display_setcolors(MODECOLOR, BGCOLOR);
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
@@ -1111,7 +1112,7 @@ static void display_vfomode1(
 	{
 		display_gotoxy(x, y + lowhalf);
 		display_wrdata_begin();
-		display_put_char_small(text [0], lowhalf);
+		display_put_char_small(label [0], lowhalf);
 		display_wrdata_end();
 	} while (lowhalf --);
 }
@@ -3825,7 +3826,7 @@ enum
 
 		{	25, 0,	display_notch5,		REDRM_MODE, PGALL, },	// NOTCH
 		{	25,	5,	display_notchfreq5,		REDRM_MODE, PGALL, },	// placeholder
-		{	26,	10,	display_vfomode3,	REDRM_MODE, PGALL, },	// SPLIT
+		{	25,	10,	display_vfomode5,	REDRM_MODE, PGALL, },	// SPLIT
 		{	26, 15,	display_voxtune3,	REDRM_MODE, PGALL, },	// VOX
 		{	26, 20,	display_atu3,		REDRM_MODE, PGALL, },
 		{	26, 25,	display_byp3,		REDRM_MODE, PGALL, },

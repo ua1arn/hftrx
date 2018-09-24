@@ -4853,7 +4853,7 @@ getactualmainsubrx(void)
 #endif /* WITHUSEDUALWATCH */
 
 // VFO mode
-const char * hamradio_get_vfomode3_value(void)
+const char * hamradio_get_vfomode3_value(uint_fast8_t * flag)
 {
 	static const char spl [] = "SPL";
 	static const char sp3 [] = "   ";
@@ -4862,15 +4862,17 @@ const char * hamradio_get_vfomode3_value(void)
 	{
 	default:
 	case VFOMODES_VFOINIT:	/* no SPLIT -  Обычная перестройка */
+		* flag = 0;
 		return sp3;
 	case VFOMODES_VFOSPLIT:	
+		* flag = 1;
 		return spl;
 		//return (gvfoab != tx) ? b : a;
 	}
 }
 
 // VFO mode
-const char * hamradio_get_vfomode5_value(void)
+const char * hamradio_get_vfomode5_value(uint_fast8_t * flag)
 {
 	static const char spl [] = "SPLIT";
 	static const char sp5 [] = "     ";
@@ -4879,8 +4881,10 @@ const char * hamradio_get_vfomode5_value(void)
 	{
 	default:
 	case VFOMODES_VFOINIT:	/* no SPLIT -  Обычная перестройка */
+		* flag = 0;
 		return sp5;
 	case VFOMODES_VFOSPLIT:	
+		* flag = 1;
 		return spl;
 		//return (gvfoab != tx) ? b : a;
 	}
