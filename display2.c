@@ -4567,10 +4567,9 @@ void display_colorbuffer_xor_vline(
 
 // Поставить цветную точку.
 // Формат RGB565
-void display_colorbuffer_set_vline(
+static void 
+display_colorbuffer_set_vline(
 	PACKEDCOLOR565_T * buffer,
-	uint_fast16_t dx,	
-	uint_fast16_t dy,
 	uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
 	uint_fast16_t row0,	// вертикальная координата пикселя (0..dy-1) сверху вниз
 	uint_fast16_t h,	// высота
@@ -4578,10 +4577,11 @@ void display_colorbuffer_set_vline(
 	)
 {
 	while (h --)
-		display_colorbuffer_set(buffer, dx, dy, col, row0 ++, color);
+		display_colorbuffer_set(buffer, ALLDX, ALLDY, col, row0 ++, color);
 }
 
-void display_colorgrid(
+static void 
+display_colorgrid(
 	PACKEDCOLOR565_T * buffer,
 	uint_fast16_t row0,	// вертикальная координата начала занимаемой области
 	uint_fast16_t h,	// высота
@@ -4717,7 +4717,7 @@ static void display2_spectrum(
 			const int yv = SPDY - val;	//отображаемый уровень, yv = 0..SPDY
 
 			// формирование фона растра - верхняя часть графика
-			display_colorbuffer_set_vline(colorpip, ALLDX, ALLDY, x, SPY0, yv, COLOR565_SPECTRUMBG);
+			display_colorbuffer_set_vline(colorpip, x, SPY0, yv, COLOR565_SPECTRUMBG);
 			// точку на границе
 			if (yv < SPDY)
 			{
@@ -4730,12 +4730,12 @@ static void display2_spectrum(
 					if (glob_nofill != 0)
 					{
 						// под спектром цветом фона спектра
-						display_colorbuffer_set_vline(colorpip, ALLDX, ALLDY, x, yb + SPY0, SPDY - yb, COLOR565_SPECTRUMBG);
+						display_colorbuffer_set_vline(colorpip, x, yb + SPY0, SPDY - yb, COLOR565_SPECTRUMBG);
 					}
 					else
 					{
 						// формирование занятой области растра
-						display_colorbuffer_set_vline(colorpip, ALLDX, ALLDY, x, yb + SPY0, SPDY - yb, COLOR565_SPECTRUMFG);
+						display_colorbuffer_set_vline(colorpip, x, yb + SPY0, SPDY - yb, COLOR565_SPECTRUMFG);
 					}
 				}
 			}
