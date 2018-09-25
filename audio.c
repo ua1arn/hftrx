@@ -300,7 +300,6 @@ static int_fast8_t		glob_swaprts;		// управление боковой выхода спектроанализато
 
 	// Фильтр для квадратурных каналов приёмника и передатчика в FPGA (целочисленный).
 	// Параметры для передачи в FPGA
-	static int_fast32_t FIRCoef_trxi_IQ [NtapCoeffs(Ntap_trxi_IQ)];
 	#if WITHDOUBLEFIRCOEFS && (__ARM_FP & 0x08)
 		static double FIRCwndL_trxi_IQ [NtapCoeffs(Ntap_trxi_IQ)];			// подготовленные значения функции окна
 	#else
@@ -2659,6 +2658,10 @@ static int_fast16_t audio_validatebw6(int_fast16_t n)
 // Установка параметров тракта приёмника
 static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 {
+#if WITHDSPEXTDDC && WITHDSPEXTFIR
+	static int_fast32_t FIRCoef_trxi_IQ [NtapCoeffs(Ntap_trxi_IQ)];
+#endif /* WITHDSPEXTDDC && WITHDSPEXTFIR */
+
 	const uint_fast8_t dspmode = glob_dspmodes [pathi];
 	const uint_fast16_t fullbw6 = audio_validatebw6(glob_fullbw6 [pathi]);
 #if WITHDSPEXTDDC
@@ -2671,8 +2674,7 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 	const FLOAT_t txfiltergain = 2;	// Для IQ фильтра можно так - для компенсации 0.5 усиления из-за перемножителя перед ним.
 #endif /* WITHDSPEXTDDC */
 
-	const int cutfreq = fullbw6 / 2;
-	//debug_printf_P(PSTR("audio_setup_wiver: fullbw6=%u\n"), (unsigned) fullbw6);
+	debug_printf_P(PSTR("audio_setup_wiver: fullbw6[%u]=%u\n"), (unsigned) pathi, (unsigned) fullbw6);
 
 	if (fullbw6 == INT16_MAX)
 	{
@@ -2689,6 +2691,7 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 	}
 	else
 	{
+		const int cutfreq = fullbw6 / 2;
 		//debug_printf_P(PSTR("audio_setup_wiver: construct filter glob_fullbw6=%u\n"), (unsigned) glob_fullbw6);
 	#if WITHDSPLOCALFIR
 		if (isdspmoderx(dspmode))
@@ -2713,8 +2716,8 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 #if WITHDSPEXTDDC && WITHDSPEXTFIR
 	// загрузка коэффициентов фильтра в FPGA
 	//writecoefs(FIRCoef_trxi_IQ, Ntap_trxi_IQ);	/* печать коэффициентов фильтра */
-	board_fpga_fir_send(pathi, FIRCoef_trxi_IQ, Ntap_trxi_IQ, HARDWARE_COEFWIDTH);		/* загрузить массив коэффициентов в FPGA */
-	boart_tgl_firprofile(pathi);
+	board_reload_fir(pathi, FIRCoef_trxi_IQ, Ntap_trxi_IQ, HARDWARE_COEFWIDTH);
+	//board_reload_fir(pathi, FIRCoef_trxi_IQ, Ntap_trxi_IQ, HARDWARE_COEFWIDTH);
 #endif /* WITHDSPEXTDDC && WITHDSPEXTFIR */
 }
 
@@ -2727,7 +2730,7 @@ static void audio_setup_rx(const uint_fast8_t spf, const uint_fast8_t pathi)
 	const FLOAT_t * const dWindow = FIRCwnd_rx_AUDIO;
 	enum { iCoefNum = Ntap_rx_AUDIO };
 
-	switch (glob_dspmodes [0])
+	switch (glob_dspmodes [pathi])
 	{
 	case DSPCTL_MODE_RX_DSB:
 		// В этом режиме фильтр не используется
@@ -2820,7 +2823,7 @@ static void audio_setup_mike(const uint_fast8_t spf)
 	const FLOAT_t * const dWindow = FIRCwnd_tx_MIKE;
 	enum { iCoefNum = Ntap_tx_MIKE };
 
-	switch (glob_dspmodes [0])
+	switch (glob_dspmodes [0])	// 0 - для передатчика
 	{
 	case DSPCTL_MODE_TX_BPSK:
 		// 15-ти герцовый ФНЧ перед модулятором - из "канонического" описания модуляции в статье в QEX July/Aug 1999 7 - x9907003.pdf
@@ -2927,9 +2930,8 @@ static void setlevelindicator(long code)	// в кодах ЦАП
 static void audio_update(const uint_fast8_t spf, uint_fast8_t pathi)
 {
 	globDSPMode  [spf] [pathi] = glob_dspmodes [pathi];
-	//debug_printf_P(PSTR("nco_setlo_ftw: freq=%d\n"), glob_lo6A);
 	const ncoftw_t lo6_ftw = FTWAF(- glob_lo6 [pathi]);
-	nco_setlo_ftw(lo6_ftw, pathi);	// Приёмник #0
+	nco_setlo_ftw(lo6_ftw, pathi);
 
 #if WITHLOOPBACKTEST
 	fir_design_bandpass_freq(FIRCoef_tx_MIKE [spf], Ntap_tx_MIKE, glob_aflowcuttx, glob_afhighcuttx);
@@ -2944,7 +2946,7 @@ static void audio_update(const uint_fast8_t spf, uint_fast8_t pathi)
 
 	debug_cleardtmax();		// сброс максимального значения в тесте производительности DSP
 
-#if 0
+#if 1
 	debug_printf_P(PSTR("audio_update[pathi=%d]: dsp_mode=%d, bw6=%d, lo6=%d, rx=%d..%d, tx=%d..%d\n"), 
 		(int) pathi, 
 		(int) glob_dspmodes [pathi], 

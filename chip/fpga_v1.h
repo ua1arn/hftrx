@@ -105,10 +105,10 @@ prog_fpga_ctrlreg(
 	RBBIT(13, glob_adcfifo);				/* b13: adc_fifo */
 	RBBIT(12, glob_dacstraight);			/* b12: dacstraight - Требуется формирование кода для ЦАП в режиме беззнакового кода*/
 	RBBIT(11, glob_i2s_enable);				/* b11: i2s_enable */
-	RBBIT(10, glob_firprofile [1]);			/* b10: fir2_weprofile */
-	RBBIT(9, ! glob_firprofile [1]);		/* b9: fir2_profile */
-	RBBIT(8, glob_firprofile [0]);			/* b8: fir_weprofile */
-	RBBIT(7, ! glob_firprofile [0]);		/* b7: fir_profile */
+	RBBIT(10, glob_firprofile [1]);			/* b10: fir2_weprofile - куда пишем коэффициеты FIR2 */
+	RBBIT(9, ! glob_firprofile [1]);		/* b9: fir2_profile - что используется для фильтрации FIR2 */
+	RBBIT(8, glob_firprofile [0]);			/* b8: fir_weprofile - куда пишем коэффициеты FIR1 */
+	RBBIT(7, ! glob_firprofile [0]);		/* b7: fir_profile - что используется для фильтрации FIR1 */
 	RBBIT(6, glob_flt_reset_n);				/* b6: flt_reset_n net */
 	RBBIT(5, glob_dither);					/* b5: adc_dith net */
 	RBBIT(4, glob_adcrand);					/* b4: adc_rand net  */

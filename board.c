@@ -6169,11 +6169,18 @@ void board_fpga_fir_initialize(void)
 	debug_printf_P(PSTR("board_fpga_fir_initialize done\n"));
 }
 
-static void board_fpga_fir_strobe(void)	// FIR index
+static void board_fpga_fir_strobe(void)
 {
 	// strobe (negative pulse)
 	TARGET_FPGA_FIR_CLK_PORT_C(TARGET_FPGA_FIR_CLK_BIT);
 	TARGET_FPGA_FIR_CLK_PORT_S(TARGET_FPGA_FIR_CLK_BIT);
+}
+
+static void board_fpga_fir_delay(void)
+{
+	hardware_spi_b16_p1(0);
+	hardware_spi_b16_p2(0);
+	hardware_spi_complete_b16();
 }
 
 // Передача одного 32-битного значения и формирование строба.
@@ -6360,14 +6367,15 @@ static void single_rate_out_write_mcv(const int_fast32_t * coef, unsigned coef_l
 
 
 /* Выдача расчитанных параметров фильтра в FPGA (симметричные) */
-void board_fpga_fir_send(
+static void 
+board_fpga_fir_send(
 	const uint_fast8_t ifir,	// номер FIR фильтра в FPGA
 	const int_fast32_t * const k, unsigned Ntap, unsigned CWidth
 	)
 {
 #if (WITHSPIHW && WITHSPI16BIT)	// for skip in test configurations
 
-	//debug_printf_P(PSTR("board_fpga_fir_send: Ntap=%u\n"), Ntap);
+	//debug_printf_P(PSTR("board_fpga_fir_send: ifir=%u, Ntap=%u\n"), ifir, Ntap);
 	hardware_spi_connect_b16(SPIC_SPEEDUFAST, SPIC_MODE3);
 
 	// strobe
@@ -6383,10 +6391,10 @@ void board_fpga_fir_send(
 		break;
 #endif /* TARGET_FPGA_FIR2_WE_BIT != 0 */
 	}
-
+	board_fpga_fir_delay();
 
 	board_fpga_fir_coef(0x00000000);	// 1-st dummy
-	board_fpga_fir_coef(0x00000000);	// 2-nd dummy
+	board_fpga_fir_strobe();			// 2-nd dummy
 
 	//single_rate_out_write_ser(k, Ntap / 2 + 1); // NtapCoeffs(Ntap);
 	single_rate_out_write_mcv(k, Ntap, CWidth); // NtapCoeffs(Ntap);
@@ -6403,6 +6411,7 @@ void board_fpga_fir_send(
 		break;
 #endif /* TARGET_FPGA_FIR2_WE_BIT != 0 */
 	}
+	board_fpga_fir_delay();
 	// strobe
 	board_fpga_fir_coef(0x00000000);	// one strobe after, without WE required
 
@@ -6412,12 +6421,24 @@ void board_fpga_fir_send(
 #endif /* WITHDSPEXTFIR */
 
 /* поменять местами значение загружаемого профиля FIR фильтра в FPGA */
-void boart_tgl_firprofile(
+static void 
+boart_tgl_firprofile(
 	const uint_fast8_t ifir	// номер FIR фильтра в FPGA
 	)
 {
+	ASSERT(ifir < (sizeof glob_firprofile / sizeof glob_firprofile [0]));
+	//debug_printf_P(PSTR("boart_tgl_firprofile(%u) 1: glob_firprofile [0]=%u, glob_firprofile [1]=%u\n"), ifir, glob_firprofile [0], glob_firprofile [1]);
 	glob_firprofile [ifir] = ! glob_firprofile [ifir];
-	board_update_ctrlreg_hack();
+	board_update_ctrlreg_hack();	// обновление периферии безманипуляций с флагами запроса на обновление
+	//debug_printf_P(PSTR("boart_tgl_firprofile(%u) 2: glob_firprofile [0]=%u, glob_firprofile [1]=%u\n"), ifir, glob_firprofile [0], glob_firprofile [1]);
+}
+
+
+void board_reload_fir(uint_fast8_t ifir, const int_fast32_t * const k, unsigned Ntap, unsigned CWidth)
+{
+	debug_printf_P(PSTR("board_reload_fir: ifir=%u, Ntap=%u\n"), ifir, Ntap);
+	board_fpga_fir_send(ifir, k, Ntap, CWidth);		/* загрузить массив коэффициентов в FPGA */
+	boart_tgl_firprofile(ifir);
 }
 
 /* получения признака переполнения АЦП приёмного тракта */
