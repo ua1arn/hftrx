@@ -66,10 +66,7 @@
 		#define USB_FUNCTION_RELEASE_NO	0x0104
 	#endif
 #else /* WITHUSBUAC && WITHUSBUAC3 */
-	#if WITHRTSNOAUDIO
-		#define BUILD_ID 3	// модификатор serial sumber
-		#define USB_FUNCTION_RELEASE_NO	0x0103
-	#elif WITHRTS96
+	#if WITHRTS96
 		#define BUILD_ID 2	// модификатор serial sumber
 		#define USB_FUNCTION_RELEASE_NO	0x0102
 	#elif WITHRTS192
@@ -921,7 +918,6 @@ static unsigned r9fill_24(
 	return length;
 }
 
-#if ! WITHRTSNOAUDIO
 /* USB Microphone Type I Format Type Descriptor (CODE == 6)*/
 // Audio Streaming Format Type Descriptor 
 static unsigned UAC_r9fill_26_audio48(uint_fast8_t fill, uint8_t * buff, unsigned maxsize)
@@ -973,7 +969,6 @@ static unsigned UAC_r9fill_27_audio48(uint_fast8_t fill, uint8_t * buff, unsigne
 	}
 	return length;
 }
-#endif /* ! WITHRTSNOAUDIO */
 
 #if WITHRTS96
 
@@ -1230,14 +1225,12 @@ static unsigned fill_UACIN48_INRTS_function(uint_fast8_t fill, uint8_t * p, unsi
 	// INTERFACE_AUDIO_MIKE - audio streaming interface
 	n += r9fill_24(fill, p + n, maxsize - n, mikeifv, UACINALT_NONE, 0, offset);	/* USB Microphone Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3) */ //zero-bandwidth interface
 
-#if ! WITHRTSNOAUDIO
 	// IN data flow: radio RX audio data
 	n += r9fill_24(fill, p + n, maxsize - n, mikeifv, UACINALT_AUDIO48, 1, offset);	/* INTERFACE_AUDIO_MIKE Interface Descriptor 2/1 Audio, 1 Endpoint, bAlternateSetting=0x01 */
 	n += UAC_AudioStreamingIf(fill, p + n, maxsize - n, TERMINAL_ID_OT_4 + offset);	/* USB Microphone Class-specific AS General Interface Descriptor (for output TERMINAL_ID_OT_4) (CODE == 5) */
 	n += UAC_r9fill_26_audio48(fill, p + n, maxsize - n);		/* USB Microphone Type I Format Type Descriptor (CODE == 6) 48000 */
 	n += UAC_r9fill_27_audio48(fill, p + n, maxsize - n, highspeed, epin, offset);	/* Endpoint Descriptor USBD_EP_AUDIO_IN In, Isochronous, 125 us */
 	n += r9fill_28(fill, p + n, maxsize - n);	/* USB Microphone Class-specific Isoc. Audio Data Endpoint Descriptor (CODE == 7) OK - подтверждено документацией*/
-#endif /* ! WITHRTSNOAUDIO */
 
 #if WITHRTS96
 	// IN data flow: radio RX specrum data

@@ -9,7 +9,7 @@
 // SD-card
 // Rmainunit_v2bm.pcb
 
-// RA4FIX использует плату со 100 МГц генератором и 16 МГц кварцем на процессоре, see WITHRTSNOAUDIO
+// RA4FIX использует плату со 100 МГц генератором и 16 МГц кварцем на процессоре,
 
 #ifndef ARM_STM32F4XX_TQFP144_CTLSTYLE_RAVEN_V4_H_INCLUDED
 #define ARM_STM32F4XX_TQFP144_CTLSTYLE_RAVEN_V4_H_INCLUDED 1
@@ -120,13 +120,13 @@
 	#define WITHIF4DSP	1	// "Дятел"
 
 	#if 0
-		#define DIRECT_80M0_X1		1	/* See WITHRTSNOAUDIO, Тактовый генератор на плате 80.0 МГц */	
+		#define DIRECT_80M0_X1		1	/* Тактовый генератор на плате 80.0 МГц */	
 		#define BANDSELSTYLERE_UPCONV56M_36M	1	/* Up-conversion with working band .030..36 MHz */
 	#elif 0
-		#define DIRECT_100M0_X1		1	/* See WITHRTSNOAUDIO, Тактовый генератор на плате 100.0 МГц */	
+		#define DIRECT_100M0_X1		1	/* Тактовый генератор на плате 100.0 МГц */	
 		#define BANDSELSTYLERE_UPCONV56M_45M	1	/* Up-conversion with working band .030..45 MHz */
 	#else
-		//#define DIRECT_125M0_X1		1	/* See WITHRTSNOAUDIO, Тактовый генератор на плате 125.0 МГц */	
+		//#define DIRECT_125M0_X1		1	/* Тактовый генератор на плате 125.0 МГц */	
 		//#define DIRECT_12M288_X10	1	/* Тактовый генератор 12.288 МГц */	
 		#define DIRECT_122M88_X1	1	/* Тактовый генератор 122.880 МГц */	
 		#define BANDSELSTYLERE_UPCONV56M	1	/* Up-conversion with working band .030..56 MHz */
@@ -251,7 +251,6 @@
 	#define WITHAFDACWIDTH	16		// 1 бит знак и 15 бит значащих
 	//#define WITHLOOPBACKTEST	1
 	//#define WITHRTS96 1		/* кроме выходного аудиосигнала передача квадратур по USB */
-	//#define WITHRTSNOAUDIO 1		/* передача квадратур по USB в компютер, звукового режима нет */
 	#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
 
 	#define WITHDSPEXTDDC 1			/* Квадратуры получаются внешней аппаратурой */

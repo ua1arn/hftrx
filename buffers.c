@@ -1827,7 +1827,7 @@ void savesampleout16stereo(int_fast16_t ch0, int_fast16_t ch1)
 
 	void savesamplerecord16uacin(int_fast16_t ch0, int_fast16_t ch1)
 	{
-	#if ! WITHRTSNOAUDIO && WITHUSBHW && WITHUSBUAC
+	#if WITHUSBHW && WITHUSBUAC
 		// если есть инициализированный канал для выдачи звука
 		static voice16_t * p = NULL;
 		static unsigned n = 0;
@@ -1854,7 +1854,7 @@ void savesampleout16stereo(int_fast16_t ch0, int_fast16_t ch1)
 				buffers_savetonull(p);
 			p = NULL;
 		}
-	#endif /* ! WITHRTSNOAUDIO && WITHUSBHW && WITHUSBUAC */
+	#endif /* WITHUSBHW && WITHUSBUAC */
 	}
 
 #endif /* WITHUSBUAC */
@@ -2057,11 +2057,10 @@ uintptr_t getfilled_dmabufferx(uint_fast16_t * sizep)
 	case UACINALT_NONE:
 		return 0;
 
-#if ! WITHRTSNOAUDIO
 	case UACINALT_AUDIO48:
 		* sizep = VIRTUAL_AUDIO_PORT_DATA_SIZE_IN_AUDIO48;
 		return getfilled_dmabuffer16uacin();
-#endif /* ! WITHRTSNOAUDIO */
+
 #if !WITHUSBUAC3
 
 #if WITHRTS96

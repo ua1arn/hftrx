@@ -266,7 +266,6 @@
 	#define WITHUSEDUALWATCH	1	// Второй приемник
 	//#define WITHUSEAUDIOREC2CH	1	// Запись звука на SD CARD в стерео
 	#define WITHDACSTRAIGHT 1	/* Требуется формирование кода для ЦАП в режиме беззнакового кода */
-	//#define WITHRTSNOAUDIO 1		/* передача квадратур по USB в компютер, звукового режима нет */
 	#define WITHRTS96 1		/* вместо выходного аудиосигнала передача квадратур по USB */
 	#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
 

@@ -4614,9 +4614,9 @@ void dtmftest(void)
 // Выдача в USB UAC
 static RAMFUNC void recordsampleUAC(int left, int right)
 {
-#if WITHUSBUAC && ! WITHRTSNOAUDIO
+#if WITHUSBUAC
 	savesamplerecord16uacin(left, right);	// Запись демодулированного сигнала без озвучки клавиш в USB 
-#endif /* WITHUSBUAC && ! WITHRTSNOAUDIO */
+#endif /* WITHUSBUAC */
 }
 
 // Запись на SD CARD
