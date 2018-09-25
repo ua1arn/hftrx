@@ -4530,14 +4530,16 @@ static void dsp_latchwaterfall(
 	}
 }
 
+// Параметры отображения спектра и водопада
+
+static int_fast16_t glob_gridstep = 10000;	// 10 kHz - шаг сетки
+
 #if WITHDISPLAYNOFILLSPECTRUM
 	/* не заливать заполнением площадь под графиком спектра */
 	static uint_fast8_t glob_nofill = 1;
 #else /* WITHDISPLAYNOFILLSPECTRUM */
 	static uint_fast8_t glob_nofill;
 #endif /* WITHDISPLAYNOFILLSPECTRUM */
-
-static int_fast16_t glob_gridstep = 10000;	// 10 kHz
 
 // получить горизонтальную позицию для заданного отклонения в герцах
 static uint_fast16_t
@@ -4570,8 +4572,8 @@ void display_colorbuffer_xor_vline(
 static void 
 display_colorbuffer_set_vline(
 	PACKEDCOLOR565_T * buffer,
-	uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
-	uint_fast16_t row0,	// вертикальная координата пикселя (0..dy-1) сверху вниз
+	uint_fast16_t col,	// горизонтальная координата начального пикселя (0..dx-1) слева направо
+	uint_fast16_t row0,	// вертикальная координата начального пикселя (0..dy-1) сверху вниз
 	uint_fast16_t h,	// высота
 	COLOR565_T color
 	)
@@ -4583,7 +4585,7 @@ display_colorbuffer_set_vline(
 static void 
 display_colorgrid(
 	PACKEDCOLOR565_T * buffer,
-	uint_fast16_t row0,	// вертикальная координата начала занимаемой области
+	uint_fast16_t row0,	// вертикальная координата начала занимаемой области (0..dy-1) сверху вниз
 	uint_fast16_t h,	// высота
 	COLOR565_T color
 	)
