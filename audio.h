@@ -459,7 +459,9 @@ void dsp_initialize(void);
 		FLOAT_t * const hbase,
 		uint_fast16_t dx	// pixel X width of display window
 		);
-	int dsp_mag2y(FLOAT_t mag, uint_fast16_t dy);	// Нормирование уровня сигнала к шкале
+	// Нормирование уровня сигнала к шкале
+	// возвращает значения от 0 до dy включительно
+	int dsp_mag2y(FLOAT_t mag, uint_fast16_t dy);	
 #endif /* WITHINTEGRATEDDSP */
 
 int_fast32_t dsp_get_ifreq(void);		/* Получить значение входной ПЧ для обработки DSP */

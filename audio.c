@@ -2758,7 +2758,7 @@ static void audio_setup_rx(const uint_fast8_t spf, const uint_fast8_t pathi)
 			const int fNotch = inside(cutfreqlow + glob_notch_width / 2, glob_notch_freq, cutfreqhigh - glob_notch_width / 2);
 			const int fcutL = fNotch - glob_notch_width / 2;
 			const int fcutH = fNotch + glob_notch_width / 2;
-			if (0)
+			if (1)
 			{
 				// Расчитывается Notch
 				fir_design_bandstop(dCoeff, iCoefNum, fir_design_normfreq(fcutL), fir_design_normfreq(fcutH));
@@ -4806,15 +4806,17 @@ static int mapfft2raster(
 	return x;
 }
 
+// Нормирование уровня сигнала к шкале
+// возвращает значения от 0 до dy включительно
 int dsp_mag2y(FLOAT_t mag, uint_fast16_t dy)
 {
 	if (mag < waterfalrange)
 		return 0;
 	const FLOAT_t v = mag / waterfalrange;
-	int val = LOG10F(v) * ((int_fast16_t) dy - 1) / toplogdb;
+	int val = LOG10F(v) * ((int_fast16_t) dy) / toplogdb;
 
-	if (val >= dy) 
-		val = dy - 1;
+	if (val > dy) 
+		val = dy;
 	else if (val < 0) 
 		val = 0;
 	return val;
@@ -4873,6 +4875,8 @@ void dsp_getspectrumrow(
 	}
 }
 
+// Нормирование уровня сигнала к шкале
+// возвращает значения от 0 до dy включительно
 int dsp_mag2y(FLOAT_t mag, uint_fast16_t dy)
 {
 	return 0;
