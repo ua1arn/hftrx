@@ -2853,6 +2853,7 @@ static uint_fast8_t gantennas [2];
 static uint_fast8_t gvfosplit [2];	// At index 0: RX VFO A or B, at index 1: TX VFO A or B
 // Параметры, выставляемые в update board
 // кэш установленных параметров.
+// На эти параметры ориентируемся при работе кнопками управления, переклбчения филттров и так далее.
 static uint_fast8_t gsubmode;		/* код текущего режима */
 static uint_fast8_t gmode;		/* текущий код группы режимов */
 static uint_fast8_t gfi;			/* номер фильтра (сквозной) для текущего режима */
@@ -6185,13 +6186,18 @@ getcattxdata(void)
 	return catenable && catstatetx && catstatetxdata;
 }
 
+// получить submode для тракта, возможно замененный на CWZ в случае формирования сигнала настройки.
 static uint_fast8_t
-getasubmode(void)
+getasubmode(uint_fast8_t pathi)
 {
+	const uint_fast8_t bi = getbankindex_pathi(pathi);	/* vfo bank index */
+	/* преустановка всех параметров приемника или передатчика под новый режим */
+	const uint_fast8_t pathsubmode = gsubmode; //getsubmode(bi);
+
 #if WITHMODESETSMART
-	const uint_fast8_t submode = (getactualtune() == 0) ? gsubmode : SUBMODE_CWZSMART;	// mode_cwz обеспечивает формирование сигнала самоконтроля при передаче.
+	const uint_fast8_t submode = (getactualtune() == 0) ? pathsubmode : SUBMODE_CWZSMART;	// mode_cwz обеспечивает формирование сигнала самоконтроля при передаче.
 #else /* WITHMODESETSMART */
-	const uint_fast8_t submode = (getactualtune() == 0) ? gsubmode : SUBMODE_CWZ;	// mode_cwz обеспечивает формирование сигнала самоконтроля при передаче.
+	const uint_fast8_t submode = (getactualtune() == 0) ? pathsubmode : SUBMODE_CWZ;	// mode_cwz обеспечивает формирование сигнала самоконтроля при передаче.
 #endif /* WITHMODESETSMART */
 	return submode;
 }
@@ -6295,14 +6301,12 @@ static uint_fast8_t getlo4div(
 }
 
 
-#if WITHDEBUG
 // Печать частоты в формате dddddd.ddd
 static void printfreq(int_fast32_t freq)
 {
 	const ldiv_t v = ldiv(freq, 1000);
 	debug_printf_P(PSTR("%s%ld.%03ld"), (v.quot >= 0 && freq < 0) ? "-" : "", v.quot, freq < 0 ? - v.rem : v.rem);
 }
-#endif /* WITHDEBUG */
 
 /* Получить частоту lo1 из частоты настройки */
 static int_fast32_t synth_if1 [2];
@@ -6460,7 +6464,7 @@ updateboard(
 
 		for (pathi = 0; pathi < pathn; ++ pathi)
 		{
-			const uint_fast8_t asubmode = getasubmode();	// SUBMODE_CWZ/SUBMODE_CWZSMART for tune
+			const uint_fast8_t asubmode = getasubmode(pathi);	// SUBMODE_CWZ/SUBMODE_CWZSMART for tune
 			pamodetempl = getmodetempl(asubmode);
 			const uint_fast8_t amode = submodes [asubmode].mode;
 			const uint_fast8_t alsbmode = getsubmodelsb(asubmode, forcelsb [pathi]);	// Принимаемая модуляция на нижней боковой
@@ -14083,6 +14087,8 @@ process_key_menuset0(uint_fast8_t kbch)
 		uif_key_spliton(1);
 		return 1;	// требуется обновление индикатора
 
+#endif /* WITHSPLIT */
+
 	case KBD_CODE_A_EX_B:
 		uif_key_click_a_ex_b();
 		return 1;	// требуется обновление индикатора
@@ -14090,8 +14096,6 @@ process_key_menuset0(uint_fast8_t kbch)
 	case KBD_CODE_A_EQ_B:
 		uif_key_click_b_from_a();
 		return 1;	// требуется обновление индикатора
-
-#endif /* WITHSPLIT */
 
 	case KBD_CODE_BAND_UP:
 		/* переход на следующий (с большей частотой) диапазон или на шаг general coverage */
