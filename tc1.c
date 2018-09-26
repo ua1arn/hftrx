@@ -6192,7 +6192,7 @@ getasubmode(uint_fast8_t pathi)
 {
 	const uint_fast8_t bi = getbankindex_pathi(pathi);	/* vfo bank index */
 	/* преустановка всех параметров приемника или передатчика под новый режим */
-	const uint_fast8_t pathsubmode = gsubmode; //getsubmode(bi);
+	const uint_fast8_t pathsubmode = getsubmode(bi);
 
 #if WITHMODESETSMART
 	const uint_fast8_t submode = (getactualtune() == 0) ? pathsubmode : SUBMODE_CWZSMART;	// mode_cwz обеспечивает формирование сигнала самоконтроля при передаче.

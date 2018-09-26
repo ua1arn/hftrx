@@ -6176,13 +6176,6 @@ static void board_fpga_fir_strobe(void)
 	TARGET_FPGA_FIR_CLK_PORT_S(TARGET_FPGA_FIR_CLK_BIT);
 }
 
-static void board_fpga_fir_delay(void)
-{
-	hardware_spi_b16_p1(0);
-	hardware_spi_b16_p2(0);
-	hardware_spi_complete_b16();
-}
-
 // Передача одного 32-битного значения и формирование строба.
 static void board_fpga_fir_coef(int_fast32_t v)
 {
@@ -6390,8 +6383,10 @@ board_fpga_fir_send(
 		TARGET_FPGA_FIR2_WE_PORT_C(TARGET_FPGA_FIR2_WE_BIT);
 		break;
 #endif /* TARGET_FPGA_FIR2_WE_BIT != 0 */
+	default:
+		ASSERT(0);
+		break;
 	}
-	board_fpga_fir_delay();
 
 	board_fpga_fir_coef(0x00000000);	// 1-st dummy
 	board_fpga_fir_strobe();			// 2-nd dummy
@@ -6410,8 +6405,10 @@ board_fpga_fir_send(
 		TARGET_FPGA_FIR2_WE_PORT_S(TARGET_FPGA_FIR2_WE_BIT);
 		break;
 #endif /* TARGET_FPGA_FIR2_WE_BIT != 0 */
+	default:
+		ASSERT(0);
+		break;
 	}
-	board_fpga_fir_delay();
 	// strobe
 	board_fpga_fir_coef(0x00000000);	// one strobe after, without WE required
 
