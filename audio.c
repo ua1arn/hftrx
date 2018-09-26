@@ -23,7 +23,7 @@
 
 //#define WITHLIMITEDAGCATTACK 1
 #define DUALFILTERSPROCESSING 1	// Фильтры НЧ для левого и правого каналов - вынсено в конфигурационный файл
-#define WITHDOUBLEFIRCOEFS 1
+//#define WITHDOUBLEFIRCOEFS 1
 
 #if WITHUSEDUALWATCH && WITHDSPLOCALFIR
 	#error Can not support WITHUSEDUALWATCH && WITHDSPLOCALFIR together
