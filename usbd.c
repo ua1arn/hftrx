@@ -1039,8 +1039,8 @@ static USBALIGN_BEGIN PCD_HandleTypeDef hpcd_USB_OTG USBALIGN_END;
 static USBALIGN_BEGIN USBD_HandleTypeDef hUsbDevice USBALIGN_END;
 
 
-static USBD_StatusTypeDef  USBD_LL_Stop (USBD_HandleTypeDef *pdev);
-static USBD_StatusTypeDef  USBD_LL_Start(USBD_HandleTypeDef *pdev);
+USBD_StatusTypeDef  USBD_LL_Stop (USBD_HandleTypeDef *pdev);
+USBD_StatusTypeDef  USBD_LL_Start(USBD_HandleTypeDef *pdev);
 
 
 
@@ -4673,7 +4673,9 @@ static void Error_Handler(void)
 
 #define UNUSED(x) ((void)(x))
 
-#if (CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX)
+#if CPUSTYLE_R7S721
+
+#elif (CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX)
 
 	static void HAL_Delay(uint32_t ms)
 	{
@@ -6005,7 +6007,7 @@ HAL_StatusTypeDef  USB_DevDisconnect (USB_OTG_GlobalTypeDef *USBx)
 {
 	//debug_printf_P(PSTR("USB_DevDisconnect (USBx=%p)\n"), USBx);
 
-	USBx_DEVICE->DCTL |= USB_OTG_DCTL_SDIS ;
+	USBx_DEVICE->DCTL |= USB_OTG_DCTL_SDIS;
 	ASSERT((USBx_DEVICE->DCTL & USB_OTG_DCTL_SDIS) != 0);
 	HAL_Delay(3);
 
@@ -6368,6 +6370,12 @@ static uint32_t USB_GetHostSpeed (USB_OTG_GlobalTypeDef *USBx)
   return ((USBx_HPRT0 & USB_OTG_HPRT_PSPD) / MASK2LSB(USB_OTG_HPRT_PSPD));
 }
 
+#else
+	#error Unsupported CPUSTYLE_XXXX
+#endif
+
+#if (CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX)
+
 
 /* Exported types ------------------------------------------------------------*/
 typedef enum  
@@ -6391,38 +6399,7 @@ HAL_StatusTypeDef HAL_PCDEx_ActivateLPM(PCD_HandleTypeDef *hpcd);
 HAL_StatusTypeDef HAL_PCDEx_DeActivateLPM(PCD_HandleTypeDef *hpcd);
 void HAL_PCDEx_LPM_Callback(PCD_HandleTypeDef *hpcd, PCD_LPM_MsgTypeDef msg);
 
-/**
-  * @}
-  */
 
-/* Exported functions --------------------------------------------------------*/
-/** @addtogroup PCD_Exported_Functions PCD Exported Functions
-  * @{
-  */
-
-/* Initialization/de-initialization functions  ********************************/
-/** @addtogroup PCD_Exported_Functions_Group1 Initialization and de-initialization functions
-  * @{
-  */
-/**
-  * @}
-  */
-
-/* I/O operation functions  ***************************************************/
-/* Non-Blocking mode: Interrupt */
-/** @addtogroup PCD_Exported_Functions_Group2 Input and Output operation functions
-  * @{
-  */
-
-/* Private macros ------------------------------------------------------------*/
-
-
-
-
-/* Private types -------------------------------------------------------------*/
-/* Private variables ---------------------------------------------------------*/
-/* Private constants ---------------------------------------------------------*/
-/* Private macros ------------------------------------------------------------*/
 /** @defgroup PCD_Private_Macros PCD Private Macros
   * @{
   */ 
@@ -7793,7 +7770,7 @@ static void USBD_ParseSetupRequest(USBD_SetupReqTypedef *req, const uint32_t * p
   * @param  pdev: Device handle
   * @retval USBD Status
   */
-static USBD_StatusTypeDef  USBD_LL_Start(USBD_HandleTypeDef *pdev)
+USBD_StatusTypeDef  USBD_LL_Start(USBD_HandleTypeDef *pdev)
 {
   HAL_PCD_Start((PCD_HandleTypeDef*)pdev->pData);
   return USBD_OK;
@@ -7804,7 +7781,7 @@ static USBD_StatusTypeDef  USBD_LL_Start(USBD_HandleTypeDef *pdev)
   * @param  pdev: Device handle
   * @retval USBD Status
   */
-static USBD_StatusTypeDef  USBD_LL_Stop (USBD_HandleTypeDef *pdev)
+USBD_StatusTypeDef  USBD_LL_Stop (USBD_HandleTypeDef *pdev)
 {
   HAL_PCD_Stop(pdev->pData);
   return USBD_OK; 
