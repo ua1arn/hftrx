@@ -5854,7 +5854,7 @@ uint32_t hardware_get_random(void)
 
 #else
 
-	#warning RNG not exist
+	#warning RNG not exist - hardware_get_random not work
 	return 0;
 
 #endif
@@ -8740,9 +8740,6 @@ uint_fast32_t cpu_getdebugticks(void)
 {
 #if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7
 	return DWT->CYCCNT;
-#elif CPUSTYLE_STM32F
-	//return SysTick->VAL & SysTick_VAL_CURRENT_Msk;
-	return TIM3->CNT;
 #elif CPUSTYLE_ARM_CA9
 	{
 		uint32_t result;
@@ -8752,7 +8749,7 @@ uint_fast32_t cpu_getdebugticks(void)
 		return(result);
 	}
 #else
-	#warning Wromg CPUSTYLE_xxx
+	#warning Wromg CPUSTYLE_xxx - cpu_getdebugticks not work
 	return 0;
 #endif
 }
