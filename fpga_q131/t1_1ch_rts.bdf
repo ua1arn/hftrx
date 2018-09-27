@@ -4221,12 +4221,6 @@ applicable agreement for further details.
 	(pt -1976 -504)
 )
 (connector
-	(text "decode[7..0]" (rect -3174 896 -3113 908)(font "Arial" ))
-	(pt -3288 912)
-	(pt -3096 912)
-	(bus)
-)
-(connector
 	(text "decode_ctlreg" (rect -2950 896 -2882 908)(font "Arial" ))
 	(pt -2976 912)
 	(pt -2896 912)
@@ -5006,22 +5000,6 @@ applicable agreement for further details.
 	(pt -3656 1256)
 )
 (connector
-	(pt -3824 1576)
-	(pt -3848 1576)
-)
-(connector
-	(pt -3856 1256)
-	(pt -3856 1432)
-)
-(connector
-	(pt -3856 1432)
-	(pt -3872 1432)
-)
-(connector
-	(pt -4248 1560)
-	(pt -4024 1560)
-)
-(connector
 	(pt -4048 1448)
 	(pt -4064 1448)
 )
@@ -5038,20 +5016,8 @@ applicable agreement for further details.
 	(pt -4080 1576)
 )
 (connector
-	(pt -3856 1256)
-	(pt -3808 1256)
-)
-(connector
-	(pt -4248 1416)
-	(pt -4048 1416)
-)
-(connector
 	(pt -3824 1192)
 	(pt -3824 1240)
-)
-(connector
-	(pt -3824 1240)
-	(pt -3824 1576)
 )
 (connector
 	(pt -4152 1592)
@@ -5721,6 +5687,64 @@ applicable agreement for further details.
 	(pt -2040 808)
 	(pt -2008 808)
 )
+(connector
+	(text "decode[7..0]" (rect -3174 896 -3113 908)(font "Arial" ))
+	(pt -3288 912)
+	(pt -3096 912)
+	(bus)
+)
+(connector
+	(pt -4080 1256)
+	(pt -4080 1416)
+)
+(connector
+	(pt -4248 1416)
+	(pt -4080 1416)
+)
+(connector
+	(pt -4080 1416)
+	(pt -4048 1416)
+)
+(connector
+	(pt -4104 1560)
+	(pt -4104 1664)
+)
+(connector
+	(pt -4248 1560)
+	(pt -4104 1560)
+)
+(connector
+	(pt -4104 1560)
+	(pt -4024 1560)
+)
+(connector
+	(pt -4104 1664)
+	(pt -3824 1664)
+)
+(connector
+	(pt -3832 1576)
+	(pt -3824 1576)
+)
+(connector
+	(pt -3824 1240)
+	(pt -3824 1576)
+)
+(connector
+	(pt -3824 1576)
+	(pt -3824 1664)
+)
+(connector
+	(pt -3856 1256)
+	(pt -3856 1408)
+)
+(connector
+	(pt -4080 1256)
+	(pt -3856 1256)
+)
+(connector
+	(pt -3856 1256)
+	(pt -3808 1256)
+)
 (junction (pt -3024 -696))
 (junction (pt -2384 -696))
 (junction (pt -2544 -696))
@@ -5773,7 +5797,10 @@ applicable agreement for further details.
 (junction (pt -2056 776))
 (junction (pt -2024 792))
 (junction (pt -2040 808))
-(text "decode[31..0]" (rect -3174 896 -3107 908)(font "Arial" ))
+(junction (pt -3856 1256))
+(junction (pt -4080 1416))
+(junction (pt -4104 1560))
+(junction (pt -3824 1576))
 (text "Previous" (rect -1120 -104 -1071 -90)(font "Arial" (font_size 8)))
 (text "Current" (rect -1120 -136 -1078 -122)(font "Arial" (font_size 8)))
 (text "Previous" (rect -1792 800 -1743 814)(font "Arial" (font_size 8)))
