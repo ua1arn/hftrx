@@ -4680,6 +4680,10 @@ static void Error_Handler(void)
 		local_delay_ms(ms);
 	}
 
+	static uint32_t HAL_GetTick(void)
+	{
+		return 0;
+	}
 
 /** @brief Reset the Handle's State field.
   * @param h: specifies the Peripheral Handle.
