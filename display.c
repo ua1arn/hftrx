@@ -435,10 +435,12 @@ void display_colorbuffer_show(
 #endif /* LCDMODE_HORFILL */
 
 #else /* defined (DMA2D) && LCDMODE_LTDC */
-	display_plotfrom(col, row);
-	display_plotstart(dy);
-	display_plot(buffer, dx, dy);
-	display_plotstop();
+	#if LCDMODE_COLORED
+		display_plotfrom(col, row);
+		display_plotstart(dy);
+		display_plot(buffer, dx, dy);
+		display_plotstop();
+	#endif
 #endif /* defined (DMA2D) && LCDMODE_LTDC */
 }
 

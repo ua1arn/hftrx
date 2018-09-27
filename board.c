@@ -6415,7 +6415,6 @@ board_fpga_fir_send(
 	hardware_spi_disconnect();
 #endif /* (WITHSPIHW && WITHSPI16BIT) */
 }
-#endif /* WITHDSPEXTFIR */
 
 /* поменять местами значение загружаемого профиля FIR фильтра в FPGA */
 static void 
@@ -6437,6 +6436,9 @@ void board_reload_fir(uint_fast8_t ifir, const int_fast32_t * const k, unsigned 
 	board_fpga_fir_send(ifir, k, Ntap, CWidth);		/* загрузить массив коэффициентов в FPGA */
 	boart_tgl_firprofile(ifir);
 }
+
+#endif /* WITHDSPEXTFIR */
+
 
 /* получения признака переполнения АЦП приёмного тракта */
 uint_fast8_t boad_fpga_adcoverflow(void)
