@@ -187,7 +187,6 @@ static const struct stringtempl strtemplates [] =
 	{ STRING_ID_IQSPECTRUM, "RX IQ Output", },
 #endif /* CTLSTYLE_OLEG4Z_V1 */
 };
-#if 0
 
 static int
 toprintc(int c)
@@ -221,7 +220,6 @@ static printhex(unsigned long voffs, const unsigned char * buff, unsigned length
 		debug_printf_P(PSTR("\n"));
 	}
 }
-#endif
 
 // usb_20.pdf:
 // 5.9 High-Speed, High Bandwidth Endpoints
@@ -2734,8 +2732,6 @@ static unsigned fill_string_descriptor(uint8_t * buff, unsigned maxsize, const c
 	return length;
 }
 
-#if 0
-
 // Инициализация дескриптора произвольным массивом данных
 static unsigned fill_pattern_descriptor(uint_fast8_t fill, uint8_t * buff, unsigned maxsize, const void * pattern, unsigned length)
 {
@@ -2774,8 +2770,6 @@ static unsigned fill_wstring_descriptor(uint8_t * buff, unsigned maxsize, const 
 	}
 	return length;
 }
-
-#endif
 
 static ALIGNX_BEGIN uint8_t alldescbuffer [2048] ALIGNX_END;
 
