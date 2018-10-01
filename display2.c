@@ -1182,22 +1182,25 @@ static void display_voltlevel4(
 #endif /* WITHVOLTLEVEL && WITHCPUADCHW */
 }
 
-static void display_thermo5(
+// отображение целых градусов
+static void display_thermo4(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
 	void * pv
 	)
 {
 #if WITHTHERMOLEVEL && WITHCPUADCHW
-	const int_fast16_t tempv = hamradio_get_temperature_value();
-	const uint_fast8_t negative = tempv < 0;
-	div_t d = div(negative ? - tempv : + tempv, 10);
+	int_fast16_t tempv = hamradio_get_temperature_value() / 10;	// Градусы в десятых долях в целые градусы
 
-	char b [6];
-	local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("%c%02d.%1d"), negative ? '-' : '+', d.quot, d.rem);
-
-	const uint_fast8_t state = 0;
-	display_2states(x, y, state, b, b);
+	display_setcolors(colorsfg_1state [0], colorsbg_1state [0]);
+	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
+	do
+	{
+		display_gotoxy(x + CHARS2GRID(0), y + lowhalf);	
+		display_value_small(tempv, 3 | WSIGNFLAG, 0, 255, 0, lowhalf);
+		//display_gotoxy(x + CHARS2GRID(4), y + lowhalf);	
+		//display_string_P(PSTR("С"), lowhalf);
+	} while (lowhalf --);
 #endif /* WITHTHERMOLEVEL && WITHCPUADCHW */
 }
 
@@ -3850,12 +3853,10 @@ enum
 		{	26, 15,	display_voxtune3,	REDRM_MODE, PGALL, },	// VOX
 		{	26, 20,	display_atu3,		REDRM_MODE, PGALL, },
 		{	26, 25,	display_byp3,		REDRM_MODE, PGALL, },
-		//{	26, 30,	display_XXXXX3,		REDRM_MODE, PGALL, },	// placeholder
-		{	25, 30,	display_thermo5,	REDRM_BARS, PGALL, },	// thermo sensor
+		{	26, 30,	display_XXXXX3,		REDRM_MODE, PGALL, },	// placeholder
 		{	26, 35,	display_mainsub3,	REDRM_MODE, PGALL, },	// main/sub RX
 		{	26, 40,	display_rec3,		REDRM_BARS, PGALL, },	// Отображение режима записи аудио фрагмента
 		{	26, 45,	display_lockstate4, REDRM_MODE, PGALL, },	// LOCK
-		{	25, 51,	display_voltlevelV5, REDRM_VOLT, PGALL, },	// voltmeter with "V"
 
 		
 		{	0,	7,	display_freqX_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Частота (большие цифры)
@@ -3876,13 +3877,15 @@ enum
 
 	
 		//{	0,	51,	display_samfreqdelta8, REDRM_BARS, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
-		{	9,	51,	display_siglevel5,	REDRM_BARS, PGALL, },	// signal level in S points
 		{	0,	51,	display_time8,		REDRM_BARS, PGALL, },	// TIME
+		{	9,	51,	display_siglevel5,	REDRM_BARS, PGALL, },	// signal level in S points
+		{	14, 51,	display_thermo4,	REDRM_VOLT, PGALL, },	// thermo sensor
 #if CTLSTYLE_RA4YBO || CTLSTYLE_RA4YBO_V3
 		{	19, 51,	display_currlevel5alt, REDRM_VOLT, PGALL, },	// PA drain current dd.d without "A"
 #else
 		{	19, 51,	display_currlevel5, REDRM_VOLT, PGALL, },	// PA drain current d.dd without "A"
 #endif
+		{	25, 51,	display_voltlevelV5, REDRM_VOLT, PGALL, },	// voltmeter with "V"
 
 	#if WITHMENU
 		{	4,	25,	display_menu_group,	REDRM_MLBL, REDRSUBSET_MENU, },	// название группы

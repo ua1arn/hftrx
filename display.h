@@ -764,7 +764,7 @@ const FLASHMEM char * hamradio_get_mainsubrxmode3_value_P(void);	// текущее сост
 const char * hamradio_get_vfomode3_value(uint_fast8_t * flag);	// VFO mode
 const char * hamradio_get_vfomode5_value(uint_fast8_t * flag);	// VFO mode
 uint_fast8_t hamradio_get_volt_value(void);	// Вольты в десятых долях
-int_fast16_t hamradio_get_temperature_value(void);	// Градусы в десфтых долях
+int_fast16_t hamradio_get_temperature_value(void);	// Градусы в десятых долях
 int_fast16_t hamradio_get_pacurrent_value(void);	// Ток в десятках милиампер, может быть отрицательным
 const FLASHMEM char * hamradio_get_hplp_value_P(void);	// HP/LP
 uint_fast8_t hamradio_get_rec_value(void);	// AUDIO recording state
