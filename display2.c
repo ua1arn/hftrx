@@ -4407,8 +4407,9 @@ enum { PALETTESIZE = 256 };
 static PACKEDCOLOR565_T wfpalette [PALETTESIZE];
 extern uint_fast8_t wflfence;
 
-#define COLOR565_GRIDCOLOR	TFTRGB565(0xFF, 0x00, 0x00)	//COLOR_RED
-#define COLOR565_SPECTRUMBG	TFTRGB565(0x00, 0x00, 0x8B)	//COLOR_DARKBLUE
+#define COLOR565_GRIDCOLOR	TFTRGB565(0x80, 0x00, 0x00)	//COLOR_DARKRED - center marker
+#define COLOR565_GRIDCOLOR2	TFTRGB565(0x80, 0x80, 0x80)	//COLOR_GRAY
+#define COLOR565_SPECTRUMBG	TFTRGB565(0x00, 0x40, 0x00)	//COLOR_DARKGREEN2
 #define COLOR565_SPECTRUMFG	TFTRGB565(0x00, 0xFF, 0x00)	//COLOR_GREEN
 #define COLOR565_SPECTRUMFENCE	TFTRGB565(0xFF, 0xFF, 0xFF)	//COLOR_WHITE
 
@@ -4609,10 +4610,11 @@ static void
 display_colorgrid(
 	PACKEDCOLOR565_T * buffer,
 	uint_fast16_t row0,	// вертикальная координата начала занимаемой области (0..dy-1) сверху вниз
-	uint_fast16_t h,	// высота
-	COLOR565_T color
+	uint_fast16_t h			// высота
 	)
 {
+	COLOR565_T color0 = COLOR565_GRIDCOLOR;	// макркр на центре
+	COLOR565_T color = COLOR565_GRIDCOLOR2;
 	// 
 	const int_fast32_t gs = glob_gridstep;	// шаг сетки
 	const int_fast32_t bw = dsp_get_samplerateuacin_rts96();
@@ -4624,7 +4626,7 @@ display_colorgrid(
 
 		// маркер центральной частоты обзора - XOR линию
 		xmarker = deltafreq2x(df, bw, ALLDX);
-		display_colorbuffer_xor_vline(buffer, xmarker, row0, h, color);
+		display_colorbuffer_xor_vline(buffer, xmarker, row0, h, df == 0 ? color0 : color);
 	}
 }
 
@@ -4765,7 +4767,7 @@ static void display2_spectrum(
 				}
 			}
 		}
-		display_colorgrid(colorpip, SPY0, SPDY, COLOR565_GRIDCOLOR);
+		display_colorgrid(colorpip, SPY0, SPDY);
 	}
 
 #endif
@@ -4891,7 +4893,7 @@ static void display2_waterfall(
 		}
 		else
 		{
-			display_colorgrid(colorpip, WFY0, WFDY, COLOR565_GRIDCOLOR);
+			display_colorgrid(colorpip, WFY0, WFDY);
 		}
 
 	}
