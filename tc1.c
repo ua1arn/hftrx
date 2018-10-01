@@ -7764,7 +7764,40 @@ uint_fast8_t hamradio_get_volt_value(void)
 #endif /* WITHREFSENSOR */
 }
 
-#endif /* WITHVOLTLEVEL */
+#endif /* WITHVOLTLEVEL && WITHCPUADCHW */
+
+#if WITHTHERMOLEVEL && WITHCPUADCHW
+
+// Градусы в десятых долях
+// Read from thermo sensor ST LM235Z
+int_fast16_t hamradio_get_temperature_value(void)
+{
+	return 999;
+	const int_fast16_t offset = - 2731;	// -273.15 approximation of temperature at 0 volt. Slope = 10 mV / celsius
+#if WITHREFSENSOR
+	// Измерение опрного напряжения
+	const uint_fast8_t vrefi = VREFIX;
+	const adcvalholder_t ref = board_getadc_unfiltered_truevalue(vrefi);	// текущее значение данного АЦП
+	if (ref != 0)
+	{
+		const unsigned Vref_mV = (uint_fast32_t) board_getadc_fsval(vrefi) * WITHREFSENSORVAL / ref;
+		const int_fast16_t mv = (int16_t) board_getadc_unfiltered_u16(XTERMOIX, 0, Vref_mV);
+		//debug_printf_P(PSTR("hamradio_get_temperature_value: ref=%u, VrefmV=%u, v=%u, out=%u\n"), ref, Vref_mV, mv, (mv + 50) / 100);
+		return mv + offset;	// Приводим к десятым долям градуса
+	}
+	else
+	{
+		debug_printf_P(PSTR("hamradio_get_temperature_value: ref=%u\n"), ref);
+		return 999;
+	}
+#else /* WITHREFSENSOR */
+	const unsigned Vref_mV = ADCVREF_CPU * 100;
+	debug_printf_P(PSTR("hamradio_get_temperature_value: XTERMOIX=%u\n"), board_getadc_filtered_u16(XTERMOIX, 0, Vref_mV));
+	return (int16_t) board_getadc_filtered_u16(XTERMOIX, 0, Vref_mV) + offset;
+#endif /* WITHREFSENSOR */
+}
+
+#endif /* WITHTHERMOLEVEL && WITHCPUADCHW */
 
 // Read ADC MCP3204/MCP3208
 static uint_fast16_t 

@@ -7727,6 +7727,10 @@ static const uint_fast8_t adcinputs [] =
 	VOLTSIX,
 #endif /* WITHVOLTSENSOR */
 
+#if WITHTHERMOLEVEL
+	XTERMOIX,		// Exernal thermo sensor ST LM235Z
+#endif /* WITHTHERMOLEVEL */
+
 #if WITHPOTIFGAIN
 	POTIFGAIN,
 #endif /* WITHPOTIFGAIN */
@@ -7796,7 +7800,6 @@ static const uint_fast8_t adcinputs [] =
 #if CTLSTYLE_STORCH_V2
 	ALCINIX,		// PB1 ALC IN
 #endif /* CTLSTYLE_STORCH_V2 */
-
 };
 
 /* получить количество каналов АЦП, задействованных в устройстве */

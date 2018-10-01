@@ -324,6 +324,7 @@
 	#endif
 
 	#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
+	#define WITHTHERMOLEVEL	1	/* отображение температуры */
 
 	#define WITHIFSHIFT	1	/* используется IF SHIFT */
 	//#define WITHIFSHIFTOFFSET	(-250)	/* Начальное занчение IF SHIFT */
@@ -462,7 +463,9 @@
 		POTPOWER = 6,			// регулировка мощности
 	#endif /* WITHPOTPOWER */
 
-		ALCINIX = 9,		// PB1 ALC IN
+	#if WITHTHERMOLEVEL
+		XTERMOIX = 9,		// PB1 Exernal thermo sensor ST LM235Z
+	#endif /* WITHTHERMOLEVEL */
 
 	#if WITHCURRLEVEL
 		PASENSEIX = 2,		// PA2 PA current sense - ACS712-05 chip

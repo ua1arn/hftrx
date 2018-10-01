@@ -1182,6 +1182,25 @@ static void display_voltlevel4(
 #endif /* WITHVOLTLEVEL && WITHCPUADCHW */
 }
 
+static void display_thermo5(
+	uint_fast8_t x, 
+	uint_fast8_t y, 
+	void * pv
+	)
+{
+#if WITHTHERMOLEVEL && WITHCPUADCHW
+	const int_fast16_t tempv = hamradio_get_temperature_value();
+	const uint_fast8_t negative = tempv < 0;
+	div_t d = div(negative ? - tempv : + tempv, 10);
+
+	char b [6];
+	local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("%c%02d.%1d"), negative ? '-' : '+', d.quot, d.rem);
+
+	const uint_fast8_t state = 0;
+	display_2states(x, y, state, b, b);
+#endif /* WITHTHERMOLEVEL && WITHCPUADCHW */
+}
+
 // +d.ddA - 6 places (with "A")
 // amphermeter with "A"
 static void display_currlevelA6(
@@ -3831,7 +3850,8 @@ enum
 		{	26, 15,	display_voxtune3,	REDRM_MODE, PGALL, },	// VOX
 		{	26, 20,	display_atu3,		REDRM_MODE, PGALL, },
 		{	26, 25,	display_byp3,		REDRM_MODE, PGALL, },
-		{	26, 30,	display_XXXXX3,		REDRM_MODE, PGALL, },	// placeholder
+		//{	26, 30,	display_XXXXX3,		REDRM_MODE, PGALL, },	// placeholder
+		{	25, 30,	display_thermo5,	REDRM_BARS, PGALL, },	// thermo sensor
 		{	26, 35,	display_mainsub3,	REDRM_MODE, PGALL, },	// main/sub RX
 		{	26, 40,	display_rec3,		REDRM_BARS, PGALL, },	// Отображение режима записи аудио фрагмента
 		{	26, 45,	display_lockstate4, REDRM_MODE, PGALL, },	// LOCK
