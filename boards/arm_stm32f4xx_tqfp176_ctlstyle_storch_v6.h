@@ -427,7 +427,10 @@
 	#define KEYBOARD_USE_ADC	1	/* на одной линии установлено  четыре  клавиши. на vref - 6.8K, далее 2.2 , 4.7  и 13K. */
 
 	#define VOLTLEVEL_UPPER		47	// 4.7 kOhm - верхний резистор делител€ датчика напр€жени€
-	#define VOLTLEVEL_LOWER		10	// 1.0 kOhm - нижний резистор
+	#define VOLTLEVEL_LOWER		10	// 1 kOhm - нижний резистор
+
+	#define THERMOSENSOR_UPPER		47	// 4.7 kOhm - верхний резистор делител€ датчика температуры
+	#define THERMOSENSOR_LOWER		100	// 10 kOhm - нижний резистор
 
 	//#define WITHDCDCFREQCTL	1		// »меетс€ управление частотой преобразователей блока питани€ и/или подсветки диспле€
 
@@ -459,7 +462,7 @@
 	#endif /* WITHPOTPOWER */
 
 	#if WITHTHERMOLEVEL
-		XTERMOIX = 9,		// PB1 Exernal thermo sensor ST LM235Z
+		XTHERMOIX = 9,		// PB1 Exernal thermo sensor ST LM235Z
 	#endif /* WITHTHERMOLEVEL */
 
 	#if WITHCURRLEVEL

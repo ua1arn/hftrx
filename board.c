@@ -7728,7 +7728,7 @@ static const uint_fast8_t adcinputs [] =
 #endif /* WITHVOLTSENSOR */
 
 #if WITHTHERMOLEVEL
-	XTERMOIX,		// Exernal thermo sensor ST LM235Z
+	XTHERMOIX,		// Exernal thermo sensor ST LM235Z
 #endif /* WITHTHERMOLEVEL */
 
 #if WITHPOTIFGAIN
