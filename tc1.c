@@ -10969,6 +10969,8 @@ static const FLASHMEM struct menudef menutable [] =
 		getzerobase, /* складывается со смещением и отображается */
 	},
 #endif /* WITHBARS */
+#if WITHSPECTRUMWF	/* Отображение производных от спектрального анализатора */
+#endif /* WITHSPECTRUMWF */
 #if defined (RTC1_TYPE)
 #if ! WITHFLATMENU
 	{
@@ -15207,6 +15209,29 @@ dspcontrol_mainloop(void)
 
 #if WITHOPERA4BEACON
 
+#if 1
+
+
+
+#define NFREQS 1
+#define FREQTEMPO	512	// 128 ms интервал
+// . Частота - Dial USB + 1500 Гц
+// 3. Передаем со скоростью Opera05: 0.128 s  на ВСЕХ частотах.
+//3570     CH1TST
+static const char msg1 [] = "11011001101010100110101010100110010101010110101010011001100110010101101001101010101010100110011010011001011010100101100101011010101010011010100110010110100101101010011010011001011001011010011010011001011010010110100101100101101001101001010";
+
+static unsigned long freqs [NFREQS] = 
+{
+	3548500,
+};
+
+static const char * const msgs [NFREQS] =
+{
+	msg1,
+};
+
+#elif 1
+
 #define NFREQS 4
 #define FREQTEMPO	128	// 128 ms интервал
 // . Частота - Dial USB + 1500 Гц
@@ -15239,18 +15264,25 @@ static const char * const msgs [NFREQS] =
 	msg4,
 	//msg5,
 };
+#endif
 
 static int getkeydn(int msg, int pos)
 {
 	return msgs [msg][pos] == '1';
 }
 
-static setmsgkeys(int pos)
+static void setmsgkeys(int pos)
 {
 	int msg;
 	for (msg = 0; msg < NFREQS; ++ msg)
 	{
-		synth_lo1_setfrequ(msg, getkeydn(msg, pos) * freqs [msg], getlo1div(gtx));
+		const uint_fast32_t freq = getkeydn(msg, pos) * freqs [msg];
+		static uint_fast32_t lastfreq = UINT32_MAX;
+		if (lastfreq != freq)
+		{
+			lastfreq = freq;
+			synth_lo1_setfrequ(msg, freq, getlo1div(gtx));
+		}
 	}
 }
 
@@ -15263,6 +15295,9 @@ void spool_0p128(void)
 
 static int getevent128ms(void)
 {
+	//local_delay_ms(FREQTEMPO);
+	//return 1;
+
 	disableIRQ();
 	int f = flag128;
 	flag128 = 0;
@@ -15272,11 +15307,15 @@ static int getevent128ms(void)
 
 static void dumbtx(int tx)
 {
+	if (gtx == tx)
+		return;
 	seq_txrequest(0, tx);	// press PTT
 	while (seq_get_txstate() != tx)
 		;
 	gtx = tx;
+#if WITHDSPEXTDDC
 	gdactest = tx;
+#endif /* WITHDSPEXTDDC */
 	updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
 
 	seq_ask_txstate(tx);
@@ -15286,8 +15325,14 @@ static void dumbtx(int tx)
 static void
 hamradio_mainloop_OPERA4(void)
 {
+	int periodS = 2uL * 60;
 	int msgpos;
-	int msglen = strlen(msgs [0]);
+	const int msglen = strlen(msgs [0]);
+	long ticks0 = ((int64_t) periodS * 1000) / FREQTEMPO - msglen - 2;
+	if (ticks0 < 0)
+		ticks0 = 5120;
+
+	ticks0 = 5120;
 	gtx = 0;
 
 	updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
@@ -15306,7 +15351,7 @@ hamradio_mainloop_OPERA4(void)
 				;
 			setmsgkeys(msglen);	// выключить формирование - превести на частоту 0 все каналы
 			dumbtx(0);
-			unsigned long ticks = (2uL * 60 * 1000) / FREQTEMPO - msglen - 2;
+			long ticks = ticks0;
 			while (ticks --)
 			{
 				while (getevent128ms() == 0)
