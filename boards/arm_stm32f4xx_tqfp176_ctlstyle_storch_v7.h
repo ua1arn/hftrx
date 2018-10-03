@@ -163,7 +163,8 @@
 	// --- Особые варианты расположения кнопок на клавиатуре
 	#define WITHSPLIT	1	/* управление режимами расстройки одной кнопкой */
 	//#define WITHSPLITEX	1	/* Трехкнопочное управление режимами расстройки */
-	//#define WITHSEPARATEWFL	1	/* без совмещения на одном экрание водопада и панорамы */
+	#define WITHSPECTRUMWF	1	/* Отображение производных от спектрального анализатора */
+	//#define WITHSEPARATEWFL	1	/* Без совмещения на одном экрание водопада и панорамы */
 
 	// +++ Одна из этих строк определяет тип дисплея, для которого компилируется прошивка
 	//#define LCDMODE_HARD_SPI	1	/* LCD over SPI line */
@@ -324,7 +325,7 @@
 	#endif
 
 	#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
-	#define WITHTHERMOLEVEL	1	/* отображение температуры */
+	//#define WITHTHERMOLEVEL	1	/* отображение температуры */
 
 	#define WITHIFSHIFT	1	/* используется IF SHIFT */
 	//#define WITHIFSHIFTOFFSET	(-250)	/* Начальное занчение IF SHIFT */
@@ -408,7 +409,7 @@
 	#define targetext2	SPI_CSEL_PG14 	/* external devices control */
 	#define targetctl1	SPI_CSEL_PG3 	/* control register as a chain of registers */
 	#define targetfpga1	SPI_CSEL_PG1 	/* control register in FPGA */
-
+	//#define targetfir1	SPI_CSEL_PG0	/* FIR coefs load registersin FPGA */
 	#define targetlcd	targetext1 	/* LCD over SPI line devices control */ 
 	#define targetuc1608 targetext1	/* LCD with positive chip select signal	*/
 
