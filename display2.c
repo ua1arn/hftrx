@@ -3904,7 +3904,7 @@ enum
 		//{	0,	51,	display_samfreqdelta8, REDRM_BARS, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
 		{	0,	51,	display_time8,		REDRM_BARS, PGALL, },	// TIME
 		{	9,	51,	display_siglevel5,	REDRM_BARS, PGALL, },	// signal level in S points
-		{	14, 51,	display_thermo4,	REDRM_VOLT, PGALL, },	// thermo sensor
+		{	15, 51,	display_thermo4,	REDRM_VOLT, PGALL, },	// thermo sensor
 #if CTLSTYLE_RA4YBO || CTLSTYLE_RA4YBO_V3
 		{	19, 51,	display_currlevel5alt, REDRM_VOLT, PGALL, },	// PA drain current dd.d without "A"
 #else
