@@ -3633,7 +3633,7 @@ static void dosaveserialport(const char * fname)
 	}
 }
 
-#define WITHTEST_H7	1
+//#define WITHTEST_H7	1
 #if WITHTEST_H7
 
 //#include "OS.h"
@@ -3722,12 +3722,6 @@ SetEvents(events_t v)
 	sd_event_xx = 1;
 }
 
-static void
-ClearEvents(void)
-{
-	sd_event_xx = 0;
-}
-
 static int
 WaitEvents(events_t e, int type)
 {
@@ -3785,7 +3779,6 @@ void __attribute__((interrupt)) SDMMC1_IRQHandler(void)
 
 static uint32_t SDSendCommand(uint32_t cmd, uint32_t arg, uint32_t rsp)
 {
-	ClearEvents();
    //debug_printf_P(PSTR("CMD%d ARG=%08x\n"), cmd, arg);
    SDMMC1->ARG = arg;
    //Clear interrupt flags, unmask interrupts according to cmd response
