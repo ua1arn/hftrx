@@ -15,7 +15,7 @@
 #include <string.h>
 #include <math.h>
 
-//#define WITHPLACEHOLDERS 1	//  отобрадение макета с еще незанятыми полями
+#define WITHPLACEHOLDERS 1	//  отображение макета с еще незанятыми полями
 
 // todo: switch off -Wunused-function
 
@@ -577,6 +577,7 @@ static const FLASHMEM char text_nul1_P [] = " ";
 static const FLASHMEM char text_nul3_P [] = "   ";
 static const FLASHMEM char text_nul4_P [] = "    ";
 static const FLASHMEM char text_nul5_P [] = "     ";
+static const FLASHMEM char text_nul9_P [] = "         ";
 static const char text_nul3 [] = "   ";
 static const char text_nul5 [] = "     ";
 
@@ -594,6 +595,28 @@ static void display_2states_P(
 		const FLASHMEM char * const labels [2] = { state0, state1, };
 	#endif /* LCDMODE_COLORED */
 	display2_text_P(x, y, labels, colorsfg_2state, colorsbg_2state, state);
+}
+
+// FUNC item label
+static void display_fnlabel9(
+	uint_fast8_t x, 
+	uint_fast8_t y, 
+	void * pv
+	)
+{
+	const uint_fast8_t state = 0;
+	display_2states_P(x, y, state, text_nul9_P, text_nul9_P);
+}
+
+// FUNC item value
+static void display_fnvalue9(
+	uint_fast8_t x, 
+	uint_fast8_t y, 
+	void * pv
+	)
+{
+	const uint_fast8_t state = 0;
+	display_2states_P(x, y, state, text_nul9_P, text_nul9_P);
 }
 
 // Отображение режима NOCH ON/OFF
@@ -3844,26 +3867,28 @@ enum
 		{	9,	0,	display_att4,		REDRM_MODE, PGALL, },
 		{	14,	0,	display_preovf3,	REDRM_BARS, PGALL, },
 		{	18,	0,	display_genham1,	REDRM_BARS, PGALL, },	// Отображение режима General Coverage / HAM bands
-		//{	17, 0,	display_agc3,		REDRM_MODE, PGALL, },
-		{	21, 0,	display_rxbw3,		REDRM_MODE, PGALL, },	// 3.1 / 0,5 / WID / NAR
 
-		{	25, 0,	display_notch5,		REDRM_MODE, PGALL, },	// NOTCH
-		{	25,	5,	display_notchfreq5,	REDRM_BARS, PGALL, },	// placeholder
-		{	25,	10,	display_vfomode5,	REDRM_MODE, PGALL, },	// SPLIT
-		{	26, 15,	display_voxtune3,	REDRM_MODE, PGALL, },	// VOX
-		{	26, 20,	display_atu3,		REDRM_MODE, PGALL, },
-		{	26, 25,	display_byp3,		REDRM_MODE, PGALL, },
-		{	26, 30,	display_XXXXX3,		REDRM_MODE, PGALL, },	// placeholder
-		{	26, 35,	display_mainsub3,	REDRM_MODE, PGALL, },	// main/sub RX
-		{	26, 40,	display_rec3,		REDRM_BARS, PGALL, },	// Отображение режима записи аудио фрагмента
-		{	26, 45,	display_lockstate4, REDRM_MODE, PGALL, },	// LOCK
+		//{	21, 0,	display_fnlabel9,	REDRM_MODE, PGALL, },	// FUNC item label
+		//{	21,	4,	display_fnvalue9,	REDRM_BARS, PGALL, },	// FUNC item value
+		//{	25, 15,	display_notch5,		REDRM_MODE, PGALL, },	// NOTCH on/off
 
+		{	25, 0,	display_notch5,		REDRM_MODE, PGALL, },	// FUNC item label
+		{	25,	4,	display_notchfreq5,	REDRM_BARS, PGALL, },	// FUNC item value
+
+		{	26, 20,	display_agc3,		REDRM_MODE, PGALL, },	// AGC mode
+		{	26, 25,	display_voxtune3,	REDRM_MODE, PGALL, },	// VOX
+		{	26, 30,	display_datamode3,	REDRM_MODE, PGALL, },	// DATA mode indicator
+		{	26, 35,	display_atu3,		REDRM_MODE, PGALL, },	// TUNER state (optional)
+		{	26, 40,	display_byp3,		REDRM_MODE, PGALL, },	// TUNER BYPASS state (optional)
+		{	26, 45,	display_rec3,		REDRM_BARS, PGALL, },	// Отображение режима записи аудио фрагмента
 		
 		{	0,	7,	display_freqX_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Частота (большие цифры)
-		{	21,	5,	display_XXXXX3,		REDRM_MODE, PGALL, },	// placeholder
 		{	21, 10,	display_mode3_a,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
-		{	21, 15,	display_datamode3,	REDRM_MODE, PGALL, },	// DATA mode indicator
+		{	26, 10,	display_rxbw3,		REDRM_MODE, PGALL, },	// 3.1 / 0,5 / WID / NAR
+		{	21, 15,	display_mainsub3,	REDRM_MODE, PGALL, },	// main/sub RX: A/A, A/B, B/A, etc
 
+		{	0,	20,	display_lockstate4, REDRM_MODE, PGALL, },	// LOCK
+		{	5,	20,	display_vfomode3,	REDRM_MODE, PGALL, },	// SPLIT
 		{	9,	20,	display_freqX_b,	REDRM_FREQB, PGALL, },	// SUB FREQ
 		{	21, 20,	display_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
 
