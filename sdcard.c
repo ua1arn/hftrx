@@ -10,8 +10,6 @@
 #include <ctype.h>
 #include <string.h>
 
-//#define WITHTEST_H7	CPUSTYLE_STM32H7XX
-
 #if WITHUSESDCARD
 
 #include "board.h"
@@ -799,6 +797,7 @@ WaitEvents(events_t e, int type)
 		}
 		enableIRQ();
 	}
+	SDMMC1->MASK = 0;
 	return EV_SD_READY;
 }
 
@@ -831,47 +830,6 @@ void /*__attribute__((interrupt)) */ SDMMC1_IRQHandler(void)
    }
 
    SetEvents(e);
-}
-
-#define SD_CMD_NO_RESP (SDMMC_CMD_WAITRESP_0 * 0)
-#define SD_CMD_SHORT_RESP (SDMMC_CMD_WAITRESP_0 * 1)
-#define SD_CMD_LONG_RESP (SDMMC_CMD_WAITRESP_0 * 3)
-
-#define SD_OK        0
-#define SD_ERROR     1
-
-static uint32_t SDSendCommand(uint32_t cmd, uint32_t arg, uint32_t rsp)
-{
-   //debug_printf_P(PSTR("CMD%d ARG=%08x\n"), cmd, arg);
-   SDMMC1->ARG = arg;
-   //Clear interrupt flags, unmask interrupts according to cmd response
-   SDMMC1->ICR = (SDMMC_ICR_CMDRENDC | SDMMC_ICR_CMDSENTC | SDMMC_ICR_CCRCFAILC | SDMMC_ICR_CTIMEOUTC);
-   if (rsp == SD_CMD_NO_RESP)
-   {
-      //No response wait for CMDSENT interrupt
-      SDMMC1->MASK |= (SDMMC_MASK_CMDSENTIE | SDMMC_MASK_CCRCFAILIE | SDMMC_MASK_CTIMEOUTIE);
-   }
-   else 
-   {
-      //Short or long response wait for CMDREND interrupt
-      SDMMC1->MASK |= (SDMMC_MASK_CMDRENDIE | SDMMC_MASK_CCRCFAILIE | SDMMC_MASK_CTIMEOUTIE);
-   }
-   SDMMC1->CMD = SDMMC_CMD_CPSMEN | rsp | cmd;
-   if (WaitEvents(EV_SD_READY | EV_SD_ERROR, WAIT_ANY) != EV_SD_READY)
-   { 
-      //debug_printf_P("E1(cmd=%d arg=%x STA=%x)\n",cmd,arg,SDMMC1->STA);
-      return SD_ERROR; 
-   }
-   //ASSERT(WaitEvents(EV_SD_READY | EV_SD_ERROR, WAIT_ANY) == EV_SD_READY);
-   //Check for the correct response (long response and OCR response will result in 0x3F value in RESPCMD)
-   if (rsp == SD_CMD_SHORT_RESP && SDMMC1->RESPCMD != (cmd & SDMMC_CMD_CMDINDEX))
-   {
-      //debug_printf_P("E2(cmd=%d arg=%x STA=%x)\n",cmd,arg,SDMMC1->STA);
-      return SD_ERROR;
-   }
-   //ASSERT(!(rsp == SD_CMD_SHORT_RESP && SDMMC1->RESPCMD != cmd));
-   //debug_printf_P("OK");
-   return SD_OK;
 }
 
 #endif /* CPUSTYLE_STM32H7XX */
@@ -988,7 +946,7 @@ static void sdhost_dpsm_prepare(uintptr_t addr, uint_fast8_t txmode, uint_fast32
 	SDMMC1->DLEN = (SDMMC1->DLEN & ~ (SDMMC_DLEN_DATALENGTH_Msk)) |
 		((len << SDMMC_DLEN_DATALENGTH_Pos) & SDMMC_DLEN_DATALENGTH_Msk) |
 		0;
-	SDMMC1->DTIMER = 0x03FFFFFF;
+	SDMMC1->DTIMER = 0x0FFFFFFF;
 
 	SDMMC1->DCTRL =
 		//SDMMC_DCTRL_DTEN_Msk |		// Data transfer enabled bit
@@ -998,15 +956,17 @@ static void sdhost_dpsm_prepare(uintptr_t addr, uint_fast8_t txmode, uint_fast32
 
 #elif CPUSTYLE_STM32F7XX
 
-	SDMMC1->DTIMER = 0x03FFFFFF;
+	SDMMC1->DTIMER = 0x0FFFFFFF;
 
-	SDMMC1->DLEN = (len & SDMMC_DLEN_DATALENGTH);
+	SDMMC1->DLEN = (SDMMC1->DLEN & ~ (SDMMC_DLEN_DATALENGTH_Msk)) |
+		((len << SDMMC_DLEN_DATALENGTH_Pos) & SDMMC_DLEN_DATALENGTH_Msk) |
+		0;
 
 	SDMMC1->DCTRL =
 		1 * SDMMC_DCTRL_DTEN_Msk |		// Data transfer enabled bit
 		! txmode * SDMMC_DCTRL_DTDIR_Msk |		// 1: From card to controller.
 		0 * SDMMC_DCTRL_DTMODE_Msk |		// 0: Block data transfer
-		1 * SDMMC_DCTRL_DMAEN_Msk |
+		SDMMC_DCTRL_DMAEN_Msk |
 		lenpower * SDMMC_DCTRL_DBLOCKSIZE_0 |	// 9: 512 bytes, 3: 8 bytes
 		//0 * SDMMC_DCTRL_RWSTART |
 		//0 * SDMMC_DCTRL_RWSTOP |
@@ -1016,7 +976,7 @@ static void sdhost_dpsm_prepare(uintptr_t addr, uint_fast8_t txmode, uint_fast32
 
 #elif CPUSTYLE_STM32F4XX
 
-	SDIO->DTIMER = 0x03FFFFFF;
+	SDIO->DTIMER = 0x0FFFFFFF;
 
 	SDIO->DLEN = (len & SDIO_DLEN_DATALENGTH);
 
@@ -1024,7 +984,7 @@ static void sdhost_dpsm_prepare(uintptr_t addr, uint_fast8_t txmode, uint_fast32
 		1 * SDIO_DCTRL_DTEN |		// Data transfer enabled bit
 		! txmode * SDIO_DCTRL_DTDIR |		// 1: From card to controller.
 		0 * SDIO_DCTRL_DTMODE |		// 0: Block data transfer
-		1 * SDIO_DCTRL_DMAEN |
+		SDIO_DCTRL_DMAEN |
 		lenpower * SDIO_DCTRL_DBLOCKSIZE_0 |	// 9: 512 bytes, 3: 8 bytes
 		//0 * SDIO_DCTRL_RWSTART |
 		//0 * SDIO_DCTRL_RWSTOP |
@@ -2066,60 +2026,6 @@ static uint_fast8_t sdhost_short_acmd_resp_R3(uint_fast8_t cmd, uint_fast32_t ar
 }
 
 
-#if WITHTEST_H7
-
-static 
-DRESULT SD_disk_write(
-	BYTE drv,			/* Physical drive nmuber (0..) */
-	const BYTE *buff,	/* Data to be written */
-	DWORD sector,		/* Sector address (LBA) */
-	UINT count			/* Number of sectors to write */
-	)
-{
-	//Wait until card is ready for the data operations
-	for (;;)
-	{
-		int t;
-		//Make 10 tries to get card status before fail
-		for(t = 0; SDSendCommand(13, sdhost_sdcard_RCA << 16, SD_CMD_SHORT_RESP) != SD_OK; t++)
-		{
-			if (t > 10)
-				return RES_NOTRDY;
-		}
-		if ((SDMMC1->RESP1 & (SD_STAT_CURRENT_STATE|SD_STAT_READY_FOR_DATA)) == (SD_STAT_CURRENT_STATE_TRAN|SD_STAT_READY_FOR_DATA))break;
-		local_delay_ms((1));
-	}
-
-	//debug_printf_P(" WR1:%x ", SDMMC1->RESP1);
-	arm_hardware_flush((uintptr_t) buff, count * 512);
-	DMA_SDIO_setparams((uintptr_t) buff, 512, count, 1);
-
-	sdhost_dpsm_prepare((uintptr_t) buff, 1, 512 * count, 9);		// подготовка к обмену data path state machine - при записи после выдачи команды
-
-	const uint_fast8_t cmd = (count == 1) ? 24 /*CMD24 single block write*/: 25 /*CMD25 multiple blocks write*/;
-	if (SDSendCommand(cmd | SDMMC_CMD_CMDTRANS, sector * sdhost_getaddresmultiplier(), SD_CMD_SHORT_RESP))
-	{
-		//debug_printf_P("CMD%d failed!", cmd);
-		//turn off DMA
-		DMA_sdio_cancel();
-		return RES_ERROR;
-	}
-
-	// Wait for data transfer finish
-	sdhost_dpsm_wait(1);
-	if (DMA_sdio_waitdone() != 0)
-	{
-		DMA_sdio_cancel();
-		return RES_ERROR;
-	}
-	sdhost_dpsm_wait_fifo_empty();
-	//DMA_sdio_cancel();
-
-	return RES_OK;
-}
-
-#endif /* WITHTEST_H7 */
-
 // write a size Byte big block beginning at the address.
 static uint_fast8_t sdhost_sdcard_WriteSectors(
 	const BYTE *buff,	/* Data to be written */
@@ -2151,6 +2057,8 @@ static uint_fast8_t sdhost_sdcard_WriteSectors(
 		}
 	}
 
+	arm_hardware_flush_invalidate((uintptr_t) buff, 512 * count);	// Сейчас эту память будем записывать по DMA, потом содержимое не требуется
+
 	if (count == 1)
 	{
 		// wriite single block
@@ -2158,9 +2066,11 @@ static uint_fast8_t sdhost_sdcard_WriteSectors(
 		// Сперва настраивается DMA, затем выдается команда SD_CMD_WRITE_SINGLE_BLOCK
 		// Работает и на STM32Fxxx
 
-		arm_hardware_flush_invalidate((uintptr_t) buff, 512 * count);	// Сейчас эту память будем записывать по DMA, потом содержимое не требуется
 		DMA_SDIO_setparams((uintptr_t) buff, 512, count, 1);
-
+#if CPUSTYLE_STM32H7XX
+		// H7 need here: 
+		sdhost_dpsm_prepare((uintptr_t) buff, 1, 512 * count, 9);		// подготовка к обмену data path state machine - при записи после выдачи команды
+#endif /* CPUSTYLE_STM32H7XX */
 		// write block
 		sdhost_short_resp2(encode_cmd(SD_CMD_WRITE_SINGLE_BLOCK), sector * sdhost_getaddresmultiplier(), 1, 0);	// CMD24
 		if (sdhost_get_R1(SD_CMD_WRITE_SINGLE_BLOCK, & resp) != 0)
@@ -2170,7 +2080,10 @@ static uint_fast8_t sdhost_sdcard_WriteSectors(
 			return 1;
 		}
 
+#if ! CPUSTYLE_STM32H7XX
+		// other then H7 need here
 		sdhost_dpsm_prepare((uintptr_t) buff, 1, 512 * count, 9);		// подготовка к обмену data path state machine - при записи после выдачи команды
+#endif /* ! CPUSTYLE_STM32H7XX */
 
 		if (sdhost_dpsm_wait(1) != 0)
 		{
@@ -2203,23 +2116,25 @@ static uint_fast8_t sdhost_sdcard_WriteSectors(
 		}
 		//debug_printf_P(PSTR("SD_CMD_SD_APP_SET_NWB_PREERASED okay\n"));
 
-		// write multiblock
-		// Сперва настраивается DMA, затем выдается команда SD_CMD_WRITE_MULT_BLOCK
-		// Работает и на STM32Fxxx
-		arm_hardware_flush_invalidate((uintptr_t) buff, 512 * count);	// Сейчас эту память будем записывать по DMA, потом содержимое не требуется
-		DMA_SDIO_setparams((uintptr_t) buff, 512, count, 1);
-		
 		if (sdhost_use_cmd23 != 0)
 		{
 			// set block count
 			sdhost_short_resp(encode_cmd(SD_CMD_SET_BLOCK_COUNT), count);	// CMD23
 			if (sdhost_get_R1(SD_CMD_SET_BLOCK_COUNT, & resp) != 0)	// get R1
 			{
-				DMA_sdio_cancel();
 				debug_printf_P(PSTR("SD_CMD_SET_BLOCK_COUNT error\n"));
 				return 1;
 			}
 		}
+
+		// write multiblock
+		// Сперва настраивается DMA, затем выдается команда SD_CMD_WRITE_MULT_BLOCK
+		// Работает и на STM32Fxxx
+		DMA_SDIO_setparams((uintptr_t) buff, 512, count, 1);
+#if CPUSTYLE_STM32H7XX
+		// H7 need here: 
+		sdhost_dpsm_prepare((uintptr_t) buff, 1, 512 * count, 9);		// подготовка к обмену data path state machine - при записи после выдачи команды
+#endif /* CPUSTYLE_STM32H7XX */
 
 		// write blocks
 		sdhost_short_resp2(encode_cmd(SD_CMD_WRITE_MULT_BLOCK), sector * sdhost_getaddresmultiplier(), 1, 0);	// CMD25
@@ -2230,7 +2145,10 @@ static uint_fast8_t sdhost_sdcard_WriteSectors(
 			return 1;
 		}
 
+#if ! CPUSTYLE_STM32H7XX
+		// other then H7 need here
 		sdhost_dpsm_prepare((uintptr_t) buff, 1, 512 * count, 9);		// подготовка к обмену data path state machine - при записи после выдачи команды
+#endif /* ! CPUSTYLE_STM32H7XX */
 
 		if (sdhost_dpsm_wait(1) != 0)
 		{
@@ -2265,58 +2183,6 @@ static uint_fast8_t sdhost_sdcard_WriteSectors(
 	return 0;
 }
 
-
-#if WITHTEST_H7
-
-static DRESULT 
-SD_disk_read(
-	BYTE drv,			/* Physical drive nmuber (0..) */
-	BYTE *buff,		/* Data buffer to store read data */
-	DWORD sector,	/* Sector address (LBA) */
-	UINT count		/* Number of sectors to read */
-	)
-{
-   //Wait until card is ready for the data operations
-   for(;;)
-   {
-	   int t;
-      //Make ten tries to retrive card status before fail
-      for(t = 0; SDSendCommand(13, sdhost_sdcard_RCA << 16, SD_CMD_SHORT_RESP) != SD_OK; t++)
-      {
-         if (t > 10)
-			 return RES_NOTRDY;
-      }
-      if ((SDMMC1->RESP1 & (SD_STAT_CURRENT_STATE|SD_STAT_READY_FOR_DATA)) == (SD_STAT_CURRENT_STATE_TRAN|SD_STAT_READY_FOR_DATA))
-		  break;
-      local_delay_ms((1));
-   }
-
-   arm_hardware_flush_invalidate((uintptr_t) buff, 512 * count);
-	DMA_SDIO_setparams((uintptr_t) buff, 512, count, 0);
-
-
-	sdhost_dpsm_prepare((uintptr_t) buff, 0, 512 * count, 9);		// подготовка к обмену data path state machine - при записи после выдачи команды
-
-	uint8_t cmd = (count == 1) ? 17 /*CMD17 single block read*/: 18 /*CMD18 multiple blocks read*/;
-	if (SDSendCommand(cmd | SDMMC_CMD_CMDTRANS, sector * sdhost_getaddresmultiplier(), SD_CMD_SHORT_RESP))
-	{
-		//debug_printf_P("CMD%d failed!", cmd);
-		//turn off DMA
-		DMA_sdio_cancel();
-		return RES_ERROR;
-	}
-	//Wait for data transfer finish
-	sdhost_dpsm_wait(0);
-	if (DMA_sdio_waitdone() != 0)
-	{
-		DMA_sdio_cancel();
-		return RES_ERROR;
-	}
-	sdhost_dpsm_wait_fifo_empty();
-	//DMA_sdio_cancel();
-	return RES_OK;
-}
-#endif /* WITHTEST_H7 */
 
 // read a size Byte big block beginning at the address.
 static uint_fast8_t sdhost_sdcard_ReadSectors(
@@ -2353,15 +2219,14 @@ static uint_fast8_t sdhost_sdcard_ReadSectors(
 	}
 
 
+	arm_hardware_flush_invalidate((uintptr_t) buff, 512 * count);	// Сейчас эту память будем записывать по DMA, потом содержимое не требуется
+
 	if (count == 1)
 	{
 		//debug_printf_P(PSTR("read one block\n"));
 		// read one block
-		sdhost_dpsm_prepare((uintptr_t) buff, 0, 512 * count, 9);		// подготовка к обмену data path state machine - при чтении перед выдачей команды
-		//TP();
-		//arm_hardware_invalidate((uint32_t) buff, 512 * count);		// Сейчас в эту память будем читать по DMA
-		/* СТРАННО, но помогло! */arm_hardware_flush_invalidate((uintptr_t) buff, 512 * count);	// Сейчас эту память будем записывать по DMA, потом содержимое не требуется
 		DMA_SDIO_setparams((uintptr_t) buff, 512, count, 0);
+		sdhost_dpsm_prepare((uintptr_t) buff, 0, 512 * count, 9);		// подготовка к обмену data path state machine - при чтении перед выдачей команды
 		//TP();
 
 		// read block
@@ -2392,23 +2257,22 @@ static uint_fast8_t sdhost_sdcard_ReadSectors(
 	}
 	else
 	{
-		//debug_printf_P(PSTR("read multiple blocks: count=%d\n"), count);
+		debug_printf_P(PSTR("read multiple blocks: count=%d\n"), count);
 		// read multiple blocks
-		sdhost_dpsm_prepare((uintptr_t) buff, 0, 512 * count, 9);		// подготовка к обмену data path state machine - при чтении перед выдачей команды
-		//arm_hardware_invalidate((uint32_t) buff, 512 * count);		// Сейчас в эту память будем читать по DMA
-		/* СТРАННО, но помогло! */arm_hardware_flush_invalidate((uintptr_t) buff, 512 * count);	// Сейчас эту память будем записывать по DMA, потом содержимое не требуется
-		DMA_SDIO_setparams((uintptr_t) buff, 512, count, 0);
 		if (sdhost_use_cmd23 != 0)
 		{
 			// set block count
 			sdhost_short_resp(encode_cmd(SD_CMD_SET_BLOCK_COUNT), count);	// CMD23
 			if (sdhost_get_R1(SD_CMD_SET_BLOCK_COUNT, & resp) != 0)	// get R1
 			{
-				DMA_sdio_cancel();
 				debug_printf_P(PSTR("SD_CMD_SET_BLOCK_COUNT error\n"));
 				return 1;
 			}
 		}
+
+		DMA_SDIO_setparams((uintptr_t) buff, 512, count, 0);
+		sdhost_dpsm_prepare((uintptr_t) buff, 0, 512 * count, 9);		// подготовка к обмену data path state machine - при чтении перед выдачей команды
+
 		// read block
 		sdhost_short_resp2(encode_cmd(SD_CMD_READ_MULT_BLOCK), sector * sdhost_getaddresmultiplier(), 1, 0);	// CMD18
 		if (sdhost_get_R1(SD_CMD_READ_MULT_BLOCK, & resp) != 0)
@@ -2761,7 +2625,6 @@ char sd_initialize2(void)
 	return MMC_RESPONSE_ERROR;
 }
 
-#if ! WITHTEST_H7
 // write a size Byte big block beginning at the address.
 static 
 DRESULT SD_disk_write(
@@ -2789,9 +2652,6 @@ DRESULT SD_disk_read(
 		return RES_ERROR;
 	return RES_OK;
 }
-
-
-#endif /* ! WITHTEST_H7 */
 
 static 
 uint_fast64_t SD_ReadCardSize(void)

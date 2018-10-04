@@ -3763,28 +3763,18 @@ static BYTE targetdrv = 0;
 
 static char mmcInitialize(void)
 {
-#if WITHTEST_H7
-	disk_initialize (targetdrv);				/* Physical drive nmuber (0..) */
-
-	return SDCardInit() != RES_OK;
-#else
 	DSTATUS st = disk_initialize (targetdrv);				/* Physical drive nmuber (0..) */
 	//debug_printf_P(PSTR("disk_initialize code=%02X\n"), st);
 	return st != RES_OK;
-#endif
 }
 
 // read a size Byte big block beginning at the address.
 //char mmcReadBlock(uint_fast32_t address, unsigned long count, unsigned char *pBuffer);
 static char mmcReadSector(uint_fast32_t sector, unsigned char *pBuffer)
 {
-#if WITHTEST_H7
-	return SDReadBlock(sector, pBuffer, 1) != RES_OK;
-#else
 	DSTATUS st = disk_read(targetdrv, pBuffer, sector, 1);
 	//debug_printf_P(PSTR("disk_read code=%02X\n"), st);
 	return st != RES_OK;
-#endif
 }
 //#define 
 
@@ -3792,13 +3782,9 @@ static char mmcReadSector(uint_fast32_t sector, unsigned char *pBuffer)
 //char mmcWriteBlock (uint_fast32_t address, unsigned long count, const unsigned char *pBuffer);
 static char mmcWriteSector(uint_fast32_t sector, const unsigned char *pBuffer)
 {
-#if WITHTEST_H7
-	return SDWriteBlock(sector, pBuffer, 1) != RES_OK;
-#else
 	DSTATUS st = disk_write(targetdrv, pBuffer, sector, 1);
 	//debug_printf_P(PSTR("disk_write code=%02X\n"), st);
 	return st != RES_OK;
-#endif
 }
 
 static uint_fast64_t mmcCardSize(void)
