@@ -872,7 +872,7 @@ static void sdhost_dpsm_prepare(uintptr_t addr, uint_fast8_t txmode, uint_fast32
 	//SDMMC1->IDMABSIZE = (SDMMC1->IDMABSIZE & ~ (SDMMC_IDMABSIZE_IDMABNDT)) |
 	//	(((length0 * count / 32) << SDMMC_IDMABSIZE_IDMABNDT_Pos) & SDMMC_IDMABSIZE_IDMABNDT_Msk) |
 	//0;
-	debug_printf_P(PSTR("SDMMC1->IDMABASE0=%08lx\n"), SDMMC1->IDMABASE0);
+	//debug_printf_P(PSTR("SDMMC1->IDMABASE0=%08lx\n"), SDMMC1->IDMABASE0);
 	ASSERT((SDMMC1->IDMACTRL & SDMMC_IDMA_IDMAEN_Msk) != 0);
 	ASSERT(SDMMC1->IDMABASE0 == addr);
 
@@ -882,7 +882,7 @@ static void sdhost_dpsm_prepare(uintptr_t addr, uint_fast8_t txmode, uint_fast32
 	SDMMC1->DTIMER = 0x03FFFFFF;
 
 	SDMMC1->DCTRL =
-		SDMMC_DCTRL_DTEN_Msk |		// Data transfer enabled bit
+		//SDMMC_DCTRL_DTEN_Msk |		// Data transfer enabled bit
 		! txmode * SDMMC_DCTRL_DTDIR_Msk |		// 1: From card to controller.
 		((lenpower * SDMMC_DCTRL_DBLOCKSIZE_0) & SDMMC_DCTRL_DBLOCKSIZE_Msk) |	// 9: 512 bytes, 3: 8 bytes
 		0;
@@ -2090,72 +2090,47 @@ DRESULT SD_disk_write(
 	UINT count			/* Number of sectors to write */
 	)
 {
-   //Wait until card is ready for the data operations
-   for(;;)
-   {
-	   int t;
-      //Make 10 tries to get card status before fail
-      for(t = 0; SDSendCommand(13, sdhost_sdcard_RCA << 16, SD_CMD_SHORT_RESP) != SD_OK; t++)
-      {
-         if (t > 10)
-			 return RES_NOTRDY;
-      }
-      if ((SDMMC1->RESP1 & (SD_STAT_CURRENT_STATE|SD_STAT_READY_FOR_DATA)) == (SD_STAT_CURRENT_STATE_TRAN|SD_STAT_READY_FOR_DATA))break;
-      local_delay_ms((1));
-   }
+	//Wait until card is ready for the data operations
+	for (;;)
+	{
+		int t;
+		//Make 10 tries to get card status before fail
+		for(t = 0; SDSendCommand(13, sdhost_sdcard_RCA << 16, SD_CMD_SHORT_RESP) != SD_OK; t++)
+		{
+			if (t > 10)
+				return RES_NOTRDY;
+		}
+		if ((SDMMC1->RESP1 & (SD_STAT_CURRENT_STATE|SD_STAT_READY_FOR_DATA)) == (SD_STAT_CURRENT_STATE_TRAN|SD_STAT_READY_FOR_DATA))break;
+		local_delay_ms((1));
+	}
 
-   //debug_printf_P(" WR1:%x ", SDMMC1->RESP1);
-   arm_hardware_flush((uintptr_t) buff, count * 512);
+	//debug_printf_P(" WR1:%x ", SDMMC1->RESP1);
+	arm_hardware_flush((uintptr_t) buff, count * 512);
+	DMA_SDIO_setparams((uintptr_t) buff, 512, count, 1);
 
-   //Program data length register
-   SDMMC1->DLEN = count * 512;
-   
-   //Clean DPSM interrupt flags and enable DPSM interrupts
-   SDMMC1->ICR = (SDMMC_ICR_DBCKENDC | SDMMC_ICR_DATAENDC | SDMMC_ICR_DCRCFAILC | SDMMC_ICR_DTIMEOUTC);
-   SDMMC1->MASK |= (SDMMC_MASK_DATAENDIE | SDMMC_MASK_DCRCFAILIE | SDMMC_MASK_DTIMEOUTIE);
+	//Clean DPSM interrupt flags and enable DPSM interrupts
+	SDMMC1->ICR = (SDMMC_ICR_DBCKENDC | SDMMC_ICR_DATAENDC | SDMMC_ICR_DCRCFAILC | SDMMC_ICR_DTIMEOUTC);
+	SDMMC1->MASK |= (SDMMC_MASK_DATAENDIE | SDMMC_MASK_DCRCFAILIE | SDMMC_MASK_DTIMEOUTIE);
 
-   SDMMC1->DTIMER = 12000000 /*0.5sec timeout*/;
+	sdhost_dpsm_prepare((uintptr_t) buff, 1, 512 * count, 9);		// подготовка к обмену data path state machine - при записи после выдачи команды
 
-   //Program data control register
-   SDMMC1->DCTRL = SDMMC_DCTRL_DBLOCKSIZE_0 * 9 /*512 bytes block*/ |
-                     SDMMC_DCTRL_DTDIR * 0 /* From controller to card*/; /*|
-                     SDMMC_DCTRL_DTEN;*/
+	const uint_fast8_t cmd = (count == 1) ? 24 /*CMD24 single block write*/: 25 /*CMD25 multiple blocks write*/;
+	if (SDSendCommand(cmd | SDMMC_CMD_CMDTRANS, sector * sdhost_getaddresmultiplier(), SD_CMD_SHORT_RESP))
+	{
+		//debug_printf_P("CMD%d failed!", cmd);
+		//turn off DMA
+		DMA_sdio_cancel();
+		return RES_ERROR;
+	}
 
-   //Program SDMMC1 DMA
-   SDMMC1->IDMABASE0 = (uintptr_t) buff;
-   SDMMC1->IDMACTRL |= SDMMC_IDMA_IDMAEN;
+	// Wait for data transfer finish
+	WaitEvents(EV_SD_DATA, WAIT_ANY);
+	sdhost_dpsm_wait_fifo_empty();
+	DMA_sdio_cancel();
 
-   
-   uint8_t cmd = (count == 1) ? 24 /*CMD24 single block write*/: 25 /*CMD25 multiple blocks write*/;
-   if (SDSendCommand(cmd | SDMMC_CMD_CMDTRANS, sector * sdhost_getaddresmultiplier(), SD_CMD_SHORT_RESP))
-   {
-      //debug_printf_P("CMD%d failed!", cmd);
-      //turn off DMA
-	  SDMMC1->IDMACTRL &= ~SDMMC_IDMA_IDMAEN;
-      return RES_ERROR;
-   }
-
-   //TP();
-   //Wait for data transfer finish
-   WaitEvents(EV_SD_DATA, WAIT_ANY);
-#if 0
-   if (count > 1)
-   {
-	  SDMMC1->IDMACTRL &= ~SDMMC_IDMA_IDMAEN;   
-      //Send CMD12 STOP command in case of multiple block transfer      
-      if (SDSendCommand(12, 0, SD_CMD_SHORT_RESP))
-		  return RES_ERROR;
-   }
-#endif
-   sdhost_dpsm_wait_fifo_empty();
-    SDMMC1->IDMACTRL &= ~SDMMC_IDMA_IDMAEN;   
-  //Do we need to check FIFOCNT and wait until it is 0?
-   //debug_printf_P(" FIFO:%d WSTA:%x ", SDMMC1->FIFOCNT, SDMMC1->STA);
-   
-   if ((SDMMC1->STA & (SDMMC_STA_DATAEND | SDMMC_STA_DCRCFAIL | SDMMC_STA_DTIMEOUT)) == SDMMC_STA_DATAEND)
-	   return RES_OK;
-   TP();
-   return RES_ERROR;
+	if ((SDMMC1->STA & (SDMMC_STA_DATAEND | SDMMC_STA_DCRCFAIL | SDMMC_STA_DTIMEOUT)) == SDMMC_STA_DATAEND)
+		return RES_OK;
+	return RES_ERROR;
 }
 
 #endif /* WITHTEST_H7 */
@@ -2331,57 +2306,33 @@ SD_disk_read(
       local_delay_ms((1));
    }
 
-   //TP();
    arm_hardware_flush_invalidate((uintptr_t) buff, 512 * count);
+	DMA_SDIO_setparams((uintptr_t) buff, 512, count, 0);
 
-   //Program data length register
-   SDMMC1->DLEN = count * 512;
 
-   //Clean DPSM interrupt flags and enable DPSM interrupts
-   SDMMC1->ICR = (SDMMC_ICR_DBCKENDC | SDMMC_ICR_DATAENDC | SDMMC_ICR_DCRCFAILC | SDMMC_ICR_DTIMEOUTC);
-   SDMMC1->MASK |= (SDMMC_MASK_DATAENDIE | SDMMC_MASK_DCRCFAILIE | SDMMC_MASK_DTIMEOUTIE);
+	//Clean DPSM interrupt flags and enable DPSM interrupts
+	SDMMC1->ICR = (SDMMC_ICR_DBCKENDC | SDMMC_ICR_DATAENDC | SDMMC_ICR_DCRCFAILC | SDMMC_ICR_DTIMEOUTC);
+	SDMMC1->MASK |= (SDMMC_MASK_DATAENDIE | SDMMC_MASK_DCRCFAILIE | SDMMC_MASK_DTIMEOUTIE);
 
-   SDMMC1->DTIMER = 12000000 /*0.5sec timeout*/;
+	sdhost_dpsm_prepare((uintptr_t) buff, 0, 512 * count, 9);		// подготовка к обмену data path state machine - при записи после выдачи команды
 
-   //Program data control register
-   SDMMC1->DCTRL = SDMMC_DCTRL_DBLOCKSIZE_0 * 9 /*512 bytes block*/ |
-                   SDMMC_DCTRL_DTDIR /* From card to controller */;/* |
-                   SDMMC_DCTRL_DTEN;*/
+	uint8_t cmd = (count == 1) ? 17 /*CMD17 single block read*/: 18 /*CMD18 multiple blocks read*/;
+	if (SDSendCommand(cmd | SDMMC_CMD_CMDTRANS, sector * sdhost_getaddresmultiplier(), SD_CMD_SHORT_RESP))
+	{
+		//debug_printf_P("CMD%d failed!", cmd);
+		//turn off DMA
+		DMA_sdio_cancel();
+		return RES_ERROR;
+	}
+	//Wait for data transfer finish
+	WaitEvents(EV_SD_DATA, WAIT_ANY);
+	//Do we need to check FIFOCNT and wait until it is 0?
+	sdhost_dpsm_wait_fifo_empty();
+	DMA_sdio_cancel();
 
-   //Program SDMMC1 DMA
-   SDMMC1->IDMABASE0 = (uintptr_t) buff;
-   SDMMC1->IDMACTRL |= SDMMC_IDMA_IDMAEN;
-
-   uint8_t cmd = (count == 1) ? 17 /*CMD17 single block read*/: 18 /*CMD18 multiple blocks read*/;
-   if (SDSendCommand(cmd | SDMMC_CMD_CMDTRANS, sector * sdhost_getaddresmultiplier(), SD_CMD_SHORT_RESP))
-   {
-      //debug_printf_P("CMD%d failed!", cmd);
-      //turn off DMA
-	  SDMMC1->IDMACTRL &= ~SDMMC_IDMA_IDMAEN;
-      return RES_ERROR;
-   }
-   //TP();
-   //Wait for data transfer finish
-   WaitEvents(EV_SD_DATA, WAIT_ANY);
-#if 0
-   if (count > 1)
-   {
-      //Send CMD12 STOP command in case of multiple block transfer
-      if (SDSendCommand(12, 0, SD_CMD_SHORT_RESP))
-      {
-		  SDMMC1->IDMACTRL &= ~SDMMC_IDMA_IDMAEN;
-         return RES_ERROR;
-      }
-   }
-#endif
-   //TP();
-  //Do we need to check FIFOCNT and wait until it is 0?
-   sdhost_dpsm_wait_fifo_empty();
-    SDMMC1->IDMACTRL &= ~SDMMC_IDMA_IDMAEN;
-
-  if ((SDMMC1->STA & (SDMMC_STA_DATAEND | SDMMC_STA_DCRCFAIL | SDMMC_STA_DTIMEOUT)) != SDMMC_STA_DATAEND)
-	   return RES_ERROR;
-   return RES_OK;
+	if ((SDMMC1->STA & (SDMMC_STA_DATAEND | SDMMC_STA_DCRCFAIL | SDMMC_STA_DTIMEOUT)) != SDMMC_STA_DATAEND)
+		return RES_ERROR;
+	return RES_OK;
 }
 #endif /* WITHTEST_H7 */
 
