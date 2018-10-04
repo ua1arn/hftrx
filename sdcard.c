@@ -24,6 +24,54 @@
 
 
 
+/* Card Status Register*/
+
+#define SD_STAT_OUT_OF_RANGE       0x80000000  /*The command's argument was out of the allowed range for this card.*/
+#define SD_STAT_ADDRESS_ERROR      0x40000000  /*A misaligned address which did not match the block length was used in the command. */
+#define SD_STAT_BLOCK_LEN_ERROR    0x20000000  /*The transferred block length is not allowed for this card, or the number
+                                         of transferred bytes does not match the block length. */
+#define SD_STAT_ERASE_SEQ_ERROR    0x10000000  /*An error in the sequence of erase commands occurred. */
+#define SD_STAT_ERASE_PARAM        0x08000000  /*An invalid selection of write-blocks for erase occurred. */
+#define SD_STAT_WP_VIOLATION       0x04000000  /*Set when the host attempts to write to a protected block or to the
+                                         temporary or permanent write protected card. */
+#define SD_STAT_CARD_IS_LOCKED     0x02000000  /*When set, signals that the card is locked by the host */
+#define SD_STAT_LOCK_UNLOCK_FAILED 0x01000000  /*Set when a sequence or password error has been detected in
+                                         lock/unlock card command. */
+#define SD_STAT_COM_CRC_ERROR      0x00800000  /*The CRC check of the previous command failed.*/
+#define SD_STAT_ILLEGAL_COMMAND    0x00400000  /*Command not legal for the card state. */
+#define SD_STAT_CARD_ECC_FAILED    0x00200000  /*Card internal ECC was applied but failed to correct the data.*/
+#define SD_STAT_CC_ERROR           0x00100000  /*Internal card controller error.*/
+#define SD_STAT_ERROR              0x00080000  /*A general or an unknown error occurred during the operation.*/
+#define SD_STAT_CSD_OVERWRITE      0x00010000  /*Can be either one of the following errors:
+                                          - The read only section of the CSD does not match the card content.
+                                          - An attempt to reverse the copy (set as original) or permanent WP
+                                            (unprotected) bits was made. */
+#define SD_STAT_WP_ERASE_SKIP      0x00008000  /*Set when only partial address space was erased due to existing
+                                         write protected blocks or the temporary or permanent write
+                                         protected card was erased. */
+#define SD_STAT_CARD_ECC_DISABLED  0x00004000  /*The command has been executed without using the internal ECC.*/
+#define SD_STAT_ERASE_RESET        0x00002000  /*An erase sequence was cleared before executing because an out of
+                                         erase sequence command was received. */
+#define SD_STAT_CURRENT_STATE      0x00001E00  /*The state of the card when receiving the command. If the command
+                                         execution causes a state change, it will be visible to the host in the
+                                         response to the next command. The four bits are interpreted as a
+                                         binary coded number between 0 and 15.*/
+#define SD_STAT_CURRENT_STATE_IDLE  0x00000000  
+#define SD_STAT_CURRENT_STATE_READY 0x00000200
+#define SD_STAT_CURRENT_STATE_IDENT 0x00000400
+#define SD_STAT_CURRENT_STATE_STDBY 0x00000600
+#define SD_STAT_CURRENT_STATE_TRAN  0x00000800
+#define SD_STAT_CURRENT_STATE_DATA  0x00000A00
+#define SD_STAT_CURRENT_STATE_RECV  0x00000C00
+#define SD_STAT_CURRENT_STATE_PROG  0x00000E00
+#define SD_STAT_CURRENT_STATE_DIS   0x00001000
+
+#define SD_STAT_READY_FOR_DATA      0x00000100 /*Corresponds to buffer empty signaling on the bus. */
+#define SD_STAT_APP_CMD             0x00000020 /*The card will expect ACMD, or an indication that the command has
+                                         been interpreted as ACMD. */
+#define SD_STAT_AKE_SEQ_ERROR       0x0000008  /*Error in the sequence of the authentication process*/
+
+
 // this variable will be used to track the current block length
 // this allows the block length to be set only when needed
 // unsigned long _BlockLength = 0;
@@ -1914,54 +1962,6 @@ static uint_fast8_t sdhost_short_acmd_resp_R3(uint_fast8_t cmd, uint_fast32_t ar
 
 #if WITHTEST_H7
 
-
-/* Card Status Register*/
-
-#define SD_STAT_OUT_OF_RANGE       0x80000000  /*The command's argument was out of the allowed range for this card.*/
-#define SD_STAT_ADDRESS_ERROR      0x40000000  /*A misaligned address which did not match the block length was used in the command. */
-#define SD_STAT_BLOCK_LEN_ERROR    0x20000000  /*The transferred block length is not allowed for this card, or the number
-                                         of transferred bytes does not match the block length. */
-#define SD_STAT_ERASE_SEQ_ERROR    0x10000000  /*An error in the sequence of erase commands occurred. */
-#define SD_STAT_ERASE_PARAM        0x08000000  /*An invalid selection of write-blocks for erase occurred. */
-#define SD_STAT_WP_VIOLATION       0x04000000  /*Set when the host attempts to write to a protected block or to the
-                                         temporary or permanent write protected card. */
-#define SD_STAT_CARD_IS_LOCKED     0x02000000  /*When set, signals that the card is locked by the host */
-#define SD_STAT_LOCK_UNLOCK_FAILED 0x01000000  /*Set when a sequence or password error has been detected in
-                                         lock/unlock card command. */
-#define SD_STAT_COM_CRC_ERROR      0x00800000  /*The CRC check of the previous command failed.*/
-#define SD_STAT_ILLEGAL_COMMAND    0x00400000  /*Command not legal for the card state. */
-#define SD_STAT_CARD_ECC_FAILED    0x00200000  /*Card internal ECC was applied but failed to correct the data.*/
-#define SD_STAT_CC_ERROR           0x00100000  /*Internal card controller error.*/
-#define SD_STAT_ERROR              0x00080000  /*A general or an unknown error occurred during the operation.*/
-#define SD_STAT_CSD_OVERWRITE      0x00010000  /*Can be either one of the following errors:
-                                          - The read only section of the CSD does not match the card content.
-                                          - An attempt to reverse the copy (set as original) or permanent WP
-                                            (unprotected) bits was made. */
-#define SD_STAT_WP_ERASE_SKIP      0x00008000  /*Set when only partial address space was erased due to existing
-                                         write protected blocks or the temporary or permanent write
-                                         protected card was erased. */
-#define SD_STAT_CARD_ECC_DISABLED  0x00004000  /*The command has been executed without using the internal ECC.*/
-#define SD_STAT_ERASE_RESET        0x00002000  /*An erase sequence was cleared before executing because an out of
-                                         erase sequence command was received. */
-#define SD_STAT_CURRENT_STATE      0x00001E00  /*The state of the card when receiving the command. If the command
-                                         execution causes a state change, it will be visible to the host in the
-                                         response to the next command. The four bits are interpreted as a
-                                         binary coded number between 0 and 15.*/
-#define SD_STAT_CURRENT_STATE_IDLE  0x00000000  
-#define SD_STAT_CURRENT_STATE_READY 0x00000200
-#define SD_STAT_CURRENT_STATE_IDENT 0x00000400
-#define SD_STAT_CURRENT_STATE_STDBY 0x00000600
-#define SD_STAT_CURRENT_STATE_TRAN  0x00000800
-#define SD_STAT_CURRENT_STATE_DATA  0x00000A00
-#define SD_STAT_CURRENT_STATE_RECV  0x00000C00
-#define SD_STAT_CURRENT_STATE_PROG  0x00000E00
-#define SD_STAT_CURRENT_STATE_DIS   0x00001000
-
-#define SD_STAT_READY_FOR_DATA      0x00000100 /*Corresponds to buffer empty signaling on the bus. */
-#define SD_STAT_APP_CMD             0x00000020 /*The card will expect ACMD, or an indication that the command has
-                                         been interpreted as ACMD. */
-#define SD_STAT_AKE_SEQ_ERROR       0x0000008  /*Error in the sequence of the authentication process*/
-
 //SD card filesystem data
 //static FATFS axi_sram SDCardFFS;
 
@@ -2093,8 +2093,9 @@ DRESULT SD_disk_write(
    //Wait until card is ready for the data operations
    for(;;)
    {
+	   int t;
       //Make 10 tries to get card status before fail
-      for(int t = 0; SDSendCommand(13, sdhost_sdcard_RCA << 16, SD_CMD_SHORT_RESP) != SD_OK; t++)
+      for(t = 0; SDSendCommand(13, sdhost_sdcard_RCA << 16, SD_CMD_SHORT_RESP) != SD_OK; t++)
       {
          if (t > 10)
 			 return RES_NOTRDY;
@@ -2104,8 +2105,7 @@ DRESULT SD_disk_write(
    }
 
    //debug_printf_P(" WR1:%x ", SDMMC1->RESP1);
-   //SCB_CleanDCache_by_Addr(buffer, count*512);
-   arm_hardware_flush((uintptr_t) buff, count*512);
+   arm_hardware_flush((uintptr_t) buff, count * 512);
 
    //Program data length register
    SDMMC1->DLEN = count * 512;
@@ -2138,14 +2138,18 @@ DRESULT SD_disk_write(
    //TP();
    //Wait for data transfer finish
    WaitEvents(EV_SD_DATA, WAIT_ANY);
-   SDMMC1->IDMACTRL &= ~SDMMC_IDMA_IDMAEN;   
+#if 0
    if (count > 1)
    {
+	  SDMMC1->IDMACTRL &= ~SDMMC_IDMA_IDMAEN;   
       //Send CMD12 STOP command in case of multiple block transfer      
       if (SDSendCommand(12, 0, SD_CMD_SHORT_RESP))
 		  return RES_ERROR;
    }
-   //Do we need to check FIFOCNT and wait until it is 0?
+#endif
+   sdhost_dpsm_wait_fifo_empty();
+    SDMMC1->IDMACTRL &= ~SDMMC_IDMA_IDMAEN;   
+  //Do we need to check FIFOCNT and wait until it is 0?
    //debug_printf_P(" FIFO:%d WSTA:%x ", SDMMC1->FIFOCNT, SDMMC1->STA);
    
    if ((SDMMC1->STA & (SDMMC_STA_DATAEND | SDMMC_STA_DCRCFAIL | SDMMC_STA_DTIMEOUT)) == SDMMC_STA_DATAEND)
@@ -2315,8 +2319,9 @@ SD_disk_read(
    //Wait until card is ready for the data operations
    for(;;)
    {
+	   int t;
       //Make ten tries to retrive card status before fail
-      for(int t = 0; SDSendCommand(13, sdhost_sdcard_RCA << 16, SD_CMD_SHORT_RESP) != SD_OK; t++)
+      for(t = 0; SDSendCommand(13, sdhost_sdcard_RCA << 16, SD_CMD_SHORT_RESP) != SD_OK; t++)
       {
          if (t > 10)
 			 return RES_NOTRDY;
@@ -2358,20 +2363,24 @@ SD_disk_read(
    //TP();
    //Wait for data transfer finish
    WaitEvents(EV_SD_DATA, WAIT_ANY);
-   SDMMC1->IDMACTRL &= ~SDMMC_IDMA_IDMAEN;
+#if 0
    if (count > 1)
    {
       //Send CMD12 STOP command in case of multiple block transfer
       if (SDSendCommand(12, 0, SD_CMD_SHORT_RESP))
       {
+		  SDMMC1->IDMACTRL &= ~SDMMC_IDMA_IDMAEN;
          return RES_ERROR;
       }
    }
+#endif
    //TP();
   //Do we need to check FIFOCNT and wait until it is 0?
-   if ((SDMMC1->STA & (SDMMC_STA_DATAEND | SDMMC_STA_DCRCFAIL | SDMMC_STA_DTIMEOUT)) != SDMMC_STA_DATAEND)
+   sdhost_dpsm_wait_fifo_empty();
+    SDMMC1->IDMACTRL &= ~SDMMC_IDMA_IDMAEN;
+
+  if ((SDMMC1->STA & (SDMMC_STA_DATAEND | SDMMC_STA_DCRCFAIL | SDMMC_STA_DTIMEOUT)) != SDMMC_STA_DATAEND)
 	   return RES_ERROR;
-   //SCB_InvalidateDCache_by_Addr(buffer, size*512);
    return RES_OK;
 }
 #endif /* WITHTEST_H7 */
