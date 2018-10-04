@@ -6029,8 +6029,8 @@ void hardware_sdhost_setspeed(unsigned long ticksfreq)
 
 	const unsigned value = ulmin(calcdivround2(SDIOCLK, ticksfreq) - 2, 255);
 
-	SDIO->CLKCR = (SDIO->CLKCR & ~ (SDIO_CLKCR_CLKDIV)) |
-		(value & SDIO_CLKCR_CLKDIV);
+	SDIO->CLKCR = (SDIO->CLKCR & ~ (SDIO_CLKCR_CLKDIV_Msk)) |
+		(value & SDIO_CLKCR_CLKDIV_Msk);
 
 #elif CPUSTYLE_STM32F7XX
 
@@ -6135,11 +6135,11 @@ void hardware_sdhost_initialize(void)
 	// hwrdware flow control отключен - от этого зависит проверка состояния txfifo & rxfifo
 	SDIO->CLKCR =
 		1 * SDIO_CLKCR_CLKEN |
-		(255 & SDIO_CLKCR_CLKDIV) |
+		(255 & SDIO_CLKCR_CLKDIV_Msk) |
 	#if WITHSDHCHW4BIT
 		1 * SDIO_CLKCR_WIDBUS_0 |	// 01: 4-wide bus mode: SDIO_D[3:0] used
 	#endif /* WITHSDHCHW4BIT */
-		//1 * SDIO_CLKCR_HWFC_EN |
+		1 * SDIO_CLKCR_HWFC_EN |
 		1 * SDIO_CLKCR_PWRSAV |		// выключается clock без обращений
 		0;
 
@@ -6167,7 +6167,7 @@ void hardware_sdhost_initialize(void)
 	#if WITHSDHCHW4BIT
 		1 * SDMMC_CLKCR_WIDBUS_0 |	// 01: 4-wide bus mode: SDMMC_D[3:0] used
 	#endif /* WITHSDHCHW4BIT */
-		//1 * SDMMC_CLKCR_HWFC_EN |
+		1 * SDMMC_CLKCR_HWFC_EN |
 		1 * SDMMC_CLKCR_PWRSAV |		// выключается clock без обращений
 		0;
 
@@ -6189,12 +6189,6 @@ void hardware_sdhost_initialize(void)
 	(void) RCC->AHB3ENR;
 	__DSB();
 
-	//SDMMC1->IDMACTRL |= SDMMC_IDMA_IDMAEN;
-	//ASSERT((SDMMC1->IDMACTRL & SDMMC_IDMA_IDMAEN) != 0);
-	SDMMC1->IDMABASE0 = 0xdeadbeef;
-	//debug_printf_P(PSTR("SDMMC1->IDMABASE0=%08lx\n"), SDMMC1->IDMABASE0);
-	//ASSERT(SDMMC1->IDMABASE0 == 0xdeadbeef);
-
 	HARDWARE_SDIO_INITIALIZE();	// Подсоединить контроллер к выводам процессора
 	
 	// hwrdware flow control отключен - от этого зависит проверка состояния txfifo & rxfifo
@@ -6203,9 +6197,8 @@ void hardware_sdhost_initialize(void)
 	#if WITHSDHCHW4BIT
 		1 * SDMMC_CLKCR_WIDBUS_0 |	// 01: 4-wide bus mode: SDMMC_D[3:0] used
 	#endif /* WITHSDHCHW4BIT */
-		//1 * SDMMC_CLKCR_HWFC_EN |
-		1 * SDMMC_CLKCR_PWRSAV |		// выключается clock без обращений
 		1 * SDMMC_CLKCR_HWFC_EN |
+		1 * SDMMC_CLKCR_PWRSAV |		// выключается clock без обращений
 		0;
 
 	hardware_sdhost_setbuswidth(0);
