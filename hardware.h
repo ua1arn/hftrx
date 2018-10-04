@@ -669,11 +669,14 @@ void DMA2_Stream5_IRQHandler(void);		// ch0: SAI1_B (rx)
 void DMA2_Stream4_IRQHandler(void);		// ch3: SAI2_B (tx)
 void DMA2_Stream7_IRQHandler(void);		// ch0: SAI2_B (rx)
 void DMA2_Stream6_IRQHandler(void);		// ch4: SDIO
+
 void SDIO_IRQHandler(void);
+void SDMMC1_IRQHandler(void);
 
 void USART1_IRQHandler(void);
 void USART2_IRQHandler(void);
 void USART3_IRQHandler(void);
+
 
 
 void cpu_stm32f1xx_setmapr(unsigned long bits);

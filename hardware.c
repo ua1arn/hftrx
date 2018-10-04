@@ -10983,6 +10983,20 @@ void ATTRWEAK UART5_IRQHandler(void)
 		;
 }
 
+void ATTRWEAK USART6_IRQHandler(void)
+{
+	debug_printf_P(PSTR("USART6_IRQHandler trapped\n"));
+	for (;;)
+		;
+}
+
+void ATTRWEAK SDMMC1_IRQHandler(void)
+{
+	debug_printf_P(PSTR("SDMMC1_IRQHandler trapped\n"));
+	for (;;)
+		;
+}
+
 void ATTRWEAK TIM6_IRQHandler(void)
 {
 	debug_printf_P(PSTR("TIM6_IRQHandler trapped\n"));
@@ -11459,11 +11473,11 @@ IntFunc __Vectors [/*256*/] = {
 	Default_Handler,	//TIM8_CC_IRQHandler        , /* TIM8 Capture Compare         */                          
 	DMA1_Stream7_IRQHandler   , /* DMA1 Stream7                 */                          
 	Default_Handler,	//FMC_IRQHandler            , /* FMC                          */                   
-	Default_Handler,	//SDMMC1_IRQHandler         , /* SDMMC1                       */                   
+	SDMMC1_IRQHandler         , /* SDMMC1                       */                   
 	TIM5_IRQHandler           , /* TIM5                         */                   
 	SPI3_IRQHandler           , /* SPI3                         */                   
 	UART4_IRQHandler          , /* UART4                        */                   
-	Default_Handler,	//UART5_IRQHandler          , /* UART5                        */                   
+	UART5_IRQHandler          , /* UART5                        */                   
 	Default_Handler,	//TIM6_DAC_IRQHandler       , /* TIM6 and DAC1&2 underrun errors */                   
 	Default_Handler,	//TIM7_IRQHandler           , /* TIM7                         */
 	DMA2_Stream0_IRQHandler   , /* DMA2 Stream 0                */                   
@@ -11481,7 +11495,7 @@ IntFunc __Vectors [/*256*/] = {
 	DMA2_Stream5_IRQHandler   , /* DMA2 Stream 5                */                   
 	DMA2_Stream6_IRQHandler   , /* DMA2 Stream 6                */                   
 	DMA2_Stream7_IRQHandler   , /* DMA2 Stream 7                */                   
-	Default_Handler,	//USART6_IRQHandler         , /* USART6                       */                    
+	USART6_IRQHandler         , /* USART6                       */                    
 	Default_Handler,	//I2C3_EV_IRQHandler        , /* I2C3 event                   */                          
 	Default_Handler,	//I2C3_ER_IRQHandler        , /* I2C3 error                   */                          
 	Default_Handler,	//OTG_HS_EP1_OUT_IRQHandler , /* USB OTG HS End Point 1 Out   */                   
@@ -11702,7 +11716,7 @@ IntFunc __Vectors [/*256*/] = {
   DMA2_Stream5_IRQHandler,		/*!< DMA2 Stream 5 global interrupt                                    */
   DMA2_Stream6_IRQHandler,		/*!< DMA2 Stream 6 global interrupt                                    */
   DMA2_Stream7_IRQHandler,		/*!< DMA2 Stream 7 global interrupt                                    */
-  Default_Handler,	//USART6_IRQHandler,		/*!< USART6 global interrupt                                           */
+  USART6_IRQHandler,		/*!< USART6 global interrupt                                           */
   Default_Handler,	//I2C3_EV_IRQHandler,		/*!< I2C3 event interrupt                                              */
   Default_Handler,	//I2C3_ER_IRQHandler,		/*!< I2C3 error interrupt                                              */
   OTG_HS_EP1_OUT_IRQHandler,		/*!< USB OTG HS End Point 1 Out global interrupt                       */

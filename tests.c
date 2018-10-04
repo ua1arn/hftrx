@@ -722,19 +722,19 @@ sect4done:
  * Change to USE_EPD270 if you are connecting with 2.7 inch EPD. USE_EPD144 for 1.44 inch. */
 #define USE_EPD_Type USE_EPD200 /**< default is connecting with 2 inch EPD */
 
-#if(USE_EPD_Type==USE_EPD144) // array size=96*16, (128/8=16)
+#if (USE_EPD_Type==USE_EPD144) // array size=96*16, (128/8=16)
 	extern uint8_t const image_array_144_1[]; /**< use 1.44" image array #1 */
 	extern uint8_t const image_array_144_2[]; /**< use 1.44" image array #2 */
-#elif(USE_EPD_Type==USE_EPD200) // array size=96*25, (200/8=25)
+#elif (USE_EPD_Type==USE_EPD200) // array size=96*25, (200/8=25)
 	extern uint8_t const image_array_200_1[]; /**< use 2" image array #1 */
 	extern uint8_t const image_array_200_2[]; /**< use 2" image array #2 */
-#elif(USE_EPD_Type==USE_EPD270) // array size=176*33, (264/8=33)
+#elif (USE_EPD_Type==USE_EPD270) // array size=176*33, (264/8=33)
 	extern uint8_t const image_array_270_1[]; /**< use 2.7" image array #1 */
 	extern uint8_t const image_array_270_2[]; /**< use 2.7" image array #2 */
 #endif
 
 
-#if(USE_EPD_Type==USE_EPD144)
+#if (USE_EPD_Type==USE_EPD144)
 #define image_width_144 128 /**< the resolution of 1.44 inch is 128*96 */
 #define image_height_144 96 /**< the image array size of 1.44 inch is 96*16 where 16=128/8 */
 uint8_t const image_array_144_1[] = {
@@ -939,7 +939,7 @@ uint8_t const image_array_144_2[] = {
 //2013/04/03 Resolution: 128 x 96
 
 
-#elif(USE_EPD_Type==USE_EPD200)
+#elif (USE_EPD_Type==USE_EPD200)
 
 #define image_width_200 200 /**< the resolution of 2 inch is 200*96 */
 #define image_height_200 96 /**< the image array size of 2 inch is 96*25 where 25=200/8 */
@@ -1252,7 +1252,7 @@ uint8_t const image_array_200_2[] = {
 //2013/04/03 Resolution: 200 x 96
 
 
-#elif(USE_EPD_Type==USE_EPD270)
+#elif (USE_EPD_Type==USE_EPD270)
 
 #define image_width_270 264 /**< The resolution of 2 inch is 264*176 */
 #define image_height_270 176 /**< the image array size of 2.7 inch is 176*33 where 33=264/8 */
@@ -2275,17 +2275,17 @@ uint8_t EPD_initialize_driver (uint8_t EPD_type_index) {
 	i = 0;
 	
 	while (EPD_IsBusy()) {
-		if((i++) >= 0x0FFF) return ERROR_BUSY;
+		if ((i++) >= 0x0FFF) return ERROR_BUSY;
 	}
 	
 	//Check COG ID
-	if((SPI_R(0x72,0x00) & 0x0f) !=0x02) return ERROR_COG_ID;
+	if ((SPI_R(0x72,0x00) & 0x0f) !=0x02) return ERROR_COG_ID;
 
 	//Disable OE
 	epd_spi_send_byte(0x02,0x40);	
 
 	//Check Breakage
-	if((SPI_R(0x0F,0x00) & 0x80) != 0x80) return ERROR_BREAKAGE;
+	if ((SPI_R(0x0F,0x00) & 0x80) != 0x80) return ERROR_BREAKAGE;
 	
 	//Power Saving Mode
  	epd_spi_send_byte(0x0B, 0x02);
@@ -2336,11 +2336,11 @@ uint8_t EPD_initialize_driver (uint8_t EPD_type_index) {
 		local_delay_ms_spool(40);
 
 		//Check DC/DC
-		if((SPI_R(0x0F,0x00) & 0x40) != 0x00) break;	
+		if ((SPI_R(0x0F,0x00) & 0x40) != 0x00) break;	
 		
 	}while((i++) != 4);
 	
-	if(i>=4) 
+	if (i>=4) 
 	{
 		//Output enable to disable
 		epd_spi_send_byte(0x02,0x40);
@@ -2543,7 +2543,7 @@ void stage_handle_Base(uint8_t EPD_type_index, const uint8_t *image_ptr,long ima
 	
 	debug_printf_P(PSTR("stage_handle_Base: 1\n"));
 								/** Stage 2: BLACK/WHITE image, Frame type */
-	if(stage_no==Stage2)
+	if (stage_no==Stage2)
 	{
 		for(i=0;i<action__Waveform_param->stage2_cycle;i++)
 		{
@@ -2712,7 +2712,7 @@ void EPD_display_from_flash_prt (uint8_t EPD_type_index, long previous_image_fla
     long new_image_flash_address,EPD_read_flash_handler On_EPD_read_flash) {
 		
 	uint8_t line_len=LINE_SIZE;
-	if(line_len==0) line_len=COG_parameters[EPD_type_index].horizontal_size;
+	if (line_len==0) line_len=COG_parameters[EPD_type_index].horizontal_size;
 		
 	_On_EPD_read_flash=On_EPD_read_flash;	
 	stage_handle_ex(EPD_type_index,new_image_flash_address,Stage1,line_len);
@@ -2795,19 +2795,19 @@ static void border_dummy_line(uint8_t EPD_type_index)
 */
 uint8_t EPD_power_off (uint8_t EPD_type_index) {
 
-	if(EPD_type_index==EPD_144 || EPD_type_index==EPD_200) 	{
+	if (EPD_type_index==EPD_144 || EPD_type_index==EPD_200) 	{
 		border_dummy_line(EPD_type_index);
 		dummy_line(EPD_type_index);
 	}
 
 	local_delay_ms_spool (25);
-	if(EPD_type_index==EPD_270)	{
+	if (EPD_type_index==EPD_270)	{
 		EPD_border_low();
 		local_delay_ms_spool (200);
 		EPD_border_high();
 	}
 	//Check DC/DC
-	if((SPI_R(0x0F,0x00) & 0x40) == 0x00) return ERROR_DC;
+	if ((SPI_R(0x0F,0x00) & 0x40) == 0x00) return ERROR_DC;
 	// Latch reset turn on
 	epd_spi_send_byte(0x03, 0x01);
 	
@@ -2867,20 +2867,20 @@ uint8_t EPD_power_off (uint8_t EPD_type_index) {
 uint8_t EPD_power_off2 (uint8_t EPD_type_index) {
 	uint8_t y;		
 
-	if(EPD_type_index==EPD_144 || EPD_type_index==EPD_200) 	{
+	if (EPD_type_index==EPD_144 || EPD_type_index==EPD_200) 	{
 		border_dummy_line(EPD_type_index);
 		dummy_line(EPD_type_index);
 	}
 
 	local_delay_ms_spool (25);
-	if(EPD_type_index==EPD_270)	{
+	if (EPD_type_index==EPD_270)	{
 		EPD_border_low();
 		local_delay_ms_spool (200);
 		EPD_border_high();
 	}
 
 	//Check DC/DC
-	if((SPI_R(0x0F,0x00) & 0x40) == 0x00) return ERROR_DC;
+	if ((SPI_R(0x0F,0x00) & 0x40) == 0x00) return ERROR_DC;
 	
 	//Turn on Latch Reset
 	epd_spi_send_byte(0x03, 0x01);
@@ -3306,12 +3306,12 @@ static void LCD1x9_Initialize(void)
 *******************************************************************************/
 static void LCD1x9_enableSegment(uint_fast8_t comIndex, uint_fast8_t bitIndex)
 {
-	if(bitIndex >= 40)
+	if (bitIndex >= 40)
 		return;
 		
 	comIndex &= 0x3;
 	
-	if(bitIndex & 0x1)
+	if (bitIndex & 0x1)
 		comIndex |= 0x4;
 		
 	bitIndex >>= 1;
@@ -3329,12 +3329,12 @@ static void LCD1x9_enableSegment(uint_fast8_t comIndex, uint_fast8_t bitIndex)
 *******************************************************************************/
 static void LCD1x9_disableSegment(uint_fast8_t comIndex, uint_fast8_t bitIndex)
 {
-	if(bitIndex >= 40)
+	if (bitIndex >= 40)
 		return;
 		
 	comIndex &= 0x3;
 	
-	if(bitIndex & 0x1)
+	if (bitIndex & 0x1)
 		comIndex |= 0x4;
 		
 	bitIndex >>= 1;
@@ -3383,7 +3383,7 @@ static void LCD1x9_Write(const char *string)
 	uint8_t com, bit;
 	
 	length = strlen(string);
-	if(length > 9)
+	if (length > 9)
 		return;
 	
 	index  = 0;
@@ -3720,15 +3720,17 @@ static void
 SetEvents(events_t v)
 {
 	sd_event_xx = 1;
+	sd_event_value = v;
 }
 
 static int
 WaitEvents(events_t e, int type)
 {
+
 	for (;;)
 	{
 		disableIRQ();
-		if (sd_event_xx != 0)
+		if (sd_event_xx != 0 /*&& (sd_event_value & e) != 0 */)
 		{
 			sd_event_xx = 0;
 			enableIRQ();
@@ -3741,26 +3743,26 @@ WaitEvents(events_t e, int type)
 
 
 //SDMMC1 Interrupt
-void __attribute__((interrupt)) SDMMC1_IRQHandler(void)
+void /*__attribute__((interrupt)) */ SDMMC1_IRQHandler(void)
 {
-   uint32_t f = SDMMC1->STA & SDMMC1->MASK;
+   const uint32_t f = SDMMC1->STA & SDMMC1->MASK;
    events_t e = 0;
-   if(f & (SDMMC_STA_CCRCFAIL | SDMMC_STA_CTIMEOUT))
+   if (f & (SDMMC_STA_CCRCFAIL | SDMMC_STA_CTIMEOUT))
    {
       //Command path error
       e |= EV_SD_ERROR;
       //Mask error interrupts, leave flags in STA for the further analisys
       SDMMC1->MASK &= ~(SDMMC_STA_CCRCFAIL | SDMMC_STA_CTIMEOUT);
    }
-   if(f & (SDMMC_STA_CMDREND | SDMMC_STA_CMDSENT))
+   if (f & (SDMMC_STA_CMDREND | SDMMC_STA_CMDSENT))
    {
       //We have finished the command execution
       e |= EV_SD_READY;
-      SDMMC1->MASK &= ~(SDMMC_STA_CMDREND | SDMMC_STA_CMDSENT);
+      SDMMC1->MASK &= ~ (SDMMC_STA_CMDREND | SDMMC_STA_CMDSENT);
       SDMMC1->ICR |= (SDMMC_STA_CMDREND | SDMMC_STA_CMDSENT);
    }
    uint32_t fdata = (f & (SDMMC_STA_DATAEND | SDMMC_STA_DBCKEND | SDMMC_STA_DCRCFAIL | SDMMC_STA_DTIMEOUT));
-   if(fdata)
+   if (fdata)
    {
       //We have finished the data send/receive
       e |= EV_SD_DATA;
@@ -3783,7 +3785,7 @@ static uint32_t SDSendCommand(uint32_t cmd, uint32_t arg, uint32_t rsp)
    SDMMC1->ARG = arg;
    //Clear interrupt flags, unmask interrupts according to cmd response
    SDMMC1->ICR = (SDMMC_ICR_CMDRENDC | SDMMC_ICR_CMDSENTC | SDMMC_ICR_CCRCFAILC | SDMMC_ICR_CTIMEOUTC);
-   if(rsp == SD_CMD_NO_RESP)
+   if (rsp == SD_CMD_NO_RESP)
    {
       //No response wait for CMDSENT interrupt
       SDMMC1->MASK |= (SDMMC_MASK_CMDSENTIE | SDMMC_MASK_CCRCFAILIE | SDMMC_MASK_CTIMEOUTIE);
@@ -3794,14 +3796,14 @@ static uint32_t SDSendCommand(uint32_t cmd, uint32_t arg, uint32_t rsp)
       SDMMC1->MASK |= (SDMMC_MASK_CMDRENDIE | SDMMC_MASK_CCRCFAILIE | SDMMC_MASK_CTIMEOUTIE);
    }
    SDMMC1->CMD = SDMMC_CMD_CPSMEN | rsp | cmd;
-   if(WaitEvents(EV_SD_READY | EV_SD_ERROR, WAIT_ANY) != EV_SD_READY)
+   if (WaitEvents(EV_SD_READY | EV_SD_ERROR, WAIT_ANY) != EV_SD_READY)
    { 
       //debug_printf_P("E1(cmd=%d arg=%x STA=%x)\n",cmd,arg,SDMMC1->STA);
       return SD_ERROR; 
    }
    //ASSERT(WaitEvents(EV_SD_READY | EV_SD_ERROR, WAIT_ANY) == EV_SD_READY);
    //Check for the correct response (long response and OCR response will result in 0x3F value in RESPCMD)
-   if(rsp == SD_CMD_SHORT_RESP && SDMMC1->RESPCMD != (cmd & SDMMC_CMD_CMDINDEX))
+   if (rsp == SD_CMD_SHORT_RESP && SDMMC1->RESPCMD != (cmd & SDMMC_CMD_CMDINDEX))
    {
       //debug_printf_P("E2(cmd=%d arg=%x STA=%x)\n",cmd,arg,SDMMC1->STA);
       return SD_ERROR;
@@ -3814,10 +3816,10 @@ static uint32_t SDSendCommand(uint32_t cmd, uint32_t arg, uint32_t rsp)
 static uint32_t SDCardInit(void)
 {
    //Card already has been initialized
-   if(SDCardState == 1)return RES_OK;
+   if (SDCardState == 1)return RES_OK;
 
    //Check for card precence
-   if(GPIOI->IDR & 0x08 /*PI3*/)
+   if (GPIOI->IDR & 0x08 /*PI3*/)
    {
       //debug_printf_P("No card!");
       return STA_NODISK | STA_NOINIT;
@@ -3833,12 +3835,12 @@ static uint32_t SDCardInit(void)
    //Give some time for the card to initialize
    local_delay_ms((50));
    //Issue GO_IDLE_STATE CMD0 command
-   if(SDSendCommand(0, 0, SD_CMD_NO_RESP))return STA_NOINIT; 
+   if (SDSendCommand(0, 0, SD_CMD_NO_RESP))return STA_NOINIT; 
    
    //Issue SEND_IF_COND CMD8 to verify the voltage operting conditions
-   if(SDSendCommand(8, 0x100/*Supply voltage +3.3V*/ | 0xAA /*Check pattern*/, SD_CMD_SHORT_RESP))return STA_NOINIT;
+   if (SDSendCommand(8, 0x100/*Supply voltage +3.3V*/ | 0xAA /*Check pattern*/, SD_CMD_SHORT_RESP))return STA_NOINIT;
    //debug_printf_P(" R=%08x",SDMMC1->RESP1);
-   if(SDMMC1->RESP1 != 0x1AA)
+   if (SDMMC1->RESP1 != 0x1AA)
    {
       //Not an V2.00 card
       return STA_NODISK | STA_NOINIT;
@@ -3849,14 +3851,14 @@ static uint32_t SDCardInit(void)
    {
       //Issue ACMD41
       //Issue CMD55 to switch card to ACMD mode
-      if(SDSendCommand(55, 0, SD_CMD_SHORT_RESP))return STA_NOINIT;
+      if (SDSendCommand(55, 0, SD_CMD_SHORT_RESP))return STA_NOINIT;
       //Check if card ready for ACMD
-      if((SDMMC1->RESP1 & SD_STAT_APP_CMD) == 0)return STA_NOINIT;
+      if ((SDMMC1->RESP1 & SD_STAT_APP_CMD) == 0)return STA_NOINIT;
       //Send ACMD41 requesting 3.2..3.3V operating voltage with SDHC/SDXC host type
       //ACMD41 does not provide valid CRC chaecksum, so ignore errors
       SDSendCommand(41, 0x40100000, SD_CMD_SHORT_RESP);
       //Check for timeout conditions
-      if(count++ > 2500)
+      if (count++ > 2500)
       {
          //debug_printf_P("ACMD41 Timeout!");
          return STA_NOINIT;
@@ -3867,31 +3869,31 @@ static uint32_t SDCardInit(void)
    //debug_printf_P(" R=%08x",SDMMC1->RESP1);
 
    //Issue ALL_SEND_CID CMD2 command
-   if(SDSendCommand(2, 0, SD_CMD_LONG_RESP))return STA_NOINIT;
+   if (SDSendCommand(2, 0, SD_CMD_LONG_RESP))return STA_NOINIT;
    //debug_printf_P(" R=%08x",SDMMC1->RESP1);
    
    //Issue SEND_RELATIVE_ADDR CMD3 command to the active card, set card address (RCA) to 1
-   if(SDSendCommand(3, 0, SD_CMD_SHORT_RESP))return STA_NOINIT;
+   if (SDSendCommand(3, 0, SD_CMD_SHORT_RESP))return STA_NOINIT;
    //debug_printf_P(" R=%08x",SDMMC1->RESP1);
    SDCardRCA = SDMMC1->RESP1 & 0xFFFF0000; //Store card RCA
 
    SDMMC1->CLKCR = SDMMC_CLKCR_HWFC_EN | SDMMC_CLKCR_PWRSAV | /*SDMMC_CLKCR_CLKEN |*/ (10 - 2) /* Set SDCard clock to 50MHz/10 = 5MHz*/;
 
    //Issue SEND_CSD CMD9
-   if(SDSendCommand(9, SDCardRCA, SD_CMD_LONG_RESP))return STA_NOINIT;
+   if (SDSendCommand(9, SDCardRCA, SD_CMD_LONG_RESP))return STA_NOINIT;
    //debug_printf_P("R=%08x %08x %08x %08x", SDMMC1->RESP1, SDMMC1->RESP2, SDMMC1->RESP3, SDMMC1->RESP4);
 
    //Now wait until card is ready for the data operations
    do
    {
       local_delay_ms((1));
-      if(SDSendCommand(13, SDCardRCA, SD_CMD_SHORT_RESP))return STA_NOINIT;
+      if (SDSendCommand(13, SDCardRCA, SD_CMD_SHORT_RESP))return STA_NOINIT;
       //debug_printf_P("R=%08x",SDMMC1->RESP1);
    }
    while((SDMMC1->RESP1 & SD_STAT_READY_FOR_DATA) == 0);
 
    //Select card - Issue CMD7 command with RCA card address
-   if(SDSendCommand(7, SDCardRCA, SD_CMD_SHORT_RESP))return STA_NOINIT;
+   if (SDSendCommand(7, SDCardRCA, SD_CMD_SHORT_RESP))return STA_NOINIT;
    //debug_printf_P("R=%08x",SDMMC1->RESP1);
 
    //Set SDCardState flag, it will be cleared on card removal
@@ -3902,16 +3904,16 @@ static uint32_t SDCardInit(void)
 
 static uint32_t SDReadBlock(uint32_t address, void* buffer, uint32_t size)
 {
-   if(SDCardState == 0)return RES_NOTRDY;
+   if (SDCardState == 0)return RES_NOTRDY;
    //Wait until card is ready for the data operations
    for(;;)
    {
       //Make ten tries to retrive card status before fail
-      for(int t = 0; SDSendCommand(13, SDCardRCA, SD_CMD_SHORT_RESP); t++)
+      for(int t = 0; SDSendCommand(13, SDCardRCA, SD_CMD_SHORT_RESP) != SD_OK; t++)
       {
-         if(t > 10)return RES_NOTRDY;
+         if (t > 10)return RES_NOTRDY;
       }
-      if((SDMMC1->RESP1 & (SD_STAT_CURRENT_STATE|SD_STAT_READY_FOR_DATA)) == (SD_STAT_CURRENT_STATE_TRAN|SD_STAT_READY_FOR_DATA))break;
+      if ((SDMMC1->RESP1 & (SD_STAT_CURRENT_STATE|SD_STAT_READY_FOR_DATA)) == (SD_STAT_CURRENT_STATE_TRAN|SD_STAT_READY_FOR_DATA))break;
       local_delay_ms((1));
    }
 
@@ -3937,7 +3939,7 @@ static uint32_t SDReadBlock(uint32_t address, void* buffer, uint32_t size)
    SDMMC1->IDMACTRL |= SDMMC_IDMA_IDMAEN;
 
    uint8_t cmd = (size == 1) ? 17 /*CMD17 single block read*/: 18 /*CMD18 multiple blocks read*/;
-   if(SDSendCommand(cmd | SDMMC_CMD_CMDTRANS, address, SD_CMD_SHORT_RESP))
+   if (SDSendCommand(cmd | SDMMC_CMD_CMDTRANS, address, SD_CMD_SHORT_RESP))
    {
       //debug_printf_P("CMD%d failed!", cmd);
       //turn off DMA
@@ -3948,17 +3950,17 @@ static uint32_t SDReadBlock(uint32_t address, void* buffer, uint32_t size)
    //Wait for data transfer finish
    WaitEvents(EV_SD_DATA, WAIT_ANY);
    SDMMC1->IDMACTRL &= ~SDMMC_IDMA_IDMAEN;
-   if(size > 1)
+   if (size > 1)
    {
       //Send CMD12 STOP command in case of multiple block transfer
-      if(SDSendCommand(12, 0, SD_CMD_SHORT_RESP))
+      if (SDSendCommand(12, 0, SD_CMD_SHORT_RESP))
       {
          return RES_ERROR;
       }
    }
    //TP();
   //Do we need to check FIFOCNT and wait until it is 0?
-   if((SDMMC1->STA & (SDMMC_STA_DATAEND | SDMMC_STA_DCRCFAIL | SDMMC_STA_DTIMEOUT)) != SDMMC_STA_DATAEND)
+   if ((SDMMC1->STA & (SDMMC_STA_DATAEND | SDMMC_STA_DCRCFAIL | SDMMC_STA_DTIMEOUT)) != SDMMC_STA_DATAEND)
 	   return RES_ERROR;
    //SCB_InvalidateDCache_by_Addr(buffer, size*512);
    return RES_OK;
@@ -3967,16 +3969,17 @@ static uint32_t SDReadBlock(uint32_t address, void* buffer, uint32_t size)
 
 static uint32_t SDWriteBlock(uint32_t address, const void* buffer, uint32_t size)
 {
-   if(SDCardState == 0)return RES_NOTRDY;
+   if (SDCardState == 0)return RES_NOTRDY;
    //Wait until card is ready for the data operations
    for(;;)
    {
       //Make 10 tries to get card status before fail
-      for(int t = 0; SDSendCommand(13, SDCardRCA, SD_CMD_SHORT_RESP); t++)
+      for(int t = 0; SDSendCommand(13, SDCardRCA, SD_CMD_SHORT_RESP) != SD_OK; t++)
       {
-         if(t > 10)return RES_NOTRDY;
+         if (t > 10)
+			 return RES_NOTRDY;
       }
-      if((SDMMC1->RESP1 & (SD_STAT_CURRENT_STATE|SD_STAT_READY_FOR_DATA)) == (SD_STAT_CURRENT_STATE_TRAN|SD_STAT_READY_FOR_DATA))break;
+      if ((SDMMC1->RESP1 & (SD_STAT_CURRENT_STATE|SD_STAT_READY_FOR_DATA)) == (SD_STAT_CURRENT_STATE_TRAN|SD_STAT_READY_FOR_DATA))break;
       local_delay_ms((1));
    }
 
@@ -4004,7 +4007,7 @@ static uint32_t SDWriteBlock(uint32_t address, const void* buffer, uint32_t size
 
    
    uint8_t cmd = (size == 1) ? 24 /*CMD24 single block write*/: 25 /*CMD25 multiple blocks write*/;
-   if(SDSendCommand(cmd | SDMMC_CMD_CMDTRANS, address, SD_CMD_SHORT_RESP))
+   if (SDSendCommand(cmd | SDMMC_CMD_CMDTRANS, address, SD_CMD_SHORT_RESP))
    {
       //debug_printf_P("CMD%d failed!", cmd);
       //turn off DMA
@@ -4016,42 +4019,20 @@ static uint32_t SDWriteBlock(uint32_t address, const void* buffer, uint32_t size
    //Wait for data transfer finish
    WaitEvents(EV_SD_DATA, WAIT_ANY);
    SDMMC1->IDMACTRL &= ~SDMMC_IDMA_IDMAEN;   
-   if(size > 1)
+   if (size > 1)
    {
       //Send CMD12 STOP command in case of multiple block transfer      
-      if(SDSendCommand(12, 0, SD_CMD_SHORT_RESP))
+      if (SDSendCommand(12, 0, SD_CMD_SHORT_RESP))
 		  return RES_ERROR;
    }
    //Do we need to check FIFOCNT and wait until it is 0?
    //debug_printf_P(" FIFO:%d WSTA:%x ", SDMMC1->FIFOCNT, SDMMC1->STA);
    
-   if((SDMMC1->STA & (SDMMC_STA_DATAEND | SDMMC_STA_DCRCFAIL | SDMMC_STA_DTIMEOUT)) == SDMMC_STA_DATAEND)
+   if ((SDMMC1->STA & (SDMMC_STA_DATAEND | SDMMC_STA_DCRCFAIL | SDMMC_STA_DTIMEOUT)) == SDMMC_STA_DATAEND)
 	   return RES_OK;
    TP();
    return RES_ERROR;
 }
-
-
-void SDInit(void)
-{
-   //Configure end enable SDMMC1 interrupt
-   NVIC_SetPriority(SDMMC1_IRQn, ARM_SYSTEM_PRIORITY);
-   NVIC_EnableIRQ(SDMMC1_IRQn);		// SDMMC1_IRQHandler
-
-#if 0
-   //Configure PI3 rise interrupt (SD card removal)
-   //Map EXTI3 to PI3 port
-   BITS(SYSCFG->EXTICR[0], SYSCFG_EXTICR1_EXTI3, SYSCFG_EXTICR1_EXTI3_PI);
-   EXTI_D1->IMR1 |= EXTI_IMR1_IM3; //Unmask EXTI3 interrupt
-   EXTI->RTSR1 |= EXTI_RTSR1_TR3; //Interrupt on rise (card removal)
-   EXTI_D1->PR1 = EXTI_PR1_PR3; //Clear interrupt flag
-   NVIC_SetPriority(EXTI3_IRQn, ARM_SYSTEM_PRIORITY);
-   NVIC_EnableIRQ(EXTI3_IRQn); 
-#endif
-   //Prepare for automount filesystem on default volume
-   //f_mount(&SDCardFFS, "", 0);
-}
-
 
 #endif /* WITHTEST_H7 */
 
@@ -4188,7 +4169,6 @@ static char mmcInitialize(void)
 #if WITHTEST_H7
 	disk_initialize (targetdrv);				/* Physical drive nmuber (0..) */
 
-	SDInit();
 	return SDCardInit() != RES_OK;
 #else
 	DSTATUS st = disk_initialize (targetdrv);				/* Physical drive nmuber (0..) */
@@ -5328,7 +5308,7 @@ static void showstate(
 }
 
 
-static unsigned modif(unsigned v, unsigned pos, unsigned dd, unsigned width)
+static unsigned modif (unsigned v, unsigned pos, unsigned dd, unsigned width)
 {
 	unsigned d = (dd % width);
 	unsigned leftpos = pos * width;
@@ -5562,45 +5542,45 @@ void hightests(void)
 				switch (kbch)
 				{
 				case KBD_CODE_8:
-					ontime = modif(ontime, 100, 1, 100);
+					ontime = modif (ontime, 100, 1, 100);
 					break;
 				case KBD_CODE_9:
-					ontime = modif(ontime, 100, 99, 100);
+					ontime = modif (ontime, 100, 99, 100);
 					break;
 
 				case KBD_CODE_4:
-					ontime = modif(ontime, 10, 1, 10);
+					ontime = modif (ontime, 10, 1, 10);
 					break;
 				case KBD_CODE_5:
-					ontime = modif(ontime, 10, 99, 10);
+					ontime = modif (ontime, 10, 99, 10);
 					break;
 
 				case KBD_CODE_0:
-					ontime = modif(ontime, 1, 1, 10);
+					ontime = modif (ontime, 1, 1, 10);
 					break;
 				case KBD_CODE_1:
-					ontime = modif(ontime, 1, 99, 10);
+					ontime = modif (ontime, 1, 99, 10);
 					break;
 				//
 				case KBD_CODE_10:
-					offtime = modif(offtime, 100, 1, 100);
+					offtime = modif (offtime, 100, 1, 100);
 					break;
 				case KBD_CODE_11:
-					offtime = modif(offtime, 100, 99, 100);
+					offtime = modif (offtime, 100, 99, 100);
 					break;
 
 				case KBD_CODE_6:
-					offtime = modif(offtime, 10, 1, 10);
+					offtime = modif (offtime, 10, 1, 10);
 					break;
 				case KBD_CODE_7:
-					offtime = modif(offtime, 10, 99, 10);
+					offtime = modif (offtime, 10, 99, 10);
 					break;
 
 				case KBD_CODE_2:
-					offtime = modif(offtime, 1, 1, 10);
+					offtime = modif (offtime, 1, 1, 10);
 					break;
 				case KBD_CODE_3:
-					offtime = modif(offtime, 1, 99, 10);
+					offtime = modif (offtime, 1, 99, 10);
 					break;
 
 
@@ -6067,11 +6047,11 @@ void hightests(void)
 			/* User selects which EPD size to run demonstration by changing the
 			 * USE_EPD_Type in image_data.h
 			 * The Image data arrays for each EPD size are defined at image_data.c */
-	#if(USE_EPD_Type==USE_EPD144)
+	#if (USE_EPD_Type==USE_EPD144)
 			EPD_display_from_pointer(EPD_144,image_array_144_2,image_array_144_1);
-	#elif(USE_EPD_Type==USE_EPD200)
+	#elif (USE_EPD_Type==USE_EPD200)
 			EPD_display_from_pointer(EPD_200,image_array_200_2,image_array_200_1);
-	#elif(USE_EPD_Type==USE_EPD270)
+	#elif (USE_EPD_Type==USE_EPD270)
 			EPD_display_from_pointer(EPD_270,image_array_270_2,image_array_270_1);
 	#endif
 
@@ -6079,11 +6059,11 @@ void hightests(void)
 			//local_delay_ms(10000);
 			local_delay_ms_spool(1000);
 
-	#if(USE_EPD_Type==USE_EPD144)
+	#if (USE_EPD_Type==USE_EPD144)
 			EPD_display_from_pointer(EPD_144,image_array_144_1,image_array_144_2);
-	#elif(USE_EPD_Type==USE_EPD200)
+	#elif (USE_EPD_Type==USE_EPD200)
 			EPD_display_from_pointer(EPD_200,image_array_200_1,image_array_200_2);
-	#elif(USE_EPD_Type==USE_EPD270)
+	#elif (USE_EPD_Type==USE_EPD270)
 			EPD_display_from_pointer(EPD_270,image_array_270_1,image_array_270_2);
 	#endif
 
