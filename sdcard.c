@@ -10,6 +10,8 @@
 #include <ctype.h>
 #include <string.h>
 
+//#define WITHTEST_H7	CPUSTYLE_STM32H7XX
+
 #if WITHUSESDCARD
 
 #include "board.h"
@@ -678,7 +680,9 @@ static uint_fast8_t DMA_sdio_waitdone(void)
 
 #elif CPUSTYLE_STM32H7XX
 	// в процессоре для обмена с SDIO используется выделенный блок DMA
-	//TP();
+	// check result
+	if ((SDMMC1->STA & (SDMMC_STA_DATAEND | SDMMC_STA_DCRCFAIL | SDMMC_STA_DTIMEOUT)) != SDMMC_STA_DATAEND)
+		return 1;
 	return 0;
 
 #elif CPUSTYLE_STM32F7XX || CPUSTYLE_STM32F4XX
@@ -753,6 +757,126 @@ static void DMA_sdio_cancel(void)
 #endif
 
 
+
+
+#if CPUSTYLE_STM32H7XX
+
+static volatile int sd_event_xx;
+static volatile int sd_event_value;
+
+enum
+{
+
+	EV_SD_ERROR = 1,
+	EV_SD_READY = 2,
+	EV_SD_DATA = 4
+
+};
+
+enum { WAIT_ANY = 0 };
+typedef uint_fast8_t events_t;
+
+
+static void
+SetEvents(events_t v)
+{
+	sd_event_xx = 1;
+	sd_event_value = v;
+}
+
+static int
+WaitEvents(events_t e, int type)
+{
+
+	for (;;)
+	{
+		disableIRQ();
+		if (sd_event_xx != 0 /*&& (sd_event_value & e) != 0 */)
+		{
+			sd_event_xx = 0;
+			enableIRQ();
+			break;
+		}
+		enableIRQ();
+	}
+	return EV_SD_READY;
+}
+
+
+//SDMMC1 Interrupt
+void /*__attribute__((interrupt)) */ SDMMC1_IRQHandler(void)
+{
+   const uint32_t f = SDMMC1->STA & SDMMC1->MASK;
+   events_t e = 0;
+   if (f & (SDMMC_STA_CCRCFAIL | SDMMC_STA_CTIMEOUT))
+   {
+      //Command path error
+      e |= EV_SD_ERROR;
+      //Mask error interrupts, leave flags in STA for the further analisys
+      SDMMC1->MASK &= ~(SDMMC_STA_CCRCFAIL | SDMMC_STA_CTIMEOUT);
+   }
+   if (f & (SDMMC_STA_CMDREND | SDMMC_STA_CMDSENT))
+   {
+      //We have finished the command execution
+      e |= EV_SD_READY;
+      SDMMC1->MASK &= ~ (SDMMC_STA_CMDREND | SDMMC_STA_CMDSENT);
+      SDMMC1->ICR |= (SDMMC_STA_CMDREND | SDMMC_STA_CMDSENT);
+   }
+   uint32_t fdata = (f & (SDMMC_STA_DATAEND | SDMMC_STA_DBCKEND | SDMMC_STA_DCRCFAIL | SDMMC_STA_DTIMEOUT));
+   if (fdata)
+   {
+      //We have finished the data send/receive
+      e |= EV_SD_DATA;
+      SDMMC1->MASK &= ~(SDMMC_STA_DATAEND | SDMMC_STA_DBCKEND | SDMMC_STA_DCRCFAIL | SDMMC_STA_DTIMEOUT);
+   }
+
+   SetEvents(e);
+}
+
+#define SD_CMD_NO_RESP (SDMMC_CMD_WAITRESP_0 * 0)
+#define SD_CMD_SHORT_RESP (SDMMC_CMD_WAITRESP_0 * 1)
+#define SD_CMD_LONG_RESP (SDMMC_CMD_WAITRESP_0 * 3)
+
+#define SD_OK        0
+#define SD_ERROR     1
+
+static uint32_t SDSendCommand(uint32_t cmd, uint32_t arg, uint32_t rsp)
+{
+   //debug_printf_P(PSTR("CMD%d ARG=%08x\n"), cmd, arg);
+   SDMMC1->ARG = arg;
+   //Clear interrupt flags, unmask interrupts according to cmd response
+   SDMMC1->ICR = (SDMMC_ICR_CMDRENDC | SDMMC_ICR_CMDSENTC | SDMMC_ICR_CCRCFAILC | SDMMC_ICR_CTIMEOUTC);
+   if (rsp == SD_CMD_NO_RESP)
+   {
+      //No response wait for CMDSENT interrupt
+      SDMMC1->MASK |= (SDMMC_MASK_CMDSENTIE | SDMMC_MASK_CCRCFAILIE | SDMMC_MASK_CTIMEOUTIE);
+   }
+   else 
+   {
+      //Short or long response wait for CMDREND interrupt
+      SDMMC1->MASK |= (SDMMC_MASK_CMDRENDIE | SDMMC_MASK_CCRCFAILIE | SDMMC_MASK_CTIMEOUTIE);
+   }
+   SDMMC1->CMD = SDMMC_CMD_CPSMEN | rsp | cmd;
+   if (WaitEvents(EV_SD_READY | EV_SD_ERROR, WAIT_ANY) != EV_SD_READY)
+   { 
+      //debug_printf_P("E1(cmd=%d arg=%x STA=%x)\n",cmd,arg,SDMMC1->STA);
+      return SD_ERROR; 
+   }
+   //ASSERT(WaitEvents(EV_SD_READY | EV_SD_ERROR, WAIT_ANY) == EV_SD_READY);
+   //Check for the correct response (long response and OCR response will result in 0x3F value in RESPCMD)
+   if (rsp == SD_CMD_SHORT_RESP && SDMMC1->RESPCMD != (cmd & SDMMC_CMD_CMDINDEX))
+   {
+      //debug_printf_P("E2(cmd=%d arg=%x STA=%x)\n",cmd,arg,SDMMC1->STA);
+      return SD_ERROR;
+   }
+   //ASSERT(!(rsp == SD_CMD_SHORT_RESP && SDMMC1->RESPCMD != cmd));
+   //debug_printf_P("OK");
+   return SD_OK;
+}
+
+#endif /* CPUSTYLE_STM32H7XX */
+
+
 // Ожидание окончания обмена data path state machine
 static uint_fast8_t sdhost_dpsm_wait(uint_fast8_t txmode)
 {
@@ -764,7 +888,12 @@ static uint_fast8_t sdhost_dpsm_wait(uint_fast8_t txmode)
 
 	return 0;
 
-#elif CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
+#elif CPUSTYLE_STM32H7XX
+
+	WaitEvents(EV_SD_DATA, WAIT_ANY);
+	return 0;
+
+#elif CPUSTYLE_STM32F7XX
 
 	unsigned w;
 	w = 0;
@@ -851,6 +980,10 @@ static void sdhost_dpsm_prepare(uintptr_t addr, uint_fast8_t txmode, uint_fast32
 
 #elif CPUSTYLE_STM32H7XX
 
+
+	//Clean DPSM interrupt flags and enable DPSM interrupts
+	SDMMC1->ICR = (SDMMC_ICR_DBCKENDC | SDMMC_ICR_DATAENDC | SDMMC_ICR_DCRCFAILC | SDMMC_ICR_DTIMEOUTC);
+	SDMMC1->MASK |= (SDMMC_MASK_DATAENDIE | SDMMC_MASK_DCRCFAILIE | SDMMC_MASK_DTIMEOUTIE);
 
 	SDMMC1->DLEN = (SDMMC1->DLEN & ~ (SDMMC_DLEN_DATALENGTH_Msk)) |
 		((len << SDMMC_DLEN_DATALENGTH_Pos) & SDMMC_DLEN_DATALENGTH_Msk) |
@@ -1933,126 +2066,6 @@ static uint_fast8_t sdhost_short_acmd_resp_R3(uint_fast8_t cmd, uint_fast32_t ar
 }
 
 
-
-//#define WITHTEST_H7	CPUSTYLE_STM32H7XX
-
-#if WITHTEST_H7
-
-static volatile int sd_event_xx;
-static volatile int sd_event_value;
-
-enum
-{
-
-	EV_SD_ERROR = 1,
-	EV_SD_READY = 2,
-	EV_SD_DATA = 4
-
-};
-
-enum { WAIT_ANY = 0 };
-typedef uint_fast8_t events_t;
-
-
-static void
-SetEvents(events_t v)
-{
-	sd_event_xx = 1;
-	sd_event_value = v;
-}
-
-static int
-WaitEvents(events_t e, int type)
-{
-
-	for (;;)
-	{
-		disableIRQ();
-		if (sd_event_xx != 0 /*&& (sd_event_value & e) != 0 */)
-		{
-			sd_event_xx = 0;
-			enableIRQ();
-			break;
-		}
-		enableIRQ();
-	}
-	return EV_SD_READY;
-}
-
-
-//SDMMC1 Interrupt
-void /*__attribute__((interrupt)) */ SDMMC1_IRQHandler(void)
-{
-   const uint32_t f = SDMMC1->STA & SDMMC1->MASK;
-   events_t e = 0;
-   if (f & (SDMMC_STA_CCRCFAIL | SDMMC_STA_CTIMEOUT))
-   {
-      //Command path error
-      e |= EV_SD_ERROR;
-      //Mask error interrupts, leave flags in STA for the further analisys
-      SDMMC1->MASK &= ~(SDMMC_STA_CCRCFAIL | SDMMC_STA_CTIMEOUT);
-   }
-   if (f & (SDMMC_STA_CMDREND | SDMMC_STA_CMDSENT))
-   {
-      //We have finished the command execution
-      e |= EV_SD_READY;
-      SDMMC1->MASK &= ~ (SDMMC_STA_CMDREND | SDMMC_STA_CMDSENT);
-      SDMMC1->ICR |= (SDMMC_STA_CMDREND | SDMMC_STA_CMDSENT);
-   }
-   uint32_t fdata = (f & (SDMMC_STA_DATAEND | SDMMC_STA_DBCKEND | SDMMC_STA_DCRCFAIL | SDMMC_STA_DTIMEOUT));
-   if (fdata)
-   {
-      //We have finished the data send/receive
-      e |= EV_SD_DATA;
-      SDMMC1->MASK &= ~(SDMMC_STA_DATAEND | SDMMC_STA_DBCKEND | SDMMC_STA_DCRCFAIL | SDMMC_STA_DTIMEOUT);
-   }
-
-   SetEvents(e);
-}
-
-#define SD_CMD_NO_RESP (SDMMC_CMD_WAITRESP_0 * 0)
-#define SD_CMD_SHORT_RESP (SDMMC_CMD_WAITRESP_0 * 1)
-#define SD_CMD_LONG_RESP (SDMMC_CMD_WAITRESP_0 * 3)
-
-#define SD_OK        0
-#define SD_ERROR     1
-
-static uint32_t SDSendCommand(uint32_t cmd, uint32_t arg, uint32_t rsp)
-{
-   //debug_printf_P(PSTR("CMD%d ARG=%08x\n"), cmd, arg);
-   SDMMC1->ARG = arg;
-   //Clear interrupt flags, unmask interrupts according to cmd response
-   SDMMC1->ICR = (SDMMC_ICR_CMDRENDC | SDMMC_ICR_CMDSENTC | SDMMC_ICR_CCRCFAILC | SDMMC_ICR_CTIMEOUTC);
-   if (rsp == SD_CMD_NO_RESP)
-   {
-      //No response wait for CMDSENT interrupt
-      SDMMC1->MASK |= (SDMMC_MASK_CMDSENTIE | SDMMC_MASK_CCRCFAILIE | SDMMC_MASK_CTIMEOUTIE);
-   }
-   else 
-   {
-      //Short or long response wait for CMDREND interrupt
-      SDMMC1->MASK |= (SDMMC_MASK_CMDRENDIE | SDMMC_MASK_CCRCFAILIE | SDMMC_MASK_CTIMEOUTIE);
-   }
-   SDMMC1->CMD = SDMMC_CMD_CPSMEN | rsp | cmd;
-   if (WaitEvents(EV_SD_READY | EV_SD_ERROR, WAIT_ANY) != EV_SD_READY)
-   { 
-      //debug_printf_P("E1(cmd=%d arg=%x STA=%x)\n",cmd,arg,SDMMC1->STA);
-      return SD_ERROR; 
-   }
-   //ASSERT(WaitEvents(EV_SD_READY | EV_SD_ERROR, WAIT_ANY) == EV_SD_READY);
-   //Check for the correct response (long response and OCR response will result in 0x3F value in RESPCMD)
-   if (rsp == SD_CMD_SHORT_RESP && SDMMC1->RESPCMD != (cmd & SDMMC_CMD_CMDINDEX))
-   {
-      //debug_printf_P("E2(cmd=%d arg=%x STA=%x)\n",cmd,arg,SDMMC1->STA);
-      return SD_ERROR;
-   }
-   //ASSERT(!(rsp == SD_CMD_SHORT_RESP && SDMMC1->RESPCMD != cmd));
-   //debug_printf_P("OK");
-   return SD_OK;
-}
-
-#endif /* WITHTEST_H7 */
-
 #if WITHTEST_H7
 
 static 
@@ -2081,10 +2094,6 @@ DRESULT SD_disk_write(
 	arm_hardware_flush((uintptr_t) buff, count * 512);
 	DMA_SDIO_setparams((uintptr_t) buff, 512, count, 1);
 
-	//Clean DPSM interrupt flags and enable DPSM interrupts
-	SDMMC1->ICR = (SDMMC_ICR_DBCKENDC | SDMMC_ICR_DATAENDC | SDMMC_ICR_DCRCFAILC | SDMMC_ICR_DTIMEOUTC);
-	SDMMC1->MASK |= (SDMMC_MASK_DATAENDIE | SDMMC_MASK_DCRCFAILIE | SDMMC_MASK_DTIMEOUTIE);
-
 	sdhost_dpsm_prepare((uintptr_t) buff, 1, 512 * count, 9);		// подготовка к обмену data path state machine - при записи после выдачи команды
 
 	const uint_fast8_t cmd = (count == 1) ? 24 /*CMD24 single block write*/: 25 /*CMD25 multiple blocks write*/;
@@ -2097,15 +2106,16 @@ DRESULT SD_disk_write(
 	}
 
 	// Wait for data transfer finish
-	WaitEvents(EV_SD_DATA, WAIT_ANY);
-	//sdhost_dpsm_wait(1);
-	//DMA_sdio_waitdone();
+	sdhost_dpsm_wait(1);
+	if (DMA_sdio_waitdone() != 0)
+	{
+		DMA_sdio_cancel();
+		return RES_ERROR;
+	}
 	sdhost_dpsm_wait_fifo_empty();
-	DMA_sdio_cancel();
+	//DMA_sdio_cancel();
 
-	if ((SDMMC1->STA & (SDMMC_STA_DATAEND | SDMMC_STA_DCRCFAIL | SDMMC_STA_DTIMEOUT)) == SDMMC_STA_DATAEND)
-		return RES_OK;
-	return RES_ERROR;
+	return RES_OK;
 }
 
 #endif /* WITHTEST_H7 */
@@ -2285,10 +2295,6 @@ SD_disk_read(
 	DMA_SDIO_setparams((uintptr_t) buff, 512, count, 0);
 
 
-	//Clean DPSM interrupt flags and enable DPSM interrupts
-	SDMMC1->ICR = (SDMMC_ICR_DBCKENDC | SDMMC_ICR_DATAENDC | SDMMC_ICR_DCRCFAILC | SDMMC_ICR_DTIMEOUTC);
-	SDMMC1->MASK |= (SDMMC_MASK_DATAENDIE | SDMMC_MASK_DCRCFAILIE | SDMMC_MASK_DTIMEOUTIE);
-
 	sdhost_dpsm_prepare((uintptr_t) buff, 0, 512 * count, 9);		// подготовка к обмену data path state machine - при записи после выдачи команды
 
 	uint8_t cmd = (count == 1) ? 17 /*CMD17 single block read*/: 18 /*CMD18 multiple blocks read*/;
@@ -2300,14 +2306,14 @@ SD_disk_read(
 		return RES_ERROR;
 	}
 	//Wait for data transfer finish
-	WaitEvents(EV_SD_DATA, WAIT_ANY);
-	//sdhost_dpsm_wait(0);
-	//DMA_sdio_waitdone();
-	sdhost_dpsm_wait_fifo_empty();
-	DMA_sdio_cancel();
-
-	if ((SDMMC1->STA & (SDMMC_STA_DATAEND | SDMMC_STA_DCRCFAIL | SDMMC_STA_DTIMEOUT)) != SDMMC_STA_DATAEND)
+	sdhost_dpsm_wait(0);
+	if (DMA_sdio_waitdone() != 0)
+	{
+		DMA_sdio_cancel();
 		return RES_ERROR;
+	}
+	sdhost_dpsm_wait_fifo_empty();
+	//DMA_sdio_cancel();
 	return RES_OK;
 }
 #endif /* WITHTEST_H7 */
