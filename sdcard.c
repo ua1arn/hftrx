@@ -563,33 +563,18 @@ static void DMA_SDIO_setparams(
 	SDHI0.CC_EXT_MODE |= (1uL << 1);	// DMASDRW
 
 #elif CPUSTYLE_STM32H7XX
+
 	// в процессоре для обмена с SDIO используется выделенный блок DMA
-
-#if 0
-	ASSERT((SDMMC1->IDMACTRL & SDMMC_IDMA_IDMAEN) == 0);
-	//SDMMC1->DCTRL |= SDMMC_DCTRL_FIFORST;
-	//SDMMC1->DCTRL &= ~ SDMMC_DCTRL_FIFORST;
-
-	//SDMMC1->CMD = SDMMC_CMD_CMDSTOP;
-	TP();
-	debug_printf_P(PSTR("SDMMC1->CMD=%08lx (cmd=%02x)\n"), SDMMC1->CMD, SDMMC1->CMD & SDMMC_CMD_CMDINDEX);
-	while ((SDMMC1->STA & SDMMC_STA_CPSMACT) != 0)
-		;
-	TP();
-	debug_printf_P(PSTR("SDMMC1->CMD=%08lx (cmd=%02x)\n"), SDMMC1->CMD, SDMMC1->CMD & SDMMC_CMD_CMDINDEX);
-	ASSERT((SDMMC1->STA & SDMMC_STA_DPSMACT) == 0);
-	ASSERT((SDMMC1->STA & SDMMC_STA_CPSMACT) == 0);
-
 
 	SDMMC1->IDMACTRL |= SDMMC_IDMA_IDMAEN;
 	SDMMC1->IDMABASE0 = addr;
 	//SDMMC1->IDMABSIZE = (SDMMC1->IDMABSIZE & ~ (SDMMC_IDMABSIZE_IDMABNDT)) |
 	//	(((length0 * count / 32) << SDMMC_IDMABSIZE_IDMABNDT_Pos) & SDMMC_IDMABSIZE_IDMABNDT_Msk) |
 	//0;
-	debug_printf_P(PSTR("SDMMC1->IDMABASE0=%08lx\n"), SDMMC1->IDMABASE0);
-	ASSERT((SDMMC1->IDMACTRL & SDMMC_IDMA_IDMAEN) != 0);
+	//debug_printf_P(PSTR("SDMMC1->IDMABASE0=%08lx\n"), SDMMC1->IDMABASE0);
+	ASSERT((SDMMC1->IDMACTRL & SDMMC_IDMA_IDMAEN_Msk) != 0);
 	ASSERT(SDMMC1->IDMABASE0 == addr);
-#endif
+
 
 #elif CPUSTYLE_STM32F7XX || CPUSTYLE_STM32F4XX
 
@@ -866,15 +851,6 @@ static void sdhost_dpsm_prepare(uintptr_t addr, uint_fast8_t txmode, uint_fast32
 
 #elif CPUSTYLE_STM32H7XX
 
-
-	SDMMC1->IDMACTRL |= SDMMC_IDMA_IDMAEN;
-	SDMMC1->IDMABASE0 = addr;
-	//SDMMC1->IDMABSIZE = (SDMMC1->IDMABSIZE & ~ (SDMMC_IDMABSIZE_IDMABNDT)) |
-	//	(((length0 * count / 32) << SDMMC_IDMABSIZE_IDMABNDT_Pos) & SDMMC_IDMABSIZE_IDMABNDT_Msk) |
-	//0;
-	//debug_printf_P(PSTR("SDMMC1->IDMABASE0=%08lx\n"), SDMMC1->IDMABASE0);
-	ASSERT((SDMMC1->IDMACTRL & SDMMC_IDMA_IDMAEN_Msk) != 0);
-	ASSERT(SDMMC1->IDMABASE0 == addr);
 
 	SDMMC1->DLEN = (SDMMC1->DLEN & ~ (SDMMC_DLEN_DATALENGTH_Msk)) |
 		((len << SDMMC_DLEN_DATALENGTH_Pos) & SDMMC_DLEN_DATALENGTH_Msk) |
@@ -1962,9 +1938,6 @@ static uint_fast8_t sdhost_short_acmd_resp_R3(uint_fast8_t cmd, uint_fast32_t ar
 
 #if WITHTEST_H7
 
-//SD card filesystem data
-//static FATFS axi_sram SDCardFFS;
-
 static volatile int sd_event_xx;
 static volatile int sd_event_value;
 
@@ -2125,6 +2098,8 @@ DRESULT SD_disk_write(
 
 	// Wait for data transfer finish
 	WaitEvents(EV_SD_DATA, WAIT_ANY);
+	//sdhost_dpsm_wait(1);
+	//DMA_sdio_waitdone();
 	sdhost_dpsm_wait_fifo_empty();
 	DMA_sdio_cancel();
 
@@ -2326,7 +2301,8 @@ SD_disk_read(
 	}
 	//Wait for data transfer finish
 	WaitEvents(EV_SD_DATA, WAIT_ANY);
-	//Do we need to check FIFOCNT and wait until it is 0?
+	//sdhost_dpsm_wait(0);
+	//DMA_sdio_waitdone();
 	sdhost_dpsm_wait_fifo_empty();
 	DMA_sdio_cancel();
 
