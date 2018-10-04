@@ -273,7 +273,7 @@
 	//#define WITHUSEAUDIORECCLASSIC	1	// стандартный формат записи, без "дыр"
 
 	#define WITHRTS96 1		/* вместо выходного аудиосигнала передача квадратур по USB */
-	//#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
+	#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
 	//#define WITHOPERA4BEACON	1	/* работа маяком в OPERA */
 
 	#if 0
