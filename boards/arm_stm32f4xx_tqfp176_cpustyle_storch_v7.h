@@ -435,9 +435,9 @@
 	#define	SPI_MISO_BIT			(1uL << 4)	// * PB4 бит, через который идет ввод с SPI.
 
 	#define SPIIO_INITIALIZE() do { \
-			arm_hardware_pioa_outputs(SPI_SCLK_BIT, SPI_SCLK_BIT); \
-			arm_hardware_piob_outputs(SPI_MOSI_BIT, SPI_MOSI_BIT); \
-			arm_hardware_piob_inputs(SPI_MISO_BIT); \
+			arm_hardware_pioa_outputs(SPI_SCLK_BIT, SPI_SCLK_BIT); /* PA5 */ \
+			arm_hardware_piob_outputs(SPI_MOSI_BIT, SPI_MOSI_BIT); /* PB5 */ \
+			arm_hardware_piob_inputs(SPI_MISO_BIT); /* PB4 */ \
 		} while (0)
 	#define HARDWARE_SPI_CONNECT() do { \
 			arm_hardware_piob_altfn20(SPI_MOSI_BIT | SPI_MISO_BIT, AF_SPI1); /* В этих процессорах и входы и выходы перекдючаются на ALT FN */ \
@@ -470,7 +470,7 @@
 	} while (0)
 
 #if WITHKEYBOARD
-	/* PF10: pull-up second encoder button */
+	/* PF0: pull-up second encoder button */
 	#define KBD_MASK (1U << 0)	// PF0
 	#define KBD_TARGET_PIN (GPIOF->IDR)
 

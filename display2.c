@@ -604,8 +604,10 @@ static void display_fnlabel9(
 	void * pv
 	)
 {
+#if WITHENCODER2
 	const uint_fast8_t state = 0;
 	display_2states_P(x, y, state, text_nul9_P, text_nul9_P);
+#endif /* WITHENCODER2 */
 }
 
 // FUNC item value
@@ -615,8 +617,10 @@ static void display_fnvalue9(
 	void * pv
 	)
 {
+#if WITHENCODER2
 	const uint_fast8_t state = 0;
 	display_2states_P(x, y, state, text_nul9_P, text_nul9_P);
+#endif /* WITHENCODER2 */
 }
 
 // Отображение режима NOCH ON/OFF
@@ -3868,12 +3872,14 @@ enum
 		{	14,	0,	display_preovf3,	REDRM_BARS, PGALL, },
 		{	18,	0,	display_genham1,	REDRM_BARS, PGALL, },	// Отображение режима General Coverage / HAM bands
 
-		//{	21, 0,	display_fnlabel9,	REDRM_MODE, PGALL, },	// FUNC item label
-		//{	21,	4,	display_fnvalue9,	REDRM_BARS, PGALL, },	// FUNC item value
-		//{	25, 15,	display_notch5,		REDRM_MODE, PGALL, },	// NOTCH on/off
-
+#if WITHENCODER2
+		{	21, 0,	display_fnlabel9,	REDRM_MODE, PGALL, },	// FUNC item label
+		{	21,	4,	display_fnvalue9,	REDRM_BARS, PGALL, },	// FUNC item value
+		{	25, 15,	display_notch5,		REDRM_MODE, PGALL, },	// NOTCH on/off
+#else /* WITHENCODER2 */
 		{	25, 0,	display_notch5,		REDRM_MODE, PGALL, },	// FUNC item label
 		{	25,	4,	display_notchfreq5,	REDRM_BARS, PGALL, },	// FUNC item value
+#endif /* WITHENCODER2 */
 
 		{	26, 20,	display_agc3,		REDRM_MODE, PGALL, },	// AGC mode
 		{	26, 25,	display_voxtune3,	REDRM_MODE, PGALL, },	// VOX

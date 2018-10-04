@@ -14215,6 +14215,39 @@ freqvalid(
 
 #endif /* WITHDIRECTFREQENER */
 
+enum
+{
+	ENC2STATE_INITIALIZE,
+	ENC2STATE_SELECTITEM,
+	ENC2STATE_EDITITEM,
+	//
+	ENC2STATE_COUNT
+};
+
+static uint_fast8_t enc2state = ENC2STATE_INITIALIZE;
+
+/* нажатие на второй валкодер */
+static void
+uif_encoder2_press(void)
+{
+}
+
+/* удержанное нажатие на второй валкодер */
+static void
+uif_encoder2_hold(void)
+{
+}
+
+/* обработка вращения второго валкодера */
+static void
+uif_encoder2_rotate(
+	int_fast8_t clicks	/* знаковое число - на сколько повернут валкодер */
+	)
+{
+
+}
+
+
 void testlfm(void);
 
 #if WITHKEYBOARD
@@ -14265,6 +14298,15 @@ process_key_menuset_common(uint_fast8_t kbch)
 		sdcardformat();
 		return 1;	/* клавиша уже обработана */
 #endif /* WITHUSEAUDIOREC */
+
+#if WITHENCODER2
+	case KBD_ENC2_PRESS:
+		uif_encoder2_press();
+		return 1;
+	case KBD_ENC2_HOLD:
+		uif_encoder2_hold();
+		return 1;
+#endif /* WITHENCODER2 */
 
 #if WITHTX
 

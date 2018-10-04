@@ -796,7 +796,7 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE,		KBD_CODE_ANTENNA,	KBD_CODE_17, 		'1', },
 
 	/* кнопка дополнительного валкодера */
-	{ KIF_NONE,		KBD_CODE_21,		KBD_CODE_22, 		' ', },
+	{ KIF_NONE,		KBD_ENC2_PRESS,		KBD_ENC2_HOLD, 		' ', },
 };
 
 uint_fast8_t getexitkey(void)
@@ -841,7 +841,7 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE,		KBD_CODE_A_EQ_B,			KBD_CODE_21, 		' ', },		// A=B
 
 	/* кнопка дополнительного валкодера */
-	{ KIF_NONE,		KBD_CODE_21,		KBD_CODE_22, 		' ', },
+	{ KIF_NONE,		KBD_ENC2_PRESS,		KBD_ENC2_HOLD, 		' ', },
 };
 
 uint_fast8_t getexitkey(void)
@@ -884,9 +884,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE,		KBD_CODE_ANTENNA,		KBD_CODE_19, 			' ', },		// ANTEMMA
 	{ KIF_NONE,		KBD_CODE_A_EQ_B,		KBD_CODE_21, 			' ', },		// A=B
 
-
 	/* кнопка дополнительного валкодера */
-	{ KIF_NONE,		KBD_CODE_21,		KBD_CODE_22, 		' ', },
+	{ KIF_NONE,		KBD_ENC2_PRESS,		KBD_ENC2_HOLD, 		' ', },
 };
 
 uint_fast8_t getexitkey(void)
@@ -940,7 +939,7 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE,		KBD_CODE_19,			KBD_CODE_20,			' ', },
 
 	/* кнопка дополнительного валкодера */
-	{ KIF_NONE,		KBD_CODE_21,		KBD_CODE_22, 		' ', },
+	{ KIF_NONE,		KBD_ENC2_PRESS,		KBD_ENC2_HOLD, 		' ', },
 };
 
 uint_fast8_t getexitkey(void)
@@ -994,7 +993,7 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE,		KBD_CODE_MODE_0,		KBD_CODE_MODEMOD_0, 	' ', },		// MODE/SUBMODE
 
 	/* кнопка дополнительного валкодера */
-	{ KIF_NONE,		KBD_CODE_21,		KBD_CODE_22, 		' ', },
+	{ KIF_NONE,		KBD_ENC2_PRESS,		KBD_ENC2_HOLD, 		' ', },
 };
 
 uint_fast8_t getexitkey(void)
@@ -1038,7 +1037,7 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE,		KBD_CODE_BKIN,			KBD_CODE_BKIN_HOLDED, 	'0', },		// BREAK-IN
 
 	/* кнопка дополнительного валкодера */
-	{ KIF_NONE,		KBD_CODE_21,		KBD_CODE_22, 		' ', },
+	{ KIF_NONE,		KBD_ENC2_PRESS,		KBD_ENC2_HOLD, 		' ', },
 };
 
 uint_fast8_t getexitkey(void)
@@ -1083,7 +1082,7 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE,		KBD_CODE_A_EQ_B,		KBD_CODE_21, 			' ', },		// A=B
 
 	/* кнопка дополнительного валкодера */
-	{ KIF_NONE,		KBD_CODE_21,		KBD_CODE_22, 		' ', },
+	{ KIF_NONE,		KBD_ENC2_PRESS,		KBD_ENC2_HOLD, 		' ', },
 };
 
 uint_fast8_t getexitkey(void)
@@ -1113,7 +1112,7 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_FAST,		ENC_CODE_STEP_DOWN,	ENC_CODE_STEP_DOWN, 	'#', },
 
 	/* кнопка дополнительного валкодера */
-	{ KIF_NONE,		KBD_CODE_21,		KBD_CODE_22, 		' ', },
+	{ KIF_NONE,		KBD_ENC2_PRESS,		KBD_ENC2_HOLD, 		' ', },
 };
 
 uint_fast8_t getexitkey(void)
@@ -1143,7 +1142,7 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE,		KBD_CODE_11,	KBD_CODE_11, 	'#', },
 
 	/* кнопка дополнительного валкодера */
-	{ KIF_NONE,		KBD_CODE_21,		KBD_CODE_22, 		' ', },
+	{ KIF_NONE,		KBD_ENC2_PRESS,		KBD_ENC2_HOLD, 		' ', },
 };
 
 uint_fast8_t getexitkey(void)
@@ -1172,7 +1171,7 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE,		KBD_CODE_MODE,		KBD_CODE_MODEMOD, 		'9', },
 
 	/* кнопка дополнительного валкодера */
-	{ KIF_NONE,		KBD_CODE_21,		KBD_CODE_22, 		' ', },
+	{ KIF_NONE,		KBD_ENC2_PRESS,		KBD_ENC2_HOLD, 		' ', },
 };
 
 uint_fast8_t getexitkey(void)
@@ -1202,7 +1201,7 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_FAST,		ENC_CODE_STEP_DOWN,	ENC_CODE_STEP_DOWN, 	'#', },
 
 	/* кнопка дополнительного валкодера */
-	{ KIF_NONE,		KBD_CODE_21,		KBD_CODE_22, 		' ', },
+	{ KIF_NONE,		KBD_ENC2_PRESS,		KBD_ENC2_HOLD, 		' ', },
 };
 
 uint_fast8_t getexitkey(void)

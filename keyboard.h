@@ -123,6 +123,8 @@ enum
 	KBD_CODE_BAND_21M0, KBD_CODE_BAND_24M9, KBD_CODE_BAND_28M0, KBD_CODE_BAND_50M0,
 #endif /* WITHDIRECTBANDS */
 	//
+	KBD_ENC2_PRESS, KBD_ENC2_HOLD,
+	//
 	KBD_CODE_MAX		// на этот код назначаются неиспользуемые клавиши.
 };
 
