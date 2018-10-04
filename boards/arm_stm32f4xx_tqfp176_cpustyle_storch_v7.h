@@ -406,7 +406,7 @@
 		SPI_CSEL_PG3	| 	/* PG3 board control registers chain */ \
 		SPI_CSEL_PG2	| 	/* PG2 on-board codec1 NAU8822L */ \
 		SPI_CSEL_PG1	| 	/* PG1 FPGA control registers CS1 */ \
-		SPI_CSEL_PG0	| 	/* PG0 FPGA control registers CS2 */ \
+		SPI_CSEL_PG0	| 	/* PG0 FPGA control registers CS2 targetfir1 */ \
 		0)
 
 	#define SPI_ALLCS_BITSNEG 0		// Выходы, активные при "1"
@@ -547,9 +547,9 @@
 
 #if WITHDSPEXTFIR
 	// Биты доступа к массиву коэффициентов FIR фильтра в FPGA
-	#define TARGET_FPGA_FIR_CLK_PORT_C(v)	do { GPIOE->BSRR = BSRR_C(v); __DSB(); } while (0)
-	#define TARGET_FPGA_FIR_CLK_PORT_S(v)	do { GPIOE->BSRR = BSRR_S(v); __DSB(); } while (0)
-	#define TARGET_FPGA_FIR_CLK_BIT (1uL << 7)	/* PE7 - fir CLK */
+	#define TARGET_FPGA_FIR_CS_PORT_C(v)	do { GPIOE->BSRR = BSRR_C(v); __DSB(); } while (0)
+	#define TARGET_FPGA_FIR_CS_PORT_S(v)	do { GPIOE->BSRR = BSRR_S(v); __DSB(); } while (0)
+	#define TARGET_FPGA_FIR_CS_BIT (1uL << 7)	/* PE7 - fir CS */
 
 	#define TARGET_FPGA_FIR1_WE_PORT_C(v)	do { GPIOH->BSRR = BSRR_C(v); __DSB(); } while (0)
 	#define TARGET_FPGA_FIR1_WE_PORT_S(v)	do { GPIOH->BSRR = BSRR_S(v); __DSB(); } while (0)
@@ -562,7 +562,7 @@
 	#define TARGET_FPGA_FIR_INITIALIZE() do { \
 			arm_hardware_pioh_outputs(TARGET_FPGA_FIR1_WE_BIT, TARGET_FPGA_FIR1_WE_BIT); \
 			arm_hardware_pioh_outputs(TARGET_FPGA_FIR2_WE_BIT, TARGET_FPGA_FIR2_WE_BIT); \
-			arm_hardware_pioe_outputs(TARGET_FPGA_FIR_CLK_BIT, TARGET_FPGA_FIR_CLK_BIT); \
+			arm_hardware_pioe_outputs(TARGET_FPGA_FIR_CS_BIT, TARGET_FPGA_FIR_CS_BIT); \
 		} while (0)
 #endif /* WITHDSPEXTFIR */
 

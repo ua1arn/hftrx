@@ -507,9 +507,9 @@
 
 #if WITHDSPEXTFIR
 	// Биты доступа к массиву коэффициентов FIR фильтра в FPGA
-	#define TARGET_FPGA_FIR_CLK_PORT_C(v)	do { GPIOG->BSRR = BSRR_C(v); __DSB(); } while (0)
-	#define TARGET_FPGA_FIR_CLK_PORT_S(v)	do { GPIOG->BSRR = BSRR_S(v); __DSB(); } while (0)
-	#define TARGET_FPGA_FIR_CLK_BIT (1U << 7)	/* PG7 - fir CLK */
+	#define TARGET_FPGA_FIR_CS_PORT_C(v)	do { GPIOG->BSRR = BSRR_C(v); __DSB(); } while (0)
+	#define TARGET_FPGA_FIR_CS_PORT_S(v)	do { GPIOG->BSRR = BSRR_S(v); __DSB(); } while (0)
+	#define TARGET_FPGA_FIR_CS_BIT (1U << 7)	/* PG7 - fir CLK */
 
 	#define TARGET_FPGA_FIR1_WE_PORT_C(v)	do { GPIOG->BSRR = BSRR_C(v); __DSB(); } while (0)
 	#define TARGET_FPGA_FIR1_WE_PORT_S(v)	do { GPIOG->BSRR = BSRR_S(v); __DSB(); } while (0)
@@ -522,7 +522,7 @@
 	#define TARGET_FPGA_FIR_INITIALIZE() do { \
 				arm_hardware_piog_outputs(TARGET_FPGA_FIR1_WE_BIT, TARGET_FPGA_FIR1_WE_BIT); \
 				arm_hardware_piog_outputs(TARGET_FPGA_FIR2_WE_BIT, TARGET_FPGA_FIR2_WE_BIT); \
-				arm_hardware_piog_outputs(TARGET_FPGA_FIR_CLK_BIT, TARGET_FPGA_FIR_CLK_BIT); \
+				arm_hardware_piog_outputs(TARGET_FPGA_FIR_CS_BIT, TARGET_FPGA_FIR_CS_BIT); \
 			} while (0)
 #endif /* WITHDSPEXTFIR */
 

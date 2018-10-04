@@ -102,7 +102,7 @@ applicable agreement for further details.
 		(line (pt 117 12)(pt 121 8))
 	)
 	(text "VCC" (rect 136 7 156 17)(font "Arial" (font_size 6)))
-	(annotation_block (location)(rect 1000 304 1048 320))
+	(annotation_block (location)(rect 968 320 1016 336))
 )
 (pin
 	(input)
@@ -187,7 +187,7 @@ applicable agreement for further details.
 		(line (pt 117 12)(pt 121 8))
 	)
 	(text "VCC" (rect 136 7 156 17)(font "Arial" (font_size 6)))
-	(annotation_block (location)(rect 936 256 984 272))
+	(annotation_block (location)(rect 936 280 984 296))
 )
 (pin
 	(input)
@@ -1019,8 +1019,8 @@ applicable agreement for further details.
 	(port
 		(pt 0 176)
 		(input)
-		(text "fir_coef_clk" (rect 0 0 67 14)(font "Arial" (font_size 8)))
-		(text "fir_coef_clk" (rect 21 171 88 185)(font "Arial" (font_size 8)))
+		(text "spi_cs_fir_n" (rect 0 0 70 14)(font "Arial" (font_size 8)))
+		(text "spi_cs_fir_n" (rect 21 171 91 185)(font "Arial" (font_size 8)))
 		(line (pt 0 176)(pt 16 176))
 	)
 	(port

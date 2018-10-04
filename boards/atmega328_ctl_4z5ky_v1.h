@@ -22,8 +22,8 @@
 	// Выбор диапазонных фильтров
 	#define BANDSELSTYLERE_LOCONV32M_NLB	1	/* Down-conversion with working band 1.6..32 MHz */
 	//#define DIRECT_125M0_X1		1
-	#define DIRECT_80M0_X1		1
-	//#define DIRECT_50M0_X1		1
+	//#define DIRECT_80M0_X1		1
+	#define DIRECT_50M0_X1		1
 	//#define DIRECT_75M0_X1		1
 	//#define DIRECT_66M0_X1		1
 	//#define DIRECT_48M0_X1		1

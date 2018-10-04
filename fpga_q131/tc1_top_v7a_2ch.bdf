@@ -157,23 +157,6 @@ applicable agreement for further details.
 )
 (pin
 	(input)
-	(rect 1096 288 1272 304)
-	(text "INPUT" (rect 133 0 161 10)(font "Arial" (font_size 6)))
-	(text "fpga_fir_clk_n" (rect 5 0 75 12)(font "Arial" ))
-	(pt 176 8)
-	(drawing
-		(line (pt 92 12)(pt 117 12))
-		(line (pt 92 4)(pt 117 4))
-		(line (pt 121 8)(pt 176 8))
-		(line (pt 92 12)(pt 92 4))
-		(line (pt 117 4)(pt 121 8))
-		(line (pt 117 12)(pt 121 8))
-	)
-	(text "GND" (rect 136 7 157 17)(font "Arial" (font_size 6)))
-	(annotation_block (location)(rect 992 288 1040 304))
-)
-(pin
-	(input)
 	(rect 1104 192 1272 208)
 	(text "INPUT" (rect 125 0 153 10)(font "Arial" (font_size 6)))
 	(text "adc_ovfl" (rect 5 0 48 12)(font "Arial" ))
@@ -239,6 +222,23 @@ applicable agreement for further details.
 	)
 	(text "VCC" (rect 128 7 148 17)(font "Arial" (font_size 6)))
 	(annotation_block (location)(rect 1176 864 1232 880))
+)
+(pin
+	(input)
+	(rect 1104 288 1272 304)
+	(text "INPUT" (rect 125 0 153 10)(font "Arial" (font_size 6)))
+	(text "fpga_fir_cs" (rect 5 0 62 12)(font "Arial" ))
+	(pt 168 8)
+	(drawing
+		(line (pt 84 12)(pt 109 12))
+		(line (pt 84 4)(pt 109 4))
+		(line (pt 113 8)(pt 168 8))
+		(line (pt 84 12)(pt 84 4))
+		(line (pt 109 4)(pt 113 8))
+		(line (pt 109 12)(pt 113 8))
+	)
+	(text "GND" (rect 128 7 149 17)(font "Arial" (font_size 6)))
+	(annotation_block (location)(rect 992 288 1040 304))
 )
 (pin
 	(output)
@@ -1125,8 +1125,8 @@ applicable agreement for further details.
 	(port
 		(pt 0 176)
 		(input)
-		(text "fir_coef_clk" (rect 0 0 67 14)(font "Arial" (font_size 8)))
-		(text "fir_coef_clk" (rect 21 171 88 185)(font "Arial" (font_size 8)))
+		(text "spi_cs_fir_n" (rect 0 0 70 14)(font "Arial" (font_size 8)))
+		(text "spi_cs_fir_n" (rect 21 171 91 185)(font "Arial" (font_size 8)))
 		(line (pt 0 176)(pt 16 176))
 	)
 	(port

@@ -88,7 +88,6 @@ set_location_assignment PIN_32 -to sai1_sck_a
 set_location_assignment PIN_31 -to sai1_fs_a
 set_location_assignment PIN_30 -to sai1_sd_b
 set_location_assignment PIN_13 -to cpu_mosi
-set_location_assignment PIN_25 -to fpga_nco_cs -disable
 set_location_assignment PIN_24 -to fpga_ctl_cs
 set_location_assignment PIN_6 -to cpu_miso
 set_location_assignment PIN_12 -to cpu_sclk
@@ -97,7 +96,6 @@ set_location_assignment PIN_133 -to adc_dith
 set_location_assignment PIN_137 -to tx_inh_h
 set_location_assignment PIN_8 -to fpga_fir1_we_n
 set_location_assignment PIN_7 -to fpga_fir2_we_n
-set_location_assignment PIN_23 -to fpga_fir_clk_n
 set_location_assignment PIN_39 -to led0
 set_location_assignment PIN_42 -to led1
 set_location_assignment PIN_129 -to pps_in
@@ -105,7 +103,6 @@ set_location_assignment PIN_143 -to i2s2_mck
 set_location_assignment PIN_144 -to i2s2_ws
 set_location_assignment PIN_43 -to led2
 set_location_assignment PIN_44 -to led3
-set_location_assignment PIN_141 -to fpga_cs2 -disable
 
 # Classic Timing Assignments
 # ==========================
@@ -176,10 +173,8 @@ set_global_assignment -name OUTPUT_IO_TIMING_FAR_END_VMEAS "HALF SIGNAL SWING" -
 
 # end ENTITY(tc1_top_v5_2ch)
 # --------------------------
-set_location_assignment PIN_76 -to dac_clk_alt -disable
 set_location_assignment PIN_142 -to i2s2_ck
 set_location_assignment PIN_28 -to fpga_ovf
-set_location_assignment PIN_136 -to fpga_cs3 -disable
 set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to dac_sleep -disable
 set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to cpu_miso -disable
 set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to cpu_mosi -disable
@@ -219,43 +214,9 @@ set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to dac_clk_alt -disabl
 set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to led2 -disable
 set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to led3 -disable
 set_instance_assignment -name CURRENT_STRENGTH_NEW "MINIMUM CURRENT" -to dac_d* -disable
-set_global_assignment -name QIP_FILE lpm_counter_mod6.qip
-set_global_assignment -name QIP_FILE lpm_counter_i2sclocls.qip
-set_global_assignment -name QIP_FILE lpm_shiftreg_32.qip
-set_global_assignment -name QIP_FILE lpm_counter1.qip
-set_global_assignment -name BDF_FILE ctlbridge.bdf
-set_global_assignment -name BDF_FILE LTC2208_input_fifo.bdf
-set_global_assignment -name BDF_FILE LTC2208_input.bdf
-set_global_assignment -name BDF_FILE DAC_interface.bdf
-set_global_assignment -name BDF_FILE i2s_sync.bdf
-set_global_assignment -name BDF_FILE i2smclk.bdf
-set_global_assignment -name BDF_FILE spislave_sync.bdf
-set_global_assignment -name BDF_FILE monoflop_ovf.bdf
-set_global_assignment -name BDF_FILE ddc_mux.bdf
-set_global_assignment -name BDF_FILE duc_mux.bdf
-set_global_assignment -name BDF_FILE i2s_rx_slave.bdf
-set_global_assignment -name QIP_FILE lpm_shiftreg_2b.qip
-set_global_assignment -name QIP_FILE mult16.qip
-set_global_assignment -name QIP_FILE ducadd.qip
-set_global_assignment -name QIP_FILE ducmult1.qip
-set_global_assignment -name QIP_FILE nco18_v13.qip
-set_global_assignment -name QIP_FILE cicdec0.qip
-set_global_assignment -name QIP_FILE lpm_counter_ovf0.qip
-set_global_assignment -name QIP_FILE cic_duc2560_mux.qip
-set_global_assignment -name QIP_FILE lpm_decode_4ch.qip
-set_global_assignment -name QIP_FILE lpm_decode_2ch.qip
-set_global_assignment -name QIP_FILE dacout14.qip
-set_global_assignment -name QIP_FILE lpm_decode_4ch_en.qip
-set_global_assignment -name BDF_FILE fqmemter.bdf
-set_global_assignment -name QIP_FILE fifo64.qip
 set_global_assignment -name RESERVE_ALL_UNUSED_PINS_WEAK_PULLUP "AS OUTPUT DRIVING GROUND"
 set_global_assignment -name PHYSICAL_SYNTHESIS_COMBO_LOGIC_FOR_AREA ON
-set_global_assignment -name QIP_FILE cic_64_2iq.qip
-set_global_assignment -name QIP_FILE cic40_ddc_2rx.qip
 set_global_assignment -name ENABLE_INIT_DONE_OUTPUT ON
-set_global_assignment -name BDF_FILE t1_2ch_rts96.bdf
-set_global_assignment -name SDC_FILE tc1_top_v7a_2ch.sdc
-set_global_assignment -name BDF_FILE tc1_top_v7a_2ch.bdf
 set_location_assignment PIN_85 -to refclk_out
 set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
 set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id Top
@@ -278,5 +239,43 @@ set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to dac_d*
 set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to adc_ovfl
 set_instance_assignment -name WEAK_PULL_UP_RESISTOR OFF -to tx_inh_h
 set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to adc_d*
+set_location_assignment PIN_23 -to fpga_fir_cs
+set_location_assignment PIN_25 -to fpga_ctl2_cs -disable
+set_global_assignment -name SDC_FILE tc1_top_v7a_2ch.sdc
+set_global_assignment -name QIP_FILE lpm_counter_mod6.qip
+set_global_assignment -name QIP_FILE lpm_counter_i2sclocls.qip
+set_global_assignment -name QIP_FILE lpm_shiftreg_32.qip
+set_global_assignment -name QIP_FILE lpm_counter1.qip
+set_global_assignment -name QIP_FILE lpm_shiftreg_2b.qip
+set_global_assignment -name QIP_FILE mult16.qip
+set_global_assignment -name QIP_FILE ducadd.qip
+set_global_assignment -name QIP_FILE ducmult1.qip
+set_global_assignment -name QIP_FILE nco18_v13.qip
+set_global_assignment -name QIP_FILE cicdec0.qip
+set_global_assignment -name QIP_FILE lpm_counter_ovf0.qip
+set_global_assignment -name QIP_FILE cic_duc2560_mux.qip
+set_global_assignment -name QIP_FILE lpm_decode_4ch.qip
+set_global_assignment -name QIP_FILE lpm_decode_2ch.qip
+set_global_assignment -name QIP_FILE dacout14.qip
+set_global_assignment -name QIP_FILE lpm_decode_4ch_en.qip
+set_global_assignment -name QIP_FILE fifo64.qip
+set_global_assignment -name QIP_FILE cic_64_2iq.qip
+set_global_assignment -name QIP_FILE cic40_ddc_2rx.qip
 set_global_assignment -name QIP_FILE fir_20_2ch.qip
+set_global_assignment -name QIP_FILE clkctrl1.qip
+set_global_assignment -name QIP_FILE lpm_counter_mod24.qip
+set_global_assignment -name BDF_FILE ctlbridge.bdf
+set_global_assignment -name BDF_FILE LTC2208_input_fifo.bdf
+set_global_assignment -name BDF_FILE LTC2208_input.bdf
+set_global_assignment -name BDF_FILE DAC_interface.bdf
+set_global_assignment -name BDF_FILE i2s_sync.bdf
+set_global_assignment -name BDF_FILE i2smclk.bdf
+set_global_assignment -name BDF_FILE spislave_sync.bdf
+set_global_assignment -name BDF_FILE monoflop_ovf.bdf
+set_global_assignment -name BDF_FILE ddc_mux.bdf
+set_global_assignment -name BDF_FILE duc_mux.bdf
+set_global_assignment -name BDF_FILE i2s_rx_slave.bdf
+set_global_assignment -name BDF_FILE fqmemter.bdf
+set_global_assignment -name BDF_FILE t1_2ch_rts96.bdf
+set_global_assignment -name BDF_FILE tc1_top_v7a_2ch.bdf
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top

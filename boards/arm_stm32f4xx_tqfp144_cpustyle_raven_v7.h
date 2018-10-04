@@ -576,9 +576,9 @@
 
 #if WITHDSPEXTFIR
 	// Ѕиты доступа к массиву коэффициентов FIR фильтра в FPGA
-	#define TARGET_FPGA_FIR_CLK_PORT_C(v)	do { GPIOE->BSRR = BSRR_C(v); __DSB(); } while (0)
-	#define TARGET_FPGA_FIR_CLK_PORT_S(v)	do { GPIOE->BSRR = BSRR_S(v); __DSB(); } while (0)
-	#define TARGET_FPGA_FIR_CLK_BIT (1U << 7)	/* PE7 - fir CLK */
+	#define TARGET_FPGA_FIR_CS_PORT_C(v)	do { GPIOE->BSRR = BSRR_C(v); __DSB(); } while (0)
+	#define TARGET_FPGA_FIR_CS_PORT_S(v)	do { GPIOE->BSRR = BSRR_S(v); __DSB(); } while (0)
+	#define TARGET_FPGA_FIR_CS_BIT (1U << 7)	/* PE7 - fir CLK */
 
 	#define TARGET_FPGA_FIR1_WE_PORT_C(v)	do { GPIOE->BSRR = BSRR_C(v); __DSB(); } while (0)
 	#define TARGET_FPGA_FIR1_WE_PORT_S(v)	do { GPIOE->BSRR = BSRR_S(v); __DSB(); } while (0)
@@ -591,7 +591,7 @@
 	#define TARGET_FPGA_FIR_INITIALIZE() do { \
 			arm_hardware_pioe_outputs(TARGET_FPGA_FIR1_WE_BIT, TARGET_FPGA_FIR1_WE_BIT); \
 			arm_hardware_pioe_outputs(TARGET_FPGA_FIR2_WE_BIT, TARGET_FPGA_FIR2_WE_BIT); \
-			arm_hardware_pioe_outputs(TARGET_FPGA_FIR_CLK_BIT, TARGET_FPGA_FIR_CLK_BIT); \
+			arm_hardware_pioe_outputs(TARGET_FPGA_FIR_CS_BIT, TARGET_FPGA_FIR_CS_BIT); \
 		} while (0)
 #endif /* WITHDSPEXTFIR */
 
@@ -648,9 +648,30 @@
 	#define	USBD_HS_ULPI_INITIALIZE() do { \
 		} while (0)
 #endif /* WITHUSBHW */
+	
+#if LCDMODE_S1D13781
+
+	#define LCD_BL_BIT (1U << 6)	// PF6
+
+	#define	HARDWARE_BL_INITIALIZE() do { \
+			arm_hardware_piof_outputs2m(LCD_BL_BIT, 0); \
+		} while (0)
+	/* установка €ркости и включение/выключение преобразовател€ подсветки */
+	#define HARDWARE_BL_SET(en, level) do { \
+		GPIOF->BSRR = (en) ? BSRR_S(LCD_BL_BIT) : BSRR_C(LCD_BL_BIT); /* backlight control on/off */ \
+		__DSB(); \
+	} while (0)
+
+#else /* LCDMODE_S1D13781 */
+
+	#define	HARDWARE_BL_INITIALIZE() do { \
+		} while (0)
+
+#endif /* LCDMODE_S1D13781 */
 
 	/* макроопределение, которое должно включить в себ€ все инициализации */
 	#define	HARDWARE_INITIALIZE() do { \
+		HARDWARE_BL_INITIALIZE(); \
 		HARDWARE_SIDETONE_INITIALIZE(); \
 		HARDWARE_KBD_INITIALIZE(); \
 		HARDWARE_DAC_INITIALIZE(); \

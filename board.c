@@ -4266,20 +4266,6 @@ board_update_ctrlreg(void)
 
 #endif
 
-static void board_update_ctrlreg_hack(void)
-{
-#if CTLREGMODE_RAVENDSP_V3 || CTLREGMODE_RAVENDSP_V4 || CTLREGMODE_RAVENDSP_V5
-	//prog_ctldacreg();	/* регистр выбора ГУН, сброс DDS и ЦАП подстройки опорника */ 
-	board_update_rxctrlreg();
-#elif (ATMEGA_CTLSTYLE_V7_H_INCLUDED || ARM_CTLSTYLE_V7_H_INCLUDED || ARM_CTLSTYLE_V7A_H_INCLUDED)
-	//prog_ctldacreg();	/* регистр выбора ГУН, сброс DDS и ЦАП подстройки опорника */ 
-	board_update_rxctrlreg();
-#else
-	board_update_ctrlreg();
-#endif
-}
-
-
 // Обнуление теневых переменных, синхронизация регистров с теневыми переменными.
 // Обнулние выполняется start-up, Выдаём в регистры текущее состояние
 static void board_update_initial(void)
@@ -6019,9 +6005,9 @@ static void board_fpga_loader_PS(void)
 		#include "rbf/rbfimage_v7_1ch.h"	//
 	#elif CTLSTYLE_STORCH_V6 && (DDS1_CLK_MUL == 1)		// mini
 		#include "rbf/rbfimage_v7a_2ch.h"	// same as CTLSTYLE_RAVENDSP_V7
-	#elif CTLSTYLE_STORCH_V7 && ! WITHUSEDUALWATCH && (DDS1_CLK_MUL == 1)		// mini
+	#elif CTLSTYLE_STORCH_V7 && ! WITHUSEDUALWATCH && (DDS1_CLK_MUL == 1)		// TFT plug on board
 		#include "rbf/rbfimage_v7_1ch.h"	//
-	#elif CTLSTYLE_STORCH_V7 && (DDS1_CLK_MUL == 1)		// mini
+	#elif CTLSTYLE_STORCH_V7 && (DDS1_CLK_MUL == 1)		// TFT plug on board
 		#include "rbf/rbfimage_v7a_2ch.h"	// same as CTLSTYLE_RAVENDSP_V7
 	#elif CTLSTYLE_OLEG4Z_V1 && (DDS1_CLK_MUL == 1)
 		#include "rbf/rbfimage_oleg4z.h"	// same as CTLSTYLE_RAVENDSP_V7, 1 RX & WFM
@@ -6169,22 +6155,67 @@ void board_fpga_fir_initialize(void)
 	debug_printf_P(PSTR("board_fpga_fir_initialize done\n"));
 }
 
-static void board_fpga_fir_strobe(void)
+// Передача одного 32-битного значения и формирование строба.
+static void board_fpga_fir_coef_p1(int_fast32_t v)
 {
-	// strobe (negative pulse)
-	TARGET_FPGA_FIR_CLK_PORT_C(TARGET_FPGA_FIR_CLK_BIT);
-	TARGET_FPGA_FIR_CLK_PORT_S(TARGET_FPGA_FIR_CLK_BIT);
+	hardware_spi_b8_p1(v >> 16);
+	hardware_spi_b8_p2(v >> 8);
+	hardware_spi_b8_p2(v >> 0);	// на последнем бите формируеся coef_in_clk
 }
 
-// Передача одного 32-битного значения и формирование строба.
-static void board_fpga_fir_coef(int_fast32_t v)
+static void board_fpga_fir_coef_p2(int_fast32_t v)
 {
-	hardware_spi_b16_p1(v >> 16);
-	hardware_spi_b16_p2(v >> 0);
-	hardware_spi_complete_b16();
-	// strobe
-	board_fpga_fir_strobe();	// wrtte value to FIR coefficiets array
+	hardware_spi_b8_p2(v >> 16);
+	hardware_spi_b8_p2(v >> 8);
+	hardware_spi_b8_p2(v >> 0);	// на последнем бите формируеся coef_in_clk
 }
+
+static void
+board_fpga_fir_complete(void)
+{
+	hardware_spi_complete_b8();
+}
+
+static void
+board_fpga_fir_connect(void)
+{
+#if defined (TARGET_FPGA_FIR_CS_BIT)
+
+	hardware_spi_connect(SPIC_SPEEDUFAST, SPIC_MODE3);
+
+	//hardware_spi_b8_p1(0);	// provide clock for reset bit counter while CS=1
+	//board_fpga_fir_complete();
+
+	TARGET_FPGA_FIR_CS_PORT_C(TARGET_FPGA_FIR_CS_BIT);	/* start sending data to target chip */
+
+#else /* defined (TARGET_FPGA_FIR_CS_BIT) */
+
+	hardware_spi_connect(SPIC_SPEEDUFAST, SPIC_MODE3);
+
+	//hardware_spi_b8_p1(0);	// provide clock for reset bit counter while CS=1
+	//board_fpga_fir_complete();
+
+	prog_select(targetfir1);	/* start sending data to target chip */
+
+#endif /* defined (TARGET_FPGA_FIR_CS_BIT) */
+}
+
+static void
+board_fpga_fir_disconnect(void)
+{
+#if defined (TARGET_FPGA_FIR_CS_BIT)
+
+	TARGET_FPGA_FIR_CS_PORT_S(TARGET_FPGA_FIR_CS_BIT); /* Disable SPI */
+	hardware_spi_disconnect();
+
+#else /* defined (TARGET_FPGA_FIR_CS_BIT) */
+
+	prog_unselect(targetfir1);			/* Disable SPI */
+	hardware_spi_disconnect();
+
+#endif /* defined (TARGET_FPGA_FIR_CS_BIT) */
+}
+
 /*
 static void sendbatch(uint_fast8_t ifir)
 {
@@ -6196,7 +6227,7 @@ static void sendbatch(uint_fast8_t ifir)
 
 	unsigned i;
 	for (i = 0; i < sizeof va / sizeof va [0]; ++ i)
-		board_fpga_fir_coef(va [i]);
+		board_fpga_fir_coef_p2(va [i]);
 }
 */	
 // переупорядачивание коэффициентов при выдаче в FIR
@@ -6342,7 +6373,7 @@ static void single_rate_out_write_mcv(const int_fast32_t * coef, unsigned coef_l
 			for (i = 0; i < (num_mac + mcv_reload_zero_insert) * num_cycles; ++ i)
 			{
 				//coef[i] = tmp_coef[i] ;
-				board_fpga_fir_coef(tmp_coef [i]);
+				board_fpga_fir_coef_p2(tmp_coef [i]);
 			}
 		}
 		else
@@ -6351,13 +6382,12 @@ static void single_rate_out_write_mcv(const int_fast32_t * coef, unsigned coef_l
 			for (i = 0; i< (num_mac + mcv_reload_zero_insert) * num_cycles; ++i)
 			{
 				//coef[i] = wrk_coef[i] ;
-				board_fpga_fir_coef(wrk_coef [i]);
+				board_fpga_fir_coef_p2(wrk_coef [i]);
 			}
 		}
 	}
 
 }
-
 
 /* Выдача расчитанных параметров фильтра в FPGA (симметричные) */
 static void 
@@ -6368,11 +6398,14 @@ board_fpga_fir_send(
 {
 #if (WITHSPIHW && WITHSPI16BIT)	// for skip in test configurations
 
+	ASSERT(CWidth <= 24);
 	//debug_printf_P(PSTR("board_fpga_fir_send: ifir=%u, Ntap=%u\n"), ifir, Ntap);
-	hardware_spi_connect_b16(SPIC_SPEEDUFAST, SPIC_MODE3);
+	board_fpga_fir_connect();
 
 	// strobe
-	board_fpga_fir_strobe();	// one strobe before, without WE required
+	board_fpga_fir_coef_p1(0x00000000);	// one strobe before, without WE required
+	board_fpga_fir_complete();
+
 	switch (ifir)
 	{
 	case 0:
@@ -6388,13 +6421,14 @@ board_fpga_fir_send(
 		break;
 	}
 
-	board_fpga_fir_coef(0x00000000);	// 1-st dummy
-	board_fpga_fir_strobe();			// 2-nd dummy
+	board_fpga_fir_coef_p1(0x00000000);	// 1-st dummy
+	board_fpga_fir_coef_p2(0x00000000);	// 2-nd dummy
 
 	//single_rate_out_write_ser(k, Ntap / 2 + 1); // NtapCoeffs(Ntap);
 	single_rate_out_write_mcv(k, Ntap, CWidth); // NtapCoeffs(Ntap);
 	//sendbatch();
-	//prog_unselect(targetfir1);
+
+	board_fpga_fir_complete();
 	switch (ifir)
 	{
 	case 0:
@@ -6409,10 +6443,12 @@ board_fpga_fir_send(
 		ASSERT(0);
 		break;
 	}
-	// strobe
-	board_fpga_fir_coef(0x00000000);	// one strobe after, without WE required
 
-	hardware_spi_disconnect();
+	// strobe
+	board_fpga_fir_coef_p1(0x00000000);	// one strobe after, without WE required
+	board_fpga_fir_complete();
+
+	board_fpga_fir_disconnect();
 #endif /* (WITHSPIHW && WITHSPI16BIT) */
 }
 
@@ -6423,16 +6459,15 @@ boart_tgl_firprofile(
 	)
 {
 	ASSERT(ifir < (sizeof glob_firprofile / sizeof glob_firprofile [0]));
-	//debug_printf_P(PSTR("boart_tgl_firprofile(%u) 1: glob_firprofile [0]=%u, glob_firprofile [1]=%u\n"), ifir, glob_firprofile [0], glob_firprofile [1]);
+
 	glob_firprofile [ifir] = ! glob_firprofile [ifir];
-	board_update_ctrlreg_hack();	// обновление периферии безманипуляций с флагами запроса на обновление
-	//debug_printf_P(PSTR("boart_tgl_firprofile(%u) 2: glob_firprofile [0]=%u, glob_firprofile [1]=%u\n"), ifir, glob_firprofile [0], glob_firprofile [1]);
+	prog_fpga_ctrlreg(targetfpga1);	// FPGA control register
 }
 
 
 void board_reload_fir(uint_fast8_t ifir, const int_fast32_t * const k, unsigned Ntap, unsigned CWidth)
 {
-	debug_printf_P(PSTR("board_reload_fir: ifir=%u, Ntap=%u\n"), ifir, Ntap);
+	//debug_printf_P(PSTR("board_reload_fir: ifir=%u, Ntap=%u\n"), ifir, Ntap);
 	board_fpga_fir_send(ifir, k, Ntap, CWidth);		/* загрузить массив коэффициентов в FPGA */
 	boart_tgl_firprofile(ifir);
 }
