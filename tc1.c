@@ -15714,6 +15714,7 @@ hamradio_main_step(void)
 		
 			if (lockmode == 0)
 			{
+				uint_fast8_t freqchanged = 0;
 
 				/* Обработка накопленного количества импульсов от валкодера */
 				if (nrotate < 0)
@@ -15722,31 +15723,41 @@ hamradio_main_step(void)
 					//const uint_fast32_t lowfreq = bandsmap [b].bottom;
 					gfreqs [bi_main] = prevfreq(gfreqs [bi_main], gfreqs [bi_main] - ((uint_fast32_t) gstep * jumpsize * - nrotate), gstep, tune_bottom(bi_main));
 					//gfreqs [bi_main] = prevfreq(gfreqs [bi_main], gfreqs [bi_main] - (jumpsize * - nrotate), gstep, TUNE_BOTTOM);
+					freqchanged = 1;
 				}
-				if (nrotate > 0)
+				else if (nrotate > 0)
 				{
 					/* Валкодер A: вращали "вверх" */
 					//const uint_fast32_t topfreq = bandsmap [b].top;
 					gfreqs [bi_main] = nextfreq(gfreqs [bi_main], gfreqs [bi_main] + ((uint_fast32_t) gstep * jumpsize * nrotate), gstep, tune_top(bi_main));
 					//gfreqs [bi_main] = nextfreq(gfreqs [bi_main], gfreqs [bi_main] + (jumpsize * nrotate), gstep, TUNE_TOP);
+					freqchanged = 1;
 				}
-				if (nrotate2 < 0)
+
+				if (enc2state != ENC2STATE_INITIALIZE)
+				{
+					uif_encoder2_rotate(nrotate2);
+				}
+				else if (nrotate2 < 0)
 				{
 					/* Валкодер B: вращали "вниз" */
 					//const uint_fast32_t lowfreq = bandsmap [b].bottom;
 					gfreqs [bi_sub] = prevfreq(gfreqs [bi_sub], gfreqs [bi_sub] - ((uint_fast32_t) gstep * jumpsize2 * - nrotate2), gstep, tune_bottom(bi_sub));
 					//gfreqs [bi_sub] = prevfreq(gfreqs [bi_sub], gfreqs [bi_sub] - (jumpsize2 * - nrotate2), gstep, TUNE_BOTTOM);
+					freqchanged = 1;
 				}
-				if (nrotate2 > 0)
+				else if (nrotate2 > 0)
 				{
 					/* Валкодер B: вращали "вверх" */
 					//const uint_fast32_t topfreq = bandsmap [b].top;
 					gfreqs [bi_sub] = nextfreq(gfreqs [bi_sub], gfreqs [bi_sub] + ((uint_fast32_t) gstep * jumpsize2 * nrotate2), gstep, tune_top(bi_sub));
 					//gfreqs [bi_sub] = nextfreq(gfreqs [bi_sub], gfreqs [bi_sub] + (jumpsize2 * nrotate2), gstep, TUNE_TOP);
+					freqchanged = 1;
 				}
 
-				if (nrotate != 0 || nrotate2 != 0)
+				if (freqchanged != 0)
 				{
+					// Ограничение по скорости обновления дисплея уже заложено в него
 					sthrl = STHRL_RXTX_FQCHANGED;
 					updateboard(0, 0);	/* частичная перенастройка - без смены режима работы */
 				}
