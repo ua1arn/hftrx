@@ -1909,6 +1909,253 @@ static uint_fast8_t sdhost_short_acmd_resp_R3(uint_fast8_t cmd, uint_fast32_t ar
 }
 
 
+
+//#define WITHTEST_H7	CPUSTYLE_STM32H7XX
+
+#if WITHTEST_H7
+
+
+/* Card Status Register*/
+
+#define SD_STAT_OUT_OF_RANGE       0x80000000  /*The command's argument was out of the allowed range for this card.*/
+#define SD_STAT_ADDRESS_ERROR      0x40000000  /*A misaligned address which did not match the block length was used in the command. */
+#define SD_STAT_BLOCK_LEN_ERROR    0x20000000  /*The transferred block length is not allowed for this card, or the number
+                                         of transferred bytes does not match the block length. */
+#define SD_STAT_ERASE_SEQ_ERROR    0x10000000  /*An error in the sequence of erase commands occurred. */
+#define SD_STAT_ERASE_PARAM        0x08000000  /*An invalid selection of write-blocks for erase occurred. */
+#define SD_STAT_WP_VIOLATION       0x04000000  /*Set when the host attempts to write to a protected block or to the
+                                         temporary or permanent write protected card. */
+#define SD_STAT_CARD_IS_LOCKED     0x02000000  /*When set, signals that the card is locked by the host */
+#define SD_STAT_LOCK_UNLOCK_FAILED 0x01000000  /*Set when a sequence or password error has been detected in
+                                         lock/unlock card command. */
+#define SD_STAT_COM_CRC_ERROR      0x00800000  /*The CRC check of the previous command failed.*/
+#define SD_STAT_ILLEGAL_COMMAND    0x00400000  /*Command not legal for the card state. */
+#define SD_STAT_CARD_ECC_FAILED    0x00200000  /*Card internal ECC was applied but failed to correct the data.*/
+#define SD_STAT_CC_ERROR           0x00100000  /*Internal card controller error.*/
+#define SD_STAT_ERROR              0x00080000  /*A general or an unknown error occurred during the operation.*/
+#define SD_STAT_CSD_OVERWRITE      0x00010000  /*Can be either one of the following errors:
+                                          - The read only section of the CSD does not match the card content.
+                                          - An attempt to reverse the copy (set as original) or permanent WP
+                                            (unprotected) bits was made. */
+#define SD_STAT_WP_ERASE_SKIP      0x00008000  /*Set when only partial address space was erased due to existing
+                                         write protected blocks or the temporary or permanent write
+                                         protected card was erased. */
+#define SD_STAT_CARD_ECC_DISABLED  0x00004000  /*The command has been executed without using the internal ECC.*/
+#define SD_STAT_ERASE_RESET        0x00002000  /*An erase sequence was cleared before executing because an out of
+                                         erase sequence command was received. */
+#define SD_STAT_CURRENT_STATE      0x00001E00  /*The state of the card when receiving the command. If the command
+                                         execution causes a state change, it will be visible to the host in the
+                                         response to the next command. The four bits are interpreted as a
+                                         binary coded number between 0 and 15.*/
+#define SD_STAT_CURRENT_STATE_IDLE  0x00000000  
+#define SD_STAT_CURRENT_STATE_READY 0x00000200
+#define SD_STAT_CURRENT_STATE_IDENT 0x00000400
+#define SD_STAT_CURRENT_STATE_STDBY 0x00000600
+#define SD_STAT_CURRENT_STATE_TRAN  0x00000800
+#define SD_STAT_CURRENT_STATE_DATA  0x00000A00
+#define SD_STAT_CURRENT_STATE_RECV  0x00000C00
+#define SD_STAT_CURRENT_STATE_PROG  0x00000E00
+#define SD_STAT_CURRENT_STATE_DIS   0x00001000
+
+#define SD_STAT_READY_FOR_DATA      0x00000100 /*Corresponds to buffer empty signaling on the bus. */
+#define SD_STAT_APP_CMD             0x00000020 /*The card will expect ACMD, or an indication that the command has
+                                         been interpreted as ACMD. */
+#define SD_STAT_AKE_SEQ_ERROR       0x0000008  /*Error in the sequence of the authentication process*/
+
+//SD card filesystem data
+//static FATFS axi_sram SDCardFFS;
+
+static volatile int sd_event_xx;
+static volatile int sd_event_value;
+
+enum
+{
+
+	EV_SD_ERROR = 1,
+	EV_SD_READY = 2,
+	EV_SD_DATA = 4
+
+};
+
+enum { WAIT_ANY = 0 };
+typedef uint_fast8_t events_t;
+
+
+static void
+SetEvents(events_t v)
+{
+	sd_event_xx = 1;
+	sd_event_value = v;
+}
+
+static int
+WaitEvents(events_t e, int type)
+{
+
+	for (;;)
+	{
+		disableIRQ();
+		if (sd_event_xx != 0 /*&& (sd_event_value & e) != 0 */)
+		{
+			sd_event_xx = 0;
+			enableIRQ();
+			break;
+		}
+		enableIRQ();
+	}
+	return EV_SD_READY;
+}
+
+
+//SDMMC1 Interrupt
+void /*__attribute__((interrupt)) */ SDMMC1_IRQHandler(void)
+{
+   const uint32_t f = SDMMC1->STA & SDMMC1->MASK;
+   events_t e = 0;
+   if (f & (SDMMC_STA_CCRCFAIL | SDMMC_STA_CTIMEOUT))
+   {
+      //Command path error
+      e |= EV_SD_ERROR;
+      //Mask error interrupts, leave flags in STA for the further analisys
+      SDMMC1->MASK &= ~(SDMMC_STA_CCRCFAIL | SDMMC_STA_CTIMEOUT);
+   }
+   if (f & (SDMMC_STA_CMDREND | SDMMC_STA_CMDSENT))
+   {
+      //We have finished the command execution
+      e |= EV_SD_READY;
+      SDMMC1->MASK &= ~ (SDMMC_STA_CMDREND | SDMMC_STA_CMDSENT);
+      SDMMC1->ICR |= (SDMMC_STA_CMDREND | SDMMC_STA_CMDSENT);
+   }
+   uint32_t fdata = (f & (SDMMC_STA_DATAEND | SDMMC_STA_DBCKEND | SDMMC_STA_DCRCFAIL | SDMMC_STA_DTIMEOUT));
+   if (fdata)
+   {
+      //We have finished the data send/receive
+      e |= EV_SD_DATA;
+      SDMMC1->MASK &= ~(SDMMC_STA_DATAEND | SDMMC_STA_DBCKEND | SDMMC_STA_DCRCFAIL | SDMMC_STA_DTIMEOUT);
+   }
+
+   SetEvents(e);
+}
+
+#define SD_CMD_NO_RESP (SDMMC_CMD_WAITRESP_0 * 0)
+#define SD_CMD_SHORT_RESP (SDMMC_CMD_WAITRESP_0 * 1)
+#define SD_CMD_LONG_RESP (SDMMC_CMD_WAITRESP_0 * 3)
+
+#define SD_OK        0
+#define SD_ERROR     1
+
+static uint32_t SDSendCommand(uint32_t cmd, uint32_t arg, uint32_t rsp)
+{
+   //debug_printf_P(PSTR("CMD%d ARG=%08x\n"), cmd, arg);
+   SDMMC1->ARG = arg;
+   //Clear interrupt flags, unmask interrupts according to cmd response
+   SDMMC1->ICR = (SDMMC_ICR_CMDRENDC | SDMMC_ICR_CMDSENTC | SDMMC_ICR_CCRCFAILC | SDMMC_ICR_CTIMEOUTC);
+   if (rsp == SD_CMD_NO_RESP)
+   {
+      //No response wait for CMDSENT interrupt
+      SDMMC1->MASK |= (SDMMC_MASK_CMDSENTIE | SDMMC_MASK_CCRCFAILIE | SDMMC_MASK_CTIMEOUTIE);
+   }
+   else 
+   {
+      //Short or long response wait for CMDREND interrupt
+      SDMMC1->MASK |= (SDMMC_MASK_CMDRENDIE | SDMMC_MASK_CCRCFAILIE | SDMMC_MASK_CTIMEOUTIE);
+   }
+   SDMMC1->CMD = SDMMC_CMD_CPSMEN | rsp | cmd;
+   if (WaitEvents(EV_SD_READY | EV_SD_ERROR, WAIT_ANY) != EV_SD_READY)
+   { 
+      //debug_printf_P("E1(cmd=%d arg=%x STA=%x)\n",cmd,arg,SDMMC1->STA);
+      return SD_ERROR; 
+   }
+   //ASSERT(WaitEvents(EV_SD_READY | EV_SD_ERROR, WAIT_ANY) == EV_SD_READY);
+   //Check for the correct response (long response and OCR response will result in 0x3F value in RESPCMD)
+   if (rsp == SD_CMD_SHORT_RESP && SDMMC1->RESPCMD != (cmd & SDMMC_CMD_CMDINDEX))
+   {
+      //debug_printf_P("E2(cmd=%d arg=%x STA=%x)\n",cmd,arg,SDMMC1->STA);
+      return SD_ERROR;
+   }
+   //ASSERT(!(rsp == SD_CMD_SHORT_RESP && SDMMC1->RESPCMD != cmd));
+   //debug_printf_P("OK");
+   return SD_OK;
+}
+
+#endif /* WITHTEST_H7 */
+
+#if WITHTEST_H7
+
+static 
+DRESULT SD_disk_write(
+	BYTE drv,			/* Physical drive nmuber (0..) */
+	const BYTE *buff,	/* Data to be written */
+	DWORD sector,		/* Sector address (LBA) */
+	UINT count			/* Number of sectors to write */
+	)
+{
+   //Wait until card is ready for the data operations
+   for(;;)
+   {
+      //Make 10 tries to get card status before fail
+      for(int t = 0; SDSendCommand(13, sdhost_sdcard_RCA << 16, SD_CMD_SHORT_RESP) != SD_OK; t++)
+      {
+         if (t > 10)
+			 return RES_NOTRDY;
+      }
+      if ((SDMMC1->RESP1 & (SD_STAT_CURRENT_STATE|SD_STAT_READY_FOR_DATA)) == (SD_STAT_CURRENT_STATE_TRAN|SD_STAT_READY_FOR_DATA))break;
+      local_delay_ms((1));
+   }
+
+   //debug_printf_P(" WR1:%x ", SDMMC1->RESP1);
+   //SCB_CleanDCache_by_Addr(buffer, count*512);
+   arm_hardware_flush((uintptr_t) buff, count*512);
+
+   //Program data length register
+   SDMMC1->DLEN = count * 512;
+   
+   //Clean DPSM interrupt flags and enable DPSM interrupts
+   SDMMC1->ICR = (SDMMC_ICR_DBCKENDC | SDMMC_ICR_DATAENDC | SDMMC_ICR_DCRCFAILC | SDMMC_ICR_DTIMEOUTC);
+   SDMMC1->MASK |= (SDMMC_MASK_DATAENDIE | SDMMC_MASK_DCRCFAILIE | SDMMC_MASK_DTIMEOUTIE);
+
+   SDMMC1->DTIMER = 12000000 /*0.5sec timeout*/;
+
+   //Program data control register
+   SDMMC1->DCTRL = SDMMC_DCTRL_DBLOCKSIZE_0 * 9 /*512 bytes block*/ |
+                     SDMMC_DCTRL_DTDIR * 0 /* From controller to card*/; /*|
+                     SDMMC_DCTRL_DTEN;*/
+
+   //Program SDMMC1 DMA
+   SDMMC1->IDMABASE0 = (uintptr_t) buff;
+   SDMMC1->IDMACTRL |= SDMMC_IDMA_IDMAEN;
+
+   
+   uint8_t cmd = (count == 1) ? 24 /*CMD24 single block write*/: 25 /*CMD25 multiple blocks write*/;
+   if (SDSendCommand(cmd | SDMMC_CMD_CMDTRANS, sector * sdhost_getaddresmultiplier(), SD_CMD_SHORT_RESP))
+   {
+      //debug_printf_P("CMD%d failed!", cmd);
+      //turn off DMA
+	  SDMMC1->IDMACTRL &= ~SDMMC_IDMA_IDMAEN;
+      return RES_ERROR;
+   }
+
+   //TP();
+   //Wait for data transfer finish
+   WaitEvents(EV_SD_DATA, WAIT_ANY);
+   SDMMC1->IDMACTRL &= ~SDMMC_IDMA_IDMAEN;   
+   if (count > 1)
+   {
+      //Send CMD12 STOP command in case of multiple block transfer      
+      if (SDSendCommand(12, 0, SD_CMD_SHORT_RESP))
+		  return RES_ERROR;
+   }
+   //Do we need to check FIFOCNT and wait until it is 0?
+   //debug_printf_P(" FIFO:%d WSTA:%x ", SDMMC1->FIFOCNT, SDMMC1->STA);
+   
+   if ((SDMMC1->STA & (SDMMC_STA_DATAEND | SDMMC_STA_DCRCFAIL | SDMMC_STA_DTIMEOUT)) == SDMMC_STA_DATAEND)
+	   return RES_OK;
+   TP();
+   return RES_ERROR;
+}
+
+#endif /* WITHTEST_H7 */
+
 // write a size Byte big block beginning at the address.
 static uint_fast8_t sdhost_sdcard_WriteSectors(
 	const BYTE *buff,	/* Data to be written */
@@ -2053,6 +2300,81 @@ static uint_fast8_t sdhost_sdcard_WriteSectors(
 	//debug_printf_P(PSTR("sdhost_sdcard_WriteSectors: buff=%p, sector=%lu, count=%lu okay\n"), buff, (unsigned long) sector, (unsigned long) count);
 	return 0;
 }
+
+
+#if WITHTEST_H7
+
+static DRESULT 
+SD_disk_read(
+	BYTE drv,			/* Physical drive nmuber (0..) */
+	BYTE *buff,		/* Data buffer to store read data */
+	DWORD sector,	/* Sector address (LBA) */
+	UINT count		/* Number of sectors to read */
+	)
+{
+   //Wait until card is ready for the data operations
+   for(;;)
+   {
+      //Make ten tries to retrive card status before fail
+      for(int t = 0; SDSendCommand(13, sdhost_sdcard_RCA << 16, SD_CMD_SHORT_RESP) != SD_OK; t++)
+      {
+         if (t > 10)
+			 return RES_NOTRDY;
+      }
+      if ((SDMMC1->RESP1 & (SD_STAT_CURRENT_STATE|SD_STAT_READY_FOR_DATA)) == (SD_STAT_CURRENT_STATE_TRAN|SD_STAT_READY_FOR_DATA))
+		  break;
+      local_delay_ms((1));
+   }
+
+   //TP();
+   arm_hardware_flush_invalidate((uintptr_t) buff, 512 * count);
+
+   //Program data length register
+   SDMMC1->DLEN = count * 512;
+
+   //Clean DPSM interrupt flags and enable DPSM interrupts
+   SDMMC1->ICR = (SDMMC_ICR_DBCKENDC | SDMMC_ICR_DATAENDC | SDMMC_ICR_DCRCFAILC | SDMMC_ICR_DTIMEOUTC);
+   SDMMC1->MASK |= (SDMMC_MASK_DATAENDIE | SDMMC_MASK_DCRCFAILIE | SDMMC_MASK_DTIMEOUTIE);
+
+   SDMMC1->DTIMER = 12000000 /*0.5sec timeout*/;
+
+   //Program data control register
+   SDMMC1->DCTRL = SDMMC_DCTRL_DBLOCKSIZE_0 * 9 /*512 bytes block*/ |
+                   SDMMC_DCTRL_DTDIR /* From card to controller */;/* |
+                   SDMMC_DCTRL_DTEN;*/
+
+   //Program SDMMC1 DMA
+   SDMMC1->IDMABASE0 = (uintptr_t) buff;
+   SDMMC1->IDMACTRL |= SDMMC_IDMA_IDMAEN;
+
+   uint8_t cmd = (count == 1) ? 17 /*CMD17 single block read*/: 18 /*CMD18 multiple blocks read*/;
+   if (SDSendCommand(cmd | SDMMC_CMD_CMDTRANS, sector * sdhost_getaddresmultiplier(), SD_CMD_SHORT_RESP))
+   {
+      //debug_printf_P("CMD%d failed!", cmd);
+      //turn off DMA
+	  SDMMC1->IDMACTRL &= ~SDMMC_IDMA_IDMAEN;
+      return RES_ERROR;
+   }
+   //TP();
+   //Wait for data transfer finish
+   WaitEvents(EV_SD_DATA, WAIT_ANY);
+   SDMMC1->IDMACTRL &= ~SDMMC_IDMA_IDMAEN;
+   if (count > 1)
+   {
+      //Send CMD12 STOP command in case of multiple block transfer
+      if (SDSendCommand(12, 0, SD_CMD_SHORT_RESP))
+      {
+         return RES_ERROR;
+      }
+   }
+   //TP();
+  //Do we need to check FIFOCNT and wait until it is 0?
+   if ((SDMMC1->STA & (SDMMC_STA_DATAEND | SDMMC_STA_DCRCFAIL | SDMMC_STA_DTIMEOUT)) != SDMMC_STA_DATAEND)
+	   return RES_ERROR;
+   //SCB_InvalidateDCache_by_Addr(buffer, size*512);
+   return RES_OK;
+}
+#endif /* WITHTEST_H7 */
 
 // read a size Byte big block beginning at the address.
 static uint_fast8_t sdhost_sdcard_ReadSectors(
@@ -2278,7 +2600,7 @@ static uint_fast8_t sdhost_read_registers_acmd(uint16_t acmd, uint8_t * buff, un
 		return 1;
 	}
 	
-	//debug_printf_P(PSTR("sdhost_sdcard_ReadSectors: sdhost_CardType=%08lX, sdhost_SDType=%08lX\n"), (unsigned long) sdhost_CardType, (unsigned long) sdhost_SDType);
+	//debug_printf_P(PSTR("sdhost_read_registers_acmd: sdhost_CardType=%08lX, sdhost_SDType=%08lX\n"), (unsigned long) sdhost_CardType, (unsigned long) sdhost_SDType);
 
 	sdhost_dpsm_prepare((uintptr_t) buff, 0, size, lenpower);		// подготовка к обмену data path state machine - при чтенииперед выдачей команды
 	//arm_hardware_invalidate((uint32_t) buff, size * 1);		// Сейчас в эту память будем читать по DMA
@@ -2497,6 +2819,7 @@ char sd_initialize2(void)
 	return MMC_RESPONSE_ERROR;
 }
 
+#if ! WITHTEST_H7
 // write a size Byte big block beginning at the address.
 static 
 DRESULT SD_disk_write(
@@ -2524,6 +2847,9 @@ DRESULT SD_disk_read(
 		return RES_ERROR;
 	return RES_OK;
 }
+
+
+#endif /* ! WITHTEST_H7 */
 
 static 
 uint_fast64_t SD_ReadCardSize(void)
