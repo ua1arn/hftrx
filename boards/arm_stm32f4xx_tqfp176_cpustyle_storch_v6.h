@@ -749,6 +749,23 @@
 	#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры 
 #endif
 
+#if WITHKEYBOARD
+	/* PF5: pull-up second encoder button */
+	#define KBD_MASK (1U << 5)	// PF5
+	#define KBD_TARGET_PIN (GPIOF->IDR)
+
+	#define HARDWARE_KBD_INITIALIZE() do { \
+			arm_hardware_piof_inputs(KBD_MASK); \
+			arm_hardware_piof_updown(KBD_MASK, 0);	/* PF10: pull-up second encoder button */ \
+		} while (0)
+
+#else /* WITHKEYBOARD */
+
+	#define HARDWARE_KBD_INITIALIZE() do { \
+		} while (0)
+
+#endif /* WITHKEYBOARD */
+
 	/* макроопределение, которое должно включить в себя все инициализации */
 	#define	HARDWARE_INITIALIZE() do { \
 		HARDWARE_SIDETONE_INITIALIZE(); \
@@ -756,6 +773,7 @@
 		HARDWARE_DAC_INITIALIZE(); \
 		HARDWARE_BL_INITIALIZE(); \
 		HARDWARE_DCDC_INITIALIZE(); \
+		HARDWARE_KBD_INITIALIZE(); \
 		TXDISABLE_INITIALIZE(); \
 		} while (0)
 
