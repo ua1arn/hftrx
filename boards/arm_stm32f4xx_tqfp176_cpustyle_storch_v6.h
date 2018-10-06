@@ -505,15 +505,6 @@
 #define HARDWARE_SIDETONE_INITIALIZE() do { \
 	} while (0)
 
-#if KEYBOARD_USE_ADC
-	#define HARDWARE_KBD_INITIALIZE() do { \
-		} while (0)
-#else
-	#define HARDWARE_KBD_INITIALIZE() do { \
-		arm_hardware_pioa_inputs(KBD_MASK); \
-		} while (0)
-#endif
-
 #if 1 // WITHTWISW
 	#define TARGET_TWI_TWCK_PORT_C(v) do { GPIOB->BSRR = BSRR_C(v); __DSB(); } while (0)
 	#define TARGET_TWI_TWCK_PORT_S(v) do { GPIOB->BSRR = BSRR_S(v); __DSB(); } while (0)
@@ -769,7 +760,6 @@
 	/* макроопределение, которое должно включить в себя все инициализации */
 	#define	HARDWARE_INITIALIZE() do { \
 		HARDWARE_SIDETONE_INITIALIZE(); \
-		HARDWARE_KBD_INITIALIZE(); \
 		HARDWARE_DAC_INITIALIZE(); \
 		HARDWARE_BL_INITIALIZE(); \
 		HARDWARE_DCDC_INITIALIZE(); \
