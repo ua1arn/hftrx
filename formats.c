@@ -65,7 +65,8 @@ local_format(void * param, int (* putsub)(void *, int), const FLASHMEM char * pf
 	enum { TMP_S_SIZE = 14 };
 	int_fast8_t /* int	*/ rj, altern;
 	char	c, signc, fillc;
-	uint_fast8_t /* int */	maxwidth, width, i;
+	uint_fast8_t /* int */ i;
+	int_fast8_t width, maxwidth;
 	union
 	{
 #ifdef	__NOLONG__
@@ -82,6 +83,7 @@ local_format(void * param, int (* putsub)(void *, int), const FLASHMEM char * pf
 	int		len;
 	static const FLASHMEM char	lcase[17] = { "0123456789abcdef" };
 	static const FLASHMEM char	ucase[17] = { "0123456789ABCDEF" };
+	static char null_s[] = "(null)";
 
 	u.lval = 0;	/* Supress GCC warning. */
 	len = 0;	/* Counter of written characters.	*/
@@ -167,7 +169,7 @@ local_format(void * param, int (* putsub)(void *, int), const FLASHMEM char * pf
 			break;
 		case 's':
 			if ((cp = va_arg(args, char *)) == NULL)
-				cp = "(null)";
+				cp = null_s;
 			i = safestrlen(cp, maxwidth);
 			/*i = strlen(cp);*/
 			goto havelen;
