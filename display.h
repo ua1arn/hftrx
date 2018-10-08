@@ -308,7 +308,7 @@ typedef uint16_t PACKEDCOLOR565_T;
 #define COLOR_NAVY           TFTRGB(0x00, 0x00, 0x80)
 #define COLOR_DARKBLUE       TFTRGB(0x00, 0x00, 0x8B)
 #define COLOR_DARKGREEN      TFTRGB(0x00, 0x64, 0x00)
-#define COLOR_DARKGREEN2     TFTRGB(0x00, 0x40, 0x00)
+#define COLOR_DARKGREEN2     TFTRGB(0x00, 0x20, 0x00)
 #define COLOR_DARKCYAN       TFTRGB(0x00, 0x8B, 0x8B)
 #define COLOR_CYAN           TFTRGB(0x00, 0xFF, 0xFF)
 #define COLOR_TURQUOISE      TFTRGB(0x40, 0xE0, 0xD0)
