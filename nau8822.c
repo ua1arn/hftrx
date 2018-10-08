@@ -87,26 +87,33 @@ static void nau8822_setreg(
 /* Установка громкости на наушники */
 static void nau8822_setvolume(uint_fast16_t gain, uint_fast8_t mute, uint_fast8_t mutespk)
 {
+	uint_fast8_t vmutehp = 0;
+	uint_fast8_t vmutespk = 0;
 	// 0x3F: +6 dB
 	// 0x39: 0 dB: 2.7..2.8 volt p-p at each SPK output
 	uint_fast8_t levelhp = (gain - BOARD_AFGAIN_MIN) * (NAU8822L_OUT_HP_MAX - NAU8822L_OUT_HP_MIN) / (BOARD_AFGAIN_MAX - BOARD_AFGAIN_MIN) + NAU8822L_OUT_HP_MIN;
 	uint_fast8_t levelspk = (gain - BOARD_AFGAIN_MIN) * (NAU8822L_OUT_SPK_MAX - NAU8822L_OUT_SPK_MIN) / (BOARD_AFGAIN_MAX - BOARD_AFGAIN_MIN) + NAU8822L_OUT_SPK_MIN;
 	if (mute)
-		levelhp = levelspk = 0;
+	{
+		vmutehp = 0x40;
+		vmutespk = 0x40;
+	}
 	if (mutespk)
-		levelspk = 0;
+	{
+		vmutespk = 0x40;
+	}
 	//debug_printf_P(PSTR("nau8822_setvolume: level=%02x start\n"), level);
 
 	// Установка уровня вывода на наушники
-	nau8822_setreg(NAU8822_LOUT1_HP_CONTROL, levelhp | 0);
-	nau8822_setreg(NAU8822_ROUT1_HP_CONTROL, levelhp | 0x100);
+	nau8822_setreg(NAU8822_LOUT1_HP_CONTROL, vmutehp | (levelhp & 0x3F) | 0);
+	nau8822_setreg(NAU8822_ROUT1_HP_CONTROL, vmutehp | (levelhp & 0x3F) | 0x100);
 
 //{0x34, 0x139},
 //{0x35, 0x139},
 
 	// Установка уровня вывода на динамик
-	nau8822_setreg(NAU8822_LOUT2_SPK_CONTROL, levelspk | 0);
-	nau8822_setreg(NAU8822_ROUT2_SPK_CONTROL, levelspk | 0x100);
+	nau8822_setreg(NAU8822_LOUT2_SPK_CONTROL, vmutespk | (levelspk & 0x3F) | 0);
+	nau8822_setreg(NAU8822_ROUT2_SPK_CONTROL, vmutespk | (levelspk & 0x3F) | 0x100);
 //{0x36, 0x139},
 //{0x37, 0x139},
 
@@ -148,11 +155,6 @@ static void nau8822_lineinput(uint_fast8_t linein, uint_fast8_t mikebust20db, ui
 		nau8822_setreg(NAU8822_RIGHT_ADC_BOOST_CONTROL, 0x000);	// RLINEIN disconnected, RAUXIN disconnected
 		//
 	}
-
-	// Установка чувствительность АЦП не требуется - стоит максимальная после сброса
-	//uint_fast8_t level = 255;
-	//nau8822_setreg(NAU8822_LEFT_ADC_DIGITAL_VOLUME, level | 0);
-	//nau8822_setreg(NAU8822_RIGHT_ADC_DIGITAL_VOLUME, level | 0x100);
 }
 
 
@@ -310,7 +312,15 @@ static void nau8822_initialize_slave_fullduplex(void)
 	nau8822_setreg(NAU8822_RIGHT_MIXER_CONTROL, 0x001);
 
 	// Микрофон подключен к LMICN, LMICP=common
-	nau8822_setreg(NAU8822_INPUT_CONTROL, 0x03);
+	nau8822_setreg(NAU8822_INPUT_CONTROL, 0x003);
+
+	// Установка чувствительность АЦП не требуется - стоит максимальная после сброса
+	// но на всякий слуяай для понятности програмируем.
+	const uint_fast8_t mklevel = 255;
+	nau8822_setreg(NAU8822_LEFT_ADC_DIGITAL_VOLUME, mklevel | 0);
+	nau8822_setreg(NAU8822_RIGHT_ADC_DIGITAL_VOLUME, mklevel | 0x100);
+
+	nau8822_setreg(NAU8822_INPUT_CONTROL, 0x000);	// dither off
 
 	//debug_printf_P(PSTR("nau8822_initialize_slave_fullduplex done\n"));
 }
