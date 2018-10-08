@@ -1857,4 +1857,8 @@
 	#define WITHFLATMENU (CTLSTYLE_SW2011ALL && ! CPUSTYLE_ATMEGA_XXX4)
 #endif /* WITHFLATMENU */
 
+#define HARDWARE_DELAY_MS(t) do { local_delay_ms(t); } while (0)
+#define HARDWARE_DELAY_US(t) do { local_delay_us(t); } while (0)
+#define HARDWARE_GETTICK_MS(t) ((uint32_t) 0) // HAL_GetTick()
+
 #endif /* PARAMDEPEND_H_INCLUDED */
