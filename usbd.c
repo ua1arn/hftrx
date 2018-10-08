@@ -27,26 +27,26 @@ void usbd_showstate(void)
 {
 #if 0
 	{
-		debug_printf_P(PSTR("usb_showstate: e1(ISOC_OUT)=%u, e2(ISOC_IN)=%u, e3(CDC_OUT)=%u, e4(CDC_IN)=%u\n"), e1, e2, e3, e4);
+		PRINTF(PSTR("usb_showstate: e1(ISOC_OUT)=%u, e2(ISOC_IN)=%u, e3(CDC_OUT)=%u, e4(CDC_IN)=%u\n"), e1, e2, e3, e4);
 	}
 #endif
 #if 0
 	{
 #if CPUSTYLE_R7S721
-	debug_printf_P(PSTR("usb_showstate, mask=%04X, NRDYSTS=%04X\n"), 1U << HARDWARE_USBD_PIPE_CDC_IN, USB200.NRDYSTS);
+	PRINTF(PSTR("usb_showstate, mask=%04X, NRDYSTS=%04X\n"), 1U << HARDWARE_USBD_PIPE_CDC_IN, USB200.NRDYSTS);
 		const uint_fast8_t pipe = HARDWARE_USBD_PIPE_CDC_IN;
 
 		volatile uint16_t * const PIPEnCTR = (& USB200.PIPE1CTR) + (pipe - 1);
-		debug_printf_P(PSTR("usb_showstate, PIPEnCTR=%08lX\n"), * PIPEnCTR);
+		PRINTF(PSTR("usb_showstate, PIPEnCTR=%08lX\n"), * PIPEnCTR);
 #endif /* CPUSTYLE_R7S721 */
 	}
 #endif
-//	debug_printf_P(PSTR("usb_showstate, usbd_state=%d, VBSTS=%d\n"), usbd_state, usbd_getvbus());
+//	PRINTF(PSTR("usb_showstate, usbd_state=%d, VBSTS=%d\n"), usbd_state, usbd_getvbus());
 }
 
 static void _Error_Handler(char * file, int line)
 {
-	debug_printf_P(PSTR("_Error_Handler: at %s/%d\n"), file, line);
+	PRINTF(PSTR("_Error_Handler: at %s/%d\n"), file, line);
 	for (;;)
 		;
 }
@@ -55,10 +55,10 @@ static unsigned txcnt [16];
 
 void usbd_diagnostics(void)
 {
-	//debug_printf_P(PSTR("cnt: UAC=%u, CDC=%u\n"), txcnt [0x7F & USBD_EP_AUDIO_IN], txcnt [0x7F & USBD_EP_CDC_IN]);
-	//debug_printf_P(PSTR("cnt: UAC=%u\n"), txcnt [0x7F & USBD_EP_AUDIO_IN]);
+	//PRINTF(PSTR("cnt: UAC=%u, CDC=%u\n"), txcnt [0x7F & USBD_EP_AUDIO_IN], txcnt [0x7F & USBD_EP_CDC_IN]);
+	//PRINTF(PSTR("cnt: UAC=%u\n"), txcnt [0x7F & USBD_EP_AUDIO_IN]);
 	//USB_OTG_GlobalTypeDef *USBx = USB_OTG_HS;
-	//debug_printf_P(PSTR("USBx->GINTSTS=%08lX, USBx->GINTMSK=%08lX, USBx_DEVICE->DAINT=%08lX\n"), USBx->GINTSTS, USBx->GINTMSK, USBx_DEVICE->DAINT);
+	//PRINTF(PSTR("USBx->GINTSTS=%08lX, USBx->GINTMSK=%08lX, USBx_DEVICE->DAINT=%08lX\n"), USBx->GINTSTS, USBx->GINTMSK, USBx_DEVICE->DAINT);
 }
 
 
@@ -391,9 +391,9 @@ static void cdceemout_buffer_print(
 	uint_fast16_t pos;
 	for (pos = 0; pos < length; ++ pos)
 	{
-		debug_printf_P(PSTR("%02X%s"), data [pos], ((pos + 1) % 16) == 0 ? ",\n" : ", ");
+		PRINTF(PSTR("%02X%s"), data [pos], ((pos + 1) % 16) == 0 ? ",\n" : ", ");
 	}
-	debug_printf_P(PSTR("\n"));
+	PRINTF(PSTR("\n"));
 }
 
 // Ethernet II frame print (64..1518 bytes)
@@ -403,10 +403,10 @@ static void cdceemout_buffer_print2(
 	)
 {
 	// +++ MAC header
-	debug_printf_P(PSTR("Dst MAC = %02X:%02X:%02X:%02X:%02X:%02X, "), data [0], data [1], data [2], data [3], data [4], data [5]);
-	debug_printf_P(PSTR("Src MAC = %02X:%02X:%02X:%02X:%02X:%02X, "), data [6], data [7], data [8], data [9], data [10], data [11]);
+	PRINTF(PSTR("Dst MAC = %02X:%02X:%02X:%02X:%02X:%02X, "), data [0], data [1], data [2], data [3], data [4], data [5]);
+	PRINTF(PSTR("Src MAC = %02X:%02X:%02X:%02X:%02X:%02X, "), data [6], data [7], data [8], data [9], data [10], data [11]);
 	const uint_fast16_t EtherType = data [12] * 256 + data [13];	// 0x0800
-	debug_printf_P(PSTR("EtherType %04X\n"), EtherType);
+	PRINTF(PSTR("EtherType %04X\n"), EtherType);
 	// --- MAC header
 	data += 14;
 	length = length >= 14 ? length - 14 : 0;
@@ -415,27 +415,27 @@ static void cdceemout_buffer_print2(
 	{
 	case 0x0800:
 		// IPv4 datagram
-		debug_printf_P(PSTR("IPv4 datagram: "));
-		debug_printf_P(PSTR("Protocol=%02X, "), data [9]);	// 0x11 == UDP, 
-		debug_printf_P(PSTR("Src IP=%d.%d.%d.%d, "), data [12], data [13], data [14], data [15]);
-		debug_printf_P(PSTR("Dst IP=%d.%d.%d.%d\n"), data [16], data [17], data [18], data [19]);
+		PRINTF(PSTR("IPv4 datagram: "));
+		PRINTF(PSTR("Protocol=%02X, "), data [9]);	// 0x11 == UDP, 
+		PRINTF(PSTR("Src IP=%d.%d.%d.%d, "), data [12], data [13], data [14], data [15]);
+		PRINTF(PSTR("Dst IP=%d.%d.%d.%d\n"), data [16], data [17], data [18], data [19]);
 		{
 		}
 		break;
 
 	case 0x86DD:
 		// IPv6 datagram
-		//debug_printf_P(PSTR("IPv6 datagram\n"));
+		//PRINTF(PSTR("IPv6 datagram\n"));
 		break;
 
 	case 0x0806:
 		// ARP frame
-		//debug_printf_P(PSTR("ARP frame\n"));
+		//PRINTF(PSTR("ARP frame\n"));
 		break;
 
 	case 0x88CC:
 		// IEEE Std 802.1AB - Link Layer Discovery Protocol (LLDP)s
-		//debug_printf_P(PSTR("LLDP\n"));
+		//PRINTF(PSTR("LLDP\n"));
 		break;
 
 	default:
@@ -444,9 +444,9 @@ static void cdceemout_buffer_print2(
 			uint_fast16_t pos;
 			for (pos = 0; pos < length; ++ pos)
 			{
-				debug_printf_P(PSTR("%02X%s"), data [pos], ((pos + 1) % 16) == 0 ? ",\n" : ", ");
+				PRINTF(PSTR("%02X%s"), data [pos], ((pos + 1) % 16) == 0 ? ",\n" : ", ");
 			}
-			debug_printf_P(PSTR("\n"));
+			PRINTF(PSTR("\n"));
 		}
 		break;
 	}
@@ -487,13 +487,13 @@ static void cdceemout_buffer_save(
 							cdceemoutstate = CDCEEMOUT_DATA;
 						}
 					}
-					//debug_printf_P(PSTR("Data: bmCRC=%02X, cdceemlength=%u, pyload=0x%04X\n"), bmCRC, cdceemlength, cdceematcrc);
+					//PRINTF(PSTR("Data: bmCRC=%02X, cdceemlength=%u, pyload=0x%04X\n"), bmCRC, cdceemlength, cdceematcrc);
 				}
 				else
 				{
 					const uint_fast8_t bmEEMCmd = (w >> 11) & 0x0007;	// 0: Ethernet Frame CRC is set to 0xdeadbeef 
 					const uint_fast16_t bmEEMCmdParam = (w >> 11) & 0x07FF;
-					debug_printf_P(PSTR("Command: bmEEMCmd=%02X, bmEEMCmdParam=%u\n"), bmEEMCmd, bmEEMCmdParam);
+					PRINTF(PSTR("Command: bmEEMCmd=%02X, bmEEMCmdParam=%u\n"), bmEEMCmd, bmEEMCmdParam);
 				}
 			}
 			break;
@@ -519,11 +519,11 @@ static void cdceemout_buffer_save(
 				cdceemoutstate = CDCEEMOUT_COMMAND;
 
 				++ cdceemnpackets;
-				//debug_printf_P(PSTR("CDCEEMOUT packets=%lu\n"), (unsigned long) cdceemnpackets);
+				//PRINTF(PSTR("CDCEEMOUT packets=%lu\n"), (unsigned long) cdceemnpackets);
 
-				//debug_printf_P(PSTR("crc=%08lX\n"), (cdceemoutacc & 0xFFFFFFFF));
+				//PRINTF(PSTR("crc=%08lX\n"), (cdceemoutacc & 0xFFFFFFFF));
 				// Тут полностью собран ethernet, используем его (или например печатаем содержимое).
-				debug_printf_P(PSTR("Data pyload length=0x%04X\n"), cdceematcrc);
+				PRINTF(PSTR("Data pyload length=0x%04X\n"), cdceematcrc);
 				//cdceemout_buffer_print(cdceembuff, cdceematcrc);
 				cdceemout_buffer_print2(cdceembuff, cdceematcrc);
 			}
@@ -2431,7 +2431,7 @@ static unsigned usbd_read_data(PCD_TypeDef * const Instance, uint_fast8_t pipe, 
 	g_usb0_function_PipeIgnore [pipe] = 0;
 	//unsigned w;
 
-	//debug_printf_P(PSTR("selected read from c_fifo%u 0, CFIFOCTR=%04X, CFIFOSEL=%04X\n"), pipe, Instance->CFIFOCTR, Instance->CFIFOSEL);
+	//PRINTF(PSTR("selected read from c_fifo%u 0, CFIFOCTR=%04X, CFIFOSEL=%04X\n"), pipe, Instance->CFIFOCTR, Instance->CFIFOSEL);
 
 	Instance->CFIFOSEL = 
 		//1 * (1uL << USB_CFIFOSEL_RCNT_SHIFT) |		// RCNT
@@ -2448,7 +2448,7 @@ static unsigned usbd_read_data(PCD_TypeDef * const Instance, uint_fast8_t pipe, 
 	unsigned count = 0;
 	unsigned size8 = (Instance->CFIFOCTR & USB_CFIFOCTR_DTLN) / MASK2LSB(USB_CFIFOCTR_DTLN);
 	size = ulmin16(size, size8);
-	//debug_printf_P(PSTR("selected read from c_fifo%u 3, CFIFOCTR=%04X, CFIFOSEL=%04X\n"), pipe, Instance->CFIFOCTR, Instance->CFIFOSEL);
+	//PRINTF(PSTR("selected read from c_fifo%u 3, CFIFOCTR=%04X, CFIFOSEL=%04X\n"), pipe, Instance->CFIFOCTR, Instance->CFIFOSEL);
 
 	while (size --)
 	{
@@ -2456,11 +2456,11 @@ static unsigned usbd_read_data(PCD_TypeDef * const Instance, uint_fast8_t pipe, 
 		++ count;
 	}
 
-	//debug_printf_P(PSTR("selected read from c_fifo%u 4, CFIFOCTR=%04X, CFIFOSEL=%04X\n"), pipe, Instance->CFIFOCTR, Instance->CFIFOSEL);
+	//PRINTF(PSTR("selected read from c_fifo%u 4, CFIFOCTR=%04X, CFIFOSEL=%04X\n"), pipe, Instance->CFIFOCTR, Instance->CFIFOSEL);
 
 	Instance->CFIFOCTR = USB_CFIFOCTR_BCLR;	// BCLR
 
-	//debug_printf_P(PSTR("selected read from c_fifo%u 5, CFIFOCTR=%04X, CFIFOSEL=%04X\n"), pipe, Instance->CFIFOCTR, Instance->CFIFOSEL);
+	//PRINTF(PSTR("selected read from c_fifo%u 5, CFIFOCTR=%04X, CFIFOSEL=%04X\n"), pipe, Instance->CFIFOCTR, Instance->CFIFOSEL);
 	return count;
 
 #elif 0//CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX
@@ -2493,9 +2493,9 @@ usbd_write_data(PCD_TypeDef * const Instance, uint_fast8_t pipe, const uint8_t *
 {
 #if 0
 	if (data != NULL && size != 0)
-		debug_printf_P(PSTR("usbd_write_data, pipe=%d, size=%d, data[]={%02x,%02x,%02x,%02x,%02x,..}\n"), pipe, size, data [0], data [1], data [2], data [3], data [4]);
+		PRINTF(PSTR("usbd_write_data, pipe=%d, size=%d, data[]={%02x,%02x,%02x,%02x,%02x,..}\n"), pipe, size, data [0], data [1], data [2], data [3], data [4]);
 	else
-		debug_printf_P(PSTR("usbd_write_data, pipe=%d, size=%d, data[]={}\n"), pipe, size);
+		PRINTF(PSTR("usbd_write_data, pipe=%d, size=%d, data[]={}\n"), pipe, size);
 #endif
 
 #if CPUSTYLE_R7S721
@@ -2510,15 +2510,15 @@ usbd_write_data(PCD_TypeDef * const Instance, uint_fast8_t pipe, const uint8_t *
 		0;
 	while ((Instance->CFIFOSEL & USB_CFIFOSEL_CURPIPE) != (pipe * MASK2LSB(USB_CFIFOSEL_CURPIPE)))
 		;
-	//debug_printf_P(PSTR("dcp_writedata 1, Instance->CFIFOCTR=%04X\n"), Instance->CFIFOCTR);
+	//PRINTF(PSTR("dcp_writedata 1, Instance->CFIFOCTR=%04X\n"), Instance->CFIFOCTR);
 	//while ((Instance->CFIFOSEL & 0x0F) != pipe || (Instance->CFIFOSEL & (1uL << USB_CFIFOSEL_ISEL_SHIFT)) == 0) // CURPIPE, ISEL
 	//	;
 
-	//debug_printf_P(PSTR("dcp_writedata 3, Instance->CFIFOCTR=%04X\n"), Instance->CFIFOCTR);
+	//PRINTF(PSTR("dcp_writedata 3, Instance->CFIFOCTR=%04X\n"), Instance->CFIFOCTR);
 	//while ((Instance->CFIFOCTR & (1uL << USB_CFIFOCTR_FRDY_SHIFT)) == 0)	// FRDY
 	//	;
 
-	//debug_printf_P(PSTR("dcp_writedata 4, Instance->CFIFOCTR=%04X\n"), Instance->CFIFOCTR);
+	//PRINTF(PSTR("dcp_writedata 4, Instance->CFIFOCTR=%04X\n"), Instance->CFIFOCTR);
 	////Instance->CFIFOCTR = (1uL << USB_CFIFOCTR_BCLR_SHIFT);	// BCLR
     while (size --)
 	{
@@ -2528,7 +2528,7 @@ usbd_write_data(PCD_TypeDef * const Instance, uint_fast8_t pipe, const uint8_t *
 
 #elif 0//CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX
 
-	debug_printf_P(PSTR("USB_Mgs_x_INEP(%d)->DTXFSTS=%08lX, DIEPCTL=%08lX\n"), pipe, USB_Mgs_x_INEP(pipe)->DTXFSTS & USB_OTG_DTXFSTS_INEPTFSAV, USB_Mgs_x_INEP(pipe)->DIEPCTL);
+	PRINTF(PSTR("USB_Mgs_x_INEP(%d)->DTXFSTS=%08lX, DIEPCTL=%08lX\n"), pipe, USB_Mgs_x_INEP(pipe)->DTXFSTS & USB_OTG_DTXFSTS_INEPTFSAV, USB_Mgs_x_INEP(pipe)->DIEPCTL);
 
 	// заполнение FIFO
 	unsigned size4 = (size + 3) / 4;
@@ -2546,11 +2546,11 @@ usbd_write_data(PCD_TypeDef * const Instance, uint_fast8_t pipe, const uint8_t *
 		case 1:
 			v |= (uint_fast32_t) data [0] << 0;
 		}
-		//debug_printf_P(PSTR("%08lx \n"), v);
+		//PRINTF(PSTR("%08lx \n"), v);
 		USB_Mgs_x_DIFIFO(pipe) = v;
 	}
 	
-	//debug_printf_P(PSTR("USB_Mgs_x_INEP(%d)->DTXFSTS=%08lX, DIEPCTL=%08lX\n"), pipe, USB_Mgs_x_INEP(pipe)->DTXFSTS & USB_OTG_DTXFSTS_INEPTFSAV, USB_Mgs_x_INEP(pipe)->DIEPCTL);
+	//PRINTF(PSTR("USB_Mgs_x_INEP(%d)->DTXFSTS=%08lX, DIEPCTL=%08lX\n"), pipe, USB_Mgs_x_INEP(pipe)->DTXFSTS & USB_OTG_DTXFSTS_INEPTFSAV, USB_Mgs_x_INEP(pipe)->DIEPCTL);
 
 #endif
 }
@@ -2672,7 +2672,7 @@ static void control_transmit(PCD_TypeDef * const Instance, const uint8_t * data,
 		(size & USB_OTG_DIEPTSIZ_XFRSIZ) |
 		((pktcnt << USB_OTG_DIEPTSIZ_PKTCNT_Pos) & USB_OTG_DIEPTSIZ_PKTCNT) |	
 		0;
-	//debug_printf_P(PSTR("control_transmit: USB_Mgs_x_INEP(%d)->DIEPTSIZ=%08lX\n"), pipe, USB_Mgs_x_INEP(pipe)->DIEPTSIZ);
+	//PRINTF(PSTR("control_transmit: USB_Mgs_x_INEP(%d)->DIEPTSIZ=%08lX\n"), pipe, USB_Mgs_x_INEP(pipe)->DIEPTSIZ);
 	/* EP enable, IN data in FIFO */
 	USB_Mgs_x_INEP(pipe)->DIEPCTL |= (USB_OTG_DIEPCTL_CNAK | USB_OTG_DIEPCTL_EPENA);   
 
@@ -2689,7 +2689,7 @@ static void dcp_acksend(PCD_TypeDef * const Instance)
 {
 #if CPUSTYLE_R7S721
 
-	//debug_printf_P(PSTR("dcp_acksend\n"));
+	//PRINTF(PSTR("dcp_acksend\n"));
 
 	if (((Instance->DCPCTR & USB_DCPCTR_PID) >> USB_DCPCTR_PID_SHIFT) == 0x03)
 	{
@@ -2714,7 +2714,7 @@ static void dcp_acksend(PCD_TypeDef * const Instance)
 // NAK
 static void nak_ep0(PCD_TypeDef * const Instance)
 {
-	//debug_printf_P(PSTR("nak_ep0\n"));
+	//PRINTF(PSTR("nak_ep0\n"));
 
 #if CPUSTYLE_R7S721
 
@@ -2765,7 +2765,7 @@ static void nak_ep0(PCD_TypeDef * const Instance)
 // STALL
 static void stall_ep0(PCD_TypeDef * const Instance)
 {
-	//debug_printf_P(PSTR("stall_ep0\n"));
+	//PRINTF(PSTR("stall_ep0\n"));
 
 #if CPUSTYLE_R7S721
 
@@ -2817,7 +2817,7 @@ usbd_cdc_tx(void * ctx, uint_fast8_t c)
 	PCD_TypeDef * const Instance = ctx;
 
 	//const uint_fast8_t pipe = HARDWARE_USBD_PIPE_CDC_IN;
-    //debug_printf_P(PSTR("tx=%02x "), c);
+    //PRINTF(PSTR("tx=%02x "), c);
 	Instance->CFIFO.UINT8 [R_IO_HH] = c;		// HH=3
 }
 
@@ -2828,7 +2828,7 @@ usbd_cdc_tx(void * ctx, uint_fast8_t c)
 static void
 usbd_handler_brdy_bulk_in8(PCD_TypeDef * const Instance, uint_fast8_t pipe, uint_fast8_t epnum)
 {
-	//debug_printf_P(PSTR("usbd_handler_brdy_bulk_in8: pipe=%u\n"), pipe);
+	//PRINTF(PSTR("usbd_handler_brdy_bulk_in8: pipe=%u\n"), pipe);
 	//volatile uint16_t * const PIPEnCTR = (& Instance->PIPE1CTR) + (pipe - 1);
 	//Instance->PIPESEL = pipe;
 	Instance->CFIFOSEL = 
@@ -2876,7 +2876,7 @@ usbd_handler_brdy_bulk_in8(PCD_TypeDef * const Instance, uint_fast8_t pipe, uint
 static void
 usbd_handler_brdy_bulk_out8(PCD_TypeDef * const Instance, uint_fast8_t pipe, uint_fast8_t epnum)
 {
-	//debug_printf_P(PSTR("usbd_handler_brdy: pipe=%u\n"), pipe);
+	//PRINTF(PSTR("usbd_handler_brdy: pipe=%u\n"), pipe);
 	//volatile uint16_t * const PIPEnCTR = (& Instance->PIPE1CTR) + (pipe - 1);
 	//Instance->PIPESEL = pipe;
 	Instance->CFIFOSEL = 
@@ -2892,7 +2892,7 @@ usbd_handler_brdy_bulk_out8(PCD_TypeDef * const Instance, uint_fast8_t pipe, uin
 	{
 #if WITHUSBCDC
 	case USBD_EP_CDC_OUT & 0x7F:
-		//debug_printf_P(PSTR("status of c_fifo%u CFIFOCTR=%04X\n"), pipe, Instance->CFIFOCTR);
+		//PRINTF(PSTR("status of c_fifo%u CFIFOCTR=%04X\n"), pipe, Instance->CFIFOCTR);
 		if (usbd_cdc_rxenabled != 0)
 		{
 			unsigned size8 = (Instance->CFIFOCTR & USB_CFIFOCTR_DTLN) / MASK2LSB(USB_CFIFOCTR_DTLN);
@@ -2900,13 +2900,13 @@ usbd_handler_brdy_bulk_out8(PCD_TypeDef * const Instance, uint_fast8_t pipe, uin
 			{
 				const uint_fast8_t c = Instance->CFIFO.UINT8 [R_IO_HH];	// HH=3
 				HARDWARE_CDC_ONRXCHAR(c);
-				//debug_printf_P(PSTR("rx=%02x "), c);
+				//PRINTF(PSTR("rx=%02x "), c);
 			}
 		}
 		break;
 
 	case USBD_EP_CDC_OUTb & 0x7F:
-		//debug_printf_P(PSTR("status of c_fifo%u CFIFOCTR=%04X\n"), pipe, Instance->CFIFOCTR);
+		//PRINTF(PSTR("status of c_fifo%u CFIFOCTR=%04X\n"), pipe, Instance->CFIFOCTR);
 		//if (usbd_cdc_rxenabled != 0)
 		{
 			unsigned size8 = (Instance->CFIFOCTR & USB_CFIFOCTR_DTLN) / MASK2LSB(USB_CFIFOCTR_DTLN);
@@ -2915,7 +2915,7 @@ usbd_handler_brdy_bulk_out8(PCD_TypeDef * const Instance, uint_fast8_t pipe, uin
 				const uint_fast8_t c = Instance->CFIFO.UINT8 [R_IO_HH];	// HH=3
 				(void) c;
 				//HARDWARE_CDC_ONRXCHAR(c);
-				//debug_printf_P(PSTR("rx=%02x "), c);
+				//PRINTF(PSTR("rx=%02x "), c);
 			}
 		}
 		break;
@@ -2944,7 +2944,7 @@ usbd_handler_brdy_bulk_out8(PCD_TypeDef * const Instance, uint_fast8_t pipe, uin
 static void
 usbd_handler_nrdy(PCD_TypeDef * const Instance, uint_fast8_t pipe)
 {
-	//debug_printf_P(PSTR("usbd_handler_nrdy: pipe=%u\n"), pipe);
+	//PRINTF(PSTR("usbd_handler_nrdy: pipe=%u\n"), pipe);
 	uint_fast8_t pid;
 	if (pipe == 0)
 	{
@@ -3033,7 +3033,7 @@ usbd_handler_brdy8_dcp_out(PCD_TypeDef * const Instance, uint_fast8_t pipe)
 			unsigned count = usbd_read_data(Instance, pipe, cdc_ep0databuffout, sizeof cdc_ep0databuffout / sizeof cdc_ep0databuffout [0]);
 			const uint_fast8_t interfacev = LO_BYTE(gReqIndex);
 			dwDTERate [interfacev] = USBD_peek_u32(& cdc_ep0databuffout [0]);
-			//debug_printf_P(PSTR("CDC_SET_LINE_CODING: interfacev=%u, dwDTERate=%lu, bits=%u\n"), interfacev, dwDTERate [interfacev], cdc_ep0databuffout [6]);
+			//PRINTF(PSTR("CDC_SET_LINE_CODING: interfacev=%u, dwDTERate=%lu, bits=%u\n"), interfacev, dwDTERate [interfacev], cdc_ep0databuffout [6]);
 		}
 		break;
 #endif /* WITHUSBCDC */
@@ -3046,7 +3046,7 @@ usbd_handler_brdy8_dcp_out(PCD_TypeDef * const Instance, uint_fast8_t pipe)
 			const uint_fast8_t terminalID = HI_BYTE(gReqIndex);
 			const uint_fast8_t controlID = HI_BYTE(gReqValue);	// AUDIO_MUTE_CONTROL, AUDIO_VOLUME_CONTROL, ...
 			terminalsprops [terminalID] [controlID] = uac_ep0databuffout [0];
-			debug_printf_P(PSTR("AUDIO_REQUEST_SET_CUR: interfacev=%u, %u=%u\n"), interfacev, terminalID, uac_ep0databuffout [0]);
+			PRINTF(PSTR("AUDIO_REQUEST_SET_CUR: interfacev=%u, %u=%u\n"), interfacev, terminalID, uac_ep0databuffout [0]);
 		}
 		break;
 #endif /* WITHUSBUAC */
@@ -3072,70 +3072,70 @@ static void usbd_continuereading(PCD_TypeDef * const Instance, uint_fast8_t pipe
 // seq=1,3,5
 static void usb0_function_Resrv_123(PCD_TypeDef * const Instance, uint_fast8_t ReqTypeRecip, uint_fast16_t ReqValue, uint_fast16_t ReqIndex, uint_fast16_t ReqLength)
 {
-	//debug_printf_P(PSTR("usb0_function_Resrv_123: ReqTypeRecip=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
+	//PRINTF(PSTR("usb0_function_Resrv_123: ReqTypeRecip=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
 	//stall_ep0(Instance);	// В примерах от renesas стоит stall
 }
 #if 0
 // seq=0
 static void usb0_function_Resrv_0(PCD_TypeDef * const Instance, uint_fast8_t ReqTypeRecip, uint_fast16_t ReqValue, uint_fast16_t ReqIndex, uint_fast16_t ReqLength)
 {
-	//debug_printf_P(PSTR("usb0_function_Resrv_0: ReqTypeRecip=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
+	//PRINTF(PSTR("usb0_function_Resrv_0: ReqTypeRecip=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
 	// В примерах от renesas пусто
 }
 
 // seq=2
 static void usb0_function_Resrv_4(PCD_TypeDef * const Instance, uint_fast8_t ReqTypeRecip, uint_fast16_t ReqValue, uint_fast16_t ReqIndex, uint_fast16_t ReqLength)
 {
-	//debug_printf_P(PSTR("usb0_function_Resrv_4: ReqTypeRecip=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
+	//PRINTF(PSTR("usb0_function_Resrv_4: ReqTypeRecip=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
 	// В примерах от renesas пусто
 }
 // seq=4
 static void usb0_function_Resrv_5(PCD_TypeDef * const Instance, uint_fast8_t ReqTypeRecip, uint_fast16_t ReqValue, uint_fast16_t ReqIndex, uint_fast16_t ReqLength)
 {
-	//debug_printf_P(PSTR("usb0_function_Resrv_5: ReqTypeRecip=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
+	//PRINTF(PSTR("usb0_function_Resrv_5: ReqTypeRecip=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
 	// В примерах от renesas пусто
 }
 // Control Read Status stage
 static void usbdFunctionReq_seq2(PCD_TypeDef * const Instance, PCD_TypeDef * const Instance, uint_fast8_t ReqType, uint_fast8_t ReqRequest, uint_fast16_t ReqValue, uint_fast16_t ReqIndex, uint_fast16_t ReqLength)
 {
-	//debug_printf_P(PSTR("usbdFunctionReq_seq2: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
+	//PRINTF(PSTR("usbdFunctionReq_seq2: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
 	const uint_fast8_t interfacev = LO_BYTE(ReqIndex);
 
 }
 // Control Read Status stage
 static void usbdVendorReq_seq2(PCD_TypeDef * const Instance, uint_fast8_t ReqType, uint_fast8_t ReqRequest, uint_fast16_t ReqValue, uint_fast16_t ReqIndex, uint_fast16_t ReqLength)
 {
-	//debug_printf_P(PSTR("usbdVendorReq_seq2: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
+	//PRINTF(PSTR("usbdVendorReq_seq2: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
 }
 // Idle or setup stage
 static void usbdFunctionReq_seq0(PCD_TypeDef * const Instance, uint_fast8_t ReqType, uint_fast8_t ReqRequest, uint_fast16_t ReqValue, uint_fast16_t ReqIndex, uint_fast16_t ReqLength)
 {
-	//debug_printf_P(PSTR("usbdFunctionReq_seq0: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
+	//PRINTF(PSTR("usbdFunctionReq_seq0: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
 	//const uint_fast8_t interfacev = LO_BYTE(ReqIndex);
 }
 // Idle or setup stage
 static void usbdVendorReq_seq0(PCD_TypeDef * const Instance, uint_fast8_t ReqType, uint_fast8_t ReqRequest, uint_fast16_t ReqValue, uint_fast16_t ReqIndex, uint_fast16_t ReqLength)
 {
-	//debug_printf_P(PSTR("usbdVendorReq_seq0: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
+	//PRINTF(PSTR("usbdVendorReq_seq0: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
 }
 // Control write status stage
 static void usbdFunctionReq_seq4(PCD_TypeDef * const Instance, uint_fast8_t ReqType, uint_fast8_t ReqRequest, uint_fast16_t ReqValue, uint_fast16_t ReqIndex, uint_fast16_t ReqLength)
 {
-	//debug_printf_P(PSTR("usbdFunctionReq_seq4: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
+	//PRINTF(PSTR("usbdFunctionReq_seq4: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
 	//const uint_fast8_t interfacev = LO_BYTE(ReqIndex);
 }
 
 // Control write status stage
 static void usbdVendorReq_seq4(PCD_TypeDef * const Instance, uint_fast8_t ReqType, uint_fast8_t ReqRequest, uint_fast16_t ReqValue, uint_fast16_t ReqIndex, uint_fast16_t ReqLength)
 {
-	//debug_printf_P(PSTR("usbdVendorReq_seq4: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
+	//PRINTF(PSTR("usbdVendorReq_seq4: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
 }
 #endif
 /* Control Read Data Stage seq= 1 */
 // OUT token
 static void usb0_function_GetDescriptor(PCD_TypeDef * const Instance, uint_fast8_t ReqTypeRecip, uint_fast16_t ReqValue, uint_fast16_t ReqIndex, uint_fast16_t ReqLength)
 {
-	//debug_printf_P(PSTR("usb0_function_GetDescriptor: ReqTypeRecip=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
+	//PRINTF(PSTR("usb0_function_GetDescriptor: ReqTypeRecip=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
     if (ReqTypeRecip != 0x0000) // USB_FUNCTION_DEVICE_REQUEST
 	{
 		stall_ep0(Instance);
@@ -3146,13 +3146,13 @@ static void usb0_function_GetDescriptor(PCD_TypeDef * const Instance, uint_fast8
 	{
 	case USB_DESC_TYPE_DEVICE:
 		// device Descriptor 
-		//debug_printf_P(PSTR("usb0_function_GetDescriptor: ReqTypeRecip=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
+		//PRINTF(PSTR("usb0_function_GetDescriptor: ReqTypeRecip=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
 		control_transmit(Instance, DeviceDescrTbl [0].data, ulmin16(ReqLength, DeviceDescrTbl [0].size));
 		break;
 
 	case USB_DESC_TYPE_CONFIGURATION:
 		// Configuration Descriptor
-		//debug_printf_P(PSTR("usb0_function_GetDescriptor: ReqTypeRecip=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
+		//PRINTF(PSTR("usb0_function_GetDescriptor: ReqTypeRecip=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
 		if (index < ARRAY_SIZE(ConfigDescrTbl))
 			control_transmit(Instance, ConfigDescrTbl [index].data, ulmin16(ReqLength, ConfigDescrTbl [index].size));
 		else
@@ -3161,7 +3161,7 @@ static void usb0_function_GetDescriptor(PCD_TypeDef * const Instance, uint_fast8
 
 	case USB_DESC_TYPE_STRING:
 		// String Descriptor
-		//debug_printf_P(PSTR("usb0_function_GetDescriptor: ReqTypeRecip=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
+		//PRINTF(PSTR("usb0_function_GetDescriptor: ReqTypeRecip=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
 		switch (index)
 		{
 		case 0xF8:
@@ -3183,7 +3183,7 @@ static void usb0_function_GetDescriptor(PCD_TypeDef * const Instance, uint_fast8
 
 	case USB_DESC_TYPE_DEVICE_QUALIFIER:
 		// Device Qualifier descriptor
-		//debug_printf_P(PSTR("usb0_function_GetDescriptor: ReqTypeRecip=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
+		//PRINTF(PSTR("usb0_function_GetDescriptor: ReqTypeRecip=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
 		if (index < ARRAY_SIZE(DeviceQualifierTbl) && DeviceQualifierTbl [index].size != 0)
 			control_transmit(Instance, DeviceQualifierTbl [index].data, ulmin16(ReqLength, DeviceQualifierTbl [index].size));
 		else
@@ -3192,7 +3192,7 @@ static void usb0_function_GetDescriptor(PCD_TypeDef * const Instance, uint_fast8
 
 	case USB_DESC_TYPE_OTHER_SPEED_CONFIGURATION:
 		// Other Speed Configuration descriptor
-		//debug_printf_P(PSTR("usb0_function_GetDescriptor: ReqTypeRecip=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
+		//PRINTF(PSTR("usb0_function_GetDescriptor: ReqTypeRecip=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
 		if (index < ARRAY_SIZE(OtherSpeedConfigurationTbl) && OtherSpeedConfigurationTbl [index].size)
 			control_transmit(Instance, OtherSpeedConfigurationTbl [index].data, ulmin16(ReqLength, OtherSpeedConfigurationTbl [index].size));
 		else
@@ -3207,7 +3207,7 @@ static void usb0_function_GetDescriptor(PCD_TypeDef * const Instance, uint_fast8
 		break;
 
 	default:
-		//debug_printf_P(PSTR("usb0_function_GetDescriptor: default path ReqTypeRecip=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
+		//PRINTF(PSTR("usb0_function_GetDescriptor: default path ReqTypeRecip=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
 		stall_ep0(Instance);
 		break;
 	}
@@ -3218,7 +3218,7 @@ static void usb0_function_GetDescriptor(PCD_TypeDef * const Instance, uint_fast8
 // OUT token
 static void usb0_function_GetStatus(PCD_TypeDef * const Instance, uint_fast8_t ReqTypeRecip, uint_fast16_t ReqValue, uint_fast16_t ReqIndex, uint_fast16_t ReqLength)
 {
-	//debug_printf_P(PSTR("usb0_function_GetStatus: ReqTypeRecip=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
+	//PRINTF(PSTR("usb0_function_GetStatus: ReqTypeRecip=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
 	// The Recipient bits of the bmRequestType field specify the desired recipient.  
 	// The data returned is the current status of the specified recipient.
 
@@ -3241,7 +3241,7 @@ static uint_fast8_t stored_bConfiguration = 1;
 // OUT token
 static void usb0_function_GetConfiguration(PCD_TypeDef * const Instance, uint_fast8_t ReqTypeRecip, uint_fast16_t ReqValue, uint_fast16_t ReqIndex, uint_fast16_t ReqLength)
 {
-	//debug_printf_P(PSTR("usb0_function_GetConfiguration: ReqTypeRecip=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
+	//PRINTF(PSTR("usb0_function_GetConfiguration: ReqTypeRecip=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
 
 	// This request returns the current device configuration value.
 	const uint_fast8_t data = stored_bConfiguration; //1;
@@ -3256,7 +3256,7 @@ static void usb0_function_GetConfiguration(PCD_TypeDef * const Instance, uint_fa
 // OUT token
 static void usb0_function_GetInterface(PCD_TypeDef * const Instance, uint_fast8_t ReqTypeRecip, uint_fast16_t ReqValue, uint_fast16_t ReqIndex, uint_fast16_t ReqLength)
 {
-	//debug_printf_P(PSTR("usb0_function_GetInterface: ReqTypeRecip=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
+	//PRINTF(PSTR("usb0_function_GetInterface: ReqTypeRecip=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
 
 	const uint_fast8_t interfacev = LO_BYTE(ReqIndex);
 
@@ -3276,7 +3276,7 @@ static void usb0_function_GetInterface(PCD_TypeDef * const Instance, uint_fast8_
 // OUT token
 static void usb0_function_SynchFrame(PCD_TypeDef * const Instance, uint_fast8_t ReqTypeRecip, uint_fast16_t ReqValue, uint_fast16_t ReqIndex, uint_fast16_t ReqLength)
 {
-	//debug_printf_P(PSTR("usb0_function_SynchFrame: ReqTypeRecip=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
+	//PRINTF(PSTR("usb0_function_SynchFrame: ReqTypeRecip=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
 
 	// This request is used to set and then report an endpoint’s synchronization frame
 	// wIndex=endpoint
@@ -3296,7 +3296,7 @@ static void usb0_function_SynchFrame(PCD_TypeDef * const Instance, uint_fast8_t 
 // IN token
 static void usb0_function_SetDescriptor(PCD_TypeDef * const Instance, uint_fast8_t ReqTypeRecip, uint_fast16_t ReqValue, uint_fast16_t ReqIndex, uint_fast16_t ReqLength)
 {
-	//debug_printf_P(PSTR("usb0_function_SetDescriptor: ReqTypeRecip=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
+	//PRINTF(PSTR("usb0_function_SetDescriptor: ReqTypeRecip=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
 
 	static USBALIGN_BEGIN uint8_t buff [255] USBALIGN_END;
 	control_read_data(Instance, buff, ulmin16(ARRAY_SIZE(buff), ReqLength));
@@ -3310,7 +3310,7 @@ static void usb0_function_SetDescriptor(PCD_TypeDef * const Instance, uint_fast8
 /* Control Write No Data Status Stage seq= 5 */
 static void usb0_function_ClearFeature(PCD_TypeDef * const Instance, uint_fast8_t ReqTypeRecip, uint_fast16_t ReqValue, uint_fast16_t ReqIndex, uint_fast16_t ReqLength)
 {
-	debug_printf_P(PSTR("usb0_function_ClearFeature: ReqTypeRecip=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
+	PRINTF(PSTR("usb0_function_ClearFeature: ReqTypeRecip=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
 #if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32F4XX
 	dcp_acksend(Instance);
 #endif /* CPUSTYLE_STM32F7XX | CPUSTYLE_STM32F4XX */
@@ -3319,7 +3319,7 @@ static void usb0_function_ClearFeature(PCD_TypeDef * const Instance, uint_fast8_
 /* Control Write No Data Status Stage seq= 5 */
 static void usb0_function_SetFeature(PCD_TypeDef * const Instance, uint_fast8_t ReqTypeRecip, uint_fast16_t ReqValue, uint_fast16_t ReqIndex, uint_fast16_t ReqLength)
 {
-	debug_printf_P(PSTR("usb0_function_SetFeature: ReqTypeRecip=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
+	PRINTF(PSTR("usb0_function_SetFeature: ReqTypeRecip=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
 #if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32F4XX
 	dcp_acksend(Instance);
 #endif /* CPUSTYLE_STM32F7XX | CPUSTYLE_STM32F4XX */
@@ -3329,9 +3329,9 @@ static void usb0_function_SetFeature(PCD_TypeDef * const Instance, uint_fast8_t 
 static void usb0_function_SetAddress(PCD_TypeDef * const Instance, uint_fast8_t ReqTypeRecip, uint_fast16_t ReqValue, uint_fast16_t ReqIndex, uint_fast16_t ReqLength)
 {
 
-  //debug_printf_P(PSTR("usb0_function_SetAddress: ReqTypeRecip=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
+  //PRINTF(PSTR("usb0_function_SetAddress: ReqTypeRecip=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
 	// wValue = device address
-	debug_printf_P(PSTR("SetAddress: address=0x%02lx\n"), LO_BYTE(ReqValue));
+	PRINTF(PSTR("SetAddress: address=0x%02lx\n"), LO_BYTE(ReqValue));
 #if 0//CPUSTYLE_STM32H7XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32F4XX
 	USBx_DEVICE->DCFG = (USBx_DEVICE->DCFG & ~ (USB_OTG_DCFG_DAD)) |
 		LO_BYTE(ReqValue) * USB_OTG_DCFG_DAD_0 |
@@ -3345,7 +3345,7 @@ static void usb0_function_SetAddress(PCD_TypeDef * const Instance, uint_fast8_t 
 /* Control Write No Data Status Stage seq= 5 */
 static void usb0_function_SetConfiguration(PCD_TypeDef * const Instance, uint_fast8_t ReqTypeRecip, uint_fast16_t ReqValue, uint_fast16_t ReqIndex, uint_fast16_t ReqLength)
 {
-	//debug_printf_P(PSTR("usb0_function_SetConfiguration: ReqTypeRecip=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
+	//PRINTF(PSTR("usb0_function_SetConfiguration: ReqTypeRecip=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
 	// The lower byte of the wValue field specifies the desired configuration.  
 	// This configuration value must be zero or match a configuration value from a configuration descriptor.  
 	// If the configuration value is zero, the device is placed in its Address state.  
@@ -3353,7 +3353,7 @@ static void usb0_function_SetConfiguration(PCD_TypeDef * const Instance, uint_fa
 	const uint_fast8_t configuration = LO_BYTE(ReqValue);
 
 	stored_bConfiguration = configuration;
-	//debug_printf_P(PSTR("SetConfiguration: configuration=%02X\n"), LO_BYTE(ReqValue));
+	//PRINTF(PSTR("SetConfiguration: configuration=%02X\n"), LO_BYTE(ReqValue));
 
 	dcp_acksend(Instance);	// убирание этой строки приводит к ошибке enumeration
 }
@@ -3361,7 +3361,7 @@ static void usb0_function_SetConfiguration(PCD_TypeDef * const Instance, uint_fa
 /* Control Write No Data Status Stage seq= 5 */
 static void usb0_function_SetInterface(PCD_TypeDef * const Instance, uint_fast8_t ReqTypeRecip, uint_fast16_t ReqValue, uint_fast16_t ReqIndex, uint_fast16_t ReqLength)
 {
-	//debug_printf_P(PSTR("usb0_function_SetInterface: ReqTypeRecip=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
+	//PRINTF(PSTR("usb0_function_SetInterface: ReqTypeRecip=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
 	const uint_fast8_t interfacev = LO_BYTE(ReqIndex);
 
 	/*
@@ -3379,7 +3379,7 @@ static void usb0_function_SetInterface(PCD_TypeDef * const Instance, uint_fast8_
 	// wValue = alternate setting 
 	// wIndex = interface (INTERFACE_AUDIO_MIKE, INTERFACE_AUDIO_SPK)
 
-	//debug_printf_P(PSTR("SetInterface: interface=%02X, alternative=%02X\n"), interfacev, LO_BYTE(ReqValue));
+	//PRINTF(PSTR("SetInterface: interface=%02X, alternative=%02X\n"), interfacev, LO_BYTE(ReqValue));
 	
 	if (ReqLength != 0)
 	{
@@ -3422,7 +3422,7 @@ static void usb0_function_SetInterface(PCD_TypeDef * const Instance, uint_fast8_
 // IN direction
 static void usbdFunctionReq_seq1(PCD_TypeDef * const Instance, uint_fast8_t ReqType, uint_fast8_t ReqRequest, uint_fast16_t ReqValue, uint_fast16_t ReqIndex, uint_fast16_t ReqLength)
 {
-	//debug_printf_P(PSTR("usbdFunctionReq_seq1: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
+	//PRINTF(PSTR("usbdFunctionReq_seq1: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
 	const uint_fast8_t interfacev = LO_BYTE(ReqIndex);
 
 	// See 5.2.2 Control Request Layout
@@ -3451,7 +3451,7 @@ static void usbdFunctionReq_seq1(PCD_TypeDef * const Instance, uint_fast8_t ReqT
 			switch (ReqRequest)
 			{
 			case CDC_GET_LINE_CODING:
-				//debug_printf_P(PSTR("GET_LINE_CODING, dwDTERate=%lu\n"), (unsigned long) dwDTERate [interfacev]);
+				//PRINTF(PSTR("GET_LINE_CODING, dwDTERate=%lu\n"), (unsigned long) dwDTERate [interfacev]);
 				USBD_poke_u32(& buff [0], dwDTERate [interfacev]); // dwDTERate
 				buff [4] = 0;	// 1 stop bit
 				buff [5] = 0;	// parity=none
@@ -3461,7 +3461,7 @@ static void usbdFunctionReq_seq1(PCD_TypeDef * const Instance, uint_fast8_t ReqT
 				return;
 
 			default:
-				//debug_printf_P(PSTR("default path 1: usbdFunctionReq_seq1: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
+				//PRINTF(PSTR("default path 1: usbdFunctionReq_seq1: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
 				stall_ep0(Instance);
 				return;
 			}
@@ -3480,31 +3480,31 @@ static void usbdFunctionReq_seq1(PCD_TypeDef * const Instance, uint_fast8_t ReqT
 				switch (ReqRequest)
 				{
 				case AUDIO_REQUEST_GET_CUR:
-					debug_printf_P(PSTR("AUDIO_REQUEST_GET_CUR: interfacev=%u,  %u\n"), interfacev, terminalID);
+					PRINTF(PSTR("AUDIO_REQUEST_GET_CUR: interfacev=%u,  %u\n"), interfacev, terminalID);
 					buff [0] = terminalsprops [terminalID] [controlID];
 					control_transmit(Instance, buff, ulmin16(ARRAY_SIZE(buff), ReqLength));
 					return;
 
 				case AUDIO_REQUEST_GET_MIN:
-					debug_printf_P(PSTR("AUDIO_REQUEST_GET_MIN: interfacev=%u,  %u\n"), interfacev, terminalID);
+					PRINTF(PSTR("AUDIO_REQUEST_GET_MIN: interfacev=%u,  %u\n"), interfacev, terminalID);
 					buff [0] = terminalID == TERMINAL_ID_SELECTOR_6 ? 1 : 0;
 					control_transmit(Instance, buff, ulmin16(ARRAY_SIZE(buff), ReqLength));
 					return;
 
 				case AUDIO_REQUEST_GET_MAX:
-					debug_printf_P(PSTR("AUDIO_REQUEST_GET_MAX: interfacev=%u,  %u\n"), interfacev, terminalID);
+					PRINTF(PSTR("AUDIO_REQUEST_GET_MAX: interfacev=%u,  %u\n"), interfacev, terminalID);
 					buff [0] = terminalID == TERMINAL_ID_SELECTOR_6 ? TERMINAL_ID_SELECTOR_6_INPUTS : 100;
 					control_transmit(Instance, buff, ulmin16(ARRAY_SIZE(buff), ReqLength));
 					return;
 
 				case AUDIO_REQUEST_GET_RES:
-					debug_printf_P(PSTR("AUDIO_REQUEST_GET_MAX: interfacev=%u,  %u\n"), interfacev, terminalID);
+					PRINTF(PSTR("AUDIO_REQUEST_GET_MAX: interfacev=%u,  %u\n"), interfacev, terminalID);
 					buff [0] = 1;
 					control_transmit(Instance, buff, ulmin16(ARRAY_SIZE(buff), ReqLength));
 					return;
 
 				default:
-					//debug_printf_P(PSTR("default path 2: usbdFunctionReq_seq1: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
+					//PRINTF(PSTR("default path 2: usbdFunctionReq_seq1: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
 					stall_ep0(Instance);
 					return;
 				}
@@ -3513,7 +3513,7 @@ static void usbdFunctionReq_seq1(PCD_TypeDef * const Instance, uint_fast8_t ReqT
 #endif /* WITHUSBUAC */
 
 	default:
-		//debug_printf_P(PSTR("default path 3: usbdFunctionReq_seq1: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
+		//PRINTF(PSTR("default path 3: usbdFunctionReq_seq1: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
 		memset(buff, 0, ulmin16(ARRAY_SIZE(buff), ReqLength));
 		control_transmit(Instance, buff, ulmin16(ARRAY_SIZE(buff), ReqLength));
 		return;
@@ -3524,10 +3524,10 @@ static void usbdFunctionReq_seq1(PCD_TypeDef * const Instance, uint_fast8_t ReqT
 // Control read data stage
 static void usbdVendorReq_seq1(PCD_TypeDef * const Instance, uint_fast8_t ReqType, uint_fast8_t ReqRequest, uint_fast16_t ReqValue, uint_fast16_t ReqIndex, uint_fast16_t ReqLength)
 {
-	//debug_printf_P(PSTR("usbdVendorReq_seq1: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
+	//PRINTF(PSTR("usbdVendorReq_seq1: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
 	// ReqIndex = interfacei
 	//dcp_acksend(Instance);	// пока так, игнорируя параметры
-	//debug_printf_P(PSTR("default path: usbdVendorReq_seq1: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
+	//PRINTF(PSTR("default path: usbdVendorReq_seq1: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
 	static uint8_t buff [1 * 63] = { 254 };
 	control_transmit(Instance, buff, ulmin16(ARRAY_SIZE(buff), ReqLength));
 	return;
@@ -3538,7 +3538,7 @@ static void usbdVendorReq_seq1(PCD_TypeDef * const Instance, uint_fast8_t ReqTyp
 // Далее следует блок данных с дополнительными параметрами.
 static void usbdFunctionReq_seq3(PCD_TypeDef * const Instance, uint_fast8_t ReqType, uint_fast8_t ReqRequest, uint_fast16_t ReqValue, uint_fast16_t ReqIndex, uint_fast16_t ReqLength)
 {
-	//debug_printf_P(PSTR("usbdFunctionReq_seq3: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
+	//PRINTF(PSTR("usbdFunctionReq_seq3: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
 	const uint_fast8_t interfacev = LO_BYTE(ReqIndex);
 
 	switch (interfacev)
@@ -3557,7 +3557,7 @@ static void usbdFunctionReq_seq3(PCD_TypeDef * const Instance, uint_fast8_t ReqT
 				break;
 
 			default:
-				debug_printf_P(PSTR("default path 1: usbdFunctionReq_seq3: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
+				PRINTF(PSTR("default path 1: usbdFunctionReq_seq3: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
 				stall_ep0(Instance);
 				return;
 			}
@@ -3576,7 +3576,7 @@ static void usbdFunctionReq_seq3(PCD_TypeDef * const Instance, uint_fast8_t ReqT
 				break;
 
 			default:
-				debug_printf_P(PSTR("default path 2: usbdFunctionReq_seq3: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
+				PRINTF(PSTR("default path 2: usbdFunctionReq_seq3: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
 				stall_ep0(Instance);
 				return;
 			}
@@ -3585,7 +3585,7 @@ static void usbdFunctionReq_seq3(PCD_TypeDef * const Instance, uint_fast8_t ReqT
 #endif /* WITHUSBCDC */
 	
 	default:
-		debug_printf_P(PSTR("default path 3: usbdFunctionReq_seq3: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
+		PRINTF(PSTR("default path 3: usbdFunctionReq_seq3: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
 		stall_ep0(Instance);
 		return;
 	}
@@ -3596,7 +3596,7 @@ static void usbdFunctionReq_seq3(PCD_TypeDef * const Instance, uint_fast8_t ReqT
 // Control Write Data Stage
 static void usbdVendorReq_seq3(PCD_TypeDef * const Instance, uint_fast8_t ReqType, uint_fast8_t ReqRequest, uint_fast16_t ReqValue, uint_fast16_t ReqIndex, uint_fast16_t ReqLength)
 {
-	//debug_printf_P(PSTR("usbdVendorReq_seq3: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
+	//PRINTF(PSTR("usbdVendorReq_seq3: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
 	dcp_acksend(Instance);	// ACK
 }
 
@@ -3604,7 +3604,7 @@ static void usbdVendorReq_seq3(PCD_TypeDef * const Instance, uint_fast8_t ReqTyp
 // Блока данных не будет, вся необходимая информация в setup request уже передана
 static void usbdFunctionReq_seq5(PCD_TypeDef * const Instance, uint_fast8_t ReqType, uint_fast8_t ReqRequest, uint_fast16_t ReqValue, uint_fast16_t ReqIndex, uint_fast16_t ReqLength)
 {
-	//debug_printf_P(PSTR("usbdFunctionReq_seq5: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
+	//PRINTF(PSTR("usbdFunctionReq_seq5: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
 
 	const uint_fast8_t interfacev = LO_BYTE(ReqIndex);
 	switch (interfacev)
@@ -3616,12 +3616,12 @@ static void usbdFunctionReq_seq5(PCD_TypeDef * const Instance, uint_fast8_t ReqT
 			switch (ReqRequest)
 			{
 			case CDC_SET_CONTROL_LINE_STATE:
-				//debug_printf_P(PSTR("usbdFunctionReq_seq5: CDC_SET_CONTROL_LINE_STATE: ReqIndex(interfacei)=%02X, ReqValue=0x%04x\n"), ReqIndex, ReqValue);
+				//PRINTF(PSTR("usbdFunctionReq_seq5: CDC_SET_CONTROL_LINE_STATE: ReqIndex(interfacei)=%02X, ReqValue=0x%04x\n"), ReqIndex, ReqValue);
 				usb_cdc_control_state [interfacev] = ReqValue;
 				break;
 
 			default:
-				debug_printf_P(PSTR("default path 1: usbdFunctionReq_seq5: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
+				PRINTF(PSTR("default path 1: usbdFunctionReq_seq5: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
 				stall_ep0(Instance);
 				return;
 			}
@@ -3636,7 +3636,7 @@ static void usbdFunctionReq_seq5(PCD_TypeDef * const Instance, uint_fast8_t ReqT
 #endif /* WITHUSBCDCEEM */
 
 	default:
-		debug_printf_P(PSTR("default path 2: usbdFunctionReq_seq5: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
+		PRINTF(PSTR("default path 2: usbdFunctionReq_seq5: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
 		stall_ep0(Instance);
 		return;
 	}
@@ -3648,7 +3648,7 @@ static void usbdFunctionReq_seq5(PCD_TypeDef * const Instance, uint_fast8_t ReqT
 static void usbdVendorReq_seq5(PCD_TypeDef * const Instance, uint_fast8_t ReqType, uint_fast8_t ReqRequest, uint_fast16_t ReqValue, uint_fast16_t ReqIndex, uint_fast16_t ReqLength)
 {
 	//const uint_fast8_t interfacev = LO_BYTE(ReqIndex);
-	//debug_printf_P(PSTR("usbdVendorReq_seq5: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
+	//PRINTF(PSTR("usbdVendorReq_seq5: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
 	dcp_acksend(Instance);	// ACK
 }
 
@@ -3661,7 +3661,7 @@ static void invoketable(
 	uint_fast8_t ReqTypeRecip, uint_fast16_t ReqValue, uint_fast16_t ReqIndex, uint_fast16_t ReqLength
 	)
 {
-	//debug_printf_P(PSTR("invoketable: ReqRequest=%02X, ReqTypeRecip=%02X, ReqValue=%04X,  ReqIndex=%04X, ReqLength=%04X\n"), ReqRequest, ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
+	//PRINTF(PSTR("invoketable: ReqRequest=%02X, ReqTypeRecip=%02X, ReqValue=%04X,  ReqIndex=%04X, ReqLength=%04X\n"), ReqRequest, ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
 	if (ReqRequest < tablesize)
 		(* pbReq_seq [ReqRequest])(Instance, ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
 	else
@@ -3940,7 +3940,7 @@ static void usb0_function_save_request(PCD_TypeDef * const Instance)
 	gReqRequest = HI_BYTE(usbreq & USB_FUNCTION_bRequest);		/* b15-8:bRequest */
 
 #if 0
-	debug_printf_P(
+	PRINTF(
 		PSTR("ReqType=%02X, ReqTypeType=%02X, ReqTypeRecip=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), 
 		gReqType, gReqTypeType, gReqTypeRecip, gReqRequest, gReqValue, gReqIndex, gReqLength 
 		);
@@ -4131,7 +4131,7 @@ static void
 usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 {
 	PCD_TypeDef * const Instance = hpcd->Instance;
-	debug_printf_P(PSTR("usbd_pipes_initialize\n"));
+	PRINTF(PSTR("usbd_pipes_initialize\n"));
 	/*
 		at initialize:
 		usbd_handler_brdy: после инициализации появляется для тех pipe, у которых dir=0 (read direction)
@@ -4147,7 +4147,7 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 		const uint_fast8_t pipe = HARDWARE_USBD_PIPE_CDC_OUT;	// PIPE3
 		const uint_fast8_t epnum = USBD_EP_CDC_OUT;
 		const uint_fast8_t dir = 0;
-		//debug_printf_P(PSTR("usbd_pipe_initialize: pipe=%u endpoint=%02X\n"), pipe, epnum);
+		//PRINTF(PSTR("usbd_pipe_initialize: pipe=%u endpoint=%02X\n"), pipe, epnum);
 
 		Instance->PIPESEL = pipe << USB_PIPESEL_PIPESEL_SHIFT;
 		while ((Instance->PIPESEL & USB_PIPESEL_PIPESEL) != (pipe << USB_PIPESEL_PIPESEL_SHIFT))
@@ -4174,7 +4174,7 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 		const uint_fast8_t pipe = HARDWARE_USBD_PIPE_CDC_IN;	// PIPE4
 		const uint_fast8_t epnum = USBD_EP_CDC_IN;
 		const uint_fast8_t dir = 1;
-		//debug_printf_P(PSTR("usbd_pipe_initialize: pipe=%u endpoint=%02X\n"), pipe, epnum);
+		//PRINTF(PSTR("usbd_pipe_initialize: pipe=%u endpoint=%02X\n"), pipe, epnum);
 
 		Instance->PIPESEL = pipe << USB_PIPESEL_PIPESEL_SHIFT;
 		while ((Instance->PIPESEL & USB_PIPESEL_PIPESEL) != (pipe << USB_PIPESEL_PIPESEL_SHIFT))
@@ -4201,7 +4201,7 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 		const uint_fast8_t pipe = HARDWARE_USBD_PIPE_CDC_INT;	// PIPE6
 		const uint_fast8_t epnum = USBD_EP_CDC_INT;
 		const uint_fast8_t dir = 1;
-		//debug_printf_P(PSTR("usbd_pipe_initialize: pipe=%u endpoint=%02X\n"), pipe, epnum);
+		//PRINTF(PSTR("usbd_pipe_initialize: pipe=%u endpoint=%02X\n"), pipe, epnum);
 
 		Instance->PIPESEL = pipe << USB_PIPESEL_PIPESEL_SHIFT;
 		while ((Instance->PIPESEL & USB_PIPESEL_PIPESEL) != (pipe << USB_PIPESEL_PIPESEL_SHIFT))
@@ -4227,7 +4227,7 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 		const uint_fast8_t pipe = HARDWARE_USBD_PIPE_CDC_OUTb;	// PIPE14
 		const uint_fast8_t epnum = USBD_EP_CDC_OUTb;
 		const uint_fast8_t dir = 0;
-		//debug_printf_P(PSTR("usbd_pipe_initialize: pipe=%u endpoint=%02X\n"), pipe, epnum);
+		//PRINTF(PSTR("usbd_pipe_initialize: pipe=%u endpoint=%02X\n"), pipe, epnum);
 
 		Instance->PIPESEL = pipe << USB_PIPESEL_PIPESEL_SHIFT;
 		while ((Instance->PIPESEL & USB_PIPESEL_PIPESEL) != (pipe << USB_PIPESEL_PIPESEL_SHIFT))
@@ -4253,7 +4253,7 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 		const uint_fast8_t pipe = HARDWARE_USBD_PIPE_CDC_INb;	// PIPE15
 		const uint_fast8_t epnum = USBD_EP_CDC_INb;
 		const uint_fast8_t dir = 1;
-		//debug_printf_P(PSTR("usbd_pipe_initialize: pipe=%u endpoint=%02X\n"), pipe, epnum);
+		//PRINTF(PSTR("usbd_pipe_initialize: pipe=%u endpoint=%02X\n"), pipe, epnum);
 
 		Instance->PIPESEL = pipe << USB_PIPESEL_PIPESEL_SHIFT;
 		while ((Instance->PIPESEL & USB_PIPESEL_PIPESEL) != (pipe << USB_PIPESEL_PIPESEL_SHIFT))
@@ -4279,7 +4279,7 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 		const uint_fast8_t pipe = HARDWARE_USBD_PIPE_CDC_INTb;	// PIPE7
 		const uint_fast8_t epnum = USBD_EP_CDC_INTb;
 		const uint_fast8_t dir = 1;
-		//debug_printf_P(PSTR("usbd_pipe_initialize: pipe=%u endpoint=%02X\n"), pipe, epnum);
+		//PRINTF(PSTR("usbd_pipe_initialize: pipe=%u endpoint=%02X\n"), pipe, epnum);
 
 		Instance->PIPESEL = pipe << USB_PIPESEL_PIPESEL_SHIFT;
 		while ((Instance->PIPESEL & USB_PIPESEL_PIPESEL) != (pipe << USB_PIPESEL_PIPESEL_SHIFT))
@@ -4314,7 +4314,7 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 		const uint_fast8_t dir = 1;
 
 		const uint_fast16_t maxpacket = usbd_getuacinmaxpacket();
-		//debug_printf_P(PSTR("usbd_pipe_initialize: pipe=%u endpoint=%02X\n"), pipe, epnum);
+		//PRINTF(PSTR("usbd_pipe_initialize: pipe=%u endpoint=%02X\n"), pipe, epnum);
 
 		Instance->PIPESEL = pipe << USB_PIPESEL_PIPESEL_SHIFT;
 		while ((Instance->PIPESEL & USB_PIPESEL_PIPESEL) != (pipe << USB_PIPESEL_PIPESEL_SHIFT))
@@ -4363,7 +4363,7 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 		const uint_fast8_t epnum = USBD_EP_AUDIO_OUT;
 		const uint_fast8_t dir = 0;
 		const uint_fast16_t maxpacket = VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT;
-		//debug_printf_P(PSTR("usbd_pipe_initialize: pipe=%u endpoint=%02X\n"), pipe, epnum);
+		//PRINTF(PSTR("usbd_pipe_initialize: pipe=%u endpoint=%02X\n"), pipe, epnum);
 
 		Instance->PIPESEL = pipe << USB_PIPESEL_PIPESEL_SHIFT;
 		while ((Instance->PIPESEL & USB_PIPESEL_PIPESEL) != (pipe << USB_PIPESEL_PIPESEL_SHIFT))
@@ -4406,7 +4406,7 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 	for (pipe = 1; pipe <= 15; ++ pipe)
 	{
 		Instance->PIPESEL = pipe;
-		debug_printf_P(PSTR("USB pipe%02d PIPEBUF=%04X PIPEMAXP=%u\n"), pipe, Instance->PIPEBUF, Instance->PIPEMAXP & USB_PIPEMAXP_MXPS);
+		PRINTF(PSTR("USB pipe%02d PIPEBUF=%04X PIPEMAXP=%u\n"), pipe, Instance->PIPEBUF, Instance->PIPEMAXP & USB_PIPEMAXP_MXPS);
 	}
 	*/
 }
@@ -4415,7 +4415,7 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 
 static void usbd_handle_resume(PCD_TypeDef * const Instance)
 {
-	//debug_printf_P(PSTR("usbd_handle_resume\n"));
+	//PRINTF(PSTR("usbd_handle_resume\n"));
 	usbd_pipes_enable(Instance);
 
 	memset(altinterfaces, 0, sizeof altinterfaces);
@@ -4440,7 +4440,7 @@ static void usbd_handle_resume(PCD_TypeDef * const Instance)
 
 static void usbd_handle_suspend(PCD_TypeDef * const Instance)
 {
-	//debug_printf_P(PSTR("usbd_handle_suspend\n"));
+	//PRINTF(PSTR("usbd_handle_suspend\n"));
 	usbd_pipes_disable(Instance);
 
 	memset(altinterfaces, 0, sizeof altinterfaces);
@@ -4502,19 +4502,19 @@ static void r7s721_usbiX_handler(PCD_TypeDef * const Instance)
 	if ((intsts0 & USB_INTSTS0_SOFR) != 0)	// SOFR
 	{
 		Instance->INTSTS0 = (uint16_t) ~ (1uL << USB_INTSTS0_SOFR_SHIFT);	// Clear SOFR
-		//debug_printf_P(PSTR("r7s721_usbi0_handler trapped - SOFR\n"));
+		//PRINTF(PSTR("r7s721_usbi0_handler trapped - SOFR\n"));
 	}
 #endif
 	if ((intsts0 & USB_INTSTS0_CTRT) != 0)	// CTRT
 	{
-		//debug_printf_P(PSTR("r7s721_usbi0_handler trapped - CTRT, CTSQ=%d\n"), (intsts0 >> 0) & 0x07);
+		//PRINTF(PSTR("r7s721_usbi0_handler trapped - CTRT, CTSQ=%d\n"), (intsts0 >> 0) & 0x07);
 		Instance->INTSTS0 = (uint16_t) ~ (1uL << USB_INTSTS0_CTRT_SHIFT);	// Clear CTRT
 	
 		usbd_handle_ctrt(Instance, intsts0 & USB_INTSTS0_CTSQ);
 	} 
 	if ((intsts0 & USB_INTSTS0_BEMP) != 0)	// BEMP
 	{
-		//debug_printf_P(PSTR("r7s721_usbi0_handler trapped - BEMP, BEMPSTS=0x%04X\n"), Instance->BEMPSTS);
+		//PRINTF(PSTR("r7s721_usbi0_handler trapped - BEMP, BEMPSTS=0x%04X\n"), Instance->BEMPSTS);
 		const uint_fast16_t bempsts = Instance->BEMPSTS & Instance->BEMPENB;	// BEMP Interrupt Status Register
 		Instance->BEMPSTS = ~ bempsts;
 
@@ -4523,7 +4523,7 @@ static void r7s721_usbiX_handler(PCD_TypeDef * const Instance)
 	}
 	if ((intsts0 & USB_INTSTS0_NRDY) != 0)	// NRDY
 	{
-		//debug_printf_P(PSTR("r7s721_usbi0_handler trapped - NRDY, NRDYSTS=0x%04X\n"), Instance->NRDYSTS);
+		//PRINTF(PSTR("r7s721_usbi0_handler trapped - NRDY, NRDYSTS=0x%04X\n"), Instance->NRDYSTS);
 		const uint_fast16_t nrdysts = Instance->NRDYSTS & Instance->NRDYENB;	// NRDY Interrupt Status Register
 		Instance->NRDYSTS = ~ nrdysts;
 #if WITHUSBUAC
@@ -4545,7 +4545,7 @@ static void r7s721_usbiX_handler(PCD_TypeDef * const Instance)
 	}
 	if ((intsts0 & USB_INTSTS0_BRDY) != 0)	// BRDY
 	{
-		//debug_printf_P(PSTR("r7s721_usbi0_handler trapped - BRDY, BRDYSTS=0x%04X\n"), Instance->BRDYSTS);
+		//PRINTF(PSTR("r7s721_usbi0_handler trapped - BRDY, BRDYSTS=0x%04X\n"), Instance->BRDYSTS);
 		const uint_fast16_t brdysts = Instance->BRDYSTS & Instance->BRDYENB;	// BRDY Interrupt Status Register
 		Instance->BRDYSTS = ~ brdysts;
 
@@ -4566,20 +4566,20 @@ static void r7s721_usbiX_handler(PCD_TypeDef * const Instance)
 	}
 	if ((intsts0 & (1uL << USB_INTSTS0_DVST_SHIFT)) != 0)	// DVSE
 	{
-		//debug_printf_P(PSTR("r7s721_usbi0_handler trapped - DVSE, DVSQ=%d\n"), (intsts0 >> 4) & 0x07);
+		//PRINTF(PSTR("r7s721_usbi0_handler trapped - DVSE, DVSQ=%d\n"), (intsts0 >> 4) & 0x07);
 		Instance->INTSTS0 = (uint16_t) ~ (1uL << USB_INTSTS0_DVST_SHIFT);	// Clear DVSE
 		usbd_handle_dvst(Instance, (intsts0 & USB_INTSTS0_DVSQ) >> USB_INTSTS0_DVSQ_SHIFT);
 	}
 	if ((intsts0 & (1uL << USB_INTSTS0_RESM_SHIFT)) != 0)	// RESM
 	{
 		Instance->INTSTS0 = (uint16_t) ~ (1uL << USB_INTSTS0_RESM_SHIFT);	// Clear RESM
-		//debug_printf_P(PSTR("r7s721_usbi0_handler trapped - RESM\n"));
+		//PRINTF(PSTR("r7s721_usbi0_handler trapped - RESM\n"));
 		usbd_handle_resume(Instance);
 	}
 	//if ((intsts0 & (1uL << USB_INTSTS0_VBINT_SHIFT)) != 0)	// VBINT
 	//{
 	//	Instance->INTSTS0 = (uint16_t) ~ (1uL << USB_INTSTS0_VBINT_SHIFT);	// Clear VBINT - enabled by VBSE
-	//	debug_printf_P(PSTR("r7s721_usbi0_handler trapped - VBINT, VBSTS=%d\n"), usbd_getvbus());
+	//	PRINTF(PSTR("r7s721_usbi0_handler trapped - VBINT, VBSTS=%d\n"), usbd_getvbus());
 	//	usbd_handle_vbuse(usbd_getvbus());
 	//}
 }
@@ -4661,7 +4661,7 @@ HAL_StatusTypeDef HAL_PCD_DeActivateRemoteWakeup(PCD_HandleTypeDef *hpcd);
   */
 static void Error_Handler(void)
 {
-	debug_printf_P(PSTR("Error_Handler\n"));
+	PRINTF(PSTR("Error_Handler\n"));
 	/* USER CODE BEGIN Error_Handler */
 	/* User can add his own implementation to report the HAL error return state */
 	while(1) 
@@ -5433,7 +5433,7 @@ HAL_StatusTypeDef USB_EPStartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDef
 	#if 0
 		while (! (((inep->DTXFSTS & USB_OTG_DTXFSTS_INEPTFSAV) >> USB_OTG_DTXFSTS_INEPTFSAV_Pos) >= ((ep->xfer_len + 3) / 4)))
 		{
-			debug_printf_P(PSTR("ep%d: avl=%04lX, need=%04lX, sts=%08lX\n"), ep->num, ((inep->DTXFSTS & USB_OTG_DTXFSTS_INEPTFSAV) >> USB_OTG_DTXFSTS_INEPTFSAV_Pos), ((ep->xfer_len + 3) / 4), USBx->GRSTCTL);
+			PRINTF(PSTR("ep%d: avl=%04lX, need=%04lX, sts=%08lX\n"), ep->num, ((inep->DTXFSTS & USB_OTG_DTXFSTS_INEPTFSAV) >> USB_OTG_DTXFSTS_INEPTFSAV_Pos), ((ep->xfer_len + 3) / 4), USBx->GRSTCTL);
 			USB_FlushTxFifo(USBx, ep->num);
 			//ASSERT(((inep->DTXFSTS & USB_OTG_DTXFSTS_INEPTFSAV) >> USB_OTG_DTXFSTS_INEPTFSAV_Pos) >= ((ep->xfer_len + 3) / 4));
 		}
@@ -5775,9 +5775,9 @@ static void USB_ReadPacket(USB_OTG_GlobalTypeDef *USBx, uint8_t *dest, uint_fast
 static void USB_WritePacket(USB_OTG_GlobalTypeDef *USBx, const uint8_t * data, uint_fast8_t tx_fifo_num, uint_fast16_t size, uint_fast8_t dma)
 {
 	//if (data != NULL && size != 0)
-	//	debug_printf_P(PSTR("USB_WritePacket, pipe=%d, size=%d, data[]={%02x,%02x,%02x,%02x,%02x,..}\n"), ch_ep_num, size, data [0], data [1], data [2], data [3], data [4]);
+	//	PRINTF(PSTR("USB_WritePacket, pipe=%d, size=%d, data[]={%02x,%02x,%02x,%02x,%02x,..}\n"), ch_ep_num, size, data [0], data [1], data [2], data [3], data [4]);
 	//else
-	//	debug_printf_P(PSTR("USB_WritePacket, pipe=%d, size=%d, data[]={}\n"), ch_ep_num, size);
+	//	PRINTF(PSTR("USB_WritePacket, pipe=%d, size=%d, data[]={}\n"), ch_ep_num, size);
 
 
 	if (dma == USB_DISABLE)
@@ -5885,7 +5885,7 @@ static void USB_ReadPacket(USB_OTG_GlobalTypeDef *USBx, uint8_t * dest, uint_fas
   */
 HAL_StatusTypeDef USB_EPSetStall(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDef *ep)
 {
-	//debug_printf_P(PSTR("USB_EPSetStall, ep->num=%02X\n"), ep->num);
+	//PRINTF(PSTR("USB_EPSetStall, ep->num=%02X\n"), ep->num);
 	if (ep->is_in == 1)
 	{
 		USB_OTG_INEndpointTypeDef * const inep = USBx_INEP(ep->num);
@@ -5916,7 +5916,7 @@ HAL_StatusTypeDef USB_EPSetStall(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDef 
   */
 HAL_StatusTypeDef USB_EPClearStall(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDef *ep)
 {
-	//debug_printf_P(PSTR("USB_EPClearStall, ep->num=%02X\n"), ep->num);
+	//PRINTF(PSTR("USB_EPClearStall, ep->num=%02X\n"), ep->num);
 	if (ep->is_in == 1)
 	{
 		USB_OTG_INEndpointTypeDef * const inep = USBx_INEP(ep->num);
@@ -5990,7 +5990,7 @@ HAL_StatusTypeDef  USB_SetDevAddress (USB_OTG_GlobalTypeDef *USBx, uint8_t addre
   */
 HAL_StatusTypeDef  USB_DevConnect (USB_OTG_GlobalTypeDef *USBx)
 {
-	//debug_printf_P(PSTR("USB_DevConnect (USBx=%p)\n"), USBx);
+	//PRINTF(PSTR("USB_DevConnect (USBx=%p)\n"), USBx);
 	USBx_DEVICE->DCTL &= ~ USB_OTG_DCTL_SDIS;
 	ASSERT((USBx_DEVICE->DCTL & USB_OTG_DCTL_SDIS) == 0);
 	HAL_Delay(3);
@@ -6005,7 +6005,7 @@ HAL_StatusTypeDef  USB_DevConnect (USB_OTG_GlobalTypeDef *USBx)
   */
 HAL_StatusTypeDef  USB_DevDisconnect (USB_OTG_GlobalTypeDef *USBx)
 {
-	//debug_printf_P(PSTR("USB_DevDisconnect (USBx=%p)\n"), USBx);
+	//PRINTF(PSTR("USB_DevDisconnect (USBx=%p)\n"), USBx);
 
 	USBx_DEVICE->DCTL |= USB_OTG_DCTL_SDIS;
 	ASSERT((USBx_DEVICE->DCTL & USB_OTG_DCTL_SDIS) != 0);
@@ -7460,7 +7460,7 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 	const int mul2 = bigbuff ? 3 : 1;	// tx fifo buffers
 	PCD_TypeDef * const instance = hpcd->Instance;
 
-	debug_printf_P(PSTR("usbd_fifo_initialize: power-on GRXFSIZ=%u\n"), instance->GRXFSIZ & USB_OTG_GRXFSIZ_RXFD);
+	PRINTF(PSTR("usbd_fifo_initialize: power-on GRXFSIZ=%u\n"), instance->GRXFSIZ & USB_OTG_GRXFSIZ_RXFD);
 	// DocID028270 Rev 2 (RM0410): 41.11.3 FIFO RAM allocation
 	// DocID028270 Rev 2 (RM0410): 41.16.6 Device programming model
 
@@ -7502,7 +7502,7 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 	const uint_fast16_t last4dummy = last4;
 #endif /* WITHUSBCDC */
 
-	debug_printf_P(PSTR("usbd_fifo_initialize1: 4*(full4-last4)=%u\n"), 4 * (full4 - last4));
+	PRINTF(PSTR("usbd_fifo_initialize1: 4*(full4-last4)=%u\n"), 4 * (full4 - last4));
 
 #if WITHUSBUAC
 	{
@@ -7534,7 +7534,7 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 		ASSERT(last4 >= size4);
 		last4 -= size4;
 		instance->DIEPTXF [pipe - 1] = usbd_makeTXFSIZ(last4, size4);
-		debug_printf_P(PSTR("usbd_fifo_initialize2 - UAC %u bytes: 4*(full4-last4)=%u\n"), 4 * size4, 4 * (full4 - last4));
+		PRINTF(PSTR("usbd_fifo_initialize2 - UAC %u bytes: 4*(full4-last4)=%u\n"), 4 * size4, 4 * (full4 - last4));
 	}
 #if WITHUSBUAC3
 	{
@@ -7548,7 +7548,7 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 		ASSERT(last4 >= size4);
 		last4 -= size4;
 		instance->DIEPTXF [pipe - 1] = usbd_makeTXFSIZ(last4, size4);
-		debug_printf_P(PSTR("usbd_fifo_initialize3 - UAC3 %u bytes: 4*(full4-last4)=%u\n"), 4 * size4, 4 * (full4 - last4));
+		PRINTF(PSTR("usbd_fifo_initialize3 - UAC3 %u bytes: 4*(full4-last4)=%u\n"), 4 * size4, 4 * (full4 - last4));
 	}
 #endif /* WITHUSBUAC3 */
 #endif /* WITHUSBUAC */
@@ -7589,7 +7589,7 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 			last4 -= size4;
 			instance->DIEPTXF [pipe - 1] = usbd_makeTXFSIZ(last4, size4);
 			instance->DIEPTXF [pipeint - 1] = usbd_makeTXFSIZ(last4dummy, size4dummy);
-			debug_printf_P(PSTR("usbd_fifo_initialize4 CDC %u bytes: 4*(full4-last4)=%u\n"), 4 * size4, 4 * (full4 - last4));
+			PRINTF(PSTR("usbd_fifo_initialize4 CDC %u bytes: 4*(full4-last4)=%u\n"), 4 * size4, 4 * (full4 - last4));
 		}
 	}
 
@@ -7618,7 +7618,7 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 		ASSERT(last4 >= size4);
 		last4 -= size4;
 		instance->DIEPTXF [pipe - 1] = usbd_makeTXFSIZ(last4, size4);
-		debug_printf_P(PSTR("usbd_fifo_initialize5 EEM %u bytes: 4*(full4-last4)=%u\n"), 4 * size4, 4 * (full4 - last4));
+		PRINTF(PSTR("usbd_fifo_initialize5 EEM %u bytes: 4*(full4-last4)=%u\n"), 4 * size4, 4 * (full4 - last4));
 	}
 #endif /* WITHUSBCDCEEM */
 
@@ -7638,13 +7638,13 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 		ASSERT(last4 >= size4);
 		last4 -= size4;
 		instance->DIEPTXF [pipe - 1] = usbd_makeTXFSIZ(last4, size4);
-		debug_printf_P(PSTR("usbd_fifo_initialize6 CDCECM %u bytes: 4*(full4-last4)=%u\n"), 4 * size4, 4 * (full4 - last4));
+		PRINTF(PSTR("usbd_fifo_initialize6 CDCECM %u bytes: 4*(full4-last4)=%u\n"), 4 * size4, 4 * (full4 - last4));
 
 		const uint_fast16_t size4int = ncdcecmmintpackets * (size2buff4(USBD_CDCECM_INT_SIZE) + add3tx);
 		ASSERT(last4 >= size4int);
 		last4 -= size4int;
 		instance->DIEPTXF [pipeint - 1] = usbd_makeTXFSIZ(last4, size4int);
-		debug_printf_P(PSTR("usbd_fifo_initialize6 CDCECM INT %u bytes: 4*(full4-last4)=%u\n"), 4 * size4int, 4 * (full4 - last4));
+		PRINTF(PSTR("usbd_fifo_initialize6 CDCECM INT %u bytes: 4*(full4-last4)=%u\n"), 4 * size4int, 4 * (full4 - last4));
 	}
 #endif /* WITHUSBCDCECM */
 
@@ -7664,13 +7664,13 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 		ASSERT(last4 >= size4);
 		last4 -= size4;
 		instance->DIEPTXF [pipe - 1] = usbd_makeTXFSIZ(last4, size4);
-		debug_printf_P(PSTR("usbd_fifo_initialize7 RNDIS %u bytes: 4*(full4-last4)=%u\n"), 4 * size4, 4 * (full4 - last4));
+		PRINTF(PSTR("usbd_fifo_initialize7 RNDIS %u bytes: 4*(full4-last4)=%u\n"), 4 * size4, 4 * (full4 - last4));
 
 		const uint_fast16_t size4int = nrndismintpackets * (size2buff4(USBD_RNDIS_INT_SIZE) + add3tx);
 		ASSERT(last4 >= size4int);
 		last4 -= size4int;
 		instance->DIEPTXF [pipeint - 1] = usbd_makeTXFSIZ(last4, size4int);
-		debug_printf_P(PSTR("usbd_fifo_initialize7 RNDIS INT %u bytes: 4*(full4-last4)=%u\n"), 4 * size4int, 4 * (full4 - last4));
+		PRINTF(PSTR("usbd_fifo_initialize7 RNDIS INT %u bytes: 4*(full4-last4)=%u\n"), 4 * size4int, 4 * (full4 - last4));
 	}
 #endif /* WITHUSBRNDIS */
 
@@ -7684,11 +7684,11 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 		ASSERT(last4 >= size4);
 		last4 -= size4;
 		instance->DIEPTXF [pipe - 1] = usbd_makeTXFSIZ(last4, size4);
-		debug_printf_P(PSTR("usbd_fifo_initialize8 HID %u bytes: 4*(full4-last4)=%u\n"), 4 * size4, 4 * (full4 - last4));
+		PRINTF(PSTR("usbd_fifo_initialize8 HID %u bytes: 4*(full4-last4)=%u\n"), 4 * size4, 4 * (full4 - last4));
 	}
 #endif /* WITHUSBHID */
 
-	debug_printf_P(PSTR("usbd_fifo_initialize9: 4*(full4-last4)=%u\n"), 4 * (full4 - last4));
+	PRINTF(PSTR("usbd_fifo_initialize9: 4*(full4-last4)=%u\n"), 4 * (full4 - last4));
 	
 	/* control endpoint TX FIFO */
 	{
@@ -7697,7 +7697,7 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 		ASSERT(last4 >= size4);
 		last4 -= size4;
 		instance->DIEPTXF0_HNPTXFSIZ = usbd_makeTXFSIZ(last4, size4);
-		debug_printf_P(PSTR("usbd_fifo_initialize10 TX FIFO %u bytes: 4*(full4-last4)=%u\n"), 4 * size4, 4 * (full4 - last4));
+		PRINTF(PSTR("usbd_fifo_initialize10 TX FIFO %u bytes: 4*(full4-last4)=%u\n"), 4 * size4, 4 * (full4 - last4));
 	}
 	/* control endpoint RX FIFO */
 	{
@@ -7713,7 +7713,7 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 				1 +
 				addplaces;
 
-		debug_printf_P(PSTR("usbd_fifo_initialize11 RX FIFO %u bytes: 4*(full4-last4)=%u bytes (last4=%u, size4=%u)\n"), 4 * size4, 4 * (full4 - last4), last4, size4);
+		PRINTF(PSTR("usbd_fifo_initialize11 RX FIFO %u bytes: 4*(full4-last4)=%u bytes (last4=%u, size4=%u)\n"), 4 * size4, 4 * (full4 - last4), last4, size4);
 		ASSERT(last4 >= size4);
 		instance->GRXFSIZ = (instance->GRXFSIZ & ~ USB_OTG_GRXFSIZ_RXFD) |
 			(last4 << USB_OTG_GRXFSIZ_RXFD_Pos) |	// was: size4 - то что осталось
@@ -7727,7 +7727,7 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 	if (base4 > last4 || last4 > full4)
 	{
 		char b [64];
-		debug_printf_P(PSTR("usbd_fifo_initialize error: base4=%u, last4=%u, fullsize=%u\n"), (base4 * 4), (last4 * 4), fullsize);
+		PRINTF(PSTR("usbd_fifo_initialize error: base4=%u, last4=%u, fullsize=%u\n"), (base4 * 4), (last4 * 4), fullsize);
 		local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("used=%u"), (base4 * 4) + (fullsize - last4 * 4));
 		display_setcolors(COLOR_RED, BGCOLOR);
 		display_at(0, 0, b);
@@ -7736,7 +7736,7 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 	}
 	else
 	{
-		debug_printf_P(PSTR("usbd_fifo_initialize: base4=%u, last4=%u, fullsize=%u\n"), (base4 * 4), (last4 * 4), fullsize);
+		PRINTF(PSTR("usbd_fifo_initialize: base4=%u, last4=%u, fullsize=%u\n"), (base4 * 4), (last4 * 4), fullsize);
 #if 0
 		// Диагностическая выдача использованного объёма FIFO RAM
 		char b [64];
@@ -7757,7 +7757,7 @@ static void USBD_ParseSetupRequest(USBD_SetupReqTypedef *req, const uint32_t * p
 	req->wIndex        = (pdata [1] >> 0) & 0xFFFF;
 	req->wLength       = (pdata [1] >> 16) & 0xFFFF;
 #if 0
-	debug_printf_P(PSTR("USBD_ParseSetupRequest: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), 
+	PRINTF(PSTR("USBD_ParseSetupRequest: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), 
 		req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
 #endif
 }
@@ -8171,7 +8171,7 @@ static void USBD_CtlError( USBD_HandleTypeDef *pdev,
                             USBD_SetupReqTypedef *req)
 {
 #if 0
-	debug_printf_P(PSTR("USBD_CtlError: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"),
+	PRINTF(PSTR("USBD_CtlError: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"),
 		req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
 #endif
 	USBD_LL_StallEP(pdev, 0x80);
@@ -8185,7 +8185,7 @@ static USBD_StatusTypeDef USBD_XXX_Init(USBD_HandleTypeDef *pdev, uint_fast8_t c
 	uint8_t offset;
 	USBD_StatusTypeDef   ret = USBD_FAIL;
   
-	//debug_printf_P(PSTR("USBD_XXX_Init: cfgidx=%d\n"), cfgidx);
+	//PRINTF(PSTR("USBD_XXX_Init: cfgidx=%d\n"), cfgidx);
 	memset(altinterfaces, 0, sizeof altinterfaces);
 
 #if WITHUSBCDCEEM
@@ -8312,7 +8312,7 @@ static USBD_StatusTypeDef USBD_XXX_Init(USBD_HandleTypeDef *pdev, uint_fast8_t c
 static USBD_StatusTypeDef USBD_XXX_DeInit(USBD_HandleTypeDef *pdev, uint_fast8_t cfgidx)
 {
 	uint_fast8_t offset;
-	//debug_printf_P(PSTR("USBD_XXX_DeInit\n"));
+	//PRINTF(PSTR("USBD_XXX_DeInit\n"));
 
 	USB_OTG_GlobalTypeDef * const USBx = ((PCD_HandleTypeDef *) pdev->pData)->Instance;
 
@@ -8392,7 +8392,7 @@ static USBD_StatusTypeDef USBD_XXX_DeInit(USBD_HandleTypeDef *pdev, uint_fast8_t
   
 #endif /* WITHUSBUAC */
 
-	//debug_printf_P(PSTR("USBD_XXX_DeInit done\n"));
+	//PRINTF(PSTR("USBD_XXX_DeInit done\n"));
 	return USBD_OK;
 }
 
@@ -8402,7 +8402,7 @@ static USBD_StatusTypeDef USBD_XXX_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReq
 	static USBALIGN_BEGIN uint8_t buff [32] USBALIGN_END;	// was: 7
 	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
 
-	//debug_printf_P(PSTR("USBD_ClassXXX_Setup: bRequest=%02X, wIndex=%04X, wLength=%04X, wValue=%04X (interfacev=%02X)\n"), req->bRequest, req->wIndex, req->wLength, req->wValue, interfacev);
+	//PRINTF(PSTR("USBD_ClassXXX_Setup: bRequest=%02X, wIndex=%04X, wLength=%04X, wValue=%04X (interfacev=%02X)\n"), req->bRequest, req->wIndex, req->wLength, req->wValue, interfacev);
 
 	if ((req->bmRequest & USB_REQ_TYPE_DIR) != 0)
 	{
@@ -8419,7 +8419,7 @@ static USBD_StatusTypeDef USBD_XXX_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReq
 					switch (req->bRequest)
 					{
 					case CDC_GET_LINE_CODING:
-						//debug_printf_P(PSTR("USBD_ClassXXX_Setup IN: GET_LINE_CODING, dwDTERate=%lu\n"), (unsigned long) dwDTERate [interfacev]);
+						//PRINTF(PSTR("USBD_ClassXXX_Setup IN: GET_LINE_CODING, dwDTERate=%lu\n"), (unsigned long) dwDTERate [interfacev]);
 						USBD_poke_u32(& buff [0], dwDTERate [interfacev]); // dwDTERate
 						buff [4] = 0;	// 1 stop bit
 						buff [5] = 0;	// parity=none
@@ -8448,31 +8448,31 @@ static USBD_StatusTypeDef USBD_XXX_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReq
 					switch (req->bRequest)
 					{
 					case AUDIO_REQUEST_GET_CUR:
-						//debug_printf_P(PSTR("USBD_ClassXXX_Setup IN: AUDIO_REQUEST_GET_CUR: interfacev=%u, %u\n"), interfacev, terminalID);
+						//PRINTF(PSTR("USBD_ClassXXX_Setup IN: AUDIO_REQUEST_GET_CUR: interfacev=%u, %u\n"), interfacev, terminalID);
 						buff [0] = terminalsprops [terminalID] [controlID];
 						USBD_CtlSendData(pdev, buff, ulmin16(ARRAY_SIZE(buff), req->wLength));
 						break;
 
 					case AUDIO_REQUEST_GET_MIN:
-						//debug_printf_P(PSTR("USBD_ClassXXX_Setup IN: USBD_StdItfReq: AUDIO_REQUEST_GET_MIN: interfacev=%u, %u\n"), interfacev, terminalID);
+						//PRINTF(PSTR("USBD_ClassXXX_Setup IN: USBD_StdItfReq: AUDIO_REQUEST_GET_MIN: interfacev=%u, %u\n"), interfacev, terminalID);
 						buff [0] = terminalID == TERMINAL_ID_SELECTOR_6 ? 1 : 0;
 						USBD_CtlSendData(pdev, buff, ulmin16(ARRAY_SIZE(buff), req->wLength));
 						break;
 
 					case AUDIO_REQUEST_GET_MAX:
-						//debug_printf_P(PSTR("USBD_ClassXXX_Setup IN: AUDIO_REQUEST_GET_MAX: interfacev=%u, %u\n"), interfacev, terminalID);
+						//PRINTF(PSTR("USBD_ClassXXX_Setup IN: AUDIO_REQUEST_GET_MAX: interfacev=%u, %u\n"), interfacev, terminalID);
 						buff [0] = terminalID == TERMINAL_ID_SELECTOR_6 ? TERMINAL_ID_SELECTOR_6_INPUTS : 100;
 						USBD_CtlSendData(pdev, buff, ulmin16(ARRAY_SIZE(buff), req->wLength));
 						break;
 
 					case AUDIO_REQUEST_GET_RES:
-						//debug_printf_P(PSTR("USBD_ClassXXX_Setup IN: AUDIO_REQUEST_GET_RES: interfacev=%u, %u\n"), interfacev, terminalID);
+						//PRINTF(PSTR("USBD_ClassXXX_Setup IN: AUDIO_REQUEST_GET_RES: interfacev=%u, %u\n"), interfacev, terminalID);
 						buff [0] = 1;
 						USBD_CtlSendData(pdev, buff, ulmin16(ARRAY_SIZE(buff), req->wLength));
 						break;
 
 					default:
-						debug_printf_P(PSTR("USBD_ClassXXX_Setup IN: default path 2: req->bRequest=%02X\n"), req->bRequest);
+						PRINTF(PSTR("USBD_ClassXXX_Setup IN: default path 2: req->bRequest=%02X\n"), req->bRequest);
 						TP();
 						USBD_CtlError(pdev, req);
 						break;
@@ -8486,7 +8486,7 @@ static USBD_StatusTypeDef USBD_XXX_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReq
 				switch (req->bRequest)
 				{
 				case 0x01:	// GET_ENCAPSULATED_RESPONSE
-					//debug_printf_P(PSTR("USBD_ClassXXX_Setup IN: INTERFACE_RNDIS_CONTROL_5: GET_ENCAPSULATED_RESPONSE: bRequest=%02X, wIndex=%04X, wLength=%04X\n"), req->bRequest, req->wIndex, req->wLength);
+					//PRINTF(PSTR("USBD_ClassXXX_Setup IN: INTERFACE_RNDIS_CONTROL_5: GET_ENCAPSULATED_RESPONSE: bRequest=%02X, wIndex=%04X, wLength=%04X\n"), req->bRequest, req->wIndex, req->wLength);
 					{
 						if (rndis_resp_ptr != NULL)
 						{
@@ -8509,7 +8509,7 @@ static USBD_StatusTypeDef USBD_XXX_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReq
 					break;
 
 				default:
-					debug_printf_P(PSTR("USBD_ClassXXX_Setup IN: INTERFACE_RNDIS_CONTROL_5: xxx: bRequest=%02X, wIndex=%04X, wLength=%04X\n"), req->bRequest, req->wIndex, req->wLength);
+					PRINTF(PSTR("USBD_ClassXXX_Setup IN: INTERFACE_RNDIS_CONTROL_5: xxx: bRequest=%02X, wIndex=%04X, wLength=%04X\n"), req->bRequest, req->wIndex, req->wLength);
 					{
 						static RAMNOINIT_D1 USBALIGN_BEGIN uint8_t ep0resp [1] USBALIGN_END;
 						ep0resp [0] = 0;
@@ -8521,7 +8521,7 @@ static USBD_StatusTypeDef USBD_XXX_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReq
 	#endif /* WITHUSBRNDIS */
 
 			default:
-				debug_printf_P(PSTR("USBD_ClassXXX_Setup IN: default path 3: interfacev=%02X\n"), interfacev);
+				PRINTF(PSTR("USBD_ClassXXX_Setup IN: default path 3: interfacev=%02X\n"), interfacev);
 				TP();
 				USBD_CtlError(pdev, req);
 				break;
@@ -8537,7 +8537,7 @@ static USBD_StatusTypeDef USBD_XXX_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReq
 			switch (req->bRequest)
 			{
 			case USB_REQ_GET_INTERFACE :
-				//debug_printf_P(PSTR("USBD_ClassXXX_Setup IN: USB_REQ_TYPE_STANDARD USB_REQ_GET_INTERFACE dir=%02X interfacev=%d\n"), req->bmRequest & 0x80, interfacev);
+				//PRINTF(PSTR("USBD_ClassXXX_Setup IN: USB_REQ_TYPE_STANDARD USB_REQ_GET_INTERFACE dir=%02X interfacev=%d\n"), req->bmRequest & 0x80, interfacev);
 				if (interfacev < INTERFACE_count)
 				{
 					buff [0] = altinterfaces [interfacev];
@@ -8556,7 +8556,7 @@ static USBD_StatusTypeDef USBD_XXX_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReq
 					{
 #if WITHUSBHID
 					case HID_REPORT_DESC:
-						debug_printf_P(PSTR("USBD_ClassXXX_Setup IN: USB_REQ_TYPE_STANDARD USB_REQ_GET_DESCRIPTOR dir=%02X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), req->bmRequest & 0x80, req->wValue, req->wIndex, req->wLength);
+						PRINTF(PSTR("USBD_ClassXXX_Setup IN: USB_REQ_TYPE_STANDARD USB_REQ_GET_DESCRIPTOR dir=%02X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), req->bmRequest & 0x80, req->wValue, req->wIndex, req->wLength);
 						if (HIDReportDescrTbl [0].size != 0 && interfacev == INTERFACE_HID_CONTROL_7)
 						{
 							USBD_CtlSendData(pdev, HIDReportDescrTbl [0].data, HIDReportDescrTbl [0].size);
@@ -8615,12 +8615,12 @@ static USBD_StatusTypeDef USBD_XXX_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReq
 				{
 				case CDC_SET_CONTROL_LINE_STATE:
 					// Выполнение этого запроса не требует дополнительного чтения данных
-					//debug_printf_P(PSTR("USBD_ClassXXX_Setup OUT: CDC_SET_CONTROL_LINE_STATE, wValue=%04X\n"), req->wValue);
+					//PRINTF(PSTR("USBD_ClassXXX_Setup OUT: CDC_SET_CONTROL_LINE_STATE, wValue=%04X\n"), req->wValue);
 					usb_cdc_control_state [interfacev] = req->wValue;
 					break;
 
 				default:
-					//debug_printf_P(PSTR("USBD_ClassXXX_Setup OUT: bRequest=%02X, wValue=%04X, wLength=%04X\n"), req->bRequest, req->wValue, req->wLength);
+					//PRINTF(PSTR("USBD_ClassXXX_Setup OUT: bRequest=%02X, wValue=%04X, wLength=%04X\n"), req->bRequest, req->wValue, req->wLength);
 					//TP();
 					break;
 				}
@@ -8647,7 +8647,7 @@ static USBD_StatusTypeDef USBD_XXX_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReq
 					switch (req->bRequest)
 					{
 					default:
-						//debug_printf_P(PSTR("USBD_ClassXXX_Setup OUT: OUT: INTERFACE_AUDIO_CONTROL_SPK: ???? = %02X\n"), req->bRequest);
+						//PRINTF(PSTR("USBD_ClassXXX_Setup OUT: OUT: INTERFACE_AUDIO_CONTROL_SPK: ???? = %02X\n"), req->bRequest);
 						break;
 					}
 				}
@@ -8669,11 +8669,11 @@ static USBD_StatusTypeDef USBD_XXX_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReq
 				{
 				case CDC_SET_CONTROL_LINE_STATE:
 					// Выполнение этого запроса не требует дополнительного чтения данных
-					debug_printf_P(PSTR("USBD_ClassXXX_Setup OUT: INTERFACE_CDCEEM_DATA_6 CDC_SET_CONTROL_LINE_STATE, wValue=%04X\n"), req->wValue);
+					PRINTF(PSTR("USBD_ClassXXX_Setup OUT: INTERFACE_CDCEEM_DATA_6 CDC_SET_CONTROL_LINE_STATE, wValue=%04X\n"), req->wValue);
 					//usb_cdc_control_state [interfacev] = req->wValue;
 					break;
 				default:
-					debug_printf_P(PSTR("USBD_ClassXXX_Setup OUT: INTERFACE_CDCEEM_DATA_6: bRequest=%02X, wIndex=%04X, wLength=%04X\n"), req->bRequest, req->wIndex, req->wLength);
+					PRINTF(PSTR("USBD_ClassXXX_Setup OUT: INTERFACE_CDCEEM_DATA_6: bRequest=%02X, wIndex=%04X, wLength=%04X\n"), req->bRequest, req->wIndex, req->wLength);
 					break;
 				}
 				if (req->wLength != 0)
@@ -8693,11 +8693,11 @@ static USBD_StatusTypeDef USBD_XXX_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReq
 				{
 				//case CDC_SET_CONTROL_LINE_STATE:
 					// Выполнение этого запроса не требует дополнительного чтения данных
-				//	debug_printf_P(PSTR("USBD_ClassXXX_Setup: INTERFACE_RNDIS_CONTROL_5 CDC_SET_CONTROL_LINE_STATE, wValue=%04X\n"), req->wValue);
+				//	PRINTF(PSTR("USBD_ClassXXX_Setup: INTERFACE_RNDIS_CONTROL_5 CDC_SET_CONTROL_LINE_STATE, wValue=%04X\n"), req->wValue);
 					//usb_cdc_control_state [interfacev] = req->wValue;
 				//	break;
 				default:
-					//debug_printf_P(PSTR("USBD_ClassXXX_Setup OUT: INTERFACE_RNDIS_CONTROL_5: bRequest=%02X, wIndex=%04X, wLength=%04X\n"), req->bRequest, req->wIndex, req->wLength);
+					//PRINTF(PSTR("USBD_ClassXXX_Setup OUT: INTERFACE_RNDIS_CONTROL_5: bRequest=%02X, wIndex=%04X, wLength=%04X\n"), req->bRequest, req->wIndex, req->wLength);
 					break;
 				}
 				if (req->wLength != 0)
@@ -8717,11 +8717,11 @@ static USBD_StatusTypeDef USBD_XXX_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReq
 				{
 				//case CDC_SET_CONTROL_LINE_STATE:
 					// Выполнение этого запроса не требует дополнительного чтения данных
-				//	debug_printf_P(PSTR("USBD_ClassXXX_Setup: INTERFACE_CDCECM_CONTROL_5 CDC_SET_CONTROL_LINE_STATE, wValue=%04X\n"), req->wValue);
+				//	PRINTF(PSTR("USBD_ClassXXX_Setup: INTERFACE_CDCECM_CONTROL_5 CDC_SET_CONTROL_LINE_STATE, wValue=%04X\n"), req->wValue);
 					//usb_cdc_control_state [interfacev] = req->wValue;
 				//	break;
 				default:
-					//debug_printf_P(PSTR("USBD_ClassXXX_Setup OUT: INTERFACE_CDCECM_CONTROL_5: bRequest=%02X, wIndex=%04X, wLength=%04X\n"), req->bRequest, req->wIndex, req->wLength);
+					//PRINTF(PSTR("USBD_ClassXXX_Setup OUT: INTERFACE_CDCECM_CONTROL_5: bRequest=%02X, wIndex=%04X, wLength=%04X\n"), req->bRequest, req->wIndex, req->wLength);
 					break;
 				}
 				if (req->wLength != 0)
@@ -8741,11 +8741,11 @@ static USBD_StatusTypeDef USBD_XXX_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReq
 				{
 				//case CDC_SET_CONTROL_LINE_STATE:
 					// Выполнение этого запроса не требует дополнительного чтения данных
-					//debug_printf_P(PSTR("USBD_ClassXXX_Setup OUT: INTERFACE_HID_CONTROL_7 CDC_SET_CONTROL_LINE_STATE, wValue=%04X\n"), req->wValue);
+					//PRINTF(PSTR("USBD_ClassXXX_Setup OUT: INTERFACE_HID_CONTROL_7 CDC_SET_CONTROL_LINE_STATE, wValue=%04X\n"), req->wValue);
 					//usb_cdc_control_state [interfacev] = req->wValue;
 					//break;
 				default:
-					debug_printf_P(PSTR("USBD_ClassXXX_Setup OUT: INTERFACE_HID_CONTROL_7: bRequest=%02X, wIndex=%04X, wLength=%04X\n"), req->bRequest, req->wIndex, req->wLength);
+					PRINTF(PSTR("USBD_ClassXXX_Setup OUT: INTERFACE_HID_CONTROL_7: bRequest=%02X, wIndex=%04X, wLength=%04X\n"), req->bRequest, req->wIndex, req->wLength);
 					break;
 				}
 				if (req->wLength != 0)
@@ -8774,7 +8774,7 @@ static USBD_StatusTypeDef USBD_XXX_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReq
 			switch (req->bRequest)
 			{
 			case USB_REQ_SET_INTERFACE :
-				//debug_printf_P(PSTR("USBD_ClassXXX_Setup: USB_REQ_TYPE_STANDARD USB_REQ_SET_INTERFACE interfacev=%d, value=%d\n"), interfacev, LO_BYTE(req->wValue));
+				//PRINTF(PSTR("USBD_ClassXXX_Setup: USB_REQ_TYPE_STANDARD USB_REQ_SET_INTERFACE interfacev=%d, value=%d\n"), interfacev, LO_BYTE(req->wValue));
 				if (interfacev < INTERFACE_count)
 					altinterfaces [interfacev] = LO_BYTE(req->wValue);
 				switch (interfacev)
@@ -8801,12 +8801,12 @@ static USBD_StatusTypeDef USBD_XXX_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReq
 
 		#if WITHUSBCDCEEM
 				case INTERFACE_CDCEEM_DATA_6:	// CDC ECM interfacei
-					debug_printf_P(PSTR("USBD_ClassXXX_Setup: INTERFACE_CDCEEM_DATA_6: set interfacev=%02X to %02X\n"), interfacev, LO_BYTE(req->wValue));
+					PRINTF(PSTR("USBD_ClassXXX_Setup: INTERFACE_CDCEEM_DATA_6: set interfacev=%02X to %02X\n"), interfacev, LO_BYTE(req->wValue));
 					break;
 		#endif /* WITHUSBCDCEEM */
 		#if WITHUSBHID
 				//case INTERFACE_HID_CONTROL_7:	// HID interfacei
-				//	debug_printf_P(PSTR("USBD_ClassXXX_Setup: INTERFACE_HID_CONTROL_7: set interfacev=%02X to %02X\n"), interfacev, LO_BYTE(req->wValue));
+				//	PRINTF(PSTR("USBD_ClassXXX_Setup: INTERFACE_HID_CONTROL_7: set interfacev=%02X to %02X\n"), interfacev, LO_BYTE(req->wValue));
 				//	break;
 		#endif /* WITHUSBHID */
 				default:
@@ -8817,13 +8817,13 @@ static USBD_StatusTypeDef USBD_XXX_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReq
 				break;
 
 			case USB_REQ_SET_FEATURE:
-				debug_printf_P(PSTR("USBD_ClassXXX_Setup: USB_REQ_TYPE_STANDARD USB_REQ_SET_FEATURE interfacev=%d, value=%d\n"), interfacev, LO_BYTE(req->wValue));
+				PRINTF(PSTR("USBD_ClassXXX_Setup: USB_REQ_TYPE_STANDARD USB_REQ_SET_FEATURE interfacev=%d, value=%d\n"), interfacev, LO_BYTE(req->wValue));
 				USBD_CtlSendStatus(pdev);
 				break;
 
 			// Добавлено для WITHUSBHID
 			case USB_REQ_CLEAR_FEATURE:
-				debug_printf_P(PSTR("USBD_ClassXXX_Setup: USB_REQ_TYPE_STANDARD USB_REQ_CLEAR_FEATURE interfacev=%d, value=%d\n"), interfacev, LO_BYTE(req->wValue));
+				PRINTF(PSTR("USBD_ClassXXX_Setup: USB_REQ_TYPE_STANDARD USB_REQ_CLEAR_FEATURE interfacev=%d, value=%d\n"), interfacev, LO_BYTE(req->wValue));
 				USBD_CtlSendStatus(pdev);
 				break;
 
@@ -8845,7 +8845,7 @@ static USBD_StatusTypeDef USBD_XXX_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReq
 static USBD_StatusTypeDef USBD_XXX_DataIn (USBD_HandleTypeDef *pdev, uint_fast8_t epnum)
 {
 	// epnum without direction bit
-	//debug_printf_P(PSTR("USBD_LL_DataInStage: IN: epnum=%02X\n"), epnum);
+	//PRINTF(PSTR("USBD_LL_DataInStage: IN: epnum=%02X\n"), epnum);
 	switch (epnum)
 	{
 #if WITHUSBCDC
@@ -8932,37 +8932,37 @@ static USBD_StatusTypeDef USBD_XXX_DataIn (USBD_HandleTypeDef *pdev, uint_fast8_
 	case (USBD_EP_CDCEEM_IN & 0x7F):
 		//USBD_LL_Transmit(pdev, USBD_EP_CDCEEM_IN, NULL, 0);
 		USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), & dbd, sizeof dbd);
-		//debug_printf_P(PSTR("USBD_LL_DataInStage: USBD_EP_CDCEEM_IN\n"));
+		//PRINTF(PSTR("USBD_LL_DataInStage: USBD_EP_CDCEEM_IN\n"));
 		break;
 #endif /* WITHUSBCDCEEM */
 
 #if WITHUSBRNDIS
 	case (USBD_EP_RNDIS_IN & 0x7F):
 		USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), NULL, 0);
-		//debug_printf_P(PSTR("USBD_LL_DataInStage: USBD_EP_RNDIS_IN\n"));
+		//PRINTF(PSTR("USBD_LL_DataInStage: USBD_EP_RNDIS_IN\n"));
 		break;
 
 	case (USBD_EP_RNDIS_INT & 0x7F):
 		//USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), NULL, 0);
-		//debug_printf_P(PSTR("USBD_LL_DataInStage: USBD_EP_RNDIS_INT\n"));
+		//PRINTF(PSTR("USBD_LL_DataInStage: USBD_EP_RNDIS_INT\n"));
 		break;
 #endif /* WITHUSBRNDIS */
 
 #if WITHUSBCDCECM
 	case (USBD_EP_CDCECM_IN & 0x7F):
 		USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), NULL, 0);
-		//debug_printf_P(PSTR("USBD_LL_DataInStage: USBD_EP_CDCECM_IN\n"));
+		//PRINTF(PSTR("USBD_LL_DataInStage: USBD_EP_CDCECM_IN\n"));
 		break;
 
 	case (USBD_EP_CDCECM_INT & 0x7F):
 		//USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), NULL, 0);
-		//debug_printf_P(PSTR("USBD_LL_DataInStage: USBD_EP_CDCECM_INT\n"));
+		//PRINTF(PSTR("USBD_LL_DataInStage: USBD_EP_CDCECM_INT\n"));
 		break;
 #endif /* WITHUSBCDCECM */
 
 	default:
 		TP();
-		debug_printf_P(PSTR("USBD_LL_DataInStage: epnum=%02x\n"), epnum);
+		PRINTF(PSTR("USBD_LL_DataInStage: epnum=%02x\n"), epnum);
 		break;
 	}
 	return USBD_OK;
@@ -8976,7 +8976,7 @@ static USBD_StatusTypeDef USBD_XXX_DataOut (USBD_HandleTypeDef *pdev, uint_fast8
 	case USBD_EP_CDC_OUT:
 		/* CDC EP OUT */
 		// use CDC data
-		//debug_printf_P(PSTR("0:%u "), USBD_LL_GetRxDataSize(pdev, epnum));
+		//PRINTF(PSTR("0:%u "), USBD_LL_GetRxDataSize(pdev, epnum));
 		cdc1out_buffer_save(cdc1buffout, USBD_LL_GetRxDataSize(pdev, epnum));	/* использование буфера принятых данных */
 		//memcpy(cdc1buffin, cdc1buffout, cdc1buffinlevel = USBD_LL_GetRxDataSize(pdev, epnum));
 		/* Prepare Out endpoint to receive next cdc data packet */
@@ -8986,7 +8986,7 @@ static USBD_StatusTypeDef USBD_XXX_DataOut (USBD_HandleTypeDef *pdev, uint_fast8
 	case USBD_EP_CDC_OUTb:
 		/* CDC EP OUT */
 		// use CDC data
-		//debug_printf_P(PSTR("1:%u "), USBD_LL_GetRxDataSize(pdev, epnum));
+		//PRINTF(PSTR("1:%u "), USBD_LL_GetRxDataSize(pdev, epnum));
 		cdc2out_buffer_save(cdc2buffout, USBD_LL_GetRxDataSize(pdev, epnum));	/* использование буфера принятых данных */
 		//memcpy(cdc2buffin, cdc2buffout, cdc2buffinlevel = USBD_LL_GetRxDataSize(pdev, epnum));
 		/* Prepare Out endpoint to receive next cdc data packet */
@@ -9021,7 +9021,7 @@ static USBD_StatusTypeDef USBD_XXX_DataOut (USBD_HandleTypeDef *pdev, uint_fast8
 #endif /* WITHUSBRNDIS */
 
 	default:
-		debug_printf_P(PSTR("USBD_XXX_DataOut: epnum=%02X\n"), epnum);
+		PRINTF(PSTR("USBD_XXX_DataOut: epnum=%02X\n"), epnum);
 		TP();
 		break;
 	}
@@ -9039,12 +9039,12 @@ static USBD_StatusTypeDef USBD_XXX_DataOut (USBD_HandleTypeDef *pdev, uint_fast8
 */
 USBD_StatusTypeDef  USBD_StdItfReq (USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef  *req)
 {
-	//debug_printf_P(PSTR("USBD_StdItfReq: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), 
+	//PRINTF(PSTR("USBD_StdItfReq: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), 
 	//	req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
 
 	USBD_StatusTypeDef ret = USBD_OK; 
 	
-	//debug_printf_P(PSTR("USBD_StdItfReq: interfacev=%d\n"), interfacev);
+	//PRINTF(PSTR("USBD_StdItfReq: interfacev=%d\n"), interfacev);
 	switch (pdev->dev_state) 
 	{
 	case USBD_STATE_CONFIGURED:
@@ -9081,7 +9081,7 @@ USBD_StatusTypeDef  USBD_StdItfReq (USBD_HandleTypeDef *pdev, USBD_SetupReqTyped
 */
 USBD_StatusTypeDef  USBD_StdEPReq (USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef  *req)
 {
-	//debug_printf_P(PSTR("USBD_StdEPReq: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), 
+	//PRINTF(PSTR("USBD_StdEPReq: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), 
 	//	req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
 	uint8_t   ep_addr;
 	USBD_StatusTypeDef ret = USBD_OK; 
@@ -9102,7 +9102,7 @@ USBD_StatusTypeDef  USBD_StdEPReq (USBD_HandleTypeDef *pdev, USBD_SetupReqTypede
   {
     
   case USB_REQ_SET_FEATURE :
- 	//debug_printf_P(PSTR("USBD_StdEPReq: USB_REQ_SET_FEATURE: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), 
+ 	//PRINTF(PSTR("USBD_StdEPReq: USB_REQ_SET_FEATURE: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), 
 	//	req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
     
     switch (pdev->dev_state) 
@@ -9138,7 +9138,7 @@ USBD_StatusTypeDef  USBD_StdEPReq (USBD_HandleTypeDef *pdev, USBD_SetupReqTypede
     break;
     
   case USB_REQ_CLEAR_FEATURE :
- 	//debug_printf_P(PSTR("USBD_StdEPReq: USB_REQ_CLEAR_FEATURE: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), 
+ 	//PRINTF(PSTR("USBD_StdEPReq: USB_REQ_CLEAR_FEATURE: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), 
 	//	req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
    
     switch (pdev->dev_state) 
@@ -9172,7 +9172,7 @@ USBD_StatusTypeDef  USBD_StdEPReq (USBD_HandleTypeDef *pdev, USBD_SetupReqTypede
     break;
     
   case USB_REQ_GET_STATUS:                  
- 	//debug_printf_P(PSTR("USBD_StdEPReq: USB_REQ_GET_STATUS: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), 
+ 	//PRINTF(PSTR("USBD_StdEPReq: USB_REQ_GET_STATUS: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), 
 	//	req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
     switch (pdev->dev_state) 
     {
@@ -9208,7 +9208,7 @@ USBD_StatusTypeDef  USBD_StdEPReq (USBD_HandleTypeDef *pdev, USBD_SetupReqTypede
     
   default:
 	  TP();
-	//debug_printf_P(PSTR("USBD_StdEPReq: ???? bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), 
+	//PRINTF(PSTR("USBD_StdEPReq: ???? bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), 
 	//	req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
     break;
   }
@@ -9228,7 +9228,7 @@ static void USBD_GetDescriptor(USBD_HandleTypeDef *pdev,
 	const uint8_t *pbuf;
 	const uint_fast8_t index = LO_BYTE(req->wValue);
 
-	//debug_printf_P(PSTR("USBD_GetDescriptor: %02X, wLength=%04X (%d dec), ix=%u\n"), HI_BYTE(req->wValue), req->wLength, req->wLength, LO_BYTE(req->wValue));
+	//PRINTF(PSTR("USBD_GetDescriptor: %02X, wLength=%04X (%d dec), ix=%u\n"), HI_BYTE(req->wValue), req->wLength, req->wLength, LO_BYTE(req->wValue));
 
 	switch (HI_BYTE(req->wValue))
 	{ 
@@ -9281,7 +9281,7 @@ static void USBD_GetDescriptor(USBD_HandleTypeDef *pdev,
 				else
 				{
 					TP();
-					debug_printf_P(PSTR("USBD_GetDescriptor: %02X\n"), HI_BYTE(req->wValue));
+					PRINTF(PSTR("USBD_GetDescriptor: %02X\n"), HI_BYTE(req->wValue));
 					USBD_CtlError(pdev, req);
 					return;
 				}
@@ -9355,7 +9355,7 @@ static void USBD_GetDescriptor(USBD_HandleTypeDef *pdev,
 static void USBD_SetAddress(USBD_HandleTypeDef *pdev, 
                             USBD_SetupReqTypedef *req)
 {
-	//debug_printf_P(PSTR("USBD_SetAddress 0x%02X:\n"), LO_BYTE(req->wValue) & 0x7F);
+	//PRINTF(PSTR("USBD_SetAddress 0x%02X:\n"), LO_BYTE(req->wValue) & 0x7F);
 
 	if ((req->wIndex == 0) && (req->wLength == 0)) 
 	{
@@ -9401,7 +9401,7 @@ static void USBD_SetConfig(USBD_HandleTypeDef *pdev,
 {
 
 	const uint_fast8_t  cfgidx = LO_BYTE(req->wValue);                 
-	debug_printf_P(PSTR("USBD_SetConfig: cfgidx=%d, pdev->dev_state=%d\n"), cfgidx, pdev->dev_state);
+	PRINTF(PSTR("USBD_SetConfig: cfgidx=%d, pdev->dev_state=%d\n"), cfgidx, pdev->dev_state);
 
 	switch (pdev->dev_state) 
 	{
@@ -9476,7 +9476,7 @@ static void USBD_SetConfig(USBD_HandleTypeDef *pdev,
 static void USBD_GetConfig(USBD_HandleTypeDef *pdev, 
                            USBD_SetupReqTypedef *req)
 {
-	debug_printf_P(PSTR("USBD_GetConfig:\n"));
+	PRINTF(PSTR("USBD_GetConfig:\n"));
 
 	if (req->wLength != 1) 
 	{                   
@@ -9516,7 +9516,7 @@ static void USBD_GetStatus(USBD_HandleTypeDef *pdev,
                            USBD_SetupReqTypedef *req)
 {
   
-	//debug_printf_P(PSTR("USBD_GetStatus:\n"));
+	//PRINTF(PSTR("USBD_GetStatus:\n"));
 	switch (pdev->dev_state) 
 	{
 	case USBD_STATE_ADDRESSED:
@@ -9611,9 +9611,9 @@ static void USBD_ClrFeature(USBD_HandleTypeDef *pdev,
 */
 USBD_StatusTypeDef  USBD_StdDevReq (USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef  *req)
 {
-	//debug_printf_P(PSTR("USBD_StdDevReq: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), 
+	//PRINTF(PSTR("USBD_StdDevReq: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), 
 	//	req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
-	//debug_printf_P(PSTR("USBD_StdDevReq:\n"));
+	//PRINTF(PSTR("USBD_StdDevReq:\n"));
 	USBD_StatusTypeDef ret = USBD_OK;  
 
 	switch (req->bRequest) 
@@ -10050,7 +10050,7 @@ static void usbd_rndis_ep0_recv(USBD_HandleTypeDef *pdev)
 		break;
 
 	case REMOTE_NDIS_QUERY_MSG:	// https://docs.microsoft.com/en-us/windows-hardware/drivers/network/remote-ndis-query-msg
-		//debug_printf_P(PSTR("USBD_LL_DataOutStage: xx03: Oid=%08lX\n"), USBD_peek_u32(& rndis_ep0databuffout [12]));
+		//PRINTF(PSTR("USBD_LL_DataOutStage: xx03: Oid=%08lX\n"), USBD_peek_u32(& rndis_ep0databuffout [12]));
 		rndis_query(pdev);
 		break;
 
@@ -10093,7 +10093,7 @@ static void usbd_rndis_ep0_recv(USBD_HandleTypeDef *pdev)
 		break;
 
 	default:
-		debug_printf_P(PSTR("USBD_LL_DataOutStage: xx07: MessageType=%08lX\n"), MessageType);
+		PRINTF(PSTR("USBD_LL_DataOutStage: xx07: MessageType=%08lX\n"), MessageType);
 		TP();
 		break;
 
@@ -10111,11 +10111,11 @@ static void usbd_rndis_ep0_recv(USBD_HandleTypeDef *pdev)
 */
 USBD_StatusTypeDef USBD_LL_DataOutStage(USBD_HandleTypeDef *pdev, uint_fast8_t epnum, uint8_t *pdata)
 {
-	//debug_printf_P(PSTR("USBD_LL_DataOutStage:\n"));
+	//PRINTF(PSTR("USBD_LL_DataOutStage:\n"));
 
 	if (epnum == 0) 
 	{
-		//debug_printf_P(PSTR("USBD_LL_DataOutStage: EP0 epnum=%02X\n"), epnum);
+		//PRINTF(PSTR("USBD_LL_DataOutStage: EP0 epnum=%02X\n"), epnum);
 		USBD_EndpointTypeDef * const pep = & pdev->ep_out [0];
 
 		if (pdev->ep0_state == USBD_EP0_DATA_OUT)
@@ -10169,12 +10169,12 @@ USBD_StatusTypeDef USBD_LL_DataOutStage(USBD_HandleTypeDef *pdev, uint_fast8_t e
 
 USBD_StatusTypeDef USBD_LL_DataInStage(USBD_HandleTypeDef *pdev, uint_fast8_t epnum, uint8_t * pdata)
 {
-//	debug_printf_P(PSTR("USBD_LL_DataInStage:\n"));
+//	PRINTF(PSTR("USBD_LL_DataInStage:\n"));
 
 	if (epnum == 0) 
 	{
 		USBD_EndpointTypeDef * const pep = & pdev->ep_in [0];
-		//debug_printf_P(PSTR("USBD_LL_DataInStage: IN: EP0: epnum=%02X\n"), epnum);
+		//PRINTF(PSTR("USBD_LL_DataInStage: IN: EP0: epnum=%02X\n"), epnum);
 
 		if (pdev->ep0_state == USBD_EP0_DATA_IN)
 		{
@@ -10388,7 +10388,7 @@ USBD_StatusTypeDef USBD_LL_IsoOUTIncomplete(USBD_HandleTypeDef  *pdev, uint_fast
 */
 USBD_StatusTypeDef USBD_LL_DevConnected(USBD_HandleTypeDef  *pdev)
 {
-	debug_printf_P(PSTR("USBD_LL_DevConnected\n"));
+	PRINTF(PSTR("USBD_LL_DevConnected\n"));
 	return USBD_OK;
 }
 
@@ -10400,7 +10400,7 @@ USBD_StatusTypeDef USBD_LL_DevConnected(USBD_HandleTypeDef  *pdev)
 */
 USBD_StatusTypeDef USBD_LL_DevDisconnected(USBD_HandleTypeDef  *pdev)
 {
-	debug_printf_P(PSTR("USBD_LL_DevDisconnected\n"));
+	PRINTF(PSTR("USBD_LL_DevDisconnected\n"));
 	/* Free Class Resources */
 	pdev->dev_state = USBD_STATE_DEFAULT;
 
@@ -10451,7 +10451,7 @@ static USBD_StatusTypeDef  USBD_AddClass(USBD_HandleTypeDef *pdev, const USBD_Cl
   */
 void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 {
-//	debug_printf_P(PSTR("HAL_PCD_IRQHandler:\n"));
+//	PRINTF(PSTR("HAL_PCD_IRQHandler:\n"));
   USB_OTG_GlobalTypeDef *USBx = hpcd->Instance;
   
   /* ensure that we are in device mode */
@@ -10475,7 +10475,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
     {
       /* Read in the device interrupt bits */
       uint_fast32_t ep_intr = USB_ReadDevAllOutEpInterrupt(hpcd->Instance);
- 	  //debug_printf_P(PSTR("HAL_PCD_IRQHandler: USB_OTG_GINTSTS_OEPINT, ep_intr=%02X, DAINTMSK=%08lX\n"), ep_intr, USBx_DEVICE->DAINTMSK);
+ 	  //PRINTF(PSTR("HAL_PCD_IRQHandler: USB_OTG_GINTSTS_OEPINT, ep_intr=%02X, DAINTMSK=%08lX\n"), ep_intr, USBx_DEVICE->DAINTMSK);
       
  	  uint_fast32_t epnum = 0;
       while (ep_intr)
@@ -10562,7 +10562,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
       /* Read in the device interrupt bits */
       uint_fast32_t ep_intr = USB_ReadDevAllInEpInterrupt(hpcd->Instance);
       
- 	  //debug_printf_P(PSTR("HAL_PCD_IRQHandler: USB_OTG_GINTSTS_IEPINT, ep_intr=%02X, DAINTMSK=%08lX\n"), ep_intr, USBx_DEVICE->DAINTMSK);
+ 	  //PRINTF(PSTR("HAL_PCD_IRQHandler: USB_OTG_GINTSTS_IEPINT, ep_intr=%02X, DAINTMSK=%08lX\n"), ep_intr, USBx_DEVICE->DAINTMSK);
 	  uint_fast32_t epnum = 0;
       
       while (ep_intr)
@@ -10897,7 +10897,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 
     if(__HAL_PCD_GET_FLAG(hpcd, USB_OTG_GINTSTS_BOUTNAKEFF))
     {
-		debug_printf_P(PSTR("Global_NAK effective\n"));
+		PRINTF(PSTR("Global_NAK effective\n"));
 
 		//USBx_DEVICE->DCTL = USB_OTG_DCTL_CGONAK;
     }
@@ -11300,8 +11300,8 @@ void USB_LP_CAN1_RX0_IRQHandler(void)
 
 
 #if 1//(USBH_DEBUG_LEVEL > 0)
-#define  USBH_UsrLog(...)   debug_printf_P(__VA_ARGS__);\
-                            debug_printf_P("\n");
+#define  USBH_UsrLog(...)   PRINTF(__VA_ARGS__);\
+                            PRINTF("\n");
 #else
 #define USBH_UsrLog(...)   
 #endif 
@@ -11309,18 +11309,18 @@ void USB_LP_CAN1_RX0_IRQHandler(void)
                             
 #if 1//(USBH_DEBUG_LEVEL > 1)
 
-#define  USBH_ErrLog(...)   debug_printf_P("ERROR: ") ;\
-                            debug_printf_P(__VA_ARGS__);\
-                            debug_printf_P("\n");
+#define  USBH_ErrLog(...)   PRINTF("ERROR: ") ;\
+                            PRINTF(__VA_ARGS__);\
+                            PRINTF("\n");
 #else
 #define USBH_ErrLog(...)   
 #endif 
                             
                             
 #if 1//(USBH_DEBUG_LEVEL > 2)                         
-#define  USBH_DbgLog(...)   debug_printf_P("DEBUG : ") ;\
-                            debug_printf_P(__VA_ARGS__);\
-                            debug_printf_P("\n");
+#define  USBH_DbgLog(...)   PRINTF("DEBUG : ") ;\
+                            PRINTF(__VA_ARGS__);\
+                            PRINTF("\n");
 #else
 #define USBH_DbgLog(...)                         
 #endif
@@ -14949,7 +14949,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
 #elif defined (STM32F40_41xxx)
 
 	const uint_fast32_t stm32f4xx_pllq = arm_hardware_stm32f7xx_pllq_initialize();	// Настроить выход PLLQ на 48 МГц
-	debug_printf_P(PSTR("HAL_PCD_MspInit: stm32f4xx_pllq=%lu, freq=%lu\n"), (unsigned long) stm32f4xx_pllq, PLL_FREQ / stm32f4xx_pllq);
+	PRINTF(PSTR("HAL_PCD_MspInit: stm32f4xx_pllq=%lu, freq=%lu\n"), (unsigned long) stm32f4xx_pllq, PLL_FREQ / stm32f4xx_pllq);
 
 	USBD_FS_INITIALIZE();
 	RCC->AHB2ENR |= RCC_AHB2ENR_OTGFSEN;	/* USB/OTG FS  */
@@ -14965,13 +14965,13 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
 	if (hpcd->Instance == USB_OTG_HS)
 	{
 		const uint_fast32_t stm32f4xx_pllq = arm_hardware_stm32f7xx_pllq_initialize();	// Настроить выход PLLQ на 48 МГц
-		debug_printf_P(PSTR("HAL_PCD_MspInit: stm32f4xx_pllq=%lu, freq=%lu\n"), (unsigned long) stm32f4xx_pllq, PLL_FREQ / stm32f4xx_pllq);
+		PRINTF(PSTR("HAL_PCD_MspInit: stm32f4xx_pllq=%lu, freq=%lu\n"), (unsigned long) stm32f4xx_pllq, PLL_FREQ / stm32f4xx_pllq);
 
 		if (hpcd->Init.phy_itface == USB_OTG_ULPI_PHY)
 		{
 			USBD_HS_ULPI_INITIALIZE();
 
-			debug_printf_P(PSTR("HAL_PCD_MspInit: HS and ULPI\n"));
+			PRINTF(PSTR("HAL_PCD_MspInit: HS and ULPI\n"));
 			RCC->AHB1ENR |= RCC_AHB1ENR_OTGHSEN;	/* USB/OTG HS  */
 			(void) RCC->AHB1ENR;
 			RCC->AHB1ENR |= RCC_AHB1ENR_OTGHSULPIEN;	/* USB/OTG HS with ULPI */
@@ -14981,7 +14981,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
 		{
 			USBD_HS_FS_INITIALIZE();
 
-			debug_printf_P(PSTR("HAL_PCD_MspInit: HS without ULPI\n"));
+			PRINTF(PSTR("HAL_PCD_MspInit: HS without ULPI\n"));
 			RCC->AHB1ENR |= RCC_AHB1ENR_OTGHSEN;	/* USB/OTG HS  */
 			(void) RCC->AHB1ENR;
 		}
@@ -15003,7 +15003,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
 	else if (hpcd->Instance == USB_OTG_FS)
 	{
 		const uint_fast32_t stm32f4xx_pllq = arm_hardware_stm32f7xx_pllq_initialize();	// Настроить выход PLLQ на 48 МГц
-		debug_printf_P(PSTR("HAL_PCD_MspInit: stm32f4xx_pllq=%lu, freq=%lu\n"), (unsigned long) stm32f4xx_pllq, PLL_FREQ / stm32f4xx_pllq);
+		PRINTF(PSTR("HAL_PCD_MspInit: stm32f4xx_pllq=%lu, freq=%lu\n"), (unsigned long) stm32f4xx_pllq, PLL_FREQ / stm32f4xx_pllq);
 
 		USBD_FS_INITIALIZE();
 		RCC->AHB2ENR |= RCC_AHB2ENR_OTGFSEN;	/* USB/OTG FS  */
@@ -15325,7 +15325,7 @@ static void board_usbd_initialize(void)
 /* вызывается при разрешённых прерываниях. */
 static void board_usbd_activate(void)
 {
-	//debug_printf_P(PSTR("board_usbd_activate.\n"));
+	//PRINTF(PSTR("board_usbd_activate.\n"));
 #if CPUSTYLE_R7S721
 
 	USB200.SYSCFG0 |= (1uL << USB_SYSCFG_DPRPU_SHIFT);	// DPRPU 1: Pulling up the D+ line is enabled.
@@ -15336,7 +15336,7 @@ static void board_usbd_activate(void)
 	USBD_Start(& hUsbDevice);
 
 #endif
-	//debug_printf_P(PSTR("board_usbd_activate done.\n"));
+	//PRINTF(PSTR("board_usbd_activate done.\n"));
 }
 
 
@@ -15626,7 +15626,7 @@ USBH_StatusTypeDef USBH_LL_ResetPort (USBH_HandleTypeDef *phost)
   */
 USBH_StatusTypeDef  USBH_LL_DriverVBUS(USBH_HandleTypeDef *phost, uint8_t state)
 { 
-	//debug_printf_P(PSTR("USBH_LL_DriverVBUS(%d)\n"), state);
+	//PRINTF(PSTR("USBH_LL_DriverVBUS(%d)\n"), state);
 	/* USER CODE BEGIN 0 */
 	/* USER CODE END 0*/     
 	if (phost->id == HOST_FS) // compare to WITHUSBHW_HOST
@@ -15661,7 +15661,7 @@ USBH_StatusTypeDef  USBH_LL_DriverVBUS(USBH_HandleTypeDef *phost, uint8_t state)
 
 void HAL_HCD_MspInit(HCD_HandleTypeDef* hcdHandle)
 {
-	debug_printf_P(PSTR("HAL_HCD_MspInit()\n"));
+	PRINTF(PSTR("HAL_HCD_MspInit()\n"));
 	if (hcdHandle->Instance == USB_OTG_FS)
 	{
 		#if CPUSTYLE_STM32H7XX
@@ -15678,7 +15678,7 @@ void HAL_HCD_MspInit(HCD_HandleTypeDef* hcdHandle)
 
 		#else
 			const uint_fast32_t stm32f4xx_pllq = arm_hardware_stm32f7xx_pllq_initialize();	// Настроить выход PLLQ на 48 МГц
-			debug_printf_P(PSTR("HAL_HCD_MspInit: stm32f4xx_pllq=%lu, freq=%lu\n"), (unsigned long) stm32f4xx_pllq, PLL_FREQ / stm32f4xx_pllq);
+			PRINTF(PSTR("HAL_HCD_MspInit: stm32f4xx_pllq=%lu, freq=%lu\n"), (unsigned long) stm32f4xx_pllq, PLL_FREQ / stm32f4xx_pllq);
 
 			USBD_FS_INITIALIZE();
 
@@ -16451,7 +16451,7 @@ USBH_StatusTypeDef  USBH_LL_Connect(USBH_HandleTypeDef *phost)
   */
 USBH_StatusTypeDef  USBH_LL_Disconnect(USBH_HandleTypeDef *phost)
 {
-	//debug_printf_P(PSTR("USBH_LL_Disconnect\n"));
+	//PRINTF(PSTR("USBH_LL_Disconnect\n"));
 	/*Stop Host */ 
 	USBH_LL_Stop(phost);  
 
@@ -18052,7 +18052,7 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
 		break;
     
 	case HOST_ENUMERATION:     
-		//debug_printf_P(PSTR("USBH_Process: HOST_ENUMERATION\n"));
+		//PRINTF(PSTR("USBH_Process: HOST_ENUMERATION\n"));
 		/* Check for enumeration status */  
 		if (USBH_HandleEnum(phost) == USBH_OK)
 		{ 
@@ -18073,7 +18073,7 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
 		break;
     
   case HOST_INPUT:
-	  debug_printf_P(PSTR("USBH_Process: HOST_INPUT\n"));
+	  PRINTF(PSTR("USBH_Process: HOST_INPUT\n"));
     {
       /* user callback for end of device basic enumeration */
       if (phost->pUser != NULL)
@@ -18089,7 +18089,7 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
     break;
     
   case HOST_SET_CONFIGURATION:
-	  //debug_printf_P(PSTR("USBH_Process: HOST_SET_CONFIGURATION\n"));
+	  //PRINTF(PSTR("USBH_Process: HOST_SET_CONFIGURATION\n"));
     /* set configuration */
     if (USBH_SetCfg(phost, phost->device.CfgDesc.bConfigurationValue) == USBH_OK)
     {
@@ -18102,7 +18102,7 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
 	case HOST_CHECK_CLASS:
 		// Если USBH_GetActiveClass(phost) == 0x01 - работаем с составным устройством.
 
-		debug_printf_P(PSTR("USBH_Process: HOST_CHECK_CLASS (0x%02X)\n"), USBH_GetActiveClass(phost));
+		PRINTF(PSTR("USBH_Process: HOST_CHECK_CLASS (0x%02X)\n"), USBH_GetActiveClass(phost));
 		if (phost->ClassNumber == 0)
 		{
 			USBH_UsrLog ("No Class has been registered.");
@@ -18151,7 +18151,7 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
     break;    
     
   case HOST_CLASS_REQUEST:  
-	  debug_printf_P(PSTR("USBH_Process: HOST_CLASS_REQUEST\n"));
+	  PRINTF(PSTR("USBH_Process: HOST_CLASS_REQUEST\n"));
     /* process class standard control requests state machine */
     if (phost->pActiveClass != NULL)
     {
@@ -18174,7 +18174,7 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
     break;  
 	
   case HOST_CLASS:   
-	  debug_printf_P(PSTR("USBH_Process: HOST_CLASS\n"));
+	  PRINTF(PSTR("USBH_Process: HOST_CLASS\n"));
     /* process class state machine */
     if (phost->pActiveClass != NULL)
     { 
@@ -18183,7 +18183,7 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
     break;       
 
   case HOST_DEV_DISCONNECTED :
-	  debug_printf_P(PSTR("USBH_Process: HOST_DEV_DISCONNECTED\n"));
+	  PRINTF(PSTR("USBH_Process: HOST_DEV_DISCONNECTED\n"));
     DeInitStateMachine(phost);  
     
     /* Re-Initilaize Host for new Enumeration */
@@ -18195,12 +18195,12 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
     break;
     
   case HOST_ABORT_STATE:
-	  //debug_printf_P(PSTR("USBH_Process: HOST_ABORT_STATE\n"));
+	  //PRINTF(PSTR("USBH_Process: HOST_ABORT_STATE\n"));
     break;
 
   default :
 	  TP();
-	  //debug_printf_P(PSTR("USBH_Process: default\n"));
+	  //PRINTF(PSTR("USBH_Process: default\n"));
     break;
   }
  return USBH_OK;  
@@ -18834,7 +18834,7 @@ DSTATUS USB_Initialize (
 	BYTE drv				/* Physical drive nmuber (0..) */
 	)
 {
-	//debug_printf_P(PSTR("disk_initialize: drv=%d\n"), (int) drv);
+	//PRINTF(PSTR("disk_initialize: drv=%d\n"), (int) drv);
 	if (1)
 	{
 		if (HCD_IsDeviceConnected(&USB_OTG_Core) && TM_USB_MSCHOST_INT_Result == TM_USB_MSCHOST_Result_Connected) {
@@ -18854,7 +18854,7 @@ DSTATUS USB_Status (
 	BYTE drv		/* Physical drive nmuber (0..) */
 	)
 {
-	//debug_printf_P(PSTR("disk_status: drv=%d\n"), (int) drv);
+	//PRINTF(PSTR("disk_status: drv=%d\n"), (int) drv);
 	if (1)
 	{
 		return USB_Stat;
@@ -18987,7 +18987,7 @@ const struct drvfunc USBH_drvfunc =
 /* вызывается при запрещённых прерываниях. */
 void board_usb_initialize(void)
 {
-	//debug_printf_P(PSTR("board_usb_initialize start.\n"));
+	//PRINTF(PSTR("board_usb_initialize start.\n"));
 #if defined (WITHUSBHW_DEVICE)
 	board_usbd_initialize();	// USB device support
 #endif /* defined (WITHUSBHW_DEVICE) */
@@ -18995,13 +18995,13 @@ void board_usb_initialize(void)
 #if defined (WITHUSBHW_HOST)
 	board_usbh_initialize();	// USB host support
 #endif /* defined (WITHUSBHW_HOST) */
-	//debug_printf_P(PSTR("board_usb_initialize done.\n"));
+	//PRINTF(PSTR("board_usb_initialize done.\n"));
 }
 
 /* вызывается при разрешённых прерываниях. */
 void board_usb_activate(void)
 {
-	//debug_printf_P(PSTR("board_usb_activate start.\n"));
+	//PRINTF(PSTR("board_usb_activate start.\n"));
 #if defined (WITHUSBHW_DEVICE)
 	board_usbd_activate();
 #endif /* defined (WITHUSBHW_DEVICE) */
@@ -19009,7 +19009,7 @@ void board_usb_activate(void)
 #if defined (WITHUSBHW_HOST)
 	board_usbh_activate();
 #endif /* defined (WITHUSBHW_HOST) */
-	//debug_printf_P(PSTR("board_usb_activate done.\n"));
+	//PRINTF(PSTR("board_usb_activate done.\n"));
 }
 
 // вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.

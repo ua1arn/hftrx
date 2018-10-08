@@ -653,7 +653,7 @@ enum
 	#define TP() \
 		do { \
 			static const char this_file [] = __FILE__; \
-			debug_printf_P(PSTR("At %d in %s.\n"), __LINE__, this_file); \
+			PRINTF(PSTR("At %d in %s.\n"), __LINE__, this_file); \
 		} while(0)
 #else /* WITHDEBUG */
 	#define TP() do { } while(0)
@@ -661,13 +661,14 @@ enum
 
 #if WITHDEBUG
 
+	#define PRINTF	debug_printf_P
 	#define ASSERT(v) do { if ((v) == 0) { \
-		debug_printf_P(PSTR("%s(%d): Assert '%s'\n"), __FILE__, __LINE__, (# v)); \
+		PRINTF(PSTR("%s(%d): Assert '%s'\n"), __FILE__, __LINE__, (# v)); \
 		for (;;) ; \
 		} } while (0)
 
 	#define VERIFY(v) do { if ((v) == 0) { \
-		debug_printf_P(PSTR("%s(%d): Verify '%s'\n"), __FILE__, __LINE__, (# v)); \
+		PRINTF(PSTR("%s(%d): Verify '%s'\n"), __FILE__, __LINE__, (# v)); \
 		for (;;) ; \
 		} } while (0)
 
@@ -680,6 +681,7 @@ enum
 
 #else /* WITHDEBUG */
 
+	#define PRINTF(...)	do {} while (0)
 	#define ASSERT(v) ((void) (0))
 	#define VERIFY(v) ((void) (v))
 
