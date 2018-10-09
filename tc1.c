@@ -727,7 +727,7 @@ struct micproc
 {
 	uint8_t comp;
 	uint8_t complevel;
-} __attribute__ ((packed));	// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
+} ATTRPACKED;	// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
 
 
 static mikproc_t micprofiles [] =
@@ -1051,7 +1051,7 @@ struct agcseti
 	uint8_t agc_release10;
 	uint8_t agc_t4;
 	uint8_t agc_thung10;
-} __attribute__ ((packed));	// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
+} ATTRPACKED;	// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
 
 struct afsetitempl
 {
@@ -2254,7 +2254,7 @@ struct modeprops
 	uint8_t txaudio;	/* источник звука для передачи */
 #endif /* WITHIF4DSP */
 
-} __attribute__ ((packed));// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
+} ATTRPACKED;// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
 
 /* структура - расположение байтов в конфигурационном ОЗУ.
    bitfields нельзя использовать, так как всё это - только обозначения смещений
@@ -2278,7 +2278,7 @@ struct bandinfo
 	uint8_t tunerind;
 	uint8_t tunertype;
 #endif /* WITHAUTOTUNER */
-} __attribute__ ((packed));// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
+} ATTRPACKED;// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
 
 /* структура - расположение байтов в конфигурационном ОЗУ.
    bitfields нельзя использовать, так как всё это - только обозначения смещений
@@ -2756,7 +2756,7 @@ filter_t fi_2p0_455 =
 	uint8_t	bandgroup [BANDGROUP_COUNT];	/* последний диапазон в группе, куда был переход по кнопке диапазона (индекс в bands). */
 #endif	/* WITHDIRECTBANDS */
 	uint8_t signature [sizeof nvramsign - 1];	/* сигнатура соответствия версии программы и содержимого NVRAM */
-} __attribute__ ((packed));	// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
+} ATTRPACKED;	// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
 
 /* константы, определяющие расположение параметров в FRAM */
 

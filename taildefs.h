@@ -672,12 +672,12 @@ enum
 		for (;;) ; \
 		} } while (0)
 
-	#define TRACE0(f)		debug_printf_P( PSTR(f))
-	#define TRACE1(f,a1)		debug_printf_P( PSTR(f),(a1))
-	#define TRACE2(f,a1,a2)		debug_printf_P( PSTR(f),(a1),(a2))
-	#define TRACE3(f,a1,a2,a3)	debug_printf_P( PSTR(f),(a1),(a2),(a3))
-	#define TRACE4(f,a1,a2,a3,a4)	debug_printf_P( PSTR(f),(a1),(a2),(a3),(a4))
-	#define TRACE5(f,a1,a2,a3,a4,a5) debug_printf_P( PSTR(f),(a1),(a2),(a3),(a4),(a5))
+#define TRACE0(f)		do { PRINTF( PSTR(f)); } while (0)
+	#define TRACE1(f,a1)		do { PRINTF( PSTR(f),(a1)); } while (0)
+	#define TRACE2(f,a1,a2)		do { PRINTF( PSTR(f),(a1),(a2)); } while (0)
+	#define TRACE3(f,a1,a2,a3)	do { PRINTF( PSTR(f),(a1),(a2),(a3)); } while (0)
+	#define TRACE4(f,a1,a2,a3,a4)	do { PRINTF( PSTR(f),(a1),(a2),(a3),(a4)); } while (0)
+	#define TRACE5(f,a1,a2,a3,a4,a5) do { PRINTF( PSTR(f),(a1),(a2),(a3),(a4),(a5)); } while (0)
 
 #else /* WITHDEBUG */
 

@@ -267,6 +267,7 @@ calcdivider(
 	return (rbi - 1);	// если надо обраьатывать невозможность подбора - возврат rbmax
 }
 
+static uint_fast32_t arm_hardware_stm32f7xx_pllq_initialize(void);	// Настроить выход PLLQ на 48 МГц
 
 #if CPUSTYLE_AT91SAM7S
 
@@ -6868,7 +6869,7 @@ lowlevel_sam3s_init_pll_clock_xtal(unsigned pllmul, unsigned plldiv, unsigned ws
 
 #if CPUSTYLE_STM32F7XX || CPUSTYLE_STM32F4XX
 // Настроить выход PLLQ на 48 МГц
-uint_fast32_t arm_hardware_stm32f7xx_pllq_initialize(void)
+static uint_fast32_t arm_hardware_stm32f7xx_pllq_initialize(void)
 {
 	const uint32_t stm32f4xx_pllq = calcdivround2(PLL_FREQ, 48000000uL);	// Как было сделано при инициализации PLL
 	// PLLQ: Main PLL (PLL) division factor for USB OTG FS, SDIO and random number generator clocks
@@ -6912,9 +6913,13 @@ lowlevel_stm32f4xx_pll_initialize(void)
 	while ((RCC->CR & RCC_CR_HSIRDY) == 0)//жду пока не заработает
 		;
 
-	RCC->CFGR |= RCC_CFGR_SW_HSI;
+    // switch CPU clock to HSI before PLL programming
+	RCC->CFGR = (RCC->CFGR & ~ (RCC_CFGR_SW)) |
+        RCC_CFGR_SW_HSI |
+        0;
 	while ((RCC->CFGR & RCC_CFGR_SWS) != (RCC_CFGR_SWS_0 * 0))
 		;
+	RCC->CR &= ~ RCC_CR_PLLON;				// Выключил PLL
 
 	#if WITHCPUXTAL
 		// Внешний кварцевый резонатор
@@ -6987,17 +6992,13 @@ lowlevel_stm32f4xx_pll_initialize(void)
 	while ((FLASH->ACR & FLASH_ACR_LATENCY) != flash_acr_latency)
 		;
 
-#if defined(STM32F401xC)
-	RCC->CFGR = (RCC->CFGR & ~ (RCC_CFGR_HPRE)) |
-		RCC_CFGR_HPRE_DIV2 |
-		0;
-#endif
-
 	RCC->CFGR = (RCC->CFGR & ~ (RCC_CFGR_PPRE1 | RCC_CFGR_PPRE2 | RCC_CFGR_SW)) |
 #if defined(STM32F401xC)
+		(RCC_CFGR_HPRE_0 * 8) |		// AHB clock division factor. 0x08: system clock divided by 2s
 		(RCC_CFGR_PPRE1_0 * 4) |	// APB1 prescaler 0x05: AHB clock divided by 2: понизил частоту APB1 до 42МГц
 		(RCC_CFGR_PPRE2_0 * 0) |	// APB2 prescaler 0x04: AHB clock divided by 1: 84MHz
 #else
+		(RCC_CFGR_HPRE_0 * 0) |		// AHB clock division factor. 0x00: system clock divided by 1
 		(RCC_CFGR_PPRE1_0 * 5) |	// APB1 prescaler 0x05: AHB clock divided by 4: понизил частоту APB1 до 42МГц
 		(RCC_CFGR_PPRE2_0 * 4) |	// APB2 prescaler 0x04: AHB clock divided by 2: 84MHz
 #endif
@@ -7107,9 +7108,13 @@ lowlevel_stm32f7xx_pll_initialize(void)
 	while ((RCC->CR & RCC_CR_HSIRDY) == 0)//жду пока не заработает
 		;
 
-	RCC->CFGR |= RCC_CFGR_SW_HSI;
+    // switch CPU clock to HSI before PLL programming
+	RCC->CFGR = (RCC->CFGR & ~ (RCC_CFGR_SW)) |
+        RCC_CFGR_SW_HSI |
+        0;
 	while ((RCC->CFGR & RCC_CFGR_SWS) != (RCC_CFGR_SWS_0 * 0))
 		;
+	RCC->CR &= ~ RCC_CR_PLLON;				// Выключил PLL
 
 	#if WITHCPUXOSC
 		// Внешний кварцевый генератор
@@ -7183,6 +7188,7 @@ lowlevel_stm32f7xx_pll_initialize(void)
 		;
 
 	RCC->CFGR = (RCC->CFGR & ~ (RCC_CFGR_PPRE1 | RCC_CFGR_PPRE2)) |
+		(RCC_CFGR_HPRE_0 * 0) |		// AHB clock division factor. 0x00: system clock divided by 1
 		(RCC_CFGR_PPRE1_0 * 5) |	// APB1 prescaler 0x05: AHB clock divided by 4: понизил частоту APB1 до 42МГц
 		(RCC_CFGR_PPRE2_0 * 4) |	// APB2 prescaler 0x04: AHB clock divided by 2: 84MHz
 		RCC_CFGR_SW_PLL; // PLL as system clock
@@ -7266,8 +7272,12 @@ lowlevel_stm32h7xx_pll_initialize(void)
 	RCC->CR |= RCC_CR_HSION;		// 64 MHz включаю внутренний генератор
 	while ((RCC->CR & RCC_CR_HSIRDY) == 0) //жду пока не заработает
 		;
+	RCC->CR &= ~ RCC_CR_PLLON;				// Выключил PLL
 
-	RCC->CFGR |= RCC_CFGR_SW_HSI;
+    // switch CPU clock to HSI before PLL programming
+	RCC->CFGR = (RCC->CFGR & ~ (RCC_CFGR_SW)) |
+        RCC_CFGR_SW_HSI |
+        0;
 	while ((RCC->CFGR & RCC_CFGR_SWS) != (RCC_CFGR_SWS_0 * 0))
 		;
 
@@ -7498,7 +7508,7 @@ lowlevel_stm32h7xx_pll_initialize(void)
 // Настроить выход PLLQ на 48 МГц, подключить SDMMC и USB к нему.
 // Настройка делителя делается при инициализации PLL, здесь измениь делитель не получается.
 // Версия для STM32H7 возвращает текушее значение делитедя.
-uint_fast32_t arm_hardware_stm32f7xx_pllq_initialize(void)
+static uint_fast32_t arm_hardware_stm32f7xx_pllq_initialize(void)
 {
 	const uint32_t stm32h7xx_pllq = ((RCC->PLL1DIVR & RCC_PLL1DIVR_Q1) >> RCC_PLL1DIVR_Q1_Pos) + 1;
 	return stm32h7xx_pllq;
@@ -8235,10 +8245,10 @@ lowlevel_stm32l0xx_hsi_clock(void)
 	FLASH->ACR |= FLASH_ACR_PRFTEN;
 
 	RCC->CFGR = (RCC->CFGR & ~ (RCC_CFGR_PPRE1 | RCC_CFGR_PPRE2)) |
+			(RCC_CFGR_HPRE_0 * 0) |		// AHB clock division factor. 0x00: system clock divided by 1
 			(0 * RCC_CFGR_PPRE2_0) |	// APB high-speed prescaler (APB2)
 			(0 * RCC_CFGR_PPRE1_0) |	// APB low-speed prescaler (APB1)
 			0;
-
 
 	//000: Zero wait state, if 0 < SYSCLK <= 24 MHz
 	FLASH->ACR &= ~ FLASH_ACR_LATENCY;
@@ -8288,10 +8298,20 @@ void hardware_tim21_initialize(void)
 static void 
 lowlevel_stm32l0xx_pll_clock(void)
 {
+	// Enable HSI
+	RCC->CR |= RCC_CR_HSION;
+	while (!(RCC->CR & RCC_CR_HSIRDY)) 
+		;
+	// Select HSI as system clock source
+	RCC->CFGR = (RCC->CFGR & ~RCC_CFGR_SW) | RCC_CFGR_SW_PLL;
+    // Wait till HSI is used as system clock source
+	while ((RCC->CFGR & RCC_CFGR_SWS) != RCC_CFGR_SWS_HSI) 
+		;
+
 	#if WITHCPUXTAL
 		// внешний кварцевый резонатор
-		// Enable HSI
-		RCC->CR = (RCC->CR & ~ (RCC_CR_HSEON | RCC_CR_HSION | RCC_CR_HSEBYP)) | RCC_CR_HSEON;
+		// Enable HSE
+		RCC->CR |= RCC_CR_HSEON;
 		while (!(RCC->CR & RCC_CR_HSERDY)) 
 			;
 	#else /* WITHCPUXTAL */
@@ -8328,6 +8348,7 @@ lowlevel_stm32l0xx_pll_clock(void)
 
    // HCLK = SYSCLK, PCLK2 = HCLK, PCLK1 = HCLK/1
 	RCC->CFGR = (RCC->CFGR & ~ (RCC_CFGR_PPRE1 | RCC_CFGR_PPRE2)) |
+			(0 * RCC_CFGR_HPRE_0) |		// AHB clock division factor. 0x00: system clock divided by 1
 			(0 * RCC_CFGR_PPRE2_0) |	// APB high-speed prescaler (APB2) / 2
 			(4 * RCC_CFGR_PPRE1_0) |	// APB low-speed prescaler (APB1)
 			0;
@@ -8850,10 +8871,12 @@ arm_cpu_initialize(void)
 
 	lowlevel_stm32f4xx_pll_initialize();
 	lowlevel_stm32f4xx_MCOx_test();
+	arm_hardware_stm32f7xx_pllq_initialize();	// Настроить выход PLLQ на 48 МГц
 
 #elif CPUSTYLE_STM32H7XX
 
 	lowlevel_stm32h7xx_pll_initialize();
+	arm_hardware_stm32f7xx_pllq_initialize();	// Настроить выход PLLQ на 48 МГц
 	//lowlevel_stm32h7xx_mpu_initialize();
 
 	/* AXI SRAM Slave */
@@ -8881,6 +8904,7 @@ arm_cpu_initialize(void)
 #elif CPUSTYLE_STM32F7XX
 
 	lowlevel_stm32f7xx_pll_initialize();
+	arm_hardware_stm32f7xx_pllq_initialize();	// Настроить выход PLLQ на 48 МГц
 
 	SCB_InvalidateICache();
 	SCB_EnableICache();
@@ -8891,6 +8915,7 @@ arm_cpu_initialize(void)
 #elif CPUSTYLE_STM32F30X
 
 	lowlevel_stm32f30x_pll_clock();
+	arm_hardware_stm32f7xx_pllq_initialize();	// Настроить выход PLLQ на 48 МГц
 
 #elif CPUSTYLE_STM32F0XX
 

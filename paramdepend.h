@@ -704,17 +704,21 @@
    with the DMA during the transaction process should be 4-bytes aligned */    
 
 #if defined   (__GNUC__)        /* GNU Compiler */
-  #define __ALIGN4_END    __attribute__ ((aligned (4)))
-  #define __ALIGN4_BEGIN         
+	#pragma GCC diagnostic ignored "-Wunused-function"
+	#pragma GCC diagnostic ignored "-Wunused-variable"
+	#define __ALIGN4_END    __attribute__ ((aligned (4)))
+	#define __ALIGN4_BEGIN         
+	#define ATTRPACKED __attribute__ ((packed))
+	#define KEYWORDPACKED __packed
 #else                           
-  #define __ALIGN4_END
-  #if defined   (__CC_ARM)      /* ARM Compiler */
-    #define __ALIGN4_BEGIN    __align(4)  
-  #elif defined (__ICCARM__)    /* IAR Compiler */
-    #define __ALIGN4_BEGIN 
-  #elif defined  (__TASKING__)  /* TASKING Compiler */
-    #define __ALIGN4_BEGIN    __align(4) 
-  #endif /* __CC_ARM */  
+#define __ALIGN4_END
+	#if defined   (__CC_ARM)      /* ARM Compiler */
+		#define __ALIGN4_BEGIN    __align(4)  
+	#elif defined (__ICCARM__)    /* IAR Compiler */
+		#define __ALIGN4_BEGIN 
+	#elif defined  (__TASKING__)  /* TASKING Compiler */
+		#define __ALIGN4_BEGIN    __align(4) 
+	#endif /* __CC_ARM */  
 #endif /* __GNUC__ */ 
 
 
@@ -1857,8 +1861,8 @@
 	#define WITHFLATMENU (CTLSTYLE_SW2011ALL && ! CPUSTYLE_ATMEGA_XXX4)
 #endif /* WITHFLATMENU */
 
-#define HARDWARE_DELAY_MS(t) do { local_delay_ms(t); } while (0)
+#define HARDWARE_DELAY_MS(t) do { local_delay_ms(t); } while (0)	//HAL_Delay(t)
 #define HARDWARE_DELAY_US(t) do { local_delay_us(t); } while (0)
-#define HARDWARE_GETTICK_MS(t) ((uint32_t) 0) // HAL_GetTick()
+#define HARDWARE_GETTICK_MS() ((uint32_t) 0) // HAL_GetTick()
 
 #endif /* PARAMDEPEND_H_INCLUDED */

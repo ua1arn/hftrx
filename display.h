@@ -213,7 +213,7 @@ typedef uint16_t PACKEDCOLOR565_T;
 		struct rgb_24b
 		{
 			uint8_t r, g, b;
-		} __attribute__ ((packed));// аттрибут GCC, исключает "дыры" в структуре.
+		} ATTRPACKED;// аттрибут GCC, исключает "дыры" в структуре.
 
 		typedef struct rgb_24b PACKEDCOLOR_T;	// 3 байта для последовательной выдачи как RGB для LCDMODE_ILI8961
 

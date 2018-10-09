@@ -1686,7 +1686,7 @@ struct COG_144_line_data_t {
 	uint8_t even[16]; /**< 1.44" even byte array */
 	uint8_t scan[24]; /**< 1.44" scan byte array */
 	uint8_t odd [16]; /**< 1.44" odd byte array */
-} __attribute__ ((packed));
+} ATTRPACKED;
 
 /** 
  * \brief Line data structure of 2 inch EPD
@@ -1699,7 +1699,7 @@ struct COG_200_line_data_t {
 	uint8_t scan[24]; /**< 2" scan byte array */
 	uint8_t odd [25]; /**< 2" odd byte array */
 	uint8_t dummy_data;	/**< dummy byte 0x00 */
-} __attribute__ ((packed));
+} ATTRPACKED;
 
 /** 
  * \brief Line data structure of 2.7 inch EPD
@@ -1712,7 +1712,7 @@ struct COG_270_line_data_t {
 	uint8_t scan[44]; /**< 2.7" scan byte array */
 	uint8_t odd [33]; /**< 2.7" odd byte array */
 	uint8_t dummy_data;	/**< dummy byte 0x00 */
-} __attribute__ ((packed));
+} ATTRPACKED;
 
 #elif (defined COG_V110_G2) 
 
@@ -1727,7 +1727,7 @@ struct COG_144_line_data_t {
 	uint8_t scan[24]; /**< 1.44" scan byte array */
 	uint8_t odd [16]; /**< 1.44" odd byte array */
 	uint8_t border_byte; /**< Internal border_control*/
-} __attribute__ ((packed));
+} ATTRPACKED;
 
 /** 
  * \brief Line data structure of 2 inch EPD with G2 COG
@@ -1740,7 +1740,7 @@ struct COG_200_line_data_t {
 	uint8_t even[25]; /**< 2" even byte array */
 	uint8_t scan[24]; /**< 2" scan byte array */
 	uint8_t odd [25]; /**< 2" odd byte array */
-} __attribute__ ((packed));
+} ATTRPACKED;
     
 /** 
  * \brief Line data structure of 2.7 inch EPD with G2 COG
@@ -1753,7 +1753,7 @@ struct COG_270_line_data_t {
 	uint8_t even[33]; /**< 2.7" even byte array */
 	uint8_t scan[44]; /**< 2.7" scan byte array */
 	uint8_t odd [33]; /**< 2.7" odd byte array */
-} __attribute__ ((packed));
+} ATTRPACKED;
 
 #elif (defined COG_V230_G2)
 /** 
@@ -1767,7 +1767,7 @@ struct COG_144_line_data_t {
 	uint8_t scan[24]; /**< 1.44" scan byte array */
 	uint8_t odd [16]; /**< 1.44" odd byte array */
 	uint8_t border_byte; /**< Internal border_control*/
-} __attribute__ ((packed));
+} ATTRPACKED;
 
 /** 
  * \brief Line data structure of 2 inch V230 EPD with G2 COG
@@ -1780,7 +1780,7 @@ struct COG_200_line_data_t {
 	uint8_t even[25]; /**< 2" even byte array */
 	uint8_t scan[24]; /**< 2" scan byte array */
 	uint8_t odd [25]; /**< 2" odd byte array */
-} __attribute__ ((packed));
+} ATTRPACKED;
     
 /** 
  * \brief Line data structure of 2.7 inch V230 EPD with G2 COG
@@ -1793,7 +1793,7 @@ struct COG_270_line_data_t {
 	uint8_t even[33]; /**< 2.7" even byte array */
 	uint8_t scan[44]; /**< 2.7" scan byte array */
 	uint8_t odd [33]; /**< 2.7" odd byte array */
-} __attribute__ ((packed));
+} ATTRPACKED;
 
 struct EPD_WaveformTable_Struct
 {
