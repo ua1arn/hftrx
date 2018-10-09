@@ -6,12 +6,17 @@
 // автор Гена Завидовский mgs2001@mail.ru
 // UA1ARN
 //
+/*
+	новую полную версию аппарата SW с блоком ЧМ но без УКВ. 
+	Планируется использование совместно с трансвертером 144 и 430 мгц с ПЧ 28. 
+	Подходит от SW2016-VHF но индикатор RDX0154
+*/
 
 // Описание для трансивера SW2015 с индикатором RDX0154
-// ATMega32, LCD RDT065, Si5351
+// ATMega32, Si5351
 
-#ifndef ATMEGA_CTLSTYLE_SW2016_H_INCLUDED
-#define ATMEGA_CTLSTYLE_SW2016_H_INCLUDED 1
+#ifndef ATMEGA_CTLSTYLE_SW2018XVR_H_INCLUDED
+#define ATMEGA_CTLSTYLE_SW2018XVR_H_INCLUDED 1
 	
 	#define CTLSTYLE_SW2011ALL	1
 
@@ -252,4 +257,4 @@ enum
 #define KI_COUNT 2	// количество используемых под клавиатуру входов АЦП
 #define KI_LIST	KI1, KI0,	// инициализаторы для функции перекодировки
 
-#endif /* ATMEGA_CTLSTYLE_SW2016_H_INCLUDED */
+#endif /* ATMEGA_CTLSTYLE_SW2018XVR_H_INCLUDED */

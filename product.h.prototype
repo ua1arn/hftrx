@@ -454,7 +454,7 @@
 	#include "paramdepend.h"				/* проверка зависимостей параметров конфигурации */
 	#include "boards/atmega_cpustyle_v9sf.h"	// SW-2012SF-RDX
 #elif CPUSTYLE_ATMEGA32 && CTLSTYLE_SW2018XVR
-	#include "boards/atmega_ctlstyle_sw2016xvr.h"	// atmega32, LCD RDX0154, Si5351 с ПЧ 6 МГц и монохромным индикатором
+	#include "boards/atmega_ctlstyle_sw2018xvr.h"	// atmega32, LCD RDX0154, Si5351 с ПЧ 6 МГц и монохромным индикатором
 	#include "paramdepend.h"				/* проверка зависимостей параметров конфигурации */
 	#include "boards/atmega_cpustyle_v9sf.h"	// SW-2012SF-RDX
 #elif CPUSTYLE_AT91SAM7S && CTLSTYLE_V9		// satmpd9_v0 board
