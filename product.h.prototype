@@ -33,7 +33,7 @@
 //#define CTLSTYLE_STORCH_V4	1	// Rmainunit_v5im.pcb modem v2
 //#define CTLSTYLE_STORCH_V5	1	// Rmainunit_v5l.pcb STM32F767ZET6, 2xmini-USB, mini SD-CARD, 8-bit display imnterface, NAU8822L и FPGA EP4CE22E22I7N
 //#define CTLSTYLE_STORCH_V6	1	// Rmainunit_v5la.pcb STM32H743IIT6, TFT 4.3", 2xmini-USB, mini SD-CARD, 8-bit display imnterface, NAU8822L и FPGA EP4CE22E22I7N
-#define CTLSTYLE_STORCH_V7	1	// rmainunit_v5km1.pcb, rmainunit_v5km0.pcb STM32H743IIT6, TFT 4.3", 2xUSB, SD-CARD, NAU8822L и FPGA EP4CE22E22I7N
+//#define CTLSTYLE_STORCH_V7	1	// rmainunit_v5km0.pcb STM32H743IIT6, TFT 4.3", 2xUSB, SD-CARD, NAU8822L и FPGA EP4CE22E22I7N
 
 //
 //#define CTLSTYLE_DSPV1A	1	// Плата "Дятел" с кодеками для DSPIF4 с 12 кГц IF DSP трактом
@@ -55,6 +55,7 @@
 //#define CTLSTYLE_SW2015	1		// ATMega: SW2015 (LPF, no VHF, V5.1 - with VOLT METER) с индикатором RDX0154
 //#define CTLSTYLE_SW2016	1		// ATMega: Si5351, SW20116 (LCD RDT065, Si5351 с ПЧ 6 МГц) - с ФНЧ, без УКВ
 //#define CTLSTYLE_SW2016VHF	1	// ATMega: Si5351, SW20116 (LCD RDT065, Si5351 с ПЧ 6 МГц, FM)
+#define CTLSTYLE_SW2018XVR	1	// ATMega: Si5351, SW20116 (LCD RDT065, Si5351 с ПЧ 6 МГц, FM)
 // mini...
 //#define CTLSTYLE_SW2012_MINI 1	// ATMega: SW-2012-MINI 32*64 - А.Шатун, UR3LMZ (atmega_ctlstyle_v9m.h)
 //#define CTLSTYLE_SW2012MC 1	// ATMega: SW-2012С LS020 - MINI с ПЧ 6 МГЦ и цветным индикатором LS020
@@ -149,8 +150,8 @@
 #elif CPUSTYLE_STM32F && CTLSTYLE_STORCH_V1	// SD-CARD. DUAL WATCH, STM32F446ZET6, TLV320AIC23B и FPGA EP4CE22E22I7N
 	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v1.h"	// penkevich, Rmainunit_v5cm.pcb, Rmainunit_v5dm.pcb (USB)
 	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v1_RA9OH.h"	// Rmainunit_v5dm.pcb (USB)
-	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v1_R4DR.h"	// Rmainunit_v5dm.pcb (thermo stab) (USB)
-	#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v1_R4DZ.h"	// Rmainunit_v5dm.pcb (thermo stab) (USB)s
+	#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v1_R4DR.h"	// Rmainunit_v5dm.pcb (thermo stab) (USB)
+	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v1_R4DZ.h"	// Rmainunit_v5dm.pcb (thermo stab) (USB)s
 	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v1_RD1AD.h"	// Rmainunit_v5cm.pcb (USB)
 	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v1_OUSSOV.h"	// Rmainunit_v5cm.pcb (USB)
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
@@ -161,8 +162,8 @@
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32f4xx_tqfp144_cpustyle_storch_v2.h"	// Rmainunit_v5em.pcb (USBx2)
 #elif CPUSTYLE_STM32F && CTLSTYLE_STORCH_V3	// SD-CARD. 2xUSB, DUAL WATCH, STM32F446ZET6, TLV320AIC23B и FPGA EP4CE22E22I7N
-	//#include "./boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v3.h"	// Rmainunit_v5fm.pcb (USBx2, wide display interface)
-	#include "./boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v3_UT3NZ.h"	// stm32h743ziT6, EPSON 50 MHz Rmainunit_v5km.pcb (USBx2, wide display interface)
+	#include "./boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v3.h"	// Rmainunit_v5fm.pcb (USBx2, wide display interface)
+	//#include "./boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v3_UT3NZ.h"	// stm32h743ziT6, EPSON 50 MHz Rmainunit_v5km.pcb (USBx2, wide display interface)
 	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v3_hansolo.h"	// Дачь Rmainunit_v5jm.pcb (USBx2, wide display interface)
 	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v3_RA1AHL.h"	// Rmainunit_v5fm.pcb (USBx2, wide display interface)
 	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v3_UA9WF.h"	// Rmainunit_v5fm.pcb LTC2217 (USBx2, wide display interface)
@@ -286,8 +287,8 @@
 	#include "paramdepend.h"				/* проверка зависимостей параметров конфигурации */
 	#include "boards/atmega_cpustyle_RV9CQQ.h"
 #elif CPUSTYLE_ATMEGA32 && CTLSTYLE_V1B
-	//#include "boards/atmega644_ctlstyle_v1.h"	// Синтезатор "Воробей"
-	#include "boards/atmega644_ctlstyle_v1_gorlov.h"	// Синтезатор "Воробей" для RC3U hansgo_1969@mail.ru
+	#include "boards/atmega644_ctlstyle_v1.h"	// Синтезатор "Воробей"
+	//#include "boards/atmega644_ctlstyle_v1_gorlov.h"	// Синтезатор "Воробей" для RC3U hansgo_1969@mail.ru
 	//#include "boards/atmega644_ctlstyle_LADVABEST.h"	// Синтезатор "Воробей" у ladvabest
 	#include "paramdepend.h"				/* проверка зависимостей параметров конфигурации */
 	#include "boards/atmega_cpustyle_v8a.h"
@@ -450,6 +451,10 @@
 #elif CPUSTYLE_ATMEGA32 && CTLSTYLE_SW2016VHF
 	#include "boards/atmega_ctlstyle_sw2016vhf.h"	// atmega32, LCD RDT065, Si5351 с ПЧ 6 МГц и монохромным индикатором
 	//#include "boards/atmega_ctlstyle_sw2016vhf_UY5UM.h"	// atmega32, LCD WO240128, Si5351 с ПЧ 6 МГц и монохромным индикатором
+	#include "paramdepend.h"				/* проверка зависимостей параметров конфигурации */
+	#include "boards/atmega_cpustyle_v9sf.h"	// SW-2012SF-RDX
+#elif CPUSTYLE_ATMEGA32 && CTLSTYLE_SW2018XVR
+	#include "boards/atmega_ctlstyle_sw2016xvr.h"	// atmega32, LCD RDX0154, Si5351 с ПЧ 6 МГц и монохромным индикатором
 	#include "paramdepend.h"				/* проверка зависимостей параметров конфигурации */
 	#include "boards/atmega_cpustyle_v9sf.h"	// SW-2012SF-RDX
 #elif CPUSTYLE_AT91SAM7S && CTLSTYLE_V9		// satmpd9_v0 board

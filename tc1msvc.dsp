@@ -898,6 +898,10 @@ SOURCE=.\wm8994.c
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
 # Begin Source File
 
+SOURCE=.\boards\atmega_ctlstyle_sw2016xvr.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\audio.h
 # End Source File
 # Begin Source File

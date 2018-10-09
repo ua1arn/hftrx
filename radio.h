@@ -2204,7 +2204,7 @@ void spool_0p128(void);	// OPERA support
 		#elif CTLSTYLE_SW2016
 			#define DIRECT_39M00_X10_EXACT	1	/* SW2011 TRX scheme V.2 */
 			#define IF3_MODEL IF3_TYPE_6000_SW2015	/* Слегка выше по частоте верхний скат */
-		#elif CTLSTYLE_SW2016VHF
+		#elif CTLSTYLE_SW2016VHF || CTLSTYLE_SW2018XVR
 			#define DIRECT_39M00_X10_EXACT	1	/* SW2011 TRX scheme V.2 */
 			#define IF3_MODEL IF3_TYPE_6000_SW2015	/* Слегка выше по частоте верхний скат */
 		#elif CTLSTYLE_SW2016MINI

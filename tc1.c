@@ -3333,7 +3333,7 @@ enum
 			static uint_fast8_t maxpwrcali = 216;	/* калибровочный параметр PWR-метра */
 		#elif CTLSTYLE_SW2015
 			static uint_fast8_t maxpwrcali = 216;	/* калибровочный параметр PWR-метра */
-		#elif CTLSTYLE_SW2016 || CTLSTYLE_SW2016VHF
+		#elif CTLSTYLE_SW2016 || CTLSTYLE_SW2016VHF || CTLSTYLE_SW2018XVR
 			static uint_fast8_t maxpwrcali = 216;	/* калибровочный параметр PWR-метра */
 		#elif CTLSTYLE_SW2016MINI
 			static uint_fast8_t maxpwrcali = 100;	/* калибровочный параметр PWR-метра */
@@ -3459,7 +3459,7 @@ static uint_fast8_t dctxmodecw;	/* при передаче предполагается, что частоты if2 
 		static uint_fast8_t s9level = 110;			/* уровни калибровки S-метра */
 		static uint_fast8_t s9delta = 70;			
 		static uint_fast8_t s9_60_delta = 50;		
-	#elif CTLSTYLE_SW2016 || CTLSTYLE_SW2016VHF
+	#elif CTLSTYLE_SW2016 || CTLSTYLE_SW2016VHF || CTLSTYLE_SW2018XVR
 		static uint_fast8_t s9level = 110;			/* уровни калибровки S-метра */
 		static uint_fast8_t s9delta = 70;			
 		static uint_fast8_t s9_60_delta = 50;		
