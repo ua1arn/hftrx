@@ -4609,7 +4609,8 @@ deltafreq2x(
 	uint_fast16_t width	// ширина экрана
 	)
 {
-	int_fast32_t dp = (delta + bw / 2) * width / bw;
+	//const int_fast32_t dp = (delta + bw / 2) * width / bw;
+	const int_fast32_t dp = (delta + bw / 2) * (width - 1) / bw;
 	return dp;
 }
 
@@ -4642,6 +4643,7 @@ display_colorbuffer_set_vline(
 		display_colorbuffer_set(buffer, ALLDX, ALLDY, col, row0 ++, color);
 }
 
+// отрисовка маркеров частот
 static void 
 display_colorgrid(
 	PACKEDCOLOR565_T * buffer,
@@ -4803,7 +4805,7 @@ static void display2_spectrum(
 				}
 			}
 		}
-		display_colorgrid(colorpip, SPY0, SPDY);
+		display_colorgrid(colorpip, SPY0, SPDY);	// отрисовка маркеров частот
 	}
 
 #endif
@@ -4929,7 +4931,7 @@ static void display2_waterfall(
 		}
 		else
 		{
-			display_colorgrid(colorpip, WFY0, WFDY);
+			display_colorgrid(colorpip, WFY0, WFDY);	// отрисовка маркеров частот
 		}
 
 	}
