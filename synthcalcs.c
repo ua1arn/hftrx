@@ -413,7 +413,7 @@ board_getscalelo1(
 	uint_fast32_t f
 	)
 {
-#if CTLSTYLE_SW2016VHF
+#if CTLSTYLE_SW2016VHF || CTLSTYLE_SW2018XVR
 	// используется FQMODEL_45_IF8868_UHF144
 	return 1;
 #elif \
