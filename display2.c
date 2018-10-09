@@ -2233,7 +2233,7 @@ enum
 	#define SMALLCHARH 8 /* Font height */
 
 	#if DSTYLE_UR3LMZMOD && WITHONEATTONEAMP
-
+		// SW20XXX 
 		enum
 		{
 			BDTH_ALLRX = 21,	// ширина зоны для отображение полосы на индикаторе
@@ -2300,14 +2300,18 @@ enum
 			{	8,	4,	display_freqX_b,	REDRM_FREQB, REDRSUBSET(DPAGE0), },
 			{	19, 4,	display_mode3_b,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
 
-			{	0,	5,	display_ant5,		REDRM_MODE, REDRSUBSET(DPAGE0), },	// ANTENNA
-			{	6,	5,	display_voltlevelV5,REDRM_VOLT, REDRSUBSET(DPAGE0), },	// voltmeter with "V"
-			{	12, 5,	display_hplp2,		REDRM_MODE, REDRSUBSET(DPAGE0), },	// HP/LP
+			{	0,	5,	display_hplp2,		REDRM_MODE, REDRSUBSET(DPAGE0), },	// HP/LP
+			{	3,	5,	display_voltlevelV5,REDRM_VOLT, REDRSUBSET(DPAGE0), },	// voltmeter with "V"
+		#if WITHANTSELECT
+			{	9,	5,	display_ant5,		REDRM_MODE, REDRSUBSET(DPAGE0), },	// ANTENNA
+		#endif /* WITHANTSELECT */
 		#if defined (RTC1_TYPE)
-			{	15, 5,	display_time5,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// TIME
+			{	9,	5,	display_time5,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// TIME
 		#endif /* defined (RTC1_TYPE) */
+		#if WITHTX && WITHAUTOTUNER
 			{	15, 5,	display_atu3,		REDRM_MODE, REDRSUBSET(DPAGE0), },	// ATU
 			{	19, 5,	display_byp3,		REDRM_MODE, REDRSUBSET(DPAGE0), },	// BYP
+		#endif /* WITHTX && WITHAUTOTUNER */
 
 			{	0,	6,	display2_bars,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// S-METER, SWR-METER, POWER-METER
 			{	0,	7,	display2_legend,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// Отображение оцифровки шкалы S-метра

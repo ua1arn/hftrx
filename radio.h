@@ -2204,7 +2204,10 @@ void spool_0p128(void);	// OPERA support
 		#elif CTLSTYLE_SW2016
 			#define DIRECT_39M00_X10_EXACT	1	/* SW2011 TRX scheme V.2 */
 			#define IF3_MODEL IF3_TYPE_6000_SW2015	/* Слегка выше по частоте верхний скат */
-		#elif CTLSTYLE_SW2016VHF || CTLSTYLE_SW2018XVR
+		#elif CTLSTYLE_SW2016VHF
+			#define DIRECT_39M00_X10_EXACT	1	/* SW2011 TRX scheme V.2 */
+			#define IF3_MODEL IF3_TYPE_6000_SW2015	/* Слегка выше по частоте верхний скат */
+		#elif CTLSTYLE_SW2018XVR
 			#define DIRECT_39M00_X10_EXACT	1	/* SW2011 TRX scheme V.2 */
 			#define IF3_MODEL IF3_TYPE_6000_SW2015	/* Слегка выше по частоте верхний скат */
 		#elif CTLSTYLE_SW2016MINI
@@ -2287,7 +2290,7 @@ void spool_0p128(void);	// OPERA support
 
 	#endif
 
-	#if CTLSTYLE_SW2016VHF
+	#if CTLSTYLE_SW2016VHF || CTLSTYLE_SW2018XVR
 		#define LO1_SIDE	LOCODE_UPPER	/* При преобразовании на этом гетеродине происходит инверсия спектра */
 	#else /* CTLSTYLE_SW2016VHF */
 		#define LO1_SIDE_F(freq) (((freq) < 80000000L) ? LOCODE_UPPER : LOCODE_LOWER)	/* сторона зависит от рабочей частоты */

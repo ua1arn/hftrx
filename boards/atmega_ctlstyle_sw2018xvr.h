@@ -39,6 +39,7 @@
 		//#define FQMODEL_45_IF8868_UHF144	1
 		// ѕользовательские варианты конфигурации.
 		#define BANDSELSTYLERE_SW20XX 1
+		//#define BANDSELSTYLERE_SW20XX_UHF 1
 
 	#else
 		// ƒл€ случаев использовани€ платы синтезатора в трансиверах с одним преобразованием.

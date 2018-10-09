@@ -1196,7 +1196,7 @@ static FLASHMEM const struct afsetitempl aft [AGCSETI_COUNT] =
 	#define	BPSK_LO5_SIDE_RX		LOCODE_LOWER	/* При преобразовании на этом гетеродине нет инверсии спектра */
 	#define	BPSK_LO5_SIDE_TX		LOCODE_LOWER	/* При преобразовании на этом гетеродине нет инверсии спектра */
 
-#if CTLSTYLE_SW2016VHF
+#if CTLSTYLE_SW2016VHF || CTLSTYLE_SW2018XVR
 	// CTLSTYLE_SW2016VHF (Si5351)
 	#define	NFM_LO5_SIDE_RX		LOCODE_LOWER	/* При преобразовании на этом гетеродине нет инверсии спектра */
 	#define	NFM_LO5_SIDE_TX		LOCODE_INVALID	/* Не выключать третий гетеродин - при NFM используется тот же тракт. */
@@ -3333,7 +3333,9 @@ enum
 			static uint_fast8_t maxpwrcali = 216;	/* калибровочный параметр PWR-метра */
 		#elif CTLSTYLE_SW2015
 			static uint_fast8_t maxpwrcali = 216;	/* калибровочный параметр PWR-метра */
-		#elif CTLSTYLE_SW2016 || CTLSTYLE_SW2016VHF || CTLSTYLE_SW2018XVR
+		#elif CTLSTYLE_SW2018XVR
+			static uint_fast8_t maxpwrcali = 216;	/* калибровочный параметр PWR-метра */
+		#elif CTLSTYLE_SW2016 || CTLSTYLE_SW2016VHF
 			static uint_fast8_t maxpwrcali = 216;	/* калибровочный параметр PWR-метра */
 		#elif CTLSTYLE_SW2016MINI
 			static uint_fast8_t maxpwrcali = 100;	/* калибровочный параметр PWR-метра */
