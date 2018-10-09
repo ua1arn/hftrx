@@ -3832,6 +3832,7 @@ enum
 			PG2 = REDRSUBSET(DPAGE2),
 			PGALL = PG0 | PG1 | PG2 | REDRSUBSET_MENU,
 			PGLATCH = PGALL,	// страницы, на которых возможно отображение водопада или панорамы.
+			PGSWR = PG0,	// страница отоюражения S-meter и SWR-meter
 			PGWFL = PG2,
 			PGSPE = PG1,
 			PGunused
