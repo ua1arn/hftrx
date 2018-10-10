@@ -3977,6 +3977,7 @@ static void sdcard_filesystest(void)
 	char testlog [FF_MAX_LFN + 1];
 	//int nlog = 0;
 
+	mmcInitialize();
 	debug_printf_P(PSTR("FAT FS test.\n"));
 	f_mount(& Fatfs, "", 0);		/* Register volume work area (never fails) */
 
@@ -3991,6 +3992,22 @@ static void sdcard_filesystest(void)
 				debug_printf_P(PSTR("Undefined command letter with code 0x%02X\n"), (unsigned char) c);
 				break;
 
+			case 'q':
+				{
+					uint_fast64_t v = mmcCardSize();
+					debug_printf_P(PSTR("SD Card size = %lu KB (%lu MB) (%08lx:%08lx bytes)\n"), 
+						(unsigned long) (v / 1024), 
+						(unsigned long) (v / 1024 / 1024), 
+						(unsigned long) (v >> 32), 
+						(unsigned long) (v >> 0));
+
+				}
+				break;
+
+			case 'z':
+				mmcInitialize();
+				break;
+				
 			case 'x':
 				f_mount(NULL, "", 0);		/* Unregister volume work area (never fails) */
 				debug_printf_P(PSTR("FAT FS test done.\n"));
