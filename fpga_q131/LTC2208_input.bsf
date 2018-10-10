@@ -72,6 +72,13 @@ applicable agreement for further details.
 		(text "value[15..0]" (rect 121 43 187 57)(font "Arial" (font_size 8)))
 		(line (pt 208 48)(pt 192 48)(line_width 3))
 	)
+	(port
+		(pt 208 64)
+		(output)
+		(text "ready" (rect 0 0 33 14)(font "Arial" (font_size 8)))
+		(text "ready" (rect 154 59 187 73)(font "Arial" (font_size 8)))
+		(line (pt 208 64)(pt 192 64))
+	)
 	(drawing
 		(rectangle (rect 16 16 192 112))
 	)
