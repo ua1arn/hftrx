@@ -140,12 +140,12 @@ static void sd_power_cycle(void)
 
 void sdcardhw_initialize(void)
 {
-	//debug_printf_P(PSTR("sd_initialize: power cycle\n"));
+	//PRINTF(PSTR("sd_initialize: power cycle\n"));
 	sd_sense_initialize();
 	sd_power_initialize();
 	//sd_power_cycle();
 	
-	//debug_printf_P(PSTR("sd_initialize: done.\n"));
+	//PRINTF(PSTR("sd_initialize: done.\n"));
 	return;
 }
 
@@ -156,8 +156,8 @@ static uint_fast64_t sdhost_sdcard_parse_CSD(const uint8_t * bv)
 	// Обработка информациолнного блока (Code length is 128 bits = 16 bytes)
 	//
 	const uint_fast8_t csdv = array_get_bits(bv, 128, 127, 2);	//  [127:126] - csd structure version
-	debug_printf_P("CSD version=0x%02x\n", csdv);
-	debug_printf_P("CSD TRAN_SPEED = %d (0x%02x)\n", array_get_bits(bv, 128, 103, 8), array_get_bits(bv, 128, 103, 8));	// [103:96] 
+	PRINTF("CSD version=0x%02x\n", csdv);
+	PRINTF("CSD TRAN_SPEED = %d (0x%02x)\n", array_get_bits(bv, 128, 103, 8), array_get_bits(bv, 128, 103, 8));	// [103:96] 
 
 	switch (csdv)
 	{	
@@ -166,7 +166,7 @@ static uint_fast64_t sdhost_sdcard_parse_CSD(const uint8_t * bv)
 		// Расчёт объёма карты памяти по структуре версии 2
 		mmc_C_SIZE = array_get_bits(bv, 128, 69, 22);	// [69:48] This parameter is used to calculate the user data area capacity in the SD memory card (not include the protected area).
 
-		//debug_printf_P("mmc_C_SIZE = %lu\n", (unsigned long) mmc_C_SIZE);
+		//PRINTF("mmc_C_SIZE = %lu\n", (unsigned long) mmc_C_SIZE);
 		MMC_CardSize = (uint_fast64_t) (mmc_C_SIZE + 1) * 512 * 1024;
 		break;
 
@@ -399,14 +399,14 @@ static uint_fast8_t crc7b8(uint_fast8_t crc, uint_fast8_t v8)
 //	SDIO DMA2	Stream6	Channel 4	
 void DMA2_Stream6_IRQHandler(void)
 {
-	debug_printf_P(PSTR("DMA2_Stream6_IRQHandler() trapped.\n"));
+	PRINTF(PSTR("DMA2_Stream6_IRQHandler() trapped.\n"));
 	for (;;)
 		;
 }
 
 void SDIO_IRQHandler(void)
 {
-	debug_printf_P(PSTR("SDIO_IRQHandler trapped\n"));
+	PRINTF(PSTR("SDIO_IRQHandler trapped\n"));
 	for (;;)
 		;
 }
@@ -425,7 +425,7 @@ static void DMA_SDIO_setparams(
 	uint_fast8_t direction	// 0: Peripheral-to-memory, 1: Memory-to-peripherial
 	)
 {
-	//debug_printf_P(PSTR("DMA_SDIO_setparams: addr=%p\n"), addr);
+	//PRINTF(PSTR("DMA_SDIO_setparams: addr=%p\n"), addr);
 #if ! WITHSDHCHW
 // SPI SD CARD (MMC SD)
 
@@ -571,7 +571,7 @@ static void DMA_SDIO_setparams(
 	//SDMMC1->IDMABSIZE = (SDMMC1->IDMABSIZE & ~ (SDMMC_IDMABSIZE_IDMABNDT)) |
 	//	(((length0 * count / 32) << SDMMC_IDMABSIZE_IDMABNDT_Pos) & SDMMC_IDMABSIZE_IDMABNDT_Msk) |
 	//0;
-	//debug_printf_P(PSTR("SDMMC1->IDMABASE0=%08lx\n"), SDMMC1->IDMABASE0);
+	//PRINTF(PSTR("SDMMC1->IDMABASE0=%08lx\n"), SDMMC1->IDMABASE0);
 	ASSERT((SDMMC1->IDMACTRL & SDMMC_IDMA_IDMAEN_Msk) != 0);
 	ASSERT(SDMMC1->IDMABASE0 == addr);
 
@@ -687,14 +687,14 @@ static uint_fast8_t DMA_sdio_waitdone(void)
 
 	while ((DMA2->HISR & DMA_HISR_TCIF6) == 0)
 	{
-		//debug_printf_P(PSTR("DMA_sdio_waitdone: NDTR=%lu\n"), DMA2_Stream6->NDTRDMA2_Stream6->NDTR);
+		//PRINTF(PSTR("DMA_sdio_waitdone: NDTR=%lu\n"), DMA2_Stream6->NDTRDMA2_Stream6->NDTR);
 	}
 
 	if ((DMA2->HISR & DMA_HISR_TCIF6) != 0)
 		DMA2->HIFCR = DMA_HIFCR_CTCIF6;		// сбросил флаг - DMA готово начинать с начала
 	else
 	{
-		debug_printf_P(PSTR("DMA_sdio_waitdone: force stop, NDTR=%lu\n"), DMA2_Stream6->NDTR);
+		PRINTF(PSTR("DMA_sdio_waitdone: force stop, NDTR=%lu\n"), DMA2_Stream6->NDTR);
 		// DMA ещё может передавать
 		// Надо привести в начальное состояние
 		DMA2_Stream6->CR &= ~ DMA_SxCR_EN;
@@ -730,7 +730,7 @@ static void DMA_sdio_cancel(void)
 #elif CPUSTYLE_STM32F7XX || CPUSTYLE_STM32F4XX
 
 	{
-		//debug_printf_P(PSTR("DMA_sdio_cancel: force stop, NDTR=%lu\n"), DMA2_Stream6->NDTR);
+		//PRINTF(PSTR("DMA_sdio_cancel: force stop, NDTR=%lu\n"), DMA2_Stream6->NDTR);
 		// DMA ещё может передавать
 		// Надо привести в начальное состояние
 		DMA2_Stream6->CR &= ~ DMA_SxCR_EN;
@@ -785,20 +785,21 @@ SetEvents(events_t v)
 static int
 WaitEvents(events_t e, int type)
 {
-
-	for (;;)
+	unsigned long t;
+	for (t = 0; t < 100000000; ++ t)
 	{
 		disableIRQ();
 		if (sd_event_xx != 0 /*&& (sd_event_value & e) != 0 */)
 		{
 			sd_event_xx = 0;
 			enableIRQ();
-			break;
+			SDMMC1->MASK = 0;
+			return EV_SD_READY;
 		}
 		enableIRQ();
 	}
 	SDMMC1->MASK = 0;
-	return EV_SD_READY;
+	return EV_SD_ERROR;
 }
 
 
@@ -848,8 +849,7 @@ static uint_fast8_t sdhost_dpsm_wait(uint_fast8_t txmode)
 
 #elif CPUSTYLE_STM32H7XX
 
-	WaitEvents(EV_SD_DATA, WAIT_ANY);
-	return 0;
+	return WaitEvents(EV_SD_DATA, WAIT_ANY) == EV_SD_ERROR;
 
 #elif CPUSTYLE_STM32F7XX
 
@@ -864,7 +864,7 @@ static uint_fast8_t sdhost_dpsm_wait(uint_fast8_t txmode)
 		if ((sta & SDMMC_STA_DBCKEND) != 0)
 			return 0;
 	}
-	debug_printf_P(PSTR("sdhost_dpsm_wait error, STA=%08lX, w=%u\n"), SDMMC1->STA, w);
+	PRINTF(PSTR("sdhost_dpsm_wait error, STA=%08lX, w=%u\n"), SDMMC1->STA, w);
 	//SDMMC1->ICR = SDMMC1->STA & errmask;
 	return 1;
 
@@ -878,7 +878,7 @@ static uint_fast8_t sdhost_dpsm_wait(uint_fast8_t txmode)
 		if ((sta & SDIO_STA_DBCKEND) != 0)
 			return 0;
 	}
-	debug_printf_P(PSTR("sdhost_dpsm_wait error, STA=%08lX\n"), SDIO->STA);
+	PRINTF(PSTR("sdhost_dpsm_wait error, STA=%08lX\n"), SDIO->STA);
 	return 1;
 
 #else
@@ -1128,7 +1128,7 @@ static void sdhost_no_resp(uint_fast16_t cmd, uint_fast32_t arg)
 #elif CPUSTYLE_R7S721
 
 	while ((SDHI0.SD_INFO2 & (1uL << 14)) != 0)	// CBSY
-		; //debug_printf_P(PSTR("sdhost_no_resp: CBSY\n"));
+		; //PRINTF(PSTR("sdhost_no_resp: CBSY\n"));
 
 	SDHI0.SD_INFO1_MASK = 0xFFFE;
 	SDHI0.SD_INFO2_MASK = 0x7F80;
@@ -1208,7 +1208,7 @@ static void sdhost_short_resp2(uint_fast16_t cmd, uint_fast32_t arg, uint_fast8_
 #elif CPUSTYLE_R7S721
 
 	while ((SDHI0.SD_INFO2 & (1uL << 14)) != 0)	// CBSY
-		; //debug_printf_P(PSTR("sdhost_short_resp2: CBSY\n"));
+		; //PRINTF(PSTR("sdhost_short_resp2: CBSY\n"));
 
 	SDHI0.SD_INFO1_MASK = 0xFFFE;
 	SDHI0.SD_INFO2_MASK = 0x7F80;
@@ -1294,7 +1294,7 @@ static void sdhost_long_resp(uint_fast16_t cmd, uint_fast32_t arg)
 #elif CPUSTYLE_R7S721
 
 	while ((SDHI0.SD_INFO2 & (1uL << 14)) != 0)	// CBSY
-		; //debug_printf_P(PSTR("sdhost_long_resp: CBSY\n"));
+		; //PRINTF(PSTR("sdhost_long_resp: CBSY\n"));
 
 	SDHI0.SD_INFO1_MASK = 0xFFFE;
 	SDHI0.SD_INFO2_MASK = 0x7F80;
@@ -1360,7 +1360,7 @@ static uint_fast8_t sdhost_verify_resp(uint_fast16_t cmd)
 
 	if ((SDMMC1->RESPCMD & SDMMC_RESPCMD_RESPCMD) != (cmd & SDMMC_CMD_CMDINDEX))
 	{
-		//debug_printf_P(PSTR("sdhost_verify_resp error, RESPCMD=%02lX, expeted %02lX\n"), SDMMC1->RESPCMD, cmd);
+		//PRINTF(PSTR("sdhost_verify_resp error, RESPCMD=%02lX, expeted %02lX\n"), SDMMC1->RESPCMD, cmd);
 		return 1;
 	}
 	return 0;
@@ -1369,7 +1369,7 @@ static uint_fast8_t sdhost_verify_resp(uint_fast16_t cmd)
 
 	if ((SDIO->RESPCMD & SDIO_RESPCMD_RESPCMD) != (cmd & SDIO_CMD_CMDINDEX))
 	{
-		//debug_printf_P(PSTR("sdhost_verify_resp error, RESPCMD=%02lX, expeted %02lX\n"), SDIO->RESPCMD, cmd);
+		//PRINTF(PSTR("sdhost_verify_resp error, RESPCMD=%02lX, expeted %02lX\n"), SDIO->RESPCMD, cmd);
 		return 1;
 	}
 	return 0;
@@ -1404,10 +1404,10 @@ static uint_fast8_t sdhost_get_none_resp(void)
 	SDHI0.SD_INFO1 = (uint16_t) ~ (1U << 0);	// INFO0=0
 	//SDHI0.SD_INFO1 = (uint16_t) ~ (1U << 2);	// INFO2=0
 
-	//debug_printf_P(PSTR("Aftrer command w=%lu %04X %04X %04X\n"), w, SDHI0.SD_CMD, SDHI0.SD_ARG0, SDHI0.SD_ARG1);
-	//debug_printf_P(PSTR("SD_INFO1=%04X, SD_INFO2=%04X\n"), SDHI0.SD_INFO1, SDHI0.SD_INFO2);	// SD_INFO1=0600, SD_INFO2=2080
-	//debug_printf_P(PSTR("SD_ERR_STS1=%04X, SD_ERR_STS2=%04X\n"), SDHI0.SD_ERR_STS1, SDHI0.SD_ERR_STS2);	// SD_ERR_STS1=0000, SD_ERR_STS2=2000
-	//debug_printf_P(PSTR("SD_SIZE=%04X\n"), SDHI0.SD_SIZE);
+	//PRINTF(PSTR("Aftrer command w=%lu %04X %04X %04X\n"), w, SDHI0.SD_CMD, SDHI0.SD_ARG0, SDHI0.SD_ARG1);
+	//PRINTF(PSTR("SD_INFO1=%04X, SD_INFO2=%04X\n"), SDHI0.SD_INFO1, SDHI0.SD_INFO2);	// SD_INFO1=0600, SD_INFO2=2080
+	//PRINTF(PSTR("SD_ERR_STS1=%04X, SD_ERR_STS2=%04X\n"), SDHI0.SD_ERR_STS1, SDHI0.SD_ERR_STS2);	// SD_ERR_STS1=0000, SD_ERR_STS2=2000
+	//PRINTF(PSTR("SD_SIZE=%04X\n"), SDHI0.SD_SIZE);
 	
 	return ec;
 
@@ -1504,10 +1504,10 @@ static uint_fast8_t sdhost_get_resp(void)
 	SDHI0.SD_INFO1 = (uint16_t) ~ (1U << 0);	// INFO0=0
 	//SDHI0.SD_INFO1 = (uint16_t) ~ (1U << 2);	// INFO2=0
 
-	//debug_printf_P(PSTR("Aftrer command w=%lu %04X %04X %04X\n"), w, SDHI0.SD_CMD, SDHI0.SD_ARG0, SDHI0.SD_ARG1);
-	//debug_printf_P(PSTR("SD_INFO1=%04X, SD_INFO2=%04X\n"), SDHI0.SD_INFO1, SDHI0.SD_INFO2);	// SD_INFO1=0600, SD_INFO2=2080
-	//debug_printf_P(PSTR("SD_ERR_STS1=%04X, SD_ERR_STS2=%04X\n"), SDHI0.SD_ERR_STS1, SDHI0.SD_ERR_STS2);	// SD_ERR_STS1=0000, SD_ERR_STS2=2000
-	//debug_printf_P(PSTR("SD_SIZE=%04X\n"), SDHI0.SD_SIZE);
+	//PRINTF(PSTR("Aftrer command w=%lu %04X %04X %04X\n"), w, SDHI0.SD_CMD, SDHI0.SD_ARG0, SDHI0.SD_ARG1);
+	//PRINTF(PSTR("SD_INFO1=%04X, SD_INFO2=%04X\n"), SDHI0.SD_INFO1, SDHI0.SD_INFO2);	// SD_INFO1=0600, SD_INFO2=2080
+	//PRINTF(PSTR("SD_ERR_STS1=%04X, SD_ERR_STS2=%04X\n"), SDHI0.SD_ERR_STS1, SDHI0.SD_ERR_STS2);	// SD_ERR_STS1=0000, SD_ERR_STS2=2000
+	//PRINTF(PSTR("SD_SIZE=%04X\n"), SDHI0.SD_SIZE);
 	
 	return ec;
 
@@ -1534,7 +1534,7 @@ static uint_fast8_t sdhost_get_resp(void)
 	}
 	if (ec != 0)
 	{
-		debug_printf_P(PSTR("sdhost_get_resp error, STA=%08lX, DCOUNT=%08lX\n"), SDMMC1->STA, SDMMC1->DCOUNT & SDMMC_DCOUNT_DATACOUNT);
+		PRINTF(PSTR("sdhost_get_resp error, STA=%08lX, DCOUNT=%08lX\n"), SDMMC1->STA, SDMMC1->DCOUNT & SDMMC_DCOUNT_DATACOUNT);
 	}
 	SDMMC1->ICR = SDMMC_ICR_CMDRENDC;
 	// Если была ошибка CRC при приёме ответа - сбросить её
@@ -1566,7 +1566,7 @@ static uint_fast8_t sdhost_get_resp(void)
 	}
 	if (ec != 0)
 	{
-			//debug_printf_P(PSTR("sdhost_get_resp error, STA=%08lX\n"), SDIO->STA);
+			//PRINTF(PSTR("sdhost_get_resp error, STA=%08lX\n"), SDIO->STA);
 	}
 
 	SDIO->ICR = SDIO_ICR_CMDRENDC;
@@ -1620,10 +1620,10 @@ static uint_fast8_t sdhost_get_resp_nocrc(void)
 	SDHI0.SD_INFO1 = (uint16_t) ~ (1U << 0);	// INFO0=0
 	//SDHI0.SD_INFO1 = (uint16_t) ~ (1U << 2);	// INFO2=0
 
-	//debug_printf_P(PSTR("Aftrer command w=%lu %04X %04X %04X\n"), w, SDHI0.SD_CMD, SDHI0.SD_ARG0, SDHI0.SD_ARG1);
-	//debug_printf_P(PSTR("SD_INFO1=%04X, SD_INFO2=%04X\n"), SDHI0.SD_INFO1, SDHI0.SD_INFO2);	// SD_INFO1=0600, SD_INFO2=2080
-	//debug_printf_P(PSTR("SD_ERR_STS1=%04X, SD_ERR_STS2=%04X\n"), SDHI0.SD_ERR_STS1, SDHI0.SD_ERR_STS2);	// SD_ERR_STS1=0000, SD_ERR_STS2=2000
-	//debug_printf_P(PSTR("SD_SIZE=%04X\n"), SDHI0.SD_SIZE);
+	//PRINTF(PSTR("Aftrer command w=%lu %04X %04X %04X\n"), w, SDHI0.SD_CMD, SDHI0.SD_ARG0, SDHI0.SD_ARG1);
+	//PRINTF(PSTR("SD_INFO1=%04X, SD_INFO2=%04X\n"), SDHI0.SD_INFO1, SDHI0.SD_INFO2);	// SD_INFO1=0600, SD_INFO2=2080
+	//PRINTF(PSTR("SD_ERR_STS1=%04X, SD_ERR_STS2=%04X\n"), SDHI0.SD_ERR_STS1, SDHI0.SD_ERR_STS2);	// SD_ERR_STS1=0000, SD_ERR_STS2=2000
+	//PRINTF(PSTR("SD_SIZE=%04X\n"), SDHI0.SD_SIZE);
 	
 	return ec;
 
@@ -1890,7 +1890,7 @@ static uint_fast8_t sdhost_stop_transmission(void)
 	sdhost_short_resp(encode_cmd(SD_CMD_STOP_TRANSMISSION), 0);	// CMD12
 	if (sdhost_get_R1(SD_CMD_STOP_TRANSMISSION, & resp) != 0)	// get R1b
 	{
-		debug_printf_P(PSTR("sdhost_stop_transmission error\n"));
+		PRINTF(PSTR("sdhost_stop_transmission error\n"));
 		return 1;
 	}
 	return 0;
@@ -1910,7 +1910,7 @@ static uint_fast8_t sdhost_sdcard_waitstatus(void)
 		sdhost_short_resp(encode_cmd(SD_CMD_SEND_STATUS), sdhost_sdcard_RCA << 16);	// CMD13
 		if (sdhost_get_R1(SD_CMD_SEND_STATUS, & resp) != 0)
 		{
-			debug_printf_P(PSTR("sdhost_sdcard_waitstatus: SD_CMD_SEND_STATUS error\n"));
+			PRINTF(PSTR("sdhost_sdcard_waitstatus: SD_CMD_SEND_STATUS error\n"));
 			return 1;
 		}
 
@@ -1941,11 +1941,11 @@ static uint_fast8_t sdhost_sdcard_waitstatus(void)
 		//	continue;	// потребовалось при использовании блочной записи
 
 		default:
-			debug_printf_P(PSTR("sdhost_sdcard_waitstatus, resp=%08lX, cardstate=%u\n"), (unsigned long) resp, (unsigned) cardstate);
+			PRINTF(PSTR("sdhost_sdcard_waitstatus, resp=%08lX, cardstate=%u\n"), (unsigned long) resp, (unsigned) cardstate);
 			return 1;
 		}
 	}
-	debug_printf_P(PSTR("sdhost_sdcard_waitstatus, timeout error, cardstate=%u\n"), cardstate);
+	PRINTF(PSTR("sdhost_sdcard_waitstatus, timeout error, cardstate=%u\n"), cardstate);
 	return 1;
 }
 
@@ -1956,12 +1956,12 @@ static uint_fast32_t sdhost_getaddresmultiplier(void)
 	//if ((cmd58answer & 0x40000000) != 0)	//CCS (Card Capacity Status)
 	if ((sdhost_SDType & SD_HIGH_CAPACITY) != 0)	//CCS (Card Capacity Status)
 	{
-		//debug_printf_P(PSTR("SDHC or SDXC (High Capacity)\n"));
+		//PRINTF(PSTR("SDHC or SDXC (High Capacity)\n"));
 		return 1; //mmcAddressMultiplier = 1;	// Для SDHC (адресация идёт в 512-ти байтовых блоках)
 	}
 	else
 	{
-		//debug_printf_P(PSTR("SDSD - up to 2GB\n"));
+		//PRINTF(PSTR("SDSD - up to 2GB\n"));
 		return 512; //mmcAddressMultiplier = MMC_SECTORSIZE;	// Для обычных SD карт
 	}
 }
@@ -2035,16 +2035,16 @@ DRESULT SD_disk_write(
 	UINT count			/* Number of sectors to write */
 	)
 {
-	//if ((unsigned long) buff & 0x1F)
+	//if ((uintptr_t) buff & 0x1F)
 	//{
-	//	debug_printf_P(PSTR("sdhost_sdcard_WriteSectors: unalligned: buff=%p, sector=%lu, count=%lu\n"), buff, (unsigned long) sector, (unsigned long) count);
+	//	PRINTF(PSTR("SD_disk_write: unalligned: buff=%p, sector=%lu, count=%lu\n"), buff, (unsigned long) sector, (unsigned long) count);
 	//}
-	//debug_printf_P(PSTR("sdhost_sdcard_WriteSectors: buff=%p, sector=%lu, count=%lu\n"), buff, (unsigned long) sector, (unsigned long) count);
+	//PRINTF(PSTR("SD_disk_write: buff=%p, sector=%lu, count=%lu\n"), buff, (unsigned long) sector, (unsigned long) count);
 	uint_fast32_t resp;
 	
 	if (sdhost_sdcard_waitstatus() != 0)
 	{
-		debug_printf_P(PSTR("sdhost_sdcard_WriteSectors: sdhost_sdcard_waitstatus error\n"));
+		PRINTF(PSTR("SD_disk_write: sdhost_sdcard_waitstatus error\n"));
 		return RES_ERROR;
 	}
 
@@ -2054,7 +2054,7 @@ DRESULT SD_disk_write(
 		sdhost_short_resp(encode_cmd(SD_CMD_SET_BLOCKLEN), sdhost_getblocksize());	// CMD16
 		if (sdhost_get_R1(SD_CMD_SET_BLOCKLEN, & resp) != 0)
 		{
-			debug_printf_P(PSTR("sdhost_sdcard_setblocklen error\n"));
+			PRINTF(PSTR("sdhost_sdcard_setblocklen error\n"));
 			return RES_ERROR;
 		}
 	}
@@ -2064,7 +2064,7 @@ DRESULT SD_disk_write(
 	if (count == 1)
 	{
 		// wriite single block
-		//debug_printf_P(PSTR("write single block\n"));
+		//PRINTF(PSTR("write single block\n"));
 		// Сперва настраивается DMA, затем выдается команда SD_CMD_WRITE_SINGLE_BLOCK
 		// Работает и на STM32Fxxx
 
@@ -2078,7 +2078,7 @@ DRESULT SD_disk_write(
 		if (sdhost_get_R1(SD_CMD_WRITE_SINGLE_BLOCK, & resp) != 0)
 		{
 			DMA_sdio_cancel();
-			debug_printf_P(PSTR("SD_CMD_WRITE_SINGLE_BLOCK error\n"));
+			PRINTF(PSTR("SD_CMD_WRITE_SINGLE_BLOCK error\n"));
 			return RES_ERROR;
 		}
 
@@ -2090,13 +2090,13 @@ DRESULT SD_disk_write(
 		if (sdhost_dpsm_wait(1) != 0)
 		{
 			DMA_sdio_cancel();
-			debug_printf_P(PSTR("sdhost_sdcard_WriteSectors 1: sdhost_dpsm_wait error\n"));
+			PRINTF(PSTR("SD_disk_write 1: sdhost_dpsm_wait error\n"));
 			return RES_ERROR;
 		}
 		else if (DMA_sdio_waitdone() != 0)
 		{
 			DMA_sdio_cancel();
-			debug_printf_P(PSTR("sdhost_sdcard_WriteSectors 1: DMA_sdio_waitdone error\n"));
+			PRINTF(PSTR("SD_disk_write 1: DMA_sdio_waitdone error\n"));
 			return RES_ERROR;
 		}
 		else
@@ -2108,16 +2108,16 @@ DRESULT SD_disk_write(
 	else
 	{
 		// write multiblock
-		//debug_printf_P(PSTR("write multiblock, count=%d\n"), count);
+		//PRINTF(PSTR("write multiblock, count=%d\n"), count);
 
 		// Pre-erased Setting prior to a Multiple Block Write Operation
 		// Setting a number of write blocks to be pre-erased (ACMD23)
 		if (sdhost_short_acmd_resp_R1(SD_CMD_SD_APP_SET_NWB_PREERASED, count & 0x7FFFFF, & resp, 0) != 0) // ACMD23
 		{
-			debug_printf_P(PSTR("SD_CMD_SD_APP_SET_NWB_PREERASED error\n"));
+			PRINTF(PSTR("SD_CMD_SD_APP_SET_NWB_PREERASED error\n"));
 			return RES_ERROR;
 		}
-		//debug_printf_P(PSTR("SD_CMD_SD_APP_SET_NWB_PREERASED okay\n"));
+		//PRINTF(PSTR("SD_CMD_SD_APP_SET_NWB_PREERASED okay\n"));
 
 		if (sdhost_use_cmd23 != 0)
 		{
@@ -2125,7 +2125,7 @@ DRESULT SD_disk_write(
 			sdhost_short_resp(encode_cmd(SD_CMD_SET_BLOCK_COUNT), count);	// CMD23
 			if (sdhost_get_R1(SD_CMD_SET_BLOCK_COUNT, & resp) != 0)	// get R1
 			{
-				debug_printf_P(PSTR("SD_CMD_SET_BLOCK_COUNT error\n"));
+				PRINTF(PSTR("SD_CMD_SET_BLOCK_COUNT error\n"));
 				return RES_ERROR;
 			}
 		}
@@ -2144,7 +2144,7 @@ DRESULT SD_disk_write(
 		if (sdhost_get_R1(SD_CMD_WRITE_MULT_BLOCK, & resp) != 0)
 		{
 			DMA_sdio_cancel();
-			debug_printf_P(PSTR("SD_CMD_WRITE_MULT_BLOCK error\n"));
+			PRINTF(PSTR("SD_CMD_WRITE_MULT_BLOCK error\n"));
 			return RES_ERROR;
 		}
 
@@ -2155,16 +2155,16 @@ DRESULT SD_disk_write(
 
 		if (sdhost_dpsm_wait(1) != 0)
 		{
-			debug_printf_P(PSTR("sdhost_sdcard_WriteSectors: sdhost_dpsm_wait error\n"));
+			PRINTF(PSTR("SD_disk_write: sdhost_dpsm_wait error\n"));
 			DMA_sdio_cancel();
 			if (sdhost_stop_transmission() != 0)
-				debug_printf_P(PSTR("sdhost_sdcard_WriteSectors 2: sdhost_sdcard_waitstatus error\n"));
+				PRINTF(PSTR("SD_disk_write 2: sdhost_sdcard_waitstatus error\n"));
 			return RES_ERROR;
 		}
 		else if (DMA_sdio_waitdone() != 0)
 		{
 			DMA_sdio_cancel();
-			debug_printf_P(PSTR("sdhost_sdcard_WriteSectors 2: DMA_sdio_waitdone error\n"));
+			PRINTF(PSTR("SD_disk_write 2: DMA_sdio_waitdone error\n"));
 			return RES_ERROR;
 		}
 		else
@@ -2176,18 +2176,16 @@ DRESULT SD_disk_write(
 			if (sdhost_use_cmd23 == 0)
 			{
 				if (sdhost_stop_transmission() != 0)
-					debug_printf_P(PSTR("sdhost_sdcard_WriteSectors 2: sdhost_sdcard_waitstatus error\n"));
+					PRINTF(PSTR("SD_disk_write 2: sdhost_sdcard_waitstatus error\n"));
 			}
 			#endif /* ! CPUSTYLE_R7S721 */
 		}
-		//debug_printf_P(PSTR("write multiblock, count=%d okay\n"), count);
+		//PRINTF(PSTR("write multiblock, count=%d okay\n"), count);
 			return RES_OK;
 	}
-	//debug_printf_P(PSTR("sdhost_sdcard_WriteSectors: buff=%p, sector=%lu, count=%lu okay\n"), buff, (unsigned long) sector, (unsigned long) count);
+	//PRINTF(PSTR("SD_disk_write: buff=%p, sector=%lu, count=%lu okay\n"), buff, (unsigned long) sector, (unsigned long) count);
 }
 
-
-// read a size Byte big block beginning at the address.
 
 // read a size Byte big block beginning at the address.
 static 
@@ -2198,21 +2196,21 @@ DRESULT SD_disk_read(
 	UINT count		/* Number of sectors to read */
 	)
 {
-	//if ((unsigned long) buff & 0x1F)
+	//if ((uintptr_t) buff & 0x1F)
 	//{
-	//	debug_printf_P(PSTR("sdhost_sdcard_ReadSectors: unalligned: buff=%p, sector=%lu, count=%lu\n"), buff, (unsigned long) sector, (unsigned long) count);
+	//	PRINTF(PSTR("SD_disk_read: unalligned: buff=%p, sector=%lu, count=%lu\n"), buff, (unsigned long) sector, (unsigned long) count);
 	//}
-	//debug_printf_P(PSTR("sdhost_sdcard_ReadSectors: buff=%p, sector=%lu, count=%lu\n"), buff, (unsigned long) sector, (unsigned long) count);
+	//PRINTF(PSTR("SD_disk_read: buff=%p, sector=%lu, count=%lu\n"), buff, (unsigned long) sector, (unsigned long) count);
 	uint_fast32_t resp;
 	
 	if (sdhost_sdcard_waitstatus() != 0)
 	{
-		debug_printf_P(PSTR("sdhost_sdcard_ReadSectors: sdhost_sdcard_waitstatus error\n"));
+		PRINTF(PSTR("SD_disk_read: sdhost_sdcard_waitstatus error\n"));
 		return RES_ERROR;
 	}
 	
 	
-	//debug_printf_P(PSTR("sdhost_sdcard_ReadSectors: sdhost_CardType=%08lX, sdhost_SDType=%08lX\n"), (unsigned long) sdhost_CardType, (unsigned long) sdhost_SDType);
+	//PRINTF(PSTR("SD_disk_read: sdhost_CardType=%08lX, sdhost_SDType=%08lX\n"), (unsigned long) sdhost_CardType, (unsigned long) sdhost_SDType);
 
 	if ((sdhost_SDType & SD_HIGH_CAPACITY) == 0)	//CCS (Card Capacity Status)
 	{
@@ -2220,7 +2218,7 @@ DRESULT SD_disk_read(
 		sdhost_short_resp(encode_cmd(SD_CMD_SET_BLOCKLEN), sdhost_getblocksize());	// CMD16
 		if (sdhost_get_R1(SD_CMD_SET_BLOCKLEN, & resp) != 0)
 		{
-			debug_printf_P(PSTR("sdhost_sdcard_setblocklen error\n"));
+			PRINTF(PSTR("sdhost_sdcard_setblocklen error\n"));
 			return RES_ERROR;
 		}
 	}
@@ -2230,7 +2228,7 @@ DRESULT SD_disk_read(
 
 	if (count == 1)
 	{
-		//debug_printf_P(PSTR("read one block\n"));
+		//PRINTF(PSTR("read one block\n"));
 		// read one block
 		DMA_SDIO_setparams((uintptr_t) buff, 512, count, 0);
 		sdhost_dpsm_prepare((uintptr_t) buff, 0, 512 * count, 9);		// подготовка к обмену data path state machine - при чтении перед выдачей команды
@@ -2241,19 +2239,19 @@ DRESULT SD_disk_read(
 		if (sdhost_get_R1(SD_CMD_READ_SINGLE_BLOCK, & resp) != 0)
 		{
 			DMA_sdio_cancel();
-			debug_printf_P(PSTR("SD_CMD_READ_SINGLE_BLOCK error\n"));
+			PRINTF(PSTR("SD_CMD_READ_SINGLE_BLOCK error\n"));
 			return RES_ERROR;
 		}
 		if (sdhost_dpsm_wait(0) != 0)
 		{
 			DMA_sdio_cancel();
-			debug_printf_P(PSTR("sdhost_sdcard_ReadSectors 1: sdhost_dpsm_wait error\n"));
+			PRINTF(PSTR("SD_disk_read 1: sdhost_dpsm_wait error\n"));
 			return RES_ERROR;
 		}
 		else if (DMA_sdio_waitdone() != 0)
 		{
 			DMA_sdio_cancel();
-			debug_printf_P(PSTR("sdhost_sdcard_ReadSectors 1: DMA_sdio_waitdone error\n"));
+			PRINTF(PSTR("SD_disk_read 1: DMA_sdio_waitdone error\n"));
 			return RES_ERROR;
 		}
 		else
@@ -2264,7 +2262,7 @@ DRESULT SD_disk_read(
 	}
 	else
 	{
-		debug_printf_P(PSTR("read multiple blocks: count=%d\n"), count);
+		PRINTF(PSTR("read multiple blocks: count=%d\n"), count);
 		// read multiple blocks
 		if (sdhost_use_cmd23 != 0)
 		{
@@ -2272,7 +2270,7 @@ DRESULT SD_disk_read(
 			sdhost_short_resp(encode_cmd(SD_CMD_SET_BLOCK_COUNT), count);	// CMD23
 			if (sdhost_get_R1(SD_CMD_SET_BLOCK_COUNT, & resp) != 0)	// get R1
 			{
-				debug_printf_P(PSTR("SD_CMD_SET_BLOCK_COUNT error\n"));
+				PRINTF(PSTR("SD_CMD_SET_BLOCK_COUNT error\n"));
 				return RES_ERROR;
 			}
 		}
@@ -2285,21 +2283,21 @@ DRESULT SD_disk_read(
 		if (sdhost_get_R1(SD_CMD_READ_MULT_BLOCK, & resp) != 0)
 		{
 			DMA_sdio_cancel();
-			debug_printf_P(PSTR("SD_CMD_READ_MULT_BLOCK error\n"));
+			PRINTF(PSTR("SD_CMD_READ_MULT_BLOCK error\n"));
 			return RES_ERROR;
 		}
 		if (sdhost_dpsm_wait(0) != 0)
 		{
-			debug_printf_P(PSTR("sdhost_sdcard_ReadSectors 2: sdhost_dpsm_wait error\n"));
+			PRINTF(PSTR("SD_disk_read 2: sdhost_dpsm_wait error\n"));
 			DMA_sdio_cancel();
 			if (sdhost_stop_transmission() != 0)
-				debug_printf_P(PSTR("sdhost_sdcard_ReadSectors 2: sdhost_stop_transmission error\n"));
+				PRINTF(PSTR("SD_disk_read 2: sdhost_stop_transmission error\n"));
 			return RES_ERROR;
 		}
 		else if (DMA_sdio_waitdone() != 0)
 		{
 			DMA_sdio_cancel();
-			debug_printf_P(PSTR("sdhost_sdcard_ReadSectors 2: DMA_sdio_waitdone error\n"));
+			PRINTF(PSTR("SD_disk_read 2: DMA_sdio_waitdone error\n"));
 			return RES_ERROR;
 		}
 		else
@@ -2310,7 +2308,7 @@ DRESULT SD_disk_read(
 			if (sdhost_use_cmd23 == 0)
 			{
 				if (sdhost_stop_transmission() != 0)
-					debug_printf_P(PSTR("sdhost_sdcard_ReadSectors 2: sdhost_sdcard_waitstatus error\n"));
+					PRINTF(PSTR("SD_disk_read 2: sdhost_sdcard_waitstatus error\n"));
 			}
 			#endif /* ! CPUSTYLE_R7S721 */
 			return RES_OK;
@@ -2335,7 +2333,7 @@ static uint_fast8_t sdhost_sdcard_checkversion(void)
 			sdhost_SDType = SD_HIGH_CAPACITY;
 			sdhost_CardType = SDIO_STD_CAPACITY_SD_CARD_V2_0; /*!< SD Card 2.0 */
 
-			debug_printf_P(PSTR("SD CARD is V2, R1 resp: stuff=%08lX\n"), resp);
+			PRINTF(PSTR("SD CARD is V2, R1 resp: stuff=%08lX\n"), resp);
 			return 0;
 		}
 	}
@@ -2348,10 +2346,10 @@ static uint_fast8_t sdhost_sdcard_checkversion(void)
 	if (sdhost_get_R1(SD_CMD_APP_CMD, & resp) != 0)
 	{
 		
-		debug_printf_P(PSTR("sdhost_sdcard_checkversion failure\n"));
+		PRINTF(PSTR("sdhost_sdcard_checkversion failure\n"));
 		return 1;
 	}
-	debug_printf_P(PSTR("SD CARD is V1, R1 resp: stuff=%08lX\n"), resp);
+	PRINTF(PSTR("SD CARD is V1, R1 resp: stuff=%08lX\n"), resp);
 	return 0;
 }
 
@@ -2359,14 +2357,14 @@ static uint_fast8_t sdhost_sdcard_poweron(void)
 {
 	uint_fast32_t resp;
 
-	debug_printf_P(PSTR("SD CARD power on start\n"));
+	PRINTF(PSTR("SD CARD power on start\n"));
 	sdhost_sdcard_RCA = 0;
 
 
 	if (sdhost_sdcard_checkversion() != 0)
 		return 1;
 
-	debug_printf_P(PSTR("Set voltage conditions\n"));
+	PRINTF(PSTR("Set voltage conditions\n"));
 
 	const unsigned COUNTLIMIT = 10000;
 	unsigned count;
@@ -2375,30 +2373,30 @@ static uint_fast8_t sdhost_sdcard_poweron(void)
 #if WITHSDHCHW
 		if (sdhost_short_acmd_resp_R3(SD_CMD_SD_APP_OP_COND, SD_VOLTAGE_WINDOW_SD | sdhost_SDType, & resp) != 0)	// ACMD41
 		{
-			debug_printf_P(PSTR("voltage send process: sdhost_short_acmd_resp_R3(SD_CMD_SD_APP_OP_COND) failure\n"));
+			PRINTF(PSTR("voltage send process: sdhost_short_acmd_resp_R3(SD_CMD_SD_APP_OP_COND) failure\n"));
 			return 1;
 		}
 #else /* WITHSDHCHW */
 		sdhost_short_resp(encode_cmd(58), 0);	// CMD58
 		if (sdhost_get_R3(& resp) != 0)	// Response of ACMD41 (R3)
 		{
-			debug_printf_P(PSTR("Set voltage conditions error\n"));
+			PRINTF(PSTR("Set voltage conditions error\n"));
 			return 1;
 		}
 #endif /* WITHSDHCHW */
- 		//debug_printf_P(PSTR("voltage send waiting: R3 resp: stuff=%08lX\n"), resp);
+ 		//PRINTF(PSTR("voltage send waiting: R3 resp: stuff=%08lX\n"), resp);
 		if ((resp & (1UL << 31)) == 0)	// check for voltage range is okay
 			continue;
-		debug_printf_P(PSTR("voltage send okay: R3 resp: stuff=%08lX\n"), resp);
+		PRINTF(PSTR("voltage send okay: R3 resp: stuff=%08lX\n"), resp);
 		if ((resp & SD_HIGH_CAPACITY) != 0)
 		{
             sdhost_CardType = SDIO_HIGH_CAPACITY_SD_CARD;
-			debug_printf_P(PSTR("SD CARD is high capacity\n"));
+			PRINTF(PSTR("SD CARD is high capacity\n"));
 		}
-		debug_printf_P(PSTR("SD CARD power on done, no errors\n"));
+		PRINTF(PSTR("SD CARD power on done, no errors\n"));
 		return 0;
 	}
-	debug_printf_P(PSTR("SD CARD power on done, error\n"));
+	PRINTF(PSTR("SD CARD power on done, error\n"));
 	return 1;
 }
 
@@ -2409,11 +2407,11 @@ static uint_fast8_t sdhost_read_registers_acmd(uint16_t acmd, uint8_t * buff, un
 	ASSERT(size == (1U << lenpower));
 	if (sdhost_sdcard_waitstatus() != 0)
 	{
-		debug_printf_P(PSTR("sdhost_read_registers_acmd: sdhost_sdcard_waitstatus error\n"));
+		PRINTF(PSTR("sdhost_read_registers_acmd: sdhost_sdcard_waitstatus error\n"));
 		return 1;
 	}
 	
-	//debug_printf_P(PSTR("sdhost_read_registers_acmd: sdhost_CardType=%08lX, sdhost_SDType=%08lX\n"), (unsigned long) sdhost_CardType, (unsigned long) sdhost_SDType);
+	//PRINTF(PSTR("sdhost_read_registers_acmd: sdhost_CardType=%08lX, sdhost_SDType=%08lX\n"), (unsigned long) sdhost_CardType, (unsigned long) sdhost_SDType);
 
 	sdhost_dpsm_prepare((uintptr_t) buff, 0, size, lenpower);		// подготовка к обмену data path state machine - при чтенииперед выдачей команды
 	//arm_hardware_invalidate((uint32_t) buff, size * 1);		// Сейчас в эту память будем читать по DMA
@@ -2424,19 +2422,19 @@ static uint_fast8_t sdhost_read_registers_acmd(uint16_t acmd, uint8_t * buff, un
 	if (sdhost_short_acmd_resp_R1(acmd, 0, & resp, 1) != 0)	// ACMD51
 	{
 		DMA_sdio_cancel();
-		debug_printf_P(PSTR("sdhost_read_registers_acmd: sdhost_get_R1 (acmd=0x%02lX) error\n"), acmd);
+		PRINTF(PSTR("sdhost_read_registers_acmd: sdhost_get_R1 (acmd=0x%02lX) error\n"), acmd);
 		return 1;
 	}
 	if (sdhost_dpsm_wait(0) != 0)
 	{
 		DMA_sdio_cancel();
-		debug_printf_P(PSTR("sdhost_read_registers_acmd: sdhost_dpsm_wait error\n"));
+		PRINTF(PSTR("sdhost_read_registers_acmd: sdhost_dpsm_wait error\n"));
 		return 1;
 	}
 	else if (DMA_sdio_waitdone() != 0)
 	{
 		DMA_sdio_cancel();
-		debug_printf_P(PSTR("sdhost_read_registers_acmd: DMA_sdio_waitdone error\n"));
+		PRINTF(PSTR("sdhost_read_registers_acmd: DMA_sdio_waitdone error\n"));
 		return 1;
 	}
 	else
@@ -2450,12 +2448,12 @@ static uint_fast8_t sdhost_sdcard_identification(void)
 {
 	uint_fast32_t resp;
 
-	debug_printf_P(PSTR("SD CARD identification start\n"));
+	PRINTF(PSTR("SD CARD identification start\n"));
 
 	sdhost_long_resp(encode_cmd(SD_CMD_ALL_SEND_CID), 0);	// CMD2
 	if (sdhost_get_R2(sdhost_sdcard_CID) != 0)
 	{
-		debug_printf_P(PSTR("SD_CMD_ALL_SEND_CID error\n"));
+		PRINTF(PSTR("SD_CMD_ALL_SEND_CID error\n"));
 		return 1;
 	}
 
@@ -2464,13 +2462,13 @@ static uint_fast8_t sdhost_sdcard_identification(void)
 	sdhost_short_resp(encode_cmd(SD_CMD_SET_REL_ADDR), 0);	// CMD3
 	if (sdhost_get_R1(SD_CMD_SET_REL_ADDR, & resp) != 0)
 	{
-		debug_printf_P(PSTR("SD_CMD_SET_REL_ADDR error\n"));
+		PRINTF(PSTR("SD_CMD_SET_REL_ADDR error\n"));
 		return 1;
 	}
 	else
 	{
 		sdhost_sdcard_RCA = 0xFFFF & (resp >> 16);
-		debug_printf_P(PSTR("RCA=%08lX\n"), sdhost_sdcard_RCA);
+		PRINTF(PSTR("RCA=%08lX\n"), sdhost_sdcard_RCA);
 	}
 #endif /* WITHSDHCHW */
 
@@ -2478,20 +2476,20 @@ static uint_fast8_t sdhost_sdcard_identification(void)
 	sdhost_long_resp(encode_cmd(SD_CMD_SEND_CSD), sdhost_sdcard_RCA << 16);	// CMD9 The contents of the CSD register are sent as a response to CMD9.
 	if (sdhost_get_R2(sdhost_sdcard_CSD) != 0)
 	{
-		debug_printf_P(PSTR("SD_CMD_SEND_CSD error\n"));
+		PRINTF(PSTR("SD_CMD_SEND_CSD error\n"));
 		return 1;
 	}
-	debug_printf_P(PSTR("SD_CMD_SEND_CSD okay\n"));
+	PRINTF(PSTR("SD_CMD_SEND_CSD okay\n"));
 
 #if WITHSDHCHW
 	// Select card
 	sdhost_short_resp(encode_cmd(SD_CMD_SEL_DESEL_CARD), sdhost_sdcard_RCA << 16);
 	if (sdhost_get_R1(SD_CMD_SEL_DESEL_CARD, & resp) != 0)
 	{
-		debug_printf_P(PSTR("SD_CMD_SEL_DESEL_CARD error\n"));
+		PRINTF(PSTR("SD_CMD_SEL_DESEL_CARD error\n"));
 		return 1;
 	}
-	debug_printf_P(PSTR("SD_CMD_SEL_DESEL_CARD okay\n"));
+	PRINTF(PSTR("SD_CMD_SEL_DESEL_CARD okay\n"));
 #endif /* WITHSDHCHW */
 
 	// Get SCR
@@ -2509,7 +2507,7 @@ static uint_fast8_t sdhost_sdcard_identification(void)
 
 	if (sdhost_read_registers_acmd(SD_CMD_SD_APP_SEND_SCR, sdhost_sdcard_SCR, 8, 3, sizeof sdhost_sdcard_SCR) == 0)		// ACMD51
 	{
-		debug_printf_P(PSTR("SD_CMD_SD_APP_SEND_SCR okay: SCR=%02X%02X%02X%02X%02X%02X%02X%02X\n"), 
+		PRINTF(PSTR("SD_CMD_SD_APP_SEND_SCR okay: SCR=%02X%02X%02X%02X%02X%02X%02X%02X\n"), 
 			sdhost_sdcard_SCR [0], sdhost_sdcard_SCR [1], sdhost_sdcard_SCR [2], sdhost_sdcard_SCR [3], sdhost_sdcard_SCR [4], sdhost_sdcard_SCR [5], sdhost_sdcard_SCR [6], sdhost_sdcard_SCR [7]
 			);
 
@@ -2521,13 +2519,13 @@ static uint_fast8_t sdhost_sdcard_identification(void)
 		// sdhost_sdcard_SCR [5]: 23..16
 		// sdhost_sdcard_SCR [6]: 15..8
 		// sdhost_sdcard_SCR [7]: 7..0
-		debug_printf_P(PSTR("SCR Structure=0x%02lX\n"), array_get_bits(sdhost_sdcard_SCR, 64, 63, 4));			// [63:60]
-		debug_printf_P(PSTR("SD Memory Card - Spec. Version=0x%02lX\n"), array_get_bits(sdhost_sdcard_SCR, 64, 63, 4));	// [59:56]
-		debug_printf_P(PSTR("SD Memory Card - Spec3. Version=0x%02lX\n"), array_get_bits(sdhost_sdcard_SCR, 64, 47, 1));	// [47]
-		debug_printf_P(PSTR("SD Memory Card - ext security=0x%02lX\n"), array_get_bits(sdhost_sdcard_SCR, 64, 46, 4));	// [46:43]
-		debug_printf_P(PSTR("DAT Bus widths supported=0x%02lX\n"), array_get_bits(sdhost_sdcard_SCR, 64, 51, 4));	// [51:48]
-		debug_printf_P(PSTR("CPRM Security Support=0x%02lX\n"), array_get_bits(sdhost_sdcard_SCR, 64, 54, 3));			// [54:52]
-		debug_printf_P(PSTR("CMD Support=0x%02lX\n"), array_get_bits(sdhost_sdcard_SCR, 64, 33, 2));			// [33:32]
+		PRINTF(PSTR("SCR Structure=0x%02lX\n"), array_get_bits(sdhost_sdcard_SCR, 64, 63, 4));			// [63:60]
+		PRINTF(PSTR("SD Memory Card - Spec. Version=0x%02lX\n"), array_get_bits(sdhost_sdcard_SCR, 64, 63, 4));	// [59:56]
+		PRINTF(PSTR("SD Memory Card - Spec3. Version=0x%02lX\n"), array_get_bits(sdhost_sdcard_SCR, 64, 47, 1));	// [47]
+		PRINTF(PSTR("SD Memory Card - ext security=0x%02lX\n"), array_get_bits(sdhost_sdcard_SCR, 64, 46, 4));	// [46:43]
+		PRINTF(PSTR("DAT Bus widths supported=0x%02lX\n"), array_get_bits(sdhost_sdcard_SCR, 64, 51, 4));	// [51:48]
+		PRINTF(PSTR("CPRM Security Support=0x%02lX\n"), array_get_bits(sdhost_sdcard_SCR, 64, 54, 3));			// [54:52]
+		PRINTF(PSTR("CMD Support=0x%02lX\n"), array_get_bits(sdhost_sdcard_SCR, 64, 33, 2));			// [33:32]
 
 		bussupport1b = array_get_bits(sdhost_sdcard_SCR, 64, 48, 1); //(sdhost_sdcard_SCR [1] & 0x01) != 0;
 		bussupport4b = array_get_bits(sdhost_sdcard_SCR, 64, 51, 1); //(sdhost_sdcard_SCR [1] & 0x04) != 0;
@@ -2546,10 +2544,10 @@ static uint_fast8_t sdhost_sdcard_identification(void)
 		// Set 4 bit bus width
 		if (sdhost_short_acmd_resp_R1(SD_CMD_APP_SD_SET_BUSWIDTH, 0x0002, & resp, 0) != 0) // ACMD6
 		{
-			debug_printf_P(PSTR("SD_CMD_APP_SD_SET_BUSWIDTH error\n"));
+			PRINTF(PSTR("SD_CMD_APP_SD_SET_BUSWIDTH error\n"));
 			return 1;
 		}
-		debug_printf_P(PSTR("SD_CMD_APP_SD_SET_BUSWIDTH okay\n"));
+		PRINTF(PSTR("SD_CMD_APP_SD_SET_BUSWIDTH okay\n"));
 		hardware_sdhost_setbuswidth(1);		// 4-bit width
 	}
 	else if (bussupport1b != 0)
@@ -2571,20 +2569,20 @@ static uint_fast8_t sdhost_sdcard_identification(void)
 	if (sdhost_read_registers_acmd(SD_CMD_SD_APP_STATUS, sdhost_sdcard_SDSTATUS, 64, 6, sizeof sdhost_sdcard_SDSTATUS) == 0)		// ACMD13
 	{
 
-		debug_printf_P(PSTR("SECURED_MODE=%02lx\n"), array_get_bits(sdhost_sdcard_SDSTATUS, 512, 509, 1));
-		debug_printf_P(PSTR("DAT_BUS_WIDTH=%02lx\n"), array_get_bits(sdhost_sdcard_SDSTATUS, 512, 511, 2));
-		debug_printf_P(PSTR("SD_CARD_TYPE=%04lx\n"), array_get_bits(sdhost_sdcard_SDSTATUS, 512, 495, 16));
+		PRINTF(PSTR("SECURED_MODE=%02lx\n"), array_get_bits(sdhost_sdcard_SDSTATUS, 512, 509, 1));
+		PRINTF(PSTR("DAT_BUS_WIDTH=%02lx\n"), array_get_bits(sdhost_sdcard_SDSTATUS, 512, 511, 2));
+		PRINTF(PSTR("SD_CARD_TYPE=%04lx\n"), array_get_bits(sdhost_sdcard_SDSTATUS, 512, 495, 16));
 
-		debug_printf_P(PSTR("SIZE_OF_PROTECTED_AREA=%08lx\n"), array_get_bits(sdhost_sdcard_SDSTATUS, 512, 479, 32));
+		PRINTF(PSTR("SIZE_OF_PROTECTED_AREA=%08lx\n"), array_get_bits(sdhost_sdcard_SDSTATUS, 512, 479, 32));
 
-		debug_printf_P(PSTR("SPEED_CLASS=%02lx\n"), array_get_bits(sdhost_sdcard_SDSTATUS, 512, 447, 8));
-		debug_printf_P(PSTR("PERFORMANCE_MOVE=%02lx\n"), array_get_bits(sdhost_sdcard_SDSTATUS, 512, 439, 8));
-		debug_printf_P(PSTR("AU_SIZE=%02lx\n"), array_get_bits(sdhost_sdcard_SDSTATUS, 512, 431, 4));
-		debug_printf_P(PSTR("ERASE_SIZE=%04x\n"), array_get_bits(sdhost_sdcard_SDSTATUS, 512, 423, 16));
+		PRINTF(PSTR("SPEED_CLASS=%02lx\n"), array_get_bits(sdhost_sdcard_SDSTATUS, 512, 447, 8));
+		PRINTF(PSTR("PERFORMANCE_MOVE=%02lx\n"), array_get_bits(sdhost_sdcard_SDSTATUS, 512, 439, 8));
+		PRINTF(PSTR("AU_SIZE=%02lx\n"), array_get_bits(sdhost_sdcard_SDSTATUS, 512, 431, 4));
+		PRINTF(PSTR("ERASE_SIZE=%04x\n"), array_get_bits(sdhost_sdcard_SDSTATUS, 512, 423, 16));
 
 	}
 #endif /* WITHSDHCHW */
-	debug_printf_P(PSTR("SD CARD identification done\n"));
+	PRINTF(PSTR("SD CARD identification done\n"));
 	return 0;
 }
 
@@ -2593,7 +2591,7 @@ char sd_initialize2(void)
 {
 	sd_power_cycle();
 
-	debug_printf_P(PSTR("hardware_sdhost_setspeed to 400 kHz\n"));
+	PRINTF(PSTR("hardware_sdhost_setspeed to 400 kHz\n"));
 	hardware_sdhost_setspeed(400000uL);
 	hardware_sdhost_setbuswidth(0);		// 1-bit width
 	if (sdhost_sdcard_poweron() == 0)
@@ -2604,12 +2602,12 @@ char sd_initialize2(void)
 			{
 			case SDIO_STD_CAPACITY_SD_CARD_V2_0:
 			case SDIO_HIGH_CAPACITY_SD_CARD:
-				debug_printf_P(PSTR("hardware_sdhost_setspeed to 24 MHz\n"));
+				PRINTF(PSTR("hardware_sdhost_setspeed to 24 MHz\n"));
 				hardware_sdhost_setspeed(24000000uL);
 				break;
 
 			default:
-				debug_printf_P(PSTR("hardware_sdhost_setspeed to 12 MHz\n"));
+				PRINTF(PSTR("hardware_sdhost_setspeed to 12 MHz\n"));
 				hardware_sdhost_setspeed(12000000uL);
 				break;
 			}
@@ -2617,7 +2615,7 @@ char sd_initialize2(void)
 #if WITHDEBUG
 			{
 				uint_fast64_t v = sdhost_sdcard_parse_CSD(sdhost_sdcard_CSD);
-				debug_printf_P(PSTR("SD Card size = %lu KB (%lu MB) (%08lx:%08lx bytes)\n"), 
+				PRINTF(PSTR("SD Card size = %lu KB (%lu MB) (%08lx:%08lx bytes)\n"), 
 					(unsigned long) (v / 1024), 
 					(unsigned long) (v / 1024 / 1024), 
 					(unsigned long) (v >> 32), 
@@ -2673,7 +2671,7 @@ DRESULT SD_Get_Block_Size (
 	{
 		const unsigned au = array_get_bits(sdhost_sdcard_SDSTATUS, 512, 431, 4);	// [431:428] AU_SIZE
 		const unsigned es = array_get_bits(sdhost_sdcard_SDSTATUS, 512, 423, 16);	// [423:408] ERASE_SIZE
-		debug_printf_P(PSTR("ioctl: GET_BLOCK_SIZE: AU_SIZE=0x%02x, ERASE_SIZE=0x%04x\n"), au, es);
+		PRINTF(PSTR("ioctl: GET_BLOCK_SIZE: AU_SIZE=0x%02x, ERASE_SIZE=0x%04x\n"), au, es);
 		* buff = aus [au] * es;
 		return RES_OK;
 	}
@@ -2705,13 +2703,13 @@ DSTATUS SD_Initialize (
 	BYTE drv				/* Physical drive nmuber (0..) */
 )
 {
-	debug_printf_P(PSTR("SD_Initialize: drv=%d\n"), (int) drv);
+	PRINTF(PSTR("SD_Initialize: drv=%d\n"), (int) drv);
 	if (1)
 	{
 #if WITHSDHCHW
 		if (HARDWARE_SDIOSENSE_CD() == 0)
 		{
-			debug_printf_P(PSTR("SD_Initialize: STA_NODISK\n"));
+			PRINTF(PSTR("SD_Initialize: STA_NODISK\n"));
 			return STA_NODISK;
 		}
 		//if (HARDWARE_SDIOSENSE_WP() != 0)
@@ -2729,7 +2727,7 @@ DSTATUS SD_Status (
 	BYTE drv		/* Physical drive nmuber (0..) */
 )
 {
-	//debug_printf_P(PSTR("disk_status: drv=%d\n"), (int) drv);
+	//PRINTF(PSTR("disk_status: drv=%d\n"), (int) drv);
 	if (1)
 	{
 #if WITHSDHCHW
@@ -2867,7 +2865,7 @@ static unsigned char mmcGetResponseR1b(void)
 	for (i = 0; i <= RESPLIMIT; ++ i)
 	{
 		response = spi_read_byte(targetsdcard, 0xff);
-		//debug_printf_P(PSTR("mmcGetResponseR1b 1: %02x\n"), response);
+		//PRINTF(PSTR("mmcGetResponseR1b 1: %02x\n"), response);
 		if ((response & 0x80) == 0)
 			break;
 	}
@@ -2875,7 +2873,7 @@ static unsigned char mmcGetResponseR1b(void)
 	for (; i <= RESPLIMIT; ++ i)
 	{
 		unsigned char v = spi_read_byte(targetsdcard, 0xff);
-		//debug_printf_P(PSTR("mmcGetResponseR1b 2: %02x\n"), v);
+		//PRINTF(PSTR("mmcGetResponseR1b 2: %02x\n"), v);
 		if (v != 0)
 			break;
 	}
@@ -2889,7 +2887,7 @@ static unsigned char waitwhilebusy(void)
 	for (i = 0; i <= RESPLIMITREAD; ++ i)
 	{
 		unsigned char v = spi_read_byte(targetsdcard, 0xff);
-		//debug_printf_P(PSTR("mmcGetResponseR1b 2: %02x\n"), v);
+		//PRINTF(PSTR("mmcGetResponseR1b 2: %02x\n"), v);
 		if (v != 0)
 			return 0;
 	}
@@ -2977,7 +2975,7 @@ static uint_fast8_t mmcGetXXResponse(uint_fast8_t resp)
 			break;
 		i ++;
 	}
-	//debug_printf_P(PSTR("waiting count: %d\n"), i);
+	//PRINTF(PSTR("waiting count: %d\n"), i);
 	return response;
 }
 
@@ -3088,22 +3086,22 @@ static char mmcGoIdle(void)
 		// Ver2.00 or later SD Memory Card(voltage mismatch)
 		// or Ver1.X SD Memory Card
 		// or not SD Memory Card
-		debug_printf_P(PSTR("Ver1.X SD Memory Card or not SD Memory Card\n")); 
+		PRINTF(PSTR("Ver1.X SD Memory Card or not SD Memory Card\n")); 
 
 		// check voltage range here
 		mmcSendDummyByte();
 		mmcSendCmd(0x40 + 58, 0);	// CMD58
 		response = mmcGetResponseR3(& cmd58answer);
-		debug_printf_P(PSTR("1: CMD58 has responce %02x, value = %08lx\n"), response, cmd58answer); 
+		PRINTF(PSTR("1: CMD58 has responce %02x, value = %08lx\n"), response, cmd58answer); 
 		if (response == 0x00 || response == 0x01)
 		{
 			if ((cmd58answer & (1UL << 21)) || (cmd58answer & (1UL << 20)))
 			{
-				debug_printf_P(PSTR("3.3 volt VCC suitable.\n"));
+				PRINTF(PSTR("3.3 volt VCC suitable.\n"));
 			}
 			else
 			{
-				debug_printf_P(PSTR("3.3 volt VCC NOT suitable.\n"));
+				PRINTF(PSTR("3.3 volt VCC NOT suitable.\n"));
 				return MMC_INIT_ERROR;
 			}
 		}
@@ -3114,7 +3112,7 @@ static char mmcGoIdle(void)
 			mmcSendCmd(MMC_APP_CMD, 0);	// APP_CMD
 			//Now wait for READY RESPONSE
 			response = mmcGetResponseR1();
-			debug_printf_P(PSTR("mmcGoIdle: 1: APP_CMD responce R1 = %02x\n"), response);
+			PRINTF(PSTR("mmcGoIdle: 1: APP_CMD responce R1 = %02x\n"), response);
 			if (response != 0x01 && response != 0x00)
 				continue;
 
@@ -3122,17 +3120,17 @@ static char mmcGoIdle(void)
 			mmcSendCmd(MMC_ACMD41, 0);	// ACMD41(0)
 			//Now wait for READY RESPONSE
 			response = mmcGetResponseR1();
-			debug_printf_P(PSTR("ACMD41 responce R1 = %02x\n"), response);
+			PRINTF(PSTR("ACMD41 responce R1 = %02x\n"), response);
 			if (response == 0x00)
 				break;
 		}
-		//debug_printf_P(PSTR("ACMD41 has responce %02x\n"), response); 
+		//PRINTF(PSTR("ACMD41 has responce %02x\n"), response); 
 
 		//return MMC_INIT_ERROR;
 	}
 	else if ((cmd8answer & 0xff) != 0xaa)
 	{
-		debug_printf_P(PSTR("Bad CMD8 answer. SD Card unuseable\n"));
+		PRINTF(PSTR("Bad CMD8 answer. SD Card unuseable\n"));
 		return MMC_INIT_ERROR;
 	}
 	else
@@ -3141,22 +3139,22 @@ static char mmcGoIdle(void)
 		mmcCardVersion2 = 1;
 
 		// Ver2.00 or later SD Memory Card
-		debug_printf_P(PSTR("Ver2.00 or later SD Memory Card\n")); 	
+		PRINTF(PSTR("Ver2.00 or later SD Memory Card\n")); 	
 
 		// check voltage range here
 		mmcSendDummyByte();
 		mmcSendCmd(0x40 + 58, 0);	// CMD58
 		response = mmcGetResponseR3(& cmd58answer);
-		debug_printf_P("2: CMD58 has responce %02x, value = %08lx\n", response, cmd58answer); 
+		PRINTF("2: CMD58 has responce %02x, value = %08lx\n", response, cmd58answer); 
 		if (response == 0x00 || response == 0x01)
 		{
 			if ((cmd58answer & (1UL << 21)) || (cmd58answer & (1UL << 20)))
 			{
-				debug_printf_P(PSTR("3.3 volt VCC suitable.\n"));
+				PRINTF(PSTR("3.3 volt VCC suitable.\n"));
 			}
 			else
 			{
-				debug_printf_P(PSTR("3.3 volt VCC NOT suitable.\n"));
+				PRINTF(PSTR("3.3 volt VCC NOT suitable.\n"));
 				return MMC_INIT_ERROR;
 			}
 		}
@@ -3164,7 +3162,7 @@ static char mmcGoIdle(void)
 		mmcSendDummyByte();
 		mmcSendCmd(0x40 + 59, 1);	// shitch CRC check on - required before ACMD41
 		response = mmcGetResponseR1();
-		//debug_printf_P(PSTR("CMD59 has responce %02x\n"), response); 
+		//PRINTF(PSTR("CMD59 has responce %02x\n"), response); 
 
 		for (;;)
 		{
@@ -3172,7 +3170,7 @@ static char mmcGoIdle(void)
 			mmcSendCmdCRC7(MMC_APP_CMD, 0);	// APP_CMD
 			//Now wait for READY RESPONSE
 			response = mmcGetResponseR1();
-			//debug_printf_P(PSTR("mmcGoIdle: 2: APP_CMD responce R1 = %02x\n"), response);
+			//PRINTF(PSTR("mmcGoIdle: 2: APP_CMD responce R1 = %02x\n"), response);
 			if (response != 0x01 && response != 0x00)
 				continue;
 
@@ -3180,7 +3178,7 @@ static char mmcGoIdle(void)
 			mmcSendCmdCRC7(MMC_ACMD41, 0x40000000);	// HCS (High Capacity Support)
 			//Now wait for READY RESPONSE
 			response = mmcGetResponseR1();
-			//debug_printf_P(PSTR("ACMD41 responce R1 = %02x\n"), response);
+			//PRINTF(PSTR("ACMD41 responce R1 = %02x\n"), response);
 			if (response == 0x00)
 				break;
 		}
@@ -3188,29 +3186,29 @@ static char mmcGoIdle(void)
 		mmcSendDummyByte();
 		mmcSendCmdCRC7(0x40 + 59, 0);	// shitch CRC check off
 		response = mmcGetResponseR1();
-		//debug_printf_P("CMD59 has responce %02x\n", response); 
+		//PRINTF("CMD59 has responce %02x\n", response); 
 
 		// Check CCS bit (capacity) bit
 		mmcSendDummyByte();
 		mmcSendCmd(0x40 + 58, 0);	// CMD58
 		response = mmcGetResponseR3(& cmd58answer);
-		debug_printf_P(PSTR("3: CMD58 has responce %02x, value = %08lx\n"), response, cmd58answer); 
+		PRINTF(PSTR("3: CMD58 has responce %02x, value = %08lx\n"), response, cmd58answer); 
 		if (response == 0x00 || response == 0x01)
 		{
 			if ((cmd58answer & 0x40000000) != 0)	//CCS (Card Capacity Status)
 			{
-				debug_printf_P(PSTR("SDHC or SDXC (High Capacity)\n"));
+				PRINTF(PSTR("SDHC or SDXC (High Capacity)\n"));
 				mmcAddressMultiplier = 1;	// Для SDHC (адресация идёт в 512-ти байтовых блоках)
 			}
 			else
 			{
-				debug_printf_P(PSTR("SDSD - up to 2GB\n"));
+				PRINTF(PSTR("SDSD - up to 2GB\n"));
 				mmcAddressMultiplier = MMC_SECTORSIZE;	// Для обычных SD карт
 			}
 		}
 	}
 
-	//debug_printf_P("mmcGoIdle() done.\n");
+	//PRINTF("mmcGoIdle() done.\n");
 
 	spi_read_byte(targetsdcard, 0xff);
 	return (MMC_SUCCESS);
@@ -3270,7 +3268,7 @@ static char mmcInit(void)
 	char ec;
 	int i;
 
-	debug_printf_P(PSTR("SPI clock set to 400 kHz\n"));
+	PRINTF(PSTR("SPI clock set to 400 kHz\n"));
 
 	SDCARD_CS_HIGH();
 	sdcard_spi_setfreq(400000);
@@ -3285,14 +3283,14 @@ static char mmcInit(void)
 	{
 		if (mmcCardVersion2 != 0)
 		{
-			debug_printf_P("SPI clock set to 24 MHz\n");
+			PRINTF("SPI clock set to 24 MHz\n");
 			SDCARD_CS_HIGH();
 			sdcard_spi_setfreq(24000000);
 			SDCARD_CS_LOW();
 		}
 		else
 		{
-			debug_printf_P("SPI clock set to 12 MHz\n");
+			PRINTF("SPI clock set to 12 MHz\n");
 			SDCARD_CS_HIGH();
 			sdcard_spi_setfreq(12000000);
 			SDCARD_CS_LOW();
@@ -3300,7 +3298,7 @@ static char mmcInit(void)
 	}
 	else
 	{
-			debug_printf_P("mmcGoIdle return ec=%d\n", ec);
+			PRINTF("mmcGoIdle return ec=%d\n", ec);
 	}
 	
 	return ec;
@@ -3445,14 +3443,14 @@ static char mmcReadSectors(
 			else
 			{
 				// the data token was never received
-				//debug_printf_P("MMC_DATA_TOKEN_ERROR\n");
+				//PRINTF("MMC_DATA_TOKEN_ERROR\n");
 				rvalue = MMC_DATA_TOKEN_ERROR;      // 3
 			}
 		}
 		else
 		{
 			// the MMC never acknowledge the read command
-			//debug_printf_P("MMC_RESPONSE_ERROR\n");
+			//PRINTF("MMC_RESPONSE_ERROR\n");
 			rvalue = MMC_RESPONSE_ERROR;          // 2
 		}
 
@@ -3503,7 +3501,7 @@ static char mmcReadSectors(
 				else
 				{
 					// the data token was never received
-					debug_printf_P("mmcReadSectors: MMC_DATA_TOKEN_ERROR\n");
+					PRINTF("mmcReadSectors: MMC_DATA_TOKEN_ERROR\n");
 					rvalue = MMC_DATA_TOKEN_ERROR;      // 3
 					break;
 				}
@@ -3513,7 +3511,7 @@ static char mmcReadSectors(
 			mmcSendDummyByte();
 			if (mmcGetResponseR1b() != 0x00)
 			{
-				debug_printf_P("mmcReadSectors: MMC_STOP_TRANSMISSION error\n");
+				PRINTF("mmcReadSectors: MMC_STOP_TRANSMISSION error\n");
 				rvalue = MMC_RESPONSE_ERROR;    
 			}
 			mmcCheckBusy();
@@ -3521,7 +3519,7 @@ static char mmcReadSectors(
 		else
 		{
 			// the MMC never acknowledge the read command
-			debug_printf_P("SD_ReadSectors: MMC_READ_MULTIPLE_BLOCK: MMC_RESPONSE_ERROR\n");
+			PRINTF("SD_ReadSectors: MMC_READ_MULTIPLE_BLOCK: MMC_RESPONSE_ERROR\n");
 			rvalue = MMC_RESPONSE_ERROR;          // 2
 		}
 
@@ -3585,7 +3583,7 @@ static char mmcWriteSectors(
 		else
 		{
 			// the MMC never acknowledge the write command
-			//debug_printf_P("MMC_BLOCK_SET_ERROR\n");
+			//PRINTF("MMC_BLOCK_SET_ERROR\n");
 			rvalue = MMC_BLOCK_SET_ERROR;   // 2
 		}
 		// give the MMC the required clocks to finish up what ever it needs to do
@@ -3600,7 +3598,7 @@ static char mmcWriteSectors(
 	else
 	{
 		// write multiblock
-		//debug_printf_P(PSTR("write multiblock, count=%d\n"), count);
+		//PRINTF(PSTR("write multiblock, count=%d\n"), count);
 		// Set the block length to read
 		//if (mmcSetBlockLength (count) == MMC_SUCCESS)   // block length could be set
 		// CS = LOW (on)
@@ -3620,7 +3618,7 @@ static char mmcWriteSectors(
 			response = mmcGetResponseR1();
 			if (/*response != 0x01 && */response != 0x00)
 			{
-				debug_printf_P(PSTR("mmcWriteSectors: 1: APP_CMD responce R1 = %02x\n"), response);
+				PRINTF(PSTR("mmcWriteSectors: 1: APP_CMD responce R1 = %02x\n"), response);
 				SDCARD_CS_HIGH();
 				return MMC_BLOCK_SET_ERROR;
 			}
@@ -3631,7 +3629,7 @@ static char mmcWriteSectors(
 			response = mmcGetResponseR1();
 			if (/*response != 0x01 && */response != 0x00)
 			{
-				debug_printf_P(PSTR("mmcWriteSectors: 1: MMC_ACMD23 responce R1 = %02x\n"), response);
+				PRINTF(PSTR("mmcWriteSectors: 1: MMC_ACMD23 responce R1 = %02x\n"), response);
 				SDCARD_CS_HIGH();
 				return MMC_BLOCK_SET_ERROR;
 			}
@@ -3663,7 +3661,7 @@ static char mmcWriteSectors(
 				spi_progval8_p2(targetsdcard, 0xff);
 				spi_complete(targetsdcard);
 				//unsigned char rr = spi_read_byte(targetsdcard, 0xff);
-				//debug_printf_P(PSTR("mmcWriteSectors: 1: rr=%02x\n"), rr);
+				//PRINTF(PSTR("mmcWriteSectors: 1: rr=%02x\n"), rr);
 				//if ((rr & 0x1f) != 0x05)
 				//{
 				//	break;
@@ -3689,7 +3687,7 @@ static char mmcWriteSectors(
 		else
 		{
 			// the MMC never acknowledge the write command
-			//debug_printf_P("MMC_BLOCK_SET_ERROR\n");
+			//PRINTF("MMC_BLOCK_SET_ERROR\n");
 			rvalue = MMC_BLOCK_SET_ERROR;   // 2
 		}
 		// give the MMC the required clocks to finish up what ever it needs to do
@@ -3699,7 +3697,7 @@ static char mmcWriteSectors(
 		SDCARD_CS_HIGH();
 		// Send 8 Clock pulses of delay.
 		////////spi_read_byte(targetsdcard, 0xff);
-		//debug_printf_P(PSTR("write multiblock, count=%d done\n"), count);
+		//PRINTF(PSTR("write multiblock, count=%d done\n"), count);
 		return rvalue;
 	}
 } // mmc_write_block
@@ -3791,7 +3789,7 @@ DSTATUS MMC_Initialize (
 	BYTE drv				/* Physical drive nmuber (0..) */
 )
 {
-	//debug_printf_P(PSTR("MMC_Initialize: drv=%d\n"), (int) drv);
+	//PRINTF(PSTR("MMC_Initialize: drv=%d\n"), (int) drv);
 	if (1)
 	{
 		if (HARDWARE_SDIOSENSE_CD() == 0)
@@ -3809,7 +3807,7 @@ DSTATUS MMC_Status (
 	BYTE drv		/* Physical drive nmuber (0..) */
 )
 {
-	//debug_printf_P(PSTR("disk_status: drv=%d\n"), (int) drv);
+	//PRINTF(PSTR("disk_status: drv=%d\n"), (int) drv);
 	if (1)
 	{
 		if (HARDWARE_SDIOSENSE_CD() == 0)
