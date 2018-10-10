@@ -2027,7 +2027,9 @@ static uint_fast8_t sdhost_short_acmd_resp_R3(uint_fast8_t cmd, uint_fast32_t ar
 
 
 // write a size Byte big block beginning at the address.
-static uint_fast8_t sdhost_sdcard_WriteSectors(
+static 
+DRESULT SD_disk_write(
+	BYTE drv,			/* Physical drive nmuber (0..) */
 	const BYTE *buff,	/* Data to be written */
 	DWORD sector,		/* Sector address (LBA) */
 	UINT count			/* Number of sectors to write */
@@ -2043,7 +2045,7 @@ static uint_fast8_t sdhost_sdcard_WriteSectors(
 	if (sdhost_sdcard_waitstatus() != 0)
 	{
 		debug_printf_P(PSTR("sdhost_sdcard_WriteSectors: sdhost_sdcard_waitstatus error\n"));
-		return 1;
+		return RES_ERROR;
 	}
 
 	if ((sdhost_SDType & SD_HIGH_CAPACITY) == 0)	//CCS (Card Capacity Status)
@@ -2053,7 +2055,7 @@ static uint_fast8_t sdhost_sdcard_WriteSectors(
 		if (sdhost_get_R1(SD_CMD_SET_BLOCKLEN, & resp) != 0)
 		{
 			debug_printf_P(PSTR("sdhost_sdcard_setblocklen error\n"));
-			return 1;
+			return RES_ERROR;
 		}
 	}
 
@@ -2077,7 +2079,7 @@ static uint_fast8_t sdhost_sdcard_WriteSectors(
 		{
 			DMA_sdio_cancel();
 			debug_printf_P(PSTR("SD_CMD_WRITE_SINGLE_BLOCK error\n"));
-			return 1;
+			return RES_ERROR;
 		}
 
 #if ! CPUSTYLE_STM32H7XX
@@ -2089,17 +2091,18 @@ static uint_fast8_t sdhost_sdcard_WriteSectors(
 		{
 			DMA_sdio_cancel();
 			debug_printf_P(PSTR("sdhost_sdcard_WriteSectors 1: sdhost_dpsm_wait error\n"));
-			return 1;
+			return RES_ERROR;
 		}
 		else if (DMA_sdio_waitdone() != 0)
 		{
 			DMA_sdio_cancel();
 			debug_printf_P(PSTR("sdhost_sdcard_WriteSectors 1: DMA_sdio_waitdone error\n"));
-			return 1;
+			return RES_ERROR;
 		}
 		else
 		{
 			sdhost_dpsm_wait_fifo_empty();
+			return RES_OK;
 		}
 	}
 	else
@@ -2112,7 +2115,7 @@ static uint_fast8_t sdhost_sdcard_WriteSectors(
 		if (sdhost_short_acmd_resp_R1(SD_CMD_SD_APP_SET_NWB_PREERASED, count & 0x7FFFFF, & resp, 0) != 0) // ACMD23
 		{
 			debug_printf_P(PSTR("SD_CMD_SD_APP_SET_NWB_PREERASED error\n"));
-			return 1;
+			return RES_ERROR;
 		}
 		//debug_printf_P(PSTR("SD_CMD_SD_APP_SET_NWB_PREERASED okay\n"));
 
@@ -2123,7 +2126,7 @@ static uint_fast8_t sdhost_sdcard_WriteSectors(
 			if (sdhost_get_R1(SD_CMD_SET_BLOCK_COUNT, & resp) != 0)	// get R1
 			{
 				debug_printf_P(PSTR("SD_CMD_SET_BLOCK_COUNT error\n"));
-				return 1;
+				return RES_ERROR;
 			}
 		}
 
@@ -2142,7 +2145,7 @@ static uint_fast8_t sdhost_sdcard_WriteSectors(
 		{
 			DMA_sdio_cancel();
 			debug_printf_P(PSTR("SD_CMD_WRITE_MULT_BLOCK error\n"));
-			return 1;
+			return RES_ERROR;
 		}
 
 #if ! CPUSTYLE_STM32H7XX
@@ -2156,13 +2159,13 @@ static uint_fast8_t sdhost_sdcard_WriteSectors(
 			DMA_sdio_cancel();
 			if (sdhost_stop_transmission() != 0)
 				debug_printf_P(PSTR("sdhost_sdcard_WriteSectors 2: sdhost_sdcard_waitstatus error\n"));
-			return 1;
+			return RES_ERROR;
 		}
 		else if (DMA_sdio_waitdone() != 0)
 		{
 			DMA_sdio_cancel();
 			debug_printf_P(PSTR("sdhost_sdcard_WriteSectors 2: DMA_sdio_waitdone error\n"));
-			return 1;
+			return RES_ERROR;
 		}
 		else
 		{
@@ -2178,14 +2181,18 @@ static uint_fast8_t sdhost_sdcard_WriteSectors(
 			#endif /* ! CPUSTYLE_R7S721 */
 		}
 		//debug_printf_P(PSTR("write multiblock, count=%d okay\n"), count);
+			return RES_OK;
 	}
 	//debug_printf_P(PSTR("sdhost_sdcard_WriteSectors: buff=%p, sector=%lu, count=%lu okay\n"), buff, (unsigned long) sector, (unsigned long) count);
-	return 0;
 }
 
 
 // read a size Byte big block beginning at the address.
-static uint_fast8_t sdhost_sdcard_ReadSectors(
+
+// read a size Byte big block beginning at the address.
+static 
+DRESULT SD_disk_read(
+	BYTE drv,			/* Physical drive nmuber (0..) */
 	BYTE *buff,		/* Data buffer to store read data */
 	DWORD sector,	/* Sector address (LBA) */
 	UINT count		/* Number of sectors to read */
@@ -2201,7 +2208,7 @@ static uint_fast8_t sdhost_sdcard_ReadSectors(
 	if (sdhost_sdcard_waitstatus() != 0)
 	{
 		debug_printf_P(PSTR("sdhost_sdcard_ReadSectors: sdhost_sdcard_waitstatus error\n"));
-		return 1;
+		return RES_ERROR;
 	}
 	
 	
@@ -2214,7 +2221,7 @@ static uint_fast8_t sdhost_sdcard_ReadSectors(
 		if (sdhost_get_R1(SD_CMD_SET_BLOCKLEN, & resp) != 0)
 		{
 			debug_printf_P(PSTR("sdhost_sdcard_setblocklen error\n"));
-			return 1;
+			return RES_ERROR;
 		}
 	}
 
@@ -2235,24 +2242,24 @@ static uint_fast8_t sdhost_sdcard_ReadSectors(
 		{
 			DMA_sdio_cancel();
 			debug_printf_P(PSTR("SD_CMD_READ_SINGLE_BLOCK error\n"));
-			return 1;
+			return RES_ERROR;
 		}
 		if (sdhost_dpsm_wait(0) != 0)
 		{
 			DMA_sdio_cancel();
 			debug_printf_P(PSTR("sdhost_sdcard_ReadSectors 1: sdhost_dpsm_wait error\n"));
-			return 1;
+			return RES_ERROR;
 		}
 		else if (DMA_sdio_waitdone() != 0)
 		{
 			DMA_sdio_cancel();
 			debug_printf_P(PSTR("sdhost_sdcard_ReadSectors 1: DMA_sdio_waitdone error\n"));
-			return 1;
+			return RES_ERROR;
 		}
 		else
 		{
 			sdhost_dpsm_wait_fifo_empty();
-			return 0;
+			return RES_OK;
 		}
 	}
 	else
@@ -2266,7 +2273,7 @@ static uint_fast8_t sdhost_sdcard_ReadSectors(
 			if (sdhost_get_R1(SD_CMD_SET_BLOCK_COUNT, & resp) != 0)	// get R1
 			{
 				debug_printf_P(PSTR("SD_CMD_SET_BLOCK_COUNT error\n"));
-				return 1;
+				return RES_ERROR;
 			}
 		}
 
@@ -2279,7 +2286,7 @@ static uint_fast8_t sdhost_sdcard_ReadSectors(
 		{
 			DMA_sdio_cancel();
 			debug_printf_P(PSTR("SD_CMD_READ_MULT_BLOCK error\n"));
-			return 1;
+			return RES_ERROR;
 		}
 		if (sdhost_dpsm_wait(0) != 0)
 		{
@@ -2287,13 +2294,13 @@ static uint_fast8_t sdhost_sdcard_ReadSectors(
 			DMA_sdio_cancel();
 			if (sdhost_stop_transmission() != 0)
 				debug_printf_P(PSTR("sdhost_sdcard_ReadSectors 2: sdhost_stop_transmission error\n"));
-			return 1;
+			return RES_ERROR;
 		}
 		else if (DMA_sdio_waitdone() != 0)
 		{
 			DMA_sdio_cancel();
 			debug_printf_P(PSTR("sdhost_sdcard_ReadSectors 2: DMA_sdio_waitdone error\n"));
-			return 1;
+			return RES_ERROR;
 		}
 		else
 		{
@@ -2306,7 +2313,7 @@ static uint_fast8_t sdhost_sdcard_ReadSectors(
 					debug_printf_P(PSTR("sdhost_sdcard_ReadSectors 2: sdhost_sdcard_waitstatus error\n"));
 			}
 			#endif /* ! CPUSTYLE_R7S721 */
-			return 0;
+			return RES_OK;
 		}
 	}
 }
@@ -2623,34 +2630,6 @@ char sd_initialize2(void)
 		}
 	}
 	return MMC_RESPONSE_ERROR;
-}
-
-// write a size Byte big block beginning at the address.
-static 
-DRESULT SD_disk_write(
-	BYTE drv,			/* Physical drive nmuber (0..) */
-	const BYTE *buff,	/* Data to be written */
-	DWORD sector,		/* Sector address (LBA) */
-	UINT count			/* Number of sectors to write */
-	)
-{
-	if (sdhost_sdcard_WriteSectors(buff, sector, count) != 0)
-		return RES_ERROR;
-	return RES_OK;
-}
-
-// read a size Byte big block beginning at the address.
-static 
-DRESULT SD_disk_read(
-	BYTE drv,			/* Physical drive nmuber (0..) */
-	BYTE *buff,		/* Data buffer to store read data */
-	DWORD sector,	/* Sector address (LBA) */
-	UINT count		/* Number of sectors to read */
-	)
-{
-	if (sdhost_sdcard_ReadSectors(buff, sector, count) != 0)
-		return RES_ERROR;
-	return RES_OK;
 }
 
 static 
