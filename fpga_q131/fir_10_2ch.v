@@ -119,35 +119,35 @@ endmodule
 // Retrieval info:      <PRIVATE name = "flow_control_input" value="Slave Sink"  type="STRING"  enable="1" />
 // Retrieval info:      <PRIVATE name = "flow_control_output" value="Master Source"  type="STRING"  enable="1" />
 // Retrieval info:      <PRIVATE name = "device_family" value="Cyclone IV E"  type="STRING"  enable="1" />
-// Retrieval info:      <PRIVATE name = "structure" value="Distributed Arithmetic : Fully Serial Filter"  type="STRING"  enable="1" />
-// Retrieval info:      <PRIVATE name = "pipeline_level" value="1"  type="INTEGER"  enable="1" />
-// Retrieval info:      <PRIVATE name = "clocks_to_compute" value="1"  type="INTEGER"  enable="0" />
+// Retrieval info:      <PRIVATE name = "structure" value="Variable/Fixed Coefficient : Multi-Cycle"  type="STRING"  enable="1" />
+// Retrieval info:      <PRIVATE name = "pipeline_level" value="3"  type="INTEGER"  enable="1" />
+// Retrieval info:      <PRIVATE name = "clocks_to_compute" value="24"  type="INTEGER"  enable="1" />
 // Retrieval info:      <PRIVATE name = "number_of_serial_units" value="2"  type="INTEGER"  enable="0" />
 // Retrieval info:      <PRIVATE name = "data_storage" value="M9K"  type="STRING"  enable="1" />
-// Retrieval info:      <PRIVATE name = "coefficient_storage" value="Logic Cells"  type="STRING"  enable="1" />
-// Retrieval info:      <PRIVATE name = "multiplier_storage" value="Logic Cells"  type="STRING"  enable="0" />
-// Retrieval info:      <PRIVATE name = "force_non_symmetric_structure" value="1"  type="BOOLEAN"  enable="0" />
-// Retrieval info:      <PRIVATE name = "coefficients_reload" value="0"  type="BOOLEAN"  enable="0" />
+// Retrieval info:      <PRIVATE name = "coefficient_storage" value="M9K"  type="STRING"  enable="1" />
+// Retrieval info:      <PRIVATE name = "multiplier_storage" value="DSP Blocks"  type="STRING"  enable="1" />
+// Retrieval info:      <PRIVATE name = "force_non_symmetric_structure" value="1"  type="BOOLEAN"  enable="1" />
+// Retrieval info:      <PRIVATE name = "coefficients_reload" value="0"  type="BOOLEAN"  enable="1" />
 // Retrieval info:      <PRIVATE name = "coefficients_reload_sgl_clock" value="0"  type="BOOLEAN"  enable="1" />
-// Retrieval info:      <PRIVATE name = "max_clocks_to_compute" value="1"  type="INTEGER"  enable="1" />
+// Retrieval info:      <PRIVATE name = "max_clocks_to_compute" value="24"  type="INTEGER"  enable="1" />
 // Retrieval info:      <PRIVATE name = "set_1" value="Low Pass Set, Floating, Low Pass, Blackman, 333, 1920000.0, 80000.0, 3750000.0, 0, 0.0, 0.0, 0.0, 0.0, -1.01447E-6, -1.53559E-6, -1.98765E-6, -2.21122E-6, -2.03449E-6, -1.3E-6, 0.0, 2.22795E-6, 5.01439E-6, 8.3077E-6, 1.18392E-5, 1.52398E-5, 1.80642E-5, 1.98277E-5, 2.00543E-5, 1.83315E-5, 1.43675E-5, 8.04422E-6, 0.0, -1.10329E-5, -2.28386E-5, -3.51147E-5, -4.68236E-5, -5.67969E-5, -6.38246E-5, -6.67614E-5, -6.46417E-5, -5.67942E-5, -4.29465E-5, -2.33076E-5, 1.38157E-6, 2.98372E-5, 6.02687E-5, 9.04629E-5, 1.17916E-4, 1.40009E-4, 1.54208E-4, 1.58295E-4, 1.50586E-4, 1.3014E-4, 9.69279E-5, 5.19467E-5, -2.74007E-6, -6.40424E-5, -1.27973E-4, -1.89867E-4, -2.44674E-4, -2.87324E-4, -3.13122E-4, -3.1817E-4, -2.99754E-4, -2.56691E-4, -1.89583E-4, -1.00955E-4, 4.73818E-6, 1.21264E-4, 2.40915E-4, 3.54957E-4, 4.54206E-4, 5.29689E-4, 5.73358E-4, 5.78801E-4, 5.41883E-4, 4.61287E-4, 3.38871E-4, 1.79828E-4, -7.40711E-6, -2.115E-4, -4.18815E-4, -6.14245E-4, -7.82217E-4, -9.07833E-4, -9.78045E-4, -9.82802E-4, -9.16063E-4, -7.76583E-4, -5.68421E-4, -3.01075E-4, 1.07748E-5, 3.47934E-4, 6.87754E-4, 0.00100554, 0.0012762, 0.00147612, 0.00158498, 0.00158755, 0.0014752, 0.00124705, 9.10662E-4, 4.82082E-4, -1.46438E-5, -5.48653E-4, -0.00108401, -0.00158194, -0.0020035, -0.00231236, -0.00247768, -0.00247676, -0.00229726, -0.00193891, -0.00141436, -7.49213E-4, 1.88806E-5, 8.421E-4, 0.00166517, 0.00242881, 0.00307374, 0.00354493, 0.00379586, 0.00379249, 0.00351653, 0.00296793, 0.00216615, 0.00115013, -2.30319E-5, -0.00128093, -0.00253983, -0.00370984, -0.0047008, -0.00542864, -0.00582173, -0.00582679, -0.005414, -0.00458076, -0.00335386, -0.00178981, 2.6887E-5, 0.00198746, 0.00396455, 0.0058195, 0.00741095, 0.00860424, 0.00928099, 0.00934838, 0.00874736, 0.00745929, 0.0055105, 0.00297428, -2.98797E-5, -0.00333993, -0.00675779, -0.0100584, -0.0130011, -0.0153422, -0.0168489, -0.0173134, -0.0165655, -0.0144849, -0.0110105, -0.00614699, 3.19114E-5, 0.00738362, 0.0157009, 0.0247196, 0.0341296, 0.0435884, 0.0527376, 0.0612193, 0.0686936, 0.0748557, 0.079451, 0.0822877, 0.0832468, 0.0822877, 0.079451, 0.0748557, 0.0686936, 0.0612193, 0.0527376, 0.0435884, 0.0341296, 0.0247196, 0.0157009, 0.00738362, 3.19114E-5, -0.00614699, -0.0110105, -0.0144849, -0.0165655, -0.0173134, -0.0168489, -0.0153422, -0.0130011, -0.0100584, -0.00675779, -0.00333993, -2.98797E-5, 0.00297428, 0.0055105, 0.00745929, 0.00874736, 0.00934838, 0.00928099, 0.00860424, 0.00741095, 0.0058195, 0.00396455, 0.00198746, 2.6887E-5, -0.00178981, -0.00335386, -0.00458076, -0.005414, -0.00582679, -0.00582173, -0.00542864, -0.0047008, -0.00370984, -0.00253983, -0.00128093, -2.30319E-5, 0.00115013, 0.00216615, 0.00296793, 0.00351653, 0.00379249, 0.00379586, 0.00354493, 0.00307374, 0.00242881, 0.00166517, 8.421E-4, 1.88806E-5, -7.49213E-4, -0.00141436, -0.00193891, -0.00229726, -0.00247676, -0.00247768, -0.00231236, -0.0020035, -0.00158194, -0.00108401, -5.48653E-4, -1.46438E-5, 4.82082E-4, 9.10662E-4, 0.00124705, 0.0014752, 0.00158755, 0.00158498, 0.00147612, 0.0012762, 0.00100554, 6.87754E-4, 3.47934E-4, 1.07748E-5, -3.01075E-4, -5.68421E-4, -7.76583E-4, -9.16063E-4, -9.82802E-4, -9.78045E-4, -9.07833E-4, -7.82217E-4, -6.14245E-4, -4.18815E-4, -2.115E-4, -7.40711E-6, 1.79828E-4, 3.38871E-4, 4.61287E-4, 5.41883E-4, 5.78801E-4, 5.73358E-4, 5.29689E-4, 4.54206E-4, 3.54957E-4, 2.40915E-4, 1.21264E-4, 4.73818E-6, -1.00955E-4, -1.89583E-4, -2.56691E-4, -2.99754E-4, -3.1817E-4, -3.13122E-4, -2.87324E-4, -2.44674E-4, -1.89867E-4, -1.27973E-4, -6.40424E-5, -2.74007E-6, 5.19467E-5, 9.69279E-5, 1.3014E-4, 1.50586E-4, 1.58295E-4, 1.54208E-4, 1.40009E-4, 1.17916E-4, 9.04629E-5, 6.02687E-5, 2.98372E-5, 1.38157E-6, -2.33076E-5, -4.29465E-5, -5.67942E-5, -6.46417E-5, -6.67614E-5, -6.38246E-5, -5.67969E-5, -4.68236E-5, -3.51147E-5, -2.28386E-5, -1.10329E-5, 0.0, 8.04422E-6, 1.43675E-5, 1.83315E-5, 2.00543E-5, 1.98277E-5, 1.80642E-5, 1.52398E-5, 1.18392E-5, 8.3077E-6, 5.01439E-6, 2.22795E-6, 0.0, -1.3E-6, -2.03449E-6, -2.21122E-6, -1.98765E-6, -1.53559E-6, -1.01447E-6, 0.0, 0.0, 0.0, 0.0"  type="STRING"  enable="1" />
 // Retrieval info:      <PRIVATE name = "number_of_sets" value="1"  type="INTEGER"  enable="1" />
 // Retrieval info:      <PRIVATE name = "output_full_bit_width" value="55"  type="INTEGER"  enable="1" />
 // Retrieval info:      <PRIVATE name = "output_full_bits_right_of_binary_point" value="53"  type="INTEGER"  enable="1" />
-// Retrieval info:      <PRIVATE name = "coefficient_reload_bit_width" value="25"  type="INTEGER"  enable="1" />
-// Retrieval info:      <PRIVATE name = "logic_cell" value="1243"  type="INTEGER"  enable="1" />
-// Retrieval info:      <PRIVATE name = "m512" value="0"  type="INTEGER"  enable="1" />
+// Retrieval info:      <PRIVATE name = "coefficient_reload_bit_width" value="23"  type="INTEGER"  enable="1" />
+// Retrieval info:      <PRIVATE name = "logic_cell" value="644"  type="INTEGER"  enable="1" />
+// Retrieval info:      <PRIVATE name = "m512" value="1"  type="INTEGER"  enable="1" />
 // Retrieval info:      <PRIVATE name = "m4k" value="0"  type="INTEGER"  enable="1" />
 // Retrieval info:      <PRIVATE name = "m144k" value="0"  type="INTEGER"  enable="1" />
-// Retrieval info:      <PRIVATE name = "m9k" value="3"  type="INTEGER"  enable="1" />
+// Retrieval info:      <PRIVATE name = "m9k" value="6"  type="INTEGER"  enable="1" />
 // Retrieval info:      <PRIVATE name = "m20k" value="0"  type="INTEGER"  enable="1" />
 // Retrieval info:      <PRIVATE name = "mlab" value="0"  type="INTEGER"  enable="1" />
 // Retrieval info:      <PRIVATE name = "megaram" value="0"  type="INTEGER"  enable="1" />
-// Retrieval info:      <PRIVATE name = "dsp_block" value="0"  type="INTEGER"  enable="1" />
-// Retrieval info:      <PRIVATE name = "input_clock_period" value="32"  type="INTEGER"  enable="1" />
-// Retrieval info:      <PRIVATE name = "output_clock_period" value="320"  type="INTEGER"  enable="1" />
-// Retrieval info:      <PRIVATE name = "throughput" value="320"  type="INTEGER"  enable="1" />
-// Retrieval info:      <PRIVATE name = "memory_units" value="0"  type="INTEGER"  enable="1" />
+// Retrieval info:      <PRIVATE name = "dsp_block" value="2"  type="INTEGER"  enable="1" />
+// Retrieval info:      <PRIVATE name = "input_clock_period" value="24"  type="INTEGER"  enable="1" />
+// Retrieval info:      <PRIVATE name = "output_clock_period" value="240"  type="INTEGER"  enable="1" />
+// Retrieval info:      <PRIVATE name = "throughput" value="240"  type="INTEGER"  enable="1" />
+// Retrieval info:      <PRIVATE name = "memory_units" value="2"  type="INTEGER"  enable="1" />
 // Retrieval info:     </NAMESPACE>
 // Retrieval info:     <NAMESPACE name = "simgen_enable">
 // Retrieval info:      <PRIVATE name = "matlab_enable" value="1"  type="BOOLEAN"  enable="1" />

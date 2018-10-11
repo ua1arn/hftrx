@@ -4,7 +4,7 @@ blank_gen    : READ
 alpha     : 0
 fc1       : 1.25e+006
 fc2       : 3.75e+006
-length    : 929
+length    : 959
 samp_rate : 1e+007
 win_type  : NON 
 flt_type  : LPF 
@@ -58,8 +58,8 @@ coef_mem_width  : 21
 coef_mem_addr   : 5
 num_coef_one_mem : 1
 fmax			: 0
-num_lc			: 68890
-num_m4k			: 39
+num_lc			: 70544
+num_m4k			: 40
 num_m512			: 0
 num_MRAM			: 0
 num_mul			: 0

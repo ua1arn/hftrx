@@ -37,8 +37,7 @@ proc add_fir_constraints {args} {
 	#set_global_assignment -name "AUTO_SHIFT_REGISTER_RECOGNITION" -entity "msft_reseq_mc" "OFF" 
 	################################################################################################ 
 	
-	set_global_assignment -name "AUTO_SHIFT_REGISTER_RECOGNITION" -entity "tdl_da_lc" "ON" 
-	set_global_assignment -name "REMOVE_DUPLICATE_REGISTERS" -entity "tdl_da_lc" "OFF" 
+	set_global_assignment -name "AUTO_SHIFT_REGISTER_RECOGNITION" -entity "tdl_da_lc" "OFF" 
 	set_global_assignment -name "AUTO_SHIFT_REGISTER_RECOGNITION" -entity "sadd_lpm" "OFF"
 	set_global_assignment -name "AUTO_SHIFT_REGISTER_RECOGNITION" -entity "tsadd_lpm" "OFF"
 	set_global_assignment -name "AUTO_SHIFT_REGISTER_RECOGNITION" -entity "sadd_lpm_cen" "OFF"
@@ -57,6 +56,6 @@ proc add_fir_constraints {args} {
 	set_global_assignment -name "AUTO_SHIFT_REGISTER_RECOGNITION" -entity "tsadd_lpm_reg_top_cen" "OFF"
 	set_global_assignment -name "AUTO_SHIFT_REGISTER_RECOGNITION" -entity "sadd_lpm_reg_top_cen" "OFF"
 	set_global_assignment -name "AUTO_SHIFT_REGISTER_RECOGNITION" -entity "mlu_nd_lc" "OFF"
-	set_global_assignment -name "DSP_BLOCK_BALANCING" -entity "fir_10_2ch_st" "LOGIC ELEMENTS"
+	set_global_assignment -name "DSP_BLOCK_BALANCING" -entity "fir_10_2ch_st" "DSP BLOCKS"
 }
 add_fir_constraints
