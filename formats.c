@@ -65,8 +65,7 @@ local_format(void * param, int (* putsub)(void *, int), const FLASHMEM char * pf
 	enum { TMP_S_SIZE = 14 };
 	int_fast8_t /* int	*/ rj, altern;
 	char	c, signc, fillc;
-	uint_fast8_t /* int */ i;
-	int_fast8_t width, maxwidth;
+	uint_fast8_t /* int */	maxwidth, width, i;
 	union
 	{
 #ifdef	__NOLONG__
