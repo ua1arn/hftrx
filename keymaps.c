@@ -234,6 +234,38 @@ uint_fast8_t getexitkey(void)
 	return KBD_CODE_BW;
 }
 
+#elif KEYBSTYLE_SW2018XVR
+
+// Кнопки на передней панели SW2016 с индикатором RDX0154
+//
+// PRE - FUN - MOD - LOCK
+// UP  - DN  - SPL - PWR
+// XXX - XXX - XXX - XXX
+
+const struct qmkey qmdefs [NQMKEYS] =
+{
+	// ADC7 (ki2)
+	{	KIF_NONE, 		KBD_CODE_ATT, 		KBD_CODE_TXTUNE, },		// PRE
+	{	KIF_EXTMENU,	KBD_CODE_BW, 		KBD_CODE_MENU, },		// FUN
+	{	KIF_NONE, 		KBD_CODE_MODE, 		KBD_CODE_MODEMOD, },	// MOD
+	{	KIF_NONE, 		KBD_CODE_LOCK, 		KBD_CODE_MAX, },// LOCK
+	// ADC6 (ki1)
+	{	KIF_NONE, 		KBD_CODE_BAND_UP, 	KBD_CODE_MAX, },		// TUNE(UP)
+	{	KIF_SLOW, 		KBD_CODE_BAND_DOWN,	KBD_CODE_MAX, },		// DOWN
+	{	KIF_ERASE, 		KBD_CODE_SPLIT, 	KBD_CODE_SPLIT_HOLDED, },	// SPL
+	{	KIF_NONE, 		KBD_CODE_PWRTOGGLE,	KBD_CODE_MAX, },		// PWR
+	// ADC5 (ki0)
+	//{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, },	
+	//{ KIF_NONE,		KBD_CODE_MAX,		KBD_CODE_MAX, },
+	//{	KIF_NONE, 		KBD_CODE_MAX, 		KBD_CODE_MAX, },
+	//{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, },
+};
+
+uint_fast8_t getexitkey(void)
+{
+	return KBD_CODE_BW;
+}
+
 #elif KEYBSTYLE_SW2016RDX_UY5UM_WO240
 
 // Кнопки на передней панели SW2016 с индикатором WO240128

@@ -94,6 +94,12 @@ display_redrawbars(
 	);
 
 
+static uint_fast8_t local_isdigit(char c)
+{
+	//return isdigit((unsigned char) c) != 0;
+	return c >= '0' && c <= '9';
+}
+
 static uint_fast8_t gtx;	/* текущее состояние прием или передача */
 static uint_fast8_t gcwpitch10 = 700 / CWPITCHSCALE;	/* тон при приеме телеграфа или самоконтроль (в десятках герц) */
 #if WITHIF4DSP
@@ -8137,7 +8143,7 @@ static volatile uint_fast8_t secoundticks;
 
 static unsigned char hex2int(uint_fast8_t c)
 {
-	if (isdigit(c))
+	if (local_isdigit(c))
 		return c - '0';
 	if (isupper(c))
 		return c - 'A' + 10;
@@ -8941,7 +8947,7 @@ void cat2_parsechar(uint_fast8_t c)
 
 	case CATSTATE_WAITPARAM:
 		//if (c >= '0' && c <= '9')
-		if (isdigit((unsigned char) c))
+		if (local_isdigit((unsigned char) c))
 		{
 			cathasparam = 1;
 			if (catpcount < (sizeof catp / sizeof catp [0]))
@@ -9773,7 +9779,7 @@ catscanint(
 	)
 {
 	uint_fast32_t v = 0;
-	while (width -- && isdigit((unsigned char) * p))
+	while (width -- && local_isdigit((unsigned char) * p))
 	{
 		v = v * 10 + * p ++ - '0';
 	}
@@ -12047,6 +12053,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, 
 	},
   #endif /* ! WITHPOTPOWER */
+#if WITHAUTOTUNER || defined (HARDWARE_GET_TUNE)
 	{
 		"ATU PWR ", 7, 0, 0,	ISTEP1,		/* мощность при работе автоматического согласующего устройства */
 		ITEM_VALUE,
@@ -12056,8 +12063,10 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		& gotunerpower,
 		getzerobase, 
 	},
+#endif /* WITHAUTOTUNER || defined (HARDWARE_GET_TUNE) */
 #elif WITHPOWERLPHP
   #if ! WITHPOTPOWER
+	#if ! CTLSTYLE_SW2011ALL
 	{
 		"TX POWER", 7, 0, RJ_POWER,	ISTEP1,		/* мощность при обычной работе на передачу */
 		ITEM_VALUE,
@@ -12067,7 +12076,9 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		& gnormalpower,
 		getzerobase, 
 	},
+	#endif /* ! CTLSTYLE_SW2011ALL */
   #endif /* ! WITHPOTPOWER */
+#if WITHAUTOTUNER || defined (HARDWARE_GET_TUNE)
 	{
 		"ATU PWR ", 7, 0, RJ_POWER,	ISTEP1,		/* мощность при работе автоматического согласующего устройства */
 		ITEM_VALUE,
@@ -12077,7 +12088,9 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		& gotunerpower,
 		getzerobase, 
 	},
+#endif /* WITHAUTOTUNER || defined (HARDWARE_GET_TUNE) */
 #endif /* WITHPOWERTRIM */
+#if ! CTLSTYLE_SW2011ALL
 	{
 		"TX GATE ", 7, 0, RJ_ON,	ISTEP1,	
 		ITEM_VALUE,
@@ -12087,6 +12100,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		& gtxgate,
 		getzerobase, 
 	},
+#endif /* ! CTLSTYLE_SW2011ALL */
 #if WITHVOX
 #if ! WITHFLATMENU
 	{
