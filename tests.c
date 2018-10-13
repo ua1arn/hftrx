@@ -3595,7 +3595,10 @@ static void dosaveserialport(const char * fname)
 		if (dbg_getchar(& kbch) != 0)
 		{
 			if (kbch == 0x1b)
+			{
+				debug_printf_P(PSTR("break recording\n"));
 				break;
+			}
 		}
 		if (rxqpeek(& c) != 0)
 		{
