@@ -3719,7 +3719,7 @@ void displfiles_buff(const char* path)
 			else                                        /* It is a file. */
 			{
                 //printf("%s/%s\n", path, fn);
- 				debug_printf_P(PSTR("displfiles_buff: '%s'\n"), fn);
+ 				debug_printf_P(PSTR("displfiles_buff: %9lu '%s'\n"), (unsigned long) pfno->fsize,  fn);
 				//strcpy(
 			}
         }
@@ -3972,6 +3972,8 @@ static void sdcard_test(void)
 
 static void sdcard_filesystest(void)
 {
+	ALIGNX_BEGIN BYTE work [FF_MAX_SS] ALIGNX_END;
+	FRESULT rc;  
 	static RAMNOINIT_D1 FATFS Fatfs;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
 	static const char testfile [] = "readme.txt";
 	char testlog [FF_MAX_LFN + 1];
@@ -4025,6 +4027,21 @@ static void sdcard_filesystest(void)
 				f_mount(NULL, "", 0);		/* Unregister volume work area (never fails) */
 				f_mount(& Fatfs, "", 0);		/* Register volume work area (never fails) */
 				printtextfile(testfile);
+				break;
+
+			case 'f':
+				debug_printf_P(PSTR("FAT FS formatting.\n"));
+				f_mount(NULL, "", 0);		/* Unregister volume work area (never fails) */
+				rc = f_mkfs("0:", FM_ANY, 0, work, sizeof (work));
+				if (rc != FR_OK)
+				{
+					debug_printf_P(PSTR("sdcardformat: f_mkfs failure\n"));
+				}
+				else
+				{
+					debug_printf_P(PSTR("sdcardformat: f_mkfs okay\n"));
+				}
+				f_mount(& Fatfs, "", 0);		/* Register volume work area (never fails) */
 				break;
 
 			case 'w':

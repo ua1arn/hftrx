@@ -2140,6 +2140,7 @@ DRESULT SD_disk_write(
 	UINT count			/* Number of sectors to write */
 	)
 {
+	enum { txmode = 1 };
 	//return SDWriteBlock(sector, buff, count);
 	//if ((uintptr_t) buff & 0x1F)
 	//{
@@ -2174,10 +2175,10 @@ DRESULT SD_disk_write(
 		// Сперва настраивается DMA, затем выдается команда SD_CMD_WRITE_SINGLE_BLOCK
 		// Работает и на STM32Fxxx
 
-		DMA_SDIO_setparams((uintptr_t) buff, 512, count, 1);
+		DMA_SDIO_setparams((uintptr_t) buff, 512, count, txmode);
 #if CPUSTYLE_STM32H7XX
 		// H7 need here: 
-		sdhost_dpsm_prepare((uintptr_t) buff, 1, 512 * count, 9);		// подготовка к обмену data path state machine - при записи после выдачи команды
+		sdhost_dpsm_prepare((uintptr_t) buff, txmode, 512 * count, 9);		// подготовка к обмену data path state machine - при записи после выдачи команды
 #endif /* CPUSTYLE_STM32H7XX */
 		// write block
 		sdhost_short_resp(encode_cmd(SD_CMD_WRITE_SINGLE_BLOCK), sector * sdhost_getaddresmultiplier());	// CMD24
@@ -2190,10 +2191,10 @@ DRESULT SD_disk_write(
 
 #if ! CPUSTYLE_STM32H7XX
 		// other then H7 need here
-		sdhost_dpsm_prepare((uintptr_t) buff, 1, 512 * count, 9);		// подготовка к обмену data path state machine - при записи после выдачи команды
+		sdhost_dpsm_prepare((uintptr_t) buff, txmode, 512 * count, 9);		// подготовка к обмену data path state machine - при записи после выдачи команды
 #endif /* ! CPUSTYLE_STM32H7XX */
 
-		if (sdhost_dpsm_wait(1) != 0)
+		if (sdhost_dpsm_wait(txmode) != 0)
 		{
 			DMA_sdio_cancel();
 			PRINTF(PSTR("SD_disk_write 1: sdhost_dpsm_wait error\n"));
@@ -2239,10 +2240,10 @@ DRESULT SD_disk_write(
 		// write multiblock
 		// Сперва настраивается DMA, затем выдается команда SD_CMD_WRITE_MULT_BLOCK
 		// Работает и на STM32Fxxx
-		DMA_SDIO_setparams((uintptr_t) buff, 512, count, 1);
+		DMA_SDIO_setparams((uintptr_t) buff, 512, count, txmode);
 #if CPUSTYLE_STM32H7XX
 		// H7 need here: 
-		sdhost_dpsm_prepare((uintptr_t) buff, 1, 512 * count, 9);		// подготовка к обмену data path state machine - при записи после выдачи команды
+		sdhost_dpsm_prepare((uintptr_t) buff, txmode, 512 * count, 9);		// подготовка к обмену data path state machine - при записи после выдачи команды
 #endif /* CPUSTYLE_STM32H7XX */
 
 		// write blocks
@@ -2256,10 +2257,10 @@ DRESULT SD_disk_write(
 
 #if ! CPUSTYLE_STM32H7XX
 		// other then H7 need here
-		sdhost_dpsm_prepare((uintptr_t) buff, 1, 512 * count, 9);		// подготовка к обмену data path state machine - при записи после выдачи команды
+		sdhost_dpsm_prepare((uintptr_t) buff, txmode, 512 * count, 9);		// подготовка к обмену data path state machine - при записи после выдачи команды
 #endif /* ! CPUSTYLE_STM32H7XX */
 
-		if (sdhost_dpsm_wait(1) != 0)
+		if (sdhost_dpsm_wait(txmode) != 0)
 		{
 			PRINTF(PSTR("SD_disk_write: sdhost_dpsm_wait error\n"));
 			DMA_sdio_cancel();
@@ -2302,6 +2303,7 @@ DRESULT SD_disk_read(
 	UINT count		/* Number of sectors to read */
 	)
 {
+	enum { txmode = 0 };
 	//if ((uintptr_t) buff & 0x1F)
 	//{
 	//	PRINTF(PSTR("SD_disk_read: unalligned: buff=%p, sector=%lu, count=%lu\n"), buff, (unsigned long) sector, (unsigned long) count);
@@ -2336,8 +2338,8 @@ DRESULT SD_disk_read(
 	{
 		//PRINTF(PSTR("read one block\n"));
 		// read one block
-		DMA_SDIO_setparams((uintptr_t) buff, 512, count, 0);
-		sdhost_dpsm_prepare((uintptr_t) buff, 0, 512 * count, 9);		// подготовка к обмену data path state machine - при чтении перед выдачей команды
+		DMA_SDIO_setparams((uintptr_t) buff, 512, count, txmode);
+		sdhost_dpsm_prepare((uintptr_t) buff, txmode, 512 * count, 9);		// подготовка к обмену data path state machine - при чтении перед выдачей команды
 		//TP();
 
 		// read block
@@ -2348,7 +2350,7 @@ DRESULT SD_disk_read(
 			PRINTF(PSTR("SD_CMD_READ_SINGLE_BLOCK error\n"));
 			return RES_ERROR;
 		}
-		if (sdhost_dpsm_wait(0) != 0)
+		if (sdhost_dpsm_wait(txmode) != 0)
 		{
 			DMA_sdio_cancel();
 			PRINTF(PSTR("SD_disk_read 1: sdhost_dpsm_wait error\n"));
@@ -2381,8 +2383,8 @@ DRESULT SD_disk_read(
 			}
 		}
 
-		DMA_SDIO_setparams((uintptr_t) buff, 512, count, 0);
-		sdhost_dpsm_prepare((uintptr_t) buff, 0, 512 * count, 9);		// подготовка к обмену data path state machine - при чтении перед выдачей команды
+		DMA_SDIO_setparams((uintptr_t) buff, 512, count, txmode);
+		sdhost_dpsm_prepare((uintptr_t) buff, txmode, 512 * count, 9);		// подготовка к обмену data path state machine - при чтении перед выдачей команды
 
 		// read block
 		sdhost_short_resp(encode_cmd(SD_CMD_READ_MULT_BLOCK), sector * sdhost_getaddresmultiplier());	// CMD18
@@ -2392,7 +2394,7 @@ DRESULT SD_disk_read(
 			PRINTF(PSTR("SD_CMD_READ_MULT_BLOCK error\n"));
 			return RES_ERROR;
 		}
-		if (sdhost_dpsm_wait(0) != 0)
+		if (sdhost_dpsm_wait(txmode) != 0)
 		{
 			PRINTF(PSTR("SD_disk_read 2: sdhost_dpsm_wait error\n"));
 			DMA_sdio_cancel();
@@ -2508,6 +2510,7 @@ static uint_fast8_t sdhost_sdcard_poweron(void)
 
 static uint_fast8_t sdhost_read_registers_acmd(uint16_t acmd, uint8_t * buff, unsigned size, unsigned lenpower, unsigned sizeofarray)
 {
+	enum { txmode = 0 };	// read from card to memory
 	uint_fast32_t resp;
 	
 	ASSERT(size == (1U << lenpower));
@@ -2519,10 +2522,9 @@ static uint_fast8_t sdhost_read_registers_acmd(uint16_t acmd, uint8_t * buff, un
 	
 	//PRINTF(PSTR("sdhost_read_registers_acmd: sdhost_CardType=%08lX, sdhost_SDType=%08lX\n"), (unsigned long) sdhost_CardType, (unsigned long) sdhost_SDType);
 
-	sdhost_dpsm_prepare((uintptr_t) buff, 0, size, lenpower);		// подготовка к обмену data path state machine - при чтенииперед выдачей команды
-	//arm_hardware_invalidate((uint32_t) buff, size * 1);		// Сейчас в эту память будем читать по DMA
-	/* СТРАННО, но помогло! */arm_hardware_flush_invalidate((uintptr_t) buff, sizeofarray);	// Сейчас эту память будем записывать по DMA, потом содержимое не требуется
-	DMA_SDIO_setparams((uintptr_t) buff, size, 1, 0);
+	sdhost_dpsm_prepare((uintptr_t) buff, txmode, size, lenpower);		// подготовка к обмену data path state machine - при чтенииперед выдачей команды
+	arm_hardware_flush_invalidate((uintptr_t) buff, sizeofarray);	// Сейчас эту память будем записывать по DMA, потом содержимое не требуется
+	DMA_SDIO_setparams((uintptr_t) buff, size, 1, txmode);
 
 	// read block
 	if (sdhost_short_acmd_resp_R1(acmd, 0, & resp) != 0)	// ACMD51
@@ -2531,7 +2533,7 @@ static uint_fast8_t sdhost_read_registers_acmd(uint16_t acmd, uint8_t * buff, un
 		PRINTF(PSTR("sdhost_read_registers_acmd: sdhost_get_R1 (acmd=0x%02lX) error\n"), acmd);
 		return 1;
 	}
-	if (sdhost_dpsm_wait(0) != 0)
+	if (sdhost_dpsm_wait(txmode) != 0)
 	{
 		DMA_sdio_cancel();
 		PRINTF(PSTR("sdhost_read_registers_acmd: sdhost_dpsm_wait error\n"));
