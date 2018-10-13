@@ -22,6 +22,7 @@
 
 //#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 //#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
+#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	*/
 
 #define WITHI2SHW	1	/* Использование I2S - аудиокодек на I2S2 и I2S2_alt	*/
 #define WITHSAI1HW	1	/* Использование SAI1 - FPGA или IF codec	*/

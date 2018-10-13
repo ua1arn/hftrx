@@ -6,11 +6,9 @@
 // UA1ARN
 //
 
-// Трансивер с DSP обработкой "Воронёнок-2" на процессоре 
-// STM32H743ZIT6, STM32F746ZGT6 кодеком NAU8822L и FPGA EP4CE22E22I7N
-// с функцией DUAL WATCH
-// 2xUSB
-// Rmainunit_v5fm.pcb, Rmainunit_v5jm.pcb
+// Трансивер с DSP обработкой "Аист" на процессоре 
+// STM32H743ZIT6, STM32F746ZGT6 и FPGA EP4CE22E22I7N
+// Rmainunit_v5im.pcb modem v2
 
 #ifndef ARM_STM32F4XX_TQFP144_CPUSTYLE_STORCH_V4_H_INCLUDED
 #define ARM_STM32F4XX_TQFP144_CPUSTYLE_STORCH_V4_H_INCLUDED 1
@@ -19,6 +17,7 @@
 #define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
 #define WITHSPIHWDMA 	1	/* Использование DMA при обмене по SPI */
 //#define WITHSPISW 	1	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */
+//#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	*/
 
 //#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 //#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
