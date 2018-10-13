@@ -108,18 +108,6 @@ static unsigned long array_get_bits(const uint8_t * data, unsigned total, unsign
 	return v;
 }
 
-// инициализация управляющего вывода - разрешение прияния SD CARD
-// Вывод в 0 - питание подано, в 1 - снято.
-static void sd_power_initialize(void)
-{
-	HARDWARE_SDIOPOWER_INITIALIZE();
-}
-
-static void sd_sense_initialize(void)
-{
-	HARDWARE_SDIOSENSE_INITIALIZE();
-}
-
 static void sd_power_enable(
 	uint_fast8_t enable	// флаг управления включением питания SD карты
 	)
@@ -140,12 +128,12 @@ static void sd_power_cycle(void)
 
 void sdcardhw_initialize(void)
 {
-	//PRINTF(PSTR("sd_initialize: power cycle\n"));
-	sd_sense_initialize();
-	sd_power_initialize();
+	//PRINTF(PSTR("sdcardhw_initialize\n"));
+	HARDWARE_SDIOSENSE_INITIALIZE();
+	HARDWARE_SDIOPOWER_INITIALIZE();
 	//sd_power_cycle();
 	
-	//PRINTF(PSTR("sd_initialize: done.\n"));
+	//PRINTF(PSTR("sdcardhw_initialize: done.\n"));
 	return;
 }
 
@@ -2693,6 +2681,7 @@ DRESULT SD_Get_Sector_Count (
 static 
 DRESULT SD_Sync(BYTE drv)
 {
+	//PRINTF(PSTR("SD_Sync: drv=%d\n"), (int) drv);
 	if (sdhost_sdcard_waitstatus() != 0)
 		return RES_ERROR;
 	return RES_OK;
@@ -2727,7 +2716,7 @@ DSTATUS SD_Status (
 	BYTE drv		/* Physical drive nmuber (0..) */
 )
 {
-	//PRINTF(PSTR("disk_status: drv=%d\n"), (int) drv);
+	//PRINTF(PSTR("SD_Status: drv=%d\n"), (int) drv);
 	if (1)
 	{
 #if WITHSDHCHW
