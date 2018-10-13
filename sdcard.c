@@ -3627,7 +3627,7 @@ static char mmcReadSectors(
 		else
 		{
 			// the MMC never acknowledge the read command
-			PRINTF("SD_ReadSectors: MMC_READ_MULTIPLE_BLOCK: MMC_RESPONSE_ERROR\n");
+			PRINTF("mmcReadSectors: MMC_READ_MULTIPLE_BLOCK: MMC_RESPONSE_ERROR\n");
 			rvalue = MMC_RESPONSE_ERROR;          // 2
 		}
 
