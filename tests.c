@@ -3494,7 +3494,7 @@ static void printtextfile(const char * filename)
 	UINT i = 0;			// номер выводимого байта
 	
 	FRESULT rc;				/* Result code */
-	static FIL Fil;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
+	static RAMNOINIT_D1 FIL Fil;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
 	// чтение файла
 	rc = f_open(& Fil, filename, FA_READ);
 	if (rc) 
@@ -3574,7 +3574,7 @@ static uint_fast8_t rxqpeek(char * ch)
 // сохранение потока данных с CNC на флэшке
 static void dosaveserialport(const char * fname)
 {
-	static FIL Fil;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
+	static RAMNOINIT_D1 FIL Fil;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
 	unsigned i;
 	FRESULT rc;				/* Result code */
 
@@ -4399,7 +4399,7 @@ static int parsehex(const TCHAR * filename, int (* usedata)(unsigned long addr, 
 	UINT i = 0;			// номер выводимого байта
 	
 	FRESULT rc;				/* Result code */
-	static FIL Fil;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
+	static RAMNOINIT_D1 FIL Fil;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
 	// чтение файла
 	rc = f_open(& Fil, filename, FA_READ);
 	if (rc) 
@@ -4963,9 +4963,9 @@ void hightests(void)
 
 		arm_hardware_piog_outputs(WORKMASK, 0);
 
-		static ALIGNX_BEGIN float Etalon [2048] ALIGNX_END;
-		static ALIGNX_BEGIN float TM [2048] ALIGNX_END;
-		static FIL WPFile;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
+		static RAMNOINIT_D1 ALIGNX_BEGIN float Etalon [2048] ALIGNX_END;
+		static RAMNOINIT_D1 ALIGNX_BEGIN float TM [2048] ALIGNX_END;
+		static RAMNOINIT_D1 FIL WPFile;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
 		static const char fmname [] = "tstdata.dat";
 		static RAMNOINIT_D1 FATFS wave_Fatfs;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
 	
