@@ -3476,7 +3476,7 @@ void fb_initialize(struct fb * p)
 #endif
 }
 
-static char FATFSALIGN_BEGIN rbuff [FF_MAX_SS * 4] FATFSALIGN_END;		// буфер записи - при совпадении с _MAX_SS нельзя располагать в Cortex-M4 CCM
+static RAMNOINIT_D1 char FATFSALIGN_BEGIN rbuff [FF_MAX_SS * 4] FATFSALIGN_END;		// буфер записи - при совпадении с _MAX_SS нельзя располагать в Cortex-M4 CCM
 
 
 static void showprogress(
@@ -3972,7 +3972,7 @@ static void sdcard_test(void)
 
 static void sdcard_filesystest(void)
 {
-	static FATFS Fatfs;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
+	static RAMNOINIT_D1 FATFS Fatfs;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
 	static const char testfile [] = "readme.txt";
 	char testlog [FF_MAX_LFN + 1];
 	//int nlog = 0;
@@ -4630,7 +4630,7 @@ sdcard_proghexfile(const char * hexfile)
 static void
 sdcard_progspi(void)
 {
-	static FATFS Fatfs;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
+	static RAMNOINIT_D1 FATFS Fatfs;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
 	f_mount(& Fatfs, "", 0);		/* Register volume work area (never fails) */
 	sdcard_proghexfile("tc1_r7s721_rom.hex");
 	f_mount(NULL, "", 0);		/* Unregister volume work area (never fails) */
@@ -4967,7 +4967,7 @@ void hightests(void)
 		static ALIGNX_BEGIN float TM [2048] ALIGNX_END;
 		static FIL WPFile;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
 		static const char fmname [] = "tstdata.dat";
-		static FATFS wave_Fatfs;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
+		static RAMNOINIT_D1 FATFS wave_Fatfs;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
 	
 		int CountZap=0;
 		int LC=2048;
