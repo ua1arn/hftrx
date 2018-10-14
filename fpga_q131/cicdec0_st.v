@@ -40,13 +40,13 @@ module cicdec0_st (clk,
               fir_result ); 
 
 parameter DATA_WIDTH  = 32;
-parameter COEF_WIDTH  = 23;
-parameter COEF_WIDTH_IN  = 23;
-parameter ACCUM_WIDTH = 66;
+parameter COEF_WIDTH  = 24;
+parameter COEF_WIDTH_IN  = 24;
+parameter ACCUM_WIDTH = 67;
 
 parameter CH_WIDTH = 1;
  parameter MSB_RM = 12;
-parameter LSB_RM = 22;
+parameter LSB_RM = 23;
 parameter WIDTH_SAT = ACCUM_WIDTH-LSB_RM;
 
 parameter COEF_SET_WIDTH = 1;
@@ -160,9 +160,9 @@ defparam U_2_sym_add.PIPE_DEPTH = 1;
 wire [7:0]mem_wr_addr;
 wire [2:0]coef_wr_mem;
 wire mem_done, one_set_done;
-wire [22:0]coef_in_reg;
+wire [23:0]coef_in_reg;
 tdl_da_lc in_coef(.clk(coef_in_clk),.clk_en(coef_we), .rst(rst),.data_in(coef_in),.data_out(coef_in_reg));
-defparam in_coef.WIDTH = 23;
+defparam in_coef.WIDTH = 24;
 addr_cnt_dn addr_cnt(.clk(coef_in_clk),.rst(coef_we),.cnt_out(mem_wr_addr),.cnt_done(mem_done),.enable(one_set_done));
 defparam addr_cnt.NUM_DATA = 256;
 defparam addr_cnt.DATA_ADDR_WIDTH = 8;
@@ -176,11 +176,11 @@ defparam we_shift.SUB_ADDR =0;
 defparam we_shift.FULL_ADDR =2;	
 wire coef_en ;
 assign coef_en = coef_we | clk_en;
-wire [22:0] coef_st_comb_0_n;
+wire [23:0] coef_st_comb_0_n;
 wire [COEF_WIDTH-1:0]coef_st_0_n;
-assign coef_st_0_n = coef_st_comb_0_n[22:0];
+assign coef_st_0_n = coef_st_comb_0_n[23:0];
 msft_mem_mcoef Ucoef_0_n (.rst(rst), .clk_in(coef_in_clk), .clk_out(clk),.clk_en(clk_en), .we(coef_wr_mem[2]),.wr_addr(mem_wr_addr), .coef_set_in(coef_set_in), .data_in(coef_in_reg),.coef_set(coef_set_dly), .data_out(coef_st_comb_0_n));
-defparam Ucoef_0_n.WIDTH = 23 ;
+defparam Ucoef_0_n.WIDTH = 24 ;
 defparam Ucoef_0_n.LENGTH_ALL = 512;
 defparam Ucoef_0_n.LENGTH = 256;
 defparam Ucoef_0_n.COEF_SET_WIDTH = 1;
@@ -189,11 +189,11 @@ defparam Ucoef_0_n.FULL_WIDTH = 9;
 defparam Ucoef_0_n.READ_ST = 2;
 defparam Ucoef_0_n.INIT_FILE = "cicdec0_coef_0.hex";
 defparam Ucoef_0_n.MEM_CORE = "AUTO";
-wire [22:0] coef_st_comb_1_n;
+wire [23:0] coef_st_comb_1_n;
 wire [COEF_WIDTH-1:0]coef_st_1_n;
-assign coef_st_1_n = coef_st_comb_1_n[22:0];
+assign coef_st_1_n = coef_st_comb_1_n[23:0];
 msft_mem_mcoef Ucoef_1_n (.rst(rst), .clk_in(coef_in_clk), .clk_out(clk),.clk_en(clk_en), .we(coef_wr_mem[1]),.wr_addr(mem_wr_addr), .coef_set_in(coef_set_in), .data_in(coef_in_reg),.coef_set(coef_set_dly), .data_out(coef_st_comb_1_n));
-defparam Ucoef_1_n.WIDTH = 23 ;
+defparam Ucoef_1_n.WIDTH = 24 ;
 defparam Ucoef_1_n.LENGTH_ALL = 512;
 defparam Ucoef_1_n.LENGTH = 256;
 defparam Ucoef_1_n.COEF_SET_WIDTH = 1;
@@ -202,11 +202,11 @@ defparam Ucoef_1_n.FULL_WIDTH = 9;
 defparam Ucoef_1_n.READ_ST = 2;
 defparam Ucoef_1_n.INIT_FILE = "cicdec0_coef_1.hex";
 defparam Ucoef_1_n.MEM_CORE = "AUTO";
-wire [22:0] coef_st_comb_2_n;
+wire [23:0] coef_st_comb_2_n;
 wire [COEF_WIDTH-1:0]coef_st_2_n;
-assign coef_st_2_n = coef_st_comb_2_n[22:0];
+assign coef_st_2_n = coef_st_comb_2_n[23:0];
 msft_mem_mcoef Ucoef_2_n (.rst(rst), .clk_in(coef_in_clk), .clk_out(clk),.clk_en(clk_en), .we(coef_wr_mem[0]),.wr_addr(mem_wr_addr), .coef_set_in(coef_set_in), .data_in(coef_in_reg),.coef_set(coef_set_dly), .data_out(coef_st_comb_2_n));
-defparam Ucoef_2_n.WIDTH = 23 ;
+defparam Ucoef_2_n.WIDTH = 24 ;
 defparam Ucoef_2_n.LENGTH_ALL = 512;
 defparam Ucoef_2_n.LENGTH = 256;
 defparam Ucoef_2_n.COEF_SET_WIDTH = 1;
@@ -217,72 +217,72 @@ defparam Ucoef_2_n.INIT_FILE = "cicdec0_coef_2.hex";
 defparam Ucoef_2_n.MEM_CORE = "AUTO";
 
 
-wire [55:0] mlu_resx_0_n;
+wire [56:0] mlu_resx_0_n;
 mlu_nd Umlu_0_n (.clk(clk), .data_in(sym_res_0_n), .coef_in(coef_st_0_n), .clk_en(clk_en), .mlu_out(mlu_resx_0_n) );
 defparam Umlu_0_n.DATA_WIDTH = 33;
 defparam Umlu_0_n.COEF_WIDTH = COEF_WIDTH;
-defparam Umlu_0_n.PIPE = 3;
+defparam Umlu_0_n.PIPE = 5;
 defparam Umlu_0_n.DSP_USE = "YES";
-wire [55:0] mlu_res_0_n;
+wire [56:0] mlu_res_0_n;
 mac_tl Umtl_0_n             (.clk(clk), 
              .data_in(mlu_resx_0_n),
              .data_out(mlu_res_0_n));
-defparam Umtl_0_n.DATA_WIDTH = 56;
+defparam Umtl_0_n.DATA_WIDTH = 57;
 
-wire [55:0] mlu_resx_1_n;
+wire [56:0] mlu_resx_1_n;
 mlu_nd Umlu_1_n (.clk(clk), .data_in(sym_res_1_n), .coef_in(coef_st_1_n), .clk_en(clk_en), .mlu_out(mlu_resx_1_n) );
 defparam Umlu_1_n.DATA_WIDTH = 33;
 defparam Umlu_1_n.COEF_WIDTH = COEF_WIDTH;
-defparam Umlu_1_n.PIPE = 3;
+defparam Umlu_1_n.PIPE = 5;
 defparam Umlu_1_n.DSP_USE = "YES";
-wire [55:0] mlu_res_1_n;
+wire [56:0] mlu_res_1_n;
 mac_tl Umtl_1_n             (.clk(clk), 
              .data_in(mlu_resx_1_n),
              .data_out(mlu_res_1_n));
-defparam Umtl_1_n.DATA_WIDTH = 56;
+defparam Umtl_1_n.DATA_WIDTH = 57;
 
-wire [55:0] mlu_resx_2_n;
+wire [56:0] mlu_resx_2_n;
 mlu_nd Umlu_2_n (.clk(clk), .data_in(sym_res_2_n), .coef_in(coef_st_2_n), .clk_en(clk_en), .mlu_out(mlu_resx_2_n) );
 defparam Umlu_2_n.DATA_WIDTH = 33;
 defparam Umlu_2_n.COEF_WIDTH = COEF_WIDTH;
-defparam Umlu_2_n.PIPE = 3;
+defparam Umlu_2_n.PIPE = 5;
 defparam Umlu_2_n.DSP_USE = "YES";
-wire [55:0] mlu_res_2_n;
+wire [56:0] mlu_res_2_n;
 mac_tl Umtl_2_n             (.clk(clk), 
              .data_in(mlu_resx_2_n),
              .data_out(mlu_res_2_n));
-defparam Umtl_2_n.DATA_WIDTH = 56;
+defparam Umtl_2_n.DATA_WIDTH = 57;
 
-wire [56:0] tree_l_0_n_0_n;
+wire [57:0] tree_l_0_n_0_n;
 sadd_reg_top_cen Uaddl_0_n_0_n (.clk(clk),  .gclk_en(clk_en), .ain(mlu_res_0_n), .bin(mlu_res_1_n), .res(tree_l_0_n_0_n) );
-defparam Uaddl_0_n_0_n.IN_WIDTH = 56;
+defparam Uaddl_0_n_0_n.IN_WIDTH = 57;
 defparam Uaddl_0_n_0_n.PIPE_DEPTH = 1;
-wire [56:0] tree_l_0_n_1_n;
-sadd_reg_top_cen Uaddl_0_n_1_n (.clk(clk),  .gclk_en(clk_en), .ain(mlu_res_2_n), .bin(56'd0), .res(tree_l_0_n_1_n) );
-defparam Uaddl_0_n_1_n.IN_WIDTH = 56;
+wire [57:0] tree_l_0_n_1_n;
+sadd_reg_top_cen Uaddl_0_n_1_n (.clk(clk),  .gclk_en(clk_en), .ain(mlu_res_2_n), .bin(57'd0), .res(tree_l_0_n_1_n) );
+defparam Uaddl_0_n_1_n.IN_WIDTH = 57;
 defparam Uaddl_0_n_1_n.PIPE_DEPTH = 1;
 
-wire [57:0] tree_l_1_n_0_n;
+wire [58:0] tree_l_1_n_0_n;
 sadd_reg_top_cen Uaddl_1_n_0_n (.clk(clk),  .gclk_en(clk_en), .ain(tree_l_0_n_0_n), .bin(tree_l_0_n_1_n), .res(tree_l_1_n_0_n) );
-defparam Uaddl_1_n_0_n.IN_WIDTH = 57;
+defparam Uaddl_1_n_0_n.IN_WIDTH = 58;
 defparam Uaddl_1_n_0_n.PIPE_DEPTH = 1;
 
-wire [57:0] fir_mc_res;
+wire [58:0] fir_mc_res;
 assign fir_mc_res=tree_l_1_n_0_n;
-wire [65:0] fir_acc_in;
-wire [65:0] fir_temp_res;
-wire [65:0] fir_acc_in_reg;
-assign fir_acc_in = {fir_mc_res[57], fir_mc_res[57], fir_mc_res[57], fir_mc_res[57], fir_mc_res[57], fir_mc_res[57], fir_mc_res[57], fir_mc_res[57], fir_mc_res};
+wire [66:0] fir_acc_in;
+wire [66:0] fir_temp_res;
+wire [66:0] fir_acc_in_reg;
+assign fir_acc_in = {fir_mc_res[58], fir_mc_res[58], fir_mc_res[58], fir_mc_res[58], fir_mc_res[58], fir_mc_res[58], fir_mc_res[58], fir_mc_res[58], fir_mc_res};
 lc_store_cen Uaccum_reg (.clk(clk), .ce(1'b1), .gclk_en(clk_en),.rst(rst), .data_in(fir_acc_in), .q(fir_acc_in_reg) );
 defparam Uaccum_reg.WIDTH = ACCUM_WIDTH;
 maccum_cen Usa (.clk(clk), .gclk_en(clk_en),.rst(acc_rst_out), .ain(fir_acc_in_reg), .accum_out(fir_temp_res));
 defparam Usa.WIDTH_A = ACCUM_WIDTH;
-wire [65:0] fir_int_res;
+wire [66:0] fir_int_res;
 lc_store_cen Ures_reg (.clk(clk), .ce(done_int), .rst(rst), .gclk_en(clk_en),.data_in(fir_temp_res[ACCUM_WIDTH-1:0]), .q(fir_int_res) );
 defparam Ures_reg.WIDTH = ACCUM_WIDTH;
 // ---- Limiting Precision ---- 
-wire [65:0]fir_int_res_fill;
-assign fir_int_res_fill =  fir_int_res[65 :0];
+wire [66:0]fir_int_res_fill;
+assign fir_int_res_fill =  fir_int_res[66 :0];
 parameter TOT_WIDTH = ACCUM_WIDTH;
 assign fir_result = fir_int_res_fill[TOT_WIDTH-MSB_RM-1:LSB_RM];
 
@@ -291,7 +291,7 @@ mcv_ctrl_nc ctrl(.rst(rst), .clk(clk), .acc_rst_out(acc_rst_out),.clk_en(clk_en)
  .input_ch_id(input_ch_id), .output_ch_id(output_ch_id), .done_int(done_int), .rdy_int(rdy_int), .coef_ld(coef_ld), 
 .done(done), .data_ld(data_ld), .rdy_to_ld(rdy_to_ld));
 defparam ctrl.REG_LEN   = 256;
-defparam ctrl.PIPE_DLY  = 7;
+defparam ctrl.PIPE_DLY  = 9;
 defparam ctrl.BASE_CYCLE  = 3;
 defparam ctrl.NO_SYM   = 0; 
 defparam ctrl.NUM_CH = 2;  

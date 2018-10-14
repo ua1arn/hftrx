@@ -107,16 +107,6 @@ static uint_fast8_t gsquelch;	/* squelch level */
 #endif /* WITHIF4DSP */
 #if WITHDSPEXTDDC	/* "Воронёнок" с DSP и FPGA */
 
-/*
-	#define ADCOFFSETMID	256
-
-	static int_fast32_t getadcoffsetbase(void)
-	{
-		return - ADCOFFSETMID;
-	}
-
-*/
-
 #endif /* WITHDSPEXTDDC */
 
 //#define DEBUGEXT 1
@@ -2464,9 +2454,10 @@ struct nvmap
 
 #if WITHDSPEXTDDC	/* "Воронёнок" с DSP и FPGA */
 	uint8_t	ggrprfadc; // последний посещённый пункт группы
-	uint8_t gdither;	/* управление зашумлением в LCT2088 */
-	uint8_t gadcrand;	/* управление интерфейсом в LCT2088 */
+	uint8_t gdither;	/* управление зашумлением в LTC2208 */
+	uint8_t gadcrand;	/* управление интерфейсом в LTC2208 */
 	uint8_t gadcfifo;
+	uint16_t gadcoffset;
 	uint8_t gdactest;
 #endif /* WITHDSPEXTDDC */
 
@@ -3555,6 +3546,12 @@ static int_fast32_t getzerobase(void)
 	return 0;
 }
 
+#define ADCOFFSETMID (UINT16_MAX / 2)
+static int_fast32_t getadcoffsbase(void)
+{
+	return - ADCOFFSETMID;
+}
+
 #if WITHAFCODEC1HAVEPROC	/* кодек имеет управление обработкой микрофонного сигнала (эффекты, эквалайзер, ...) */
 
 static int_fast32_t getequalizerbase(void)
@@ -3613,14 +3610,15 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий клавиш - 880 Гц - 
 		(- 330) + FSADCPOWEROFFSET10,	// с конвертором
 	};
 	#if WITHDSPEXTDDC	/* "Воронёнок" с DSP и FPGA */
-		static uint_fast8_t gdither;		/* управление зашумлением в LCT2088 */
+		static uint_fast8_t gdither;		/* управление зашумлением в LTC2208 */
 		#if ADC1_TYPE == ADC_TYPE_AD9246
-			static uint_fast8_t gadcrand = 0;		/* управление интерфейсом в LCT2088 */
+			static uint_fast8_t gadcrand = 0;		/* управление интерфейсом в LTC2208 */
 		#else /* ADC1_TYPE == ADC_TYPE_AD9246 */
-			static uint_fast8_t gadcrand = 1;		/* управление интерфейсом в LCT2088 */
+			static uint_fast8_t gadcrand = 1;		/* управление интерфейсом в LTC2208 */
 		#endif /* ADC1_TYPE == ADC_TYPE_AD9246 */
 
 		static uint_fast8_t gadcfifo = 1;
+		static uint_fast16_t gadcoffset = ADCOFFSETMID;
 		static uint_fast8_t gdactest;
 		#if WITHDACSTRAIGHT
 			static uint_fast8_t gdacstraight = 1;	/* Требуется формирование кода для ЦАП в режиме беззнакового кода */
@@ -3632,9 +3630,6 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий клавиш - 880 Гц - 
 		#else /* WITHTXINHDISABLE */
 			static uint_fast8_t gtxinhenable = 1;	/* разрешение реакции на вход tx_inh */
 		#endif /* WITHTXINHDISABLE */
-		//static uint_fast8_t gddcrshift = 1;	/* 0..3 сдвиг данных после умножителей - "0" для имитации 14 бит */
-		//static uint_fast8_t gadcrshift = 0;	/* 0..3 сдвиг данных после АЦП - "2" для имитации работы с 14 бит АЦП */
-		//static uint_fast8_t gadcoffset = ADCOFFSETMID;
 	#endif /* WITHDSPEXTDDC */
 
 #endif /* WITHIF4DSP */
@@ -6806,9 +6801,10 @@ updateboard(
 			board_set_affilter(gaffilter);
 		#endif /* CTLSTYLE_RA4YBO || CTLSTYLE_RA4YBO_V3 */
 		#if WITHDSPEXTDDC	/* "Воронёнок" с DSP и FPGA */
-			board_set_dither(gdither);	/* управление зашумлением в LCT2088 */
-			board_set_adcrand(gadcrand);	/* управление интерфейсом в LCT2088 */
+			board_set_dither(gdither);	/* управление зашумлением в LTC2208 */
+			board_set_adcrand(gadcrand);	/* управление интерфейсом в LTC2208 */
 			board_set_adcfifo(gadcfifo);
+			board_set_adcoffset(gadcoffset + getadcoffsbase()); /* смещение для выходного сигнала с АЦП */
 		#endif /* WITHDSPEXTDDC */
 		} /* (gtx == 0) */
 
@@ -11960,7 +11956,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 #endif /* ! WITHFLATMENU */
 	{
-		"ADC RAND", 7, 0, RJ_ON,	ISTEP1,	/* управление интерфейсом в LCT2088 */
+		"ADC RAND", 7, 0, RJ_ON,	ISTEP1,	/* управление интерфейсом в LTC2208 */
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, gadcrand),
@@ -11969,7 +11965,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, 
 	},
 	{
-		"ADC DITH", 7, 0, RJ_ON,	ISTEP1,	/* управление зашумлением в LCT2088 */
+		"ADC DITH", 7, 0, RJ_ON,	ISTEP1,	/* управление зашумлением в LTC2208 */
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, gdither),
@@ -11985,6 +11981,15 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		NULL,
 		& gadcfifo,
 		getzerobase, 
+	},
+	{
+		"ADC OFFS", 5 + WSIGNFLAG, 0, 0,	ISTEP1,	/* смещение для выходного сигнала с АЦП */
+		ITEM_VALUE,
+		ADCOFFSETMID - 100, ADCOFFSETMID + 100, 
+		offsetof(struct nvmap, gadcoffset),
+		& gadcoffset,
+		NULL,
+		getadcoffsbase,	/* складывается со смещением и отображается */
 	},
 	{
 		"DAC TEST", 7, 0, RJ_ON,	ISTEP1,	/*  */

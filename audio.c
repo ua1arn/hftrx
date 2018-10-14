@@ -21,6 +21,11 @@
 #include <math.h>
 #include <assert.h>
 
+// supress messages in normalized_atan()
+#if defined   (__GNUC__)        /* GNU Compiler */
+	#pragma GCC diagnostic ignored "-Wstrict-aliasing"
+#endif /* defined   (__GNUC__)  */
+
 //#define WITHLIMITEDAGCATTACK 1
 #define DUALFILTERSPROCESSING 1	// Фильтры НЧ для левого и правого каналов - вынсено в конфигурационный файл
 //#define WITHDOUBLEFIRCOEFS 1
@@ -281,22 +286,12 @@ static int_fast8_t		glob_swaprts;		// управление боковой выхода спектроанализато
 #define NtapValidate(n)	((unsigned) (n) / 8 * 8 + 1)
 #define NtapCoeffs(n)	((unsigned) (n) / 2 + 1)
 
-
-#if CPUSTYLE_R7S721
-	#define FFTSizeFiltersM 10
-	#define FFTSizeSpectrumM 10
-#else
-	#define FFTSizeFiltersM 10
-	#define FFTSizeSpectrumM 10
-#endif
-
-
 #if WITHDSPEXTFIR || WITHDSPEXTDDC
 
 
 	// Параметры фильтров в случае использования FPGA с фильтром на квадратурных каналах
 	#define Ntap_trxi_IQ		1535	// Фильтр в FPGA
-	#define HARDWARE_COEFWIDTH	23		// Разрядность коэффициентов. format is S0.22
+	#define HARDWARE_COEFWIDTH	24		// Разрядность коэффициентов. format is S0.22
 
 	// Фильтр для квадратурных каналов приёмника и передатчика в FPGA (целочисленный).
 	// Параметры для передачи в FPGA
@@ -540,6 +535,10 @@ static ncoftw_t angle_lout, angle_rout;
 static ncoftw_t anglestep_lout2 = FTWAF(5600), anglestep_rout2 = FTWAF(6300);
 static ncoftw_t angle_lout2, angle_rout2;
 
+// test IQ frequency
+static ncoftw_t anglestep_monofreq = FTWAF(5600);
+static ncoftw_t angle_monofreq;
+
 int get_rout16(void)
 {
 	// Формирование значения для ROUT
@@ -569,6 +568,17 @@ static int get_lout24(void)
 	// Формирование значения для LOUT
 	const int v = peekvali24(FTW2ANGLEI(angle_lout2));
 	angle_lout2 = FTWROUND(angle_lout2 + anglestep_lout2);
+	return v;
+}
+
+
+// test IQ frequency
+static RAMFUNC FLOAT32P_t get_float_monofreq(void)
+{
+	FLOAT32P_t v;
+	v.IV = peekvalf(FTW2ANGLEI(angle_monofreq));
+	v.QV = peekvalf(FTW2ANGLEQ(angle_monofreq));
+	angle_monofreq = FTWROUND(angle_monofreq + anglestep_monofreq);
 	return v;
 }
 
@@ -1013,6 +1023,11 @@ static void imp_response(const FLOAT_t *dCoeff, int iCoefNum)
 	const int iHalfLen = (iCoefNum - 1) / 2;
 	int i;
 
+	//ASSERT(iHalfLen <= FFTSizeFilters);
+	//if (iHalfLen > FFTSizeFilters)
+	//	return;
+
+	//memset(Sig, 0, sizeof Sig);
 	//---------------------------
 	// copy coefficients to Sig
 	//---------------------------
@@ -1034,7 +1049,6 @@ static void imp_response(const FLOAT_t *dCoeff, int iCoefNum)
 		Sig [i].real = 0;
 		Sig [i].imag = 0;
 	} 	
-
 	//---------------------------
 	// Do FFT
 	//---------------------------
@@ -1076,7 +1090,7 @@ static void sigtocoeffs(FLOAT_t *dCoeff, int iCoefNum)
 	//---------------------------
 	// Magnitude in dB
 	//---------------------------
-	for (i = 0; i < j; ++ i) {
+	for (i = 0; i < j && i < FFTSizeFilters; ++ i) {
 		dCoeff [i] = Sig [i].real;
 	}
 
@@ -2717,7 +2731,6 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 	// загрузка коэффициентов фильтра в FPGA
 	//writecoefs(FIRCoef_trxi_IQ, Ntap_trxi_IQ);	/* печать коэффициентов фильтра */
 	board_reload_fir(pathi, FIRCoef_trxi_IQ, Ntap_trxi_IQ, HARDWARE_COEFWIDTH);
-	//board_reload_fir(pathi, FIRCoef_trxi_IQ, Ntap_trxi_IQ, HARDWARE_COEFWIDTH);
 #endif /* WITHDSPEXTDDC && WITHDSPEXTFIR */
 }
 
@@ -4745,15 +4758,30 @@ static RAMFUNC FLOAT32P_t filterRxAudio_Pair(FLOAT32P_t v, uint_fast8_t dspmode)
 enum { NTap256 = FFTSizeSpectrum };
 
 static volatile uint_fast8_t rendering;
+static volatile unsigned long nrcount, nrerrors, nrerrinc;
+
+uint_fast8_t hamradio_get_notchvalueXXX(int_fast32_t * p)
+{
+	* p = nrerrors;
+	return 0;
+}
 
 static struct Complex x256 [NTap256 * 2] = { { 0, 0 }, };
 static uint_fast16_t fft_head = 0;
 
 // формирование отображения спектра
-void savesamplespectrum96stereo(FLOAT_t iv, FLOAT_t qv)
+void savesamplespectrum96stereo(int_fast32_t iv, int_fast32_t qv)
 {
+#if 0
+	FLOAT32P_t v = scalepair(get_float_monofreq(), 0x3fffff);	// frequency
+	iv = v.IV;
+	qv = v.QV;
+#endif
 	if (rendering == 0)
 	{
+		//if (NTap256 > nrcount)
+		//	++ nrcount;
+
 		const struct Complex NewSample = { iv, qv };
 
 		// shift the old samples
@@ -4762,6 +4790,14 @@ void savesamplespectrum96stereo(FLOAT_t iv, FLOAT_t qv)
 		fft_head = (fft_head == 0) ? (NTap256 - 1) : (fft_head - 1);
 		x256 [fft_head] = x256 [fft_head + NTap256] = NewSample;
 
+	}
+	else
+	{
+		//if (NTap256 > nrcount && nrerrinc == 0)
+		//{
+		//	++ nrerrors;
+		//	nrerrinc = 1;
+		//}
 	}
 }
 
@@ -4800,11 +4836,12 @@ static FLOAT_t getmag2(const struct Complex * Sig)
 // в горизонтальную координату окна отображения спектра
 static int mapfft2raster(
 	int i,	/* FFT buffer index */
-	int dx	/* Raster position */
+	int dx	/* Raster width */
 	)
 {
-	const int xx = (i * (dx - 1)) / (FFTSizeSpectrum - 1);	// отображение большего диапазона индексов в меньший
+	const int xx = (i * (dx - 1)) / ((int) FFTSizeSpectrum - 1);	// отображение большего диапазона индексов в меньший
 	const int x = (xx + dx / 2) % dx;	// перемещение центральной частоты
+	ASSERT(x < dx && x >= 0);
 	return x;
 }
 
@@ -4832,8 +4869,8 @@ void dsp_getspectrumrow(
 	)
 {
 	uint_fast16_t i;
-	struct Complex * const Sig = & x256 [fft_head];	// первый элемент массива комплексных чисел
 	rendering = 1;
+	struct Complex * const Sig = & x256 [fft_head];	// первый элемент массива комплексных чисел
 	adjustwmwp(Sig, FFTSizeSpectrum);
 	IFFT(Sig, FFTSizeSpectrum, FFTSizeSpectrumM);
 
@@ -4852,6 +4889,8 @@ void dsp_getspectrumrow(
 		FLOAT_t * const p1 = & hbase [x];
 		* p1 = FMAXF(* p1, v);
 	}
+	//nrcount = 0;
+	//nrerrinc = 0;
 	rendering = 0;
 
 }

@@ -87,6 +87,7 @@ static uint_fast8_t 	glob_dac1value [2];
 static uint_fast8_t 	glob_txcw;			// находимся в режиме передачи телеграфа
 static uint_fast8_t 	glob_txgate = 1;	// разрешение драйвера и оконечного усилителя
 
+static int_fast16_t		glob_adcoffset;		/* смещение для выходного сигнала с АЦП */
 static uint_fast8_t		glob_flt_reset_n;	// сброс фильтров в FPGA DSP
 static uint_fast8_t		glob_dactest;		/* вместо выхода интерполятора к ЦАП передатчика подключается выход NCO */
 static uint_fast8_t		glob_tx_inh_enable;	/* разрешение реакции FPGA на вход tx_inh */
@@ -95,8 +96,8 @@ static uint_fast8_t		glob_mode_wfm;
 static uint_fast8_t		glob_adcfifo;
 static uint_fast8_t		glob_xvrtr;
 static uint_fast8_t		glob_dacstraight;	// Требуется формирование кода для ЦАП в режиме беззнакового кода
-static uint_fast8_t		glob_dither;		/* управление зашумлением в LCT2088 */
-static uint_fast8_t		glob_adcrand;		/* управление рандомизацией выходных данных в LCT2088 */
+static uint_fast8_t		glob_dither;		/* управление зашумлением в LTC2208 */
+static uint_fast8_t		glob_adcrand;		/* управление рандомизацией выходных данных в LTC2208 */
 static uint_fast8_t		glob_firprofile [2];	/* */
 static uint_fast8_t 	glob_reset_n;
 static uint_fast8_t 	glob_i2s_enable;	// разрешение генерации тактовой частоты для I2S в FPGA
@@ -4725,6 +4726,18 @@ board_set_adcfifo(uint_fast8_t v)
 	}
 }
 
+/* смещение для выходного сигнала с АЦП */
+void
+board_set_adcoffset(int_fast16_t n)
+{
+	if (glob_adcoffset != n)
+	{
+		glob_adcoffset = n;
+		board_ctlreg1changed();
+	}
+}
+
+
 void
 board_set_dactest(uint_fast8_t v)
 {
@@ -4792,7 +4805,7 @@ board_set_dacstraight(uint_fast8_t v)
 	}
 }
 
-/* управление зашумлением в LCT2088 */
+/* управление зашумлением в LTC2208 */
 void
 board_set_dither(uint_fast8_t v)
 {
@@ -4804,7 +4817,7 @@ board_set_dither(uint_fast8_t v)
 	}
 }
 
-/* управление интерфейсом в LCT2088 */
+/* управление интерфейсом в LTC2208 */
 void
 board_set_adcrand(uint_fast8_t v)
 {

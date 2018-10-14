@@ -279,4 +279,8 @@ set_global_assignment -name BDF_FILE fqmemter.bdf
 set_global_assignment -name BDF_FILE t1_2ch_rts96.bdf
 set_global_assignment -name BDF_FILE tc1_top_v7a_2ch.bdf
 set_global_assignment -name QIP_FILE fir_20ex_2ch.qip
+set_global_assignment -name QIP_FILE adcoffset16.qip
+set_global_assignment -name QIP_FILE fir_10_2ch.qip
+set_global_assignment -name QIP_FILE fir_10ex_2ch.qip
+set_global_assignment -name QIP_FILE fir_10wfm_2ch.qip
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top

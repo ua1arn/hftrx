@@ -711,13 +711,15 @@
 	#define ATTRPACKED __attribute__ ((packed))
 	#define KEYWORDPACKED __packed
 #else                           
-#define __ALIGN4_END
 	#if defined   (__CC_ARM)      /* ARM Compiler */
 		#define __ALIGN4_BEGIN    __align(4)  
+		#define __ALIGN4_END
 	#elif defined (__ICCARM__)    /* IAR Compiler */
 		#define __ALIGN4_BEGIN 
+		#define __ALIGN4_END
 	#elif defined  (__TASKING__)  /* TASKING Compiler */
 		#define __ALIGN4_BEGIN    __align(4) 
+		#define __ALIGN4_END
 	#endif /* __CC_ARM */  
 #endif /* __GNUC__ */ 
 

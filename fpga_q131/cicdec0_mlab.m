@@ -19,8 +19,8 @@
 %Input Data Type:	Signed
 %Input Data Width:	32
 %MSB Truncated Bits: 12
-%LSB Truncated bits:22
-%FIR Width (Full Calculation Width Before Output Width Adjust) :   66
+%LSB Truncated bits:23
+%FIR Width (Full Calculation Width Before Output Width Adjust) :   67
 %-----------------------------------------------------------------------------------------------------------
 
 	%MegaWizard Scaled Coefficient Values
@@ -29,9 +29,9 @@
 	DECI_FACTOR  = 1; 
 	MSB_RM  = 12;
 	MSB_TYPE  = 0;
-	LSB_RM  = 22;
+	LSB_RM  = 23;
 	LSB_TYPE  = 0;
-	FIR_WIDTH  = 66;
+	FIR_WIDTH  = 67;
 	OUT_WIDTH  = FIR_WIDTH - MSB_RM - LSB_RM ;
 	DATA_WIDTH = 32;
             

@@ -35,7 +35,7 @@ component cicdec0
 		ast_sink_error	: IN STD_LOGIC_VECTOR (1 DOWNTO 0);
 		coef_set_in	: IN STD_LOGIC;
 		coef_we	: IN STD_LOGIC;
-		coef_in	: IN STD_LOGIC_VECTOR (22 DOWNTO 0);
+		coef_in	: IN STD_LOGIC_VECTOR (23 DOWNTO 0);
 		coef_in_clk	: IN STD_LOGIC;
 		ast_source_data	: OUT STD_LOGIC_VECTOR (31 DOWNTO 0);
 		ast_sink_ready	: OUT STD_LOGIC;
