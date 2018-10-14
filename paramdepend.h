@@ -699,13 +699,13 @@
 
 #endif /* CPUSTYLE_ARM_CM3 */
 
-	
 /* STM32: In HS mode and when the DMA is used, all variables and data structures dealing
    with the DMA during the transaction process should be 4-bytes aligned */    
 
 #if defined   (__GNUC__)        /* GNU Compiler */
 	#pragma GCC diagnostic ignored "-Wunused-function"
 	#pragma GCC diagnostic ignored "-Wunused-variable"
+	#pragma GCC diagnostic ignored "-Wunused-const-variable"
 	#define __ALIGN4_END    __attribute__ ((aligned (4)))
 	#define __ALIGN4_BEGIN         
 	#define ATTRPACKED __attribute__ ((packed))
