@@ -1458,7 +1458,7 @@ SOURCE=.\boards\arm_stm32f4xx_tqfp144_ctlstyle_storch_v2.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\boards\arm_stm32f4xx_tqfp144_ctlstyle_storch_v2_UA1CEI.h
+SOURCE=.\boards\arm_stm32f4xx_tqfp144_ctlstyle_storch_v2_RX3M.h
 # End Source File
 # Begin Source File
 
