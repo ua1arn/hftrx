@@ -320,7 +320,7 @@ static void nau8822_initialize_slave_fullduplex(void)
 	nau8822_setreg(NAU8822_LEFT_ADC_DIGITAL_VOLUME, mklevel | 0);
 	nau8822_setreg(NAU8822_RIGHT_ADC_DIGITAL_VOLUME, mklevel | 0x100);
 
-	nau8822_setreg(NAU8822_INPUT_CONTROL, 0x000);	// dither off
+	nau8822_setreg(NAU8822_DAC_DITHER, 0x000);	// dither off
 
 	//debug_printf_P(PSTR("nau8822_initialize_slave_fullduplex done\n"));
 }
