@@ -12372,21 +12372,21 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"MK AGCSC", 7, 0, 0,	ISTEP1,	
-		ITEM_VALUE,	
-		10, 100, 					/* На какую часть (в процентах) от полной амплитуды выхода настроена АРУ микрофона */
-		offsetof(struct nvmap, gmikeagcscale),
-		NULL,
-		& gmikeagcscale,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
 		"MK AGCGN", 7, 0, 0,	ISTEP1,	
 		ITEM_VALUE,	
 		10, 60, 					/* максимальное усиление АРУ микрофона в дБ */
 		offsetof(struct nvmap, gmikeagcgain),
 		NULL,
 		& gmikeagcgain,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	{
+		"MK AGCSC", 7, 0, 0,	ISTEP1,	
+		ITEM_VALUE,	
+		10, 100, 					/* На какую часть (в процентах) от полной амплитуды выхода настроена АРУ микрофона */
+		offsetof(struct nvmap, gmikeagcscale),
+		NULL,
+		& gmikeagcscale,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
