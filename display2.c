@@ -3467,8 +3467,7 @@ enum
 			PG0 = REDRSUBSET(DPAGE0),
 		#if WITHDSPEXTDDC
 			PG1 = REDRSUBSET(DPAGE1),
-			PG2 = REDRSUBSET(DPAGE2),
-			PGALL = PG0 | PG1 | PG2 | REDRSUBSET_MENU,
+			PGALL = PG0 | PG1 | REDRSUBSET_MENU,
 		#else /* WITHDSPEXTDDC */
 			PGALL = PG0 | REDRSUBSET_MENU,
 		#endif /* WITHDSPEXTDDC */
@@ -3516,8 +3515,7 @@ enum
 
 			{	0,	9,	dsp_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
 			{	0,	9,	display2_spectrum,	REDRM_BARS, PG1, },// подготовка изображения спектра
-			{	0,	9,	display2_waterfall,	REDRM_BARS, PG2, },// подготовка изображения водопада
-			{	0,	9,	display2_colorbuff,REDRM_BARS,	PG1 | PG2, },// Отображение водопада и/или спектра
+			{	0,	9,	display2_colorbuff,	REDRM_BARS,	PG1, },// Отображение водопада и/или спектра
 		#else /* WITHDSPEXTDDC */
 			{	27, 12,	display_atu3,		REDRM_MODE, PGALL, },	// ATU
 			{	27, 14,	display_byp3,		REDRM_MODE, PGALL, },	// BYP
@@ -4821,7 +4819,7 @@ static void display_wfputrow(uint_fast16_t x, uint_fast16_t y, const uint8_t * p
 		display_colorbuffer_set(b, dx, dy, xp, 0, wfpalette [p [xp]]);
 
 	// маркер центральной частоты обзора
-	display_colorbuffer_xor(b, dx, dy, dx / 2, 0, COLOR565_GRIDCOLOR);
+	//display_colorbuffer_xor(b, dx, dy, dx / 2, 0, COLOR565_GRIDCOLOR);
 
 	display_colorbuffer_show(b, dx, dy, x, y);
 }
@@ -4870,36 +4868,6 @@ static void display2_waterfall(
 #elif LCDMODE_UC1608 || LCDMODE_UC1601
 	// следы спектра ("водопад") на монохромных дисплеях
 
-	static ALIGNX_BEGIN GX_t wfmonoscr [MGSIZE(ALLDX, WFDY)] ALIGNX_END;
-	memset(wfmonoscr, 0xFF, sizeof wfmonoscr);			// рисование способом погасить точку
-
-	if (hamradio_get_tx() == 0)
-	{
-
-		uint_fast16_t x, y;
-
-
-		// формирование растра
-		// маркер центральной частоты обзора
-		for (y = 0; y < WFDY; ++ y)
-		{
-			display_pixelbuffer(wfmonoscr, ALLDX, WFDY, ALLDX / 2, y);	// погасить точку
-		}
-		// следы спектра ("водопад")
-		for (x = 0; x < ALLDX; ++ x)
-		{
-			for (y = 0; y < WFDY; ++ y)
-			{
-				const uint_fast8_t v = wfarray [(wfrow + y) % WFDY] [x];
-				if (v > wflfence)
-					display_pixelbuffer(wfmonoscr, ALLDX, WFDY, x, y);	// погасить точку
-			}
-		}
-	}
-
-	display_setcolors(COLOR_GRAY, COLOR_BLUE);
-	display_showbuffer(wfmonoscr, ALLDX, WFDY, x0, y0 + WFY0);
-
 #else /* */
 	// следы спектра ("водопад") на цветных дисплеях
 	PACKEDCOLOR565_T * const colorpip = getscratchpip();
@@ -4922,6 +4890,7 @@ static void display2_waterfall(
 				display_colorbuffer_set(colorpip, ALLDX, ALLDY, x, y + WFY0, wfpalette [wfarray [(wfrow + y) % WFDY] [x]]);
 			}
 		}
+#if 0
 		if (1)
 		{
 			// маркер центральной частоты обзора
@@ -4933,7 +4902,7 @@ static void display2_waterfall(
 		{
 			display_colorgrid(colorpip, WFY0, WFDY);	// отрисовка маркеров частот
 		}
-
+#endif
 	}
 
 #endif /* LCDMODE_S1D13781 */
