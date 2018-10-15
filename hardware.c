@@ -5951,6 +5951,10 @@ void hardware_sdhost_setbuswidth(uint_fast8_t use4bit)
 {
 	debug_printf_P(PSTR("hardware_sdhost_setbuswidth: use4bit=%u\n"), (unsigned) use4bit);
 
+#if ! WITHSDHCHW4BIT
+	use4bit = 0;
+#endif /* ! WITHSDHCHW4BIT */
+
 #if CPUSTYLE_R7S721
 
 	if (use4bit != 0)
@@ -6137,9 +6141,6 @@ void hardware_sdhost_initialize(void)
 	SDIO->CLKCR =
 		1 * SDIO_CLKCR_CLKEN |
 		(255 & SDIO_CLKCR_CLKDIV_Msk) |
-	#if WITHSDHCHW4BIT
-		1 * SDIO_CLKCR_WIDBUS_0 |	// 01: 4-wide bus mode: SDIO_D[3:0] used
-	#endif /* WITHSDHCHW4BIT */
 		1 * SDIO_CLKCR_HWFC_EN |
 		1 * SDIO_CLKCR_PWRSAV |		// выключается clock без обращений
 		0;
@@ -6165,9 +6166,6 @@ void hardware_sdhost_initialize(void)
 	SDMMC1->CLKCR =
 		1 * SDMMC_CLKCR_CLKEN |
 		(255 & SDMMC_CLKCR_CLKDIV) |
-	#if WITHSDHCHW4BIT
-		1 * SDMMC_CLKCR_WIDBUS_0 |	// 01: 4-wide bus mode: SDMMC_D[3:0] used
-	#endif /* WITHSDHCHW4BIT */
 		1 * SDMMC_CLKCR_HWFC_EN |
 		1 * SDMMC_CLKCR_PWRSAV |		// выключается clock без обращений
 		0;
@@ -6195,9 +6193,6 @@ void hardware_sdhost_initialize(void)
 	// hwrdware flow control отключен - от этого зависит проверка состояния txfifo & rxfifo
 	SDMMC1->CLKCR =
 		SDMMC_CLKCR_CLKDIV |
-	#if WITHSDHCHW4BIT
-		1 * SDMMC_CLKCR_WIDBUS_0 |	// 01: 4-wide bus mode: SDMMC_D[3:0] used
-	#endif /* WITHSDHCHW4BIT */
 		1 * SDMMC_CLKCR_HWFC_EN |
 		1 * SDMMC_CLKCR_PWRSAV |		// выключается clock без обращений
 		0;
