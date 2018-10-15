@@ -4805,6 +4805,7 @@ void savesamplespectrum96stereo(int_fast32_t iv, int_fast32_t qv)
 static FLOAT_t wnd256 [FFTSizeSpectrum];
 static const FLOAT_t waterfalrange = 64;
 static FLOAT_t toplogdb; // = LOG10F((FLOAT_t) INT32_MAX / waterfalrange); 
+//static uint_fast32_t wndcks;
 
 static void buildsigwnd(void)
 {
@@ -4826,9 +4827,9 @@ static void adjustwmwp(struct Complex *w)
 	}
 }
 
-static FLOAT_t getmag2(const struct Complex * Sig)
+static FLOAT_t getmag2(const struct Complex * sig)
 {
-	const FLOAT_t mag = SQRTF(Sig->real * Sig->real + Sig->imag * Sig->imag);
+	const FLOAT_t mag = SQRTF(sig->real * sig->real + sig->imag * sig->imag);
 	return mag;
 }
 
@@ -4861,6 +4862,16 @@ int dsp_mag2y(FLOAT_t mag, uint_fast16_t dy)
 	return val;
 }
 
+static uint_fast32_t checksumarea(const void * p, size_t len)
+{
+	uint_fast32_t v = 0;
+	const uint8_t * b = (const uint8_t *) p;
+	while (len --)
+		v += * b ++;
+
+	return v;
+}
+
 // Копрование информации о спектре с текущую строку буфера 
 // wfarray (преобразование к пикселям растра */
 void dsp_getspectrumrow(
@@ -4869,9 +4880,17 @@ void dsp_getspectrumrow(
 	)
 {
 	uint_fast16_t i;
+/*
+	uint_fast32_t wndcks2 = checksumarea(wnd256, sizeof wnd256);
+	if (wndcks2 != wndcks)
+	{
+		++ nrerrors;
+		wndcks = wndcks2;
+	}
+*/
 	rendering = 1;
 	struct Complex * const sig = & x256 [fft_head];	// первый элемент массива комплексных чисел
-	//adjustwmwp(sig); // TODO: пока закомментировано - разобраться с артефактами на спектре
+	adjustwmwp(sig); // TODO: пока закомментировано - разобраться с артефактами на спектре
 	IFFT(sig, FFTSizeSpectrum, FFTSizeSpectrumM);
 
 	// очистка строки буфера истории отображения
@@ -4899,6 +4918,7 @@ static void
 dsp_rasterinitialize(void)
 {
 	buildsigwnd();
+	//wndcks = checksumarea(wnd256, sizeof wnd256);
 	toplogdb = LOG10F((FLOAT_t) INT32_MAX / waterfalrange);
 }
 
