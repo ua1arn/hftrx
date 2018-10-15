@@ -2411,7 +2411,6 @@ struct nvmap
 	struct agcseti afsets [AGCSETI_COUNT];	/* режимы приема */
 
 	uint8_t gagcoff;
-	uint8_t wflfence;
 	uint8_t gamdepth;		/* Глубина модуляции в АМ - 0..100% */
 	uint8_t gdacscale;		/* Использование амплитуды сигнала с ЦАП передатчика - 0..100% */
 	uint8_t tdsp_nfm_sql_off;	// отключить шумодав
@@ -3176,8 +3175,6 @@ enum
 	static uint_fast8_t gmikeagcscale = 100; /* На какую часть (в процентах) от полной амплитуды настроена АРУ микрофона */
 	static uint_fast8_t gmikeagcgain = 30;	/* Максимальное усидение АРУ микрофона */
 	static uint_fast8_t  gmikehclip;		/* Ограничитель */
-
-	uint_fast8_t wflfence = 50;
 
 #if WITHUSBUAC
 	static uint_fast8_t gdatamode;	/* передача звука с USB вместо обычного источника */
@@ -12551,18 +12548,6 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		NULL,
 	},
 #endif /* ! WITHFLATMENU */
-	#if LCDMODE_COLORED
-	#else /* LCDMODE_COLORED */
-	{
-		"WF FENCE", 7, 0, 0,	ISTEP1,		/* waterfall fence in BF modes */
-		ITEM_VALUE,
-		0, 255, 
-		offsetof(struct nvmap, wflfence),	/* время разряда медленной цепи АРУ */
-		NULL,
-		& wflfence,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	#endif /* LCDMODE_COLORED */
 	{
 		"ADC FS  ", 3 + WSIGNFLAG, 1, 0,	ISTEP1,		/* Калиьровка S-метра - момент перегрузки */
 		ITEM_VALUE,

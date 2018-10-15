@@ -4439,7 +4439,6 @@ static uint_fast8_t spavgrow;				// строка, в которую последней занесены данные
 #endif
 enum { PALETTESIZE = 256 };
 static PACKEDCOLOR565_T wfpalette [PALETTESIZE];
-extern uint_fast8_t wflfence;
 
 #define COLOR565_GRIDCOLOR	TFTRGB565(0x80, 0x80, 0x80)	//COLOR_GRAY - center marker
 #define COLOR565_GRIDCOLOR2	TFTRGB565(0x80, 0x00, 0x00)	//COLOR_DARKRED - other markers
