@@ -4806,19 +4806,19 @@ static FLOAT_t wnd256 [FFTSizeSpectrum];
 static const FLOAT_t waterfalrange = 64;
 static FLOAT_t toplogdb; // = LOG10F((FLOAT_t) INT32_MAX / waterfalrange); 
 
-static void buildsigwnd(FLOAT_t *w, int n /* FFTSize */)
+static void buildsigwnd(void)
 {
 	int i;
-	for (i = 0; i < n; i++)
+	for (i = 0; i < FFTSizeSpectrum; i++)
 	{
-		w [i] = fir_design_window(i, n);
+		wnd256 [i] = fir_design_window(i, FFTSizeSpectrum);
 	}
 }
 
-static void adjustwmwp(struct Complex *w, int n /* FFTSize */)
+static void adjustwmwp(struct Complex *w)
 {
 	int i;
-	for (i = 0; i < n; i++)
+	for (i = 0; i < FFTSizeSpectrum; i++)
 	{
 		const FLOAT_t r = wnd256 [i]; //fir_design_window(i, n);
 		w [i].real *= r;
@@ -4870,9 +4870,9 @@ void dsp_getspectrumrow(
 {
 	uint_fast16_t i;
 	rendering = 1;
-	struct Complex * const Sig = & x256 [fft_head];	// первый элемент массива комплексных чисел
-	adjustwmwp(Sig, FFTSizeSpectrum);
-	IFFT(Sig, FFTSizeSpectrum, FFTSizeSpectrumM);
+	struct Complex * const sig = & x256 [fft_head];	// первый элемент массива комплексных чисел
+	//adjustwmwp(sig); // TODO: пока закомментировано - разобраться с артефактами на спектре
+	IFFT(sig, FFTSizeSpectrum, FFTSizeSpectrumM);
 
 	// очистка строки буфера истории отображения
 	for (i = 0; i < dx; ++ i)
@@ -4885,7 +4885,7 @@ void dsp_getspectrumrow(
 	for (i = 0; i < FFTSizeSpectrum; ++ i)
 	{
 		const int x = mapfft2raster(i, dx);
-		const FLOAT_t v = getmag2(& Sig [i]);
+		const FLOAT_t v = getmag2(& sig [i]);
 		FLOAT_t * const p1 = & hbase [x];
 		* p1 = FMAXF(* p1, v);
 	}
@@ -4898,7 +4898,7 @@ void dsp_getspectrumrow(
 static void
 dsp_rasterinitialize(void)
 {
-	buildsigwnd(wnd256, FFTSizeSpectrum);
+	buildsigwnd();
 	toplogdb = LOG10F((FLOAT_t) INT32_MAX / waterfalrange);
 }
 
