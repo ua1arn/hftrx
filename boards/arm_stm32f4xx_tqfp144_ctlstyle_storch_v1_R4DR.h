@@ -13,9 +13,9 @@
 #ifndef ARM_STM32F4XX_TQFP144_CTLSTYLE_STORCH_V1_H_INCLUDED
 #define ARM_STM32F4XX_TQFP144_CTLSTYLE_STORCH_V1_H_INCLUDED 1
 
-	#if ! defined(STM32F746xx)
-		#error Wrong CPU selected. STM32F746xx expected
-	#endif /* ! defined(STM32F446xx) */
+	#if ! defined(STM32H743xx)
+		#error Wrong CPU selected. STM32H743xx expected
+	#endif /* ! defined(STM32F767xx) */
 
 	//#define WITHSAICLOCKFROMI2S 1	/* Блок SAI1 тактируется от PLL I2S */
 	#define WITHI2SCLOCKFROMPIN 1	// тактовая частота на SPI2 (I2S) подается с внешнего генератора, в процессор вводится через MCK сигнал интерфейса
@@ -230,7 +230,8 @@
 	#define ENCRES_DEFAULT ENCRES_128
 	//#define ENCRES_DEFAULT ENCRES_24
 	#define WITHDIRECTFREQENER	1 //(! CTLSTYLE_SW2011ALL && ! CTLSTYLE_UA3DKC)
-	#define	WITHENCODER	1	/* для изменения частоты имеется енкодер */
+	#define	WITHENCODER		1		/* для изменения частоты имеется валкодер */
+	//#define WITHENCODER2	1		/* есть второй валкодер */
 
 	/* Board hardware configuration */
 	//#define CODEC1_TYPE CODEC_TYPE_TLV320AIC23B
