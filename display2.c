@@ -557,7 +557,7 @@ static void display_usb1(
 #endif /* defined (WITHUSBHW_HOST) */
 }
 
-static void display_2states(
+void display_2states(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
 	uint_fast8_t state,
@@ -573,15 +573,7 @@ static void display_2states(
 	display2_text(x, y, labels, colorsfg_2state, colorsbg_2state, state);
 }
 
-static const FLASHMEM char text_nul1_P [] = " ";
-static const FLASHMEM char text_nul3_P [] = "   ";
-static const FLASHMEM char text_nul4_P [] = "    ";
-static const FLASHMEM char text_nul5_P [] = "     ";
-static const FLASHMEM char text_nul9_P [] = "         ";
-static const char text_nul3 [] = "   ";
-static const char text_nul5 [] = "     ";
-
-static void display_2states_P(
+void display_2states_P(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
 	uint_fast8_t state,
@@ -597,31 +589,34 @@ static void display_2states_P(
 	display2_text_P(x, y, labels, colorsfg_2state, colorsbg_2state, state);
 }
 
-// FUNC item label
-static void display_fnlabel9(
+// параметры, не мен€ющие состо€ни€ цветом
+void display_1state_P(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	const FLASHMEM char * label
 	)
 {
-#if WITHENCODER2
-	const uint_fast8_t state = 0;
-	display_2states_P(x, y, state, text_nul9_P, text_nul9_P);
-#endif /* WITHENCODER2 */
+	display2_text_P(x, y, & label, colorsfg_1state, colorsbg_1state, 0);
 }
 
-// FUNC item value
-static void display_fnvalue9(
+// параметры, не мен€ющие состо€ни€ цветом
+void display_1state(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	void * pv
+	const char * label
 	)
 {
-#if WITHENCODER2
-	const uint_fast8_t state = 0;
-	display_2states_P(x, y, state, text_nul9_P, text_nul9_P);
-#endif /* WITHENCODER2 */
+	display2_text(x, y, & label, colorsfg_1state, colorsbg_1state, 0);
 }
+
+
+static const FLASHMEM char text_nul1_P [] = " ";
+static const FLASHMEM char text_nul3_P [] = "   ";
+static const FLASHMEM char text_nul4_P [] = "    ";
+static const FLASHMEM char text_nul5_P [] = "     ";
+//static const FLASHMEM char text_nul9_P [] = "         ";
+static const char text_nul3 [] = "   ";
+static const char text_nul5 [] = "     ";
 
 // ќтображение режима NOCH ON/OFF
 static void display_notch5(
@@ -1106,8 +1101,7 @@ static void display_agc3(
 	void * pv
 	)
 {
-	const char FLASHMEM * const labels [1] = { hamradio_get_agc3_value_P(), };
-	display2_text_P(x, y, labels, colorsfg_1state, colorsbg_1state, 0);
+	display_1state_P(x, y, hamradio_get_agc3_value_P());
 }
 
 // RX agc
@@ -1117,10 +1111,7 @@ static void display_agc4(
 	void * pv
 	)
 {
-	const FLASHMEM char * text = hamradio_get_agc4_value_P();
-
-	display_setcolors(MODECOLOR, BGCOLOR);
-	display_at_P(x, y, text);
+	display_1state_P(x, y, hamradio_get_agc4_value_P());
 }
 
 // VFO mode - одним символом (первым от слова SPLIT или пробелом)
@@ -1558,10 +1549,10 @@ struct dzone
 		REDRSUBSET(2) | \
 		REDRSUBSET(3) | \
 		REDRSUBSET(4) | \
-		REDRSUBSET(5) | \
 		0)
-#define REDRSUBSET_MENU		REDRSUBSET(7)
-#define REDRSUBSET_SLEEP	REDRSUBSET(6)
+#define REDRSUBSET_MENU		REDRSUBSET(5)
+#define REDRSUBSET_MENU2	REDRSUBSET(6)
+#define REDRSUBSET_SLEEP	REDRSUBSET(7)
 
 enum
 {
@@ -1572,7 +1563,8 @@ enum
 	REDRM_VOLT,		// вольтметр (редко мен€ющиес€ параметры)
 	REDRM_MVAL,		// параметр меню
 	REDRM_MLBL,		// название редактируемого параметра
-	//
+	REDRM_M2LABEL,	//
+	REDRM_M2VALUE,	//
 	REDRM_count
 };
 
@@ -3792,7 +3784,7 @@ enum
 		BDTH_SPACEPWR = BDTH_SPACERX,
 	#endif /* WITHSHOWSWRPWR */
 
-		BDCV_ALLRX = ROWS2GRID(24),	// количество €чееек, отведенное под S-метр, панораму, иные отображени€
+		BDCV_ALLRX = ROWS2GRID(23),	// количество €чееек, отведенное под S-метр, панораму, иные отображени€
 	#if WITHSEPARATEWFL
 		/* без совмещени€ на одном экрание водопада и панорамы */
 		BDCV_SPMRX = BDCV_ALLRX,	// вертикальный размер спектра в €чейках		};
@@ -3802,7 +3794,7 @@ enum
 	#else /* WITHSEPARATEWFL */
 		/* совмещение на одном экрание водопада и панорамы */
 		BDCV_SPMRX = ROWS2GRID(12),	// вертикальный размер спектра в €чейках		};
-		BDCV_WFLRX = ROWS2GRID(12),	// вертикальный размер водопада в €чейках		};
+		BDCV_WFLRX = ROWS2GRID(11),	// вертикальный размер водопада в €чейках		};
 		BDCO_SPMRX = ROWS2GRID(0),	// смещение спектра по вертикали в €чейках от начала общего пол€
 		BDCO_WFLRX = ROWS2GRID(12)	// смещение водопада по вертикали в €чейках от начала общего пол€
 	#endif /* WITHSEPARATEWFL */
@@ -3877,7 +3869,7 @@ enum
 
 #if WITHENCODER2
 		{	21, 0,	display_fnlabel9,	REDRM_MODE, PGALL, },	// FUNC item label
-		{	21,	4,	display_fnvalue9,	REDRM_BARS, PGALL, },	// FUNC item value
+		{	21,	4,	display_fnvalue9,	REDRM_MODE, PGALL, },	// FUNC item value
 		{	25, 15,	display_notch5,		REDRM_MODE, PGALL, },	// NOTCH on/off
 #else /* WITHENCODER2 */
 		{	25, 0,	display_notch5,		REDRM_MODE, PGALL, },	// FUNC item label
@@ -5168,6 +5160,7 @@ void display_menuitemvalue(
 {
 	display_walktrough(REDRM_MVAL, REDRSUBSET_MENU, pv);
 }
+
 
 // последний номер варианта отображени€ (menuset)
 uint_fast8_t display_getpagesmax(void)

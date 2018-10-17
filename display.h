@@ -773,6 +773,47 @@ uint_fast8_t hamradio_get_samdelta10(int_fast32_t * p, uint_fast8_t pathi);		/* 
 uint_fast8_t hamradio_get_usbh_active(void);
 uint_fast8_t hamradio_get_datamode(void);	// источник звука для передачи - USB AUDIO
 
+// FUNC item label
+void display_fnlabel9(
+	uint_fast8_t x, 
+	uint_fast8_t y, 
+	void * pv
+	);
+// FUNC item value
+void display_fnvalue9(
+	uint_fast8_t x, 
+	uint_fast8_t y, 
+	void * pv
+	);
+
+void display_2states_P(
+	uint_fast8_t x, 
+	uint_fast8_t y, 
+	uint_fast8_t state,
+	const FLASHMEM char * state1,	// активное
+	const FLASHMEM char * state0
+	);
+
+void display_2states(
+	uint_fast8_t x, 
+	uint_fast8_t y, 
+	uint_fast8_t state,
+	const char * state1,	// активное
+	const char * state0
+	);
+// параметры, не меняющие состояния цветом
+void display_1state_P(
+	uint_fast8_t x, 
+	uint_fast8_t y, 
+	const FLASHMEM char * label
+	);
+// параметры, не меняющие состояния цветом
+void display_1state(
+	uint_fast8_t x, 
+	uint_fast8_t y, 
+	const char * label
+	);
+
 #define SWRMIN 10	// минимум - соответствует SWR = 1.0, точность = 0.1
 
 #if LCDMODE_LTDC

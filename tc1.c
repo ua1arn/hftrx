@@ -92,6 +92,10 @@ display_redrawbars(
 	uint_fast8_t immed,	// Безусловная перерисовка изображения
 	uint_fast8_t extra		/* находимся в режиме отображения настроек */
 	);
+static void 
+display_redrawmodes(
+	uint_fast8_t immed	// Безусловная перерисовка изображения
+	);
 
 
 static uint_fast8_t local_isdigit(char c)
@@ -2283,6 +2287,10 @@ struct bandinfo
 struct nvmap
 {
 	uint8_t lockmode;			/* блокировка валкодера */
+#if WITHENCODER2
+	uint8_t enc2state;
+	uint8_t enc2pos;			// выбраный пунки меню (второй валкодер)
+#endif /* WITHENCODER2 */
 #if WITHLCDBACKLIGHT
 	uint8_t dimmmode;			/* выключение подсветки дисплея с клавиатуры */
 #endif /* WITHLCDBACKLIGHT */
@@ -5175,6 +5183,184 @@ static void micproc_load(void)
 
 #endif /* WITHIF4DSP */
 
+
+///////////////////////////
+//
+// работа со вторым валкодером
+
+struct enc2menu
+{
+	char label [10];	
+};
+
+static const FLASHMEM struct enc2menu enc2menus [] =
+{
+	{
+		"NOTCH FRQ",
+	},
+	{
+		"CW SPEED ",
+	},
+};
+
+/* получение названия редактируемого параметра */
+static 
+const FLASHMEM char * 
+enc2menu_label_P(
+	uint_fast8_t item
+	)
+{
+	const FLASHMEM struct enc2menu * const p = & enc2menus [item];
+
+	return p->label;
+}
+
+/* получение значения редактируемого параметра */
+static 
+const char * 
+enc2menu_value(
+	uint_fast8_t item
+	)
+{
+	const FLASHMEM struct enc2menu * const p = & enc2menus [item];
+	static char b [10];
+
+	local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("%-9u"), 12345);
+
+	return b;
+}
+
+enum
+{
+	ENC2STATE_INITIALIZE,
+	ENC2STATE_SELECTITEM,
+	ENC2STATE_EDITITEM,
+	//
+	ENC2STATE_COUNT
+};
+
+#define ENC2POS_COUNT (sizeof enc2menus / sizeof enc2menus [0])
+
+static const FLASHMEM char text_nul9_P [] = "         ";
+
+static uint_fast8_t enc2state = ENC2STATE_INITIALIZE;
+static uint_fast8_t enc2pos;	// выбраный пунки меню
+
+#define RMT_ENC2STATE_BASE offsetof(struct nvmap, enc2state)
+#define RMT_ENC2POS_BASE offsetof(struct nvmap, enc2pos)
+
+/* нажатие на второй валкодер */
+static void
+uif_encoder2_press(void)
+{
+	switch (enc2state)
+	{
+	case ENC2STATE_INITIALIZE:
+		enc2state = ENC2STATE_SELECTITEM;
+		break;
+	case ENC2STATE_SELECTITEM:
+		enc2state = ENC2STATE_EDITITEM;
+		break;
+	case ENC2STATE_EDITITEM:
+		enc2state = ENC2STATE_SELECTITEM;
+		break;
+	}
+	save_i8(RMT_ENC2STATE_BASE, enc2state);
+	display_redrawmodes(1);
+}
+
+/* удержанное нажатие на второй валкодер - выход из режима редактирования */
+static void
+uif_encoder2_hold(void)
+{
+	enc2state = ENC2STATE_INITIALIZE; //calc_next(enc2state, ENC2STATE_INITIALIZE, ENC2STATE_COUNT - 1);
+	save_i8(RMT_ENC2STATE_BASE, enc2state);
+	display_redrawmodes(1);
+}
+
+/* обработка вращения второго валкодера */
+static void
+uif_encoder2_rotate(
+	int_fast8_t clicks	/* знаковое число - на сколько повернут валкодер */
+	)
+{
+	switch (enc2state)
+	{
+	case ENC2STATE_SELECTITEM:
+		/* выбор парамтра для редактирования */
+		while (clicks != 0)
+		{
+			if (clicks > 0)
+			{
+				enc2pos = calc_next(enc2pos, 0, ENC2POS_COUNT - 1);
+				-- clicks;
+			}
+			else
+			{
+				enc2pos = calc_prev(enc2pos, 0, ENC2POS_COUNT - 1);
+				++ clicks;
+			}
+		}
+		display_redrawmodes(1);
+		break;
+
+	case ENC2STATE_EDITITEM:
+		/* измиенение парамтра */
+		display_redrawmodes(1);
+		updateboard(1, 0);
+		break;
+	}
+}
+
+
+// FUNC item label
+void display_fnlabel9(
+	uint_fast8_t x, 
+	uint_fast8_t y, 
+	void * pv
+	)
+{
+#if WITHENCODER2
+	const char FLASHMEM * const text = enc2menu_label_P(enc2pos);
+	switch (enc2state)
+	{
+	case ENC2STATE_INITIALIZE:
+		display_1state_P(x, y, text_nul9_P);
+		break;
+	case ENC2STATE_SELECTITEM:
+		display_2states_P(x, y, 0, text, text);
+		break;
+	case ENC2STATE_EDITITEM:
+		display_2states_P(x, y, 1, text, text);
+		break;
+	}
+#endif /* WITHENCODER2 */
+}
+
+// FUNC item value
+void display_fnvalue9(
+	uint_fast8_t x, 
+	uint_fast8_t y, 
+	void * pv
+	)
+{
+#if WITHENCODER2
+	const char * const text = enc2menu_value(enc2pos);
+	switch (enc2state)
+	{
+	case ENC2STATE_INITIALIZE:
+		display_1state_P(x, y, text_nul9_P);
+		break;
+	case ENC2STATE_SELECTITEM:
+		display_2states(x, y, 0, text, text);
+		break;
+	case ENC2STATE_EDITITEM:
+		display_2states(x, y, 1, text, text);
+		break;
+	}
+#endif /* WITHENCODER2 */
+}
+
 // split, lock, s-meter display
 static void
 loadsavedstate(void)
@@ -5195,6 +5381,10 @@ loadsavedstate(void)
 #if WITHNOTCHONOFF
 	gnotch = loadvfy8up(RMT_NOTCH_BASE, 0, NOTCHMODE_COUNT - 1, gnotch);
 #elif WITHNOTCHFREQ
+#if WITHENCODER2
+	enc2state = loadvfy8up(RMT_ENC2STATE_BASE, ENC2STATE_INITIALIZE, ENC2STATE_COUNT - 1, enc2state);	/* вытаскиваем режим режактирования паарметров вторым валкодером */
+	enc2pos = loadvfy8up(RMT_ENC2POS_BASE, 0, ENC2POS_COUNT - 1, enc2pos);	/* вытаскиваем номер параметра для редактирования вторым валкодером */
+#endif /* WITHENCODER2 */
 	// паратметры регулируются через меню - тут не нужны.
 	// правда, вкд/выед через клавиатуру...
 	//gnotch = loadvfy8up(RMT_NOTCH_BASE, 0, NOTCHMODE_COUNT - 1, gnotch);
@@ -14221,41 +14411,6 @@ freqvalid(
 
 #endif /* WITHDIRECTFREQENER */
 
-enum
-{
-	ENC2STATE_INITIALIZE,
-	ENC2STATE_SELECTITEM,
-	ENC2STATE_EDITITEM,
-	//
-	ENC2STATE_COUNT
-};
-
-static uint_fast8_t enc2state = ENC2STATE_INITIALIZE;
-
-/* нажатие на второй валкодер */
-static void
-uif_encoder2_press(void)
-{
-}
-
-/* удержанное нажатие на второй валкодер */
-static void
-uif_encoder2_hold(void)
-{
-}
-
-/* обработка вращения второго валкодера */
-static void
-uif_encoder2_rotate(
-	int_fast8_t clicks	/* знаковое число - на сколько повернут валкодер */
-	)
-{
-
-}
-
-
-void testlfm(void);
-
 #if WITHKEYBOARD
 
 /* возврат ненуля - было какое-либо нажатие, клавиша уже обработана
@@ -15742,7 +15897,11 @@ hamradio_main_step(void)
 
 				if (enc2state != ENC2STATE_INITIALIZE)
 				{
-					uif_encoder2_rotate(nrotate2);
+					if (nrotate2 != 0)
+					{
+						uif_encoder2_rotate(nrotate2);
+						sthrl = STHRL_RXTX;
+					}
 				}
 				else if (nrotate2 < 0)
 				{
