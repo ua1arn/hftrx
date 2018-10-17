@@ -5188,18 +5188,51 @@ static void micproc_load(void)
 //
 // работа со вторым валкодером
 
+// шаг изменения значения параметра
+enum
+{
+	ISTEP1 = 1,
+	ISTEP2 = 2,
+	ISTEP5 = 5,
+	ISTEP10 = 10,
+	ISTEP50 = 50,
+	ISTEP100 = 100,
+	//ISTEPG,
+	//
+};
+
 struct enc2menu
 {
-	char label [10];	
+	char label [10];
+	uint8_t istep;
+	uint16_t bottom, upper;	/* ограничения на редактируемое значение (upper - включая) */
+
+	nvramaddress_t nvram;				/* Если MENUNONVRAM - только меняем в памяти */
+
+	uint_fast16_t * pval16;			/* переменная, которую подстраиваем - если она 16 бит */
+	uint_fast8_t * pval8;			/* переменная, которую подстраиваем  - если она 8 бит*/
+	int_fast32_t (* funcoffs)(void);	/* при отображении и использовании добавляется число отсюда */
 };
 
 static const FLASHMEM struct enc2menu enc2menus [] =
 {
 	{
 		"NOTCH FRQ",
+		ISTEP50,
+		WITHNOTCHFREQMIN, WITHNOTCHFREQMAX,
+		offsetof(struct nvmap, gnotchfreq),	/* центральная частота NOTCH */
+		& gnotchfreq,
+		NULL,
+		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
 		"CW SPEED ",
+		ISTEP1,
+		CWWPMMIN, CWWPMMAX,		// minimal WPM = 10, maximal = 60 (also changed by command KS).
+		offsetof(struct nvmap, elkeywpm),
+		NULL,
+		& elkeywpm,
+		getzerobase, 
 	},
 };
 
@@ -5222,10 +5255,25 @@ enc2menu_value(
 	uint_fast8_t item
 	)
 {
-	const FLASHMEM struct enc2menu * const p = & enc2menus [item];
+	const FLASHMEM struct enc2menu * const mp = & enc2menus [item];
 	static char b [10];
+	int_fast32_t value;
 
-	local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("%-9u"), 12345);
+	//const nvramaddress_t nvram = mp->nvram;
+	if (mp->pval16 != NULL)
+	{
+		value = mp->funcoffs() + * mp->pval16;
+	}
+	else if (mp->pval8 != NULL)
+	{
+		value = mp->funcoffs() + * mp->pval8;
+	}
+	else
+	{
+		value = mp->bottom;	/* чтобы не ругался компилятор */
+	}
+
+	local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("%-9u"), value);
 
 	return b;
 }
@@ -5301,6 +5349,7 @@ uif_encoder2_rotate(
 				++ clicks;
 			}
 		}
+		save_i8(RMT_ENC2POS_BASE, enc2state);
 		display_redrawmodes(1);
 		break;
 
@@ -10961,18 +11010,6 @@ enum
 	RJ_POWER,		/* отображние мощности HP/LP */
 	//
 	RJ_notused
-};
-
-enum
-{
-	ISTEP1 = 1,
-	ISTEP2 = 2,
-	ISTEP5 = 5,
-	ISTEP10 = 10,
-	ISTEP50 = 50,
-	ISTEP100 = 100,
-	//ISTEPG,
-	//
 };
 
 struct menudef
