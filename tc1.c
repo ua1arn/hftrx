@@ -5473,11 +5473,14 @@ uif_encoder2_hold(void)
 }
 
 /* обработка вращения второго валкодера */
-static void
+static uint_fast8_t
 uif_encoder2_rotate(
 	int_least16_t nrotate	/* знаковое число - на сколько повернут валкодер */
 	)
 {
+	if (nrotate == 0)
+		return 0;
+
 	switch (enc2state)
 	{
 	case ENC2STATE_SELECTITEM:
@@ -5497,17 +5500,22 @@ uif_encoder2_rotate(
 		}
 		save_i8(RMT_ENC2POS_BASE, enc2pos);
 		display_redrawmodes(1);
-		break;
+		return 1;
 
 	case ENC2STATE_EDITITEM:
+		if (nrotate != 0)
 		{
 			const FLASHMEM struct enc2menu * const mp = & enc2menus [enc2pos];
 			mp->adjust(mp, nrotate);	// изменение и сохранение значения параметра
 			display_redrawmodes(1);
 			updateboard(1, 0);
+			return 1;
 		}
+
+	default:
 		break;
 	}
+	return 0;
 }
 
 #endif /* WITHENCODER2 */
