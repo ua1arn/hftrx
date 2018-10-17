@@ -220,6 +220,7 @@
 	#define BOARD_ENCODER2_DIVIDE 1		/* значение для валкодера PEC16-4220F-n0024 (с трещёткой") */
 	#define WITHDIRECTFREQENER	1 //(! CTLSTYLE_SW2011ALL && ! CTLSTYLE_UA3DKC)
 	#define	WITHENCODER	1	/* для изменения частоты имеется енкодер */
+	//#define WITHENCODER2	1		/* есть второй валкодер */
 
 	/* Board hardware configuration */
 	//#define CODEC1_TYPE CODEC_TYPE_TLV320AIC23B

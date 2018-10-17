@@ -106,6 +106,8 @@
 
 #elif LCDMODE_HD44780 && (LCDMODE_SPI == 0)
 
+	#define	WITHUSEPARALELDISPLAY	1
+
 	// Выводы подключения ЖКИ индикатора WH2002 или аналогичного HD44780.
 	#define LCD_DATA_INPUT			(GPIOF->IDR)
 
@@ -476,14 +478,19 @@
 #define HARDWARE_SIDETONE_INITIALIZE() do { \
 	} while (0)
 
-#if KEYBOARD_USE_ADC
+#if ! WITHUSEPARALELDISPLAY
+	/* PF6: pull-up second encoder button */
+	#define KBD_MASK (1U << 6)	// PF6
+	#define KBD_TARGET_PIN (GPIOF->IDR)
+
+	#define HARDWARE_KBD_INITIALIZE() do { \
+			arm_hardware_piof_inputs(KBD_MASK); \
+			arm_hardware_piof_updown(KBD_MASK, 0);	/* PF10: pull-up second encoder button */ \
+		} while (0)
+#else /* ! WITHUSEPARALELDISPLAY */
 	#define HARDWARE_KBD_INITIALIZE() do { \
 		} while (0)
-#else
-	#define HARDWARE_KBD_INITIALIZE() do { \
-		arm_hardware_pioa_inputs(KBD_MASK); \
-		} while (0)
-#endif
+#endif /* ! WITHUSEPARALELDISPLAY */
 
 #if 1 // WITHTWISW
 	#define TARGET_TWI_TWCK_PORT_C(v) do { GPIOB->BSRR = BSRR_C(v); __DSB(); } while (0)
