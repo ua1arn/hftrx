@@ -5499,7 +5499,6 @@ uif_encoder2_rotate(
 			}
 		}
 		save_i8(RMT_ENC2POS_BASE, enc2pos);
-		display_redrawmodes(1);
 		return 1;
 
 	case ENC2STATE_EDITITEM:
@@ -5507,7 +5506,6 @@ uif_encoder2_rotate(
 		{
 			const FLASHMEM struct enc2menu * const mp = & enc2menus [enc2pos];
 			mp->adjust(mp, nrotate);	// изменение и сохранение значения параметра
-			display_redrawmodes(1);
 			updateboard(1, 0);
 			return 1;
 		}
@@ -5515,6 +5513,17 @@ uif_encoder2_rotate(
 	default:
 		break;
 	}
+	return 0;
+}
+
+#else /* WITHENCODER2 */
+
+/* заглушка */
+static uint_fast8_t
+uif_encoder2_rotate(
+	int_least16_t nrotate	/* знаковое число - на сколько повернут валкодер */
+	)
+{
 	return 0;
 }
 
@@ -16017,6 +16026,25 @@ hamradio_main_step(void)
 			}
 	#endif /* WITHUSEAUDIOREC */
 
+			uint_fast8_t jumpsize;
+			uint_fast8_t jumpsize2;
+			int_least16_t nrotate;
+			int_least16_t nrotate2;
+
+			/* переход по частоте - шаг берется из gstep */
+			#if WITHBBOX && defined (WITHBBOXFREQ)
+				nrotate = 0;	// ignore encoder
+				nrotate2 = 0;	// ignore encoder
+			#else
+				nrotate = getRotateHiRes(& jumpsize, ghiresdiv * gencderate);
+				nrotate2 = getRotateHiRes2(& jumpsize2);
+			#endif
+
+			if (uif_encoder2_rotate(nrotate2))
+			{
+				nrotate2 = 0;
+				display_redrawfreqmodesbars(0);			/* Обновление дисплея - всё, включая частоту */
+			}
 	#if WITHKEYBOARD
 			if (kbready != 0)
 			{
@@ -16037,19 +16065,6 @@ hamradio_main_step(void)
 			//auto int marker;
 			//debug_printf_P(PSTR("M0:@%p %02x %08lx!\n"), & marker, INTC.ICCRPR, __get_CPSR());
 
-			uint_fast8_t jumpsize;
-			uint_fast8_t jumpsize2;
-			int_least16_t nrotate;
-			int_least16_t nrotate2;
-
-			/* переход по частоте - шаг берется из gstep */
-			#if WITHBBOX && defined (WITHBBOXFREQ)
-				nrotate = 0;	// ignore encoder
-				nrotate2 = 0;	// ignore encoder
-			#else
-				nrotate = getRotateHiRes(& jumpsize, ghiresdiv * gencderate);
-				nrotate2 = getRotateHiRes2(& jumpsize2);
-			#endif
 		
 			if (lockmode == 0)
 			{
@@ -16073,17 +16088,7 @@ hamradio_main_step(void)
 					freqchanged = 1;
 				}
 
-				if (enc2state != ENC2STATE_INITIALIZE)
-				{
-#if WITHENCODER2
-					if (nrotate2 != 0)
-					{
-						uif_encoder2_rotate(nrotate2);
-						sthrl = STHRL_RXTX;
-					}
-#endif /* WITHENCODER2 */
-				}
-				else if (nrotate2 < 0)
+				if (nrotate2 < 0)
 				{
 					/* Валкодер B: вращали "вниз" */
 					//const uint_fast32_t lowfreq = bandsmap [b].bottom;
