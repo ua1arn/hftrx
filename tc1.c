@@ -5234,7 +5234,82 @@ struct enc2menu
 	uint_fast16_t * pval16;			/* переменная, которую подстраиваем - если она 16 бит */
 	uint_fast8_t * pval8;			/* переменная, которую подстраиваем  - если она 8 бит*/
 	int_fast32_t (* funcoffs)(void);	/* при отображении и использовании добавляется число отсюда */
+	void (* adjust)(const FLASHMEM struct enc2menu * mp, int_least16_t nrotate);
 };
+
+/* функция для сохранения значения параметра */
+static void
+enc2savemenuvalue(
+	const FLASHMEM struct enc2menu * mp
+	)
+{
+	const nvramaddress_t nvram = mp->nvram;
+	const uint_fast16_t * const pv16 = mp->pval16;
+	const uint_fast8_t * const pv8 = mp->pval8;
+
+	if (nvram == MENUNONVRAM)
+		return;
+	if (pv16 != NULL)
+	{
+		save_i16(nvram, * pv16);		/* сохраняем отредактированное значение */
+	}
+	else if (pv8 != NULL)
+	{
+		save_i8(nvram, * pv8);		/* сохраняем отредактированное значение */
+	}
+	else
+	{
+		ASSERT(0);
+	}
+}
+
+/* функция для изменения значения параметра */
+static 
+void
+enc2menu_adjust(
+	const FLASHMEM struct enc2menu * mp,
+	int_least16_t nrotate	/* знаковое число - на сколько повернут валкодер */
+	)
+{
+	//const nvramaddress_t nvram = mp->nvram;
+	const uint_fast16_t step = mp->istep;
+	uint_fast16_t * const pv16 = mp->pval16;
+	uint_fast8_t * const pv8 = mp->pval8;
+
+	/* измиенение параметра */
+	if (nrotate < 0)
+	{
+		// negative change value
+		const uint_fast32_t bottom = mp->bottom;
+		if (pv16 != NULL)
+		{
+			* pv16 =
+				prevfreq(* pv16, * pv16 - (- nrotate * step), step, bottom);
+		}
+		else if (pv8 != NULL)
+		{
+			* pv8 =
+				prevfreq(* pv8, * pv8 - (- nrotate * step), step, bottom);
+		}
+		enc2savemenuvalue(mp);
+	}
+	else if (nrotate > 0)
+	{
+		// positive change value
+		const uint_fast32_t upper = mp->upper;
+		if (pv16 != NULL)
+		{
+			* pv16 =
+				nextfreq(* pv16, * pv16 + (nrotate * step), step, upper + (uint_fast32_t) step);
+		}
+		else
+		{
+			* pv8 =
+				nextfreq(* pv8, * pv8 + (nrotate * step), step, upper + (uint_fast32_t) step);
+		}
+		enc2savemenuvalue(mp);
+	}
+}
 
 static const FLASHMEM struct enc2menu enc2menus [] =
 {
@@ -5248,6 +5323,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		NULL,
 		& elkeywpm,
 		getzerobase, 
+		enc2menu_adjust,	/* функция для изменения значения параметра */
 	},
 #endif /* WITHELKEY && ! WITHPOTWPM */
 #if WITHPOWERTRIM
@@ -5260,6 +5336,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		NULL,
 		& gnormalpower,
 		getzerobase, 
+		enc2menu_adjust,	/* функция для изменения значения параметра */
 	},
 #endif /* WITHPOWERTRIM */
 #if WITHNOTCHFREQ
@@ -5272,6 +5349,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		& gnotchfreq,
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
+		enc2menu_adjust,	/* функция для изменения значения параметра */
 	},
 #endif /* WITHNOTCHFREQ */
 #if WITHSUBTONES
@@ -5284,6 +5362,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		NULL,
 		& gsubtonei,
 		getzerobase, 
+		enc2menu_adjust,	/* функция для изменения значения параметра */
 	},
 #endif /* WITHPOWERTRIM */
 };
@@ -5393,31 +5472,6 @@ uif_encoder2_hold(void)
 	display_redrawmodes(1);
 }
 
-static void
-enc2savemenuvalue(
-	const FLASHMEM struct enc2menu * mp
-	)
-{
-	const nvramaddress_t nvram = mp->nvram;
-	const uint_fast16_t * const pv16 = mp->pval16;
-	const uint_fast8_t * const pv8 = mp->pval8;
-
-	if (nvram == MENUNONVRAM)
-		return;
-	if (pv16 != NULL)
-	{
-		save_i16(nvram, * pv16);		/* сохраняем отредактированное значение */
-	}
-	else if (pv8 != NULL)
-	{
-		save_i8(nvram, * pv8);		/* сохраняем отредактированное значение */
-	}
-	else
-	{
-		ASSERT(0);
-	}
-}
-
 /* обработка вращения второго валкодера */
 static void
 uif_encoder2_rotate(
@@ -5448,48 +5502,9 @@ uif_encoder2_rotate(
 	case ENC2STATE_EDITITEM:
 		{
 			const FLASHMEM struct enc2menu * const mp = & enc2menus [enc2pos];
-			//const nvramaddress_t nvram = mp->nvram;
-			const uint_fast16_t step = mp->istep;
-			uint_fast16_t * const pv16 = mp->pval16;
-			uint_fast8_t * const pv8 = mp->pval8;
-
-			/* измиенение параметра */
-			if (nrotate < 0)
-			{
-				// negative change value
-				const uint_fast32_t bottom = mp->bottom;
-				if (pv16 != NULL)
-				{
-					* pv16 =
-						prevfreq(* pv16, * pv16 - (- nrotate * step), step, bottom);
-				}
-				else if (pv8 != NULL)
-				{
-					* pv8 =
-						prevfreq(* pv8, * pv8 - (- nrotate * step), step, bottom);
-				}
-				enc2savemenuvalue(mp);
-				display_redrawmodes(1);
-				updateboard(1, 0);
-			}
-			else if (nrotate > 0)
-			{
-				// positive change value
-				const uint_fast32_t upper = mp->upper;
-				if (pv16 != NULL)
-				{
-					* pv16 =
-						nextfreq(* pv16, * pv16 + (nrotate * step), step, upper + (uint_fast32_t) step);
-				}
-				else
-				{
-					* pv8 =
-						nextfreq(* pv8, * pv8 + (nrotate * step), step, upper + (uint_fast32_t) step);
-				}
-				enc2savemenuvalue(mp);
-				display_redrawmodes(1);
-				updateboard(1, 0);
-			}
+			mp->adjust(mp, nrotate);	// изменение и сохранение значения параметра
+			display_redrawmodes(1);
+			updateboard(1, 0);
 		}
 		break;
 	}
