@@ -5201,9 +5201,31 @@ enum
 	//
 };
 
+// особые случаи отображения значения параметра
+enum
+{
+	RJ_YES = 128,	/* значение в поле rj, при котором отображаем как Yes/No */
+	RJ_ON,			/* значение в поле rj, при котором отображаем как On/Off */
+	RJ_CATSPEED	,	/* отображение скорости CAT */
+	RJ_ELKEYMODE,	/* режим электронного ключа - 0 - ACS, 1 - electronic key, 2 - straight key, 3 - BUG key */
+	RJ_POW2,		/* параметр - степень двойки. Отображается результат */
+	RJ_ENCRES,		/* параметр - индекс в таблице разрешений валкодера */
+	RJ_SUBTONE,		/* параметр - индекс в таблице частот субтонов */
+	RJ_TXAUDIO,		/* параметр - источник звука для передачи */
+	RJ_MDMSPEED,	/* параметр - скорость модема */
+	RJ_MDMMODE,		/* параметр - тип модуляции модема */
+	RJ_MONTH,		/* параметр - месяц 1..12 */
+	RJ_POWER,		/* отображние мощности HP/LP */
+	//
+	RJ_notused
+};
+
+#if WITHENCODER2
+
 struct enc2menu
 {
 	char label [10];
+	uint8_t rj;
 	uint8_t istep;
 	uint16_t bottom, upper;	/* ограничения на редактируемое значение (upper - включая) */
 
@@ -5216,17 +5238,10 @@ struct enc2menu
 
 static const FLASHMEM struct enc2menu enc2menus [] =
 {
-	{
-		"NOTCH FRQ",
-		ISTEP50,
-		WITHNOTCHFREQMIN, WITHNOTCHFREQMAX,
-		offsetof(struct nvmap, gnotchfreq),	/* центральная частота NOTCH */
-		& gnotchfreq,
-		NULL,
-		getzerobase, /* складывается со смещением и отображается */
-	},
+#if WITHELKEY && ! WITHPOTWPM
 	{
 		"CW SPEED ",
+		0,		// rj
 		ISTEP1,
 		CWWPMMIN, CWWPMMAX,		// minimal WPM = 10, maximal = 60 (also changed by command KS).
 		offsetof(struct nvmap, elkeywpm),
@@ -5234,6 +5249,43 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		& elkeywpm,
 		getzerobase, 
 	},
+#endif /* WITHELKEY && ! WITHPOTWPM */
+#if WITHPOWERTRIM
+	{
+		"TX POWER ",
+		0,		// rj
+		ISTEP1,
+		WITHPOWERTRIMMIN, WITHPOWERTRIMMAX,
+		offsetof(struct nvmap, gnormalpower),
+		NULL,
+		& gnormalpower,
+		getzerobase, 
+	},
+#endif /* WITHPOWERTRIM */
+#if WITHNOTCHFREQ
+	{
+		"NOTCH FRQ",
+		0,		// rj
+		ISTEP50,
+		WITHNOTCHFREQMIN, WITHNOTCHFREQMAX,
+		offsetof(struct nvmap, gnotchfreq),	/* центральная частота NOTCH */
+		& gnotchfreq,
+		NULL,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+#endif /* WITHNOTCHFREQ */
+#if WITHSUBTONES
+	{
+		"CTCSS FRQ", 
+		RJ_SUBTONE,		// rj
+		ISTEP1,	//  Continuous Tone-Coded Squelch System or CTCSS freq
+		0, sizeof gsubtones / sizeof gsubtones [0] - 1, 
+		offsetof(struct nvmap, gsubtonei),
+		NULL,
+		& gsubtonei,
+		getzerobase, 
+	},
+#endif /* WITHPOWERTRIM */
 };
 
 /* получение названия редактируемого параметра */
@@ -5255,8 +5307,9 @@ enc2menu_value(
 	uint_fast8_t item
 	)
 {
+	enum { WDTH = 9 };	// ширина поля для отображения
 	const FLASHMEM struct enc2menu * const mp = & enc2menus [item];
-	static char b [10];
+	static char b [WDTH + 1];	// на этот буфер возвращается указатель
 	int_fast32_t value;
 
 	//const nvramaddress_t nvram = mp->nvram;
@@ -5270,11 +5323,25 @@ enc2menu_value(
 	}
 	else
 	{
+		ASSERT(0);
 		value = mp->bottom;	/* чтобы не ругался компилятор */
 	}
 
-	local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("%-9u"), value);
-
+	switch (mp->rj)
+	{
+	case RJ_SUBTONE:
+		local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("%*u.%1u"), WDTH - 2, gsubtones [value] / 10, gsubtones [value] % 10);
+		break;
+	case RJ_YES:
+		local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("%*s"), WDTH, value ? "YES" : "NO");
+		break;
+	case RJ_ON:
+		local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("%*s"), WDTH, value ? "ON" : "OFF");
+		break;
+	default:
+		local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("%*u"), WDTH, value);
+		break;
+	}
 	return b;
 }
 
@@ -5326,40 +5393,109 @@ uif_encoder2_hold(void)
 	display_redrawmodes(1);
 }
 
+static void
+enc2savemenuvalue(
+	const FLASHMEM struct enc2menu * mp
+	)
+{
+	const nvramaddress_t nvram = mp->nvram;
+	const uint_fast16_t * const pv16 = mp->pval16;
+	const uint_fast8_t * const pv8 = mp->pval8;
+
+	if (nvram == MENUNONVRAM)
+		return;
+	if (pv16 != NULL)
+	{
+		save_i16(nvram, * pv16);		/* сохраняем отредактированное значение */
+	}
+	else if (pv8 != NULL)
+	{
+		save_i8(nvram, * pv8);		/* сохраняем отредактированное значение */
+	}
+	else
+	{
+		ASSERT(0);
+	}
+}
+
 /* обработка вращения второго валкодера */
 static void
 uif_encoder2_rotate(
-	int_fast8_t clicks	/* знаковое число - на сколько повернут валкодер */
+	int_least16_t nrotate	/* знаковое число - на сколько повернут валкодер */
 	)
 {
 	switch (enc2state)
 	{
 	case ENC2STATE_SELECTITEM:
-		/* выбор парамтра для редактирования */
-		while (clicks != 0)
+		/* выбор параметра для редактирования */
+		while (nrotate != 0)
 		{
-			if (clicks > 0)
+			if (nrotate > 0)
 			{
 				enc2pos = calc_next(enc2pos, 0, ENC2POS_COUNT - 1);
-				-- clicks;
+				-- nrotate;
 			}
 			else
 			{
 				enc2pos = calc_prev(enc2pos, 0, ENC2POS_COUNT - 1);
-				++ clicks;
+				++ nrotate;
 			}
 		}
-		save_i8(RMT_ENC2POS_BASE, enc2state);
+		save_i8(RMT_ENC2POS_BASE, enc2pos);
 		display_redrawmodes(1);
 		break;
 
 	case ENC2STATE_EDITITEM:
-		/* измиенение парамтра */
-		display_redrawmodes(1);
-		updateboard(1, 0);
+		{
+			const FLASHMEM struct enc2menu * const mp = & enc2menus [enc2pos];
+			//const nvramaddress_t nvram = mp->nvram;
+			const uint_fast16_t step = mp->istep;
+			uint_fast16_t * const pv16 = mp->pval16;
+			uint_fast8_t * const pv8 = mp->pval8;
+
+			/* измиенение параметра */
+			if (nrotate < 0)
+			{
+				// negative change value
+				const uint_fast32_t bottom = mp->bottom;
+				if (pv16 != NULL)
+				{
+					* pv16 =
+						prevfreq(* pv16, * pv16 - (- nrotate * step), step, bottom);
+				}
+				else if (pv8 != NULL)
+				{
+					* pv8 =
+						prevfreq(* pv8, * pv8 - (- nrotate * step), step, bottom);
+				}
+				enc2savemenuvalue(mp);
+				display_redrawmodes(1);
+				updateboard(1, 0);
+			}
+			else if (nrotate > 0)
+			{
+				// positive change value
+				const uint_fast32_t upper = mp->upper;
+				if (pv16 != NULL)
+				{
+					* pv16 =
+						nextfreq(* pv16, * pv16 + (nrotate * step), step, upper + (uint_fast32_t) step);
+				}
+				else
+				{
+					* pv8 =
+						nextfreq(* pv8, * pv8 + (nrotate * step), step, upper + (uint_fast32_t) step);
+				}
+				enc2savemenuvalue(mp);
+				display_redrawmodes(1);
+				updateboard(1, 0);
+			}
+		}
 		break;
 	}
 }
+
+#endif /* WITHENCODER2 */
 
 
 // FUNC item label
@@ -10994,24 +11130,6 @@ display_menu_string_P(
 
 #define ITEM_NOINITNVRAM	0x10	/* значение этого пункта не используется при начальной инициализации NVRAM */
 
-enum
-{
-	RJ_YES = 128,	/* значение в поле rj, при котором отображаем как Yes/No */
-	RJ_ON,			/* значение в поле rj, при котором отображаем как On/Off */
-	RJ_CATSPEED	,	/* отображение скорости CAT */
-	RJ_ELKEYMODE,	/* режим электронного ключа - 0 - ACS, 1 - electronic key, 2 - straight key, 3 - BUG key */
-	RJ_POW2,		/* параметр - степень двойки. Отображается результат */
-	RJ_ENCRES,		/* параметр - индекс в таблице разрешений валкодера */
-	RJ_SUBTONE,		/* параметр - индекс в таблице частот субтонов */
-	RJ_TXAUDIO,		/* параметр - источник звука для передачи */
-	RJ_MDMSPEED,	/* параметр - скорость модема */
-	RJ_MDMMODE,		/* параметр - тип модуляции модема */
-	RJ_MONTH,		/* параметр - месяц 1..12 */
-	RJ_POWER,		/* отображние мощности HP/LP */
-	//
-	RJ_notused
-};
-
 struct menudef
 {
 	char qlabel [9];		/* текст - название пункта меню */
@@ -12282,7 +12400,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, 
 	},
   #endif /* ! WITHPOTPOWER */
-#if WITHAUTOTUNER || defined (HARDWARE_GET_TUNE)
+  #if WITHAUTOTUNER || defined (HARDWARE_GET_TUNE)
 	{
 		"ATU PWR ", 7, 0, 0,	ISTEP1,		/* мощность при работе автоматического согласующего устройства */
 		ITEM_VALUE,
@@ -12292,7 +12410,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		& gotunerpower,
 		getzerobase, 
 	},
-#endif /* WITHAUTOTUNER || defined (HARDWARE_GET_TUNE) */
+  #endif /* WITHAUTOTUNER || defined (HARDWARE_GET_TUNE) */
 #elif WITHPOWERLPHP
   #if ! WITHPOTPOWER
 	#if ! CTLSTYLE_SW2011ALL
@@ -15934,11 +16052,13 @@ hamradio_main_step(void)
 
 				if (enc2state != ENC2STATE_INITIALIZE)
 				{
+#if WITHENCODER2
 					if (nrotate2 != 0)
 					{
 						uif_encoder2_rotate(nrotate2);
 						sthrl = STHRL_RXTX;
 					}
+#endif /* WITHENCODER2 */
 				}
 				else if (nrotate2 < 0)
 				{
