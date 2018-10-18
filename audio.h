@@ -207,7 +207,7 @@
 
 #if WITHINTEGRATEDDSP
 
-	#if 0 && CPUSTYLE_R7S721 && (__ARM_FP & 0x08)
+	#if (__ARM_FP & 0x08) && 0
 
 		typedef double FLOAT_t;
 
