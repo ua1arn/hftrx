@@ -54,8 +54,8 @@ CFG=tc1msvc - Win32 stm32f769ii
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 1
-# PROP BASE Output_Dir "tc1msvc___Win32_stm32f746zg"
-# PROP BASE Intermediate_Dir "tc1msvc___Win32_stm32f746zg"
+# PROP BASE Output_Dir "stm32f746zg"
+# PROP BASE Intermediate_Dir "stm32f746zg"
 # PROP BASE Cmd_Line "NMAKE /a /f tc1msvc_at32.mak stm32f745zg"
 # PROP BASE Rebuild_Opt ""
 # PROP BASE Target_File "tc1msvc.exe"
@@ -63,8 +63,8 @@ CFG=tc1msvc - Win32 stm32f769ii
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "tc1msvc___Win32_stm32f746zg"
-# PROP Intermediate_Dir "tc1msvc___Win32_stm32f746zg"
+# PROP Output_Dir "stm32f746zg"
+# PROP Intermediate_Dir "stm32f746zg"
 # PROP Cmd_Line "NMAKE /a /f tc1msvc_at32.mak stm32f746zg"
 # PROP Rebuild_Opt ""
 # PROP Target_File "tc1msvc.exe"
@@ -75,8 +75,8 @@ CFG=tc1msvc - Win32 stm32f769ii
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 1
-# PROP BASE Output_Dir "tc1msvc___Win32_stm32f767zi"
-# PROP BASE Intermediate_Dir "tc1msvc___Win32_stm32f767zi"
+# PROP BASE Output_Dir "stm32f767zi"
+# PROP BASE Intermediate_Dir "stm32f767zi"
 # PROP BASE Cmd_Line "NMAKE /a /f tc1msvc_at32.mak stm32f746zg"
 # PROP BASE Rebuild_Opt ""
 # PROP BASE Target_File "tc1msvc.exe"
@@ -84,8 +84,8 @@ CFG=tc1msvc - Win32 stm32f769ii
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "tc1msvc___Win32_stm32f767zi"
-# PROP Intermediate_Dir "tc1msvc___Win32_stm32f767zi"
+# PROP Output_Dir "stm32f767zi"
+# PROP Intermediate_Dir "stm32f767zi"
 # PROP Cmd_Line "NMAKE /a /f tc1msvc_at32.mak stm32f767zi"
 # PROP Rebuild_Opt ""
 # PROP Target_File "tc1msvc.exe"
@@ -96,8 +96,8 @@ CFG=tc1msvc - Win32 stm32f769ii
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 1
-# PROP BASE Output_Dir "tc1msvc___Win32_stm32h743zi"
-# PROP BASE Intermediate_Dir "tc1msvc___Win32_stm32h743zi"
+# PROP BASE Output_Dir "stm32h743zi"
+# PROP BASE Intermediate_Dir "stm32h743zi"
 # PROP BASE Cmd_Line "NMAKE /a /f tc1msvc_at32.mak stm32f767zi"
 # PROP BASE Rebuild_Opt ""
 # PROP BASE Target_File "tc1msvc.exe"
@@ -105,8 +105,8 @@ CFG=tc1msvc - Win32 stm32f769ii
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "tc1msvc___Win32_stm32h743zi"
-# PROP Intermediate_Dir "tc1msvc___Win32_stm32h743zi"
+# PROP Output_Dir "stm32h743zi"
+# PROP Intermediate_Dir "stm32h743zi"
 # PROP Cmd_Line "NMAKE /a /f tc1msvc_at32.mak stm32h743zi"
 # PROP Rebuild_Opt ""
 # PROP Target_File "tc1msvc.exe"
@@ -117,8 +117,8 @@ CFG=tc1msvc - Win32 stm32f769ii
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 1
-# PROP BASE Output_Dir "tc1msvc___Win32_stm32f429zi"
-# PROP BASE Intermediate_Dir "tc1msvc___Win32_stm32f429zi"
+# PROP BASE Output_Dir "stm32f429zi"
+# PROP BASE Intermediate_Dir "stm32f429zi"
 # PROP BASE Cmd_Line "NMAKE /a /f tc1msvc_at32.mak  stm32f407vg"
 # PROP BASE Rebuild_Opt ""
 # PROP BASE Target_File "tc1msvc.exe"
@@ -126,8 +126,8 @@ CFG=tc1msvc - Win32 stm32f769ii
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "tc1msvc___Win32_stm32f429zi"
-# PROP Intermediate_Dir "tc1msvc___Win32_stm32f429zi"
+# PROP Output_Dir "stm32f429zi"
+# PROP Intermediate_Dir "stm32f429zi"
 # PROP Cmd_Line "NMAKE /a /f tc1msvc_at32.mak stm32f429zi"
 # PROP Rebuild_Opt ""
 # PROP Target_File "tc1msvc.exe"
@@ -138,8 +138,8 @@ CFG=tc1msvc - Win32 stm32f769ii
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 1
-# PROP BASE Output_Dir "tc1msvc___Win32_stm32f769ii"
-# PROP BASE Intermediate_Dir "tc1msvc___Win32_stm32f769ii"
+# PROP BASE Output_Dir "stm32f769ii"
+# PROP BASE Intermediate_Dir "stm32f769ii"
 # PROP BASE Cmd_Line "NMAKE /a /f tc1msvc_at32.mak stm32f767zi"
 # PROP BASE Rebuild_Opt ""
 # PROP BASE Target_File "tc1msvc.exe"
@@ -147,8 +147,8 @@ CFG=tc1msvc - Win32 stm32f769ii
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "tc1msvc___Win32_stm32f769ii"
-# PROP Intermediate_Dir "tc1msvc___Win32_stm32f769ii"
+# PROP Output_Dir "stm32f769ii"
+# PROP Intermediate_Dir "stm32f769ii"
 # PROP Cmd_Line "NMAKE /a /f tc1msvc_at32.mak stm32f769ii"
 # PROP Rebuild_Opt ""
 # PROP Target_File "tc1msvc.exe"
@@ -159,8 +159,8 @@ CFG=tc1msvc - Win32 stm32f769ii
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 1
-# PROP BASE Output_Dir "tc1msvc___Win32_stm32f723ze"
-# PROP BASE Intermediate_Dir "tc1msvc___Win32_stm32f723ze"
+# PROP BASE Output_Dir "stm32f723ze"
+# PROP BASE Intermediate_Dir "stm32f723ze"
 # PROP BASE Cmd_Line "NMAKE /a /f tc1msvc_at32.mak stm32f746zg"
 # PROP BASE Rebuild_Opt ""
 # PROP BASE Target_File "tc1msvc.exe"
@@ -168,8 +168,8 @@ CFG=tc1msvc - Win32 stm32f769ii
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "tc1msvc___Win32_stm32f723ze"
-# PROP Intermediate_Dir "tc1msvc___Win32_stm32f723ze"
+# PROP Output_Dir "stm32f723ze"
+# PROP Intermediate_Dir "stm32f723ze"
 # PROP Cmd_Line "NMAKE /a /f tc1msvc_at32.mak stm32f723ze"
 # PROP Rebuild_Opt ""
 # PROP Target_File "tc1msvc.exe"
@@ -180,8 +180,8 @@ CFG=tc1msvc - Win32 stm32f769ii
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 1
-# PROP BASE Output_Dir "tc1msvc___Win32_stm32f446ze"
-# PROP BASE Intermediate_Dir "tc1msvc___Win32_stm32f446ze"
+# PROP BASE Output_Dir "stm32f446ze"
+# PROP BASE Intermediate_Dir "stm32f446ze"
 # PROP BASE Cmd_Line "NMAKE /a /f tc1msvc_at32.mak stm32f429zi"
 # PROP BASE Rebuild_Opt ""
 # PROP BASE Target_File "tc1msvc.exe"
@@ -189,8 +189,8 @@ CFG=tc1msvc - Win32 stm32f769ii
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "tc1msvc___Win32_stm32f446ze"
-# PROP Intermediate_Dir "tc1msvc___Win32_stm32f446ze"
+# PROP Output_Dir "stm32f446ze"
+# PROP Intermediate_Dir "stm32f446ze"
 # PROP Cmd_Line "NMAKE /a /f tc1msvc_at32.mak stm32f446ze"
 # PROP Rebuild_Opt ""
 # PROP Target_File "tc1msvc.exe"
@@ -201,8 +201,8 @@ CFG=tc1msvc - Win32 stm32f769ii
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 1
-# PROP BASE Output_Dir "tc1msvc___Win32_stm32f401rb"
-# PROP BASE Intermediate_Dir "tc1msvc___Win32_stm32f401rb"
+# PROP BASE Output_Dir "stm32f401rb"
+# PROP BASE Intermediate_Dir "stm32f401rb"
 # PROP BASE Cmd_Line "NMAKE /a /f tc1msvc_at32.mak stm32f103c8"
 # PROP BASE Rebuild_Opt ""
 # PROP BASE Target_File "tc1msvc.exe"
@@ -210,8 +210,8 @@ CFG=tc1msvc - Win32 stm32f769ii
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "tc1msvc___Win32_stm32f401rb"
-# PROP Intermediate_Dir "tc1msvc___Win32_stm32f401rb"
+# PROP Output_Dir "stm32f401rb"
+# PROP Intermediate_Dir "stm32f401rb"
 # PROP Cmd_Line "NMAKE /a /f tc1msvc_at32.mak stm32f401rb"
 # PROP Rebuild_Opt ""
 # PROP Target_File "tc1msvc.exe"
@@ -222,8 +222,8 @@ CFG=tc1msvc - Win32 stm32f769ii
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 1
-# PROP BASE Output_Dir "tc1msvc___Win32_stm32f407vg"
-# PROP BASE Intermediate_Dir "tc1msvc___Win32_stm32f407vg"
+# PROP BASE Output_Dir "stm32f407vg"
+# PROP BASE Intermediate_Dir "stm32f407vg"
 # PROP BASE Cmd_Line "NMAKE /a /f tc1msvc_at32.mak  stm32f303vc"
 # PROP BASE Rebuild_Opt ""
 # PROP BASE Target_File "tc1msvc.exe"
@@ -231,8 +231,8 @@ CFG=tc1msvc - Win32 stm32f769ii
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "tc1msvc___Win32_stm32f407vg"
-# PROP Intermediate_Dir "tc1msvc___Win32_stm32f407vg"
+# PROP Output_Dir "stm32f407vg"
+# PROP Intermediate_Dir "stm32f407vg"
 # PROP Cmd_Line "NMAKE /a /f tc1msvc_at32.mak stm32f407vg"
 # PROP Rebuild_Opt ""
 # PROP Target_File "tc1msvc.exe"
@@ -243,8 +243,8 @@ CFG=tc1msvc - Win32 stm32f769ii
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 1
-# PROP BASE Output_Dir "tc1msvc___Win32_r7s721020"
-# PROP BASE Intermediate_Dir "tc1msvc___Win32_r7s721020"
+# PROP BASE Output_Dir "r7s721020"
+# PROP BASE Intermediate_Dir "r7s721020"
 # PROP BASE Cmd_Line "NMAKE /a /f tc1msvc_at32.mak r7s721020"
 # PROP BASE Rebuild_Opt ""
 # PROP BASE Target_File "tc1msvc.exe"
@@ -252,8 +252,8 @@ CFG=tc1msvc - Win32 stm32f769ii
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "tc1msvc___Win32_r7s721020"
-# PROP Intermediate_Dir "tc1msvc___Win32_r7s721020"
+# PROP Output_Dir "r7s721020"
+# PROP Intermediate_Dir "r7s721020"
 # PROP Cmd_Line "NMAKE /a /f tc1msvc_at32.mak r7s721020"
 # PROP Rebuild_Opt ""
 # PROP Target_File "tc1msvc.exe"
@@ -264,8 +264,8 @@ CFG=tc1msvc - Win32 stm32f769ii
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 1
-# PROP BASE Output_Dir "tc1msvc___Win32_stm32f103c8"
-# PROP BASE Intermediate_Dir "tc1msvc___Win32_stm32f103c8"
+# PROP BASE Output_Dir "stm32f103c8"
+# PROP BASE Intermediate_Dir "stm32f103c8"
 # PROP BASE Cmd_Line "NMAKE /a /f tc1msvc_at32.mak stm32f101rb"
 # PROP BASE Rebuild_Opt ""
 # PROP BASE Target_File "tc1msvc.exe"
@@ -273,8 +273,8 @@ CFG=tc1msvc - Win32 stm32f769ii
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "tc1msvc___Win32_stm32f103c8"
-# PROP Intermediate_Dir "tc1msvc___Win32_stm32f103c8"
+# PROP Output_Dir "stm32f103c8"
+# PROP Intermediate_Dir "stm32f103c8"
 # PROP Cmd_Line "NMAKE /a /f tc1msvc_at32.mak stm32f103c8"
 # PROP Rebuild_Opt ""
 # PROP Target_File "tc1msvc.exe"
@@ -285,8 +285,8 @@ CFG=tc1msvc - Win32 stm32f769ii
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 1
-# PROP BASE Output_Dir "tc1msvc___Win32_stm32f101rb"
-# PROP BASE Intermediate_Dir "tc1msvc___Win32_stm32f101rb"
+# PROP BASE Output_Dir "stm32f101rb"
+# PROP BASE Intermediate_Dir "stm32f101rb"
 # PROP BASE Cmd_Line "NMAKE /a /f tc1msvc_at32.mak  stm32f107vc"
 # PROP BASE Rebuild_Opt ""
 # PROP BASE Target_File "tc1msvc.exe"
@@ -294,8 +294,8 @@ CFG=tc1msvc - Win32 stm32f769ii
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "tc1msvc___Win32_stm32f101rb"
-# PROP Intermediate_Dir "tc1msvc___Win32_stm32f101rb"
+# PROP Output_Dir "stm32f101rb"
+# PROP Intermediate_Dir "stm32f101rb"
 # PROP Cmd_Line "NMAKE /a /f tc1msvc_at32.mak stm32f101rb"
 # PROP Rebuild_Opt ""
 # PROP Target_File "tc1msvc.exe"
@@ -306,8 +306,8 @@ CFG=tc1msvc - Win32 stm32f769ii
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 1
-# PROP BASE Output_Dir "tc1msvc___Win32_stm32f303vc"
-# PROP BASE Intermediate_Dir "tc1msvc___Win32_stm32f303vc"
+# PROP BASE Output_Dir "stm32f303vc"
+# PROP BASE Intermediate_Dir "stm32f303vc"
 # PROP BASE Cmd_Line "NMAKE /a /f tc1msvc_at32.mak  stm32f101rb"
 # PROP BASE Rebuild_Opt ""
 # PROP BASE Target_File "tc1msvc.exe"
@@ -315,8 +315,8 @@ CFG=tc1msvc - Win32 stm32f769ii
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "tc1msvc___Win32_stm32f303vc"
-# PROP Intermediate_Dir "tc1msvc___Win32_stm32f303vc"
+# PROP Output_Dir "stm32f303vc"
+# PROP Intermediate_Dir "stm32f303vc"
 # PROP Cmd_Line "NMAKE /a /f tc1msvc_at32.mak stm32f303vc"
 # PROP Rebuild_Opt ""
 # PROP Target_File "tc1msvc.exe"
@@ -327,8 +327,8 @@ CFG=tc1msvc - Win32 stm32f769ii
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 1
-# PROP BASE Output_Dir "tc1msvc___Win32_stm32f030f4p"
-# PROP BASE Intermediate_Dir "tc1msvc___Win32_stm32f030f4p"
+# PROP BASE Output_Dir "stm32f030f4p"
+# PROP BASE Intermediate_Dir "stm32f030f4p"
 # PROP BASE Cmd_Line "NMAKE /a /f tc1msvc_at32.mak  stm32f429zi"
 # PROP BASE Rebuild_Opt ""
 # PROP BASE Target_File "tc1msvc.exe"
@@ -336,8 +336,8 @@ CFG=tc1msvc - Win32 stm32f769ii
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "tc1msvc___Win32_stm32f030f4p"
-# PROP Intermediate_Dir "tc1msvc___Win32_stm32f030f4p"
+# PROP Output_Dir "stm32f030f4p"
+# PROP Intermediate_Dir "stm32f030f4p"
 # PROP Cmd_Line "NMAKE /a /f tc1msvc_at32.mak stm32f030f4p"
 # PROP Rebuild_Opt ""
 # PROP Target_File "tc1msvc.exe"
@@ -348,8 +348,8 @@ CFG=tc1msvc - Win32 stm32f769ii
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 1
-# PROP BASE Output_Dir "tc1msvc___Win32_stm32f051c6t"
-# PROP BASE Intermediate_Dir "tc1msvc___Win32_stm32f051c6t"
+# PROP BASE Output_Dir "stm32f051c6t"
+# PROP BASE Intermediate_Dir "stm32f051c6t"
 # PROP BASE Cmd_Line "NMAKE /a /f tc1msvc_at32.mak  stm32f101rb"
 # PROP BASE Rebuild_Opt ""
 # PROP BASE Target_File "tc1msvc.exe"
@@ -357,8 +357,8 @@ CFG=tc1msvc - Win32 stm32f769ii
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "tc1msvc___Win32_stm32f051c6t"
-# PROP Intermediate_Dir "tc1msvc___Win32_stm32f051c6t"
+# PROP Output_Dir "stm32f051c6t"
+# PROP Intermediate_Dir "stm32f051c6t"
 # PROP Cmd_Line "NMAKE /a /f tc1msvc_at32.mak stm32f051c6t"
 # PROP Rebuild_Opt ""
 # PROP Target_File "tc1msvc.exe"
@@ -369,8 +369,8 @@ CFG=tc1msvc - Win32 stm32f769ii
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 1
-# PROP BASE Output_Dir "tc1msvc___Win32_stm32l051k6t"
-# PROP BASE Intermediate_Dir "tc1msvc___Win32_stm32l051k6t"
+# PROP BASE Output_Dir "stm32l051k6t"
+# PROP BASE Intermediate_Dir "stm32l051k6t"
 # PROP BASE Cmd_Line "NMAKE /a /f tc1msvc_at32.mak stm32f051c6t"
 # PROP BASE Rebuild_Opt ""
 # PROP BASE Target_File "tc1msvc.exe"
@@ -378,8 +378,8 @@ CFG=tc1msvc - Win32 stm32f769ii
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "tc1msvc___Win32_stm32l051k6t"
-# PROP Intermediate_Dir "tc1msvc___Win32_stm32l051k6t"
+# PROP Output_Dir "stm32l051k6t"
+# PROP Intermediate_Dir "stm32l051k6t"
 # PROP Cmd_Line "NMAKE /a /f tc1msvc_at32.mak stm32l051k6t"
 # PROP Rebuild_Opt ""
 # PROP Target_File "tc1msvc.exe"
@@ -390,8 +390,8 @@ CFG=tc1msvc - Win32 stm32f769ii
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 1
-# PROP BASE Output_Dir "tc1msvc___Win32_mk20dx256vlh7"
-# PROP BASE Intermediate_Dir "tc1msvc___Win32_mk20dx256vlh7"
+# PROP BASE Output_Dir "mk20dx256vlh7"
+# PROP BASE Intermediate_Dir "mk20dx256vlh7"
 # PROP BASE Cmd_Line "NMAKE /a /f tc1msvc_at32.mak stm32f446ze"
 # PROP BASE Rebuild_Opt ""
 # PROP BASE Target_File "tc1msvc.exe"
@@ -399,8 +399,8 @@ CFG=tc1msvc - Win32 stm32f769ii
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "tc1msvc___Win32_mk20dx256vlh7"
-# PROP Intermediate_Dir "tc1msvc___Win32_mk20dx256vlh7"
+# PROP Output_Dir "mk20dx256vlh7"
+# PROP Intermediate_Dir "mk20dx256vlh7"
 # PROP Cmd_Line "NMAKE /a /f tc1msvc_at32.mak mk20dx256vlh7"
 # PROP Rebuild_Opt ""
 # PROP Target_File "tc1msvc.exe"
@@ -411,8 +411,8 @@ CFG=tc1msvc - Win32 stm32f769ii
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 1
-# PROP BASE Output_Dir "tc1msvc___Win32_atmega32a_8"
-# PROP BASE Intermediate_Dir "tc1msvc___Win32_atmega32a_8"
+# PROP BASE Output_Dir "atmega32a_8"
+# PROP BASE Intermediate_Dir "atmega32a_8"
 # PROP BASE Cmd_Line "NMAKE /a /f tc1msvc_at32.mak atmega32a_8"
 # PROP BASE Rebuild_Opt ""
 # PROP BASE Target_File "tc1msvc.exe"
@@ -420,8 +420,8 @@ CFG=tc1msvc - Win32 stm32f769ii
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "tc1msvc___Win32_atmega32a_8"
-# PROP Intermediate_Dir "tc1msvc___Win32_atmega32a_8"
+# PROP Output_Dir "atmega32a_8"
+# PROP Intermediate_Dir "atmega32a_8"
 # PROP Cmd_Line "NMAKE /a /f tc1msvc_at32.mak atmega32a_8"
 # PROP Rebuild_Opt ""
 # PROP Target_File "tc1msvc.exe"
@@ -432,8 +432,8 @@ CFG=tc1msvc - Win32 stm32f769ii
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 1
-# PROP BASE Output_Dir "tc1msvc___Win32_atmega644p_8"
-# PROP BASE Intermediate_Dir "tc1msvc___Win32_atmega644p_8"
+# PROP BASE Output_Dir "atmega644p_8"
+# PROP BASE Intermediate_Dir "atmega644p_8"
 # PROP BASE Cmd_Line "NMAKE /f tc1msvc_at32.mak atmega644p"
 # PROP BASE Rebuild_Opt ""
 # PROP BASE Target_File "tc1msvc.exe"
@@ -441,8 +441,8 @@ CFG=tc1msvc - Win32 stm32f769ii
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "tc1msvc___Win32_atmega644p_8"
-# PROP Intermediate_Dir "tc1msvc___Win32_atmega644p_8"
+# PROP Output_Dir "atmega644p_8"
+# PROP Intermediate_Dir "atmega644p_8"
 # PROP Cmd_Line "NMAKE /a /f tc1msvc_at32.mak atmega644p_8"
 # PROP Rebuild_Opt ""
 # PROP Target_File "tc1msvc.exe"
@@ -453,8 +453,8 @@ CFG=tc1msvc - Win32 stm32f769ii
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 1
-# PROP BASE Output_Dir "tc1msvc___Win32_atmega644p_10"
-# PROP BASE Intermediate_Dir "tc1msvc___Win32_atmega644p_10"
+# PROP BASE Output_Dir "atmega644p_10"
+# PROP BASE Intermediate_Dir "atmega644p_10"
 # PROP BASE Cmd_Line "NMAKE /f tc1msvc_at32.mak atmega644p"
 # PROP BASE Rebuild_Opt ""
 # PROP BASE Target_File "tc1msvc.exe"
@@ -462,8 +462,8 @@ CFG=tc1msvc - Win32 stm32f769ii
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "tc1msvc___Win32_atmega644p_10"
-# PROP Intermediate_Dir "tc1msvc___Win32_atmega644p_10"
+# PROP Output_Dir "atmega644p_10"
+# PROP Intermediate_Dir "atmega644p_10"
 # PROP Cmd_Line "NMAKE /a /f tc1msvc_at32.mak atmega644p_10"
 # PROP Rebuild_Opt ""
 # PROP Target_File "tc1msvc.exe"
@@ -474,8 +474,8 @@ CFG=tc1msvc - Win32 stm32f769ii
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 1
-# PROP BASE Output_Dir "tc1msvc___Win32_atmega328p_8"
-# PROP BASE Intermediate_Dir "tc1msvc___Win32_atmega328p_8"
+# PROP BASE Output_Dir "atmega328p_8"
+# PROP BASE Intermediate_Dir "atmega328p_8"
 # PROP BASE Cmd_Line "NMAKE /a /f tc1msvc_at32.mak atmega32a_8"
 # PROP BASE Rebuild_Opt ""
 # PROP BASE Target_File "tc1msvc.exe"
@@ -483,8 +483,8 @@ CFG=tc1msvc - Win32 stm32f769ii
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "tc1msvc___Win32_atmega328p_8"
-# PROP Intermediate_Dir "tc1msvc___Win32_atmega328p_8"
+# PROP Output_Dir "atmega328p_8"
+# PROP Intermediate_Dir "atmega328p_8"
 # PROP Cmd_Line "NMAKE /a /f tc1msvc_at32.mak atmega328p_8"
 # PROP Rebuild_Opt ""
 # PROP Target_File "tc1msvc.exe"
@@ -495,8 +495,8 @@ CFG=tc1msvc - Win32 stm32f769ii
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 1
-# PROP BASE Output_Dir "tc1msvc___Win32_atmega328p_16"
-# PROP BASE Intermediate_Dir "tc1msvc___Win32_atmega328p_16"
+# PROP BASE Output_Dir "atmega328p_16"
+# PROP BASE Intermediate_Dir "atmega328p_16"
 # PROP BASE Cmd_Line "NMAKE /a /f tc1msvc_at32.mak atmega328p_8"
 # PROP BASE Rebuild_Opt ""
 # PROP BASE Target_File "tc1msvc.exe"
@@ -504,8 +504,8 @@ CFG=tc1msvc - Win32 stm32f769ii
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "tc1msvc___Win32_atmega328p_16"
-# PROP Intermediate_Dir "tc1msvc___Win32_atmega328p_16"
+# PROP Output_Dir "atmega328p_16"
+# PROP Intermediate_Dir "atmega328p_16"
 # PROP Cmd_Line "NMAKE /a /f tc1msvc_at32.mak atmega328p_16"
 # PROP Rebuild_Opt ""
 # PROP Target_File "tc1msvc.exe"
@@ -516,8 +516,8 @@ CFG=tc1msvc - Win32 stm32f769ii
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 1
-# PROP BASE Output_Dir "tc1msvc___Win32_atsam3s4b"
-# PROP BASE Intermediate_Dir "tc1msvc___Win32_atsam3s4b"
+# PROP BASE Output_Dir "atsam3s4b"
+# PROP BASE Intermediate_Dir "atsam3s4b"
 # PROP BASE Cmd_Line "NMAKE /f tc1msvc_at32.mak at91sam7s64"
 # PROP BASE Rebuild_Opt ""
 # PROP BASE Target_File "tc1msvc.exe"
@@ -525,8 +525,8 @@ CFG=tc1msvc - Win32 stm32f769ii
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "tc1msvc___Win32_atsam3s4b"
-# PROP Intermediate_Dir "tc1msvc___Win32_atsam3s4b"
+# PROP Output_Dir "atsam3s4b"
+# PROP Intermediate_Dir "atsam3s4b"
 # PROP Cmd_Line "NMAKE /a /f tc1msvc_at32.mak atsam3s4b"
 # PROP Rebuild_Opt ""
 # PROP Target_File "tc1msvc.exe"
@@ -537,8 +537,8 @@ CFG=tc1msvc - Win32 stm32f769ii
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 1
-# PROP BASE Output_Dir "tc1msvc___Win32_atsam4sa16c"
-# PROP BASE Intermediate_Dir "tc1msvc___Win32_atsam4sa16c"
+# PROP BASE Output_Dir "atsam4sa16c"
+# PROP BASE Intermediate_Dir "atsam4sa16c"
 # PROP BASE Cmd_Line "NMAKE /a /f tc1msvc_at32.mak atsam3s4b"
 # PROP BASE Rebuild_Opt ""
 # PROP BASE Target_File "tc1msvc.exe"
@@ -546,8 +546,8 @@ CFG=tc1msvc - Win32 stm32f769ii
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "tc1msvc___Win32_atsam4sa16c"
-# PROP Intermediate_Dir "tc1msvc___Win32_atsam4sa16c"
+# PROP Output_Dir "atsam4sa16c"
+# PROP Intermediate_Dir "atsam4sa16c"
 # PROP Cmd_Line "NMAKE /a /f tc1msvc_at32.mak atsam4sa16c"
 # PROP Rebuild_Opt ""
 # PROP Target_File "tc1msvc.exe"
@@ -558,8 +558,8 @@ CFG=tc1msvc - Win32 stm32f769ii
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 1
-# PROP BASE Output_Dir "tc1msvc___Win32_at91sam7s64"
-# PROP BASE Intermediate_Dir "tc1msvc___Win32_at91sam7s64"
+# PROP BASE Output_Dir "at91sam7s64"
+# PROP BASE Intermediate_Dir "at91sam7s64"
 # PROP BASE Cmd_Line "NMAKE /f tc1msvc_at32.mak all"
 # PROP BASE Rebuild_Opt "/a"
 # PROP BASE Target_File "tc1msvc.exe"
@@ -567,8 +567,8 @@ CFG=tc1msvc - Win32 stm32f769ii
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "tc1msvc___Win32_at91sam7s64"
-# PROP Intermediate_Dir "tc1msvc___Win32_at91sam7s64"
+# PROP Output_Dir "at91sam7s64"
+# PROP Intermediate_Dir "at91sam7s64"
 # PROP Cmd_Line "NMAKE /a /f tc1msvc_at32.mak at91sam7s64"
 # PROP Rebuild_Opt ""
 # PROP Target_File "tc1msvc.exe"
@@ -579,8 +579,8 @@ CFG=tc1msvc - Win32 stm32f769ii
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 1
-# PROP BASE Output_Dir "tc1msvc___Win32_at91sam9xe"
-# PROP BASE Intermediate_Dir "tc1msvc___Win32_at91sam9xe"
+# PROP BASE Output_Dir "at91sam9xe"
+# PROP BASE Intermediate_Dir "at91sam9xe"
 # PROP BASE Cmd_Line "NMAKE /a /f tc1msvc_at32.mak at91sam7s64"
 # PROP BASE Rebuild_Opt ""
 # PROP BASE Target_File "tc1msvc.exe"
@@ -588,8 +588,8 @@ CFG=tc1msvc - Win32 stm32f769ii
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "tc1msvc___Win32_at91sam9xe"
-# PROP Intermediate_Dir "tc1msvc___Win32_at91sam9xe"
+# PROP Output_Dir "at91sam9xe"
+# PROP Intermediate_Dir "at91sam9xe"
 # PROP Cmd_Line "NMAKE /a /f tc1msvc_at32.mak at91sam9xe"
 # PROP Rebuild_Opt ""
 # PROP Target_File "tc1msvc.exe"
