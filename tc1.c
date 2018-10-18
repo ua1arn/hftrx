@@ -4316,7 +4316,7 @@ static uint_fast16_t sleepcount;	/* счетчик в секундах */
 static uint_fast8_t sleepflagch;	/* не-0: изменилось состояние sleepflag */
 
 #else
-	enum { sleepflag = 0 };
+	//enum { sleepflag = 0 };
 
 #endif /* WITHSLEEPTIMER */
 
