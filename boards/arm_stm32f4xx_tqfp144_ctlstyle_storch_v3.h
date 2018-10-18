@@ -215,8 +215,8 @@
 	#define ENCRES_DEFAULT ENCRES_128
 	//#define ENCRES_DEFAULT ENCRES_24
 	#define WITHDIRECTFREQENER	1 //(! CTLSTYLE_SW2011ALL && ! CTLSTYLE_UA3DKC)
-	#define	WITHENCODER	1	/* для изменения частоты имеется валкодер */
-	//#define WITHENCODER2	1		/* есть второй валкодер */
+	#define	WITHENCODER		1		/* для изменения частоты имеется валкодер */
+	#define WITHENCODER2	1		/* есть второй валкодер */
 
 	/* Board hardware configuration */
 	//#define CODEC1_TYPE CODEC_TYPE_TLV320AIC23B
