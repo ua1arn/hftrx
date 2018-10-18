@@ -4301,9 +4301,10 @@ static uint_fast8_t dimmflagch;	/* не-0: изменилось состо€ние dimmflag */
 
 #if WITHFANTIMER
 
+#define FANPATIMEMAX	240
 static uint_fast8_t fanpatime = 15;	/* количество секунд до выключени€ вентил€тора после передачи, 0 - не гасим. –егулируетс€ из меню. */
-static uint_fast8_t fanpacount;
-static uint_fast8_t fanpaflag;	/* не-0: выключить ыентил€тор. */
+static uint_fast8_t fanpacount = FANPATIMEMAX;
+static uint_fast8_t fanpaflag = 1;	/* не-0: выключить ыентил€тор. */
 static uint_fast8_t fanpaflagch;	/* не-0: изменилось состо€ние fanpaflag */
 
 #endif /* WITHFANTIMER */
@@ -12428,7 +12429,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	{
 		"FAN TIME", 7, 0, 0,	ISTEP5,	
 		ITEM_VALUE,
-		0, 240, 
+		0, FANPATIMEMAX, 
 		offsetof(struct nvmap, fanpatime),
 		NULL,
 		& fanpatime,
