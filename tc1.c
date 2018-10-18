@@ -4627,7 +4627,11 @@ getnext_ham_band(
 
 	do
 	{
-		if (b == XBANDS_BASE0 && xprev [0] == xprev [1] && xnext [0] == xnext [1] && xsel [1] >= HBANDS_COUNT)
+		if (
+			b == XBANDS_BASE0 && 
+			xprev [0] == xprev [1] && 
+			xnext [0] == xnext [1] && 
+			xsel [1] >= HBANDS_COUNT)
 		{
 			/* обработка ситуацию "из обзорного - в обзорный диапазон",
 			если запомненная частота нового обзорного диапазона не попадает на выделенный диапазон */
@@ -4697,7 +4701,12 @@ getprev_ham_band(
 
 	do
 	{
-		if (b == XBANDS_BASE1 && xprev [0] == xprev [1] && xnext [0] == xnext [1] && xsel [0] >= HBANDS_COUNT)
+		if (
+			b == XBANDS_BASE1 && 
+			xprev [0] == xprev [1] && 
+			xnext [0] == xnext [1] && 
+			xsel [0] >= HBANDS_COUNT
+			)
 		{
 			/* обработка ситуацию "из обзорного - в обзорный диапазон",
 			если запомненная частота нового обзорного диапазона не попадает на выделенный диапазон */
