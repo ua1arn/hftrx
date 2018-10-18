@@ -663,21 +663,53 @@ static INT32P_t get_int32_aflosim(void)
 }
 */
 
+static unsigned delaysetlo6 [NTRX] = { 0, };	// задержка переключения частоты lo6 на аремя прохода сигнала через FPGA FIR
 static ncoftw_t anglestep_aflo [NTRX] = { 0, };
+static ncoftw_t anglestep_aflo_shadow [NTRX] = { 0, };
 static ncoftw_t angle_aflo [NTRX] = { 0, };
 const ncoftw_t gnfmdeviationftw = FTWAF(2500);	// 2.5 kHz (-2.5..+2.5) deviation
 
 // установить частоту
 static void nco_setlo_ftw(ncoftw_t ftw, uint_fast8_t pathi)
 {
+#if WITHDSPEXTFIR || WITHDSPEXTDDC
+	delaysetlo6 [pathi] = Ntap_trxi_IQ / 2;
+	anglestep_aflo_shadow [pathi] = ftw;
+#elif WITHDSPLOCALFIR
+	delaysetlo6 [pathi] = Ntap_rx_SSB_IQ / 2;
+	anglestep_aflo_shadow [pathi] = ftw;
+#else
+	anglestep_aflo [pathi] = ftw;
 	if (ftw == 0)
 	{
-		/* Для обеспечения максимальной амплитуды после суммирования квадратурных составляющих в FPA */
-		//angle_aflo [pathi] = (ncoftw_t) 1 << (NCOFTWBITS - 2);	// 1/2 Pi
 		/* Для обеспечения 0.7 от максимальной амплитуды после суммирования квадратурных составляющих в FPA */
 		angle_aflo [pathi] = 0;	// 0 Pi
 	}
-	anglestep_aflo [pathi] = ftw;
+#endif
+}
+
+/* задержка установки нового значение частоты генератора */
+static RAMFUNC void nco_setlo_delay(uint_fast8_t pathi, uint_fast8_t tx)
+{
+#if WITHDSPEXTFIR || WITHDSPEXTDDC || WITHDSPLOCALFIR
+	if (tx != 0)
+	{
+		delaysetlo6 [pathi] = 0;	// предотвращаем повторное срабатывание
+		if ((anglestep_aflo [pathi] = anglestep_aflo_shadow [pathi]) == 0)
+		{
+			/* Для обеспечения 0.7 от максимальной амплитуды после суммирования квадратурных составляющих в FPA */
+			angle_aflo [pathi] = 0;	// 0 Pi
+		}
+	}
+	else if (delaysetlo6 [pathi] != 0 && -- delaysetlo6 [pathi] == 0)
+	{
+		if ((anglestep_aflo [pathi] = anglestep_aflo_shadow [pathi]) == 0)
+		{
+			/* Для обеспечения 0.7 от максимальной амплитуды после суммирования квадратурных составляющих в FPA */
+			angle_aflo [pathi] = 0;	// 0 Pi
+		}
+	}
+#endif
 }
 
 // Получение квадратурных значений для данной частоты со смещением (в герцах)
@@ -2943,8 +2975,6 @@ static void setlevelindicator(long code)	// в кодах ЦАП
 static void audio_update(const uint_fast8_t spf, uint_fast8_t pathi)
 {
 	globDSPMode  [spf] [pathi] = glob_dspmodes [pathi];
-	const ncoftw_t lo6_ftw = FTWAF(- glob_lo6 [pathi]);
-	nco_setlo_ftw(lo6_ftw, pathi);
 
 #if WITHLOOPBACKTEST
 	fir_design_bandpass_freq(FIRCoef_tx_MIKE [spf], Ntap_tx_MIKE, glob_aflowcuttx, glob_afhighcuttx);
@@ -2955,7 +2985,11 @@ static void audio_update(const uint_fast8_t spf, uint_fast8_t pathi)
 	// второй фильтр грузится только в режиме приёма (обеспечиватся внешним циклом).
 	audio_setup_wiver(spf, pathi);	/* Установка параметров ФНЧ в тракте обработки сигнала алгоритм Уивера */
 
+	const ncoftw_t lo6_ftw = FTWAF(- glob_lo6 [pathi]);
+	nco_setlo_ftw(lo6_ftw, pathi);
+
 	audio_setup_rx(spf, pathi);
+
 
 	debug_cleardtmax();		// сброс максимального значения в тесте производительности DSP
 
@@ -4770,7 +4804,7 @@ static struct Complex x256 [NTap256 * 2] = { { 0, 0 }, };
 static uint_fast16_t fft_head = 0;
 
 // формирование отображения спектра
-void savesamplespectrum96stereo(int_fast32_t iv, int_fast32_t qv)
+void savesamplespectrum96stereo(FLOAT_t iv, FLOAT_t qv)
 {
 #if 0
 	FLOAT32P_t v = scalepair(get_float_monofreq(), 0x3fffff);	// frequency
@@ -4802,22 +4836,49 @@ void savesamplespectrum96stereo(int_fast32_t iv, int_fast32_t qv)
 }
 
 //static uint_fast8_t	glob_waterfalrange = 64;
-static FLOAT_t wnd256 [FFTSizeSpectrum];
 static const FLOAT_t waterfalrange = 64;
 static FLOAT_t toplogdb; // = LOG10F((FLOAT_t) INT32_MAX / waterfalrange); 
 //static uint_fast32_t wndcks;
+#if 0
+
+#include "wnd256.h"
+
+static void buildsigwnd(void)
+{
+}
+
+#else
+
+static FLOAT_t wnd256 [FFTSizeSpectrum];
 
 static void buildsigwnd(void)
 {
 	int i;
-	for (i = 0; i < FFTSizeSpectrum; i++)
+	for (i = 0; i < FFTSizeSpectrum; ++ i)
 	{
 		wnd256 [i] = fir_design_window(i, FFTSizeSpectrum);
 	}
 }
 
+static void printsigwnd(void)
+{
+	debug_printf_P(PSTR("static const FLASHMEM FLOAT_t wnd256 [%u] =\n"), (unsigned) FFTSizeSpectrum);
+	debug_printf_P(PSTR("{\n"));
+
+	int i;
+	for (i = 0; i < FFTSizeSpectrum; ++ i)
+	{
+		wnd256 [i] = fir_design_window(i, FFTSizeSpectrum);
+		int el = ((i + 1) % 4) == 0;
+		debug_printf_P(PSTR("\t" "%+1.20f%s"), wnd256 [i], el ? ",\n" : ", ");
+	}
+	debug_printf_P(PSTR("};\n"));
+}
+#endif
+
 static void adjustwmwp(struct Complex *w)
 {
+	//return;
 	int i;
 	for (i = 0; i < FFTSizeSpectrum; i++)
 	{
@@ -4918,6 +4979,7 @@ static void
 dsp_rasterinitialize(void)
 {
 	buildsigwnd();
+	//printsigwnd();	// печать оконных коэффициентов для формирования таблицы во FLASH
 	//wndcks = checksumarea(wnd256, sizeof wnd256);
 	toplogdb = LOG10F((FLOAT_t) INT32_MAX / waterfalrange);
 }
@@ -5157,6 +5219,14 @@ void RAMFUNC dsp_extbuffer32rx(const uint32_t * buff)
 		const FLOAT_t monitx = getmonitx(dspmodeA, sdtn, vi.IV);
 		const FLOAT_t shape = shapeCWEnvelopStep() * scaleDAC;	// 0..1
 	#endif /* ! WITHTRANSPARENTIQ */
+
+	/* отсрочка установки частоты lo6 на время прохождения сигнала через FPGA FIR - аосле смены частоты LO1 */
+	#if WITHUSEDUALWATCH
+		nco_setlo_delay(0, tx);
+		nco_setlo_delay(1, tx);
+	#else /* WITHUSEDUALWATCH */
+		nco_setlo_delay(0, tx);
+	#endif /* WITHUSEDUALWATCH */
 
 #if WITHSUSBSPKONLY
 		// тестирование в режиме USB SPEAKER
