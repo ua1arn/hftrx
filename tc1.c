@@ -4612,39 +4612,38 @@ getnext_ham_band(
 	const uint_fast32_t freq
 	)
 {
-	/* когда дополнительных диапазонов станет больше двух,
-	   сделаю циклы.
-	   */
-	const uint_fast32_t xfreq0 = loadvfy32freq(XBANDS_BASE0);	// частота в обзорном диапазоне 0
-	const uint_fast32_t xfreq1 = loadvfy32freq(XBANDS_BASE1);	// частота в обзорном диапазоне 1
-	const vindex_t xsel0 = getfreqband(xfreq0);		// не принадлежит ли частота какому-то диапазону
-	const vindex_t xsel1 = getfreqband(xfreq1);		// не принадлежит ли частота какому-то диапазону
+	uint_fast8_t i;
+	vindex_t xsel [XBANDS_COUNT];
+	vindex_t xnext [XBANDS_COUNT];
+	vindex_t xprev [XBANDS_COUNT];
 
-	const vindex_t xnext0 = getnexthband(xfreq0);
-	const vindex_t xprev0 = getprevhband(xfreq0);
-
-	const vindex_t xnext1 = getnexthband(xfreq1);
-	const vindex_t xprev1 = getprevhband(xfreq1);
+	for (i = 0; i < XBANDS_COUNT; ++ i)
+	{
+		const uint_fast32_t f = loadvfy32freq(XBANDS_BASE0 + i);	// частота в обзорном диапазоне
+		xsel [i] = getfreqband(f);			// не принадлежит ли частота какому-то диапазону
+		xnext [i] = getnexthband(f);		// не принадлежит ли частота какому-то диапазону
+		xprev [i] = getprevhband(f);		// не принадлежит ли частота какому-то диапазону
+	}
 
 	do
 	{
-		if (b == XBANDS_BASE0 && xprev0 == xprev1 && xnext0 == xnext1 && xsel1 >= HBANDS_COUNT)
+		if (b == XBANDS_BASE0 && xprev [0] == xprev [1] && xnext [0] == xnext [1] && xsel [1] >= HBANDS_COUNT)
 		{
 			/* обработка ситуацию "из обзорного - в обзорный диапазон",
 			если запомненная частота нового обзорного диапазона не попадает на выделенный диапазон */
 			b = XBANDS_BASE1;
 			continue;
 		}
-		if (b == xprev0 && xsel0 >= HBANDS_COUNT)
+		if (b == xprev [0] && xsel [0] >= HBANDS_COUNT)
 		{
-			// текущая является предшествующей для xfreq0
+			// текущая является предшествующей для xfreq [0]
 			/* переходим в обзорный диапазон 0 */
 			b = XBANDS_BASE0;
 			continue;
 		}
-		if (b == xprev1 && xsel1 >= HBANDS_COUNT)
+		if (b == xprev [1] && xsel [1] >= HBANDS_COUNT)
 		{
-			// текущая является предшествующей для xfreq1
+			// текущая является предшествующей для xfreq [1]
 			/* переходим в обзорный диапазон 1 */
 			b = XBANDS_BASE1;
 			continue;
@@ -4660,13 +4659,13 @@ getnext_ham_band(
 		if (b == XBANDS_BASE0)
 		{
 			// текущая частота - обзорный 0
-			b = xnext0;
+			b = xnext [0];
 			continue;
 		}
 		if (b == XBANDS_BASE1)
 		{
 			// текущая частота - обзорный 1
-			b = xnext1;
+			b = xnext [1];
 			continue;
 		}
 
@@ -4683,23 +4682,22 @@ getprev_ham_band(
 	const uint_fast32_t freq
 	)
 {
-	/* когда дополнительных диапазонов станет больше двух,
-	   сделаю циклы.
-	   */
-	const uint_fast32_t xfreq0 = loadvfy32freq(XBANDS_BASE0);	// частота в обзорном диапазоне 0
-	const uint_fast32_t xfreq1 = loadvfy32freq(XBANDS_BASE1);	// частота в обзорном диапазоне 1
-	const vindex_t xsel0 = getfreqband(xfreq0);		// не принадлежит ли частота какому-то диапазону
-	const vindex_t xsel1 = getfreqband(xfreq1);		// не принадлежит ли частота какому-то диапазону
+	uint_fast8_t i;
+	vindex_t xsel [XBANDS_COUNT];
+	vindex_t xnext [XBANDS_COUNT];
+	vindex_t xprev [XBANDS_COUNT];
 
-	const vindex_t xnext0 = getnexthband(xfreq0);
-	const vindex_t xprev0 = getprevhband(xfreq0);
-
-	const vindex_t xnext1 = getnexthband(xfreq1);
-	const vindex_t xprev1 = getprevhband(xfreq1);
+	for (i = 0; i < XBANDS_COUNT; ++ i)
+	{
+		const uint_fast32_t f = loadvfy32freq(XBANDS_BASE0 + i);	// частота в обзорном диапазоне
+		xsel [i] = getfreqband(f);			// не принадлежит ли частота какому-то диапазону
+		xnext [i] = getnexthband(f);		// не принадлежит ли частота какому-то диапазону
+		xprev [i] = getprevhband(f);		// не принадлежит ли частота какому-то диапазону
+	}
 
 	do
 	{
-		if (b == XBANDS_BASE1 && xprev0 == xprev1 && xnext0 == xnext1 && xsel0 >= HBANDS_COUNT)
+		if (b == XBANDS_BASE1 && xprev [0] == xprev [1] && xnext [0] == xnext [1] && xsel [0] >= HBANDS_COUNT)
 		{
 			/* обработка ситуацию "из обзорного - в обзорный диапазон",
 			если запомненная частота нового обзорного диапазона не попадает на выделенный диапазон */
@@ -4707,13 +4705,13 @@ getprev_ham_band(
 			continue;
 
 		}
-		if (b == xnext0 && xsel0 >= HBANDS_COUNT)
+		if (b == xnext [0] && xsel [0] >= HBANDS_COUNT)
 		{
 			/* переходим в обзорный диапазон 0 */
 			b = XBANDS_BASE0;
 			continue;
 		}
-		if (b == xnext1 && xsel1 >= HBANDS_COUNT)
+		if (b == xnext [1] && xsel [1] >= HBANDS_COUNT)
 		{
 			/* переходим в обзорный диапазон 1 */
 			b = XBANDS_BASE1;
@@ -4730,13 +4728,13 @@ getprev_ham_band(
 		if (b == (XBANDS_BASE0))
 		{
 			// текущая частота - обзорный 0
-			b = xprev0;
+			b = xprev [0];
 			continue;
 		}
 		if (b == (XBANDS_BASE1))
 		{
 			// текущая частота - обзорный 1
-			b = xprev1;
+			b = xprev [1];
 			continue;
 		}
 
