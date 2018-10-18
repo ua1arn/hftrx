@@ -3164,7 +3164,7 @@ prog_ctrlreg(uint_fast8_t plane)
 		spi_unselect(target);
 	}
 }
-#elif CTLREGMODE_STORCH_V1_R4DR	// V6 fixed "Воронёнок" с USB FS, DSP и FPGA, DUAL WATCH, SD-CARD & PA on board
+#elif CTLREGMODE_STORCH_V1_R4DR	// STORCH_V1 thermo с USB FS, DSP и FPGA, DUAL WATCH, SD-CARD & PA on board
 // Сигналы DIN8 дублируются на разъеме управления тюнером
 #define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 
