@@ -464,7 +464,7 @@ void buffers_initialize(void)
 	#elif defined (STM32F429xx)
 		RAMNOINIT_D1 static records16_t recordsarray16 [16];
 	#elif defined (STM32H743xx)
-		RAMNOINIT_D1 static records16_t recordsarray16 [48];
+		RAMNOINIT_D1 static records16_t recordsarray16 [28];
 	#else
 		RAMNOINIT_D1 static records16_t recordsarray16 [16];
 	#endif

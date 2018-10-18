@@ -4399,12 +4399,14 @@ enum
 
 #if LCDMODE_LTDC_PIP16
 
-	static RAMNOINIT_D1 ALIGNX_BEGIN PACKEDCOLOR565_T colorpips [2] [GXSIZE(ALLDX, ALLDY)] ALIGNX_END;
+	// один ьуфер установлен для отображения, второй еше отображается. Третий заполняем новым изображением.
+	enum { NPIPS = 3 };
+	static RAMNOINIT_D1 ALIGNX_BEGIN PACKEDCOLOR565_T colorpips [NPIPS] [GXSIZE(ALLDX, ALLDY)] ALIGNX_END;
 	static int pipphase;
 
 	static void nextpip(void)
 	{
-		pipphase = ! pipphase;
+		pipphase = (pipphase + 1) % NPIPS;
 	}
 
 #else /* LCDMODE_LTDC_PIP16 */
