@@ -1542,7 +1542,10 @@ struct dzone
 
 /* struct dzone subset field values */
 
+#define PAGESLEEP 7
+
 #define REDRSUBSET(page)		(1U << (page))	// сдвиги соответствуют номеру отображаемого набора элементов
+
 #define REDRSUBSET_ALL ( \
 		REDRSUBSET(0) | \
 		REDRSUBSET(1) | \
@@ -1550,9 +1553,10 @@ struct dzone
 		REDRSUBSET(3) | \
 		REDRSUBSET(4) | \
 		0)
+
 #define REDRSUBSET_MENU		REDRSUBSET(5)
 #define REDRSUBSET_MENU2	REDRSUBSET(6)
-#define REDRSUBSET_SLEEP	REDRSUBSET(7)
+#define REDRSUBSET_SLEEP	REDRSUBSET(PAGESLEEP)
 
 enum
 {
@@ -3824,6 +3828,7 @@ enum
 			PG0 = REDRSUBSET(DPAGE0),
 			PG1 = REDRSUBSET(DPAGE1),
 			PG2 = REDRSUBSET(DPAGE2),
+			PGSLP = REDRSUBSET_SLEEP,
 			PGALL = PG0 | PG1 | PG2 | REDRSUBSET_MENU,
 			PGLATCH = PGALL,	// страницы, на которых возможно отображение водопада или панорамы.
 			PGSWR = PG0,	// страница отоюражени€ S-meter и SWR-meter
@@ -3844,6 +3849,7 @@ enum
 		{
 			PG0 = REDRSUBSET(DPAGE0),
 			PG1 = REDRSUBSET(DPAGE1),
+			PGSLP = REDRSUBSET_SLEEP,
 			PGALL = PG0 | PG1 | REDRSUBSET_MENU,
 			PGLATCH = PGALL,	// страницы, на которых возможно отображение водопада или панорамы.
 			PGWFL = PG0,	// страница отображени€ водопада
@@ -3903,7 +3909,7 @@ enum
 
 	
 		//{	0,	51,	display_samfreqdelta8, REDRM_BARS, PGALL, },	/* ѕолучить информацию об ошибке настройки в режиме SAM */
-		{	0,	51,	display_time8,		REDRM_BARS, PGALL, },	// TIME
+		{	0,	51,	display_time8,		REDRM_BARS, PGALL | PGSLP, },	// TIME
 		{	9,	51,	display_siglevel5,	REDRM_BARS, PGALL, },	// signal level in S points
 		{	15, 51,	display_thermo4,	REDRM_VOLT, PGALL, },	// thermo sensor
 #if CTLSTYLE_RA4YBO || CTLSTYLE_RA4YBO_V3
@@ -5166,6 +5172,12 @@ void display_menuitemvalue(
 uint_fast8_t display_getpagesmax(void)
 {
 	return DISPLC_MODCOUNT - 1;
+}
+
+// номер варианта отображени€ дл€ "сна"
+uint_fast8_t display_getpagesleep(void)
+{
+	return PAGESLEEP;
 }
 
 // получить параметры отображени€ частоты (дл€ функции пр€мого ввода)

@@ -372,6 +372,7 @@ typedef uint16_t PACKEDCOLOR565_T;
 #define MNUVALCOLOR COLOR_WHITE
 
 uint_fast8_t display_getpagesmax(void);	// количество разных вариантов отображения (menuset)
+uint_fast8_t display_getpagesleep(void);	// номер варианта отображения для "сна"
 uint_fast8_t display_getfreqformat(uint_fast8_t * prjv);	// получить параметры отображения частоты (для функции прямого ввода)
 
 typedef struct pipparams_tag

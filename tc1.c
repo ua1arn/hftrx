@@ -3530,7 +3530,15 @@ static uint_fast8_t gmodecolmaps4 [2] [4];	/* индексом 1-й размерности используе
 #endif /* WITHTX */
 
 static uint_fast8_t menuset; 	/* номер комплекта функций на кнопках (переключабтся кнопкой Fn) */
+static uint_fast8_t dimmflag;	/* не-0: притушить дисплей. */
+static uint_fast8_t sleepflag;	/* не-0: выклбючить дисплей и звук. */
 
+static uint_fast8_t amenuset(void)
+{
+	if ((dimmflag || sleepflag || dimmmode))
+		return display_getpagesleep();
+	return menuset;
+}
 
 // текущее состояние LOCK
 uint_fast8_t
@@ -4287,7 +4295,6 @@ static void cat_answer_forming(void);
 
 static uint_fast8_t dimmtime;	/* количество секунд до гашения индикатора, 0 - не гасим. Регулируется из меню. */
 static uint_fast8_t dimmcount;
-static uint_fast8_t dimmflag;	/* не-0: притушить дисплей. */
 static uint_fast8_t dimmflagch;	/* не-0: изменилось состояние dimmflag */
 
 #endif /* WITHLCDBACKLIGHT || WITHKBDBACKLIGHT */
@@ -4306,7 +4313,6 @@ static uint_fast8_t fanpaflagch;	/* не-0: изменилось состояние fanpaflag */
 
 static uint_fast8_t sleeptime;	/* количество минут до выключения, 0 - не выключаем. Регулируется из меню. */
 static uint_fast16_t sleepcount;	/* счетчик в секундах */
-static uint_fast8_t sleepflag;	/* не-0: выклбючить дисплей и звук. */
 static uint_fast8_t sleepflagch;	/* не-0: изменилось состояние sleepflag */
 
 #else
@@ -8840,16 +8846,16 @@ display_freqpair(void)
 
 	if (editfreqmode)
 	{
-		display_dispfreq_a2(editfreq, blinkpos + 1, blinkstate, menuset);
+		display_dispfreq_a2(editfreq, blinkpos + 1, blinkstate, amenuset());
 	}
 	else
 	{
-		display_dispfreq_ab(menuset);	/* отображение всех индикаторов частоты */
+		display_dispfreq_ab(amenuset());	/* отображение всех индикаторов частоты */
 	}
 
 #else /* WITHDIRECTFREQENER */
 
-	display_dispfreq_ab(menuset);		/* отображение всех индикаторов частоты */
+	display_dispfreq_ab(amenuset());		/* отображение всех индикаторов частоты */
 
 #endif /* WITHDIRECTFREQENER */
 }
@@ -8982,14 +8988,14 @@ display_redrawbars(
 
 		/* отрисовка элементов, общих для всех режимов отображения */
 		/* отрисовка элементов, специфических для данного режима отображения */
-		display_barmeters_subset(menuset, extra);
+		display_barmeters_subset(amenuset(), extra);
 		// подтверждение отрисовки
 		display_refreshperformed_bars();
 	}
 
 	if (immed || display_refreshenabled_voltage())
 	{
-		display_volts(menuset, extra);
+		display_volts(amenuset(), extra);
 		display_refreshperformed_voltage();
 	}
 }
@@ -9019,7 +9025,7 @@ display_redrawmodes(
 	{
 		/* отрисовка элементов, общих для всех режимов отображения */
 		/* отрисовка элементов, специфических для данного режима отображения */
-		display_mode_subset(menuset);
+		display_mode_subset(amenuset());
 		// подтверждение отрисовки
 		display_refreshperformed_modes();
 	}
@@ -10927,6 +10933,8 @@ processmessages(uint_fast8_t * kbch, uint_fast8_t * kbready, uint_fast8_t inmenu
 		if (dimmflagch != 0)
 		{
 			dimmflagch = 0;
+			display2_bgreset();
+			display_redrawfreqmodesbars(0);			/* Обновление дисплея - всё, включая частоту */
 			updateboard(1, 0);
 		}
 #endif /* WITHLCDBACKLIGHT || WITHKBDBACKLIGHT */
@@ -10943,6 +10951,8 @@ processmessages(uint_fast8_t * kbch, uint_fast8_t * kbready, uint_fast8_t inmenu
 		if (sleepflagch != 0)
 		{
 			sleepflagch = 0;
+			display2_bgreset();
+			display_redrawfreqmodesbars(0);			/* Обновление дисплея - всё, включая частоту */
 			updateboard(1, 0);
 		}
 #endif /* WITHSLEEPTIMER */
@@ -14877,6 +14887,8 @@ process_key_menuset_common(uint_fast8_t kbch)
 		{
 			dimmmode = calc_next(dimmmode, 0, 1);
 			save_i8(RMT_DIMMMODE_BASE, dimmmode);
+			display2_bgreset();
+			display_redrawfreqmodesbars(0);			/* Обновление дисплея - всё, включая частоту */
 			updateboard(1, 0);
 		}
 #endif /* WITHLCDBACKLIGHT */
