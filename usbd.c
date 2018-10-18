@@ -9298,7 +9298,7 @@ static void USBD_GetDescriptor(USBD_HandleTypeDef *pdev,
 		}
 		else
 		{
-			TP();
+			//TP();
 			USBD_CtlError(pdev, req);
 			return;
 		}
