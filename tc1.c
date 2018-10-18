@@ -4536,7 +4536,7 @@ getfreqband(const uint_fast32_t freq)
 	return ((vindex_t) - 1);
 }
 
-/* получить номер любительского диапазона с большей частотой, на который переходить.
+/* получить номер диапазона с большей частотой, на который переходить.
   Если нет подходящих, возврат low */
 static vindex_t 
 //NOINLINEAT
@@ -4579,7 +4579,7 @@ getnextbandingroup(const vindex_t b, const uint_fast8_t bandgroup)
 }
 #endif	/* WITHDIRECTBANDS */
 
-/* получить номер любительского диапазона с меньшей частотой, на который переходить.
+/* получить номер диапазона с меньшей частотой, на который переходить.
   Если нет подходящих, возврат high */
 static vindex_t 
 //NOINLINEAT
@@ -4621,8 +4621,8 @@ getnext_ham_band(
 	{
 		const uint_fast32_t f = loadvfy32freq(XBANDS_BASE0 + i);	// частота в обзорном диапазоне
 		xsel [i] = getfreqband(f);			// не принадлежит ли частота какому-то диапазону
-		xnext [i] = getnexthband(f);		// не принадлежит ли частота какому-то диапазону
-		xprev [i] = getprevhband(f);		// не принадлежит ли частота какому-то диапазону
+		xnext [i] = getnexthband(f);		// получить номер диапазона с большей частотой
+		xprev [i] = getprevhband(f);		// получить номер диапазона с меньшей частотой
 	}
 
 	do
@@ -4691,8 +4691,8 @@ getprev_ham_band(
 	{
 		const uint_fast32_t f = loadvfy32freq(XBANDS_BASE0 + i);	// частота в обзорном диапазоне
 		xsel [i] = getfreqband(f);			// не принадлежит ли частота какому-то диапазону
-		xnext [i] = getnexthband(f);		// не принадлежит ли частота какому-то диапазону
-		xprev [i] = getprevhband(f);		// не принадлежит ли частота какому-то диапазону
+		xnext [i] = getnexthband(f);		// получить номер диапазона с большей частотой
+		xprev [i] = getprevhband(f);		// получить номер диапазона с меньшей частотой
 	}
 
 	do
