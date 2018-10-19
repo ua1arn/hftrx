@@ -1520,7 +1520,7 @@ static void display_datetime12(
 
 	board_rtc_getdatetime(& year, & month, & day, & hour, & minute, & secounds);
 
-	local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("%s/%2d %02d:%02d"), 
+	local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("%s %2d %02d:%02d"), 
 		months [month - 1],
 		day,
 		hour, minute
@@ -2957,7 +2957,7 @@ enum
 			{	0, 16,	display2_legend,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// Отображение оцифровки шкалы S-метра
 
 		#if defined (RTC1_TYPE)
-			{	0, 18,	display_datetime12,	REDRM_BARS, REDRSUBSET(DPAGE0), },	// DATE&TIME Jan-01 13:40
+			{	0, 18,	display_datetime12,	REDRM_BARS, REDRSUBSET(DPAGE0), },	// DATE&TIME Jan 01 13:40
 			//{	0, 18,	display_time5,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// TIME HH:MM
 		#endif /* defined (RTC1_TYPE) */
 			{	0, 20,	display_lockstate4, REDRM_MODE, REDRSUBSET(DPAGE0), },
@@ -3131,7 +3131,7 @@ enum
 	#endif /* WITHVOLTLEVEL  */
 	#if defined (RTC1_TYPE)
 			//{	18,	14,	display_time8,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// TIME
-			{	18,	14,	display_datetime12,	REDRM_BARS, REDRSUBSET(DPAGE0), },	// DATE&TIME Jan-01 13:40
+			{	18,	14,	display_datetime12,	REDRM_BARS, REDRSUBSET(DPAGE0), },	// DATE&TIME Jan 01 13:40
 	#endif /* defined (RTC1_TYPE) */
 		#if WITHNOTCHONOFF || WITHNOTCHFREQ
 			{	27, 14,	display_notch3, REDRM_MODE, PG0, },	// 3.7
@@ -3909,7 +3909,7 @@ enum
 
 	
 		//{	0,	51,	display_samfreqdelta8, REDRM_BARS, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
-		{	0,	51,	display_time8,		REDRM_BARS, PGALL | PGSLP, },	// TIME
+		{	0,	51,	display_time8,		REDRM_BARS, PGALL,	},	// TIME
 		{	9,	51,	display_siglevel5,	REDRM_BARS, PGALL, },	// signal level in S points
 		{	15, 51,	display_thermo4,	REDRM_VOLT, PGALL, },	// thermo sensor
 #if CTLSTYLE_RA4YBO || CTLSTYLE_RA4YBO_V3
@@ -3918,6 +3918,10 @@ enum
 		{	19, 51,	display_currlevel5, REDRM_VOLT, PGALL, },	// PA drain current d.dd without "A"
 #endif
 		{	25, 51,	display_voltlevelV5, REDRM_VOLT, PGALL, },	// voltmeter with "V"
+
+		// sleep mode display
+		{	5,	24,	display_datetime12,	REDRM_BARS, PGSLP, },	// DATE & TIME // DATE&TIME Jan 01 13:40
+		{	20, 24,	display_voltlevelV5, REDRM_VOLT, PGSLP, },	// voltmeter with "V"
 
 	#if WITHMENU
 		{	4,	25,	display_menu_group,	REDRM_MLBL, REDRSUBSET_MENU, },	// название группы
