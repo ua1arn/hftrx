@@ -232,7 +232,7 @@
 	//#define ENCRES_DEFAULT ENCRES_24
 	#define WITHDIRECTFREQENER	1 //(! CTLSTYLE_SW2011ALL && ! CTLSTYLE_UA3DKC)
 	#define	WITHENCODER		1		/* для изменения частоты имеется валкодер */
-	#define WITHENCODER2	1		/* есть второй валкодер */
+	#define WITHENCODER2	1		/* есть второй валкодер PEC16-4220F-S0024 (с кнопкой и трещеткой) */
 	#define BOARD_ENCODER2_DIVIDE 2		/* значение для валкодера PEC16-4220F-n0024 (с трещёткой") */
 
 	/* Board hardware configuration */
