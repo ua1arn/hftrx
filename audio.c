@@ -125,7 +125,6 @@ static uint_fast8_t 	glob_afmute;	/* отключить звук в наушниках и динамиках */
 static uint_fast8_t 	glob_lineinput;	/* используется line input вместо микрофона */
 static uint_fast8_t 	glob_mikebust20db;	/* Включение усилителя 20 дБ за микрофоном */
 static uint_fast8_t		glob_mikeagc = 1;	/* Включение программной АРУ перед модулятором */
-static uint_fast8_t		glob_mikeagcscale = 100;	/* На какую часть (в процентах) от полной амплитуды настроена АРУ микрофона */
 static uint_fast8_t		glob_mikeagcgain = 40;	/* предел усиления в АРУ */
 static uint_fast8_t		glob_mikehclip;			/* параметр ограничителя микрофона	*/
 #if defined(CODEC1_TYPE)
@@ -1398,7 +1397,7 @@ static void comp_parameters_initialize(volatile agcparams_t * agcp)
 
 	agcp->gainlimit = db2ratio(60);
 	agcp->mininput = 1;
-	agcp->levelfence = txlevelfence * (int) glob_mikeagcscale / 100;
+	agcp->levelfence = txlevelfence;
 	agcp->agcfactor = (FLOAT_t) - 1;
 }
 
@@ -1409,7 +1408,7 @@ static void comp_parameters_update(volatile agcparams_t * const agcp, FLOAT_t ga
 	agcp->agcoff = glob_mikeagc == 0;
 
 	agcp->gainlimit = gainlimit;
-	agcp->levelfence = txlevelfence * (int) glob_mikeagcscale / 100;
+	agcp->levelfence = txlevelfence;
 }
 
 // детектор АРУ - поддерживает выходное значение пропорционально сигналу 
@@ -6012,7 +6011,7 @@ prog_dsplreg(void)
 	//buff [DSPCTL_OFFSET_FLTSOFTER] = glob_fltsofter;
 	buff [DSPCTL_OFFSET_AMDEPTH] = glob_amdepth;
 	buff [DSPCTL_OFFSET_MIKEAGC] = glob_mikeagc;
-	buff [DSPCTL_OFFSET_MIKEAGCSCALE] = glob_mikeagcscale;
+	buff [DSPCTL_OFFSET_MIKEHCLIP] = glob_mikehclip;
 
 	spi_select(target, DSPREG_SPIMODE);
 	prog_spi_send_frame(target, buff, sizeof buff / sizeof buff [0]);
@@ -6453,17 +6452,6 @@ board_set_mikeagc(uint_fast8_t n)
 	}
 }
 
-/* На какую часть (в процентах) от полной амплитуды настроена АРУ микрофона */
-void
-board_set_mikeagcscale(uint_fast8_t v)
-{
-	if (glob_mikeagcscale != v)
-	{
-		glob_mikeagcscale = v;
-		board_dsp1regchanged();
-	}
-}
-
 /* Максимальное усидение АРУ микрофона */
 void
 board_set_mikeagcgain(uint_fast8_t v)
@@ -6718,7 +6706,7 @@ void hardware_spi_slave_callback(uint8_t * buff, uint_fast8_t len)
 		//board_set_fltsofter(buff [DSPCTL_OFFSET_FLTSOFTER]);
 		board_set_amdepth(buff [DSPCTL_OFFSET_AMDEPTH]);
 		board_set_mikeagc(buff [DSPCTL_OFFSET_MIKEAGC]);
-		board_set_mikeagcscale(buff [DSPCTL_OFFSET_MIKEAGCSCALE]);
+		board_set_mikehclip(buff [DSPCTL_OFFSET_MIKEHCLIP]);
 	}
 }
 

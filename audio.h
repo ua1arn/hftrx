@@ -441,7 +441,6 @@ void board_set_afmute(uint_fast8_t n);	// Отключение звука
 void board_set_mikeequal(uint_fast8_t n);	// включение обработки сигнала с микрофона (эффекты, эквалайзер, ...)
 void board_set_mikeequalparams(const uint_fast8_t * p);	// Эквалайзер 80Hz 230Hz 650Hz 	1.8kHz 5.3kHz
 void board_set_mikeagc(uint_fast8_t n);		/* Включение программной АРУ перед модулятором */
-void board_set_mikeagcscale(uint_fast8_t v);	/* На какую часть (в процентах) от полной амплитуды настроена АРУ микрофона */
 void board_set_mikeagcgain(uint_fast8_t v);	/* Максимальное усидение АРУ микрофона */
 void board_set_afresponcerx(int_fast8_t v);	/* изменение тембра звука в канале приемника */
 void board_set_afresponcetx(int_fast8_t v);	/* изменение тембра звука в канале передатчика */

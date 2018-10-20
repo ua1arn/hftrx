@@ -2439,7 +2439,6 @@ struct nvmap
 	uint16_t glineamp;	// усиление с LINE IN
 	uint8_t gmikebust20db;	// предусилитель микрофона
 	uint8_t gmikeagc;	/* Включение программной АРУ перед модулятором */
-	uint8_t gmikeagcscale;	/* На какую часть (в процентах) от полной амплитуды настроена АРУ микрофона */
 	uint8_t gmikeagcgain;	/* Максимальное усидение АРУ микрофона */
 	uint8_t gmikehclip;		/* Ограничитель */
 	#if WITHUSBUAC
@@ -3180,7 +3179,6 @@ enum
 	static uint_fast16_t glineamp = WITHLINEINGAINMAX;	// усиление с LINE IN
 	static uint_fast8_t gmikebust20db;	// предусилитель микрофона
 	static uint_fast8_t gmikeagc = 1;	/* Включение программной АРУ перед модулятором */
-	static uint_fast8_t gmikeagcscale = 100; /* На какую часть (в процентах) от полной амплитуды настроена АРУ микрофона */
 	static uint_fast8_t gmikeagcgain = 30;	/* Максимальное усидение АРУ микрофона */
 	static uint_fast8_t  gmikehclip;		/* Ограничитель */
 
@@ -7284,7 +7282,6 @@ updateboard(
 		board_set_lineamp(glineamp);	/* усиление с линейного входа */
 		board_set_txaudio(txaudio);	// Альтернативные источники сигнала при передаче
 		board_set_mikeagc(gmikeagc);	/* Включение программной АРУ перед модулятором */
-		board_set_mikeagcscale(gmikeagcscale);	/* На какую часть (в процентах) от полной амплитуды настроена АРУ микрофона */
 		board_set_mikeagcgain(gmikeagcgain);	/* Максимальное усидение АРУ микрофона */
 		board_set_mikehclip(gmikehclip);	/* Ограничитель */
 
@@ -12770,15 +12767,6 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		offsetof(struct nvmap, gmikeagcgain),
 		NULL,
 		& gmikeagcgain,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		"MK AGCSC", 7, 0, 0,	ISTEP1,	
-		ITEM_VALUE,	
-		10, 100, 					/* На какую часть (в процентах) от полной амплитуды выхода настроена АРУ микрофона */
-		offsetof(struct nvmap, gmikeagcscale),
-		NULL,
-		& gmikeagcscale,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
