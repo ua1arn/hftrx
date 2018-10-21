@@ -996,7 +996,7 @@ static void sdhost_dpsm_prepare(uintptr_t addr, uint_fast8_t txmode, uint_fast32
 // SD_CMD[5..0]		CF45:CF40	Command Index
 #define R7S721_SD_CMD_ACMD_bm	(1U << 6)
 
-static uint_fast16_t encode_cmd(uint_fast8_t cmd)
+static portholder_t encode_cmd(uint_fast8_t cmd)
 {
 #if ! WITHSDHCHW
 // SPI SD CARD (MMC SD)
@@ -1042,7 +1042,7 @@ static uint_fast16_t encode_cmd(uint_fast8_t cmd)
 	return cmd;
 }
 
-static uint_fast16_t encode_appcmd(uint_fast8_t cmd)
+static portholder_t encode_appcmd(uint_fast8_t cmd)
 {
 #if ! WITHSDHCHW
 // SPI SD CARD (MMC SD)
@@ -1089,7 +1089,7 @@ static uint_fast16_t encode_appcmd(uint_fast8_t cmd)
 }
 
 // «апустить на выполнение команду, не возвращающую responce
-static void sdhost_no_resp(uint_fast16_t cmd, uint_fast32_t arg)
+static void sdhost_no_resp(portholder_t cmd, uint_fast32_t arg)
 {
 #if ! WITHSDHCHW
 // SPI SD CARD (MMC SD)
@@ -1168,7 +1168,7 @@ static void sdhost_no_resp(uint_fast16_t cmd, uint_fast32_t arg)
 }
 
 // «апустить на выполнение команду, возвращающую short responce
-static void sdhost_short_resp2(uint_fast16_t cmd, uint_fast32_t arg, uint_fast8_t nocrc)
+static void sdhost_short_resp2(portholder_t cmd, uint_fast32_t arg, uint_fast8_t nocrc)
 {
 #if ! WITHSDHCHW
 // SPI SD CARD (MMC SD)
@@ -1248,13 +1248,13 @@ static void sdhost_short_resp2(uint_fast16_t cmd, uint_fast32_t arg, uint_fast8_
 }
 
 //  оманда без пересылки данных
-static void sdhost_short_resp(uint_fast16_t cmd, uint_fast32_t arg)
+static void sdhost_short_resp(portholder_t cmd, uint_fast32_t arg)
 {
 	sdhost_short_resp2(cmd, arg, 0);
 }
 
 // «апустить на выполнение команду, возвращающую long responce
-static void sdhost_long_resp(uint_fast16_t cmd, uint_fast32_t arg)
+static void sdhost_long_resp(portholder_t cmd, uint_fast32_t arg)
 {
 #if ! WITHSDHCHW
 // SPI SD CARD (MMC SD)
@@ -1334,7 +1334,7 @@ static void sdhost_long_resp(uint_fast16_t cmd, uint_fast32_t arg)
 }
 
 // ѕроверка совпадени€ ответа с кодом команды
-static uint_fast8_t sdhost_verify_resp(uint_fast16_t cmd)
+static uint_fast8_t sdhost_verify_resp(uint_fast8_t cmd)
 {
 #if ! WITHSDHCHW
 // SPI SD CARD (MMC SD)
@@ -1831,7 +1831,7 @@ static void sdhost_get_resp128bit(uint8_t * resp128)
 }
 
 // R1 (normal response command)
-static uint_fast8_t sdhost_get_R1(uint_fast16_t cmd, uint_fast32_t * resp32)
+static uint_fast8_t sdhost_get_R1(uint_fast8_t cmd, uint_fast32_t * resp32)
 {
 	const uint_fast8_t ec = sdhost_get_resp();
 	if (ec == 0)
@@ -1844,7 +1844,7 @@ static uint_fast8_t sdhost_get_R1(uint_fast16_t cmd, uint_fast32_t * resp32)
 }
 
 // R7
-static uint_fast8_t sdhost_get_R7(uint_fast16_t cmd, uint_fast32_t * resp32)
+static uint_fast8_t sdhost_get_R7(uint_fast8_t cmd, uint_fast32_t * resp32)
 {
 	const uint_fast8_t ec = sdhost_get_resp();
 	if (ec == 0)
@@ -1881,15 +1881,47 @@ static uint_fast8_t sdhost_get_R3(uint_fast32_t * resp32)
 	return ec;
 }
 
+/**
+  * @brief  Enable the CMDTRANS mode.
+  * @param  p : Pointer to SDMMC register base  
+  * @retval None
+  */  
+#define __SDMMC_CMDTRANS_ENABLE(p)  ((p)->CMD |= SDMMC_CMD_CMDTRANS) 
+
+/**
+  * @brief  Disable the CMDTRANS mode.
+  * @param  p : Pointer to SDMMC register base  
+  * @retval None
+  */  
+#define __SDMMC_CMDTRANS_DISABLE(p)  ((p)->CMD &= ~SDMMC_CMD_CMDTRANS) 
+
+/**
+  * @brief  Enable the CMDSTOP mode.
+  * @param  p : Pointer to SDMMC register base
+  * @retval None
+  */
+#define __SDMMC_CMDSTOP_ENABLE(p)  ((p)->CMD |= SDMMC_CMD_CMDSTOP)
+
+/**
+  * @brief  Disable the CMDSTOP mode.
+  * @param  p : Pointer to SDMMC register base
+  * @retval None
+  */
+#define __SDMMC_CMDSTOP_DISABLE(p)  ((p)->CMD &= ~SDMMC_CMD_CMDSTOP)
+
 static uint_fast8_t sdhost_stop_transmission(void)
 {
 	uint_fast32_t resp;
+  //__SDMMC_CMDSTOP_ENABLE(SDMMC1);
+  //__SDMMC_CMDTRANS_DISABLE(SDMMC1);
 	sdhost_short_resp(encode_cmd(SD_CMD_STOP_TRANSMISSION), 0);	// CMD12
 	if (sdhost_get_R1(SD_CMD_STOP_TRANSMISSION, & resp) != 0)	// get R1b
 	{
+  //__SDMMC_CMDSTOP_DISABLE(SDMMC1);
 		PRINTF(PSTR("sdhost_stop_transmission error\n"));
 		return 1;
 	}
+  //__SDMMC_CMDSTOP_DISABLE(SDMMC1);
 	return 0;
 }
 
@@ -2184,7 +2216,7 @@ DRESULT SD_disk_write(
 
 	arm_hardware_flush_invalidate((uintptr_t) buff, 512 * count);	// —ейчас эту пам€ть будем записывать по DMA, потом содержимое не требуетс€
 
-	if (count == 1)
+	if (count < 2)
 	{
 		// wriite single block
 		//PRINTF(PSTR("write single block\n"));
@@ -2351,7 +2383,7 @@ DRESULT SD_disk_read(
 
 	arm_hardware_flush_invalidate((uintptr_t) buff, 512 * count);	// —ейчас эту пам€ть будем записывать по DMA, потом содержимое не требуетс€
 
-	if (count == 1)
+	if (count < 2)
 	{
 		//PRINTF(PSTR("read one block\n"));
 		// read one block
