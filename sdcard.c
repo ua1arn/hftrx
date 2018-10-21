@@ -2325,7 +2325,7 @@ DRESULT SD_disk_read(
 	//{
 	//	PRINTF(PSTR("SD_disk_read: unalligned: buff=%p, sector=%lu, count=%lu\n"), buff, (unsigned long) sector, (unsigned long) count);
 	//}
-	PRINTF(PSTR("SD_disk_read: buff=%p, sector=%lu, count=%lu\n"), buff, (unsigned long) sector, (unsigned long) count);
+	//PRINTF(PSTR("SD_disk_read: buff=%p, sector=%lu, count=%lu\n"), buff, (unsigned long) sector, (unsigned long) count);
 	uint_fast32_t resp;
 	
 	if (sdhost_sdcard_waitstatus() != 0)
