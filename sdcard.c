@@ -2141,7 +2141,7 @@ DRESULT SD_disk_write(
 	UINT count			/* Number of sectors to write */
 	)
 {
-#if 1//CPUSTYLE_STM32H7XX
+#if CPUSTYLE_STM32H7XX
 	if (count > 1)
 	{
 		while (count --)
