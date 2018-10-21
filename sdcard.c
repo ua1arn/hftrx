@@ -2126,7 +2126,8 @@ static uint32_t SDWriteBlock(uint32_t address, const void* buffer, uint32_t size
    //Do we need to check FIFOCNT and wait until it is 0?
    //PRINTF(" FIFO:%d WSTA:%x ", SDMMC1->FIFOCNT, SDMMC1->STA);
    
-   if((SDMMC1->STA & (SDMMC_STA_DATAEND | SDMMC_STA_DCRCFAIL | SDMMC_STA_DTIMEOUT)) == SDMMC_STA_DATAEND)return RES_OK;
+   if((SDMMC1->STA & (SDMMC_STA_DATAEND | SDMMC_STA_DCRCFAIL | SDMMC_STA_DTIMEOUT)) == SDMMC_STA_DATAEND)
+	   return RES_OK;
    return RES_ERROR;
 }
 
@@ -2140,6 +2141,21 @@ DRESULT SD_disk_write(
 	UINT count			/* Number of sectors to write */
 	)
 {
+#if CPUSTYLE_STM32H7XX
+	if (count > 1)
+	{
+		while (count --)
+		{
+			DRESULT ec = SD_disk_write(drv, buff, sector, 1);
+			if (ec != RES_OK)
+				return ec;
+			buff += 512;
+			sector += 1;
+		}
+		return RES_OK;
+	}
+#endif /* CPUSTYLE_STM32H7XX */
+
 	enum { txmode = 1 };
 	//return SDWriteBlock(sector, buff, count);
 	//if ((uintptr_t) buff & 0x1F)
