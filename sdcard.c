@@ -2141,7 +2141,7 @@ DRESULT SD_disk_write(
 	UINT count			/* Number of sectors to write */
 	)
 {
-#if CPUSTYLE_STM32H7XX
+#if 1//CPUSTYLE_STM32H7XX
 	if (count > 1)
 	{
 		while (count --)
@@ -2281,7 +2281,7 @@ DRESULT SD_disk_write(
 			PRINTF(PSTR("SD_disk_write: sdhost_dpsm_wait error\n"));
 			DMA_sdio_cancel();
 			if (sdhost_stop_transmission() != 0)
-				PRINTF(PSTR("SD_disk_write 2: sdhost_sdcard_waitstatus error\n"));
+				PRINTF(PSTR("SD_disk_write 2: sdhost_stop_transmission error\n"));
 			return RES_ERROR;
 		}
 		else if (DMA_sdio_waitdone() != 0)
@@ -2293,18 +2293,19 @@ DRESULT SD_disk_write(
 		else
 		{
 			sdhost_dpsm_wait_fifo_empty();
+			DMA_sdio_cancel();
 
 			#if ! CPUSTYLE_R7S721
 			// В процессоре CPUSTYLE_R7S721 команда CMD12 формируется аппаратурой
 			if (sdhost_use_cmd23 == 0)
 			{
 				if (sdhost_stop_transmission() != 0)
-					PRINTF(PSTR("SD_disk_write 2: sdhost_sdcard_waitstatus error\n"));
+					PRINTF(PSTR("SD_disk_write 2: sdhost_stop_transmission error\n"));
 			}
 			#endif /* ! CPUSTYLE_R7S721 */
 		}
 		//PRINTF(PSTR("write multiblock, count=%d okay\n"), count);
-			return RES_OK;
+		return RES_OK;
 	}
 	//PRINTF(PSTR("SD_disk_write: buff=%p, sector=%lu, count=%lu okay\n"), buff, (unsigned long) sector, (unsigned long) count);
 }
@@ -2324,7 +2325,7 @@ DRESULT SD_disk_read(
 	//{
 	//	PRINTF(PSTR("SD_disk_read: unalligned: buff=%p, sector=%lu, count=%lu\n"), buff, (unsigned long) sector, (unsigned long) count);
 	//}
-	//PRINTF(PSTR("SD_disk_read: buff=%p, sector=%lu, count=%lu\n"), buff, (unsigned long) sector, (unsigned long) count);
+	PRINTF(PSTR("SD_disk_read: buff=%p, sector=%lu, count=%lu\n"), buff, (unsigned long) sector, (unsigned long) count);
 	uint_fast32_t resp;
 	
 	if (sdhost_sdcard_waitstatus() != 0)
@@ -2427,12 +2428,13 @@ DRESULT SD_disk_read(
 		else
 		{
 			sdhost_dpsm_wait_fifo_empty();
+			DMA_sdio_cancel();
 			#if ! CPUSTYLE_R7S721
 			// В процессоре CPUSTYLE_R7S721 команда CMD12 формируется аппаратурой
 			if (sdhost_use_cmd23 == 0)
 			{
 				if (sdhost_stop_transmission() != 0)
-					PRINTF(PSTR("SD_disk_read 2: sdhost_sdcard_waitstatus error\n"));
+					PRINTF(PSTR("SD_disk_read 2: sdhost_stop_transmission error\n"));
 			}
 			#endif /* ! CPUSTYLE_R7S721 */
 			return RES_OK;
