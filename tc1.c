@@ -3691,6 +3691,8 @@ typedef struct tunerstate
 	uint8_t tunercap, tunerind, tunertype;
 	uint8_t swr;	// values 0..190: SWR = 1..20
 } tus_t;
+#define TUS_SWRMAX (SWRMIN * 20)
+#define TUS_SWR1p1 (SWRMIN * 11 / 10)	// SWR=1.1
 
 static void board_set_tuner_group(void)
 {
@@ -3776,7 +3778,7 @@ static uint_fast8_t scanminLk(tus_t * tus, uint_fast8_t addsteps)
 			return 1;
 		updateboard_tuner();
 		tuner_waitadc();
-		const uint_fast8_t swr = get_swr(SWRMIN * 20);
+		const uint_fast8_t swr = get_swr(TUS_SWRMAX);
 
 		if ((bestswrvalid == 0) || (tus->swr > swr))
 		{
@@ -3812,7 +3814,7 @@ static uint_fast8_t scanminCk(tus_t * tus, uint_fast8_t addsteps)
 			return 1;
 		updateboard_tuner();
 		tuner_waitadc();
-		const uint_fast8_t swr = get_swr(SWRMIN * 20);
+		const uint_fast8_t swr = get_swr(TUS_SWRMAX);
 
 		if ((bestswrvalid == 0) || (tus->swr > swr))
 		{
@@ -3873,10 +3875,18 @@ static void auto_tune(void)
 		tunerind = statuses [tunertype].tunerind;
 		updateboard_tuner();
 
+		// проверка - а может уже нашли подход€шее согласование?
+		if (statuses [tunertype].swr <= TUS_SWR1p1)
+			goto NoMoreTune;
+
 		if (scanminCk(& statuses [tunertype], addstepsCk) != 0)
 			goto aborted;
 		tunercap = statuses [tunertype].tunercap;
 		updateboard_tuner();
+
+		// проверка - а может уже нашли подход€шее согласование?
+		if (statuses [tunertype].swr <= TUS_SWR1p1)
+			goto NoMoreTune;
 	}
 	// ¬ыбираем наилучший результат согласовани€
 	cshindex = findbestswr(statuses, sizeof statuses / sizeof statuses [0]);
@@ -3887,6 +3897,7 @@ static void auto_tune(void)
 	tunercap = statuses [cshindex].tunercap;
 	updateboard_tuner();
 	//debug_printf_P(PSTR("auto_tune stop\n"));
+NoMoreTune:
 
 	save_i8(offsetof(struct nvmap, bands[b].tunercap), tunercap);
 	save_i8(offsetof(struct nvmap, bands[b].tunerind), tunerind);
