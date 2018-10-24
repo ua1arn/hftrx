@@ -50,7 +50,14 @@ Old product page:
 https://launchpad.net/gcc-arm-embedded
 
 FPGA:
+
 Используется Quartis II 13.1 (с апдейтом) Paid version
+
+http://download.altera.com/akdlm/software/acdsinst/13.1/162/ib_tar/Quartus-13.1.0.162-windows-complete.tar
+
+и  апдейт после
+
+http://download.altera.com/akdlm/software/acdsinst/13.1.4/182/update/QuartusSetup-13.1.4.182.exe
 
 ATMEL ARM:
 
