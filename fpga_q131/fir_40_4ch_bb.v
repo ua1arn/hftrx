@@ -25,6 +25,7 @@
 module fir_40_4ch (
 	clk,
 	reset_n,
+	enable,
 	ast_sink_data,
 	ast_sink_valid,
 	ast_source_ready,
@@ -41,6 +42,7 @@ module fir_40_4ch (
 
 	input		clk;
 	input		reset_n;
+	input		enable;
 	input	[31:0]	ast_sink_data;
 	input		ast_sink_valid;
 	input		ast_source_ready;
