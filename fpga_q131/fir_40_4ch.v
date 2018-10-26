@@ -33,6 +33,7 @@
 module fir_40_4ch (
 	clk,
 	reset_n,
+	enable,
 	ast_sink_data,
 	ast_sink_valid,
 	ast_source_ready,
@@ -50,6 +51,7 @@ module fir_40_4ch (
 
 	input		clk;
 	input		reset_n;
+	input		enable;
 	input	[31:0]	ast_sink_data;
 	input		ast_sink_valid;
 	input		ast_source_ready;
@@ -68,6 +70,7 @@ module fir_40_4ch (
 	fir_40_4ch_ast	fir_40_4ch_ast_inst(
 		.clk(clk),
 		.reset_n(reset_n),
+		.enable(enable),
 		.ast_sink_data(ast_sink_data),
 		.ast_sink_valid(ast_sink_valid),
 		.ast_source_ready(ast_source_ready),
@@ -115,7 +118,7 @@ endmodule
 // Retrieval info:      <PRIVATE name = "output_bits_removed_from_lsb" value="24"  type="INTEGER"  enable="1" />
 // Retrieval info:      <PRIVATE name = "output_lsb_remove_type" value="Truncate"  type="STRING"  enable="1" />
 // Retrieval info:      <PRIVATE name = "output_msb_remove_type" value="Truncate"  type="STRING"  enable="1" />
-// Retrieval info:      <PRIVATE name = "flow_control" value="0"  type="INTEGER"  enable="1" />
+// Retrieval info:      <PRIVATE name = "flow_control" value="1"  type="INTEGER"  enable="1" />
 // Retrieval info:      <PRIVATE name = "flow_control_input" value="Slave Sink"  type="STRING"  enable="1" />
 // Retrieval info:      <PRIVATE name = "flow_control_output" value="Master Source"  type="STRING"  enable="1" />
 // Retrieval info:      <PRIVATE name = "device_family" value="Cyclone IV E"  type="STRING"  enable="1" />
