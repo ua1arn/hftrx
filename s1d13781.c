@@ -1250,6 +1250,8 @@ static void rectangle3d(
 uint_fast8_t
 display_getreadystate(void)
 {
+	if (s1d13781_missing != 0)
+		return 1;
 	bitblt_getbusyflag();
 	bitblt_getbusyflag();
 	return bitblt_getbusyflag() == 0;
