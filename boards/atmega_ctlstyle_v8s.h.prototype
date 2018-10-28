@@ -21,10 +21,10 @@
 	//#define ELKEY328 		1	/* электронный ключ	*/
 #if 1
 	/* Версии частотных схем - с преобразованием "вниз" */
-	//#define DIRECT_75M0_X1		1	/* Board hardware configuration */
+	#define DIRECT_75M0_X1		1	/* Board hardware configuration */
 	//#define DIRECT_66M0_X1		1	/* Board hardware configuration */
 	//#define DIRECT_66M66_X1		1	/* Board hardware configuration */
-	#define DIRECT_48M0_X1		1	/* Board hardware configuration */
+	//#define DIRECT_48M0_X1		1	/* Board hardware configuration */
 	//#define DIRECT_50M0_X1		1	/* Board hardware configuration */
 	//#define DIRECT_80M0_X1		1	/* Board hardware configuration */
 	//#define DIRECT_27M0_X1		1	/* Board hardware configuration */
@@ -36,8 +36,8 @@
 
 	//#define BANDSELSTYLERE_LOCONV32M	1
 	#define BANDSELSTYLERE_LOCONV32M_NLB	1	/* Down-conversion with working band 1.6..32 MHz */
-	#if 0
-		#define IF3DF (8823000L - 8862500L)
+	#if 1
+		#define IF3DF (8983000L - 8862500L)
 		#define IF3_CUSTOM_CW_CENTER	(8864000L + IF3DF)
 		#define IF3_CUSTOM_SSB_LOWER	(8862500L + IF3DF)
 		#define IF3_CUSTOM_SSB_UPPER	(8865200L + IF3DF)
@@ -84,7 +84,7 @@
 
 	// --- вариации прошивки, специфические для разных плат
 
-	#define DSTYLE_UR3LMZMOD	1	// Учесть WITHONEATTONEAMP
+	//#define DSTYLE_UR3LMZMOD	1	// Учесть WITHONEATTONEAMP
 	//#define	FONTSTYLE_ITALIC	1	//
 
 	#define CTLREGMODE16	1		/* управляющий регистр 16 бит - для SIMPLE синтезатора на AD8932/AD8935/AD8933	*/
@@ -99,8 +99,8 @@
 	// +++ Особые варианты расположения кнопок на клавиатуре
 	//#define KEYB_RA1AGG	1	/* расположение кнопок для корпуса, сделанного RA1AGG - три группы по четыре линейки кнопок друг за другом в один ряд. */
 	//#define KEYB_UA1CEI	1	/* расположение кнопок для UA1CEI */
-	//#define KEYB_VERTICAL_REV	1	/* расположение кнопок для плат "Воробей" и "Колибри" */
-	#define KEYB_V8S_DK1VS	1	/* расположение для контроллера DK1VS */
+	#define KEYB_VERTICAL_REV	1	/* расположение кнопок для плат "Воробей" и "Колибри" */
+	//#define KEYB_V8S_DK1VS	1	/* расположение для контроллера DK1VS */
 
 	#define WITHSPLIT	1	/* управление режимами расстройки одной кнопкой */
 	//#define WITHSPLITEX	1	/* Трехкнопочное управление режимами расстройки */
@@ -184,7 +184,7 @@
 	//#define REQUEST_FOR_RN4NAB 1	/* Специальный вариант диапазонных фильтров */
 
 	//#define SIDELO4DEFAULT	1	/* применён ЭМВ на нижнюю боковую */
-	//#define WITHFIXEDBFO	1	/* Переворот боковых за счёт 1-го гетродина (особенно, если нет подстраиваемого BFO) */
+	#define WITHFIXEDBFO	1	/* Переворот боковых за счёт 1-го гетродина (особенно, если нет подстраиваемого BFO) */
 	//#define WITHDUALFLTR	1	/* Переворот боковых за счёт переключения фильтра верхней или нижней боковой полосы */
 	#define WITHSAMEBFO	1	/* использование общих настроек BFO для приёма и пережачи */
 	//#define WITHONLYBANDS 1		/* Перестройка может быть ограничена любительскими диапазонами */
@@ -211,11 +211,11 @@
 	//#define PLL1_TYPE PLL_TYPE_SI570
 	//#define PLL1_FRACTIONAL_LENGTH	28	/* Si570: lower 28 bits is a fractional part */
 	//#define DDS1_TYPE DDS_TYPE_AD9951
-	#define DDS1_TYPE DDS_TYPE_AD9835	/* AD9832, AD9835 */
+	//#define DDS1_TYPE DDS_TYPE_AD9835	/* AD9832, AD9835 */
 	//#define PLL1_TYPE PLL_TYPE_LMX1601
 	//#define DDS1_TYPE DDS_TYPE_AD9851	/* AD9851, AD9850 */
 	//#define DDS1_TYPE DDS_TYPE_ATTINY2313
-	//#define DDS1_TYPE DDS_TYPE_AD9834
+	#define DDS1_TYPE DDS_TYPE_AD9834
 	//#define DDS2_TYPE DDS_TYPE_AD9834
 	//#define WITHSI5351AREPLACE 1
 
