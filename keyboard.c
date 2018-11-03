@@ -14,8 +14,8 @@ enum
 {
 	KBD_BEEP_LENGTH =			NTICKS(25),	// длительность озвучивания нажатия
 
-	KBD_STABIL_PRESS =			NTICKS(60),	// время для регистраци нажатия
-	KBD_STABIL_RELEASE =		NTICKS(60),	// время для регистраци отпускания
+	KBD_STABIL_PRESS =			NTICKS(15),	// время для регистраци нажатия
+	KBD_STABIL_RELEASE =		NTICKS(15),	// время для регистраци отпускания
 
 	KBD_MAX_PRESS_DELAY_LONG =	NTICKS(600), // RK4CI:1600 время для регистрации удержания кнопки с медленным автоповтором
 	KBD_PRESS_REPEAT_SLOW =		NTICKS(400),	// время между символами по медленному автоповтору
