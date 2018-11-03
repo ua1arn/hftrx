@@ -111,7 +111,7 @@
 		#define DIRECT_80M0_X1		1	/* Тактовый генератор на плате 80.0 МГц */	
 		//#define DIRECT_72M595_X1	1	/* Тактовый генератор 122.880 МГц */	
 		#define BANDSELSTYLERE_UPCONV56M_36M	1	/* Up-conversion with working band .030..36 MHz */
-	#elif 0
+	#elif 1
 		#define DIRECT_100M0_X1		1	/* Тактовый генератор на плате 100.0 МГц */	
 		#define BANDSELSTYLERE_UPCONV56M_45M	1	/* Up-conversion with working band .030..45 MHz */
 	#else
