@@ -410,20 +410,21 @@ static FLOAT_t FIRCwnd_tx_MIKE [NtapCoeffs(Ntap_tx_MIKE)];			// подготовленные з
 	#error Strange WITHIFADCWIDTH & WITHAFDACWIDTH relations
 #endif
 
-static FLOAT_t txlevelfence = INT_MAX;
-static FLOAT_t txlevelfenceHALF = INT_MAX / 2;
+static FLOAT_t txlevelfence = INT32_MAX;
+static FLOAT_t txlevelfenceHALF = INT32_MAX / 2;
 
-static int_fast32_t txlevelfenceSSB_INTEGER = INT_MAX - 1;
-static FLOAT_t txlevelfenceSSB = INT_MAX / 2;
+static int_fast32_t txlevelfenceSSB_INTEGER = INT32_MAX - 1;
+static FLOAT_t txlevelfenceSSB = INT32_MAX / 2;
 
-static FLOAT_t txlevelfenceNFM = INT_MAX / 2;
-static FLOAT_t txlevelfenceBPSK = INT_MAX / 2;
-static FLOAT_t txlevelfenceCW = INT_MAX / 2;
+static FLOAT_t txlevelfenceNFM = INT32_MAX / 2;
+static FLOAT_t txlevelfenceBPSK = INT32_MAX / 2;
+static FLOAT_t txlevelfenceCW = INT32_MAX / 2;
 
-static FLOAT_t rxlevelfence = INT_MAX;
+static FLOAT_t rxlevelfence = INT32_MAX;
 
-static FLOAT_t mikefence = INT_MAX;
-static FLOAT_t phonefence = INT_MAX;	// Разрядность поступающего на наушники сигнала
+static FLOAT_t mikefenceIN = INT16_MAX;
+static FLOAT_t mikefenceOUT = INT16_MAX;
+static FLOAT_t phonefence = INT16_MAX;	// Разрядность поступающего на наушники сигнала
 static FLOAT_t rxoutdenom = 1 / (FLOAT_t) RXOUTDENOM;
 
 static volatile FLOAT_t nbfence;
@@ -1482,12 +1483,6 @@ uint_fast8_t dsp_getvox(void)
 
 // Возвращает значения 0..255
 uint_fast8_t dsp_getavox(void)
-{
-	return 0;
-}
-
-/* получения признака переполнения АЦП микрофонного тракта */
-uint_fast8_t dsp_getmikeadcoverflow(void)
 {
 	return 0;
 }
@@ -3527,6 +3522,14 @@ static RAMFUNC FLOAT_t txmikeagc(FLOAT_t vi)
 }
 
 
+/* получения признака переполнения АЦП микрофонного тракта - вызывается из user mode */
+uint_fast8_t dsp_getmikeadcoverflow(void)
+{
+	volatile agcstate_t * const st = & txagcstate;
+	const FLOAT_t FS = txagcparams [gwagcproftx].levelfence;
+	return st->agcslowcap >= FS * db2ratio((FLOAT_t) - 1);
+}
+
 void debug_showcompstate(void)
 {
 	const volatile agcstate_t * const st = & txagcstate;
@@ -3686,7 +3689,7 @@ static RAMFUNC FLOAT_t preparevi(
 			// источник - микрофон
 			// дополнительно работает ограничитель.
 			// see glob_mik1level (0..100)
-			return injectsubtone(txmikeagc(vi0f * txlevelfenceSSB / mikefence), ctcss); //* TXINSCALE; // источник сигнала - микрофон
+			return injectsubtone(txmikeagc(vi0f * txlevelfenceSSB / mikefenceIN), ctcss); //* TXINSCALE; // источник сигнала - микрофон
 
 #if WITHUSBUAC
 		case BOARD_TXAUDIO_USB:
@@ -3694,7 +3697,7 @@ static RAMFUNC FLOAT_t preparevi(
 		default:
 			// источник - LINE IN или USB
 			// see glob_mik1level (0..100)
-			return injectsubtone(vi0f * txlevelfenceSSB / mikefence, ctcss); //* TXINSCALE; // источник сигнала - микрофон
+			return injectsubtone(vi0f * txlevelfenceSSB / mikefenceIN, ctcss); //* TXINSCALE; // источник сигнала - микрофон
 
 		case BOARD_TXAUDIO_NOISE:
 			// источник - шум
@@ -4400,7 +4403,7 @@ static INT32P_t loopbacktestaudio(INT32P_t vi0, uint_fast8_t dspmode, FLOAT_t sh
 	//
 	// Здесь выбираем, что прослушиваем при тесте
 	BEGIN_STAMP2();
-	//vi.IV = txmikeagc(vi.IV * txlevelfence / mikefence) / TXINSCALE;
+	//vi.IV = txmikeagc(vi.IV * txlevelfence / mikefenceIN) / TXINSCALE;
 	//vi.IV = filter_fir_rx_AUDIO_A(vi.IV);		// Прослушивание микрофонного сигнала через фильтр приёмника
 	//vi.IV = filter_fir_tx_MIKE(vi.IV, 0);		// Прослушивание микрофонного сигнала через фильтр передатчика
 	END_STAMP2();
@@ -5862,7 +5865,8 @@ void dsp_initialize(void)
 
 	rxlevelfence = adcFS * db2ratio(- 1);
 	// Разрядность поступающего с микрофона сигнала
-	mikefence = POWF(2, WITHAFADCWIDTH - 1) - 1;
+	mikefenceIN = POWF(2, WITHAFADCWIDTH - 1) - 1;	// разрядность сигнала от микрофонного кодека на систему АРУ
+	mikefenceOUT = (POWF(2, WITHAFADCWIDTH - 1) - 1) * db2ratio(- 1);	// максимальное значение на выходе системы АРУ и контроля переполнения
 
 	// Разрядность поступающего на наушники сигнала
 	phonefence = (POWF(2, WITHAFDACWIDTH - 1) - 1)  * db2ratio(- 1);
