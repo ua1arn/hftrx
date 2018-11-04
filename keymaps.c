@@ -494,6 +494,32 @@ uint_fast8_t getexitkey(void)
 	return KBD_CODE_BW;
 }
 
+#elif KEYBSTYLE_SW2012CN5_UY5UM
+//  нопки на передней панели SW-2012-MINI-V5
+//
+// PRE - MOD - FUN - xxx (encoder)
+// UP  - DN  - SPL - xxx (additional key lock)
+const struct qmkey qmdefs [NQMKEYS] =
+{
+	// ADC7 (ki1)
+	{ KIF_NONE,		KBD_CODE_ATT, KBD_CODE_TXTUNE, },
+	{ KIF_NONE,		KBD_CODE_MODE, KBD_CODE_MODEMOD, },
+	{ KIF_EXTMENU,	KBD_CODE_BW, KBD_CODE_MENU, },
+	{ KIF_NONE,		KBD_CODE_ATUBYPASS,	KBD_CODE_ATUSTART, },		// BYP/ATU
+	// ADC6 (ki0)
+	{ KIF_NONE,		KBD_CODE_BAND_UP, KBD_CODE_LOCK, },
+	{ KIF_SLOW,		KBD_CODE_BAND_DOWN,KBD_CODE_MAX, },
+	{ KIF_ERASE,	KBD_CODE_SPLIT, KBD_CODE_SPLIT_HOLDED, },
+	{ KIF_NONE,		KBD_CODE_MAX, KBD_CODE_MAX, },
+	// дополнительный элемент
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, },
+};
+
+uint_fast8_t getexitkey(void)
+{
+	return KBD_CODE_BW;
+}
+
 #elif KEYBSTYLE_SW2012CN5_RN3ZOB_V2
 //  нопки на передней панели SW-2012-MINI-V5
 //

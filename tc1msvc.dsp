@@ -1794,6 +1794,10 @@ SOURCE=.\boards\atmega_ctlstyle_v9cn6.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\boards\atmega_ctlstyle_v9cn6_UY5UM.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\boards\atmega_ctlstyle_v9fm.h
 # End Source File
 # Begin Source File

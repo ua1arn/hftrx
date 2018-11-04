@@ -55,14 +55,14 @@
 //#define CTLSTYLE_SW2015	1		// ATMega: SW2015 (LPF, no VHF, V5.1 - with VOLT METER) с индикатором RDX0154
 //#define CTLSTYLE_SW2016	1		// ATMega: Si5351, SW20116 (LCD RDT065, Si5351 с ПЧ 6 МГц) - с ФНЧ, без УКВ
 //#define CTLSTYLE_SW2016VHF	1	// ATMega: Si5351, SW20116 (LCD RDT065, Si5351 с ПЧ 6 МГц, FM)
-#define CTLSTYLE_SW2018XVR	1	// ATMega: Si5351, SW20116 (LCD RDT065, Si5351 с ПЧ 6 МГц, FM)
+//#define CTLSTYLE_SW2018XVR	1	// ATMega: Si5351, SW20116 (LCD RDT065, Si5351 с ПЧ 6 МГц, FM)
 // mini...
 //#define CTLSTYLE_SW2012_MINI 1	// ATMega: SW-2012-MINI 32*64 - А.Шатун, UR3LMZ (atmega_ctlstyle_v9m.h)
 //#define CTLSTYLE_SW2012MC 1	// ATMega: SW-2012С LS020 - MINI с ПЧ 6 МГЦ и цветным индикатором LS020
 //#define CTLSTYLE_SW2012CN 1	// ATMega: mini 2013 TFT1.8 - MINI с ПЧ 6 МГЦ и цветным индикатором 160*128 с контроллером Sitronix ST7735
 //#define CTLSTYLE_SW2012CN5 1	// ATMega: mini 2013 TFT1.8 - SWR METER + VOLT METER - MINI с ПЧ 6 МГЦ и цветным индикатором 160*128 с контроллером Sitronix ST7735
 //#define CTLSTYLE_SW2012CN5_RN3ZOB	1	// ATMega644, tuner, ...
-//#define CTLSTYLE_SW2016MINI 1		// ATMega: mini 2013 TFT1.8 - SWR METER + VOLT METER - MINI с ПЧ 6 МГЦ и цветным индикатором 160*128 с контроллером Sitronix ST7735
+#define CTLSTYLE_SW2016MINI 1		// ATMega: mini 2013 TFT1.8 - SWR METER + VOLT METER - MINI с ПЧ 6 МГЦ и цветным индикатором 160*128 с контроллером Sitronix ST7735
 
 // Простой синтезатор на AD9835/AD9834/AD9851/Si570 
 //#define CTLSTYLE_V8S 1		// ATMega: "Простой синтезатор на AD9835" - без внешнего дешифратора адресов atmega_ctlstyle_v8s.h
@@ -148,9 +148,9 @@
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32f4xx_tqfp144_cpustyle_raven_v7.h"	// Rmainunit_v5bm.pcb
 #elif CPUSTYLE_STM32F && CTLSTYLE_STORCH_V1	// SD-CARD. DUAL WATCH, STM32F446ZET6, TLV320AIC23B и FPGA EP4CE22E22I7N
-	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v1.h"	// penkevich, Rmainunit_v5cm.pcb, Rmainunit_v5dm.pcb (USB)
+	#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v1.h"	// penkevich, Rmainunit_v5cm.pcb, Rmainunit_v5dm.pcb (USB)
 	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v1_RA9OH.h"	// Rmainunit_v5dm.pcb (USB)
-	#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v1_R4DR.h"	// Rmainunit_v5dm.pcb (thermo stab) (USB)
+	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v1_R4DR.h"	// Rmainunit_v5dm.pcb (thermo stab) (USB)
 	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v1_R4DZ.h"	// Rmainunit_v5dm.pcb (thermo stab) (USB)s
 	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v1_RD1AD.h"	// Rmainunit_v5cm.pcb (USB)
 	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v1_OUSSOV.h"	// Rmainunit_v5cm.pcb (USB)
@@ -158,7 +158,7 @@
 	#include "boards/arm_stm32f4xx_tqfp144_cpustyle_storch_v1.h"	// Rmainunit_v5cm.pcb, Rmainunit_v5dm.pcb
 #elif CPUSTYLE_STM32F && CTLSTYLE_STORCH_V2	// wide LCD, SD-CARD. 2xUSB, DUAL WATCH, STM32F446ZET6, TLV320AIC23B и FPGA EP4CE22E22I7N
 	#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v2.h"	// RA0CGS Rmainunit_v5em.pcb (USBx2)
-	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v2_UA1CEI.h"	// RX3M Rmainunit_v5em.pcb (USBx2)
+	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v2_RX3M.h"	// RX3M Rmainunit_v5em.pcb (USBx2)
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32f4xx_tqfp144_cpustyle_storch_v2.h"	// Rmainunit_v5em.pcb (USBx2)
 #elif CPUSTYLE_STM32F && CTLSTYLE_STORCH_V3	// SD-CARD. 2xUSB, DUAL WATCH, STM32F446ZET6, TLV320AIC23B и FPGA EP4CE22E22I7N
@@ -415,6 +415,7 @@
 	#include "boards/atmega_cpustyle_v9.h"	// SW-2011-RDX
 #elif CPUSTYLE_ATMEGA32 && CTLSTYLE_SW2016MINI
 	#include "boards/atmega_ctlstyle_v9cn6.h"	// SW-2016-MINI с ПЧ 6 МГц и цветным индикатором
+	//#include "boards/atmega_ctlstyle_v9cn6_UY5UM.h"	// SW-2016-MINI с ПЧ 6 МГц и EPSON цветным индикатором
 	#include "paramdepend.h"				/* проверка зависимостей параметров конфигурации */
 	#include "boards/atmega_cpustyle_v9.h"	// SW-2011-RDX
 #elif CPUSTYLE_ATMEGA32 && CTLSTYLE_SW2012CN5_RN3ZOB
