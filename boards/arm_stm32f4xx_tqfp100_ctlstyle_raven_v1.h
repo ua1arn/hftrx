@@ -18,7 +18,6 @@
 	#define WITHUSEPLL		1	/* Главная PLL	*/
 	#define WITHUSESAIPLL	1	/* SAI PLL	*/
 	//#define WITHUSESAII2S	1	/* I2S PLL	*/
-	#define LTDC_DOTCLK	9000000uL	// частота пикселей при работе с интерфейсом RGB
 
 	#if 0
 		// при наличии внешнего кварцевого резонатора
