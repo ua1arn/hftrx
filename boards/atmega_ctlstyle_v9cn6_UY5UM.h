@@ -9,8 +9,8 @@
 
 // Описание для трансивера SW2013C - mini "Color" - с цветным дисплеем и управлением выходной мощностью.
 
-#ifndef ATMEGA_CTLSTYLE_V9CN6_H_INCLUDED
-#define ATMEGA_CTLSTYLE_V9CN6_H_INCLUDED 1
+#ifndef ATMEGA_CTLSTYLE_V9CN6_UY5UM_H_INCLUDED
+#define ATMEGA_CTLSTYLE_V9CN6_UY5UM_H_INCLUDED 1
 	
 	#define CTLSTYLE_SW2011ALL	1
 
@@ -59,6 +59,7 @@
 
 	// +++ Особые варианты расположения кнопок на клавиатуре
 	#define KEYBSTYLE_SW2012CN5_UY5UM	1
+	#define WITHDIRECTFREQENER	1 //(! CTLSTYLE_SW2011ALL && ! CTLSTYLE_UA3DKC)
 	// --- Особые варианты расположения кнопок на клавиатуре
 
 	// +++ Одна из этих строк определяет тип дисплея, для которого компилируется прошивка
@@ -217,16 +218,17 @@ enum
 	VOLTSOURCE = 2, // Средняя точка делителя напряжения, для АКБ
 #if WITHBARS
 	SMETERIX = 1,	// S-meter
-	PWRI = 0,		// Индикатор мощности передатчика
+	PWRI = 0,		// PIN 37 Индикатор мощности передатчика
 	FWD = 4, REF = 3,	// SWR-meter
 #endif /* WITHBARS */
-	KI0 = 6, KI1 = 7	// клавиатура
+	KI0 = 5, KI1 = 6, KI2 = 7	// клавиатура
 };
 
-#define KI_COUNT 2	// количество используемых под клавиатуру входов АЦП
+#define KI_COUNT 3	// количество используемых под клавиатуру входов АЦП
+#define KI_LIST	KI1, KI2, KI0,	// инициализаторы для функции перекодировки
 
 #define VOLTLEVEL_UPPER		43	// 4.3 kOhm - верхний резистор делителя датчика напряжения
 #define VOLTLEVEL_LOWER		10	// 1.0 kOhm - нижний резистор
 
 
-#endif /* ATMEGA_CTLSTYLE_V9CN6_H_INCLUDED */
+#endif /* ATMEGA_CTLSTYLE_V9CN6_UY5UM_H_INCLUDED */
