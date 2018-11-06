@@ -3841,20 +3841,27 @@ enum
 		enum 
 		{
 			DPAGE0,					// —траница, в которой отображаютс€ основные (или все) 
+#if WITHINTEGRATEDDSP && (WITHRTS96 || WITHRTS192)
 			DPAGE1,					// —траница, в которой отображаетс€ спектр и водопад
+#endif /* WITHINTEGRATEDDSP && (WITHRTS96 || WITHRTS192) */
 			DISPLC_MODCOUNT
 		};
 
 		enum
 		{
 			PG0 = REDRSUBSET(DPAGE0),
+#if WITHINTEGRATEDDSP && (WITHRTS96 || WITHRTS192)
 			PG1 = REDRSUBSET(DPAGE1),
-			PGSLP = REDRSUBSET_SLEEP,
 			PGALL = PG0 | PG1 | REDRSUBSET_MENU,
-			PGLATCH = PGALL,	// страницы, на которых возможно отображение водопада или панорамы.
 			PGWFL = PG0,	// страница отображени€ водопада
 			PGSPE = PG0,	// страница отображени€ панорамы
 			PGSWR = PG1,	// страница отоюражени€ S-meter и SWR-meter
+			PGLATCH = PGALL,	// страницы, на которых возможно отображение водопада или панорамы.
+#else /* WITHINTEGRATEDDSP && (WITHRTS96 || WITHRTS192) */
+			PGSWR = PG0,	// страница отоюражени€ S-meter и SWR-meter
+			PGALL = PG0 | REDRSUBSET_MENU,
+#endif /* WITHINTEGRATEDDSP && (WITHRTS96 || WITHRTS192) */
+			PGSLP = REDRSUBSET_SLEEP,
 			PGunused
 		};
 	#endif /* WITHSEPARATEWFL */
@@ -3902,10 +3909,12 @@ enum
 		{	0,	25,	display2_legend,	REDRM_MODE, PGSWR, },// ќтображение оцифровки шкалы S-метра
 		{	0,	30,	display2_bars,		REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
 
+#if WITHINTEGRATEDDSP && (WITHRTS96 || WITHRTS192)
 		{	0,	25,	dsp_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра дл€ последующего отображени€ спектра или водопада
 		{	0,	25,	display2_spectrum,	REDRM_BARS, PGSPE, },// подготовка изображени€ спектра
 		{	0,	25,	display2_waterfall,	REDRM_BARS, PGWFL, },// подготовка изображени€ водопада
 		{	0,	25,	display2_colorbuff,	REDRM_BARS,	PGWFL | PGSPE, },// ќтображение водопада и/или спектра
+#endif /* WITHINTEGRATEDDSP && (WITHRTS96 || WITHRTS192) */
 
 	
 		//{	0,	51,	display_samfreqdelta8, REDRM_BARS, PGALL, },	/* ѕолучить информацию об ошибке настройки в режиме SAM */
