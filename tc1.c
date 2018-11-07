@@ -5393,7 +5393,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		"SQUELCH  ", 
 		0,		// rj
 		ISTEP1,		/* squelch level */
-		0, UINT8_MAX, 
+		0, SQUELCHMAX, 
 		offsetof(struct nvmap, gsquelch),	/* уровень сигнала болше которого открывается шумодав */
 		NULL,
 		& gsquelch,
@@ -10500,7 +10500,7 @@ processcatmsg(
 			if (catpcount == 4)
 			{
 				//const uint_fast32_t p1 = vfy32up(catscanint(catp + 0, 1), 0, 0, 0);
-				const uint_fast32_t p2 = vfy32up(catscanint(catp + 1, 3), 0, 255, 0);
+				const uint_fast32_t p2 = vfy32up(catscanint(catp + 1, 3), 0, SQUELCHMAX, 0);
 				gsquelch = p2;
 				updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
 				rc = 1;
@@ -12711,7 +12711,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	{
 		"SQUELCH ", 7, 0, 0,	ISTEP1,		/* squelch level */
 		ITEM_VALUE,
-		0, UINT8_MAX, 
+		0, SQUELCHMAX, 
 		offsetof(struct nvmap, gsquelch),	/* уровень сигнала болше которого открывается шумодав */
 		NULL,
 		& gsquelch,
