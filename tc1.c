@@ -5345,7 +5345,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		offsetof(struct nvmap, elkeywpm),
 		NULL,
 		& elkeywpm,
-		getzerobase, 
+		getzerobase, /* складывается со смещением и отображается */
 		enc2menu_adjust,	/* функция для изменения значения параметра */
 	},
 #endif /* WITHELKEY && ! WITHPOTWPM */
@@ -5358,7 +5358,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		offsetof(struct nvmap, gnormalpower),
 		NULL,
 		& gnormalpower,
-		getzerobase, 
+		getzerobase, /* складывается со смещением и отображается */
 		enc2menu_adjust,	/* функция для изменения значения параметра */
 	},
 #endif /* WITHPOWERTRIM */
@@ -5384,10 +5384,23 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		offsetof(struct nvmap, gsubtonei),
 		NULL,
 		& gsubtonei,
-		getzerobase, 
+		getzerobase, /* складывается со смещением и отображается */
 		enc2menu_adjust,	/* функция для изменения значения параметра */
 	},
 #endif /* WITHPOWERTRIM */
+#if WITHIF4DSP
+	{
+		"SQUELCH  ", 
+		0,		// rj
+		ISTEP1,		/* squelch level */
+		0, UINT8_MAX, 
+		offsetof(struct nvmap, gsquelch),	/* уровень сигнала болше которого открывается шумодав */
+		NULL,
+		& gsquelch,
+		getzerobase, /* складывается со смещением и отображается */
+		enc2menu_adjust,	/* функция для изменения значения параметра */
+	},
+#endif /* WITHIF4DSP */
 };
 
 /* получение названия редактируемого параметра */
@@ -12698,7 +12711,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	{
 		"SQUELCH ", 7, 0, 0,	ISTEP1,		/* squelch level */
 		ITEM_VALUE,
-		0, 255, 
+		0, UINT8_MAX, 
 		offsetof(struct nvmap, gsquelch),	/* уровень сигнала болше которого открывается шумодав */
 		NULL,
 		& gsquelch,

@@ -5748,7 +5748,7 @@ rxparam_update(uint_fast8_t profile, uint_fast8_t pathi)
 
 		const FLOAT_t upper = agccalcstrength(agcp, agcp->levelfence);
 		const FLOAT_t lower = agccalcstrength(agcp, agcp->mininput);
-		manualsquelch [pathi] = (int) glob_squelch * (upper - lower) / 255 + lower;
+		manualsquelch [pathi] = (int) glob_squelch * (upper - lower) / UINT8_MAX + lower;
 	}
 
 	// шумодав NFM
