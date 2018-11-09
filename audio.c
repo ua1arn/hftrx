@@ -410,7 +410,6 @@ static FLOAT_t FIRCwnd_tx_MIKE [NtapCoeffs(Ntap_tx_MIKE)];			// подготовленные з
 	#error Strange WITHIFADCWIDTH & WITHAFDACWIDTH relations
 #endif
 
-static FLOAT_t txlevelfence = INT32_MAX;
 static FLOAT_t txlevelfenceHALF = INT32_MAX / 2;
 
 static int_fast32_t txlevelfenceSSB_INTEGER = INT32_MAX - 1;
@@ -1398,7 +1397,7 @@ static void comp_parameters_initialize(volatile agcparams_t * agcp)
 
 	agcp->gainlimit = db2ratio(60);
 	agcp->mininput = 1;
-	agcp->levelfence = txlevelfence;
+	agcp->levelfence = txlevelfenceSSB;
 	agcp->agcfactor = (FLOAT_t) - 1;
 }
 
@@ -1409,7 +1408,7 @@ static void comp_parameters_update(volatile agcparams_t * const agcp, FLOAT_t ga
 	agcp->agcoff = glob_mikeagc == 0;
 
 	agcp->gainlimit = gainlimit;
-	agcp->levelfence = txlevelfence;
+	agcp->levelfence = txlevelfenceSSB;
 }
 
 // детектор АРУ - поддерживает выходное значение пропорционально сигналу 
@@ -5215,7 +5214,7 @@ void RAMFUNC dsp_extbuffer32rx(const uint32_t * buff)
 	for (i = 0; i < DMABUFFSIZE32RX; i += DMABUFSTEP32RX)
 	{
 	#if ! WITHTRANSPARENTIQ
-		const FLOAT_t ctcss = get_float_subtone() * txlevelfence;
+		const FLOAT_t ctcss = get_float_subtone() * txlevelfenceSSB;
 		const FLOAT_t sdtn = get_float_sidetone() * phonefence * shapeSidetoneStep();	// Здесь значение выборки в диапазоне, допустимом для кодека
 		const INT32P_t vi = getsampmlemike2();	// с микрофона (или 0, если ещё не запустился) */
 		const FLOAT_t monitx = getmonitx(dspmodeA, sdtn, vi.IV);
@@ -5841,20 +5840,14 @@ void dsp_initialize(void)
 		const int_fast32_t dacFS = (((uint_fast64_t) 1 << (WITHIFDACWIDTH - 1)) - 1);
 	#endif /* WITHIFDACWIDTH > DSP_FLOAT_BITSMANTISSA */
 
-	txlevelfence = dacFS * db2ratio(- (FLOAT_t) 1.75) * (FLOAT_t) M_SQRT1_2;	// контролировать по отсутствию индикации переполнения DUC при передаче
-	txlevelfenceSSB_INTEGER = txlevelfence;	// Для источника шума
+	const FLOAT_t txlevelfence = dacFS * db2ratio(- (FLOAT_t) 1.75) * (FLOAT_t) M_SQRT1_2;	// контролировать по отсутствию индикации переполнения DUC при передаче
 	txlevelfenceHALF = txlevelfence / 2;	// Для режимов с lo6=0 - у которых нет подавления нерабочей боковой
 
-	txlevelfenceSSB = txlevelfence;
-#if WITHTXDACFULL
-	txlevelfenceBPSK = txlevelfence;
-	txlevelfenceNFM = txlevelfence;
-	txlevelfenceCW = txlevelfence;
-#else /* WITHTXDACFULL */
+	txlevelfenceSSB = txlevelfence * (FLOAT_t) M_SQRT1_2;
+	txlevelfenceSSB_INTEGER = txlevelfenceSSB;	// Для источника шума
 	txlevelfenceBPSK = txlevelfence / (FLOAT_t) 1.5;
 	txlevelfenceNFM = txlevelfence / 2;
 	txlevelfenceCW = txlevelfence / 2;
-#endif /* WITHTXDACFULL */
 
 	// Разрядность приёмного тракта
 	#if WITHIFADCWIDTH > DSP_FLOAT_BITSMANTISSA
