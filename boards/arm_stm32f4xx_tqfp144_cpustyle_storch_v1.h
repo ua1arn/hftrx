@@ -186,9 +186,9 @@
 #if WITHI2SHW
 
 	#if defined(STM32H743xx)
-		#define PB5_I2S3_AF AF_SPI3
-	#else /* defined(STM32H743xx) */
 		#define PB5_I2S3_AF 7	// AF_7
+	#else /* defined(STM32H743xx) */
+		#define PB5_I2S3_AF AF_SPI3
 	#endif /* defined(STM32H743xx) */
 
 	// Инициализируются I2S2 и I2S3
