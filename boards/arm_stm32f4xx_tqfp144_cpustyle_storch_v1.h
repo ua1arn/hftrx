@@ -184,6 +184,13 @@
 #endif
 
 #if WITHI2SHW
+
+	#if defined(STM32H743xx)
+		#define PB5_I2S3_AF AF_SPI3
+	#else /* defined(STM32H743xx) */
+		#define PB5_I2S3_AF 7	// AF_7
+	#endif /* defined(STM32H743xx) */
+
 	// Инициализируются I2S2 и I2S3
 	#define I2S2HW_INITIALIZE() do { \
 		arm_hardware_piob_altfn2(1U << 12, AF_SPI2); /* PB12	*/ \
@@ -191,7 +198,7 @@
 		arm_hardware_piob_altfn2(1U << 15, AF_SPI2); /* PB15 - передача */ \
 		arm_hardware_pioa_altfn2(1U << 15, AF_SPI3); /* PA15	*/ \
 		arm_hardware_piob_altfn2(1U << 3, AF_SPI3); /* PB3	*/ \
-		arm_hardware_piob_altfn2(1U << 5, AF_SPI3); /* PB5 - приём */ \
+		arm_hardware_piob_altfn2(1U << 5, PB5_I2S3_AF); /* PB5 - приём */ \
 	} while (0)
 #endif /* WITHSAI1HW */
 
