@@ -5349,6 +5349,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		enc2menu_adjust,	/* функция для изменения значения параметра */
 	},
 #endif /* WITHELKEY && ! WITHPOTWPM */
+#if WITHTX
 #if WITHPOWERTRIM
 	{
 		"TX POWER ",
@@ -5358,6 +5359,18 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		offsetof(struct nvmap, gnormalpower),
 		NULL,
 		& gnormalpower,
+		getzerobase, /* складывается со смещением и отображается */
+		enc2menu_adjust,	/* функция для изменения значения параметра */
+	},
+#elif WITHIF4DSP
+	{
+		"DAC SCALE",
+		0,		// rj
+		ISTEP1,
+		0, 1,
+		offsetof(struct nvmap, gdacscale),
+		NULL,
+		& gdacscale,
 		getzerobase, /* складывается со смещением и отображается */
 		enc2menu_adjust,	/* функция для изменения значения параметра */
 	},
@@ -5388,6 +5401,20 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		enc2menu_adjust,	/* функция для изменения значения параметра */
 	},
 #endif /* WITHPOWERTRIM */
+#if WITHMIC1LEVEL
+	{
+		"MIKE LEVL",
+		0,	
+		ISTEP1,		/* подстройка усиления микрофонного усилителя через меню. */
+		WITHMIKEINGAINMIN, WITHMIKEINGAINMAX, 
+		offsetof(struct nvmap, mik1level),	/* усиление микрофонного усилителя */
+		& mik1level,
+		NULL,
+		getzerobase, /* складывается со смещением и отображается */
+		enc2menu_adjust,	/* функция для изменения значения параметра */
+	},
+#endif /* ITHMIC1LEVEL */
+#endif /* WITHTX */
 #if WITHIF4DSP
 	{
 		"SQUELCH  ", 
@@ -8907,23 +8934,38 @@ display_refreshperformed_bars(void)
 	enableIRQ();
 }
 
-
-// S-METER, SWR-METER, POWER-METER
-/* отображение S-метра или SWR-метра на приёме или передаче */
+// S-METER
+/* отображение S-метра на приёме или передаче */
 // Функция вызывается из display2.c
 void 
-display2_bars(
+display2_bars_rx(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
 	void * pv
 	)
 {
 #if WITHBARS
-	if (userfsg)
-	{
-	}
-	else if (gtx)
-	{
+	uint_fast8_t tracemax;
+	uint_fast8_t v = board_getsmeter(& tracemax, 0, UINT8_MAX, 0);
+	display_smeter(x, y, v, tracemax, s9level, s9delta, s9_60_delta);
+
+#if LCDMODE_LTDC_PIP16
+	arm_hardware_ltdc_pip_off();
+#endif /* LCDMODE_LTDC_PIP16 */
+#endif /* WITHBARS */
+}
+
+// SWR-METER, POWER-METER
+/* отображение P-метра и SWR-метра на приёме или передаче */
+// Функция вызывается из display2.c
+void 
+display2_bars_tx(
+	uint_fast8_t x, 
+	uint_fast8_t y, 
+	void * pv
+	)
+{
+#if WITHBARS
 #if WITHTX
 	#if (WITHSWRMTR || WITHSHOWSWRPWR)
 		uint_fast8_t pwrtrace;
@@ -8945,18 +8987,35 @@ display2_bars(
 		display_pwrmeter(x, y, pwr, pwrtrace, maxpwrcali);
 	#endif
 
-#endif
-	}
-	else
-	{
-		uint_fast8_t tracemax;
-		uint_fast8_t v = board_getsmeter(& tracemax, 0, UINT8_MAX, 0);
-		display_smeter(x, y, v, tracemax, s9level, s9delta, s9_60_delta);
-	}
-#endif /* WITHBARS */
 #if LCDMODE_LTDC_PIP16
 	arm_hardware_ltdc_pip_off();
 #endif /* LCDMODE_LTDC_PIP16 */
+
+#endif /* WITHTX */
+#endif /* WITHBARS */
+}
+
+// S-METER, SWR-METER, POWER-METER
+/* отображение S-метра или SWR-метра на приёме или передаче */
+// Функция вызывается из display2.c
+void 
+display2_bars(
+	uint_fast8_t x, 
+	uint_fast8_t y, 
+	void * pv
+	)
+{
+	if (userfsg)
+	{
+	}
+	else if (gtx)
+	{
+		display2_bars_tx(x, y, pv);
+	}
+	else
+	{
+		display2_bars_rx(x, y, pv);
+	}
 
 }
 
