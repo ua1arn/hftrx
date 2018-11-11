@@ -5367,7 +5367,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		"DAC SCALE",
 		0,		// rj
 		ISTEP1,
-		0, 1,
+		0, 100,
 		offsetof(struct nvmap, gdacscale),
 		NULL,
 		& gdacscale,
