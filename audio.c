@@ -3526,7 +3526,7 @@ static RAMFUNC FLOAT_t txmikeagc(FLOAT_t vi)
 uint_fast8_t dsp_getmikeadcoverflow(void)
 {
 	volatile agcstate_t * const st = & txagcstate;
-	const FLOAT_t FS = txagcparams [gwagcproftx].levelfence;
+	const FLOAT_t FS = txagcparams [gwagcproftx].levelfence;	// txlevelfenceSSB
 	return st->agcslowcap >= FS * db2ratio((FLOAT_t) - 1);
 }
 
@@ -5759,7 +5759,7 @@ txparam_update(uint_fast8_t profile)
 
 	{
 		// Настройка ограничителя
-		const FLOAT_t FS = txagcparams [profile].levelfence;
+		const FLOAT_t FS = txagcparams [profile].levelfence;	// txlevelfenceSSB
 		const FLOAT_t grade = 1 - (glob_mikehclip / (FLOAT_t) 100);
 		mickeclipscale [profile] = 1 / grade;
 		mickecliplevelp [profile] = FS * grade;
