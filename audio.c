@@ -3493,6 +3493,7 @@ static FLOAT_t mickeclipleveln [NPROF] = { - INT_MAX, - INT_MAX };
 static FLOAT_t mickeclipscale [NPROF] = { 1, 1 };
 
 // ару и компрессор микрофона
+// На входе уже нормированный к txlevelfenceSSB сигнал
 static RAMFUNC FLOAT_t txmikeagc(FLOAT_t vi)
 {
 	volatile agcparams_t * const agcp = & txagcparams [gwagcproftx];
@@ -3527,17 +3528,6 @@ uint_fast8_t dsp_getmikeadcoverflow(void)
 	volatile agcstate_t * const st = & txagcstate;
 	const FLOAT_t FS = txagcparams [gwagcproftx].levelfence;
 	return st->agcslowcap >= FS * db2ratio((FLOAT_t) - 1);
-}
-
-void debug_showcompstate(void)
-{
-	const volatile agcstate_t * const st = & txagcstate;
-	char s [128];
-
-	snprintf(s, sizeof s / sizeof s [0], 
-		"agcfastcap=%f, agchangticks=%u, agcslowcap=%f\n", 
-		st->agcfastcap, st->agchangticks, st->agcslowcap);
-	dbg_puts_impl(s);
 }
 
 // agc ---
