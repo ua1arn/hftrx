@@ -56,6 +56,18 @@ static void display2_legend(
 	uint_fast8_t y, 
 	void * pv
 	);
+// Отображение шкалы S-метра
+static void display2_legend_rx(
+	uint_fast8_t x, 
+	uint_fast8_t y, 
+	void * pv
+	);
+// Отображение шкалы SWR-метра и других измерителе
+static void display2_legend_tx(
+	uint_fast8_t x, 
+	uint_fast8_t y, 
+	void * pv
+	);
 
 //#define WIDEFREQ (TUNE_TOP > 100000000L)
 
@@ -3277,131 +3289,6 @@ enum
 	#endif /* WITHMENU */
 		};
 
-	#elif DSTYLE_UA1CEIMOD
-		// x=30, y=16
-
-		enum
-		{
-			BDCV_ALLRX = 7,			// количество ячееек, отведенное под S-метр, панораму, иные отображения
-			BDCV_SPMRX = BDCV_ALLRX,	// вертикальный размер спектра в ячейках		};
-			BDCV_WFLRX = BDCV_ALLRX,	// вертикальный размер водопада в ячейках		};
-			BDCO_SPMRX = 0,	// смещение спектра по вертикали в ячейках от начала общего поля
-			BDCO_WFLRX = 0,	// смещение водопада по вертикали в ячейках от начала общего поля
-			BDTH_ALLRX = 30,	// ширина зоны для отображение полосы на индикаторе
-			BDTH_LEFTRX = 15,	// ширина индикатора баллов
-			BDTH_RIGHTRX = BDTH_ALLRX - BDTH_LEFTRX,	// ширина индикатора плюсов 
-			BDTH_SPACERX = 0,
-		#if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
-			BDTH_ALLSWR = 9,
-			BDTH_SPACESWR = 1,
-			BDTH_ALLPWR = 20,
-			BDTH_SPACEPWR = 0
-		#else /* WITHSHOWSWRPWR */
-			BDTH_ALLSWR = BDTH_ALLRX,
-			BDTH_SPACESWR = BDTH_SPACERX,
-			BDTH_ALLPWR = BDTH_ALLRX,
-			BDTH_SPACEPWR = BDTH_SPACERX
-		#endif /* WITHSHOWSWRPWR */
-		};
-		//					  "012345678901234567890123456789"
-		#define SMETERMAP 	  "S 1  3  5  7  9  +20  +40  +60"	//
-		//#if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
-			#define SWRPWRMAP "1 | 2 | 3 0%      50%     100%" 
-			#define SWRMAX	(SWRMIN * 30 / 10)	// 3.0 - значение на полной шкале
-		//#else
-		//	#error Not designed for work DSTYLE_UR3LMZMOD without WITHSHOWSWRPWR
-			//#define POWERMAP  " 0 10 20 40 60 80 100"
-			//#define SWRMAP    "1    |    2    |   3 "	// 
-			//#define SWRMAX	(SWRMIN * 31 / 10)	// 3.1 - значение на полной шкале
-		//#endif
-		enum
-		{
-			PATTERN_SPACE = 0x00,	/* очищаем место за SWR и PWR метром этим символом */
-			PATTERN_BAR_FULL = 0xFF,
-			PATTERN_BAR_HALF = 0xFF,
-			PATTERN_BAR_EMPTYFULL = 0x81,
-			PATTERN_BAR_EMPTYHALF = 0x81
-		};
-		//#define SWRMAX	(SWRMIN * 40 / 10)	// 4.0 - значение на полной шкале
-
-		enum {
-			DPAGE0,					// Страница, в которой отображаются основные (или все) 
-			DPAGE1,					// Страница, в которой отображаются основные (или все) 
-			DPAGE2,					// Страница, в которой отображаются основные (или все) 
-			DISPLC_MODCOUNT
-		};
-		enum
-		{
-			PG0 = REDRSUBSET(DPAGE0),
-			PG1 = REDRSUBSET(DPAGE1),
-			PG2 = REDRSUBSET(DPAGE2),
-			PGALL = PG0 | PG1 | PG2 | REDRSUBSET_MENU,
-			PGLATCH = PGALL,
-			PGunused
-		};
-		#define DISPLC_WIDTH	8	// количество цифр в отображении частоты
-		#define DISPLC_RJ		1	// количество скрытых справа цифр в отображении частоты
-		static const FLASHMEM struct dzone dzones [] =
-		{
-		/* ---------------------------------- */
-			{	0,	0,	display_txrxstate2, REDRM_MODE, PGALL, },
-			{	3,	0,	display_ant5,		REDRM_MODE, PGALL, },
-			{	9,	0,	display_ovf3,		REDRM_BARS, PGALL, },	// ovf
-			{	14,	0,	display_pre3,		REDRM_MODE, PGALL, },	// pre
-			{	18, 0,	display_att4,		REDRM_MODE, PGALL, },	// attenuator state
-			{	22,	0,	display_lockstate1, REDRM_MODE, PGALL, },
-			{	23, 0,	display_rxbw3,		REDRM_MODE, PGALL, },
-			{	27, 0,	display_mode3_a,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
-		/* ---------------------------------- */
-			{	0,	2,	display_freqXbig_a, REDRM_FREQ, PGALL, },	// fullwidth = 8 constantly
-			{	27, 2,	display_agc3,		REDRM_MODE, PGALL, },
-			{	27, 4,	display_voxtune3,	REDRM_MODE, PGALL, },
-		/* ---------------------------------- */
-		#if WITHUSEAUDIOREC
-			{	0,	7,	display_rec3,		REDRM_BARS, PGALL, },	// Отображение режима записи аудио фрагмента
-		#endif /* WITHUSEAUDIOREC */
-			{	4,	7,	display_mainsub3, REDRM_MODE, PGALL, },	// main/sub RX
-			{	8,	7,	display_vfomode3,	REDRM_MODE, PGALL, },	// SPL
-			{	16, 7,	display_freqX_b,	REDRM_FREQB, PGALL, },
-			{	27, 7,	display_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
-		/* ---------------------------------- */
-			{	0,	9,	display2_bars,		REDRM_BARS, PG0, },	// S-METER, SWR-METER, POWER-METER
-			{	0,	10,	display2_legend,	REDRM_MODE, PG0, },	// Отображение оцифровки шкалы S-метра
-			/* ---------------------------------- */
-			{	0,	9,	dsp_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
-			{	0,	9,	display2_spectrum,	REDRM_BARS, PG1, },// подготовка изображения спектра
-			{	0,	9,	display2_waterfall,	REDRM_BARS, PG2, },// подготовка изображения водопада
-			{	0,	9,	display2_colorbuff,REDRM_BARS,	PG1 | PG2, },// Отображение водопада и/или спектра
-			/* ---------------------------------- */
-		#if defined (RTC1_TYPE)
-			{	0,	14,	display_time5,		REDRM_BARS, PG0, },	// TIME
-		#endif /* defined (RTC1_TYPE) */
-		#if WITHVOLTLEVEL
-			{	6,	14,	display_voltlevelV5, REDRM_VOLT, PG0 | REDRSUBSET_MENU, },	// voltmeter with "V"
-		#endif /* WITHVOLTLEVEL  */
-		#if WITHCURRLEVEL
-			{	11, 14,	display_currlevelA6, REDRM_VOLT, PG0 | REDRSUBSET_MENU, },	// amphermeter with "A"
-		#endif /*  WITHCURRLEVEL */
-		#if WITHAMHIGHKBDADJ
-			{	6, 14,	display_amfmhighcut3,REDRM_MODE, PG0, },	// 3.7
-		#endif /* WITHAMHIGHKBDADJ */
-			{	18, 14,	display_samfreqdelta8, REDRM_BARS, PG0 | REDRSUBSET_MENU, },	/* Получить информацию об ошибке настройки в режиме SAM */
-		#if WITHNOTCHONOFF || WITHNOTCHFREQ
-			{	27, 14,	display_notch3, REDRM_MODE, PG0, },	// 3.7
-		#endif /* WITHNOTCHONOFF || WITHNOTCHFREQ */
-		/* ---------------------------------- */
-	#if WITHMENU
-			{	0,	9,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
-			{	0,	11,	display_menu_lblc3,	REDRM_MLBL, REDRSUBSET_MENU, },	// код редактируемого параметра
-			{	4,	11,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
-			//{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
-		#if WITHVOLTLEVEL && WITHCURRLEVEL
-			//{	0,	9,	display_voltlevelV5, REDRM_VOLT, REDRSUBSET_MENU, },	// voltmeter with "V"
-			//{	6,	9,	display_currlevelA6, REDRM_VOLT, REDRSUBSET_MENU, },	// amphermeter with "A"
-		#endif /* WITHVOLTLEVEL && WITHCURRLEVEL */
-	#endif /* WITHMENU */
-		};
-
 	#else /* DSTYLE_UR3LMZMOD && WITHONEATTONEAMP */
 		// RA1AGO version
 		// x=30, y=16
@@ -3753,7 +3640,7 @@ enum
 
 	#endif /* DSTYLE_UR3LMZMOD && WITHONEATTONEAMP */
 
-#elif DSTYLE_G_X480_Y272
+#elif DSTYLE_G_X480_Y272 && WITHINTEGRATEDDSP && (WITHRTS96 || WITHRTS192)
 
 	// TFT панель SONY PSP-1000
 	// 272/5 = 54, 480/16=30
@@ -3841,26 +3728,19 @@ enum
 		enum 
 		{
 			DPAGE0,					// Страница, в которой отображаются основные (или все) 
-#if WITHINTEGRATEDDSP && (WITHRTS96 || WITHRTS192)
 			DPAGE1,					// Страница, в которой отображается спектр и водопад
-#endif /* WITHINTEGRATEDDSP && (WITHRTS96 || WITHRTS192) */
 			DISPLC_MODCOUNT
 		};
 
 		enum
 		{
 			PG0 = REDRSUBSET(DPAGE0),
-#if WITHINTEGRATEDDSP && (WITHRTS96 || WITHRTS192)
 			PG1 = REDRSUBSET(DPAGE1),
 			PGALL = PG0 | PG1 | REDRSUBSET_MENU,
 			PGWFL = PG0,	// страница отображения водопада
 			PGSPE = PG0,	// страница отображения панорамы
 			PGSWR = PG1,	// страница отоюражения S-meter и SWR-meter
 			PGLATCH = PGALL,	// страницы, на которых возможно отображение водопада или панорамы.
-#else /* WITHINTEGRATEDDSP && (WITHRTS96 || WITHRTS192) */
-			PGSWR = PG0,	// страница отоюражения S-meter и SWR-meter
-			PGALL = PG0 | REDRSUBSET_MENU,
-#endif /* WITHINTEGRATEDDSP && (WITHRTS96 || WITHRTS192) */
 			PGSLP = REDRSUBSET_SLEEP,
 			PGunused
 		};
@@ -3872,6 +3752,7 @@ enum
 		#define DISPLC_WIDTH	8	// количество цифр в отображении частоты
 	#endif
 	#define DISPLC_RJ		0	// количество скрытых справа цифр в отображении частоты
+
 	static const FLASHMEM struct dzone dzones [] =
 	{
 		{	0,	0,	display_txrxstate2, REDRM_MODE, PGALL, },
@@ -3880,14 +3761,14 @@ enum
 		{	14,	0,	display_preovf3,	REDRM_BARS, PGALL, },
 		{	18,	0,	display_genham1,	REDRM_BARS, PGALL, },	// Отображение режима General Coverage / HAM bands
 
-#if WITHENCODER2
+	#if WITHENCODER2
 		{	21, 0,	display_fnlabel9,	REDRM_MODE, PGALL, },	// FUNC item label
 		{	21,	4,	display_fnvalue9,	REDRM_MODE, PGALL, },	// FUNC item value
 		{	25, 15,	display_notch5,		REDRM_MODE, PGALL, },	// NOTCH on/off
-#else /* WITHENCODER2 */
+	#else /* WITHENCODER2 */
 		{	25, 0,	display_notch5,		REDRM_MODE, PGALL, },	// FUNC item label
 		{	25,	4,	display_notchfreq5,	REDRM_BARS, PGALL, },	// FUNC item value
-#endif /* WITHENCODER2 */
+	#endif /* WITHENCODER2 */
 
 		{	26, 20,	display_agc3,		REDRM_MODE, PGALL, },	// AGC mode
 		{	26, 25,	display_voxtune3,	REDRM_MODE, PGALL, },	// VOX
@@ -3909,23 +3790,23 @@ enum
 		{	0,	25,	display2_legend,	REDRM_MODE, PGSWR, },// Отображение оцифровки шкалы S-метра
 		{	0,	30,	display2_bars,		REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
 
-#if WITHINTEGRATEDDSP && (WITHRTS96 || WITHRTS192)
+	#if WITHINTEGRATEDDSP && (WITHRTS96 || WITHRTS192)
 		{	0,	25,	dsp_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
 		{	0,	25,	display2_spectrum,	REDRM_BARS, PGSPE, },// подготовка изображения спектра
 		{	0,	25,	display2_waterfall,	REDRM_BARS, PGWFL, },// подготовка изображения водопада
 		{	0,	25,	display2_colorbuff,	REDRM_BARS,	PGWFL | PGSPE, },// Отображение водопада и/или спектра
-#endif /* WITHINTEGRATEDDSP && (WITHRTS96 || WITHRTS192) */
+	#endif /* WITHINTEGRATEDDSP && (WITHRTS96 || WITHRTS192) */
 
 	
 		//{	0,	51,	display_samfreqdelta8, REDRM_BARS, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
 		{	0,	51,	display_time8,		REDRM_BARS, PGALL,	},	// TIME
 		{	9,	51,	display_siglevel5,	REDRM_BARS, PGALL, },	// signal level in S points
 		{	15, 51,	display_thermo4,	REDRM_VOLT, PGALL, },	// thermo sensor
-#if CTLSTYLE_RA4YBO || CTLSTYLE_RA4YBO_V3
+	#if CTLSTYLE_RA4YBO || CTLSTYLE_RA4YBO_V3
 		{	19, 51,	display_currlevel5alt, REDRM_VOLT, PGALL, },	// PA drain current dd.d without "A"
-#else
+	#else
 		{	19, 51,	display_currlevel5, REDRM_VOLT, PGALL, },	// PA drain current d.dd without "A"
-#endif
+	#endif
 		{	25, 51,	display_voltlevelV5, REDRM_VOLT, PGALL, },	// voltmeter with "V"
 
 		// sleep mode display
@@ -3949,6 +3830,149 @@ enum
 		p->w = GRID2X(CHARS2GRID(BDTH_ALLRX));	// размер по горизонтали в пикселях
 		p->h = GRID2Y(BDCV_ALLRX);				// размер по вертикали в пикселях
 	}
+
+#elif DSTYLE_G_X480_Y272 && ! (WITHINTEGRATEDDSP && (WITHRTS96 || WITHRTS192))
+
+	// TFT панель SONY PSP-1000
+	// 272/5 = 54, 480/16=30
+	// без панорамы и водопада
+
+	#if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
+		//					"012345678901234567890123"
+		#define SWRPWRMAP	"1   2   3   4  0% | 100%" 
+		#define SWRMAX	(SWRMIN * 40 / 10)	// 4.0 - значение на полной шкале
+	#else
+		//					"012345678901234567890123"
+		#define POWERMAP	"0    25    50   75   100"
+		#define SWRMAP		"1   |   2  |   3   |   4"	// 
+		#define SWRMAX	(SWRMIN * 40 / 10)	// 4.0 - значение на полной шкале
+	#endif
+	//						"012345678901234567890123"
+	#define SMETERMAP		"1  3  5  7  9 +20 +40 60"
+	enum
+	{
+		BDTH_ALLRX = 24,	// ширина зоны для отображение полосы на индикаторе
+		BDTH_LEFTRX = 12,	// ширина индикатора баллов
+		BDTH_RIGHTRX = BDTH_ALLRX - BDTH_LEFTRX,	// ширина индикатора плюсов
+		BDTH_SPACERX = 0,
+	#if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
+		BDTH_ALLSWR = 13,
+		BDTH_SPACESWR = 2,
+		BDTH_ALLPWR = 9,
+		BDTH_SPACEPWR = 0,
+	#else /* WITHSHOWSWRPWR */
+		BDTH_ALLSWR = BDTH_ALLRX,
+		BDTH_SPACESWR = BDTH_SPACERX,
+		BDTH_ALLPWR = BDTH_ALLRX,
+		BDTH_SPACEPWR = BDTH_SPACERX,
+	#endif /* WITHSHOWSWRPWR */
+
+		BDCV_ALLRX = ROWS2GRID(20),	// количество ячееек, отведенное под S-метр, панораму, иные отображения
+	};
+
+	enum
+	{
+		PATTERN_SPACE = 0x00,	/* очищаем место за SWR и PWR метром этим символом */
+		PATTERN_BAR_FULL = 0xFF,
+		PATTERN_BAR_HALF = 0x3c,
+		PATTERN_BAR_EMPTYFULL = 0x00,	//0x00
+		PATTERN_BAR_EMPTYHALF = 0x00	//0x00
+	};
+
+		/* совмещение на одном экрание водопада и панорамы */
+		enum 
+		{
+			DPAGE0,					// Страница, в которой отображаются основные (или все) 
+			DISPLC_MODCOUNT
+		};
+
+		enum
+		{
+			PG0 = REDRSUBSET(DPAGE0),
+			PGSWR = PG0,	// страница отоюражения S-meter и SWR-meter
+			PGALL = PG0 | REDRSUBSET_MENU,
+			PGSLP = REDRSUBSET_SLEEP,
+			PGunused
+		};
+
+	#if TUNE_TOP > 100000000uL
+		#define DISPLC_WIDTH	9	// количество цифр в отображении частоты
+	#else
+		#define DISPLC_WIDTH	8	// количество цифр в отображении частоты
+	#endif
+	#define DISPLC_RJ		0	// количество скрытых справа цифр в отображении частоты
+
+	static const FLASHMEM struct dzone dzones [] =
+	{
+		{	0,	0,	display_txrxstate2, REDRM_MODE, PGALL, },
+		{	3,	0,	display_ant5,		REDRM_MODE, PGALL, },
+		{	9,	0,	display_att4,		REDRM_MODE, PGALL, },
+		{	14,	0,	display_preovf3,	REDRM_BARS, PGALL, },
+		{	18,	0,	display_genham1,	REDRM_BARS, PGALL, },	// Отображение режима General Coverage / HAM bands
+
+	#if WITHENCODER2
+		{	21, 0,	display_fnlabel9,	REDRM_MODE, PGALL, },	// FUNC item label
+		{	21,	4,	display_fnvalue9,	REDRM_MODE, PGALL, },	// FUNC item value
+		{	25, 15,	display_notch5,		REDRM_MODE, PGALL, },	// NOTCH on/off
+	#else /* WITHENCODER2 */
+		{	25, 0,	display_notch5,		REDRM_MODE, PGALL, },	// FUNC item label
+		{	25,	4,	display_notchfreq5,	REDRM_BARS, PGALL, },	// FUNC item value
+	#endif /* WITHENCODER2 */
+
+		{	26, 20,	display_agc3,		REDRM_MODE, PGALL, },	// AGC mode
+		{	26, 22,	display_voxtune3,	REDRM_MODE, PGALL, },	// VOX
+		{	25, 30,	display_lockstate4, REDRM_MODE, PGALL, },	// LOCK
+		{	26, 35,	display_atu3,		REDRM_MODE, PGALL, },	// TUNER state (optional)
+		{	26, 40,	display_byp3,		REDRM_MODE, PGALL, },	// TUNER BYPASS state (optional)
+		{	26, 45,	display_rec3,		REDRM_BARS, PGALL, },	// Отображение режима записи аудио фрагмента
+		
+		{	0,	7,	display_freqX_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Частота (большие цифры)
+		{	21, 10,	display_mode3_a,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
+		{	26, 10,	display_rxbw3,		REDRM_MODE, PGALL, },	// 3.1 / 0,5 / WID / NAR
+		{	21, 15,	display_mainsub3,	REDRM_MODE, PGALL, },	// main/sub RX: A/A, A/B, B/A, etc
+
+		{	5,	22,	display_vfomode3,	REDRM_MODE, PGALL, },	// SPLIT
+		{	8,	22,	display_freqX_b,	REDRM_FREQB, PGALL, },	// SUB FREQ
+		{	21, 22,	display_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
+
+		{	0,	30,	display2_legend_rx,	REDRM_MODE, PGSWR, },// Отображение оцифровки шкалы S-метра
+		{	0,	35,	display2_bars_rx,	REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
+		{	0,	40,	display2_legend_tx,	REDRM_MODE, PGSWR, },// Отображение оцифровки шкалы S-метра
+		{	0,	45,	display2_bars_tx,	REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
+
+		//{	0,	51,	display_samfreqdelta8, REDRM_BARS, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
+		{	0,	51,	display_time8,		REDRM_BARS, PGALL,	},	// TIME
+		{	9,	51,	display_siglevel5,	REDRM_BARS, PGALL, },	// signal level in S points
+		{	15, 51,	display_thermo4,	REDRM_VOLT, PGALL, },	// thermo sensor
+	#if CTLSTYLE_RA4YBO || CTLSTYLE_RA4YBO_V3
+		{	19, 51,	display_currlevel5alt, REDRM_VOLT, PGALL, },	// PA drain current dd.d without "A"
+	#else
+		{	19, 51,	display_currlevel5, REDRM_VOLT, PGALL, },	// PA drain current d.dd without "A"
+	#endif
+		{	25, 51,	display_voltlevelV5, REDRM_VOLT, PGALL, },	// voltmeter with "V"
+
+		// sleep mode display
+		{	5,	24,	display_datetime12,	REDRM_BARS, PGSLP, },	// DATE & TIME // DATE&TIME Jan 01 13:40
+		{	20, 24,	display_voltlevelV5, REDRM_VOLT, PGSLP, },	// voltmeter with "V"
+
+	#if WITHMENU
+		{	4,	25,	display_menu_group,	REDRM_MLBL, REDRSUBSET_MENU, },	// название группы
+		{	0,	30,	display_menu_lblc3,	REDRM_MLBL, REDRSUBSET_MENU, },	// код редактируемого параметра
+		{	4,	30,	display_menu_lblng,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
+		{	0,	35,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
+		{	0,	40,	display_samfreqdelta8, REDRM_BARS, REDRSUBSET_MENU, },	/* Получить информацию об ошибке настройки в режиме SAM */
+	#endif /* WITHMENU */
+	};
+
+	/* получить координаты окна с панорамой и/или водопадом. */
+	void display2_getpipparams(pipparams_t * p)
+	{
+		p->x = GRID2X(0);	// позиция верхнего левого угла в пикселях
+		p->y = GRID2Y(30);	// позиция верхнего левого угла в пикселях
+		p->w = GRID2X(CHARS2GRID(BDTH_ALLRX));	// размер по горизонтали в пикселях
+		p->h = GRID2Y(BDCV_ALLRX);				// размер по вертикали в пикселях
+	}
+
 #else
 	#error TODO: to be implemented
 #endif /* LCDMODE_LS020 */
@@ -4396,6 +4420,65 @@ static void display2_legend(
 #if LCDMODE_LTDC_PIP16
 	arm_hardware_ltdc_pip_off();
 #endif /* LCDMODE_LTDC_PIP16 */
+}
+
+// Отображение шкалы S-метра и других измерителей
+static void display2_legend_rx(
+	uint_fast8_t x, 
+	uint_fast8_t y, 
+	void * pv
+	)
+{
+#if defined(SMETERMAP)
+	display_setcolors(MODECOLOR, BGCOLOR);
+	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
+	do
+	{
+		display_gotoxy(x, y + lowhalf);
+		display_string_P(PSTR(SMETERMAP), lowhalf);
+
+	} while (lowhalf --);
+#endif /* defined(SMETERMAP) */
+#if LCDMODE_LTDC_PIP16
+	arm_hardware_ltdc_pip_off();
+#endif /* LCDMODE_LTDC_PIP16 */
+}
+
+// Отображение шкалы SWR-метра и других измерителей
+static void display2_legend_tx(
+	uint_fast8_t x, 
+	uint_fast8_t y, 
+	void * pv
+	)
+{
+#if defined(SWRPWRMAP)
+#if WITHTX
+	display_setcolors(MODECOLOR, BGCOLOR);
+	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
+	do
+	{
+		display_gotoxy(x, y + lowhalf);
+		#if WITHSWRMTR
+			#if WITHSHOWSWRPWR /* на дисплее одновременно отображаются SWR-meter и PWR-meter */
+					display_string_P(PSTR(SWRPWRMAP), lowhalf);
+			#else
+					if (swrmode) 	// Если TUNE то показываем шкалу КСВ
+						display_string_P(PSTR(SWRMAP), lowhalf);
+					else
+						display_string_P(PSTR(POWERMAP), lowhalf);
+			#endif
+		#elif WITHPWRMTR
+					display_string_P(PSTR(POWERMAP), lowhalf);
+		#else
+			#warning No TX indication
+		#endif
+	} while (lowhalf --);
+
+	#if LCDMODE_LTDC_PIP16
+		arm_hardware_ltdc_pip_off();
+	#endif /* LCDMODE_LTDC_PIP16 */
+#endif /* WITHTX */
+#endif /* defined(SWRPWRMAP) */
 }
 
 #if WITHINTEGRATEDDSP && (WITHRTS96 || WITHRTS192) && ! LCDMODE_HD44780
