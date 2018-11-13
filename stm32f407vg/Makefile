@@ -25,7 +25,7 @@ CC   = $(TRGT)gcc
 CP   = $(TRGT)objcopy
 AS   = $(TRGT)gcc -x assembler-with-cpp
 HEX  = $(CP) -O ihex -R .noinit -R .bss
-BIN  = $(CP) -O binary 
+BIN  = $(CP) -O binary -R .noinit -R .bss
 
 CMSISDIR = ../../CMSIS_5-5.4.0/CMSIS
 
@@ -136,8 +136,8 @@ all: ROM
 
 RAM: $(OBJS) $(PROJECT)_ram.elf $(PROJECT)_ram.hex
 
-ROM: $(OBJS) $(PROJECT)_rom.elf $(PROJECT)_rom.hex
-#ROM: $(OBJS) $(PROJECT)_rom.elf $(PROJECT)_rom.bin
+#ROM: $(OBJS) $(PROJECT)_rom.elf $(PROJECT)_rom.hex
+ROM: $(OBJS) $(PROJECT)_rom.elf $(PROJECT)_rom.bin
 
 %o: $(addprefix $(SRCDIR), %c)
 	$(CC) -c $(CPFLAGS) $(INCDIR) $< -o $@
