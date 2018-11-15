@@ -5530,7 +5530,18 @@ uif_encoder2_press(void)
 static void
 uif_encoder2_hold(void)
 {
-	enc2state = ENC2STATE_INITIALIZE; //calc_next(enc2state, ENC2STATE_INITIALIZE, ENC2STATE_COUNT - 1);
+	switch (enc2state)
+	{
+	case ENC2STATE_INITIALIZE:
+		enc2state = ENC2STATE_EDITITEM;
+		break;
+	case ENC2STATE_SELECTITEM:
+		enc2state = ENC2STATE_INITIALIZE;
+		break;
+	case ENC2STATE_EDITITEM:
+		enc2state = ENC2STATE_INITIALIZE;
+		break;
+	}
 	save_i8(RMT_ENC2STATE_BASE, enc2state);
 	display_redrawmodes(1);
 }
