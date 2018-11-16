@@ -15161,7 +15161,7 @@ processkeyboard(uint_fast8_t kbch)
 		return 0;	// не требуется обновление индикатора
 
 #if WITHMENU
-#if KEYBSTYLE_SW2013SF_US2IT || WITHIF4DSP
+#if KEYBSTYLE_SW2013SF_US2IT || KEYBSTYLE_SW2012CN5_UY5UM || WITHIF4DSP
 	case KBD_CODE_MENU_CWSPEED:
 		uif_key_click_menubyname("CW SPEED", KBD_CODE_MENU_CWSPEED);
 		return 1;	/* клавиша уже обработана */
