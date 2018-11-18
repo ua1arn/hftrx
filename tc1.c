@@ -771,9 +771,6 @@ static uint_fast8_t gtxaprofiles [TXAPROFIG_count];	// индекс профиля для группы
 #define AFRESPONCEMIN 0
 #define AFRESPONCEMAX (AFRESPONCESHIFT + 18)	// -96..+18
 
-#define BWGRANLOW	10		// низкочастотный скат фильтров подстраивается с шагом 10 герц
-#define BWGRANHIGH	100		// высокочастотный скат фильтров подстраивается с шагом 100 герц
-
 static int_fast32_t getafresponcebase(void)
 {
 	return - AFRESPONCESHIFT;
@@ -865,7 +862,7 @@ static bwprop_t bwprop_amnarrow = { & bwlimits_am, BWSET_WIDE, 100 / BWGRANLOW, 
 static bwprop_t bwprop_digiwide = { & bwlimits_ssb, BWSET_WIDE, 300 / BWGRANLOW, 3400 / BWGRANHIGH, - 0 + AFRESPONCESHIFT,	};
 static bwprop_t bwprop_nfmnarrow = { & bwlimits_am, BWSET_WIDE, 300 / BWGRANLOW, 3400 / BWGRANHIGH, - 36 + AFRESPONCESHIFT,	};
 static bwprop_t bwprop_nfmwide = { & bwlimits_am, BWSET_WIDE, 300 / BWGRANLOW, 4000 / BWGRANHIGH, - 36 + AFRESPONCESHIFT,	};
-static bwprop_t bwprop_wfm = { & bwlimits_wfm, BWSET_WIDE, WITHWFMLOW10DEF, WITHWFMHIGH100DEF, + 18 + AFRESPONCESHIFT,	};
+static bwprop_t bwprop_wfm = { & bwlimits_wfm, BWSET_WIDE, 100 / BWGRANLOW, 12000 / BWGRANHIGH, + 18 + AFRESPONCESHIFT,	};
 
 // Способ представления частот и количество профилей полосы пропускания,
 // а так же названия полос пропускания для отображения
