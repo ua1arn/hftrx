@@ -5414,6 +5414,19 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		enc2menu_adjust,	/* функция для изменения значения параметра */
 	},
 #endif /* ITHMIC1LEVEL */
+#if WITHIF4DSP
+	{
+		"MIKE CLIP",
+		0,
+		ISTEP1,	
+		0, 90, 					/* Ограничение */
+		offsetof(struct nvmap, gmikehclip),
+		NULL,
+		& gmikehclip,
+		getzerobase, /* складывается со смещением и отображается */
+		enc2menu_adjust,	/* функция для изменения значения параметра */
+	},
+#endif /* WITHIF4DSP */
 #endif /* WITHTX */
 #if WITHIF4DSP
 	{
@@ -12864,7 +12877,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"MK HCLIP", 7, 0, 0,	ISTEP1,	
+		"MIK CLIP", 7, 0, 0,	ISTEP1,	
 		ITEM_VALUE,	
 		0, 90, 					/* Ограничение */
 		offsetof(struct nvmap, gmikehclip),
