@@ -499,7 +499,7 @@ uint_fast8_t getexitkey(void)
 const struct qmkey qmdefs [NQMKEYS] =
 {
 	//ki2-правый ряд
-	{ KIF_FAST,		KBD_CODE_IFSHIFT,	KBD_CODE_10, 			'*', },
+	{ KIF_NONE,		KBD_CODE_IFSHIFT,	KBD_CODE_10, 			'*', },
 	{ KIF_SLOW,		KBD_CODE_BAND_DOWN,	KBD_CODE_BAND_DOWN, 	'9', },
 	{ KIF_SLOW,		KBD_CODE_BAND_UP,	KBD_CODE_BAND_UP, 		'6', },
 	{ KIF_NONE,		KBD_CODE_MODE,		KBD_CODE_MODEMOD, 		'3', },
