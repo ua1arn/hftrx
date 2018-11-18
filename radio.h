@@ -130,10 +130,12 @@ enum
 	#define WITHWFMHIGH100MIN	(4000 / 100)		// минимальна€ частота высокочастотного среза в сотн€х герц
 	#define WITHWFMHIGH100DEF	(12000 / 100)	// Ќачальное значение в сотн€х герц
 
-	#define	WITHNOTCHFREQ	1	/* NOTCH фильтр с устанавливаемой через меню или потенциометром частотой */
-	#define WITHSUBTONES	1	/* выполн€етс€ формирование субтона при передаче NFM */
-	#define WITHSAM			1	/* synchronous AM demodulation */
-	#define WITHIFSHIFT		1	/* используетс€ IF SHIFT */
+	#define	WITHNOTCHFREQ		1	/* NOTCH фильтр с устанавливаемой через меню или потенциометром частотой */
+	//#define	WITHLMSAUTONOTCH	1	/* »спользование AUTONOTCH	*/
+	#define WITHSUBTONES		1	/* выполн€етс€ формирование субтона при передаче NFM */
+	#define WITHSAM				1	/* synchronous AM demodulation */
+	#define WITHIFSHIFT			1	/* используетс€ IF SHIFT */
+	#define	WITHMIC1LEVEL		1	/* установка усилени€ микрофона */
 
 	#define	SQUELCHMAX	255	/* Kenwood's value */
 #endif /* WITHIF4DSP */

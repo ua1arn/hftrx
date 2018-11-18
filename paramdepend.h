@@ -1777,8 +1777,8 @@
 
 	#if WITHIF4DSP
 		// Временно, для проверки
-		#define WITHAGCMODEONOFF	1	// АРУ вкл/выкл
-		#define	WITHMIC1LEVEL		1	// установка усиления микрофона
+		//#define WITHAGCMODEONOFF	1	// АРУ вкл/выкл
+		//#define	WITHMIC1LEVEL		1	// установка усиления микрофона
 
 	#else /* WITHIF4DSP */
 

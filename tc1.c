@@ -601,6 +601,9 @@ static const FLASHMEM struct {
 {
 	{ 0, "     " },
 	{ 1, "NOTCH" },
+#if WITHLMSAUTONOTCH
+	{ 2, "ANTCH" },
+#endif /* WITHLMSAUTONOTCH */
 };
 
 #if WITHUSEDUALWATCH
@@ -7116,7 +7119,7 @@ updateboard(
 			#elif WITHNOTCHFREQ
 				board_set_notch_on(notchmodes [gnotch].code);
 				board_set_notch_width(gnotchwidth);
-				board_set_notch_freq(gnotchfreq);
+				board_set_notch_freq(gnotchfreq);	// TODO: при AUTONOTCH ставить INT16_MAX ?
 			#endif /* WITHNOTCHFREQ */
 			#if WITHIF4DSP
 				const uint_fast8_t agcseti = pamodetempl->agcseti;
