@@ -499,7 +499,7 @@ uint_fast8_t getexitkey(void)
 const struct qmkey qmdefs [NQMKEYS] =
 {
 	//ki2-правый ряд
-	{ KIF_FAST,		ENC_CODE_STEP_UP,	ENC_CODE_STEP_UP, 		'*', },
+	{ KIF_FAST,		KBD_CODE_IFSHIFT,	KBD_CODE_10, 			'*', },
 	{ KIF_SLOW,		KBD_CODE_BAND_DOWN,	KBD_CODE_BAND_DOWN, 	'9', },
 	{ KIF_SLOW,		KBD_CODE_BAND_UP,	KBD_CODE_BAND_UP, 		'6', },
 	{ KIF_NONE,		KBD_CODE_MODE,		KBD_CODE_MODEMOD, 		'3', },
@@ -509,13 +509,13 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE,		KBD_CODE_ATT,		KBD_CODE_PAMP, 			'5', },
 	{ KIF_NONE,		KBD_CODE_MOX,		KBD_CODE_TXTUNE, 		'2', },
 	//ki0-левый ряд
-	{ KIF_NONE,		KBD_CODE_MENU_CWSPEED,	KBD_CODE_MENU_CWSPEED, 	'#', },
+	{ KIF_NONE,		KBD_CODE_MENU_CWSPEED,	KBD_CODE_11,		'#', },
 	{ KIF_NONE,		KBD_CODE_ENTERFREQ,	KBD_CODE_ENTERFREQDONE, '7', },
 	{ KIF_ERASE,	KBD_CODE_SPLIT,		KBD_CODE_SPLIT_HOLDED, 	'4', },
 	{ KIF_EXTMENU,	KBD_CODE_DISPMODE,	KBD_CODE_MENU, 			'1', },
 
 	/* кнопка дополнительного валкодера */
-	{ KIF_NONE,		KBD_ENC2_PRESS,		KBD_ENC2_HOLD, 		' ', },
+	{ KIF_NONE,		KBD_ENC2_PRESS,		KBD_ENC2_HOLD, 			' ', },
 };
 
 uint_fast8_t getexitkey(void)
