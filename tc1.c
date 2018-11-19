@@ -8304,15 +8304,16 @@ mcp3208_read(
 	const uint_fast8_t cmd1 = 0x04 | (diff ? 0x00 : 0x02) | (ch >> 2);
 	const uint_fast8_t cmd2 = 0xFF & (ch << 6);
 	
-	spi_select2(target, SPIC_MODE3, SPIC_SPEED100k);
+	prog_select(target); //spi_select2(target, SPIC_MODE3, SPIC_SPEED_1M2);	// for 50 kS/S and 24 bit words
+	//spi_select(target, SPIC_MODE3);
 
-	spi_read_byte(target, cmd1);
-	v1 = spi_read_byte(target, cmd2);
-	v2 = spi_read_byte(target, 0x00);
+	prog_read_byte(target, cmd1);
+	v1 = prog_read_byte(target, cmd2);
+	v2 = prog_read_byte(target, 0x00);
 
-	spi_unselect(target);
+	prog_unselect(target);
 
-	return (v1 * 256 + v2) & 0xFFF;
+	return (v1 * 256 + v2) & 0x1FFF;
 }
 
 #if (WITHCURRLEVEL || WITHCURRLEVEL2) && WITHCPUADCHW
@@ -8969,18 +8970,23 @@ display2_adctest(
 	void * pv
 	)
 {
-	
+#if defined (targetext2)
+	const uint_fast16_t vref_mV = 3140;
 	static const struct
 	{
 		uint_fast8_t adci;
 		uint_fast8_t diff;
+		uint_fast16_t mul10;
 	} adcis [] =
 	{
-		{	0,	0,	},
-		{	1,	0,	},
-		{	2,	0,	},
-		{	3,	0,	},
-		{	4,	0,	},
+		// UA1CEI 100W PA board 2xRD100HHF1 
+		// ADC inputs configuration
+		//{	1,	1,	10, },	// DRAIN (negative from midpoint at CH1: ch0=in-, ch1=in+)
+		{	0,	0,	10, },	// DRAIN (negative from midpoint at CH1)
+		{	1,	0,	10, },	// reference (2.5 volt)
+		{	2,	0,	10, },	// FORWARD
+		{	3,	0,	10, },	// REFLECTED
+		{	4,	0,	57.	},	// VDD 4.7k + 1k
 	};
 
 	uint_fast8_t row;
@@ -8990,15 +8996,17 @@ display2_adctest(
 		enum { WDTH = 12 };	// ширина поля для отображения
 		char b [WDTH + 1];
 
-		value = mcp3208_read(targetext2, adcis [row].diff, adcis [row].adci) * (uint64_t) 3300 / 4096;
+		value = mcp3208_read(targetext2, adcis [row].diff, adcis [row].adci) * (uint64_t) adcis [row].mul10 * vref_mV / 4095 / 10;
 
-		local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("%*u"), WDTH, value);
+		local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("%*u"), WDTH, (unsigned) value);
 		display_2states(x, y + GRID2Y(row), 1, b, b);
 	}
 
 #if LCDMODE_LTDC_PIP16
 	arm_hardware_ltdc_pip_off();
 #endif /* LCDMODE_LTDC_PIP16 */
+
+#endif
 }
 // S-METER
 /* отображение S-метра на приёме или передаче */
