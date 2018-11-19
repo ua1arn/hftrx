@@ -8302,13 +8302,15 @@ mcp3208_read(
 	uint_fast8_t v1, v2;
 	const uint_fast8_t ch = adci & 0x07;
 	
-	spi_select2(target, SPIC_MODE3, SPIC_SPEED100k);
-	spi_read_byte(target, 0x04 | (diff ? 0x00 : 0x02) | (ch >> 2));
-	v1 = spi_read_byte(target, (ch << 6));
-	v2 = spi_read_byte(target, 0xFF);
-	spi_unselect(target);
+	prog_select(target /*, SPIC_MODE3, SPIC_SPEED100k */); // spi_select2
 
-	return (v1 * 256 + v2) & 0x0FFF;
+	prog_read_byte(target, 0x08 | (diff ? 0x00 : 0x04) | (ch >> 2));
+	v1 = prog_read_byte(target, 0xFF & (ch << 6));
+	v2 = prog_read_byte(target, 0x00);
+
+	prog_unselect(target);	// spi_unselect
+
+	return (v1 * 256 + v2) & 0xFFF;
 }
 
 #if (WITHCURRLEVEL || WITHCURRLEVEL2) && WITHCPUADCHW
@@ -8958,6 +8960,45 @@ display_refreshperformed_bars(void)
 	enableIRQ();
 }
 
+void 
+display2_adctest(
+	uint_fast8_t x, 
+	uint_fast8_t y, 
+	void * pv
+	)
+{
+	
+	static const struct
+	{
+		uint_fast8_t adci;
+		uint_fast8_t diff;
+	} adcis [] =
+	{
+		{	0,	0,	},
+		{	1,	0,	},
+		{	2,	0,	},
+		{	3,	0,	},
+		{	4,	0,	},
+	};
+
+	uint_fast8_t row;
+	for (row = 0; row < (sizeof adcis / sizeof adcis [0]); ++ row)
+	{
+		uint_fast16_t value;
+		enum { WDTH = 12 };	// ширина поля для отображения
+		char b [WDTH + 1];
+
+		value = mcp3208_read(targetext2, adcis [row].diff, adcis [row].adci) * (uint64_t) 3300 / 4096;
+		value = mcp3208_read(targetext2, adcis [row].diff, adcis [row].adci) * (uint64_t) 3300 / 4096;
+
+		local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("%*u"), WDTH, value);
+		display_2states(x, y + GRID2Y(row), 1, b, b);
+	}
+
+#if LCDMODE_LTDC_PIP16
+	arm_hardware_ltdc_pip_off();
+#endif /* LCDMODE_LTDC_PIP16 */
+}
 // S-METER
 /* отображение S-метра на приёме или передаче */
 // Функция вызывается из display2.c

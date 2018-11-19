@@ -449,6 +449,13 @@ display2_bars_tx(
 	uint_fast8_t y, 
 	void * pv
 	);
+// Вызывается из display2.c
+void 
+display2_adctest(
+	uint_fast8_t x, 
+	uint_fast8_t y, 
+	void * pv
+	);
 
 // Вызывается из display2.c (версия для CTLSTYLE_RA4YBO_AM0)
 void 

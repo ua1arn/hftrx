@@ -1574,7 +1574,7 @@ enum
 {
 	REDRM_MODE,		// поля меняющиемя при изменении режимов работы, LOCK state
 	REDRM_FREQ,		// индикаторы частоты
-	REDRM_FREQB,	// индикаторы частоты
+	REDRM_FRQB,	// индикаторы частоты
 	REDRM_BARS,		// S-meter, SWR-meter, voltmeter
 	REDRM_VOLT,		// вольтметр (редко меняющиеся параметры)
 	REDRM_MVAL,		// параметр меню
@@ -2152,7 +2152,7 @@ enum
 			{	18, 2,	display_mode3_a,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
 
 			{	2, 4,	display_vfomode3,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// SPLIT
-			{	7, 4,	display_freqX_b,	REDRM_FREQB, REDRSUBSET(DPAGE0), },
+			{	7, 4,	display_freqX_b,	REDRM_FRQB, REDRSUBSET(DPAGE0), },
 			{	18, 4,	display_mode3_b,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
 
 
@@ -2220,7 +2220,7 @@ enum
 			{	18, 3,	display_mode3_a,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
 			{	18, 5,	display_mode3_b,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
 			{	0,	5,	display_vfomode3,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// SPLIT
-			{	7,	5,	display_freqX_b,	REDRM_FREQB, REDRSUBSET(DPAGE0), },		// x=8 then !WIDEFREQ
+			{	7,	5,	display_freqX_b,	REDRM_FRQB, REDRSUBSET(DPAGE0), },		// x=8 then !WIDEFREQ
 			{	18, 7,	display_agc3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 			{	0,	7,	display2_bars,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// S-METER, SWR-METER, POWER-METER
 		#if WITHMENU
@@ -2305,7 +2305,7 @@ enum
 			{	19, 2,	display_mode3_a,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/..
 			//
 			{	2,	4,	display_vfomode5,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// SPLIT
-			{	8,	4,	display_freqX_b,	REDRM_FREQB, REDRSUBSET(DPAGE0), },
+			{	8,	4,	display_freqX_b,	REDRM_FRQB, REDRSUBSET(DPAGE0), },
 			{	19, 4,	display_mode3_b,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
 
 			{	0,	5,	display_hplp2,		REDRM_MODE, REDRSUBSET(DPAGE0), },	// HP/LP
@@ -2382,7 +2382,7 @@ enum
 			{	0, 5,	display_voltlevel4, REDRM_VOLT, REDRSUBSET(DPAGE0), },	// voltmeter without "V"
 			{	0, 6,	display_currlevelA6, REDRM_VOLT, REDRSUBSET(DPAGE0), },	// amphermeter with "A"
 			{	13, 5,	display_vfomode3,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// SPLIT
-			{	16, 5,	display_freqX_b,	REDRM_FREQB, REDRSUBSET(DPAGE0), },	// x=9 then !WIDEFREQ
+			{	16, 5,	display_freqX_b,	REDRM_FRQB, REDRSUBSET(DPAGE0), },	// x=9 then !WIDEFREQ
 			{	19, 5,	display_mode3_b,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
 
 			{	0, 6,	display_atu3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
@@ -2485,7 +2485,7 @@ enum
 			{	17, 5,	display_mode3_a,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
 
 			{	0,	8,	display_vfomode3,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// SPLIT
-			{	7,	8,	display_freqX_b,	REDRM_FREQB, REDRSUBSET(DPAGE0), },
+			{	7,	8,	display_freqX_b,	REDRM_FRQB, REDRSUBSET(DPAGE0), },
 			{	17, 8,	display_mode3_b,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
 
 		#if defined (RTC1_TYPE)
@@ -2558,7 +2558,7 @@ enum
 			{	17, 6,	display_mode3_a,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
 
 			{	0,	9,	display_vfomode3,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// SPLIT
-			{	7,	9,	display_freqX_b,	REDRM_FREQB, REDRSUBSET(DPAGE0), },
+			{	7,	9,	display_freqX_b,	REDRM_FRQB, REDRSUBSET(DPAGE0), },
 			{	17, 9,	display_mode3_b,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
 
 		#if defined (RTC1_TYPE)
@@ -2653,7 +2653,7 @@ enum
 			{	0,	5,	display_freqX_a,	REDRM_FREQ, REDRSUBSET(DPAGE0), },
 			{	0, 10,	display_vfomode3,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// SPLIT
 			{	17, 10,	display_mode3_b,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
-			{	5, 10,	display_freqX_b,	REDRM_FREQB, REDRSUBSET(DPAGE0), },
+			{	5, 10,	display_freqX_b,	REDRM_FRQB, REDRSUBSET(DPAGE0), },
 			{	0, 13,	display2_bars,		REDRM_BARS, REDRSUBSET(DPAGE0), },		// S-METER, SWR-METER, POWER-METER
 			{	1, 14,	display2_legend,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// Отображение оцифровки шкалы S-метра
 		#if WITHMENU
@@ -2732,7 +2732,7 @@ enum
 			{	18, 4,	display_mode3_a,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
 
 			{	0, 10,	display_vfomode3,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// SPLIT
-			{	4, 10,	display_freqX_b,	REDRM_FREQB, REDRSUBSET(DPAGE0), },
+			{	4, 10,	display_freqX_b,	REDRM_FRQB, REDRSUBSET(DPAGE0), },
 			{	16, 10,	display_mode3_b,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
 
 			{	0, 13,	display2_bars,		REDRM_BARS, REDRSUBSET(DPAGE0), },		// S-METER, SWR-METER, POWER-METER
@@ -2801,7 +2801,7 @@ enum
 			{	0,	4,	display_freqX_a,	REDRM_FREQ, REDRSUBSET(DPAGE0), },
 			{	19, 4,	display_mode3_a,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
 			{	0,	9,	display_vfomode3,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// SPLIT
-			{	8,	9,	display_freqX_b,	REDRM_FREQB, REDRSUBSET(DPAGE0), },
+			{	8,	9,	display_freqX_b,	REDRM_FRQB, REDRSUBSET(DPAGE0), },
 			{	19, 9,	display_mode3_b,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
 			{	0,	14,	display2_bars,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// S-METER, SWR-METER, POWER-METER
 			{	18, 14,	display_agc3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
@@ -2881,7 +2881,7 @@ enum
 			{	0, 5,	display_freqXbig_a, REDRM_FREQ, REDRSUBSET(DPAGE0), },
 
 			{	0, 11,	display_vfomode3,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// SPLIT
-			{	11, 11, display_freqX_b,	REDRM_FREQB, REDRSUBSET(DPAGE0), },
+			{	11, 11, display_freqX_b,	REDRM_FRQB, REDRSUBSET(DPAGE0), },
 			{	24, 11,	display_mode3_b,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
 
 			{	0, 14,	display2_bars,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// S-METER, SWR-METER, POWER-METER
@@ -2962,7 +2962,7 @@ enum
 			{	0, 5,	display_freqXbig_a, REDRM_FREQ, REDRSUBSET(DPAGE0), },
 
 			{	0, 11,	display_vfomode3,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// SPLIT
-			{	11, 11, display_freqX_b,	REDRM_FREQB, REDRSUBSET(DPAGE0), },
+			{	11, 11, display_freqX_b,	REDRM_FRQB, REDRSUBSET(DPAGE0), },
 			{	24, 11,	display_mode3_b,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
 
 			{	0, 14,	display2_bars,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// S-METER, SWR-METER, POWER-METER
@@ -3033,7 +3033,7 @@ enum
 			{	0, 4,	display_freqX_a,	REDRM_FREQ, REDRSUBSET(DPAGE0), },
 			{	19, 10,	display_mode3_b,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
 			{	0, 10,	display_vfomode3,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// SPLIT
-			{	8, 10,	display_freqX_b,	REDRM_FREQB, REDRSUBSET(DPAGE0), },
+			{	8, 10,	display_freqX_b,	REDRM_FRQB, REDRSUBSET(DPAGE0), },
 			{	19, 13,	display_agc3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 			{	0, 14,	display2_bars,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// S-METER, SWR-METER, POWER-METER
 
@@ -3123,7 +3123,7 @@ enum
 		/* ---------------------------------- */
 			//{	0,	8,	display_mainsub3, REDRM_MODE, REDRSUBSET(DPAGE0), },	// main/sub RX
 			{	4,	8,	display_vfomode3,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// SPL
-			{	12, 8,	display_freqX_b,	REDRM_FREQB, REDRSUBSET(DPAGE0), },
+			{	12, 8,	display_freqX_b,	REDRM_FRQB, REDRSUBSET(DPAGE0), },
 			{	27, 8,	display_mode3_b,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
 		/* ---------------------------------- */
 			{	0,	11,	display2_bars,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// S-METER, SWR-METER, POWER-METER
@@ -3249,7 +3249,7 @@ enum
 		#endif /* WITHUSEAUDIOREC */
 			{	4,	7,	display_mainsub3, REDRM_MODE, PGALL, },	// main/sub RX
 			{	8,	7,	display_vfomode3,	REDRM_MODE, PGALL, },	// SPL
-			{	16, 7,	display_freqX_b,	REDRM_FREQB, PGALL, },
+			{	16, 7,	display_freqX_b,	REDRM_FRQB, PGALL, },
 			{	27, 7,	display_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
 		/* ---------------------------------- */
 			{	0,	9,	display2_bars,		REDRM_BARS, PG0, },	// S-METER, SWR-METER, POWER-METER
@@ -3388,7 +3388,7 @@ enum
 		#endif /* WITHUSEAUDIOREC */
 			{	4,	7,	display_mainsub3, REDRM_MODE, PGALL, },	// main/sub RX
 			{	8,	7,	display_vfomode3,	REDRM_MODE, PGALL, },	// SPL
-			{	16, 7,	display_freqX_b,	REDRM_FREQB, PGALL, },
+			{	16, 7,	display_freqX_b,	REDRM_FRQB, PGALL, },
 			{	27, 7,	display_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
 		/* ---------------------------------- */
 			{	0,	9,	display2_bars,		REDRM_BARS, PG0 | REDRSUBSET_MENU, },	// S-METER, SWR-METER, POWER-METER
@@ -3495,7 +3495,7 @@ enum
 			{	19, 8,	display_mode3_a,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
 
 			{	0, 18,	display_vfomode5,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// SPLIT
-			{	5, 18,	display_freqX_b,	REDRM_FREQB, REDRSUBSET(DPAGE0), },
+			{	5, 18,	display_freqX_b,	REDRM_FRQB, REDRSUBSET(DPAGE0), },
 			{	19, 18,	display_mode3_b,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
 
 			{	1, 24,	display2_bars,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// S-METER, SWR-METER, POWER-METER
@@ -3589,7 +3589,7 @@ enum
 			{	29, 8,	display_mode3_a,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
 			//---
 			{	0,	15,	display_vfomode5,	REDRM_MODE, PGALL, },	// SPLIT
-			{	6,	15,	display_freqX_b,	REDRM_FREQB, PGALL, },
+			{	6,	15,	display_freqX_b,	REDRM_FRQB, PGALL, },
 		#if WITHUSEDUALWATCH
 			{	25, 15,	display_mainsub3,	REDRM_MODE, PGALL, },	// main/sub RX
 		#endif /* WITHUSEDUALWATCH */
@@ -3784,11 +3784,14 @@ enum
 
 		{	0,	20,	display_lockstate4, REDRM_MODE, PGALL, },	// LOCK
 		{	5,	20,	display_vfomode3,	REDRM_MODE, PGALL, },	// SPLIT
-		{	9,	20,	display_freqX_b,	REDRM_FREQB, PGALL, },	// SUB FREQ
+		{	9,	20,	display_freqX_b,	REDRM_FRQB, PGALL, },	// SUB FREQ
 		{	21, 20,	display_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
 
-		{	0,	25,	display2_legend,	REDRM_MODE, PGSWR, },// Отображение оцифровки шкалы S-метра
-		{	0,	30,	display2_bars,		REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
+		{	0,	25,	display2_legend_rx,	REDRM_MODE, PGSWR, },	// Отображение оцифровки шкалы S-метра
+		{	0,	30,	display2_bars_rx,	REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
+		{	0,	35,	display2_legend_tx,	REDRM_MODE, PGSWR, },	// Отображение оцифровки шкалы PWR & SWR-метра
+		{	0,	40,	display2_bars_tx,	REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
+		//{	0,	25,	display2_adctest,	REDRM_BARS, PGSWR, },	// ADC raw data print
 
 	#if WITHINTEGRATEDDSP && (WITHRTS96 || WITHRTS192)
 		{	0,	25,	dsp_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
@@ -3932,12 +3935,12 @@ enum
 		{	21, 15,	display_mainsub3,	REDRM_MODE, PGALL, },	// main/sub RX: A/A, A/B, B/A, etc
 
 		{	5,	22,	display_vfomode3,	REDRM_MODE, PGALL, },	// SPLIT
-		{	8,	22,	display_freqX_b,	REDRM_FREQB, PGALL, },	// SUB FREQ
+		{	8,	22,	display_freqX_b,	REDRM_FRQB, PGALL, },	// SUB FREQ
 		{	21, 22,	display_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
 
-		{	0,	30,	display2_legend_rx,	REDRM_MODE, PGSWR, },// Отображение оцифровки шкалы S-метра
+		{	0,	30,	display2_legend_rx,	REDRM_MODE, PGSWR, },	// Отображение оцифровки шкалы S-метра
 		{	0,	35,	display2_bars_rx,	REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
-		{	0,	40,	display2_legend_tx,	REDRM_MODE, PGSWR, },// Отображение оцифровки шкалы S-метра
+		{	0,	40,	display2_legend_tx,	REDRM_MODE, PGSWR, },	// Отображение оцифровки шкалы PWR & SWR-метра
 		{	0,	45,	display2_bars_tx,	REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
 
 		//{	0,	51,	display_samfreqdelta8, REDRM_BARS, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
@@ -5214,7 +5217,7 @@ void display_dispfreq_ab(
 	)
 {
 	display_walktroughsteps(REDRM_FREQ, getsubset(menuset, 0));
-	display_walktroughsteps(REDRM_FREQB, getsubset(menuset, 0));
+	display_walktroughsteps(REDRM_FRQB, getsubset(menuset, 0));
 }
 
 void display_dispfreq_a2(
@@ -5251,7 +5254,7 @@ void display_menuitemlabel(
 	)
 {
 	display_walktrough(REDRM_FREQ, REDRSUBSET_MENU, NULL);
-	display_walktrough(REDRM_FREQB, REDRSUBSET_MENU, NULL);
+	display_walktrough(REDRM_FRQB, REDRSUBSET_MENU, NULL);
 	display_walktrough(REDRM_MODE, REDRSUBSET_MENU, NULL);
 	display_walktrough(REDRM_MLBL, REDRSUBSET_MENU, pv);
 	display_walktrough(REDRM_MVAL, REDRSUBSET_MENU, pv);
