@@ -1086,13 +1086,21 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_EXTMENU,	KBD_CODE_DISPMODE,		KBD_CODE_MENU, 			' ', },		// DISPLAY/MENU
 
 	/* матрица справа от индикатора - ряд 3 2 по счету справа - сверху вниз */
+#if WITHAMHIGHKBDADJ
+	{ KIF_SLOW4,	KBD_CODE_AMBANDPASSUP,		KBD_CODE_AMBANDPASSUP, 	' ', },	// #1: F3
+#else /* WITHAMHIGHKBDADJ */
 	{ KIF_NONE,		KBD_CODE_A_EQ_B,		KBD_CODE_21, 			'1', },		// A=B
+#endif /* WITHAMHIGHKBDADJ */
 	{ KIF_NONE,		KBD_CODE_ANTENNA,		KBD_CODE_19, 			'4', },		// ANTEMMA
 	{ KIF_NONE,		KBD_CODE_RECORDTOGGLE,	KBD_CODE_RECORD_HOLDED,	'7', },		// REC
 	{ KIF_NONE,		KBD_CODE_ENTERFREQ,		KBD_CODE_ENTERFREQDONE,	'*', },		// direct frequencu enter
 
 	/* матрица справа от индикатора - ряд 2 3 по счету справа - сверху вниз */
+#if WITHAMHIGHKBDADJ
+	{ KIF_SLOW4,	KBD_CODE_AMBANDPASSDOWN,	KBD_CODE_AMBANDPASSDOWN,	' ', },	// #2: F2
+#else /* WITHAMHIGHKBDADJ */
 	{ KIF_NONE,		KBD_CODE_A_EX_B,			KBD_CODE_18, 		'2', },		// A/B
+#endif /* WITHAMHIGHKBDADJ */
 	{ KIF_NONE,		KBD_CODE_ATT,			KBD_CODE_PAMP, 			'5', },		// ATT/PRE
 	{ KIF_NONE,		KBD_CODE_LDSPTGL,		KBD_CODE_DATATOGGLE,	'8', },		// SPK/DATA
 	{ KIF_NONE,		KBD_CODE_BKIN,			KBD_CODE_BKIN_HOLDED, 	'0', },		// BREAK-IN
