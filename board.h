@@ -246,6 +246,12 @@ uint_fast8_t board_getpwrmeter(
 	uint_fast8_t * toptrace	// peak hold
 	); 
 
+uint_fast16_t 
+mcp3208_read(
+	spitarget_t target,
+	uint_fast8_t diff,
+	uint_fast8_t adci
+	);
 
 void board_adc_initialize(void);
 void board_usb_initialize(void);

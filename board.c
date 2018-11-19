@@ -8568,3 +8568,29 @@ void debugusb_initialize(void)
 }
 
 #endif /* WITHDEBUG && WITHUSBCDC && WITHDEBUG_CDC */
+
+// Read ADC MCP3204/MCP3208
+uint_fast16_t 
+mcp3208_read(
+	spitarget_t target,
+	uint_fast8_t diff,
+	uint_fast8_t adci
+	)
+{
+	uint_fast8_t v1, v2;
+	const uint_fast8_t ch = adci & 0x07;
+	const uint_fast8_t cmd1 = 0x04 | (diff ? 0x00 : 0x02) | (ch >> 2);
+	const uint_fast8_t cmd2 = 0xFF & (ch << 6);
+	
+	prog_select(target); //spi_select2(target, SPIC_MODE3, SPIC_SPEED_1M2);	// for 50 kS/S and 24 bit words
+	//spi_select(target, SPIC_MODE3);
+
+	prog_read_byte(target, cmd1);
+	v1 = prog_read_byte(target, cmd2);
+	v2 = prog_read_byte(target, 0x00);
+
+	prog_unselect(target);
+
+	return (v1 * 256 + v2) & 0x1FFF;
+}
+
