@@ -8301,14 +8301,16 @@ mcp3208_read(
 {
 	uint_fast8_t v1, v2;
 	const uint_fast8_t ch = adci & 0x07;
+	const uint_fast8_t cmd1 = 0x04 | (diff ? 0x00 : 0x02) | (ch >> 2);
+	const uint_fast8_t cmd2 = 0xFF & (ch << 6);
 	
-	prog_select(target /*, SPIC_MODE3, SPIC_SPEED100k */); // spi_select2
+	spi_select2(target, SPIC_MODE3, SPIC_SPEED100k);
 
-	prog_read_byte(target, 0x08 | (diff ? 0x00 : 0x04) | (ch >> 2));
-	v1 = prog_read_byte(target, 0xFF & (ch << 6));
-	v2 = prog_read_byte(target, 0x00);
+	spi_read_byte(target, cmd1);
+	v1 = spi_read_byte(target, cmd2);
+	v2 = spi_read_byte(target, 0x00);
 
-	prog_unselect(target);	// spi_unselect
+	spi_unselect(target);
 
 	return (v1 * 256 + v2) & 0xFFF;
 }
@@ -8988,7 +8990,6 @@ display2_adctest(
 		enum { WDTH = 12 };	// ширина поля для отображения
 		char b [WDTH + 1];
 
-		value = mcp3208_read(targetext2, adcis [row].diff, adcis [row].adci) * (uint64_t) 3300 / 4096;
 		value = mcp3208_read(targetext2, adcis [row].diff, adcis [row].adci) * (uint64_t) 3300 / 4096;
 
 		local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("%*u"), WDTH, value);

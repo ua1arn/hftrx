@@ -3787,11 +3787,14 @@ enum
 		{	9,	20,	display_freqX_b,	REDRM_FRQB, PGALL, },	// SUB FREQ
 		{	21, 20,	display_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
 
+#if 1
 		{	0,	25,	display2_legend_rx,	REDRM_MODE, PGSWR, },	// Отображение оцифровки шкалы S-метра
 		{	0,	30,	display2_bars_rx,	REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
 		{	0,	35,	display2_legend_tx,	REDRM_MODE, PGSWR, },	// Отображение оцифровки шкалы PWR & SWR-метра
 		{	0,	40,	display2_bars_tx,	REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
-		//{	0,	25,	display2_adctest,	REDRM_BARS, PGSWR, },	// ADC raw data print
+#else
+		{	0,	25,	display2_adctest,	REDRM_BARS, PGSWR, },	// ADC raw data print
+#endif
 
 	#if WITHINTEGRATEDDSP && (WITHRTS96 || WITHRTS192)
 		{	0,	25,	dsp_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
