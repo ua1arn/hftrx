@@ -8969,14 +8969,15 @@ display2_adctest(
 	uint_fast8_t row;
 	for (row = 0; row < (sizeof adcis / sizeof adcis [0]); ++ row)
 	{
-		uint_fast16_t value;
+		uint_fast16_t value = 0;
 		char b [WDTH + 1];
+		uint_fast8_t valid;
 
-		value = mcp3208_read(targetext2, adcis [row].diff, adcis [row].adci) * (uint64_t) adcis [row].mul10 * vref_mV / 4095 / 10;
+		value = mcp3208_read(targetext2, adcis [row].diff, adcis [row].adci, & valid) * (uint64_t) adcis [row].mul10 * vref_mV / 4095 / 10;
 
 		local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("%*u"), WDTH, (unsigned) value);
-		display_2states_P(x + (0), y + GRID2Y(row), 1, adcis [row].label, adcis [row].label);
-		display_2states(x + (5), y + GRID2Y(row), 1, b, b);
+		display_2states_P(x + (0), y + GRID2Y(row), valid, adcis [row].label, adcis [row].label);
+		display_2states(x + (5), y + GRID2Y(row), valid, b, b);
 	}
 
 #if LCDMODE_LTDC_PIP16

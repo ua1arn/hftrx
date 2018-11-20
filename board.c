@@ -8574,13 +8574,15 @@ uint_fast16_t
 mcp3208_read(
 	spitarget_t target,
 	uint_fast8_t diff,
-	uint_fast8_t adci
+	uint_fast8_t adci,
+	uint_fast8_t * valid
 	)
 {
 	// при аппаратной реализации сдвиг командных последовательностей влево еще на один бит
 	// приводит к увеличенной погрешности.
 	uint_fast8_t v1, v2;
 	const uint_fast8_t cmd1 = 0x10 | (diff ? 0x00 : 0x08) | (adci & 0x07);
+	uint_fast16_t rv;
 
 // todo: разобраться - при программной реализации SPI требуется сдвиг на один разряд больше.
 // возможно, на STM32H7xx что-то не так с приемом по SPI - но FRAM работает как и ожидается.
@@ -8596,7 +8598,7 @@ mcp3208_read(
 	spi_to_write(target);
 	spi_unselect(target);
 
-	return ((v1 * 256 + v2) >> 1) & 0x1FFF;
+	rv = (v1 * 256 + v2) >> 1;
 
 #else
 
@@ -8606,8 +8608,10 @@ mcp3208_read(
 	v2 = prog_read_byte(target, 0x00);
 	prog_unselect(target);
 
-	return ((v1 * 256 + v2) >> 2) & 0x1FFF;
+	rv = (v1 * 256 + v2) >> 1;
 
 #endif
+	* valid = (rv & 0x1000) == 0;
+	return rv & 0x0FFF;
 }
 
