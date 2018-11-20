@@ -8,6 +8,8 @@
 	#error Do not include this file directly.
 #endif
 
+#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
+#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
 
 enum
 {

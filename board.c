@@ -8577,20 +8577,37 @@ mcp3208_read(
 	uint_fast8_t adci
 	)
 {
+	// при аппаратной реализации сдвиг командных последовательностей влево еще на один бит
+	// приводит к увеличенной погрешности.
 	uint_fast8_t v1, v2;
-	const uint_fast8_t ch = adci & 0x07;
-	const uint_fast8_t cmd1 = 0x04 | (diff ? 0x00 : 0x02) | (ch >> 2);
-	const uint_fast8_t cmd2 = 0xFF & (ch << 6);
-	
-	prog_select(target); //spi_select2(target, SPIC_MODE3, SPIC_SPEED_1M2);	// for 50 kS/S and 24 bit words
-	//spi_select(target, SPIC_MODE3);
+	const uint_fast8_t cmd1 = 0x10 | (diff ? 0x00 : 0x08) | (adci & 0x07);
 
+// todo: разобраться - при программной реализации SPI требуется сдвиг на один разряд больше.
+// возможно, на STM32H7xx что-то не так с приемом по SPI - но FRAM работает как и ожидается.
+
+#if 1
+
+	spi_select2(target, SPIC_MODE3, SPIC_SPEED100k);	// for 50 kS/S and 24 bit words
+	spi_progval8_p1(target, cmd1);
+	spi_complete(target);
+	spi_to_read(target);
+	v1 = spi_read_byte(target, 0x00);
+	v2 = spi_read_byte(target, 0x00);
+	spi_to_write(target);
+	spi_unselect(target);
+
+	return ((v1 * 256 + v2) >> 1) & 0x1FFF;
+
+#else
+
+	prog_select(target); 
 	prog_read_byte(target, cmd1);
-	v1 = prog_read_byte(target, cmd2);
+	v1 = prog_read_byte(target, 0x00);
 	v2 = prog_read_byte(target, 0x00);
-
 	prog_unselect(target);
 
-	return (v1 * 256 + v2) & 0x1FFF;
+	return ((v1 * 256 + v2) >> 2) & 0x1FFF;
+
+#endif
 }
 
