@@ -3837,7 +3837,7 @@ enum
 		p->h = GRID2Y(BDCV_ALLRX);				// размер по вертикали в пикселях
 	}
 
-#elif DSTYLE_G_X480_Y272 && ! (WITHINTEGRATEDDSP && (WITHRTS96 || WITHRTS192))
+#elif DSTYLE_G_X480_Y272
 
 	// TFT панель SONY PSP-1000
 	// 272/5 = 54, 480/16=30
