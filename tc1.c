@@ -8946,9 +8946,11 @@ display2_adctest(
 	)
 {
 #if defined (targetext2)
+	enum { WDTH = 6 };	// ширина поля для отображения
 	const uint_fast16_t vref_mV = 3140;
-	static const struct
+	static FLASHMEM const struct
 	{
+		char label [6];
 		uint_fast8_t adci;
 		uint_fast8_t diff;
 		uint_fast16_t mul10;
@@ -8956,25 +8958,25 @@ display2_adctest(
 	{
 		// UA1CEI 100W PA board 2xRD100HHF1 
 		// ADC inputs configuration
-		//{	1,	1,	10, },	// DRAIN (negative from midpoint at CH1: ch0=in-, ch1=in+)
-		{	0,	0,	10, },	// DRAIN (negative from midpoint at CH1)
-		{	1,	0,	10, },	// reference (2.5 volt)
-		{	2,	0,	10, },	// FORWARD
-		{	3,	0,	10, },	// REFLECTED
-		{	4,	0,	57.	},	// VDD 4.7k + 1k
+		//{	"DRAIN",	1,	1,	10, },	// DRAIN (negative from midpoint at CH1: ch0=in-, ch1=in+)
+		{	"DRAIN",	0,	0,	10, },	// DRAIN (negative from midpoint at CH1)
+		{	"REFER",	1,	0,	10, },	// reference (2.5 volt)
+		{	"FWD  ",	2,	0,	10, },	// FORWARD
+		{	"REFL ",	3,	0,	10, },	// REFLECTED
+		{	"VDD  ",	4,	0,	57.	},	// VDD 4.7k + 1k
 	};
 
 	uint_fast8_t row;
 	for (row = 0; row < (sizeof adcis / sizeof adcis [0]); ++ row)
 	{
 		uint_fast16_t value;
-		enum { WDTH = 12 };	// ширина поля для отображения
 		char b [WDTH + 1];
 
 		value = mcp3208_read(targetext2, adcis [row].diff, adcis [row].adci) * (uint64_t) adcis [row].mul10 * vref_mV / 4095 / 10;
 
 		local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("%*u"), WDTH, (unsigned) value);
-		display_2states(x, y + GRID2Y(row), 1, b, b);
+		display_2states_P(x + (0), y + GRID2Y(row), 1, adcis [row].label, adcis [row].label);
+		display_2states(x + (5), y + GRID2Y(row), 1, b, b);
 	}
 
 #if LCDMODE_LTDC_PIP16
