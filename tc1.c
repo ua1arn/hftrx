@@ -14305,7 +14305,8 @@ modifysettings(
 	uint_fast8_t firstitem, uint_fast8_t lastitem,	/* диапазон от какого и до какого пункта меню работает */
 	uint_fast8_t itemmask,		/* по какому типу пунктов меню проходим */
 	nvramaddress_t posnvram,	/* где сохранена текущая позиция */
-	uint_fast8_t exitkey		/* дополнительная клавиша, по которой происходит выход из меню на уровень выше (или KBD_CODE_MAX) */
+	uint_fast8_t exitkey,		/* дополнительная клавиша, по которой происходит выход из меню на уровень выше (или KBD_CODE_MAX) */
+	uint_fast8_t byname			/* был выполнен прямой вход в меню */
 	)
 {
 	uint_fast8_t menupos = loadvfy8up(posnvram, firstitem, lastitem, firstitem);	/* начальное значение позиции */
@@ -14320,7 +14321,7 @@ modifysettings(
 #if WITHDEBUG
 	debug_printf_P(PSTR("menu: ")); debug_printf_P(mp->qlabel); debug_printf_P(PSTR("\n")); 
 #endif /* WITHDEBUG */
-	display_menuitemlabel((void *) mp);
+	display_menuitemlabel((void *) mp, byname);
 	display_menuitemvalue((void *) mp);
 	display_redrawbars(1, 1);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 	encoder_clear();
@@ -14365,10 +14366,10 @@ modifysettings(
 					#if defined (RTC1_TYPE)
 						getstamprtc();
 					#endif /* defined (RTC1_TYPE) */
-						modifysettings(first, last, ITEM_VALUE, mp->qnvram, exitkey);
+						modifysettings(first, last, ITEM_VALUE, mp->qnvram, exitkey, byname);
 
 						display2_bgreset();		/* возможно уже с новой цветовой схемой */
-						display_menuitemlabel((void *) mp);
+						display_menuitemlabel((void *) mp, byname);
 						display_menuitemvalue((void *) mp);
 						display_redrawbars(1, 1);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 					}
@@ -14380,7 +14381,7 @@ modifysettings(
 				/* блокировка валкодера
 					 - не вызывает сохранение состояния диапазона */
 				uif_key_lockencoder();
-				display_menuitemlabel((void *) mp);
+				display_menuitemlabel((void *) mp, byname);
 				continue;	// требуется обновление индикатора
 
 			case KBD_CODE_BAND_DOWN:
@@ -14416,7 +14417,7 @@ modifysettings(
 #if WITHDEBUG
 				debug_printf_P(PSTR("menu: ")); debug_printf_P(mp->qlabel); debug_printf_P(PSTR("\n")); 
 #endif /* WITHDEBUG */
-				display_menuitemlabel((void *) mp);
+				display_menuitemlabel((void *) mp, byname);
 				display_menuitemvalue((void *) mp);
 				display_redrawbars(1, 1);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 				break;
@@ -14512,7 +14513,7 @@ uif_key_click_menubyname(const char * name, uint_fast8_t exitkey)
 	}
 	display2_bgreset();
 
-	modifysettings(menupos, menupos, ITEM_VALUE, MENUNONVRAM, exitkey);
+	modifysettings(menupos, menupos, ITEM_VALUE, MENUNONVRAM, exitkey, 1);
 
 	updateboard(1, 0);
 	updateboard2();			/* настройки валкодера и цветовой схемы дисплея. */
@@ -15178,9 +15179,9 @@ processkeyboard(uint_fast8_t kbch)
 	#endif /* WITHAUTOTUNER */
 		display2_bgreset();
 	#if WITHFLATMENU
-		modifysettings(0, MENUROW_COUNT - 1, ITEM_VALUE, RMT_GROUP_BASE, exitkey);	/* выбор группы параметров для редактирования */
+		modifysettings(0, MENUROW_COUNT - 1, ITEM_VALUE, RMT_GROUP_BASE, exitkey, 0);	/* выбор группы параметров для редактирования */
 	#else /* WITHFLATMENU */
-		modifysettings(0, MENUROW_COUNT - 1, ITEM_GROUP, RMT_GROUP_BASE, exitkey);	/* выбор группы параметров для редактирования */
+		modifysettings(0, MENUROW_COUNT - 1, ITEM_GROUP, RMT_GROUP_BASE, exitkey, 0);	/* выбор группы параметров для редактирования */
 	#endif /* WITHFLATMENU */
 		
 		updateboard(1, 0);

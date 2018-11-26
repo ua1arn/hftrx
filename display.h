@@ -419,7 +419,8 @@ void display_barmeters_subset(
 
 // отображения названия параметра или группы - не в режиме редактирования
 void display_menuitemlabel(
-	void * pv
+	void * pv,
+	uint_fast8_t byname			/* был выполнен прямой вход в меню */
 	);
 
 // отображение значения параметра

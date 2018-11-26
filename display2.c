@@ -1577,10 +1577,10 @@ enum
 	REDRM_FRQB,	// индикаторы частоты
 	REDRM_BARS,		// S-meter, SWR-meter, voltmeter
 	REDRM_VOLT,		// вольтметр (редко меняющиеся параметры)
-	REDRM_MVAL,		// параметр меню
+
+	REDRM_MFXX,		// код редактируемого параметра
 	REDRM_MLBL,		// название редактируемого параметра
-	REDRM_M2LABEL,	//
-	REDRM_M2VALUE,	//
+	REDRM_MVAL,		// значение параметра меню
 	REDRM_count
 };
 
@@ -1654,7 +1654,7 @@ enum
 
 	#if WITHMENU 
 		{	0, 0,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
-		{	0, 1,	display_menu_lblc3,	REDRM_MLBL, REDRSUBSET_MENU, },	// код редактируемого параметра
+		{	0, 1,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
 		{	4, 1,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
 		{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
 	#endif /* WITHMENU */
@@ -1726,7 +1726,7 @@ enum
 		//{	0, 0,	display_txrxstate2,	REDRM_MODE, REDRSUBSET_ALL, },
 	#if WITHMENU
 		{	0, 0,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
-		{	0, 1,	display_menu_lblc3,	REDRM_MLBL, REDRSUBSET_MENU, },	// код редактируемого параметра
+		{	0, 1,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
 		{	4, 1,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
 		{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
 	#endif /* WITHMENU */
@@ -1770,7 +1770,7 @@ enum
 		//{	0, 1, display_pbt,		REDRM_BARS, REDRSUBSET(DPAGE1), },	// PBT +00.00
 	#if WITHMENU
 		{	0, 0,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
-		{	0, 1,	display_menu_lblc3,	REDRM_MLBL, REDRSUBSET_MENU, },	// код редактируемого параметра
+		{	0, 1,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
 		{	4, 1,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
 		{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
 	#endif /* WITHMENU */
@@ -1848,7 +1848,7 @@ enum
 		{	1, 1,	display2_bars_amv0,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// S-METER, SWR-METER, POWER-METER
 	#if WITHMENU 
 		{	0, 0,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
-		{	0, 1,	display_menu_lblc3,	REDRM_MLBL, REDRSUBSET_MENU, },	// код редактируемого параметра
+		{	0, 1,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
 		{	4, 1,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
 	#endif /* WITHMENU */
 	};
@@ -1955,7 +1955,7 @@ enum
 		//{	0, 0,	display_voxtune3,	REDRM_MODE, REDRSUBSET_ALL, },
 	#if WITHMENU
 		{	0, 0,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
-		{	0, 1,	display_menu_lblc3,	REDRM_MLBL, REDRSUBSET_MENU, },	// код редактируемого параметра
+		{	0, 1,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
 		{	4, 1,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
 		{	15, 0,	display_lockstate1,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
 	#endif /* WITHMENU */
@@ -2018,7 +2018,7 @@ enum
 
 	#if WITHMENU
 		{	0, 0,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра параметра
-		{	0, 1,	display_menu_lblc3,	REDRM_MLBL, REDRSUBSET_MENU, },	// код редактируемого параметра
+		{	0, 1,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
 		{	4, 1,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
 		{	15, 0,	display_lockstate1,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
 	#endif /* WITHMENU */
@@ -2074,7 +2074,7 @@ enum
 		{	0, 3,	display_voxtune3,	REDRM_MODE, REDRSUBSET(DPAGE0), },
 	#if WITHMENU 
 		{	0, 0,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
-		{	0, 3,	display_menu_lblc3,	REDRM_MLBL, REDRSUBSET_MENU, },	// код редактируемого параметра
+		{	0, 3,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
 		{	0, 2,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
 		{	9, 3,	display_lockstate1,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
 	#endif /* WITHMENU */
@@ -2164,7 +2164,7 @@ enum
 			{	0, 7,	display2_legend,	REDRM_MODE, REDRSUBSET(DPAGE0), },// Отображение оцифровки шкалы S-метра
 		#if WITHMENU
 			{	0, 0,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
-			{	0, 1,	display_menu_lblc3,	REDRM_MLBL, REDRSUBSET_MENU, },	// код редактируемого параметра
+			{	0, 1,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
 			{	4, 1,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
 			{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
 		#endif /* WITHMENU */
@@ -2225,7 +2225,7 @@ enum
 			{	0,	7,	display2_bars,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// S-METER, SWR-METER, POWER-METER
 		#if WITHMENU
 			{	0, 0,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
-			{	0, 1,	display_menu_lblc3,	REDRM_MLBL, REDRSUBSET_MENU, },	// код редактируемого параметра
+			{	0, 1,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
 			{	4, 1,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
 			{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
 		#endif /* WITHMENU */
@@ -2325,7 +2325,7 @@ enum
 			{	0,	7,	display2_legend,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// Отображение оцифровки шкалы S-метра
 		#if WITHMENU
 			{	0,	0,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
-			{	0,	1,	display_menu_lblc3,	REDRM_MLBL, REDRSUBSET_MENU, },	// код редактируемого параметра
+			{	0,	1,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
 			{	4,	1,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
 			{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
 		#endif /* WITHMENU */
@@ -2403,7 +2403,7 @@ enum
 
 		#if WITHMENU
 			{	0, 0,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
-			{	0, 1,	display_menu_lblc3,	REDRM_MLBL, REDRSUBSET_MENU, },	// код редактируемого параметра
+			{	0, 1,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
 			{	4, 1,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
 			{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
 		#endif /* WITHMENU */
@@ -2501,7 +2501,7 @@ enum
 
 		#if WITHMENU
 			{	4, 0,	display_menu_group,	REDRM_MLBL, REDRSUBSET_MENU, },	// название группы
-			{	0, 2,	display_menu_lblc3,	REDRM_MLBL, REDRSUBSET_MENU, },	// код редактируемого параметра
+			{	0, 2,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
 			{	4, 2,	display_menu_lblng,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
 			{	0, 4,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
 			{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
@@ -2574,7 +2574,7 @@ enum
 			{	0, 14,	display2_bars,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// S-METER, SWR-METER, POWER-METER
 		#if WITHMENU
 			{	4, 0,	display_menu_group,	REDRM_MLBL, REDRSUBSET_MENU, },	// название группы
-			{	0, 2,	display_menu_lblc3,	REDRM_MLBL, REDRSUBSET_MENU, },	// код редактируемого параметра
+			{	0, 2,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
 			{	4, 2,	display_menu_lblng,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
 			{	0, 4,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
 			{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
@@ -2658,7 +2658,7 @@ enum
 			{	1, 14,	display2_legend,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// Отображение оцифровки шкалы S-метра
 		#if WITHMENU
 			{	0, 0,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
-			{	0, 2,	display_menu_lblc3,	REDRM_MLBL, REDRSUBSET_MENU, },	// код редактируемого параметра
+			{	0, 2,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
 			{	4, 2,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
 			{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
 		#endif /* WITHMENU */
@@ -2739,7 +2739,7 @@ enum
 			{	1, 14,	display2_legend,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// Отображение оцифровки шкалы S-метра
 		#if WITHMENU
 			{	0, 0,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
-			{	0, 2,	display_menu_lblc3,	REDRM_MLBL, REDRSUBSET_MENU, },	// код редактируемого параметра
+			{	0, 2,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
 			{	4, 2,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
 			{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
 		#endif /* WITHMENU */
@@ -2807,7 +2807,7 @@ enum
 			{	18, 14,	display_agc3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 		#if WITHMENU
 			{	0, 0,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
-			{	0, 2,	display_menu_lblc3,	REDRM_MLBL, REDRSUBSET_MENU, },	// код редактируемого параметра
+			{	0, 2,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
 			{	4, 2,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
 			{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
 		#endif /* WITHMENU */
@@ -2897,7 +2897,7 @@ enum
 			{	22, 20,	display_voltlevelV5, REDRM_VOLT, REDRSUBSET(DPAGE0), },	// voltmeter
 		#if WITHMENU
 			{	0, 0,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
-			{	0, 2,	display_menu_lblc3,	REDRM_MLBL, REDRSUBSET_MENU, },	// код редактируемого параметра
+			{	0, 2,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
 			{	4, 2,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
 			{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
 		#endif /* WITHMENU */
@@ -2979,7 +2979,7 @@ enum
 			{	22, 20,	display_voltlevelV5, REDRM_VOLT, REDRSUBSET(DPAGE0), },	// voltmeter
 		#if WITHMENU
 			{	0, 0,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
-			{	0, 2,	display_menu_lblc3,	REDRM_MLBL, REDRSUBSET_MENU, },	// код редактируемого параметра
+			{	0, 2,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
 			{	4, 2,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
 			{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
 		#endif /* WITHMENU */
@@ -3046,7 +3046,7 @@ enum
 			{	23, 20,	display_voltlevel4, REDRM_VOLT, REDRSUBSET(DPAGE0), },	// voltmeter without "V"
 		#if WITHMENU
 			{	0, 0,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
-			{	0, 2,	display_menu_lblc3,	REDRM_MLBL, REDRSUBSET_MENU, },	// код редактируемого параметра
+			{	0, 2,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
 			{	4, 2,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
 			{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
 		#endif /* WITHMENU */
@@ -3151,7 +3151,7 @@ enum
 		/* ---------------------------------- */
 	#if WITHMENU
 			{	0,	0,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
-			{	0,	2,	display_menu_lblc3,	REDRM_MLBL, REDRSUBSET_MENU, },	// код редактируемого параметра
+			{	0,	2,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
 			{	4,	2,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
 			{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
 		#if WITHVOLTLEVEL && WITHCURRLEVEL
@@ -3279,7 +3279,7 @@ enum
 		/* ---------------------------------- */
 	#if WITHMENU
 			{	0,	9,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
-			{	0,	11,	display_menu_lblc3,	REDRM_MLBL, REDRSUBSET_MENU, },	// код редактируемого параметра
+			{	0,	11,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
 			{	4,	11,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
 			//{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
 		#if WITHVOLTLEVEL && WITHCURRLEVEL
@@ -3423,7 +3423,7 @@ enum
 		/* ---------------------------------- */
 	#if WITHMENU
 			{	0,	12,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
-			{	0,	14,	display_menu_lblc3,	REDRM_MLBL, REDRSUBSET_MENU, },	// код редактируемого параметра
+			{	0,	14,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
 			{	4,	14,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
 			//{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
 		#if WITHVOLTLEVEL && WITHCURRLEVEL
@@ -3505,7 +3505,7 @@ enum
 			{	18, 28,	display_agc3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 		#if WITHMENU
 			{	4, 0,	display_menu_group,	REDRM_MLBL, REDRSUBSET_MENU, },	// название группы
-			{	0, 2,	display_menu_lblc3,	REDRM_MLBL, REDRSUBSET_MENU, },	// код редактируемого параметра
+			{	0, 2,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
 			{	4, 2,	display_menu_lblng,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
 			{	0, 4,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
 			{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
@@ -3622,7 +3622,7 @@ enum
 		#if WITHMENU
 			{	4, 19,	display_menu_group,	REDRM_MLBL, REDRSUBSET_MENU, },	// название группы
 			{	0, 21,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
-			{	0, 24,	display_menu_lblc3,	REDRM_MLBL, REDRSUBSET_MENU, },	// код редактируемого параметра
+			{	0, 24,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
 			{	4, 24,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
 			//{	9,	27,	display_freqmeter10,	REDRM_VOLT, REDRSUBSET_MENU, },	// отладочная функция измерителя опорной частоты
 			{	9, 27,	display_samfreqdelta8, REDRM_BARS, REDRSUBSET_MENU, },	/* Получить информацию об ошибке настройки в режиме SAM */
@@ -3787,7 +3787,7 @@ enum
 		{	9,	20,	display_freqX_b,	REDRM_FRQB, PGALL, },	// SUB FREQ
 		{	21, 20,	display_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
 
-#if 1
+#if 0
 		{	0,	25,	display2_legend_rx,	REDRM_MODE, PGSWR, },	// Отображение оцифровки шкалы S-метра
 		{	0,	30,	display2_bars_rx,	REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
 		{	0,	35,	display2_legend_tx,	REDRM_MODE, PGSWR, },	// Отображение оцифровки шкалы PWR & SWR-метра
@@ -3821,7 +3821,7 @@ enum
 
 	#if WITHMENU
 		{	4,	25,	display_menu_group,	REDRM_MLBL, REDRSUBSET_MENU, },	// название группы
-		{	0,	30,	display_menu_lblc3,	REDRM_MLBL, REDRSUBSET_MENU, },	// код редактируемого параметра
+		{	0,	30,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
 		{	4,	30,	display_menu_lblng,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
 		{	0,	35,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
 		{	0,	40,	display_samfreqdelta8, REDRM_BARS, REDRSUBSET_MENU, },	/* Получить информацию об ошибке настройки в режиме SAM */
@@ -3963,7 +3963,7 @@ enum
 
 	#if WITHMENU
 		{	4,	25,	display_menu_group,	REDRM_MLBL, REDRSUBSET_MENU, },	// название группы
-		{	0,	30,	display_menu_lblc3,	REDRM_MLBL, REDRSUBSET_MENU, },	// код редактируемого параметра
+		{	0,	30,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
 		{	4,	30,	display_menu_lblng,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
 		{	0,	35,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
 		{	0,	40,	display_samfreqdelta8, REDRM_BARS, REDRSUBSET_MENU, },	/* Получить информацию об ошибке настройки в режиме SAM */
@@ -5253,13 +5253,18 @@ void display_volts(
 
 // отображения названия параметра или группы
 void display_menuitemlabel(
-	void * pv
+	void * pv,
+	uint_fast8_t byname			/* был выполнен прямой вход в меню */
 	)
 {
 	display_walktrough(REDRM_FREQ, REDRSUBSET_MENU, NULL);
 	display_walktrough(REDRM_FRQB, REDRSUBSET_MENU, NULL);
 	display_walktrough(REDRM_MODE, REDRSUBSET_MENU, NULL);
 	display_walktrough(REDRM_MLBL, REDRSUBSET_MENU, pv);
+	if (byname == 0)
+	{
+		display_walktrough(REDRM_MFXX, REDRSUBSET_MENU, pv);
+	}
 	display_walktrough(REDRM_MVAL, REDRSUBSET_MENU, pv);
 }
 
