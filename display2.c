@@ -3965,8 +3965,8 @@ enum
 		{	4,	25,	display_menu_group,	REDRM_MLBL, REDRSUBSET_MENU, },	// название группы
 		{	0,	30,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
 		{	4,	30,	display_menu_lblng,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
-		{	0,	35,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
-		{	0,	40,	display_samfreqdelta8, REDRM_BARS, REDRSUBSET_MENU, },	/* Получить информацию об ошибке настройки в режиме SAM */
+		{	14,	30,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
+		{	0,	35,	display_samfreqdelta8, REDRM_BARS, REDRSUBSET_MENU, },	/* Получить информацию об ошибке настройки в режиме SAM */
 	#endif /* WITHMENU */
 	};
 
@@ -5260,11 +5260,11 @@ void display_menuitemlabel(
 	display_walktrough(REDRM_FREQ, REDRSUBSET_MENU, NULL);
 	display_walktrough(REDRM_FRQB, REDRSUBSET_MENU, NULL);
 	display_walktrough(REDRM_MODE, REDRSUBSET_MENU, NULL);
-	display_walktrough(REDRM_MLBL, REDRSUBSET_MENU, pv);
 	if (byname == 0)
 	{
 		display_walktrough(REDRM_MFXX, REDRSUBSET_MENU, pv);
 	}
+	display_walktrough(REDRM_MLBL, REDRSUBSET_MENU, pv);
 	display_walktrough(REDRM_MVAL, REDRSUBSET_MENU, pv);
 }
 
