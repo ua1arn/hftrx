@@ -3787,7 +3787,7 @@ enum
 		{	9,	20,	display_freqX_b,	REDRM_FRQB, PGALL, },	// SUB FREQ
 		{	21, 20,	display_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
 
-#if 0
+#if 1
 		{	0,	25,	display2_legend_rx,	REDRM_MODE, PGSWR, },	// Отображение оцифровки шкалы S-метра
 		{	0,	30,	display2_bars_rx,	REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
 		{	0,	35,	display2_legend_tx,	REDRM_MODE, PGSWR, },	// Отображение оцифровки шкалы PWR & SWR-метра
@@ -3815,7 +3815,7 @@ enum
 	#endif
 		{	25, 51,	display_voltlevelV5, REDRM_VOLT, PGALL, },	// voltmeter with "V"
 	#if WITHAMHIGHKBDADJ
-		{	25, 51,	display_amfmhighcut3,REDRM_MODE, PG0, },	// 3.7
+		{	26, 51,	display_amfmhighcut3,REDRM_MODE, PGALL, },	// 3.7
 	#endif /* WITHAMHIGHKBDADJ */
 
 		// sleep mode display
