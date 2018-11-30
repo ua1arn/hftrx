@@ -20,7 +20,7 @@
 // Современные конфигурации:
 //#define CTLSTYLE_RAVENDSP_V1	1	// Трансивер Вороненок с 12 кГц IF DSP трактом
 //#define CTLSTYLE_RAVENDSP_V3	1	// Трансивер Вороненок с DSP STM32F429ZIT6, кодеком TLV320AIC23B и FPGA EP4CE22E22I7N
-//#define CTLSTYLE_RAVENDSP_V4	1	// Трансивер Вороненок с SD-CARD, DSP STM32F429ZIT6, кодеком TLV320AIC23B и FPGA EP4CE22E22I7N
+#define CTLSTYLE_RAVENDSP_V4	1	// Трансивер Вороненок с SD-CARD, DSP STM32F429ZIT6, кодеком TLV320AIC23B и FPGA EP4CE22E22I7N
 //#define CTLSTYLE_RAVENDSP_V5	1	// Трансивер Вороненок с SD-CARD, DUAL WATCH, STM32F746ZET6, TLV320AIC23B и FPGA EP4CE22E22I7N
 //#define CTLSTYLE_RAVENDSP_V6	1	// Трансивер Вороненок с SD-CARD, DUAL WATCH, STM32F746ZET6, NAU8822L и FPGA EP4CE22E22I7N
 //#define CTLSTYLE_RAVENDSP_V7	1	// V6 fixed Rmainunit_v5bm.pcb STM32F746ZET6
@@ -61,8 +61,7 @@
 //#define CTLSTYLE_SW2012MC 1	// ATMega: SW-2012С LS020 - MINI с ПЧ 6 МГЦ и цветным индикатором LS020
 //#define CTLSTYLE_SW2012CN 1	// ATMega: mini 2013 TFT1.8 - MINI с ПЧ 6 МГЦ и цветным индикатором 160*128 с контроллером Sitronix ST7735
 //#define CTLSTYLE_SW2012CN5 1	// ATMega: mini 2013 TFT1.8 - SWR METER + VOLT METER - MINI с ПЧ 6 МГЦ и цветным индикатором 160*128 с контроллером Sitronix ST7735
-//#define CTLSTYLE_SW2012CN5_RN3ZOB	1	// ATMega644, tuner, ...
-#define CTLSTYLE_SW2016MINI 1		// ATMega: mini 2013 TFT1.8 - SWR METER + VOLT METER - MINI с ПЧ 6 МГЦ и цветным индикатором 160*128 с контроллером Sitronix ST7735
+//#define CTLSTYLE_SW2016MINI 1		// ATMega: mini 2013 TFT1.8 - SWR METER + VOLT METER - MINI с ПЧ 6 МГЦ и цветным индикатором 160*128 с контроллером Sitronix ST7735
 
 // Простой синтезатор на AD9835/AD9834/AD9851/Si570 
 //#define CTLSTYLE_V8S 1		// ATMega: "Простой синтезатор на AD9835" - без внешнего дешифратора адресов atmega_ctlstyle_v8s.h
@@ -119,8 +118,8 @@
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32f4xx_tqfp144_cpustyle_raven_v3.h"	// Rmainunit_v2b.pcb
 #elif CPUSTYLE_STM32F && CTLSTYLE_RAVENDSP_V4	// SD-CARD. STM32F429ZIT6 or STM32F745ZGT6, TLV320AIC23B и FPGA EP4CE22E22I7N
-	#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_raven_v4.h"	// Rmainunit_v2bm.pcb
-	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_raven_v4_RA1AGO.h"	// Rmainunit_v2bm.pcb
+	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_raven_v4.h"	// Rmainunit_v2bm.pcb
+	#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_raven_v4_RA1AGO.h"	// Rmainunit_v2bm.pcb
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32f4xx_tqfp144_cpustyle_raven_v4.h"	// Rmainunit_v2bm.pcb
 #elif CPUSTYLE_STM32F && CTLSTYLE_RAVENDSP_V5	// SD-CARD. DUAL WATCH, STM32F446ZET6, TLV320AIC23B и FPGA EP4CE22E22I7N
@@ -148,9 +147,9 @@
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32f4xx_tqfp144_cpustyle_raven_v7.h"	// Rmainunit_v5bm.pcb
 #elif CPUSTYLE_STM32F && CTLSTYLE_STORCH_V1	// SD-CARD. DUAL WATCH, STM32F446ZET6, TLV320AIC23B и FPGA EP4CE22E22I7N
-	#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v1.h"	// penkevich, Rmainunit_v5cm.pcb, Rmainunit_v5dm.pcb (USB)
+	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v1.h"	// penkevich, Rmainunit_v5cm.pcb, Rmainunit_v5dm.pcb (USB)
 	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v1_RA9OH.h"	// Rmainunit_v5dm.pcb (USB)
-	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v1_R4DR.h"	// Rmainunit_v5dm.pcb (thermo stab) (USB)
+	#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v1_R4DR.h"	// Rmainunit_v5dm.pcb (thermo stab) (USB)
 	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v1_R4DZ.h"	// Rmainunit_v5dm.pcb (thermo stab) (USB)s
 	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v1_RD1AD.h"	// Rmainunit_v5cm.pcb (USB)
 	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v1_OUSSOV.h"	// Rmainunit_v5cm.pcb (USB)
@@ -181,6 +180,7 @@
 	#include "boards/arm_stm32f4xx_tqfp144_cpustyle_storch_v5.h"	// Rmainunit_v5l.pcb (mimi USBx2, wide display interface) - mini RX
 #elif CPUSTYLE_STM32F && CTLSTYLE_STORCH_V6	// Rmainunit_v5la.pcb STM32H743IIT6, TFT 4.3", 2xmini-USB, mini SD-CARD, NAU8822L и FPGA EP4CE22E22I7N
 	#include "boards/arm_stm32f4xx_tqfp176_ctlstyle_storch_v6.h"	// Rmainunit_v5la.pcb STM32H743IIT6, TFT 4.3", 2xmini-USB, mini SD-CARD, NAU8822L и FPGA EP4CE22E22I7N
+	//#include "boards/arm_stm32f4xx_tqfp176_ctlstyle_storch_v6_RA1AGO.h"	// Rmainunit_v5la.pcb STM32H743IIT6, TFT 4.3", 2xmini-USB, mini SD-CARD, NAU8822L и FPGA EP4CE22E22I7N
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32f4xx_tqfp176_cpustyle_storch_v6.h"	// Rmainunit_v5l.pcb (mimi USBx2, wide display interface) - mini RX
 #elif CPUSTYLE_STM32F && CTLSTYLE_STORCH_V7	// rmainunit_v5km0.pcb STM32H743IIT6, TFT 4.3", 2xUSB, SD-CARD, NAU8822L и FPGA EP4CE22E22I7N
@@ -411,15 +411,12 @@
 	#include "boards/atmega_cpustyle_v9.h"	// SW-2011-RDX
 #elif CPUSTYLE_ATMEGA32 && CTLSTYLE_SW2012CN5
 	#include "boards/atmega_ctlstyle_v9cn5.h"	// SW-2011-MINI с ПЧ 6 МГц + SWR METER + VOLT METER и цветным индикатором
+	//#include "boards/atmega_ctlstyle_v9cn5_RN3ZOB.h"	// ATMega644, tuner, цветной индикатор
 	#include "paramdepend.h"				/* проверка зависимостей параметров конфигурации */
 	#include "boards/atmega_cpustyle_v9.h"	// SW-2011-RDX
 #elif CPUSTYLE_ATMEGA32 && CTLSTYLE_SW2016MINI
-	#include "boards/atmega_ctlstyle_v9cn6.h"	// SW-2016-MINI с ПЧ 6 МГц и цветным индикатором
-	//#include "boards/atmega_ctlstyle_v9cn6_UY5UM.h"	// SW-2016-MINI с ПЧ 6 МГц и EPSON цветным индикатором
-	#include "paramdepend.h"				/* проверка зависимостей параметров конфигурации */
-	#include "boards/atmega_cpustyle_v9.h"	// SW-2011-RDX
-#elif CPUSTYLE_ATMEGA32 && CTLSTYLE_SW2012CN5_RN3ZOB
-	#include "boards/atmega_ctlstyle_v9cn5_RN3ZOB.h"	// ATMega644, tuner, цветной индикатор
+	//#include "boards/atmega_ctlstyle_v9cn6.h"	// SW-2016-MINI с ПЧ 6 МГц и цветным индикатором
+	#include "boards/atmega_ctlstyle_v9cn6_UY5UM.h"	// SW-2016-MINI с ПЧ 6 МГц и EPSON цветным индикатором
 	#include "paramdepend.h"				/* проверка зависимостей параметров конфигурации */
 	#include "boards/atmega_cpustyle_v9.h"	// SW-2011-RDX
 #elif CPUSTYLE_ATMEGA32 && CTLSTYLE_SW2013SF
