@@ -595,7 +595,6 @@
 			arm_hardware_piob_outputs(SPI_MOSI_BIT, SPI_MOSI_BIT);	/* PIO enable for MOSI bit (SD CARD read support)  */ \
 		} while (0)
 	#define HARDWARE_SIDETONE_INITIALIZE() do { \
-		arm_hardware_piob_altfn2(SIDETONE_TARGET_BIT, AF_TIM4);	/* output TIM4_CH3 (PB8, base mapping) */ \
 		} while (0)
 
 	#if KEYBOARD_USE_ADC
