@@ -1087,7 +1087,7 @@ const struct qmkey qmdefs [NQMKEYS] =
 
 	/* матрица справа от индикатора - ряд 3 2 по счету справа - сверху вниз */
 #if WITHAMHIGHKBDADJ
-	{ KIF_SLOW4,	KBD_CODE_AMBANDPASSUP,		KBD_CODE_AMBANDPASSUP, 	' ', },	// #1: F3
+	{ KIF_SLOW4,	KBD_CODE_AMBANDPASSUP,		KBD_CODE_AMBANDPASSUP, 	'1', },	// #1: F3
 #else /* WITHAMHIGHKBDADJ */
 	{ KIF_NONE,		KBD_CODE_A_EQ_B,		KBD_CODE_21, 			'1', },		// A=B
 #endif /* WITHAMHIGHKBDADJ */
@@ -1097,7 +1097,7 @@ const struct qmkey qmdefs [NQMKEYS] =
 
 	/* матрица справа от индикатора - ряд 2 3 по счету справа - сверху вниз */
 #if WITHAMHIGHKBDADJ
-	{ KIF_SLOW4,	KBD_CODE_AMBANDPASSDOWN,	KBD_CODE_AMBANDPASSDOWN,	' ', },	// #2: F2
+	{ KIF_SLOW4,	KBD_CODE_AMBANDPASSDOWN,	KBD_CODE_AMBANDPASSDOWN,	'2', },	// #2: F2
 #else /* WITHAMHIGHKBDADJ */
 	{ KIF_NONE,		KBD_CODE_A_EX_B,			KBD_CODE_18, 		'2', },		// A/B
 #endif /* WITHAMHIGHKBDADJ */

@@ -3814,6 +3814,9 @@ enum
 		{	19, 51,	display_currlevel5, REDRM_VOLT, PGALL, },	// PA drain current d.dd without "A"
 	#endif
 		{	25, 51,	display_voltlevelV5, REDRM_VOLT, PGALL, },	// voltmeter with "V"
+	#if WITHAMHIGHKBDADJ
+		{	25, 51,	display_amfmhighcut3,REDRM_MODE, PG0, },	// 3.7
+	#endif /* WITHAMHIGHKBDADJ */
 
 		// sleep mode display
 		{	5,	24,	display_datetime12,	REDRM_BARS, PGSLP, },	// DATE & TIME // DATE&TIME Jan 01 13:40
