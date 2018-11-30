@@ -21,6 +21,7 @@
 	typedef uint_fast8_t COLOR_T;	/* цвета не поддерживаются - заглушка */
 	typedef uint8_t PACKEDCOLOR_T;	/* цвета не поддерживаются - заглушка */
 
+	#define TFTRGB565 TFTRGB
 
 #endif /* LCDMODE_UC1608 */
 
