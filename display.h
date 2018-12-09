@@ -791,10 +791,12 @@ int_fast16_t hamradio_get_temperature_value(void);	// Градусы в десятых долях
 int_fast16_t hamradio_get_pacurrent_value(void);	// Ток в десятках милиампер, может быть отрицательным
 const FLASHMEM char * hamradio_get_hplp_value_P(void);	// HP/LP
 uint_fast8_t hamradio_get_rec_value(void);	// AUDIO recording state
-uint_fast8_t hamradio_get_amfm_highcut100_value(void);	// текущее значение верхней частоты среза НЧ фильтра АМ/ЧМ (в сотнях герц)
+uint_fast8_t hamradio_get_amfm_highcut100_value(uint_fast8_t * flag);	// текущее значение верхней частоты среза НЧ фильтра АМ/ЧМ (в сотнях герц)
 uint_fast8_t hamradio_get_samdelta10(int_fast32_t * p, uint_fast8_t pathi);		/* Получить значение отклонения частоты с точностью 0.1 герца */
 uint_fast8_t hamradio_get_usbh_active(void);
 uint_fast8_t hamradio_get_datamode(void);	// источник звука для передачи - USB AUDIO
+int_fast16_t hamradio_getleft_bp(uint_fast8_t pathi);	/* получить левый (низкочастотный) скат полосы пропускания для отображения "шторки" на спектранализаторе */
+int_fast16_t hamradio_getright_bp(uint_fast8_t pathi);	/* получить правый (высокочастотный) скат полосы пропускания для отображения "шторки" на спектранализаторе */
 
 // FUNC item label
 void display_fnlabel9(

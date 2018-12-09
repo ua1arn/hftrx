@@ -162,7 +162,7 @@ uint_fast8_t kbd_is_tready(void);
 /* получение скан-кода клавиши, возврат 0 в случае отсутствия.
  */
 uint_fast8_t kbd_scan(uint_fast8_t * key);
-uint_fast8_t kbd_get_ishold(uint_fast8_t key);
+uint_fast8_t kbd_get_ishold(uint_fast8_t flag);
 uint_fast8_t kbd_getnumpad(uint_fast8_t key);
 
 struct qmkey 

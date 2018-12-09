@@ -1446,9 +1446,10 @@ static void display_amfmhighcut3(
 	)
 {
 #if WITHAMHIGHKBDADJ
-	const uint_fast8_t v = hamradio_get_amfm_highcut100_value();	// текущее значение верхней частоты среза НЧ фильтра АМ/ЧМ (в сотнях герц)
+	uint_fast8_t flag;
+	const uint_fast8_t v = hamradio_get_amfm_highcut100_value(& flag);	// текущее значение верхней частоты среза НЧ фильтра АМ/ЧМ (в сотнях герц)
 
-	display_setcolors(colorsfg_1state [0], colorsbg_1state [0]);
+	display_setcolors(colorsfg_2state [flag], colorsbg_2state [flag]);
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 	do
 	{
@@ -4388,50 +4389,6 @@ void display_smeter(
 //--- bars
 
 // Отображение шкалы S-метра и других измерителей
-static void display2_legend(
-	uint_fast8_t x, 
-	uint_fast8_t y, 
-	void * pv
-	)
-{
-#if defined(SMETERMAP)
-	display_setcolors(MODECOLOR, BGCOLOR);
-	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
-	do
-	{
-		display_gotoxy(x, y + lowhalf);
-		if (hamradio_get_tx())
-		{
-	#if WITHTX
-		#if WITHSWRMTR
-			#if WITHSHOWSWRPWR /* на дисплее одновременно отображаются SWR-meter и PWR-meter */
-					display_string_P(PSTR(SWRPWRMAP), lowhalf);
-			#else
-					if (swrmode) 	// Если TUNE то показываем шкалу КСВ
-						display_string_P(PSTR(SWRMAP), lowhalf);
-					else
-						display_string_P(PSTR(POWERMAP), lowhalf);
-			#endif
-		#elif WITHPWRMTR
-					display_string_P(PSTR(POWERMAP), lowhalf);
-		#else
-			#warning No TX indication
-		#endif
-	#endif /* WITHTX */
-		}
-		else
-		{
-			display_string_P(PSTR(SMETERMAP), lowhalf);
-		}
-
-	} while (lowhalf --);
-#endif /* defined(SMETERMAP) */
-#if LCDMODE_LTDC_PIP16
-	arm_hardware_ltdc_pip_off();
-#endif /* LCDMODE_LTDC_PIP16 */
-}
-
-// Отображение шкалы S-метра и других измерителей
 static void display2_legend_rx(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
@@ -4460,8 +4417,7 @@ static void display2_legend_tx(
 	void * pv
 	)
 {
-#if defined(SWRPWRMAP)
-#if WITHTX
+#if defined(SWRPWRMAP) && WITHTX && (WITHSWRMTR || WITHSHOWSWRPWR)
 	display_setcolors(MODECOLOR, BGCOLOR);
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 	do
@@ -4486,9 +4442,24 @@ static void display2_legend_tx(
 	#if LCDMODE_LTDC_PIP16
 		arm_hardware_ltdc_pip_off();
 	#endif /* LCDMODE_LTDC_PIP16 */
-#endif /* WITHTX */
-#endif /* defined(SWRPWRMAP) */
+
+#endif /* defined(SWRPWRMAP) && WITHTX && (WITHSWRMTR || WITHSHOWSWRPWR) */
 }
+
+
+// Отображение шкалы S-метра и других измерителей
+static void display2_legend(
+	uint_fast8_t x, 
+	uint_fast8_t y, 
+	void * pv
+	)
+{
+	if (hamradio_get_tx())
+		display2_legend_tx(x, y, pv);
+	else
+		display2_legend_rx(x, y, pv);
+}
+
 
 #if WITHINTEGRATEDDSP && (WITHRTS96 || WITHRTS192) && ! LCDMODE_HD44780
 
@@ -4545,11 +4516,13 @@ static uint_fast8_t spavgrow;				// строка, в которую последней занесены данные
 enum { PALETTESIZE = 256 };
 static PACKEDCOLOR565_T wfpalette [PALETTESIZE];
 
-#define COLOR565_GRIDCOLOR	TFTRGB565(0x80, 0x80, 0x80)	//COLOR_GRAY - center marker
-#define COLOR565_GRIDCOLOR2	TFTRGB565(0x80, 0x00, 0x00)	//COLOR_DARKRED - other markers
-#define COLOR565_SPECTRUMBG	TFTRGB565(0x00, 0x00, 0x00)	//COLOR_BLACK
-#define COLOR565_SPECTRUMFG	TFTRGB565(0x00, 0xFF, 0x00)	//COLOR_GREEN
-#define COLOR565_SPECTRUMFENCE	TFTRGB565(0xFF, 0xFF, 0xFF)	//COLOR_WHITE
+#define COLOR565_GRIDCOLOR		TFTRGB565(128, 128, 0)		//COLOR_GRAY - center marker
+#define COLOR565_GRIDCOLOR2		TFTRGB565(128, 0, 0x00)		//COLOR_DARKRED - other markers
+#define COLOR565_SPECTRUMBG		TFTRGB565(0, 0, 0)			//COLOR_BLACK
+#define COLOR565_SPECTRUMBG2	TFTRGB565(0, 64, 64)		//COLOR_XXX - полоса пропускания приемника
+//#define COLOR565_SPECTRUMBG2	TFTRGB565(0x80, 0x80, 0x00)	//COLOR_OLIVE - полоса пропускания приемника
+#define COLOR565_SPECTRUMFG		TFTRGB565(0, 255, 0)		//COLOR_GREEN
+#define COLOR565_SPECTRUMFENCE	TFTRGB565(255, 255, 255)	//COLOR_WHITE
 
 // Код взят из проекта Malamute
 static void wfpalette_initialize(void)
@@ -4750,14 +4723,14 @@ static void
 display_colorgrid(
 	PACKEDCOLOR565_T * buffer,
 	uint_fast16_t row0,	// вертикальная координата начала занимаемой области (0..dy-1) сверху вниз
-	uint_fast16_t h			// высота
+	uint_fast16_t h,			// высота
+	int_fast32_t bw
 	)
 {
 	COLOR565_T color0 = COLOR565_GRIDCOLOR;	// макркр на центре
 	COLOR565_T color = COLOR565_GRIDCOLOR2;
 	// 
 	const int_fast32_t gs = glob_gridstep;	// шаг сетки
-	const int_fast32_t bw = dsp_get_samplerateuacin_rts96();
 	const int_fast32_t halfbw = bw / 2;
 	int_fast32_t df;	// кратное сетке значение
 	for (df = - halfbw / gs * gs; df < halfbw; df += gs)
@@ -4784,6 +4757,9 @@ static void display2_spectrum(
 
 	if (hamradio_get_tx() == 0)
 	{
+		const int_fast32_t bw = dsp_get_samplerateuacin_rts96();
+		uint_fast16_t xleft = deltafreq2x(hamradio_getleft_bp(0), bw, ALLDX);	// левый край шторуи
+		uint_fast16_t xright = deltafreq2x(hamradio_getright_bp(0), bw, ALLDX);	// правый край шторки
 		uint_fast16_t x;
 		uint_fast16_t y;
 		// формирование растра
@@ -4822,6 +4798,13 @@ static void display2_spectrum(
 			// логарифм - в вертикальную координату
 			const int val = dsp_mag2y(spavgarray [spavgrow ] [x], SPDY);	// возвращает значения от 0 до SPDY включительно
 		#endif
+			// формирование изображения шторки.
+			if (x >= xleft && x <= xright)
+			{
+				for (y = 0; y < SPDY; ++ y)
+					display_pixelbuffer_xor(spectrmonoscr, ALLDX, SPDY, x, y);	// xor точку
+			}
+
 			// Формирование графика
 			const int yv = SPDY - val;	//отображаемый уровень, yv = 0..SPDY
 			if (glob_nofill != 0)
@@ -4852,6 +4835,10 @@ static void display2_spectrum(
 	// построения изображения по bitmap с раскрашиванием
 	if (hamradio_get_tx() == 0)
 	{
+		const int_fast32_t bw = dsp_get_samplerateuacin_rts96();
+		uint_fast16_t xleft = deltafreq2x(hamradio_getleft_bp(0), bw, ALLDX);	// левый край шторуи
+		uint_fast16_t xright = deltafreq2x(hamradio_getright_bp(0), bw, ALLDX);	// правый край шторки
+
 		uint_fast16_t x;
 		uint_fast16_t y;
 		// отображение спектра
@@ -4881,10 +4868,11 @@ static void display2_spectrum(
 			const int val = dsp_mag2y(spavgarray [spavgrow ] [x], SPDY);	// возвращает значения от 0 до SPDY включительно
 		#endif
 			// Формирование графика
-			const int yv = SPDY - val;	//отображаемый уровень, yv = 0..SPDY
+			const int yv = SPDY - val;	// отображаемый уровень, yv = 0..SPDY
 
 			// формирование фона растра - верхняя часть графика
-			display_colorbuffer_set_vline(colorpip, x, SPY0, yv, COLOR565_SPECTRUMBG);
+			//display_colorbuffer_set_vline(colorpip, x, SPY0, yv, COLOR565_SPECTRUMBG);
+			display_colorbuffer_set_vline(colorpip, x, SPY0, yv, (x >= xleft && x <= xright) ? COLOR565_SPECTRUMBG2 : COLOR565_SPECTRUMBG);
 			// точку на границе
 			if (yv < SPDY)
 			{
@@ -4907,7 +4895,7 @@ static void display2_spectrum(
 				}
 			}
 		}
-		display_colorgrid(colorpip, SPY0, SPDY);	// отрисовка маркеров частот
+		display_colorgrid(colorpip, SPY0, SPDY, bw);	// отрисовка маркеров частот
 	}
 
 #endif
@@ -4981,7 +4969,7 @@ static void display2_waterfall(
 
 	if (hamradio_get_tx() == 0)
 	{
-
+		const int_fast32_t bw = dsp_get_samplerateuacin_rts96();
 		uint_fast16_t x, y;
 
 
@@ -5004,7 +4992,7 @@ static void display2_waterfall(
 		}
 		else
 		{
-			display_colorgrid(colorpip, WFY0, WFDY);	// отрисовка маркеров частот
+			display_colorgrid(colorpip, WFY0, WFDY, bw);	// отрисовка маркеров частот
 		}
 #endif
 	}

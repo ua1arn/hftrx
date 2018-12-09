@@ -18,14 +18,14 @@
 
 #include <string.h>		// for memset
 
+#if defined(WITHRTS96) && defined(WITHRTS192)
+	#error Configuration Error: WITHRTS96 and WITHRTS192 can not be used together
+#endif /* defined(WITHRTS96) && defined(WITHRTS192) */
 enum
 {
 	BUFFTAG_VOICE16 = 44,
-	#if WITHRTS192
-		BUFFTAG_RTS192,
-	#elif WITHRTS96
-		BUFFTAG_RTS96,
-	#endif
+	BUFFTAG_RTS192,
+	BUFFTAG_RTS96,
 	BUFFTAG_total
 };
 
@@ -89,8 +89,8 @@ enum
 	//
 	typedef ALIGNX_BEGIN struct voice16
 	{
-		LIST_ENTRY item;
-		uint_fast8_t tag;
+		LIST_ENTRY item;	// layout should be same in voice16_t, voice96rts_t and voice192rts_t
+		uint_fast8_t tag;	// layout should be same in voice16_t, voice96rts_t and voice192rts_t
 		ALIGNX_BEGIN uint16_t buff [DMABUFFSIZE16] ALIGNX_END;
 	} ALIGNX_END voice16_t;
 
@@ -123,8 +123,8 @@ enum
 
 		typedef ALIGNX_BEGIN struct voices192rts
 		{
-			LIST_ENTRY item;
-			uint_fast8_t tag;
+			LIST_ENTRY item;	// layout should be same in voice16_t, voice96rts_t and voice192rts_t
+			uint_fast8_t tag;	// layout should be same in voice16_t, voice96rts_t and voice192rts_t
 			ALIGNX_BEGIN uint8_t buff [DMABUFFSIZE192RTS] ALIGNX_END;		// спектр, 2*24*192 kS/S
 		} ALIGNX_END voice192rts_t;
 
@@ -132,12 +132,13 @@ enum
 		static LIST_ENTRY2 uacin192rts;	// Буферы для записи в вудиоканал USB к компьютеру спектра, 2*32*192 kS/S
 	
 	#endif /* WITHRTS192 */
+
 	#if WITHRTS96
 
 		typedef ALIGNX_BEGIN struct voices96rts
 		{
-			LIST_ENTRY item;
-			uint_fast8_t tag;
+			LIST_ENTRY item;	// layout should be same in voice16_t, voice96rts_t and voice192rts_t
+			uint_fast8_t tag;	// layout should be same in voice16_t, voice96rts_t and voice192rts_t
 			ALIGNX_BEGIN uint8_t buff [DMABUFFSIZE96RTS] ALIGNX_END;		// спектр, 2*24*192 kS/S
 		} ALIGNX_END voice96rts_t;
 
@@ -396,6 +397,7 @@ void buffers_initialize(void)
 
 		RAMNOINIT_D1 static voice192rts_t voicesarray192rts [4];
 
+		ASSERT(offsetof(voice16_t, item) == offsetof(voice192rts_t, item));
 		ASSERT(offsetof(voice16_t, buff) == offsetof(voice192rts_t, buff));
 		ASSERT(offsetof(voice16_t, tag) == offsetof(voice192rts_t, tag));
 
@@ -408,10 +410,13 @@ void buffers_initialize(void)
 			InsertHeadList2(& voicesfree192rts, & p->item);
 		}
 
-	#elif WITHRTS96
+	#endif /* WITHRTS192 */
+
+	#if WITHRTS96
 
 		RAMNOINIT_D1 static voice96rts_t voicesarray96rts [4];
 
+		ASSERT(offsetof(voice16_t, item) == offsetof(voice96rts_t, item));
 		ASSERT(offsetof(voice16_t, buff) == offsetof(voice96rts_t, buff));
 		ASSERT(offsetof(voice16_t, tag) == offsetof(voice96rts_t, tag));
 
@@ -423,9 +428,6 @@ void buffers_initialize(void)
 			p->tag = BUFFTAG_RTS96;
 			InsertHeadList2(& voicesfree96rts, & p->item);
 		}
-
-	#else /* WITHRTS192, WITHRTS96 */
-
 
 	#endif /* WITHRTS192 */
 
@@ -693,19 +695,19 @@ static uint_fast8_t isaudio48(void)
 }
 
 // UAC IN samplerate
-// todo: сделать нормальный расчёт для некруглыз значений ARMI2SRATE
+// todo: сделать нормальный расчёт для некруглых значений ARMI2SRATE
 int_fast32_t dsp_get_samplerateuacin_audio48(void)
 {
 	return dsp_get_sampleraterx();
 }
 // UAC IN samplerate
-// todo: сделать нормальный расчёт для некруглыз значений ARMI2SRATE
+// todo: сделать нормальный расчёт для некруглых значений ARMI2SRATE
 int_fast32_t dsp_get_samplerateuacin_rts96(void)
 {
 	return dsp_get_sampleraterxscaled(2);
 }
 // UAC IN samplerate
-// todo: сделать нормальный расчёт для некруглыз значений ARMI2SRATE
+// todo: сделать нормальный расчёт для некруглых значений ARMI2SRATE
 int_fast32_t dsp_get_samplerateuacin_rts192(void)
 {
 	return dsp_get_sampleraterxscaled(4);
@@ -1771,7 +1773,9 @@ void savesampleout16stereo(int_fast16_t ch0, int_fast16_t ch1)
 			InsertHeadList2(& voicesfree192rts, & p->item);
 			UNLOCK(& locklist32);
 		}
-		// Поэлементное заполнение буфера RTS96
+
+		// NOT USED
+		// Поэлементное заполнение буфера RTS192
 
 		// Вызывается из ARM_REALTIME_PRIORITY обработчика прерывания
 		// vl, vr: 32 bit, signed - преобразуем к требуемому формату для передачи по USB здесь.
@@ -2022,18 +2026,16 @@ void release_dmabufferx(uintptr_t addr)
 	switch (p->tag)
 	{
 #if WITHRTS96
-
 	case BUFFTAG_RTS96:
 		release_dmabuffer96rts(addr);
 		return;
+#endif /* WITHRTS96 */
 
-#elif WITHRTS192
-
+#if WITHRTS192
 	case BUFFTAG_RTS192:
 		release_dmabuffer192rts(addr);
 		return;
-
-#endif /* WITHRTS96, WITHRTS192 */
+#endif /* WITHRTS192 */
 
 	case BUFFTAG_VOICE16:
 		release_dmabuffer16(addr);
@@ -2061,7 +2063,7 @@ uintptr_t getfilled_dmabufferx(uint_fast16_t * sizep)
 		* sizep = VIRTUAL_AUDIO_PORT_DATA_SIZE_IN_AUDIO48;
 		return getfilled_dmabuffer16uacin();
 
-#if !WITHUSBUAC3
+#if ! WITHUSBUAC3
 
 #if WITHRTS96
 	case UACINALT_RTS96:
@@ -2074,7 +2076,8 @@ uintptr_t getfilled_dmabufferx(uint_fast16_t * sizep)
 		* sizep = VIRTUAL_AUDIO_PORT_DATA_SIZE_IN_RTS192;
 		return getfilled_dmabuffer192uacinrts();
 #endif /* WITHRTS192 */
-#endif /* !WITHUSBUAC3 */
+
+#endif /* ! WITHUSBUAC3 */
 
 	default:
 		debug_printf_P(PSTR("getfilled_dmabufferx: uacinalt=%u\n"), uacinalt);
