@@ -20,7 +20,7 @@
 // Современные конфигурации:
 //#define CTLSTYLE_RAVENDSP_V1	1	// Трансивер Вороненок с 12 кГц IF DSP трактом
 //#define CTLSTYLE_RAVENDSP_V3	1	// Трансивер Вороненок с DSP STM32F429ZIT6, кодеком TLV320AIC23B и FPGA EP4CE22E22I7N
-#define CTLSTYLE_RAVENDSP_V4	1	// Трансивер Вороненок с SD-CARD, DSP STM32F429ZIT6, кодеком TLV320AIC23B и FPGA EP4CE22E22I7N
+//#define CTLSTYLE_RAVENDSP_V4	1	// Трансивер Вороненок с SD-CARD, DSP STM32F429ZIT6, кодеком TLV320AIC23B и FPGA EP4CE22E22I7N
 //#define CTLSTYLE_RAVENDSP_V5	1	// Трансивер Вороненок с SD-CARD, DUAL WATCH, STM32F746ZET6, TLV320AIC23B и FPGA EP4CE22E22I7N
 //#define CTLSTYLE_RAVENDSP_V6	1	// Трансивер Вороненок с SD-CARD, DUAL WATCH, STM32F746ZET6, NAU8822L и FPGA EP4CE22E22I7N
 //#define CTLSTYLE_RAVENDSP_V7	1	// V6 fixed Rmainunit_v5bm.pcb STM32F746ZET6
@@ -33,7 +33,7 @@
 //#define CTLSTYLE_STORCH_V4	1	// Rmainunit_v5im.pcb modem v2
 //#define CTLSTYLE_STORCH_V5	1	// Rmainunit_v5l.pcb STM32F767ZET6, 2xmini-USB, mini SD-CARD, 8-bit display imnterface, NAU8822L и FPGA EP4CE22E22I7N
 //#define CTLSTYLE_STORCH_V6	1	// Rmainunit_v5la.pcb STM32H743IIT6, TFT 4.3", 2xmini-USB, mini SD-CARD, 8-bit display imnterface, NAU8822L и FPGA EP4CE22E22I7N
-//#define CTLSTYLE_STORCH_V7	1	// rmainunit_v5km0.pcb STM32H743IIT6, TFT 4.3", 2xUSB, SD-CARD, NAU8822L и FPGA EP4CE22E22I7N
+#define CTLSTYLE_STORCH_V7	1	// rmainunit_v5km0.pcb STM32H743IIT6, TFT 4.3", 2xUSB, SD-CARD, NAU8822L и FPGA EP4CE22E22I7N
 
 //
 //#define CTLSTYLE_DSPV1A	1	// Плата "Дятел" с кодеками для DSPIF4 с 12 кГц IF DSP трактом
@@ -180,6 +180,7 @@
 	#include "boards/arm_stm32f4xx_tqfp144_cpustyle_storch_v5.h"	// Rmainunit_v5l.pcb (mimi USBx2, wide display interface) - mini RX
 #elif CPUSTYLE_STM32F && CTLSTYLE_STORCH_V6	// Rmainunit_v5la.pcb STM32H743IIT6, TFT 4.3", 2xmini-USB, mini SD-CARD, NAU8822L и FPGA EP4CE22E22I7N
 	#include "boards/arm_stm32f4xx_tqfp176_ctlstyle_storch_v6.h"	// Rmainunit_v5la.pcb STM32H743IIT6, TFT 4.3", 2xmini-USB, mini SD-CARD, NAU8822L и FPGA EP4CE22E22I7N
+	//#include "boards/arm_stm32f4xx_tqfp176_ctlstyle_storch_v6_UA1M.h"	// Rmainunit_v5la.pcb STM32H743IIT6, TFT 4.3", 2xmini-USB, mini SD-CARD, NAU8822L и FPGA EP4CE22E22I7N
 	//#include "boards/arm_stm32f4xx_tqfp176_ctlstyle_storch_v6_RA1AGO.h"	// Rmainunit_v5la.pcb STM32H743IIT6, TFT 4.3", 2xmini-USB, mini SD-CARD, NAU8822L и FPGA EP4CE22E22I7N
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32f4xx_tqfp176_cpustyle_storch_v6.h"	// Rmainunit_v5l.pcb (mimi USBx2, wide display interface) - mini RX

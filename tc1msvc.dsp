@@ -1514,6 +1514,10 @@ SOURCE=.\boards\arm_stm32f4xx_tqfp176_ctlstyle_storch_v6_RA1AGO.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\boards\arm_stm32f4xx_tqfp176_ctlstyle_storch_v6_UA1M.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\boards\arm_stm32f4xx_tqfp176_ctlstyle_storch_v7.h
 # End Source File
 # Begin Source File
