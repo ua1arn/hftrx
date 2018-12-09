@@ -151,7 +151,7 @@
 	//#define NVRAM_TYPE NVRAM_TYPE_AT25256A
 
 	// End of NVRAM definitions section
-	//#define RTC1_TYPE RTC_TYPE_M41T81	/* ST M41T81M6/M41T81SM6F RTC clock chip with I2C interface */
+	#define RTC1_TYPE RTC_TYPE_M41T81	/* ST M41T81M6/M41T81SM6F RTC clock chip with I2C interface */
 	//#define RTC1_TYPE RTC_TYPE_DS1307	/* MAXIM DS1307/DS3231 RTC clock chip with I2C interface */
 
 	/* Аппаратура контроллера SW2011 */
