@@ -14,6 +14,10 @@
 #ifndef ARM_STM32F4XX_TQFP144_CTLSTYLE_RAVEN_V4_H_INCLUDED
 #define ARM_STM32F4XX_TQFP144_CTLSTYLE_RAVEN_V4_H_INCLUDED 1
 
+	#if ! defined(STM32F429xx)
+		#error Wrong CPU selected. STM32F429xx expected
+	#endif /* ! defined(STM32F767xx) */
+
 	//#define WITHSAICLOCKFROMI2S 1	/* Блок SAI1 тактируется от PLL I2S */
 	#define WITHI2SCLOCKFROMPIN 1	// тактовая частота на SPI2 (I2S) подается с внешнего генератора, в процессор вводится через MCK сигнал интерфейса
 	#define WITHSAICLOCKFROMPIN 1	// тактовая частота на SAI1 подается с внешнего генератора, в процессор вводится через MCK сигнал интерфейса
