@@ -4355,6 +4355,7 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 		(void) Instance->D1FIFOSEL;
 	}
 #endif /* WITHUSBUAC */
+#if WITHUSBUAC
 	if (1)
 	{
 		// Данные AUDIO из компьютера в трансивер
@@ -4400,6 +4401,7 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 			0;
 		(void) Instance->D0FIFOSEL;
 	}
+#endif /* WITHUSBUAC */
 
 	/*
 	uint_fast8_t pipe;
