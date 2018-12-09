@@ -3616,7 +3616,7 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBBIT(0003, lcdblcode & 0x02);		/* D3	- LCD backlight */
 		RBBIT(0002, lcdblcode & 0x02);		/* D2	- LCD backlight */
 		RBBIT(0001, lcdblcode & 0x01);		/* D2:D1 - LCD backlight */
-		RBBIT(0000, glob_kblight);			/* D0: keyboard backlight */
+		RBBIT(0000, glob_tx/*glob_kblight*/);			/* D0: keyboard backlight */
 
 		spi_select(target, CTLREG_SPIMODE);
 		prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
@@ -7381,11 +7381,11 @@ board_getsmeter(uint_fast8_t * tracemax, uint_fast8_t minval, uint_fast8_t maxva
 
 
 
-uint_fast8_t board_getvox(void)	/* получить значение от детектора VOX */
+uint_fast8_t board_getvox(void)	/* получить значение от детектора VOX 0..UINT8_MAX */
 {
 #if WITHTX && WITHVOX
 	#if WITHINTEGRATEDDSP
-		return dsp_getvox();
+		return dsp_getvox(UINT8_MAX);
 	#else /* WITHINTEGRATEDDSP */
 		return board_getadc_unfiltered_u8(VOXIX, 0, UINT8_MAX);
 	#endif /* WITHINTEGRATEDDSP */
@@ -7394,11 +7394,11 @@ uint_fast8_t board_getvox(void)	/* получить значение от детектора VOX */
 #endif /* WITHTX && WITHVOX */
 }
 
-uint_fast8_t board_getavox(void)	/* получить значение от детектора Anti-VOX */
+uint_fast8_t board_getavox(void)	/* получить значение от детектора Anti-VOX 0..UINT8_MAX */
 {
 #if WITHTX && WITHVOX
 	#if WITHINTEGRATEDDSP
-		return dsp_getavox();
+		return dsp_getavox(UINT8_MAX);
 	#else /* WITHINTEGRATEDDSP */
 		return board_getadc_unfiltered_u8(AVOXIX, 0, UINT8_MAX);
 	#endif /* WITHINTEGRATEDDSP */

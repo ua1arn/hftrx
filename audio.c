@@ -1475,13 +1475,13 @@ static FLOAT_t VOXDISCHARGE;
 static FLOAT_t VOXCHARGE = 0;
 
 // Возвращает значения 0..255
-uint_fast8_t dsp_getvox(void)
+uint_fast8_t dsp_getvox(uint_fast8_t fullscale)
 {
-	return mikeinlevel / (1 << (WITHAFADCWIDTH - 8 - 1));	// масшабирование q15 к 0..255
+	return mikeinlevel * UINT8_MAX / mikefenceIN;	// масшабирование q15 к 0..255
 }
 
 // Возвращает значения 0..255
-uint_fast8_t dsp_getavox(void)
+uint_fast8_t dsp_getavox(uint_fast8_t fullscale)
 {
 	return 0;
 }
@@ -2734,15 +2734,64 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 		//debug_printf_P(PSTR("audio_setup_wiver: construct filter glob_fullbw6=%u\n"), (unsigned) glob_fullbw6);
 	#if WITHDSPLOCALFIR
 		if (isdspmoderx(dspmode))
-			fir_design_lowpass_freq_scaled(FIRCoef_rx_SSB_IQ [spf], FIRCwnd_rx_SSB_IQ, Ntap_rx_SSB_IQ, cutfreq, rxfiltergain);	// с управлением крутизной скатов и нормированием усиления, с наложением окна
+		{
+			if (1)
+				fir_design_lowpass_freq_scaled(FIRCoef_rx_SSB_IQ [spf], FIRCwnd_rx_SSB_IQ, Ntap_rx_SSB_IQ, cutfreq, rxfiltergain);	// с управлением крутизной скатов и нормированием усиления, с наложением окна
+			else
+				{
+					fir_design_lowpass(dCoeff, iCoefNum, fir_design_normfreq(iCutHigh));
+					if (dspmode == DSPCTL_MODE_RX_AM)
+						fir_design_adjust_rx(FIRCoef_rx_SSB_IQ [spf], FIRCwnd_rx_SSB_IQ, Ntap_rx_SSB_IQ, 0);	// Формирование наклона АЧХ
+					fir_design_applaywindow(dCoeff, dWindow, iCoefNum);
+					fir_design_scale(dCoeff, iCoefNum, dGain / testgain_float_DC(dCoeff, iCoefNum));
+				}
+		}
 		else if (isdspmodetx(dspmode))
 			fir_design_lowpass_freq_scaled(FIRCoef_tx_SSB_IQ [spf], FIRCwnd_tx_SSB_IQ, Ntap_tx_SSB_IQ, cutfreq, txfiltergain);	// с управлением крутизной скатов и нормированием усиления, с наложением окна
+
 	#else /* WITHDSPLOCALFIR */
+
 		(void) dspmode;
 		#if WITHDOUBLEFIRCOEFS && (__ARM_FP & 0x08)
+
+		if (1)
 			fir_design_integer_lowpass_scaledL(FIRCoef_trxi_IQ, FIRCwndL_trxi_IQ, Ntap_trxi_IQ, cutfreq, 1);
+		else
+		{
+			const int iCoefNum = Ntap_trxi_IQ;
+			const FLOAT_t * const dWindow = FIRCwnd_trxi_IQ;
+			double dCoeff [NtapCoeffs(iCoefNum)];	/* Use GCC extension */
+			//fir_design_lowpass_freq_scaledL(dCoeff, dWindow, iCoefNum, iCutHigh, dGain);	// с управлением крутизной скатов и нормированием усиления, с наложением окна
+			{
+				fir_design_lowpassL(dCoeff, iCoefNum, fir_design_normfreqL(iCutHigh));
+				if (dspmode == DSPCTL_MODE_RX_AM)
+					fir_design_adjust_rxL(FIRCoef_rx_SSB_IQ [spf], FIRCwndL_trxi_IQ, iCoefNum, 0);	// Формирование наклона АЧХ
+				fir_design_applaywindowL(dCoeff, dWindow, iCoefNum);
+				fir_design_scaleL(dCoeff, iCoefNum, 1 / testgain_float_DCL(dCoeff, iCoefNum));
+			}
+			fir_design_copy_integersL(FIRCoef_trxi_IQ, dCoeff, iCoefNum);
+		}
+
 		#else
+
+		if (1)
 			fir_design_integer_lowpass_scaled(FIRCoef_trxi_IQ, FIRCwnd_trxi_IQ, Ntap_trxi_IQ, cutfreq, 1);
+		else
+		{
+			const int iCoefNum = Ntap_trxi_IQ;
+			const FLOAT_t * const dWindow = FIRCwnd_trxi_IQ;
+			FLOAT_t dCoeff [NtapCoeffs(iCoefNum)];	/* Use GCC extension */
+			//fir_design_lowpass_freq_scaled(dCoeff, dWindow, iCoefNum, iCutHigh, dGain);	// с управлением крутизной скатов и нормированием усиления, с наложением окна
+			{
+				fir_design_lowpass(dCoeff, iCoefNum, fir_design_normfreq(cutfreq));
+				if (dspmode == DSPCTL_MODE_RX_AM)
+					fir_design_adjust_rx(dCoeff, dWindow, iCoefNum, 0);	// Формирование наклона АЧХ
+				fir_design_applaywindow(dCoeff, dWindow, iCoefNum);
+				fir_design_scale(dCoeff, iCoefNum, 1 / testgain_float_DC(dCoeff, iCoefNum));
+			}
+			fir_design_copy_integers(FIRCoef_trxi_IQ, dCoeff, iCoefNum);
+		}
+
 		#endif
 	#endif /* WITHDSPLOCALFIR */
 	}

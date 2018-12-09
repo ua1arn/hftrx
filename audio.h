@@ -282,7 +282,7 @@ struct Complex
 	FLOAT_t imag;
 };
 
-#if CPUSTYLE_R7S721
+#if CPUSTYLE_R7S721 || CPUSTYLE_STM32H7XX
 	#define FFTSizeFiltersM 10
 	#define FFTSizeSpectrumM 10
 #else
@@ -475,8 +475,8 @@ int_fast32_t dsp_get_samplerateuacin_rts192(void);		// UAC IN samplerate
 int_fast32_t dsp_get_samplerateuacout(void);	// UAC OUT samplerate
 
 uint_fast8_t dsp_getsmeter(uint_fast8_t * tracemax, uint_fast8_t lower, uint_fast8_t upper, uint_fast8_t clean);	/* получить значение от АЦП s-метра */
-uint_fast8_t dsp_getvox(void);	/* получить значение от детектора VOX */
-uint_fast8_t dsp_getavox(void);	/* получить значение от детектора Anti-VOX */
+uint_fast8_t dsp_getvox(uint_fast8_t fullscale);	/* получить значение от детектора VOX */
+uint_fast8_t dsp_getavox(uint_fast8_t fullscale);	/* получить значение от детектора Anti-VOX */
 uint_fast8_t dsp_getfreqdelta10(int_fast32_t * p, uint_fast8_t pathi);	/* Получить значение отклонения частоты с точностью 0.1 герца */
 uint_fast8_t dsp_getmikeadcoverflow(void); /* получения признака переполнения АЦП микрофонного тракта */
 

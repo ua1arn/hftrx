@@ -149,14 +149,15 @@ void vox_set_levels(uint_fast8_t vlevel, uint_fast8_t alevel)
 
 static int vscale(uint_fast8_t v, uint_fast8_t mag)
 {
-	return v * 128 / (101 - mag);
+	return v * mag / 100;
 }
  
 /* предъявить для проверки детектированный уровень сигнала и anti-vox */
 // Вызывается при запрещённых прерываниях.
 void vox_probe(uint_fast8_t vlevel, uint_fast8_t alevel)
 {
-	if ((vscale(vlevel, vox_level) - vscale(alevel, avox_level) >= 50))
+	// vlevel, alevel - значение 0..UINT8_MAX
+	if ((vscale(vlevel, vox_level) - vscale(alevel, avox_level) >= 16))
 	{
 		vox_count = vox_delay;
 	}

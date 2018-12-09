@@ -910,6 +910,22 @@ static bwprop_t * const FLASHMEM bwprops [BWPROPI_count] =
 	& bwprop_nfmwide,	// BWPROPI_NFMWIDE,
 };
 
+// получить bwpropi по bwprop
+static uint_fast8_t
+getbwpropi(const bwprop_t * p)
+{
+	uint_fast8_t i;
+
+	for (i = 0; i < (sizeof bwprops / sizeof bwprops [0]); ++ i)
+	{
+		if (bwprops [i] == p)
+			return i;
+	}
+	ASSERT(0);
+	return 0;
+}
+
+
 // получить тип фильтра
 static int_fast16_t 
 bwseti_getwide(
@@ -959,9 +975,9 @@ bwseti_getwidth(
 	case BWSET_NARROW:
 		{
 			const int_fast16_t width = p->left10_width10 * BWGRANLOW;
-			const int_fast16_t width2 = width / 2;
+			const int_fast16_t width_2 = width / 2;
 			const int_fast16_t center = gcwpitch10 * CWPITCHSCALE;
-			return (center > width2) ? width : (center * 2);
+			return (center > width_2) ? width : (center * 2);
 		}
 
 	default:
@@ -1017,6 +1033,7 @@ bwseti_gethigh(
 		}
 	}
 }
+
 #if 0
 // получить код управления сглаживанием скатов фильтра
 static int_fast8_t 
@@ -2411,7 +2428,7 @@ struct nvmap
 
 	uint8_t bwpropsleft [BWPROPI_count];	/* значения границ полосы пропускания */
 	uint8_t bwpropsright [BWPROPI_count];	/* значения границ полосы пропускания */
-	uint8_t bwpropsfltsofter [BWPROPI_count];	/* Код управления сглаживанием скатов фильтра основной селекции на приёме */
+	//uint8_t bwpropsfltsofter [BWPROPI_count];	/* Код управления сглаживанием скатов фильтра основной селекции на приёме */
 	uint8_t bwpropsafresponce [BWPROPI_count];	/* Наклон АЧХ */
 	uint8_t gssbtxlowcut10;		/* Нижняя частота среза фильтра НЧ при передаче */
 	uint8_t gssbtxhighcut100;	/* Верхняя частота среза фильтра НЧ при передаче */
@@ -2810,39 +2827,13 @@ filter_t fi_2p0_455 =
 
 #define RMT_BWPROPSLEFT_BASE(i) offsetof(struct nvmap, bwpropsleft [(i)])
 #define RMT_BWPROPSRIGHT_BASE(i) offsetof(struct nvmap, bwpropsright [(i)])
-#define RMT_BWPROPSFLTSOFTER_BASE(i) offsetof(struct nvmap, bwpropsfltsofter [(i)])
+//#define RMT_BWPROPSFLTSOFTER_BASE(i) offsetof(struct nvmap, bwpropsfltsofter [(i)])
 #define RMT_BWPROPSAFRESPONCE_BASE(i) offsetof(struct nvmap, bwpropsafresponce [(i)])
 
 
 /* переменные, вынесенные из главной функции - определяют текущий тежим рботы
    и частоту настройки
    */
-
-#if WITHAMHIGHKBDADJ
-/* Изменение полосы пропускания в АМ  */
-static void 
-uif_key_click_amfmbandpassup(void)
-{
-	bwsetsc [BWSETI_AM].prop [0]->right100 = nextfreq(bwsetsc [BWSETI_AM].prop [0]->right100, bwsetsc [BWSETI_AM].prop [0]->right100 + 1, 1, WITHAMHIGH100MAX + 2);
-	save_i8(RMT_BWPROPSRIGHT_BASE(BWPROPI_AMWIDE), bwsetsc [BWSETI_AM].prop [0]->right100);	// верхний срез фильтра НЧ в сотнях герц
-	updateboard(1, 0);
-}
-/* Изменение полосы пропускания в АМ  */
-static void 
-uif_key_click_amfmbandpassdown(void)
-{
-	bwsetsc [BWSETI_AM].prop [0]->right100 = prevfreq(bwsetsc [BWSETI_AM].prop [0]->right100, bwsetsc [BWSETI_AM].prop [0]->right100 - 1, 1, WITHAMHIGH100MIN);
-	save_i8(RMT_BWPROPSRIGHT_BASE(BWPROPI_AMWIDE), bwsetsc [BWSETI_AM].prop [0]->right100);	// верхний срез фильтра НЧ в сотнях герц
-	updateboard(1, 0);
-}
-// текущее значение верхней частоты среза НЧ фильтра АМ/ЧМ (в сотнях герц)
-uint_fast8_t hamradio_get_amfm_highcut100_value(void)
-{
-	return bwsetsc [BWSETI_AM].prop [0]->right100;
-}
-
-#endif /* WITHAMHIGHKBDADJ */
-
 
 /* параметры диапазона, переключаемые при смене VFO */
 static uint_fast32_t gfreqs [2];		/* отображаемая на дисплее частота работы */
@@ -3298,8 +3289,8 @@ enum
 	static uint_fast8_t gtxgate = 1;		/* разрешение драйвера и оконечного усилителя */
 	#if WITHVOX
 		static uint_fast8_t gvoxenable;	/* модифицируется через меню - автоматическое управление передатчиком (от голоса) */
-		static uint_fast8_t gvoxlevel = 100;	/* модифицируется через меню - уровень срабатывания VOX */
-		static uint_fast8_t gavoxlevel = 100;	/* модифицируется через меню - уровень anti-VOX */
+		static uint_fast8_t gvoxlevel = 100;	/* модифицируется через меню - усиление VOX */
+		static uint_fast8_t gavoxlevel = 0;	/* модифицируется через меню - усиление anti-VOX */
 		static uint_fast8_t voxdelay = 30;	/* модифицируется через меню - задержка отпускания VOX */
 	#else /* WITHVOX */
 		enum { gvoxenable = 0 };	/* модифицируется через меню - автоматическое управление передатчиком (от голоса) */
@@ -4463,6 +4454,54 @@ getmodetempl(uint_fast8_t submode)
 	return & mdt [submodes [submode].mode];
 }
 
+#if WITHAMHIGHKBDADJ
+
+
+/* Изменение верхнего среза полосы пропускания в установленном режиме */
+static void 
+uif_key_click_amfmbandpassup(void)
+{
+	const FLASHMEM struct modetempl * const pmodet = getmodetempl(gsubmode);
+	const uint_fast8_t bwseti = pmodet->bwseti;
+	const uint_fast8_t pos = bwsetpos [bwseti];
+	bwprop_t * const p = bwsetsc [bwseti].prop [pos];
+	if (p->type != BWSET_WIDE)
+		return;
+
+	p->right100 = nextfreq(p->right100, p->right100 + 1, 1, p->limits->right100_high + 1);
+	save_i8(RMT_BWPROPSRIGHT_BASE(getbwpropi(p)), p->right100);	// верхний срез фильтра НЧ в сотнях герц
+	updateboard(1, 0);
+}
+
+/* Изменение верхнего среза полосы пропускания в установленном режиме */
+static void 
+uif_key_click_amfmbandpassdown(void)
+{
+	const FLASHMEM struct modetempl * const pmodet = getmodetempl(gsubmode);
+	const uint_fast8_t bwseti = pmodet->bwseti;
+	const uint_fast8_t pos = bwsetpos [bwseti];
+	bwprop_t * const p = bwsetsc [bwseti].prop [pos];
+	if (p->type != BWSET_WIDE)
+		return;
+
+	p->right100 = prevfreq(p->right100, p->right100 - 1, 1, p->limits->right100_low);
+	save_i8(RMT_BWPROPSRIGHT_BASE(getbwpropi(p)), p->right100);	// верхний срез фильтра НЧ в сотнях герц
+	updateboard(1, 0);
+}
+
+/* текущее значение верхнего среза полосы пропускания в установленном режиме (в сотнях герц) */
+uint_fast8_t hamradio_get_amfm_highcut100_value(uint_fast8_t * flag)
+{
+	const FLASHMEM struct modetempl * const pmodet = getmodetempl(gsubmode);
+	const uint_fast8_t bwseti = pmodet->bwseti;
+	const uint_fast8_t pos = bwsetpos [bwseti];
+	bwprop_t * const p = bwsetsc [bwseti].prop [pos];
+
+	* flag = p->type == BWSET_WIDE;
+	return p->right100;
+}
+#endif /* WITHAMHIGHKBDADJ */
+
 // проверка, используется ли описатель диапазона с данным кодом в текущей конфигурации.
 // Возврат 0 - не используется
 static uint_fast8_t
@@ -5147,12 +5186,12 @@ bwseti_load(void)
 		switch (p->type)
 		{
 		case BWSET_NARROW:
-			p->left10_width10 = loadvfy8up(RMT_BWPROPSLEFT_BASE(bwprop), 10, 180, p->left10_width10);
+			p->left10_width10 = loadvfy8up(RMT_BWPROPSLEFT_BASE(bwprop), p->limits->left10_width10_low, p->limits->left10_width10_high, p->left10_width10);
 			break;
 		default:
 		case BWSET_WIDE:
-			p->left10_width10 = loadvfy8up(RMT_BWPROPSLEFT_BASE(bwprop), 5, 70, p->left10_width10);
-			p->right100 = loadvfy8up(RMT_BWPROPSRIGHT_BASE(bwprop), 8, 60, p->right100);
+			p->left10_width10 = loadvfy8up(RMT_BWPROPSLEFT_BASE(bwprop), p->limits->left10_width10_low, p->limits->left10_width10_high, p->left10_width10);
+			p->right100 = loadvfy8up(RMT_BWPROPSRIGHT_BASE(bwprop), p->limits->right100_low, p->limits->right100_high, p->right100);
 			break;
 		}
 	}
@@ -5336,6 +5375,34 @@ enc2menu_adjust(
 
 static const FLASHMEM struct enc2menu enc2menus [] =
 {
+#if WITHIF4DSP
+#if ! WITHPOTAFGAIN
+	{
+		"VOLUME   ",
+		0,		// rj
+		ISTEP1,
+		BOARD_AFGAIN_MIN, BOARD_AFGAIN_MAX, 					// Громкость в процентах
+		offsetof(struct nvmap, afgain1),
+		& afgain1,
+		NULL,
+		getzerobase, /* складывается со смещением и отображается */
+		enc2menu_adjust,	/* функция для изменения значения параметра */
+	},
+#endif /* ! WITHPOTAFGAIN */
+#if 0 && ! WITHPOTIFGAIN
+	{
+		"RF GAIN  ",
+		0,		// rj
+		ISTEP1,
+		BOARD_IFGAIN_MIN, BOARD_IFGAIN_MAX, 					// Усиление ПЧ/ВЧ в процентах
+		offsetof(struct nvmap, rfgain1),
+		& rfgain1,
+		NULL,
+		getzerobase, /* складывается со смещением и отображается */
+		enc2menu_adjust,	/* функция для изменения значения параметра */
+	},
+#endif /* ! WITHPOTIFGAIN */
+#endif /* WITHIF4DSP */
 #if WITHELKEY && ! WITHPOTWPM
 	{
 		"CW SPEED ",
@@ -6501,6 +6568,53 @@ getif6bw(
 	}
 	return 0;
 }
+
+
+/* получить левый (низкочастотный) скат полосы пропускания для отображения "шторки" на спектранализаторе */
+int_fast16_t
+hamradio_getleft_bp(uint_fast8_t pathi)
+{
+	const uint_fast8_t bi = getbankindex_pathi(pathi);
+	const uint_fast32_t freq = gfreqs [bi];
+	const uint_fast8_t forcelsb = getforcelsb(freq);
+	const uint_fast8_t alsbmode = getsubmodelsb(gsubmode, forcelsb);	// Принимаемая модуляция на нижней боковой
+	const FLASHMEM struct modetempl * const pmodet = getmodetempl(gsubmode);
+	const uint_fast8_t bwseti = pmodet->bwseti;
+	const uint_fast8_t mode = submodes [gsubmode].mode;
+
+	switch (mode)
+	{
+	case MODE_SSB:
+	case MODE_DIGI:
+		return alsbmode ? - bwseti_gethigh(bwseti) : bwseti_getlow(bwseti);
+	default:
+		return - getif6bw(mode, gtx, bwseti_getwide(bwseti)) / 2;	// TODO: учесть возврат INT16_MAX
+	}
+}
+
+/* получить правый (высокочастотный) скат полосы пропускания для отображения "шторки" на спектранализаторе */
+int_fast16_t
+hamradio_getright_bp(uint_fast8_t pathi)
+{
+	const uint_fast8_t bi = getbankindex_pathi(pathi);
+	const uint_fast32_t freq = gfreqs [bi];
+	const uint_fast8_t forcelsb = getforcelsb(freq);
+	const uint_fast8_t alsbmode = getsubmodelsb(gsubmode, forcelsb);	// Принимаемая модуляция на нижней боковой
+	const FLASHMEM struct modetempl * const pmodet = getmodetempl(gsubmode);
+	const uint_fast8_t bwseti = pmodet->bwseti;
+	const uint_fast8_t mode = submodes [gsubmode].mode;
+
+	switch (mode)
+	{
+	case MODE_SSB:
+	case MODE_DIGI:
+		return alsbmode ? - bwseti_getlow(bwseti) : bwseti_gethigh(bwseti);
+
+	default:
+		return getif6bw(mode, gtx, bwseti_getwide(bwseti)) / 2;	// TODO: учесть возврат INT16_MAX
+	}
+}
+
 #endif /* WITHIF4DSP */
 
 // Значение частоты для восстановления сигнала
@@ -11202,13 +11316,11 @@ processmessages(uint_fast8_t * kbch, uint_fast8_t * kbready, uint_fast8_t inmenu
 /* Вызывается из обработчика прерываний раз в секунду */
 void spool_secound(void)
 {
-#if WITHLCDBACKLIGHT || WITHKBDBACKLIGHT
 	uint8_t * buff;
 	if (takemsgbufferfree_low(& buff) != 0)
 	{
 		placesemsgbuffer_low(MSGT_1SEC, buff);
 	}
-#endif /* WITHLCDBACKLIGHT || WITHKBDBACKLIGHT */
 }
 
 
