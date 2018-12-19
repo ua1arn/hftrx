@@ -1439,7 +1439,7 @@ static void display_samfreqdelta8(
 
 // d.d - 3 places
 // текущее значение верхней частоты среза НЧ фильтра АМ/ЧМ
-static void display_amfmhighcut3(
+static void display_amfmhighcut4(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
 	void * pv
@@ -1447,14 +1447,14 @@ static void display_amfmhighcut3(
 {
 #if WITHAMHIGHKBDADJ
 	uint_fast8_t flag;
-	const uint_fast8_t v = hamradio_get_amfm_highcut100_value(& flag);	// текущее значение верхней частоты среза НЧ фильтра АМ/ЧМ (в сотнях герц)
+	const uint_fast8_t v = hamradio_get_amfm_highcut10_value(& flag);	// текущее значение верхней частоты среза НЧ фильтра АМ/ЧМ (в десятках герц)
 
 	display_setcolors(colorsfg_2state [flag], colorsbg_2state [flag]);
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 	do
 	{
 		display_gotoxy(x, y + lowhalf);	
-		display_value_small(v, 2, 1, 255, 0, lowhalf);
+		display_value_small(v, 3, 2, 255, 0, lowhalf);
 	} while (lowhalf --);
 #endif /* WITHAMHIGHKBDADJ */
 }
@@ -3271,7 +3271,7 @@ enum
 			{	11, 14,	display_currlevelA6, REDRM_VOLT, PG0 | REDRSUBSET_MENU, },	// amphermeter with "A"
 		#endif /*  WITHCURRLEVEL */
 		#if WITHAMHIGHKBDADJ
-			{	6, 14,	display_amfmhighcut3,REDRM_MODE, PG0, },	// 3.7
+			{	6, 14,	display_amfmhighcut4,REDRM_MODE, PG0, },	// 3.70
 		#endif /* WITHAMHIGHKBDADJ */
 			{	18, 14,	display_samfreqdelta8, REDRM_BARS, PG0 | REDRSUBSET_MENU, },	/* Получить информацию об ошибке настройки в режиме SAM */
 		#if WITHNOTCHONOFF || WITHNOTCHFREQ
@@ -3415,7 +3415,7 @@ enum
 			{	11, 14,	display_currlevelA6, REDRM_VOLT, PG0, },	// amphermeter with "A"
 		#endif /*  WITHCURRLEVEL */
 		#if WITHAMHIGHKBDADJ
-			{	6, 14,	display_amfmhighcut3,REDRM_MODE, PG0, },	// 3.7
+			{	6, 14,	display_amfmhighcut4,REDRM_MODE, PG0, },	// 3.70
 		#endif /* WITHAMHIGHKBDADJ */
 			{	18, 14,	display_samfreqdelta8, REDRM_BARS, PG0 | REDRSUBSET_MENU, },	/* Получить информацию об ошибке настройки в режиме SAM */
 		#if WITHNOTCHONOFF || WITHNOTCHFREQ
@@ -3816,7 +3816,7 @@ enum
 	#endif
 		{	25, 51,	display_voltlevelV5, REDRM_VOLT, PGALL, },	// voltmeter with "V"
 	#if WITHAMHIGHKBDADJ
-		{	26, 51,	display_amfmhighcut3,REDRM_MODE, PGALL, },	// 3.7
+		{	25, 51,	display_amfmhighcut4,REDRM_MODE, PGALL, },	// 3.70
 	#endif /* WITHAMHIGHKBDADJ */
 
 		// sleep mode display

@@ -824,7 +824,8 @@ static uint_fast8_t	gssbtxlowcut10 = 300 / BWGRANLOW;		/* Нижняя частота среза ф
 // Частоты перестройки границ полосы пропускания
 typedef struct
 {
-	uint_fast16_t granulation;
+	uint_fast16_t granulationleft;
+	uint_fast16_t granulationright;
 	uint_fast8_t left10_width10_low, left10_width10_high;	// пределы изменения параметров
 	uint_fast8_t right100_low, right100_high;	// пределы изменения параметров
 } bwlimits_t;
@@ -832,6 +833,7 @@ typedef struct
 typedef struct
 {
 	const bwlimits_t * limits;
+	uint_fast8_t bwpropi;	// BWPROPI_xxxx
 	uint_fast8_t type;		// BWSET_NARROW/BWSET_WIDE
 	uint_fast8_t left10_width10, right100;	// left выполняет роль width для телеграфных (BWSET_NARROW) фильтров
 	//uint_fast8_t fltsofter;
@@ -846,23 +848,40 @@ typedef struct
 	const char FLASHMEM * labels [BWSET_WIDTHS];	// названия фильтров
 } bwsetsc_t;
 
-static const bwlimits_t bwlimits_cw = { 1, 10, 180, 0, 0,  };
-static const bwlimits_t bwlimits_am = { 1, WITHAMLOW10MIN, WITHAMLOW10MAX, WITHAMHIGH100MIN, WITHAMHIGH100MAX,  };
-static const bwlimits_t bwlimits_ssb = { 1, WITHSSBLOW10MIN, WITHSSBLOW10MAX, WITHSSBHIGH100MIN, WITHSSBHIGH100MAX, };
-static const bwlimits_t bwlimits_wfm = { 1, WITHWFMLOW10MIN, WITHWFMLOW10MAX, WITHWFMHIGH100MIN, WITHWFMHIGH100MAX, };
+static const bwlimits_t bwlimits_cw = { 10, 1, 10, 180, 0, 0,  };
+static const bwlimits_t bwlimits_am = { 5, 1, WITHAMLOW10MIN, WITHAMLOW10MAX, WITHAMHIGH100MIN, WITHAMHIGH100MAX,  };
+static const bwlimits_t bwlimits_ssb = { 5, 1, WITHSSBLOW10MIN, WITHSSBLOW10MAX, WITHSSBHIGH100MIN, WITHSSBHIGH100MAX, };
+static const bwlimits_t bwlimits_wfm = { 5, 1, WITHWFMLOW10MIN, WITHWFMLOW10MAX, WITHWFMHIGH100MIN, WITHWFMHIGH100MAX, };
+
+// индекс банка полос пропускания для данного режима
+enum
+{
+	BWPROPI_CWNARROW,
+	BWPROPI_CWWIDE,	
+	BWPROPI_SSBWIDE,	
+	BWPROPI_SSBNARROW,	
+	BWPROPI_AMWIDE,	
+	BWPROPI_AMNARROW,	
+	BWPROPI_DIGIWIDE,	
+	BWPROPI_NFMNARROW,
+	BWPROPI_NFMWIDE,	
+	BWPROPI_WFM,	
+	//
+	BWPROPI_count
+};
 
 // Частоты границ полосы пропускания
 // эти значения могут модифицироваться через меню
-static bwprop_t bwprop_cwnarrow = { & bwlimits_cw, BWSET_NARROW, 200 / BWGRANLOW, 0, - 0 + AFRESPONCESHIFT, };
-static bwprop_t bwprop_cwwide = { & bwlimits_cw, BWSET_NARROW, 500 / BWGRANLOW, 0, - 0 + AFRESPONCESHIFT, };
-static bwprop_t bwprop_ssbwide = { & bwlimits_ssb, BWSET_WIDE, 300 / BWGRANLOW, 3400 / BWGRANHIGH, - 36 + AFRESPONCESHIFT,	};
-static bwprop_t bwprop_ssbnarrow = { & bwlimits_ssb, BWSET_WIDE, 400 / BWGRANLOW, 2900 / BWGRANHIGH, - 36 + AFRESPONCESHIFT,	};
-static bwprop_t bwprop_amwide = { & bwlimits_ssb, BWSET_WIDE, 100 / BWGRANLOW, 4000 / BWGRANHIGH, - 36 + AFRESPONCESHIFT,	};
-static bwprop_t bwprop_amnarrow = { & bwlimits_am, BWSET_WIDE, 100 / BWGRANLOW, 3400 / BWGRANHIGH, - 36 + AFRESPONCESHIFT,	};
-static bwprop_t bwprop_digiwide = { & bwlimits_ssb, BWSET_WIDE, 300 / BWGRANLOW, 3400 / BWGRANHIGH, - 0 + AFRESPONCESHIFT,	};
-static bwprop_t bwprop_nfmnarrow = { & bwlimits_am, BWSET_WIDE, 300 / BWGRANLOW, 3400 / BWGRANHIGH, - 36 + AFRESPONCESHIFT,	};
-static bwprop_t bwprop_nfmwide = { & bwlimits_am, BWSET_WIDE, 300 / BWGRANLOW, 4000 / BWGRANHIGH, - 36 + AFRESPONCESHIFT,	};
-static bwprop_t bwprop_wfm = { & bwlimits_wfm, BWSET_WIDE, 100 / BWGRANLOW, 12000 / BWGRANHIGH, + 18 + AFRESPONCESHIFT,	};
+static bwprop_t bwprop_cwnarrow = { & bwlimits_cw, BWPROPI_CWNARROW, BWSET_NARROW, 200 / BWGRANLOW, 0, - 0 + AFRESPONCESHIFT, };
+static bwprop_t bwprop_cwwide = { & bwlimits_cw, BWPROPI_CWWIDE, BWSET_NARROW, 500 / BWGRANLOW, 0, - 0 + AFRESPONCESHIFT, };
+static bwprop_t bwprop_ssbwide = { & bwlimits_ssb, BWPROPI_SSBWIDE, BWSET_WIDE, 300 / BWGRANLOW, 3400 / BWGRANHIGH, - 36 + AFRESPONCESHIFT,	};
+static bwprop_t bwprop_ssbnarrow = { & bwlimits_ssb, BWPROPI_SSBNARROW, BWSET_WIDE, 400 / BWGRANLOW, 2900 / BWGRANHIGH, - 36 + AFRESPONCESHIFT,	};
+static bwprop_t bwprop_amwide = { & bwlimits_ssb, BWPROPI_AMWIDE, BWSET_WIDE, 100 / BWGRANLOW, 4000 / BWGRANHIGH, - 36 + AFRESPONCESHIFT,	};
+static bwprop_t bwprop_amnarrow = { & bwlimits_am, BWPROPI_AMNARROW, BWSET_WIDE, 100 / BWGRANLOW, 3400 / BWGRANHIGH, - 36 + AFRESPONCESHIFT,	};
+static bwprop_t bwprop_digiwide = { & bwlimits_ssb, BWPROPI_DIGIWIDE, BWSET_WIDE, 300 / BWGRANLOW, 3400 / BWGRANHIGH, - 0 + AFRESPONCESHIFT,	};
+static bwprop_t bwprop_nfmnarrow = { & bwlimits_am, BWPROPI_NFMNARROW, BWSET_WIDE, 300 / BWGRANLOW, 3400 / BWGRANHIGH, - 36 + AFRESPONCESHIFT,	};
+static bwprop_t bwprop_nfmwide = { & bwlimits_am, BWPROPI_NFMWIDE, BWSET_WIDE, 300 / BWGRANLOW, 4000 / BWGRANHIGH, - 36 + AFRESPONCESHIFT,	};
+static bwprop_t bwprop_wfm = { & bwlimits_wfm, BWPROPI_WFM, BWSET_WIDE, 100 / BWGRANLOW, 12000 / BWGRANHIGH, + 18 + AFRESPONCESHIFT,	};
 
 // Способ представления частот и количество профилей полосы пропускания,
 // а так же названия полос пропускания для отображения
@@ -880,21 +899,6 @@ static const FLASHMEM bwsetsc_t bwsetsc [BWSETI_count] =
 // выбранная полоса пропускания в каждом режиме
 static uint_fast8_t bwsetpos [BWSETI_count];
 
-// индекс банка полос пропускания для данного режима
-enum
-{
-	BWPROPI_CWNARROW,
-	BWPROPI_CWWIDE,	
-	BWPROPI_SSBWIDE,	
-	BWPROPI_SSBNARROW,	
-	BWPROPI_AMWIDE,	
-	BWPROPI_AMNARROW,	
-	BWPROPI_DIGIWIDE,	
-	BWPROPI_NFMNARROW,
-	BWPROPI_NFMWIDE,	
-	//
-	BWPROPI_count
-};
 
 // Используется для обмена с NVRAN параметрами фильтров
 static bwprop_t * const FLASHMEM bwprops [BWPROPI_count] =
@@ -908,23 +912,8 @@ static bwprop_t * const FLASHMEM bwprops [BWPROPI_count] =
 	& bwprop_digiwide,	// BWPROPI_DIGIWIDE,
 	& bwprop_nfmnarrow,	// BWPROPI_NFMNARROW,
 	& bwprop_nfmwide,	// BWPROPI_NFMWIDE,
+	& bwprop_wfm,		// BWPROPI_WFM,
 };
-
-// получить bwpropi по bwprop
-static uint_fast8_t
-getbwpropi(const bwprop_t * p)
-{
-	uint_fast8_t i;
-
-	for (i = 0; i < (sizeof bwprops / sizeof bwprops [0]); ++ i)
-	{
-		if (bwprops [i] == p)
-			return i;
-	}
-	ASSERT(0);
-	return 0;
-}
-
 
 // получить тип фильтра
 static int_fast16_t 
@@ -4465,12 +4454,25 @@ uif_key_click_amfmbandpassup(void)
 	const uint_fast8_t bwseti = pmodet->bwseti;
 	const uint_fast8_t pos = bwsetpos [bwseti];
 	bwprop_t * const p = bwsetsc [bwseti].prop [pos];
-	if (p->type != BWSET_WIDE)
-		return;
+	//if (p->type != BWSET_WIDE)
+	//	return;
 
-	p->right100 = nextfreq(p->right100, p->right100 + 1, 1, p->limits->right100_high + 1);
-	save_i8(RMT_BWPROPSRIGHT_BASE(getbwpropi(p)), p->right100);	// верхний срез фильтра НЧ в сотнях герц
-	updateboard(1, 0);
+	switch (p->type)
+	{
+	case BWSET_NARROW:
+		p->left10_width10 = nextfreq(p->left10_width10, p->left10_width10 + p->limits->granulationleft, p->limits->granulationleft, p->limits->left10_width10 + 1);
+		save_i8(RMT_BWPROPSLEFT_BASE(p->bwpropi), p->left10_width10);	// верхний срез фильтра НЧ в сотнях герц
+		updateboard(1, 0);
+		break;
+
+	default:
+	case BWSET_WIDE:
+		p->right100 = nextfreq(p->right100, p->right100 + p->limits->granulationright, p->limits->granulationright, p->limits->right100_high + 1);
+		save_i8(RMT_BWPROPSRIGHT_BASE(p->bwpropi), p->right100);	// верхний срез фильтра НЧ в сотнях герц
+		updateboard(1, 0);
+		break;
+	}
+
 }
 
 /* Изменение верхнего среза полосы пропускания в установленном режиме */
@@ -4481,24 +4483,47 @@ uif_key_click_amfmbandpassdown(void)
 	const uint_fast8_t bwseti = pmodet->bwseti;
 	const uint_fast8_t pos = bwsetpos [bwseti];
 	bwprop_t * const p = bwsetsc [bwseti].prop [pos];
-	if (p->type != BWSET_WIDE)
-		return;
+	//if (p->type != BWSET_WIDE)
+	//	return;
 
-	p->right100 = prevfreq(p->right100, p->right100 - 1, 1, p->limits->right100_low);
-	save_i8(RMT_BWPROPSRIGHT_BASE(getbwpropi(p)), p->right100);	// верхний срез фильтра НЧ в сотнях герц
-	updateboard(1, 0);
+	switch (p->type)
+	{
+	case BWSET_NARROW:
+		p->left10_width10 = prevfreq(p->left10_width10, p->left10_width10 - p->limits->granulationleft, p->limits->granulationleft, p->limits->left10_width10_low);
+		save_i8(RMT_BWPROPSLEFT_BASE(p->bwpropi), p->left10_width10);	// верхний срез фильтра НЧ в сотнях герц
+		updateboard(1, 0);
+		break;
+
+	default:
+	case BWSET_WIDE:
+		p->right100 = prevfreq(p->right100, p->right100 - 1, p->limits->granulationright, p->limits->right100_low);
+		save_i8(RMT_BWPROPSRIGHT_BASE(bwpropi), p->right100);	// верхний срез фильтра НЧ в сотнях герц
+		updateboard(1, 0);
+		break;
+	}
+
 }
 
-/* текущее значение верхнего среза полосы пропускания в установленном режиме (в сотнях герц) */
-uint_fast8_t hamradio_get_amfm_highcut100_value(uint_fast8_t * flag)
+/* текущее значение верхнего среза полосы пропускания в установленном режиме (в десятках герц) */
+uint_fast8_t hamradio_get_amfm_highcut10_value(uint_fast8_t * flag)
 {
 	const FLASHMEM struct modetempl * const pmodet = getmodetempl(gsubmode);
 	const uint_fast8_t bwseti = pmodet->bwseti;
 	const uint_fast8_t pos = bwsetpos [bwseti];
 	bwprop_t * const p = bwsetsc [bwseti].prop [pos];
 
-	* flag = p->type == BWSET_WIDE;
-	return p->right100;
+	switch (p->type)
+	{
+	case BWSET_NARROW:
+		* flag = 1;//p->type == BWSET_WIDE;
+		return p->left10_width10;
+		break;
+	default:
+	case BWSET_WIDE:
+		* flag = 1;//p->type == BWSET_WIDE;
+		return p->right100 * 10;
+		break;
+	}
 }
 #endif /* WITHAMHIGHKBDADJ */
 
@@ -5402,6 +5427,19 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		enc2menu_adjust,	/* функция для изменения значения параметра */
 	},
 #endif /* ! WITHPOTIFGAIN */
+#if 0//WITHAMHIGHKBDADJ
+	{
+		"CW SPEED ",
+		0,		// rj
+		ISTEP1,
+		CWWPMMIN, CWWPMMAX,		// minimal WPM = 10, maximal = 60 (also changed by command KS).
+		offsetof(struct nvmap, elkeywpm),
+		NULL,
+		& elkeywpm,
+		getzerobase, /* складывается со смещением и отображается */
+		enc2menu_adjust,	/* функция для изменения значения параметра */
+	},
+#endif /* WITHIF4DSP */
 #endif /* WITHIF4DSP */
 #if WITHELKEY && ! WITHPOTWPM
 	{
