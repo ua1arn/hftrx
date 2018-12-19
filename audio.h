@@ -133,12 +133,23 @@
 
 #endif /* WITHDSPEXTDDC */
 
+
+// Требования по кратности размера буфера для передачи по USB DMA
+#if CPUSTYLE_R7S721
+	#define HARDWARE_RTSDMABYTES	4
+#else /* CPUSTYLE_R7S721 */
+	#define HARDWARE_RTSDMABYTES	1
+#endif /* CPUSTYLE_R7S721 */
+
+// коррекция размера с учетом требуемого выравнивания
+#define DMAHWEPADJUST(sz, granulation) (((sz) + ((granulation) - 1)) / (granulation) * (granulation))
+
 /* константы. С запасом чтобы работало и при тактовой 125 МГц на FPGA при децимации 2560 = 48.828125 kHz sample rate */
 //#define MSOUTSAMPLES	49 /* количество сэмплов за милисекунду в UAC OUT */
 // без запаса - только для 48000
 #define MSOUTSAMPLES	48 /* количество сэмплов за милисекунду в UAC OUT */
 #define MSINSAMPLES		(MSOUTSAMPLES + 1) /* количество сэмплов за милисекунду в UAC IN */
-
+// коррекции размера не требуется - и так кратен 4 всегда
 #define DMABUFFSIZE16 (MSINSAMPLES * DMABUFSTEP16)	/* размер под USB ENDPOINT PACKET SIZE В буфере помещаются пары значений - стерео кодек */
 
 #define DMABUFCLUSTER	8	// Cделано небольшое количество - для взаимодействия с формирователем электронного ключа
@@ -148,11 +159,14 @@
 
 // Параметры для канала передачи Real Time Spectrum - stereo, 32 bit, 192 kS/S
 #define DMABUFSTEP192RTS 8	// 8: стерео по 32 бит, 6: стерео по 24 бит
-#define DMABUFFSIZE192RTS (128/*288*/ * DMABUFSTEP192RTS)
+#define DMABUFFSIZE192RTS_AJ (128/*288*/ * DMABUFSTEP192RTS)
+
+#define DMABUFFSIZE192RTS DMAHWEPADJUST(DMABUFFSIZE192RTS_AJ, DMABUFSTEP192RTS * HARDWARE_RTSDMABYTES)
 
 #define DMABUFSTEP96RTS 6	// 6: стерео по 24 бит
-#define DMABUFFSIZE96RTS ((MSOUTSAMPLES * 2 + 1) * DMABUFSTEP96RTS) //((96 + 4) * DMABUFSTEP96RTS)		// 588 - должно быть кратно 4 байтам - для работы DMA в Renesas
+#define DMABUFFSIZE96RTS_AJ ((MSOUTSAMPLES * 2 + 1) * DMABUFSTEP96RTS) //((96 + 4) * DMABUFSTEP96RTS)		// 588 - должно быть кратно 4 байтам - для работы DMA в Renesas
 
+#define DMABUFFSIZE96RTS DMAHWEPADJUST(DMABUFFSIZE96RTS_AJ, DMABUFSTEP96RTS * HARDWARE_RTSDMABYTES)
 
 #if WITHRTS96
 

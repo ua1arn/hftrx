@@ -276,8 +276,8 @@ void buffers_diagnostics(void)
 #endif
 
 #if 1 && WITHDEBUG && WITHINTEGRATEDDSP && WITHBUFFERSDEBUG
-	debug_printf_P(PSTR("n1=%u, n1wfm=%u, n2=%u, n3=%u, n4=%u, n5=%u, n6=%u\n"), n1, n1wfm, n2, n3, n4, n5, n6);
-	debug_printf_P(PSTR("e1=%u, e2=%u, e3=%u, e4=%u, e5=%u, e6=%u\n"), e1, e2, e3, e4, e5, e6);
+	debug_printf_P(PSTR("n1=%u n1wfm=%u n2=%u n3=%u n4=%u n5=%u n6=%u\n"), n1, n1wfm, n2, n3, n4, n5, n6);
+	debug_printf_P(PSTR("e1=%u e2=%u e3=%u e4=%u e5=%u e6=%u uacinalt=%d\n"), e1, e2, e3, e4, e5, e6, uacinalt);
 
 	{
 		const unsigned ms10 = getresetval(& debugcount_ms10);
@@ -392,6 +392,10 @@ void buffers_initialize(void)
 	}
 
 #if WITHUSBUAC
+
+	ASSERT((DMABUFFSIZE16 % HARDWARE_RTSDMABYTES) == 0);
+	ASSERT((DMABUFFSIZE192RTS % HARDWARE_RTSDMABYTES) == 0);
+	ASSERT((DMABUFFSIZE96RTS % HARDWARE_RTSDMABYTES) == 0);
 
 	#if WITHRTS192
 
@@ -1683,6 +1687,7 @@ void savesampleout16stereo(int_fast16_t ch0, int_fast16_t ch1)
 				n = 0;
 			}
 
+			ASSERT(DMABUFSTEP96RTS == 6);
 			p->buff [n ++] = ch0 >> 8;	// sample value
 			p->buff [n ++] = ch0 >> 16;	// sample value
 			p->buff [n ++] = ch0 >> 24;	// sample value
@@ -1885,12 +1890,16 @@ buffers_set_uacinalt(uint_fast8_t v)	/* выбор альтернативной конфигурации для UA
 	uacinalt = v;
 }
 
+#if WITHUSBUAC3
+
 void 
 buffers_set_uacinrtsalt(uint_fast8_t v)	/* выбор альтернативной конфигурации для UAC IN interface */
 {
 	//debug_printf_P(PSTR("buffers_set_uacinrtsalt: v=%d\n"), v);
 	uacinrtsalt = v;
 }
+
+#endif /* WITHUSBUAC3 */
 
 void 
 buffers_set_uacoutalt(uint_fast8_t v)	/* выбор альтернативной конфигурации для UAC OUT interface */
