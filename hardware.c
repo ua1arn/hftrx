@@ -4610,7 +4610,7 @@ hardware_spi_master_send_frame_8bpartial(
 	while ((DMAC15.CHSTAT_n & DMAC15_CHSTAT_n_END) == 0)	// END
 		;
 
-	/* ждем окончания пеердачи последнего элемента */
+	/* ждем окончания передачи последнего элемента */
 	while ((RSPI0.SPSR & RSPIn_SPSR_TEND) == 0)	// TEND bit
 		;
 
@@ -4776,7 +4776,7 @@ hardware_spi_master_send_frame_16bpartial(
 	while ((DMAC15.CHSTAT_n & DMAC15_CHSTAT_n_END) == 0)	// END
 		;
 
-	/* ждем окончания пеердачи последнего элемента */
+	/* ждем окончания передачи последнего элемента */
 	while ((RSPI0.SPSR & RSPIn_SPSR_TEND) == 0)	// TEND bit
 		;
 
