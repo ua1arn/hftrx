@@ -10,7 +10,7 @@
 #define DS1305_H_INCLUDED
 
 #define DS1305_SPIMODE SPIC_MODE3
-#define DS1305_SPISPEED	SPIC_SPEED100k//SPIC_SPEED400k
+#define DS1305_SPISPEED	SPIC_SPEED400k
 
 enum
 {
@@ -112,12 +112,19 @@ void board_rtc_settime(
 {
 	const uint_fast8_t rt = DS1305REG_TIME;	// Addr
 	uint8_t bt [3];
+	static const uint8_t b_WP [1] = { 0x40 };
+	static const uint8_t b_WE [1] = { 0x00 };
 
 	bt [0] = 0x7f & ds1305_bin2bcd(secounds);	// r=0
 	bt [1] = 0x7f & ds1305_bin2bcd(minutes);	// r=1
 	bt [2] = 0x3f & ds1305_bin2bcd(hours);		// r=2
 
+	// write enable
+	ds1305_writebuff(b_WE, sizeof b_WE / sizeof b_WE [0], DS1305REG_CONTROL);
+	// write data
 	ds1305_writebuff(bt, sizeof bt / sizeof bt [0], rt);
+	// write protect
+	ds1305_writebuff(b_WP, sizeof b_WP / sizeof b_WP [0], DS1305REG_CONTROL);
 }
 
 void board_rtc_setdatetime(
@@ -129,6 +136,8 @@ void board_rtc_setdatetime(
 	uint_fast8_t secounds
 	)
 {
+	static const uint8_t b_WP [1] = { 0x40 };
+	static const uint8_t b_WE [1] = { 0x00 };
 	const uint_fast8_t rt = DS1305REG_TIME;	// Addr
 	uint8_t bt [3];
 
@@ -136,6 +145,10 @@ void board_rtc_setdatetime(
 	bt [1] = 0x7f & ds1305_bin2bcd(minutes);	// r=1
 	bt [2] = 0x3f & ds1305_bin2bcd(hours);		// r=2
 
+	// write enable
+	ds1305_writebuff(b_WE, sizeof b_WE / sizeof b_WE [0], DS1305REG_CONTROL);
+
+	// write data
 	ds1305_writebuff(bt, sizeof bt / sizeof bt [0], rt);
 
 	// Writing the time and date registers within one second 
@@ -149,6 +162,8 @@ void board_rtc_setdatetime(
 	bd [2] = ds1305_bin2bcd(year % 100);		// r=6
 
 	ds1305_writebuff(bd, sizeof bd / sizeof bd [0], rd);
+	// write protect
+	ds1305_writebuff(b_WP, sizeof b_WP / sizeof b_WP [0], DS1305REG_CONTROL);
 }
 
 
@@ -160,12 +175,19 @@ void board_rtc_setdate(
 {
 	const uint_fast8_t rd = DS1305REG_DAYOFMONTH;	// Addr
 	uint8_t bd [3];
+	static const uint8_t b_WP [1] = { 0x40 };
+	static const uint8_t b_WE [1] = { 0x00 };
 
 	bd [0] = 0x3f & ds1305_bin2bcd(dayofmonth);	// r=4
 	bd [1] = 0x01f & ds1305_bin2bcd(month);		// r=5
 	bd [2] = ds1305_bin2bcd(year % 100);		// r=6
 
+	// write enable
+	ds1305_writebuff(b_WE, sizeof b_WE / sizeof b_WE [0], DS1305REG_CONTROL);
+	// write data
 	ds1305_writebuff(bd, sizeof bd / sizeof bd [0], rd);
+	// write protect
+	ds1305_writebuff(b_WP, sizeof b_WP / sizeof b_WP [0], DS1305REG_CONTROL);
 }
 
 void board_rtc_getdate(
@@ -231,20 +253,33 @@ uint_fast8_t board_rtc_chip_initialize(void)
 	//hardware_spi_master_setfreq(SPIC_SPEED100k, SPISPEED100k);	// Slow clock speed (for chips like LM7001 or DS1305EN)
 
 	uint8_t b [1];
+	static const uint8_t b0 [1] = { 0 };
+	static const uint8_t b_WP [1] = { 0x40 };
+	static const uint8_t b_WE [1] = { 0x00 };
 
 	ds1305_readbuff(b, sizeof b / sizeof b[0], DS1305REG_CONTROL);
-	eosc = (b [0] & 0x80) != 0;
+	eosc = (b [0] & 0x80) == 0;
 	if (eosc != 0)
 	{
-		b [0] = 0;	// enable oscillator
-		ds1305_writebuff(b, sizeof b / sizeof b [0], DS1305REG_CONTROL);
+		// Initial application of power,
+
+		// write enable
+		ds1305_writebuff(b_WE, sizeof b_WE / sizeof b_WE [0], DS1305REG_CONTROL);
+
+		// enable oscillator
+		ds1305_writebuff(b0, sizeof b0 / sizeof b0 [0], DS1305REG_CONTROL);
 
 		local_delay_ms(50);
 
-		b [0] = 0;	// disable Trickle Charger
-		ds1305_writebuff(b, sizeof b / sizeof b [0], DS1305REG_TCS);
+		// disable Trickle Charger
+		//ds1305_writebuff(b0, sizeof b0 / sizeof b0 [0], DS1305REG_TCS);
+
 	}
 
+	// write protect
+	ds1305_writebuff(b_WP, sizeof b_WP / sizeof b_WP [0], DS1305REG_CONTROL);
+
+	debug_printf_P(PSTR("board_rtc_chip_initialize: eosc=%d\n"), (int) eosc);
 	return eosc;
 }
 
