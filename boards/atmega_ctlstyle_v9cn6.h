@@ -86,8 +86,11 @@
 	//#define LCDMODE_ILI9225_TOPDOWN	1	/* LCDMODE_ILI9225 - перевернуть изображение (дл€ выводов слева от экрана) */
 	//#define LCDMODE_UC1608	1		/* »ндикатор 240*128 с контроллером UC1608.- монохромный */
 	//#define LCDMODE_UC1608_TOPDOWN	1	/* LCDMODE_UC1608 - перевернуть изображение (дл€ выводов сверху) */
+
 	#define LCDMODE_ST7735	1	/* »ндикатор 160*128 с контроллером Sitronix ST7735 */
 	//#define LCDMODE_ST7735_TOPDOWN	1	/* LCDMODE_ST7735 - перевернуть изображение (дл€ выводов справа) */
+	//#define LCDMODE_BGR565 1		// индикатор с перепутанными цветвми
+
 	//#define LCDMODE_ILI9341	1	/* 320*240 SF-TC240T-9370-T с контроллером ILI9341 - STM32F4DISCO */
 	//#define LCDMODE_ILI9341_TOPDOWN	1	/* LCDMODE_ILI9341 - перевернуть изображение (дл€ выводов справа) */
 	//#define LCDMODE_ST7565S	1	/* »ндикатор WO12864C2-TFH# 128*64 с контроллером Sitronix ST7565S */
