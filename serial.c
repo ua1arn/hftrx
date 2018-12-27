@@ -963,7 +963,7 @@ void hardware_uart1_initialize(void)
 #elif CPUSTYLE_R7S721
 
     /* ---- Supply clock to the SCIF(channel 0) ---- */
-	CPG.STBCR4 &= ~ (1U << 7);	// Module Stop 47
+	CPG.STBCR4 &= ~ CPG_STBCR4_BIT_MSTP47;	// Module Stop 47 SCIF0
 	(void) CPG.STBCR4;			/* Dummy read */
 
 	SCIF0.SCSCR = 0x0000;	/* SCIF transmitting and receiving operations stop, internal clock */
@@ -1163,19 +1163,19 @@ void hardware_uart1_initialize(void)
 #elif CPUSTYLE_R7S721
 
 	// Приём символа он последовательного порта
-	static void r7s721_scifrxi1_interrupt(void)
+	static void r7s721_scifrxi3_interrupt(void)
 	{
-		(void) SCIF1.SCFSR;						// Перед сбросом бита RDF должно произойти его чтение в ненулевом состоянии
-		SCIF1.SCFSR = (uint16_t) ~ SCIF1_SCFSR_RDF;	// RDF=0 читать незачем (в примерах странное - сбрасывабтся и другие биты)
-		uint_fast8_t n = (SCIF1.SCFDR & SCIF1_SCFDR_R) >> SCIF1_SCFDR_R_SHIFT;
+		(void) SCIF3.SCFSR;						// Перед сбросом бита RDF должно произойти его чтение в ненулевом состоянии
+		SCIF3.SCFSR = (uint16_t) ~ SCIF3_SCFSR_RDF;	// RDF=0 читать незачем (в примерах странное - сбрасывабтся и другие биты)
+		uint_fast8_t n = (SCIF3.SCFDR & SCIF3_SCFDR_R) >> SCIF3_SCFDR_R_SHIFT;
 		while (n --)
-			HARDWARE_UART2_ONRXCHAR(SCIF1.SCFRDR & SCIF1_SCFRDR_D);
+			HARDWARE_UART2_ONRXCHAR(SCIF3.SCFRDR & SCIF3_SCFRDR_D);
 	}
 
 	// Передача символа в последовательный порт
-	static void r7s721_sciftxi0_interrupt(void)
+	static void r7s721_sciftxi3_interrupt(void)
 	{
-		HARDWARE_UART2_ONTXCHAR(& SCIF1);
+		HARDWARE_UART2_ONTXCHAR(& SCIF3);
 	}
 
 #else
@@ -1310,9 +1310,9 @@ void hardware_uart2_enabletx(uint_fast8_t state)
 #elif CPUSTYLE_R7S721
 
 	if (state)
-		SCIF1.SCSCR |= (1U << 7);	// TIE Transmit Interrupt Enable
+		SCIF3.SCSCR |= (1U << 7);	// TIE Transmit Interrupt Enable
 	else
-		SCIF1.SCSCR &= ~ (1U << 7);	// TIE Transmit Interrupt Enable
+		SCIF3.SCSCR &= ~ (1U << 7);	// TIE Transmit Interrupt Enable
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -1418,9 +1418,9 @@ void hardware_uart2_enablerx(uint_fast8_t state)
 #elif CPUSTYLE_R7S721
 
 	if (state)
-		SCIF1.SCSCR |= (1U << 6);	// RIE Receive Interrupt Enable
+		SCIF3.SCSCR |= (1U << 6);	// RIE Receive Interrupt Enable
 	else
-		SCIF1.SCSCR &= ~ (1U << 6);	// RIE Receive Interrupt Enable
+		SCIF3.SCSCR &= ~ (1U << 6);	// RIE Receive Interrupt Enable
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -1480,9 +1480,9 @@ void hardware_uart2_tx(void * ctx, uint_fast8_t c)
 
 #elif CPUSTYLE_R7S721
 
-	(void) SCIF1.SCFSR;			// Перед сбросом бита TDFE должно произойти его чтение в ненулевом состоянии
-	SCIF1.SCFTDR = c;
-	SCIF1.SCFSR = (uint16_t) ~ (1U << SCIF1_SCFSR_TDFE_SHIFT);	// TDFE=0 читать незачем (в примерах странное)
+	(void) SCIF3.SCFSR;			// Перед сбросом бита TDFE должно произойти его чтение в ненулевом состоянии
+	SCIF3.SCFTDR = c;
+	SCIF3.SCFSR = (uint16_t) ~ (1U << SCIF3_SCFSR_TDFE_SHIFT);	// TDFE=0 читать незачем (в примерах странное)
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -1577,10 +1577,10 @@ hardware_usart2_getchar(char * cp)
 
 #elif CPUSTYLE_R7S721
 
-	if ((SCIF1.SCFSR & (1U << 1)) == 0)	// RDF
+	if ((SCIF3.SCFSR & (1U << 1)) == 0)	// RDF
 		return 0;
-	* cp = SCIF1.SCFRDR;
-	SCIF1.SCFSR = (uint16_t) ~ (1U << 1);	// RDF=0 читать незачем (в примерах странное)
+	* cp = SCIF3.SCFRDR;
+	SCIF3.SCFSR = (uint16_t) ~ (1U << 1);	// RDF=0 читать незачем (в примерах странное)
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -1674,10 +1674,10 @@ hardware_usart2_putchar(uint_fast8_t c)
 
 #elif CPUSTYLE_R7S721
 
-	if ((SCIF1.SCFSR & (1U << SCIF1_SCFSR_TDFE_SHIFT)) == 0)	// Перед сбросом бита TDFE должно произойти его чтение в ненулевом состоянии
+	if ((SCIF3.SCFSR & (1U << SCIF3_SCFSR_TDFE_SHIFT)) == 0)	// Перед сбросом бита TDFE должно произойти его чтение в ненулевом состоянии
 		return 0;
-	SCIF1.SCFTDR = c;
-	SCIF1.SCFSR = (uint16_t) ~ (1U << SCIF1_SCFSR_TDFE_SHIFT);	// TDFE=0 читать незачем (в примерах странное)
+	SCIF3.SCFTDR = c;
+	SCIF3.SCFSR = (uint16_t) ~ (1U << SCIF3_SCFSR_TDFE_SHIFT);	// TDFE=0 читать незачем (в примерах странное)
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -1975,26 +1975,26 @@ xxxx!;
 #elif CPUSTYLE_R7S721
 
     /* ---- Supply clock to the SCIF(channel 1) ---- */
-	CPG.STBCR4 &= ~ (1U << 6);	// Module Stop 46
+	CPG.STBCR4 &= ~ CPG_STBCR4_BIT_MSTP44;	// Module Stop 44 - SCIF3
 	(void) CPG.STBCR4;			/* Dummy read */
 
-	SCIF1.SCSCR = 0x0000;	/* SCIF transmitting and receiving operations stop, internal clock */
+	SCIF3.SCSCR = 0x0000;	/* SCIF transmitting and receiving operations stop, internal clock */
 
-	SCIF1.SCSCR = (SCIF1.SCSCR & ~ 0x03) |	
+	SCIF3.SCSCR = (SCIF3.SCSCR & ~ 0x03) |	
 		0x00 |						// internal clock
 		0;
 
 	/* ---- Serial status register(SCFSR2) setting ---- */
 	/* ER,BRK,DR bit clear */
-	(void) SCIF1.SCFSR;						// Перед сбросом бита xxx должно произойти его чтение в ненулевом состоянии
-	SCIF1.SCFSR = ~ 0x0091;	// 0xFF6E;
+	(void) SCIF3.SCFSR;						// Перед сбросом бита xxx должно произойти его чтение в ненулевом состоянии
+	SCIF3.SCFSR = ~ 0x0091;	// 0xFF6E;
 
 	/* ---- Line status register (SCLSR2) setting ---- */
 	/* ORER bit clear */
-	//SCIF1.SCLSR.BIT.ORER  = 0;
-	SCIF1.SCLSR &= ~ 0x0001;
+	//SCIF3.SCLSR.BIT.ORER  = 0;
+	SCIF3.SCLSR &= ~ 0x0001;
 
-	SCIF1.SCSMR = 
+	SCIF3.SCSMR = 
 		0x00 |	/* 8-N-1 format */
 		0;
 
@@ -2005,29 +2005,29 @@ xxxx!;
 	/*  Modem control enable             :Disabled		*/
 	/*  Receive FIFO data register reset :Disabled		*/
 	/*  Loop-back test                   :Disabled 		*/
-	SCIF1.SCFCR = 0x0030;
+	SCIF3.SCFCR = 0x0030;
 
 	/* ---- Serial port register (SCSPTR2) setting ---- */
 	/* Serial port  break output(SPB2IO)  1: Enabled */
 	/* Serial port break data(SPB2DT)  1: High-level */
-	//SCIF1.SCSPTR |= 0x0003;
+	//SCIF3.SCSPTR |= 0x0003;
 
 	{
-		const uint16_t int_id = RXI0_IRQn;
-		r7s721_intc_registintfunc(int_id, r7s721_scifrxi0_interrupt);
+		const uint16_t int_id = SCIFRXI3_IRQn;
+		r7s721_intc_registintfunc(int_id, r7s721_scifrxi3_interrupt);
 		GIC_SetPriority(int_id, ARM_SYSTEM_PRIORITY);
 		GIC_EnableIRQ(int_id);
 	}
 	{
-		const uint16_t int_id = TXI0_IRQn;
-		r7s721_intc_registintfunc(int_id, r7s721_sciftxi0_interrupt);
+		const uint16_t int_id = SCIFTXI3_IRQn;
+		r7s721_intc_registintfunc(int_id, r7s721_sciftxi3_interrupt);
 		GIC_SetPriority(int_id, ARM_SYSTEM_PRIORITY);
 		GIC_EnableIRQ(int_id);
 	}
 
 	HARDWARE_USART2_INITIALIZE();	/* Присоединить периферию к выводам */
 
-	SCIF1.SCSCR |= 0x0030;	// TE RE - SCIF1 transmitting and receiving operations are enabled */
+	SCIF3.SCSCR |= 0x0030;	// TE RE - SCIF3 transmitting and receiving operations are enabled */
 
 #else
 	#error Undefined CPUSTYLE_XXX

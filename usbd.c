@@ -33,10 +33,10 @@ void usbd_showstate(void)
 #if 0
 	{
 #if CPUSTYLE_R7S721
-	PRINTF(PSTR("usb_showstate, mask=%04X, NRDYSTS=%04X\n"), 1U << HARDWARE_USBD_PIPE_CDC_IN, USB200.NRDYSTS);
+	PRINTF(PSTR("usb_showstate, mask=%04X, NRDYSTS=%04X\n"), 1U << HARDWARE_USBD_PIPE_CDC_IN, WITHUSBHW_DEVICE->NRDYSTS);
 		const uint_fast8_t pipe = HARDWARE_USBD_PIPE_CDC_IN;
 
-		volatile uint16_t * const PIPEnCTR = (& USB200.PIPE1CTR) + (pipe - 1);
+		volatile uint16_t * const PIPEnCTR = (& WITHUSBHW_DEVICE->PIPE1CTR) + (pipe - 1);
 		PRINTF(PSTR("usb_showstate, PIPEnCTR=%08lX\n"), * PIPEnCTR);
 #endif /* CPUSTYLE_R7S721 */
 	}
@@ -4495,7 +4495,7 @@ usbd_handle_dvst(PCD_TypeDef * const Instance, uint_fast8_t dvsq)
 	 BRDYSTS=0x00000000
 	 INTSTS0=0x0000F899
 */
-static void r7s721_usbiX_handler(PCD_TypeDef * const Instance)
+static void r7s721_usbdevice_handler(PCD_TypeDef * const Instance)
 {
 	const uint_fast16_t intsts0 = Instance->INTSTS0;
 	const uint_fast16_t intsts1 = Instance->INTSTS1;
@@ -4586,14 +4586,14 @@ static void r7s721_usbiX_handler(PCD_TypeDef * const Instance)
 	//}
 }
 
-static void r7s721_usbi0_handler(void)
+static void r7s721_usbi0_device_handler(void)
 {
-	r7s721_usbiX_handler(& USB200);
+	r7s721_usbdevice_handler(WITHUSBHW_DEVICE);
 }
 
-static void r7s721_usbi1_handler(void)
+static void r7s721_usbi1_device_handler(void)
 {
-	r7s721_usbiX_handler(& USB201);
+	r7s721_usbdevice_handler(WITHUSBHW_DEVICE);
 }
 
 #elif CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
@@ -14810,7 +14810,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
 	if (hpcd->Instance == & USB200)
 	{
 		const uint16_t int_id = USBI0_IRQn;
-		r7s721_intc_registintfunc(int_id, r7s721_usbi0_handler);
+		r7s721_intc_registintfunc(int_id, r7s721_usbi0_device_handler);
 		GIC_SetPriority(int_id, ARM_SYSTEM_PRIORITY);
 		GIC_EnableIRQ(int_id);
 
@@ -14822,20 +14822,21 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
 	else if (hpcd->Instance == & USB201)
 	{
 		const uint16_t int_id = USBI1_IRQn;
-		r7s721_intc_registintfunc(int_id, r7s721_usbi1_handler);
+		r7s721_intc_registintfunc(int_id, r7s721_usbi1_device_handler);
 		GIC_SetPriority(int_id, ARM_SYSTEM_PRIORITY);
 		GIC_EnableIRQ(int_id);
 
 		/* ---- Supply clock to the USB20(channel 1) ---- */
 		CPG.STBCR7 &= ~ CPG_STBCR7_MSTP70;	// Module Stop 70 0: Channel 1 of the USB 2.0 host/function module runs.
+		CPG.STBCR7 &= ~ CPG_STBCR7_MSTP71;	// Module Stop 71 0: Channel 0 of the USB 2.0 host/function module runs.
 		(void) CPG.STBCR7;			/* Dummy read */
 	}
 
 	hpcd->Instance->SUSPMODE &= ~ USB_SUSPMODE_SUSPM;	// SUSPM 0: The clock supplied to this module is stopped.
 
 
-	hpcd->Instance->SYSCFG0 = 0;
-	hpcd->Instance->SYSCFG0 = 
+	SYSCFG0_0 = 0;
+	SYSCFG0_0 = 
 		1 * USB_SYSCFG_UPLLE |	// UPLLE 1: Enables operation of the internal PLL.
 		1 * USB_SYSCFG_UCKSEL |	// UCKSEL 1: The 12-MHz EXTAL clock is selected.
 		0;
@@ -15330,8 +15331,8 @@ static void board_usbd_activate(void)
 	//PRINTF(PSTR("board_usbd_activate.\n"));
 #if CPUSTYLE_R7S721
 
-	USB200.SYSCFG0 |= (1uL << USB_SYSCFG_DPRPU_SHIFT);	// DPRPU 1: Pulling up the D+ line is enabled.
-	(void) USB200.SYSSTS0;
+	WITHUSBHW_DEVICE->SYSCFG0 |= (1uL << USB_SYSCFG_DPRPU_SHIFT);	// DPRPU 1: Pulling up the D+ line is enabled.
+	(void) WITHUSBHW_DEVICE->SYSSTS0;
 
 #elif CPUSTYLE_STM32F
 
@@ -18808,8 +18809,8 @@ static void board_usbh_activate(void)
 {
 #if CPUSTYLE_R7S721
 
-	//USB200.SYSCFG0 |= (1uL << USB_SYSCFG_DPRPU_SHIFT);	// DPRPU 1: Pulling up the D+ line is enabled.
-	//(void) USB200.SYSSTS0;
+	//WITHUSBHW_HOST->SYSCFG0 |= (1uL << USB_SYSCFG_DPRPU_SHIFT);	// DPRPU 1: Pulling up the D+ line is enabled.
+	//(void) WITHUSBHW_HOST->SYSSTS0;
 
 #elif CPUSTYLE_STM32F
 

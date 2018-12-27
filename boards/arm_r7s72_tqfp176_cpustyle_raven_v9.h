@@ -39,8 +39,8 @@
 #define WITHUSBHWHIGHSPEEDDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
 #define WITHUSBHW_DEVICE	(& USB200)	/* на этом устройстве поддерживается функцилнальность DEVUCE	*/
 
-#define WITHUART1HW	1	/* Используется периферийный контроллер последовательного порта #1 */
-//#define WITHUART2HW	1	/* Используется периферийный контроллер последовательного порта #2 */
+#define WITHUART1HW	1	/* Используется периферийный контроллер последовательного порта #1 SCIF0 */
+//#define WITHUART2HW	1	/* Используется периферийный контроллер последовательного порта #2 SCIF3 */
 
 //#define WITHCAT_USART1	1
 #define WITHCAT_CDC			1	/* использовать виртуальный воследовательный порт на USB соединении */
@@ -405,6 +405,13 @@
 		} while (0)
 #endif /* WITHUART1HW */
 
+#if WITHUART2HW
+	#define HARDWARE_USART2_INITIALIZE() do { \
+			arm_hardware_pio7_alternative(1U << 10, R7S721_PIOALT_5);	/* P7_10: RXD3: RX DATA line */ \
+			arm_hardware_pio7_alternative(1U << 11, R7S721_PIOALT_5);	/* P7_11: TXD3: TX DATA line */ \
+		} while (0)
+#endif /* WITHUART1HW */
+
 #if WITHTX
 
 	// txpath outputs not used
@@ -522,6 +529,8 @@
 ////#define TARGET_CS4272_RESET_PORT_C(v)		do { R7S721_TARGET_PORT_C(7, v); } while (0)
 ////#define TARGET_CS4272_RESET_BIT		(1U << 2)	// PD2
 
+// RSPI0 used
+#define HW_SPIUSED (& RSPI0)
 // MOSI & SCK port
 #define SPI_TARGET_SCLK_PORT_S(v) do {	R7S721_TARGET_PORT_S(6, v); } while (0)
 #define SPI_TARGET_SCLK_PORT_C(v) do {	R7S721_TARGET_PORT_C(6, v); } while (0)
@@ -578,7 +587,7 @@
 	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
 	// присоединение выводов к периферийному устройству
 	#define	TWIHARD_INITIALIZE() do { \
-			arm_hardware_piob_periphopendrain_altfn2(TARGET_TWI_TWCK | TARGET_TWI_TWD, AF_I2C1);	/* AF=4 */ \
+			arm_hardware_pio1_alternative(TARGET_TWI_TWCK | TARGET_TWI_TWD, R7S721_PIOALT_1);	/* */ \
 		} while (0) 
 
 

@@ -2953,11 +2953,11 @@ void refreshDMA_uacin(void)
 	if (addr != 0)
 	{
 		const uint_fast8_t pipe = HARDWARE_USBD_PIPE_ISOC_IN;	// PIPE2
-		USB200.PIPESEL = pipe << USB_PIPESEL_PIPESEL_SHIFT;
-		while ((USB200.PIPESEL & USB_PIPESEL_PIPESEL) != (pipe << USB_PIPESEL_PIPESEL_SHIFT))
+		WITHUSBHW_DEVICE->PIPESEL = pipe << USB_PIPESEL_PIPESEL_SHIFT;
+		while ((WITHUSBHW_DEVICE->PIPESEL & USB_PIPESEL_PIPESEL) != (pipe << USB_PIPESEL_PIPESEL_SHIFT))
 			;
-		USB200.PIPEMAXP = size << USB_PIPEMAXP_MXPS_SHIFT;
-		USB200.PIPESEL = 0;
+		WITHUSBHW_DEVICE->PIPEMAXP = size << USB_PIPEMAXP_MXPS_SHIFT;
+		WITHUSBHW_DEVICE->PIPESEL = 0;
 
 		DMAC12.N0SA_n = dma_flushxrtstx(addr, size);
 		DMAC12.N0TB_n = size;	// размер в байтах
@@ -2991,11 +2991,11 @@ void r7s721_usb0_dma1_dmatx_handler(void)
 	if (addr != 0)
 	{
 		const uint_fast8_t pipe = HARDWARE_USBD_PIPE_ISOC_IN;	// PIPE2
-		USB200.PIPESEL = pipe << USB_PIPESEL_PIPESEL_SHIFT;
-		while ((USB200.PIPESEL & USB_PIPESEL_PIPESEL) != (pipe << USB_PIPESEL_PIPESEL_SHIFT))
+		WITHUSBHW_DEVICE->PIPESEL = pipe << USB_PIPESEL_PIPESEL_SHIFT;
+		while ((WITHUSBHW_DEVICE->PIPESEL & USB_PIPESEL_PIPESEL) != (pipe << USB_PIPESEL_PIPESEL_SHIFT))
 				;
-		USB200.PIPEMAXP = size << USB_PIPEMAXP_MXPS_SHIFT;
-		USB200.PIPESEL = 0;
+		WITHUSBHW_DEVICE->PIPEMAXP = size << USB_PIPEMAXP_MXPS_SHIFT;
+		WITHUSBHW_DEVICE->PIPESEL = 0;
 
 		DMAC12.N0SA_n = dma_flushxrtstx(addr, size);
 		DMAC12.N0TB_n = size;	// размер в байтах
@@ -3024,8 +3024,8 @@ static void r7s721_usb0_dma1_dmatx_initialize(void)
 	/* Set Source Start Address */
 
     /* Set Destination Start Address */
-    DMAC12.N0DA_n = (uint32_t) & USB200.D1FIFO.UINT32;	// Fixed destination address
-    //DMAC12.N1DA_n = (uint32_t) & USB200.D1FIFO.UINT32;	// Fixed destination address
+    DMAC12.N0DA_n = (uint32_t) & WITHUSBHW_DEVICE->D1FIFO.UINT32;	// Fixed destination address
+    //DMAC12.N1DA_n = (uint32_t) & WITHUSBHW_DEVICE->D1FIFO.UINT32;	// Fixed destination address
 
     /* Set Transfer Size */
     //DMAC12.N0TB_n = DMABUFFSIZE16 * sizeof (int16_t);	// размер в байтах
@@ -3125,8 +3125,8 @@ static void r7s721_usb0_dma0_dmarx_initialize(void)
 	// DMAC13
 	/* Set Source Start Address */
 	/* регистры USB PIPE (HARDWARE_USBD_PIPE_ISOC_OUT) */
-    DMAC13.N0SA_n = (uint32_t) & USB200.D0FIFO.UINT32;	// Fixed source address
-    DMAC13.N1SA_n = (uint32_t) & USB200.D0FIFO.UINT32;	// Fixed source address
+    DMAC13.N0SA_n = (uint32_t) & WITHUSBHW_DEVICE->D0FIFO.UINT32;	// Fixed source address
+    DMAC13.N1SA_n = (uint32_t) & WITHUSBHW_DEVICE->D0FIFO.UINT32;	// Fixed source address
 
 	/* Set Destination Start Address */
 	DMAC13.N0DA_n = (uintptr_t) uacoutbuff0;

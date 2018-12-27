@@ -1250,6 +1250,10 @@ SOURCE=.\boards\arm_r7s72_tqfp176_cpustyle_raven_v9.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\boards\arm_r7s72_tqfp176_cpustyle_storch_v8.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\boards\arm_r7s72_tqfp176_ctlstyle_raven_v2.h
 # End Source File
 # Begin Source File
@@ -1259,6 +1263,10 @@ SOURCE=.\boards\arm_r7s72_tqfp176_ctlstyle_raven_v2_valery.h
 # Begin Source File
 
 SOURCE=.\boards\arm_r7s72_tqfp176_ctlstyle_raven_v9.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\boards\arm_r7s72_tqfp176_ctlstyle_storch_v8.h
 # End Source File
 # Begin Source File
 

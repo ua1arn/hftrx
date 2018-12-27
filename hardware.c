@@ -787,14 +787,14 @@ hardware_uart2_set_speed(uint_fast32_t baudrate)
 	unsigned value;
 	const uint_fast8_t prei = calcdivider(calcdivround_p1clock(baudrate), R7S721_SCIF_SCBRR_WIDTH, R7S721_SCIF_SCBRR_TAPS, & value, 1);
 
-	SCIF1.SCSMR = (SCIF1.SCSMR & ~ 0x03) | 
+	SCIF3.SCSMR = (SCIF3.SCSMR & ~ 0x03) | 
 		scemr_scsmr [prei].scsmr |	// prescaler: 0: /1, 1: /4, 2: /16, 3: /64
 		0;
-	SCIF1.SCEMR = (SCIF1.SCEMR & ~ (0x80 | 0x01)) | 
+	SCIF3.SCEMR = (SCIF3.SCEMR & ~ (0x80 | 0x01)) | 
 		0 * 0x80 |						// BGDM
 		scemr_scsmr [prei].scemr |	// ABCS = 8/16 clocks per bit
 		0;
-	SCIF1.SCBRR = value;	/* Bit rate register */
+	SCIF3.SCBRR = value;	/* Bit rate register */
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -3751,30 +3751,55 @@ void hardware_spi_master_initialize(void)
 	// MISO0	P6_3	ALT3
 	// SSL00	P6_1	ALT3
 
-    /* ---- Supply clock to the RSPI(channel 0) ---- */
-	CPG.STBCR10 &= ~ (1U << 7);	// Module Stop 107
-	(void) CPG.STBCR10;			/* Dummy read */
+	uint_fast8_t mid = 0x48;	
+	if (HW_SPIUSED == & RSPI0)
+	{
+		/* ---- Supply clock to the RSPI(channel 0) ---- */
+		CPG.STBCR10 &= ~ CPG_STBCR10_BIT_MSTP107;	// Module Stop 107 RSPI0
+		(void) CPG.STBCR10;			/* Dummy read */
+		// Values from Table 9.4 On-Chip Peripheral Module Requests
+		// SPTI0 (transmit data empty)
+		mid = 0x48;	
+	}
+	else if (HW_SPIUSED == & RSPI1)
+	{
+		/* ---- Supply clock to the RSPI(channel 1) ---- */
+		CPG.STBCR10 &= ~ CPG_STBCR10_BIT_MSTP106;	// Module Stop 106 RSPI1
+		(void) CPG.STBCR10;			/* Dummy read */
+		// Values from Table 9.4 On-Chip Peripheral Module Requests
+		// SPTI1 (transmit data empty)
+		mid = 0x49;	
+	}
+	else if (HW_SPIUSED == & RSPI2)
+	{
+		/* ---- Supply clock to the RSPI(channel 2) ---- */
+		CPG.STBCR10 &= ~ CPG_STBCR10_BIT_MSTP105;	// Module Stop 105 RSPI2
+		(void) CPG.STBCR10;			/* Dummy read */
+		// Values from Table 9.4 On-Chip Peripheral Module Requests
+		// SPTI2 (transmit data empty)
+		mid = 0x4a;	
+	}
 
-	RSPI0.SPCR =		/* Control Register (SPCR) */
+	HW_SPIUSED->SPCR =		/* Control Register (SPCR) */
 		0;
 
-	RSPI0.SPPCR =		/* Pin Control Register (SPPCR) */
+	HW_SPIUSED->SPPCR =		/* Pin Control Register (SPPCR) */
 		0x00 |
 		0;
-	RSPI0.SPSCR =		/*  (SPSCR) */
+	HW_SPIUSED->SPSCR =		/*  (SPSCR) */
 		0x00 |
 		0;
 	// Сбросить буферы
-	RSPI0.SPBFCR =		/* Buffer Control Register (SPBFCR) */
+	HW_SPIUSED->SPBFCR =		/* Buffer Control Register (SPBFCR) */
 		(1U << 7) |		// TXRST - TX buffer reset
 		(1U << 6) |		// RXRST - TX buffer reset
 		0;
 	// Разрешить буферы
-	RSPI0.SPBFCR =		/* Buffer Control Register (SPBFCR) */
+	HW_SPIUSED->SPBFCR =		/* Buffer Control Register (SPBFCR) */
 		(3U << 4) |		// TX buffer trigger level = 0
 		0;
 
-	RSPI0.SPCR =		/* Control Register (SPCR) */
+	HW_SPIUSED->SPCR =		/* Control Register (SPCR) */
 		(1U << 3) |		// MSTR - master
 		(1U << 6) |		// SPE - Function Enable
 		(1U << 5) |		// SPTIE  - Transmit Interrupt Enable (for DMA transfers)
@@ -3786,8 +3811,8 @@ void hardware_spi_master_initialize(void)
 		enum { id = 15 };	// 15: DMAC15
 		// DMAC15
 		/* Set Destination Start Address */
-		//DMAC15.N0DA_n = (uint32_t) & RSPI0.SPDR.UINT8 [R_IO_LL];	// Fixed destination address for 8-bit transfers
-		DMAC15.N0DA_n = (uint32_t) & RSPI0.SPDR.UINT16 [R_IO_L];	// Fixed destination address for 16-bit transfers
+		//DMAC15.N0DA_n = (uint32_t) & HW_SPIUSED->SPDR.UINT8 [R_IO_LL];	// Fixed destination address for 8-bit transfers
+		DMAC15.N0DA_n = (uint32_t) & HW_SPIUSED->SPDR.UINT16 [R_IO_L];	// Fixed destination address for 16-bit transfers
 
 		/* Set Transfer Size */
 		//DMAC15.N0TB_n = DMABUFFSIZE16 * sizeof (int16_t);	// размер в байтах
@@ -3795,7 +3820,7 @@ void hardware_spi_master_initialize(void)
 
 		// Values from Table 9.4 On-Chip Peripheral Module Requests
 		// SPTI0 (transmit data empty)
-		const uint_fast8_t mid = 0x48;	
+		//const uint_fast8_t mid = 0x48;	
 		const uint_fast8_t rid = 1;		
 		const uint_fast8_t tm = 0;		// single transfer mode
 		const uint_fast8_t am = 2;		
@@ -4201,11 +4226,11 @@ void hardware_spi_connect(uint_fast8_t spispeedindex, uint_fast8_t spimode)
 
 #elif CPUSTYLE_R7S721
 
-	RSPI0.SPDCR =		/* Data Control Register (SPDCR) */
+	HW_SPIUSED->SPDCR =		/* Data Control Register (SPDCR) */
 		(0x01 << 5) |	// 0x01: 8 bit. Specifies the width for accessing the data register (SPDR)
 		0;
-	RSPI0.SPBR = spi_spbr_val [spispeedindex];
-	RSPI0.SPCMD0 = spi_spcmd0_val8w [spispeedindex][spimode];
+	HW_SPIUSED->SPBR = spi_spbr_val [spispeedindex];
+	HW_SPIUSED->SPCMD0 = spi_spcmd0_val8w [spispeedindex][spimode];
 
 	HARDWARE_SPI_CONNECT();
 
@@ -4309,9 +4334,9 @@ hardware_spi_ready_b8_void(void)
 
 #elif CPUSTYLE_R7S721
 
-	while ((RSPI0.SPSR & (1U << 7)) == 0)	// SPRF bit
+	while ((HW_SPIUSED->SPSR & (1U << 7)) == 0)	// SPRF bit
 		;
-	(void) RSPI0.SPDR.UINT8 [R_IO_LL]; // LL=0
+	(void) HW_SPIUSED->SPDR.UINT8 [R_IO_LL]; // LL=0
 
 #else
 	#error Wrong CPUSTYLE macro
@@ -4368,9 +4393,9 @@ portholder_t hardware_spi_complete_b8(void)	/* дождаться готовности */
 
 #elif CPUSTYLE_R7S721
 
-	while ((RSPI0.SPSR & (1U << 7)) == 0)	// SPRF bit
+	while ((HW_SPIUSED->SPSR & (1U << 7)) == 0)	// SPRF bit
 		;
-	return RSPI0.SPDR.UINT8 [R_IO_LL]; // LL=0
+	return HW_SPIUSED->SPDR.UINT8 [R_IO_LL]; // LL=0
 
 #else
 	#error Wrong CPUSTYLE macro
@@ -4390,8 +4415,8 @@ hardware_spi_master_setdma8bit_rx(void)
 		(0 * DMA_SxCR_PSIZE_0) |	// длина в SPI_DR- 8bit
 		0;
 #elif CPUSTYLE_R7S721
-	DMAC15.N0SA_n = (uint32_t) & RSPI0.SPDR.UINT8 [R_IO_LL];	// Fixed destination address for 8-bit transfers
-	//DMAC15.N0SA_n = (uint32_t) & RSPI0.SPDR.UINT16 [R_IO_L];	// Fixed destination address for 16-bit transfers
+	DMAC15.N0SA_n = (uint32_t) & HW_SPIUSED->SPDR.UINT8 [R_IO_LL];	// Fixed destination address for 8-bit transfers
+	//DMAC15.N0SA_n = (uint32_t) & HW_SPIUSED->SPDR.UINT16 [R_IO_L];	// Fixed destination address for 16-bit transfers
 	DMAC15.CHCFG_n = (DMAC15.CHCFG_n & ~ (DMAC15_CHCFG_n_DDS | DMAC15_CHCFG_n_SDS | DMAC15_CHCFG_n_DAD | DMAC15_CHCFG_n_SAD)) |
 		0 * (1U << DMAC15_CHCFG_n_DDS_SHIFT) |	// DDS	2: 32 bits, 1: 16 bits (Destination Data Size)
 		0 * (1U << DMAC15_CHCFG_n_SDS_SHIFT) |	// SDS	2: 32 bits, 1: 16 bits (Source Data Size)
@@ -4411,8 +4436,8 @@ hardware_spi_master_setdma16bit_rx(void)
 		(1 * DMA_SxCR_PSIZE_0) |	// длина в SPI_DR- 16bit
 		0;
 #elif CPUSTYLE_R7S721
-	//DMAC15.N0SA_n = (uint32_t) & RSPI0.SPDR.UINT8 [R_IO_LL];	// Fixed source address for 8-bit transfers
-	DMAC15.N0SA_n = (uint32_t) & RSPI0.SPDR.UINT16 [R_IO_L];	// Fixed source address for 16-bit transfers
+	//DMAC15.N0SA_n = (uint32_t) & HW_SPIUSED->SPDR.UINT8 [R_IO_LL];	// Fixed source address for 8-bit transfers
+	DMAC15.N0SA_n = (uint32_t) & HW_SPIUSED->SPDR.UINT16 [R_IO_L];	// Fixed source address for 16-bit transfers
 	DMAC15.CHCFG_n = (DMAC15.CHCFG_n & ~ (DMAC15_CHCFG_n_DDS | DMAC15_CHCFG_n_SDS | DMAC15_CHCFG_n_DAD | DMAC15_CHCFG_n_SAD)) |
 		1 * (1U << DMAC15_CHCFG_n_DDS_SHIFT) |	// DDS	2: 32 bits, 1: 16 bits (Destination Data Size)
 		1 * (1U << DMAC15_CHCFG_n_SDS_SHIFT) |	// SDS	2: 32 bits, 1: 16 bits (Source Data Size)
@@ -4432,8 +4457,8 @@ hardware_spi_master_setdma8bit_tx(void)
 		(0 * DMA_SxCR_PSIZE_0) |	// длина в SPI_DR- 8bit
 		0;
 #elif CPUSTYLE_R7S721
-	DMAC15.N0DA_n = (uint32_t) & RSPI0.SPDR.UINT8 [R_IO_LL];	// Fixed destination address for 8-bit transfers
-	//DMAC15.N0DA_n = (uint32_t) & RSPI0.SPDR.UINT16 [R_IO_L];	// Fixed destination address for 16-bit transfers
+	DMAC15.N0DA_n = (uint32_t) & HW_SPIUSED->SPDR.UINT8 [R_IO_LL];	// Fixed destination address for 8-bit transfers
+	//DMAC15.N0DA_n = (uint32_t) & HW_SPIUSED->SPDR.UINT16 [R_IO_L];	// Fixed destination address for 16-bit transfers
 	DMAC15.CHCFG_n = (DMAC15.CHCFG_n & ~ (DMAC15_CHCFG_n_DDS | DMAC15_CHCFG_n_SDS | DMAC15_CHCFG_n_DAD | DMAC15_CHCFG_n_SAD)) |
 		0 * (1U << DMAC15_CHCFG_n_DDS_SHIFT) |	// DDS	2: 32 bits, 1: 16 bits (Destination Data Size)
 		0 * (1U << DMAC15_CHCFG_n_SDS_SHIFT) |	// SDS	2: 32 bits, 1: 16 bits (Source Data Size)
@@ -4453,8 +4478,8 @@ hardware_spi_master_setdma16bit_tx(void)
 		(1 * DMA_SxCR_PSIZE_0) |	// длина в SPI_DR- 16bit
 		0;
 #elif CPUSTYLE_R7S721
-	//DMAC15.N0DA_n = (uint32_t) & RSPI0.SPDR.UINT8 [R_IO_LL];	// Fixed destination address for 8-bit transfers
-	DMAC15.N0DA_n = (uint32_t) & RSPI0.SPDR.UINT16 [R_IO_L];	// Fixed destination address for 16-bit transfers
+	//DMAC15.N0DA_n = (uint32_t) & HW_SPIUSED->SPDR.UINT8 [R_IO_LL];	// Fixed destination address for 8-bit transfers
+	DMAC15.N0DA_n = (uint32_t) & HW_SPIUSED->SPDR.UINT16 [R_IO_L];	// Fixed destination address for 16-bit transfers
 	DMAC15.CHCFG_n = (DMAC15.CHCFG_n & ~ (DMAC15_CHCFG_n_DDS | DMAC15_CHCFG_n_SDS | DMAC15_CHCFG_n_DAD | DMAC15_CHCFG_n_SAD)) |
 		1 * (1U << DMAC15_CHCFG_n_DDS_SHIFT) |	// DDS	2: 32 bits, 1: 16 bits (Destination Data Size)
 		1 * (1U << DMAC15_CHCFG_n_SDS_SHIFT) |	// SDS	2: 32 bits, 1: 16 bits (Source Data Size)
@@ -4600,7 +4625,7 @@ hardware_spi_master_send_frame_8bpartial(
 
 #elif CPUSTYLE_R7S721
 
-	RSPI0.SPBFCR |= RSPIn_SPBFCR_RXRST;		// Запретить прием
+	HW_SPIUSED->SPBFCR |= RSPIn_SPBFCR_RXRST;		// Запретить прием
 
 	DMAC15.N0TB_n = (uint_fast32_t) size * sizeof (* buffer);	// размер в байтах
 	DMAC15.N0SA_n = (uintptr_t) buffer;			// source address
@@ -4611,14 +4636,14 @@ hardware_spi_master_send_frame_8bpartial(
 		;
 
 	/* ждем окончания передачи последнего элемента */
-	while ((RSPI0.SPSR & RSPIn_SPSR_TEND) == 0)	// TEND bit
+	while ((HW_SPIUSED->SPSR & RSPIn_SPSR_TEND) == 0)	// TEND bit
 		;
 
 	DMAC15.CHCTRL_n = DMAC15_CHCTRL_n_CLREN;		// CLREN
 	DMAC15.CHCTRL_n = DMAC15_CHCTRL_n_CLRTC;		// CLRTC
 	DMAC15.CHCTRL_n = DMAC15_CHCTRL_n_CLREND;		// CLREND
 
-	RSPI0.SPBFCR &= ~ RSPIn_SPBFCR_RXRST;		// Разрешить прием
+	HW_SPIUSED->SPBFCR &= ~ RSPIn_SPBFCR_RXRST;		// Разрешить прием
 
 #else
 	#error Undefined CPUSTYLE_xxxx
@@ -4766,7 +4791,7 @@ hardware_spi_master_send_frame_16bpartial(
 
 #elif CPUSTYLE_R7S721
 
-	RSPI0.SPBFCR |= RSPIn_SPBFCR_RXRST;		// Запретить прием
+	HW_SPIUSED->SPBFCR |= RSPIn_SPBFCR_RXRST;		// Запретить прием
 
 	DMAC15.N0TB_n = (uint_fast32_t) size * sizeof (* buffer);	// размер в байтах
 	DMAC15.N0SA_n = (uintptr_t) buffer;			// source address
@@ -4777,14 +4802,14 @@ hardware_spi_master_send_frame_16bpartial(
 		;
 
 	/* ждем окончания передачи последнего элемента */
-	while ((RSPI0.SPSR & RSPIn_SPSR_TEND) == 0)	// TEND bit
+	while ((HW_SPIUSED->SPSR & RSPIn_SPSR_TEND) == 0)	// TEND bit
 		;
 
 	DMAC15.CHCTRL_n = DMAC15_CHCTRL_n_CLREN;		// CLREN
 	DMAC15.CHCTRL_n = DMAC15_CHCTRL_n_CLRTC;		// CLRTC
 	DMAC15.CHCTRL_n = DMAC15_CHCTRL_n_CLREND;		// CLREND
 
-	RSPI0.SPBFCR &= ~ RSPIn_SPBFCR_RXRST;		// Разрешить прием
+	HW_SPIUSED->SPBFCR &= ~ RSPIn_SPBFCR_RXRST;		// Разрешить прием
 
 #else
 	#error Undefined CPUSTYLE_xxxx
@@ -5291,11 +5316,11 @@ void hardware_spi_connect_b16(uint_fast8_t spispeedindex, uint_fast8_t spimode)
 
 #elif CPUSTYLE_R7S721
 
-	RSPI0.SPDCR =		/* Data Control Register (SPDCR) */
+	HW_SPIUSED->SPDCR =		/* Data Control Register (SPDCR) */
 		(0x02 << 5) |	// 0x02: 16 bit. Specifies the width for accessing the data register (SPDR)
 		0;
-	RSPI0.SPBR = spi_spbr_val [spispeedindex];
-	RSPI0.SPCMD0 = spi_spcmd0_val16w [spispeedindex][spimode];
+	HW_SPIUSED->SPBR = spi_spbr_val [spispeedindex];
+	HW_SPIUSED->SPCMD0 = spi_spcmd0_val16w [spispeedindex][spimode];
 
 	HARDWARE_SPI_CONNECT();
 
@@ -5341,9 +5366,9 @@ portholder_t hardware_spi_complete_b16(void)	/* дождаться готовности */
 
 #elif CPUSTYLE_R7S721
 
-	while ((RSPI0.SPSR & (1U << 7)) == 0)	// SPRF bit
+	while ((HW_SPIUSED->SPSR & (1U << 7)) == 0)	// SPRF bit
 		;
-	return RSPI0.SPDR.UINT16 [R_IO_L]; // L=0
+	return HW_SPIUSED->SPDR.UINT16 [R_IO_L]; // L=0
 
 #else
 	#error Wrong CPUSTYLE macro
@@ -5383,9 +5408,9 @@ static void hardware_spi_ready_b16_void(void)	/* дождаться готовности */
 
 #elif CPUSTYLE_R7S721
 
-	while ((RSPI0.SPSR & (1U << 7)) == 0)	// SPRF bit
+	while ((HW_SPIUSED->SPSR & (1U << 7)) == 0)	// SPRF bit
 		;
-	(void) RSPI0.SPDR.UINT16 [R_IO_L];	 // L=0
+	(void) HW_SPIUSED->SPDR.UINT16 [R_IO_L];	 // L=0
 
 #else
 	#error Wrong CPUSTYLE macro
@@ -5423,7 +5448,7 @@ void hardware_spi_b16_p1(
 
 #elif CPUSTYLE_R7S721
 
-	RSPI0.SPDR.UINT16 [R_IO_L] = v; // L=0
+	HW_SPIUSED->SPDR.UINT16 [R_IO_L] = v; // L=0
 
 #else
 	#error Wrong CPUSTYLE macro
@@ -5485,7 +5510,7 @@ void hardware_spi_b8_p1(
 
 #elif CPUSTYLE_R7S721
 
-	RSPI0.SPDR.UINT8 [R_IO_LL] = v; // LL=0
+	HW_SPIUSED->SPDR.UINT8 [R_IO_LL] = v; // LL=0
 
 #else
 	#error Wrong CPUSTYLE macro
