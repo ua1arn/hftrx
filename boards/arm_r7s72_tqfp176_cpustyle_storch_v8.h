@@ -688,6 +688,59 @@
 	#define HARDWARE_SIDETONE_INITIALIZE() do { \
 		} while (0)
 
+#if LCDMODE_LTDC
+	#define HARDWARE_LTDC_INITIALIZE() do { \
+		/* Synchronisation signals */ \
+		arm_hardware_pio7_alternative((1U << 4), R7S721_PIOALT_6);	/* P7_4 CLK */ \
+		arm_hardware_pio7_alternative((1U << 5), R7S721_PIOALT_6);	/* P7_5 VSYNC */ \
+		arm_hardware_pio7_alternative((1U << 6), R7S721_PIOALT_6);	/* P7_6 HSYNC */ \
+		/* Control */ \
+		/* arm_hardware_pio7_alternative((1U << 7), R7S721_PIOALT_6); */	/* P7_7 DE */ \
+		arm_hardware_pio7_outputs((1U << 7), 0 * (1U << 7));	/* P7_7 DE=0 */ \
+		/* RED */ \
+		arm_hardware_pio6_outputs((1U << 3), R7S721_PIOALT_2);	/* P6_3 R3 */ \
+		arm_hardware_pio6_outputs((1U << 4), R7S721_PIOALT_2);	/* P6_4 R4 */ \
+		arm_hardware_pio6_outputs((1U << 5), R7S721_PIOALT_2);	/* P6_5 R5 */ \
+		arm_hardware_pio6_outputs((1U << 6), R7S721_PIOALT_2);	/* P6_6 R6 */ \
+		arm_hardware_pio6_outputs((1U << 7), R7S721_PIOALT_2);	/* P6_7 R7 */ \
+		/* GREEN */ \
+		arm_hardware_pio3_outputs((1U << 5), R7S721_PIOALT_3);	/* P3_5 G2 */ \
+		arm_hardware_pio3_outputs((1U << 6), R7S721_PIOALT_3);	/* P3_6 G3 */ \
+		arm_hardware_pio3_outputs((1U << 7), R7S721_PIOALT_3);	/* P3_7 G4 */ \
+		arm_hardware_pio6_outputs((1U << 0), R7S721_PIOALT_6);	/* P6_0 G5 */ \
+		arm_hardware_pio6_outputs((1U << 1), R7S721_PIOALT_6);	/* P6_1 G6 */ \
+		arm_hardware_pio6_outputs((1U << 2), R7S721_PIOALT_6);	/* P6_2 G7 */ \
+		/* BLUE */ \
+		arm_hardware_pio3_outputs((1U << 0), R7S721_PIOALT_3);	/* P3_0 B3 */ \
+		arm_hardware_pio3_outputs((1U << 1), R7S721_PIOALT_3);	/* P3_1 B4 */ \
+		arm_hardware_pio3_outputs((1U << 2), R7S721_PIOALT_3);	/* P3_2 B5 */ \
+		arm_hardware_pio3_outputs((1U << 3), R7S721_PIOALT_3);	/* P3_3 B6 */ \
+		arm_hardware_pio3_outputs((1U << 4), R7S721_PIOALT_3);	/* P3_4 B7 */ \
+	} while (0)
+
+	/* управление состоянием сигнала DISP панели */
+	#define HARDWARE_LTDC_SET_DISP(state) do { \
+		const uint32_t mask = (1U << 13); /* PE13 */ \
+		/* const uint32_t VSYNC = (1U << 9); */ /* PI9 */ \
+		/* while ((GPIOI->IDR & VSYNC) != 0) ; */ /* схема синхронизации стоит на плате дисплея. дождаться 0 */ \
+		/* while ((GPIOI->IDR & VSYNC) == 0) ; */ /* дождаться 1 */ \
+		/*arm_hardware_pioe_outputs(mask, ((state) != 0) * mask);*/	/* DE=DISP, pin 31 - можно менять только при VSYNC=1 */ \
+	} while (0)
+#endif /* LCDMODE_LTDC */
+
+#if 0
+#if LCDMODE_LQ043T3DX02K
+	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея 
+	#define WITHLCDBACKLIGHTMIN	0	// Нижний предел регулировки (показываетый на дисплее)
+	#define WITHLCDBACKLIGHTMAX	4	// Верхний предел регулировки (показываетый на дисплее)
+	#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры 
+#else
+	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея 
+	#define WITHLCDBACKLIGHTMIN	0	// Нижний предел регулировки (показываетый на дисплее)
+	#define WITHLCDBACKLIGHTMAX	3	// Верхний предел регулировки (показываетый на дисплее)
+	#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры 
+#endif
+#endif
 	/* макроопределение, которое должно включить в себя все инициализации */
 	#define	HARDWARE_INITIALIZE() do { \
 		HARDWARE_SIDETONE_INITIALIZE(); \

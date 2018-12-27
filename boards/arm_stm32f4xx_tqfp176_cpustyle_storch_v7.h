@@ -678,7 +678,6 @@
 		/* arm_hardware_pioe_altfn20((1U << 13), GPIO_AF_LTDC); */	/* DE */ \
 		arm_hardware_pioe_outputs((1U << 13), 0 * (1U << 13));	/* DE=0 (DISP, pin 31) */ \
 		/* RED */ \
-		arm_hardware_pioh_altfn20((1U << 8), GPIO_AF_LTDC);		/* R2 */ \
 		arm_hardware_pioh_altfn20((1U << 9), GPIO_AF_LTDC);		/* R3 */ \
 		arm_hardware_pioh_altfn20((1U << 10), GPIO_AF_LTDC);	/* R4 */ \
 		arm_hardware_pioh_altfn20((1U << 11), GPIO_AF_LTDC);	/* R5 */ \
@@ -692,7 +691,6 @@
 		arm_hardware_pioi_altfn20((1U << 1), GPIO_AF_LTDC);		/* G6 */ \
 		arm_hardware_pioi_altfn20((1U << 2), GPIO_AF_LTDC);		/* G7 */ \
 		/* BLUE */ \
-		arm_hardware_piog_altfn20((1U << 10), GPIO_AF_LTDC);	/* B2 */ \
 		arm_hardware_piog_altfn20((1U << 11), GPIO_AF_LTDC);	/* B3 */ \
 		arm_hardware_piog_altfn20((1U << 12), GPIO_AF_LTDC9);	/* B4 */ \
 		arm_hardware_pioi_altfn20((1U << 5), GPIO_AF_LTDC);		/* B5 */ \
