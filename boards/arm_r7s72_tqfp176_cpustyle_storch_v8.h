@@ -400,11 +400,11 @@
 //#define SPI_IOUPDATE_BIT		(1U << 15)	// * PA15
 
 /* Назначение адресов на SPI шине */
-#define targetfpga1		(1U << 5)	// P2_5  FPGA control registers CS1
-#define targetrtc1		(1U << 2)	// P2_2  RTC DS1305EN
-#define targetext1		(1U << 1)	// P2_1  front panel spi device (LCD)
-#define targetext2		(1U << 0)	// P2_0  external spi device (PA BOARD ADC)
-#define targetnvram		(1U << 9)	// P2_9  nvmem FM25L16B
+#define targetfpga1		(1U << 5)	// P2_5 FPGA control registers CS1
+#define targetrtc1		(1U << 2)	// P2_2 RTC DS1305EN
+#define targetext1		(1U << 1)	// P2_1 front panel SPI device (LCD)
+#define targetext2		(1U << 0)	// P2_0 external SPI device (PA BOARD ADC)
+#define targetnvram		(1U << 9)	// P2_9 nvmem FM25L16B
 #define targetctl1		(1U << 7)	// P2_7 board control registers chain
 #define targetcodec1	(1U << 11)	// P2_6 on-board codec1 NAU8822L
 #define targetadc1		(1U << 4) 	/* P2_4 ADC AD9246 chip select */
