@@ -5,6 +5,7 @@
 // UA1ARN
 //
 // STM32F42XX LCD-TFT Controller (LTDC)
+// RENESAS Video Display Controller 5
 
 #include "hardware.h"
 
@@ -15,7 +16,20 @@
 #include "formats.h"	// for debug prints
 #include "spifuncs.h"
 
-#if CPUSTYLE_STM32F && LCDMODE_LTDC
+#if LCDMODE_LTDC
+
+#if CPUSTYLE_R7S721
+
+void
+arm_hardware_ltdc_initialize(void)
+{
+	debug_printf_P(PSTR("arm_hardware_ltdc_initialize start\n"));
+
+	/* Configure the LCD Control pins */
+	HARDWARE_LTDC_INITIALIZE();	// подключение к выводам процессора сигналов периферийного контроллера
+}
+
+#elif CPUSTYLE_STM32F
 
 /** @defgroup LTDC_Pixelformat 
   * @{
@@ -727,4 +741,6 @@ void arm_hardware_ltdc_pip_off(void)	// set PIP framebuffer address
 	LTDC->SRCR = LTDC_SRCR_VBR;	/* Vertical Blanking Reload. */
 #endif /* LCDMODE_LTDC_PIP16 */
 }
-#endif /* CPUSTYLE_STM32F && LCDMODE_LTDC */
+#endif /* CPUSTYLE_STM32F */
+
+#endif /* LCDMODE_LTDC */

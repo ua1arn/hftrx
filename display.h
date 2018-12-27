@@ -854,7 +854,7 @@ void display_1state(
 	typedef PACKEDCOLOR_T FRAMEBUFF_T [DIM_FIRST][DIM_SECOND];
 
 	#if CPUSTYLE_R7S721
-		#define SDRAM_BANK_ADDR     ((uintptr_t) 0x20200000)
+		//#define SDRAM_BANK_ADDR     ((uintptr_t) 0x20200000)
 	#elif STM32H743xx
 		//#define SDRAM_BANK_ADDR     ((uintptr_t) D1_AXISRAM_BASE)
 	#elif CPUSTYLE_STM32F4XX
