@@ -703,6 +703,13 @@ void arm_hardware_flush_all(void);
 void r7s721_sdhi0_dma_handler(void);
 void r7s721_intc_registintfunc(uint_fast16_t int_id, void (* func)(void));
 
+uint_fast32_t 
+NOINLINEAT
+calcdivround2(
+	uint_fast32_t ref,	/* частота на входе делителя, в герцах. */
+	uint_fast32_t freq	/* требуемая частота на выходе делителя, в герцах. */
+	);
+
 #if CPUSTYLE_R7S721
 	//  Renesas parameters
 	#define HARDWARE_USBD_PIPE_ISOC_OUT	1	// ISOC OUT Аудиоданные от компьютера в TRX - D0FIFOB0

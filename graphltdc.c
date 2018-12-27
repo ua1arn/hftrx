@@ -6,6 +6,8 @@
 //
 // STM32F42XX LCD-TFT Controller (LTDC)
 // RENESAS Video Display Controller 5
+//	Video Display Controller 5 (5): Image Synthesizer
+//	Video Display Controller 5 (7): Output Controller
 
 #include "hardware.h"
 
@@ -18,6 +20,70 @@
 
 #if LCDMODE_LTDC
 
+
+#if LCDMODE_LQ043T3DX02K
+	// Sony PSP-1000 display panel
+	// LQ043T3DX02K panel (272*480)
+	// RK043FN48H-CT672B  panel (272*480) - плата STM32F746G-DISCO
+	/** 
+	  * @brief  RK043FN48H Size  
+	  */    
+	enum
+	{
+		WIDTH = 480,				/* LCD PIXEL WIDTH            */
+		HEIGHT = 272,			/* LCD PIXEL HEIGHT           */
+		/** 
+		  * @brief  RK043FN48H Timing  
+		  */     
+		HSYNC = 41,				/* Horizontal synchronization */
+		HBP = 2,				/* Horizontal back porch      */
+		HFP = 2,				/* Horizontal front porch     */
+
+		VSYNC = 10,				/* Vertical synchronization   */
+		VBP = 2,					/* Vertical back porch        */
+		VFP = 2,					/* Vertical front porch       */
+	};
+#elif LCDMODE_ILI8961
+	// HHT270C-8961-6A6 (320*240)
+	enum
+	{
+		WIDTH = 320 * 3,				/* LCD PIXEL WIDTH            */
+		HEIGHT = 240,			/* LCD PIXEL HEIGHT           */
+
+		/** 
+		  * @brief  RK043FN48H Timing  
+		  */     
+		HSYNC = 1,				/* Horizontal synchronization */
+		HBP = 2,				/* Horizontal back porch      */
+		HFP = 2,				/* Horizontal front porch     */
+
+		VSYNC = 1,				/* Vertical synchronization   */
+		VBP = 2,					/* Vertical back porch        */
+		VFP = 2,					/* Vertical front porch       */
+	};
+#elif LCDMODE_ILI9341
+	// SF-TC240T-9370-T (320*240)
+	enum
+	{
+
+		WIDTH = 240,				/* LCD PIXEL WIDTH            */
+		HEIGHT = 320,			/* LCD PIXEL HEIGHT           */
+
+		/** 
+		  * @brief  RK043FN48H Timing  
+		  */     
+		HSYNC = 10,				/* Horizontal synchronization */
+		HBP = 20,				/* Horizontal back porch      */
+		HFP = 10,				/* Horizontal front porch     */
+
+		VSYNC = 2,				/* Vertical synchronization   */
+		VBP = 4,					/* Vertical back porch        */
+		VFP = 4,					/* Vertical front porch       */
+	};
+#else
+	#error Unsupported LCDMODE_xxx
+#endif
+
 #if CPUSTYLE_R7S721
 
 void
@@ -25,8 +91,99 @@ arm_hardware_ltdc_initialize(void)
 {
 	debug_printf_P(PSTR("arm_hardware_ltdc_initialize start\n"));
 
+
+	/* ---- Supply clock to the video display controller 5  ---- */
+	CPG.STBCR9 &= ~ CPG_STBCR9_MSTP91;	// Module Stop 91 0: The video display controller 5 runs.
+	(void) CPG.STBCR9;			/* Dummy read */
+
 	/* Configure the LCD Control pins */
 	HARDWARE_LTDC_INITIALIZE();	// подключение к выводам процессора сигналов периферийного контроллера
+
+
+	// I/O Clock Frequency (MHz) = 60 MHz
+	VDC50.SYSCNT_PANEL_CLK =
+		(3 << 12) |	/* Divided Clock Source Select: 3: Peripheral clock 1 */
+		(calcdivround2(P1CLOCK_FREQ, LTDC_DOTCLK) << 0) | /* Clock Frequency Division Ratio - Table 35.5 I/O Clock Frequency and Divisors */
+		(1 << 8) |	/* ICKEN */
+		0;
+
+	/* hardware-dependent control signals */
+	// LCD0_TCON4 - VSYNC P7_5
+	// LCD0_TCON5 - HSYNC P7_6
+	// LCD0_TCON6 - DE P7_7
+
+	const uint_fast32_t TCON_CPV_SEL = 0x07uL << 0;
+	const uint_fast32_t TCON_POLA_SEL = 0x07uL << 0;
+	const uint_fast32_t TCON_POLB_SEL = 0x07uL << 0;
+
+	VDC50.OUT_UPDATE |= 1;
+
+	VDC50.OUT_SET = (VDC50.OUT_SET & ~ (3uL << 12)) |
+			(2uL << 12) |	// Output Format Select 2: RGB565
+			0;
+
+	VDC50.TCON_UPDATE |= 1;
+
+	// Output Signal Select for LCD_TCON4 Pin
+	VDC50.TCON_TIM_CPV2 = (VDC50.TCON_TIM_CPV2 & ~ (TCON_CPV_SEL)) |
+		0 * MASK2LSB(TCON_CPV_SEL) |	// LCD0_TCON4 - VSYNC
+		(0 << 4) |	// Polarity Inversion Control of CPV Signal
+		0;
+	// Output Signal Select for LCD_TCON5 Pin
+	VDC50.TCON_TIM_POLA2 = (VDC50.TCON_TIM_POLA2 & ~ (TCON_POLA_SEL)) |
+		2 * MASK2LSB(TCON_POLA_SEL) |	// LCD0_TCON5 - HSYNC
+		(0 << 4) |	// Polarity Inversion Control of POLA Signal
+		0;
+	// Output Signal Select for LCD_TCON6 Pin
+	VDC50.TCON_TIM_POLB2 = (VDC50.TCON_TIM_POLB2 & ~ (TCON_POLB_SEL)) |
+		7 * MASK2LSB(TCON_POLB_SEL) |	// LCD0_TCON6 - DE
+		0;
+
+#if 0
+	VDC50.TCON_TIM_CPV1 =
+		(((HSYNC + HBP) - 1) << 16) |	// Horizontal Enable Signal Width for Output Image (pixel-clock cycles)
+		((HSYNC) << 0) |	// CPV Pulse Width (Second Changing Timing)
+		0;
+#endif
+
+#if 1
+	VDC50.GR0_UPDATE |= (1uL << 4);	// Graphics Display Register Update
+	// Table 31.9 Image Output Enable Control
+	// Output image horizontal size register
+	VDC50.SC0_SCL0_US3 =
+		(WIDTH << 0) |	// Horizontal Enable Signal Width for Output Image (pixel-clock cycles)
+		((HSYNC + HBP) << 16) |	// Horizontal Enable Signal Start Position for Output Image (hsync + backporch)
+		0;
+	// Output image vertical size register
+	VDC50.SC0_SCL0_US2 =
+		(HEIGHT << 0) |	// Vertical Enable Signal Width for Output Image (lines)
+		((VSYNC + VBP) << 16) |	// Vertical Enable Signal Start Position for Output Image
+		0;
+	
+	// Full-Screen Horizontal Size Register
+	VDC50.SC0_SCL0_FRC7 =
+		(WIDTH << 0) |	// Horizontal Enable Signal Width for Output Image (pixel-clock cycles)
+		((HSYNC + HBP) << 16) |	// Horizontal Enable Signal Start Position for Output Image (hsync + backporch)
+		0;
+	// Full-Screen Vertical Size Register
+	VDC50.SC0_SCL0_FRC6 =
+		(HEIGHT << 0) |	// Vertical Enable Signal Width for Output Image (lines)
+		((VSYNC + VBP) << 16) |	// Vertical Enable Signal Start Position for Output Image
+		0;
+
+	VDC50.GR0_FLM2 = (uintptr_t) & framebuff;
+	// 31.2.54 Frame Buffer Control Register 6 (Graphics 0) (GR0_FLM6)
+	VDC50.GR0_FLM6 =
+		((WIDTH - 1) << 16) |	// Sets the width of the horizontal valid period.
+		0;
+	// 31.2.53 Frame Buffer Control Register 5 (Graphics 0) (GR0_FLM5)
+	VDC50.GR0_FLM5 =
+		((HEIGHT - 1) << 16) |	// Sets the number of lines in a frames
+		0;
+
+#endif
+	
+	debug_printf_P(PSTR("arm_hardware_ltdc_initialize stop\n"));
 }
 
 #elif CPUSTYLE_STM32F
@@ -566,69 +723,6 @@ arm_hardware_ltdc_initialize(void)
 
 	/* LTDC Initialization -------------------------------------------------------*/
 	LTDC_InitTypeDef LTDC_InitStruct;
-
-#if LCDMODE_LQ043T3DX02K
-	// Sony PSP-1000 display panel
-	// LQ043T3DX02K panel (272*480)
-	// RK043FN48H-CT672B  panel (272*480) - плата STM32F746G-DISCO
-	/** 
-	  * @brief  RK043FN48H Size  
-	  */    
-	enum
-	{
-		WIDTH = 480,				/* LCD PIXEL WIDTH            */
-		HEIGHT = 272,			/* LCD PIXEL HEIGHT           */
-		/** 
-		  * @brief  RK043FN48H Timing  
-		  */     
-		HSYNC = 41,				/* Horizontal synchronization */
-		HBP = 2,				/* Horizontal back porch      */
-		HFP = 2,				/* Horizontal front porch     */
-
-		VSYNC = 10,				/* Vertical synchronization   */
-		VBP = 2,					/* Vertical back porch        */
-		VFP = 2,					/* Vertical front porch       */
-	};
-#elif LCDMODE_ILI8961
-	// HHT270C-8961-6A6 (320*240)
-	enum
-	{
-		WIDTH = 320 * 3,				/* LCD PIXEL WIDTH            */
-		HEIGHT = 240,			/* LCD PIXEL HEIGHT           */
-
-		/** 
-		  * @brief  RK043FN48H Timing  
-		  */     
-		HSYNC = 1,				/* Horizontal synchronization */
-		HBP = 2,				/* Horizontal back porch      */
-		HFP = 2,				/* Horizontal front porch     */
-
-		VSYNC = 1,				/* Vertical synchronization   */
-		VBP = 2,					/* Vertical back porch        */
-		VFP = 2,					/* Vertical front porch       */
-	};
-#elif LCDMODE_ILI9341
-	// SF-TC240T-9370-T (320*240)
-	enum
-	{
-
-		WIDTH = 240,				/* LCD PIXEL WIDTH            */
-		HEIGHT = 320,			/* LCD PIXEL HEIGHT           */
-
-		/** 
-		  * @brief  RK043FN48H Timing  
-		  */     
-		HSYNC = 10,				/* Horizontal synchronization */
-		HBP = 20,				/* Horizontal back porch      */
-		HFP = 10,				/* Horizontal front porch     */
-
-		VSYNC = 2,				/* Vertical synchronization   */
-		VBP = 4,					/* Vertical back porch        */
-		VFP = 4,					/* Vertical front porch       */
-	};
-#else
-	#error Unsupported LCDMODE_xxx
-#endif
 
 	pipparams_t mainwnd = { 0, 0, DIM_SECOND, DIM_FIRST };
 	pipparams_t pipwnd;

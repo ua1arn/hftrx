@@ -72,117 +72,43 @@
 */
 #define LS020_RS_INITIALIZE() \
 	do { \
-		arm_hardware_pio3_outputs(WRITEE_BIT, 0); /* в новой версии платы выдавать "0" */ \
-		arm_hardware_pio3_outputs(LS020_RS, LS020_RS); \
+		arm_hardware_pio7_outputs(LS020_RS, LS020_RS); \
 	} while (0)
 
 #define LS020_RESET_INITIALIZE() \
 	do { \
-		arm_hardware_pio3_outputs(WRITEE_BIT, 0); /* в новой версии платы выдавать "0" */ \
-		arm_hardware_pio3_outputs(LS020_RST, LS020_RST); \
+		arm_hardware_pio7_outputs(LS020_RST, LS020_RST); \
 	} while (0)
 
 #if LCDMODE_SPI_NA
 	// эти контроллеры требуют только RS
 
-	#define LS020_RS_PORT_S(v) do {	R7S721_TARGET_PORT_S(3, v); } while (0)
-	#define LS020_RS_PORT_C(v) do {	R7S721_TARGET_PORT_C(3, v); } while (0)
-	#define LS020_RS			(1u << 11)			// P3_11 D7 signal in HD44780 socket
+	#define LS020_RS_PORT_S(v) do {	R7S721_TARGET_PORT_S(7, v); } while (0)
+	#define LS020_RS_PORT_C(v) do {	R7S721_TARGET_PORT_C(7, v); } while (0)
+	#define LS020_RS			(1u << 0)			// P7_0 D7 signal in HD44780 socket
 
 #elif LCDMODE_SPI_RN
 	// эти контроллеры требуют только RESET
 
-	#define LS020_RESET_PORT_S(v) do {	R7S721_TARGET_PORT_S(3, v); } while (0)
-	#define LS020_RESET_PORT_C(v) do {	R7S721_TARGET_PORT_C(3, v); } while (0)
-	#define LS020_RST			(1u << 10)			// * P3_10 D6 signal in HD44780 socket
+	#define LS020_RESET_PORT_S(v) do {	R7S721_TARGET_PORT_S(7, v); } while (0)
+	#define LS020_RESET_PORT_C(v) do {	R7S721_TARGET_PORT_C(7, v); } while (0)
+	#define LS020_RST			(1u << 1)			// * P7_1 D6 signal in HD44780 socket
 
 #elif LCDMODE_SPI_RA
 	// Эти контроллеры требуют RESET и RS
 
-	#define LS020_RS_PORT_S(v) do {	R7S721_TARGET_PORT_S(3, v); } while (0)
-	#define LS020_RS_PORT_C(v) do {	R7S721_TARGET_PORT_C(3, v); } while (0)
-	#define LS020_RS			(1u << 11)			// P3_11 D7 signal in HD44780 socket
+	#define LS020_RS_PORT_S(v) do {	R7S721_TARGET_PORT_S(7, v); } while (0)
+	#define LS020_RS_PORT_C(v) do {	R7S721_TARGET_PORT_C(7, v); } while (0)
+	#define LS020_RS			(1u << 0)			// P7_0 D7 signal in HD44780 socket
 
-	#define LS020_RESET_PORT_S(v) do {	R7S721_TARGET_PORT_S(3, v); } while (0)
-	#define LS020_RESET_PORT_C(v) do {	R7S721_TARGET_PORT_C(3, v); } while (0)
-	#define LS020_RST			(1u << 10)			// P3_10 D6 signal in HD44780 socket
+	#define LS020_RESET_PORT_S(v) do {	R7S721_TARGET_PORT_S(7, v); } while (0)
+	#define LS020_RESET_PORT_C(v) do {	R7S721_TARGET_PORT_C(7, v); } while (0)
+	#define LS020_RST			(1u << 1)			// P7_1 D6 signal in HD44780 socket
 
 #elif LCDMODE_HD44780 && (LCDMODE_SPI == 0)
 
-	// Выводы подключения ЖКИ индикатора WH2002 или аналогичного HD44780.
-	#define LCD_DATA_PORT_S(v) do {	R7S721_TARGET_PORT_S(3, v); } while (0)		// P3_11,,P3_8
-	#define LCD_DATA_PORT_C(v) do {	R7S721_TARGET_PORT_C(3, v); } while (0)		// P3_11,,P3_8
-
-	#define LCD_DATA_INPUT			(R7S721_INPUT_PORT(3))
-
-	// E (enable) bit
-	#define LCD_STROBE_PORT_S(v) do {	R7S721_TARGET_PORT_S(3, v); } while (0)
-	#define LCD_STROBE_PORT_C(v) do {	R7S721_TARGET_PORT_C(3, v); } while (0)
-
-	// RS bit
-	#define LCD_RS_PORT_S(v) do {	R7S721_TARGET_PORT_S(3, v); } while (0)
-	#define LCD_RS_PORT_C(v) do {	R7S721_TARGET_PORT_C(3, v); } while (0)
-
-	// W bit
-	#define LCD_WE_PORT_S(v) do {	R7S721_TARGET_PORT_S(3, v); } while (0)
-	#define LCD_WE_PORT_C(v) do {	R7S721_TARGET_PORT_C(3, v); } while (0)
-
-	#define LCD_STROBE_BIT			(1u << 14)	// E: P3_14
-
-	#define WRITEE_BIT				(1u << 12)	// RD/~WR  P3_12
-	//#define WRITEE_BIT_ZERO				(1u << 12)	// RD/~WR  P3_12
-	
-	#define ADDRES_BIT				(1u << 13)	// * P3_13
-
-	#define LCD_DATAS_BITS			((1u << 11) | (1u << 10) | (1u << 9) | (1u << 8))	// P3_11,,P3_8
-	#define LCD_DATAS_BIT_LOW		8		// какой бит данных младший в слове считанном с порта
-
-	#define DISPLAY_BUS_DATA_GET() ((LCD_DATA_INPUT & LCD_DATAS_BITS) >> LCD_DATAS_BIT_LOW) /* получить данные с шины LCD */
-	#define DISPLAY_BUS_DATA_SET(v) do { /* выдача данных (не сдвинуьых) */ \
-			const portholder_t t = (portholder_t) (v) << LCD_DATAS_BIT_LOW; \
-			LCD_DATA_PORT_S(LCD_DATAS_BITS & t); \
-			LCD_DATA_PORT_C(LCD_DATAS_BITS & ~ t); \
-		} while (0)
-
-	/* инициализация управляющих выходов процессора для управления HD44780 - полный набор выходов */
-	#define LCD_CONTROL_INITIALIZE() \
-		do { \
-			arm_hardware_pio3_outputs(LCD_STROBE_BIT | WRITEE_BIT | ADDRES_BIT, 0); \
-		} while (0)
-	/* инициализация управляющих выходов процессора для управления HD44780 - WE=0 */
-	#define LCD_CONTROL_INITIALIZE_WEEZERO() \
-		do { \
-			arm_hardware_pio3_outputs(LCD_STROBE_BIT | WRITEE_BIT_ZERO | ADDRES_BIT, 0); \
-		} while (0)
-	/* инициализация управляющих выходов процессора для управления HD44780 - WE отсутствует - сигнал к индикатору заземлён */
-	#define LCD_CONTROL_INITIALIZE_WEENONE() \
-		do { \
-			arm_hardware_pio3_outputs(LCD_STROBE_BIT | ADDRES_BIT, 0); \
-		} while (0)
-
-	#define LCD_DATA_INITIALIZE_READ() \
-		do { \
-			arm_hardware_pio3_inputs(LCD_DATAS_BITS);	/* переключить порт на чтение с выводов */ \
-		} while (0)
-
-	#define LCD_DATA_INITIALIZE_WRITE(v) \
-		do { \
-			arm_hardware_pio3_outputs(LCD_DATAS_BITS, (v) << LCD_DATAS_BIT_LOW);	/* открыть выходы порта */ \
-		} while (0)
 
 #endif
-
-#if 0 && LCDMODE_UC1608
-	#define UC1608_CSP_PORT_S(v) do {	R7S721_TARGET_PORT_S(7, v); } while (0)
-	#define UC1608_CSP_PORT_C(v) do {	R7S721_TARGET_PORT_C(7, v); } while (0)
-	#define UC1608_CSP			(1u << 15)			// * PE15
-	#define SPI_CSEL255			255				// по этому чипселекту выбираем положительным сигналом
-
-	#define UC1608_CSP_INITIALIZE() do { \
-			arm_hardware_pio1_outputs(UC1608_CSP, 0); \
-		} while (0)
-#endif
-
 
 #if WITHENCODER
 	// Выводы подключения енкодера
@@ -476,7 +402,7 @@
 /* Назначение адресов на SPI шине */
 #define targetfpga1		(1U << 5)	// P2_5  FPGA control registers CS1
 #define targetrtc1		(1U << 2)	// P2_2  RTC DS1305EN
-#define targetext1		(1U << 1)	// P2_1  external spi device (LCD)
+#define targetext1		(1U << 1)	// P2_1  front panel spi device (LCD)
 #define targetext2		(1U << 0)	// P2_0  external spi device (PA BOARD ADC)
 #define targetnvram		(1U << 9)	// P2_9  nvmem FM25L16B
 #define targetctl1		(1U << 7)	// P2_7 board control registers chain
@@ -485,6 +411,7 @@
 #define targetadc2		(1U << 3) 	/* P2_3 ADC MCP3208-BI/SL chip select */
 
 #define targetuc1608	targetext1 
+#define targetlcd		targetext1
 
 // Здесь должны быть перечислены все биты формирования CS в устройстве.
 #define SPI_ALLCS_BITS ( \
@@ -691,7 +618,7 @@
 #if LCDMODE_LTDC
 	#define HARDWARE_LTDC_INITIALIZE() do { \
 		/* Synchronisation signals */ \
-		arm_hardware_pio7_alternative((1U << 4), R7S721_PIOALT_6);	/* P7_4 CLK */ \
+		arm_hardware_pio7_alternative((1U << 4), R7S721_PIOALT_6);	/* P7_4 CLK LCD0_CLK */ \
 		arm_hardware_pio7_alternative((1U << 5), R7S721_PIOALT_6);	/* P7_5 VSYNC */ \
 		arm_hardware_pio7_alternative((1U << 6), R7S721_PIOALT_6);	/* P7_6 HSYNC */ \
 		/* Control */ \

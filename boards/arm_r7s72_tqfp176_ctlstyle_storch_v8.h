@@ -101,7 +101,7 @@
 
 	// +++ ќдна из этих строк определ€ет тип диспле€, дл€ которого компилируетс€ прошивка
 	//#define LCDMODE_HARD_SPI	1	/* LCD over SPI line */
-	#define LCDMODE_LTDC	1		/* Use STM32F4xxx with LCD-TFT Controller (LTDC), also need LCDMODE_ILI9341 */
+	//#define LCDMODE_LTDC	1		/* Use STM32F4xxx with LCD-TFT Controller (LTDC), also need LCDMODE_ILI9341 */
 	//#define LCDMODE_LTDC_L8	1	/* используетс€ 8 бит на пиксель представление экрана. »наче - 16 бит. */
 	//#define LCDMODE_LTDCSDRAMBUFF	1	/* используетс€ область внешнего SDRAM дл€ хранени€ framebuffer */
 	//#define LCDMODE_WH2002	1	/* тип примен€емого индикатора 20*2, возможно вместе с LCDMODE_HARD_SPI */
@@ -136,9 +136,9 @@
 	//#define LCDMODE_ST7565S	1	/* »ндикатор WO12864C2-TFH# 128*64 с контроллером Sitronix ST7565S */
 	//#define LCDMODE_ST7565S_TOPDOWN	1	/* LCDMODE_ST7565S - перевернуть изображение (дл€ выводов сверху) */
 	//#define LCDMODE_ILI9320	1	/* »ндикатор 248*320 с контроллером ILI9320 */
-	//#define LCDMODE_ILI9341	1	/* 320*240 SF-TC240T-9370-T с контроллером ILI9341 - STM32F4DISCO */
+	#define LCDMODE_ILI9341	1	/* 320*240 SF-TC240T-9370-T с контроллером ILI9341 - STM32F4DISCO */
 	//#define LCDMODE_ILI9341_TOPDOWN	1	/* LCDMODE_ILI9341 - перевернуть изображение (дл€ выводов справа) */
-	#define LCDMODE_LQ043T3DX02K 1	/* LQ043T3DX02K panel (272*480) - SONY PSP-1000 display */
+	//#define LCDMODE_LQ043T3DX02K 1	/* LQ043T3DX02K panel (272*480) - SONY PSP-1000 display */
 	// --- ќдна из этих строк определ€ет тип диспле€, дл€ которого компилируетс€ прошивка
 
 	#define ENCRES_DEFAULT ENCRES_128

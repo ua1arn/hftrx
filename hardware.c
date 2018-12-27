@@ -75,7 +75,7 @@ static unsigned long ulmax(
 // OSTM1: 1/ELKEY_DISCRETE dot length timer 
 // OSTM0: system ticks
 
-static uint_fast32_t 
+uint_fast32_t 
 NOINLINEAT
 calcdivround2(
 	uint_fast32_t ref,	/* частота на входе делителя, в герцах. */
