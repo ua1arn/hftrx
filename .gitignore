@@ -13,6 +13,9 @@ atmega328_8\
 *.elf
 *.dfu
 *.pof
+*.rpd
+*.sof
+*.log
 product.h
 tc1msvc.opt
 tc1msvc.plg
