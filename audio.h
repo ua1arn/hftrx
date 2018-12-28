@@ -198,11 +198,25 @@
 #define HARDWARE_USBD_AUDIO_IN_CHANNELS_AUDIO48		2
 #define VIRTUAL_AUDIO_PORT_DATA_SIZE_IN_AUDIO48		(DMABUFFSIZE16 * sizeof (uint16_t))
 
+/*
+	For full-/high-speed isochronous endpoints, this value
+	must be in the range from 1 to 16. The bInterval value
+	is used as the exponent for a 2^(bInterval-1) value; e.g.,
+	a bInterval of 4 means a period of 8 (2^(4-1))."
+
+  */
 #define HSINTERVAL_AUDIO48 4	// endpoint descriptor parameters - для обеспечения 1 кГц периода
 #define FSINTERVAL_AUDIO48 1
 
+#define HSINTERVAL_8MS 7	// endpoint descriptor parameters - для обеспечения 10 ms периода
+#define FSINTERVAL_8MS 8
+
 #define HSINTERVAL_32MS 9	// endpoint descriptor parameters - для обеспечения 32 ms периода
 #define FSINTERVAL_32MS 32
+
+#define HSINTERVAL_256MS 12	// endpoint descriptor parameters - для обеспечения 255 ms периода (interrupt endpoint for CDC 
+#define FSINTERVAL_255MS 255
+
 
 #define HARDWARE_USBD_AUDIO_OUT_SAMPLEBITS	16
 #if WITHUABUACOUTAUDIO48MONO

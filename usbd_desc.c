@@ -1439,7 +1439,7 @@ static unsigned r9fill_35(uint_fast8_t fill, uint8_t * buff, unsigned maxsize, i
 		* buff ++ = USB_ENDPOINT_TYPE_INTERRUPT;   	/* bmAttributes: Interrupt */
 		* buff ++ = LO_BYTE(wMaxPacketSize);        /* wMaxPacketSize */
 		* buff ++ = HI_BYTE(wMaxPacketSize); 
-		* buff ++ = highspeed ? 0x10 : 0xFF;   						/* bInterval: 255 mS */
+		* buff ++ = highspeed ? HSINTERVAL_256MS : FSINTERVAL_255MS;   						/* bInterval: 255 mS */
 	}
 	return length;
 }
@@ -2170,7 +2170,7 @@ static unsigned fill_HID_Mouse_IntEP(uint_fast8_t fill, uint8_t * buff, unsigned
 		* buff ++ = USB_ENDPOINT_TYPE_INTERRUPT;   	/* bmAttributes: Interrupt */
 		* buff ++ = LO_BYTE(wMaxPacketSize);        /* wMaxPacketSize */
 		* buff ++ = HI_BYTE(wMaxPacketSize); 
-		* buff ++ = highspeed ? 0x07 : 0x0A;   						/* bInterval: 10 mS */
+		* buff ++ = highspeed ? HSINTERVAL_8MS : FSINTERVAL_8MS;	/* bInterval: 8 mS */
 	}
 	return length;
 }
