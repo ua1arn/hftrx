@@ -214,7 +214,7 @@
 #define HSINTERVAL_32MS 9	// endpoint descriptor parameters - для обеспечения 32 ms периода
 #define FSINTERVAL_32MS 32
 
-#define HSINTERVAL_256MS 12	// endpoint descriptor parameters - для обеспечения 255 ms периода (interrupt endpoint for CDC 
+#define HSINTERVAL_256MS 12	// endpoint descriptor parameters - для обеспечения 255 ms периода (interrupt endpoint for CDC)
 #define FSINTERVAL_255MS 255
 
 
