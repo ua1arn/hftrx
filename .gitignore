@@ -1,10 +1,10 @@
 fpga_q131\db
 fpga_q131\output_files
-atmega32_8\
-atmega644_8\
-atmega644_10\
-atmega328_16\
-atmega328_8\
+atmega32a_8
+atmega644p_8
+atmega644p_10
+atmega328_16
+atmega328_8
 *.o
 *.d
 *.h
@@ -19,6 +19,8 @@ atmega328_8\
 product.h
 tc1msvc.opt
 tc1msvc.plg
+tc1.aws
+
 
 
 
