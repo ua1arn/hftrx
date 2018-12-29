@@ -127,11 +127,17 @@ arm_hardware_ltdc_initialize(void)
 	// LCD0_TCON5 - HSYNC P7_6
 	// LCD0_TCON6 - DE P7_7
 
+	////////////////////////////////////////////////////////////////
+	// OUT
 	SETREG32(& VDC50.OUT_UPDATE, 1, 0, 1);
 
-	SETREG32(& VDC50.OUT_SET, 2, 12, 0x02);	// Output Format Select 2: RGB565
+	SETREG32(& VDC50.OUT_SET, 2, 12, 0x02);	// OUT_FORMAT Output Format Select 2: RGB565
 
-	SETREG32(& VDC50.TCON_UPDATE, 1, 0, 1);
+	SETREG32(& VDC50.OUT_UPDATE, 1, 0, 1);
+
+	////////////////////////////////////////////////////////////////
+	// TCON
+	SETREG32(& VDC50.TCON_UPDATE, 1, 0, 1);	// TCON_VEN
 
 	//modreg32(& VDC50.TCON_TIM_POLA2, (3uL << 12), (0uL << 12));	// TCON_POLA_MD
 	//modreg32(& VDC50.TCON_TIM_POLA2, (1 << 4), (0uL << 4));	// TCON_POLA_INV
@@ -144,64 +150,70 @@ arm_hardware_ltdc_initialize(void)
 	SETREG32(& VDC50.TCON_TIM_STH1, 11, 16,	0);	// TCON_STH_HS
 	SETREG32(& VDC50.TCON_TIM_STH1, 11, 0, HSYNC);	// TCON_STH_HW
 	// Source strobe signal
-	SETREG32(& VDC50.TCON_TIM_STB1, 11, 16, 0);	// TCON_STB_HS
+	SETREG32(& VDC50.TCON_TIM_STB1, 11, 16, 0);		// TCON_STB_HS
 	SETREG32(& VDC50.TCON_TIM_STB1, 11, 0, WIDTH);	// TCON_STB_HW
 	// Hsymc polarity
-	SETREG32(& VDC50.TCON_TIM_STH2, 11, 4, 0x01);	// TCON_STH_INV
-	// Output pin route
-	SETREG32(& VDC50.TCON_TIM_POLA2, 3, 0, 0x02);	// 2: STH/SP/HS TCON_POLA_SEL Output Signal Select for LCD_TCON5 Pin - HSYNC
+	SETREG32(& VDC50.TCON_TIM_STH2, 1, 4, 0x01);	// TCON_STH_INV
 
 	// Vertical sync generation parameters
+
+	// Vertical enable signal
+	SETREG32(& VDC50.TCON_TIM_STVB1, 11, 16, VSYNC + VBP);	// TCON_STVB_VS
+	SETREG32(& VDC50.TCON_TIM_STVB1, 11, 0, HEIGHT);	// TCON_STVB_VW
+
 	// VSYNC signal
-	////modreg32(& VDC50.TCON_TIM_STH1, (0x7FFuL << 16), ((0) << 16));	// TCON_STH_HS
-	////modreg32(& VDC50.TCON_TIM_STH1, (0x7FFuL << 0), ((HSYNC) << 0));	// TCON_STH_HW
-	// Source strobe signal
-	//modreg32(& VDC50.TCON_TIM_STB1, (0x7FFuL << 16), ((HSYNC + HBP + HFP - 1) << 16));	// TCON_STB_HS
-	////modreg32(& VDC50.TCON_TIM_STB1, (0x7FFuL << 0), ((WIDTH) << 0));	// TCON_STB_HW
-	// Hsymc polarity
-	////modreg32(& VDC50.TCON_TIM_STH2, (0x01uL << 4), 1 * (0x01uL << 4));	// TCON_STH_INV
-	// Output pin route
-	SETREG32(& VDC50.TCON_TIM_CPV2, 3, 0, 0x00);		// 0: STVA/VS Output Signal Select for LCD_TCON4 Pin - VSYNC
-	
-	// DE signal output pin route
+	SETREG32(& VDC50.TCON_TIM_STVA1, 11, 16, 0);	// TCON_STVA_VS
+	SETREG32(& VDC50.TCON_TIM_STVA1, 11, 0, VSYNC);	// TCON_STVA_VW
+	// VSYNC polarity
+	SETREG32(& VDC50.TCON_TIM_STVA2, 1, 4, 0x01);	// TCON_STVA_INV
+
+	// Hardware-depemdent procedure
+	// Output pins route
+	//SETREG32(& VDC50.TCON_TIM_STVA2, 3, 0, 0xXX);	// Output Signal Select for LCD_TCON0 pin - 
+	//SETREG32(& VDC50.TCON_TIM_STVB2, 3, 0, 0xXX);	// Output Signal Select for LCD_TCON1 pin - 
+	//SETREG32(& VDC50.TCON_TIM_STH2, 3, 0, 0xXX);	// Output Signal Select for LCD_TCON2 pin - 
+	SETREG32(& VDC50.TCON_TIM_CPV2, 3, 0, 0x00);	// TCON_CPV_SEL 0: STVA/VS Output Signal Select for LCD_TCON4 Pin - VSYNC
+	SETREG32(& VDC50.TCON_TIM_POLA2, 3, 0, 0x02);	// 2: STH/SP/HS TCON_POLA_SEL Output Signal Select for LCD_TCON5 Pin - HSYNC
 	SETREG32(& VDC50.TCON_TIM_POLB2, 3, 0, 0x07);	// Output Signal Select for LCD_TCON6 Pin - DE
+
+	SETREG32(& VDC50.TCON_UPDATE, 1, 0, 1);	// TCON_VEN
 
 	////////////////////////////////////////////////////////////////
 	// SC0
 	SETREG32(& VDC50.SC0_SCL0_UPDATE, 1, 13, 1);	// SC0_SCL0_VEN_D	Scaling-Up Control and Frame Buffer Read Control Register Update
 	SETREG32(& VDC50.SC0_SCL0_UPDATE, 1, 12, 1);	// SC0_SCL0_VEN_C	Scaling-Down Control and Frame Buffer Read Control Register Update
-	//SETREG32(& VDC50.SC0_SCL0_UPDATE, 1, 8, 1);		// SC0_SCL0_UPDATE	SYNC Control Register Update
+	SETREG32(& VDC50.SC0_SCL0_UPDATE, 1, 8, 1);		// SC0_SCL0_UPDATE	SYNC Control Register Update
 	SETREG32(& VDC50.SC0_SCL0_UPDATE, 1, 4, 1);		// SC0_SCL0_VEN_B	Synchronization Control and Scaling-up Control Register Update
 	SETREG32(& VDC50.SC0_SCL0_UPDATE, 1, 0, 1);		// SC0_SCL0_VEN_A	Scaling-Down Control Register Update
 
 	SETREG32(& VDC50.SC0_SCL0_FRC3, 1, 0, 0x01);	// SC0_RES_VS_SEL Vsync Signal Output Select 1: Internally generated free-running Vsync signal
 
-	SETREG32(& VDC50.SC0_SCL0_FRC4, 11, 16, HEIGHT + VSYNC + VBP + VFP - 1);	// SC0_RES_FV Free-Running Vsync Period Setting
-	SETREG32(& VDC50.SC0_SCL0_FRC4, 11, 0, WIDTH + HSYNC + HBP + HFP - 1);	// SC0_RES_HV Hsync Period Setting
-	SETREG32(& VDC50.SC0_SCL0_FRC6, 11, 16, VSYNC + VBP - 1);
-	SETREG32(& VDC50.SC0_SCL0_FRC6, 11, 0, HEIGHT);
-	SETREG32(& VDC50.SC0_SCL0_FRC7, 11, 16, HSYNC + HBP - 1);
-	SETREG32(& VDC50.SC0_SCL0_FRC7, 11, 0, WIDTH);
+	SETREG32(& VDC50.SC0_SCL0_FRC5, 1, 8, 0x00);	// SC0_RES_FLD_DLY_SEL
 
+	SETREG32(& VDC50.SC0_SCL0_FRC4, 11, 16, HEIGHT + VSYNC + VBP + VFP - 1);// SC0_RES_FV Free-Running Vsync Period Setting
+	SETREG32(& VDC50.SC0_SCL0_FRC4, 11, 0, WIDTH + HSYNC + HBP + HFP - 1);	// SC0_RES_HV Hsync Period Setting
+
+	SETREG32(& VDC50.SC0_SCL0_FRC6, 11, 16, VSYNC + VBP - 1);				// SC0_RES_F_VS
+	SETREG32(& VDC50.SC0_SCL0_FRC6, 11, 0, HEIGHT);							// SC0_RES_F_VW
+
+	SETREG32(& VDC50.SC0_SCL0_FRC7, 11, 16, HSYNC + HBP - 1);			// SC0_RES_F_HS
+	SETREG32(& VDC50.SC0_SCL0_FRC7, 11, 0, WIDTH);						// SC0_RES_F_HW
+
+	// down-scaler off
+	// depend on SC0_SCL0_VEN_A
 	SETREG32(& VDC50.SC0_SCL0_DS1, 1, 4, 0);	// SC0_RES_DS_V_ON Vertical Scale Down On/Off 0: Off
 	SETREG32(& VDC50.SC0_SCL0_DS1, 1, 0, 0);	// SC0_RES_DS_H_ON
 
-	//SETREG32(& VDC50.SC0_SCL0_DS7, 11, 16, HEIGHT);
-	//SETREG32(& VDC50.SC0_SCL0_DS7, 11, 0, WIDTH);
+	// up-scaler off
+	// depend on SC0_SCL0_VEN_B
+	SETREG32(& VDC50.SC0_SCL0_US1, 1, 4, 0);	// SC0_RES_US_V_ON
+	SETREG32(& VDC50.SC0_SCL0_US1, 1, 0, 0);	// SC0_RES_US_V_ON
 
-	SETREG32(& VDC50.SC0_SCL0_US1, 1, 4, 0);
-	SETREG32(& VDC50.SC0_SCL0_US1, 1, 0, 0);
-
-	//SETREG32(& VDC50.SC0_SCL0_US2, 11, 16, VSYNC + VBP);
-	//SETREG32(& VDC50.SC0_SCL0_US2, 11, 0, HEIGHT);
-	//SETREG32(& VDC50.SC0_SCL0_US3, 11, 16, HSYNC + HBP);
-	//SETREG32(& VDC50.SC0_SCL0_US3, 11, 0, WIDTH);
-
-	//SETREG32(& VDC50.SC0_SCL0_UPDATE, 1, 13, 1);	// SC0_SCL0_VEN_D	Scaling-Up Control and Frame Buffer Read Control Register Update
-	//SETREG32(& VDC50.SC0_SCL0_UPDATE, 1, 12, 1);	// SC0_SCL0_VEN_C	Scaling-Down Control and Frame Buffer Read Control Register Update
+	SETREG32(& VDC50.SC0_SCL0_UPDATE, 1, 13, 1);	// SC0_SCL0_VEN_D	Scaling-Up Control and Frame Buffer Read Control Register Update
+	SETREG32(& VDC50.SC0_SCL0_UPDATE, 1, 12, 1);	// SC0_SCL0_VEN_C	Scaling-Down Control and Frame Buffer Read Control Register Update
 	SETREG32(& VDC50.SC0_SCL0_UPDATE, 1, 8, 1);		// SC0_SCL0_UPDATE	SYNC Control Register Update
-	//SETREG32(& VDC50.SC0_SCL0_UPDATE, 1, 4, 1);		// SC0_SCL0_VEN_B	Synchronization Control and Scaling-up Control Register Update
-	//SETREG32(& VDC50.SC0_SCL0_UPDATE, 1, 0, 1);		// SC0_SCL0_VEN_A	Scaling-Down Control Register Update
+	SETREG32(& VDC50.SC0_SCL0_UPDATE, 1, 4, 1);		// SC0_SCL0_VEN_B	Synchronization Control and Scaling-up Control Register Update
+	SETREG32(& VDC50.SC0_SCL0_UPDATE, 1, 0, 1);		// SC0_SCL0_VEN_A	Scaling-Down Control Register Update
 
 	////////////////////////////////////////////////////////////////
 	// SC1
@@ -242,7 +254,7 @@ arm_hardware_ltdc_initialize(void)
 	SETREG32(& VDC50.GR2_FLM6, 11, 16, WIDTH - 1);	// GR2_HW Sets the width of the horizontal valid period.
 	SETREG32(& VDC50.GR2_FLM6, 4, 28, 0x00);		// GR2_FORMAT 0: RGB565
 	SETREG32(& VDC50.GR2_FLM5, 11, 16, HEIGHT - 1);	// GR2_FLM_LNUM Sets the number of lines in a frame
-	SETREG32(& VDC50.GR2_AB1, 2, 0,	0x02);	// GR2_DISP_SEL 2: Current graphics display
+	SETREG32(& VDC50.GR2_AB1, 2, 0,	0x00);	// GR2_DISP_SEL 0: Background color display
 
 	SETREG32(& VDC50.GR2_UPDATE, 1, 8, 1);	// GR2_UPDATE Frame Buffer Read Control Register Update
 	SETREG32(& VDC50.GR2_UPDATE, 1, 4, 1);	// GR2_P_VEN Graphics Display Register Update
