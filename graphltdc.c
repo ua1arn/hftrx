@@ -154,11 +154,8 @@ arm_hardware_ltdc_initialize(void)
 	// TCON
 	SETREG32(& VDC50.TCON_UPDATE, 1, 0, 1);	// TCON_VEN
 
-	//modreg32(& VDC50.TCON_TIM_POLA2, (3uL << 12), (0uL << 12));	// TCON_POLA_MD
-	//modreg32(& VDC50.TCON_TIM_POLA2, (1 << 4), (0uL << 4));	// TCON_POLA_INV
-
-	SETREG32(& VDC50.TCON_TIM, 11, 16, WIDTH / 2);	// TCON_HALF
 	// Horisontal sync generation parameters
+	SETREG32(& VDC50.TCON_TIM, 11, 16, (WIDTH + HSYNC + HBP + HFP) / 2);	// TCON_HALF
 
 	SETREG32(& VDC50.TCON_TIM_POLA2, 2, 12, 0x00);	// TCON_POLA_MD
 	// HSYNC signal
@@ -167,8 +164,6 @@ arm_hardware_ltdc_initialize(void)
 	// Source strobe signal
 	SETREG32(& VDC50.TCON_TIM_STB1, 11, 16, 0);		// TCON_STB_HS
 	SETREG32(& VDC50.TCON_TIM_STB1, 11, 0, WIDTH);	// TCON_STB_HW
-	// Hsymc polarity
-	SETREG32(& VDC50.TCON_TIM_STH2, 1, 4, 0x01);	// TCON_STH_INV
 
 	// Vertical sync generation parameters
 
@@ -179,17 +174,19 @@ arm_hardware_ltdc_initialize(void)
 	// VSYNC signal
 	SETREG32(& VDC50.TCON_TIM_STVA1, 11, 16, 0);	// TCON_STVA_VS
 	SETREG32(& VDC50.TCON_TIM_STVA1, 11, 0, VSYNC);	// TCON_STVA_VW
-	// VSYNC polarity
-	SETREG32(& VDC50.TCON_TIM_STVA2, 1, 4, 0x01);	// TCON_STVA_INV
 
 	// Hardware-depemdent procedure
 	// Output pins route
 	//SETREG32(& VDC50.TCON_TIM_STVA2, 3, 0, 0xXX);	// Output Signal Select for LCD_TCON0 pin - 
 	//SETREG32(& VDC50.TCON_TIM_STVB2, 3, 0, 0xXX);	// Output Signal Select for LCD_TCON1 pin - 
 	//SETREG32(& VDC50.TCON_TIM_STH2, 3, 0, 0xXX);	// Output Signal Select for LCD_TCON2 pin - 
-	SETREG32(& VDC50.TCON_TIM_CPV2, 3, 0, 0x00);	// TCON_CPV_SEL 0: STVA/VS Output Signal Select for LCD_TCON4 Pin - VSYNC
-	SETREG32(& VDC50.TCON_TIM_POLA2, 3, 0, 0x02);	// 2: STH/SP/HS TCON_POLA_SEL Output Signal Select for LCD_TCON5 Pin - HSYNC
+	SETREG32(& VDC50.TCON_TIM_CPV2, 3, 0, 0x00);	// Output Signal Select for LCD_TCON4 Pin - VSYNC
+	SETREG32(& VDC50.TCON_TIM_POLA2, 3, 0, 0x02);	// Output Signal Select for LCD_TCON5 Pin - HSYNC
 	SETREG32(& VDC50.TCON_TIM_POLB2, 3, 0, 0x07);	// Output Signal Select for LCD_TCON6 Pin - DE
+	// HSYMC polarity
+	SETREG32(& VDC50.TCON_TIM_STH2, 1, 4, 0x01);	// TCON_STH_INV
+	// VSYNC polarity
+	SETREG32(& VDC50.TCON_TIM_STVA2, 1, 4, 0x01);	// TCON_STVA_INV
 
 	SETREG32(& VDC50.TCON_UPDATE, 1, 0, 1);	// TCON_VEN
 
@@ -213,7 +210,7 @@ arm_hardware_ltdc_initialize(void)
 
 	SETREG32_CK(& VDC50.SC0_SCL0_FRC7, 11, 16, HSYNC + HBP - 1);			// SC0_RES_F_HS
 	SETREG32_CK(& VDC50.SC0_SCL0_FRC7, 11, 0, WIDTH);						// SC0_RES_F_HW
-
+#if 0
 	//debug_printf_P(PSTR("VDC50.SC0_SCL0_DS1=%08lX s1\n"), VDC50.SC0_SCL0_DS1);
 	//debug_printf_P(PSTR("VDC50.SC0_SCL0_US1=%08lX s1\n"), VDC50.SC0_SCL0_US1);
 	// down-scaler off
@@ -225,7 +222,7 @@ arm_hardware_ltdc_initialize(void)
 	// depend on SC0_SCL0_VEN_B
 	SETREG32_CK(& VDC50.SC0_SCL0_US1, 1, 4, 0);	// SC0_RES_US_V_ON
 	SETREG32_CK(& VDC50.SC0_SCL0_US1, 1, 0, 0);	// SC0_RES_US_V_ON
-
+#endif
 	//debug_printf_P(PSTR("VDC50.SC0_SCL0_DS1=%08lX s2\n"), VDC50.SC0_SCL0_DS1);
 	//debug_printf_P(PSTR("VDC50.SC0_SCL0_US1=%08lX s2\n"), VDC50.SC0_SCL0_US1);
 
@@ -254,7 +251,7 @@ arm_hardware_ltdc_initialize(void)
 	SETREG32_CK(& VDC50.GR0_FLM_RD, 1, 0, 0);	// GR0_R_ENB Frame Buffer Read Enable
 	SETREG32_CK(& VDC50.GR0_FLM2, 32, 0, (uintptr_t) & framebuff);	// GR0_BASE
 	SETREG32_CK(& VDC50.GR0_FLM3, 15, 16, rowsize);	// GR0_LN_OFF
-	SETREG32_CK(& VDC50.GR0_FLM4, 23, 0, rowsize * HEIGHT);	// 
+	SETREG32_CK(& VDC50.GR0_FLM4, 23, 0, rowsize * HEIGHT);	// GR0_FLM_OFF
 	SETREG32_CK(& VDC50.GR0_FLM5, 11, 16, HEIGHT - 1);	// GR0_FLM_LNUM Sets the number of lines in a frame
 	SETREG32_CK(& VDC50.GR0_FLM5, 11, 0, HEIGHT - 1);	// GR0_FLM_LOOP
 	SETREG32_CK(& VDC50.GR0_FLM6, 11, 16, WIDTH - 1);	// GR0_HW Sets the width of the horizontal valid period.
@@ -275,7 +272,7 @@ arm_hardware_ltdc_initialize(void)
 	SETREG32_CK(& VDC50.GR2_FLM_RD, 1, 0, 0);	// GR2_R_ENB Frame Buffer Read Enable
 	SETREG32_CK(& VDC50.GR2_FLM2, 32, 0, (uintptr_t) & framebuff);	// GR2_BASE
 	SETREG32_CK(& VDC50.GR2_FLM3, 15, 16, rowsize);	// GR0_LN_OFF
-	SETREG32_CK(& VDC50.GR2_FLM4, 23, 0, rowsize * HEIGHT);	// GR0_FLM_OFF
+	SETREG32_CK(& VDC50.GR2_FLM4, 23, 0, rowsize * HEIGHT);	// GR2_FLM_OFF
 	SETREG32_CK(& VDC50.GR2_FLM5, 11, 16, HEIGHT - 1);	// GR2_FLM_LNUM Sets the number of lines in a frame
 	SETREG32_CK(& VDC50.GR2_FLM5, 11, 0, HEIGHT - 1);	// GR2_FLM_LOOP Sets the number of lines in a frame
 	SETREG32_CK(& VDC50.GR2_FLM6, 11, 16, WIDTH - 1);	// GR2_HW Sets the width of the horizontal valid period.
