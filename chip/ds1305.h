@@ -29,6 +29,9 @@ static void ds1305_readbuff(
 	const spitarget_t target = targetrtc1;		/* addressing to chip */
 
 	spi_select2(target, DS1305_SPIMODE, DS1305_SPISPEED);
+	spi_unselect(target);	/* done sending data to target chip */
+
+	spi_select2(target, DS1305_SPIMODE, DS1305_SPISPEED);
 
 	spi_progval8_p1(target, addr & 0x7F);	// D7=0: read mode
 	spi_complete(target);
@@ -120,11 +123,11 @@ void board_rtc_settime(
 	bt [2] = 0x3f & ds1305_bin2bcd(hours);		// r=2
 
 	// write enable
-	ds1305_writebuff(b_WE, sizeof b_WE / sizeof b_WE [0], DS1305REG_CONTROL);
+	//ds1305_writebuff(b_WE, sizeof b_WE / sizeof b_WE [0], DS1305REG_CONTROL);
 	// write data
 	ds1305_writebuff(bt, sizeof bt / sizeof bt [0], rt);
 	// write protect
-	ds1305_writebuff(b_WP, sizeof b_WP / sizeof b_WP [0], DS1305REG_CONTROL);
+	//ds1305_writebuff(b_WP, sizeof b_WP / sizeof b_WP [0], DS1305REG_CONTROL);
 }
 
 void board_rtc_setdatetime(
@@ -146,7 +149,7 @@ void board_rtc_setdatetime(
 	bt [2] = 0x3f & ds1305_bin2bcd(hours);		// r=2
 
 	// write enable
-	ds1305_writebuff(b_WE, sizeof b_WE / sizeof b_WE [0], DS1305REG_CONTROL);
+	//ds1305_writebuff(b_WE, sizeof b_WE / sizeof b_WE [0], DS1305REG_CONTROL);
 
 	// write data
 	ds1305_writebuff(bt, sizeof bt / sizeof bt [0], rt);
@@ -163,7 +166,7 @@ void board_rtc_setdatetime(
 
 	ds1305_writebuff(bd, sizeof bd / sizeof bd [0], rd);
 	// write protect
-	ds1305_writebuff(b_WP, sizeof b_WP / sizeof b_WP [0], DS1305REG_CONTROL);
+	//ds1305_writebuff(b_WP, sizeof b_WP / sizeof b_WP [0], DS1305REG_CONTROL);
 }
 
 
@@ -183,11 +186,11 @@ void board_rtc_setdate(
 	bd [2] = ds1305_bin2bcd(year % 100);		// r=6
 
 	// write enable
-	ds1305_writebuff(b_WE, sizeof b_WE / sizeof b_WE [0], DS1305REG_CONTROL);
+	//ds1305_writebuff(b_WE, sizeof b_WE / sizeof b_WE [0], DS1305REG_CONTROL);
 	// write data
 	ds1305_writebuff(bd, sizeof bd / sizeof bd [0], rd);
 	// write protect
-	ds1305_writebuff(b_WP, sizeof b_WP / sizeof b_WP [0], DS1305REG_CONTROL);
+	//ds1305_writebuff(b_WP, sizeof b_WP / sizeof b_WP [0], DS1305REG_CONTROL);
 }
 
 void board_rtc_getdate(
@@ -259,12 +262,14 @@ uint_fast8_t board_rtc_chip_initialize(void)
 
 	ds1305_readbuff(b, sizeof b / sizeof b[0], DS1305REG_CONTROL);
 	eosc = (b [0] & 0x80) == 0;
-	if (eosc != 0)
+	if (eosc == 0)
 	{
 		// Initial application of power,
 
 		// write enable
-		ds1305_writebuff(b_WE, sizeof b_WE / sizeof b_WE [0], DS1305REG_CONTROL);
+		//ds1305_writebuff(b_WE, sizeof b_WE / sizeof b_WE [0], DS1305REG_CONTROL);
+
+		//local_delay_ms(50);
 
 		// enable oscillator
 		ds1305_writebuff(b0, sizeof b0 / sizeof b0 [0], DS1305REG_CONTROL);
@@ -277,7 +282,7 @@ uint_fast8_t board_rtc_chip_initialize(void)
 	}
 
 	// write protect
-	ds1305_writebuff(b_WP, sizeof b_WP / sizeof b_WP [0], DS1305REG_CONTROL);
+	//ds1305_writebuff(b_WP, sizeof b_WP / sizeof b_WP [0], DS1305REG_CONTROL);
 
 	debug_printf_P(PSTR("board_rtc_chip_initialize: eosc=%d\n"), (int) eosc);
 	return eosc;
