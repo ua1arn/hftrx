@@ -3480,25 +3480,25 @@ static void usbdFunctionReq_seq1(PCD_TypeDef * const Instance, uint_fast8_t ReqT
 				switch (ReqRequest)
 				{
 				case AUDIO_REQUEST_GET_CUR:
-					PRINTF(PSTR("AUDIO_REQUEST_GET_CUR: interfacev=%u,  %u\n"), interfacev, terminalID);
+					//PRINTF(PSTR("AUDIO_REQUEST_GET_CUR: interfacev=%u,  %u\n"), interfacev, terminalID);
 					buff [0] = terminalsprops [terminalID] [controlID];
 					control_transmit(Instance, buff, ulmin16(ARRAY_SIZE(buff), ReqLength));
 					return;
 
 				case AUDIO_REQUEST_GET_MIN:
-					PRINTF(PSTR("AUDIO_REQUEST_GET_MIN: interfacev=%u,  %u\n"), interfacev, terminalID);
+					//PRINTF(PSTR("AUDIO_REQUEST_GET_MIN: interfacev=%u,  %u\n"), interfacev, terminalID);
 					buff [0] = terminalID == TERMINAL_ID_SELECTOR_6 ? 1 : 0;
 					control_transmit(Instance, buff, ulmin16(ARRAY_SIZE(buff), ReqLength));
 					return;
 
 				case AUDIO_REQUEST_GET_MAX:
-					PRINTF(PSTR("AUDIO_REQUEST_GET_MAX: interfacev=%u,  %u\n"), interfacev, terminalID);
+					//PRINTF(PSTR("AUDIO_REQUEST_GET_MAX: interfacev=%u,  %u\n"), interfacev, terminalID);
 					buff [0] = terminalID == TERMINAL_ID_SELECTOR_6 ? TERMINAL_ID_SELECTOR_6_INPUTS : 100;
 					control_transmit(Instance, buff, ulmin16(ARRAY_SIZE(buff), ReqLength));
 					return;
 
 				case AUDIO_REQUEST_GET_RES:
-					PRINTF(PSTR("AUDIO_REQUEST_GET_MAX: interfacev=%u,  %u\n"), interfacev, terminalID);
+					//PRINTF(PSTR("AUDIO_REQUEST_GET_MAX: interfacev=%u,  %u\n"), interfacev, terminalID);
 					buff [0] = 1;
 					control_transmit(Instance, buff, ulmin16(ARRAY_SIZE(buff), ReqLength));
 					return;
