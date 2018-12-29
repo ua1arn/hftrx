@@ -86,10 +86,25 @@
 
 #if CPUSTYLE_R7S721
 
+/* Set value at specified position of I/O register */
+#define SETREG32(reg, iwidth, pos, ival) do { \
+	uint_fast32_t val = (ival); \
+	uint_fast8_t width = (iwidth); \
+	uint_fast32_t mask = 0; \
+	while (width --) \
+		mask = (mask << 1) | 1U; \
+	mask <<= pos; \
+	val <<= pos; \
+	ASSERT((val & mask) == val); \
+	* reg = (* reg & ~ (mask)) | (val & mask); \
+	(void) * reg;	/* dummy read */ \
+	/*ASSERT(((* reg) & mask) == val); */ \
+} while (0)
+
 void
 arm_hardware_ltdc_initialize(void)
 {
-	debug_printf_P(PSTR("arm_hardware_ltdc_initialize start\n"));
+	debug_printf_P(PSTR("arm_hardware_ltdc_initialize start, WIDTH=%d, HEIGHT=%d\n"), WIDTH, HEIGHT);
 
 
 	/* ---- Supply clock to the video display controller 5  ---- */
@@ -112,77 +127,142 @@ arm_hardware_ltdc_initialize(void)
 	// LCD0_TCON5 - HSYNC P7_6
 	// LCD0_TCON6 - DE P7_7
 
-	const uint_fast32_t TCON_CPV_SEL = 0x07uL << 0;
-	const uint_fast32_t TCON_POLA_SEL = 0x07uL << 0;
-	const uint_fast32_t TCON_POLB_SEL = 0x07uL << 0;
+	SETREG32(& VDC50.OUT_UPDATE, 1, 0, 1);
 
-	VDC50.OUT_UPDATE |= 1;
+	SETREG32(& VDC50.OUT_SET, 2, 12, 0x02);	// Output Format Select 2: RGB565
 
-	VDC50.OUT_SET = (VDC50.OUT_SET & ~ (3uL << 12)) |
-			(2uL << 12) |	// Output Format Select 2: RGB565
-			0;
+	SETREG32(& VDC50.TCON_UPDATE, 1, 0, 1);
 
-	VDC50.TCON_UPDATE |= 1;
+	//modreg32(& VDC50.TCON_TIM_POLA2, (3uL << 12), (0uL << 12));	// TCON_POLA_MD
+	//modreg32(& VDC50.TCON_TIM_POLA2, (1 << 4), (0uL << 4));	// TCON_POLA_INV
 
-	// Output Signal Select for LCD_TCON4 Pin
-	VDC50.TCON_TIM_CPV2 = (VDC50.TCON_TIM_CPV2 & ~ (TCON_CPV_SEL)) |
-		0 * MASK2LSB(TCON_CPV_SEL) |	// LCD0_TCON4 - VSYNC
-		(0 << 4) |	// Polarity Inversion Control of CPV Signal
-		0;
-	// Output Signal Select for LCD_TCON5 Pin
-	VDC50.TCON_TIM_POLA2 = (VDC50.TCON_TIM_POLA2 & ~ (TCON_POLA_SEL)) |
-		2 * MASK2LSB(TCON_POLA_SEL) |	// LCD0_TCON5 - HSYNC
-		(0 << 4) |	// Polarity Inversion Control of POLA Signal
-		0;
-	// Output Signal Select for LCD_TCON6 Pin
-	VDC50.TCON_TIM_POLB2 = (VDC50.TCON_TIM_POLB2 & ~ (TCON_POLB_SEL)) |
-		7 * MASK2LSB(TCON_POLB_SEL) |	// LCD0_TCON6 - DE
-		0;
+	SETREG32(& VDC50.TCON_TIM, 11, 16, WIDTH);	// TCON_HALF
+	// Horisontal sync generation parameters
 
-#if 0
-	VDC50.TCON_TIM_CPV1 =
-		(((HSYNC + HBP) - 1) << 16) |	// Horizontal Enable Signal Width for Output Image (pixel-clock cycles)
-		((HSYNC) << 0) |	// CPV Pulse Width (Second Changing Timing)
-		0;
-#endif
+	SETREG32(& VDC50.TCON_TIM_POLA2, 2, 12, 0x00);	// TCON_POLA_MD
+	// HSYNC signal
+	SETREG32(& VDC50.TCON_TIM_STH1, 11, 16,	0);	// TCON_STH_HS
+	SETREG32(& VDC50.TCON_TIM_STH1, 11, 0, HSYNC);	// TCON_STH_HW
+	// Source strobe signal
+	SETREG32(& VDC50.TCON_TIM_STB1, 11, 16, 0);	// TCON_STB_HS
+	SETREG32(& VDC50.TCON_TIM_STB1, 11, 0, WIDTH);	// TCON_STB_HW
+	// Hsymc polarity
+	SETREG32(& VDC50.TCON_TIM_STH2, 11, 4, 0x01);	// TCON_STH_INV
+	// Output pin route
+	SETREG32(& VDC50.TCON_TIM_POLA2, 3, 0, 0x02);	// 2: STH/SP/HS TCON_POLA_SEL Output Signal Select for LCD_TCON5 Pin - HSYNC
 
-#if 1
-	VDC50.GR0_UPDATE |= (1uL << 4);	// Graphics Display Register Update
-	// Table 31.9 Image Output Enable Control
-	// Output image horizontal size register
-	VDC50.SC0_SCL0_US3 =
-		(WIDTH << 0) |	// Horizontal Enable Signal Width for Output Image (pixel-clock cycles)
-		((HSYNC + HBP) << 16) |	// Horizontal Enable Signal Start Position for Output Image (hsync + backporch)
-		0;
-	// Output image vertical size register
-	VDC50.SC0_SCL0_US2 =
-		(HEIGHT << 0) |	// Vertical Enable Signal Width for Output Image (lines)
-		((VSYNC + VBP) << 16) |	// Vertical Enable Signal Start Position for Output Image
-		0;
+	// Vertical sync generation parameters
+	// VSYNC signal
+	////modreg32(& VDC50.TCON_TIM_STH1, (0x7FFuL << 16), ((0) << 16));	// TCON_STH_HS
+	////modreg32(& VDC50.TCON_TIM_STH1, (0x7FFuL << 0), ((HSYNC) << 0));	// TCON_STH_HW
+	// Source strobe signal
+	//modreg32(& VDC50.TCON_TIM_STB1, (0x7FFuL << 16), ((HSYNC + HBP + HFP - 1) << 16));	// TCON_STB_HS
+	////modreg32(& VDC50.TCON_TIM_STB1, (0x7FFuL << 0), ((WIDTH) << 0));	// TCON_STB_HW
+	// Hsymc polarity
+	////modreg32(& VDC50.TCON_TIM_STH2, (0x01uL << 4), 1 * (0x01uL << 4));	// TCON_STH_INV
+	// Output pin route
+	SETREG32(& VDC50.TCON_TIM_CPV2, 3, 0, 0x00);		// 0: STVA/VS Output Signal Select for LCD_TCON4 Pin - VSYNC
 	
-	// Full-Screen Horizontal Size Register
-	VDC50.SC0_SCL0_FRC7 =
-		(WIDTH << 0) |	// Horizontal Enable Signal Width for Output Image (pixel-clock cycles)
-		((HSYNC + HBP) << 16) |	// Horizontal Enable Signal Start Position for Output Image (hsync + backporch)
-		0;
-	// Full-Screen Vertical Size Register
-	VDC50.SC0_SCL0_FRC6 =
-		(HEIGHT << 0) |	// Vertical Enable Signal Width for Output Image (lines)
-		((VSYNC + VBP) << 16) |	// Vertical Enable Signal Start Position for Output Image
-		0;
+	// DE signal output pin route
+	SETREG32(& VDC50.TCON_TIM_POLB2, 3, 0, 0x07);	// Output Signal Select for LCD_TCON6 Pin - DE
 
-	VDC50.GR0_FLM2 = (uintptr_t) & framebuff;
-	// 31.2.54 Frame Buffer Control Register 6 (Graphics 0) (GR0_FLM6)
-	VDC50.GR0_FLM6 =
-		((WIDTH - 1) << 16) |	// Sets the width of the horizontal valid period.
-		0;
-	// 31.2.53 Frame Buffer Control Register 5 (Graphics 0) (GR0_FLM5)
-	VDC50.GR0_FLM5 =
-		((HEIGHT - 1) << 16) |	// Sets the number of lines in a frames
-		0;
+	// SC0
+	SETREG32(& VDC50.SC0_SCL0_UPDATE, 1, 13, 1);	// SC0_SCL0_VEN_D	Scaling-Up Control and Frame Buffer Read Control Register Update
+	SETREG32(& VDC50.SC0_SCL0_UPDATE, 1, 12, 1);	// SC0_SCL0_VEN_C	Scaling-Down Control and Frame Buffer Read Control Register Update
+	SETREG32(& VDC50.SC0_SCL0_UPDATE, 1, 8, 1);		// what is a bit? SC0_SCL0_UPDATE	SYNC Control Register Update
+	SETREG32(& VDC50.SC0_SCL0_UPDATE, 1, 4, 1);		// SC0_SCL0_VEN_B	Synchronization Control and Scaling-up Control Register Update
+	SETREG32(& VDC50.SC0_SCL0_UPDATE, 1, 0, 1);		// SC0_SCL0_VEN_A	Scaling-Down Control Register Update
 
-#endif
-	
+	SETREG32(& VDC50.SC0_SCL0_FRC3, 1, 0, 0x01);	// SC0_RES_VS_SEL Vsync Signal Output Select 1: Internally generated free-running Vsync signal
+
+	SETREG32(& VDC50.SC0_SCL0_FRC4, 11, 16, HEIGHT + VSYNC + VBP + VFP - 1);	// SC0_RES_FV Free-Running Vsync Period Setting
+	SETREG32(& VDC50.SC0_SCL0_FRC4, 11, 0, WIDTH + HSYNC + HBP + HFP - 1);	// SC0_RES_HV Hsync Period Setting
+	SETREG32(& VDC50.SC0_SCL0_FRC6, 11, 16, VSYNC + VBP - 1);
+	SETREG32(& VDC50.SC0_SCL0_FRC6, 11, 0, HEIGHT);
+	SETREG32(& VDC50.SC0_SCL0_FRC7, 11, 16, HSYNC + HBP - 1);
+	SETREG32(& VDC50.SC0_SCL0_FRC7, 11, 0, WIDTH);
+
+	SETREG32(& VDC50.SC0_SCL0_DS1, 1, 4, 0);	// SC0_RES_DS_V_ON Vertical Scale Down On/Off 0: Off
+	SETREG32(& VDC50.SC0_SCL0_DS1, 1, 0, 0);	// SC0_RES_DS_H_ON
+
+	//SETREG32(& VDC50.SC0_SCL0_DS7, 11, 16, HEIGHT);
+	//SETREG32(& VDC50.SC0_SCL0_DS7, 11, 0, WIDTH);
+
+	SETREG32(& VDC50.SC0_SCL0_US1, 1, 4, 0);
+	SETREG32(& VDC50.SC0_SCL0_US1, 1, 0, 0);
+
+	//SETREG32(& VDC50.SC0_SCL0_US2, 11, 16, VSYNC + VBP);
+	//SETREG32(& VDC50.SC0_SCL0_US2, 11, 0, HEIGHT);
+	//SETREG32(& VDC50.SC0_SCL0_US3, 11, 16, HSYNC + HBP);
+	//SETREG32(& VDC50.SC0_SCL0_US3, 11, 0, WIDTH);
+
+	SETREG32(& VDC50.SC0_SCL0_UPDATE, 1, 13, 1);	// SC0_SCL0_VEN_D	Scaling-Up Control and Frame Buffer Read Control Register Update
+	SETREG32(& VDC50.SC0_SCL0_UPDATE, 1, 12, 1);	// SC0_SCL0_VEN_C	Scaling-Down Control and Frame Buffer Read Control Register Update
+	SETREG32(& VDC50.SC0_SCL0_UPDATE, 1, 8, 1);		// what is a bit? SC0_SCL0_UPDATE	SYNC Control Register Update
+	SETREG32(& VDC50.SC0_SCL0_UPDATE, 1, 4, 1);		// SC0_SCL0_VEN_B	Synchronization Control and Scaling-up Control Register Update
+	SETREG32(& VDC50.SC0_SCL0_UPDATE, 1, 0, 1);		// SC0_SCL0_VEN_A	Scaling-Down Control Register Update
+
+	// SC1
+	SETREG32(& VDC50.SC0_SCL1_UPDATE, 1, 20, 1);
+	SETREG32(& VDC50.SC0_SCL1_UPDATE, 1, 16, 1);
+	SETREG32(& VDC50.SC0_SCL1_UPDATE, 1, 4, 1);
+	SETREG32(& VDC50.SC0_SCL1_UPDATE, 1, 0, 1);
+
+	// GR0
+
+	SETREG32(& VDC50.GR0_UPDATE, 1, 8, 1);	// GR0_UPDATE Frame Buffer Read Control Register Update
+	SETREG32(& VDC50.GR0_UPDATE, 1, 4, 1);	// GR0_P_VEN Graphics Display Register Update
+	SETREG32(& VDC50.GR0_UPDATE, 1, 0, 1);	// GR0_IBUS_VEN Frame Buffer Read Control Register Update
+	SETREG32(& VDC50.GR0_FLM_RD, 1, 0, 0);	// GR0_R_ENB Frame Buffer Read Enable
+
+	SETREG32(& VDC50.GR0_FLM2, 32, 0, (uintptr_t) & framebuff);	// GR0_BASE
+	SETREG32(& VDC50.GR0_FLM6, 11, 16, WIDTH - 1);	// GR0_HW Sets the width of the horizontal valid period.
+	SETREG32(& VDC50.GR0_FLM6, 4, 28, 0x00);		// GR0_FORMAT 0: RGB565
+	SETREG32(& VDC50.GR0_FLM5, 11, 16, HEIGHT - 1);	// GR0_FLM_LNUM Sets the number of lines in a frame
+	SETREG32(& VDC50.GR0_AB1, 2, 0,	0x02);	// GR0_DISP_SEL 2: Current graphics display
+
+	SETREG32(& VDC50.GR0_UPDATE, 1, 8, 1);	// GR0_UPDATE Frame Buffer Read Control Register Update
+	SETREG32(& VDC50.GR0_UPDATE, 1, 4, 1);	// GR0_P_VEN Graphics Display Register Update
+	SETREG32(& VDC50.GR0_UPDATE, 1, 0, 1);	// GR0_IBUS_VEN Frame Buffer Read Control Register Update
+	SETREG32(& VDC50.GR0_FLM_RD, 1, 0, 0);	// GR0_R_ENB Frame Buffer Read Enable
+
+	// GR2
+
+	SETREG32(& VDC50.GR2_UPDATE, 1, 8, 1);	// GR2_UPDATE Frame Buffer Read Control Register Update
+	SETREG32(& VDC50.GR2_UPDATE, 1, 4, 1);	// GR2_P_VEN Graphics Display Register Update
+	SETREG32(& VDC50.GR2_UPDATE, 1, 0, 1);	// GR2_IBUS_VEN Frame Buffer Read Control Register Update
+	SETREG32(& VDC50.GR2_FLM_RD, 1, 0, 0);	// GR2_R_ENB Frame Buffer Read Enable
+
+	SETREG32(& VDC50.GR2_FLM2, 32, 0, (uintptr_t) & framebuff);	// GR2_BASE
+	SETREG32(& VDC50.GR2_FLM6, 11, 16, WIDTH - 1);	// GR2_HW Sets the width of the horizontal valid period.
+	SETREG32(& VDC50.GR2_FLM6, 4, 28, 0x00);		// GR2_FORMAT 0: RGB565
+	SETREG32(& VDC50.GR2_FLM5, 11, 16, HEIGHT - 1);	// GR2_FLM_LNUM Sets the number of lines in a frame
+	SETREG32(& VDC50.GR2_AB1, 2, 0,	0x02);	// GR2_DISP_SEL 2: Current graphics display
+
+	SETREG32(& VDC50.GR2_UPDATE, 1, 8, 1);	// GR2_UPDATE Frame Buffer Read Control Register Update
+	SETREG32(& VDC50.GR2_UPDATE, 1, 4, 1);	// GR2_P_VEN Graphics Display Register Update
+	SETREG32(& VDC50.GR2_UPDATE, 1, 0, 1);	// GR2_IBUS_VEN Frame Buffer Read Control Register Update
+	SETREG32(& VDC50.GR2_FLM_RD, 1, 0, 0);	// GR2_R_ENB Frame Buffer Read Enable
+
+	// GR3
+
+	SETREG32(& VDC50.GR3_UPDATE, 1, 8, 1);	// GR3_UPDATE Frame Buffer Read Control Register Update
+	SETREG32(& VDC50.GR3_UPDATE, 1, 4, 1);	// GR3_P_VEN Graphics Display Register Update
+	SETREG32(& VDC50.GR3_UPDATE, 1, 0, 1);	// GR3_IBUS_VEN Frame Buffer Read Control Register Update
+	SETREG32(& VDC50.GR3_FLM_RD, 1, 0, 1);	// GR3_R_ENB Frame Buffer Read Enable
+
+	SETREG32(& VDC50.GR3_FLM2, 32, 0, (uintptr_t) & framebuff);	// GR3_BASE
+	SETREG32(& VDC50.GR3_FLM6, 11, 16, WIDTH - 1);	// GR3_HW Sets the width of the horizontal valid period.
+	SETREG32(& VDC50.GR3_FLM6, 4, 28, 0x00);		// GR3_FORMAT 0: RGB565
+	SETREG32(& VDC50.GR3_FLM5, 11, 16, HEIGHT - 1);	// GR3_FLM_LNUM Sets the number of lines in a frame
+	SETREG32(& VDC50.GR3_AB1, 2, 0,	0x02);	// GR3_DISP_SEL 2: Current graphics display
+
+	SETREG32(& VDC50.GR3_UPDATE, 1, 8, 1);	// GR3_UPDATE Frame Buffer Read Control Register Update
+	SETREG32(& VDC50.GR3_UPDATE, 1, 4, 1);	// GR3_P_VEN Graphics Display Register Update
+	SETREG32(& VDC50.GR3_UPDATE, 1, 0, 1);	// GR3_IBUS_VEN Frame Buffer Read Control Register Update
+	SETREG32(& VDC50.GR3_FLM_RD, 1, 0, 1);	// GR3_R_ENB Frame Buffer Read Enable
+
+
 	debug_printf_P(PSTR("arm_hardware_ltdc_initialize stop\n"));
 }
 
@@ -691,7 +771,7 @@ static void LCD_LayerInitPIP(
 void
 arm_hardware_ltdc_initialize(void)
 {
-	debug_printf_P(PSTR("arm_hardware_ltdc_initialize start\n"));
+	debug_printf_P(PSTR("arm_hardware_ltdc_initialize start, WIDTH=%d, HEIGHT=%d\n"), WIDTH, HEIGHT);
 
 	//const unsigned rowsize = sizeof framebuff [0];	// размер одной строки в байтах
 	//const unsigned rowsize2 = (sizeof (PACKEDCOLOR_T) * DIM_SECOND);
