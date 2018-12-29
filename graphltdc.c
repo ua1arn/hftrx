@@ -136,7 +136,7 @@ arm_hardware_ltdc_initialize(void)
 	//modreg32(& VDC50.TCON_TIM_POLA2, (3uL << 12), (0uL << 12));	// TCON_POLA_MD
 	//modreg32(& VDC50.TCON_TIM_POLA2, (1 << 4), (0uL << 4));	// TCON_POLA_INV
 
-	SETREG32(& VDC50.TCON_TIM, 11, 16, WIDTH);	// TCON_HALF
+	SETREG32(& VDC50.TCON_TIM, 11, 16, WIDTH / 2);	// TCON_HALF
 	// Horisontal sync generation parameters
 
 	SETREG32(& VDC50.TCON_TIM_POLA2, 2, 12, 0x00);	// TCON_POLA_MD
@@ -166,10 +166,11 @@ arm_hardware_ltdc_initialize(void)
 	// DE signal output pin route
 	SETREG32(& VDC50.TCON_TIM_POLB2, 3, 0, 0x07);	// Output Signal Select for LCD_TCON6 Pin - DE
 
+	////////////////////////////////////////////////////////////////
 	// SC0
 	SETREG32(& VDC50.SC0_SCL0_UPDATE, 1, 13, 1);	// SC0_SCL0_VEN_D	Scaling-Up Control and Frame Buffer Read Control Register Update
 	SETREG32(& VDC50.SC0_SCL0_UPDATE, 1, 12, 1);	// SC0_SCL0_VEN_C	Scaling-Down Control and Frame Buffer Read Control Register Update
-	SETREG32(& VDC50.SC0_SCL0_UPDATE, 1, 8, 1);		// what is a bit? SC0_SCL0_UPDATE	SYNC Control Register Update
+	//SETREG32(& VDC50.SC0_SCL0_UPDATE, 1, 8, 1);		// SC0_SCL0_UPDATE	SYNC Control Register Update
 	SETREG32(& VDC50.SC0_SCL0_UPDATE, 1, 4, 1);		// SC0_SCL0_VEN_B	Synchronization Control and Scaling-up Control Register Update
 	SETREG32(& VDC50.SC0_SCL0_UPDATE, 1, 0, 1);		// SC0_SCL0_VEN_A	Scaling-Down Control Register Update
 
@@ -196,25 +197,29 @@ arm_hardware_ltdc_initialize(void)
 	//SETREG32(& VDC50.SC0_SCL0_US3, 11, 16, HSYNC + HBP);
 	//SETREG32(& VDC50.SC0_SCL0_US3, 11, 0, WIDTH);
 
-	SETREG32(& VDC50.SC0_SCL0_UPDATE, 1, 13, 1);	// SC0_SCL0_VEN_D	Scaling-Up Control and Frame Buffer Read Control Register Update
-	SETREG32(& VDC50.SC0_SCL0_UPDATE, 1, 12, 1);	// SC0_SCL0_VEN_C	Scaling-Down Control and Frame Buffer Read Control Register Update
-	SETREG32(& VDC50.SC0_SCL0_UPDATE, 1, 8, 1);		// what is a bit? SC0_SCL0_UPDATE	SYNC Control Register Update
-	SETREG32(& VDC50.SC0_SCL0_UPDATE, 1, 4, 1);		// SC0_SCL0_VEN_B	Synchronization Control and Scaling-up Control Register Update
-	SETREG32(& VDC50.SC0_SCL0_UPDATE, 1, 0, 1);		// SC0_SCL0_VEN_A	Scaling-Down Control Register Update
+	//SETREG32(& VDC50.SC0_SCL0_UPDATE, 1, 13, 1);	// SC0_SCL0_VEN_D	Scaling-Up Control and Frame Buffer Read Control Register Update
+	//SETREG32(& VDC50.SC0_SCL0_UPDATE, 1, 12, 1);	// SC0_SCL0_VEN_C	Scaling-Down Control and Frame Buffer Read Control Register Update
+	SETREG32(& VDC50.SC0_SCL0_UPDATE, 1, 8, 1);		// SC0_SCL0_UPDATE	SYNC Control Register Update
+	//SETREG32(& VDC50.SC0_SCL0_UPDATE, 1, 4, 1);		// SC0_SCL0_VEN_B	Synchronization Control and Scaling-up Control Register Update
+	//SETREG32(& VDC50.SC0_SCL0_UPDATE, 1, 0, 1);		// SC0_SCL0_VEN_A	Scaling-Down Control Register Update
 
+	////////////////////////////////////////////////////////////////
 	// SC1
+#if 0
 	SETREG32(& VDC50.SC0_SCL1_UPDATE, 1, 20, 1);
 	SETREG32(& VDC50.SC0_SCL1_UPDATE, 1, 16, 1);
 	SETREG32(& VDC50.SC0_SCL1_UPDATE, 1, 4, 1);
 	SETREG32(& VDC50.SC0_SCL1_UPDATE, 1, 0, 1);
+#endif
 
+	////////////////////////////////////////////////////////////////
 	// GR0
-
+#if 0
 	SETREG32(& VDC50.GR0_UPDATE, 1, 8, 1);	// GR0_UPDATE Frame Buffer Read Control Register Update
 	SETREG32(& VDC50.GR0_UPDATE, 1, 4, 1);	// GR0_P_VEN Graphics Display Register Update
 	SETREG32(& VDC50.GR0_UPDATE, 1, 0, 1);	// GR0_IBUS_VEN Frame Buffer Read Control Register Update
-	SETREG32(& VDC50.GR0_FLM_RD, 1, 0, 0);	// GR0_R_ENB Frame Buffer Read Enable
 
+	SETREG32(& VDC50.GR0_FLM_RD, 1, 0, 0);	// GR0_R_ENB Frame Buffer Read Enable
 	SETREG32(& VDC50.GR0_FLM2, 32, 0, (uintptr_t) & framebuff);	// GR0_BASE
 	SETREG32(& VDC50.GR0_FLM6, 11, 16, WIDTH - 1);	// GR0_HW Sets the width of the horizontal valid period.
 	SETREG32(& VDC50.GR0_FLM6, 4, 28, 0x00);		// GR0_FORMAT 0: RGB565
@@ -224,15 +229,15 @@ arm_hardware_ltdc_initialize(void)
 	SETREG32(& VDC50.GR0_UPDATE, 1, 8, 1);	// GR0_UPDATE Frame Buffer Read Control Register Update
 	SETREG32(& VDC50.GR0_UPDATE, 1, 4, 1);	// GR0_P_VEN Graphics Display Register Update
 	SETREG32(& VDC50.GR0_UPDATE, 1, 0, 1);	// GR0_IBUS_VEN Frame Buffer Read Control Register Update
-	SETREG32(& VDC50.GR0_FLM_RD, 1, 0, 0);	// GR0_R_ENB Frame Buffer Read Enable
-
+#endif
+	////////////////////////////////////////////////////////////////
 	// GR2
 
 	SETREG32(& VDC50.GR2_UPDATE, 1, 8, 1);	// GR2_UPDATE Frame Buffer Read Control Register Update
 	SETREG32(& VDC50.GR2_UPDATE, 1, 4, 1);	// GR2_P_VEN Graphics Display Register Update
 	SETREG32(& VDC50.GR2_UPDATE, 1, 0, 1);	// GR2_IBUS_VEN Frame Buffer Read Control Register Update
-	SETREG32(& VDC50.GR2_FLM_RD, 1, 0, 0);	// GR2_R_ENB Frame Buffer Read Enable
 
+	SETREG32(& VDC50.GR2_FLM_RD, 1, 0, 0);	// GR2_R_ENB Frame Buffer Read Enable
 	SETREG32(& VDC50.GR2_FLM2, 32, 0, (uintptr_t) & framebuff);	// GR2_BASE
 	SETREG32(& VDC50.GR2_FLM6, 11, 16, WIDTH - 1);	// GR2_HW Sets the width of the horizontal valid period.
 	SETREG32(& VDC50.GR2_FLM6, 4, 28, 0x00);		// GR2_FORMAT 0: RGB565
@@ -242,15 +247,15 @@ arm_hardware_ltdc_initialize(void)
 	SETREG32(& VDC50.GR2_UPDATE, 1, 8, 1);	// GR2_UPDATE Frame Buffer Read Control Register Update
 	SETREG32(& VDC50.GR2_UPDATE, 1, 4, 1);	// GR2_P_VEN Graphics Display Register Update
 	SETREG32(& VDC50.GR2_UPDATE, 1, 0, 1);	// GR2_IBUS_VEN Frame Buffer Read Control Register Update
-	SETREG32(& VDC50.GR2_FLM_RD, 1, 0, 0);	// GR2_R_ENB Frame Buffer Read Enable
 
+	////////////////////////////////////////////////////////////////
 	// GR3
 
 	SETREG32(& VDC50.GR3_UPDATE, 1, 8, 1);	// GR3_UPDATE Frame Buffer Read Control Register Update
 	SETREG32(& VDC50.GR3_UPDATE, 1, 4, 1);	// GR3_P_VEN Graphics Display Register Update
 	SETREG32(& VDC50.GR3_UPDATE, 1, 0, 1);	// GR3_IBUS_VEN Frame Buffer Read Control Register Update
-	SETREG32(& VDC50.GR3_FLM_RD, 1, 0, 1);	// GR3_R_ENB Frame Buffer Read Enable
 
+	SETREG32(& VDC50.GR3_FLM_RD, 1, 0, 1);	// GR3_R_ENB Frame Buffer Read Enable
 	SETREG32(& VDC50.GR3_FLM2, 32, 0, (uintptr_t) & framebuff);	// GR3_BASE
 	SETREG32(& VDC50.GR3_FLM6, 11, 16, WIDTH - 1);	// GR3_HW Sets the width of the horizontal valid period.
 	SETREG32(& VDC50.GR3_FLM6, 4, 28, 0x00);		// GR3_FORMAT 0: RGB565
@@ -260,10 +265,9 @@ arm_hardware_ltdc_initialize(void)
 	SETREG32(& VDC50.GR3_UPDATE, 1, 8, 1);	// GR3_UPDATE Frame Buffer Read Control Register Update
 	SETREG32(& VDC50.GR3_UPDATE, 1, 4, 1);	// GR3_P_VEN Graphics Display Register Update
 	SETREG32(& VDC50.GR3_UPDATE, 1, 0, 1);	// GR3_IBUS_VEN Frame Buffer Read Control Register Update
-	SETREG32(& VDC50.GR3_FLM_RD, 1, 0, 1);	// GR3_R_ENB Frame Buffer Read Enable
 
 
-	debug_printf_P(PSTR("arm_hardware_ltdc_initialize stop\n"));
+	debug_printf_P(PSTR("arm_hardware_ltdc_initialize done\n"));
 }
 
 #elif CPUSTYLE_STM32F
