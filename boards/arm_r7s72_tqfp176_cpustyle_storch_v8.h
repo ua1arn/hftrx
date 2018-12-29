@@ -621,28 +621,27 @@
 		arm_hardware_pio7_alternative((1U << 4), R7S721_PIOALT_6);	/* P7_4 CLK LCD0_CLK */ \
 		arm_hardware_pio7_alternative((1U << 5), R7S721_PIOALT_6);	/* P7_5 VSYNC */ \
 		arm_hardware_pio7_alternative((1U << 6), R7S721_PIOALT_6);	/* P7_6 HSYNC */ \
-		/* Control */ \
 		/* arm_hardware_pio7_alternative((1U << 7), R7S721_PIOALT_6); */	/* P7_7 DE */ \
 		arm_hardware_pio7_outputs((1U << 7), 0 * (1U << 7));	/* P7_7 DE=0 */ \
-		/* RED */ \
-		arm_hardware_pio6_outputs((1U << 3), R7S721_PIOALT_2);	/* P6_3 R3 */ \
-		arm_hardware_pio6_outputs((1U << 4), R7S721_PIOALT_2);	/* P6_4 R4 */ \
-		arm_hardware_pio6_outputs((1U << 5), R7S721_PIOALT_2);	/* P6_5 R5 */ \
-		arm_hardware_pio6_outputs((1U << 6), R7S721_PIOALT_2);	/* P6_6 R6 */ \
-		arm_hardware_pio6_outputs((1U << 7), R7S721_PIOALT_2);	/* P6_7 R7 */ \
-		/* GREEN */ \
-		arm_hardware_pio3_outputs((1U << 5), R7S721_PIOALT_3);	/* P3_5 G2 */ \
-		arm_hardware_pio3_outputs((1U << 6), R7S721_PIOALT_3);	/* P3_6 G3 */ \
-		arm_hardware_pio3_outputs((1U << 7), R7S721_PIOALT_3);	/* P3_7 G4 */ \
-		arm_hardware_pio6_outputs((1U << 0), R7S721_PIOALT_6);	/* P6_0 G5 */ \
-		arm_hardware_pio6_outputs((1U << 1), R7S721_PIOALT_6);	/* P6_1 G6 */ \
-		arm_hardware_pio6_outputs((1U << 2), R7S721_PIOALT_6);	/* P6_2 G7 */ \
 		/* BLUE */ \
-		arm_hardware_pio3_outputs((1U << 0), R7S721_PIOALT_3);	/* P3_0 B3 */ \
-		arm_hardware_pio3_outputs((1U << 1), R7S721_PIOALT_3);	/* P3_1 B4 */ \
-		arm_hardware_pio3_outputs((1U << 2), R7S721_PIOALT_3);	/* P3_2 B5 */ \
-		arm_hardware_pio3_outputs((1U << 3), R7S721_PIOALT_3);	/* P3_3 B6 */ \
-		arm_hardware_pio3_outputs((1U << 4), R7S721_PIOALT_3);	/* P3_4 B7 */ \
+		arm_hardware_pio3_alternative((1U << 0), R7S721_PIOALT_3);	/* P3_0 B3 */ \
+		arm_hardware_pio3_alternative((1U << 1), R7S721_PIOALT_3);	/* P3_1 B4 */ \
+		arm_hardware_pio3_alternative((1U << 2), R7S721_PIOALT_3);	/* P3_2 B5 */ \
+		arm_hardware_pio3_alternative((1U << 3), R7S721_PIOALT_3);	/* P3_3 B6 */ \
+		arm_hardware_pio3_alternative((1U << 4), R7S721_PIOALT_3);	/* P3_4 B7 */ \
+		/* GREEN */ \
+		arm_hardware_pio3_alternative((1U << 5), R7S721_PIOALT_3);	/* P3_5 G2 */ \
+		arm_hardware_pio3_alternative((1U << 6), R7S721_PIOALT_3);	/* P3_6 G3 */ \
+		arm_hardware_pio3_alternative((1U << 7), R7S721_PIOALT_3);	/* P3_7 G4 */ \
+		arm_hardware_pio6_alternative((1U << 0), R7S721_PIOALT_2);	/* P6_0 G5 */ \
+		arm_hardware_pio6_alternative((1U << 1), R7S721_PIOALT_2);	/* P6_1 G6 */ \
+		arm_hardware_pio6_alternative((1U << 2), R7S721_PIOALT_2);	/* P6_2 G7 */ \
+		/* RED */ \
+		arm_hardware_pio6_alternative((1U << 3), R7S721_PIOALT_2);	/* P6_3 R3 */ \
+		arm_hardware_pio6_alternative((1U << 4), R7S721_PIOALT_2);	/* P6_4 R4 */ \
+		arm_hardware_pio6_alternative((1U << 5), R7S721_PIOALT_2);	/* P6_5 R5 */ \
+		arm_hardware_pio6_alternative((1U << 6), R7S721_PIOALT_2);	/* P6_6 R6 */ \
+		arm_hardware_pio6_alternative((1U << 7), R7S721_PIOALT_2);	/* P6_7 R7 */ \
 	} while (0)
 
 	/* управление состоянием сигнала DISP панели */
