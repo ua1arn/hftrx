@@ -36,12 +36,12 @@
 		  * @brief  RK043FN48H Timing  
 		  */     
 		HSYNC = 41,				/* Horizontal synchronization */
-		HBP = 2,				/* Horizontal back porch      */
-		HFP = 2,				/* Horizontal front porch     */
+		HBP = 2 + 10,				/* Horizontal back porch      */
+		HFP = 2 + 10,				/* Horizontal front porch     */
 
 		VSYNC = 10,				/* Vertical synchronization   */
-		VBP = 2,					/* Vertical back porch        */
-		VFP = 2,					/* Vertical front porch       */
+		VBP = 2 + 20,					/* Vertical back porch        */
+		VFP = 2 + 10,					/* Vertical front porch       */
 	};
 #elif LCDMODE_ILI8961
 	// HHT270C-8961-6A6 (320*240)
@@ -115,12 +115,41 @@
 	ASSERT(((* reg) & mask) == val); \
 } while (0)
 
+
+#define     LCD_CH0_S_VSYNC         (0u)                     /* Vertical Pulse start position                               */
+#define     LCD_CH0_W_VSYNC         (10u)                    /* Vertical Pulse Width(VPW)                                   */
+#define     LCD_CH0_DISP_VS         (10u + 2u)                    /* LCD display area vertical start position
+                                                                 = Vertical Pulse Width(VPW) + Vertical Back Porch(VBP)     */
+#define     LCD_CH0_DISP_VW         (272u)                   /* Vertical Display Period(VDP)                                */
+
+#define     LCD_CH0_S_HSYNC         (0u)                     /* Horizontal Pulse start position                             */
+#define     LCD_CH0_W_HSYNC         (41u)                    /* Horizontal Pulse Width(HPW)                                 */
+#define     LCD_CH0_DISP_HS         (41u + 2u)                    /* LCD display area horizontal start position
+                                                                 = Horizontal Pulse Width(HPW) + Horizontal Back Porch(HBP) */
+#define     LCD_CH0_DISP_HW         (480u)                   /* Horizontal Display Period(HDP)                              */
+
+#define     LCD_CH0_SIG_FV          (288u - 1u)              /* Vertical Total Period(VTP)                                  */
+#define     LCD_CH0_SIG_FH          (539u - 1u)             /* Horizontal Total Period(HTP)                                */
+
+#define     LCD_CH0_TCON_PIN_VSYNC  VDC5_LCD_TCON_PIN_4      /* Select TCON of a Vsync signal (Vsync_TCON_select)           */
+#define     LCD_CH0_TCON_PIN_HSYNC  VDC5_LCD_TCON_PIN_5      /* Select TCON of a Hsync signal (Hsync_TCON_select)           */
+#define     LCD_CH0_TCON_PIN_DE     VDC5_LCD_TCON_PIN_6      /* Select TCON of a DE signal    (DE_TCON_select)              */
+
+#define     LCD_CH0_TOCN_POL_VSYNC  VDC5_SIG_POL_INVERTED    /* Select polarity of a Vsync signal (Vsync_POL)               */
+#define     LCD_CH0_TOCN_POL_HSYNC  VDC5_SIG_POL_INVERTED    /* Select polarity of a Hsync signal (Hsync_POL)               */
+#define     LCD_CH0_TOCN_POL_DE     VDC5_SIG_POL_NOT_INVERTED/* Select polarity of a Hsync signal (DE_POL)                  */
+
+#define     LCD_CH0_TCON_HALF       (539u)                  /* TCON reference timing, 1/2fH timing(HTP)                          */
+#define     LCD_CH0_TCON_OFFSET     (0u)                     /* TCON reference timing, offset Hsync signal timing           */
+
+#define     LCD_CH0_OUT_EDGE        (VDC5_EDGE_FALLING)       /* Output phase control of LCD_DATA signal(LCD_DATA_OUT_EDGE)  */
+#define     LCD_CH0_OUT_FORMAT      (VDC5_LCD_OUTFORMAT_RGB565) /* LCD output format select (LCD_OUT_FORMAT)                */
+
 void
 arm_hardware_ltdc_initialize(void)
 {
 	debug_printf_P(PSTR("arm_hardware_ltdc_initialize start, WIDTH=%d, HEIGHT=%d\n"), WIDTH, HEIGHT);
 	const unsigned rowsize = sizeof framebuff [0];	// размер одной строки в байтах
-
 
 	/* ---- Supply clock to the video display controller 5  ---- */
 	CPG.STBCR9 &= ~ CPG_STBCR9_MSTP91;	// Module Stop 91 0: The video display controller 5 runs.
@@ -131,11 +160,10 @@ arm_hardware_ltdc_initialize(void)
 
 
 	// I/O Clock Frequency (MHz) = 60 MHz
-	VDC50.SYSCNT_PANEL_CLK =
-		(3 << 12) |	/* Divided Clock Source Select: 3: Peripheral clock 1 */
-		(calcdivround2(P1CLOCK_FREQ, LTDC_DOTCLK) << 0) | /* Clock Frequency Division Ratio - Table 35.5 I/O Clock Frequency and Divisors */
-		(1 << 8) |	/* ICKEN */
-		0;
+	SETREG32(& VDC50.SYSCNT_PANEL_CLK, 1, 8, 0);	/* PANEL_ICKEN */
+	SETREG32(& VDC50.SYSCNT_PANEL_CLK, 2, 12, 0x03);	/* Divided Clock Source Select: 3: Peripheral clock 1 */
+	SETREG32(& VDC50.SYSCNT_PANEL_CLK, 6, 0, calcdivround2(P1CLOCK_FREQ, LTDC_DOTCLK));	/* Clock Frequency Division Ratio */
+	SETREG32(& VDC50.SYSCNT_PANEL_CLK, 1, 8, 1);	/* PANEL_ICKEN */
 
 	/* hardware-dependent control signals */
 	// LCD0_TCON4 - VSYNC P7_5
@@ -155,7 +183,7 @@ arm_hardware_ltdc_initialize(void)
 	SETREG32(& VDC50.TCON_UPDATE, 1, 0, 1);	// TCON_VEN
 
 	// Horisontal sync generation parameters
-	SETREG32(& VDC50.TCON_TIM, 11, 16, (WIDTH + HSYNC + HBP + HFP) / 2);	// TCON_HALF
+	SETREG32(& VDC50.TCON_TIM, 11, 16, WIDTH + HSYNC + HBP + HFP);	// TCON_HALF
 
 	SETREG32(& VDC50.TCON_TIM_POLA2, 2, 12, 0x00);	// TCON_POLA_MD
 	// HSYNC signal
