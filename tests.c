@@ -6377,12 +6377,17 @@ void hightests(void)
 				//display_dispfreq(kbch * 1000UL + v);
 				//v = (v + 10) % 1000;
 			}
+			unsigned tune1 = hardware_get_tune();
 			unsigned ptt1 = hardware_get_ptt();
 			unsigned ptt2 = HARDWARE_CAT_GET_RTS();
 			disableIRQ();
 			unsigned elkey = hardware_elkey_getpaddle(0);
 			unsigned ckey = HARDWARE_CAT_GET_DTR();
 			enableIRQ();
+
+
+			debug_printf_P(PSTR("tune=%u, ptt=%u, elkey=%u\n"), tune1, ptt1, elkey);
+			continue;
 
 			display_gotoxy(0, 0);		// курсор в начало первой строки
 

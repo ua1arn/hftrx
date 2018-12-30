@@ -369,7 +369,7 @@
 	#define HARDWARE_GET_TUNE() ((TUNE_TARGET_PIN & TUNE_BIT_TUNE) == 0)
 	#define TUNE_INITIALIZE() \
 		do { \
-			arm_hardware_pio3_inputs(TUNE_TARGET_PIN); \
+			arm_hardware_pio3_inputs(TUNE_BIT_TUNE); \
 		} while (0)
 
 #endif /* WITHTX */
