@@ -36,12 +36,12 @@
 		  * @brief  RK043FN48H Timing  
 		  */     
 		HSYNC = 41,				/* Horizontal synchronization */
-		HBP = 2 + 10,				/* Horizontal back porch      */
-		HFP = 2 + 10,				/* Horizontal front porch     */
+		HBP = 2,				/* Horizontal back porch      */
+		HFP = 2,				/* Horizontal front porch     */
 
 		VSYNC = 10,				/* Vertical synchronization   */
-		VBP = 2 + 20,					/* Vertical back porch        */
-		VFP = 2 + 10,					/* Vertical front porch       */
+		VBP = 2,					/* Vertical back porch        */
+		VFP = 2,					/* Vertical front porch       */
 	};
 #elif LCDMODE_ILI8961
 	// HHT270C-8961-6A6 (320*240)
@@ -92,9 +92,9 @@
 	uint_fast8_t width = (iwidth); \
 	uint_fast32_t mask = 0; \
 	while (width --) \
-		mask = (mask << 1) | 1U; \
-	mask <<= pos; \
-	val <<= pos; \
+		mask = (mask << 1) | 1uL; \
+	mask <<= (pos); \
+	val <<= (pos); \
 	ASSERT((val & mask) == val); \
 	* reg = (* reg & ~ (mask)) | (val & mask); \
 	(void) * reg;	/* dummy read */ \
@@ -106,9 +106,9 @@
 	uint_fast8_t width = (iwidth); \
 	uint_fast32_t mask = 0; \
 	while (width --) \
-		mask = (mask << 1) | 1U; \
-	mask <<= pos; \
-	val <<= pos; \
+		mask = (mask << 1) | 1uL; \
+	mask <<= (pos); \
+	val <<= (pos); \
 	ASSERT((val & mask) == val); \
 	* reg = (* reg & ~ (mask)) | (val & mask); \
 	(void) * reg;	/* dummy read */ \
@@ -162,7 +162,7 @@ arm_hardware_ltdc_initialize(void)
 	// I/O Clock Frequency (MHz) = 60 MHz
 	SETREG32(& VDC50.SYSCNT_PANEL_CLK, 1, 8, 0);	/* PANEL_ICKEN */
 	SETREG32(& VDC50.SYSCNT_PANEL_CLK, 2, 12, 0x03);	/* Divided Clock Source Select: 3: Peripheral clock 1 */
-	SETREG32(& VDC50.SYSCNT_PANEL_CLK, 6, 0, calcdivround2(P1CLOCK_FREQ, LTDC_DOTCLK));	/* Clock Frequency Division Ratio */
+	SETREG32(& VDC50.SYSCNT_PANEL_CLK, 6, 0, calcdivround2(P1CLOCK_FREQ, LTDC_DOTCLK));	/* Clock Frequency Division Ratio Note: Settings other than those in Table 35.5 are prohibited. */
 	SETREG32(& VDC50.SYSCNT_PANEL_CLK, 1, 8, 1);	/* PANEL_ICKEN */
 
 	/* hardware-dependent control signals */
@@ -174,6 +174,7 @@ arm_hardware_ltdc_initialize(void)
 	// OUT
 	SETREG32(& VDC50.OUT_UPDATE, 1, 0, 1);
 
+	SETREG32(& VDC50.OUT_SET, 2, 8, 0x00);	// OUT_FRQ_SEL Clock Frequency Control 0: 100% speed — (parallel RGB)
 	SETREG32(& VDC50.OUT_SET, 2, 12, 0x02);	// OUT_FORMAT Output Format Select 2: RGB565
 
 	SETREG32(& VDC50.OUT_UPDATE, 1, 0, 1);
@@ -203,7 +204,7 @@ arm_hardware_ltdc_initialize(void)
 	SETREG32(& VDC50.TCON_TIM_STVA1, 11, 16, 0);	// TCON_STVA_VS
 	SETREG32(& VDC50.TCON_TIM_STVA1, 11, 0, VSYNC);	// TCON_STVA_VW
 
-	// Hardware-depemdent procedure
+	// Hardware-dependent procedure
 	// Output pins route
 	//SETREG32(& VDC50.TCON_TIM_STVA2, 3, 0, 0xXX);	// Output Signal Select for LCD_TCON0 pin - 
 	//SETREG32(& VDC50.TCON_TIM_STVB2, 3, 0, 0xXX);	// Output Signal Select for LCD_TCON1 pin - 
@@ -226,19 +227,19 @@ arm_hardware_ltdc_initialize(void)
 	SETREG32(& VDC50.SC0_SCL0_UPDATE, 1, 4, 1);		// SC0_SCL0_VEN_B	Synchronization Control and Scaling-up Control Register Update
 	SETREG32(& VDC50.SC0_SCL0_UPDATE, 1, 0, 1);		// SC0_SCL0_VEN_A	Scaling-Down Control Register Update
 
-	SETREG32_CK(& VDC50.SC0_SCL0_FRC3, 1, 0, 0x01);	// SC0_RES_VS_SEL Vsync Signal Output Select 1: Internally generated free-running Vsync signal
+	////SETREG32_CK(& VDC50.SC0_SCL0_FRC3, 1, 0, 0x01);	// SC0_RES_VS_SEL Vsync Signal Output Select 1: Internally generated free-running Vsync signal
 
 	SETREG32_CK(& VDC50.SC0_SCL0_FRC5, 1, 8, 0x00);	// SC0_RES_FLD_DLY_SEL
 
 	SETREG32_CK(& VDC50.SC0_SCL0_FRC4, 11, 16, HEIGHT + VSYNC + VBP + VFP - 1);// SC0_RES_FV Free-Running Vsync Period Setting
-	SETREG32_CK(& VDC50.SC0_SCL0_FRC4, 11, 0, WIDTH + HSYNC + HBP + HFP - 1);	// SC0_RES_HV Hsync Period Setting
+	SETREG32_CK(& VDC50.SC0_SCL0_FRC4, 11, 0, WIDTH + HSYNC + HBP + HFP - 1);	// SC0_RES_FH Hsync Period Setting
 
 	SETREG32_CK(& VDC50.SC0_SCL0_FRC6, 11, 16, VSYNC + VBP - 1);				// SC0_RES_F_VS
 	SETREG32_CK(& VDC50.SC0_SCL0_FRC6, 11, 0, HEIGHT);							// SC0_RES_F_VW
 
 	SETREG32_CK(& VDC50.SC0_SCL0_FRC7, 11, 16, HSYNC + HBP - 1);			// SC0_RES_F_HS
 	SETREG32_CK(& VDC50.SC0_SCL0_FRC7, 11, 0, WIDTH);						// SC0_RES_F_HW
-#if 0
+#if 1
 	//debug_printf_P(PSTR("VDC50.SC0_SCL0_DS1=%08lX s1\n"), VDC50.SC0_SCL0_DS1);
 	//debug_printf_P(PSTR("VDC50.SC0_SCL0_US1=%08lX s1\n"), VDC50.SC0_SCL0_US1);
 	// down-scaler off
@@ -277,8 +278,10 @@ arm_hardware_ltdc_initialize(void)
 	SETREG32(& VDC50.GR0_UPDATE, 1, 0, 1);	// GR0_IBUS_VEN Frame Buffer Read Control Register Update
 
 	SETREG32_CK(& VDC50.GR0_FLM_RD, 1, 0, 0);	// GR0_R_ENB Frame Buffer Read Enable
+	SETREG32_CK(& VDC50.GR0_FLM1, 2, 8, 0x01);	// GR0_FLM_SEL 1: Selects GR0_FLM_NUM.
 	SETREG32_CK(& VDC50.GR0_FLM2, 32, 0, (uintptr_t) & framebuff);	// GR0_BASE
 	SETREG32_CK(& VDC50.GR0_FLM3, 15, 16, rowsize);	// GR0_LN_OFF
+	SETREG32_CK(& VDC50.GR0_FLM3, 10, 0, 0x00);	// GR0_FLM_NUM
 	SETREG32_CK(& VDC50.GR0_FLM4, 23, 0, rowsize * HEIGHT);	// GR0_FLM_OFF
 	SETREG32_CK(& VDC50.GR0_FLM5, 11, 16, HEIGHT - 1);	// GR0_FLM_LNUM Sets the number of lines in a frame
 	SETREG32_CK(& VDC50.GR0_FLM5, 11, 0, HEIGHT - 1);	// GR0_FLM_LOOP
@@ -298,8 +301,10 @@ arm_hardware_ltdc_initialize(void)
 	SETREG32(& VDC50.GR2_UPDATE, 1, 0, 1);	// GR2_IBUS_VEN Frame Buffer Read Control Register Update
 
 	SETREG32_CK(& VDC50.GR2_FLM_RD, 1, 0, 0);	// GR2_R_ENB Frame Buffer Read Enable
+	SETREG32_CK(& VDC50.GR2_FLM1, 2, 8, 0x01);	// GR2_FLM_SEL 1: Selects GR2_FLM_NUM.
 	SETREG32_CK(& VDC50.GR2_FLM2, 32, 0, (uintptr_t) & framebuff);	// GR2_BASE
-	SETREG32_CK(& VDC50.GR2_FLM3, 15, 16, rowsize);	// GR0_LN_OFF
+	SETREG32_CK(& VDC50.GR2_FLM3, 15, 16, rowsize);	// GR2_LN_OFF
+	SETREG32_CK(& VDC50.GR2_FLM3, 10, 0, 0x00);	// GR0_FLM_NUM
 	SETREG32_CK(& VDC50.GR2_FLM4, 23, 0, rowsize * HEIGHT);	// GR2_FLM_OFF
 	SETREG32_CK(& VDC50.GR2_FLM5, 11, 16, HEIGHT - 1);	// GR2_FLM_LNUM Sets the number of lines in a frame
 	SETREG32_CK(& VDC50.GR2_FLM5, 11, 0, HEIGHT - 1);	// GR2_FLM_LOOP Sets the number of lines in a frame
@@ -319,8 +324,10 @@ arm_hardware_ltdc_initialize(void)
 	SETREG32(& VDC50.GR3_UPDATE, 1, 0, 1);	// GR3_IBUS_VEN Frame Buffer Read Control Register Update
 
 	SETREG32_CK(& VDC50.GR3_FLM_RD, 1, 0, 1);	// GR3_R_ENB Frame Buffer Read Enable
+	SETREG32_CK(& VDC50.GR3_FLM1, 2, 8, 0x01);	// GR3_FLM_SEL 1: Selects GR3_FLM_NUM.
 	SETREG32_CK(& VDC50.GR3_FLM2, 32, 0, (uintptr_t) & framebuff);	// GR3_BASE
-	SETREG32_CK(& VDC50.GR3_FLM3, 15, 16, rowsize);	// GR0_LN_OFF 
+	SETREG32_CK(& VDC50.GR3_FLM3, 15, 16, rowsize);	// GR3_LN_OFF
+	SETREG32_CK(& VDC50.GR3_FLM3, 10, 0, 0x00);	// GR3_FLM_NUM
 	SETREG32_CK(& VDC50.GR3_FLM4, 23, 0, rowsize * HEIGHT);	// GR0_FLM_OFF
 	SETREG32_CK(& VDC50.GR3_FLM5, 11, 16, HEIGHT - 1);	// GR3_FLM_LNUM Sets the number of lines in a frame
 	SETREG32_CK(& VDC50.GR3_FLM5, 11, 0, HEIGHT - 1);	// GR3_FLM_LOOP Sets the number of lines in a frame
