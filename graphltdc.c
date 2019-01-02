@@ -462,6 +462,7 @@ static void vdc5fb_init_graphics(void)
 	SETREG32_CK(& VDC50.GR0_FLM6, 11, 16, WIDTH - 1);	// GR0_HW Sets the width of the horizontal valid period.
 	SETREG32_CK(& VDC50.GR0_FLM6, 4, 28, 0x00);		// GR0_FORMAT 0: RGB565
 	SETREG32_CK(& VDC50.GR0_AB1, 2, 0,	0x00);	// GR0_DISP_SEL 0: background color
+	SETREG32_CK(& VDC50.GR0_BASE, 24, 0, 0x00FF0000);	// GREEN GR0_BASE GBR Background Color B,Gb& R Signal
 
 	////////////////////////////////////////////////////////////////
 	// GR2
@@ -477,6 +478,7 @@ static void vdc5fb_init_graphics(void)
 	SETREG32_CK(& VDC50.GR2_FLM6, 11, 16, WIDTH - 1);	// GR2_HW Sets the width of the horizontal valid period.
 	SETREG32_CK(& VDC50.GR2_FLM6, 4, 28, 0x00);		// GR2_FORMAT 0: RGB565
 	SETREG32_CK(& VDC50.GR2_AB1, 2, 0,	0x00);	// GR2_DISP_SEL 0: Background color display
+	SETREG32_CK(& VDC50.GR2_BASE, 24, 0, 0x0000FF00);	// BLUE GR2_BASE GBR Background Color B,Gb& R Signal
 
 	////////////////////////////////////////////////////////////////
 	// GR3
@@ -492,6 +494,8 @@ static void vdc5fb_init_graphics(void)
 	SETREG32_CK(& VDC50.GR3_FLM6, 11, 16, WIDTH - 1);	// GR3_HW Sets the width of the horizontal valid period.
 	SETREG32_CK(& VDC50.GR3_FLM6, 4, 28, 0x00);		// GR3_FORMAT 0: RGB565
 	SETREG32_CK(& VDC50.GR3_AB1, 2, 0,	0x02);	// GR3_DISP_SEL 2: Current graphics display
+	//SETREG32_CK(& VDC50.GR3_AB1, 2, 0,	0x00);	// GR3_DISP_SEL 0: Background color display
+	SETREG32_CK(& VDC50.GR3_BASE, 24, 0, 0x000000FF);	// RED GR3_BASE GBR Background Color B,Gb& R Signal
 
 #if 0
 	struct fb_videomode *mode = priv->videomode;
@@ -993,6 +997,10 @@ arm_hardware_ltdc_initialize(void)
 
 	/* Configure the LCD Control pins */
 	HARDWARE_LTDC_INITIALIZE();	// подключение к выводам процессора сигналов периферийного контроллера
+
+	HARDWARE_LTDC_SET_DISP(0);
+	local_delay_ms(150);
+	HARDWARE_LTDC_SET_DISP(1);
 
 	debug_printf_P(PSTR("arm_hardware_ltdc_initialize done\n"));
 }

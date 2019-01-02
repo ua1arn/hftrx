@@ -615,6 +615,16 @@
 	#define HARDWARE_SIDETONE_INITIALIZE() do { \
 		} while (0)
 
+	/* установка яркости и включение/выключение преобразователя подсветки */
+	#define HARDWARE_BL_SET(en, level) do { \
+		const portholder_t enmask = (1U << 9); /* P7_9 */ \
+		const portholder_t opins = (1U << 3) | (1U << 2); /* P7_3:P7_2 */ \
+		const portholder_t initialstate = (~ (level) & 0x03) << 2; \
+		arm_hardware_pio7_outputs(opins, 0); /* BL ADJ */ \
+		arm_hardware_pio7_outputs(enmask, en ? enmask : 0);	/* BL ENABLE */ \
+		__DSB(); \
+	} while (0)
+
 #if LCDMODE_LTDC
 	#define HARDWARE_LTDC_INITIALIZE() do { \
 		/* Synchronisation signals */ \
@@ -646,11 +656,8 @@
 
 	/* управление состоянием сигнала DISP панели */
 	#define HARDWARE_LTDC_SET_DISP(state) do { \
-		const uint32_t mask = (1U << 13); /* PE13 */ \
-		/* const uint32_t VSYNC = (1U << 9); */ /* PI9 */ \
-		/* while ((GPIOI->IDR & VSYNC) != 0) ; */ /* схема синхронизации стоит на плате дисплея. дождаться 0 */ \
-		/* while ((GPIOI->IDR & VSYNC) == 0) ; */ /* дождаться 1 */ \
-		/*arm_hardware_pioe_outputs(mask, ((state) != 0) * mask);*/	/* DE=DISP, pin 31 - можно менять только при VSYNC=1 */ \
+		const uint32_t mask = (1U << 7); /* P7_7 */ \
+		arm_hardware_pio7_outputs(mask, (state != 0) * mask);	/* P7_7 DE=state */ \
 	} while (0)
 #endif /* LCDMODE_LTDC */
 
