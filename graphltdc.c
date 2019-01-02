@@ -86,33 +86,62 @@
 
 #if CPUSTYLE_R7S721
 
+void vdc5_update(
+	volatile uint32_t * reg,
+	const char * label,
+	uint_fast32_t mask
+	)
+{
+	* reg |= mask;
+	(void) * reg;
+	uint_fast32_t count = 1000;
+	while ((* reg & mask) != 0)
+	{
+		local_delay_ms(1);
+		if (-- count == 0)
+		{
+			debug_printf_P(PSTR("wait reg=%p %s mask=%08lX, stay=%08lX\n"), reg, label, mask, * reg & mask);
+			return;
+		}
+	}
+}
+
 /* Set value at specified position of I/O register */
-#define SETREG32(reg, iwidth, pos, ival) do { \
+/* Waiting for set */
+#define SETREG32_UPDATE(reg, iwidth, ipos, ival) do { \
 	uint_fast32_t val = (ival); \
 	uint_fast8_t width = (iwidth); \
+	const uint_fast8_t pos = (ipos); \
 	uint_fast32_t mask = 0; \
 	while (width --) \
 		mask = (mask << 1) | 1uL; \
 	mask <<= (pos); \
 	val <<= (pos); \
 	ASSERT((val & mask) == val); \
-	* reg = (* reg & ~ (mask)) | (val & mask); \
-	(void) * reg;	/* dummy read */ \
-	/*ASSERT(((* reg) & mask) == val); */ \
+	* (reg) = (* (reg) & ~ (mask)) | (val & mask); \
+	(void) * (reg);	/* dummy read */ \
+	uint_fast32_t count = 1000; \
+	do { \
+		if (count -- == 0) {debug_printf_P(PSTR("wait %s/%d\n"), __FILE__, __LINE__); break; } \
+		local_delay_ms(1); \
+	} while (((* (reg)) & mask) != 0); /* wait for bit chamge to zero */ \
 } while (0)
+
 /* Set value at specified position of I/O register */
-#define SETREG32_CK(reg, iwidth, pos, ival) do { \
+#define SETREG32_CK(reg, iwidth, ipos, ival) do { \
 	uint_fast32_t val = (ival); \
 	uint_fast8_t width = (iwidth); \
+	const uint_fast8_t pos = (ipos); \
 	uint_fast32_t mask = 0; \
 	while (width --) \
 		mask = (mask << 1) | 1uL; \
 	mask <<= (pos); \
 	val <<= (pos); \
 	ASSERT((val & mask) == val); \
-	* reg = (* reg & ~ (mask)) | (val & mask); \
-	(void) * reg;	/* dummy read */ \
-	ASSERT(((* reg) & mask) == val); \
+	* (reg) = (* (reg) & ~ (mask)) | (val & mask); \
+	(void) * (reg);	/* dummy read */ \
+	ASSERT(((* (reg)) & mask) == val); \
+	local_delay_ms(0); \
 } while (0)
 
 
@@ -145,200 +174,825 @@
 #define     LCD_CH0_OUT_EDGE        (VDC5_EDGE_FALLING)       /* Output phase control of LCD_DATA signal(LCD_DATA_OUT_EDGE)  */
 #define     LCD_CH0_OUT_FORMAT      (VDC5_LCD_OUTFORMAT_RGB565) /* LCD output format select (LCD_OUT_FORMAT)                */
 
-void
-arm_hardware_ltdc_initialize(void)
+/************************************************************************/
+
+
+static void vdc5fb_init_syscnt(void)
 {
-	debug_printf_P(PSTR("arm_hardware_ltdc_initialize start, WIDTH=%d, HEIGHT=%d\n"), WIDTH, HEIGHT);
-	const unsigned rowsize = sizeof framebuff [0];	// размер одной строки в байтах
 
-	/* ---- Supply clock to the video display controller 5  ---- */
-	CPG.STBCR9 &= ~ CPG_STBCR9_MSTP91;	// Module Stop 91 0: The video display controller 5 runs.
-	(void) CPG.STBCR9;			/* Dummy read */
+	/* Ignore all irqs here */
+	VDC50.SYSCNT_INT4 = 0x00000000;
+	VDC50.SYSCNT_INT5 = 0x00000000;
 
-	/* Configure the LCD Control pins */
-	HARDWARE_LTDC_INITIALIZE();	// подключение к выводам процессора сигналов периферийного контроллера
+	/* Clear all pending irqs */
+	VDC50.SYSCNT_INT1 = 0x00000000;
+	VDC50.SYSCNT_INT2 = 0x00000000;
 
-
+	/* Setup panel clock */
 	// I/O Clock Frequency (MHz) = 60 MHz
-	SETREG32(& VDC50.SYSCNT_PANEL_CLK, 1, 8, 0);	/* PANEL_ICKEN */
-	SETREG32(& VDC50.SYSCNT_PANEL_CLK, 2, 12, 0x03);	/* Divided Clock Source Select: 3: Peripheral clock 1 */
-	SETREG32(& VDC50.SYSCNT_PANEL_CLK, 6, 0, calcdivround2(P1CLOCK_FREQ, LTDC_DOTCLK));	/* Clock Frequency Division Ratio Note: Settings other than those in Table 35.5 are prohibited. */
-	SETREG32(& VDC50.SYSCNT_PANEL_CLK, 1, 8, 1);	/* PANEL_ICKEN */
+	SETREG32_CK(& VDC50.SYSCNT_PANEL_CLK, 1, 8, 0);	/* PANEL_ICKEN */
+	SETREG32_CK(& VDC50.SYSCNT_PANEL_CLK, 2, 12, 0x03);	/* Divided Clock Source Select: 3: Peripheral clock 1 */
+	SETREG32_CK(& VDC50.SYSCNT_PANEL_CLK, 6, 0, calcdivround2(P1CLOCK_FREQ, LTDC_DOTCLK));	/* Clock Frequency Division Ratio Note: Settings other than those in Table 35.5 are prohibited. */
+	SETREG32_CK(& VDC50.SYSCNT_PANEL_CLK, 1, 8, 1);	/* PANEL_ICKEN */
 
-	/* hardware-dependent control signals */
-	// LCD0_TCON4 - VSYNC P7_5
-	// LCD0_TCON5 - HSYNC P7_6
-	// LCD0_TCON6 - DE P7_7
+}
 
-	////////////////////////////////////////////////////////////////
-	// OUT
-	SETREG32(& VDC50.OUT_UPDATE, 1, 0, 1);
 
-	SETREG32(& VDC50.OUT_SET, 2, 8, 0x00);	// OUT_FRQ_SEL Clock Frequency Control 0: 100% speed — (parallel RGB)
-	SETREG32(& VDC50.OUT_SET, 2, 12, 0x02);	// OUT_FORMAT Output Format Select 2: RGB565
+static void vdc5fb_init_sync(void)
+{
+	//SETREG32_CK(& VDC50.SC0_SCL0_FRC1, 16, 16, 0);	// SC0_RES_VMASK
+	SETREG32_CK(& VDC50.SC0_SCL0_FRC1, 1, 0, 0);	// SC0_RES_VMASK_ON 0: Repeated Vsync signal masking control is disabled.
+	//SETREG32_CK(& VDC50.SC0_SCL0_FRC2, 16, 16, 0);	// SC0_RES_VLACK
+	SETREG32_CK(& VDC50.SC0_SCL0_FRC2, 1, 0, 0);	// SC0_RES_VLACK_ON	0: Compensation of missing Vsync signals is disabled.
 
-	SETREG32(& VDC50.OUT_UPDATE, 1, 0, 1);
-
-	////////////////////////////////////////////////////////////////
-	// TCON
-	SETREG32(& VDC50.TCON_UPDATE, 1, 0, 1);	// TCON_VEN
-
-	// Horisontal sync generation parameters
-	SETREG32(& VDC50.TCON_TIM, 11, 16, WIDTH + HSYNC + HBP + HFP);	// TCON_HALF
-
-	SETREG32(& VDC50.TCON_TIM_POLA2, 2, 12, 0x00);	// TCON_POLA_MD
-	// HSYNC signal
-	SETREG32(& VDC50.TCON_TIM_STH1, 11, 16,	0);	// TCON_STH_HS
-	SETREG32(& VDC50.TCON_TIM_STH1, 11, 0, HSYNC);	// TCON_STH_HW
-	// Source strobe signal
-	SETREG32(& VDC50.TCON_TIM_STB1, 11, 16, 0);		// TCON_STB_HS
-	SETREG32(& VDC50.TCON_TIM_STB1, 11, 0, WIDTH);	// TCON_STB_HW
-
-	// Vertical sync generation parameters
-
-	// Vertical enable signal
-	SETREG32(& VDC50.TCON_TIM_STVB1, 11, 16, VSYNC + VBP);	// TCON_STVB_VS
-	SETREG32(& VDC50.TCON_TIM_STVB1, 11, 0, HEIGHT);	// TCON_STVB_VW
-
-	// VSYNC signal
-	SETREG32(& VDC50.TCON_TIM_STVA1, 11, 16, 0);	// TCON_STVA_VS
-	SETREG32(& VDC50.TCON_TIM_STVA1, 11, 0, VSYNC);	// TCON_STVA_VW
-
-	// Hardware-dependent procedure
-	// Output pins route
-	//SETREG32(& VDC50.TCON_TIM_STVA2, 3, 0, 0xXX);	// Output Signal Select for LCD_TCON0 pin - 
-	//SETREG32(& VDC50.TCON_TIM_STVB2, 3, 0, 0xXX);	// Output Signal Select for LCD_TCON1 pin - 
-	//SETREG32(& VDC50.TCON_TIM_STH2, 3, 0, 0xXX);	// Output Signal Select for LCD_TCON2 pin - 
-	SETREG32(& VDC50.TCON_TIM_CPV2, 3, 0, 0x00);	// Output Signal Select for LCD_TCON4 Pin - VSYNC
-	SETREG32(& VDC50.TCON_TIM_POLA2, 3, 0, 0x02);	// Output Signal Select for LCD_TCON5 Pin - HSYNC
-	SETREG32(& VDC50.TCON_TIM_POLB2, 3, 0, 0x07);	// Output Signal Select for LCD_TCON6 Pin - DE
-	// HSYMC polarity
-	SETREG32(& VDC50.TCON_TIM_STH2, 1, 4, 0x01);	// TCON_STH_INV
-	// VSYNC polarity
-	SETREG32(& VDC50.TCON_TIM_STVA2, 1, 4, 0x01);	// TCON_STVA_INV
-
-	SETREG32(& VDC50.TCON_UPDATE, 1, 0, 1);	// TCON_VEN
-
-	////////////////////////////////////////////////////////////////
-	// SC0
-	SETREG32(& VDC50.SC0_SCL0_UPDATE, 1, 13, 1);	// SC0_SCL0_VEN_D	Scaling-Up Control and Frame Buffer Read Control Register Update
-	SETREG32(& VDC50.SC0_SCL0_UPDATE, 1, 12, 1);	// SC0_SCL0_VEN_C	Scaling-Down Control and Frame Buffer Read Control Register Update
-	SETREG32(& VDC50.SC0_SCL0_UPDATE, 1, 8, 1);		// SC0_SCL0_UPDATE	SYNC Control Register Update
-	SETREG32(& VDC50.SC0_SCL0_UPDATE, 1, 4, 1);		// SC0_SCL0_VEN_B	Synchronization Control and Scaling-up Control Register Update
-	SETREG32(& VDC50.SC0_SCL0_UPDATE, 1, 0, 1);		// SC0_SCL0_VEN_A	Scaling-Down Control Register Update
-
-	////SETREG32_CK(& VDC50.SC0_SCL0_FRC3, 1, 0, 0x01);	// SC0_RES_VS_SEL Vsync Signal Output Select 1: Internally generated free-running Vsync signal
-
-	SETREG32_CK(& VDC50.SC0_SCL0_FRC5, 1, 8, 0x00);	// SC0_RES_FLD_DLY_SEL
+	SETREG32_CK(& VDC50.SC0_SCL0_FRC5, 1, 8, 1);	// SC0_RES_FLD_DLY_SEL
+	SETREG32_CK(& VDC50.SC0_SCL0_FRC5, 8, 0, 1);	// SC0_RES_VSDLY
 
 	SETREG32_CK(& VDC50.SC0_SCL0_FRC4, 11, 16, HEIGHT + VSYNC + VBP + VFP - 1);// SC0_RES_FV Free-Running Vsync Period Setting
 	SETREG32_CK(& VDC50.SC0_SCL0_FRC4, 11, 0, WIDTH + HSYNC + HBP + HFP - 1);	// SC0_RES_FH Hsync Period Setting
+
+	SETREG32_CK(& VDC50.SC0_SCL0_FRC3, 1, 0, 0x01);	// SC0_RES_VS_SEL Vsync Signal Output Select 1: Internally generated free-running Vsync signal
+	vdc5_update(& VDC50.SC0_SCL0_UPDATE, "SC0_SCL0_UPDATE",
+			(1 << 8) |	// SC0_SCL0_UPDATE	SYNC Control Register Update
+			0
+		);
+	vdc5_update(& VDC50.SC0_SCL0_UPDATE, "SC0_SCL0_UPDATE",
+			(1 << 8) |	// SC0_SCL0_UPDATE	SYNC Control Register Update
+			(1 << 4) |	// SC0_SCL0_VEN_B	Synchronization Control and Scaling-up Control Register Update
+			0
+		);
+	vdc5_update(& VDC50.GR_VIN_UPDATE, "GR_VIN_UPDATE",
+			(1 << 8) |	// GR_VIN_UPDATE Graphics Display Register Update
+			(1 << 4) |	// GR_VIN_P_VEN Graphics Display Register Update
+			0
+		);
+
+#if 0
+	struct fb_videomode *mode = priv->videomode;
+	uint32_t tmp;
+
+	/* (TODO) Freq. vsync masking and missing vsync
+	 * compensation are not supported.
+	 */
+	vdc5fb_write(priv, SC0_SCL0_FRC1, 0);
+	vdc5fb_write(priv, SC0_SCL0_FRC2, 0);
+	vdc5fb_write(priv, SC1_SCL0_FRC1, 0);
+	vdc5fb_write(priv, SC1_SCL0_FRC2, 0);
+#ifdef OUTPUT_IMAGE_GENERATOR
+	vdc5fb_write(priv, OIR_SCL0_FRC1, 0);
+	vdc5fb_write(priv, OIR_SCL0_FRC2, 0);
+#endif
+
+	/* Set the same free-running hsync/vsync period to
+	 * all scalers (sc0, sc1 and oir). The hsync/vsync
+	 * from scaler 0 is used by all scalers.
+	 * (TODO) External input vsync is not supported.
+	 */
+	tmp = SC_RES_FH(priv->res_fh);
+	tmp |= SC_RES_FV(priv->res_fv);
+	vdc5fb_write(priv, SC0_SCL0_FRC4, tmp);
+	vdc5fb_write(priv, SC1_SCL0_FRC4, tmp);
+#ifdef OUTPUT_IMAGE_GENERATOR
+	vdc5fb_write(priv, OIR_SCL0_FRC4, tmp);
+#endif
+	tmp = (SC_RES_FLD_DLY_SEL | SC_RES_VSDLY(1));
+	vdc5fb_write(priv, SC0_SCL0_FRC5, tmp);
+	vdc5fb_write(priv, SC1_SCL0_FRC5, tmp);
+	tmp = SC_RES_VSDLY(1);
+#ifdef OUTPUT_IMAGE_GENERATOR
+	vdc5fb_write(priv, OIR_SCL0_FRC5, tmp);
+#endif
+
+	vdc5fb_write(priv, SC0_SCL0_FRC3, SC_RES_VS_SEL);
+	vdc5fb_write(priv, SC1_SCL0_FRC3, (SC_RES_VS_SEL | SC_RES_VS_IN_SEL));
+#ifdef OUTPUT_IMAGE_GENERATOR
+	vdc5fb_write(priv, OIR_SCL0_FRC3, 0);
+#endif
+	/* Note that OIR is not enabled here */
+
+	/* Set full-screen size */
+	tmp = SC_RES_F_VW(priv->panel_pixel_yres);
+	tmp |= SC_RES_F_VS(mode->vsync_len + mode->upper_margin);
+	vdc5fb_write(priv, SC0_SCL0_FRC6, tmp);
+	vdc5fb_write(priv, SC1_SCL0_FRC6, tmp);
+#ifdef OUTPUT_IMAGE_GENERATOR
+	vdc5fb_write(priv, OIR_SCL0_FRC6, tmp);
+#endif
+	tmp = SC_RES_F_HW(priv->panel_pixel_xres);
+	tmp |= SC_RES_F_HS(mode->hsync_len + mode->left_margin);
+	vdc5fb_write(priv, SC0_SCL0_FRC7, tmp);
+	vdc5fb_write(priv, SC1_SCL0_FRC7, tmp);
+
+#ifdef OUTPUT_IMAGE_GENERATOR
+	vdc5fb_write(priv, OIR_SCL0_FRC7, tmp);
+#endif
+	/* Cascade on */
+	vdc5fb_setbits(priv, GR1_AB1, GR1_CUS_CON_ON);
+	/* Set GR0 as current, GR1 as underlaying */
+	/* Set GR1 as current, GR0 as underlaying */
+	tmp = vdc5fb_read(priv, GR_VIN_AB1);
+	tmp &= ~GR_VIN_SCL_UND_SEL;
+	vdc5fb_write(priv, GR_VIN_AB1, tmp);
+
+	/* Do update here. */
+	tmp = (SC_SCL0_UPDATE | SC_SCL0_VEN_B);
+	vdc5fb_update_regs(priv, SC0_SCL0_UPDATE, tmp, 1);
+	vdc5fb_update_regs(priv, SC1_SCL0_UPDATE, tmp, 1);
+#ifdef OUTPUT_IMAGE_GENERATOR
+	vdc5fb_update_regs(priv, OIR_SCL0_UPDATE, tmp, 1);
+#endif
+	tmp = (GR_UPDATE | GR_P_VEN);
+	vdc5fb_update_regs(priv, GR1_UPDATE, tmp, 1);
+	vdc5fb_update_regs(priv, GR_VIN_UPDATE, tmp, 1);
+
+#endif
+}
+
+static void vdc5fb_init_scalers(void)
+{
+
+	////////////////////////////////////////////////////////////////
+	// SC0
 
 	SETREG32_CK(& VDC50.SC0_SCL0_FRC6, 11, 16, VSYNC + VBP - 1);				// SC0_RES_F_VS
 	SETREG32_CK(& VDC50.SC0_SCL0_FRC6, 11, 0, HEIGHT);							// SC0_RES_F_VW
 
 	SETREG32_CK(& VDC50.SC0_SCL0_FRC7, 11, 16, HSYNC + HBP - 1);			// SC0_RES_F_HS
 	SETREG32_CK(& VDC50.SC0_SCL0_FRC7, 11, 0, WIDTH);						// SC0_RES_F_HW
-#if 1
-	//debug_printf_P(PSTR("VDC50.SC0_SCL0_DS1=%08lX s1\n"), VDC50.SC0_SCL0_DS1);
-	//debug_printf_P(PSTR("VDC50.SC0_SCL0_US1=%08lX s1\n"), VDC50.SC0_SCL0_US1);
+
 	// down-scaler off
 	// depend on SC0_SCL0_VEN_A
 	SETREG32_CK(& VDC50.SC0_SCL0_DS1, 1, 4, 0);	// SC0_RES_DS_V_ON Vertical Scale Down On/Off 0: Off
 	SETREG32_CK(& VDC50.SC0_SCL0_DS1, 1, 0, 0);	// SC0_RES_DS_H_ON
 
+	SETREG32_CK(& VDC50.SC0_SCL0_DS7, 11, 16, HEIGHT);// SC0_RES_OUT_VW Number of Valid Lines in Vertical Direction Output by Scaling-down Control Block (lines)
+	SETREG32_CK(& VDC50.SC0_SCL0_DS7, 11, 0, WIDTH);	// SC0_RES_OUT_HW Number of Valid Horizontal Pixels Output by Scaling-Down Control Block (video-image clock cycles)
+
 	// up-scaler off
 	// depend on SC0_SCL0_VEN_B
 	SETREG32_CK(& VDC50.SC0_SCL0_US1, 1, 4, 0);	// SC0_RES_US_V_ON
 	SETREG32_CK(& VDC50.SC0_SCL0_US1, 1, 0, 0);	// SC0_RES_US_V_ON
-#endif
-	//debug_printf_P(PSTR("VDC50.SC0_SCL0_DS1=%08lX s2\n"), VDC50.SC0_SCL0_DS1);
-	//debug_printf_P(PSTR("VDC50.SC0_SCL0_US1=%08lX s2\n"), VDC50.SC0_SCL0_US1);
+	SETREG32_CK(& VDC50.SC0_SCL0_OVR1, 24, 0, 0);	// Background Color Setting RGB
 
-	SETREG32(& VDC50.SC0_SCL0_UPDATE, 1, 13, 1);	// SC0_SCL0_VEN_D	Scaling-Up Control and Frame Buffer Read Control Register Update
-	SETREG32(& VDC50.SC0_SCL0_UPDATE, 1, 12, 1);	// SC0_SCL0_VEN_C	Scaling-Down Control and Frame Buffer Read Control Register Update
-	SETREG32(& VDC50.SC0_SCL0_UPDATE, 1, 8, 1);		// SC0_SCL0_UPDATE	SYNC Control Register Update
-	SETREG32(& VDC50.SC0_SCL0_UPDATE, 1, 4, 1);		// SC0_SCL0_VEN_B	Synchronization Control and Scaling-up Control Register Update
-	SETREG32(& VDC50.SC0_SCL0_UPDATE, 1, 0, 1);		// SC0_SCL0_VEN_A	Scaling-Down Control Register Update
+	
+
+	SETREG32_CK(& VDC50.SC0_SCL0_US8, 1, 4,	1); // SC0_RES_IBUS_SYNC_SEL 1: Sync signals from the graphics processing block
+	SETREG32_CK(& VDC50.SC0_SCL0_US8, 1, 4,	1); // SC0_RES_DISP_ON 1: Frame display off
 
 	////////////////////////////////////////////////////////////////
 	// SC1
+
+
 #if 0
-	SETREG32(& VDC50.SC0_SCL1_UPDATE, 1, 20, 1);	// SC0_SCL1_UPDATE_B
-	SETREG32(& VDC50.SC0_SCL1_UPDATE, 1, 16, 1);	// SC0_SCL1_UPDATE_A
-	SETREG32(& VDC50.SC0_SCL1_UPDATE, 1, 4, 1);		// SC0_SCL1_VEN_B
-	SETREG32(& VDC50.SC0_SCL1_UPDATE, 1, 0, 1);		// SC0_SCL1_VEN_A
+	struct fb_videomode *mode = priv->videomode;
+	uint32_t tmp;
+
+	/* Enable and setup scaler 0 */
+	if( 0 /*priv->pdata->layers[0].xres */) {
+		vdc5fb_write(priv, SC0_SCL0_FRC3, SC_RES_VS_SEL);
+		vdc5fb_update_regs(priv, SC0_SCL0_UPDATE, SC_SCL0_UPDATE, 1);
+
+		vdc5fb_write(priv, SC0_SCL0_DS1, 0);
+		vdc5fb_write(priv, SC0_SCL0_US1, 0);
+		vdc5fb_write(priv, SC0_SCL0_OVR1, D_SC_RES_BK_COL);
+
+		tmp = (mode->vsync_len + mode->upper_margin - 1) << 16;
+		tmp |= mode->yres;
+		vdc5fb_write(priv, SC0_SCL0_DS2, tmp);
+		vdc5fb_write(priv, SC0_SCL0_US2, tmp);
+
+		tmp = (mode->hsync_len + mode->left_margin) << 16;
+		tmp |= mode->xres;
+		vdc5fb_write(priv, SC0_SCL0_DS3, tmp);
+		vdc5fb_write(priv, SC0_SCL0_US3, tmp);
+
+		tmp = mode->yres << 16;
+		tmp |= mode->xres;
+		vdc5fb_write(priv, SC0_SCL0_DS7, tmp);
+
+		tmp = SC_RES_IBUS_SYNC_SEL;
+		vdc5fb_write(priv, SC0_SCL0_US8, tmp);
+		vdc5fb_write(priv, SC0_SCL0_OVR1, D_SC_RES_BK_COL);
+	}
+	else {
+		/* Disable scaler 0 */
+		vdc5fb_write(priv, SC0_SCL0_DS1, 0);
+		vdc5fb_write(priv, SC0_SCL0_US1, 0);
+		vdc5fb_write(priv, SC0_SCL0_OVR1, D_SC_RES_BK_COL);
+	}
+
+	/* Enable and setup scaler 1 */
+	if( 0 /*priv->pdata->layers[1].xres */) {
+		// RZA1H only
+		vdc5fb_write(priv, SC1_SCL0_FRC3, SC_RES_VS_SEL);
+		vdc5fb_update_regs(priv, SC1_SCL0_UPDATE, SC_SCL0_UPDATE, 1);
+
+`		vdc5fb_write(priv, SC1_SCL0_DS1, 0);
+		vdc5fb_write(priv, SC1_SCL0_US1, 0);
+		vdc5fb_write(priv, SC1_SCL0_OVR1, D_SC_RES_BK_COL);
+
+		tmp = (mode->vsync_len + mode->upper_margin - 1) << 16;
+		tmp |= mode->yres;
+		vdc5fb_write(priv, SC1_SCL0_DS2, tmp);
+		vdc5fb_write(priv, SC1_SCL0_US2, tmp);
+
+		tmp = (mode->hsync_len + mode->left_margin) << 16;
+		tmp |= mode->xres;
+		vdc5fb_write(priv, SC1_SCL0_DS3, tmp);
+		vdc5fb_write(priv, SC1_SCL0_US3, tmp);
+
+		tmp = mode->yres << 16;
+		tmp |= mode->xres;
+		vdc5fb_write(priv, SC1_SCL0_DS7, tmp);
+
+		tmp = SC_RES_IBUS_SYNC_SEL;
+		vdc5fb_write(priv, SC1_SCL0_US8, tmp);
+		vdc5fb_write(priv, SC1_SCL0_OVR1, D_SC_RES_BK_COL);
+	}
+	else {
+		/* Disable scaler 1 */
+		vdc5fb_write(priv, SC1_SCL0_DS1, 0);
+		vdc5fb_write(priv, SC1_SCL0_US1, 0);
+		vdc5fb_write(priv, SC1_SCL0_OVR1, D_SC_RES_BK_COL);
+	}
+
+	/* Enable and setup OIR scaler */
+#ifdef OUTPUT_IMAGE_GENERATOR
+	vdc5fb_write(priv, OIR_SCL0_FRC3, OIR_RES_EN);
+	vdc5fb_update_regs(priv, OIR_SCL0_UPDATE, SC_SCL_UPDATE, 1);
+
+	vdc5fb_write(priv, OIR_SCL0_DS1, 0);
+	vdc5fb_write(priv, OIR_SCL0_US1, 0);
+	vdc5fb_write(priv, OIR_SCL0_OVR1, D_SC_RES_BK_COL);
+
+	tmp = (mode->vsync_len + mode->upper_margin - 1) << 16;
+	tmp |= mode->yres;
+	vdc5fb_write(priv, OIR_SCL0_DS2, tmp);
+	vdc5fb_write(priv, OIR_SCL0_US2, tmp);
+
+	tmp = (mode->hsync_len + mode->left_margin) << 16;
+	tmp |= mode->xres;
+	vdc5fb_write(priv, OIR_SCL0_DS3, tmp);
+	vdc5fb_write(priv, OIR_SCL0_US3, tmp);
+
+	tmp = mode->yres << 16;
+	tmp |= mode->xres;
+	vdc5fb_write(priv, OIR_SCL0_DS7, tmp);
+
+	tmp = SC_RES_IBUS_SYNC_SEL;
+	vdc5fb_write(priv, OIR_SCL0_US8, tmp);
 #endif
+#endif
+}
+
+static void vdc5fb_init_graphics(void)
+{
+	const unsigned ROWSIZE = sizeof framebuff [0];	// размер одной строки в байтах
 
 	////////////////////////////////////////////////////////////////
 	// GR0
-#if 1
-	SETREG32(& VDC50.GR0_UPDATE, 1, 8, 1);	// GR0_UPDATE Frame Buffer Read Control Register Update
-	SETREG32(& VDC50.GR0_UPDATE, 1, 4, 1);	// GR0_P_VEN Graphics Display Register Update
-	SETREG32(& VDC50.GR0_UPDATE, 1, 0, 1);	// GR0_IBUS_VEN Frame Buffer Read Control Register Update
-
 	SETREG32_CK(& VDC50.GR0_FLM_RD, 1, 0, 0);	// GR0_R_ENB Frame Buffer Read Enable
 	SETREG32_CK(& VDC50.GR0_FLM1, 2, 8, 0x01);	// GR0_FLM_SEL 1: Selects GR0_FLM_NUM.
 	SETREG32_CK(& VDC50.GR0_FLM2, 32, 0, (uintptr_t) & framebuff);	// GR0_BASE
-	SETREG32_CK(& VDC50.GR0_FLM3, 15, 16, rowsize);	// GR0_LN_OFF
+	SETREG32_CK(& VDC50.GR0_FLM3, 15, 16, ROWSIZE);	// GR0_LN_OFF
 	SETREG32_CK(& VDC50.GR0_FLM3, 10, 0, 0x00);	// GR0_FLM_NUM
-	SETREG32_CK(& VDC50.GR0_FLM4, 23, 0, rowsize * HEIGHT);	// GR0_FLM_OFF
+	SETREG32_CK(& VDC50.GR0_FLM4, 23, 0, ROWSIZE * HEIGHT);	// GR0_FLM_OFF
 	SETREG32_CK(& VDC50.GR0_FLM5, 11, 16, HEIGHT - 1);	// GR0_FLM_LNUM Sets the number of lines in a frame
 	SETREG32_CK(& VDC50.GR0_FLM5, 11, 0, HEIGHT - 1);	// GR0_FLM_LOOP
 	SETREG32_CK(& VDC50.GR0_FLM6, 11, 16, WIDTH - 1);	// GR0_HW Sets the width of the horizontal valid period.
 	SETREG32_CK(& VDC50.GR0_FLM6, 4, 28, 0x00);		// GR0_FORMAT 0: RGB565
 	SETREG32_CK(& VDC50.GR0_AB1, 2, 0,	0x00);	// GR0_DISP_SEL 0: background color
 
-	SETREG32(& VDC50.GR0_UPDATE, 1, 8, 1);	// GR0_UPDATE Frame Buffer Read Control Register Update
-	SETREG32(& VDC50.GR0_UPDATE, 1, 4, 1);	// GR0_P_VEN Graphics Display Register Update
-	SETREG32(& VDC50.GR0_UPDATE, 1, 0, 1);	// GR0_IBUS_VEN Frame Buffer Read Control Register Update
-#endif
 	////////////////////////////////////////////////////////////////
 	// GR2
-
-	SETREG32(& VDC50.GR2_UPDATE, 1, 8, 1);	// GR2_UPDATE Frame Buffer Read Control Register Update
-	SETREG32(& VDC50.GR2_UPDATE, 1, 4, 1);	// GR2_P_VEN Graphics Display Register Update
-	SETREG32(& VDC50.GR2_UPDATE, 1, 0, 1);	// GR2_IBUS_VEN Frame Buffer Read Control Register Update
 
 	SETREG32_CK(& VDC50.GR2_FLM_RD, 1, 0, 0);	// GR2_R_ENB Frame Buffer Read Enable
 	SETREG32_CK(& VDC50.GR2_FLM1, 2, 8, 0x01);	// GR2_FLM_SEL 1: Selects GR2_FLM_NUM.
 	SETREG32_CK(& VDC50.GR2_FLM2, 32, 0, (uintptr_t) & framebuff);	// GR2_BASE
-	SETREG32_CK(& VDC50.GR2_FLM3, 15, 16, rowsize);	// GR2_LN_OFF
+	SETREG32_CK(& VDC50.GR2_FLM3, 15, 16, ROWSIZE);	// GR2_LN_OFF
 	SETREG32_CK(& VDC50.GR2_FLM3, 10, 0, 0x00);	// GR0_FLM_NUM
-	SETREG32_CK(& VDC50.GR2_FLM4, 23, 0, rowsize * HEIGHT);	// GR2_FLM_OFF
+	SETREG32_CK(& VDC50.GR2_FLM4, 23, 0, ROWSIZE * HEIGHT);	// GR2_FLM_OFF
 	SETREG32_CK(& VDC50.GR2_FLM5, 11, 16, HEIGHT - 1);	// GR2_FLM_LNUM Sets the number of lines in a frame
 	SETREG32_CK(& VDC50.GR2_FLM5, 11, 0, HEIGHT - 1);	// GR2_FLM_LOOP Sets the number of lines in a frame
 	SETREG32_CK(& VDC50.GR2_FLM6, 11, 16, WIDTH - 1);	// GR2_HW Sets the width of the horizontal valid period.
 	SETREG32_CK(& VDC50.GR2_FLM6, 4, 28, 0x00);		// GR2_FORMAT 0: RGB565
 	SETREG32_CK(& VDC50.GR2_AB1, 2, 0,	0x00);	// GR2_DISP_SEL 0: Background color display
 
-	SETREG32(& VDC50.GR2_UPDATE, 1, 8, 1);	// GR2_UPDATE Frame Buffer Read Control Register Update
-	SETREG32(& VDC50.GR2_UPDATE, 1, 4, 1);	// GR2_P_VEN Graphics Display Register Update
-	SETREG32(& VDC50.GR2_UPDATE, 1, 0, 1);	// GR2_IBUS_VEN Frame Buffer Read Control Register Update
-
 	////////////////////////////////////////////////////////////////
 	// GR3
-
-	SETREG32(& VDC50.GR3_UPDATE, 1, 8, 1);	// GR3_UPDATE Frame Buffer Read Control Register Update
-	SETREG32(& VDC50.GR3_UPDATE, 1, 4, 1);	// GR3_P_VEN Graphics Display Register Update
-	SETREG32(& VDC50.GR3_UPDATE, 1, 0, 1);	// GR3_IBUS_VEN Frame Buffer Read Control Register Update
 
 	SETREG32_CK(& VDC50.GR3_FLM_RD, 1, 0, 1);	// GR3_R_ENB Frame Buffer Read Enable
 	SETREG32_CK(& VDC50.GR3_FLM1, 2, 8, 0x01);	// GR3_FLM_SEL 1: Selects GR3_FLM_NUM.
 	SETREG32_CK(& VDC50.GR3_FLM2, 32, 0, (uintptr_t) & framebuff);	// GR3_BASE
-	SETREG32_CK(& VDC50.GR3_FLM3, 15, 16, rowsize);	// GR3_LN_OFF
+	SETREG32_CK(& VDC50.GR3_FLM3, 15, 16, ROWSIZE);	// GR3_LN_OFF
 	SETREG32_CK(& VDC50.GR3_FLM3, 10, 0, 0x00);	// GR3_FLM_NUM
-	SETREG32_CK(& VDC50.GR3_FLM4, 23, 0, rowsize * HEIGHT);	// GR0_FLM_OFF
+	SETREG32_CK(& VDC50.GR3_FLM4, 23, 0, ROWSIZE * HEIGHT);	// GR0_FLM_OFF
 	SETREG32_CK(& VDC50.GR3_FLM5, 11, 16, HEIGHT - 1);	// GR3_FLM_LNUM Sets the number of lines in a frame
 	SETREG32_CK(& VDC50.GR3_FLM5, 11, 0, HEIGHT - 1);	// GR3_FLM_LOOP Sets the number of lines in a frame
 	SETREG32_CK(& VDC50.GR3_FLM6, 11, 16, WIDTH - 1);	// GR3_HW Sets the width of the horizontal valid period.
 	SETREG32_CK(& VDC50.GR3_FLM6, 4, 28, 0x00);		// GR3_FORMAT 0: RGB565
 	SETREG32_CK(& VDC50.GR3_AB1, 2, 0,	0x02);	// GR3_DISP_SEL 2: Current graphics display
 
-	SETREG32(& VDC50.GR3_UPDATE, 1, 8, 1);	// GR3_UPDATE Frame Buffer Read Control Register Update
-	SETREG32(& VDC50.GR3_UPDATE, 1, 4, 1);	// GR3_P_VEN Graphics Display Register Update
-	SETREG32(& VDC50.GR3_UPDATE, 1, 0, 1);	// GR3_IBUS_VEN Frame Buffer Read Control Register Update
+#if 0
+	struct fb_videomode *mode = priv->videomode;
+	uint32_t tmp;
+	struct vdc5fb_layer *layer;
+	uint32_t update_addr[4];
+	int i;
 
+	/* Need at least 1 graphic layer for /dev/fb0 */
+	for (i=0;i<4;i++)
+		if( priv->pdata->layers[i].xres )
+			break;
+	if( i == 4 )
+	{
+		printk("\n\n\n%s: You need to define at least 1 'layer' to be used as /dev/fb0\n\n\n",__func__);
+		return -1;
+	}
+
+	update_addr[0] = (uint32_t)priv->base + vdc5fb_offsets[GR0_UPDATE];
+	update_addr[1] = (uint32_t)priv->base + vdc5fb_offsets[GR1_UPDATE];
+	update_addr[2] = (uint32_t)priv->base + vdc5fb_offsets[GR2_UPDATE];
+	update_addr[3] = (uint32_t)priv->base + vdc5fb_offsets[GR3_UPDATE];
+
+	for (i=0;i<4;i++) {
+#ifdef DEBUG
+		/* Set Background color (really for debugging only) */
+		switch (i) {
+			case 0:	tmp = 0x00800000;	// GR0 = Green
+				break;
+			case 1:	tmp = 0x00000080;	// GR1 = red
+				break;
+			case 2:	tmp = 0x00008000;	// GR2 = Blue
+				break;
+			case 3:	tmp = 0x00008080;	// GR3 = purple
+		}
+		vdc5fb_iowrite32(tmp, update_addr[i] + GR_BASE_OFFSET);	/* Background color (0-G-B-R) */
+#endif
+		layer = &priv->pdata->layers[i];
+		if( layer->xres == 0 ) {
+			/* not used */
+			vdc5fb_iowrite32(0, update_addr[i] + GR_FLM_RD_OFFSET);
+			if( i == 0 )
+				vdc5fb_iowrite32(0, update_addr[i] + GR_AB1_OFFSET);	/* background graphics display */
+			else
+				vdc5fb_iowrite32(1, update_addr[i] + GR_AB1_OFFSET);	/* Lower-layer graphics display */
+			continue;
+		}
+
+		vdc5fb_iowrite32(GR_R_ENB, update_addr[i] + GR_FLM_RD_OFFSET);
+		vdc5fb_iowrite32(GR_FLM_SEL(1), update_addr[i] + GR_FLM1_OFFSET); /* scalers MUST use FLM_SEL */
+		if( layer->base == 0 )
+			layer->base = priv->dma_handle;	/* Allocated during probe */
+		if( layer->base >= 0xC0000000 )
+			layer->base = virt_to_phys((void *)layer->base);	/* Convert to physical address */
+
+		printk("vdc5fb: Layer %u Enabled (%ux%u @ 0x%08x)\n",i,layer->xres,layer->yres, layer->base);
+
+		vdc5fb_iowrite32(layer->base, update_addr[i] + GR_FLM2_OFFSET);	/* frame buffer address*/
+		tmp = GR_LN_OFF(layer->xres * (layer->bpp / 8));	/* length of each line (and Frame Number=0)*/
+		vdc5fb_iowrite32(tmp, update_addr[i] + GR_FLM3_OFFSET);
+		tmp = GR_FLM_LOOP(layer->yres - 1);
+		tmp |= GR_FLM_LNUM(layer->yres - 1);
+		vdc5fb_iowrite32(tmp, update_addr[i] + GR_FLM5_OFFSET);		/* lines per frame */
+		tmp = layer->format;
+		tmp |= GR_HW(layer->xres - 1);
+		vdc5fb_iowrite32(tmp, update_addr[i] + GR_FLM6_OFFSET);	/* frame format */
+
+		tmp = 0;
+		if( layer->blend )
+			tmp |= GR_DISP_SEL(3);		/* Blended display of lower-layer graphics and current graphics */
+		else
+			tmp |= GR_DISP_SEL(2);		/* Current graphics display */
+		vdc5fb_iowrite32(tmp, update_addr[i] + GR_AB1_OFFSET);
+
+		tmp = GR_GRC_VW(layer->yres);
+		tmp |= GR_GRC_VS(mode->vsync_len + mode->upper_margin + layer->y_offset);
+		vdc5fb_iowrite32(tmp, update_addr[i] + GR_AB2_OFFSET);
+
+		tmp = GR_GRC_HW(layer->xres);
+		tmp |= GR_GRC_HS(mode->hsync_len + mode->left_margin + layer->x_offset);
+		vdc5fb_iowrite32(tmp, update_addr[i] + GR_AB3_OFFSET);
+	}
+
+	/* Graphics VIN (Image Synthsizer) */
+	/* Scaler 0 and Scaler 1 are blended together using this */
+	/* GR0 = lower */
+	/* GR1 = current */
+	tmp = vdc5fb_read(priv, GR_VIN_AB1);
+	tmp &= GR_AB1_MASK;
+	if ( priv->pdata->layers[0].xres != 0 ) {
+		if ( priv->pdata->layers[1].xres == 0 )
+			// GR0 used, GR1 not used
+			tmp |= GR_DISP_SEL(1);		/* lower only*/
+		else
+			// GR0 used, GR1 used
+			tmp |= GR_DISP_SEL(3);		/* blend */
+	}
+	else if ( priv->pdata->layers[1].xres != 0 )
+	{
+			// GR0 not used, GR1 used
+			tmp |= GR_DISP_SEL(2);		/* current only */
+	}
+	vdc5fb_write(priv, GR_VIN_AB1, tmp);
+	vdc5fb_write(priv, GR_VIN_BASE, 0x00FF00);	/* Background color (0-G-B-R) */
+
+	/* Set the LCD margins, other wise the pixels will be cliped
+	  (and background color will show through instead */
+	tmp = GR_GRC_VW(priv->panel_pixel_yres);
+	tmp |= GR_GRC_VS(mode->vsync_len + mode->upper_margin);
+	vdc5fb_write(priv, GR_VIN_AB2, tmp);
+	tmp = GR_GRC_HW(priv->panel_pixel_xres);
+	tmp |= GR_GRC_HS(mode->hsync_len + mode->left_margin);
+	vdc5fb_write(priv, GR_VIN_AB3, tmp);
+
+	/* Graphics OIR */
+#ifdef OUTPUT_IMAGE_GENERATOR
+	vdc5fb_write(priv, GR_OIR_FLM_RD, GR_R_ENB);
+	vdc5fb_write(priv, GR_OIR_FLM1, GR_FLM_SEL(1));
+	vdc5fb_write(priv, GR_OIR_FLM2, priv->dma_handle);
+	tmp = GR_FLM_NUM(priv->flm_num);
+	tmp |= GR_LN_OFF(mode->xres * (priv->info->var.bits_per_pixel / 8));
+	vdc5fb_write(priv, GR_OIR_FLM3, tmp);
+	tmp = GR_FLM_OFF(priv->flm_off);
+	vdc5fb_write(priv, GR_OIR_FLM4, tmp);
+	tmp = GR_FLM_LOOP(mode->yres - 1);
+	tmp |= GR_FLM_LNUM(mode->yres - 1);
+	vdc5fb_write(priv, GR_OIR_FLM5, tmp);
+	if (priv->info->var.bits_per_pixel == 16)
+		tmp = D_GR_FLM6_RGB565;		/* RGB565 LE, 78563412 */
+	else
+		tmp = D_GR_FLM6_ARGB8888;	/* ARGB8888 LE, 56781234 */
+	tmp |= GR_HW(mode->xres - 1);
+	vdc5fb_write(priv, GR_OIR_FLM6, tmp);
+
+	tmp = vdc5fb_read(priv, GR_OIR_AB1);
+	tmp &= GR_AB1_MASK;
+	tmp |= GR_DISP_SEL(2);		/* current graphics */
+	vdc5fb_write(priv, GR_OIR_AB1, tmp);
+
+	tmp = GR_GRC_VW(mode->yres);
+	tmp |= GR_GRC_VS(mode->vsync_len + mode->upper_margin);
+	vdc5fb_write(priv, GR_OIR_AB2, tmp);
+
+	tmp = GR_GRC_HW(mode->xres);
+	tmp |= GR_GRC_HS(mode->hsync_len + mode->left_margin);
+	vdc5fb_write(priv, GR_OIR_AB3, tmp);
+
+	vdc5fb_write(priv, GR_OIR_AB7, 0);
+	vdc5fb_write(priv, GR_OIR_AB8, D_GR_AB8);
+	vdc5fb_write(priv, GR_OIR_AB9, D_GR_AB9);
+	vdc5fb_write(priv, GR_OIR_AB10, D_GR_AB10);
+	vdc5fb_write(priv, GR_OIR_AB11, D_GR_AB11);
+
+	vdc5fb_write(priv, GR_OIR_BASE, D_GR_BASE);
+#endif
+
+#endif
+}
+
+static void vdc5fb_init_outcnt(void)
+{
+	////////////////////////////////////////////////////////////////
+	// OUT
+	SETREG32_CK(& VDC50.OUT_SET, 2, 8, 0x00);	// OUT_FRQ_SEL Clock Frequency Control 0: 100% speed — (parallel RGB)
+	SETREG32_CK(& VDC50.OUT_SET, 2, 12, 0x02);	// OUT_FORMAT Output Format Select 2: RGB565
+
+#if 0
+	struct vdc5fb_pdata *pdata = priv_to_pdata(priv);
+	uint32_t tmp;
+
+	vdc5fb_write(priv, OUT_CLK_PHASE, D_OUT_CLK_PHASE);
+	vdc5fb_write(priv, OUT_BRIGHT1, PBRT_G(512));
+	vdc5fb_write(priv, OUT_BRIGHT2, (PBRT_B(512) | PBRT_R(512)));
+	tmp = (CONT_G(128) | CONT_B(128) | CONT_R(128));
+	vdc5fb_write(priv, OUT_CONTRAST, tmp);
+
+	vdc5fb_write(priv, GAM_SW, 0);
+
+	tmp = D_OUT_PDTHA;
+	tmp |= PDTHA_FORMAT(0);
+	vdc5fb_write(priv, OUT_PDTHA, tmp);
+
+	tmp = D_OUT_SET;
+	tmp |= OUT_FORMAT(pdata->out_format);
+	vdc5fb_write(priv, OUT_SET, tmp);
+
+#endif
+}
+
+static void vdc5fb_init_tcon(void)
+{
+
+	////////////////////////////////////////////////////////////////
+	// TCON
+
+	// Vertical sync generation parameters
+
+	// VSYNC signal
+	SETREG32_CK(& VDC50.TCON_TIM_STVA1, 11, 16, 0);	// TCON_STVA_VS
+	SETREG32_CK(& VDC50.TCON_TIM_STVA1, 11, 0, VSYNC);	// TCON_STVA_VW
+
+	// Vertical enable signal
+	SETREG32_CK(& VDC50.TCON_TIM_STVB1, 11, 16, VSYNC + VBP);	// TCON_STVB_VS
+	SETREG32_CK(& VDC50.TCON_TIM_STVB1, 11, 0, HEIGHT);	// TCON_STVB_VW
+
+	// Horisontal sync generation parameters
+	SETREG32_CK(& VDC50.TCON_TIM, 11, 16, (WIDTH + HSYNC + HBP + HFP) / 2);	// TCON_HALF
+
+	//SETREG32_CK(& VDC50.TCON_TIM_POLA2, 2, 12, 0x00);	// TCON_POLA_MD
+	//SETREG32_CK(& VDC50.TCON_TIM_POLB2, 2, 12, 0x00);	// TCON_POLB_MD
+
+	// HSYNC signal
+	SETREG32_CK(& VDC50.TCON_TIM_STH1, 11, 16,	0);	// TCON_STH_HS
+	SETREG32_CK(& VDC50.TCON_TIM_STH1, 11, 0, HSYNC);	// TCON_STH_HW
+	// Source strobe signal
+	SETREG32_CK(& VDC50.TCON_TIM_STB1, 11, 16, 0);		// TCON_STB_HS
+	SETREG32_CK(& VDC50.TCON_TIM_STB1, 11, 0, WIDTH);	// TCON_STB_HW
+
+	/* hardware-dependent control signals */
+	// LCD0_TCON4 - VSYNC P7_5
+	// LCD0_TCON5 - HSYNC P7_6
+	// LCD0_TCON6 - DE P7_7
+	// Output pins route
+	//SETREG32_CK(& VDC50.TCON_TIM_STVA2, 3, 0, 0xXX);	// Output Signal Select for LCD_TCON0 pin - 
+	//SETREG32_CK(& VDC50.TCON_TIM_STVB2, 3, 0, 0xXX);	// Output Signal Select for LCD_TCON1 pin - 
+	//SETREG32_CK(& VDC50.TCON_TIM_STH2, 3, 0, 0xXX);	// Output Signal Select for LCD_TCON2 pin - 
+	SETREG32_CK(& VDC50.TCON_TIM_CPV2, 3, 0, 0x00);	// Output Signal Select for LCD_TCON4 Pin - VSYNC 0: STVA/VS
+	SETREG32_CK(& VDC50.TCON_TIM_POLA2, 3, 0, 0x02);	// Output Signal Select for LCD_TCON5 Pin - HSYNC 2: STH/SP/HS
+	SETREG32_CK(& VDC50.TCON_TIM_POLB2, 3, 0, 0x07);	// Output Signal Select for LCD_TCON6 Pin - DE
+	// HSYMC polarity
+	SETREG32_CK(& VDC50.TCON_TIM_STH2, 1, 4, 0x01);	// TCON_STH_INV
+	// VSYNC polarity
+	SETREG32_CK(& VDC50.TCON_TIM_STVA2, 1, 4, 0x01);	// TCON_STVA_INV
+#if 0
+	static const unsigned char tcon_sel[LCD_MAX_TCON]
+		= { 0, 1, 2, 7, 4, 5, 6, };
+	struct fb_videomode *mode = priv->videomode;
+	struct vdc5fb_pdata *pdata = priv_to_pdata(priv);
+	uint32_t vs_s, vs_w, ve_s, ve_w;
+	uint32_t hs_s, hs_w, he_s, he_w;
+	uint32_t tmp1, tmp2;
+
+	tmp1 = TCON_OFFSET(0);
+	tmp1 |= TCON_HALF(priv->res_fh / 2);
+	vdc5fb_write(priv, TCON_TIM, tmp1);
+	tmp2 = 0;
+#if 0
+	tmp2 = TCON_DE_INV;
+#endif
+	vdc5fb_write(priv, TCON_TIM_DE, tmp2);
+
+	vs_s = (2 * 0);
+	vs_w = (2 * mode->vsync_len);
+	ve_s = (2 * (mode->vsync_len + mode->upper_margin));
+	ve_w = (2 * priv->panel_pixel_yres);
+
+	tmp1 = TCON_VW(vs_w);
+	tmp1 |= TCON_VS(vs_s);
+	vdc5fb_write(priv, TCON_TIM_STVA1, tmp1);
+	if (pdata->tcon_sel[LCD_TCON0] == TCON_SEL_UNUSED)
+		tmp2 = TCON_SEL(tcon_sel[LCD_TCON0]);
+	else
+		tmp2 = TCON_SEL(pdata->tcon_sel[LCD_TCON0]);
+	if (!(mode->sync & FB_SYNC_VERT_HIGH_ACT))
+		tmp2 |= TCON_INV;
+	vdc5fb_write(priv, TCON_TIM_STVA2, tmp2);
+
+	tmp1 = TCON_VW(ve_w);
+	tmp1 |= TCON_VS(ve_s);
+	vdc5fb_write(priv, TCON_TIM_STVB1, tmp1);
+	if (pdata->tcon_sel[LCD_TCON1] == TCON_SEL_UNUSED)
+		tmp2 = TCON_SEL(tcon_sel[LCD_TCON1]);
+	else
+		tmp2 = TCON_SEL(pdata->tcon_sel[LCD_TCON1]);
+#if 0
+	tmp2 |= TCON_INV;
+#endif
+	vdc5fb_write(priv, TCON_TIM_STVB2, tmp2);
+
+	hs_s = 0;
+	hs_w = mode->hsync_len;
+	he_s = (mode->hsync_len + mode->left_margin);
+	he_w = priv->panel_pixel_xres;
+
+	tmp1 = TCON_HW(hs_w);
+	tmp1 |= TCON_HS(hs_s);
+	vdc5fb_write(priv, TCON_TIM_STH1, tmp1);
+	if (pdata->tcon_sel[LCD_TCON2] == TCON_SEL_UNUSED)
+		tmp2 = TCON_SEL(tcon_sel[LCD_TCON2]);
+	else
+		tmp2 = TCON_SEL(pdata->tcon_sel[LCD_TCON2]);
+	if (!(mode->sync & FB_SYNC_HOR_HIGH_ACT))
+		tmp2 |= TCON_INV;
+#if 0
+	tmp2 |= TCON_HS_SEL;
+#endif
+	vdc5fb_write(priv, TCON_TIM_STH2, tmp2);
+
+	tmp1 = TCON_HW(he_w);
+	tmp1 |= TCON_HS(he_s);
+	vdc5fb_write(priv, TCON_TIM_STB1, tmp1);
+	if (pdata->tcon_sel[LCD_TCON3] == TCON_SEL_UNUSED)
+		tmp2 = TCON_SEL(tcon_sel[LCD_TCON3]);
+	else
+		tmp2 = TCON_SEL(pdata->tcon_sel[LCD_TCON3]);
+#if 0
+	tmp2 |= TCON_INV;
+	tmp2 |= TCON_HS_SEL;
+#endif
+	vdc5fb_write(priv, TCON_TIM_STB2, tmp2);
+
+	tmp1 = TCON_HW(hs_w);
+	tmp1 |= TCON_HS(hs_s);
+	vdc5fb_write(priv, TCON_TIM_CPV1, tmp1);
+	if (pdata->tcon_sel[LCD_TCON4] == TCON_SEL_UNUSED)
+		tmp2 = TCON_SEL(tcon_sel[LCD_TCON4]);
+	else
+		tmp2 = TCON_SEL(pdata->tcon_sel[LCD_TCON4]);
+#if 0
+	tmp2 |= TCON_INV;
+	tmp2 |= TCON_HS_SEL;
+#endif
+	vdc5fb_write(priv, TCON_TIM_CPV2, tmp2);
+
+	tmp1 = TCON_HW(he_w);
+	tmp1 |= TCON_HS(he_s);
+	vdc5fb_write(priv, TCON_TIM_POLA1, tmp1);
+	if (pdata->tcon_sel[LCD_TCON5] == TCON_SEL_UNUSED)
+		tmp2 = TCON_SEL(tcon_sel[LCD_TCON5]);
+	else
+		tmp2 = TCON_SEL(pdata->tcon_sel[LCD_TCON5]);
+#if 0
+	tmp2 |= TCON_HS_SEL;
+	tmp2 |= TCON_INV;
+	tmp2 |= TCON_MD;
+#endif
+	vdc5fb_write(priv, TCON_TIM_POLA2, tmp2);
+
+	tmp1 = TCON_HW(he_w);
+	tmp1 |= TCON_HS(he_s);
+	vdc5fb_write(priv, TCON_TIM_POLB1, tmp1);
+	if (pdata->tcon_sel[LCD_TCON6] == TCON_SEL_UNUSED)
+		tmp2 = TCON_SEL(tcon_sel[LCD_TCON6]);
+	else
+		tmp2 = TCON_SEL(pdata->tcon_sel[LCD_TCON6]);
+#if 0
+	tmp2 |= TCON_INV;
+	tmp2 |= TCON_HS_SEL;
+	tmp2 |= TCON_MD;
+#endif
+	vdc5fb_write(priv, TCON_TIM_POLB2, tmp2);
+
+#endif
+}
+
+static void vdc5fb_update_all(void)
+{
+		
+	////////////////////////////////////////////////////////////////
+	// INP
+
+	SETREG32_UPDATE(& VDC50.INP_SEL_CNT, 1, 20, 0);	// INP_SEL 0: Input supplied via the external input pins is off
+	//SETREG32_CK(& VDC50.INP_VSYNC_PH_ADJ, 10, 16, xx);
+	//SETREG32_CK(& VDC50.INP_VSYNC_PH_ADJ, 10, 0,  xx);
+
+	/* update all registers */
+
+	
+	vdc5_update(& VDC50.IMGCNT_UPDATE, "IMGCNT_UPDATE",
+			(1 << 0) |	// IMGCNT_VEN Image Quality Adjustment Block Register Update
+			0
+		);
+
+	vdc5_update(& VDC50.SC0_SCL0_UPDATE, "SC0_SCL0_UPDATE",
+			(1 << 13) |	// SC0_SCL0_VEN_D	Scaling-Up Control and Frame Buffer Read Control Register Update
+			(1 << 12) |	// SC0_SCL0_VEN_C	Scaling-Down Control and Frame Buffer Read Control Register Upda
+			(1 << 8) |	// SC0_SCL0_UPDATE	SYNC Control Register Update
+			(1 << 4) |	// SC0_SCL0_VEN_B	Synchronization Control and Scaling-up Control Register Update
+			(1 << 0) |	// SC0_SCL0_VEN_A	Scaling-Down Control Register Update
+			0
+		);
+
+	vdc5_update(& VDC50.SC0_SCL1_UPDATE, "SC0_SCL1_UPDATE",
+			(1 << 20) |	// SC0_SCL1_UPDATE_B
+			(1 << 16) |	// SC0_SCL1_UPDATE_A
+			(1 << 4) |	// SC0_SCL1_VEN_B
+			(1 << 0) |	// SC0_SCL1_VEN_A
+			0
+		);
+
+	vdc5_update(& VDC50.GR0_UPDATE, "GR0_UPDATE",
+			(1 << 8) |	// GR0_UPDATE Frame Buffer Read Control Register Update
+			(1 << 4) |	// GR0_P_VEN Graphics Display Register Update
+			(1 << 0) |	// GR0_IBUS_VEN Frame Buffer Read Control Register Update
+			0
+		);
+	vdc5_update(& VDC50.GR2_UPDATE, "GR2_UPDATE",
+			(1 << 8) |	// GR2_UPDATE Frame Buffer Read Control Register Update
+			(1 << 4) |	// GR2_P_VEN Graphics Display Register Update
+			(1 << 0) |	// GR2_IBUS_VEN Frame Buffer Read Control Register Update
+			0
+		);
+	vdc5_update(& VDC50.GR3_UPDATE, "GR3_UPDATE",
+			(1 << 8) |	// GR3_UPDATE Frame Buffer Read Control Register Update
+			(1 << 4) |	// GR3_P_VEN Graphics Display Register Update
+			(1 << 0) |	// GR3_IBUS_VEN Frame Buffer Read Control Register Update
+			0
+		);
+
+	vdc5_update(& VDC50.GR_VIN_UPDATE, "GR_VIN_UPDATE",
+			(1 << 8) |	// GR_VIN_UPDATE Graphics Display Register Update
+			(1 << 4) |	// GR_VIN_P_VEN Graphics Display Register Update
+			0
+		);
+
+	vdc5_update(& VDC50.OUT_UPDATE, "OUT_UPDATE",
+			(1 << 0) |	// OUTCNT_VEN
+			0
+		);
+
+	vdc5_update(& VDC50.TCON_UPDATE, "TCON_UPDATE",
+			(1 << 0) |	// TCON_VEN
+			0
+		);
+
+#if 0
+	uint32_t tmp;
+
+	tmp = IMGCNT_VEN;
+	vdc5fb_update_regs(priv, IMGCNT_UPDATE, tmp, 1);
+
+	tmp = (SC_SCL0_VEN_A | SC_SCL0_VEN_B | SC_SCL0_UPDATE
+		| SC_SCL0_VEN_C | SC_SCL0_VEN_D);
+	vdc5fb_update_regs(priv, SC0_SCL0_UPDATE, tmp, 1);
+
+	tmp = (SC_SCL1_VEN_A | SC_SCL1_VEN_B | SC_SCL1_UPDATE_A
+		| SC_SCL1_UPDATE_B);
+	vdc5fb_update_regs(priv, SC0_SCL1_UPDATE, tmp, 1);
+
+	tmp = (GR_IBUS_VEN | GR_P_VEN | GR_UPDATE);
+	vdc5fb_update_regs(priv, GR0_UPDATE, tmp, 1);
+	vdc5fb_update_regs(priv, GR1_UPDATE, tmp, 1);
+
+	tmp = ADJ_VEN;
+	vdc5fb_write(priv, ADJ0_UPDATE, tmp);
+	vdc5fb_write(priv, ADJ1_UPDATE, tmp);
+
+	tmp = (GR_IBUS_VEN | GR_P_VEN | GR_UPDATE);
+	vdc5fb_update_regs(priv, GR2_UPDATE, tmp, 1);
+	vdc5fb_update_regs(priv, GR3_UPDATE, tmp, 1);
+
+	tmp = (GR_P_VEN | GR_UPDATE);
+	vdc5fb_update_regs(priv, GR_VIN_UPDATE, tmp, 1);
+
+#ifdef OUTPUT_IMAGE_GENERATOR
+	tmp = (SC_SCL_VEN_A | SC_SCL_VEN_B | SC_SCL_UPDATE
+		| SC_SCL_VEN_C | SC_SCL_VEN_D);
+	vdc5fb_update_regs(priv, OIR_SCL0_UPDATE, tmp, 1);
+	vdc5fb_update_regs(priv, OIR_SCL1_UPDATE, tmp, 1);
+
+	tmp = (GR_IBUS_VEN | GR_P_VEN | GR_UPDATE);
+	vdc5fb_update_regs(priv, GR_OIR_UPDATE, tmp, 1);
+#endif
+
+	tmp = OUTCNT_VEN;
+	vdc5fb_update_regs(priv, OUT_UPDATE, tmp, 1);
+	tmp = GAM_VEN;
+	vdc5fb_update_regs(priv, GAM_G_UPDATE, tmp, 1);
+	vdc5fb_update_regs(priv, GAM_B_UPDATE, tmp, 1);
+	vdc5fb_update_regs(priv, GAM_R_UPDATE, tmp, 1);
+	tmp = TCON_VEN;
+	vdc5fb_update_regs(priv, TCON_UPDATE, tmp, 1);
+
+#endif
+}
+
+void
+arm_hardware_ltdc_initialize(void)
+{
+	debug_printf_P(PSTR("arm_hardware_ltdc_initialize start, WIDTH=%d, HEIGHT=%d\n"), WIDTH, HEIGHT);
+	const unsigned ROWSIZE = sizeof framebuff [0];	// размер одной строки в байтах
+
+
+	/* ---- Supply clock to the video display controller 5  ---- */
+	CPG.STBCR9 &= ~ CPG_STBCR9_MSTP91;	// Module Stop 91 0: The video display controller 5 runs.
+	(void) CPG.STBCR9;			/* Dummy read */
+
+	vdc5fb_init_syscnt();
+	vdc5fb_init_sync();
+	vdc5fb_init_scalers();
+	vdc5fb_init_graphics();
+	vdc5fb_init_outcnt();
+	vdc5fb_init_tcon();
+
+	vdc5fb_update_all();
+
+
+
+
+	/* Configure the LCD Control pins */
+	HARDWARE_LTDC_INITIALIZE();	// подключение к выводам процессора сигналов периферийного контроллера
 
 	debug_printf_P(PSTR("arm_hardware_ltdc_initialize done\n"));
 }
@@ -726,7 +1380,7 @@ static void LCD_LayerInit(
 	unsigned pixelsize	// для расчета размера строки в байтах
 	)
 {
-	const unsigned rowsize = (pixelsize * wnd->w);	// размер одной строки в байтах
+	const unsigned ROWSIZE = (pixelsize * wnd->w);	// размер одной строки в байтах
 
 	LTDC_Layer_InitTypeDef LTDC_Layer_InitStruct; 
 	/* Windowing configuration */
@@ -756,12 +1410,12 @@ static void LCD_LayerInit(
 	number of bytes per pixel = 2    (pixel_format : RGB565) 
 	number of bytes per pixel = 1    (pixel_format : L8) 
 	*/
-	LTDC_Layer_InitStruct.LTDC_CFBLineLength = rowsize + 3; //((DIM_SECOND * 2) + 3);
-	//LTDC_Layer1->CFBLR = ((rowsize << 16) & LTDC_LxCFBLR_CFBP) | (((rowsize + 3) << 0) & LTDC_LxCFBLR_CFBLL);
+	LTDC_Layer_InitStruct.LTDC_CFBLineLength = ROWSIZE + 3; //((DIM_SECOND * 2) + 3);
+	//LTDC_Layer1->CFBLR = ((ROWSIZE << 16) & LTDC_LxCFBLR_CFBP) | (((ROWSIZE + 3) << 0) & LTDC_LxCFBLR_CFBLL);
 	/* the pitch is the increment from the start of one line of pixels to the 
 	start of the next line in bytes, then :
 	Pitch = Active high width x number of bytes per pixel */ 
-	LTDC_Layer_InitStruct.LTDC_CFBPitch = rowsize; // (DIM_SECOND * 2);
+	LTDC_Layer_InitStruct.LTDC_CFBPitch = ROWSIZE; // (DIM_SECOND * 2);
 
 	/* Configure the number of lines */  
 	LTDC_Layer_InitStruct.LTDC_CFBLineNumber = wnd->h;
@@ -850,9 +1504,9 @@ arm_hardware_ltdc_initialize(void)
 {
 	debug_printf_P(PSTR("arm_hardware_ltdc_initialize start, WIDTH=%d, HEIGHT=%d\n"), WIDTH, HEIGHT);
 
-	//const unsigned rowsize = sizeof framebuff [0];	// размер одной строки в байтах
+	//const unsigned ROWSIZE = sizeof framebuff [0];	// размер одной строки в байтах
 	//const unsigned rowsize2 = (sizeof (PACKEDCOLOR_T) * DIM_SECOND);
-	//ASSERT(rowsize == rowsize2);
+	//ASSERT(ROWSIZE == rowsize2);
 	debug_printf_P(PSTR("arm_hardware_ltdc_initialize: framebuff=%p\n"), framebuff);
 
 	/* Initialize the LCD */
