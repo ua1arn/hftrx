@@ -302,9 +302,24 @@ void display_colorbuffer_fill(
 #else /* defined (DMA2D) && LCDMODE_LTDC */
 
 	uint_fast32_t len = (uint_fast32_t) dx * dy;
-	if (sizeof (PACKEDCOLOR_T) == 1)
+	if (sizeof (* buffer) == 1)
 	{
 		memset(buffer, color, len);
+	}
+	else if ((len & 0x07) == 0)
+	{
+		len /= 8;
+		while (len --)
+		{
+			* buffer ++ = color;
+			* buffer ++ = color;
+			* buffer ++ = color;
+			* buffer ++ = color;
+			* buffer ++ = color;
+			* buffer ++ = color;
+			* buffer ++ = color;
+			* buffer ++ = color;
+		}
 	}
 	else if ((len & 0x03) == 0)
 	{
@@ -368,6 +383,7 @@ void display_colorbuffer_xor(
 #endif /* LCDMODE_HORFILL */
 }
 
+#if LCDMODE_LTDC_PIP16
 // установить данный буфер как область для PIP
 void display_colorbuffer_pip(
 	const PACKEDCOLOR565_T * buffer,
@@ -378,6 +394,8 @@ void display_colorbuffer_pip(
 	arm_hardware_flush((uintptr_t) buffer, (uint_fast32_t) dx * dy * sizeof * buffer);
 	arm_hardware_ltdc_pip_set((uintptr_t) buffer);
 }
+
+#else /* LCDMODE_LTDC_PIP16 */
 
 // Выдать буфер на дисплей
 void display_colorbuffer_show(
@@ -443,6 +461,7 @@ void display_colorbuffer_show(
 	#endif
 #endif /* defined (DMA2D) && LCDMODE_LTDC */
 }
+#endif /* LCDMODE_LTDC_PIP16 */
 
 // погасить точку
 void display_pixelbuffer(
