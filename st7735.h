@@ -11,14 +11,17 @@
 
 #if LCDMODE_ST7735 || LCDMODE_ILI9163 || LCDMODE_ILI9341
 
-#define DISPLAYMODES_FPS 5	/* количество обновлений отображения режимов работы */
-#if LCDMODE_ILI9341
-	#define DISPLAY_FPS	10	/* обновление показаний частоты десять раз в секунду */
-	#define DISPLAYSWR_FPS 10	/* количество обновлений SWR и панорамы за секунду */
-#else /* LCDMODE_ILI9341 */
-	#define DISPLAY_FPS	10	/* обновление показаний частоты десять раз в секунду */
-	#define DISPLAYSWR_FPS 10	/* количество обновлений SWR и панорамы за секунду */
-#endif /* LCDMODE_ILI9341 */
+#if ! LCDMODE_LTDC
+
+	#define DISPLAYMODES_FPS 5	/* количество обновлений отображения режимов работы */
+	#if LCDMODE_ILI9341
+		#define DISPLAY_FPS	10	/* обновление показаний частоты десять раз в секунду */
+		#define DISPLAYSWR_FPS 10	/* количество обновлений SWR и панорамы за секунду */
+	#else /* LCDMODE_ILI9341 */
+		#define DISPLAY_FPS	10	/* обновление показаний частоты десять раз в секунду */
+		#define DISPLAYSWR_FPS 10	/* количество обновлений SWR и панорамы за секунду */
+	#endif /* LCDMODE_ILI9341 */
+#endif /* ! LCDMODE_LTDC */
 
 #if LCDMODE_LTDC
 

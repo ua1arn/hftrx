@@ -12,7 +12,7 @@
 
 #include "hardware.h"	/* зависящие от процессора функции работы с портами */
 
-#if LCDMODE_S1D13781 || LCDMODE_LQ043T3DX02K
+#if LCDMODE_S1D13781 //|| LCDMODE_LQ043T3DX02K
 
 #define DISPLAYMODES_FPS 5	/* количество обновлений отображения режимов работы */
 #define DISPLAY_FPS	20	/* обновление показаний частоты десять раз в секунду */

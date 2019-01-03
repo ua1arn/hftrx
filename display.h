@@ -207,6 +207,10 @@ typedef uint16_t PACKEDCOLOR565_T;
 
 #if LCDMODE_LTDC
 
+	#define DISPLAYMODES_FPS 5	/* количество обновлений отображения режимов работы */
+	#define DISPLAY_FPS	20	/* обновление показаний частоты десять раз в секунду */
+	#define DISPLAYSWR_FPS 10	/* количество обновлений SWR и панорамы за секунду */
+
 	#if LCDMODE_LTDC_L24
 
 		typedef uint_fast32_t COLOR_T;
@@ -233,7 +237,6 @@ typedef uint16_t PACKEDCOLOR565_T;
 		typedef uint_fast8_t COLOR_T;
 		typedef uint8_t PACKEDCOLOR_T;
 
-
 		// RRRGGGBB
 		#define TFTRGB(red, green, blue) \
 			(  (unsigned char) \
@@ -249,9 +252,9 @@ typedef uint16_t PACKEDCOLOR565_T;
 		#define TFTRGB565(red, green, blue) \
 			(  (uint_fast16_t) \
 				(	\
-					(((uint_fast16_t) (red) << 8) &   0xf800)  | \
-					(((uint_fast16_t) (green) << 3) & 0x07e0) | \
-					(((uint_fast16_t) (blue) >> 3) &  0x001f) \
+					(((uint_fast16_t) (red) << 8) &   0xF800)  | \
+					(((uint_fast16_t) (green) << 3) & 0x07E0) | \
+					(((uint_fast16_t) (blue) >> 3) &  0x001F) \
 				) \
 			)
 
