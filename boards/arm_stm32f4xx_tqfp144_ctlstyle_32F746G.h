@@ -352,6 +352,7 @@
 	/* Назначение адресов на SPI шине */
 	#define targetdds1	SPI_CSEL_PG0 	/* FPGA NCO1 */
 	#define targetext1	SPI_CSEL_PG15 	/* external devices control */
+	#define targetext2	SPI_CSEL_PG15 	/* external devices control */
 	#define targetctl1	SPI_CSEL_PG7 	/* control register as a chain of registers */
 	#define targetfpga1	SPI_CSEL_PG1 	/* control register in FPGA */
 
