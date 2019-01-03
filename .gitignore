@@ -7,7 +7,6 @@ atmega328_16
 atmega328_8
 *.o
 *.d
-*.h
 *.hex
 *.map
 *.elf
