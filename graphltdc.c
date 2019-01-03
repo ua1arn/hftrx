@@ -201,15 +201,21 @@ static void vdc5fb_init_syscnt(void)
 static void vdc5fb_init_sync(void)
 {
 	//SETREG32_CK(& VDC50.SC0_SCL0_FRC1, 16, 16, 0);	// SC0_RES_VMASK
-	SETREG32_CK(& VDC50.SC0_SCL0_FRC1, 1, 0, 0);	// SC0_RES_VMASK_ON 0: Repeated Vsync signal masking control is disabled.
+	SETREG32_CK(& VDC50.SC0_SCL0_FRC1, 1, 0, 0);		// SC0_RES_VMASK_ON 0: Repeated Vsync signal masking control is disabled.
 	//SETREG32_CK(& VDC50.SC0_SCL0_FRC2, 16, 16, 0);	// SC0_RES_VLACK
-	SETREG32_CK(& VDC50.SC0_SCL0_FRC2, 1, 0, 0);	// SC0_RES_VLACK_ON	0: Compensation of missing Vsync signals is disabled.
+	SETREG32_CK(& VDC50.SC0_SCL0_FRC2, 1, 0, 0);		// SC0_RES_VLACK_ON	0: Compensation of missing Vsync signals is disabled.
 
-	SETREG32_CK(& VDC50.SC0_SCL0_FRC5, 1, 8, 1);	// SC0_RES_FLD_DLY_SEL
-	SETREG32_CK(& VDC50.SC0_SCL0_FRC5, 8, 0, 1);	// SC0_RES_VSDLY
+	SETREG32_CK(& VDC50.SC0_SCL0_FRC5, 1, 8, 1);		// SC0_RES_FLD_DLY_SEL
+	SETREG32_CK(& VDC50.SC0_SCL0_FRC5, 8, 0, 1);		// SC0_RES_VSDLY
 
 	SETREG32_CK(& VDC50.SC0_SCL0_FRC4, 11, 16, HEIGHT + VSYNC + VBP + VFP - 1);// SC0_RES_FV Free-Running Vsync Period Setting
 	SETREG32_CK(& VDC50.SC0_SCL0_FRC4, 11, 0, WIDTH + HSYNC + HBP + HFP - 1);	// SC0_RES_FH Hsync Period Setting
+
+	SETREG32_CK(& VDC50.SC0_SCL0_FRC6, 11, 16, VSYNC + VBP);	// SC0_RES_F_VS
+	SETREG32_CK(& VDC50.SC0_SCL0_FRC6, 11, 0, HEIGHT);			// SC0_RES_F_VW
+
+	SETREG32_CK(& VDC50.SC0_SCL0_FRC7, 11, 16, HSYNC + HBP);	// SC0_RES_F_HS
+	SETREG32_CK(& VDC50.SC0_SCL0_FRC7, 11, 0, WIDTH);			// SC0_RES_F_HW
 
 	SETREG32_CK(& VDC50.SC0_SCL0_FRC3, 1, 0, 0x01);	// SC0_RES_VS_SEL Vsync Signal Output Select 1: Internally generated free-running Vsync signal
 	vdc5_update(& VDC50.SC0_SCL0_UPDATE, "SC0_SCL0_UPDATE",
@@ -314,31 +320,27 @@ static void vdc5fb_init_scalers(void)
 	////////////////////////////////////////////////////////////////
 	// SC0
 
-	SETREG32_CK(& VDC50.SC0_SCL0_FRC6, 11, 16, VSYNC + VBP - 1);				// SC0_RES_F_VS
-	SETREG32_CK(& VDC50.SC0_SCL0_FRC6, 11, 0, HEIGHT);							// SC0_RES_F_VW
-
-	SETREG32_CK(& VDC50.SC0_SCL0_FRC7, 11, 16, HSYNC + HBP - 1);			// SC0_RES_F_HS
-	SETREG32_CK(& VDC50.SC0_SCL0_FRC7, 11, 0, WIDTH);						// SC0_RES_F_HW
-
 	// down-scaler off
 	// depend on SC0_SCL0_VEN_A
 	SETREG32_CK(& VDC50.SC0_SCL0_DS1, 1, 4, 0);	// SC0_RES_DS_V_ON Vertical Scale Down On/Off 0: Off
 	SETREG32_CK(& VDC50.SC0_SCL0_DS1, 1, 0, 0);	// SC0_RES_DS_H_ON
-
-	SETREG32_CK(& VDC50.SC0_SCL0_DS7, 11, 16, HEIGHT);// SC0_RES_OUT_VW Number of Valid Lines in Vertical Direction Output by Scaling-down Control Block (lines)
-	SETREG32_CK(& VDC50.SC0_SCL0_DS7, 11, 0, WIDTH);	// SC0_RES_OUT_HW Number of Valid Horizontal Pixels Output by Scaling-Down Control Block (video-image clock cycles)
-
 	// up-scaler off
 	// depend on SC0_SCL0_VEN_B
 	SETREG32_CK(& VDC50.SC0_SCL0_US1, 1, 4, 0);	// SC0_RES_US_V_ON
 	SETREG32_CK(& VDC50.SC0_SCL0_US1, 1, 0, 0);	// SC0_RES_US_V_ON
-	SETREG32_CK(& VDC50.SC0_SCL0_OVR1, 24, 0, 0);	// Background Color Setting RGB
+
+	SETREG32_CK(& VDC50.SC0_SCL0_OVR1, 24, 0, 0x00008080);	// Background Color Setting RGB
+
+#if 0
+	SETREG32_CK(& VDC50.SC0_SCL0_DS7, 11, 16, HEIGHT);// SC0_RES_OUT_VW Number of Valid Lines in Vertical Direction Output by Scaling-down Control Block (lines)
+	SETREG32_CK(& VDC50.SC0_SCL0_DS7, 11, 0, WIDTH);	// SC0_RES_OUT_HW Number of Valid Horizontal Pixels Output by Scaling-Down Control Block (video-image clock cycles)
+
 
 	
 
 	SETREG32_CK(& VDC50.SC0_SCL0_US8, 1, 4,	1); // SC0_RES_IBUS_SYNC_SEL 1: Sync signals from the graphics processing block
 	SETREG32_CK(& VDC50.SC0_SCL0_US8, 1, 4,	1); // SC0_RES_DISP_ON 1: Frame display off
-
+#endif
 	////////////////////////////////////////////////////////////////
 	// SC1
 
@@ -719,13 +721,14 @@ static void vdc5fb_init_tcon(void)
 	SETREG32_CK(& VDC50.TCON_TIM_STVB1, 11, 0, HEIGHT);	// TCON_STVB_VW
 
 	// Horisontal sync generation parameters
-	SETREG32_CK(& VDC50.TCON_TIM, 11, 16, (WIDTH + HSYNC + HBP + HFP) / 2);	// TCON_HALF
+	SETREG32_CK(& VDC50.TCON_TIM, 11, 16, WIDTH + HSYNC + HBP + HFP);	// TCON_HALF
+	SETREG32_CK(& VDC50.TCON_TIM, 11, 0, 0);							// TCON_OFFSET
 
 	//SETREG32_CK(& VDC50.TCON_TIM_POLA2, 2, 12, 0x00);	// TCON_POLA_MD
 	//SETREG32_CK(& VDC50.TCON_TIM_POLB2, 2, 12, 0x00);	// TCON_POLB_MD
 
 	// HSYNC signal
-	SETREG32_CK(& VDC50.TCON_TIM_STH1, 11, 16,	0);	// TCON_STH_HS
+	SETREG32_CK(& VDC50.TCON_TIM_STH1, 11, 16,	0);		// TCON_STH_HS
 	SETREG32_CK(& VDC50.TCON_TIM_STH1, 11, 0, HSYNC);	// TCON_STH_HW
 	// Source strobe signal
 	SETREG32_CK(& VDC50.TCON_TIM_STB1, 11, 16, 0);		// TCON_STB_HS
@@ -739,11 +742,11 @@ static void vdc5fb_init_tcon(void)
 	//SETREG32_CK(& VDC50.TCON_TIM_STVA2, 3, 0, 0xXX);	// Output Signal Select for LCD_TCON0 pin - 
 	//SETREG32_CK(& VDC50.TCON_TIM_STVB2, 3, 0, 0xXX);	// Output Signal Select for LCD_TCON1 pin - 
 	//SETREG32_CK(& VDC50.TCON_TIM_STH2, 3, 0, 0xXX);	// Output Signal Select for LCD_TCON2 pin - 
-	SETREG32_CK(& VDC50.TCON_TIM_CPV2, 3, 0, 0x00);	// Output Signal Select for LCD_TCON4 Pin - VSYNC 0: STVA/VS
+	SETREG32_CK(& VDC50.TCON_TIM_CPV2, 3, 0, 0x00);		// Output Signal Select for LCD_TCON4 Pin - VSYNC 0: STVA/VS
 	SETREG32_CK(& VDC50.TCON_TIM_POLA2, 3, 0, 0x02);	// Output Signal Select for LCD_TCON5 Pin - HSYNC 2: STH/SP/HS
 	SETREG32_CK(& VDC50.TCON_TIM_POLB2, 3, 0, 0x07);	// Output Signal Select for LCD_TCON6 Pin - DE
 	// HSYMC polarity
-	SETREG32_CK(& VDC50.TCON_TIM_STH2, 1, 4, 0x01);	// TCON_STH_INV
+	SETREG32_CK(& VDC50.TCON_TIM_STH2, 1, 4, 0x01);		// TCON_STH_INV
 	// VSYNC polarity
 	SETREG32_CK(& VDC50.TCON_TIM_STVA2, 1, 4, 0x01);	// TCON_STVA_INV
 #if 0
