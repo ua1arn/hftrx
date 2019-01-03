@@ -6193,19 +6193,21 @@ void hightests(void)
 		}
 	}
 #endif
-#if 0 && WITHDEBUG
+#if 0
 	// тест дисплея - проход по всем возможным уровням основных цветов
 	for (;;)
 	{
+		char b [32];
 		int c;
 		// COLOR_T bg
 		for (c = 0; c < 256; ++ c)
 		{
 			display_setbgcolor(TFTRGB(c, c, c));
 			display2_bgreset();
-			display_gotoxy(0, 0);
+			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("WHITE %-3d"), c);
 			display_setcolors(COLOR_WHITE, COLOR_BLACK);
-			display_string("WHITE", 0);
+			display_at(0, 0, b);
+			local_delay_ms(50);
 		}
 		//for (; c -- > 0; )
 		//{
@@ -6216,9 +6218,10 @@ void hightests(void)
 		{
 			display_setbgcolor(TFTRGB(c, 0, 0));
 			display2_bgreset();
-			display_gotoxy(0, 0);
+			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("RED %-3d"), c);
 			display_setcolors(COLOR_WHITE, COLOR_BLACK);
-			display_string("RED", 0);
+			display_at(0, 0, b);
+			local_delay_ms(50);
 		}
 		//for (; c -- > 0; )
 		//{
@@ -6229,9 +6232,10 @@ void hightests(void)
 		{
 			display_setbgcolor(TFTRGB(0, c, 0));
 			display2_bgreset();
-			display_gotoxy(0, 0);
+			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("GREEN %-3d"), c);
 			display_setcolors(COLOR_WHITE, COLOR_BLACK);
-			display_string("GREEN", 0);
+			display_at(0, 0, b);
+			local_delay_ms(50);
 		}
 		//for (; c -- > 0; )
 		//{
@@ -6242,9 +6246,10 @@ void hightests(void)
 		{
 			display_setbgcolor(TFTRGB(0, 0, c));
 			display2_bgreset();
-			display_gotoxy(0, 0);
+			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("BLUE %-3d"), c);
 			display_setcolors(COLOR_WHITE, COLOR_BLACK);
-			display_string("BLUE", 0);
+			display_at(0, 0, b);
+			local_delay_ms(50);
 		}
 		//for (; c -- > 0; )
 		//{
