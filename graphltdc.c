@@ -176,6 +176,53 @@ void vdc5_update(
 
 /************************************************************************/
 
+#if LCDMODE_LTDC_L8
+
+static void
+VDC5_fillLUT_L8(
+	volatile uint32_t * reg
+	)
+{
+	unsigned color;
+
+	for (color = 0; color < 256; ++ color)
+	{
+#define XRGB(zr,zg,zb) do { r = (zr), g = (zg), b = (zb); } while (0)
+		uint_fast8_t r, g, b;
+
+		switch (color)
+		{
+		case TFTRGB(0, 0, 0)			/*COLOR_BLACK*/:		XRGB(0, 0, 0);			break;	// 0x00 черный
+		case TFTRGB(255, 0, 0)			/*COLOR_RED*/:			XRGB(255, 0, 0);		break; 	// 0xE0 красный
+		case TFTRGB(0, 255, 0)			/*COLOR_GREEN*/:		XRGB(0, 255, 0);		break; 	// 0x1C зеленый
+		case TFTRGB(0, 0, 255)			/*COLOR_BLUE*/:			XRGB(0, 0, 255);		break; 	// 0x03 синий
+		case TFTRGB(128, 0, 0)			/*COLOR_DARKRED*/:		XRGB(128, 0, 0);		break; 	// 
+		case TFTRGB(0, 128, 0)			/*COLOR_DARKGREEN*/:	XRGB(0, 128, 0);		break; 	// 
+		case TFTRGB(0, 0, 128)			/*COLOR_DARKBLUE*/:		XRGB(0, 0, 128);		break; 	// 
+		case TFTRGB(255, 255, 0)		/*COLOR_YELLOW*/:		XRGB(255, 255, 0);		break; 	// 0xFC желтый
+		case TFTRGB(255, 0, 255)		/*COLOR_MAGENTA*/:		XRGB(255, 0, 255);		break; 	// 0x83 пурпурный
+		case TFTRGB(0, 255, 255)		/*COLOR_CYAN*/:			XRGB(0, 255, 255);		break; 	// 0x1F голубой
+		case TFTRGB(255, 255, 255)		/*COLOR_WHITE*/:		XRGB(255, 255, 255);	break;  // 0xff	белый
+		case TFTRGB(128, 128, 128)		/*COLOR_GRAY*/:			XRGB(128, 128, 128);	break; 	// серый
+		case TFTRGB(0xa5, 0x2a, 0x2a)	/*COLOR_BROWN*/:		XRGB(0xa5, 0x2a, 0x2a);	break; 	// 0x64 коричневый
+		case TFTRGB(0xff, 0xd7, 0x00)	/*COLOR_GOLD*/:			XRGB(0xff, 0xd7, 0x00);	break; 	// 0xF4 золото
+		case TFTRGB(0xd1, 0xe2, 0x31)	/*COLOR_PEAR*/:			XRGB(0xd1, 0xe2, 0x31);	break; 	// 0xDC грушевый
+#undef XRGB
+		default:
+			r = ((color & 0xe0) << 0) | ((color & 0x80) ? 0x1f : 0);	// red
+			g = ((color & 0x1c) << 3) | ((color & 0x10) ? 0x1f : 0);	// green
+			b = ((color & 0x03) << 6) | ((color & 0x02) ? 0x3f : 0);	// blue
+			break;
+		}
+		/* запись значений в регистры палитры */
+		SETREG32_CK(reg + color, 8, 24, 0x00);	// alpha
+		SETREG32_CK(reg + color, 8, 16, r);
+		SETREG32_CK(reg + color, 8, 8, g);
+		SETREG32_CK(reg + color, 8, 0, b);
+	}
+}
+
+#endif /* LCDMODE_LTDC_L8 */
 
 static void vdc5fb_init_syscnt(void)
 {
@@ -484,8 +531,16 @@ void arm_hardware_ltdc_pip_off(void)	// set PIP framebuffer address
 static void vdc5fb_init_graphics(void)
 {
 	const unsigned ROWSIZE = sizeof framebuff [0];	// размер одной строки в байтах
-	const unsigned grx_format = 0x00;	// GRx_FORMAT 0: RGB565
-	const unsigned grx_rdswa = 0x06;	// GRx_RDSWA 110: (7) (8) (5) (6) (3) (4) (1) (2) [32-bit swap + 16-bit swap]
+
+#if LCDMODE_LTDC_L8
+	const unsigned grx_format_MAIN = 0x05;	// GRx_FORMAT 5: CLUT8
+	const unsigned grx_rdswa_MAIN = 0x07;	// GRx_RDSWA 111: (8) (7) (6) (5) (4) (3) (2) (1) [32-bit swap + 16-bit swap + 8-bit swap]
+#else /* LCDMODE_LTDC_L8 */
+	const unsigned grx_format_MAIN = 0x00;	// GRx_FORMAT 0: RGB565
+	const unsigned grx_rdswa_MAIN = 0x06;	// GRx_RDSWA 110: (7) (8) (5) (6) (3) (4) (1) (2) [32-bit swap + 16-bit swap]
+#endif /* LCDMODE_LTDC_L8 */
+	const unsigned grx_format_PIP = 0x00;	// GRx_FORMAT 0: RGB565
+	const unsigned grx_rdswa_PIP = 0x06;	// GRx_RDSWA 110: (7) (8) (5) (6) (3) (4) (1) (2) [32-bit swap + 16-bit swap]
 
 	////////////////////////////////////////////////////////////////
 	// GR0
@@ -498,8 +553,8 @@ static void vdc5fb_init_graphics(void)
 	SETREG32_CK(& VDC50.GR0_FLM5, 11, 16, HEIGHT - 1);	// GR0_FLM_LNUM Sets the number of lines in a frame
 	SETREG32_CK(& VDC50.GR0_FLM5, 11, 0, HEIGHT - 1);	// GR0_FLM_LOOP
 	SETREG32_CK(& VDC50.GR0_FLM6, 11, 16, WIDTH - 1);	// GR0_HW Sets the width of the horizontal valid period.
-	SETREG32_CK(& VDC50.GR0_FLM6, 4, 28, grx_format);	// GR0_FORMAT 0: RGB565
-	SETREG32_CK(& VDC50.GR0_FLM6, 3, 10, grx_rdswa);	// GR0_RDSWA 110: (7) (8) (5) (6) (3) (4) (1) (2) [32-bit swap + 16-bit swap]
+	SETREG32_CK(& VDC50.GR0_FLM6, 4, 28, grx_format_MAIN);	// GR0_FORMAT 0: RGB565
+	SETREG32_CK(& VDC50.GR0_FLM6, 3, 10, grx_rdswa_MAIN);	// GR0_RDSWA 110: (7) (8) (5) (6) (3) (4) (1) (2) [32-bit swap + 16-bit swap]
 	SETREG32_CK(& VDC50.GR0_AB1, 2, 0,	0x00);			// GR0_DISP_SEL 0: background color
 	SETREG32_CK(& VDC50.GR0_BASE, 24, 0, 0x00FF0000);	// GREEN GR0_BASE GBR Background Color B,Gb & R Signal
 	SETREG32_CK(& VDC50.GR0_AB2, 11, 16, VSYNC + VBP);	// GR0_GRC_VS
@@ -519,14 +574,26 @@ static void vdc5fb_init_graphics(void)
 	SETREG32_CK(& VDC50.GR2_FLM5, 11, 16, HEIGHT - 1);	// GR2_FLM_LNUM Sets the number of lines in a frame
 	SETREG32_CK(& VDC50.GR2_FLM5, 11, 0, HEIGHT - 1);	// GR2_FLM_LOOP Sets the number of lines in a frame
 	SETREG32_CK(& VDC50.GR2_FLM6, 11, 16, WIDTH - 1);	// GR2_HW Sets the width of the horizontal valid period.
-	SETREG32_CK(& VDC50.GR2_FLM6, 4, 28, grx_format);	// GR2_FORMAT 0: RGB565
-	SETREG32_CK(& VDC50.GR2_FLM6, 3, 10, grx_rdswa);	// GR2_RDSWA 110: (7) (8) (5) (6) (3) (4) (1) (2) [32-bit swap + 16-bit swap]
+	SETREG32_CK(& VDC50.GR2_FLM6, 4, 28, grx_format_MAIN);	// GR2_FORMAT 0: RGB565
+	SETREG32_CK(& VDC50.GR2_FLM6, 3, 10, grx_rdswa_MAIN);	// GR2_RDSWA 110: (7) (8) (5) (6) (3) (4) (1) (2) [32-bit swap + 16-bit swap]
 	SETREG32_CK(& VDC50.GR2_AB1, 2, 0,	0x02);			// GR2_DISP_SEL 2: Current graphics display
 	SETREG32_CK(& VDC50.GR2_BASE, 24, 0, 0x0000FF00);	// BLUE GR2_BASE GBR Background Color B,Gb & R Signal
 	SETREG32_CK(& VDC50.GR2_AB2, 11, 16, VSYNC + VBP);	// GR2_GRC_VS
 	SETREG32_CK(& VDC50.GR2_AB2, 11, 0, HEIGHT);		// GR2_GRC_VW
 	SETREG32_CK(& VDC50.GR2_AB3, 11, 16, HSYNC + HBP);	// GR2_GRC_HS
 	SETREG32_CK(& VDC50.GR2_AB3, 11, 0, WIDTH);			// GR2_GRC_HW
+
+#if LCDMODE_LTDC_L8
+	#define     VDC5_CH0_GR0_CLUT_TBL           (*(volatile uint32_t*)0xFCFF6000)
+	//#define     VDC5_CH0_GR1_CLUT_TBL           (*(volatile uint32_t*)0xFCFF6400)
+	#define     VDC5_CH0_GR2_CLUT_TBL           (*(volatile uint32_t*)0xFCFF6800)
+	#define     VDC5_CH0_GR3_CLUT_TBL           (*(volatile uint32_t*)0xFCFF6C00)
+
+	SETREG32_CK(& VDC50.GR2_CLUT, 1, 16, 0x00);			// GR2_CLT_SEL
+	VDC5_fillLUT_L8(& VDC5_CH0_GR2_CLUT_TBL);
+	SETREG32_CK(& VDC50.GR2_CLUT, 1, 16, 0x01);			// GR2_CLT_SEL
+	//VDC50.GR2_CLUT ^= (1uL << 16);	// GR2_CLT_SEL Switch to filled table
+#endif /* LCDMODE_LTDC_L8 */
 
 	////////////////////////////////////////////////////////////////
 	// GR3 - PIP screen
@@ -540,8 +607,8 @@ static void vdc5fb_init_graphics(void)
 	SETREG32_CK(& VDC50.GR3_FLM5, 11, 16, HEIGHT - 1);	// GR3_FLM_LNUM Sets the number of lines in a frame
 	SETREG32_CK(& VDC50.GR3_FLM5, 11, 0, HEIGHT - 1);	// GR3_FLM_LOOP Sets the number of lines in a frame
 	SETREG32_CK(& VDC50.GR3_FLM6, 11, 16, WIDTH - 1);	// GR3_HW Sets the width of the horizontal valid period.
-	SETREG32_CK(& VDC50.GR3_FLM6, 4, 28, grx_format);	// GR3_FORMAT 0: RGB565
-	SETREG32_CK(& VDC50.GR3_FLM6, 3, 10, grx_rdswa);	// GR3_RDSWA 110: (7) (8) (5) (6) (3) (4) (1) (2) [32-bit swap + 16-bit swap]
+	SETREG32_CK(& VDC50.GR3_FLM6, 4, 28, grx_format_PIP);	// GR3_FORMAT 0: RGB565
+	SETREG32_CK(& VDC50.GR3_FLM6, 3, 10, grx_rdswa_PIP);	// GR3_RDSWA 110: (7) (8) (5) (6) (3) (4) (1) (2) [32-bit swap + 16-bit swap]
 	SETREG32_CK(& VDC50.GR3_AB1, 2, 0,	0x01);			// GR3_DISP_SEL 1: Lower-layer graphics display
 	SETREG32_CK(& VDC50.GR3_BASE, 24, 0, 0x000000FF);	// RED GR3_BASE GBR Background Color B,Gb & R Signal
 	SETREG32_CK(& VDC50.GR3_AB2, 11, 16, VSYNC + VBP);	// GR3_GRC_VS
