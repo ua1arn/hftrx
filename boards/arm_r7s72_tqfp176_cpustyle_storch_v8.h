@@ -626,6 +626,7 @@
 	} while (0)
 
 #if LCDMODE_LTDC
+	/* Table 34.9 Bit Allocation of RGB Signal Input for RGB565 Output */ 
 	#define HARDWARE_LTDC_INITIALIZE() do { \
 		/* Synchronisation signals */ \
 		arm_hardware_pio7_alternative((1U << 4), R7S721_PIOALT_6);	/* P7_4 CLK LCD0_CLK */ \
@@ -634,24 +635,24 @@
 		/* arm_hardware_pio7_alternative((1U << 7), R7S721_PIOALT_6); */	/* P7_7 DE */ \
 		arm_hardware_pio7_outputs((1U << 7), 0 * (1U << 7));	/* P7_7 DE=0 */ \
 		/* BLUE */ \
-		arm_hardware_pio3_alternative((1U << 0), R7S721_PIOALT_3);	/* P3_0 B3 */ \
-		arm_hardware_pio3_alternative((1U << 1), R7S721_PIOALT_3);	/* P3_1 B4 */ \
-		arm_hardware_pio3_alternative((1U << 2), R7S721_PIOALT_3);	/* P3_2 B5 */ \
-		arm_hardware_pio3_alternative((1U << 3), R7S721_PIOALT_3);	/* P3_3 B6 */ \
-		arm_hardware_pio3_alternative((1U << 4), R7S721_PIOALT_3);	/* P3_4 B7 */ \
+		arm_hardware_pio3_alternative((1U << 0), R7S721_PIOALT_3);	/* P3_0 LCD0_DATA0 B3 */ \
+		arm_hardware_pio3_alternative((1U << 1), R7S721_PIOALT_3);	/* P3_1 LCD0_DATA1 B4 */ \
+		arm_hardware_pio3_alternative((1U << 2), R7S721_PIOALT_3);	/* P3_2 LCD0_DATA2 B5 */ \
+		arm_hardware_pio3_alternative((1U << 3), R7S721_PIOALT_3);	/* P3_3 LCD0_DATA3 B6 */ \
+		arm_hardware_pio3_alternative((1U << 4), R7S721_PIOALT_3);	/* P3_4 LCD0_DATA4 B7 */ \
 		/* GREEN */ \
-		arm_hardware_pio3_alternative((1U << 5), R7S721_PIOALT_3);	/* P3_5 G2 */ \
-		arm_hardware_pio3_alternative((1U << 6), R7S721_PIOALT_3);	/* P3_6 G3 */ \
-		arm_hardware_pio3_alternative((1U << 7), R7S721_PIOALT_3);	/* P3_7 G4 */ \
-		arm_hardware_pio6_alternative((1U << 0), R7S721_PIOALT_2);	/* P6_0 G5 */ \
-		arm_hardware_pio6_alternative((1U << 1), R7S721_PIOALT_2);	/* P6_1 G6 */ \
-		arm_hardware_pio6_alternative((1U << 2), R7S721_PIOALT_2);	/* P6_2 G7 */ \
+		arm_hardware_pio3_alternative((1U << 5), R7S721_PIOALT_3);	/* P3_5 LCD0_DATA5 G2 */ \
+		arm_hardware_pio3_alternative((1U << 6), R7S721_PIOALT_3);	/* P3_6 LCD0_DATA6 G3 */ \
+		arm_hardware_pio3_alternative((1U << 7), R7S721_PIOALT_3);	/* P3_7 LCD0_DATA7 G4 */ \
+		arm_hardware_pio6_alternative((1U << 0), R7S721_PIOALT_2);	/* P6_0 LCD0_DATA8 G5 */ \
+		arm_hardware_pio6_alternative((1U << 1), R7S721_PIOALT_2);	/* P6_1 LCD0_DATA9 G6 */ \
+		arm_hardware_pio6_alternative((1U << 2), R7S721_PIOALT_2);	/* P6_2 LCD0_DATA10 G7 */ \
 		/* RED */ \
-		arm_hardware_pio6_alternative((1U << 3), R7S721_PIOALT_2);	/* P6_3 R3 */ \
-		arm_hardware_pio6_alternative((1U << 4), R7S721_PIOALT_2);	/* P6_4 R4 */ \
-		arm_hardware_pio6_alternative((1U << 5), R7S721_PIOALT_2);	/* P6_5 R5 */ \
-		arm_hardware_pio6_alternative((1U << 6), R7S721_PIOALT_2);	/* P6_6 R6 */ \
-		arm_hardware_pio6_alternative((1U << 7), R7S721_PIOALT_2);	/* P6_7 R7 */ \
+		arm_hardware_pio6_alternative((1U << 3), R7S721_PIOALT_2);	/* P6_3 LCD0_DATA11 R3 */ \
+		arm_hardware_pio6_alternative((1U << 4), R7S721_PIOALT_2);	/* P6_4 LCD0_DATA12 R4 */ \
+		arm_hardware_pio6_alternative((1U << 5), R7S721_PIOALT_2);	/* P6_5 LCD0_DATA13 R5 */ \
+		arm_hardware_pio6_alternative((1U << 6), R7S721_PIOALT_2);	/* P6_6 LCD0_DATA14 R6 */ \
+		arm_hardware_pio6_alternative((1U << 7), R7S721_PIOALT_2);	/* P6_7 LCD0_DATA15 R7 */ \
 	} while (0)
 
 	/* управление состоянием сигнала DISP панели */
