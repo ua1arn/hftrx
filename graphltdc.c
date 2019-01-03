@@ -447,12 +447,33 @@ static void vdc5fb_init_scalers(void)
 #endif
 }
 
+#if LCDMODE_LTDC_PIP16
+
+/* set bottom buffer start */
+void arm_hardware_ltdc_pip_set(uintptr_t p)
+{
+	LAYER_PIP->CFBAR = p;
+	LAYER_PIP->CR |= LTDC_LxCR_LEN;
+	LTDC->SRCR = LTDC_SRCR_VBR;	/* Vertical Blanking Reload. */
+}
+
+void arm_hardware_ltdc_pip_off(void)	// set PIP framebuffer address
+{
+	LAYER_PIP->CR &= ~ LTDC_LxCR_LEN;
+	LTDC->SRCR = LTDC_SRCR_VBR;	/* Vertical Blanking Reload. */
+}
+
+#endif /* LCDMODE_LTDC_PIP16 */
+
 static void vdc5fb_init_graphics(void)
 {
 	const unsigned ROWSIZE = sizeof framebuff [0];	// размер одной строки в байтах
 	const unsigned grx_format = 0x00;	// GRx_FORMAT 0: RGB565
 	const unsigned grx_rdswa = 0x06;	// GRx_RDSWA 110: (7) (8) (5) (6) (3) (4) (1) (2) [32-bit swap + 16-bit swap]
 
+	pipparams_t mainwnd = { 0, 0, DIM_SECOND, DIM_FIRST };
+	pipparams_t pipwnd;
+	display2_getpipparams(& pipwnd);
 	////////////////////////////////////////////////////////////////
 	// GR0
 	SETREG32_CK(& VDC50.GR0_FLM_RD, 1, 0, 0);	// GR0_R_ENB Frame Buffer Read Enable
@@ -1652,23 +1673,24 @@ arm_hardware_ltdc_initialize(void)
 	debug_printf_P(PSTR("arm_hardware_ltdc_initialize done\n"));
 }
 
+#if LCDMODE_LTDC_PIP16
+
 /* set bottom buffer start */
 void arm_hardware_ltdc_pip_set(uintptr_t p)
 {
-#if LCDMODE_LTDC_PIP16
 	LAYER_PIP->CFBAR = p;
 	LAYER_PIP->CR |= LTDC_LxCR_LEN;
 	LTDC->SRCR = LTDC_SRCR_VBR;	/* Vertical Blanking Reload. */
-#endif /* LCDMODE_LTDC_PIP16 */
 }
 
 void arm_hardware_ltdc_pip_off(void)	// set PIP framebuffer address
 {
-#if LCDMODE_LTDC_PIP16
 	LAYER_PIP->CR &= ~ LTDC_LxCR_LEN;
 	LTDC->SRCR = LTDC_SRCR_VBR;	/* Vertical Blanking Reload. */
-#endif /* LCDMODE_LTDC_PIP16 */
 }
+
+#endif /* LCDMODE_LTDC_PIP16 */
+
 #endif /* CPUSTYLE_STM32F */
 
 #endif /* LCDMODE_LTDC */
