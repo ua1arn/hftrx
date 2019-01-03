@@ -41,7 +41,7 @@
 
 		VSYNC = 10,				/* Vertical synchronization   */
 		VBP = 2,					/* Vertical back porch        */
-		VFP = 2,					/* Vertical front porch       */
+		VFP = 4,					/* Vertical front porch       */
 	};
 #elif LCDMODE_ILI8961
 	// HHT270C-8961-6A6 (320*240)
@@ -157,7 +157,7 @@ void vdc5_update(
                                                                  = Horizontal Pulse Width(HPW) + Horizontal Back Porch(HBP) */
 #define     LCD_CH0_DISP_HW         (480u)                   /* Horizontal Display Period(HDP)                              */
 
-#define     LCD_CH0_SIG_FV          (288u - 1u)              /* Vertical Total Period(VTP)                                  */
+#define     LCD_CH0_SIG_FV          (272u + 16u - 1u)              /* Vertical Total Period(VTP)                                  */
 #define     LCD_CH0_SIG_FH          (539u - 1u)             /* Horizontal Total Period(HTP)                                */
 
 #define     LCD_CH0_TCON_PIN_VSYNC  VDC5_LCD_TCON_PIN_4      /* Select TCON of a Vsync signal (Vsync_TCON_select)           */
@@ -448,6 +448,8 @@ static void vdc5fb_init_scalers(void)
 static void vdc5fb_init_graphics(void)
 {
 	const unsigned ROWSIZE = sizeof framebuff [0];	// размер одной строки в байтах
+	const unsigned grx_format = 0x00;	// GRx_FORMAT 0: RGB565
+	const unsigned grx_rdswa = 0x06;	// GRx_RDSWA 110: (7) (8) (5) (6) (3) (4) (1) (2) [32-bit swap + 16-bit swap]
 
 	////////////////////////////////////////////////////////////////
 	// GR0
@@ -460,8 +462,9 @@ static void vdc5fb_init_graphics(void)
 	SETREG32_CK(& VDC50.GR0_FLM5, 11, 16, HEIGHT - 1);	// GR0_FLM_LNUM Sets the number of lines in a frame
 	SETREG32_CK(& VDC50.GR0_FLM5, 11, 0, HEIGHT - 1);	// GR0_FLM_LOOP
 	SETREG32_CK(& VDC50.GR0_FLM6, 11, 16, WIDTH - 1);	// GR0_HW Sets the width of the horizontal valid period.
-	SETREG32_CK(& VDC50.GR0_FLM6, 4, 28, 0x00);		// GR0_FORMAT 0: RGB565
-	SETREG32_CK(& VDC50.GR0_AB1, 2, 0,	0x00);	// GR0_DISP_SEL 0: background color
+	SETREG32_CK(& VDC50.GR0_FLM6, 4, 28, grx_format);	// GR0_FORMAT 0: RGB565
+	SETREG32_CK(& VDC50.GR0_FLM6, 3, 10, grx_rdswa);	// GR0_RDSWA 110: (7) (8) (5) (6) (3) (4) (1) (2) [32-bit swap + 16-bit swap]
+	SETREG32_CK(& VDC50.GR0_AB1, 2, 0,	0x00);			// GR0_DISP_SEL 0: background color
 	SETREG32_CK(& VDC50.GR0_BASE, 24, 0, 0x00FF0000);	// GREEN GR0_BASE GBR Background Color B,Gb& R Signal
 	SETREG32_CK(& VDC50.GR0_AB2, 11, 16, VSYNC + VBP);	// GR0_GRC_VS
 	SETREG32_CK(& VDC50.GR0_AB2, 11, 0, HEIGHT);		// GR0_GRC_VW
@@ -480,8 +483,9 @@ static void vdc5fb_init_graphics(void)
 	SETREG32_CK(& VDC50.GR2_FLM5, 11, 16, HEIGHT - 1);	// GR2_FLM_LNUM Sets the number of lines in a frame
 	SETREG32_CK(& VDC50.GR2_FLM5, 11, 0, HEIGHT - 1);	// GR2_FLM_LOOP Sets the number of lines in a frame
 	SETREG32_CK(& VDC50.GR2_FLM6, 11, 16, WIDTH - 1);	// GR2_HW Sets the width of the horizontal valid period.
-	SETREG32_CK(& VDC50.GR2_FLM6, 4, 28, 0x00);		// GR2_FORMAT 0: RGB565
-	SETREG32_CK(& VDC50.GR2_AB1, 2, 0,	0x00);	// GR2_DISP_SEL 0: Background color display
+	SETREG32_CK(& VDC50.GR2_FLM6, 4, 28, grx_format);	// GR2_FORMAT 0: RGB565
+	SETREG32_CK(& VDC50.GR2_FLM6, 3, 10, grx_rdswa);	// GR2_RDSWA 110: (7) (8) (5) (6) (3) (4) (1) (2) [32-bit swap + 16-bit swap]
+	SETREG32_CK(& VDC50.GR2_AB1, 2, 0,	0x00);			// GR2_DISP_SEL 0: Background color display
 	SETREG32_CK(& VDC50.GR2_BASE, 24, 0, 0x0000FF00);	// BLUE GR2_BASE GBR Background Color B,Gb& R Signal
 	SETREG32_CK(& VDC50.GR2_AB2, 11, 16, VSYNC + VBP);	// GR2_GRC_VS
 	SETREG32_CK(& VDC50.GR2_AB2, 11, 0, HEIGHT);		// GR2_GRC_VW
@@ -500,9 +504,9 @@ static void vdc5fb_init_graphics(void)
 	SETREG32_CK(& VDC50.GR3_FLM5, 11, 16, HEIGHT - 1);	// GR3_FLM_LNUM Sets the number of lines in a frame
 	SETREG32_CK(& VDC50.GR3_FLM5, 11, 0, HEIGHT - 1);	// GR3_FLM_LOOP Sets the number of lines in a frame
 	SETREG32_CK(& VDC50.GR3_FLM6, 11, 16, WIDTH - 1);	// GR3_HW Sets the width of the horizontal valid period.
-	SETREG32_CK(& VDC50.GR3_FLM6, 4, 28, 0x00);		// GR3_FORMAT 0: RGB565
-	SETREG32_CK(& VDC50.GR3_AB1, 2, 0,	0x02);		// GR3_DISP_SEL 2: Current graphics display
-	//SETREG32_CK(& VDC50.GR3_AB1, 2, 0,	0x00);	// GR3_DISP_SEL 0: Background color display
+	SETREG32_CK(& VDC50.GR3_FLM6, 4, 28, grx_format);	// GR3_FORMAT 0: RGB565
+	SETREG32_CK(& VDC50.GR3_FLM6, 3, 10, grx_rdswa);	// GR3_RDSWA 110: (7) (8) (5) (6) (3) (4) (1) (2) [32-bit swap + 16-bit swap]
+	SETREG32_CK(& VDC50.GR3_AB1, 2, 0,	0x02);			// GR3_DISP_SEL 2: Current graphics display
 	SETREG32_CK(& VDC50.GR3_BASE, 24, 0, 0x000000FF);	// RED GR3_BASE GBR Background Color B,Gb& R Signal
 	SETREG32_CK(& VDC50.GR3_AB2, 11, 16, VSYNC + VBP);	// GR3_GRC_VS
 	SETREG32_CK(& VDC50.GR3_AB2, 11, 0, HEIGHT);		// GR3_GRC_VW
