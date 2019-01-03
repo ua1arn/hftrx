@@ -11,8 +11,8 @@
 #define ARM_R7S72_TQFP176_CTLSTYLE_STORCH_V8_H_INCLUDED 1
 
 	//#define WITHSAICLOCKFROMI2S 1	/* Блок SAI1 тактируется от PLL I2S */
-	#define WITHI2SCLOCKFROMPIN 1	// тактовая частота на SPI2 (I2S) подается с внешнего генератора, в процессор вводится через MCK сигнал интерфейса
-	#define WITHSAICLOCKFROMPIN 1	// тактовая частота на SAI1 подается с внешнего генератора, в процессор вводится через MCK сигнал интерфейса
+	#define WITHI2SCLOCKFROMPIN 1	// тактовая частота на SPI2 (I2S) подается с внешнего генератора, в процессор вводится через AUDIO_X1 сигнал интерфейса
+	#define WITHSAICLOCKFROMPIN 1	// тактовая частота на SAI1 подается с внешнего генератора, в процессор вводится через AUDIO_X1 сигнал интерфейса
 
 	#define WITHCPUXTAL 12000000uL			/* На процессоре установлен кварц 12.000 МГц */
 
@@ -103,7 +103,7 @@
 	#define LCDMODE_LTDC	1		/* Use STM32F4xxx with LCD-TFT Controller (LTDC), also need LCDMODE_ILI9341 */
 	//#define LCDMODE_LTDC_L8	1	/* используется 8 бит на пиксель представление экрана. Иначе - 16 бит. */
 	//#define LCDMODE_LTDCSDRAMBUFF	1	/* используется область внешнего SDRAM для хранения framebuffer */
-	//#define LCDMODE_LTDC_PIP16	1	/* используется PIP с форматом 16 бит - RGB565 */
+	#define LCDMODE_LTDC_PIP16	1	/* используется PIP с форматом 16 бит - RGB565 */
 	#define LCDMODE_LQ043T3DX02K 1	/* LQ043T3DX02K panel (272*480) - SONY PSP-1000 display */
 
 	//#define LCDMODE_HARD_SPI	1	/* LCD over SPI line */
@@ -182,7 +182,7 @@
 	#define WITHDSPEXTFIR 1			/* Фильтрация квадратур осуществляется внешней аппаратурой */
 	#define WITHIF4DSP	1	// "Дятел"
 
-	#if 0
+	#if 1
 		#define WITHUSBHEADSET 1	/* трансивер работает USB гарнитурой для компютера - режим тестирования */
 		#define WITHBBOX	1	// Black Box mode - устройство без органов управления
 		#define	WITHBBOXMIKESRC	BOARD_TXAUDIO_USB
@@ -232,7 +232,7 @@
 	//#define WITHIFSHIFTOFFSET	(-250)	/* Начальное занчение IF SHIFT */
 	//#define WITHPBT		1	/* используется PBT (если LO3 есть) */
 	#define WITHCAT			1	/* используется CAT (через USB CDC) */
-	#define WITHDEBUG		1	/* Отладочная печать через COM-порт. */
+	//#define WITHDEBUG		1	/* Отладочная печать через COM-порт. */
 	//#define WITHNMEA		1	/* используется NMEA parser */
 	//#define WITHMODEM		1	/* Устройство работает как радиомодем с последовательным интерфейсом */
 	//#define WITHFREEDV	1	/* поддержка режима FreeDV - http://freedv.org/ */ 

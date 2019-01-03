@@ -452,15 +452,31 @@ static void vdc5fb_init_scalers(void)
 /* set bottom buffer start */
 void arm_hardware_ltdc_pip_set(uintptr_t p)
 {
-	LAYER_PIP->CFBAR = p;
-	LAYER_PIP->CR |= LTDC_LxCR_LEN;
-	LTDC->SRCR = LTDC_SRCR_VBR;	/* Vertical Blanking Reload. */
+	SETREG32_CK(& VDC50.GR3_FLM_RD, 1, 0, 1);			// GR3_R_ENB Frame Buffer Read Enable 1: Frame buffer reading is enabled.
+	SETREG32_CK(& VDC50.GR3_FLM2, 32, 0, p);			// GR3_BASE
+	SETREG32_CK(& VDC50.GR3_AB1, 2, 0,	0x03);			// GR3_DISP_SEL 3: Blended display of lower-layer graphics and current graphics
+
+	//vdc5_update(& VDC50.GR3_UPDATE, "GR3_UPDATE",
+		VDC50.GR3_UPDATE = (
+			(1 << 8) |	// GR3_UPDATE Frame Buffer Read Control Register Update
+			(1 << 4) |	// GR3_P_VEN Graphics Display Register Update
+			(1 << 0) |	// GR3_IBUS_VEN Frame Buffer Read Control Register Update
+			0
+		);
 }
 
 void arm_hardware_ltdc_pip_off(void)	// set PIP framebuffer address
 {
-	LAYER_PIP->CR &= ~ LTDC_LxCR_LEN;
-	LTDC->SRCR = LTDC_SRCR_VBR;	/* Vertical Blanking Reload. */
+	SETREG32_CK(& VDC50.GR3_FLM_RD, 1, 0, 0);			// GR3_R_ENB Frame Buffer Read Enable 0: Frame buffer reading is disabled.
+	SETREG32_CK(& VDC50.GR3_AB1, 2, 0,	0x01);			// GR3_DISP_SEL 1: Lower-layer graphics display
+
+	//vdc5_update(& VDC50.GR3_UPDATE, "GR3_UPDATE",
+		VDC50.GR3_UPDATE = (
+			(1 << 8) |	// GR3_UPDATE Frame Buffer Read Control Register Update
+			(1 << 4) |	// GR3_P_VEN Graphics Display Register Update
+			(1 << 0) |	// GR3_IBUS_VEN Frame Buffer Read Control Register Update
+			0
+		);
 }
 
 #endif /* LCDMODE_LTDC_PIP16 */
@@ -471,9 +487,6 @@ static void vdc5fb_init_graphics(void)
 	const unsigned grx_format = 0x00;	// GRx_FORMAT 0: RGB565
 	const unsigned grx_rdswa = 0x06;	// GRx_RDSWA 110: (7) (8) (5) (6) (3) (4) (1) (2) [32-bit swap + 16-bit swap]
 
-	pipparams_t mainwnd = { 0, 0, DIM_SECOND, DIM_FIRST };
-	pipparams_t pipwnd;
-	display2_getpipparams(& pipwnd);
 	////////////////////////////////////////////////////////////////
 	// GR0
 	SETREG32_CK(& VDC50.GR0_FLM_RD, 1, 0, 0);	// GR0_R_ENB Frame Buffer Read Enable
@@ -488,16 +501,16 @@ static void vdc5fb_init_graphics(void)
 	SETREG32_CK(& VDC50.GR0_FLM6, 4, 28, grx_format);	// GR0_FORMAT 0: RGB565
 	SETREG32_CK(& VDC50.GR0_FLM6, 3, 10, grx_rdswa);	// GR0_RDSWA 110: (7) (8) (5) (6) (3) (4) (1) (2) [32-bit swap + 16-bit swap]
 	SETREG32_CK(& VDC50.GR0_AB1, 2, 0,	0x00);			// GR0_DISP_SEL 0: background color
-	SETREG32_CK(& VDC50.GR0_BASE, 24, 0, 0x00FF0000);	// GREEN GR0_BASE GBR Background Color B,Gb& R Signal
+	SETREG32_CK(& VDC50.GR0_BASE, 24, 0, 0x00FF0000);	// GREEN GR0_BASE GBR Background Color B,Gb & R Signal
 	SETREG32_CK(& VDC50.GR0_AB2, 11, 16, VSYNC + VBP);	// GR0_GRC_VS
 	SETREG32_CK(& VDC50.GR0_AB2, 11, 0, HEIGHT);		// GR0_GRC_VW
 	SETREG32_CK(& VDC50.GR0_AB3, 11, 16, HSYNC + HBP);	// GR0_GRC_HS
 	SETREG32_CK(& VDC50.GR0_AB3, 11, 0, WIDTH);			// GR0_GRC_HW
 
 	////////////////////////////////////////////////////////////////
-	// GR2
+	// GR2 - main screen
 
-	SETREG32_CK(& VDC50.GR2_FLM_RD, 1, 0, 0);	// GR2_R_ENB Frame Buffer Read Enable
+	SETREG32_CK(& VDC50.GR2_FLM_RD, 1, 0, 1);	// GR2_R_ENB Frame Buffer Read Enable
 	SETREG32_CK(& VDC50.GR2_FLM1, 2, 8, 0x01);	// GR2_FLM_SEL 1: Selects GR2_FLM_NUM.
 	SETREG32_CK(& VDC50.GR2_FLM2, 32, 0, (uintptr_t) & framebuff);	// GR2_BASE
 	SETREG32_CK(& VDC50.GR2_FLM3, 15, 16, ROWSIZE);	// GR2_LN_OFF
@@ -508,33 +521,56 @@ static void vdc5fb_init_graphics(void)
 	SETREG32_CK(& VDC50.GR2_FLM6, 11, 16, WIDTH - 1);	// GR2_HW Sets the width of the horizontal valid period.
 	SETREG32_CK(& VDC50.GR2_FLM6, 4, 28, grx_format);	// GR2_FORMAT 0: RGB565
 	SETREG32_CK(& VDC50.GR2_FLM6, 3, 10, grx_rdswa);	// GR2_RDSWA 110: (7) (8) (5) (6) (3) (4) (1) (2) [32-bit swap + 16-bit swap]
-	SETREG32_CK(& VDC50.GR2_AB1, 2, 0,	0x00);			// GR2_DISP_SEL 0: Background color display
-	SETREG32_CK(& VDC50.GR2_BASE, 24, 0, 0x0000FF00);	// BLUE GR2_BASE GBR Background Color B,Gb& R Signal
+	SETREG32_CK(& VDC50.GR2_AB1, 2, 0,	0x02);			// GR2_DISP_SEL 2: Current graphics display
+	SETREG32_CK(& VDC50.GR2_BASE, 24, 0, 0x0000FF00);	// BLUE GR2_BASE GBR Background Color B,Gb & R Signal
 	SETREG32_CK(& VDC50.GR2_AB2, 11, 16, VSYNC + VBP);	// GR2_GRC_VS
 	SETREG32_CK(& VDC50.GR2_AB2, 11, 0, HEIGHT);		// GR2_GRC_VW
 	SETREG32_CK(& VDC50.GR2_AB3, 11, 16, HSYNC + HBP);	// GR2_GRC_HS
 	SETREG32_CK(& VDC50.GR2_AB3, 11, 0, WIDTH);			// GR2_GRC_HW
 
 	////////////////////////////////////////////////////////////////
-	// GR3
+	// GR3 - PIP screen
 
-	SETREG32_CK(& VDC50.GR3_FLM_RD, 1, 0, 1);	// GR3_R_ENB Frame Buffer Read Enable
-	SETREG32_CK(& VDC50.GR3_FLM1, 2, 8, 0x01);	// GR3_FLM_SEL 1: Selects GR3_FLM_NUM.
+	SETREG32_CK(& VDC50.GR3_FLM_RD, 1, 0, 0);			// GR3_R_ENB Frame Buffer Read Enable
+	SETREG32_CK(& VDC50.GR3_FLM1, 2, 8, 0x01);			// GR3_FLM_SEL 1: Selects GR3_FLM_NUM.
 	SETREG32_CK(& VDC50.GR3_FLM2, 32, 0, (uintptr_t) & framebuff);	// GR3_BASE
-	SETREG32_CK(& VDC50.GR3_FLM3, 15, 16, ROWSIZE);	// GR3_LN_OFF
-	SETREG32_CK(& VDC50.GR3_FLM3, 10, 0, 0x00);	// GR3_FLM_NUM
+	SETREG32_CK(& VDC50.GR3_FLM3, 15, 16, ROWSIZE);		// GR3_LN_OFF
+	SETREG32_CK(& VDC50.GR3_FLM3, 10, 0, 0x00);			// GR3_FLM_NUM
 	SETREG32_CK(& VDC50.GR3_FLM4, 23, 0, ROWSIZE * HEIGHT);	// GR0_FLM_OFF
 	SETREG32_CK(& VDC50.GR3_FLM5, 11, 16, HEIGHT - 1);	// GR3_FLM_LNUM Sets the number of lines in a frame
 	SETREG32_CK(& VDC50.GR3_FLM5, 11, 0, HEIGHT - 1);	// GR3_FLM_LOOP Sets the number of lines in a frame
 	SETREG32_CK(& VDC50.GR3_FLM6, 11, 16, WIDTH - 1);	// GR3_HW Sets the width of the horizontal valid period.
 	SETREG32_CK(& VDC50.GR3_FLM6, 4, 28, grx_format);	// GR3_FORMAT 0: RGB565
 	SETREG32_CK(& VDC50.GR3_FLM6, 3, 10, grx_rdswa);	// GR3_RDSWA 110: (7) (8) (5) (6) (3) (4) (1) (2) [32-bit swap + 16-bit swap]
-	SETREG32_CK(& VDC50.GR3_AB1, 2, 0,	0x02);			// GR3_DISP_SEL 2: Current graphics display
-	SETREG32_CK(& VDC50.GR3_BASE, 24, 0, 0x000000FF);	// RED GR3_BASE GBR Background Color B,Gb& R Signal
+	SETREG32_CK(& VDC50.GR3_AB1, 2, 0,	0x01);			// GR3_DISP_SEL 1: Lower-layer graphics display
+	SETREG32_CK(& VDC50.GR3_BASE, 24, 0, 0x000000FF);	// RED GR3_BASE GBR Background Color B,Gb & R Signal
 	SETREG32_CK(& VDC50.GR3_AB2, 11, 16, VSYNC + VBP);	// GR3_GRC_VS
 	SETREG32_CK(& VDC50.GR3_AB2, 11, 0, HEIGHT);		// GR3_GRC_VW
 	SETREG32_CK(& VDC50.GR3_AB3, 11, 16, HSYNC + HBP);	// GR3_GRC_HS
 	SETREG32_CK(& VDC50.GR3_AB3, 11, 0, WIDTH);			// GR3_GRC_HW
+
+#if LCDMODE_LTDC_PIP16
+
+	/* Adjust GR3 parameters for PIP mode (GR2 - mani window, GR3 - PIP) */
+
+	//pipparams_t mainwnd = { 0, 0, DIM_SECOND, DIM_FIRST };
+	pipparams_t pipwnd;
+	display2_getpipparams(& pipwnd);
+
+	SETREG32_CK(& VDC50.GR3_FLM_RD, 1, 0, 0);			// GR3_R_ENB Frame Buffer Read Enable
+	SETREG32_CK(& VDC50.GR3_AB1, 2, 0,	0x02);			// GR2_DISP_SEL 2: Current graphics display
+	SETREG32_CK(& VDC50.GR3_FLM3, 15, 16, pipwnd.w * sizeof (PACKEDCOLOR565_T));		// GR3_LN_OFF
+	SETREG32_CK(& VDC50.GR3_FLM3, 10, 0, 0x00);			// GR3_FLM_NUM
+	SETREG32_CK(& VDC50.GR3_FLM4, 23, 0, pipwnd.w * pipwnd.h * sizeof (PACKEDCOLOR565_T));	// GR3_FLM_OFF
+	SETREG32_CK(& VDC50.GR3_FLM5, 11, 16, pipwnd.h - 1);	// GR3_FLM_LNUM Sets the number of lines in a frame
+	SETREG32_CK(& VDC50.GR3_FLM5, 11, 0, pipwnd.h - 1);	// GR3_FLM_LOOP Sets the number of lines in a frame
+	SETREG32_CK(& VDC50.GR3_FLM6, 11, 16, pipwnd.w - 1);	// GR3_HW Sets the width of the horizontal valid period.
+	SETREG32_CK(& VDC50.GR3_AB2, 11, 16, VSYNC + VBP + pipwnd.y);	// GR3_GRC_VS
+	SETREG32_CK(& VDC50.GR3_AB2, 11, 0, pipwnd.h);		// GR3_GRC_VW
+	SETREG32_CK(& VDC50.GR3_AB3, 11, 16, HSYNC + HBP + pipwnd.x);	// GR3_GRC_HS
+	SETREG32_CK(& VDC50.GR3_AB3, 11, 0, pipwnd.w);			// GR3_GRC_HW
+
+#endif /* LCDMODE_LTDC_PIP16 */
 
 #if 0
 	struct fb_videomode *mode = priv->videomode;
