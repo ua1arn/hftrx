@@ -874,30 +874,24 @@ static void vdc5fb_init_tcon(void)
 static void vdc5fb_update_all(void)
 {
 		
-	////////////////////////////////////////////////////////////////
-	// INP
-
-	SETREG32_UPDATE(& VDC50.INP_SEL_CNT, 1, 20, 0);	// INP_SEL 0: Input supplied via the external input pins is off
-	//SETREG32_CK(& VDC50.INP_VSYNC_PH_ADJ, 10, 16, xx);
-	//SETREG32_CK(& VDC50.INP_VSYNC_PH_ADJ, 10, 0,  xx);
-
 	/* update all registers */
 
 	
-	vdc5_update(& VDC50.IMGCNT_UPDATE, "IMGCNT_UPDATE",
-			(1 << 0) |	// IMGCNT_VEN Image Quality Adjustment Block Register Update
-			0
-		);
+	//vdc5_update(& VDC50.IMGCNT_UPDATE, "IMGCNT_UPDATE",
+	//		(1 << 0) |	// IMGCNT_VEN Image Quality Adjustment Block Register Update
+	//		0
+	//	);
 
 	vdc5_update(& VDC50.SC0_SCL0_UPDATE, "SC0_SCL0_UPDATE",
 			(1 << 13) |	// SC0_SCL0_VEN_D	Scaling-Up Control and Frame Buffer Read Control Register Update
-			(1 << 12) |	// SC0_SCL0_VEN_C	Scaling-Down Control and Frame Buffer Read Control Register Upda
+		//	(1 << 12) |	// SC0_SCL0_VEN_C	Scaling-Down Control and Frame Buffer Read Control Register Upda
 			(1 << 8) |	// SC0_SCL0_UPDATE	SYNC Control Register Update
 			(1 << 4) |	// SC0_SCL0_VEN_B	Synchronization Control and Scaling-up Control Register Update
-			(1 << 0) |	// SC0_SCL0_VEN_A	Scaling-Down Control Register Update
+		//	(1 << 0) |	// SC0_SCL0_VEN_A	Scaling-Down Control Register Update
 			0
 		);
 
+#if 0
 	vdc5_update(& VDC50.SC0_SCL1_UPDATE, "SC0_SCL1_UPDATE",
 			(1 << 20) |	// SC0_SCL1_UPDATE_B
 			(1 << 16) |	// SC0_SCL1_UPDATE_A
@@ -905,6 +899,7 @@ static void vdc5fb_update_all(void)
 			(1 << 0) |	// SC0_SCL1_VEN_A
 			0
 		);
+#endif
 
 	vdc5_update(& VDC50.GR0_UPDATE, "GR0_UPDATE",
 			(1 << 8) |	// GR0_UPDATE Frame Buffer Read Control Register Update
