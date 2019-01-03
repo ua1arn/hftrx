@@ -261,8 +261,8 @@ uint_fast8_t board_rtc_chip_initialize(void)
 	static const uint8_t b_WE [1] = { 0x00 };
 
 	ds1305_readbuff(b, sizeof b / sizeof b[0], DS1305REG_CONTROL);
-	eosc = (b [0] & 0x80) == 0;
-	if (eosc == 0)
+	eosc = (b [0] & 0x80) != 0;
+	if (eosc != 0)
 	{
 		// Initial application of power,
 

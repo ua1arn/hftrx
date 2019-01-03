@@ -406,7 +406,7 @@
 #define targetext2		(1U << 0)	// P2_0 external SPI device (PA BOARD ADC)
 #define targetnvram		(1U << 9)	// P2_9 nvmem FM25L16B
 #define targetctl1		(1U << 7)	// P2_7 board control registers chain
-#define targetcodec1	(1U << 11)	// P2_6 on-board codec1 NAU8822L
+#define targetcodec1	(1U << 6)	// P2_6 on-board codec1 NAU8822L
 #define targetadc1		(1U << 4) 	/* P2_4 ADC AD9246 chip select */
 #define targetadc2		(1U << 3) 	/* P2_3 ADC MCP3208-BI/SL chip select */
 
