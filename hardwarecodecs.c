@@ -2977,10 +2977,11 @@ void refreshDMA_uacin(void)
 
 // USB AUDIO
 // DMA по передаче USB0 DMA1 - обработчик прерывания
+// DMA по передаче USB1 DMA1 - обработчик прерывания
 // Use arm_hardware_flush
 // ARM_REALTIME_PRIORITY
 
-void r7s721_usb0_dma1_dmatx_handler(void)
+void r7s721_usbX_dma1_dmatx_handler(void)
 {
 	ASSERT(DMAC12.N0SA_n != 0);
 	release_dmabufferx(DMAC12.N0SA_n);
@@ -3012,6 +3013,7 @@ void r7s721_usb0_dma1_dmatx_handler(void)
 		//DMAC12.CHCTRL_n = DMAC12_CHCTRL_n_CLRINTMSK;	// CLRINTMSK
 	}
 }
+
 
 // audio codec
 // DMA по передаче USB0 DMA1
@@ -3073,7 +3075,7 @@ static void r7s721_usb0_dma1_dmatx_initialize(void)
 
 	{
 		const uint16_t int_id = DMAINT12_IRQn;
-		r7s721_intc_registintfunc(int_id, r7s721_usb0_dma1_dmatx_handler);
+		r7s721_intc_registintfunc(int_id, r7s721_usbX_dma1_dmatx_handler);
 		GIC_SetPriority(int_id, ARM_REALTIME_PRIORITY);
 		GIC_EnableIRQ(int_id);
 	}
@@ -3088,9 +3090,10 @@ static USBALIGN_BEGIN uint8_t uacoutbuff1 [VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT] USB
 
 // USB AUDIO
 // DMA по приему USB0 DMA0 - обработчик прерывания
+// DMA по приему USB1 DMA0 - обработчик прерывания
 // Работает на ARM_SYSTEM_PRIORITY
 
-static RAMFUNC_NONILINE void r7s721_usb0_dma0_dmarx_handler(void)
+static RAMFUNC_NONILINE void r7s721_usbX_dma0_dmarx_handler(void)
 {
 	// Enable switch to next regidters set
 	DMAC13.CHCFG_n |= DMAC13_CHCFG_n_REN;	// REN bit
@@ -3112,6 +3115,7 @@ static RAMFUNC_NONILINE void r7s721_usb0_dma0_dmarx_handler(void)
 		arm_hardware_flush_invalidate((uintptr_t) uacoutbuff1, VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT);
 	}
 }
+
 
 // USB AUDIO
 // DMA по приёму usb0_dma0
@@ -3178,7 +3182,7 @@ static void r7s721_usb0_dma0_dmarx_initialize(void)
 
 	{
 		const uint16_t int_id = DMAINT13_IRQn;
-		r7s721_intc_registintfunc(int_id, r7s721_usb0_dma0_dmarx_handler);
+		r7s721_intc_registintfunc(int_id, r7s721_usbX_dma0_dmarx_handler);
 		GIC_SetPriority(int_id, ARM_SYSTEM_PRIORITY);
 		GIC_EnableIRQ(int_id);
 	}
@@ -3198,44 +3202,6 @@ static void r7s721_usb0_dma0_dmatx_enable(void)
 {
 	// Инициализация порта доступа к регистрам FIFO
 	//const uint_fast8_t pipe = HARDWARE_USBD_PIPE_ISOC_IN;
-}
-
-// USB AUDIO
-// DMA по передаче USB1 DMA1 - обработчик прерывания
-// Use arm_hardware_flush
-// ARM_REALTIME_PRIORITY
-
-void r7s721_usb1_dma1_dmatx_handler(void)
-{
-	ASSERT(DMAC12.N0SA_n != 0);
-	release_dmabufferx(DMAC12.N0SA_n);
-
-	// При наличии следующего блока - запускаем передачу
-	uint_fast16_t size;
-	const uintptr_t addr = getfilled_dmabufferx(& size);	// для передачи в компьютер - может вернуть 0
-	if (addr != 0)
-	{
-		const uint_fast8_t pipe = HARDWARE_USBD_PIPE_ISOC_IN;	// PIPE2
-		WITHUSBHW_DEVICE->PIPESEL = pipe << USB_PIPESEL_PIPESEL_SHIFT;
-		while ((WITHUSBHW_DEVICE->PIPESEL & USB_PIPESEL_PIPESEL) != (pipe << USB_PIPESEL_PIPESEL_SHIFT))
-				;
-		WITHUSBHW_DEVICE->PIPEMAXP = size << USB_PIPEMAXP_MXPS_SHIFT;
-		WITHUSBHW_DEVICE->PIPESEL = 0;
-
-		DMAC12.N0SA_n = dma_flushxrtstx(addr, size);
-		DMAC12.N0TB_n = size;	// размер в байтах
-
-		//DMAC12.CHCTRL_n = DMAC12_CHCTRL_n_SWRST;		// SWRST
-		//DMAC12.CHCTRL_n = DMAC12_CHCTRL_n_CLRINTMSK;	// CLRINTMSK
-		DMAC12.CHCTRL_n = DMAC12_CHCTRL_n_SETEN;		// SETEN
-	}
-	else
-	{
-		DMAC12.N0SA_n = 0;
-		DMAC12.CHCTRL_n = DMAC12_CHCTRL_n_CLREN;		// CLREN
-		//DMAC12.CHCTRL_n = DMAC12_CHCTRL_n_SWRST;		// SWRST
-		//DMAC12.CHCTRL_n = DMAC12_CHCTRL_n_CLRINTMSK;	// CLRINTMSK
-	}
 }
 
 // audio codec
@@ -3298,7 +3264,7 @@ static void r7s721_usb1_dma1_dmatx_initialize(void)
 
 	{
 		const uint16_t int_id = DMAINT12_IRQn;
-		r7s721_intc_registintfunc(int_id, r7s721_usb1_dma1_dmatx_handler);
+		r7s721_intc_registintfunc(int_id, r7s721_usbX_dma1_dmatx_handler);
 		GIC_SetPriority(int_id, ARM_REALTIME_PRIORITY);
 		GIC_EnableIRQ(int_id);
 	}
@@ -3306,36 +3272,6 @@ static void r7s721_usb1_dma1_dmatx_initialize(void)
 	DMAC12.CHCTRL_n = DMAC12_CHCTRL_n_SWRST;		// SWRST
 	DMAC12.CHCTRL_n = DMAC12_CHCTRL_n_CLRINTMSK;	// CLRINTMSK
 	//DMAC12.CHCTRL_n = 1 * (1U << 0);		// SETEN
-}
-
-static USBALIGN_BEGIN uint8_t uacoutbuff0 [VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT] USBALIGN_END;
-static USBALIGN_BEGIN uint8_t uacoutbuff1 [VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT] USBALIGN_END;
-
-// USB AUDIO
-// DMA по приему USB0 DMA0 - обработчик прерывания
-// Работает на ARM_SYSTEM_PRIORITY
-
-static RAMFUNC_NONILINE void r7s721_usb1_dma0_dmarx_handler(void)
-{
-	// Enable switch to next regidters set
-	DMAC13.CHCFG_n |= DMAC13_CHCFG_n_REN;	// REN bit
-	// SR (bt 7)
-	// Indicates the register set currently selected in register mode.
-	// 0: Next0 Register Set
-	// 1: Next1 Register Set
-	const uint_fast8_t b = (DMAC13.CHSTAT_n & DMAC13_CHSTAT_n_SR) != 0;	// SR
-	// Фаза в данном случае отличается от проверенной на передаче в кодек (функция r7s721_ssif0_txdma). 
-	// Прием с автопереключением больше нигде не подтвержден.
-	if (b == 0)
-	{
-		uacout_buffer_save(uacoutbuff0, VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT);
-		arm_hardware_flush_invalidate((uintptr_t) uacoutbuff0, VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT);
-	}
-	else
-	{
-		uacout_buffer_save(uacoutbuff1, VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT);
-		arm_hardware_flush_invalidate((uintptr_t) uacoutbuff1, VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT);
-	}
 }
 
 // USB AUDIO
@@ -3403,7 +3339,7 @@ static void r7s721_usb1_dma0_dmarx_initialize(void)
 
 	{
 		const uint16_t int_id = DMAINT13_IRQn;
-		r7s721_intc_registintfunc(int_id, r7s721_usb1_dma0_dmarx_handler);
+		r7s721_intc_registintfunc(int_id, r7s721_usbX_dma0_dmarx_handler);
 		GIC_SetPriority(int_id, ARM_SYSTEM_PRIORITY);
 		GIC_EnableIRQ(int_id);
 	}
