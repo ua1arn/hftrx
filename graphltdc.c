@@ -503,9 +503,13 @@ void arm_hardware_ltdc_pip_set(uintptr_t p)
 	SETREG32_CK(& VDC50.GR3_FLM2, 32, 0, p);			// GR3_BASE
 	SETREG32_CK(& VDC50.GR3_AB1, 2, 0,	0x03);			// GR3_DISP_SEL 3: Blended display of lower-layer graphics and current graphics
 
+	// GR3_IBUS_VEN in GR3_UPDATE is 1.
+	// GR3_IBUS_VEN and GR3_P_VEN in GR3_UPDATE are 1.
+	// GR3_P_VEN in GR3_UPDATE is 1.
+
 	//vdc5_update(& VDC50.GR3_UPDATE, "GR3_UPDATE",
 		VDC50.GR3_UPDATE = (
-			(1 << 8) |	// GR3_UPDATE Frame Buffer Read Control Register Update
+		//	(1 << 8) |	// GR3_UPDATE Frame Buffer Read Control Register Update
 			(1 << 4) |	// GR3_P_VEN Graphics Display Register Update
 			(1 << 0) |	// GR3_IBUS_VEN Frame Buffer Read Control Register Update
 			0
@@ -519,7 +523,7 @@ void arm_hardware_ltdc_pip_off(void)	// set PIP framebuffer address
 
 	//vdc5_update(& VDC50.GR3_UPDATE, "GR3_UPDATE",
 		VDC50.GR3_UPDATE = (
-			(1 << 8) |	// GR3_UPDATE Frame Buffer Read Control Register Update
+		//	(1 << 8) |	// GR3_UPDATE Frame Buffer Read Control Register Update
 			(1 << 4) |	// GR3_P_VEN Graphics Display Register Update
 			(1 << 0) |	// GR3_IBUS_VEN Frame Buffer Read Control Register Update
 			0
