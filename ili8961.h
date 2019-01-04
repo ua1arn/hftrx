@@ -12,9 +12,9 @@
 
 #if LCDMODE_ILI8961
 
-	#define DISPLAYMODES_FPS 5	/* количество обновлений отображения режимов работы */
-	#define DISPLAY_FPS	10	/* обновление показаний частоты десять раз в секунду */
-	#define DISPLAYSWR_FPS 5	/* количество обновлений SWR за секунду */
+	//#define DISPLAYMODES_FPS 5	/* количество обновлений отображения режимов работы */
+	//#define DISPLAY_FPS	10	/* обновление показаний частоты десять раз в секунду */
+	//#define DISPLAYSWR_FPS 5	/* количество обновлений SWR за секунду */
 
 	#if LCDMODE_LTDC
 
