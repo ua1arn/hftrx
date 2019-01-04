@@ -615,6 +615,13 @@
 	#define HARDWARE_SIDETONE_INITIALIZE() do { \
 		} while (0)
 
+	#define	HARDWARE_BL_INITIALIZE() do { \
+		const portholder_t enmask = (1U << 9); /* P7_9 */ \
+		const portholder_t opins = (1U << 3) | (1U << 2); /* P7_3:P7_2 */ \
+		const portholder_t initialstate = (~ (3) & 0x03) << 2; \
+		arm_hardware_pio7_outputs(opins, 0); /* BL ADJ */ \
+		arm_hardware_pio7_outputs(enmask, 1 ? enmask : 0);	/* BL ENABLE */ \
+		} while (0)
 	/* установка яркости и включение/выключение преобразователя подсветки */
 	#define HARDWARE_BL_SET(en, level) do { \
 		const portholder_t enmask = (1U << 9); /* P7_9 */ \
@@ -622,8 +629,16 @@
 		const portholder_t initialstate = (~ (level) & 0x03) << 2; \
 		arm_hardware_pio7_outputs(opins, 0); /* BL ADJ */ \
 		arm_hardware_pio7_outputs(enmask, en ? enmask : 0);	/* BL ENABLE */ \
-		__DSB(); \
 	} while (0)
+#if WITHDCDCFREQCTL
+	#define	HARDWARE_DCDC_INITIALIZE() do { \
+		hardware_blfreq_initialize(); \
+		arm_hardware_pio2_alternative((1U << 8), R7S721_PIOALT_3);	/* P2_8 TIOC0A (MTU0 output) */ \
+		} while (0)
+#else /* WITHDCDCFREQCTL */
+	#define	HARDWARE_DCDC_INITIALIZE() do { \
+		} while (0)
+#endif /* WITHDCDCFREQCTL */
 
 #if LCDMODE_LTDC
 	/* Table 34.9 Bit Allocation of RGB Signal Input for RGB565 Output */ 
@@ -680,6 +695,8 @@
 		HARDWARE_SIDETONE_INITIALIZE(); \
 		HARDWARE_KBD_INITIALIZE(); \
 		HARDWARE_DAC_INITIALIZE(); \
+		HARDWARE_DCDC_INITIALIZE(); \
+		HARDWARE_BL_INITIALIZE(); \
 		TUNE_INITIALIZE(); \
 		} while (0)
 

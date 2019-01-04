@@ -683,7 +683,8 @@ void cpu_stm32f1xx_setmapr(unsigned long bits);
 void hardware_tim21_initialize(void);
 
 void hardware_blfreq_initialize(void);
-void hardware_blfreq_setfreq(uint_fast32_t v);
+void hardware_blfreq_setdivider(uint_fast32_t v);
+uint_fast16_t getbldivider(uint_fast32_t freq);
 
 
 void hardware_sdhost_initialize(void);

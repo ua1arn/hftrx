@@ -2983,51 +2983,6 @@ static uint_fast8_t alignmode;		/* режимы для настройки аппаратной части (0-норм
 	enum { gcontrast = 0 };
 #endif
 
-#if WITHDCDCFREQCTL
-	//static uint_fast16_t dcdcrefdiv = 62;	/* делится частота внутреннего генератора 48 МГц */
-
-	/* 
-		получение делителя частоты для синхронизации DC-DC конверторов 
-		для исключения попадания в полосу обзора панорамы гармоник этой частоты. 
-	*/
-	static uint_fast16_t
-	getbldivider(
-		uint_fast32_t freq
-		)
-	{
-		struct FREQ 
-		{
-			uint_fast16_t dcdcdiv;
-			uint32_t fmin;
-			uint32_t fmax;
-		};
-		// пока для проверки работоспособности. Таблицу надо расчитать.
-		static const FLASHMEM struct FREQ freqs [] = {
-		  { 63, 6900000uL,  UINT32_MAX },
-		  { 62, 0,		6900000uL },	
-		};
-
-		uint_fast8_t high = (sizeof freqs / sizeof freqs [0]);
-		uint_fast8_t low = 0;
-		uint_fast8_t middle;	// результат поиска
-
-		// Двоичный поиск
-		while (low < high)
-		{
-			middle = (high - low) / 2 + low;
-			if (freq < freqs [middle].fmin)	// нижняя граница не включается - для обеспечения формального попадания частоты DCO в рабочий диапазон
-				low = middle + 1;
-			else if (freq >= freqs [middle].fmax)
-				high = middle;		// переходим к поиску в меньших индексах
-			else
-				goto found;
-		}
-
-	found: 
-		return freqs [middle].dcdcdiv;
-	}
-
-#endif /* WITHDCDCFREQCTL */
 
 static const uint_fast8_t displaymodesfps = DISPLAYMODES_FPS;
 static uint_fast8_t displayfreqsfps = DISPLAY_FPS;

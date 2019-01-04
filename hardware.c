@@ -2999,9 +2999,89 @@ hardware_adc_startonescan(void)
 
 
 #if WITHDCDCFREQCTL
-	/* TIM16_CH1 - PF6 */
+	//static uint_fast16_t dcdcrefdiv = 62;	/* делится частота внутреннего генератора 48 МГц */
+
+	/* 
+		получение делителя частоты для синхронизации DC-DC конверторов 
+		для исключения попадания в полосу обзора панорамы гармоник этой частоты. 
+	*/
+	uint_fast16_t
+	getbldivider(
+		uint_fast32_t freq
+		)
+	{
+#if CPUSTYLE_R7S721
+
+		return calcdivround_p0clock(760000uL * 2);	// на выходе формирователя делитель на 2 - требуемую частоту умножаем на два
+
+#elif CPUSTYLE_STM32H7XX
+		struct FREQ 
+		{
+			uint_fast16_t dcdcdiv;
+			uint32_t fmin;
+			uint32_t fmax;
+		};
+		// пока для проверки работоспособности. Таблицу надо расчитать.
+		static const FLASHMEM struct FREQ freqs [] = {
+		  { 63, 6900000uL,  UINT32_MAX },
+		  { 62, 0,		6900000uL },	
+		};
+
+		uint_fast8_t high = (sizeof freqs / sizeof freqs [0]);
+		uint_fast8_t low = 0;
+		uint_fast8_t middle;	// результат поиска
+
+		// Двоичный поиск
+		while (low < high)
+		{
+			middle = (high - low) / 2 + low;
+			if (freq < freqs [middle].fmin)	// нижняя граница не включается - для обеспечения формального попадания частоты DCO в рабочий диапазон
+				low = middle + 1;
+			else if (freq >= freqs [middle].fmax)
+				high = middle;		// переходим к поиску в меньших индексах
+			else
+				goto found;
+		}
+
+	found: 
+		return freqs [middle].dcdcdiv;
+#endif /* CPUSTYLE_STM32H7XX, CPUSTYLE_R7S721 */
+	}
+
+
 	void hardware_blfreq_initialize(void)
 	{
+	debug_printf_P(PSTR("hardware_blfreq_initialize start\n"));
+#if CPUSTYLE_R7S721
+		/* P2_8 TIOC0A (MTU0 output) */
+		/* ---- Supply clock to the video display controller 5  ---- */
+		CPG.STBCR3 &= ~ CPG_STBCR3_MSTP33;	// Module Stop 33 0: The multi-function timer pulse unit 2 runs.
+		(void) CPG.STBCR3;					/* Dummy read */
+
+		/* Enable access to write-protected MTU2 registers */
+		MTU2.TRWER = 1u;	// Channels 3 & 4 regidters
+
+		MTU2.TMDR_0 =
+			(1 << MTU2_TMDR_0_BFA_SHIFT) | // 1: TGRA and TGRC used together for buffer operation
+			(0x00 << MTU2_TMDR_0_MD_SHIFT) | // MD 0: Normal operation
+			0;
+
+		// TGRA_0 Function and TIOC0A Pin Function
+		MTU2.TCR_0 =
+			(0x01 << MTU2_TCR_0_CCLR_SHIFT) | // CCLR 1: TCNT cleared by TGRA compare match/input capture
+			0;
+
+
+		MTU2.TIORH_0 = (MTU2.TIORH_0 & ~ (MTU2_TIORH_0_IOA)) |
+			(0x07 << MTU2_TIORH_0_IOA_SHIFT) |
+			0;
+
+		MTU2.TGRC_0 = calcdivround_p0clock(1200000uL * 2) - 1;	// Use C intstead of A
+
+		MTU2.TSTR |= MTU2_TSTR_CST0;
+
+#elif CPUSTYLE_STM32H7XX
+		/* TIM16_CH1 - PF6 */
 		RCC->APB2ENR |= RCC_APB2ENR_TIM16EN;   //подаем тактирование на TIM16
 		__DSB();
 
@@ -3011,11 +3091,19 @@ hardware_adc_startonescan(void)
 		TIM16->CCER = TIM_CCER_CC1E;
 		//TIM16->DIER = TIM_DIER_UIE;        	 // разрешить событие от таймера
 		TIM16->BDTR = TIM_BDTR_MOE;
+#endif /* CPUSTYLE_STM32H7XX, CPUSTYLE_R7S721 */
+		debug_printf_P(PSTR("hardware_blfreq_initialize done\n"));
 	}
 
-	/* TIM16_CH1 - PF6 */
-	void hardware_blfreq_setfreq(uint_fast32_t v)
+	void hardware_blfreq_setdivider(uint_fast32_t v)
 	{
+#if CPUSTYLE_R7S721
+
+		/* P2_8 TIOC0A (MTU0 output) */
+		MTU2.TGRC_0 = v - 1;	// Use C intstead of A
+
+#elif CPUSTYLE_STM32H7XX
+		/* TIM16_CH1 - PF6 */
 		unsigned value;	/* делитель */
 		const uint_fast8_t prei = calcdivider(v, STM32F_TIM4_TIMER_WIDTH, STM32F_TIM4_TIMER_TAPS, & value, 1);
 		TIM16->PSC = ((1UL << prei) - 1) & TIM_PSC_PSC;
@@ -3026,6 +3114,7 @@ hardware_adc_startonescan(void)
 		//TIM16->CCR1 = (value / 2) & TIM_CCR1_CCR1;	// TIM16_CH1 - wave output
 		//TIM16->ARR = value;
 		TIM16->CR1 = TIM_CR1_CEN | TIM_CR1_ARPE;	/* разрешить перезагрузку и включить таймер */
+#endif /* CPUSTYLE_STM32H7XX, CPUSTYLE_R7S721 */
 	}
 
 #endif /* WITHDCDCFREQCTL */
@@ -9887,9 +9976,9 @@ void cpu_initialize(void)
 
 	extern unsigned long __etext, __bss_start__, __bss_end__, __data_end__, __data_start__, __stack;
 
-	debug_printf_P(PSTR("cpu_initialize1: CP15=%08lX, __data_start__=%p\n"), __get_SCTLR(), & __data_start__);
-	debug_printf_P(PSTR("__etext=%p, __bss_start__=%p, __bss_end__=%p, __data_start__=%p, __data_end__=%p\n"), & __etext, & __bss_start__, & __bss_end__, & __data_start__, & __data_end__);
-	debug_printf_P(PSTR("__stack=%p, arm_cpu_initialize=%p\n"), & __stack, arm_cpu_initialize);
+	//debug_printf_P(PSTR("cpu_initialize1: CP15=%08lX, __data_start__=%p\n"), __get_SCTLR(), & __data_start__);
+	//debug_printf_P(PSTR("__etext=%p, __bss_start__=%p, __bss_end__=%p, __data_start__=%p, __data_end__=%p\n"), & __etext, & __bss_start__, & __bss_end__, & __data_start__, & __data_end__);
+	//debug_printf_P(PSTR("__stack=%p, arm_cpu_initialize=%p\n"), & __stack, arm_cpu_initialize);
 
     /* ==== Writeback Cache ==== */
     //io_cache_writeback();
@@ -9922,7 +10011,7 @@ void cpu_initialize(void)
 
 	ca9_cache_setup();
 
-#if WITHDEBUG
+#if 0 && WITHDEBUG
 	uint_fast32_t leveli;
 	for (leveli = 0; leveli <= ARM_CA9_CACHELEVELMAX; ++ leveli)
 	{
@@ -9961,14 +10050,16 @@ void cpu_initialize(void)
 	//cp15_vectors_reloc_disable();
 	__set_SCTLR(__get_SCTLR() & ~ SCTLR_V_Msk);
 
-	debug_printf_P(PSTR("cpu_initialize2: CP15=%08lX\n"), __get_SCTLR());
+	//debug_printf_P(PSTR("cpu_initialize2: CP15=%08lX\n"), __get_SCTLR());
 
 	/* TN-RZ*-A011A/E recommends switch off USB_X1 if usb USB not used */
+	CPG.STBCR7 &= ~ CPG_STBCR7_MSTP70;	// Module Stop 71 0: Channel 0 of the USB 2.0 host/function module runs.
 	CPG.STBCR7 &= ~ CPG_STBCR7_MSTP71;	// Module Stop 71 0: Channel 0 of the USB 2.0 host/function module runs.
 	(void) CPG.STBCR7;			/* Dummy read */
 	USB200.SYSCFG0 |= USB_SYSCFG_UCKSEL; // UCKSEL 1: The 12-MHz EXTAL clock is selected.
 	local_delay_ms(2);	// required 1 ms delay - see R01UH0437EJ0200 Rev.2.00 28.4.1 System Control and Oscillation Control
 	CPG.STBCR7 |= CPG_STBCR7_MSTP71;	// Module Stop 71 0: Channel 0 of the USB 2.0 host/function module halts.
+	CPG.STBCR7 |= CPG_STBCR7_MSTP70;	// Module Stop 71 0: Channel 0 of the USB 2.0 host/function module halts.
 	
 	CPG.STBCR7 &= ~ CPG_STBCR7_MSTP70;	// Module Stop 70 0: Channel 1 of the USB 2.0 host/function module runs.
 	(void) CPG.STBCR7;			/* Dummy read */
