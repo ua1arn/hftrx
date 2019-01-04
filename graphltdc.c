@@ -85,7 +85,7 @@
 		HFP = 10,				/* Horizontal front porch     */
 
 		VSYNC = 2,				/* Vertical synchronization   */
-		VBP = 4,					/* Vertical back porch        */
+		VBP = 2,					/* Vertical back porch        */
 		VFP = 4,					/* Vertical front porch       */
 
 		VSYNCNEG = 1,			/* Negative polarity required for VSYNC signel */
