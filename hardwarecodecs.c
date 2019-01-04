@@ -105,7 +105,7 @@ enum
 	// значениям DMABUFSTEP32RX и DMABUFSTEP32TX соответственно.
 	#if WITHSAI1_FRAMEBITS == 256
 		// FPGA версия
-		#define DMABUFSTEP32RX	8
+		//#define DMABUFSTEP32RX	(WITHSAI1_FRAMEBITS / 32) //8
 		SLOTEN_RX_SAI1 = 0x00FF,
 
 		// На передачу во всех версиях FPGA используется один и тот же блок
@@ -117,7 +117,7 @@ enum
 		//#if WITHRTS96 || WITHUSEDUALWATCH
 		//	#error WITHRTS96 or WITHUSEDUALWATCH unsupported with 64-bit frame length
 		//#endif /* WITHRTS96 || WITHUSEDUALWATCH */
-		#define DMABUFSTEP32RX	2	// 2 - каждому сэмплу соответствует два числа в DMA буфере	- I/Q
+		//#define DMABUFSTEP32RX	(WITHSAI1_FRAMEBITS / 32) //2	// 2 - каждому сэмплу соответствует два числа в DMA буфере	- I/Q
 		// Аппаратный кодек
 		SLOTEN_RX_SAI1 = 0x0003,
 		SLOTEN_TX_SAI1 = 0x0003,

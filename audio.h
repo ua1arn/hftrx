@@ -121,7 +121,7 @@
 #else /* WITHDSPEXTDDC */
 	// buff data layout: ADC data/unused channel
 	#define DMABUF32RX		0		// ADC data index
-	#define DMABUFSTEP32RX	2		// 2 - каждому сэмплу соответствует два числа в DMA буфере
+	#define DMABUFSTEP32RX	(WITHSAI1_FRAMEBITS / 32) //2		// 2 - каждому сэмплу соответствует два числа в DMA буфере
 	#define DMABUF32RXI	0		// RX0, I
 	#define DMABUF32RXQ	1		// RX0, Q
 

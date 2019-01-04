@@ -2739,10 +2739,13 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 				fir_design_lowpass_freq_scaled(FIRCoef_rx_SSB_IQ [spf], FIRCwnd_rx_SSB_IQ, Ntap_rx_SSB_IQ, cutfreq, rxfiltergain);	// с управлением крутизной скатов и нормированием усиления, с наложением окна
 			else
 				{
-					fir_design_lowpass(dCoeff, iCoefNum, fir_design_normfreq(iCutHigh));
+					FLOAT_t dGain = 1;
+					FLOAT_t * dCoeff = FIRCoef_rx_SSB_IQ [spf];
+					int iCoefNum = Ntap_rx_SSB_IQ;
+					fir_design_lowpass(dCoeff, iCoefNum, fir_design_normfreq(cutfreq));
 					if (dspmode == DSPCTL_MODE_RX_AM)
 						fir_design_adjust_rx(FIRCoef_rx_SSB_IQ [spf], FIRCwnd_rx_SSB_IQ, Ntap_rx_SSB_IQ, 0);	// Формирование наклона АЧХ
-					fir_design_applaywindow(dCoeff, dWindow, iCoefNum);
+					fir_design_applaywindow(dCoeff, FIRCwnd_rx_SSB_IQ, iCoefNum);
 					fir_design_scale(dCoeff, iCoefNum, dGain / testgain_float_DC(dCoeff, iCoefNum));
 				}
 		}
