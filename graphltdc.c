@@ -42,6 +42,10 @@
 		VSYNC = 10,				/* Vertical synchronization   */
 		VBP = 2,					/* Vertical back porch        */
 		VFP = 4,					/* Vertical front porch       */
+
+		VSYNCNEG = 1,			/* Negative polarity required for VSYNC signel */
+		HSYNCNEG = 1,			/* Negative polarity required for HSYNC signel */
+		DENEG = 1				/* DE polarity (ignored) */
 	};
 #elif LCDMODE_ILI8961
 	// HHT270C-8961-6A6 (320*240)
@@ -60,6 +64,10 @@
 		VSYNC = 1,				/* Vertical synchronization   */
 		VBP = 2,					/* Vertical back porch        */
 		VFP = 2,					/* Vertical front porch       */
+
+		VSYNCNEG = 1,			/* Negative polarity required for VSYNC signel */
+		HSYNCNEG = 1,			/* Negative polarity required for HSYNC signel */
+		DENEG = 1				/* DE polarity */
 	};
 #elif LCDMODE_ILI9341
 	// SF-TC240T-9370-T (320*240)
@@ -79,6 +87,10 @@
 		VSYNC = 2,				/* Vertical synchronization   */
 		VBP = 4,					/* Vertical back porch        */
 		VFP = 4,					/* Vertical front porch       */
+
+		VSYNCNEG = 1,			/* Negative polarity required for VSYNC signel */
+		HSYNCNEG = 1,			/* Negative polarity required for HSYNC signel */
+		DENEG = 1				/* DE polarity */
 	};
 #else
 	#error Unsupported LCDMODE_xxx
@@ -874,9 +886,12 @@ static void vdc5fb_init_tcon(void)
 	SETREG32_CK(& VDC50.TCON_TIM_POLA2, 3, 0, 0x02);	// Output Signal Select for LCD_TCON5 Pin - HSYNC 2: STH/SP/HS
 	SETREG32_CK(& VDC50.TCON_TIM_POLB2, 3, 0, 0x07);	// Output Signal Select for LCD_TCON6 Pin - DE
 	// HSYMC polarity
-	SETREG32_CK(& VDC50.TCON_TIM_STH2, 1, 4, 0x01);		// TCON_STH_INV
+	SETREG32_CK(& VDC50.TCON_TIM_STH2, 1, 4, HSYNCNEG * 0x01);		// TCON_STH_INV
 	// VSYNC polarity
-	SETREG32_CK(& VDC50.TCON_TIM_STVA2, 1, 4, 0x01);	// TCON_STVA_INV
+	SETREG32_CK(& VDC50.TCON_TIM_STVA2, 1, 4, VSYNCNEG * 0x01);		// TCON_STVA_INV
+	// DE polarity
+	SETREG32_CK(& VDC50.TCON_TIM_STB2, 1, 4, DENEG * 0x01);			// TCON_STB_INV
+
 #if 0
 	static const unsigned char tcon_sel[LCD_MAX_TCON]
 		= { 0, 1, 2, 7, 4, 5, 6, };
@@ -1692,14 +1707,14 @@ arm_hardware_ltdc_initialize(void)
 
 	debug_printf_P(PSTR("arm_hardware_ltdc_initialize: pip: x/y=%u/%u, w/h=%u/%u\n"), pipwnd.x, pipwnd.y, pipwnd.w, pipwnd.h);
 
-	LTDC_InitStruct.LTDC_HSPolarity = LTDC_HSPolarity_AL;     
+	LTDC_InitStruct.LTDC_HSPolarity = HSYNCNEG ? LTDC_HSPolarity_AL : LTDC_HSPolarity_AH;     
 	//LTDC_InitStruct.LTDC_HSPolarity = LTDC_HSPolarity_AH;     
 	/* Initialize the vertical synchronization polarity as active low */  
-	LTDC_InitStruct.LTDC_VSPolarity = LTDC_VSPolarity_AL;     
+	LTDC_InitStruct.LTDC_VSPolarity = VSYNCNEG ? LTDC_VSPolarity_AL : LTDC_VSPolarity_AH;     
 	//LTDC_InitStruct.LTDC_VSPolarity = LTDC_VSPolarity_AH;     
 	/* Initialize the data enable polarity as active low */ 
 	//LTDC_InitStruct.LTDC_DEPolarity = LTDC_DEPolarity_AH;		// While VSYNC is low, do not change DISP signal "Low" or "High"
-	LTDC_InitStruct.LTDC_DEPolarity = LTDC_DEPolarity_AL;		// While VSYNC is low, do not change DISP signal "Low" or "High"
+	LTDC_InitStruct.LTDC_DEPolarity = DENEG ? LTDC_DEPolarity_AL : LTDC_DEPolarity_AH;		// While VSYNC is low, do not change DISP signal "Low" or "High"
 	/* Initialize the pixel clock polarity as input pixel clock */ 
 	LTDC_InitStruct.LTDC_PCPolarity = LTDC_PCPolarity_IPC;
 
