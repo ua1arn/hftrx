@@ -43,6 +43,13 @@
 		VBP = 2,					/* Vertical back porch        */
 		VFP = 4,					/* Vertical front porch       */
 
+		/* Accumulated parameters for this display */
+		LEFTMARGIN = HSYNC + HBP,	/* horizontal delay before DE start */
+		TOPMARGIN = VSYNC + VBP,	/* vertival delay before DE start */
+
+		HFULL = HSYNC + HBP + WIDTH + HFP,	/* horisontal full period */
+		VFULL = VSYNC + VBP + HEIGHT + VFP,	/* vertical full period */
+
 		VSYNCNEG = 1,			/* Negative polarity required for VSYNC signel */
 		HSYNCNEG = 1,			/* Negative polarity required for HSYNC signel */
 		DENEG = 1				/* DE polarity (ignored) */
@@ -65,6 +72,13 @@
 		VBP = 2,					/* Vertical back porch        */
 		VFP = 2,					/* Vertical front porch       */
 
+		/* TODO: should be changed Accumulated parameters for this display */
+		LEFTMARGIN = HSYNC + HBP,	/* horizontal delay before DE start */
+		TOPMARGIN = VSYNC + VBP,	/* vertival delay before DE start */
+
+		HFULL = HSYNC + HBP + WIDTH + HFP,	/* horisontal full period */
+		VFULL = VSYNC + VBP + HEIGHT + VFP,	/* vertical full period */
+
 		VSYNCNEG = 1,			/* Negative polarity required for VSYNC signel */
 		HSYNCNEG = 1,			/* Negative polarity required for HSYNC signel */
 		DENEG = 1				/* DE polarity */
@@ -78,7 +92,7 @@
 		HEIGHT = 320,			/* LCD PIXEL HEIGHT           */
 
 		/** 
-		  * @brief  RK043FN48H Timing  
+		  * @brief  ILI9341 Timing  
 		  */     
 		HSYNC = 10,				/* Horizontal synchronization */
 		HBP = 20,				/* Horizontal back porch      */
@@ -87,6 +101,13 @@
 		VSYNC = 2,				/* Vertical synchronization   */
 		VBP = 2,					/* Vertical back porch        */
 		VFP = 4,					/* Vertical front porch       */
+
+		/* Accumulated parameters for this display */
+		LEFTMARGIN = HSYNC + HBP,	/* horizontal delay before DE start */
+		TOPMARGIN = VSYNC + VBP,	/* vertival delay before DE start */
+
+		HFULL = HSYNC + HBP + WIDTH + HFP,	/* horisontal full period */
+		VFULL = VSYNC + VBP + HEIGHT + VFP,	/* vertical full period */
 
 		VSYNCNEG = 1,			/* Negative polarity required for VSYNC signel */
 		HSYNCNEG = 1,			/* Negative polarity required for HSYNC signel */
@@ -267,13 +288,13 @@ static void vdc5fb_init_sync(void)
 	SETREG32_CK(& VDC50.SC0_SCL0_FRC5, 1, 8, 1);		// SC0_RES_FLD_DLY_SEL
 	SETREG32_CK(& VDC50.SC0_SCL0_FRC5, 8, 0, 1);		// SC0_RES_VSDLY
 
-	SETREG32_CK(& VDC50.SC0_SCL0_FRC4, 11, 16, HEIGHT + VSYNC + VBP + VFP - 1);// SC0_RES_FV Free-Running Vsync Period Setting
-	SETREG32_CK(& VDC50.SC0_SCL0_FRC4, 11, 0, WIDTH + HSYNC + HBP + HFP - 1);	// SC0_RES_FH Hsync Period Setting
+	SETREG32_CK(& VDC50.SC0_SCL0_FRC4, 11, 16, VFULL - 1);// SC0_RES_FV Free-Running Vsync Period Setting
+	SETREG32_CK(& VDC50.SC0_SCL0_FRC4, 11, 0, HFULL - 1);	// SC0_RES_FH Hsync Period Setting
 
-	SETREG32_CK(& VDC50.SC0_SCL0_FRC6, 11, 16, VSYNC + VBP);	// SC0_RES_F_VS
+	SETREG32_CK(& VDC50.SC0_SCL0_FRC6, 11, 16, TOPMARGIN);	// SC0_RES_F_VS
 	SETREG32_CK(& VDC50.SC0_SCL0_FRC6, 11, 0, HEIGHT);			// SC0_RES_F_VW
 
-	SETREG32_CK(& VDC50.SC0_SCL0_FRC7, 11, 16, HSYNC + HBP);	// SC0_RES_F_HS
+	SETREG32_CK(& VDC50.SC0_SCL0_FRC7, 11, 16, LEFTMARGIN);	// SC0_RES_F_HS
 	SETREG32_CK(& VDC50.SC0_SCL0_FRC7, 11, 0, WIDTH);			// SC0_RES_F_HW
 
 	SETREG32_CK(& VDC50.SC0_SCL0_FRC3, 1, 0, 0x01);	// SC0_RES_VS_SEL Vsync Signal Output Select 1: Internally generated free-running Vsync signal
@@ -573,9 +594,9 @@ static void vdc5fb_init_graphics(void)
 	SETREG32_CK(& VDC50.GR0_FLM6, 3, 10, grx_rdswa_MAIN);	// GR0_RDSWA 110: (7) (8) (5) (6) (3) (4) (1) (2) [32-bit swap + 16-bit swap]
 	SETREG32_CK(& VDC50.GR0_AB1, 2, 0,	0x00);			// GR0_DISP_SEL 0: background color
 	SETREG32_CK(& VDC50.GR0_BASE, 24, 0, 0x00FF0000);	// GREEN GR0_BASE GBR Background Color B,Gb & R Signal
-	SETREG32_CK(& VDC50.GR0_AB2, 11, 16, VSYNC + VBP);	// GR0_GRC_VS
+	SETREG32_CK(& VDC50.GR0_AB2, 11, 16, TOPMARGIN);	// GR0_GRC_VS
 	SETREG32_CK(& VDC50.GR0_AB2, 11, 0, HEIGHT);		// GR0_GRC_VW
-	SETREG32_CK(& VDC50.GR0_AB3, 11, 16, HSYNC + HBP);	// GR0_GRC_HS
+	SETREG32_CK(& VDC50.GR0_AB3, 11, 16, LEFTMARGIN);	// GR0_GRC_HS
 	SETREG32_CK(& VDC50.GR0_AB3, 11, 0, WIDTH);			// GR0_GRC_HW
 
 	////////////////////////////////////////////////////////////////
@@ -594,9 +615,9 @@ static void vdc5fb_init_graphics(void)
 	SETREG32_CK(& VDC50.GR2_FLM6, 3, 10, grx_rdswa_MAIN);	// GR2_RDSWA 110: (7) (8) (5) (6) (3) (4) (1) (2) [32-bit swap + 16-bit swap]
 	SETREG32_CK(& VDC50.GR2_AB1, 2, 0,	0x02);			// GR2_DISP_SEL 2: Current graphics display
 	SETREG32_CK(& VDC50.GR2_BASE, 24, 0, 0x0000FF00);	// BLUE GR2_BASE GBR Background Color B,Gb & R Signal
-	SETREG32_CK(& VDC50.GR2_AB2, 11, 16, VSYNC + VBP);	// GR2_GRC_VS
+	SETREG32_CK(& VDC50.GR2_AB2, 11, 16, TOPMARGIN);	// GR2_GRC_VS
 	SETREG32_CK(& VDC50.GR2_AB2, 11, 0, HEIGHT);		// GR2_GRC_VW
-	SETREG32_CK(& VDC50.GR2_AB3, 11, 16, HSYNC + HBP);	// GR2_GRC_HS
+	SETREG32_CK(& VDC50.GR2_AB3, 11, 16, LEFTMARGIN);	// GR2_GRC_HS
 	SETREG32_CK(& VDC50.GR2_AB3, 11, 0, WIDTH);			// GR2_GRC_HW
 
 #if LCDMODE_LTDC_L8
@@ -627,9 +648,9 @@ static void vdc5fb_init_graphics(void)
 	SETREG32_CK(& VDC50.GR3_FLM6, 3, 10, grx_rdswa_PIP);	// GR3_RDSWA 110: (7) (8) (5) (6) (3) (4) (1) (2) [32-bit swap + 16-bit swap]
 	SETREG32_CK(& VDC50.GR3_AB1, 2, 0,	0x01);			// GR3_DISP_SEL 1: Lower-layer graphics display
 	SETREG32_CK(& VDC50.GR3_BASE, 24, 0, 0x000000FF);	// RED GR3_BASE GBR Background Color B,Gb & R Signal
-	SETREG32_CK(& VDC50.GR3_AB2, 11, 16, VSYNC + VBP);	// GR3_GRC_VS
+	SETREG32_CK(& VDC50.GR3_AB2, 11, 16, TOPMARGIN);	// GR3_GRC_VS
 	SETREG32_CK(& VDC50.GR3_AB2, 11, 0, HEIGHT);		// GR3_GRC_VW
-	SETREG32_CK(& VDC50.GR3_AB3, 11, 16, HSYNC + HBP);	// GR3_GRC_HS
+	SETREG32_CK(& VDC50.GR3_AB3, 11, 16, LEFTMARGIN);	// GR3_GRC_HS
 	SETREG32_CK(& VDC50.GR3_AB3, 11, 0, WIDTH);			// GR3_GRC_HW
 
 #if LCDMODE_LTDC_PIP16
@@ -648,9 +669,9 @@ static void vdc5fb_init_graphics(void)
 	SETREG32_CK(& VDC50.GR3_FLM5, 11, 16, pipwnd.h - 1);	// GR3_FLM_LNUM Sets the number of lines in a frame
 	SETREG32_CK(& VDC50.GR3_FLM5, 11, 0, pipwnd.h - 1);	// GR3_FLM_LOOP Sets the number of lines in a frame
 	SETREG32_CK(& VDC50.GR3_FLM6, 11, 16, pipwnd.w - 1);	// GR3_HW Sets the width of the horizontal valid period.
-	SETREG32_CK(& VDC50.GR3_AB2, 11, 16, VSYNC + VBP + pipwnd.y);	// GR3_GRC_VS
+	SETREG32_CK(& VDC50.GR3_AB2, 11, 16, TOPMARGIN + pipwnd.y);	// GR3_GRC_VS
 	SETREG32_CK(& VDC50.GR3_AB2, 11, 0, pipwnd.h);		// GR3_GRC_VW
-	SETREG32_CK(& VDC50.GR3_AB3, 11, 16, HSYNC + HBP + pipwnd.x);	// GR3_GRC_HS
+	SETREG32_CK(& VDC50.GR3_AB3, 11, 16, LEFTMARGIN + pipwnd.x);	// GR3_GRC_HS
 	SETREG32_CK(& VDC50.GR3_AB3, 11, 0, pipwnd.w);			// GR3_GRC_HW
 
 #endif /* LCDMODE_LTDC_PIP16 */
@@ -853,16 +874,16 @@ static void vdc5fb_init_tcon(void)
 	// Vertical sync generation parameters
 
 	// VSYNC signal
-	SETREG32_CK(& VDC50.TCON_TIM_STVA1, 11, 16, 0);	// TCON_STVA_VS
+	SETREG32_CK(& VDC50.TCON_TIM_STVA1, 11, 16, 0);		// TCON_STVA_VS
 	SETREG32_CK(& VDC50.TCON_TIM_STVA1, 11, 0, VSYNC);	// TCON_STVA_VW
 
 	// Vertical enable signal
-	SETREG32_CK(& VDC50.TCON_TIM_STVB1, 11, 16, VSYNC + VBP);	// TCON_STVB_VS
+	SETREG32_CK(& VDC50.TCON_TIM_STVB1, 11, 16, TOPMARGIN);	// TCON_STVB_VS
 	SETREG32_CK(& VDC50.TCON_TIM_STVB1, 11, 0, HEIGHT);	// TCON_STVB_VW
 
 	// Horisontal sync generation parameters
-	SETREG32_CK(& VDC50.TCON_TIM, 11, 16, WIDTH + HSYNC + HBP + HFP);	// TCON_HALF
-	SETREG32_CK(& VDC50.TCON_TIM, 11, 0, 0);							// TCON_OFFSET
+	SETREG32_CK(& VDC50.TCON_TIM, 11, 16, HFULL);		// TCON_HALF
+	SETREG32_CK(& VDC50.TCON_TIM, 11, 0, 0);			// TCON_OFFSET
 
 	//SETREG32_CK(& VDC50.TCON_TIM_POLA2, 2, 12, 0x00);	// TCON_POLA_MD
 	//SETREG32_CK(& VDC50.TCON_TIM_POLB2, 2, 12, 0x00);	// TCON_POLB_MD
@@ -1722,20 +1743,20 @@ arm_hardware_ltdc_initialize(void)
 	/* Configure horizontal synchronization width */     
 	LTDC_InitStruct.LTDC_HorizontalSync = (HSYNC - 1);
 	/* Configure accumulated horizontal back porch */
-	LTDC_InitStruct.LTDC_AccumulatedHBP = (HSYNC + HBP - 1);
+	LTDC_InitStruct.LTDC_AccumulatedHBP = (LEFTMARGIN - 1);
 	/* Configure accumulated active width */  
-	LTDC_InitStruct.LTDC_AccumulatedActiveW = (WIDTH + HSYNC + HBP - 1);
+	LTDC_InitStruct.LTDC_AccumulatedActiveW = (LEFTMARGIN + WIDTH - 1);
 	/* Configure total width */
-	LTDC_InitStruct.LTDC_TotalWidth = (WIDTH + HSYNC + HBP + HFP - 1);
+	LTDC_InitStruct.LTDC_TotalWidth = (HFULL - 1);
 
 	/* Configure vertical synchronization height */
 	LTDC_InitStruct.LTDC_VerticalSync = (VSYNC - 1);
 	/* Configure accumulated vertical back porch */
-	LTDC_InitStruct.LTDC_AccumulatedVBP = (VSYNC + VBP - 1);
+	LTDC_InitStruct.LTDC_AccumulatedVBP = (TOPMARGIN - 1);
 	/* Configure accumulated active height */
-	LTDC_InitStruct.LTDC_AccumulatedActiveH = (HEIGHT + VSYNC + VBP - 1);
+	LTDC_InitStruct.LTDC_AccumulatedActiveH = (TOPMARGIN + HEIGHT - 1);
 	/* Configure total height */
-	LTDC_InitStruct.LTDC_TotalHeigh = (HEIGHT + VSYNC + VBP + VFP - 1);
+	LTDC_InitStruct.LTDC_TotalHeigh = (VFULL - 1);
 
 	/* Configure R,G,B component values for LCD background color */                   
 	LTDC_InitStruct.LTDC_BackgroundColor = 0;		// all 0 - black
@@ -1751,15 +1772,15 @@ arm_hardware_ltdc_initialize(void)
 	// Bottom layer - LTDC_Layer1
 #if LCDMODE_LTDC_L24
 
-	LCD_LayerInit(LAYER_MAIN, HSYNC + HBP, VSYNC + VBP, & mainwnd, LTDC_Pixelformat_L8, 3, sizeof (PACKEDCOLOR_T));
+	LCD_LayerInit(LAYER_MAIN, LEFTMARGIN, TOPMARGIN, & mainwnd, LTDC_Pixelformat_L8, 3, sizeof (PACKEDCOLOR_T));
 
 #elif LCDMODE_LTDC_L8
 
-	LCD_LayerInit(LAYER_MAIN, HSYNC + HBP, VSYNC + VBP, & mainwnd, LTDC_Pixelformat_L8, 1, sizeof (PACKEDCOLOR_T));
+	LCD_LayerInit(LAYER_MAIN, LEFTMARGIN, TOPMARGIN, & mainwnd, LTDC_Pixelformat_L8, 1, sizeof (PACKEDCOLOR_T));
 
 #else
 	/* Без палитры */
-	LCD_LayerInit(LAYER_MAIN, HSYNC + HBP, VSYNC + VBP, & mainwnd, LTDC_Pixelformat_RGB565, 1, sizeof (PACKEDCOLOR_T));
+	LCD_LayerInit(LAYER_MAIN, LEFTMARGIN, TOPMARGIN, & mainwnd, LTDC_Pixelformat_RGB565, 1, sizeof (PACKEDCOLOR_T));
 
 #endif /* LCDMODE_LTDC_L8 */
 
@@ -1768,7 +1789,7 @@ arm_hardware_ltdc_initialize(void)
 	LCD_LayerInitMain(LAYER_MAIN);	// довести инициализацию
 
 	// Bottom layer
-	LCD_LayerInit(LAYER_PIP, HSYNC + HBP, VSYNC + VBP, & pipwnd, LTDC_Pixelformat_RGB565, 1, sizeof (uint16_t));
+	LCD_LayerInit(LAYER_PIP, LEFTMARGIN, TOPMARGIN, & pipwnd, LTDC_Pixelformat_RGB565, 1, sizeof (uint16_t));
 	LCD_LayerInitPIP(LAYER_PIP);	// довести инициализацию
 
 #endif /* LCDMODE_LTDC_PIP16 */
