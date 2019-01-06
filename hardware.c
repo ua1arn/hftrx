@@ -8675,6 +8675,7 @@ void CPG_Init(void)
     /* PLL(x30), I:G:B:P1:P0 = 30:20:10:5:5/2 */
     //CPG.FRQCR  = 0x1035u;
     CPG.FRQCR  = 0x3035u;	// CKIO pin = hi-z
+	(void) CPG.FRQCR;
 
     /* CKIO:Output at time usually output     *
      * when bus right is opened output at     *
