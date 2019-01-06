@@ -4420,7 +4420,7 @@ uif_key_click_amfmbandpassup(void)
 	switch (p->type)
 	{
 	case BWSET_NARROW:
-		p->left10_width10 = nextfreq(p->left10_width10, p->left10_width10 + p->limits->granulationleft, p->limits->granulationleft, p->limits->left10_width10 + 1);
+		p->left10_width10 = nextfreq(p->left10_width10, p->left10_width10 + p->limits->granulationleft, p->limits->granulationleft, p->limits->left10_width10_high + 1);
 		save_i8(RMT_BWPROPSLEFT_BASE(p->bwpropi), p->left10_width10);	// верхний срез фильтра НЧ в сотнях герц
 		updateboard(1, 0);
 		break;
@@ -4457,7 +4457,7 @@ uif_key_click_amfmbandpassdown(void)
 	default:
 	case BWSET_WIDE:
 		p->right100 = prevfreq(p->right100, p->right100 - 1, p->limits->granulationright, p->limits->right100_low);
-		save_i8(RMT_BWPROPSRIGHT_BASE(bwpropi), p->right100);	// верхний срез фильтра НЧ в сотнях герц
+		save_i8(RMT_BWPROPSRIGHT_BASE(p->bwpropi), p->right100);	// верхний срез фильтра НЧ в сотнях герц
 		updateboard(1, 0);
 		break;
 	}
