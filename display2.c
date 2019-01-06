@@ -4509,6 +4509,7 @@ static uint_fast8_t spavgrow;				// строка, в которую последней занесены данные
 #if 1
 	static uint8_t wfarray [WFDY][ALLDX];	// массив "водопада"
 	static uint_fast16_t wfrow;				// строка, в которую последней занесены данные
+	static uint_fast32_t wffreq;			// частота центра спектра, для которой в последной раз отрисовали.
 #else
 	static uint8_t wfarray [1][ALLDX];	// массив "водопада"
 	enum { wfrow = 0 };				// строка, в которую последней занесены данные
@@ -4766,7 +4767,7 @@ static void display2_spectrum(
 		// маркер центральной частоты обзора
 		memset(spectrmonoscr, 0xFF, sizeof spectrmonoscr);			// рисование способом погасить точку
 		// центральная частота
-		uint_fast16_t xmarker = deltafreq2x(0, dsp_get_samplerateuacin_rts96(), ALLDX);
+		uint_fast16_t xmarker = deltafreq2x(0, bw, ALLDX);
 		for (y = 0; y < SPDY; ++ y)
 		{
 			display_pixelbuffer(spectrmonoscr, ALLDX, SPDY, xmarker, y);	// погасить точку
@@ -4901,6 +4902,61 @@ static void display2_spectrum(
 #endif
 }
 
+// стираем целиком старое изображение водопада
+// в строке wfrow - новое
+static void wflclear(void)
+{
+	const size_t rowsize = sizeof wfarray [0];
+	uint_fast16_t y;
+
+	for (y = 0; y < sizeof wfarray / sizeof wfarray [0]; ++ y)
+	{
+		if (y == wfrow)
+			continue;
+		memset(wfarray [y], 0x00, rowsize);
+	}
+}
+
+// частота увеличилась - надо сдвигать картинку влево
+// нужно сохрянять часть старого изображения
+// в строке wfrow - новое
+static void wflshiftleft(uint_fast16_t pixels)
+{
+	const size_t rowsize = sizeof wfarray [0];
+	uint_fast16_t y;
+
+	if (pixels == 0)
+		return;
+	for (y = 0; y < sizeof wfarray / sizeof wfarray [0]; ++ y)
+	{
+		if (y == wfrow)
+			continue;
+		memmove(wfarray [y] + 0, wfarray [y] + pixels, rowsize - pixels);
+		memset(wfarray [y] + rowsize - pixels, 0x00, pixels);
+	}
+}
+
+// частота уменьшилась - надо сдвигать картинку вправо
+// нужно сохрянять часть старого изображения
+// в строке wfrow - новое
+static void wflshiftright(uint_fast16_t pixels)
+{
+	const size_t rowsize = sizeof wfarray [0];
+	uint_fast16_t y;
+
+	if (pixels == 0)
+		return;
+	for (y = 0; y < sizeof wfarray / sizeof wfarray [0]; ++ y)
+	{
+		if (y == wfrow)
+			continue;
+		memmove(wfarray [y] + pixels, wfarray [y] + 0, rowsize - pixels);
+		memset(wfarray [y] + 0, 0x00, pixels);
+	}
+}
+
+
+
 // отрисовка вновь появившихся данных на водопаде (в случае использования аппаратного scroll видеопамяти).
 static void display_wfputrow(uint_fast16_t x, uint_fast16_t y, const uint8_t * p)
 {
@@ -4969,9 +5025,55 @@ static void display2_waterfall(
 
 	if (hamradio_get_tx() == 0)
 	{
+		const uint_fast32_t freq = hamradio_get_freq_a();	/* frequecy at midle of spectrum */
 		const int_fast32_t bw = dsp_get_samplerateuacin_rts96();
 		uint_fast16_t x, y;
+		const uint_fast16_t x0 = deltafreq2x(0, bw, ALLDX);
 
+		if (wffreq == 0)
+		{
+			// стираем целиком старое изображение водопада
+			// в строке wfrow - новое
+			wflclear();
+		}
+		else if (wffreq == freq)
+		{
+			// не менялась частота
+		}
+		else if (wffreq > freq)
+		{
+			// частота уменьшилась - надо сдвигать картинку вправо
+			const uint_fast32_t delta = wffreq - freq;
+			if (delta < bw / 2)
+			{
+				// нужно сохрянять часть старого изображения
+				// в строке wfrow - новое
+				wflshiftright(deltafreq2x(delta, bw, ALLDX) - x0);
+			}
+			else
+			{
+				// стараем целиком старое изображение водопада
+				// в строке wfrow - новое
+				wflclear();
+			}
+		}
+		else
+		{
+			// частота увеличилась - надо сдвигать картинку влево
+			const uint_fast32_t delta = freq - wffreq;
+			if (delta < bw / 2)
+			{
+				// нужно сохрянять часть старого изображения
+				// в строке wfrow - новое
+				wflshiftleft(deltafreq2x(delta, bw, ALLDX) - x0);
+			}
+			else
+			{
+				// стираем целиком старое изображение водопада
+				// в строке 0 - новое
+				wflclear();
+			}
+		}
 
 		// формирование растра
 		// следы спектра ("водопад")
@@ -4987,7 +5089,7 @@ static void display2_waterfall(
 		{
 			// маркер центральной частоты обзора
 			// XOR линию
-			uint_fast16_t xmarker = deltafreq2x(0, dsp_get_samplerateuacin_rts96(), ALLDX);
+			uint_fast16_t xmarker = x0;
 			display_colorbuffer_xor_vline(colorpip, xmarker, WFY0, WFDY, COLOR565_GRIDCOLOR);
 		}
 		else
@@ -4995,6 +5097,11 @@ static void display2_waterfall(
 			display_colorgrid(colorpip, WFY0, WFDY, bw);	// отрисовка маркеров частот
 		}
 #endif
+		wffreq = freq;
+	}
+	else
+	{
+		wffreq = 0;
 	}
 
 #endif /* LCDMODE_S1D13781 */
