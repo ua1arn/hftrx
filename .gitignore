@@ -15,6 +15,7 @@ atmega328_8
 *.rpd
 *.sof
 *.log
+*.zip
 product.h
 tc1msvc.opt
 tc1msvc.plg
