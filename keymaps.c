@@ -1262,7 +1262,7 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE,		KBD_CODE_4,			KBD_CODE_4, 		'2', },
 	{ KIF_NONE,		KBD_CODE_5,			KBD_CODE_5, 			'5', },
 	{ KIF_NONE,		KBD_CODE_6,			KBD_CODE_6, 			'8', },
-	{ KIF_NONE,		KBD_CODE_LOCK,		KBD_CODE_LOCK_HOLDED, 	'0', },
+	{ KIF_NONE,		KBD_CODE_LOCK,		KBD_CODE_7,			'0', },
 	//ki0-левый ряд
 	{ KIF_EXTMENU,	KBD_CODE_DISPMODE,		KBD_CODE_MENU, 			'1', },
 	{ KIF_ERASE,	KBD_CODE_9,			KBD_CODE_9, 	'4', },
