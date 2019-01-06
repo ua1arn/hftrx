@@ -18,27 +18,19 @@
 * you agree to the additional terms and conditions found by accessing the
 * following link:
 * http://www.renesas.com/disclaimer
-*
+* Copyright (C) 2012 - 2013 Renesas Electronics Corporation. All rights reserved.
 *******************************************************************************/
 /*******************************************************************************
-* Copyright (C) 2013 Renesas Electronics Corporation. All rights reserved.
+* File Name   : mtu2_iobitmask.h
+* $Rev: 2444 $
+* $Date:: 2014-10-14 21:15:39 +0100#$
+* Description : MTU2 register define header
 *******************************************************************************/
-/*******************************************************************************
-* File Name     : mtu2_iobitmask.h
-* Device(s)     : RZ/A1H RSK2+RZA1H
-* H/W Platform  : RSK2+RZA1H CPU Board
-* Description   : MTU2 register define header
-*******************************************************************************/
-/*******************************************************************************
-* History       : DD.MM.YYYY Version Description
-*               : 18.06.2013 1.00
-*******************************************************************************/
-
 #ifndef MTU2_IOBITMASK_H
 #define MTU2_IOBITMASK_H
 
 
-/* ==== Mask values for IO registers ==== */
+/* ==== IOレジスタへのマスク値 ==== */
 #define MTU2_TCR_2_TPSC                         (0x07u)
 #define MTU2_TCR_2_CKEG                         (0x18u)
 #define MTU2_TCR_2_CCLR                         (0x60u)

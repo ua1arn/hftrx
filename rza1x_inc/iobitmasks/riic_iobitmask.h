@@ -18,22 +18,14 @@
 * you agree to the additional terms and conditions found by accessing the
 * following link:
 * http://www.renesas.com/disclaimer
-*
+* Copyright (C) 2012 - 2013 Renesas Electronics Corporation. All rights reserved.
 *******************************************************************************/
 /*******************************************************************************
-* Copyright (C) 2013 Renesas Electronics Corporation. All rights reserved.
+* File Name   : riic_iobitmask.h
+* $Rev: 2444 $
+* $Date:: 2014-10-14 21:15:39 +0100#$
+* Description : RIIC register define header
 *******************************************************************************/
-/*******************************************************************************
-* File Name     : riic_iobitmask.h
-* Device(s)     : RZ/A1H RSK2+RZA1H
-* H/W Platform  : RSK2+RZA1H CPU Board
-* Description   : RIIC register define header
-*******************************************************************************/
-/*******************************************************************************
-* History       : DD.MM.YYYY Version Description
-*               : 18.06.2013 1.00
-*******************************************************************************/
-
 #ifndef RIIC_IOBITMASK_H
 #define RIIC_IOBITMASK_H
 

@@ -18,22 +18,14 @@
 * you agree to the additional terms and conditions found by accessing the
 * following link:
 * http://www.renesas.com/disclaimer
-*
+* Copyright (C) 2012 - 2013 Renesas Electronics Corporation. All rights reserved.
 *******************************************************************************/
 /*******************************************************************************
-* Copyright (C) 2013 Renesas Electronics Corporation. All rights reserved.
+* File Name   : dmac_iobitmask.h
+* $Rev: 2444 $
+* $Date:: 2014-10-14 21:15:39 +0100#$
+* Description : DMAC register define header
 *******************************************************************************/
-/*******************************************************************************
-* File Name     : dmac_iobitmask.h
-* Device(s)     : RZ/A1H RSK2+RZA1H
-* H/W Platform  : RSK2+RZA1H CPU Board
-* Description   : DMAC register define header
-*******************************************************************************/
-/*******************************************************************************
-* History       : DD.MM.YYYY Version Description
-*               : 18.06.2013 1.00
-*******************************************************************************/
-
 #ifndef DMAC_IOBITMASK_H
 #define DMAC_IOBITMASK_H
 
@@ -2678,6 +2670,6 @@
 #define DMAC1415_DMARS_CH15_MID_SHIFT       (18u)
 
 
-#endif /* __DMAC_IOBITMASK_H__ */
+#endif /* DMAC_IOBITMASK_H */
 
 /* End of File */

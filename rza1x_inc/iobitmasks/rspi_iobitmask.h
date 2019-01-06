@@ -18,19 +18,26 @@
 * you agree to the additional terms and conditions found by accessing the
 * following link:
 * http://www.renesas.com/disclaimer
-* Copyright (C) 2012 - 2013 Renesas Electronics Corporation. All rights reserved.
+*
 *******************************************************************************/
 /*******************************************************************************
-* File Name   : rspi_iobitmask.h
-* $Rev: 690 $
-* $Date:: 2014-01-28 21:23:21 +0900#$
-* Description : Renesas Serial Peripheral Interface register define header
+* Copyright (C) 2013 Renesas Electronics Corporation. All rights reserved.
 *******************************************************************************/
+/*******************************************************************************
+* File Name     : rspi_iobitmask.h
+* Device(s)     : RZ/A1H RSK+RZA1H
+* H/W Platform  : RSK+RZA1H CPU Board
+* Description   : Renesas Serial Peripheral Interface register define header
+*******************************************************************************/
+/*******************************************************************************
+* History       : DD.MM.YYYY Version Description
+*               : 18.06.2013 1.00
+*******************************************************************************/
+
 #ifndef RSPI_IOBITMASK_H
 #define RSPI_IOBITMASK_H
 
 
-/* ==== Mask values for IO registers ==== */
 #define RSPIn_SPCR_MODFEN                   (0x04u)
 #define RSPIn_SPCR_MSTR                     (0x08u)
 #define RSPIn_SPCR_SPEIE                    (0x10u)
@@ -119,8 +126,6 @@
 #define RSPIn_SPBFDR_R                      (0x003Fu)
 #define RSPIn_SPBFDR_T                      (0x0F00u)
 
-
-/* ==== Shift values for IO registers ==== */
 #define RSPIn_SPCR_MODFEN_SHIFT             (2u)
 #define RSPIn_SPCR_MSTR_SHIFT               (3u)
 #define RSPIn_SPCR_SPEIE_SHIFT              (4u)

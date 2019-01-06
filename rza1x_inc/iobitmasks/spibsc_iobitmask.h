@@ -18,304 +18,269 @@
 * you agree to the additional terms and conditions found by accessing the
 * following link:
 * http://www.renesas.com/disclaimer
-*
 * Copyright (C) 2013 Renesas Electronics Corporation. All rights reserved.
 *******************************************************************************/
 /*******************************************************************************
 * File Name   : spibsc_iobitmask.h
 * Description : SPI multi I/O bus controller register define header
 *******************************************************************************/
-#ifndef __SPIBSC_IOBITMASK_H__
-#define __SPIBSC_IOBITMASK_H__
-
-#if 0	/* DO NOT USE */
-
-#include "typedefine.h"
+#ifndef SPIBSC_IOBITMASK_H
+#define SPIBSC_IOBITMASK_H
 
 
-/****************************************************************/
-/*       SPIBSC                                                 */
-/****************************************************************/
-struct st_spibsc_n {                              /* struct SPIBSC*/
-       union {                                  /* CMNCR        */
-             _UDWORD LONG;                      /*  Long Access */
-             struct {                           /*  Bit Access  */
-                    _UDWORD BSZ:2;              /*   BSZ        */
-                    _UDWORD :1;                 /*              */
-                    _UDWORD CPOL:1;             /*   CPOL       */
-                    _UDWORD SSLP:1;             /*   SSLP       */
-                    _UDWORD CPHAR:1;            /*   CPHAR      */
-                    _UDWORD CPHAT:1;            /*   CPHAT      */
-                    _UDWORD :1;                 /*              */
-                    _UDWORD IO0FV:2;            /*   IO0FV      */
-                    _UDWORD :2;                 /*              */
-                    _UDWORD IO2FV:2;            /*   IO2FV      */
-                    _UDWORD IO3FV:2;            /*   IO3FV      */
-                    _UDWORD MOIIO0:2;           /*   MOIIO0     */
-                    _UDWORD MOIIO1:2;           /*   MOIIO1     */
-                    _UDWORD MOIIO2:2;           /*   MOIIO2     */
-                    _UDWORD MOIIO3:2;           /*   MOIIO3     */
-                    _UDWORD SFDE:1;             /*   SFDE       */
-                    _UDWORD :6;                 /*              */
-                    _UDWORD MD:1;               /*   MD         */
-                    } BIT;                      /*              */
-             } CMNCR;                           /*              */
-       union {                                  /* SSLDR        */
-             _UDWORD LONG;                      /*  Long Access */
-             struct {                           /*  Bit Access  */
-                    _UDWORD SCKDL:3;            /*   SCKDL      */
-                    _UDWORD :5;                 /*              */
-                    _UDWORD SLNDL:3;            /*   SLNDL      */
-                    _UDWORD :5;                 /*              */
-                    _UDWORD SPNDL:3;            /*   SPNDL      */
-                    _UDWORD :13;                /*              */
-                    } BIT;                      /*              */
-             } SSLDR;                           /*              */
-       union {                                  /* SPBCR        */
-             _UDWORD LONG;                      /*  Long Access */
-             struct {                           /*  Bit Access  */
-                    _UDWORD BRDV:2;             /*   BRDV       */
-                    _UDWORD :6;                 /*              */
-                    _UDWORD SPBR:8;             /*   SPBR       */
-                    _UDWORD :16;                /*              */
-                    } BIT;                      /*              */
-             } SPBCR;                           /*              */
-       union {                                  /* DRCR         */
-             _UDWORD LONG;                      /*  Long Access */
-             struct {                           /*  Bit Access  */
-                    _UDWORD SSLE:1;             /*   SSLE       */
-                    _UDWORD :7;                 /*              */
-                    _UDWORD RBE:1;              /*   RBE        */
-                    _UDWORD RCF:1;              /*   RCF        */
-                    _UDWORD :6;                 /*              */
-                    _UDWORD RBURST:4;           /*   RBURST     */
-                    _UDWORD :4;                 /*              */
-                    _UDWORD SSLN:1;             /*   SSLN       */
-                    _UDWORD :7;                 /*              */
-                    } BIT;                      /*              */
-             } DRCR;                            /*              */
-       union {                                  /* DRCMR        */
-             _UDWORD LONG;                      /*  Long Access */
-             struct {                           /*  Bit Access  */
-                    _UDWORD OCMD:8;             /*   OCMD       */
-                    _UDWORD :8;                 /*              */
-                    _UDWORD CMD:8;              /*   CMD        */
-                    _UDWORD :8;                 /*              */
-                    } BIT;                      /*              */
-             } DRCMR;                           /*              */
-       union {                                  /* DREAR        */
-             _UDWORD LONG;                      /*  Long Access */
-             struct {                           /*  Bit Access  */
-                    _UDWORD EAC:3;              /*   EAC        */
-                    _UDWORD :13;                /*              */
-                    _UDWORD EAV:8;              /*   EAV        */
-                    _UDWORD :8;                 /*              */
-                    } BIT;                      /*              */
-             } DREAR;                           /*              */
-       union {                                  /* DROPR        */
-             _UDWORD LONG;                      /*  Long Access */
-             struct {                           /*  Bit Access  */
-                    _UDWORD OPD0:8;             /*   OPD0       */
-                    _UDWORD OPD1:8;             /*   OPD1       */
-                    _UDWORD OPD2:8;             /*   OPD2       */
-                    _UDWORD OPD3:8;             /*   OPD3       */
-                    } BIT;                      /*              */
-             } DROPR;                           /*              */
-       union {                                  /* DRENR        */
-             _UDWORD LONG;                      /*  Long Access */
-             struct {                           /*  Bit Access  */
-                    _UDWORD :4;                 /*              */
-                    _UDWORD OPDE:4;             /*   OPDE       */
-                    _UDWORD ADE:4;              /*   ADE        */
-                    _UDWORD OCDE:1;             /*   OCDE       */
-                    _UDWORD :1;                 /*              */
-                    _UDWORD CDE:1;              /*   CDE        */
-                    _UDWORD DME:1;              /*   DME        */
-                    _UDWORD DRDB:2;             /*   DRDB       */
-                    _UDWORD :2;                 /*              */
-                    _UDWORD OPDB:2;             /*   OPDB       */
-                    _UDWORD :2;                 /*              */
-                    _UDWORD ADB:2;              /*   ADB        */
-                    _UDWORD :2;                 /*              */
-                    _UDWORD OCDB:2;             /*   OCDB       */
-                    _UDWORD CDB:2;              /*   CDB        */
-                    } BIT;                      /*              */
-             } DRENR;                           /*              */
-       union {                                  /* SMCR         */
-             _UDWORD LONG;                      /*  Long Access */
-             struct {                           /*  Bit Access  */
-                    _UDWORD SPIE:1;             /*   SPIE       */
-                    _UDWORD SPIWE:1;            /*   SPIWE      */
-                    _UDWORD SPIRE:1;            /*   SPIRE      */
-                    _UDWORD :5;                 /*              */
-                    _UDWORD SSLKP:1;            /*   SSLKP      */
-                    _UDWORD :23;                /*              */
-                    } BIT;                      /*              */
-             } SMCR;                            /*              */
-       union {                                  /* SMCMR        */
-             _UDWORD LONG;                      /*  Long Access */
-             struct {                           /*  Bit Access  */
-                    _UDWORD OCMD:8;             /*   OCMD       */
-                    _UDWORD :8;                 /*              */
-                    _UDWORD CMD:8;              /*   CMD        */
-                    _UDWORD :8;                 /*              */
-                    } BIT;                      /*              */
-             } SMCMR;                           /*              */
-       union {                                  /* SMADR        */
-             _UDWORD LONG;                      /*  Long Access */
-             struct {                           /*  Bit Access  */
-                    _UDWORD ADR:32;             /*   ADR        */
-                    } BIT;                      /*              */
-             } SMADR;                           /*              */
-       union {                                  /* SMOPR        */
-             _UDWORD LONG;                      /*  Long Access */
-             struct {                           /*  Bit Access  */
-                    _UDWORD OPD0:8;             /*   OPD0       */
-                    _UDWORD OPD1:8;             /*   OPD1       */
-                    _UDWORD OPD2:8;             /*   OPD2       */
-                    _UDWORD OPD3:8;             /*   OPD3       */
-                    } BIT;                      /*              */
-             } SMOPR;                           /*              */
-       union {                                  /* SMENR        */
-             _UDWORD LONG;                      /*  Long Access */
-             struct {                           /*  Bit Access  */
-                    _UDWORD SPIDE:4;            /*   SPIDE      */
-                    _UDWORD OPDE:4;             /*   OPDE       */
-                    _UDWORD ADE:4;              /*   ADE        */
-                    _UDWORD OCDE:1;             /*   OCDE       */
-                    _UDWORD :1;                 /*              */
-                    _UDWORD CDE:1;              /*   CDE        */
-                    _UDWORD DME:1;              /*   DME        */
-                    _UDWORD SPIDB:2;            /*   SPIDB      */
-                    _UDWORD :2;                 /*              */
-                    _UDWORD OPDB:2;             /*   OPDB       */
-                    _UDWORD :2;                 /*              */
-                    _UDWORD ADB:2;              /*   ADB        */
-                    _UDWORD :2;                 /*              */
-                    _UDWORD OCDB:2;             /*   OCDB       */
-                    _UDWORD CDB:2;              /*   CDB        */
-                    } BIT;                      /*              */
-             } SMENR;                           /*              */
-       _UBYTE wk0[4];                           /*              */
-       union {                                  /* SMRDR0       */
-             _UDWORD LONG;                      /*  Long Access */
-             struct {                           /*  Word Access */
-                    _UWORD L;                   /*   Low        */
-                    _UWORD H;                   /*   High       */
-                    } WORD;                     /*              */
-             struct {                           /*  Byte Access */
-                    _UBYTE LL;                  /*   Low, Low   */
-                    _UBYTE LH;                  /*   Low, High  */
-                    _UBYTE HL;                  /*   High, Low  */
-                    _UBYTE HH;                  /*   High, High */
-                    } BYTE;                     /*              */
-             struct {                           /*  Bit Access  */
-                    _UDWORD RDATA0:32;          /*   RDATA0     */
-                    } BIT;                      /*              */
-             } SMRDR0;                          /*              */
-       union {                                  /* SMRDR1       */
-             _UDWORD LONG;                      /*  Long Access */
-             struct {                           /*  Word Access */
-                    _UWORD L;                   /*   Low        */
-                    _UWORD H;                   /*   High       */
-                    } WORD;                     /*              */
-             struct {                           /*  Byte Access */
-                    _UBYTE LL;                  /*   Low, Low   */
-                    _UBYTE LH;                  /*   Low, High  */
-                    _UBYTE HL;                  /*   High, Low  */
-                    _UBYTE HH;                  /*   High, High */
-                    } BYTE;                     /*              */
-             struct {                           /*  Bit Access  */
-                    _UDWORD RDATA1:32;          /*   RDATA1     */
-                    } BIT;                      /*              */
-             } SMRDR1;                          /*              */
-       union {                                  /* SMWDR0       */
-             _UDWORD LONG;                      /*  Long Access */
-             struct {                           /*  Word Access */
-                    _UWORD L;                   /*   Low        */
-                    _UWORD H;                   /*   High       */
-                    } WORD;                     /*              */
-             struct {                           /*  Byte Access */
-                    _UBYTE LL;                  /*   Low, Low   */
-                    _UBYTE LH;                  /*   Low, High  */
-                    _UBYTE HL;                  /*   High, Low  */
-                    _UBYTE HH;                  /*   High, High */
-                    } BYTE;                     /*              */
-             struct {                           /*  Bit Access  */
-                    _UDWORD WDATA0:32;          /*   WDATA0     */
-                    } BIT;                      /*              */
-             } SMWDR0;                          /*              */
-       union {                                  /* SMWDR1       */
-             _UDWORD LONG;                      /*  Long Access */
-             struct {                           /*  Word Access */
-                    _UWORD L;                   /*   Low        */
-                    _UWORD H;                   /*   High       */
-                    } WORD;                     /*              */
-             struct {                           /*  Byte Access */
-                    _UBYTE LL;                  /*   Low, Low   */
-                    _UBYTE LH;                  /*   Low, High  */
-                    _UBYTE HL;                  /*   High, Low  */
-                    _UBYTE HH;                  /*   High, High */
-                    } BYTE;                     /*              */
-             struct {                           /*  Bit Access  */
-                    _UDWORD WDATA1:32;          /*   WDATA1     */
-                    } BIT;                      /*              */
-             } SMWDR1;                          /*              */
-       union {                                  /* CMNSR        */
-             _UDWORD LONG;                      /*  Long Access */
-             struct {                           /*  Bit Access  */
-                    _UDWORD TEND:1;             /*   TEND       */
-                    _UDWORD SSLF:1;             /*   SSLF       */
-                    _UDWORD :30;                /*              */
-                    } BIT;                      /*              */
-             } CMNSR;                           /*              */
-       _UBYTE wk1[12];                          /*              */
-      union {                                   /* DRDMCR       */
-             _UDWORD LONG;                      /*  Long Access */
-             struct {                           /*  Bit Access  */
-                     _UDWORD DMCYC:3;           /*              */
-                     _UDWORD :13;               /*              */
-                     _UDWORD DMDB:2;            /*              */
-                     _UDWORD :14;               /*              */
-                    } BIT;                      /*              */
-             } DRDMCR;                          /*              */
-      union {                                   /* DRDRENR      */
-             _UDWORD LONG;                      /*  Long Access */
-             struct {                           /*  Bit Access  */
-                     _UDWORD DRDRE:1;           /*              */
-                     _UDWORD :3;                /*              */
-                     _UDWORD OPDRE:1;           /*              */
-                     _UDWORD :3;                /*              */
-                     _UDWORD ADDRE:1;           /*              */
-                     _UDWORD :23;               /*              */
-                    } BIT;                      /*              */
-             } DRDRENR;                         /*              */
+/* ==== Mask values for IO registers ==== */
+#define SPIBSC_CMNCR_BSZ               (0x00000003uL)
 
-      union {                                   /* SMDMCR       */
-             _UDWORD LONG;                      /*  Long Access */
-             struct {                           /*  Bit Access  */
-                     _UDWORD DMCYC:3;           /*              */
-                     _UDWORD :13;               /*              */
-                     _UDWORD DMDB:2;            /*              */
-                     _UDWORD :14;               /*              */
-                    } BIT;                      /*              */
-             } SMDMCR;                          /*              */
-      union {                                   /* SMDRENR      */
-             _UDWORD LONG;                      /*  Long Access */
-             struct {                           /*  Bit Access  */
-                     _UDWORD SPIDRE:1;          /*              */
-                     _UDWORD :3;                /*              */
-                     _UDWORD OPDRE:1;           /*              */
-                     _UDWORD :3;                /*              */
-                     _UDWORD ADDRE:1;           /*              */
-                     _UDWORD :23;               /*              */
-                    } BIT;                      /*              */
-             } SMDRENR;                         /*              */
-};                                              /*              */
+#define SPIBSC_CMNCR_CPOL              (0x00000008uL)
+#define SPIBSC_CMNCR_SSLP              (0x00000010uL)
+#define SPIBSC_CMNCR_CPHAR             (0x00000020uL)
+#define SPIBSC_CMNCR_CPHAT             (0x00000040uL)
 
-#define SPIBSC0 (*(volatile struct st_spibsc_n *)0x3FEFA000)
-#define SPIBSC1 (*(volatile struct st_spibsc_n *)0x3FEFB000)
+#define SPIBSC_CMNCR_IO0FV             (0x00000300uL)
 
-#endif	/* 一時的にコメントアウト @ 2013.05.13 */
+#define SPIBSC_CMNCR_IO2FV             (0x00003000uL)
+#define SPIBSC_CMNCR_IO3FV             (0x0000C000uL)
+#define SPIBSC_CMNCR_MOIIO0            (0x00030000uL)
+#define SPIBSC_CMNCR_MOIIO1            (0x000C0000uL)
+#define SPIBSC_CMNCR_MOIIO2            (0x00300000uL)
+#define SPIBSC_CMNCR_MOIIO3            (0x00C00000uL)
+#define SPIBSC_CMNCR_SFDE              (0x01000000uL)
 
-#endif /* __SPIBSC_IOBITMASK_H__ */
+#define SPIBSC_CMNCR_MD                (0x80000000uL)
+
+#define SPIBSC_SSLDR_SCKDL             (0x00000007uL)
+
+#define SPIBSC_SSLDR_SLNDL             (0x00000700uL)
+
+#define SPIBSC_SSLDR_SPNDL             (0x00070000uL)
+
+#define SPIBSC_SPBCR_BRDV              (0x00000003uL)
+
+#define SPIBSC_SPBCR_SPBR              (0x0000FF00uL)
+
+#define SPIBSC_DRCR_SSLE               (0x00000001uL)
+
+#define SPIBSC_DRCR_RBE                (0x00000100uL)
+#define SPIBSC_DRCR_RCF                (0x00000200uL)
+
+#define SPIBSC_DRCR_RBURST             (0x000F0000uL)
+
+#define SPIBSC_DRCR_SSLN               (0x01000000uL)
+
+#define SPIBSC_DRCMR_OCMD              (0x000000FFuL)
+
+#define SPIBSC_DRCMR_CMD               (0x00FF0000uL)
+
+#define SPIBSC_DREAR_EAC               (0x00000007uL)
+
+#define SPIBSC_DREAR_EAV               (0x00FF0000uL)
+
+#define SPIBSC_DROPR_OPD0              (0x000000FFuL)
+#define SPIBSC_DROPR_OPD1              (0x0000FF00uL)
+#define SPIBSC_DROPR_OPD2              (0x00FF0000uL)
+#define SPIBSC_DROPR_OPD3              (0xFF000000uL)
+
+#define SPIBSC_DRENR_OPDE              (0x000000F0uL)
+#define SPIBSC_DRENR_ADE               (0x00000F00uL)
+#define SPIBSC_DRENR_OCDE              (0x00001000uL)
+
+#define SPIBSC_DRENR_CDE               (0x00004000uL)
+#define SPIBSC_DRENR_DME               (0x00008000uL)
+#define SPIBSC_DRENR_DRDB              (0x00030000uL)
+
+#define SPIBSC_DRENR_OPDB              (0x00300000uL)
+
+#define SPIBSC_DRENR_ADB               (0x03000000uL)
+
+#define SPIBSC_DRENR_OCDB              (0x30000000uL)
+#define SPIBSC_DRENR_CDB               (0xC0000000uL)
+
+#define SPIBSC_SMCR_SPIE               (0x00000001uL)
+#define SPIBSC_SMCR_SPIWE              (0x00000002uL)
+#define SPIBSC_SMCR_SPIRE              (0x00000004uL)
+
+#define SPIBSC_SMCR_SSLKP              (0x00000100uL)
+
+#define SPIBSC_SMCMR_OCMD              (0x000000FFuL)
+
+#define SPIBSC_SMCMR_CMD               (0x00FF0000uL)
+
+#define SPIBSC_SMADR_ADR               (0xFFFFFFFFuL)
+
+#define SPIBSC_SMOPR_OPD0              (0x000000FFuL)
+#define SPIBSC_SMOPR_OPD1              (0x0000FF00uL)
+#define SPIBSC_SMOPR_OPD2              (0x00FF0000uL)
+#define SPIBSC_SMOPR_OPD3              (0xFF000000uL)
+
+#define SPIBSC_SMENR_SPIDE             (0x0000000FuL)
+#define SPIBSC_SMENR_OPDE              (0x000000F0uL)
+#define SPIBSC_SMENR_ADE               (0x00000F00uL)
+#define SPIBSC_SMENR_OCDE              (0x00001000uL)
+
+#define SPIBSC_SMENR_CDE               (0x00004000uL)
+#define SPIBSC_SMENR_DME               (0x00008000uL)
+#define SPIBSC_SMENR_SPIDB             (0x00030000uL)
+
+#define SPIBSC_SMENR_OPDB              (0x00300000uL)
+
+#define SPIBSC_SMENR_ADB               (0x03000000uL)
+
+#define SPIBSC_SMENR_OCDB              (0x30000000uL)
+#define SPIBSC_SMENR_CDB               (0xC0000000uL)
+
+#define SPIBSC_SMRDR0_RDATA0           (0xFFFFFFFFuL)
+#define SPIBSC_SMRDR1_RDATA1           (0xFFFFFFFFuL)
+#define SPIBSC_SMWDR0_WDATA0           (0xFFFFFFFFuL)
+#define SPIBSC_SMWDR1_WDATA1           (0xFFFFFFFFuL)
+
+#define SPIBSC_CMNSR_TEND              (0x00000001uL)
+#define SPIBSC_CMNSR_SSLF              (0x00000002uL)
+
+#define SPIBSC_DRDMCR_DMCYC            (0x00000007uL)
+
+#define SPIBSC_DRDMCR_DMDB             (0x00030000uL)
+
+#define SPIBSC_DRDRENR_DRDRE           (0x00000001uL)
+
+#define SPIBSC_DRDRENR_OPDRE           (0x00000010uL)
+
+#define SPIBSC_DRDRENR_ADDRE           (0x00000100uL)
+
+#define SPIBSC_SMDMCR_DMCYC            (0x00000007uL)
+
+#define SPIBSC_SMDMCR_DMDB             (0x00030000uL)
+
+#define SPIBSC_SMDRENR_SPIDRE          (0x00000001uL)
+
+#define SPIBSC_SMDRENR_OPDRE           (0x00000010uL)
+
+#define SPIBSC_SMDRENR_ADDRE           (0x00000100uL)
+
+/* Shift parameter */
+#define SPIBSC_CMNCR_BSZ_SHIFT         (0u)
+
+#define SPIBSC_CMNCR_CPOL_SHIFT        (3u)
+#define SPIBSC_CMNCR_SSLP_SHIFT        (4u)
+#define SPIBSC_CMNCR_CPHAR_SHIFT       (5u)
+#define SPIBSC_CMNCR_CPHAT_SHIFT       (6u)
+
+#define SPIBSC_CMNCR_IO0FV_SHIFT       (8u)
+
+#define SPIBSC_CMNCR_IO2FV_SHIFT       (12u)
+#define SPIBSC_CMNCR_IO3FV_SHIFT       (14u)
+#define SPIBSC_CMNCR_MOIIO0_SHIFT      (16u)
+#define SPIBSC_CMNCR_MOIIO1_SHIFT      (18u)
+#define SPIBSC_CMNCR_MOIIO2_SHIFT      (20u)
+#define SPIBSC_CMNCR_MOIIO3_SHIFT      (22u)
+#define SPIBSC_CMNCR_SFDE_SHIFT        (24u)
+
+#define SPIBSC_CMNCR_MD_SHIFT          (31u)
+
+#define SPIBSC_SSLDR_SCKDL_SHIFT       (0u)
+
+#define SPIBSC_SSLDR_SLNDL_SHIFT       (8u)
+
+#define SPIBSC_SSLDR_SPNDL_SHIFT       (16u)
+
+#define SPIBSC_SPBCR_BRDV_SHIFT        (0u)
+
+#define SPIBSC_SPBCR_SPBR_SHIFT        (8u)
+
+#define SPIBSC_DRCR_SSLE_SHIFT         (0u)
+
+#define SPIBSC_DRCR_RBE_SHIFT          (8u)
+#define SPIBSC_DRCR_RCF_SHIFT          (9u)
+
+#define SPIBSC_DRCR_RBURST_SHIFT       (16u)
+
+#define SPIBSC_DRCR_SSLN_SHIFT         (24u)
+
+#define SPIBSC_DRCMR_OCMD_SHIFT        (0u)
+
+#define SPIBSC_DRCMR_CMD_SHIFT         (16u)
+
+#define SPIBSC_DREAR_EAC_SHIFT         (0u)
+
+#define SPIBSC_DREAR_EAV_SHIFT         (16u)
+
+#define SPIBSC_DROPR_OPD0_SHIFT        (0u)
+#define SPIBSC_DROPR_OPD1_SHIFT        (8u)
+#define SPIBSC_DROPR_OPD2_SHIFT        (16u)
+#define SPIBSC_DROPR_OPD3_SHIFT        (24u)
+
+#define SPIBSC_DRENR_OPDE_SHIFT        (4u)
+#define SPIBSC_DRENR_ADE_SHIFT         (8u)
+#define SPIBSC_DRENR_OCDE_SHIFT        (12u)
+
+#define SPIBSC_DRENR_CDE_SHIFT         (14u)
+#define SPIBSC_DRENR_DME_SHIFT         (15u)
+#define SPIBSC_DRENR_DRDB_SHIFT        (16u)
+
+#define SPIBSC_DRENR_OPDB_SHIFT        (20u)
+
+#define SPIBSC_DRENR_ADB_SHIFT         (24u)
+
+#define SPIBSC_DRENR_OCDB_SHIFT        (28u)
+#define SPIBSC_DRENR_CDB_SHIFT         (30u)
+
+#define SPIBSC_SMCR_SPIE_SHIFT         (0u)
+#define SPIBSC_SMCR_SPIWE_SHIFT        (1u)
+#define SPIBSC_SMCR_SPIRE_SHIFT        (2u)
+
+#define SPIBSC_SMCR_SSLKP_SHIFT        (8u)
+
+#define SPIBSC_SMCMR_OCMD_SHIFT        (0u)
+
+#define SPIBSC_SMCMR_CMD_SHIFT         (16u)
+
+#define SPIBSC_SMADR_ADR_SHIFT         (0u)
+
+#define SPIBSC_SMOPR_OPD0_SHIFT        (0u)
+#define SPIBSC_SMOPR_OPD1_SHIFT        (8u)
+#define SPIBSC_SMOPR_OPD2_SHIFT        (16u)
+#define SPIBSC_SMOPR_OPD3_SHIFT        (24u)
+
+#define SPIBSC_SMENR_SPIDE_SHIFT       (0u)
+#define SPIBSC_SMENR_OPDE_SHIFT        (4u)
+#define SPIBSC_SMENR_ADE_SHIFT         (8u)
+#define SPIBSC_SMENR_OCDE_SHIFT        (12u)
+
+#define SPIBSC_SMENR_CDE_SHIFT         (14u)
+#define SPIBSC_SMENR_DME_SHIFT         (15u)
+#define SPIBSC_SMENR_SPIDB_SHIFT       (16u)
+
+#define SPIBSC_SMENR_OPDB_SHIFT        (20u)
+
+#define SPIBSC_SMENR_ADB_SHIFT         (24u)
+
+#define SPIBSC_SMENR_OCDB_SHIFT        (28u)
+#define SPIBSC_SMENR_CDB_SHIFT         (30u)
+
+#define SPIBSC_SMRDR0_RDATA0_SHIFT    (0u)
+#define SPIBSC_SMRDR1_RDATA1_SHIFT     (0u)
+#define SPIBSC_SMWDR0_WDATA0_SHIFT     (0u)
+#define SPIBSC_SMWDR1_WDATA1_SHIFT     (0u)
+
+#define SPIBSC_CMNSR_TEND_SHIFT        (0u)
+#define SPIBSC_CMNSR_SSLF_SHIFT        (1u)
+
+#define SPIBSC_DRDMCR_DMCYC_SHIFT      (0u)
+
+#define SPIBSC_DRDMCR_DMDB_SHIFT       (16u)
+
+#define SPIBSC_DRDRENR_DRDRE_SHIFT     (0u)
+
+#define SPIBSC_DRDRENR_OPDRE_SHIFT     (4u)
+
+#define SPIBSC_DRDRENR_ADDRE_SHIFT     (8u)
+
+#define SPIBSC_SMDMCR_DMCYC_SHIFT      (0u)
+
+#define SPIBSC_SMDMCR_DMDB_SHIFT       (16u)
+
+#define SPIBSC_SMDRENR_SPIDRE_SHIFT    (0u)
+
+#define SPIBSC_SMDRENR_OPDRE_SHIFT     (4u)
+
+#define SPIBSC_SMDRENR_ADDRE_SHIFT     (8u)
+#endif /* SPIBSC_IOBITMASK_H */

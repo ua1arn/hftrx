@@ -2126,7 +2126,7 @@ r7s721_adi_irq_handler(void)
 	// Select next ADC input
 	if (++ adc_input >= board_get_adcinputs())
 	{
-		ADC.ADCSR &= ~ (1uL << 15);	// ADF: A/D end flag - Cleared by reading ADF while ADF = 1, then writing 0 to ADF
+		ADC.ADCSR &= ~ ADC_SR_ADF;	// ADF: A/D end flag - Cleared by reading ADF while ADF = 1, then writing 0 to ADF
 
 		//dbg_putchar('L');
 		// Это был последний вход
@@ -2136,9 +2136,9 @@ r7s721_adi_irq_handler(void)
 	else
 	{
 		// Установить следующий вход
-		ADC.ADCSR = (ADC.ADCSR & ~ ((1uL << 15) | 0x07)) | 
-			board_get_adcch(adc_input) |	// канал для преобразования
-			1 * ADC_ADCSR_ADST |	// ADST: Single mode: A/D conversion starts
+		ADC.ADCSR = (ADC.ADCSR & ~ (ADC_SR_ADF | ADC_SR_CH)) | 
+			(board_get_adcch(adc_input) << ADC_SR_CH_SHIFT) |	// канал для преобразования
+			1 * ADC_SR_ADST |	// ADST: Single mode: A/D conversion starts
 			0;
 	}
 }
@@ -2817,8 +2817,8 @@ void hardware_adc_initialize(void)
 	const uint_fast32_t ainmask = build_adc_mask();
 
 	ADC.ADCSR =
-		1 * (1uL << ADC_ADCSR_ADIE_SHIFT) |	// ADIE - 1: A/D conversion end interrupt (ADI) request is enabled
-		3 * (1uL << ADC_ADCSR_CKS_SHIFT) |	// CKS[2..0] - Clock Select - 011: Conversion time = 382 tcyc (maximum)
+		1 * (1uL << ADC_SR_ADIE_SHIFT) |	// ADIE - 1: A/D conversion end interrupt (ADI) request is enabled
+		3 * (1uL << ADC_SR_CKS_SHIFT) |	// CKS[2..0] - Clock Select - 011: Conversion time = 382 tcyc (maximum)
 		0;
 
 	HARDWARE_ADC_INITIALIZE(ainmask);
@@ -2954,9 +2954,9 @@ hardware_adc_startonescan(void)
 	//#warning TODO: Add code for R7S721 ADC support
 	// 27.4.1 Single Mode
 	// Установить следующий вход
-	ADC.ADCSR = (ADC.ADCSR & ~ (0x07)) | 
-		board_get_adcch(adc_input) |	// канал для преобразования
-		1 * ADC_ADCSR_ADST |	// ADST: Single mode: A/D conversion starts
+	ADC.ADCSR = (ADC.ADCSR & ~ (ADC_SR_CH)) | 
+		(board_get_adcch(adc_input) << ADC_SR_CH_SHIFT) |	// канал для преобразования
+		1 * ADC_SR_ADST |	// ADST: Single mode: A/D conversion starts
 		0;
 
 #elif CPUSTYLE_STM32F0XX
@@ -10093,18 +10093,31 @@ void cpu_initialize(void)
 void cpu_initdone(void)
 {
 #if CPUSTYLE_R7S721
+
 	// Когда загрузочный образ FPGA будт оставаться в SERIAL FLASH, запретить отключение.
 	while ((SPIBSC0.CMNSR & (1u << 0)) == 0)	// TEND bit
 		;
+
+	SPIBSC0.CMNCR = (SPIBSC0.CMNCR & ~ ((1 << SPIBSC_CMNCR_BSZ))) |	// BSZ
+		(1 << SPIBSC_CMNCR_BSZ_SHIFT) |
+		0;
+	(void) SPIBSC0.CMNCR;	/* Dummy read */
+
 	// SPI multi-io Read Cache Flush
-	SPIBSC0.DRCR = (1u << 9);	// RCF bit
+	SPIBSC0.DRCR |= (1u << SPIBSC_DRCR_RCF_SHIFT);	// RCF bit
 	(void) SPIBSC0.DRCR;		/* Dummy read */
 
+	local_delay_ms(50);
+
 	SPIBSC0.SMCR = 0;
+	(void) SPIBSC0.SMCR;	/* Dummy read */
+
 	// spi multi-io hang off
 	CPG.STBCR9 |= (1U << 3);	// Module Stop 93	- 1: Clock supply to channel 0 of the SPI multi I/O bus controller is halted.
 	(void) CPG.STBCR9;			/* Dummy read */
+
 	arm_hardware_pio4_inputs(0xFC);		// Отключить процессор от SERIAL FLASH
+
 #endif /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7 */
 }
 

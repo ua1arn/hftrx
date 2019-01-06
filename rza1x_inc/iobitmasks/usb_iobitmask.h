@@ -62,8 +62,12 @@
 /* SYSSTS0										*/
 /*==============================================*/
 #define		USB_SYSSTS0_LNST				(0x0003u)
+#define		USB_SYSSTS0_SOFEA				(0x0020u)
+#define		USB_SYSSTS0_HTACT				(0x0040u)
 
 #define		USB_SYSSTS0_LNST_SHIFT			(0)
+#define		USB_SYSSTS0_SOFEA_SHIFT			(5)
+#define		USB_SYSSTS0_HTACT_SHIFT			(6)
 
 /*==============================================*/
 /* DVSTCTR0										*/
@@ -127,7 +131,7 @@
 /*==============================================*/
 #define		USB_CFIFOSEL_CURPIPE			(0x000Fu)
 //#define	USB_CFIFOSEL_RESERVED1			(0x0010u)
-#define		USB_CFIFOSEL_ISEL				(0x0020u)
+#define		USB_CFIFOSEL_ISEL_				(0x0020u)
 //#define	USB_CFIFOSEL_RESERVED2			(0x00C0u)
 #define		USB_CFIFOSEL_BIGEND				(0x0100u)
 //#define	USB_CFIFOSEL_RESERVED3			(0x0200u)
@@ -138,7 +142,7 @@
 
 #define		USB_CFIFOSEL_CURPIPE_SHIFT		(0)
 //#define	USB_CFIFOSEL_RESERVED1_SHIFT	(4)
-#define		USB_CFIFOSEL_ISEL_SHIFT			(5)
+#define		USB_CFIFOSEL_ISEL_SHIFT_		(5)
 //#define	USB_CFIFOSEL_RESERVED2_SHIFT	(6)
 #define		USB_CFIFOSEL_BIGEND_SHIFT		(8)
 //#define	USB_CFIFOSEL_RESERVED3_SHIFT	(9)

@@ -25,8 +25,8 @@
 *******************************************************************************/
 /*******************************************************************************
 * File Name     : adc_iobitmask.h
-* Device(s)     : RZ/A1H RSK2+RZA1H
-* H/W Platform  : RSK2+RZA1H CPU Board
+* Device(s)     : RZ/A1H RSK+RZA1H
+* H/W Platform  : RSK+RZA1H CPU Board
 * Description   : ADC register define header
 *******************************************************************************/
 /*******************************************************************************
@@ -38,7 +38,6 @@
 #define ADC_IOBITMASK_H
 
 
-/* ==== Mask values for IO registers ==== */
 #define ADC_ADDRA_D                            (0xFFFFu)
 
 #define ADC_ADDRB_D                            (0xFFFFu)
@@ -55,82 +54,81 @@
 
 #define ADC_ADDRH_D                            (0xFFFFu)
 
-#define ADC_ADCMPHA_D                          (0xFFFFu)
+#define ADC_MPHA_D                             (0xFFFFu)
 
-#define ADC_ADCMPLA_D                          (0xFFFFu)
+#define ADC_MPLA_D                             (0xFFFFu)
 
-#define ADC_ADCMPHB_D                          (0xFFFFu)
+#define ADC_MPHB_D                             (0xFFFFu)
 
-#define ADC_ADCMPLB_D                          (0xFFFFu)
+#define ADC_MPLB_D                             (0xFFFFu)
 
-#define ADC_ADCMPHC_D                          (0xFFFFu)
+#define ADC_MPHC_D                             (0xFFFFu)
 
-#define ADC_ADCMPLC_D                          (0xFFFFu)
+#define ADC_MPLC_D                             (0xFFFFu)
 
-#define ADC_ADCMPHD_D                          (0xFFFFu)
+#define ADC_MPHD_D                             (0xFFFFu)
 
-#define ADC_ADCMPLD_D                          (0xFFFFu)
+#define ADC_MPLD_D                             (0xFFFFu)
 
-#define ADC_ADCMPHE_D                          (0xFFFFu)
+#define ADC_MPHE_D                             (0xFFFFu)
 
-#define ADC_ADCMPLE_D                          (0xFFFFu)
+#define ADC_MPLE_D                             (0xFFFFu)
 
-#define ADC_ADCMPHF_D                          (0xFFFFu)
+#define ADC_MPHF_D                             (0xFFFFu)
 
-#define ADC_ADCMPLF_D                          (0xFFFFu)
+#define ADC_MPLF_D                             (0xFFFFu)
 
-#define ADC_ADCMPHG_D                          (0xFFFFu)
+#define ADC_MPHG_D                             (0xFFFFu)
 
-#define ADC_ADCMPLG_D                          (0xFFFFu)
+#define ADC_MPLG_D                             (0xFFFFu)
 
-#define ADC_ADCMPHH_D                          (0xFFFFu)
+#define ADC_MPHH_D                             (0xFFFFu)
 
-#define ADC_ADCMPLH_D                          (0xFFFFu)
+#define ADC_MPLH_D                             (0xFFFFu)
 
-#define ADC_ADCSR_CH                           (0x0007u)
-#define ADC_ADCSR_MDS                          (0x0038u)
-#define ADC_ADCSR_CKS                          (0x01C0u)
-#define ADC_ADCSR_TRGS                         (0x1E00u)
-#define ADC_ADCSR_ADST                         (0x2000u)
-#define ADC_ADCSR_ADIE                         (0x4000u)
-#define ADC_ADCSR_ADF                          (0x8000u)
+#define ADC_SR_CH                              (0x0007u)
+#define ADC_SR_MDS                             (0x0038u)
+#define ADC_SR_CKS                             (0x01C0u)
+#define ADC_SR_TRGS                            (0x1E00u)
+#define ADC_SR_ADST                            (0x2000u)
+#define ADC_SR_ADIE                            (0x4000u)
+#define ADC_SR_ADF                             (0x8000u)
 
-#define ADC_ADCMPER_LLMENA                     (0x0001u)
-#define ADC_ADCMPER_LLMENB                     (0x0002u)
-#define ADC_ADCMPER_LLMENC                     (0x0004u)
-#define ADC_ADCMPER_LLMEND                     (0x0008u)
-#define ADC_ADCMPER_LLMENE                     (0x0010u)
-#define ADC_ADCMPER_LLMENF                     (0x0020u)
-#define ADC_ADCMPER_LLMENG                     (0x0040u)
-#define ADC_ADCMPER_LLMENH                     (0x0080u)
-#define ADC_ADCMPER_HLMENA                     (0x0100u)
-#define ADC_ADCMPER_HLMENB                     (0x0200u)
-#define ADC_ADCMPER_HLMENC                     (0x0400u)
-#define ADC_ADCMPER_HLMEND                     (0x0800u)
-#define ADC_ADCMPER_HLMENE                     (0x1000u)
-#define ADC_ADCMPER_HLMENF                     (0x2000u)
-#define ADC_ADCMPER_HLMENG                     (0x4000u)
-#define ADC_ADCMPER_HLMENH                     (0x8000u)
+#define ADC_MPER_LLMENA                        (0x0001u)
+#define ADC_MPER_LLMENB                        (0x0002u)
+#define ADC_MPER_LLMENC                        (0x0004u)
+#define ADC_MPER_LLMEND                        (0x0008u)
+#define ADC_MPER_LLMENE                        (0x0010u)
+#define ADC_MPER_LLMENF                        (0x0020u)
+#define ADC_MPER_LLMENG                        (0x0040u)
+#define ADC_MPER_LLMENH                        (0x0080u)
+#define ADC_MPER_HLMENA                        (0x0100u)
+#define ADC_MPER_HLMENB                        (0x0200u)
+#define ADC_MPER_HLMENC                        (0x0400u)
+#define ADC_MPER_HLMEND                        (0x0800u)
+#define ADC_MPER_HLMENE                        (0x1000u)
+#define ADC_MPER_HLMENF                        (0x2000u)
+#define ADC_MPER_HLMENG                        (0x4000u)
+#define ADC_MPER_HLMENH                        (0x8000u)
 
-#define ADC_ADCMPSR_LUDRA                      (0x0001u)
-#define ADC_ADCMPSR_LUDRB                      (0x0002u)
-#define ADC_ADCMPSR_LUDRC                      (0x0004u)
-#define ADC_ADCMPSR_LUDRD                      (0x0008u)
-#define ADC_ADCMPSR_LUDRE                      (0x0010u)
-#define ADC_ADCMPSR_LUDRF                      (0x0020u)
-#define ADC_ADCMPSR_LUDRG                      (0x0040u)
-#define ADC_ADCMPSR_LUDRH                      (0x0080u)
-#define ADC_ADCMPSR_HOVRA                      (0x0100u)
-#define ADC_ADCMPSR_HOVRB                      (0x0200u)
-#define ADC_ADCMPSR_HOVRC                      (0x0400u)
-#define ADC_ADCMPSR_HOVRD                      (0x0800u)
-#define ADC_ADCMPSR_HOVRE                      (0x1000u)
-#define ADC_ADCMPSR_HOVRF                      (0x2000u)
-#define ADC_ADCMPSR_HOVRG                      (0x4000u)
-#define ADC_ADCMPSR_HOVRH                      (0x8000u)
+#define ADC_MPSR_LUDRA                         (0x0001u)
+#define ADC_MPSR_LUDRB                         (0x0002u)
+#define ADC_MPSR_LUDRC                         (0x0004u)
+#define ADC_MPSR_LUDRD                         (0x0008u)
+#define ADC_MPSR_LUDRE                         (0x0010u)
+#define ADC_MPSR_LUDRF                         (0x0020u)
+#define ADC_MPSR_LUDRG                         (0x0040u)
+#define ADC_MPSR_LUDRH                         (0x0080u)
+#define ADC_MPSR_HOVRA                         (0x0100u)
+#define ADC_MPSR_HOVRB                         (0x0200u)
+#define ADC_MPSR_HOVRC                         (0x0400u)
+#define ADC_MPSR_HOVRD                         (0x0800u)
+#define ADC_MPSR_HOVRE                         (0x1000u)
+#define ADC_MPSR_HOVRF                         (0x2000u)
+#define ADC_MPSR_HOVRG                         (0x4000u)
+#define ADC_MPSR_HOVRH                         (0x8000u)
 
 
-/* ==== IOレジスタへのシフト値 ==== */
 #define ADC_ADDRA_D_SHIFT                      (0u)
 
 #define ADC_ADDRB_D_SHIFT                      (0u)
@@ -147,81 +145,81 @@
 
 #define ADC_ADDRH_D_SHIFT                      (0u)
 
-#define ADC_ADCMPHA_D_SHIFT                    (0u)
+#define ADC_MPHA_D_SHIFT                       (0u)
 
-#define ADC_ADCMPLA_D_SHIFT                    (0u)
+#define ADC_MPLA_D_SHIFT                       (0u)
 
-#define ADC_ADCMPHB_D_SHIFT                    (0u)
+#define ADC_MPHB_D_SHIFT                       (0u)
 
-#define ADC_ADCMPLB_D_SHIFT                    (0u)
+#define ADC_MPLB_D_SHIFT                       (0u)
 
-#define ADC_ADCMPHC_D_SHIFT                    (0u)
+#define ADC_MPHC_D_SHIFT                       (0u)
 
-#define ADC_ADCMPLC_D_SHIFT                    (0u)
+#define ADC_MPLC_D_SHIFT                       (0u)
 
-#define ADC_ADCMPHD_D_SHIFT                    (0u)
+#define ADC_MPHD_D_SHIFT                       (0u)
 
-#define ADC_ADCMPLD_D_SHIFT                    (0u)
+#define ADC_MPLD_D_SHIFT                       (0u)
 
-#define ADC_ADCMPHE_D_SHIFT                    (0u)
+#define ADC_MPHE_D_SHIFT                       (0u)
 
-#define ADC_ADCMPLE_D_SHIFT                    (0u)
+#define ADC_MPLE_D_SHIFT                       (0u)
 
-#define ADC_ADCMPHF_D_SHIFT                    (0u)
+#define ADC_MPHF_D_SHIFT                       (0u)
 
-#define ADC_ADCMPLF_D_SHIFT                    (0u)
+#define ADC_MPLF_D_SHIFT                       (0u)
 
-#define ADC_ADCMPHG_D_SHIFT                    (0u)
+#define ADC_MPHG_D_SHIFT                       (0u)
 
-#define ADC_ADCMPLG_D_SHIFT                    (0u)
+#define ADC_MPLG_D_SHIFT                       (0u)
 
-#define ADC_ADCMPHH_D_SHIFT                    (0u)
+#define ADC_MPHH_D_SHIFT                       (0u)
 
-#define ADC_ADCMPLH_D_SHIFT                    (0u)
+#define ADC_MPLH_D_SHIFT                       (0u)
 
-#define ADC_ADCSR_CH_SHIFT                     (0u)
-#define ADC_ADCSR_MDS_SHIFT                    (3u)
-#define ADC_ADCSR_CKS_SHIFT                    (6u)
-#define ADC_ADCSR_TRGS_SHIFT                   (9u)
-#define ADC_ADCSR_ADST_SHIFT                   (13u)
-#define ADC_ADCSR_ADIE_SHIFT                   (14u)
-#define ADC_ADCSR_ADF_SHIFT                    (15u)
+#define ADC_SR_CH_SHIFT                        (0u)
+#define ADC_SR_MDS_SHIFT                       (3u)
+#define ADC_SR_CKS_SHIFT                       (6u)
+#define ADC_SR_TRGS_SHIFT                      (9u)
+#define ADC_SR_ADST_SHIFT                      (13u)
+#define ADC_SR_ADIE_SHIFT                      (14u)
+#define ADC_SR_ADF_SHIFT                       (15u)
 
-#define ADC_ADCMPER_LLMENA_SHIFT               (0u)
-#define ADC_ADCMPER_LLMENB_SHIFT               (1u)
-#define ADC_ADCMPER_LLMENC_SHIFT               (2u)
-#define ADC_ADCMPER_LLMEND_SHIFT               (3u)
-#define ADC_ADCMPER_LLMENE_SHIFT               (4u)
-#define ADC_ADCMPER_LLMENF_SHIFT               (5u)
-#define ADC_ADCMPER_LLMENG_SHIFT               (6u)
-#define ADC_ADCMPER_LLMENH_SHIFT               (7u)
-#define ADC_ADCMPER_HLMENA_SHIFT               (8u)
-#define ADC_ADCMPER_HLMENB_SHIFT               (9u)
-#define ADC_ADCMPER_HLMENC_SHIFT               (10u)
-#define ADC_ADCMPER_HLMEND_SHIFT               (11u)
-#define ADC_ADCMPER_HLMENE_SHIFT               (12u)
-#define ADC_ADCMPER_HLMENF_SHIFT               (13u)
-#define ADC_ADCMPER_HLMENG_SHIFT               (14u)
-#define ADC_ADCMPER_HLMENH_SHIFT               (15u)
+#define ADC_MPER_LLMENA_SHIFT                  (0u)
+#define ADC_MPER_LLMENB_SHIFT                  (1u)
+#define ADC_MPER_LLMENC_SHIFT                  (2u)
+#define ADC_MPER_LLMEND_SHIFT                  (3u)
+#define ADC_MPER_LLMENE_SHIFT                  (4u)
+#define ADC_MPER_LLMENF_SHIFT                  (5u)
+#define ADC_MPER_LLMENG_SHIFT                  (6u)
+#define ADC_MPER_LLMENH_SHIFT                  (7u)
+#define ADC_MPER_HLMENA_SHIFT                  (8u)
+#define ADC_MPER_HLMENB_SHIFT                  (9u)
+#define ADC_MPER_HLMENC_SHIFT                  (10u)
+#define ADC_MPER_HLMEND_SHIFT                  (11u)
+#define ADC_MPER_HLMENE_SHIFT                  (12u)
+#define ADC_MPER_HLMENF_SHIFT                  (13u)
+#define ADC_MPER_HLMENG_SHIFT                  (14u)
+#define ADC_MPER_HLMENH_SHIFT                  (15u)
 
-#define ADC_ADCMPSR_LUDRA_SHIFT                (0u)
-#define ADC_ADCMPSR_LUDRB_SHIFT                (1u)
-#define ADC_ADCMPSR_LUDRC_SHIFT                (2u)
-#define ADC_ADCMPSR_LUDRD_SHIFT                (3u)
-#define ADC_ADCMPSR_LUDRE_SHIFT                (4u)
-#define ADC_ADCMPSR_LUDRF_SHIFT                (5u)
-#define ADC_ADCMPSR_LUDRG_SHIFT                (6u)
-#define ADC_ADCMPSR_LUDRH_SHIFT                (7u)
-#define ADC_ADCMPSR_HOVRA_SHIFT                (8u)
-#define ADC_ADCMPSR_HOVRB_SHIFT                (9u)
-#define ADC_ADCMPSR_HOVRC_SHIFT                (10u)
-#define ADC_ADCMPSR_HOVRD_SHIFT                (11u)
-#define ADC_ADCMPSR_HOVRE_SHIFT                (12u)
-#define ADC_ADCMPSR_HOVRF_SHIFT                (13u)
-#define ADC_ADCMPSR_HOVRG_SHIFT                (14u)
-#define ADC_ADCMPSR_HOVRH_SHIFT                (15u)
+#define ADC_MPSR_LUDRA_SHIFT                   (0u)
+#define ADC_MPSR_LUDRB_SHIFT                   (1u)
+#define ADC_MPSR_LUDRC_SHIFT                   (2u)
+#define ADC_MPSR_LUDRD_SHIFT                   (3u)
+#define ADC_MPSR_LUDRE_SHIFT                   (4u)
+#define ADC_MPSR_LUDRF_SHIFT                   (5u)
+#define ADC_MPSR_LUDRG_SHIFT                   (6u)
+#define ADC_MPSR_LUDRH_SHIFT                   (7u)
+#define ADC_MPSR_HOVRA_SHIFT                   (8u)
+#define ADC_MPSR_HOVRB_SHIFT                   (9u)
+#define ADC_MPSR_HOVRC_SHIFT                   (10u)
+#define ADC_MPSR_HOVRD_SHIFT                   (11u)
+#define ADC_MPSR_HOVRE_SHIFT                   (12u)
+#define ADC_MPSR_HOVRF_SHIFT                   (13u)
+#define ADC_MPSR_HOVRG_SHIFT                   (14u)
+#define ADC_MPSR_HOVRH_SHIFT                   (15u)
 
 
-#endif /* __ADC_IOBITMASK_H__ */
+#endif /* ADC_IOBITMASK_H */
 
 /* End of File */
