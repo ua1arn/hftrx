@@ -3957,7 +3957,6 @@ static void usb0_function_save_request(PCD_TypeDef * const Instance, USBD_SetupR
 	gReqIndex = Instance->USBINDX;
 	gReqLength = Instance->USBLENG;
 
-#endif
 
 	req->bmRequest     = LO_BYTE(usbreq & USB_FUNCTION_bmRequestType); //(pdata [0] >> 0) & 0x00FF;
 	req->bRequest      = HI_BYTE(usbreq & USB_FUNCTION_bRequest); //(pdata [0] >> 8) & 0x00FF;
@@ -3983,6 +3982,7 @@ static void usb0_function_save_request(PCD_TypeDef * const Instance, USBD_SetupR
 	uint_fast8_t gReqTypeType = req->bmRequest & USB_FUNCTION_bmRequestTypeType;	/* b6-5: Type */
 	uint_fast8_t gReqTypeRecip = req->bmRequest & USB_FUNCTION_bmRequestTypeRecip;	/* b4-0: Recipient */
 
+#endif
 
 #if 0
 	PRINTF(PSTR("USBD_ParseSetupRequest: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), 
