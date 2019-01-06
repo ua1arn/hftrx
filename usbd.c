@@ -3007,6 +3007,7 @@ usbd_handler_nrdy(PCD_TypeDef * const Instance, uint_fast8_t pipe)
 
 #endif /* CPUSTYLE_R7S721 */
 
+static USBD_SetupReqTypedef    gRequest;	// CPUSTYLE_R7S721 only
 
 static uint_fast8_t gReqType;
 //static uint_fast8_t gReqTypeDir;
@@ -3017,6 +3018,19 @@ static uint_fast16_t gReqValue;
 static uint_fast16_t gReqIndex;
 static uint_fast16_t gReqLength;
 
+#if 0
+	const uint_fast16_t usbreq = Instance->USBREQ;
+	gReqValue = Instance->USBVAL;
+	gReqIndex = Instance->USBINDX;
+	gReqLength = Instance->USBLENG;
+
+	gReqType = usbreq & USB_FUNCTION_bmRequestType;			/* b7-0: bmRequestType */
+	//gReqTypeDir = usbreq & USB_FUNCTION_bmRequestTypeDir;		/* b7 : Data transfer direction */
+	gReqTypeType = usbreq & USB_FUNCTION_bmRequestTypeType;	/* b6-5: Type */
+	gReqTypeRecip = usbreq & USB_FUNCTION_bmRequestTypeRecip;	/* b4-0: Recipient */
+	gReqRequest = HI_BYTE(usbreq & USB_FUNCTION_bRequest);		/* b15-8:bRequest */
+
+#endif
 static uint_fast32_t dwDTERate [INTERFACE_count];
 
 
@@ -3025,6 +3039,7 @@ static uint_fast32_t dwDTERate [INTERFACE_count];
 static void
 usbd_handler_brdy8_dcp_out(PCD_TypeDef * const Instance, uint_fast8_t pipe)
 {
+	USBD_SetupReqTypedef *req = & gRequest;
 	switch (gReqRequest)
 	{
 #if WITHUSBCDC
@@ -3042,9 +3057,9 @@ usbd_handler_brdy8_dcp_out(PCD_TypeDef * const Instance, uint_fast8_t pipe)
 	case AUDIO_REQUEST_SET_CUR:
 		{
 			unsigned count = usbd_read_data(Instance, pipe, uac_ep0databuffout, sizeof uac_ep0databuffout / sizeof uac_ep0databuffout [0]);
-			const uint_fast8_t interfacev = LO_BYTE(gReqIndex);
-			const uint_fast8_t terminalID = HI_BYTE(gReqIndex);
-			const uint_fast8_t controlID = HI_BYTE(gReqValue);	// AUDIO_MUTE_CONTROL, AUDIO_VOLUME_CONTROL, ...
+			const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
+			const uint_fast8_t terminalID = HI_BYTE(req->wIndex);
+			const uint_fast8_t controlID = HI_BYTE(req->wValue);	// AUDIO_MUTE_CONTROL, AUDIO_VOLUME_CONTROL, ...
 			terminalsprops [terminalID] [controlID] = uac_ep0databuffout [0];
 			PRINTF(PSTR("AUDIO_REQUEST_SET_CUR: interfacev=%u, %u=%u\n"), interfacev, terminalID, uac_ep0databuffout [0]);
 		}
@@ -3070,91 +3085,101 @@ static void usbd_continuereading(PCD_TypeDef * const Instance, uint_fast8_t pipe
 // end of machine-dependent stuff
 /* Control Write No Data Status Stage seq= 5 */
 // seq=1,3,5
-static void usb0_function_Resrv_123(PCD_TypeDef * const Instance, uint_fast8_t ReqTypeRecip, uint_fast16_t ReqValue, uint_fast16_t ReqIndex, uint_fast16_t ReqLength)
+static void usb0_function_Resrv_123(PCD_TypeDef * const Instance, USBD_SetupReqTypedef *req)
 {
 	//PRINTF(PSTR("usb0_function_Resrv_123: ReqTypeRecip=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
 	//stall_ep0(Instance);	// В примерах от renesas стоит stall
 }
 #if 0
 // seq=0
-static void usb0_function_Resrv_0(PCD_TypeDef * const Instance, uint_fast8_t ReqTypeRecip, uint_fast16_t ReqValue, uint_fast16_t ReqIndex, uint_fast16_t ReqLength)
+static void usb0_function_Resrv_0(PCD_TypeDef * const Instance, USBD_SetupReqTypedef *req)
 {
 	//PRINTF(PSTR("usb0_function_Resrv_0: ReqTypeRecip=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
 	// В примерах от renesas пусто
 }
 
 // seq=2
-static void usb0_function_Resrv_4(PCD_TypeDef * const Instance, uint_fast8_t ReqTypeRecip, uint_fast16_t ReqValue, uint_fast16_t ReqIndex, uint_fast16_t ReqLength)
+static void usb0_function_Resrv_4(PCD_TypeDef * const Instance, USBD_SetupReqTypedef *req)
 {
 	//PRINTF(PSTR("usb0_function_Resrv_4: ReqTypeRecip=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
 	// В примерах от renesas пусто
 }
 // seq=4
-static void usb0_function_Resrv_5(PCD_TypeDef * const Instance, uint_fast8_t ReqTypeRecip, uint_fast16_t ReqValue, uint_fast16_t ReqIndex, uint_fast16_t ReqLength)
+static void usb0_function_Resrv_5(PCD_TypeDef * const Instance, USBD_SetupReqTypedef *req)
 {
 	//PRINTF(PSTR("usb0_function_Resrv_5: ReqTypeRecip=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
 	// В примерах от renesas пусто
 }
 // Control Read Status stage
-static void usbdFunctionReq_seq2(PCD_TypeDef * const Instance, PCD_TypeDef * const Instance, uint_fast8_t ReqType, uint_fast8_t ReqRequest, uint_fast16_t ReqValue, uint_fast16_t ReqIndex, uint_fast16_t ReqLength)
+static void usbdFunctionReq_seq2(PCD_TypeDef * const Instance, USBD_SetupReqTypedef *req)
 {
 	//PRINTF(PSTR("usbdFunctionReq_seq2: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
-	const uint_fast8_t interfacev = LO_BYTE(ReqIndex);
+	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
 
 }
 // Control Read Status stage
-static void usbdVendorReq_seq2(PCD_TypeDef * const Instance, uint_fast8_t ReqType, uint_fast8_t ReqRequest, uint_fast16_t ReqValue, uint_fast16_t ReqIndex, uint_fast16_t ReqLength)
+static void usbdVendorReq_seq2(PCD_TypeDef * const Instance, USBD_SetupReqTypedef *req)
 {
 	//PRINTF(PSTR("usbdVendorReq_seq2: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
 }
 // Idle or setup stage
-static void usbdFunctionReq_seq0(PCD_TypeDef * const Instance, uint_fast8_t ReqType, uint_fast8_t ReqRequest, uint_fast16_t ReqValue, uint_fast16_t ReqIndex, uint_fast16_t ReqLength)
+static void usbdFunctionReq_seq0(PCD_TypeDef * const Instance, USBD_SetupReqTypedef *req)
 {
 	//PRINTF(PSTR("usbdFunctionReq_seq0: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
-	//const uint_fast8_t interfacev = LO_BYTE(ReqIndex);
+	//const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
 }
 // Idle or setup stage
-static void usbdVendorReq_seq0(PCD_TypeDef * const Instance, uint_fast8_t ReqType, uint_fast8_t ReqRequest, uint_fast16_t ReqValue, uint_fast16_t ReqIndex, uint_fast16_t ReqLength)
+static void usbdVendorReq_seq0(PCD_TypeDef * const Instance, USBD_SetupReqTypedef *req)
 {
 	//PRINTF(PSTR("usbdVendorReq_seq0: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
 }
 // Control write status stage
-static void usbdFunctionReq_seq4(PCD_TypeDef * const Instance, uint_fast8_t ReqType, uint_fast8_t ReqRequest, uint_fast16_t ReqValue, uint_fast16_t ReqIndex, uint_fast16_t ReqLength)
+static void usbdFunctionReq_seq4(PCD_TypeDef * const Instance, USBD_SetupReqTypedef *req)
 {
+	const uint_fast8_t ReqType = req->bmRequest & USB_FUNCTION_bmRequestType;			/* b7-0: bmRequestType */
+	//const uint_fast8_t ReqTypeDir = req->bmRequest & USB_FUNCTION_bmRequestTypeDir;		/* b7 : Data transfer direction */
+	const uint_fast8_t ReqTypeType = req->bmRequest & USB_FUNCTION_bmRequestTypeType;	/* b6-5: Type */
+	const uint_fast8_t ReqTypeRecip = req->bmRequest & USB_FUNCTION_bmRequestTypeRecip;	/* b4-0: Recipient */
+
 	//PRINTF(PSTR("usbdFunctionReq_seq4: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
-	//const uint_fast8_t interfacev = LO_BYTE(ReqIndex);
+	//const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
 }
 
 // Control write status stage
-static void usbdVendorReq_seq4(PCD_TypeDef * const Instance, uint_fast8_t ReqType, uint_fast8_t ReqRequest, uint_fast16_t ReqValue, uint_fast16_t ReqIndex, uint_fast16_t ReqLength)
+static void usbdVendorReq_seq4(PCD_TypeDef * const Instance, USBD_SetupReqTypedef *req)
 {
 	//PRINTF(PSTR("usbdVendorReq_seq4: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
 }
 #endif
 /* Control Read Data Stage seq= 1 */
 // OUT token
-static void usb0_function_GetDescriptor(PCD_TypeDef * const Instance, uint_fast8_t ReqTypeRecip, uint_fast16_t ReqValue, uint_fast16_t ReqIndex, uint_fast16_t ReqLength)
+static void usb0_function_GetDescriptor(PCD_TypeDef * const Instance, USBD_SetupReqTypedef *req)
 {
+	const uint_fast8_t ReqType = req->bmRequest & USB_FUNCTION_bmRequestType;			/* b7-0: bmRequestType */
+	//const uint_fast8_t ReqTypeDir = req->bmRequest & USB_FUNCTION_bmRequestTypeDir;		/* b7 : Data transfer direction */
+	const uint_fast8_t ReqTypeType = req->bmRequest & USB_FUNCTION_bmRequestTypeType;	/* b6-5: Type */
+	const uint_fast8_t ReqTypeRecip = req->bmRequest & USB_FUNCTION_bmRequestTypeRecip;	/* b4-0: Recipient */
+
 	//PRINTF(PSTR("usb0_function_GetDescriptor: ReqTypeRecip=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
     if (ReqTypeRecip != 0x0000) // USB_FUNCTION_DEVICE_REQUEST
 	{
 		stall_ep0(Instance);
 		return;
 	}
-	const unsigned index = LO_BYTE(ReqValue);
-	switch (HI_BYTE(ReqValue))
+	const unsigned index = LO_BYTE(req->wValue);
+	switch (HI_BYTE(req->wValue))
 	{
 	case USB_DESC_TYPE_DEVICE:
 		// device Descriptor 
 		//PRINTF(PSTR("usb0_function_GetDescriptor: ReqTypeRecip=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
-		control_transmit(Instance, DeviceDescrTbl [0].data, ulmin16(ReqLength, DeviceDescrTbl [0].size));
+		control_transmit(Instance, DeviceDescrTbl [0].data, ulmin16(req->wLength, DeviceDescrTbl [0].size));
 		break;
 
 	case USB_DESC_TYPE_CONFIGURATION:
 		// Configuration Descriptor
 		//PRINTF(PSTR("usb0_function_GetDescriptor: ReqTypeRecip=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
 		if (index < ARRAY_SIZE(ConfigDescrTbl))
-			control_transmit(Instance, ConfigDescrTbl [index].data, ulmin16(ReqLength, ConfigDescrTbl [index].size));
+			control_transmit(Instance, ConfigDescrTbl [index].data, ulmin16(req->wLength, ConfigDescrTbl [index].size));
 		else
 			stall_ep0(Instance);
 		break;
@@ -3166,7 +3191,7 @@ static void usb0_function_GetDescriptor(PCD_TypeDef * const Instance, uint_fast8
 		{
 		case 0xF8:
 			// Запрос появляется при запуске MixW2
-			//control_transmit(Instance, StringDescrTbl [STRING_ID_7].data, ulmin16(ReqLength, StringDescrTbl [STRING_ID_7].size));
+			//control_transmit(Instance, StringDescrTbl [STRING_ID_7].data, ulmin16(req->wLength, StringDescrTbl [STRING_ID_7].size));
 			stall_ep0(Instance);
 			return;
 
@@ -3176,7 +3201,7 @@ static void usb0_function_GetDescriptor(PCD_TypeDef * const Instance, uint_fast8
 			return;
 		}
 		if (index < usbd_get_stringsdesc_count() && StringDescrTbl [index].size != 0)
-			control_transmit(Instance, StringDescrTbl [index].data, ulmin16(ReqLength, StringDescrTbl [index].size));
+			control_transmit(Instance, StringDescrTbl [index].data, ulmin16(req->wLength, StringDescrTbl [index].size));
 		else
 			stall_ep0(Instance);
 		break;
@@ -3185,7 +3210,7 @@ static void usb0_function_GetDescriptor(PCD_TypeDef * const Instance, uint_fast8
 		// Device Qualifier descriptor
 		//PRINTF(PSTR("usb0_function_GetDescriptor: ReqTypeRecip=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
 		if (index < ARRAY_SIZE(DeviceQualifierTbl) && DeviceQualifierTbl [index].size != 0)
-			control_transmit(Instance, DeviceQualifierTbl [index].data, ulmin16(ReqLength, DeviceQualifierTbl [index].size));
+			control_transmit(Instance, DeviceQualifierTbl [index].data, ulmin16(req->wLength, DeviceQualifierTbl [index].size));
 		else
 			stall_ep0(Instance);
 		break;
@@ -3194,14 +3219,14 @@ static void usb0_function_GetDescriptor(PCD_TypeDef * const Instance, uint_fast8
 		// Other Speed Configuration descriptor
 		//PRINTF(PSTR("usb0_function_GetDescriptor: ReqTypeRecip=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
 		if (index < ARRAY_SIZE(OtherSpeedConfigurationTbl) && OtherSpeedConfigurationTbl [index].size)
-			control_transmit(Instance, OtherSpeedConfigurationTbl [index].data, ulmin16(ReqLength, OtherSpeedConfigurationTbl [index].size));
+			control_transmit(Instance, OtherSpeedConfigurationTbl [index].data, ulmin16(req->wLength, OtherSpeedConfigurationTbl [index].size));
 		else
 			stall_ep0(Instance);
 		break;
 
 	case USB_DESC_TYPE_BOS:
 		if (index < ARRAY_SIZE(BinaryDeviceObjectStoreTbl) && BinaryDeviceObjectStoreTbl [index].size)
-			control_transmit(Instance, BinaryDeviceObjectStoreTbl [index].data, ulmin16(ReqLength, BinaryDeviceObjectStoreTbl [index].size));
+			control_transmit(Instance, BinaryDeviceObjectStoreTbl [index].data, ulmin16(req->wLength, BinaryDeviceObjectStoreTbl [index].size));
 		else
 			stall_ep0(Instance);
 		break;
@@ -3216,8 +3241,13 @@ static void usb0_function_GetDescriptor(PCD_TypeDef * const Instance, uint_fast8
 
 /* Control Read Data Stage seq= 1 */
 // OUT token
-static void usb0_function_GetStatus(PCD_TypeDef * const Instance, uint_fast8_t ReqTypeRecip, uint_fast16_t ReqValue, uint_fast16_t ReqIndex, uint_fast16_t ReqLength)
+static void usb0_function_GetStatus(PCD_TypeDef * const Instance, USBD_SetupReqTypedef *req)
 {
+	const uint_fast8_t ReqType = req->bmRequest & USB_FUNCTION_bmRequestType;			/* b7-0: bmRequestType */
+	//const uint_fast8_t ReqTypeDir = req->bmRequest & USB_FUNCTION_bmRequestTypeDir;		/* b7 : Data transfer direction */
+	const uint_fast8_t ReqTypeType = req->bmRequest & USB_FUNCTION_bmRequestTypeType;	/* b6-5: Type */
+	const uint_fast8_t ReqTypeRecip = req->bmRequest & USB_FUNCTION_bmRequestTypeRecip;	/* b4-0: Recipient */
+
 	//PRINTF(PSTR("usb0_function_GetStatus: ReqTypeRecip=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
 	// The Recipient bits of the bmRequestType field specify the desired recipient.  
 	// The data returned is the current status of the specified recipient.
@@ -3231,7 +3261,7 @@ static void usb0_function_GetStatus(PCD_TypeDef * const Instance, uint_fast8_t R
 	buff [0] = LO_BYTE(status);
 	buff [1] = HI_BYTE(status);
 
-	control_transmit(Instance, buff, ulmin16(ARRAY_SIZE(buff), ReqLength));
+	control_transmit(Instance, buff, ulmin16(ARRAY_SIZE(buff), req->wLength));
 }
 
 
@@ -3239,7 +3269,7 @@ static uint_fast8_t stored_bConfiguration = 1;
 
 /* Control Read Data Stage seq= 1 */
 // OUT token
-static void usb0_function_GetConfiguration(PCD_TypeDef * const Instance, uint_fast8_t ReqTypeRecip, uint_fast16_t ReqValue, uint_fast16_t ReqIndex, uint_fast16_t ReqLength)
+static void usb0_function_GetConfiguration(PCD_TypeDef * const Instance, USBD_SetupReqTypedef *req)
 {
 	//PRINTF(PSTR("usb0_function_GetConfiguration: ReqTypeRecip=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
 
@@ -3249,22 +3279,22 @@ static void usb0_function_GetConfiguration(PCD_TypeDef * const Instance, uint_fa
 	static uint8_t buff [1];	// static, так как может переаваться асинхронно
 	buff [0] = LO_BYTE(data);
 
-	control_transmit(Instance, buff, ulmin16(ARRAY_SIZE(buff), ReqLength));
+	control_transmit(Instance, buff, ulmin16(ARRAY_SIZE(buff), req->wLength));
 }
 
 /* Control Read Data Stage seq= 1 */
 // OUT token
-static void usb0_function_GetInterface(PCD_TypeDef * const Instance, uint_fast8_t ReqTypeRecip, uint_fast16_t ReqValue, uint_fast16_t ReqIndex, uint_fast16_t ReqLength)
+static void usb0_function_GetInterface(PCD_TypeDef * const Instance, USBD_SetupReqTypedef *req)
 {
 	//PRINTF(PSTR("usb0_function_GetInterface: ReqTypeRecip=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
 
-	const uint_fast8_t interfacev = LO_BYTE(ReqIndex);
+	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
 
 	static USBALIGN_BEGIN uint8_t buff [1] USBALIGN_END;
-	if (interfacev < INTERFACE_count && ReqLength == 1)
+	if (interfacev < INTERFACE_count && req->wLength == 1)
 	{
 		buff [0] = altinterfaces [interfacev];
-		control_transmit(Instance, buff, ulmin16(ARRAY_SIZE(buff), ReqLength));
+		control_transmit(Instance, buff, ulmin16(ARRAY_SIZE(buff), req->wLength));
 	}
 	else
 	{
@@ -3274,7 +3304,7 @@ static void usb0_function_GetInterface(PCD_TypeDef * const Instance, uint_fast8_
 
 /* Control Read Data Stage seq= 1 */
 // OUT token
-static void usb0_function_SynchFrame(PCD_TypeDef * const Instance, uint_fast8_t ReqTypeRecip, uint_fast16_t ReqValue, uint_fast16_t ReqIndex, uint_fast16_t ReqLength)
+static void usb0_function_SynchFrame(PCD_TypeDef * const Instance, USBD_SetupReqTypedef *req)
 {
 	//PRINTF(PSTR("usb0_function_SynchFrame: ReqTypeRecip=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
 
@@ -3289,17 +3319,17 @@ static void usb0_function_SynchFrame(PCD_TypeDef * const Instance, uint_fast8_t 
 	buff [0] = LO_BYTE(frame);
 	buff [1] = HI_BYTE(frame);
 
-	control_transmit(Instance, buff, ulmin16(ARRAY_SIZE(buff), ReqLength));
+	control_transmit(Instance, buff, ulmin16(ARRAY_SIZE(buff), req->wLength));
 }
 
 /* Control Write Data Stage seq= 3 */
 // IN token
-static void usb0_function_SetDescriptor(PCD_TypeDef * const Instance, uint_fast8_t ReqTypeRecip, uint_fast16_t ReqValue, uint_fast16_t ReqIndex, uint_fast16_t ReqLength)
+static void usb0_function_SetDescriptor(PCD_TypeDef * const Instance, USBD_SetupReqTypedef *req)
 {
 	//PRINTF(PSTR("usb0_function_SetDescriptor: ReqTypeRecip=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
 
 	static USBALIGN_BEGIN uint8_t buff [255] USBALIGN_END;
-	control_read_data(Instance, buff, ulmin16(ARRAY_SIZE(buff), ReqLength));
+	control_read_data(Instance, buff, ulmin16(ARRAY_SIZE(buff), req->wLength));
 	//
 	// The wIndex field specifies the Language ID for string descriptors or is 
 	// reset to zero for other descriptors. 
@@ -3308,7 +3338,7 @@ static void usb0_function_SetDescriptor(PCD_TypeDef * const Instance, uint_fast8
 }
 
 /* Control Write No Data Status Stage seq= 5 */
-static void usb0_function_ClearFeature(PCD_TypeDef * const Instance, uint_fast8_t ReqTypeRecip, uint_fast16_t ReqValue, uint_fast16_t ReqIndex, uint_fast16_t ReqLength)
+static void usb0_function_ClearFeature(PCD_TypeDef * const Instance, USBD_SetupReqTypedef *req)
 {
 	PRINTF(PSTR("usb0_function_ClearFeature: ReqTypeRecip=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
 #if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32F4XX
@@ -3317,7 +3347,7 @@ static void usb0_function_ClearFeature(PCD_TypeDef * const Instance, uint_fast8_
 }
 
 /* Control Write No Data Status Stage seq= 5 */
-static void usb0_function_SetFeature(PCD_TypeDef * const Instance, uint_fast8_t ReqTypeRecip, uint_fast16_t ReqValue, uint_fast16_t ReqIndex, uint_fast16_t ReqLength)
+static void usb0_function_SetFeature(PCD_TypeDef * const Instance, USBD_SetupReqTypedef *req)
 {
 	PRINTF(PSTR("usb0_function_SetFeature: ReqTypeRecip=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
 #if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32F4XX
@@ -3326,15 +3356,15 @@ static void usb0_function_SetFeature(PCD_TypeDef * const Instance, uint_fast8_t 
 }
 
 /* Control Write No Data Status Stage seq= 5 */
-static void usb0_function_SetAddress(PCD_TypeDef * const Instance, uint_fast8_t ReqTypeRecip, uint_fast16_t ReqValue, uint_fast16_t ReqIndex, uint_fast16_t ReqLength)
+static void usb0_function_SetAddress(PCD_TypeDef * const Instance, USBD_SetupReqTypedef *req)
 {
 
   //PRINTF(PSTR("usb0_function_SetAddress: ReqTypeRecip=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
 	// wValue = device address
-	PRINTF(PSTR("SetAddress: address=0x%02lx\n"), LO_BYTE(ReqValue));
+	PRINTF(PSTR("SetAddress: address=0x%02lx\n"), LO_BYTE(req->wValue));
 #if 0//CPUSTYLE_STM32H7XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32F4XX
 	USBx_DEVICE->DCFG = (USBx_DEVICE->DCFG & ~ (USB_OTG_DCFG_DAD)) |
-		LO_BYTE(ReqValue) * USB_OTG_DCFG_DAD_0 |
+		LO_BYTE(req->wValue) * USB_OTG_DCFG_DAD_0 |
 		0;
 	//control_transmit(Instance, NULL, 0);
 	dcp_acksend(Instance);
@@ -3343,26 +3373,26 @@ static void usb0_function_SetAddress(PCD_TypeDef * const Instance, uint_fast8_t 
 
 
 /* Control Write No Data Status Stage seq= 5 */
-static void usb0_function_SetConfiguration(PCD_TypeDef * const Instance, uint_fast8_t ReqTypeRecip, uint_fast16_t ReqValue, uint_fast16_t ReqIndex, uint_fast16_t ReqLength)
+static void usb0_function_SetConfiguration(PCD_TypeDef * const Instance, USBD_SetupReqTypedef *req)
 {
 	//PRINTF(PSTR("usb0_function_SetConfiguration: ReqTypeRecip=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
 	// The lower byte of the wValue field specifies the desired configuration.  
 	// This configuration value must be zero or match a configuration value from a configuration descriptor.  
 	// If the configuration value is zero, the device is placed in its Address state.  
 	// The upper byte of the wValue field is reserved
-	const uint_fast8_t configuration = LO_BYTE(ReqValue);
+	const uint_fast8_t configuration = LO_BYTE(req->wValue);
 
 	stored_bConfiguration = configuration;
-	//PRINTF(PSTR("SetConfiguration: configuration=%02X\n"), LO_BYTE(ReqValue));
+	//PRINTF(PSTR("SetConfiguration: configuration=%02X\n"), LO_BYTE(req->wValue));
 
 	dcp_acksend(Instance);	// убирание этой строки приводит к ошибке enumeration
 }
 
 /* Control Write No Data Status Stage seq= 5 */
-static void usb0_function_SetInterface(PCD_TypeDef * const Instance, uint_fast8_t ReqTypeRecip, uint_fast16_t ReqValue, uint_fast16_t ReqIndex, uint_fast16_t ReqLength)
+static void usb0_function_SetInterface(PCD_TypeDef * const Instance, USBD_SetupReqTypedef *req)
 {
 	//PRINTF(PSTR("usb0_function_SetInterface: ReqTypeRecip=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
-	const uint_fast8_t interfacev = LO_BYTE(ReqIndex);
+	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
 
 	/*
 		Some USB devices have configurations with interfaces that have mutually exclusive settings.  
@@ -3379,16 +3409,16 @@ static void usb0_function_SetInterface(PCD_TypeDef * const Instance, uint_fast8_
 	// wValue = alternate setting 
 	// wIndex = interface (INTERFACE_AUDIO_MIKE, INTERFACE_AUDIO_SPK)
 
-	//PRINTF(PSTR("SetInterface: interface=%02X, alternative=%02X\n"), interfacev, LO_BYTE(ReqValue));
+	//PRINTF(PSTR("SetInterface: interface=%02X, alternative=%02X\n"), interfacev, LO_BYTE(req->wValue));
 	
-	if (ReqLength != 0)
+	if (req->wLength != 0)
 	{
 		stall_ep0(Instance);
 		return;
 	}
 	if (interfacev < INTERFACE_count)
 	{
-		altinterfaces [interfacev] = LO_BYTE(ReqValue);
+		altinterfaces [interfacev] = LO_BYTE(req->wValue);
 		switch (interfacev)
 		{
 #if WITHUSBCDC
@@ -3420,10 +3450,10 @@ static void usb0_function_SetInterface(PCD_TypeDef * const Instance, uint_fast8_
 
 // Control read data stage
 // IN direction
-static void usbdFunctionReq_seq1(PCD_TypeDef * const Instance, uint_fast8_t ReqType, uint_fast8_t ReqRequest, uint_fast16_t ReqValue, uint_fast16_t ReqIndex, uint_fast16_t ReqLength)
+static void usbdFunctionReq_seq1(PCD_TypeDef * const Instance, USBD_SetupReqTypedef *req)
 {
 	//PRINTF(PSTR("usbdFunctionReq_seq1: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
-	const uint_fast8_t interfacev = LO_BYTE(ReqIndex);
+	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
 
 	// See 5.2.2 Control Request Layout
 	/*
@@ -3448,7 +3478,7 @@ static void usbdFunctionReq_seq1(PCD_TypeDef * const Instance, uint_fast8_t ReqT
 	case INTERFACE_CDC_CONTROL_3a:	// CDC interface
 	case INTERFACE_CDC_CONTROL_3b:	// CDC interface
 		{
-			switch (ReqRequest)
+			switch (req->bRequest)
 			{
 			case CDC_GET_LINE_CODING:
 				//PRINTF(PSTR("GET_LINE_CODING, dwDTERate=%lu\n"), (unsigned long) dwDTERate [interfacev]);
@@ -3457,7 +3487,7 @@ static void usbdFunctionReq_seq1(PCD_TypeDef * const Instance, uint_fast8_t ReqT
 				buff [5] = 0;	// parity=none
 				buff [6] = 8;	// bDataBits 
 
-				control_transmit(Instance, buff, ulmin16(7, ReqLength));
+				control_transmit(Instance, buff, ulmin16(7, req->wLength));
 				return;
 
 			default:
@@ -3475,32 +3505,32 @@ static void usbdFunctionReq_seq1(PCD_TypeDef * const Instance, uint_fast8_t ReqT
 	#endif /* WITHUSBUAC3 */
 		case INTERFACE_AUDIO_CONTROL_SPK:	// AUDIO control interface
 			{
-				const uint_fast8_t terminalID = HI_BYTE(ReqIndex);
-				const uint_fast8_t controlID = HI_BYTE(gReqValue);	// AUDIO_MUTE_CONTROL, AUDIO_VOLUME_CONTROL, ...
-				switch (ReqRequest)
+				const uint_fast8_t terminalID = HI_BYTE(req->wIndex);
+				const uint_fast8_t controlID = HI_BYTE(req->wValue);	// AUDIO_MUTE_CONTROL, AUDIO_VOLUME_CONTROL, ...
+				switch (req->bRequest)
 				{
 				case AUDIO_REQUEST_GET_CUR:
 					//PRINTF(PSTR("AUDIO_REQUEST_GET_CUR: interfacev=%u,  %u\n"), interfacev, terminalID);
 					buff [0] = terminalsprops [terminalID] [controlID];
-					control_transmit(Instance, buff, ulmin16(ARRAY_SIZE(buff), ReqLength));
+					control_transmit(Instance, buff, ulmin16(ARRAY_SIZE(buff), req->wLength));
 					return;
 
 				case AUDIO_REQUEST_GET_MIN:
 					//PRINTF(PSTR("AUDIO_REQUEST_GET_MIN: interfacev=%u,  %u\n"), interfacev, terminalID);
 					buff [0] = terminalID == TERMINAL_ID_SELECTOR_6 ? 1 : 0;
-					control_transmit(Instance, buff, ulmin16(ARRAY_SIZE(buff), ReqLength));
+					control_transmit(Instance, buff, ulmin16(ARRAY_SIZE(buff), req->wLength));
 					return;
 
 				case AUDIO_REQUEST_GET_MAX:
 					//PRINTF(PSTR("AUDIO_REQUEST_GET_MAX: interfacev=%u,  %u\n"), interfacev, terminalID);
 					buff [0] = terminalID == TERMINAL_ID_SELECTOR_6 ? TERMINAL_ID_SELECTOR_6_INPUTS : 100;
-					control_transmit(Instance, buff, ulmin16(ARRAY_SIZE(buff), ReqLength));
+					control_transmit(Instance, buff, ulmin16(ARRAY_SIZE(buff), req->wLength));
 					return;
 
 				case AUDIO_REQUEST_GET_RES:
 					//PRINTF(PSTR("AUDIO_REQUEST_GET_MAX: interfacev=%u,  %u\n"), interfacev, terminalID);
 					buff [0] = 1;
-					control_transmit(Instance, buff, ulmin16(ARRAY_SIZE(buff), ReqLength));
+					control_transmit(Instance, buff, ulmin16(ARRAY_SIZE(buff), req->wLength));
 					return;
 
 				default:
@@ -3514,32 +3544,32 @@ static void usbdFunctionReq_seq1(PCD_TypeDef * const Instance, uint_fast8_t ReqT
 
 	default:
 		//PRINTF(PSTR("default path 3: usbdFunctionReq_seq1: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
-		memset(buff, 0, ulmin16(ARRAY_SIZE(buff), ReqLength));
-		control_transmit(Instance, buff, ulmin16(ARRAY_SIZE(buff), ReqLength));
+		memset(buff, 0, ulmin16(ARRAY_SIZE(buff), req->wLength));
+		control_transmit(Instance, buff, ulmin16(ARRAY_SIZE(buff), req->wLength));
 		return;
 	}
 
 }
 
 // Control read data stage
-static void usbdVendorReq_seq1(PCD_TypeDef * const Instance, uint_fast8_t ReqType, uint_fast8_t ReqRequest, uint_fast16_t ReqValue, uint_fast16_t ReqIndex, uint_fast16_t ReqLength)
+static void usbdVendorReq_seq1(PCD_TypeDef * const Instance, USBD_SetupReqTypedef *req)
 {
 	//PRINTF(PSTR("usbdVendorReq_seq1: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
 	// ReqIndex = interfacei
 	//dcp_acksend(Instance);	// пока так, игнорируя параметры
 	//PRINTF(PSTR("default path: usbdVendorReq_seq1: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
 	static uint8_t buff [1 * 63] = { 254 };
-	control_transmit(Instance, buff, ulmin16(ARRAY_SIZE(buff), ReqLength));
+	control_transmit(Instance, buff, ulmin16(ARRAY_SIZE(buff), req->wLength));
 	return;
 }
 
 // Control Write Data Stage
 // OUT direction
 // Далее следует блок данных с дополнительными параметрами.
-static void usbdFunctionReq_seq3(PCD_TypeDef * const Instance, uint_fast8_t ReqType, uint_fast8_t ReqRequest, uint_fast16_t ReqValue, uint_fast16_t ReqIndex, uint_fast16_t ReqLength)
+static void usbdFunctionReq_seq3(PCD_TypeDef * const Instance, USBD_SetupReqTypedef *req)
 {
 	//PRINTF(PSTR("usbdFunctionReq_seq3: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
-	const uint_fast8_t interfacev = LO_BYTE(ReqIndex);
+	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
 
 	switch (interfacev)
 	{
@@ -3550,7 +3580,7 @@ static void usbdFunctionReq_seq3(PCD_TypeDef * const Instance, uint_fast8_t ReqT
 	case INTERFACE_AUDIO_CONTROL_SPK:	// AUDIO control interface
 		{
 			//const uint_fast8_t terminalID = HI_BYTE(ReqIndex);
-			switch (ReqRequest)
+			switch (req->bRequest)
 			{
 			case AUDIO_REQUEST_SET_CUR:
 				usbd_continuereading(Instance, 0);	// DCP
@@ -3569,7 +3599,7 @@ static void usbdFunctionReq_seq3(PCD_TypeDef * const Instance, uint_fast8_t ReqT
 	case INTERFACE_CDC_CONTROL_3a:	// CDC interface
 	case INTERFACE_CDC_CONTROL_3b:	// CDC interface
 		{
-			switch (ReqRequest)
+			switch (req->bRequest)
 			{
 			case CDC_SET_LINE_CODING:
 				usbd_continuereading(Instance, 0);	// DCP
@@ -3594,7 +3624,7 @@ static void usbdFunctionReq_seq3(PCD_TypeDef * const Instance, uint_fast8_t ReqT
 }
 
 // Control Write Data Stage
-static void usbdVendorReq_seq3(PCD_TypeDef * const Instance, uint_fast8_t ReqType, uint_fast8_t ReqRequest, uint_fast16_t ReqValue, uint_fast16_t ReqIndex, uint_fast16_t ReqLength)
+static void usbdVendorReq_seq3(PCD_TypeDef * const Instance, USBD_SetupReqTypedef *req)
 {
 	//PRINTF(PSTR("usbdVendorReq_seq3: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
 	dcp_acksend(Instance);	// ACK
@@ -3602,22 +3632,22 @@ static void usbdVendorReq_seq3(PCD_TypeDef * const Instance, uint_fast8_t ReqTyp
 
 // Control Write No Data Status Stage
 // Блока данных не будет, вся необходимая информация в setup request уже передана
-static void usbdFunctionReq_seq5(PCD_TypeDef * const Instance, uint_fast8_t ReqType, uint_fast8_t ReqRequest, uint_fast16_t ReqValue, uint_fast16_t ReqIndex, uint_fast16_t ReqLength)
+static void usbdFunctionReq_seq5(PCD_TypeDef * const Instance, USBD_SetupReqTypedef *req)
 {
 	//PRINTF(PSTR("usbdFunctionReq_seq5: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
 
-	const uint_fast8_t interfacev = LO_BYTE(ReqIndex);
+	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
 	switch (interfacev)
 	{
 #if WITHUSBCDC
 	case INTERFACE_CDC_CONTROL_3a:	// CDC interface
 	case INTERFACE_CDC_CONTROL_3b:	// CDC interface
 		{
-			switch (ReqRequest)
+			switch (req->bRequest)
 			{
 			case CDC_SET_CONTROL_LINE_STATE:
 				//PRINTF(PSTR("usbdFunctionReq_seq5: CDC_SET_CONTROL_LINE_STATE: ReqIndex(interfacei)=%02X, ReqValue=0x%04x\n"), ReqIndex, ReqValue);
-				usb_cdc_control_state [interfacev] = ReqValue;
+				usb_cdc_control_state [interfacev] = req->wValue;
 				break;
 
 			default:
@@ -3645,25 +3675,24 @@ static void usbdFunctionReq_seq5(PCD_TypeDef * const Instance, uint_fast8_t ReqT
 }
 
 // Control Write No Data Status Stage
-static void usbdVendorReq_seq5(PCD_TypeDef * const Instance, uint_fast8_t ReqType, uint_fast8_t ReqRequest, uint_fast16_t ReqValue, uint_fast16_t ReqIndex, uint_fast16_t ReqLength)
+static void usbdVendorReq_seq5(PCD_TypeDef * const Instance, USBD_SetupReqTypedef *req)
 {
-	//const uint_fast8_t interfacev = LO_BYTE(ReqIndex);
+	//const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
 	//PRINTF(PSTR("usbdVendorReq_seq5: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
 	dcp_acksend(Instance);	// ACK
 }
 
-typedef void (* fnrquest_t)(PCD_TypeDef * const Instance, uint_fast8_t ReqTypeRecip, uint_fast16_t ReqValue, uint_fast16_t ReqIndex, uint_fast16_t ReqLength);
+typedef void (* fnrquest_t)(PCD_TypeDef * const Instance, USBD_SetupReqTypedef *req);
 
 static void invoketable(
 	PCD_TypeDef * const Instance, 
-	const fnrquest_t * pbReq_seq, unsigned tablesize,
-	uint_fast8_t ReqRequest, 
-	uint_fast8_t ReqTypeRecip, uint_fast16_t ReqValue, uint_fast16_t ReqIndex, uint_fast16_t ReqLength
+	USBD_SetupReqTypedef *req,
+	const fnrquest_t * pbReq_seq, unsigned tablesize
 	)
 {
 	//PRINTF(PSTR("invoketable: ReqRequest=%02X, ReqTypeRecip=%02X, ReqValue=%04X,  ReqIndex=%04X, ReqLength=%04X\n"), ReqRequest, ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
-	if (ReqRequest < tablesize)
-		(* pbReq_seq [ReqRequest])(Instance, ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
+	if (req->bRequest < tablesize)
+		(* pbReq_seq [req->bRequest])(Instance, req);
 	else
 	{
 		stall_ep0(Instance);
@@ -3674,6 +3703,7 @@ static void invoketable(
 // Idle or setup stage
 static void actions_seq0(
 	PCD_TypeDef * const Instance, 
+	USBD_SetupReqTypedef *req,
 	uint_fast8_t ReqRequest,
 	uint_fast8_t ReqType, 
 	uint_fast8_t ReqTypeType, 
@@ -3696,13 +3726,13 @@ static void actions_seq0(
 	switch (ReqTypeType)
 	{
 	case USB_STANDARD_REQUEST: /* USB_FUNCTION_STANDARD_REQUEST */
-		invoketable(Instance, pbReqFunction_seq0, ARRAY_SIZE(pbReqFunction_seq0), ReqRequest, ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
+		invoketable(Instance, req, pbReqFunction_seq0, ARRAY_SIZE(pbReqFunction_seq0));
 		break;
 	case USB_CLASS_REQUEST: /* USB_FUNCTION_CLASS_REQUEST */
-		usbdFunctionReq_seq0(Instance, ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
+		usbdFunctionReq_seq0(Instance, req);
 		break;
 	case USB_VENDOR_REQUEST: /* USB_FUNCTION_VENDOR_REQUEST */
-		usbdVendorReq_seq0(Instance, ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
+		usbdVendorReq_seq0(Instance, req);
 		break;
 	default:
 		stall_ep0(Instance);
@@ -3714,6 +3744,7 @@ static void actions_seq0(
 // Control read data stage
 static void actions_seq1(
 	PCD_TypeDef * const Instance, 
+	USBD_SetupReqTypedef *req,
 	uint_fast8_t ReqRequest,
 	uint_fast8_t ReqType, 
 	uint_fast8_t ReqTypeType, 
@@ -3737,13 +3768,13 @@ static void actions_seq1(
 	switch (ReqTypeType)
 	{
 	case USB_STANDARD_REQUEST: /* USB_FUNCTION_STANDARD_REQUEST */
-		invoketable(Instance, pbReqFunction_seq1, ARRAY_SIZE(pbReqFunction_seq1), ReqRequest, ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
+		invoketable(Instance, req, pbReqFunction_seq1, ARRAY_SIZE(pbReqFunction_seq1));
 		break;
 	case USB_CLASS_REQUEST: /* USB_FUNCTION_CLASS_REQUEST */
-		usbdFunctionReq_seq1(Instance, ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
+		usbdFunctionReq_seq1(Instance, req);
 		break;
 	case USB_VENDOR_REQUEST: /* USB_FUNCTION_VENDOR_REQUEST */
-		usbdVendorReq_seq1(Instance, ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
+		usbdVendorReq_seq1(Instance, req);
 		break;
 	default:
 		stall_ep0(Instance);
@@ -3754,6 +3785,7 @@ static void actions_seq1(
 // Control Write Data Stage
 static void actions_seq3(
 	PCD_TypeDef * const Instance, 
+	USBD_SetupReqTypedef *req,
 	uint_fast8_t ReqRequest,
 	uint_fast8_t ReqType, 
 	uint_fast8_t ReqTypeType, 
@@ -3777,13 +3809,13 @@ static void actions_seq3(
 	switch (ReqTypeType)
 	{
 	case USB_STANDARD_REQUEST: /* USB_FUNCTION_STANDARD_REQUEST */
-		invoketable(Instance, pbReqFunction_seq3, ARRAY_SIZE(pbReqFunction_seq3), ReqRequest, ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
+		invoketable(Instance, req, pbReqFunction_seq3, ARRAY_SIZE(pbReqFunction_seq3));
 		break;
 	case USB_CLASS_REQUEST: /* USB_FUNCTION_CLASS_REQUEST */
-		usbdFunctionReq_seq3(Instance, ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
+		usbdFunctionReq_seq3(Instance, req);
 		break;
 	case USB_VENDOR_REQUEST: /* USB_FUNCTION_VENDOR_REQUEST */
-		usbdVendorReq_seq3(Instance, ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
+		usbdVendorReq_seq3(Instance, req);
 		break;
 	default:
 		stall_ep0(Instance);
@@ -3794,6 +3826,7 @@ static void actions_seq3(
 // Control Write No Data Status Stage
 static void actions_seq5(
 	PCD_TypeDef * const Instance, 
+	USBD_SetupReqTypedef *req,
 	uint_fast8_t ReqRequest,
 	uint_fast8_t ReqType, 
 	uint_fast8_t ReqTypeType, 
@@ -3816,13 +3849,13 @@ static void actions_seq5(
 	switch (ReqTypeType)
 	{
 	case USB_STANDARD_REQUEST: /* USB_FUNCTION_STANDARD_REQUEST */
-		invoketable(Instance, pbReqFunction_seq5, ARRAY_SIZE(pbReqFunction_seq5), ReqRequest, ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
+		invoketable(Instance, req, pbReqFunction_seq5, ARRAY_SIZE(pbReqFunction_seq5));
 		break;
 	case USB_CLASS_REQUEST: /* USB_FUNCTION_CLASS_REQUEST */
-		usbdFunctionReq_seq5(Instance, ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
+		usbdFunctionReq_seq5(Instance, req);
 		break;
 	case USB_VENDOR_REQUEST: /* USB_FUNCTION_VENDOR_REQUEST */
-		usbdVendorReq_seq5(Instance, ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
+		usbdVendorReq_seq5(Instance, req);
 		break;
 	default:
 		stall_ep0(Instance);
@@ -3834,6 +3867,7 @@ static void actions_seq5(
 // Control Read Status stage
 static void actions_seq2(
 	PCD_TypeDef * const Instance, 
+	USBD_SetupReqTypedef *req,
 	uint_fast8_t ReqRequest,
 	uint_fast8_t ReqType, 
 	uint_fast8_t ReqTypeType, 
@@ -3856,13 +3890,13 @@ static void actions_seq2(
 	switch (ReqTypeType)
 	{
 	case USB_STANDARD_REQUEST: /* USB_FUNCTION_STANDARD_REQUEST */
-		invoketable(Instance, pbReqFunction_seq2, ARRAY_SIZE(pbReqFunction_seq2), ReqRequest, ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
+		invoketable(Instance, req, pbReqFunction_seq2, ARRAY_SIZE(pbReqFunction_seq2));
 		break;
 	case USB_CLASS_REQUEST: /* USB_FUNCTION_CLASS_REQUEST */
-		usbdFunctionReq_seq2(Instance, ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
+		usbdFunctionReq_seq2(Instance, req);
 		break;
 	case USB_VENDOR_REQUEST: /* USB_FUNCTION_VENDOR_REQUEST */
-		usbdVendorReq_seq2(Instance, ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
+		usbdVendorReq_seq2(Instance, req);
 		break;
 	default:
 		stall_ep0(Instance);
@@ -3875,6 +3909,7 @@ static void actions_seq2(
 // Control write status stage
 static void actions_seq4(
 	PCD_TypeDef * const Instance, 
+	USBD_SetupReqTypedef *req,
 	uint_fast8_t ReqRequest,
 	uint_fast8_t ReqType, 
 	uint_fast8_t ReqTypeType, 
@@ -3897,13 +3932,13 @@ static void actions_seq4(
 	switch (ReqTypeType)
 	{
 	case USB_STANDARD_REQUEST: /* USB_FUNCTION_STANDARD_REQUEST */
-		invoketable(Instance, pbReqFunction_seq4, ARRAY_SIZE(pbReqFunction_seq4), ReqRequest, ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
+		invoketable(Instance, req, pbReqFunction_seq4, ARRAY_SIZE(pbReqFunction_seq4));
 		break;
 	case USB_CLASS_REQUEST: /* USB_FUNCTION_CLASS_REQUEST */
-		usbdFunctionReq_seq4(Instance, ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
+		usbdFunctionReq_seq4(Instance, req);
 		break;
 	case USB_VENDOR_REQUEST: /* USB_FUNCTION_VENDOR_REQUEST */
-		usbdVendorReq_seq4(Instance, ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
+		usbdVendorReq_seq4(Instance, req);
 		break;
 	default:
 		stall_ep0(Instance);
@@ -3912,9 +3947,8 @@ static void actions_seq4(
 }
 #endif
 
-static USBALIGN_BEGIN uint32_t gSetup [12] USBALIGN_END;  /*!< Setup packet buffer                */
 
-static void usb0_function_save_request(PCD_TypeDef * const Instance)
+static void usb0_function_save_request(PCD_TypeDef * const Instance, USBD_SetupReqTypedef *req)
 {
 #if CPUSTYLE_R7S721
 
@@ -3923,21 +3957,37 @@ static void usb0_function_save_request(PCD_TypeDef * const Instance)
 	gReqIndex = Instance->USBINDX;
 	gReqLength = Instance->USBLENG;
 
-
-#elif CPUSTYLE_STM32F4XX || CPUSTYLE_STM32H7XX || CPUSTYLE_STM32F7XX
-
-	const uint_fast16_t usbreq = (gSetup [0] >> 0) & 0xFFFF;
-	gReqValue = (gSetup [0] >> 16) & 0xFFFF;
-	gReqIndex = (gSetup [1] >> 0) & 0xFFFF;
-	gReqLength = (gSetup [1] >> 16) & 0xFFFF;
-
 #endif
+
+	req->bmRequest     = LO_BYTE(usbreq & USB_FUNCTION_bmRequestType); //(pdata [0] >> 0) & 0x00FF;
+	req->bRequest      = HI_BYTE(usbreq & USB_FUNCTION_bRequest); //(pdata [0] >> 8) & 0x00FF;
+	req->wValue        = Instance->USBVAL; //(pdata [0] >> 16) & 0xFFFF;
+	req->wIndex        = Instance->USBINDX; //(pdata [1] >> 0) & 0xFFFF;
+	req->wLength       = Instance->USBLENG; //(pdata [1] >> 16) & 0xFFFF;
+
+	gReqRequest = HI_BYTE(usbreq & USB_FUNCTION_bRequest);		/* b15-8:bRequest */
 
 	gReqType = usbreq & USB_FUNCTION_bmRequestType;			/* b7-0: bmRequestType */
 	//gReqTypeDir = usbreq & USB_FUNCTION_bmRequestTypeDir;		/* b7 : Data transfer direction */
 	gReqTypeType = usbreq & USB_FUNCTION_bmRequestTypeType;	/* b6-5: Type */
 	gReqTypeRecip = usbreq & USB_FUNCTION_bmRequestTypeRecip;	/* b4-0: Recipient */
-	gReqRequest = HI_BYTE(usbreq & USB_FUNCTION_bRequest);		/* b15-8:bRequest */
+
+	gReqType = req->bmRequest & USB_FUNCTION_bmRequestType;			/* b7-0: bmRequestType */
+	//gReqTypeDir = req->bmRequest & USB_FUNCTION_bmRequestTypeDir;		/* b7 : Data transfer direction */
+	gReqTypeType = req->bmRequest & USB_FUNCTION_bmRequestTypeType;	/* b6-5: Type */
+	gReqTypeRecip = req->bmRequest & USB_FUNCTION_bmRequestTypeRecip;	/* b4-0: Recipient */
+
+	// This block should be copied
+	uint_fast8_t gReqType = req->bmRequest & USB_FUNCTION_bmRequestType;			/* b7-0: bmRequestType */
+	//uint_fast8_t gReqTypeDir = req->bmRequest & USB_FUNCTION_bmRequestTypeDir;		/* b7 : Data transfer direction */
+	uint_fast8_t gReqTypeType = req->bmRequest & USB_FUNCTION_bmRequestTypeType;	/* b6-5: Type */
+	uint_fast8_t gReqTypeRecip = req->bmRequest & USB_FUNCTION_bmRequestTypeRecip;	/* b4-0: Recipient */
+
+
+#if 0
+	PRINTF(PSTR("USBD_ParseSetupRequest: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), 
+		req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
+#endif
 
 #if 0
 	PRINTF(
@@ -3976,15 +4026,15 @@ static void usbd_handle_ctrt(PCD_TypeDef * const Instance, uint_fast8_t ctsq)
 		// 1: Control read data stage
 		// seq1 OUT token -> seq2 -> seq0
 		Instance->INTSTS0 = (uint16_t) ~ (1uL << USB_INTSTS0_VALID_SHIFT);	// Clear VALID - in seq 1, 3 and 5
-		usb0_function_save_request(Instance);
+		usb0_function_save_request(Instance, & gRequest);
 
-		actions_seq1(Instance, gReqRequest, gReqType, gReqTypeType, gReqTypeRecip, gReqValue, gReqIndex, gReqLength);
+		actions_seq1(Instance, & gRequest, gReqRequest, gReqType, gReqTypeType, gReqTypeRecip, gReqValue, gReqIndex, gReqLength);
 
 		break;
 
 	case 2:
 		// 2: Control read status stage
-		//actions_seq2(gReqRequest, gReqType, gReqTypeType, gReqTypeRecip, gReqValue, gReqIndex, gReqLength);
+		//actions_seq2(Instance, & gRequest, gReqRequest, gReqType, gReqTypeType, gReqTypeRecip, gReqValue, gReqIndex, gReqLength);
 
 		Instance->DCPCTR |= 1 * (1uL << USB_DCPCTR_CCPL_SHIFT);	// CCPL
 		break;
@@ -3993,14 +4043,14 @@ static void usbd_handle_ctrt(PCD_TypeDef * const Instance, uint_fast8_t ctsq)
 		// 3: Control write data stage
 		// seq3 IN token -> seq4 ->seq0
 		Instance->INTSTS0 = (uint16_t) ~ (1uL << USB_INTSTS0_VALID_SHIFT);	// Clear VALID - in seq 1, 3 and 5
-		usb0_function_save_request(Instance);
+		usb0_function_save_request(Instance, & gRequest);
 
-		actions_seq3(Instance, gReqRequest, gReqType, gReqTypeType, gReqTypeRecip, gReqValue, gReqIndex, gReqLength);
+		actions_seq3(Instance, & gRequest, gReqRequest, gReqType, gReqTypeType, gReqTypeRecip, gReqValue, gReqIndex, gReqLength);
 		break;
 
 	case 4:
 		// 4: Control write status stage
-		//actions_seq4(gReqRequest, gReqType, gReqTypeType, gReqTypeRecip, gReqValue, gReqIndex, gReqLength);
+		//actions_seq4(Instance, & gRequest, gReqRequest, gReqType, gReqTypeType, gReqTypeRecip, gReqValue, gReqIndex, gReqLength);
 
 		Instance->DCPCTR |= 1 * (1uL << USB_DCPCTR_CCPL_SHIFT);	// CCPL
 		break;
@@ -4009,9 +4059,9 @@ static void usbd_handle_ctrt(PCD_TypeDef * const Instance, uint_fast8_t ctsq)
 		// 5: Control write (no data) status stage
 		// seq5 -> seq0
 		Instance->INTSTS0 = (uint16_t) ~ (1uL << USB_INTSTS0_VALID_SHIFT);	// Clear VALID - in seq 1, 3 and 5
-		usb0_function_save_request(Instance);
+		usb0_function_save_request(Instance, & gRequest);
 
-		actions_seq5(Instance, gReqRequest, gReqType, gReqTypeType, gReqTypeRecip, gReqValue, gReqIndex, gReqLength);
+		actions_seq5(Instance, & gRequest, gReqRequest, gReqType, gReqTypeType, gReqTypeRecip, gReqValue, gReqIndex, gReqLength);
 
 		Instance->DCPCTR |= 1 * (1uL << USB_DCPCTR_CCPL_SHIFT);	// CCPL
 		break;
