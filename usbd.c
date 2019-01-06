@@ -2437,7 +2437,7 @@ static unsigned usbd_read_data(PCD_TypeDef * const Instance, uint_fast8_t pipe, 
 		//1 * (1uL << USB_CFIFOSEL_RCNT_SHIFT) |		// RCNT
 		pipe * MASK2LSB(USB_CFIFOSEL_CURPIPE) |	// CURPIPE 0000: DCP
 		0 * USB_CFIFOSEL_MBW |	// MBW 00: 8-bit width
-		0 * USB_CFIFOSEL_ISEL |	// ISEL 0: Reading from the buffer memory is selected
+		0 * USB_CFIFOSEL_ISEL_ |	// ISEL 0: Reading from the buffer memory is selected
 		0;
 	while ((Instance->CFIFOSEL & USB_CFIFOSEL_CURPIPE) != (pipe * MASK2LSB(USB_CFIFOSEL_CURPIPE)))
 		;
@@ -2506,12 +2506,12 @@ usbd_write_data(PCD_TypeDef * const Instance, uint_fast8_t pipe, const uint8_t *
 		//1 * (1uL << USB_CFIFOSEL_RCNT_SHIFT) |		// RCNT
 		pipe * MASK2LSB(USB_CFIFOSEL_CURPIPE) |	// CURPIPE 0000: DCP
 		0 * USB_CFIFOSEL_MBW |	// MBW 00: 8-bit width
-		1 * USB_CFIFOSEL_ISEL |	// ISEL 1: Writing to the buffer memory is selected (for DCP)
+		1 * USB_CFIFOSEL_ISEL_ |	// ISEL 1: Writing to the buffer memory is selected (for DCP)
 		0;
 	while ((Instance->CFIFOSEL & USB_CFIFOSEL_CURPIPE) != (pipe * MASK2LSB(USB_CFIFOSEL_CURPIPE)))
 		;
 	//PRINTF(PSTR("dcp_writedata 1, Instance->CFIFOCTR=%04X\n"), Instance->CFIFOCTR);
-	//while ((Instance->CFIFOSEL & 0x0F) != pipe || (Instance->CFIFOSEL & (1uL << USB_CFIFOSEL_ISEL_SHIFT)) == 0) // CURPIPE, ISEL
+	//while ((Instance->CFIFOSEL & 0x0F) != pipe || (Instance->CFIFOSEL & (1uL << USB_CFIFOSEL_ISEL_SHIFT_)) == 0) // CURPIPE, ISEL
 	//	;
 
 	//PRINTF(PSTR("dcp_writedata 3, Instance->CFIFOCTR=%04X\n"), Instance->CFIFOCTR);
@@ -2731,7 +2731,7 @@ static void nak_ep0(PCD_TypeDef * const Instance)
 	Instance->CFIFOSEL = 
 		//1 * (1uL << USB_CFIFOSEL_RCNT_SHIFT) |		// RCNT
 		pipe * (1uL << USB_CFIFOSEL_CURPIPE_SHIFT) |	// CURPIPE 0000: DCP
-		1 * (1uL << USB_CFIFOSEL_ISEL_SHIFT) |	// ISEL 1: Writing to the buffer memory is selected (for DCP)
+		1 * (1uL << USB_CFIFOSEL_ISEL_SHIFT_) |	// ISEL 1: Writing to the buffer memory is selected (for DCP)
 		0;
 	while ((Instance->CFIFOSEL & USB_CFIFOSEL_CURPIPE) != (pipe * MASK2LSB(USB_CFIFOSEL_CURPIPE)))
 		;
@@ -2774,7 +2774,7 @@ static void stall_ep0(PCD_TypeDef * const Instance)
 	Instance->CFIFOSEL = 
 		//1 * (1uL << USB_CFIFOSEL_RCNT_SHIFT) |		// RCNT
 		pipe * (1uL << USB_CFIFOSEL_CURPIPE_SHIFT) |	// CURPIPE 0000: DCP
-		1 * (1uL << USB_CFIFOSEL_ISEL_SHIFT) |	// ISEL 1: Writing to the buffer memory is selected (for DCP)
+		1 * (1uL << USB_CFIFOSEL_ISEL_SHIFT_) |	// ISEL 1: Writing to the buffer memory is selected (for DCP)
 		0;
 	while ((Instance->CFIFOSEL & USB_CFIFOSEL_CURPIPE) != (pipe * MASK2LSB(USB_CFIFOSEL_CURPIPE)))
 		;
@@ -2835,7 +2835,7 @@ usbd_handler_brdy_bulk_in8(PCD_TypeDef * const Instance, uint_fast8_t pipe, uint
 		//1 * USB_CFIFOSEL_RCNT |		// RCNT
 		pipe * MASK2LSB(USB_CFIFOSEL_CURPIPE) |	// CURPIPE 0000: DCP
 		0 * USB_CFIFOSEL_MBW |	// MBW 00: 8-bit width
-		1 * USB_CFIFOSEL_ISEL |	// ISEL 1: Writing to the buffer memory is selected
+		1 * USB_CFIFOSEL_ISEL_ |	// ISEL 1: Writing to the buffer memory is selected
 		0;
 	while ((Instance->CFIFOSEL & USB_CFIFOSEL_CURPIPE) != (pipe * MASK2LSB(USB_CFIFOSEL_CURPIPE)))
 		;
@@ -2883,7 +2883,7 @@ usbd_handler_brdy_bulk_out8(PCD_TypeDef * const Instance, uint_fast8_t pipe, uin
 		//1 * (1uL << USB_CFIFOSEL_RCNT_SHIFT) |		// RCNT
 		pipe * MASK2LSB(USB_CFIFOSEL_CURPIPE) |	// CURPIPE
 		0 * USB_CFIFOSEL_MBW |	// MBW 00: 8-bit width
-		0 * (1uL << USB_CFIFOSEL_ISEL_SHIFT) |	// ISEL 0: Reading from the buffer memory is selected
+		0 * (1uL << USB_CFIFOSEL_ISEL_SHIFT_) |	// ISEL 0: Reading from the buffer memory is selected
 		0;
 	while ((Instance->CFIFOSEL & USB_CFIFOSEL_CURPIPE) != (pipe * MASK2LSB(USB_CFIFOSEL_CURPIPE)))
 		;
