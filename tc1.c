@@ -7013,10 +7013,11 @@ updateboard(
 		const int_fast32_t freq = gfreqs [bi];
 	#if CTLSTYLE_IGOR
 		full2 |= flagne_u16(& bandf100khint, freq / 100000uL);
-	#endif /* CTLSTYLE_IGOR */
+	#else /* CTLSTYLE_IGOR */
 		full2 |= flagne_u8(& bandfhint, bandf_calc(freq));
 		full2 |= flagne_u8(& bandf2hint, bandf2_calc(freq));
 		full2 |= flagne_u8(& bandf3hint, bandf3_calc(freq));
+	#endif /* CTLSTYLE_IGOR */
 		full2 |= flagne_u8(& lo0side, getsidelo0(freq));	// LOCODE_UPPER, LOCODE_LOWER or LOCODE_TARGETED
 		full2 |= flagne_u32(& lo0hint, gethintlo0(freq, lo0side));
 	}
