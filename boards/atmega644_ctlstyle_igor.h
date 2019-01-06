@@ -197,7 +197,7 @@
 	//#define LO1PHASES	1		/* Прямой синтез первого гетеродина двумя DDS с програмимруемым сдвигом фазы */
 	//#define WITHMODESETFULLNFM 1	/* используется FM */
 	//#define WITHWFM	1			/* используется WFM */
-	#define WITHMODESETFULL 1	/*  */
+	#define WITHMODESET_IGOR 1	/*  */
 	/* все возможные в данной конфигурации фильтры */
 	#define IF3_FMASK	(IF3_FMASK_0P5 | IF3_FMASK_3P1)
 	/* все возможные в данной конфигурации фильтры для передачи */

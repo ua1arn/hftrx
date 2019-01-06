@@ -2159,6 +2159,11 @@ get_band_bandset(vindex_t b)	/* b: диапазон в таблице bandsmap */
 		{ 3, SUBMODE_AM, SUBMODE_CWZ, SUBMODE_DRM, },
 		{ 2, SUBMODE_DGU, SUBMODE_DGL, },
 	};
+#elif WITHMODESET_IGOR
+	static const uint_fast8_t modes [][4] =
+	{
+		{ 2, SUBMODE_LSB, SUBMODE_USB, },
+	};
 #else
 	#error WITHMODESETxxx not defined
 #endif /*  */
@@ -15648,7 +15653,7 @@ static void initialize2(void)
 			{
 				while (kbd_scan(& kbch) == 0)
 					;
-				if (kbch == KBD_CODE_SPLIT)
+				if (kbch == KBD_CODE_SPLIT || kbch == KBD_CODE_ERASECONFIG)
 					break;
 			}
 			display2_bgreset();
@@ -15706,7 +15711,7 @@ static void initialize2(void)
 			{
 				while (kbd_scan(& kbch) == 0)
 					;
-				if (kbch == KBD_CODE_SPLIT)
+				if (kbch == KBD_CODE_SPLIT || kbch == KBD_CODE_ERASECONFIG)
 					break;
 			}
 			display2_bgreset();
