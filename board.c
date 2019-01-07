@@ -7886,6 +7886,16 @@ adcvalholder_t board_getadc_filtered_truevalue(uint_fast8_t adci)
 /* получить значение от АЦП */
 adcvalholder_t board_getadc_unfiltered_truevalue(uint_fast8_t adci)	
 {
+	if (adci >= BOARD_ADCXBASE)
+	{
+#if defined (targetadc2)
+		uint_fast8_t valid;
+		uint_fast8_t ch = adci - BOARD_ADCXBASE;
+		return mcp3208_read(targetadc2, 0, ch, & valid);
+#else /* defined (targetadc2) */
+		return 0;
+#endif /* defined (targetadc2) */
+	}
 	ASSERT(adci < HARDWARE_ADCINPUTS);
 	return adc_data_raw [adci];
 }

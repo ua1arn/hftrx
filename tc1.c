@@ -8366,8 +8366,10 @@ uint_fast8_t hamradio_get_volt_value(void)
 		return 3333;
 	}
 #else /* WITHREFSENSOR */
-		debug_printf_P(PSTR("hamradio_get_volt_value: VOLTSOURCE=%u\n"), board_getadc_filtered_u8(VOLTSOURCE, 0, voltcalibr));
-	return board_getadc_filtered_u8(VOLTSOURCE, 0, voltcalibr);
+
+	//debug_printf_P(PSTR("hamradio_get_volt_value: VOLTSOURCE=%u, voltcalibr=%u\n"), board_getadc_unfiltered_truevalue(VOLTSOURCE), voltcalibr);
+	return board_getadc_unfiltered_u8(VOLTSOURCE, 0, voltcalibr);
+
 #endif /* WITHREFSENSOR */
 }
 
@@ -8423,7 +8425,7 @@ int_fast16_t hamradio_get_pacurrent_value(void)
 	const uint_fast8_t adci = 0;	// CH0=IN-, CH1=IN+
 	const uint_fast8_t diff = 0;
 	static const long fullscale2 = 3300uL * scale;
-	uint_fast16_t vsenseZ = mcp3208_read(targetext2, diff, adci);
+	uint_fast16_t vsenseZ = mcp3208_read(targetadc2, diff, adci);
 	uint_fast16_t vsense2 = (unsigned long) vsenseZ * fullscale2 / 4095;
 
 	static const long midpoint2 = 2500uL * scale;
@@ -9058,7 +9060,7 @@ display2_adctest(
 	void * pv
 	)
 {
-#if defined (targetext2)
+#if defined (targetadc2)
 	enum { WDTH = 6 };	// ширина поля для отображения
 	const uint_fast16_t vref_mV = 3140;
 	static FLASHMEM const struct
@@ -9086,7 +9088,7 @@ display2_adctest(
 		char b [WDTH + 1];
 		uint_fast8_t valid;
 
-		value = mcp3208_read(targetext2, adcis [row].diff, adcis [row].adci, & valid) * (uint64_t) adcis [row].mul10 * vref_mV / 4095 / 10;
+		value = mcp3208_read(targetadc2, adcis [row].diff, adcis [row].adci, & valid) * (uint64_t) adcis [row].mul10 * vref_mV / 4095 / 10;
 
 		local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("%*u"), WDTH, (unsigned) value);
 		display_2states_P(x + (0), y + GRID2Y(row), valid, adcis [row].label, adcis [row].label);

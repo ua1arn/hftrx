@@ -253,7 +253,7 @@
 	//#define WITHIFSHIFTOFFSET	(-250)	/* Начальное занчение IF SHIFT */
 	//#define WITHPBT		1	/* используется PBT (если LO3 есть) */
 	#define WITHCAT			1	/* используется CAT (через USB CDC) */
-	//#define WITHDEBUG		1	/* Отладочная печать через COM-порт. */
+	#define WITHDEBUG		1	/* Отладочная печать через COM-порт. */
 	//#define WITHNMEA		1	/* используется NMEA parser */
 	//#define WITHMODEM		1	/* Устройство работает как радиомодем с последовательным интерфейсом */
 	//#define WITHFREEDV	1	/* поддержка режима FreeDV - http://freedv.org/ */ 
@@ -265,7 +265,7 @@
 	//#define WITHPWRLIN	1	/* Индикатор выходной мощности показывает напряжение а не мощность */
 	#define WITHBARS		1	/* отображение S-метра и SWR-метра */
 
-	////#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
+	#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
 	#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
 	////#define WITHTHERMOLEVEL	1	/* отображение температуры */
 

@@ -2982,9 +2982,15 @@ static void
 hardware_adc_startonescan(void)
 {
 	//ASSERT((adc_input == 0) || (adc_input == board_get_adcinputs()));	// проверяем, успело ли отработать ранее запущенное преобразование
-	if ((adc_input != 0) && (adc_input != board_get_adcinputs()))
+	if ((adc_input != 0) && (adc_input < board_get_adcinputs()))
 		return;	// не успели
-	adc_input = 0;
+	for (adc_input = 0; adc_input < board_get_adcinputs(); ++ adc_input)
+	{
+		if (board_get_adcch(adc_input) < BOARD_ADCXBASE)
+			break;
+	}
+	if (adc_input >= board_get_adcinputs())
+		return;
 
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
@@ -4275,6 +4281,14 @@ void hardware_spi_master_setfreq(uint_fast8_t spispeedindex, int_fast32_t spispe
 
 	unsigned value;	
 	const uint_fast8_t prei = calcdivider(calcdivround_p1clock(spispeed), R7S721_RSPI_SPBR_WIDTH, R7S721_RSPI_SPBR_TAPS, & value, 1);
+
+	//value = 59, prei = 0;	// 500 kHz
+	//value = 59, prei = 1;	// 250 kHz
+	//value = 59, prei = 2;	// 125 kHz
+	//value = 29, prei = 3;	// 125 kHz
+	//value = 149, prei = 1;	// 100 kHz
+
+	debug_printf_P(PSTR("hardware_spi_master_setfreq: prei=%u, value=%u, spispeed[%u]=%lu\n"), prei, value, spispeedindex, (unsigned long) spispeed);
 
 	const uint_fast8_t spcmd0 =	// Command Register (SPCMD)
 		(RSPIn_SPCMD0_BRDV & (prei << RSPIn_SPCMD0_BRDV_SHIFT)) |	// BRDV1..BRDV0 - Bit Rate Division Setting /1, /2, /4. /8
