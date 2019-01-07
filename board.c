@@ -8588,10 +8588,10 @@ mcp3208_read(
 	uint_fast8_t * valid
 	)
 {
-	// при аппаратной реализации сдвиг командных последовательностей влево еще на один бит
-	// приводит к увеличенной погрешности.
-	uint_fast8_t v1, v2;
-	const uint_fast8_t cmd1 = 0x10 | (diff ? 0x00 : 0x08) | (adci & 0x07);
+	uint_fast8_t v0, v1, v2, v3;
+	// сдвинуто, чтобы позиция временной диаграммы, 
+	// где формируется время выборки, не попадала на паузу между байтами.
+	const uint_fast8_t cmd1 = (0x10 | (diff ? 0x00 : 0x08) | (adci & 0x07)) << 2;
 	uint_fast16_t rv;
 
 // todo: разобраться - при программной реализации SPI требуется сдвиг на один разряд больше.
@@ -8599,21 +8599,23 @@ mcp3208_read(
 
 #if 1
 
-	spi_select2(target, SPIC_MODE3, SPIC_SPEED10M);	// for 50 kS/S and 24 bit words
-	spi_progval8_p1(target, cmd1);
-	spi_complete(target);
-	spi_to_read(target);
+	spi_select2(target, SPIC_MODE3, SPIC_SPEED400k);	// for 50 kS/S and 24 bit words
+
+	v0 = spi_read_byte(target, cmd1);
 	v1 = spi_read_byte(target, 0x00);
 	v2 = spi_read_byte(target, 0x00);
-	spi_to_write(target);
+	//v3 = spi_read_byte(target, 0x00);
+
 	spi_unselect(target);
 
-	rv = (v1 * 256 + v2) >> 1;
+	//debug_printf_P(PSTR("mcp3208_read: %02X:%02X:%02X:%02X\n"), v0, v1, v2, v3);
+
+	rv = (v1 * 256 + v2) >> 4;
 
 #else
 
 	prog_select(target); 
-	prog_read_byte(target, cmd1);
+	v0 = prog_read_byte(target, cmd1);
 	v1 = prog_read_byte(target, 0x00);
 	v2 = prog_read_byte(target, 0x00);
 	prog_unselect(target);
@@ -8621,7 +8623,7 @@ mcp3208_read(
 	rv = (v1 * 256 + v2) >> 1;
 
 #endif
-	* valid = (rv & 0x1000) == 0;
+	* valid = (v0 & 0x01) == 0;
 	return rv & 0x0FFF;
 }
 
