@@ -391,24 +391,27 @@
 	#define SPI_ALLCS_PORT_S(v)	do { GPIOG->BSRR = BSRR_S(v); __DSB(); } while (0)
 	#define SPI_ALLCS_PORT_C(v)	do { GPIOG->BSRR = BSRR_C(v); __DSB(); } while (0)
 
-	#define SPI_CSEL_PG15	(1uL << 15)	// PG15 ext1 on front panel
-	#define SPI_CSEL_PG14	(1uL << 14)	// PG14 ext2(not connected now)
-	#define SPI_CSEL_PG4	(1uL << 4)	// PG4 nvmem FM25L16B
-	#define SPI_CSEL_PG3	(1uL << 3)	// PG7 board control registers chain
-	#define SPI_CSEL_PG2	(1uL << 2)	// PG6 on-board codec1 NAU8822L
-	#define SPI_CSEL_PG1	(1uL << 1)	// PG1 FPGA control registers CS1
-	#define SPI_CSEL_PG0	(1uL << 0)	// PG0 FPGA control registers CS2
+	#define targetext1	(1uL << 15)	// PG15 ext1 on front panel
+	#define targetadc2	(1uL << 14)	// PG14 ext2(not connected now)
+	#define targetnvram	(1uL << 4)	// PG4 nvmem FM25L16B
+	#define targetctl1	(1uL << 3)	// PG7 board control registers chain
+	#define targetcodec1	(1uL << 2)	// PG6 on-board codec1 NAU8822L
+	#define targetfpga1	(1uL << 1)	// PG1 FPGA control registers CS1
+	#define targetfpga2	(1uL << 0)	// PG0 FPGA control registers CS2
 
 	// «десь должны быть перечислены все биты формировани€ CS в устройстве.
 	#define SPI_ALLCS_BITS ( \
-		SPI_CSEL_PG15	| 	/* PG15 ext1 on front panel */ \
-		SPI_CSEL_PG14	|	/* PA100W on-board ADC (not connected on this board) */ \
-		SPI_CSEL_PG4	| 	/* PG4 nvmem FM25L16B */ \
-		SPI_CSEL_PG3	| 	/* PG3 board control registers chain */ \
-		SPI_CSEL_PG2	| 	/* PG2 on-board codec1 NAU8822L */ \
-		SPI_CSEL_PG1	| 	/* PG1 FPGA control registers CS1 */ \
-		SPI_CSEL_PG0	| 	/* PG0 FPGA control registers CS2 targetfir1 */ \
+		targetext1	| 	/* PG15 ext1 on front panel */ \
+		targetadc2	|	/* PA100W on-board ADC (not connected on this board) */ \
+		targetnvram	| 	/* PG4 nvmem FM25L16B */ \
+		targetctl1	| 	/* PG3 board control registers chain */ \
+		targetcodec1	| 	/* PG2 on-board codec1 NAU8822L */ \
+		targetfpga1	| 	/* PG1 FPGA control registers CS1 */ \
+		targetfpga2	| 	/* PG0 FPGA control registers CS2 targetfir1 */ \
 		0)
+
+	#define targetlcd	targetext1 	/* LCD over SPI line devices control */ 
+	#define targetuc1608 targetext1	/* LCD with positive chip select signal	*/
 
 	#define SPI_ALLCS_BITSNEG 0		// ¬ыходы, активные при "1"
 
