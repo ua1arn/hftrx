@@ -600,6 +600,7 @@ void spi_initialize(void)
 #if defined (SPISPEED400k) || defined (SPISPEED100k)
 	hardware_spi_master_setfreq(SPIC_SPEED100k, SPISPEED100k);		// 100 kHz for MICROCHIP MCP3204/MCP3208
 	hardware_spi_master_setfreq(SPIC_SPEED400k, SPISPEED400k);
+	hardware_spi_master_setfreq(SPIC_SPEED4M, 4000000uL);	/* 4 MHz для MICROCHIP MCP3204/MCP3208 */
 	hardware_spi_master_setfreq(SPIC_SPEED10M, 10000000uL);	/* 10 MHz для ILI9341 */
 	hardware_spi_master_setfreq(SPIC_SPEED25M, 25000000uL);	/* 25 MHz  */
 #endif /* (SPISPEED400k) || defined (SPISPEED100k) */

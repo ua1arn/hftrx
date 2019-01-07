@@ -8599,7 +8599,7 @@ mcp3208_read(
 
 #if 1
 
-	spi_select2(target, SPIC_MODE3, SPIC_SPEED100k);	// for 50 kS/S and 24 bit words
+	spi_select2(target, SPIC_MODE3, SPIC_SPEED10M);	// for 50 kS/S and 24 bit words
 	spi_progval8_p1(target, cmd1);
 	spi_complete(target);
 	spi_to_read(target);
