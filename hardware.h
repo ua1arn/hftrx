@@ -741,6 +741,9 @@ void releasemsgbuffer_user(uint8_t * dest);	// Освобождение обработанного буфера
 size_t takemsgbufferfree_low(uint8_t * * dest);	// Буфер для формирования сообщения
 void placesemsgbuffer_low(uint_fast8_t type, uint8_t * dest);	// поместить сообщение в очередь к исполнению 
 
+#define BOARD_ADCXBASE 24
+#define BOARD_ADCXIN(ch) (BOARD_ADCXBASE + (ch))
+
 #include "product.h"
 #include "taildefs.h"
 

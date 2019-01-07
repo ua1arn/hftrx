@@ -7960,12 +7960,12 @@ static void hardware_set_adc_filter(uint_fast8_t adci, uint_fast8_t v)
 	adc_filter [adci] = v;
 }
 
-/* Установить способ фильтрации данных LPF и частоту среза - параметр 1.0..0.0, умноженное на HARDWARE_ADCFILTER_LPF_DENOM */
+/* Установить способ фильтрации данных LPF и частоту среза - параметр 1.0..0.0, умноженное на BOARD_ADCFILTER_LPF_DENOM */
 static void hardware_set_adc_filterLPF(uint_fast8_t adci, uint_fast8_t k)
 {
 	ASSERT(adci < HARDWARE_ADCINPUTS);
-	adc_filter [adci] = HARDWARE_ADCFILTER_LPF;
-	adc_data_k [adci] = k;	/* 1.0..0.0, умноженное на HARDWARE_ADCFILTER_LPF_DENOM */
+	adc_filter [adci] = BOARD_ADCFILTER_LPF;
+	adc_data_k [adci] = k;	/* 1.0..0.0, умноженное на BOARD_ADCFILTER_LPF_DENOM */
 }
 
 // Функция вызывается из обработчика прерывания завершения преобразования 
@@ -8054,12 +8054,12 @@ void board_adc_filtering(void)
 		const adcvalholder_t raw = adc_data_raw [i];
 		switch (adc_filter [i])
 		{
-		case HARDWARE_ADCFILTER_DIRECT:
+		case BOARD_ADCFILTER_DIRECT:
 			// Значение просто обновляется
 			adc_data_filtered [i] = raw;
 			break;
 #if WITHPOTFILTERS
-		case HARDWARE_ADCFILTER_HISTERESIS2:
+		case BOARD_ADCFILTER_HISTERESIS2:
 			// Значение обновляется, если новое значение отличается на HYDELTA или более дискретов
 			{
 				enum { HYDELTA = (1U << (HARDWARE_ADCBITS - 8)) };
@@ -8075,7 +8075,7 @@ void board_adc_filtering(void)
 			//	adc_data_filtered [i] = raw;
 			break;
 #endif /* WITHPOTFILTERS */
-		case HARDWARE_ADCFILTER_TRACETOP3S:
+		case BOARD_ADCFILTER_TRACETOP3S:
 			// Отслеживание максимума с постоянной времени 3 секунды
 			{
 				enum { DELAY3SNUM = 993, DELAY3SDENOM = 1000 };	// todo: сделать расчет в зависимости от частоты системного таймера
@@ -8085,17 +8085,17 @@ void board_adc_filtering(void)
 			break;
 
 #if WITHSWRMTR || WITHPWRMTR
-		case HARDWARE_ADCFILTER_AVERAGEPWR:
+		case BOARD_ADCFILTER_AVERAGEPWR:
 			adc_data_filtered [i] = board_get_forward_filtered(raw);
 			break;
 #endif /* WITHSWRMTR || WITHPWRMTR */
-		case HARDWARE_ADCFILTER_LPF:
+		case BOARD_ADCFILTER_LPF:
 			{
 				const uint_fast8_t k = adc_data_k [i];
 				//adc_data_filtered [i] = (1 - k) * adc_data_filtered [i] + k * raw;
 				adc_data_filtered [i] = 
-					((int_fast32_t) (HARDWARE_ADCFILTER_LPF_DENOM - k) * adc_data_filtered [i] + 
-					(int_fast32_t) k * raw) / HARDWARE_ADCFILTER_LPF_DENOM;
+					((int_fast32_t) (BOARD_ADCFILTER_LPF_DENOM - k) * adc_data_filtered [i] + 
+					(int_fast32_t) k * raw) / BOARD_ADCFILTER_LPF_DENOM;
 			}
 			break;
 		}
@@ -8111,34 +8111,34 @@ static void
 adcfilters_initialize(void)
 {
 	#if WITHPOTPOWER
-		hardware_set_adc_filter(POTPOWER, HARDWARE_ADCFILTER_HISTERESIS2);
+		hardware_set_adc_filter(POTPOWER, BOARD_ADCFILTER_HISTERESIS2);
 	#endif /* WITHPOTPOWER */
 	#if WITHPOTWPM
-		hardware_set_adc_filter(POTWPM, HARDWARE_ADCFILTER_HISTERESIS2);
+		hardware_set_adc_filter(POTWPM, BOARD_ADCFILTER_HISTERESIS2);
 	#endif /* WITHPOTWPM */
 	#if WITHPOTPBT
-		hardware_set_adc_filter(POTPBT, HARDWARE_ADCFILTER_HISTERESIS2);
+		hardware_set_adc_filter(POTPBT, BOARD_ADCFILTER_HISTERESIS2);
 	#endif /* WITHPOTPBT */
 	#if WITHPOTIFSHIFT
-		hardware_set_adc_filter(POTIFSHIFT, HARDWARE_ADCFILTER_HISTERESIS2);	// регулировка IF SHIFT
+		hardware_set_adc_filter(POTIFSHIFT, BOARD_ADCFILTER_HISTERESIS2);	// регулировка IF SHIFT
 	#endif /* WITHPOTIFSHIFT */
 	#if WITHPOTIFGAIN
-		hardware_set_adc_filter(POTIFGAIN, HARDWARE_ADCFILTER_HISTERESIS2);
-		//hardware_set_adc_filterLPF(POTIFGAIN, HARDWARE_ADCFILTER_LPF_DENOM / 2);
+		hardware_set_adc_filter(POTIFGAIN, BOARD_ADCFILTER_HISTERESIS2);
+		//hardware_set_adc_filterLPF(POTIFGAIN, BOARD_ADCFILTER_LPF_DENOM / 2);
 	#endif /* WITHPOTIFGAIN */
 	#if WITHPOTAFGAIN
-		hardware_set_adc_filter(POTAFGAIN, HARDWARE_ADCFILTER_HISTERESIS2);
-		//hardware_set_adc_filterLPF(POTAFGAIN, HARDWARE_ADCFILTER_LPF_DENOM / 2);
+		hardware_set_adc_filter(POTAFGAIN, BOARD_ADCFILTER_HISTERESIS2);
+		//hardware_set_adc_filterLPF(POTAFGAIN, BOARD_ADCFILTER_LPF_DENOM / 2);
 	#endif /* WITHPOTAFGAIN */
 	#if WITHPOTNOTCH && WITHNOTCHFREQ
-		hardware_set_adc_filter(POTNOTCH, HARDWARE_ADCFILTER_HISTERESIS2);		// регулировка частоты NOTCH фильтра
+		hardware_set_adc_filter(POTNOTCH, BOARD_ADCFILTER_HISTERESIS2);		// регулировка частоты NOTCH фильтра
 	#endif /* WITHPOTNOTCH && WITHNOTCHFREQ */
 	#if WITHBARS && ! WITHINTEGRATEDDSP
-		hardware_set_adc_filter(SMETERIX, HARDWARE_ADCFILTER_TRACETOP3S);
+		hardware_set_adc_filter(SMETERIX, BOARD_ADCFILTER_TRACETOP3S);
 	#endif /* WITHBARS && ! WITHINTEGRATEDDSP */
 	#if WITHTX && (WITHSWRMTR || WITHPWRMTR)
-		hardware_set_adc_filter(PWRI, HARDWARE_ADCFILTER_AVERAGEPWR);	// Включить фильтр
-		//hardware_set_adc_filter(PWRI, HARDWARE_ADCFILTER_DIRECT);		// Отключить фильтр
+		hardware_set_adc_filter(PWRI, BOARD_ADCFILTER_AVERAGEPWR);	// Включить фильтр
+		//hardware_set_adc_filter(PWRI, BOARD_ADCFILTER_DIRECT);		// Отключить фильтр
 	#endif /* WITHTX && (WITHSWRMTR || WITHPWRMTR) */
 }
 

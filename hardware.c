@@ -1779,18 +1779,27 @@ void RAMFUNC_NONILINE ADC_Handler(void)
 	// of the AD conversion result
 	board_adc_store_data(board_get_adcch(adc_input), ADC->ADC_LCDR & ADC_LCDR_LDATA_Msk);	// на этом цикле используем результат
 	// Select next ADC input
-	if (++ adc_input >= board_get_adcinputs())
+	for (;;)
 	{
-		board_adc_filtering();
-		spool_adcdonebundle();
-	}
-	else
-	{
-		// Select next ADC input (only one)
-		const portholder_t mask = ADC_CHER_CH0 << board_get_adcch(adc_input);
-		ADC->ADC_CHER = mask; /* enable ADC */
-		ADC->ADC_CHDR = ~ mask; /* disable ADC */
-		ADC->ADC_CR = ADC_CR_START;	// Start the AD conversion
+		if (++ adc_input >= board_get_adcinputs())
+		{
+			board_adc_filtering();
+			spool_adcdonebundle();
+			break;
+		}
+		else
+		{
+			const uint_fast8_t adci = board_get_adcch(adc_input);
+			if (adci < BOARD_ADCXBASE)
+			{
+				// Select next ADC input (only one)
+				const portholder_t mask = ADC_CHER_CH0 << adci;
+				ADC->ADC_CHER = mask; /* enable ADC */
+				ADC->ADC_CHDR = ~ mask; /* disable ADC */
+				ADC->ADC_CR = ADC_CR_START;	// Start the AD conversion
+				break;
+			}
+		}
 	}
 }
 	
@@ -1802,18 +1811,28 @@ static RAMFUNC_NONILINE void AT91F_ADC_IRQHandler(void)
 	// Read the 8 most significant bits
 	// of the AD conversion result
 	board_adc_store_data(board_get_adcch(adc_input), AT91C_BASE_ADC->ADC_LCDR & AT91C_ADC_LDATA);	// на этом цикле используем результат
-	if (++ adc_input >= board_get_adcinputs())
+	// Select next ADC input
+	for (;;)
 	{
-		board_adc_filtering();
-		spool_adcdonebundle();
-	}
-	else
-	{
-		// Select next ADC input (only one)
-		const portholder_t mask = AT91C_ADC_CH0 << board_get_adcch(adc_input);
-		AT91C_BASE_ADC->ADC_CHDR = ~ mask; /* disable ADC inputs */
-		AT91C_BASE_ADC->ADC_CHER = mask; /* enable ADC */
-		AT91C_BASE_ADC->ADC_CR = AT91C_ADC_START;	// Start the AD conversion
+		if (++ adc_input >= board_get_adcinputs())
+		{
+			board_adc_filtering();
+			spool_adcdonebundle();
+			break;
+		}
+		else
+		{
+			// Select next ADC input (only one)
+			const uint_fast8_t adci = board_get_adcch(adc_input);
+			if (adci < BOARD_ADCXBASE)
+			{
+				const portholder_t mask = AT91C_ADC_CH0 << adci;
+				AT91C_BASE_ADC->ADC_CHDR = ~ mask; /* disable ADC inputs */
+				AT91C_BASE_ADC->ADC_CHER = mask; /* enable ADC */
+				AT91C_BASE_ADC->ADC_CR = AT91C_ADC_START;	// Start the AD conversion
+				break;
+			}
+		}
 	}
 }
 
@@ -1841,16 +1860,25 @@ static RAMFUNC_NONILINE void AT91F_ADC_IRQHandler(void)
 			board_adc_store_data(board_get_adcch(adc_input), ADCW);
 		#endif 
 		// Select next ADC input
-		if (++ adc_input >= board_get_adcinputs())
+		for (;;)
 		{
-			board_adc_filtering();
-			spool_adcdonebundle();
-		}
-		else
-		{
-			// Select next ADC input
-			ADMUX = hardware_atmega_admux(board_get_adcch(adc_input));
-			ADCSRA |= (1U << ADSC);			// Start the AD conversion
+			if (++ adc_input >= board_get_adcinputs())
+			{
+				board_adc_filtering();
+				spool_adcdonebundle();
+				break;
+			}
+			else
+			{
+				// Select next ADC input (only one)
+				const uint_fast8_t adci = board_get_adcch(adc_input);
+				if (adci < BOARD_ADCXBASE)
+				{
+					ADMUX = hardware_atmega_admux(adci);
+					ADCSRA |= (1U << ADSC);			// Start the AD conversion
+					break;
+				}
+			}
 		}
 	}
 #elif CPUSTYLE_ATXMEGAXXXA4
@@ -1872,16 +1900,25 @@ static RAMFUNC_NONILINE void AT91F_ADC_IRQHandler(void)
 			board_adc_store_data(board_get_adcch(adc_input), ADCA.CH0.RESH * 256 + ADCA.CH0.RESL);
 		#endif 
 		// Select next ADC input
-		if (++ adc_input >= board_get_adcinputs())
+		for (;;)
 		{
-			board_adc_filtering();
-			spool_adcdonebundle();
-		}
-		else
-		{
-			// Select next ADC input
-			ADCA.CH0.MUXCTRL = board_get_adcch(adc_input);
-			ADCA.CH0.CTRL |= (1U << ADC_CH_START_bp);			// Start the AD conversion
+			if (++ adc_input >= board_get_adcinputs())
+			{
+				board_adc_filtering();
+				spool_adcdonebundle();
+				break;
+			}
+			else
+			{
+				// Select next ADC input (only one)
+				const uint_fast8_t adci = board_get_adcch(adc_input);
+				if (adci < BOARD_ADCXBASE)
+				{
+					ADCA.CH0.MUXCTRL = adci;
+					ADCA.CH0.CTRL |= (1U << ADC_CH_START_bp);			// Start the AD conversion
+					break;
+				}
+			}
 		}
 	}
 
@@ -1942,23 +1979,33 @@ ADCs_IRQHandler(ADC_TypeDef * p)
 		adc->ISR = ADC_ISR_EOS;		// EOS (end of regular sequence) flag
 		board_adc_store_data(board_get_adcch(adc_input), (adc->DR & ADC_DR_RDATA) >> ADC_DR_RDATA_Pos);	// на этом цикле используем результат
 		// Select next ADC input
-		if (++ adc_input >= board_get_adcinputs())
+		for (;;)
 		{
-			board_adc_filtering();
-			spool_adcdonebundle();
-		}
-		else
-		{
-			// Установить следующий вход (блок ADC может измениться)
-			const adcinmap_t * const adcmap = getadcmap(board_get_adcch(adc_input));
-			ADC_TypeDef * const adc = adcmap->adc;
+			if (++ adc_input >= board_get_adcinputs())
+			{
+				board_adc_filtering();
+				spool_adcdonebundle();
+				break;
+			}
+			else
+			{
+				// Select next ADC input (only one)
+				const uint_fast8_t adci = board_get_adcch(adc_input);
+				if (adci < BOARD_ADCXBASE)
+				{
+					// Установить следующий вход (блок ADC может измениться)
+					const adcinmap_t * const adcmap = getadcmap(adci);
+					ADC_TypeDef * const adc = adcmap->adc;
 
-			ASSERT((adc->CR & (ADC_CR_JADSTART | ADC_CR_ADSTART)) == 0);
-			adc->SQR1 = (adc->SQR1 & ~ (ADC_SQR1_L | ADC_SQR1_SQ1)) |
-				0 * ADC_SQR1_L_0 |	// Выбираем преобразование с одного канала. Сканирования нет.
-				adcmap->ch * ADC_SQR1_SQ1_0 |
-				0;
-			adc->CR |= ADC_CR_ADSTART;	// Запуск преобразования
+					ASSERT((adc->CR & (ADC_CR_JADSTART | ADC_CR_ADSTART)) == 0);
+					adc->SQR1 = (adc->SQR1 & ~ (ADC_SQR1_L | ADC_SQR1_SQ1)) |
+						0 * ADC_SQR1_L_0 |	// Выбираем преобразование с одного канала. Сканирования нет.
+						adcmap->ch * ADC_SQR1_SQ1_0 |
+						0;
+					adc->CR |= ADC_CR_ADSTART;	// Запуск преобразования
+					break;
+				}
+			}
 		}
 	}
 	else
@@ -1989,18 +2036,27 @@ ADC1_2_IRQHandler(void)
 	ADC1->SR = 0;		// Сбрасываем все запросы прерывания.
 	board_adc_store_data(board_get_adcch(adc_input), ADC1->DR & ADC_DR_DATA);	// на этом цикле используем результат
 	// Select next ADC input
-	if (++ adc_input >= board_get_adcinputs())
+	for (;;)
 	{
-		board_adc_filtering();
-		spool_adcdonebundle();
-	}
-	else
-	{
-		// Установить следующий вход
-		ADC1->SQR3 = (ADC1->SQR3 & ~ ADC_SQR3_SQ1) | (ADC_SQR3_SQ1_0 * board_get_adcch(adc_input)); 
-		#if CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX
-		ADC1->CR2 |= ADC_CR2_SWSTART;	// !!!!
-		#endif
+		if (++ adc_input >= board_get_adcinputs())
+		{
+			board_adc_filtering();
+			spool_adcdonebundle();
+			break;
+		}
+		else
+		{
+			// Select next ADC input (only one)
+			const uint_fast8_t adci = board_get_adcch(adc_input);
+			if (adci < BOARD_ADCXBASE)
+			{
+				ADC1->SQR3 = (ADC1->SQR3 & ~ ADC_SQR3_SQ1) | (ADC_SQR3_SQ1_0 * adci); 
+				#if CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX
+				ADC1->CR2 |= ADC_CR2_SWSTART;	// !!!!
+				#endif
+				break;
+			}
+		}
 	}
 }
 
@@ -2014,16 +2070,25 @@ ADC1_2_IRQHandler(void)
 			ADC1->ISR = ADC_ISR_EOC;
 			ADC1->CHSELR = 1UL <<  board_get_adcch(adc_input);
 			// Select next ADC input
-			if (++ adc_input >= board_get_adcinputs())
+			for (;;)
 			{
-				board_adc_filtering();
-				spool_adcdonebundle();
-			}
-			else
-			{
-				// Установить следующий вход
-				ADC1->CHSELR = 1UL <<  board_get_adcch(adc_input);
-				ADC1->CR = ADC_CR_ADSTART;	// ADC Start of Regular conversion
+				if (++ adc_input >= board_get_adcinputs())
+				{
+					board_adc_filtering();
+					spool_adcdonebundle();
+					break;
+				}
+				else
+				{
+					// Select next ADC input (only one)
+					const uint_fast8_t adci = board_get_adcch(adc_input);
+					if (adci < BOARD_ADCXBASE)
+					{
+						ADC1->CHSELR = 1UL <<  board_get_adcch(adc_input);
+						ADC1->CR = ADC_CR_ADSTART;	// ADC Start of Regular conversion
+						break;
+					}
+				}
 			}
 		}
 	#else /* STM32F0XX_MD */
@@ -2035,16 +2100,25 @@ ADC1_2_IRQHandler(void)
 			ADC1->ISR = ADC_ISR_EOC;
 			ADC1->CHSELR = 1UL <<  board_get_adcch(adc_input);
 			// Select next ADC input
-			if (++ adc_input >= board_get_adcinputs())
+			for (;;)
 			{
-				board_adc_filtering();
-				spool_adcdonebundle();
-			}
-			else
-			{
-				// Установить следующий вход
-				ADC1->CHSELR = 1UL <<  board_get_adcch(adc_input);
-				ADC1->CR = ADC_CR_ADSTART;	// ADC Start of Regular conversion
+				if (++ adc_input >= board_get_adcinputs())
+				{
+					board_adc_filtering();
+					spool_adcdonebundle();
+					break;
+				}
+				else
+				{
+					// Select next ADC input (only one)
+					const uint_fast8_t adci = board_get_adcch(adc_input);
+					if (adci < BOARD_ADCXBASE)
+					{
+						ADC1->CHSELR = 1UL << adci;
+						ADC1->CR = ADC_CR_ADSTART;	// ADC Start of Regular conversion
+						break;
+					}
+				}
 			}
 		}
 	#endif /* STM32F0XX_MD */
@@ -2059,16 +2133,25 @@ ADC1_2_IRQHandler(void)
 		ADC1->ISR = ADC_ISR_EOC;
 		ADC1->CHSELR |= 1UL <<  board_get_adcch(adc_input);
 		// Select next ADC input
-		if (++ adc_input >= board_get_adcinputs())
+		for (;;)
 		{
-			board_adc_filtering();
-			spool_adcdonebundle();
-		}
-		else
-		{
-			// Установить следующий вход
-			ADC1->CHSELR |= 1UL <<  board_get_adcch(adc_input);
-			ADC1->CR = ADC_CR_ADSTART;	// ADC Start of Regular conversion
+			if (++ adc_input >= board_get_adcinputs())
+			{
+				board_adc_filtering();
+				spool_adcdonebundle();
+				break;
+			}
+			else
+			{
+				// Select next ADC input (only one)
+				const uint_fast8_t adci = board_get_adcch(adc_input);
+				if (adci < BOARD_ADCXBASE)
+				{
+					ADC1->CHSELR |= 1UL << adci;
+					ADC1->CR = ADC_CR_ADSTART;	// ADC Start of Regular conversion
+					break;
+				}
+			}
 		}
 	}
 
@@ -2082,16 +2165,25 @@ ADC1_2_IRQHandler(void)
 	ADC1->ISR = 0;		// Сбрасываем все запросы прерывания.
 	board_adc_store_data(board_get_adcch(adc_input), ADC1->DR & ADC_DR_RDATA);	// на этом цикле используем результат
 	// Select next ADC input
-	if (++ adc_input >= board_get_adcinputs())
+	for (;;)
 	{
-		board_adc_filtering();
-		spool_adcdonebundle();
-	}
-	else
-	{
-		// Установить следующий вход
-		ADC1->SQR1 = (ADC1->SQR1 & ~ ADC_SQR1_SQ1) | (ADC_SQR1_SQ1_0 * board_get_adcch(adc_input)); 
-		ADC1->CR |= ADC_CR_ADSTART;	// ADC Start of Regular conversion
+		if (++ adc_input >= board_get_adcinputs())
+		{
+			board_adc_filtering();
+			spool_adcdonebundle();
+			break;
+		}
+		else
+		{
+			// Select next ADC input (only one)
+			const uint_fast8_t adci = board_get_adcch(adc_input);
+			if (adci < BOARD_ADCXBASE)
+			{
+				ADC1->SQR1 = (ADC1->SQR1 & ~ ADC_SQR1_SQ1) | (ADC_SQR1_SQ1_0 * adci); 
+				ADC1->CR |= ADC_CR_ADSTART;	// ADC Start of Regular conversion
+				break;
+			}
+		}
 	}
 }
 
@@ -2124,22 +2216,29 @@ r7s721_adi_irq_handler(void)
 	////ADC1->ISR = 0;		// Сбрасываем все запросы прерывания.
 	board_adc_store_data(board_get_adcch(adc_input), (& ADC.ADDRA) [board_get_adcch(adc_input)] >> 4);	// на этом цикле используем результат
 	// Select next ADC input
-	if (++ adc_input >= board_get_adcinputs())
+	for (;;)
 	{
-		ADC.ADCSR &= ~ ADC_SR_ADF;	// ADF: A/D end flag - Cleared by reading ADF while ADF = 1, then writing 0 to ADF
-
-		//dbg_putchar('L');
-		// Это был последний вход
-		board_adc_filtering();
-		spool_adcdonebundle();
-	}
-	else
-	{
-		// Установить следующий вход
-		ADC.ADCSR = (ADC.ADCSR & ~ (ADC_SR_ADF | ADC_SR_CH)) | 
-			(board_get_adcch(adc_input) << ADC_SR_CH_SHIFT) |	// канал для преобразования
-			1 * ADC_SR_ADST |	// ADST: Single mode: A/D conversion starts
-			0;
+		if (++ adc_input >= board_get_adcinputs())
+		{
+			ADC.ADCSR &= ~ ADC_SR_ADF;	// ADF: A/D end flag - Cleared by reading ADF while ADF = 1, then writing 0 to ADF
+			// Это был последний вход
+			board_adc_filtering();
+			spool_adcdonebundle();
+			break;
+		}
+		else
+		{
+			// Select next ADC input (only one)
+			const uint_fast8_t adci = board_get_adcch(adc_input);
+			if (adci < BOARD_ADCXBASE)
+			{
+				ADC.ADCSR = (ADC.ADCSR & ~ (ADC_SR_ADF | ADC_SR_CH)) | 
+					(adci << ADC_SR_CH_SHIFT) |	// канал для преобразования
+					1 * ADC_SR_ADST |	// ADST: Single mode: A/D conversion starts
+					0;
+				break;
+			}
+		}
 	}
 }
 

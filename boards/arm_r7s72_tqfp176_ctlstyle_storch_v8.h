@@ -264,15 +264,18 @@
 	//#define WITHPWRMTR	1	/* Индикатор выходной мощности или */
 	//#define WITHPWRLIN	1	/* Индикатор выходной мощности показывает напряжение а не мощность */
 	#define WITHBARS		1	/* отображение S-метра и SWR-метра */
-	//#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
+
+	////#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
 	#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
+	////#define WITHTHERMOLEVEL	1	/* отображение температуры */
+
 	//#define WITHSWLMODE	1	/* поддержка запоминания множества частот в swl-mode */
 	#define WITHVIBROPLEX	1	/* возможность эмуляции передачи виброплексом */
 
 	// Есть ли регулировка параметров потенциометрами
 	////#define WITHPOTWPM		1	/* используется регулировка скорости передачи в телеграфе потенциометром */
-	//#define WITHPOTIFGAIN		1	/* регуляторы усиления ПЧ на потенциометрах */
-	//#define WITHPOTAFGAIN		1	/* регуляторы усиления НЧ на потенциометрах */
+	////#define WITHPOTIFGAIN		1	/* регуляторы усиления ПЧ на потенциометрах */
+	////#define WITHPOTAFGAIN		1	/* регуляторы усиления НЧ на потенциометрах */
 	#define WITHSLEEPTIMER	1	/* выключить индикатор и вывод звука по истечениии указанного времени */
 
 	#define WITHMENU 	1	/* функциональность меню может быть отключена - если настраивать нечего */
@@ -341,15 +344,20 @@
 	enum 
 	{ 
 	#if WITHPOTIFGAIN
-		POTIFGAIN = 0,		// ADC0 IF GAIN
+		POTIFGAIN = BOARD_ADCXIN(0),		// MCP3208 CH0 IF GAIN
 	#endif /* WITHPOTIFGAIN */
 	#if WITHPOTAFGAIN
-		POTAFGAIN = 1,		// ADC1 AF GAIN
+		POTAFGAIN = BOARD_ADCXIN(1),		// MCP3208 CH1 AF GAIN
 	#endif /* WITHPOTAFGAIN */
-
 	#if WITHPOTWPM
-		POTWPM = 2,		// ADC2 потенциометр управления скоростью передачи в телеграфе
+		POTWPM = BOARD_ADCXIN(2),			// MCP3208 CH2 потенциометр управления скоростью передачи в телеграфе
 	#endif /* WITHPOTWPM */
+	#if WITHTHERMOLEVEL
+		XTHERMOIX = BOARD_ADCXIN(6),		// MCP3208 CH6 Exernal thermo sensor ST LM235Z
+	#endif /* WITHTHERMOLEVEL */
+	#if WITHVOLTLEVEL 
+		VOLTSOURCE = BOARD_ADCXIN(7),		// MCP3208 CH7 Средняя точка делителя напряжения, для АКБ
+	#endif /* WITHVOLTLEVEL */
 
 	#if WITHSWRMTR
 		PWRI = 0,			// PB1
@@ -363,8 +371,10 @@
 		KI0 = 3, KI1 = 4, KI2 = 5, KI3 = 6, KI4 = 7		// клавиатура
 	};
 
-	//#define VOLTLEVEL_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика напряжения
-	//#define VOLTLEVEL_LOWER		10	// 1.0 kOhm - нижний резистор
+	#define VOLTLEVEL_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика напряжения
+	#define VOLTLEVEL_LOWER		10	// 1.0 kOhm - нижний резистор
+	#define XTHERMOLEVEL_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика температуры
+	#define XTHERMOLEVEL_LOWER		10	// 1.0 kOhm - нижний резистор
 
 	#define KI_COUNT 5	// количество используемых под клавиатуру входов АЦП
 	#define KI_LIST	KI4, KI3, KI2, KI1, KI0,	// инициализаторы для функции перекодировки
