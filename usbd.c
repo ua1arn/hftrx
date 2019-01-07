@@ -3340,7 +3340,7 @@ static void usb0_function_SetDescriptor(PCD_TypeDef * const Instance, USBD_Setup
 /* Control Write No Data Status Stage seq= 5 */
 static void usb0_function_ClearFeature(PCD_TypeDef * const Instance, USBD_SetupReqTypedef *req)
 {
-	PRINTF(PSTR("usb0_function_ClearFeature: ReqTypeRecip=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
+	//PRINTF(PSTR("usb0_function_ClearFeature: ReqTypeRecip=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
 #if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32F4XX
 	dcp_acksend(Instance);
 #endif /* CPUSTYLE_STM32F7XX | CPUSTYLE_STM32F4XX */
@@ -3349,7 +3349,7 @@ static void usb0_function_ClearFeature(PCD_TypeDef * const Instance, USBD_SetupR
 /* Control Write No Data Status Stage seq= 5 */
 static void usb0_function_SetFeature(PCD_TypeDef * const Instance, USBD_SetupReqTypedef *req)
 {
-	PRINTF(PSTR("usb0_function_SetFeature: ReqTypeRecip=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
+	//PRINTF(PSTR("usb0_function_SetFeature: ReqTypeRecip=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
 #if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32F4XX
 	dcp_acksend(Instance);
 #endif /* CPUSTYLE_STM32F7XX | CPUSTYLE_STM32F4XX */
@@ -3587,7 +3587,7 @@ static void usbdFunctionReq_seq3(PCD_TypeDef * const Instance, USBD_SetupReqType
 				break;
 
 			default:
-				PRINTF(PSTR("default path 1: usbdFunctionReq_seq3: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
+				//PRINTF(PSTR("default path 1: usbdFunctionReq_seq3: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
 				stall_ep0(Instance);
 				return;
 			}
@@ -3606,7 +3606,7 @@ static void usbdFunctionReq_seq3(PCD_TypeDef * const Instance, USBD_SetupReqType
 				break;
 
 			default:
-				PRINTF(PSTR("default path 2: usbdFunctionReq_seq3: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
+				//PRINTF(PSTR("default path 2: usbdFunctionReq_seq3: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
 				stall_ep0(Instance);
 				return;
 			}
@@ -3615,7 +3615,7 @@ static void usbdFunctionReq_seq3(PCD_TypeDef * const Instance, USBD_SetupReqType
 #endif /* WITHUSBCDC */
 	
 	default:
-		PRINTF(PSTR("default path 3: usbdFunctionReq_seq3: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
+		//PRINTF(PSTR("default path 3: usbdFunctionReq_seq3: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
 		stall_ep0(Instance);
 		return;
 	}
@@ -3651,7 +3651,7 @@ static void usbdFunctionReq_seq5(PCD_TypeDef * const Instance, USBD_SetupReqType
 				break;
 
 			default:
-				PRINTF(PSTR("default path 1: usbdFunctionReq_seq5: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
+				//PRINTF(PSTR("default path 1: usbdFunctionReq_seq5: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
 				stall_ep0(Instance);
 				return;
 			}
@@ -3666,7 +3666,7 @@ static void usbdFunctionReq_seq5(PCD_TypeDef * const Instance, USBD_SetupReqType
 #endif /* WITHUSBCDCEEM */
 
 	default:
-		PRINTF(PSTR("default path 2: usbdFunctionReq_seq5: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
+		//PRINTF(PSTR("default path 2: usbdFunctionReq_seq5: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
 		stall_ep0(Instance);
 		return;
 	}
