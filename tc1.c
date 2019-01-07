@@ -8399,7 +8399,7 @@ int_fast16_t hamradio_get_temperature_value(void)
 	}
 #else /* WITHREFSENSOR */
 	const unsigned Vref_mV = ADCVREF_CPU * 100;
-	debug_printf_P(PSTR("hamradio_get_temperature_value: XTHERMOIX=%u\n"), board_getadc_filtered_u16(XTHERMOIX, 0, Vref_mV));
+	//debug_printf_P(PSTR("hamradio_get_temperature_value: XTHERMOIX=%u\n"), board_getadc_filtered_u16(XTHERMOIX, 0, Vref_mV));
 	return (int32_t) board_getadc_unfiltered_u32(XTHERMOIX, 0, (uint_fast64_t) Vref_mV * (THERMOSENSOR_UPPER + THERMOSENSOR_LOWER) / THERMOSENSOR_LOWER) + offset_LM235;
 #endif /* WITHREFSENSOR */
 }

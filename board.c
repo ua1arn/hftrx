@@ -7872,7 +7872,10 @@ static uint_fast8_t adc_data_k [HARDWARE_ADCINPUTS];	/* параметр (частота среза 
 /* получить максимальное возможное значение от АЦП */
 adcvalholder_t board_getadc_fsval(uint_fast8_t adci)	
 {
-	(void) adci;	// номер канала пока не испольщуется. Нужен для систем с разными АЦП на разных виртуадльных каналах
+	if (adci >= BOARD_ADCXBASE)
+	{
+		return 4095;	// MCP3208
+	}
 	return (1uL << HARDWARE_ADCBITS) - 1;
 }
 
