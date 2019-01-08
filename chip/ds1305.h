@@ -28,10 +28,9 @@ static void ds1305_readbuff(
 {
 	const spitarget_t target = targetrtc1;		/* addressing to chip */
 
+	local_delay_us(10);		// 4 uS required
 	spi_select2(target, DS1305_SPIMODE, DS1305_SPISPEED);
-	spi_unselect(target);	/* done sending data to target chip */
-
-	spi_select2(target, DS1305_SPIMODE, DS1305_SPISPEED);
+	local_delay_us(10);		// 4 uS required
 
 	spi_progval8_p1(target, addr & 0x7F);	// D7=0: read mode
 	spi_complete(target);
@@ -52,7 +51,9 @@ static void ds1305_writebuff(
 {
 	const spitarget_t target = targetrtc1;		/* addressing to chip */
 
+	local_delay_us(10);		// 4 uS required
 	spi_select2(target, DS1305_SPIMODE, DS1305_SPISPEED);
+	local_delay_us(10);		// 4 uS required
 
 	spi_progval8_p1(target, addr | 0x80);	// D7=1: write mode
 	spi_complete(target);
@@ -219,6 +220,8 @@ void board_rtc_gettime(
 	uint8_t b [3];
 
 	ds1305_readbuff(b, sizeof b / sizeof b[0], r);
+
+	//debug_printf_P(PSTR("board_rtc_gettime: %02X:%02X:%02X\n"), b [0], b [1], b [2]);
 
 	* secounds = ds1305_bcd2bin(b [0] & 0x7f);	// r=1
 	* minute = ds1305_bcd2bin(b [1] & 0x7f);	// r=2
