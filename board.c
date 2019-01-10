@@ -3564,7 +3564,7 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBBIT(0003, lcdblcode & 0x02);		/* D3	- LCD backlight */
 		RBBIT(0002, lcdblcode & 0x02);		/* D2	- LCD backlight */
 		RBBIT(0001, lcdblcode & 0x01);		/* D2:D1 - LCD backlight */
-		RBBIT(0000, glob_kblight);			/* D0: keyboard backlight */
+		RBBIT(0000, glob_tx);			/* D0: PTT out for UA1CEI keyboard backlight */
 
 		spi_select(target, CTLREG_SPIMODE);
 		prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
