@@ -55,17 +55,6 @@
 //#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
 //#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
 
-// ‘ункций-макросы установки/сброса битов в указанном порту
-//
-//  ѕример использовани€:
-//		R7S721_TARGET_PORT_S(6, 0x04);	/* P6_2=1 */
-//		R7S721_TARGET_PORT_C(6, 0x04);	/* P6_2=0 */
-
-#define R7S721_TARGET_PORT_S(p, v) do { GPIO.PSR ## p = ((v) * 0x10000UL) | (v); __DSB(); } while (0)
-#define R7S721_TARGET_PORT_C(p, v) do { GPIO.PSR ## p = ((v) * 0x10000UL) | (0); __DSB(); } while (0)
-
-#define R7S721_INPUT_PORT(p) (GPIO.PPR ## p)
-
 //#define WRITEE_BIT				(1u << 12)	// RD/~WR  P3_12 - должен быть в "0" - как при записи - дл€ управлени€ буферами на шине данных LCD
 
 /* ¬ данной версии платы ошибка в схеме - дл€ работы преобразователей уровн€ "наружу" WRITEE_BIT долже быть в "1". 

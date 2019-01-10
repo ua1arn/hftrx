@@ -264,6 +264,23 @@ void arm_hardware_pioa_analoginput(unsigned long ipins);
 void arm_hardware_piob_analoginput(unsigned long ipins);
 void arm_hardware_pioc_analoginput(unsigned long ipins);
 
+// Функций-макросы установки/сброса битов в указанном порту
+//
+//  Пример использования:
+//		R7S721_TARGET_PORT_S(6, 0x04);	/* P6_2=1 */
+//		R7S721_TARGET_PORT_C(6, 0x04);	/* P6_2=0 */
+
+#define R7S721_TARGET_PORT_S(p, v) do { const uint_fast16_t vv = 0xFFFF & (v); GPIO.PSR ## p = ((vv) * 0x10000uL) | (vv); __DSB(); } while (0)
+#define R7S721_TARGET_PORT_C(p, v) do { const uint_fast16_t vv = 0xFFFF & (v); GPIO.PSR ## p = ((vv) * 0x10000uL) | (0); __DSB(); } while (0)
+
+#define R7S721_TARGET_JPORT_S(p, v) do { const uint_fast16_t vv = 0xFFFF & (v); GPIO.JPSR ## p = ((vv) * 0x10000uL) | (vv); __DSB(); } while (0)
+#define R7S721_TARGET_JPORT_C(p, v) do { const uint_fast16_t vv = 0xFFFF & (v); GPIO.JPSR ## p = ((vv) * 0x10000uL) | (0); __DSB(); } while (0)
+
+#define R7S721_INPUT_PORT(p) ((uint16_t) GPIO.PPR ## p)
+
+#define R7S721_INPUT_JPORT(p) ((uint16_t) GPIO.JPPR ## p)
+
+
 // R7S721 ports
 void arm_hardware_pio0_inputs(unsigned long ipins);
 void arm_hardware_pio1_inputs(unsigned long ipins);
