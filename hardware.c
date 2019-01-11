@@ -8677,7 +8677,7 @@ void DAbortHandler(void)
 		14. 0bx10110 asynchronous external abort
 		15. 0b000010 debug event.
 	*/
-	debug_printf_P(PSTR("WnR=%d. Status=%02X\n"), WnR, Status);
+	debug_printf_P(PSTR(" WnR=%d, Status=%02X\n"), WnR, Status);
 	switch (Status)
 	{
 	case 0x01: debug_printf_P(PSTR("alignment fault\n")); break;
@@ -9224,6 +9224,7 @@ arm_cpu_initialize(void)
 	L1C_EnableCaches();
 	L1C_EnableBTAC();
 	__set_ACTLR(__get_ACTLR() | ACTLR_L1PE_Msk);	// Enable Dside prefetch
+
 
 	/* далее будет выполняться копирование data и инициализация bss - для нормальной работы RESET требуется без DATA CACHE */
 
@@ -10144,8 +10145,9 @@ void cpu_initialize(void)
 
 	//cp15_vectors_reloc_disable();
 	__set_SCTLR(__get_SCTLR() & ~ SCTLR_V_Msk);
+	__set_SCTLR(__get_SCTLR() & ~ SCTLR_A_Msk);	// 0 = Strict alignment fault checking disabled. This is the reset value.
 
-	//debug_printf_P(PSTR("cpu_initialize2: CP15=%08lX\n"), __get_SCTLR());
+	//debug_printf_P(PSTR("cpu_initialize2: CP15(SCTLR)=%08lX\n"), __get_SCTLR());
 
 	/* TN-RZ*-A011A/E recommends switch off USB_X1 if usb USB not used */
 	CPG.STBCR7 &= ~ CPG_STBCR7_MSTP70;	// Module Stop 71 0: Channel 0 of the USB 2.0 host/function module runs.
