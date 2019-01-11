@@ -8637,21 +8637,66 @@ void UndefHandler(void)
 	for (;;)
 		;
 }
+
 void SWIHandler(void)
 {
 	debug_printf_P(PSTR("SWIHandler trapped.\n"));
 	for (;;)
 		;
 }
+
+// Prefetch Abort
 void PAbortHandler(void)
 {
 	debug_printf_P(PSTR("PAbortHandler trapped.\n"));
 	for (;;)
 		;
 }
+
+// Data Abort.
 void DAbortHandler(void)
 {
 	debug_printf_P(PSTR("DAbortHandler trapped.\n"));
+	debug_printf_P(PSTR("DFSR=%08lX\n"), __get_DFSR());
+	const int WnR = (__get_DFSR() & (1uL << 11)) != 0;
+	const int Status = (__get_DFSR() & (0x0FuL << 0));
+	/*
+		1. 0b000001 alignment fault
+		2. 0b000100 instruction cache maintenance fault
+		3. 0bx01100 1st level translation, synchronous external abort
+		4. 0bx01110 2nd level translation, synchronous external abort
+		5. 0b000101 translation fault, section
+		6. 0b000111 translation fault, page
+		7. 0b000011 access flag fault, section
+		8. 0b000110 access flag fault, page
+		9. 0b001001 domain fault, section
+		10. 0b001011 domain fault, page
+		11. 0b001101 permission fault, section
+		12. 0b001111 permission fault, page
+		13. 0bx01000 synchronous external abort, nontranslation
+		14. 0bx10110 asynchronous external abort
+		15. 0b000010 debug event.
+	*/
+	debug_printf_P(PSTR("WnR=%d. Status=%02X\n"), WnR, Status);
+	switch (Status)
+	{
+	case 0x01: debug_printf_P(PSTR("alignment fault\n")); break;
+	case 0x04: debug_printf_P(PSTR("instruction cache maintenance fault\n")); break;
+	case 0x0C: debug_printf_P(PSTR("1st level translation, synchronous external abort\n")); break;
+	case 0x0E: debug_printf_P(PSTR("2nd level translation, synchronous external abort\n")); break;
+	case 0x05: debug_printf_P(PSTR("translation fault, section\n")); break;
+	case 0x07: debug_printf_P(PSTR("translation fault, page\n")); break;
+	case 0x03: debug_printf_P(PSTR("access flag fault, section\n")); break;
+	case 0x06: debug_printf_P(PSTR("access flag fault, page\n")); break;
+	case 0x09: debug_printf_P(PSTR("domain fault, section\n")); break;
+	case 0x0B: debug_printf_P(PSTR("domain fault, page\n")); break;
+	case 0x0D: debug_printf_P(PSTR("permission fault, section\n")); break;
+	case 0x0F: debug_printf_P(PSTR("permission fault, page\n")); break;
+	case 0x08: debug_printf_P(PSTR("synchronous external abort, nontranslation\n")); break;
+	case 0x16: debug_printf_P(PSTR("asynchronous external abort\n")); break;
+	case 0x02: debug_printf_P(PSTR("debug event.\n")); break;
+	default: debug_printf_P(PSTR("undefined Status=%02X\n"), Status); break;
+	}
 	for (;;)
 		;
 }
@@ -8669,70 +8714,6 @@ void IRQHandler(void)
 		;
 }
 */
-#endif
-
-#if 0
- 
-/** \brief  Set CSSELR
- */
-__STATIC_FORCEINLINE void __set_CSSELR(uint32_t value)
-{
-//  __ASM volatile("MCR p15, 2, %0, c0, c0, 0" : : "r"(value) : "memory");
-  __set_CP(15, 2, value, 0, 0, 0);
-}
-
-/** \brief Get MVBAR
-This function returns the value of the Monitor Vector Base Address Register.
-
-\return               Monitor Vector Base Address Register
-
-
-*/
- __STATIC_FORCEINLINE uint32_t __get_MVBAR(void)
- {
- uint32_t result;
- __get_CP(15, 0, result, 12, 0, 1);
- return result;
- }
-
-/** \brief Set MVBAR
-This function assigns the given value to the Monitor Vector Base Address Register.
-
-\param [in]    mvbar  Monitor Vector Base Address Register value to set
-
-
-*/
- __STATIC_FORCEINLINE void __set_MVBAR(uint32_t vbar)
- {
- __set_CP(15, 0, vbar, 12, 0, 1);
- }
-
-/** \brief Get VBAR
-This function returns the value of the Vector Base Address Register.
-
-\return               Vector Base Address Register
-
-
-*/
- __STATIC_FORCEINLINE uint32_t __get_VBAR(void)
- {
- uint32_t result;
- __get_CP(15, 0, result, 12, 0, 0);
- return result;
- }
-
-/** \brief Set VBAR
-This function assigns the given value to the Vector Base Address Register.
-
-\param [in]    vbar  Vector Base Address Register value to set
-
-
-*/
- __STATIC_FORCEINLINE void __set_VBAR(uint32_t vbar)
- {
- __set_CP(15, 0, vbar, 12, 0, 0);
- }
-
 #endif
 
 static void arm_hardware_VFPEnable(void)
