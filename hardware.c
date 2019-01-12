@@ -9264,6 +9264,8 @@ arm_cpu_CMx_initialize_NVIC(void)
 
 	// Назначить таймеру приоритет, равный всем остальным прерываниям
 	NVIC_SetPriority(SysTick_IRQn, ARM_SYSTEM_PRIORITY);
+
+	//__set_BASEPRI(gARM_BASEPRI_ALL_ENABLED);
 }
 
 #endif /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7 */
@@ -9492,7 +9494,7 @@ if (0)
 
     /* Interrupt Priority Mask Register setting */
     /* Enable priorities for all interrupts */
-    GIC_SetInterfacePriorityMask(ARM_CA9_ENCODE_PRIORITY(31));	// GICC_PMR
+    GIC_SetInterfacePriorityMask(gARM_BASEPRI_ALL_ENABLED);	// GICC_PMR
 
     /* Binary Point Register setting */
     /* Group priority field [7:3], Subpriority field [2:0](Do not use) */
@@ -9500,7 +9502,7 @@ if (0)
 	GIC_SetBinaryPoint(2);
     /* CPU Interface Control Register setting */
     //INTC.ICCICR = 0x00000003uL;	// GICC_CTLR
-	GIC_EnableInterface();	// cjeck GICInterface->CTLR a same for INTC.ICCICR
+	GIC_EnableInterface();	// check GICInterface->CTLR a same for INTC.ICCICR
 
     /* Initial setting 2 to receive GIC interrupt request */
     /* Distributor Control Register setting */

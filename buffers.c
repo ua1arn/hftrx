@@ -522,20 +522,21 @@ void buffers_initialize(void)
 // Буферы с принятымти от обработчиков прерываний сообщениями
 uint_fast8_t takemsgready_user(uint8_t * * dest)
 {
-	disableIRQ();
+	ASSERT_IRQL_USER();
+	global_disableIRQ();
 	LOCK(& locklist8);
 	if (! IsListEmpty(& msgsready8))
 	{
 		PLIST_ENTRY t = RemoveTailList(& msgsready8);
 		UNLOCK(& locklist8);
-		enableIRQ();
+		global_enableIRQ();
 		message_t * const p = CONTAINING_RECORD(t, message_t, item);
 		* dest = p->data;
 		ASSERT(p->type != MSGT_EMPTY);
 		return p->type;
 	}
 	UNLOCK(& locklist8);
-	enableIRQ();
+	global_enableIRQ();
 	return MSGT_EMPTY;
 }
 
@@ -543,17 +544,19 @@ uint_fast8_t takemsgready_user(uint8_t * * dest)
 // Освобождение обработанного буфера сообщения
 void releasemsgbuffer_user(uint8_t * dest)
 {
+	ASSERT_IRQL_USER();
 	message_t * const p = CONTAINING_RECORD(dest, message_t, data);
-	disableIRQ();
+	global_disableIRQ();
 	LOCK(& locklist8);
 	InsertHeadList(& msgsfree8, & p->item);
 	UNLOCK(& locklist8);
-	enableIRQ();
+	global_enableIRQ();
 }
 
 // Буфер для формирования сообщения
 size_t takemsgbufferfree_low(uint8_t * * dest)
 {
+	ASSERT_IRQL_SYSTEM();
 	LOCK(& locklist8);
 	if (! IsListEmpty(& msgsfree8))
 	{
@@ -570,6 +573,7 @@ size_t takemsgbufferfree_low(uint8_t * * dest)
 // поместить сообщение в очередь к исполнению 
 void placesemsgbuffer_low(uint_fast8_t type, uint8_t * dest)
 {
+	ASSERT_IRQL_SYSTEM();
 	ASSERT(type != MSGT_EMPTY);
 	message_t * p = CONTAINING_RECORD(dest, message_t, data);
 	p->type = type;
