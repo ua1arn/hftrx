@@ -3427,6 +3427,8 @@ prog_ctrlreg(uint_fast8_t plane)
 }
 
 #elif CTLREGMODE_STORCH_V7
+/* TFT 4.3" "јист" с DSP и FPGA STM32H743IIT6 */
+/* TFT 4.3" "јист" с DSP и FPGA R7S721020VCFP */
 
 #define BOARD_NPLANES	1	/* в данной конфигурации не требуетс€ обновл€ть множество регистров со "сло€ми" */
 

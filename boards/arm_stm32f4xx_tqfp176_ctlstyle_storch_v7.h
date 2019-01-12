@@ -121,7 +121,7 @@
 
 	// --- вариации прошивки, специфические для разных частот
 
-	#define CTLREGMODE_STORCH_V7	1	/* TFT 4.3" "Воронёнок" с DSP и FPGA, SD-CARD, dual watch - mini RX */
+	#define CTLREGMODE_STORCH_V7	1	/* TFT 4.3" "Аист" с DSP и FPGA STM32H743IIT6 или R7S721020VCFP */
 
 	#define WITHPOWERTRIM		1	// Имеется управление мощностью
 	#define WITHPOWERTRIMMIN	10	// Нижний предел регулировки (показываетый на дисплее)
