@@ -274,6 +274,8 @@ uint_fast8_t board_rtc_chip_initialize(void)
 
 		//local_delay_ms(50);
 
+		// write enable (may be need???)
+		ds1305_writebuff(b0, sizeof b0 / sizeof b0 [0], DS1305REG_CONTROL);
 		// enable oscillator
 		ds1305_writebuff(b0, sizeof b0 / sizeof b0 [0], DS1305REG_CONTROL);
 
