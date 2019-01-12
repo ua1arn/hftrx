@@ -34,8 +34,8 @@ LTO = -flto
 
 # This product incorporates the ARM single-core Cortex-A9 MPCore, where the IP version is r3p0.
 MCU  = cortex-a9
-#CORE = -march=armv7-a -mfloat-abi=hard -mfpu=vfpv3-d16
-CORE = -march=armv7-a -mfloat-abi=hard -mfpu=neon -ftree-vectorize
+CORE = -march=armv7-a -mfloat-abi=hard -mfpu=vfpv3-d16
+#CORE = -march=armv7-a -mfloat-abi=hard -mfpu=neon -ftree-vectorize
 
 # List all default C defines here, like -D_DEBUG=1
 DDEFS = 
@@ -108,7 +108,7 @@ ADEFS   = $(DADEFS) $(UADEFS)
 OBJS    = $(ASRC:.s=.o) $(SRC:.c=.o)
 LIBS    = $(DLIBS) $(ULIBS)
 
-MCFLAGS = -mcpu=$(MCU) $(CORE) -fno-math-errno -funroll-loops -fgraphite-identity -ffunction-sections -fdata-sections -ffat-lto-objects
+MCFLAGS = $(CORE) -fno-math-errno -funroll-loops -fgraphite-identity -ffunction-sections -fdata-sections -ffat-lto-objects
 #MCFLAGS = -mcpu=$(MCU) $(CORE) -fno-math-errno
 #
 #ASFLAGS = $(MCFLAGS) $(OPT) $(LTO) -g -gdwarf-2 -Wa,-amhls=$(<:.s=.lst) $(ADEFS)
