@@ -4981,11 +4981,16 @@ static void display2_waterfall(
 {
 #if LCDMODE_S1D13781
 
+		const uint_fast32_t freq = hamradio_get_freq_a();	/* frequecy at midle of spectrum */
+		const int_fast32_t bw = dsp_get_samplerateuacin_rts96();
+		uint_fast16_t x, y;
+		const uint_fast16_t x0 = deltafreq2x(0, bw, ALLDX);
+		int_fast16_t hshift = 0;
+
 	#if 1
 		// следы спектра ("водопад")
 		// сдвигаем вниз, отрисовываем только верхнюю строку
-		uint_fast16_t x;
-		display_scroll_down(GRID2X(x0), GRID2Y(y0) + WFY0, ALLDX, WFDY, 1);
+		display_scroll_down(GRID2X(x0), GRID2Y(y0) + WFY0, ALLDX, WFDY, 1, hshift);
 		while (display_getreadystate() == 0)
 			;
 		x = 0;
@@ -4993,8 +4998,7 @@ static void display2_waterfall(
 	#elif 0
 		// следы спектра ("фонтан")
 		// сдвигаем вверх, отрисовываем только нижнюю строку
-		uint_fast16_t x;
-		display_scroll_up(GRID2X(x0), GRID2Y(y0) + WFY0, ALLDX, WFDY, 1);
+		display_scroll_up(GRID2X(x0), GRID2Y(y0) + WFY0, ALLDX, WFDY, 1, hshift);
 		while (display_getreadystate() == 0)
 			;
 		x = 0;
@@ -5004,7 +5008,6 @@ static void display2_waterfall(
 		// отрисовываем весь экран
 		while (display_getreadystate() == 0)
 			;
-		uint_fast16_t x, y;
 		for (y = 0; y < WFDY; ++ y)
 		{
 			// отрисовка горизонтальными линиями
@@ -5018,13 +5021,13 @@ static void display2_waterfall(
 
 #else /* */
 	// следы спектра ("водопад") на цветных дисплеях
-	PACKEDCOLOR565_T * const colorpip = getscratchpip();
 	(void) x0;
 	(void) y0;
 	(void) pv;
 
 	if (hamradio_get_tx() == 0)
 	{
+		PACKEDCOLOR565_T * const colorpip = getscratchpip();
 		const uint_fast32_t freq = hamradio_get_freq_a();	/* frequecy at midle of spectrum */
 		const int_fast32_t bw = dsp_get_samplerateuacin_rts96();
 		uint_fast16_t x, y;
