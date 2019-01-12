@@ -13,6 +13,8 @@ rbf2c.exe ..\fpga_q131\output_files\t1_v8.rbf ..\rbf\rbfimage_v8.h
 rbf2c.exe ..\fpga_q131\output_files\t1_v7renesas_2ch.rbf ..\rbf\rbfimage_v7renesas_2ch.h
 rbf2c.exe ..\fpga_q131\output_files\t1_v8renes_2ch.rbf ..\rbf\rbfimage_v8renesas_2ch.h
 rbf2c.exe ..\fpga_q131\output_files\t1_v8renes96_2ch.rbf ..\rbf\rbfimage_v8renesas96k_2ch.h
+rbf2c.exe ..\fpga_q131\output_files\t1_v8t_96k.rbf ..\rbf\rbfimage_v8t_96k
+rbf2c.exe ..\fpga_q131\output_files\t1_v8t_192k.rbf ..\rbf\rbfimage_v8t_192k
 rbf2c.exe ..\fpga_q131\output_files\t1_v9x_2ch.rbf ..\rbf\rbfimage_v9x_2ch.h
 
 pause
