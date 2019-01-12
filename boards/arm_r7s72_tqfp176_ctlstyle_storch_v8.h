@@ -61,7 +61,7 @@
 	#endif
 	// --- вариации прошивки, специфические дл€ разных плат
 
-	#define CTLREGMODE_RAVENDSP_V2	1	/* renesas */
+	#define CTLREGMODE_STORCH_V7	1	/* TFT 4.3" "јист" с DSP и FPGA STM32H743IIT6 или R7S721020VCFP */
 
 	#define WITHLCDBACKLIGHT	1	// »меетс€ управление подсветкой диспле€ 
 	#define WITHLCDBACKLIGHTMIN	0	// Ќижний предел регулировки (показываетый на дисплее)
