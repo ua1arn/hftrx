@@ -214,12 +214,6 @@ set_global_assignment -name QIP_FILE fir_20_2ch.qip
 set_global_assignment -name QIP_FILE cic40_ddc_1rx.qip
 set_global_assignment -name QIP_FILE cic_64_2iq.qip
 set_global_assignment -name QIP_FILE lpm_counter_mod6.qip
-set_global_assignment -name BSF_FILE nco18_v13.bsf
-set_global_assignment -name BSF_FILE mult16.bsf
-set_global_assignment -name BSF_FILE lpm_shiftreg_2b.bsf
-set_global_assignment -name BSF_FILE lpm_counter_ovf0.bsf
-set_global_assignment -name BSF_FILE ducmult1.bsf
-set_global_assignment -name BSF_FILE cic_duc2560_mux.bsf
 set_global_assignment -name BDF_FILE avalon_to_i2s.bdf
 set_global_assignment -name BDF_FILE LTC2208_input_fifo.bdf
 set_global_assignment -name BDF_FILE tc1_top_v3.bdf

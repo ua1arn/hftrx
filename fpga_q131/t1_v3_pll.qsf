@@ -199,12 +199,6 @@ set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to fpga_fir1_we_n -dis
 # end ENTITY(tc1_top_v3)
 # ----------------------
 set_global_assignment -name QIP_FILE lpm_counter_mod6.qip
-set_global_assignment -name BSF_FILE nco18_v13.bsf
-set_global_assignment -name BSF_FILE mult16.bsf
-set_global_assignment -name BSF_FILE lpm_shiftreg_2b.bsf
-set_global_assignment -name BSF_FILE lpm_counter_ovf0.bsf
-set_global_assignment -name BSF_FILE ducmult1.bsf
-set_global_assignment -name BSF_FILE cic_duc2560_mux.bsf
 set_global_assignment -name BDF_FILE avalon_to_i2s.bdf
 set_global_assignment -name BDF_FILE LTC2208_input_fifo.bdf
 set_global_assignment -name BDF_FILE i2smclk.bdf

@@ -235,7 +235,6 @@ set_instance_assignment -name CURRENT_STRENGTH_NEW "MINIMUM CURRENT" -to sai1_sd
 set_instance_assignment -name CURRENT_STRENGTH_NEW "MINIMUM CURRENT" -to dac_d*
 set_instance_assignment -name FAST_INPUT_REGISTER ON -to adc_data*
 set_global_assignment -name SDC_FILE tc1_top_v5_2ch_pll.sdc
-set_global_assignment -name BSF_FILE LTC2208_input.bsf
 set_global_assignment -name QIP_FILE lpm_shiftreg_8.qip
 set_global_assignment -name QIP_FILE lpm_counter_i2sclocls.qip
 set_global_assignment -name QIP_FILE lpm_shiftreg_32.qip
@@ -252,7 +251,6 @@ set_global_assignment -name BDF_FILE monoflop_ovf.bdf
 set_global_assignment -name BDF_FILE ddc_mux.bdf
 set_global_assignment -name BDF_FILE duc_mux.bdf
 set_global_assignment -name BDF_FILE i2s_rx_slave.bdf
-set_global_assignment -name BSF_FILE lpm_counter_ovf0.bsf
 set_global_assignment -name QIP_FILE lpm_shiftreg_2b.qip
 set_global_assignment -name QIP_FILE mult16.qip
 set_global_assignment -name QIP_FILE ducadd.qip

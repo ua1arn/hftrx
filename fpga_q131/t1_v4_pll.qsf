@@ -219,8 +219,6 @@ set_instance_assignment -name IO_MAXIMUM_TOGGLE_RATE "1 MHz" -to adc_shdn
 set_instance_assignment -name IO_MAXIMUM_TOGGLE_RATE "10 MHz" -to cpu_miso
 set_instance_assignment -name IO_MAXIMUM_TOGGLE_RATE "1 MHz" -to dac_sleep
 set_instance_assignment -name IO_MAXIMUM_TOGGLE_RATE "5 MHz" -to sai1_sd_b
-set_global_assignment -name BSF_FILE LTC2208_input_fifo.bsf
-set_global_assignment -name BSF_FILE duc_mux.bsf
 set_global_assignment -name BDF_FILE t1_1ch_rts.bdf
 set_global_assignment -name QIP_FILE dacout15.qip
 set_global_assignment -name QIP_FILE lpm_counter_mod6.qip
