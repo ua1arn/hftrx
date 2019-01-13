@@ -1,6 +1,6 @@
-fpga_q131\db
-fpga_q131\output_files
-fpga_q131\incremental_db
+fpga_q131/db
+fpga_q131/output_files
+fpga_q131/incremental_db
 atmega32a_8
 atmega644p_8
 atmega644p_10
