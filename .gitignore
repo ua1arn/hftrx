@@ -1,3 +1,4 @@
+fpga_q131/*.qws
 fpga_q131/db
 fpga_q131/output_files
 fpga_q131/incremental_db
