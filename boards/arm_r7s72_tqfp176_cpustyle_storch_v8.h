@@ -630,6 +630,11 @@
 #endif /* WITHDCDCFREQCTL */
 
 #if LCDMODE_LTDC
+
+	#define LS020_RESET_PORT_S(v) do {	R7S721_TARGET_PORT_S(7, v); } while (0)
+	#define LS020_RESET_PORT_C(v) do {	R7S721_TARGET_PORT_C(7, v); } while (0)
+	#define LS020_RST			(1u << 1)			// * P7_1 D6 NRESET
+
 	/* Table 34.9 Bit Allocation of RGB Signal Input for RGB565 Output */ 
 	#define HARDWARE_LTDC_INITIALIZE() do { \
 		/* Synchronisation signals */ \

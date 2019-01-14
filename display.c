@@ -1181,6 +1181,15 @@ void display_wrdata_end(void)
 void
 display_reset(void)
 {
+	board_lcd_reset(1); 	// Pull RST pin up
+	board_update();
+	local_delay_ms(1); // Delay 1ms
+	board_lcd_reset(0); 	// Pull RST pin down
+	board_update();
+	local_delay_ms(10); // Delay 10ms
+	board_lcd_reset(1); 	// Pull RST pin up
+	board_update();
+	local_delay_ms(50); // Delay 50 ms
 }
 /* вызывается при разрешённых прерываниях. */
 void display_initialize(void)
