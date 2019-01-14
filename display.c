@@ -570,6 +570,12 @@ void display_hardware_initialize(void)
 	#include "./fonts/S1D13781_font_half_LTDC.c"
 	#include "./fonts/S1D13781_font_big_LTDC.c"
 
+#elif DSTYLE_G_X800_Y480
+	// в знакогенераторе изображения символов "по горизонтали"
+	#include "./fonts/S1D13781_font_small_LTDC.c"
+	#include "./fonts/S1D13781_font_half_LTDC.c"
+	#include "./fonts/S1D13781_font_big_LTDC.c"
+
 #else /*  */
 	// в знакогенераторе изображения символов "по вертикалти"
 	//#error Undefined display layout
@@ -677,7 +683,7 @@ ltdc_vertical_pixN(
 	)
 {
 
-#if LCDMODE_LTDC_L24 || LCDMODE_LQ043T3DX02K
+#if LCDMODE_LTDC_L24 || LCDMODE_HORFILL
 
 	// TODO: для паттернов шире чем восемь бит, повторить нужное число раз.
 	ltdc_pixel(0, 0, v & 0x01);
@@ -727,7 +733,7 @@ smallfont_decode(uint_fast8_t c)
 	return c - ' ';
 }
 
-#if LCDMODE_LQ043T3DX02K
+#if LCDMODE_HORFILL
 // для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
 
 static void
@@ -793,7 +799,7 @@ static void ltdc_horizontal_put_char_half(char cc)
 	ltdc_second += width;
 }
 
-#else /* LCDMODE_LQ043T3DX02K */
+#else /* LCDMODE_HORFILL */
 
 // Вызов этой функции только внутри display_wrdata_begin() и 	display_wrdata_end();
 static void ltdc_vertical_put_char_small(char cc)
@@ -833,7 +839,7 @@ static void ltdc_vertical_put_char_half(char cc)
 		ltdc_vertical_pixN(p [i], 8);	// Выдать восемь цветных пикселей, младший бит - самый верхний в растре
 }
 
-#endif /* LCDMODE_LQ043T3DX02K */
+#endif /* LCDMODE_HORFILL */
 
 
 
@@ -1009,13 +1015,14 @@ void display_clear(void)
 
 void display_gotoxy(uint_fast8_t x, uint_fast8_t y)
 {
-#if LCDMODE_ILI8961 || LCDMODE_LQ043T3DX02K
+#if LCDMODE_HORFILL
 	ltdc_second = GRID2X(x);
 	ltdc_first = GRID2Y(y);
-#else
+#else /* LCDMODE_HORFILL */
 	ltdc_first = GRID2X(x);
 	ltdc_second = GRID2Y(y);
-#endif
+#endif /* LCDMODE_HORFILL */
+
 	//debug_printf_P(PSTR("display_gotoxy: CHAR_H=%d, CHAR_W=%d, x=%d, y=%d, ltdc_first=%d, ltdc_second=%d\n"), CHAR_H, CHAR_W, x, y, ltdc_first, ltdc_second);
 	ASSERT(ltdc_first < DIM_FIRST);
 	ASSERT(ltdc_second < DIM_SECOND);
@@ -1092,11 +1099,11 @@ void display_wrdata2_end(void)
 
 void display_put_char_small2(uint_fast8_t c, uint_fast8_t lowhalf)
 {
-#if LCDMODE_LQ043T3DX02K
+#if LCDMODE_HORFILL
 	ltdc_horizontal_put_char_small(c);
-#else /* LCDMODE_LQ043T3DX02K */
+#else /* LCDMODE_HORFILL */
 	ltdc_vertical_put_char_small(c);
-#endif /* LCDMODE_LQ043T3DX02K */
+#endif /* LCDMODE_HORFILL */
 }
 
 // полоса индикатора
@@ -1125,20 +1132,20 @@ void display_wrdatabig_begin(void)
 
 void display_put_char_big(uint_fast8_t c, uint_fast8_t lowhalf)
 {
-#if LCDMODE_LQ043T3DX02K
+#if LCDMODE_HORFILL
 	ltdc_horizontal_put_char_big(c);
-#else /* LCDMODE_LQ043T3DX02K */
+#else /* LCDMODE_HORFILL */
 	ltdc_vertical_put_char_big(c);
-#endif /* LCDMODE_LQ043T3DX02K */
+#endif /* LCDMODE_HORFILL */
 }
 
 void display_put_char_half(uint_fast8_t c, uint_fast8_t lowhalf)
 {
-#if LCDMODE_LQ043T3DX02K
+#if LCDMODE_HORFILL
 	ltdc_horizontal_put_char_half(c);
-#else /* LCDMODE_LQ043T3DX02K */
+#else /* LCDMODE_HORFILL */
 	ltdc_vertical_put_char_half(c);
-#endif /* LCDMODE_LQ043T3DX02K */
+#endif /* LCDMODE_HORFILL */
 }
 
 void display_wrdatabig_end(void)
@@ -1154,18 +1161,18 @@ void display_wrdata_begin(void)
 
 void display_put_char_small(uint_fast8_t c, uint_fast8_t lowhalf)
 {
-#if LCDMODE_LQ043T3DX02K
+#if LCDMODE_HORFILL
 	ltdc_horizontal_put_char_small(c);
-#else /* LCDMODE_LQ043T3DX02K */
+#else /* LCDMODE_HORFILL */
 	ltdc_vertical_put_char_small(c);
-#endif /* LCDMODE_LQ043T3DX02K */
+#endif /* LCDMODE_HORFILL */
 }
 
 void display_wrdata_end(void)
 {
 }
 
-#if LCDMODE_LQ043T3DX02K
+#if LCDMODE_LQ043T3DX02K || LCDMODE_AT070TN90
 
 // заглушки
 

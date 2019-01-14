@@ -52,8 +52,35 @@
 
 		VSYNCNEG = 1,			/* Negative polarity required for VSYNC signel */
 		HSYNCNEG = 1,			/* Negative polarity required for HSYNC signel */
-		DENEG = 1				/* DE polarity (ignored) */
+		DENEG = 1				/* DE polarity */
 	};
+#elif LCDMODE_AT070TN90
+
+	enum
+	{
+		WIDTH = 800,			/* LCD PIXEL WIDTH            */
+		HEIGHT = 480,			/* LCD PIXEL HEIGHT           */
+		/** 
+		  * @brief  RK043FN48H Timing  
+		  */     
+		HSYNC = 40,				/* Horizontal synchronization 1..40 */
+		HFP = 210,				/* Horizontal front porch  16..354   */
+
+		VSYNC = 20,				/* Vertical synchronization 1..20  */
+		VFP = 22,				/* Vertical front porch  7..147     */
+
+		/* Accumulated parameters for this display */
+		LEFTMARGIN = 46,		/* horizontal blanking */
+		TOPMARGIN = 23,			/* vertival blanking */
+
+		HFULL = LEFTMARGIN + WIDTH + HFP,	/* horisontal full period */
+		VFULL = TOPMARGIN + HEIGHT + VFP,	/* vertical full period */
+
+		VSYNCNEG = 1,			/* Negative polarity required for VSYNC signel */
+		HSYNCNEG = 1,			/* Negative polarity required for HSYNC signel */
+		DENEG = 0				/* DE polarity */
+	};
+
 #elif LCDMODE_ILI8961
 	// HHT270C-8961-6A6 (320*240)
 	enum

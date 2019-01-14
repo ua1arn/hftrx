@@ -89,7 +89,7 @@ typedef uint16_t PACKEDCOLOR565_T;
 
 	#define DEFAULT_LCD_CONTRAST	255
 
-#elif LCDMODE_S1D13781 || LCDMODE_LQ043T3DX02K
+#elif LCDMODE_S1D13781 || LCDMODE_LQ043T3DX02K || LCDMODE_AT070TN90
 
 	#include "s1d13781.h"
 
@@ -848,7 +848,7 @@ void display_1state(
 
 #if LCDMODE_LTDC
 
-	#if LCDMODE_ILI8961 || LCDMODE_LQ043T3DX02K
+	#if LCDMODE_ILI8961 || LCDMODE_LQ043T3DX02K || LCDMODE_AT070TN90
 		#define DIM_FIRST DIM_Y
 		#define DIM_SECOND DIM_X
 	#else
@@ -858,21 +858,12 @@ void display_1state(
 
 	typedef PACKEDCOLOR_T FRAMEBUFF_T [DIM_FIRST][DIM_SECOND];
 
-	#if CPUSTYLE_R7S721
-		//#define SDRAM_BANK_ADDR     ((uintptr_t) 0x20200000)
-	#elif STM32H743xx
-		//#define SDRAM_BANK_ADDR     ((uintptr_t) D1_AXISRAM_BASE)
-	#elif CPUSTYLE_STM32F4XX
-		//#define SDRAM_BANK_ADDR     ((uintptr_t) 0xD0000000)
-	#endif
-
 	#if defined (SDRAM_BANK_ADDR) && LCDMODE_LTDCSDRAMBUFF && LCDMODE_LTDC
 		#define framebuff (* (FRAMEBUFF_T *) SDRAM_BANK_ADDR)
 	#else /* defined (SDRAM_BANK_ADDR) && LCDMODE_LTDCSDRAMBUFF && LCDMODE_LTDC */
 		#define framebuff (framebuff0)
 		extern FRAMEBUFF_T framebuff0;	//L8 (8-bit Luminance or CLUT)
 	#endif /* defined (SDRAM_BANK_ADDR) && LCDMODE_LTDCSDRAMBUFF && LCDMODE_LTDC */
-
 
 #endif /* LCDMODE_LTDC */
 
