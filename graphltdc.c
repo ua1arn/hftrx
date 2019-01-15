@@ -52,7 +52,8 @@
 
 		VSYNCNEG = 1,			/* Negative polarity required for VSYNC signel */
 		HSYNCNEG = 1,			/* Negative polarity required for HSYNC signel */
-		DENEG = 1				/* DE polarity */
+		DENEG = 1,				/* DE polarity */
+		BOARD_DEMODE = 0		/* 0: static signal, 1: DE controlled */
 	};
 #elif LCDMODE_AT070TN90
 
@@ -78,7 +79,8 @@
 
 		VSYNCNEG = 1,			/* Negative polarity required for VSYNC signel */
 		HSYNCNEG = 1,			/* Negative polarity required for HSYNC signel */
-		DENEG = 0				/* DE polarity */
+		DENEG = 0,				/* DE polarity */
+		BOARD_DEMODE = 1		/* 0: static signal, 1: DE controlled */
 	};
 
 #elif LCDMODE_ILI8961
@@ -108,7 +110,8 @@
 
 		VSYNCNEG = 1,			/* Negative polarity required for VSYNC signel */
 		HSYNCNEG = 1,			/* Negative polarity required for HSYNC signel */
-		DENEG = 1				/* DE polarity */
+		DENEG = 1,				/* DE polarity */
+		BOARD_DEMODE = 0		/* 0: static signal, 1: DE controlled */
 	};
 #elif LCDMODE_ILI9341
 	// SF-TC240T-9370-T (320*240)
@@ -138,7 +141,8 @@
 
 		VSYNCNEG = 1,			/* Negative polarity required for VSYNC signel */
 		HSYNCNEG = 1,			/* Negative polarity required for HSYNC signel */
-		DENEG = 1				/* DE polarity */
+		DENEG = 1,				/* DE polarity */
+		BOARD_DEMODE = 0		/* 0: static signal, 1: DE controlled */
 	};
 #else
 	#error Unsupported LCDMODE_xxx
@@ -1202,11 +1206,11 @@ arm_hardware_ltdc_initialize(void)
 
 
 	/* Configure the LCD Control pins */
-	HARDWARE_LTDC_INITIALIZE();	// подключение к выводам процессора сигналов периферийного контроллера
+	HARDWARE_LTDC_INITIALIZE(BOARD_DEMODE);	// подключение к выводам процессора сигналов периферийного контроллера
 
-	HARDWARE_LTDC_SET_DISP(0);
+	HARDWARE_LTDC_SET_DISP(BOARD_DEMODE, 0);
 	local_delay_ms(150);
-	HARDWARE_LTDC_SET_DISP(1);
+	HARDWARE_LTDC_SET_DISP(BOARD_DEMODE, 1);
 
 	debug_printf_P(PSTR("arm_hardware_ltdc_initialize done\n"));
 }
@@ -1744,7 +1748,7 @@ arm_hardware_ltdc_initialize(void)
 #endif /* CPUSTYLE_STM32H7XX */
 
 	/* Configure the LCD Control pins */
-	HARDWARE_LTDC_INITIALIZE();	// подключение к выводам процессора сигналов периферийного контроллера
+	HARDWARE_LTDC_INITIALIZE(BOARD_DEMODE);	// подключение к выводам процессора сигналов периферийного контроллера
 
 	/* LTDC Initialization -------------------------------------------------------*/
 	LTDC_InitTypeDef LTDC_InitStruct;
@@ -1836,9 +1840,9 @@ arm_hardware_ltdc_initialize(void)
 	LTDC->SRCR = LTDC_SRCR_IMR;	/* Immediately Reload. */
 
 	// LQ043T3DX02K rules: While УVSYNCФ is УLowФ, donТt change УDISPФ signal УLowФ to УHighФ. 
-	HARDWARE_LTDC_SET_DISP(0);
+	HARDWARE_LTDC_SET_DISP(BOARD_DEMODE, 0);
 	local_delay_ms(150);
-	HARDWARE_LTDC_SET_DISP(1);
+	HARDWARE_LTDC_SET_DISP(BOARD_DEMODE, 1);
 
 	debug_printf_P(PSTR("arm_hardware_ltdc_initialize done\n"));
 }

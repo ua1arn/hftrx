@@ -554,7 +554,8 @@ enum
 			GPIO_AF_LTDC = 14,  /* LCD-TFT Alternate Function mapping */
 			GPIO_AF_LTDC9 = 9  /* LCD-TFT Alternate Function mapping */
 		};
-		#define HARDWARE_LTDC_INITIALIZE() do { \
+		/* demode values: 0: static signal, 1: DE controlled */
+		#define HARDWARE_LTDC_INITIALIZE(demode) do { \
 				arm_hardware_pioa_altfn20((1U << 3) | (1U << 4) | (1U << 6) | (1U << 11) | (1U << 12), GPIO_AF_LTDC); \
 				arm_hardware_piob_altfn20((1U << 8) | (1U << 9) | (1U << 10) | (1U << 11), GPIO_AF_LTDC); \
 				arm_hardware_pioc_altfn20((1U << 6) | (1U << 7) | (1U << 12), GPIO_AF_LTDC); \
@@ -565,8 +566,10 @@ enum
 				arm_hardware_piog_altfn20((1U << 10) | (1U << 12), GPIO_AF_LTDC9); \
 			} while (0)
 		/* управление состоянием сигнала DISP панели */
-		#define HARDWARE_LTDC_SET_DISP(state) do { \
-		} while (0)
+		/* demode values: 0: static signal, 1: DE controlled */
+		#define HARDWARE_LTDC_SET_DISP(demode, state) do { \
+			if (demode != 0) break; \
+			} while (0)
 
 	#endif /* LCDMODE_LTDC */
 

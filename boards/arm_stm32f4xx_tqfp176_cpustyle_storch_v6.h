@@ -688,7 +688,8 @@
 		GPIO_AF_LTDC = 14,  /* LCD-TFT Alternate Function mapping */
 		GPIO_AF_LTDC9 = 9  /* LCD-TFT Alternate Function mapping */
 	};
-	#define HARDWARE_LTDC_INITIALIZE() do { \
+	/* demode values: 0: static signal, 1: DE controlled */
+	#define HARDWARE_LTDC_INITIALIZE(demode) do { \
 		/* Synchronisation signals */ \
 		arm_hardware_pioi_altfn20((1U << 9), GPIO_AF_LTDC);		/* VSYNC */ \
 		arm_hardware_pioi_altfn20((1U << 10), GPIO_AF_LTDC);	/* HSYNC */ \
@@ -720,9 +721,11 @@
 	} while (0)
 
 	/* управление состоянием сигнала DISP панели */
-	#define HARDWARE_LTDC_SET_DISP(state) do { \
+	/* demode values: 0: static signal, 1: DE controlled */
+	#define HARDWARE_LTDC_SET_DISP(demode, state) do { \
 		const uint32_t VSYNC = (1U << 9); \
 		const uint32_t mask = (1U << 13); \
+		if (demode != 0) break; \
 		while ((GPIOI->IDR & VSYNC) != 0) ; /* дождаться 0 */ \
 		while ((GPIOI->IDR & VSYNC) == 0) ; /* дождаться 1 */ \
 		arm_hardware_pioe_outputs(mask, ((state) != 0) * mask);	/* DE=DISP, pin 31 - можно менять только при VSYNC=1 */ \

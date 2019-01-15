@@ -635,14 +635,15 @@
 	#define LS020_RESET_PORT_C(v) do {	R7S721_TARGET_PORT_C(7, v); } while (0)
 	#define LS020_RST			(1u << 1)			// * P7_1 D6 NRESET
 
+	/* demode values: 0: static signal, 1: DE controlled */
 	/* Table 34.9 Bit Allocation of RGB Signal Input for RGB565 Output */ 
-	#define HARDWARE_LTDC_INITIALIZE() do { \
+	#define HARDWARE_LTDC_INITIALIZE(demode) do { \
 		/* Synchronisation signals */ \
 		arm_hardware_pio7_alternative((1U << 4), R7S721_PIOALT_6);	/* P7_4 CLK LCD0_CLK */ \
 		arm_hardware_pio7_alternative((1U << 5), R7S721_PIOALT_6);	/* P7_5 VSYNC */ \
 		arm_hardware_pio7_alternative((1U << 6), R7S721_PIOALT_6);	/* P7_6 HSYNC */ \
-		/* arm_hardware_pio7_alternative((1U << 7), R7S721_PIOALT_6); */	/* P7_7 DE */ \
-		arm_hardware_pio7_outputs((1U << 7), 0 * (1U << 7));	/* P7_7 DE=0 */ \
+		arm_hardware_pio7_alternative((demode != 0) * (1U << 7), R7S721_PIOALT_6); 	/* P7_7 DE */ \
+		arm_hardware_pio7_outputs((demode == 0) * (1U << 7), 0 * (1U << 7));	/* P7_7 DE=0 */ \
 		/* BLUE */ \
 		arm_hardware_pio3_alternative((1U << 0), R7S721_PIOALT_3);	/* P3_0 LCD0_DATA0 B3 */ \
 		arm_hardware_pio3_alternative((1U << 1), R7S721_PIOALT_3);	/* P3_1 LCD0_DATA1 B4 */ \
@@ -665,7 +666,9 @@
 	} while (0)
 
 	/* управление состоянием сигнала DISP панели */
-	#define HARDWARE_LTDC_SET_DISP(state) do { \
+	/* demode values: 0: static signal, 1: DE controlled */
+	#define HARDWARE_LTDC_SET_DISP(demode, state) do { \
+		if (demode != 0) break; \
 		const uint32_t mask = (1U << 7); /* P7_7 */ \
 		arm_hardware_pio7_outputs(mask, (state != 0) * mask);	/* P7_7 DE=state */ \
 	} while (0)

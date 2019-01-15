@@ -8,6 +8,7 @@
 //
 
 #include "hardware.h"
+#include "board.h"
 #include "spifuncs.h"	// hardware_spi_master_send_frame
 
 #include "display.h"
