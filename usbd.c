@@ -14868,6 +14868,8 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
 		CPG.STBCR7 &= ~ CPG_STBCR7_MSTP71;	// Module Stop 71 0: Channel 0 of the USB 2.0 host/function module runs.
 		(void) CPG.STBCR7;			/* Dummy read */
 
+		HARDWARE_USB0_INITIALIZE();
+
 	}
 	else if (hpcd->Instance == & USB201)
 	{
@@ -14880,6 +14882,8 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
 		CPG.STBCR7 &= ~ CPG_STBCR7_MSTP70;	// Module Stop 70 0: Channel 1 of the USB 2.0 host/function module runs.
 		CPG.STBCR7 &= ~ CPG_STBCR7_MSTP71;	// Module Stop 71 0: Channel 0 of the USB 2.0 host/function module runs.
 		(void) CPG.STBCR7;			/* Dummy read */
+
+		HARDWARE_USB1_INITIALIZE();
 	}
 
 	hpcd->Instance->SUSPMODE &= ~ USB_SUSPMODE_SUSPM;	// SUSPM 0: The clock supplied to this module is stopped.

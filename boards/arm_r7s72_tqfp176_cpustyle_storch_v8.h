@@ -7,7 +7,7 @@
 //
 
 // Трансивер с DSP обработкой "Storch" на процессоре Renesas R7S721020VCFP с кодеком NAU8822L и FPGA EP4CE22E22I7N
-// Rmainunit_v7cm.pcb
+// rmainunit_v5km2.pcb rmainunit_v5km3
 
 #ifndef ARM_R7S72_TQFP176_CPUSTYLE_STORCH_V8_H_INCLUDED
 #define ARM_R7S72_TQFP176_CPUSTYLE_STORCH_V8_H_INCLUDED 1
@@ -687,6 +687,14 @@
 	#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры 
 #endif
 #endif
+
+#define HARDWARE_USB0_INITIALIZE() do { \
+		arm_hardware_pio5_outputs((1U << 2), (1U << 2));	/* P5_2 ~VBUS_ON */ \
+	} while (0)
+
+#define HARDWARE_USB1_INITIALIZE() do { \
+	} while (0)
+
 	/* макроопределение, которое должно включить в себя все инициализации */
 	#define	HARDWARE_INITIALIZE() do { \
 		HARDWARE_SIDETONE_INITIALIZE(); \
@@ -695,6 +703,8 @@
 		HARDWARE_DCDC_INITIALIZE(); \
 		HARDWARE_BL_INITIALIZE(); \
 		TUNE_INITIALIZE(); \
+		HARDWARE_USB0_INITIALIZE(); \
+		HARDWARE_USB1_INITIALIZE(); \
 		} while (0)
 
 #endif /* ARM_R7S72_TQFP176_CPUSTYLE_STORCH_V8_H_INCLUDED */
