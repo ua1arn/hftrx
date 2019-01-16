@@ -4958,7 +4958,7 @@ static void display2_spectrum(
 
 	if (hamradio_get_tx() == 0)
 	{
-		const int_fast32_t bw = dsp_get_samplerateuacin_rts96();
+		const int_fast32_t bw = dsp_get_samplerateuacin_rts();
 		uint_fast16_t xleft = deltafreq2x(hamradio_getleft_bp(0), bw, ALLDX);	// левый край шторуи
 		uint_fast16_t xright = deltafreq2x(hamradio_getright_bp(0), bw, ALLDX);	// правый край шторки
 		uint_fast16_t x;
@@ -5036,7 +5036,7 @@ static void display2_spectrum(
 	// построения изображения по bitmap с раскрашиванием
 	if (hamradio_get_tx() == 0)
 	{
-		const int_fast32_t bw = dsp_get_samplerateuacin_rts96();
+		const int_fast32_t bw = dsp_get_samplerateuacin_rts();
 		uint_fast16_t xleft = deltafreq2x(hamradio_getleft_bp(0), bw, ALLDX);	// левый край шторуи
 		uint_fast16_t xright = deltafreq2x(hamradio_getright_bp(0), bw, ALLDX);	// правый край шторки
 
@@ -5182,7 +5182,7 @@ static void display2_waterfall(
 #if LCDMODE_S1D13781
 
 		const uint_fast32_t freq = hamradio_get_freq_a();	/* frequecy at midle of spectrum */
-		const int_fast32_t bw = dsp_get_samplerateuacin_rts96();
+		const int_fast32_t bw = dsp_get_samplerateuacin_rts();
 		uint_fast16_t x, y;
 		const uint_fast16_t x0 = deltafreq2x(0, bw, ALLDX);
 		int_fast16_t hshift = 0;
@@ -5229,7 +5229,7 @@ static void display2_waterfall(
 	{
 		PACKEDCOLOR565_T * const colorpip = getscratchpip();
 		const uint_fast32_t freq = hamradio_get_freq_a();	/* frequecy at midle of spectrum */
-		const int_fast32_t bw = dsp_get_samplerateuacin_rts96();
+		const int_fast32_t bw = dsp_get_samplerateuacin_rts();
 		uint_fast16_t x, y;
 		const uint_fast16_t x0 = deltafreq2x(0, bw, ALLDX);
 
@@ -5251,7 +5251,7 @@ static void display2_waterfall(
 			{
 				// нужно сохрянять часть старого изображения
 				// в строке wfrow - новое
-				wflshiftright(deltafreq2x(delta, bw, ALLDX) - x0);
+				wflshiftright(x0 - deltafreq2x(0 - delta, bw, ALLDX));
 			}
 			else
 			{

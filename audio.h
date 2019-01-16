@@ -500,7 +500,8 @@ int_fast32_t dsp_get_samplerate100(void);	/* Получить значение частоты выборок в
 int_fast32_t dsp_get_samplerateuacin_audio48(void);		// UAC IN samplerate
 int_fast32_t dsp_get_samplerateuacin_rts96(void);		// UAC IN samplerate
 int_fast32_t dsp_get_samplerateuacin_rts192(void);		// UAC IN samplerate
-int_fast32_t dsp_get_samplerateuacout(void);	// UAC OUT samplerate
+int_fast32_t dsp_get_samplerateuacin_rts(void);			// RTS samplerate
+int_fast32_t dsp_get_samplerateuacout(void);			// UAC OUT samplerate
 
 uint_fast8_t dsp_getsmeter(uint_fast8_t * tracemax, uint_fast8_t lower, uint_fast8_t upper, uint_fast8_t clean);	/* получить значение от АЦП s-метра */
 uint_fast8_t dsp_getvox(uint_fast8_t fullscale);	/* получить значение от детектора VOX */
