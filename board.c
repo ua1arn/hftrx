@@ -137,6 +137,8 @@ static uint_fast8_t		glob_attvalue;	// RF signal gen attenuator value
 
 int gettxstate(void) { return glob_tx; }
 
+static void prog_rfadc_update(void);
+
 /**********************/
 //#if defined(PLL1_TYPE) && (LO1MODE_DIRECT == 0)
 //	#define PLLX_TYPE PLL1_TYPE
@@ -2607,7 +2609,7 @@ prog_rxctrlreg(uint_fast8_t plane)
 {
 	prog_fpga_ctrlreg(targetfpga1);	// FPGA control register
 
-	// rågisters chain control register
+	// registers chain control register
 	{
 		//Current Output at Full Power A1 = 1, A0 = 1, VO = 0 ±500 ±380 ±350 ±320 mA min A
 		//Current Output at Power Cutback A1 = 1, A0 = 0, VO = 0 ±450 ±350 ±320 ±300 mA min A
@@ -2691,7 +2693,7 @@ prog_rxctrlreg(uint_fast8_t plane)
 {
 	prog_fpga_ctrlreg(targetfpga1);	// FPGA control register
 
-	// rågisters chain control register
+	// registers chain control register
 	{
 		const uint_fast8_t txgated = glob_tx && glob_txgate;
 		const uint_fast8_t lcdblcode = (glob_bglight - WITHLCDBACKLIGHTMIN);
@@ -2815,7 +2817,7 @@ prog_rxctrlreg(uint_fast8_t plane)
 	prog_atuctlreg(targetatu1);		// Tuner control regiser
 #endif /* WITHAUTOTUNEROWNSPI && WITHAUTOTUNER */
 
-	// rågisters chain control register
+	// registers chain control register
 	{
 		const uint_fast8_t lcdblcode = (glob_bglight - WITHLCDBACKLIGHTMIN);
 		//Current Output at Full Power A1 = 1, A0 = 1, VO = 0 ±500 ±380 ±350 ±320 mA min A
@@ -2914,7 +2916,7 @@ prog_ctrlreg(uint_fast8_t plane)
 {
 	prog_fpga_ctrlreg(targetfpga1);	// FPGA control register
 
-	// rågisters chain control register
+	// registers chain control register
 	{
 		const uint_fast8_t lcdblcode = (glob_bglight - WITHLCDBACKLIGHTMIN);
 		//Current Output at Full Power A1 = 1, A0 = 1, VO = 0 ±500 ±380 ±350 ±320 mA min A
@@ -3001,7 +3003,7 @@ prog_ctrlreg(uint_fast8_t plane)
 {
 	prog_fpga_ctrlreg(targetfpga1);	// FPGA control register
 
-	// rågisters chain control register
+	// registers chain control register
 	{
 		const uint_fast8_t lcdblcode = (glob_bglight - WITHLCDBACKLIGHTMIN);
 		//Current Output at Full Power A1 = 1, A0 = 1, VO = 0 ±500 ±380 ±350 ±320 mA min A
@@ -3089,7 +3091,7 @@ prog_ctrlreg(uint_fast8_t plane)
 {
 	prog_fpga_ctrlreg(targetfpga1);	// FPGA control register
 
-	// rågisters chain control register
+	// registers chain control register
 	{
 		const uint_fast8_t lcdblcode = (glob_bglight - WITHLCDBACKLIGHTMIN);
 		//Current Output at Full Power A1 = 1, A0 = 1, VO = 0 ±500 ±380 ±350 ±320 mA min A
@@ -3175,7 +3177,7 @@ prog_ctrlreg(uint_fast8_t plane)
 {
 	prog_fpga_ctrlreg(targetfpga1);	// FPGA control register
 
-	// rågisters chain control register
+	// registers chain control register
 	{
 		const uint_fast8_t lcdblcode = (glob_bglight - WITHLCDBACKLIGHTMIN);
 		//Current Output at Full Power A1 = 1, A0 = 1, VO = 0 ±500 ±380 ±350 ±320 mA min A
@@ -3265,7 +3267,7 @@ prog_ctrlreg(uint_fast8_t plane)
 {
 	prog_fpga_ctrlreg(targetfpga1);	// FPGA control register
 
-	// rågisters chain control register
+	// registers chain control register
 	{
 		const uint_fast8_t lcdblcode = (glob_bglight - WITHLCDBACKLIGHTMIN);
 		//Current Output at Full Power A1 = 1, A0 = 1, VO = 0 ±500 ±380 ±350 ±320 mA min A
@@ -3351,7 +3353,7 @@ prog_ctrlreg(uint_fast8_t plane)
 {
 	prog_fpga_ctrlreg(targetfpga1);	// FPGA control register
 
-	// rågisters chain control register
+	// registers chain control register
 	{
 		const uint_fast8_t lcdblcode = (glob_bglight - WITHLCDBACKLIGHTMIN);
 		//Current Output at Full Power A1 = 1, A0 = 1, VO = 0 ±500 ±380 ±350 ±320 mA min A
@@ -3438,8 +3440,9 @@ static void
 prog_ctrlreg(uint_fast8_t plane)
 {
 	prog_fpga_ctrlreg(targetfpga1);	// FPGA control register
+	prog_rfadc_update();			// AD9246 vref divider update 
 
-	// rågisters chain control register
+	// registers chain control register
 	{
 		const uint_fast8_t lcdblcode = (glob_bglight - WITHLCDBACKLIGHTMIN);
 		//Current Output at Full Power A1 = 1, A0 = 1, VO = 0 ±500 ±380 ±350 ±320 mA min A
@@ -3548,7 +3551,7 @@ prog_ctrlreg(uint_fast8_t plane)
 {
 	prog_fpga_ctrlreg(targetfpga1);	// FPGA control register
 
-	// rågisters chain control register
+	// registers chain control register
 	{
 		const uint_fast8_t lcdblcode = (glob_bglight - WITHLCDBACKLIGHTMIN);
 		const spitarget_t target = targetctl1;
@@ -3586,7 +3589,7 @@ prog_ctrlreg(uint_fast8_t plane)
 {
 	prog_fpga_ctrlreg(targetfpga1);	// FPGA control register
 
-	// rågisters chain control register
+	// registers chain control register
 	{
 		const uint_fast8_t lcdblcode = (glob_bglight - WITHLCDBACKLIGHTMIN);
 		const spitarget_t target = targetctl1;
@@ -3637,7 +3640,7 @@ prog_ctrlreg(uint_fast8_t plane)
 {
 	prog_fpga_ctrlreg(targetfpga1);	// FPGA control register
 
-	// rågisters chain control register
+	// registers chain control register
 	{
 		uint_fast8_t xvr = glob_bandf >= 11;
 		uint_fast16_t xvtr_bandmask = (1U << 4);	// See R820T_IFFREQ
@@ -3681,7 +3684,7 @@ prog_ctrlreg(uint_fast8_t plane)
 {
 	prog_fpga_ctrlreg(targetfpga1);	// FPGA control register
 
-	// rågisters chain control register
+	// registers chain control register
 	{
 		enum { STARTNUX = 14 };
 		enum { RF1, RF2, RF3, RF4, RF5, RF6 };
@@ -3741,7 +3744,7 @@ prog_ctrlreg(uint_fast8_t plane)
 {
 	prog_fpga_ctrlreg(targetfpga1);	// FPGA control register
 
-	// rågisters chain control register
+	// registers chain control register
 	{
 		const spitarget_t target = targetctl1;
 
@@ -3791,7 +3794,7 @@ prog_ctrlreg(uint_fast8_t plane)
 {
 	prog_fpga_ctrlreg(targetfpga1);	// FPGA control register
 
-	// rågisters chain control register
+	// registers chain control register
 	{
 		const uint_fast8_t lcdblcode = (glob_bglight - WITHLCDBACKLIGHTMIN);
 		//Current Output at Full Power A1 = 1, A0 = 1, VO = 0 ±500 ±380 ±350 ±320 mA min A
@@ -3875,7 +3878,7 @@ prog_ctrlreg(uint_fast8_t plane)
 {
 	prog_fpga_ctrlreg(targetfpga1);	// FPGA control register
 
-	// rågisters chain control register
+	// registers chain control register
 	{
 		const uint_fast8_t lcdblcode = (glob_bglight - WITHLCDBACKLIGHTMIN);
 		//Current Output at Full Power A1 = 1, A0 = 1, VO = 0 ±500 ±380 ±350 ±320 mA min A
@@ -7029,10 +7032,15 @@ static void ad9246_initialize(void)
 	ad9246_write(0x09, 0x00);	// Duty cycle stabilizer off
 	//ad9246_write(0x0D, 0x01);	// test_io: midscale short
 
-	ad9246_write(0x18, 0x00);	// VREF: VREF = 1.25 V
-	//ad9246_write(0x18, 0x40);	// VREF: VREF = 1.50 V
-	//ad9246_write(0x18, 0x80);	// VREF: VREF = 1.75 V
-	//ad9246_write(0x18, 0xC0);	// VREF: VREF = 2.00 V
+	// TODO: move to update procs
+	if (glob_preamp)
+		ad9246_write(0x18, 0x00);	// VREF: VREF = 1.25 V
+	else
+	{
+		//ad9246_write(0x18, 0x40);	// VREF: VREF = 1.50 V
+		//ad9246_write(0x18, 0x80);	// VREF: VREF = 1.75 V
+		ad9246_write(0x18, 0xC0);	// VREF: VREF = 2.00 V
+	}
 
 	ad9246_write(0x14, 0x01);	// output_mode: twos complement
 
@@ -7041,7 +7049,7 @@ static void ad9246_initialize(void)
 }
 #endif /* ADC1_TYPE == ADC_TYPE_AD9246 */
 
-#if defined(ADC1_TYPE)
+//#if defined(ADC1_TYPE)
 static void prog_rfadc_initialize(void)
 {
 	#if ADC1_TYPE == ADC_TYPE_AD9246
@@ -7050,7 +7058,23 @@ static void prog_rfadc_initialize(void)
 
 
 }
-#endif /* defined(ADC1_TYPE) */
+
+static void prog_rfadc_update(void)
+{
+	#if ADC1_TYPE == ADC_TYPE_AD9246
+	if (glob_preamp)
+		ad9246_write(0x18, 0x00);	// VREF: VREF = 1.25 V
+	else
+	{
+		//ad9246_write(0x18, 0x40);	// VREF: VREF = 1.50 V
+		//ad9246_write(0x18, 0x80);	// VREF: VREF = 1.75 V
+		ad9246_write(0x18, 0xC0);	// VREF: VREF = 2.00 V
+	}
+	#endif /* ADC1_TYPE == ADC_TYPE_AD9246 */
+
+
+}
+//#endif /* defined(ADC1_TYPE) */
 
 
 void board_reset(void)
