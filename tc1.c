@@ -178,6 +178,12 @@ enum
 	CAT_ZZ_INDEX,		// zzanswer()
 #endif /* CTLSTYLE_V1D || CTLSTYLE_OLEG4Z_V1 */
 #if WITHIF4DSP
+#if ! WITHPOTIFGAIN
+	CAT_RG_INDEX,		// rganswer()
+#endif /* ! WITHPOTIFGAIN */
+#if ! WITHPOTAFGAIN
+	CAT_AG_INDEX,		// aganswer()
+#endif /* ! WITHPOTAFGAIN */
 	CAT_SQ_INDEX,		// sqanswer()
 #endif /* WITHIF4DSP */
 	CAT_BADCOMMAND_INDEX,		// badcommandanswer()
@@ -9884,6 +9890,42 @@ static void zzanswer(uint_fast8_t arg)
 
 #if WITHIF4DSP
 
+#if ! WITHPOTAFGAIN
+static void aganswer(uint_fast8_t arg)
+{
+	// AF gain
+	static const FLASHMEM char fmt_2 [] =
+		"AG"			// 2 characters - status information code
+		"%1d"			// P1 always 0
+		"%03d"			// P2 0..255 Squelch level
+		";";				// 1 char - line terminator
+
+	// answer mode
+	const uint_fast8_t len = local_snprintf_P(cat_ask_buffer, CAT_ASKBUFF_SIZE, fmt_2,
+		(int) arg,
+		(int) afgain1
+		);
+	cat_answer(len);
+}
+#endif /* ! WITHPOTAFGAIN */
+
+#if ! WITHPOTIFGAIN
+static void rganswer(uint_fast8_t arg)
+{
+	// RF (IF) gain
+	static const FLASHMEM char fmt_1 [] =
+		"RG"			// 2 characters - status information code
+		"%03d"			// P1 0..255 RF Gain status
+		";";				// 1 char - line terminator
+
+	// answer mode
+	const uint_fast8_t len = local_snprintf_P(cat_ask_buffer, CAT_ASKBUFF_SIZE, fmt_1,
+		(int) rfgain1
+		);
+	cat_answer(len);
+}
+#endif /* ! WITHPOTIFGAIN */
+
 static void sqanswer(uint_fast8_t arg)
 {
 	static const FLASHMEM char fmt_2 [] =
@@ -10408,6 +10450,12 @@ static canapfn catanswers [CAT_MAX_INDEX] =
 	zzanswer,
 #endif /* CTLSTYLE_V1D || CTLSTYLE_OLEG4Z_V1 */
 #if WITHIF4DSP
+#if ! WITHPOTIFGAIN
+	rganswer,
+#endif /* ! WITHPOTIFGAIN */
+#if ! WITHPOTAFGAIN
+	aganswer,
+#endif /* ! WITHPOTAFGAIN */
 	sqanswer,
 #endif /* CTLSTYLE_V1D || CTLSTYLE_OLEG4Z_V1 */
 	badcommandanswer,
@@ -10748,6 +10796,61 @@ processcatmsg(
 			cat_answer_request(CAT_BADCOMMAND_INDEX);
 		}
 	}
+#if ! WITHPOTAFGAIN
+	else if (match2('A', 'G'))
+	{
+		// AF gain level set/report
+		if (cathasparam != 0)
+		{
+			if (catpcount == 4)
+			{
+				//const uint_fast32_t p1 = vfy32up(catscanint(catp + 0, 1), 0, 0, 0);
+				const uint_fast32_t p2 = vfy32up(catscanint(catp + 1, 3), BOARD_AFGAIN_MIN, BOARD_AFGAIN_MAX, BOARD_AFGAIN_MAX);
+				if (afgain1 != p2)
+				{
+					afgain1 = p2;
+					updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
+					rc = 1;
+				}
+			}
+			else if (catpcount == 1)
+			{
+				const uint_fast32_t p1 = vfy32up(catscanint(catp + 0, 1), 0, 0, 0);
+				cat_answerparam_map [CAT_AG_INDEX] = p1;
+				cat_answer_request(CAT_AG_INDEX);	// aganswer
+				//rc = 1;
+			}
+			else
+			{
+				cat_answer_request(CAT_BADCOMMAND_INDEX);
+			}
+		}
+		else
+		{
+			cat_answer_request(CAT_BADCOMMAND_INDEX);
+		}
+	}
+#endif /* ! WITHPOTAFGAIN */
+#if ! WITHPOTIFGAIN
+	else if (match2('R', 'G'))
+	{
+		// RF gain level set/report
+		if (cathasparam != 0)
+		{
+			const uint_fast32_t p2 = vfy32up(catparam, BOARD_IFGAIN_MIN, BOARD_IFGAIN_MAX, BOARD_IFGAIN_MAX);
+			if (rfgain1 != p2)
+			{
+				rfgain1 = p2;
+				updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
+				rc = 1;
+			}
+		}
+		else
+		{
+			cat_answer_request(CAT_RG_INDEX);	// rganswer
+		}
+	}
+#endif /* ! WITHPOTIFGAIN */
 #endif /* WITHIF4DSP */
 	else if (match2('R', 'A'))
 	{

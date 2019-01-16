@@ -81,12 +81,12 @@ enum
 	#define	BOARD_IFGAIN_MAX	255		/* код управления усилением ВЧ тракта */
 #else /* WITHPOTIFGAIN */
 	#define	BOARD_IFGAIN_MIN	0		/* код управления усилением ВЧ тракта */
-	#define	BOARD_IFGAIN_MAX	100		/* код управления усилением ВЧ тракта */
+	#define	BOARD_IFGAIN_MAX	255		/* код управления усилением ВЧ тракта */
 #endif /* WITHPOTIFGAIN */
 
 #if ! WITHPOTAFGAIN
 	#define	BOARD_AFGAIN_MIN	0		/* код управления усилением НЧ тракта */
-	#define	BOARD_AFGAIN_MAX	100		/* код управления усилением НЧ тракта */
+	#define	BOARD_AFGAIN_MAX	255		/* код управления усилением НЧ тракта */
 #endif /* !WITHPOTAFGAIN */
 
 #define	WITHLINEINGAINMIN	0		/* код управления усилением входа с линии */
