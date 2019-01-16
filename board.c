@@ -7070,6 +7070,7 @@ static void prog_rfadc_update(void)
 		//ad9246_write(0x18, 0x80);	// VREF: VREF = 1.75 V
 		ad9246_write(0x18, 0xC0);	// VREF: VREF = 2.00 V
 	}
+	ad9246_write(0xFF, 0x01);			// SW transfer
 	#endif /* ADC1_TYPE == ADC_TYPE_AD9246 */
 
 
