@@ -55,6 +55,7 @@ set_false_path -from [get_clocks { ref122880    }] -to [get_ports {led0 led1 led
 set_false_path -from [get_clocks { ref122880    }] -to [get_ports {sai1_sd_b}]
 set_false_path -from [get_clocks { ref122880    }] -to [get_ports {i2s2_mck}]
 set_false_path -from [get_clocks { ref122880    }] -to [get_ports {sai1_sck_a}]
+set_false_path -from [get_clocks { ref122880    }] -to [get_ports {refclk_out}]
 
 # tsu/th constraints
 

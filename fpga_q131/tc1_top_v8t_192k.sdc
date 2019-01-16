@@ -47,6 +47,7 @@ set_clock_groups -asynchronous \
 set_false_path -from [get_clocks {clockfromadc ref122800 sclk_clock ssisck1_clock ssisck2_clock i2s2_ck_clock fpga_ctl_cs_clock fpga_fir_clk_clock}] -to [get_ports {adc_dith adc_rand adc_shdn adc_pga dac_sleep}]
 set_false_path -from [get_clocks {clockfromadc ref122800 sclk_clock ssisck1_clock ssisck2_clock i2s2_ck_clock fpga_ctl_cs_clock fpga_fir_clk_clock}] -to [get_ports {led0 led1 led2 led3}]
 set_false_path -from [get_clocks {clockfromadc ref122800 sclk_clock ssisck1_clock ssisck2_clock i2s2_ck_clock fpga_ctl_cs_clock fpga_fir_clk_clock}] -to [get_ports {ssidata2}]
+set_false_path -from [get_clocks { ref122880    }] -to [get_ports {refclk_out}]
 
 # Automatically constrain PLL and other generated clocks
 derive_pll_clocks -create_base_clocks

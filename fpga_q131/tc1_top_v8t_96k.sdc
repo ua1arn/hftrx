@@ -27,13 +27,13 @@ create_clock -name "ref122800" -period 125MHz [get_ports {refclk_in}]
 
 create_clock -name "sclk_clock" -period 25MHz [get_ports {cpu_sclk}]
 create_clock -name "fpga_ctl_cs_clock" -period 25MHz [get_ports {fpga_ctl_cs}]
-create_clock -name "fpga_fir_clk_clock" -period 25MHz [get_ports {fpga_fir_clk_n}]
+#create_clock -name "fpga_fir_clk_clock" -period 25MHz [get_ports {fpga_fir_clk_n}]
 #create_clock -name "ssisck1_clock" -period 13MHz [get_ports {ssisck1}]
 #create_clock -name "ssisck2_clock" -period 13MHz [get_ports {ssisck2}]
 
-create_generated_clock -name "i2s2_ck_clock" -source [get_ports {refclk_in}] -divide_by 10 -duty_cycle 20.0
-create_generated_clock -name "ssisck1_clock" -source [get_ports {refclk_in}] -divide_by 10 -duty_cycle 20.0
-create_generated_clock -name "ssisck2_clock" -source [get_ports {refclk_in}] -divide_by 10 -duty_cycle 20.0
+#create_generated_clock -name "i2s2_ck_clock" -source [get_ports {refclk_in}] -divide_by 10 -duty_cycle 20.0
+#create_generated_clock -name "ssisck1_clock" -source [get_ports {refclk_in}] -divide_by 10 -duty_cycle 20.0
+#create_generated_clock -name "ssisck2_clock" -source [get_ports {refclk_in}] -divide_by 10 -duty_cycle 20.0
 
 set_clock_groups -asynchronous \
 	-group { get_clocks {clockfromadc}] get_clocks {ref122800}] } \
@@ -42,11 +42,13 @@ set_clock_groups -asynchronous \
 	-group { get_clocks {ssisck1_clock}] } \
 	-group { get_clocks {ssisck2_clock}] } \
 	-group { get_clocks {fpga_ctl_cs_clock}] } \
-	-group { get_clocks {fpga_fir_clk_clock}] }
+	
+#	-group { get_clocks {fpga_fir_clk_clock}] }
 
 set_false_path -from [get_clocks {clockfromadc ref122800 sclk_clock ssisck1_clock ssisck2_clock i2s2_ck_clock fpga_ctl_cs_clock fpga_fir_clk_clock}] -to [get_ports {adc_dith adc_rand adc_shdn adc_pga dac_sleep}]
 set_false_path -from [get_clocks {clockfromadc ref122800 sclk_clock ssisck1_clock ssisck2_clock i2s2_ck_clock fpga_ctl_cs_clock fpga_fir_clk_clock}] -to [get_ports {led0 led1 led2 led3}]
 set_false_path -from [get_clocks {clockfromadc ref122800 sclk_clock ssisck1_clock ssisck2_clock i2s2_ck_clock fpga_ctl_cs_clock fpga_fir_clk_clock}] -to [get_ports {ssidata2}]
+set_false_path -from [get_clocks { ref122880    }] -to [get_ports {refclk_out}]
 
 # Automatically constrain PLL and other generated clocks
 derive_pll_clocks -create_base_clocks

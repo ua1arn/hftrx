@@ -18,17 +18,17 @@
 #
 # Quartus II 64-Bit
 # Version 13.1.4 Build 182 03/12/2014 SJ Full Version
-# Date created = 02:51:42  January 16, 2019
+# Date created = 17:35:39  January 16, 2019
 #
 # -------------------------------------------------------------------------- #
 
 QUARTUS_VERSION = "13.1"
-DATE = "02:51:42  January 16, 2019"
+DATE = "17:35:39  January 16, 2019"
 
 # Revisions
 
-PROJECT_REVISION = "t1_v7_2ch"
 PROJECT_REVISION = "t1_v8t_192k"
+PROJECT_REVISION = "t1_v8t_96k"
 PROJECT_REVISION = "t1_v7a_2ch"
 PROJECT_REVISION = "t1_v4"
 PROJECT_REVISION = "t1_v3"
@@ -44,4 +44,4 @@ PROJECT_REVISION = "t1_v8"
 PROJECT_REVISION = "t1_v3_pll"
 PROJECT_REVISION = "t1_v9x_2ch"
 PROJECT_REVISION = "t1_v8renes_2ch"
-PROJECT_REVISION = "t1_v8t_96k"
+PROJECT_REVISION = "t1_v7_2ch"

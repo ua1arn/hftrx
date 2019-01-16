@@ -38,7 +38,7 @@ applicable agreement for further details.
 )
 (pin
 	(input)
-	(rect 520 456 688 472)
+	(rect 736 568 904 584)
 	(text "INPUT" (rect 125 0 153 10)(font "Arial" (font_size 6)))
 	(text "pps_in" (rect 5 0 36 12)(font "Arial" ))
 	(pt 168 8)
@@ -51,7 +51,7 @@ applicable agreement for further details.
 		(line (pt 109 12)(pt 113 8))
 	)
 	(text "VCC" (rect 128 7 148 17)(font "Arial" (font_size 6)))
-	(annotation_block (location)(rect 488 496 544 512))
+	(annotation_block (location)(rect 704 608 760 624))
 )
 (pin
 	(input)
@@ -276,7 +276,7 @@ applicable agreement for further details.
 )
 (pin
 	(output)
-	(rect 704 288 880 304)
+	(rect 496 288 672 304)
 	(text "OUTPUT" (rect 1 0 39 10)(font "Arial" (font_size 6)))
 	(text "i2s2_mck" (rect 90 0 137 12)(font "Arial" ))
 	(pt 0 8)
@@ -289,7 +289,7 @@ applicable agreement for further details.
 		(line (pt 82 8)(pt 78 12))
 		(line (pt 78 12)(pt 82 8))
 	)
-	(annotation_block (location)(rect 904 288 960 304))
+	(annotation_block (location)(rect 696 288 752 304))
 )
 (pin
 	(output)
@@ -514,7 +514,7 @@ applicable agreement for further details.
 )
 (pin
 	(output)
-	(rect 1032 440 1208 456)
+	(rect 1248 552 1424 568)
 	(text "OUTPUT" (rect 1 0 39 10)(font "Arial" (font_size 6)))
 	(text "cpu_miso" (rect 90 0 137 12)(font "Arial" ))
 	(pt 0 8)
@@ -527,10 +527,10 @@ applicable agreement for further details.
 		(line (pt 82 8)(pt 78 12))
 		(line (pt 78 12)(pt 82 8))
 	)
-	(annotation_block (location)(rect 1656 592 1704 608))
+	(annotation_block (location)(rect 1872 704 1920 720))
 )
 (symbol
-	(rect 1056 136 1104 168)
+	(rect 1064 136 1112 168)
 	(text "OPNDRN" (rect 1 0 42 10)(font "Arial" (font_size 6)))
 	(text "inst2" (rect 3 21 26 33)(font "Arial" ))
 	(port
@@ -554,7 +554,7 @@ applicable agreement for further details.
 	)
 )
 (symbol
-	(rect 968 136 1016 168)
+	(rect 984 136 1032 168)
 	(text "NOT" (rect 1 0 21 10)(font "Arial" (font_size 6)))
 	(text "inst3" (rect 3 21 26 33)(font "Arial" ))
 	(port
@@ -579,7 +579,7 @@ applicable agreement for further details.
 	)
 )
 (symbol
-	(rect 1056 168 1104 200)
+	(rect 1064 168 1112 200)
 	(text "OPNDRN" (rect 1 0 42 10)(font "Arial" (font_size 6)))
 	(text "inst4" (rect 3 21 26 33)(font "Arial" ))
 	(port
@@ -603,7 +603,7 @@ applicable agreement for further details.
 	)
 )
 (symbol
-	(rect 1056 200 1104 232)
+	(rect 1064 200 1112 232)
 	(text "OPNDRN" (rect 1 0 42 10)(font "Arial" (font_size 6)))
 	(text "inst6" (rect 3 21 26 33)(font "Arial" ))
 	(port
@@ -627,7 +627,7 @@ applicable agreement for further details.
 	)
 )
 (symbol
-	(rect 1056 232 1104 264)
+	(rect 1064 232 1112 264)
 	(text "OPNDRN" (rect 1 0 42 10)(font "Arial" (font_size 6)))
 	(text "inst7" (rect 3 21 26 33)(font "Arial" ))
 	(port
@@ -651,7 +651,7 @@ applicable agreement for further details.
 	)
 )
 (symbol
-	(rect 992 248 1024 280)
+	(rect 1000 248 1032 280)
 	(text "GND" (rect 8 16 29 26)(font "Arial" (font_size 6)))
 	(text "inst1" (rect 3 21 26 33)(font "Arial" )(invisible))
 	(port
@@ -696,7 +696,7 @@ applicable agreement for further details.
 	)
 )
 (symbol
-	(rect 936 432 984 464)
+	(rect 1152 544 1200 576)
 	(text "ALT_OUTBUF_TRI" (rect 1 0 81 10)(font "Arial" (font_size 6)))
 	(text "inst8" (rect 3 21 26 33)(font "Arial" ))
 	(port
@@ -727,7 +727,7 @@ applicable agreement for further details.
 	)
 )
 (symbol
-	(rect 880 360 928 392)
+	(rect 1096 472 1144 504)
 	(text "NOT" (rect 1 0 21 10)(font "Arial" (font_size 6)))
 	(text "inst10" (rect 3 21 32 33)(font "Arial" ))
 	(port
@@ -752,7 +752,7 @@ applicable agreement for further details.
 	)
 )
 (symbol
-	(rect 760 416 872 544)
+	(rect 976 528 1088 656)
 	(text "fqmemter" (rect 5 0 58 14)(font "Arial" (font_size 8)))
 	(text "inst11" (rect 8 112 37 124)(font "Arial" ))
 	(port
@@ -1185,42 +1185,6 @@ applicable agreement for further details.
 	)
 )
 (connector
-	(pt 1128 152)
-	(pt 1104 152)
-)
-(connector
-	(pt 1128 184)
-	(pt 1104 184)
-)
-(connector
-	(pt 1128 216)
-	(pt 1104 216)
-)
-(connector
-	(pt 1128 248)
-	(pt 1104 248)
-)
-(connector
-	(pt 1056 248)
-	(pt 1008 248)
-)
-(connector
-	(pt 1128 312)
-	(pt 1032 312)
-)
-(connector
-	(pt 1032 312)
-	(pt 1032 152)
-)
-(connector
-	(pt 1016 152)
-	(pt 1032 152)
-)
-(connector
-	(pt 1032 152)
-	(pt 1056 152)
-)
-(connector
 	(pt 1024 -48)
 	(pt 896 -48)
 )
@@ -1254,54 +1218,6 @@ applicable agreement for further details.
 	(pt 2040 -312)
 )
 (connector
-	(pt 1032 448)
-	(pt 984 448)
-)
-(connector
-	(pt 928 376)
-	(pt 960 376)
-)
-(connector
-	(pt 960 376)
-	(pt 960 432)
-)
-(connector
-	(pt 936 448)
-	(pt 872 448)
-)
-(connector
-	(pt 760 480)
-	(pt 728 480)
-)
-(connector
-	(pt 728 480)
-	(pt 728 376)
-)
-(connector
-	(text "clk_122880" (rect 586 432 641 444)(font "Arial" ))
-	(pt 576 448)
-	(pt 760 448)
-	(color 255 0 0)
-)
-(connector
-	(pt 760 464)
-	(pt 688 464)
-)
-(connector
-	(text "fpga_ctl_cs" (rect 576 360 633 372)(font "Arial" ))
-	(pt 576 376)
-	(pt 728 376)
-)
-(connector
-	(pt 728 376)
-	(pt 880 376)
-)
-(connector
-	(text "cpu_sclk" (rect 602 480 645 492)(font "Arial" ))
-	(pt 592 496)
-	(pt 760 496)
-)
-(connector
 	(pt 648 -128)
 	(pt 664 -128)
 )
@@ -1322,11 +1238,6 @@ applicable agreement for further details.
 (connector
 	(pt 448 -200)
 	(pt 376 -200)
-)
-(connector
-	(text "<<__$DEF_ALIAS24220>>" (rect 482 280 611 292)(font "Arial" )(invisible))
-	(pt 424 296)
-	(pt 704 296)
 )
 (connector
 	(text "clk_122880" (rect 138 232 193 244)(font "Arial" ))
@@ -1404,50 +1315,6 @@ applicable agreement for further details.
 	(pt 648 -112)
 )
 (connector
-	(pt 968 152)
-	(pt 944 152)
-)
-(connector
-	(pt 928 184)
-	(pt 928 48)
-)
-(connector
-	(pt 1056 184)
-	(pt 928 184)
-)
-(connector
-	(pt 1056 216)
-	(pt 912 216)
-)
-(connector
-	(pt 912 -112)
-	(pt 912 216)
-)
-(connector
-	(pt 896 -64)
-	(pt 944 -64)
-)
-(connector
-	(pt 944 152)
-	(pt 944 -64)
-)
-(connector
-	(pt 896 -112)
-	(pt 912 -112)
-)
-(connector
-	(pt 912 -112)
-	(pt 984 -112)
-)
-(connector
-	(pt 896 48)
-	(pt 928 48)
-)
-(connector
-	(pt 928 48)
-	(pt 1024 48)
-)
-(connector
 	(pt 896 0)
 	(pt 1024 0)
 )
@@ -1463,9 +1330,162 @@ applicable agreement for further details.
 	(pt 1416 -96)
 	(pt 896 -96)
 )
-(junction (pt 1032 152))
-(junction (pt 728 376))
+(connector
+	(pt 1248 560)
+	(pt 1200 560)
+)
+(connector
+	(pt 1144 488)
+	(pt 1176 488)
+)
+(connector
+	(pt 1176 488)
+	(pt 1176 544)
+)
+(connector
+	(pt 1152 560)
+	(pt 1088 560)
+)
+(connector
+	(pt 976 592)
+	(pt 944 592)
+)
+(connector
+	(pt 944 592)
+	(pt 944 488)
+)
+(connector
+	(text "clk_122880" (rect 802 544 857 556)(font "Arial" ))
+	(pt 792 560)
+	(pt 976 560)
+	(color 255 0 0)
+)
+(connector
+	(pt 976 576)
+	(pt 904 576)
+)
+(connector
+	(text "cpu_sclk" (rect 818 592 861 604)(font "Arial" ))
+	(pt 808 608)
+	(pt 976 608)
+)
+(connector
+	(text "fpga_ctl_cs" (rect 792 472 849 484)(font "Arial" ))
+	(pt 792 488)
+	(pt 944 488)
+)
+(connector
+	(pt 944 488)
+	(pt 1096 488)
+)
+(connector
+	(text "<<__$DEF_ALIAS24220>>" (rect 274 280 403 292)(font "Arial" )(invisible))
+	(pt 424 296)
+	(pt 496 296)
+)
+(connector
+	(pt 1128 152)
+	(pt 1112 152)
+)
+(connector
+	(pt 1128 184)
+	(pt 1112 184)
+)
+(connector
+	(pt 1128 216)
+	(pt 1112 216)
+)
+(connector
+	(pt 1128 248)
+	(pt 1112 248)
+)
+(connector
+	(pt 1016 248)
+	(pt 1064 248)
+)
+(connector
+	(pt 1128 312)
+	(pt 1048 312)
+)
+(connector
+	(pt 1048 152)
+	(pt 1048 312)
+)
+(connector
+	(pt 1032 152)
+	(pt 1048 152)
+)
+(connector
+	(pt 1048 152)
+	(pt 1064 152)
+)
+(connector
+	(pt 896 -64)
+	(pt 968 -64)
+)
+(connector
+	(pt 968 -64)
+	(pt 968 152)
+)
+(connector
+	(pt 984 152)
+	(pt 968 152)
+)
+(connector
+	(pt 952 48)
+	(pt 952 184)
+)
+(connector
+	(pt 1064 184)
+	(pt 952 184)
+)
+(connector
+	(pt 896 48)
+	(pt 952 48)
+)
+(connector
+	(pt 952 48)
+	(pt 1024 48)
+)
+(connector
+	(pt 936 -112)
+	(pt 936 216)
+)
+(connector
+	(pt 1064 216)
+	(pt 936 216)
+)
+(connector
+	(pt 896 -112)
+	(pt 936 -112)
+)
+(connector
+	(pt 936 -112)
+	(pt 984 -112)
+)
+(connector
+	(pt 896 64)
+	(pt 912 64)
+)
+(connector
+	(pt 424 264)
+	(pt 464 264)
+)
+(connector
+	(pt 464 264)
+	(pt 464 392)
+)
+(connector
+	(pt 912 64)
+	(pt 912 344)
+)
+(connector
+	(pt 464 392)
+	(pt 864 392)
+)
 (junction (pt 648 -200))
 (junction (pt 648 -128))
-(junction (pt 912 -112))
-(junction (pt 928 48))
+(junction (pt 944 488))
+(junction (pt 1048 152))
+(junction (pt 952 48))
+(junction (pt 936 -112))
