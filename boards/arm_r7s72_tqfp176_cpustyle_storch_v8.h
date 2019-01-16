@@ -149,7 +149,7 @@
 		arm_hardware_pio6_alternative(1U << 10, R7S721_PIOALT_3); /* P6_10 SSITxD0 */ \
 		arm_hardware_pio6_alternative(1U << 11, R7S721_PIOALT_3); /* P6_11 SSIRxD0 */ \
 	} while (0)
-#endif /* WITHSAI1HW */
+#endif /* WITHI2SHW */
 
 #if WITHSAI1HW
 	#define HARDWARE_SSIF1_INITIALIZE() do { \
