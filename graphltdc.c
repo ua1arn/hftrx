@@ -52,7 +52,7 @@
 
 		VSYNCNEG = 1,			/* Negative polarity required for VSYNC signel */
 		HSYNCNEG = 1,			/* Negative polarity required for HSYNC signel */
-		DENEG = 1,				/* DE polarity */
+		DENEG = 1,				/* DE polarity (ignored) */
 		BOARD_DEMODE = 0		/* 0: static signal, 1: DE controlled */
 	};
 #elif LCDMODE_AT070TN90
@@ -62,7 +62,8 @@
 		WIDTH = 800,			/* LCD PIXEL WIDTH            */
 		HEIGHT = 480,			/* LCD PIXEL HEIGHT           */
 		/** 
-		  * @brief  RK043FN48H Timing  
+		  * @brief  AT070TN90 Timing  
+		  * MODE=0
 		  */     
 		HSYNC = 40,				/* Horizontal synchronization 1..40 */
 		HFP = 210,				/* Horizontal front porch  16..354   */

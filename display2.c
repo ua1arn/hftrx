@@ -3677,18 +3677,19 @@ enum
 	#endif /* WITHSHOWSWRPWR */
 
 		BDCV_ALLRX = ROWS2GRID(23),	// количество ячееек, отведенное под S-метр, панораму, иные отображения
+
 	#if WITHSEPARATEWFL
 		/* без совмещения на одном экрание водопада и панорамы */
-		BDCV_SPMRX = BDCV_ALLRX,	// вертикальный размер спектра в ячейках		};
-		BDCV_WFLRX = BDCV_ALLRX,	// вертикальный размер водопада в ячейках		};
 		BDCO_SPMRX = ROWS2GRID(0),	// смещение спектра по вертикали в ячейках от начала общего поля
 		BDCO_WFLRX = ROWS2GRID(0)	// смещение водопада по вертикали в ячейках от начала общего поля
+		BDCV_SPMRX = BDCV_ALLRX,	// вертикальный размер спектра в ячейках		};
+		BDCV_WFLRX = BDCV_ALLRX,	// вертикальный размер водопада в ячейках		};
 	#else /* WITHSEPARATEWFL */
 		/* совмещение на одном экрание водопада и панорамы */
-		BDCV_SPMRX = ROWS2GRID(12),	// вертикальный размер спектра в ячейках		};
-		BDCV_WFLRX = ROWS2GRID(11),	// вертикальный размер водопада в ячейках		};
 		BDCO_SPMRX = ROWS2GRID(0),	// смещение спектра по вертикали в ячейках от начала общего поля
-		BDCO_WFLRX = ROWS2GRID(12)	// смещение водопада по вертикали в ячейках от начала общего поля
+		BDCV_SPMRX = ROWS2GRID(12),	// вертикальный размер спектра в ячейках		};
+		BDCO_WFLRX = BDCV_SPMRX,	// смещение водопада по вертикали в ячейках от начала общего поля
+		BDCV_WFLRX = BDCV_ALLRX - BDCO_WFLRX	// вертикальный размер водопада в ячейках		};
 	#endif /* WITHSEPARATEWFL */
 	};
 
@@ -3985,8 +3986,8 @@ enum
 
 #elif DSTYLE_G_X800_Y480 && WITHINTEGRATEDDSP && (WITHRTS96 || WITHRTS192)
 
-	// TFT панель SONY PSP-1000
-	// 272/5 = 54, 480/16=30
+	// TFT панель AT070TN90
+	// 480/5 = 96, 800/16=50
 
 	#if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
 		//					"012345678901234567890123"
@@ -4002,7 +4003,8 @@ enum
 	#define SMETERMAP		"1  3  5  7  9 +20 +40 60"
 	enum
 	{
-		BDTH_ALLRX = 24,	// ширина зоны для отображение полосы на индикаторе
+		BDTH_ALLRX = 40,	// ширина зоны для отображение полосы на индикаторе
+
 		BDTH_LEFTRX = 12,	// ширина индикатора баллов
 		BDTH_RIGHTRX = BDTH_ALLRX - BDTH_LEFTRX,	// ширина индикатора плюсов
 		BDTH_SPACERX = 0,
@@ -4018,19 +4020,19 @@ enum
 		BDTH_SPACEPWR = BDTH_SPACERX,
 	#endif /* WITHSHOWSWRPWR */
 
-		BDCV_ALLRX = ROWS2GRID(23),	// количество ячееек, отведенное под S-метр, панораму, иные отображения
+		BDCV_ALLRX = ROWS2GRID(60),	// количество ячееек, отведенное под S-метр, панораму, иные отображения
 	#if WITHSEPARATEWFL
 		/* без совмещения на одном экрание водопада и панорамы */
-		BDCV_SPMRX = BDCV_ALLRX,	// вертикальный размер спектра в ячейках		};
-		BDCV_WFLRX = BDCV_ALLRX,	// вертикальный размер водопада в ячейках		};
 		BDCO_SPMRX = ROWS2GRID(0),	// смещение спектра по вертикали в ячейках от начала общего поля
 		BDCO_WFLRX = ROWS2GRID(0)	// смещение водопада по вертикали в ячейках от начала общего поля
+		BDCV_SPMRX = BDCV_ALLRX,	// вертикальный размер спектра в ячейках		};
+		BDCV_WFLRX = BDCV_ALLRX,	// вертикальный размер водопада в ячейках		};
 	#else /* WITHSEPARATEWFL */
 		/* совмещение на одном экрание водопада и панорамы */
-		BDCV_SPMRX = ROWS2GRID(12),	// вертикальный размер спектра в ячейках		};
-		BDCV_WFLRX = ROWS2GRID(11),	// вертикальный размер водопада в ячейках		};
 		BDCO_SPMRX = ROWS2GRID(0),	// смещение спектра по вертикали в ячейках от начала общего поля
-		BDCO_WFLRX = ROWS2GRID(12)	// смещение водопада по вертикали в ячейках от начала общего поля
+		BDCV_SPMRX = ROWS2GRID(22),	// вертикальный размер спектра в ячейках		};
+		BDCO_WFLRX = BDCV_SPMRX,	// смещение водопада по вертикали в ячейках от начала общего поля
+		BDCV_WFLRX = BDCV_ALLRX - BDCV_SPMRX	// вертикальный размер водопада в ячейках		};
 	#endif /* WITHSEPARATEWFL */
 	};
 
@@ -4089,6 +4091,10 @@ enum
 		};
 	#endif /* WITHSEPARATEWFL */
 
+		enum {
+		DLE0 = 88,
+		DLE1 = 93
+		};
 	#if TUNE_TOP > 100000000uL
 		#define DISPLC_WIDTH	9	// количество цифр в отображении частоты
 	#else
@@ -4096,9 +4102,16 @@ enum
 	#endif
 	#define DISPLC_RJ		0	// количество скрытых справа цифр в отображении частоты
 
+	// 480/5 = 96, 800/16=50
+	// 272/5 = 54, 480/16=30 (old)
+	//#define GRID2X(cellsx) ((cellsx) * 16)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
+	//#define GRID2Y(cellsy) ((cellsy) * 5)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
+	//#define SMALLCHARH 15 /* Font height */
+	//#define SMALLCHARW 16 /* Font width */
 	static const FLASHMEM struct dzone dzones [] =
 	{
 		{	0,	0,	display_txrxstate2, REDRM_MODE, PGALL, },
+
 		{	3,	0,	display_ant5,		REDRM_MODE, PGALL, },
 		{	9,	0,	display_att4,		REDRM_MODE, PGALL, },
 		{	14,	0,	display_preovf3,	REDRM_BARS, PGALL, },
@@ -4107,25 +4120,24 @@ enum
 	#if WITHENCODER2
 		{	21, 0,	display_fnlabel9,	REDRM_MODE, PGALL, },	// FUNC item label
 		{	21,	4,	display_fnvalue9,	REDRM_MODE, PGALL, },	// FUNC item value
-		{	25, 15,	display_notch5,		REDRM_MODE, PGALL, },	// NOTCH on/off
+		{	45, 15,	display_notch5,		REDRM_MODE, PGALL, },	// NOTCH on/off
 	#else /* WITHENCODER2 */
-		{	25, 0,	display_notch5,		REDRM_MODE, PGALL, },	// FUNC item label
-		{	25,	4,	display_notchfreq5,	REDRM_BARS, PGALL, },	// FUNC item value
+		{	45, 0,	display_notch5,		REDRM_MODE, PGALL, },	// FUNC item label
+		{	45,	4,	display_notchfreq5,	REDRM_BARS, PGALL, },	// FUNC item value
 	#endif /* WITHENCODER2 */
 
-		{	26, 20,	display_agc3,		REDRM_MODE, PGALL, },	// AGC mode
-		{	26, 25,	display_voxtune3,	REDRM_MODE, PGALL, },	// VOX
-		{	26, 30,	display_datamode3,	REDRM_MODE, PGALL, },	// DATA mode indicator
-		{	26, 35,	display_atu3,		REDRM_MODE, PGALL, },	// TUNER state (optional)
-		{	26, 40,	display_byp3,		REDRM_MODE, PGALL, },	// TUNER BYPASS state (optional)
-		{	26, 45,	display_rec3,		REDRM_BARS, PGALL, },	// Отображение режима записи аудио фрагмента
+		{	46, 20,	display_agc3,		REDRM_MODE, PGALL, },	// AGC mode
+		{	46, 25,	display_voxtune3,	REDRM_MODE, PGALL, },	// VOX
+		{	46, 30,	display_datamode3,	REDRM_MODE, PGALL, },	// DATA mode indicator
+		{	46, 35,	display_atu3,		REDRM_MODE, PGALL, },	// TUNER state (optional)
+		{	46, 40,	display_byp3,		REDRM_MODE, PGALL, },	// TUNER BYPASS state (optional)
+		{	46, 45,	display_rec3,		REDRM_BARS, PGALL, },	// Отображение режима записи аудио фрагмента
 		
 		{	0,	7,	display_freqX_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Частота (большие цифры)
 		{	21, 10,	display_mode3_a,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
 		{	26, 10,	display_rxbw3,		REDRM_MODE, PGALL, },	// 3.1 / 0,5 / WID / NAR
 		{	21, 15,	display_mainsub3,	REDRM_MODE, PGALL, },	// main/sub RX: A/A, A/B, B/A, etc
 
-		{	0,	20,	display_lockstate4, REDRM_MODE, PGALL, },	// LOCK
 		{	5,	20,	display_vfomode3,	REDRM_MODE, PGALL, },	// SPLIT
 		{	9,	20,	display_freqX_b,	REDRM_FRQB, PGALL, },	// SUB FREQ
 		{	21, 20,	display_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
@@ -4147,18 +4159,20 @@ enum
 	#endif /* WITHINTEGRATEDDSP && (WITHRTS96 || WITHRTS192) */
 
 	
-		//{	0,	51,	display_samfreqdelta8, REDRM_BARS, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
-		{	0,	51,	display_time8,		REDRM_BARS, PGALL,	},	// TIME
-		{	9,	51,	display_siglevel5,	REDRM_BARS, PGALL, },	// signal level in S points
-		{	15, 51,	display_thermo4,	REDRM_VOLT, PGALL, },	// thermo sensor
+		{	0,	DLE0,	display_lockstate4, REDRM_MODE, PGALL, },	// LOCK
+		{	5,	DLE0,	display_samfreqdelta8, REDRM_BARS, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
+		{	14,	DLE0,	display_siglevel5,	REDRM_BARS, PGALL, },	// signal level in S points
+
+		{	0,	DLE1,	display_time8,		REDRM_BARS, PGALL,	},	// TIME
+		{	15, DLE1,	display_thermo4,	REDRM_VOLT, PGALL, },	// thermo sensor
 	#if CTLSTYLE_RA4YBO || CTLSTYLE_RA4YBO_V3
-		{	19, 51,	display_currlevel5alt, REDRM_VOLT, PGALL, },	// PA drain current dd.d without "A"
+		{	19, DLE1,	display_currlevel5alt, REDRM_VOLT, PGALL, },	// PA drain current dd.d without "A"
 	#else
-		{	19, 51,	display_currlevel5, REDRM_VOLT, PGALL, },	// PA drain current d.dd without "A"
+		{	19, DLE1,	display_currlevel5, REDRM_VOLT, PGALL, },	// PA drain current d.dd without "A"
 	#endif
-		{	25, 51,	display_voltlevelV5, REDRM_VOLT, PGALL, },	// voltmeter with "V"
+		{	45, DLE1,	display_voltlevelV5, REDRM_VOLT, PGALL, },	// voltmeter with "V"
 	#if WITHAMHIGHKBDADJ
-		{	25, 51,	display_amfmhighcut4,REDRM_MODE, PGALL, },	// 3.70
+		{	45, DLE1,	display_amfmhighcut4,REDRM_MODE, PGALL, },	// 3.70
 	#endif /* WITHAMHIGHKBDADJ */
 
 		// sleep mode display
