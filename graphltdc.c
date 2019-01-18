@@ -63,7 +63,10 @@
 		HEIGHT = 480,			/* LCD PIXEL HEIGHT           */
 		/** 
 		  * @brief  AT070TN90 Timing  
-		  * MODE=0
+		  * MODE=0 (DE)
+		  * When selected DE mode, VSYNC & HSYNC must pulled HIGH
+		  * MODE=1 (SYNC)
+		  * When selected sync mode, de must be grounded.
 		  */     
 		HSYNC = 40,				/* Horizontal synchronization 1..40 */
 		HFP = 210,				/* Horizontal front porch  16..354   */
@@ -72,8 +75,8 @@
 		VFP = 22,				/* Vertical front porch  7..147     */
 
 		/* Accumulated parameters for this display */
-		LEFTMARGIN = 46,		/* horizontal blanking */
-		TOPMARGIN = 23,			/* vertival blanking */
+		LEFTMARGIN = 46,		/* horizontal blanking EXACTLY */
+		TOPMARGIN = 23,			/* vertival blanking EXACTLY */
 
 		HFULL = LEFTMARGIN + WIDTH + HFP,	/* horisontal full period */
 		VFULL = TOPMARGIN + HEIGHT + VFP,	/* vertical full period */
@@ -81,8 +84,10 @@
 		VSYNCNEG = 1,			/* Negative polarity required for VSYNC signel */
 		HSYNCNEG = 1,			/* Negative polarity required for HSYNC signel */
 		DENEG = 0,				/* DE polarity */
-		BOARD_DEMODE = 1		/* 0: static signal, 1: DE controlled */
+		BOARD_DEMODE = 0		/* 0: static signal, 1: DE controlled */
 	};
+
+	#define BOARD_DEVALUE 0			/* hold DE=0 */
 
 #elif LCDMODE_ILI8961
 	// HHT270C-8961-6A6 (320*240)
@@ -1216,9 +1221,13 @@ arm_hardware_ltdc_initialize(void)
 	/* Configure the LCD Control pins */
 	HARDWARE_LTDC_INITIALIZE(BOARD_DEMODE);	// подключение к выводам процессора сигналов периферийного контроллера
 
+#if defined (BOARD_DEVALUE)
+	HARDWARE_LTDC_SET_DISP(BOARD_DEMODE, BOARD_DEVALUE);
+#else
 	HARDWARE_LTDC_SET_DISP(BOARD_DEMODE, 0);
 	local_delay_ms(150);
 	HARDWARE_LTDC_SET_DISP(BOARD_DEMODE, 1);
+#endif
 
 	debug_printf_P(PSTR("arm_hardware_ltdc_initialize done\n"));
 }
@@ -1848,9 +1857,13 @@ arm_hardware_ltdc_initialize(void)
 	LTDC->SRCR = LTDC_SRCR_IMR;	/* Immediately Reload. */
 
 	// LQ043T3DX02K rules: While УVSYNCФ is УLowФ, donТt change УDISPФ signal УLowФ to УHighФ. 
+#if defined (BOARD_DEVALUE)
+	HARDWARE_LTDC_SET_DISP(BOARD_DEMODE, BOARD_DEVALUE);
+#else
 	HARDWARE_LTDC_SET_DISP(BOARD_DEMODE, 0);
 	local_delay_ms(150);
 	HARDWARE_LTDC_SET_DISP(BOARD_DEMODE, 1);
+#endif
 
 	debug_printf_P(PSTR("arm_hardware_ltdc_initialize done\n"));
 }
