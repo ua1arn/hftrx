@@ -4714,11 +4714,9 @@ static PACKEDCOLOR565_T * getscratchpip(void)
 #endif /* LCDMODE_LTDC_PIP16 */
 }
 
-enum { AVGLEN = 2 };
-enum { MAXHISTLEN = 5 };
-enum { SPAVGSIZE = 5 };	// max(AVGLEN, MAXHISTLEN)
-static FLOAT_t spavgarray [SPAVGSIZE][ALLDX];	// массив для усреднения
-static uint_fast8_t spavgrow;				// строка, в которую последней занесены данные
+static const FLOAT_t spectrum_alpha = (1 - 0.125f);
+static const FLOAT_t spectrum_beta = 0.125f;
+static FLOAT_t spavgarray [ALLDX];	// массив входных данных для усреднения
 
 #if 1
 	static uint8_t wfarray [WFDY][ALLDX];	// массив "водопада"
@@ -4824,9 +4822,37 @@ static void wfpalette_initialize(void)
 	}
 }
 
+static FLOAT_t filter_waterfall(
+	uint_fast16_t x
+	)
+{
+	const FLOAT_t val = spavgarray [x];
+#if 1
+	return val;
+#else
+	static FLOAT_t Yold [ALLDX];
+	const FLOAT_t Y = Yold [x] * spectrum_alpha + spectrum_beta * val;
+	Yold [x] = Y;
 
-#define EEAVERAGE 1
-#define EEMAXIMUM 0
+	return Y;
+#endif
+}
+
+static FLOAT_t filter_spectrum(
+	uint_fast16_t x
+	)
+{
+	const FLOAT_t val = spavgarray [x];
+#if 1
+	return val;
+#else
+	static FLOAT_t Yold [ALLDX];
+	const FLOAT_t Y = Yold [x] * spectrum_alpha + spectrum_beta * val;
+	Yold [x] = Y;
+
+	return Y;
+#endif
+}
 
 // формирование данных спектра для последующего отображения
 // спектра или водопада
@@ -4843,38 +4869,15 @@ static void dsp_latchwaterfall(
 
 
 	// запоминание информации спектра для спектрограммы
-	spavgrow = (spavgrow == 0) ? (SPAVGSIZE - 1) : (spavgrow - 1);
-	dsp_getspectrumrow(& spavgarray [spavgrow] [0], ALLDX);
+	dsp_getspectrumrow(spavgarray, ALLDX);
 
-#if 1
 	wfrow = (wfrow == 0) ? (WFDY - 1) : (wfrow - 1);
-#endif
 
 	// запоминание информации спектра для водопада
 	for (x = 0; x < ALLDX; ++ x)
 	{
-#if 0
-		// усреднение
-		FLOAT_t mag = 0;
-		uint_fast8_t h;
-		for (h = 0; h < AVGLEN; ++ h)
-			mag += spavgarray [(spavgrow + h) % SPAVGSIZE] [x];
-
-		// логарифм - в индекс палитры
-		const int val = dsp_mag2y(mag / AVGLEN, PALETTESIZE - 1);	// возвращает значения от 0 до dy включительно
-#elif 0
-		// максимум
-		FLOAT_t mag = 0;
-		uint_fast8_t h;
-		for (h = 0; h < MAXHISTLEN; ++ h)
-			mag = FMAXF(mag, spavgarray [(spavgrow + h) % SPAVGSIZE] [x]);
-
-		// логарифм - в индекс палитры
-		const int val = dsp_mag2y(mag, PALETTESIZE - 1);	// возвращает значения от 0 до dy включительно
-#else
 		// без усреднения для водопада
-		const int val = dsp_mag2y(spavgarray [spavgrow] [x], PALETTESIZE - 1); // возвращает значения от 0 до dy включительно
-#endif
+		const int val = dsp_mag2y(filter_waterfall(x), PALETTESIZE - 1); // возвращает значения от 0 до dy включительно
 		// запись в буфер водопада
 		wfarray [wfrow] [x] = val;
 	}
@@ -4990,29 +4993,8 @@ static void display2_spectrum(
 		// отображение спектра
 		for (x = 0; x < ALLDX; ++ x)
 		{
-		#if EEAVERAGE
-			// усреднение
-			FLOAT_t mag = 0;
-			uint_fast8_t h;
-			for (h = 0; h < AVGLEN; ++ h)
-				mag += spavgarray [(spavgrow + h) % SPAVGSIZE] [x];
-
 			// логарифм - в вертикальную координату
-			const int val = dsp_mag2y(mag / AVGLEN, SPDY);	// возвращает значения от 0 до SPDY включительно
-		#elif EEMAXIMUM
-			// максимум
-			FLOAT_t mag = 0;
-			uint_fast8_t h;
-			for (h = 0; h < MAXHISTLEN; ++ h)
-				mag = FMAXF(mag, spavgarray [(spavgrow + h) % SPAVGSIZE] [x]);
-
-			// логарифм - в вертикальную координату
-			const int val = dsp_mag2y(mag, SPDY);	// возвращает значения от 0 до SPDY включительно
-		#else
-			// без усреднения
-			// логарифм - в вертикальную координату
-			const int val = dsp_mag2y(spavgarray [spavgrow ] [x], SPDY);	// возвращает значения от 0 до SPDY включительно
-		#endif
+			const int val = dsp_mag2y(filter_spectrum(x), SPDY);	// возвращает значения от 0 до SPDY включительно
 			// формирование изображения шторки.
 			if (x >= xleft && x <= xright)
 			{
@@ -5059,29 +5041,9 @@ static void display2_spectrum(
 		// отображение спектра
 		for (x = 0; x < ALLDX; ++ x)
 		{
-		#if EEAVERAGE
-			// усреднение
-			FLOAT_t mag = 0;
-			uint_fast8_t h;
-			for (h = 0; h < AVGLEN; ++ h)
-				mag += spavgarray [(spavgrow + h) % SPAVGSIZE] [x];
-
-			// логарифм - в вертикальную координату
-			const int val = dsp_mag2y(mag / AVGLEN, SPDY);	// возвращает значения от 0 до SPDY включительно
-		#elif EEMAXIMUM
-			// максимум
-			FLOAT_t mag = 0;
-			uint_fast8_t h;
-			for (h = 0; h < MAXHISTLEN; ++ h)
-				mag = FMAXF(mag, spavgarray [(spavgrow + h) % SPAVGSIZE] [x]);
-
-			// логарифм - в вертикальную координату
-			const int val = dsp_mag2y(mag, SPDY);	// возвращает значения от 0 до SPDY включительно
-		#else
 			// без усреднения
 			// логарифм - в вертикальную координату
-			const int val = dsp_mag2y(spavgarray [spavgrow ] [x], SPDY);	// возвращает значения от 0 до SPDY включительно
-		#endif
+			const int val = dsp_mag2y(filter_spectrum(x), SPDY);	// возвращает значения от 0 до SPDY включительно
 			// Формирование графика
 			const int yv = SPDY - val;	// отображаемый уровень, yv = 0..SPDY
 
