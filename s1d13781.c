@@ -90,7 +90,8 @@
 #include "./fonts/S1D13781_font_big_LTDC.c"
 
 #define S1D13781_SPIMODE SPIC_MODE3		/* допустим только MODE3, MODE2 не работает с этим контроллером */
-#define S1D13781_SPIC_SPEED		SPIC_SPEED10M
+#define S1D13781_SPIC_SPEEDSLOW		SPIC_SPEED10M
+#define S1D13781_SPIC_SPEED		SPIC_SPEED25M
 
 // Условие использования оптимизированных функций обращения к SPI
 #define WITHSPIEXT16 (WITHSPIHW && WITHSPI16BIT)
@@ -111,6 +112,7 @@
 #define SMALLCHARWIDTH2 SMALLCHARW
 #define SMALLCHARHEIGHT2 SMALLCHARH
 
+// For SPI write operations
 static void
 s1d13781_select(void)
 {
@@ -119,6 +121,18 @@ s1d13781_select(void)
 	prog_select(targetlcd);	
 #else
 	spi_select2(targetlcd, S1D13781_SPIMODE, S1D13781_SPIC_SPEED);	/* Enable SPI */
+#endif /* WITHSPIHW */
+}
+
+// For SPI read operations
+static void
+s1d13781_selectslow(void)
+{
+#if WITHSPIEXT16
+	hardware_spi_connect_b16(S1D13781_SPIC_SPEEDSLOW, S1D13781_SPIMODE);		// если есть возможность - работаем в 16-ти битном режиме
+	prog_select(targetlcd);	
+#else
+	spi_select2(targetlcd, S1D13781_SPIMODE, S1D13781_SPIC_SPEEDSLOW);	/* Enable SPI */
 #endif /* WITHSPIHW */
 }
 
@@ -370,6 +384,23 @@ static void s1d13781_wrcmd8(uint_fast8_t reg, uint_fast8_t val)
 
 	s1d13781_unselect();
 }
+
+static void s1d13781_wrcmd8slow(uint_fast8_t reg, uint_fast8_t val)
+{
+	s1d13781_selectslow();
+
+	set_addrwr_p1p2_registers_nc(reg);
+	#if WITHSPIEXT16
+		hardware_spi_b16_p2(val);
+		hardware_spi_complete_b16();
+	#else /* WITHSPIEXT16 */
+		spi_progval8_p2(targetlcd, val);
+		spi_complete(targetlcd);
+	#endif /* WITHSPIEXT16 */
+
+	s1d13781_unselect();
+}
+
 static void s1d13781_wrcmd16(uint_fast8_t reg, uint_fast16_t val)
 {
 	s1d13781_select();
@@ -508,7 +539,7 @@ static uint_fast8_t bitblt_getbusyflag(void)
 {
 	uint_fast8_t v;
 
-	s1d13781_select();
+	s1d13781_selectslow();
 	v = set_addr_p1p2_registers_getval8(REG84_BLT_STATUS);
 	s1d13781_unselect();
 
@@ -519,7 +550,7 @@ static uint_fast16_t getprodcode(void)
 {
 	uint_fast16_t v;
 
-	s1d13781_select();
+	s1d13781_selectslow();
 	v = set_addr_p1p2_registers_getval16(REG02_PROD_CODE);
 	s1d13781_unselect();
 
@@ -535,12 +566,21 @@ bitblt_waitbusy(void)
 {
 	if (s1d13781_missing != 0)
 		return 0;
+	return 1;
 
-	bitblt_getbusyflag();
-	bitblt_getbusyflag();
 	while (bitblt_getbusyflag() != 0)
 		;
 	return 1;
+}
+
+static void
+bitblt_waitbusy2(void)
+{
+	if (s1d13781_missing != 0)
+		return;
+
+	while (bitblt_getbusyflag() != 0)
+		;
 }
 
 /* заполнение прямоугольника произвольным цветом с помощью BitBlt engine
@@ -570,6 +610,7 @@ bitblt_fill(
 
 		s1d13781_wrcmd8(REG86_BLT_CMD, 0x02);	// 0x02 - solid fill
 		s1d13781_wrcmd8(REG80_BLT_CTRL_0, 0x01);	// BitBlt start
+		bitblt_waitbusy2();
 	}
 
 }
@@ -622,7 +663,7 @@ bitblt_chargen_big(
 	// set bitblt rectangle width and height (pixels) registers.
 	s1d13781_wrcmd16(REG92_BLT_WIDTH, w);
 	s1d13781_wrcmd8(REG80_BLT_CTRL_0, 0x01);	// BitBlt start
-	bitblt_waitbusy();
+	bitblt_waitbusy2();
 }
 
 /* заполнение картинкой с помощью BitBlt engine
@@ -649,7 +690,7 @@ bitblt_picture(
 		s1d13781_wrcmd32_pair(REG92_BLT_WIDTH, h, w);
 		s1d13781_wrcmd8(REG86_BLT_CMD, 0x04);	// 0x04 - move with color expand
 		s1d13781_wrcmd8(REG80_BLT_CTRL_0, 0x01);	// BitBlt start
-		bitblt_waitbusy();
+		bitblt_waitbusy2();
 	}
 }
 
@@ -692,7 +733,7 @@ display_scroll_down(
 		s1d13781_wrcmd32_pair(REG92_BLT_WIDTH, h - n, w);
 		s1d13781_wrcmd8(REG86_BLT_CMD, 0x01);	// 0x01 - move negative
 		s1d13781_wrcmd8(REG80_BLT_CTRL_0, 0x01);	// BitBlt start
-		bitblt_waitbusy();
+		bitblt_waitbusy2();
 	}
 }
 	
@@ -735,7 +776,7 @@ display_scroll_up(
 		s1d13781_wrcmd32_pair(REG92_BLT_WIDTH, h - n, w);
 		s1d13781_wrcmd8(REG86_BLT_CMD, 0x00);	// 0x00 - move positive
 		s1d13781_wrcmd8(REG80_BLT_CTRL_0, 0x01);	// BitBlt start
-		bitblt_waitbusy();
+		bitblt_waitbusy2();
 	}
 }
 	
@@ -1115,7 +1156,7 @@ bitblt_chargen_small(
 	// set source address
 	s1d13781_wrcmd32(REG88_BLT_SSADDR_0, srcaddr);		// bits of address
 	s1d13781_wrcmd8(REG80_BLT_CTRL_0, 0x01);	// BitBlt start
-	bitblt_waitbusy();
+	bitblt_waitbusy2();
 }
 
 
@@ -1252,6 +1293,7 @@ static void rectangle3d(
 uint_fast8_t
 display_getreadystate(void)
 {
+	return 1;
 	if (s1d13781_missing != 0)
 		return 1;
 	bitblt_getbusyflag();
@@ -2119,7 +2161,7 @@ void s1d13781_showbuffer(
 			s1d13781_select();
 			set_addrwr(scratchbufbase);// Sets address for writes and complete spi transfer
 
-		#if 0//WITHSPIEXT16 && WITHSPIHWDMA
+		#if WITHSPIEXT16 && WITHSPIHWDMA
 			// Обратить внимание, передается растр, где младшицй бит левее.
 			// Передача в индикатор по DMA	
 			const uint_fast32_t len = MGSIZE(dx, dy);
@@ -2163,7 +2205,7 @@ void s1d13781_showbuffer(
 		s1d13781_wrcmd32_pair(REG92_BLT_WIDTH, dy, dx);	// set bitblt rectangle width and height (pixels) registers.
 		//s1d13781_wrcmd8(REG86_BLT_CMD, 0x04);	// перенесено в 'begin' - 0x04 - move with color expand
 		s1d13781_wrcmd8(REG80_BLT_CTRL_0, 0x01);	// BitBlt start
-		bitblt_waitbusy();
+		bitblt_waitbusy2();
 	}
 }
 
@@ -2240,7 +2282,7 @@ void display_plot(
 	uint_fast16_t dy
 	)
 {
-#if 0//WITHSPIEXT16 && WITHSPIHWDMA
+#if WITHSPIEXT16 && WITHSPIHWDMA
 	// Передача в индикатор по DMA	
 	arm_hardware_flush((uintptr_t) buffer, GXSIZE(dx, dy) * sizeof (* buffer));	// количество байтов
 #endif /* WITHSPIEXT16 && WITHSPIHWDMA */
@@ -2269,7 +2311,7 @@ void display_plot(
 		/* произвести пересылку по SPI */
 		{
 			uint_fast32_t len = dx;	// количество элементов
-		#if 0//WITHSPIEXT16 && WITHSPIHWDMA
+		#if WITHSPIEXT16 && WITHSPIHWDMA
 			// Передача в индикатор по DMA	
 			hardware_spi_master_send_frame_16b(buffer, len);
 			buffer += len;
@@ -2290,7 +2332,7 @@ void display_plot(
 		#endif /* WITHSPIEXT16 && WITHSPIHWDMA */
 		}
 
-	/* закончить пересылку по SPI */
+		/* закончить пересылку по SPI */
 		s1d13781_unselect();
 	}
 }
