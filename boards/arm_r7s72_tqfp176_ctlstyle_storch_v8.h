@@ -101,7 +101,7 @@
 	//#define WITHSPLITEX	1	/* Трехкнопочное управление режимами расстройки */
 
 	// +++ Одна из этих строк определяет тип дисплея, для которого компилируется прошивка
-#if 0
+#if 1
 
 	#define LCDMODE_LTDC		1	/* Use VDC5 peripherial block */
 	#define LCDMODE_LTDC_L8		1	/* используется 8 бит на пиксель представление экрана. Иначе - 16 бит. */
@@ -120,7 +120,7 @@
 	//#define LCDMODE_LQ043T3DX02K 1	/* LQ043T3DX02K panel (272*480) - SONY PSP-1000 display */
 	//#define LCDMODE_LTDC_L24	1	/* 32-bit на пиксель в памяти (3 байта) */
 
-#elif 1
+#elif 0
 
 	// not tested
 	#define LCDMODE_LTDC		1	/* Use VDC5 peripherial block */
@@ -132,7 +132,7 @@
 	#define LCDMODE_ILI8961	1	/* 320 * 240 HHT270C-8961-6A6, RGB, ILI8961, use LCDMODE_LTDC_L24 */
 	//#define LCDMODE_ILI8961_TOPDOWN	1
 
-#elif 1
+#elif 0
 
 	#define LCDMODE_ILI9341	1	/* 320*240 SF-TC240T-9370-T с контроллером ILI9341 - STM32F4DISCO */
 	//#define LCDMODE_ILI9341_TOPDOWN	1	/* LCDMODE_ILI9341 - перевернуть изображение (для выводов справа) */
