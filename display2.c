@@ -4163,13 +4163,10 @@ enum
 		{	5,	DLE0,	display_samfreqdelta8, REDRM_BARS, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
 		{	14,	DLE0,	display_siglevel5,	REDRM_BARS, PGALL, },	// signal level in S points
 
-		{	0,	DLE1,	display_time8,		REDRM_BARS, PGALL,	},	// TIME
-		{	15, DLE1,	display_thermo4,	REDRM_VOLT, PGALL, },	// thermo sensor
-	#if CTLSTYLE_RA4YBO || CTLSTYLE_RA4YBO_V3
-		{	19, DLE1,	display_currlevel5alt, REDRM_VOLT, PGALL, },	// PA drain current dd.d without "A"
-	#else
-		{	19, DLE1,	display_currlevel5, REDRM_VOLT, PGALL, },	// PA drain current d.dd without "A"
-	#endif
+		{	0,	DLE1,	display_datetime12,	REDRM_BARS, PGALL,	},	// TIME
+		{	13, DLE1,	display_thermo4,	REDRM_VOLT, PGALL, },	// thermo sensor
+
+		{	39, DLE1,	display_currlevel5, REDRM_VOLT, PGALL, },	// PA drain current d.dd without "A"
 		{	45, DLE1,	display_voltlevelV5, REDRM_VOLT, PGALL, },	// voltmeter with "V"
 	#if WITHAMHIGHKBDADJ
 		{	45, DLE1,	display_amfmhighcut4,REDRM_MODE, PGALL, },	// 3.70
@@ -4714,9 +4711,35 @@ static PACKEDCOLOR565_T * getscratchpip(void)
 #endif /* LCDMODE_LTDC_PIP16 */
 }
 
-static const FLOAT_t spectrum_alpha = (1 - 0.125f);
-static const FLOAT_t spectrum_beta = 0.125f;
-static FLOAT_t spavgarray [ALLDX];	// массив входных данных для усреднения
+static const FLOAT_t spectrum_beta = 0.25;					// incoming value coefficient
+static const FLOAT_t spectrum_alpha = 1 - (FLOAT_t) 0.25;	// old value coefficient
+
+static const FLOAT_t waterfall_beta = 0.75;					// incoming value coefficient
+static const FLOAT_t waterfall_alpha = 1 - (FLOAT_t) 0.75;	// old value coefficient
+
+static FLOAT_t spavgarray [ALLDX];	// массив входных данных для отображения (через фильтры).
+
+static FLOAT_t filter_waterfall(
+	uint_fast16_t x
+	)
+{
+	const FLOAT_t val = spavgarray [x];
+	static FLOAT_t Yold [ALLDX];
+	const FLOAT_t Y = Yold [x] * waterfall_alpha + waterfall_beta * val;
+	Yold [x] = Y;
+	return Y;
+}
+
+static FLOAT_t filter_spectrum(
+	uint_fast16_t x
+	)
+{
+	const FLOAT_t val = spavgarray [x];
+	static FLOAT_t Yold [ALLDX];
+	const FLOAT_t Y = Yold [x] * spectrum_alpha + spectrum_beta * val;
+	Yold [x] = Y;
+	return Y;
+}
 
 #if 1
 	static uint8_t wfarray [WFDY][ALLDX];	// массив "водопада"
@@ -4820,38 +4843,6 @@ static void wfpalette_initialize(void)
 		a += i;
 		// a = 256
 	}
-}
-
-static FLOAT_t filter_waterfall(
-	uint_fast16_t x
-	)
-{
-	const FLOAT_t val = spavgarray [x];
-#if 1
-	return val;
-#else
-	static FLOAT_t Yold [ALLDX];
-	const FLOAT_t Y = Yold [x] * spectrum_alpha + spectrum_beta * val;
-	Yold [x] = Y;
-
-	return Y;
-#endif
-}
-
-static FLOAT_t filter_spectrum(
-	uint_fast16_t x
-	)
-{
-	const FLOAT_t val = spavgarray [x];
-#if 1
-	return val;
-#else
-	static FLOAT_t Yold [ALLDX];
-	const FLOAT_t Y = Yold [x] * spectrum_alpha + spectrum_beta * val;
-	Yold [x] = Y;
-
-	return Y;
-#endif
 }
 
 // формирование данных спектра для последующего отображения
@@ -5041,7 +5032,6 @@ static void display2_spectrum(
 		// отображение спектра
 		for (x = 0; x < ALLDX; ++ x)
 		{
-			// без усреднения
 			// логарифм - в вертикальную координату
 			const int val = dsp_mag2y(filter_spectrum(x), SPDY);	// возвращает значения от 0 до SPDY включительно
 			// Формирование графика
