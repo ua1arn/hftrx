@@ -101,41 +101,66 @@
 	//#define WITHSPLITEX	1	/* Трехкнопочное управление режимами расстройки */
 
 	// +++ Одна из этих строк определяет тип дисплея, для которого компилируется прошивка
-#if 1
+#if 0
+
+	#define LCDMODE_LQ043T3DX02K 1	/* LQ043T3DX02K panel (272*480) - SONY PSP-1000 display */
 
 	#define LCDMODE_LTDC		1	/* Use VDC5 peripherial block */
 	#define LCDMODE_LTDC_L8		1	/* используется 8 бит на пиксель представление экрана. Иначе - 16 бит. */
 	#define LCDMODE_LTDC_PIP16	1	/* используется PIP с форматом 16 бит - RGB565 */
 
-	#define LCDMODE_LQ043T3DX02K 1	/* LQ043T3DX02K panel (272*480) - SONY PSP-1000 display */
 	//#define LCDMODE_LTDC_L24	1	/* 32-bit на пиксель в памяти (3 байта) */
 
 #elif 1
 
+	#define LCDMODE_AT070TN90 1	/* AT070TN90 panel (800*480) - 7" display */
+
 	#define LCDMODE_LTDC		1	/* Use VDC5 peripherial block */
 	#define LCDMODE_LTDC_L8		1	/* используется 8 бит на пиксель представление экрана. Иначе - 16 бит. */
 	#define LCDMODE_LTDC_PIP16	1	/* используется PIP с форматом 16 бит - RGB565 */
 
-	#define LCDMODE_AT070TN90 1	/* AT070TN90 panel (800*480) - 7" display */
-	//#define LCDMODE_LQ043T3DX02K 1	/* LQ043T3DX02K panel (272*480) - SONY PSP-1000 display */
 	//#define LCDMODE_LTDC_L24	1	/* 32-bit на пиксель в памяти (3 байта) */
 
 #elif 0
 
+	#define LCDMODE_LQ043T3DX02K 1	/* LQ043T3DX02K panel (272*480) - SONY PSP-1000 display */
+	#define LCDMODE_S1D13781	1	/* Инндикатор 480*272 с контроллером Epson S1D13781 */
+	#define LCDMODE_S1D13781_NHWACCEL 1	/* Неиспользоване аппаратных особенностей EPSON S1D13781 при выводе графики */
+	//#define LCDMODE_S1D13781_TOPDOWN	1	/* LCDMODE_S1D13781 - перевернуть изображение */
+	#define LCDMODE_S1D13781_REFOSC_MHZ	50	/* Частота генератора, установленного на контроллере дисплея */
+
+#elif 0
+
 	// not tested
+	#define LCDMODE_ILI8961	1	/* 320 * 240 HHT270C-8961-6A6, RGB, ILI8961, use LCDMODE_LTDC_L24 */
 	#define LCDMODE_LTDC		1	/* Use VDC5 peripherial block */
 	#define LCDMODE_LTDC_L8		1	/* используется 8 бит на пиксель представление экрана. Иначе - 16 бит. */
 	#define LCDMODE_LTDC_PIP16	1	/* используется PIP с форматом 16 бит - RGB565 */
 
 	//#define LCDMODE_LQ043T3DX02K 1	/* LQ043T3DX02K panel (272*480) - SONY PSP-1000 display */
 	//#define LCDMODE_LTDC_L24	1	/* 32-bit на пиксель в памяти (3 байта) */
-	#define LCDMODE_ILI8961	1	/* 320 * 240 HHT270C-8961-6A6, RGB, ILI8961, use LCDMODE_LTDC_L24 */
 	//#define LCDMODE_ILI8961_TOPDOWN	1
 
 #elif 0
 
 	#define LCDMODE_ILI9341	1	/* 320*240 SF-TC240T-9370-T с контроллером ILI9341 - STM32F4DISCO */
 	//#define LCDMODE_ILI9341_TOPDOWN	1	/* LCDMODE_ILI9341 - перевернуть изображение (для выводов справа) */
+
+#else
+	//#define LCDMODE_HARD_SPI	1	/* LCD over SPI line */
+	//#define LCDMODE_WH2002	1	/* тип применяемого индикатора 20*2, возможно вместе с LCDMODE_HARD_SPI */
+	//#define LCDMODE_WH1602	1	/* тип применяемого индикатора 16*2 */
+	//#define LCDMODE_WH1604	1	/* тип применяемого индикатора 16*4 */
+	//#define LCDMODE_WH2004	1	/* тип применяемого индикатора 20*4 */
+	//#define LCDMODE_RDX0077	1	/* Индикатор 128*64 с контроллером UC1601.  */
+	//#define LCDMODE_RDX0154	1	/* Индикатор 132*64 с контроллером UC1601. */
+	//#define LCDMODE_RDX0120	1	/* Индикатор 64*32 с контроллером UC1601.  */
+	//#define LCDMODE_UC1601S_XMIRROR	1	/* Индикатор 132*64 с контроллером UC1601.  */
+	//#define LCDMODE_UC1601S_TOPDOWN	1	/* LCDMODE_RDX0154 - перевернуть изображение */
+	//#define LCDMODE_UC1601S_EXTPOWER	1	/* LCDMODE_RDX0154 - без внутреннего преобразователя */
+	//#define LCDMODE_TIC154	1	/* Индикатор 133*65 с контроллером PCF8535 */
+	//#define LCDMODE_TIC218	1	/* Индикатор 133*65 с контроллером PCF8535 */
+	//#define LCDMODE_PCF8535_TOPDOWN	1	/* Контроллер PCF8535 - перевернуть изображение */
 
 	//#define LCDMODE_ILI9225	1	/* Индикатор 220*176 SF-TC220H-9223A-N_IC_ILI9225C_2011-01-15 с контроллером ILI9225С */
 	//#define LCDMODE_ILI9225_TOPDOWN	1	/* LCDMODE_ILI9225 - перевернуть изображение (для выводов слева от экрана) */
@@ -154,25 +179,6 @@
 	//#define LCDMODE_ILI9163_TOPDOWN	1	/* LCDMODE_ILI9163 - перевернуть изображение (для выводов справа, лента дисплея слева) */
 	//#define LCDMODE_L2F50	1	/* Индикатор 176*132 с контроллером Epson L2F50126 */
 	//#define LCDMODE_L2F50_TOPDOWN	1	/* Переворот изображени я в случае LCDMODE_L2F50 */
-#else
-	#define LCDMODE_S1D13781_NHWACCEL 1	/* Неиспользоване аппаратных особенностей EPSON S1D13781 при выводе графики */
-	#define LCDMODE_S1D13781	1	/* Инндикатор 480*272 с контроллером Epson S1D13781 */
-	//#define LCDMODE_S1D13781_TOPDOWN	1	/* LCDMODE_S1D13781 - перевернуть изображение */
-	#define LCDMODE_S1D13781_REFOSC_MHZ	50	/* Частота генератора, установленного на контроллере дисплея */
-	//#define LCDMODE_HARD_SPI	1	/* LCD over SPI line */
-	//#define LCDMODE_WH2002	1	/* тип применяемого индикатора 20*2, возможно вместе с LCDMODE_HARD_SPI */
-	//#define LCDMODE_WH1602	1	/* тип применяемого индикатора 16*2 */
-	//#define LCDMODE_WH1604	1	/* тип применяемого индикатора 16*4 */
-	//#define LCDMODE_WH2004	1	/* тип применяемого индикатора 20*4 */
-	//#define LCDMODE_RDX0077	1	/* Индикатор 128*64 с контроллером UC1601.  */
-	//#define LCDMODE_RDX0154	1	/* Индикатор 132*64 с контроллером UC1601. */
-	//#define LCDMODE_RDX0120	1	/* Индикатор 64*32 с контроллером UC1601.  */
-	//#define LCDMODE_UC1601S_XMIRROR	1	/* Индикатор 132*64 с контроллером UC1601.  */
-	//#define LCDMODE_UC1601S_TOPDOWN	1	/* LCDMODE_RDX0154 - перевернуть изображение */
-	//#define LCDMODE_UC1601S_EXTPOWER	1	/* LCDMODE_RDX0154 - без внутреннего преобразователя */
-	//#define LCDMODE_TIC154	1	/* Индикатор 133*65 с контроллером PCF8535 */
-	//#define LCDMODE_TIC218	1	/* Индикатор 133*65 с контроллером PCF8535 */
-	//#define LCDMODE_PCF8535_TOPDOWN	1	/* Контроллер PCF8535 - перевернуть изображение */
 	// --- Одна из этих строк определяет тип дисплея, для которого компилируется прошивка
 #endif
 
