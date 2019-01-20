@@ -5150,7 +5150,7 @@ static void display2_waterfall(
 		const uint_fast32_t freq = hamradio_get_freq_a();	/* frequecy at midle of spectrum */
 		const int_fast32_t bw = dsp_get_samplerateuacin_rts();
 		uint_fast16_t x, y;
-		const uint_fast16_t x0 = deltafreq2x(0, bw, ALLDX);
+		const uint_fast16_t xm = deltafreq2x(0, bw, ALLDX);
 		int_fast16_t hshift = 0;
 
 	#if 1
@@ -5197,7 +5197,7 @@ static void display2_waterfall(
 		const uint_fast32_t freq = hamradio_get_freq_a();	/* frequecy at midle of spectrum */
 		const int_fast32_t bw = dsp_get_samplerateuacin_rts();
 		uint_fast16_t x, y;
-		const uint_fast16_t x0 = deltafreq2x(0, bw, ALLDX);
+		const uint_fast16_t xm = deltafreq2x(0, bw, ALLDX);
 
 		if (wffreq == 0)
 		{
@@ -5217,7 +5217,7 @@ static void display2_waterfall(
 			{
 				// нужно сохрянять часть старого изображения
 				// в строке wfrow - новое
-				wflshiftright(x0 - deltafreq2x(0 - delta, bw, ALLDX));
+				wflshiftright(xm - deltafreq2x(0 - delta, bw, ALLDX));
 			}
 			else
 			{
@@ -5234,7 +5234,7 @@ static void display2_waterfall(
 			{
 				// нужно сохрянять часть старого изображения
 				// в строке wfrow - новое
-				wflshiftleft(deltafreq2x(delta, bw, ALLDX) - x0);
+				wflshiftleft(deltafreq2x(delta, bw, ALLDX) - xm);
 			}
 			else
 			{
@@ -5258,7 +5258,7 @@ static void display2_waterfall(
 		{
 			// маркер центральной частоты обзора
 			// XOR линию
-			uint_fast16_t xmarker = x0;
+			uint_fast16_t xmarker = xm;
 			display_colorbuffer_xor_vline(colorpip, xmarker, WFY0, WFDY, COLOR565_GRIDCOLOR);
 		}
 		else
