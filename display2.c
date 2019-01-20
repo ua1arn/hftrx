@@ -4952,6 +4952,7 @@ display_colorgrid(
 	}
 }
 
+
 // подготовка изображения спектра
 static void display2_spectrum(
 	uint_fast8_t x0, 
@@ -4959,7 +4960,7 @@ static void display2_spectrum(
 	void * pv
 	)
 {
-#if LCDMODE_UC1608 || LCDMODE_UC1601 || LCDMODE_S1D13781
+#if (! LCDMODE_S1D13781_NHWACCEL && LCDMODE_S1D13781) || LCDMODE_UC1608 || LCDMODE_UC1601
 	// Спектр на монохромных дисплеях 
 	// или на цвентых,где есть возможность раскаски растровой картинки.
 	static ALIGNX_BEGIN GX_t spectrmonoscr [MGSIZE(ALLDX, SPDY)] ALIGNX_END;
@@ -5145,7 +5146,7 @@ static void display2_waterfall(
 	void * pv
 	)
 {
-#if LCDMODE_S1D13781
+#if (! LCDMODE_S1D13781_NHWACCEL && LCDMODE_S1D13781)
 
 		const uint_fast32_t freq = hamradio_get_freq_a();	/* frequecy at midle of spectrum */
 		const int_fast32_t bw = dsp_get_samplerateuacin_rts();
@@ -5284,7 +5285,7 @@ static void display2_colorbuff(
 	void * pv
 	)
 {
-#if LCDMODE_S1D13781
+#if (! LCDMODE_S1D13781_NHWACCEL && LCDMODE_S1D13781)
 #elif LCDMODE_UC1608 || LCDMODE_UC1601
 #else /* */
 
