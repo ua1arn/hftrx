@@ -155,9 +155,6 @@ enum
 	#define DDS2_CLK_DIV	1		/* Делитель опорной частоты перед подачей в DDS2 */
 #endif
 
-#define WITHPOTFILTERS (WITHPOTWPM || WITHPOTIFGAIN || WITHPOTAFGAIN || WITHPOTPBT || WITHPOTIFSHIFT || WITHPOTPOWER || CTLSTYLE_RA4YBO_V3)
-
-
 extern uint_fast8_t glob_agc;
 extern uint_fast8_t glob_opowerlevel;
 extern uint_fast8_t	glob_loudspeaker_off;

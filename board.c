@@ -7953,6 +7953,28 @@ uint_fast16_t board_getadc_filtered_u16(uint_fast8_t adci, uint_fast16_t lower, 
 	return v;
 }
 
+static adcvalholder_t hysts [BOARD_ADCXBASE + 16];
+
+/* получить отфильтрованное значение от АЦП в диапазоне lower..upper (включая границы) */
+/* поскольку используется для получения позиции потенциометра, применяется фильтрация "гистерезис" */
+uint_fast8_t board_getpot_filtered_u8(uint_fast8_t adci, uint_fast8_t lower, uint_fast8_t upper)
+{
+	const adcvalholder_t t = board_getadc_unfiltered_truevalue(adci);	// текущее отфильтрованное значение данного АЦП
+	const uint_fast8_t v = lower + ((uint_fast32_t) filter_hyst(& hysts [adci], t) * (upper - lower) / board_getadc_fsval(adci));	// нормируем к требуемому диапазону
+	ASSERT(v >= lower && v <= upper);
+	return v;
+}
+
+/* получить отфильтрованное значение от АЦП в диапазоне lower..upper (включая границы) */
+/* поскольку используется для получения позиции потенциометра, применяется фильтрация "гистерезис" */
+uint_fast16_t board_getpot_filtered_u16(uint_fast8_t adci, uint_fast16_t lower, uint_fast16_t upper)
+{
+	const adcvalholder_t t = board_getadc_unfiltered_truevalue(adci);	// текущее отфильтрованное значение данного АЦП
+	const uint_fast16_t v = lower + ((uint_fast32_t) filter_hyst(& hysts [adci], t) * (upper - lower) / board_getadc_fsval(adci));	// нормируем к требуемому диапазону
+	ASSERT(v >= lower && v <= upper);
+	return v;
+}
+
 /* при изменении отфильтрованного значения этого АЦП в диапазоне lower..upper (включая границы)
     возвращаемое значение на каждом вызове приближается к нему на единицу
 */
@@ -8088,6 +8110,25 @@ unsigned int get_ADC_ref(float k)
 
 #endif
 
+// Значение обновляется, если новое значение отличается на HYDELTA или более дискретов
+// todo: использоать эту запись алгоритма, только он сейчас, похоже, не работает.
+//if ((adc_data_filtered [i] + HYDELTA) <= raw || (raw + HYDELTA) <= adc_data_filtered [i])
+//	adc_data_filtered [i] = raw;
+adcvalholder_t filter_hyst(
+	adcvalholder_t * pv0, 
+	adcvalholder_t raw
+	)
+{
+	enum { HYDELTA = (1U << (HARDWARE_ADCBITS - 8)) };
+	const adcvalholder_t v0 = * pv0;
+	if (raw < v0 && (v0 - raw) >= HYDELTA)
+		* pv0 = raw;
+	else if (raw > v0 && (raw - v0) >= HYDELTA)
+		* pv0 = raw;
+
+	return * pv0;
+}
+						   
 // Функция вызывается из обработчика прерывания после получения значения от последнего канала АЦП
 void board_adc_filtering(void)
 {
@@ -8102,23 +8143,6 @@ void board_adc_filtering(void)
 			// Значение просто обновляется
 			adc_data_filtered [i] = raw;
 			break;
-#if WITHPOTFILTERS
-		case BOARD_ADCFILTER_HISTERESIS2:
-			// Значение обновляется, если новое значение отличается на HYDELTA или более дискретов
-			{
-				enum { HYDELTA = (1U << (HARDWARE_ADCBITS - 8)) };
-				const adcvalholder_t v0 = adc_data_filtered [i];
-				if (raw < v0 && (v0 - raw) >= HYDELTA)
-					adc_data_filtered [i] = raw;
-				else if (raw > v0 && (raw - v0) >= HYDELTA)
-					adc_data_filtered [i] = raw;
-
-			}
-			// todo: использоать эту запись алгоритма, только он сейчас, похоже, не работает.
-			//if ((adc_data_filtered [i] + HYDELTA) <= raw || (raw + HYDELTA) <= adc_data_filtered [i])
-			//	adc_data_filtered [i] = raw;
-			break;
-#endif /* WITHPOTFILTERS */
 		case BOARD_ADCFILTER_TRACETOP3S:
 			// Отслеживание максимума с постоянной времени 3 секунды
 			{
@@ -8154,29 +8178,6 @@ void board_adc_filtering(void)
 static void
 adcfilters_initialize(void)
 {
-	#if WITHPOTPOWER
-		hardware_set_adc_filter(POTPOWER, BOARD_ADCFILTER_HISTERESIS2);
-	#endif /* WITHPOTPOWER */
-	#if WITHPOTWPM
-		hardware_set_adc_filter(POTWPM, BOARD_ADCFILTER_HISTERESIS2);
-	#endif /* WITHPOTWPM */
-	#if WITHPOTPBT
-		hardware_set_adc_filter(POTPBT, BOARD_ADCFILTER_HISTERESIS2);
-	#endif /* WITHPOTPBT */
-	#if WITHPOTIFSHIFT
-		hardware_set_adc_filter(POTIFSHIFT, BOARD_ADCFILTER_HISTERESIS2);	// регулировка IF SHIFT
-	#endif /* WITHPOTIFSHIFT */
-	#if WITHPOTIFGAIN
-		hardware_set_adc_filter(POTIFGAIN, BOARD_ADCFILTER_HISTERESIS2);
-		//hardware_set_adc_filterLPF(POTIFGAIN, BOARD_ADCFILTER_LPF_DENOM / 2);
-	#endif /* WITHPOTIFGAIN */
-	#if WITHPOTAFGAIN
-		hardware_set_adc_filter(POTAFGAIN, BOARD_ADCFILTER_HISTERESIS2);
-		//hardware_set_adc_filterLPF(POTAFGAIN, BOARD_ADCFILTER_LPF_DENOM / 2);
-	#endif /* WITHPOTAFGAIN */
-	#if WITHPOTNOTCH && WITHNOTCHFREQ
-		hardware_set_adc_filter(POTNOTCH, BOARD_ADCFILTER_HISTERESIS2);		// регулировка частоты NOTCH фильтра
-	#endif /* WITHPOTNOTCH && WITHNOTCHFREQ */
 	#if WITHBARS && ! WITHINTEGRATEDDSP
 		hardware_set_adc_filter(SMETERIX, BOARD_ADCFILTER_TRACETOP3S);
 	#endif /* WITHBARS && ! WITHINTEGRATEDDSP */

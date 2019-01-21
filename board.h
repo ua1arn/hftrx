@@ -268,6 +268,11 @@ uint_fast8_t board_get_adcch(uint_fast8_t index);	/* получить канал АЦП но индек
 void board_adc_store_data(uint_fast8_t i, adcvalholder_t v);
 void board_adc_filtering(void);	// Функция вызывается из обработчика прерывания после получения значения от последнего канала АЦП
 
+adcvalholder_t filter_hyst(
+	adcvalholder_t * pv0, 
+	adcvalholder_t raw
+	);
+
 void 
 modemchangefreq(
 	uint_fast32_t f		// частота, которую устанавливаем по команде от modem
@@ -292,15 +297,14 @@ enum
 	BOARD_ADCFILTER_AVERAGEPWR,	/* усреднение для измерителя мощности - только один канал */
 	BOARD_ADCFILTER_TRACETOP3S,	/* Отслеживание максимума с постоянной времени 3 секунды */
 	BOARD_ADCFILTER_LPF,			/* ФНЧ, параметр задается в виде числа с фиксированной точкой */
-#if WITHPOTFILTERS
-	BOARD_ADCFILTER_HISTERESIS2,	/* гистерезис в 2 уровня квантования */
-#endif /* WITHPOTFILTERS */
 	//
 	BOARD_ADCFILTER_TYPECOUNT
 };
 
 uint_fast8_t board_getadc_filtered_u8(uint_fast8_t i, uint_fast8_t lower, uint_fast8_t upper);	/* получить значение от АЦП в диапазоне lower..upper (включая границы) */
+uint_fast8_t board_getpot_filtered_u8(uint_fast8_t i, uint_fast8_t lower, uint_fast8_t upper);	/* получить значение от АЦП в диапазоне lower..upper (включая границы) */
 uint_fast16_t board_getadc_filtered_u16(uint_fast8_t i, uint_fast16_t lower, uint_fast16_t upper);	/* получить значение от АЦП в диапазоне lower..upper (включая границы) */
+uint_fast16_t board_getpot_filtered_u16(uint_fast8_t i, uint_fast16_t lower, uint_fast16_t upper);	/* получить значение от АЦП в диапазоне lower..upper (включая границы) */
 uint_fast8_t board_getadc_smoothed_u8(uint_fast8_t i, uint_fast8_t lower, uint_fast8_t upper);	/* при изменении отфильтрованного значения этого АЦП возвращаемое значение на каждом вызове приближается к нему на 1 */
 uint_fast8_t board_getadc_unfiltered_u8(uint_fast8_t i, uint_fast8_t lower, uint_fast8_t upper);	/* получить значение от АЦП в диапазоне lower..upper (включая границы) */
 uint_fast16_t board_getadc_unfiltered_u16(uint_fast8_t i, uint_fast16_t lower, uint_fast16_t upper);	/* получить значение от АЦП в диапазоне lower..upper (включая границы) */

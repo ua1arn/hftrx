@@ -9324,27 +9324,27 @@ directctlupdate(uint_fast8_t inmenu)
 		// +++ получение состояния органов управления */
 #if WITHCPUADCHW
 	#if WITHPOTPOWER
-		changed |= flagne_u8(& gnormalpower, board_getadc_filtered_u8(POTPOWER, WITHPOWERTRIMMIN, WITHPOWERTRIMMAX));	// регулировка мощности
+		changed |= flagne_u8(& gnormalpower, board_getpot_filtered_u8(POTPOWER, WITHPOWERTRIMMIN, WITHPOWERTRIMMAX));	// регулировка мощности
 	#endif /* WITHPOTPOWER */
 	#if WITHPOTWPM
-		changed |= flagne_u8(& elkeywpm, board_getadc_filtered_u8(POTWPM, CWWPMMIN, CWWPMMAX));
+		changed |= flagne_u8(& elkeywpm, board_getpot_filtered_u8(POTWPM, CWWPMMIN, CWWPMMAX));
 	#endif /* WITHPOTWPM */
 	#if WITHPOTIFGAIN
-		changed |= flagne_u16(& rfgain1, board_getadc_filtered_u16(POTIFGAIN, BOARD_IFGAIN_MIN, BOARD_IFGAIN_MAX));	// Параметр для регулировки усидения ПЧ
+		changed |= flagne_u16(& rfgain1, board_getpot_filtered_u16(POTIFGAIN, BOARD_IFGAIN_MIN, BOARD_IFGAIN_MAX));	// Параметр для регулировки усидения ПЧ
 	#endif /* WITHPOTIFGAIN */
 	#if WITHPOTAFGAIN
-		changed |= flagne_u16(& afgain1, board_getadc_filtered_u16(POTAFGAIN, BOARD_AFGAIN_MIN, BOARD_AFGAIN_MAX));	// Параметр для регулировки уровня на выходе аудио-ЦАП
+		changed |= flagne_u16(& afgain1, board_getpot_filtered_u16(POTAFGAIN, BOARD_AFGAIN_MIN, BOARD_AFGAIN_MAX));	// Параметр для регулировки уровня на выходе аудио-ЦАП
 	#endif /* WITHPOTAFGAIN */
 	#if WITHPBT && WITHPOTPBT
 		/* установка gpbtoffset PBTMIN, PBTMAX, midscale = PBTHALF */
-		changed |= flagne_u16(& gpbtoffset, board_getadc_filtered_u16(POTPBT, PBTMIN, PBTMAX) / 10 * 10);
+		changed |= flagne_u16(& gpbtoffset, board_getpot_filtered_u16(POTPBT, PBTMIN, PBTMAX) / 10 * 10);
 	#endif /* WITHPBT && WITHPOTPBT */
 	#if WITHIFSHIFT && WITHPOTIFSHIFT
 		/* установка gifshftoffset IFSHIFTTMIN, IFSHIFTMAX, midscale = IFSHIFTHALF */
-		changed |= flagne_u16(& ifshifoffset, board_getadc_filtered_u16(POTIFSHIFT, IFSHIFTTMIN, IFSHIFTMAX) / 10 * 10);
+		changed |= flagne_u16(& ifshifoffset, board_getpot_filtered_u16(POTIFSHIFT, IFSHIFTTMIN, IFSHIFTMAX) / 10 * 10);
 	#endif /* WITHIFSHIFT && WITHPOTIFSHIFT */
 	#if WITHPOTNOTCH && WITHNOTCHFREQ
-		changed |= flagne_u16(& gnotchfreq, board_getadc_filtered_u16(POTNOTCH, WITHNOTCHFREQMIN, WITHNOTCHFREQMAX) / 50 * 50);	// регулировка частоты NOTCH фильтра
+		changed |= flagne_u16(& gnotchfreq, board_getpot_filtered_u16(POTNOTCH, WITHNOTCHFREQMIN, WITHNOTCHFREQMAX) / 50 * 50);	// регулировка частоты NOTCH фильтра
 	#endif /* WITHPOTNOTCH && WITHNOTCHFREQ */
 #endif /* WITHCPUADCHW */
 	#if CTLSTYLE_RA4YBO_V3
