@@ -5200,6 +5200,7 @@ static void display2_waterfall(
 		uint_fast16_t x, y;
 		const uint_fast16_t xm = deltafreq2x(0, bw, ALLDX);
 
+#if ! WITHSEPARATEWFL
 		if (wffreq == 0)
 		{
 			// стираем целиком старое изображение водопада
@@ -5244,6 +5245,7 @@ static void display2_waterfall(
 				wflclear();
 			}
 		}
+#endif /* ! WITHSEPARATEWFL */
 
 		// формирование растра
 		// следы спектра ("водопад")
