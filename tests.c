@@ -6071,17 +6071,17 @@ void hightests(void)
 
 		//const unsigned potrf = board_getadc_filtered_u8(POTIFGAIN, 0, UINT8_MAX);
 		const unsigned potrft = board_getadc_unfiltered_truevalue(POTIFGAIN);
-		const unsigned potrf = board_getadc_filtered_truevalue(POTIFGAIN);
+		const unsigned potrf = board_getpot_filtered_truevalue(POTIFGAIN);
 
 		//const unsigned potaf = board_getadc_smoothed_u8(POTAFGAIN, BOARD_AFGAIN_MIN, BOARD_AFGAIN_MAX);
 		const unsigned potaft = board_getadc_unfiltered_truevalue(POTAFGAIN);
-		const unsigned potaf = board_getadc_filtered_truevalue(POTAFGAIN);
+		const unsigned potaf = board_getpot_filtered_truevalue(POTAFGAIN);
 
 		//const unsigned aux1 = board_getadc_filtered_u8(POTAUX1, 0, UINT8_MAX);
 		//const unsigned aux2 = board_getadc_filtered_u8(POTAUX2, 0, UINT8_MAX);
 		//const unsigned aux3 = board_getadc_filtered_u8(POTAUX3, 0, UINT8_MAX);
 #if WITHPOTWPM
-		const unsigned wpm = board_getadc_filtered_u8(POTWPM, 0, UINT8_MAX);
+		const unsigned wpm = board_getpot_filtered_u8(POTWPM, 0, UINT8_MAX);
 #endif /* WITHPOTWPM */
 
 		uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;

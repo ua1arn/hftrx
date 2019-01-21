@@ -76,23 +76,17 @@ enum
 	#define CWWPMMAX	60
 #endif
 
-#if WITHPOTIFGAIN
-	#define	BOARD_IFGAIN_MIN	0		/* код управления усилением ВЧ тракта */
-	#define	BOARD_IFGAIN_MAX	255		/* код управления усилением ВЧ тракта */
-#else /* WITHPOTIFGAIN */
-	#define	BOARD_IFGAIN_MIN	0		/* код управления усилением ВЧ тракта */
-	#define	BOARD_IFGAIN_MAX	255		/* код управления усилением ВЧ тракта */
-#endif /* WITHPOTIFGAIN */
+#define	BOARD_IFGAIN_MIN	0		/* код управления усилением ВЧ тракта */
+#define	BOARD_IFGAIN_MAX	255		/* код управления усилением ВЧ тракта */
 
-#if ! WITHPOTAFGAIN
-	#define	BOARD_AFGAIN_MIN	0		/* код управления усилением НЧ тракта */
-	#define	BOARD_AFGAIN_MAX	255		/* код управления усилением НЧ тракта */
-#endif /* !WITHPOTAFGAIN */
+#define	BOARD_AFGAIN_MIN	0		/* код управления усилением НЧ тракта */
+#define	BOARD_AFGAIN_MAX	255		/* код управления усилением НЧ тракта */
 
 #define	WITHLINEINGAINMIN	0		/* код управления усилением входа с линии */
-#define	WITHLINEINGAINMAX	100		/* код управления усилением входа с линии */
+#define	WITHLINEINGAINMAX	255		/* код управления усилением входа с линии */
+
 #define	WITHMIKEINGAINMIN	0		/* код управления усилением входа с микрофона */
-#define	WITHMIKEINGAINMAX	100		/* код управления усилением входа с микрофона */
+#define	WITHMIKEINGAINMAX	255		/* код управления усилением входа с микрофона */
 
 //#define	WITHFILTSOFTMIN		0		/* код управления сглаживанием скатов фильтра основной селекции на приёме */
 //#define	WITHFILTSOFTMAX		100		/* код управления сглаживанием скатов фильтра основной селекции на приёме */

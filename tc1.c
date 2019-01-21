@@ -178,12 +178,8 @@ enum
 	CAT_ZZ_INDEX,		// zzanswer()
 #endif /* CTLSTYLE_V1D || CTLSTYLE_OLEG4Z_V1 */
 #if WITHIF4DSP
-#if ! WITHPOTIFGAIN
 	CAT_RG_INDEX,		// rganswer()
-#endif /* ! WITHPOTIFGAIN */
-#if ! WITHPOTAFGAIN
 	CAT_AG_INDEX,		// aganswer()
-#endif /* ! WITHPOTAFGAIN */
 	CAT_SQ_INDEX,		// sqanswer()
 #endif /* WITHIF4DSP */
 	CAT_BADCOMMAND_INDEX,		// badcommandanswer()
@@ -6956,7 +6952,7 @@ flagne_u16(uint_fast16_t * oldval, uint_fast16_t v)
 }
 
 /* Если изменяемый параметр отличается от старого значения - возврат 1 */
-static uint_fast32_t
+static uint_fast8_t
 flagne_u32(uint_fast32_t * oldval, uint_fast32_t v)
 {
 	if (* oldval != v)
@@ -6966,6 +6962,56 @@ flagne_u32(uint_fast32_t * oldval, uint_fast32_t v)
 	}
 	return 0;
 }
+
+#if WITHCAT
+
+/* формирование запроса на информирование управляющего компютера при изменении параметра. */
+static uint_fast8_t
+flagne_u8_cat(uint_fast8_t * oldval, uint_fast8_t v, uint_fast8_t catindex)
+{
+	if (flagne_u8(oldval, v) != 0)
+	{
+		cat_answer_request(catindex);
+		return 1;
+	}
+	return 0;
+}
+
+/* формирование запроса на информирование управляющего компютера при изменении параметра. */
+static uint_fast8_t
+flagne_u16_cat(uint_fast16_t * oldval, uint_fast16_t v, uint_fast8_t catindex)
+{
+	if (flagne_u16(oldval, v) != 0)
+	{
+		cat_answer_request(catindex);
+		return 1;
+	}
+	return 0;
+}
+
+/* формирование запроса на информирование управляющего компютера при изменении параметра. */
+static uint_fast8_t
+flagne_u32_cat(uint_fast32_t * oldval, uint_fast32_t v, uint_fast8_t catindex)
+{
+	if (flagne_u32(oldval, v) != 0)
+	{
+		cat_answer_request(catindex);
+		return 1;
+	}
+	return 0;
+}
+
+#define FLAGNE_U8_CAT(a,b,c) flagne_u8_cat((a), (b), (c))
+#define FLAGNE_U16_CAT(a,b,c) flagne_u16_cat((a), (b), (c))
+#define FLAGNE_U32_CAT(a,b,c) flagne_u32_cat((a), (b), (c))
+
+#else /* WITHCAT */
+
+#define FLAGNE_U8_CAT(a,b,c) flagne_u8((a), (b))
+#define FLAGNE_U16_CAT(a,b,c) flagne_u16((a), (b))
+#define FLAGNE_U32_CAT(a,b,c) flagne_u32((a), (b))
+
+#endif /* WITHCAT */
 
 /*
  параметры:
@@ -9327,13 +9373,13 @@ directctlupdate(uint_fast8_t inmenu)
 		changed |= flagne_u8(& gnormalpower, board_getpot_filtered_u8(POTPOWER, WITHPOWERTRIMMIN, WITHPOWERTRIMMAX));	// регулировка мощности
 	#endif /* WITHPOTPOWER */
 	#if WITHPOTWPM
-		changed |= flagne_u8(& elkeywpm, board_getpot_filtered_u8(POTWPM, CWWPMMIN, CWWPMMAX));
+		changed |= FLAGNE_U8_CAT(& elkeywpm, board_getpot_filtered_u8(POTWPM, CWWPMMIN, CWWPMMAX), CAT_KS_INDEX);
 	#endif /* WITHPOTWPM */
 	#if WITHPOTIFGAIN
-		changed |= flagne_u16(& rfgain1, board_getpot_filtered_u16(POTIFGAIN, BOARD_IFGAIN_MIN, BOARD_IFGAIN_MAX));	// Параметр для регулировки усидения ПЧ
+		changed |= FLAGNE_U16_CAT(& rfgain1, board_getpot_filtered_u16(POTIFGAIN, BOARD_IFGAIN_MIN, BOARD_IFGAIN_MAX), CAT_RG_INDEX);	// Параметр для регулировки усидения ПЧ
 	#endif /* WITHPOTIFGAIN */
 	#if WITHPOTAFGAIN
-		changed |= flagne_u16(& afgain1, board_getpot_filtered_u16(POTAFGAIN, BOARD_AFGAIN_MIN, BOARD_AFGAIN_MAX));	// Параметр для регулировки уровня на выходе аудио-ЦАП
+		changed |= FLAGNE_U16_CAT(& afgain1, board_getpot_filtered_u16(POTAFGAIN, BOARD_AFGAIN_MIN, BOARD_AFGAIN_MAX), CAT_AG_INDEX);	// Параметр для регулировки уровня на выходе аудио-ЦАП
 	#endif /* WITHPOTAFGAIN */
 	#if WITHPBT && WITHPOTPBT
 		/* установка gpbtoffset PBTMIN, PBTMAX, midscale = PBTHALF */
@@ -9890,7 +9936,6 @@ static void zzanswer(uint_fast8_t arg)
 
 #if WITHIF4DSP
 
-#if ! WITHPOTAFGAIN
 static void aganswer(uint_fast8_t arg)
 {
 	// AF gain
@@ -9907,9 +9952,7 @@ static void aganswer(uint_fast8_t arg)
 		);
 	cat_answer(len);
 }
-#endif /* ! WITHPOTAFGAIN */
 
-#if ! WITHPOTIFGAIN
 static void rganswer(uint_fast8_t arg)
 {
 	// RF (IF) gain
@@ -9924,7 +9967,6 @@ static void rganswer(uint_fast8_t arg)
 		);
 	cat_answer(len);
 }
-#endif /* ! WITHPOTIFGAIN */
 
 static void sqanswer(uint_fast8_t arg)
 {
@@ -10450,12 +10492,8 @@ static canapfn catanswers [CAT_MAX_INDEX] =
 	zzanswer,
 #endif /* CTLSTYLE_V1D || CTLSTYLE_OLEG4Z_V1 */
 #if WITHIF4DSP
-#if ! WITHPOTIFGAIN
 	rganswer,
-#endif /* ! WITHPOTIFGAIN */
-#if ! WITHPOTAFGAIN
 	aganswer,
-#endif /* ! WITHPOTAFGAIN */
 	sqanswer,
 #endif /* CTLSTYLE_V1D || CTLSTYLE_OLEG4Z_V1 */
 	badcommandanswer,
@@ -10796,7 +10834,6 @@ processcatmsg(
 			cat_answer_request(CAT_BADCOMMAND_INDEX);
 		}
 	}
-#if ! WITHPOTAFGAIN
 	else if (match2('A', 'G'))
 	{
 		// AF gain level set/report
@@ -10804,6 +10841,7 @@ processcatmsg(
 		{
 			if (catpcount == 4)
 			{
+#if ! WITHPOTAFGAIN
 				//const uint_fast32_t p1 = vfy32up(catscanint(catp + 0, 1), 0, 0, 0);
 				const uint_fast32_t p2 = vfy32up(catscanint(catp + 1, 3), BOARD_AFGAIN_MIN, BOARD_AFGAIN_MAX, BOARD_AFGAIN_MAX);
 				if (afgain1 != p2)
@@ -10812,6 +10850,7 @@ processcatmsg(
 					updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
 					rc = 1;
 				}
+#endif /* ! WITHPOTAFGAIN */
 			}
 			else if (catpcount == 1)
 			{
@@ -10830,13 +10869,12 @@ processcatmsg(
 			cat_answer_request(CAT_BADCOMMAND_INDEX);
 		}
 	}
-#endif /* ! WITHPOTAFGAIN */
-#if ! WITHPOTIFGAIN
 	else if (match2('R', 'G'))
 	{
 		// RF gain level set/report
 		if (cathasparam != 0)
 		{
+#if ! WITHPOTIFGAIN
 			const uint_fast32_t p2 = vfy32up(catparam, BOARD_IFGAIN_MIN, BOARD_IFGAIN_MAX, BOARD_IFGAIN_MAX);
 			if (rfgain1 != p2)
 			{
@@ -10844,13 +10882,13 @@ processcatmsg(
 				updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
 				rc = 1;
 			}
+#endif /* ! WITHPOTIFGAIN */
 		}
 		else
 		{
 			cat_answer_request(CAT_RG_INDEX);	// rganswer
 		}
 	}
-#endif /* ! WITHPOTIFGAIN */
 #endif /* WITHIF4DSP */
 	else if (match2('R', 'A'))
 	{
@@ -11085,9 +11123,13 @@ processcatmsg(
 		{
 			// Скорость передачи от 10 до 60 WPM (в TS-590 от 4 до 60).
 #if ! WITHPOTWPM
-			elkeywpm = vfy32up(catparam, CWWPMMIN, CWWPMMAX, 20); 
+			const uint_fast32_t p1 = vfy32up(catparam, CWWPMMIN, CWWPMMAX, 20); 
+			if (p1 != elkeywpm)
+			{
+				elkeywpm = p1;
+				updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
+			}
 #endif /* ! WITHPOTWPM */
-			updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
 		}
 		else
 		{
