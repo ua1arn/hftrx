@@ -4095,7 +4095,8 @@ enum
 		DLE0 = 88,
 		DLE1 = 93
 		};
-	#if TUNE_TOP > 100000000uL
+
+	#if 1//TUNE_TOP > 100000000uL
 		#define DISPLC_WIDTH	9	// количество цифр в отображении частоты
 	#else
 		#define DISPLC_WIDTH	8	// количество цифр в отображении частоты
@@ -4111,7 +4112,6 @@ enum
 	static const FLASHMEM struct dzone dzones [] =
 	{
 		{	0,	0,	display_txrxstate2, REDRM_MODE, PGALL, },
-
 		{	3,	0,	display_ant5,		REDRM_MODE, PGALL, },
 		{	9,	0,	display_att4,		REDRM_MODE, PGALL, },
 		{	14,	0,	display_preovf3,	REDRM_BARS, PGALL, },
