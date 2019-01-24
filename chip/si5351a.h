@@ -63,6 +63,11 @@
 #define SI5351a_FANOUT		187		//  Fanout Enable
 #define SI5351a_SSC_R1			149		// Spread Spectrum Parameters 149..161
 
+#define SI5351a_CLK0_PHOFF	165	// [6..0] : CLK0 Initial Phase Offset
+#define SI5351a_CLK1_PHOFF	166	// [6..0] : CLK1 Initial Phase Offset
+#define SI5351a_CLK2_PHOFF	167	// [6..0] : CLK2 Initial Phase Offset
+
+
 #define SI5351a_R_DIV_1		0x00			// R-division ratio definitions
 #define SI5351a_R_DIV_2		0x10
 #define SI5351a_R_DIV_4		0x20
@@ -370,6 +375,13 @@ static void si5351aSetFrequencyB(uint_fast32_t frequency)
 		oldhint = hint;
 	}
 
+}
+
+// Function template
+statoc void si5351aQuadrature(void)
+{
+	si535x_SendRegister(SI5351a_CLK0_PHOFF, 0x00);
+	si535x_SendRegister(SI5351a_CLK1_PHOFF, 0x00);
 }
 
 static void si5351aInitialize(void)
