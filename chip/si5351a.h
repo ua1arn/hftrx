@@ -378,7 +378,7 @@ static void si5351aSetFrequencyB(uint_fast32_t frequency)
 }
 
 // Function template
-statoc void si5351aQuadrature(void)
+static void si5351aQuadrature(void)
 {
 	si535x_SendRegister(SI5351a_CLK0_PHOFF, 0x00);
 	si535x_SendRegister(SI5351a_CLK1_PHOFF, 0x00);

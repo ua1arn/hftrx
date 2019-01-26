@@ -1403,7 +1403,7 @@ static unsigned CDCACM_InterfaceDescriptorDataIf_a(
 
 /* ACM Functional Descriptor */
 // Abstract Control Management Functional Descriptor
-static unsigned CDCACM_r9fill_33(uint_fast8_t fill, uint8_t * buff, unsigned maxsize)
+static unsigned CDCACM_ACMFunctionalDescriptor(uint_fast8_t fill, uint8_t * buff, unsigned maxsize)
 {
 	const uint_fast8_t length = 4;
 	ASSERT(maxsize >= length);
@@ -1502,7 +1502,7 @@ static unsigned fill_CDCACM_function_a(uint_fast8_t fill, uint8_t * p, unsigned 
 	n += CDCACM_InterfaceDescriptorControlIf_a(fill, p + n, maxsize - n, offset, 0x01);	/* INTERFACE_CDC_CONTROL_3a Interface Descriptor 3/0 CDC Control, 1 Endpoint */
 	n += r9fill_31(fill, p + n, maxsize - n);	/* Header Functional Descriptor*/
 	n += CDCACM_r9fill_32_a(fill, p + n, maxsize - n, offset);	/* Call Managment Functional Descriptor*/
-	n += CDCACM_r9fill_33(fill, p + n, maxsize - n);	/* ACM Functional Descriptor */
+	n += CDCACM_ACMFunctionalDescriptor(fill, p + n, maxsize - n);	/* ACM Functional Descriptor */
 	n += CDC_UnionFunctionalDescriptor_a(fill, p + n, maxsize - n, offset);	/* Union Functional Descriptor INTERFACE_CDC_CONTROL_3a & INTERFACE_CDC_DATA_4a */
 	n += r9fill_35(fill, p + n, maxsize - n, highspeed, USB_ENDPOINT_IN(intnep));	/* Endpoint Descriptor 86 6 In, Interrupt */
 
@@ -1938,7 +1938,7 @@ static unsigned RNDIS_r9fill_32(uint_fast8_t fill, uint8_t * buff, unsigned maxs
 }
 
 // Abstract Control Management Functional Descriptor
-static unsigned RNDIS_r9fill_33(uint_fast8_t fill, uint8_t * buff, unsigned maxsize)
+static unsigned RNDIS_ACMFunctionalDescriptor(uint_fast8_t fill, uint8_t * buff, unsigned maxsize)
 {
 	const uint_fast8_t length = 4;
 	ASSERT(maxsize >= length);
@@ -2087,7 +2087,7 @@ static unsigned fill_RNDIS_function(uint_fast8_t fill, uint8_t * p, unsigned max
 	// Call Management Functional Descriptor
 	n += RNDIS_r9fill_32(fill, p + n, maxsize - n);
 	// Abstract Control Management Functional Descriptor
-	n += RNDIS_r9fill_33(fill, p + n, maxsize - n);
+	n += RNDIS_ACMFunctionalDescriptor(fill, p + n, maxsize - n);
 	// Union Functional Descriptor
 	n += RNDIS_UnionFunctionalDescriptor(fill, p + n, maxsize - n);
 	// Endpoint descriptors for Communication Class Interface     https://msdn.microsoft.com/en-US/library/ee482509(v=winembedded.60).aspx
