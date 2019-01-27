@@ -672,6 +672,11 @@
 		const uint32_t mask = (1U << 7); /* P7_7 */ \
 		arm_hardware_pio7_outputs(mask, (state != 0) * mask);	/* P7_7 DE=state */ \
 	} while (0)
+	/* управление состоянием сигнала MODE панели */
+	#define HARDWARE_LTDC_SET_MODE(state) do { \
+		const uint32_t mask = (1U << 0); /* P7_0 */ \
+		arm_hardware_pio7_outputs(mask, (state != 0) * mask);	/* P7_0 MODE=state */ \
+	} while (0)
 #endif /* LCDMODE_LTDC */
 
 #if 0

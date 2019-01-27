@@ -87,6 +87,7 @@
 		BOARD_DEMODE = 0		/* 0: static signal, 1: DE controlled */
 	};
 
+	#define BOARD_MODEVALUE 0			/* hold MODE=0 */
 	#define BOARD_DEVALUE 0			/* hold DE=0 */
 
 #elif LCDMODE_ILI8961
@@ -1228,6 +1229,9 @@ arm_hardware_ltdc_initialize(void)
 	local_delay_ms(150);
 	HARDWARE_LTDC_SET_DISP(BOARD_DEMODE, 1);
 #endif
+#if defined (BOARD_MODEVALUE)
+	HARDWARE_LTDC_SET_MODE(BOARD_MODEVALUE);
+#endif
 
 	debug_printf_P(PSTR("arm_hardware_ltdc_initialize done\n"));
 }
@@ -1863,6 +1867,9 @@ arm_hardware_ltdc_initialize(void)
 	HARDWARE_LTDC_SET_DISP(BOARD_DEMODE, 0);
 	local_delay_ms(150);
 	HARDWARE_LTDC_SET_DISP(BOARD_DEMODE, 1);
+#endif
+#if defined (BOARD_MODEVALUE)
+	HARDWARE_LTDC_SET_MODE(BOARD_MODEVALUE);
 #endif
 
 	debug_printf_P(PSTR("arm_hardware_ltdc_initialize done\n"));
