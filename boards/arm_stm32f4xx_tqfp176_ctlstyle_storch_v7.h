@@ -465,8 +465,7 @@
 	#endif /* WITHCURRLEVEL */
 
 	#if WITHSWRMTR
-		//FWD = BOARD_ADCXIN(2),		// MCP3208 CH2 Детектор прямой волны
-		//REF = BOARD_ADCXIN(3),		// MCP3208 CH3 Детектор отраженной волнф
+		//FWD = BOARD_ADCXIN(2), REF = BOARD_ADCXIN(3),		// MCP3208 CH2, CH3 Детектор прямой, отраженной волны
 		FWD = 14, REF = 15,	// PC5	SWR-meter
 		PWRI = FWD,			// PC4
 	#endif /* WITHSWRMTR */
