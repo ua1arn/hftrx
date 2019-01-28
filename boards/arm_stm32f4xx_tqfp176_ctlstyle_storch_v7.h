@@ -460,12 +460,15 @@
 	#endif /* WITHTHERMOLEVEL */
 
 	#if WITHCURRLEVEL
+		//PASENSEIX = BOARD_ADCXIN(0),		// MCP3208 CH0 PA current sense - ACS712-30 chip
 		PASENSEIX = 2,		// PA2 PA current sense - ACS712-05 chip
 	#endif /* WITHCURRLEVEL */
 
 	#if WITHSWRMTR
-		PWRI = 14,			// PC4
+		//FWD = BOARD_ADCXIN(2),		// MCP3208 CH2 Детектор прямой волны
+		//REF = BOARD_ADCXIN(3),		// MCP3208 CH3 Детектор отраженной волнф
 		FWD = 14, REF = 15,	// PC5	SWR-meter
+		PWRI = FWD,			// PC4
 	#endif /* WITHSWRMTR */
 		KI0 = 10, KI1 = 11, KI2 = 12, KI3 = 0, KI4 = 1	// клавиатура
 	};

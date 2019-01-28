@@ -8465,28 +8465,6 @@ int_fast16_t hamradio_get_temperature_value(void)
 // PA current sense - ACS712ELCTR-30B-T chip
 int_fast16_t hamradio_get_pacurrent_value(void)
 {
-#if 0
-
-
-	// x30A - 0.066 V/A
-	enum { 
-		sens = 66,			// millivolts / ampher
-		scale = 100			// результат - в десятых долях ампера
-	};
-
-	const uint_fast8_t adci = 0;	// CH0=IN-, CH1=IN+
-	const uint_fast8_t diff = 0;
-	static const long fullscale2 = 3300uL * scale;
-	uint_fast16_t vsenseZ = mcp3208_read(targetadc2, diff, adci);
-	uint_fast16_t vsense2 = (unsigned long) vsenseZ * fullscale2 / 4095;
-
-	static const long midpoint2 = 2500uL * scale;
-	int curr10a = ((long) midpoint2 - (long) vsense2 + sens / 2) / sens;
-
-	return curr10a;
-
-#else
-
 #if WITHCURRLEVEL
 	// Чувствительность датчиков:
 	// x05B - 0.185 V/A
@@ -8546,7 +8524,7 @@ int_fast16_t hamradio_get_pacurrent_value(void)
 	const unsigned Vref_mV = ADCVREF_CPU * 100;
 #endif /* WITHREFSENSOR */
 
-	const long vsense = board_getadc_unfiltered_u32(PASENSEIX, 0, (uint_fast32_t) Vref_mV * scale);
+	const long vsense = board_getadc_unfiltered_u32(adci, 0, (uint_fast32_t) Vref_mV * scale);
 #if CTLSTYLE_RAVENDSP_V5
 	const long midpoint = (gtx ? 2472uL : 2442uL) * scale; // tx=247200, rx=244200
 #else
@@ -8558,7 +8536,6 @@ int_fast16_t hamradio_get_pacurrent_value(void)
 	//debug_printf_P(PSTR("voltage vsense=%lu, midpoint=%lu, delta=%d mV, current=%d * 10 mA\n"), vsense, midpoint, v / scale, curr10);
 
 	return curr10;
-#endif
 }
 
 #endif /* WITHCURRLEVEL && WITHCPUADCHW */
