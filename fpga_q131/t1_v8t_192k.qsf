@@ -263,4 +263,5 @@ set_instance_assignment -name IO_MAXIMUM_TOGGLE_RATE "10 MHz" -to cpu_miso -enti
 set_instance_assignment -name IO_MAXIMUM_TOGGLE_RATE "1 MHz" -to dac_sleep -entity tc1_top_v8t_96k
 set_location_assignment PIN_85 -to refclk_out
 set_location_assignment PIN_83 -to cp_out
+set_location_assignment PIN_76 -to ssidata2
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
