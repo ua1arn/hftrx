@@ -549,4 +549,6 @@ void uacout_buffer_save(const uint8_t * buff, uint_fast16_t size);
 #define USBALIGN_BEGIN __attribute__ ((aligned (32)))
 #define USBALIGN_END /* nothing */
 
+void saveIQRTSxx(FLOAT_t iv, FLOAT_t qv);	// формирование отображения спектра
+
 #endif /* AUDIO_H_INCLUDED */

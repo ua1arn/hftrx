@@ -4847,7 +4847,7 @@ static struct Complex x256 [NTap256 * 2] = { { 0, 0 }, };
 static uint_fast16_t fft_head = 0;
 
 // формирование отображения спектра
-void savesamplespectrum96stereo(FLOAT_t iv, FLOAT_t qv)
+void saveIQRTSxx(FLOAT_t iv, FLOAT_t qv)
 {
 #if 0
 	FLOAT32P_t v = scalepair(get_float_monofreq(), 0x3fffff);	// frequency
@@ -5086,24 +5086,24 @@ saverts96(const uint32_t * buff)
 	// если используется конвертор на Rafael Micro R820T - требуется инверсия спектра
 	if (glob_swaprts != 0)
 	{
-		savesamplespectrum96stereo(
-			(int_fast32_t) buff [DMABUF32RTS0Q],	// previous
-			(int_fast32_t) buff [DMABUF32RTS0I]
+		saveIQRTSxx(
+			(int32_t) buff [DMABUF32RTS0Q],	// previous
+			(int32_t) buff [DMABUF32RTS0I]
 			);	
-		savesamplespectrum96stereo(
-			(int_fast32_t) buff [DMABUF32RTS1Q],	// current
-			(int_fast32_t) buff [DMABUF32RTS1I]
+		saveIQRTSxx(
+			(int32_t) buff [DMABUF32RTS1Q],	// current
+			(int32_t) buff [DMABUF32RTS1I]
 			);	
 	}
 	else
 	{
-		savesamplespectrum96stereo(
-			(int_fast32_t) buff [DMABUF32RTS0I],	// previous
-			(int_fast32_t) buff [DMABUF32RTS0Q]
+		saveIQRTSxx(
+			(int32_t) buff [DMABUF32RTS0I],	// previous
+			(int32_t) buff [DMABUF32RTS0Q]
 			);	
-		savesamplespectrum96stereo(
-			(int_fast32_t) buff [DMABUF32RTS1I],	// current
-			(int_fast32_t) buff [DMABUF32RTS1Q]
+		saveIQRTSxx(
+			(int32_t) buff [DMABUF32RTS1I],	// current
+			(int32_t) buff [DMABUF32RTS1Q]
 			);	
 	}
 

@@ -1487,6 +1487,16 @@ void RAMFUNC processing_dmabuffer32rts(uintptr_t addr)
 	++ n4;
 #endif /* WITHBUFFERSDEBUG */
 	voice192rts_t * const p = CONTAINING_RECORD(addr, voice192rts_t, buff);
+
+#if ! WITHTRANSPARENTIQ
+	unsigned i;
+	for (i = 0; i < DMABUFFSIZE192RTS; i += DMABUFSTEP192RTS)
+	{
+		const int32_t * const b = (const int32_t *) & p->buff [i];
+		saveIQRTSxx(b [0], b [1]);
+	}
+#endif /* ! WITHTRANSPARENTIQ */
+
 	buffers_savetouacin192rts(p);
 }
 #endif /* WITHRTS192 */
