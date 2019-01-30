@@ -7066,7 +7066,7 @@ updateboard(
 	}
 	// параметры, не имеющие специфики для разных приемников
 	{
-		const uint_fast8_t bi = getbankindex_tx(gtx);
+		const uint_fast8_t bi = getbankindex_pathi(0); //getbankindex_tx(gtx);
 		const int_fast32_t freq = gfreqs [bi];
 	#if CTLSTYLE_IGOR
 		full2 |= flagne_u16(& bandf100khint, freq / 100000uL);
