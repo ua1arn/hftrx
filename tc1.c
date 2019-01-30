@@ -12690,6 +12690,26 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		& spaceratio,
 		getzerobase, 
 	},
+#if WITHTX
+	{
+		"BREAK-IN", 7, 0, RJ_ON,	ISTEP1,	
+		ITEM_VALUE,
+		0, 1, 
+		offsetof(struct nvmap, bkinenable),
+		NULL,
+		& bkinenable,
+		getzerobase, 
+	},
+	{
+		"CW DELAY", 7, 2, 0,	ISTEP5,	/* задержка в десятках ms */
+		ITEM_VALUE,
+		5, 160,						/* 0.05..1.6 секунды */
+		offsetof(struct nvmap, bkindelay),
+		NULL,
+		& bkindelay,
+		getzerobase, 
+	},
+#endif /* WITHTX */
 #if WITHIF4DSP
 	{
 		"EDGE TIM", 7, 0, 0,	ISTEP1,		/* Set the rise time of the transmitted CW envelope. */
@@ -12772,26 +12792,6 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 #endif /* ! WITHFLATMENU */
 #if WITHTX
-#if WITHELKEY
-	{
-		"BREAK-IN", 7, 0, RJ_ON,	ISTEP1,	
-		ITEM_VALUE,
-		0, 1, 
-		offsetof(struct nvmap, bkinenable),
-		NULL,
-		& bkinenable,
-		getzerobase, 
-	},
-	{
-		"CW DELAY", 7, 2, 0,	ISTEP5,	/* задержка в десятках ms */
-		ITEM_VALUE,
-		5, 160,						/* 0.05..1.6 секунды */
-		offsetof(struct nvmap, bkindelay),
-		NULL,
-		& bkindelay,
-		getzerobase, 
-	},
-#endif /* WITHELKEY */
 #if WITHFANTIMER
 	{
 		"FAN TIME", 7, 0, 0,	ISTEP5,	
