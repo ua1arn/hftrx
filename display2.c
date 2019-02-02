@@ -3164,7 +3164,6 @@ enum
 
 	#elif DSTYLE_UR3LMZMOD
 		// x=30, y=16
-
 		enum
 		{
 			BDCV_ALLRX = 7,			// количество ячееек, отведенное под S-метр, панораму, иные отображения
@@ -3213,15 +3212,13 @@ enum
 		enum {
 			DPAGE0,					// Страница, в которой отображаются основные (или все) 
 			DPAGE1,					// Страница, в которой отображаются основные (или все) 
-			DPAGE2,					// Страница, в которой отображаются основные (или все) 
 			DISPLC_MODCOUNT
 		};
 		enum
 		{
 			PG0 = REDRSUBSET(DPAGE0),
 			PG1 = REDRSUBSET(DPAGE1),
-			PG2 = REDRSUBSET(DPAGE2),
-			PGALL = PG0 | PG1 | PG2 | REDRSUBSET_MENU,
+			PGALL = PG0 | PG1 | REDRSUBSET_MENU,
 			PGLATCH = PGALL,
 			PGunused
 		};
@@ -3258,8 +3255,7 @@ enum
 			/* ---------------------------------- */
 			{	0,	9,	dsp_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
 			{	0,	9,	display2_spectrum,	REDRM_BARS, PG1, },// подготовка изображения спектра
-			{	0,	9,	display2_waterfall,	REDRM_BARS, PG2, },// подготовка изображения водопада
-			{	0,	9,	display2_colorbuff,REDRM_BARS,	PG1 | PG2, },// Отображение водопада и/или спектра
+			{	0,	9,	display2_colorbuff,	REDRM_BARS,	PG1, },// Отображение водопада и/или спектра
 			/* ---------------------------------- */
 		#if defined (RTC1_TYPE)
 			{	0,	14,	display_time5,		REDRM_BARS, PG0, },	// TIME
@@ -3342,7 +3338,6 @@ enum
 			DPAGE0,					// Страница, в которой отображаются основные (или все) 
 		#if WITHDSPEXTDDC
 			DPAGE1,					// Страница, в которой отображаются основные (или все) 
-			DPAGE2,					// Страница, в которой отображаются основные (или все) 
 		#endif /* WITHDSPEXTDDC */
 			DISPLC_MODCOUNT
 		};

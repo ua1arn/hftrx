@@ -39,7 +39,7 @@
 #if 1
 
 	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
-	#define WITHUSBHWVBUSSENSE	1	/* используется предопределенный вывод VBUS_SENSE */
+	//#define WITHUSBHWVBUSSENSE	1	/* используется предопределенный вывод VBUS_SENSE */
 	//#define WITHUSBHWHIGHSPEED	1	/* Используется встроенная в процессор поддержка USB HS */
 	//#define WITHUSBHWHIGHSPEEDDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
 	#define WITHUSBHW_DEVICE	USB_OTG_FS	/* на этом устройстве поддерживается функцилнальность DEVUCE	*/
@@ -418,7 +418,7 @@
 #define SPI_CSEL_PG6	(1U << 6)	// PG6 on-board codec1 NAU8822L
 //#define SPI_CSEL_PG5	(1U << 5)	// PG5 FPGA CS2 - used as overflov signal from ADC
 #define SPI_CSEL_PG1	(1U << 1)	// PG0 FPGA control registers CS
-#define SPI_CSEL_PG0	(1U << 0)	// PG1 FPGA NCO1 registers CS
+//#define SPI_CSEL_PG0	(1U << 0)	// PG1 FPGA NCO1 registers CS
 
 // Здесь должны быть перечислены все биты формирования CS в устройстве.
 #define SPI_ALLCS_BITS ( \
@@ -428,7 +428,7 @@
 	SPI_CSEL_PG6	| 	/* PG6 on-board codec1 NAU8822L */ \
 	/*SPI_CSEL_PG5	| */	/* PG5 FPGA CS2 */ \
 	SPI_CSEL_PG1	| 	/* PG0 FPGA control registers CS */ \
-	SPI_CSEL_PG0	| 	/* PG1 FPGA NCO1 registers CS */ \
+	/*SPI_CSEL_PG0	| */	/* PG1 FPGA NCO1 registers CS */ \
 	0)
 
 #define SPI_ALLCS_BITSNEG 0		// Выходы, активные при "1"
@@ -437,6 +437,18 @@
 //#define SPI_NAEN_PORT_C(v)	do { GPIOE->BSRR = BSRR_C(v); __DSB(); } while (0)
 
 //#define SPI_NAEN_BIT (1u << 7)		// * PE7 used
+
+
+/* Назначение адресов на SPI шине */
+#define targetext1	SPI_CSEL_PG15 	/* external devices control */
+#define targetctl1	SPI_CSEL_PG7 	/* control register as a chain of registers */
+#define targetfpga1	SPI_CSEL_PG1 	/* control register in FPGA */
+
+#define targetlcd	targetext1 	/* LCD over SPI line devices control */ 
+#define targetuc1608 targetext1	/* LCD with positive chip select signal	*/
+
+#define targetnvram SPI_CSEL_PG8  	/* serial nvram */
+#define targetcodec1 SPI_CSEL_PG6 	/* NAU8822L */
 
 /* инициализация лиий выбора периферийных микросхем */
 #define SPI_ALLCS_INITIALIZE() \

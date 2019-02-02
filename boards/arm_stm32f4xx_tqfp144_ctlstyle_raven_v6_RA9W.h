@@ -378,18 +378,6 @@
 
 	#define DDS1_CLK_DIV	1		/* ƒелитель опорной частоты перед подачей в DDS1 */
 
-	/* Ќазначение адресов на SPI шине */
-	#define targetdds1	SPI_CSEL_PG0 	/* FPGA NCO1 */
-	#define targetext1	SPI_CSEL_PG15 	/* external devices control */
-	#define targetctl1	SPI_CSEL_PG7 	/* control register as a chain of registers */
-	#define targetfpga1	SPI_CSEL_PG1 	/* control register in FPGA */
-
-	#define targetlcd	targetext1 	/* LCD over SPI line devices control */ 
-	#define targetuc1608 targetext1	/* LCD with positive chip select signal	*/
-
-	#define targetnvram SPI_CSEL_PG8  	/* serial nvram */
-	#define targetcodec1 SPI_CSEL_PG6 	/* NAU8822L */
-
 	#define WITHMODESETFULLNFM 1
 
 	//#define WITHWFM	1			/* используетс€ WFM */

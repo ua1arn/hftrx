@@ -224,23 +224,6 @@ applicable agreement for further details.
 	(annotation_block (location)(rect 56 176 112 192))
 )
 (pin
-	(input)
-	(rect 112 960 280 976)
-	(text "INPUT" (rect 125 0 153 10)(font "Arial" (font_size 6)))
-	(text "pps_in" (rect 5 0 36 12)(font "Arial" ))
-	(pt 168 8)
-	(drawing
-		(line (pt 84 12)(pt 109 12))
-		(line (pt 84 4)(pt 109 4))
-		(line (pt 113 8)(pt 168 8))
-		(line (pt 84 12)(pt 84 4))
-		(line (pt 109 4)(pt 113 8))
-		(line (pt 109 12)(pt 113 8))
-	)
-	(text "VCC" (rect 128 7 148 17)(font "Arial" (font_size 6)))
-	(annotation_block (location)(rect 56 992 112 1008))
-)
-(pin
 	(output)
 	(rect 768 176 944 192)
 	(text "OUTPUT" (rect 1 0 39 10)(font "Arial" (font_size 6)))
@@ -794,50 +777,7 @@ applicable agreement for further details.
 	)
 )
 (symbol
-	(rect 352 920 464 1048)
-	(text "fqmemter" (rect 5 0 58 14)(font "Arial" (font_size 8)))
-	(text "inst11" (rect 8 112 37 124)(font "Arial" ))
-	(port
-		(pt 0 32)
-		(input)
-		(text "sysclk" (rect 0 0 36 14)(font "Arial" (font_size 8)))
-		(text "sysclk" (rect 21 27 57 41)(font "Arial" (font_size 8)))
-		(line (pt 0 32)(pt 16 32))
-	)
-	(port
-		(pt 0 48)
-		(input)
-		(text "pps" (rect 0 0 21 14)(font "Arial" (font_size 8)))
-		(text "pps" (rect 21 43 42 57)(font "Arial" (font_size 8)))
-		(line (pt 0 48)(pt 16 48))
-	)
-	(port
-		(pt 0 64)
-		(input)
-		(text "cs" (rect 0 0 14 14)(font "Arial" (font_size 8)))
-		(text "cs" (rect 21 59 35 73)(font "Arial" (font_size 8)))
-		(line (pt 0 64)(pt 16 64))
-	)
-	(port
-		(pt 0 80)
-		(input)
-		(text "sclk" (rect 0 0 22 14)(font "Arial" (font_size 8)))
-		(text "sclk" (rect 21 75 43 89)(font "Arial" (font_size 8)))
-		(line (pt 0 80)(pt 16 80))
-	)
-	(port
-		(pt 112 32)
-		(output)
-		(text "miso" (rect 0 0 25 14)(font "Arial" (font_size 8)))
-		(text "miso" (rect 66 27 91 41)(font "Arial" (font_size 8)))
-		(line (pt 112 32)(pt 96 32))
-	)
-	(drawing
-		(rectangle (rect 16 16 96 112))
-	)
-)
-(symbol
-	(rect 184 -8 344 56)
+	(rect 176 -8 336 56)
 	(text "glogclk1" (rect 4 -16 60 0)(font "Arial" (font_size 10)))
 	(text "inst26" (rect 8 48 37 60)(font "Arial" ))
 	(port
@@ -1211,6 +1151,21 @@ applicable agreement for further details.
 		(rectangle (rect 16 16 216 272))
 	)
 )
+(symbol
+	(rect 448 936 480 952)
+	(text "VCC" (rect 7 0 27 10)(font "Arial" (font_size 6)))
+	(text "inst11" (rect 3 5 32 17)(font "Arial" )(invisible))
+	(port
+		(pt 16 16)
+		(output)
+		(text "1" (rect 19 7 24 19)(font "Courier New" (bold))(invisible))
+		(text "1" (rect 19 7 24 19)(font "Courier New" (bold))(invisible))
+		(line (pt 16 16)(pt 16 8))
+	)
+	(drawing
+		(line (pt 8 8)(pt 24 8))
+	)
+)
 (connector
 	(pt 640 184)
 	(pt 768 184)
@@ -1312,42 +1267,6 @@ applicable agreement for further details.
 	(pt 464 952)
 )
 (connector
-	(pt 352 984)
-	(pt 320 984)
-)
-(connector
-	(pt 320 984)
-	(pt 320 880)
-)
-(connector
-	(text "clk_122880" (rect 178 936 233 948)(font "Arial" ))
-	(pt 168 952)
-	(pt 352 952)
-	(color 255 0 0)
-)
-(connector
-	(pt 352 968)
-	(pt 280 968)
-)
-(connector
-	(text "cpu_sclk" (rect 186 984 229 996)(font "Arial" ))
-	(pt 352 1000)
-	(pt 176 1000)
-)
-(connector
-	(text "fpga_ctl_cs" (rect 168 864 225 876)(font "Arial" ))
-	(pt 168 880)
-	(pt 320 880)
-)
-(connector
-	(pt 320 880)
-	(pt 472 880)
-)
-(connector
-	(pt 184 24)
-	(pt 160 24)
-)
-(connector
 	(pt 120 592)
 	(pt 200 592)
 )
@@ -1373,15 +1292,6 @@ applicable agreement for further details.
 (connector
 	(pt 408 104)
 	(pt 352 104)
-)
-(connector
-	(pt 344 24)
-	(pt 352 24)
-)
-(connector
-	(text "clk_122880" (rect 418 8 473 20)(font "Arial" ))
-	(pt 352 24)
-	(pt 416 24)
 )
 (connector
 	(pt 120 528)
@@ -1534,10 +1444,27 @@ applicable agreement for further details.
 	(pt 672 280)
 	(pt 768 280)
 )
+(connector
+	(text "fpga_ctl_cs" (rect 312 864 369 876)(font "Arial" ))
+	(pt 472 880)
+	(pt 312 880)
+)
+(connector
+	(pt 160 24)
+	(pt 176 24)
+)
+(connector
+	(text "clk_122880" (rect 418 8 473 20)(font "Arial" ))
+	(pt 352 24)
+	(pt 416 24)
+)
+(connector
+	(pt 336 24)
+	(pt 352 24)
+)
 (junction (pt 776 384))
 (junction (pt 656 120))
 (junction (pt 360 656))
-(junction (pt 320 880))
 (junction (pt 352 24))
 (junction (pt 320 528))
 (junction (pt 304 656))
