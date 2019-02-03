@@ -207,23 +207,6 @@ applicable agreement for further details.
 	(annotation_block (location)(rect 952 208 1008 224))
 )
 (pin
-	(input)
-	(rect 1288 856 1456 872)
-	(text "INPUT" (rect 125 0 153 10)(font "Arial" (font_size 6)))
-	(text "pps_in" (rect 5 0 36 12)(font "Arial" ))
-	(pt 168 8)
-	(drawing
-		(line (pt 84 12)(pt 109 12))
-		(line (pt 84 4)(pt 109 4))
-		(line (pt 113 8)(pt 168 8))
-		(line (pt 84 12)(pt 84 4))
-		(line (pt 109 4)(pt 113 8))
-		(line (pt 109 12)(pt 113 8))
-	)
-	(text "VCC" (rect 128 7 148 17)(font "Arial" (font_size 6)))
-	(annotation_block (location)(rect 1176 864 1232 880))
-)
-(pin
 	(output)
 	(rect 1624 160 1800 176)
 	(text "OUTPUT" (rect 1 0 39 10)(font "Arial" (font_size 6)))
@@ -777,49 +760,6 @@ applicable agreement for further details.
 	)
 )
 (symbol
-	(rect 1528 816 1640 944)
-	(text "fqmemter" (rect 5 0 58 14)(font "Arial" (font_size 8)))
-	(text "inst11" (rect 8 112 37 124)(font "Arial" ))
-	(port
-		(pt 0 32)
-		(input)
-		(text "sysclk" (rect 0 0 36 14)(font "Arial" (font_size 8)))
-		(text "sysclk" (rect 21 27 57 41)(font "Arial" (font_size 8)))
-		(line (pt 0 32)(pt 16 32))
-	)
-	(port
-		(pt 0 48)
-		(input)
-		(text "pps" (rect 0 0 21 14)(font "Arial" (font_size 8)))
-		(text "pps" (rect 21 43 42 57)(font "Arial" (font_size 8)))
-		(line (pt 0 48)(pt 16 48))
-	)
-	(port
-		(pt 0 64)
-		(input)
-		(text "cs" (rect 0 0 14 14)(font "Arial" (font_size 8)))
-		(text "cs" (rect 21 59 35 73)(font "Arial" (font_size 8)))
-		(line (pt 0 64)(pt 16 64))
-	)
-	(port
-		(pt 0 80)
-		(input)
-		(text "sclk" (rect 0 0 22 14)(font "Arial" (font_size 8)))
-		(text "sclk" (rect 21 75 43 89)(font "Arial" (font_size 8)))
-		(line (pt 0 80)(pt 16 80))
-	)
-	(port
-		(pt 112 32)
-		(output)
-		(text "miso" (rect 0 0 25 14)(font "Arial" (font_size 8)))
-		(text "miso" (rect 66 27 91 41)(font "Arial" (font_size 8)))
-		(line (pt 112 32)(pt 96 32))
-	)
-	(drawing
-		(rectangle (rect 16 16 96 112))
-	)
-)
-(symbol
 	(rect 968 32 1128 96)
 	(text "glogclk1" (rect 4 -16 60 0)(font "Arial" (font_size 10)))
 	(text "inst26" (rect 8 48 37 60)(font "Arial" ))
@@ -1173,6 +1113,21 @@ applicable agreement for further details.
 		(rectangle (rect 16 16 216 240))
 	)
 )
+(symbol
+	(rect 1624 832 1656 848)
+	(text "VCC" (rect 7 0 27 10)(font "Arial" (font_size 6)))
+	(text "inst" (rect 3 5 20 17)(font "Arial" )(invisible))
+	(port
+		(pt 16 16)
+		(output)
+		(text "1" (rect 19 7 24 19)(font "Courier New" (bold))(invisible))
+		(text "1" (rect 19 7 24 19)(font "Courier New" (bold))(invisible))
+		(line (pt 16 16)(pt 16 8))
+	)
+	(drawing
+		(line (pt 8 8)(pt 24 8))
+	)
+)
 (connector
 	(pt 1768 480)
 	(pt 1744 480)
@@ -1319,41 +1274,6 @@ applicable agreement for further details.
 	(pt 1728 832)
 )
 (connector
-	(pt 1704 848)
-	(pt 1640 848)
-)
-(connector
-	(pt 1528 880)
-	(pt 1496 880)
-)
-(connector
-	(pt 1496 880)
-	(pt 1496 776)
-)
-(connector
-	(pt 1528 864)
-	(pt 1456 864)
-)
-(connector
-	(pt 1496 776)
-	(pt 1648 776)
-)
-(connector
-	(text "cpu_sclk" (rect 1362 880 1405 892)(font "Arial" ))
-	(pt 1528 896)
-	(pt 1352 896)
-)
-(connector
-	(text "fpga_ctl_cs" (rect 1344 760 1401 772)(font "Arial" ))
-	(pt 1344 776)
-	(pt 1496 776)
-)
-(connector
-	(text "refclk_in" (rect 1394 832 1436 844)(font "Arial" ))
-	(pt 1528 848)
-	(pt 1384 848)
-)
-(connector
 	(text "clk_122880" (rect 1298 -8 1353 4)(font "Arial" ))
 	(pt 1168 8)
 	(pt 1296 8)
@@ -1486,11 +1406,19 @@ applicable agreement for further details.
 	(pt 2800 200)
 	(bus)
 )
+(connector
+	(text "fpga_ctl_cs" (rect 1344 760 1401 772)(font "Arial" ))
+	(pt 1344 776)
+	(pt 1648 776)
+)
+(connector
+	(pt 1640 848)
+	(pt 1704 848)
+)
 (junction (pt 1672 480))
 (junction (pt 1184 584))
 (junction (pt 1552 168))
 (junction (pt 1568 312))
 (junction (pt 1224 712))
 (junction (pt 1168 712))
-(junction (pt 1496 776))
 (junction (pt 1168 64))

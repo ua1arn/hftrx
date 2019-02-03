@@ -242,6 +242,8 @@ set_location_assignment PIN_44 -to led2
 set_location_assignment PIN_39 -to pllrefout
 set_location_assignment PIN_72 -to pllrefout_alt
 set_location_assignment PIN_144 -to sai2_sd_b
+set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
+set_global_assignment -name QIP_FILE fir_10wfm_2ch.qip
 set_global_assignment -name SDC_FILE tc1_top_v7_oleg4z.sdc
 set_global_assignment -name QIP_FILE lpm_counter_mod6.qip
 set_global_assignment -name QIP_FILE lpm_counter_i2sclocls.qip
@@ -274,10 +276,7 @@ set_global_assignment -name QIP_FILE lpm_decode_4ch_en.qip
 set_global_assignment -name BDF_FILE fqmemter.bdf
 set_global_assignment -name QIP_FILE fifo64.qip
 set_global_assignment -name QIP_FILE cic_64_2iq.qip
-set_global_assignment -name QIP_FILE cic40_ddc_1rx.qip
-set_global_assignment -name QIP_FILE cic40_ddc_2rx.qip
 set_global_assignment -name BDF_FILE tc1_top_v7_oleg4z.bdf
 set_global_assignment -name BDF_FILE t1_1ch_wfm.bdf
 set_global_assignment -name QIP_FILE lpm_counter_mod4.qip
 set_global_assignment -name QIP_FILE lpm_counter_mod2.qip
-set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
