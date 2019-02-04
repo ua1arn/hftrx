@@ -839,6 +839,13 @@ buffers_savetouacin(voice16_t * p)
 	refreshDMA_uacin();		// если DMA  остановлено - начать обмен
 }
 
+#else
+
+int_fast32_t dsp_get_samplerateuacin_rts(void)		// RTS samplerate
+{
+	return 48000L;
+}
+
 #endif /* WITHUSBUAC */
 
 #if WITHI2SHW
