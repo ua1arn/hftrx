@@ -14272,6 +14272,10 @@ static void hardware_usbd_initialize(void)
 		const uint_fast8_t ifhs = 0;
 	#endif /* WITHUSBHWHIGHSPEED */
 
+#if WITHUSBUAC
+	uacout_buffer_initialize();
+#endif /* WITHUSBUAC */
+
 	USBD_Init2(& hUsbDevice, ifhs);
 #if CPUSTYLE_STM32F
 	USBD_AddClass(& hUsbDevice, & USBD_CLASS_XXX);
@@ -14296,9 +14300,6 @@ static void board_usbd_initialize(void)
 	#endif /* ITHUSBHWHIGHSPEED && WITHUSBHWHIGHSPEEDDESC */
 
 	usbd_descriptors_initialize(deschs && ifhs);
-#if WITHUSBUAC
-	uacout_buffer_initialize();
-#endif /* WITHUSBUAC */
 	hardware_usbd_initialize();
 	hardware_usbd_dma_initialize();
 	hardware_usbd_dma_enable();
