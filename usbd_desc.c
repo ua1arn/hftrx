@@ -1293,6 +1293,33 @@ static unsigned fill_UACOUT48_function(uint_fast8_t fill, uint8_t * p, unsigned 
 	return n;
 }
 
+static unsigned fill_UAC_function(uint_fast8_t fill, uint8_t * p, unsigned maxsize, int highspeed)
+{
+	unsigned n = 0;
+
+
+	#if WITHUSBUAC3
+		/* отдельные функции для передачи в компютер спектра и звука */
+		n += fill_UACIN48_function(fill, p + n, maxsize - n, highspeed, 0);
+		#if WITHRTS96 || WITHRTS192
+			n += fill_UACINRTS_function(fill, p + n, maxsize - n, highspeed, 1);
+		#else /* WITHRTS96 || WITHRTS192 */
+			#error WITHRTS96 or WITHRTS192 required for WITHUSBUAC3
+		#endif /* WITHRTS96 || WITHRTS192 */
+
+	#else /* WITHUSBUAC3 */
+		/* раздичные форматы для передачи в компютер для передачи спектра и звука */
+		n += fill_UACIN48_INRTS_function(fill, p + n, maxsize - n, highspeed, 0);
+
+	#endif /* WITHUSBUAC3 */
+
+//#if WITHTX
+	n += fill_UACOUT48_function(fill, p + n, maxsize - n, highspeed, 2);
+//#endif /* WITHTX */
+
+	return n;
+}
+
 #endif /* WITHUSBUAC */
 
 #if WITHUSBCDC
@@ -2578,7 +2605,6 @@ static unsigned fill_DFU_function(uint_fast8_t fill, uint8_t * p, unsigned maxsi
 
 static unsigned fill_Configuration_compound(uint_fast8_t fill, uint8_t * p, unsigned maxsize, int highspeed)
 {
-	unsigned offset;
 	unsigned n = 0;
 
 #if WITHUSBRNDIS
@@ -2590,26 +2616,7 @@ static unsigned fill_Configuration_compound(uint_fast8_t fill, uint8_t * p, unsi
 #endif /* WITHUSBCDC */
 
 #if WITHUSBUAC
-
-	#if WITHUSBUAC3
-		/* отдельные функции для передачи в компютер спектра и звука */
-		n += fill_UACIN48_function(fill, p + n, maxsize - n, highspeed, 0);
-		#if WITHRTS96 || WITHRTS192
-			n += fill_UACINRTS_function(fill, p + n, maxsize - n, highspeed, 1);
-		#else /* WITHRTS96 || WITHRTS192 */
-			#error WITHRTS96 or WITHRTS192 required for WITHUSBUAC3
-		#endif /* WITHRTS96 || WITHRTS192 */
-
-	#else /* WITHUSBUAC3 */
-		/* раздичные форматы для передачи в компютер для передачи спектра и звука */
-		n += fill_UACIN48_INRTS_function(fill, p + n, maxsize - n, highspeed, 0);
-
-	#endif /* WITHUSBUAC3 */
-
-//#if WITHTX
-	n += fill_UACOUT48_function(fill, p + n, maxsize - n, highspeed, 2);
-//#endif /* WITHTX */
-
+	n += fill_UAC_function(fill, p + n, maxsize - n, highspeed);
 #endif /* WITHUSBUAC */
 
 #if WITHUSBCDCEEM
