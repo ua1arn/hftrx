@@ -129,7 +129,7 @@ enum
 
 	STRING_ID_DFU,
 	STRING_ID_DFU_0,
-	STRING_ID_DFU_1,
+	//STRING_ID_DFU_1,
 	// 
 	STRING_ID_count
 };
@@ -141,9 +141,10 @@ struct stringtempl
 };
 
 // STM32H743IIT6 descriptors:
-static const char strFlashDesc [] = "@Internal Flash /0x08000000/16*128Kg";
-static const char strOptBytesDesc [] = "@Option Bytes /0x5200201C/01*128 e";
+//static const char strFlashDesc [] = "@Internal Flash /0x08000000/16*128Kg";
+//static const char strOptBytesDesc [] = "@Option Bytes /0x5200201C/01*128 e";
 
+static const char strFlashDesc [] = "@SPI Flash : M25Px/0x18000000/32*64Kg";
 
 static const struct stringtempl strtemplates [] =
 {
@@ -157,7 +158,7 @@ static const struct stringtempl strtemplates [] =
 
 	{ STRING_ID_DFU, "Storch DFU Device", },
 	{ STRING_ID_DFU_0, strFlashDesc, },
-	{ STRING_ID_DFU_1, strOptBytesDesc, },
+	//{ STRING_ID_DFU_1, strOptBytesDesc, },
 
 	#if CTLSTYLE_OLEG4Z_V1
 		{ STRING_ID_a0, "Storch TRX Voice", },		// tag for Interface Descriptor 0/0 Audio
@@ -1526,6 +1527,17 @@ static unsigned fill_CDCACM_function_a(uint_fast8_t fill, uint8_t * p, unsigned 
 	return n;
 }
 
+// Group of CDC
+static unsigned fill_CDCACM_function(uint_fast8_t fill, uint8_t * p, unsigned maxsize, int highspeed)
+{
+	unsigned offset;
+	unsigned n = 0;
+
+	for (offset = 0; offset < WITHUSBHWCDC_N; ++ offset)
+		n += fill_CDCACM_function_a(fill, p + n, maxsize - n, highspeed, offset);
+	return n;
+}
+
 #endif /* WITHUSBCDC */
 
 #if WITHUSBCDCEEM
@@ -2566,16 +2578,15 @@ static unsigned fill_DFU_function(uint_fast8_t fill, uint8_t * p, unsigned maxsi
 
 static unsigned fill_Configuration_compound(uint_fast8_t fill, uint8_t * p, unsigned maxsize, int highspeed)
 {
-	unsigned n = 0;
 	unsigned offset;
+	unsigned n = 0;
 
 #if WITHUSBRNDIS
 	n += fill_RNDIS_function(fill, p + n, maxsize - n, highspeed);
 #endif /* WITHUSBRNDIS */
 
 #if WITHUSBCDC
-	for (offset = 0; offset < WITHUSBHWCDC_N; ++ offset)
-		n += fill_CDCACM_function_a(fill, p + n, maxsize - n, highspeed, offset);
+	n += fill_CDCACM_function(fill, p + n, maxsize - n, highspeed);
 #endif /* WITHUSBCDC */
 
 #if WITHUSBUAC

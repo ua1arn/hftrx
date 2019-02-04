@@ -168,8 +168,13 @@ enum
 
 #if WITHUSBCDC
 	#define VIRTUAL_COM_PORT_INT_SIZE 			10
-	#define VIRTUAL_COM_PORT_IN_DATA_SIZE			64
-	#define VIRTUAL_COM_PORT_OUT_DATA_SIZE			64
+	#if WITHUSBHWHIGHSPEEDDESC
+		#define VIRTUAL_COM_PORT_IN_DATA_SIZE			512
+		#define VIRTUAL_COM_PORT_OUT_DATA_SIZE			512
+	#else /* WITHUSBHWHIGHSPEEDDESC */
+		#define VIRTUAL_COM_PORT_IN_DATA_SIZE			64
+		#define VIRTUAL_COM_PORT_OUT_DATA_SIZE			64
+	#endif /* WITHUSBHWHIGHSPEEDDESC */
 #endif /* WITHUSBCDC */
 
 #if WITHUSBHID
@@ -318,73 +323,73 @@ enum
 		#endif /* WITHUSBUAC3 */
 	#endif /* WITHUSBUAC */
 
-#if WITHUSBRNDIS
-	enum
-	{
+	#if WITHUSBRNDIS
+		enum
+		{
 
-		INTERFACE_RNDIS_CONTROL_5,	/* RNDIS control Interface */
-		INTERFACE_RNDIS_DATA_6,		/* RNDIS data Interface */
-	};
-#endif /* WITHUSBRNDIS */
-#if WITHUSBUAC
-	enum
-	{
+			INTERFACE_RNDIS_CONTROL_5,	/* RNDIS control Interface */
+			INTERFACE_RNDIS_DATA_6,		/* RNDIS data Interface */
+		};
+	#endif /* WITHUSBRNDIS */
+	#if WITHUSBUAC
+		enum
+		{
 
-		#if WITHUSBUAC3
-			INTERFACE_AUDIO_CONTROL_SPK,		/* AUDIO transmitter input control interface */
-			INTERFACE_AUDIO_SPK,			/* USB Speaker Standard AS Interface Descriptor - Audio Streaming Zero Bandwith */
-			INTERFACE_AUDIO_MIKE,		/* USB receiver output  Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3)*/ //zero-bandwidth interface
-			INTERFACE_AUDIO_CONTROL_RTS,		/* AUDIO spectrum control interface */
-			INTERFACE_AUDIO_RTS,		/* USB spectrum Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3)*/ //zero-bandwidth interface
-			//INTERFACE_AUDIO_last = INTERFACE_AUDIO_CONTROL_SPK + 3,
-		#else
-			INTERFACE_AUDIO_CONTROL_SPK,		/* AUDIO control interface */
-			INTERFACE_AUDIO_SPK,		/* USB Speaker Standard AS Interface Descriptor - Audio Streaming Zero Bandwith */
-			INTERFACE_AUDIO_MIKE,		/* USB Microphone Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3)*/ //zero-bandwidth interface
-			//INTERFACE_AUDIO_last = INTERFACE_AUDIO_CONTROL_SPK + 2,
-		#endif
-	};
-#endif /* WITHUSBUAC */
-#if WITHUSBCDC
-	enum
-	{
+			#if WITHUSBUAC3
+				INTERFACE_AUDIO_CONTROL_SPK,		/* AUDIO transmitter input control interface */
+				INTERFACE_AUDIO_SPK,			/* USB Speaker Standard AS Interface Descriptor - Audio Streaming Zero Bandwith */
+				INTERFACE_AUDIO_MIKE,		/* USB receiver output  Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3)*/ //zero-bandwidth interface
+				INTERFACE_AUDIO_CONTROL_RTS,		/* AUDIO spectrum control interface */
+				INTERFACE_AUDIO_RTS,		/* USB spectrum Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3)*/ //zero-bandwidth interface
+				//INTERFACE_AUDIO_last = INTERFACE_AUDIO_CONTROL_SPK + 3,
+			#else
+				INTERFACE_AUDIO_CONTROL_SPK,		/* AUDIO control interface */
+				INTERFACE_AUDIO_SPK,		/* USB Speaker Standard AS Interface Descriptor - Audio Streaming Zero Bandwith */
+				INTERFACE_AUDIO_MIKE,		/* USB Microphone Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3)*/ //zero-bandwidth interface
+				//INTERFACE_AUDIO_last = INTERFACE_AUDIO_CONTROL_SPK + 2,
+			#endif
+		};
+	#endif /* WITHUSBUAC */
+	#if WITHUSBCDC
+		enum
+		{
 
-		INTERFACE_CDC_base,
-		INTERFACE_CDC_CONTROL_3a = INTERFACE_CDC_base,	/* CDC ACM control Interface */
-		INTERFACE_CDC_DATA_4a,		/* CDC ACM data Interface */
-		INTERFACE_CDC_CONTROL_3b,	/* CDC ACM control Interface */
-		INTERFACE_CDC_DATA_4b,		/* CDC ACM data Interface */
-		INTERFACE_CDC_last = INTERFACE_CDC_base + WITHUSBHWCDC_N * 2 - 1,
-	};
-#endif /* WITHUSBCDC */
-#if WITHUSBCDCEEM
-	enum
-	{
-		INTERFACE_CDCEEM_DATA_6		/* CDC ECM/CDC EEM data Interface */
-	};
-#endif /* WITHUSBCDCEEM */
-#if WITHUSBCDCECM
-	enum
-	{
-		INTERFACE_CDCECM_CONTROL_5,	/* CDC ECM control Interface */
-		INTERFACE_CDCECM_DATA_6		/* CDC ECM/CDC EEM data Interface */
-	};
-#endif /* WITHUSBCDCECM */
-#if WITHUSBHID
-	enum
-	{
-		INTERFACE_HID_CONTROL_7	/* HID control Interface */
-		//
-	};
-#endif /* WITHUSBHID */
+			INTERFACE_CDC_base,
+			INTERFACE_CDC_CONTROL_3a = INTERFACE_CDC_base,	/* CDC ACM control Interface */
+			INTERFACE_CDC_DATA_4a,		/* CDC ACM data Interface */
+			INTERFACE_CDC_CONTROL_3b,	/* CDC ACM control Interface */
+			INTERFACE_CDC_DATA_4b,		/* CDC ACM data Interface */
+			INTERFACE_CDC_last = INTERFACE_CDC_base + WITHUSBHWCDC_N * 2 - 1,
+		};
+	#endif /* WITHUSBCDC */
+	#if WITHUSBCDCEEM
+		enum
+		{
+			INTERFACE_CDCEEM_DATA_6		/* CDC ECM/CDC EEM data Interface */
+		};
+	#endif /* WITHUSBCDCEEM */
+	#if WITHUSBCDCECM
+		enum
+		{
+			INTERFACE_CDCECM_CONTROL_5,	/* CDC ECM control Interface */
+			INTERFACE_CDCECM_DATA_6		/* CDC ECM/CDC EEM data Interface */
+		};
+	#endif /* WITHUSBCDCECM */
+	#if WITHUSBHID
+		enum
+		{
+			INTERFACE_HID_CONTROL_7	/* HID control Interface */
+			//
+		};
+	#endif /* WITHUSBHID */
 
-#if WITHUSBDFU
-	enum
-	{
-		INTERFACE_DFU_CONTROL		/* DFU control Interface */
-		//
-	};
-#endif /* WITHUSBDFU */
+	#if WITHUSBDFU
+		enum
+		{
+			INTERFACE_DFU_CONTROL		/* DFU control Interface */
+			//
+		};
+	#endif /* WITHUSBDFU */
 
 	#define INTERFACE_CDCACM_count 2	/* количество интерфейсов в одном CDC */
 	#define INTERFACE_CDCEEM_count 1	/* количество интерфейсов в одном CDC EEM */

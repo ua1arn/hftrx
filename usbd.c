@@ -3629,9 +3629,9 @@ static void usbdFunctionReq_seq3(PCD_TypeDef * const Instance, USBD_SetupReqType
 		{
 			switch (req->bRequest)
 			{
-			//case CDC_SET_LINE_CODING:
-			//	usbd_continuereading(Instance, 0);	// DCP
-			//	break;
+			case CDC_SET_LINE_CODING:
+				usbd_continuereading(Instance, 0);	// DCP
+				break;
 
 			default:
 				TP();
