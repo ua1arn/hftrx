@@ -646,4 +646,81 @@
 #define HID_DESCRIPTOR_TYPE           0x21
 #define HID_REPORT_DESC               0x22
 
+
+// DFU
+    
+#define DFU_DESCRIPTOR_TYPE            0x21
+    
+
+/**************************************************/
+/* DFU Requests  DFU states                       */
+/**************************************************/
+#define APP_STATE_IDLE                 0
+#define APP_STATE_DETACH               1
+#define DFU_STATE_IDLE                 2
+#define DFU_STATE_DNLOAD_SYNC          3
+#define DFU_STATE_DNLOAD_BUSY          4
+#define DFU_STATE_DNLOAD_IDLE          5
+#define DFU_STATE_MANIFEST_SYNC        6
+#define DFU_STATE_MANIFEST             7
+#define DFU_STATE_MANIFEST_WAIT_RESET  8
+#define DFU_STATE_UPLOAD_IDLE          9
+#define DFU_STATE_ERROR                10
+
+/**************************************************/
+/* DFU errors                                     */
+/**************************************************/
+#define DFU_ERROR_NONE                 0x00
+#define DFU_ERROR_TARGET               0x01
+#define DFU_ERROR_FILE                 0x02
+#define DFU_ERROR_WRITE                0x03
+#define DFU_ERROR_ERASE                0x04
+#define DFU_ERROR_CHECK_ERASED         0x05
+#define DFU_ERROR_PROG                 0x06
+#define DFU_ERROR_VERIFY               0x07
+#define DFU_ERROR_ADDRESS              0x08
+#define DFU_ERROR_NOTDONE              0x09
+#define DFU_ERROR_FIRMWARE             0x0A
+#define DFU_ERROR_VENDOR               0x0B
+#define DFU_ERROR_USB                  0x0C
+#define DFU_ERROR_POR                  0x0D
+#define DFU_ERROR_UNKNOWN              0x0E
+#define DFU_ERROR_STALLEDPKT           0x0F
+
+/**************************************************/
+/* DFU Manifestation State                        */
+/**************************************************/
+#define DFU_MANIFEST_COMPLETE          0x00
+#define DFU_MANIFEST_IN_PROGRESS       0x01
+
+
+/**************************************************/
+/* Special Commands  with Download Request        */
+/**************************************************/
+#define DFU_CMD_GETCOMMANDS            0x00
+#define DFU_CMD_SETADDRESSPOINTER      0x21
+#define DFU_CMD_ERASE                  0x41
+    
+#define DFU_MEDIA_ERASE                0x00
+#define DFU_MEDIA_PROGRAM              0x01
+
+/**************************************************/
+/* Other defines                                  */
+/**************************************************/
+/* Bit Detach capable = bit 3 in bmAttributes field */
+#define DFU_DETACH_MASK                (uint8_t)(1 << 4) 
+#define DFU_STATUS_DEPTH               (6) 
+    
+typedef enum 
+{
+  DFU_DETACH = 0,
+  DFU_DNLOAD ,
+  DFU_UPLOAD,
+  DFU_GETSTATUS,
+  DFU_CLRSTATUS,
+  DFU_GETSTATE,
+  DFU_ABORT
+} DFU_RequestTypeDef;
+
+
 #endif   /* __USB200_H__ */

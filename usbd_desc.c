@@ -126,7 +126,10 @@ enum
 	STRING_ID_RNDIS,
 	STRING_ID_HIDa,
 	STRING_ID_IQSPECTRUM,
+
 	STRING_ID_DFU,
+	STRING_ID_DFU_0,
+	STRING_ID_DFU_1,
 	// 
 	STRING_ID_count
 };
@@ -137,6 +140,11 @@ struct stringtempl
 	const char * str;
 };
 
+// STM32H743IIT6 descriptors:
+static const char strFlashDesc [] = "@Internal Flash /0x08000000/16*128Kg";
+static const char strOptBytesDesc [] = "@Option Bytes /0x5200201C/01*128 e";
+
+
 static const struct stringtempl strtemplates [] =
 {
 	{ STRING_ID_1, "MicroGenSF", },		// Manufacturer
@@ -146,7 +154,10 @@ static const struct stringtempl strtemplates [] =
 	{ STRING_ID_5, "Storch TRX CDC EEM", },
 	{ STRING_ID_5a, "Storch TRX CDC ECM", },
 	{ STRING_ID_RNDIS, "Storch TRX Remote NDIS", },
+
 	{ STRING_ID_DFU, "Storch DFU Device", },
+	{ STRING_ID_DFU_0, strFlashDesc, },
+	{ STRING_ID_DFU_1, strOptBytesDesc, },
 
 	#if CTLSTYLE_OLEG4Z_V1
 		{ STRING_ID_a0, "Storch TRX Voice", },		// tag for Interface Descriptor 0/0 Audio
@@ -2468,7 +2479,7 @@ static unsigned DFU_InterfaceAssociationDescriptor(
 		* buff ++ = bInterfaceCount;	// bInterfaceCount
 		* buff ++ = 0xFE;	// bFunctionClass: Audio
 		* buff ++ = 0x01;	// bFunctionSubClass
-		* buff ++ = 0x00;	// bFunctionProtocol
+		* buff ++ = 0x02;	// bFunctionProtocol
 		* buff ++ = STRING_ID_DFU;				/* iInterface */
 	}
 	return length;
@@ -2478,7 +2489,8 @@ static unsigned DFU_InterfaceAssociationDescriptor(
 /* Table 4.1 Run-Time DFU Interface Descriptor */
 static unsigned DFU_InterfaceDescriptor(uint_fast8_t fill, uint8_t * buff, unsigned maxsize,
 	uint_fast8_t bInterfaceNumber,
-	uint_fast8_t bAlternateSetting
+	uint_fast8_t bAlternateSetting,
+	uint_fast8_t iInterface
 	)
 {
 	const uint_fast8_t length = 9;
@@ -2495,8 +2507,8 @@ static unsigned DFU_InterfaceDescriptor(uint_fast8_t fill, uint8_t * buff, unsig
 		* buff ++ = 0x00;                       /* bNumEndpoints */
 		* buff ++ = 0xFE;						/* bInterfaceClass */
 		* buff ++ = 0x01;						/* bInterfaceSubClass */
-		* buff ++ = 0x00;						/* bInterfaceProtocol */
-		* buff ++ = STRING_ID_DFU;				/* iInterface */
+		* buff ++ = 0x02;						/* bInterfaceProtocol */
+		* buff ++ = iInterface;				/* iInterface */
 		/* 09 byte*/
 	}
 	return length;
@@ -2507,27 +2519,31 @@ static unsigned DFU_FunctionalDescriptor(
 	uint_fast8_t fill, uint8_t * buff, unsigned maxsize
 	)
 {
-	const uint_fast8_t length = 7;
+	const uint_fast8_t length = 9;
 	ASSERT(maxsize >= length);
 	if (maxsize < length)
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
 		const uint_fast8_t bmAttributes = 
-			(1u << 2) |		/* Bit 2:  bitManifestationTolerant  */
-			(1u << 1) |		/* Bit 1: upload capable ( bitCanUpload ) */
-			(1u << 0) |		/* Bit 0: download capable  */
+			//1 * (1u << 3) |		/* Bit 3: bitWillDetach - есть у STM32H7 */
+			//1 * (1u << 2) |		/* Bit 2: bitManifestationTolerant  */
+			1 * (1u << 1) |		/* Bit 1: upload capable ( bitCanUpload ) */
+			1 * (1u << 0) |		/* Bit 0: download capable  */
 			0;
+		const uint_fast16_t bcdDFUVersion = 0x011A;
 		const uint_fast16_t wDetachTimeOut = 500;
-		const uint_fast16_t wTransferSize = 16;
+		const uint_fast16_t wTransferSize = 1024;
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
-		* buff ++ = 0x21;	// bDescriptorType: DFU FUNCTIONAL descriptor type 
+		* buff ++ = DFU_DESCRIPTOR_TYPE;	// bDescriptorType: DFU FUNCTIONAL descriptor type 
 		* buff ++ = bmAttributes;		// bmAttributes
 		* buff ++ = LO_BYTE(wDetachTimeOut);	
 		* buff ++ = HI_BYTE(wDetachTimeOut);	
 		* buff ++ = LO_BYTE(wTransferSize);		
 		* buff ++ = HI_BYTE(wTransferSize);		
+		* buff ++ = LO_BYTE(bcdDFUVersion);		
+		* buff ++ = HI_BYTE(bcdDFUVersion);		
 	}
 	return length;
 }
@@ -2539,7 +2555,8 @@ static unsigned fill_DFU_function(uint_fast8_t fill, uint8_t * p, unsigned maxsi
 	unsigned n = 0;
 	//
 	n += DFU_InterfaceAssociationDescriptor(fill, p + n, maxsize - n, INTERFACE_DFU_CONTROL, INTERFACE_DFU_count);
-	n += DFU_InterfaceDescriptor(fill, p + n, maxsize - n, INTERFACE_DFU_CONTROL, 0x00);	/* DFU Interface Descriptor */
+	n += DFU_InterfaceDescriptor(fill, p + n, maxsize - n, INTERFACE_DFU_CONTROL, 0x00, STRING_ID_DFU_0);	/* DFU Interface Descriptor */
+	//n += DFU_InterfaceDescriptor(fill, p + n, maxsize - n, INTERFACE_DFU_CONTROL, 0x01, STRING_ID_DFU_1);	/* DFU Interface Descriptor */
 	n += DFU_FunctionalDescriptor(fill, p + n, maxsize - n);	/* DFU Functional Descriptor */
 
 	return n;

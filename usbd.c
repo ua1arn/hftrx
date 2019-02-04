@@ -3503,6 +3503,7 @@ static void usbdFunctionReq_seq1(PCD_TypeDef * const Instance, USBD_SetupReqType
 	#if WITHUSBUAC3
 		case INTERFACE_AUDIO_CONTROL_RTS:	/* AUDIO spectrum control interface */
 	#endif /* WITHUSBUAC3 */
+		case INTERFACE_AUDIO_CONTROL_MIKE:	// AUDIO control interface
 		case INTERFACE_AUDIO_CONTROL_SPK:	// AUDIO control interface
 			{
 				const uint_fast8_t terminalID = HI_BYTE(req->wIndex);
@@ -3541,8 +3542,35 @@ static void usbdFunctionReq_seq1(PCD_TypeDef * const Instance, USBD_SetupReqType
 			}
 			break;
 #endif /* WITHUSBUAC */
+#if WITHUSBDFU
+	// data IN
+	case INTERFACE_DFU_CONTROL:	// DFU interface
+		{
+			switch (req->bRequest)
+			{
+			//case CDC_GET_LINE_CODING:
+			//	//PRINTF(PSTR("GET_LINE_CODING, dwDTERate=%lu\n"), (unsigned long) dwDTERate [interfacev]);
+			//	USBD_poke_u32(& buff [0], dwDTERate [interfacev]); // dwDTERate
+			//	buff [4] = 0;	// 1 stop bit
+			//	buff [5] = 0;	// parity=none
+			//	buff [6] = 8;	// bDataBits 
+
+			//	control_transmit(Instance, buff, ulmin16(7, req->wLength));
+			//	return;
+
+			default:
+				//PRINTF(PSTR("default path 1: usbdFunctionReq_seq1: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
+				TP();
+				stall_ep0(Instance);
+				return;
+			}
+		}
+		return;
+#endif /* WITHUSBDFU */
 
 	default:
+		TP();
+		PRINTF(PSTR("default path 3: interfacev=%08u\n"), interfacev);
 		//PRINTF(PSTR("default path 3: usbdFunctionReq_seq1: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
 		memset(buff, 0, ulmin16(ARRAY_SIZE(buff), req->wLength));
 		control_transmit(Instance, buff, ulmin16(ARRAY_SIZE(buff), req->wLength));
@@ -3601,11 +3629,12 @@ static void usbdFunctionReq_seq3(PCD_TypeDef * const Instance, USBD_SetupReqType
 		{
 			switch (req->bRequest)
 			{
-			case CDC_SET_LINE_CODING:
-				usbd_continuereading(Instance, 0);	// DCP
-				break;
+			//case CDC_SET_LINE_CODING:
+			//	usbd_continuereading(Instance, 0);	// DCP
+			//	break;
 
 			default:
+				TP();
 				//PRINTF(PSTR("default path 2: usbdFunctionReq_seq3: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
 				stall_ep0(Instance);
 				return;
@@ -3614,7 +3643,29 @@ static void usbdFunctionReq_seq3(PCD_TypeDef * const Instance, USBD_SetupReqType
 		break;	// to ACK
 #endif /* WITHUSBCDC */
 	
+#if WITHUSBDFU
+	// data OUT
+	case INTERFACE_DFU_CONTROL:	// DFU interface
+		{
+			switch (req->bRequest)
+			{
+			//case CDC_SET_LINE_CODING:
+			//		TP();
+			//	usbd_continuereading(Instance, 0);	// DCP
+			//	break;
+
+			default:
+				//PRINTF(PSTR("default path 1: usbdFunctionReq_seq1: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
+				TP();
+				stall_ep0(Instance);
+				return;
+			}
+		}
+		return;
+#endif /* WITHUSBDFU */
 	default:
+		TP();
+		PRINTF(PSTR("default path 4: interfacev=%08u\n"), interfacev);
 		//PRINTF(PSTR("default path 3: usbdFunctionReq_seq3: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
 		stall_ep0(Instance);
 		return;
@@ -3664,9 +3715,16 @@ static void usbdFunctionReq_seq5(PCD_TypeDef * const Instance, USBD_SetupReqType
 	case INTERFACE_CDCEEM_DATA_6:	// CDC EEM data interfacei
 		break;
 #endif /* WITHUSBCDCEEM */
+#if WITHUSBDFU
+	case INTERFACE_DFU_CONTROL:	// DFU
+		TP();
+		break;
+#endif /* WITHUSBDFU */
 
 	default:
-		//PRINTF(PSTR("default path 2: usbdFunctionReq_seq5: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
+		TP();
+		PRINTF(PSTR("default path 5: interfacev=%08u\n"), interfacev);
+		//PRINTF(PSTR("default path 5: usbdFunctionReq_seq5: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
 		stall_ep0(Instance);
 		return;
 	}
