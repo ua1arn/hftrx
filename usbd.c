@@ -1921,28 +1921,7 @@ usbd_handler_nrdy(PCD_TypeDef * const Instance, uint_fast8_t pipe)
 
 static USBD_SetupReqTypedef    gRequest;	// CPUSTYLE_R7S721 only
 
-static uint_fast8_t gReqType;
-//static uint_fast8_t gReqTypeDir;
-static uint_fast8_t gReqTypeType;
-static uint_fast8_t gReqTypeRecip;
-static uint_fast8_t gReqRequest;
-static uint_fast16_t gReqValue;
-static uint_fast16_t gReqIndex;
-static uint_fast16_t gReqLength;
 
-#if 0
-	const uint_fast16_t usbreq = Instance->USBREQ;
-	gReqValue = Instance->USBVAL;
-	gReqIndex = Instance->USBINDX;
-	gReqLength = Instance->USBLENG;
-
-	gReqType = usbreq & USB_FUNCTION_bmRequestType;			/* b7-0: bmRequestType */
-	//gReqTypeDir = usbreq & USB_FUNCTION_bmRequestTypeDir;		/* b7 : Data transfer direction */
-	gReqTypeType = usbreq & USB_FUNCTION_bmRequestTypeType;	/* b6-5: Type */
-	gReqTypeRecip = usbreq & USB_FUNCTION_bmRequestTypeRecip;	/* b4-0: Recipient */
-	gReqRequest = HI_BYTE(usbreq & USB_FUNCTION_bRequest);		/* b15-8:bRequest */
-
-#endif
 static uint_fast32_t dwDTERate [INTERFACE_count];
 
 
@@ -1952,13 +1931,13 @@ static void
 usbd_handler_brdy8_dcp_out(PCD_TypeDef * const Instance, uint_fast8_t pipe)
 {
 	USBD_SetupReqTypedef *req = & gRequest;
-	switch (gReqRequest)
+	switch (req->bRequest)
 	{
 #if WITHUSBCDC
 	case CDC_SET_LINE_CODING:
 		{
 			unsigned count = usbd_read_data(Instance, pipe, cdc_ep0databuffout, sizeof cdc_ep0databuffout / sizeof cdc_ep0databuffout [0]);
-			const uint_fast8_t interfacev = LO_BYTE(gReqIndex);
+			const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
 			dwDTERate [interfacev] = USBD_peek_u32(& cdc_ep0databuffout [0]);
 			//PRINTF(PSTR("CDC_SET_LINE_CODING: interfacev=%u, dwDTERate=%lu, bits=%u\n"), interfacev, dwDTERate [interfacev], cdc_ep0databuffout [6]);
 		}
@@ -2912,9 +2891,6 @@ static void usb0_function_save_request(USBD_HandleTypeDef *pdev, USBD_SetupReqTy
 	PCD_TypeDef * const Instance = (PCD_TypeDef *) pdev->pData;
 
 	const uint_fast16_t usbreq = Instance->USBREQ;
-	gReqValue = Instance->USBVAL;
-	gReqIndex = Instance->USBINDX;
-	gReqLength = Instance->USBLENG;
 
 
 	req->bmRequest     = LO_BYTE(usbreq & USB_FUNCTION_bmRequestType); //(pdata [0] >> 0) & 0x00FF;
@@ -2922,24 +2898,6 @@ static void usb0_function_save_request(USBD_HandleTypeDef *pdev, USBD_SetupReqTy
 	req->wValue        = Instance->USBVAL; //(pdata [0] >> 16) & 0xFFFF;
 	req->wIndex        = Instance->USBINDX; //(pdata [1] >> 0) & 0xFFFF;
 	req->wLength       = Instance->USBLENG; //(pdata [1] >> 16) & 0xFFFF;
-
-	gReqRequest = HI_BYTE(usbreq & USB_FUNCTION_bRequest);		/* b15-8:bRequest */
-
-	gReqType = usbreq & USB_FUNCTION_bmRequestType;			/* b7-0: bmRequestType */
-	//gReqTypeDir = usbreq & USB_FUNCTION_bmRequestTypeDir;		/* b7 : Data transfer direction */
-	gReqTypeType = usbreq & USB_FUNCTION_bmRequestTypeType;	/* b6-5: Type */
-	gReqTypeRecip = usbreq & USB_FUNCTION_bmRequestTypeRecip;	/* b4-0: Recipient */
-
-	gReqType = req->bmRequest & USB_FUNCTION_bmRequestType;			/* b7-0: bmRequestType */
-	//gReqTypeDir = req->bmRequest & USB_FUNCTION_bmRequestTypeDir;		/* b7 : Data transfer direction */
-	gReqTypeType = req->bmRequest & USB_FUNCTION_bmRequestTypeType;	/* b6-5: Type */
-	gReqTypeRecip = req->bmRequest & USB_FUNCTION_bmRequestTypeRecip;	/* b4-0: Recipient */
-
-	// This block should be copied
-	uint_fast8_t gReqType = req->bmRequest & USB_FUNCTION_bmRequestType;			/* b7-0: bmRequestType */
-	//uint_fast8_t gReqTypeDir = req->bmRequest & USB_FUNCTION_bmRequestTypeDir;		/* b7 : Data transfer direction */
-	uint_fast8_t gReqTypeType = req->bmRequest & USB_FUNCTION_bmRequestTypeType;	/* b6-5: Type */
-	uint_fast8_t gReqTypeRecip = req->bmRequest & USB_FUNCTION_bmRequestTypeRecip;	/* b4-0: Recipient */
 
 #endif
 
@@ -2994,7 +2952,7 @@ static void usbd_handle_ctrt(USBD_HandleTypeDef *pdev, uint_fast8_t ctsq)
 
 	case 2:
 		// 2: Control read status stage
-		//actions_seq2(pdev, & gRequest, gReqRequest, gReqType, gReqTypeType, gReqTypeRecip, gReqValue, gReqIndex, gReqLength);
+		//actions_seq2(pdev, & gRequest);
 
 		Instance->DCPCTR |= 1 * (1uL << USB_DCPCTR_CCPL_SHIFT);	// CCPL
 		break;
