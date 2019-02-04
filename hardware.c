@@ -8760,9 +8760,13 @@ static
 FLASHMEMINITFUNC
 void CPG_Init(void)
 {
+    /* Cancel L2C standby status before clock change */
+    L2CREG15_POWER_CTRL = 0x00000001;
+	(void) L2CREG15_POWER_CTRL;
+	
     /* standby_mode_en bit of Power Control Register setting */
-    *(volatile uint32_t *)(0x3fffff80) = 0x00000001;
-    (void) *(volatile uint32_t *)(0x3fffff80);
+    //*(volatile uint32_t *)(0x3fffff80) = 0x00000001;
+    //(void) *(volatile uint32_t *)(0x3fffff80);
 
     /* ==== CPG Settings ==== */
 
