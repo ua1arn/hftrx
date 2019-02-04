@@ -118,6 +118,9 @@ enum
 	//USBD_EP_HIDMOUSE_INT,	// HID INT События манипулятора в компьютер из TRX
 #endif /* WITHUSBHID */
 
+#if WITHUSBDFU
+		/* no endpoints need */
+#endif /* WITHUSBDFU */
 	//
 	epincount
 };
@@ -155,6 +158,10 @@ enum
 
 #if WITHUSBHID
 #endif /* WITHUSBHID */
+
+#if WITHUSBDFU
+		/* no endpoints need */
+#endif /* WITHUSBDFU */
 	//
 	epoutcount
 };
@@ -284,6 +291,10 @@ enum
 #if WITHUSBHID
 	INTERFACE_HID_CONTROL_7,	/* HID control Interface */
 #endif /* WITHUSBHID */
+
+#if WITHUSBDFU
+	INTERFACE_DFU_CONTROL,		/* DFU control Interface */
+#endif /* WITHUSBDFU */
 	// 
 	INTERFACE_count				/* Значение для configuration descriptor */
 };
@@ -293,6 +304,7 @@ enum
 #define INTERFACE_CDCECM_count 2	/* количество интерфейсов в одном CDC EEM */
 #define INTERFACE_HID_count 1	/* количество интерфейсов в одном HID */
 #define INTERFACE_RNDIS_count 2	/* количество интерфейсов в одном RNDIS */
+#define INTERFACE_DFU_count 1	/* количество интерфейсов в одном DFU */
 
 //#define INTERFACE_UAC_count (INTERFACE_AUDIO_last - INTERFACE_AUDIO_CONTROL_SPK)
 
@@ -348,31 +360,38 @@ enum
 #if WITHUSBCDCEEM
 	enum
 	{
-
-		INTERFACE_CDCEEM_DATA_6,	/* CDC ECM/CDC EEM data Interface */
+		INTERFACE_CDCEEM_DATA_6		/* CDC ECM/CDC EEM data Interface */
 	};
 #endif /* WITHUSBCDCEEM */
 #if WITHUSBCDCECM
 	enum
 	{
 		INTERFACE_CDCECM_CONTROL_5,	/* CDC ECM control Interface */
-		INTERFACE_CDCECM_DATA_6,	/* CDC ECM/CDC EEM data Interface */
+		INTERFACE_CDCECM_DATA_6		/* CDC ECM/CDC EEM data Interface */
 	};
-	#endif /* WITHUSBCDCECM */
+#endif /* WITHUSBCDCECM */
 #if WITHUSBHID
 	enum
 	{
-		INTERFACE_HID_CONTROL_7,	/* HID control Interface */
+		INTERFACE_HID_CONTROL_7	/* HID control Interface */
 		//
 	};
 #endif /* WITHUSBHID */
 
+#if WITHUSBDFU
+	enum
+	{
+		INTERFACE_DFU_CONTROL		/* DFU control Interface */
+		//
+	};
+#endif /* WITHUSBDFU */
 
 	#define INTERFACE_CDCACM_count 2	/* количество интерфейсов в одном CDC */
 	#define INTERFACE_CDCEEM_count 1	/* количество интерфейсов в одном CDC EEM */
 	#define INTERFACE_CDCECM_count 2	/* количество интерфейсов в одном CDC ECM */
 	#define INTERFACE_HID_count 1	/* количество интерфейсов в одном HID */
 	#define INTERFACE_RNDIS_count 2	/* количество интерфейсов в одном RNDIS */
+	#define INTERFACE_DFU_count 1	/* количество интерфейсов в одном DFU */
 
 	enum
 	{

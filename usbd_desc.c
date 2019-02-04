@@ -126,6 +126,7 @@ enum
 	STRING_ID_RNDIS,
 	STRING_ID_HIDa,
 	STRING_ID_IQSPECTRUM,
+	STRING_ID_DFU,
 	// 
 	STRING_ID_count
 };
@@ -145,6 +146,7 @@ static const struct stringtempl strtemplates [] =
 	{ STRING_ID_5, "Storch TRX CDC EEM", },
 	{ STRING_ID_5a, "Storch TRX CDC ECM", },
 	{ STRING_ID_RNDIS, "Storch TRX Remote NDIS", },
+	{ STRING_ID_DFU, "Storch DFU Device", },
 
 	#if CTLSTYLE_OLEG4Z_V1
 		{ STRING_ID_a0, "Storch TRX Voice", },		// tag for Interface Descriptor 0/0 Audio
@@ -2445,6 +2447,105 @@ static unsigned fill_HID_XXXX_function(uint_fast8_t fill, uint8_t * p, unsigned 
 
 #endif /* WITHUSBHID */
 
+#if WITHUSBDFU
+
+static unsigned DFU_InterfaceAssociationDescriptor(
+	uint_fast8_t fill, uint8_t * buff, unsigned maxsize,
+	uint_fast8_t bFirstInterface,
+	uint_fast8_t bInterfaceCount
+	)
+{
+	const uint_fast8_t length = 8;
+	ASSERT(maxsize >= length);
+	if (maxsize < length)
+		return 0;
+	if (fill != 0 && buff != NULL)
+	{
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
+		* buff ++ = length;						  /* bLength */
+		* buff ++ = USB_INTERFACE_ASSOC_DESCRIPTOR_TYPE;	// bDescriptorType: IAD
+		* buff ++ = bFirstInterface;			// bFirstInterface
+		* buff ++ = bInterfaceCount;	// bInterfaceCount
+		* buff ++ = 0xFE;	// bFunctionClass: Audio
+		* buff ++ = 0x01;	// bFunctionSubClass
+		* buff ++ = 0x00;	// bFunctionProtocol
+		* buff ++ = STRING_ID_DFU;				/* iInterface */
+	}
+	return length;
+}
+
+
+/* Table 4.1 Run-Time DFU Interface Descriptor */
+static unsigned DFU_InterfaceDescriptor(uint_fast8_t fill, uint8_t * buff, unsigned maxsize,
+	uint_fast8_t bInterfaceNumber,
+	uint_fast8_t bAlternateSetting
+	)
+{
+	const uint_fast8_t length = 9;
+	ASSERT(maxsize >= length);
+	if (maxsize < length)
+		return 0;
+	if (fill != 0 && buff != NULL)
+	{
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
+		* buff ++ = length;						  /* bLength */
+		* buff ++ = USB_INTERFACE_DESCRIPTOR_TYPE; /* bDescriptorType */
+		* buff ++ = bInterfaceNumber;			/* bInterfaceNumber */
+		* buff ++ = bAlternateSetting;			/* bAlternateSetting */
+		* buff ++ = 0x00;                       /* bNumEndpoints */
+		* buff ++ = 0xFE;						/* bInterfaceClass */
+		* buff ++ = 0x01;						/* bInterfaceSubClass */
+		* buff ++ = 0x00;						/* bInterfaceProtocol */
+		* buff ++ = STRING_ID_DFU;				/* iInterface */
+		/* 09 byte*/
+	}
+	return length;
+}
+
+/* 4.1.3 Run-Time DFU Functional Descriptor */
+static unsigned DFU_FunctionalDescriptor(
+	uint_fast8_t fill, uint8_t * buff, unsigned maxsize
+	)
+{
+	const uint_fast8_t length = 7;
+	ASSERT(maxsize >= length);
+	if (maxsize < length)
+		return 0;
+	if (fill != 0 && buff != NULL)
+	{
+		const uint_fast8_t bmAttributes = 
+			(1u << 2) |		/* Bit 2:  bitManifestationTolerant  */
+			(1u << 1) |		/* Bit 1: upload capable ( bitCanUpload ) */
+			(1u << 0) |		/* Bit 0: download capable  */
+			0;
+		const uint_fast16_t wDetachTimeOut = 500;
+		const uint_fast16_t wTransferSize = 16;
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
+		* buff ++ = length;						  /* bLength */
+		* buff ++ = 0x21;	// bDescriptorType: DFU FUNCTIONAL descriptor type 
+		* buff ++ = bmAttributes;		// bmAttributes
+		* buff ++ = LO_BYTE(wDetachTimeOut);	
+		* buff ++ = HI_BYTE(wDetachTimeOut);	
+		* buff ++ = LO_BYTE(wTransferSize);		
+		* buff ++ = HI_BYTE(wTransferSize);		
+	}
+	return length;
+}
+
+
+/* DFU USB Device Firmware Upgrade support */
+static unsigned fill_DFU_function(uint_fast8_t fill, uint8_t * p, unsigned maxsize, int highspeed)
+{
+	unsigned n = 0;
+	//
+	n += DFU_InterfaceAssociationDescriptor(fill, p + n, maxsize - n, INTERFACE_DFU_CONTROL, INTERFACE_DFU_count);
+	n += DFU_InterfaceDescriptor(fill, p + n, maxsize - n, INTERFACE_DFU_CONTROL, 0x00);	/* DFU Interface Descriptor */
+	n += DFU_FunctionalDescriptor(fill, p + n, maxsize - n);	/* DFU Functional Descriptor */
+
+	return n;
+}
+
+#endif /* WITHUSBDFU */
 
 static unsigned fill_Configuration_compound(uint_fast8_t fill, uint8_t * p, unsigned maxsize, int highspeed)
 {
@@ -2494,6 +2595,11 @@ static unsigned fill_Configuration_compound(uint_fast8_t fill, uint8_t * p, unsi
 #if WITHUSBHID
 	n += fill_HID_XXXX_function(fill, p + n, maxsize - n, highspeed);
 #endif /* WITHUSBHID */
+
+#if WITHUSBDFU
+	n += fill_DFU_function(fill, p + n, maxsize - n, highspeed);
+#endif /* WITHUSBDFU */
+
 	return n;
 }
 
