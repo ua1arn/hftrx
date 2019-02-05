@@ -4859,11 +4859,6 @@ void looptests(void)
 #if WITHDTMFPROCESSING
 	dtmftest();
 #endif
-#if 0 && WITHUSBHW
-	{
-		usbd_diagnostics();
-	}
-#endif
 #if 0 && WITHINTEGRATEDDSP
 	{
 		dsp_speed_diagnostics();	// печать в последовательный порт результатов диагностики

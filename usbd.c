@@ -36,17 +36,6 @@ static void _Error_Handler(char * file, int line)
 		;
 }
 
-static unsigned txcnt [16];
-
-void usbd_diagnostics(void)
-{
-	//PRINTF(PSTR("cnt: UAC=%u, CDC=%u\n"), txcnt [0x7F & USBD_EP_AUDIO_IN], txcnt [0x7F & USBD_EP_CDC_IN]);
-	//PRINTF(PSTR("cnt: UAC=%u\n"), txcnt [0x7F & USBD_EP_AUDIO_IN]);
-	//USB_OTG_GlobalTypeDef *USBx = USB_OTG_HS;
-	//PRINTF(PSTR("USBx->GINTSTS=%08lX, USBx->GINTMSK=%08lX, USBx_DEVICE->DAINT=%08lX\n"), USBx->GINTSTS, USBx->GINTMSK, USBx_DEVICE->DAINT);
-}
-
-
 #if WITHUSBUAC
 
 	static uint_fast8_t terminalsprops [256] [16];
@@ -4529,8 +4518,6 @@ HAL_StatusTypeDef USB_EPStartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDef
 			break;
 		}
 	#endif
-		++ txcnt [ep->num];
-
 
 		/* Zero Length Packet? */
 		if (ep->xfer_len == 0)
@@ -4711,7 +4698,6 @@ HAL_StatusTypeDef USB_EP0StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDe
     
     }
     
-	++ txcnt [ep->num];
     if (dma == USB_ENABLE)
     {
       inep->DIEPDMA = ep->dma_addr;
