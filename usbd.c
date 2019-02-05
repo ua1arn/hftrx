@@ -106,7 +106,6 @@ static volatile uint_fast16_t usb_cdc_control_state [INTERFACE_count];
 		usbd_cdc_rxenabled = state;
 	}
 
-#if CPUSTYLE_STM32F
 	/* передача символа после прерывания о готовности передатчика - вызывается из HARDWARE_CDC_ONTXCHAR */
 	void
 	usbd_cdc_tx(void * ctx, uint_fast8_t c)
@@ -115,7 +114,7 @@ static volatile uint_fast16_t usb_cdc_control_state [INTERFACE_count];
 		ASSERT(cdc1buffinlevel < VIRTUAL_COM_PORT_IN_DATA_SIZE);
 		cdc1buffin [cdc1buffinlevel ++] = c;
 	}
-#endif /* CPUSTYLE_STM32F */
+
 	/* использование буфера принятых данных */
 	static void cdc1out_buffer_save(
 		const uint8_t * data, 
@@ -1268,15 +1267,6 @@ static uint_fast8_t usbd_count = 0;
 
 static uint_fast16_t /* volatile */ g_usb0_function_PipeIgnore [16];
 
-// see usb0_function_set_transaction_counter
-static void set_transaction_counter(uint_fast8_t pipe, uint_fast32_t size)
-{
-	// todo: adjust size to max packet size
-
-
-}
-
-
 // Эта функция не должна общаться с DCPCTR - она универсальная
 static unsigned usbd_read_data(PCD_TypeDef * const Instance, uint_fast8_t pipe, uint8_t * data, unsigned size)
 {
@@ -1299,14 +1289,13 @@ static unsigned usbd_read_data(PCD_TypeDef * const Instance, uint_fast8_t pipe, 
 		;
 
 	unsigned count = 0;
-	unsigned size8 = (Instance->CFIFOCTR & USB_CFIFOCTR_DTLN) / MASK2LSB(USB_CFIFOCTR_DTLN);
+	unsigned size8 = (Instance->CFIFOCTR & USB_CFIFOCTR_DTLN) >> USB_CFIFOCTR_DTLN_SHIFT;
 	size = ulmin16(size, size8);
 	//PRINTF(PSTR("selected read from c_fifo%u 3, CFIFOCTR=%04X, CFIFOSEL=%04X\n"), pipe, Instance->CFIFOCTR, Instance->CFIFOSEL);
-
+	count = size;
 	while (size --)
 	{
 		* data ++ = Instance->CFIFO.UINT8 [R_IO_HH]; // HH=3
-		++ count;
 	}
 
 	//PRINTF(PSTR("selected read from c_fifo%u 4, CFIFOCTR=%04X, CFIFOSEL=%04X\n"), pipe, Instance->CFIFOCTR, Instance->CFIFOSEL);
@@ -1521,28 +1510,6 @@ static void USBD_CtlErrorNec( USBD_HandleTypeDef *pdev,
 	//USBD_LL_StallEP(pdev, 0);
 }
 
-
-/* вызывается из обработчика прерываний или при запрещённых прерываниях. */
-/*
-		disableIRQ();
-		enableIRQ();
-*/
-
-#if WITHUSBCDC
-
-/* передача символа после прерывания о готовности передатчика - вызывается из HARDWARE_CDC_ONTXCHAR */
-void
-usbd_cdc_tx(void * ctx, uint_fast8_t c)
-{
-	PCD_TypeDef * const Instance = ctx;
-
-	//const uint_fast8_t pipe = HARDWARE_USBD_PIPE_CDC_IN;
-    //PRINTF(PSTR("tx=%02x "), c);
-	Instance->CFIFO.UINT8 [R_IO_HH] = c;		// HH=3
-}
-
-#endif /* WITHUSBCDC */
-
 // BRDY pipe Interrupt handler
 // Заполнение символами буфеа пердатчика
 static void
@@ -1550,34 +1517,27 @@ usbd_handler_brdy_bulk_in8(USBD_HandleTypeDef *pdev, uint_fast8_t pipe, uint_fas
 {
 	USB_OTG_GlobalTypeDef * const Instance = ((PCD_HandleTypeDef *) pdev->pData)->Instance;
 	//PRINTF(PSTR("usbd_handler_brdy_bulk_in8: pipe=%u\n"), pipe);
-	//volatile uint16_t * const PIPEnCTR = (& Instance->PIPE1CTR) + (pipe - 1);
-	//Instance->PIPESEL = pipe;
-	Instance->CFIFOSEL = 
-		//1 * USB_CFIFOSEL_RCNT |		// RCNT
-		pipe * MASK2LSB(USB_CFIFOSEL_CURPIPE) |	// CURPIPE 0000: DCP
-		0 * USB_CFIFOSEL_MBW |	// MBW 00: 8-bit width
-		1 * USB_CFIFOSEL_ISEL_ |	// ISEL 1: Writing to the buffer memory is selected
-		0;
-	while ((Instance->CFIFOSEL & USB_CFIFOSEL_CURPIPE) != (pipe * MASK2LSB(USB_CFIFOSEL_CURPIPE)))
-		;
 
-	//const uint_fast8_t epnum = (Instance->PIPECFG & USB_PIPECFG_EPNUM) >> USB_PIPECFG_EPNUM_SHIFT;
 	switch (epnum & 0x7F)
 	{
 #if WITHUSBCDC
 	case USBD_EP_CDC_IN & 0x7F:
+		while (usbd_cdc_txenabled && (cdc1buffinlevel < ARRAY_SIZE(cdc1buffin)))
 		{
-			unsigned n = VIRTUAL_COM_PORT_IN_DATA_SIZE;
-			while (usbd_cdc_txenabled != 0 && n --)	// при отсутствии данных usbd_cdc_txenabled устанавливается в 0
-				HARDWARE_CDC_ONTXCHAR((void *) Instance);		// отсюда вызовется usbd_cdc_tx() с требуемым для передачи символом.
+			HARDWARE_CDC_ONTXCHAR(pdev);	// при отсутствии данных usbd_cdc_txenabled устанавливается в 0
 		}
+		usbd_write_data(Instance, pipe, cdc1buffin, cdc1buffinlevel);	// pipe=0: DCP
+		cdc1buffinlevel = 0;
 		break;
+
 	case USBD_EP_CDC_INb & 0x7F:
 		{
 			//unsigned n = VIRTUAL_COM_PORT_IN_DATA_SIZE;
 			//while (usbd_cdc_txenabled != 0 && n --)	// при отсутствии данных usbd_cdc_txenabled устанавливается в 0
 			//	HARDWARE_CDC_ONTXCHAR((void *) Instance);		// отсюда вызовется usbd_cdc_tx() с требуемым для передачи символом.
 		}
+		usbd_write_data(Instance, pipe, cdc2buffin, cdc2buffinlevel);	// pipe=0: DCP
+		cdc2buffinlevel = 0;
 		break;
 #endif /* WITHUSBCDC */
 
@@ -1588,8 +1548,6 @@ usbd_handler_brdy_bulk_in8(USBD_HandleTypeDef *pdev, uint_fast8_t pipe, uint_fas
 		TP();
 		break;
 	}
-
-	Instance->CFIFOCTR = USB_CFIFOCTR_BVAL;	// BVAL
 }
 
 // BRDY pipe Interrupt handler
