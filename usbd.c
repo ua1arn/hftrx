@@ -1598,47 +1598,21 @@ static void
 usbd_handler_brdy_bulk_out8(USBD_HandleTypeDef *pdev, uint_fast8_t pipe, uint_fast8_t epnum)
 {
 	USB_OTG_GlobalTypeDef * const Instance = ((PCD_HandleTypeDef *) pdev->pData)->Instance;
-	//PRINTF(PSTR("usbd_handler_brdy: pipe=%u\n"), pipe);
-	//volatile uint16_t * const PIPEnCTR = (& Instance->PIPE1CTR) + (pipe - 1);
-	//Instance->PIPESEL = pipe;
-	Instance->CFIFOSEL = 
-		//1 * (1uL << USB_CFIFOSEL_RCNT_SHIFT) |		// RCNT
-		pipe * MASK2LSB(USB_CFIFOSEL_CURPIPE) |	// CURPIPE
-		0 * USB_CFIFOSEL_MBW |	// MBW 00: 8-bit width
-		0 * (1uL << USB_CFIFOSEL_ISEL_SHIFT_) |	// ISEL 0: Reading from the buffer memory is selected
-		0;
-	while ((Instance->CFIFOSEL & USB_CFIFOSEL_CURPIPE) != (pipe * MASK2LSB(USB_CFIFOSEL_CURPIPE)))
-		;
-	//const uint_fast8_t epnum = (Instance->PIPECFG & USB_PIPECFG_EPNUM) >> USB_PIPECFG_EPNUM_SHIFT;
+
 	switch (epnum & 0x7F)
 	{
 #if WITHUSBCDC
 	case USBD_EP_CDC_OUT & 0x7F:
-		//PRINTF(PSTR("status of c_fifo%u CFIFOCTR=%04X\n"), pipe, Instance->CFIFOCTR);
-		if (usbd_cdc_rxenabled != 0)
 		{
-			unsigned size8 = (Instance->CFIFOCTR & USB_CFIFOCTR_DTLN) >> USB_CFIFOCTR_DTLN_SHIFT;
-			while (size8 --)
-			{
-				const uint_fast8_t c = Instance->CFIFO.UINT8 [R_IO_HH];	// HH=3
-				HARDWARE_CDC_ONRXCHAR(c);
-				//PRINTF(PSTR("rx=%02x "), c);
-			}
+			unsigned count = usbd_read_data(Instance, pipe, cdc1buffout, VIRTUAL_COM_PORT_OUT_DATA_SIZE);
+			cdc1out_buffer_save(cdc1buffout, count);	/* использование буфера принятых данных */
 		}
 		break;
 
 	case USBD_EP_CDC_OUTb & 0x7F:
-		//PRINTF(PSTR("status of c_fifo%u CFIFOCTR=%04X\n"), pipe, Instance->CFIFOCTR);
-		//if (usbd_cdc_rxenabled != 0)
 		{
-			unsigned size8 = (Instance->CFIFOCTR & USB_CFIFOCTR_DTLN) >> USB_CFIFOCTR_DTLN_SHIFT;
-			while (size8 --)
-			{
-				const uint_fast8_t c = Instance->CFIFO.UINT8 [R_IO_HH];	// HH=3
-				(void) c;
-				//HARDWARE_CDC_ONRXCHAR(c);
-				//PRINTF(PSTR("rx=%02x "), c);
-			}
+			unsigned count = usbd_read_data(Instance, pipe, cdc2buffout, VIRTUAL_COM_PORT_OUT_DATA_SIZE);
+			cdc2out_buffer_save(cdc2buffout, count);	/* использование буфера принятых данных */
 		}
 		break;
 #endif /* WITHUSBCDC */
@@ -3431,7 +3405,7 @@ static HAL_StatusTypeDef USB_DeactivateEndpoint(USB_OTG_GlobalTypeDef *USBx, USB
   */
 HAL_StatusTypeDef  USB_DevDisconnect (USB_OTG_GlobalTypeDef *USBx)
 {
-	PRINTF(PSTR("USB_DevDisconnect (USBx=%p)\n"), USBx);
+	//PRINTF(PSTR("USB_DevDisconnect (USBx=%p)\n"), USBx);
 
 	USBx->SYSCFG0 &= ~ (1uL << USB_SYSCFG_DPRPU_SHIFT);	// DPRPU 1: Pulling up the D+ line is enabled.
 	(void) USBx->SYSSTS0;
@@ -3447,7 +3421,7 @@ HAL_StatusTypeDef  USB_DevDisconnect (USB_OTG_GlobalTypeDef *USBx)
   */
 HAL_StatusTypeDef  USB_DevConnect (USB_OTG_GlobalTypeDef *USBx)
 {
-	PRINTF(PSTR("USB_DevConnect (USBx=%p)\n"), USBx);
+	//PRINTF(PSTR("USB_DevConnect (USBx=%p)\n"), USBx);
 
 	USBx->SYSCFG0 |= (1uL << USB_SYSCFG_DPRPU_SHIFT);	// DPRPU 1: Pulling up the D+ line is enabled.
 	(void) USBx->SYSSTS0;
