@@ -27,29 +27,6 @@ static uint_fast8_t notseq;
 	#define USBD_CtlSendData USBD_CtlSendDataSt
 #endif
 
-static volatile unsigned e1, e2, e3, e4;
-
-void usbd_showstate(void)
-{
-#if 0
-	{
-		PRINTF(PSTR("usb_showstate: e1(ISOC_OUT)=%u, e2(ISOC_IN)=%u, e3(CDC_OUT)=%u, e4(CDC_IN)=%u\n"), e1, e2, e3, e4);
-	}
-#endif
-#if 0
-	{
-#if CPUSTYLE_R7S721
-	PRINTF(PSTR("usb_showstate, mask=%04X, NRDYSTS=%04X\n"), 1U << HARDWARE_USBD_PIPE_CDC_IN, WITHUSBHW_DEVICE->NRDYSTS);
-		const uint_fast8_t pipe = HARDWARE_USBD_PIPE_CDC_IN;
-
-		volatile uint16_t * const PIPEnCTR = (& WITHUSBHW_DEVICE->PIPE1CTR) + (pipe - 1);
-		PRINTF(PSTR("usb_showstate, PIPEnCTR=%08lX\n"), * PIPEnCTR);
-#endif /* CPUSTYLE_R7S721 */
-	}
-#endif
-//	PRINTF(PSTR("usb_showstate, usbd_state=%d, VBSTS=%d\n"), usbd_state, usbd_getvbus());
-}
-
 static void _Error_Handler(char * file, int line)
 {
 	PRINTF(PSTR("_Error_Handler: at %s/%d\n"), file, line);
@@ -728,7 +705,7 @@ typedef struct _Device_cb
 	USBD_StatusTypeDef  (*Init)             (struct _USBD_HandleTypeDef *pdev, uint_fast8_t cfgidx);
 	USBD_StatusTypeDef  (*DeInit)           (struct _USBD_HandleTypeDef *pdev, uint_fast8_t cfgidx);
 	/* Control Endpoints*/
-	USBD_StatusTypeDef  (*Setup)            (struct _USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef  *req);
+	USBD_StatusTypeDef  (*Setup)            (struct _USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef  *req);
 	USBD_StatusTypeDef  (*EP0_TxSent)       (struct _USBD_HandleTypeDef *pdev );
 	USBD_StatusTypeDef  (*EP0_RxReady)      (struct _USBD_HandleTypeDef *pdev );
 	/* Class Specific Endpoints*/
@@ -1298,11 +1275,6 @@ static uint_fast8_t usbd_count = 0;
 
 #if CPUSTYLE_R7S721
 
-
-static USBD_SetupReqTypedef    gRequest;	// CPUSTYLE_R7S721 only
-
-
-
 static uint_fast16_t /* volatile */ g_usb0_function_PipeIgnore [16];
 
 // see usb0_function_set_transaction_counter
@@ -1700,10 +1672,10 @@ static void stall_ep0(USBD_HandleTypeDef *pdev)
 #endif
 }
 static void USBD_CtlError( USBD_HandleTypeDef *pdev,
-                            USBD_SetupReqTypedef *req);
+                            const USBD_SetupReqTypedef *req);
 
 static void USBD_CtlErrorZZ( USBD_HandleTypeDef *pdev,
-                            USBD_SetupReqTypedef *req)
+                            const USBD_SetupReqTypedef *req)
 {
 	stall_ep0(pdev);
 #if 0
@@ -1739,8 +1711,9 @@ usbd_cdc_tx(void * ctx, uint_fast8_t c)
 // BRDY pipe Interrupt handler
 // Заполнение символами буфеа пердатчика
 static void
-usbd_handler_brdy_bulk_in8(PCD_TypeDef * const Instance, uint_fast8_t pipe, uint_fast8_t epnum)
+usbd_handler_brdy_bulk_in8(USBD_HandleTypeDef *pdev, uint_fast8_t pipe, uint_fast8_t epnum)
 {
+	USB_OTG_GlobalTypeDef * const Instance = ((PCD_HandleTypeDef *) pdev->pData)->Instance;
 	//PRINTF(PSTR("usbd_handler_brdy_bulk_in8: pipe=%u\n"), pipe);
 	//volatile uint16_t * const PIPEnCTR = (& Instance->PIPE1CTR) + (pipe - 1);
 	//Instance->PIPESEL = pipe;
@@ -1787,8 +1760,9 @@ usbd_handler_brdy_bulk_in8(PCD_TypeDef * const Instance, uint_fast8_t pipe, uint
 // BRDY pipe Interrupt handler
 // Получение символов из буфера приёмника
 static void
-usbd_handler_brdy_bulk_out8(PCD_TypeDef * const Instance, uint_fast8_t pipe, uint_fast8_t epnum)
+usbd_handler_brdy_bulk_out8(USBD_HandleTypeDef *pdev, uint_fast8_t pipe, uint_fast8_t epnum)
 {
+	USB_OTG_GlobalTypeDef * const Instance = ((PCD_HandleTypeDef *) pdev->pData)->Instance;
 	//PRINTF(PSTR("usbd_handler_brdy: pipe=%u\n"), pipe);
 	//volatile uint16_t * const PIPEnCTR = (& Instance->PIPE1CTR) + (pipe - 1);
 	//Instance->PIPESEL = pipe;
@@ -1808,7 +1782,7 @@ usbd_handler_brdy_bulk_out8(PCD_TypeDef * const Instance, uint_fast8_t pipe, uin
 		//PRINTF(PSTR("status of c_fifo%u CFIFOCTR=%04X\n"), pipe, Instance->CFIFOCTR);
 		if (usbd_cdc_rxenabled != 0)
 		{
-			unsigned size8 = (Instance->CFIFOCTR & USB_CFIFOCTR_DTLN) / MASK2LSB(USB_CFIFOCTR_DTLN);
+			unsigned size8 = (Instance->CFIFOCTR & USB_CFIFOCTR_DTLN) >> USB_CFIFOCTR_DTLN_SHIFT;
 			while (size8 --)
 			{
 				const uint_fast8_t c = Instance->CFIFO.UINT8 [R_IO_HH];	// HH=3
@@ -1822,7 +1796,7 @@ usbd_handler_brdy_bulk_out8(PCD_TypeDef * const Instance, uint_fast8_t pipe, uin
 		//PRINTF(PSTR("status of c_fifo%u CFIFOCTR=%04X\n"), pipe, Instance->CFIFOCTR);
 		//if (usbd_cdc_rxenabled != 0)
 		{
-			unsigned size8 = (Instance->CFIFOCTR & USB_CFIFOCTR_DTLN) / MASK2LSB(USB_CFIFOCTR_DTLN);
+			unsigned size8 = (Instance->CFIFOCTR & USB_CFIFOCTR_DTLN) >> USB_CFIFOCTR_DTLN_SHIFT;
 			while (size8 --)
 			{
 				const uint_fast8_t c = Instance->CFIFO.UINT8 [R_IO_HH];	// HH=3
@@ -1855,8 +1829,10 @@ usbd_handler_brdy_bulk_out8(PCD_TypeDef * const Instance, uint_fast8_t pipe, uin
 
 // NRDY pipe Interrupt handler
 static void
-usbd_handler_nrdy(PCD_TypeDef * const Instance, uint_fast8_t pipe)
+usbd_handler_nrdy(USBD_HandleTypeDef *pdev, uint_fast8_t pipe)
 {
+	USB_OTG_GlobalTypeDef * const Instance = ((PCD_HandleTypeDef *) pdev->pData)->Instance;
+
 	//PRINTF(PSTR("usbd_handler_nrdy: pipe=%u\n"), pipe);
 	uint_fast8_t pid;
 	if (pipe == 0)
@@ -1924,9 +1900,10 @@ usbd_handler_nrdy(PCD_TypeDef * const Instance, uint_fast8_t pipe)
 // BRDY pipe Interrupt handler
 // Получение символов из буфера приёмника
 static void
-usbd_handler_brdy8_dcp_out(PCD_TypeDef * const Instance, uint_fast8_t pipe)
+usbd_handler_brdy8_dcp_out(USBD_HandleTypeDef *pdev, uint_fast8_t pipe)
 {
-	USBD_SetupReqTypedef *req = & gRequest;
+	USB_OTG_GlobalTypeDef * const Instance = ((PCD_HandleTypeDef *) pdev->pData)->Instance;
+	USBD_SetupReqTypedef *req = & pdev->request;
 	switch (req->bRequest)
 	{
 #if WITHUSBCDC
@@ -2879,6 +2856,7 @@ static void actions_seq4(
 }
 #endif
 
+void HAL_PCD_SetupStageCallback(PCD_HandleTypeDef *hpcd);
 
 static void usb0_function_save_request(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef *req)
 {
@@ -2936,15 +2914,16 @@ static void usbd_handle_ctrt(USBD_HandleTypeDef *pdev, uint_fast8_t ctsq)
 		// 1: Control read data stage
 		// seq1 OUT token -> seq2 -> seq0
 		Instance->INTSTS0 = (uint16_t) ~ (1uL << USB_INTSTS0_VALID_SHIFT);	// Clear VALID - in seq 1, 3 and 5
-		usb0_function_save_request(pdev, & gRequest);
+		usb0_function_save_request(pdev, & pdev->request);
 
-		actions_seq1(pdev, & gRequest);
+		actions_seq1(pdev, & pdev->request);	// USBD_XXX_Setup
+        //HAL_PCD_SetupStageCallback((PCD_HandleTypeDef *) pdev->pData);
 
 		break;
 
 	case 2:
 		// 2: Control read status stage
-		//actions_seq2(pdev, & gRequest);
+		//actions_seq2(pdev, & pdev->reques);
 
 		Instance->DCPCTR |= 1 * (1uL << USB_DCPCTR_CCPL_SHIFT);	// CCPL
 		break;
@@ -2953,9 +2932,10 @@ static void usbd_handle_ctrt(USBD_HandleTypeDef *pdev, uint_fast8_t ctsq)
 		// 3: Control write data stage
 		// seq3 IN token -> seq4 ->seq0
 		Instance->INTSTS0 = (uint16_t) ~ (1uL << USB_INTSTS0_VALID_SHIFT);	// Clear VALID - in seq 1, 3 and 5
-		usb0_function_save_request(pdev, & gRequest);
+		usb0_function_save_request(pdev, & pdev->request);
 
-		actions_seq3(pdev, & gRequest);
+		actions_seq3(pdev, & pdev->request);// USBD_XXX_Setup
+        //HAL_PCD_SetupStageCallback((PCD_HandleTypeDef *) pdev->pData);
 		break;
 
 	case 4:
@@ -2969,9 +2949,10 @@ static void usbd_handle_ctrt(USBD_HandleTypeDef *pdev, uint_fast8_t ctsq)
 		// 5: Control write (no data) status stage
 		// seq5 -> seq0
 		Instance->INTSTS0 = (uint16_t) ~ (1uL << USB_INTSTS0_VALID_SHIFT);	// Clear VALID - in seq 1, 3 and 5
-		usb0_function_save_request(pdev, & gRequest);
+		usb0_function_save_request(pdev, & pdev->request);
 
-		actions_seq5(pdev, & gRequest);
+		actions_seq5(pdev, & pdev->request);// USBD_XXX_Setup
+        //HAL_PCD_SetupStageCallback((PCD_HandleTypeDef *) pdev->pData);
 
 		Instance->DCPCTR |= 1 * (1uL << USB_DCPCTR_CCPL_SHIFT);	// CCPL
 		break;
@@ -3426,8 +3407,10 @@ static void usbd_handle_suspend(PCD_TypeDef * const Instance)
 }
 
 static void 
-usbd_handle_dvst(PCD_TypeDef * const Instance, uint_fast8_t dvsq)
+usbd_handle_dvst(USBD_HandleTypeDef *pdev, uint_fast8_t dvsq)
 {
+	USB_OTG_GlobalTypeDef * const Instance = ((PCD_HandleTypeDef *) pdev->pData)->Instance;
+
 	if (dvsq & 0x04)
 	{
 		usbd_handle_suspend(Instance);
@@ -3492,19 +3475,19 @@ static void r7s721_usbdevice_handler(USBD_HandleTypeDef *pdev)
 		Instance->NRDYSTS = ~ nrdysts;
 #if WITHUSBUAC
 		if ((nrdysts & (1U << HARDWARE_USBD_PIPE_ISOC_OUT)) != 0)	
-			++ e1, usbd_handler_nrdy(Instance, HARDWARE_USBD_PIPE_ISOC_OUT);
+			usbd_handler_nrdy(pdev, HARDWARE_USBD_PIPE_ISOC_OUT);
 		if ((nrdysts & (1U << HARDWARE_USBD_PIPE_ISOC_IN)) != 0)	
-			++ e2, usbd_handler_nrdy(Instance, HARDWARE_USBD_PIPE_ISOC_IN);
+			usbd_handler_nrdy(pdev, HARDWARE_USBD_PIPE_ISOC_IN);
 #endif /* WITHUSBUAC */
 #if WITHUSBCDC
 		if ((nrdysts & (1U << HARDWARE_USBD_PIPE_CDC_OUT)) != 0)	
-			++ e3, usbd_handler_nrdy(Instance, HARDWARE_USBD_PIPE_CDC_OUT);
+			usbd_handler_nrdy(pdev, HARDWARE_USBD_PIPE_CDC_OUT);
 		if ((nrdysts & (1U << HARDWARE_USBD_PIPE_CDC_IN)) != 0)	
-			++ e4, usbd_handler_nrdy(Instance, HARDWARE_USBD_PIPE_CDC_IN);
+			usbd_handler_nrdy(pdev, HARDWARE_USBD_PIPE_CDC_IN);
 		if ((nrdysts & (1U << HARDWARE_USBD_PIPE_CDC_OUTb)) != 0)	
-			++ e3, usbd_handler_nrdy(Instance, HARDWARE_USBD_PIPE_CDC_OUTb);
+			usbd_handler_nrdy(pdev, HARDWARE_USBD_PIPE_CDC_OUTb);
 		if ((nrdysts & (1U << HARDWARE_USBD_PIPE_CDC_INb)) != 0)	
-			++ e4, usbd_handler_nrdy(Instance, HARDWARE_USBD_PIPE_CDC_INb);
+			usbd_handler_nrdy(pdev, HARDWARE_USBD_PIPE_CDC_INb);
 #endif /* WITHUSBCDC */
 	}
 	if ((intsts0 & USB_INTSTS0_BRDY) != 0)	// BRDY
@@ -3514,16 +3497,16 @@ static void r7s721_usbdevice_handler(USBD_HandleTypeDef *pdev)
 		Instance->BRDYSTS = ~ brdysts;
 
 		if ((brdysts & (1U << 0)) != 0)		// PIPE0 - DCP
-			usbd_handler_brdy8_dcp_out(Instance, 0);
+			usbd_handler_brdy8_dcp_out(pdev, 0);
 #if WITHUSBCDC
 		if ((brdysts & (1U << HARDWARE_USBD_PIPE_CDC_OUT)) != 0)	
-			usbd_handler_brdy_bulk_out8(Instance, HARDWARE_USBD_PIPE_CDC_OUT, USBD_EP_CDC_OUT);
+			usbd_handler_brdy_bulk_out8(pdev, HARDWARE_USBD_PIPE_CDC_OUT, USBD_EP_CDC_OUT);
 		if ((brdysts & (1U << HARDWARE_USBD_PIPE_CDC_IN)) != 0)	
-			usbd_handler_brdy_bulk_in8(Instance, HARDWARE_USBD_PIPE_CDC_IN, USBD_EP_CDC_IN);
+			usbd_handler_brdy_bulk_in8(pdev, HARDWARE_USBD_PIPE_CDC_IN, USBD_EP_CDC_IN);
 		if ((brdysts & (1U << HARDWARE_USBD_PIPE_CDC_OUTb)) != 0)	
-			usbd_handler_brdy_bulk_out8(Instance, HARDWARE_USBD_PIPE_CDC_OUTb, USBD_EP_CDC_OUTb);
+			usbd_handler_brdy_bulk_out8(pdev, HARDWARE_USBD_PIPE_CDC_OUTb, USBD_EP_CDC_OUTb);
 		if ((brdysts & (1U << HARDWARE_USBD_PIPE_CDC_INb)) != 0)	
-			usbd_handler_brdy_bulk_in8(Instance, HARDWARE_USBD_PIPE_CDC_INb, USBD_EP_CDC_INb);
+			usbd_handler_brdy_bulk_in8(pdev, HARDWARE_USBD_PIPE_CDC_INb, USBD_EP_CDC_INb);
 #endif /* WITHUSBCDC */
 #if WITHUSBRNDIS
 #endif /* WITHUSBRNDIS */
@@ -3532,7 +3515,7 @@ static void r7s721_usbdevice_handler(USBD_HandleTypeDef *pdev)
 	{
 		//PRINTF(PSTR("r7s721_usbi0_handler trapped - DVSE, DVSQ=%d\n"), (intsts0 >> 4) & 0x07);
 		Instance->INTSTS0 = (uint16_t) ~ (1uL << USB_INTSTS0_DVST_SHIFT);	// Clear DVSE
-		usbd_handle_dvst(Instance, (intsts0 & USB_INTSTS0_DVSQ) >> USB_INTSTS0_DVSQ_SHIFT);
+		usbd_handle_dvst(pdev, (intsts0 & USB_INTSTS0_DVSQ) >> USB_INTSTS0_DVSQ_SHIFT);
 	}
 	if ((intsts0 & (1uL << USB_INTSTS0_RESM_SHIFT)) != 0)	// RESM
 	{
@@ -7347,7 +7330,7 @@ USBD_StatusTypeDef  USBD_CtlContinueSendData (USBD_HandleTypeDef  *pdev,
 */
 
 static void USBD_CtlError( USBD_HandleTypeDef *pdev,
-                            USBD_SetupReqTypedef *req)
+                            const USBD_SetupReqTypedef *req)
 {
 #if 0
 	PRINTF(PSTR("USBD_CtlError: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"),
@@ -7576,12 +7559,12 @@ static USBD_StatusTypeDef USBD_XXX_DeInit(USBD_HandleTypeDef *pdev, uint_fast8_t
 }
 
 
-static USBD_StatusTypeDef USBD_XXX_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef *req)
+static USBD_StatusTypeDef USBD_XXX_Setup(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req)
 {
 	static USBALIGN_BEGIN uint8_t buff [32] USBALIGN_END;	// was: 7
 	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
 
-	//PRINTF(PSTR("USBD_ClassXXX_Setup: bRequest=%02X, wIndex=%04X, wLength=%04X, wValue=%04X (interfacev=%02X)\n"), req->bRequest, req->wIndex, req->wLength, req->wValue, interfacev);
+	PRINTF(PSTR("USBD_ClassXXX_Setup: bRequest=%02X, wIndex=%04X, wLength=%04X, wValue=%04X (interfacev=%02X)\n"), req->bRequest, req->wIndex, req->wLength, req->wValue, interfacev);
 
 	if ((req->bmRequest & USB_REQ_TYPE_DIR) != 0)
 	{
@@ -8401,7 +8384,7 @@ USBD_StatusTypeDef  USBD_StdEPReq (USBD_HandleTypeDef *pdev, USBD_SetupReqTypede
 * @retval status
 */
 static void USBD_GetDescriptor(USBD_HandleTypeDef *pdev, 
-                               USBD_SetupReqTypedef *req)
+                               const USBD_SetupReqTypedef *req)
 {
 	uint16_t len;
 	const uint8_t *pbuf;
@@ -8532,7 +8515,7 @@ static void USBD_GetDescriptor(USBD_HandleTypeDef *pdev,
 * @retval status
 */
 static void USBD_SetAddress(USBD_HandleTypeDef *pdev, 
-                            USBD_SetupReqTypedef *req)
+                            const USBD_SetupReqTypedef *req)
 {
 	//PRINTF(PSTR("USBD_SetAddress 0x%02X:\n"), LO_BYTE(req->wValue) & 0x7F);
 
@@ -8576,7 +8559,7 @@ static void USBD_SetAddress(USBD_HandleTypeDef *pdev,
 * @retval status
 */
 static void USBD_SetConfig(USBD_HandleTypeDef *pdev, 
-                           USBD_SetupReqTypedef *req)
+                           const USBD_SetupReqTypedef *req)
 {
 
 	const uint_fast8_t  cfgidx = LO_BYTE(req->wValue);                 
@@ -8653,7 +8636,7 @@ static void USBD_SetConfig(USBD_HandleTypeDef *pdev,
 * @retval status
 */
 static void USBD_GetConfig(USBD_HandleTypeDef *pdev, 
-                           USBD_SetupReqTypedef *req)
+                           const USBD_SetupReqTypedef *req)
 {
 	PRINTF(PSTR("USBD_GetConfig:\n"));
 
@@ -8692,7 +8675,7 @@ static void USBD_GetConfig(USBD_HandleTypeDef *pdev,
 * @retval status
 */
 static void USBD_GetStatus(USBD_HandleTypeDef *pdev, 
-                           USBD_SetupReqTypedef *req)
+                           const USBD_SetupReqTypedef *req)
 {
   
 	//PRINTF(PSTR("USBD_GetStatus:\n"));
@@ -8733,7 +8716,7 @@ static void USBD_GetStatus(USBD_HandleTypeDef *pdev,
 * @retval status
 */
 static void USBD_SetFeature(USBD_HandleTypeDef *pdev, 
-                            USBD_SetupReqTypedef *req)
+                            const USBD_SetupReqTypedef *req)
 {
 
 	if (req->wValue == USB_FEATURE_REMOTE_WAKEUP)
@@ -8756,7 +8739,7 @@ static void USBD_SetFeature(USBD_HandleTypeDef *pdev,
 * @retval status
 */
 static void USBD_ClrFeature(USBD_HandleTypeDef *pdev, 
-                            USBD_SetupReqTypedef *req)
+                            const USBD_SetupReqTypedef *req)
 {
 	switch (pdev->dev_state)
 	{
@@ -13957,39 +13940,6 @@ USBH_StatusTypeDef USBH_MSC_Write(USBH_HandleTypeDef *phost,
 }
 
 #endif /* WITHUSEUSBFLASH */
-
-#if 0
-
-
-	// INTERFACE_AUDIO_CONTROL_SPK = 0, /* USB Speaker Standard interfacei descriptor */
-	// INTERFACE_AUDIO_SPK,		/* USB Speaker Standard AS Interface Descriptor - Audio Streaming Zero Bandwith */
-	// INTERFACE_AUDIO_MIKE,		/* USB Microphone Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3)*/ //zero-bandwidth interfacei
-	// INTERFACE_CDC_CONTROL_3a,		// CDC control Interface
-	// INTERFACE_CDC_DATA_4a,		// CDC data Interface
-	//
-	// INTERFACE_count
-
-static const USBD_ClassTypeDef USBD_dispatch [INTERFACE_count] =
-{
-	// INTERFACE_AUDIO_CONTROL_SPK = 0, /* USB Speaker Standard interfacei descriptor */
-	{
-	},
-	// INTERFACE_AUDIO_SPK,		/* USB Speaker Standard AS Interface Descriptor - Audio Streaming Zero Bandwith */
-	{
-	},
-	// INTERFACE_AUDIO_MIKE,		/* USB Microphone Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3)*/ //zero-bandwidth interfacei
-	{
-	},
-	// INTERFACE_CDC_CONTROL_3a,		// CDC control Interface
-	{
-	},
-	// INTERFACE_CDC_DATA_4a,		// CDC data Interface
-	{
-	},
-}
-
-
-#endif
 
 static const USBD_ClassTypeDef USBD_CLASS_XXX =
 {

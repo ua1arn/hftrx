@@ -511,7 +511,6 @@ uint_fast8_t dsp_getmikeadcoverflow(void); /* получения признака переполнения АЦ
 
 void dsp_speed_diagnostics(void);	/* DSP speed test */
 void buffers_diagnostics(void);
-void usbd_showstate(void);
 void usbd_diagnostics(void);
 void dtmftest(void);
 

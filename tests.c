@@ -4861,7 +4861,6 @@ void looptests(void)
 #endif
 #if 0 && WITHUSBHW
 	{
-		//usbd_showstate();
 		usbd_diagnostics();
 	}
 #endif
