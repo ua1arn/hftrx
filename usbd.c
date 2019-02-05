@@ -23,8 +23,10 @@ static uint_fast8_t notseq;
 
 #if CPUSTYLE_R7S721
 	#define USBD_CtlSendData USBD_CtlSendDataNec
+	#define USBD_CtlError USBD_CtlErrorNec
 #else
 	#define USBD_CtlSendData USBD_CtlSendDataSt
+	#define USBD_CtlError USBD_CtlErrorSt
 #endif
 
 static void _Error_Handler(char * file, int line)
@@ -1290,10 +1292,8 @@ static void set_transaction_counter(uint_fast8_t pipe, uint_fast32_t size)
 static unsigned usbd_read_data(PCD_TypeDef * const Instance, uint_fast8_t pipe, uint8_t * data, unsigned size)
 {
 	ASSERT(Instance == WITHUSBHW_DEVICE);
-#if CPUSTYLE_R7S721
 
 	g_usb0_function_PipeIgnore [pipe] = 0;
-	//unsigned w;
 
 	//PRINTF(PSTR("selected read from c_fifo%u 0, CFIFOCTR=%04X, CFIFOSEL=%04X\n"), pipe, Instance->CFIFOCTR, Instance->CFIFOSEL);
 
@@ -1326,30 +1326,6 @@ static unsigned usbd_read_data(PCD_TypeDef * const Instance, uint_fast8_t pipe, 
 
 	//PRINTF(PSTR("selected read from c_fifo%u 5, CFIFOCTR=%04X, CFIFOSEL=%04X\n"), pipe, Instance->CFIFOCTR, Instance->CFIFOSEL);
 	return count;
-
-#elif 0//CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX
-		const unsigned wcnt = (size + 3) / 4;
-		unsigned i;
-		
-		for (i = 0; i < wcnt; ++ i, data += 4, size -= 4)
-		{
-			const uint_fast32_t v = USBx_DOFIFO(pipe);
-			switch (ulmin16(size, 4) % 4)
-			{
-			case 0:
-				data [3] = (uint8_t) (v >> 24);
-			case 3:
-				data [2] = (uint8_t) (v >> 16);
-			case 2:
-				data [1] = (uint8_t) (v >> 8);
-			case 1:
-				data [0] = (uint8_t) (v >> 0);
-			}
-		}
-		return size;
-#else
-	return 0;
-#endif
 }
 
 static void 
@@ -1362,8 +1338,6 @@ usbd_write_data(PCD_TypeDef * const Instance, uint_fast8_t pipe, const uint8_t *
 	else
 		PRINTF(PSTR("usbd_write_data, pipe=%d, size=%d, data[]={}\n"), pipe, size);
 #endif
-
-#if CPUSTYLE_R7S721
 
 	g_usb0_function_PipeIgnore [pipe] = 0;
 
@@ -1390,34 +1364,6 @@ usbd_write_data(PCD_TypeDef * const Instance, uint_fast8_t pipe, const uint8_t *
         Instance->CFIFO.UINT8 [R_IO_HH] = * data ++; // HH=3
 	}
 	Instance->CFIFOCTR = USB_CFIFOCTR_BVAL;	// BVAL
-
-#elif 0//CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX
-
-	PRINTF(PSTR("USB_Mgs_x_INEP(%d)->DTXFSTS=%08lX, DIEPCTL=%08lX\n"), pipe, USB_Mgs_x_INEP(pipe)->DTXFSTS & USB_OTG_DTXFSTS_INEPTFSAV, USB_Mgs_x_INEP(pipe)->DIEPCTL);
-
-	// заполнение FIFO
-	unsigned size4 = (size + 3) / 4;
-	for (; size4 --; data += 4, size -= 4)
-	{
-		uint_fast32_t v = 0;
-		switch (ulmin16(size, 4) % 4)
-		{
-		case 0:
-			v |= (uint_fast32_t) data [3] << 24;
-		case 3:
-			v |= (uint_fast32_t) data [2] << 16;
-		case 2:
-			v |= (uint_fast32_t) data [1] << 8;
-		case 1:
-			v |= (uint_fast32_t) data [0] << 0;
-		}
-		//PRINTF(PSTR("%08lx \n"), v);
-		USB_Mgs_x_DIFIFO(pipe) = v;
-	}
-	
-	//PRINTF(PSTR("USB_Mgs_x_INEP(%d)->DTXFSTS=%08lX, DIEPCTL=%08lX\n"), pipe, USB_Mgs_x_INEP(pipe)->DTXFSTS & USB_OTG_DTXFSTS_INEPTFSAV, USB_Mgs_x_INEP(pipe)->DIEPCTL);
-
-#endif
 }
 
 static unsigned control_read_data(USBD_HandleTypeDef *pdev, uint8_t * data, unsigned size)
@@ -1429,18 +1375,10 @@ static unsigned control_read_data(USBD_HandleTypeDef *pdev, uint8_t * data, unsi
 static void 
 control_transmit0single(USBD_HandleTypeDef *pdev, const uint8_t * data, unsigned size)
 {
-#if CPUSTYLE_R7S721
 
 	USB_OTG_GlobalTypeDef * const Instance = ((PCD_HandleTypeDef *) pdev->pData)->Instance;
 	usbd_write_data(Instance, 0, data, size);	// pipe=0: DCP
 
-#elif 0//CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX
-
-	const uint_fast8_t pipe = 0;
-
-	usbd_write_data(Instance, pipe, data, size);	// pipe=0: DCP
-
-#endif
 }
 
 static const uint8_t * ep0data = NULL;
@@ -1449,7 +1387,6 @@ static unsigned ep0size = 0;
 // Обработчик прерывания по пустому FIFO EP0 IN
 static void control_transmit2(USBD_HandleTypeDef *pdev)
 {
-#if CPUSTYLE_R7S721
 	USB_OTG_GlobalTypeDef * const Instance = ((PCD_HandleTypeDef *) pdev->pData)->Instance;
 
 	if (ep0size != 0)
@@ -1468,42 +1405,11 @@ static void control_transmit2(USBD_HandleTypeDef *pdev)
 		ep0data = NULL;
 	}
 
-#elif 0//CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX
-
-	if (ep0size != 0)
-	{
-		uint_fast16_t chunk = ulmin16(ep0size, USB_OTG_MAX_EP0_SIZE);
-		control_transmit0single(pdev, ep0data, chunk);
-		ep0data += chunk;
-		ep0size -= chunk;
-		if (ep0size == 0 && chunk < USB_OTG_MAX_EP0_SIZE)
-		{
-			ep0data = NULL;	// завершающего пакета нулевого размера передавать ненужно. Прерывание обработается и сбросится, но передачи никакой не будет.
-			usbd_epx_txfifoe_enable(0, 0);
-		}
-		else
-		{
-			usbd_epx_txfifoe_enable(0, 1);
-		}
-	}
-	else if (ep0data == NULL)
-	{
-		usbd_epx_txfifoe_enable(0, 0);	// завершающего пакета нулевого размера передавать ненужно
-	}
-	else
-	{
-		// если последний пакет был кратет USB_OTG_MAX_EP0_SIZE, то передаем пакет нулевого размера
-		control_transmit0single(pdev, NULL, 0);
-		ep0data = NULL;
-		usbd_epx_txfifoe_enable(0, 0);	// завершающего пакета нулевого размера передавать ненужно
-	}
-#endif
 }
 
 static USBD_StatusTypeDef USBD_CtlSendDataNec(USBD_HandleTypeDef *pdev, const uint8_t * data, uint16_t size)
 {
 
-#if CPUSTYLE_R7S721
 	USB_OTG_GlobalTypeDef * const Instance = ((PCD_HandleTypeDef *) pdev->pData)->Instance;
 
 	Instance->DCPCTR = (Instance->DCPCTR & ~ USB_DCPCTR_PID) |
@@ -1528,35 +1434,12 @@ static USBD_StatusTypeDef USBD_CtlSendDataNec(USBD_HandleTypeDef *pdev, const ui
 		0x01 * MASK2LSB(USB_DCPCTR_PID) |	// PID 01: BUF response (depending on the buffer state)
 		0;
 
-#elif 0//CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX
-
-	ep0data = data;
-	ep0size = size;
-
-	const uint_fast8_t pipe = 0;
-	const uint_fast8_t pktcnt = size == 0 ? 0 : 1;
-	// разрешение передачи
-	// OTG_DIEPTSIZ0
-	USB_Mgs_x_INEP(pipe)->DIEPTSIZ = (USB_Mgs_x_INEP(pipe)->DIEPTSIZ & ~ (USB_OTG_DIEPTSIZ_XFRSIZ | USB_OTG_DIEPTSIZ_PKTCNT)) |
-		(size & USB_OTG_DIEPTSIZ_XFRSIZ) |
-		((pktcnt << USB_OTG_DIEPTSIZ_PKTCNT_Pos) & USB_OTG_DIEPTSIZ_PKTCNT) |	
-		0;
-	//PRINTF(PSTR("USBD_CtlSendData: USB_Mgs_x_INEP(%d)->DIEPTSIZ=%08lX\n"), pipe, USB_Mgs_x_INEP(pipe)->DIEPTSIZ);
-	/* EP enable, IN data in FIFO */
-	USB_Mgs_x_INEP(pipe)->DIEPCTL |= (USB_OTG_DIEPCTL_CNAK | USB_OTG_DIEPCTL_EPENA);   
-
-
-	usbd_epx_txfifoe_enable(0, size != 0);
-	//control_transmit2(pdev);
-
-#endif
 	return 0;
 }
 
 // ACK
 static void dcp_acksend(USBD_HandleTypeDef *pdev)
 {
-#if CPUSTYLE_R7S721
 	USB_OTG_GlobalTypeDef * const Instance = ((PCD_HandleTypeDef *) pdev->pData)->Instance;
 
 	//PRINTF(PSTR("dcp_acksend\n"));
@@ -1573,12 +1456,6 @@ static void dcp_acksend(USBD_HandleTypeDef *pdev)
 		0x01 * MASK2LSB(USB_DCPCTR_PID) |	// PID 01: BUF response (depending on the buffer state)
 		0;
 
-#elif 0//CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX
-
-	static const uint8_t empty [1];
-	USBD_CtlSendData(Instance, empty, 0);	// не-нулевой указатель - хак для передачи пакета нулевой длины без продолжения.
-
-#endif
 }
 
 // NAK
@@ -1586,7 +1463,6 @@ static void nak_ep0(USBD_HandleTypeDef *pdev)
 {
 	//PRINTF(PSTR("nak_ep0\n"));
 
-#if CPUSTYLE_R7S721
 	USB_OTG_GlobalTypeDef * const Instance = ((PCD_HandleTypeDef *) pdev->pData)->Instance;
 
 	if (((Instance->DCPCTR & USB_DCPCTR_PID) >> USB_DCPCTR_PID_SHIFT) == 0x03)
@@ -1614,31 +1490,12 @@ static void nak_ep0(USBD_HandleTypeDef *pdev)
 		//1 * (1uL << 0) |	// PID 01: BUF response (depending on the buffer state)
 		//2 * (1uL << 0) |	// PID 02: STALL response
 		0;
-
-#elif 0//CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX
-
-	const uint_fast8_t pipe = 0;	// DCP
-
-	//USB_Mgs_x_DIFIFO(0) = 0xdeadbeef;
-	if ((USB_Mgs_x_INEP(pipe)->DIEPCTL & USB_OTG_DIEPCTL_EPENA) != 0)
-	{
-		USB_Mgs_x_INEP(pipe)->DIEPCTL = USB_OTG_DIEPCTL_EPDIS | USB_OTG_DIEPCTL_SNAK;
-	}
-	else
-	{
-		USB_Mgs_x_INEP(pipe)->DIEPCTL = 0;
-	}
-	//USB_Mgs_x_DIFIFO(0) = 0xdeadbeef;
-
-#endif
 }
 
 // STALL
 static void stall_ep0(USBD_HandleTypeDef *pdev)
 {
 	//PRINTF(PSTR("stall_ep0\n"));
-
-#if CPUSTYLE_R7S721
 
 	USB_OTG_GlobalTypeDef * const Instance = ((PCD_HandleTypeDef *) pdev->pData)->Instance;
 	const uint_fast8_t pipe = 0;	// DCP
@@ -1659,22 +1516,11 @@ static void stall_ep0(USBD_HandleTypeDef *pdev)
 		0x02 * (1uL << USB_DCPCTR_PID_SHIFT) |	// PID 02: STALL response
 		0;
 
-#elif 0//CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX
-
-	const uint_fast8_t pipe = 0;	// DCP
-
-	if (((USB_Mgs_x_INEP(pipe)->DIEPCTL) & USB_OTG_DIEPCTL_EPENA) == 0)
-	{
-		USB_Mgs_x_INEP(pipe)->DIEPCTL &= ~(USB_OTG_DIEPCTL_EPDIS); 
-	} 
-	USB_Mgs_x_INEP(pipe)->DIEPCTL |= USB_OTG_DIEPCTL_STALL;
-
-#endif
 }
 static void USBD_CtlError( USBD_HandleTypeDef *pdev,
                             const USBD_SetupReqTypedef *req);
 
-static void USBD_CtlErrorZZ( USBD_HandleTypeDef *pdev,
+static void USBD_CtlErrorNec( USBD_HandleTypeDef *pdev,
                             const USBD_SetupReqTypedef *req)
 {
 	stall_ep0(pdev);
@@ -2987,13 +2833,15 @@ static const uint_fast8_t usedpipes [] =
 #endif /* WITHUSBCDCEEM */
 };
 
-static const uint_fast8_t brdyenbpipes [] =
+
+static const struct { uint8_t pipe, ep; } brdyenbpipes2 [] =
 {
+	//{ 0x00, 0x00 },		// DCP
 #if WITHUSBCDC
-	HARDWARE_USBD_PIPE_CDC_OUT,		// CDC OUT Данные ком-порта от компьютера в TRX
-	HARDWARE_USBD_PIPE_CDC_IN,		// CDC IN Данные ком-порта в компьютер из TRX
-	HARDWARE_USBD_PIPE_CDC_OUTb,	// CDC OUT dummy interfacei
-	HARDWARE_USBD_PIPE_CDC_INb,		// CDC IN dummy interfacei
+	{ HARDWARE_USBD_PIPE_CDC_OUT, USBD_EP_CDC_OUT },		// CDC OUT Данные ком-порта от компьютера в TRX
+	{ HARDWARE_USBD_PIPE_CDC_IN, USBD_EP_CDC_IN },		// CDC IN Данные ком-порта в компьютер из TRX
+	{ HARDWARE_USBD_PIPE_CDC_OUTb, USBD_EP_CDC_OUTb },	// CDC OUT dummy interfacei
+	{ HARDWARE_USBD_PIPE_CDC_INb, USBD_EP_CDC_INb },		// CDC IN dummy interfacei
 #endif /* WITHUSBCDC */
 #if WITHUSBCDCEEM
 #endif /* WITHUSBCDCEEM */
@@ -3022,11 +2870,12 @@ static void usbd_pipes_enable(PCD_TypeDef * const Instance)
 
 		g_usb0_function_PipeIgnore [pipe] = 0;
 	}
-	for (i = 0; i < sizeof brdyenbpipes / sizeof brdyenbpipes [0]; ++ i)
+	for (i = 0; i < sizeof brdyenbpipes2 / sizeof brdyenbpipes2 [0]; ++ i)
 	{
-		const uint_fast8_t pipe = brdyenbpipes [i];
+		const uint_fast8_t pipe = brdyenbpipes2 [i].pipe;
 		Instance->BRDYENB |= (1uL << pipe);	// Прерывание по заполненности приёмного (OUT) или для заполнения передающего (IN) буфера
 	}
+	if (1)
 	{
 		// DCP, control pipe
 		uint_fast8_t pipe = 0;	// PIPE0
@@ -3039,15 +2888,16 @@ static void usbd_pipes_disable(PCD_TypeDef * const Instance)
 {
 	uint_fast8_t i;
 
+	if (1)
 	{
 		// DCP, control pipe
 		uint_fast8_t pipe = 0;	// PIPE0
 		//Instance->BRDYENB |= (1uL << pipe);	// Прерывание по заполненности приёмного (OUT) буфера
 		Instance->BEMPENB &= ~ (1uL << pipe);	// Прерывание окончания передачи передающего (IN) буфера
 	}
-	for (i = 0; i < sizeof brdyenbpipes / sizeof brdyenbpipes [0]; ++ i)
+	for (i = 0; i < sizeof brdyenbpipes2 / sizeof brdyenbpipes2 [0]; ++ i)
 	{
-		const uint_fast8_t pipe = brdyenbpipes [i];
+		const uint_fast8_t pipe = brdyenbpipes2 [i].pipe;
 		Instance->BRDYENB &= ~ (1uL << pipe);	// Прерывание по заполненности приёмного (OUT) или для заполнения передающего (IN) буфера
 	}
 	for (i = 0; i < sizeof usedpipes / sizeof usedpipes [0]; ++ i)
@@ -3470,46 +3320,39 @@ static void r7s721_usbdevice_handler(USBD_HandleTypeDef *pdev)
 	}
 	if ((intsts0 & USB_INTSTS0_NRDY) != 0)	// NRDY
 	{
+		uint_fast8_t i;
 		//PRINTF(PSTR("r7s721_usbi0_handler trapped - NRDY, NRDYSTS=0x%04X\n"), Instance->NRDYSTS);
 		const uint_fast16_t nrdysts = Instance->NRDYSTS & Instance->NRDYENB;	// NRDY Interrupt Status Register
 		Instance->NRDYSTS = ~ nrdysts;
-#if WITHUSBUAC
-		if ((nrdysts & (1U << HARDWARE_USBD_PIPE_ISOC_OUT)) != 0)	
-			usbd_handler_nrdy(pdev, HARDWARE_USBD_PIPE_ISOC_OUT);
-		if ((nrdysts & (1U << HARDWARE_USBD_PIPE_ISOC_IN)) != 0)	
-			usbd_handler_nrdy(pdev, HARDWARE_USBD_PIPE_ISOC_IN);
-#endif /* WITHUSBUAC */
-#if WITHUSBCDC
-		if ((nrdysts & (1U << HARDWARE_USBD_PIPE_CDC_OUT)) != 0)	
-			usbd_handler_nrdy(pdev, HARDWARE_USBD_PIPE_CDC_OUT);
-		if ((nrdysts & (1U << HARDWARE_USBD_PIPE_CDC_IN)) != 0)	
-			usbd_handler_nrdy(pdev, HARDWARE_USBD_PIPE_CDC_IN);
-		if ((nrdysts & (1U << HARDWARE_USBD_PIPE_CDC_OUTb)) != 0)	
-			usbd_handler_nrdy(pdev, HARDWARE_USBD_PIPE_CDC_OUTb);
-		if ((nrdysts & (1U << HARDWARE_USBD_PIPE_CDC_INb)) != 0)	
-			usbd_handler_nrdy(pdev, HARDWARE_USBD_PIPE_CDC_INb);
-#endif /* WITHUSBCDC */
+		for (i = 0; i < sizeof usedpipes / sizeof usedpipes [0]; ++ i)
+		{
+			const uint_fast8_t pipe = usedpipes [i];
+			if ((nrdysts & (1U << pipe)) != 0)	
+				usbd_handler_nrdy(pdev, pipe);
+		}
 	}
 	if ((intsts0 & USB_INTSTS0_BRDY) != 0)	// BRDY
 	{
+		uint_fast8_t i;
 		//PRINTF(PSTR("r7s721_usbi0_handler trapped - BRDY, BRDYSTS=0x%04X\n"), Instance->BRDYSTS);
 		const uint_fast16_t brdysts = Instance->BRDYSTS & Instance->BRDYENB;	// BRDY Interrupt Status Register
 		Instance->BRDYSTS = ~ brdysts;
 
 		if ((brdysts & (1U << 0)) != 0)		// PIPE0 - DCP
 			usbd_handler_brdy8_dcp_out(pdev, 0);
-#if WITHUSBCDC
-		if ((brdysts & (1U << HARDWARE_USBD_PIPE_CDC_OUT)) != 0)	
-			usbd_handler_brdy_bulk_out8(pdev, HARDWARE_USBD_PIPE_CDC_OUT, USBD_EP_CDC_OUT);
-		if ((brdysts & (1U << HARDWARE_USBD_PIPE_CDC_IN)) != 0)	
-			usbd_handler_brdy_bulk_in8(pdev, HARDWARE_USBD_PIPE_CDC_IN, USBD_EP_CDC_IN);
-		if ((brdysts & (1U << HARDWARE_USBD_PIPE_CDC_OUTb)) != 0)	
-			usbd_handler_brdy_bulk_out8(pdev, HARDWARE_USBD_PIPE_CDC_OUTb, USBD_EP_CDC_OUTb);
-		if ((brdysts & (1U << HARDWARE_USBD_PIPE_CDC_INb)) != 0)	
-			usbd_handler_brdy_bulk_in8(pdev, HARDWARE_USBD_PIPE_CDC_INb, USBD_EP_CDC_INb);
-#endif /* WITHUSBCDC */
-#if WITHUSBRNDIS
-#endif /* WITHUSBRNDIS */
+
+		for (i = 0; i < sizeof brdyenbpipes2 / sizeof brdyenbpipes2 [0]; ++ i)
+		{
+			const uint_fast8_t pipe = brdyenbpipes2 [i].pipe;
+			const uint_fast8_t ep = brdyenbpipes2 [i].ep;
+			if ((brdysts & (1U << pipe)) != 0)	
+			{
+				if ((ep & 0x80) != 0)
+					usbd_handler_brdy_bulk_in8(pdev, pipe, ep);
+				else
+					usbd_handler_brdy_bulk_out8(pdev, pipe, ep);
+			}
+		}
 	}
 	if ((intsts0 & (1uL << USB_INTSTS0_DVST_SHIFT)) != 0)	// DVSE
 	{
@@ -7329,7 +7172,7 @@ USBD_StatusTypeDef  USBD_CtlContinueSendData (USBD_HandleTypeDef  *pdev,
 * @retval None
 */
 
-static void USBD_CtlError( USBD_HandleTypeDef *pdev,
+static void USBD_CtlErrorSt( USBD_HandleTypeDef *pdev,
                             const USBD_SetupReqTypedef *req)
 {
 #if 0
