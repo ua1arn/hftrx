@@ -247,8 +247,9 @@ void display_showbuffer(
 		display_plotfrom(GRID2X(col), GRID2Y(row) + lowhalf * 8);		// курсор в начало первой строки
 		// выдача горизонтальной полосы
 		display_wrdatabar_begin();
-	#if WITHSPIHWDMA && (LCDMODE_UC1608 | 0)
+	#if WITHSPIHWDMA && (0)
 		// на LCDMODE_S1D13781 почему-то DMA сбивает контроллер
+		// на LCDMODE_UC1608 портит мохранене теузей частоты и режима работы (STM32F746xx)
 		hardware_spi_master_send_frame(p, dx);
 	#else
 		for (pos = 0; pos < dx; ++ pos)

@@ -4785,6 +4785,16 @@ hardware_spi_master_send_frame_8bpartial(
 	DMA2->LIFCR = DMA_LIFCR_CTCIF3;		// сбросил флаг соответствующий stream
 	//DMA2_waitTC(3);	// ожидаем завершения обмена по соответствушему stream
 
+	DMA2_Stream3->CR &= ~ DMA_SxCR_EN;
+	while ((DMA2_Stream3->CR &  DMA_SxCR_EN) != 0)
+		;
+
+	#if CPUSTYLE_STM32H7XX
+		SPI1->CFG1 &= ~ SPI_CFG1_TXDMAEN; // запретить DMA по передаче
+	#else /* CPUSTYLE_STM32H7XX */
+		SPI1->CR2 &= ~ SPI_CR2_TXDMAEN; // запретить DMA по передаче
+	#endif /* CPUSTYLE_STM32H7XX */
+
 	#if CPUSTYLE_STM32H7XX
 
 		while ((SPI1->SR & SPI_SR_TXC) == 0)	
@@ -4801,13 +4811,6 @@ hardware_spi_master_send_frame_8bpartial(
 			;
 		(void) SPI1->DR;	/* clear SPI_SR_RXNE in status register */
 
-	#endif /* CPUSTYLE_STM32H7XX */
-
-
-	#if CPUSTYLE_STM32H7XX
-		SPI1->CFG1 &= ~ SPI_CFG1_TXDMAEN; // запретить DMA по передаче
-	#else /* CPUSTYLE_STM32H7XX */
-		SPI1->CR2 &= ~ SPI_CR2_TXDMAEN; // запретить DMA по передаче
 	#endif /* CPUSTYLE_STM32H7XX */
 
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX
@@ -4948,6 +4951,16 @@ hardware_spi_master_send_frame_16bpartial(
 	DMA2->LIFCR = DMA_LIFCR_CTCIF3;		// сбросил флаг соответствующий stream
 	//DMA2_waitTC(3);	// ожидаем завершения обмена по соответствушему stream
 
+	DMA2_Stream3->CR &= ~ DMA_SxCR_EN;
+	while ((DMA2_Stream3->CR &  DMA_SxCR_EN) != 0)
+		;
+
+	#if CPUSTYLE_STM32H7XX
+		SPI1->CFG1 &= ~ SPI_CFG1_TXDMAEN; // запретить DMA по передаче
+	#else /* CPUSTYLE_STM32H7XX */
+		SPI1->CR2 &= ~ SPI_CR2_TXDMAEN; // запретить DMA по передаче
+	#endif /* CPUSTYLE_STM32H7XX */
+
 	#if CPUSTYLE_STM32H7XX
 
 		while ((SPI1->SR & SPI_SR_TXC) == 0)	
@@ -4965,17 +4978,6 @@ hardware_spi_master_send_frame_16bpartial(
 		(void) SPI1->DR;	/* clear SPI_SR_RXNE in status register */
 
 	#endif /* CPUSTYLE_STM32H7XX */
-
-	DMA2_Stream3->CR &= ~ DMA_SxCR_EN;
-	while ((DMA2_Stream3->CR &  DMA_SxCR_EN) != 0)
-		;
-
-	#if CPUSTYLE_STM32H7XX
-		SPI1->CFG1 &= ~ SPI_CFG1_TXDMAEN; // запретить DMA по передаче
-	#else /* CPUSTYLE_STM32H7XX */
-		SPI1->CR2 &= ~ SPI_CR2_TXDMAEN; // запретить DMA по передаче
-	#endif /* CPUSTYLE_STM32H7XX */
-
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX
 	#warning TODO: implement SPI over DMA
 
