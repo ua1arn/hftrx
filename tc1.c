@@ -3818,8 +3818,8 @@ static void auto_tune(void)
 		updateboard_tuner();
 
 		// проверка - а может уже нашли подход€шее согласование?
-		if (statuses [tunertype].swr <= TUS_SWR1p1)
-			goto NoMoreTune;
+		////if (statuses [tunertype].swr <= TUS_SWR1p1)
+		////	goto NoMoreTune;
 
 		if (scanminCk(& statuses [tunertype], addstepsCk) != 0)
 			goto aborted;
@@ -3827,8 +3827,8 @@ static void auto_tune(void)
 		updateboard_tuner();
 
 		// проверка - а может уже нашли подход€шее согласование?
-		if (statuses [tunertype].swr <= TUS_SWR1p1)
-			goto NoMoreTune;
+		////if (statuses [tunertype].swr <= TUS_SWR1p1)
+		////	goto NoMoreTune;
 	}
 	// ¬ыбираем наилучший результат согласовани€
 	cshindex = findbestswr(statuses, sizeof statuses / sizeof statuses [0]);
