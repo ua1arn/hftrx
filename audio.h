@@ -489,6 +489,9 @@ void dsp_initialize(void);
 	// Нормирование уровня сигнала к шкале
 	// возвращает значения от 0 до dy включительно
 	int dsp_mag2y(FLOAT_t mag, uint_fast16_t dy);	
+
+	void saveIQRTSxx(FLOAT_t iv, FLOAT_t qv);	// формирование отображения спектра
+
 #endif /* WITHINTEGRATEDDSP */
 
 int_fast32_t dsp_get_ifreq(void);		/* Получить значение входной ПЧ для обработки DSP */
@@ -546,7 +549,5 @@ void uacout_buffer_save(const uint8_t * buff, uint_fast16_t size);
 
 #define USBALIGN_BEGIN __attribute__ ((aligned (32)))
 #define USBALIGN_END /* nothing */
-
-void saveIQRTSxx(FLOAT_t iv, FLOAT_t qv);	// формирование отображения спектра
 
 #endif /* AUDIO_H_INCLUDED */
