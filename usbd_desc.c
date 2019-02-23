@@ -46,7 +46,6 @@
 //#define USB_FUNCTION_VENDOR_ID	0x041C	// Altera Corp.
 //#define USB_FUNCTION_VENDOR_ID	0x04d9	// Holtek Semiconductor, Inc.
 
-#define USB_FUNCTION_PRODUCT_ID	0x0737
 
 
 // From STMicroelectronics Comunication Device Class driver (CDC) INF FILE:
@@ -55,6 +54,7 @@
 //#define USB_FUNCTION_RELEASE_NO	0x0200
 
 #if WITHUSBUAC && WITHUSBUAC3
+	#define USB_FUNCTION_PRODUCT_ID	0x0737
 	#if WITHRTS96
 		#define BUILD_ID 6	// модификатор serial sumber
 		#define USB_FUNCTION_RELEASE_NO	0x0106
@@ -66,6 +66,7 @@
 		#define USB_FUNCTION_RELEASE_NO	0x0104
 	#endif
 #else /* WITHUSBUAC && WITHUSBUAC3 */
+	#define USB_FUNCTION_PRODUCT_ID	0x0738
 	#if WITHRTS96
 		#define BUILD_ID 2	// модификатор serial sumber
 		#define USB_FUNCTION_RELEASE_NO	0x0102
@@ -2914,6 +2915,8 @@ static unsigned fill_wstring_descriptor(uint8_t * buff, unsigned maxsize, const 
 
 static ALIGNX_BEGIN uint8_t alldescbuffer [2048] ALIGNX_END;
 
+struct descholder MsftStringDescr [1];
+struct descholder MsftCompFeatureDescr [1];	// Microsoft Compatible ID Feature Descriptor
 struct descholder StringDescrTbl [STRING_ID_count];
 struct descholder ConfigDescrTbl [USBD_CONFIGCOUNT];
 struct descholder DeviceDescrTbl [USBD_CONFIGCOUNT];
@@ -2977,6 +2980,63 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 			score += partlen;
 		}
 	}
+
+#if WITHUSBDFU
+	{
+		// Microsoft OS String Descriptor 
+		static const uint8_t MsftStringDescrProto [18] =
+		{
+			0x12,	// Descriptor length (18 bytes)
+			0x03,	// Descriptor type (3 = String)
+			'M', 0,	// Signature: "MSFT100"
+			'S', 0,
+			'F', 0,
+			'T', 0,
+			'1', 0,
+			'0', 0,
+			'0', 0,
+			DFU_VENDOR_CODE,	// Vendor Code - for vendor request
+			0x00,	// padding
+		};
+		unsigned partlen;
+
+		score += fill_align4(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score);
+		partlen = fill_pattern_descriptor(1, alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score, MsftStringDescrProto, sizeof MsftStringDescrProto);
+		MsftStringDescr [0].size = partlen;
+		MsftStringDescr [0].data = alldescbuffer + score;
+		score += partlen;
+	}
+	{
+		// Microsoft Compatible ID Feature Descriptor
+		static const uint8_t MsftCompFeatureDescrProto [40] =
+		{
+			0x28, 0x00, 0x00, 0x00,	// Descriptor length (40 bytes)
+			0x00, 0x01,	// Version ('1.0') 
+			0x04, 0x00,	// Compatibility ID Descriptor index
+			0x01,							// Number of sections (1)
+			0x00, 0x00, 0x00, 0x00,			// Reserved 
+			0x00, 0x00, 0x00,				// Reserved 
+			INTERFACE_DFU_CONTROL,			// Interface Number
+			0x01,							// reserved
+#if 0
+			'W', 'I', 'N', 'U', 'S', 'B', 0x00, 0x00,				// Compatible ID
+#else
+			'L', 'I', 'B', 'U', 'S', 'B', '0', 0x00,				// Compatible ID
+			//'L', 'I', 'B', 'U', 'S', 'B', 'K', 0x00,				// Compatible ID
+#endif
+			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,			// Sub-Compatible ID 
+			0x00, 0x00, 0x00, 0x00,			// Reserved 
+			0x00, 0x00,						// Reserved 
+		};
+		unsigned partlen;
+
+		score += fill_align4(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score);
+		partlen = fill_pattern_descriptor(1, alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score, MsftCompFeatureDescrProto, sizeof MsftCompFeatureDescrProto);
+		MsftCompFeatureDescr [0].size = partlen;
+		MsftCompFeatureDescr [0].data = alldescbuffer + score;
+		score += partlen;
+	}
+#endif /* WITHUSBDFU */
 
 	if (HSdesc != 0)
 	{

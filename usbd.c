@@ -1837,7 +1837,15 @@ static void usb0_function_GetDescriptor(USBD_HandleTypeDef *pdev, USBD_SetupReqT
 
 		case 0xEE:
 			// Microsoft OS String Descriptor, ReqLength=0x12
-			stall_ep0(pdev);
+			if (MsftStringDescr [0].data != NULL && MsftStringDescr [0].size != 0)
+			{
+				TP();
+				USBD_CtlSendData(pdev, MsftStringDescr [0].data, ulmin16(req->wLength, MsftStringDescr [0].size));
+			}
+			else
+			{
+				stall_ep0(pdev);
+			}
 			return;
 		}
 		if (index < usbd_get_stringsdesc_count() && StringDescrTbl [index].size != 0)
@@ -2240,14 +2248,18 @@ static void usbdFunctionReq_seq1(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef 
 }
 
 // Control read data stage
+// hus, the second part of making your device WCID is ensuring that your firmware 
+// answers a Vendor Request with wIndex=0x0004 and bRequest=0x##, to return a Compatible ID. 
 static void usbdVendorReq_seq1(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef *req)
 {
 	//PRINTF(PSTR("usbdVendorReq_seq1: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
 	// ReqIndex = interfacei
 	//dcp_acksend(pdev);	// пока так, игнориру€ параметры
 	//PRINTF(PSTR("default path: usbdVendorReq_seq1: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
-	static uint8_t buff [1 * 63] = { 254 };
-	USBD_CtlSendData(pdev, buff, ulmin16(ARRAY_SIZE(buff), req->wLength));
+	if (MsftCompFeatureDescr[0].data != NULL)
+		USBD_CtlSendData(pdev, MsftCompFeatureDescr[0].data, ulmin16(MsftCompFeatureDescr[0].size, req->wLength));
+	else
+		USBD_CtlError (pdev, req);
 	return;
 }
 
@@ -7404,6 +7416,50 @@ static USBD_StatusTypeDef USBD_XXX_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 				break;
 
 	#endif /* WITHUSBUAC */
+#if WITHUSBDFU
+	// data IN
+	case INTERFACE_DFU_CONTROL:	// DFU interface
+		{
+			switch (req->bRequest)
+			{
+				/*
+			case DFU_DNLOAD:
+				DFU_Download(pdev, req);
+				break;
+
+			case DFU_UPLOAD:
+				DFU_Upload(pdev, req);   
+				break;
+
+			case DFU_GETSTATUS:
+				DFU_GetStatus(pdev);
+				break;
+
+			case DFU_CLRSTATUS:
+				DFU_ClearStatus(pdev);
+				break;      
+
+			case DFU_GETSTATE:
+				DFU_GetState(pdev);
+				break;  
+
+			case DFU_ABORT:
+				DFU_Abort(pdev);
+				break;
+
+			case DFU_DETACH:
+				DFU_Detach(pdev, req);
+				break;
+*/
+			default:
+				USBD_CtlError (pdev, req);
+				//ret = USBD_FAIL; 
+				break;
+			}
+		}
+		break;
+#endif /* WITHUSBDFU */
+
 	#if WITHUSBRNDIS
 			case INTERFACE_RNDIS_CONTROL_5:	// RNDIS control
 				switch (req->bRequest)
@@ -7452,9 +7508,28 @@ static USBD_StatusTypeDef USBD_XXX_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 			break;
 
 		case USB_REQ_TYPE_VENDOR:
-			TP();
-			USBD_CtlError(pdev, req);
-			break;
+			switch (req->bRequest)
+			{
+			case DFU_VENDOR_CODE:
+				PRINTF(PSTR("USBD_ClassXXX_Setup: vendor. bRequest=%02X, wIndex=%04X, wLength=%04X, wValue=%04X (interfacev=%02X)\n"), req->bRequest, req->wIndex, req->wLength, req->wValue, interfacev);
+				if (MsftCompFeatureDescr[0].size != 0)
+				{
+					TP();	// third stage afrer string request, bRequest=DFU_VENDOR_CODE - if second fail
+					USBD_CtlSendData(pdev, MsftCompFeatureDescr[0].data, ulmin16(MsftCompFeatureDescr[0].size, req->wLength));
+				}
+				else
+				{
+					TP();
+					USBD_CtlError(pdev, req);
+				}
+				break;
+
+			default:
+				TP();
+				PRINTF(PSTR("USBD_ClassXXX_Setup: vendor. bRequest=%02X, wIndex=%04X, wLength=%04X, wValue=%04X (interfacev=%02X)\n"), req->bRequest, req->wIndex, req->wLength, req->wValue, interfacev);
+				USBD_CtlError(pdev, req);
+				break;
+			}
 
 		case USB_REQ_TYPE_STANDARD:
 			switch (req->bRequest)
@@ -8191,9 +8266,19 @@ static void USBD_GetDescriptor(USBD_HandleTypeDef *pdev,
 
 			case 0xEE:
 				// Microsoft OS String Descriptor, ReqLength=0x12
-				TP();
-				USBD_CtlError(pdev, req);
-				return;
+				if (MsftStringDescr [0].data != NULL && MsftStringDescr [0].size != 0)
+				{
+					TP();
+					len = MsftStringDescr [0].size;
+					pbuf = MsftStringDescr [0].data;
+				}
+				else
+				{
+					TP();
+					USBD_CtlError(pdev, req);
+					return;
+				}
+				break;
 
 			default:
 				if (index < usbd_get_stringsdesc_count() && StringDescrTbl [index].size != 0)
@@ -8569,8 +8654,18 @@ USBD_StatusTypeDef  USBD_StdDevReq (USBD_HandleTypeDef *pdev, USBD_SetupReqTyped
 		USBD_ClrFeature (pdev, req);
 		break;
 
+#if 1
+	case DFU_VENDOR_CODE:
+		TP();	// second stage afrer string request, bRequest=DFU_VENDOR_CODE
+		PRINTF(PSTR("USBD_StdDevReq: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), 
+			req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
+		USBD_CtlSendData (pdev, MsftCompFeatureDescr[0].data, ulmin16(MsftCompFeatureDescr[0].size, req->wLength));
+		break;
+#endif
+
 	default:  
 		TP();
+		PRINTF(PSTR("USBD_StdDevReq: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
 		USBD_CtlError(pdev, req);
 		break;
 	}
