@@ -6581,12 +6581,17 @@ hamradio_getleft_bp(uint_fast8_t pathi)
 	const FLASHMEM struct modetempl * const pmodet = getmodetempl(gsubmode);
 	const uint_fast8_t bwseti = pmodet->bwseti;
 	const uint_fast8_t mode = submodes [gsubmode].mode;
+	const int_fast16_t cwpitch = gcwpitch10 * CWPITCHSCALE;
 
 	switch (mode)
 	{
 	case MODE_SSB:
 	case MODE_DIGI:
 		return alsbmode ? - bwseti_gethigh(bwseti) : bwseti_getlow(bwseti);
+
+	case MODE_CW:
+		return alsbmode ? - bwseti_gethigh(bwseti) + cwpitch: bwseti_getlow(bwseti) - cwpitch;
+
 	default:
 		return - getif6bw(mode, gtx, bwseti_getwide(bwseti)) / 2;	// TODO: учесть возврат INT16_MAX
 	}
@@ -6603,12 +6608,16 @@ hamradio_getright_bp(uint_fast8_t pathi)
 	const FLASHMEM struct modetempl * const pmodet = getmodetempl(gsubmode);
 	const uint_fast8_t bwseti = pmodet->bwseti;
 	const uint_fast8_t mode = submodes [gsubmode].mode;
+	const int_fast16_t cwpitch = gcwpitch10 * CWPITCHSCALE;
 
 	switch (mode)
 	{
 	case MODE_SSB:
 	case MODE_DIGI:
 		return alsbmode ? - bwseti_getlow(bwseti) : bwseti_gethigh(bwseti);
+
+	case MODE_CW:
+		return alsbmode ? - bwseti_getlow(bwseti) + cwpitch : bwseti_gethigh(bwseti) - cwpitch;
 
 	default:
 		return getif6bw(mode, gtx, bwseti_getwide(bwseti)) / 2;	// TODO: учесть возврат INT16_MAX

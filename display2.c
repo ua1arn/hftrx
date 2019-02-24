@@ -4974,6 +4974,10 @@ static void display2_spectrum(
 		uint_fast16_t xright = deltafreq2x(hamradio_getright_bp(0), bw, ALLDX);	// правый край шторки
 		uint_fast16_t x;
 		uint_fast16_t y;
+
+		if (xright == xleft)
+			xright = xleft + 1;
+
 		// формирование растра
 		// маркер центральной частоты обзора
 		memset(spectrmonoscr, 0xFF, sizeof spectrmonoscr);			// рисование способом погасить точку
@@ -5027,6 +5031,9 @@ static void display2_spectrum(
 		const int_fast32_t bw = dsp_get_samplerateuacin_rts();
 		uint_fast16_t xleft = deltafreq2x(hamradio_getleft_bp(0), bw, ALLDX);	// левый край шторуи
 		uint_fast16_t xright = deltafreq2x(hamradio_getright_bp(0), bw, ALLDX);	// правый край шторки
+
+		if (xright == xleft)
+			xright = xleft + 1;
 
 		uint_fast16_t x;
 		uint_fast16_t y;
