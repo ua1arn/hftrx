@@ -1174,7 +1174,7 @@ void display_wrdata_end(void)
 {
 }
 
-#if LCDMODE_LQ043T3DX02K || LCDMODE_AT070TN90
+#if LCDMODE_LQ043T3DX02K || LCDMODE_AT070TN90 || LCDMODE_AT070TNA2
 
 // заглушки
 

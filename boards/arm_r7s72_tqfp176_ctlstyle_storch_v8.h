@@ -123,6 +123,16 @@
 
 #elif 0
 
+	#define LCDMODE_AT070TNA2 1	/* AT070TNA2 panel (1024*600) - 7" display */
+
+	#define LCDMODE_LTDC		1	/* Use VDC5 peripherial block */
+	#define LCDMODE_LTDC_L8		1	/* используется 8 бит на пиксель представление экрана. Иначе - 16 бит. */
+	#define LCDMODE_LTDC_PIP16	1	/* используется PIP с форматом 16 бит - RGB565 */
+
+	//#define LCDMODE_LTDC_L24	1	/* 32-bit на пиксель в памяти (3 байта) */
+
+#elif 0
+
 	#define LCDMODE_LQ043T3DX02K 1	/* LQ043T3DX02K panel (272*480) - SONY PSP-1000 display */
 	#define LCDMODE_S1D13781	1	/* Инндикатор 480*272 с контроллером Epson S1D13781 */
 	#define LCDMODE_S1D13781_NHWACCEL 1	/* Неиспользоване аппаратных особенностей EPSON S1D13781 при выводе графики */
@@ -294,7 +304,7 @@
 	// Есть ли регулировка параметров потенциометрами
 	////#define WITHPOTWPM		1	/* используется регулировка скорости передачи в телеграфе потенциометром */
 	////#define WITHPOTIFGAIN		1	/* регуляторы усиления ПЧ на потенциометрах */
-	////#define WITHPOTAFGAIN		1	/* регуляторы усиления НЧ на потенциометрах */
+	#define WITHPOTAFGAIN		1	/* регуляторы усиления НЧ на потенциометрах */
 	#define WITHSLEEPTIMER	1	/* выключить индикатор и вывод звука по истечениии указанного времени */
 
 	#define WITHMENU 	1	/* функциональность меню может быть отключена - если настраивать нечего */
@@ -366,7 +376,8 @@
 		POTIFGAIN = BOARD_ADCXIN(0),		// MCP3208 CH0 IF GAIN
 	#endif /* WITHPOTIFGAIN */
 	#if WITHPOTAFGAIN
-		POTAFGAIN = BOARD_ADCXIN(1),		// MCP3208 CH1 AF GAIN
+		POTAFGAIN = BOARD_ADCXIN(2),		// MCP3208 CH2 потенциометр управления скоростью передачи в телеграфе
+		//POTAFGAIN = BOARD_ADCXIN(1),		// MCP3208 CH1 AF GAIN
 	#endif /* WITHPOTAFGAIN */
 	#if WITHPOTWPM
 		POTWPM = BOARD_ADCXIN(2),			// MCP3208 CH2 потенциометр управления скоростью передачи в телеграфе
