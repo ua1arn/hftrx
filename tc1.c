@@ -3499,7 +3499,7 @@ static int_fast32_t getzerobase(void)
 	return 0;
 }
 
-#define ADCOFFSETMID (UINT16_MAX / 2)
+#define ADCOFFSETMID (512 / 2)
 static int_fast32_t getadcoffsbase(void)
 {
 	return - ADCOFFSETMID;
@@ -12773,7 +12773,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	{
 		"ADC OFFS", 5 + WSIGNFLAG, 0, 0,	ISTEP1,	/* смещение для выходного сигнала с АЦП */
 		ITEM_VALUE,
-		ADCOFFSETMID - 100, ADCOFFSETMID + 100, 
+		ADCOFFSETMID - 200, ADCOFFSETMID + 200, 
 		offsetof(struct nvmap, gadcoffset),
 		& gadcoffset,
 		NULL,

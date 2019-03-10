@@ -828,6 +828,30 @@ applicable agreement for further details.
 		(circle (rect 31 12 39 20))
 	)
 )
+(symbol
+	(rect 464 880 512 912)
+	(text "WIRE" (rect 1 0 24 10)(font "Arial" (font_size 6)))
+	(text "inst98" (rect 3 21 32 33)(font "Arial" ))
+	(port
+		(pt 0 16)
+		(input)
+		(text "IN" (rect 2 7 13 19)(font "Courier New" (bold))(invisible))
+		(text "IN" (rect 2 7 13 19)(font "Courier New" (bold))(invisible))
+		(line (pt 0 16)(pt 14 16))
+	)
+	(port
+		(pt 48 16)
+		(output)
+		(text "OUT" (rect 32 7 49 19)(font "Courier New" (bold))(invisible))
+		(text "OUT" (rect 32 7 49 19)(font "Courier New" (bold))(invisible))
+		(line (pt 32 16)(pt 48 16))
+	)
+	(drawing
+		(line (pt 14 7)(pt 32 16))
+		(line (pt 14 25)(pt 14 7))
+		(line (pt 14 25)(pt 32 16))
+	)
+)
 (connector
 	(text "SPIDATA[31..0]" (rect 232 240 309 252)(font "Arial" ))
 	(pt 240 256)
@@ -1004,17 +1028,6 @@ applicable agreement for further details.
 	(bus)
 )
 (connector
-	(pt 360 848)
-	(pt 360 928)
-	(bus)
-)
-(connector
-	(text "SPIDATA[31..16]" (rect 384 960 467 972)(font "Arial" ))
-	(pt 488 976)
-	(pt 384 976)
-	(bus)
-)
-(connector
 	(pt 360 656)
 	(pt 360 720)
 	(bus)
@@ -1120,6 +1133,32 @@ applicable agreement for further details.
 	(pt 360 848)
 	(pt 496 848)
 )
+(connector
+	(text "SPIDATA[24]" (rect 368 880 432 892)(font "Arial" ))
+	(pt 360 896)
+	(pt 464 896)
+)
+(connector
+	(text "s" (rect 522 880 527 892)(font "Arial" ))
+	(pt 512 896)
+	(pt 544 896)
+)
+(connector
+	(text "s,s,s,s,s,s,s,s,SPIDATA[23..16]" (rect 384 960 543 972)(font "Arial" ))
+	(pt 488 976)
+	(pt 384 976)
+	(bus)
+)
+(connector
+	(pt 360 848)
+	(pt 360 896)
+	(bus)
+)
+(connector
+	(pt 360 896)
+	(pt 360 1112)
+	(bus)
+)
 (junction (pt 360 272))
 (junction (pt 360 304))
 (junction (pt 360 336))
@@ -1138,3 +1177,4 @@ applicable agreement for further details.
 (junction (pt 360 848))
 (junction (pt 608 560))
 (junction (pt 608 496))
+(junction (pt 360 896))

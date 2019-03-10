@@ -97,7 +97,7 @@ prog_fpga_ctrlreg(
 
 	RBVAL8(040, FPGA_DECODE_CTLREG);
 
-	RBVAL(16, glob_adcoffset, 16);			/* b31..b16: adcoffset - смещение дл€ выходного сигнала с ј÷ѕ */
+	RBVAL(16, glob_adcoffset, 9);			/* b24..b16: adcoffset - смещение дл€ выходного сигнала с ј÷ѕ */
 	RBBIT(15, glob_mode_wfm);				/* b15: mode_wfm - разрешение передачи в DSP квадратур 192 к√ц */
 	RBBIT(14, glob_tx_bpsk_enable);			/* b14: tx_bpsk_enable - разрешение пр€мого формировани€ модул€ции в FPGA */
 	RBBIT(13, glob_tx_inh_enable);			/* b13: tx_inh_enable - разрешение реакции на вход tx_inh */
