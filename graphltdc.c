@@ -57,6 +57,7 @@
 	};
 #elif LCDMODE_AT070TN90
 
+	/* AT070TN90 panel (800*480) - 7" display HV mode */
 	enum
 	{
 		WIDTH = 800,			/* LCD PIXEL WIDTH            */
@@ -76,6 +77,43 @@
 
 		/* Accumulated parameters for this display */
 		LEFTMARGIN = 46,		/* horizontal blanking EXACTLY */
+		TOPMARGIN = 23,			/* vertival blanking EXACTLY */
+
+		HFULL = LEFTMARGIN + WIDTH + HFP,	/* horisontal full period */
+		VFULL = TOPMARGIN + HEIGHT + VFP,	/* vertical full period */
+
+		VSYNCNEG = 1,			/* Negative polarity required for VSYNC signel */
+		HSYNCNEG = 1,			/* Negative polarity required for HSYNC signel */
+		DENEG = 0,				/* DE polarity */
+		BOARD_DEMODE = 0		/* 0: static signal, 1: DE controlled */
+	};
+
+	#define BOARD_MODEVALUE 0			/* hold MODE=0 */
+	#define BOARD_DEVALUE 0			/* hold DE=0 */
+
+#elif LCDMODE_AT070TNA2
+
+	/* AT070TNA2 panel (1024*600) - 7" display HV mode */
+	// HX8282-A01.pdf, page 38
+	enum
+	{
+		WIDTH = 1024,			/* LCD PIXEL WIDTH            */
+		HEIGHT = 600,			/* LCD PIXEL HEIGHT           */
+		/** 
+		  * @brief  AT070TN90 Timing  
+		  * MODE=0 (DE)
+		  * When selected DE mode, VSYNC & HSYNC must pulled HIGH
+		  * MODE=1 (SYNC)
+		  * When selected sync mode, de must be grounded.
+		  */     
+		HSYNC = 140,			/* Horizontal synchronization 1..140 */
+		HFP = 160,				/* Horizontal front porch  16..216   */
+
+		VSYNC = 20,				/* Vertical synchronization 1..20  */
+		VFP = 12,				/* Vertical front porch  1..127     */
+
+		/* Accumulated parameters for this display */
+		LEFTMARGIN = 160,		/* horizontal blanking EXACTLY */
 		TOPMARGIN = 23,			/* vertival blanking EXACTLY */
 
 		HFULL = LEFTMARGIN + WIDTH + HFP,	/* horisontal full period */
@@ -881,7 +919,7 @@ static void vdc5fb_init_outcnt(struct st_vdc5 * const vdc)
 {
 	////////////////////////////////////////////////////////////////
 	// OUT
-	SETREG32_CK(& vdc->OUT_CLK_PHASE, 1, 8, 0x00);	// OUTCNT_LCD_EDGE 0: Output at the rising edge of LCD_CLK pin
+	SETREG32_CK(& vdc->OUT_CLK_PHASE, 1, 8, 0x00);	// OUTCNT_LCD_EDGE 0: Output changed at the rising edge of LCD_CLK pin, data latched at falling edge
 	SETREG32_CK(& vdc->OUT_SET, 2, 8, 0x00);	// OUT_FRQ_SEL Clock Frequency Control 0: 100% speed — (parallel RGB)
 	SETREG32_CK(& vdc->OUT_SET, 2, 12, 0x02);	// OUT_FORMAT Output Format Select 2: RGB565
 

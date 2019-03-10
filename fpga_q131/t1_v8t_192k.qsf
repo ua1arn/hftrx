@@ -221,47 +221,47 @@ set_global_assignment -name QIP_FILE fir_10ex_2ch.qip
 set_global_assignment -name BDF_FILE tc1_top_v8t_192k.bdf
 set_global_assignment -name SDC_FILE tc1_top_v8t_192k.sdc
 set_global_assignment -name ENABLE_INIT_DONE_OUTPUT ON
-set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to dac_sleep -entity tc1_top_v8renes96_2ch -disable
-set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to cpu_miso -entity tc1_top_v8renes96_2ch -disable
-set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to cpu_mosi -entity tc1_top_v8renes96_2ch -disable
-set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to cpu_sclk -entity tc1_top_v8renes96_2ch -disable
-set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adc_ovfl -entity tc1_top_v8renes96_2ch -disable
-set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adc_pga -entity tc1_top_v8renes96_2ch -disable
-set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adc_rand -entity tc1_top_v8renes96_2ch -disable
-set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adc_shdn -entity tc1_top_v8renes96_2ch -disable
-set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adc_dith -entity tc1_top_v8renes96_2ch -disable
-set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to dac_d -entity tc1_top_v8renes96_2ch -disable
-set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to fpga_nco_cs -entity tc1_top_v8renes96_2ch -disable
-set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to refclk_in -entity tc1_top_v8renes96_2ch -disable
-set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to sai1_fs_a -entity tc1_top_v8renes96_2ch -disable
-set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to sai1_sck_a -entity tc1_top_v8renes96_2ch -disable
-set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to sai1_sd_a -entity tc1_top_v8renes96_2ch -disable
-set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to sai1_sd_b -entity tc1_top_v8renes96_2ch -disable
-set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adc_clka -entity tc1_top_v8renes96_2ch -disable
-set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adc_data* -entity tc1_top_v8renes96_2ch -disable
-set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to tx_inh_h -entity tc1_top_v8renes96_2ch -disable
-set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to fpga_fir1_we_n -entity tc1_top_v8renes96_2ch -disable
-set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to fpga_fir2_we_n -entity tc1_top_v8renes96_2ch -disable
-set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to fpga_ctl_cs -entity tc1_top_v8renes96_2ch -disable
-set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to fpga_fir_clk_n -entity tc1_top_v8renes96_2ch -disable
-set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to pps_in -entity tc1_top_v8renes96_2ch -disable
-set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to led0 -entity tc1_top_v8renes96_2ch -disable
-set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to led1 -entity tc1_top_v8renes96_2ch -disable
-set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to i2s2_ws -entity tc1_top_v8renes96_2ch -disable
-set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to i2s2_ck -entity tc1_top_v8renes96_2ch -disable
-set_instance_assignment -name IO_MAXIMUM_TOGGLE_RATE "1 MHz" -to pps_in -entity tc1_top_v8renes96_2ch -disable
-set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to dac_clk_alt -entity tc1_top_v8renes96_2ch -disable
-set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to led2 -entity tc1_top_v8renes96_2ch -disable
-set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to led3 -entity tc1_top_v8renes96_2ch -disable
-set_instance_assignment -name FAST_INPUT_REGISTER ON -to adc_data -entity tc1_top_v8t_96k
-set_instance_assignment -name FAST_INPUT_REGISTER ON -to adc_ovfl -entity tc1_top_v8t_96k
-set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to dac_d -entity tc1_top_v8t_96k
-set_instance_assignment -name IO_MAXIMUM_TOGGLE_RATE "1 MHz" -to adc_rand -entity tc1_top_v8t_96k
-set_instance_assignment -name IO_MAXIMUM_TOGGLE_RATE "1 MHz" -to adc_pga -entity tc1_top_v8t_96k
-set_instance_assignment -name IO_MAXIMUM_TOGGLE_RATE "1 MHz" -to adc_shdn -entity tc1_top_v8t_96k
-set_instance_assignment -name IO_MAXIMUM_TOGGLE_RATE "10 MHz" -to cpu_miso -entity tc1_top_v8t_96k
-set_instance_assignment -name IO_MAXIMUM_TOGGLE_RATE "1 MHz" -to dac_sleep -entity tc1_top_v8t_96k
 set_location_assignment PIN_85 -to refclk_out
 set_location_assignment PIN_83 -to cp_out
 set_location_assignment PIN_76 -to ssidata2
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to dac_sleep -disable
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to cpu_miso -disable
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to cpu_mosi -disable
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to cpu_sclk -disable
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adc_ovfl -disable
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adc_pga -disable
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adc_rand -disable
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adc_shdn -disable
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adc_dith -disable
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to dac_d -disable
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to fpga_nco_cs -disable
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to refclk_in -disable
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to sai1_fs_a -disable
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to sai1_sck_a -disable
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to sai1_sd_a -disable
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to sai1_sd_b -disable
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adc_clka -disable
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adc_data* -disable
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to tx_inh_h -disable
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to fpga_fir1_we_n -disable
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to fpga_fir2_we_n -disable
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to fpga_ctl_cs -disable
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to fpga_fir_clk_n -disable
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to pps_in -disable
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to led0 -disable
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to led1 -disable
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to i2s2_ws -disable
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to i2s2_ck -disable
+set_instance_assignment -name IO_MAXIMUM_TOGGLE_RATE "1 MHz" -to pps_in -disable
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to dac_clk_alt -disable
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to led2 -disable
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to led3 -disable
+set_instance_assignment -name FAST_INPUT_REGISTER ON -to adc_data
+set_instance_assignment -name FAST_INPUT_REGISTER ON -to adc_ovfl
+set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to dac_d
+set_instance_assignment -name IO_MAXIMUM_TOGGLE_RATE "1 MHz" -to adc_rand
+set_instance_assignment -name IO_MAXIMUM_TOGGLE_RATE "1 MHz" -to adc_pga
+set_instance_assignment -name IO_MAXIMUM_TOGGLE_RATE "1 MHz" -to adc_shdn
+set_instance_assignment -name IO_MAXIMUM_TOGGLE_RATE "10 MHz" -to cpu_miso
+set_instance_assignment -name IO_MAXIMUM_TOGGLE_RATE "1 MHz" -to dac_sleep
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top

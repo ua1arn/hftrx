@@ -220,8 +220,10 @@ static LIST_ENTRY msgsready8;		// Заполненные - готовые к обработке
 	
 #endif /* WITHBUFFERSDEBUG */
 
+static ticker_t buffticker;
+
 /* вызывается из обработчика таймерного прерывания */
-void buffers_spool(void)
+static void buffers_spool(void * ctx)
 {
 #if WITHBUFFERSDEBUG
 	debugcount_ms10 += 10000 / TICKS_FREQUENCY;
@@ -375,6 +377,9 @@ void buffers_diagnostics(void)
 // инициализация системы буферов
 void buffers_initialize(void)
 {
+#if WITHBUFFERSDEBUG
+	ticker_initialize(& buffticker, 1, buffers_spool, NULL);
+#endif /* WITHBUFFERSDEBUG */
 	unsigned i;
 
 #if WITHINTEGRATEDDSP

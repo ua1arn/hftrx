@@ -968,6 +968,14 @@
 	#define LTDC_DOTCLK	30000000uL	// частота пикселей при работе с интерфейсом RGB
 #endif /* LCDMODE_AT070TN90 */
 
+#if LCDMODE_AT070TNA2	/* AT070TNA2 panel (1024*600) - 7" display */
+	#define DIM_X 1024
+	#define DIM_Y 600
+	#define LCDMODE_COLORED	1
+	#define LCDMODE_HORFILL	1
+	#define LTDC_DOTCLK	60000000uL	// частота пикселей при работе с интерфейсом RGB 40.8..67.2
+#endif /* LCDMODE_AT070TN90 */
+
 #if LCDMODE_S1D13781		/* PSP-1000 with S1D113780 */
 	#define LCDMODE_HARD_SPI	1	/* SPI interface */
 	#define LCDMODE_SPI_RN	1	/* SPI only, with Reset, no Address need */
@@ -1132,6 +1140,14 @@
 
 #elif DIM_X == 800 && DIM_Y == 480
 	#define DSTYLE_G_X800_Y480	1	/* AT070TN90 panel (800*480) - 7" display */
+	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в €чейкт сетки разметки отображни€ */
+	#define ROWS2GRID(rows) ((rows) * 1)		/* перевести количество символов в €чейкт сетки разметки отображни€ */
+	#define GRID2X(cellsx) ((cellsx) * 16)	/* перевод €чеек сетки разметки в номер пиксел€ по горизонталм */
+	#define GRID2Y(cellsy) ((cellsy) * 5)	/* перевод €чеек сетки разметки в номер пиксел€ по вертикали */
+
+#elif DIM_X == 1024 && DIM_Y == 600
+	#define DSTYLE_G_X800_Y480	1	/* AT070TN90 panel (800*480) - 7" display */
+	//#define DSTYLE_G_X1024_Y600	1	/* AT070TNA2 panel (1024*600) - 7" display */
 	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в €чейкт сетки разметки отображни€ */
 	#define ROWS2GRID(rows) ((rows) * 1)		/* перевести количество символов в €чейкт сетки разметки отображни€ */
 	#define GRID2X(cellsx) ((cellsx) * 16)	/* перевод €чеек сетки разметки в номер пиксел€ по горизонталм */

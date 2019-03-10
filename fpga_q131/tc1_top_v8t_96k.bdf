@@ -497,23 +497,6 @@ applicable agreement for further details.
 )
 (pin
 	(output)
-	(rect 2040 -320 2216 -304)
-	(text "OUTPUT" (rect 1 0 39 10)(font "Arial" (font_size 6)))
-	(text "dac_clk_alt" (rect 90 0 145 12)(font "Arial" ))
-	(pt 0 8)
-	(drawing
-		(line (pt 0 8)(pt 52 8))
-		(line (pt 52 4)(pt 78 4))
-		(line (pt 52 12)(pt 78 12))
-		(line (pt 52 12)(pt 52 4))
-		(line (pt 78 4)(pt 82 8))
-		(line (pt 82 8)(pt 78 12))
-		(line (pt 78 12)(pt 82 8))
-	)
-	(annotation_block (location)(rect 3016 -328 3064 -312))
-)
-(pin
-	(output)
 	(rect 1248 552 1424 568)
 	(text "OUTPUT" (rect 1 0 39 10)(font "Arial" (font_size 6)))
 	(text "cpu_miso" (rect 90 0 137 12)(font "Arial" ))
@@ -1210,14 +1193,6 @@ applicable agreement for further details.
 	(bus)
 )
 (connector
-	(pt 1416 -96)
-	(pt 1416 -312)
-)
-(connector
-	(pt 1416 -312)
-	(pt 2040 -312)
-)
-(connector
 	(pt 648 -128)
 	(pt 664 -128)
 )
@@ -1325,10 +1300,6 @@ applicable agreement for further details.
 (connector
 	(pt 896 32)
 	(pt 1024 32)
-)
-(connector
-	(pt 1416 -96)
-	(pt 896 -96)
 )
 (connector
 	(pt 1248 560)

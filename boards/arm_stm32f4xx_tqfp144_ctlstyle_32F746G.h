@@ -204,7 +204,7 @@
 	//#define CODEC_TYPE_CS4272_USE_SPI	1		// codecboard v2.0
 	//#define CODEC_TYPE_CS4272_STANDALONE	1		// codecboard v3.0
 
-	//#define WITHSAI1_FRAMEBITS 256	// Полный размер фрейма
+	#define WITHSAI1_FRAMEBITS 64	// Полный размер фрейма
 	#define WITHSAI2_FRAMEBITS 64	// Полный размер фрейма для двух квадратур по 24 бита - канал спектроанализатора
 	//#define WITHSAI1_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
 	#define WITHSAI2_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
@@ -228,7 +228,7 @@
 	//#define WITHUSEAUDIOREC		1	// Запись звука на SD CARD
 	//#define WITHUSEDUALWATCH	1	// Второй приемник
 	#define WITHDACSTRAIGHT 1	/* Требуется формирование кода для ЦАП в режиме беззнакового кода */
-	#define WITHRTS96 1		/* вместо выходного аудиосигнала передача квадратур по USB */
+	//#define WITHRTS96 1		/* вместо выходного аудиосигнала передача квадратур по USB */
 	//#define WITHRTS192 1		/* вместо выходного аудиосигнала передача квадратур по USB */
 	#define WITHSUSBSPKONLY 1
 	#if 0

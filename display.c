@@ -247,8 +247,9 @@ void display_showbuffer(
 		display_plotfrom(GRID2X(col), GRID2Y(row) + lowhalf * 8);		// курсор в начало первой строки
 		// выдача горизонтальной полосы
 		display_wrdatabar_begin();
-	#if WITHSPIHWDMA && (LCDMODE_UC1608 | 0)
+	#if WITHSPIHWDMA && (0)
 		// на LCDMODE_S1D13781 почему-то DMA сбивает контроллер
+		// на LCDMODE_UC1608 портит мохранене теузей частоты и режима работы (STM32F746xx)
 		hardware_spi_master_send_frame(p, dx);
 	#else
 		for (pos = 0; pos < dx; ++ pos)
@@ -1173,7 +1174,7 @@ void display_wrdata_end(void)
 {
 }
 
-#if LCDMODE_LQ043T3DX02K || LCDMODE_AT070TN90
+#if LCDMODE_LQ043T3DX02K || LCDMODE_AT070TN90 || LCDMODE_AT070TNA2
 
 // заглушки
 

@@ -3163,6 +3163,7 @@ enum
 		};
 
 	#elif DSTYLE_UR3LMZMOD
+		// Versopn with specreum display
 		// x=30, y=16
 		enum
 		{
@@ -4947,7 +4948,14 @@ display_colorgrid(
 	}
 }
 
+// Спектр на монохромных дисплеях 
+// или на цвентых,где есть возможность раскаски растровой картинки.
 
+#define HHWMG ((! LCDMODE_S1D13781_NHWACCEL && LCDMODE_S1D13781) || LCDMODE_UC1608 || LCDMODE_UC1601)
+
+#if HHWMG
+static ALIGNX_BEGIN GX_t spectrmonoscr [MGSIZE(ALLDX, ALLDY)] ALIGNX_END;
+#endif /* HHWMG */
 // подготовка изображения спектра
 static void display2_spectrum(
 	uint_fast8_t x0, 
@@ -4955,10 +4963,9 @@ static void display2_spectrum(
 	void * pv
 	)
 {
-#if (! LCDMODE_S1D13781_NHWACCEL && LCDMODE_S1D13781) || LCDMODE_UC1608 || LCDMODE_UC1601
+#if HHWMG
 	// Спектр на монохромных дисплеях 
 	// или на цвентых,где есть возможность раскаски растровой картинки.
-	static ALIGNX_BEGIN GX_t spectrmonoscr [MGSIZE(ALLDX, SPDY)] ALIGNX_END;
 
 	if (hamradio_get_tx() == 0)
 	{
@@ -4967,6 +4974,10 @@ static void display2_spectrum(
 		uint_fast16_t xright = deltafreq2x(hamradio_getright_bp(0), bw, ALLDX);	// правый край шторки
 		uint_fast16_t x;
 		uint_fast16_t y;
+
+		if (xright == xleft)
+			xright = xleft + 1;
+
 		// формирование растра
 		// маркер центральной частоты обзора
 		memset(spectrmonoscr, 0xFF, sizeof spectrmonoscr);			// рисование способом погасить точку
@@ -4974,7 +4985,7 @@ static void display2_spectrum(
 		uint_fast16_t xmarker = deltafreq2x(0, bw, ALLDX);
 		for (y = 0; y < SPDY; ++ y)
 		{
-			display_pixelbuffer(spectrmonoscr, ALLDX, SPDY, xmarker, y);	// погасить точку
+			display_pixelbuffer(spectrmonoscr, ALLDX, ALLDY, xmarker, SPY0 + y);	// погасить точку
 		}
 
 		// отображение спектра
@@ -4986,20 +4997,19 @@ static void display2_spectrum(
 			if (x >= xleft && x <= xright)
 			{
 				for (y = 0; y < SPDY; ++ y)
-					display_pixelbuffer_xor(spectrmonoscr, ALLDX, SPDY, x, y);	// xor точку
+					display_pixelbuffer_xor(spectrmonoscr, ALLDX, ALLDY, x, SPY0 + y);	// xor точку
 			}
-
 			// Формирование графика
 			const int yv = SPDY - val;	//отображаемый уровень, yv = 0..SPDY
 			if (glob_nofill != 0)
 			{
 				if (yv < SPDY)
-					display_pixelbuffer_xor(spectrmonoscr, ALLDX, SPDY, x, SPY0 + yv);	// xor точку
+					display_pixelbuffer_xor(spectrmonoscr, ALLDX, ALLDY, x, SPY0 + yv);	// xor точку
 			}
 			else
 			{
 				for (y = yv; y < SPDY; ++ y)
-					display_pixelbuffer_xor(spectrmonoscr, ALLDX, SPDY, x, SPY0 + y);	// xor точку
+					display_pixelbuffer_xor(spectrmonoscr, ALLDX, ALLDY, x, SPY0 + y);	// xor точку
 			}
 		}
 	}
@@ -5008,7 +5018,6 @@ static void display2_spectrum(
 		memset(spectrmonoscr, 0xFF, sizeof spectrmonoscr);			// рисование способом погасить точку
 	}
 	display_setcolors(COLOR565_SPECTRUMBG, COLOR565_SPECTRUMFG);
-	display_showbuffer(spectrmonoscr, ALLDX, SPDY, x0, y0 + SPY0);
 
 #else /* */
 	PACKEDCOLOR565_T * const colorpip = getscratchpip();
@@ -5022,6 +5031,9 @@ static void display2_spectrum(
 		const int_fast32_t bw = dsp_get_samplerateuacin_rts();
 		uint_fast16_t xleft = deltafreq2x(hamradio_getleft_bp(0), bw, ALLDX);	// левый край шторуи
 		uint_fast16_t xright = deltafreq2x(hamradio_getright_bp(0), bw, ALLDX);	// правый край шторки
+
+		if (xright == xleft)
+			xright = xleft + 1;
 
 		uint_fast16_t x;
 		uint_fast16_t y;
@@ -5178,7 +5190,10 @@ static void display2_waterfall(
 		}
 	#endif
 
-#elif LCDMODE_UC1608 || LCDMODE_UC1601
+#elif HHWMG
+	// Спектр на монохромных дисплеях 
+	// или на цвентых,где есть возможность раскаски растровой картинки.
+
 	// следы спектра ("водопад") на монохромных дисплеях
 
 #else /* */
@@ -5282,8 +5297,11 @@ static void display2_colorbuff(
 	void * pv
 	)
 {
-#if (! LCDMODE_S1D13781_NHWACCEL && LCDMODE_S1D13781)
-#elif LCDMODE_UC1608 || LCDMODE_UC1601
+#if HHWMG
+	// Спектр на монохромных дисплеях 
+	// или на цвентых,где есть возможность раскаски растровой картинки.
+	display_showbuffer(spectrmonoscr, ALLDX, ALLDY, x0, y0);
+
 #else /* */
 
 	PACKEDCOLOR565_T * const colorpip = getscratchpip();

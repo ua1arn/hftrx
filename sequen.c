@@ -110,6 +110,7 @@ static /* volatile */ uint_fast8_t usertxstate;	/* 0 - периферия находимся в сос
 static volatile uint_fast8_t seqstate;
 static volatile uint_fast8_t seqpushtime;	// Возможные количства "тиков" на передачу и на приём
 
+static ticker_t seqticker;
 
 static uint_fast8_t
 getstablev8(volatile uint_fast8_t * p)
@@ -376,8 +377,8 @@ seq_txpath_set(portholder_t txpathstate)
 // вызывается из обработчика прерываний. Желательно вызывать самым первым для уменьшения
 // паразитного дрейфа по времени
 
-void 
-seq_spool_ticks(void)
+static void 
+seq_spool_ticks(void * ctc)
 {
 	// Поместить в линию задержки данные со стороны источника манипуляции
 	//
@@ -565,6 +566,7 @@ void seq_set_rxtxdelay(
 /* инициализация сиквенсора и телеграфного ключа. Выполняется при запрещённых прерываниях. */
 void seq_initialize(void)
 {
+	ticker_initialize(& seqticker, 1, seq_spool_ticks, NULL);
 
 	hardware_ptt_port_initialize();		// инициализация входов управления режимом передачи и запрета передачи
 
@@ -631,8 +633,8 @@ void seq_ask_txstate(
 
 #else	/* WITHTX */
 
-void 
-seq_spool_ticks(void)
+static void 
+seq_spool_ticks(void * ctc)
 {
 	const uint_fast8_t keydown = elkey_get_output();	// а так же состояния ручной манипуляции, манипуляции от CAT...
 
@@ -659,6 +661,7 @@ void seq_ask_txstate(uint_fast8_t tx)
 /* инициализация сиквенсора и телеграфного ключа. Выполняется при запрещённых прерываниях. */
 void seq_initialize(void)
 {
+	ticker_initialize(& seqticker, 1, seq_spool_ticks, NULL);
 }
 
 /* очистка запомненных нажатий до этого момента. Вызывается из user-mode программы */

@@ -503,9 +503,6 @@ void kbd_spool(void);
 void display_spool(void);	// отсчёт времени по запрещению обновления дисплея при вращении валкодера
 void board_usb_spool(void);
 
-
-void seq_spool_ticks(void);	/* сиквенсор приём-передача - таймерные состояния*/
-//void key_spool_inputs(void);	// опрос состояния электронного ключа и запоминание факта нажатия
 void spool_secound(void);		// вызывается раз в секунду из таймерного прерывания.
 
 void spool_nmeapps(void);	// Обработчик вызывается при приходе очередного импульса PPS
@@ -610,7 +607,6 @@ void debugusb_parsechar(uint_fast8_t c);	/* вызывается из обработчика прерываний
 void debugusb_sendchar(void * ctx);			/* вызывается из обработчика прерываний */
 
 void modem_spool(void);		/* вызывается из обработчика таймерного прерывания */
-void buffers_spool(void);	/* вызывается из обработчика таймерного прерывания */
 
 // spool-based functions for debug
 int dbg_puts_impl_P(const FLASHMEM char * s);
@@ -740,6 +736,19 @@ uint_fast8_t takemsgready_user(uint8_t * * dest);	// Буферы с принятымти от обра
 void releasemsgbuffer_user(uint8_t * dest);	// Освобождение обработанного буфера сообщения
 size_t takemsgbufferfree_low(uint8_t * * dest);	// Буфер для формирования сообщения
 void placesemsgbuffer_low(uint_fast8_t type, uint8_t * dest);	// поместить сообщение в очередь к исполнению 
+
+#include "list.h"
+
+typedef struct ticker
+{
+	LIST_ENTRY item;
+	unsigned period;
+	unsigned fired;
+	void (* cb)(void *);
+	void * ctx;
+} ticker_t;
+
+void ticker_initialize(ticker_t * p, unsigned nticks, void (* cb)(void *), void * ctx);
 
 #define BOARD_ADCXBASE 24
 #define BOARD_ADCXIN(ch) (BOARD_ADCXBASE + (ch))
