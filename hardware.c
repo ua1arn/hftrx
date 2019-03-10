@@ -1029,6 +1029,35 @@ static RAMFUNC void spool_elkeyinputsbundle(void)
 }
 
 
+static LIST_ENTRY tickers;
+static unsigned nowtick;
+
+void ticker_initialize(ticker_t * p, unsigned nticks, void (* cb)(void *), void * ctx)
+{
+	p->period = nticks;
+	p->fired = nowtick;
+	p->cb = cb;
+	p->ctx = ctx;
+	InsertHeadList(& tickers, & p->item);
+}
+
+static void tickers_spool(void)
+{
+
+	++ nowtick;
+	PLIST_ENTRY t;
+	for (t = tickers.Flink; t != & tickers; t = t->Flink)
+	{
+		ticker_t * const p = CONTAINING_RECORD(t, ticker_t, item);
+	
+		if (1)//(p->next <= nowtick)
+		{
+			p->fired = nowtick;
+			(p->cb)(p->ctx);
+		}
+	}
+}
+
 /* Машинно-независимый обработчик прерываний. */
 // Функции с побочным эффектом - отсчитывание времени. 
 // При возможности вызываются столько раз, сколько произошло таймерных прерываний.
@@ -1039,7 +1068,6 @@ static RAMFUNC void spool_systimerbundle1(void)
 
 	enum { TICKS1000MS = NTICKS(1000) };
 	//spool_lfm();
-	seq_spool_ticks();
 #if WITHENCODER
 	enc_spool();	// таймер для динамического изменения шага перестройки
 #endif /* WITHENCODER */
@@ -1050,7 +1078,6 @@ static RAMFUNC void spool_systimerbundle1(void)
 #if WITHUSBHW
 	board_usb_spool();
 #endif /* WITHUSBHW */
-	buffers_spool();
 	spool_encinterrupt2();	/* прерывание по изменению сигнала на входах от валкодера #2*/
 	// Формирование секундного прерывания
 	if (++ spool_1stickcount >= TICKS1000MS)
@@ -1058,6 +1085,8 @@ static RAMFUNC void spool_systimerbundle1(void)
 		spool_1stickcount = 0;
 		spool_secound();
 	}
+
+	tickers_spool();
 }
 
 /* Машинно-независимый обработчик прерываний. */
@@ -1581,7 +1610,8 @@ hardware_getshutdown(void)
 void 
 hardware_timer_initialize(uint_fast32_t ticksfreq)
 {
-
+	InitializeListHead(& tickers);
+	
 #if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7
 
 	SysTick_Config(calcdivround_systick(ticksfreq));	// Call SysTick_Handler
