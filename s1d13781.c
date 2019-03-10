@@ -91,7 +91,7 @@
 
 #define S1D13781_SPIMODE SPIC_MODE3		/* допустим только MODE3, MODE2 не работает с этим контроллером */
 #define S1D13781_SPIC_SPEEDSLOW		SPIC_SPEED10M
-#define S1D13781_SPIC_SPEED		SPIC_SPEED25M
+#define S1D13781_SPIC_SPEED		SPIC_SPEED10M
 
 // Условие использования оптимизированных функций обращения к SPI
 #define WITHSPIEXT16 (WITHSPIHW && WITHSPI16BIT)
@@ -2161,7 +2161,7 @@ void s1d13781_showbuffer(
 			s1d13781_select();
 			set_addrwr(scratchbufbase);// Sets address for writes and complete spi transfer
 
-		#if WITHSPIEXT16 && WITHSPIHWDMA
+		#if 0//WITHSPIEXT16 && WITHSPIHWDMA
 			// Обратить внимание, передается растр, где младшицй бит левее.
 			// Передача в индикатор по DMA	
 			const uint_fast32_t len = MGSIZE(dx, dy);
@@ -2282,7 +2282,7 @@ void display_plot(
 	uint_fast16_t dy
 	)
 {
-#if WITHSPIEXT16 && WITHSPIHWDMA
+#if 0//WITHSPIEXT16 && WITHSPIHWDMA
 	// Передача в индикатор по DMA	
 	arm_hardware_flush((uintptr_t) buffer, GXSIZE(dx, dy) * sizeof (* buffer));	// количество байтов
 #endif /* WITHSPIEXT16 && WITHSPIHWDMA */
@@ -2311,7 +2311,7 @@ void display_plot(
 		/* произвести пересылку по SPI */
 		{
 			uint_fast32_t len = dx;	// количество элементов
-		#if WITHSPIEXT16 && WITHSPIHWDMA
+		#if 0//WITHSPIEXT16 && WITHSPIHWDMA
 			// Передача в индикатор по DMA	
 			hardware_spi_master_send_frame_16b(buffer, len);
 			buffer += len;
