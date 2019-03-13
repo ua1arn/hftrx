@@ -11981,7 +11981,7 @@ static const FLASHMEM struct menudef menutable [] =
 		"AM AFR W", 3 + WSIGNFLAG, 0, 0,	ISTEP1,	
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используетс€ при начальной инициализации NVRAM */
 		AFRESPONCEMIN, AFRESPONCEMAX,			/* изменение тембра звука - на Samplerate/2 ј„’ измен€етс€ на столько децибел  */
-		RMT_BWPROPSAFRESPONCE_BASE(BWPROPI_SSBWIDE),
+		RMT_BWPROPSAFRESPONCE_BASE(BWPROPI_AMWIDE),
 		NULL,
 		& bwprop_amwide.afresponce,
 		getafresponcebase, /* складываетс€ со смещением и отображаетс€ */
@@ -12019,7 +12019,7 @@ static const FLASHMEM struct menudef menutable [] =
 		"AM AFR N", 3 + WSIGNFLAG, 0, 0,	ISTEP1,	
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используетс€ при начальной инициализации NVRAM */
 		AFRESPONCEMIN, AFRESPONCEMAX,			/* изменение тембра звука - на Samplerate/2 ј„’ измен€етс€ на столько децибел  */
-		RMT_BWPROPSAFRESPONCE_BASE(BWPROPI_SSBWIDE),
+		RMT_BWPROPSAFRESPONCE_BASE(BWPROPI_AMNARROW),
 		NULL,
 		& bwprop_amnarrow.afresponce,
 		getafresponcebase, /* складываетс€ со смещением и отображаетс€ */
