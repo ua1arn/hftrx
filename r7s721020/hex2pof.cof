@@ -9,11 +9,22 @@
 		<hex_filename>C:/user/SVN/tc1/r7s721020/tc1_r7s721020_rom.hex</hex_filename>
 		<hex_addressing>relative</hex_addressing>
 		<hex_offset>0</hex_offset>
+		<hex_little_endian>0</hex_little_endian>
 	</hex_block>
-	<version>6</version>
+	<version>10</version>
 	<create_cvp_file>0</create_cvp_file>
+	<create_hps_iocsr>0</create_hps_iocsr>
 	<auto_create_rpd>0</auto_create_rpd>
+	<rpd_little_endian>1</rpd_little_endian>
 	<options>
-		<map_file>1</map_file>
+		<map_file>0</map_file>
 	</options>
+	<advanced_options>
+		<ignore_epcs_id_check>2</ignore_epcs_id_check>
+		<ignore_condone_check>2</ignore_condone_check>
+		<plc_adjustment>0</plc_adjustment>
+		<post_chain_bitstream_pad_bytes>-1</post_chain_bitstream_pad_bytes>
+		<post_device_bitstream_pad_bytes>-1</post_device_bitstream_pad_bytes>
+		<bitslice_pre_padding>1</bitslice_pre_padding>
+	</advanced_options>
 </cof>

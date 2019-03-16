@@ -1,5 +1,5 @@
-set SRCPATH=..\fpga_q131\output_files
-rem set SRCPATH=..\fpga_q181std\output_files
+rem set SRCPATH=..\fpga_q131\output_files
+set SRCPATH=..\fpga_q181std\output_files
 
 rbf2c.exe %SRCPATH%\t1_v3.rbf ..\rbf\rbfimage_v3.h
 rbf2c.exe %SRCPATH%\t1_v3_pll.rbf ..\rbf\rbfimage_v3_pll.h
