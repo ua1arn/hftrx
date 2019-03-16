@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<system name="$${FILENAME}">
+ <component
+   name="$${FILENAME}"
+   displayName="$${FILENAME}"
+   version="1.0"
+   description=""
+   tags="INTERNAL_COMPONENT=true"
+   categories="System" />
+ <parameter name="bonusData"><![CDATA[bonusData 
+{
+   element nco_ii_0
+   {
+      datum _sortIndex
+      {
+         value = "0";
+         type = "int";
+      }
+   }
+}
+]]></parameter>
+ <parameter name="clockCrossingAdapter" value="HANDSHAKE" />
+ <parameter name="device" value="EP4CE22E22I7" />
+ <parameter name="deviceFamily" value="Cyclone IV E" />
+ <parameter name="deviceSpeedGrade" value="7" />
+ <parameter name="fabricMode" value="QSYS" />
+ <parameter name="generateLegacySim" value="false" />
+ <parameter name="generationId" value="0" />
+ <parameter name="globalResetBus" value="false" />
+ <parameter name="hdlLanguage" value="VERILOG" />
+ <parameter name="hideFromIPCatalog" value="true" />
+ <parameter name="lockedInterfaceDefinition" value="" />
+ <parameter name="maxAdditionalLatency" value="1" />
+ <parameter name="projectName" value="t1.qpf" />
+ <parameter name="sopcBorderPoints" value="false" />
+ <parameter name="systemHash" value="0" />
+ <parameter name="testBenchDutName" value="" />
+ <parameter name="timeStamp" value="0" />
+ <parameter name="useTestBenchNamingPattern" value="false" />
+ <instanceScript></instanceScript>
+ <interface name="clk" internal="nco_ii_0.clk" type="clock" dir="end">
+  <port name="clk" internal="clk" />
+ </interface>
+ <interface name="in" internal="nco_ii_0.in" type="conduit" dir="end">
+  <port name="clken" internal="clken" />
+  <port name="phi_inc_i" internal="phi_inc_i" />
+ </interface>
+ <interface name="out" internal="nco_ii_0.out" type="conduit" dir="end">
+  <port name="fsin_o" internal="fsin_o" />
+  <port name="fcos_o" internal="fcos_o" />
+  <port name="out_valid" internal="out_valid" />
+ </interface>
+ <interface name="rst" internal="nco_ii_0.rst" type="reset" dir="end">
+  <port name="reset_n" internal="reset_n" />
+ </interface>
+ <module
+   name="nco_ii_0"
+   kind="altera_nco_ii"
+   version="18.1"
+   enabled="1"
+   autoexport="1">
+  <parameter name="apr" value="32" />
+  <parameter name="aprf" value="32" />
+  <parameter name="apri" value="18" />
+  <parameter name="aprp" value="16" />
+  <parameter name="arch" value="trig" />
+  <parameter name="cordic_arch" value="parallel" />
+  <parameter name="design_env" value="NATIVE" />
+  <parameter name="dpri" value="4" />
+  <parameter name="fmod_pipe" value="1" />
+  <parameter name="freq_out" value="50.0" />
+  <parameter name="fsamp" value="122.88" />
+  <parameter name="hyper_opt_select" value="false" />
+  <parameter name="mpr" value="17" />
+  <parameter name="numba" value="1" />
+  <parameter name="numch" value="1" />
+  <parameter name="pmod_pipe" value="1" />
+  <parameter name="selected_device_family" value="Cyclone IV E" />
+  <parameter name="trig_cycles_per_output" value="1" />
+  <parameter name="use_dedicated_multipliers" value="true" />
+  <parameter name="want_dither" value="false" />
+  <parameter name="want_freq_mod" value="false" />
+  <parameter name="want_phase_mod" value="false" />
+  <parameter name="want_sin_and_cos" value="dual_output" />
+ </module>
+ <interconnectRequirement for="$system" name="qsys_mm.clockCrossingAdapter" value="HANDSHAKE" />
+ <interconnectRequirement for="$system" name="qsys_mm.enableEccProtection" value="FALSE" />
+ <interconnectRequirement for="$system" name="qsys_mm.insertDefaultSlave" value="FALSE" />
+ <interconnectRequirement for="$system" name="qsys_mm.maxAdditionalLatency" value="1" />
+</system>

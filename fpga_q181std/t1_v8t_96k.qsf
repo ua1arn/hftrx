@@ -225,6 +225,7 @@ set_global_assignment -name ENABLE_INIT_DONE_OUTPUT ON
 set_location_assignment PIN_85 -to refclk_out
 set_location_assignment PIN_83 -to cp_out
 set_location_assignment PIN_76 -to ssidata2
+set_global_assignment -name QSYS_FILE nco18_v181.qsys
 set_global_assignment -name QIP_FILE lpm_decode_6ch_en.qip
 set_global_assignment -name QIP_FILE cic40_ddc_2rx.qip
 set_global_assignment -name QIP_FILE cic_64_3iq.qip
@@ -248,7 +249,6 @@ set_global_assignment -name QIP_FILE lpm_shiftreg_2b.qip
 set_global_assignment -name QIP_FILE mult16.qip
 set_global_assignment -name QIP_FILE ducadd.qip
 set_global_assignment -name QIP_FILE ducmult1.qip
-set_global_assignment -name QIP_FILE nco18_v13.qip
 set_global_assignment -name QIP_FILE cicdec0.qip
 set_global_assignment -name QIP_FILE lpm_counter_ovf0.qip
 set_global_assignment -name QIP_FILE cic_duc2560_mux.qip
@@ -263,8 +263,9 @@ set_global_assignment -name BDF_FILE i2s_tx_8slot.bdf
 set_global_assignment -name BDF_FILE 64bit_to_i2s.bdf
 set_global_assignment -name BDF_FILE tc1_top_v8t_96k.bdf
 set_global_assignment -name SDC_FILE tc1_top_v8t_96k.sdc
-set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
-set_global_assignment -name SEARCH_PATH "nco-library"
+set_global_assignment -name SEARCH_PATH "c:\\altera\\13.1\\ip\\altera\\cic\\lib"
+set_global_assignment -name SEARCH_PATH "c:\\altera\\13.1\\ip\\altera\\fir_compiler\\lib"
 set_global_assignment -name SEARCH_PATH "cic-library"
 set_global_assignment -name SEARCH_PATH .
 set_global_assignment -name SEARCH_PATH "fir_compiler-library"
+set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top

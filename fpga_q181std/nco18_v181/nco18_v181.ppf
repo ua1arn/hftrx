@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pinplan
+ variation_name="nco_ii_0"
+ megafunction_name="ALTERA_NCO_II"
+ intended_family="Cyclone IV E"
+ specifies="all_ports">
+ <global>
+  <pin name="clk" direction="input" scope="external" />
+  <pin name="reset_n" direction="input" scope="external" />
+  <pin name="clken" direction="input" scope="external" />
+  <pin name="phi_inc_i[31..0]" direction="input" scope="external" />
+  <pin name="fsin_o[16..0]" direction="output" scope="external" />
+  <pin name="fcos_o[16..0]" direction="output" scope="external" />
+  <pin name="out_valid" direction="output" scope="external" />
+ </global>
+</pinplan>

@@ -1,0 +1,28 @@
+Info: Starting: Create block symbol file (.bsf)
+Info: qsys-generate C:\user\SVN\tc1\fpga_q181std\nco18_v181.qsys --block-symbol-file --output-directory=C:\user\SVN\tc1\fpga_q181std\nco18_v181 --family="Cyclone IV E" --part=EP4CE22E22I7
+Progress: Loading fpga_q181std/nco18_v181.qsys
+Progress: Reading input file
+Progress: Adding nco_ii_0 [altera_nco_ii 18.1]
+Progress: Parameterizing module nco_ii_0
+Progress: Building connections
+Progress: Parameterizing connections
+Progress: Validating
+Progress: Done reading input file
+Info: qsys-generate succeeded.
+Info: Finished: Create block symbol file (.bsf)
+Info: 
+Info: Starting: Create HDL design files for synthesis
+Info: qsys-generate C:\user\SVN\tc1\fpga_q181std\nco18_v181.qsys --synthesis=VHDL --output-directory=C:\user\SVN\tc1\fpga_q181std\nco18_v181\synthesis --family="Cyclone IV E" --part=EP4CE22E22I7
+Progress: Loading fpga_q181std/nco18_v181.qsys
+Progress: Reading input file
+Progress: Adding nco_ii_0 [altera_nco_ii 18.1]
+Progress: Parameterizing module nco_ii_0
+Progress: Building connections
+Progress: Parameterizing connections
+Progress: Validating
+Progress: Done reading input file
+Info: nco18_v181: Generating nco18_v181 "nco18_v181" for QUARTUS_SYNTH
+Info: nco_ii_0: "nco18_v181" instantiated altera_nco_ii "nco_ii_0"
+Info: nco18_v181: Done "nco18_v181" with 2 modules, 18 files
+Info: qsys-generate succeeded.
+Info: Finished: Create HDL design files for synthesis

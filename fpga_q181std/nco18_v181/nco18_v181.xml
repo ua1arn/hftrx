@@ -1,0 +1,317 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<deploy
+ date="2019.03.17.03:21:19"
+ outputDirectory="C:/user/SVN/tc1/fpga_q181std/nco18_v181/">
+ <perimeter>
+  <parameter
+     name="AUTO_GENERATION_ID"
+     type="Integer"
+     defaultValue="0"
+     onHdl="0"
+     affectsHdl="1" />
+  <parameter
+     name="AUTO_UNIQUE_ID"
+     type="String"
+     defaultValue=""
+     onHdl="0"
+     affectsHdl="1" />
+  <parameter
+     name="AUTO_DEVICE_FAMILY"
+     type="String"
+     defaultValue="Cyclone IV E"
+     onHdl="0"
+     affectsHdl="1" />
+  <parameter
+     name="AUTO_DEVICE"
+     type="String"
+     defaultValue="EP4CE22E22I7"
+     onHdl="0"
+     affectsHdl="1" />
+  <parameter
+     name="AUTO_DEVICE_SPEEDGRADE"
+     type="String"
+     defaultValue="7"
+     onHdl="0"
+     affectsHdl="1" />
+  <parameter
+     name="AUTO_CLK_CLOCK_RATE"
+     type="Long"
+     defaultValue="-1"
+     onHdl="0"
+     affectsHdl="1" />
+  <parameter
+     name="AUTO_CLK_CLOCK_DOMAIN"
+     type="Integer"
+     defaultValue="-1"
+     onHdl="0"
+     affectsHdl="1" />
+  <parameter
+     name="AUTO_CLK_RESET_DOMAIN"
+     type="Integer"
+     defaultValue="-1"
+     onHdl="0"
+     affectsHdl="1" />
+  <interface name="clk" kind="clock" start="0">
+   <property name="clockRate" value="0" />
+   <property name="externallyDriven" value="false" />
+   <property name="ptfSchematicName" value="" />
+   <port name="clk" direction="input" role="clk" width="1" />
+  </interface>
+  <interface name="in" kind="conduit" start="0">
+   <property name="associatedClock" value="clk" />
+   <property name="associatedReset" value="rst" />
+   <port name="clken" direction="input" role="clken" width="1" />
+   <port name="phi_inc_i" direction="input" role="phi_inc_i" width="32" />
+  </interface>
+  <interface name="out" kind="conduit" start="0">
+   <property name="associatedClock" value="clk" />
+   <property name="associatedReset" value="rst" />
+   <port name="fsin_o" direction="output" role="fsin_o" width="17" />
+   <port name="fcos_o" direction="output" role="fcos_o" width="17" />
+   <port name="out_valid" direction="output" role="out_valid" width="1" />
+  </interface>
+  <interface name="rst" kind="reset" start="0">
+   <property name="associatedClock" value="clk" />
+   <property name="synchronousEdges" value="DEASSERT" />
+   <port name="reset_n" direction="input" role="reset_n" width="1" />
+  </interface>
+ </perimeter>
+ <entity
+   path=""
+   parameterizationKey="nco18_v181:1.0:AUTO_CLK_CLOCK_DOMAIN=-1,AUTO_CLK_CLOCK_RATE=-1,AUTO_CLK_RESET_DOMAIN=-1,AUTO_DEVICE=EP4CE22E22I7,AUTO_DEVICE_FAMILY=Cyclone IV E,AUTO_DEVICE_SPEEDGRADE=7,AUTO_GENERATION_ID=1552778476,AUTO_UNIQUE_ID=(altera_nco_ii:18.1:apr=32,aprf=32,apri=18,aprp=16,arch=trig,cordic_arch=parallel,cycles_per_output=1,design_env=NATIVE,dpri=4,fmod_pipe=1,freq_out=50.0,fsamp=122.88,hyper_opt=false,hyper_opt_select=false,mpr=17,numba=1,numch=1,phi_inc=1747626667,pmod_pipe=1,real_freq_out=50.0,selected_device_family=Cyclone IV E,trig_cycles_per_output=1,use_dedicated_multipliers=true,want_dither=false,want_freq_mod=false,want_phase_mod=false,want_sin_and_cos=dual_output)"
+   instancePathKey="nco18_v181"
+   kind="nco18_v181"
+   version="1.0"
+   name="nco18_v181">
+  <parameter name="AUTO_CLK_CLOCK_RATE" value="-1" />
+  <parameter name="AUTO_GENERATION_ID" value="1552778476" />
+  <parameter name="AUTO_DEVICE" value="EP4CE22E22I7" />
+  <parameter name="AUTO_DEVICE_FAMILY" value="Cyclone IV E" />
+  <parameter name="AUTO_CLK_RESET_DOMAIN" value="-1" />
+  <parameter name="AUTO_CLK_CLOCK_DOMAIN" value="-1" />
+  <parameter name="AUTO_UNIQUE_ID" value="" />
+  <parameter name="AUTO_DEVICE_SPEEDGRADE" value="7" />
+  <generatedFiles>
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/nco18_v181/synthesis/nco18_v181.vhd"
+       type="VHDL" />
+  </generatedFiles>
+  <childGeneratedFiles>
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/nco18_v181/synthesis/submodules/asj_nco_madx_cen.v"
+       type="VERILOG"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/nco18_v181/synthesis/submodules/asj_nco_mady_cen.v"
+       type="VERILOG"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/nco18_v181/synthesis/submodules/asj_nco_isdr.v"
+       type="VERILOG"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/nco18_v181/synthesis/submodules/asj_nco_mob_w.v"
+       type="VERILOG"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/nco18_v181/synthesis/submodules/asj_nco_as_m_dp_cen.v"
+       type="VERILOG"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/nco18_v181/synthesis/submodules/asj_nco_as_m_cen.v"
+       type="VERILOG"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/nco18_v181/synthesis/submodules/asj_altqmcpipe.v"
+       type="VERILOG"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/nco18_v181/synthesis/submodules/asj_gam_dp.v"
+       type="VERILOG"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/nco18_v181/synthesis/submodules/asj_nco_derot.v"
+       type="VERILOG"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/nco18_v181/synthesis/submodules/nco18_v181_nco_ii_0_sin_c.hex"
+       type="HEX"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/nco18_v181/synthesis/submodules/nco18_v181_nco_ii_0_cos_c.hex"
+       type="HEX"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/nco18_v181/synthesis/submodules/nco18_v181_nco_ii_0_sin_f.hex"
+       type="HEX"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/nco18_v181/synthesis/submodules/nco18_v181_nco_ii_0_cos_f.hex"
+       type="HEX"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/nco18_v181/synthesis/submodules/nco18_v181_nco_ii_0.v"
+       type="VERILOG"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/nco18_v181/synthesis/submodules/asj_altq.ocp"
+       type="OTHER"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/nco18_v181/synthesis/submodules/asj_altqmcash.ocp"
+       type="OTHER"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/nco18_v181/synthesis/submodules/asj_altqmcpipe.ocp"
+       type="OTHER"
+       attributes="" />
+  </childGeneratedFiles>
+  <sourceFiles>
+   <file path="C:/user/SVN/tc1/fpga_q181std/nco18_v181.qsys" />
+  </sourceFiles>
+  <childSourceFiles>
+   <file
+       path="C:/intelfpga/18.1/ip/altera/dsp/altera_nco_ii/altera_nco_ii_hw.tcl" />
+   <file path="C:/intelFPGA/18.1/ip/altera/dsp/altera_nco_ii/nco_helper.jar" />
+   <file
+       path="C:/intelFPGA/18.1/quartus/sopc_builder/model/lib/com.altera.entityinterfaces.jar" />
+  </childSourceFiles>
+  <messages>
+   <message level="Debug" culprit="nco18_v181">queue size: 0 starting:nco18_v181 "nco18_v181"</message>
+   <message level="Progress" culprit="min"></message>
+   <message level="Progress" culprit="max"></message>
+   <message level="Progress" culprit="current"></message>
+   <message level="Debug">Transform: CustomInstructionTransform</message>
+   <message level="Debug">No custom instruction connections, skipping transform </message>
+   <message level="Debug" culprit="merlin_custom_instruction_transform"><![CDATA[After transform: <b>1</b> modules, <b>0</b> connections]]></message>
+   <message level="Debug">Transform: MMTransform</message>
+   <message level="Debug">Transform: InterruptMapperTransform</message>
+   <message level="Debug">Transform: InterruptSyncTransform</message>
+   <message level="Debug">Transform: InterruptFanoutTransform</message>
+   <message level="Debug">Transform: AvalonStreamingTransform</message>
+   <message level="Debug">Transform: ResetAdaptation</message>
+   <message level="Debug" culprit="nco18_v181"><![CDATA["<b>nco18_v181</b>" reuses <b>altera_nco_ii</b> "<b>submodules/nco18_v181_nco_ii_0</b>"]]></message>
+   <message level="Debug" culprit="nco18_v181">queue size: 0 starting:altera_nco_ii "submodules/nco18_v181_nco_ii_0"</message>
+   <message level="Info" culprit="nco_ii_0"><![CDATA["<b>nco18_v181</b>" instantiated <b>altera_nco_ii</b> "<b>nco_ii_0</b>"]]></message>
+  </messages>
+ </entity>
+ <entity
+   path="submodules/"
+   parameterizationKey="altera_nco_ii:18.1:apr=32,aprf=32,apri=18,aprp=16,arch=trig,cordic_arch=parallel,cycles_per_output=1,design_env=NATIVE,dpri=4,fmod_pipe=1,freq_out=50.0,fsamp=122.88,hyper_opt=false,hyper_opt_select=false,mpr=17,numba=1,numch=1,phi_inc=1747626667,pmod_pipe=1,real_freq_out=50.0,selected_device_family=Cyclone IV E,trig_cycles_per_output=1,use_dedicated_multipliers=true,want_dither=false,want_freq_mod=false,want_phase_mod=false,want_sin_and_cos=dual_output"
+   instancePathKey="nco18_v181:.:nco_ii_0"
+   kind="altera_nco_ii"
+   version="18.1"
+   name="nco18_v181_nco_ii_0">
+  <parameter name="aprp" value="16" />
+  <parameter name="numba" value="1" />
+  <parameter name="cordic_arch" value="parallel" />
+  <parameter name="pmod_pipe" value="1" />
+  <parameter name="fsamp" value="122.88" />
+  <parameter name="cycles_per_output" value="1" />
+  <parameter name="selected_device_family" value="Cyclone IV E" />
+  <parameter name="apri" value="18" />
+  <parameter name="aprf" value="32" />
+  <parameter name="want_dither" value="false" />
+  <parameter name="hyper_opt_select" value="false" />
+  <parameter name="want_phase_mod" value="false" />
+  <parameter name="apr" value="32" />
+  <parameter name="hyper_opt" value="false" />
+  <parameter name="trig_cycles_per_output" value="1" />
+  <parameter name="dpri" value="4" />
+  <parameter name="mpr" value="17" />
+  <parameter name="design_env" value="NATIVE" />
+  <parameter name="numch" value="1" />
+  <parameter name="want_freq_mod" value="false" />
+  <parameter name="use_dedicated_multipliers" value="true" />
+  <parameter name="want_sin_and_cos" value="dual_output" />
+  <parameter name="phi_inc" value="1747626667" />
+  <parameter name="fmod_pipe" value="1" />
+  <parameter name="arch" value="trig" />
+  <parameter name="freq_out" value="50.0" />
+  <parameter name="real_freq_out" value="50.0" />
+  <generatedFiles>
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/nco18_v181/synthesis/submodules/asj_nco_madx_cen.v"
+       type="VERILOG"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/nco18_v181/synthesis/submodules/asj_nco_mady_cen.v"
+       type="VERILOG"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/nco18_v181/synthesis/submodules/asj_nco_isdr.v"
+       type="VERILOG"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/nco18_v181/synthesis/submodules/asj_nco_mob_w.v"
+       type="VERILOG"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/nco18_v181/synthesis/submodules/asj_nco_as_m_dp_cen.v"
+       type="VERILOG"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/nco18_v181/synthesis/submodules/asj_nco_as_m_cen.v"
+       type="VERILOG"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/nco18_v181/synthesis/submodules/asj_altqmcpipe.v"
+       type="VERILOG"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/nco18_v181/synthesis/submodules/asj_gam_dp.v"
+       type="VERILOG"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/nco18_v181/synthesis/submodules/asj_nco_derot.v"
+       type="VERILOG"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/nco18_v181/synthesis/submodules/nco18_v181_nco_ii_0_sin_c.hex"
+       type="HEX"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/nco18_v181/synthesis/submodules/nco18_v181_nco_ii_0_cos_c.hex"
+       type="HEX"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/nco18_v181/synthesis/submodules/nco18_v181_nco_ii_0_sin_f.hex"
+       type="HEX"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/nco18_v181/synthesis/submodules/nco18_v181_nco_ii_0_cos_f.hex"
+       type="HEX"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/nco18_v181/synthesis/submodules/nco18_v181_nco_ii_0.v"
+       type="VERILOG"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/nco18_v181/synthesis/submodules/asj_altq.ocp"
+       type="OTHER"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/nco18_v181/synthesis/submodules/asj_altqmcash.ocp"
+       type="OTHER"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/nco18_v181/synthesis/submodules/asj_altqmcpipe.ocp"
+       type="OTHER"
+       attributes="" />
+  </generatedFiles>
+  <childGeneratedFiles/>
+  <sourceFiles>
+   <file
+       path="C:/intelfpga/18.1/ip/altera/dsp/altera_nco_ii/altera_nco_ii_hw.tcl" />
+   <file path="C:/intelFPGA/18.1/ip/altera/dsp/altera_nco_ii/nco_helper.jar" />
+   <file
+       path="C:/intelFPGA/18.1/quartus/sopc_builder/model/lib/com.altera.entityinterfaces.jar" />
+  </sourceFiles>
+  <childSourceFiles/>
+  <instantiator instantiator="nco18_v181" as="nco_ii_0" />
+  <messages>
+   <message level="Debug" culprit="nco18_v181">queue size: 0 starting:altera_nco_ii "submodules/nco18_v181_nco_ii_0"</message>
+   <message level="Info" culprit="nco_ii_0"><![CDATA["<b>nco18_v181</b>" instantiated <b>altera_nco_ii</b> "<b>nco_ii_0</b>"]]></message>
+  </messages>
+ </entity>
+</deploy>
