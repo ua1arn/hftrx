@@ -4,19 +4,19 @@ editor if you plan to continue editing the block that represents it in
 the Block Editor! File corruption is VERY likely to occur.
 */
 /*
-Copyright (C) 1991-2014 Altera Corporation
-Your use of Altera Corporation's design tools, logic functions 
+Copyright (C) 2018  Intel Corporation. All rights reserved.
+Your use of Intel Corporation's design tools, logic functions 
 and other software and tools, and its AMPP partner logic 
 functions, and any output files from any of the foregoing 
 (including device programming or simulation files), and any 
 associated documentation or information are expressly subject 
-to the terms and conditions of the Altera Program License 
-Subscription Agreement, Altera MegaCore Function License 
-Agreement, or other applicable license agreement, including, 
-without limitation, that your use is for the sole purpose of 
-programming logic devices manufactured by Altera and sold by 
-Altera or its authorized distributors.  Please refer to the 
-applicable agreement for further details.
+to the terms and conditions of the Intel Program License 
+Subscription Agreement, the Intel Quartus Prime License Agreement,
+the Intel FPGA IP License Agreement, or other applicable license
+agreement, including, without limitation, that your use is for
+the sole purpose of programming logic devices manufactured by
+Intel and sold by Intel or its authorized distributors.  Please
+refer to the applicable agreement for further details.
 */
 (header "graphic" (version "1.4"))
 (pin
@@ -114,7 +114,7 @@ applicable agreement for further details.
 		(line (pt 117 4)(pt 121 8))
 		(line (pt 117 12)(pt 121 8))
 	)
-	(text "VCC" (rect 136 7 156 17)(font "Arial" (font_size 6)))
+	(text "GND" (rect 136 7 157 17)(font "Arial" (font_size 6)))
 )
 (pin
 	(output)
@@ -755,7 +755,7 @@ applicable agreement for further details.
 	)
 )
 (symbol
-	(rect 976 -328 1008 -312)
+	(rect 840 -328 872 -312)
 	(text "VCC" (rect 7 0 27 10)(font "Arial" (font_size 6)))
 	(text "inst1" (rect 3 5 26 17)(font "Arial" )(invisible))
 	(port
@@ -770,7 +770,7 @@ applicable agreement for further details.
 	)
 )
 (symbol
-	(rect 976 -376 1008 -360)
+	(rect 840 -376 872 -360)
 	(text "VCC" (rect 7 0 27 10)(font "Arial" (font_size 6)))
 	(text "inst2" (rect 3 5 26 17)(font "Arial" )(invisible))
 	(port
@@ -898,7 +898,7 @@ applicable agreement for further details.
 	(annotation_block (parameter)(rect -24 -376 174 -306))
 )
 (symbol
-	(rect 1064 -432 1240 -240)
+	(rect 928 -432 1104 -240)
 	(text "lpm_fifo_adc16" (rect 45 0 146 16)(font "Arial" (font_size 10)))
 	(text "inst" (rect 8 176 25 188)(font "Arial" ))
 	(port
@@ -1040,7 +1040,7 @@ applicable agreement for further details.
 	)
 )
 (symbol
-	(rect 1568 -376 1632 -328)
+	(rect 1552 -376 1616 -328)
 	(text "OR2" (rect 1 0 19 10)(font "Arial" (font_size 6)))
 	(text "inst28" (rect 3 37 32 49)(font "Arial" ))
 	(port
@@ -1077,28 +1077,8 @@ applicable agreement for further details.
 	(pt -24 -432)
 )
 (connector
-	(pt 944 -296)
-	(pt 1064 -296)
-)
-(connector
-	(pt 992 -360)
-	(pt 1064 -360)
-)
-(connector
-	(pt 992 -312)
-	(pt 1064 -312)
-)
-(connector
 	(pt -72 -432)
 	(pt -72 -344)
-)
-(connector
-	(pt -192 -344)
-	(pt -72 -344)
-)
-(connector
-	(pt -72 -344)
-	(pt 1064 -344)
 )
 (connector
 	(text "adc_of,adc_data[15..0]" (rect -272 -464 -158 -452)(font "Arial" ))
@@ -1107,73 +1087,12 @@ applicable agreement for further details.
 	(bus)
 )
 (connector
-	(text "y[16..0]" (rect 1250 -336 1288 -324)(font "Arial" ))
-	(pt 1240 -320)
-	(pt 1336 -320)
-	(bus)
-)
-(connector
-	(text "used[1..0]" (rect 1250 -312 1299 -300)(font "Arial" ))
-	(pt 1240 -296)
-	(pt 1288 -296)
-	(bus)
-)
-(connector
 	(pt 1648 -72)
 	(pt 1672 -72)
 )
 (connector
-	(pt 336 -520)
-	(pt 944 -520)
-)
-(connector
-	(text "y[15..0]" (rect 1290 -184 1328 -172)(font "Arial" ))
-	(pt 1360 -168)
-	(pt 1280 -168)
-	(bus)
-)
-(connector
-	(pt 1360 -152)
-	(pt 944 -152)
-)
-(connector
-	(pt 944 -520)
-	(pt 944 -296)
-)
-(connector
-	(pt 944 -296)
-	(pt 944 -152)
-)
-(connector
-	(pt 1632 -352)
-	(pt 1712 -352)
-)
-(connector
-	(text "y[16]" (rect 1506 -376 1531 -364)(font "Arial" ))
-	(pt 1496 -360)
-	(pt 1568 -360)
-)
-(connector
-	(pt 1520 -112)
-	(pt 1552 -112)
-)
-(connector
-	(pt 1568 -344)
-	(pt 1552 -344)
-)
-(connector
-	(pt 1552 -112)
-	(pt 1552 -344)
-)
-(connector
 	(pt 1520 -152)
 	(pt 1672 -152)
-	(bus)
-)
-(connector
-	(text "adcoffset[15..0]" (rect 1290 -152 1370 -140)(font "Arial" ))
-	(pt 1360 -136)
-	(pt 1280 -136)
 	(bus)
 )
 (connector
@@ -1432,12 +1351,6 @@ applicable agreement for further details.
 	(bus)
 )
 (connector
-	(text "q[16..0]" (rect 786 -400 823 -388)(font "Arial" ))
-	(pt 1064 -384)
-	(pt 768 -384)
-	(bus)
-)
-(connector
 	(pt 640 -136)
 	(pt 640 -104)
 )
@@ -1662,6 +1575,53 @@ applicable agreement for further details.
 	(bus)
 )
 (connector
+	(pt 768 -232)
+	(pt 768 -96)
+	(bus)
+)
+(connector
+	(pt 808 -296)
+	(pt 928 -296)
+)
+(connector
+	(pt 856 -360)
+	(pt 928 -360)
+)
+(connector
+	(pt 856 -312)
+	(pt 928 -312)
+)
+(connector
+	(text "y[16..0]" (rect 1114 -336 1152 -324)(font "Arial" ))
+	(pt 1104 -320)
+	(pt 1200 -320)
+	(bus)
+)
+(connector
+	(text "used[1..0]" (rect 1114 -312 1163 -300)(font "Arial" ))
+	(pt 1104 -296)
+	(pt 1152 -296)
+	(bus)
+)
+(connector
+	(pt 336 -520)
+	(pt 808 -520)
+)
+(connector
+	(text "q[16..0]" (rect 650 -400 687 -388)(font "Arial" ))
+	(pt 768 -384)
+	(pt 928 -384)
+	(bus)
+)
+(connector
+	(pt -192 -344)
+	(pt -72 -344)
+)
+(connector
+	(pt -72 -344)
+	(pt 928 -344)
+)
+(connector
 	(pt 768 -384)
 	(pt 768 -288)
 	(bus)
@@ -1672,12 +1632,51 @@ applicable agreement for further details.
 	(bus)
 )
 (connector
-	(pt 768 -232)
-	(pt 768 -96)
+	(text "y[15..0]" (rect 1274 -184 1312 -172)(font "Arial" ))
+	(pt 1360 -168)
+	(pt 1264 -168)
 	(bus)
 )
+(connector
+	(pt 1360 -152)
+	(pt 808 -152)
+)
+(connector
+	(text "adcoffset[15..0]" (rect 1274 -152 1354 -140)(font "Arial" ))
+	(pt 1360 -136)
+	(pt 1264 -136)
+	(bus)
+)
+(connector
+	(pt 808 -520)
+	(pt 808 -296)
+)
+(connector
+	(pt 808 -296)
+	(pt 808 -152)
+)
+(connector
+	(text "y[16]" (rect 1490 -376 1515 -364)(font "Arial" ))
+	(pt 1480 -360)
+	(pt 1552 -360)
+)
+(connector
+	(pt 1520 -112)
+	(pt 1536 -112)
+)
+(connector
+	(pt 1552 -344)
+	(pt 1536 -344)
+)
+(connector
+	(pt 1536 -112)
+	(pt 1536 -344)
+)
+(connector
+	(pt 1616 -352)
+	(pt 1712 -352)
+)
 (junction (pt -72 -344))
-(junction (pt 944 -296))
 (junction (pt 640 -104))
 (junction (pt 640 -56))
 (junction (pt 640 -8))
@@ -1725,4 +1724,5 @@ applicable agreement for further details.
 (junction (pt 768 -232))
 (junction (pt 592 -288))
 (junction (pt 768 -288))
+(junction (pt 808 -296))
 (text "Need for FAST IO feature" (rect -32 -544 113 -530)(font "Arial" (font_size 8)))

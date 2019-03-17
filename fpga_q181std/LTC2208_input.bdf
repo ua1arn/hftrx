@@ -4,19 +4,19 @@ editor if you plan to continue editing the block that represents it in
 the Block Editor! File corruption is VERY likely to occur.
 */
 /*
-Copyright (C) 1991-2014 Altera Corporation
-Your use of Altera Corporation's design tools, logic functions 
+Copyright (C) 2018  Intel Corporation. All rights reserved.
+Your use of Intel Corporation's design tools, logic functions 
 and other software and tools, and its AMPP partner logic 
 functions, and any output files from any of the foregoing 
 (including device programming or simulation files), and any 
 associated documentation or information are expressly subject 
-to the terms and conditions of the Altera Program License 
-Subscription Agreement, Altera MegaCore Function License 
-Agreement, or other applicable license agreement, including, 
-without limitation, that your use is for the sole purpose of 
-programming logic devices manufactured by Altera and sold by 
-Altera or its authorized distributors.  Please refer to the 
-applicable agreement for further details.
+to the terms and conditions of the Intel Program License 
+Subscription Agreement, the Intel Quartus Prime License Agreement,
+the Intel FPGA IP License Agreement, or other applicable license
+agreement, including, without limitation, that your use is for
+the sole purpose of programming logic devices manufactured by
+Intel and sold by Intel or its authorized distributors.  Please
+refer to the applicable agreement for further details.
 */
 (header "graphic" (version "1.4"))
 (pin
@@ -101,20 +101,20 @@ applicable agreement for further details.
 	(text "VCC" (rect 128 7 148 17)(font "Arial" (font_size 6)))
 )
 (pin
-	(output)
-	(rect 1864 -128 2040 -112)
-	(text "OUTPUT" (rect 1 0 39 10)(font "Arial" (font_size 6)))
-	(text "value[15..0]" (rect 90 0 149 12)(font "Arial" ))
-	(pt 0 8)
+	(input)
+	(rect -48 -16 128 0)
+	(text "INPUT" (rect 133 0 161 10)(font "Arial" (font_size 6)))
+	(text "adcoffset[15..0]" (rect 5 0 86 12)(font "Arial" ))
+	(pt 176 8)
 	(drawing
-		(line (pt 0 8)(pt 52 8))
-		(line (pt 52 4)(pt 78 4))
-		(line (pt 52 12)(pt 78 12))
-		(line (pt 52 12)(pt 52 4))
-		(line (pt 78 4)(pt 82 8))
-		(line (pt 82 8)(pt 78 12))
-		(line (pt 78 12)(pt 82 8))
+		(line (pt 92 12)(pt 117 12))
+		(line (pt 92 4)(pt 117 4))
+		(line (pt 121 8)(pt 176 8))
+		(line (pt 92 12)(pt 92 4))
+		(line (pt 117 4)(pt 121 8))
+		(line (pt 117 12)(pt 121 8))
 	)
+	(text "GND" (rect 136 7 157 17)(font "Arial" (font_size 6)))
 )
 (pin
 	(output)
@@ -134,9 +134,25 @@ applicable agreement for further details.
 )
 (pin
 	(output)
-	(rect 1784 152 1960 168)
+	(rect 1920 680 2096 696)
 	(text "OUTPUT" (rect 1 0 39 10)(font "Arial" (font_size 6)))
 	(text "ready" (rect 90 0 118 12)(font "Arial" ))
+	(pt 0 8)
+	(drawing
+		(line (pt 0 8)(pt 52 8))
+		(line (pt 52 4)(pt 78 4))
+		(line (pt 52 12)(pt 78 12))
+		(line (pt 52 12)(pt 52 4))
+		(line (pt 78 4)(pt 82 8))
+		(line (pt 82 8)(pt 78 12))
+		(line (pt 78 12)(pt 82 8))
+	)
+)
+(pin
+	(output)
+	(rect 2168 184 2344 200)
+	(text "OUTPUT" (rect 1 0 39 10)(font "Arial" (font_size 6)))
+	(text "value[15..0]" (rect 90 0 149 12)(font "Arial" ))
 	(pt 0 8)
 	(drawing
 		(line (pt 0 8)(pt 52 8))
@@ -1393,7 +1409,7 @@ applicable agreement for further details.
 	(annotation_block (parameter)(rect 1072 -80 1270 -10))
 )
 (symbol
-	(rect 1744 144 1776 160)
+	(rect 1880 672 1912 688)
 	(text "VCC" (rect 7 0 27 10)(font "Arial" (font_size 6)))
 	(text "inst7" (rect 3 5 26 17)(font "Arial" )(invisible))
 	(port
@@ -1405,6 +1421,62 @@ applicable agreement for further details.
 	)
 	(drawing
 		(line (pt 8 8)(pt 24 8))
+	)
+)
+(symbol
+	(rect 1888 136 2048 248)
+	(text "adcoffset16" (rect 48 0 125 16)(font "Arial" (font_size 10)))
+	(text "inst28" (rect 8 96 36 113)(font "Intel Clear" ))
+	(port
+		(pt 0 40)
+		(input)
+		(text "dataa[15..0]" (rect 0 0 67 14)(font "Arial" (font_size 8)))
+		(text "dataa[15..0]" (rect 4 26 71 40)(font "Arial" (font_size 8)))
+		(line (pt 0 40)(pt 64 40)(line_width 3))
+	)
+	(port
+		(pt 0 72)
+		(input)
+		(text "datab[15..0]" (rect 0 0 67 14)(font "Arial" (font_size 8)))
+		(text "datab[15..0]" (rect 4 58 71 72)(font "Arial" (font_size 8)))
+		(line (pt 0 72)(pt 64 72)(line_width 3))
+	)
+	(port
+		(pt 0 56)
+		(input)
+		(text "clock" (rect 0 0 29 14)(font "Arial" (font_size 8)))
+		(text "clock" (rect 4 42 33 56)(font "Arial" (font_size 8)))
+		(line (pt 0 56)(pt 64 56))
+	)
+	(port
+		(pt 160 56)
+		(output)
+		(text "result[15..0]" (rect 0 0 67 14)(font "Arial" (font_size 8)))
+		(text "result[15..0]" (rect 100 42 167 56)(font "Arial" (font_size 8)))
+		(line (pt 160 56)(pt 96 56)(line_width 3))
+	)
+	(port
+		(pt 160 96)
+		(output)
+		(text "overflow" (rect 0 0 51 14)(font "Arial" (font_size 8)))
+		(text "overflow" (rect 113 82 164 96)(font "Arial" (font_size 8)))
+		(line (pt 160 96)(pt 80 96))
+	)
+	(drawing
+		(text "A+B" (rect 75 51 99 65)(font "Arial" (font_size 8)))
+		(text "A" (rect 64 35 73 49)(font "Arial" (font_size 8)))
+		(text "B" (rect 65 67 73 81)(font "Arial" (font_size 8)))
+		(line (pt 64 32)(pt 64 80))
+		(line (pt 64 32)(pt 96 40))
+		(line (pt 64 80)(pt 96 72))
+		(line (pt 96 40)(pt 96 72))
+		(line (pt 80 76)(pt 80 96))
+		(line (pt 0 0)(pt 162 0))
+		(line (pt 162 0)(pt 162 114))
+		(line (pt 0 114)(pt 162 114))
+		(line (pt 0 0)(pt 0 114))
+		(line (pt 64 50)(pt 70 56))
+		(line (pt 70 56)(pt 64 62))
 	)
 )
 (connector
@@ -1681,10 +1753,6 @@ applicable agreement for further details.
 (connector
 	(pt 1624 -520)
 	(pt 1624 -352)
-)
-(connector
-	(pt 1624 -352)
-	(pt 1624 -120)
 )
 (connector
 	(pt 1392 -24)
@@ -1978,8 +2046,49 @@ applicable agreement for further details.
 	(bus)
 )
 (connector
-	(pt 1760 160)
-	(pt 1784 160)
+	(pt 1896 688)
+	(pt 1920 688)
+)
+(connector
+	(text "adcoffset[15..0]" (rect 1802 192 1882 204)(font "Arial" ))
+	(pt 1888 208)
+	(pt 1792 208)
+	(bus)
+)
+(connector
+	(pt 2048 232)
+	(pt 2064 232)
+)
+(connector
+	(pt 2048 192)
+	(pt 2168 192)
+	(bus)
+)
+(connector
+	(pt 2064 96)
+	(pt 2064 232)
+)
+(connector
+	(pt 1888 176)
+	(pt 1864 176)
+	(bus)
+)
+(connector
+	(pt 1864 -120)
+	(pt 1864 176)
+	(bus)
+)
+(connector
+	(pt 1624 192)
+	(pt 1888 192)
+)
+(connector
+	(pt 1624 -352)
+	(pt 1624 -120)
+)
+(connector
+	(pt 1624 -120)
+	(pt 1624 192)
 )
 (junction (pt 176 -384))
 (junction (pt 1624 -352))
@@ -2030,3 +2139,4 @@ applicable agreement for further details.
 (junction (pt 1344 -120))
 (junction (pt 1048 -520))
 (junction (pt 1048 -368))
+(junction (pt 1624 -120))
