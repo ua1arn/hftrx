@@ -1,0 +1,28 @@
+Info: Starting: Create block symbol file (.bsf)
+Info: qsys-generate C:\user\SVN\tc1\fpga_q181std\cic64_3iq_v181.qsys --block-symbol-file --output-directory=C:\user\SVN\tc1\fpga_q181std\cic64_3iq_v181 --family="Cyclone IV E" --part=EP4CE22E22I7
+Progress: Loading fpga_q181std/cic64_3iq_v181.qsys
+Progress: Reading input file
+Progress: Adding cic_ii_0 [altera_cic_ii 18.1]
+Progress: Parameterizing module cic_ii_0
+Progress: Building connections
+Progress: Parameterizing connections
+Progress: Validating
+Progress: Done reading input file
+Info: qsys-generate succeeded.
+Info: Finished: Create block symbol file (.bsf)
+Info: 
+Info: Starting: Create HDL design files for synthesis
+Info: qsys-generate C:\user\SVN\tc1\fpga_q181std\cic64_3iq_v181.qsys --synthesis=VHDL --output-directory=C:\user\SVN\tc1\fpga_q181std\cic64_3iq_v181\synthesis --family="Cyclone IV E" --part=EP4CE22E22I7
+Progress: Loading fpga_q181std/cic64_3iq_v181.qsys
+Progress: Reading input file
+Progress: Adding cic_ii_0 [altera_cic_ii 18.1]
+Progress: Parameterizing module cic_ii_0
+Progress: Building connections
+Progress: Parameterizing connections
+Progress: Validating
+Progress: Done reading input file
+Info: cic64_3iq_v181: Generating cic64_3iq_v181 "cic64_3iq_v181" for QUARTUS_SYNTH
+Info: cic_ii_0: "cic64_3iq_v181" instantiated altera_cic_ii "cic_ii_0"
+Info: cic64_3iq_v181: Done "cic64_3iq_v181" with 2 modules, 30 files
+Info: qsys-generate succeeded.
+Info: Finished: Create HDL design files for synthesis

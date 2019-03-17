@@ -1,0 +1,18 @@
+	component fir_main is
+		port (
+			clk                : in  std_logic                     := 'X';             -- clk
+			reset_n            : in  std_logic                     := 'X';             -- reset_n
+			ast_sink_data      : in  std_logic_vector(31 downto 0) := (others => 'X'); -- data
+			ast_sink_valid     : in  std_logic                     := 'X';             -- valid
+			ast_sink_error     : in  std_logic_vector(1 downto 0)  := (others => 'X'); -- error
+			ast_sink_sop       : in  std_logic                     := 'X';             -- startofpacket
+			ast_sink_eop       : in  std_logic                     := 'X';             -- endofpacket
+			ast_source_data    : out std_logic_vector(31 downto 0);                    -- data
+			ast_source_valid   : out std_logic;                                        -- valid
+			ast_source_error   : out std_logic_vector(1 downto 0);                     -- error
+			ast_source_sop     : out std_logic;                                        -- startofpacket
+			ast_source_eop     : out std_logic;                                        -- endofpacket
+			ast_source_channel : out std_logic_vector(0 downto 0)                      -- channel
+		);
+	end component fir_main;
+

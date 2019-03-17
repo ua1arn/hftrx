@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<system name="$${FILENAME}">
+ <component
+   name="$${FILENAME}"
+   displayName="$${FILENAME}"
+   version="1.0"
+   description=""
+   tags="INTERNAL_COMPONENT=true"
+   categories="System" />
+ <parameter name="bonusData"><![CDATA[bonusData 
+{
+   element cic_ii_0
+   {
+      datum _sortIndex
+      {
+         value = "0";
+         type = "int";
+      }
+   }
+}
+]]></parameter>
+ <parameter name="clockCrossingAdapter" value="HANDSHAKE" />
+ <parameter name="device" value="EP4CE22E22I7" />
+ <parameter name="deviceFamily" value="Cyclone IV E" />
+ <parameter name="deviceSpeedGrade" value="7" />
+ <parameter name="fabricMode" value="QSYS" />
+ <parameter name="generateLegacySim" value="false" />
+ <parameter name="generationId" value="0" />
+ <parameter name="globalResetBus" value="false" />
+ <parameter name="hdlLanguage" value="VERILOG" />
+ <parameter name="hideFromIPCatalog" value="true" />
+ <parameter name="lockedInterfaceDefinition" value="" />
+ <parameter name="maxAdditionalLatency" value="1" />
+ <parameter name="projectName" value="t1.qpf" />
+ <parameter name="sopcBorderPoints" value="false" />
+ <parameter name="systemHash" value="0" />
+ <parameter name="testBenchDutName" value="" />
+ <parameter name="timeStamp" value="0" />
+ <parameter name="useTestBenchNamingPattern" value="false" />
+ <instanceScript></instanceScript>
+ <interface name="av_st_in" internal="cic_ii_0.av_st_in" type="conduit" dir="end">
+  <port name="in_error" internal="in_error" />
+  <port name="in_valid" internal="in_valid" />
+  <port name="in_ready" internal="in_ready" />
+  <port name="in0_data" internal="in0_data" />
+  <port name="in1_data" internal="in1_data" />
+  <port name="in2_data" internal="in2_data" />
+  <port name="in3_data" internal="in3_data" />
+  <port name="in4_data" internal="in4_data" />
+  <port name="in5_data" internal="in5_data" />
+ </interface>
+ <interface
+   name="av_st_out"
+   internal="cic_ii_0.av_st_out"
+   type="conduit"
+   dir="end">
+  <port name="out_data" internal="out_data" />
+  <port name="out_error" internal="out_error" />
+  <port name="out_valid" internal="out_valid" />
+  <port name="out_ready" internal="out_ready" />
+  <port name="out_startofpacket" internal="out_startofpacket" />
+  <port name="out_endofpacket" internal="out_endofpacket" />
+  <port name="out_channel" internal="out_channel" />
+ </interface>
+ <interface name="clock" internal="cic_ii_0.clock" type="clock" dir="end">
+  <port name="clk" internal="clk" />
+ </interface>
+ <interface name="reset" internal="cic_ii_0.reset" type="reset" dir="end">
+  <port name="reset_n" internal="reset_n" />
+ </interface>
+ <module
+   name="cic_ii_0"
+   kind="altera_cic_ii"
+   version="18.1"
+   enabled="1"
+   autoexport="1">
+  <parameter name="CH_PER_INT" value="1" />
+  <parameter name="CLK_EN_PORT" value="false" />
+  <parameter name="D_DELAY" value="1" />
+  <parameter name="FILTER_TYPE" value="decimator" />
+  <parameter name="INTERFACES" value="6" />
+  <parameter name="IN_WIDTH" value="32" />
+  <parameter name="RCF_FIX" value="64" />
+  <parameter name="RCF_LB" value="8" />
+  <parameter name="RCF_UB" value="21" />
+  <parameter name="REQ_DIF_MEM" value="logic_element" />
+  <parameter name="REQ_INT_MEM" value="logic_element" />
+  <parameter name="REQ_OUT_WIDTH" value="32" />
+  <parameter name="REQ_PIPELINE" value="0" />
+  <parameter name="ROUND_TYPE" value="H_PRUNE" />
+  <parameter name="STAGES" value="5" />
+  <parameter name="VRC_EN" value="0" />
+  <parameter name="design_env" value="NATIVE" />
+  <parameter name="hyper_opt_select" value="0" />
+  <parameter name="selected_device_family" value="Cyclone IV E" />
+ </module>
+ <interconnectRequirement for="$system" name="qsys_mm.clockCrossingAdapter" value="HANDSHAKE" />
+ <interconnectRequirement for="$system" name="qsys_mm.enableEccProtection" value="FALSE" />
+ <interconnectRequirement for="$system" name="qsys_mm.insertDefaultSlave" value="FALSE" />
+ <interconnectRequirement for="$system" name="qsys_mm.maxAdditionalLatency" value="1" />
+</system>

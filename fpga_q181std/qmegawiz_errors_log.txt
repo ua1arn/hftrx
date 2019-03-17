@@ -1,0 +1,6 @@
+
+
+C:/user/SVN/tc1/fpga_q181std/cic_64_3iq.vhd
+
+Mar 17 03AM:25:41>: Megafunction CIC v13.1 is not listed in any 
+wizard.lst file in the specified library path(s).Wizard launch aborted

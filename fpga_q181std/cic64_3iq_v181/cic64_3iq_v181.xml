@@ -1,0 +1,455 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<deploy
+ date="2019.03.17.18:00:08"
+ outputDirectory="C:/user/SVN/tc1/fpga_q181std/cic64_3iq_v181/">
+ <perimeter>
+  <parameter
+     name="AUTO_GENERATION_ID"
+     type="Integer"
+     defaultValue="0"
+     onHdl="0"
+     affectsHdl="1" />
+  <parameter
+     name="AUTO_UNIQUE_ID"
+     type="String"
+     defaultValue=""
+     onHdl="0"
+     affectsHdl="1" />
+  <parameter
+     name="AUTO_DEVICE_FAMILY"
+     type="String"
+     defaultValue="Cyclone IV E"
+     onHdl="0"
+     affectsHdl="1" />
+  <parameter
+     name="AUTO_DEVICE"
+     type="String"
+     defaultValue="EP4CE22E22I7"
+     onHdl="0"
+     affectsHdl="1" />
+  <parameter
+     name="AUTO_DEVICE_SPEEDGRADE"
+     type="String"
+     defaultValue="7"
+     onHdl="0"
+     affectsHdl="1" />
+  <parameter
+     name="AUTO_CLOCK_CLOCK_RATE"
+     type="Long"
+     defaultValue="-1"
+     onHdl="0"
+     affectsHdl="1" />
+  <parameter
+     name="AUTO_CLOCK_CLOCK_DOMAIN"
+     type="Integer"
+     defaultValue="-1"
+     onHdl="0"
+     affectsHdl="1" />
+  <parameter
+     name="AUTO_CLOCK_RESET_DOMAIN"
+     type="Integer"
+     defaultValue="-1"
+     onHdl="0"
+     affectsHdl="1" />
+  <interface name="av_st_in" kind="conduit" start="0">
+   <property name="associatedClock" value="clock" />
+   <property name="associatedReset" value="reset" />
+   <port name="in_error" direction="input" role="error" width="2" />
+   <port name="in_valid" direction="input" role="valid" width="1" />
+   <port name="in_ready" direction="output" role="ready" width="1" />
+   <port name="in0_data" direction="input" role="in0_data" width="32" />
+   <port name="in1_data" direction="input" role="in1_data" width="32" />
+   <port name="in2_data" direction="input" role="in2_data" width="32" />
+   <port name="in3_data" direction="input" role="in3_data" width="32" />
+   <port name="in4_data" direction="input" role="in4_data" width="32" />
+   <port name="in5_data" direction="input" role="in5_data" width="32" />
+  </interface>
+  <interface name="av_st_out" kind="conduit" start="0">
+   <property name="associatedClock" value="clock" />
+   <property name="associatedReset" value="reset" />
+   <port name="out_data" direction="output" role="out_data" width="32" />
+   <port name="out_error" direction="output" role="error" width="2" />
+   <port name="out_valid" direction="output" role="valid" width="1" />
+   <port name="out_ready" direction="input" role="ready" width="1" />
+   <port
+       name="out_startofpacket"
+       direction="output"
+       role="startofpacket"
+       width="1" />
+   <port
+       name="out_endofpacket"
+       direction="output"
+       role="endofpacket"
+       width="1" />
+   <port name="out_channel" direction="output" role="channel" width="3" />
+  </interface>
+  <interface name="clock" kind="clock" start="0">
+   <property name="clockRate" value="0" />
+   <property name="externallyDriven" value="false" />
+   <property name="ptfSchematicName" value="" />
+   <port name="clk" direction="input" role="clk" width="1" />
+  </interface>
+  <interface name="reset" kind="reset" start="0">
+   <property name="associatedClock" value="clock" />
+   <property name="synchronousEdges" value="DEASSERT" />
+   <port name="reset_n" direction="input" role="reset_n" width="1" />
+  </interface>
+ </perimeter>
+ <entity
+   path=""
+   parameterizationKey="cic64_3iq_v181:1.0:AUTO_CLOCK_CLOCK_DOMAIN=-1,AUTO_CLOCK_CLOCK_RATE=-1,AUTO_CLOCK_RESET_DOMAIN=-1,AUTO_DEVICE=EP4CE22E22I7,AUTO_DEVICE_FAMILY=Cyclone IV E,AUTO_DEVICE_SPEEDGRADE=7,AUTO_GENERATION_ID=1552831206,AUTO_UNIQUE_ID=(altera_cic_ii:18.1:CH_PER_INT=1,CLK_EN_PORT=false,C_STAGE_0_WIDTH=38,C_STAGE_10_WIDTH=0,C_STAGE_11_WIDTH=0,C_STAGE_1_WIDTH=37,C_STAGE_2_WIDTH=36,C_STAGE_3_WIDTH=35,C_STAGE_4_WIDTH=35,C_STAGE_5_WIDTH=0,C_STAGE_6_WIDTH=0,C_STAGE_7_WIDTH=0,C_STAGE_8_WIDTH=0,C_STAGE_9_WIDTH=0,DIF_MEM=auto,DIF_USE_MEM=false,D_DELAY=1,FILTER_TYPE=decimator,INTERFACES=6,INT_MEM=auto,INT_USE_MEM=false,IN_WIDTH=32,I_STAGE_0_WIDTH=61,I_STAGE_10_WIDTH=0,I_STAGE_11_WIDTH=0,I_STAGE_1_WIDTH=55,I_STAGE_2_WIDTH=49,I_STAGE_3_WIDTH=45,I_STAGE_4_WIDTH=40,I_STAGE_5_WIDTH=0,I_STAGE_6_WIDTH=0,I_STAGE_7_WIDTH=0,I_STAGE_8_WIDTH=0,I_STAGE_9_WIDTH=0,MAX_C_STAGE_WIDTH=62,MAX_I_STAGE_WIDTH=62,OUT_WIDTH=32,PIPELINING=0,RCF_FIX=64,RCF_LB=8,RCF_MAX=64,RCF_MIN=64,RCF_UB=21,REQ_DIF_MEM=logic_element,REQ_INT_MEM=logic_element,REQ_OUT_WIDTH=32,REQ_PIPELINE=0,ROUND_TYPE=H_PRUNE,STAGES=5,VRC_EN=0,design_env=NATIVE,hyper_opt=0,hyper_opt_select=0,selected_device_family=Cyclone IV E)"
+   instancePathKey="cic64_3iq_v181"
+   kind="cic64_3iq_v181"
+   version="1.0"
+   name="cic64_3iq_v181">
+  <parameter name="AUTO_CLOCK_CLOCK_RATE" value="-1" />
+  <parameter name="AUTO_CLOCK_CLOCK_DOMAIN" value="-1" />
+  <parameter name="AUTO_CLOCK_RESET_DOMAIN" value="-1" />
+  <parameter name="AUTO_GENERATION_ID" value="1552831206" />
+  <parameter name="AUTO_DEVICE" value="EP4CE22E22I7" />
+  <parameter name="AUTO_DEVICE_FAMILY" value="Cyclone IV E" />
+  <parameter name="AUTO_UNIQUE_ID" value="" />
+  <parameter name="AUTO_DEVICE_SPEEDGRADE" value="7" />
+  <generatedFiles>
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/cic64_3iq_v181/synthesis/cic64_3iq_v181.vhd"
+       type="VHDL" />
+  </generatedFiles>
+  <childGeneratedFiles>
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/cic64_3iq_v181/synthesis/submodules/auk_dspip_math_pkg.vhd"
+       type="VHDL"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/cic64_3iq_v181/synthesis/submodules/auk_dspip_text_pkg.vhd"
+       type="VHDL"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/cic64_3iq_v181/synthesis/submodules/auk_dspip_lib_pkg.vhd"
+       type="VHDL"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/cic64_3iq_v181/synthesis/submodules/auk_dspip_avalon_streaming_small_fifo.vhd"
+       type="VHDL"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/cic64_3iq_v181/synthesis/submodules/auk_dspip_avalon_streaming_controller.vhd"
+       type="VHDL"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/cic64_3iq_v181/synthesis/submodules/auk_dspip_avalon_streaming_sink.vhd"
+       type="VHDL"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/cic64_3iq_v181/synthesis/submodules/auk_dspip_avalon_streaming_source.vhd"
+       type="VHDL"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/cic64_3iq_v181/synthesis/submodules/auk_dspip_delay.vhd"
+       type="VHDL"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/cic64_3iq_v181/synthesis/submodules/auk_dspip_fastaddsub.vhd"
+       type="VHDL"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/cic64_3iq_v181/synthesis/submodules/auk_dspip_fastadd.vhd"
+       type="VHDL"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/cic64_3iq_v181/synthesis/submodules/auk_dspip_pipelined_adder.vhd"
+       type="VHDL"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/cic64_3iq_v181/synthesis/submodules/auk_dspip_roundsat.vhd"
+       type="VHDL"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/cic64_3iq_v181/synthesis/submodules/alt_dsp_cic_common_pkg.sv"
+       type="SYSTEM_VERILOG"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/cic64_3iq_v181/synthesis/submodules/auk_dspip_cic_lib_pkg.vhd"
+       type="VHDL"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/cic64_3iq_v181/synthesis/submodules/auk_dspip_differentiator.vhd"
+       type="VHDL"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/cic64_3iq_v181/synthesis/submodules/auk_dspip_downsample.sv"
+       type="SYSTEM_VERILOG"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/cic64_3iq_v181/synthesis/submodules/auk_dspip_integrator.vhd"
+       type="VHDL"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/cic64_3iq_v181/synthesis/submodules/auk_dspip_upsample.vhd"
+       type="VHDL"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/cic64_3iq_v181/synthesis/submodules/auk_dspip_channel_buffer.vhd"
+       type="VHDL"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/cic64_3iq_v181/synthesis/submodules/auk_dspip_variable_downsample.sv"
+       type="SYSTEM_VERILOG"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/cic64_3iq_v181/synthesis/submodules/hyper_pipeline_interface.v"
+       type="VERILOG"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/cic64_3iq_v181/synthesis/submodules/counter_module.sv"
+       type="SYSTEM_VERILOG"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/cic64_3iq_v181/synthesis/submodules/alt_cic_int_siso.sv"
+       type="SYSTEM_VERILOG"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/cic64_3iq_v181/synthesis/submodules/alt_cic_dec_siso.sv"
+       type="SYSTEM_VERILOG"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/cic64_3iq_v181/synthesis/submodules/alt_cic_int_simo.sv"
+       type="SYSTEM_VERILOG"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/cic64_3iq_v181/synthesis/submodules/alt_cic_dec_miso.sv"
+       type="SYSTEM_VERILOG"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/cic64_3iq_v181/synthesis/submodules/alt_cic_core.sv"
+       type="SYSTEM_VERILOG"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/cic64_3iq_v181/synthesis/submodules/alt_cic_core.ocp"
+       type="OTHER"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/cic64_3iq_v181/synthesis/submodules/cic64_3iq_v181_cic_ii_0.sv"
+       type="SYSTEM_VERILOG"
+       attributes="" />
+  </childGeneratedFiles>
+  <sourceFiles>
+   <file path="C:/user/SVN/tc1/fpga_q181std/cic64_3iq_v181.qsys" />
+  </sourceFiles>
+  <childSourceFiles>
+   <file
+       path="C:/intelfpga/18.1/ip/altera/dsp/altera_cic_ii/altera_cic_ii_hw.tcl" />
+   <file path="C:/intelFPGA/18.1/ip/altera/dsp/altera_cic_ii/cic_helper.jar" />
+  </childSourceFiles>
+  <messages>
+   <message level="Debug" culprit="cic64_3iq_v181">queue size: 0 starting:cic64_3iq_v181 "cic64_3iq_v181"</message>
+   <message level="Progress" culprit="min"></message>
+   <message level="Progress" culprit="max"></message>
+   <message level="Progress" culprit="current"></message>
+   <message level="Debug">Transform: CustomInstructionTransform</message>
+   <message level="Debug">No custom instruction connections, skipping transform </message>
+   <message level="Debug" culprit="merlin_custom_instruction_transform"><![CDATA[After transform: <b>1</b> modules, <b>0</b> connections]]></message>
+   <message level="Debug">Transform: MMTransform</message>
+   <message level="Debug">Transform: InterruptMapperTransform</message>
+   <message level="Debug">Transform: InterruptSyncTransform</message>
+   <message level="Debug">Transform: InterruptFanoutTransform</message>
+   <message level="Debug">Transform: AvalonStreamingTransform</message>
+   <message level="Debug">Transform: ResetAdaptation</message>
+   <message level="Debug" culprit="cic64_3iq_v181"><![CDATA["<b>cic64_3iq_v181</b>" reuses <b>altera_cic_ii</b> "<b>submodules/cic64_3iq_v181_cic_ii_0</b>"]]></message>
+   <message level="Debug" culprit="cic64_3iq_v181">queue size: 0 starting:altera_cic_ii "submodules/cic64_3iq_v181_cic_ii_0"</message>
+   <message level="Info" culprit="cic_ii_0"><![CDATA["<b>cic64_3iq_v181</b>" instantiated <b>altera_cic_ii</b> "<b>cic_ii_0</b>"]]></message>
+  </messages>
+ </entity>
+ <entity
+   path="submodules/"
+   parameterizationKey="altera_cic_ii:18.1:CH_PER_INT=1,CLK_EN_PORT=false,C_STAGE_0_WIDTH=38,C_STAGE_10_WIDTH=0,C_STAGE_11_WIDTH=0,C_STAGE_1_WIDTH=37,C_STAGE_2_WIDTH=36,C_STAGE_3_WIDTH=35,C_STAGE_4_WIDTH=35,C_STAGE_5_WIDTH=0,C_STAGE_6_WIDTH=0,C_STAGE_7_WIDTH=0,C_STAGE_8_WIDTH=0,C_STAGE_9_WIDTH=0,DIF_MEM=auto,DIF_USE_MEM=false,D_DELAY=1,FILTER_TYPE=decimator,INTERFACES=6,INT_MEM=auto,INT_USE_MEM=false,IN_WIDTH=32,I_STAGE_0_WIDTH=61,I_STAGE_10_WIDTH=0,I_STAGE_11_WIDTH=0,I_STAGE_1_WIDTH=55,I_STAGE_2_WIDTH=49,I_STAGE_3_WIDTH=45,I_STAGE_4_WIDTH=40,I_STAGE_5_WIDTH=0,I_STAGE_6_WIDTH=0,I_STAGE_7_WIDTH=0,I_STAGE_8_WIDTH=0,I_STAGE_9_WIDTH=0,MAX_C_STAGE_WIDTH=62,MAX_I_STAGE_WIDTH=62,OUT_WIDTH=32,PIPELINING=0,RCF_FIX=64,RCF_LB=8,RCF_MAX=64,RCF_MIN=64,RCF_UB=21,REQ_DIF_MEM=logic_element,REQ_INT_MEM=logic_element,REQ_OUT_WIDTH=32,REQ_PIPELINE=0,ROUND_TYPE=H_PRUNE,STAGES=5,VRC_EN=0,design_env=NATIVE,hyper_opt=0,hyper_opt_select=0,selected_device_family=Cyclone IV E"
+   instancePathKey="cic64_3iq_v181:.:cic_ii_0"
+   kind="altera_cic_ii"
+   version="18.1"
+   name="cic64_3iq_v181_cic_ii_0">
+  <parameter name="VRC_EN" value="0" />
+  <parameter name="D_DELAY" value="1" />
+  <parameter name="C_STAGE_6_WIDTH" value="0" />
+  <parameter name="I_STAGE_10_WIDTH" value="0" />
+  <parameter name="C_STAGE_2_WIDTH" value="36" />
+  <parameter name="I_STAGE_5_WIDTH" value="0" />
+  <parameter name="ROUND_TYPE" value="H_PRUNE" />
+  <parameter name="REQ_DIF_MEM" value="logic_element" />
+  <parameter name="DIF_MEM" value="auto" />
+  <parameter name="I_STAGE_2_WIDTH" value="49" />
+  <parameter name="MAX_I_STAGE_WIDTH" value="62" />
+  <parameter name="C_STAGE_5_WIDTH" value="0" />
+  <parameter name="RCF_MAX" value="64" />
+  <parameter name="hyper_opt" value="0" />
+  <parameter name="OUT_WIDTH" value="32" />
+  <parameter name="I_STAGE_6_WIDTH" value="0" />
+  <parameter name="I_STAGE_9_WIDTH" value="0" />
+  <parameter name="FILTER_TYPE" value="decimator" />
+  <parameter name="design_env" value="NATIVE" />
+  <parameter name="C_STAGE_1_WIDTH" value="37" />
+  <parameter name="C_STAGE_7_WIDTH" value="0" />
+  <parameter name="RCF_MIN" value="64" />
+  <parameter name="REQ_OUT_WIDTH" value="32" />
+  <parameter name="I_STAGE_3_WIDTH" value="45" />
+  <parameter name="C_STAGE_4_WIDTH" value="35" />
+  <parameter name="INT_USE_MEM" value="false" />
+  <parameter name="C_STAGE_10_WIDTH" value="0" />
+  <parameter name="INT_MEM" value="auto" />
+  <parameter name="I_STAGE_0_WIDTH" value="61" />
+  <parameter name="selected_device_family" value="Cyclone IV E" />
+  <parameter name="hyper_opt_select" value="0" />
+  <parameter name="I_STAGE_7_WIDTH" value="0" />
+  <parameter name="REQ_INT_MEM" value="logic_element" />
+  <parameter name="C_STAGE_8_WIDTH" value="0" />
+  <parameter name="STAGES" value="5" />
+  <parameter name="CLK_EN_PORT" value="false" />
+  <parameter name="CH_PER_INT" value="1" />
+  <parameter name="C_STAGE_0_WIDTH" value="38" />
+  <parameter name="PIPELINING" value="0" />
+  <parameter name="REQ_PIPELINE" value="0" />
+  <parameter name="I_STAGE_4_WIDTH" value="40" />
+  <parameter name="IN_WIDTH" value="32" />
+  <parameter name="C_STAGE_11_WIDTH" value="0" />
+  <parameter name="RCF_UB" value="21" />
+  <parameter name="I_STAGE_11_WIDTH" value="0" />
+  <parameter name="C_STAGE_3_WIDTH" value="35" />
+  <parameter name="I_STAGE_1_WIDTH" value="55" />
+  <parameter name="RCF_FIX" value="64" />
+  <parameter name="I_STAGE_8_WIDTH" value="0" />
+  <parameter name="MAX_C_STAGE_WIDTH" value="62" />
+  <parameter name="INTERFACES" value="6" />
+  <parameter name="DIF_USE_MEM" value="false" />
+  <parameter name="RCF_LB" value="8" />
+  <parameter name="C_STAGE_9_WIDTH" value="0" />
+  <generatedFiles>
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/cic64_3iq_v181/synthesis/submodules/auk_dspip_math_pkg.vhd"
+       type="VHDL"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/cic64_3iq_v181/synthesis/submodules/auk_dspip_text_pkg.vhd"
+       type="VHDL"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/cic64_3iq_v181/synthesis/submodules/auk_dspip_lib_pkg.vhd"
+       type="VHDL"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/cic64_3iq_v181/synthesis/submodules/auk_dspip_avalon_streaming_small_fifo.vhd"
+       type="VHDL"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/cic64_3iq_v181/synthesis/submodules/auk_dspip_avalon_streaming_controller.vhd"
+       type="VHDL"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/cic64_3iq_v181/synthesis/submodules/auk_dspip_avalon_streaming_sink.vhd"
+       type="VHDL"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/cic64_3iq_v181/synthesis/submodules/auk_dspip_avalon_streaming_source.vhd"
+       type="VHDL"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/cic64_3iq_v181/synthesis/submodules/auk_dspip_delay.vhd"
+       type="VHDL"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/cic64_3iq_v181/synthesis/submodules/auk_dspip_fastaddsub.vhd"
+       type="VHDL"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/cic64_3iq_v181/synthesis/submodules/auk_dspip_fastadd.vhd"
+       type="VHDL"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/cic64_3iq_v181/synthesis/submodules/auk_dspip_pipelined_adder.vhd"
+       type="VHDL"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/cic64_3iq_v181/synthesis/submodules/auk_dspip_roundsat.vhd"
+       type="VHDL"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/cic64_3iq_v181/synthesis/submodules/alt_dsp_cic_common_pkg.sv"
+       type="SYSTEM_VERILOG"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/cic64_3iq_v181/synthesis/submodules/auk_dspip_cic_lib_pkg.vhd"
+       type="VHDL"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/cic64_3iq_v181/synthesis/submodules/auk_dspip_differentiator.vhd"
+       type="VHDL"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/cic64_3iq_v181/synthesis/submodules/auk_dspip_downsample.sv"
+       type="SYSTEM_VERILOG"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/cic64_3iq_v181/synthesis/submodules/auk_dspip_integrator.vhd"
+       type="VHDL"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/cic64_3iq_v181/synthesis/submodules/auk_dspip_upsample.vhd"
+       type="VHDL"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/cic64_3iq_v181/synthesis/submodules/auk_dspip_channel_buffer.vhd"
+       type="VHDL"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/cic64_3iq_v181/synthesis/submodules/auk_dspip_variable_downsample.sv"
+       type="SYSTEM_VERILOG"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/cic64_3iq_v181/synthesis/submodules/hyper_pipeline_interface.v"
+       type="VERILOG"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/cic64_3iq_v181/synthesis/submodules/counter_module.sv"
+       type="SYSTEM_VERILOG"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/cic64_3iq_v181/synthesis/submodules/alt_cic_int_siso.sv"
+       type="SYSTEM_VERILOG"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/cic64_3iq_v181/synthesis/submodules/alt_cic_dec_siso.sv"
+       type="SYSTEM_VERILOG"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/cic64_3iq_v181/synthesis/submodules/alt_cic_int_simo.sv"
+       type="SYSTEM_VERILOG"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/cic64_3iq_v181/synthesis/submodules/alt_cic_dec_miso.sv"
+       type="SYSTEM_VERILOG"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/cic64_3iq_v181/synthesis/submodules/alt_cic_core.sv"
+       type="SYSTEM_VERILOG"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/cic64_3iq_v181/synthesis/submodules/alt_cic_core.ocp"
+       type="OTHER"
+       attributes="" />
+   <file
+       path="C:/user/SVN/tc1/fpga_q181std/cic64_3iq_v181/synthesis/submodules/cic64_3iq_v181_cic_ii_0.sv"
+       type="SYSTEM_VERILOG"
+       attributes="" />
+  </generatedFiles>
+  <childGeneratedFiles/>
+  <sourceFiles>
+   <file
+       path="C:/intelfpga/18.1/ip/altera/dsp/altera_cic_ii/altera_cic_ii_hw.tcl" />
+   <file path="C:/intelFPGA/18.1/ip/altera/dsp/altera_cic_ii/cic_helper.jar" />
+  </sourceFiles>
+  <childSourceFiles/>
+  <instantiator instantiator="cic64_3iq_v181" as="cic_ii_0" />
+  <messages>
+   <message level="Debug" culprit="cic64_3iq_v181">queue size: 0 starting:altera_cic_ii "submodules/cic64_3iq_v181_cic_ii_0"</message>
+   <message level="Info" culprit="cic_ii_0"><![CDATA["<b>cic64_3iq_v181</b>" instantiated <b>altera_cic_ii</b> "<b>cic_ii_0</b>"]]></message>
+  </messages>
+ </entity>
+</deploy>

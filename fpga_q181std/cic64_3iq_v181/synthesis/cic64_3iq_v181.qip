@@ -1,0 +1,115 @@
+set_global_assignment -entity "cic64_3iq_v181" -library "cic64_3iq_v181" -name IP_TOOL_NAME "Qsys"
+set_global_assignment -entity "cic64_3iq_v181" -library "cic64_3iq_v181" -name IP_TOOL_VERSION "18.1"
+set_global_assignment -entity "cic64_3iq_v181" -library "cic64_3iq_v181" -name IP_TOOL_ENV "Qsys"
+set_global_assignment -library "cic64_3iq_v181" -name SOPCINFO_FILE [file join $::quartus(qip_path) "../../cic64_3iq_v181.sopcinfo"]
+set_global_assignment -entity "cic64_3iq_v181" -library "cic64_3iq_v181" -name SLD_INFO "QSYS_NAME cic64_3iq_v181 HAS_SOPCINFO 1 GENERATION_ID 1552831206"
+set_global_assignment -library "cic64_3iq_v181" -name MISC_FILE [file join $::quartus(qip_path) "../cic64_3iq_v181.cmp"]
+set_global_assignment -library "cic64_3iq_v181" -name SLD_FILE [file join $::quartus(qip_path) "cic64_3iq_v181.debuginfo"]
+set_global_assignment -entity "cic64_3iq_v181" -library "cic64_3iq_v181" -name IP_TARGETED_DEVICE_FAMILY "Cyclone IV E"
+set_global_assignment -entity "cic64_3iq_v181" -library "cic64_3iq_v181" -name IP_GENERATED_DEVICE_FAMILY "{Cyclone IV E}"
+set_global_assignment -entity "cic64_3iq_v181" -library "cic64_3iq_v181" -name IP_QSYS_MODE "STANDALONE"
+set_global_assignment -name SYNTHESIS_ONLY_QIP ON
+set_global_assignment -library "cic64_3iq_v181" -name MISC_FILE [file join $::quartus(qip_path) "../../cic64_3iq_v181.qsys"]
+set_global_assignment -entity "cic64_3iq_v181" -library "cic64_3iq_v181" -name IP_COMPONENT_NAME "Y2ljNjRfM2lxX3YxODE="
+set_global_assignment -entity "cic64_3iq_v181" -library "cic64_3iq_v181" -name IP_COMPONENT_DISPLAY_NAME "Y2ljNjRfM2lxX3YxODE="
+set_global_assignment -entity "cic64_3iq_v181" -library "cic64_3iq_v181" -name IP_COMPONENT_REPORT_HIERARCHY "On"
+set_global_assignment -entity "cic64_3iq_v181" -library "cic64_3iq_v181" -name IP_COMPONENT_INTERNAL "Off"
+set_global_assignment -entity "cic64_3iq_v181" -library "cic64_3iq_v181" -name IP_COMPONENT_VERSION "MS4w"
+set_global_assignment -entity "cic64_3iq_v181" -library "cic64_3iq_v181" -name IP_COMPONENT_PARAMETER "QVVUT19HRU5FUkFUSU9OX0lE::MTU1MjgzMTIwNg==::QXV0byBHRU5FUkFUSU9OX0lE"
+set_global_assignment -entity "cic64_3iq_v181" -library "cic64_3iq_v181" -name IP_COMPONENT_PARAMETER "QVVUT19ERVZJQ0VfRkFNSUxZ::Q3ljbG9uZSBJViBF::QXV0byBERVZJQ0VfRkFNSUxZ"
+set_global_assignment -entity "cic64_3iq_v181" -library "cic64_3iq_v181" -name IP_COMPONENT_PARAMETER "QVVUT19ERVZJQ0U=::RVA0Q0UyMkUyMkk3::QXV0byBERVZJQ0U="
+set_global_assignment -entity "cic64_3iq_v181" -library "cic64_3iq_v181" -name IP_COMPONENT_PARAMETER "QVVUT19ERVZJQ0VfU1BFRURHUkFERQ==::Nw==::QXV0byBERVZJQ0VfU1BFRURHUkFERQ=="
+set_global_assignment -entity "cic64_3iq_v181" -library "cic64_3iq_v181" -name IP_COMPONENT_PARAMETER "QVVUT19DTE9DS19DTE9DS19SQVRF::LTE=::QXV0byBDTE9DS19SQVRF"
+set_global_assignment -entity "cic64_3iq_v181" -library "cic64_3iq_v181" -name IP_COMPONENT_PARAMETER "QVVUT19DTE9DS19DTE9DS19ET01BSU4=::LTE=::QXV0byBDTE9DS19ET01BSU4="
+set_global_assignment -entity "cic64_3iq_v181" -library "cic64_3iq_v181" -name IP_COMPONENT_PARAMETER "QVVUT19DTE9DS19SRVNFVF9ET01BSU4=::LTE=::QXV0byBSRVNFVF9ET01BSU4="
+set_global_assignment -entity "cic64_3iq_v181_cic_ii_0" -library "cic64_3iq_v181" -name IP_COMPONENT_NAME "Y2ljNjRfM2lxX3YxODFfY2ljX2lpXzA="
+set_global_assignment -entity "cic64_3iq_v181_cic_ii_0" -library "cic64_3iq_v181" -name IP_COMPONENT_DISPLAY_NAME "Q0lD"
+set_global_assignment -entity "cic64_3iq_v181_cic_ii_0" -library "cic64_3iq_v181" -name IP_COMPONENT_REPORT_HIERARCHY "Off"
+set_global_assignment -entity "cic64_3iq_v181_cic_ii_0" -library "cic64_3iq_v181" -name IP_COMPONENT_INTERNAL "Off"
+set_global_assignment -entity "cic64_3iq_v181_cic_ii_0" -library "cic64_3iq_v181" -name IP_COMPONENT_AUTHOR "QWx0ZXJhIENvcnBvcmF0aW9u"
+set_global_assignment -entity "cic64_3iq_v181_cic_ii_0" -library "cic64_3iq_v181" -name IP_COMPONENT_VERSION "MTguMQ=="
+set_global_assignment -entity "cic64_3iq_v181_cic_ii_0" -library "cic64_3iq_v181" -name IP_COMPONENT_DESCRIPTION "QWx0ZXJhIENhc2NhZGVkIEludGVncmF0b3IgQ29tYiBJSQ=="
+set_global_assignment -entity "cic64_3iq_v181_cic_ii_0" -library "cic64_3iq_v181" -name IP_COMPONENT_PARAMETER "ZGVzaWduX2Vudg==::TkFUSVZF::ZGVzaWduX2Vudg=="
+set_global_assignment -entity "cic64_3iq_v181_cic_ii_0" -library "cic64_3iq_v181" -name IP_COMPONENT_PARAMETER "c2VsZWN0ZWRfZGV2aWNlX2ZhbWlseQ==::Q3ljbG9uZSBJViBF::c2VsZWN0ZWRfZGV2aWNlX2ZhbWlseQ=="
+set_global_assignment -entity "cic64_3iq_v181_cic_ii_0" -library "cic64_3iq_v181" -name IP_COMPONENT_PARAMETER "RklMVEVSX1RZUEU=::ZGVjaW1hdG9y::RmlsdGVyIHR5cGU="
+set_global_assignment -entity "cic64_3iq_v181_cic_ii_0" -library "cic64_3iq_v181" -name IP_COMPONENT_PARAMETER "U1RBR0VT::NQ==::TnVtYmVyIG9mIHN0YWdlcw=="
+set_global_assignment -entity "cic64_3iq_v181_cic_ii_0" -library "cic64_3iq_v181" -name IP_COMPONENT_PARAMETER "RF9ERUxBWQ==::MQ==::RGlmZmVyZW50aWFsIGRlbGF5"
+set_global_assignment -entity "cic64_3iq_v181_cic_ii_0" -library "cic64_3iq_v181" -name IP_COMPONENT_PARAMETER "VlJDX0VO::MA==::RW5hYmxlIHZhcmlhYmxlIHJhdGUgY2hhbmdlIGZhY3Rvcg=="
+set_global_assignment -entity "cic64_3iq_v181_cic_ii_0" -library "cic64_3iq_v181" -name IP_COMPONENT_PARAMETER "UkNGX0ZJWA==::NjQ=::UmF0ZSBjaGFuZ2UgZmFjdG9y"
+set_global_assignment -entity "cic64_3iq_v181_cic_ii_0" -library "cic64_3iq_v181" -name IP_COMPONENT_PARAMETER "UkNGX01JTg==::NjQ=::UkNGX01JTg=="
+set_global_assignment -entity "cic64_3iq_v181_cic_ii_0" -library "cic64_3iq_v181" -name IP_COMPONENT_PARAMETER "UkNGX01BWA==::NjQ=::UkNGX01BWA=="
+set_global_assignment -entity "cic64_3iq_v181_cic_ii_0" -library "cic64_3iq_v181" -name IP_COMPONENT_PARAMETER "SU5URVJGQUNFUw==::Ng==::TnVtYmVyIG9mIGludGVyZmFjZXM="
+set_global_assignment -entity "cic64_3iq_v181_cic_ii_0" -library "cic64_3iq_v181" -name IP_COMPONENT_PARAMETER "Q0hfUEVSX0lOVA==::MQ==::TnVtYmVyIG9mIGNoYW5uZWxzIHBlciBpbnRlcmZhY2U="
+set_global_assignment -entity "cic64_3iq_v181_cic_ii_0" -library "cic64_3iq_v181" -name IP_COMPONENT_PARAMETER "SU5fV0lEVEg=::MzI=::SW5wdXQgZGF0YSB3aWR0aA=="
+set_global_assignment -entity "cic64_3iq_v181_cic_ii_0" -library "cic64_3iq_v181" -name IP_COMPONENT_PARAMETER "Q0xLX0VOX1BPUlQ=::ZmFsc2U=::VXNlIGNsb2NrIGVuYWJsZSBwb3J0"
+set_global_assignment -entity "cic64_3iq_v181_cic_ii_0" -library "cic64_3iq_v181" -name IP_COMPONENT_PARAMETER "Uk9VTkRfVFlQRQ==::SF9QUlVORQ==::T3V0cHV0IFJvdW5kaW5nIE1ldGhvZA=="
+set_global_assignment -entity "cic64_3iq_v181_cic_ii_0" -library "cic64_3iq_v181" -name IP_COMPONENT_PARAMETER "UkVRX09VVF9XSURUSA==::MzI=::T3V0cHV0IGRhdGEgd2lkdGg="
+set_global_assignment -entity "cic64_3iq_v181_cic_ii_0" -library "cic64_3iq_v181" -name IP_COMPONENT_PARAMETER "SU5UX01FTQ==::YXV0bw==::SW50ZWdyYXRvciBkYXRhIHN0b3JhZ2UgdHlwZQ=="
+set_global_assignment -entity "cic64_3iq_v181_cic_ii_0" -library "cic64_3iq_v181" -name IP_COMPONENT_PARAMETER "UkVRX0lOVF9NRU0=::bG9naWNfZWxlbWVudA==::SW50ZWdyYXRvciBkYXRhIHN0b3JhZ2UgdHlwZQ=="
+set_global_assignment -entity "cic64_3iq_v181_cic_ii_0" -library "cic64_3iq_v181" -name IP_COMPONENT_PARAMETER "RElGX1VTRV9NRU0=::ZmFsc2U=::TWFwIGRpZmZlcmVudGlhdG9yIGRhdGEgc3RvcmFnZSB0byBtZW1vcnk="
+set_global_assignment -entity "cic64_3iq_v181_cic_ii_0" -library "cic64_3iq_v181" -name IP_COMPONENT_PARAMETER "RElGX01FTQ==::YXV0bw==::RGlmZmVyZW50aWF0b3IgZGF0YSBzdG9yYWdlIHR5cGU="
+set_global_assignment -entity "cic64_3iq_v181_cic_ii_0" -library "cic64_3iq_v181" -name IP_COMPONENT_PARAMETER "UkVRX0RJRl9NRU0=::bG9naWNfZWxlbWVudA==::RGlmZmVyZW50aWF0b3IgZGF0YSBzdG9yYWdlIHR5cGU="
+set_global_assignment -entity "cic64_3iq_v181_cic_ii_0" -library "cic64_3iq_v181" -name IP_COMPONENT_PARAMETER "UkVRX1BJUEVMSU5F::MA==::UGlwZWxpbmUgc3RhZ2VzIHBlciBpbnRlZ3JhdG9y"
+set_global_assignment -entity "cic64_3iq_v181_cic_ii_0" -library "cic64_3iq_v181" -name IP_COMPONENT_PARAMETER "Q19TVEFHRV8wX1dJRFRI::Mzg=::Q19TVEFHRV8wX1dJRFRI"
+set_global_assignment -entity "cic64_3iq_v181_cic_ii_0" -library "cic64_3iq_v181" -name IP_COMPONENT_PARAMETER "SV9TVEFHRV8wX1dJRFRI::NjE=::SV9TVEFHRV8wX1dJRFRI"
+set_global_assignment -entity "cic64_3iq_v181_cic_ii_0" -library "cic64_3iq_v181" -name IP_COMPONENT_PARAMETER "Q19TVEFHRV8xX1dJRFRI::Mzc=::Q19TVEFHRV8xX1dJRFRI"
+set_global_assignment -entity "cic64_3iq_v181_cic_ii_0" -library "cic64_3iq_v181" -name IP_COMPONENT_PARAMETER "SV9TVEFHRV8xX1dJRFRI::NTU=::SV9TVEFHRV8xX1dJRFRI"
+set_global_assignment -entity "cic64_3iq_v181_cic_ii_0" -library "cic64_3iq_v181" -name IP_COMPONENT_PARAMETER "Q19TVEFHRV8yX1dJRFRI::MzY=::Q19TVEFHRV8yX1dJRFRI"
+set_global_assignment -entity "cic64_3iq_v181_cic_ii_0" -library "cic64_3iq_v181" -name IP_COMPONENT_PARAMETER "SV9TVEFHRV8yX1dJRFRI::NDk=::SV9TVEFHRV8yX1dJRFRI"
+set_global_assignment -entity "cic64_3iq_v181_cic_ii_0" -library "cic64_3iq_v181" -name IP_COMPONENT_PARAMETER "Q19TVEFHRV8zX1dJRFRI::MzU=::Q19TVEFHRV8zX1dJRFRI"
+set_global_assignment -entity "cic64_3iq_v181_cic_ii_0" -library "cic64_3iq_v181" -name IP_COMPONENT_PARAMETER "SV9TVEFHRV8zX1dJRFRI::NDU=::SV9TVEFHRV8zX1dJRFRI"
+set_global_assignment -entity "cic64_3iq_v181_cic_ii_0" -library "cic64_3iq_v181" -name IP_COMPONENT_PARAMETER "Q19TVEFHRV80X1dJRFRI::MzU=::Q19TVEFHRV80X1dJRFRI"
+set_global_assignment -entity "cic64_3iq_v181_cic_ii_0" -library "cic64_3iq_v181" -name IP_COMPONENT_PARAMETER "SV9TVEFHRV80X1dJRFRI::NDA=::SV9TVEFHRV80X1dJRFRI"
+set_global_assignment -entity "cic64_3iq_v181_cic_ii_0" -library "cic64_3iq_v181" -name IP_COMPONENT_PARAMETER "Q19TVEFHRV81X1dJRFRI::MA==::Q19TVEFHRV81X1dJRFRI"
+set_global_assignment -entity "cic64_3iq_v181_cic_ii_0" -library "cic64_3iq_v181" -name IP_COMPONENT_PARAMETER "SV9TVEFHRV81X1dJRFRI::MA==::SV9TVEFHRV81X1dJRFRI"
+set_global_assignment -entity "cic64_3iq_v181_cic_ii_0" -library "cic64_3iq_v181" -name IP_COMPONENT_PARAMETER "Q19TVEFHRV82X1dJRFRI::MA==::Q19TVEFHRV82X1dJRFRI"
+set_global_assignment -entity "cic64_3iq_v181_cic_ii_0" -library "cic64_3iq_v181" -name IP_COMPONENT_PARAMETER "SV9TVEFHRV82X1dJRFRI::MA==::SV9TVEFHRV82X1dJRFRI"
+set_global_assignment -entity "cic64_3iq_v181_cic_ii_0" -library "cic64_3iq_v181" -name IP_COMPONENT_PARAMETER "Q19TVEFHRV83X1dJRFRI::MA==::Q19TVEFHRV83X1dJRFRI"
+set_global_assignment -entity "cic64_3iq_v181_cic_ii_0" -library "cic64_3iq_v181" -name IP_COMPONENT_PARAMETER "SV9TVEFHRV83X1dJRFRI::MA==::SV9TVEFHRV83X1dJRFRI"
+set_global_assignment -entity "cic64_3iq_v181_cic_ii_0" -library "cic64_3iq_v181" -name IP_COMPONENT_PARAMETER "Q19TVEFHRV84X1dJRFRI::MA==::Q19TVEFHRV84X1dJRFRI"
+set_global_assignment -entity "cic64_3iq_v181_cic_ii_0" -library "cic64_3iq_v181" -name IP_COMPONENT_PARAMETER "SV9TVEFHRV84X1dJRFRI::MA==::SV9TVEFHRV84X1dJRFRI"
+set_global_assignment -entity "cic64_3iq_v181_cic_ii_0" -library "cic64_3iq_v181" -name IP_COMPONENT_PARAMETER "Q19TVEFHRV85X1dJRFRI::MA==::Q19TVEFHRV85X1dJRFRI"
+set_global_assignment -entity "cic64_3iq_v181_cic_ii_0" -library "cic64_3iq_v181" -name IP_COMPONENT_PARAMETER "SV9TVEFHRV85X1dJRFRI::MA==::SV9TVEFHRV85X1dJRFRI"
+set_global_assignment -entity "cic64_3iq_v181_cic_ii_0" -library "cic64_3iq_v181" -name IP_COMPONENT_PARAMETER "Q19TVEFHRV8xMF9XSURUSA==::MA==::Q19TVEFHRV8xMF9XSURUSA=="
+set_global_assignment -entity "cic64_3iq_v181_cic_ii_0" -library "cic64_3iq_v181" -name IP_COMPONENT_PARAMETER "SV9TVEFHRV8xMF9XSURUSA==::MA==::SV9TVEFHRV8xMF9XSURUSA=="
+set_global_assignment -entity "cic64_3iq_v181_cic_ii_0" -library "cic64_3iq_v181" -name IP_COMPONENT_PARAMETER "Q19TVEFHRV8xMV9XSURUSA==::MA==::Q19TVEFHRV8xMV9XSURUSA=="
+set_global_assignment -entity "cic64_3iq_v181_cic_ii_0" -library "cic64_3iq_v181" -name IP_COMPONENT_PARAMETER "SV9TVEFHRV8xMV9XSURUSA==::MA==::SV9TVEFHRV8xMV9XSURUSA=="
+set_global_assignment -entity "cic64_3iq_v181_cic_ii_0" -library "cic64_3iq_v181" -name IP_COMPONENT_PARAMETER "TUFYX0lfU1RBR0VfV0lEVEg=::NjI=::TUFYX0lfU1RBR0VfV0lEVEg="
+set_global_assignment -entity "cic64_3iq_v181_cic_ii_0" -library "cic64_3iq_v181" -name IP_COMPONENT_PARAMETER "TUFYX0NfU1RBR0VfV0lEVEg=::NjI=::TUFYX0NfU1RBR0VfV0lEVEg="
+set_global_assignment -entity "cic64_3iq_v181_cic_ii_0" -library "cic64_3iq_v181" -name IP_COMPONENT_PARAMETER "aHlwZXJfb3B0X3NlbGVjdA==::MA==::T3B0aW1pemUgZm9yIFN0cmF0aXggMTA="
+set_global_assignment -entity "cic64_3iq_v181_cic_ii_0" -library "cic64_3iq_v181" -name IP_COMPONENT_PARAMETER "aHlwZXJfb3B0::MA==::aHlwZXJfb3B0"
+
+set_global_assignment -library "cic64_3iq_v181" -name VHDL_FILE [file join $::quartus(qip_path) "cic64_3iq_v181.vhd"]
+set_global_assignment -library "cic64_3iq_v181" -name VHDL_FILE [file join $::quartus(qip_path) "submodules/auk_dspip_math_pkg.vhd"]
+set_global_assignment -library "cic64_3iq_v181" -name VHDL_FILE [file join $::quartus(qip_path) "submodules/auk_dspip_text_pkg.vhd"]
+set_global_assignment -library "cic64_3iq_v181" -name VHDL_FILE [file join $::quartus(qip_path) "submodules/auk_dspip_lib_pkg.vhd"]
+set_global_assignment -library "cic64_3iq_v181" -name VHDL_FILE [file join $::quartus(qip_path) "submodules/auk_dspip_avalon_streaming_small_fifo.vhd"]
+set_global_assignment -library "cic64_3iq_v181" -name VHDL_FILE [file join $::quartus(qip_path) "submodules/auk_dspip_avalon_streaming_controller.vhd"]
+set_global_assignment -library "cic64_3iq_v181" -name VHDL_FILE [file join $::quartus(qip_path) "submodules/auk_dspip_avalon_streaming_sink.vhd"]
+set_global_assignment -library "cic64_3iq_v181" -name VHDL_FILE [file join $::quartus(qip_path) "submodules/auk_dspip_avalon_streaming_source.vhd"]
+set_global_assignment -library "cic64_3iq_v181" -name VHDL_FILE [file join $::quartus(qip_path) "submodules/auk_dspip_delay.vhd"]
+set_global_assignment -library "cic64_3iq_v181" -name VHDL_FILE [file join $::quartus(qip_path) "submodules/auk_dspip_fastaddsub.vhd"]
+set_global_assignment -library "cic64_3iq_v181" -name VHDL_FILE [file join $::quartus(qip_path) "submodules/auk_dspip_fastadd.vhd"]
+set_global_assignment -library "cic64_3iq_v181" -name VHDL_FILE [file join $::quartus(qip_path) "submodules/auk_dspip_pipelined_adder.vhd"]
+set_global_assignment -library "cic64_3iq_v181" -name VHDL_FILE [file join $::quartus(qip_path) "submodules/auk_dspip_roundsat.vhd"]
+set_global_assignment -library "cic64_3iq_v181" -name SYSTEMVERILOG_FILE [file join $::quartus(qip_path) "submodules/alt_dsp_cic_common_pkg.sv"]
+set_global_assignment -library "cic64_3iq_v181" -name VHDL_FILE [file join $::quartus(qip_path) "submodules/auk_dspip_cic_lib_pkg.vhd"]
+set_global_assignment -library "cic64_3iq_v181" -name VHDL_FILE [file join $::quartus(qip_path) "submodules/auk_dspip_differentiator.vhd"]
+set_global_assignment -library "cic64_3iq_v181" -name SYSTEMVERILOG_FILE [file join $::quartus(qip_path) "submodules/auk_dspip_downsample.sv"]
+set_global_assignment -library "cic64_3iq_v181" -name VHDL_FILE [file join $::quartus(qip_path) "submodules/auk_dspip_integrator.vhd"]
+set_global_assignment -library "cic64_3iq_v181" -name VHDL_FILE [file join $::quartus(qip_path) "submodules/auk_dspip_upsample.vhd"]
+set_global_assignment -library "cic64_3iq_v181" -name VHDL_FILE [file join $::quartus(qip_path) "submodules/auk_dspip_channel_buffer.vhd"]
+set_global_assignment -library "cic64_3iq_v181" -name SYSTEMVERILOG_FILE [file join $::quartus(qip_path) "submodules/auk_dspip_variable_downsample.sv"]
+set_global_assignment -library "cic64_3iq_v181" -name VERILOG_FILE [file join $::quartus(qip_path) "submodules/hyper_pipeline_interface.v"]
+set_global_assignment -library "cic64_3iq_v181" -name SYSTEMVERILOG_FILE [file join $::quartus(qip_path) "submodules/counter_module.sv"]
+set_global_assignment -library "cic64_3iq_v181" -name SYSTEMVERILOG_FILE [file join $::quartus(qip_path) "submodules/alt_cic_int_siso.sv"]
+set_global_assignment -library "cic64_3iq_v181" -name SYSTEMVERILOG_FILE [file join $::quartus(qip_path) "submodules/alt_cic_dec_siso.sv"]
+set_global_assignment -library "cic64_3iq_v181" -name SYSTEMVERILOG_FILE [file join $::quartus(qip_path) "submodules/alt_cic_int_simo.sv"]
+set_global_assignment -library "cic64_3iq_v181" -name SYSTEMVERILOG_FILE [file join $::quartus(qip_path) "submodules/alt_cic_dec_miso.sv"]
+set_global_assignment -library "cic64_3iq_v181" -name SYSTEMVERILOG_FILE [file join $::quartus(qip_path) "submodules/alt_cic_core.sv"]
+set_global_assignment -library "cic64_3iq_v181" -name SOURCE_FILE [file join $::quartus(qip_path) "submodules/alt_cic_core.ocp"]
+set_global_assignment -library "cic64_3iq_v181" -name SYSTEMVERILOG_FILE [file join $::quartus(qip_path) "submodules/cic64_3iq_v181_cic_ii_0.sv"]
+
+set_global_assignment -entity "cic64_3iq_v181_cic_ii_0" -library "cic64_3iq_v181" -name IP_TOOL_NAME "altera_cic_ii"
+set_global_assignment -entity "cic64_3iq_v181_cic_ii_0" -library "cic64_3iq_v181" -name IP_TOOL_VERSION "18.1"
+set_global_assignment -entity "cic64_3iq_v181_cic_ii_0" -library "cic64_3iq_v181" -name IP_TOOL_ENV "Qsys"

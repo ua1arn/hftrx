@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pinplan
+ variation_name="cic_ii_0"
+ megafunction_name="ALTERA_CIC_II"
+ intended_family="Cyclone IV E"
+ specifies="all_ports">
+ <global>
+  <pin name="clk" direction="input" scope="external" />
+  <pin name="reset_n" direction="input" scope="external" />
+  <pin name="in_error[1..0]" direction="input" scope="external" />
+  <pin name="in_valid" direction="input" scope="external" />
+  <pin name="in_ready" direction="output" scope="external" />
+  <pin name="in0_data[31..0]" direction="input" scope="external" />
+  <pin name="in1_data[31..0]" direction="input" scope="external" />
+  <pin name="in2_data[31..0]" direction="input" scope="external" />
+  <pin name="in3_data[31..0]" direction="input" scope="external" />
+  <pin name="in4_data[31..0]" direction="input" scope="external" />
+  <pin name="in5_data[31..0]" direction="input" scope="external" />
+  <pin name="out_data[31..0]" direction="output" scope="external" />
+  <pin name="out_error[1..0]" direction="output" scope="external" />
+  <pin name="out_valid" direction="output" scope="external" />
+  <pin name="out_ready" direction="input" scope="external" />
+  <pin name="out_startofpacket" direction="output" scope="external" />
+  <pin name="out_endofpacket" direction="output" scope="external" />
+  <pin name="out_channel[2..0]" direction="output" scope="external" />
+ </global>
+</pinplan>
