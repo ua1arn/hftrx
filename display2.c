@@ -1493,8 +1493,9 @@ static void display_time5(
 
 	board_rtc_gettime(& hour, & minute, & secounds);
 	local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("%02d%c%02d"), 
-		hour, minute, 
-		((secounds & 1) ? ' ' : ':')	// мигающее двоеточие с периодом две секунды
+		hour, 
+		((secounds & 1) ? ' ' : ':'),	// мигающее двоеточие с периодом две секунды
+		minute
 		);
 
 	const char * const labels [1] = { buff, };
@@ -1537,8 +1538,9 @@ static void display_datetime12(
 	local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("%s %2d %02d%c%02d"), 
 		months [month - 1],
 		day,
-		hour, minute,
-		((secounds & 1) ? ' ' : ':')	// мигающее двоеточие с периодом две секунды
+		hour, 
+		((secounds & 1) ? ' ' : ':'),	// мигающее двоеточие с периодом две секунды
+		minute
 		);
 
 	const char * const labels [1] = { buff, };
