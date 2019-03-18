@@ -20,9 +20,9 @@ applicable agreement for further details.
 */
 (header "symbol" (version "1.2"))
 (symbol
-	(rect 0 0 168 112)
+	(rect 0 0 168 128)
 	(text "mult16" (rect 65 0 111 16)(font "Arial" (font_size 10)))
-	(text "inst" (rect 8 96 25 108)(font "Arial" ))
+	(text "inst" (rect 8 112 25 124)(font "Arial" ))
 	(port
 		(pt 0 32)
 		(input)
@@ -45,10 +45,17 @@ applicable agreement for further details.
 		(line (pt 0 88)(pt 72 88)(line_width 3))
 	)
 	(port
+		(pt 0 112)
+		(input)
+		(text "clken" (rect 0 0 29 14)(font "Arial" (font_size 8)))
+		(text "clken" (rect 4 98 27 111)(font "Arial" (font_size 8)))
+		(line (pt 0 112)(pt 100 112))
+	)
+	(port
 		(pt 168 72)
 		(output)
-		(text "result[18..0]" (rect 0 0 67 14)(font "Arial" (font_size 8)))
-		(text "result[18..0]" (rect 108 58 163 71)(font "Arial" (font_size 8)))
+		(text "result[26..0]" (rect 0 0 67 14)(font "Arial" (font_size 8)))
+		(text "result[26..0]" (rect 108 58 163 71)(font "Arial" (font_size 8)))
 		(line (pt 168 72)(pt 104 72)(line_width 3))
 	)
 	(drawing
@@ -59,10 +66,12 @@ applicable agreement for further details.
 		(line (pt 82 78)(pt 94 66)(line_width 3))
 		(line (pt 72 56)(pt 77 61)(line_width 3))
 		(line (pt 72 88)(pt 77 83)(line_width 3))
+		(line (pt 100 88)(pt 100 111))
+		(line (pt 100 87)(pt 96 83))
 		(line (pt 0 0)(pt 169 0))
-		(line (pt 169 0)(pt 169 114))
-		(line (pt 0 114)(pt 169 114))
-		(line (pt 0 0)(pt 0 114))
+		(line (pt 169 0)(pt 169 130))
+		(line (pt 0 130)(pt 169 130))
+		(line (pt 0 0)(pt 0 130))
 		(line (pt 0 0)(pt 0 0))
 		(line (pt 0 0)(pt 0 0))
 		(line (pt 0 0)(pt 0 0))

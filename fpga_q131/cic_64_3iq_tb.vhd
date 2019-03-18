@@ -37,12 +37,12 @@ architecture tb of cic_64_3iq_tb is
   signal clk_cnt : integer 	:=0;
   signal reset_n : std_logic;
   signal clken : std_logic;
-  signal in0_data : std_logic_vector (31 downto 0);
-  signal in1_data : std_logic_vector (31 downto 0);
-  signal in2_data : std_logic_vector (31 downto 0);
-  signal in3_data : std_logic_vector (31 downto 0);
-  signal in4_data : std_logic_vector (31 downto 0);
-  signal in5_data : std_logic_vector (31 downto 0);
+  signal in0_data : std_logic_vector (25 downto 0);
+  signal in1_data : std_logic_vector (25 downto 0);
+  signal in2_data : std_logic_vector (25 downto 0);
+  signal in3_data : std_logic_vector (25 downto 0);
+  signal in4_data : std_logic_vector (25 downto 0);
+  signal in5_data : std_logic_vector (25 downto 0);
   signal out_data : std_logic_vector (31 downto 0);
   signal out_channel : std_logic_vector (2 downto 0);
   signal out_startofpacket : std_logic;
@@ -66,12 +66,12 @@ architecture tb of cic_64_3iq_tb is
       reset_n           : in  std_logic;
       in_ready          : out std_logic;
       in_valid          : in  std_logic;
-      in0_data          : in  std_logic_vector (31 downto 0);
-      in1_data          : in  std_logic_vector (31 downto 0);
-      in2_data          : in  std_logic_vector (31 downto 0);
-      in3_data          : in  std_logic_vector (31 downto 0);
-      in4_data          : in  std_logic_vector (31 downto 0);
-      in5_data          : in  std_logic_vector (31 downto 0);
+      in0_data          : in  std_logic_vector (25 downto 0);
+      in1_data          : in  std_logic_vector (25 downto 0);
+      in2_data          : in  std_logic_vector (25 downto 0);
+      in3_data          : in  std_logic_vector (25 downto 0);
+      in4_data          : in  std_logic_vector (25 downto 0);
+      in5_data          : in  std_logic_vector (25 downto 0);
       out_data          : out std_logic_vector (31 downto 0);
       out_channel       : out std_logic_vector (2 downto 0);
       out_startofpacket : out std_logic;
@@ -149,12 +149,12 @@ begin
     variable rdata  : line;
   begin
       if(reset_n = '0') then
-        in0_data  <= std_logic_vector(to_signed(0, 32));
-        in1_data  <= std_logic_vector(to_signed(0, 32));
-        in2_data  <= std_logic_vector(to_signed(0, 32));
-        in3_data  <= std_logic_vector(to_signed(0, 32));
-        in4_data  <= std_logic_vector(to_signed(0, 32));
-        in5_data  <= std_logic_vector(to_signed(0, 32));
+        in0_data  <= std_logic_vector(to_signed(0, 26));
+        in1_data  <= std_logic_vector(to_signed(0, 26));
+        in2_data  <= std_logic_vector(to_signed(0, 26));
+        in3_data  <= std_logic_vector(to_signed(0, 26));
+        in4_data  <= std_logic_vector(to_signed(0, 26));
+        in5_data  <= std_logic_vector(to_signed(0, 26));
         in_valid <= '0';
         end_test <= '0';
       elsif rising_edge(clk) then
@@ -164,12 +164,12 @@ begin
             readline(r_file, rdata);
             read(rdata, data_r);
             in_valid <= '1';
-              in0_data  <= std_logic_vector(to_signed(data_r, 32));
-              in1_data  <= std_logic_vector(to_signed(2, 32));
-              in2_data  <= std_logic_vector(to_signed(4, 32));
-              in3_data  <= std_logic_vector(to_signed(8, 32));
-              in4_data  <= std_logic_vector(to_signed(16, 32));
-              in5_data  <= std_logic_vector(to_signed(32, 32));
+              in0_data  <= std_logic_vector(to_signed(data_r, 26));
+              in1_data  <= std_logic_vector(to_signed(2, 26));
+              in2_data  <= std_logic_vector(to_signed(4, 26));
+              in3_data  <= std_logic_vector(to_signed(8, 26));
+              in4_data  <= std_logic_vector(to_signed(16, 26));
+              in5_data  <= std_logic_vector(to_signed(32, 26));
           else
             in_valid <= '1';
             in0_data  <= in0_data;
@@ -184,12 +184,12 @@ begin
             if (in_valid = '1' and in_ready = '1') then
               end_test <= '1';
               in_valid <= '0';
-              in0_data  <= std_logic_vector(to_signed(0, 32));
-              in1_data  <= std_logic_vector(to_signed(0, 32));
-              in2_data  <= std_logic_vector(to_signed(0, 32));
-              in3_data  <= std_logic_vector(to_signed(0, 32));
-              in4_data  <= std_logic_vector(to_signed(0, 32));
-              in5_data  <= std_logic_vector(to_signed(0, 32));
+              in0_data  <= std_logic_vector(to_signed(0, 26));
+              in1_data  <= std_logic_vector(to_signed(0, 26));
+              in2_data  <= std_logic_vector(to_signed(0, 26));
+              in3_data  <= std_logic_vector(to_signed(0, 26));
+              in4_data  <= std_logic_vector(to_signed(0, 26));
+              in5_data  <= std_logic_vector(to_signed(0, 26));
             else
               in_valid <= '1';
               in0_data  <= in0_data;

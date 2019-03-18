@@ -103,7 +103,7 @@ applicable agreement for further details.
 	(output)
 	(rect 304 128 480 144)
 	(text "OUTPUT" (rect 1 0 39 10)(font "Arial" (font_size 6)))
-	(text "outi_data[31..0]" (rect 90 0 166 12)(font "Arial" ))
+	(text "outi_data[25..0]" (rect 90 0 166 12)(font "Arial" ))
 	(pt 0 8)
 	(drawing
 		(line (pt 0 8)(pt 52 8))
@@ -119,7 +119,7 @@ applicable agreement for further details.
 	(output)
 	(rect 304 144 480 160)
 	(text "OUTPUT" (rect 1 0 39 10)(font "Arial" (font_size 6)))
-	(text "outq_data[31..0]" (rect 90 0 170 12)(font "Arial" ))
+	(text "outq_data[25..0]" (rect 90 0 170 12)(font "Arial" ))
 	(pt 0 8)
 	(drawing
 		(line (pt 0 8)(pt 52 8))
@@ -166,8 +166,8 @@ applicable agreement for further details.
 	(port
 		(pt 168 72)
 		(output)
-		(text "result[32..0]" (rect 0 0 67 14)(font "Arial" (font_size 8)))
-		(text "result[32..0]" (rect 108 58 175 72)(font "Arial" (font_size 8)))
+		(text "result[26..0]" (rect 0 0 67 14)(font "Arial" (font_size 8)))
+		(text "result[26..0]" (rect 108 58 175 72)(font "Arial" (font_size 8)))
 		(line (pt 168 72)(pt 104 72)(line_width 3))
 	)
 	(drawing
@@ -226,8 +226,8 @@ applicable agreement for further details.
 	(port
 		(pt 168 72)
 		(output)
-		(text "result[32..0]" (rect 0 0 67 14)(font "Arial" (font_size 8)))
-		(text "result[32..0]" (rect 108 58 175 72)(font "Arial" (font_size 8)))
+		(text "result[26..0]" (rect 0 0 67 14)(font "Arial" (font_size 8)))
+		(text "result[26..0]" (rect 108 58 175 72)(font "Arial" (font_size 8)))
 		(line (pt 168 72)(pt 104 72)(line_width 3))
 	)
 	(drawing
@@ -327,25 +327,25 @@ applicable agreement for further details.
 	(bus)
 )
 (connector
-	(text "shdi[32..0]" (rect 34 48 85 60)(font "Arial" ))
+	(text "shdi[26..0]" (rect 34 48 85 60)(font "Arial" ))
 	(pt 24 64)
 	(pt 128 64)
 	(bus)
 )
 (connector
-	(text "shdq[32..0]" (rect 26 224 81 236)(font "Arial" ))
+	(text "shdq[26..0]" (rect 26 224 81 236)(font "Arial" ))
 	(pt 24 240)
 	(pt 120 240)
 	(bus)
 )
 (connector
-	(text "shdi[31..0]" (rect 186 120 237 132)(font "Arial" ))
+	(text "shdi[25..0]" (rect 186 120 237 132)(font "Arial" ))
 	(pt 304 136)
 	(pt 176 136)
 	(bus)
 )
 (connector
-	(text "shdq[31..0]" (rect 186 136 241 148)(font "Arial" ))
+	(text "shdq[25..0]" (rect 186 136 241 148)(font "Arial" ))
 	(pt 176 152)
 	(pt 304 152)
 	(bus)

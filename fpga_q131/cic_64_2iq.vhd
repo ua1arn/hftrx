@@ -37,10 +37,10 @@ ENTITY cic_64_2iq IS
 		clk	: IN STD_LOGIC;
 		clken	: IN STD_LOGIC;
 		reset_n	: IN STD_LOGIC;
-		in0_data	: IN STD_LOGIC_VECTOR (31 DOWNTO 0);
-		in1_data	: IN STD_LOGIC_VECTOR (31 DOWNTO 0);
-		in2_data	: IN STD_LOGIC_VECTOR (31 DOWNTO 0);
-		in3_data	: IN STD_LOGIC_VECTOR (31 DOWNTO 0);
+		in0_data	: IN STD_LOGIC_VECTOR (25 DOWNTO 0);
+		in1_data	: IN STD_LOGIC_VECTOR (25 DOWNTO 0);
+		in2_data	: IN STD_LOGIC_VECTOR (25 DOWNTO 0);
+		in3_data	: IN STD_LOGIC_VECTOR (25 DOWNTO 0);
 		in_valid	: IN STD_LOGIC;
 		out_ready	: IN STD_LOGIC;
 		in_error	: IN STD_LOGIC_VECTOR (1 DOWNTO 0);
@@ -62,10 +62,10 @@ ARCHITECTURE SYN OF cic_64_2iq IS
 		clk	: IN STD_LOGIC;
 		clken	: IN STD_LOGIC;
 		reset_n	: IN STD_LOGIC;
-		in0_data	: IN STD_LOGIC_VECTOR (31 DOWNTO 0);
-		in1_data	: IN STD_LOGIC_VECTOR (31 DOWNTO 0);
-		in2_data	: IN STD_LOGIC_VECTOR (31 DOWNTO 0);
-		in3_data	: IN STD_LOGIC_VECTOR (31 DOWNTO 0);
+		in0_data	: IN STD_LOGIC_VECTOR (25 DOWNTO 0);
+		in1_data	: IN STD_LOGIC_VECTOR (25 DOWNTO 0);
+		in2_data	: IN STD_LOGIC_VECTOR (25 DOWNTO 0);
+		in3_data	: IN STD_LOGIC_VECTOR (25 DOWNTO 0);
 		in_valid	: IN STD_LOGIC;
 		out_ready	: IN STD_LOGIC;
 		in_error	: IN STD_LOGIC_VECTOR (1 DOWNTO 0);
@@ -128,7 +128,7 @@ END SYN;
 -- Retrieval info:      <PRIVATE name = "Number of Stages" value="12"  type="INTEGER"  enable="1" />
 -- Retrieval info:      <PRIVATE name = "Rate Change Factor" value="64"  type="INTEGER"  enable="1" />
 -- Retrieval info:      <PRIVATE name = "Differential Delay" value="1"  type="INTEGER"  enable="1" />
--- Retrieval info:      <PRIVATE name = "Input Bit Width" value="32"  type="INTEGER"  enable="1" />
+-- Retrieval info:      <PRIVATE name = "Input Bit Width" value="26"  type="INTEGER"  enable="1" />
 -- Retrieval info:      <PRIVATE name = "Output Bit Width" value="32"  type="INTEGER"  enable="1" />
 -- Retrieval info:      <PRIVATE name = "Hogenauer Pruning" value="1"  type="BOOLEAN"  enable="1" />
 -- Retrieval info:      <PRIVATE name = "Support AST back pressure" value="1"  type="BOOLEAN"  enable="1" />
