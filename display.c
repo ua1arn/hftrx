@@ -39,6 +39,70 @@
 
 /* заполнение прямоугольной области буфера цветом */
 void 
+display_fillrect(
+	PACKEDCOLOR_T * buffer,
+	uint_fast16_t dx,	// размеры буфера
+	uint_fast16_t dy,
+	uint_fast16_t col,	// позиция окна в буфере,
+	uint_fast16_t row,
+	uint_fast16_t w,	// размер окна
+	uint_fast16_t h,
+	COLOR_T color
+	)
+{
+#if LCDMODE_LTDC
+#if defined (DMA2D)
+
+	// just writes the color defined in the DMA2D_OCOLR register 
+	// to the area located at the address pointed by the DMA2D_OMAR 
+	// and defined in the DMA2D_NLR and DMA2D_OOR.
+
+	arm_hardware_flush((uintptr_t) buffer, sizeof (* buffer) * dx * dy);
+
+	/* целевой растр */
+	DMA2D->OMAR = (uintptr_t) & buffer [row * dx + col];
+	DMA2D->OOR = (DMA2D->OOR & ~ (DMA2D_OOR_LO)) |
+		((dx - w) << DMA2D_OOR_LO_Pos) |
+		0;
+
+	DMA2D->NLR = (DMA2D->NLR & ~ (DMA2D_NLR_NL | DMA2D_NLR_PL)) |
+		(h << DMA2D_NLR_NL_Pos) |
+		(w << DMA2D_NLR_PL_Pos) |
+		0;
+
+	DMA2D->OCOLR = 
+		color |
+		0;
+
+	DMA2D->OPFCCR = (DMA2D->OPFCCR & ~ (DMA2D_OPFCCR_CM)) |
+		(2 * DMA2D_FGPFCCR_CM_VALUE) |	/* framebuffer pixel format */
+		0;
+
+	/* set AXI master timer */
+	DMA2D->AMTCR = (DMA2D->AMTCR & ~ (DMA2D_AMTCR_DT | DMA2D_AMTCR_EN)) |
+		(DMA2D_AMTCR_DT_VALUE << DMA2D_AMTCR_DT_Pos) |
+		1 * DMA2D_AMTCR_EN |
+		0;
+
+	/* запустить операцию */
+	DMA2D->CR = (DMA2D->CR & ~ (DMA2D_CR_MODE)) |
+		3 * DMA2D_CR_MODE_0 |	// 11: Register-to-memory (no FG nor BG, only output stage active)
+		1 * DMA2D_CR_START |
+		0;
+
+	/* ожидаем выполнения операции */
+	while ((DMA2D->CR & DMA2D_CR_START) != 0)
+		;
+
+
+#else /* defined (DMA2D)*/
+
+#endif /* defined (DMA2D) */
+#endif /* LCDMODE_LTDC */
+}
+
+/* заполнение прямоугольной области буфера цветом */
+void 
 dma2d_fillrect2_RGB565(
 	PACKEDCOLOR565_T * buffer,
 	uint_fast16_t dx,	// размеры буфера
@@ -50,7 +114,8 @@ dma2d_fillrect2_RGB565(
 	COLOR565_T color
 	)
 {
-#if defined (DMA2D) && LCDMODE_LTDC
+#if LCDMODE_LTDC
+#if defined (DMA2D)
 
 	// just writes the color defined in the DMA2D_OCOLR register 
 	// to the area located at the address pointed by the DMA2D_OMAR 
@@ -93,7 +158,8 @@ dma2d_fillrect2_RGB565(
 	while ((DMA2D->CR & DMA2D_CR_START) != 0)
 		;
 
-#endif /* defined (DMA2D) && LCDMODE_LTDC */
+#endif /* defined (DMA2D) */
+#endif /* LCDMODE_LTDC */
 }
 
 
@@ -522,6 +588,84 @@ void display_pixelbuffer_xor(
 #endif /* LCDMODE_S1D13781 */
 }
 
+#if LCDMODE_LTDC
+
+static void 
+bitblt_fill(
+	uint_fast16_t x, uint_fast16_t y, 	// координаты в пикселях
+	uint_fast16_t w, uint_fast16_t h, 	// размеры в пикселях
+	COLOR_T color)
+{
+
+#if defined (DMA2D) && LCDMODE_LTDC && ! LCDMODE_LTDC_L8
+
+	dma2d_fillrect2_RGB565(& framebuff [0] [0], DIM_X, DIM_Y, x, y, w, h, color);
+
+#else /* defined (DMA2D) && LCDMODE_LTDC && ! LCDMODE_LTDC_L8 */
+
+	display_fillrect(& framebuff [0] [0], DIM_X, DIM_Y, x, y, w, h, color);
+
+#endif /* defined (DMA2D) && LCDMODE_LTDC && ! LCDMODE_LTDC_L8 */
+}
+
+void display_solidbar(uint_fast16_t x, uint_fast16_t y, uint_fast16_t x2, uint_fast16_t y2, COLOR_T color)
+{
+	if (x2 < x)
+	{
+		uint_fast16_t t = x;
+		x = x2, x2 = t;
+	}
+	if (y2 < y)
+	{
+		uint_fast16_t t = y;
+		y = y2, y2 = t;
+	}
+	bitblt_fill(x, y, x2 - x, y2 - y, color);
+}
+
+#endif /* LCDMODE_LTDC */
+
+
+static int local_randomgr( int num )
+{
+
+	static unsigned long rand_val = 123456UL;
+
+	if (rand_val & 0x80000000UL)
+		rand_val = (rand_val << 1);
+	else	rand_val = (rand_val << 1) ^0x201051UL;
+
+	return (rand_val % num);
+
+}
+
+
+/*                                                                      */
+/*      RANDOMBARS: Display local_randomgr bars                                 */
+/*                                                                      */
+
+void display_barstest(void)
+{
+	unsigned n = 20000;
+	for (;n --;)
+	{                    /* Until user enters a key...   */
+		int r = local_randomgr(255);
+		int g = local_randomgr(255);
+		int b = local_randomgr(255);
+
+		const COLOR_T color = TFTRGB(r, g, b);
+
+		int x = local_randomgr(DIM_X - 1);
+		int y = local_randomgr(DIM_Y - 1);
+		int x2 = local_randomgr(DIM_X - 1);
+		int y2 = local_randomgr(DIM_Y - 1);
+
+		display_solidbar(x, y, x2, y2, color);
+		//_delay_ms(10);
+	}
+
+	//getch();             /* Pause for user's response    */
+}
 
 /*
  * настройка портов для последующей работы с дополнительными (кроме последовательного канала)

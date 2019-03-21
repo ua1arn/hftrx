@@ -1908,26 +1908,16 @@ void display_set_contrast(uint_fast8_t v)
 {
 }
 
-static int vesa_getmaxx(void)
-{
-	return DIM_X - 1;
-}
-static int vesa_getmaxy(void)
-{
-	return DIM_Y - 1;
-}
-
-
-static void graph_bar(int x, int y, int x2, int y2, COLOR_T color)
+void display_solidbar(uint_fast16_t x, uint_fast16_t y, uint_fast16_t x2, uint_fast16_t y2, COLOR_T color)
 {
 	if (x2 < x)
 	{
-		int t = x;
+		uint_fast16_t t = x;
 		x = x2, x2 = t;
 	}
 	if (y2 < y)
 	{
-		int t = y;
+		uint_fast16_t t = y;
 		y = y2, y2 = t;
 	}
 	bitblt_fill(x, y, x2 - x, y2 - y, color);
@@ -1952,28 +1942,28 @@ GrideTest(void)
 	col3 = TFTRGB(0,192,192);
 
 
-	xm = vesa_getmaxx();
-	ym = vesa_getmaxy();
+	xm = DIM_X - 1;
+	ym = DIM_Y - 1;
 	xm4 = xm / 4;
 	ym4 = ym / 4;
 	xm1 = xm / 40;
 	ym1 = ym / 40;
 
 	/* Filled rectangle - all screen. */
-	graph_bar(0, 0, xm, ym, col1);
+	display_solidbar(0, 0, xm, ym, col1);
 
 	/* Filled rectangle at right-down corner. */
-	graph_bar(xm4 * 3 + xm1, ym4 * 3 + ym1, xm4 * 4 - xm1, ym4 * 4 - ym1, col20);
+	display_solidbar(xm4 * 3 + xm1, ym4 * 3 + ym1, xm4 * 4 - xm1, ym4 * 4 - ym1, col20);
 	/* Filled rectangle at right-upper corner. */
-	graph_bar(xm4 * 3 + xm1, ym1, xm4 * 4 - xm1, ym4 - ym1, col21);
+	display_solidbar(xm4 * 3 + xm1, ym1, xm4 * 4 - xm1, ym4 - ym1, col21);
 	/* Filled rectangle at left - down corner. */
-	graph_bar(xm1, ym4 * 3 + ym1, xm4 - xm1, ym4 * 4 - ym1, col22);
+	display_solidbar(xm1, ym4 * 3 + ym1, xm4 - xm1, ym4 * 4 - ym1, col22);
 	/* Filled rectangle at center. */
-	graph_bar(xm4 + xm1, ym4 + ym1, xm4 * 3 - xm1, ym4 * 3 - ym1, col23);
+	display_solidbar(xm4 + xm1, ym4 + ym1, xm4 * 3 - xm1, ym4 * 3 - ym1, col23);
 
 	for (k = 0; k < 16; ++ k)
 		for (n = 0; n < 16; ++ n)
-			graph_bar(n * 18 + 1,
+			display_solidbar(n * 18 + 1,
 				 k * 10 + 3,
 				 n * 18 + 16,
 				 k * 10 + 9,
@@ -1996,47 +1986,6 @@ GrideTest(void)
 
 }
 
-static int local_random( int num )
-{
-
-	static unsigned long rand_val = 123456UL;
-
-	if (rand_val & 0x80000000UL)
-		rand_val = (rand_val << 1);
-	else	rand_val = (rand_val << 1) ^0x201051UL;
-
-	return (rand_val % num);
-
-}
-
-
-/*                                                                      */
-/*      RANDOMBARS: Display local_random bars                                 */
-/*                                                                      */
-
-static void RandomBars(void)
-{
-	unsigned n = 20000;
-	for (;n --;)
-	{                    /* Until user enters a key...   */
-		int r = local_random(255);
-		int g = local_random(255);
-		int b = local_random(255);
-
-		const COLOR_T color = TFTRGB(r, g, b);
-
-		int x = local_random(vesa_getmaxx());
-		int y = local_random(vesa_getmaxy());
-		int x2 = local_random(vesa_getmaxx());
-		int y2 = local_random(vesa_getmaxy());
-
-		graph_bar(x, y, x2, y2, color);
-		//_delay_ms(10);
-	}
-
-	//getch();             /* Pause for user's response    */
-}
-
 #if ! LCDMODE_LTDC
 
 void 
@@ -2053,7 +2002,7 @@ display_clear(void)
 	for (;;)
 		;
 #elif 0
-	RandomBars();
+	display_barstest();
 	display_gotoxy(0, 0);
 	display_setcolors(COLOR_WHITE, COLOR_BLACK);
 	display_string2_P(PSTR("test done"), 0);

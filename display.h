@@ -867,5 +867,6 @@ void display_1state(
 
 #endif /* LCDMODE_LTDC */
 
+void display_solidbar(uint_fast16_t x, uint_fast16_t y, uint_fast16_t x2, uint_fast16_t y2, COLOR_T color);
 
 #endif /* DISPLAY_H_INCLUDED */
