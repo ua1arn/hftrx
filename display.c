@@ -97,6 +97,19 @@ display_fillrect(
 
 #else /* defined (DMA2D)*/
 
+	const unsigned t = dx - w;
+	buffer += (dx * row) + col;
+	while (h --)
+	{
+		PACKEDCOLOR_T * startmem = buffer;
+
+		unsigned n = w;
+		while (n --)
+			* buffer ++ = color;
+		buffer += t;
+		arm_hardware_flush((uintptr_t) startmem, sizeof (* startmem) * w);
+	}
+
 #endif /* defined (DMA2D) */
 #endif /* LCDMODE_LTDC */
 }
@@ -157,6 +170,23 @@ dma2d_fillrect2_RGB565(
 	/* ожидаем выполнения операции */
 	while ((DMA2D->CR & DMA2D_CR_START) != 0)
 		;
+
+#else /* defined (DMA2D) */
+
+	const unsigned t = dx - w;
+	buffer += (dx * row) + col;
+	while (h --)
+	{
+		PACKEDCOLOR565_T * startmem = buffer;
+
+		unsigned n = w;
+		while (n --)
+			* buffer ++ = color;
+		buffer += t;
+		arm_hardware_flush((uintptr_t) startmem, sizeof (* startmem) * w);
+	}
+
+
 
 #endif /* defined (DMA2D) */
 #endif /* LCDMODE_LTDC */
