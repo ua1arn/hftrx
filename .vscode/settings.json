@@ -47,5 +47,8 @@
     "files.watcherExclude": {
         "**/*.d": true,
         "**/*.o": true
-    }
+    },
+    "telemetry.enableTelemetry": false,
+    "C_Cpp.default.cStandard": "c99",
+    "editor.detectIndentation": false
 }
