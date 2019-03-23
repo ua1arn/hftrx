@@ -1,0 +1,51 @@
+// Place your settings in this file to overwrite default and user settings.
+{
+    "C_Cpp.addWorkspaceRootToIncludePath": false,
+    "C_Cpp.intelliSenseEngine": "Tag Parser",
+    "files.associations": {
+        "initializer_list": "cpp",
+        "type_traits": "cpp",
+        "vector": "cpp",
+        "xstring": "cpp",
+        "xutility": "cpp",
+        "xiosbase": "cpp",
+        "xlocale": "cpp",
+        "system_error": "cpp",
+        "array": "cpp",
+        "string_view": "cpp",
+        "*.tcc": "cpp",
+        "stdbool.h": "c",
+        "utility": "cpp",
+        "ostream": "cpp",
+        "istream": "cpp",
+        "ios": "cpp",
+        "iosfwd": "cpp",
+        "memory": "cpp",
+        "tuple": "cpp",
+        "xmemory0": "cpp",
+        "xtr1common": "cpp",
+        "limits": "cpp",
+        "xhash": "cpp",
+        "xtree": "cpp",
+        "cmath": "cpp",
+        "font.h": "c",
+        "list": "cpp",
+        "unordered_map": "cpp",
+        "functional": "cpp",
+        "deque": "cpp",
+        "queue": "cpp",
+        "algorithm": "cpp"
+    },
+    "files.encoding": "windows1251",
+    "files.eol": "\r\n",
+    "workbench.list.openMode": "doubleClick",
+    "workbench.colorTheme": "Visual Studio Dark",
+    "files.exclude": {
+        "**/*.d": true,
+        "**/*.o": true
+    },
+    "files.watcherExclude": {
+        "**/*.d": true,
+        "**/*.o": true
+    }
+}

@@ -1,0 +1,23 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build r7s721020",
+            "type": "shell",
+            "command": "NMAKE /a /f tc1msvc_at32.mak r7s721020",
+            "problemMatcher": [
+                "$gcc"
+            ]
+        },
+        {
+            "label": "echo",
+            "type": "shell",
+            "command": "echo Hello",
+            "problemMatcher": [
+                "$gcc"
+            ]
+        }
+    ]
+}
