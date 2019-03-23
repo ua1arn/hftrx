@@ -1702,18 +1702,6 @@ usbd_handler_brdy8_dcp_out(USBD_HandleTypeDef *pdev, uint_fast8_t pipe)
 #endif /* CPUSTYLE_R7S721 */
 }
 
-static void usbd_continuereading(USBD_HandleTypeDef *pdev, uint_fast8_t pipe)
-{
-#if CPUSTYLE_R7S721
-	USB_OTG_GlobalTypeDef * const Instance = ((PCD_HandleTypeDef *) pdev->pData)->Instance;
-	//const uint_fast8_t pipe = 0;
-	//if (state != 0)
-		Instance->BRDYENB |= (1uL << pipe);
-	//else
-		//Instance->BRDYENB &= ~ (1uL << pipe);
-#endif /* CPUSTYLE_R7S721 */
-}
-
 // end of machine-dependent stuff
 
 
@@ -2268,81 +2256,10 @@ static void usbdVendorReq_seq1(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef *r
 // Далее следует блок данных с дополнительными параметрами.
 static void usbdFunctionReq_seq3(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef *req)
 {
-	//PRINTF(PSTR("usbdFunctionReq_seq3: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
-	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
-
-	switch (interfacev)
-	{
-#if WITHUSBUAC
-	#if WITHUSBUAC3
-	case INTERFACE_AUDIO_CONTROL_RTS:	/* AUDIO spectrum control interface */
-	#endif /* WITHUSBUAC3 */
-	case INTERFACE_AUDIO_CONTROL_SPK:	// AUDIO control interface
-		{
-			//const uint_fast8_t terminalID = HI_BYTE(ReqIndex);
-			switch (req->bRequest)
-			{
-			case AUDIO_REQUEST_SET_CUR:
-				usbd_continuereading(pdev, 0);	// DCP
-				break;
-
-			default:
-				//PRINTF(PSTR("default path 1: usbdFunctionReq_seq3: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
-				stall_ep0(pdev);
-				return;
-			}
-		}
-		break;
-#endif /* WITHUSBUAC */
-
-#if WITHUSBCDC
-	case INTERFACE_CDC_CONTROL_3a:	// CDC interface
-	case INTERFACE_CDC_CONTROL_3b:	// CDC interface
-		{
-			switch (req->bRequest)
-			{
-			case CDC_SET_LINE_CODING:
-				usbd_continuereading(pdev, 0);	// DCP
-				break;
-
-			default:
-				TP();
-				//PRINTF(PSTR("default path 2: usbdFunctionReq_seq3: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
-				stall_ep0(pdev);
-				return;
-			}
-		}
-		break;	// to ACK
-#endif /* WITHUSBCDC */
-	
-#if WITHUSBDFU
-	// data OUT
-	case INTERFACE_DFU_CONTROL:	// DFU interface
-		{
-			switch (req->bRequest)
-			{
-			//case CDC_SET_LINE_CODING:
-			//		TP();
-			//	usbd_continuereading(pdev, 0);	// DCP
-			//	break;
-
-			default:
-				//PRINTF(PSTR("default path 1: usbdFunctionReq_seq1: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
-				TP();
-				stall_ep0(pdev);
-				return;
-			}
-		}
-		return;
-#endif /* WITHUSBDFU */
-	default:
-		TP();
-		PRINTF(PSTR("default path 4: interfacev=%08u\n"), interfacev);
-		//PRINTF(PSTR("default path 3: usbdFunctionReq_seq3: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
-		stall_ep0(pdev);
-		return;
-	}
-
+	USB_OTG_GlobalTypeDef * const Instance = ((PCD_HandleTypeDef *) pdev->pData)->Instance;
+	const uint_fast8_t pipe = 0;
+	//if (state != 0)
+	Instance->BRDYENB |= (1uL << pipe);
 	dcp_acksend(pdev);	// ACK
 }
 
