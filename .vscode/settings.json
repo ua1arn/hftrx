@@ -34,7 +34,8 @@
         "functional": "cpp",
         "deque": "cpp",
         "queue": "cpp",
-        "algorithm": "cpp"
+        "algorithm": "cpp",
+        "speex_preprocess.h": "c"
     },
     "files.encoding": "windows1251",
     "files.eol": "\r\n",

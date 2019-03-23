@@ -9,7 +9,7 @@
             "command": "NMAKE /a /f tc1msvc_at32.mak r7s721020",
             "problemMatcher": {
                 "owner": "c",
-                "fileLocation": ["relative", "r7s721020"],
+                "fileLocation": ["relative", "${workspaceRoot}/r7s721020"],
                 "pattern": {
                     "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
                     "file": 1,
