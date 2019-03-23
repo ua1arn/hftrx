@@ -5876,7 +5876,7 @@ void *speex_alloc (int size)
 /* вызывается при разрешённых прерываниях. */
 void dsp_initialize(void)
 {
-#if 1 //! WITHTRANSPARENTIQ
+#if 0 //! WITHTRANSPARENTIQ
 	// Speex
 	{
 		speex_st = speex_preprocess_state_init(1024, ARMI2SRATE);
