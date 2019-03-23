@@ -7070,7 +7070,7 @@ updateboard(
 		full2 |= flagne_u8(& lo2hint [pathi], gethintlo2(freq));
 		full2 |= flagne_u8(& forcelsb [pathi], getforcelsb(freq));
 #if WITHDCDCFREQCTL
-		full2 |= flagne_u16(& bldividerout, getbldivider(freq));
+		full2 |= flagne_u16(& bldividerout, getbldivider(freq));	// управление частотой dc-dc преобразователя
 #endif /* WITHDCDCFREQCTL */
 	}
 	// параметры, не имеющие специфики для разных приемников
