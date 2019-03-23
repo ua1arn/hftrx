@@ -162,6 +162,12 @@ static int_fast8_t		glob_swaprts;		// управление боковой выхода спектроанализато
 
 #if WITHINTEGRATEDDSP
 
+
+#include "speex\speex_preprocess.h"
+
+SpeexPreprocessState *speex_st;
+
+
 #define NPROF 2	/* количество профилей параметров DSP фильтров. */
 
 // Определения для работ по оптимизации быстродействия
@@ -5845,10 +5851,42 @@ trxparam_update(void)
 	enveloplen0 = NSAITICKS(glob_cwedgetime) + 1;		/* количество сэмплов, за которое меняется огибающая */
 
 }
+#if 0
+void Denoiser (CommonRx* ptr, float* src )
+{
+	int delta;
+	delta=ptr->FilterHighFrequency-ptr->FilterLowFrequency;
+	if(ptr->NR_en==1)
+	{
+	if(delta>=DF_DENOISER_LMS)
+	speex_preprocess_run(st, (float*)src, ptr->NR_en, ptr->NR_level);
+	else
+		;//!!!!!!!ANC_filter( (float*)src, (FFT_FILTER_SIZE/2));
+	}
+
+}
+#endif
+
+void *speex_alloc (int size)
+{
+   //return NULL;
+   return calloc(size,1);
+}
 
 /* вызывается при разрешённых прерываниях. */
 void dsp_initialize(void)
 {
+#if 1 //! WITHTRANSPARENTIQ
+	// Speex
+	{
+		speex_st = speex_preprocess_state_init(1024, ARMI2SRATE);
+		int denoise = 1;
+		speex_preprocess_ctl(speex_st, SPEEX_PREPROCESS_SET_DENOISE, &denoise);
+	}
+	//Denoiser(0, 0);
+	speex_preprocess(speex_st, NULL, NULL);;
+#endif /* ! WITHTRANSPARENTIQ */
+
 	FFT_initialize();
 #if (WITHRTS96 || WITHRTS192) && ! WITHTRANSPARENTIQ
 	dsp_rasterinitialize();

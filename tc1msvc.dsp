@@ -738,6 +738,10 @@ SOURCE=.\fft.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\fftwrap.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\ffunicode.c
 # End Source File
 # Begin Source File
@@ -798,6 +802,10 @@ SOURCE=.\ls020.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\mdf.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\modems.c
 # End Source File
 # Begin Source File
@@ -815,6 +823,10 @@ SOURCE=.\pcf8535.c
 # Begin Source File
 
 SOURCE=.\pio.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\preprocess.c
 # End Source File
 # Begin Source File
 

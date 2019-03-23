@@ -2,6 +2,7 @@
 
 # List C source files here
 SRC += \
+ preprocess.c fftwrap.c smallft.c mdf.c \
  bandfilters.c \
  board.c \
  usbd.c usbd_desc.c \
