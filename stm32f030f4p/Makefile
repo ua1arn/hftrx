@@ -46,7 +46,7 @@ DADEFS = -D__ASSEMBLY__=1
 DINCDIR = $(CMSISDIR)/Core/Include
 
 # List the default directory to look for the libraries here
-DLIBDIR = $(CMSISDIR)/Lib/GCC
+DLIBDIR = $(CMSISDIR)/DSP/Lib/GCC
 
 # List all default libraries here
 DLIBS = -lm -larm_cortexM0l_math

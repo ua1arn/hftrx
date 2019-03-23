@@ -27,7 +27,7 @@ AS   = $(TRGT)gcc -x assembler-with-cpp
 HEX  = $(CP) -O ihex -R .noinit -R .bss
 BIN  = $(CP) -O binary -R .noinit -R .bss
 
-CMSISDIR = ../../CMSIS_5-5.4.0/CMSIS
+CMSISDIR = ../../CMSIS_5/CMSIS
 
 # Define optimisation level here
 OPT = -Ofast
@@ -47,7 +47,7 @@ DADEFS = -D__ASSEMBLY__=1
 DINCDIR = $(CMSISDIR)/Core/Include
 
 # List the default directory to look for the libraries here
-DLIBDIR = $(CMSISDIR)/Lib/GCC
+DLIBDIR = $(CMSISDIR)/DSP/Lib/GCC
 
 # List all default libraries here
 DLIBS = -lm -larm_cortexM7lfdp_math
@@ -81,7 +81,7 @@ SRC +=
 ASRC +=
 
 # List all user directories here
-UINCDIR += ../
+UINCDIR += ../ ../inc
 
 # List the user directory to look for the libraries here
 ULIBDIR +=

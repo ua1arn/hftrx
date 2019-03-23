@@ -46,7 +46,7 @@ DADEFS = -D__ASSEMBLY__=1
 DINCDIR = $(CMSISDIR)/Core_A/Include
 
 # List the default directory to look for the libraries here
-DLIBDIR = $(CMSISDIR)/Lib/GCC
+DLIBDIR = $(CMSISDIR)/DSP/Lib/GCC
 
 # List all default libraries here
 DLIBS = -lm
@@ -84,7 +84,7 @@ ASRC += \
  crt_r7s721.s
 
 # List all user directories here
-UINCDIR += ..  ../rza1x_inc
+UINCDIR += ..  ../rza1x_inc ../inc
 
 # List the user directory to look for the libraries here
 ULIBDIR +=
