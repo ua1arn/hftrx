@@ -106,16 +106,14 @@ power2(uint_fast16_t v)
 	// Port Register (Pn)
 	//GPIO.P7 |= (1U << 1);
 
-#define r7s721_pio_inputs(n, pins) do { \
-		const portholder_t ipins = (pins); \
+#define r7s721_pio_inputs(n, ipins) do { \
 		GPIO.PIPC ## n &= ~ (ipins);	/* Port IP Control Register: 0 - direction control from PMn, 1 - from alternative function */ \
 		GPIO.PMC ## n &= ~ (ipins);	/* Port Mode Control Register: 0 - port, 1 - alternative */ \
 		GPIO.PM ## n |= (ipins);	/* Port Mode Register (PMn): 0 - output, 1 - input */ \
 		GPIO.PIBC ## n |= (ipins);	/* Port Input Buffer Control Register (PIBCn): 0 - hiZ, 1 - input */ \
 	} while (0)
 
-#define r7s721_pio_outputs(n, pins, initialstate) do { \
-		const portholder_t opins = (pins); \
+#define r7s721_pio_outputs(n, opins, initialstate) do { \
 		GPIO.PIPC ## n &= ~ (opins);	/* Port IP Control Register: 0 - direction control from PMn, 1 - from alternative function */ \
 		GPIO.PSR ## n = ((opins) * 0x10000UL) | (initialstate); \
 		GPIO.PMC ## n &= ~ (opins);	/* Port Mode Control Register: 0 - port, 1 - alternative */ \
@@ -123,9 +121,7 @@ power2(uint_fast16_t v)
 		GPIO.PIBC ## n &= ~ (opins);	/* Port Input Buffer Control Register (PIBCn): 0 - hiZ, 1 - input */ \
 	} while (0)
 
-#define r7s721_pio_alternative(n, pins, ioalt) do { \
-		const unsigned alt = (ioalt); \
-		const portholder_t iopins = (pins); \
+#define r7s721_pio_alternative(n, iopins, alt) do { \
 		const int pfcae = ((alt) & 0x04) != 0; \
 		const int pfce = ((alt) & 0x02) != 0; \
 		const int pfc = ((alt) & 0x01) != 0; \
