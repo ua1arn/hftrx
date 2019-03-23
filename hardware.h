@@ -347,6 +347,7 @@
 	#define ALIGNX_BEGIN __attribute__ ((aligned(32))) 
 	#define ALIGNX_END /* nothing */
 
+	//#define ARM_MATH_CA9 1
 	//#include "../../DSP/Include/arm_math.h"
 	//#include "../../DSP/Include/arm_const_structs.h"
 
