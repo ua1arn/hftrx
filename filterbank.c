@@ -41,15 +41,18 @@
 #include "math_approx.h"
 #include "os_support.h"
 
+#include "hardware.h"
+#include "audio.h"
+
 #ifdef FIXED_POINT
 
 #define toBARK(n)   (MULT16_16(26829,spx_atan(SHR32(MULT16_16(97,n),2))) + MULT16_16(4588,spx_atan(MULT16_32_Q15(20,MULT16_16(n,n)))) + MULT16_16(3355,n))
 
 #else
-#define toBARK(n)   (13.1f*atan(.00074f*(n))+2.24f*atan((n)*(n)*1.85e-8f)+1e-4f*(n))
+#define toBARK(n)   (13.1f*ATANF(.00074f*(n))+2.24f*ATANF((n)*(n)*1.85e-8f)+1e-4f*(n))
 #endif
 
-#define toMEL(n)    (2595.f*log10(1.f+(n)/700.f))
+#define toMEL(n)    (2595.f*LOG10F(1.f+(n)/700.f))
 
 FilterBank *filterbank_new(int banks, spx_word32_t sampling, int len, int type)
 {
@@ -86,7 +89,7 @@ FilterBank *filterbank_new(int banks, spx_word32_t sampling, int len, int type)
 #ifdef FIXED_POINT
       id1 = DIV32(mel,mel_interval);
 #else
-      id1 = (int)(floor(mel/mel_interval));
+      id1 = (int)(FLOORF(mel/mel_interval));
 #endif
       if (id1>banks-2)
       {

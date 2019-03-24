@@ -183,7 +183,7 @@ struct SpeexPreprocessState_ {
    //int    ps_size;           /**< Number of points in the power spectrum */
    int    sampling_rate;     /**< Sampling rate of the input/output */
    int    nbands;
-   FilterBank *bank;
+   FilterBank *fltbank;
 
    /* Parameters */
    int    denoise_enabled;
@@ -442,7 +442,7 @@ EXPORT SpeexPreprocessState *speex_preprocess_state_init(int frame_size, int sam
 
    st->nbands = NB_BANDS;
    M = st->nbands;
-   st->bank = filterbank_new(M, sampling_rate, N, 1);
+   st->fltbank = filterbank_new(M, sampling_rate, N, 1);
 
    st->frame = (spx_word16_t*)speex_alloc(2*N*sizeof(spx_word16_t));
    st->window = (spx_word16_t*)speex_alloc(2*N*sizeof(spx_word16_t));
@@ -559,7 +559,7 @@ EXPORT void speex_preprocess_state_destroy(SpeexPreprocessState *st)
    speex_free(st->outbuf);
 
    spx_fft_destroy(st->fft_lookup);
-   filterbank_destroy(st->bank);
+   filterbank_destroy(st->fltbank);
    speex_free(st);
 }
 
@@ -657,7 +657,7 @@ static void preprocess_analysis(SpeexPreprocessState *st, spx_int16_t *x)
    for (i=0;i<N;i++)
       st->ps[i] = PSHR32(st->ps[i], 2*st->frame_shift);
 
-   filterbank_compute_bank32(st->bank, ps, ps+N);
+   filterbank_compute_bank32(st->fltbank, ps, ps+N);
 }
 
 static void update_noise_prob(SpeexPreprocessState *st)
@@ -757,7 +757,7 @@ EXPORT int speex_preprocess_run(SpeexPreprocessState *st, spx_int16_t *x)
 #endif
       for (i=0;i<N;i++)
          st->echo_noise[i] = MAX32(MULT16_32_Q15(QCONST16(.6f,15),st->echo_noise[i]), st->residual_echo[i]);
-      filterbank_compute_bank32(st->bank, st->echo_noise, st->echo_noise+N);
+      filterbank_compute_bank32(st->fltbank, st->echo_noise, st->echo_noise+N);
    } else {
       for (i=0;i<N+M;i++)
          st->echo_noise[i] = 0;
@@ -780,7 +780,7 @@ EXPORT int speex_preprocess_run(SpeexPreprocessState *st, spx_int16_t *x)
       if (!st->update_prob[i] || st->ps[i] < PSHR32(st->noise[i], NOISE_SHIFT))
          st->noise[i] = MAX32(EXTEND32(0),MULT16_32_Q15(beta_1,st->noise[i]) + MULT16_32_Q15(beta,SHL32(st->ps[i],NOISE_SHIFT)));
    }
-   filterbank_compute_bank32(st->bank, st->noise, st->noise+N);
+   filterbank_compute_bank32(st->fltbank, st->noise, st->noise+N);
 
    /* Special case for first frame */
    if (st->nb_adapt==1)
@@ -868,13 +868,13 @@ EXPORT int speex_preprocess_run(SpeexPreprocessState *st, spx_int16_t *x)
 #endif
    }
    /* Convert the EM gains and speech prob to linear frequency */
-   filterbank_compute_psd16(st->bank,st->gain2+N, st->gain2);
-   filterbank_compute_psd16(st->bank,st->gain+N, st->gain);
+   filterbank_compute_psd16(st->fltbank,st->gain2+N, st->gain2);
+   filterbank_compute_psd16(st->fltbank,st->gain+N, st->gain);
 
    /* Use 1 for linear gain resolution (best) or 0 for Bark gain resolution (faster) */
    if (1)
    {
-      filterbank_compute_psd16(st->bank,st->gain_floor+N, st->gain_floor);
+      filterbank_compute_psd16(st->fltbank,st->gain_floor+N, st->gain_floor);
 
       /* Compute gain according to the Ephraim-Malah algorithm -- linear frequency */
       for (i=0;i<N;i++)
@@ -929,7 +929,7 @@ EXPORT int speex_preprocess_run(SpeexPreprocessState *st, spx_int16_t *x)
          tmp = MULT16_16_P15(p,spx_sqrt(SHL32(EXTEND32(st->gain[i]),15))) + MULT16_16_P15(SUB16(Q15_ONE,p),spx_sqrt(SHL32(EXTEND32(st->gain_floor[i]),15)));
          st->gain2[i]=SQR16_Q15(tmp);
       }
-      filterbank_compute_psd16(st->bank,st->gain2+N, st->gain2);
+      filterbank_compute_psd16(st->fltbank,st->gain2+N, st->gain2);
    }
 
    /* If noise suppression is off, don't apply the gain (but then why call this in the first place!) */
