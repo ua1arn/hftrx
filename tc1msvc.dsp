@@ -746,6 +746,10 @@ SOURCE=.\ffunicode.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\filterbank.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\filters.c
 # End Source File
 # Begin Source File

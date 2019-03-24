@@ -5449,12 +5449,12 @@ void RAMFUNC dsp_extbuffer32rx(const uint32_t * buff)
 				{
 					BEGIN_STAMP2();
 					const FLOAT_t filtered = filterRxAudio_rxA(rxA, dspmodeA);
+					//const FLOAT_t filtered = denoiseA(rxA);
 					END_STAMP2();
 
-					const FLOAT_t filtered2 = denoiseA(filtered);
-					recordsampleSD(tx ? monitx : filtered, tx ? monitx : filtered2);	// Запись демодулированного сигнала без озвучки клавиш
-					recordsampleUAC(tx ? monitx : filtered, tx ? monitx : filtered2);	// Запись в UAC демодулированного сигнала без озвучки клавиш
-					savesampleout16stereo(injectsidetone(filtered, sdtn), injectsidetone(filtered2, sdtn));
+					recordsampleSD(tx ? monitx : filtered, tx ? monitx : filtered);	// Запись демодулированного сигнала без озвучки клавиш
+					recordsampleUAC(tx ? monitx : filtered, tx ? monitx : filtered);	// Запись в UAC демодулированного сигнала без озвучки клавиш
+					savesampleout16stereo(injectsidetone(filtered, sdtn), injectsidetone(filtered, sdtn));
 				}
 				break;
 
@@ -5906,7 +5906,7 @@ void dsp_initialize(void)
 		speex_st = speex_preprocess_state_init(SIPEXNN, ARMI2SRATE);
 		spx_int32_t denoise = 1;
 		speex_preprocess_ctl(speex_st, SPEEX_PREPROCESS_SET_DENOISE, &denoise);
-		spx_int32_t supress = -12;
+		spx_int32_t supress = -6;
 		speex_preprocess_ctl(speex_st, SPEEX_PREPROCESS_SET_NOISE_SUPPRESS, &supress);
 	}
 	debug_printf_P(PSTR("final allocated=%d\n"), allocated);
