@@ -41,12 +41,14 @@
 extern "C" {
 #endif
 
+#define SIPEXNN 64 //512
+
 struct drft_lookup;
 
 /** Speex pre-processor state. */
 typedef struct SpeexPreprocessState {
-   int    frame_size;        /**< Number of samples processed each time */
-   int    ps_size;           /**< Number of points in the power spectrum */
+   //int    frame_size;        /**< Number of samples processed each time */
+   //int    ps_size;           /**< Number of points in the power spectrum */
    int    sampling_rate;     /**< Sampling rate of the input/output */
    
    /* parameters */
@@ -113,10 +115,10 @@ SpeexPreprocessState *speex_preprocess_state_init(int frame_size, int sampling_r
 void speex_preprocess_state_destroy(SpeexPreprocessState *st);
 
 /** Preprocess a frame */
-int speex_preprocess(SpeexPreprocessState *st, spx_int16_t *x, spx_int32_t *echo);
+int speex_preprocess(SpeexPreprocessState *st, float *x, float *echo);
 
 /** Preprocess a frame */
-void speex_preprocess_estimate_update(SpeexPreprocessState *st, spx_int16_t *x, spx_int32_t *echo);
+void speex_preprocess_estimate_update(SpeexPreprocessState *st, float *x, float *echo);
 
 /** Used like the ioctl function to control the preprocessor parameters */
 int speex_preprocess_ctl(SpeexPreprocessState *st, int request, void *ptr);

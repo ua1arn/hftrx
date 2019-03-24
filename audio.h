@@ -152,7 +152,7 @@
 // коррекции размера не требуется - и так кратен 4 всегда
 #define DMABUFFSIZE16 (MSINSAMPLES * DMABUFSTEP16)	/* размер под USB ENDPOINT PACKET SIZE В буфере помещаются пары значений - стерео кодек */
 
-#define DMABUFCLUSTER	8	// Cделано небольшое количество - для взаимодействия с формирователем электронного ключа
+#define DMABUFCLUSTER	24 //8	// Cделано небольшое количество - для взаимодействия с формирователем электронного ключа
 
 #define DMABUFFSIZE32RX (DMABUFCLUSTER * DMABUFSTEP32RX)
 #define DMABUFFSIZE32TX (DMABUFCLUSTER * DMABUFSTEP32TX * 4)
@@ -239,6 +239,7 @@
 
 		typedef double FLOAT_t;
 
+		#define FLOORF	floor
 		#define LOG10F	log10
 		//#define LOGF	log
 		//#define POWF	pow
@@ -268,6 +269,7 @@
 
 		typedef float FLOAT_t;
 
+		#define FLOORF	floorf
 		#define LOG10F	log10f
 		//#define LOGF	logf
 		//#define POWF	powf
@@ -303,6 +305,10 @@
 /* from "C Language Algorithms for Digital Signal Processing"
    by Paul M. Embree and Bruce Kimble, Prentice Hall, 1991 */
 
+
+FLOAT_t local_exp(FLOAT_t x);
+FLOAT_t local_pow(FLOAT_t x, FLOAT_t y);
+FLOAT_t local_log(FLOAT_t x);
 	
 struct Complex
 {
