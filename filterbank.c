@@ -1,4 +1,3 @@
-			
 /* Copyright (C) 2006 Jean-Marc Valin */
 /**
    @file filterbank.c
@@ -42,8 +41,14 @@
 #include "math_approx.h"
 #include "os_support.h"
 
+#ifdef FIXED_POINT
 
-#define toBARK(n)   (13.1f*atanf(.00074f*(n))+2.24f*atanf((n)*(n)*1.85e-8f)+1e-4f*(n))
+#define toBARK(n)   (MULT16_16(26829,spx_atan(SHR32(MULT16_16(97,n),2))) + MULT16_16(4588,spx_atan(MULT16_32_Q15(20,MULT16_16(n,n)))) + MULT16_16(3355,n))
+
+#else
+#define toBARK(n)   (13.1f*atan(.00074f*(n))+2.24f*atan((n)*(n)*1.85e-8f)+1e-4f*(n))
+#endif
+
 #define toMEL(n)    (2595.f*log10(1.f+(n)/700.f))
 
 FilterBank *filterbank_new(int banks, spx_word32_t sampling, int len, int type)
@@ -66,7 +71,9 @@ FilterBank *filterbank_new(int banks, spx_word32_t sampling, int len, int type)
    bank->filter_left = (spx_word16_t*)speex_alloc(len*sizeof(spx_word16_t));
    bank->filter_right = (spx_word16_t*)speex_alloc(len*sizeof(spx_word16_t));
    /* Think I can safely disable normalisation that for fixed-point (and probably float as well) */
+#ifndef FIXED_POINT
    bank->scaling = (float*)speex_alloc(banks*sizeof(float));
+#endif
    for (i=0;i<len;i++)
    {
       spx_word16_t curr_freq;
@@ -76,9 +83,11 @@ FilterBank *filterbank_new(int banks, spx_word32_t sampling, int len, int type)
       mel = toBARK(curr_freq);
       if (mel > max_mel)
          break;
-
+#ifdef FIXED_POINT
+      id1 = DIV32(mel,mel_interval);
+#else
       id1 = (int)(floor(mel/mel_interval));
-
+#endif
       if (id1>banks-2)
       {
          id1 = banks-2;
@@ -94,7 +103,7 @@ FilterBank *filterbank_new(int banks, spx_word32_t sampling, int len, int type)
    }
 
    /* Think I can safely disable normalisation for fixed-point (and probably float as well) */
-
+#ifndef FIXED_POINT
    for (i=0;i<bank->nb_banks;i++)
       bank->scaling[i] = 0;
    for (i=0;i<bank->len;i++)
@@ -106,10 +115,21 @@ FilterBank *filterbank_new(int banks, spx_word32_t sampling, int len, int type)
    }
    for (i=0;i<bank->nb_banks;i++)
       bank->scaling[i] = Q15_ONE/(bank->scaling[i]);
-
+#endif
    return bank;
 }
 
+void filterbank_destroy(FilterBank *bank)
+{
+   speex_free(bank->bank_left);
+   speex_free(bank->bank_right);
+   speex_free(bank->filter_left);
+   speex_free(bank->filter_right);
+#ifndef FIXED_POINT
+   speex_free(bank->scaling);
+#endif
+   speex_free(bank);
+}
 
 void filterbank_compute_bank32(FilterBank *bank, spx_word32_t *ps, spx_word32_t *mel)
 {
@@ -126,11 +146,11 @@ void filterbank_compute_bank32(FilterBank *bank, spx_word32_t *ps, spx_word32_t 
       mel[id] += MULT16_32_P15(bank->filter_right[i],ps[i]);
    }
    /* Think I can safely disable normalisation that for fixed-point (and probably float as well) */
-
+#ifndef FIXED_POINT
    /*for (i=0;i<bank->nb_banks;i++)
       mel[i] = MULT16_32_P15(Q15(bank->scaling[i]),mel[i]);
    */
-
+#endif
 }
 
 void filterbank_compute_psd16(FilterBank *bank, spx_word16_t *mel, spx_word16_t *ps)

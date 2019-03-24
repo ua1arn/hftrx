@@ -163,13 +163,15 @@ static int_fast8_t		glob_swaprts;		// управление боковой выхода спектроанализато
 #if WITHINTEGRATEDDSP
 
 
-#include "speex\speex_preprocess.h"
-
-static SpeexPreprocessState *speex_st;
-
 //#define WITHDENOISER 1	/* возможность использования функции DENOISE библиотеки Sipex */
 
 #if WITHDENOISER && ! WITHTRANSPARENTIQ
+
+#include "arch.h"
+
+#include "speex\speex_preprocess.h"
+
+static SpeexPreprocessState *speex_st;
 
 static int allocated = 0;
 static uint8_t sipexbuff [2 * 112000uL];
@@ -182,12 +184,10 @@ void *speex_alloc (int size)
 	allocated += size;
 	return p;
 }
-#endif /* ! WITHTRANSPARENTIQ */
 
 static FLOAT_t denoiseA(FLOAT_t sample)
 {
-#if WITHDENOISER && ! WITHTRANSPARENTIQ
-	static FLOAT_t denoisebuff [2][SIPEXNN];
+	static spx_int16_t denoisebuff [2][SIPEXNN];
 	static unsigned denoisepos, denoisestage;
 
 	denoisebuff [denoisestage][denoisepos] = sample;
@@ -199,9 +199,17 @@ static FLOAT_t denoiseA(FLOAT_t sample)
 		denoisepos = 0;
 		denoisestage = ! denoisestage;
 	}
-#endif /* WITHDENOISER && ! WITHTRANSPARENTIQ */
 	return sample;
 }
+
+#else /* WITHDENOISER && ! WITHTRANSPARENTIQ */
+
+static FLOAT_t denoiseA(FLOAT_t sample)
+{
+	return sample;
+}
+
+#endif /* WITHDENOISER && ! WITHTRANSPARENTIQ */
 
 #define NPROF 2	/* количество профилей параметров DSP фильтров. */
 
@@ -5443,10 +5451,10 @@ void RAMFUNC dsp_extbuffer32rx(const uint32_t * buff)
 					const FLOAT_t filtered = filterRxAudio_rxA(rxA, dspmodeA);
 					END_STAMP2();
 
-					//const FLOAT_t filtered2 = denoiseA(filtered);
-					recordsampleSD(tx ? monitx : filtered, tx ? monitx : filtered);	// Запись демодулированного сигнала без озвучки клавиш
-					recordsampleUAC(tx ? monitx : filtered, tx ? monitx : filtered);	// Запись в UAC демодулированного сигнала без озвучки клавиш
-					savesampleout16stereo(injectsidetone(filtered, sdtn), injectsidetone(filtered, sdtn));
+					const FLOAT_t filtered2 = denoiseA(filtered);
+					recordsampleSD(tx ? monitx : filtered, tx ? monitx : filtered2);	// Запись демодулированного сигнала без озвучки клавиш
+					recordsampleUAC(tx ? monitx : filtered, tx ? monitx : filtered2);	// Запись в UAC демодулированного сигнала без озвучки клавиш
+					savesampleout16stereo(injectsidetone(filtered, sdtn), injectsidetone(filtered2, sdtn));
 				}
 				break;
 
@@ -5887,21 +5895,6 @@ trxparam_update(void)
 	enveloplen0 = NSAITICKS(glob_cwedgetime) + 1;		/* количество сэмплов, за которое меняется огибающая */
 
 }
-#if 0
-void Denoiser (CommonRx* ptr, float* src )
-{
-	int delta;
-	delta=ptr->FilterHighFrequency-ptr->FilterLowFrequency;
-	if(ptr->NR_en==1)
-	{
-	if(delta>=DF_DENOISER_LMS)
-	speex_preprocess_run(st, (float*)src, ptr->NR_en, ptr->NR_level);
-	else
-		;//!!!!!!!ANC_filter( (float*)src, (FFT_FILTER_SIZE/2));
-	}
-
-}
-#endif
 
 /* вызывается при разрешённых прерываниях. */
 void dsp_initialize(void)
@@ -5911,13 +5904,13 @@ void dsp_initialize(void)
 	// Speex
 	{
 		speex_st = speex_preprocess_state_init(SIPEXNN, ARMI2SRATE);
-		int denoise = 1;
+		spx_int32_t denoise = 1;
 		speex_preprocess_ctl(speex_st, SPEEX_PREPROCESS_SET_DENOISE, &denoise);
+		spx_int32_t supress = -12;
+		speex_preprocess_ctl(speex_st, SPEEX_PREPROCESS_SET_NOISE_SUPPRESS, &supress);
 	}
-	//Denoiser(0, 0);
-	//speex_preprocess(speex_st, NULL, NULL);;
 	debug_printf_P(PSTR("final allocated=%d\n"), allocated);
-#endif /* ! WITHTRANSPARENTIQ */
+#endif /* WITHDENOISER && ! WITHTRANSPARENTIQ */
 
 	FFT_initialize();
 #if (WITHRTS96 || WITHRTS192) && ! WITHTRANSPARENTIQ

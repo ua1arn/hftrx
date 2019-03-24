@@ -17,6 +17,9 @@
 	#error PLEASE, DO NOT USE THIS FILE DIRECTLY. USE FILE "hardware.h" INSTEAD.
 #endif
 
+//#define WITHDEBUG		1	/* Отладочная печать через COM-порт. */
+//#define DEFAULTDIALFREQ	225000L
+
 // Современные конфигурации:
 //#define CTLSTYLE_RAVENDSP_V1	1	// Трансивер Вороненок с 12 кГц IF DSP трактом
 //#define CTLSTYLE_RAVENDSP_V3	1	// Трансивер Вороненок с DSP STM32F429ZIT6, кодеком TLV320AIC23B и FPGA EP4CE22E22I7N

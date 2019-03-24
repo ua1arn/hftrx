@@ -1,8 +1,10 @@
-/* Copyright (C) 2005 Jean-Marc Valin
-   File: fftwrap.h
-
-   Wrapper for various FFTs
-
+/* Copyright (C) 2005 Analog Devices */
+/**
+   @file misc_bfin.h
+   @author Jean-Marc Valin
+   @brief Various compatibility routines for Speex (Blackfin version)
+*/
+/*
    Redistribution and use in source and binary forms, with or without
    modification, are permitted provided that the following conditions
    are met:
@@ -29,30 +31,26 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
 */
 
-#ifndef FFTWRAP_H
-#define FFTWRAP_H
+#include "bfin.h"
 
-#include "arch.h"
-
-/** Compute tables for an FFT */
-void *spx_fft_init(int size);
-
-/** Destroy tables for an FFT */
-void spx_fft_destroy(void *table);
-
-/** Forward (real to half-complex) transform */
-void spx_fft(void *table, spx_word16_t *in, spx_word16_t *out);
-
-/** Backward (half-complex to real) transform */
-void spx_ifft(void *table, spx_word16_t *in, spx_word16_t *out);
-
-/** Forward (real to half-complex) transform of float data */
-void spx_fft_float(void *table, float *in, float *out);
-
-/** Backward (half-complex to real) transform of float data */
-void spx_ifft_float(void *table, float *in, float *out);
-
-#endif
+#define OVERRIDE_SPEEX_MOVE
+void *speex_move (void *dest, void *src, int n)
+{
+   __asm__ __volatile__
+         (
+         "L0 = 0;\n\t"
+         "I0 = %0;\n\t"
+         "R0 = [I0++];\n\t"
+         "LOOP move%= LC0 = %2;\n\t"
+         "LOOP_BEGIN move%=;\n\t"
+            "[%1++] = R0 || R0 = [I0++];\n\t"
+         "LOOP_END move%=;\n\t"
+         "[%1++] = R0;\n\t"
+   : "=a" (src), "=a" (dest)
+   : "a" ((n>>2)-1), "0" (src), "1" (dest)
+   : "R0", "I0", "L0", "memory" BFIN_HWLOOP0_REGS
+         );
+   return dest;
+}
