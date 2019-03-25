@@ -5402,9 +5402,14 @@ void RAMFUNC dsp_extbuffer32rx(const uint32_t * buff)
 					const FLOAT_t filtered = filterRxAudio_rxA(rxA, dspmodeA);
 					END_STAMP2();
 
+					//filtered = get_lout16();
 					recordsampleSD(tx ? monitx : filtered, tx ? monitx : filtered);	// Запись демодулированного сигнала без озвучки клавиш
 					recordsampleUAC(tx ? monitx : filtered, tx ? monitx : filtered);	// Запись в UAC демодулированного сигнала без озвучки клавиш
+#if WITHDENOISER
+					savesampleout16denoise(filtered, filtered);
+#else /* WITHDENOISER */
 					savesampleout16stereo(injectsidetone(filtered, sdtn), injectsidetone(filtered, sdtn));
+#endif /* WITHDENOISER */
 				}
 				break;
 

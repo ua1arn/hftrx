@@ -125,8 +125,8 @@ enum
 	// USB AUDIO IN
 	typedef ALIGNX_BEGIN struct uacin16_tag
 	{
-		LIST_ENTRY item;	// layout should be same in voice16_t, voice96rts_t and voice192rts_t
-		uint_fast8_t tag;	// layout should be same in voice16_t, voice96rts_t and voice192rts_t
+		LIST_ENTRY item;	// layout should be same in uacin16_t, voice96rts_t and voice192rts_t
+		uint_fast8_t tag;	// layout should be same in uacin16_t, voice96rts_t and voice192rts_t
 		ALIGNX_BEGIN uint16_t buff [DMABUFFSIZEUACIN16] ALIGNX_END;
 	} ALIGNX_END uacin16_t;
 
@@ -134,8 +134,8 @@ enum
 
 		typedef ALIGNX_BEGIN struct voices192rts
 		{
-			LIST_ENTRY item;	// layout should be same in voice16_t, voice96rts_t and voice192rts_t
-			uint_fast8_t tag;	// layout should be same in voice16_t, voice96rts_t and voice192rts_t
+			LIST_ENTRY item;	// layout should be same in uacin16_t, voice96rts_t and voice192rts_t
+			uint_fast8_t tag;	// layout should be same in uacin16_t, voice96rts_t and voice192rts_t
 			ALIGNX_BEGIN uint8_t buff [DMABUFFSIZE192RTS] ALIGNX_END;		// спектр, 2*24*192 kS/S
 		} ALIGNX_END voice192rts_t;
 
@@ -148,8 +148,8 @@ enum
 
 		typedef ALIGNX_BEGIN struct voices96rts
 		{
-			LIST_ENTRY item;	// layout should be same in voice16_t, voice96rts_t and voice192rts_t
-			uint_fast8_t tag;	// layout should be same in voice16_t, voice96rts_t and voice192rts_t
+			LIST_ENTRY item;	// layout should be same in uacin16_t, voice96rts_t and voice192rts_t
+			uint_fast8_t tag;	// layout should be same in uacin16_t, voice96rts_t and voice192rts_t
 			ALIGNX_BEGIN uint8_t buff [DMABUFFSIZE96RTS] ALIGNX_END;		// спектр, 2*24*192 kS/S
 		} ALIGNX_END voice96rts_t;
 
@@ -201,7 +201,7 @@ static LIST_ENTRY2 modemsrx8;	// Буферы с принятымти через модем данными
 
 #endif /* WITHMODEM */
 
-#if WITHDENOISER && ! WITHTRANSPARENTIQ
+#if WITHDENOISER
 
 #include "arch.h"
 
@@ -213,8 +213,9 @@ static LIST_ENTRY2 modemsrx8;	// Буферы с принятымти через модем данными
 		ALIGNX_BEGIN spx_int16_t buff [SIPEXNN] ALIGNX_END;
 	} ALIGNX_END denoise16_t;
 
-static LIST_ENTRY speexfree16;		// Свободные буферы
-static LIST_ENTRY speexready16;	// Буферы для записи на SD CARD
+static LIST_ENTRY2 speexfree16;		// Свободные буферы
+static LIST_ENTRY2 speexready16;	// Буферы для обработки speex
+static int speexready16enable;
 
 static SpeexPreprocessState *speex_st;
 
@@ -239,9 +240,13 @@ uint_fast8_t takespeexready_user(spx_int16_t * * dest)
 	ASSERT_IRQL_USER();
 	global_disableIRQ();
 
-	if (! IsListEmpty(& speexready16))
+	if (speexready16enable == 0)
 	{
-		PLIST_ENTRY t = RemoveTailList(& speexready16);
+		speexready16enable = speexready16.Count > 2;
+	}
+	if (speexready16enable && ! IsListEmpty2(& speexready16))
+	{
+		PLIST_ENTRY t = RemoveTailList2(& speexready16);
 		global_enableIRQ();
 		denoise16_t * const p = CONTAINING_RECORD(t, denoise16_t, item);
 		* dest = p->buff;
@@ -258,52 +263,78 @@ void releasespeexbuffer_user(spx_int16_t * dest)
 	ASSERT_IRQL_USER();
 	denoise16_t * const p = CONTAINING_RECORD(dest, denoise16_t, buff);
 	global_disableIRQ();
-	InsertHeadList(& speexfree16, & p->item);
+	InsertHeadList2(& speexfree16, & p->item);
 	global_enableIRQ();
 }
 
-// Буфер для формирования сообщения
-size_t takespeexbufferfree_low(spx_int16_t * * dest)
+uintptr_t allocate_dmabuffe16rdenoise(void)
 {
-	ASSERT_IRQL_SYSTEM();
-	if (! IsListEmpty(& speexfree16))
+	if (! IsListEmpty2(& speexfree16))
 	{
-		PLIST_ENTRY t = RemoveTailList(& speexfree16);
+		PLIST_ENTRY t = RemoveTailList2(& speexfree16);
 		denoise16_t * const p = CONTAINING_RECORD(t, denoise16_t, item);
-		* dest = p->buff;
-		return SIPEXNN;
+		return (uintptr_t) p->buff;
 	}
+	TP();
+	buffers_diagnostics();
+	ASSERT(0);
 	return 0;
 }
 
-// поместить сообщение в очередь к исполнению 
-void placespeexbuffer_low(spx_int16_t * dest)
-{
-	ASSERT_IRQL_SYSTEM();
-	denoise16_t * p = CONTAINING_RECORD(dest, denoise16_t, buff);
-	InsertHeadList(& speexready16, & p->item);
-}
-
 // user-mode processing
-void speex_spool(void)
+void speex_spool(void * ctx)
 {
 	spx_int16_t * p;
 
-	if (takespeexready_user(& p) == 0)
-		return;
-	speex_preprocess(speex_st, p, NULL);
-	releasespeexbuffer_user(p);
+	if (takespeexready_user(& p))
+	{
+		speex_preprocess(speex_st, p, NULL);
+		unsigned i;
+		for (i = 0; i < SIPEXNN; ++ i)
+		{
+			const spx_int16_t sample = p [i];
+			savesampleout16stereo_user(sample, sample);	// to AUDIO codec
+		}
+		releasespeexbuffer_user(p);
+	}
 }
 
-#else /* WITHDENOISER && ! WITHTRANSPARENTIQ */
+void savesampleout16denoise(int_fast16_t ch0, int_fast16_t ch1)
+{
+	//savesampleout16stereo(ch0, ch0);	// to AUDIO codec
+	//return;
+
+	static denoise16_t * p = NULL;
+	static unsigned n = 0;
+
+	if (p == NULL)
+	{
+		uintptr_t addr = allocate_dmabuffe16rdenoise();
+		p = CONTAINING_RECORD(addr, denoise16_t, item);
+		n = 0;
+	}
+
+	p->buff [n] = ch0;		// sample value
+	//p->buff [n + 1] = ch1;	// sample value
+
+	n += 1;
+
+	if (n >= SIPEXNN)
+	{
+		InsertHeadList2(& speexready16, & p->item);
+		p = NULL;
+	}
+}
+
+#else /* WITHDENOISER */
 
 
-void speex_spool(void)
+void speex_spool(void * ctx)
 {
 
 }
 
-#endif /* WITHDENOISER && ! WITHTRANSPARENTIQ */
+#endif /* WITHDENOISER */
 
 /* Cообщения от уровня обработчиков прерываний к user-level функциям. */
 
@@ -370,20 +401,22 @@ void buffers_diagnostics(void)
 	voicesfree16[  9] voicesmike16[  0] voicesphones16[  1] voicesfree96rts[  6] uacin96rts[  0] uacin16[  0] resample16[  6]
 	*/
 
+	LIST2PRINT(speexfree16);
+	LIST2PRINT(speexready16);
 	LIST2PRINT(voicesfree16);
 	LIST2PRINT(voicesmike16);
 	LIST2PRINT(voicesphones16);
 
 	#if WITHUSBUAC
 		#if WITHRTS192
-			LIST2PRINT(voicesfree192rts);
-			LIST2PRINT(uacin192rts);
+			//LIST2PRINT(voicesfree192rts);
+			//LIST2PRINT(uacin192rts);
 		#elif WITHRTS96
-			LIST2PRINT(voicesfree96rts);
-			LIST2PRINT(uacin96rts);
+			//LIST2PRINT(voicesfree96rts);
+			//LIST2PRINT(uacin96rts);
 		#endif
-		LIST2PRINT(uacinfree16);
-		LIST2PRINT(uacinready16);
+		//LIST2PRINT(uacinfree16);
+		//LIST2PRINT(uacinready16);
 		LIST2PRINT(resample16);
 	#endif /* WITHUSBUAC */
 
@@ -500,7 +533,7 @@ void buffers_initialize(void)
 
 #if WITHINTEGRATEDDSP
 
-	static voice16_t voicesarray16 [24];
+	static voice16_t voicesarray16 [200];
 
 	InitializeListHead2(& resample16);	// буферы от USB для синхронизации
 	InitializeListHead2(& voicesphones16);	// список для выдачи на ЦАП
@@ -631,7 +664,7 @@ void buffers_initialize(void)
 	}
 #endif /* WITHMODEM */
 
-#if WITHDENOISER && ! WITHTRANSPARENTIQ
+#if WITHDENOISER
 	// Speex
 	{
 		speex_st = speex_preprocess_state_init(SIPEXNN, ARMI2SRATE);
@@ -642,19 +675,20 @@ void buffers_initialize(void)
 	}
 	debug_printf_P(PSTR("final allocated=%d\n"), allocated);
 
-	static denoise16_t speexarray16 [3];
+	static denoise16_t speexarray16 [4];
 
-	InitializeListHead(& speexfree16);	// Незаполненные
-	InitializeListHead(& speexready16);	// Для обработки
+	InitializeListHead2(& speexfree16);	// Незаполненные
+	InitializeListHead2(& speexready16);	// Для обработки
+	speexready16enable = 0;
 
 	for (i = 0; i < (sizeof speexarray16 / sizeof speexarray16 [0]); ++ i)
 	{
 		denoise16_t * const p = & speexarray16 [i];
-		InsertHeadList(& speexfree16, & p->item);
+		InsertHeadList2(& speexfree16, & p->item);
 	}
 
 
-#endif /* WITHDENOISER && ! WITHTRANSPARENTIQ */
+#endif /* WITHDENOISER */
 
 #endif /* WITHINTEGRATEDDSP */
 
@@ -677,7 +711,7 @@ void buffers_initialize(void)
 // Буферы с принятымти от обработчиков прерываний сообщениями
 uint_fast8_t takemsgready_user(uint8_t * * dest)
 {
-	speex_spool();
+	speex_spool(NULL);
 
 	ASSERT_IRQL_USER();
 	global_disableIRQ();
@@ -1698,10 +1732,12 @@ uintptr_t getfilled_dmabuffer16phones(void)
 #endif /* WITHBUFFERSDEBUG */
 
 	LOCK(& locklist16);
+	global_disableIRQ();
 	if (! IsListEmpty2(& voicesphones16))
 	{
 		PLIST_ENTRY t = RemoveTailList2(& voicesphones16);
 		voice16_t * const p = CONTAINING_RECORD(t, voice16_t, item);
+		global_enableIRQ();
 		UNLOCK(& locklist16);
 		return (uintptr_t) & p->buff;
 	}
@@ -1772,6 +1808,37 @@ void savesampleout16stereo(int_fast16_t ch0, int_fast16_t ch1)
 	if (n >= DMABUFFSIZE16)
 	{
 		buffers_savefromrxout(p);
+		p = NULL;
+	}
+#endif /* WITHI2SHW */
+}
+
+void savesampleout16stereo_user(int_fast16_t ch0, int_fast16_t ch1)
+{
+#if WITHI2SHW
+	// если есть инициализированный канал для выдачи звука
+	static voice16_t * p = NULL;
+	static unsigned n = 0;
+
+	if (p == NULL)
+	{
+		global_disableIRQ();
+		uintptr_t addr = allocate_dmabuffer16();
+		global_enableIRQ();
+		p = CONTAINING_RECORD(addr, voice16_t, buff);
+		n = 0;
+	}
+
+	p->buff [n + 0] = ch0;		// sample value
+	p->buff [n + 1] = ch1;	// sample value
+
+	n += DMABUFSTEP16;
+
+	if (n >= DMABUFFSIZE16)
+	{
+		global_disableIRQ();
+		buffers_savefromrxout(p);
+		global_enableIRQ();
 		p = NULL;
 	}
 #endif /* WITHI2SHW */
