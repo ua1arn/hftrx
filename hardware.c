@@ -1046,14 +1046,15 @@ static void tickers_spool(void)
 
 	++ nowtick;
 	PLIST_ENTRY t;
-	for (t = tickers.Flink; t != & tickers; t = t->Flink)
+	for (t = tickers.Blink; t != & tickers; t = t->Blink)
 	{
 		ticker_t * const p = CONTAINING_RECORD(t, ticker_t, item);
 	
 		if (1)//(p->next <= nowtick)
 		{
 			p->fired = nowtick;
-			(p->cb)(p->ctx);
+			if (p->cb != NULL)
+				(p->cb)(p->ctx);
 		}
 	}
 }
