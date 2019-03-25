@@ -281,31 +281,13 @@ uintptr_t allocate_dmabuffe16rdenoise(void)
 	return 0;
 }
 
-// user-mode processing
-void speex_spool(void * ctx)
-{
-	spx_int16_t * p;
-
-	if (takespeexready_user(& p))
-	{
-		speex_preprocess(speex_st, p, NULL);
-		unsigned i;
-		for (i = 0; i < SIPEXNN; ++ i)
-		{
-			const spx_int16_t sample = p [i];
-			savesampleout16stereo_user(sample, sample);	// to AUDIO codec
-		}
-		releasespeexbuffer_user(p);
-	}
-}
-
 void savesampleout16denoise(int_fast16_t ch0, int_fast16_t ch1)
 {
 	//savesampleout16stereo(ch0, ch0);	// to AUDIO codec
 	//return;
 
 	static denoise16_t * p = NULL;
-	static unsigned n = 0;
+	static unsigned n;
 
 	if (p == NULL)
 	{
@@ -323,6 +305,24 @@ void savesampleout16denoise(int_fast16_t ch0, int_fast16_t ch1)
 	{
 		InsertHeadList2(& speexready16, & p->item);
 		p = NULL;
+	}
+}
+
+// user-mode processing
+void speex_spool(void * ctx)
+{
+	spx_int16_t * p;
+
+	while (takespeexready_user(& p))
+	{
+		//speex_preprocess(speex_st, p, NULL);
+		unsigned i;
+		for (i = 0; i < SIPEXNN; ++ i)
+		{
+			const spx_int16_t sample = p [i];
+			savesampleout16stereo_user(sample, sample);	// to AUDIO codec
+		}
+		releasespeexbuffer_user(p);
 	}
 }
 
@@ -686,7 +686,6 @@ void buffers_initialize(void)
 		denoise16_t * const p = & speexarray16 [i];
 		InsertHeadList2(& speexfree16, & p->item);
 	}
-
 
 #endif /* WITHDENOISER */
 
@@ -1791,7 +1790,7 @@ void savesampleout16stereo(int_fast16_t ch0, int_fast16_t ch1)
 #if WITHI2SHW
 	// если есть инициализированный канал для выдачи звука
 	static voice16_t * p = NULL;
-	static unsigned n = 0;
+	static unsigned n;
 
 	if (p == NULL)
 	{

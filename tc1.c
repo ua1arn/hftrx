@@ -15605,7 +15605,6 @@ lowinitialize(void)
 	cpu_initdone();			/* секция init (в которой лежит образ для загрузки в FPGA) больше не нужна */
 	display_hardware_initialize();
 
-	buffers_initialize();	// инициализация системы буферов - в том числе очереди сообщений
 	//hardware_cw_diagnostics_noirq(1, 0, 0);	// 'D'
 #if WITHUSBHW
 	board_usb_initialize();		// USB device and host support
@@ -15614,6 +15613,7 @@ lowinitialize(void)
 	hardware_encoder_initialize();	//  todo: разобраться - вызов перенесен сюда из board_init_io - иначе не собирается под Cortex-A9.
 #endif /* WITHENCODER */
 	hardware_timer_initialize(TICKS_FREQUENCY);
+	buffers_initialize();	// инициализация системы буферов - в том числе очереди сообщений
 
 #if WITHLFM
 	hardware_lfm_timer_initialize();
