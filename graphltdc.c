@@ -738,7 +738,7 @@ static void vdc5fb_init_graphics(struct st_vdc5 * const vdc)
 
 	/* Adjust GR3 parameters for PIP mode (GR2 - mani window, GR3 - PIP) */
 
-	//pipparams_t mainwnd = { 0, 0, DIM_SECOND, DIM_FIRST };
+	//pipparams_t mainwnd = { 0, 0, DIM_SECOND, DIM_FIRST, (uintptr_t) & framebuff };
 	pipparams_t pipwnd;
 	display2_getpipparams(& pipwnd);
 
@@ -1698,7 +1698,7 @@ static void LCD_LayerInit(
 	LTDC_Layer_InitStruct.LTDC_CFBLineNumber = wnd->h;
 
 	/* Start Address configuration : the LCD Frame buffer is defined on SDRAM */    
-	LTDC_Layer_InitStruct.LTDC_CFBStartAdress = (uintptr_t) & framebuff;
+	LTDC_Layer_InitStruct.LTDC_CFBStartAdress = wnd->frame;
 	//LTDC_Layer1->CFBAR = (uint32_t) & framebuff;
 
 	/* Initialize LTDC layer 1 */
@@ -1812,7 +1812,7 @@ arm_hardware_ltdc_initialize(void)
 	/* LTDC Initialization -------------------------------------------------------*/
 	LTDC_InitTypeDef LTDC_InitStruct;
 
-	pipparams_t mainwnd = { 0, 0, DIM_SECOND, DIM_FIRST };
+	pipparams_t mainwnd = { 0, 0, DIM_SECOND, DIM_FIRST, (uintptr_t) & framebuff };
 	pipparams_t pipwnd;
 	display2_getpipparams(& pipwnd);
 
