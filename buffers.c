@@ -208,7 +208,7 @@ static LIST_ENTRY speexready16;	// Буферы для записи на SD CARD
 static SpeexPreprocessState *speex_st;
 
 static int allocated = 0;
-static uint8_t sipexbuff [2 * 112000uL];
+static uint8_t sipexbuff [144980];
 
 void *speex_alloc (int size)
 {
