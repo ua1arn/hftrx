@@ -1375,5 +1375,11 @@ void display_initialize(void)
 void display_set_contrast(uint_fast8_t v)
 {
 }
+
+/* Разряжаем конденсаторы питания */
+void display_discharge(void)
+{
+}
+
 #endif /* LCDMODE_LQ043T3DX02K */
 #endif /* LCDMODE_LTDC */
