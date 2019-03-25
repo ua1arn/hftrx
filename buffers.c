@@ -269,12 +269,11 @@ size_t takespeexbufferfree_low(spx_int16_t * * dest)
 void placespeexbuffer_low(spx_int16_t * dest)
 {
 	ASSERT_IRQL_SYSTEM();
-	ASSERT(type != MSGT_EMPTY);
 	denoise16_t * p = CONTAINING_RECORD(dest, denoise16_t, buff);
 	InsertHeadList(& speexready16, & p->item);
 }
 
-
+// user-mode processing
 void speex_spool(void)
 {
 	spx_int16_t * p;
