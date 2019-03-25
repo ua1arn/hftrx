@@ -381,6 +381,7 @@ uint_fast8_t display_getfreqformat(uint_fast8_t * prjv);	// получить параметры о
 typedef struct pipparams_tag
 {
 	uint_fast16_t x, y, w, h;	// в пикселях
+	uintptr_t frame;	// default framebufer
 
 } pipparams_t;
 

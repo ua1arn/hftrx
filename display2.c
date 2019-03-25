@@ -69,6 +69,8 @@ static void display2_legend_tx(
 	void * pv
 	);
 
+static PACKEDCOLOR565_T * getscratchpip(void);
+
 //#define WIDEFREQ (TUNE_TOP > 100000000L)
 
 static const FLASHMEM int32_t vals10 [] =
@@ -3637,6 +3639,7 @@ enum
 			p->y = GRID2Y(18);	// позиция верхнего левого угла в пикселях
 			p->w = GRID2X(CHARS2GRID(BDTH_ALLRX));	// размер по горизонтали в пикселях
 			p->h = GRID2Y(BDCV_ALLRX);				// размер по вертикали в пикселях
+			p->frame = (uintptr_t) getscratchpip();
 		}
 
 	#endif /* DSTYLE_UR3LMZMOD && WITHONEATTONEAMP */
@@ -3840,6 +3843,7 @@ enum
 		p->y = GRID2Y(25);	// позиция верхнего левого угла в пикселях
 		p->w = GRID2X(CHARS2GRID(BDTH_ALLRX));	// размер по горизонтали в пикселях
 		p->h = GRID2Y(BDCV_ALLRX);				// размер по вертикали в пикселях
+		p->frame = (uintptr_t) getscratchpip();
 	}
 
 #elif DSTYLE_G_X480_Y272
@@ -3982,6 +3986,7 @@ enum
 		p->y = GRID2Y(30);	// позиция верхнего левого угла в пикселях
 		p->w = GRID2X(CHARS2GRID(BDTH_ALLRX));	// размер по горизонтали в пикселях
 		p->h = GRID2Y(BDCV_ALLRX);				// размер по вертикали в пикселях
+		p->frame = (uintptr_t) getscratchpip();
 	}
 
 #elif DSTYLE_G_X800_Y480 && WITHINTEGRATEDDSP && (WITHRTS96 || WITHRTS192)
@@ -4192,6 +4197,7 @@ enum
 		p->y = GRID2Y(25);	// позиция верхнего левого угла в пикселях
 		p->w = GRID2X(CHARS2GRID(BDTH_ALLRX));	// размер по горизонтали в пикселях
 		p->h = GRID2Y(BDCV_ALLRX);				// размер по вертикали в пикселях
+		p->frame = (uintptr_t) getscratchpip();
 	}
 
 #else
