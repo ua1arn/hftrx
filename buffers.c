@@ -190,6 +190,111 @@ static LIST_ENTRY2 modemsrx8;	// Буферы с принятымти через модем данными
 
 #endif /* WITHMODEM */
 
+#if WITHDENOISER && ! WITHTRANSPARENTIQ
+
+#include "arch.h"
+
+#include "speex\speex_preprocess.h"
+
+	typedef ALIGNX_BEGIN struct denoise16
+	{
+		LIST_ENTRY item;
+		ALIGNX_BEGIN spx_int16_t buff [SIPEXNN] ALIGNX_END;
+	} ALIGNX_END denoise16_t;
+
+static LIST_ENTRY speexfree16;		// Свободные буферы
+static LIST_ENTRY speexready16;	// Буферы для записи на SD CARD
+
+static SpeexPreprocessState *speex_st;
+
+static int allocated = 0;
+static uint8_t sipexbuff [2 * 112000uL];
+
+void *speex_alloc (int size)
+{
+	size = (size + 0x03) & ~ 0x03;
+	ASSERT((allocated + size) <= sizeof sipexbuff / sizeof sipexbuff [0]);
+	void * p = (void *) (sipexbuff + allocated);
+	allocated += size;
+	return p;
+}
+
+
+/* Cообщения от уровня обработчиков прерываний к user-level функциям. */
+
+// Буферы с принятымти от обработчиков прерываний сообщениями
+uint_fast8_t takespeexready_user(spx_int16_t * * dest)
+{
+	ASSERT_IRQL_USER();
+	global_disableIRQ();
+
+	if (! IsListEmpty(& speexready16))
+	{
+		PLIST_ENTRY t = RemoveTailList(& speexready16);
+		global_enableIRQ();
+		denoise16_t * const p = CONTAINING_RECORD(t, denoise16_t, item);
+		* dest = p->buff;
+		return SIPEXNN;
+	}
+	global_enableIRQ();
+	return 0;
+}
+
+
+// Освобождение обработанного буфера сообщения
+void releasespeexbuffer_user(spx_int16_t * dest)
+{
+	ASSERT_IRQL_USER();
+	denoise16_t * const p = CONTAINING_RECORD(dest, denoise16_t, buff);
+	global_disableIRQ();
+	InsertHeadList(& speexfree16, & p->item);
+	global_enableIRQ();
+}
+
+// Буфер для формирования сообщения
+size_t takespeexbufferfree_low(spx_int16_t * * dest)
+{
+	ASSERT_IRQL_SYSTEM();
+	if (! IsListEmpty(& speexfree16))
+	{
+		PLIST_ENTRY t = RemoveTailList(& speexfree16);
+		denoise16_t * const p = CONTAINING_RECORD(t, denoise16_t, item);
+		* dest = p->buff;
+		return SIPEXNN;
+	}
+	return 0;
+}
+
+// поместить сообщение в очередь к исполнению 
+void placespeexbuffer_low(spx_int16_t * dest)
+{
+	ASSERT_IRQL_SYSTEM();
+	ASSERT(type != MSGT_EMPTY);
+	denoise16_t * p = CONTAINING_RECORD(dest, denoise16_t, buff);
+	InsertHeadList(& speexready16, & p->item);
+}
+
+
+void speex_spool(void)
+{
+	spx_int16_t * p;
+
+	if (takespeexready_user(& p) == 0)
+		return;
+	speex_preprocess(speex_st, p, NULL);
+	releasespeexbuffer_user(p);
+}
+
+#else /* WITHDENOISER && ! WITHTRANSPARENTIQ */
+
+
+void speex_spool(void)
+{
+
+}
+
+#endif /* WITHDENOISER && ! WITHTRANSPARENTIQ */
+
 /* Cообщения от уровня обработчиков прерываний к user-level функциям. */
 
 typedef struct message
@@ -506,6 +611,31 @@ void buffers_initialize(void)
 	}
 #endif /* WITHMODEM */
 
+#if WITHDENOISER && ! WITHTRANSPARENTIQ
+	// Speex
+	{
+		speex_st = speex_preprocess_state_init(SIPEXNN, ARMI2SRATE);
+		spx_int32_t denoise = 1;
+		speex_preprocess_ctl(speex_st, SPEEX_PREPROCESS_SET_DENOISE, &denoise);
+		spx_int32_t supress = -6;
+		speex_preprocess_ctl(speex_st, SPEEX_PREPROCESS_SET_NOISE_SUPPRESS, &supress);
+	}
+	debug_printf_P(PSTR("final allocated=%d\n"), allocated);
+
+	static denoise16_t speexarray16 [3];
+
+	InitializeListHead(& speexfree16);	// Незаполненные
+	InitializeListHead(& speexready16);	// Для обработки
+
+	for (i = 0; i < (sizeof speexarray16 / sizeof speexarray16 [0]); ++ i)
+	{
+		denoise16_t * const p = & speexarray16 [i];
+		InsertHeadList(& speexfree16, & p->item);
+	}
+
+
+#endif /* WITHDENOISER && ! WITHTRANSPARENTIQ */
+
 #endif /* WITHINTEGRATEDDSP */
 
 	/* Cообщения от уровня обработчиков прерываний к user-level функциям. */
@@ -527,8 +657,11 @@ void buffers_initialize(void)
 // Буферы с принятымти от обработчиков прерываний сообщениями
 uint_fast8_t takemsgready_user(uint8_t * * dest)
 {
+	speex_spool();
+
 	ASSERT_IRQL_USER();
 	global_disableIRQ();
+
 	LOCK(& locklist8);
 	if (! IsListEmpty(& msgsready8))
 	{

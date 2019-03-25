@@ -162,55 +162,6 @@ static int_fast8_t		glob_swaprts;		// управление боковой выхода спектроанализато
 
 #if WITHINTEGRATEDDSP
 
-
-//#define WITHDENOISER 1	/* возможность использования функции DENOISE библиотеки Sipex */
-
-#if WITHDENOISER && ! WITHTRANSPARENTIQ
-
-#include "arch.h"
-
-#include "speex\speex_preprocess.h"
-
-static SpeexPreprocessState *speex_st;
-
-static int allocated = 0;
-static uint8_t sipexbuff [2 * 112000uL];
-
-void *speex_alloc (int size)
-{
-	size = (size + 0x03) & ~ 0x03;
-	ASSERT((allocated + size) <= sizeof sipexbuff / sizeof sipexbuff [0]);
-	void * p = (void *) (sipexbuff + allocated);
-	allocated += size;
-	return p;
-}
-
-static FLOAT_t denoiseA(FLOAT_t sample)
-{
-	static spx_int16_t denoisebuff [2][SIPEXNN];
-	static unsigned denoisepos, denoisestage;
-
-	denoisebuff [denoisestage][denoisepos] = sample;
-	sample = denoisebuff [!denoisestage][denoisepos];
-
-	if (++ denoisepos >= SIPEXNN)
-	{
-		speex_preprocess(speex_st, denoisebuff [denoisestage], NULL);;
-		denoisepos = 0;
-		denoisestage = ! denoisestage;
-	}
-	return sample;
-}
-
-#else /* WITHDENOISER && ! WITHTRANSPARENTIQ */
-
-static FLOAT_t denoiseA(FLOAT_t sample)
-{
-	return sample;
-}
-
-#endif /* WITHDENOISER && ! WITHTRANSPARENTIQ */
-
 #define NPROF 2	/* количество профилей параметров DSP фильтров. */
 
 // Определения для работ по оптимизации быстродействия
@@ -5449,7 +5400,6 @@ void RAMFUNC dsp_extbuffer32rx(const uint32_t * buff)
 				{
 					BEGIN_STAMP2();
 					const FLOAT_t filtered = filterRxAudio_rxA(rxA, dspmodeA);
-					//const FLOAT_t filtered = denoiseA(rxA);
 					END_STAMP2();
 
 					recordsampleSD(tx ? monitx : filtered, tx ? monitx : filtered);	// Запись демодулированного сигнала без озвучки клавиш
@@ -5900,17 +5850,6 @@ trxparam_update(void)
 void dsp_initialize(void)
 {
 	debug_printf_P(PSTR("dsp_initialize start.\n"));
-#if WITHDENOISER && ! WITHTRANSPARENTIQ
-	// Speex
-	{
-		speex_st = speex_preprocess_state_init(SIPEXNN, ARMI2SRATE);
-		spx_int32_t denoise = 1;
-		speex_preprocess_ctl(speex_st, SPEEX_PREPROCESS_SET_DENOISE, &denoise);
-		spx_int32_t supress = -6;
-		speex_preprocess_ctl(speex_st, SPEEX_PREPROCESS_SET_NOISE_SUPPRESS, &supress);
-	}
-	debug_printf_P(PSTR("final allocated=%d\n"), allocated);
-#endif /* WITHDENOISER && ! WITHTRANSPARENTIQ */
 
 	FFT_initialize();
 #if (WITHRTS96 || WITHRTS192) && ! WITHTRANSPARENTIQ

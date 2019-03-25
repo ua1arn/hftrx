@@ -35,7 +35,7 @@
 #ifndef ARCH_H
 #define ARCH_H
 
-#define SIPEXNN 64
+#define SIPEXNN 1024
 
 //#define FIXED_POINT
 #define FLOATING_POINT
