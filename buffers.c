@@ -210,7 +210,7 @@ static LIST_ENTRY2 modemsrx8;	// Буферы с принятымти через модем данными
 	typedef ALIGNX_BEGIN struct denoise16
 	{
 		LIST_ENTRY item;
-		ALIGNX_BEGIN spx_int16_t buff [SIPEXNN] ALIGNX_END;
+		ALIGNX_BEGIN spx_int16_t buff [SPEEXNN] ALIGNX_END;
 	} ALIGNX_END denoise16_t;
 
 static LIST_ENTRY2 speexfree16;		// Свободные буферы
@@ -250,7 +250,7 @@ uint_fast8_t takespeexready_user(spx_int16_t * * dest)
 		global_enableIRQ();
 		denoise16_t * const p = CONTAINING_RECORD(t, denoise16_t, item);
 		* dest = p->buff;
-		return SIPEXNN;
+		return SPEEXNN;
 	}
 	global_enableIRQ();
 	return 0;
@@ -301,7 +301,7 @@ void savesampleout16denoise(int_fast16_t ch0, int_fast16_t ch1)
 
 	n += 1;
 
-	if (n >= SIPEXNN)
+	if (n >= SPEEXNN)
 	{
 		InsertHeadList2(& speexready16, & p->item);
 		p = NULL;
@@ -317,7 +317,7 @@ void speex_spool(void * ctx)
 	{
 		//speex_preprocess(speex_st, p, NULL);
 		unsigned i;
-		for (i = 0; i < SIPEXNN; ++ i)
+		for (i = 0; i < SPEEXNN; ++ i)
 		{
 			const spx_int16_t sample = p [i];
 			savesampleout16stereo_user(sample, sample);	// to AUDIO codec
@@ -667,7 +667,7 @@ void buffers_initialize(void)
 #if WITHDENOISER
 	// Speex
 	{
-		speex_st = speex_preprocess_state_init(SIPEXNN, ARMI2SRATE);
+		speex_st = speex_preprocess_state_init(SPEEXNN, ARMI2SRATE);
 		spx_int32_t denoise = 1;
 		speex_preprocess_ctl(speex_st, SPEEX_PREPROCESS_SET_DENOISE, &denoise);
 		spx_int32_t supress = -6;

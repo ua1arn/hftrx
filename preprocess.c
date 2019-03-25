@@ -397,17 +397,17 @@ EXPORT SpeexPreprocessState *speex_preprocess_state_init(int frame_size, int sam
    int N, N3, N4, M;
 
    SpeexPreprocessState *st = (SpeexPreprocessState *)speex_alloc(sizeof(SpeexPreprocessState));
-   //SIPEXNN = frame_size;
+   //SPEEXNN = frame_size;
 
    /* Round ps_size down to the nearest power of two */
 #if 0
    i=1;
-   SIPEXNN = SIPEXNN;
+   SPEEXNN = SPEEXNN;
    while(1)
    {
-      if (SIPEXNN & ~i)
+      if (SPEEXNN & ~i)
       {
-         SIPEXNN &= ~i;
+         SPEEXNN &= ~i;
          i<<=1;
       } else {
          break;
@@ -415,15 +415,15 @@ EXPORT SpeexPreprocessState *speex_preprocess_state_init(int frame_size, int sam
    }
 
 
-   if (SIPEXNN < 3*SIPEXNN/4)
-      SIPEXNN = SIPEXNN * 3 / 2;
+   if (SPEEXNN < 3*SPEEXNN/4)
+      SPEEXNN = SPEEXNN * 3 / 2;
 #else
-   //SIPEXNN = SIPEXNN;
+   //SPEEXNN = SPEEXNN;
 #endif
 
-   N = SIPEXNN;
-   N3 = 2*N - SIPEXNN;
-   N4 = SIPEXNN - N3;
+   N = SPEEXNN;
+   N3 = 2*N - SPEEXNN;
+   N4 = SPEEXNN - N3;
 
    st->sampling_rate = sampling_rate;
    st->denoise_enabled = 1;
@@ -470,7 +470,7 @@ EXPORT SpeexPreprocessState *speex_preprocess_state_init(int frame_size, int sam
    st->outbuf = (spx_word16_t*)speex_alloc(N3*sizeof(spx_word16_t));
 
    conj_window(st->window, 2*N3);
-   for (i=2*N3;i<2*SIPEXNN;i++)
+   for (i=2*N3;i<2*SPEEXNN;i++)
       st->window[i]=Q15_ONE;
 
    if (N4>0)
@@ -515,8 +515,8 @@ EXPORT SpeexPreprocessState *speex_preprocess_state_init(int frame_size, int sam
    st->loudness = 1e-15;
    st->agc_gain = 1;
    st->max_gain = 30;
-   st->max_increase_step = EXPF(0.11513f * 12.*SIPEXNN / st->sampling_rate);
-   st->max_decrease_step = EXPF(-0.11513f * 40.*SIPEXNN / st->sampling_rate);
+   st->max_increase_step = EXPF(0.11513f * 12.*SPEEXNN / st->sampling_rate);
+   st->max_decrease_step = EXPF(-0.11513f * 40.*SPEEXNN / st->sampling_rate);
    st->prev_loudness = 1;
    st->init_max = 1;
 #endif
@@ -568,7 +568,7 @@ EXPORT void speex_preprocess_state_destroy(SpeexPreprocessState *st)
 static void speex_compute_agc(SpeexPreprocessState *st, spx_word16_t Pframe, spx_word16_t *ft)
 {
    int i;
-   int N = SIPEXNN;
+   int N = SPEEXNN;
    float target_gain;
    float loudness=1.f;
    float rate;
@@ -617,15 +617,15 @@ static void speex_compute_agc(SpeexPreprocessState *st, spx_word16_t Pframe, spx
 static void preprocess_analysis(SpeexPreprocessState *st, spx_int16_t *x)
 {
    int i;
-   int N = SIPEXNN;
-   int N3 = 2*N - SIPEXNN;
-   int N4 = SIPEXNN - N3;
+   int N = SPEEXNN;
+   int N3 = 2*N - SPEEXNN;
+   int N4 = SPEEXNN - N3;
    spx_word32_t *ps=st->ps;
 
    /* 'Build' input frame */
    for (i=0;i<N3;i++)
       st->frame[i]=st->inbuf[i];
-   for (i=0;i<SIPEXNN;i++)
+   for (i=0;i<SPEEXNN;i++)
       st->frame[N3+i]=x[i];
 
    /* Update inbuf */
@@ -664,7 +664,7 @@ static void update_noise_prob(SpeexPreprocessState *st)
 {
    int i;
    int min_range;
-   int N = SIPEXNN;
+   int N = SPEEXNN;
 
    for (i=1;i<N-1;i++)
       st->S[i] =  MULT16_32_Q15(QCONST16(.8f,15),st->S[i]) + MULT16_32_Q15(QCONST16(.05f,15),st->ps[i-1])
@@ -726,9 +726,9 @@ EXPORT int speex_preprocess_run(SpeexPreprocessState *st, spx_int16_t *x)
 {
    int i;
    int M;
-   int N = SIPEXNN;
-   int N3 = 2*N - SIPEXNN;
-   int N4 = SIPEXNN - N3;
+   int N = SPEEXNN;
+   int N3 = 2*N - SPEEXNN;
+   int N4 = SPEEXNN - N3;
    spx_word32_t *ps=st->ps;
    spx_word32_t Zframe;
    spx_word16_t Pframe;
@@ -989,7 +989,7 @@ EXPORT int speex_preprocess_run(SpeexPreprocessState *st, spx_int16_t *x)
 
    /* Update outbuf */
    for (i=0;i<N3;i++)
-      st->outbuf[i] = st->frame[SIPEXNN+i];
+      st->outbuf[i] = st->frame[SPEEXNN+i];
 
    /* FIXME: This VAD is a kludge */
    st->speech_prob = Pframe;
@@ -1012,8 +1012,8 @@ EXPORT int speex_preprocess_run(SpeexPreprocessState *st, spx_int16_t *x)
 EXPORT void speex_preprocess_estimate_update(SpeexPreprocessState *st, spx_int16_t *x)
 {
    int i;
-   int N = SIPEXNN;
-   int N3 = 2*N - SIPEXNN;
+   int N = SPEEXNN;
+   int N3 = 2*N - SPEEXNN;
    int M;
    spx_word32_t *ps=st->ps;
 
@@ -1033,7 +1033,7 @@ EXPORT void speex_preprocess_estimate_update(SpeexPreprocessState *st, spx_int16
    }
 
    for (i=0;i<N3;i++)
-      st->outbuf[i] = MULT16_16_Q15(x[SIPEXNN-N3+i],st->window[SIPEXNN+i]);
+      st->outbuf[i] = MULT16_16_Q15(x[SPEEXNN-N3+i],st->window[SPEEXNN+i]);
 
    /* Save old power spectrum */
    for (i=0;i<N+M;i++)
@@ -1077,16 +1077,16 @@ EXPORT int speex_preprocess_ctl(SpeexPreprocessState *state, int request, void *
       break;
 #endif /* #ifndef DISABLE_FLOAT_API */
    case SPEEX_PREPROCESS_SET_AGC_INCREMENT:
-      st->max_increase_step = EXPF(0.11513f * (*(spx_int32_t*)ptr)*SIPEXNN / st->sampling_rate);
+      st->max_increase_step = EXPF(0.11513f * (*(spx_int32_t*)ptr)*SPEEXNN / st->sampling_rate);
       break;
    case SPEEX_PREPROCESS_GET_AGC_INCREMENT:
-      (*(spx_int32_t*)ptr) = FLOORF(.5+8.6858*LOGF(st->max_increase_step)*st->sampling_rate/SIPEXNN);
+      (*(spx_int32_t*)ptr) = FLOORF(.5+8.6858*LOGF(st->max_increase_step)*st->sampling_rate/SPEEXNN);
       break;
    case SPEEX_PREPROCESS_SET_AGC_DECREMENT:
-      st->max_decrease_step = EXPF(0.11513f * (*(spx_int32_t*)ptr)*SIPEXNN / st->sampling_rate);
+      st->max_decrease_step = EXPF(0.11513f * (*(spx_int32_t*)ptr)*SPEEXNN / st->sampling_rate);
       break;
    case SPEEX_PREPROCESS_GET_AGC_DECREMENT:
-      (*(spx_int32_t*)ptr) = FLOORF(.5+8.6858*LOGF(st->max_decrease_step)*st->sampling_rate/SIPEXNN);
+      (*(spx_int32_t*)ptr) = FLOORF(.5+8.6858*LOGF(st->max_decrease_step)*st->sampling_rate/SPEEXNN);
       break;
    case SPEEX_PREPROCESS_SET_AGC_MAX_GAIN:
       st->max_gain = EXPF(0.11513f * (*(spx_int32_t*)ptr));
@@ -1105,7 +1105,7 @@ EXPORT int speex_preprocess_ctl(SpeexPreprocessState *state, int request, void *
 
    case SPEEX_PREPROCESS_SET_DEREVERB:
       st->dereverb_enabled = (*(spx_int32_t*)ptr);
-      for (i=0;i<SIPEXNN;i++)
+      for (i=0;i<SPEEXNN;i++)
          st->reverb_estimate[i]=0;
       break;
    case SPEEX_PREPROCESS_GET_DEREVERB:
@@ -1180,14 +1180,14 @@ EXPORT int speex_preprocess_ctl(SpeexPreprocessState *state, int request, void *
 #endif
    case SPEEX_PREPROCESS_GET_PSD_SIZE:
    case SPEEX_PREPROCESS_GET_NOISE_PSD_SIZE:
-      (*(spx_int32_t*)ptr) = SIPEXNN;
+      (*(spx_int32_t*)ptr) = SPEEXNN;
       break;
    case SPEEX_PREPROCESS_GET_PSD:
-      for(i=0;i<SIPEXNN;i++)
+      for(i=0;i<SPEEXNN;i++)
       	((spx_int32_t *)ptr)[i] = (spx_int32_t) st->ps[i];
       break;
    case SPEEX_PREPROCESS_GET_NOISE_PSD:
-      for(i=0;i<SIPEXNN;i++)
+      for(i=0;i<SPEEXNN;i++)
       	((spx_int32_t *)ptr)[i] = (spx_int32_t) PSHR32(st->noise[i], NOISE_SHIFT);
       break;
    case SPEEX_PREPROCESS_GET_PROB:
