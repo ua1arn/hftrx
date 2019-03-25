@@ -78,7 +78,7 @@
 		#define DMABUF32RXWFM3I	3		// WFM NEWEST
 		#define DMABUF32RXWFM3Q	7		// WFM
 
-		#define DMABUFSTEP16	2		// 2 - каждому сэмплу соответствует два числа в DMA буфере
+		#define DMABUFSTEP16	2		// 2 - каждому сэмплу при обмене с AUDIO CODEC соответствует два числа в DMA буфере
 
 	#elif CPUSTYLE_STM32F
 
@@ -114,7 +114,7 @@
 		#define DMABUF32TXI	0		// TX, I
 		#define DMABUF32TXQ	1		// TX, Q
 
-		#define DMABUFSTEP16	2		// 2 - каждому сэмплу соответствует два числа в DMA буфере
+		#define DMABUFSTEP16	2		// 2 - каждому сэмплу при обмене с AUDIO CODEC соответствует два числа в DMA буфере
 
 	#endif
 
@@ -129,7 +129,7 @@
 	#define DMABUF32TXI	0		// TX, I
 	#define DMABUF32TXQ	1		// TX, Q
 
-	#define DMABUFSTEP16	2		// 2 - каждому сэмплу соответствует два числа в DMA буфере
+	#define DMABUFSTEP16	2		// 2 - каждому сэмплу при обмене с AUDIO CODEC соответствует два числа в DMA буфере
 
 #endif /* WITHDSPEXTDDC */
 
@@ -141,6 +141,9 @@
 	#define HARDWARE_RTSDMABYTES	1
 #endif /* CPUSTYLE_R7S721 */
 
+#define DMABUFSTEPUACIN16	2		// 2 - каждому сэмплу соответствует два числа в DMA буфере
+#define HARDWARE_USBD_AUDIO_IN_CHANNELS	2	/* для всех каналов в IN направлении */
+
 // коррекция размера с учетом требуемого выравнивания
 #define DMAHWEPADJUST(sz, granulation) (((sz) + ((granulation) - 1)) / (granulation) * (granulation))
 
@@ -149,13 +152,16 @@
 // без запаса - только для 48000
 #define MSOUTSAMPLES	48 /* количество сэмплов за милисекунду в UAC OUT */
 #define MSINSAMPLES		(MSOUTSAMPLES + 1) /* количество сэмплов за милисекунду в UAC IN */
-// коррекции размера не требуется - и так кратен 4 всегда
-#define DMABUFFSIZE16 (MSINSAMPLES * DMABUFSTEP16)	/* размер под USB ENDPOINT PACKET SIZE В буфере помещаются пары значений - стерео кодек */
 
-#define DMABUFCLUSTER	24 //8	// Cделано небольшое количество - для взаимодействия с формирователем электронного ключа
 
-#define DMABUFFSIZE32RX (DMABUFCLUSTER * DMABUFSTEP32RX)
-#define DMABUFFSIZE32TX (DMABUFCLUSTER * DMABUFSTEP32TX * 4)
+#define DMABUFFSIZEUACIN16 (MSINSAMPLES * DMABUFSTEPUACIN16)	/* размер под USB ENDPOINT PACKET SIZE В буфере помещаются пары значений - стерео кодек */
+
+/* если приоритет прерываний USB не выше чем у аудиобработки - она должна длиться не более 1 мс (WITHRTS192 - 0.5 ms) */
+#define DMABUFCLUSTER	19	// Прерывания по приему от IF CODEC или FPGA RX должны происходить не реже 1 раз в милисекунду (чтобы USB работать могло) */
+
+#define DMABUFFSIZE16	(DMABUFCLUSTER * DMABUFSTEP16 * 4)		/* AF CODEC */
+#define DMABUFFSIZE32RX (DMABUFCLUSTER * DMABUFSTEP32RX)		/* FPGA RX or IF CODEC RX */
+#define DMABUFFSIZE32TX (DMABUFCLUSTER * DMABUFSTEP32TX * 4)	/* FPGA TX or IF CODEC TX	*/
 
 // Параметры для канала передачи Real Time Spectrum - stereo, 32 bit, 192 kS/S
 #define DMABUFSTEP192RTS 8	// 8: стерео по 32 бит, 6: стерео по 24 бит
@@ -196,7 +202,7 @@
 // По звуковому каналу передается стерео, 16 бит, 48 кГц - 288 байт размер данных в ендпонтт
 #define HARDWARE_USBD_AUDIO_IN_SAMPLEBITS_AUDIO48	16
 #define HARDWARE_USBD_AUDIO_IN_CHANNELS_AUDIO48		2
-#define VIRTUAL_AUDIO_PORT_DATA_SIZE_IN_AUDIO48		(DMABUFFSIZE16 * sizeof (uint16_t))
+#define VIRTUAL_AUDIO_PORT_DATA_SIZE_IN_AUDIO48		(DMABUFFSIZEUACIN16 * sizeof (uint16_t))
 
 /*
 	For full-/high-speed isochronous endpoints, this value
@@ -231,7 +237,6 @@
 	((HARDWARE_USBD_AUDIO_OUT_SAMPLEBITS * HARDWARE_USBD_AUDIO_OUT_CHANNELS + 7) / 8) \
 	)
 
-#define HARDWARE_USBD_AUDIO_IN_CHANNELS	2	/* для всех каналов в IN направлении */
 
 #if WITHINTEGRATEDDSP
 
