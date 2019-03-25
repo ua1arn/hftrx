@@ -3630,6 +3630,30 @@ static HAL_StatusTypeDef USB_DevInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_
 	return HAL_OK;  
 }
 
+
+/**
+  * @brief  USB_StopDevice : Stop the usb device mode
+  * @param  USBx : Selected device
+  * @retval HAL status
+  */
+HAL_StatusTypeDef USB_StopDevice(USB_OTG_GlobalTypeDef *USBx)
+{
+	return HAL_OK;  
+}
+
+/**
+  * @brief  USB_OTG_FlushTxFifo : Flush a Tx FIFO
+  * @param  USBx : Selected device
+  * @param  num : FIFO number
+  *         This parameter can be a value from 1 to 15
+            16 means Flush all Tx FIFOs
+  * @retval HAL status
+  */
+HAL_StatusTypeDef USB_FlushTxFifo(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t num)
+{
+	return HAL_OK;  
+}
+
 #endif /* CPUSTYLE_R7S721 */
 
 #if (CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX)
