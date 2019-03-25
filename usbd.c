@@ -1692,7 +1692,7 @@ usbd_handler_brdy8_dcp_out(USBD_HandleTypeDef *pdev, uint_fast8_t pipe)
 			const uint_fast8_t terminalID = HI_BYTE(req->wIndex);
 			const uint_fast8_t controlID = HI_BYTE(req->wValue);	// AUDIO_MUTE_CONTROL, AUDIO_VOLUME_CONTROL, ...
 			terminalsprops [terminalID] [controlID] = uac_ep0databuffout [0];
-			PRINTF(PSTR("AUDIO_REQUEST_SET_CUR: interfacev=%u, %u=%u\n"), interfacev, terminalID, uac_ep0databuffout [0]);
+			//PRINTF(PSTR("AUDIO_REQUEST_SET_CUR: interfacev=%u, %u=%u\n"), interfacev, terminalID, uac_ep0databuffout [0]);
 		}
 		break;
 #endif /* WITHUSBUAC */
