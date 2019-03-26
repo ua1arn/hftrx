@@ -966,8 +966,7 @@ EXPORT int speex_preprocess_run(SpeexPreprocessState *st, spx_int16_t *x)
    {
       float max_sample=0;
       for (i=0;i<2*N;i++)
-         if (fabs(st->frame[i])>max_sample)
-            max_sample = fabs(st->frame[i]);
+		  max_sample = fmaxf(max_sample, fabsf(st->frame[i]));
       if (max_sample>28000.f)
       {
          float damp = 28000.f/max_sample;
