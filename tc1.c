@@ -2420,6 +2420,9 @@ struct nvmap
 	uint8_t	ggrpagcssb; // последний посещЄнный пункт группы
 	uint8_t	ggrpagccw; // последний посещЄнный пункт группы
 	uint8_t	ggrpagcdigi; // последний посещЄнный пункт группы
+
+	uint8_t gnoisereduct;	// noise reduction
+	uint8_t gnoisereductvl;	// noise reduction
 	uint8_t bwsetpos [BWSETI_count];	/* выбор одной из полос пропускани€ */
 
 	uint8_t bwpropsleft [BWPROPI_count];	/* значени€ границ полосы пропускани€ */
@@ -3138,6 +3141,8 @@ enum
 	static uint_fast8_t gmikeequalizerparams [HARDWARE_CODEC1_NPROCPARAMS] = { 12, 12, 12, 12, 12 };	// Ёквалайзер 80Hz 230Hz 650Hz 	1.8kHz 5.3kHz
 #endif /* WITHAFCODEC1HAVEPROC */
 	static uint_fast8_t gagcoff;
+	static uint_fast8_t gnoisereduct = 1;	// noise reduction
+	static uint_fast8_t gnoisereductvl = 12;	// noise reduction
 #else /* WITHIF4DSP */
 	static const uint_fast8_t gagcoff = 0;
 #endif /* WITHIF4DSP */
@@ -6926,7 +6931,7 @@ static SpeexPreprocessState * st_handles [NTRX];
 // user-mode processing
 static void speex_spool(void)
 {
-	spx_int16_t * p [2];
+	spx_int16_t * p [NTRX];
 
 	while (takespeexready_user(& p [0]))
 	{
@@ -6963,11 +6968,13 @@ void speex_free (void *ptr)
 {
 }
 
-static void speex_update(void)
+static void speex_update_rx(void)
 {
 	uint_fast8_t pathi;
-	spx_int32_t denoise = 1;
-	spx_int32_t supress = - 12;
+
+	spx_int32_t denoise = gnoisereduct;
+	spx_int32_t supress = - (int) gnoisereductvl;
+
 	for (pathi = 0; pathi < NTRX; ++ pathi)
 	{
 		SpeexPreprocessState * const st = st_handles [pathi];
@@ -6986,8 +6993,6 @@ static void speex_initialize(void)
 		st_handles [pathi] = speex_preprocess_state_init(SPEEXNN, ARMI2SRATE);
 	}
 	debug_printf_P(PSTR("speex: final speecallocated=%d\n"), speecallocated);
-
-	speex_update();
 }
 
 #else /* WITHDENOISER */
@@ -6995,8 +7000,8 @@ static void speex_initialize(void)
 
 void speex_spool(void)
 {
-
 }
+
 #endif /* WITHDENOISER */
 
 
@@ -7553,6 +7558,9 @@ updateboard(
 			board_set_adcfifo(gadcfifo);
 			board_set_adcoffset(gadcoffset + getadcoffsbase()); /* смещение дл€ выходного сигнала с ј÷ѕ */
 		#endif /* WITHDSPEXTDDC */
+		#if WITHDENOISER
+			speex_update_rx();
+		#endif /* WITHDENOISER */
 		} /* (gtx == 0) */
 
 	#if defined (RTC1_TYPE)
