@@ -182,6 +182,9 @@ enum
 	CAT_AG_INDEX,		// aganswer()
 	CAT_SQ_INDEX,		// sqanswer()
 #endif /* WITHIF4DSP */
+#if WITHDENOISER
+	CAT_NR_INDEX,		// nranswer()
+#endif /* WITHDENOISER */
 	CAT_BADCOMMAND_INDEX,		// badcommandanswer()
 	//
 	CAT_MAX_INDEX
@@ -3141,8 +3144,8 @@ enum
 	static uint_fast8_t gmikeequalizerparams [HARDWARE_CODEC1_NPROCPARAMS] = { 12, 12, 12, 12, 12 };	// Эквалайзер 80Hz 230Hz 650Hz 	1.8kHz 5.3kHz
 #endif /* WITHAFCODEC1HAVEPROC */
 	static uint_fast8_t gagcoff;
-	static uint_fast8_t gnoisereduct = 1;	// noise reduction
-	static uint_fast8_t gnoisereductvl = 12;	// noise reduction
+	static uint_fast8_t gnoisereduct;	// noise reduction
+	static uint_fast8_t gnoisereductvl = 16;	// noise reduction
 #else /* WITHIF4DSP */
 	static const uint_fast8_t gagcoff = 0;
 #endif /* WITHIF4DSP */
@@ -7186,6 +7189,9 @@ updateboard(
 			cat_answer_request(CAT_MD_INDEX);
 			cat_answer_request(CAT_FA_INDEX);	// добавлено для обновления индикатора частоты в ACRP-590 при переходе по диапазонам клавишами на устройстве. И помогло при нажатиях на цифры дисплея.
 			cat_answer_request(gtx ? CAT_TX_INDEX : CAT_RX_INDEX);	// ignore main/sub rx selection (0 - main. 1 - sub);
+#if WITHDENOISER
+			cat_answer_request(CAT_NR_INDEX);
+#endif /* WITHDENOISER */
 		}
 		else
 		{
@@ -10061,6 +10067,21 @@ static void sqanswer(uint_fast8_t arg)
 }
 #endif /* WITHIF4DSP */
 
+#if WITHDENOISER
+static void nranswer(uint_fast8_t arg)
+{
+	static const FLASHMEM char fmt_1 [] =
+		"NR"			// 2 characters - status information code
+		"%1d"			// P1 NR0: nr off, NR1: nr1 on NR2: nr2 on
+		";";			// 1 char - line terminator
+
+	// answer mode
+	const uint_fast8_t len = local_snprintf_P(cat_ask_buffer, CAT_ASKBUFF_SIZE, fmt_1,
+		(int) (gnoisereduct != 0 ? 2 : 0)
+		);
+	cat_answer(len);
+}
+#endif /* WITHDENOISER */
 
 #if WITHCATEXT && WITHELKEY
 
@@ -10572,16 +10593,22 @@ static canapfn catanswers [CAT_MAX_INDEX] =
 	aganswer,
 	sqanswer,
 #endif /* CTLSTYLE_V1D || CTLSTYLE_OLEG4Z_V1 */
+#if WITHDENOISER
+	nranswer,
+#endif /* WITHDENOISER */
 	badcommandanswer,
 };
 
 static void 
 cat_answer_forming(void)
 {
-	uint_fast8_t i;
-
-	for (i = 0; i < (sizeof cat_answer_map / sizeof cat_answer_map [0]); ++ i)
+	static uint_fast8_t ilast;
+	uint_fast8_t original;
+	original = ilast;
+	for (;;)
 	{
+		const uint_fast8_t i = ilast;
+		ilast = calc_next(i, 0, (sizeof cat_answer_map / sizeof cat_answer_map [0]) - 1);
 		disableIRQ();
 		if (cat_answer_map [i] != 0)
 		{
@@ -10592,6 +10619,8 @@ cat_answer_forming(void)
 			return;
 		}
 		enableIRQ();
+		if (ilast == original)
+			break;
 	}
 }
 
@@ -10773,6 +10802,27 @@ processcatmsg(
 			cat_answer_request(CAT_IF_INDEX);
 		}
 	}
+#if WITHDENOISER
+	else if (match2('N', 'R'))
+	{
+		if (cathasparam != 0)
+		{
+			const uint_fast32_t p1 = vfy32up(catparam, 0, 2, 0) != 0;	// RN0; NR1; NR2;
+			if (gnoisereduct != p1)
+			{
+				gnoisereduct = p1;
+				updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
+				rc = 1;
+			}
+			rc = 1;
+		}
+		else
+		{
+			// NR;
+			cat_answer_request(CAT_NR_INDEX);	// nranswer()
+		}
+	}
+#endif /* WITHDENOISER */
 #if WITHSPLITEX
 	else if (match2('S', 'P'))
 	{
