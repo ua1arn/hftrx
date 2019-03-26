@@ -250,8 +250,7 @@ static LIST_ENTRY2 modemsrx8;	// Буферы с принятымти через модем данными
 	typedef ALIGNX_BEGIN struct denoise16
 	{
 		LIST_ENTRY item;
-		ALIGNX_BEGIN spx_int16_t left [SPEEXNN] ALIGNX_END;
-		ALIGNX_BEGIN spx_int16_t right [SPEEXNN] ALIGNX_END;
+		ALIGNX_BEGIN spx_int16_t buff [NTRX] [SPEEXNN] ALIGNX_END;
 	} ALIGNX_END denoise16_t;
 
 static LIST_ENTRY2 speexfree16;		// Свободные буферы
@@ -273,8 +272,10 @@ uint_fast8_t takespeexready_user(spx_int16_t * * dest)
 		PLIST_ENTRY t = RemoveTailList2(& speexready16);
 		global_enableIRQ();
 		denoise16_t * const p = CONTAINING_RECORD(t, denoise16_t, item);
-		dest [0] = p->left;
-		dest [1] = p->right;
+		dest [0] = p->buff [0];
+#if WITHUSEDUALWATCH
+		dest [1] = p->buff [1];
+#endif /* WITHUSEDUALWATCH */
 		return SPEEXNN;
 	}
 	global_enableIRQ();
@@ -286,7 +287,7 @@ void releasespeexbuffer_user(spx_int16_t * t)
 {
 	ASSERT_IRQL_USER();
 	global_disableIRQ();
-	denoise16_t * const p = CONTAINING_RECORD(t, denoise16_t, left);
+	denoise16_t * const p = CONTAINING_RECORD(t, denoise16_t, buff [0]);
 	InsertHeadList2(& speexfree16, & p->item);
 	global_enableIRQ();
 }
@@ -316,8 +317,10 @@ void savesampleout16denoise(int_fast16_t ch0, int_fast16_t ch1)
 		n = 0;
 	}
 
-	p->left [n] = ch0;		// sample value
-	p->right [n] = ch1;	// sample value
+	p->buff [0] [n] = ch0;		// sample value
+#if WITHUSEDUALWATCH
+	p->buff [1] [n] = ch1;	// sample value
+#endif /* WITHUSEDUALWATCH */
 
 	n += 1;
 
