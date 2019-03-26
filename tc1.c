@@ -11300,6 +11300,7 @@ processmessages(uint_fast8_t * kbch, uint_fast8_t * kbready, uint_fast8_t inmenu
 			;
 	}
 
+	speex_spool();
 
 	uint8_t * buff;
 

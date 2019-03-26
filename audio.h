@@ -423,7 +423,20 @@ void savesampleout16stereo(int_fast16_t ch0, int_fast16_t ch1);
 void savesampleout32stereo(int_fast32_t ch0, int_fast32_t ch1);
 void savesampleout96stereo(int_fast32_t ch0, int_fast32_t ch1);
 void savesampleout192stereo(int_fast32_t ch0, int_fast32_t ch1);
+
+#if WITHDENOISER
+
+	#include "arch.h"
+	#include "speex\speex_preprocess.h"
+
+	uint_fast8_t takespeexready_user(spx_int16_t * * dest);
+	void releasespeexbuffer_user(spx_int16_t * t);
+
+#endif /* WITHDENOISER */
+
 void savesampleout16denoise(int_fast16_t ch0, int_fast16_t ch1);
+void speex_spool(void);	// user-mode processing
+
 
 uint32_t allocate_dmabuffer192rts(void);
 

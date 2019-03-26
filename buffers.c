@@ -247,10 +247,6 @@ static LIST_ENTRY2 modemsrx8;	// Буферы с принятымти через модем данными
 
 #if WITHDENOISER
 
-#include "arch.h"
-
-#include "speex\speex_preprocess.h"
-
 	typedef ALIGNX_BEGIN struct denoise16
 	{
 		LIST_ENTRY item;
@@ -281,36 +277,35 @@ void speex_free (void *ptr)
 {
 }
 
-/* Cообщения от уровня обработчиков прерываний к user-level функциям. */
-
 // Буферы с принятымти от обработчиков прерываний сообщениями
-uint_fast8_t takespeexready_user(denoise16_t * * dest)
+uint_fast8_t takespeexready_user(spx_int16_t * * dest)
 {
 	ASSERT_IRQL_USER();
 	global_disableIRQ();
 
 	if (speexready16enable == 0)
 	{
-		speexready16enable = speexready16.Count > 2;
+		speexready16enable = speexready16.Count > 1;
 	}
 	if (speexready16enable && ! IsListEmpty2(& speexready16))
 	{
 		PLIST_ENTRY t = RemoveTailList2(& speexready16);
 		global_enableIRQ();
 		denoise16_t * const p = CONTAINING_RECORD(t, denoise16_t, item);
-		* dest = p;
+		dest [0] = p->left;
+		dest [1] = p->right;
 		return SPEEXNN;
 	}
 	global_enableIRQ();
 	return 0;
 }
 
-
 // Освобождение обработанного буфера сообщения
-void releasespeexbuffer_user(denoise16_t * p)
+void releasespeexbuffer_user(spx_int16_t * t)
 {
 	ASSERT_IRQL_USER();
 	global_disableIRQ();
+	denoise16_t * const p = CONTAINING_RECORD(t, denoise16_t, left);
 	InsertHeadList2(& speexfree16, & p->item);
 	global_enableIRQ();
 }
@@ -324,6 +319,8 @@ denoise16_t * allocate_dmabuffe16rdenoise(void)
 		return p;
 	}
 	ASSERT(0);
+	for (;;)
+		;
 	return 0;
 }
 
@@ -351,27 +348,27 @@ void savesampleout16denoise(int_fast16_t ch0, int_fast16_t ch1)
 }
 
 // user-mode processing
-void speex_spool(void * ctx)
+void speex_spool(void)
 {
-	denoise16_t * p;
+	spx_int16_t * p [2];
 
-	while (takespeexready_user(& p))
+	while (takespeexready_user(& p [0]))
 	{
-		speex_preprocess(st_left, p->left, NULL);
-		speex_preprocess(st_right, p->right, NULL);
+		speex_preprocess(st_left, p [0], NULL);
+		speex_preprocess(st_right, p [1], NULL);
 		unsigned i;
 		for (i = 0; i < SPEEXNN; ++ i)
 		{
-			savesampleout16stereo_user(p->left [i], p->right [i]);	// to AUDIO codec
+			savesampleout16stereo_user(p [0] [i], p [1] [i]);	// to AUDIO codec
 		}
-		releasespeexbuffer_user(p);
+		releasespeexbuffer_user(p [0]);
 	}
 }
 
 #else /* WITHDENOISER */
 
 
-void speex_spool(void * ctx)
+void speex_spool(void)
 {
 
 }
@@ -724,7 +721,6 @@ void buffers_initialize(void)
 
 	InitializeListHead2(& speexfree16);	// Незаполненные
 	InitializeListHead2(& speexready16);	// Для обработки
-	speexready16enable = 0;
 
 	for (i = 0; i < (sizeof speexarray16 / sizeof speexarray16 [0]); ++ i)
 	{
@@ -754,8 +750,6 @@ void buffers_initialize(void)
 // Буферы с принятымти от обработчиков прерываний сообщениями
 uint_fast8_t takemsgready_user(uint8_t * * dest)
 {
-	speex_spool(NULL);
-
 	ASSERT_IRQL_USER();
 	global_disableIRQ();
 
