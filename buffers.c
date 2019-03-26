@@ -32,7 +32,7 @@ enum
 	/* отладочные врапперы для функций работы со списком - позволяют получить размер очереди */
 	typedef struct listcnt
 	{
-		LIST_ENTRY item;
+		LIST_ENTRY item0;
 		uint_fast8_t Count;	// количество элментов в списке
 	} LIST_ENTRY2, * PLIST_ENTRY2;
 
@@ -44,28 +44,28 @@ enum
 	IsListEmpty2(PLIST_ENTRY2 ListHead)
 	{
 		return (ListHead)->Count == 0;
-		//return IsListEmpty(& (ListHead)->item);
+		//return IsListEmpty(& (ListHead)->item0);
 	}
 
 	__STATIC_INLINE void
 	InitializeListHead2(LIST_ENTRY2 * ListHead)
 	{
 		(ListHead)->Count = 0;
-		InitializeListHead(& (ListHead)->item);
+		InitializeListHead(& (ListHead)->item0);
 	}
 
 	__STATIC_INLINE void
 	InsertHeadList2(PLIST_ENTRY2 ListHead, PLIST_ENTRY Entry)
 	{
 		(ListHead)->Count += 1;
-		InsertHeadList(& (ListHead)->item, (Entry));
+		InsertHeadList(& (ListHead)->item0, (Entry));
 	}
 
 	__STATIC_INLINE PLIST_ENTRY
 	RemoveTailList2(PLIST_ENTRY2 ListHead)
 	{
 		(ListHead)->Count -= 1;
-		const PLIST_ENTRY t = RemoveTailList(& (ListHead)->item);	/* прямо вернуть значение RemoveTailList нельзя - Microsoft сделал не совсем правильный макрос. Но по другому и не плучилось бы в стандартном языке C. */
+		const PLIST_ENTRY t = RemoveTailList(& (ListHead)->item0);	/* прямо вернуть значение RemoveTailList нельзя - Microsoft сделал не совсем правильный макрос. Но по другому и не плучилось бы в стандартном языке C. */
 		return t;
 	}
 
@@ -78,6 +78,49 @@ enum
 	{
 		return ready ? Count != 0 : Count >= normal;
 	}
+
+
+
+
+static int16_t vfyseq;
+static int16_t lastseq;
+static int lastseqvalid;
+int16_t vfydataget(void)
+{
+	return ++ vfyseq;
+}
+
+void vfydata(int16_t v)
+{
+	if (lastseqvalid == 0)
+	{
+		lastseq = v;
+		lastseqvalid = 1;
+		return;
+	}
+	++ lastseq;
+	ASSERT(lastseq == v);
+}
+
+void vfyalign2(void * p)
+{
+	ASSERT(((uintptr_t) p & 0x01) == 0);
+}
+
+void vfyalign4(void * p)
+{
+	ASSERT(((uintptr_t) p & 0x03) == 0);
+}
+
+void vfylist(LIST_ENTRY2 * head)
+{
+	LIST_ENTRY * list = & head->item0;
+	LIST_ENTRY * t;
+	for (t = list->Flink; t != list; t = t->Flink)
+	{
+		vfyalign4(t);
+	}
+}
 
 	static volatile uint_fast8_t uacoutplayer = 0;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
 	static volatile uint_fast8_t uacoutmike = 0;	/* на вход трансивера берутся аудиоданные с USB виртуальной платы, а не с микрофона */
@@ -231,6 +274,9 @@ void *speex_alloc (int size)
 	return p;
 }
 
+void speex_free (void *ptr)
+{
+}
 
 /* Cообщения от уровня обработчиков прерываний к user-level функциям. */
 
@@ -275,24 +321,19 @@ uintptr_t allocate_dmabuffe16rdenoise(void)
 		denoise16_t * const p = CONTAINING_RECORD(t, denoise16_t, item);
 		return (uintptr_t) p->buff;
 	}
-	TP();
-	buffers_diagnostics();
 	ASSERT(0);
 	return 0;
 }
 
 void savesampleout16denoise(int_fast16_t ch0, int_fast16_t ch1)
 {
-	//savesampleout16stereo(ch0, ch0);	// to AUDIO codec
-	//return;
-
 	static denoise16_t * p = NULL;
 	static unsigned n;
 
 	if (p == NULL)
 	{
 		uintptr_t addr = allocate_dmabuffe16rdenoise();
-		p = CONTAINING_RECORD(addr, denoise16_t, item);
+		p = CONTAINING_RECORD(addr, denoise16_t, buff);
 		n = 0;
 	}
 
@@ -315,11 +356,11 @@ void speex_spool(void * ctx)
 
 	while (takespeexready_user(& p))
 	{
-		//speex_preprocess(speex_st, p, NULL);
+		speex_preprocess(speex_st, p, NULL);
 		unsigned i;
 		for (i = 0; i < SPEEXNN; ++ i)
 		{
-			const spx_int16_t sample = p [i];
+			spx_int16_t sample = p [i];
 			savesampleout16stereo_user(sample, sample);	// to AUDIO codec
 		}
 		releasespeexbuffer_user(p);
@@ -533,7 +574,7 @@ void buffers_initialize(void)
 
 #if WITHINTEGRATEDDSP
 
-	static voice16_t voicesarray16 [200];
+	static voice16_t voicesarray16 [100];
 
 	InitializeListHead2(& resample16);	// буферы от USB для синхронизации
 	InitializeListHead2(& voicesphones16);	// список для выдачи на ЦАП
@@ -686,7 +727,6 @@ void buffers_initialize(void)
 		denoise16_t * const p = & speexarray16 [i];
 		InsertHeadList2(& speexfree16, & p->item);
 	}
-
 #endif /* WITHDENOISER */
 
 #endif /* WITHINTEGRATEDDSP */
