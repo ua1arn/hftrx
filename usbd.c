@@ -7879,7 +7879,7 @@ static USBD_StatusTypeDef USBD_XXX_DataIn (USBD_HandleTypeDef *pdev, uint_fast8_
 #if WITHUSBCDCEEM
 	case (USBD_EP_CDCEEM_IN & 0x7F):
 		//USBD_LL_Transmit(pdev, USBD_EP_CDCEEM_IN, NULL, 0);
-		USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), & dbd, sizeof dbd);
+		USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), dbd, sizeof dbd);
 		//PRINTF(PSTR("USBD_LL_DataInStage: USBD_EP_CDCEEM_IN\n"));
 		break;
 #endif /* WITHUSBCDCEEM */
