@@ -13,6 +13,8 @@
 #include "spifuncs.h"
 #include "formats.h"
 
+static ticker_t seqticker;
+
 #if WITHTX
 
 enum {
@@ -110,7 +112,6 @@ static /* volatile */ uint_fast8_t usertxstate;	/* 0 - периферия находимся в сос
 static volatile uint_fast8_t seqstate;
 static volatile uint_fast8_t seqpushtime;	// Возможные количства "тиков" на передачу и на приём
 
-static ticker_t seqticker;
 
 static uint_fast8_t
 getstablev8(volatile uint_fast8_t * p)
