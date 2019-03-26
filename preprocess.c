@@ -504,9 +504,9 @@ EXPORT SpeexPreprocessState *speex_preprocess_state_init(int frame_size, int sam
    st->loudness_weight = (float*)speex_alloc(N*sizeof(float));
    for (i=0;i<N;i++)
    {
-      float ff=((float)i)*.5*sampling_rate/((float)N);
+      float ff=((float)i)*0.5f*sampling_rate/((float)N);
       /*st->loudness_weight[i] = .5f*(1.f/(1.f+ff/8000.f))+1.f*EXPF(-.5f*(ff-3800.f)*(ff-3800.f)/9e5f);*/
-      st->loudness_weight[i] = .35f-.35f*ff/16000.f+.73f*EXPF(-.5f*(ff-3800)*(ff-3800)/9e5f);
+      st->loudness_weight[i] = 0.35f-.35f*ff/16000.f+.73f*EXPF(-.5f*(ff-3800)*(ff-3800)/9e5f);
       if (st->loudness_weight[i]<.01f)
          st->loudness_weight[i]=.01f;
       st->loudness_weight[i] *= st->loudness_weight[i];
@@ -515,8 +515,8 @@ EXPORT SpeexPreprocessState *speex_preprocess_state_init(int frame_size, int sam
    st->loudness = 1e-15;
    st->agc_gain = 1;
    st->max_gain = 30;
-   st->max_increase_step = EXPF(0.11513f * 12.*SPEEXNN / st->sampling_rate);
-   st->max_decrease_step = EXPF(-0.11513f * 40.*SPEEXNN / st->sampling_rate);
+   st->max_increase_step = EXPF(0.11513f * 12.0f * SPEEXNN / st->sampling_rate);
+   st->max_decrease_step = EXPF(-0.11513f * 40.0f * SPEEXNN / st->sampling_rate);
    st->prev_loudness = 1;
    st->init_max = 1;
 #endif
@@ -1080,19 +1080,19 @@ EXPORT int speex_preprocess_ctl(SpeexPreprocessState *state, int request, void *
       st->max_increase_step = EXPF(0.11513f * (*(spx_int32_t*)ptr)*SPEEXNN / st->sampling_rate);
       break;
    case SPEEX_PREPROCESS_GET_AGC_INCREMENT:
-      (*(spx_int32_t*)ptr) = FLOORF(.5+8.6858*LOGF(st->max_increase_step)*st->sampling_rate/SPEEXNN);
+      (*(spx_int32_t*)ptr) = FLOORF(.5f+8.6858f*LOGF(st->max_increase_step)*st->sampling_rate/SPEEXNN);
       break;
    case SPEEX_PREPROCESS_SET_AGC_DECREMENT:
       st->max_decrease_step = EXPF(0.11513f * (*(spx_int32_t*)ptr)*SPEEXNN / st->sampling_rate);
       break;
    case SPEEX_PREPROCESS_GET_AGC_DECREMENT:
-      (*(spx_int32_t*)ptr) = FLOORF(.5+8.6858*LOGF(st->max_decrease_step)*st->sampling_rate/SPEEXNN);
+      (*(spx_int32_t*)ptr) = FLOORF(.5f+8.6858f*LOGF(st->max_decrease_step)*st->sampling_rate/SPEEXNN);
       break;
    case SPEEX_PREPROCESS_SET_AGC_MAX_GAIN:
       st->max_gain = EXPF(0.11513f * (*(spx_int32_t*)ptr));
       break;
    case SPEEX_PREPROCESS_GET_AGC_MAX_GAIN:
-      (*(spx_int32_t*)ptr) = FLOORF(.5+8.6858*LOGF(st->max_gain));
+      (*(spx_int32_t*)ptr) = FLOORF(.5f+8.6858f*LOGF(st->max_gain));
       break;
 #endif
    case SPEEX_PREPROCESS_SET_VAD:
