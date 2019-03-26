@@ -81,52 +81,47 @@ enum
 
 
 
-
-static int16_t vfyseq;
-static int16_t lastseq;
-static int lastseqvalid;
-int16_t vfydataget(void)
-{
-	return ++ vfyseq;
-}
-
-void vfydata(int16_t v)
-{
-	if (lastseqvalid == 0)
+#if 0
+	static int16_t vfyseq;
+	static int16_t lastseq;
+	static int lastseqvalid;
+	int16_t vfydataget(void)
 	{
-		lastseq = v;
-		lastseqvalid = 1;
-		return;
+		return ++ vfyseq;
 	}
-	++ lastseq;
-	ASSERT(lastseq == v);
-}
 
-void vfyalign2(void * p)
-{
-	ASSERT(((uintptr_t) p & 0x01) == 0);
-}
-
-void vfyalign4(void * p)
-{
-	ASSERT(((uintptr_t) p & 0x03) == 0);
-}
-
-void vfylist(LIST_ENTRY2 * head)
-{
-	LIST_ENTRY * list = & head->item0;
-	LIST_ENTRY * t;
-	for (t = list->Flink; t != list; t = t->Flink)
+	void vfydata(int16_t v)
 	{
-		vfyalign4(t);
+		if (lastseqvalid == 0)
+		{
+			lastseq = v;
+			lastseqvalid = 1;
+			return;
+		}
+		++ lastseq;
+		ASSERT(lastseq == v);
 	}
-}
 
-	static volatile uint_fast8_t uacoutplayer = 0;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
-	static volatile uint_fast8_t uacoutmike = 0;	/* на вход трансивера берутся аудиоданные с USB виртуальной платы, а не с микрофона */
-	static volatile uint_fast8_t uacinalt = UACINALT_NONE;		/* выбор альтернативной конфигурации для UAC IN interface */
-	static volatile uint_fast8_t uacinrtsalt = UACINRTSALT_NONE;		/* выбор альтернативной конфигурации для RTS UAC IN interface */
-	static volatile uint_fast8_t uacoutalt;
+	void vfyalign2(void * p)
+	{
+		ASSERT(((uintptr_t) p & 0x01) == 0);
+	}
+
+	void vfyalign4(void * p)
+	{
+		ASSERT(((uintptr_t) p & 0x03) == 0);
+	}
+
+	void vfylist(LIST_ENTRY2 * head)
+	{
+		LIST_ENTRY * list = & head->item0;
+		LIST_ENTRY * t;
+		for (t = list->Flink; t != list; t = t->Flink)
+		{
+			vfyalign4(t);
+		}
+	}
+#endif
 	//////////////////////////////////
 	// Система буферизации аудиоданных
 	//
@@ -162,6 +157,12 @@ void vfylist(LIST_ENTRY2 * head)
 	static LIST_ENTRY2 voicesready32tx;	// буферы, предназначенные для выдачи на IF DAC
 	static LIST_ENTRY2 voicesfree32tx;
 	static LIST_ENTRY2 voicesfree32rx;
+
+	static volatile uint_fast8_t uacoutplayer = 0;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
+	static volatile uint_fast8_t uacoutmike = 0;	/* на вход трансивера берутся аудиоданные с USB виртуальной платы, а не с микрофона */
+	static volatile uint_fast8_t uacinalt = UACINALT_NONE;		/* выбор альтернативной конфигурации для UAC IN interface */
+	static volatile uint_fast8_t uacinrtsalt = UACINRTSALT_NONE;		/* выбор альтернативной конфигурации для RTS UAC IN interface */
+	static volatile uint_fast8_t uacoutalt;
 
 #if WITHUSBUAC
 
@@ -253,17 +254,19 @@ static LIST_ENTRY2 modemsrx8;	// Буферы с принятымти через модем данными
 	typedef ALIGNX_BEGIN struct denoise16
 	{
 		LIST_ENTRY item;
-		ALIGNX_BEGIN spx_int16_t buff [SPEEXNN] ALIGNX_END;
+		ALIGNX_BEGIN spx_int16_t left [SPEEXNN] ALIGNX_END;
+		ALIGNX_BEGIN spx_int16_t right [SPEEXNN] ALIGNX_END;
 	} ALIGNX_END denoise16_t;
 
 static LIST_ENTRY2 speexfree16;		// Свободные буферы
 static LIST_ENTRY2 speexready16;	// Буферы для обработки speex
 static int speexready16enable;
 
-static SpeexPreprocessState *speex_st;
+static SpeexPreprocessState * st_left;
+static SpeexPreprocessState * st_right;
 
 static int allocated = 0;
-static uint8_t sipexbuff [144980];
+static uint8_t sipexbuff [2 * 144980];
 
 void *speex_alloc (int size)
 {
@@ -281,7 +284,7 @@ void speex_free (void *ptr)
 /* Cообщения от уровня обработчиков прерываний к user-level функциям. */
 
 // Буферы с принятымти от обработчиков прерываний сообщениями
-uint_fast8_t takespeexready_user(spx_int16_t * * dest)
+uint_fast8_t takespeexready_user(denoise16_t * * dest)
 {
 	ASSERT_IRQL_USER();
 	global_disableIRQ();
@@ -295,7 +298,7 @@ uint_fast8_t takespeexready_user(spx_int16_t * * dest)
 		PLIST_ENTRY t = RemoveTailList2(& speexready16);
 		global_enableIRQ();
 		denoise16_t * const p = CONTAINING_RECORD(t, denoise16_t, item);
-		* dest = p->buff;
+		* dest = p;
 		return SPEEXNN;
 	}
 	global_enableIRQ();
@@ -304,22 +307,21 @@ uint_fast8_t takespeexready_user(spx_int16_t * * dest)
 
 
 // Освобождение обработанного буфера сообщения
-void releasespeexbuffer_user(spx_int16_t * dest)
+void releasespeexbuffer_user(denoise16_t * p)
 {
 	ASSERT_IRQL_USER();
-	denoise16_t * const p = CONTAINING_RECORD(dest, denoise16_t, buff);
 	global_disableIRQ();
 	InsertHeadList2(& speexfree16, & p->item);
 	global_enableIRQ();
 }
 
-uintptr_t allocate_dmabuffe16rdenoise(void)
+denoise16_t * allocate_dmabuffe16rdenoise(void)
 {
 	if (! IsListEmpty2(& speexfree16))
 	{
 		PLIST_ENTRY t = RemoveTailList2(& speexfree16);
 		denoise16_t * const p = CONTAINING_RECORD(t, denoise16_t, item);
-		return (uintptr_t) p->buff;
+		return p;
 	}
 	ASSERT(0);
 	return 0;
@@ -332,13 +334,12 @@ void savesampleout16denoise(int_fast16_t ch0, int_fast16_t ch1)
 
 	if (p == NULL)
 	{
-		uintptr_t addr = allocate_dmabuffe16rdenoise();
-		p = CONTAINING_RECORD(addr, denoise16_t, buff);
+		p = allocate_dmabuffe16rdenoise();
 		n = 0;
 	}
 
-	p->buff [n] = ch0;		// sample value
-	//p->buff [n + 1] = ch1;	// sample value
+	p->left [n] = ch0;		// sample value
+	p->right [n] = ch1;	// sample value
 
 	n += 1;
 
@@ -352,16 +353,16 @@ void savesampleout16denoise(int_fast16_t ch0, int_fast16_t ch1)
 // user-mode processing
 void speex_spool(void * ctx)
 {
-	spx_int16_t * p;
+	denoise16_t * p;
 
 	while (takespeexready_user(& p))
 	{
-		speex_preprocess(speex_st, p, NULL);
+		speex_preprocess(st_left, p->left, NULL);
+		speex_preprocess(st_right, p->right, NULL);
 		unsigned i;
 		for (i = 0; i < SPEEXNN; ++ i)
 		{
-			spx_int16_t sample = p [i];
-			savesampleout16stereo_user(sample, sample);	// to AUDIO codec
+			savesampleout16stereo_user(p->left [i], p->right [i]);	// to AUDIO codec
 		}
 		releasespeexbuffer_user(p);
 	}
@@ -708,11 +709,14 @@ void buffers_initialize(void)
 #if WITHDENOISER
 	// Speex
 	{
-		speex_st = speex_preprocess_state_init(SPEEXNN, ARMI2SRATE);
+		st_left = speex_preprocess_state_init(SPEEXNN, ARMI2SRATE);
+		st_right = speex_preprocess_state_init(SPEEXNN, ARMI2SRATE);
 		spx_int32_t denoise = 1;
-		speex_preprocess_ctl(speex_st, SPEEX_PREPROCESS_SET_DENOISE, &denoise);
 		spx_int32_t supress = -6;
-		speex_preprocess_ctl(speex_st, SPEEX_PREPROCESS_SET_NOISE_SUPPRESS, &supress);
+		speex_preprocess_ctl(st_left, SPEEX_PREPROCESS_SET_DENOISE, &denoise);
+		speex_preprocess_ctl(st_left, SPEEX_PREPROCESS_SET_NOISE_SUPPRESS, &supress);
+		speex_preprocess_ctl(st_right, SPEEX_PREPROCESS_SET_DENOISE, &denoise);
+		speex_preprocess_ctl(st_right, SPEEX_PREPROCESS_SET_NOISE_SUPPRESS, &supress);
 	}
 	debug_printf_P(PSTR("final allocated=%d\n"), allocated);
 
