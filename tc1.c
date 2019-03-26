@@ -11920,6 +11920,26 @@ static const FLASHMEM struct menudef menutable [] =
 		& gcwpitch10,
 		getzerobase, 
 	},
+#if WITHDENOISER
+	{
+		"NR      ", 7, 0, RJ_ON,	ISTEP1,	
+		ITEM_VALUE,
+		0, 1, 
+		offsetof(struct nvmap, gnoisereduct),
+		NULL,
+		& gnoisereduct,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	{
+		"NR LEVEL", 7, 0, 0,	ISTEP1,	
+		ITEM_VALUE,
+		0, 60, 
+		offsetof(struct nvmap, gnoisereductvl),
+		NULL,
+		& gnoisereductvl,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+#endif /* WITHDENOISER */
 #if WITHIF4DSP
 	{
 		"CW WDT W", 7, 2, 0, 	ISTEP10,	// CW bandwidth for WIDE
