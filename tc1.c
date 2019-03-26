@@ -11285,6 +11285,76 @@ uint_fast8_t elkey_getnextcw(void)
 #endif /* WITHELKEY */
 
 
+#if WITHDENOISER
+
+static SpeexPreprocessState * st_left;
+static SpeexPreprocessState * st_right;
+
+// user-mode processing
+static void speex_spool(void)
+{
+	spx_int16_t * p [2];
+
+	while (takespeexready_user(& p [0]))
+	{
+		speex_preprocess(st_left, p [0], NULL);
+		speex_preprocess(st_right, p [1], NULL);
+		unsigned i;
+		for (i = 0; i < SPEEXNN; ++ i)
+		{
+			savesampleout16stereo_user(p [0] [i], p [1] [i]);	// to AUDIO codec
+		}
+		releasespeexbuffer_user(p [0]);
+	}
+}
+
+static int allocated = 0;
+static uint8_t sipexbuff [2 * 144980];
+
+void *speex_alloc (int size)
+{
+	size = (size + 0x03) & ~ 0x03;
+	ASSERT((allocated + size) <= sizeof sipexbuff / sizeof sipexbuff [0]);
+	void * p = (void *) (sipexbuff + allocated);
+	allocated += size;
+	return p;
+}
+
+void speex_free (void *ptr)
+{
+}
+
+static void speex_update(void)
+{
+	ASSERT(st_left != NULL);
+	ASSERT(st_right != NULL);
+
+	spx_int32_t denoise = 1;
+	spx_int32_t supress = -6;
+	speex_preprocess_ctl(st_left, SPEEX_PREPROCESS_SET_DENOISE, &denoise);
+	speex_preprocess_ctl(st_left, SPEEX_PREPROCESS_SET_NOISE_SUPPRESS, &supress);
+	speex_preprocess_ctl(st_right, SPEEX_PREPROCESS_SET_DENOISE, &denoise);
+	speex_preprocess_ctl(st_right, SPEEX_PREPROCESS_SET_NOISE_SUPPRESS, &supress);
+	debug_printf_P(PSTR("final allocated=%d\n"), allocated);
+}
+// Speex
+static void speex_initialize(void)
+{
+	st_left = speex_preprocess_state_init(SPEEXNN, ARMI2SRATE);
+	st_right = speex_preprocess_state_init(SPEEXNN, ARMI2SRATE);
+
+	speex_update();
+}
+
+#else /* WITHDENOISER */
+
+
+void speex_spool(void)
+{
+
+}
+#endif /* WITHDENOISER */
+
 
 /* обработка сообщений от уровня обработчиков прерываний к user-level функциям. */
 static void 
@@ -15929,6 +15999,10 @@ hamradio_initialize(void)
 #if WITHINTEGRATEDDSP	/* в программу включена инициализация и запуск DSP части. */
 	dsp_initialize();		// цифровая обработка подготавливается
 #endif /* WITHINTEGRATEDDSP */
+
+#if WITHDENOISER
+	speex_initialize();
+#endif /* WITHDENOISER */
 
 #if WITHI2SHW
 	hardware_audiocodec_enable();	// Интерфейс к НЧ кодеку

@@ -435,7 +435,6 @@ void savesampleout192stereo(int_fast32_t ch0, int_fast32_t ch1);
 #endif /* WITHDENOISER */
 
 void savesampleout16denoise(int_fast16_t ch0, int_fast16_t ch1);
-void speex_spool(void);	// user-mode processing
 
 
 uint32_t allocate_dmabuffer192rts(void);

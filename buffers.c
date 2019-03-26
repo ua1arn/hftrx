@@ -258,25 +258,6 @@ static LIST_ENTRY2 speexfree16;		// Свободные буферы
 static LIST_ENTRY2 speexready16;	// Буферы для обработки speex
 static int speexready16enable;
 
-static SpeexPreprocessState * st_left;
-static SpeexPreprocessState * st_right;
-
-static int allocated = 0;
-static uint8_t sipexbuff [2 * 144980];
-
-void *speex_alloc (int size)
-{
-	size = (size + 0x03) & ~ 0x03;
-	ASSERT((allocated + size) <= sizeof sipexbuff / sizeof sipexbuff [0]);
-	void * p = (void *) (sipexbuff + allocated);
-	allocated += size;
-	return p;
-}
-
-void speex_free (void *ptr)
-{
-}
-
 // Буферы с принятымти от обработчиков прерываний сообщениями
 uint_fast8_t takespeexready_user(spx_int16_t * * dest)
 {
@@ -346,33 +327,6 @@ void savesampleout16denoise(int_fast16_t ch0, int_fast16_t ch1)
 		p = NULL;
 	}
 }
-
-// user-mode processing
-void speex_spool(void)
-{
-	spx_int16_t * p [2];
-
-	while (takespeexready_user(& p [0]))
-	{
-		speex_preprocess(st_left, p [0], NULL);
-		speex_preprocess(st_right, p [1], NULL);
-		unsigned i;
-		for (i = 0; i < SPEEXNN; ++ i)
-		{
-			savesampleout16stereo_user(p [0] [i], p [1] [i]);	// to AUDIO codec
-		}
-		releasespeexbuffer_user(p [0]);
-	}
-}
-
-#else /* WITHDENOISER */
-
-
-void speex_spool(void)
-{
-
-}
-
 #endif /* WITHDENOISER */
 
 /* Cообщения от уровня обработчиков прерываний к user-level функциям. */
@@ -704,19 +658,6 @@ void buffers_initialize(void)
 #endif /* WITHMODEM */
 
 #if WITHDENOISER
-	// Speex
-	{
-		st_left = speex_preprocess_state_init(SPEEXNN, ARMI2SRATE);
-		st_right = speex_preprocess_state_init(SPEEXNN, ARMI2SRATE);
-		spx_int32_t denoise = 1;
-		spx_int32_t supress = -6;
-		speex_preprocess_ctl(st_left, SPEEX_PREPROCESS_SET_DENOISE, &denoise);
-		speex_preprocess_ctl(st_left, SPEEX_PREPROCESS_SET_NOISE_SUPPRESS, &supress);
-		speex_preprocess_ctl(st_right, SPEEX_PREPROCESS_SET_DENOISE, &denoise);
-		speex_preprocess_ctl(st_right, SPEEX_PREPROCESS_SET_NOISE_SUPPRESS, &supress);
-	}
-	debug_printf_P(PSTR("final allocated=%d\n"), allocated);
-
 	static denoise16_t speexarray16 [4];
 
 	InitializeListHead2(& speexfree16);	// Незаполненные
