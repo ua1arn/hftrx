@@ -256,7 +256,7 @@ static LIST_ENTRY2 speexready16;	// Буферы для обработки speex
 static int speexready16enable;
 
 // Буферы с принятымти от обработчиков прерываний сообщениями
-static uint_fast8_t takespeexready_user(FLOAT_t * * dest)
+static uint_fast8_t takespeexready_user(denoise16_t * * dest)
 {
 	ASSERT_IRQL_USER();
 	global_disableIRQ();
@@ -270,22 +270,18 @@ static uint_fast8_t takespeexready_user(FLOAT_t * * dest)
 		PLIST_ENTRY t = RemoveTailList2(& speexready16);
 		global_enableIRQ();
 		denoise16_t * const p = CONTAINING_RECORD(t, denoise16_t, item);
-		dest [0] = p->buff [0];
-#if WITHUSEDUALWATCH
-		dest [1] = p->buff [1];
-#endif /* WITHUSEDUALWATCH */
-		return SPEEXNN;
+		* dest = p;
+		return 1;
 	}
 	global_enableIRQ();
 	return 0;
 }
 
 // Освобождение обработанного буфера сообщения
-static void releasespeexbuffer_user(FLOAT_t * t)
+static void releasespeexbuffer_user(denoise16_t * p)
 {
 	ASSERT_IRQL_USER();
 	global_disableIRQ();
-	denoise16_t * const p = CONTAINING_RECORD(t, denoise16_t, buff [0]);
 	InsertHeadList2(& speexfree16, & p->item);
 	global_enableIRQ();
 }
@@ -293,26 +289,31 @@ static void releasespeexbuffer_user(FLOAT_t * t)
 // user-mode processing
 void audioproc_spool_user(void)
 {
-	FLOAT_t * p [NTRX];
+	denoise16_t * p;
 
-	while (takespeexready_user(& p [0]))
+	while (takespeexready_user(& p))
 	{
-#if WITHDENOISER
-		speex_proc(0, p [0]);
 #if WITHUSEDUALWATCH
-		speex_proc(1, p [1]);
+		dsp_audiopostproc(p->buff [0], p->buff [1]);
+#else /* WITHUSEDUALWATCH */
+		dsp_audiopostproc(p->buff [0], NULL);
+#endif /* WITHUSEDUALWATCH */
+#if WITHDENOISER
+		speex_proc(0, p->buff [0]);
+#if WITHUSEDUALWATCH
+		speex_proc(1, p->buff [1]);
 #endif /* WITHUSEDUALWATCH */
 #endif /* WITHDENOISER */
 		unsigned i;
 		for (i = 0; i < SPEEXNN; ++ i)
 		{
 #if WITHUSEDUALWATCH
-			savesampleout16stereo_user(p [0] [i], p [1] [i]);	// to AUDIO codec
+			savesampleout16stereo_user(p->buff [0] [i], p->buff [1] [i]);	// to AUDIO codec
 #else /* WITHUSEDUALWATCH */
-			savesampleout16stereo_user(p [0] [i], p [0] [i]);	// to AUDIO codec
+			savesampleout16stereo_user(p->buff [0] [i], p->buff [0] [i]);	// to AUDIO codec
 #endif /* WITHUSEDUALWATCH */
 		}
-		releasespeexbuffer_user(p [0]);
+		releasespeexbuffer_user(p);
 	}
 }
 
@@ -1050,23 +1051,6 @@ int_fast32_t dsp_get_samplerateuacin_rts(void)		// RTS samplerate
 
 #endif /* WITHUSBUAC */
 
-// получить пустой буфер (с "тишиной")
-static RAMFUNC voice16_t *
-buffers_getsilence(void)
-{
-	const uintptr_t addr = allocate_dmabuffer16();
-	voice16_t * const p = CONTAINING_RECORD(addr, voice16_t, buff);
-	memset(p->buff, 0, sizeof p->buff);	// Заполнение "тишиной"
-	return p;
-}
-
-// получить пустой буфер (с "тишиной")
-static RAMFUNC uintptr_t getfilled_dmabuffer16silence(void)
-{
-	return (uintptr_t) buffers_getsilence()->buff;
-}
-
-
 // +++ Коммутация потоков аудиоданных
 // первый канал выхода приёмника - для прослушивания
 static RAMFUNC void
@@ -1740,7 +1724,11 @@ uintptr_t getfilled_dmabuffer16phones(void)
 #if WITHBUFFERSDEBUG
 	++ e1;
 #endif /* WITHBUFFERSDEBUG */
-	return getfilled_dmabuffer16silence();		// аварийная ветка - работает первые несколько раз
+	const uintptr_t addr = allocate_dmabuffer16();
+	voice16_t * const p = CONTAINING_RECORD(addr, voice16_t, buff);
+	memset(p->buff, 0, sizeof p->buff);	// Заполнение "тишиной"
+	dsp_addsidetone(p->buff);
+	return (uintptr_t) & p->buff;
 }
 
 //////////////////////////////////////////

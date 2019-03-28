@@ -433,6 +433,7 @@ void savesampleout192stereo(int_fast32_t ch0, int_fast32_t ch1);
 
 void speex_proc(uint_fast8_t pathi, FLOAT_t * buff);
 void audioproc_spool_user(void);
+void dsp_audiopostproc(FLOAT_t * left, FLOAT_t * right);
 
 void savesampleout16denoise(FLOAT_t ch0, FLOAT_t ch1);
 

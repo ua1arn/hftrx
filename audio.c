@@ -135,7 +135,6 @@ static uint_fast8_t		glob_codec1_gains [HARDWARE_CODEC1_NPROCPARAMS]; // = { -2,
 static uint_fast16_t 	glob_lineamp = WITHLINEINGAINMAX;
 static uint_fast16_t	glob_mik1level = WITHMIKEINGAINMAX;
 static uint_fast8_t 	glob_txaudio = BOARD_TXAUDIO_MIKE;	// при SSB/AM/FM передача с тестовых источников
-static uint_fast8_t		glob_mainsubrxmode = BOARD_RXMAINSUB_A_A;	// Левый/правый, A - main RX, B - sub RX
 
 static uint_fast16_t 	glob_notch_freq = 1000;	/* частота NOTCH фильтра */
 static uint_fast16_t	glob_notch_width = 500;	/* полоса NOTCH фильтра */
@@ -159,6 +158,8 @@ static int_fast8_t		glob_afresponcerx;	// изменение тембра звука в канале приемн
 static int_fast8_t		glob_afresponcetx;	// изменение тембра звука в канале передатчика - на Samplerate/2 АЧХ становится на столько децибел 
 
 static int_fast8_t		glob_swaprts;		// управление боковой выхода спектроанализатора
+
+static uint_fast8_t		glob_mainsubrxmode = BOARD_RXMAINSUB_A_A;	// Левый/правый, A - main RX, B - sub RX
 
 #if WITHINTEGRATEDDSP
 
@@ -2632,40 +2633,6 @@ static RAMFUNC_NONILINE FLOAT_t filter_fir_rx_AUDIO_B(FLOAT_t NewSample)
 	return filter_fir_compute(FIRCoef_rx_AUDIO [gwprof] [1], & xshift [fir_head + NtapHalf + 1], NtapHalf + 1);
 }
 
-#if DUALFILTERSPROCESSING
-// Звуковой фильтр приёмника.
-// фильтрация пар значений одинаковым фильтром
-static RAMFUNC_NONILINE FLOAT32P_t filter_fir_rx_AUDIO_Pair(FLOAT32P_t NewSample) 
-{
-	enum { Ntap = Ntap_rx_AUDIO, NtapHalf = Ntap / 2 };
-	// буфер с сохраненными значениями сэмплов
-	static FLOAT32P_t xshift [Ntap * 2] = { 0, };
-	static uint_fast16_t fir_head = 0;
-
-	// shift the old samples
-	fir_head = (fir_head == 0) ? (Ntap - 1) : (fir_head - 1);
-    xshift [fir_head] = xshift [fir_head + Ntap] = NewSample;
-
-	return filter_fir_compute_Pair(FIRCoef_rx_AUDIO [gwprof] [0], & xshift [fir_head + NtapHalf + 1], NtapHalf + 1);
-}
-
-// Звуковой фильтр приёмника.
-// фильтрация пар значений разными фильтрами
-static RAMFUNC_NONILINE FLOAT32P_t filter_fir_rx_AUDIO_Pair2(FLOAT32P_t NewSample) 
-{
-	enum { Ntap = Ntap_rx_AUDIO, NtapHalf = Ntap / 2 };
-	// буфер с сохраненными значениями сэмплов
-	static FLOAT32P_t xshift [Ntap * 2] = { 0, };
-	static uint_fast16_t fir_head = 0;
-
-	// shift the old samples
-	fir_head = (fir_head == 0) ? (Ntap - 1) : (fir_head - 1);
-    xshift [fir_head] = xshift [fir_head + Ntap] = NewSample;
-
-	return filter_fir_compute_Pair2(FIRCoef_rx_AUDIO [gwprof] [0], FIRCoef_rx_AUDIO [gwprof] [1], & xshift [fir_head + NtapHalf + 1], NtapHalf + 1);
-}
-#endif /* DUALFILTERSPROCESSING */
-
 #endif /* WITHUSEDUALWATCH */
 
 
@@ -4764,54 +4731,6 @@ static RAMFUNC uint_fast8_t isneedmute(uint_fast8_t dspmode)
 	}
 }
 
-static RAMFUNC FLOAT_t filterRxAudio_rxA(FLOAT_t v, uint_fast8_t dspmode)
-{
-	return isneedmute(dspmode) ? 0 : (isneedfiltering(dspmode) ? filter_fir_rx_AUDIO_A(v) : v);
-}
-
-#if WITHUSEDUALWATCH
-
-static RAMFUNC FLOAT_t filterRxAudio_rxB(FLOAT_t v, uint_fast8_t dspmode)
-{
-	return isneedmute(dspmode) ? 0 : (isneedfiltering(dspmode) ? filter_fir_rx_AUDIO_B(v) : v);
-}
-
-// фильтры разные - не можем позволить себе паралельную обработку
-static RAMFUNC FLOAT32P_t filterRxAudio_Pair2(FLOAT32P_t v, uint_fast8_t dspmodeA, uint_fast8_t dspmodeB)
-{
-	const uint_fast8_t m0 = isneedmute(dspmodeA);
-	const uint_fast8_t f0 = isneedfiltering(dspmodeA);
-	const uint_fast8_t m1 = isneedmute(dspmodeB);
-	const uint_fast8_t f1 = isneedfiltering(dspmodeB);
-	if (f0 && f1 && ! m0 && ! m1)
-	{
-		return filter_fir_rx_AUDIO_Pair2(v);	// фильтрация пар значений разными фильтрами
-	}
-	else
-	{
-		FLOAT32P_t vFiltered;
-		vFiltered.IV = m0 ? 0 : (f0 ? filter_fir_rx_AUDIO_A(v.IV) : v.IV);
-		vFiltered.QV = m1 ? 0 : (f1 ? filter_fir_rx_AUDIO_B(v.QV) : v.QV);
-		return vFiltered;
-	}
-}
-
-// фильтры одинаковые - можем позволить себе паралельную обработку
-static RAMFUNC FLOAT32P_t filterRxAudio_Pair(FLOAT32P_t v, uint_fast8_t dspmode)
-{
-	if (isneedmute(dspmode))
-	{
-		const FLOAT32P_t vFiltered = { { 0, 0 } };
-		return vFiltered;
-	}
-	else if (isneedfiltering(dspmode))
-		return filter_fir_rx_AUDIO_Pair(v);	// фильтрация пар значений одинаковым фильтром
-	else
-		return v;
-}
-
-#endif /* WITHUSEDUALWATCH */
-
 #if (WITHRTS96 || WITHRTS192) && ! WITHTRANSPARENTIQ
 
 // Поддержка панорпамы и водопада
@@ -5191,9 +5110,7 @@ void RAMFUNC dsp_extbuffer32wfm(const uint32_t * buff)
 	ASSERT(buff != NULL);
 	ASSERT(gwprof < NPROF);
 	const uint_fast8_t dspmodeA = globDSPMode [gwprof] [0];
-	const uint_fast8_t tx = isdspmodetx(dspmodeA);
 	unsigned i;
-	const FLOAT_t sdtn = 0;
 
 	//memcpy(dd, buff, sizeof dd);
 
@@ -5201,19 +5118,14 @@ void RAMFUNC dsp_extbuffer32wfm(const uint32_t * buff)
 	{
 		if (dspmodeA == DSPCTL_MODE_RX_WFM)
 		{
-			FLOAT_t a0 = demod_WFM(buff [i + DMABUF32RXWFM0I], buff [i + DMABUF32RXWFM0Q]);
-			FLOAT_t a1 = demod_WFM(buff [i + DMABUF32RXWFM1I], buff [i + DMABUF32RXWFM1Q]);
-			FLOAT_t a2 = demod_WFM(buff [i + DMABUF32RXWFM2I], buff [i + DMABUF32RXWFM2Q]);
-			FLOAT_t a3 = demod_WFM(buff [i + DMABUF32RXWFM3I], buff [i + DMABUF32RXWFM3Q]);
+			const FLOAT_t a0 = demod_WFM(buff [i + DMABUF32RXWFM0I], buff [i + DMABUF32RXWFM0Q]);
+			const FLOAT_t a1 = demod_WFM(buff [i + DMABUF32RXWFM1I], buff [i + DMABUF32RXWFM1Q]);
+			const FLOAT_t a2 = demod_WFM(buff [i + DMABUF32RXWFM2I], buff [i + DMABUF32RXWFM2Q]);
+			const FLOAT_t a3 = demod_WFM(buff [i + DMABUF32RXWFM3I], buff [i + DMABUF32RXWFM3Q]);
+
 			const FLOAT_t left = (a0 + a1 + a2 + a3) / 4;
 
-			/* прием WFM (демодуляция в FPGA, только без WITHUSEDUALWATCH)	*/
-			//const FLOAT_t right = (int_fast32_t) buff [i + DMABUF32RX1Q] * rxgate;		// Расширяем 24-х битные числа до 32 бит
-			BEGIN_STAMP2();
-			const FLOAT_t leftFiltered = filterRxAudio_rxA(left, dspmodeA);
-			//const FLOAT_t leftFiltered = filterRxAudio_rxA(get_lout16(), dspmodeA);	// TODO: debug
-			END_STAMP2();
-			savesampleout16denoise(leftFiltered, leftFiltered);
+			savesampleout16denoise(left, left);
 		}
 	}
 }
@@ -5238,8 +5150,10 @@ static RAMFUNC void recordsampleSD(int left, int right)
 
 // перед передачей по DMA в аудиокодек
 //  Здесь ответвляются потоки в USB и для записи на SD CARD
+// realtime level
 void dsp_addsidetone(int16_t * buff)
 {
+	enum { L, R };
 	ASSERT(buff != NULL);
 	ASSERT(gwprof < NPROF);
 	const uint_fast8_t dspmodeA = globDSPMode [gwprof] [0];
@@ -5265,9 +5179,79 @@ void dsp_addsidetone(int16_t * buff)
 			recordsampleUAC(left, right);	// Запись в UAC демодулированного сигнала без озвучки клавиш
 		}
 
-		b [0] = injectsidetone(left, sdtn);
-		b [1] = injectsidetone(right, sdtn);
+		switch (glob_mainsubrxmode)
+		{
+		default:
+		case BOARD_RXMAINSUB_A_A:
+			// left:A/right:A
+			b [L] = b [R] = injectsidetone(left, sdtn);
+			break;
+		case BOARD_RXMAINSUB_A_B:
+			// left:A/right:B
+			b [L] = injectsidetone(left, sdtn);
+			b [R] = injectsidetone(right, sdtn);
+			break;
+		case BOARD_RXMAINSUB_B_A:
+			// left:B/right:A
+			b [L] = injectsidetone(right, sdtn);
+			b [R] = injectsidetone(left, sdtn);
+			break;
+		case BOARD_RXMAINSUB_B_B:
+			// left:B/right:B
+			b [L] = b [R] = injectsidetone(right, sdtn);
+			break;
+		case BOARD_RXMAINSUB_TWO:
+			// left, right:A+B
+			b [L] = b [R] = injectsidetone(((int_fast32_t) left + right) / 2, sdtn);
+			break;
+		}
 	}
+}
+
+static void blockfilter_rxA(FLOAT_t * buff)
+{
+	unsigned i;
+	for (i = 0; i < SPEEXNN; ++ i)
+	{
+		buff [i] = filter_fir_rx_AUDIO_A(buff [i]);
+	}
+}
+
+#if WITHUSEDUALWATCH
+static void blockfilter_rxB(FLOAT_t * buff)
+{
+	unsigned i;
+	for (i = 0; i < SPEEXNN; ++ i)
+	{
+		buff [i] = filter_fir_rx_AUDIO_B(buff [i]);
+	}
+}
+#endif /* WITHUSEDUALWATCH */
+
+// user mode function
+void dsp_audiopostproc(FLOAT_t * left, FLOAT_t * right)
+{
+	const uint_fast8_t dspmodeA = glob_dspmodes [0];
+	const uint_fast8_t tx = isdspmodetx(dspmodeA);
+	const uint_fast8_t m0 = isneedmute(dspmodeA);
+	const uint_fast8_t f0 = isneedfiltering(dspmodeA);
+#if WITHUSEDUALWATCH
+	const uint_fast8_t dspmodeB = tx ? DSPCTL_MODE_IDLE : glob_dspmodes [1];
+	const uint_fast8_t m1 = isneedmute(dspmodeB);
+	const uint_fast8_t f1 = isneedfiltering(dspmodeB);
+#endif /* WITHUSEDUALWATCH */
+	//if (m0)
+	//	memset(left, 0, sizeof * left * SPEEXNN);	// mute
+	//else 
+	if (f0)
+		blockfilter_rxA(left);
+#if WITHUSEDUALWATCH
+	//if (m1)
+	//	memset(right, 0, sizeof * right * SPEEXNN);	// mute
+	//else 
+	if (f1)
+		blockfilter_rxB(right);
+#endif /* WITHUSEDUALWATCH */
 }
 
 // Обработка полученного от DMA буфера с выборками или квадратурами (или двухканальный приём).
@@ -5392,10 +5376,7 @@ void RAMFUNC dsp_extbuffer32rx(const uint32_t * buff)
 				(int_fast32_t) buff [i + DMABUF32RX0I] * rxgate,	// Расширяем 24-х битные числа до 32 бит
 				(int_fast32_t) buff [i + DMABUF32RX0Q] * rxgate	// Расширяем 24-х битные числа до 32 бит
 				);	
-			BEGIN_STAMP2();
-			const FLOAT32P_t filtered = filterRxAudio_Pair(pair, dspmodeA);
-			END_STAMP2();
-			savesampleout16denoise(filtered.IV, filtered.QV);	/* к line output подключен модем - озвучку запрещаем */
+			savesampleout16denoise(pair.IV, pair.QV);	/* к line output подключен модем - озвучку запрещаем */
 		}
 		else
 		{
@@ -5413,104 +5394,7 @@ void RAMFUNC dsp_extbuffer32rx(const uint32_t * buff)
 				dspmodeB,
 				1	// SUB RX
 				);	
-
-
-			switch (glob_mainsubrxmode)
-			{
-			default:
-			case BOARD_RXMAINSUB_A_A:
-				// left:A/right:A
-				{
-					BEGIN_STAMP2();
-					const FLOAT_t filtered = filterRxAudio_rxA(rxA, dspmodeA);
-					END_STAMP2();
-
-					savesampleout16denoise(filtered, filtered);
-				}
-				break;
-
-			case BOARD_RXMAINSUB_A_B:
-				// left:A/right:B
-				if /*(0)*/(dspmodeA == dspmodeB)
-				{
-					// фильтры одинаковые - можем позволить себе паралельную обработку
-					const FLOAT32P_t pair = { { rxA, rxB } };
-					BEGIN_STAMP2();
-					const FLOAT32P_t filtered2 = filterRxAudio_Pair(pair, dspmodeA);
-					END_STAMP2();
-
-					savesampleout16denoise(filtered2.IV, filtered2.QV);
-				}
-				else
-				{
-					const FLOAT32P_t pair = { { rxA, rxB } };
-					BEGIN_STAMP2();
-					const FLOAT32P_t filtered2 = filterRxAudio_Pair2(pair, dspmodeA, dspmodeB);
-					BEGIN_STAMP2();
-
-					savesampleout16denoise(filtered2.IV, filtered2.QV);
-				}
-				break;
-
-			case BOARD_RXMAINSUB_TWO:
-				// в оба аудиоканала поступает сумма выходов приемников.	
-				if /*(0)*/(dspmodeA == dspmodeB)
-				{
-					// фильтры одинаковые - можем позволить себе паралельную обработку
-					const FLOAT32P_t pair = { { rxA, rxB } };
-					BEGIN_STAMP2();
-					const FLOAT32P_t filtered2 = filterRxAudio_Pair(pair, dspmodeA);
-					const FLOAT_t filtered = (filtered2.IV + filtered2.QV) / 2;
-					END_STAMP2();
-
-					savesampleout16denoise(filtered, filtered);
-				}
-				else
-				{
-					const FLOAT32P_t pair = { { rxA, rxB } };
-					BEGIN_STAMP2();
-					const FLOAT32P_t filtered2 = filterRxAudio_Pair2(pair, dspmodeA, dspmodeB);
-					const FLOAT_t filtered = (filtered2.IV + filtered2.QV) / 2;
-					END_STAMP2();
-
-					savesampleout16denoise(filtered, filtered);
-				}
-				break;
-
-			case BOARD_RXMAINSUB_B_A:
-				// left:B/right:A
-				if /*(0)*/(dspmodeA == dspmodeB)
-				{
-					// фильтры одинаковые - можем позволить себе паралельную обработку
-					const FLOAT32P_t pair = { { rxA, rxB } };
-					BEGIN_STAMP2();
-					const FLOAT32P_t filtered2 = filterRxAudio_Pair(pair, dspmodeA);
-					END_STAMP2();
-
-					savesampleout16denoise(filtered2.QV, filtered2.IV);
-				}
-				else
-				{
-					const FLOAT32P_t pair = { { rxA, rxB } };
-					BEGIN_STAMP2();
-					const FLOAT32P_t filtered2 = filterRxAudio_Pair2(pair, dspmodeA, dspmodeB);
-					END_STAMP2();
-
-					savesampleout16denoise(filtered2.QV, filtered2.IV);
-				}
-				break;
-
-			case BOARD_RXMAINSUB_B_B:
-				// left:B/right:B
-				{
-					BEGIN_STAMP2();
-					const FLOAT_t filtered = filterRxAudio_rxB(rxB, dspmodeB);	// todo: пока только с фильтром
-					END_STAMP2();
-
-					savesampleout16denoise(filtered, filtered);
-				}
-				break;
-			}
+			savesampleout16denoise(rxA, rxB);
 		}
 
 	#else /* WITHUSEDUALWATCH */
@@ -5535,7 +5419,6 @@ void RAMFUNC dsp_extbuffer32rx(const uint32_t * buff)
 				(int_fast32_t) buff [i + DMABUF32RX0I] * rxgate,	// Расширяем 24-х битные числа до 32 бит
 				(int_fast32_t) buff [i + DMABUF32RX0Q] * rxgate	// Расширяем 24-х битные числа до 32 бит
 				);	
-
 			savesampleout16denoise(rv.IV, rv.QV);	/* к line output подключен модем - озвучку запрещаем */
 		}
 		else
@@ -5547,12 +5430,7 @@ void RAMFUNC dsp_extbuffer32rx(const uint32_t * buff)
 				dspmodeA,
 				0		// MAIN RX
 				);	
-
-			BEGIN_STAMP2();
-			const FLOAT_t leftFiltered = filterRxAudio_rxA(left, dspmodeA);
-			END_STAMP2();
-
-			savesampleout16denoise(leftFiltered, leftFiltered);
+			savesampleout16denoise(left, left);
 		}
 
 	#endif /*  DMABUFSTEP32 == 4 */
@@ -5571,13 +5449,8 @@ void RAMFUNC dsp_extbuffer32rx(const uint32_t * buff)
 	#else /* WITHLOOPBACKTEST */
 
 		processafadcsample(vi, dspmodeA, shape, ctcss);	// Передатчик - использование принятого с AF ADC буфера
-
 		const FLOAT_t left = processifadcsamplei(buff [i + DMABUF32RX] * rxgate, dspmodeA);	// Расширяем 24-х битные числа до 32 бит
-		BEGIN_STAMP2();
-		const FLOAT_t leftFiltered = filterRxAudio_rxA(left, dspmodeA);
-		END_STAMP2();
-
-		savesampleout16denoise(leftFiltered, leftFiltered);
+		savesampleout16denoise(left, left);
 
 	#endif /* WITHLOOPBACKTEST */
 #endif /* WITHDSPEXTDDC */
@@ -6439,16 +6312,6 @@ board_set_txaudio(uint_fast8_t v)
 	}
 }
 
-// Левый/правый, A - main RX, B - sub RX
-void board_set_mainsubrxmode(uint_fast8_t v)
-{
-	if (glob_mainsubrxmode != v)
-	{
-		glob_mainsubrxmode = v;
-		board_dsp1regchanged();
-	}
-}
-
 // Параметр для регулировки уровня на входе аудио-ЦАП при работе с LINE IN
 void
 board_set_lineamp(uint_fast16_t v)
@@ -6704,6 +6567,12 @@ board_set_modem_mode(uint_fast8_t v)
 		glob_modem_mode = v;
 		board_flt1regchanged();
 	}
+}
+
+// Левый/правый, A - main RX, B - sub RX
+void board_set_mainsubrxmode(uint_fast8_t v)
+{
+	glob_mainsubrxmode = v;
 }
 
 #if WITHSPISLAVE
