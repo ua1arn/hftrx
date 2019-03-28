@@ -778,7 +778,6 @@ static RAMFUNC void buffers_savetonull16(voice16_t * p)
 // Сохранить USB UAC IN буфер в никуда...
 static RAMFUNC void buffers_savetonulluacin(uacin16_t * p)
 {
-	ASSERT(p->tag == BUFFTAG_UACIN16);
 	LOCK(& locklist16);
 	InsertHeadList2(& uacinfree16, & p->item);
 	UNLOCK(& locklist16);
@@ -985,7 +984,6 @@ static uint_fast8_t isrts96(void)
 static RAMFUNC void
 buffers_savetouacin96rts(voice96rts_t * p)
 {
-	ASSERT(p->tag == BUFFTAG_RTS96);
 #if WITHBUFFERSDEBUG
 	// подсчёт скорости в сэмплах за секунду
 	debugcount_rtsadc += sizeof p->buff / sizeof p->buff [0] / DMABUFSTEP96RTS;	// в буфере пары сэмплов по три байта
@@ -1000,7 +998,6 @@ buffers_savetouacin96rts(voice96rts_t * p)
 
 static void buffers_savetonull96rts(voice96rts_t * p)
 {
-	ASSERT(p->tag == BUFFTAG_RTS96);
 	LOCK(& locklist16);
 	InsertHeadList2(& voicesfree96rts, & p->item);
 	UNLOCK(& locklist16);
@@ -1012,13 +1009,11 @@ static void buffers_savetonull96rts(voice96rts_t * p)
 static RAMFUNC void
 buffers_savetouacin(uacin16_t * p)
 {
-	ASSERT(p->tag == BUFFTAG_UACIN16);
 #if WITHBUFFERSDEBUG
 	// подсчёт скорости в сэмплах за секунду
 	debugcount_uacin += sizeof p->buff / sizeof p->buff [0] / DMABUFSTEPUACIN16;	// в буфере пары сэмплов по три байта
 #endif /* WITHBUFFERSDEBUG */
 	LOCK(& locklist16);
-	ASSERT(p->tag == BUFFTAG_UACIN16);
 	InsertHeadList2(& uacinready16, & p->item);
 	UNLOCK(& locklist16);
 
@@ -2107,7 +2102,6 @@ void savesampleout16stereo_user(int_fast16_t ch0, int_fast16_t ch1)
 			PLIST_ENTRY t = RemoveTailList2(& uacinready16);
 			uacin16_t * const p = CONTAINING_RECORD(t, uacin16_t, item);
 			UNLOCK(& locklist16);
-			ASSERT(p->tag == BUFFTAG_UACIN16);
 			return (uintptr_t) & p->buff;
 		}
 		UNLOCK(& locklist16);
