@@ -45,8 +45,8 @@ static void hardware_dummy_enable(void)
 static uintptr_t 
 dma_invalidate16rx(uintptr_t addr)
 {
-	//arm_hardware_invalidate(addr, DMABUFFSIZE16 * sizeof (uint16_t));
-	arm_hardware_flush_invalidate(addr, DMABUFFSIZE16 * sizeof (uint16_t));
+	//arm_hardware_invalidate(addr, DMABUFFSIZE16 * sizeof (int16_t));
+	arm_hardware_flush_invalidate(addr, DMABUFFSIZE16 * sizeof (int16_t));
 	return addr;
 }
 
@@ -55,7 +55,7 @@ dma_invalidate16rx(uintptr_t addr)
 static uintptr_t 
 dma_flush16tx(uintptr_t addr)
 {
-	arm_hardware_flush_invalidate(addr, DMABUFFSIZE16 * sizeof (uint16_t));
+	arm_hardware_flush_invalidate(addr, DMABUFFSIZE16 * sizeof (int16_t));
 	return addr;
 }
 
@@ -2060,6 +2060,8 @@ enum
 	R7S721_SSIF_CKDIV128 = 7,
 };
 
+#define R7S721_MASTER 1
+
 #if WITHI2SHW
 
 // audio codec
@@ -2126,8 +2128,8 @@ static void r7s721_ssif0_dmarx_initialize(void)
 	DMAC0.N1DA_n = dma_invalidate16rx(allocate_dmabuffer16());
 
     /* Set Transfer Size */
-    DMAC0.N0TB_n = DMABUFFSIZE16 * sizeof (uint16_t);	// размер в байтах
-    DMAC0.N1TB_n = DMABUFFSIZE16 * sizeof (uint16_t);	// размер в байтах
+    DMAC0.N0TB_n = DMABUFFSIZE16 * sizeof (int16_t);	// размер в байтах
+    DMAC0.N1TB_n = DMABUFFSIZE16 * sizeof (int16_t);	// размер в байтах
 
 	// Values from Table 9.4 On-Chip Peripheral Module Requests
 	// SSIRXI0 (receive data full)
@@ -2197,8 +2199,8 @@ static void r7s721_ssif0_dmatx_initialize(void)
     DMAC1.N1DA_n = (uint32_t) & SSIF0.SSIFTDR;	// Fixed destination address
 
     /* Set Transfer Size */
-    DMAC1.N0TB_n = DMABUFFSIZE16 * sizeof (uint16_t);	// размер в байтах
-    DMAC1.N1TB_n = DMABUFFSIZE16 * sizeof (uint16_t);	// размер в байтах
+    DMAC1.N0TB_n = DMABUFFSIZE16 * sizeof (int16_t);	// размер в байтах
+    DMAC1.N1TB_n = DMABUFFSIZE16 * sizeof (int16_t);	// размер в байтах
 
 	// Values from Table 9.4 On-Chip Peripheral Module Requests
 	// SSITXI0 (transmit data empty)
@@ -2251,7 +2253,6 @@ static void r7s721_ssif0_dmatx_initialize(void)
 	DMAC1.CHCTRL_n = 1 * (1U << 0);		// SETEN
 }
 
-#define R7S721_MASTER 1
 // Возможно, удастся перейти на master - но надо решить проблему с очередями (FIFO) в FPGA
 // Была попытка сделать так: AUDIO_X1 формируется только после появления i2s_ready - не работает
 // Правда, и в SLAVE нельзя сказать что работает - около пяти секунд проходит до начала нормальной раболты.

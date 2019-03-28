@@ -129,7 +129,7 @@ enum
 	typedef ALIGNX_BEGIN struct voice16_tag
 	{
 		LIST_ENTRY item;
-		ALIGNX_BEGIN uint16_t buff [DMABUFFSIZE16] ALIGNX_END;
+		ALIGNX_BEGIN int16_t buff [DMABUFFSIZE16] ALIGNX_END;
 	} ALIGNX_END voice16_t;
 
 	// I/Q data to FPGA or IF CODEC
@@ -245,20 +245,18 @@ static LIST_ENTRY2 modemsrx8;	// Буферы с принятымти через модем данными
 
 #endif /* WITHMODEM */
 
-#if WITHDENOISER
-
-	typedef ALIGNX_BEGIN struct denoise16
-	{
-		LIST_ENTRY item;
-		ALIGNX_BEGIN spx_int16_t buff [NTRX] [SPEEXNN] ALIGNX_END;
-	} ALIGNX_END denoise16_t;
+typedef ALIGNX_BEGIN struct denoise16
+{
+	LIST_ENTRY item;
+	ALIGNX_BEGIN FLOAT_t buff [NTRX] [SPEEXNN] ALIGNX_END;
+} ALIGNX_END denoise16_t;
 
 static LIST_ENTRY2 speexfree16;		// Свободные буферы
 static LIST_ENTRY2 speexready16;	// Буферы для обработки speex
 static int speexready16enable;
 
 // Буферы с принятымти от обработчиков прерываний сообщениями
-uint_fast8_t takespeexready_user(spx_int16_t * * dest)
+static uint_fast8_t takespeexready_user(FLOAT_t * * dest)
 {
 	ASSERT_IRQL_USER();
 	global_disableIRQ();
@@ -283,13 +281,39 @@ uint_fast8_t takespeexready_user(spx_int16_t * * dest)
 }
 
 // Освобождение обработанного буфера сообщения
-void releasespeexbuffer_user(spx_int16_t * t)
+static void releasespeexbuffer_user(FLOAT_t * t)
 {
 	ASSERT_IRQL_USER();
 	global_disableIRQ();
 	denoise16_t * const p = CONTAINING_RECORD(t, denoise16_t, buff [0]);
 	InsertHeadList2(& speexfree16, & p->item);
 	global_enableIRQ();
+}
+
+// user-mode processing
+void audioproc_spool_user(void)
+{
+	FLOAT_t * p [NTRX];
+
+	while (takespeexready_user(& p [0]))
+	{
+#if WITHDENOISER
+		speex_proc(0, p [0]);
+#if WITHUSEDUALWATCH
+		speex_proc(1, p [1]);
+#endif /* WITHUSEDUALWATCH */
+#endif /* WITHDENOISER */
+		unsigned i;
+		for (i = 0; i < SPEEXNN; ++ i)
+		{
+#if WITHUSEDUALWATCH
+			savesampleout16stereo_user(p [0] [i], p [1] [i]);	// to AUDIO codec
+#else /* WITHUSEDUALWATCH */
+			savesampleout16stereo_user(p [0] [i], p [0] [i]);	// to AUDIO codec
+#endif /* WITHUSEDUALWATCH */
+		}
+		releasespeexbuffer_user(p [0]);
+	}
 }
 
 denoise16_t * allocate_dmabuffe16rdenoise(void)
@@ -306,7 +330,7 @@ denoise16_t * allocate_dmabuffe16rdenoise(void)
 	return 0;
 }
 
-void savesampleout16denoise(int_fast16_t ch0, int_fast16_t ch1)
+void savesampleout16denoise(FLOAT_t ch0, FLOAT_t ch1)
 {
 	static denoise16_t * p = NULL;
 	static unsigned n;
@@ -330,7 +354,6 @@ void savesampleout16denoise(int_fast16_t ch0, int_fast16_t ch1)
 		p = NULL;
 	}
 }
-#endif /* WITHDENOISER */
 
 /* Cообщения от уровня обработчиков прерываний к user-level функциям. */
 
@@ -660,7 +683,6 @@ void buffers_initialize(void)
 	}
 #endif /* WITHMODEM */
 
-#if WITHDENOISER
 	static denoise16_t speexarray16 [4];
 
 	InitializeListHead2(& speexfree16);	// Незаполненные
@@ -671,7 +693,6 @@ void buffers_initialize(void)
 		denoise16_t * const p = & speexarray16 [i];
 		InsertHeadList2(& speexfree16, & p->item);
 	}
-#endif /* WITHDENOISER */
 
 #endif /* WITHINTEGRATEDDSP */
 
@@ -1029,8 +1050,6 @@ int_fast32_t dsp_get_samplerateuacin_rts(void)		// RTS samplerate
 
 #endif /* WITHUSBUAC */
 
-#if WITHI2SHW
-
 // получить пустой буфер (с "тишиной")
 static RAMFUNC voice16_t *
 buffers_getsilence(void)
@@ -1042,9 +1061,9 @@ buffers_getsilence(void)
 }
 
 // получить пустой буфер (с "тишиной")
-static RAMFUNC uint32_t getfilled_dmabuffer16silence(void)
+static RAMFUNC uintptr_t getfilled_dmabuffer16silence(void)
 {
-	return (uint32_t) buffers_getsilence()->buff;
+	return (uintptr_t) buffers_getsilence()->buff;
 }
 
 
@@ -1058,7 +1077,6 @@ buffers_savefromrxout(voice16_t * p)
 	else
 		buffers_savetophones16(p);
 }
-#endif /* WITHI2SHW */
 
 // приняли данные от USB AUDIO
 static RAMFUNC void
@@ -1109,14 +1127,14 @@ static RAMFUNC unsigned long ulmin(
 
 // возвращает количество полученых сэмплов
 static RAMFUNC unsigned getsamplemsuacout(
-	uint16_t * buff,	// текущая позиция в целевом буфере
+	int16_t * buff,	// текущая позиция в целевом буфере
 	unsigned size		// количество оставшихся одиночных сэмплов
 	)
 {
 	static voice16_t * p = NULL;
 	enum { NPARTS = 3 };
 	static uint_fast8_t part = 0;
-	static uint16_t * datas [NPARTS] = { NULL, NULL };		// начальный адрес пары сэмплов во входном буфере
+	static int16_t * datas [NPARTS] = { NULL, NULL };		// начальный адрес пары сэмплов во входном буфере
 	static unsigned sizes [NPARTS] = { 0, 0 };			// количество сэмплов во входном буфере
 	// исправляемая погрешность = 0.02% - один сэмпл добавить/убрать на 5000 сэмплов
 	enum { SKIPPED = 5000 / (DMABUFFSIZE16 / DMABUFSTEP16) };
@@ -1166,11 +1184,11 @@ static RAMFUNC unsigned getsamplemsuacout(
 				datas [part + 1] = & p->buff [0];
 				sizes [part + 1] = DMABUFFSIZE16;
 #else
-				static uint16_t addsample [DMABUFSTEP16];
+				static int16_t addsample [DMABUFSTEP16];
 				enum { HALF = DMABUFFSIZE16 / 2 };
 				// значения как среднее арифметическое сэмплов, между которыми вставляем дополнительный.
-				addsample [0] = ((int_fast32_t) (int16_t) p->buff [HALF - DMABUFSTEP16 + 0] +  (int16_t) p->buff [HALF + 0]) / 2;	// Left
-				addsample [1] = ((int_fast32_t) (int16_t) p->buff [HALF - DMABUFSTEP16 + 1] +  (int16_t) p->buff [HALF + 1]) / 2;	// Right
+				addsample [0] = ((int_fast32_t) p->buff [HALF - DMABUFSTEP16 + 0] +  p->buff [HALF + 0]) / 2;	// Left
+				addsample [1] = ((int_fast32_t) p->buff [HALF - DMABUFSTEP16 + 1] +  p->buff [HALF + 1]) / 2;	// Right
 				part = NPARTS - 3;
 				datas [0] = & p->buff [0];		// часть перед вставкой
 				sizes [0] = HALF;
@@ -1617,6 +1635,9 @@ void RAMFUNC processing_dmabuffer32rx(uintptr_t addr)
 	while (rx32adc >= CNT16)
 	{
 		buffers_resample();		// формирование одного буфера синхронного потока из N несинхронного
+#if ! WITHI2SHW
+		release_dmabuffer16(getfilled_dmabuffer16phones());
+#endif /* WITHI2SHW */
 		rx32adc -= CNT16;
 	}
 #endif /* WITHUSBUAC */
@@ -1697,7 +1718,6 @@ uintptr_t getfilled_dmabuffer32tx_sub(void)
 	return allocate_dmabuffer32tx();
 }
 
-#if WITHI2SHW
 // Этой функцией пользуются обработчики прерываний DMA
 // получить буфер для передачи через AF DAC
 uintptr_t getfilled_dmabuffer16phones(void)
@@ -1708,13 +1728,12 @@ uintptr_t getfilled_dmabuffer16phones(void)
 #endif /* WITHBUFFERSDEBUG */
 
 	LOCK(& locklist16);
-	global_disableIRQ();
 	if (! IsListEmpty2(& voicesphones16))
 	{
 		PLIST_ENTRY t = RemoveTailList2(& voicesphones16);
 		voice16_t * const p = CONTAINING_RECORD(t, voice16_t, item);
-		global_enableIRQ();
 		UNLOCK(& locklist16);
+		dsp_addsidetone(p->buff);
 		return (uintptr_t) & p->buff;
 	}
 	UNLOCK(& locklist16);
@@ -1723,7 +1742,6 @@ uintptr_t getfilled_dmabuffer16phones(void)
 #endif /* WITHBUFFERSDEBUG */
 	return getfilled_dmabuffer16silence();		// аварийная ветка - работает первые несколько раз
 }
-#endif /* WITHI2SHW */
 
 //////////////////////////////////////////
 // Поэлементное заполнение буфера IF DAC
@@ -1760,38 +1778,8 @@ void savesampleout32stereo(int_fast32_t ch0, int_fast32_t ch1)
 //////////////////////////////////////////
 // Поэлементное заполнение буфера AF DAC
 
-// Вызывается из ARM_REALTIME_PRIORITY обработчика прерывания
-// vl, vr: 16 bit, signed
-void savesampleout16stereo(int_fast16_t ch0, int_fast16_t ch1)
+void savesampleout16stereo_user(FLOAT_t ch0, FLOAT_t ch1)
 {
-#if WITHI2SHW
-	// если есть инициализированный канал для выдачи звука
-	static voice16_t * p = NULL;
-	static unsigned n;
-
-	if (p == NULL)
-	{
-		uintptr_t addr = allocate_dmabuffer16();
-		p = CONTAINING_RECORD(addr, voice16_t, buff);
-		n = 0;
-	}
-
-	p->buff [n + 0] = ch0;		// sample value
-	p->buff [n + 1] = ch1;	// sample value
-
-	n += DMABUFSTEP16;
-
-	if (n >= DMABUFFSIZE16)
-	{
-		buffers_savefromrxout(p);
-		p = NULL;
-	}
-#endif /* WITHI2SHW */
-}
-
-void savesampleout16stereo_user(int_fast16_t ch0, int_fast16_t ch1)
-{
-#if WITHI2SHW
 	// если есть инициализированный канал для выдачи звука
 	static voice16_t * p = NULL;
 	static unsigned n = 0;
@@ -1817,7 +1805,6 @@ void savesampleout16stereo_user(int_fast16_t ch0, int_fast16_t ch1)
 		global_enableIRQ();
 		p = NULL;
 	}
-#endif /* WITHI2SHW */
 }
 
 #if WITHUSBUAC
@@ -2197,7 +2184,7 @@ static uint_fast16_t ulmin16(uint_fast16_t a, uint_fast16_t b)
 	return a < b ? a : b;
 }
 
-static uintptr_t uacoutaddr;	// address of DMABUFFSIZE16 * sizeof (uint16_t) bytes
+static uintptr_t uacoutaddr;	// address of DMABUFFSIZE16 * sizeof (int16_t) bytes
 static uint_fast16_t uacoutbufflevel;	// количество байтовЮ на которые заполнен буфер
 
 /* вызывается при запрещённых прерываниях. */
@@ -2230,7 +2217,7 @@ void uacout_buffer_stop(void)
 // Работает на ARM_SYSTEM_PRIORITY
 void uacout_buffer_save(const uint8_t * buff, uint_fast16_t size)
 {
-	const size_t dmabuffer16size = DMABUFFSIZE16 * sizeof (uint16_t);	// размер в байтах
+	const size_t dmabuffer16size = DMABUFFSIZE16 * sizeof (int16_t);	// размер в байтах
 
 #if WITHUABUACOUTAUDIO48MONO
 

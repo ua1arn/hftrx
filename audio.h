@@ -393,6 +393,7 @@ uintptr_t getfilled_dmabuffer16phones(void);
 
 void dsp_extbuffer32rx(const uint32_t * buff);	// RX
 void dsp_extbuffer32wfm(const uint32_t * buff);	// RX
+void dsp_addsidetone(int16_t * buff);			// перед передачей по DMA в аудиокодек
 
 void processing_dmabuffer16rx(uintptr_t addr);	// обработать буфер после оцифровки AF ADC
 void processing_dmabuffer16rxuac(uintptr_t addr);	// обработать буфер после приёма пакета с USB AUDIO
@@ -418,8 +419,7 @@ void savemodemtxbuffer(uint8_t * dest, unsigned size_t);	// Готов буфер с данным
 void releasemodembuffer(uint8_t * dest);
 void releasemodembuffer_low(uint8_t * dest);
 
-void savesampleout16stereo_user(int_fast16_t ch0, int_fast16_t ch1);
-void savesampleout16stereo(int_fast16_t ch0, int_fast16_t ch1);
+void savesampleout16stereo_user(FLOAT_t ch0, FLOAT_t ch1);
 void savesampleout32stereo(int_fast32_t ch0, int_fast32_t ch1);
 void savesampleout96stereo(int_fast32_t ch0, int_fast32_t ch1);
 void savesampleout192stereo(int_fast32_t ch0, int_fast32_t ch1);
@@ -429,12 +429,17 @@ void savesampleout192stereo(int_fast32_t ch0, int_fast32_t ch1);
 	#include "arch.h"
 	#include "speex\speex_preprocess.h"
 
-	uint_fast8_t takespeexready_user(spx_int16_t * * dest);
-	void releasespeexbuffer_user(spx_int16_t * t);
+#else
+
+	#define SPEEXNN 1024
+
 
 #endif /* WITHDENOISER */
 
-void savesampleout16denoise(int_fast16_t ch0, int_fast16_t ch1);
+void speex_proc(uint_fast8_t pathi, FLOAT_t * buff);
+void audioproc_spool_user(void);
+
+void savesampleout16denoise(FLOAT_t ch0, FLOAT_t ch1);
 
 
 uint32_t allocate_dmabuffer192rts(void);

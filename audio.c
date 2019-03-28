@@ -4703,22 +4703,6 @@ void dtmftest(void)
 
 #endif /* WITHDTMFPROCESSING */
 
-// Выдача в USB UAC
-static RAMFUNC void recordsampleUAC(int left, int right)
-{
-#if WITHUSBUAC
-	savesamplerecord16uacin(left, right);	// Запись демодулированного сигнала без озвучки клавиш в USB 
-#endif /* WITHUSBUAC */
-}
-
-// Запись на SD CARD
-static RAMFUNC void recordsampleSD(int left, int right)
-{
-#if WITHUSEAUDIOREC
-	savesamplerecord16SD(left, right);	// Запись демодулированного сигнала без озвучки клавиш на SD CARD
-#endif /* WITHUSEAUDIOREC */
-}
-
 static RAMFUNC uint_fast8_t isneedfiltering(uint_fast8_t dspmode)
 {
 	switch (dspmode)
@@ -5229,14 +5213,62 @@ void RAMFUNC dsp_extbuffer32wfm(const uint32_t * buff)
 			const FLOAT_t leftFiltered = filterRxAudio_rxA(left, dspmodeA);
 			//const FLOAT_t leftFiltered = filterRxAudio_rxA(get_lout16(), dspmodeA);	// TODO: debug
 			END_STAMP2();
-			recordsampleSD(leftFiltered, leftFiltered);	// Запись демодулированного сигнала без озвучки клавиш
-			recordsampleUAC(leftFiltered, leftFiltered);	// Запись в UAC демодулированного сигнала без озвучки клавиш
-			savesampleout16stereo(injectsidetone(leftFiltered, sdtn), injectsidetone(leftFiltered, sdtn));
+			savesampleout16denoise(leftFiltered, leftFiltered);
 		}
 	}
 }
 
 #endif /* WITHDSPEXTDDC */
+
+// Выдача в USB UAC
+static RAMFUNC void recordsampleUAC(int left, int right)
+{
+#if WITHUSBUAC
+	savesamplerecord16uacin(left, right);	// Запись демодулированного сигнала без озвучки клавиш в USB 
+#endif /* WITHUSBUAC */
+}
+
+// Запись на SD CARD
+static RAMFUNC void recordsampleSD(int left, int right)
+{
+#if WITHUSEAUDIOREC
+	savesamplerecord16SD(left, right);	// Запись демодулированного сигнала без озвучки клавиш на SD CARD
+#endif /* WITHUSEAUDIOREC */
+}
+
+// перед передачей по DMA в аудиокодек
+//  Здесь ответвляются потоки в USB и для записи на SD CARD
+void dsp_addsidetone(int16_t * buff)
+{
+	ASSERT(buff != NULL);
+	ASSERT(gwprof < NPROF);
+	const uint_fast8_t dspmodeA = globDSPMode [gwprof] [0];
+	const uint_fast8_t tx = isdspmodetx(dspmodeA);
+	unsigned i;
+	for (i = 0; i < DMABUFFSIZE16; i += DMABUFSTEP16)
+	{
+		int16_t * const b = & buff [i];
+		const FLOAT_t sdtn = get_float_sidetone() * phonefence * shapeSidetoneStep();	// Здесь значение выборки в диапазоне, допустимом для кодека
+		const int16_t monitx = getmonitx(dspmodeA, sdtn, 0);
+
+		int_fast16_t left = (int16_t) b [0];
+		int_fast16_t right = (int16_t) b [1];
+		//
+		if (tx)
+		{
+			recordsampleSD(monitx, monitx);	// Запись демодулированного сигнала без озвучки клавиш
+			recordsampleUAC(monitx, monitx);	// Запись в UAC демодулированного сигнала без озвучки клавиш
+		}
+		else
+		{
+			recordsampleSD(left, right);	// Запись демодулированного сигнала без озвучки клавиш
+			recordsampleUAC(left, right);	// Запись в UAC демодулированного сигнала без озвучки клавиш
+		}
+
+		b [0] = injectsidetone(left, sdtn);
+		b [1] = injectsidetone(right, sdtn);
+	}
+}
 
 // Обработка полученного от DMA буфера с выборками или квадратурами (или двухканальный приём).
 // Вызывается на ARM_REALTIME_PRIORITY уровне.
@@ -5257,9 +5289,7 @@ void RAMFUNC dsp_extbuffer32rx(const uint32_t * buff)
 	{
 	#if ! WITHTRANSPARENTIQ
 		const FLOAT_t ctcss = get_float_subtone() * txlevelfenceSSB;
-		const FLOAT_t sdtn = get_float_sidetone() * phonefence * shapeSidetoneStep();	// Здесь значение выборки в диапазоне, допустимом для кодека
 		const INT32P_t vi = getsampmlemike2();	// с микрофона (или 0, если ещё не запустился) */
-		const FLOAT_t monitx = getmonitx(dspmodeA, sdtn, vi.IV);
 		const FLOAT_t shape = shapeCWEnvelopStep() * scaleDAC;	// 0..1
 	#endif /* ! WITHTRANSPARENTIQ */
 
@@ -5327,7 +5357,7 @@ void RAMFUNC dsp_extbuffer32rx(const uint32_t * buff)
 			inp_samples [dtmfbi] = vi.IV;
 			++ dtmfbi;
 		}
-		savesampleout16stereo(injectsidetone(dual.IV, sdtn), injectsidetone(dual.QV, sdtn));
+		savesampleout16denoise(dual.IV, dual.QV);
 
 #elif WITHDSPEXTDDC
 	// Режимы трансиверов с внешним DDC
@@ -5340,17 +5370,12 @@ void RAMFUNC dsp_extbuffer32rx(const uint32_t * buff)
 		processafadcsampleiq(dual, dspmodeA, shape, ctcss);	// Передатчик - формирование одного сэмпда (пары I/Q).
 		//
 		// Тестирование источников и потребителей звука
-		recordsampleSD(dual.IV, dual.QV);	// Запись демодулированного сигнала без озвучки клавиш
-		recordsampleUAC(dual.IV, dual.QV);	// Запись в UAC демодулированного сигнала без озвучки клавиш
-		savesampleout16stereo(injectsidetone(dual.IV, sdtn), injectsidetone(dual.QV, sdtn));
-		//savesampleout16stereo(dual.IV, dual.QV);
+		savesampleout16denoise(dual.IV, dual.QV);
 
 	#elif WITHUSBHEADSET
 		/* трансивер работает USB гарнитурой для компютера - режим тестирования */
 
-		recordsampleUAC(get_lout16(), get_rout16());	// Запись в UAC демодулированного сигнала без озвучки клавиш
-		savesampleout16stereo(vi.IV, vi.QV);	/* к line output подключен модем - озвучку запрещаем */
-		//savesampleout16stereo(injectsidetone(vi.IV, sdtn), injectsidetone(vi.QV, sdtn));
+		savesampleout16denoise(0, 0);	// Посе фильтрации будет проигнорированно
 		savesampleout32stereo(iq2tx(0), iq2tx(0));
 
 	#elif WITHUSEDUALWATCH
@@ -5370,9 +5395,7 @@ void RAMFUNC dsp_extbuffer32rx(const uint32_t * buff)
 			BEGIN_STAMP2();
 			const FLOAT32P_t filtered = filterRxAudio_Pair(pair, dspmodeA);
 			END_STAMP2();
-			recordsampleSD(tx ? monitx : filtered.IV, tx ? monitx : filtered.QV);	// Запись демодулированного сигнала без озвучки клавиш
-			recordsampleUAC(tx ? monitx : filtered.IV, tx ? monitx : filtered.QV);	// Запись в UAC демодулированного сигнала без озвучки клавиш
-			savesampleout16stereo(filtered.IV, filtered.QV);	/* к line output подключен модем - озвучку запрещаем */
+			savesampleout16denoise(filtered.IV, filtered.QV);	/* к line output подключен модем - озвучку запрещаем */
 		}
 		else
 		{
@@ -5402,14 +5425,7 @@ void RAMFUNC dsp_extbuffer32rx(const uint32_t * buff)
 					const FLOAT_t filtered = filterRxAudio_rxA(rxA, dspmodeA);
 					END_STAMP2();
 
-					//filtered = get_lout16();
-					recordsampleSD(tx ? monitx : filtered, tx ? monitx : filtered);	// Запись демодулированного сигнала без озвучки клавиш
-					recordsampleUAC(tx ? monitx : filtered, tx ? monitx : filtered);	// Запись в UAC демодулированного сигнала без озвучки клавиш
-#if WITHDENOISER
 					savesampleout16denoise(filtered, filtered);
-#else /* WITHDENOISER */
-					savesampleout16stereo(injectsidetone(filtered, sdtn), injectsidetone(filtered, sdtn));
-#endif /* WITHDENOISER */
 				}
 				break;
 
@@ -5423,9 +5439,7 @@ void RAMFUNC dsp_extbuffer32rx(const uint32_t * buff)
 					const FLOAT32P_t filtered2 = filterRxAudio_Pair(pair, dspmodeA);
 					END_STAMP2();
 
-					recordsampleSD(tx ? monitx : filtered2.IV, tx ? monitx : filtered2.QV);	// Запись демодулированного сигнала без озвучки клавиш
-					recordsampleUAC(tx ? monitx : filtered2.IV, tx ? monitx : filtered2.QV);	// Запись в UAC демодулированного сигнала без озвучки клавиш
-					savesampleout16stereo(injectsidetone(filtered2.IV, sdtn), injectsidetone(filtered2.QV, sdtn));
+					savesampleout16denoise(filtered2.IV, filtered2.QV);
 				}
 				else
 				{
@@ -5434,9 +5448,7 @@ void RAMFUNC dsp_extbuffer32rx(const uint32_t * buff)
 					const FLOAT32P_t filtered2 = filterRxAudio_Pair2(pair, dspmodeA, dspmodeB);
 					BEGIN_STAMP2();
 
-					recordsampleSD(tx ? monitx : filtered2.IV, tx ? monitx : filtered2.QV);	// Запись демодулированного сигнала без озвучки клавиш
-					recordsampleUAC(tx ? monitx : filtered2.IV, tx ? monitx : filtered2.QV);	// Запись в UAC демодулированного сигнала без озвучки клавиш
-					savesampleout16stereo(injectsidetone(filtered2.IV, sdtn), injectsidetone(filtered2.QV, sdtn));
+					savesampleout16denoise(filtered2.IV, filtered2.QV);
 				}
 				break;
 
@@ -5451,9 +5463,7 @@ void RAMFUNC dsp_extbuffer32rx(const uint32_t * buff)
 					const FLOAT_t filtered = (filtered2.IV + filtered2.QV) / 2;
 					END_STAMP2();
 
-					recordsampleSD(tx ? monitx : filtered, tx ? monitx : filtered);	// Запись демодулированного сигнала без озвучки клавиш
-					recordsampleUAC(tx ? monitx : filtered, tx ? monitx : filtered);	// Запись в UAC демодулированного сигнала без озвучки клавиш
-					savesampleout16stereo(injectsidetone(filtered, sdtn), injectsidetone(filtered, sdtn));
+					savesampleout16denoise(filtered, filtered);
 				}
 				else
 				{
@@ -5463,9 +5473,7 @@ void RAMFUNC dsp_extbuffer32rx(const uint32_t * buff)
 					const FLOAT_t filtered = (filtered2.IV + filtered2.QV) / 2;
 					END_STAMP2();
 
-					recordsampleSD(tx ? monitx : filtered, tx ? monitx : filtered);	// Запись демодулированного сигнала без озвучки клавиш
-					recordsampleUAC(tx ? monitx : filtered, tx ? monitx : filtered);	// Запись в UAC демодулированного сигнала без озвучки клавиш
-					savesampleout16stereo(injectsidetone(filtered, sdtn), injectsidetone(filtered, sdtn));
+					savesampleout16denoise(filtered, filtered);
 				}
 				break;
 
@@ -5479,9 +5487,7 @@ void RAMFUNC dsp_extbuffer32rx(const uint32_t * buff)
 					const FLOAT32P_t filtered2 = filterRxAudio_Pair(pair, dspmodeA);
 					END_STAMP2();
 
-					recordsampleSD(tx ? monitx : filtered2.QV, tx ? monitx : filtered2.IV);	// Запись демодулированного сигнала без озвучки клавиш
-					recordsampleUAC(tx ? monitx : filtered2.QV, tx ? monitx : filtered2.IV);	// Запись в UAC демодулированного сигнала без озвучки клавиш
-					savesampleout16stereo(injectsidetone(filtered2.QV, sdtn), injectsidetone(filtered2.IV, sdtn));
+					savesampleout16denoise(filtered2.QV, filtered2.IV);
 				}
 				else
 				{
@@ -5490,9 +5496,7 @@ void RAMFUNC dsp_extbuffer32rx(const uint32_t * buff)
 					const FLOAT32P_t filtered2 = filterRxAudio_Pair2(pair, dspmodeA, dspmodeB);
 					END_STAMP2();
 
-					recordsampleSD(tx ? monitx : filtered2.QV, tx ? monitx : filtered2.IV);	// Запись демодулированного сигнала без озвучки клавиш
-					recordsampleUAC(tx ? monitx : filtered2.QV, tx ? monitx : filtered2.IV);	// Запись в UAC демодулированного сигнала без озвучки клавиш
-					savesampleout16stereo(injectsidetone(filtered2.QV, sdtn), injectsidetone(filtered2.IV, sdtn));
+					savesampleout16denoise(filtered2.QV, filtered2.IV);
 				}
 				break;
 
@@ -5503,9 +5507,7 @@ void RAMFUNC dsp_extbuffer32rx(const uint32_t * buff)
 					const FLOAT_t filtered = filterRxAudio_rxB(rxB, dspmodeB);	// todo: пока только с фильтром
 					END_STAMP2();
 
-					recordsampleSD(tx ? monitx : filtered, tx ? monitx : filtered);	// Запись демодулированного сигнала без озвучки клавиш
-					recordsampleUAC(tx ? monitx : filtered, tx ? monitx : filtered);	// Запись в UAC демодулированного сигнала без озвучки клавиш
-					savesampleout16stereo(injectsidetone(filtered, sdtn), injectsidetone(filtered, sdtn));
+					savesampleout16denoise(filtered, filtered);
 				}
 				break;
 			}
@@ -5522,9 +5524,7 @@ void RAMFUNC dsp_extbuffer32rx(const uint32_t * buff)
 			BEGIN_STAMP2();
 			const FLOAT_t leftFiltered = 0;
 			END_STAMP2();
-			recordsampleSD(leftFiltered, leftFiltered);	// Запись демодулированного сигнала без озвучки клавиш
-			recordsampleUAC(leftFiltered, leftFiltered);	// Запись в UAC демодулированного сигнала без озвучки клавиш
-			savesampleout16stereo(injectsidetone(leftFiltered, sdtn), injectsidetone(leftFiltered, sdtn));
+			savesampleout16denoise(leftFiltered, leftFiltered);	
 #endif /* ! WITHSAI2HW */
 		}
 		else if (dspmodeA == DSPCTL_MODE_RX_ISB)
@@ -5535,9 +5535,8 @@ void RAMFUNC dsp_extbuffer32rx(const uint32_t * buff)
 				(int_fast32_t) buff [i + DMABUF32RX0I] * rxgate,	// Расширяем 24-х битные числа до 32 бит
 				(int_fast32_t) buff [i + DMABUF32RX0Q] * rxgate	// Расширяем 24-х битные числа до 32 бит
 				);	
-			recordsampleSD(tx ? monitx : rv.IV, tx ? monitx : rv.QV);	// Запись демодулированного сигнала без озвучки клавиш
-			recordsampleUAC(tx ? monitx : rv.IV, tx ? monitx : rv.QV);	// Запись в UAC демодулированного сигнала без озвучки клавиш
-			savesampleout16stereo(rv.IV, rv.QV);	/* к line output подключен модем - озвучку запрещаем */
+
+			savesampleout16denoise(rv.IV, rv.QV);	/* к line output подключен модем - озвучку запрещаем */
 		}
 		else
 		{
@@ -5552,9 +5551,8 @@ void RAMFUNC dsp_extbuffer32rx(const uint32_t * buff)
 			BEGIN_STAMP2();
 			const FLOAT_t leftFiltered = filterRxAudio_rxA(left, dspmodeA);
 			END_STAMP2();
-			recordsampleSD(tx ? monitx : leftFiltered, tx ? monitx : leftFiltered);	// Запись демодулированного сигнала без озвучки клавиш
-			recordsampleUAC(tx ? monitx : leftFiltered, tx ? monitx : leftFiltered);	// Запись в UAC демодулированного сигнала без озвучки клавиш
-			savesampleout16stereo(injectsidetone(leftFiltered, sdtn), injectsidetone(leftFiltered, sdtn));
+
+			savesampleout16denoise(leftFiltered, leftFiltered);
 		}
 
 	#endif /*  DMABUFSTEP32 == 4 */
@@ -5568,9 +5566,7 @@ void RAMFUNC dsp_extbuffer32rx(const uint32_t * buff)
 		processafadcsample(dual, dspmodeA, shape, ctcss);	// обработка одного сэмпла с микрофона
 		//
 		// Тестирование источников и потребителей звука
-		recordsampleSD(dual.IV, dual.QV);	// Запись демодулированного сигнала без озвучки клавиш
-		recordsampleUAC(dual.IV, dual.QV);	// Запись в UAC демодулированного сигнала без озвучки клавиш
-		savesampleout16stereo(injectsidetone(dual.IV, sdtn), injectsidetone(dual.QV, sdtn));
+		savesampleout16denoise(dual.IV, dual.QV);
 
 	#else /* WITHLOOPBACKTEST */
 
@@ -5580,9 +5576,8 @@ void RAMFUNC dsp_extbuffer32rx(const uint32_t * buff)
 		BEGIN_STAMP2();
 		const FLOAT_t leftFiltered = filterRxAudio_rxA(left, dspmodeA);
 		END_STAMP2();
-		recordsampleSD(tx ? monitx : leftFiltered, tx ? monitx : leftFiltered);	// Запись демодулированного сигнала без озвучки клавиш
-		recordsampleUAC(tx ? monitx : leftFiltered, tx ? monitx : leftFiltered);	// Запись в UAC демодулированного сигнала без озвучки клавиш
-		savesampleout16stereo(injectsidetone(leftFiltered, sdtn), injectsidetone(leftFiltered, sdtn));
+
+		savesampleout16denoise(leftFiltered, leftFiltered);
 
 	#endif /* WITHLOOPBACKTEST */
 #endif /* WITHDSPEXTDDC */
@@ -5801,9 +5796,13 @@ rxparam_update(uint_fast8_t profile, uint_fast8_t pathi)
 	nbfence = POWF(2, WITHIFADCWIDTH - 8) * (int) glob_nfm_sql_lelel;	// glob_nfm_sql_lelel: 0..255
 
 	// Уровень сигнала самоконтроля
-	sidetonevolume = (glob_sidetonelevel / (FLOAT_t) 100);
+#if WITHUSBHEADSET
+	sidetonevolume = 0;
 	mainvolumerx = 1 - sidetonevolume;
-
+#else /* WITHUSBHEADSET */
+	sidetonevolume = (glob_sidetonelevel / (FLOAT_t) 100);
+#endif /* WITHUSBHEADSET */
+	mainvolumerx = 1 - sidetonevolume;
 }
 // Передача параметров в DSP модуль
 // Обновление параметров передатчика (кроме фильтров).

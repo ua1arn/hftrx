@@ -3134,7 +3134,11 @@ enum
 	static uint_fast8_t gdatamode;	/* передача звука с USB вместо обычного источника */
 	uint_fast8_t hamradio_get_datamode(void) { return gdatamode; }
 
-	static uint_fast8_t guacplayer;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
+	#if WITHUSBHEADSET
+		static uint_fast8_t guacplayer = 1;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
+	#else /* WITHUSBHEADSET */
+		static uint_fast8_t guacplayer;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
+	#endif /* WITHUSBHEADSET */
 	#if WITHRTS96 || WITHRTS192 || WITHTRANSPARENTIQ
 		static uint_fast8_t  gswapiq;		/* Поменять местами I и Q сэмплы в потоке RTS96 */
 	#endif /* WITHRTS96 || WITHRTS192 || WITHTRANSPARENTIQ */
@@ -6931,30 +6935,6 @@ static uint_fast8_t getlo4div(
 
 static SpeexPreprocessState * st_handles [NTRX];
 
-// user-mode processing
-static void speex_spool(void)
-{
-	spx_int16_t * p [NTRX];
-
-	while (takespeexready_user(& p [0]))
-	{
-		speex_preprocess(st_handles [0], p [0], NULL);
-#if WITHUSEDUALWATCH
-		speex_preprocess(st_handles [1], p [1], NULL);
-#endif /* WITHUSEDUALWATCH */
-		unsigned i;
-		for (i = 0; i < SPEEXNN; ++ i)
-		{
-#if WITHUSEDUALWATCH
-			savesampleout16stereo_user(p [0] [i], p [1] [i]);	// to AUDIO codec
-#else /* WITHUSEDUALWATCH */
-			savesampleout16stereo_user(p [0] [i], p [0] [i]);	// to AUDIO codec
-#endif /* WITHUSEDUALWATCH */
-		}
-		releasespeexbuffer_user(p [0]);
-	}
-}
-
 static int speecallocated = 0;
 static uint8_t sipexbuff [NTRX * 144980];
 
@@ -6998,15 +6978,14 @@ static void speex_initialize(void)
 	debug_printf_P(PSTR("speex: final speecallocated=%d\n"), speecallocated);
 }
 
-#else /* WITHDENOISER */
-
-
-void speex_spool(void)
-{
-}
-
 #endif /* WITHDENOISER */
 
+void speex_proc(uint_fast8_t pathi, FLOAT_t * buff)
+{
+#if WITHDENOISER
+		speex_preprocess_run(st_handles [pathi], buff);
+#endif /* WITHDENOISER */
+}
 
 // Печать частоты в формате dddddd.ddd
 static void printfreq(int_fast32_t freq)
@@ -11448,7 +11427,9 @@ processmessages(uint_fast8_t * kbch, uint_fast8_t * kbready, uint_fast8_t inmenu
 			;
 	}
 
-	speex_spool();
+#if WITHINTEGRATEDDSP
+	audioproc_spool_user();
+#endif /* WITHINTEGRATEDDSP */
 
 	uint8_t * buff;
 
