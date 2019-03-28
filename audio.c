@@ -5168,6 +5168,9 @@ void dsp_addsidetone(int16_t * buff)
 		int_fast16_t left = (int16_t) b [0];
 		int_fast16_t right = (int16_t) b [1];
 		//
+		if (glob_mainsubrxmode == BOARD_RXMAINSUB_A_A)
+			right = left;
+		//
 		if (tx)
 		{
 			recordsampleSD(monitx, monitx);	// Запись демодулированного сигнала без озвучки клавиш
