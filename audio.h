@@ -424,17 +424,12 @@ void savesampleout32stereo(int_fast32_t ch0, int_fast32_t ch1);
 void savesampleout96stereo(int_fast32_t ch0, int_fast32_t ch1);
 void savesampleout192stereo(int_fast32_t ch0, int_fast32_t ch1);
 
-#if WITHDENOISER
+#if WITHINTEGRATEDDSP
 
 	#include "arch.h"
 	#include "speex\speex_preprocess.h"
 
-#else
-
-	#define SPEEXNN 1024
-
-
-#endif /* WITHDENOISER */
+#endif /* WITHINTEGRATEDDSP */
 
 void speex_proc(uint_fast8_t pathi, FLOAT_t * buff);
 void audioproc_spool_user(void);
