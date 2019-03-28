@@ -8486,12 +8486,22 @@ uint_fast8_t hamradio_get_notchvalue(int_fast32_t * p)
 {
 #if WITHNOTCHFREQ
 	* p = gnotchfreq;
+#else /* WITHNOTCHFREQ */
+	* p = 0;
 #endif /* WITHNOTCHFREQ */
 	return gnotch;
 }
 
 #endif /* WITHNOTCHONOFF || WITHNOTCHFREQ  */
 
+#if WITHDENOISER
+// NR ON/OFF
+uint_fast8_t hamradio_get_nrvalue(int_fast32_t * p)
+{
+	* p = gnoisereductvl;
+	return gnoisereduct != 0;
+}
+#endif /* WITHDENOISER */
 
 // текущее состояние TUNE
 uint_fast8_t hamradio_get_tunemodevalue(void)

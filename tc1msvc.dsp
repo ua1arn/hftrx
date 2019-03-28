@@ -914,6 +914,10 @@ SOURCE=.\wm8994.c
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
 # Begin Source File
 
+SOURCE=.\inc\arch.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\audio.h
 # End Source File
 # Begin Source File

@@ -625,12 +625,27 @@ void display_1state(
 
 
 static const FLASHMEM char text_nul1_P [] = " ";
+static const FLASHMEM char text_nul2_P [] = "  ";
 static const FLASHMEM char text_nul3_P [] = "   ";
 static const FLASHMEM char text_nul4_P [] = "    ";
 static const FLASHMEM char text_nul5_P [] = "     ";
 //static const FLASHMEM char text_nul9_P [] = "         ";
 static const char text_nul3 [] = "   ";
 static const char text_nul5 [] = "     ";
+
+// Отображение режима NR ON/OFF
+static void display_nr3(
+	uint_fast8_t x, 
+	uint_fast8_t y, 
+	void * pv
+	)
+{
+#if WITHDENOISER
+	int_fast32_t grade;
+	const uint_fast8_t state = hamradio_get_nrvalue(& grade);
+	display_2states_P(x, y, state, PSTR("NR "), text_nul3_P);
+#endif /* WITHDENOISER */
+}
 
 // Отображение режима NOCH ON/OFF
 static void display_notch5(
@@ -4134,9 +4149,10 @@ enum
 		{	46, 20,	display_agc3,		REDRM_MODE, PGALL, },	// AGC mode
 		{	46, 25,	display_voxtune3,	REDRM_MODE, PGALL, },	// VOX
 		{	46, 30,	display_datamode3,	REDRM_MODE, PGALL, },	// DATA mode indicator
-		{	46, 35,	display_atu3,		REDRM_MODE, PGALL, },	// TUNER state (optional)
-		{	46, 40,	display_byp3,		REDRM_MODE, PGALL, },	// TUNER BYPASS state (optional)
-		{	46, 45,	display_rec3,		REDRM_BARS, PGALL, },	// Отображение режима записи аудио фрагмента
+		{	46, 35,	display_nr3,		REDRM_MODE, PGALL, },	// NR
+		{	46, 40,	display_atu3,		REDRM_MODE, PGALL, },	// TUNER state (optional)
+		{	46, 45,	display_byp3,		REDRM_MODE, PGALL, },	// TUNER BYPASS state (optional)
+		{	46, 50,	display_rec3,		REDRM_BARS, PGALL, },	// Отображение режима записи аудио фрагмента
 		
 		{	0,	7,	display_freqX_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Частота (большие цифры)
 		{	21, 10,	display_mode3_a,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...

@@ -781,6 +781,7 @@ uint_fast32_t hamradio_get_freq_b(void);		// Частота VFO B для отображения на ди
 uint_fast32_t hamradio_get_freq_rx(void);		// Частота VFO A для маркировки файлов
 uint_fast32_t hamradio_get_modem_baudrate100(void);	// скорость передачи BPSK * 100
 uint_fast8_t hamradio_get_notchvalue(int_fast32_t * p);		// Notch filter ON/OFF
+uint_fast8_t hamradio_get_nrvalue(int_fast32_t * p);		// NR ON/OFF
 const FLASHMEM char * hamradio_get_mode_a_value_P(void);	// SSB/CW/AM/FM/..
 const FLASHMEM char * hamradio_get_mode_b_value_P(void);	// SSB/CW/AM/FM/..
 const FLASHMEM char * hamradio_get_rxbw_value_P(void);	// RX bandwidth
