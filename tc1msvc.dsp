@@ -794,6 +794,14 @@ SOURCE=.\keymaps.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\kiss_fft.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\kiss_fftr.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\l2f50.c
 # End Source File
 # Begin Source File
@@ -851,6 +859,10 @@ SOURCE=.\sequen.c
 # Begin Source File
 
 SOURCE=.\serial.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\smallft.c
 # End Source File
 # Begin Source File
 
