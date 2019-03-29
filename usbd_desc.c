@@ -1673,6 +1673,8 @@ static unsigned CDCEEM_r9fill_38(uint_fast8_t fill, uint8_t * buff, unsigned max
 	return length;
 }
 
+// https://electronix.ru/forum/applications/core/interface/file/attachment.php?id=118456
+// https://github.com/rawaaw/cdc-eem-f103
 /* CDC Ethernet Emulation Model */
 static unsigned fill_CDCEEM_function(uint_fast8_t fill, uint8_t * p, unsigned maxsize, int highspeed)
 {
@@ -3139,7 +3141,7 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 	}
 #endif /* WITHUSBHID */
 	
-#if WITHUSBCDCECM
+#if WITHUSBCDCECM || WITHUSBCDCEEM
 	{
 		unsigned partlen;
 		// Формирование MAC адреса данного устройства
@@ -3147,6 +3149,7 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 		const uint_fast8_t id = STRING_ID_MACADDRESS;
 		char b [64];
 		local_snprintf_P(b, ARRAY_SIZE(b), PSTR("3089846A96AB"));
+		//local_snprintf_P(b, ARRAY_SIZE(b), PSTR("0023543C471C"));
 		// Unic serial number
 		score += fill_align4(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score);
 		partlen = fill_string_descriptor(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score, b);
@@ -3154,7 +3157,7 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 		StringDescrTbl [id].data = alldescbuffer + score;
 		score += partlen;
 	}
-#endif /* WITHUSBCDCECM */
+#endif /* WITHUSBCDCECM || WITHUSBCDCEEM */
 
 #if CTLSTYLE_SW2011ALL || WITHUSBNOUNIQUE
 	{
