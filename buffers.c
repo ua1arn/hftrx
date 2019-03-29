@@ -164,7 +164,7 @@ enum
 	static volatile uint_fast8_t uacinrtsalt = UACINRTSALT_NONE;		/* выбор альтернативной конфигурации для RTS UAC IN interface */
 	static volatile uint_fast8_t uacoutalt;
 
-#if WITHUSBUAC
+#if 1//WITHUSBUAC
 
 	// USB AUDIO IN
 	typedef ALIGNX_BEGIN struct uacin16_tag
@@ -1908,7 +1908,7 @@ void savesampleout16stereo_user(FLOAT_t ch0, FLOAT_t ch1)
 				p = NULL;
 			}
 		}
-
+			
 	#endif /* WITHRTS96 */
 
 	#if WITHRTS192
@@ -2121,6 +2121,15 @@ void savesampleout16stereo_user(FLOAT_t ch0, FLOAT_t ch1)
 		}
 	#endif /* WITHUSBHW && WITHUSBUAC */
 	}
+
+#else /* WITHUSBUAC */
+
+void savesampleout96stereo(int_fast32_t ch0, int_fast32_t ch1)
+{
+}
+void savesampleout192stereo(int_fast32_t ch0, int_fast32_t ch1)
+{
+}
 
 #endif /* WITHUSBUAC */
 
