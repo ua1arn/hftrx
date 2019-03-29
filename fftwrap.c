@@ -38,6 +38,7 @@
 
 #include "arch.h"
 #include "os_support.h"
+#include "fftwrap.h"
 
 #include <math.h>
 #include "hardware.h"
