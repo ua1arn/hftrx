@@ -553,7 +553,7 @@ void buffers_initialize(void)
 
 #if WITHINTEGRATEDDSP
 
-	static voice16_t voicesarray16 [100];
+	static voice16_t voicesarray16 [48];
 
 	InitializeListHead2(& resample16);	// буферы от USB для синхронизации
 	InitializeListHead2(& voicesphones16);	// список для выдачи на ЦАП
