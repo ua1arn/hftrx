@@ -541,6 +541,7 @@ uint_fast8_t dsp_getmikeadcoverflow(void); /* получения признака переполнения АЦ
 void dsp_speed_diagnostics(void);	/* DSP speed test */
 void buffers_diagnostics(void);
 void dtmftest(void);
+void dsp_recalceq(uint_fast8_t pathi, float * b);
 
 void modem_initialze(void);
 uint_fast8_t modem_get_ptt(void);

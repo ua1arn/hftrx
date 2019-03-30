@@ -909,7 +909,7 @@ EXPORT int speex_preprocess_run(SpeexPreprocessState *st, float *x)
          /* Save old power spectrum */
          st->old_ps[i] = MULT16_32_P15(QCONST16(.2f,15),st->old_ps[i]) + MULT16_32_P15(MULT16_16_P15(QCONST16(.8f,15),SQR16_Q15(st->gain[i])),ps[i]);
 
-         /* Apply gain FLOORF */
+         /* Apply gain floor */
          if (st->gain[i] < st->gain_floor[i])
             st->gain[i] = st->gain_floor[i];
 
@@ -946,11 +946,11 @@ EXPORT int speex_preprocess_run(SpeexPreprocessState *st, float *x)
    /* Apply computed gain */
    for (i=1;i<N;i++)
    {
-      st->ft[2*i-1] = MULT16_16_P15(st->gain2[i],st->ft[2*i-1]);
-      st->ft[2*i] = MULT16_16_P15(st->gain2[i],st->ft[2*i]);
+      st->ft[2*i-1] = MULT16_16_P15(st->gain2[i],st->ft[2*i-1])*st->equalizer2[i];
+      st->ft[2*i] = MULT16_16_P15(st->gain2[i],st->ft[2*i])*st->equalizer2[i];
    }
-   st->ft[0] = MULT16_16_P15(st->gain2[0],st->ft[0]);
-   st->ft[2*N-1] = MULT16_16_P15(st->gain2[N-1],st->ft[2*N-1]);
+   st->ft[0] = MULT16_16_P15(st->gain2[0],st->ft[0])*st->equalizer2[0];
+   st->ft[2*N-1] = MULT16_16_P15(st->gain2[N-1],st->ft[2*N-1])*st->equalizer2[2*N-1];
 
    /*FIXME: This *will* not work for fixed-point */
 #ifndef FIXED_POINT

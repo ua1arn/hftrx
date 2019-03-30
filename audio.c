@@ -3017,6 +3017,145 @@ static void audio_update(const uint_fast8_t spf, uint_fast8_t pathi)
 #endif
 }
 
+// for speex equalizer responce buffer
+static int freq2index(unsigned freq)
+{
+	return (uint_fast64_t) freq * SPEEXNN * 2 / ARMI2SRATE;
+}
+
+// slope: изменение тембра звука - на Samplerate/2 АЧХ становится на столько децибел 
+// scale: общий масштаб изменения АЧХ
+static void correctspectrum(float * resp, int_fast8_t targetdb)
+{
+	const FLOAT_t slope = db2ratio(targetdb);
+	FLOAT_t scale = 1;
+	const FLOAT_t step = POWF(slope, (FLOAT_t) 1 / SPEEXNN);
+	const int n = SPEEXNN;
+	int i;
+	for (i = 0; i < n; ++ i, scale *= step)
+	{
+		resp [i] *= scale;
+	}
+}
+
+void dsp_recalceq(uint_fast8_t pathi, float * b)
+{
+	const int cutfreqlow = glob_aflowcutrx [pathi];
+	const int cutfreqhigh = glob_afhighcutrx [pathi];
+#if 0
+	FLOAT_t * const dCoeff = FIRCoef_rx_AUDIO [spf] [pathi];
+	const FLOAT_t * const dWindow = FIRCwnd_rx_AUDIO;
+	enum { iCoefNum = Ntap_rx_AUDIO };
+
+	switch (glob_dspmodes [pathi])
+	{
+	case DSPCTL_MODE_RX_DSB:
+		// В этом режиме фильтр не используется
+		//fir_design_passtrough(dCoeff, iCoefNum, 1);
+		// ФНЧ
+		fir_design_lowpass_freq(dCoeff, iCoefNum, cutfreqhigh);
+		fir_design_adjust_rx(dCoeff, dWindow, iCoefNum, 1);	// Формирование наклона АЧХ
+		break;
+
+	case DSPCTL_MODE_RX_SAM:
+		// ФНЧ
+		//fir_design_lowpass_freq(dCoeff, iCoefNum, cutfreqhigh);
+		fir_design_bandpass_freq(dCoeff, iCoefNum, cutfreqlow, cutfreqhigh);
+		fir_design_adjust_rx(dCoeff, dWindow, iCoefNum, 1);	// Формирование наклона АЧХ
+		break;
+
+	case DSPCTL_MODE_RX_WFM:
+	case DSPCTL_MODE_RX_AM:
+	case DSPCTL_MODE_RX_WIDE:
+		// audio
+		if (glob_notch_on != 0)
+		{
+			// частоты SSB фильтра
+			//const int fssbL = cutfreqlow;
+			//const int fssbH = cutfreqhigh;
+
+			// Частоты NOTCH фильтра
+			const int fNotch = inside(cutfreqlow + glob_notch_width / 2, glob_notch_freq, cutfreqhigh - glob_notch_width / 2);
+			const int fcutL = fNotch - glob_notch_width / 2;
+			const int fcutH = fNotch + glob_notch_width / 2;
+			if (1)
+			{
+				// Расчитывается Notch
+				fir_design_bandstop(dCoeff, iCoefNum, fir_design_normfreq(fcutL), fir_design_normfreq(fcutH));
+				fir_design_scale(dCoeff, iCoefNum, 1 / testgain_float_DC(dCoeff, iCoefNum));	// Масштабирование для несимметричного фильтра
+				fir_design_adjust_rx(dCoeff, dWindow, iCoefNum, 0);	// Формирование наклона АЧХ, без применения оконной функции
+			}
+			else
+			{
+				FLOAT_t dC2 [NtapCoeffs(iCoefNum)];
+				int i;
+				// расчитывается два неперекрывающихся полосовых фильтра
+				fir_design_bandpass_freq(dC2, iCoefNum, cutfreqlow, fcutL);	// низкочастотная полоса пропускания
+				fir_design_bandpass_freq(dCoeff, iCoefNum, fcutH, cutfreqhigh);	// высокочастотная полоса пропускания
+				// суммирование эоэффициентов
+				for (i = 0; i < NtapCoeffs(iCoefNum); ++ i)
+					dCoeff [i] += dC2 [i];
+				fir_design_adjust_rx(dCoeff, dWindow, iCoefNum, 0);	// Формирование наклона АЧХ, без применения оконной функции
+			}
+		}
+		else
+		{
+			fir_design_bandpass_freq(dCoeff, iCoefNum, cutfreqlow, cutfreqhigh);
+			fir_design_adjust_rx(dCoeff, dWindow, iCoefNum, 1);	// Формирование наклона АЧХ
+		}
+		break;
+
+	case DSPCTL_MODE_RX_NARROW:
+	case DSPCTL_MODE_RX_FREEDV:
+		// audio
+		fir_design_bandpass_freq(dCoeff, iCoefNum, cutfreqlow, cutfreqhigh);
+		fir_design_adjust_rx(dCoeff, dWindow, iCoefNum, 1);	// Формирование наклона АЧХ
+		break;
+
+	case DSPCTL_MODE_RX_DRM:
+		// audio
+		// В этом режиме фильтр не используется
+		fir_design_passtrough(dCoeff, iCoefNum, 1);		// сигнал через НЧ фильтр не проходит
+		break;
+
+
+	case DSPCTL_MODE_RX_NFM:
+		// audio
+		fir_design_bandpass_freq(dCoeff, iCoefNum, cutfreqlow, cutfreqhigh);
+		fir_design_adjust_rx(dCoeff, dWindow, iCoefNum, 1);	// Формирование наклона АЧХ
+		NBTAU = 1 - MAKETAUIF((FLOAT_t) 0.1);
+		break;
+
+	// в режиме передачи
+	default:
+		break;
+	}
+#endif
+	unsigned i;
+	for (i = 0; i < SPEEXNN; ++ i)
+	{
+		b [i] = 1;
+	}
+	for (i = 0; i < freq2index(cutfreqlow); ++ i)
+	{
+		b [i] = 0;
+	}
+	for (i = freq2index(cutfreqhigh); i < SPEEXNN; ++ i)
+	{
+		b [i] = 0;
+	}
+	correctspectrum(b, glob_afresponcerx);
+
+#if 0
+	unsigned freqmin = freq2index(900);
+	unsigned freqmax = freq2index(1100);
+	for (i = freqmin; i < freqmax; ++ i)
+	{
+		b [i] = db2ratio(-100);
+	}
+#endif
+}
+
 #if WITHMODEM
 
 // RX
@@ -5213,6 +5352,7 @@ void dsp_addsidetone(int16_t * buff)
 
 static void blockfilter_rxA(FLOAT_t * buff)
 {
+	return;
 	unsigned i;
 	for (i = 0; i < SPEEXNN; ++ i)
 	{
@@ -5223,6 +5363,7 @@ static void blockfilter_rxA(FLOAT_t * buff)
 #if WITHUSEDUALWATCH
 static void blockfilter_rxB(FLOAT_t * buff)
 {
+	return;
 	unsigned i;
 	for (i = 0; i < SPEEXNN; ++ i)
 	{
