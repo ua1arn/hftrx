@@ -8,6 +8,7 @@
 #include "hardware.h"	/* зависящие от процессора функции работы с портами */
 #include "board.h"
 #include "audio.h"
+#include "fftwrap.h"
 #include "spifuncs.h"
 #include "formats.h"	// for debug prints
 #include "display.h"	// for debug prints
@@ -369,6 +370,25 @@ static uint_fast8_t		glob_mainsubrxmode = BOARD_RXMAINSUB_A_A;	// Левый/правый, 
 // Обрабатывается как несимметричный
 static FLOAT_t FIRCoef_tx_MIKE [NPROF] [NtapCoeffs(Ntap_tx_MIKE)] = { { 0 }, { 0 } };
 static FLOAT_t FIRCwnd_tx_MIKE [NtapCoeffs(Ntap_tx_MIKE)];			// подготовленные значения функции окна
+
+#define	Ntap_rx_AUDIO	NtapValidate(950)
+static FLOAT_t FIRCoef_rx_AUDIO [NtapCoeffs(Ntap_rx_AUDIO)] = { 0 };
+static FLOAT_t FIRCwnd_rx_AUDIO [NtapCoeffs(Ntap_rx_AUDIO)];			// подготовленные значения функции окна
+
+static void * fft_lookup;
+
+static spx_word16_t SIGft [2 * SPEEXNN];
+static struct Complex Sig [FFTSizeFilters];
+
+#define fftixreal(i) ((i * 2) + 0)
+#define fftiximag(i) ((i * 2) + 1)
+
+#if 0
+   /* Perform FFT */
+   spx_fft(st->fft_lookup, st->frame, SIGft);
+   /* Inverse FFT with 1/N scaling */
+   spx_ifft(st->fft_lookup, SIGft, st->frame);
+#endif
 
 /* Обработка производится всегда в наибольшей разрядности учавствующих кодеков. */
 /* требуется согласовать разрядность данных IF и AF кодеков. */
@@ -1012,8 +1032,6 @@ static FLOAT_t db2ratio(FLOAT_t valueDBb)
 {
 	return POWF(10, valueDBb / 20);
 }
-
-static struct Complex Sig [FFTSizeFilters];
 
 /* получение пикового значения АЧХ */
 static FLOAT_t getmaxresponce(void)
@@ -2808,8 +2826,7 @@ static void audio_setup_rx(const uint_fast8_t spf, const uint_fast8_t pathi)
 		// audio
 		fir_design_bandpass_freq(dCoeff, iCoefNum, cutfreqlow, cutfreqhigh);
 		fir_design_adjust_rx(dCoeff, dWindow, iCoefNum, 1);	// Формирование наклона АЧХ
-		NBTAU = 1 - MAKETAUIF((FLOAT_t) 0.1);
-		break;
+x		break;
 
 	// в режиме передачи
 	default:
@@ -2971,10 +2988,10 @@ static int freq2index(unsigned freq)
 
 // slope: изменение тембра звука - на Samplerate/2 АЧХ становится на столько децибел 
 // scale: общий масштаб изменения АЧХ
-static void correctspectrum(float * resp, int_fast8_t targetdb)
+static void correctspectrum(spx_word16_t * resp, int_fast8_t targetdb)
 {
 	const FLOAT_t slope = db2ratio(targetdb);
-	FLOAT_t scale = 1;
+	spx_word16_t scale = Q15_ONE;
 	const FLOAT_t step = POWF(slope, (FLOAT_t) 1 / SPEEXNN);
 	const int n = SPEEXNN;
 	int i;
@@ -2984,12 +3001,12 @@ static void correctspectrum(float * resp, int_fast8_t targetdb)
 	}
 }
 
-void dsp_recalceq(uint_fast8_t pathi, float * b)
+void dsp_recalceq(uint_fast8_t pathi, spx_word16_t * frame)
 {
 	const int cutfreqlow = glob_aflowcutrx [pathi];
 	const int cutfreqhigh = glob_afhighcutrx [pathi];
 #if 0
-	FLOAT_t * const dCoeff = FIRCoef_rx_AUDIO [spf] [pathi];
+	FLOAT_t * const dCoeff = FIRCoef_rx_AUDIO;
 	const FLOAT_t * const dWindow = FIRCwnd_rx_AUDIO;
 	enum { iCoefNum = Ntap_rx_AUDIO };
 
@@ -3069,36 +3086,36 @@ void dsp_recalceq(uint_fast8_t pathi, float * b)
 		// audio
 		fir_design_bandpass_freq(dCoeff, iCoefNum, cutfreqlow, cutfreqhigh);
 		fir_design_adjust_rx(dCoeff, dWindow, iCoefNum, 1);	// Формирование наклона АЧХ
-		NBTAU = 1 - MAKETAUIF((FLOAT_t) 0.1);
 		break;
 
 	// в режиме передачи
 	default:
 		break;
 	}
-#endif
+#else
 	unsigned i;
 	for (i = 0; i < SPEEXNN; ++ i)
 	{
-		b [i] = 1;
+		frame [i] = Q15_ONE;
 	}
 	for (i = 0; i < freq2index(cutfreqlow); ++ i)
 	{
-		b [i] = 0;
+		frame [i] = 0;
 	}
 	for (i = freq2index(cutfreqhigh); i < SPEEXNN; ++ i)
 	{
-		b [i] = 0;
+		frame [i] = 0;
 	}
-	correctspectrum(b, glob_afresponcerx);
+	correctspectrum(frame, glob_afresponcerx);
 
 #if 0
 	unsigned freqmin = freq2index(900);
 	unsigned freqmax = freq2index(1100);
 	for (i = freqmin; i < freqmax; ++ i)
 	{
-		b [i] = db2ratio(-100);
+		frame [i] = Q15_ONE * db2ratio(-100);
 	}
+#endif
 #endif
 }
 
@@ -5776,6 +5793,10 @@ void dsp_initialize(void)
 #endif /* WITHRTS96 && ! WITHTRANSPARENTIQ */
 
 	fir_design_windowbuff(FIRCwnd_tx_MIKE, Ntap_tx_MIKE);
+	fir_design_windowbuff(FIRCwnd_rx_AUDIO, Ntap_rx_AUDIO);
+	fft_lookup = spx_fft_init(2*SPEEXNN);
+
+	NBTAU = 1 - MAKETAUIF((FLOAT_t) 0.1);
 
 #if WITHDSPEXTFIR
 	#if WITHDOUBLEFIRCOEFS && (__ARM_FP & 0x08)

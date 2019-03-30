@@ -6936,7 +6936,7 @@ static uint_fast8_t getlo4div(
 static SpeexPreprocessState * st_handles [NTRX];
 
 static int speecallocated = 0;
-static uint8_t sipexbuff [NTRX * 149176];
+static uint8_t sipexbuff [NTRX * 149176 + 20000];
 
 void *speex_alloc (int size)
 {
@@ -6959,7 +6959,7 @@ void speex_free (void *ptr)
 static void speex_update_rx(void)
 {
 
-	static float speexEQ [NTRX] [SPEEXNN];
+	static spx_word16_t speexEQ [NTRX] [SPEEXNN];
 
 	uint_fast8_t pathi;
 
