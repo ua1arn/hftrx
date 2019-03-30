@@ -211,7 +211,7 @@ int speex_preprocess_ctl(SpeexPreprocessState *st, int request, void *ptr);
 /** Get preprocessor Automatic Gain Control level (int32) */
 #define SPEEX_PREPROCESS_GET_AGC_TARGET 47
 
-/** Set equalizer responces (float[]) */
+/** Set equalizer responces (spx_word16_t[]) */
 #define SPEEX_PREPROCESS_SET_EQUALIZER 48
 
 #ifdef __cplusplus
