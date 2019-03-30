@@ -6936,7 +6936,8 @@ static uint_fast8_t getlo4div(
 static SpeexPreprocessState * st_handles [NTRX];
 
 static int speecallocated = 0;
-static uint8_t sipexbuff [NTRX * 149176 + 24716];
+//static uint8_t sipexbuff [NTRX * 149176 /* + 24716 */];
+static uint8_t sipexbuff [NTRX * 99176 /* + 24716 */];
 
 void *speex_alloc (int size)
 {
@@ -6958,9 +6959,6 @@ void speex_free (void *ptr)
 
 static void speex_update_rx(void)
 {
-
-	static spx_word16_t speexEQ [NTRX] [2 * SPEEXNN];
-
 	uint_fast8_t pathi;
 
 	spx_int32_t denoise = gnoisereduct;
@@ -6968,13 +6966,14 @@ static void speex_update_rx(void)
 
 	for (pathi = 0; pathi < NTRX; ++ pathi)
 	{
+		static spx_word16_t speexEQ [SPEEXNN];
 		SpeexPreprocessState * const st = st_handles [pathi];
 		ASSERT(st != NULL);
 
-		dsp_recalceq(pathi, speexEQ [pathi]);
+		dsp_recalceq(pathi, speexEQ);
 		speex_preprocess_ctl(st, SPEEX_PREPROCESS_SET_DENOISE, & denoise);
 		speex_preprocess_ctl(st, SPEEX_PREPROCESS_SET_NOISE_SUPPRESS, & supress);
-		speex_preprocess_ctl(st, SPEEX_PREPROCESS_SET_EQUALIZER, speexEQ [pathi]);
+		speex_preprocess_ctl(st, SPEEX_PREPROCESS_SET_EQUALIZER, speexEQ);
 	}
 }
 
