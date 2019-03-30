@@ -3154,6 +3154,8 @@ enum
 	static const uint_fast8_t gagcoff = 0;
 #endif /* WITHIF4DSP */
 
+#define NRLEVELMAX 60
+
 #if WITHAUTOTUNER
 	static uint_fast16_t tunercap;// = (CMAX - CMIN) / 2 + CMIN;
 	static uint_fast16_t tunerind;// = (LMAX - LMIN) / 2 + LMIN;
@@ -5509,6 +5511,17 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 #endif /* WITHTX */
 #if WITHIF4DSP
 	{
+		"NR LEVEL ", 
+		0,		// rj
+		ISTEP1,		/* squelch level */
+		0, NRLEVELMAX, 
+		offsetof(struct nvmap, gnoisereductvl),	/* уровень сигнала болше которого открывается шумодав */
+		NULL,
+		& gnoisereductvl,
+		getzerobase, /* складывается со смещением и отображается */
+		enc2menu_adjust,	/* функция для изменения значения параметра */
+	},
+	{
 		"SQUELCH  ", 
 		0,		// rj
 		ISTEP1,		/* squelch level */
@@ -6936,9 +6949,10 @@ static uint_fast8_t getlo4div(
 static SpeexPreprocessState * st_handles [NTRX];
 
 static int speecallocated = 0;
+
 #if SPEEXNN == 512
 	#define SPEEXALLOCSIZE (NTRX * 75448)
-#elsif SPEEXNN == 1024
+#elif SPEEXNN == 1024
 	#define SPEEXALLOCSIZE (NTRX * 149176)
 #endif
 //static uint8_t sipexbuff [NTRX * 149176 /* + 24716 */];
@@ -8388,6 +8402,17 @@ uif_key_changebw(void)
 
 	bwsetpos [bwseti] = calc_next(bwsetpos [bwseti], 0, bwsetsc [bwseti].last);
 	save_i8(RMT_BWSETPOS_BASE(bwseti), bwsetpos [bwseti]);	/* только здесь сохраняем новый фильтр для режима */
+	updateboard(1, 1);
+}
+
+/* Переключение шумоподавления
+	 - не вызывает сохранение состояния диапазона */
+
+static void 
+uif_key_changenr(void)
+{
+	gnoisereduct = calc_next(gnoisereduct, 0, 1);
+	save_i8(offsetof(struct nvmap, gnoisereduct), gnoisereduct);
 	updateboard(1, 1);
 }
 
@@ -12006,7 +12031,7 @@ static const FLASHMEM struct menudef menutable [] =
 	{
 		"NR LEVEL", 7, 0, 0,	ISTEP1,	
 		ITEM_VALUE,
-		0, 60, 
+		0, NRLEVELMAX, 
 		offsetof(struct nvmap, gnoisereductvl),
 		NULL,
 		& gnoisereductvl,
@@ -15189,6 +15214,14 @@ process_key_menuset_common(uint_fast8_t kbch)
 		uif_key_changefilter();
 #endif /* WITHIF4DSP */
 		return 1;	/* клавиша уже обработана */
+
+#if WITHIF4DSP
+	case KBD_CODE_NR:
+		/* Переключение режтима шумоподавления
+			 - не вызывает сохранение состояния диапазона */
+		uif_key_changenr();
+		return 1;	/* клавиша уже обработана */
+#endif /* WITHIF4DSP */
 
 #if ! WITHAGCMODENONE
 	case KBD_CODE_AGC:

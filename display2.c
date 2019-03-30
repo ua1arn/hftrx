@@ -3790,7 +3790,8 @@ enum
 		{	25,	4,	display_notchfreq5,	REDRM_BARS, PGALL, },	// FUNC item value
 	#endif /* WITHENCODER2 */
 
-		{	26, 20,	display_agc3,		REDRM_MODE, PGALL, },	// AGC mode
+		{	26, 20,	display_nr3,		REDRM_MODE, PGALL, },	// NR
+//		{	26, 20,	display_agc3,		REDRM_MODE, PGALL, },	// AGC mode
 		{	26, 25,	display_voxtune3,	REDRM_MODE, PGALL, },	// VOX
 		{	26, 30,	display_datamode3,	REDRM_MODE, PGALL, },	// DATA mode indicator
 		{	26, 35,	display_atu3,		REDRM_MODE, PGALL, },	// TUNER state (optional)
@@ -4149,7 +4150,7 @@ enum
 		{	46, 20,	display_agc3,		REDRM_MODE, PGALL, },	// AGC mode
 		{	46, 25,	display_voxtune3,	REDRM_MODE, PGALL, },	// VOX
 		{	46, 30,	display_datamode3,	REDRM_MODE, PGALL, },	// DATA mode indicator
-		{	46, 35,	display_nr3,		REDRM_MODE, PGALL, },	// NR
+//		{	46, 35,	display_nr3,		REDRM_MODE, PGALL, },	// NR
 		{	46, 40,	display_atu3,		REDRM_MODE, PGALL, },	// TUNER state (optional)
 		{	46, 45,	display_byp3,		REDRM_MODE, PGALL, },	// TUNER BYPASS state (optional)
 		{	46, 50,	display_rec3,		REDRM_BARS, PGALL, },	// Отображение режима записи аудио фрагмента
@@ -4157,6 +4158,7 @@ enum
 		{	0,	7,	display_freqX_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Частота (большие цифры)
 		{	21, 10,	display_mode3_a,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
 		{	26, 10,	display_rxbw3,		REDRM_MODE, PGALL, },	// 3.1 / 0,5 / WID / NAR
+		{	30, 10,	display_nr3,		REDRM_MODE, PGALL, },	// NR : was: AGC
 		{	21, 15,	display_mainsub3,	REDRM_MODE, PGALL, },	// main/sub RX: A/A, A/B, B/A, etc
 
 		{	5,	20,	display_vfomode3,	REDRM_MODE, PGALL, },	// SPLIT
