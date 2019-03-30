@@ -2268,6 +2268,7 @@ struct modeprops
 
 #if WITHIF4DSP
 	uint8_t txaudio;	/* источник звука для передачи */
+	uint8_t noisereduct;	/* включение NR для данного режима */
 #endif /* WITHIF4DSP */
 
 } ATTRPACKED;// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
@@ -2424,8 +2425,7 @@ struct nvmap
 	uint8_t	ggrpagccw; // последний посещённый пункт группы
 	uint8_t	ggrpagcdigi; // последний посещённый пункт группы
 
-	uint8_t gnoisereduct;	// noise reduction
-	uint8_t gnoisereductvl;	// noise reduction
+	uint8_t gnoisereductvl;	// noise reduction level
 	uint8_t bwsetpos [BWSETI_count];	/* выбор одной из полос пропускания */
 
 	uint8_t bwpropsleft [BWPROPI_count];	/* значения границ полосы пропускания */
@@ -2799,6 +2799,7 @@ filter_t fi_2p0_455 =
 #define RMT_DATAMODE_BASE	offsetof(struct nvmap, gdatamode)
 
 
+#define RMT_NR_BASE(i)	offsetof(struct nvmap, modes[(i)].noisereduct)
 #define RMT_AGC_BASE(i)	offsetof(struct nvmap, modes[(i)].agc)
 #define RMT_FILTER_BASE(i)	offsetof(struct nvmap, modes[(i)].filter)
 #define RMT_STEP_BASE(i)	offsetof(struct nvmap, modes[(i)].step)
@@ -2849,13 +2850,17 @@ static uint_fast8_t gantennas [2];
 static uint_fast8_t gvfosplit [2];	// At index 0: RX VFO A or B, at index 1: TX VFO A or B
 // Параметры, выставляемые в update board
 // кэш установленных параметров.
-// На эти параметры ориентируемся при работе кнопками управления, переклбчения филттров и так далее.
+// На эти параметры ориентируемся при работе кнопками управления, переклбчения фильттров и так далее.
 static uint_fast8_t gsubmode;		/* код текущего режима */
 static uint_fast8_t gmode;		/* текущий код группы режимов */
 static uint_fast8_t gfi;			/* номер фильтра (сквозной) для текущего режима */
 static uint_fast16_t gstep;
 static uint_fast16_t gencderate = 1;
 static uint_fast8_t gagcmode;
+#if WITHIF4DSP
+	static uint_fast8_t gnoisereducts [MODE_COUNT];	// noise reduction
+	static uint_fast8_t gnoisereductvl = 16;	// noise reduction
+#endif /* WITHIF4DSP */
 
 
 
@@ -3148,8 +3153,6 @@ enum
 	static uint_fast8_t gmikeequalizerparams [HARDWARE_CODEC1_NPROCPARAMS] = { 12, 12, 12, 12, 12 };	// Эквалайзер 80Hz 230Hz 650Hz 	1.8kHz 5.3kHz
 #endif /* WITHAFCODEC1HAVEPROC */
 	static uint_fast8_t gagcoff;
-	static uint_fast8_t gnoisereduct;	// noise reduction
-	static uint_fast8_t gnoisereductvl = 16;	// noise reduction
 #else /* WITHIF4DSP */
 	static const uint_fast8_t gagcoff = 0;
 #endif /* WITHIF4DSP */
@@ -5941,6 +5944,9 @@ setgsubmode(
 		gstep = pmodet->step10 [0] * 10;
 		gencderate = gstep / STEP_MINIMAL;
 	}
+#if WITHIF4DSP
+	gnoisereducts [mode] = loadvfy8up(RMT_NR_BASE(mode), 0, 1, gnoisereducts [mode]);
+#endif /* WITHIF4DSP */
 }
 #if ! WITHAGCMODENONE
 #endif /* ! WITHAGCMODENONE */
@@ -6980,7 +6986,7 @@ static void speex_update_rx(void)
 {
 	uint_fast8_t pathi;
 
-	spx_int32_t denoise = gnoisereduct;
+	spx_int32_t denoise = gnoisereducts [gmode];
 	spx_int32_t supress = - (int) gnoisereductvl;
 
 	for (pathi = 0; pathi < NTRX; ++ pathi)
@@ -8411,8 +8417,8 @@ uif_key_changebw(void)
 static void 
 uif_key_changenr(void)
 {
-	gnoisereduct = calc_next(gnoisereduct, 0, 1);
-	save_i8(offsetof(struct nvmap, gnoisereduct), gnoisereduct);
+	gnoisereducts [gmode] = calc_next(gnoisereducts [gmode], 0, 1);
+	save_i8(RMT_NR_BASE(gmode), gnoisereducts [gmode]);
 	updateboard(1, 1);
 }
 
@@ -8535,7 +8541,7 @@ uint_fast8_t hamradio_get_notchvalue(int_fast32_t * p)
 uint_fast8_t hamradio_get_nrvalue(int_fast32_t * p)
 {
 	* p = gnoisereductvl;
-	return gnoisereduct != 0;
+	return gnoisereducts [gmode] != 0;
 }
 #endif /* WITHIF4DSP */
 
@@ -10123,7 +10129,7 @@ static void nranswer(uint_fast8_t arg)
 
 	// answer mode
 	const uint_fast8_t len = local_snprintf_P(cat_ask_buffer, CAT_ASKBUFF_SIZE, fmt_1,
-		(int) (gnoisereduct != 0 ? 2 : 0)
+		(int) (gnoisereducts [gmode] != 0 ? 2 : 0)
 		);
 	cat_answer(len);
 }
@@ -10854,9 +10860,9 @@ processcatmsg(
 		if (cathasparam != 0)
 		{
 			const uint_fast32_t p1 = vfy32up(catparam, 0, 2, 0) != 0;	// RN0; NR1; NR2;
-			if (gnoisereduct != p1)
+			if (gnoisereducts [gmode] != p1)
 			{
-				gnoisereduct = p1;
+				gnoisereducts [gmode] = p1;
 				updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
 				rc = 1;
 			}
@@ -12019,15 +12025,6 @@ static const FLASHMEM struct menudef menutable [] =
 		getzerobase, 
 	},
 #if WITHIF4DSP
-	{
-		"NR      ", 7, 0, RJ_ON,	ISTEP1,	
-		ITEM_VALUE,
-		0, 1, 
-		offsetof(struct nvmap, gnoisereduct),
-		NULL,
-		& gnoisereduct,
-		getzerobase, /* складывается со смещением и отображается */
-	},
 	{
 		"NR LEVEL", 7, 0, 0,	ISTEP1,	
 		ITEM_VALUE,
