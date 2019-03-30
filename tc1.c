@@ -6936,7 +6936,7 @@ static uint_fast8_t getlo4div(
 static SpeexPreprocessState * st_handles [NTRX];
 
 static int speecallocated = 0;
-static uint8_t sipexbuff [NTRX * 149176 + 20000];
+static uint8_t sipexbuff [NTRX * 149176 + 24716];
 
 void *speex_alloc (int size)
 {
