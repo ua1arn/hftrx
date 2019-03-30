@@ -6936,8 +6936,13 @@ static uint_fast8_t getlo4div(
 static SpeexPreprocessState * st_handles [NTRX];
 
 static int speecallocated = 0;
+#if SPEEXNN == 512
+	#define SPEEXALLOCSIZE (NTRX * 75448)
+#elsif SPEEXNN == 1024
+	#define SPEEXALLOCSIZE (NTRX * 149176)
+#endif
 //static uint8_t sipexbuff [NTRX * 149176 /* + 24716 */];
-static uint8_t sipexbuff [NTRX * 99176 /* + 24716 */];
+static uint8_t sipexbuff [SPEEXALLOCSIZE];
 
 void *speex_alloc (int size)
 {
