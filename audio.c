@@ -371,7 +371,7 @@ static uint_fast8_t		glob_mainsubrxmode = BOARD_RXMAINSUB_A_A;	// Левый/правый, 
 static FLOAT_t FIRCoef_tx_MIKE [NPROF] [NtapCoeffs(Ntap_tx_MIKE)] = { { 0 }, { 0 } };
 static FLOAT_t FIRCwnd_tx_MIKE [NtapCoeffs(Ntap_tx_MIKE)];			// подготовленные значения функции окна
 
-#define	Ntap_rx_AUDIO	NtapValidate(950)
+#define	Ntap_rx_AUDIO	NtapValidate(241)
 static FLOAT_t FIRCoef_rx_AUDIO [NtapCoeffs(Ntap_rx_AUDIO)] = { 0 };
 static FLOAT_t FIRCwnd_rx_AUDIO [NtapCoeffs(Ntap_rx_AUDIO)];			// подготовленные значения функции окна
 
@@ -1086,6 +1086,46 @@ static void imp_response(const FLOAT_t *dCoeff, int iCoefNum)
 	//---------------------------
 
 	FFT(Sig, FFTSizeFilters, FFTSizeFiltersM); 
+}
+
+static void imp_response2(const FLOAT_t *dCoeff, int iCoefNum, spx_word16_t * frame) 
+{
+	const int iHalfLen = (iCoefNum - 1) / 2;
+	int i;
+
+	//ASSERT(iHalfLen <= FFTSizeFilters);
+	//if (iHalfLen > FFTSizeFilters)
+	//	return;
+
+	//memset(Sig, 0, sizeof Sig);
+	//---------------------------
+	// copy coefficients to Sig
+	//---------------------------
+	Sig [iHalfLen].real = dCoeff [iHalfLen];
+	Sig [iHalfLen].imag = 0;
+	for (i = 1; i <= iHalfLen; ++ i) 
+	{
+		const FLOAT_t k = dCoeff [iHalfLen - i];
+		Sig [iHalfLen - i].real = k;
+		Sig [iHalfLen + i].real = k;
+		Sig [iHalfLen - i].imag = 0;
+		Sig [iHalfLen + i].imag = 0;
+	} 	
+
+	//---------------------------
+	// append zeros
+	//---------------------------
+	for (i = iCoefNum; i < FFTSizeFilters; ++ i) {
+		Sig [i].real = 0;
+		Sig [i].imag = 0;
+	} 	
+	//---------------------------
+	// Do FFT
+	//---------------------------
+
+	//FFT(Sig, FFTSizeFilters, FFTSizeFiltersM); 
+   /* Inverse FFT */
+   spx_ifft(fft_lookup, (void *) Sig, frame);
 }
 
 //====================================================
@@ -2826,7 +2866,7 @@ static void audio_setup_rx(const uint_fast8_t spf, const uint_fast8_t pathi)
 		// audio
 		fir_design_bandpass_freq(dCoeff, iCoefNum, cutfreqlow, cutfreqhigh);
 		fir_design_adjust_rx(dCoeff, dWindow, iCoefNum, 1);	// Формирование наклона АЧХ
-x		break;
+		break;
 
 	// в режиме передачи
 	default:
@@ -3005,7 +3045,6 @@ void dsp_recalceq(uint_fast8_t pathi, spx_word16_t * frame)
 {
 	const int cutfreqlow = glob_aflowcutrx [pathi];
 	const int cutfreqhigh = glob_afhighcutrx [pathi];
-#if 0
 	FLOAT_t * const dCoeff = FIRCoef_rx_AUDIO;
 	const FLOAT_t * const dWindow = FIRCwnd_rx_AUDIO;
 	enum { iCoefNum = Ntap_rx_AUDIO };
@@ -3090,14 +3129,18 @@ void dsp_recalceq(uint_fast8_t pathi, spx_word16_t * frame)
 
 	// в режиме передачи
 	default:
+		fir_design_passtrough(dCoeff, iCoefNum, 1);		// сигнал через НЧ фильтр не проходит
 		break;
 	}
-#else
+	imp_response2(dCoeff, iCoefNum, frame);
+	//return;
+
 	unsigned i;
-	for (i = 0; i < SPEEXNN; ++ i)
+	for (i = 0; i < SPEEXNN*2; ++ i)
 	{
 		frame [i] = Q15_ONE;
 	}
+
 	for (i = 0; i < freq2index(cutfreqlow); ++ i)
 	{
 		frame [i] = 0;
@@ -3116,7 +3159,7 @@ void dsp_recalceq(uint_fast8_t pathi, spx_word16_t * frame)
 		frame [i] = Q15_ONE * db2ratio(-100);
 	}
 #endif
-#endif
+
 }
 
 #if WITHMODEM

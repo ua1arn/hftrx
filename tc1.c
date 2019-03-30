@@ -6959,7 +6959,7 @@ void speex_free (void *ptr)
 static void speex_update_rx(void)
 {
 
-	static spx_word16_t speexEQ [NTRX] [SPEEXNN];
+	static spx_word16_t speexEQ [NTRX] [2 * SPEEXNN];
 
 	uint_fast8_t pathi;
 
