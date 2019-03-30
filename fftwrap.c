@@ -100,7 +100,7 @@ void spx_fft_destroy(void *table)
    speex_free(table);
 }
 
-void spx_fft(void *table, float *in, float *out)
+void spx_fft(void *table, const float *in, float *out)
 {
    if (in==out)
    {
@@ -118,7 +118,7 @@ void spx_fft(void *table, float *in, float *out)
    spx_drft_forward((struct drft_lookup *)table, out);
 }
 
-void spx_ifft(void *table, float *in, float *out)
+void spx_ifft(void *table, const float *in, float *out)
 {
    if (in==out)
    {
@@ -158,13 +158,13 @@ void spx_fft_destroy(void *table)
   speex_free(table);
 }
 
-void spx_fft(void *table, spx_word16_t *in, spx_word16_t *out)
+void spx_fft(void *table, const spx_word16_t *in, spx_word16_t *out)
 {
   struct mkl_config *t = (struct mkl_config *) table;
   DftiComputeForward(t->desc, in, out);
 }
 
-void spx_ifft(void *table, spx_word16_t *in, spx_word16_t *out)
+void spx_ifft(void *table, const spx_word16_t *in, spx_word16_t *out)
 {
   struct mkl_config *t = (struct mkl_config *) table;
   DftiComputeBackward(t->desc, in, out);
@@ -209,13 +209,13 @@ void spx_fft_destroy(void *table)
   speex_free(t);
 }
 
-void spx_fft(void *table, spx_word16_t *in, spx_word16_t *out)
+void spx_fft(void *table, const spx_word16_t *in, spx_word16_t *out)
 {
   struct ipp_fft_config *t = (struct ipp_fft_config *)table;
   ippsDFTFwd_RToPack_32f(in, out, t->dftSpec, t->buffer);
 }
 
-void spx_ifft(void *table, spx_word16_t *in, spx_word16_t *out)
+void spx_ifft(void *table, const spx_word16_t *in, spx_word16_t *out)
 {
   struct ipp_fft_config *t = (struct ipp_fft_config *)table;
   ippsDFTInv_PackToR_32f(in, out, t->dftSpec, t->buffer);
@@ -257,7 +257,7 @@ void spx_fft_destroy(void *table)
 }
 
 
-void spx_fft(void *table, spx_word16_t *in, spx_word16_t *out)
+void spx_fft(void *table, const spx_word16_t *in, spx_word16_t *out)
 {
   int i;
   struct fftw_config *t = (struct fftw_config *) table;
@@ -275,7 +275,7 @@ void spx_fft(void *table, spx_word16_t *in, spx_word16_t *out)
     out[i] = optr[i+1];
 }
 
-void spx_ifft(void *table, spx_word16_t *in, spx_word16_t *out)
+void spx_ifft(void *table, const spx_word16_t *in, spx_word16_t *out)
 {
   int i;
   struct fftw_config *t = (struct fftw_config *) table;
@@ -326,7 +326,7 @@ void spx_fft_destroy(void *table)
 
 #ifdef FIXED_POINT
 
-void spx_fft(void *table, spx_word16_t *in, spx_word16_t *out)
+void spx_fft(void *table, const spx_word16_t *in, spx_word16_t *out)
 {
    int shift;
    struct kiss_config *t = (struct kiss_config *)table;
@@ -338,7 +338,7 @@ void spx_fft(void *table, spx_word16_t *in, spx_word16_t *out)
 
 #else
 
-void spx_fft(void *table, spx_word16_t *in, spx_word16_t *out)
+void spx_fft(void *table, const spx_word16_t *in, spx_word16_t *out)
 {
    int i;
    float scale;
@@ -350,7 +350,7 @@ void spx_fft(void *table, spx_word16_t *in, spx_word16_t *out)
 }
 #endif
 
-void spx_ifft(void *table, spx_word16_t *in, spx_word16_t *out)
+void spx_ifft(void *table, const spx_word16_t *in, spx_word16_t *out)
 {
    struct kiss_config *t = (struct kiss_config *)table;
    kiss_fftri2(t->backward, in, out);
