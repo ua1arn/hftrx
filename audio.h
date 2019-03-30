@@ -419,7 +419,7 @@ void savemodemtxbuffer(uint8_t * dest, unsigned size_t);	// Готов буфер с данным
 void releasemodembuffer(uint8_t * dest);
 void releasemodembuffer_low(uint8_t * dest);
 
-void savesampleout16stereo_user(FLOAT_t ch0, FLOAT_t ch1);
+void savesampleout16stereo_user(int_fast32_t ch0, int_fast32_t ch1);
 void savesampleout32stereo(int_fast32_t ch0, int_fast32_t ch1);
 void savesampleout96stereo(int_fast32_t ch0, int_fast32_t ch1);
 void savesampleout192stereo(int_fast32_t ch0, int_fast32_t ch1);
@@ -431,8 +431,8 @@ void savesampleout192stereo(int_fast32_t ch0, int_fast32_t ch1);
 
 #endif /* WITHINTEGRATEDDSP */
 
-uint_fast8_t takespeexready_user(FLOAT_t * * dest);
-void releasespeexbuffer_user(FLOAT_t * t);
+uint_fast8_t takespeexready_user(int16_t * * dest);
+void releasespeexbuffer_user(int16_t * t);
 
 void savesampleout16denoise(FLOAT_t ch0, FLOAT_t ch1);
 

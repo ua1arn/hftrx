@@ -6982,7 +6982,7 @@ static void speex_update_rx(void)
 static void 
 audioproc_spool_user(void)
 {
-	FLOAT_t * p;
+	int16_t * p;
 
 	while (takespeexready_user(& p))
 	{
@@ -6996,7 +6996,7 @@ audioproc_spool_user(void)
 #if WITHUSEDUALWATCH
 			savesampleout16stereo_user(p [i], p [i + SPEEXNN]);	// to AUDIO codec
 #else /* WITHUSEDUALWATCH */
-			savesampleout16stereo_user(pf [i], p [i]);	// to AUDIO codec
+			savesampleout16stereo_user(p [i], p [i]);	// to AUDIO codec
 #endif /* WITHUSEDUALWATCH */
 		}
 		releasespeexbuffer_user(p);

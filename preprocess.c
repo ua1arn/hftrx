@@ -618,7 +618,7 @@ static void speex_compute_agc(SpeexPreprocessState *st, spx_word16_t Pframe, spx
 }
 #endif
 
-static void preprocess_analysis(SpeexPreprocessState *st, float *x)
+static void preprocess_analysis(SpeexPreprocessState *st, spx_int16_t *x)
 {
    int i;
    int N = SPEEXNN;
@@ -721,12 +721,12 @@ static void update_noise_prob(SpeexPreprocessState *st)
 
 void speex_echo_get_residual(SpeexEchoState *st, spx_word32_t *Yout, int len);
 
-EXPORT int speex_preprocess(SpeexPreprocessState *st, float *x, spx_int32_t *echo)
+EXPORT int speex_preprocess(SpeexPreprocessState *st, spx_int16_t *x, spx_int32_t *echo)
 {
    return speex_preprocess_run(st, x);
 }
 
-EXPORT int speex_preprocess_run(SpeexPreprocessState *st, float *x)
+EXPORT int speex_preprocess_run(SpeexPreprocessState *st, spx_int16_t *x)
 {
    int i;
    int M;
@@ -1012,7 +1012,7 @@ EXPORT int speex_preprocess_run(SpeexPreprocessState *st, float *x)
    }
 }
 
-EXPORT void speex_preprocess_estimate_update(SpeexPreprocessState *st, float *x)
+EXPORT void speex_preprocess_estimate_update(SpeexPreprocessState *st, spx_int16_t *x)
 {
    int i;
    int N = SPEEXNN;

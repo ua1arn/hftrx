@@ -248,7 +248,7 @@ static LIST_ENTRY2 modemsrx8;	// Буферы с принятымти через модем данными
 typedef ALIGNX_BEGIN struct denoise16
 {
 	LIST_ENTRY item;
-	ALIGNX_BEGIN FLOAT_t buff [NTRX * SPEEXNN] ALIGNX_END;
+	ALIGNX_BEGIN int16_t buff [NTRX * SPEEXNN] ALIGNX_END;
 } ALIGNX_END denoise16_t;
 
 static LIST_ENTRY2 speexfree16;		// Свободные буферы
@@ -256,7 +256,7 @@ static LIST_ENTRY2 speexready16;	// Буферы для обработки speex
 static int speexready16enable;
 
 // Буферы с принятымти от обработчиков прерываний сообщениями
-uint_fast8_t takespeexready_user(FLOAT_t * * dest)
+uint_fast8_t takespeexready_user(int16_t * * dest)
 {
 	ASSERT_IRQL_USER();
 	global_disableIRQ();
@@ -278,7 +278,7 @@ uint_fast8_t takespeexready_user(FLOAT_t * * dest)
 }
 
 // Освобождение обработанного буфера сообщения
-void releasespeexbuffer_user(FLOAT_t * t)
+void releasespeexbuffer_user(int16_t * t)
 {
 	ASSERT_IRQL_USER();
 	denoise16_t * const p = CONTAINING_RECORD(t, denoise16_t, buff);
@@ -1737,7 +1737,7 @@ void savesampleout32stereo(int_fast32_t ch0, int_fast32_t ch1)
 //////////////////////////////////////////
 // Поэлементное заполнение буфера AF DAC
 
-void savesampleout16stereo_user(FLOAT_t ch0, FLOAT_t ch1)
+void savesampleout16stereo_user(int_fast32_t ch0, int_fast32_t ch1)
 {
 	// если есть инициализированный канал для выдачи звука
 	static voice16_t * p = NULL;
