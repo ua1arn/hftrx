@@ -28,7 +28,7 @@
 
 #include <string.h>
 #include <ctype.h>
-//#include <math.h>
+#include <math.h>
 
 #if WITHSECTOGGLE
 static uint_fast8_t sectoggle;
@@ -6936,12 +6936,18 @@ static uint_fast8_t getlo4div(
 static SpeexPreprocessState * st_handles [NTRX];
 
 static int speecallocated = 0;
-static uint8_t sipexbuff [NTRX * 144980];
+static uint8_t sipexbuff [NTRX * 149176];
+static float eq [SPEEXNN];
 
 void *speex_alloc (int size)
 {
 	size = (size + 0x03) & ~ 0x03;
 	ASSERT((speecallocated + size) <= sizeof sipexbuff / sizeof sipexbuff [0]);
+	if (! ((speecallocated + size) <= sizeof sipexbuff / sizeof sipexbuff [0]))
+	{
+		for (;;)
+			;
+	}
 	void * p = (void *) (sipexbuff + speecallocated);
 	speecallocated += size;
 	return p;
@@ -6968,12 +6974,37 @@ static void speex_update_rx(void)
 	}
 }
 
+static int freq2index(unsigned freq)
+{
+	return (uint_fast64_t) freq * SPEEXNN * 2 / ARMI2SRATE;
+}
+// Преобразовать отношение выраженное в децибелах к "разам" отношения напряжений.
+
+static float db2ratiof(float valueDBb)
+{
+	return powf(10, valueDBb / 20);
+}
+
 static void speex_initialize(void)
 {
+	unsigned i;
+	for (i = 0; i < SPEEXNN; ++ i)
+	{
+		eq [i] = 1;
+	}
+#if 1
+	unsigned freqmin = freq2index(900);
+	unsigned freqmax = freq2index(1100);
+	for (i = freqmin; i < freqmax; ++ i)
+	{
+		eq [i] = db2ratiof(-20);
+	}
+#endif
 	uint_fast8_t pathi;
 	for (pathi = 0; pathi < NTRX; ++ pathi)
 	{
 		st_handles [pathi] = speex_preprocess_state_init(SPEEXNN, ARMI2SRATE);
+		speex_preprocess_ctl(st_handles [pathi], SPEEX_PREPROCESS_SET_EQUALIZER, eq);
 	}
 	debug_printf_P(PSTR("speex: final speecallocated=%d\n"), speecallocated);
 }

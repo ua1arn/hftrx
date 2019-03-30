@@ -205,6 +205,7 @@ struct SpeexPreprocessState_ {
    spx_word16_t *ft;         /**< Processing frame in freq domain (2*ps_size) */
    spx_word32_t *ps;         /**< Current power spectrum */
    spx_word16_t *gain2;      /**< Adjusted gains */
+   float *equalizer2;  /**< Equalizer */
    spx_word16_t *gain_floor; /**< Minimum gain allowed */
    spx_word16_t *window;     /**< Analysis/Synthesis window */
    spx_word32_t *noise;      /**< Noise estimate */
@@ -458,6 +459,7 @@ EXPORT SpeexPreprocessState *speex_preprocess_state_init(int frame_size, int sam
    st->post = (spx_word16_t*)speex_alloc((N+M)*sizeof(spx_word16_t));
    st->gain = (spx_word16_t*)speex_alloc((N+M)*sizeof(spx_word16_t));
    st->gain2 = (spx_word16_t*)speex_alloc((N+M)*sizeof(spx_word16_t));
+   st->equalizer2 = (float*)speex_alloc((N+M)*sizeof(float));
    st->gain_floor = (spx_word16_t*)speex_alloc((N+M)*sizeof(spx_word16_t));
    st->zeta = (spx_word16_t*)speex_alloc((N+M)*sizeof(spx_word16_t));
 
@@ -489,6 +491,7 @@ EXPORT SpeexPreprocessState *speex_preprocess_state_init(int frame_size, int sam
       st->gain[i]=Q15_ONE;
       st->post[i]=SHL16(1, SNR_SHIFT);
       st->prior[i]=SHL16(1, SNR_SHIFT);
+	  st->equalizer2 [i] = 1;
    }
 
    for (i=0;i<N;i++)
@@ -535,6 +538,7 @@ EXPORT void speex_preprocess_state_destroy(SpeexPreprocessState *st)
    speex_free(st->ft);
    speex_free(st->ps);
    speex_free(st->gain2);
+   speex_free(st->equalizer2);
    speex_free(st->gain_floor);
    speex_free(st->window);
    speex_free(st->noise);
@@ -1189,6 +1193,10 @@ EXPORT int speex_preprocess_ctl(SpeexPreprocessState *state, int request, void *
       for(i=0;i<SPEEXNN;i++)
       	((spx_int32_t *)ptr)[i] = (spx_int32_t) PSHR32(st->noise[i], NOISE_SHIFT);
       break;
+   case SPEEX_PREPROCESS_SET_EQUALIZER:
+      for(i=0;i<SPEEXNN;i++)
+		  st->equalizer2 [i] = ((float *)ptr)[i];
+	   break;
    case SPEEX_PREPROCESS_GET_PROB:
       (*(spx_int32_t*)ptr) = MULT16_16_Q15(st->speech_prob, 100);
       break;
