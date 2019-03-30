@@ -288,7 +288,7 @@ void releasespeexbuffer_user(int16_t * t)
 }
 
 
-denoise16_t * allocate_dmabuffe16rdenoise(void)
+denoise16_t * allocate_dmabuffer16denoise(void)
 {
 	if (! IsListEmpty2(& speexfree16))
 	{
@@ -296,7 +296,7 @@ denoise16_t * allocate_dmabuffe16rdenoise(void)
 		denoise16_t * const p = CONTAINING_RECORD(t, denoise16_t, item);
 		return p;
 	}
-	ASSERT(0);
+	debug_printf_P(PSTR("allocate_dmabuffer16denoise() failure\n"));
 	for (;;)
 		;
 	return 0;
@@ -309,7 +309,7 @@ void savesampleout16denoise(FLOAT_t ch0, FLOAT_t ch1)
 
 	if (p == NULL)
 	{
-		p = allocate_dmabuffe16rdenoise();
+		p = allocate_dmabuffer16denoise();
 		n = 0;
 	}
 
