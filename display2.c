@@ -4722,7 +4722,7 @@ enum
 
 #else /* LCDMODE_LTDC_PIP16 */
 
-	static ALIGNX_BEGIN PACKEDCOLOR565_T colorpip0 [GXSIZE(ALLDX, ALLDY)] ALIGNX_END;
+	static ALIGNX_BEGIN PACKEDCOLOR565_T colorpip0 [GXSIZE(ALLDX, ALLDY)] ALIGNX_END = { 1 };
 
 #endif /* LCDMODE_LTDC_PIP16 */
 
@@ -4741,7 +4741,7 @@ static const FLOAT_t spectrum_alpha = 1 - (FLOAT_t) 0.25;	// old value coefficie
 static const FLOAT_t waterfall_beta = 0.75;					// incoming value coefficient
 static const FLOAT_t waterfall_alpha = 1 - (FLOAT_t) 0.75;	// old value coefficient
 
-static FLOAT_t spavgarray [ALLDX];	// массив входных данных для отображения (через фильтры).
+static FLOAT_t spavgarray [ALLDX] = { 1 };	// массив входных данных для отображения (через фильтры).
 
 static FLOAT_t filter_waterfall(
 	uint_fast16_t x
@@ -4766,7 +4766,7 @@ static FLOAT_t filter_spectrum(
 }
 
 #if 1
-	static uint8_t wfarray [WFDY][ALLDX];	// массив "водопада"
+static uint8_t wfarray [WFDY][ALLDX] = { { 1 } };	// массив "водопада"
 	static uint_fast16_t wfrow;				// строка, в которую последней занесены данные
 	static uint_fast32_t wffreq;			// частота центра спектра, для которой в последной раз отрисовали.
 #else

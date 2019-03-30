@@ -368,16 +368,16 @@ static uint_fast8_t		glob_mainsubrxmode = BOARD_RXMAINSUB_A_A;	// Левый/правый, 
 
 // Фильтр для передатчика (floating point)
 // Обрабатывается как несимметричный
-static FLOAT_t FIRCoef_tx_MIKE [NPROF] [NtapCoeffs(Ntap_tx_MIKE)] = { { 0 }, { 0 } };
-static FLOAT_t FIRCwnd_tx_MIKE [NtapCoeffs(Ntap_tx_MIKE)];			// подготовленные значения функции окна
+static FLOAT_t FIRCoef_tx_MIKE [NPROF] [NtapCoeffs(Ntap_tx_MIKE)] = { { 1 }, { 1 } };
+static FLOAT_t FIRCwnd_tx_MIKE [NtapCoeffs(Ntap_tx_MIKE)] = { 1 };			// подготовленные значения функции окна
 
 #define	Ntap_rx_AUDIO	NtapValidate(SPEEXNN - 1)
-static FLOAT_t FIRCoef_rx_AUDIO [NtapCoeffs(Ntap_rx_AUDIO)] = { 0 };
-static FLOAT_t FIRCwnd_rx_AUDIO [NtapCoeffs(Ntap_rx_AUDIO)];			// подготовленные значения функции окна
+static FLOAT_t FIRCoef_rx_AUDIO [NtapCoeffs(Ntap_rx_AUDIO)] = { 1 };
+static FLOAT_t FIRCwnd_rx_AUDIO [NtapCoeffs(Ntap_rx_AUDIO)] = { 1 };			// подготовленные значения функции окна
 
 //static void * fft_lookup;
 
-static struct Complex Sig [FFTSizeFilters];
+static struct Complex Sig [FFTSizeFilters] = { { 1 }, { 1 } };
 
 #define fftixreal(i) ((i * 2) + 0)
 #define fftiximag(i) ((i * 2) + 1)
@@ -4753,7 +4753,7 @@ uint_fast8_t hamradio_get_notchvalueXXX(int_fast32_t * p)
 	return 0;
 }
 
-static struct Complex x256 [NTap256 * 2] = { { 0, 0 }, };
+static struct Complex x256 [NTap256 * 2] = { { 1, 1 }, };
 static uint_fast16_t fft_head = 0;
 
 // формирование отображения спектра
