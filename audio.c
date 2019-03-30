@@ -1087,33 +1087,6 @@ static void imp_response(const FLOAT_t *dCoeff, int iCoefNum)
 	FFT(Sig, FFTSizeFilters, FFTSizeFiltersM); 
 }
 
-//====================================================
-// construct FIR coefficients from frequency response
-//====================================================
-static void reconstruct(void)
-{
-
-	// Центр симметрии Sig - ячейка с индексом FFTSizeFilters / 2
-	// Преобразование из responce в набор коэффициентов для симметричного FIR
-
-#if 1
-#else
-	int i;
-	// Центр симметрии Sig - ячейка с индексом FFTSizeFilters / 2
-	// +++ black magic
-	for (i = 0; i < FFTSizeFilters / 2; i++)
-	{
-		Sig [FFTSizeFilters - 1 - i].imag = - Sig [i + 1].imag;
-		Sig [FFTSizeFilters - 1 - i].real = Sig [i + 1].real;
-	}
-	Sig [FFTSizeFilters / 2].imag = Sig [FFTSizeFilters / 2 + 1].imag;
-	Sig [FFTSizeFilters / 2].real = Sig [FFTSizeFilters / 2 + 1].real;
-	// --- black magic
-#endif
-	IFFT(Sig, FFTSizeFilters, FFTSizeFiltersM); 
-
-}
-
 static void sigtocoeffs(FLOAT_t *dCoeff, int iCoefNum)
 {
 	const int j = NtapCoeffs(iCoefNum);
@@ -1191,6 +1164,9 @@ static void correctspectrumcomplex(int_fast8_t targetdb)
 	Sig [FFTSizeFilters / 2].real *= ratio;
 	Sig [FFTSizeFilters / 2].imag *= ratio;
 #endif
+
+	// Construct FIR coefficients from frequency response
+	IFFT(Sig, FFTSizeFilters, FFTSizeFiltersM); 
 }
 
 // Формирование наклона АЧХ звукового тракта приемника
@@ -1200,14 +1176,13 @@ static void fir_design_adjust_rx(FLOAT_t *dCoeff, const FLOAT_t *dWindow, int iC
 	{
 		imp_response(dCoeff, iCoefNum);	// Получение АЧХ из коэффициентов симмметричного FIR
 		correctspectrumcomplex(glob_afresponcerx);
-		reconstruct();					// construct FIR coefficients from frequency response
 		sigtocoeffs(dCoeff, iCoefNum);
 	}
 
 	if (usewindow != 0)
 		fir_design_applaywindow(dCoeff, dWindow, iCoefNum);
 
-	imp_response(dCoeff, iCoefNum);	// Получение АЧХ из коэффициентов симмметричного FIR
+	imp_response(dCoeff, iCoefNum);	// Получение АЧХ из коэффициентов симмметричного FIR для последующего масштабирования коэффициентов
 	const FLOAT_t resp = getmaxresponce();
 	scalecoeffs(dCoeff, iCoefNum, 1 / resp);	// нормалтизация к. передаци к заданному значению (1)
 }
@@ -1219,11 +1194,10 @@ static void fir_design_adjust_tx(FLOAT_t *dCoeff, const FLOAT_t *dWindow, int iC
 	{
 		imp_response(dCoeff, iCoefNum);	// Получение АЧХ из коэффициентов симмметричного FIR
 		correctspectrumcomplex(glob_afresponcetx);
-		reconstruct();	// construct FIR coefficients from frequency response
 		sigtocoeffs(dCoeff, iCoefNum);
 	}
 	fir_design_applaywindow(dCoeff, dWindow, iCoefNum);
-	imp_response(dCoeff, iCoefNum);	// Получение АЧХ из коэффициентов симмметричного FIR
+	imp_response(dCoeff, iCoefNum);	// Получение АЧХ из коэффициентов симмметричного FIR для последующего масштабирования коэффициентов
 	const FLOAT_t resp = getmaxresponce();
 	scalecoeffs(dCoeff, iCoefNum, 1 / resp);	// нормалтизация к. передаци к заданному значению (1)
 }
