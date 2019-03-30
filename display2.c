@@ -640,11 +640,11 @@ static void display_nr3(
 	void * pv
 	)
 {
-#if WITHDENOISER
+#if WITHIF4DSP
 	int_fast32_t grade;
 	const uint_fast8_t state = hamradio_get_nrvalue(& grade);
 	display_2states_P(x, y, state, PSTR("NR "), text_nul3_P);
-#endif /* WITHDENOISER */
+#endif /* WITHIF4DSP */
 }
 
 // Отображение режима NOCH ON/OFF

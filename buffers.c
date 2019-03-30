@@ -248,7 +248,7 @@ static LIST_ENTRY2 modemsrx8;	// Буферы с принятымти через модем данными
 typedef ALIGNX_BEGIN struct denoise16
 {
 	LIST_ENTRY item;
-	ALIGNX_BEGIN FLOAT_t buff [NTRX] [SPEEXNN] ALIGNX_END;
+	ALIGNX_BEGIN FLOAT_t buff [NTRX * SPEEXNN] ALIGNX_END;
 } ALIGNX_END denoise16_t;
 
 static LIST_ENTRY2 speexfree16;		// Свободные буферы
@@ -256,7 +256,7 @@ static LIST_ENTRY2 speexready16;	// Буферы для обработки speex
 static int speexready16enable;
 
 // Буферы с принятымти от обработчиков прерываний сообщениями
-static uint_fast8_t takespeexready_user(denoise16_t * * dest)
+uint_fast8_t takespeexready_user(FLOAT_t * * dest)
 {
 	ASSERT_IRQL_USER();
 	global_disableIRQ();
@@ -270,7 +270,7 @@ static uint_fast8_t takespeexready_user(denoise16_t * * dest)
 		PLIST_ENTRY t = RemoveTailList2(& speexready16);
 		global_enableIRQ();
 		denoise16_t * const p = CONTAINING_RECORD(t, denoise16_t, item);
-		* dest = p;
+		* dest = p->buff;
 		return 1;
 	}
 	global_enableIRQ();
@@ -278,44 +278,15 @@ static uint_fast8_t takespeexready_user(denoise16_t * * dest)
 }
 
 // Освобождение обработанного буфера сообщения
-static void releasespeexbuffer_user(denoise16_t * p)
+void releasespeexbuffer_user(FLOAT_t * t)
 {
 	ASSERT_IRQL_USER();
+	denoise16_t * const p = CONTAINING_RECORD(t, denoise16_t, buff);
 	global_disableIRQ();
 	InsertHeadList2(& speexfree16, & p->item);
 	global_enableIRQ();
 }
 
-// user-mode processing
-void audioproc_spool_user(void)
-{
-	denoise16_t * p;
-
-	while (takespeexready_user(& p))
-	{
-#if WITHUSEDUALWATCH
-		dsp_audiopostproc(p->buff [0], p->buff [1]);
-#else /* WITHUSEDUALWATCH */
-		dsp_audiopostproc(p->buff [0], NULL);
-#endif /* WITHUSEDUALWATCH */
-#if WITHDENOISER
-		speex_proc(0, p->buff [0]);
-#if WITHUSEDUALWATCH
-		speex_proc(1, p->buff [1]);
-#endif /* WITHUSEDUALWATCH */
-#endif /* WITHDENOISER */
-		unsigned i;
-		for (i = 0; i < SPEEXNN; ++ i)
-		{
-#if WITHUSEDUALWATCH
-			savesampleout16stereo_user(p->buff [0] [i], p->buff [1] [i]);	// to AUDIO codec
-#else /* WITHUSEDUALWATCH */
-			savesampleout16stereo_user(p->buff [0] [i], p->buff [0] [i]);	// to AUDIO codec
-#endif /* WITHUSEDUALWATCH */
-		}
-		releasespeexbuffer_user(p);
-	}
-}
 
 denoise16_t * allocate_dmabuffe16rdenoise(void)
 {
@@ -342,9 +313,9 @@ void savesampleout16denoise(FLOAT_t ch0, FLOAT_t ch1)
 		n = 0;
 	}
 
-	p->buff [0] [n] = ch0;		// sample value
+	p->buff [n] = ch0;		// sample value
 #if WITHUSEDUALWATCH
-	p->buff [1] [n] = ch1;	// sample value
+	p->buff [n + SPEEXNN] = ch1;	// sample value
 #endif /* WITHUSEDUALWATCH */
 
 	n += 1;
@@ -1782,8 +1753,9 @@ void savesampleout16stereo_user(FLOAT_t ch0, FLOAT_t ch1)
 	}
 
 	p->buff [n + 0] = ch0;		// sample value
+#if DMABUFSTEP16 > 1
 	p->buff [n + 1] = ch1;	// sample value
-
+#endif
 	n += DMABUFSTEP16;
 
 	if (n >= DMABUFFSIZE16)

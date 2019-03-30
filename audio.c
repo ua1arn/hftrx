@@ -308,39 +308,30 @@ static uint_fast8_t		glob_mainsubrxmode = BOARD_RXMAINSUB_A_A;	// Левый/правый, 
 
 	#if CPUSTYLE_R7S721 && ! WITHUSEDUALWATCH
 		// Без WITHUSEDUALWATCH
-		#define Ntap_rx_AUDIO	NtapValidate(241)
 		#define Ntap_tx_MIKE	NtapValidate(481)
 	#elif CPUSTYLE_R7S721
 		// есть режим WITHUSEDUALWATCH
-		#define Ntap_rx_AUDIO	NtapValidate(241)
 		#define Ntap_tx_MIKE	NtapValidate(481)
 	#elif (defined (STM32F767xx) || defined (STM32F769xx)) && ! WITHUSEDUALWATCH
 		// Без WITHUSEDUALWATCH
-		#define Ntap_rx_AUDIO	NtapValidate(221)
 		#define Ntap_tx_MIKE	NtapValidate(241)
 	#elif (defined (STM32F767xx) || defined (STM32F769xx))
 		// есть режим WITHUSEDUALWATCH
-		#define Ntap_rx_AUDIO	NtapValidate(129)
 		#define Ntap_tx_MIKE	NtapValidate(241)
 	#elif CPUSTYLE_STM32H7XX && ! WITHUSEDUALWATCH
 		// Без WITHUSEDUALWATCH
-		#define Ntap_rx_AUDIO	NtapValidate(221)
 		#define Ntap_tx_MIKE	NtapValidate(241)
 	#elif CPUSTYLE_STM32H7XX
 		// есть режим WITHUSEDUALWATCH
-		#define Ntap_rx_AUDIO	NtapValidate(129)
 		#define Ntap_tx_MIKE	NtapValidate(241)
 	#elif CPUSTYLE_STM32F7XX && ! WITHUSEDUALWATCH
 		// Без WITHUSEDUALWATCH
-		#define Ntap_rx_AUDIO	NtapValidate(221)
 		#define Ntap_tx_MIKE	NtapValidate(241)
 	#elif CPUSTYLE_STM32F7XX
 		// есть режим WITHUSEDUALWATCH
-		#define Ntap_rx_AUDIO	NtapValidate(129)
 		#define Ntap_tx_MIKE	NtapValidate(241)
 	#elif CPUSTYLE_STM32F4XX && ! WITHUSEDUALWATCH
 		// Без WITHUSEDUALWATCH (только)
-		#define Ntap_rx_AUDIO	NtapValidate(129)
 		#define Ntap_tx_MIKE	NtapValidate(129)
 	#else
 		#error Not suitable CPUSTYLE_xxx and WITHUSEDUALWATCH combination
@@ -353,17 +344,14 @@ static uint_fast8_t		glob_mainsubrxmode = BOARD_RXMAINSUB_A_A;	// Левый/правый, 
 	#if CPUSTYLE_R7S721
 		#define Ntap_rx_SSB_IQ	NtapValidate(241)	// SSB/CW filters: complex numbers, floating-point implementation
 		#define Ntap_tx_SSB_IQ	NtapValidate(241)	// SSB/CW TX filter: complex numbers, floating-point implementation
-		#define Ntap_rx_AUDIO	NtapValidate(105)	// single samples, floating-point implementation
 		#define Ntap_tx_MIKE	NtapValidate(105)	// single samples, floating point implementation
 	#elif CPUSTYLE_STM32F7XX
 		#define Ntap_rx_SSB_IQ	NtapValidate(241)	// SSB/CW filters: complex numbers, floating-point implementation
 		#define Ntap_tx_SSB_IQ	NtapValidate(241)	// SSB/CW TX filter: complex numbers, floating-point implementation
-		#define Ntap_rx_AUDIO	NtapValidate(105)	// single samples, floating-point implementation
 		#define Ntap_tx_MIKE	NtapValidate(105)	// single samples, floating point implementation
 	#else
 		#define Ntap_rx_SSB_IQ	NtapValidate(181)	// SSB/CW filters: complex numbers, floating-point implementation
 		#define Ntap_tx_SSB_IQ	NtapValidate(181)	// SSB/CW TX filter: complex numbers, floating-point implementation
-		#define Ntap_rx_AUDIO	NtapValidate(105)	// single samples, floating-point implementation
 		#define Ntap_tx_MIKE	NtapValidate(105)	// single samples, floating point implementation
 	#endif
 
@@ -376,12 +364,6 @@ static uint_fast8_t		glob_mainsubrxmode = BOARD_RXMAINSUB_A_A;	// Левый/правый, 
 	static FLOAT_t FIRCwnd_tx_SSB_IQ [NtapCoeffs(Ntap_tx_SSB_IQ)];			// подготовленные значения функции окна
 
 #endif /* WITHDSPLOCALFIR */
-
-// Фильтр для аудиовыхода
-// Обрабатывается как несимметричный
-// массив паарметров для двух приемников
-static FLOAT_t FIRCoef_rx_AUDIO [NPROF] [2 /* эта размерность номер тракта */] [NtapCoeffs(Ntap_rx_AUDIO)] = { { { 0 }, { 0 } }, { { 0 }, { 0 } } };
-static FLOAT_t FIRCwnd_rx_AUDIO [NtapCoeffs(Ntap_rx_AUDIO)];			// подготовленные значения функции окна
 
 // Фильтр для передатчика (floating point)
 // Обрабатывается как несимметричный
@@ -2597,44 +2579,6 @@ static RAMFUNC_NONILINE FLOAT_t filter_fir_tx_MIKE(FLOAT_t NewSample, uint_fast8
 	return bypass ? xshift [fir_head + NtapHalf] : filter_fir_compute(FIRCoef_tx_MIKE [gwprof], & xshift [fir_head + NtapHalf + 1], NtapHalf + 1);
 }
 
-// Звуковой фильтр приёмника.
-static RAMFUNC_NONILINE FLOAT_t filter_fir_rx_AUDIO_A(FLOAT_t NewSample) 
-{
-	enum { Ntap = Ntap_rx_AUDIO, NtapHalf = Ntap / 2 };
-	// буфер с сохраненными значениями сэмплов
-	static FLOAT_t xshift [Ntap * 2] = { 0, };
-	static uint_fast16_t fir_head = 0;
-
-	// shift the old samples
-	fir_head = (fir_head == 0) ? (Ntap - 1) : (fir_head - 1);
-    xshift [fir_head] = xshift [fir_head + Ntap] = NewSample;
-
-	return filter_fir_compute(FIRCoef_rx_AUDIO [gwprof] [0], & xshift [fir_head + NtapHalf + 1], NtapHalf + 1);
-}
-
-#if WITHUSEDUALWATCH
-
-// Звуковой фильтр приёмника.
-static RAMFUNC_NONILINE FLOAT_t filter_fir_rx_AUDIO_B(FLOAT_t NewSample) 
-{
-#if ! DUALFILTERSPROCESSING
-	return NewSample;
-#endif /* ! DUALFILTERSPROCESSING */
-
-	enum { Ntap = Ntap_rx_AUDIO, NtapHalf = Ntap / 2 };
-	// буфер с сохраненными значениями сэмплов
-	static FLOAT_t xshift [Ntap * 2] = { 0, };
-	static uint_fast16_t fir_head = 0;
-
-	// shift the old samples
-	fir_head = (fir_head == 0) ? (Ntap - 1) : (fir_head - 1);
-    xshift [fir_head] = xshift [fir_head + Ntap] = NewSample;
-
-	return filter_fir_compute(FIRCoef_rx_AUDIO [gwprof] [1], & xshift [fir_head + NtapHalf + 1], NtapHalf + 1);
-}
-
-#endif /* WITHUSEDUALWATCH */
-
 
 static RAMFUNC uint_fast8_t isdspmoderx(uint_fast8_t dspmode)
 {
@@ -2781,6 +2725,7 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 // Установка параметров тракта приёмника
 static void audio_setup_rx(const uint_fast8_t spf, const uint_fast8_t pathi)
 {
+#if 0
 	const int cutfreqlow = glob_aflowcutrx [pathi];
 	const int cutfreqhigh = glob_afhighcutrx [pathi];
 	FLOAT_t * const dCoeff = FIRCoef_rx_AUDIO [spf] [pathi];
@@ -2870,6 +2815,7 @@ static void audio_setup_rx(const uint_fast8_t spf, const uint_fast8_t pathi)
 	default:
 		break;
 	}
+#endif
 }
 
 
@@ -5350,54 +5296,6 @@ void dsp_addsidetone(int16_t * buff)
 	}
 }
 
-static void blockfilter_rxA(FLOAT_t * buff)
-{
-	return;
-	unsigned i;
-	for (i = 0; i < SPEEXNN; ++ i)
-	{
-		buff [i] = filter_fir_rx_AUDIO_A(buff [i]);
-	}
-}
-
-#if WITHUSEDUALWATCH
-static void blockfilter_rxB(FLOAT_t * buff)
-{
-	return;
-	unsigned i;
-	for (i = 0; i < SPEEXNN; ++ i)
-	{
-		buff [i] = filter_fir_rx_AUDIO_B(buff [i]);
-	}
-}
-#endif /* WITHUSEDUALWATCH */
-
-// user mode function
-void dsp_audiopostproc(FLOAT_t * left, FLOAT_t * right)
-{
-	const uint_fast8_t dspmodeA = glob_dspmodes [0];
-	const uint_fast8_t tx = isdspmodetx(dspmodeA);
-	const uint_fast8_t m0 = isneedmute(dspmodeA);
-	const uint_fast8_t f0 = isneedfiltering(dspmodeA);
-#if WITHUSEDUALWATCH
-	const uint_fast8_t dspmodeB = tx ? DSPCTL_MODE_IDLE : glob_dspmodes [1];
-	const uint_fast8_t m1 = isneedmute(dspmodeB);
-	const uint_fast8_t f1 = isneedfiltering(dspmodeB);
-#endif /* WITHUSEDUALWATCH */
-	//if (m0)
-	//	memset(left, 0, sizeof * left * SPEEXNN);	// mute
-	//else 
-	if (f0)
-		blockfilter_rxA(left);
-#if WITHUSEDUALWATCH
-	//if (m1)
-	//	memset(right, 0, sizeof * right * SPEEXNN);	// mute
-	//else 
-	if (f1)
-		blockfilter_rxB(right);
-#endif /* WITHUSEDUALWATCH */
-}
-
 // Обработка полученного от DMA буфера с выборками или квадратурами (или двухканальный приём).
 // Вызывается на ARM_REALTIME_PRIORITY уровне.
 void RAMFUNC dsp_extbuffer32rx(const uint32_t * buff)
@@ -5878,7 +5776,6 @@ void dsp_initialize(void)
 #endif /* WITHRTS96 && ! WITHTRANSPARENTIQ */
 
 	fir_design_windowbuff(FIRCwnd_tx_MIKE, Ntap_tx_MIKE);
-	fir_design_windowbuff(FIRCwnd_rx_AUDIO, Ntap_rx_AUDIO);
 
 #if WITHDSPEXTFIR
 	#if WITHDOUBLEFIRCOEFS && (__ARM_FP & 0x08)

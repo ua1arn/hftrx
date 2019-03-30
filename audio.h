@@ -431,9 +431,8 @@ void savesampleout192stereo(int_fast32_t ch0, int_fast32_t ch1);
 
 #endif /* WITHINTEGRATEDDSP */
 
-void speex_proc(uint_fast8_t pathi, FLOAT_t * buff);
-void audioproc_spool_user(void);
-void dsp_audiopostproc(FLOAT_t * left, FLOAT_t * right);
+uint_fast8_t takespeexready_user(FLOAT_t * * dest);
+void releasespeexbuffer_user(FLOAT_t * t);
 
 void savesampleout16denoise(FLOAT_t ch0, FLOAT_t ch1);
 

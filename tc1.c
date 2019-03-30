@@ -182,9 +182,9 @@ enum
 	CAT_AG_INDEX,		// aganswer()
 	CAT_SQ_INDEX,		// sqanswer()
 #endif /* WITHIF4DSP */
-#if WITHDENOISER
+#if WITHIF4DSP
 	CAT_NR_INDEX,		// nranswer()
-#endif /* WITHDENOISER */
+#endif /* WITHIF4DSP */
 	CAT_BADCOMMAND_INDEX,		// badcommandanswer()
 	//
 	CAT_MAX_INDEX
@@ -6931,7 +6931,7 @@ static uint_fast8_t getlo4div(
 
 // speex
 
-#if WITHDENOISER
+#if WITHIF4DSP
 
 static SpeexPreprocessState * st_handles [NTRX];
 
@@ -6978,6 +6978,31 @@ static void speex_update_rx(void)
 	}
 }
 
+// user-mode processing
+static void 
+audioproc_spool_user(void)
+{
+	FLOAT_t * p;
+
+	while (takespeexready_user(& p))
+	{
+		speex_preprocess_run(st_handles [0], p + 0);	// left channel
+#if WITHUSEDUALWATCH
+		speex_preprocess_run(st_handles [1], p + SPEEXNN);	// right channel
+#endif /* WITHUSEDUALWATCH */
+		unsigned i;
+		for (i = 0; i < SPEEXNN; ++ i)
+		{
+#if WITHUSEDUALWATCH
+			savesampleout16stereo_user(p [i], p [i + SPEEXNN]);	// to AUDIO codec
+#else /* WITHUSEDUALWATCH */
+			savesampleout16stereo_user(pf [i], p [i]);	// to AUDIO codec
+#endif /* WITHUSEDUALWATCH */
+		}
+		releasespeexbuffer_user(p);
+	}
+}
+
 static void speex_initialize(void)
 {
 	uint_fast8_t pathi;
@@ -6988,14 +7013,7 @@ static void speex_initialize(void)
 	debug_printf_P(PSTR("speex: final speecallocated=%d\n"), speecallocated);
 }
 
-#endif /* WITHDENOISER */
-
-void speex_proc(uint_fast8_t pathi, FLOAT_t * buff)
-{
-#if WITHDENOISER
-		speex_preprocess_run(st_handles [pathi], buff);
-#endif /* WITHDENOISER */
-}
+#endif /* WITHIF4DSP */
 
 // Печать частоты в формате dddddd.ddd
 static void printfreq(int_fast32_t freq)
@@ -7178,9 +7196,9 @@ updateboard(
 			cat_answer_request(CAT_MD_INDEX);
 			cat_answer_request(CAT_FA_INDEX);	// добавлено для обновления индикатора частоты в ACRP-590 при переходе по диапазонам клавишами на устройстве. И помогло при нажатиях на цифры дисплея.
 			cat_answer_request(gtx ? CAT_TX_INDEX : CAT_RX_INDEX);	// ignore main/sub rx selection (0 - main. 1 - sub);
-#if WITHDENOISER
+#if WITHIF4DSP
 			cat_answer_request(CAT_NR_INDEX);
-#endif /* WITHDENOISER */
+#endif /* WITHIF4DSP */
 		}
 		else
 		{
@@ -7553,9 +7571,9 @@ updateboard(
 			board_set_adcfifo(gadcfifo);
 			board_set_adcoffset(gadcoffset + getadcoffsbase()); /* смещение для выходного сигнала с АЦП */
 		#endif /* WITHDSPEXTDDC */
-		#if WITHDENOISER
+		#if WITHIF4DSP
 			speex_update_rx();
-		#endif /* WITHDENOISER */
+		#endif /* WITHIF4DSP */
 		} /* (gtx == 0) */
 
 	#if defined (RTC1_TYPE)
@@ -8483,14 +8501,14 @@ uint_fast8_t hamradio_get_notchvalue(int_fast32_t * p)
 
 #endif /* WITHNOTCHONOFF || WITHNOTCHFREQ  */
 
-#if WITHDENOISER
+#if WITHIF4DSP
 // NR ON/OFF
 uint_fast8_t hamradio_get_nrvalue(int_fast32_t * p)
 {
 	* p = gnoisereductvl;
 	return gnoisereduct != 0;
 }
-#endif /* WITHDENOISER */
+#endif /* WITHIF4DSP */
 
 // текущее состояние TUNE
 uint_fast8_t hamradio_get_tunemodevalue(void)
@@ -10066,7 +10084,7 @@ static void sqanswer(uint_fast8_t arg)
 }
 #endif /* WITHIF4DSP */
 
-#if WITHDENOISER
+#if WITHIF4DSP
 static void nranswer(uint_fast8_t arg)
 {
 	static const FLASHMEM char fmt_1 [] =
@@ -10080,7 +10098,7 @@ static void nranswer(uint_fast8_t arg)
 		);
 	cat_answer(len);
 }
-#endif /* WITHDENOISER */
+#endif /* WITHIF4DSP */
 
 #if WITHCATEXT && WITHELKEY
 
@@ -10584,17 +10602,17 @@ static canapfn catanswers [CAT_MAX_INDEX] =
 	ptanswer,
 	ifanswer,
 	fwanswer,
-#if WITHIF4DSP//CTLSTYLE_V1D || CTLSTYLE_OLEG4Z_V1 || 1
+#if WITHIF4DSP
 	zzanswer,
-#endif /* CTLSTYLE_V1D || CTLSTYLE_OLEG4Z_V1 */
+#endif /* WITHIF4DSP */
 #if WITHIF4DSP
 	rganswer,
 	aganswer,
 	sqanswer,
-#endif /* CTLSTYLE_V1D || CTLSTYLE_OLEG4Z_V1 */
-#if WITHDENOISER
+#endif /* WITHIF4DSP */
+#if WITHIF4DSP
 	nranswer,
-#endif /* WITHDENOISER */
+#endif /* WITHIF4DSP */
 	badcommandanswer,
 };
 
@@ -10801,7 +10819,7 @@ processcatmsg(
 			cat_answer_request(CAT_IF_INDEX);
 		}
 	}
-#if WITHDENOISER
+#if WITHIF4DSP
 	else if (match2('N', 'R'))
 	{
 		if (cathasparam != 0)
@@ -10821,7 +10839,7 @@ processcatmsg(
 			cat_answer_request(CAT_NR_INDEX);	// nranswer()
 		}
 	}
-#endif /* WITHDENOISER */
+#endif /* WITHIF4DSP */
 #if WITHSPLITEX
 	else if (match2('S', 'P'))
 	{
@@ -11971,7 +11989,7 @@ static const FLASHMEM struct menudef menutable [] =
 		& gcwpitch10,
 		getzerobase, 
 	},
-#if WITHDENOISER
+#if WITHIF4DSP
 	{
 		"NR      ", 7, 0, RJ_ON,	ISTEP1,	
 		ITEM_VALUE,
@@ -11990,7 +12008,7 @@ static const FLASHMEM struct menudef menutable [] =
 		& gnoisereductvl,
 		getzerobase, /* складывается со смещением и отображается */
 	},
-#endif /* WITHDENOISER */
+#endif /* WITHIF4DSP */
 #if WITHIF4DSP
 	{
 		"CW WDT W", 7, 2, 0, 	ISTEP10,	// CW bandwidth for WIDE
@@ -16087,11 +16105,8 @@ hamradio_initialize(void)
 
 #if WITHINTEGRATEDDSP	/* в программу включена инициализация и запуск DSP части. */
 	dsp_initialize();		// цифровая обработка подготавливается
-#endif /* WITHINTEGRATEDDSP */
-
-#if WITHDENOISER
 	speex_initialize();
-#endif /* WITHDENOISER */
+#endif /* WITHINTEGRATEDDSP */
 
 #if WITHI2SHW
 	hardware_audiocodec_enable();	// Интерфейс к НЧ кодеку
