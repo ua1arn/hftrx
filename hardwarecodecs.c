@@ -2117,7 +2117,7 @@ static void r7s721_ssif0_txdma(void)
 
 static void r7s721_ssif0_dmarx_initialize(void)
 {
-	const uint_fast8_t id = 0;		// 0: DMAC0
+	enum { id = 0 };		// 0: DMAC0
 	// DMAC0
    /* Set Source Start Address */
     DMAC0.N0SA_n = (uint32_t) & SSIF0.SSIFRDR;	// Fixed source address
@@ -2188,7 +2188,7 @@ static void r7s721_ssif0_dmarx_initialize(void)
 
 static void r7s721_ssif0_dmatx_initialize(void)
 {
-	const uint_fast8_t id = 1;	// 1: DMAC1
+	enum { id = 1 };	// 1: DMAC1
 	// DMAC1
 	/* Set Source Start Address */
 	DMAC1.N0SA_n = dma_flush16tx(allocate_dmabuffer16());
@@ -2381,7 +2381,7 @@ static RAMFUNC_NONILINE void r7s721_ssif1_rxdma(void)
 
 static void r7s721_ssif1_dmarx_initialize(void)
 {
-	const uint_fast8_t id = 2;	// 2: DMAC2
+	enum { id = 2 };	// 2: DMAC2
 	// DMAC2
 	/* Set Source Start Address */
     DMAC2.N0SA_n = (uint32_t) & SSIF1.SSIFRDR;	// Fixed source address
@@ -3022,7 +3022,7 @@ void r7s721_usbX_dma1_dmatx_handler(void)
 
 static void r7s721_usb0_dma1_dmatx_initialize(void)
 {
-	const uint_fast8_t id = 12;	// 12: DMAC12
+	enum { id = 12 };	// 12: DMAC12
 	// DMAC12
 	/* Set Source Start Address */
 
@@ -3126,7 +3126,7 @@ static void r7s721_usb0_dma0_dmarx_initialize(void)
 	arm_hardware_flush_invalidate((uintptr_t) uacoutbuff0, VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT);
 	arm_hardware_flush_invalidate((uintptr_t) uacoutbuff1, VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT);
 
-	const uint_fast8_t id = 13;		// 13: DMAC13
+	enum { id = 13 };	// 13: DMAC13
 	// DMAC13
 	/* Set Source Start Address */
 	/* регистры USB PIPE (HARDWARE_USBD_PIPE_ISOC_OUT) */
@@ -3211,7 +3211,7 @@ static void r7s721_usb0_dma0_dmatx_enable(void)
 
 static void r7s721_usb1_dma1_dmatx_initialize(void)
 {
-	const uint_fast8_t id = 12;	// 12: DMAC12
+	enum { id = 12 };	// 12: DMAC12
 	// DMAC12
 	/* Set Source Start Address */
 
@@ -3283,7 +3283,7 @@ static void r7s721_usb1_dma0_dmarx_initialize(void)
 	arm_hardware_flush_invalidate((uintptr_t) uacoutbuff0, VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT);
 	arm_hardware_flush_invalidate((uintptr_t) uacoutbuff1, VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT);
 
-	const uint_fast8_t id = 13;		// 13: DMAC13
+	enum { id = 13 };	// 13: DMAC13
 	// DMAC13
 	/* Set Source Start Address */
 	/* регистры USB PIPE (HARDWARE_USBD_PIPE_ISOC_OUT) */

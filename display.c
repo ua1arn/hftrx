@@ -482,6 +482,18 @@ void display_colorbuffer_xor(
 }
 
 #if LCDMODE_LTDC_PIP16
+
+// Выдать буфер на дисплей
+void display_colorbuffer_show(
+	const PACKEDCOLOR565_T * buffer,
+	uint_fast16_t dx,	
+	uint_fast16_t dy,
+	uint_fast16_t col,	// горизонтальная координата левого верхнего угла на экране (0..dx-1) слева направо
+	uint_fast16_t row	// вертикальная координата левого верхнего угла на экране (0..dy-1) сверху вниз
+	)
+{
+}
+
 // установить данный буфер как область для PIP
 void display_colorbuffer_pip(
 	const PACKEDCOLOR565_T * buffer,

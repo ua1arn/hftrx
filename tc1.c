@@ -28,7 +28,7 @@
 
 #include <string.h>
 #include <ctype.h>
-//#include <math.h>
+#include <math.h>
 
 #if WITHSECTOGGLE
 static uint_fast8_t sectoggle;
@@ -182,9 +182,9 @@ enum
 	CAT_AG_INDEX,		// aganswer()
 	CAT_SQ_INDEX,		// sqanswer()
 #endif /* WITHIF4DSP */
-#if WITHDENOISER
+#if WITHIF4DSP
 	CAT_NR_INDEX,		// nranswer()
-#endif /* WITHDENOISER */
+#endif /* WITHIF4DSP */
 	CAT_BADCOMMAND_INDEX,		// badcommandanswer()
 	//
 	CAT_MAX_INDEX
@@ -2268,6 +2268,7 @@ struct modeprops
 
 #if WITHIF4DSP
 	uint8_t txaudio;	/* источник звука для передачи */
+	uint8_t noisereduct;	/* включение NR для данного режима */
 #endif /* WITHIF4DSP */
 
 } ATTRPACKED;// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
@@ -2424,8 +2425,7 @@ struct nvmap
 	uint8_t	ggrpagccw; // последний посещённый пункт группы
 	uint8_t	ggrpagcdigi; // последний посещённый пункт группы
 
-	uint8_t gnoisereduct;	// noise reduction
-	uint8_t gnoisereductvl;	// noise reduction
+	uint8_t gnoisereductvl;	// noise reduction level
 	uint8_t bwsetpos [BWSETI_count];	/* выбор одной из полос пропускания */
 
 	uint8_t bwpropsleft [BWPROPI_count];	/* значения границ полосы пропускания */
@@ -2799,6 +2799,7 @@ filter_t fi_2p0_455 =
 #define RMT_DATAMODE_BASE	offsetof(struct nvmap, gdatamode)
 
 
+#define RMT_NR_BASE(i)	offsetof(struct nvmap, modes[(i)].noisereduct)
 #define RMT_AGC_BASE(i)	offsetof(struct nvmap, modes[(i)].agc)
 #define RMT_FILTER_BASE(i)	offsetof(struct nvmap, modes[(i)].filter)
 #define RMT_STEP_BASE(i)	offsetof(struct nvmap, modes[(i)].step)
@@ -2849,13 +2850,17 @@ static uint_fast8_t gantennas [2];
 static uint_fast8_t gvfosplit [2];	// At index 0: RX VFO A or B, at index 1: TX VFO A or B
 // Параметры, выставляемые в update board
 // кэш установленных параметров.
-// На эти параметры ориентируемся при работе кнопками управления, переклбчения филттров и так далее.
+// На эти параметры ориентируемся при работе кнопками управления, переклбчения фильттров и так далее.
 static uint_fast8_t gsubmode;		/* код текущего режима */
 static uint_fast8_t gmode;		/* текущий код группы режимов */
 static uint_fast8_t gfi;			/* номер фильтра (сквозной) для текущего режима */
 static uint_fast16_t gstep;
 static uint_fast16_t gencderate = 1;
 static uint_fast8_t gagcmode;
+#if WITHIF4DSP
+	static uint_fast8_t gnoisereducts [MODE_COUNT];	// noise reduction
+	static uint_fast8_t gnoisereductvl = 16;	// noise reduction
+#endif /* WITHIF4DSP */
 
 
 
@@ -3148,11 +3153,11 @@ enum
 	static uint_fast8_t gmikeequalizerparams [HARDWARE_CODEC1_NPROCPARAMS] = { 12, 12, 12, 12, 12 };	// Эквалайзер 80Hz 230Hz 650Hz 	1.8kHz 5.3kHz
 #endif /* WITHAFCODEC1HAVEPROC */
 	static uint_fast8_t gagcoff;
-	static uint_fast8_t gnoisereduct;	// noise reduction
-	static uint_fast8_t gnoisereductvl = 16;	// noise reduction
 #else /* WITHIF4DSP */
 	static const uint_fast8_t gagcoff = 0;
 #endif /* WITHIF4DSP */
+
+#define NRLEVELMAX 60
 
 #if WITHAUTOTUNER
 	static uint_fast16_t tunercap;// = (CMAX - CMIN) / 2 + CMIN;
@@ -5509,6 +5514,17 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 #endif /* WITHTX */
 #if WITHIF4DSP
 	{
+		"NR LEVEL ", 
+		0,		// rj
+		ISTEP1,		/* squelch level */
+		0, NRLEVELMAX, 
+		offsetof(struct nvmap, gnoisereductvl),	/* уровень сигнала болше которого открывается шумодав */
+		NULL,
+		& gnoisereductvl,
+		getzerobase, /* складывается со смещением и отображается */
+		enc2menu_adjust,	/* функция для изменения значения параметра */
+	},
+	{
 		"SQUELCH  ", 
 		0,		// rj
 		ISTEP1,		/* squelch level */
@@ -5828,6 +5844,10 @@ loadsavedstate(void)
 	#if WITHIF4DSP
 		// источник звука
 		gtxaudio [mode] = loadvfy8up(RMT_TXAUDIO_BASE(mode), 0, BOARD_TXAUDIO_count - 1, mdt [mode].txaudio);
+	#endif /* WITHIF4DSP */
+		/* включение NR */
+	#if WITHIF4DSP
+		gnoisereducts [mode] = loadvfy8up(RMT_NR_BASE(mode), 0, 1, gnoisereducts [mode]);
 	#endif /* WITHIF4DSP */
 	}
 }
@@ -6931,17 +6951,29 @@ static uint_fast8_t getlo4div(
 
 // speex
 
-#if WITHDENOISER
+#if WITHIF4DSP
 
 static SpeexPreprocessState * st_handles [NTRX];
 
 static int speecallocated = 0;
-static uint8_t sipexbuff [NTRX * 144980];
+
+#if SPEEXNN == 512
+	#define SPEEXALLOCSIZE (NTRX * 75448)
+#elif SPEEXNN == 1024
+	#define SPEEXALLOCSIZE (NTRX * 149176)
+#endif
+//static uint8_t sipexbuff [NTRX * 149176 /* + 24716 */];
+static uint8_t sipexbuff [SPEEXALLOCSIZE];
 
 void *speex_alloc (int size)
 {
 	size = (size + 0x03) & ~ 0x03;
 	ASSERT((speecallocated + size) <= sizeof sipexbuff / sizeof sipexbuff [0]);
+	if (! ((speecallocated + size) <= sizeof sipexbuff / sizeof sipexbuff [0]))
+	{
+		for (;;)
+			;
+	}
 	void * p = (void *) (sipexbuff + speecallocated);
 	speecallocated += size;
 	return p;
@@ -6955,16 +6987,44 @@ static void speex_update_rx(void)
 {
 	uint_fast8_t pathi;
 
-	spx_int32_t denoise = gnoisereduct;
+	spx_int32_t denoise = gnoisereducts [gmode];
 	spx_int32_t supress = - (int) gnoisereductvl;
 
 	for (pathi = 0; pathi < NTRX; ++ pathi)
 	{
+		static spx_word16_t speexEQ [SPEEXNN];
 		SpeexPreprocessState * const st = st_handles [pathi];
 		ASSERT(st != NULL);
 
+		dsp_recalceq(pathi, speexEQ);
 		speex_preprocess_ctl(st, SPEEX_PREPROCESS_SET_DENOISE, & denoise);
 		speex_preprocess_ctl(st, SPEEX_PREPROCESS_SET_NOISE_SUPPRESS, & supress);
+		speex_preprocess_ctl(st, SPEEX_PREPROCESS_SET_EQUALIZER, speexEQ);
+	}
+}
+
+// user-mode processing
+static void 
+audioproc_spool_user(void)
+{
+	int16_t * p;
+
+	while (takespeexready_user(& p))
+	{
+		speex_preprocess_run(st_handles [0], p + 0);	// left channel
+#if WITHUSEDUALWATCH
+		speex_preprocess_run(st_handles [1], p + SPEEXNN);	// right channel
+#endif /* WITHUSEDUALWATCH */
+		unsigned i;
+		for (i = 0; i < SPEEXNN; ++ i)
+		{
+#if WITHUSEDUALWATCH
+			savesampleout16stereo_user(p [i], p [i + SPEEXNN]);	// to AUDIO codec
+#else /* WITHUSEDUALWATCH */
+			savesampleout16stereo_user(p [i], p [i]);	// to AUDIO codec
+#endif /* WITHUSEDUALWATCH */
+		}
+		releasespeexbuffer_user(p);
 	}
 }
 
@@ -6978,14 +7038,7 @@ static void speex_initialize(void)
 	debug_printf_P(PSTR("speex: final speecallocated=%d\n"), speecallocated);
 }
 
-#endif /* WITHDENOISER */
-
-void speex_proc(uint_fast8_t pathi, FLOAT_t * buff)
-{
-#if WITHDENOISER
-		speex_preprocess_run(st_handles [pathi], buff);
-#endif /* WITHDENOISER */
-}
+#endif /* WITHIF4DSP */
 
 // Печать частоты в формате dddddd.ddd
 static void printfreq(int_fast32_t freq)
@@ -7168,9 +7221,9 @@ updateboard(
 			cat_answer_request(CAT_MD_INDEX);
 			cat_answer_request(CAT_FA_INDEX);	// добавлено для обновления индикатора частоты в ACRP-590 при переходе по диапазонам клавишами на устройстве. И помогло при нажатиях на цифры дисплея.
 			cat_answer_request(gtx ? CAT_TX_INDEX : CAT_RX_INDEX);	// ignore main/sub rx selection (0 - main. 1 - sub);
-#if WITHDENOISER
+#if WITHIF4DSP
 			cat_answer_request(CAT_NR_INDEX);
-#endif /* WITHDENOISER */
+#endif /* WITHIF4DSP */
 		}
 		else
 		{
@@ -7543,9 +7596,9 @@ updateboard(
 			board_set_adcfifo(gadcfifo);
 			board_set_adcoffset(gadcoffset + getadcoffsbase()); /* смещение для выходного сигнала с АЦП */
 		#endif /* WITHDSPEXTDDC */
-		#if WITHDENOISER
+		#if WITHIF4DSP
 			speex_update_rx();
-		#endif /* WITHDENOISER */
+		#endif /* WITHIF4DSP */
 		} /* (gtx == 0) */
 
 	#if defined (RTC1_TYPE)
@@ -8359,6 +8412,17 @@ uif_key_changebw(void)
 	updateboard(1, 1);
 }
 
+/* Переключение шумоподавления
+	 - не вызывает сохранение состояния диапазона */
+
+static void 
+uif_key_changenr(void)
+{
+	gnoisereducts [gmode] = calc_next(gnoisereducts [gmode], 0, 1);
+	save_i8(RMT_NR_BASE(gmode), gnoisereducts [gmode]);
+	updateboard(1, 1);
+}
+
 #if WITHUSBUAC
 
 /* переключение источника звука с USB или обычного для данного режима */
@@ -8473,14 +8537,14 @@ uint_fast8_t hamradio_get_notchvalue(int_fast32_t * p)
 
 #endif /* WITHNOTCHONOFF || WITHNOTCHFREQ  */
 
-#if WITHDENOISER
+#if WITHIF4DSP
 // NR ON/OFF
 uint_fast8_t hamradio_get_nrvalue(int_fast32_t * p)
 {
 	* p = gnoisereductvl;
-	return gnoisereduct != 0;
+	return gnoisereducts [gmode] != 0;
 }
-#endif /* WITHDENOISER */
+#endif /* WITHIF4DSP */
 
 // текущее состояние TUNE
 uint_fast8_t hamradio_get_tunemodevalue(void)
@@ -10056,7 +10120,7 @@ static void sqanswer(uint_fast8_t arg)
 }
 #endif /* WITHIF4DSP */
 
-#if WITHDENOISER
+#if WITHIF4DSP
 static void nranswer(uint_fast8_t arg)
 {
 	static const FLASHMEM char fmt_1 [] =
@@ -10066,11 +10130,11 @@ static void nranswer(uint_fast8_t arg)
 
 	// answer mode
 	const uint_fast8_t len = local_snprintf_P(cat_ask_buffer, CAT_ASKBUFF_SIZE, fmt_1,
-		(int) (gnoisereduct != 0 ? 2 : 0)
+		(int) (gnoisereducts [gmode] != 0 ? 2 : 0)
 		);
 	cat_answer(len);
 }
-#endif /* WITHDENOISER */
+#endif /* WITHIF4DSP */
 
 #if WITHCATEXT && WITHELKEY
 
@@ -10574,17 +10638,17 @@ static canapfn catanswers [CAT_MAX_INDEX] =
 	ptanswer,
 	ifanswer,
 	fwanswer,
-#if WITHIF4DSP//CTLSTYLE_V1D || CTLSTYLE_OLEG4Z_V1 || 1
+#if WITHIF4DSP
 	zzanswer,
-#endif /* CTLSTYLE_V1D || CTLSTYLE_OLEG4Z_V1 */
+#endif /* WITHIF4DSP */
 #if WITHIF4DSP
 	rganswer,
 	aganswer,
 	sqanswer,
-#endif /* CTLSTYLE_V1D || CTLSTYLE_OLEG4Z_V1 */
-#if WITHDENOISER
+#endif /* WITHIF4DSP */
+#if WITHIF4DSP
 	nranswer,
-#endif /* WITHDENOISER */
+#endif /* WITHIF4DSP */
 	badcommandanswer,
 };
 
@@ -10791,15 +10855,19 @@ processcatmsg(
 			cat_answer_request(CAT_IF_INDEX);
 		}
 	}
-#if WITHDENOISER
+#if WITHIF4DSP
+	else if (match2('R', 'L'))
+	{
+		cat_answer_request(CAT_BADCOMMAND_INDEX);
+	}
 	else if (match2('N', 'R'))
 	{
 		if (cathasparam != 0)
 		{
 			const uint_fast32_t p1 = vfy32up(catparam, 0, 2, 0) != 0;	// RN0; NR1; NR2;
-			if (gnoisereduct != p1)
+			if (gnoisereducts [gmode] != p1)
 			{
-				gnoisereduct = p1;
+				gnoisereducts [gmode] = p1;
 				updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
 				rc = 1;
 			}
@@ -10811,7 +10879,7 @@ processcatmsg(
 			cat_answer_request(CAT_NR_INDEX);	// nranswer()
 		}
 	}
-#endif /* WITHDENOISER */
+#endif /* WITHIF4DSP */
 #if WITHSPLITEX
 	else if (match2('S', 'P'))
 	{
@@ -11961,26 +12029,17 @@ static const FLASHMEM struct menudef menutable [] =
 		& gcwpitch10,
 		getzerobase, 
 	},
-#if WITHDENOISER
-	{
-		"NR      ", 7, 0, RJ_ON,	ISTEP1,	
-		ITEM_VALUE,
-		0, 1, 
-		offsetof(struct nvmap, gnoisereduct),
-		NULL,
-		& gnoisereduct,
-		getzerobase, /* складывается со смещением и отображается */
-	},
+#if WITHIF4DSP
 	{
 		"NR LEVEL", 7, 0, 0,	ISTEP1,	
 		ITEM_VALUE,
-		0, 60, 
+		0, NRLEVELMAX, 
 		offsetof(struct nvmap, gnoisereductvl),
 		NULL,
 		& gnoisereductvl,
 		getzerobase, /* складывается со смещением и отображается */
 	},
-#endif /* WITHDENOISER */
+#endif /* WITHIF4DSP */
 #if WITHIF4DSP
 	{
 		"CW WDT W", 7, 2, 0, 	ISTEP10,	// CW bandwidth for WIDE
@@ -15158,6 +15217,14 @@ process_key_menuset_common(uint_fast8_t kbch)
 #endif /* WITHIF4DSP */
 		return 1;	/* клавиша уже обработана */
 
+#if WITHIF4DSP
+	case KBD_CODE_NR:
+		/* Переключение режтима шумоподавления
+			 - не вызывает сохранение состояния диапазона */
+		uif_key_changenr();
+		return 1;	/* клавиша уже обработана */
+#endif /* WITHIF4DSP */
+
 #if ! WITHAGCMODENONE
 	case KBD_CODE_AGC:
 		/* AGC mode switch
@@ -16077,11 +16144,8 @@ hamradio_initialize(void)
 
 #if WITHINTEGRATEDDSP	/* в программу включена инициализация и запуск DSP части. */
 	dsp_initialize();		// цифровая обработка подготавливается
-#endif /* WITHINTEGRATEDDSP */
-
-#if WITHDENOISER
 	speex_initialize();
-#endif /* WITHDENOISER */
+#endif /* WITHINTEGRATEDDSP */
 
 #if WITHI2SHW
 	hardware_audiocodec_enable();	// Интерфейс к НЧ кодеку

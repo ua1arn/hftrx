@@ -321,14 +321,8 @@ struct Complex
 	FLOAT_t imag;
 };
 
-#if CPUSTYLE_R7S721 || CPUSTYLE_STM32H7XX
-	#define FFTSizeFiltersM 10
-	#define FFTSizeSpectrumM 10
-#else
-	#define FFTSizeFiltersM 10
-	#define FFTSizeSpectrumM 10
-#endif
-
+#define FFTSizeFiltersM 10
+#define FFTSizeSpectrumM 10
 
 #define FFTSizeFilters (1 << (FFTSizeFiltersM))
 #define FFTSizeSpectrum (1 << (FFTSizeSpectrumM))
@@ -419,7 +413,7 @@ void savemodemtxbuffer(uint8_t * dest, unsigned size_t);	// Готов буфер с данным
 void releasemodembuffer(uint8_t * dest);
 void releasemodembuffer_low(uint8_t * dest);
 
-void savesampleout16stereo_user(FLOAT_t ch0, FLOAT_t ch1);
+void savesampleout16stereo_user(int_fast32_t ch0, int_fast32_t ch1);
 void savesampleout32stereo(int_fast32_t ch0, int_fast32_t ch1);
 void savesampleout96stereo(int_fast32_t ch0, int_fast32_t ch1);
 void savesampleout192stereo(int_fast32_t ch0, int_fast32_t ch1);
@@ -431,9 +425,8 @@ void savesampleout192stereo(int_fast32_t ch0, int_fast32_t ch1);
 
 #endif /* WITHINTEGRATEDDSP */
 
-void speex_proc(uint_fast8_t pathi, FLOAT_t * buff);
-void audioproc_spool_user(void);
-void dsp_audiopostproc(FLOAT_t * left, FLOAT_t * right);
+uint_fast8_t takespeexready_user(int16_t * * dest);
+void releasespeexbuffer_user(int16_t * t);
 
 void savesampleout16denoise(FLOAT_t ch0, FLOAT_t ch1);
 
@@ -541,6 +534,7 @@ uint_fast8_t dsp_getmikeadcoverflow(void); /* получения признака переполнения АЦ
 void dsp_speed_diagnostics(void);	/* DSP speed test */
 void buffers_diagnostics(void);
 void dtmftest(void);
+void dsp_recalceq(uint_fast8_t pathi, spx_word16_t * frame);
 
 void modem_initialze(void);
 uint_fast8_t modem_get_ptt(void);

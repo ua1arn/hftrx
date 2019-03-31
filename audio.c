@@ -8,6 +8,7 @@
 #include "hardware.h"	/* зависящие от процессора функции работы с портами */
 #include "board.h"
 #include "audio.h"
+#include "fftwrap.h"
 #include "spifuncs.h"
 #include "formats.h"	// for debug prints
 #include "display.h"	// for debug prints
@@ -308,39 +309,30 @@ static uint_fast8_t		glob_mainsubrxmode = BOARD_RXMAINSUB_A_A;	// Левый/правый, 
 
 	#if CPUSTYLE_R7S721 && ! WITHUSEDUALWATCH
 		// Без WITHUSEDUALWATCH
-		#define Ntap_rx_AUDIO	NtapValidate(241)
 		#define Ntap_tx_MIKE	NtapValidate(481)
 	#elif CPUSTYLE_R7S721
 		// есть режим WITHUSEDUALWATCH
-		#define Ntap_rx_AUDIO	NtapValidate(241)
 		#define Ntap_tx_MIKE	NtapValidate(481)
 	#elif (defined (STM32F767xx) || defined (STM32F769xx)) && ! WITHUSEDUALWATCH
 		// Без WITHUSEDUALWATCH
-		#define Ntap_rx_AUDIO	NtapValidate(221)
 		#define Ntap_tx_MIKE	NtapValidate(241)
 	#elif (defined (STM32F767xx) || defined (STM32F769xx))
 		// есть режим WITHUSEDUALWATCH
-		#define Ntap_rx_AUDIO	NtapValidate(129)
 		#define Ntap_tx_MIKE	NtapValidate(241)
 	#elif CPUSTYLE_STM32H7XX && ! WITHUSEDUALWATCH
 		// Без WITHUSEDUALWATCH
-		#define Ntap_rx_AUDIO	NtapValidate(221)
 		#define Ntap_tx_MIKE	NtapValidate(241)
 	#elif CPUSTYLE_STM32H7XX
 		// есть режим WITHUSEDUALWATCH
-		#define Ntap_rx_AUDIO	NtapValidate(129)
 		#define Ntap_tx_MIKE	NtapValidate(241)
 	#elif CPUSTYLE_STM32F7XX && ! WITHUSEDUALWATCH
 		// Без WITHUSEDUALWATCH
-		#define Ntap_rx_AUDIO	NtapValidate(221)
 		#define Ntap_tx_MIKE	NtapValidate(241)
 	#elif CPUSTYLE_STM32F7XX
 		// есть режим WITHUSEDUALWATCH
-		#define Ntap_rx_AUDIO	NtapValidate(129)
 		#define Ntap_tx_MIKE	NtapValidate(241)
 	#elif CPUSTYLE_STM32F4XX && ! WITHUSEDUALWATCH
 		// Без WITHUSEDUALWATCH (только)
-		#define Ntap_rx_AUDIO	NtapValidate(129)
 		#define Ntap_tx_MIKE	NtapValidate(129)
 	#else
 		#error Not suitable CPUSTYLE_xxx and WITHUSEDUALWATCH combination
@@ -353,17 +345,14 @@ static uint_fast8_t		glob_mainsubrxmode = BOARD_RXMAINSUB_A_A;	// Левый/правый, 
 	#if CPUSTYLE_R7S721
 		#define Ntap_rx_SSB_IQ	NtapValidate(241)	// SSB/CW filters: complex numbers, floating-point implementation
 		#define Ntap_tx_SSB_IQ	NtapValidate(241)	// SSB/CW TX filter: complex numbers, floating-point implementation
-		#define Ntap_rx_AUDIO	NtapValidate(105)	// single samples, floating-point implementation
 		#define Ntap_tx_MIKE	NtapValidate(105)	// single samples, floating point implementation
 	#elif CPUSTYLE_STM32F7XX
 		#define Ntap_rx_SSB_IQ	NtapValidate(241)	// SSB/CW filters: complex numbers, floating-point implementation
 		#define Ntap_tx_SSB_IQ	NtapValidate(241)	// SSB/CW TX filter: complex numbers, floating-point implementation
-		#define Ntap_rx_AUDIO	NtapValidate(105)	// single samples, floating-point implementation
 		#define Ntap_tx_MIKE	NtapValidate(105)	// single samples, floating point implementation
 	#else
 		#define Ntap_rx_SSB_IQ	NtapValidate(181)	// SSB/CW filters: complex numbers, floating-point implementation
 		#define Ntap_tx_SSB_IQ	NtapValidate(181)	// SSB/CW TX filter: complex numbers, floating-point implementation
-		#define Ntap_rx_AUDIO	NtapValidate(105)	// single samples, floating-point implementation
 		#define Ntap_tx_MIKE	NtapValidate(105)	// single samples, floating point implementation
 	#endif
 
@@ -377,16 +366,28 @@ static uint_fast8_t		glob_mainsubrxmode = BOARD_RXMAINSUB_A_A;	// Левый/правый, 
 
 #endif /* WITHDSPLOCALFIR */
 
-// Фильтр для аудиовыхода
-// Обрабатывается как несимметричный
-// массив паарметров для двух приемников
-static FLOAT_t FIRCoef_rx_AUDIO [NPROF] [2 /* эта размерность номер тракта */] [NtapCoeffs(Ntap_rx_AUDIO)] = { { { 0 }, { 0 } }, { { 0 }, { 0 } } };
-static FLOAT_t FIRCwnd_rx_AUDIO [NtapCoeffs(Ntap_rx_AUDIO)];			// подготовленные значения функции окна
-
 // Фильтр для передатчика (floating point)
 // Обрабатывается как несимметричный
-static FLOAT_t FIRCoef_tx_MIKE [NPROF] [NtapCoeffs(Ntap_tx_MIKE)] = { { 0 }, { 0 } };
-static FLOAT_t FIRCwnd_tx_MIKE [NtapCoeffs(Ntap_tx_MIKE)];			// подготовленные значения функции окна
+static FLOAT_t FIRCoef_tx_MIKE [NPROF] [NtapCoeffs(Ntap_tx_MIKE)] = { { 1 }, { 1 } };
+static FLOAT_t FIRCwnd_tx_MIKE [NtapCoeffs(Ntap_tx_MIKE)] = { 1 };			// подготовленные значения функции окна
+
+#define	Ntap_rx_AUDIO	NtapValidate(SPEEXNN - 1)
+static FLOAT_t FIRCoef_rx_AUDIO [NtapCoeffs(Ntap_rx_AUDIO)] = { 1 };
+static FLOAT_t FIRCwnd_rx_AUDIO [NtapCoeffs(Ntap_rx_AUDIO)] = { 1 };			// подготовленные значения функции окна
+
+//static void * fft_lookup;
+
+static struct Complex Sig [FFTSizeFilters] = { { 1 }, { 1 } };
+
+#define fftixreal(i) ((i * 2) + 0)
+#define fftiximag(i) ((i * 2) + 1)
+
+#if 0
+   /* Perform FFT */
+   spx_fft(st->fft_lookup, st->frame, SIGft);
+   /* Inverse FFT with 1/N scaling */
+   spx_ifft(st->fft_lookup, SIGft, st->frame);
+#endif
 
 /* Обработка производится всегда в наибольшей разрядности учавствующих кодеков. */
 /* требуется согласовать разрядность данных IF и AF кодеков. */
@@ -1031,8 +1032,6 @@ static FLOAT_t db2ratio(FLOAT_t valueDBb)
 	return POWF(10, valueDBb / 20);
 }
 
-static struct Complex Sig [FFTSizeFilters];
-
 /* получение пикового значения АЧХ */
 static FLOAT_t getmaxresponce(void)
 {
@@ -1086,33 +1085,6 @@ static void imp_response(const FLOAT_t *dCoeff, int iCoefNum)
 	//---------------------------
 
 	FFT(Sig, FFTSizeFilters, FFTSizeFiltersM); 
-}
-
-//====================================================
-// construct FIR coefficients from frequency response
-//====================================================
-static void reconstruct(void)
-{
-
-	// Центр симметрии Sig - ячейка с индексом FFTSizeFilters / 2
-	// Преобразование из responce в набор коэффициентов для симметричного FIR
-
-#if 1
-#else
-	int i;
-	// Центр симметрии Sig - ячейка с индексом FFTSizeFilters / 2
-	// +++ black magic
-	for (i = 0; i < FFTSizeFilters / 2; i++)
-	{
-		Sig [FFTSizeFilters - 1 - i].imag = - Sig [i + 1].imag;
-		Sig [FFTSizeFilters - 1 - i].real = Sig [i + 1].real;
-	}
-	Sig [FFTSizeFilters / 2].imag = Sig [FFTSizeFilters / 2 + 1].imag;
-	Sig [FFTSizeFilters / 2].real = Sig [FFTSizeFilters / 2 + 1].real;
-	// --- black magic
-#endif
-	IFFT(Sig, FFTSizeFilters, FFTSizeFiltersM); 
-
 }
 
 static void sigtocoeffs(FLOAT_t *dCoeff, int iCoefNum)
@@ -1192,6 +1164,9 @@ static void correctspectrumcomplex(int_fast8_t targetdb)
 	Sig [FFTSizeFilters / 2].real *= ratio;
 	Sig [FFTSizeFilters / 2].imag *= ratio;
 #endif
+
+	// Construct FIR coefficients from frequency response
+	IFFT(Sig, FFTSizeFilters, FFTSizeFiltersM); 
 }
 
 // Формирование наклона АЧХ звукового тракта приемника
@@ -1199,16 +1174,15 @@ static void fir_design_adjust_rx(FLOAT_t *dCoeff, const FLOAT_t *dWindow, int iC
 {
 	if (glob_afresponcerx != 0)
 	{
-		imp_response(dCoeff, iCoefNum);	//  calculate impulse response of FIR filter
+		imp_response(dCoeff, iCoefNum);	// Получение АЧХ из коэффициентов симмметричного FIR
 		correctspectrumcomplex(glob_afresponcerx);
-		reconstruct();					// construct FIR coefficients from frequency response
 		sigtocoeffs(dCoeff, iCoefNum);
 	}
 
 	if (usewindow != 0)
 		fir_design_applaywindow(dCoeff, dWindow, iCoefNum);
 
-	imp_response(dCoeff, iCoefNum);	//  calculate impulse response of FIR filter
+	imp_response(dCoeff, iCoefNum);	// Получение АЧХ из коэффициентов симмметричного FIR для последующего масштабирования коэффициентов
 	const FLOAT_t resp = getmaxresponce();
 	scalecoeffs(dCoeff, iCoefNum, 1 / resp);	// нормалтизация к. передаци к заданному значению (1)
 }
@@ -1218,13 +1192,12 @@ static void fir_design_adjust_tx(FLOAT_t *dCoeff, const FLOAT_t *dWindow, int iC
 {
 	if (glob_afresponcetx != 0)
 	{
-		imp_response(dCoeff, iCoefNum);	//  calculate impulse response of FIR filter
+		imp_response(dCoeff, iCoefNum);	// Получение АЧХ из коэффициентов симмметричного FIR
 		correctspectrumcomplex(glob_afresponcetx);
-		reconstruct();	// construct FIR coefficients from frequency response
 		sigtocoeffs(dCoeff, iCoefNum);
 	}
 	fir_design_applaywindow(dCoeff, dWindow, iCoefNum);
-	imp_response(dCoeff, iCoefNum);	//  calculate impulse response of FIR filter
+	imp_response(dCoeff, iCoefNum);	// Получение АЧХ из коэффициентов симмметричного FIR для последующего масштабирования коэффициентов
 	const FLOAT_t resp = getmaxresponce();
 	scalecoeffs(dCoeff, iCoefNum, 1 / resp);	// нормалтизация к. передаци к заданному значению (1)
 }
@@ -2597,44 +2570,6 @@ static RAMFUNC_NONILINE FLOAT_t filter_fir_tx_MIKE(FLOAT_t NewSample, uint_fast8
 	return bypass ? xshift [fir_head + NtapHalf] : filter_fir_compute(FIRCoef_tx_MIKE [gwprof], & xshift [fir_head + NtapHalf + 1], NtapHalf + 1);
 }
 
-// Звуковой фильтр приёмника.
-static RAMFUNC_NONILINE FLOAT_t filter_fir_rx_AUDIO_A(FLOAT_t NewSample) 
-{
-	enum { Ntap = Ntap_rx_AUDIO, NtapHalf = Ntap / 2 };
-	// буфер с сохраненными значениями сэмплов
-	static FLOAT_t xshift [Ntap * 2] = { 0, };
-	static uint_fast16_t fir_head = 0;
-
-	// shift the old samples
-	fir_head = (fir_head == 0) ? (Ntap - 1) : (fir_head - 1);
-    xshift [fir_head] = xshift [fir_head + Ntap] = NewSample;
-
-	return filter_fir_compute(FIRCoef_rx_AUDIO [gwprof] [0], & xshift [fir_head + NtapHalf + 1], NtapHalf + 1);
-}
-
-#if WITHUSEDUALWATCH
-
-// Звуковой фильтр приёмника.
-static RAMFUNC_NONILINE FLOAT_t filter_fir_rx_AUDIO_B(FLOAT_t NewSample) 
-{
-#if ! DUALFILTERSPROCESSING
-	return NewSample;
-#endif /* ! DUALFILTERSPROCESSING */
-
-	enum { Ntap = Ntap_rx_AUDIO, NtapHalf = Ntap / 2 };
-	// буфер с сохраненными значениями сэмплов
-	static FLOAT_t xshift [Ntap * 2] = { 0, };
-	static uint_fast16_t fir_head = 0;
-
-	// shift the old samples
-	fir_head = (fir_head == 0) ? (Ntap - 1) : (fir_head - 1);
-    xshift [fir_head] = xshift [fir_head + Ntap] = NewSample;
-
-	return filter_fir_compute(FIRCoef_rx_AUDIO [gwprof] [1], & xshift [fir_head + NtapHalf + 1], NtapHalf + 1);
-}
-
-#endif /* WITHUSEDUALWATCH */
-
 
 static RAMFUNC uint_fast8_t isdspmoderx(uint_fast8_t dspmode)
 {
@@ -2778,101 +2713,6 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 #endif /* WITHDSPEXTDDC && WITHDSPEXTFIR */
 }
 
-// Установка параметров тракта приёмника
-static void audio_setup_rx(const uint_fast8_t spf, const uint_fast8_t pathi)
-{
-	const int cutfreqlow = glob_aflowcutrx [pathi];
-	const int cutfreqhigh = glob_afhighcutrx [pathi];
-	FLOAT_t * const dCoeff = FIRCoef_rx_AUDIO [spf] [pathi];
-	const FLOAT_t * const dWindow = FIRCwnd_rx_AUDIO;
-	enum { iCoefNum = Ntap_rx_AUDIO };
-
-	switch (glob_dspmodes [pathi])
-	{
-	case DSPCTL_MODE_RX_DSB:
-		// В этом режиме фильтр не используется
-		//fir_design_passtrough(dCoeff, iCoefNum, 1);
-		// ФНЧ
-		fir_design_lowpass_freq(dCoeff, iCoefNum, cutfreqhigh);
-		fir_design_adjust_rx(dCoeff, dWindow, iCoefNum, 1);	// Формирование наклона АЧХ
-		break;
-
-	case DSPCTL_MODE_RX_SAM:
-		// ФНЧ
-		//fir_design_lowpass_freq(dCoeff, iCoefNum, cutfreqhigh);
-		fir_design_bandpass_freq(dCoeff, iCoefNum, cutfreqlow, cutfreqhigh);
-		fir_design_adjust_rx(dCoeff, dWindow, iCoefNum, 1);	// Формирование наклона АЧХ
-		break;
-
-	case DSPCTL_MODE_RX_WFM:
-	case DSPCTL_MODE_RX_AM:
-	case DSPCTL_MODE_RX_WIDE:
-		// audio
-		if (glob_notch_on != 0)
-		{
-			// частоты SSB фильтра
-			//const int fssbL = cutfreqlow;
-			//const int fssbH = cutfreqhigh;
-
-			// Частоты NOTCH фильтра
-			const int fNotch = inside(cutfreqlow + glob_notch_width / 2, glob_notch_freq, cutfreqhigh - glob_notch_width / 2);
-			const int fcutL = fNotch - glob_notch_width / 2;
-			const int fcutH = fNotch + glob_notch_width / 2;
-			if (1)
-			{
-				// Расчитывается Notch
-				fir_design_bandstop(dCoeff, iCoefNum, fir_design_normfreq(fcutL), fir_design_normfreq(fcutH));
-				fir_design_scale(dCoeff, iCoefNum, 1 / testgain_float_DC(dCoeff, iCoefNum));	// Масштабирование для несимметричного фильтра
-				fir_design_adjust_rx(dCoeff, dWindow, iCoefNum, 0);	// Формирование наклона АЧХ, без применения оконной функции
-			}
-			else
-			{
-				FLOAT_t dC2 [NtapCoeffs(iCoefNum)];
-				int i;
-				// расчитывается два неперекрывающихся полосовых фильтра
-				fir_design_bandpass_freq(dC2, iCoefNum, cutfreqlow, fcutL);	// низкочастотная полоса пропускания
-				fir_design_bandpass_freq(dCoeff, iCoefNum, fcutH, cutfreqhigh);	// высокочастотная полоса пропускания
-				// суммирование эоэффициентов
-				for (i = 0; i < NtapCoeffs(iCoefNum); ++ i)
-					dCoeff [i] += dC2 [i];
-				fir_design_adjust_rx(dCoeff, dWindow, iCoefNum, 0);	// Формирование наклона АЧХ, без применения оконной функции
-			}
-		}
-		else
-		{
-			fir_design_bandpass_freq(dCoeff, iCoefNum, cutfreqlow, cutfreqhigh);
-			fir_design_adjust_rx(dCoeff, dWindow, iCoefNum, 1);	// Формирование наклона АЧХ
-		}
-		break;
-
-	case DSPCTL_MODE_RX_NARROW:
-	case DSPCTL_MODE_RX_FREEDV:
-		// audio
-		fir_design_bandpass_freq(dCoeff, iCoefNum, cutfreqlow, cutfreqhigh);
-		fir_design_adjust_rx(dCoeff, dWindow, iCoefNum, 1);	// Формирование наклона АЧХ
-		break;
-
-	case DSPCTL_MODE_RX_DRM:
-		// audio
-		// В этом режиме фильтр не используется
-		fir_design_passtrough(dCoeff, iCoefNum, 1);		// сигнал через НЧ фильтр не проходит
-		break;
-
-
-	case DSPCTL_MODE_RX_NFM:
-		// audio
-		fir_design_bandpass_freq(dCoeff, iCoefNum, cutfreqlow, cutfreqhigh);
-		fir_design_adjust_rx(dCoeff, dWindow, iCoefNum, 1);	// Формирование наклона АЧХ
-		NBTAU = 1 - MAKETAUIF((FLOAT_t) 0.1);
-		break;
-
-	// в режиме передачи
-	default:
-		break;
-	}
-}
-
-
 // Установка параметров тракта передатчика
 static void audio_setup_mike(const uint_fast8_t spf)
 {
@@ -3000,9 +2840,6 @@ static void audio_update(const uint_fast8_t spf, uint_fast8_t pathi)
 	const ncoftw_t lo6_ftw = FTWAF(- glob_lo6 [pathi]);
 	nco_setlo_ftw(lo6_ftw, pathi);
 
-	audio_setup_rx(spf, pathi);
-
-
 	debug_cleardtmax();		// сброс максимального значения в тесте производительности DSP
 
 #if 1
@@ -3015,6 +2852,150 @@ static void audio_update(const uint_fast8_t spf, uint_fast8_t pathi)
 		glob_aflowcuttx, glob_afhighcuttx
 		);
 #endif
+}
+
+// for speex equalizer responce buffer
+static int freq2index(unsigned freq)
+{
+	return (uint_fast64_t) freq * SPEEXNN * 2 / ARMI2SRATE;
+}
+
+// slope: изменение тембра звука - на Samplerate/2 АЧХ становится на столько децибел 
+// scale: общий масштаб изменения АЧХ
+static void correctspectrum(spx_word16_t * resp, int_fast8_t targetdb)
+{
+	const FLOAT_t slope = db2ratio(targetdb);
+	spx_word16_t scale = Q15_ONE;
+	const FLOAT_t step = POWF(slope, (FLOAT_t) 1 / SPEEXNN);
+	const int n = SPEEXNN;
+	int i;
+	for (i = 0; i < n; ++ i, scale *= step)
+	{
+		resp [i] *= scale;
+	}
+}
+
+
+static void copytospeex(spx_word16_t * frame)
+{
+	ASSERT((FFTSizeFilters / 2) == SPEEXNN);
+	unsigned i;
+	for (i = 0; i < SPEEXNN; ++ i)
+	{
+		struct Complex * const sig = & Sig [i];
+		frame [i] = SQRTF(sig->real * sig->real + sig->imag * sig->imag);
+	}
+}
+
+void dsp_recalceq(uint_fast8_t pathi, spx_word16_t * frame)
+{
+	const int cutfreqlow = glob_aflowcutrx [pathi];
+	const int cutfreqhigh = glob_afhighcutrx [pathi];
+	FLOAT_t * const dCoeff = FIRCoef_rx_AUDIO;
+	const FLOAT_t * const dWindow = FIRCwnd_rx_AUDIO;
+	enum { iCoefNum = Ntap_rx_AUDIO };
+
+	switch (glob_dspmodes [pathi])
+	{
+	case DSPCTL_MODE_RX_DSB:
+		// В этом режиме фильтр не используется
+		//fir_design_passtrough(dCoeff, iCoefNum, 1);
+		// ФНЧ
+		fir_design_lowpass_freq(dCoeff, iCoefNum, cutfreqhigh);
+		fir_design_adjust_rx(dCoeff, dWindow, iCoefNum, 1);	// Формирование наклона АЧХ
+		imp_response(dCoeff, iCoefNum);	// Получение АЧХ из коэффициентов симмметричного FIR
+		copytospeex(frame);
+		break;
+
+	case DSPCTL_MODE_RX_SAM:
+		// ФНЧ
+		//fir_design_lowpass_freq(dCoeff, iCoefNum, cutfreqhigh);
+		fir_design_bandpass_freq(dCoeff, iCoefNum, cutfreqlow, cutfreqhigh);
+		fir_design_adjust_rx(dCoeff, dWindow, iCoefNum, 1);	// Формирование наклона АЧХ
+		imp_response(dCoeff, iCoefNum);	// Получение АЧХ из коэффициентов симмметричного FIR
+		copytospeex(frame);
+		break;
+
+	case DSPCTL_MODE_RX_WFM:
+	case DSPCTL_MODE_RX_AM:
+	case DSPCTL_MODE_RX_WIDE:
+		// audio
+		if (glob_notch_on != 0)
+		{
+			// частоты SSB фильтра
+			//const int fssbL = cutfreqlow;
+			//const int fssbH = cutfreqhigh;
+
+			// Частоты NOTCH фильтра
+			const int fNotch = inside(cutfreqlow + glob_notch_width / 2, glob_notch_freq, cutfreqhigh - glob_notch_width / 2);
+			const int fcutL = fNotch - glob_notch_width / 2;
+			const int fcutH = fNotch + glob_notch_width / 2;
+			if (1)
+			{
+				// Расчитывается Notch
+				fir_design_bandstop(dCoeff, iCoefNum, fir_design_normfreq(fcutL), fir_design_normfreq(fcutH));
+				fir_design_scale(dCoeff, iCoefNum, 1 / testgain_float_DC(dCoeff, iCoefNum));	// Масштабирование для несимметричного фильтра
+				fir_design_adjust_rx(dCoeff, dWindow, iCoefNum, 0);	// Формирование наклона АЧХ, без применения оконной функции
+				imp_response(dCoeff, iCoefNum);	// Получение АЧХ из коэффициентов симмметричного FIR
+				copytospeex(frame);
+			}
+			else
+			{
+				FLOAT_t dC2 [NtapCoeffs(iCoefNum)];
+				int i;
+				// расчитывается два неперекрывающихся полосовых фильтра
+				fir_design_bandpass_freq(dC2, iCoefNum, cutfreqlow, fcutL);	// низкочастотная полоса пропускания
+				fir_design_bandpass_freq(dCoeff, iCoefNum, fcutH, cutfreqhigh);	// высокочастотная полоса пропускания
+				// суммирование эоэффициентов
+				for (i = 0; i < NtapCoeffs(iCoefNum); ++ i)
+					dCoeff [i] += dC2 [i];
+				fir_design_adjust_rx(dCoeff, dWindow, iCoefNum, 0);	// Формирование наклона АЧХ, без применения оконной функции
+				imp_response(dCoeff, iCoefNum);	// Получение АЧХ из коэффициентов симмметричного FIR
+				copytospeex(frame);
+			}
+		}
+		else
+		{
+			fir_design_bandpass_freq(dCoeff, iCoefNum, cutfreqlow, cutfreqhigh);
+			fir_design_adjust_rx(dCoeff, dWindow, iCoefNum, 1);	// Формирование наклона АЧХ
+			imp_response(dCoeff, iCoefNum);	// Получение АЧХ из коэффициентов симмметричного FIR
+			copytospeex(frame);
+		}
+		break;
+
+	case DSPCTL_MODE_RX_NARROW:
+	case DSPCTL_MODE_RX_FREEDV:
+		// audio
+		fir_design_bandpass_freq(dCoeff, iCoefNum, cutfreqlow, cutfreqhigh);
+		fir_design_adjust_rx(dCoeff, dWindow, iCoefNum, 1);	// Формирование наклона АЧХ
+		imp_response(dCoeff, iCoefNum);	// Получение АЧХ из коэффициентов симмметричного FIR
+		copytospeex(frame);
+		break;
+
+	case DSPCTL_MODE_RX_DRM:
+		// audio
+		// В этом режиме фильтр не используется
+		fir_design_passtrough(dCoeff, iCoefNum, 1);		// сигнал через НЧ фильтр не проходит
+		imp_response(dCoeff, iCoefNum);	// Получение АЧХ из коэффициентов симмметричного FIR
+		copytospeex(frame);
+		break;
+
+
+	case DSPCTL_MODE_RX_NFM:
+		// audio
+		fir_design_bandpass_freq(dCoeff, iCoefNum, cutfreqlow, cutfreqhigh);
+		fir_design_adjust_rx(dCoeff, dWindow, iCoefNum, 1);	// Формирование наклона АЧХ
+		imp_response(dCoeff, iCoefNum);	// Получение АЧХ из коэффициентов симмметричного FIR
+		copytospeex(frame);
+		break;
+
+	// в режиме передачи
+	default:
+		fir_design_passtrough(dCoeff, iCoefNum, 1);		// сигнал через НЧ фильтр не проходит
+		imp_response(dCoeff, iCoefNum);	// Получение АЧХ из коэффициентов симмметричного FIR
+		copytospeex(frame);
+		break;
+	}
 }
 
 #if WITHMODEM
@@ -4746,7 +4727,7 @@ uint_fast8_t hamradio_get_notchvalueXXX(int_fast32_t * p)
 	return 0;
 }
 
-static struct Complex x256 [NTap256 * 2] = { { 0, 0 }, };
+static struct Complex x256 [NTap256 * 2] = { { 1, 1 }, };
 static uint_fast16_t fft_head = 0;
 
 // формирование отображения спектра
@@ -5209,52 +5190,6 @@ void dsp_addsidetone(int16_t * buff)
 			break;
 		}
 	}
-}
-
-static void blockfilter_rxA(FLOAT_t * buff)
-{
-	unsigned i;
-	for (i = 0; i < SPEEXNN; ++ i)
-	{
-		buff [i] = filter_fir_rx_AUDIO_A(buff [i]);
-	}
-}
-
-#if WITHUSEDUALWATCH
-static void blockfilter_rxB(FLOAT_t * buff)
-{
-	unsigned i;
-	for (i = 0; i < SPEEXNN; ++ i)
-	{
-		buff [i] = filter_fir_rx_AUDIO_B(buff [i]);
-	}
-}
-#endif /* WITHUSEDUALWATCH */
-
-// user mode function
-void dsp_audiopostproc(FLOAT_t * left, FLOAT_t * right)
-{
-	const uint_fast8_t dspmodeA = glob_dspmodes [0];
-	const uint_fast8_t tx = isdspmodetx(dspmodeA);
-	const uint_fast8_t m0 = isneedmute(dspmodeA);
-	const uint_fast8_t f0 = isneedfiltering(dspmodeA);
-#if WITHUSEDUALWATCH
-	const uint_fast8_t dspmodeB = tx ? DSPCTL_MODE_IDLE : glob_dspmodes [1];
-	const uint_fast8_t m1 = isneedmute(dspmodeB);
-	const uint_fast8_t f1 = isneedfiltering(dspmodeB);
-#endif /* WITHUSEDUALWATCH */
-	//if (m0)
-	//	memset(left, 0, sizeof * left * SPEEXNN);	// mute
-	//else 
-	if (f0)
-		blockfilter_rxA(left);
-#if WITHUSEDUALWATCH
-	//if (m1)
-	//	memset(right, 0, sizeof * right * SPEEXNN);	// mute
-	//else 
-	if (f1)
-		blockfilter_rxB(right);
-#endif /* WITHUSEDUALWATCH */
 }
 
 // Обработка полученного от DMA буфера с выборками или квадратурами (или двухканальный приём).
@@ -5738,6 +5673,9 @@ void dsp_initialize(void)
 
 	fir_design_windowbuff(FIRCwnd_tx_MIKE, Ntap_tx_MIKE);
 	fir_design_windowbuff(FIRCwnd_rx_AUDIO, Ntap_rx_AUDIO);
+	//fft_lookup = spx_fft_init(2*SPEEXNN);
+
+	NBTAU = 1 - MAKETAUIF((FLOAT_t) 0.1);
 
 #if WITHDSPEXTFIR
 	#if WITHDOUBLEFIRCOEFS && (__ARM_FP & 0x08)
