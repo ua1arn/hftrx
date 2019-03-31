@@ -5845,6 +5845,10 @@ loadsavedstate(void)
 		// источник звука
 		gtxaudio [mode] = loadvfy8up(RMT_TXAUDIO_BASE(mode), 0, BOARD_TXAUDIO_count - 1, mdt [mode].txaudio);
 	#endif /* WITHIF4DSP */
+		/* включение NR */
+	#if WITHIF4DSP
+		gnoisereducts [mode] = loadvfy8up(RMT_NR_BASE(mode), 0, 1, gnoisereducts [mode]);
+	#endif /* WITHIF4DSP */
 	}
 }
 
@@ -5944,9 +5948,6 @@ setgsubmode(
 		gstep = pmodet->step10 [0] * 10;
 		gencderate = gstep / STEP_MINIMAL;
 	}
-#if WITHIF4DSP
-	gnoisereducts [mode] = loadvfy8up(RMT_NR_BASE(mode), 0, 1, gnoisereducts [mode]);
-#endif /* WITHIF4DSP */
 }
 #if ! WITHAGCMODENONE
 #endif /* ! WITHAGCMODENONE */
@@ -10855,6 +10856,10 @@ processcatmsg(
 		}
 	}
 #if WITHIF4DSP
+	else if (match2('R', 'L'))
+	{
+		cat_answer_request(CAT_BADCOMMAND_INDEX);
+	}
 	else if (match2('N', 'R'))
 	{
 		if (cathasparam != 0)
