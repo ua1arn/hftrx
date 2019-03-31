@@ -105,13 +105,13 @@ void spx_fft(void *table, const float *in, float *out)
    if (in==out)
    {
       int i;
-      float scale = 1./((struct drft_lookup *)table)->n;
+      float scale = 1.f/((struct drft_lookup *)table)->n;
       speex_warning("FFT should not be done in-place");
       for (i=0;i<((struct drft_lookup *)table)->n;i++)
          out[i] = scale*in[i];
    } else {
       int i;
-      float scale = 1./((struct drft_lookup *)table)->n;
+      float scale = 1.f/((struct drft_lookup *)table)->n;
       for (i=0;i<((struct drft_lookup *)table)->n;i++)
          out[i] = scale*in[i];
    }
@@ -264,7 +264,7 @@ void spx_fft(void *table, const spx_word16_t *in, spx_word16_t *out)
   const int N = t->N;
   float *iptr = t->in;
   float *optr = t->out;
-  const float m = 1.0 / N;
+  const float m = 1.0f / N;
   for(i=0;i<N;++i)
     iptr[i]=in[i] * m;
 
@@ -343,7 +343,7 @@ void spx_fft(void *table, const spx_word16_t *in, spx_word16_t *out)
    int i;
    float scale;
    struct kiss_config *t = (struct kiss_config *)table;
-   scale = 1./t->N;
+   scale = 1.f/t->N;
    kiss_fftr2(t->forward, in, out);
    for (i=0;i<t->N;i++)
       out[i] *= scale;
