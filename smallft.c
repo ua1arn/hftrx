@@ -98,8 +98,8 @@ static void drfti1(int n, float *wa, int *ifac){
       for (ii=2;ii<ido;ii+=2){
 	fi+=1.f;
 	arg=fi*argld;
-	wa[i++]=cos(arg);
-	wa[i++]=sin(arg);
+	wa[i++]=cosf(arg);
+	wa[i++]=sinf(arg);
       }
       is+=ido;
     }
@@ -282,8 +282,8 @@ static void dradfg(int ido,int ip,int l1,int idl1,float *cc,float *c1,
   int idp2,ipp2;
 
   arg=tpi/(float)ip;
-  dcp=cos(arg);
-  dsp=sin(arg);
+  dcp=cosf(arg);
+  dsp=sinf(arg);
   ipph=(ip+1)>>1;
   ipp2=ip;
   idp2=ido;
@@ -852,8 +852,8 @@ static void dradbg(int ido,int ip,int l1,int idl1,float *cc,float *c1,
   t10=ip*ido;
   t0=l1*ido;
   arg=tpi/(float)ip;
-  dcp=cos(arg);
-  dsp=sin(arg);
+  dcp=cosf(arg);
+  dsp=sinf(arg);
   nbd=(ido-1)>>1;
   ipp2=ip;
   ipph=(ip+1)>>1;
