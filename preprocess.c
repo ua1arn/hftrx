@@ -950,7 +950,7 @@ EXPORT int speex_preprocess_run(SpeexPreprocessState *st, spx_int16_t *x)
       st->ft[2*i] = MULT16_16_P15(st->gain2[i],st->ft[2*i])*st->equalizer2[i];
    }
    st->ft[0] = MULT16_16_P15(st->gain2[0],st->ft[0])*st->equalizer2[0];
-   st->ft[2*N-1] = MULT16_16_P15(st->gain2[N-1],st->ft[2*N-1])*st->equalizer2[2*N-1];
+   st->ft[2*N-1] = MULT16_16_P15(st->gain2[N-1],st->ft[2*N-1])*st->equalizer2[N-1];
 
    /*FIXME: This *will* not work for fixed-point */
 #ifndef FIXED_POINT
