@@ -321,12 +321,6 @@ struct Complex
 	FLOAT_t imag;
 };
 
-#define FFTSizeFiltersM 10
-#define FFTSizeSpectrumM 10
-
-#define FFTSizeFilters (1 << (FFTSizeFiltersM))
-#define FFTSizeSpectrum (1 << (FFTSizeSpectrumM))
-
 
 void FFT_initialize(void);
 void FFT(struct Complex *x, int n, int m);

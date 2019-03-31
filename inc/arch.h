@@ -35,7 +35,22 @@
 #ifndef ARCH_H
 #define ARCH_H
 
-#define SPEEXNN 512 //1024
+#if CPUSTYLE_R7S721
+
+#define FFTSizeFiltersM 11
+#define FFTSizeSpectrumM 11
+
+#else
+
+#define FFTSizeFiltersM 10
+#define FFTSizeSpectrumM 10
+
+#endif
+
+#define FFTSizeFilters (1 << (FFTSizeFiltersM))
+#define FFTSizeSpectrum (1 << (FFTSizeSpectrumM))
+
+#define SPEEXNN (FFTSizeFilters / 2)
 
 //#define FIXED_POINT
 #define FLOATING_POINT
