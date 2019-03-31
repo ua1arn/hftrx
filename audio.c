@@ -371,7 +371,7 @@ static uint_fast8_t		glob_mainsubrxmode = BOARD_RXMAINSUB_A_A;	// Левый/правый, 
 static FLOAT_t FIRCoef_tx_MIKE [NPROF] [NtapCoeffs(Ntap_tx_MIKE)] = { { 1 }, { 1 } };
 static FLOAT_t FIRCwnd_tx_MIKE [NtapCoeffs(Ntap_tx_MIKE)] = { 1 };			// подготовленные значения функции окна
 
-#define	Ntap_rx_AUDIO	NtapValidate(SPEEXNN - 1)
+#define	Ntap_rx_AUDIO	NtapValidate(SPEEXNN * 2 - 7)
 static FLOAT_t FIRCoef_rx_AUDIO [NtapCoeffs(Ntap_rx_AUDIO)] = { 1 };
 static FLOAT_t FIRCwnd_rx_AUDIO [NtapCoeffs(Ntap_rx_AUDIO)] = { 1 };			// подготовленные значения функции окна
 
@@ -5146,11 +5146,18 @@ void dsp_addsidetone(int16_t * buff)
 		const FLOAT_t sdtn = get_float_sidetone() * phonefence * shapeSidetoneStep();	// Здесь значение выборки в диапазоне, допустимом для кодека
 		const int16_t monitx = getmonitx(dspmodeA, sdtn, 0);
 
-		int_fast16_t left = (int16_t) b [0];
-		int_fast16_t right = (int16_t) b [1];
+		int_fast16_t left = b [L];
+		int_fast16_t right = b [R];
 		//
-		if (glob_mainsubrxmode == BOARD_RXMAINSUB_A_A)
-			right = left;
+		switch (glob_mainsubrxmode)
+		{
+		case BOARD_RXMAINSUB_A_A:
+			right = left;		// Для предотвращения посылки по USB данных от неинициализированного тракта приемника B
+			break;
+		case BOARD_RXMAINSUB_B_B:
+			left = right;
+			break;
+		}
 		//
 		if (tx)
 		{
@@ -5168,7 +5175,8 @@ void dsp_addsidetone(int16_t * buff)
 		default:
 		case BOARD_RXMAINSUB_A_A:
 			// left:A/right:A
-			b [L] = b [R] = injectsidetone(left, sdtn);
+			b [L] = injectsidetone(left, sdtn);
+			b [R] = injectsidetone(left, sdtn);
 			break;
 		case BOARD_RXMAINSUB_A_B:
 			// left:A/right:B
@@ -5182,7 +5190,8 @@ void dsp_addsidetone(int16_t * buff)
 			break;
 		case BOARD_RXMAINSUB_B_B:
 			// left:B/right:B
-			b [L] = b [R] = injectsidetone(right, sdtn);
+			b [L] = injectsidetone(right, sdtn);
+			b [R] = injectsidetone(right, sdtn);
 			break;
 		case BOARD_RXMAINSUB_TWO:
 			// left, right:A+B
