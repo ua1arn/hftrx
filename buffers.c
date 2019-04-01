@@ -253,7 +253,7 @@ typedef ALIGNX_BEGIN struct denoise16
 
 static LIST_ENTRY2 speexfree16;		// Свободные буферы
 static LIST_ENTRY2 speexready16;	// Буферы для обработки speex
-static int speexready16enable;
+//static int speexready16enable;
 
 // Буферы с принятымти от обработчиков прерываний сообщениями
 uint_fast8_t takespeexready_user(int16_t * * dest)
@@ -261,11 +261,11 @@ uint_fast8_t takespeexready_user(int16_t * * dest)
 	ASSERT_IRQL_USER();
 	global_disableIRQ();
 
-	if (speexready16enable == 0)
-	{
-		speexready16enable = speexready16.Count > 1;
-	}
-	if (speexready16enable && ! IsListEmpty2(& speexready16))
+	//if (speexready16enable == 0)
+	//{
+	//	speexready16enable = speexready16.Count > 1;
+	//}
+	if (/*speexready16enable && */ ! IsListEmpty2(& speexready16))
 	{
 		PLIST_ENTRY t = RemoveTailList2(& speexready16);
 		global_enableIRQ();
@@ -666,7 +666,7 @@ void buffers_initialize(void)
 	}
 #endif /* WITHMODEM */
 
-	static denoise16_t speexarray16 [4];
+	static denoise16_t speexarray16 [3];
 
 	InitializeListHead2(& speexfree16);	// Незаполненные
 	InitializeListHead2(& speexready16);	// Для обработки
