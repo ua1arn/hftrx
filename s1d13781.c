@@ -2152,7 +2152,7 @@ void s1d13781_showbuffer(
 		s1d13781_wrcmd32(REG88_BLT_SSADDR_0, scratchbufbase);		// bits of address
 		// set bitblt rectangle width and height (pixels) registers.
 		s1d13781_wrcmd32_pair(REG92_BLT_WIDTH, dy, dx);	// set bitblt rectangle width and height (pixels) registers.
-		//s1d13781_wrcmd8(REG86_BLT_CMD, 0x04);	// перенесено в 'begin' - 0x04 - move with color expand
+		s1d13781_wrcmd8(REG86_BLT_CMD, 0x04);	// 0x04 - move with color expand
 		s1d13781_wrcmd8(REG80_BLT_CTRL_0, 0x01);	// BitBlt start
 		bitblt_waitbusy2();
 	}
