@@ -4765,14 +4765,16 @@ static FLOAT_t filter_spectrum(
 	return Y;
 }
 
-#if 1
-static uint8_t wfarray [WFDY][ALLDX] = { { 1 } };	// массив "водопада"
-	static uint_fast16_t wfrow;				// строка, в которую последней занесены данные
-	static uint_fast32_t wffreq;			// частота центра спектра, для которой в последной раз отрисовали.
-#else
+#if (! LCDMODE_S1D13781_NHWACCEL && LCDMODE_S1D13781)
 	static uint8_t wfarray [1][ALLDX];	// массив "водопада"
 	enum { wfrow = 0 };				// строка, в которую последней занесены данные
+#else
+	static uint8_t wfarray [WFDY][ALLDX] = { { 1 } };	// массив "водопада"
+	static uint_fast16_t wfrow;				// строка, в которую последней занесены данные
 #endif
+
+static uint_fast32_t wffreq;			// частота центра спектра, для которой в последной раз отрисовали.
+
 enum { PALETTESIZE = 256 };
 static PACKEDCOLOR565_T wfpalette [PALETTESIZE];
 
@@ -4886,7 +4888,10 @@ static void dsp_latchwaterfall(
 	// запоминание информации спектра для спектрограммы
 	dsp_getspectrumrow(spavgarray, ALLDX);
 
+#if (! LCDMODE_S1D13781_NHWACCEL && LCDMODE_S1D13781)
+#else
 	wfrow = (wfrow == 0) ? (WFDY - 1) : (wfrow - 1);
+#endif
 
 	// запоминание информации спектра для водопада
 	for (x = 0; x < ALLDX; ++ x)
@@ -4982,7 +4987,7 @@ display_colorgrid(
 #define HHWMG ((! LCDMODE_S1D13781_NHWACCEL && LCDMODE_S1D13781) || LCDMODE_UC1608 || LCDMODE_UC1601)
 
 #if HHWMG
-static ALIGNX_BEGIN GX_t spectrmonoscr [MGSIZE(ALLDX, ALLDY)] ALIGNX_END;
+static ALIGNX_BEGIN GX_t spectrmonoscr [MGSIZE(ALLDX, SPDY)] ALIGNX_END;
 #endif /* HHWMG */
 // подготовка изображения спектра
 static void display2_spectrum(
@@ -5013,7 +5018,7 @@ static void display2_spectrum(
 		uint_fast16_t xmarker = deltafreq2x(0, bw, ALLDX);
 		for (y = 0; y < SPDY; ++ y)
 		{
-			display_pixelbuffer(spectrmonoscr, ALLDX, ALLDY, xmarker, SPY0 + y);	// погасить точку
+			display_pixelbuffer(spectrmonoscr, ALLDX, SPDY, xmarker, SPY0 + y);	// погасить точку
 		}
 
 		// отображение спектра
@@ -5025,19 +5030,19 @@ static void display2_spectrum(
 			if (x >= xleft && x <= xright)
 			{
 				for (y = 0; y < SPDY; ++ y)
-					display_pixelbuffer_xor(spectrmonoscr, ALLDX, ALLDY, x, SPY0 + y);	// xor точку
+					display_pixelbuffer_xor(spectrmonoscr, ALLDX, SPDY, x, SPY0 + y);	// xor точку
 			}
 			// Формирование графика
 			const int yv = SPDY - val;	//отображаемый уровень, yv = 0..SPDY
 			if (glob_nofill != 0)
 			{
 				if (yv < SPDY)
-					display_pixelbuffer_xor(spectrmonoscr, ALLDX, ALLDY, x, SPY0 + yv);	// xor точку
+					display_pixelbuffer_xor(spectrmonoscr, ALLDX, SPDY, x, SPY0 + yv);	// xor точку
 			}
 			else
 			{
 				for (y = yv; y < SPDY; ++ y)
-					display_pixelbuffer_xor(spectrmonoscr, ALLDX, ALLDY, x, SPY0 + y);	// xor точку
+					display_pixelbuffer_xor(spectrmonoscr, ALLDX, SPDY, x, SPY0 + y);	// xor точку
 			}
 		}
 	}
@@ -5328,7 +5333,7 @@ static void display2_colorbuff(
 #if HHWMG
 	// Спектр на монохромных дисплеях 
 	// или на цвентых,где есть возможность раскаски растровой картинки.
-	display_showbuffer(spectrmonoscr, ALLDX, ALLDY, x0, y0);
+	display_showbuffer(spectrmonoscr, ALLDX, SPDY, x0, y0);
 
 #else /* */
 
