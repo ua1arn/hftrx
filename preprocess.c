@@ -491,7 +491,7 @@ EXPORT SpeexPreprocessState *speex_preprocess_state_init(int frame_size, int sam
       st->gain[i]=Q15_ONE;
       st->post[i]=SHL16(1, SNR_SHIFT);
       st->prior[i]=SHL16(1, SNR_SHIFT);
-	  st->equalizer2 [i] = 1;
+	  st->equalizer2 [i] = Q15_ONE;
    }
 
    for (i=0;i<N;i++)
