@@ -296,7 +296,18 @@ denoise16_t * allocate_dmabuffer16denoise(void)
 		denoise16_t * const p = CONTAINING_RECORD(t, denoise16_t, item);
 		return p;
 	}
+#if WITHBUFFERSDEBUG
+	++ e7;
+#endif /* WITHBUFFERSDEBUG */
+	//debug_printf_P(PSTR("allocate_dmabuffer16denoise() failure\n"));
+	if (! IsListEmpty2(& speexready16))
+	{
+		PLIST_ENTRY t = RemoveTailList2(& speexready16);
+		denoise16_t * const p = CONTAINING_RECORD(t, denoise16_t, item);
+		return p;
+	}
 	debug_printf_P(PSTR("allocate_dmabuffer16denoise() failure\n"));
+	ASSERT(0);
 	for (;;)
 		;
 	return 0;
@@ -341,7 +352,7 @@ static LIST_ENTRY msgsready8;		// «аполненные - готовые к обработке
 
 #if WITHBUFFERSDEBUG
 	static volatile unsigned n1, n1wfm, n2, n3, n4, n5, n6;
-	static volatile unsigned e1, e2, e3, e4, e5, e6;
+	static volatile unsigned e1, e2, e3, e4, e5, e6, e7;
 	static volatile unsigned nbadd, nbdel, nbzero;
 
 	static volatile unsigned debugcount_ms10;	// с точностью 0.1 ms
@@ -419,7 +430,7 @@ void buffers_diagnostics(void)
 
 #if 1 && WITHDEBUG && WITHINTEGRATEDDSP && WITHBUFFERSDEBUG
 	debug_printf_P(PSTR("n1=%u n1wfm=%u n2=%u n3=%u n4=%u n5=%u n6=%u\n"), n1, n1wfm, n2, n3, n4, n5, n6);
-	debug_printf_P(PSTR("e1=%u e2=%u e3=%u e4=%u e5=%u e6=%u uacinalt=%d\n"), e1, e2, e3, e4, e5, e6, uacinalt);
+	debug_printf_P(PSTR("e1=%u e2=%u e3=%u e4=%u e5=%u e6=%u e7=%u uacinalt=%d\n"), e1, e2, e3, e4, e5, e6, e7, uacinalt);
 
 	{
 		const unsigned ms10 = getresetval(& debugcount_ms10);
