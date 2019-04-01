@@ -5316,7 +5316,7 @@ static void display2_waterfall(
 	}
 	else
 	{
-		wffreq = 0;
+		//wffreq = 0;
 	}
 
 #endif /* LCDMODE_S1D13781 */
