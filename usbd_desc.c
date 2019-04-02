@@ -2575,7 +2575,7 @@ static unsigned DFU_FunctionalDescriptor(
 			0;
 		const uint_fast16_t bcdDFUVersion = 0x011A;
 		const uint_fast16_t wDetachTimeOut = 500;
-		const uint_fast16_t wTransferSize = 1024;
+		const uint_fast16_t wTransferSize = USBD_DFU_XFER_SIZE;
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = DFU_DESCRIPTOR_TYPE;	// bDescriptorType: DFU FUNCTIONAL descriptor type 
