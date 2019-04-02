@@ -16,42 +16,7 @@
 //#include "gendef.h"
 //#include "usbdef.h"
 
-#define  NUMBER_STD_REQ     13
 #define UNICODE_ENGLISH     (0x0409)    /* US_English (Ref: USB_LANGIDs.pdf) */
-
-/***********
-*   Control endpoint packet structures
-*/
-typedef struct _device_request
-{
-	uint8_t bmRequestType;
-	uint8_t bRequest;
-	uint16_t wValue;
-	uint16_t wIndex;
-	uint16_t wLength;
-} DEVICE_REQUEST;
-
-#define MAX_CONTROLDATA_SIZE    16
-
-typedef struct _control_xfer
-{
-	DEVICE_REQUEST DeviceRequest;
-	uint16_t wLength;                 /* Transfer size (from last Rx'd device request) */
-	uint16_t wCount;                  /* Bytes sent/rec'd so far in current transfer */
-	uint8_t * pData;                  /* Pointer to source data for TX transfer (Ctrl IN) */
-	uint8_t  dataBuffer[MAX_CONTROLDATA_SIZE];    /* Buffer for RX data transsfer (Ctrl OUT) */
-} CONTROL_XFER;
-
-extern  volatile CONTROL_XFER ControlData;
-
-
-void 	cdc_set_control_line_state (void);
-void    cdc_set_line_coding(void);
-void    cdc_get_line_coding(void);
-void    cdc_set_control_line_state(void);
-void    cdc_send_break(void);
-void    cdc_send_encapsulated_command(void);
-void    cdc_get_encapsulated_command(void);
 
 // STM32F429:
 //	valid EPs: dcp, 0x01/0x81, 0x02/0x82, 0x03/0x83 

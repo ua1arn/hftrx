@@ -2567,13 +2567,14 @@ static unsigned DFU_FunctionalDescriptor(
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
+		// ? DFU_DETACH_MASK
 		const uint_fast8_t bmAttributes = 
 			//1 * (1u << 3) |		/* Bit 3: bitWillDetach - есть у STM32H7 */
 			//1 * (1u << 2) |		/* Bit 2: bitManifestationTolerant  */
 			1 * (1u << 1) |		/* Bit 1: upload capable ( bitCanUpload ) */
 			1 * (1u << 0) |		/* Bit 0: download capable  */
 			0;
-		const uint_fast16_t bcdDFUVersion = 0x011A;
+		const uint_fast16_t bcdDFUVersion = 0x0110;
 		const uint_fast16_t wDetachTimeOut = 500;
 		const uint_fast16_t wTransferSize = USBD_DFU_XFER_SIZE;
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
