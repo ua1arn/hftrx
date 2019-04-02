@@ -886,7 +886,7 @@ const struct qmkey qmdefs [NQMKEYS] =
 	/* ! матрица слева от индикатора - р€д 4 по счету слева - снизу вверх */
 	{ KIF_NONE,		KBD_CODE_MENU_CWSPEED,	KBD_CODE_11, 			' ', },		// CW SPEED
 	{ KIF_NONE,		KBD_CODE_NOTCHTOGGLE,	KBD_CODE_NOTCHFREQ, 	' ', },		// NOTCH
-	{ KIF_NONE,		KBD_CODE_BW,			KBD_CODE_13, 			' ', },		// BW/AGC не выключаетс€ с клавиатуры
+	{ KIF_NONE,		KBD_CODE_BW,			KBD_CODE_NR, 			' ', },		// BW/NR
 	{ KIF_NONE,		KBD_CODE_DWATCHTOGGLE,	KBD_CODE_DWATCHHOLD,	' ', },		// DUAL
 
 	/* матрица слева от индикатора - р€д 3 по счету слева - снизу вверх */
