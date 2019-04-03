@@ -715,8 +715,8 @@
 typedef enum 
 {
   DFU_DETACH = 0,
-  DFU_DNLOAD ,
-  DFU_UPLOAD,
+  DFU_DNLOAD ,		// Write to flash
+  DFU_UPLOAD,		// Read from flash
   DFU_GETSTATUS,
   DFU_CLRSTATUS,
   DFU_GETSTATE,
