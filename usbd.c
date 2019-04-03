@@ -18389,7 +18389,7 @@ uint16_t MEM_If_Erase_HS(uint32_t Add)
   */
 uint16_t MEM_If_Write_HS(uint8_t *src, uint32_t dest, uint32_t Len)
 {
-	PRINTF(PSTR("MEM_If_Read_HS: addr=%08lX, len=%03lX\n"), dest, Len);
+	PRINTF(PSTR("MEM_If_Write_HS: addr=%08lX, len=%03lX\n"), dest, Len);
 	return (USBD_OK);
 }
 
@@ -18403,7 +18403,7 @@ uint16_t MEM_If_Write_HS(uint8_t *src, uint32_t dest, uint32_t Len)
 uint8_t *MEM_If_Read_HS(uint32_t src, uint8_t *dest, uint32_t Len)
 {
 	PRINTF(PSTR("MEM_If_Read_HS: addr=%08lX, len=%03lX\n"), src, Len);
-	return (USBD_OK);
+	return (*dest);
 }
 
 /**
