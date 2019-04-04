@@ -8,8 +8,8 @@
 *   Revised for USB 2.0 compliance -- MJB Nov 2005
 */
 
-#ifndef   __USB200_H__
-#define   __USB200_H__
+#ifndef   USB200_H_INCLUDED
+#define   USB200_H_INCLUDED
 
 
 #define MAXIMUM_USB_STRING_LENGTH 255
@@ -711,11 +711,12 @@
 #define DFU_DETACH_MASK                (uint8_t)(1 << 4) 
 #define DFU_STATUS_DEPTH               (6) 
     
+// INTERFACE_DFU_CONTROL bRequest codes
 typedef enum 
 {
   DFU_DETACH = 0,
-  DFU_DNLOAD ,
-  DFU_UPLOAD,
+  DFU_DNLOAD ,		// Write to flash
+  DFU_UPLOAD,		// Read from flash
   DFU_GETSTATUS,
   DFU_CLRSTATUS,
   DFU_GETSTATE,
@@ -723,4 +724,4 @@ typedef enum
 } DFU_RequestTypeDef;
 
 
-#endif   /* __USB200_H__ */
+#endif   /* USB200_H_INCLUDED */

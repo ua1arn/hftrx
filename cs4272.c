@@ -66,7 +66,7 @@ static void cs4272_setreg(
 
 	spi_select(target, CS4272_SPIMODE);
 	spi_progval8_p1(target, CS4272_ADDRESS_W);		// Chip Aaddress, D0=0: write
-	spi_progval8_p2(target, mapv);		// LSB=b8 of datav
+	spi_progval8_p2(target, mapv);
 	spi_progval8_p2(target, datav);
 	spi_complete(target);
 	spi_unselect(target);
