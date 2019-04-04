@@ -614,8 +614,8 @@ int dbg_puts_impl_P(const FLASHMEM char * s);
 int dbg_puts_impl(const char * s);
 int dbg_putchar(int c);
 int dbg_getchar(char * r);
-//#define DEBUGSPEED 256000uL
-#define DEBUGSPEED 57600uL
+#define DEBUGSPEED 256000uL
+//#define DEBUGSPEED 57600uL
 
 /* TWI (I2C) interface */
 #define I2C_RETRIES 3	/* количество повторов */

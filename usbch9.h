@@ -451,6 +451,6 @@ uint_fast8_t usbd_get_stringsdesc_count(void);
 
 #define DFU_VENDOR_CODE 0x44
 
-#define USBD_DFU_XFER_SIZE 256
+#define USBD_DFU_XFER_SIZE 64//
 
 #endif  /* __CHAP_9_H__ */
