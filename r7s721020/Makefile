@@ -134,12 +134,12 @@ CPFLAGS += -MD -MP -MF ./dep/$(@F).d
 #
 
 #all: RAM ROM
-all: ROM
+all: ROM1 ROM2
 
 RAM: $(OBJS) $(PROJECT)_ram.elf $(PROJECT)_ram.hex
 
-ROM: $(OBJS) $(PROJECT)_rom.elf $(PROJECT)_rom.hex
-#ROM: $(OBJS) $(PROJECT)_rom.elf $(PROJECT)_rom.bin
+ROM1: $(OBJS) $(PROJECT)_rom.elf $(PROJECT)_rom.hex
+ROM2: $(OBJS) $(PROJECT)_rom.elf $(PROJECT)_rom.bin
 
 %o: $(addprefix $(SRCDIR)/, %c)
 	$(CC) -c $(CPFLAGS) $(INCDIR) $< -o $@

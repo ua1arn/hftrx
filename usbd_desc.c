@@ -142,10 +142,12 @@ struct stringtempl
 };
 
 // STM32H743IIT6 descriptors:
+// Note: fixed position format
 //static const char strFlashDesc [] = "@Internal Flash /0x08000000/16*128Kg";
 //static const char strOptBytesDesc [] = "@Option Bytes /0x5200201C/01*128 e";
 
-static const char strFlashDesc [] = "@SPI Flash : M25Px/0x18000000/32*64Kg";
+static const char strFlashDesc [] = "@SPI Flash : M25Px/0x18000000/32*064Kg";
+//static const char strFlashDesc [] = "@Internal Flash /0x08000000/16*128Kg";
 
 static const struct stringtempl strtemplates [] =
 {
