@@ -1889,7 +1889,8 @@ static void usbdFunctionReq_seq4(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef 
 				break;
 
 			case DFU_UPLOAD:
-				DFU_Upload(pdev, req);   
+				TP();
+				DFU_Upload(pdev, req);	// never called
 				break;
 
 			case DFU_GETSTATUS:
@@ -1930,7 +1931,7 @@ static void usbdFunctionReq_seq4(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef 
 				{
 					const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
 					dwDTERate [interfacev] = USBD_peek_u32(& cdc_ep0databuffout [0]);
-					PRINTF(PSTR("CDC_SET_LINE_CODING: interfacev=%u, dwDTERate=%lu, bits=%u\n"), interfacev, dwDTERate [interfacev], cdc_ep0databuffout [6]);
+					//PRINTF(PSTR("CDC_SET_LINE_CODING: interfacev=%u, dwDTERate=%lu, bits=%u\n"), interfacev, dwDTERate [interfacev], cdc_ep0databuffout [6]);
 				}
 				break;
 			}
@@ -1944,7 +1945,7 @@ static void usbdFunctionReq_seq4(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef 
 				{
 					const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
 					dwDTERate [interfacev] = USBD_peek_u32(& cdc_ep0databuffout [0]);
-					PRINTF(PSTR("CDC_SET_LINE_CODING: interfacev=%u, dwDTERate=%lu, bits=%u\n"), interfacev, dwDTERate [interfacev], cdc_ep0databuffout [6]);
+					//PRINTF(PSTR("CDC_SET_LINE_CODING: interfacev=%u, dwDTERate=%lu, bits=%u\n"), interfacev, dwDTERate [interfacev], cdc_ep0databuffout [6]);
 				}
 				break;
 			}
@@ -2401,7 +2402,8 @@ static void usbdFunctionReq_seq1(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef 
 				break;
 
 			case DFU_UPLOAD:
-				DFU_Upload(pdev, req);   
+				//TP();
+				DFU_Upload(pdev, req);		// here used when upload (device -> computer)
 				break;
 
 			case DFU_GETSTATUS:
@@ -2580,6 +2582,7 @@ static void usbdFunctionReq_seq5(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef 
 				break;
 
 			case DFU_UPLOAD:
+				TP();
 				DFU_Upload(pdev, req);   
 				break;
 
@@ -2597,7 +2600,7 @@ static void usbdFunctionReq_seq5(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef 
 
 			case DFU_ABORT:
 				TP();
-				DFU_Abort(pdev);
+				DFU_Abort(pdev);	// called
 				break;
 
 			case DFU_DETACH:
@@ -7686,6 +7689,7 @@ static USBD_StatusTypeDef USBD_XXX_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 				break;
 
 			case DFU_UPLOAD:
+				TP();
 				DFU_Upload(pdev, req);   
 				break;
 
@@ -18399,9 +18403,10 @@ uint16_t MEM_If_DeInit_HS(void)
   * @param  Add: Address of sector to be erased.
   * @retval USBD_OK if operation is successful, MAL_FAIL else.
   */
+// called on each PAGESIZE region (see strFlashDesc)
 uint16_t MEM_If_Erase_HS(uint32_t Add)
 {
-	PRINTF(PSTR("MEM_If_Erase_HS: addr=%08lX\n"), Add);
+	//PRINTF(PSTR("MEM_If_Erase_HS: addr=%08lX\n"), Add);
 	return (USBD_OK);
 }
 
@@ -18429,8 +18434,8 @@ uint8_t *MEM_If_Read_HS(uint32_t src, uint8_t *dest, uint32_t Len)
 {
 	/* Return a valid address to avoid HardFault */
 	/* USER CODE BEGIN 4 */
-	memset(dest, 0x55, Len);
-	* (uint32_t *) dest = (uint32_t) src;
+	//memset(dest, 0x55, Len);
+	* (uint32_t *) dest = src;
 	return dest;
 	/* USER CODE END 4 */
 }
@@ -18445,8 +18450,8 @@ uint8_t *MEM_If_Read_HS(uint32_t src, uint8_t *dest, uint32_t Len)
 uint16_t MEM_If_GetStatus_HS(uint32_t Add, uint8_t Cmd, uint8_t *buffer)
 {
 	/* USER CODE BEGIN 11 */
-	const unsigned FLASH_PROGRAM_TIME = 50;
-	const unsigned FLASH_ERASE_TIME = 50;
+	const unsigned FLASH_PROGRAM_TIME = 0;//50;
+	const unsigned FLASH_ERASE_TIME = 0;//50;
 	switch(Cmd)
 	{
 	case DFU_MEDIA_PROGRAM:
@@ -18682,6 +18687,7 @@ static USBD_StatusTypeDef  USBD_DFU_Setup (USBD_HandleTypeDef *pdev,
       break;
       
     case DFU_UPLOAD:
+				TP();
       DFU_Upload(pdev, req);   
       break;
       
@@ -18882,7 +18888,6 @@ static void DFU_Download(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *r
   */
 static void DFU_Upload(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req)
 {
-	PRINTF(PSTR("DFU_Upload\n"));
  USBD_DFU_HandleTypeDef   *hdfu;
  
     //hdfu = (USBD_DFU_HandleTypeDef*) pdev->pClassData;
@@ -18903,7 +18908,6 @@ static void DFU_Upload(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req
       /* DFU Get Command */
       if (hdfu->wblock_num == 0)  
       {
-		TP();
         /* Update the state machine */
         hdfu->dev_state = (hdfu->wlength > 3)? DFU_STATE_IDLE:DFU_STATE_UPLOAD_IDLE;        
     
@@ -18924,7 +18928,6 @@ static void DFU_Upload(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req
       }
       else if (hdfu->wblock_num > 1)
       {
-		TP();
         hdfu->dev_state = DFU_STATE_UPLOAD_IDLE ;
         
         hdfu->dev_status[1] = 0;
@@ -19048,7 +19051,6 @@ static void DFU_GetStatus(USBD_HandleTypeDef *pdev)
     break;
     
   default :
-		TP();
     break;
   }
   
@@ -19122,7 +19124,7 @@ static void DFU_GetState(USBD_HandleTypeDef *pdev)
   */
 static void DFU_Abort(USBD_HandleTypeDef *pdev)
 {
-	PRINTF(PSTR("DFU_Abort\n"));
+	//PRINTF(PSTR("DFU_Abort\n"));
  USBD_DFU_HandleTypeDef   *hdfu;
  
     //hdfu = (USBD_DFU_HandleTypeDef*) pdev->pClassData;
