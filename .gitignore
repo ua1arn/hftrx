@@ -10,7 +10,7 @@ atmega328_8
 *.elf
 *.dfu
 *.log
-*.zip
+#*.zip
 *.rar
 *.7z
 product.h

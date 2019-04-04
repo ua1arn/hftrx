@@ -18401,8 +18401,12 @@ uint16_t MEM_If_Write_HS(uint8_t *src, uint32_t dest, uint32_t Len)
   */
 uint8_t *MEM_If_Read_HS(uint32_t src, uint8_t *dest, uint32_t Len)
 {
-	PRINTF(PSTR("MEM_If_Read_HS: addr=%08lX, len=%03lX\n"), src, Len);
+	/* Return a valid address to avoid HardFault */
+	/* USER CODE BEGIN 4 */
+	memset(dest, 0x55, Len);
+	* (uint32_t *) dest = (uint32_t) src;
 	return dest;
+	/* USER CODE END 4 */
 }
 
 /**
@@ -18414,9 +18418,9 @@ uint8_t *MEM_If_Read_HS(uint32_t src, uint8_t *dest, uint32_t Len)
   */
 uint16_t MEM_If_GetStatus_HS(uint32_t Add, uint8_t Cmd, uint8_t *buffer)
 {
+	/* USER CODE BEGIN 11 */
 	const unsigned FLASH_PROGRAM_TIME = 50;
 	const unsigned FLASH_ERASE_TIME = 50;
-	/* USER CODE BEGIN 11 */
 	switch(Cmd)
 	{
 	case DFU_MEDIA_PROGRAM:
