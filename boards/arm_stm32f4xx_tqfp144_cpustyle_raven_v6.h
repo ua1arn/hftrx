@@ -52,6 +52,7 @@
 	//#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
 	//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
 	//#define WITHUSBHID		1	/* HID использовать Human Interface Device на USB соединении */
+	//#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
 
 	#define WITHUART2HW	1	/* Используется периферийный контроллер последовательного порта #2 */
 
