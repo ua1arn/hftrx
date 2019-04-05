@@ -1753,20 +1753,6 @@ usbd_handler_brdy8_dcp_out(USBD_HandleTypeDef *pdev, uint_fast8_t pipe)
 	const unsigned count = usbd_read_data(Instance, pipe, dcp_out_ptr + dcp_out_offset, dcp_out_fullsize - dcp_out_offset);
 	//PRINTF(PSTR("usbd_handler_brdy8_dcp_out: dcp_out_fullsize=%u, dcp_out_offset=%u, count=%u\n"), dcp_out_fullsize, dcp_out_offset, count);
 	dcp_out_offset += count;
-	int ready = 0;
-	if (dcp_out_offset == dcp_out_fullsize)
-		ready = 1;
-	else if (count == 0)
-		ready = 1;
-	else if (count < USB_OTG_MAX_EP0_SIZE)
-		ready = 1;
-	else
-		;	/* continue reading */
-
-#if CPUSTYLE_R7S721
-	if (ready)
-		Instance->BRDYENB &= ~ (1uL << pipe);
-#endif /* CPUSTYLE_R7S721 */
 }
 
 // end of machine-dependent stuff
@@ -2507,8 +2493,6 @@ static void usbdFunctionReq_seq3(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef 
 		return;
 	}
 
-		//if (state != 0)
-	Instance->BRDYENB |= (1uL << pipe);
 	dcp_acksend(pdev);	// ACK
 }
 
@@ -3026,7 +3010,7 @@ static void usbd_pipes_enable(PCD_TypeDef * const Instance)
 	{
 		// DCP, control pipe
 		uint_fast8_t pipe = 0;	// PIPE0
-		//Instance->BRDYENB |= (1uL << pipe);	// Прерывание по заполненности приёмного (OUT) буфера
+		Instance->BRDYENB |= (1uL << pipe);	// Прерывание по заполненности приёмного (OUT) буфера
 		Instance->BEMPENB |= (1uL << pipe);	// Прерывание окончания передачи передающего (IN) буфера
 	}
 }
@@ -3039,7 +3023,7 @@ static void usbd_pipes_disable(PCD_TypeDef * const Instance)
 	{
 		// DCP, control pipe
 		uint_fast8_t pipe = 0;	// PIPE0
-		//Instance->BRDYENB |= (1uL << pipe);	// Прерывание по заполненности приёмного (OUT) буфера
+		Instance->BRDYENB &= ~ (1uL << pipe);	// Прерывание по заполненности приёмного (OUT) буфера
 		Instance->BEMPENB &= ~ (1uL << pipe);	// Прерывание окончания передачи передающего (IN) буфера
 	}
 	for (i = 0; i < sizeof brdyenbpipes2 / sizeof brdyenbpipes2 [0]; ++ i)
@@ -3061,8 +3045,6 @@ static void usbd_pipes_disable(PCD_TypeDef * const Instance)
 		//* PIPEnCTR = 0x0001;	// STALL->BUF
 		Instance->NRDYENB &= ~ (1u << pipe);
 	}
-	
-	Instance->BRDYENB &= ~ (1uL << 0);	// DCP
 }
 
 static void
@@ -3654,7 +3636,6 @@ HAL_StatusTypeDef USB_EP0StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDe
 	else
 	{
 		/* OUT endpoint */
-		USBx->BRDYENB |= (1uL << 0);
 	}
 	return HAL_OK;  
 }
@@ -3715,7 +3696,6 @@ HAL_StatusTypeDef USB_EPStartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDef
 	else
 	{
 		/* OUT endpoint */
-		////USBx->BRDYENB |= (1uL << pipe);
 	}
 	return HAL_OK;  
 }
