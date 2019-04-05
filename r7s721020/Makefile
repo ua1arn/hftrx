@@ -29,8 +29,9 @@ BIN  = $(CP) -O binary -R .noinit -R .bss
 CMSISDIR = ../../CMSIS_5/CMSIS
 
 # Define optimisation level here
-OPT = -Ofast
-LTO = -flto
+#OPT = -Ofast
+OPT = -O1
+#LTO = -flto
 
 # This product incorporates the ARM single-core Cortex-A9 MPCore, where the IP version is r3p0.
 MCU  = cortex-a9
