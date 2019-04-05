@@ -1341,6 +1341,38 @@ static uint_fast8_t usbd_count = 0;
 
 #if CPUSTYLE_R7S721
 
+#define USBD_FRDY_COUNT 50
+
+static uint_fast8_t usbd_wait_fifo(PCD_TypeDef * const Instance, uint_fast8_t pipe, unsigned waitcnt)
+{
+	while ((Instance->CFIFOSEL & USB_CFIFOSEL_CURPIPE) != (pipe << USB_CFIFOSEL_CURPIPE_SHIFT) || (Instance->CFIFOCTR & USB_CFIFOCTR_FRDY) == 0)	// FRDY
+	{
+		if (-- waitcnt == 0)
+		{
+#if 0
+			// From USB HOST
+			if (pipe == 0)
+			{
+				pid = (Instance->DCPCTR & USB_DCPCTR_PID) >> USB_DCPCTR_PID_SHIFT;
+			}
+			else
+			{
+				volatile uint16_t * const PIPEnCTR = (& Instance->PIPE1CTR) + (pipe - 1);
+			}
+            /* Clear the pipe */
+            USB_PIPECTR(pUSB, iPipeNumber)->BIT.PID = 0;
+			Instance->CFIFOCTR = USB_CFIFOCTR_BCLR;	// BCLR
+            USB_PIPECTR(pUSB, iPipeNumber)->BIT.ACLRM = 1;
+            USB_PIPECTR(pUSB, iPipeNumber)->BIT.ACLRM = 0;
+            USB_PIPECTR(pUSB, iPipeNumber)->BIT.ACLRM = 1;
+            USB_PIPECTR(pUSB, iPipeNumber)->BIT.ACLRM = 0;
+#endif
+            return 1;
+		}
+	}
+	return 0;
+}
+
 static uint_fast16_t /* volatile */ g_usb0_function_PipeIgnore [16];
 
 // Эта функция не должна общаться с DCPCTR - она универсальная
@@ -1357,13 +1389,9 @@ static unsigned usbd_read_data(PCD_TypeDef * const Instance, uint_fast8_t pipe, 
 		(pipe << USB_CFIFOSEL_CURPIPE_SHIFT) |	// CURPIPE 0000: DCP
 		0 * USB_CFIFOSEL_MBW |	// MBW 00: 8-bit width
 		0;
-	while ((Instance->CFIFOSEL & USB_CFIFOSEL_CURPIPE) != (pipe << USB_CFIFOSEL_CURPIPE_SHIFT))
-		;
-	while ((Instance->CFIFOCTR & USB_CFIFOCTR_FRDY) == 0)	// FRDY
-	{
-		//Instance->CFIFOCTR = USB_CFIFOCTR_BCLR;	// BCLR
-		//local_delay_us(1);
-	}
+
+	if (usbd_wait_fifo(Instance, pipe, USBD_FRDY_COUNT))
+		return 0;
 
 	unsigned count = 0;
 	unsigned size8 = (Instance->CFIFOCTR & USB_CFIFOCTR_DTLN) >> USB_CFIFOCTR_DTLN_SHIFT;
@@ -1401,13 +1429,10 @@ usbd_write_data(PCD_TypeDef * const Instance, uint_fast8_t pipe, const uint8_t *
 		0 * USB_CFIFOSEL_MBW |	// MBW 00: 8-bit width
 		1 * USB_CFIFOSEL_ISEL_ * (pipe == 0) |	// ISEL 1: Writing to the buffer memory is selected (for DCP)
 		0;
-	while ((Instance->CFIFOSEL & USB_CFIFOSEL_CURPIPE) != (pipe << USB_CFIFOSEL_CURPIPE_SHIFT))
-		;
-	while ((Instance->CFIFOCTR & USB_CFIFOCTR_FRDY) == 0)	// FRDY
-	{
-		Instance->CFIFOCTR = USB_CFIFOCTR_BCLR;	// BCLR
-		local_delay_us(1);
-	}
+
+	if (usbd_wait_fifo(Instance, pipe, USBD_FRDY_COUNT))
+		return;
+
     while (size --)
 	{
         Instance->CFIFO.UINT8 [R_IO_HH] = * data ++; // HH=3
@@ -1533,8 +1558,8 @@ static void nak_ep0(USBD_HandleTypeDef *pdev)
 		(pipe << USB_CFIFOSEL_CURPIPE_SHIFT) |	// CURPIPE 0000: DCP
 		1 * (1uL << USB_CFIFOSEL_ISEL_SHIFT_) * (pipe == 0) |	// ISEL 1: Writing to the buffer memory is selected (for DCP)
 		0;
-	while ((Instance->CFIFOSEL & USB_CFIFOSEL_CURPIPE) != (pipe << USB_CFIFOSEL_CURPIPE_SHIFT))
-		;
+	if (usbd_wait_fifo(Instance, pipe, USBD_FRDY_COUNT))
+		return;
 	
 	Instance->CFIFOCTR = (1uL << USB_CFIFOCTR_BCLR_SHIFT);	// BCLR
 
@@ -1558,8 +1583,8 @@ static void stall_ep0(USBD_HandleTypeDef *pdev)
 		(pipe << USB_CFIFOSEL_CURPIPE_SHIFT) |	// CURPIPE 0000: DCP
 		1 * (1uL << USB_CFIFOSEL_ISEL_SHIFT_) * (pipe == 0) |	// ISEL 1: Writing to the buffer memory is selected (for DCP)
 		0;
-	while ((Instance->CFIFOSEL & USB_CFIFOSEL_CURPIPE) != (pipe << USB_CFIFOSEL_CURPIPE_SHIFT))
-		;
+	if (usbd_wait_fifo(Instance, pipe, USBD_FRDY_COUNT))
+		return;
 	
 	Instance->CFIFOCTR = USB_CFIFOCTR_BCLR;	// BCLR
 
