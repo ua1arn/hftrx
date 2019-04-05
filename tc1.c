@@ -2859,7 +2859,7 @@ static uint_fast16_t gencderate = 1;
 static uint_fast8_t gagcmode;
 #if WITHIF4DSP
 	static uint_fast8_t gnoisereducts [MODE_COUNT];	// noise reduction
-	static uint_fast8_t gnoisereductvl = 16;	// noise reduction
+	static uint_fast8_t gnoisereductvl = 25;	// noise reduction
 #endif /* WITHIF4DSP */
 
 
