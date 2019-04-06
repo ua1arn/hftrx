@@ -303,7 +303,7 @@
 
 	// Есть ли регулировка параметров потенциометрами
 	////#define WITHPOTWPM		1	/* используется регулировка скорости передачи в телеграфе потенциометром */
-	////#define WITHPOTIFGAIN		1	/* регуляторы усиления ПЧ на потенциометрах */
+	#define WITHPOTIFGAIN		1	/* регуляторы усиления ПЧ на потенциометрах */
 	#define WITHPOTAFGAIN		1	/* регуляторы усиления НЧ на потенциометрах */
 	#define WITHSLEEPTIMER	1	/* выключить индикатор и вывод звука по истечениии указанного времени */
 
@@ -363,7 +363,7 @@
 
 	#define WITHCATEXT	1	/* Расширенный набор команд CAT */
 	#define WITHELKEY	1
-	#define WITHKBDENCODER 1	// перестройка частоты кнопками
+	//#define WITHKBDENCODER 1	// перестройка частоты кнопками
 	#define WITHKEYBOARD 1	/* в данном устройстве есть клавиатура */
 	#define KEYBOARD_USE_ADC	1	/* на одной линии установлено  четыре  клавиши. на vref - 6.8K, далее 2.2К, 4.7К и 13K. */
 
@@ -376,8 +376,8 @@
 		POTIFGAIN = BOARD_ADCXIN(0),		// MCP3208 CH0 IF GAIN
 	#endif /* WITHPOTIFGAIN */
 	#if WITHPOTAFGAIN
-		POTAFGAIN = BOARD_ADCXIN(2),		// MCP3208 CH2 потенциометр управления скоростью передачи в телеграфе
-		//POTAFGAIN = BOARD_ADCXIN(1),		// MCP3208 CH1 AF GAIN
+		//POTAFGAIN = BOARD_ADCXIN(2),		// MCP3208 CH2 потенциометр управления скоростью передачи в телеграфе
+		POTAFGAIN = BOARD_ADCXIN(1),		// MCP3208 CH1 AF GAIN
 	#endif /* WITHPOTAFGAIN */
 	#if WITHPOTWPM
 		POTWPM = BOARD_ADCXIN(2),			// MCP3208 CH2 потенциометр управления скоростью передачи в телеграфе
