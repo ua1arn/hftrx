@@ -9,6 +9,7 @@
 #include "pio.h"
 #include "board.h"
 #include "audio.h"
+#include "spifuncs.h"
 
 #include "display.h"
 #include "formats.h"
@@ -18342,6 +18343,261 @@ uint_fast8_t hamradio_get_usbh_active(void)
 
 
 #if WITHUSBDFU
+
+/////////
+
+#define targetdataflash 0 
+#define SPIMODE_AT26DF081A	SPIC_MODE3
+
+static unsigned char dataflash_read_status(
+	spitarget_t target	/* addressing to chip */
+	)
+{
+	unsigned char v;
+
+	spi_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
+	spi_progval8(target, 0x05);		/* read status register */
+
+	spi_to_read(target);
+	v = spi_read_byte(target, 0xff);
+	spi_to_write(target);
+
+	spi_unselect(target);	/* done sending data to target chip */
+
+	return v;
+}
+
+static int timed_dataflash_read_status(
+	spitarget_t target
+	)
+{
+	unsigned long w = 40000;
+	while (w --)
+	{
+		if ((dataflash_read_status(target) & 0x01) == 0)
+			return 0;
+	}
+	debug_printf_P(PSTR("DATAFLASH timeout error\n"));
+	return 1;
+}
+
+static int largetimed_dataflash_read_status(
+	spitarget_t target
+	)
+{
+	unsigned long w = 40000000;
+	while (w --)
+	{
+		if ((dataflash_read_status(target) & 0x01) == 0)
+			return 0;
+	}
+	debug_printf_P(PSTR("DATAFLASH erase timeout error\n"));
+	return 1;
+}
+
+static int testchipDATAFLASH(void)
+{
+	spitarget_t target = targetdataflash;	/* addressing to chip */
+
+	unsigned char mf_id;	// Manufacturer ID
+	unsigned char mf_devid1;	// device ID (part 1)
+	unsigned char mf_devid2;	// device ID (part 2)
+	unsigned char mf_dlen;	// Extended Device Information String Length
+
+
+	/* Ожидание бита ~RDY в слове состояния. Для FRAM не имеет смысла.
+	Вставлено для возможности использования DATAFLASH */
+
+	if (timed_dataflash_read_status(target))
+		return 1;
+
+	spi_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
+	spi_progval8(target, 0x9f);		/* read id register */
+
+	spi_to_read(target);
+
+	//prog_spi_to_read();
+	mf_id = spi_read_byte(target, 0xff);
+	mf_devid1 = spi_read_byte(target, 0xff);
+	mf_devid2 = spi_read_byte(target, 0xff);
+	mf_dlen = spi_read_byte(target, 0xff);
+
+	spi_to_write(target);
+
+	spi_unselect(target);	/* done sending data to target chip */
+
+	debug_printf_P(PSTR("Read: ID = 0x%02X devId = 0x%02X%02X, mf_dlen=0x%02X\n"), mf_id, mf_devid1, mf_devid2, mf_dlen);
+	//debug_printf_P(PSTR("Need: ID = 0x%02X devId = 0x%02X%02X, mf_dlen=0x%02X\n"), 0x1f, 0x45, 0x01, 0x00);
+	return mf_id != 0x1f || mf_devid1 != 0x45 || mf_devid2 != 0x01 || mf_dlen != 0;
+}
+
+static int eraseDATAFLASH(void)
+{
+	spitarget_t target = targetdataflash;	/* addressing to chip */
+
+	spi_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
+	spi_progval8(target, 0x06);		/* write enable */
+	spi_unselect(target);	/* done sending data to target chip */
+
+	if (timed_dataflash_read_status(target))
+		return 1;
+
+	spi_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
+	spi_progval8(target, 0x60);		/* chip erase */
+	spi_unselect(target);	/* done sending data to target chip */
+
+	if (largetimed_dataflash_read_status(target))
+		return 1;
+
+	if ((dataflash_read_status(target) & (0x01 << 5)) != 0)	// write error
+	{
+		debug_printf_P(PSTR("Erase error\n"));
+		return 1;
+	}
+	return 0;
+}
+
+static int prepareDATAFLASH(void)
+{
+	spitarget_t target = targetdataflash;	/* addressing to chip */
+
+	spi_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
+	spi_progval8(target, 0x06);		/* write enable */
+	spi_unselect(target);	/* done sending data to target chip */
+
+	// Write Status Register
+	spi_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
+	spi_progval8(target, 0x01);		/* write status register */
+	spi_progval8(target, 0x00);		/* write status register */
+	spi_unselect(target);	/* done sending data to target chip */
+
+	return 0;
+}
+
+static int writeEnableDATAFLASH(void)
+{
+	spitarget_t target = targetdataflash;	/* addressing to chip */
+
+	spi_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
+	spi_progval8(target, 0x06);		/* write enable */
+	spi_unselect(target);	/* done sending data to target chip */
+
+	return 0;
+}
+
+static int writeDisableDATAFLASH(void)
+{
+	spitarget_t target = targetdataflash;	/* addressing to chip */
+
+	spi_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
+	spi_progval8(target, 0x04);		/* write disable */
+	spi_unselect(target);	/* done sending data to target chip */
+
+	return 0;
+}
+
+
+static int writesinglepageDATAFLASH(unsigned long flashoffset, const unsigned char * data, unsigned long len)
+{
+	spitarget_t target = targetdataflash;	/* addressing to chip */
+
+	//debug_printf_P(PSTR(" Prog to address %08lX %02X\n"), flashoffset, len);
+
+	spi_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
+	spi_progval8(target, 0x06);		/* write enable */
+	spi_unselect(target);	/* done sending data to target chip */
+
+	// start byte programm
+	spi_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
+	spi_progval8_p1(target, 0x02);				/* Page Program */
+
+	spi_progval8_p2(target, flashoffset >> 16);
+	spi_progval8_p2(target, flashoffset >> 8);
+	spi_progval8_p2(target, flashoffset >> 0);
+
+	while (len --)
+		spi_progval8_p2(target, (unsigned char) * data ++);	// data
+
+	spi_complete(target);	/* done sending data to target chip */
+
+	spi_unselect(target);	/* done sending data to target chip */
+
+	/* Ожидание бита ~RDY в слове состояния. Для FRAM не имеет смысла.
+	Вставлено для возможности использования DATAFLASH */
+
+	if (timed_dataflash_read_status(target))
+		return 1;
+
+	//debug_printf_P(PSTR("Done programming\n"));
+	return 0;
+}
+
+static unsigned long ulmin(
+	unsigned long a,
+	unsigned long b)
+{
+	return a < b ? a : b;
+}
+
+static int writeDATAFLASH(unsigned long flashoffset, const unsigned char * data, unsigned long len)
+{
+	//debug_printf_P(PSTR("Write to address %08lX %02X\n"), flashoffset, len);
+	while (len != 0)
+	{
+		unsigned long offset = flashoffset & 0xFF;
+		unsigned long part = ulmin(len, ulmin(256, 256 - offset));
+
+		int status = writesinglepageDATAFLASH(flashoffset, data, part);
+		if (status != 0)
+			return status;
+		len -= part;
+		flashoffset += part;
+		data += part;
+	}
+	return 0;
+}
+
+static int verifyDATAFLASH(unsigned long flashoffset, const unsigned char * data, unsigned long len)
+{
+	unsigned long count;
+	unsigned long err = 0;
+	unsigned char v;
+	spitarget_t target = targetdataflash;	/* addressing to chip */
+
+	//debug_printf_P(PSTR("Compare from address %08lX\n"), flashoffset);
+
+	spi_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
+	spi_progval8(target, 0x03);		/* sequential read block */
+
+	spi_progval8(target, flashoffset >> 16);
+	spi_progval8(target, flashoffset >> 8);
+	spi_progval8(target, flashoffset >> 0);
+
+	spi_to_read(target);
+
+	for (count = 0; count < len; ++ count)
+	{
+		v = spi_read_byte(target, 0xff);
+		if (v != data [count])
+		{
+			debug_printf_P(PSTR("Data mismatch at %08lx: read=%02x, expected=%02x\n"), flashoffset + count, v, data [count]);
+			err = 1;
+			break;
+		}
+	}
+
+	spi_to_write(target);
+
+	spi_unselect(target);	/* done sending data to target chip */
+
+	if (err)
+		debug_printf_P(PSTR("Done compare, have errors\n"));
+
+	return err;
+}
+
+
+
 /** @defgroup USBD_CORE_Exported_TypesDefinitions
   * @{
   */
