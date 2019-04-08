@@ -78,6 +78,10 @@
 	#ifdef __ARM_ACLE
 		#warning Avaliable __ARM_ACLE
 	#endif
+
+	#if __ARM_ARCH_7A__
+			#warning Avaliable __ARM_ARCH_7A__
+	#endif /* __ARM_ARCH_7A__ */
 #endif
 
 #ifdef __ARM_ACLE
@@ -161,6 +165,7 @@ static int_fast8_t		glob_afresponcetx;	// изменение тембра звука в канале переда
 static int_fast8_t		glob_swaprts;		// управление боковой выхода спектроанализатора
 
 static uint_fast8_t		glob_mainsubrxmode = BOARD_RXMAINSUB_A_A;	// Левый/правый, A - main RX, B - sub RX
+
 
 #if WITHINTEGRATEDDSP
 
@@ -1019,12 +1024,12 @@ FLOAT_t local_exp(FLOAT_t x)
 //////////////////////////////////////////
 
 // Преобразовать отношение напряжений выраженное в "разах" к децибелам.
-/*
+
 static FLOAT_t ratio2db(FLOAT_t ratio)
 {
 	return LOG10F(ratio) * 20;
 }
-*/
+
 // Преобразовать отношение выраженное в децибелах к "разам" отношения напряжений.
 
 static FLOAT_t db2ratio(FLOAT_t valueDBb)
@@ -1084,7 +1089,14 @@ static void imp_response(const FLOAT_t *dCoeff, int iCoefNum)
 	// Do FFT
 	//---------------------------
 
-	FFT(Sig, FFTSizeFilters, FFTSizeFiltersM); 
+	//FFT(Sig, FFTSizeFilters, FFTSizeFiltersM); 
+
+  /* Process the data through the CFFT/CIFFT module */
+	arm_cfft_f32(FFTCONFIGFilters, (float *) Sig, 0, 1);
+	//dofft((COMPLEX_t *) sg, FFTSizeM, w);
+
+
+	//arm_cmplx_mag_squared_f32(sg, MagArr, MagLen);
 }
 
 static void sigtocoeffs(FLOAT_t *dCoeff, int iCoefNum)
@@ -1166,7 +1178,13 @@ static void correctspectrumcomplex(int_fast8_t targetdb)
 #endif
 
 	// Construct FIR coefficients from frequency response
-	IFFT(Sig, FFTSizeFilters, FFTSizeFiltersM); 
+	//IFFT(Sig, FFTSizeFilters, FFTSizeFiltersM); 
+  /* Process the data through the CFFT/CIFFT module */
+	arm_cfft_f32(FFTCONFIGFilters, (float *) Sig, !0, 1);	// inverse FFT
+	//dofft((COMPLEX_t *) sg, FFTSizeM, w);
+
+
+	//arm_cmplx_mag_squared_f32(sg, MagArr, MagLen);
 }
 
 // Формирование наклона АЧХ звукового тракта приемника
@@ -4719,15 +4737,15 @@ static RAMFUNC uint_fast8_t isneedmute(uint_fast8_t dspmode)
 enum { NTap256 = FFTSizeSpectrum };
 
 static volatile uint_fast8_t rendering;
-static volatile unsigned long nrcount, nrerrors, nrerrinc;
-
+//static volatile unsigned long nrcount, nrerrors, nrerrinc;
+/*
 uint_fast8_t hamradio_get_notchvalueXXX(int_fast32_t * p)
 {
 	* p = nrerrors;
 	return 0;
 }
-
-static struct Complex x256 [NTap256 * 2] = { { 1, 1 }, };
+*/
+static float32_t x256 [NTap256 * 4] = { 1, };
 static uint_fast16_t fft_head = 0;
 
 // формирование отображения спектра
@@ -4743,13 +4761,14 @@ void saveIQRTSxx(FLOAT_t iv, FLOAT_t qv)
 		//if (NTap256 > nrcount)
 		//	++ nrcount;
 
-		const struct Complex NewSample = { iv, qv };
+		//const struct Complex NewSample = { iv, qv };
 
 		// shift the old samples
 		// fft_head -  Начало обрабатываемой части буфера
 		// fft_head + NTap256 -  Позиция за концом обрабатываемого буфер
 		fft_head = (fft_head == 0) ? (NTap256 - 1) : (fft_head - 1);
-		x256 [fft_head] = x256 [fft_head + NTap256] = NewSample;
+		x256 [fft_head * 2 + 0] = x256 [(fft_head + NTap256) * 2 + 0] = qv;
+		x256 [fft_head * 2 + 1] = x256 [(fft_head + NTap256) * 2 + 1] = iv;
 
 	}
 	else
@@ -4763,8 +4782,9 @@ void saveIQRTSxx(FLOAT_t iv, FLOAT_t qv)
 }
 
 //static uint_fast8_t	glob_waterfalrange = 64;
-static const FLOAT_t waterfalrange = 64;
-static FLOAT_t toplogdb; // = LOG10F((FLOAT_t) INT32_MAX / waterfalrange); 
+//static const FLOAT_t waterfalrange = 64;
+//static FLOAT_t toplogdb; // = LOG10F((FLOAT_t) INT32_MAX / waterfalrange); 
+static FLOAT_t wfltange = INT32_MAX;	// depend on fpga output resolution
 //static uint_fast32_t wndcks;
 #if 0
 
@@ -4803,21 +4823,21 @@ static void printsigwnd(void)
 }
 #endif
 
-static void adjustwmwp(struct Complex *w)
+static void adjustwmwp(float32_t *w)
 {
 	//return;
 	int i;
 	for (i = 0; i < FFTSizeSpectrum; i++)
 	{
 		const FLOAT_t r = wnd256 [i]; //fir_design_window(i, n);
-		w [i].real *= r;
-		w [i].imag *= r;
+		w [i * 2 + 0] *= r; // real
+		w [i * 2 + 1] *= r; // imag
 	}
 }
 
-static FLOAT_t getmag2(const struct Complex * sig)
+static FLOAT_t getmag2(const float32_t * sig)
 {
-	const FLOAT_t mag = SQRTF(sig->real * sig->real + sig->imag * sig->imag);
+	const FLOAT_t mag = SQRTF(sig [0] * sig [0] + sig [1] * sig [1]);
 	return mag;
 }
 
@@ -4835,29 +4855,19 @@ static int mapfft2raster(
 }
 
 // Нормирование уровня сигнала к шкале
-// возвращает значения от 0 до dy включительно
-int dsp_mag2y(FLOAT_t mag, uint_fast16_t dy)
+// возвращает значения от 0 до ymax включительно
+// 0 - минимальный сигнал, ymax - максимальный
+int dsp_mag2y(FLOAT_t mag, int ymax, int_fast16_t range)
 {
-	if (mag < waterfalrange)
-		return 0;
-	const FLOAT_t v = mag / waterfalrange;
-	int val = LOG10F(v) * ((int_fast16_t) dy) / toplogdb;
+	const FLOAT_t r = ratio2db(mag / wfltange);
 
-	if (val > dy) 
-		val = dy;
+	int val = ymax - (int) (r * ymax / - range);
+
+	if (val > ymax) 
+		val = ymax;
 	else if (val < 0) 
 		val = 0;
 	return val;
-}
-
-static uint_fast32_t checksumarea(const void * p, size_t len)
-{
-	uint_fast32_t v = 0;
-	const uint8_t * b = (const uint8_t *) p;
-	while (len --)
-		v += * b ++;
-
-	return v;
 }
 
 // Копрование информации о спектре с текущую строку буфера 
@@ -4868,18 +4878,12 @@ void dsp_getspectrumrow(
 	)
 {
 	uint_fast16_t i;
-/*
-	uint_fast32_t wndcks2 = checksumarea(wnd256, sizeof wnd256);
-	if (wndcks2 != wndcks)
-	{
-		++ nrerrors;
-		wndcks = wndcks2;
-	}
-*/
 	rendering = 1;
-	struct Complex * const sig = & x256 [fft_head];	// первый элемент массива комплексных чисел
+	float32_t * const sig = & x256 [fft_head * 2];	// первый элемент массива комплексных чисел
 	adjustwmwp(sig); // TODO: пока закомментировано - разобраться с артефактами на спектре
-	IFFT(sig, FFTSizeSpectrum, FFTSizeSpectrumM);
+	//FFT((struct Complex *) sig, FFTSizeSpectrum, FFTSizeSpectrumM);
+	/* Process the data through the CFFT/CIFFT module */
+	arm_cfft_f32(FFTCONFIGSpectrum, sig, 0, 1);	// forward transform
 
 	// очистка строки буфера истории отображения
 	for (i = 0; i < dx; ++ i)
@@ -4892,7 +4896,7 @@ void dsp_getspectrumrow(
 	for (i = 0; i < FFTSizeSpectrum; ++ i)
 	{
 		const int x = mapfft2raster(i, dx);
-		const FLOAT_t v = getmag2(& sig [i]);
+		const FLOAT_t v = getmag2(& sig [i * 2]);
 		FLOAT_t * const p1 = & hbase [x];
 		* p1 = FMAXF(* p1, v);
 	}
@@ -4907,8 +4911,7 @@ dsp_rasterinitialize(void)
 {
 	buildsigwnd();
 	//printsigwnd();	// печать оконных коэффициентов для формирования таблицы во FLASH
-	//wndcks = checksumarea(wnd256, sizeof wnd256);
-	toplogdb = LOG10F((FLOAT_t) INT32_MAX / waterfalrange);
+	//toplogdb = LOG10F((FLOAT_t) INT32_MAX / waterfalrange);
 }
 
 #else /* (WITHRTS96 || WITHRTS192) && ! WITHTRANSPARENTIQ */
@@ -4927,7 +4930,8 @@ void dsp_getspectrumrow(
 
 // Нормирование уровня сигнала к шкале
 // возвращает значения от 0 до dy включительно
-int dsp_mag2y(FLOAT_t mag, uint_fast16_t dy)
+// 0 - минимальный сигнал, ymax - максимальный
+int dsp_mag2y(FLOAT_t mag, int ymax, int_fast16_t range)
 {
 	return 0;
 }
@@ -5675,7 +5679,7 @@ void dsp_initialize(void)
 {
 	debug_printf_P(PSTR("dsp_initialize start.\n"));
 
-	FFT_initialize();
+	//FFT_initialize();
 #if (WITHRTS96 || WITHRTS192) && ! WITHTRANSPARENTIQ
 	dsp_rasterinitialize();
 #endif /* WITHRTS96 && ! WITHTRANSPARENTIQ */

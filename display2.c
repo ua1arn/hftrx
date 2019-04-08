@@ -4741,6 +4741,16 @@ static const FLOAT_t spectrum_alpha = 1 - (FLOAT_t) 0.25;	// old value coefficie
 static const FLOAT_t waterfall_beta = 0.75;					// incoming value coefficient
 static const FLOAT_t waterfall_alpha = 1 - (FLOAT_t) 0.75;	// old value coefficient
 
+// Параметры отображения спектра и водопада
+
+static int_fast16_t glob_gridstep = 10000;	// 10 kHz - шаг сетки
+
+
+// waterfall/spectrum parameters
+static uint_fast8_t glob_nofill;	/* не заливать заполнением площадь под графиком спектра */
+static int_fast16_t glob_topdb = 0;
+static int_fast16_t glob_botdb = - 80;
+
 static FLOAT_t spavgarray [ALLDX] = { 1 };	// массив входных данных для отображения (через фильтры).
 
 static FLOAT_t filter_waterfall(
@@ -4769,7 +4779,7 @@ static FLOAT_t filter_spectrum(
 	static uint8_t wfarray [1][ALLDX];	// массив "водопада"
 	enum { wfrow = 0 };				// строка, в которую последней занесены данные
 #else
-	static uint8_t wfarray [WFDY][ALLDX] = { { 1 } };	// массив "водопада"
+	static uint8_t wfarray [WFDY][ALLDX];	// массив "водопада"
 	static uint_fast16_t wfrow;				// строка, в которую последней занесены данные
 #endif
 
@@ -4897,22 +4907,11 @@ static void dsp_latchwaterfall(
 	for (x = 0; x < ALLDX; ++ x)
 	{
 		// без усреднения для водопада
-		const int val = dsp_mag2y(filter_waterfall(x), PALETTESIZE - 1); // возвращает значения от 0 до dy включительно
+		const int val = dsp_mag2y(filter_waterfall(x), PALETTESIZE - 1, glob_topdb - glob_botdb); // возвращает значения от 0 до dy включительно
 		// запись в буфер водопада
 		wfarray [wfrow] [x] = val;
 	}
 }
-
-// Параметры отображения спектра и водопада
-
-static int_fast16_t glob_gridstep = 10000;	// 10 kHz - шаг сетки
-
-#if WITHDISPLAYNOFILLSPECTRUM
-	/* не заливать заполнением площадь под графиком спектра */
-	static uint_fast8_t glob_nofill = 1;
-#else /* WITHDISPLAYNOFILLSPECTRUM */
-	static uint_fast8_t glob_nofill;
-#endif /* WITHDISPLAYNOFILLSPECTRUM */
 
 // получить горизонтальную позицию для заданного отклонения в герцах
 static uint_fast16_t
@@ -4931,6 +4930,8 @@ deltafreq2x(
 // Формат RGB565
 void display_colorbuffer_xor_vline(
 	PACKEDCOLOR565_T * buffer,
+	uint_fast16_t dx,	
+	uint_fast16_t dy,
 	uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
 	uint_fast16_t row0,	// вертикальная координата пикселя (0..dy-1) сверху вниз
 	uint_fast16_t h,	// высота
@@ -4938,7 +4939,7 @@ void display_colorbuffer_xor_vline(
 	)
 {
 	while (h --)
-		display_colorbuffer_xor(buffer, ALLDX, ALLDY, col, row0 ++, color);
+		display_colorbuffer_xor(buffer, dx, dy, col, row0 ++, color);
 }
 
 // Поставить цветную точку.
@@ -4946,6 +4947,8 @@ void display_colorbuffer_xor_vline(
 static void 
 display_colorbuffer_set_vline(
 	PACKEDCOLOR565_T * buffer,
+	uint_fast16_t dx,	
+	uint_fast16_t dy,
 	uint_fast16_t col,	// горизонтальная координата начального пикселя (0..dx-1) слева направо
 	uint_fast16_t row0,	// вертикальная координата начального пикселя (0..dy-1) сверху вниз
 	uint_fast16_t h,	// высота
@@ -4953,7 +4956,7 @@ display_colorbuffer_set_vline(
 	)
 {
 	while (h --)
-		display_colorbuffer_set(buffer, ALLDX, ALLDY, col, row0 ++, color);
+		display_colorbuffer_set(buffer, dx, dy, col, row0 ++, color);
 }
 
 // отрисовка маркеров частот
@@ -4977,7 +4980,7 @@ display_colorgrid(
 
 		// маркер центральной частоты обзора - XOR линию
 		xmarker = deltafreq2x(df, bw, ALLDX);
-		display_colorbuffer_xor_vline(buffer, xmarker, row0, h, df == 0 ? color0 : color);
+		display_colorbuffer_xor_vline(buffer, ALLDX, ALLDY, xmarker, row0, h, df == 0 ? color0 : color);
 	}
 }
 
@@ -5025,7 +5028,7 @@ static void display2_spectrum(
 		for (x = 0; x < ALLDX; ++ x)
 		{
 			// логарифм - в вертикальную координату
-			const int val = dsp_mag2y(filter_spectrum(x), SPDY);	// возвращает значения от 0 до SPDY включительно
+			const int val = dsp_mag2y(filter_spectrum(x), SPDY - 1, glob_topdb - glob_botdb);	// возвращает значения от 0 до SPDY включительно
 			// формирование изображения шторки.
 			if (x >= xleft && x <= xright)
 			{
@@ -5073,14 +5076,15 @@ static void display2_spectrum(
 		// отображение спектра
 		for (x = 0; x < ALLDX; ++ x)
 		{
+			const uint_fast8_t inband = (x >= xleft && x <= xright);	// в полосе пропускания приемника = "шторка"
 			// логарифм - в вертикальную координату
-			const int val = dsp_mag2y(filter_spectrum(x), SPDY);	// возвращает значения от 0 до SPDY включительно
+			const int val = dsp_mag2y(filter_spectrum(x), SPDY - 1, glob_topdb - glob_botdb);	// возвращает значения от 0 до SPDY включительно
 			// Формирование графика
 			const int yv = SPDY - val;	// отображаемый уровень, yv = 0..SPDY
 
 			// формирование фона растра - верхняя часть графика
-			//display_colorbuffer_set_vline(colorpip, x, SPY0, yv, COLOR565_SPECTRUMBG);
-			display_colorbuffer_set_vline(colorpip, x, SPY0, yv, (x >= xleft && x <= xright) ? COLOR565_SPECTRUMBG2 : COLOR565_SPECTRUMBG);
+			display_colorbuffer_set_vline(colorpip, ALLDX, ALLDY, x, SPY0, yv, inband ? COLOR565_SPECTRUMBG2 : COLOR565_SPECTRUMBG);
+
 			// точку на границе
 			if (yv < SPDY)
 			{
@@ -5092,13 +5096,13 @@ static void display2_spectrum(
 				{
 					if (glob_nofill != 0)
 					{
-						// под спектром цветом фона спектра
-						display_colorbuffer_set_vline(colorpip, x, yb + SPY0, SPDY - yb, COLOR565_SPECTRUMBG);
+						// под спектром цветом фона спектра или цветом "шторки"
+						display_colorbuffer_set_vline(colorpip, ALLDX, ALLDY, x, yb + SPY0, SPDY - yb, inband ? COLOR565_SPECTRUMBG2 : COLOR565_SPECTRUMBG);
 					}
 					else
 					{
 						// формирование занятой области растра
-						display_colorbuffer_set_vline(colorpip, x, yb + SPY0, SPDY - yb, COLOR565_SPECTRUMFG);
+						display_colorbuffer_set_vline(colorpip, ALLDX, ALLDY, x, yb + SPY0, SPDY - yb, COLOR565_SPECTRUMFG);
 					}
 				}
 			}
@@ -5305,7 +5309,7 @@ static void display2_waterfall(
 			// маркер центральной частоты обзора
 			// XOR линию
 			uint_fast16_t xmarker = xm;
-			display_colorbuffer_xor_vline(colorpip, xmarker, WFY0, WFDY, COLOR565_GRIDCOLOR);
+			display_colorbuffer_xor_vline(colorpip, ALLDX, ALLDY, xmarker, WFY0, WFDY, COLOR565_GRIDCOLOR);
 		}
 		else
 		{
@@ -5612,4 +5616,34 @@ uint_fast8_t display_getfreqformat(
 {
 	* prjv = DISPLC_RJ;
 	return DISPLC_WIDTH;
+}
+
+// Установка параметров отображения
+/* не заливать заполнением площадь под графиком спектра */
+void
+board_set_nofill(uint_fast8_t v)
+{
+	glob_nofill = v != 0;
+}
+
+// Установить уровень сигнала для верха спектрограммы
+void
+board_set_topdb(int_fast16_t v)
+{
+	//if (glob_topdb != v)
+	//{
+		glob_topdb = v;
+	//	board_dsp1regchanged();
+	//}
+}
+
+// Установить уровень сигнала для низа спектрограммы
+void
+board_set_botdb(int_fast16_t v)
+{
+	//if (glob_botdb != v)
+	//{
+		glob_botdb = v;
+	//	board_dsp1regchanged();
+	//}
 }

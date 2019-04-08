@@ -2392,6 +2392,10 @@ struct nvmap
 
 	uint8_t displayfreqsfps;		/* скорость обновления индикатора частоты */
 	uint8_t displaybarsfps;	/* скорость обновления S-метра */
+#if WITHSPECTRUMWF
+	uint8_t gnofill;
+	uint8_t gfulldb;
+#endif /* WITHSPECTRUMWF */
 #if WITHBCBANDS
 	uint8_t bandsetbcast;	/* Broadcasting radio bands */
 #endif /* WITHBCBANDS */
@@ -3005,7 +3009,10 @@ static uint_fast8_t alignmode;		/* режимы для настройки аппаратной части (0-норм
 static const uint_fast8_t displaymodesfps = DISPLAYMODES_FPS;
 static uint_fast8_t displayfreqsfps = DISPLAY_FPS;
 static uint_fast8_t displaybarsfps = DISPLAYSWR_FPS;
-
+#if WITHSPECTRUMWF
+	static uint_fast8_t gnofill;
+	static uint_fast8_t gfulldb = 80;
+#endif /* WITHSPECTRUMWF */
 #if WITHLCDBACKLIGHT
 	static uint_fast8_t bglight = WITHLCDBACKLIGHTMAX;
 #else /* WITHLCDBACKLIGHT */
@@ -7664,6 +7671,10 @@ updateboard(
 
 		board_set_cwedgetime(gcwedgetime);	/* Время нарастания/спада огибающей телеграфа при передаче - в 1 мс */
 		board_set_sidetonelevel(gsidetonelevel);	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
+		#if WITHSPECTRUMWF
+			board_set_nofill(gnofill);	/* не заливать заполнением площадь под графиком спектра */
+			board_set_botdb(- gfulldb);
+		#endif /* WITHSPECTRUMWF */
 	#endif /* WITHIF4DSP */
 
 	#if WITHTX
@@ -11939,7 +11950,25 @@ static const FLASHMEM struct menudef menutable [] =
 		getzerobase, /* складывается со смещением и отображается */
 	},
 #endif /* WITHBARS */
-#if WITHSPECTRUMWF	/* Отображение производных от спектрального анализатора */
+#if WITHSPECTRUMWF
+	{
+		"NO FILL ", 7, 0, 0,	ISTEP1,	
+		ITEM_VALUE,
+		0, 1,							/* отказ от заполнения */
+		offsetof(struct nvmap, gnofill),
+		NULL,
+		& gnofill,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	{
+		"FULL DB ", 7, 0, 0,	ISTEP1,	
+		ITEM_VALUE,
+		40, 120,							/* диапазон отображаемых значений */
+		offsetof(struct nvmap, gfulldb),
+		NULL,
+		& gfulldb,
+		getzerobase, /* складывается со смещением и отображается */
+	},
 #endif /* WITHSPECTRUMWF */
 #if defined (RTC1_TYPE)
 #if ! WITHFLATMENU

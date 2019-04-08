@@ -321,11 +321,6 @@ struct Complex
 	FLOAT_t imag;
 };
 
-
-void FFT_initialize(void);
-void FFT(struct Complex *x, int n, int m);
-void IFFT(struct Complex *x, int n, int m);
-
 	/* для возможности работы с функциями сопроцессора NEON - vld1_f32 например */
 	#define IV ivqv [0]
 	#define QV ivqv [1]
@@ -490,6 +485,9 @@ void board_set_mikehclip(uint_fast8_t gmikehclip);	/* Ограничитель */
 void board_set_uacplayer(uint_fast8_t v);	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
 void board_set_uacmike(uint_fast8_t v);	/* на вход трансивера берутся аудиоданные с USB виртуальной платы, а не с микрофона */
 
+void board_set_topdb(int_fast16_t v);	// Установить уровень сигнала для верха спектрограммы
+void board_set_botdb(int_fast16_t v);	// Установить уровень сигнала для низа спектрограммы
+
 void dsp_initialize(void);
 
 #if WITHINTEGRATEDDSP
@@ -500,8 +498,9 @@ void dsp_initialize(void);
 		uint_fast16_t dx	// pixel X width of display window
 		);
 	// Нормирование уровня сигнала к шкале
-	// возвращает значения от 0 до dy включительно
-	int dsp_mag2y(FLOAT_t mag, uint_fast16_t dy);	
+	// возвращает значения от 0 до ymax включительно
+	// 0 - минимальный сигнал, ymax - максимальный
+	int dsp_mag2y(FLOAT_t mag, int ymax, int_fast16_t range);	
 
 	void saveIQRTSxx(FLOAT_t iv, FLOAT_t qv);	// формирование отображения спектра
 

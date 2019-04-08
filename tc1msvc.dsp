@@ -686,6 +686,26 @@ CFG=tc1msvc - Win32 stm32f769ii
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
+SOURCE=.\arm_bitreversal.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\arm_cfft_f32.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\arm_cfft_radix8_f32.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\arm_common_tables.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\arm_const_structs.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\audio.c
 # End Source File
 # Begin Source File
@@ -699,6 +719,10 @@ SOURCE=.\board.c
 # Begin Source File
 
 SOURCE=.\buffers.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\CommonTables.c
 # End Source File
 # Begin Source File
 
@@ -731,10 +755,6 @@ SOURCE=.\ff.c
 # Begin Source File
 
 SOURCE=.\ffsystem.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\fft.c
 # End Source File
 # Begin Source File
 
@@ -927,6 +947,18 @@ SOURCE=.\wm8994.c
 # Begin Source File
 
 SOURCE=.\inc\arch.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\arm_common_tables.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\arm_const_structs.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\arm_math.h
 # End Source File
 # Begin Source File
 

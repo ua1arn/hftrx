@@ -350,6 +350,8 @@
 	//#define ARM_MATH_CA9 1
 	//#include "../../DSP/Include/arm_math.h"
 	//#include "../../DSP/Include/arm_const_structs.h"
+	#include "arm_math.h"
+	#include "arm_const_structs.h"
 
 #elif \
 	defined (__TMS320C28X__) || \

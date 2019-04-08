@@ -1942,4 +1942,6 @@
 #define HARDWARE_DELAY_US(t) do { local_delay_us(t); } while (0)
 #define HARDWARE_GETTICK_MS() ((uint32_t) 0) // HAL_GetTick()
 
+#define WITHSPECTRUMWF (WITHIF4DSP && (WITHRTS96 || WITHRTS192))
+
 #endif /* PARAMDEPEND_H_INCLUDED */

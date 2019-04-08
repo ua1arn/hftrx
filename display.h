@@ -871,4 +871,6 @@ void display_1state(
 
 void display_solidbar(uint_fast16_t x, uint_fast16_t y, uint_fast16_t x2, uint_fast16_t y2, COLOR_T color);
 
+void board_set_nofill(uint_fast8_t v); /* не заливать заполнением площадь под графиком спектра */
+
 #endif /* DISPLAY_H_INCLUDED */
