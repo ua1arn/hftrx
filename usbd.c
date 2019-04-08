@@ -18349,20 +18349,69 @@ uint_fast8_t hamradio_get_usbh_active(void)
 #define targetdataflash 0 
 #define SPIMODE_AT26DF081A	SPIC_MODE3
 
+void spidf_initialize(void)
+{
+}
+
+void spidf_uninitialize(void)
+{
+}
+
+void spidf_select(spitarget_t target, uint_fast8_t mode)
+{
+}
+
+void spidf_unselect(spitarget_t target)
+{
+}
+
+void spidf_to_read(spitarget_t target)
+{
+}
+
+void spidf_to_write(spitarget_t target)
+{
+}
+
+void spidf_progval8_p1(spitarget_t target, uint_fast8_t sendval)
+{
+}
+
+void spidf_progval8_p2(spitarget_t target, uint_fast8_t sendval)
+{
+}
+
+uint_fast8_t spidf_complete(spitarget_t target)
+{
+	return 0;
+}
+
+uint_fast8_t spidf_progval8(spitarget_t target, uint_fast8_t sendval)
+{
+	spidf_progval8_p1(target, sendval);
+	return spidf_complete(target);
+}
+
+uint_fast8_t spidf_read_byte(spitarget_t target, uint_fast8_t sendval)
+{
+	return spidf_progval8(target, sendval);
+}
+
+
 static unsigned char dataflash_read_status(
 	spitarget_t target	/* addressing to chip */
 	)
 {
 	unsigned char v;
 
-	spi_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
-	spi_progval8(target, 0x05);		/* read status register */
+	spidf_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
+	spidf_progval8(target, 0x05);		/* read status register */
 
-	spi_to_read(target);
-	v = spi_read_byte(target, 0xff);
-	spi_to_write(target);
+	spidf_to_read(target);
+	v = spidf_read_byte(target, 0xff);
+	spidf_to_write(target);
 
-	spi_unselect(target);	/* done sending data to target chip */
+	spidf_unselect(target);	/* done sending data to target chip */
 
 	return v;
 }
@@ -18411,20 +18460,20 @@ static int testchipDATAFLASH(void)
 	if (timed_dataflash_read_status(target))
 		return 1;
 
-	spi_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
-	spi_progval8(target, 0x9f);		/* read id register */
+	spidf_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
+	spidf_progval8(target, 0x9f);		/* read id register */
 
-	spi_to_read(target);
+	spidf_to_read(target);
 
-	//prog_spi_to_read();
-	mf_id = spi_read_byte(target, 0xff);
-	mf_devid1 = spi_read_byte(target, 0xff);
-	mf_devid2 = spi_read_byte(target, 0xff);
-	mf_dlen = spi_read_byte(target, 0xff);
+	//prog_spidf_to_read();
+	mf_id = spidf_read_byte(target, 0xff);
+	mf_devid1 = spidf_read_byte(target, 0xff);
+	mf_devid2 = spidf_read_byte(target, 0xff);
+	mf_dlen = spidf_read_byte(target, 0xff);
 
-	spi_to_write(target);
+	spidf_to_write(target);
 
-	spi_unselect(target);	/* done sending data to target chip */
+	spidf_unselect(target);	/* done sending data to target chip */
 
 	debug_printf_P(PSTR("Read: ID = 0x%02X devId = 0x%02X%02X, mf_dlen=0x%02X\n"), mf_id, mf_devid1, mf_devid2, mf_dlen);
 	//debug_printf_P(PSTR("Need: ID = 0x%02X devId = 0x%02X%02X, mf_dlen=0x%02X\n"), 0x1f, 0x45, 0x01, 0x00);
@@ -18435,16 +18484,16 @@ static int eraseDATAFLASH(void)
 {
 	spitarget_t target = targetdataflash;	/* addressing to chip */
 
-	spi_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
-	spi_progval8(target, 0x06);		/* write enable */
-	spi_unselect(target);	/* done sending data to target chip */
+	spidf_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
+	spidf_progval8(target, 0x06);		/* write enable */
+	spidf_unselect(target);	/* done sending data to target chip */
 
 	if (timed_dataflash_read_status(target))
 		return 1;
 
-	spi_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
-	spi_progval8(target, 0x60);		/* chip erase */
-	spi_unselect(target);	/* done sending data to target chip */
+	spidf_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
+	spidf_progval8(target, 0x60);		/* chip erase */
+	spidf_unselect(target);	/* done sending data to target chip */
 
 	if (largetimed_dataflash_read_status(target))
 		return 1;
@@ -18461,15 +18510,15 @@ static int prepareDATAFLASH(void)
 {
 	spitarget_t target = targetdataflash;	/* addressing to chip */
 
-	spi_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
-	spi_progval8(target, 0x06);		/* write enable */
-	spi_unselect(target);	/* done sending data to target chip */
+	spidf_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
+	spidf_progval8(target, 0x06);		/* write enable */
+	spidf_unselect(target);	/* done sending data to target chip */
 
 	// Write Status Register
-	spi_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
-	spi_progval8(target, 0x01);		/* write status register */
-	spi_progval8(target, 0x00);		/* write status register */
-	spi_unselect(target);	/* done sending data to target chip */
+	spidf_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
+	spidf_progval8(target, 0x01);		/* write status register */
+	spidf_progval8(target, 0x00);		/* write status register */
+	spidf_unselect(target);	/* done sending data to target chip */
 
 	return 0;
 }
@@ -18478,9 +18527,9 @@ static int writeEnableDATAFLASH(void)
 {
 	spitarget_t target = targetdataflash;	/* addressing to chip */
 
-	spi_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
-	spi_progval8(target, 0x06);		/* write enable */
-	spi_unselect(target);	/* done sending data to target chip */
+	spidf_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
+	spidf_progval8(target, 0x06);		/* write enable */
+	spidf_unselect(target);	/* done sending data to target chip */
 
 	return 0;
 }
@@ -18489,9 +18538,9 @@ static int writeDisableDATAFLASH(void)
 {
 	spitarget_t target = targetdataflash;	/* addressing to chip */
 
-	spi_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
-	spi_progval8(target, 0x04);		/* write disable */
-	spi_unselect(target);	/* done sending data to target chip */
+	spidf_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
+	spidf_progval8(target, 0x04);		/* write disable */
+	spidf_unselect(target);	/* done sending data to target chip */
 
 	return 0;
 }
@@ -18503,24 +18552,24 @@ static int writesinglepageDATAFLASH(unsigned long flashoffset, const unsigned ch
 
 	//debug_printf_P(PSTR(" Prog to address %08lX %02X\n"), flashoffset, len);
 
-	spi_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
-	spi_progval8(target, 0x06);		/* write enable */
-	spi_unselect(target);	/* done sending data to target chip */
+	spidf_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
+	spidf_progval8(target, 0x06);		/* write enable */
+	spidf_unselect(target);	/* done sending data to target chip */
 
 	// start byte programm
-	spi_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
-	spi_progval8_p1(target, 0x02);				/* Page Program */
+	spidf_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
+	spidf_progval8_p1(target, 0x02);				/* Page Program */
 
-	spi_progval8_p2(target, flashoffset >> 16);
-	spi_progval8_p2(target, flashoffset >> 8);
-	spi_progval8_p2(target, flashoffset >> 0);
+	spidf_progval8_p2(target, flashoffset >> 16);
+	spidf_progval8_p2(target, flashoffset >> 8);
+	spidf_progval8_p2(target, flashoffset >> 0);
 
 	while (len --)
-		spi_progval8_p2(target, (unsigned char) * data ++);	// data
+		spidf_progval8_p2(target, (unsigned char) * data ++);	// data
 
-	spi_complete(target);	/* done sending data to target chip */
+	spidf_complete(target);	/* done sending data to target chip */
 
-	spi_unselect(target);	/* done sending data to target chip */
+	spidf_unselect(target);	/* done sending data to target chip */
 
 	/* Ожидание бита ~RDY в слове состояния. Для FRAM не имеет смысла.
 	Вставлено для возможности использования DATAFLASH */
@@ -18566,18 +18615,18 @@ static int verifyDATAFLASH(unsigned long flashoffset, const unsigned char * data
 
 	//debug_printf_P(PSTR("Compare from address %08lX\n"), flashoffset);
 
-	spi_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
-	spi_progval8(target, 0x03);		/* sequential read block */
+	spidf_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
+	spidf_progval8(target, 0x03);		/* sequential read block */
 
-	spi_progval8(target, flashoffset >> 16);
-	spi_progval8(target, flashoffset >> 8);
-	spi_progval8(target, flashoffset >> 0);
+	spidf_progval8(target, flashoffset >> 16);
+	spidf_progval8(target, flashoffset >> 8);
+	spidf_progval8(target, flashoffset >> 0);
 
-	spi_to_read(target);
+	spidf_to_read(target);
 
 	for (count = 0; count < len; ++ count)
 	{
-		v = spi_read_byte(target, 0xff);
+		v = spidf_read_byte(target, 0xff);
 		if (v != data [count])
 		{
 			debug_printf_P(PSTR("Data mismatch at %08lx: read=%02x, expected=%02x\n"), flashoffset + count, v, data [count]);
@@ -18586,9 +18635,9 @@ static int verifyDATAFLASH(unsigned long flashoffset, const unsigned char * data
 		}
 	}
 
-	spi_to_write(target);
+	spidf_to_write(target);
 
-	spi_unselect(target);	/* done sending data to target chip */
+	spidf_unselect(target);	/* done sending data to target chip */
 
 	if (err)
 		debug_printf_P(PSTR("Done compare, have errors\n"));
@@ -18627,6 +18676,8 @@ USBD_DFU_MediaTypeDef;
 uint16_t MEM_If_Init_HS(void)
 {
 	PRINTF(PSTR("MEM_If_Init_HS\n"));
+	spidf_initialize();
+	prepareDATAFLASH();
 	return (USBD_OK);
 }
 
@@ -18637,6 +18688,7 @@ uint16_t MEM_If_Init_HS(void)
 uint16_t MEM_If_DeInit_HS(void)
 {
 	PRINTF(PSTR("MEM_If_DeInit_HS\n"));
+	spidf_uninitialize();
 	return (USBD_OK);
 }
 
@@ -18662,6 +18714,9 @@ uint16_t MEM_If_Erase_HS(uint32_t Add)
 uint16_t MEM_If_Write_HS(uint8_t *src, uint32_t dest, uint32_t Len)
 {
 	//PRINTF(PSTR("MEM_If_Write_HS: addr=%08lX, len=%03lX\n"), dest, Len);
+	writeEnableDATAFLASH();
+	writeDATAFLASH(dest, src, Len);
+	writeDisableDATAFLASH();
 	return (USBD_OK);
 }
 
