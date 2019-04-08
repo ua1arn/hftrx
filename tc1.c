@@ -2395,7 +2395,7 @@ struct nvmap
 #if WITHSPECTRUMWF
 	uint8_t gnofill;
 	uint8_t gfulldb;
-	uint8_t gscalexpow;
+	uint8_t gzoomxpow;
 #endif /* WITHSPECTRUMWF */
 #if WITHBCBANDS
 	uint8_t bandsetbcast;	/* Broadcasting radio bands */
@@ -3013,7 +3013,7 @@ static uint_fast8_t displaybarsfps = DISPLAYSWR_FPS;
 #if WITHSPECTRUMWF
 	static uint_fast8_t gnofill;
 	static uint_fast8_t gfulldb = 80;
-	static uint_fast8_t gscalexpow;
+	static uint_fast8_t gzoomxpow;
 #endif /* WITHSPECTRUMWF */
 #if WITHLCDBACKLIGHT
 	static uint_fast8_t bglight = WITHLCDBACKLIGHTMAX;
@@ -7676,7 +7676,7 @@ updateboard(
 		#if WITHSPECTRUMWF
 			board_set_nofill(gnofill);	/* не заливать заполнением площадь под графиком спектра */
 			board_set_botdb(- gfulldb);
-			board_set_scalex(1u << gscalexpow);	/* уменьшение отображаемого участка спектра */
+			board_set_zoomx(1u << gzoomxpow);	/* уменьшение отображаемого участка спектра */
 		#endif /* WITHSPECTRUMWF */
 	#endif /* WITHIF4DSP */
 
@@ -11976,9 +11976,9 @@ static const FLASHMEM struct menudef menutable [] =
 		"SCALE X ", 7, 0, RJ_POW2,	ISTEP1,	
 		ITEM_VALUE,
 		0, 3,							/* уменьшение отображаемого участка спектра */
-		offsetof(struct nvmap, gscalexpow),
+		offsetof(struct nvmap, gzoomxpow),
 		NULL,
-		& gscalexpow,
+		& gzoomxpow,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 #endif /* WITHSPECTRUMWF */
