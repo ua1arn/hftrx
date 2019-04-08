@@ -4750,6 +4750,7 @@ static int_fast16_t glob_gridstep = 10000;	// 10 kHz - шаг сетки
 static uint_fast8_t glob_nofill;	/* не заливать заполнением площадь под графиком спектра */
 static int_fast16_t glob_topdb = 0;
 static int_fast16_t glob_botdb = - 80;
+static uint_fast8_t glob_scalex = 1;	/* уменьшение отображаемого участка спектра */
 
 static FLOAT_t spavgarray [ALLDX] = { 1 };	// массив входных данных для отображения (через фильтры).
 
@@ -5630,20 +5631,19 @@ board_set_nofill(uint_fast8_t v)
 void
 board_set_topdb(int_fast16_t v)
 {
-	//if (glob_topdb != v)
-	//{
-		glob_topdb = v;
-	//	board_dsp1regchanged();
-	//}
+	glob_topdb = v;
 }
 
 // Установить уровень сигнала для низа спектрограммы
 void
 board_set_botdb(int_fast16_t v)
 {
-	//if (glob_botdb != v)
-	//{
-		glob_botdb = v;
-	//	board_dsp1regchanged();
-	//}
+	glob_botdb = v;
+}
+
+/* уменьшение отображаемого участка спектра */
+void
+board_set_scalex(uint_fast8_t v)
+{
+	glob_scalex = v;
 }

@@ -485,9 +485,6 @@ void board_set_mikehclip(uint_fast8_t gmikehclip);	/* Ограничитель */
 void board_set_uacplayer(uint_fast8_t v);	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
 void board_set_uacmike(uint_fast8_t v);	/* на вход трансивера берутся аудиоданные с USB виртуальной платы, а не с микрофона */
 
-void board_set_topdb(int_fast16_t v);	// Установить уровень сигнала для верха спектрограммы
-void board_set_botdb(int_fast16_t v);	// Установить уровень сигнала для низа спектрограммы
-
 void dsp_initialize(void);
 
 #if WITHINTEGRATEDDSP
