@@ -2394,7 +2394,7 @@ struct nvmap
 	uint8_t displaybarsfps;	/* скорость обновления S-метра */
 #if WITHSPECTRUMWF
 	uint8_t gnofill;
-	uint8_t gfulldb;
+	uint8_t gfulldb;	/* диапазон отображаемых значений */
 	uint8_t gzoomxpow;
 #endif /* WITHSPECTRUMWF */
 #if WITHBCBANDS
@@ -3012,7 +3012,7 @@ static uint_fast8_t displayfreqsfps = DISPLAY_FPS;
 static uint_fast8_t displaybarsfps = DISPLAYSWR_FPS;
 #if WITHSPECTRUMWF
 	static uint_fast8_t gnofill;
-	static uint_fast8_t gfulldb = 80;
+	static uint_fast8_t gfulldb = 80;	/* диапазон отображаемых значений */
 	static uint_fast8_t gzoomxpow;
 #endif /* WITHSPECTRUMWF */
 #if WITHLCDBACKLIGHT
@@ -5402,7 +5402,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		enc2menu_adjust,	/* функция для изменения значения параметра */
 	},
 #endif /* ! WITHPOTAFGAIN */
-#if 0 && ! WITHPOTIFGAIN
+#if ! WITHPOTIFGAIN
 	{
 		"RF GAIN  ",
 		0,		// rj
@@ -5415,19 +5415,6 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		enc2menu_adjust,	/* функция для изменения значения параметра */
 	},
 #endif /* ! WITHPOTIFGAIN */
-#if 0//WITHAMHIGHKBDADJ
-	{
-		"CW SPEED ",
-		0,		// rj
-		ISTEP1,
-		CWWPMMIN, CWWPMMAX,		// minimal WPM = 10, maximal = 60 (also changed by command KS).
-		offsetof(struct nvmap, elkeywpm),
-		NULL,
-		& elkeywpm,
-		getzerobase, /* складывается со смещением и отображается */
-		enc2menu_adjust,	/* функция для изменения значения параметра */
-	},
-#endif /* WITHIF4DSP */
 #endif /* WITHIF4DSP */
 #if WITHELKEY && ! WITHPOTWPM
 	{
@@ -5525,7 +5512,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 	{
 		"NR LEVEL ", 
 		0,		// rj
-		ISTEP1,		/* squelch level */
+		ISTEP1,		/* nr level */
 		0, NRLEVELMAX, 
 		offsetof(struct nvmap, gnoisereductvl),	/* уровень сигнала болше которого открывается шумодав */
 		NULL,
@@ -5544,6 +5531,19 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		getzerobase, /* складывается со смещением и отображается */
 		enc2menu_adjust,	/* функция для изменения значения параметра */
 	},
+#if WITHSPECTRUMWF
+	{
+		"FULL DB  ", 
+		0,		// rj
+		ISTEP1,		/* spectrum range */
+		40, 120, 
+		offsetof(struct nvmap, gfulldb),	/* диапазон отображаемых значений */
+		NULL,
+		& gfulldb,
+		getzerobase, /* складывается со смещением и отображается */
+		enc2menu_adjust,	/* функция для изменения значения параметра */
+	},
+#endif /* WITHSPECTRUMWF */
 #endif /* WITHIF4DSP */
 };
 
