@@ -4796,6 +4796,7 @@ static PACKEDCOLOR565_T wfpalette [PALETTESIZE];
 //#define COLOR565_SPECTRUMBG2	TFTRGB565(0x80, 0x80, 0x00)	//COLOR_OLIVE - полоса пропускания приемника
 #define COLOR565_SPECTRUMFG		TFTRGB565(0, 255, 0)		//COLOR_GREEN
 #define COLOR565_SPECTRUMFENCE	TFTRGB565(255, 255, 255)	//COLOR_WHITE
+#define COLOR565_SPECTRUMLINE	TFTRGB565(0, 255, 0)	//COLOR_GREEN
 
 // Код взят из проекта Malamute
 static void wfpalette_initialize(void)
@@ -5009,8 +5010,6 @@ static void display2_spectrum(
 		const int_fast32_t bw = dsp_get_samplerateuacin_rts();
 		uint_fast16_t xleft = deltafreq2x(hamradio_getleft_bp(0), bw, ALLDX);	// левый край шторуи
 		uint_fast16_t xright = deltafreq2x(hamradio_getright_bp(0), bw, ALLDX);	// правый край шторки
-		uint_fast16_t x;
-		uint_fast16_t y;
 
 		if (xright == xleft)
 			xright = xleft + 1;
@@ -5020,33 +5019,58 @@ static void display2_spectrum(
 		memset(spectrmonoscr, 0xFF, sizeof spectrmonoscr);			// рисование способом погасить точку
 		// центральная частота
 		uint_fast16_t xmarker = deltafreq2x(0, bw, ALLDX);
-		for (y = 0; y < SPDY; ++ y)
-		{
-			display_pixelbuffer(spectrmonoscr, ALLDX, SPDY, xmarker, SPY0 + y);	// погасить точку
-		}
 
-		// отображение спектра
-		for (x = 0; x < ALLDX; ++ x)
+		if (glob_nofill != 0)
 		{
-			// логарифм - в вертикальную координату
-			const int val = dsp_mag2y(filter_spectrum(x), SPDY - 1, glob_topdb - glob_botdb);	// возвращает значения от 0 до SPDY включительно
-			// формирование изображения шторки.
-			if (x >= xleft && x <= xright)
+			uint_fast16_t x;
+			uint_fast16_t y;
+			uint_fast16_t ylast = 0;
+			// отображение спектра
+			for (x = 0; x < ALLDX; ++ x)
 			{
-				for (y = 0; y < SPDY; ++ y)
-					display_pixelbuffer_xor(spectrmonoscr, ALLDX, SPDY, x, SPY0 + y);	// xor точку
+				uint_fast16_t ynew = SPDY - dsp_mag2y(filter_spectrum(x), SPDY - 1, glob_topdb - glob_botdb);
+				if (x != 0)
+					display_pixelbuffer_line_xor(spectrmonoscr, ALLDX, SPDY, x - 1, ylast, x, ynew);
+				ylast = ynew;
+				// формирование изображения шторки.
+				if (x >= xleft && x <= xright)
+				{
+					for (y = 0; y < SPDY; ++ y)
+						display_pixelbuffer_xor(spectrmonoscr, ALLDX, SPDY, x, SPY0 + y);	// xor точку
+				}
 			}
-			// Формирование графика
-			const int yv = SPDY - val;	//отображаемый уровень, yv = 0..SPDY
-			if (glob_nofill != 0)
+		}
+		else
+		{
+			uint_fast16_t x;
+			uint_fast16_t y;
+			for (y = 0; y < SPDY; ++ y)
 			{
-				if (yv < SPDY)
-					display_pixelbuffer_xor(spectrmonoscr, ALLDX, SPDY, x, SPY0 + yv);	// xor точку
+				display_pixelbuffer(spectrmonoscr, ALLDX, SPDY, xmarker, SPY0 + y);	// погасить точку
 			}
-			else
+
+			// отображение спектра
+			for (x = 0; x < ALLDX; ++ x)
 			{
-				for (y = yv; y < SPDY; ++ y)
-					display_pixelbuffer_xor(spectrmonoscr, ALLDX, SPDY, x, SPY0 + y);	// xor точку
+				// формирование изображения шторки.
+				if (x >= xleft && x <= xright)
+				{
+					for (y = 0; y < SPDY; ++ y)
+						display_pixelbuffer_xor(spectrmonoscr, ALLDX, SPDY, x, SPY0 + y);	// xor точку
+				}
+				// Формирование графика
+				// логарифм - в вертикальную координату
+				const int yv = SPDY - dsp_mag2y(filter_spectrum(x), SPDY - 1, glob_topdb - glob_botdb);	//отображаемый уровень, yv = 0..SPDY
+				if (glob_nofill != 0)
+				{
+					if (yv < SPDY)
+						display_pixelbuffer_xor(spectrmonoscr, ALLDX, SPDY, x, SPY0 + yv);	// xor точку
+				}
+				else
+				{
+					for (y = yv; y < SPDY; ++ y)
+						display_pixelbuffer_xor(spectrmonoscr, ALLDX, SPDY, x, SPY0 + y);	// xor точку
+				}
 			}
 		}
 	}
@@ -5072,43 +5096,57 @@ static void display2_spectrum(
 		if (xright == xleft)
 			xright = xleft + 1;
 
-		uint_fast16_t x;
-		uint_fast16_t y;
-		// отображение спектра
-		for (x = 0; x < ALLDX; ++ x)
+		if (glob_nofill != 0)
 		{
-			const uint_fast8_t inband = (x >= xleft && x <= xright);	// в полосе пропускания приемника = "шторка"
-			// логарифм - в вертикальную координату
-			const int val = dsp_mag2y(filter_spectrum(x), SPDY - 1, glob_topdb - glob_botdb);	// возвращает значения от 0 до SPDY включительно
-			// Формирование графика
-			const int yv = SPDY - val;	// отображаемый уровень, yv = 0..SPDY
-
-			// формирование фона растра - верхняя часть графика
-			display_colorbuffer_set_vline(colorpip, ALLDX, ALLDY, x, SPY0, yv, inband ? COLOR565_SPECTRUMBG2 : COLOR565_SPECTRUMBG);
-
-			// точку на границе
-			if (yv < SPDY)
+			
+			uint_fast16_t ylast = 0;
+			
+			uint_fast16_t x;
+			for (x = 0; x < ALLDX; ++ x)
 			{
-				display_colorbuffer_set(colorpip, ALLDX, ALLDY, x, yv + SPY0, COLOR565_SPECTRUMFENCE);	
+				const uint_fast8_t inband = (x >= xleft && x <= xright);	// в полосе пропускания приемника = "шторка"
+				// формирование фона растра
+				display_colorbuffer_set_vline(colorpip, ALLDX, ALLDY, x, SPY0, SPDY, inband ? COLOR565_SPECTRUMBG2 : COLOR565_SPECTRUMBG);
 
-				// Нижняя часть экрана
-				const int yb = yv + 1;
-				if (yb < SPDY)
+				uint_fast16_t ynew = SPDY - dsp_mag2y(filter_spectrum(x), SPDY - 1, glob_topdb - glob_botdb);
+				if (x != 0)
+					display_colorbuffer_line_set(colorpip, ALLDX, ALLDY, x - 1, ylast, x, ynew, COLOR565_SPECTRUMLINE);
+				ylast = ynew;
+			}
+			display_colorgrid(colorpip, SPY0, SPDY, bw);	// отрисовка маркеров частот
+		}
+		else
+		{
+			uint_fast16_t x;
+			uint_fast16_t y;
+			// отображение спектра
+			for (x = 0; x < ALLDX; ++ x)
+			{
+				const uint_fast8_t inband = (x >= xleft && x <= xright);	// в полосе пропускания приемника = "шторка"
+				// логарифм - в вертикальную координату
+				const int val = dsp_mag2y(filter_spectrum(x), SPDY - 1, glob_topdb - glob_botdb);	// возвращает значения от 0 до SPDY включительно
+				// Формирование графика
+				const int yv = SPDY - val;	// отображаемый уровень, yv = 0..SPDY
+
+				// формирование фона растра - верхняя часть графика
+				display_colorbuffer_set_vline(colorpip, ALLDX, ALLDY, x, SPY0, yv, inband ? COLOR565_SPECTRUMBG2 : COLOR565_SPECTRUMBG);
+
+				// точку на границе
+				if (yv < SPDY)
 				{
-					if (glob_nofill != 0)
-					{
-						// под спектром цветом фона спектра или цветом "шторки"
-						display_colorbuffer_set_vline(colorpip, ALLDX, ALLDY, x, yb + SPY0, SPDY - yb, inband ? COLOR565_SPECTRUMBG2 : COLOR565_SPECTRUMBG);
-					}
-					else
+					display_colorbuffer_set(colorpip, ALLDX, ALLDY, x, yv + SPY0, COLOR565_SPECTRUMFENCE);	
+
+					// Нижняя часть экрана
+					const int yb = yv + 1;
+					if (yb < SPDY)
 					{
 						// формирование занятой области растра
 						display_colorbuffer_set_vline(colorpip, ALLDX, ALLDY, x, yb + SPY0, SPDY - yb, COLOR565_SPECTRUMFG);
 					}
 				}
 			}
+			display_colorgrid(colorpip, SPY0, SPDY, bw);	// отрисовка маркеров частот
 		}
-		display_colorgrid(colorpip, SPY0, SPDY, bw);	// отрисовка маркеров частот
 	}
 
 #endif

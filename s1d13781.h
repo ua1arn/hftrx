@@ -117,9 +117,6 @@
 
 #endif
 
-// val = 0..DIM_Y
-void drawfftbar(int x, int val, int maxval);
-
 #endif /* LCDMODE_S1D13781 */
 #endif /* S1D13781_H_INCLUDED */
 

@@ -573,6 +573,76 @@ void display_colorbuffer_show(
 }
 #endif /* LCDMODE_LTDC_PIP16 */
 
+// Routine to draw a line in the RGB565 color to the LCD.
+// The line is drawn from (xmin,ymin) to (xmax,ymax).
+// The algorithm used to draw the line is "Bresenham's line
+// algorithm". 
+#define SWAP(a, b)  do { (a) ^= (b); (b) ^= (a); (a) ^= (b); } while (0)
+// Нарисовать линию указанным цветом
+void display_colorbuffer_line_set(
+	PACKEDCOLOR565_T * buffer,
+	uint_fast16_t dx,	
+	uint_fast16_t dy,
+	uint_fast16_t x0,	
+	uint_fast16_t y0,
+	uint_fast16_t x1,	
+	uint_fast16_t y1,
+	COLOR565_T color
+	)
+{
+	int xmin = x0;
+	int xmax = x1;
+	int ymin = y0;
+	int ymax = y1;
+   int Dx = xmax - xmin; 
+   int Dy = ymax - ymin;
+   int steep = (abs(Dy) >= abs(Dx));
+   if (steep) {
+       SWAP(xmin, ymin);
+       SWAP(xmax, ymax);
+       // recompute Dx, Dy after swap
+       Dx = xmax - xmin;
+       Dy = ymax - ymin;
+   }
+   int xstep = 1;
+   if (Dx < 0) {
+       xstep = -1;
+       Dx = -Dx;
+   }
+   int ystep = 1;
+   if (Dy < 0) {
+       ystep = -1;		
+       Dy = -Dy; 
+   }
+   int TwoDy = 2*Dy; 
+   int TwoDyTwoDx = TwoDy - 2*Dx; // 2*Dy - 2*Dx
+   int E = TwoDy - Dx; //2*Dy - Dx
+   int y = ymin;
+   int xDraw, yDraw;
+   int x;
+   for (x = xmin; x != xmax; x += xstep) {		
+       if (steep) {			
+           xDraw = y;
+           yDraw = x;
+       } else {			
+           xDraw = x;
+           yDraw = y;
+       }
+       // plot
+       //LCD_PlotPoint(xDraw, yDraw, color);
+	   display_colorbuffer_set(buffer, dx, dy, xDraw, yDraw, color);
+       // next
+       if (E > 0) {
+           E += TwoDyTwoDx; //E += 2*Dy - 2*Dx;
+           y = y + ystep;
+       } else {
+           E += TwoDy; //E += 2*Dy;
+       }
+   }
+}
+
+#undef SWAP
+
 // погасить точку
 void display_pixelbuffer(
 	GX_t * buffer,
@@ -629,6 +699,74 @@ void display_pixelbuffer_xor(
 
 #endif /* LCDMODE_S1D13781 */
 }
+
+// Routine to draw a line in the RGB565 color to the LCD.
+// The line is drawn from (xmin,ymin) to (xmax,ymax).
+// The algorithm used to draw the line is "Bresenham's line
+// algorithm". 
+#define SWAP(a, b)  do { (a) ^= (b); (b) ^= (a); (a) ^= (b); } while (0)
+// Нарисовать линию указанным цветом
+void display_pixelbuffer_line_xor(
+	GX_t * buffer,
+	uint_fast16_t dx,	
+	uint_fast16_t dy,
+	uint_fast16_t x0,	
+	uint_fast16_t y0,
+	uint_fast16_t x1,	
+	uint_fast16_t y1
+	)
+{
+	int xmin = x0;
+	int xmax = x1;
+	int ymin = y0;
+	int ymax = y1;
+   int Dx = xmax - xmin; 
+   int Dy = ymax - ymin;
+   int steep = (abs(Dy) >= abs(Dx));
+   if (steep) {
+       SWAP(xmin, ymin);
+       SWAP(xmax, ymax);
+       // recompute Dx, Dy after swap
+       Dx = xmax - xmin;
+       Dy = ymax - ymin;
+   }
+   int xstep = 1;
+   if (Dx < 0) {
+       xstep = -1;
+       Dx = -Dx;
+   }
+   int ystep = 1;
+   if (Dy < 0) {
+       ystep = -1;		
+       Dy = -Dy; 
+   }
+   int TwoDy = 2*Dy; 
+   int TwoDyTwoDx = TwoDy - 2*Dx; // 2*Dy - 2*Dx
+   int E = TwoDy - Dx; //2*Dy - Dx
+   int y = ymin;
+   int xDraw, yDraw;
+   int x;
+   for (x = xmin; x != xmax; x += xstep) {		
+       if (steep) {			
+           xDraw = y;
+           yDraw = x;
+       } else {			
+           xDraw = x;
+           yDraw = y;
+       }
+       // plot
+       //LCD_PlotPoint(xDraw, yDraw, color);
+	   display_pixelbuffer_xor(buffer, dx, dy, xDraw, yDraw);
+       // next
+       if (E > 0) {
+           E += TwoDyTwoDx; //E += 2*Dy - 2*Dx;
+           y = y + ystep;
+       } else {
+           E += TwoDy; //E += 2*Dy;
+       }
+   }
+}
+#undef SWAP
 
 #if LCDMODE_LTDC
 

@@ -11955,7 +11955,7 @@ static const FLASHMEM struct menudef menutable [] =
 #endif /* WITHBARS */
 #if WITHSPECTRUMWF
 	{
-		"NO FILL ", 7, 0, 0,	ISTEP1,	
+		"NO FILL ", 7, 0, RJ_ON,	ISTEP1,	
 		ITEM_VALUE,
 		0, 1,							/* отказ от заполнения */
 		offsetof(struct nvmap, gnofill),

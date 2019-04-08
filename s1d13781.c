@@ -1726,18 +1726,6 @@ display_limb(void)
 }
 
 
-// val = 0..S1D_DISPLAY_HEIGHT
-void drawfftbar(int x, int val, int maxval)
-{
-	const int wb = 2;
-	const int xb = 50;
-	const int hb = 50;
-	const int he = 100;
-	const int v = (uint_fast64_t) val * he / maxval;
-	bitblt_fill(xb + x * wb, hb, wb, he - v,	COLOR_GRAY);	// inactive part
-	bitblt_fill(xb + x * wb, hb + he - v, wb, v, COLOR_GREEN);	// active part
-}
-
 static void s1d13781_clear(COLOR_T bg)
 {
 	bitblt_fill(0, 0, S1D_DISPLAY_WIDTH, S1D_DISPLAY_HEIGHT, bg);

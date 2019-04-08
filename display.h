@@ -646,6 +646,15 @@ void display_pixelbuffer_xor(
 	uint_fast16_t x,	// горизонтальна€ координата пиксел€ (0..dx-1) слева направо
 	uint_fast16_t y	// вертикальна€ координата пиксел€ (0..dy-1) сверху вниз
 	);
+void display_pixelbuffer_line_xor(
+	GX_t * buffer,
+	uint_fast16_t dx,	
+	uint_fast16_t dy,
+	uint_fast16_t x0,	
+	uint_fast16_t y0,
+	uint_fast16_t x1,	
+	uint_fast16_t y1
+	);
 
 // начальна€ инициализаци€ буфера
 // ‘ормат RGB565
@@ -677,6 +686,17 @@ void display_colorbuffer_show(
 	uint_fast16_t dy,
 	uint_fast16_t col,	// горизонтальна€ координата левого верхнего угла на экране (0..dx-1) слева направо
 	uint_fast16_t row	// вертикальна€ координата левого верхнего угла на экране (0..dy-1) сверху вниз
+	);
+// Ќарисовать линию указанным цветом
+void display_colorbuffer_line_set(
+	PACKEDCOLOR565_T * buffer,
+	uint_fast16_t dx,	
+	uint_fast16_t dy,
+	uint_fast16_t x0,	
+	uint_fast16_t y0,
+	uint_fast16_t x1,	
+	uint_fast16_t y1,
+	COLOR565_T color
 	);
 
 // установить данный буфер как область дл€ PIP
