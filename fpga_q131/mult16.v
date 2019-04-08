@@ -47,10 +47,10 @@ module mult16 (
 	input	  clock;
 	input	[15:0]  dataa;
 	input	[16:0]  datab;
-	output	[26:0]  result;
+	output	[32:0]  result;
 
-	wire [26:0] sub_wire0;
-	wire [26:0] result = sub_wire0[26:0];
+	wire [32:0] sub_wire0;
+	wire [32:0] result = sub_wire0[32:0];
 
 	lpm_mult	lpm_mult_component (
 				.clock (clock),
@@ -67,7 +67,7 @@ module mult16 (
 		lpm_mult_component.lpm_type = "LPM_MULT",
 		lpm_mult_component.lpm_widtha = 16,
 		lpm_mult_component.lpm_widthb = 17,
-		lpm_mult_component.lpm_widthp = 27;
+		lpm_mult_component.lpm_widthp = 33;
 
 
 endmodule
@@ -75,7 +75,7 @@ endmodule
 // ============================================================
 // CNX file retrieval info
 // ============================================================
-// Retrieval info: PRIVATE: AutoSizeResult NUMERIC "0"
+// Retrieval info: PRIVATE: AutoSizeResult NUMERIC "1"
 // Retrieval info: PRIVATE: B_isConstant NUMERIC "0"
 // Retrieval info: PRIVATE: ConstantB NUMERIC "5"
 // Retrieval info: PRIVATE: INTENDED_DEVICE_FAMILY STRING "Cyclone III"
@@ -87,7 +87,7 @@ endmodule
 // Retrieval info: PRIVATE: ValidConstant NUMERIC "1"
 // Retrieval info: PRIVATE: WidthA NUMERIC "16"
 // Retrieval info: PRIVATE: WidthB NUMERIC "17"
-// Retrieval info: PRIVATE: WidthP NUMERIC "27"
+// Retrieval info: PRIVATE: WidthP NUMERIC "33"
 // Retrieval info: PRIVATE: aclr NUMERIC "0"
 // Retrieval info: PRIVATE: clken NUMERIC "1"
 // Retrieval info: PRIVATE: new_diagram STRING "1"
@@ -99,17 +99,17 @@ endmodule
 // Retrieval info: CONSTANT: LPM_TYPE STRING "LPM_MULT"
 // Retrieval info: CONSTANT: LPM_WIDTHA NUMERIC "16"
 // Retrieval info: CONSTANT: LPM_WIDTHB NUMERIC "17"
-// Retrieval info: CONSTANT: LPM_WIDTHP NUMERIC "27"
+// Retrieval info: CONSTANT: LPM_WIDTHP NUMERIC "33"
 // Retrieval info: USED_PORT: clken 0 0 0 0 INPUT NODEFVAL "clken"
 // Retrieval info: USED_PORT: clock 0 0 0 0 INPUT NODEFVAL "clock"
 // Retrieval info: USED_PORT: dataa 0 0 16 0 INPUT NODEFVAL "dataa[15..0]"
 // Retrieval info: USED_PORT: datab 0 0 17 0 INPUT NODEFVAL "datab[16..0]"
-// Retrieval info: USED_PORT: result 0 0 27 0 OUTPUT NODEFVAL "result[26..0]"
+// Retrieval info: USED_PORT: result 0 0 33 0 OUTPUT NODEFVAL "result[32..0]"
 // Retrieval info: CONNECT: @clken 0 0 0 0 clken 0 0 0 0
 // Retrieval info: CONNECT: @clock 0 0 0 0 clock 0 0 0 0
 // Retrieval info: CONNECT: @dataa 0 0 16 0 dataa 0 0 16 0
 // Retrieval info: CONNECT: @datab 0 0 17 0 datab 0 0 17 0
-// Retrieval info: CONNECT: result 0 0 27 0 @result 0 0 27 0
+// Retrieval info: CONNECT: result 0 0 33 0 @result 0 0 33 0
 // Retrieval info: GEN_FILE: TYPE_NORMAL mult16.v TRUE
 // Retrieval info: GEN_FILE: TYPE_NORMAL mult16.inc FALSE
 // Retrieval info: GEN_FILE: TYPE_NORMAL mult16.cmp FALSE
