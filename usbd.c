@@ -1819,9 +1819,10 @@ static void usb0_function_Resrv_4(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef
 	//PRINTF(PSTR("usb0_function_Resrv_4: interfacev=%u: bRequest=%u, wLength=%u\n"), interfacev, req->bRequest, req->wLength);
 	switch (interfacev)
 	{
-#if WITHUSBDFU
+#if 0//WITHUSBDFU
 	case INTERFACE_DFU_CONTROL:
-		USBD_DFU_EP0_TxSent(pdev);
+		TP();
+		USBD_DFU_EP0_TxSent(pdev);	// never called
 		break;
 #endif /* WITHUSBDFU */
 	}
@@ -1846,7 +1847,7 @@ static void usbdFunctionReq_seq2(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef 
 	{
 #if WITHUSBDFU
 	case INTERFACE_DFU_CONTROL:
-		USBD_DFU_EP0_TxSent(pdev);
+		USBD_DFU_EP0_TxSent(pdev);	// called in download stage (write FLASH)
 		break;
 #endif /* WITHUSBDFU */
 	}
@@ -1854,7 +1855,7 @@ static void usbdFunctionReq_seq2(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef 
 // Control Read Status stage
 static void usbdVendorReq_seq2(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef *req)
 {
-	//PRINTF(PSTR("usbdVendorReq_seq2\n"));
+	PRINTF(PSTR("usbdVendorReq_seq2\n"));
 	//PRINTF(PSTR("usbdVendorReq_seq2: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
 }
 // Idle or setup stage
@@ -18690,6 +18691,8 @@ static void sectoreraseDATAFLASH(unsigned long flashoffset)
 
 	//debug_printf_P(PSTR(" Erase sector at address %08lX\n"), flashoffset);
 
+	timed_dataflash_read_status(target);
+
 	spidf_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
 	spidf_progval8(target, 0x06);		/* write enable */
 	spidf_unselect(target);	/* done sending data to target chip */
@@ -18713,6 +18716,7 @@ static void writesinglepageDATAFLASH(unsigned long flashoffset, const unsigned c
 {
 	spitarget_t target = targetdataflash;	/* addressing to chip */
 
+	timed_dataflash_read_status(target);
 	//debug_printf_P(PSTR(" Prog to address %08lX %02X\n"), flashoffset, len);
 
 	spidf_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
@@ -18734,7 +18738,7 @@ static void writesinglepageDATAFLASH(unsigned long flashoffset, const unsigned c
 
 	spidf_unselect(target);	/* done sending data to target chip */
 
-	timed_dataflash_read_status(target);
+	//timed_dataflash_read_status(target);
 }
 
 
@@ -18861,7 +18865,7 @@ uint16_t MEM_If_Init_HS(void)
 {
 	PRINTF(PSTR("MEM_If_Init_HS\n"));
 	spidf_initialize();
-	prepareDATAFLASH();
+	//prepareDATAFLASH();	// снятие зазиты со страниц при первом програмимровании через SPI интерфейс
 	testchipDATAFLASH();
 	return (USBD_OK);
 }
@@ -18900,8 +18904,6 @@ uint16_t MEM_If_Erase_HS(uint32_t Add)
 uint16_t MEM_If_Write_HS(uint8_t *src, uint32_t dest, uint32_t Len)
 {
 	//PRINTF(PSTR("MEM_If_Write_HS: addr=%08lX, len=%03lX\n"), dest, Len);
-	spitarget_t target = targetdataflash;	/* addressing to chip */
-	timed_dataflash_read_status(target);
 	writeDATAFLASH(dest, src, Len);
 	return (USBD_OK);
 }
@@ -19532,13 +19534,13 @@ static void DFU_GetStatus(USBD_HandleTypeDef *pdev)
       hdfu->dev_status[2] = 0;
       hdfu->dev_status[3] = 0;
       hdfu->dev_status[4] = hdfu->dev_state;     
-	  // не меняет протестиованного повдения
+	  // не меняет протестиованного поведения
 	//USBD_DFU_fops_HS.GetStatus(hdfu->data_ptr, DFU_MEDIA_ERASE, hdfu->dev_status);
     }
     break;
     
   default :
-	  TP();
+	  //TP();
 	USBD_DFU_fops_HS.GetStatus(hdfu->data_ptr, DFU_MEDIA_ERASE, hdfu->dev_status);
     break;
   }
