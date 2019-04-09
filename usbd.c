@@ -18349,20 +18349,106 @@ uint_fast8_t hamradio_get_usbh_active(void)
 #define targetdataflash 0 
 #define SPIMODE_AT26DF081A	SPIC_MODE3
 
+// Use block SPIBSC0
+// 17. SPI Multi I/O Bus Controller
+//
+// P4_2: WP#	
+// P4_4: SCLK
+// P4_5: CS#	
+// P4_6: MOSI
+// P4_7: MISO
 void spidf_initialize(void)
 {
+	// spi multi-io hang off
+	CPG.STBCR9 &= ~ CPG_STBCR9_BIT_MSTP93;	// Module Stop 93	- 0: Clock supply to channel 0 of the SPI multi I/O bus controller is runnuing.
+	(void) CPG.STBCR9;			/* Dummy read */
+
+	SPIBSC0.SPBCR = 0x200;	// baud rate
+	SPIBSC0.SSLDR = 0x00;	// delay
+	SPIBSC0.DRCR = 0x0000;
+
+	SPIBSC0.CMNCR = 
+		SPIBSC_CMNCR_MD |	// spi mode
+		(0x03 << SPIBSC_CMNCR_MOIIO3_SHIFT) |
+		(0x03 << SPIBSC_CMNCR_MOIIO2_SHIFT) |
+		(0x03 << SPIBSC_CMNCR_MOIIO1_SHIFT) |
+		(0x03 << SPIBSC_CMNCR_MOIIO0_SHIFT) |
+		(0x03 << SPIBSC_CMNCR_IO3FV_SHIFT) |
+		(0x03 << SPIBSC_CMNCR_IO2FV_SHIFT) |
+		(0x03 << SPIBSC_CMNCR_IO0FV_SHIFT) |
+		1 * SPIBSC_CMNCR_CPHAR |
+		1 * SPIBSC_CMNCR_CPHAT |
+		0;
+
+	SPIBSC0.SMENR =
+		0;
+
+	SPIBSC0.SMCR = 
+		SPIBSC_SMCR_SPIE |
+		SPIBSC_SMCR_SPIRE |
+		SPIBSC_SMCR_SPIWE |
+		0;
+
+	// Connrect I/O pins
+	arm_hardware_pio4_outputs(1U << 2, 1U << 2);				/* P4_2 WP / SPBIO20_0 */
+	arm_hardware_pio4_outputs(1U << 3, 1U << 3);				/* P4_3 NC / SPBIO30_0 */
+	//arm_hardware_pio4_alternative(1U << 4, R7S721_PIOALT_4);	/* P4_4 SCLK / SPBCLK_0 */
+	arm_hardware_pio4_outputs(1U << 4, 1U << 4);	/* P4_4 SCLK / SPBCLK_0 */
+	//arm_hardware_pio4_alternative(1U << 5, R7S721_PIOALT_4);	/* P4_5 CS# / SPBSSL_0 */
+	arm_hardware_pio4_outputs(1U << 5, 1 * (1U << 5));			/* P4_5 CS# / SPBSSL_0 */
+	//arm_hardware_pio4_alternative(1U << 6, R7S721_PIOALT_4);	/* P4_6 MOSI / SPBIO00_0 */
+	arm_hardware_pio4_outputs(1U << 6, 1U << 6);	/* P4_6 MOSI / SPBIO00_0 */
+	//arm_hardware_pio4_alternative(1U << 7, R7S721_PIOALT_4);	/* P4_7 MISO / SPBIO10_0 */
+	arm_hardware_pio4_inputs(1U << 7);	/* P4_7 MISO / SPBIO10_0 */
+}
+
+#define SPIDF_MISO() ((R7S721_INPUT_PORT(4) & (1U << 7)) != 0)
+#define SPIDF_MOSI(v) do { if (v) R7S721_TARGET_PORT_S(4, (1U << 6)); else R7S721_TARGET_PORT_C(4, (1U << 6)); } while (0)
+#define SPIDF_SCLK(v) do { if (v) R7S721_TARGET_PORT_S(4, (1U << 4)); else R7S721_TARGET_PORT_C(4, (1U << 4)); } while (0)
+
+uint_fast8_t spidf_bit(uint_fast8_t v)
+{
+	uint_fast8_t r;
+	SPIDF_MOSI(v);
+	SPIDF_SCLK(0);
+	r = SPIDF_MISO();
+	SPIDF_SCLK(1);
+	return r;
+}
+
+
+uint_fast8_t spidf_read_byte(spitarget_t target, uint_fast8_t v)
+{
+	uint_fast8_t r = 0;
+
+	r = r * 2 + spidf_bit(v & 0x80);
+	r = r * 2 + spidf_bit(v & 0x40);
+	r = r * 2 + spidf_bit(v & 0x20);
+	r = r * 2 + spidf_bit(v & 0x10);
+	r = r * 2 + spidf_bit(v & 0x08);
+	r = r * 2 + spidf_bit(v & 0x04);
+	r = r * 2 + spidf_bit(v & 0x02);
+	r = r * 2 + spidf_bit(v & 0x01);
+
+	return r;
 }
 
 void spidf_uninitialize(void)
 {
+	arm_hardware_pio4_inputs(0xFC);		// Отключить процессор от SERIAL FLASH
+	// spi multi-io hang off
+	CPG.STBCR9 |= CPG_STBCR9_BIT_MSTP93;	// Module Stop 93	- 1: Clock supply to channel 0 of the SPI multi I/O bus controller is halted.
+	(void) CPG.STBCR9;			/* Dummy read */
 }
 
 void spidf_select(spitarget_t target, uint_fast8_t mode)
 {
+	do {	R7S721_TARGET_PORT_C(4, (1U << 5)); } while (0);
 }
 
 void spidf_unselect(spitarget_t target)
 {
+	do {	R7S721_TARGET_PORT_S(4, (1U << 5)); } while (0);
 }
 
 void spidf_to_read(spitarget_t target)
@@ -18375,10 +18461,12 @@ void spidf_to_write(spitarget_t target)
 
 void spidf_progval8_p1(spitarget_t target, uint_fast8_t sendval)
 {
+	spidf_read_byte(target, sendval);
 }
 
 void spidf_progval8_p2(spitarget_t target, uint_fast8_t sendval)
 {
+	spidf_read_byte(target, sendval);
 }
 
 uint_fast8_t spidf_complete(spitarget_t target)
@@ -18388,14 +18476,9 @@ uint_fast8_t spidf_complete(spitarget_t target)
 
 uint_fast8_t spidf_progval8(spitarget_t target, uint_fast8_t sendval)
 {
-	spidf_progval8_p1(target, sendval);
-	return spidf_complete(target);
+	return spidf_read_byte(target, sendval);
 }
 
-uint_fast8_t spidf_read_byte(spitarget_t target, uint_fast8_t sendval)
-{
-	return spidf_progval8(target, sendval);
-}
 
 
 static unsigned char dataflash_read_status(
@@ -18645,6 +18728,34 @@ static int verifyDATAFLASH(unsigned long flashoffset, const unsigned char * data
 	return err;
 }
 
+static void readDATAFLASH(unsigned long flashoffset, unsigned char * data, unsigned long len)
+{
+	unsigned long count;
+	unsigned long err = 0;
+	unsigned char v;
+	spitarget_t target = targetdataflash;	/* addressing to chip */
+
+	//debug_printf_P(PSTR("Compare from address %08lX\n"), flashoffset);
+
+	spidf_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
+	spidf_progval8(target, 0x03);		/* sequential read block */
+
+	spidf_progval8(target, flashoffset >> 16);
+	spidf_progval8(target, flashoffset >> 8);
+	spidf_progval8(target, flashoffset >> 0);
+
+	spidf_to_read(target);
+
+	for (count = 0; count < len; ++ count)
+	{
+		 data [count] = spidf_read_byte(target, 0xff);
+	}
+
+	spidf_to_write(target);
+
+	spidf_unselect(target);	/* done sending data to target chip */
+}
+
 
 
 /** @defgroup USBD_CORE_Exported_TypesDefinitions
@@ -18678,6 +18789,7 @@ uint16_t MEM_If_Init_HS(void)
 	PRINTF(PSTR("MEM_If_Init_HS\n"));
 	spidf_initialize();
 	prepareDATAFLASH();
+	testchipDATAFLASH();
 	return (USBD_OK);
 }
 
@@ -18731,8 +18843,7 @@ uint8_t *MEM_If_Read_HS(uint32_t src, uint8_t *dest, uint32_t Len)
 {
 	/* Return a valid address to avoid HardFault */
 	/* USER CODE BEGIN 4 */
-	//memset(dest, 0x55, Len);
-	* (uint32_t *) dest = src;
+	readDATAFLASH(src, dest, Len);
 	return dest;
 	/* USER CODE END 4 */
 }
