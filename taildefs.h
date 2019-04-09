@@ -16,6 +16,7 @@ enum
 #if (SPISPEED400k) || defined (SPISPEED100k)
 	SPIC_SPEED100k,
 	SPIC_SPEED400k,
+	SPIC_SPEED4M,	/* 4 MHz дл€ CS4272 */
 	SPIC_SPEED10M,	/* 10 MHz дл€ ILI9341 */
 	SPIC_SPEED25M,	/* 25 MHz  */
 #endif /* (SPISPEED400k) || defined (SPISPEED100k) */
@@ -26,9 +27,6 @@ enum
 #if WITHUSESDCARD
 	SPIC_SPEEDSDCARD,	// ѕереключаема€ скоростть - 400 к√ц или требуема€ дл€ SD карты
 #endif /* WITHUSESDCARD */
-#if LCDMODE_UC1608
-	SPIC_SPEEDUC1608,	// SPISPEED for UC1608 should be less then 7.1 MHz
-#endif /* LCDMODE_UC1608 */
 	//
 	SPIC_SPEEDS_COUNT
 } spi_speeds_t;

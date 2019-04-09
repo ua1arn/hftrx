@@ -33,13 +33,14 @@
 	#include "./fonts/uc1608_sphm_font_big.c"
 #endif
 
-#if CTLSTYLE_SW2011ALL
-	#define SPISPEEDUC1608		200000uL	// SPISPEED for UC1608 should be less then 7.1 MHzs
-#else /* CTLSTYLE_SW2011ALL */
-	#define SPISPEEDUC1608		4000000uL	// SPISPEED for UC1608 should be less then 7.1 MHzs
-#endif /* CTLSTYLE_SW2011ALL */
 
 #define UC1608_SPIMODE		SPIC_MODE3
+#if CTLSTYLE_SW2011ALL
+	#define SPIC_SPEEDUC1608		SPIC_SPEED400k	// was: 200k SPISPEED for UC1608 should be less then 7.1 MHzs
+#else /* CTLSTYLE_SW2011ALL */
+	#define SPIC_SPEEDUC1608		SPIC_SPEED4M	// SPISPEED for UC1608 should be less then 7.1 MHzs
+#endif /* CTLSTYLE_SW2011ALL */
+
 #define tglcd	targetuc1608
 
 
@@ -433,9 +434,6 @@ void display_set_contrast(uint_fast8_t v)
 /* вызывается при разрешённых прерываниях. */
 void display_initialize(void)
 {
-	// не убирать - в общей инициализации нет!
-	hardware_spi_master_setfreq(SPIC_SPEEDUC1608, SPISPEEDUC1608);	// SPISPEED for UC1608 should be less then 7.1 MHz
-
 	uc1608_write_cmd(0xe2);	// System reset
 	uc1608_resetdelay();
 

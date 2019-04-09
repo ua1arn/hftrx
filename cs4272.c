@@ -24,6 +24,7 @@
 //
 
 #define CS4272_SPIMODE		SPIC_MODE3
+#define CS4272_SPIC_SPEED	SPIC_SPEED4M	// No more then 6 MHz
 
 #define CS4272_ADDRESS_W	0x20	// I2C address: 0x20 or 0x22	- depend on adress pin state
 									// Also used as SPI prefix byte
@@ -64,7 +65,7 @@ static void cs4272_setreg(
 	// кодек управляется по SPI
 	const spitarget_t target = targetcodec2;	/* addressing to chip */
 
-	spi_select(target, CS4272_SPIMODE);
+	spi_select2(target, CS4272_SPIMODE, CS4272_SPIC_SPEED);	/* Enable SPI */
 	spi_progval8_p1(target, CS4272_ADDRESS_W);		// Chip Aaddress, D0=0: write
 	spi_progval8_p2(target, mapv);
 	spi_progval8_p2(target, datav);
