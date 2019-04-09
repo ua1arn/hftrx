@@ -2521,9 +2521,9 @@ static unsigned DFU_InterfaceAssociationDescriptor(
 		* buff ++ = USB_INTERFACE_ASSOC_DESCRIPTOR_TYPE;	// bDescriptorType: IAD
 		* buff ++ = bFirstInterface;			// bFirstInterface
 		* buff ++ = bInterfaceCount;	// bInterfaceCount
-		* buff ++ = 0xFE;	// bFunctionClass: Audio
-		* buff ++ = 0x01;	// bFunctionSubClass
-		* buff ++ = 0x02;	// bFunctionProtocol
+		* buff ++ = 0xFE;	// bFunctionClass: Application-Specific
+		* buff ++ = 0x01;	// bFunctionSubClass Application-Specific
+		* buff ++ = 0x02;	// bFunctionProtocol 1-Runtime protocol, 2-DFU mode protocol.
 		* buff ++ = STRING_ID_DFU;				/* iInterface */
 	}
 	return length;
@@ -2549,10 +2549,10 @@ static unsigned DFU_InterfaceDescriptor(uint_fast8_t fill, uint8_t * buff, unsig
 		* buff ++ = bInterfaceNumber;			/* bInterfaceNumber */
 		* buff ++ = bAlternateSetting;			/* bAlternateSetting */
 		* buff ++ = 0x00;                       /* bNumEndpoints */
-		* buff ++ = 0xFE;						/* bInterfaceClass */
-		* buff ++ = 0x01;						/* bInterfaceSubClass */
-		* buff ++ = 0x02;						/* bInterfaceProtocol */
-		* buff ++ = iInterface;				/* iInterface */
+		* buff ++ = 0xFE;						/* bInterfaceClass Application-Specific */
+		* buff ++ = 0x01;						/* bInterfaceSubClass Device Firmware Upgrade */
+		* buff ++ = 0x02;						/* bInterfaceProtocol: 1-Runtime protocol, 2-DFU mode protocol. */
+		* buff ++ = iInterface;					/* iInterface */
 		/* 09 byte*/
 	}
 	return length;
