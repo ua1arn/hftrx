@@ -1089,11 +1089,9 @@ static void imp_response(const FLOAT_t *dCoeff, int iCoefNum)
 	// Do FFT
 	//---------------------------
 
-	//FFT(Sig, FFTSizeFilters, FFTSizeFiltersM); 
 
   /* Process the data through the CFFT/CIFFT module */
 	arm_cfft_f32(FFTCONFIGFilters, (float *) Sig, 0, 1);
-	//dofft((COMPLEX_t *) sg, FFTSizeM, w);
 
 
 	//arm_cmplx_mag_squared_f32(sg, MagArr, MagLen);
@@ -4881,7 +4879,6 @@ void dsp_getspectrumrow(
 	rendering = 1;
 	float32_t * const sig = & x256 [fft_head * 2];	// первый элемент массива комплексных чисел
 	adjustwmwp(sig); // TODO: пока закомментировано - разобраться с артефактами на спектре
-	//FFT((struct Complex *) sig, FFTSizeSpectrum, FFTSizeSpectrumM);
 	/* Process the data through the CFFT/CIFFT module */
 	arm_cfft_f32(FFTCONFIGSpectrum, sig, 0, 1);	// forward transform
 

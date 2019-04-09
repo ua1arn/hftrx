@@ -698,14 +698,6 @@ SOURCE=.\arm_cfft_radix8_f32.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\arm_common_tables.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\arm_const_structs.c
-# End Source File
-# Begin Source File
-
 SOURCE=.\audio.c
 # End Source File
 # Begin Source File
