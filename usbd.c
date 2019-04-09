@@ -1900,7 +1900,7 @@ static void usbdFunctionReq_seq4(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef 
 
 			case DFU_ABORT:
 				TP();
-				DFU_Abort(pdev);
+				DFU_Abort(pdev);	// not called
 				break;
 
 			case DFU_DETACH:
@@ -1962,7 +1962,7 @@ static void usbdFunctionReq_seq4(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef 
 					const uint_fast8_t terminalID = HI_BYTE(req->wIndex);
 					const uint_fast8_t controlID = HI_BYTE(req->wValue);	// AUDIO_MUTE_CONTROL, AUDIO_VOLUME_CONTROL, ...
 					terminalsprops [terminalID] [controlID] = uac_ep0databuffout [0];
-					PRINTF(PSTR("AUDIO_REQUEST_SET_CUR: interfacev=%u, %u=%u\n"), interfacev, terminalID, uac_ep0databuffout [0]);
+					//PRINTF(PSTR("AUDIO_REQUEST_SET_CUR: interfacev=%u, %u=%u\n"), interfacev, terminalID, uac_ep0databuffout [0]);
 				}
 				break;
 			}
@@ -2413,7 +2413,7 @@ static void usbdFunctionReq_seq1(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef 
 
 			case DFU_ABORT:
 				TP();
-				DFU_Abort(pdev);
+				DFU_Abort(pdev);	// not called
 				break;
 
 			case DFU_DETACH:
@@ -18406,7 +18406,7 @@ void spidf_initialize(void)
 #define SPIDF_MOSI(v) do { if (v) R7S721_TARGET_PORT_S(4, (1U << 6)); else R7S721_TARGET_PORT_C(4, (1U << 6)); } while (0)
 #define SPIDF_SCLK(v) do { if (v) R7S721_TARGET_PORT_S(4, (1U << 4)); else R7S721_TARGET_PORT_C(4, (1U << 4)); } while (0)
 
-uint_fast8_t spidf_bit(uint_fast8_t v)
+static uint_fast8_t spidf_rbit(uint_fast8_t v)
 {
 	uint_fast8_t r;
 	SPIDF_MOSI(v);
@@ -18416,21 +18416,40 @@ uint_fast8_t spidf_bit(uint_fast8_t v)
 	return r;
 }
 
+static void spidf_wbit(uint_fast8_t v)
+{
+	SPIDF_MOSI(v);
+	SPIDF_SCLK(0);
+	SPIDF_SCLK(1);
+}
+
 
 uint_fast8_t spidf_read_byte(spitarget_t target, uint_fast8_t v)
 {
 	uint_fast8_t r = 0;
 
-	r = r * 2 + spidf_bit(v & 0x80);
-	r = r * 2 + spidf_bit(v & 0x40);
-	r = r * 2 + spidf_bit(v & 0x20);
-	r = r * 2 + spidf_bit(v & 0x10);
-	r = r * 2 + spidf_bit(v & 0x08);
-	r = r * 2 + spidf_bit(v & 0x04);
-	r = r * 2 + spidf_bit(v & 0x02);
-	r = r * 2 + spidf_bit(v & 0x01);
+	r = r * 2 + spidf_rbit(v & 0x80);
+	r = r * 2 + spidf_rbit(v & 0x40);
+	r = r * 2 + spidf_rbit(v & 0x20);
+	r = r * 2 + spidf_rbit(v & 0x10);
+	r = r * 2 + spidf_rbit(v & 0x08);
+	r = r * 2 + spidf_rbit(v & 0x04);
+	r = r * 2 + spidf_rbit(v & 0x02);
+	r = r * 2 + spidf_rbit(v & 0x01);
 
 	return r;
+}
+
+static void spidf_write_byte(spitarget_t target, uint_fast8_t v)
+{
+	spidf_wbit(v & 0x80);
+	spidf_wbit(v & 0x40);
+	spidf_wbit(v & 0x20);
+	spidf_wbit(v & 0x10);
+	spidf_wbit(v & 0x08);
+	spidf_wbit(v & 0x04);
+	spidf_wbit(v & 0x02);
+	spidf_wbit(v & 0x01);
 }
 
 void spidf_uninitialize(void)
@@ -18443,12 +18462,19 @@ void spidf_uninitialize(void)
 
 void spidf_select(spitarget_t target, uint_fast8_t mode)
 {
+#if 1
+	// Connrect I/O pins
+	arm_hardware_pio4_outputs(0x7C, 0x7C);
+#endif
 	do {	R7S721_TARGET_PORT_C(4, (1U << 5)); } while (0);
 }
 
 void spidf_unselect(spitarget_t target)
 {
 	do {	R7S721_TARGET_PORT_S(4, (1U << 5)); } while (0);
+#if 1
+	arm_hardware_pio4_inputs(0x7C);		// Отключить процессор от SERIAL FLASH
+#endif
 }
 
 void spidf_to_read(spitarget_t target)
@@ -18562,7 +18588,7 @@ static int testchipDATAFLASH(void)
 	//debug_printf_P(PSTR("Need: ID = 0x%02X devId = 0x%02X%02X, mf_dlen=0x%02X\n"), 0x1f, 0x45, 0x01, 0x00);
 	return mf_id != 0x1f || mf_devid1 != 0x45 || mf_devid2 != 0x01 || mf_dlen != 0;
 }
-
+#if 0
 static int eraseDATAFLASH(void)
 {
 	spitarget_t target = targetdataflash;	/* addressing to chip */
@@ -18588,6 +18614,7 @@ static int eraseDATAFLASH(void)
 	}
 	return 0;
 }
+#endif
 
 static int prepareDATAFLASH(void)
 {
@@ -18603,7 +18630,7 @@ static int prepareDATAFLASH(void)
 	spidf_progval8(target, 0x00);		/* write status register */
 	spidf_unselect(target);	/* done sending data to target chip */
 
-	return 0;
+	return timed_dataflash_read_status(target);
 }
 
 static int writeEnableDATAFLASH(void)
@@ -18629,7 +18656,32 @@ static int writeDisableDATAFLASH(void)
 }
 
 
-static int writesinglepageDATAFLASH(unsigned long flashoffset, const unsigned char * data, unsigned long len)
+static void sectoreraseDATAFLASH(unsigned long flashoffset)
+{
+	spitarget_t target = targetdataflash;	/* addressing to chip */
+
+	//debug_printf_P(PSTR(" Erase sector at address %08lX\n"), flashoffset);
+
+	spidf_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
+	spidf_progval8(target, 0x06);		/* write enable */
+	spidf_unselect(target);	/* done sending data to target chip */
+
+	// start byte programm
+	spidf_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
+	spidf_progval8_p1(target, 0xD8);				/* SECTOR ERASE */
+
+	spidf_progval8_p2(target, flashoffset >> 16);
+	spidf_progval8_p2(target, flashoffset >> 8);
+	spidf_progval8_p2(target, flashoffset >> 0);
+
+	spidf_complete(target);	/* done sending data to target chip */
+
+	spidf_unselect(target);	/* done sending data to target chip */
+	
+	//timed_dataflash_read_status(target);
+}
+
+static void writesinglepageDATAFLASH(unsigned long flashoffset, const unsigned char * data, unsigned long len)
 {
 	spitarget_t target = targetdataflash;	/* addressing to chip */
 
@@ -18654,15 +18706,9 @@ static int writesinglepageDATAFLASH(unsigned long flashoffset, const unsigned ch
 
 	spidf_unselect(target);	/* done sending data to target chip */
 
-	/* Ожидание бита ~RDY в слове состояния. Для FRAM не имеет смысла.
-	Вставлено для возможности использования DATAFLASH */
-
-	if (timed_dataflash_read_status(target))
-		return 1;
-
-	//debug_printf_P(PSTR("Done programming\n"));
-	return 0;
+	timed_dataflash_read_status(target);
 }
+
 
 static unsigned long ulmin(
 	unsigned long a,
@@ -18679,9 +18725,8 @@ static int writeDATAFLASH(unsigned long flashoffset, const unsigned char * data,
 		unsigned long offset = flashoffset & 0xFF;
 		unsigned long part = ulmin(len, ulmin(256, 256 - offset));
 
-		int status = writesinglepageDATAFLASH(flashoffset, data, part);
-		if (status != 0)
-			return status;
+		writesinglepageDATAFLASH(flashoffset, data, part);
+
 		len -= part;
 		flashoffset += part;
 		data += part;
@@ -18813,6 +18858,7 @@ uint16_t MEM_If_DeInit_HS(void)
 uint16_t MEM_If_Erase_HS(uint32_t Add)
 {
 	//PRINTF(PSTR("MEM_If_Erase_HS: addr=%08lX\n"), Add);
+	sectoreraseDATAFLASH(Add);
 	return (USBD_OK);
 }
 
@@ -18826,9 +18872,9 @@ uint16_t MEM_If_Erase_HS(uint32_t Add)
 uint16_t MEM_If_Write_HS(uint8_t *src, uint32_t dest, uint32_t Len)
 {
 	//PRINTF(PSTR("MEM_If_Write_HS: addr=%08lX, len=%03lX\n"), dest, Len);
-	writeEnableDATAFLASH();
+	spitarget_t target = targetdataflash;	/* addressing to chip */
+	timed_dataflash_read_status(target);
 	writeDATAFLASH(dest, src, Len);
-	writeDisableDATAFLASH();
 	return (USBD_OK);
 }
 
@@ -18843,6 +18889,8 @@ uint8_t *MEM_If_Read_HS(uint32_t src, uint8_t *dest, uint32_t Len)
 {
 	/* Return a valid address to avoid HardFault */
 	/* USER CODE BEGIN 4 */
+	spitarget_t target = targetdataflash;	/* addressing to chip */
+	timed_dataflash_read_status(target);
 	readDATAFLASH(src, dest, Len);
 	return dest;
 	/* USER CODE END 4 */
@@ -18858,8 +18906,11 @@ uint8_t *MEM_If_Read_HS(uint32_t src, uint8_t *dest, uint32_t Len)
 uint16_t MEM_If_GetStatus_HS(uint32_t Add, uint8_t Cmd, uint8_t *buffer)
 {
 	/* USER CODE BEGIN 11 */
-	const unsigned FLASH_PROGRAM_TIME = 0;//50;
-	const unsigned FLASH_ERASE_TIME = 0;//50;
+	spitarget_t target = targetdataflash;	/* addressing to chip */
+	uint_fast8_t st = dataflash_read_status(target);
+
+	const unsigned FLASH_PROGRAM_TIME = st & 0x01 ? 5 : 0;
+	const unsigned FLASH_ERASE_TIME = st & 0x01 ? 1000 : 0;
 	switch(Cmd)
 	{
 	case DFU_MEDIA_PROGRAM:
