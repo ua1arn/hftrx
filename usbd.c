@@ -293,6 +293,14 @@ static void USBD_poke_u32(uint8_t * buff, uint_fast32_t v)
 	buff [3] = HI_32BY(v);
 }
 
+/* записать в буфер для ответа 24-бит значение */
+static void USBD_poke_u24(uint8_t * buff, uint_fast32_t v)
+{
+	buff [0] = LO_BYTE(v);
+	buff [1] = HI_BYTE(v);
+	buff [2] = HI_24BY(v);
+}
+
 #if WITHUSBUAC
 
 static uint_fast16_t usbd_getuacinmaxpacket(void)
@@ -1878,7 +1886,8 @@ static void usbdFunctionReq_seq4(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef 
 			switch (req->bRequest)
 			{
 			case DFU_DNLOAD:
-				DFU_Download(pdev, req);
+				//TP();
+				DFU_Download(pdev, req);	// used then upload/download command issued
 				break;
 
 			case DFU_UPLOAD:
@@ -1887,7 +1896,8 @@ static void usbdFunctionReq_seq4(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef 
 				break;
 
 			case DFU_GETSTATUS:
-				DFU_GetStatus(pdev);
+				TP();
+				DFU_GetStatus(pdev);// never called
 				break;
 
 			case DFU_CLRSTATUS:
@@ -1895,6 +1905,7 @@ static void usbdFunctionReq_seq4(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef 
 				break;      
 
 			case DFU_GETSTATE:
+				TP();
 				DFU_GetState(pdev);
 				break;  
 
@@ -1904,6 +1915,7 @@ static void usbdFunctionReq_seq4(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef 
 				break;
 
 			case DFU_DETACH:
+				TP();
 				DFU_Detach(pdev, req);
 				break;
 			default:
@@ -2391,6 +2403,7 @@ static void usbdFunctionReq_seq1(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef 
 			switch (req->bRequest)
 			{
 			case DFU_DNLOAD:
+				TP();
 				DFU_Download(pdev, req);
 				break;
 
@@ -2400,14 +2413,17 @@ static void usbdFunctionReq_seq1(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef 
 				break;
 
 			case DFU_GETSTATUS:
-				DFU_GetStatus(pdev);
+				//TP();
+				DFU_GetStatus(pdev);		// here used when upload (device -> computer)
 				break;
 
 			case DFU_CLRSTATUS:
+				TP();
 				DFU_ClearStatus(pdev);
 				break;      
 
 			case DFU_GETSTATE:
+				TP();
 				DFU_GetState(pdev);
 				break;  
 
@@ -2417,6 +2433,7 @@ static void usbdFunctionReq_seq1(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef 
 				break;
 
 			case DFU_DETACH:
+				TP();
 				DFU_Detach(pdev, req);
 				break;
 			default:
@@ -2564,11 +2581,13 @@ static void usbdFunctionReq_seq5(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef 
 		break;
 #endif /* WITHUSBCDCEEM */
 #if WITHUSBDFU
+	// похоже сюда только Abort требуется
 	case INTERFACE_DFU_CONTROL:	// DFU
 		{
 			switch (req->bRequest)
 			{
 			case DFU_DNLOAD:
+				TP();
 				DFU_Download(pdev, req);
 				break;
 
@@ -2578,23 +2597,27 @@ static void usbdFunctionReq_seq5(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef 
 				break;
 
 			case DFU_GETSTATUS:
-				DFU_GetStatus(pdev);
+				TP();
+				DFU_GetStatus(pdev);// never called
 				break;
 
 			case DFU_CLRSTATUS:
+				TP();
 				DFU_ClearStatus(pdev);
 				break;      
 
 			case DFU_GETSTATE:
+				TP();
 				DFU_GetState(pdev);
 				break;  
 
 			case DFU_ABORT:
-				TP();
+				//TP();
 				DFU_Abort(pdev);	// called
 				break;
 
 			case DFU_DETACH:
+				TP();
 				DFU_Detach(pdev, req);
 				break;
 
@@ -7672,6 +7695,7 @@ static USBD_StatusTypeDef USBD_XXX_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 			switch (req->bRequest)
 			{
 			case DFU_DNLOAD:
+				TP();
 				DFU_Download(pdev, req);
 				break;
 
@@ -7681,14 +7705,17 @@ static USBD_StatusTypeDef USBD_XXX_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 				break;
 
 			case DFU_GETSTATUS:
-				DFU_GetStatus(pdev);
+				TP();
+				DFU_GetStatus(pdev);// never called
 				break;
 
 			case DFU_CLRSTATUS:
+				TP();
 				DFU_ClearStatus(pdev);
 				break;      
 
 			case DFU_GETSTATE:
+				TP();
 				DFU_GetState(pdev);
 				break;  
 
@@ -7698,6 +7725,7 @@ static USBD_StatusTypeDef USBD_XXX_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 				break;
 
 			case DFU_DETACH:
+				TP();
 				DFU_Detach(pdev, req);
 				break;
 
@@ -18487,12 +18515,12 @@ void spidf_to_write(spitarget_t target)
 
 void spidf_progval8_p1(spitarget_t target, uint_fast8_t sendval)
 {
-	spidf_read_byte(target, sendval);
+	spidf_write_byte(target, sendval);
 }
 
 void spidf_progval8_p2(spitarget_t target, uint_fast8_t sendval)
 {
-	spidf_read_byte(target, sendval);
+	spidf_write_byte(target, sendval);
 }
 
 uint_fast8_t spidf_complete(spitarget_t target)
@@ -18632,7 +18660,7 @@ static int prepareDATAFLASH(void)
 
 	return timed_dataflash_read_status(target);
 }
-
+#if 0
 static int writeEnableDATAFLASH(void)
 {
 	spitarget_t target = targetdataflash;	/* addressing to chip */
@@ -18654,7 +18682,7 @@ static int writeDisableDATAFLASH(void)
 
 	return 0;
 }
-
+#endif
 
 static void sectoreraseDATAFLASH(unsigned long flashoffset)
 {
@@ -18909,21 +18937,17 @@ uint16_t MEM_If_GetStatus_HS(uint32_t Add, uint8_t Cmd, uint8_t *buffer)
 	spitarget_t target = targetdataflash;	/* addressing to chip */
 	uint_fast8_t st = dataflash_read_status(target);
 
-	const unsigned FLASH_PROGRAM_TIME = st & 0x01 ? 5 : 0;
-	const unsigned FLASH_ERASE_TIME = st & 0x01 ? 1000 : 0;
+	const unsigned FLASH_PROGRAM_TIME = (st & 0x01) ? 5 : 0;
+	const unsigned FLASH_ERASE_TIME = (st & 0x01) ? 1000 : 0;
 	switch(Cmd)
 	{
 	case DFU_MEDIA_PROGRAM:
-		buffer[1] = (uint8_t)FLASH_PROGRAM_TIME;
-		buffer[2] = (uint8_t)(FLASH_PROGRAM_TIME << 8);
-		buffer[3] = 0;  
+		USBD_poke_u24(& buffer[1], FLASH_PROGRAM_TIME);
 		break;
 
 	case DFU_MEDIA_ERASE:
 	default:
-		buffer[1] = (uint8_t)FLASH_ERASE_TIME;
-		buffer[2] = (uint8_t)(FLASH_ERASE_TIME << 8);
-		buffer[3] = 0;  
+		USBD_poke_u24(& buffer[1], FLASH_ERASE_TIME);
 		break;
 	}                             
 	return  (USBD_OK);
@@ -19151,6 +19175,7 @@ static USBD_StatusTypeDef  USBD_DFU_Setup (USBD_HandleTypeDef *pdev,
       break;
       
     case DFU_GETSTATUS:
+				TP();
       DFU_GetStatus(pdev);
       break;
       
@@ -19168,6 +19193,7 @@ static USBD_StatusTypeDef  USBD_DFU_Setup (USBD_HandleTypeDef *pdev,
       break;
       
     case DFU_DETACH:
+				TP();
       DFU_Detach(pdev, req);
       break;
       
@@ -19368,7 +19394,7 @@ static void DFU_Upload(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req
       if (hdfu->wblock_num == 0)  
       {
         /* Update the state machine */
-        hdfu->dev_state = (hdfu->wlength > 3)? DFU_STATE_IDLE:DFU_STATE_UPLOAD_IDLE;        
+        hdfu->dev_state = (hdfu->wlength > 3)? DFU_STATE_IDLE : DFU_STATE_UPLOAD_IDLE;        
     
         hdfu->dev_status[1] = 0;
         hdfu->dev_status[2] = 0;
@@ -19483,6 +19509,8 @@ static void DFU_GetStatus(USBD_HandleTypeDef *pdev)
       hdfu->dev_status[2] = 0;
       hdfu->dev_status[3] = 0;
       hdfu->dev_status[4] = hdfu->dev_state;     
+		// здесь строка предотвращет зависания звука при программировании на стирании страницы	
+	  USBD_DFU_fops_HS.GetStatus(hdfu->data_ptr, DFU_MEDIA_ERASE, hdfu->dev_status);
     }
     break;
     
@@ -19491,9 +19519,7 @@ static void DFU_GetStatus(USBD_HandleTypeDef *pdev)
     {
       hdfu->dev_state = DFU_STATE_MANIFEST;
       
-      hdfu->dev_status[1] = 1;             /*bwPollTimeout = 1ms*/
-      hdfu->dev_status[2] = 0;
-      hdfu->dev_status[3] = 0;
+	  USBD_poke_u24(& hdfu->dev_status [1], 1);	/*bwPollTimeout = 1ms*/
       hdfu->dev_status[4] = hdfu->dev_state;   
     }
     else if ((hdfu->manif_state == DFU_MANIFEST_COMPLETE) &&
@@ -19505,11 +19531,15 @@ static void DFU_GetStatus(USBD_HandleTypeDef *pdev)
       hdfu->dev_status[1] = 0;
       hdfu->dev_status[2] = 0;
       hdfu->dev_status[3] = 0;
-      hdfu->dev_status[4] = hdfu->dev_state;      
+      hdfu->dev_status[4] = hdfu->dev_state;     
+	  // не меняет протестиованного повдения
+	//USBD_DFU_fops_HS.GetStatus(hdfu->data_ptr, DFU_MEDIA_ERASE, hdfu->dev_status);
     }
     break;
     
   default :
+	  TP();
+	USBD_DFU_fops_HS.GetStatus(hdfu->data_ptr, DFU_MEDIA_ERASE, hdfu->dev_status);
     break;
   }
   
