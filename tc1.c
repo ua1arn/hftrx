@@ -3012,7 +3012,7 @@ static uint_fast8_t displayfreqsfps = DISPLAY_FPS;
 static uint_fast8_t displaybarsfps = DISPLAYSWR_FPS;
 #if WITHSPECTRUMWF
 	static uint_fast8_t gnofill;
-	static uint_fast8_t gfulldb = 80;	/* диапазон отображаемых значений */
+	static uint_fast8_t gfulldb = 120;	/* диапазон отображаемых значений */
 	static uint_fast8_t gzoomxpow;
 #endif /* WITHSPECTRUMWF */
 #if WITHLCDBACKLIGHT
@@ -5536,7 +5536,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		"FULL DB  ", 
 		0,		// rj
 		ISTEP1,		/* spectrum range */
-		40, 120, 
+		40, 160, 
 		offsetof(struct nvmap, gfulldb),	/* диапазон отображаемых значений */
 		NULL,
 		& gfulldb,
@@ -11966,7 +11966,7 @@ static const FLASHMEM struct menudef menutable [] =
 	{
 		"FULL DB ", 7, 0, 0,	ISTEP1,	
 		ITEM_VALUE,
-		40, 120,							/* диапазон отображаемых значений */
+		40, 160,							/* диапазон отображаемых значений */
 		offsetof(struct nvmap, gfulldb),
 		NULL,
 		& gfulldb,

@@ -4895,8 +4895,9 @@ void dsp_getspectrumrow(
 	// копирование в буфер истории отображения
 	for (i = 0; i < FFTSizeSpectrum; ++ i)
 	{
+		static const FLOAT_t coeff = (FLOAT_t) 1 / (int32_t) (FFTSizeSpectrum / 2);
 		const int x = mapfft2raster(i, dx);
-		const FLOAT_t v = getmag2(& sig [i * 2]);
+		const FLOAT_t v = getmag2(& sig [i * 2]) * coeff;
 		FLOAT_t * const p1 = & hbase [x];
 		* p1 = FMAXF(* p1, v);
 	}
