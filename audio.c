@@ -4769,7 +4769,7 @@ static uint_fast16_t fft_head = 0;
 void saveIQRTSxx(FLOAT_t iv, FLOAT_t qv)
 {
 #if 0
-	FLOAT32P_t v = scalepair(get_float_monofreq(), 0x3fffff);	// frequency
+	const FLOAT32P_t v = scalepair(get_float_monofreq(), rxlevelfence);	// frequency
 	iv = v.IV;
 	qv = v.QV;
 #endif
@@ -4781,8 +4781,8 @@ void saveIQRTSxx(FLOAT_t iv, FLOAT_t qv)
 		// fft_head -  Начало обрабатываемой части буфера
 		// fft_head + NTap256 -  Позиция за концом обрабатываемого буфер
 		fft_head = (fft_head == 0) ? (NTap256 - 1) : (fft_head - 1);
-		x256 [fft_head * 2 + 0] = x256 [(fft_head + NTap256) * 2 + 0] = iv;
-		x256 [fft_head * 2 + 1] = x256 [(fft_head + NTap256) * 2 + 1] = qv;
+		x256 [fft_head * 2 + 0] = x256 [(fft_head + NTap256) * 2 + 0] = qv;
+		x256 [fft_head * 2 + 1] = x256 [(fft_head + NTap256) * 2 + 1] = iv;
 
 	}
 	else
@@ -4901,22 +4901,22 @@ void dsp_getspectrumrow(
 	uint_fast8_t zoom	// horisontal magnification
 	)
 {
+	static const FLOAT_t fftcoeff = (FLOAT_t) 1 / (int32_t) (FFTSizeSpectrum / 2);
 	uint_fast16_t i;
 	uint_fast16_t x;
 	rendering = 1;
 	float32_t * const sig = & x256 [fft_head * 2];	// первый элемент массива комплексных чисел
 	adjustwmwp(sig);
 	/* Process the data through the CFFT/CIFFT module */
-	arm_cfft_f32(FFTCONFIGSpectrum, sig, !0, 1);	// inverse transform
+	arm_cfft_f32(FFTCONFIGSpectrum, sig, 0, 1);	// forward transform
 
 
 #if 1
 
 	for (x = 0; x < dx; ++ x)
 	{
-		static const FLOAT_t coeff = (FLOAT_t) 1 / (int32_t) (FFTSizeSpectrum / 2);
 		int fftpos = raster2fft(x, dx, zoom);
-		hbase [x] = getmag2(& sig [fftpos * 2]);// * coeff;
+		hbase [x] = getmag2(& sig [fftpos * 2]) * fftcoeff;
 	}
 
 #else
@@ -4931,9 +4931,8 @@ void dsp_getspectrumrow(
 	// копирование в буфер истории отображения
 	for (i = 0; i < FFTSizeSpectrum; ++ i)
 	{
-		static const FLOAT_t coeff = (FLOAT_t) 1 / (int32_t) (FFTSizeSpectrum / 2);
 		const int x = mapfft2raster(i, dx, zoom);
-		const FLOAT_t v = getmag2(& sig [i * 2]);// * coeff;
+		const FLOAT_t v = getmag2(& sig [i * 2]) * fftcoeff;
 		FLOAT_t * const p1 = & hbase [x];
 		* p1 = FMAXF(* p1, v);
 	}
@@ -5011,7 +5010,7 @@ saverts96(const uint32_t * buff)
 	// если используется конвертор на Rafael Micro R820T - требуется инверсия спектра
 	if (glob_swaprts != 0)
 	{
-		saveIQRTSxx(
+			saveIQRTSxx(
 			(int32_t) buff [DMABUF32RTS0Q],	// previous
 			(int32_t) buff [DMABUF32RTS0I]
 			);	
