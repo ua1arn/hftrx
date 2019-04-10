@@ -806,6 +806,25 @@ static void CMEMSGF(int erno, FLOAT_t * datap)
 	* datap = 0;
 }
 
+
+// tnx UA3REO
+FLOAT_t local_log10(FLOAT_t x)
+{
+	FLOAT_t Y, F;
+	int e;
+
+	F = FREXPF(FABSF(x), & e);
+	Y = (FLOAT_t) 1.23149591368684;
+	Y *= F;
+	Y += (FLOAT_t) -4.11852516267426;
+	Y *= F;
+	Y += (FLOAT_t) 6.02197014179219;
+	Y *= F;
+	Y += (FLOAT_t) -3.13396450166353;
+	Y += e;
+	return (Y * (FLOAT_t) 0.3010299956639812);
+}
+
 FLOAT_t local_log(FLOAT_t x)
 {
 	static const FLOAT_t C1 = ((FLOAT_t) 0.693359375);		/* C1 + C2 should represent log 2 to	*/
@@ -1020,6 +1039,7 @@ FLOAT_t local_exp(FLOAT_t x)
 }
 
 #endif
+
 
 //////////////////////////////////////////
 

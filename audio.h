@@ -245,7 +245,7 @@
 		typedef double FLOAT_t;
 
 		#define FLOORF	floor
-		#define LOG10F	log10
+		#define LOG10F	local_log10 //log10
 		//#define LOGF	log
 		//#define POWF	pow
 		//#define LOG2F	log2
@@ -275,7 +275,7 @@
 		typedef float FLOAT_t;
 
 		#define FLOORF	floorf
-		#define LOG10F	log10f
+		#define LOG10F	local_log10 //log10f
 		//#define LOGF	logf
 		//#define POWF	powf
 		//#define LOG2F	log2f
@@ -314,6 +314,7 @@
 FLOAT_t local_exp(FLOAT_t x);
 FLOAT_t local_pow(FLOAT_t x, FLOAT_t y);
 FLOAT_t local_log(FLOAT_t x);
+FLOAT_t local_log10(FLOAT_t X);
 	
 struct Complex
 {
