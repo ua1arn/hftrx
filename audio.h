@@ -499,7 +499,7 @@ void dsp_initialize(void);
 	// Нормирование уровня сигнала к шкале
 	// возвращает значения от 0 до ymax включительно
 	// 0 - минимальный сигнал, ymax - максимальный
-	int dsp_mag2y(FLOAT_t mag, int ymax, int_fast16_t range);	
+	int dsp_mag2y(FLOAT_t mag, int ymax, int_fast16_t topdb, int_fast16_t fulldb);	
 
 	void saveIQRTSxx(FLOAT_t iv, FLOAT_t qv);	// формирование отображения спектра
 

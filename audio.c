@@ -4790,11 +4790,6 @@ void saveIQRTSxx(FLOAT_t iv, FLOAT_t qv)
 	}
 }
 
-//static uint_fast8_t	glob_waterfalrange = 64;
-//static const FLOAT_t waterfalrange = 64;
-//static FLOAT_t toplogdb; // = LOG10F((FLOAT_t) INT32_MAX / waterfalrange); 
-static FLOAT_t wflrange = INT32_MAX;	// depend on fpga output resolution
-//static uint_fast32_t wndcks;
 #if 0
 
 #include "wnd256.h"
@@ -4881,17 +4876,21 @@ static int mapfft2raster(
 // Ќормирование уровн€ сигнала к шкале
 // возвращает значени€ от 0 до ymax включительно
 // 0 - минимальный сигнал, ymax - максимальный
-int dsp_mag2y(FLOAT_t mag, int ymax, int_fast16_t range)
+int dsp_mag2y(
+	FLOAT_t mag, 
+	int ymax, 
+	int_fast16_t topdb,		/* сколько не показывать сверху */
+	int_fast16_t fulldb		/* высота спектроанализатора */
+	)
 {
-	const FLOAT_t r = ratio2db(mag / wflrange);
+	const FLOAT_t r = ratio2db(mag / rxlevelfence);
+	const int y = ymax - (int) ((r + topdb) * ymax / - fulldb);
 
-	int val = ymax - (int) (r * ymax / - range);
-
-	if (val > ymax) 
-		val = ymax;
-	else if (val < 0) 
-		val = 0;
-	return val;
+	if (y > ymax) 
+		return ymax;
+	if (y < 0) 
+		return 0;
+	return y;
 }
 
 //  опрование информации о спектре с текущую строку буфера 
@@ -4969,7 +4968,7 @@ void dsp_getspectrumrow(
 // Ќормирование уровн€ сигнала к шкале
 // возвращает значени€ от 0 до dy включительно
 // 0 - минимальный сигнал, ymax - максимальный
-int dsp_mag2y(FLOAT_t mag, int ymax, int_fast16_t range)
+int dsp_mag2y(FLOAT_t mag, int ymax, int_fast16_t topdb, int_fast16_t fulldb)
 {
 	return 0;
 }

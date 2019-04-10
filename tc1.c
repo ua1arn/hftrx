@@ -2393,7 +2393,8 @@ struct nvmap
 	uint8_t displayfreqsfps;		/* скорость обновления индикатора частоты */
 	uint8_t displaybarsfps;	/* скорость обновления S-метра */
 #if WITHSPECTRUMWF
-	uint8_t gnofill;
+	uint8_t gfillspect;
+	uint8_t gtopdb;
 	uint8_t gfulldb;	/* диапазон отображаемых значений */
 	uint8_t gzoomxpow;
 #endif /* WITHSPECTRUMWF */
@@ -3011,7 +3012,8 @@ static const uint_fast8_t displaymodesfps = DISPLAYMODES_FPS;
 static uint_fast8_t displayfreqsfps = DISPLAY_FPS;
 static uint_fast8_t displaybarsfps = DISPLAYSWR_FPS;
 #if WITHSPECTRUMWF
-	static uint_fast8_t gnofill;
+	static uint_fast8_t gfillspect = 1;
+	static uint_fast8_t gtopdb;			/* сколько не показывать сверху */
 	static uint_fast8_t gfulldb = 120;	/* диапазон отображаемых значений */
 	static uint_fast8_t gzoomxpow;
 #endif /* WITHSPECTRUMWF */
@@ -7674,8 +7676,9 @@ updateboard(
 		board_set_cwedgetime(gcwedgetime);	/* Время нарастания/спада огибающей телеграфа при передаче - в 1 мс */
 		board_set_sidetonelevel(gsidetonelevel);	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
 		#if WITHSPECTRUMWF
-			board_set_nofill(gnofill);	/* не заливать заполнением площадь под графиком спектра */
-			board_set_botdb(- gfulldb);
+			board_set_fillspect(gfillspect);	/* заливать заполнением площадь под графиком спектра */
+			board_set_topdb(gtopdb);		/* сколько не показывать сверху */
+			board_set_fulldb(gfulldb);		/* высота спектроанализатора */
 			board_set_zoomx(1u << gzoomxpow);	/* уменьшение отображаемого участка спектра */
 		#endif /* WITHSPECTRUMWF */
 	#endif /* WITHIF4DSP */
@@ -11955,12 +11958,21 @@ static const FLASHMEM struct menudef menutable [] =
 #endif /* WITHBARS */
 #if WITHSPECTRUMWF
 	{
-		"NO FILL ", 7, 0, RJ_ON,	ISTEP1,	
+		"FILL SPE", 7, 0, RJ_YES,	ISTEP1,	
 		ITEM_VALUE,
 		0, 1,							/* отказ от заполнения */
-		offsetof(struct nvmap, gnofill),
+		offsetof(struct nvmap, gfillspect),
 		NULL,
-		& gnofill,
+		& gfillspect,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	{
+		"TOP DB  ", 7, 0, 0,	ISTEP1,	
+		ITEM_VALUE,
+		0, 80,							/* сколько не показывать сверху */
+		offsetof(struct nvmap, gtopdb),
+		NULL,
+		& gtopdb,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
