@@ -5545,6 +5545,17 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		getzerobase, /* складывается со смещением и отображается */
 		enc2menu_adjust,	/* функция для изменения значения параметра */
 	},
+	{
+		"ZOOM PAN ", 
+		RJ_POW2,		// rj
+		ISTEP1,		/* spectrum range */
+		0, 3, 
+		offsetof(struct nvmap, gzoomxpow),	/* диапазон отображаемых значений */
+		NULL,
+		& gzoomxpow,
+		getzerobase, /* складывается со смещением и отображается */
+		enc2menu_adjust,	/* функция для изменения значения параметра */
+	},
 #endif /* WITHSPECTRUMWF */
 #endif /* WITHIF4DSP */
 };
@@ -5598,6 +5609,9 @@ enc2menu_value(
 		break;
 	case RJ_ON:
 		local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("%*s"), WDTH, value ? "ON" : "OFF");
+		break;
+	case RJ_POW2:
+		local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("%*u"), WDTH, 1U << value);
 		break;
 	default:
 		local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("%*u"), WDTH, value);
@@ -11985,7 +11999,7 @@ static const FLASHMEM struct menudef menutable [] =
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"ZOOM SPE", 7, 0, RJ_POW2,	ISTEP1,	
+		"ZOOM PAN", 7, 0, RJ_POW2,	ISTEP1,	
 		ITEM_VALUE,
 		0, 3,							/* уменьшение отображаемого участка спектра */
 		offsetof(struct nvmap, gzoomxpow),
