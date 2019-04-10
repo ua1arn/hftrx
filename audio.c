@@ -4735,7 +4735,6 @@ static RAMFUNC uint_fast8_t isneedmute(uint_fast8_t dspmode)
 enum { NTap256 = FFTSizeSpectrum };
 
 static volatile uint_fast8_t rendering;
-//static volatile unsigned long nrcount, nrerrors, nrerrinc;
 /*
 uint_fast8_t hamradio_get_notchvalueXXX(int_fast32_t * p)
 {
@@ -4756,33 +4755,25 @@ void saveIQRTSxx(FLOAT_t iv, FLOAT_t qv)
 #endif
 	if (rendering == 0)
 	{
-		//if (NTap256 > nrcount)
-		//	++ nrcount;
-
 		//const struct Complex NewSample = { iv, qv };
 
 		// shift the old samples
 		// fft_head -  Начало обрабатываемой части буфера
 		// fft_head + NTap256 -  Позиция за концом обрабатываемого буфер
 		fft_head = (fft_head == 0) ? (NTap256 - 1) : (fft_head - 1);
-		x256 [fft_head * 2 + 0] = x256 [(fft_head + NTap256) * 2 + 0] = qv;
-		x256 [fft_head * 2 + 1] = x256 [(fft_head + NTap256) * 2 + 1] = iv;
+		x256 [fft_head * 2 + 0] = x256 [(fft_head + NTap256) * 2 + 0] = iv;
+		x256 [fft_head * 2 + 1] = x256 [(fft_head + NTap256) * 2 + 1] = qv;
 
 	}
 	else
 	{
-		//if (NTap256 > nrcount && nrerrinc == 0)
-		//{
-		//	++ nrerrors;
-		//	nrerrinc = 1;
-		//}
 	}
 }
 
 //static uint_fast8_t	glob_waterfalrange = 64;
 //static const FLOAT_t waterfalrange = 64;
 //static FLOAT_t toplogdb; // = LOG10F((FLOAT_t) INT32_MAX / waterfalrange); 
-static FLOAT_t wfltange = INT32_MAX;	// depend on fpga output resolution
+static FLOAT_t wflrange = INT32_MAX;	// depend on fpga output resolution
 //static uint_fast32_t wndcks;
 #if 0
 
@@ -4839,14 +4830,29 @@ static FLOAT_t getmag2(const float32_t * sig)
 	return mag;
 }
 
+static int raster2fft(
+	int x,	// window pos
+	int dx,	// width
+	int zoom	/* horisontal magnification */
+	)
+{
+	const int xm = dx / 2;	// middle
+	const int delta = x - xm;	// delta in pixels
+	const int fftoffset = delta * ((int) FFTSizeSpectrum / 2 - 1) / (xm * zoom);
+	return fftoffset < 0 ? (FFTSizeSpectrum + fftoffset) : fftoffset;
+	
+}
+
 // преобразование индекса массива FFT
 // в горизонтальную координату окна отображения спектра
 static int mapfft2raster(
-	int i,	/* FFT buffer index */
-	int dx	/* Raster width */
+	int i,		/* FFT buffer index */
+	int dx,		/* Raster width */
+	int zoom	/* horisontal magnification */
 	)
 {
-	const int xx = (i * (dx - 1)) / ((int) FFTSizeSpectrum - 1);	// отображение большего диапазона индексов в меньший
+	//int dxz = dx / zoom;
+	const int xx = (i * (dx - 1)) / ((int) FFTSizeSpectrum - 1);
 	const int x = (xx + dx / 2) % dx;	// перемещение центральной частоты
 	ASSERT(x < dx && x >= 0);
 	return x;
@@ -4857,7 +4863,7 @@ static int mapfft2raster(
 // 0 - минимальный сигнал, ymax - максимальный
 int dsp_mag2y(FLOAT_t mag, int ymax, int_fast16_t range)
 {
-	const FLOAT_t r = ratio2db(mag / wfltange);
+	const FLOAT_t r = ratio2db(mag / wflrange);
 
 	int val = ymax - (int) (r * ymax / - range);
 
@@ -4872,20 +4878,34 @@ int dsp_mag2y(FLOAT_t mag, int ymax, int_fast16_t range)
 // wfarray (преобразование к пикселям растра */
 void dsp_getspectrumrow(
 	FLOAT_t * const hbase,
-	uint_fast16_t dx	// pixel X width of display window
+	uint_fast16_t dx,	// pixel X width of display window
+	uint_fast8_t zoom	// horisontal magnification
 	)
 {
 	uint_fast16_t i;
+	uint_fast16_t x;
 	rendering = 1;
 	float32_t * const sig = & x256 [fft_head * 2];	// первый элемент массива комплексных чисел
-	adjustwmwp(sig); // TODO: пока закомментировано - разобраться с артефактами на спектре
+	adjustwmwp(sig);
 	/* Process the data through the CFFT/CIFFT module */
-	arm_cfft_f32(FFTCONFIGSpectrum, sig, 0, 1);	// forward transform
+	arm_cfft_f32(FFTCONFIGSpectrum, sig, !0, 1);	// inverse transform
+
+
+#if 1
+
+	for (x = 0; x < dx; ++ x)
+	{
+		static const FLOAT_t coeff = (FLOAT_t) 1 / (int32_t) (FFTSizeSpectrum / 2);
+		int fftpos = raster2fft(x, dx, zoom);
+		hbase [x] = getmag2(& sig [fftpos * 2]);// * coeff;
+	}
+
+#else
 
 	// очистка строки буфера истории отображения
-	for (i = 0; i < dx; ++ i)
+	for (x = 0; x < dx; ++ x)
 	{
-		FLOAT_t * const p1 = & hbase [i];
+		FLOAT_t * const p1 = & hbase [x];
 		* p1 = 0;
 	}
 
@@ -4893,13 +4913,12 @@ void dsp_getspectrumrow(
 	for (i = 0; i < FFTSizeSpectrum; ++ i)
 	{
 		static const FLOAT_t coeff = (FLOAT_t) 1 / (int32_t) (FFTSizeSpectrum / 2);
-		const int x = mapfft2raster(i, dx);
-		const FLOAT_t v = getmag2(& sig [i * 2]) * coeff;
+		const int x = mapfft2raster(i, dx, zoom);
+		const FLOAT_t v = getmag2(& sig [i * 2]);// * coeff;
 		FLOAT_t * const p1 = & hbase [x];
 		* p1 = FMAXF(* p1, v);
 	}
-	//nrcount = 0;
-	//nrerrinc = 0;
+#endif
 	rendering = 0;
 
 }
@@ -4916,7 +4935,8 @@ dsp_rasterinitialize(void)
 
 void dsp_getspectrumrow(
 	FLOAT_t * const hbase,
-	uint_fast16_t dx	// pixel X width of display window
+	uint_fast16_t dx,	// pixel X width of display window
+	uint_fast8_t zoom	// horisontal magnification
 	)
 {
 	uint_fast16_t x;

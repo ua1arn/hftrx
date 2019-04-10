@@ -4898,7 +4898,7 @@ static void dsp_latchwaterfall(
 
 
 	// запоминание информации спектра дл€ спектрограммы
-	dsp_getspectrumrow(spavgarray, ALLDX);
+	dsp_getspectrumrow(spavgarray, ALLDX, glob_zoomx);
 
 #if (! LCDMODE_S1D13781_NHWACCEL && LCDMODE_S1D13781)
 #else
@@ -5007,7 +5007,7 @@ static void display2_spectrum(
 
 	if (hamradio_get_tx() == 0)
 	{
-		const int_fast32_t bw = dsp_get_samplerateuacin_rts();
+		const int_fast32_t bw = dsp_get_samplerateuacin_rts() / glob_zoomx;
 		uint_fast16_t xleft = deltafreq2x(hamradio_getleft_bp(0), bw, ALLDX);	// левый край шторуи
 		uint_fast16_t xright = deltafreq2x(hamradio_getright_bp(0), bw, ALLDX);	// правый край шторки
 
@@ -5028,7 +5028,7 @@ static void display2_spectrum(
 			// отображение спектра
 			for (x = 0; x < ALLDX; ++ x)
 			{
-				uint_fast16_t ynew = SPDY - dsp_mag2y(filter_spectrum(x), SPDY - 1, glob_topdb - glob_botdb);
+				uint_fast16_t ynew = SPDY - 1 - dsp_mag2y(filter_spectrum(x), SPDY - 1, glob_topdb - glob_botdb);
 				if (x != 0)
 					display_pixelbuffer_line_xor(spectrmonoscr, ALLDX, SPDY, x - 1, ylast, x, ynew);
 				ylast = ynew;
@@ -5060,7 +5060,7 @@ static void display2_spectrum(
 				}
 				// ‘ормирование графика
 				// логарифм - в вертикальную координату
-				const int yv = SPDY - dsp_mag2y(filter_spectrum(x), SPDY - 1, glob_topdb - glob_botdb);	//отображаемый уровень, yv = 0..SPDY
+				const int yv = SPDY - 1 - dsp_mag2y(filter_spectrum(x), SPDY - 1, glob_topdb - glob_botdb);	//отображаемый уровень, yv = 0..SPDY
 				if (glob_nofill != 0)
 				{
 					if (yv < SPDY)
@@ -5089,7 +5089,7 @@ static void display2_spectrum(
 	// построени€ изображени€ по bitmap с раскрашиванием
 	if (hamradio_get_tx() == 0)
 	{
-		const int_fast32_t bw = dsp_get_samplerateuacin_rts();
+		const int_fast32_t bw = dsp_get_samplerateuacin_rts() / glob_zoomx;
 		uint_fast16_t xleft = deltafreq2x(hamradio_getleft_bp(0), bw, ALLDX);	// левый край шторуи
 		uint_fast16_t xright = deltafreq2x(hamradio_getright_bp(0), bw, ALLDX);	// правый край шторки
 
@@ -5108,7 +5108,7 @@ static void display2_spectrum(
 				// формирование фона растра
 				display_colorbuffer_set_vline(colorpip, ALLDX, ALLDY, x, SPY0, SPDY, inband ? COLOR565_SPECTRUMBG2 : COLOR565_SPECTRUMBG);
 
-				uint_fast16_t ynew = SPDY - dsp_mag2y(filter_spectrum(x), SPDY - 1, glob_topdb - glob_botdb);
+				uint_fast16_t ynew = SPDY - 1 - dsp_mag2y(filter_spectrum(x), SPDY - 1, glob_topdb - glob_botdb);
 				if (x != 0)
 					display_colorbuffer_line_set(colorpip, ALLDX, ALLDY, x - 1, ylast, x, ynew, COLOR565_SPECTRUMLINE);
 				ylast = ynew;
@@ -5124,9 +5124,8 @@ static void display2_spectrum(
 			{
 				const uint_fast8_t inband = (x >= xleft && x <= xright);	// в полосе пропускани€ приемника = "шторка"
 				// логарифм - в вертикальную координату
-				const int val = dsp_mag2y(filter_spectrum(x), SPDY - 1, glob_topdb - glob_botdb);	// возвращает значени€ от 0 до SPDY включительно
+				const int yv = SPDY - 1 - dsp_mag2y(filter_spectrum(x), SPDY - 1, glob_topdb - glob_botdb);	// возвращает значени€ от 0 до SPDY включительно
 				// ‘ормирование графика
-				const int yv = SPDY - val;	// отображаемый уровень, yv = 0..SPDY
 
 				// формирование фона растра - верхн€€ часть графика
 				display_colorbuffer_set_vline(colorpip, ALLDX, ALLDY, x, SPY0, yv, inband ? COLOR565_SPECTRUMBG2 : COLOR565_SPECTRUMBG);
@@ -5232,7 +5231,7 @@ static void display2_waterfall(
 #if (! LCDMODE_S1D13781_NHWACCEL && LCDMODE_S1D13781)
 
 		const uint_fast32_t freq = hamradio_get_freq_a();	/* frequecy at midle of spectrum */
-		const int_fast32_t bw = dsp_get_samplerateuacin_rts();
+		const int_fast32_t bw = dsp_get_samplerateuacin_rts() / glob_zoomx;
 		uint_fast16_t x, y;
 		const uint_fast16_t xm = deltafreq2x(0, bw, ALLDX);
 		int_fast16_t hshift = 0;
@@ -5282,7 +5281,7 @@ static void display2_waterfall(
 	{
 		PACKEDCOLOR565_T * const colorpip = getscratchpip();
 		const uint_fast32_t freq = hamradio_get_freq_a();	/* frequecy at midle of spectrum */
-		const int_fast32_t bw = dsp_get_samplerateuacin_rts();
+		const int_fast32_t bw = dsp_get_samplerateuacin_rts() / glob_zoomx;
 		uint_fast16_t x, y;
 		const uint_fast16_t xm = deltafreq2x(0, bw, ALLDX);
 
