@@ -5457,7 +5457,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		enc2menu_adjust,	/* функция для изменения значения параметра */
 	},
 #endif /* WITHPOWERTRIM */
-#if WITHNOTCHFREQ
+#if WITHNOTCHFREQ && ! WITHPOTNOTCH
 	{
 		"NOTCH FRQ",
 		0,		// rj
@@ -5469,7 +5469,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		getzerobase, /* складывается со смещением и отображается */
 		enc2menu_adjust,	/* функция для изменения значения параметра */
 	},
-#endif /* WITHNOTCHFREQ */
+#endif /* WITHNOTCHFREQ && ! WITHPOTNOTCH */
 #if WITHSUBTONES
 	{
 		"CTCSS FRQ", 
