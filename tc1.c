@@ -11985,7 +11985,7 @@ static const FLASHMEM struct menudef menutable [] =
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"SCALE X ", 7, 0, RJ_POW2,	ISTEP1,	
+		"ZOOM SPE", 7, 0, RJ_POW2,	ISTEP1,	
 		ITEM_VALUE,
 		0, 3,							/* уменьшение отображаемого участка спектра */
 		offsetof(struct nvmap, gzoomxpow),

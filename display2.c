@@ -5044,6 +5044,7 @@ static void display2_spectrum(
 		else
 		{
 			uint_fast16_t x;
+			uint_fast16_t y;
 			for (y = 0; y < SPDY; ++ y)
 			{
 				display_pixelbuffer(spectrmonoscr, ALLDX, SPDY, xmarker, SPY0 + y);	// погасить точку

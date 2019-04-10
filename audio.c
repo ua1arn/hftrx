@@ -4879,8 +4879,8 @@ static int mapfft2raster(
 int dsp_mag2y(
 	FLOAT_t mag, 
 	int ymax, 
-	int_fast16_t topdb,		/* сколько не показывать сверху */
-	int_fast16_t fulldb		/* высота спектроанализатора */
+	int_fast16_t topdb,		/* сколько не показывать сверху (positive number of decibels) */
+	int_fast16_t fulldb		/* высота спектроанализатора (positive number of decibels) */
 	)
 {
 	const FLOAT_t r = ratio2db(mag / rxlevelfence);
