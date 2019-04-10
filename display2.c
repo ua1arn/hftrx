@@ -4992,7 +4992,7 @@ display_colorgrid(
 #define HHWMG ((! LCDMODE_S1D13781_NHWACCEL && LCDMODE_S1D13781) || LCDMODE_UC1608 || LCDMODE_UC1601)
 
 #if HHWMG
-static ALIGNX_BEGIN GX_t spectrmonoscr [MGSIZE(ALLDX, SPDY)] ALIGNX_END;
+static ALIGNX_BEGIN GX_t spectmonoscr [MGSIZE(ALLDX, SPDY)] ALIGNX_END;
 #endif /* HHWMG */
 // подготовка изображения спектра
 static void display2_spectrum(
@@ -5015,29 +5015,28 @@ static void display2_spectrum(
 			xright = xleft + 1;
 
 		// формирование растра
-		// маркер центральной частоты обзора
-		memset(spectrmonoscr, 0xFF, sizeof spectrmonoscr);			// рисование способом погасить точку
+		display_pixelbuffer_clear(spectmonoscr, ALLDX, SPDY);
 		// центральная частота
-		uint_fast16_t xmarker = deltafreq2x(0, bw, ALLDX);
+		const uint_fast16_t xmarker = deltafreq2x(0, bw, ALLDX);
 
 		if (glob_fillspect == 0)
 		{
 			/* рисуем спектр ломанной линией */
 			uint_fast16_t x;
-			uint_fast16_t y;
 			uint_fast16_t ylast = 0;
 			// отображение спектра
 			for (x = 0; x < ALLDX; ++ x)
 			{
 				uint_fast16_t ynew = SPDY - 1 - dsp_mag2y(filter_spectrum(x), SPDY - 1, glob_topdb, glob_fulldb);
 				if (x != 0)
-					display_pixelbuffer_line_xor(spectrmonoscr, ALLDX, SPDY, x - 1, ylast, x, ynew);
+					display_pixelbuffer_line(spectmonoscr, ALLDX, SPDY, x - 1, ylast, x, ynew);
 				ylast = ynew;
-				// формирование изображения шторки.
+				// формирование изображения шторки.(XOR)
 				if (x >= xleft && x <= xright)
 				{
+					uint_fast16_t y;
 					for (y = 0; y < SPDY; ++ y)
-						display_pixelbuffer_xor(spectrmonoscr, ALLDX, SPDY, x, SPY0 + y);	// xor точку
+						display_pixelbuffer_xor(spectmonoscr, ALLDX, SPDY, x, SPY0 + y);	// xor точку
 				}
 			}
 		}
@@ -5045,9 +5044,10 @@ static void display2_spectrum(
 		{
 			uint_fast16_t x;
 			uint_fast16_t y;
+			// маркер центральной частоты обзора
 			for (y = 0; y < SPDY; ++ y)
 			{
-				display_pixelbuffer(spectrmonoscr, ALLDX, SPDY, xmarker, SPY0 + y);	// погасить точку
+				display_pixelbuffer(spectmonoscr, ALLDX, SPDY, xmarker, SPY0 + y);	// погасить точку
 			}
 
 			// отображение спектра
@@ -5058,19 +5058,19 @@ static void display2_spectrum(
 				if (x >= xleft && x <= xright)
 				{
 					for (y = 0; y < SPDY; ++ y)
-						display_pixelbuffer_xor(spectrmonoscr, ALLDX, SPDY, x, SPY0 + y);	// xor точку
+						display_pixelbuffer_xor(spectmonoscr, ALLDX, SPDY, x, SPY0 + y);	// xor точку
 				}
 				// Формирование графика
 				// логарифм - в вертикальную координату
 				const int yv = SPDY - 1 - dsp_mag2y(filter_spectrum(x), SPDY - 1, glob_topdb, glob_fulldb);	//отображаемый уровень, yv = 0..SPDY
 				for (y = yv; y < SPDY; ++ y)
-					display_pixelbuffer_xor(spectrmonoscr, ALLDX, SPDY, x, SPY0 + y);	// xor точку
+					display_pixelbuffer_xor(spectmonoscr, ALLDX, SPDY, x, SPY0 + y);	// xor точку
 			}
 		}
 	}
 	else
 	{
-		memset(spectrmonoscr, 0xFF, sizeof spectrmonoscr);			// рисование способом погасить точку
+		display_pixelbuffer_clear(spectmonoscr, ALLDX, SPDY);
 	}
 	display_setcolors(COLOR565_SPECTRUMBG, COLOR565_SPECTRUMFG);
 
@@ -5369,7 +5369,7 @@ static void display2_colorbuff(
 #if HHWMG
 	// Спектр на монохромных дисплеях 
 	// или на цвентых,где есть возможность раскаски растровой картинки.
-	display_showbuffer(spectrmonoscr, ALLDX, SPDY, x0, y0);
+	display_showbuffer(spectmonoscr, ALLDX, SPDY, x0, y0);
 
 #else /* */
 

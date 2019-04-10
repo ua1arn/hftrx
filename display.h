@@ -646,7 +646,7 @@ void display_pixelbuffer_xor(
 	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
 	uint_fast16_t y	// вертикальная координата пикселя (0..dy-1) сверху вниз
 	);
-void display_pixelbuffer_line_xor(
+void display_pixelbuffer_line(
 	GX_t * buffer,
 	uint_fast16_t dx,	
 	uint_fast16_t dy,
@@ -654,6 +654,11 @@ void display_pixelbuffer_line_xor(
 	uint_fast16_t y0,
 	uint_fast16_t x1,	
 	uint_fast16_t y1
+	);
+void display_pixelbuffer_clear(
+	GX_t * buffer,
+	uint_fast16_t dx,	
+	uint_fast16_t dy
 	);
 
 // начальная инициализация буфера

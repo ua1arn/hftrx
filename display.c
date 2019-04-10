@@ -700,13 +700,22 @@ void display_pixelbuffer_xor(
 #endif /* LCDMODE_S1D13781 */
 }
 
+void display_pixelbuffer_clear(
+	GX_t * buffer,
+	uint_fast16_t dx,	
+	uint_fast16_t dy
+	)
+{
+	memset(buffer, 0xFF, (size_t) MGSIZE(dx, dy) * (sizeof * buffer));			// рисование способом погасить точку
+}
+
 // Routine to draw a line in the RGB565 color to the LCD.
 // The line is drawn from (xmin,ymin) to (xmax,ymax).
 // The algorithm used to draw the line is "Bresenham's line
 // algorithm". 
 #define SWAP(a, b)  do { (a) ^= (b); (b) ^= (a); (a) ^= (b); } while (0)
 // Ќарисовать линию указанным цветом
-void display_pixelbuffer_line_xor(
+void display_pixelbuffer_line(
 	GX_t * buffer,
 	uint_fast16_t dx,	
 	uint_fast16_t dy,
@@ -756,7 +765,7 @@ void display_pixelbuffer_line_xor(
        }
        // plot
        //LCD_PlotPoint(xDraw, yDraw, color);
-	   display_pixelbuffer_xor(buffer, dx, dy, xDraw, yDraw);
+	   display_pixelbuffer(buffer, dx, dy, xDraw, yDraw);
        // next
        if (E > 0) {
            E += TwoDyTwoDx; //E += 2*Dy - 2*Dx;
