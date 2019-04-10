@@ -606,20 +606,24 @@
 		} while (0)
 
 	#define	HARDWARE_BL_INITIALIZE() do { \
-		const portholder_t enmask = (1U << 9); /* P7_9 */ \
-		const portholder_t opins = (1U << 3) | (1U << 2); /* P7_3:P7_2 */ \
-		const portholder_t initialstate = (~ (3) & 0x03) << 2; \
-		arm_hardware_pio7_outputs(opins, 0); /* BL ADJ */ \
-		arm_hardware_pio7_outputs(enmask, 1 ? enmask : 0);	/* BL ENABLE */ \
+		const portholder_t enpins = (1U << 9); /* P7_9 */ \
+		const portholder_t blpins = (1U << 3) | (1U << 2); /* P7_3:P7_2 */ \
+		const portholder_t blstate = (~ (3) & 0x03) << 2; \
+		arm_hardware_pio7_inputs(blpins & blstate); /* BL ADJ - open (open drain simulate) */ \
+		arm_hardware_pio7_outputs(blpins & ~ blstate, 0); /* BL ADJ - grounded (open drain simulate) */ \
+		arm_hardware_pio7_outputs(enpins, 1 ? enpins : 0);	/* BL ENABLE */ \
 		} while (0)
 	/* установка €ркости и включение/выключение преобразовател€ подсветки */
+	/* level: 0..3 */
 	#define HARDWARE_BL_SET(en, level) do { \
-		const portholder_t enmask = (1U << 9); /* P7_9 */ \
-		const portholder_t opins = (1U << 3) | (1U << 2); /* P7_3:P7_2 */ \
-		const portholder_t initialstate = (~ (level) & 0x03) << 2; \
-		arm_hardware_pio7_outputs(opins, 0); /* BL ADJ */ \
-		arm_hardware_pio7_outputs(enmask, en ? enmask : 0);	/* BL ENABLE */ \
+		const portholder_t enpins = (1U << 9); /* P7_9 */ \
+		const portholder_t blpins = (1U << 3) | (1U << 2); /* P7_3:P7_2 */ \
+		const portholder_t blstate = (~ (level) & 0x03) << 2; \
+		arm_hardware_pio7_inputs(blpins & blstate); /* BL ADJ - open (open drain simulate) */ \
+		arm_hardware_pio7_outputs(blpins & ~ blstate, 0); /* BL ADJ - grounded (open drain simulate) */ \
+		arm_hardware_pio7_outputs(enpins, en ? enpins : 0);	/* BL ENABLE */ \
 	} while (0)
+
 #if WITHDCDCFREQCTL
 	#define	HARDWARE_DCDC_INITIALIZE() do { \
 		hardware_blfreq_initialize(); \
@@ -679,20 +683,6 @@
 		arm_hardware_pio7_outputs(mask, (state != 0) * mask);	/* P7_0 MODE=state */ \
 	} while (0)
 #endif /* LCDMODE_LTDC */
-
-#if 0
-#if LCDMODE_LQ043T3DX02K
-	#define WITHLCDBACKLIGHT	1	// »меетс€ управление подсветкой диспле€ 
-	#define WITHLCDBACKLIGHTMIN	0	// Ќижний предел регулировки (показываетый на дисплее)
-	#define WITHLCDBACKLIGHTMAX	4	// ¬ерхний предел регулировки (показываетый на дисплее)
-	#define WITHKBDBACKLIGHT	1	// »меетс€ управление подсветкой клавиатуры 
-#else
-	#define WITHLCDBACKLIGHT	1	// »меетс€ управление подсветкой диспле€ 
-	#define WITHLCDBACKLIGHTMIN	0	// Ќижний предел регулировки (показываетый на дисплее)
-	#define WITHLCDBACKLIGHTMAX	3	// ¬ерхний предел регулировки (показываетый на дисплее)
-	#define WITHKBDBACKLIGHT	1	// »меетс€ управление подсветкой клавиатуры 
-#endif
-#endif
 
 #define HARDWARE_USB0_INITIALIZE() do { \
 		arm_hardware_pio5_outputs((1U << 2), (1U << 2));	/* P5_2 ~VBUS_ON */ \
