@@ -3,8 +3,8 @@
 /* Linker script to configure memory regions. */
 MEMORY
 {
-  FLASH (rx) : ORIGIN = 0x18000000, LENGTH = 128k
-  RAM (rwx)  : ORIGIN = 0x20000000, LENGTH = 128k
+  FLASH (rx) : ORIGIN = 0x18000000, LENGTH = 2M
+  RAM (rwx)  : ORIGIN = 0x20000000, LENGTH = 3056k
   TTB (rwx)  : ORIGIN = 0x202FC000, LENGTH = 16k
 }
 
@@ -47,7 +47,6 @@ SECTIONS
 		KEEP(*(.initfunc))
 		KEEP(*(.initdata))
 		KEEP(*(.fini))
-		*(.text*)
 	} > FLASH
 
 	.ARM.extab :
@@ -105,6 +104,8 @@ SECTIONS
 		__Vectors_End = .;
 		__Vectors_Size = __Vectors_End - __Vectors;
 		__end__ = .;
+
+		*(.text*)
 
 		/* .ctors */
 		*crtbegin.o(.ctors)

@@ -16973,6 +16973,8 @@ void bootloader_mainloop(void)
 	debug_printf_P(PSTR("Jump to application at %p\n"), (void *) APPBASE);
 	for (;;)
 		;
+	disableIRQ();
+	MMU_Disable();
 	memcpy((void *) APPAREA, (void *) APPBASE, APPSIZE);
 	//(* (void (*)(void)) APPAREA)();
 	for (;;)

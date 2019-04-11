@@ -136,9 +136,9 @@ CPFLAGS += -MD -MP -MF ./dep/$(@F).d
 # makefile rules
 #
 
-all: ROM1 ROM2
+all: BOOT
 
-ROM1: $(OBJS) $(PROJECT)_rom.elf $(PROJECT)_rom.hex
+BOOT: $(OBJS) $(PROJECT)_boot.elf $(PROJECT)_boot.hex
 ROM2: $(OBJS) $(PROJECT)_rom.elf $(PROJECT)_rom.bin
 
 %o: $(addprefix $(SRCDIR)/, %c)
@@ -149,6 +149,14 @@ ROM2: $(OBJS) $(PROJECT)_rom.elf $(PROJECT)_rom.bin
 
 %rom.elf: $(OBJS)
 	$(CC) $(OBJS) $(LDFLAGS_ROM) $(LIBS) -o $@
+	$(TRGT)size --format=sysv --radix=16 $@
+
+%boot.elf: $(OBJS)
+	$(CC) $(OBJS) $(LDFLAGS_BOOT) $(LIBS) -o $@
+	$(TRGT)size --format=sysv --radix=16 $@
+
+%app.elf: $(OBJS)
+	$(CC) $(OBJS) $(LDFLAGS_APP) $(LIBS) -o $@
 	$(TRGT)size --format=sysv --radix=16 $@
 
 %hex: %elf

@@ -18388,6 +18388,7 @@ uint_fast8_t hamradio_get_usbh_active(void)
 // P4_7: MISO
 void spidf_initialize(void)
 {
+#if ! WITHISAPPBOOTLOADER
 	// spi multi-io hang on
 	CPG.STBCR9 &= ~ CPG_STBCR9_BIT_MSTP93;	// Module Stop 93	- 0: Clock supply to channel 0 of the SPI multi I/O bus controller is runnuing.
 	(void) CPG.STBCR9;			/* Dummy read */
@@ -18429,6 +18430,7 @@ void spidf_initialize(void)
 	arm_hardware_pio4_outputs(1U << 6, 1U << 6);	/* P4_6 MOSI / SPBIO00_0 */
 	//arm_hardware_pio4_alternative(1U << 7, R7S721_PIOALT_4);	/* P4_7 MISO / SPBIO10_0 */
 	arm_hardware_pio4_inputs(1U << 7);	/* P4_7 MISO / SPBIO10_0 */
+#endif /* ! WITHISAPPBOOTLOADER */
 }
 
 #define SPIDF_MISO() ((R7S721_INPUT_PORT(4) & (1U << 7)) != 0)
@@ -18495,6 +18497,19 @@ void spidf_select(spitarget_t target, uint_fast8_t mode)
 	// Connrect I/O pins
 	arm_hardware_pio4_outputs(0x7C, 0x7C);
 #endif
+#if WITHISAPPBOOTLOADER
+	// Connrect I/O pins
+	arm_hardware_pio4_outputs(1U << 2, 1U << 2);				/* P4_2 WP / SPBIO20_0 */
+	arm_hardware_pio4_outputs(1U << 3, 1U << 3);				/* P4_3 NC / SPBIO30_0 */
+	//arm_hardware_pio4_alternative(1U << 4, R7S721_PIOALT_4);	/* P4_4 SCLK / SPBCLK_0 */
+	arm_hardware_pio4_outputs(1U << 4, 1U << 4);	/* P4_4 SCLK / SPBCLK_0 */
+	//arm_hardware_pio4_alternative(1U << 5, R7S721_PIOALT_4);	/* P4_5 CS# / SPBSSL_0 */
+	arm_hardware_pio4_outputs(1U << 5, 1 * (1U << 5));			/* P4_5 CS# / SPBSSL_0 */
+	//arm_hardware_pio4_alternative(1U << 6, R7S721_PIOALT_4);	/* P4_6 MOSI / SPBIO00_0 */
+	arm_hardware_pio4_outputs(1U << 6, 1U << 6);	/* P4_6 MOSI / SPBIO00_0 */
+	//arm_hardware_pio4_alternative(1U << 7, R7S721_PIOALT_4);	/* P4_7 MISO / SPBIO10_0 */
+	arm_hardware_pio4_inputs(1U << 7);	/* P4_7 MISO / SPBIO10_0 */
+#endif /* WITHISAPPBOOTLOADER */
 	do {	R7S721_TARGET_PORT_C(4, (1U << 5)); } while (0);
 }
 

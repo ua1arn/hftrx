@@ -9531,8 +9531,9 @@ if (0)
 
     /* Interrupt Priority Mask Register setting */
     /* Enable priorities for all interrupts */
+#if WITHNESTEDINTERRUPTS
     GIC_SetInterfacePriorityMask(gARM_BASEPRI_ALL_ENABLED);	// GICC_PMR
-
+#endif /* WITHNESTEDINTERRUPTS */
     /* Binary Point Register setting */
     /* Group priority field [7:3], Subpriority field [2:0](Do not use) */
     //INTC.ICCBPR = 0x00000002uL; // Binary Point Register, GICC_BPR, may be ARM_CA9_PRIORITYSHIFT - 1
@@ -10238,7 +10239,7 @@ void cpu_initialize(void)
 // секция init больше не нужна
 void cpu_initdone(void)
 {
-#if CPUSTYLE_R7S721 //&& ! WITHISAPPBOOTLOADER
+#if CPUSTYLE_R7S721 && ! WITHISAPPBOOTLOADER
 
 	// Когда загрузочный образ FPGA будт оставаться в SERIAL FLASH, запретить отключение.
 	while ((SPIBSC0.CMNSR & (1u << 0)) == 0)	// TEND bit
