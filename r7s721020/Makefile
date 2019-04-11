@@ -119,8 +119,9 @@ ASFLAGS = $(MCFLAGS) $(OPT) $(LTO) -g -gdwarf-2 $(ADEFS)
 #CPFLAGS = $(MCFLAGS) $(OPT) $(LTO) -gdwarf-2 -mlong-calls -fomit-frame-pointer -Wall -Wstrict-prototypes $(DEFS)
 CPFLAGS = $(MCFLAGS) $(OPT) $(LTO) -gdwarf-2 -fomit-frame-pointer -Wall -Wstrict-prototypes $(DEFS)
 
-LDFLAGS_RAM = $(MCFLAGS) $(LTO) $(OPT) -nostartfiles -T$(LDSCRIPT_RAM) -Wl,-Map=$(PROJECT)_ram.map,--cref $(LIBDIR)
 LDFLAGS_ROM = $(MCFLAGS) $(LTO) $(OPT) -nostartfiles -T$(LDSCRIPT_ROM) -Wl,-Map=$(PROJECT)_rom.map,--cref $(LIBDIR)
+LDFLAGS_BOOT = $(MCFLAGS) $(LTO) $(OPT) -nostartfiles -T$(LDSCRIPT_BOOT) -Wl,-Map=$(PROJECT)_boot.map,--cref $(LIBDIR)
+LDFLAGS_APP = $(MCFLAGS) $(LTO) $(OPT) -nostartfiles -T$(LDSCRIPT_APP) -Wl,-Map=$(PROJECT)_app.map,--cref $(LIBDIR)
 
 # Generate dependency information
 CPFLAGS += -MD -MP -MF ./dep/$(@F).d
@@ -135,10 +136,7 @@ CPFLAGS += -MD -MP -MF ./dep/$(@F).d
 # makefile rules
 #
 
-#all: RAM ROM
 all: ROM1 ROM2
-
-RAM: $(OBJS) $(PROJECT)_ram.elf $(PROJECT)_ram.hex
 
 ROM1: $(OBJS) $(PROJECT)_rom.elf $(PROJECT)_rom.hex
 ROM2: $(OBJS) $(PROJECT)_rom.elf $(PROJECT)_rom.bin
@@ -148,10 +146,6 @@ ROM2: $(OBJS) $(PROJECT)_rom.elf $(PROJECT)_rom.bin
 
 %o: $(addprefix $(SRCDIR)/, %s)
 	$(AS) -c $(ASFLAGS) $< -o $@
-
-%ram.elf: $(OBJS)
-	$(CC) $(OBJS) $(LDFLAGS_RAM) $(LIBS) -o $@
-	$(TRGT)size --format=sysv --radix=16 $@
 
 %rom.elf: $(OBJS)
 	$(CC) $(OBJS) $(LDFLAGS_ROM) $(LIBS) -o $@
