@@ -67,6 +67,8 @@ PROJECT = tc1_r7s721020
 
 # Define linker script file here
 LDSCRIPT_ROM = ./r7s721020_spi.ld
+LDSCRIPT_BOOT = ./r7s721020_boot.ld
+LDSCRIPT_APP = ./r7s721020_app.ld
 
 # List all user C define here, like -D_DEBUG=1
 # RZ/A1H: R7S721001: CPUSTYLE_R7S721001
@@ -163,12 +165,9 @@ ROM2: $(OBJS) $(PROJECT)_rom.elf $(PROJECT)_rom.bin
 
 clean:
 	-rm -f $(OBJS)
-	-rm -f $(PROJECT)_ram.elf
-	-rm -f $(PROJECT)_ram.map
-	-rm -f $(PROJECT)_ram.hex
-	-rm -f $(PROJECT)_rom.elf
-	-rm -f $(PROJECT)_rom.map
-	-rm -f $(PROJECT)_rom.hex
+	-rm -f $(PROJECT)_rom.elf $(PROJECT)_rom.map $(PROJECT)_rom.hex $(PROJECT)_rom.bin
+	-rm -f $(PROJECT)_boot.elf $(PROJECT)_boot.map $(PROJECT)_boot.hex $(PROJECT)_boot.bin
+	-rm -f $(PROJECT)_app.elf $(PROJECT)_app.map $(PROJECT)_app.hex $(PROJECT)_app.bin
 	-rm -f $(SRC:.c=.c.bak)
 	-rm -f $(SRC:.c=.lst)
 	-rm -f $(ASRC:.s=.s.bak)
