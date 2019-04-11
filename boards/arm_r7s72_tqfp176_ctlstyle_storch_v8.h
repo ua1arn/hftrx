@@ -208,7 +208,7 @@
 
 	#define ENCRES_DEFAULT ENCRES_128
 	//#define ENCRES_DEFAULT ENCRES_24
-	#define WITHDIRECTFREQENER	1 //(! CTLSTYLE_SW2011ALL && ! CTLSTYLE_UA3DKC)
+	//#define WITHDIRECTFREQENER	1 //(! CTLSTYLE_SW2011ALL && ! CTLSTYLE_UA3DKC)
 	//#define	WITHENCODER	1	/* для изменения частоты имеется енкодер */
 	//#define WITHENCODER2	1		/* есть второй валкодер */
 
@@ -233,8 +233,8 @@
 	//#define WITHFREEDV	1	/* поддержка режима FreeDV - http://freedv.org/ */ 
 	//#define WITHBEACON	1	/* Используется режим маяка */
 	//#define WITHVOX			1	/* используется VOX */
-	#define WITHSHOWSWRPWR 1	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
-	#define WITHSWRMTR	1		/* Измеритель КСВ */
+	//#define WITHSHOWSWRPWR 1	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
+	//#define WITHSWRMTR	1		/* Измеритель КСВ */
 	//#define WITHPWRMTR	1	/* Индикатор выходной мощности или */
 	//#define WITHPWRLIN	1	/* Индикатор выходной мощности показывает напряжение а не мощность */
 
