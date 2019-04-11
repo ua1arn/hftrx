@@ -245,6 +245,8 @@ static LIST_ENTRY2 modemsrx8;	// Буферы с принятымти через модем данными
 
 #endif /* WITHMODEM */
 
+#if WITHINTEGRATEDDSP
+
 typedef ALIGNX_BEGIN struct denoise16
 {
 	LIST_ENTRY item;
@@ -337,7 +339,7 @@ void savesampleout16denoise(FLOAT_t ch0, FLOAT_t ch1)
 		p = NULL;
 	}
 }
-
+#endif /* WITHINTEGRATEDDSP */
 /* Cообщения от уровня обработчиков прерываний к user-level функциям. */
 
 typedef struct message

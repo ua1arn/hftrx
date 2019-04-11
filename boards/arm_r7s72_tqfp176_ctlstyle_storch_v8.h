@@ -96,7 +96,9 @@
 	//#define WITHSPLITEX	1	/* Трехкнопочное управление режимами расстройки */
 
 	// +++ Одна из этих строк определяет тип дисплея, для которого компилируется прошивка
-#if 0
+#if WITHISAPPBOOTLOADER
+	#define LCDMODE_ILI9341	1	/* 320*240 SF-TC240T-9370-T с контроллером ILI9341 - STM32F4DISCO */
+#elif 0
 
 	#define LCDMODE_LQ043T3DX02K 1	/* LQ043T3DX02K panel (272*480) - SONY PSP-1000 display */
 
@@ -199,11 +201,82 @@
 	#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры 
 #endif
 
+#if WITHISAPPBOOTLOADER
+
+	//#define WITHRTS192	1		// Есть канал спектроанализатора - не забыть включить WITHSAI2HW
+	#define WITHRTS96		1		/* вместо выходного аудиосигнала передача квадратур по USB */
+
 	#define ENCRES_DEFAULT ENCRES_128
 	//#define ENCRES_DEFAULT ENCRES_24
 	#define WITHDIRECTFREQENER	1 //(! CTLSTYLE_SW2011ALL && ! CTLSTYLE_UA3DKC)
 	#define	WITHENCODER	1	/* для изменения частоты имеется енкодер */
 	#define WITHENCODER2	1		/* есть второй валкодер */
+
+	//#define WITHUSEDUALWATCH	1	// Второй приемник
+	//#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
+
+	// FPGA section
+	//#define	WITHFPGAWAIT_AS	1	/* FPGA загружается из собственной микросхемы загрузчика - дождаться окончания загрузки перед инициализацией SPI в процессоре */
+	////#define	WITHFPGALOAD_PS	1	/* FPGA загружается процессором с помощью SPI */
+
+	// +++ Эти строки можно отключать, уменьшая функциональность готового изделия
+	//#define WITHRFSG	1	/* включено управление ВЧ сигнал-генератором. */
+	////#define WITHTX		1	/* включено управление передатчиком - сиквенсор, электронный ключ. */
+	//#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
+	#define WITHIFSHIFT	1	/* используется IF SHIFT */
+	//#define WITHIFSHIFTOFFSET	(-250)	/* Начальное занчение IF SHIFT */
+	//#define WITHPBT		1	/* используется PBT (если LO3 есть) */
+	///#define WITHCAT			1	/* используется CAT (через USB CDC) */
+	//#define WITHDEBUG		1	/* Отладочная печать через COM-порт. */
+	//#define WITHNMEA		1	/* используется NMEA parser */
+	//#define WITHMODEM		1	/* Устройство работает как радиомодем с последовательным интерфейсом */
+	//#define WITHFREEDV	1	/* поддержка режима FreeDV - http://freedv.org/ */ 
+	//#define WITHBEACON	1	/* Используется режим маяка */
+	//#define WITHVOX			1	/* используется VOX */
+	#define WITHSHOWSWRPWR 1	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
+	#define WITHSWRMTR	1		/* Измеритель КСВ */
+	//#define WITHPWRMTR	1	/* Индикатор выходной мощности или */
+	//#define WITHPWRLIN	1	/* Индикатор выходной мощности показывает напряжение а не мощность */
+
+#else /* WITHISAPPBOOTLOADER */
+
+	//#define WITHRTS192	1		// Есть канал спектроанализатора - не забыть включить WITHSAI2HW
+	#define WITHRTS96		1		/* вместо выходного аудиосигнала передача квадратур по USB */
+
+	#define ENCRES_DEFAULT ENCRES_128
+	//#define ENCRES_DEFAULT ENCRES_24
+	#define WITHDIRECTFREQENER	1 //(! CTLSTYLE_SW2011ALL && ! CTLSTYLE_UA3DKC)
+	#define	WITHENCODER	1	/* для изменения частоты имеется енкодер */
+	#define WITHENCODER2	1		/* есть второй валкодер */
+
+	#define WITHUSEDUALWATCH	1	// Второй приемник
+	#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
+
+	// FPGA section
+	//#define	WITHFPGAWAIT_AS	1	/* FPGA загружается из собственной микросхемы загрузчика - дождаться окончания загрузки перед инициализацией SPI в процессоре */
+	#define	WITHFPGALOAD_PS	1	/* FPGA загружается процессором с помощью SPI */
+
+	// +++ Эти строки можно отключать, уменьшая функциональность готового изделия
+	//#define WITHRFSG	1	/* включено управление ВЧ сигнал-генератором. */
+	#define WITHTX		1	/* включено управление передатчиком - сиквенсор, электронный ключ. */
+	//#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
+	#define WITHIFSHIFT	1	/* используется IF SHIFT */
+	//#define WITHIFSHIFTOFFSET	(-250)	/* Начальное занчение IF SHIFT */
+	//#define WITHPBT		1	/* используется PBT (если LO3 есть) */
+	#define WITHCAT			1	/* используется CAT (через USB CDC) */
+	//#define WITHDEBUG		1	/* Отладочная печать через COM-порт. */
+	//#define WITHNMEA		1	/* используется NMEA parser */
+	//#define WITHMODEM		1	/* Устройство работает как радиомодем с последовательным интерфейсом */
+	//#define WITHFREEDV	1	/* поддержка режима FreeDV - http://freedv.org/ */ 
+	//#define WITHBEACON	1	/* Используется режим маяка */
+	#define WITHVOX			1	/* используется VOX */
+	#define WITHSHOWSWRPWR 1	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
+	#define WITHSWRMTR	1		/* Измеритель КСВ */
+	//#define WITHPWRMTR	1	/* Индикатор выходной мощности или */
+	//#define WITHPWRLIN	1	/* Индикатор выходной мощности показывает напряжение а не мощность */
+
+#endif /* WITHISAPPBOOTLOADER */
+
 
 	/* Board hardware configuration */
 	#define CODEC1_TYPE CODEC_TYPE_NAU8822L
@@ -219,8 +292,6 @@
 	#define WITHSAI1_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
 	#define WITHSAI1_FRAMEBITS 256	// Полный размер фрейма для двух квадратур - канал трансивера
 
-	//#define WITHRTS192	1		// Есть канал спектроанализатора - не забыть включить WITHSAI2HW
-	#define WITHRTS96		1		/* вместо выходного аудиосигнала передача квадратур по USB */
 
 	#define WITHSAI2_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
 	#define WITHSAI2_FRAMEBITS 64	// Полный размер фрейма для двух квадратур по 24 бита - канал спектроанализатора
@@ -274,31 +345,6 @@
 	//#define WITHUSEAUDIORECCLASSIC	1	// стандартный формат записи, без "дыр"
 	//#define WITHUSEAUDIOREC2CH	1	// Запись звука на SD CARD в стерео
 
-	#define WITHUSEDUALWATCH	1	// Второй приемник
-	#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
-
-	// FPGA section
-	//#define	WITHFPGAWAIT_AS	1	/* FPGA загружается из собственной микросхемы загрузчика - дождаться окончания загрузки перед инициализацией SPI в процессоре */
-	#define	WITHFPGALOAD_PS	1	/* FPGA загружается процессором с помощью SPI */
-
-	// +++ Эти строки можно отключать, уменьшая функциональность готового изделия
-	//#define WITHRFSG	1	/* включено управление ВЧ сигнал-генератором. */
-	#define WITHTX		1	/* включено управление передатчиком - сиквенсор, электронный ключ. */
-	//#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
-	#define WITHIFSHIFT	1	/* используется IF SHIFT */
-	//#define WITHIFSHIFTOFFSET	(-250)	/* Начальное занчение IF SHIFT */
-	//#define WITHPBT		1	/* используется PBT (если LO3 есть) */
-	#define WITHCAT			1	/* используется CAT (через USB CDC) */
-	//#define WITHDEBUG		1	/* Отладочная печать через COM-порт. */
-	//#define WITHNMEA		1	/* используется NMEA parser */
-	//#define WITHMODEM		1	/* Устройство работает как радиомодем с последовательным интерфейсом */
-	//#define WITHFREEDV	1	/* поддержка режима FreeDV - http://freedv.org/ */ 
-	//#define WITHBEACON	1	/* Используется режим маяка */
-	#define WITHVOX			1	/* используется VOX */
-	#define WITHSHOWSWRPWR 1	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
-	#define WITHSWRMTR	1		/* Измеритель КСВ */
-	//#define WITHPWRMTR	1	/* Индикатор выходной мощности или */
-	//#define WITHPWRLIN	1	/* Индикатор выходной мощности показывает напряжение а не мощность */
 	#define WITHBARS		1	/* отображение S-метра и SWR-метра */
 
 	#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */

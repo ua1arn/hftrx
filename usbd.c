@@ -18388,7 +18388,7 @@ uint_fast8_t hamradio_get_usbh_active(void)
 // P4_7: MISO
 void spidf_initialize(void)
 {
-	// spi multi-io hang off
+	// spi multi-io hang on
 	CPG.STBCR9 &= ~ CPG_STBCR9_BIT_MSTP93;	// Module Stop 93	- 0: Clock supply to channel 0 of the SPI multi I/O bus controller is runnuing.
 	(void) CPG.STBCR9;			/* Dummy read */
 

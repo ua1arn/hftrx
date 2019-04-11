@@ -238,7 +238,7 @@
 	)
 
 
-#if WITHINTEGRATEDDSP
+//#if WITHINTEGRATEDDSP
 
 	#if (__ARM_FP & 0x08) && 0
 
@@ -270,7 +270,7 @@
 		#endif /* defined (__ARM_FEATURE_FMA) || defined (FP_FAST_FMA) */
 		#define DSP_FLOAT_BITSMANTISSA 54
 
-	#elif (__ARM_FP & 0x04)
+	#elif 1 //(__ARM_FP & 0x04)
 
 		typedef float FLOAT_t;
 
@@ -350,7 +350,7 @@ modem_frames_decode(
 	FLOAT_t local_log(FLOAT_t x);
 	FLOAT_t local_pow(FLOAT_t x, FLOAT_t y);
 
-#endif /* WITHINTEGRATEDDSP */
+//#endif /* WITHINTEGRATEDDSP */
 
 
 // Buffers interface functions
@@ -526,7 +526,7 @@ uint_fast8_t dsp_getmikeadcoverflow(void); /* получения признака переполнения АЦ
 void dsp_speed_diagnostics(void);	/* DSP speed test */
 void buffers_diagnostics(void);
 void dtmftest(void);
-void dsp_recalceq(uint_fast8_t pathi, spx_word16_t * frame);
+void dsp_recalceq(uint_fast8_t pathi, float * frame);
 
 void modem_initialze(void);
 uint_fast8_t modem_get_ptt(void);

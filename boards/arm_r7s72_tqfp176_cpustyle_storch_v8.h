@@ -32,29 +32,57 @@
 //#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
 //#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
 
-#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
-#define WITHUSBHWVBUSSENSE	1	/* используется предопределенный вывод VBUS_SENSE */
-#define WITHUSBHWHIGHSPEED	1	/* Используется встроенная в процессор поддержка USB HS */
-#define WITHUSBHWHIGHSPEEDDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
-#define WITHUSBHW_DEVICE	(& USB201)	/* на этом устройстве поддерживается функцилнальность DEVUCE	*/
-//#define WITHUSBHW_HOST	(& USB200)	/* на этом устройстве поддерживается функцилнальность HOST	*/
+#if WITHISAPPBOOTLOADER
 
-//#define WITHUART1HW	1	/* Используется периферийный контроллер последовательного порта #1 SCIF0 */
-#define WITHUART2HW	1	/* Используется периферийный контроллер последовательного порта #2 SCIF3 */
+	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
+	#define WITHUSBHWVBUSSENSE	1	/* используется предопределенный вывод VBUS_SENSE */
+	#define WITHUSBHWHIGHSPEED	1	/* Используется встроенная в процессор поддержка USB HS */
+	#define WITHUSBHWHIGHSPEEDDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
+	#define WITHUSBHW_DEVICE	(& USB201)	/* на этом устройстве поддерживается функцилнальность DEVUCE	*/
+	//#define WITHUSBHW_HOST	(& USB200)	/* на этом устройстве поддерживается функцилнальность HOST	*/
 
-//#define WITHCAT_USART2	1
-#define WITHCAT_CDC			1	/* использовать виртуальный воследовательный порт на USB соединении */
-//#define WITHMODEM_CDC		1
-#define WITHDEBUG_USART2	1
-#define WITHMODEM_USART2	1
-#define WITHNMEA_USART2		1	/* порт подключения GPS/GLONASS */
+	//#define WITHUART1HW	1	/* Используется периферийный контроллер последовательного порта #1 SCIF0 */
+	#define WITHUART2HW	1	/* Используется периферийный контроллер последовательного порта #2 SCIF3 */
 
-#define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
-#define WITHUSBCDC		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
-//#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
-//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
-//#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
-#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
+	//#define WITHCAT_USART2	1
+	//#define WITHCAT_CDC			1	/* использовать виртуальный воследовательный порт на USB соединении */
+	//#define WITHMODEM_CDC		1
+	#define WITHDEBUG_USART2	1
+	#define WITHMODEM_USART2	1
+	#define WITHNMEA_USART2		1	/* порт подключения GPS/GLONASS */
+
+	//#define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
+	//#define WITHUSBCDC		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
+	//#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
+	//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
+	//#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
+	#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
+#else /* WITHISAPPBOOTLOADER */
+
+	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
+	#define WITHUSBHWVBUSSENSE	1	/* используется предопределенный вывод VBUS_SENSE */
+	#define WITHUSBHWHIGHSPEED	1	/* Используется встроенная в процессор поддержка USB HS */
+	#define WITHUSBHWHIGHSPEEDDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
+	#define WITHUSBHW_DEVICE	(& USB201)	/* на этом устройстве поддерживается функцилнальность DEVUCE	*/
+	//#define WITHUSBHW_HOST	(& USB200)	/* на этом устройстве поддерживается функцилнальность HOST	*/
+
+	//#define WITHUART1HW	1	/* Используется периферийный контроллер последовательного порта #1 SCIF0 */
+	#define WITHUART2HW	1	/* Используется периферийный контроллер последовательного порта #2 SCIF3 */
+
+	//#define WITHCAT_USART2	1
+	#define WITHCAT_CDC			1	/* использовать виртуальный воследовательный порт на USB соединении */
+	//#define WITHMODEM_CDC		1
+	#define WITHDEBUG_USART2	1
+	#define WITHMODEM_USART2	1
+	#define WITHNMEA_USART2		1	/* порт подключения GPS/GLONASS */
+
+	#define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
+	#define WITHUSBCDC		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
+	//#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
+	//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
+	//#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
+	#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
+#endif /* WITHISAPPBOOTLOADER */
 
 //#define WRITEE_BIT				(1u << 12)	// RD/~WR  P3_12 - должен быть в "0" - как при записи - для управления буферами на шине данных LCD
 
@@ -362,6 +390,10 @@
 			arm_hardware_pio3_inputs(TUNE_BIT_TUNE); \
 		} while (0)
 
+#else /* WITHTX */
+	#define TUNE_INITIALIZE() \
+		do { \
+		} while (0)
 #endif /* WITHTX */
 
 #if WITHELKEY

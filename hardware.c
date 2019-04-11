@@ -10188,6 +10188,16 @@ void cpu_initialize(void)
 
 	//debug_printf_P(PSTR("cpu_initialize2: CP15(SCTLR)=%08lX\n"), __get_SCTLR());
 
+	if (0) //(memcmp((void *) 4, & __data_start__ + 1, 16) == 0)
+	{
+		//debug_printf_P(PSTR("cpu_initialize1: vectors mapped succesful\n"));
+		//debug_printf_P(PSTR("cpu_initialize1: vectors mapped succesful. %08lX %08lX\n"), * (volatile uint32_t *) 0, * (volatile uint32_t *) 4);
+	}
+	else
+	{
+		//debug_printf_P(PSTR("cpu_initialize1: vectors mapped failure.\n"));
+	}
+
 	/* TN-RZ*-A011A/E recommends switch off USB_X1 if usb USB not used */
 	CPG.STBCR7 &= ~ CPG_STBCR7_MSTP70;	// Module Stop 71 0: Channel 0 of the USB 2.0 host/function module runs.
 	CPG.STBCR7 &= ~ CPG_STBCR7_MSTP71;	// Module Stop 71 0: Channel 0 of the USB 2.0 host/function module runs.
@@ -10228,7 +10238,7 @@ void cpu_initialize(void)
 // секция init больше не нужна
 void cpu_initdone(void)
 {
-#if CPUSTYLE_R7S721
+#if CPUSTYLE_R7S721 //&& ! WITHISAPPBOOTLOADER
 
 	// Когда загрузочный образ FPGA будт оставаться в SERIAL FLASH, запретить отключение.
 	while ((SPIBSC0.CMNSR & (1u << 0)) == 0)	// TEND bit
@@ -10254,7 +10264,7 @@ void cpu_initdone(void)
 
 	arm_hardware_pio4_inputs(0xFC);		// Отключить процессор от SERIAL FLASH
 
-#endif /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7 */
+#endif /* CPUSTYLE_R7S721 && ! WITHISAPPBOOTLOADER */
 }
 
 // optimizer test: from electronix.ru - should be one divmod call

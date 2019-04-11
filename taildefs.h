@@ -21,9 +21,7 @@ enum
 	SPIC_SPEED25M,	/* 25 MHz  */
 #endif /* (SPISPEED400k) || defined (SPISPEED100k) */
 	SPIC_SPEEDFAST,
-#if WITHFPGAWAIT_AS || WITHFPGALOAD_PS || WITHDSPEXTFIR
 	SPIC_SPEEDUFAST,	// —корость дл€ загрузки FPGA
-#endif /* WITHFPGAWAIT_AS || WITHFPGALOAD_PS || WITHDSPEXTFIR */
 #if WITHUSESDCARD
 	SPIC_SPEEDSDCARD,	// ѕереключаема€ скоростть - 400 к√ц или требуема€ дл€ SD карты
 #endif /* WITHUSESDCARD */

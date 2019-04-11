@@ -5601,9 +5601,11 @@ enc2menu_value(
 
 	switch (mp->rj)
 	{
+#if WITHSUBTONES && WITHTX
 	case RJ_SUBTONE:
 		local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("%*u.%1u"), WDTH - 2, gsubtones [value] / 10, gsubtones [value] % 10);
 		break;
+#endif /* WITHSUBTONES && WITHTX */
 	case RJ_YES:
 		local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("%*s"), WDTH, value ? "YES" : "NO");
 		break;
@@ -16962,6 +16964,19 @@ static void siggen_mainloop(void)
 }
 #endif
 
+void bootloader_mainloop(void)
+{
+	hamradio_mainloop();
+	const uintptr_t APPAREA = 0x20020000;
+	const uintptr_t APPBASE = 0x18020000;
+	const size_t APPSIZE = 1024uL * 2928;	// value from app's .ld script
+	memcpy((void *) APPAREA, (void *) APPBASE, APPSIZE);
+	debug_printf_P(PSTR("Jump to application at %p\n"), (void *) APPBASE);
+	//(* (void (*)(void)) APPAREA)();
+	for (;;)
+		;
+}
+
 /* Главная функция программы */
 int 
 //__attribute__ ((used))
@@ -16985,7 +17000,9 @@ main(void)
 	hamradio_initialize();
 	hightests();		/* подпрограммы для тестирования аппаратуры */
 
-#if WITHOPERA4BEACON
+#if WITHISAPPBOOTLOADER
+	bootloader_mainloop();
+#elif WITHOPERA4BEACON
 	hamradio_mainloop_OPERA4();
 #elif 0
 	siggen_mainloop();
