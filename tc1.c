@@ -2396,7 +2396,7 @@ struct nvmap
 	uint8_t gfillspect;
 	uint8_t gtopdb;
 	uint8_t gfulldb;	/* диапазон отображаемых значений */
-	uint8_t gzoomxpow;
+	uint8_t gzoomxpow2;
 #endif /* WITHSPECTRUMWF */
 #if WITHBCBANDS
 	uint8_t bandsetbcast;	/* Broadcasting radio bands */
@@ -3013,9 +3013,9 @@ static uint_fast8_t displayfreqsfps = DISPLAY_FPS;
 static uint_fast8_t displaybarsfps = DISPLAYSWR_FPS;
 #if WITHSPECTRUMWF
 	static uint_fast8_t gfillspect = 1;
-	static uint_fast8_t gtopdb;			/* сколько не показывать сверху */
-	static uint_fast8_t gfulldb = 120;	/* диапазон отображаемых значений */
-	static uint_fast8_t gzoomxpow;
+	static uint_fast8_t gtopdb = 30;	/* сколько не показывать сверху */
+	static uint_fast8_t gfulldb = 100;	/* диапазон отображаемых значений */
+	static uint_fast8_t gzoomxpow2;		/* степень двойки - состояние растягиваия спектра (уменьшение наблюдаемой полосы частот) */
 #endif /* WITHSPECTRUMWF */
 #if WITHLCDBACKLIGHT
 	static uint_fast8_t bglight = WITHLCDBACKLIGHTMAX;
@@ -5550,9 +5550,9 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		RJ_POW2,		// rj
 		ISTEP1,		/* spectrum range */
 		0, 3, 
-		offsetof(struct nvmap, gzoomxpow),	/* диапазон отображаемых значений */
+		offsetof(struct nvmap, gzoomxpow2),	/* диапазон отображаемых значений */
 		NULL,
-		& gzoomxpow,
+		& gzoomxpow2,
 		getzerobase, /* складывается со смещением и отображается */
 		enc2menu_adjust,	/* функция для изменения значения параметра */
 	},
@@ -7693,7 +7693,7 @@ updateboard(
 			board_set_fillspect(gfillspect);	/* заливать заполнением площадь под графиком спектра */
 			board_set_topdb(gtopdb);		/* сколько не показывать сверху */
 			board_set_fulldb(gfulldb);		/* высота спектроанализатора */
-			board_set_zoomx(1u << gzoomxpow);	/* уменьшение отображаемого участка спектра */
+			board_set_zoomx(1u << gzoomxpow2);	/* уменьшение отображаемого участка спектра */
 		#endif /* WITHSPECTRUMWF */
 	#endif /* WITHIF4DSP */
 
@@ -12002,9 +12002,9 @@ static const FLASHMEM struct menudef menutable [] =
 		"ZOOM PAN", 7, 0, RJ_POW2,	ISTEP1,	
 		ITEM_VALUE,
 		0, 3,							/* уменьшение отображаемого участка спектра */
-		offsetof(struct nvmap, gzoomxpow),
+		offsetof(struct nvmap, gzoomxpow2),
 		NULL,
-		& gzoomxpow,
+		& gzoomxpow2,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 #endif /* WITHSPECTRUMWF */
