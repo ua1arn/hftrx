@@ -16966,12 +16966,14 @@ static void siggen_mainloop(void)
 
 void bootloader_mainloop(void)
 {
-	hamradio_mainloop();
 	const uintptr_t APPAREA = 0x20020000;
 	const uintptr_t APPBASE = 0x18020000;
 	const size_t APPSIZE = 1024uL * 2928;	// value from app's .ld script
-	memcpy((void *) APPAREA, (void *) APPBASE, APPSIZE);
+
 	debug_printf_P(PSTR("Jump to application at %p\n"), (void *) APPBASE);
+	for (;;)
+		;
+	memcpy((void *) APPAREA, (void *) APPBASE, APPSIZE);
 	//(* (void (*)(void)) APPAREA)();
 	for (;;)
 		;

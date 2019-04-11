@@ -20,12 +20,6 @@
 //#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 #define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 
-#define WITHI2SHW	1	/* Использование SSIF0 I2S 2*16 bit - аудио кодек */
-#define WITHSAI1HW	1	/* Использование SSIF1 I2S 8*32 bit - FPGA IF codec */
-#if WITHRTS192
-	#define WITHSAI2HW	1	/* Использование SSIF2 I2S 2*32 (2*32) bit - FPGA панорама	*/
-#endif /* WITHRTS192 */
-
 //#define WITHCPUDACHW	1	/* использование DAC - в renesas R7S72 нету */
 #define WITHCPUADCHW 	1	/* использование ADC */
 
@@ -33,6 +27,13 @@
 //#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
 
 #if WITHISAPPBOOTLOADER
+
+	//#define WITHI2SHW	1	/* Использование SSIF0 I2S 2*16 bit - аудио кодек */
+	//#define WITHSAI1HW	1	/* Использование SSIF1 I2S 8*32 bit - FPGA IF codec */
+	//#if WITHRTS192
+	//	#define WITHSAI2HW	1	/* Использование SSIF2 I2S 2*32 (2*32) bit - FPGA панорама	*/
+	//#endif /* WITHRTS192 */
+
 
 	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 	#define WITHUSBHWVBUSSENSE	1	/* используется предопределенный вывод VBUS_SENSE */
@@ -58,6 +59,12 @@
 	//#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
 	#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
 #else /* WITHISAPPBOOTLOADER */
+
+	#define WITHI2SHW	1	/* Использование SSIF0 I2S 2*16 bit - аудио кодек */
+	#define WITHSAI1HW	1	/* Использование SSIF1 I2S 8*32 bit - FPGA IF codec */
+	#if WITHRTS192
+		#define WITHSAI2HW	1	/* Использование SSIF2 I2S 2*32 (2*32) bit - FPGA панорама	*/
+	#endif /* WITHRTS192 */
 
 	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 	#define WITHUSBHWVBUSSENSE	1	/* используется предопределенный вывод VBUS_SENSE */
