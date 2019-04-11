@@ -1,6 +1,6 @@
 fc_version : 13.1
 blank_gen : READ
-coef_bit_width : 22
+coef_bit_width : 23
 coef_conv_sel : FRAC
 coef_pow2 : FALSE
 coef_sbf_left : 0

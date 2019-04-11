@@ -9,7 +9,7 @@ samp_rate : 1e+007
 win_type  : NON 
 flt_type  : LPF 
 ---end_set---
-coef_bit_width  : 22
+coef_bit_width  : 23
 coef_conv_sel   : FRAC 
 coef_pow2       : FALSE 
 coef_sbf_left   : 0
@@ -54,11 +54,11 @@ atlantic_out    : MASTER
 atlantic_in     : MASTER 
 fir_bit_width   : 58
 num_coef_mem     : 4
-coef_mem_width  : 22
+coef_mem_width  : 23
 coef_mem_addr   : 6
 num_coef_one_mem : 1
 fmax			: 0
-num_lc			: 69092
+num_lc			: 69288
 num_m4k			: 20
 num_m512			: 0
 num_MRAM			: 0
