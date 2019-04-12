@@ -75,6 +75,10 @@ r7s721020:
 	cd .\r7s721020
 	make.exe -f .\Makefile all
 
+r7s721020_boot:
+	cd .\r7s721020
+	make.exe -f .\Makefile bootloader
+
 stm32f746zg:
 	cd .\stm32f746zg
 	make.exe -f .\Makefile all

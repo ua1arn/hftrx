@@ -5601,9 +5601,11 @@ enc2menu_value(
 
 	switch (mp->rj)
 	{
+#if WITHSUBTONES && WITHTX
 	case RJ_SUBTONE:
 		local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("%*u.%1u"), WDTH - 2, gsubtones [value] / 10, gsubtones [value] % 10);
 		break;
+#endif /* WITHSUBTONES && WITHTX */
 	case RJ_YES:
 		local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("%*s"), WDTH, value ? "YES" : "NO");
 		break;
@@ -16962,6 +16964,96 @@ static void siggen_mainloop(void)
 }
 #endif
 
+#if WITHISAPPBOOTLOADER
+
+static int
+toprintc(int c)
+{
+	if (c < 0x20 || c >= 0x7f)
+		return '.';
+	return c;
+}
+
+void
+printhex(unsigned long voffs, const unsigned char * buff, unsigned length)
+{
+	unsigned i, j;
+	unsigned rows = (length + 15) / 16;
+
+	for (i = 0; i < rows; ++ i)
+	{
+		const int trl = ((length - 1) - i * 16) % 16 + 1;
+		debug_printf_P(PSTR("%08lX "), voffs + i * 16);
+		for (j = 0; j < trl; ++ j)
+			debug_printf_P(PSTR(" %02X"), buff [i * 16 + j]);
+
+		debug_printf_P(PSTR("%*s"), (16 - trl) * 3, "");
+
+		debug_printf_P(PSTR("  "));
+		for (j = 0; j < trl; ++ j)
+			debug_printf_P(PSTR("%c"), toprintc(buff [i * 16 + j]));
+
+		debug_printf_P(PSTR("\n"));
+	}
+}
+
+void bootloader_mainloop(void)
+{
+	//local_delay_ms(1000);
+	//printhex(BOOTLOADER_APPAREA, (void *) BOOTLOADER_APPAREA, 512);
+ddd:
+	debug_printf_P(PSTR("Ready jump to application at %p. Press 'r'\n"), (void *) BOOTLOADER_APPAREA);
+	for (;;)
+	{
+#if WITHDEBUG
+		char c;
+		if (dbg_getchar(& c))
+		{
+			dbg_putchar(c);
+			if (c == 'r')
+				break;
+		}
+#endif /* WITHDEBUG */
+#if CPUSTYLE_R7S721
+		unsigned v = WITHUSBHW_DEVICE->INTSTS0;
+		if ((v & USB_INTSTS0_VBSTS) == 0)
+			break;
+#else /* CPUSTYLE_R7S721 */
+		break;
+#endif /* CPUSTYLE_R7S721 */
+	}
+	arm_hardware_flush(BOOTLOADER_APPAREA, BOOTLOADER_APPSIZE);
+
+	static const char sgn [] = " DREAM RX";
+
+	if (memcmp(sgn, (void *) (BOOTLOADER_APPAREA + 0x019C), strlen(sgn)) != 0)
+	{
+		debug_printf_P(PSTR("No application signature\n"));
+		goto ddd;
+		for (;;)
+			;
+	}
+
+	debug_printf_P(PSTR("\n"));
+	debug_printf_P(PSTR("Now jump to application at %p.\n"), (void *) BOOTLOADER_APPAREA);
+	board_usb_deactivate();
+	__disable_irq();
+	GIC_DisableInterface();
+	GIC_DisableDistributor();
+
+	MMU_Disable();
+	MMU_InvalidateTLB();
+	//arm_hardware_invalidate_all()
+	__ISB();
+	__DSB();
+	debug_printf_P(PSTR("Jump....\n"));
+	(* (void (*)(void)) BOOTLOADER_APPAREA)();
+	TP();
+	for (;;)
+		;
+}
+
+#endif /* WITHISAPPBOOTLOADER */
 /* Главная функция программы */
 int 
 //__attribute__ ((used))
@@ -16985,7 +17077,9 @@ main(void)
 	hamradio_initialize();
 	hightests();		/* подпрограммы для тестирования аппаратуры */
 
-#if WITHOPERA4BEACON
+#if WITHISAPPBOOTLOADER
+	bootloader_mainloop();
+#elif WITHOPERA4BEACON
 	hamradio_mainloop_OPERA4();
 #elif 0
 	siggen_mainloop();

@@ -53,7 +53,15 @@
 //#define USB_FUNCTION_PRODUCT_ID	0x5740
 //#define USB_FUNCTION_RELEASE_NO	0x0200
 
-#if WITHUSBUAC && WITHUSBUAC3
+#if WITHISAPPBOOTLOADER
+
+	#define USB_FUNCTION_PRODUCT_ID	0x0750
+	#define PRODUCTSTR "Storch TRX Bootloader"
+	#define BUILD_ID 1	// модификатор serial sumber
+	#define USB_FUNCTION_RELEASE_NO	0x0000
+
+#elif WITHUSBUAC && WITHUSBUAC3
+	#define PRODUCTSTR "Storch TRX"
 	#define USB_FUNCTION_PRODUCT_ID	0x0737
 	#if WITHRTS96
 		#define BUILD_ID 6	// модификатор serial sumber
@@ -66,6 +74,7 @@
 		#define USB_FUNCTION_RELEASE_NO	0x0104
 	#endif
 #else /* WITHUSBUAC && WITHUSBUAC3 */
+	#define PRODUCTSTR "Storch TRX"
 	#define USB_FUNCTION_PRODUCT_ID	0x0738
 	#if WITHRTS96
 		#define BUILD_ID 2	// модификатор serial sumber
@@ -148,25 +157,26 @@ struct stringtempl
 
 static const char strFlashDesc [] = "@SPI Flash : M25Px/0x18000000/32*064Kg";
 //static const char strFlashDesc [] = "@Internal Flash /0x08000000/16*128Kg";
-
 static const struct stringtempl strtemplates [] =
 {
 	{ STRING_ID_1, "MicroGenSF", },		// Manufacturer
-	{ STRING_ID_2, "Storch TRX", },	// Product
-	{ STRING_ID_4a, "Storch TRX CAT", },
-	{ STRING_ID_4b, "Storch TRX CTL", },
-	{ STRING_ID_5, "Storch TRX CDC EEM", },
-	{ STRING_ID_5a, "Storch TRX CDC ECM", },
-	{ STRING_ID_RNDIS, "Storch TRX Remote NDIS", },
+	{ STRING_ID_2, PRODUCTSTR, },	// Product
+	{ STRING_ID_4a, PRODUCTSTR " CAT", },
+	{ STRING_ID_4b, PRODUCTSTR " CTL", },
+	{ STRING_ID_5, PRODUCTSTR " CDC EEM", },
+	{ STRING_ID_5a, PRODUCTSTR " CDC ECM", },
+	{ STRING_ID_RNDIS, PRODUCTSTR " Remote NDIS", },
 
 	{ STRING_ID_DFU, "Storch DFU Device", },
-	{ STRING_ID_DFU_0, strFlashDesc, },
-	//{ STRING_ID_DFU_1, strOptBytesDesc, },
+	#if ! WITHISAPPBOOTLOADER
+		{ STRING_ID_DFU_0, strFlashDesc, },
+		//{ STRING_ID_DFU_1, strOptBytesDesc, },
+	#endif /* ! WITHISAPPBOOTLOADER */
 
 	#if CTLSTYLE_OLEG4Z_V1
-		{ STRING_ID_a0, "Storch TRX Voice", },		// tag for Interface Descriptor 0/0 Audio
-		{ STRING_ID_a1, "Storch TRX Spectre", },	// tag for Interface Descriptor 0/0 Audio
-		{ STRING_ID_a2, "Storch TRX Modulator", },	// tag for Interface Descriptor 0/0 Audio
+		{ STRING_ID_a0, PRODUCTSTR " Voice", },		// tag for Interface Descriptor 0/0 Audio
+		{ STRING_ID_a1, PRODUCTSTR " Spectre", },	// tag for Interface Descriptor 0/0 Audio
+		{ STRING_ID_a2, PRODUCTSTR " Modulator", },	// tag for Interface Descriptor 0/0 Audio
 	#else /* CTLSTYLE_OLEG4Z_V1 */
 		{ STRING_ID_a0, "Storch RX Voice", },		// tag for Interface Descriptor 0/0 Audio
 		{ STRING_ID_a1, "Storch RX Spectrum", },	// tag for Interface Descriptor 0/0 Audio
@@ -199,7 +209,7 @@ static const struct stringtempl strtemplates [] =
 	{ STRING_ID_Right, "LSB", },	// tag for USB Speaker Audio Feature Unit Descriptor
 	{ STRING_ID_HIDa, "HID xxx", },
 #if CTLSTYLE_OLEG4Z_V1
-	{ STRING_ID_IQSPECTRUM, "Storch TRX Spectre", },	// tag for Interface Descriptor 0/0 Audio
+	{ STRING_ID_IQSPECTRUM, PRODUCTSTR " Spectre", },	// tag for Interface Descriptor 0/0 Audio
 #else /* CTLSTYLE_OLEG4Z_V1 */
 	{ STRING_ID_IQSPECTRUM, "RX IQ Output", },
 #endif /* CTLSTYLE_OLEG4Z_V1 */
@@ -3144,6 +3154,26 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 	}
 #endif /* WITHUSBHID */
 	
+#if WITHUSBDFU
+	{
+		static const char strFlashDesc_3 [] = "@SPI Flash : M25Px/0x%08lx/%02u*%03uKg";	// 128 k for bootloader
+		unsigned partlen;
+		// Формирование MAC адреса данного устройства
+		// TODO: При модификации не забыть про достоверность значений
+		const uint_fast8_t id = STRING_ID_DFU_0;
+		char b [128];
+		local_snprintf_P(b, ARRAY_SIZE(b), strFlashDesc_3, 
+			(unsigned long) BOOTLOADER_APPBASE,
+			(unsigned) (BOOTLOADER_APPSIZE / BOOTLOADER_PAGESIZE),
+			(unsigned) (BOOTLOADER_PAGESIZE / 1024)
+			);
+		score += fill_align4(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score);
+		partlen = fill_string_descriptor(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score, b);
+		StringDescrTbl [id].size = partlen;
+		StringDescrTbl [id].data = alldescbuffer + score;
+		score += partlen;
+	}
+#endif /* WITHUSBDFU */
 #if WITHUSBCDCECM || WITHUSBCDCEEM
 	{
 		unsigned partlen;

@@ -2898,7 +2898,7 @@ static int freq2index(unsigned freq)
 
 // slope: изменение тембра звука - на Samplerate/2 АЧХ становится на столько децибел 
 // scale: общий масштаб изменения АЧХ
-static void correctspectrum(spx_word16_t * resp, int_fast8_t targetdb)
+static void correctspectrum(float * resp, int_fast8_t targetdb)
 {
 	const FLOAT_t slope = db2ratio(targetdb);
 	spx_word16_t scale = Q15_ONE;
@@ -2912,7 +2912,7 @@ static void correctspectrum(spx_word16_t * resp, int_fast8_t targetdb)
 }
 
 
-static void copytospeex(spx_word16_t * frame)
+static void copytospeex(float * frame)
 {
 	ASSERT((FFTSizeFilters / 2) == SPEEXNN);
 	unsigned i;
@@ -2923,7 +2923,7 @@ static void copytospeex(spx_word16_t * frame)
 	}
 }
 
-void dsp_recalceq(uint_fast8_t pathi, spx_word16_t * frame)
+void dsp_recalceq(uint_fast8_t pathi, float * frame)
 {
 	const int cutfreqlow = glob_aflowcutrx [pathi];
 	const int cutfreqhigh = glob_afhighcutrx [pathi];

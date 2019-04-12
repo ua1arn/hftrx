@@ -593,7 +593,7 @@ save_i32(nvramaddress_t addr, uint32_t v)
 
 #else /* defined (NVRAM_TYPE) && (NVRAM_TYPE != NVRAM_TYPE_NOTHING) */
 
-#if 0
+#if 1
 /* выборка по указанному индексу из FRAM одного байта */
 uint_fast8_t 
 //NOINLINEAT
@@ -603,11 +603,10 @@ restore_i8(nvramaddress_t addr)
 }
 
 /* сохранение по указанному индексу в FRAM одного байта */
-uint_fast8_t 
+void 
 //NOINLINEAT
 save_i8(nvramaddress_t addr, uint8_t v)
 {
-	return v;
 }
 
 /* выборка по указанному индексу из FRAM одного 16-битного слова */
@@ -619,11 +618,10 @@ restore_i16(nvramaddress_t addr)
 }
 
 /* сохранение по указанному индексу в FRAM одного 16-битного слова */
-uint_fast16_t 
+void 
 //NOINLINEAT
 save_i16(nvramaddress_t addr, uint16_t v)
 {
-	return v;
 }
 
 /* выборка по указанному индексу из FRAM одного 32-битного слова */
@@ -635,11 +633,10 @@ restore_i32(nvramaddress_t addr)
 }
 
 /* сохранение по указанному индексу в FRAM одного 32-битного слова */
-uint_fast32_t 
+void 
 //NOINLINEAT
 save_i32(nvramaddress_t addr, uint32_t v)
 {
-	return v;
 }
 
 #endif

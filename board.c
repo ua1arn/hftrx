@@ -8203,7 +8203,7 @@ void board_adc_initialize(void)
 			debug_printf_P(PSTR("%d%c"), board_get_adcch(i), (i + 1) == board_get_adcinputs() ? '\n' : ',');
 		}
 	}
-#endif
+#endif /* WITHDEBUG */
 	hardware_adc_initialize();
 	adcfilters_initialize();
 }

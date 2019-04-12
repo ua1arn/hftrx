@@ -66,7 +66,8 @@ SRCDIR = ..
 PROJECT = tc1_r7s721020
 
 # Define linker script file here
-LDSCRIPT_ROM = ./r7s721020_spi.ld
+LDSCRIPT_BOOT = ./r7s721020_boot.ld
+LDSCRIPT_APP = ./r7s721020_app.ld
 
 # List all user C define here, like -D_DEBUG=1
 # RZ/A1H: R7S721001: CPUSTYLE_R7S721001
@@ -117,8 +118,8 @@ ASFLAGS = $(MCFLAGS) $(OPT) $(LTO) -g -gdwarf-2 $(ADEFS)
 #CPFLAGS = $(MCFLAGS) $(OPT) $(LTO) -gdwarf-2 -mlong-calls -fomit-frame-pointer -Wall -Wstrict-prototypes $(DEFS)
 CPFLAGS = $(MCFLAGS) $(OPT) $(LTO) -gdwarf-2 -fomit-frame-pointer -Wall -Wstrict-prototypes $(DEFS)
 
-LDFLAGS_RAM = $(MCFLAGS) $(LTO) $(OPT) -nostartfiles -T$(LDSCRIPT_RAM) -Wl,-Map=$(PROJECT)_ram.map,--cref $(LIBDIR)
-LDFLAGS_ROM = $(MCFLAGS) $(LTO) $(OPT) -nostartfiles -T$(LDSCRIPT_ROM) -Wl,-Map=$(PROJECT)_rom.map,--cref $(LIBDIR)
+LDFLAGS_BOOT = $(MCFLAGS) $(LTO) $(OPT) -nostartfiles -T$(LDSCRIPT_BOOT) -Wl,-Map=$(PROJECT)_boot.map,--cref $(LIBDIR)
+LDFLAGS_APP = $(MCFLAGS) $(LTO) $(OPT) -nostartfiles -T$(LDSCRIPT_APP) -Wl,-Map=$(PROJECT)_app.map,--cref $(LIBDIR)
 
 # Generate dependency information
 CPFLAGS += -MD -MP -MF ./dep/$(@F).d
@@ -133,13 +134,12 @@ CPFLAGS += -MD -MP -MF ./dep/$(@F).d
 # makefile rules
 #
 
-#all: RAM ROM
-all: ROM1 ROM2
+all: APP
 
-RAM: $(OBJS) $(PROJECT)_ram.elf $(PROJECT)_ram.hex
+bootloader: BOOT
 
-ROM1: $(OBJS) $(PROJECT)_rom.elf $(PROJECT)_rom.hex
-ROM2: $(OBJS) $(PROJECT)_rom.elf $(PROJECT)_rom.bin
+BOOT: $(OBJS) $(PROJECT)_boot.elf $(PROJECT)_boot.hex
+APP: $(OBJS) $(PROJECT)_app.elf $(PROJECT)_app.bin
 
 %o: $(addprefix $(SRCDIR)/, %c)
 	$(CC) -c $(CPFLAGS) $(INCDIR) $< -o $@
@@ -147,12 +147,12 @@ ROM2: $(OBJS) $(PROJECT)_rom.elf $(PROJECT)_rom.bin
 %o: $(addprefix $(SRCDIR)/, %s)
 	$(AS) -c $(ASFLAGS) $< -o $@
 
-%ram.elf: $(OBJS)
-	$(CC) $(OBJS) $(LDFLAGS_RAM) $(LIBS) -o $@
+%_boot.elf: $(OBJS)
+	$(CC) $(OBJS) $(LDFLAGS_BOOT) $(LIBS) -o $@
 	$(TRGT)size --format=sysv --radix=16 $@
 
-%rom.elf: $(OBJS)
-	$(CC) $(OBJS) $(LDFLAGS_ROM) $(LIBS) -o $@
+%_app.elf: $(OBJS)
+	$(CC) $(OBJS) $(LDFLAGS_APP) $(LIBS) -o $@
 	$(TRGT)size --format=sysv --radix=16 $@
 
 %hex: %elf
@@ -163,12 +163,9 @@ ROM2: $(OBJS) $(PROJECT)_rom.elf $(PROJECT)_rom.bin
 
 clean:
 	-rm -f $(OBJS)
-	-rm -f $(PROJECT)_ram.elf
-	-rm -f $(PROJECT)_ram.map
-	-rm -f $(PROJECT)_ram.hex
-	-rm -f $(PROJECT)_rom.elf
-	-rm -f $(PROJECT)_rom.map
-	-rm -f $(PROJECT)_rom.hex
+	-rm -f $(PROJECT)_rom.elf $(PROJECT)_rom.map $(PROJECT)_rom.hex $(PROJECT)_rom.bin
+	-rm -f $(PROJECT)_boot.elf $(PROJECT)_boot.map $(PROJECT)_boot.hex $(PROJECT)_boot.bin
+	-rm -f $(PROJECT)_app.elf $(PROJECT)_app.map $(PROJECT)_app.hex $(PROJECT)_app.bin
 	-rm -f $(SRC:.c=.c.bak)
 	-rm -f $(SRC:.c=.lst)
 	-rm -f $(ASRC:.s=.s.bak)

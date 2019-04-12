@@ -1855,7 +1855,7 @@ static void usbdFunctionReq_seq2(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef 
 // Control Read Status stage
 static void usbdVendorReq_seq2(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef *req)
 {
-	PRINTF(PSTR("usbdVendorReq_seq2\n"));
+	//PRINTF(PSTR("usbdVendorReq_seq2\n"));
 	//PRINTF(PSTR("usbdVendorReq_seq2: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
 }
 // Idle or setup stage
@@ -3408,9 +3408,6 @@ static void usbd_handle_resume(PCD_TypeDef * const Instance)
 #if WITHUSBCDCEEM
 	cdceemout_initialize();
 #endif /* WITHUSBCDCEEM */
-#if WITHUSBDFU
-	USBD_DFU_Init(& hUsbDevice, 1);
-#endif /* WITHUSBDFU */
 }
 
 static void usbd_handle_suspend(PCD_TypeDef * const Instance)
@@ -14677,6 +14674,11 @@ static void board_usbd_activate(void)
 
 	//PRINTF(PSTR("board_usbd_activate done.\n"));
 }
+/* вызывается при разрешённых прерываниях. */
+static void board_usbd_deactivate(void)
+{
+  USBD_Stop(&hUsbDevice);
+}
 
 
 #if WITHUSBHOST//WITHUSEUSBFLASH
@@ -18328,6 +18330,9 @@ const struct drvfunc USBH_drvfunc =
 /* вызывается при запрещённых прерываниях. */
 void board_usb_initialize(void)
 {
+#if WITHUSBDFU
+	USBD_DFU_Init(& hUsbDevice, 1);
+#endif /* WITHUSBDFU */
 	//PRINTF(PSTR("board_usb_initialize start.\n"));
 #if defined (WITHUSBHW_DEVICE)
 	board_usbd_initialize();	// USB device support
@@ -18349,6 +18354,20 @@ void board_usb_activate(void)
 
 #if defined (WITHUSBHW_HOST)
 	board_usbh_activate();
+#endif /* defined (WITHUSBHW_HOST) */
+	//PRINTF(PSTR("board_usb_activate done.\n"));
+}
+
+/* вызывается при разрешённых прерываниях. */
+void board_usb_deactivate(void)
+{
+	//PRINTF(PSTR("board_usb_activate start.\n"));
+#if defined (WITHUSBHW_DEVICE)
+	board_usbd_deactivate();
+#endif /* defined (WITHUSBHW_DEVICE) */
+
+#if defined (WITHUSBHW_HOST)
+	board_usbh_deactivate();
 #endif /* defined (WITHUSBHW_HOST) */
 	//PRINTF(PSTR("board_usb_activate done.\n"));
 }
@@ -18388,7 +18407,8 @@ uint_fast8_t hamradio_get_usbh_active(void)
 // P4_7: MISO
 void spidf_initialize(void)
 {
-	// spi multi-io hang off
+#if 0
+	// spi multi-io hang on
 	CPG.STBCR9 &= ~ CPG_STBCR9_BIT_MSTP93;	// Module Stop 93	- 0: Clock supply to channel 0 of the SPI multi I/O bus controller is runnuing.
 	(void) CPG.STBCR9;			/* Dummy read */
 
@@ -18417,6 +18437,7 @@ void spidf_initialize(void)
 		SPIBSC_SMCR_SPIRE |
 		SPIBSC_SMCR_SPIWE |
 		0;
+#endif
 
 	// Connrect I/O pins
 	arm_hardware_pio4_outputs(1U << 2, 1U << 2);				/* P4_2 WP / SPBIO20_0 */
@@ -18904,7 +18925,11 @@ uint16_t MEM_If_Erase_HS(uint32_t Add)
 uint16_t MEM_If_Write_HS(uint8_t *src, uint32_t dest, uint32_t Len)
 {
 	//PRINTF(PSTR("MEM_If_Write_HS: addr=%08lX, len=%03lX\n"), dest, Len);
-	writeDATAFLASH(dest, src, Len);
+	if (writeDATAFLASH(dest, src, Len))
+		return USBD_FAIL;
+#if WITHISAPPBOOTLOADER
+	memcpy((void *) ((uintptr_t) dest - BOOTLOADER_APPBASE + BOOTLOADER_APPAREA), src, Len);
+#endif /* WITHISAPPBOOTLOADER */
 	return (USBD_OK);
 }
 
@@ -18920,7 +18945,8 @@ uint8_t *MEM_If_Read_HS(uint32_t src, uint8_t *dest, uint32_t Len)
 	/* Return a valid address to avoid HardFault */
 	/* USER CODE BEGIN 4 */
 	spitarget_t target = targetdataflash;	/* addressing to chip */
-	timed_dataflash_read_status(target);
+	if (timed_dataflash_read_status(target))
+		return dest;	// todo: error handling need
 	readDATAFLASH(src, dest, Len);
 	return dest;
 	/* USER CODE END 4 */

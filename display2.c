@@ -71,6 +71,17 @@ static void display2_legend_tx(
 
 static PACKEDCOLOR565_T * getscratchpip(void);
 
+// Параметры отображения спектра и водопада
+
+static int_fast16_t glob_gridstep = 10000;	// 10 kHz - шаг сетки
+
+
+// waterfall/spectrum parameters
+static uint_fast8_t glob_fillspect;	/* заливать заполнением площадь под графиком спектра */
+static int_fast16_t glob_topdb = 0;	/* сколько не показывать сверху */
+static int_fast16_t glob_fulldb = 80;	/* высота спектроанализатора */
+static uint_fast8_t glob_zoomx = 1;	/* уменьшение отображаемого участка спектра */
+
 //#define WIDEFREQ (TUNE_TOP > 100000000L)
 
 static const FLASHMEM int32_t vals10 [] =
@@ -4740,17 +4751,6 @@ static const FLOAT_t spectrum_alpha = 1 - (FLOAT_t) 0.25;	// old value coefficie
 
 static const FLOAT_t waterfall_beta = 0.75;					// incoming value coefficient
 static const FLOAT_t waterfall_alpha = 1 - (FLOAT_t) 0.75;	// old value coefficient
-
-// Параметры отображения спектра и водопада
-
-static int_fast16_t glob_gridstep = 10000;	// 10 kHz - шаг сетки
-
-
-// waterfall/spectrum parameters
-static uint_fast8_t glob_fillspect;	/* заливать заполнением площадь под графиком спектра */
-static int_fast16_t glob_topdb = 0;	/* сколько не показывать сверху */
-static int_fast16_t glob_fulldb = 80;	/* высота спектроанализатора */
-static uint_fast8_t glob_zoomx = 1;	/* уменьшение отображаемого участка спектра */
 
 static FLOAT_t spavgarray [ALLDX] = { 1 };	// массив входных данных для отображения (через фильтры).
 

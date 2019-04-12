@@ -74,7 +74,7 @@ __Vectors:
    ldr pc, FIQAddr      /* FIQ interrupt         */
 
 
-ResetAddr:     .word DummyResetHandler
+ResetAddr:     .word Reset_Handler
 UndefAddr:     .word UndefHandler
 SWIAddr:       .word SWIHandler
 PAbortAddr:    .word PAbortHandler
@@ -89,7 +89,7 @@ FIQAddr:       .word FIQHandler
    .section .init, "ax"
    .code 32
    
-   .global Reset_Handler
+   /* .global Reset_Handler */
    .extern main
    .extern __libc_init_array
    .extern arm_cpu_initialize

@@ -17,6 +17,7 @@
 	#error PLEASE, DO NOT USE THIS FILE DIRECTLY. USE FILE "hardware.h" INSTEAD.
 #endif
 
+//#define WITHISAPPBOOTLOADER	1	/* Сейчас компилируем и собирем bootloader (Renesas R7S721020VCFP) */
 //#define WITHDEBUG		1	/* Отладочная печать через COM-порт. */
 //#define DEFAULTDIALFREQ	225000L
 //#define DEFAULTDIALFREQ	14021000L
@@ -168,11 +169,11 @@
 #elif CPUSTYLE_STM32F && CTLSTYLE_STORCH_V3	// SD-CARD. 2xUSB, DUAL WATCH, STM32F446ZET6, TLV320AIC23B и FPGA EP4CE22E22I7N
 	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v3.h"	// Rmainunit_v5fm.pcb (USBx2, wide display interface)
 	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v3_R0CC.h"	// Rmainunit_v5fm.pcb (USBx2, wide display interface)
-	#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v3_UT3NZ.h"	// stm32h743ziT6, EPSON 50 MHz Rmainunit_v5km.pcb (USBx2, wide display interface)
+	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v3_UT3NZ.h"	// stm32h743ziT6, EPSON 50 MHz Rmainunit_v5km.pcb (USBx2, wide display interface)
 	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v3_hansolo.h"	// Дачь Rmainunit_v5jm.pcb (USBx2, wide display interface)
 	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v3_RA1AHL.h"	// Rmainunit_v5fm.pcb (USBx2, wide display interface)
 	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v3_UA9WF.h"	// Rmainunit_v5fm.pcb LTC2217 (USBx2, wide display interface)
-	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v3_RA9W.h"	// Rmainunit_v5fm.pcb (USBx2, wide display interface)
+	#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v3_RA9W.h"	// Rmainunit_v5fm.pcb (USBx2, wide display interface)
 	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v3_headset.h"	// Rmainunit_v5fm.pcb (USBx2, wide display interface)
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32f4xx_tqfp144_cpustyle_storch_v3.h"	// Rmainunit_v5fm.pcb (USBx2, wide display interface)

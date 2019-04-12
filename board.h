@@ -225,16 +225,18 @@ uint_fast8_t board_rtc_chip_initialize(void);
 		typedef uint_least8_t nvramaddress_t;				/* можно сделать 8 бит. смещение в NVRAM. Если MENUNONVRAM - только меняем в памяти */
 	#endif /* (NVRAM_END > 255) */
 
-	void save_i32(nvramaddress_t addr, uint32_t v);	/* сохранение по указанному индексу в FRAM одного 32-битного слова */
-	uint_fast32_t restore_i32(nvramaddress_t addr); /* выборка по указанному индексу из FRAM одного 32-битного слова */
-	void save_i16(nvramaddress_t addr, uint16_t v); /* сохранение по указанному индексу в FRAM одного 16-битного слова */
-	uint_fast16_t restore_i16(nvramaddress_t addr); /* выборка по указанному индексу из FRAM одного 16-битного слова */
-	void save_i8(nvramaddress_t addr, uint8_t v); /* сохранение по указанному индексу в FRAM одного байта */
-	uint_fast8_t restore_i8(nvramaddress_t addr); /* выборка по указанному индексу из FRAM одного байта */
-
 #else /* defined (NVRAM_TYPE) && (NVRAM_TYPE != NVRAM_TYPE_NOTHING) */
 
+	typedef uint_least16_t nvramaddress_t;				/* можно сделать 8 бит. смещение в NVRAM. Если MENUNONVRAM - только меняем в памяти */
+
 #endif /* defined (NVRAM_TYPE) && (NVRAM_TYPE != NVRAM_TYPE_NOTHING) */
+
+void save_i32(nvramaddress_t addr, uint32_t v);	/* сохранение по указанному индексу в FRAM одного 32-битного слова */
+uint_fast32_t restore_i32(nvramaddress_t addr); /* выборка по указанному индексу из FRAM одного 32-битного слова */
+void save_i16(nvramaddress_t addr, uint16_t v); /* сохранение по указанному индексу в FRAM одного 16-битного слова */
+uint_fast16_t restore_i16(nvramaddress_t addr); /* выборка по указанному индексу из FRAM одного 16-битного слова */
+void save_i8(nvramaddress_t addr, uint8_t v); /* сохранение по указанному индексу в FRAM одного байта */
+uint_fast8_t restore_i8(nvramaddress_t addr); /* выборка по указанному индексу из FRAM одного байта */
 
 
 /* получить значение forward & reflected ADC */
@@ -257,6 +259,7 @@ mcp3208_read(
 void board_adc_initialize(void);
 void board_usb_initialize(void);
 void board_usb_activate(void);
+void board_usb_deactivate(void);
 
 void usbd_descriptors_initialize(uint_fast8_t deschs);
 void hardware_usbd_dma_initialize(void);

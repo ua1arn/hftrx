@@ -20,41 +20,70 @@
 //#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 #define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 
-#define WITHI2SHW	1	/* Использование SSIF0 I2S 2*16 bit - аудио кодек */
-#define WITHSAI1HW	1	/* Использование SSIF1 I2S 8*32 bit - FPGA IF codec */
-#if WITHRTS192
-	#define WITHSAI2HW	1	/* Использование SSIF2 I2S 2*32 (2*32) bit - FPGA панорама	*/
-#endif /* WITHRTS192 */
-
-//#define WITHCPUDACHW	1	/* использование DAC - в renesas R7S72 нету */
-#define WITHCPUADCHW 	1	/* использование ADC */
-
 //#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
 //#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
 
-#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
-#define WITHUSBHWVBUSSENSE	1	/* используется предопределенный вывод VBUS_SENSE */
-#define WITHUSBHWHIGHSPEED	1	/* Используется встроенная в процессор поддержка USB HS */
-#define WITHUSBHWHIGHSPEEDDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
-#define WITHUSBHW_DEVICE	(& USB201)	/* на этом устройстве поддерживается функцилнальность DEVUCE	*/
-//#define WITHUSBHW_HOST	(& USB200)	/* на этом устройстве поддерживается функцилнальность HOST	*/
+#if WITHISAPPBOOTLOADER
 
-//#define WITHUART1HW	1	/* Используется периферийный контроллер последовательного порта #1 SCIF0 */
-#define WITHUART2HW	1	/* Используется периферийный контроллер последовательного порта #2 SCIF3 */
+	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
+	#define WITHUSBHWVBUSSENSE	1	/* используется предопределенный вывод VBUS_SENSE */
+	#define WITHUSBHWHIGHSPEED	1	/* Используется встроенная в процессор поддержка USB HS */
+	#define WITHUSBHWHIGHSPEEDDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
+	#define WITHUSBHW_DEVICE	(& USB200)	/* на этом устройстве поддерживается функцилнальность DEVUCE	*/
+	//#define WITHUSBHW_HOST	(& USB200)	/* на этом устройстве поддерживается функцилнальность HOST	*/
 
-//#define WITHCAT_USART2	1
-#define WITHCAT_CDC			1	/* использовать виртуальный воследовательный порт на USB соединении */
-//#define WITHMODEM_CDC		1
-#define WITHDEBUG_USART2	1
-#define WITHMODEM_USART2	1
-#define WITHNMEA_USART2		1	/* порт подключения GPS/GLONASS */
+	//#define WITHUART1HW	1	/* Используется периферийный контроллер последовательного порта #1 SCIF0 */
+	#define WITHUART2HW	1	/* Используется периферийный контроллер последовательного порта #2 SCIF3 */
 
-#define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
-#define WITHUSBCDC		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
-//#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
-//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
-//#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
-#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
+	//#define WITHCAT_USART2	1
+	//#define WITHCAT_CDC			1	/* использовать виртуальный воследовательный порт на USB соединении */
+	//#define WITHMODEM_CDC		1
+	#define WITHDEBUG_USART2	1
+	#define WITHMODEM_USART2	1
+	#define WITHNMEA_USART2		1	/* порт подключения GPS/GLONASS */
+
+	//#define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
+	//#define WITHUSBCDC		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
+	//#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
+	//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
+	//#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
+	#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
+
+#else /* WITHISAPPBOOTLOADER */
+
+	//#define WITHCPUDACHW	1	/* использование DAC - в renesas R7S72 нету */
+	#define WITHCPUADCHW 	1	/* использование ADC */
+
+	#define WITHI2SHW	1	/* Использование SSIF0 I2S 2*16 bit - аудио кодек */
+	#define WITHSAI1HW	1	/* Использование SSIF1 I2S 8*32 bit - FPGA IF codec */
+	#if WITHRTS192
+		#define WITHSAI2HW	1	/* Использование SSIF2 I2S 2*32 (2*32) bit - FPGA панорама	*/
+	#endif /* WITHRTS192 */
+
+	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
+	#define WITHUSBHWVBUSSENSE	1	/* используется предопределенный вывод VBUS_SENSE */
+	#define WITHUSBHWHIGHSPEED	1	/* Используется встроенная в процессор поддержка USB HS */
+	#define WITHUSBHWHIGHSPEEDDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
+	#define WITHUSBHW_DEVICE	(& USB201)	/* на этом устройстве поддерживается функцилнальность DEVUCE	*/
+	//#define WITHUSBHW_HOST	(& USB200)	/* на этом устройстве поддерживается функцилнальность HOST	*/
+
+	//#define WITHUART1HW	1	/* Используется периферийный контроллер последовательного порта #1 SCIF0 */
+	#define WITHUART2HW	1	/* Используется периферийный контроллер последовательного порта #2 SCIF3 */
+
+	//#define WITHCAT_USART2	1
+	#define WITHCAT_CDC			1	/* использовать виртуальный воследовательный порт на USB соединении */
+	//#define WITHMODEM_CDC		1
+	#define WITHDEBUG_USART2	1
+	#define WITHMODEM_USART2	1
+	#define WITHNMEA_USART2		1	/* порт подключения GPS/GLONASS */
+
+	#define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
+	#define WITHUSBCDC		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
+	//#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
+	//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
+	//#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
+	#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
+#endif /* WITHISAPPBOOTLOADER */
 
 //#define WRITEE_BIT				(1u << 12)	// RD/~WR  P3_12 - должен быть в "0" - как при записи - для управления буферами на шине данных LCD
 
@@ -362,6 +391,10 @@
 			arm_hardware_pio3_inputs(TUNE_BIT_TUNE); \
 		} while (0)
 
+#else /* WITHTX */
+	#define TUNE_INITIALIZE() \
+		do { \
+		} while (0)
 #endif /* WITHTX */
 
 #if WITHELKEY
@@ -611,7 +644,7 @@
 		const portholder_t blstate = (~ (3) & 0x03) << 2; \
 		arm_hardware_pio7_inputs(blpins & blstate); /* BL ADJ - open (open drain simulate) */ \
 		arm_hardware_pio7_outputs(blpins & ~ blstate, 0); /* BL ADJ - grounded (open drain simulate) */ \
-		arm_hardware_pio7_outputs(enpins, 1 ? enpins : 0);	/* BL ENABLE */ \
+		arm_hardware_pio7_outputs(enpins, 0 ? enpins : 0);	/* BL ENABLE */ \
 		} while (0)
 	/* установка яркости и включение/выключение преобразователя подсветки */
 	/* level: 0..3 */
