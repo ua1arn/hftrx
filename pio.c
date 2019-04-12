@@ -107,7 +107,7 @@ power2(uint_fast16_t v)
 	//GPIO.P7 |= (1U << 1);
 
 #define r7s721_pio_inputs(n, ipins1) do { \
-		const uint16_t ipins2 = (ipins1); \
+		const portholder_t ipins2 = (ipins1); \
 		GPIO.PIPC ## n &= ~ (ipins2);	/* Port IP Control Register: 0 - direction control from PMn, 1 - from alternative function */ \
 		GPIO.PMC ## n &= ~ (ipins2);	/* Port Mode Control Register: 0 - port, 1 - alternative */ \
 		GPIO.PM ## n |= (ipins2);	/* Port Mode Register (PMn): 0 - output, 1 - input */ \
@@ -115,8 +115,8 @@ power2(uint_fast16_t v)
 	} while (0)
 
 #define r7s721_pio_outputs(n, opins1, initialstate1) do { \
-		const uint16_t initialstate2 = (initialstate1); \
-		const uint16_t opins2 = (opins1); \
+		const portholder_t initialstate2 = (initialstate1); \
+		const portholder_t opins2 = (opins1); \
 		GPIO.PIPC ## n &= ~ (opins2);	/* Port IP Control Register: 0 - direction control from PMn, 1 - from alternative function */ \
 		GPIO.PSR ## n = ((opins2) * 0x10000UL) | ((initialstate2) & (opins2)); \
 		GPIO.PMC ## n &= ~ (opins2);	/* Port Mode Control Register: 0 - port, 1 - alternative */ \
@@ -125,8 +125,8 @@ power2(uint_fast16_t v)
 	} while (0)
 
 #define r7s721_pio_alternative(n, iopins1, alt1) do { \
-		const uint16_t iopins2 = (iopins1); \
-		const uint16_t alt2 = (alt1); \
+		const portholder_t iopins2 = (iopins1); \
+		const int alt2 = (alt1); \
 		const int pfcae = ((alt2) & 0x04) != 0; \
 		const int pfce = ((alt2) & 0x02) != 0; \
 		const int pfc = ((alt2) & 0x01) != 0; \
