@@ -66,7 +66,6 @@ SRCDIR = ..
 PROJECT = tc1_r7s721020
 
 # Define linker script file here
-LDSCRIPT_ROM = ./r7s721020_spi.ld
 LDSCRIPT_BOOT = ./r7s721020_boot.ld
 LDSCRIPT_APP = ./r7s721020_app.ld
 
@@ -119,7 +118,6 @@ ASFLAGS = $(MCFLAGS) $(OPT) $(LTO) -g -gdwarf-2 $(ADEFS)
 #CPFLAGS = $(MCFLAGS) $(OPT) $(LTO) -gdwarf-2 -mlong-calls -fomit-frame-pointer -Wall -Wstrict-prototypes $(DEFS)
 CPFLAGS = $(MCFLAGS) $(OPT) $(LTO) -gdwarf-2 -fomit-frame-pointer -Wall -Wstrict-prototypes $(DEFS)
 
-LDFLAGS_ROM = $(MCFLAGS) $(LTO) $(OPT) -nostartfiles -T$(LDSCRIPT_ROM) -Wl,-Map=$(PROJECT)_rom.map,--cref $(LIBDIR)
 LDFLAGS_BOOT = $(MCFLAGS) $(LTO) $(OPT) -nostartfiles -T$(LDSCRIPT_BOOT) -Wl,-Map=$(PROJECT)_boot.map,--cref $(LIBDIR)
 LDFLAGS_APP = $(MCFLAGS) $(LTO) $(OPT) -nostartfiles -T$(LDSCRIPT_APP) -Wl,-Map=$(PROJECT)_app.map,--cref $(LIBDIR)
 
@@ -137,14 +135,11 @@ CPFLAGS += -MD -MP -MF ./dep/$(@F).d
 #
 
 all: APP
-#all: BOOT
-#all: ROM
 
 bootloader: BOOT
 
 BOOT: $(OBJS) $(PROJECT)_boot.elf $(PROJECT)_boot.hex
 APP: $(OBJS) $(PROJECT)_app.elf $(PROJECT)_app.bin
-ROM: $(OBJS) $(PROJECT)_rom.elf $(PROJECT)_rom.hex
 
 %o: $(addprefix $(SRCDIR)/, %c)
 	$(CC) -c $(CPFLAGS) $(INCDIR) $< -o $@
@@ -152,15 +147,11 @@ ROM: $(OBJS) $(PROJECT)_rom.elf $(PROJECT)_rom.hex
 %o: $(addprefix $(SRCDIR)/, %s)
 	$(AS) -c $(ASFLAGS) $< -o $@
 
-%rom.elf: $(OBJS)
-	$(CC) $(OBJS) $(LDFLAGS_ROM) $(LIBS) -o $@
-	$(TRGT)size --format=sysv --radix=16 $@
-
-%boot.elf: $(OBJS)
+%_boot.elf: $(OBJS)
 	$(CC) $(OBJS) $(LDFLAGS_BOOT) $(LIBS) -o $@
 	$(TRGT)size --format=sysv --radix=16 $@
 
-%app.elf: $(OBJS)
+%_app.elf: $(OBJS)
 	$(CC) $(OBJS) $(LDFLAGS_APP) $(LIBS) -o $@
 	$(TRGT)size --format=sysv --radix=16 $@
 
