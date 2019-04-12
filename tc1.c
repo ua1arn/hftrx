@@ -17036,6 +17036,7 @@ ddd:
 
 	debug_printf_P(PSTR("\n"));
 	debug_printf_P(PSTR("Now jump to application at %p.\n"), (void *) BOOTLOADER_APPAREA);
+	board_usb_deactivate();
 	__disable_irq();
 	GIC_DisableInterface();
 	GIC_DisableDistributor();

@@ -14674,6 +14674,11 @@ static void board_usbd_activate(void)
 
 	//PRINTF(PSTR("board_usbd_activate done.\n"));
 }
+/* вызывается при разрешённых прерываниях. */
+static void board_usbd_deactivate(void)
+{
+  USBD_Stop(&hUsbDevice);
+}
 
 
 #if WITHUSBHOST//WITHUSEUSBFLASH
@@ -18349,6 +18354,20 @@ void board_usb_activate(void)
 
 #if defined (WITHUSBHW_HOST)
 	board_usbh_activate();
+#endif /* defined (WITHUSBHW_HOST) */
+	//PRINTF(PSTR("board_usb_activate done.\n"));
+}
+
+/* вызывается при разрешённых прерываниях. */
+void board_usb_deactivate(void)
+{
+	//PRINTF(PSTR("board_usb_activate start.\n"));
+#if defined (WITHUSBHW_DEVICE)
+	board_usbd_deactivate();
+#endif /* defined (WITHUSBHW_DEVICE) */
+
+#if defined (WITHUSBHW_HOST)
+	board_usbh_deactivate();
 #endif /* defined (WITHUSBHW_HOST) */
 	//PRINTF(PSTR("board_usb_activate done.\n"));
 }
