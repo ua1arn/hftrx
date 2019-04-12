@@ -115,7 +115,7 @@ power2(uint_fast16_t v)
 
 #define r7s721_pio_outputs(n, opins, initialstate) do { \
 		GPIO.PIPC ## n &= ~ (opins);	/* Port IP Control Register: 0 - direction control from PMn, 1 - from alternative function */ \
-		GPIO.PSR ## n = ((opins) * 0x10000UL) | (initialstate); \
+		GPIO.PSR ## n = ((opins) * 0x10000UL) | ((initialstate) & (opins)); \
 		GPIO.PMC ## n &= ~ (opins);	/* Port Mode Control Register: 0 - port, 1 - alternative */ \
 		GPIO.PM ## n &= ~ (opins);	/* Port Mode Register (PMn): 0 - output, 1 - input */ \
 		GPIO.PIBC ## n &= ~ (opins);	/* Port Input Buffer Control Register (PIBCn): 0 - hiZ, 1 - input */ \
