@@ -424,6 +424,13 @@
 
 	#define WITHMODESETFULLNFM 1
 
+
+	#define WITHCATEXT	1	/* Расширенный набор команд CAT */
+	#define WITHELKEY	1
+	//#define WITHKBDENCODER 1	// перестройка частоты кнопками
+	#define WITHKEYBOARD 1	/* в данном устройстве есть клавиатура */
+	#define KEYBOARD_USE_ADC	1	/* на одной линии установлено  четыре  клавиши. на vref - 6.8K, далее 2.2К, 4.7К и 13K. */
+
 #endif /* WITHISAPPBOOTLOADER */
 
 
@@ -502,12 +509,6 @@
 	#define IF3_FMASKTX	(IF3_FMASK_3P1 /*| IF3_FMASK_6P0 */)
 	/* фильтры, для которых стоит признак HAVE */
 	#define IF3_FHAVE	( IF3_FMASK_0P5 | IF3_FMASK_3P1 /*| IF3_FMASK_6P0 | IF3_FMASK_8P0*/)
-
-	#define WITHCATEXT	1	/* Расширенный набор команд CAT */
-	#define WITHELKEY	1
-	//#define WITHKBDENCODER 1	// перестройка частоты кнопками
-	#define WITHKEYBOARD 1	/* в данном устройстве есть клавиатура */
-	#define KEYBOARD_USE_ADC	1	/* на одной линии установлено  четыре  клавиши. на vref - 6.8K, далее 2.2К, 4.7К и 13K. */
 
 	#define WITHDCDCFREQCTL	1		// Имеется управление частотой преобразователей блока питания и/или подсветки дисплея
 

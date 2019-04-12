@@ -16999,13 +16999,10 @@ printhex(unsigned long voffs, const unsigned char * buff, unsigned length)
 
 void bootloader_mainloop(void)
 {
-	void * const APPAREA = (void *) BOOTLOADER_APPAREA;
-	void * const APPBASE = (void *) BOOTLOADER_APPBASE;
+	//local_delay_ms(1000);
+	//printhex(BOOTLOADER_APPAREA, APPAREA, 384);
 
-	local_delay_ms(1000);
-	printhex((uintptr_t) APPAREA, APPAREA, 384);
-
-	debug_printf_P(PSTR("Ready jump to application at %p. Press 'r'\n"), APPAREA);
+	debug_printf_P(PSTR("Ready jump to application at %p. (%p) Press 'r'\n"), (void *) BOOTLOADER_APPAREA, bootloader_mainloop);
 	for (;;)
 	{
 #if CPUSTYLE_R7S721
@@ -17021,12 +17018,21 @@ void bootloader_mainloop(void)
 				break;
 		}
 	}
+	arm_hardware_flush(BOOTLOADER_APPAREA, BOOTLOADER_APPSIZE);
+
 	debug_printf_P(PSTR("\n"));
-	debug_printf_P(PSTR("Now jump to application at %p.\n"), APPAREA);
+	debug_printf_P(PSTR("Now jump to application at %p.\n"), (void *) BOOTLOADER_APPAREA);
 	__disable_irq();
+	GIC_DisableInterface();
+	GIC_DisableDistributor();
+
 	MMU_Disable();
+	MMU_InvalidateTLB();
+	//arm_hardware_invalidate_all()
+	__ISB();
+	__DSB();
 	TP();
-	(* (void (*)(void)) APPAREA)();
+	(* (void (*)(void)) BOOTLOADER_APPAREA)();
 	TP();
 	for (;;)
 		;

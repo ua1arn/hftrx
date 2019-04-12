@@ -10245,7 +10245,6 @@ void cpu_initdone(void)
 
 	//debug_printf_P(PSTR("Copy application image from %p to %p\n"), (void *) APPSTORAGEBASE, (void *) APPAREA);
 	memcpy(APPAREA, APPSTORAGEBASE, BOOTLOADER_APPSIZE);
-	arm_hardware_flush(BOOTLOADER_APPAREA, BOOTLOADER_APPSIZE);
 	//debug_printf_P(PSTR("Copy application image from %p to %p\n done"), (void *) APPSTORAGEBASE, (void *) APPAREA);
 
 #endif /* WITHISAPPBOOTLOADER */

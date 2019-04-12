@@ -20,9 +20,6 @@
 //#define WITHTWIHW 	1	/* »спользование аппаратного контроллера TWI (I2C) */
 #define WITHTWISW 	1	/* »спользование программного контроллера TWI (I2C) */
 
-//#define WITHCPUDACHW	1	/* использование DAC - в renesas R7S72 нету */
-#define WITHCPUADCHW 	1	/* использование ADC */
-
 //#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
 //#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
 
@@ -53,6 +50,9 @@
 	#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
 
 #else /* WITHISAPPBOOTLOADER */
+
+	//#define WITHCPUDACHW	1	/* использование DAC - в renesas R7S72 нету */
+	#define WITHCPUADCHW 	1	/* использование ADC */
 
 	#define WITHI2SHW	1	/* »спользование SSIF0 I2S 2*16 bit - аудио кодек */
 	#define WITHSAI1HW	1	/* »спользование SSIF1 I2S 8*32 bit - FPGA IF codec */
@@ -644,7 +644,7 @@
 		const portholder_t blstate = (~ (3) & 0x03) << 2; \
 		arm_hardware_pio7_inputs(blpins & blstate); /* BL ADJ - open (open drain simulate) */ \
 		arm_hardware_pio7_outputs(blpins & ~ blstate, 0); /* BL ADJ - grounded (open drain simulate) */ \
-		arm_hardware_pio7_outputs(enpins, 1 ? enpins : 0);	/* BL ENABLE */ \
+		arm_hardware_pio7_outputs(enpins, 0 ? enpins : 0);	/* BL ENABLE */ \
 		} while (0)
 	/* установка €ркости и включение/выключение преобразовател€ подсветки */
 	/* level: 0..3 */

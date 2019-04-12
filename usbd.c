@@ -3408,9 +3408,6 @@ static void usbd_handle_resume(PCD_TypeDef * const Instance)
 #if WITHUSBCDCEEM
 	cdceemout_initialize();
 #endif /* WITHUSBCDCEEM */
-#if WITHUSBDFU
-	USBD_DFU_Init(& hUsbDevice, 1);
-#endif /* WITHUSBDFU */
 }
 
 static void usbd_handle_suspend(PCD_TypeDef * const Instance)
@@ -18328,6 +18325,9 @@ const struct drvfunc USBH_drvfunc =
 /* вызывается при запрещённых прерываниях. */
 void board_usb_initialize(void)
 {
+#if WITHUSBDFU
+	USBD_DFU_Init(& hUsbDevice, 1);
+#endif /* WITHUSBDFU */
 	//PRINTF(PSTR("board_usb_initialize start.\n"));
 #if defined (WITHUSBHW_DEVICE)
 	board_usbd_initialize();	// USB device support
@@ -18418,7 +18418,7 @@ void spidf_initialize(void)
 		SPIBSC_SMCR_SPIRE |
 		SPIBSC_SMCR_SPIWE |
 		0;
-#endif /* ! WITHISAPPBOOTLOADER */
+#endif
 
 	// Connrect I/O pins
 	arm_hardware_pio4_outputs(1U << 2, 1U << 2);				/* P4_2 WP / SPBIO20_0 */
@@ -18907,6 +18907,7 @@ uint16_t MEM_If_Write_HS(uint8_t *src, uint32_t dest, uint32_t Len)
 {
 	//PRINTF(PSTR("MEM_If_Write_HS: addr=%08lX, len=%03lX\n"), dest, Len);
 	writeDATAFLASH(dest, src, Len);
+	memcpy((void *) ((uintptr_t) dest - BOOTLOADER_APPBASE + BOOTLOADER_APPAREA), src, Len);
 	return (USBD_OK);
 }
 
