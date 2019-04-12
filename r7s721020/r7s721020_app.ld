@@ -42,6 +42,9 @@ SECTIONS
 {
 	.text :
 	{
+		KEEP(*(.vectors))
+		__Vectors_End = .;
+		__Vectors_Size = __Vectors_End - __Vectors;
 		KEEP(*(.init))
 		KEEP(*(.initfunc))
 		KEEP(*(.initdata))
@@ -100,10 +103,6 @@ SECTIONS
 	.data :
 	{
 		__data_start__ = .;
-		KEEP(*(.vectors))
-		__Vectors_End = .;
-		__Vectors_Size = __Vectors_End - __Vectors;
-		__end__ = .;
 
 		/* .ctors */
 		*crtbegin.o(.ctors)
