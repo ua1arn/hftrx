@@ -16999,8 +16999,8 @@ printhex(unsigned long voffs, const unsigned char * buff, unsigned length)
 
 void bootloader_mainloop(void)
 {
-	local_delay_ms(1000);
-	printhex(BOOTLOADER_APPAREA, (void *) BOOTLOADER_APPAREA, 512);
+	//local_delay_ms(1000);
+	//printhex(BOOTLOADER_APPAREA, (void *) BOOTLOADER_APPAREA, 512);
 ddd:
 	debug_printf_P(PSTR("Ready jump to application at %p. Press 'r'\n"), (void *) BOOTLOADER_APPAREA);
 	for (;;)
