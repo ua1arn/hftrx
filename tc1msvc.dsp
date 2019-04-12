@@ -4,7 +4,7 @@
 
 # TARGTYPE "Win32 (x86) External Target" 0x0106
 
-CFG=tc1msvc - Win32 stm32f769ii
+CFG=tc1msvc - Win32 r7s721020_boot
 !MESSAGE This is not a valid makefile. To build this project using NMAKE,
 !MESSAGE use the Export Makefile command and run
 !MESSAGE 
@@ -13,20 +13,21 @@ CFG=tc1msvc - Win32 stm32f769ii
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
 !MESSAGE 
-!MESSAGE NMAKE /f "tc1msvc.mak" CFG="tc1msvc - Win32 stm32f769ii"
+!MESSAGE NMAKE /f "tc1msvc.mak" CFG="tc1msvc - Win32 r7s721020_boot"
 !MESSAGE 
 !MESSAGE Possible choices for configuration are:
 !MESSAGE 
 !MESSAGE "tc1msvc - Win32 stm32f746zg" (based on "Win32 (x86) External Target")
 !MESSAGE "tc1msvc - Win32 stm32f767zi" (based on "Win32 (x86) External Target")
 !MESSAGE "tc1msvc - Win32 stm32h743zi" (based on "Win32 (x86) External Target")
+!MESSAGE "tc1msvc - Win32 r7s721020" (based on "Win32 (x86) External Target")
+!MESSAGE "tc1msvc - Win32 r7s721020_boot" (based on "Win32 (x86) External Target")
 !MESSAGE "tc1msvc - Win32 stm32f429zi" (based on "Win32 (x86) External Target")
 !MESSAGE "tc1msvc - Win32 stm32f769ii" (based on "Win32 (x86) External Target")
 !MESSAGE "tc1msvc - Win32 stm32f723ze" (based on "Win32 (x86) External Target")
 !MESSAGE "tc1msvc - Win32 stm32f446ze" (based on "Win32 (x86) External Target")
 !MESSAGE "tc1msvc - Win32 stm32f401rb" (based on "Win32 (x86) External Target")
 !MESSAGE "tc1msvc - Win32 stm32f407vg" (based on "Win32 (x86) External Target")
-!MESSAGE "tc1msvc - Win32 r7s721020" (based on "Win32 (x86) External Target")
 !MESSAGE "tc1msvc - Win32 stm32f103c8" (based on "Win32 (x86) External Target")
 !MESSAGE "tc1msvc - Win32 stm32f101rb" (based on "Win32 (x86) External Target")
 !MESSAGE "tc1msvc - Win32 stm32f303vc" (based on "Win32 (x86) External Target")
@@ -596,6 +597,27 @@ CFG=tc1msvc - Win32 stm32f769ii
 # PROP Bsc_Name "tc1msvc.bsc"
 # PROP Target_Dir ""
 
+!ELSEIF  "$(CFG)" == "tc1msvc - Win32 r7s721020_boot"
+
+# PROP BASE Use_MFC 0
+# PROP BASE Use_Debug_Libraries 1
+# PROP BASE Output_Dir "tc1msvc___Win32_r7s721020_boot"
+# PROP BASE Intermediate_Dir "tc1msvc___Win32_r7s721020_boot"
+# PROP BASE Cmd_Line "NMAKE /a /f tc1msvc_at32.mak r7s721020"
+# PROP BASE Rebuild_Opt ""
+# PROP BASE Target_File "tc1msvc.exe"
+# PROP BASE Bsc_Name "tc1msvc.bsc"
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 0
+# PROP Use_Debug_Libraries 1
+# PROP Output_Dir "tc1msvc___Win32_r7s721020_boot"
+# PROP Intermediate_Dir "tc1msvc___Win32_r7s721020_boot"
+# PROP Cmd_Line "NMAKE /a /f tc1msvc_at32.mak r7s721020_boot"
+# PROP Rebuild_Opt ""
+# PROP Target_File "tc1msvc.exe"
+# PROP Bsc_Name "tc1msvc.bsc"
+# PROP Target_Dir ""
+
 !ENDIF 
 
 # Begin Target
@@ -626,6 +648,7 @@ CFG=tc1msvc - Win32 stm32f769ii
 # Name "tc1msvc - Win32 atsam4sa16c"
 # Name "tc1msvc - Win32 at91sam7s64"
 # Name "tc1msvc - Win32 at91sam9xe"
+# Name "tc1msvc - Win32 r7s721020_boot"
 
 !IF  "$(CFG)" == "tc1msvc - Win32 stm32f746zg"
 
@@ -678,6 +701,8 @@ CFG=tc1msvc - Win32 stm32f769ii
 !ELSEIF  "$(CFG)" == "tc1msvc - Win32 at91sam7s64"
 
 !ELSEIF  "$(CFG)" == "tc1msvc - Win32 at91sam9xe"
+
+!ELSEIF  "$(CFG)" == "tc1msvc - Win32 r7s721020_boot"
 
 !ENDIF 
 

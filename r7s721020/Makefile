@@ -140,6 +140,8 @@ all: APP
 #all: BOOT
 #all: ROM
 
+bootloader: BOOT
+
 BOOT: $(OBJS) $(PROJECT)_boot.elf $(PROJECT)_boot.hex
 APP: $(OBJS) $(PROJECT)_app.elf $(PROJECT)_app.bin
 ROM: $(OBJS) $(PROJECT)_rom.elf $(PROJECT)_rom.hex
