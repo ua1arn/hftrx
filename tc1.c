@@ -16999,17 +16999,13 @@ printhex(unsigned long voffs, const unsigned char * buff, unsigned length)
 
 void bootloader_mainloop(void)
 {
-	//local_delay_ms(1000);
-	//printhex(BOOTLOADER_APPAREA, APPAREA, 384);
-
-	debug_printf_P(PSTR("Ready jump to application at %p. (%p) Press 'r'\n"), (void *) BOOTLOADER_APPAREA, bootloader_mainloop);
+	local_delay_ms(1000);
+	printhex(BOOTLOADER_APPAREA, (void *) BOOTLOADER_APPAREA, 512);
+ddd:
+	debug_printf_P(PSTR("Ready jump to application at %p. Press 'r'\n"), (void *) BOOTLOADER_APPAREA);
 	for (;;)
 	{
-#if CPUSTYLE_R7S721
-		unsigned v = WITHUSBHW_DEVICE->INTSTS0;
-		if ((v & USB_INTSTS0_VBSTS) == 0)
-			break;
-#endif /* CPUSTYLE_R7S721 */
+#if WITHDEBUG
 		char c;
 		if (dbg_getchar(& c))
 		{
@@ -17017,8 +17013,26 @@ void bootloader_mainloop(void)
 			if (c == 'r')
 				break;
 		}
+#endif /* WITHDEBUG */
+#if CPUSTYLE_R7S721
+		unsigned v = WITHUSBHW_DEVICE->INTSTS0;
+		if ((v & USB_INTSTS0_VBSTS) == 0)
+			break;
+#else /* CPUSTYLE_R7S721 */
+		break;
+#endif /* CPUSTYLE_R7S721 */
 	}
 	arm_hardware_flush(BOOTLOADER_APPAREA, BOOTLOADER_APPSIZE);
+
+	static const char sgn [] = " DREAM RX";
+
+	if (memcmp(sgn, (void *) (BOOTLOADER_APPAREA + 0x019C), strlen(sgn)) != 0)
+	{
+		debug_printf_P(PSTR("No application signature\n"));
+		goto ddd;
+		for (;;)
+			;
+	}
 
 	debug_printf_P(PSTR("\n"));
 	debug_printf_P(PSTR("Now jump to application at %p.\n"), (void *) BOOTLOADER_APPAREA);
@@ -17031,7 +17045,7 @@ void bootloader_mainloop(void)
 	//arm_hardware_invalidate_all()
 	__ISB();
 	__DSB();
-	TP();
+	debug_printf_P(PSTR("Jump....\n"));
 	(* (void (*)(void)) BOOTLOADER_APPAREA)();
 	TP();
 	for (;;)

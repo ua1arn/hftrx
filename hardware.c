@@ -10188,17 +10188,17 @@ void cpu_initialize(void)
 	__set_SCTLR(__get_SCTLR() & ~ SCTLR_A_Msk);	// 0 = Strict alignment fault checking disabled. This is the reset value.
 
 	//debug_printf_P(PSTR("cpu_initialize2: CP15(SCTLR)=%08lX\n"), __get_SCTLR());
-
-	if (0) //(memcmp((void *) 4, & __data_start__ + 1, 16) == 0)
+#if 0
+	if (memcmp((void *) 4, (void *) 0x20000004, 16) == 0)
 	{
-		//debug_printf_P(PSTR("cpu_initialize1: vectors mapped succesful\n"));
-		//debug_printf_P(PSTR("cpu_initialize1: vectors mapped succesful. %08lX %08lX\n"), * (volatile uint32_t *) 0, * (volatile uint32_t *) 4);
+		debug_printf_P(PSTR("cpu_initialize1: vectors mapped succesful\n"));
+		debug_printf_P(PSTR("cpu_initialize1: vectors mapped succesful. %08lX %08lX\n"), * (volatile uint32_t *) 0, * (volatile uint32_t *) 4);
 	}
 	else
 	{
-		//debug_printf_P(PSTR("cpu_initialize1: vectors mapped failure.\n"));
+		debug_printf_P(PSTR("cpu_initialize1: vectors mapped failure.\n"));
 	}
-
+#endif
 	/* TN-RZ*-A011A/E recommends switch off USB_X1 if usb USB not used */
 	CPG.STBCR7 &= ~ CPG_STBCR7_MSTP70;	// Module Stop 71 0: Channel 0 of the USB 2.0 host/function module runs.
 	CPG.STBCR7 &= ~ CPG_STBCR7_MSTP71;	// Module Stop 71 0: Channel 0 of the USB 2.0 host/function module runs.
@@ -10250,29 +10250,33 @@ void cpu_initdone(void)
 #endif /* WITHISAPPBOOTLOADER */
 #if CPUSTYLE_R7S721
 
-	// Когда загрузочный образ FPGA будт оставаться в SERIAL FLASH, запретить отключение.
-	while ((SPIBSC0.CMNSR & (1u << 0)) == 0)	// TEND bit
-		;
+	if ((CPG.STBCR9 & CPG_STBCR9_BIT_MSTP93) == 0)
+	{
 
-	SPIBSC0.CMNCR = (SPIBSC0.CMNCR & ~ ((1 << SPIBSC_CMNCR_BSZ))) |	// BSZ
-		(1 << SPIBSC_CMNCR_BSZ_SHIFT) |
-		0;
-	(void) SPIBSC0.CMNCR;	/* Dummy read */
+		// Когда загрузочный образ FPGA будт оставаться в SERIAL FLASH, запретить отключение.
+		while ((SPIBSC0.CMNSR & (1u << 0)) == 0)	// TEND bit
+			;
 
-	// SPI multi-io Read Cache Flush
-	SPIBSC0.DRCR |= (1u << SPIBSC_DRCR_RCF_SHIFT);	// RCF bit
-	(void) SPIBSC0.DRCR;		/* Dummy read */
+		SPIBSC0.CMNCR = (SPIBSC0.CMNCR & ~ ((1 << SPIBSC_CMNCR_BSZ))) |	// BSZ
+			(1 << SPIBSC_CMNCR_BSZ_SHIFT) |
+			0;
+		(void) SPIBSC0.CMNCR;	/* Dummy read */
 
-	local_delay_ms(50);
+		// SPI multi-io Read Cache Flush
+		SPIBSC0.DRCR |= (1u << SPIBSC_DRCR_RCF_SHIFT);	// RCF bit
+		(void) SPIBSC0.DRCR;		/* Dummy read */
 
-	SPIBSC0.SMCR = 0;
-	(void) SPIBSC0.SMCR;	/* Dummy read */
+		local_delay_ms(50);
 
-	// spi multi-io hang off
-	CPG.STBCR9 |= CPG_STBCR9_BIT_MSTP93;	// Module Stop 93	- 1: Clock supply to channel 0 of the SPI multi I/O bus controller is halted.
-	(void) CPG.STBCR9;			/* Dummy read */
+		SPIBSC0.SMCR = 0;
+		(void) SPIBSC0.SMCR;	/* Dummy read */
 
-	arm_hardware_pio4_inputs(0xFC);		// Отключить процессор от SERIAL FLASH
+		// spi multi-io hang off
+		CPG.STBCR9 |= CPG_STBCR9_BIT_MSTP93;	// Module Stop 93	- 1: Clock supply to channel 0 of the SPI multi I/O bus controller is halted.
+		(void) CPG.STBCR9;			/* Dummy read */
+
+		arm_hardware_pio4_inputs(0xFC);		// Отключить процессор от SERIAL FLASH
+	}
 
 #endif /* CPUSTYLE_R7S721 */
 }
