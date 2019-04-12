@@ -18906,8 +18906,11 @@ uint16_t MEM_If_Erase_HS(uint32_t Add)
 uint16_t MEM_If_Write_HS(uint8_t *src, uint32_t dest, uint32_t Len)
 {
 	//PRINTF(PSTR("MEM_If_Write_HS: addr=%08lX, len=%03lX\n"), dest, Len);
-	writeDATAFLASH(dest, src, Len);
+	if (writeDATAFLASH(dest, src, Len))
+		return USBD_FAIL;
+#if WITHISAPPBOOTLOADER
 	memcpy((void *) ((uintptr_t) dest - BOOTLOADER_APPBASE + BOOTLOADER_APPAREA), src, Len);
+#endif /* WITHISAPPBOOTLOADER */
 	return (USBD_OK);
 }
 
@@ -18923,7 +18926,8 @@ uint8_t *MEM_If_Read_HS(uint32_t src, uint8_t *dest, uint32_t Len)
 	/* Return a valid address to avoid HardFault */
 	/* USER CODE BEGIN 4 */
 	spitarget_t target = targetdataflash;	/* addressing to chip */
-	timed_dataflash_read_status(target);
+	if (timed_dataflash_read_status(target))
+		return dest;	// todo: error handling need
 	readDATAFLASH(src, dest, Len);
 	return dest;
 	/* USER CODE END 4 */
