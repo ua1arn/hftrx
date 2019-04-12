@@ -9265,6 +9265,15 @@ arm_cpu_initialize(void)
 
 	/* далее будет выполняться копирование data и инициализация bss - для нормальной работы RESET требуется без DATA CACHE */
 
+	/* Установить скорость обмена с SERIAL FLASH повыше */
+	if ((CPG.STBCR9 & CPG_STBCR9_BIT_MSTP93) == 0)
+	{
+		SPIBSC0.SPBCR = (SPIBSC0.SPBCR & ~ (SPIBSC_SPBCR_BRDV | SPIBSC_SPBCR_SPBR)) |
+			(0 << SPIBSC_SPBCR_BRDV_SHIFT) |	// 0..3
+			(2 << SPIBSC_SPBCR_SPBR_SHIFT) |	// 0..255
+			0;
+	}
+
 #else
 	//#error Undefined CPUSTYLE_XXX
 
@@ -10247,12 +10256,11 @@ void cpu_initdone(void)
 	memcpy(APPAREA, APPSTORAGEBASE, BOOTLOADER_APPSIZE);
 	//debug_printf_P(PSTR("Copy application image from %p to %p\n done"), (void *) APPSTORAGEBASE, (void *) APPAREA);
 
-#endif /* WITHISAPPBOOTLOADER */
 #if CPUSTYLE_R7S721
 
 	if ((CPG.STBCR9 & CPG_STBCR9_BIT_MSTP93) == 0)
 	{
-
+#if 0
 		// Когда загрузочный образ FPGA будт оставаться в SERIAL FLASH, запретить отключение.
 		while ((SPIBSC0.CMNSR & (1u << 0)) == 0)	// TEND bit
 			;
@@ -10274,11 +10282,12 @@ void cpu_initdone(void)
 		// spi multi-io hang off
 		CPG.STBCR9 |= CPG_STBCR9_BIT_MSTP93;	// Module Stop 93	- 1: Clock supply to channel 0 of the SPI multi I/O bus controller is halted.
 		(void) CPG.STBCR9;			/* Dummy read */
-
+#endif
 		arm_hardware_pio4_inputs(0xFC);		// Отключить процессор от SERIAL FLASH
 	}
 
 #endif /* CPUSTYLE_R7S721 */
+#endif /* WITHISAPPBOOTLOADER */
 }
 
 // optimizer test: from electronix.ru - should be one divmod call

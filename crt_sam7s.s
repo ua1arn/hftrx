@@ -74,7 +74,7 @@ __Vectors:
    ldr pc, FIQAddr      /* FIQ interrupt         */
 
 
-ResetAddr:     .word Reset_Handler
+ResetAddr:     .word Reset_Handler7
 UndefAddr:     .word UndefHandler
 SWIAddr:       .word SWIHandler
 PAbortAddr:    .word PAbortHandler
@@ -92,13 +92,13 @@ FIQAddr:       .word FIQHandler
    .section .init, "ax"
    .code 32
    
-   .global Reset_Handler
+   .global Reset_Handler7
    .extern main
    .extern arm_cpu_initialize
 /****************************************************************************/
 /*                           Reset handler                                  */
 /****************************************************************************/
-Reset_Handler:
+Reset_Handler7:
    /*
     * Setup a stack for each mode
     */    
@@ -128,12 +128,14 @@ Reset_Handler:
    ldr     r1, =__etext
    ldr     r2, =__data_start__
    ldr     r3, =__data_end__
+   cmp     r1, r2
+   beq 	   data_copy_skip	/* RAM target */
 data_copy_loop:
    cmp     r2, r3
    ldrlo   r0, [r1], #4
    strlo   r0, [r2], #4
    blo     data_copy_loop
-
+data_copy_skip:
    /*
     * Clear .bss section
     */
