@@ -4,8 +4,8 @@
 MEMORY
 {
   FLASH (rx) : ORIGIN = 0x18000000, LENGTH = 128k
-  RAM (rwx)  : ORIGIN = 0x20100000, LENGTH = 256k
-  TTB (rwx)  : ORIGIN = 0x202FC000, LENGTH = 16k
+  TTB (rwx)  : ORIGIN = 0x202F8000, LENGTH = 16k
+  RAM (rwx)  : ORIGIN = 0x20200000, LENGTH = 256k
 }
 
 /* Library configurations */

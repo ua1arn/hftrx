@@ -136,10 +136,13 @@ CPFLAGS += -MD -MP -MF ./dep/$(@F).d
 # makefile rules
 #
 
+#all: APP
 all: BOOT
+#all: ROM
 
 BOOT: $(OBJS) $(PROJECT)_boot.elf $(PROJECT)_boot.hex
-ROM2: $(OBJS) $(PROJECT)_rom.elf $(PROJECT)_rom.bin
+APP: $(OBJS) $(PROJECT)_app.elf $(PROJECT)_app.bin
+ROM: $(OBJS) $(PROJECT)_rom.elf $(PROJECT)_rom.hex
 
 %o: $(addprefix $(SRCDIR)/, %c)
 	$(CC) -c $(CPFLAGS) $(INCDIR) $< -o $@
