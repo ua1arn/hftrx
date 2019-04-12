@@ -16964,23 +16964,75 @@ static void siggen_mainloop(void)
 }
 #endif
 
+#if WITHISAPPBOOTLOADER
+
+static int
+toprintc(int c)
+{
+	if (c < 0x20 || c >= 0x7f)
+		return '.';
+	return c;
+}
+
+void
+printhex(unsigned long voffs, const unsigned char * buff, unsigned length)
+{
+	unsigned i, j;
+	unsigned rows = (length + 15) / 16;
+
+	for (i = 0; i < rows; ++ i)
+	{
+		const int trl = ((length - 1) - i * 16) % 16 + 1;
+		debug_printf_P(PSTR("%08lX "), voffs + i * 16);
+		for (j = 0; j < trl; ++ j)
+			debug_printf_P(PSTR(" %02X"), buff [i * 16 + j]);
+
+		debug_printf_P(PSTR("%*s"), (16 - trl) * 3, "");
+
+		debug_printf_P(PSTR("  "));
+		for (j = 0; j < trl; ++ j)
+			debug_printf_P(PSTR("%c"), toprintc(buff [i * 16 + j]));
+
+		debug_printf_P(PSTR("\n"));
+	}
+}
+
 void bootloader_mainloop(void)
 {
-	const uintptr_t APPAREA = 0x20020000;
-	const uintptr_t APPBASE = 0x18020000;
-	const size_t APPSIZE = 1024uL * 2928;	// value from app's .ld script
+	void * const APPAREA = (void *) BOOTLOADER_APPAREA;
+	void * const APPBASE = (void *) BOOTLOADER_APPBASE;
 
-	debug_printf_P(PSTR("Jump to application at %p\n"), (void *) APPBASE);
+	local_delay_ms(1000);
+	printhex((uintptr_t) APPAREA, APPAREA, 384);
+
+	debug_printf_P(PSTR("Ready jump to application at %p. Press 'r'\n"), APPAREA);
 	for (;;)
-		;
-	disableIRQ();
+	{
+#if CPUSTYLE_R7S721
+		unsigned v = WITHUSBHW_DEVICE->INTSTS0;
+		if ((v & USB_INTSTS0_VBSTS) == 0)
+			break;
+#endif /* CPUSTYLE_R7S721 */
+		char c;
+		if (dbg_getchar(& c))
+		{
+			dbg_putchar(c);
+			if (c == 'r')
+				break;
+		}
+	}
+	debug_printf_P(PSTR("\n"));
+	debug_printf_P(PSTR("Now jump to application at %p.\n"), APPAREA);
+	__disable_irq();
 	MMU_Disable();
-	memcpy((void *) APPAREA, (void *) APPBASE, APPSIZE);
-	//(* (void (*)(void)) APPAREA)();
+	TP();
+	(* (void (*)(void)) APPAREA)();
+	TP();
 	for (;;)
 		;
 }
 
+#endif /* WITHISAPPBOOTLOADER */
 /* Главная функция программы */
 int 
 //__attribute__ ((used))

@@ -32,7 +32,7 @@
 	#define WITHUSBHWVBUSSENSE	1	/* используется предопределенный вывод VBUS_SENSE */
 	#define WITHUSBHWHIGHSPEED	1	/* Используется встроенная в процессор поддержка USB HS */
 	#define WITHUSBHWHIGHSPEEDDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
-	#define WITHUSBHW_DEVICE	(& USB201)	/* на этом устройстве поддерживается функцилнальность DEVUCE	*/
+	#define WITHUSBHW_DEVICE	(& USB200)	/* на этом устройстве поддерживается функцилнальность DEVUCE	*/
 	//#define WITHUSBHW_HOST	(& USB200)	/* на этом устройстве поддерживается функцилнальность HOST	*/
 
 	//#define WITHUART1HW	1	/* Используется периферийный контроллер последовательного порта #1 SCIF0 */
@@ -51,6 +51,7 @@
 	//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
 	//#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
 	#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
+
 #else /* WITHISAPPBOOTLOADER */
 
 	#define WITHI2SHW	1	/* Использование SSIF0 I2S 2*16 bit - аудио кодек */
@@ -81,7 +82,7 @@
 	//#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
 	//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
 	//#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
-	#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
+	//#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
 #endif /* WITHISAPPBOOTLOADER */
 
 //#define WRITEE_BIT				(1u << 12)	// RD/~WR  P3_12 - должен быть в "0" - как при записи - для управления буферами на шине данных LCD

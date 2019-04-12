@@ -11,6 +11,11 @@
 #ifndef ARM_R7S72_TQFP176_CTLSTYLE_STORCH_V8_H_INCLUDED
 #define ARM_R7S72_TQFP176_CTLSTYLE_STORCH_V8_H_INCLUDED 1
 
+	#define BOOTLOADER_APPAREA 0x20000000	/* адрес ОЗУ, куда перемезать application */
+	#define BOOTLOADER_APPBASE 0x18020000	/* адрес где лежит во FLASH образ application */
+	#define BOOTLOADER_APPSIZE (1024uL * 1920)	// 2048 - 128
+	#define BOOTLOADER_PAGESIZE (1024uL * 64)	// M25Px with 64 KB pages
+
 	//#define WITHSAICLOCKFROMI2S 1	/* Блок SAI1 тактируется от PLL I2S */
 	#define WITHI2SCLOCKFROMPIN 1	// тактовая частота на SPI2 (I2S) подается с внешнего генератора, в процессор вводится через AUDIO_X1 сигнал интерфейса
 	#define WITHSAICLOCKFROMPIN 1	// тактовая частота на SAI1 подается с внешнего генератора, в процессор вводится через AUDIO_X1 сигнал интерфейса
@@ -188,9 +193,10 @@
 #if WITHISAPPBOOTLOADER
 
 
-	#define CTLREGSTYLE_NOCTLREG 1
+	#define CTLREGMODE_STORCH_V7	1	/* TFT 4.3" "Аист" с DSP и FPGA STM32H743IIT6 или R7S721020VCFP */
+	//#define CTLREGSTYLE_NOCTLREG 1
 	/* коды входов коммутатора источников сигнала для УНЧ приёмника */
-	//#define BOARD_DETECTOR_SSB 	0		// Заглушка
+	#define BOARD_DETECTOR_SSB 	0		// Заглушка
 
 	// +++ заглушки для плат с DSP обработкой
 	//#define	BOARD_AGCCODE_ON	0

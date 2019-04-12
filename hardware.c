@@ -10239,7 +10239,17 @@ void cpu_initialize(void)
 // секция init больше не нужна
 void cpu_initdone(void)
 {
-#if CPUSTYLE_R7S721 && ! WITHISAPPBOOTLOADER
+#if WITHISAPPBOOTLOADER
+	void * const APPAREA = (void *) BOOTLOADER_APPAREA;
+	void * const APPSTORAGEBASE = (void *) BOOTLOADER_APPBASE;
+
+	//debug_printf_P(PSTR("Copy application image from %p to %p\n"), (void *) APPSTORAGEBASE, (void *) APPAREA);
+	memcpy(APPAREA, APPSTORAGEBASE, BOOTLOADER_APPSIZE);
+	arm_hardware_flush(BOOTLOADER_APPAREA, BOOTLOADER_APPSIZE);
+	//debug_printf_P(PSTR("Copy application image from %p to %p\n done"), (void *) APPSTORAGEBASE, (void *) APPAREA);
+
+#endif /* WITHISAPPBOOTLOADER */
+#if CPUSTYLE_R7S721
 
 	// Когда загрузочный образ FPGA будт оставаться в SERIAL FLASH, запретить отключение.
 	while ((SPIBSC0.CMNSR & (1u << 0)) == 0)	// TEND bit
@@ -10265,7 +10275,7 @@ void cpu_initdone(void)
 
 	arm_hardware_pio4_inputs(0xFC);		// Отключить процессор от SERIAL FLASH
 
-#endif /* CPUSTYLE_R7S721 && ! WITHISAPPBOOTLOADER */
+#endif /* CPUSTYLE_R7S721 */
 }
 
 // optimizer test: from electronix.ru - should be one divmod call

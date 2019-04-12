@@ -155,8 +155,7 @@ struct stringtempl
 //static const char strFlashDesc [] = "@Internal Flash /0x08000000/16*128Kg";
 //static const char strOptBytesDesc [] = "@Option Bytes /0x5200201C/01*128 e";
 
-static const char strFlashDesc [] = "@SPI Flash : M25Px/0x18020000/30*064Kg";	// 128 k for bootloader
-//static const char strFlashDesc [] = "@SPI Flash : M25Px/0x18000000/32*064Kg";
+static const char strFlashDesc [] = "@SPI Flash : M25Px/0x18000000/32*064Kg";
 //static const char strFlashDesc [] = "@Internal Flash /0x08000000/16*128Kg";
 static const struct stringtempl strtemplates [] =
 {
@@ -169,8 +168,10 @@ static const struct stringtempl strtemplates [] =
 	{ STRING_ID_RNDIS, PRODUCTSTR " Remote NDIS", },
 
 	{ STRING_ID_DFU, "Storch DFU Device", },
-	{ STRING_ID_DFU_0, strFlashDesc, },
-	//{ STRING_ID_DFU_1, strOptBytesDesc, },
+	#if ! WITHISAPPBOOTLOADER
+		{ STRING_ID_DFU_0, strFlashDesc, },
+		//{ STRING_ID_DFU_1, strOptBytesDesc, },
+	#endif /* ! WITHISAPPBOOTLOADER */
 
 	#if CTLSTYLE_OLEG4Z_V1
 		{ STRING_ID_a0, PRODUCTSTR " Voice", },		// tag for Interface Descriptor 0/0 Audio
@@ -3153,6 +3154,26 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 	}
 #endif /* WITHUSBHID */
 	
+#if WITHUSBDFU
+	{
+		static const char strFlashDesc_3 [] = "@SPI Flash : M25Px/0x%08lx/%02u*%03uKg";	// 128 k for bootloader
+		unsigned partlen;
+		// Формирование MAC адреса данного устройства
+		// TODO: При модификации не забыть про достоверность значений
+		const uint_fast8_t id = STRING_ID_DFU_0;
+		char b [128];
+		local_snprintf_P(b, ARRAY_SIZE(b), strFlashDesc_3, 
+			(unsigned long) BOOTLOADER_APPBASE,
+			(unsigned) (BOOTLOADER_APPSIZE / BOOTLOADER_PAGESIZE),
+			(unsigned) (BOOTLOADER_PAGESIZE / 1024)
+			);
+		score += fill_align4(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score);
+		partlen = fill_string_descriptor(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score, b);
+		StringDescrTbl [id].size = partlen;
+		StringDescrTbl [id].data = alldescbuffer + score;
+		score += partlen;
+	}
+#endif /* WITHUSBDFU */
 #if WITHUSBCDCECM || WITHUSBCDCEEM
 	{
 		unsigned partlen;

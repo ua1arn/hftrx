@@ -136,8 +136,8 @@ CPFLAGS += -MD -MP -MF ./dep/$(@F).d
 # makefile rules
 #
 
-#all: APP
-all: BOOT
+all: APP
+#all: BOOT
 #all: ROM
 
 BOOT: $(OBJS) $(PROJECT)_boot.elf $(PROJECT)_boot.hex
