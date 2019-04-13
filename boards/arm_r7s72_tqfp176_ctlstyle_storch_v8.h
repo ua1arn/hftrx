@@ -12,8 +12,13 @@
 #define ARM_R7S72_TQFP176_CTLSTYLE_STORCH_V8_H_INCLUDED 1
 
 	#define BOOTLOADER_APPAREA 0x20000000	/* адрес ОЗУ, куда перемезать application */
+
+	#define BOOTLOADER_SELFBASE 0x18000000	/* адрес где лежит во FLASH образ application */
+	#define BOOTLOADER_SELFSIZE (1024uL * 128)	// 128
+
 	#define BOOTLOADER_APPBASE 0x18020000	/* адрес где лежит во FLASH образ application */
 	#define BOOTLOADER_APPSIZE (1024uL * 1920)	// 2048 - 128
+
 	#define BOOTLOADER_PAGESIZE (1024uL * 64)	// M25Px with 64 KB pages
 
 	//#define WITHSAICLOCKFROMI2S 1	/* Блок SAI1 тактируется от PLL I2S */

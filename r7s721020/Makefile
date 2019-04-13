@@ -136,9 +136,10 @@ CPFLAGS += -MD -MP -MF ./dep/$(@F).d
 
 all: APP
 
-bootloader: BOOT
+bootloader: BOOT BOOT2
 
 BOOT: $(OBJS) $(PROJECT)_boot.elf $(PROJECT)_boot.hex
+BOOT2: $(OBJS) $(PROJECT)_boot.elf $(PROJECT)_boot.bin
 APP: $(OBJS) $(PROJECT)_app.elf $(PROJECT)_app.bin
 
 %o: $(addprefix $(SRCDIR)/, %c)

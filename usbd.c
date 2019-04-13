@@ -18932,7 +18932,12 @@ uint16_t MEM_If_Write_HS(uint8_t *src, uint32_t dest, uint32_t Len)
 	if (writeDATAFLASH(dest, src, Len))
 		return USBD_FAIL;
 #if WITHISAPPBOOTLOADER
-	memcpy((void *) ((uintptr_t) dest - BOOTLOADER_APPBASE + BOOTLOADER_APPAREA), src, Len);
+	if (dest >= BOOTLOADER_APPBASE)
+		memcpy((void *) ((uintptr_t) dest - BOOTLOADER_APPBASE + BOOTLOADER_APPAREA), src, Len);
+	else
+	{
+		/* программируем бутлоадер */
+	}
 #endif /* WITHISAPPBOOTLOADER */
 	return (USBD_OK);
 }

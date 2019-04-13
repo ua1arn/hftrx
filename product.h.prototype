@@ -18,7 +18,7 @@
 #endif
 
 //#define WITHDEBUG		1	/* Отладочная печать через COM-порт. */
-#define DEBUGSPEED 256000uL
+//#define DEBUGSPEED 256000uL
 //#define DEBUGSPEED 57600uL
 //#define DEFAULTDIALFREQ	225000L
 //#define DEFAULTDIALFREQ	14021000L
@@ -47,9 +47,9 @@
 //#define CTLSTYLE_DSPV1A	1	// Плата "Дятел" с кодеками для DSPIF4 с 12 кГц IF DSP трактом
 //#define CTLSTYLE_V8A 	1	// приёмник "Воронёнок" с первым гетеродином на AD9834+ADF4001 - ATMEGA644PA - raven_ctlstyle_v8a.h
 //#define CTLSTYLE_V8B 	1	// приёмник "Воронёнок" с первым гетеродином на AD9951+ADF4001 - ATMEGA644PA или ARM - raven_ctlstyle_v8b.h
-//#define CTLSTYLE_V1B	1	// Контроллер "воробей" STM32F101RB или ATMega644PA - atmega644_ctlstyle_v1.h
-//#define CTLSTYLE_V1C	1	// Контроллер "воробей-2" на STM32F105RC с местом под кодек.
-//#define CTLSTYLE_V1V	1	// Контроллер Колибри" на ATMega328 - atmega328_ctlstyle_v1.h
+//#define CTLSTYLE_V1B	1	// Контроллер "Воробей" STM32F101RB или ATMega644PA - atmega644_ctlstyle_v1.h
+//#define CTLSTYLE_V1C	1	// Контроллер "Воробей-2" на STM32F105RC с местом под кодек.
+//#define CTLSTYLE_V1V	1	// Контроллер "Колибри" на ATMega328 - atmega328_ctlstyle_v1.h
 //#define CTLSTYLE_V1K	1	// Контроллер на STM32F401RB
 //#define CTLSTYLE_OLEG4Z_V1	1	// Rmainunit_v5fm.pcb STM32F767ZET6, 2xUSB, WFM, FPGA EP4CE22E22I7N
 

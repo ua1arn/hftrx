@@ -139,7 +139,7 @@ enum
 
 	STRING_ID_DFU,
 	STRING_ID_DFU_0,
-	//STRING_ID_DFU_1,
+	STRING_ID_DFU_1,
 	// 
 	STRING_ID_count
 };
@@ -168,8 +168,9 @@ static const struct stringtempl strtemplates [] =
 	{ STRING_ID_RNDIS, PRODUCTSTR " Remote NDIS", },
 
 	{ STRING_ID_DFU, "Storch DFU Device", },
-	#if ! WITHISAPPBOOTLOADER
+	#if 0//! WITHISAPPBOOTLOADER
 		{ STRING_ID_DFU_0, strFlashDesc, },
+		{ STRING_ID_DFU_1, strBootloaderFlashDesc, },
 		//{ STRING_ID_DFU_1, strOptBytesDesc, },
 	#endif /* ! WITHISAPPBOOTLOADER */
 
@@ -2611,7 +2612,7 @@ static unsigned fill_DFU_function(uint_fast8_t fill, uint8_t * p, unsigned maxsi
 	//
 	n += DFU_InterfaceAssociationDescriptor(fill, p + n, maxsize - n, INTERFACE_DFU_CONTROL, INTERFACE_DFU_count);
 	n += DFU_InterfaceDescriptor(fill, p + n, maxsize - n, INTERFACE_DFU_CONTROL, 0x00, STRING_ID_DFU_0);	/* DFU Interface Descriptor */
-	//n += DFU_InterfaceDescriptor(fill, p + n, maxsize - n, INTERFACE_DFU_CONTROL, 0x01, STRING_ID_DFU_1);	/* DFU Interface Descriptor */
+	n += DFU_InterfaceDescriptor(fill, p + n, maxsize - n, INTERFACE_DFU_CONTROL, 0x01, STRING_ID_DFU_1);	/* DFU Interface Descriptor */
 	n += DFU_FunctionalDescriptor(fill, p + n, maxsize - n);	/* DFU Functional Descriptor */
 
 	return n;
@@ -3156,7 +3157,7 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 	
 #if WITHUSBDFU
 	{
-		static const char strFlashDesc_3 [] = "@SPI Flash : M25Px/0x%08lx/%02u*%03uKg";	// 128 k for bootloader
+		static const char strFlashDesc_3 [] = "@SPI Flash APPLICATION: M25Px/0x%08lx/%02u*%03uKg";	// 128 k for bootloader
 		unsigned partlen;
 		// Формирование MAC адреса данного устройства
 		// TODO: При модификации не забыть про достоверность значений
@@ -3165,6 +3166,25 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 		local_snprintf_P(b, ARRAY_SIZE(b), strFlashDesc_3, 
 			(unsigned long) BOOTLOADER_APPBASE,
 			(unsigned) (BOOTLOADER_APPSIZE / BOOTLOADER_PAGESIZE),
+			(unsigned) (BOOTLOADER_PAGESIZE / 1024)
+			);
+		score += fill_align4(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score);
+		partlen = fill_string_descriptor(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score, b);
+		StringDescrTbl [id].size = partlen;
+		StringDescrTbl [id].data = alldescbuffer + score;
+		score += partlen;
+	}
+	{
+		// Re-write bootloader parameters
+		static const char strFlashDesc_3 [] = "@SPI Flash BOOTLOADER: M25Px/0x%08lx/%02u*%03uKg";	// 128 k for bootloader
+		unsigned partlen;
+		// Формирование MAC адреса данного устройства
+		// TODO: При модификации не забыть про достоверность значений
+		const uint_fast8_t id = STRING_ID_DFU_1;
+		char b [128];
+		local_snprintf_P(b, ARRAY_SIZE(b), strFlashDesc_3, 
+			(unsigned long) BOOTLOADER_SELFBASE,
+			(unsigned) (BOOTLOADER_SELFSIZE / BOOTLOADER_PAGESIZE),
 			(unsigned) (BOOTLOADER_PAGESIZE / 1024)
 			);
 		score += fill_align4(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score);
