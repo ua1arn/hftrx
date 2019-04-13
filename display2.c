@@ -4812,7 +4812,7 @@ static PACKEDCOLOR565_T wfpalette [PALETTESIZE];
 #define COLOR565_GRIDCOLOR		TFTRGB565(128, 128, 0)		//COLOR_GRAY - center marker
 #define COLOR565_GRIDCOLOR2		TFTRGB565(128, 0, 0x00)		//COLOR_DARKRED - other markers
 #define COLOR565_SPECTRUMBG		TFTRGB565(0, 0, 0)			//COLOR_BLACK
-#define COLOR565_SPECTRUMBG2	TFTRGB565(0, 64, 64)		//COLOR_XXX - полоса пропускания приемника
+#define COLOR565_SPECTRUMBG2	TFTRGB565(0, 128, 128)		//COLOR_CYAN - полоса пропускания приемника
 //#define COLOR565_SPECTRUMBG2	TFTRGB565(0x80, 0x80, 0x00)	//COLOR_OLIVE - полоса пропускания приемника
 #define COLOR565_SPECTRUMFG		TFTRGB565(0, 255, 0)		//COLOR_GREEN
 #define COLOR565_SPECTRUMFENCE	TFTRGB565(255, 255, 255)	//COLOR_WHITE
@@ -4822,11 +4822,11 @@ static PACKEDCOLOR565_T wfpalette [PALETTESIZE];
 static void wfpalette_initialize(void)
 {
 	int type = 0;
-	int i;
-	int a = 0;
 
 	if (type)
 	{
+		int a = 0;
+		int i;
 		for (i = 0; i < 42; ++ i)
 		{
 			wfpalette [a + i] = TFTRGB565(0, 0, (int) (powf((float) 0.095 * i, 4)));
@@ -4861,7 +4861,8 @@ static void wfpalette_initialize(void)
 	}
 	else
 	{
-
+		int a = 0;
+		int i;
 		// a = 0
 		for (i = 0; i < 64; ++ i)
 		{
