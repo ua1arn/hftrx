@@ -3772,57 +3772,6 @@ applicable agreement for further details.
 	)
 )
 (symbol
-	(rect -3232 704 -3088 816)
-	(text "lpm_counter_mod24" (rect 15 0 153 16)(font "Arial" (font_size 10)))
-	(text "inst29" (rect 8 96 37 108)(font "Arial" ))
-	(port
-		(pt 0 32)
-		(input)
-		(text "sclr" (rect 0 0 21 14)(font "Arial" (font_size 8)))
-		(text "sclr" (rect 20 25 41 39)(font "Arial" (font_size 8)))
-		(line (pt 0 32)(pt 16 32))
-	)
-	(port
-		(pt 0 64)
-		(input)
-		(text "clock" (rect 0 0 29 14)(font "Arial" (font_size 8)))
-		(text "clock" (rect 26 57 55 71)(font "Arial" (font_size 8)))
-		(line (pt 0 64)(pt 16 64))
-	)
-	(port
-		(pt 144 80)
-		(output)
-		(text "cout" (rect 0 0 24 14)(font "Arial" (font_size 8)))
-		(text "cout" (rect 104 73 128 87)(font "Arial" (font_size 8)))
-		(line (pt 144 80)(pt 128 80))
-	)
-	(port
-		(pt 144 64)
-		(output)
-		(text "q[4..0]" (rect 0 0 35 14)(font "Arial" (font_size 8)))
-		(text "q[4..0]" (rect 95 57 130 71)(font "Arial" (font_size 8)))
-		(line (pt 144 64)(pt 128 64)(line_width 3))
-	)
-	(drawing
-		(text "modulus 24" (rect 80 30 136 42)(font "Arial" ))
-		(text "up counter" (rect 84 22 135 34)(font "Arial" ))
-		(line (pt 16 16)(pt 16 96))
-		(line (pt 16 16)(pt 128 16))
-		(line (pt 16 96)(pt 128 96))
-		(line (pt 128 16)(pt 128 96))
-		(line (pt 0 0)(pt 146 0))
-		(line (pt 146 0)(pt 146 114))
-		(line (pt 0 114)(pt 146 114))
-		(line (pt 0 0)(pt 0 114))
-		(line (pt 16 58)(pt 22 64))
-		(line (pt 22 64)(pt 16 70))
-		(line (pt 0 0)(pt 0 0))
-		(line (pt 0 0)(pt 0 0))
-		(line (pt 0 0)(pt 0 0))
-		(line (pt 0 0)(pt 0 0))
-	)
-)
-(symbol
 	(rect -2656 -184 -2384 88)
 	(text "cicdec0" (rect 5 0 42 12)(font "Arial" ))
 	(text "inst54" (rect 8 256 37 268)(font "Arial" ))
@@ -4725,6 +4674,57 @@ applicable agreement for further details.
 	)
 	(drawing
 		(rectangle (rect 16 16 256 160))
+	)
+)
+(symbol
+	(rect -3232 704 -3088 816)
+	(text "lpm_counter_fircoef" (rect 17 0 150 16)(font "Arial" (font_size 10)))
+	(text "inst29" (rect 8 96 37 108)(font "Arial" ))
+	(port
+		(pt 0 32)
+		(input)
+		(text "sclr" (rect 0 0 21 14)(font "Arial" (font_size 8)))
+		(text "sclr" (rect 20 25 41 39)(font "Arial" (font_size 8)))
+		(line (pt 0 32)(pt 16 32))
+	)
+	(port
+		(pt 0 64)
+		(input)
+		(text "clock" (rect 0 0 29 14)(font "Arial" (font_size 8)))
+		(text "clock" (rect 26 57 55 71)(font "Arial" (font_size 8)))
+		(line (pt 0 64)(pt 16 64))
+	)
+	(port
+		(pt 144 80)
+		(output)
+		(text "cout" (rect 0 0 24 14)(font "Arial" (font_size 8)))
+		(text "cout" (rect 104 73 128 87)(font "Arial" (font_size 8)))
+		(line (pt 144 80)(pt 128 80))
+	)
+	(port
+		(pt 144 64)
+		(output)
+		(text "q[4..0]" (rect 0 0 35 14)(font "Arial" (font_size 8)))
+		(text "q[4..0]" (rect 95 57 130 71)(font "Arial" (font_size 8)))
+		(line (pt 144 64)(pt 128 64)(line_width 3))
+	)
+	(drawing
+		(text "modulus 24" (rect 80 30 136 42)(font "Arial" ))
+		(text "up counter" (rect 84 22 135 34)(font "Arial" ))
+		(line (pt 16 16)(pt 16 96))
+		(line (pt 16 16)(pt 128 16))
+		(line (pt 16 96)(pt 128 96))
+		(line (pt 128 16)(pt 128 96))
+		(line (pt 0 0)(pt 146 0))
+		(line (pt 146 0)(pt 146 114))
+		(line (pt 0 114)(pt 146 114))
+		(line (pt 0 0)(pt 0 114))
+		(line (pt 16 58)(pt 22 64))
+		(line (pt 22 64)(pt 16 70))
+		(line (pt 0 0)(pt 0 0))
+		(line (pt 0 0)(pt 0 0))
+		(line (pt 0 0)(pt 0 0))
+		(line (pt 0 0)(pt 0 0))
 	)
 )
 (connector
@@ -6527,14 +6527,6 @@ applicable agreement for further details.
 	(pt -2888 760)
 )
 (connector
-	(pt -3760 736)
-	(pt -3248 736)
-)
-(connector
-	(pt -3248 736)
-	(pt -3232 736)
-)
-(connector
 	(text "fircoef[31..0]" (rect -2950 840 -2886 852)(font "Arial" ))
 	(pt -3016 856)
 	(pt -2904 856)
@@ -6547,14 +6539,6 @@ applicable agreement for further details.
 	(bus)
 )
 (connector
-	(pt -3008 784)
-	(pt -3088 784)
-)
-(connector
-	(pt -3008 704)
-	(pt -3008 784)
-)
-(connector
 	(pt -3296 832)
 	(pt -2984 832)
 )
@@ -6565,14 +6549,6 @@ applicable agreement for further details.
 (connector
 	(pt -2984 792)
 	(pt -2984 832)
-)
-(connector
-	(pt -3328 768)
-	(pt -3296 768)
-)
-(connector
-	(pt -3296 768)
-	(pt -3232 768)
 )
 (connector
 	(text "fircoef[23..0]" (rect -2854 8 -2790 20)(font "Arial" ))
@@ -7412,6 +7388,30 @@ applicable agreement for further details.
 (connector
 	(pt -4032 -8)
 	(pt -3848 -8)
+)
+(connector
+	(pt -3008 784)
+	(pt -3088 784)
+)
+(connector
+	(pt -3008 704)
+	(pt -3008 784)
+)
+(connector
+	(pt -3760 736)
+	(pt -3248 736)
+)
+(connector
+	(pt -3248 736)
+	(pt -3232 736)
+)
+(connector
+	(pt -3328 768)
+	(pt -3296 768)
+)
+(connector
+	(pt -3296 768)
+	(pt -3232 768)
 )
 (junction (pt -1592 -696))
 (junction (pt -4384 -696))
