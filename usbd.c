@@ -18411,7 +18411,9 @@ void spidf_initialize(void)
 	// spi multi-io hang on
 	CPG.STBCR9 &= ~ CPG_STBCR9_BIT_MSTP93;	// Module Stop 93	- 0: Clock supply to channel 0 of the SPI multi I/O bus controller is runnuing.
 	(void) CPG.STBCR9;			/* Dummy read */
+#endif
 
+#if 0
 	SPIBSC0.SPBCR = 0x200;	// baud rate
 	SPIBSC0.SSLDR = 0x00;	// delay
 	SPIBSC0.DRCR = 0x0000;
@@ -18505,9 +18507,11 @@ static void spidf_write_byte(spitarget_t target, uint_fast8_t v)
 void spidf_uninitialize(void)
 {
 	arm_hardware_pio4_inputs(0xFC);		// Отключить процессор от SERIAL FLASH
+#if 0
 	// spi multi-io hang off
 	CPG.STBCR9 |= CPG_STBCR9_BIT_MSTP93;	// Module Stop 93	- 1: Clock supply to channel 0 of the SPI multi I/O bus controller is halted.
 	(void) CPG.STBCR9;			/* Dummy read */
+#endif
 }
 
 void spidf_select(spitarget_t target, uint_fast8_t mode)

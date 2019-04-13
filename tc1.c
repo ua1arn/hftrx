@@ -17001,8 +17001,8 @@ void bootloader_mainloop(void)
 {
 	//local_delay_ms(1000);
 	//printhex(BOOTLOADER_APPAREA, (void *) BOOTLOADER_APPAREA, 512);
-ddd:
 	debug_printf_P(PSTR("Ready jump to application at %p. Press 'r'\n"), (void *) BOOTLOADER_APPAREA);
+ddd:
 	for (;;)
 	{
 #if WITHDEBUG
@@ -17022,21 +17022,22 @@ ddd:
 		break;
 #endif /* CPUSTYLE_R7S721 */
 	}
-	arm_hardware_flush(BOOTLOADER_APPAREA, BOOTLOADER_APPSIZE);
 
-	static const char sgn [] = " DREAM RX";
-
-	if (memcmp(sgn, (void *) (BOOTLOADER_APPAREA + 0x019C), strlen(sgn)) != 0)
+	static const char sgn [] = "DREAM";
+	const size_t len = strlen(sgn);
+	const size_t zonelen = 0x0200;
+	size_t offset;
+	for (offset = 0; (offset + len) <= zonelen; ++ offset)
 	{
-		debug_printf_P(PSTR("No application signature\n"));
-		goto ddd;
-		for (;;)
-			;
+		if (memcmp(sgn, (void *) (BOOTLOADER_APPAREA + offset), len) == 0)
+			break;
 	}
+	if ((offset + len) > zonelen)
+		goto ddd;
 
-	debug_printf_P(PSTR("\n"));
-	debug_printf_P(PSTR("Now jump to application at %p.\n"), (void *) BOOTLOADER_APPAREA);
 	board_usb_deactivate();
+
+	arm_hardware_flush(BOOTLOADER_APPAREA, BOOTLOADER_APPSIZE);
 	__disable_irq();
 	GIC_DisableInterface();
 	GIC_DisableDistributor();
@@ -17046,9 +17047,7 @@ ddd:
 	//arm_hardware_invalidate_all()
 	__ISB();
 	__DSB();
-	debug_printf_P(PSTR("Jump....\n"));
 	(* (void (*)(void)) BOOTLOADER_APPAREA)();
-	TP();
 	for (;;)
 		;
 }
