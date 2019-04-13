@@ -2914,7 +2914,27 @@ static void correctspectrum(float * resp, int_fast8_t targetdb)
 
 static void copytospeex(float * frame)
 {
+
 	ASSERT((FFTSizeFilters / 2) == SPEEXNN);
+#if 1
+	const FLOAT_t r1 = db2ratio(- 100);
+	const FLOAT_t r2 = db2ratio(- 80);
+	const FLOAT_t r3 = db2ratio(- 60);
+
+	/* ”даление посто€нной составл€ющей по возможности */
+	Sig [0].imag *= r1;
+	Sig [0].real *= r1;
+	Sig [1].imag *= r2;
+	Sig [1].real *= r2;
+	//Sig [2].imag *= r3;
+	//Sig [2].real *= r3;
+	//Sig [FFTSizeFilters - 3].imag *= r3;
+	//Sig [FFTSizeFilters - 3].real *= r3;
+	Sig [FFTSizeFilters - 2].imag *= r2;
+	Sig [FFTSizeFilters - 2].real *= r2;
+	Sig [FFTSizeFilters - 1].imag *= r1;
+	Sig [FFTSizeFilters - 1].real *= r1;
+#endif
 	unsigned i;
 	for (i = 0; i < SPEEXNN; ++ i)
 	{
