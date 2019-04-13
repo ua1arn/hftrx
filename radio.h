@@ -471,7 +471,7 @@ enum
 
 enum
 {
-	BOARD_RXMAINSUB_A_A,	// в оба уха примник A
+	BOARD_RXMAINSUB_A_A,	// в оба уха приемник A
 	BOARD_RXMAINSUB_A_B,	// Левый - A, правый - B
 	BOARD_RXMAINSUB_B_A,
 	BOARD_RXMAINSUB_B_B,
