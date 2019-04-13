@@ -940,6 +940,26 @@ static void display_voxtune1(
 }
 
 
+static void display_lockstate3(
+	uint_fast8_t x, 
+	uint_fast8_t y, 
+	void * pv
+	)
+{
+	const uint_fast8_t lockv = hamradio_get_lockvalue();
+	const uint_fast8_t fastv = hamradio_get_usefastvalue();
+
+	static const FLASHMEM char text0 [] = "    ";
+	static const FLASHMEM char text1 [] = "LCK";
+	static const FLASHMEM char text2 [] = "FST";
+#if LCDMODE_COLORED
+	const FLASHMEM char * const labels [4] = { text1, text2, text1, text1, };
+#else /* LCDMODE_COLORED */
+	const FLASHMEM char * const labels [4] = { text0, text2, text1, text1, };
+#endif
+	display2_text_P(x, y, labels, colorsfg_4state, colorsbg_4state, lockv * 2 + fastv);
+}
+
 static void display_lockstate4(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
@@ -3670,7 +3690,7 @@ enum
 
 	#endif /* DSTYLE_UR3LMZMOD && WITHONEATTONEAMP */
 
-#elif DSTYLE_G_X480_Y272 && WITHINTEGRATEDDSP && (WITHRTS96 || WITHRTS192)
+#elif DSTYLE_G_X480_Y272 && WITHSPECTRUMWF
 
 	// TFT панель SONY PSP-1000
 	// 272/5 = 54, 480/16=30
@@ -3828,12 +3848,12 @@ enum
 		{	0,	25,	display2_adctest,	REDRM_BARS, PGSWR, },	// ADC raw data print
 #endif
 
-	#if WITHINTEGRATEDDSP && (WITHRTS96 || WITHRTS192)
+	#if WITHSPECTRUMWF
 		{	0,	25,	dsp_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
 		{	0,	25,	display2_spectrum,	REDRM_BARS, PGSPE, },// подготовка изображения спектра
 		{	0,	25,	display2_waterfall,	REDRM_BARS, PGWFL, },// подготовка изображения водопада
 		{	0,	25,	display2_colorbuff,	REDRM_BARS,	PGWFL | PGSPE, },// Отображение водопада и/или спектра
-	#endif /* WITHINTEGRATEDDSP && (WITHRTS96 || WITHRTS192) */
+	#endif /* WITHSPECTRUMWF */
 
 	
 		//{	0,	51,	display_samfreqdelta8, REDRM_BARS, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
@@ -4016,7 +4036,7 @@ enum
 		p->frame = (uintptr_t) getscratchpip();
 	}
 
-#elif DSTYLE_G_X800_Y480 && WITHINTEGRATEDDSP && (WITHRTS96 || WITHRTS192)
+#elif DSTYLE_G_X800_Y480 && WITHSPECTRUMWF
 
 	// TFT панель AT070TN90
 	// 480/5 = 96, 800/16=50
@@ -4148,10 +4168,11 @@ enum
 		{	9,	0,	display_att4,		REDRM_MODE, PGALL, },
 		{	14,	0,	display_preovf3,	REDRM_BARS, PGALL, },
 		{	18,	0,	display_genham1,	REDRM_BARS, PGALL, },	// Отображение режима General Coverage / HAM bands
+		{	21,	0,	display_lockstate3, REDRM_MODE, PGALL, },	// LCK
 
 	#if WITHENCODER2
-		{	21, 0,	display_fnlabel9,	REDRM_MODE, PGALL, },	// FUNC item label
-		{	21,	4,	display_fnvalue9,	REDRM_MODE, PGALL, },	// FUNC item value
+		{	26, 0,	display_fnlabel9,	REDRM_MODE, PGALL, },	// FUNC item label
+		{	26,	4,	display_fnvalue9,	REDRM_MODE, PGALL, },	// FUNC item value
 		{	45, 15,	display_notch5,		REDRM_MODE, PGALL, },	// NOTCH on/off
 	#else /* WITHENCODER2 */
 		{	45, 0,	display_notch5,		REDRM_MODE, PGALL, },	// FUNC item label
@@ -4172,7 +4193,7 @@ enum
 		{	30, 10,	display_nr3,		REDRM_MODE, PGALL, },	// NR : was: AGC
 		{	21, 15,	display_mainsub3,	REDRM_MODE, PGALL, },	// main/sub RX: A/A, A/B, B/A, etc
 
-		{	5,	20,	display_vfomode3,	REDRM_MODE, PGALL, },	// SPLIT
+		{	26,	15,	display_vfomode3,	REDRM_MODE, PGALL, },	// SPLIT
 		{	9,	20,	display_freqX_b,	REDRM_FRQB, PGALL, },	// SUB FREQ
 		{	21, 20,	display_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
 
@@ -4185,15 +4206,14 @@ enum
 		{	0,	25,	display2_adctest,	REDRM_BARS, PGSWR, },	// ADC raw data print
 #endif
 
-	#if WITHINTEGRATEDDSP && (WITHRTS96 || WITHRTS192)
+	#if WITHSPECTRUMWF
 		{	0,	25,	dsp_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
 		{	0,	25,	display2_spectrum,	REDRM_BARS, PGSPE, },// подготовка изображения спектра
 		{	0,	25,	display2_waterfall,	REDRM_BARS, PGWFL, },// подготовка изображения водопада
 		{	0,	25,	display2_colorbuff,	REDRM_BARS,	PGWFL | PGSPE, },// Отображение водопада и/или спектра
-	#endif /* WITHINTEGRATEDDSP && (WITHRTS96 || WITHRTS192) */
+	#endif /* WITHSPECTRUMWF */
 
 	
-		{	0,	DLE0,	display_lockstate4, REDRM_MODE, PGALL, },	// LOCK
 		{	5,	DLE0,	display_samfreqdelta8, REDRM_BARS, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
 		{	14,	DLE0,	display_siglevel5,	REDRM_BARS, PGALL, },	// signal level in S points
 
@@ -4707,7 +4727,7 @@ static void display2_legend(
 }
 
 
-#if WITHINTEGRATEDDSP && (WITHRTS96 || WITHRTS192) && ! LCDMODE_HD44780
+#if WITHSPECTRUMWF && ! LCDMODE_HD44780
 
 enum 
 {
@@ -5392,7 +5412,7 @@ static void display2_colorbuff(
 #endif /* LCDMODE_S1D13781 */
 }
 
-#else /* WITHINTEGRATEDDSP && (WITHRTS96 || WITHRTS192) */
+#else /* WITHSPECTRUMWF */
 
 static void dsp_latchwaterfall(
 	uint_fast8_t x0, 
@@ -5427,7 +5447,7 @@ static void display2_colorbuff(
 {
 }
 
-#endif /* WITHINTEGRATEDDSP && (WITHRTS96 || WITHRTS192) */
+#endif /* WITHSPECTRUMWF */
 
 #define STMD 1
 
@@ -5545,10 +5565,10 @@ void display2_bgreset(void)
 	keyi = 0;
 #endif /* STMD */
 
-#if WITHINTEGRATEDDSP && (WITHRTS96 || WITHRTS192) && ! LCDMODE_HD44780
+#if WITHSPECTRUMWF && ! LCDMODE_HD44780
 	// инициализация палитры волопада
 	wfpalette_initialize();
-#endif /* WITHINTEGRATEDDSP && (WITHRTS96 || WITHRTS192) */
+#endif /* WITHSPECTRUMWF */
 }
 
 // Interface functions
