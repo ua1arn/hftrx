@@ -798,6 +798,22 @@ static RAMFUNC void buffers_savtomodulators16(voice16_t * p)
 	UNLOCK(& locklist16);
 }
 
+// Сохранить звук от АЦП пикрофона
+static RAMFUNC void buffers_savefrommikeadc(voice16_t * p)
+{
+
+#if WITHBUFFERSDEBUG
+	// подсчёт скорости в сэмплах за секунду
+	debugcount_mikeadc += sizeof p->buff / sizeof p->buff [0] / DMABUFSTEP16;	// в буфере пары сэмплов по два байта
+#endif /* WITHBUFFERSDEBUG */
+
+	if (uacoutmike == 0)
+		buffers_savtomodulators16(p);
+	else
+		buffers_savetonull16(p);
+
+}
+
 // Сохранить звук после получения из него информации для модулятора
 static RAMFUNC void buffers_aftermodulators(voice16_t * p)
 {
@@ -816,8 +832,10 @@ static RAMFUNC void buffers_aftermodulators(voice16_t * p)
 // 16 bit, signed
 // в паре значений, возвращаемых данной функцией, vi получает значение от микрофона. vq зарезервированно для работы ISB (две независимых боковых)
 // При отсутствии данных в очереди - возвращаем 0
+// TODO: переделаь на denoise16_t
 RAMFUNC uint_fast8_t getsampmlemike(INT32P_t * v)
 {
+	enum { L, R };
 	static voice16_t * p = NULL;
 	static unsigned pos = 0;	// позиция по выходному количеству
 	const unsigned CNT = (DMABUFFSIZE16 / DMABUFSTEP16);	// фиксированное число сэмплов во входном буфере
@@ -846,8 +864,8 @@ RAMFUNC uint_fast8_t getsampmlemike(INT32P_t * v)
 	}
 
 	// Использование данных.
-	v->ivqv [0] = (int16_t) p->buff [pos * DMABUFSTEP16 + 0];	// микрофон или левый канал
-	v->ivqv [1] = (int16_t) p->buff [pos * DMABUFSTEP16 + 1];	// правый канал
+	v->ivqv [L] = (int16_t) p->buff [pos * DMABUFSTEP16 + L];	// микрофон или левый канал
+	v->ivqv [R] = (int16_t) p->buff [pos * DMABUFSTEP16 + R];	// правый канал
 
 	if (++ pos >= CNT)
 	{
@@ -856,8 +874,6 @@ RAMFUNC uint_fast8_t getsampmlemike(INT32P_t * v)
 	}
 	return 1;	
 }
-
-#if WITHUSBUAC
 
 // Сохранить звук от несинхронного источника - USB - для последующего ресэмплинга
 RAMFUNC static void buffers_savetoresampling16(voice16_t * p)
@@ -879,6 +895,8 @@ RAMFUNC static void buffers_savetoresampling16(voice16_t * p)
 	}
 	UNLOCK(& locklist16);
 }
+
+#if WITHUSBUAC
 
 static uint_fast8_t isaudio48(void)
 {
@@ -1220,22 +1238,6 @@ static RAMFUNC void buffers_resample(void)
 	buffers_savefromresampling(p);
 }
 #endif /* WITHUSBUAC */
-
-// Сохранить звук от АЦП пикрофона
-static RAMFUNC void buffers_savefrommikeadc(voice16_t * p)
-{
-
-#if WITHBUFFERSDEBUG
-	// подсчёт скорости в сэмплах за секунду
-	debugcount_mikeadc += sizeof p->buff / sizeof p->buff [0] / DMABUFSTEP16;	// в буфере пары сэмплов по два байта
-#endif /* WITHBUFFERSDEBUG */
-
-	if (uacoutmike == 0)
-		buffers_savtomodulators16(p);
-	else
-		buffers_savetonull16(p);
-
-}
 // --- Коммутация потоков аудиоданных
 
 #if WITHUSEAUDIOREC
