@@ -175,6 +175,7 @@ enum
 	CAT_IF_INDEX,		// ifanswer()
 	CAT_FW_INDEX,		// fwanswer()
 #if WITHIF4DSP//CTLSTYLE_V1D || CTLSTYLE_OLEG4Z_V1 || 1
+	CAT_ZY_INDEX,		// zyanswer()
 	CAT_ZZ_INDEX,		// zzanswer()
 #endif /* CTLSTYLE_V1D || CTLSTYLE_OLEG4Z_V1 */
 #if WITHIF4DSP
@@ -10074,6 +10075,28 @@ static void fwanswer(uint_fast8_t arg)
 }
 
 #if WITHIF4DSP//CTLSTYLE_V1D || CTLSTYLE_OLEG4Z_V1 || 1
+static void zyanswer(uint_fast8_t arg)
+{
+	//ZYmSLL
+	static const FLASHMEM char fmt_3 [] =
+		"ZY"			// 2 characters - status information code
+		"%1d"			// 1 char - mode
+		"%1d"			// state
+		"%02d"			// level
+		";";			// 1 char - line terminator
+
+	const uint_fast8_t submode = findkenwoodsubmode(arg, SUBMODE_USB);	/* поиск по кенвудовскому номеру */
+	const uint_fast8_t mode = submodes [submode].mode;
+
+	// answer mode
+	const uint_fast8_t len = local_snprintf_P(cat_ask_buffer, CAT_ASKBUFF_SIZE, fmt_3,
+		(int) arg,
+		(int) gnoisereducts [mode],
+		(int) gnoisereductvl
+		);
+	cat_answer(len);
+}
+
 static void zzanswer(uint_fast8_t arg)
 {
 	//ZZmLLLLUUUUSSSS
@@ -10672,6 +10695,7 @@ static canapfn catanswers [CAT_MAX_INDEX] =
 	ifanswer,
 	fwanswer,
 #if WITHIF4DSP
+	zyanswer,
 	zzanswer,
 #endif /* WITHIF4DSP */
 #if WITHIF4DSP
@@ -11354,6 +11378,49 @@ processcatmsg(
 	}
 #endif	/* WITHCATEXT */
 #if WITHIF4DSP//CTLSTYLE_V1D || CTLSTYLE_OLEG4Z_V1 || 1
+	else if (match2('Z', 'Y'))
+	{
+		if (cathasparam != 0)
+		{
+			if (catpcount == 12)
+			{
+				// Format: ZYmSLL
+				const uint_fast32_t v = catp [0] - '0';
+				const uint_fast8_t submode = findkenwoodsubmode(v, UINT8_MAX);	/* поиск по кенвудовскому номеру */
+				if (submode == UINT8_MAX)
+				{
+					cat_answer_request(CAT_BADCOMMAND_INDEX);
+				}
+				else
+				{
+					const uint_fast8_t mode = submodes [submode].mode;
+					gnoisereducts [mode] = vfy32up(catscanint(catp + 1, 1), 0, 1, 0);
+					gnoisereductvl = vfy32up(catscanint(catp + 2, 2), 0, NRLEVELMAX, gnoisereductvl);
+					updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
+					rc = 1;
+				}
+			}
+			else if (catpcount == 1)
+			{
+				/* report about NR state for specified submode and global level */
+				const uint_fast32_t v = catp [0] - '0';
+				cat_answerparam_map [CAT_ZY_INDEX] = v;
+				cat_answer_request(CAT_ZY_INDEX);	// zyanswer
+			}
+			else
+			{
+				cat_answer_request(CAT_BADCOMMAND_INDEX);
+			}
+			//const uint_fast8_t bi = getbankindex_ab(1);	/* VFO B bank index */
+			//const uint_fast32_t v = catparam;
+			//catchangefreq(vfy32up(v, TUNE_BOTTOM, TUNE_TOP - 1, gfreqs [bi]), gtx);
+			//updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
+		}
+		else
+		{
+			cat_answer_request(CAT_BADCOMMAND_INDEX);
+		}
+	}
 	else if (match2('Z', 'Z'))
 	{
 		if (cathasparam != 0)
