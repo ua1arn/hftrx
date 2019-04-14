@@ -401,7 +401,6 @@ board_gpio_init(void)
 	#if defined (HARDWARE_INITIALIZE)
 		HARDWARE_INITIALIZE();
 	#endif /* defined (HARDWARE_INITIALIZE) */
-
 	#if defined (TARGET_FPGA_OVF_INITIALIZE)
 		TARGET_FPGA_OVF_INITIALIZE();
 	#endif /* defined (TARGET_FPGA_OVF_INITIALIZE) */
@@ -2607,8 +2606,9 @@ static void
 //NOINLINEAT
 prog_rxctrlreg(uint_fast8_t plane)
 {
+#if defined(DDS1_TYPE)
 	prog_fpga_ctrlreg(targetfpga1);	// FPGA control register
-
+#endif
 	// registers chain control register
 	{
 		//Current Output at Full Power A1 = 1, A0 = 1, VO = 0 ±500 ±380 ±350 ±320 mA min A
@@ -2691,7 +2691,9 @@ static void
 //NOINLINEAT
 prog_rxctrlreg(uint_fast8_t plane)
 {
+#if defined(DDS1_TYPE)
 	prog_fpga_ctrlreg(targetfpga1);	// FPGA control register
+#endif
 
 	// registers chain control register
 	{
@@ -2812,7 +2814,9 @@ static void
 //NOINLINEAT
 prog_rxctrlreg(uint_fast8_t plane)
 {
+#if defined(DDS1_TYPE)
 	prog_fpga_ctrlreg(targetfpga1);	// FPGA control register
+#endif
 #if WITHAUTOTUNEROWNSPI && WITHAUTOTUNER
 	prog_atuctlreg(targetatu1);		// Tuner control regiser
 #endif /* WITHAUTOTUNEROWNSPI && WITHAUTOTUNER */
@@ -2914,7 +2918,9 @@ static void
 //NOINLINEAT
 prog_ctrlreg(uint_fast8_t plane)
 {
+#if defined(DDS1_TYPE)
 	prog_fpga_ctrlreg(targetfpga1);	// FPGA control register
+#endif
 
 	// registers chain control register
 	{
@@ -3001,7 +3007,9 @@ static void
 //NOINLINEAT
 prog_ctrlreg(uint_fast8_t plane)
 {
+#if defined(DDS1_TYPE)
 	prog_fpga_ctrlreg(targetfpga1);	// FPGA control register
+#endif
 
 	// registers chain control register
 	{
@@ -3089,7 +3097,9 @@ static void
 //NOINLINEAT
 prog_ctrlreg(uint_fast8_t plane)
 {
+#if defined(DDS1_TYPE)
 	prog_fpga_ctrlreg(targetfpga1);	// FPGA control register
+#endif
 
 	// registers chain control register
 	{
@@ -3175,7 +3185,9 @@ static void
 //NOINLINEAT
 prog_ctrlreg(uint_fast8_t plane)
 {
+#if defined(DDS1_TYPE)
 	prog_fpga_ctrlreg(targetfpga1);	// FPGA control register
+#endif
 
 	// registers chain control register
 	{
@@ -3265,7 +3277,9 @@ static void
 //NOINLINEAT
 prog_ctrlreg(uint_fast8_t plane)
 {
+#if defined(DDS1_TYPE)
 	prog_fpga_ctrlreg(targetfpga1);	// FPGA control register
+#endif
 
 	// registers chain control register
 	{
@@ -3351,7 +3365,9 @@ static void
 //NOINLINEAT
 prog_ctrlreg(uint_fast8_t plane)
 {
+#if defined(DDS1_TYPE)
 	prog_fpga_ctrlreg(targetfpga1);	// FPGA control register
+#endif
 
 	// registers chain control register
 	{
@@ -3439,7 +3455,10 @@ static void
 //NOINLINEAT
 prog_ctrlreg(uint_fast8_t plane)
 {
+
+#if defined(DDS1_TYPE)
 	prog_fpga_ctrlreg(targetfpga1);	// FPGA control register
+#endif
 	prog_rfadc_update();			// AD9246 vref divider update 
 
 	// registers chain control register
@@ -3524,7 +3543,9 @@ static void
 //NOINLINEAT
 prog_ctrlreg(uint_fast8_t plane)
 {
+#if defined(DDS1_TYPE)
 	prog_fpga_ctrlreg(targetfpga1);	// FPGA control register
+#endif
 
 	{
 		const spitarget_t target = targetctl1;
@@ -3549,7 +3570,9 @@ static void
 //NOINLINEAT
 prog_ctrlreg(uint_fast8_t plane)
 {
+#if defined(DDS1_TYPE)
 	prog_fpga_ctrlreg(targetfpga1);	// FPGA control register
+#endif
 
 	// registers chain control register
 	{
@@ -3587,7 +3610,9 @@ static void
 //NOINLINEAT
 prog_ctrlreg(uint_fast8_t plane)
 {
+#if defined(DDS1_TYPE)
 	prog_fpga_ctrlreg(targetfpga1);	// FPGA control register
+#endif
 
 	// registers chain control register
 	{
@@ -3638,7 +3663,9 @@ static void
 //NOINLINEAT
 prog_ctrlreg(uint_fast8_t plane)
 {
+#if defined(DDS1_TYPE)
 	prog_fpga_ctrlreg(targetfpga1);	// FPGA control register
+#endif
 
 	// registers chain control register
 	{
@@ -3682,7 +3709,9 @@ static void
 //NOINLINEAT
 prog_ctrlreg(uint_fast8_t plane)
 {
+#if defined(DDS1_TYPE)
 	prog_fpga_ctrlreg(targetfpga1);	// FPGA control register
+#endif
 
 	// registers chain control register
 	{
@@ -3742,7 +3771,9 @@ static void
 //NOINLINEAT
 prog_ctrlreg(uint_fast8_t plane)
 {
+#if defined(DDS1_TYPE)
 	prog_fpga_ctrlreg(targetfpga1);	// FPGA control register
+#endif
 
 	// registers chain control register
 	{
@@ -3792,7 +3823,9 @@ static void
 //NOINLINEAT
 prog_ctrlreg(uint_fast8_t plane)
 {
+#if defined(DDS1_TYPE)
 	prog_fpga_ctrlreg(targetfpga1);	// FPGA control register
+#endif
 
 	// registers chain control register
 	{
@@ -3876,7 +3909,9 @@ static void
 //NOINLINEAT
 prog_ctrlreg(uint_fast8_t plane)
 {
+#if defined(DDS1_TYPE)
 	prog_fpga_ctrlreg(targetfpga1);	// FPGA control register
+#endif
 
 	// registers chain control register
 	{

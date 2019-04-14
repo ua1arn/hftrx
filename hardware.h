@@ -750,6 +750,7 @@ typedef struct ticker
 } ticker_t;
 
 void ticker_initialize(ticker_t * p, unsigned nticks, void (* cb)(void *), void * ctx);
+void bootloader_detach(void);
 
 #define BOARD_ADCXBASE 24
 #define BOARD_ADCXIN(ch) (BOARD_ADCXBASE + (ch))

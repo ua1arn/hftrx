@@ -10283,8 +10283,8 @@ void cpu_initdone(void)
 		// spi multi-io hang off
 		//CPG.STBCR9 |= CPG_STBCR9_BIT_MSTP93;	// Module Stop 93	- 1: Clock supply to channel 0 of the SPI multi I/O bus controller is halted.
 		//(void) CPG.STBCR9;			/* Dummy read */
-		arm_hardware_pio4_inputs(0xFC);		// Отключить процессор от SERIAL FLASH
 	}
+	arm_hardware_pio4_inputs(0xFC);		// Отключить процессор от SERIAL FLASH
 
 #endif /* CPUSTYLE_R7S721 */
 #endif /* WITHISAPPBOOTLOADER */

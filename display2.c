@@ -3623,6 +3623,7 @@ enum
 		#define DISPLC_RJ		1	// количество скрытых справа цифр в отображении частоты
 		static const FLASHMEM struct dzone dzones [] =
 		{
+#if ! WITHISAPPBOOTLOADER
 			{	0,	0,	display_txrxstate2, REDRM_MODE, PGALL, },
 			{	3,	0,	display_voxtune3,	REDRM_MODE, PGALL, },
 			{	7,	0,	display_att4,		REDRM_MODE, PGALL, },
@@ -3676,6 +3677,7 @@ enum
 			//{	9,	27,	display_freqmeter10,	REDRM_VOLT, REDRSUBSET_MENU, },	// отладочная функция измерителя опорной частоты
 			{	9, 27,	display_samfreqdelta8, REDRM_BARS, REDRSUBSET_MENU, },	/* Получить информацию об ошибке настройки в режиме SAM */
 		#endif /* WITHMENU */
+#endif /* ! WITHISAPPBOOTLOADER */
 		};
 
 		/* получить координаты окна с панорамой и/или водопадом. */

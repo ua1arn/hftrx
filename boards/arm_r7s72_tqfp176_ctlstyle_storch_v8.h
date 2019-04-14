@@ -12,12 +12,13 @@
 #define ARM_R7S72_TQFP176_CTLSTYLE_STORCH_V8_H_INCLUDED 1
 
 	#define BOOTLOADER_APPAREA 0x20000000	/* адрес ОЗУ, куда перемезать application */
+	#define BOOTLOADER_APPFULL (1024uL * 2048)	// 2MB
 
 	#define BOOTLOADER_SELFBASE 0x18000000	/* адрес где лежит во FLASH образ application */
 	#define BOOTLOADER_SELFSIZE (1024uL * 128)	// 128
 
 	#define BOOTLOADER_APPBASE 0x18020000	/* адрес где лежит во FLASH образ application */
-	#define BOOTLOADER_APPSIZE (1024uL * 1920)	// 2048 - 128
+	#define BOOTLOADER_APPSIZE (BOOTLOADER_APPFULL - BOOTLOADER_SELFSIZE)	// 2048 - 128
 
 	#define BOOTLOADER_PAGESIZE (1024uL * 64)	// M25Px with 64 KB pages
 
@@ -205,9 +206,14 @@
 	/* коды входов коммутатора источников сигнала для УНЧ приёмника */
 	#define BOARD_DETECTOR_SSB 	0		// Заглушка
 
+	#define BOARD_DETECTOR_FM	0
+	#define BOARD_DETECTOR_AM	0
+	#define BOARD_DETECTOR_MUTE	0
+	#define BOARD_DETECTOR_TUNE	0
+
 	// +++ заглушки для плат с DSP обработкой
-	//#define	BOARD_AGCCODE_ON	0
-	//#define	BOARD_AGCCODE_OFF	0
+	#define	BOARD_AGCCODE_ON	0
+	#define	BOARD_AGCCODE_OFF	0
 
 	/* коды фильтров второй ПЧ, выдаваемые на дешифраторы */
 	#define BOARD_FILTER_0P5		0	/* 0.5 or 0.3 kHz filter */
@@ -219,7 +225,7 @@
 	//#define WITHRTS192	1		// Есть канал спектроанализатора - не забыть включить WITHSAI2HW
 	//#define WITHRTS96		1		/* вместо выходного аудиосигнала передача квадратур по USB */
 
-	#define ENCRES_DEFAULT ENCRES_128
+	//#define ENCRES_DEFAULT ENCRES_128
 	//#define ENCRES_DEFAULT ENCRES_24
 	//#define WITHDIRECTFREQENER	1 //(! CTLSTYLE_SW2011ALL && ! CTLSTYLE_UA3DKC)
 	//#define	WITHENCODER	1	/* для изменения частоты имеется енкодер */
@@ -271,7 +277,7 @@
 	#define WITHSAI2_FRAMEBITS 64	// Полный размер фрейма для двух квадратур по 24 бита - канал спектроанализатора
 
 	#define WITHNESTEDINTERRUPTS	1	/* используется при наличии real-time части. */
-	#define WITHINTEGRATEDDSP		1	/* в программу включена инициализация и запуск DSP части. */
+	//#define WITHINTEGRATEDDSP		1	/* в программу включена инициализация и запуск DSP части. */
 	#define WITHIFDACWIDTH	32		// 1 бит знак и 31 бит значащих
 	#define WITHIFADCWIDTH	32		// 1 бит знак и 31 бит значащих
 	#define WITHAFADCWIDTH	16		// 1 бит знак и 15 бит значащих
@@ -279,9 +285,9 @@
 	//#define WITHDACOUTDSPAGC		1	/* АРУ реализовано как выход ЦАП на аналоговую часть. */
 	//#define WITHEXTERNALDDSP		1	/* имеется управление внешней DSP платой. */
 	//#define WITHLOOPBACKTEST	1
-	#define WITHDSPEXTDDC 1			/* Квадратуры получаются внешней аппаратурой */
-	#define WITHDSPEXTFIR 1			/* Фильтрация квадратур осуществляется внешней аппаратурой */
-	#define WITHIF4DSP	1	// "Дятел"
+	//#define WITHDSPEXTDDC 1			/* Квадратуры получаются внешней аппаратурой */
+	//#define WITHDSPEXTFIR 1			/* Фильтрация квадратур осуществляется внешней аппаратурой */
+	//#define WITHIF4DSP	1	// "Дятел"
 	//#define WITHDACSTRAIGHT 1		/* Требуется формирование кода для ЦАП в режиме беззнакового кода */
 
 
@@ -469,6 +475,18 @@
 	//#define HARDWARE_IGNORENONVRAM	1		// отладка на платах где нет никакого NVRAM
 
 	// End of NVRAM definitions section
+	/* Board hardware configuration */
+
+	#define ADC1_TYPE ADC_TYPE_AD9246	/* ADC AD9246 chip - 14 bit */
+	#define DDS1_TYPE DDS_TYPE_FPGAV1
+	//#define PLL1_TYPE PLL_TYPE_SI570
+	//#define PLL1_FRACTIONAL_LENGTH	28	/* Si570: lower 28 bits is a fractional part */
+	//#define DDS1_TYPE DDS_TYPE_AD9951
+	//#define PLL1_TYPE PLL_TYPE_ADF4001
+	//#define DDS2_TYPE DDS_TYPE_AD9834
+	#define RTC1_TYPE RTC_TYPE_DS1305	/* MAXIM DS1305EN RTC clock chip with SPI interface */
+	//#define TSC1_TYPE TSC_TYPE_TSC2046	/* Resistive touch screen controller TI TSC2046 */
+	//#define DAC1_TYPE	99999		/* наличие ЦАП для подстройки тактовой частоты */
 
 #endif /* WITHISAPPBOOTLOADER */
 
@@ -511,17 +529,6 @@
 	#define FTW_RESOLUTION 32	/* разрядность FTW выбранного DDS */
 
 	#define MODEL_DIRECT	1	/* использовать прямой синтез, а не гибридный */
-	/* Board hardware configuration */
-	#define ADC1_TYPE ADC_TYPE_AD9246	/* ADC AD9246 chip - 14 bit */
-	#define DDS1_TYPE DDS_TYPE_FPGAV1
-	//#define PLL1_TYPE PLL_TYPE_SI570
-	//#define PLL1_FRACTIONAL_LENGTH	28	/* Si570: lower 28 bits is a fractional part */
-	//#define DDS1_TYPE DDS_TYPE_AD9951
-	//#define PLL1_TYPE PLL_TYPE_ADF4001
-	//#define DDS2_TYPE DDS_TYPE_AD9834
-	#define RTC1_TYPE RTC_TYPE_DS1305	/* MAXIM DS1305EN RTC clock chip with SPI interface */
-	//#define TSC1_TYPE TSC_TYPE_TSC2046	/* Resistive touch screen controller TI TSC2046 */
-	//#define DAC1_TYPE	99999		/* наличие ЦАП для подстройки тактовой частоты */
 
 	#define DDS1_CLK_DIV	1		/* Делитель опорной частоты перед подачей в DDS1 */
 
