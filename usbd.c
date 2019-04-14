@@ -2589,12 +2589,12 @@ static void usbdFunctionReq_seq5(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef 
 			{
 			case DFU_DNLOAD:
 				TP();
-				DFU_Download(pdev, req);
+				DFU_Download(pdev, req);// never called
 				break;
 
 			case DFU_UPLOAD:
 				TP();
-				DFU_Upload(pdev, req);   
+				DFU_Upload(pdev, req);   // never called
 				break;
 
 			case DFU_GETSTATUS:
@@ -2604,12 +2604,12 @@ static void usbdFunctionReq_seq5(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef 
 
 			case DFU_CLRSTATUS:
 				TP();
-				DFU_ClearStatus(pdev);
+				DFU_ClearStatus(pdev);// never called
 				break;      
 
 			case DFU_GETSTATE:
 				TP();
-				DFU_GetState(pdev);
+				DFU_GetState(pdev);// never called
 				break;  
 
 			case DFU_ABORT:
@@ -2619,7 +2619,7 @@ static void usbdFunctionReq_seq5(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef 
 
 			case DFU_DETACH:
 				TP();
-				DFU_Detach(pdev, req);
+				DFU_Detach(pdev, req);	// called
 				break;
 
 			default:
@@ -18413,6 +18413,61 @@ void spidf_initialize(void)
 	(void) CPG.STBCR9;			/* Dummy read */
 #endif
 
+	SPIBSC0.CMNCR |= SPIBSC_CMNCR_MD;	// SPI mode.
+	(void) SPIBSC0.CMNCR;
+	ASSERT(SPIBSC0.CMNCR & SPIBSC_CMNCR_MD);
+
+	SPIBSC0.SPBCR = (SPIBSC0.SPBCR & ~ (SPIBSC_SPBCR_BRDV | SPIBSC_SPBCR_SPBR)) |
+		(0 << SPIBSC_SPBCR_BRDV_SHIFT) |	// 0..3
+		(2 << SPIBSC_SPBCR_SPBR_SHIFT) |	// 0..255
+		0;
+
+	arm_hardware_pio4_alternative(1U << 4, R7S721_PIOALT_4);	/* P4_4 SCLK / SPBCLK_0 */
+	arm_hardware_pio4_alternative(1U << 5, R7S721_PIOALT_4);	/* P4_5 CS# / SPBSSL_0 */
+	arm_hardware_pio4_alternative(1U << 6, R7S721_PIOALT_4);	/* P4_6 MOSI / SPBIO00_0 */
+	arm_hardware_pio4_alternative(1U << 7, R7S721_PIOALT_4);	/* P4_7 MISO / SPBIO10_0 */
+
+	/*
+		The transfer format is determined based on the following registers.
+		- Common control register (CMNCR)
+		- SSL delay register (SSLDR)
+		- Bit rate setting register (SPBCR)
+		- SPI mode control register (SMCR)
+		- SPI mode command setting register (SMCMR)
+		- SPI mode address setting register (SMADR)
+		- SPI mode option setting register (SMOPR)
+		- SPI mode enable setting register (SMENR)
+		- SPI mode read data register (SMRDR)
+		- SPI mode write data register (SMWDR)
+		- SPI mode dummy cycle setting register (SMDMCR)
+		- SPI mode DDR enable register (SMDRENR)*
+	*/
+	SPIBSC0.SMENR = (SPIBSC0.SMENR & ~ (SPIBSC_SMENR_ADE | SPIBSC_SMENR_SPIDE)) |
+		(0x00 << SPIBSC_SMENR_ADE_SHIFT) | /* No address send */
+		(0x08 << SPIBSC_SMENR_SPIDE_SHIFT) | /* 8 bits transferred (enables data at address 0 of the SPI mode read/write data registers 0) */
+		0;
+
+	SPIBSC0.SMCMR =
+		(0x9F << SPIBSC_SMCMR_CMD_SHIFT) | /* 0x9f read id register */
+		(0x00 << SPIBSC_SMCMR_OCMD_SHIFT) | /* xxxx */
+		0;
+
+	SPIBSC0.SMCR = SPIBSC_SMCR_SPIE | SPIBSC_SMCR_SPIRE | SPIBSC_SMCR_SPIWE;
+
+	SPIBSC0.SMWDR0.UINT32 = 0xFFFFFFFF;
+	TP();
+	while ((SPIBSC0.CMNSR & SPIBSC_CMNSR_TEND) == 0)
+		;
+	debug_printf_P(PSTR("SMRDR0=%08lX\n"), SPIBSC0.SMRDR0.UINT32);
+	TP();
+	SPIBSC0.SMWDR0.UINT32 = 0xFFFFFFFF;
+	TP();
+	while ((SPIBSC0.CMNSR & SPIBSC_CMNSR_TEND) == 0)
+		;
+	debug_printf_P(PSTR("SMRDR0=%08lX\n"), SPIBSC0.SMRDR0.UINT32);
+
+
+
 #if 0
 	SPIBSC0.SPBCR = 0x200;	// baud rate
 	SPIBSC0.SSLDR = 0x00;	// delay
@@ -18506,7 +18561,7 @@ static void spidf_write_byte(spitarget_t target, uint_fast8_t v)
 
 void spidf_uninitialize(void)
 {
-	arm_hardware_pio4_inputs(0xFC);		// Отключить процессор от SERIAL FLASH
+	//arm_hardware_pio4_inputs(0xFC);		// Отключить процессор от SERIAL FLASH
 #if 0
 	// spi multi-io hang off
 	CPG.STBCR9 |= CPG_STBCR9_BIT_MSTP93;	// Module Stop 93	- 1: Clock supply to channel 0 of the SPI multi I/O bus controller is halted.
@@ -18912,10 +18967,11 @@ uint16_t MEM_If_DeInit_HS(void)
   * @retval USBD_OK if operation is successful, MAL_FAIL else.
   */
 // called on each PAGESIZE region (see strFlashDesc)
-uint16_t MEM_If_Erase_HS(uint32_t Add)
+uint16_t MEM_If_Erase_HS(uint32_t Addr)
 {
-	//PRINTF(PSTR("MEM_If_Erase_HS: addr=%08lX\n"), Add);
-	sectoreraseDATAFLASH(Add);
+	//PRINTF(PSTR("MEM_If_Erase_HS: addr=%08lX\n"), Addr);
+	if (Addr >= BOOTLOADER_SELFBASE && (Addr + BOOTLOADER_PAGESIZE) <= (BOOTLOADER_SELFBASE + BOOTLOADER_APPFULL))
+		sectoreraseDATAFLASH(Addr);
 	return (USBD_OK);
 }
 
@@ -18929,10 +18985,15 @@ uint16_t MEM_If_Erase_HS(uint32_t Add)
 uint16_t MEM_If_Write_HS(uint8_t *src, uint32_t dest, uint32_t Len)
 {
 	//PRINTF(PSTR("MEM_If_Write_HS: addr=%08lX, len=%03lX\n"), dest, Len);
-	if (writeDATAFLASH(dest, src, Len))
-		return USBD_FAIL;
+	if (dest >= BOOTLOADER_SELFBASE && (dest + Len) <= (BOOTLOADER_SELFBASE + BOOTLOADER_APPFULL))
+	{
+		if (writeDATAFLASH(dest, src, Len))
+			return USBD_FAIL;
+	}
 #if WITHISAPPBOOTLOADER
-	if (dest >= BOOTLOADER_APPBASE)
+	if (dest >= BOOTLOADER_APPAREA && (dest + Len) <= (BOOTLOADER_APPAREA + BOOTLOADER_APPFULL))
+		memcpy((void *) dest, src, Len);
+	else if (dest >= BOOTLOADER_APPBASE)
 		memcpy((void *) ((uintptr_t) dest - BOOTLOADER_APPBASE + BOOTLOADER_APPAREA), src, Len);
 	else
 	{
@@ -19062,6 +19123,7 @@ static USBD_StatusTypeDef  USBD_DFU_Init (USBD_HandleTypeDef *pdev,
 static USBD_StatusTypeDef  USBD_DFU_DeInit (USBD_HandleTypeDef *pdev, 
                                  uint_fast8_t cfgidx)
 {
+	//PRINTF("USBD_DFU_DeInit\n");
   USBD_DFU_HandleTypeDef   *hdfu;
     //hdfu = (USBD_DFU_HandleTypeDef*) pdev->pClassData;
     hdfu = & gdfu;
@@ -19303,11 +19365,11 @@ static void DFU_Detach(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req
 {
 	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
 
-	PRINTF(PSTR("DFU_Detach\n"));
- USBD_DFU_HandleTypeDef   *hdfu;
- 
-    //hdfu = (USBD_DFU_HandleTypeDef*) pdev->pClassData;
-    hdfu = & gdfu;
+	PRINTF(PSTR("DFU_Detach interfacev=%u\n"));
+	USBD_DFU_HandleTypeDef   *hdfu;
+
+	//hdfu = (USBD_DFU_HandleTypeDef*) pdev->pClassData;
+	hdfu = & gdfu;
  
   if (hdfu->dev_state == DFU_STATE_IDLE || hdfu->dev_state == DFU_STATE_DNLOAD_SYNC
       || hdfu->dev_state == DFU_STATE_DNLOAD_IDLE || hdfu->dev_state == DFU_STATE_MANIFEST_SYNC
@@ -19326,11 +19388,14 @@ static void DFU_Detach(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req
   } 
   
   /* Check the detach capability in the DFU functional descriptor */
-  if (0) //((USBD_DFU_CfgDesc[12 + (9 * USBD_DFU_MAX_ITF_NUM)]) & DFU_DETACH_MASK)
+  if (1) //((USBD_DFU_CfgDesc[12 + (9 * USBD_DFU_MAX_ITF_NUM)]) & DFU_DETACH_MASK)
   {
+#if WITHISAPPBOOTLOADER
     /* Perform an Attach-Detach operation on USB bus */
     USBD_Stop (pdev);
+	bootloader_detach();
     USBD_Start (pdev);  
+#endif /* WITHISAPPBOOTLOADER */
   }
   else
   {

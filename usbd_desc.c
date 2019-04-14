@@ -140,6 +140,7 @@ enum
 	STRING_ID_DFU,
 	STRING_ID_DFU_0,
 	STRING_ID_DFU_1,
+	STRING_ID_DFU_2,	/* RAM target for debug */
 	// 
 	STRING_ID_count
 };
@@ -2570,7 +2571,7 @@ static unsigned DFU_InterfaceDescriptor(uint_fast8_t fill, uint8_t * buff, unsig
 }
 
 /* 4.1.3 Run-Time DFU Functional Descriptor */
-static unsigned DFU_FunctionalDescriptor(
+static unsigned DFU_FunctionalDescriptorReadWrite(
 	uint_fast8_t fill, uint8_t * buff, unsigned maxsize
 	)
 {
@@ -2583,8 +2584,42 @@ static unsigned DFU_FunctionalDescriptor(
 		// ? DFU_DETACH_MASK
 		const uint_fast8_t bmAttributes = 
 			//1 * (1u << 3) |		/* Bit 3: bitWillDetach - есть у STM32H7 */
-			//1 * (1u << 2) |		/* Bit 2: bitManifestationTolerant  */
+			1 * (1u << 2) |		/* Bit 2: bitManifestationTolerant  */
 			1 * (1u << 1) |		/* Bit 1: upload capable ( bitCanUpload ) */
+			1 * (1u << 0) |		/* Bit 0: download capable  */
+			0;
+		const uint_fast16_t bcdDFUVersion = 0x0110;
+		const uint_fast16_t wDetachTimeOut = 500;
+		const uint_fast16_t wTransferSize = USBD_DFU_XFER_SIZE;
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
+		* buff ++ = length;						  /* bLength */
+		* buff ++ = DFU_DESCRIPTOR_TYPE;	// bDescriptorType: DFU FUNCTIONAL descriptor type 
+		* buff ++ = bmAttributes;		// bmAttributes
+		* buff ++ = LO_BYTE(wDetachTimeOut);	
+		* buff ++ = HI_BYTE(wDetachTimeOut);	
+		* buff ++ = LO_BYTE(wTransferSize);		
+		* buff ++ = HI_BYTE(wTransferSize);		
+		* buff ++ = LO_BYTE(bcdDFUVersion);		
+		* buff ++ = HI_BYTE(bcdDFUVersion);		
+	}
+	return length;
+}
+/* 4.1.3 Run-Time DFU Functional Descriptor */
+static unsigned DFU_FunctionalDescriptorWriteOnly(
+	uint_fast8_t fill, uint8_t * buff, unsigned maxsize
+	)
+{
+	const uint_fast8_t length = 9;
+	ASSERT(maxsize >= length);
+	if (maxsize < length)
+		return 0;
+	if (fill != 0 && buff != NULL)
+	{
+		// ? DFU_DETACH_MASK
+		const uint_fast8_t bmAttributes = 
+			1 * (1u << 3) |		/* Bit 3: bitWillDetach - есть у STM32H7 */
+			1 * (1u << 2) |		/* Bit 2: bitManifestationTolerant  */
+			//1 * (1u << 1) |		/* Bit 1: upload capable ( bitCanUpload ) */
 			1 * (1u << 0) |		/* Bit 0: download capable  */
 			0;
 		const uint_fast16_t bcdDFUVersion = 0x0110;
@@ -2611,9 +2646,16 @@ static unsigned fill_DFU_function(uint_fast8_t fill, uint8_t * p, unsigned maxsi
 	unsigned n = 0;
 	//
 	n += DFU_InterfaceAssociationDescriptor(fill, p + n, maxsize - n, INTERFACE_DFU_CONTROL, INTERFACE_DFU_count);
+
 	n += DFU_InterfaceDescriptor(fill, p + n, maxsize - n, INTERFACE_DFU_CONTROL, 0x00, STRING_ID_DFU_0);	/* DFU Interface Descriptor */
+	n += DFU_FunctionalDescriptorReadWrite(fill, p + n, maxsize - n);	/* DFU Functional Descriptor */
+
 	n += DFU_InterfaceDescriptor(fill, p + n, maxsize - n, INTERFACE_DFU_CONTROL, 0x01, STRING_ID_DFU_1);	/* DFU Interface Descriptor */
-	n += DFU_FunctionalDescriptor(fill, p + n, maxsize - n);	/* DFU Functional Descriptor */
+	n += DFU_FunctionalDescriptorReadWrite(fill, p + n, maxsize - n);	/* DFU Functional Descriptor */
+#if WITHISAPPBOOTLOADER
+	n += DFU_InterfaceDescriptor(fill, p + n, maxsize - n, INTERFACE_DFU_CONTROL, 0x02, STRING_ID_DFU_2);	/* DFU Interface Descriptor */
+	n += DFU_FunctionalDescriptorWriteOnly(fill, p + n, maxsize - n);	/* DFU Functional Descriptor */
+#endif /* WITHISAPPBOOTLOADER */
 
 	return n;
 }
@@ -3193,6 +3235,27 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 		StringDescrTbl [id].data = alldescbuffer + score;
 		score += partlen;
 	}
+#if WITHISAPPBOOTLOADER
+	{
+		// RAM target for debug
+		static const char strFlashDesc_3 [] = "@SRAM APPLICATION/0x%08lx/%02u*%03uKg";	// 128 k for bootloader
+		unsigned partlen;
+		// Формирование MAC адреса данного устройства
+		// TODO: При модификации не забыть про достоверность значений
+		const uint_fast8_t id = STRING_ID_DFU_2;
+		char b [128];
+		local_snprintf_P(b, ARRAY_SIZE(b), strFlashDesc_3, 
+			(unsigned long) BOOTLOADER_APPAREA,
+			(unsigned) (BOOTLOADER_APPFULL / BOOTLOADER_PAGESIZE),
+			(unsigned) (BOOTLOADER_PAGESIZE / 1024)
+			);
+		score += fill_align4(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score);
+		partlen = fill_string_descriptor(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score, b);
+		StringDescrTbl [id].size = partlen;
+		StringDescrTbl [id].data = alldescbuffer + score;
+		score += partlen;
+	}
+#endif /* WITHISAPPBOOTLOADER */
 #endif /* WITHUSBDFU */
 #if WITHUSBCDCECM || WITHUSBCDCEEM
 	{

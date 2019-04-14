@@ -16997,7 +16997,24 @@ printhex(unsigned long voffs, const unsigned char * buff, unsigned length)
 	}
 }
 
-void bootloader_mainloop(void)
+void bootloader_detach(void)
+{
+	__disable_irq();
+	arm_hardware_flush(BOOTLOADER_APPAREA, BOOTLOADER_APPSIZE);
+	GIC_DisableInterface();
+	GIC_DisableDistributor();
+
+	MMU_Disable();
+	MMU_InvalidateTLB();
+	//arm_hardware_invalidate_all()
+	__ISB();
+	__DSB();
+	(* (void (*)(void)) BOOTLOADER_APPAREA)();
+	for (;;)
+		;
+}
+
+static void bootloader_mainloop(void)
 {
 	//local_delay_ms(1000);
 	//printhex(BOOTLOADER_APPAREA, (void *) BOOTLOADER_APPAREA, 512);
@@ -17036,20 +17053,7 @@ ddd:
 		goto ddd;
 
 	board_usb_deactivate();
-
-	arm_hardware_flush(BOOTLOADER_APPAREA, BOOTLOADER_APPSIZE);
-	__disable_irq();
-	GIC_DisableInterface();
-	GIC_DisableDistributor();
-
-	MMU_Disable();
-	MMU_InvalidateTLB();
-	//arm_hardware_invalidate_all()
-	__ISB();
-	__DSB();
-	(* (void (*)(void)) BOOTLOADER_APPAREA)();
-	for (;;)
-		;
+	bootloader_detach();
 }
 
 #endif /* WITHISAPPBOOTLOADER */
