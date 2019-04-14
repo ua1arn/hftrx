@@ -118,8 +118,12 @@ enum
 	STRING_ID_e2,
 
 	STRING_ID_x0, /*  */
+	STRING_ID_x1, /*  */
+	STRING_ID_x2, /*  */
 
 	STRING_ID_y0, /*  */
+	STRING_ID_y1, /*  */
+	STRING_ID_y2, /*  */
 
 	//STRING_ID_b,	// tag for USB Speaker Audio Feature Unit Descriptor
 
@@ -188,7 +192,12 @@ static const struct stringtempl strtemplates [] =
 	{ STRING_ID_e1, "wwww 3", },	// Audio Control Output Terminal Descriptor 
 
 	{ STRING_ID_x0, "xxxx 1", },	// Audio Control Output Terminal Descriptor 
+	{ STRING_ID_x1, "xxxx 2", },	// Audio Control Output Terminal Descriptor 
+	{ STRING_ID_x2, "xxxx 3", },	// Audio Control Output Terminal Descriptor 
+
 	{ STRING_ID_y0, "yyyy 1", },	// Audio Control Output Terminal Descriptor 
+	{ STRING_ID_y1, "yyyy 2", },	// Audio Control Output Terminal Descriptor 
+	{ STRING_ID_y2, "yyyy 3", },	// Audio Control Output Terminal Descriptor 
 
 	{ STRING_ID_Left, "USB", },	// tag for USB Speaker Audio Feature Unit Descriptor
 	{ STRING_ID_Right, "LSB", },	// tag for USB Speaker Audio Feature Unit Descriptor
