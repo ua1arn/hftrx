@@ -191,27 +191,21 @@ enum
 
 // Descriptor IDs
 // »дентификаторы могут быть произвольными числами (кроме нул€)
+// ѕрименена автоматическа€ нумераци€ терминалов в каждой цепочке.
 enum
 {
 	TERMINAL_ID_UNDEFINED = 0,
 
-	TERMINAL_ID_IT_1 = 10,	// USB Speaker Input Terminal
-	TERMINAL_ID_OT_3 = 15,	// Output Terminal AUDIO_TERMINAL_RADIO_TRANSMITTER
-	TERMINAL_ID_FU_5 = 20,	// Audio Feature Unit in transmitter path (audio)
-
-	TERMINAL_ID_IT_2 = 30,	// Input Terminal (AUDIO) AUDIO_TERMINAL_RADIO_RECEIVER
-	TERMINAL_ID_OT_4 = 35,	// Output Terminal
-	TERMINAL_ID_FU_AUDIO = 40,	// Audio Feature Unit in RX path
-
-	TERMINAL_ID_ITRTS_2 = 70,	// Input Terminal (AUDIO) AUDIO_TERMINAL_RADIO_RECEIVER
-	TERMINAL_ID_OTRTS_4 = 75,	// Output Terminal
-	TERMINAL_ID_FU_RTS = 80,		// Audio Feature Unit in RX spectrum path
-
+	TERMINAL_UACOUT48 = 1,	// fill_UACOUT48_function
+	TERMINAL_UACIN48_UACINRTS = 35,	// fill_UACIN48_function or fill_UACIN48_INRTS_function
+	TERMINAL_UACINRTS = 75,	// fill_UACINRTS_function
 
 	TERMINAL_ID_SELECTOR_6 = 150,	// Input selector - вынесено из-за неудобства использовани€: значение провер€етс€
 
-	TERMINAL_ID_count
+	//TERMINAL_ID_count
 };
+
+#define MAX_TERMINALS_IN_INTERFACE 6
 
 #define TERMINAL_ID_SELECTOR_6_INPUTS 2
 
