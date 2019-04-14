@@ -41,7 +41,7 @@ enum
 		} while (0)
 
 	__STATIC_INLINE int
-	IsListEmpty2(PLIST_ENTRY2 ListHead)
+	IsListEmpty2(const LIST_ENTRY2 * ListHead)
 	{
 		return (ListHead)->Count == 0;
 		//return IsListEmpty(& (ListHead)->item0);
@@ -69,6 +69,12 @@ enum
 		return t;
 	}
 
+	__STATIC_INLINE uint_fast8_t
+	GetCountList2(const LIST_ENTRY2 * ListHead)
+	{
+		return (ListHead)->Count;
+	}
+
 	/* готовность буферов с "гистерезисом". */
 	__STATIC_INLINE uint_fast8_t fiforeadyupdate(
 		uint_fast8_t ready,		// текущее состояние готовности
@@ -80,6 +86,58 @@ enum
 	}
 
 
+	/* отладочные врапперы для функций работы со списком - позволяют получить размер очереди */
+	typedef struct listcnt3
+	{
+		LIST_ENTRY2 item2;
+		uint_fast8_t RdyLevel;	// Требуемое количество
+		uint_fast8_t Rdy;		// количество элментов в списке
+	} LIST_ENTRY3, * PLIST_ENTRY3;
+
+	__STATIC_INLINE int
+	IsListEmpty3(const LIST_ENTRY3 * ListHead)
+	{
+		return IsListEmpty2(& (ListHead)->item2);
+	}
+
+	__STATIC_INLINE void
+	InitializeListHead3(LIST_ENTRY3 * ListHead, uint_fast8_t RdyLevel)
+	{
+		(ListHead)->Rdy = 0;
+		(ListHead)->RdyLevel = RdyLevel;
+		InitializeListHead2(& (ListHead)->item2);
+	}
+
+	__STATIC_INLINE void
+	InsertHeadList3(PLIST_ENTRY3 ListHead, PLIST_ENTRY Entry)
+	{
+		InsertHeadList2(& (ListHead)->item2, (Entry));
+		(ListHead)->Rdy = fiforeadyupdate((ListHead)->Rdy, (ListHead)->item2.Count, (ListHead)->RdyLevel);
+	}
+
+	__STATIC_INLINE PLIST_ENTRY
+	RemoveTailList3(PLIST_ENTRY3 ListHead)
+	{
+		const PLIST_ENTRY t = RemoveTailList2(& (ListHead)->item2);	/* прямо вернуть значение RemoveTailList нельзя - Microsoft сделал не совсем правильный макрос. Но по другому и не плучилось бы в стандартном языке C. */
+		(ListHead)->Rdy = fiforeadyupdate((ListHead)->Rdy, (ListHead)->item2.Count, (ListHead)->RdyLevel);
+		return t;
+	}
+
+	__STATIC_INLINE uint_fast8_t
+	GetCountList3(const LIST_ENTRY3 * ListHead)
+	{
+		return GetCountList2(& (ListHead)->item2);
+	}
+
+	__STATIC_INLINE uint_fast8_t
+	GetReadyList3(const LIST_ENTRY3 * ListHead)
+	{
+		return (ListHead)->Rdy;
+	}
+
+	#define LIST3PRINT(name) do { \
+			debug_printf_P(PSTR(# name "[%3d] "), (int) GetCountList3(name)); \
+		} while (0)
 
 #if 0
 	static int16_t vfyseq;
@@ -147,11 +205,8 @@ enum
 	} ALIGNX_END voice32rx_t;
 
 	static const uint_fast8_t VOICESMIKE16NORMAL = 5;	// Нормальное количество буферов в очереди
-	static LIST_ENTRY2 voicesmike16;	// буферы с оцифрованными звуками с микрофона/Line in
-	static uint_fast8_t voicesmike16rdy = 0;	// Разрешено отдавать потребителям - обновлять после манипуляций с voicesmike16
-
-	static LIST_ENTRY2 resample16;		// буферы от USB для синхронизации
-	static uint_fast8_t resample16rdy = 0;	// Разрешено отдавать потребителям - обновлять после манипуляций с resample16
+	static LIST_ENTRY3 voicesmike16;	// буферы с оцифрованными звуками с микрофона/Line in
+	static LIST_ENTRY3 resample16;		// буферы от USB для синхронизации
 
 	static LIST_ENTRY2 voicesfree16;
 	static LIST_ENTRY2 voicesphones16;	// буферы, предназначенные для выдачи на наушники
@@ -409,7 +464,7 @@ void buffers_diagnostics(void)
 	LIST2PRINT(speexfree16);
 	LIST2PRINT(speexready16);
 	LIST2PRINT(voicesfree16);
-	LIST2PRINT(voicesmike16);
+	LIST3PRINT(voicesmike16);
 	LIST2PRINT(voicesphones16);
 
 	#if WITHUSBUAC
@@ -422,7 +477,7 @@ void buffers_diagnostics(void)
 		#endif
 		//LIST2PRINT(uacinfree16);
 		//LIST2PRINT(uacinready16);
-		LIST2PRINT(resample16);
+		LIST3PRINT(resample16);
 	#endif /* WITHUSBUAC */
 
 	debug_printf_P(PSTR(" add=%u, del=%u, zero=%u, "), nbadd, nbdel, nbzero);
@@ -540,9 +595,9 @@ void buffers_initialize(void)
 
 	static voice16_t voicesarray16 [48];
 
-	InitializeListHead2(& resample16);	// буферы от USB для синхронизации
+	InitializeListHead3(& resample16, VOICESMIKE16NORMAL);	// буферы от USB для синхронизации
+	InitializeListHead3(& voicesmike16, VOICESMIKE16NORMAL);	// список оцифрованных с АЦП
 	InitializeListHead2(& voicesphones16);	// список для выдачи на ЦАП
-	InitializeListHead2(& voicesmike16);	// список оцифрованных с АЦП
 	InitializeListHead2(& voicesfree16);	// Незаполненные
 	for (i = 0; i < (sizeof voicesarray16 / sizeof voicesarray16 [0]); ++ i)
 	{
@@ -794,8 +849,7 @@ static RAMFUNC void buffers_savetonulluacin(uacin16_t * p)
 static RAMFUNC void buffers_savtomodulators16(voice16_t * p)
 {
 	LOCK(& locklist16);
-	InsertHeadList2(& voicesmike16, & p->item);
-	voicesmike16rdy = fiforeadyupdate(voicesmike16rdy, voicesmike16.Count, VOICESMIKE16NORMAL);
+	InsertHeadList3(& voicesmike16, & p->item);
 	UNLOCK(& locklist16);
 }
 
@@ -844,10 +898,9 @@ RAMFUNC uint_fast8_t getsampmlemike(INT32P_t * v)
 	LOCK(& locklist16);
 	if (p == NULL)
 	{
-		if (voicesmike16rdy /*&& ! IsListEmpty2(& voicesmike16) */)
+		if (GetReadyList3(& voicesmike16) /*&& ! IsListEmpty2(& voicesmike16) */)
 		{
-			PLIST_ENTRY t = RemoveTailList2(& voicesmike16);
-			voicesmike16rdy = fiforeadyupdate(voicesmike16rdy, voicesmike16.Count, VOICESMIKE16NORMAL);
+			PLIST_ENTRY t = RemoveTailList3(& voicesmike16);
 			p = CONTAINING_RECORD(t, voice16_t, item);
 			UNLOCK(& locklist16);
 			pos = 0;
@@ -881,14 +934,12 @@ RAMFUNC static void buffers_savetoresampling16(voice16_t * p)
 {
 	LOCK(& locklist16);
 	// Помеестить в очередь принятых с USB UAC
-	InsertHeadList2(& resample16, & p->item);
-	resample16rdy = fiforeadyupdate(resample16rdy, resample16.Count, VOICESMIKE16NORMAL);
+	InsertHeadList3(& resample16, & p->item);
 
-	if (resample16.Count > (VOICESMIKE16NORMAL * 2))
+	if (GetCountList3(& resample16) > (VOICESMIKE16NORMAL * 2))
 	{
 		// Из-за ошибок с асинхронным аудио пришлось добавить ограничение на размер этой очереди
-		const PLIST_ENTRY t = RemoveTailList2(& resample16);
-		resample16rdy = fiforeadyupdate(resample16rdy, resample16.Count, VOICESMIKE16NORMAL);
+		const PLIST_ENTRY t = RemoveTailList3(& resample16);
 
 		InsertHeadList2(& voicesfree16, t);
 
@@ -1133,7 +1184,7 @@ static RAMFUNC unsigned getsamplemsuacout(
 	LOCK(& locklist16);
 	if (p == NULL)
 	{
-		if (resample16rdy == 0)
+		if (GetReadyList3(& resample16) == 0)
 		{
 #if WITHBUFFERSDEBUG
 			++ nbzero;
@@ -1145,22 +1196,21 @@ static RAMFUNC unsigned getsamplemsuacout(
 		}
 		else
 		{
-			PLIST_ENTRY t = RemoveTailList2(& resample16);
-			resample16rdy = fiforeadyupdate(resample16rdy, resample16.Count, VOICESMIKE16NORMAL);
+			PLIST_ENTRY t = RemoveTailList3(& resample16);
 
 			p = CONTAINING_RECORD(t, voice16_t, item);
 			UNLOCK(& locklist16);
 			
-			if (resample16rdy == 0)
+			if (GetReadyList3(& resample16) == 0)
 				skipsense = SKIPPED;
-			const uint_fast8_t valid = resample16rdy && skipsense == 0;
+			const uint_fast8_t valid = GetReadyList3(& resample16) && skipsense == 0;
 
 			skipsense = (skipsense == 0) ? SKIPPED : skipsense - 1;
 
 			const uint_fast8_t LOW = VOICESMIKE16NORMAL - 3;
 			const uint_fast8_t HIGH = VOICESMIKE16NORMAL + 1;
 
-			if (valid && resample16.Count <= LOW)
+			if (valid && GetCountList3(& resample16) <= LOW)
 			{
 				// добавляется один сэмпл к выходному потоку раз в SKIPPED блоков
 #if WITHBUFFERSDEBUG
@@ -1188,7 +1238,7 @@ static RAMFUNC unsigned getsamplemsuacout(
 				sizes [2] = DMABUFFSIZE16 - HALF;
 #endif
 			}
-			else if (valid && resample16.Count >= HIGH)
+			else if (valid && GetCountList3(& resample16) >= HIGH)
 			{
 #if WITHBUFFERSDEBUG
 				++ nbdel;
@@ -1487,19 +1537,18 @@ RAMFUNC uintptr_t allocate_dmabuffer16(void)
 		return (uintptr_t) & p->buff;
 	}
 #if WITHUSBUAC
-	else if (! IsListEmpty2(& resample16))
+	else if (! IsListEmpty3(& resample16))
 	{
 		// Ошибочная ситуация - если буферы не освобождены вовремя -
 		// берём из очереди готовых к ресэмплингу
 		uint_fast8_t n = 3;
 		do
 		{
-			const PLIST_ENTRY t = RemoveTailList2(& resample16);
-			resample16rdy = fiforeadyupdate(resample16rdy, resample16.Count, VOICESMIKE16NORMAL);
+			const PLIST_ENTRY t = RemoveTailList3(& resample16);
 
 			InsertHeadList2(& voicesfree16, t);
 		}
-		while (-- n && ! IsListEmpty2(& resample16));
+		while (-- n && ! IsListEmpty3(& resample16));
 
 		const PLIST_ENTRY t = RemoveTailList2(& voicesfree16);
 		UNLOCK(& locklist16);
