@@ -147,13 +147,15 @@ enum
 	} ALIGNX_END voice32rx_t;
 
 	static const uint_fast8_t VOICESMIKE16NORMAL = 5;	// Нормальное количество буферов в очереди
-	static uint_fast8_t voicesmike16ready = 0;	// Разрешено отдавать потребителям
+	static LIST_ENTRY2 voicesmike16;	// буферы с оцифрованными звуками с микрофона/Line in
+	static uint_fast8_t voicesmike16rdy = 0;	// Разрешено отдавать потребителям - обновлять после манипуляций с voicesmike16
+
+	static LIST_ENTRY2 resample16;		// буферы от USB для синхронизации
+	static uint_fast8_t resample16rdy = 0;	// Разрешено отдавать потребителям - обновлять после манипуляций с resample16
 
 	static LIST_ENTRY2 voicesfree16;
-	static LIST_ENTRY2 voicesmike16;	// буферы с оцифрованными звуками с микрофона/Line in
 	static LIST_ENTRY2 voicesphones16;	// буферы, предназначенные для выдачи на наушники
-	static LIST_ENTRY2 resample16;		// буферы от USB для синхронизации
-	
+
 	static LIST_ENTRY2 voicesready32tx;	// буферы, предназначенные для выдачи на IF DAC
 	static LIST_ENTRY2 voicesfree32tx;
 	static LIST_ENTRY2 voicesfree32rx;
@@ -205,7 +207,6 @@ enum
 	static LIST_ENTRY2 uacinfree16;
 	static LIST_ENTRY2 uacinready16;	// Буферы для записи в вудиоканал USB к компьютер 2*16*24 kS/S
 	//static const uint_fast8_t VOICESMIKE16NORMAL = VOICESMIKE16NORMAL;	// Нормальное количество буферов в очереди
-	static uint_fast8_t resample16ready = 0;	// Разрешено отдавать потребителям
 
 #endif /* WITHUSBUAC */
 
@@ -794,7 +795,7 @@ static RAMFUNC void buffers_savtomodulators16(voice16_t * p)
 {
 	LOCK(& locklist16);
 	InsertHeadList2(& voicesmike16, & p->item);
-	voicesmike16ready = fiforeadyupdate(voicesmike16ready, voicesmike16.Count, VOICESMIKE16NORMAL);
+	voicesmike16rdy = fiforeadyupdate(voicesmike16rdy, voicesmike16.Count, VOICESMIKE16NORMAL);
 	UNLOCK(& locklist16);
 }
 
@@ -843,10 +844,10 @@ RAMFUNC uint_fast8_t getsampmlemike(INT32P_t * v)
 	LOCK(& locklist16);
 	if (p == NULL)
 	{
-		if (voicesmike16ready /*&& ! IsListEmpty2(& voicesmike16) */)
+		if (voicesmike16rdy /*&& ! IsListEmpty2(& voicesmike16) */)
 		{
 			PLIST_ENTRY t = RemoveTailList2(& voicesmike16);
-			voicesmike16ready = fiforeadyupdate(voicesmike16ready, voicesmike16.Count, VOICESMIKE16NORMAL);
+			voicesmike16rdy = fiforeadyupdate(voicesmike16rdy, voicesmike16.Count, VOICESMIKE16NORMAL);
 			p = CONTAINING_RECORD(t, voice16_t, item);
 			UNLOCK(& locklist16);
 			pos = 0;
@@ -881,13 +882,15 @@ RAMFUNC static void buffers_savetoresampling16(voice16_t * p)
 	LOCK(& locklist16);
 	// Помеестить в очередь принятых с USB UAC
 	InsertHeadList2(& resample16, & p->item);
-	resample16ready = fiforeadyupdate(resample16ready, resample16.Count, VOICESMIKE16NORMAL);
+	resample16rdy = fiforeadyupdate(resample16rdy, resample16.Count, VOICESMIKE16NORMAL);
+
 	if (resample16.Count > (VOICESMIKE16NORMAL * 2))
 	{
 		// Из-за ошибок с асинхронным аудио пришлось добавить ограничение на размер этой очереди
 		const PLIST_ENTRY t = RemoveTailList2(& resample16);
+		resample16rdy = fiforeadyupdate(resample16rdy, resample16.Count, VOICESMIKE16NORMAL);
+
 		InsertHeadList2(& voicesfree16, t);
-		resample16ready = fiforeadyupdate(resample16ready, resample16.Count, VOICESMIKE16NORMAL);
 
 	#if WITHBUFFERSDEBUG
 		++ e6;
@@ -1130,7 +1133,7 @@ static RAMFUNC unsigned getsamplemsuacout(
 	LOCK(& locklist16);
 	if (p == NULL)
 	{
-		if (resample16ready == 0)
+		if (resample16rdy == 0)
 		{
 #if WITHBUFFERSDEBUG
 			++ nbzero;
@@ -1143,13 +1146,14 @@ static RAMFUNC unsigned getsamplemsuacout(
 		else
 		{
 			PLIST_ENTRY t = RemoveTailList2(& resample16);
-			resample16ready = fiforeadyupdate(resample16ready, resample16.Count, VOICESMIKE16NORMAL);
+			resample16rdy = fiforeadyupdate(resample16rdy, resample16.Count, VOICESMIKE16NORMAL);
+
 			p = CONTAINING_RECORD(t, voice16_t, item);
 			UNLOCK(& locklist16);
 			
-			if (resample16ready == 0)
+			if (resample16rdy == 0)
 				skipsense = SKIPPED;
-			const uint_fast8_t valid = resample16ready && skipsense == 0;
+			const uint_fast8_t valid = resample16rdy && skipsense == 0;
 
 			skipsense = (skipsense == 0) ? SKIPPED : skipsense - 1;
 
@@ -1491,10 +1495,11 @@ RAMFUNC uintptr_t allocate_dmabuffer16(void)
 		do
 		{
 			const PLIST_ENTRY t = RemoveTailList2(& resample16);
+			resample16rdy = fiforeadyupdate(resample16rdy, resample16.Count, VOICESMIKE16NORMAL);
+
 			InsertHeadList2(& voicesfree16, t);
 		}
 		while (-- n && ! IsListEmpty2(& resample16));
-		resample16ready = fiforeadyupdate(resample16ready, resample16.Count, VOICESMIKE16NORMAL);
 
 		const PLIST_ENTRY t = RemoveTailList2(& voicesfree16);
 		UNLOCK(& locklist16);
