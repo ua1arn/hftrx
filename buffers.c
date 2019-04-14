@@ -136,7 +136,7 @@ enum
 	}
 
 	#define LIST3PRINT(name) do { \
-			debug_printf_P(PSTR(# name "[%3d] "), (int) GetCountList3(name)); \
+			debug_printf_P(PSTR(# name "[%3d] "), (int) GetCountList3(& (name))); \
 		} while (0)
 
 #if 0
@@ -214,6 +214,10 @@ enum
 	static LIST_ENTRY2 voicesready32tx;	// буферы, предназначенные для выдачи на IF DAC
 	static LIST_ENTRY2 voicesfree32tx;
 	static LIST_ENTRY2 voicesfree32rx;
+
+	static LIST_ENTRY2 speexfree16;		// Свободные буферы
+	static LIST_ENTRY2 speexready16;	// Буферы для обработки speex
+	//static int speexready16enable;
 
 	static volatile uint_fast8_t uacoutplayer = 0;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
 	static volatile uint_fast8_t uacoutmike = 0;	/* на вход трансивера берутся аудиоданные с USB виртуальной платы, а не с микрофона */
@@ -301,101 +305,6 @@ static LIST_ENTRY2 modemsrx8;	// Буферы с принятымти через модем данными
 
 #endif /* WITHMODEM */
 
-#if WITHINTEGRATEDDSP
-
-typedef ALIGNX_BEGIN struct denoise16
-{
-	LIST_ENTRY item;
-	ALIGNX_BEGIN int16_t buff [NTRX * SPEEXNN] ALIGNX_END;
-} ALIGNX_END denoise16_t;
-
-static LIST_ENTRY2 speexfree16;		// Свободные буферы
-static LIST_ENTRY2 speexready16;	// Буферы для обработки speex
-//static int speexready16enable;
-
-// Буферы с принятымти от обработчиков прерываний сообщениями
-uint_fast8_t takespeexready_user(int16_t * * dest)
-{
-	ASSERT_IRQL_USER();
-	global_disableIRQ();
-
-	//if (speexready16enable == 0)
-	//{
-	//	speexready16enable = speexready16.Count > 1;
-	//}
-	if (/*speexready16enable && */ ! IsListEmpty2(& speexready16))
-	{
-		PLIST_ENTRY t = RemoveTailList2(& speexready16);
-		global_enableIRQ();
-		denoise16_t * const p = CONTAINING_RECORD(t, denoise16_t, item);
-		* dest = p->buff;
-		return 1;
-	}
-	global_enableIRQ();
-	return 0;
-}
-
-// Освобождение обработанного буфера сообщения
-void releasespeexbuffer_user(int16_t * t)
-{
-	ASSERT_IRQL_USER();
-	denoise16_t * const p = CONTAINING_RECORD(t, denoise16_t, buff);
-	global_disableIRQ();
-	InsertHeadList2(& speexfree16, & p->item);
-	global_enableIRQ();
-}
-
-
-denoise16_t * allocate_dmabuffer16denoise(void)
-{
-	if (! IsListEmpty2(& speexfree16))
-	{
-		PLIST_ENTRY t = RemoveTailList2(& speexfree16);
-		denoise16_t * const p = CONTAINING_RECORD(t, denoise16_t, item);
-		return p;
-	}
-#if WITHBUFFERSDEBUG
-	++ e7;
-#endif /* WITHBUFFERSDEBUG */
-	//debug_printf_P(PSTR("allocate_dmabuffer16denoise() failure\n"));
-	if (! IsListEmpty2(& speexready16))
-	{
-		PLIST_ENTRY t = RemoveTailList2(& speexready16);
-		denoise16_t * const p = CONTAINING_RECORD(t, denoise16_t, item);
-		return p;
-	}
-	debug_printf_P(PSTR("allocate_dmabuffer16denoise() failure\n"));
-	ASSERT(0);
-	for (;;)
-		;
-	return 0;
-}
-
-void savesampleout16denoise(FLOAT_t ch0, FLOAT_t ch1)
-{
-	static denoise16_t * p = NULL;
-	static unsigned n;
-
-	if (p == NULL)
-	{
-		p = allocate_dmabuffer16denoise();
-		n = 0;
-	}
-
-	p->buff [n] = ch0;		// sample value
-#if WITHUSEDUALWATCH
-	p->buff [n + SPEEXNN] = ch1;	// sample value
-#endif /* WITHUSEDUALWATCH */
-
-	n += 1;
-
-	if (n >= SPEEXNN)
-	{
-		InsertHeadList2(& speexready16, & p->item);
-		p = NULL;
-	}
-}
-#endif /* WITHINTEGRATEDDSP */
 /* Cообщения от уровня обработчиков прерываний к user-level функциям. */
 
 typedef struct message
@@ -582,6 +491,98 @@ void buffers_diagnostics(void)
 	#define UNLOCK(p) do {  } while (0)
 
 #endif /* WITHBUFFERSDEBUG */
+
+#if WITHINTEGRATEDDSP
+
+typedef ALIGNX_BEGIN struct denoise16
+{
+	LIST_ENTRY item;
+	ALIGNX_BEGIN int16_t buff [NTRX * SPEEXNN] ALIGNX_END;
+} ALIGNX_END denoise16_t;
+
+// Буферы с принятымти от обработчиков прерываний сообщениями
+uint_fast8_t takespeexready_user(int16_t * * dest)
+{
+	ASSERT_IRQL_USER();
+	global_disableIRQ();
+
+	//if (speexready16enable == 0)
+	//{
+	//	speexready16enable = speexready16.Count > 1;
+	//}
+	if (/*speexready16enable && */ ! IsListEmpty2(& speexready16))
+	{
+		PLIST_ENTRY t = RemoveTailList2(& speexready16);
+		global_enableIRQ();
+		denoise16_t * const p = CONTAINING_RECORD(t, denoise16_t, item);
+		* dest = p->buff;
+		return 1;
+	}
+	global_enableIRQ();
+	return 0;
+}
+
+// Освобождение обработанного буфера сообщения
+void releasespeexbuffer_user(int16_t * t)
+{
+	ASSERT_IRQL_USER();
+	denoise16_t * const p = CONTAINING_RECORD(t, denoise16_t, buff);
+	global_disableIRQ();
+	InsertHeadList2(& speexfree16, & p->item);
+	global_enableIRQ();
+}
+
+
+denoise16_t * allocate_dmabuffer16denoise(void)
+{
+	if (! IsListEmpty2(& speexfree16))
+	{
+		PLIST_ENTRY t = RemoveTailList2(& speexfree16);
+		denoise16_t * const p = CONTAINING_RECORD(t, denoise16_t, item);
+		return p;
+	}
+#if WITHBUFFERSDEBUG
+	++ e7;
+#endif /* WITHBUFFERSDEBUG */
+	//debug_printf_P(PSTR("allocate_dmabuffer16denoise() failure\n"));
+	if (! IsListEmpty2(& speexready16))
+	{
+		PLIST_ENTRY t = RemoveTailList2(& speexready16);
+		denoise16_t * const p = CONTAINING_RECORD(t, denoise16_t, item);
+		return p;
+	}
+	debug_printf_P(PSTR("allocate_dmabuffer16denoise() failure\n"));
+	ASSERT(0);
+	for (;;)
+		;
+	return 0;
+}
+
+void savesampleout16denoise(FLOAT_t ch0, FLOAT_t ch1)
+{
+	static denoise16_t * p = NULL;
+	static unsigned n;
+
+	if (p == NULL)
+	{
+		p = allocate_dmabuffer16denoise();
+		n = 0;
+	}
+
+	p->buff [n] = ch0;		// sample value
+#if WITHUSEDUALWATCH
+	p->buff [n + SPEEXNN] = ch1;	// sample value
+#endif /* WITHUSEDUALWATCH */
+
+	n += 1;
+
+	if (n >= SPEEXNN)
+	{
+		InsertHeadList2(& speexready16, & p->item);
+		p = NULL;
+	}
+}
+#endif /* WITHINTEGRATEDDSP */
 
 // инициализация системы буферов
 void buffers_initialize(void)
