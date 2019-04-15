@@ -1781,7 +1781,7 @@ void savesampleout32stereo(int_fast32_t ch0, int_fast32_t ch1)
 {
 	LOCK(& locklist32);
 	static voice32tx_t * prepareout32tx = NULL;
-	static unsigned level32tx = 0;
+	static unsigned level32tx;
 
 	if (prepareout32tx == NULL)
 	{
@@ -1811,7 +1811,7 @@ void savesampleout16stereo_user(int_fast32_t ch0, int_fast32_t ch1)
 {
 	// если есть инициализированный канал для выдачи звука
 	static voice16_t * p = NULL;
-	static unsigned n = 0;
+	static unsigned n;
 
 	if (p == NULL)
 	{
@@ -1919,7 +1919,7 @@ void savesampleout16stereo_user(int_fast32_t ch0, int_fast32_t ch1)
 		{
 			// если есть инициализированный канал для выдачи звука
 			static voice96rts_t * p = NULL;
-			static unsigned n = 0;
+			static unsigned n;
 
 			if (p == NULL)
 			{
@@ -2034,7 +2034,7 @@ void savesampleout16stereo_user(int_fast32_t ch0, int_fast32_t ch1)
 		{
 			// если есть инициализированный канал для выдачи звука
 			static voice192rts_t * p = NULL;
-			static unsigned n = 0;
+			static unsigned n;
 
 			if (p == NULL)
 			{
