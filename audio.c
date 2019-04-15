@@ -542,7 +542,7 @@ static ncoftw_t anglestep_lout2 = FTWAF(5600), anglestep_rout2 = FTWAF(6300);
 static ncoftw_t angle_lout2, angle_rout2;
 
 // test IQ frequency
-static ncoftw_t anglestep_monofreq = FTWAF(5600);
+static ncoftw_t anglestep_monofreq = FTWAF(200);
 static ncoftw_t angle_monofreq;
 
 int get_rout16(void)
@@ -5223,6 +5223,13 @@ void RAMFUNC dsp_extbuffer32rx(const uint32_t * buff)
 	// Режимы трансиверов с внешним DDC
 
 	saverts96(buff + i);	// использование данных о спектре, передаваемых в общем фрейме
+
+#if 0
+	const FLOAT32P_t simval = scalepair(get_float_monofreq(), rxlevelfence);	// frequency
+	int32_t * const dbuff = (int32_t *) buff;
+	dbuff [i + DMABUF32RX0I] = simval.IV;
+	dbuff [i + DMABUF32RX0Q] = simval.QV;
+#endif
 
 	#if WITHLOOPBACKTEST
 
