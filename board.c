@@ -66,7 +66,7 @@ static uint_fast8_t 	glob_preamp;		// включение предусилителя (УВЧ) приёмника
 static uint_fast8_t 	glob_mikemute;		// отключить аудиовход балансного модулятора
 static uint_fast8_t 	glob_vox;
 #if WITHLCDBACKLIGHT
-static uint_fast8_t 	glob_bglight = WITHLCDBACKLIGHTMAX;
+static uint_fast8_t 	glob_bglight = WITHLCDBACKLIGHTMIN;
 static uint_fast32_t 	glob_blfreq = UINT32_MAX;
 #endif /* WITHLCDBACKLIGHT */
 #if WITHKBDBACKLIGHT

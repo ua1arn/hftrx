@@ -812,7 +812,6 @@ void display_solidbar(uint_fast16_t x, uint_fast16_t y, uint_fast16_t x2, uint_f
 	bitblt_fill(x, y, x2 - x, y2 - y, color);
 }
 
-#endif /* LCDMODE_LTDC */
 
 
 static int local_randomgr( int num )
@@ -855,6 +854,8 @@ void display_barstest(void)
 
 	//getch();             /* Pause for user's response    */
 }
+
+#endif /* LCDMODE_LTDC */
 
 /*
  * настройка портов для последующей работы с дополнительными (кроме последовательного канала)
