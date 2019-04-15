@@ -545,6 +545,10 @@ static ncoftw_t angle_lout2, angle_rout2;
 static ncoftw_t anglestep_monofreq = FTWAF(200);
 static ncoftw_t angle_monofreq;
 
+// test IQ frequency
+static ncoftw_t anglestep_monofreq2 = FTWAF(5600);
+static ncoftw_t angle_monofreq2;
+
 int get_rout16(void)
 {
 	// Формирование значения для ROUT
@@ -585,6 +589,16 @@ static RAMFUNC FLOAT32P_t get_float_monofreq(void)
 	v.IV = peekvalf(FTW2ANGLEI(angle_monofreq));
 	v.QV = peekvalf(FTW2ANGLEQ(angle_monofreq));
 	angle_monofreq = FTWROUND(angle_monofreq + anglestep_monofreq);
+	return v;
+}
+
+// test IQ frequency
+static RAMFUNC FLOAT32P_t get_float_monofreq2(void)
+{
+	FLOAT32P_t v;
+	v.IV = peekvalf(FTW2ANGLEI(angle_monofreq2));
+	v.QV = peekvalf(FTW2ANGLEQ(angle_monofreq2));
+	angle_monofreq = FTWROUND(angle_monofreq2 + anglestep_monofreq2);
 	return v;
 }
 
@@ -4657,11 +4671,6 @@ static uint_fast16_t fft_head = 0;
 // формирование отображения спектра
 void saveIQRTSxx(FLOAT_t iv, FLOAT_t qv)
 {
-#if 0
-	const FLOAT32P_t v = scalepair(get_float_monofreq(), rxlevelfence);	// frequency
-	iv = v.IV;
-	qv = v.QV;
-#endif
 	if (rendering == 0)
 	{
 		//const struct Complex NewSample = { iv, qv };
@@ -5225,10 +5234,22 @@ void RAMFUNC dsp_extbuffer32rx(const uint32_t * buff)
 	saverts96(buff + i);	// использование данных о спектре, передаваемых в общем фрейме
 
 #if 0
-	const FLOAT32P_t simval = scalepair(get_float_monofreq(), rxlevelfence);	// frequency
 	int32_t * const dbuff = (int32_t *) buff;
+
+	// приемник
+	const FLOAT32P_t simval = scalepair(get_float_monofreq(), rxlevelfence);	// frequency
 	dbuff [i + DMABUF32RX0I] = simval.IV;
 	dbuff [i + DMABUF32RX0Q] = simval.QV;
+
+	// пфнорама
+	const FLOAT32P_t simval1 = scalepair(get_float_monofreq2(), rxlevelfence);	// frequency2
+	dbuff [i + DMABUF32RTS0Q] = simval.IV;
+	dbuff [i + DMABUF32RTS0I] = simval.QV;
+
+	const FLOAT32P_t simval2 = scalepair(get_float_monofreq2(), rxlevelfence);	// frequency2
+	dbuff [i + DMABUF32RTS1Q] = simval.IV;
+	dbuff [i + DMABUF32RTS1I] = simval.QV;
+
 #endif
 
 	#if WITHLOOPBACKTEST
