@@ -18,7 +18,7 @@
 #endif
 
 //#define WITHDEBUG		1	/* Отладочная печать через COM-порт. */
-//#define DEBUGSPEED 256000uL
+#define DEBUGSPEED 256000uL
 //#define DEBUGSPEED 57600uL
 //#define DEFAULTDIALFREQ	225000L
 //#define DEFAULTDIALFREQ	14021000L
@@ -155,8 +155,9 @@
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32f4xx_tqfp144_cpustyle_raven_v7.h"	// Rmainunit_v5bm.pcb
 #elif CPUSTYLE_STM32F && CTLSTYLE_STORCH_V1	// SD-CARD. DUAL WATCH, STM32F446ZET6, TLV320AIC23B и FPGA EP4CE22E22I7N
-	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v1.h"	// penkevich, Rmainunit_v5cm.pcb, Rmainunit_v5dm.pcb (USB)
-	#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v1_RA9OH.h"	// Rmainunit_v5dm.pcb (USB)
+	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v1.h"	// Rmainunit_v5cm.pcb, Rmainunit_v5dm.pcb (USB)
+	#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v1_penkevich.h"	// penkevich, Rmainunit_v5cm.pcb, Rmainunit_v5dm.pcb (USB)
+	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v1_RA9OH.h"	// Rmainunit_v5dm.pcb (USB)
 	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v1_R4DR.h"	// Rmainunit_v5dm.pcb (thermo stab) (USB)
 	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v1_R4DZ.h"	// Rmainunit_v5dm.pcb (thermo stab) (USB)s
 	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v1_RD1AD.h"	// Rmainunit_v5cm.pcb (USB)
@@ -164,8 +165,8 @@
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32f4xx_tqfp144_cpustyle_storch_v1.h"	// Rmainunit_v5cm.pcb, Rmainunit_v5dm.pcb
 #elif CPUSTYLE_STM32F && CTLSTYLE_STORCH_V2	// wide LCD, SD-CARD. 2xUSB, DUAL WATCH, STM32F446ZET6, TLV320AIC23B и FPGA EP4CE22E22I7N
-	#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v2.h"	// RA0CGS Rmainunit_v5em.pcb (USBx2)
-	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v2_RX3M.h"	// RX3M Rmainunit_v5em.pcb (USBx2)
+	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v2.h"	// RA0CGS Rmainunit_v5em.pcb (USBx2)
+	#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v2_RX3M.h"	// RX3M Rmainunit_v5em.pcb (USBx2)
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32f4xx_tqfp144_cpustyle_storch_v2.h"	// Rmainunit_v5em.pcb (USBx2)
 #elif CPUSTYLE_STM32F && CTLSTYLE_STORCH_V3	// SD-CARD. 2xUSB, DUAL WATCH, STM32F446ZET6, TLV320AIC23B и FPGA EP4CE22E22I7N

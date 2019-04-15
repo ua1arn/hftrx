@@ -114,6 +114,48 @@ CFG=tc1msvc - Win32 r7s721020_boot
 # PROP Bsc_Name "tc1msvc.bsc"
 # PROP Target_Dir ""
 
+!ELSEIF  "$(CFG)" == "tc1msvc - Win32 r7s721020"
+
+# PROP BASE Use_MFC 0
+# PROP BASE Use_Debug_Libraries 1
+# PROP BASE Output_Dir "r7s721020"
+# PROP BASE Intermediate_Dir "r7s721020"
+# PROP BASE Cmd_Line "NMAKE /a /f tc1msvc_at32.mak r7s721020"
+# PROP BASE Rebuild_Opt ""
+# PROP BASE Target_File "tc1msvc.exe"
+# PROP BASE Bsc_Name "tc1msvc.bsc"
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 0
+# PROP Use_Debug_Libraries 1
+# PROP Output_Dir "r7s721020"
+# PROP Intermediate_Dir "r7s721020"
+# PROP Cmd_Line "NMAKE /a /f tc1msvc_at32.mak r7s721020"
+# PROP Rebuild_Opt ""
+# PROP Target_File "tc1msvc.exe"
+# PROP Bsc_Name "tc1msvc.bsc"
+# PROP Target_Dir ""
+
+!ELSEIF  "$(CFG)" == "tc1msvc - Win32 r7s721020_boot"
+
+# PROP BASE Use_MFC 0
+# PROP BASE Use_Debug_Libraries 1
+# PROP BASE Output_Dir "tc1msvc___Win32_r7s721020_boot"
+# PROP BASE Intermediate_Dir "tc1msvc___Win32_r7s721020_boot"
+# PROP BASE Cmd_Line "NMAKE /a /f tc1msvc_at32.mak r7s721020"
+# PROP BASE Rebuild_Opt ""
+# PROP BASE Target_File "tc1msvc.exe"
+# PROP BASE Bsc_Name "tc1msvc.bsc"
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 0
+# PROP Use_Debug_Libraries 1
+# PROP Output_Dir "tc1msvc___Win32_r7s721020_boot"
+# PROP Intermediate_Dir "tc1msvc___Win32_r7s721020_boot"
+# PROP Cmd_Line "NMAKE /a /f tc1msvc_at32.mak r7s721020_boot"
+# PROP Rebuild_Opt ""
+# PROP Target_File "tc1msvc.exe"
+# PROP Bsc_Name "tc1msvc.bsc"
+# PROP Target_Dir ""
+
 !ELSEIF  "$(CFG)" == "tc1msvc - Win32 stm32f429zi"
 
 # PROP BASE Use_MFC 0
@@ -235,27 +277,6 @@ CFG=tc1msvc - Win32 r7s721020_boot
 # PROP Output_Dir "stm32f407vg"
 # PROP Intermediate_Dir "stm32f407vg"
 # PROP Cmd_Line "NMAKE /a /f tc1msvc_at32.mak stm32f407vg"
-# PROP Rebuild_Opt ""
-# PROP Target_File "tc1msvc.exe"
-# PROP Bsc_Name "tc1msvc.bsc"
-# PROP Target_Dir ""
-
-!ELSEIF  "$(CFG)" == "tc1msvc - Win32 r7s721020"
-
-# PROP BASE Use_MFC 0
-# PROP BASE Use_Debug_Libraries 1
-# PROP BASE Output_Dir "r7s721020"
-# PROP BASE Intermediate_Dir "r7s721020"
-# PROP BASE Cmd_Line "NMAKE /a /f tc1msvc_at32.mak r7s721020"
-# PROP BASE Rebuild_Opt ""
-# PROP BASE Target_File "tc1msvc.exe"
-# PROP BASE Bsc_Name "tc1msvc.bsc"
-# PROP BASE Target_Dir ""
-# PROP Use_MFC 0
-# PROP Use_Debug_Libraries 1
-# PROP Output_Dir "r7s721020"
-# PROP Intermediate_Dir "r7s721020"
-# PROP Cmd_Line "NMAKE /a /f tc1msvc_at32.mak r7s721020"
 # PROP Rebuild_Opt ""
 # PROP Target_File "tc1msvc.exe"
 # PROP Bsc_Name "tc1msvc.bsc"
@@ -597,27 +618,6 @@ CFG=tc1msvc - Win32 r7s721020_boot
 # PROP Bsc_Name "tc1msvc.bsc"
 # PROP Target_Dir ""
 
-!ELSEIF  "$(CFG)" == "tc1msvc - Win32 r7s721020_boot"
-
-# PROP BASE Use_MFC 0
-# PROP BASE Use_Debug_Libraries 1
-# PROP BASE Output_Dir "tc1msvc___Win32_r7s721020_boot"
-# PROP BASE Intermediate_Dir "tc1msvc___Win32_r7s721020_boot"
-# PROP BASE Cmd_Line "NMAKE /a /f tc1msvc_at32.mak r7s721020"
-# PROP BASE Rebuild_Opt ""
-# PROP BASE Target_File "tc1msvc.exe"
-# PROP BASE Bsc_Name "tc1msvc.bsc"
-# PROP BASE Target_Dir ""
-# PROP Use_MFC 0
-# PROP Use_Debug_Libraries 1
-# PROP Output_Dir "tc1msvc___Win32_r7s721020_boot"
-# PROP Intermediate_Dir "tc1msvc___Win32_r7s721020_boot"
-# PROP Cmd_Line "NMAKE /a /f tc1msvc_at32.mak r7s721020_boot"
-# PROP Rebuild_Opt ""
-# PROP Target_File "tc1msvc.exe"
-# PROP Bsc_Name "tc1msvc.bsc"
-# PROP Target_Dir ""
-
 !ENDIF 
 
 # Begin Target
@@ -625,13 +625,14 @@ CFG=tc1msvc - Win32 r7s721020_boot
 # Name "tc1msvc - Win32 stm32f746zg"
 # Name "tc1msvc - Win32 stm32f767zi"
 # Name "tc1msvc - Win32 stm32h743zi"
+# Name "tc1msvc - Win32 r7s721020"
+# Name "tc1msvc - Win32 r7s721020_boot"
 # Name "tc1msvc - Win32 stm32f429zi"
 # Name "tc1msvc - Win32 stm32f769ii"
 # Name "tc1msvc - Win32 stm32f723ze"
 # Name "tc1msvc - Win32 stm32f446ze"
 # Name "tc1msvc - Win32 stm32f401rb"
 # Name "tc1msvc - Win32 stm32f407vg"
-# Name "tc1msvc - Win32 r7s721020"
 # Name "tc1msvc - Win32 stm32f103c8"
 # Name "tc1msvc - Win32 stm32f101rb"
 # Name "tc1msvc - Win32 stm32f303vc"
@@ -648,13 +649,16 @@ CFG=tc1msvc - Win32 r7s721020_boot
 # Name "tc1msvc - Win32 atsam4sa16c"
 # Name "tc1msvc - Win32 at91sam7s64"
 # Name "tc1msvc - Win32 at91sam9xe"
-# Name "tc1msvc - Win32 r7s721020_boot"
 
 !IF  "$(CFG)" == "tc1msvc - Win32 stm32f746zg"
 
 !ELSEIF  "$(CFG)" == "tc1msvc - Win32 stm32f767zi"
 
 !ELSEIF  "$(CFG)" == "tc1msvc - Win32 stm32h743zi"
+
+!ELSEIF  "$(CFG)" == "tc1msvc - Win32 r7s721020"
+
+!ELSEIF  "$(CFG)" == "tc1msvc - Win32 r7s721020_boot"
 
 !ELSEIF  "$(CFG)" == "tc1msvc - Win32 stm32f429zi"
 
@@ -667,8 +671,6 @@ CFG=tc1msvc - Win32 r7s721020_boot
 !ELSEIF  "$(CFG)" == "tc1msvc - Win32 stm32f401rb"
 
 !ELSEIF  "$(CFG)" == "tc1msvc - Win32 stm32f407vg"
-
-!ELSEIF  "$(CFG)" == "tc1msvc - Win32 r7s721020"
 
 !ELSEIF  "$(CFG)" == "tc1msvc - Win32 stm32f103c8"
 
@@ -701,8 +703,6 @@ CFG=tc1msvc - Win32 r7s721020_boot
 !ELSEIF  "$(CFG)" == "tc1msvc - Win32 at91sam7s64"
 
 !ELSEIF  "$(CFG)" == "tc1msvc - Win32 at91sam9xe"
-
-!ELSEIF  "$(CFG)" == "tc1msvc - Win32 r7s721020_boot"
 
 !ENDIF 
 
@@ -1524,6 +1524,10 @@ SOURCE=.\boards\arm_stm32f4xx_tqfp144_ctlstyle_storch_v1.h
 # Begin Source File
 
 SOURCE=.\boards\arm_stm32f4xx_tqfp144_ctlstyle_storch_v1_OUSSOV.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\boards\arm_stm32f4xx_tqfp144_ctlstyle_storch_v1_penkevich.h
 # End Source File
 # Begin Source File
 
