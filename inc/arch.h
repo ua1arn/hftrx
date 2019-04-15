@@ -42,6 +42,15 @@
 
 	#define FFTSizeSpectrumM 11
 	#define FFTCONFIGSpectrum	(& arm_cfft_sR_f32_len2048)
+
+#elif CPUSTYLE_STM32H7XX
+
+	#define FFTSizeFiltersM 10
+	#define FFTCONFIGFilters	(& arm_cfft_sR_f32_len1024)
+
+	#define FFTSizeSpectrumM 11
+	#define FFTCONFIGSpectrum	(& arm_cfft_sR_f32_len2048)
+
 #else
 
 	#define FFTSizeFiltersM 10

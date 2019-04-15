@@ -111,7 +111,7 @@
 		#define DIRECT_80M0_X1		1	/* Тактовый генератор на плате 80.0 МГц */	
 		//#define DIRECT_72M595_X1	1	/* Тактовый генератор 122.880 МГц */	
 		#define BANDSELSTYLERE_UPCONV56M_36M	1	/* Up-conversion with working band .030..36 MHz */
-	#elif 1
+	#elif 0
 		#define DIRECT_100M0_X1		1	/* Тактовый генератор на плате 100.0 МГц */	
 		#define BANDSELSTYLERE_UPCONV56M_45M	1	/* Up-conversion with working band .030..45 MHz */
 	#else
@@ -263,7 +263,7 @@
 	//#define WITHUSEAUDIORECCLASSIC	1	// стандартный формат записи, без "дыр"
 	//#define WITHUSEAUDIOREC2CH	1	// Запись звука на SD CARD в стерео
 
-	#define WITHUSEDUALWATCH	1	// Второй приемник
+	//#define WITHUSEDUALWATCH	1	// Второй приемник
 	#define WITHDACSTRAIGHT 1	/* Требуется формирование кода для ЦАП в режиме беззнакового кода */
 	#define WITHRTS96 1		/* вместо выходного аудиосигнала передача квадратур по USB */
 	#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */

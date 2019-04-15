@@ -3019,7 +3019,11 @@ static uint_fast8_t displaybarsfps = DISPLAYSWR_FPS;
 	static uint_fast8_t gzoomxpow2;		/* степень двойки - состояние растягиваия спектра (уменьшение наблюдаемой полосы частот) */
 #endif /* WITHSPECTRUMWF */
 #if WITHLCDBACKLIGHT
-	static uint_fast8_t bglight = WITHLCDBACKLIGHTMAX;
+	#if WITHISAPPBOOTLOADER 
+		static uint_fast8_t bglight = WITHLCDBACKLIGHTMIN;
+	#else /* WITHISAPPBOOTLOADER */
+		static uint_fast8_t bglight = WITHLCDBACKLIGHTMAX;
+	#endif /* WITHISAPPBOOTLOADER */
 #else /* WITHLCDBACKLIGHT */
 	enum { bglight = 0 };
 #endif /* WITHLCDBACKLIGHT */
@@ -6985,7 +6989,9 @@ static SpeexPreprocessState * st_handles [NTRX];
 
 static int speecallocated = 0;
 
-#if SPEEXNN == 512
+#if SPEEXNN == 256
+	#define SPEEXALLOCSIZE (NTRX * 38584)
+#elif SPEEXNN == 512
 	#define SPEEXALLOCSIZE (NTRX * 75448)
 #elif SPEEXNN == 1024
 	#define SPEEXALLOCSIZE (NTRX * 149176)
