@@ -214,7 +214,7 @@ set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to dac_clk_alt -disabl
 set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to led2 -disable
 set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to led3 -disable
 set_instance_assignment -name CURRENT_STRENGTH_NEW "MINIMUM CURRENT" -to dac_d* -disable
-set_global_assignment -name RESERVE_ALL_UNUSED_PINS_WEAK_PULLUP "AS OUTPUT DRIVING GROUND"
+set_global_assignment -name RESERVE_ALL_UNUSED_PINS_WEAK_PULLUP "AS INPUT TRI-STATED WITH WEAK PULL-UP"
 set_global_assignment -name PHYSICAL_SYNTHESIS_COMBO_LOGIC_FOR_AREA ON
 set_global_assignment -name ENABLE_INIT_DONE_OUTPUT ON
 set_location_assignment PIN_85 -to refclk_out

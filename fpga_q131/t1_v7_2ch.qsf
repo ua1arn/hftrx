@@ -268,7 +268,7 @@ set_global_assignment -name QIP_FILE dacout14.qip
 set_global_assignment -name QIP_FILE lpm_decode_4ch_en.qip
 set_global_assignment -name BDF_FILE fqmemter.bdf
 set_global_assignment -name QIP_FILE fifo64.qip
-set_global_assignment -name RESERVE_ALL_UNUSED_PINS_WEAK_PULLUP "AS OUTPUT DRIVING GROUND"
+set_global_assignment -name RESERVE_ALL_UNUSED_PINS_WEAK_PULLUP "AS INPUT TRI-STATED WITH WEAK PULL-UP"
 set_global_assignment -name PHYSICAL_SYNTHESIS_COMBO_LOGIC_FOR_AREA ON
 set_global_assignment -name QIP_FILE cic_64_2iq.qip
 set_global_assignment -name QIP_FILE cic40_ddc_2rx.qip
