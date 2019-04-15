@@ -431,6 +431,7 @@ static FLOAT_t rxlevelfence = INT32_MAX;
 static FLOAT_t mikefenceIN = INT16_MAX;
 static FLOAT_t mikefenceOUT = INT16_MAX;
 static FLOAT_t phonefence = INT16_MAX;	// Разрядность поступающего на наушники сигнала
+
 static FLOAT_t rxoutdenom = 1 / (FLOAT_t) RXOUTDENOM;
 
 static volatile FLOAT_t nbfence;
@@ -598,7 +599,7 @@ static RAMFUNC FLOAT32P_t get_float_monofreq2(void)
 	FLOAT32P_t v;
 	v.IV = peekvalf(FTW2ANGLEI(angle_monofreq2));
 	v.QV = peekvalf(FTW2ANGLEQ(angle_monofreq2));
-	angle_monofreq = FTWROUND(angle_monofreq2 + anglestep_monofreq2);
+	angle_monofreq2 = FTWROUND(angle_monofreq2 + anglestep_monofreq2);
 	return v;
 }
 
@@ -3205,6 +3206,7 @@ static RAMFUNC FLOAT_t agc_getsiglevel(
 	)
 {
 	const FLOAT_t sample1 = SQRTF((FLOAT_t) sampleiq.IV * sampleiq.IV + (FLOAT_t) sampleiq.QV * sampleiq.QV);
+	return sample1;
 	const FLOAT_t sample2 = FMAXF(FABSF(sampleiq.IV), FABSF(sampleiq.QV));	// используется эта формула, так как цель - исключить арифметическое переполнение.
 	const FLOAT_t sample = FMAXF(sample1, sample2);
 
@@ -3690,9 +3692,6 @@ static RAMFUNC FLOAT32P_t baseband_modulator(
 	case DSPCTL_MODE_TX_SSB:
 	case DSPCTL_MODE_TX_FREEDV:
 		{
-#if WITHTXDACFULL
-			shape *= (FLOAT_t) M_SQRT2;
-#endif /* WITHTXDACFULL */
 			// vi - audio sample in range [- txlevelfence.. + txlevelfence]
 			//const FLOAT32P_t vfb = scalepair_int32(get_int32_aflo_delta(0, pathi), vi * shape);
 			const FLOAT32P_t vfb = scalepair(get_float_aflo_delta(0, pathi), vi * shape);
@@ -5231,8 +5230,6 @@ void RAMFUNC dsp_extbuffer32rx(const uint32_t * buff)
 #elif WITHDSPEXTDDC
 	// Режимы трансиверов с внешним DDC
 
-	saverts96(buff + i);	// использование данных о спектре, передаваемых в общем фрейме
-
 #if 0
 	int32_t * const dbuff = (int32_t *) buff;
 
@@ -5242,15 +5239,17 @@ void RAMFUNC dsp_extbuffer32rx(const uint32_t * buff)
 	dbuff [i + DMABUF32RX0Q] = simval.QV;
 
 	// пфнорама
-	const FLOAT32P_t simval1 = scalepair(get_float_monofreq2(), rxlevelfence);	// frequency2
-	dbuff [i + DMABUF32RTS0Q] = simval.IV;
-	dbuff [i + DMABUF32RTS0I] = simval.QV;
+	const FLOAT32P_t simval0 = scalepair(get_float_monofreq2(), rxlevelfence);	// frequency2
+	dbuff [i + DMABUF32RTS0I] = simval0.IV;
+	dbuff [i + DMABUF32RTS0Q] = simval0.QV;
 
-	const FLOAT32P_t simval2 = scalepair(get_float_monofreq2(), rxlevelfence);	// frequency2
-	dbuff [i + DMABUF32RTS1Q] = simval.IV;
-	dbuff [i + DMABUF32RTS1I] = simval.QV;
+	const FLOAT32P_t simval1 = scalepair(get_float_monofreq2(), rxlevelfence);	// frequency2
+	dbuff [i + DMABUF32RTS1I] = simval1.IV;
+	dbuff [i + DMABUF32RTS1Q] = simval1.QV;
 
 #endif
+
+	saverts96(buff + i);	// использование данных о спектре, передаваемых в общем фрейме
 
 	#if WITHLOOPBACKTEST
 
