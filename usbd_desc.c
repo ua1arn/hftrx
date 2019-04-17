@@ -171,7 +171,7 @@ static const struct stringtempl strtemplates [] =
 		//{ STRING_ID_DFU_1, strOptBytesDesc, },
 	#endif /* ! WITHISAPPBOOTLOADER */
 
-	#if CTLSTYLE_OLEG4Z_V1
+	#if 0//CTLSTYLE_OLEG4Z_V1
 		{ STRING_ID_a0, PRODUCTSTR " Voice", },		// tag for Interface Descriptor 0/0 Audio
 		{ STRING_ID_a1, PRODUCTSTR " Spectre", },	// tag for Interface Descriptor 0/0 Audio
 		{ STRING_ID_a2, PRODUCTSTR " Modulator", },	// tag for Interface Descriptor 0/0 Audio
@@ -202,7 +202,7 @@ static const struct stringtempl strtemplates [] =
 	{ STRING_ID_Left, "USB", },	// tag for USB Speaker Audio Feature Unit Descriptor
 	{ STRING_ID_Right, "LSB", },	// tag for USB Speaker Audio Feature Unit Descriptor
 	{ STRING_ID_HIDa, "HID xxx", },
-#if CTLSTYLE_OLEG4Z_V1
+#if 0//CTLSTYLE_OLEG4Z_V1
 	{ STRING_ID_IQSPECTRUM, PRODUCTSTR " Spectre", },	// tag for Interface Descriptor 0/0 Audio
 #else /* CTLSTYLE_OLEG4Z_V1 */
 	{ STRING_ID_IQSPECTRUM, "RX IQ Output", },

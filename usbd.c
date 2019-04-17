@@ -18393,6 +18393,7 @@ uint_fast8_t hamradio_get_usbh_active(void)
 #if WITHUSBDFU
 
 /////////
+// https://github.com/renesas-rz/rza1_qspi_flash/blob/master/qspi_flash.c
 
 #define targetdataflash 0 
 #define SPIMODE_AT26DF081A	SPIC_MODE3
