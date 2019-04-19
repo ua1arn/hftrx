@@ -11388,7 +11388,7 @@ processcatmsg(
 	{
 		if (cathasparam != 0)
 		{
-			if (catpcount == 12)
+			if (catpcount == 4)
 			{
 				// Format: ZYmSLL
 				const uint_fast32_t v = catp [0] - '0';
