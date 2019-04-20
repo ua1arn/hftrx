@@ -28,7 +28,6 @@ static void ds1305_readbuff(
 {
 	const spitarget_t target = targetrtc1;		/* addressing to chip */
 
-	local_delay_us(10);		// 4 uS required
 	spi_select2(target, DS1305_SPIMODE, DS1305_SPISPEED);
 	local_delay_us(10);		// 4 uS required
 
@@ -41,6 +40,7 @@ static void ds1305_readbuff(
 
 	spi_to_write(target);
 	spi_unselect(target);	/* done sending data to target chip */
+	local_delay_us(10);		// 4 uS required
 }
 
 static void ds1305_writebuff(
@@ -51,7 +51,6 @@ static void ds1305_writebuff(
 {
 	const spitarget_t target = targetrtc1;		/* addressing to chip */
 
-	local_delay_us(10);		// 4 uS required
 	spi_select2(target, DS1305_SPIMODE, DS1305_SPISPEED);
 	local_delay_us(10);		// 4 uS required
 
@@ -60,6 +59,7 @@ static void ds1305_writebuff(
 	prog_spi_send_frame(target, data, len);
 
 	spi_unselect(target);	/* done sending data to target chip */
+	local_delay_us(10);		// 4 uS required
 }
 
 #if 0
