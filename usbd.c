@@ -18662,6 +18662,7 @@ static int largetimed_dataflash_read_status(
 	debug_printf_P(PSTR("DATAFLASH erase timeout error\n"));
 	return 1;
 }
+// Atmel Data Flash: Read: ID = 0x1F devId = 0x4501, mf_dlen=0x00
 
 static int testchipDATAFLASH(void)
 {
@@ -18730,15 +18731,24 @@ static int prepareDATAFLASH(void)
 {
 	spitarget_t target = targetdataflash;	/* addressing to chip */
 
-	spidf_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
-	spidf_progval8(target, 0x06);		/* write enable */
-	spidf_unselect(target);	/* done sending data to target chip */
 
-	// Write Status Register
-	spidf_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
-	spidf_progval8(target, 0x01);		/* write status register */
-	spidf_progval8(target, 0x00);		/* write status register */
-	spidf_unselect(target);	/* done sending data to target chip */
+	const uint_fast8_t status = dataflash_read_status(target);
+
+	if ((status & 0x1C) != 0)
+	{
+		if (timed_dataflash_read_status(target))
+			return 1;
+		debug_printf_P(PSTR("Clear write protect bits\n"));
+		spidf_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
+		spidf_progval8(target, 0x06);		/* write enable */
+		spidf_unselect(target);	/* done sending data to target chip */
+
+		// Write Status Register
+		spidf_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
+		spidf_progval8(target, 0x01);		/* write status register ccommand */
+		spidf_progval8(target, 0x00);		/* status register data */
+		spidf_unselect(target);	/* done sending data to target chip */
+	}
 
 	return timed_dataflash_read_status(target);
 }
@@ -18946,8 +18956,8 @@ uint16_t MEM_If_Init_HS(void)
 {
 	PRINTF(PSTR("MEM_If_Init_HS\n"));
 	spidf_initialize();
-	//prepareDATAFLASH();	// снятие зазиты со страниц при первом програмимровании через SPI интерфейс
 	testchipDATAFLASH();
+	prepareDATAFLASH();	// снятие защиты со страниц при первом програмимровании через SPI интерфейс
 	return (USBD_OK);
 }
 
