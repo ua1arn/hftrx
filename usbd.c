@@ -19001,7 +19001,7 @@ uint16_t MEM_If_Write_HS(uint8_t *src, uint32_t dest, uint32_t Len)
 		if (writeDATAFLASH(dest, src, Len))
 			return USBD_FAIL;
 	}
-#if WITHISAPPBOOTLOADER
+#if WITHISBOOTLOADER
 	if (dest >= BOOTLOADER_APPAREA && (dest + Len) <= (BOOTLOADER_APPAREA + BOOTLOADER_APPFULL))
 		memcpy((void *) dest, src, Len);
 	else if (dest >= BOOTLOADER_APPBASE)
@@ -19010,7 +19010,7 @@ uint16_t MEM_If_Write_HS(uint8_t *src, uint32_t dest, uint32_t Len)
 	{
 		/* программируем бутлоадер */
 	}
-#endif /* WITHISAPPBOOTLOADER */
+#endif /* WITHISBOOTLOADER */
 	return (USBD_OK);
 }
 
@@ -19401,12 +19401,12 @@ static void DFU_Detach(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req
   /* Check the detach capability in the DFU functional descriptor */
   if (1) //((USBD_DFU_CfgDesc[12 + (9 * USBD_DFU_MAX_ITF_NUM)]) & DFU_DETACH_MASK)
   {
-#if WITHISAPPBOOTLOADER
+#if WITHISBOOTLOADER
     /* Perform an Attach-Detach operation on USB bus */
     USBD_Stop (pdev);
 	bootloader_detach();
     USBD_Start (pdev);  
-#endif /* WITHISAPPBOOTLOADER */
+#endif /* WITHISBOOTLOADER */
   }
   else
   {

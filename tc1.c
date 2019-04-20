@@ -3019,11 +3019,11 @@ static uint_fast8_t displaybarsfps = DISPLAYSWR_FPS;
 	static uint_fast8_t gzoomxpow2;		/* степень двойки - состо€ние раст€гиваи€ спектра (уменьшение наблюдаемой полосы частот) */
 #endif /* WITHSPECTRUMWF */
 #if WITHLCDBACKLIGHT
-	#if WITHISAPPBOOTLOADER 
+	#if WITHISBOOTLOADER 
 		static uint_fast8_t bglight = WITHLCDBACKLIGHTMIN;
-	#else /* WITHISAPPBOOTLOADER */
+	#else /* WITHISBOOTLOADER */
 		static uint_fast8_t bglight = WITHLCDBACKLIGHTMAX;
-	#endif /* WITHISAPPBOOTLOADER */
+	#endif /* WITHISBOOTLOADER */
 #else /* WITHLCDBACKLIGHT */
 	enum { bglight = 0 };
 #endif /* WITHLCDBACKLIGHT */
@@ -17037,7 +17037,7 @@ static void siggen_mainloop(void)
 }
 #endif
 
-#if WITHISAPPBOOTLOADER
+#if WITHISBOOTLOADER
 
 static int
 toprintc(int c)
@@ -17129,7 +17129,7 @@ ddd:
 	bootloader_detach();
 }
 
-#endif /* WITHISAPPBOOTLOADER */
+#endif /* WITHISBOOTLOADER */
 /* √лавна€ функци€ программы */
 int 
 //__attribute__ ((used))
@@ -17153,7 +17153,7 @@ main(void)
 	hamradio_initialize();
 	hightests();		/* подпрограммы дл€ тестировани€ аппаратуры */
 
-#if WITHISAPPBOOTLOADER
+#if WITHISBOOTLOADER
 	bootloader_mainloop();
 #elif WITHOPERA4BEACON
 	hamradio_mainloop_OPERA4();

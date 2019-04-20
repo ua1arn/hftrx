@@ -10248,7 +10248,7 @@ void cpu_initialize(void)
 // секция init больше не нужна
 void cpu_initdone(void)
 {
-#if WITHISAPPBOOTLOADER
+#if WITHISBOOTLOADER
 	void * const APPAREA = (void *) BOOTLOADER_APPAREA;
 	void * const APPSTORAGEBASE = (void *) BOOTLOADER_APPBASE;
 
@@ -10287,7 +10287,7 @@ void cpu_initdone(void)
 	arm_hardware_pio4_inputs(0xFC);		// Отключить процессор от SERIAL FLASH
 
 #endif /* CPUSTYLE_R7S721 */
-#endif /* WITHISAPPBOOTLOADER */
+#endif /* WITHISBOOTLOADER */
 }
 
 // optimizer test: from electronix.ru - should be one divmod call

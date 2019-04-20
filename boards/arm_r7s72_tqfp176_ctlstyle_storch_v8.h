@@ -91,7 +91,7 @@
 	//#define WITHSPLITEX	1	/* Трехкнопочное управление режимами расстройки */
 
 	// +++ Одна из этих строк определяет тип дисплея, для которого компилируется прошивка
-#if WITHISAPPBOOTLOADER
+#if WITHISBOOTLOADER
 
 	#define LCDMODE_ILI9341	1	/* 320*240 SF-TC240T-9370-T с контроллером ILI9341 - STM32F4DISCO */
 
@@ -198,7 +198,7 @@
 	#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры 
 #endif
 
-#if WITHISAPPBOOTLOADER
+#if WITHISBOOTLOADER
 
 
 	#define CTLREGMODE_STORCH_V7	1	/* TFT 4.3" "Аист" с DSP и FPGA STM32H743IIT6 или R7S721020VCFP */
@@ -336,7 +336,7 @@
 
 	// End of NVRAM definitions section
 
-#else /* WITHISAPPBOOTLOADER */
+#else /* WITHISBOOTLOADER */
 	// app
 
 	#define CTLREGMODE_STORCH_V7	1	/* TFT 4.3" "Аист" с DSP и FPGA STM32H743IIT6 или R7S721020VCFP */
@@ -488,7 +488,7 @@
 	//#define TSC1_TYPE TSC_TYPE_TSC2046	/* Resistive touch screen controller TI TSC2046 */
 	//#define DAC1_TYPE	99999		/* наличие ЦАП для подстройки тактовой частоты */
 
-#endif /* WITHISAPPBOOTLOADER */
+#endif /* WITHISBOOTLOADER */
 
 
 	#if 0

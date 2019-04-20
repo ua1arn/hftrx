@@ -53,7 +53,7 @@
 //#define USB_FUNCTION_PRODUCT_ID	0x5740
 //#define USB_FUNCTION_RELEASE_NO	0x0200
 
-#if WITHISAPPBOOTLOADER
+#if WITHISBOOTLOADER
 
 	#define USB_FUNCTION_PRODUCT_ID	0x0750
 	#define PRODUCTSTR "Storch TRX Bootloader"
@@ -165,11 +165,11 @@ static const struct stringtempl strtemplates [] =
 	{ STRING_ID_RNDIS, PRODUCTSTR " Remote NDIS", },
 
 	{ STRING_ID_DFU, "Storch DFU Device", },
-	#if 0//! WITHISAPPBOOTLOADER
+	#if 0//! WITHISBOOTLOADER
 		{ STRING_ID_DFU_0, strFlashDesc, },
 		{ STRING_ID_DFU_1, strBootloaderFlashDesc, },
 		//{ STRING_ID_DFU_1, strOptBytesDesc, },
-	#endif /* ! WITHISAPPBOOTLOADER */
+	#endif /* ! WITHISBOOTLOADER */
 
 	#if 0//CTLSTYLE_OLEG4Z_V1
 		{ STRING_ID_a0, PRODUCTSTR " Voice", },		// tag for Interface Descriptor 0/0 Audio
@@ -2639,10 +2639,10 @@ static unsigned fill_DFU_function(uint_fast8_t fill, uint8_t * p, unsigned maxsi
 
 	n += DFU_InterfaceDescriptor(fill, p + n, maxsize - n, INTERFACE_DFU_CONTROL, ialt ++, STRING_ID_DFU_1);	/* DFU Interface Descriptor */
 	n += DFU_FunctionalDescriptorReadWrite(fill, p + n, maxsize - n);	/* DFU Functional Descriptor */
-#if WITHISAPPBOOTLOADER
+#if WITHISBOOTLOADER
 	n += DFU_InterfaceDescriptor(fill, p + n, maxsize - n, INTERFACE_DFU_CONTROL, ialt ++, STRING_ID_DFU_2);	/* DFU Interface Descriptor */
 	n += DFU_FunctionalDescriptorWriteOnly(fill, p + n, maxsize - n);	/* DFU Functional Descriptor */
-#endif /* WITHISAPPBOOTLOADER */
+#endif /* WITHISBOOTLOADER */
 
 	return n;
 }
@@ -3222,7 +3222,7 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 		StringDescrTbl [id].data = alldescbuffer + score;
 		score += partlen;
 	}
-#if WITHISAPPBOOTLOADER
+#if WITHISBOOTLOADER
 	{
 		// RAM target for debug
 		static const char strFlashDesc_3 [] = "@SRAM APPLICATION/0x%08lx/%02u*%03uKg";	// 128 k for bootloader
@@ -3242,7 +3242,7 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 		StringDescrTbl [id].data = alldescbuffer + score;
 		score += partlen;
 	}
-#endif /* WITHISAPPBOOTLOADER */
+#endif /* WITHISBOOTLOADER */
 #endif /* WITHUSBDFU */
 #if WITHUSBCDCECM || WITHUSBCDCEEM
 	{
