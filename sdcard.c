@@ -354,7 +354,7 @@ static  uint_fast8_t crc7b1(uint_fast8_t crc, uint_fast8_t v1)
 		crc <<= 1;
 	}
 
-	return crc;
+	return crc & 0xFF;
 }
 
 /* вспомогательная подпрограмма расчёта CRC для одного байта */
@@ -3154,7 +3154,7 @@ static  uint_fast8_t crc7b1(uint_fast8_t crc, uint_fast8_t v1)
 		crc <<= 1;
 	}
 
-	return crc;
+	return crc & 0xFF;
 }
 
 static void mmcSendDummyByte(void)
