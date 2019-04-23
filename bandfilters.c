@@ -367,7 +367,7 @@ uint8_t bandf2_calc(
 		return 2;
 	return 3;
 #elif \
-	(CTLREGMODE_STORCH_V1 && ARM_STM32F4XX_TQFP144_CTLSTYLE_STORCH_V1_R4DZ_H_INCLUDED) || \
+	(CTLSTYLE_STORCH_V8 && ARM_R7S72_TQFP176_CTLSTYLE_STORCH_V8_R4DZ_H_INCLUDED) || \
 	0
 	/* плата усилителя 2*RD100 */
 	// R4DZ version: 1.8-2.0  3.5-4.0,   7-7.2,   10-10.2.  14-18.2    21-30

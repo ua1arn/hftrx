@@ -1351,6 +1351,10 @@ SOURCE=.\boards\arm_r7s72_tqfp176_ctlstyle_storch_v8.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\boards\arm_r7s72_tqfp176_ctlstyle_storch_v8_r4dz.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\boards\arm_stm32f051_tqfp48_cpustyle_v1.h
 # End Source File
 # Begin Source File
@@ -1532,10 +1536,6 @@ SOURCE=.\boards\arm_stm32f4xx_tqfp144_ctlstyle_storch_v1_penkevich.h
 # Begin Source File
 
 SOURCE=.\boards\arm_stm32f4xx_tqfp144_ctlstyle_storch_v1_R4DR.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\boards\arm_stm32f4xx_tqfp144_ctlstyle_storch_v1_R4DZ.h
 # End Source File
 # Begin Source File
 
