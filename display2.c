@@ -4807,6 +4807,7 @@ static FLOAT_t filter_spectrum(
 #endif
 
 static uint_fast32_t wffreq;			// частота центра спектра, для которой в последной раз отрисовали.
+static uint_fast8_t wfzoom;				// масштаб, с которым выводили спектр
 
 enum { PALETTESIZE = 256 };
 static PACKEDCOLOR565_T wfpalette [PALETTESIZE];
@@ -5303,7 +5304,7 @@ static void display2_waterfall(
 		const uint_fast16_t xm = deltafreq2x(0, bw, ALLDX);
 
 #if ! WITHSEPARATEWFL
-		if (wffreq == 0)
+		if (wffreq == 0 || wfzoom != glob_zoomx)
 		{
 			// стираем целиком старое изображение водопада
 			// в строке wfrow - новое
@@ -5372,10 +5373,10 @@ static void display2_waterfall(
 		}
 #endif
 		wffreq = freq;
+		wfzoom = glob_zoomx;
 	}
 	else
 	{
-		//wffreq = 0;
 	}
 
 #endif /* LCDMODE_S1D13781 */
