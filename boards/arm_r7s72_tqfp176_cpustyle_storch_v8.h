@@ -146,26 +146,26 @@
 
 	// Обязательно буфер (входы процессора низковольтные).
 
-	#define ENCODER_INPUT_PORT			(R7S721_INPUT_PORT(5)) 
-	#define ENCODER_BITA (1u << 11)	// P5_11 IRQ6
-	#define ENCODER_BITB (1u << 10)	// P5_10 IRQ5
-	#define ENCODER_BITS (ENCODER_BITA | ENCODER_BITB)
-	#define ENCODER_SHIFT 10	// Отсутствие этого значения означает что биты не подряд
-
 	#define ENCODER2_INPUT_PORT			(R7S721_INPUT_PORT(5)) 
-	#define ENCODER2_BITA (1u << 9)	// P5_9 IRQ4
-	#define ENCODER2_BITB (1u << 8)	// P5_8 IRQ3
+	#define ENCODER2_BITA (1u << 11)	// P5_11 IRQ6
+	#define ENCODER2_BITB (1u << 10)	// P5_10 IRQ5
 	#define ENCODER2_BITS (ENCODER2_BITA | ENCODER2_BITB)
-	#define ENCODER2_SHIFT 8	// Отсутствие этого значения означает что биты не подряд
+	#define ENCODER2_SHIFT 10	// Отсутствие этого значения означает что биты не подряд
+
+	#define ENCODER_INPUT_PORT			(R7S721_INPUT_PORT(5)) 
+	#define ENCODER_BITA (1u << 9)	// P5_9 IRQ4
+	#define ENCODER_BITB (1u << 8)	// P5_8 IRQ3
+	#define ENCODER_BITS (ENCODER_BITA | ENCODER_BITB)
+	#define ENCODER_SHIFT 8	// Отсутствие этого значения означает что биты не подряд
 
 	#define ENCODER_INITIALIZE() \
 		do { \
-			arm_hardware_pio5_alternative(ENCODER_BITS, R7S721_PIOALT_4); \
-			arm_hardware_irqn_interrupt(5, 3, ARM_OVERREALTIME_PRIORITY, spool_encinterrupt); /* IRQ5, both edges */ \
-			arm_hardware_irqn_interrupt(6, 3, ARM_OVERREALTIME_PRIORITY, spool_encinterrupt); /* IRQ6, both edges */ \
 			arm_hardware_pio5_alternative(ENCODER2_BITS, R7S721_PIOALT_4); \
-			arm_hardware_irqn_interrupt(3, 3, ARM_OVERREALTIME_PRIORITY, spool_encinterrupt2); /* IRQ3, both edges */ \
-			arm_hardware_irqn_interrupt(4, 3, ARM_OVERREALTIME_PRIORITY, spool_encinterrupt2); /* IRQ4, both edges */ \
+			/* arm_hardware_irqn_interrupt(5, 3, ARM_OVERREALTIME_PRIORITY, spool_encinterrupt2); */ /* IRQ5, both edges */ \
+			/* arm_hardware_irqn_interrupt(6, 3, ARM_OVERREALTIME_PRIORITY, spool_encinterrupt2); */ /* IRQ6, both edges */ \
+			arm_hardware_pio5_alternative(ENCODER_BITS, R7S721_PIOALT_4); \
+			arm_hardware_irqn_interrupt(3, 3, ARM_OVERREALTIME_PRIORITY, spool_encinterrupt); /* IRQ3, both edges */ \
+			arm_hardware_irqn_interrupt(4, 3, ARM_OVERREALTIME_PRIORITY, spool_encinterrupt); /* IRQ4, both edges */ \
 		} while (0)
 
 #endif /* WITHENCODER */
