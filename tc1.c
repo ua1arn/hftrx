@@ -13391,6 +13391,30 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		NULL,
 	},
 #endif /* ! WITHFLATMENU */
+#if WITHIF4DSP
+	#if ! WITHPOTAFGAIN
+	{
+		"AF GAIN ", 7, 0, 0,	ISTEP1,	
+		ITEM_VALUE,
+		BOARD_AFGAIN_MIN, BOARD_AFGAIN_MAX, 					// Громкость в процентах
+		offsetof(struct nvmap, afgain1),
+		& afgain1,
+		NULL,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	#endif /* ! WITHPOTAFGAIN */
+	#if ! WITHPOTIFGAIN
+	{
+		"RF GAIN ", 7, 0, 0,	ISTEP1,	
+		ITEM_VALUE,
+		BOARD_IFGAIN_MIN, BOARD_IFGAIN_MAX, 					// Усиление ПЧ/ВЧ в процентах
+		offsetof(struct nvmap, rfgain1),
+		& rfgain1,
+		NULL,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	#endif /* ! WITHPOTIFGAIN */
+#endif /* WITHIF4DSP */
 #if (SIDETONE_TARGET_BIT != 0) || WITHINTEGRATEDDSP
 	{
 		"KEY BEEP", 7, 2, 0, 	ISTEP5,		/* регулировка тона озвучки клавиш */
@@ -13999,30 +14023,6 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 #endif /* WITHRFSG */
-#if WITHIF4DSP
-#if ! WITHPOTAFGAIN
-	{
-		"AF GAIN ", 7, 0, 0,	ISTEP1,	
-		ITEM_VALUE,
-		BOARD_AFGAIN_MIN, BOARD_AFGAIN_MAX, 					// Громкость в процентах
-		offsetof(struct nvmap, afgain1),
-		& afgain1,
-		NULL,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-#endif /* ! WITHPOTAFGAIN */
-#if ! WITHPOTIFGAIN
-	{
-		"RF GAIN ", 7, 0, 0,	ISTEP1,	
-		ITEM_VALUE,
-		BOARD_IFGAIN_MIN, BOARD_IFGAIN_MAX, 					// Усиление ПЧ/ВЧ в процентах
-		offsetof(struct nvmap, rfgain1),
-		& rfgain1,
-		NULL,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-#endif /* ! WITHPOTIFGAIN */
-#endif /* WITHIF4DSP */
 #if WITHENCODER
 	{
 		"ENC RES ", 7, 0, RJ_ENCRES,	ISTEP1,	
