@@ -4173,8 +4173,8 @@ enum
 		{	21,	0,	display_lockstate3, REDRM_MODE, PGALL, },	// LCK
 
 	#if WITHENCODER2
-		{	26, 0,	display_fnlabel9,	REDRM_MODE, PGALL, },	// FUNC item label
-		{	26,	4,	display_fnvalue9,	REDRM_MODE, PGALL, },	// FUNC item value
+		{	41, 0,	display_fnlabel9,	REDRM_MODE, PGALL, },	// FUNC item label
+		{	41,	4,	display_fnvalue9,	REDRM_MODE, PGALL, },	// FUNC item value
 		{	45, 15,	display_notch5,		REDRM_MODE, PGALL, },	// NOTCH on/off
 	#else /* WITHENCODER2 */
 		{	45, 0,	display_notch5,		REDRM_MODE, PGALL, },	// FUNC item label
