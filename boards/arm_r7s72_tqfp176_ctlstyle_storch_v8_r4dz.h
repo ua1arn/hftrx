@@ -221,101 +221,6 @@
 	//#define BOARD_FILTER_6P0		0	/* 6.0 kHz filter */
 	//#define BOARD_FILTER_8P0		0	/* 6.0 kHz filter */
 	// --- заглушки для плат с DSP обработкой
-
-	//#define WITHRTS192	1		// Есть канал спектроанализатора - не забыть включить WITHSAI2HW
-	//#define WITHRTS96		1		/* вместо выходного аудиосигнала передача квадратур по USB */
-
-	//#define ENCRES_DEFAULT ENCRES_128
-	//#define ENCRES_DEFAULT ENCRES_24
-	//#define WITHDIRECTFREQENER	1 //(! CTLSTYLE_SW2011ALL && ! CTLSTYLE_UA3DKC)
-	//#define	WITHENCODER	1	/* для изменения частоты имеется енкодер */
-	//#define WITHENCODER2	1		/* есть второй валкодер */
-
-	//#define WITHUSEDUALWATCH	1	// Второй приемник
-	//#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
-
-	// FPGA section
-	//#define	WITHFPGAWAIT_AS	1	/* FPGA загружается из собственной микросхемы загрузчика - дождаться окончания загрузки перед инициализацией SPI в процессоре */
-	////#define	WITHFPGALOAD_PS	1	/* FPGA загружается процессором с помощью SPI */
-
-	// +++ Эти строки можно отключать, уменьшая функциональность готового изделия
-	//#define WITHRFSG	1	/* включено управление ВЧ сигнал-генератором. */
-	////#define WITHTX		1	/* включено управление передатчиком - сиквенсор, электронный ключ. */
-	//#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
-	//#define WITHIFSHIFT	1	/* используется IF SHIFT */
-	//#define WITHIFSHIFTOFFSET	(-250)	/* Начальное занчение IF SHIFT */
-	//#define WITHPBT		1	/* используется PBT (если LO3 есть) */
-	///#define WITHCAT			1	/* используется CAT (через USB CDC) */
-	//#define WITHDEBUG		1	/* Отладочная печать через COM-порт. */
-	//#define WITHNMEA		1	/* используется NMEA parser */
-	//#define WITHMODEM		1	/* Устройство работает как радиомодем с последовательным интерфейсом */
-	//#define WITHFREEDV	1	/* поддержка режима FreeDV - http://freedv.org/ */ 
-	//#define WITHBEACON	1	/* Используется режим маяка */
-	//#define WITHVOX			1	/* используется VOX */
-	//#define WITHSHOWSWRPWR 1	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
-	//#define WITHSWRMTR	1		/* Измеритель КСВ */
-	//#define WITHPWRMTR	1	/* Индикатор выходной мощности или */
-	//#define WITHPWRLIN	1	/* Индикатор выходной мощности показывает напряжение а не мощность */
-
-
-	/* Board hardware configuration */
-	//#define CODEC1_TYPE CODEC_TYPE_NAU8822L
-	//#define CODEC_TYPE_NAU8822_USE_SPI	1
-	//#define	CODEC1_TYPE	CODEC_TYPE_TLV320AIC23B
-	//#define CODEC_TYPE_TLV320AIC23B_USE_SPI	1
-	//#define CODEC_TYPE_NAU8822_USE_8KS	1	/* кодек работает с sample rate 8 kHz */
-
-	//#define CODEC2_TYPE	CODEC_TYPE_FPGAV1	/* квадратуры получаем от FPGA */
-
-	#define WITHI2S_FORMATI2S_PHILIPS 1	// Возможно использование при передаче данных в кодек, подключенный к наушникам и микрофону
-
-	#define WITHSAI1_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
-	#define WITHSAI1_FRAMEBITS 256	// Полный размер фрейма для двух квадратур - канал трансивера
-
-
-	#define WITHSAI2_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
-	#define WITHSAI2_FRAMEBITS 64	// Полный размер фрейма для двух квадратур по 24 бита - канал спектроанализатора
-
-	#define WITHNESTEDINTERRUPTS	1	/* используется при наличии real-time части. */
-	//#define WITHINTEGRATEDDSP		1	/* в программу включена инициализация и запуск DSP части. */
-	#define WITHIFDACWIDTH	32		// 1 бит знак и 31 бит значащих
-	#define WITHIFADCWIDTH	32		// 1 бит знак и 31 бит значащих
-	#define WITHAFADCWIDTH	16		// 1 бит знак и 15 бит значащих
-	#define WITHAFDACWIDTH	16		// 1 бит знак и 15 бит значащих
-	//#define WITHDACOUTDSPAGC		1	/* АРУ реализовано как выход ЦАП на аналоговую часть. */
-	//#define WITHEXTERNALDDSP		1	/* имеется управление внешней DSP платой. */
-	//#define WITHLOOPBACKTEST	1
-	//#define WITHDSPEXTDDC 1			/* Квадратуры получаются внешней аппаратурой */
-	//#define WITHDSPEXTFIR 1			/* Фильтрация квадратур осуществляется внешней аппаратурой */
-	//#define WITHIF4DSP	1	// "Дятел"
-	//#define WITHDACSTRAIGHT 1		/* Требуется формирование кода для ЦАП в режиме беззнакового кода */
-
-
-	//#define WITHBARS		1	/* отображение S-метра и SWR-метра */
-
-	//#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
-	//#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
-	////#define WITHTHERMOLEVEL	1	/* отображение температуры */
-
-	//#define WITHSWLMODE	1	/* поддержка запоминания множества частот в swl-mode */
-	//#define WITHVIBROPLEX	1	/* возможность эмуляции передачи виброплексом */
-
-	// Есть ли регулировка параметров потенциометрами
-	////#define WITHPOTWPM		1	/* используется регулировка скорости передачи в телеграфе потенциометром */
-	//#define WITHPOTIFGAIN		1	/* регуляторы усиления ПЧ на потенциометрах */
-	//#define WITHPOTAFGAIN		1	/* регуляторы усиления НЧ на потенциометрах */
-	//#define WITHSLEEPTIMER	1	/* выключить индикатор и вывод звука по истечениии указанного времени */
-
-	//#define WITHMENU 	1	/* функциональность меню может быть отключена - если настраивать нечего */
-
-	//#define WITHONLYBANDS 1		/* Перестройка может быть ограничена любительскими диапазонами */
-	//#define WITHBCBANDS	1		/* в таблице диапазонов присутствуют вещательные диапазоны */
-	//#define WITHWARCBANDS	1	/* В таблице диапазонов присутствуют HF WARC диапазоны */
-	//#define WITHLFM		1	/* LFM MODE */
-	//#define WITHTEMPSENSOR	1	/* отображение данных с датчика температуры */
-	//#define WITHDIRECTBANDS 1	/* Прямой переход к диапазонам по нажатиям на клавиатуре */
-	//#define WITHSPKMUTE		1	/* управление выключением динамика */
-	//#define WITHDATAMODE	1	/* управление с клавиатуры передачей с USB AUDIO канала */
 	// --- Эти строки можно отключать, уменьшая функциональность готового изделия
 
 	#define WITHMODESETMIXONLY 1	// Use only product detector
@@ -434,10 +339,11 @@
 	#define WITHVIBROPLEX	1	/* возможность эмуляции передачи виброплексом */
 
 	// Есть ли регулировка параметров потенциометрами
-	////#define WITHPOTWPM		1	/* используется регулировка скорости передачи в телеграфе потенциометром */
+	//#define WITHPOTNOTCH	1	/* используется регулировка частоты NOTCH фильтрач потенциометром */
+	//#define WITHPOTIFSHIFT	1	/* регулировка IF SHIFT	*/
+	//#define WITHPOTWPM		1	/* используется регулировка скорости передачи в телеграфе потенциометром */
 	#define WITHPOTIFGAIN		1	/* регуляторы усиления ПЧ на потенциометрах */
 	#define WITHPOTAFGAIN		1	/* регуляторы усиления НЧ на потенциометрах */
-	#define WITHSLEEPTIMER	1	/* выключить индикатор и вывод звука по истечениии указанного времени */
 
 	#define WITHMENU 	1	/* функциональность меню может быть отключена - если настраивать нечего */
 
@@ -449,6 +355,8 @@
 	#define WITHDIRECTBANDS 1	/* Прямой переход к диапазонам по нажатиям на клавиатуре */
 	#define WITHSPKMUTE		1	/* управление выключением динамика */
 	#define WITHDATAMODE	1	/* управление с клавиатуры передачей с USB AUDIO канала */
+	#define WITHSLEEPTIMER	1	/* выключить индикатор и вывод звука по истечениии указанного времени */
+	#define WITHFANTIMER	1	/* выключающийся по таймеру вентилятор в усилителе мощности */
 	// --- Эти строки можно отключать, уменьшая функциональность готового изделия
 
 	#define WITHMODESETFULLNFM 1
