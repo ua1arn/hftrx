@@ -27,7 +27,7 @@ SRC += \
  ls020.c \
  l2f50.c \
  s1d13781.c \
- ILI9320.c \
+ ili9320.c \
  ili9225.c \
  st7735.c \
  st7565s.c \
