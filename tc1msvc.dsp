@@ -1964,7 +1964,7 @@ SOURCE=.\boards\raven_ctlstyle_v8b_R3KBL.h
 # End Group
 # Begin Group "Link Scripts"
 
-# PROP Default_Filter "ld"
+# PROP Default_Filter "*.ld"
 # Begin Source File
 
 SOURCE=.\atsam3s4b\ATSAM3S4B_rom.ld
@@ -1975,7 +1975,11 @@ SOURCE=.\mk20dx256vlh7\MK20DX256VLH7_rom.ld
 # End Source File
 # Begin Source File
 
-SOURCE=.\r7s721020\r7s721020_spi.ld
+SOURCE=.\r7s721020\r7s721020_app.ld
+# End Source File
+# Begin Source File
+
+SOURCE=.\r7s721020\r7s721020_boot.ld
 # End Source File
 # Begin Source File
 
