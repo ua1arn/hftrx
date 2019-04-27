@@ -23,8 +23,8 @@ TRGT = arm-none-eabi-
 CC   = $(TRGT)gcc
 CP   = $(TRGT)objcopy
 AS   = $(TRGT)gcc -x assembler-with-cpp
-HEX  = $(CP) -O ihex -R .noinit -R .bss
-BIN  = $(CP) -O binary -R .noinit -R .bss
+HEX  = $(CP) -O ihex -R .noinit -R .bss -R .vram
+BIN  = $(CP) -O binary -R .noinit -R .bss -R .vram
 
 CMSISDIR = ../../CMSIS_5/CMSIS
 

@@ -3,7 +3,7 @@
 /* Linker script to configure memory regions. */
 MEMORY
 {
-  RAM (rwx)  : ORIGIN = 0x20000000, LENGTH = 3040k
+  RAM (rwx)  : ORIGIN = 0x20000000, LENGTH = 3056k
   TTB (rwx)  : ORIGIN = 0x202FC000, LENGTH = 16k
 }
 
@@ -168,6 +168,13 @@ SECTIONS
 	{
 		. = ALIGN(32);
 		*(.noinit)
+		. = ALIGN(32);
+	} > RAM
+
+	.vram :
+	{
+		. = ALIGN(32);
+		*(.framebuff)
 		. = ALIGN(32);
 	} > RAM
 

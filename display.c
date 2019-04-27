@@ -17,7 +17,7 @@
 
 #if LCDMODE_LTDC && ! defined (SDRAM_BANK_ADDR)
 	// буфер экрана
-	RAMNOINIT_D1 ALIGNX_BEGIN FRAMEBUFF_T framebuff0 ALIGNX_END;	//L8 (8-bit Luminance or CLUT)
+	RAMFRAMEBUFF ALIGNX_BEGIN FRAMEBUFF_T framebuff0 ALIGNX_END;	//L8 (8-bit Luminance or CLUT)
 #endif /* LCDMODE_LTDC */
 
 #define DMA2D_AMTCR_DT_VALUE 2
