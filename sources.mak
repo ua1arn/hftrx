@@ -2,7 +2,6 @@
 
 # List C source files here
 SRC += \
- CommonTables.c arm_cfft_f32.c arm_cfft_radix8_f32.c arm_bitreversal2.c \
  preprocess.c fftwrap.c smallft.c mdf.c filterbank.c kiss_fft.c kiss_fftr.c \
  bandfilters.c \
  board.c \
