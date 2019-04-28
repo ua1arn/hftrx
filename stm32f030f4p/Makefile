@@ -43,7 +43,7 @@ DDEFS =
 # List all default ASM defines here, like -D_DEBUG=1
 DADEFS = -D__ASSEMBLY__=1
 # List all default directories to look for include files here
-DINCDIR = $(CMSISDIR)/Core/Include
+DINCDIR = $(CMSISDIR)/Core/Include $(CMSISDIR)/DSP/Include
 
 # List the default directory to look for the libraries here
 DLIBDIR = $(CMSISDIR)/DSP/Lib/GCC

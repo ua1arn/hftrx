@@ -50,7 +50,6 @@ DLIBDIR =
 
 # List all default libraries here
 DLIBS = -lm
-#DLIBS =
 
 #
 # End of default section

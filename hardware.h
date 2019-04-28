@@ -161,8 +161,8 @@
 	#define ALIGNX_END /* nothing */
 
 	#define ARM_MATH_CM7 1
-	#include "../../DSP/Include/arm_math.h"
-	#include "../../DSP/Include/arm_const_structs.h"
+	#include "arm_math.h"
+	#include "arm_const_structs.h"
 
 #elif CPUSTYLE_STM32F7XX
 	// STM32F745ZGT6 processors, up to 216 MHz 
@@ -177,8 +177,8 @@
 	#define ALIGNX_END /* nothing */
 
 	#define ARM_MATH_CM7 1
-	#include "../../DSP/Include/arm_math.h"
-	#include "../../DSP/Include/arm_const_structs.h"
+	#include "arm_math.h"
+	#include "arm_const_structs.h"
 
 #elif CPUSTYLE_STM32F4XX
 
@@ -192,8 +192,8 @@
 	#define ALIGNX_END /* nothing */
 
 	#define ARM_MATH_CM4 1
-	#include "../../DSP/Include/arm_math.h"
-	#include "../../DSP/Include/arm_const_structs.h"
+	#include "arm_math.h"
+	#include "arm_const_structs.h"
 
 #elif CPUSTYLE_STM32F30X
 
@@ -208,8 +208,8 @@
 	#define ALIGNX_END /* nothing */
 
 	#define ARM_MATH_CM4 1
-	#include "../../DSP/Include/arm_math.h"
-	#include "../../DSP/Include/arm_const_structs.h"
+	#include "arm_math.h"
+	#include "arm_const_structs.h"
 
 #elif CPUSTYLE_STM32F1XX
 
@@ -223,8 +223,8 @@
 	#define ALIGNX_END /* nothing */
 
 	#define ARM_MATH_CM3 1
-	#include "../../DSP/Include/arm_math.h"
-	#include "../../DSP/Include/arm_const_structs.h"
+	#include "arm_math.h"
+	#include "arm_const_structs.h"
 
 #elif CPUSTYLE_STM32F0XX
 
@@ -239,8 +239,8 @@
 
 	#define ARM_MATH_CM0 1
 	//#define ARM_MATH_CM0PLUS 1
-	#include "../../DSP/Include/arm_math.h"
-	#include "../../DSP/Include/arm_const_structs.h"
+	#include "arm_math.h"
+	#include "arm_const_structs.h"
 
 #elif CPUSTYLE_STM32L0XX
 
@@ -254,8 +254,8 @@
 
 	#define ARM_MATH_CM0 1
 	//#define ARM_MATH_CM0PLUS 1
-	#include "../../DSP/Include/arm_math.h"
-	#include "../../DSP/Include/arm_const_structs.h"
+	#include "arm_math.h"
+	#include "arm_const_structs.h"
 
 #elif CPUSTYLE_ATSAM3S
 
@@ -269,8 +269,8 @@
 	#define ALIGNX_END /* nothing */
 
 	#define ARM_MATH_CM3 1
-	#include "../../DSP/Include/arm_math.h"
-	#include "../../DSP/Include/arm_const_structs.h"
+	#include "arm_math.h"
+	#include "arm_const_structs.h"
 
 #elif CPUSTYLE_ATSAM4S
 
@@ -284,8 +284,8 @@
 	#define ALIGNX_END /* nothing */
 
 	#define ARM_MATH_CM4 1
-	#include "../../DSP/Include/arm_math.h"
-	#include "../../DSP/Include/arm_const_structs.h"
+	#include "arm_math.h"
+	#include "arm_const_structs.h"
 
 #elif CPUSTYLE_MK20DX	// Teensy 3.1 - Freescale Semiconductor - KINETIS MK20DX256VLH7
 
@@ -298,8 +298,8 @@
 	#define ALIGNX_END /* nothing */
 
 	#define ARM_MATH_CM4 1
-	#include "../../DSP/Include/arm_math.h"
-	#include "../../DSP/Include/arm_const_structs.h"
+	#include "arm_math.h"
+	#include "arm_const_structs.h"
 
 #elif CPUSTYLE_AT91SAM7S
 
@@ -348,11 +348,9 @@
 	#define ALIGNX_END /* nothing */
 
 	//#define ARM_MATH_CA9 1
-	//#include "../../DSP/Include/arm_math.h"
-	//#include "../../DSP/Include/arm_const_structs.h"
 	#include "arm_math.h"
 	#include "arm_const_structs.h"
-
+`
 #elif \
 	defined (__TMS320C28X__) || \
 	0

@@ -47,11 +47,10 @@ DADEFS = -D__ASSEMBLY__=1
 DINCDIR = $(CMSISDIR)/Core/Include $(CMSISDIR)/DSP/Include
 
 # List the default directory to look for the libraries here
-#DLIBDIR = $(CMSISDIR)/DSP/Lib/GCC
+DLIBDIR = $(CMSISDIR)/DSP/Lib/GCC
 
 # List all default libraries here
-#DLIBS = -lm -larm_cortexM7lfdp_math
-DLIBS = -lm
+DLIBS = -lm -larm_cortexM7lfdp_math
 
 #
 # End of default section

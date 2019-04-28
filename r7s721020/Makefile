@@ -50,7 +50,6 @@ DLIBDIR = $(CMSISDIR)/DSP/Lib/GCC
 
 # List all default libraries here
 DLIBS = -lm $(DLIBDIR)/libarm_cortexA9l_math.a
-#DLIBS =
 
 #
 # End of default section
