@@ -160,7 +160,6 @@
 	#define ALIGNX_BEGIN __attribute__ ((aligned(32))) 
 	#define ALIGNX_END /* nothing */
 
-	#define ARM_MATH_CM7 1
 	#include "arm_math.h"
 	#include "arm_const_structs.h"
 
@@ -176,7 +175,6 @@
 	#define ALIGNX_BEGIN __attribute__ ((aligned(32))) 
 	#define ALIGNX_END /* nothing */
 
-	#define ARM_MATH_CM7 1
 	#include "arm_math.h"
 	#include "arm_const_structs.h"
 
@@ -191,7 +189,6 @@
 	#define ALIGNX_BEGIN __attribute__ ((aligned(32))) 
 	#define ALIGNX_END /* nothing */
 
-	#define ARM_MATH_CM4 1
 	#include "arm_math.h"
 	#include "arm_const_structs.h"
 
@@ -207,7 +204,6 @@
 	#define ALIGNX_BEGIN __attribute__ ((aligned(32))) 
 	#define ALIGNX_END /* nothing */
 
-	#define ARM_MATH_CM4 1
 	#include "arm_math.h"
 	#include "arm_const_structs.h"
 
@@ -222,7 +218,6 @@
 	#define ALIGNX_BEGIN __attribute__ ((aligned(32))) 
 	#define ALIGNX_END /* nothing */
 
-	#define ARM_MATH_CM3 1
 	#include "arm_math.h"
 	#include "arm_const_structs.h"
 
@@ -237,8 +232,6 @@
 	#define ALIGNX_BEGIN __attribute__ ((aligned(32))) 
 	#define ALIGNX_END /* nothing */
 
-	#define ARM_MATH_CM0 1
-	//#define ARM_MATH_CM0PLUS 1
 	#include "arm_math.h"
 	#include "arm_const_structs.h"
 
@@ -252,8 +245,6 @@
 	#define ALIGNX_BEGIN __attribute__ ((aligned(32))) 
 	#define ALIGNX_END /* nothing */
 
-	#define ARM_MATH_CM0 1
-	//#define ARM_MATH_CM0PLUS 1
 	#include "arm_math.h"
 	#include "arm_const_structs.h"
 
@@ -268,7 +259,6 @@
 	#define ALIGNX_BEGIN __attribute__ ((aligned(32))) 
 	#define ALIGNX_END /* nothing */
 
-	#define ARM_MATH_CM3 1
 	#include "arm_math.h"
 	#include "arm_const_structs.h"
 
@@ -283,7 +273,6 @@
 	#define ALIGNX_BEGIN __attribute__ ((aligned(32))) 
 	#define ALIGNX_END /* nothing */
 
-	#define ARM_MATH_CM4 1
 	#include "arm_math.h"
 	#include "arm_const_structs.h"
 
@@ -297,7 +286,6 @@
 	#define ALIGNX_BEGIN __attribute__ ((aligned(32))) 
 	#define ALIGNX_END /* nothing */
 
-	#define ARM_MATH_CM4 1
 	#include "arm_math.h"
 	#include "arm_const_structs.h"
 
@@ -347,10 +335,9 @@
 	#define ALIGNX_BEGIN __attribute__ ((aligned(32))) 
 	#define ALIGNX_END /* nothing */
 
-	//#define ARM_MATH_CA9 1
 	#include "arm_math.h"
 	#include "arm_const_structs.h"
-`
+
 #elif \
 	defined (__TMS320C28X__) || \
 	0
