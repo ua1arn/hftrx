@@ -49,7 +49,7 @@ DINCDIR = $(CMSISDIR)/Core_A/Include $(CMSISDIR)/DSP/Include
 DLIBDIR = $(CMSISDIR)/DSP/Lib/GCC
 
 # List all default libraries here
-DLIBS = -lm
+DLIBS = -lm $(DLIBDIR)/libarm_cortexA9l_math.a
 #DLIBS =
 
 #

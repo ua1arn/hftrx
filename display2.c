@@ -1367,6 +1367,30 @@ static void display_siglevel7(
 #endif /* WITHIF4DSP */
 }
 
+
+#if WITHIF4DSP
+int_fast32_t display_zoomedbw(void)
+{
+	return dsp_get_samplerateuacin_rts() / glob_zoomx;
+}
+#endif /* WITHIF4DSP */
+
+static void display_span9(
+	uint_fast8_t x, 
+	uint_fast8_t y, 
+	void * pv
+	)
+{
+#if WITHIF4DSP
+
+	char buff [32];
+
+	local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("SPAN:%3dk"), (int) ((display_zoomedbw() + 0) / 1000));
+	const char * const labels [1] = { buff, };
+	display2_text(x, y, labels, colorsfg_1state, colorsbg_1state, 0);
+
+#endif /* WITHIF4DSP */
+}
 // Отображение уровня сигнала в баллах шкалы S
 // S9+60
 static void display_siglevel5(
@@ -4146,7 +4170,8 @@ enum
 	#endif /* WITHSEPARATEWFL */
 
 		enum {
-		DLE0 = 88,
+		DLES = 30,	// spectrum window upper line
+		//DLE0 = 88,
 		DLE1 = 93
 		};
 
@@ -4199,28 +4224,29 @@ enum
 		{	9,	20,	display_freqX_b,	REDRM_FRQB, PGALL, },	// SUB FREQ
 		{	21, 20,	display_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
 
+		{	0,	25,	display_siglevel5,	REDRM_BARS, PGALL, },	// signal level in S points
+		{	6,	25,	display_samfreqdelta8, REDRM_BARS, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
+
 #if 1
-		{	0,	25,	display2_legend_rx,	REDRM_MODE, PGSWR, },	// Отображение оцифровки шкалы S-метра
-		{	0,	30,	display2_bars_rx,	REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
-		{	0,	35,	display2_legend_tx,	REDRM_MODE, PGSWR, },	// Отображение оцифровки шкалы PWR & SWR-метра
-		{	0,	40,	display2_bars_tx,	REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
+		{	0,	DLES,	display2_legend_rx,	REDRM_MODE, PGSWR, },	// Отображение оцифровки шкалы S-метра
+		{	0,	35,	display2_bars_rx,	REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
+		{	0,	40,	display2_legend_tx,	REDRM_MODE, PGSWR, },	// Отображение оцифровки шкалы PWR & SWR-метра
+		{	0,	45,	display2_bars_tx,	REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
 #else
-		{	0,	25,	display2_adctest,	REDRM_BARS, PGSWR, },	// ADC raw data print
+		{	0,	DLES,	display2_adctest,	REDRM_BARS, PGSWR, },	// ADC raw data print
 #endif
 
 	#if WITHSPECTRUMWF
-		{	0,	25,	dsp_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
-		{	0,	25,	display2_spectrum,	REDRM_BARS, PGSPE, },// подготовка изображения спектра
-		{	0,	25,	display2_waterfall,	REDRM_BARS, PGWFL, },// подготовка изображения водопада
-		{	0,	25,	display2_colorbuff,	REDRM_BARS,	PGWFL | PGSPE, },// Отображение водопада и/или спектра
+		{	0,	DLES,	dsp_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
+		{	0,	DLES,	display2_spectrum,	REDRM_BARS, PGSPE, },// подготовка изображения спектра
+		{	0,	DLES,	display2_waterfall,	REDRM_BARS, PGWFL, },// подготовка изображения водопада
+		{	0,	DLES,	display2_colorbuff,	REDRM_BARS,	PGWFL | PGSPE, },// Отображение водопада и/или спектра
 	#endif /* WITHSPECTRUMWF */
 
 	
-		{	5,	DLE0,	display_samfreqdelta8, REDRM_BARS, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
-		{	14,	DLE0,	display_siglevel5,	REDRM_BARS, PGALL, },	// signal level in S points
-
 		{	0,	DLE1,	display_datetime12,	REDRM_BARS, PGALL,	},	// TIME
-		{	13, DLE1,	display_thermo4,	REDRM_VOLT, PGALL, },	// thermo sensor
+		{	13,	DLE1,	display_span9,		REDRM_MODE, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
+		{	23, DLE1,	display_thermo4,	REDRM_VOLT, PGALL, },	// thermo sensor
 
 		{	39, DLE1,	display_currlevel5, REDRM_VOLT, PGALL, },	// PA drain current d.dd without "A"
 		{	45, DLE1,	display_voltlevelV5, REDRM_VOLT, PGALL, },	// voltmeter with "V"
@@ -4229,15 +4255,15 @@ enum
 	#endif /* WITHAMHIGHKBDADJ */
 
 		// sleep mode display
-		{	5,	24,	display_datetime12,	REDRM_BARS, PGSLP, },	// DATE & TIME // DATE&TIME Jan 01 13:40
-		{	20, 24,	display_voltlevelV5, REDRM_VOLT, PGSLP, },	// voltmeter with "V"
+		{	5,	25,	display_datetime12,	REDRM_BARS, PGSLP, },	// DATE & TIME // DATE&TIME Jan 01 13:40
+		{	20, 25,	display_voltlevelV5, REDRM_VOLT, PGSLP, },	// voltmeter with "V"
 
 	#if WITHMENU
-		{	4,	25,	display_menu_group,	REDRM_MLBL, REDRSUBSET_MENU, },	// название группы
-		{	0,	30,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
-		{	4,	30,	display_menu_lblng,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
-		{	0,	35,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
-		{	0,	40,	display_samfreqdelta8, REDRM_BARS, REDRSUBSET_MENU, },	/* Получить информацию об ошибке настройки в режиме SAM */
+		{	4,	30,	display_menu_group,	REDRM_MLBL, REDRSUBSET_MENU, },	// название группы
+		{	0,	35,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
+		{	4,	35,	display_menu_lblng,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
+		{	0,	40,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
+		{	0,	45,	display_samfreqdelta8, REDRM_BARS, REDRSUBSET_MENU, },	/* Получить информацию об ошибке настройки в режиме SAM */
 	#endif /* WITHMENU */
 	};
 
@@ -4245,7 +4271,7 @@ enum
 	void display2_getpipparams(pipparams_t * p)
 	{
 		p->x = GRID2X(0);	// позиция верхнего левого угла в пикселях
-		p->y = GRID2Y(25);	// позиция верхнего левого угла в пикселях
+		p->y = GRID2Y(DLES);	// позиция верхнего левого угла в пикселях
 		p->w = GRID2X(CHARS2GRID(BDTH_ALLRX));	// размер по горизонтали в пикселях
 		p->h = GRID2Y(BDCV_ALLRX);				// размер по вертикали в пикселях
 		p->frame = (uintptr_t) getscratchpip();
@@ -4990,23 +5016,28 @@ static void
 display_colorgrid(
 	PACKEDCOLOR565_T * buffer,
 	uint_fast16_t row0,	// вертикальная координата начала занимаемой области (0..dy-1) сверху вниз
-	uint_fast16_t h,			// высота
-	int_fast32_t bw
+	uint_fast16_t h,	// высота
+	int_fast32_t f0,	// center frequency
+	int_fast32_t bw		// span
 	)
 {
 	COLOR565_T color0 = COLOR565_GRIDCOLOR;	// макркр на центре
 	COLOR565_T color = COLOR565_GRIDCOLOR2;
 	// 
-	const int_fast32_t gs = glob_gridstep;	// шаг сетки
+	const int_fast32_t go = f0 % (int) glob_gridstep;	// шаг сетки
+	const int_fast32_t gs = (int) glob_gridstep;	// шаг сетки
 	const int_fast32_t halfbw = bw / 2;
 	int_fast32_t df;	// кратное сетке значение
-	for (df = - halfbw / gs * gs; df < halfbw; df += gs)
+	for (df = - halfbw / gs * gs - go; df < halfbw; df += gs)
 	{
 		uint_fast16_t xmarker;
 
-		// маркер центральной частоты обзора - XOR линию
-		xmarker = deltafreq2x(df, bw, ALLDX);
-		display_colorbuffer_xor_vline(buffer, ALLDX, ALLDY, xmarker, row0, h, df == 0 ? color0 : color);
+		if (df > - halfbw)
+		{
+			// маркер центральной частоты обзора - XOR линию
+			xmarker = deltafreq2x(df, bw, ALLDX);
+			display_colorbuffer_xor_vline(buffer, ALLDX, ALLDY, xmarker, row0, h, color);
+		}
 	}
 }
 
@@ -5031,7 +5062,7 @@ static void display2_spectrum(
 
 	if (hamradio_get_tx() == 0)
 	{
-		const int_fast32_t bw = dsp_get_samplerateuacin_rts() / glob_zoomx;
+		const int_fast32_t bw = display_zoomedbw();
 		uint_fast16_t xleft = deltafreq2x(hamradio_getleft_bp(0), bw, ALLDX);	// левый край шторуи
 		uint_fast16_t xright = deltafreq2x(hamradio_getright_bp(0), bw, ALLDX);	// правый край шторки
 
@@ -5107,7 +5138,8 @@ static void display2_spectrum(
 	// построения изображения по bitmap с раскрашиванием
 	if (hamradio_get_tx() == 0)
 	{
-		const int_fast32_t bw = dsp_get_samplerateuacin_rts() / glob_zoomx;
+		const uint_fast32_t freq = hamradio_get_freq_a();	/* frequecy at middle of spectrum */
+		const int_fast32_t bw = display_zoomedbw();
 		uint_fast16_t xleft = deltafreq2x(hamradio_getleft_bp(0), bw, ALLDX);	// левый край шторуи
 		uint_fast16_t xright = deltafreq2x(hamradio_getright_bp(0), bw, ALLDX);	// правый край шторки
 
@@ -5131,7 +5163,7 @@ static void display2_spectrum(
 					display_colorbuffer_line_set(colorpip, ALLDX, ALLDY, x - 1, ylast, x, ynew, COLOR565_SPECTRUMLINE);
 				ylast = ynew;
 			}
-			display_colorgrid(colorpip, SPY0, SPDY, bw);	// отрисовка маркеров частот
+			display_colorgrid(colorpip, SPY0, SPDY, freq, bw);	// отрисовка маркеров частот
 		}
 		else
 		{
@@ -5162,7 +5194,7 @@ static void display2_spectrum(
 					}
 				}
 			}
-			display_colorgrid(colorpip, SPY0, SPDY, bw);	// отрисовка маркеров частот
+			display_colorgrid(colorpip, SPY0, SPDY, freq, bw);	// отрисовка маркеров частот
 		}
 	}
 
@@ -5248,8 +5280,8 @@ static void display2_waterfall(
 {
 #if (! LCDMODE_S1D13781_NHWACCEL && LCDMODE_S1D13781)
 
-		const uint_fast32_t freq = hamradio_get_freq_a();	/* frequecy at midle of spectrum */
-		const int_fast32_t bw = dsp_get_samplerateuacin_rts() / glob_zoomx;
+		const uint_fast32_t freq = hamradio_get_freq_a();	/* frequecy at middle of spectrum */
+		const int_fast32_t bw = display_zoomedbw();
 		uint_fast16_t x, y;
 		const uint_fast16_t xm = deltafreq2x(0, bw, ALLDX);
 		int_fast16_t hshift = 0;
@@ -5298,8 +5330,8 @@ static void display2_waterfall(
 	if (hamradio_get_tx() == 0)
 	{
 		PACKEDCOLOR565_T * const colorpip = getscratchpip();
-		const uint_fast32_t freq = hamradio_get_freq_a();	/* frequecy at midle of spectrum */
-		const int_fast32_t bw = dsp_get_samplerateuacin_rts() / glob_zoomx;
+		const uint_fast32_t freq = hamradio_get_freq_a();	/* frequecy at middle of spectrum */
+		const int_fast32_t bw = display_zoomedbw();
 		uint_fast16_t x, y;
 		const uint_fast16_t xm = deltafreq2x(0, bw, ALLDX);
 
@@ -5369,7 +5401,7 @@ static void display2_waterfall(
 		}
 		else
 		{
-			display_colorgrid(colorpip, WFY0, WFDY, bw);	// отрисовка маркеров частот
+			display_colorgrid(colorpip, WFY0, WFDY, freq, bw);	// отрисовка маркеров частот
 		}
 #endif
 		wffreq = freq;
