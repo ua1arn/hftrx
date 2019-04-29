@@ -1,7 +1,7 @@
 /* $Id$ */
 //
-// Проект HF Dream Receiver (КВ приёмник мечты)
-// автор Гена Завидовский mgs2001@mail.ru
+// РџСЂРѕРµРєС‚ HF Dream Receiver (РљР’ РїСЂРёС‘РјРЅРёРє РјРµС‡С‚С‹)
+// Р°РІС‚РѕСЂ Р“РµРЅР° Р—Р°РІРёРґРѕРІСЃРєРёР№ mgs2001@mail.ru
 // UA1ARN
 //
 #ifndef SPIFUNCS_H_INCLUDED
@@ -12,12 +12,12 @@
 #include "hardware.h"
 #include "pio.h"
 
-void spi_initialize(void);	// отдельно инициализация SPI
+void spi_initialize(void);	// РѕС‚РґРµР»СЊРЅРѕ РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ SPI
 
 #if WITHSPISW
 	#if CPUSTYLE_ARM || CPUSTYLE_ATXMEGA
-		// при программной реализации SPI
-		// поддерживается режим SPI MODE 3
+		// РїСЂРё РїСЂРѕРіСЂР°РјРјРЅРѕР№ СЂРµР°Р»РёР·Р°С†РёРё SPI
+		// РїРѕРґРґРµСЂР¶РёРІР°РµС‚СЃСЏ СЂРµР¶РёРј SPI MODE 3
 		#define SCLK_SET() do { \
 				{ SPI_TARGET_SCLK_PORT_S(SPI_SCLK_BIT); hardware_spi_io_delay(); } \
 			} while (0)
@@ -37,23 +37,23 @@ void spi_initialize(void);	// отдельно инициализация SPI
 
 	#elif CPUSTYLE_ATMEGA
 
-		#if WITHSPISPLIT	/* для двух разных потребителей формируются отдельные сигналы MOSI, SCK, CS */
+		#if WITHSPISPLIT	/* РґР»СЏ РґРІСѓС… СЂР°Р·РЅС‹С… РїРѕС‚СЂРµР±РёС‚РµР»РµР№ С„РѕСЂРјРёСЂСѓСЋС‚СЃСЏ РѕС‚РґРµР»СЊРЅС‹Рµ СЃРёРіРЅР°Р»С‹ MOSI, SCK, CS */
 			// SPI0
-			// при программной реализации SPI
-			// поддерживается режим SPI MODE 3
-			// Формирование строба SPI0
+			// РїСЂРё РїСЂРѕРіСЂР°РјРјРЅРѕР№ СЂРµР°Р»РёР·Р°С†РёРё SPI
+			// РїРѕРґРґРµСЂР¶РёРІР°РµС‚СЃСЏ СЂРµР¶РёРј SPI MODE 3
+			// Р¤РѕСЂРјРёСЂРѕРІР°РЅРёРµ СЃС‚СЂРѕР±Р° SPI0
 			#define SCLK0_SET() do { SPI0_TARGET_SCLK_PORT |= SPI0_SCLK_BIT; } while (0)
 			#define SCLK0_CLR() do { SPI0_TARGET_SCLK_PORT &= ~SPI0_SCLK_BIT; } while (0)
 
 			#if CPUSTYLE_ATMEGA_XXX4
-				// поддержка быстрого формирования строба
+				// РїРѕРґРґРµСЂР¶РєР° Р±С‹СЃС‚СЂРѕРіРѕ С„РѕСЂРјРёСЂРѕРІР°РЅРёСЏ СЃС‚СЂРѕР±Р°
 				#define SCLK0_TGL() do { SPI0_TARGET_SCLK_PIN = SPI0_SCLK_BIT; } while (0)
 
 				#define SCLK0_NPULSE() do { SCLK0_TGL(); SCLK0_TGL(); } while (0)
 			#else
 				#define SCLK0_NPULSE() do { SCLK0_CLR(); SCLK0_SET(); } while (0)
 			#endif
-			// выдача данных на MOSI0
+			// РІС‹РґР°С‡Р° РґР°РЅРЅС‹С… РЅР° MOSI0
 			#define SDO0_SET(val) do { \
 				if ((val) != 0)  \
 				  SPI0_TARGET_MOSI_PORT |= SPI0_MOSI_BIT; \
@@ -61,21 +61,21 @@ void spi_initialize(void);	// отдельно инициализация SPI
 				  SPI0_TARGET_MOSI_PORT &= ~SPI0_MOSI_BIT; \
 				} while (0)
 			// SPI1
-			// при программной реализации SPI
-			// поддерживается режим SPI MODE 3
-			// Формирование строба SPI1
+			// РїСЂРё РїСЂРѕРіСЂР°РјРјРЅРѕР№ СЂРµР°Р»РёР·Р°С†РёРё SPI
+			// РїРѕРґРґРµСЂР¶РёРІР°РµС‚СЃСЏ СЂРµР¶РёРј SPI MODE 3
+			// Р¤РѕСЂРјРёСЂРѕРІР°РЅРёРµ СЃС‚СЂРѕР±Р° SPI1
 			#define SCLK1_SET() do { SPI1_TARGET_SCLK_PORT |= SPI1_SCLK_BIT; } while (0)
 			#define SCLK1_CLR() do { SPI1_TARGET_SCLK_PORT &= ~SPI1_SCLK_BIT; } while (0)
 
 			#if CPUSTYLE_ATMEGA_XXX4
-				// поддержка быстрого формирования строба
+				// РїРѕРґРґРµСЂР¶РєР° Р±С‹СЃС‚СЂРѕРіРѕ С„РѕСЂРјРёСЂРѕРІР°РЅРёСЏ СЃС‚СЂРѕР±Р°
 				#define SCLK1_TGL() do { SPI1_TARGET_SCLK_PIN = SPI1_SCLK_BIT; } while (0)
 
 				#define SCLK1_NPULSE() do { SCLK1_TGL(); SCLK1_TGL(); } while (0)
 			#else
 				#define SCLK1_NPULSE() do { SCLK1_CLR(); SCLK1_SET(); } while (0)
 			#endif
-			// выдача данных на MOSI1
+			// РІС‹РґР°С‡Р° РґР°РЅРЅС‹С… РЅР° MOSI1
 			#define SDO1_SET(val) do { \
 				if ((val) != 0)  \
 				  SPI1_TARGET_MOSI_PORT |= SPI1_MOSI_BIT; \
@@ -83,21 +83,21 @@ void spi_initialize(void);	// отдельно инициализация SPI
 				  SPI1_TARGET_MOSI_PORT &= ~SPI1_MOSI_BIT; \
 				} while (0)
 			// SPI2
-			// при программной реализации SPI
-			// поддерживается режим SPI MODE 3
-			// Формирование строба SPI1
+			// РїСЂРё РїСЂРѕРіСЂР°РјРјРЅРѕР№ СЂРµР°Р»РёР·Р°С†РёРё SPI
+			// РїРѕРґРґРµСЂР¶РёРІР°РµС‚СЃСЏ СЂРµР¶РёРј SPI MODE 3
+			// Р¤РѕСЂРјРёСЂРѕРІР°РЅРёРµ СЃС‚СЂРѕР±Р° SPI1
 			#define SCLK2_SET() do { SPI2_TARGET_SCLK_PORT |= SPI2_SCLK_BIT; } while (0)
 			#define SCLK2_CLR() do { SPI2_TARGET_SCLK_PORT &= ~SPI2_SCLK_BIT; } while (0)
 
 			#if CPUSTYLE_ATMEGA_XXX4
-				// поддержка быстрого формирования строба
+				// РїРѕРґРґРµСЂР¶РєР° Р±С‹СЃС‚СЂРѕРіРѕ С„РѕСЂРјРёСЂРѕРІР°РЅРёСЏ СЃС‚СЂРѕР±Р°
 				#define SCLK2_TGL() do { SPI2_TARGET_SCLK_PIN = SPI2_SCLK_BIT; } while (0)
 
 				#define SCLK2_NPULSE() do { SCLK2_TGL(); SCLK2_TGL(); } while (0)
 			#else
 				#define SCLK2_NPULSE() do { SCLK2_CLR(); SCLK2_SET(); } while (0)
 			#endif
-			// выдача данных на MOSI1
+			// РІС‹РґР°С‡Р° РґР°РЅРЅС‹С… РЅР° MOSI1
 			#define SDO2_SET(val) do { \
 				if ((val) != 0)  \
 				  SPI2_TARGET_MOSI_PORT |= SPI2_MOSI_BIT; \
@@ -107,22 +107,22 @@ void spi_initialize(void);	// отдельно инициализация SPI
 
 
 		#else /* WITHSPISPLIT */
-			// при программной реализации SPI
-			// поддерживается режим SPI MODE 3
+			// РїСЂРё РїСЂРѕРіСЂР°РјРјРЅРѕР№ СЂРµР°Р»РёР·Р°С†РёРё SPI
+			// РїРѕРґРґРµСЂР¶РёРІР°РµС‚СЃСЏ СЂРµР¶РёРј SPI MODE 3
 
-			// Формирование строба SPI
+			// Р¤РѕСЂРјРёСЂРѕРІР°РЅРёРµ СЃС‚СЂРѕР±Р° SPI
 			#define SCLK_SET() do { SPI_TARGET_SCLK_PORT |= SPI_SCLK_BIT; } while (0)
 			#define SCLK_CLR() do { SPI_TARGET_SCLK_PORT &= ~SPI_SCLK_BIT; } while (0)
 
 			#if CPUSTYLE_ATMEGA_XXX4
-				// поддержка быстрого формирования строба
+				// РїРѕРґРґРµСЂР¶РєР° Р±С‹СЃС‚СЂРѕРіРѕ С„РѕСЂРјРёСЂРѕРІР°РЅРёСЏ СЃС‚СЂРѕР±Р°
 				#define SCLK_TGL() do { SPI_TARGET_SCLK_PIN = SPI_SCLK_BIT; } while (0)
 
 				#define SCLK_NPULSE() do { SCLK_TGL(); SCLK_TGL(); } while (0)
 			#else
 				#define SCLK_NPULSE() do { SCLK_CLR(); SCLK_SET(); } while (0)
 			#endif
-			// выдача данных на MOSI
+			// РІС‹РґР°С‡Р° РґР°РЅРЅС‹С… РЅР° MOSI
 			#define SDO_SET(val) do { \
 				if ((val) != 0)  \
 				  SPI_TARGET_MOSI_PORT |= SPI_MOSI_BIT; \
@@ -137,23 +137,23 @@ void spi_initialize(void);	// отдельно инициализация SPI
 
 	#endif
 
-	#if WITHSPISPLIT	/* для двух разных потребителей формируются отдельные сигналы MOSI, SCK, CS */
-		//интерфейс с платой - выдача одного бита на последовательный канал
+	#if WITHSPISPLIT	/* РґР»СЏ РґРІСѓС… СЂР°Р·РЅС‹С… РїРѕС‚СЂРµР±РёС‚РµР»РµР№ С„РѕСЂРјРёСЂСѓСЋС‚СЃСЏ РѕС‚РґРµР»СЊРЅС‹Рµ СЃРёРіРЅР°Р»С‹ MOSI, SCK, CS */
+		//РёРЅС‚РµСЂС„РµР№СЃ СЃ РїР»Р°С‚РѕР№ - РІС‹РґР°С‡Р° РѕРґРЅРѕРіРѕ Р±РёС‚Р° РЅР° РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅС‹Р№ РєР°РЅР°Р»
 		#if defined (SPI_CSEL2)
 			#define prog_bit(target, bitv) \
 				do { \
 					switch (target) \
 					{ \
 					case SPI_CSEL0: \
-						SDO0_SET(bitv);	/* запись бита информации */ \
+						SDO0_SET(bitv);	/* Р·Р°РїРёСЃСЊ Р±РёС‚Р° РёРЅС„РѕСЂРјР°С†РёРё */ \
 						SCLK0_NPULSE();	/* latch to chips */ \
 						break; \
 					case SPI_CSEL1: \
-						SDO1_SET(bitv);	/* запись бита информации */ \
+						SDO1_SET(bitv);	/* Р·Р°РїРёСЃСЊ Р±РёС‚Р° РёРЅС„РѕСЂРјР°С†РёРё */ \
 						SCLK1_NPULSE();	/* latch to chips */ \
 						break; \
 					case SPI_CSEL2: \
-						SDO2_SET(bitv);	/* запись бита информации */ \
+						SDO2_SET(bitv);	/* Р·Р°РїРёСЃСЊ Р±РёС‚Р° РёРЅС„РѕСЂРјР°С†РёРё */ \
 						SCLK2_NPULSE();	/* latch to chips */ \
 						break; \
 					} \
@@ -164,11 +164,11 @@ void spi_initialize(void);	// отдельно инициализация SPI
 					switch (target) \
 					{ \
 					case SPI_CSEL0: \
-						SDO0_SET(bitv);	/* запись бита информации */ \
+						SDO0_SET(bitv);	/* Р·Р°РїРёСЃСЊ Р±РёС‚Р° РёРЅС„РѕСЂРјР°С†РёРё */ \
 						SCLK0_NPULSE();	/* latch to chips */ \
 						break; \
 					case SPI_CSEL1: \
-						SDO1_SET(bitv);	/* запись бита информации */ \
+						SDO1_SET(bitv);	/* Р·Р°РїРёСЃСЊ Р±РёС‚Р° РёРЅС„РѕСЂРјР°С†РёРё */ \
 						SCLK1_NPULSE();	/* latch to chips */ \
 						break; \
 					} \
@@ -176,11 +176,11 @@ void spi_initialize(void);	// отдельно инициализация SPI
 		#endif
 		// ---------------- end of optimizations
 	#else /* WITHSPISPLIT */
-		//интерфейс с платой - выдача одного бита на последовательный канал
+		//РёРЅС‚РµСЂС„РµР№СЃ СЃ РїР»Р°С‚РѕР№ - РІС‹РґР°С‡Р° РѕРґРЅРѕРіРѕ Р±РёС‚Р° РЅР° РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅС‹Р№ РєР°РЅР°Р»
 		#define prog_bit(target, bitv) \
 			do { \
 				(void) (target); \
-				SDO_SET(bitv);	/* запись бита информации */ \
+				SDO_SET(bitv);	/* Р·Р°РїРёСЃСЊ Р±РёС‚Р° РёРЅС„РѕСЂРјР°С†РёРё */ \
 				SCLK_NPULSE();	/* latch to chips */ \
 			} while (0)
 		// ---------------- end of optimizations
@@ -200,8 +200,8 @@ void spi_initialize(void);	// отдельно инициализация SPI
 		uint_fast8_t value
 		);
 
-	/* выдача указанного количества битов с любым содержимым.
-	   Используется для выравнивания общего количества битов на значение, кратное 8. */
+	/* РІС‹РґР°С‡Р° СѓРєР°Р·Р°РЅРЅРѕРіРѕ РєРѕР»РёС‡РµСЃС‚РІР° Р±РёС‚РѕРІ СЃ Р»СЋР±С‹Рј СЃРѕРґРµСЂР¶РёРјС‹Рј.
+	   РСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РґР»СЏ РІС‹СЂР°РІРЅРёРІР°РЅРёСЏ РѕР±С‰РµРіРѕ РєРѕР»РёС‡РµСЃС‚РІР° Р±РёС‚РѕРІ РЅР° Р·РЅР°С‡РµРЅРёРµ, РєСЂР°С‚РЅРѕРµ 8. */
 	void prog_dummy_impl(
 		spitarget_t target,	/* addressing to chip */
 		uint_fast8_t n				/* number of bits to send */
@@ -215,18 +215,18 @@ void spi_initialize(void);	// отдельно инициализация SPI
 		);
 
 
-	// Эти три функции должны использоваться везде, где надо работать с SPI.
+	// Р­С‚Рё С‚СЂРё С„СѓРЅРєС†РёРё РґРѕР»Р¶РЅС‹ РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊСЃСЏ РІРµР·РґРµ, РіРґРµ РЅР°РґРѕ СЂР°Р±РѕС‚Р°С‚СЊ СЃ SPI.
 	#define prog_val(target, value, n) do { (void) target; prog_val_impl((target), (value), (n)); } while (0)
 	#define prog_val8(target, value) do { (void) target; prog_val8_impl((target), (value)); } while (0)
 	#define prog_phbits(target, val, i, n) do { (void) target; prog_phbits_impl((target), (val), (i), (n)); } while (0)
 
-	/* выдача указанного количества битов с любым содержимым.
-	   Используется для выравнивания общего количества битов на значение, кратное 8. */
+	/* РІС‹РґР°С‡Р° СѓРєР°Р·Р°РЅРЅРѕРіРѕ РєРѕР»РёС‡РµСЃС‚РІР° Р±РёС‚РѕРІ СЃ Р»СЋР±С‹Рј СЃРѕРґРµСЂР¶РёРјС‹Рј.
+	   РСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РґР»СЏ РІС‹СЂР°РІРЅРёРІР°РЅРёСЏ РѕР±С‰РµРіРѕ РєРѕР»РёС‡РµСЃС‚РІР° Р±РёС‚РѕРІ РЅР° Р·РЅР°С‡РµРЅРёРµ, РєСЂР°С‚РЅРѕРµ 8. */
 	#define prog_dummy(target, n) do { prog_val_impl((target), 0x00, n); } while (0)	
 
 #endif /* WITHSPISW */
 
-// Эти три функции должны использоваться везде, где надо работать с SPI.
+// Р­С‚Рё С‚СЂРё С„СѓРЅРєС†РёРё РґРѕР»Р¶РЅС‹ РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊСЃСЏ РІРµР·РґРµ, РіРґРµ РЅР°РґРѕ СЂР°Р±РѕС‚Р°С‚СЊ СЃ SPI.
 #define prog_select(target) do { prog_select_impl(target); } while (0)
 #define prog_unselect(target) do { (void) (target); prog_unselect_impl(); } while (0)
 #define prog_read_byte(target, v)  ((void) (target), prog_spi_read_byte_impl(v))
@@ -249,8 +249,8 @@ void prog_spi_send_frame(
 	);
 
 // Read a frame of bytes via SPI
-// Приём блока
-// На сигнале MOSI при этом должно обеспачиваться состояние логической "1" для корректной работы SD CARD
+// РџСЂРёС‘Рј Р±Р»РѕРєР°
+// РќР° СЃРёРіРЅР°Р»Рµ MOSI РїСЂРё СЌС‚РѕРј РґРѕР»Р¶РЅРѕ РѕР±РµСЃРїР°С‡РёРІР°С‚СЊСЃСЏ СЃРѕСЃС‚РѕСЏРЅРёРµ Р»РѕРіРёС‡РµСЃРєРѕР№ "1" РґР»СЏ РєРѕСЂСЂРµРєС‚РЅРѕР№ СЂР°Р±РѕС‚С‹ SD CARD
 void prog_spi_read_frame(
 	spitarget_t target,
 	uint8_t * buff, 
@@ -276,77 +276,77 @@ void prog_spi_read_frame(
 #endif
 
 
-// 8-ми битные функции обмена по SPI
+// 8-РјРё Р±РёС‚РЅС‹Рµ С„СѓРЅРєС†РёРё РѕР±РјРµРЅР° РїРѕ SPI
 #if WITHSPIHW && ! WITHSPISW
-	/* только аппаратный SPI */
+	/* С‚РѕР»СЊРєРѕ Р°РїРїР°СЂР°С‚РЅС‹Р№ SPI */
 	#define spi_select(target, spimode) \
-		do { hardware_spi_connect(SPIC_SPEEDFAST, (spimode)); prog_select(target); } while (0)	// начало выдачи информации по SPI 
+		do { hardware_spi_connect(SPIC_SPEEDFAST, (spimode)); prog_select(target); } while (0)	// РЅР°С‡Р°Р»Рѕ РІС‹РґР°С‡Рё РёРЅС„РѕСЂРјР°С†РёРё РїРѕ SPI 
 	#define spi_select2(target, spimode, speedcode) \
-		do { hardware_spi_connect((speedcode), (spimode)); prog_select(target); } while (0)	// начало выдачи информации по SPI 
+		do { hardware_spi_connect((speedcode), (spimode)); prog_select(target); } while (0)	// РЅР°С‡Р°Р»Рѕ РІС‹РґР°С‡Рё РёРЅС„РѕСЂРјР°С†РёРё РїРѕ SPI 
 	#define spi_unselect(target) \
-		do { prog_unselect(target); hardware_spi_disconnect(); } while (0)	// заверщение выдачи информации по SPI  - поднять чипселект
+		do { prog_unselect(target); hardware_spi_disconnect(); } while (0)	// Р·Р°РІРµСЂС‰РµРЅРёРµ РІС‹РґР°С‡Рё РёРЅС„РѕСЂРјР°С†РёРё РїРѕ SPI  - РїРѕРґРЅСЏС‚СЊ С‡РёРїСЃРµР»РµРєС‚
 	#define spi_complete(target) \
-		((void) (target), hardware_spi_complete_b8())		// ожидание выдачи последнего байта в последовательности
+		((void) (target), hardware_spi_complete_b8())		// РѕР¶РёРґР°РЅРёРµ РІС‹РґР°С‡Рё РїРѕСЃР»РµРґРЅРµРіРѕ Р±Р°Р№С‚Р° РІ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕСЃС‚Рё
 	#define spi_progval8(target, v) \
-		((void) (target), hardware_spi_b8(v))	// выдача байта и дождаться его передачи
+		((void) (target), hardware_spi_b8(v))	// РІС‹РґР°С‡Р° Р±Р°Р№С‚Р° Рё РґРѕР¶РґР°С‚СЊСЃСЏ РµРіРѕ РїРµСЂРµРґР°С‡Рё
 	#define spi_progval8_p1(target, v) \
-		do { (void) (target); hardware_spi_b8_p1(v); } while (0)	// выдача первого байта в последовательности
+		do { (void) (target); hardware_spi_b8_p1(v); } while (0)	// РІС‹РґР°С‡Р° РїРµСЂРІРѕРіРѕ Р±Р°Р№С‚Р° РІ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕСЃС‚Рё
 	#define spi_progval8_p2(target, v) \
-		do { (void) (target); hardware_spi_b8_p2(v); } while (0)	// выдача средних байтов в последовательности
+		do { (void) (target); hardware_spi_b8_p2(v); } while (0)	// РІС‹РґР°С‡Р° СЃСЂРµРґРЅРёС… Р±Р°Р№С‚РѕРІ РІ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕСЃС‚Рё
 	#define spi_progval8_p3(target, v) \
-		((void) (target), hardware_spi_b8_p2(v), hardware_spi_complete_b8())	// выдача средних байтов в последовательности
+		((void) (target), hardware_spi_b8_p2(v), hardware_spi_complete_b8())	// РІС‹РґР°С‡Р° СЃСЂРµРґРЅРёС… Р±Р°Р№С‚РѕРІ РІ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕСЃС‚Рё
 	#define spi_read_byte(target, v) \
 			((void) (target), hardware_spi_b8(v))
 	#if WITHSPIHWDMA
 		#define spi_send_frame(target, buff, count) \
-			do { (void) (target); hardware_spi_master_send_frame((buff), (count)); } while (0)	// Передача блока
+			do { (void) (target); hardware_spi_master_send_frame((buff), (count)); } while (0)	// РџРµСЂРµРґР°С‡Р° Р±Р»РѕРєР°
 		#define spi_read_frame(target, buff, count) \
-			do { (void) (target); hardware_spi_master_read_frame((buff), (count)); } while (0)	// Приём блока
+			do { (void) (target); hardware_spi_master_read_frame((buff), (count)); } while (0)	// РџСЂРёС‘Рј Р±Р»РѕРєР°
 	#else /* WITHSPIHWDMA */
 		#define spi_send_frame(target, buff, count) \
-			do { prog_spi_send_frame((target), (buff), (count)); } while (0)	// Передача блока
+			do { prog_spi_send_frame((target), (buff), (count)); } while (0)	// РџРµСЂРµРґР°С‡Р° Р±Р»РѕРєР°
 		#define spi_read_frame(target, buff, count) \
-			do { prog_spi_read_frame((target), (buff), (count)); } while (0)	// Приём блока
+			do { prog_spi_read_frame((target), (buff), (count)); } while (0)	// РџСЂРёС‘Рј Р±Р»РѕРєР°
 	#endif /* WITHSPIHWDMA */
 #elif WITHSPIHW
-	/* аппаратный и программный SPI - следующая передача может оказаться программной - потому отсоединяемся */
+	/* Р°РїРїР°СЂР°С‚РЅС‹Р№ Рё РїСЂРѕРіСЂР°РјРјРЅС‹Р№ SPI - СЃР»РµРґСѓСЋС‰Р°СЏ РїРµСЂРµРґР°С‡Р° РјРѕР¶РµС‚ РѕРєР°Р·Р°С‚СЊСЃСЏ РїСЂРѕРіСЂР°РјРјРЅРѕР№ - РїРѕС‚РѕРјСѓ РѕС‚СЃРѕРµРґРёРЅСЏРµРјСЃСЏ */
 	#define spi_select(target, spimode) \
-		do { hardware_spi_connect(SPIC_SPEEDFAST, (spimode)); prog_select(target); } while (0)	// начало выдачи информации по SPI 
+		do { hardware_spi_connect(SPIC_SPEEDFAST, (spimode)); prog_select(target); } while (0)	// РЅР°С‡Р°Р»Рѕ РІС‹РґР°С‡Рё РёРЅС„РѕСЂРјР°С†РёРё РїРѕ SPI 
 	#define spi_select2(target, spimode, speedcode) \
-		do { hardware_spi_connect((speedcode), (spimode)); prog_select(target); } while (0)	// начало выдачи информации по SPI 
+		do { hardware_spi_connect((speedcode), (spimode)); prog_select(target); } while (0)	// РЅР°С‡Р°Р»Рѕ РІС‹РґР°С‡Рё РёРЅС„РѕСЂРјР°С†РёРё РїРѕ SPI 
 	#define spi_unselect(target) \
-		do { prog_unselect(target); hardware_spi_disconnect(); } while (0)	// заверщение выдачи информации по SPI  - поднять чипселект
+		do { prog_unselect(target); hardware_spi_disconnect(); } while (0)	// Р·Р°РІРµСЂС‰РµРЅРёРµ РІС‹РґР°С‡Рё РёРЅС„РѕСЂРјР°С†РёРё РїРѕ SPI  - РїРѕРґРЅСЏС‚СЊ С‡РёРїСЃРµР»РµРєС‚
 	#define spi_complete(target) \
-		((void) (target), hardware_spi_complete_b8())		// ожидание выдачи последнего байта в последовательности
+		((void) (target), hardware_spi_complete_b8())		// РѕР¶РёРґР°РЅРёРµ РІС‹РґР°С‡Рё РїРѕСЃР»РµРґРЅРµРіРѕ Р±Р°Р№С‚Р° РІ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕСЃС‚Рё
 	#define spi_progval8(target, v) \
-		((void) (target), hardware_spi_b8(v))	// выдача байта и дождаться его передачи
+		((void) (target), hardware_spi_b8(v))	// РІС‹РґР°С‡Р° Р±Р°Р№С‚Р° Рё РґРѕР¶РґР°С‚СЊСЃСЏ РµРіРѕ РїРµСЂРµРґР°С‡Рё
 	#define spi_progval8_p1(target, v) \
-		do { (void) (target); hardware_spi_b8_p1(v); } while (0)	// выдача первого байта в последовательности
+		do { (void) (target); hardware_spi_b8_p1(v); } while (0)	// РІС‹РґР°С‡Р° РїРµСЂРІРѕРіРѕ Р±Р°Р№С‚Р° РІ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕСЃС‚Рё
 	#define spi_progval8_p2(target, v) \
-		do { (void) (target); hardware_spi_b8_p2(v); } while (0)	// выдача средних байтов в последовательности
+		do { (void) (target); hardware_spi_b8_p2(v); } while (0)	// РІС‹РґР°С‡Р° СЃСЂРµРґРЅРёС… Р±Р°Р№С‚РѕРІ РІ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕСЃС‚Рё
 	#define spi_progval8_p3(target, v) \
-		((void) (target), hardware_spi_b8_p2(v), hardware_spi_complete_b8())	// выдача средних байтов в последовательности
+		((void) (target), hardware_spi_b8_p2(v), hardware_spi_complete_b8())	// РІС‹РґР°С‡Р° СЃСЂРµРґРЅРёС… Р±Р°Р№С‚РѕРІ РІ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕСЃС‚Рё
 	#define spi_read_byte(target, v) \
 			((void) (target), hardware_spi_b8(v))
 	#if WITHSPIHWDMA
 		#define spi_send_frame(target, buff, count) \
-			do { (void) (target); hardware_spi_master_send_frame((buff), (count)); } while (0)	// Передача блока
+			do { (void) (target); hardware_spi_master_send_frame((buff), (count)); } while (0)	// РџРµСЂРµРґР°С‡Р° Р±Р»РѕРєР°
 		#define spi_read_frame(target, buff, count) \
-			do { (void) (target); hardware_spi_master_read_frame((buff), (count)); } while (0)	// Приём блока
+			do { (void) (target); hardware_spi_master_read_frame((buff), (count)); } while (0)	// РџСЂРёС‘Рј Р±Р»РѕРєР°
 	#else /* WITHSPIHWDMA */
 		#define spi_send_frame(target, buff, count) \
-			do { prog_spi_send_frame((target), (buff), (count)); } while (0)	// Передача блока
+			do { prog_spi_send_frame((target), (buff), (count)); } while (0)	// РџРµСЂРµРґР°С‡Р° Р±Р»РѕРєР°
 		#define spi_read_frame(target, buff, count) \
-			do { prog_spi_read_frame((target), (buff), (count)); } while (0)	// Приём блока
+			do { prog_spi_read_frame((target), (buff), (count)); } while (0)	// РџСЂРёС‘Рј Р±Р»РѕРєР°
 	#endif /* WITHSPIHWDMA */
 #elif WITHSPISW
-	/* только программный SPI */
+	/* С‚РѕР»СЊРєРѕ РїСЂРѕРіСЂР°РјРјРЅС‹Р№ SPI */
 	#define spi_select(target, spimode) \
-		do { prog_select(target); } while (0)	// начало выдачи информации по SPI 
+		do { prog_select(target); } while (0)	// РЅР°С‡Р°Р»Рѕ РІС‹РґР°С‡Рё РёРЅС„РѕСЂРјР°С†РёРё РїРѕ SPI 
 	#define spi_select2(target, spimode, speedcode) \
-		do { prog_select(target); } while (0)	// начало выдачи информации по SPI 
+		do { prog_select(target); } while (0)	// РЅР°С‡Р°Р»Рѕ РІС‹РґР°С‡Рё РёРЅС„РѕСЂРјР°С†РёРё РїРѕ SPI 
 	#define spi_unselect(target) \
-		do { prog_unselect(target); } while (0)	// заверщение выдачи информации по SPI 
+		do { prog_unselect(target); } while (0)	// Р·Р°РІРµСЂС‰РµРЅРёРµ РІС‹РґР°С‡Рё РёРЅС„РѕСЂРјР°С†РёРё РїРѕ SPI 
 	#define spi_complete(target) \
 		do { (void) (target); } while (0)
 	#define spi_progval8(target, v) \
@@ -360,14 +360,14 @@ void prog_spi_read_frame(
 	#define spi_read_byte(target, v) \
 			prog_read_byte(target, v)
 	#define spi_send_frame(target, buff, count) \
-		do { prog_spi_send_frame((target), (buff), (count)); } while (0)	// Передача блока
+		do { prog_spi_send_frame((target), (buff), (count)); } while (0)	// РџРµСЂРµРґР°С‡Р° Р±Р»РѕРєР°
 	#define spi_read_frame(target, buff, count) \
-		do { prog_spi_read_frame((target), (buff), (count)); } while (0)	// Приём блока
+		do { prog_spi_read_frame((target), (buff), (count)); } while (0)	// РџСЂРёС‘Рј Р±Р»РѕРєР°
 #endif /* WITHSPIHW */
 
-/* поддержка побитового формирования значений для вывода в SPI устройство. */
+/* РїРѕРґРґРµСЂР¶РєР° РїРѕР±РёС‚РѕРІРѕРіРѕ С„РѕСЂРјРёСЂРѕРІР°РЅРёСЏ Р·РЅР°С‡РµРЅРёР№ РґР»СЏ РІС‹РІРѕРґР° РІ SPI СѓСЃС‚СЂРѕР№СЃС‚РІРѕ. */
 typedef uint8_t rbtype_t;
-extern const uint_fast8_t rbvalues [8];	// битовые маски, соответствующие биту в байте по его номеру.
+extern const uint_fast8_t rbvalues [8];	// Р±РёС‚РѕРІС‹Рµ РјР°СЃРєРё, СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РёРµ Р±РёС‚Сѓ РІ Р±Р°Р№С‚Рµ РїРѕ РµРіРѕ РЅРѕРјРµСЂСѓ.
 
 #define RBBIT(bitpos, v) \
 	do { \
@@ -375,7 +375,7 @@ extern const uint_fast8_t rbvalues [8];	// битовые маски, соответствующие биту в
 			rbbuff [(sizeof rbbuff / sizeof rbbuff [0]) - 1 - (bitpos) / 8] |= rbvalues [(bitpos) % 8]; \
 	} while (0)
 
-// Для ширины поля до 8 бит
+// Р”Р»СЏ С€РёСЂРёРЅС‹ РїРѕР»СЏ РґРѕ 8 Р±РёС‚
 #define RBVAL(rightbitpos, v, width) \
 	do { \
 		uint_fast8_t v2 = v; \
@@ -386,7 +386,7 @@ extern const uint_fast8_t rbvalues [8];	// битовые маски, соответствующие биту в
 		}	\
 	} while (0)
 
-// Для ширины поля до 16 бит
+// Р”Р»СЏ С€РёСЂРёРЅС‹ РїРѕР»СЏ РґРѕ 16 Р±РёС‚
 #define RBVAL_W16(rightbitpos, v, width) \
 	do { \
 		uint_fast16_t v2 = v; \
@@ -425,9 +425,9 @@ extern const uint_fast8_t rbvalues [8];	// битовые маски, соответствующие биту в
 // 	spi_complete(target);
 //	spi_unselect(target);
 
-/* Таблица разворота младших восьми бит */
+/* РўР°Р±Р»РёС†Р° СЂР°Р·РІРѕСЂРѕС‚Р° РјР»Р°РґС€РёС… РІРѕСЃСЊРјРё Р±РёС‚ */
 //extern const FLASHMEM unsigned char revbittable [256];
-uint_fast8_t revbits8(uint_fast8_t v);	// Функция разворота младших восьми бит
+uint_fast8_t revbits8(uint_fast8_t v);	// Р¤СѓРЅРєС†РёСЏ СЂР°Р·РІРѕСЂРѕС‚Р° РјР»Р°РґС€РёС… РІРѕСЃСЊРјРё Р±РёС‚
 
 
 void hardware_spi_slave_initialize(void);		
@@ -436,26 +436,26 @@ void hardware_spi_slave_callback(uint8_t * buff, uint_fast8_t len);
 
 // --- dsp
 
-void hardware_spi_master_initialize(void);		/* инициализация и перевод в состояние "отключено" */
+void hardware_spi_master_initialize(void);		/* РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ Рё РїРµСЂРµРІРѕРґ РІ СЃРѕСЃС‚РѕСЏРЅРёРµ "РѕС‚РєР»СЋС‡РµРЅРѕ" */
 void hardware_spi_master_setfreq(uint_fast8_t spispeedindex, int_fast32_t spispeed);
-void hardware_spi_connect(uint_fast8_t spispeedindex, uint_fast8_t spimode);	/* управление состоянием - подключено */
-void hardware_spi_connect_b16(uint_fast8_t spispeedindex, uint_fast8_t spimode);	/* управление состоянием - подключено - работа в режиме 16-ти битных слов. */
-void hardware_spi_disconnect(void);	/* управление состоянием - отключено */
+void hardware_spi_connect(uint_fast8_t spispeedindex, uint_fast8_t spimode);	/* СѓРїСЂР°РІР»РµРЅРёРµ СЃРѕСЃС‚РѕСЏРЅРёРµРј - РїРѕРґРєР»СЋС‡РµРЅРѕ */
+void hardware_spi_connect_b16(uint_fast8_t spispeedindex, uint_fast8_t spimode);	/* СѓРїСЂР°РІР»РµРЅРёРµ СЃРѕСЃС‚РѕСЏРЅРёРµРј - РїРѕРґРєР»СЋС‡РµРЅРѕ - СЂР°Р±РѕС‚Р° РІ СЂРµР¶РёРјРµ 16-С‚Рё Р±РёС‚РЅС‹С… СЃР»РѕРІ. */
+void hardware_spi_disconnect(void);	/* СѓРїСЂР°РІР»РµРЅРёРµ СЃРѕСЃС‚РѕСЏРЅРёРµРј - РѕС‚РєР»СЋС‡РµРЅРѕ */
 
-portholder_t hardware_spi_b16(portholder_t v);	/* передача 16-ти бит, возврат считанного */
-portholder_t hardware_spi_b8(portholder_t v);	/* передача 8-ти бит, возврат считанного */
+portholder_t hardware_spi_b16(portholder_t v);	/* РїРµСЂРµРґР°С‡Р° 16-С‚Рё Р±РёС‚, РІРѕР·РІСЂР°С‚ СЃС‡РёС‚Р°РЅРЅРѕРіРѕ */
+portholder_t hardware_spi_b8(portholder_t v);	/* РїРµСЂРµРґР°С‡Р° 8-С‚Рё Р±РёС‚, РІРѕР·РІСЂР°С‚ СЃС‡РёС‚Р°РЅРЅРѕРіРѕ */
 
-/* группа функций для использования в групповых передачах по SPI. Количество бит определяется типом spi_connect */
-void hardware_spi_b16_p1(portholder_t v);	/* передача первого слова в последовательности */
-void hardware_spi_b16_p2(portholder_t v);	/* дождаться готовности, передача слова */
-void hardware_spi_b8_p1(portholder_t v);	/* передача первого байта в последовательности */
-void hardware_spi_b8_p2(portholder_t v);	/* дождаться готовности, передача байта */
+/* РіСЂСѓРїРїР° С„СѓРЅРєС†РёР№ РґР»СЏ РёСЃРїРѕР»СЊР·РѕРІР°РЅРёСЏ РІ РіСЂСѓРїРїРѕРІС‹С… РїРµСЂРµРґР°С‡Р°С… РїРѕ SPI. РљРѕР»РёС‡РµСЃС‚РІРѕ Р±РёС‚ РѕРїСЂРµРґРµР»СЏРµС‚СЃСЏ С‚РёРїРѕРј spi_connect */
+void hardware_spi_b16_p1(portholder_t v);	/* РїРµСЂРµРґР°С‡Р° РїРµСЂРІРѕРіРѕ СЃР»РѕРІР° РІ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕСЃС‚Рё */
+void hardware_spi_b16_p2(portholder_t v);	/* РґРѕР¶РґР°С‚СЊСЃСЏ РіРѕС‚РѕРІРЅРѕСЃС‚Рё, РїРµСЂРµРґР°С‡Р° СЃР»РѕРІР° */
+void hardware_spi_b8_p1(portholder_t v);	/* РїРµСЂРµРґР°С‡Р° РїРµСЂРІРѕРіРѕ Р±Р°Р№С‚Р° РІ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕСЃС‚Рё */
+void hardware_spi_b8_p2(portholder_t v);	/* РґРѕР¶РґР°С‚СЊСЃСЏ РіРѕС‚РѕРІРЅРѕСЃС‚Рё, РїРµСЂРµРґР°С‡Р° Р±Р°Р№С‚Р° */
 
-portholder_t hardware_spi_complete_b8(void);	/* дождаться готовности передача 8-ти бит */
-portholder_t hardware_spi_complete_b16(void);	/* дождаться готовности передача 16-ти бит*/
+portholder_t hardware_spi_complete_b8(void);	/* РґРѕР¶РґР°С‚СЊСЃСЏ РіРѕС‚РѕРІРЅРѕСЃС‚Рё РїРµСЂРµРґР°С‡Р° 8-С‚Рё Р±РёС‚ */
+portholder_t hardware_spi_complete_b16(void);	/* РґРѕР¶РґР°С‚СЊСЃСЏ РіРѕС‚РѕРІРЅРѕСЃС‚Рё РїРµСЂРµРґР°С‡Р° 16-С‚Рё Р±РёС‚*/
 
 // Read a frame of bytes via SPI
-// На сигнале MOSI при это должно обеспачиваться состояние логической "1" для корректной работы SD CARD
+// РќР° СЃРёРіРЅР°Р»Рµ MOSI РїСЂРё СЌС‚Рѕ РґРѕР»Р¶РЅРѕ РѕР±РµСЃРїР°С‡РёРІР°С‚СЊСЃСЏ СЃРѕСЃС‚РѕСЏРЅРёРµ Р»РѕРіРёС‡РµСЃРєРѕР№ "1" РґР»СЏ РєРѕСЂСЂРµРєС‚РЅРѕР№ СЂР°Р±РѕС‚С‹ SD CARD
 void hardware_spi_master_read_frame(uint8_t * pBuffer, uint_fast32_t size);
 void hardware_spi_master_read_frame_16b(uint16_t * pBuffer, uint_fast32_t size);
 // Send a frame of bytes via SPI

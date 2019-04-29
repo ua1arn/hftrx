@@ -1,11 +1,11 @@
 /* $Id$ */
 //
-// Проект HF Dream Receiver (КВ приёмник мечты)
-// автор Гена Завидовский mgs2001@mail.ru
+// РџСЂРѕРµРєС‚ HF Dream Receiver (РљР’ РїСЂРёС‘РјРЅРёРє РјРµС‡С‚С‹)
+// Р°РІС‚РѕСЂ Р“РµРЅР° Р—Р°РІРёРґРѕРІСЃРєРёР№ mgs2001@mail.ru
 // UA1ARN
 //
 
-#include "hardware.h"	/* зависящие от процессора функции работы с портами */
+#include "hardware.h"	/* Р·Р°РІРёСЃСЏС‰РёРµ РѕС‚ РїСЂРѕС†РµСЃСЃРѕСЂР° С„СѓРЅРєС†РёРё СЂР°Р±РѕС‚С‹ СЃ РїРѕСЂС‚Р°РјРё */
 #include "keyboard.h"
 
 #include <string.h>
@@ -152,17 +152,17 @@
 
 #elif CPUSTYLE_R7S721
 
-	// Приём символа он последовательного порта
+	// РџСЂРёС‘Рј СЃРёРјРІРѕР»Р° РѕРЅ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕРіРѕ РїРѕСЂС‚Р°
 	static RAMFUNC_NONILINE void r7s721_scifrxi0_interrupt(void)
 	{
-		(void) SCIF0.SCFSR;						// Перед сбросом бита RDF должно произойти его чтение в ненулевом состоянии
-		SCIF0.SCFSR = (uint16_t) ~ SCIF0_SCFSR_RDF;	// RDF=0 читать незачем (в примерах странное - сбрасывабтся и другие биты)
+		(void) SCIF0.SCFSR;						// РџРµСЂРµРґ СЃР±СЂРѕСЃРѕРј Р±РёС‚Р° RDF РґРѕР»Р¶РЅРѕ РїСЂРѕРёР·РѕР№С‚Рё РµРіРѕ С‡С‚РµРЅРёРµ РІ РЅРµРЅСѓР»РµРІРѕРј СЃРѕСЃС‚РѕСЏРЅРёРё
+		SCIF0.SCFSR = (uint16_t) ~ SCIF0_SCFSR_RDF;	// RDF=0 С‡РёС‚Р°С‚СЊ РЅРµР·Р°С‡РµРј (РІ РїСЂРёРјРµСЂР°С… СЃС‚СЂР°РЅРЅРѕРµ - СЃР±СЂР°СЃС‹РІР°Р±С‚СЃСЏ Рё РґСЂСѓРіРёРµ Р±РёС‚С‹)
 		uint_fast8_t n = (SCIF0.SCFDR & SCIF0_SCFDR_R) >> SCIF0_SCFDR_R_SHIFT;
 		while (n --)
 			HARDWARE_UART1_ONRXCHAR(SCIF0.SCFRDR & SCIF0_SCFRDR_D);
 	}
 
-	// Передача символа в последовательный порт
+	// РџРµСЂРµРґР°С‡Р° СЃРёРјРІРѕР»Р° РІ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅС‹Р№ РїРѕСЂС‚
 	static RAMFUNC_NONILINE void r7s721_sciftxi0_interrupt(void)
 	{
 		HARDWARE_UART1_ONTXCHAR(& SCIF0);
@@ -175,12 +175,12 @@
 #endif	/* CPUSTYLE_ATMEGA_XXX4 */
 	
 
-/* вызывается из обработчика прерываний или при запрещённых прерываниях. */
+/* РІС‹Р·С‹РІР°РµС‚СЃСЏ РёР· РѕР±СЂР°Р±РѕС‚С‡РёРєР° РїСЂРµСЂС‹РІР°РЅРёР№ РёР»Рё РїСЂРё Р·Р°РїСЂРµС‰С‘РЅРЅС‹С… РїСЂРµСЂС‹РІР°РЅРёСЏС…. */
 /*
 		disableIRQ();
 		enableIRQ();
 */
-/* Разрешение/запрещение прерывания по передаче символа */
+/* Р Р°Р·СЂРµС€РµРЅРёРµ/Р·Р°РїСЂРµС‰РµРЅРёРµ РїСЂРµСЂС‹РІР°РЅРёСЏ РїРѕ РїРµСЂРµРґР°С‡Рµ СЃРёРјРІРѕР»Р° */
 void hardware_uart1_enabletx(uint_fast8_t state)
 {
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
@@ -308,8 +308,8 @@ void hardware_uart1_enabletx(uint_fast8_t state)
 #endif
 }
 
-/* вызывается из обработчика прерываний или при запрещённых прерываниях. */
-/* Разрешение/запрещение прерываний про приёму символа */
+/* РІС‹Р·С‹РІР°РµС‚СЃСЏ РёР· РѕР±СЂР°Р±РѕС‚С‡РёРєР° РїСЂРµСЂС‹РІР°РЅРёР№ РёР»Рё РїСЂРё Р·Р°РїСЂРµС‰С‘РЅРЅС‹С… РїСЂРµСЂС‹РІР°РЅРёСЏС…. */
+/* Р Р°Р·СЂРµС€РµРЅРёРµ/Р·Р°РїСЂРµС‰РµРЅРёРµ РїСЂРµСЂС‹РІР°РЅРёР№ РїСЂРѕ РїСЂРёС‘РјСѓ СЃРёРјРІРѕР»Р° */
 void hardware_uart1_enablerx(uint_fast8_t state)
 {
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
@@ -424,7 +424,7 @@ void hardware_uart1_enablerx(uint_fast8_t state)
 }
 
 
-/* передача символа из обработчика прерывания готовности передатчика */
+/* РїРµСЂРµРґР°С‡Р° СЃРёРјРІРѕР»Р° РёР· РѕР±СЂР°Р±РѕС‚С‡РёРєР° РїСЂРµСЂС‹РІР°РЅРёСЏ РіРѕС‚РѕРІРЅРѕСЃС‚Рё РїРµСЂРµРґР°С‚С‡РёРєР° */
 void hardware_uart1_tx(void * ctx, uint_fast8_t c)
 {
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
@@ -474,9 +474,9 @@ void hardware_uart1_tx(void * ctx, uint_fast8_t c)
 
 #elif CPUSTYLE_R7S721
 
-	(void) SCIF0.SCFSR;			// Перед сбросом бита TDFE должно произойти его чтение в ненулевом состоянии
+	(void) SCIF0.SCFSR;			// РџРµСЂРµРґ СЃР±СЂРѕСЃРѕРј Р±РёС‚Р° TDFE РґРѕР»Р¶РЅРѕ РїСЂРѕРёР·РѕР№С‚Рё РµРіРѕ С‡С‚РµРЅРёРµ РІ РЅРµРЅСѓР»РµРІРѕРј СЃРѕСЃС‚РѕСЏРЅРёРё
 	SCIF0.SCFTDR = c;
-	SCIF0.SCFSR = (uint16_t) ~ (1U << SCIF0_SCFSR_TDFE_SHIFT);	// TDFE=0 читать незачем (в примерах странное)
+	SCIF0.SCFSR = (uint16_t) ~ (1U << SCIF0_SCFSR_TDFE_SHIFT);	// TDFE=0 С‡РёС‚Р°С‚СЊ РЅРµР·Р°С‡РµРј (РІ РїСЂРёРјРµСЂР°С… СЃС‚СЂР°РЅРЅРѕРµ)
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -485,7 +485,7 @@ void hardware_uart1_tx(void * ctx, uint_fast8_t c)
 
 
 
-/* приём символа, если готов порт */
+/* РїСЂРёС‘Рј СЃРёРјРІРѕР»Р°, РµСЃР»Рё РіРѕС‚РѕРІ РїРѕСЂС‚ */
 uint_fast8_t 
 hardware_usart1_getchar(char * cp)
 {
@@ -576,7 +576,7 @@ hardware_usart1_getchar(char * cp)
 	if ((SCIF0.SCFSR & (1U << 1)) == 0)	// RDF
 		return 0;
 	* cp = SCIF0.SCFRDR;
-	SCIF0.SCFSR = (uint16_t) ~ (1U << 1);	// RDF=0 читать незачем (в примерах странное)
+	SCIF0.SCFSR = (uint16_t) ~ (1U << 1);	// RDF=0 С‡РёС‚Р°С‚СЊ РЅРµР·Р°С‡РµРј (РІ РїСЂРёРјРµСЂР°С… СЃС‚СЂР°РЅРЅРѕРµ)
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -584,7 +584,7 @@ hardware_usart1_getchar(char * cp)
 	return 1;
 }
 
-/* передача символа если готов порт */
+/* РїРµСЂРµРґР°С‡Р° СЃРёРјРІРѕР»Р° РµСЃР»Рё РіРѕС‚РѕРІ РїРѕСЂС‚ */
 uint_fast8_t 
 hardware_usart1_putchar(uint_fast8_t c)
 {
@@ -668,10 +668,10 @@ hardware_usart1_putchar(uint_fast8_t c)
 
 #elif CPUSTYLE_R7S721
 
-	if ((SCIF0.SCFSR & (1U << SCIF0_SCFSR_TDFE_SHIFT)) == 0)	// Перед сбросом бита TDFE должно произойти его чтение в ненулевом состоянии
+	if ((SCIF0.SCFSR & (1U << SCIF0_SCFSR_TDFE_SHIFT)) == 0)	// РџРµСЂРµРґ СЃР±СЂРѕСЃРѕРј Р±РёС‚Р° TDFE РґРѕР»Р¶РЅРѕ РїСЂРѕРёР·РѕР№С‚Рё РµРіРѕ С‡С‚РµРЅРёРµ РІ РЅРµРЅСѓР»РµРІРѕРј СЃРѕСЃС‚РѕСЏРЅРёРё
 		return 0;
 	SCIF0.SCFTDR = c;
-	SCIF0.SCFSR = (uint16_t) ~ (1U << SCIF0_SCFSR_TDFE_SHIFT);	// TDFE=0 читать незачем (в примерах странное)
+	SCIF0.SCFSR = (uint16_t) ~ (1U << SCIF0_SCFSR_TDFE_SHIFT);	// TDFE=0 С‡РёС‚Р°С‚СЊ РЅРµР·Р°С‡РµРј (РІ РїСЂРёРјРµСЂР°С… СЃС‚СЂР°РЅРЅРѕРµ)
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -687,7 +687,7 @@ void hardware_uart1_initialize(void)
 		// enable the clock of USART0
 		PMC->PMC_PCER0 = 1UL << ID_USART0;
 
-		HARDWARE_USART1_INITIALIZE();	/* Присоединить периферию к выводам */
+		HARDWARE_USART1_INITIALIZE();	/* РџСЂРёСЃРѕРµРґРёРЅРёС‚СЊ РїРµСЂРёС„РµСЂРёСЋ Рє РІС‹РІРѕРґР°Рј */
 		
 		// reset the UART
 		USART0->US_CR = US_CR_RSTRX | US_CR_RSTTX | US_CR_RXDIS | US_CR_TXDIS;
@@ -704,13 +704,13 @@ void hardware_uart1_initialize(void)
 		NVIC_SetPriority(USART0_IRQn, ARM_SYSTEM_PRIORITY);
 		NVIC_EnableIRQ(USART0_IRQn);		// enable USART0_Handler();
 
-		USART0->US_CR = US_CR_RXEN | US_CR_TXEN;	// разрешаем приёмник и передатчик.
+		USART0->US_CR = US_CR_RXEN | US_CR_TXEN;	// СЂР°Р·СЂРµС€Р°РµРј РїСЂРёС‘РјРЅРёРє Рё РїРµСЂРµРґР°С‚С‡РёРє.
 
 	#elif HARDWARE_ARM_USEUSART1
 		// enable the clock of USART1
 		PMC->PMC_PCER0 = 1UL << ID_USART1;
 
-		HARDWARE_USART1_INITIALIZE();	/* Присоединить периферию к выводам */
+		HARDWARE_USART1_INITIALIZE();	/* РџСЂРёСЃРѕРµРґРёРЅРёС‚СЊ РїРµСЂРёС„РµСЂРёСЋ Рє РІС‹РІРѕРґР°Рј */
 
 		// reset the UART
 		USART1->US_CR = US_CR_RSTRX | US_CR_RSTTX | US_CR_RXDIS | US_CR_TXDIS;
@@ -727,13 +727,13 @@ void hardware_uart1_initialize(void)
 		NVIC_SetPriority(USART1_IRQn, ARM_SYSTEM_PRIORITY);
 		NVIC_EnableIRQ(USART1_IRQn);		// enable USART1_Handler();
 
-		USART1->US_CR = US_CR_RXEN | US_CR_TXEN;	// разрешаем приёмник и передатчик.
+		USART1->US_CR = US_CR_RXEN | US_CR_TXEN;	// СЂР°Р·СЂРµС€Р°РµРј РїСЂРёС‘РјРЅРёРє Рё РїРµСЂРµРґР°С‚С‡РёРє.
 
 	#elif HARDWARE_ARM_USEUART0
 		// enable the clock of UART0
 		PMC->PMC_PCER0 = 1UL << ID_UART0;
 
-		HARDWARE_USART1_INITIALIZE();	/* Присоединить периферию к выводам */
+		HARDWARE_USART1_INITIALIZE();	/* РџСЂРёСЃРѕРµРґРёРЅРёС‚СЊ РїРµСЂРёС„РµСЂРёСЋ Рє РІС‹РІРѕРґР°Рј */
 		
 		// reset the UART
 		UART0->UART_CR = UART_CR_RSTRX | UART_CR_RSTTX | UART_CR_RXDIS | UART_CR_TXDIS;
@@ -751,12 +751,12 @@ void hardware_uart1_initialize(void)
 		NVIC_SetPriority(UART0_IRQn, ARM_SYSTEM_PRIORITY);
 		NVIC_EnableIRQ(UART0_IRQn);		// enable UART0_Handler();
 
-		UART0->UART_CR = UART_CR_RXEN | UART_CR_TXEN;	// разрешаем приёмник и передатчик.
+		UART0->UART_CR = UART_CR_RXEN | UART_CR_TXEN;	// СЂР°Р·СЂРµС€Р°РµРј РїСЂРёС‘РјРЅРёРє Рё РїРµСЂРµРґР°С‚С‡РёРє.
 	#elif HARDWARE_ARM_USEUART1
 		// enable the clock of UART1
 		PMC->PMC_PCER0 = 1UL << ID_UART1;
 
-		HARDWARE_USART1_INITIALIZE();	/* Присоединить периферию к выводам */
+		HARDWARE_USART1_INITIALIZE();	/* РџСЂРёСЃРѕРµРґРёРЅРёС‚СЊ РїРµСЂРёС„РµСЂРёСЋ Рє РІС‹РІРѕРґР°Рј */
 
 		// reset the UART
 		UART1->UART_CR = UART_CR_RSTRX | UART_CR_RSTTX | UART_CR_RXDIS | UART_CR_TXDIS;
@@ -774,7 +774,7 @@ void hardware_uart1_initialize(void)
 		NVIC_SetPriority(UART1_IRQn, ARM_SYSTEM_PRIORITY);
 		NVIC_EnableIRQ(UART1_IRQn);		// enable UART1_Handler();
 
-		UART1->UART_CR = UART_CR_RXEN | UART_CR_TXEN;	// разрешаем приёмник и передатчик.
+		UART1->UART_CR = UART_CR_RXEN | UART_CR_TXEN;	// СЂР°Р·СЂРµС€Р°РµРј РїСЂРёС‘РјРЅРёРє Рё РїРµСЂРµРґР°С‚С‡РёРє.
 
 	#else	/* HARDWARE_ARM_USExxx */
 		#error Wrong HARDWARE_ARM_USExxx value
@@ -783,35 +783,35 @@ void hardware_uart1_initialize(void)
 
 #elif CPUSTYLE_STM32F1XX
 
-	RCC->APB2ENR |= RCC_APB2ENR_USART1EN; // Включение тактирования USART1.
+	RCC->APB2ENR |= RCC_APB2ENR_USART1EN; // Р’РєР»СЋС‡РµРЅРёРµ С‚Р°РєС‚РёСЂРѕРІР°РЅРёСЏ USART1.
 	__DSB();
 
 	USART1->CR1 |= (USART_CR1_RE | USART_CR1_TE); // Transmitter Enable & Receiver Enables
 
 
-	RCC->APB2ENR |= RCC_APB2ENR_AFIOEN;     //включить тактирование альтернативных функций
+	RCC->APB2ENR |= RCC_APB2ENR_AFIOEN;     //РІРєР»СЋС‡РёС‚СЊ С‚Р°РєС‚РёСЂРѕРІР°РЅРёРµ Р°Р»СЊС‚РµСЂРЅР°С‚РёРІРЅС‹С… С„СѓРЅРєС†РёР№
 	__DSB();
 
-	HARDWARE_USART1_INITIALIZE();	/* Присоединить периферию к выводам */
+	HARDWARE_USART1_INITIALIZE();	/* РџСЂРёСЃРѕРµРґРёРЅРёС‚СЊ РїРµСЂРёС„РµСЂРёСЋ Рє РІС‹РІРѕРґР°Рј */
 
 	NVIC_SetPriority(USART1_IRQn, ARM_SYSTEM_PRIORITY);
 	NVIC_EnableIRQ(USART1_IRQn);		// enable USART1_IRQHandler();
 
-	USART1->CR1 |= USART_CR1_UE; // Включение USART1.
+	USART1->CR1 |= USART_CR1_UE; // Р’РєР»СЋС‡РµРЅРёРµ USART1.
 
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
 
-	RCC->APB2ENR |= RCC_APB2ENR_USART1EN; // Включение тактирования USART1.
+	RCC->APB2ENR |= RCC_APB2ENR_USART1EN; // Р’РєР»СЋС‡РµРЅРёРµ С‚Р°РєС‚РёСЂРѕРІР°РЅРёСЏ USART1.
 	__DSB();
 
 	USART1->CR1 |= (USART_CR1_RE | USART_CR1_TE); // Transmitter Enable & Receiver Enables
 
-	HARDWARE_USART1_INITIALIZE();	/* Присоединить периферию к выводам */
+	HARDWARE_USART1_INITIALIZE();	/* РџСЂРёСЃРѕРµРґРёРЅРёС‚СЊ РїРµСЂРёС„РµСЂРёСЋ Рє РІС‹РІРѕРґР°Рј */
 
 	NVIC_SetPriority(USART1_IRQn, ARM_SYSTEM_PRIORITY);
 	NVIC_EnableIRQ(USART1_IRQn);		// enable USART1_IRQHandler();
 
-	USART1->CR1 |= USART_CR1_UE; // Включение USART1.
+	USART1->CR1 |= USART_CR1_UE; // Р’РєР»СЋС‡РµРЅРёРµ USART1.
 
 #elif CPUSTYLE_AT91SAM7S
 
@@ -819,7 +819,7 @@ void hardware_uart1_initialize(void)
 		// enable the clock of USART0
 		AT91C_BASE_PMC->PMC_PCER = 1UL << AT91C_ID_US0;
 
-		HARDWARE_USART1_INITIALIZE();	/* Присоединить периферию к выводам */
+		HARDWARE_USART1_INITIALIZE();	/* РџСЂРёСЃРѕРµРґРёРЅРёС‚СЊ РїРµСЂРёС„РµСЂРёСЋ Рє РІС‹РІРѕРґР°Рј */
 
 		// disable I/O pullup
 		// reset the UART
@@ -847,13 +847,13 @@ void hardware_uart1_initialize(void)
 
 		}
 
-		AT91C_BASE_US0->US_CR = AT91C_US_RXEN  | AT91C_US_TXEN;	// разрешаем приёмник и передатчик.
+		AT91C_BASE_US0->US_CR = AT91C_US_RXEN  | AT91C_US_TXEN;	// СЂР°Р·СЂРµС€Р°РµРј РїСЂРёС‘РјРЅРёРє Рё РїРµСЂРµРґР°С‚С‡РёРє.
 
 	#elif HARDWARE_ARM_USEUSART1
 		// enable the clock of USART1
 		AT91C_BASE_PMC->PMC_PCER = 1UL << AT91C_ID_US1;
 
-		HARDWARE_USART1_INITIALIZE();	/* Присоединить периферию к выводам */
+		HARDWARE_USART1_INITIALIZE();	/* РџСЂРёСЃРѕРµРґРёРЅРёС‚СЊ РїРµСЂРёС„РµСЂРёСЋ Рє РІС‹РІРѕРґР°Рј */
 
 		// enable uart pins on PIO
 		AT91C_BASE_PIOA->PIO_ASR = AT91C_PA21_RXD1 | AT91C_PA22_TXD1; // assigns the 2 I/O lines to peripheral A function
@@ -883,7 +883,7 @@ void hardware_uart1_initialize(void)
 			AT91C_BASE_AIC->AIC_IECR = (1UL << irqID);	// enable inerrupt
 		}
 
-		AT91C_BASE_US1->US_CR = AT91C_US_RXEN | AT91C_US_TXEN;	// разрешаем приёмник и передатчик.
+		AT91C_BASE_US1->US_CR = AT91C_US_RXEN | AT91C_US_TXEN;	// СЂР°Р·СЂРµС€Р°РµРј РїСЂРёС‘РјРЅРёРє Рё РїРµСЂРµРґР°С‚С‡РёРє.
 
 	#else	/* HARDWARE_ARM_USExxx */
 
@@ -974,7 +974,7 @@ void hardware_uart1_initialize(void)
 
 	/* ---- Serial status register(SCFSR2) setting ---- */
 	/* ER,BRK,DR bit clear */
-	(void) SCIF0.SCFSR;						// Перед сбросом бита xxx должно произойти его чтение в ненулевом состоянии
+	(void) SCIF0.SCFSR;						// РџРµСЂРµРґ СЃР±СЂРѕСЃРѕРј Р±РёС‚Р° xxx РґРѕР»Р¶РЅРѕ РїСЂРѕРёР·РѕР№С‚Рё РµРіРѕ С‡С‚РµРЅРёРµ РІ РЅРµРЅСѓР»РµРІРѕРј СЃРѕСЃС‚РѕСЏРЅРёРё
 	SCIF0.SCFSR = ~ 0x0091;	// 0xFF6E;
 
 	/* ---- Line status register (SCLSR2) setting ---- */
@@ -1013,7 +1013,7 @@ void hardware_uart1_initialize(void)
 		GIC_EnableIRQ(int_id);
 	}
 
-	HARDWARE_USART1_INITIALIZE();	/* Присоединить периферию к выводам */
+	HARDWARE_USART1_INITIALIZE();	/* РџСЂРёСЃРѕРµРґРёРЅРёС‚СЊ РїРµСЂРёС„РµСЂРёСЋ Рє РІС‹РІРѕРґР°Рј */
 
 	SCIF0.SCSCR |= 0x0030;	// TE RE - SCIF0 transmitting and receiving operations are enabled */
 
@@ -1162,17 +1162,17 @@ void hardware_uart1_initialize(void)
 
 #elif CPUSTYLE_R7S721
 
-	// Приём символа он последовательного порта
+	// РџСЂРёС‘Рј СЃРёРјРІРѕР»Р° РѕРЅ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕРіРѕ РїРѕСЂС‚Р°
 	static void r7s721_scifrxi3_interrupt(void)
 	{
-		(void) SCIF3.SCFSR;						// Перед сбросом бита RDF должно произойти его чтение в ненулевом состоянии
-		SCIF3.SCFSR = (uint16_t) ~ SCIF3_SCFSR_RDF;	// RDF=0 читать незачем (в примерах странное - сбрасывабтся и другие биты)
+		(void) SCIF3.SCFSR;						// РџРµСЂРµРґ СЃР±СЂРѕСЃРѕРј Р±РёС‚Р° RDF РґРѕР»Р¶РЅРѕ РїСЂРѕРёР·РѕР№С‚Рё РµРіРѕ С‡С‚РµРЅРёРµ РІ РЅРµРЅСѓР»РµРІРѕРј СЃРѕСЃС‚РѕСЏРЅРёРё
+		SCIF3.SCFSR = (uint16_t) ~ SCIF3_SCFSR_RDF;	// RDF=0 С‡РёС‚Р°С‚СЊ РЅРµР·Р°С‡РµРј (РІ РїСЂРёРјРµСЂР°С… СЃС‚СЂР°РЅРЅРѕРµ - СЃР±СЂР°СЃС‹РІР°Р±С‚СЃСЏ Рё РґСЂСѓРіРёРµ Р±РёС‚С‹)
 		uint_fast8_t n = (SCIF3.SCFDR & SCIF3_SCFDR_R) >> SCIF3_SCFDR_R_SHIFT;
 		while (n --)
 			HARDWARE_UART2_ONRXCHAR(SCIF3.SCFRDR & SCIF3_SCFRDR_D);
 	}
 
-	// Передача символа в последовательный порт
+	// РџРµСЂРµРґР°С‡Р° СЃРёРјРІРѕР»Р° РІ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅС‹Р№ РїРѕСЂС‚
 	static void r7s721_sciftxi3_interrupt(void)
 	{
 		HARDWARE_UART2_ONTXCHAR(& SCIF3);
@@ -1185,12 +1185,12 @@ void hardware_uart1_initialize(void)
 #endif	/* CPUSTYLE_ATMEGA_XXX4 */
 	
 
-/* вызывается из обработчика прерываний или при запрещённых прерываниях. */
+/* РІС‹Р·С‹РІР°РµС‚СЃСЏ РёР· РѕР±СЂР°Р±РѕС‚С‡РёРєР° РїСЂРµСЂС‹РІР°РЅРёР№ РёР»Рё РїСЂРё Р·Р°РїСЂРµС‰С‘РЅРЅС‹С… РїСЂРµСЂС‹РІР°РЅРёСЏС…. */
 /*
 		disableIRQ();
 		enableIRQ();
 */
-/* Разрешение/запрещение прерывания по передаче символа */
+/* Р Р°Р·СЂРµС€РµРЅРёРµ/Р·Р°РїСЂРµС‰РµРЅРёРµ РїСЂРµСЂС‹РІР°РЅРёСЏ РїРѕ РїРµСЂРµРґР°С‡Рµ СЃРёРјРІРѕР»Р° */
 void hardware_uart2_enabletx(uint_fast8_t state)
 {
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
@@ -1319,8 +1319,8 @@ void hardware_uart2_enabletx(uint_fast8_t state)
 #endif
 }
 
-/* вызывается из обработчика прерываний или при запрещённых прерываниях. */
-/* Разрешение/запрещение прерываний про приёму символа */
+/* РІС‹Р·С‹РІР°РµС‚СЃСЏ РёР· РѕР±СЂР°Р±РѕС‚С‡РёРєР° РїСЂРµСЂС‹РІР°РЅРёР№ РёР»Рё РїСЂРё Р·Р°РїСЂРµС‰С‘РЅРЅС‹С… РїСЂРµСЂС‹РІР°РЅРёСЏС…. */
+/* Р Р°Р·СЂРµС€РµРЅРёРµ/Р·Р°РїСЂРµС‰РµРЅРёРµ РїСЂРµСЂС‹РІР°РЅРёР№ РїСЂРѕ РїСЂРёС‘РјСѓ СЃРёРјРІРѕР»Р° */
 void hardware_uart2_enablerx(uint_fast8_t state)
 {
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
@@ -1429,7 +1429,7 @@ void hardware_uart2_enablerx(uint_fast8_t state)
 }
 
 
-/* передача символа из обработчика прерывания готовности передатчика */
+/* РїРµСЂРµРґР°С‡Р° СЃРёРјРІРѕР»Р° РёР· РѕР±СЂР°Р±РѕС‚С‡РёРєР° РїСЂРµСЂС‹РІР°РЅРёСЏ РіРѕС‚РѕРІРЅРѕСЃС‚Рё РїРµСЂРµРґР°С‚С‡РёРєР° */
 void hardware_uart2_tx(void * ctx, uint_fast8_t c)
 {
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
@@ -1480,9 +1480,9 @@ void hardware_uart2_tx(void * ctx, uint_fast8_t c)
 
 #elif CPUSTYLE_R7S721
 
-	(void) SCIF3.SCFSR;			// Перед сбросом бита TDFE должно произойти его чтение в ненулевом состоянии
+	(void) SCIF3.SCFSR;			// РџРµСЂРµРґ СЃР±СЂРѕСЃРѕРј Р±РёС‚Р° TDFE РґРѕР»Р¶РЅРѕ РїСЂРѕРёР·РѕР№С‚Рё РµРіРѕ С‡С‚РµРЅРёРµ РІ РЅРµРЅСѓР»РµРІРѕРј СЃРѕСЃС‚РѕСЏРЅРёРё
 	SCIF3.SCFTDR = c;
-	SCIF3.SCFSR = (uint16_t) ~ (1U << SCIF3_SCFSR_TDFE_SHIFT);	// TDFE=0 читать незачем (в примерах странное)
+	SCIF3.SCFSR = (uint16_t) ~ (1U << SCIF3_SCFSR_TDFE_SHIFT);	// TDFE=0 С‡РёС‚Р°С‚СЊ РЅРµР·Р°С‡РµРј (РІ РїСЂРёРјРµСЂР°С… СЃС‚СЂР°РЅРЅРѕРµ)
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -1491,7 +1491,7 @@ void hardware_uart2_tx(void * ctx, uint_fast8_t c)
 
 
 
-/* приём символа, если готов порт */
+/* РїСЂРёС‘Рј СЃРёРјРІРѕР»Р°, РµСЃР»Рё РіРѕС‚РѕРІ РїРѕСЂС‚ */
 uint_fast8_t 
 hardware_usart2_getchar(char * cp)
 {
@@ -1580,7 +1580,7 @@ hardware_usart2_getchar(char * cp)
 	if ((SCIF3.SCFSR & (1U << 1)) == 0)	// RDF
 		return 0;
 	* cp = SCIF3.SCFRDR;
-	SCIF3.SCFSR = (uint16_t) ~ (1U << 1);	// RDF=0 читать незачем (в примерах странное)
+	SCIF3.SCFSR = (uint16_t) ~ (1U << 1);	// RDF=0 С‡РёС‚Р°С‚СЊ РЅРµР·Р°С‡РµРј (РІ РїСЂРёРјРµСЂР°С… СЃС‚СЂР°РЅРЅРѕРµ)
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -1588,7 +1588,7 @@ hardware_usart2_getchar(char * cp)
 	return 1;
 }
 
-/* передача символа если готов порт */
+/* РїРµСЂРµРґР°С‡Р° СЃРёРјРІРѕР»Р° РµСЃР»Рё РіРѕС‚РѕРІ РїРѕСЂС‚ */
 uint_fast8_t 
 hardware_usart2_putchar(uint_fast8_t c)
 {
@@ -1674,10 +1674,10 @@ hardware_usart2_putchar(uint_fast8_t c)
 
 #elif CPUSTYLE_R7S721
 
-	if ((SCIF3.SCFSR & (1U << SCIF3_SCFSR_TDFE_SHIFT)) == 0)	// Перед сбросом бита TDFE должно произойти его чтение в ненулевом состоянии
+	if ((SCIF3.SCFSR & (1U << SCIF3_SCFSR_TDFE_SHIFT)) == 0)	// РџРµСЂРµРґ СЃР±СЂРѕСЃРѕРј Р±РёС‚Р° TDFE РґРѕР»Р¶РЅРѕ РїСЂРѕРёР·РѕР№С‚Рё РµРіРѕ С‡С‚РµРЅРёРµ РІ РЅРµРЅСѓР»РµРІРѕРј СЃРѕСЃС‚РѕСЏРЅРёРё
 		return 0;
 	SCIF3.SCFTDR = c;
-	SCIF3.SCFSR = (uint16_t) ~ (1U << SCIF3_SCFSR_TDFE_SHIFT);	// TDFE=0 читать незачем (в примерах странное)
+	SCIF3.SCFSR = (uint16_t) ~ (1U << SCIF3_SCFSR_TDFE_SHIFT);	// TDFE=0 С‡РёС‚Р°С‚СЊ РЅРµР·Р°С‡РµРј (РІ РїСЂРёРјРµСЂР°С… СЃС‚СЂР°РЅРЅРѕРµ)
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -1693,7 +1693,7 @@ void hardware_uart2_initialize(void)
 		// enable the clock of USART0
 		PMC->PMC_PCER0 = 1UL << ID_USART0;
 
-		HARDWARE_USART2_INITIALIZE();	/* Присоединить периферию к выводам */
+		HARDWARE_USART2_INITIALIZE();	/* РџСЂРёСЃРѕРµРґРёРЅРёС‚СЊ РїРµСЂРёС„РµСЂРёСЋ Рє РІС‹РІРѕРґР°Рј */
 		
 		// reset the UART
 		USART0->US_CR = US_CR_RSTRX | US_CR_RSTTX | US_CR_RXDIS | US_CR_TXDIS;
@@ -1710,13 +1710,13 @@ void hardware_uart2_initialize(void)
 		NVIC_SetPriority(USART0_IRQn, ARM_SYSTEM_PRIORITY);
 		NVIC_EnableIRQ(USART0_IRQn);		// enable USART0_Handler();
 
-		USART0->US_CR = US_CR_RXEN | US_CR_TXEN;	// разрешаем приёмник и передатчик.
+		USART0->US_CR = US_CR_RXEN | US_CR_TXEN;	// СЂР°Р·СЂРµС€Р°РµРј РїСЂРёС‘РјРЅРёРє Рё РїРµСЂРµРґР°С‚С‡РёРє.
 
 	#elif HARDWARE_ARM_USEUSART1
 		// enable the clock of USART1
 		PMC->PMC_PCER0 = 1UL << ID_USART1;
 
-		HARDWARE_USART2_INITIALIZE();	/* Присоединить периферию к выводам */
+		HARDWARE_USART2_INITIALIZE();	/* РџСЂРёСЃРѕРµРґРёРЅРёС‚СЊ РїРµСЂРёС„РµСЂРёСЋ Рє РІС‹РІРѕРґР°Рј */
 
 		// reset the UART
 		USART1->US_CR = US_CR_RSTRX | US_CR_RSTTX | US_CR_RXDIS | US_CR_TXDIS;
@@ -1733,14 +1733,14 @@ void hardware_uart2_initialize(void)
 		NVIC_SetPriority(USART1_IRQn, ARM_SYSTEM_PRIORITY);
 		NVIC_EnableIRQ(USART1_IRQn);		// enable USART2_Handler();
 
-		USART1->US_CR = US_CR_RXEN | US_CR_TXEN;	// разрешаем приёмник и передатчик.
+		USART1->US_CR = US_CR_RXEN | US_CR_TXEN;	// СЂР°Р·СЂРµС€Р°РµРј РїСЂРёС‘РјРЅРёРє Рё РїРµСЂРµРґР°С‚С‡РёРє.
 
 	#elif HARDWARE_ARM_USEUART0
 
 		// enable the clock of UART0
 		PMC->PMC_PCER0 = 1UL << ID_UART0;
 
-		HARDWARE_USART2_INITIALIZE();	/* Присоединить периферию к выводам */
+		HARDWARE_USART2_INITIALIZE();	/* РџСЂРёСЃРѕРµРґРёРЅРёС‚СЊ РїРµСЂРёС„РµСЂРёСЋ Рє РІС‹РІРѕРґР°Рј */
 		
 		// reset the UART
 		UART0->UART_CR = UART_CR_RSTRX | UART_CR_RSTTX | UART_CR_RXDIS | UART_CR_TXDIS;
@@ -1758,14 +1758,14 @@ void hardware_uart2_initialize(void)
 		NVIC_SetPriority(UART0_IRQn, ARM_SYSTEM_PRIORITY);
 		NVIC_EnableIRQ(UART0_IRQn);		// enable UART0_Handler();
 
-		UART0->UART_CR = UART_CR_RXEN | UART_CR_TXEN;	// разрешаем приёмник и передатчик.
+		UART0->UART_CR = UART_CR_RXEN | UART_CR_TXEN;	// СЂР°Р·СЂРµС€Р°РµРј РїСЂРёС‘РјРЅРёРє Рё РїРµСЂРµРґР°С‚С‡РёРє.
 
 	#elif HARDWARE_ARM_USEUART1
 
 		// enable the clock of UART1
 		PMC->PMC_PCER0 = 1UL << ID_UART1;
 
-		HARDWARE_USART2_INITIALIZE();	/* Присоединить периферию к выводам */
+		HARDWARE_USART2_INITIALIZE();	/* РџСЂРёСЃРѕРµРґРёРЅРёС‚СЊ РїРµСЂРёС„РµСЂРёСЋ Рє РІС‹РІРѕРґР°Рј */
 
 		// reset the UART
 		UART1->UART_CR = UART_CR_RSTRX | UART_CR_RSTTX | UART_CR_RXDIS | UART_CR_TXDIS;
@@ -1783,7 +1783,7 @@ void hardware_uart2_initialize(void)
 		NVIC_SetPriority(UART1_IRQn, ARM_SYSTEM_PRIORITY);
 		NVIC_EnableIRQ(UART1_IRQn);		// enable UART1_Handler();
 
-		UART1->UART_CR = UART_CR_RXEN | UART_CR_TXEN;	// разрешаем приёмник и передатчик.
+		UART1->UART_CR = UART_CR_RXEN | UART_CR_TXEN;	// СЂР°Р·СЂРµС€Р°РµРј РїСЂРёС‘РјРЅРёРє Рё РїРµСЂРµРґР°С‚С‡РёРє.
 
 	#else	/* HARDWARE_ARM_USExxx */
 		#error Wrong HARDWARE_ARM_USExxx value
@@ -1792,49 +1792,49 @@ void hardware_uart2_initialize(void)
 
 #elif CPUSTYLE_STM32F1XX
 
-	RCC->APB1ENR |= RCC_APB1ENR_USART2EN; // Включение тактирования USART2.
+	RCC->APB1ENR |= RCC_APB1ENR_USART2EN; // Р’РєР»СЋС‡РµРЅРёРµ С‚Р°РєС‚РёСЂРѕРІР°РЅРёСЏ USART2.
 	__DSB();
 
 	USART2->CR1 |= (USART_CR1_RE | USART_CR1_TE); // Transmitter Enable & Receiver Enables
 
 
-	RCC->APB2ENR |= RCC_APB2ENR_AFIOEN;     //включить тактирование альтернативных функций
+	RCC->APB2ENR |= RCC_APB2ENR_AFIOEN;     //РІРєР»СЋС‡РёС‚СЊ С‚Р°РєС‚РёСЂРѕРІР°РЅРёРµ Р°Р»СЊС‚РµСЂРЅР°С‚РёРІРЅС‹С… С„СѓРЅРєС†РёР№
 	__DSB();
 
-	HARDWARE_USART2_INITIALIZE();	/* Присоединить периферию к выводам */
+	HARDWARE_USART2_INITIALIZE();	/* РџСЂРёСЃРѕРµРґРёРЅРёС‚СЊ РїРµСЂРёС„РµСЂРёСЋ Рє РІС‹РІРѕРґР°Рј */
 
 	NVIC_SetPriority(USART2_IRQn, ARM_SYSTEM_PRIORITY);
 	NVIC_EnableIRQ(USART2_IRQn);		// enable USART2_IRQHandler();
 
-	USART2->CR1 |= USART_CR1_UE; // Включение USART2.
+	USART2->CR1 |= USART_CR1_UE; // Р’РєР»СЋС‡РµРЅРёРµ USART2.
 
 #elif CPUSTYLE_STM32H7XX
 
-	RCC->APB1LENR |= RCC_APB1LENR_USART2EN; // Включение тактирования USART2.
+	RCC->APB1LENR |= RCC_APB1LENR_USART2EN; // Р’РєР»СЋС‡РµРЅРёРµ С‚Р°РєС‚РёСЂРѕРІР°РЅРёСЏ USART2.
 	__DSB();
 
 	USART2->CR1 |= (USART_CR1_RE | USART_CR1_TE); // Transmitter Enable & Receiver Enables
 
-	HARDWARE_USART2_INITIALIZE();	/* Присоединить периферию к выводам */
+	HARDWARE_USART2_INITIALIZE();	/* РџСЂРёСЃРѕРµРґРёРЅРёС‚СЊ РїРµСЂРёС„РµСЂРёСЋ Рє РІС‹РІРѕРґР°Рј */
 
 	NVIC_SetPriority(USART2_IRQn, ARM_SYSTEM_PRIORITY);
 	NVIC_EnableIRQ(USART2_IRQn);		// enable USART2_IRQHandler();
 
-	USART2->CR1 |= USART_CR1_UE; // Включение USART2.
+	USART2->CR1 |= USART_CR1_UE; // Р’РєР»СЋС‡РµРЅРёРµ USART2.
 
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX
 
-	RCC->APB1ENR |= RCC_APB1ENR_USART2EN; // Включение тактирования USART2.
+	RCC->APB1ENR |= RCC_APB1ENR_USART2EN; // Р’РєР»СЋС‡РµРЅРёРµ С‚Р°РєС‚РёСЂРѕРІР°РЅРёСЏ USART2.
 	__DSB();
 
 	USART2->CR1 |= (USART_CR1_RE | USART_CR1_TE); // Transmitter Enable & Receiver Enables
 
-	HARDWARE_USART2_INITIALIZE();	/* Присоединить периферию к выводам */
+	HARDWARE_USART2_INITIALIZE();	/* РџСЂРёСЃРѕРµРґРёРЅРёС‚СЊ РїРµСЂРёС„РµСЂРёСЋ Рє РІС‹РІРѕРґР°Рј */
 
 	NVIC_SetPriority(USART2_IRQn, ARM_SYSTEM_PRIORITY);
 	NVIC_EnableIRQ(USART2_IRQn);		// enable USART2_IRQHandler();
 
-	USART2->CR1 |= USART_CR1_UE; // Включение USART2.
+	USART2->CR1 |= USART_CR1_UE; // Р’РєР»СЋС‡РµРЅРёРµ USART2.
 
 #elif CPUSTYLE_AT91SAM7S
 
@@ -1842,7 +1842,7 @@ void hardware_uart2_initialize(void)
 		// enable the clock of USART0
 		AT91C_BASE_PMC->PMC_PCER = 1UL << AT91C_ID_US0;
 
-		HARDWARE_USART2_INITIALIZE();	/* Присоединить периферию к выводам */
+		HARDWARE_USART2_INITIALIZE();	/* РџСЂРёСЃРѕРµРґРёРЅРёС‚СЊ РїРµСЂРёС„РµСЂРёСЋ Рє РІС‹РІРѕРґР°Рј */
 
 		// disable I/O pullup
 		// reset the UART
@@ -1870,14 +1870,14 @@ void hardware_uart2_initialize(void)
 
 		}
 
-		AT91C_BASE_US0->US_CR = AT91C_US_RXEN  | AT91C_US_TXEN;	// разрешаем приёмник и передатчик.
+		AT91C_BASE_US0->US_CR = AT91C_US_RXEN  | AT91C_US_TXEN;	// СЂР°Р·СЂРµС€Р°РµРј РїСЂРёС‘РјРЅРёРє Рё РїРµСЂРµРґР°С‚С‡РёРє.
 
 	#elif HARDWARE_ARM_USEUSART1
 
 		// enable the clock of USART2
 		AT91C_BASE_PMC->PMC_PCER = 1UL << AT91C_ID_US1;
 
-		HARDWARE_USART2_INITIALIZE();	/* Присоединить периферию к выводам */
+		HARDWARE_USART2_INITIALIZE();	/* РџСЂРёСЃРѕРµРґРёРЅРёС‚СЊ РїРµСЂРёС„РµСЂРёСЋ Рє РІС‹РІРѕРґР°Рј */
 
 		// enable uart pins on PIO
 		AT91C_BASE_PIOA->PIO_ASR = AT91C_PA21_RXD1 | AT91C_PA22_TXD1; // assigns the 2 I/O lines to peripheral A function
@@ -1907,7 +1907,7 @@ void hardware_uart2_initialize(void)
 			AT91C_BASE_AIC->AIC_IECR = (1UL << irqID);	// enable inerrupt
 		}
 
-		AT91C_BASE_US1->US_CR = AT91C_US_RXEN | AT91C_US_TXEN;	// разрешаем приёмник и передатчик.
+		AT91C_BASE_US1->US_CR = AT91C_US_RXEN | AT91C_US_TXEN;	// СЂР°Р·СЂРµС€Р°РµРј РїСЂРёС‘РјРЅРёРє Рё РїРµСЂРµРґР°С‚С‡РёРє.
 	#else	/* HARDWARE_ARM_USExxx */
 		#error Wrong HARDWARE_ARM_USExxx value
 	#endif /* HARDWARE_ARM_USEUSART0 */
@@ -1986,7 +1986,7 @@ xxxx!;
 
 	/* ---- Serial status register(SCFSR2) setting ---- */
 	/* ER,BRK,DR bit clear */
-	(void) SCIF3.SCFSR;						// Перед сбросом бита xxx должно произойти его чтение в ненулевом состоянии
+	(void) SCIF3.SCFSR;						// РџРµСЂРµРґ СЃР±СЂРѕСЃРѕРј Р±РёС‚Р° xxx РґРѕР»Р¶РЅРѕ РїСЂРѕРёР·РѕР№С‚Рё РµРіРѕ С‡С‚РµРЅРёРµ РІ РЅРµРЅСѓР»РµРІРѕРј СЃРѕСЃС‚РѕСЏРЅРёРё
 	SCIF3.SCFSR = ~ 0x0091;	// 0xFF6E;
 
 	/* ---- Line status register (SCLSR2) setting ---- */
@@ -2025,7 +2025,7 @@ xxxx!;
 		GIC_EnableIRQ(int_id);
 	}
 
-	HARDWARE_USART2_INITIALIZE();	/* Присоединить периферию к выводам */
+	HARDWARE_USART2_INITIALIZE();	/* РџСЂРёСЃРѕРµРґРёРЅРёС‚СЊ РїРµСЂРёС„РµСЂРёСЋ Рє РІС‹РІРѕРґР°Рј */
 
 	SCIF3.SCSCR |= 0x0030;	// TE RE - SCIF3 transmitting and receiving operations are enabled */
 

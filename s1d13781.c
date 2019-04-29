@@ -1,10 +1,10 @@
 /* $Id$ */
 //
-// Проект HF Dream Receiver (КВ приёмник мечты)
-// автор Гена Завидовский mgs2001@mail.ru
+// РџСЂРѕРµРєС‚ HF Dream Receiver (РљР’ РїСЂРёС‘РјРЅРёРє РјРµС‡С‚С‹)
+// Р°РІС‚РѕСЂ Р“РµРЅР° Р—Р°РІРёРґРѕРІСЃРєРёР№ mgs2001@mail.ru
 // UA1ARN
 //
-// Поддержка контроллера TFT панели Epson S1D13781
+// РџРѕРґРґРµСЂР¶РєР° РєРѕРЅС‚СЂРѕР»Р»РµСЂР° TFT РїР°РЅРµР»Рё Epson S1D13781
 //
 
 
@@ -89,15 +89,15 @@
 #include "./fonts/S1D13781_font_half_LTDC.c"
 #include "./fonts/S1D13781_font_big_LTDC.c"
 
-#define S1D13781_SPIMODE SPIC_MODE3		/* допустим только MODE3, MODE2 не работает с этим контроллером */
+#define S1D13781_SPIMODE SPIC_MODE3		/* РґРѕРїСѓСЃС‚РёРј С‚РѕР»СЊРєРѕ MODE3, MODE2 РЅРµ СЂР°Р±РѕС‚Р°РµС‚ СЃ СЌС‚РёРј РєРѕРЅС‚СЂРѕР»Р»РµСЂРѕРј */
 #define S1D13781_SPIC_SPEEDSLOW		SPIC_SPEED10M
 #define S1D13781_SPIC_SPEED		SPIC_SPEED10M
 
-// Условие использования оптимизированных функций обращения к SPI
+// РЈСЃР»РѕРІРёРµ РёСЃРїРѕР»СЊР·РѕРІР°РЅРёСЏ РѕРїС‚РёРјРёР·РёСЂРѕРІР°РЅРЅС‹С… С„СѓРЅРєС†РёР№ РѕР±СЂР°С‰РµРЅРёСЏ Рє SPI
 #define WITHSPIEXT16 (WITHSPIHW && WITHSPI16BIT)
 
 #if LCDMODE_S1D13781_TOPDOWN
-	#define S1D13781_SETFLAGS (0x02 << 3)	// для перевёрнутого изображения
+	#define S1D13781_SETFLAGS (0x02 << 3)	// РґР»СЏ РїРµСЂРµРІС‘СЂРЅСѓС‚РѕРіРѕ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ
 #else
 	#define S1D13781_SETFLAGS (0x00 << 3)
 #endif
@@ -117,7 +117,7 @@ static void
 s1d13781_select(void)
 {
 #if WITHSPIEXT16
-	hardware_spi_connect_b16(S1D13781_SPIC_SPEED, S1D13781_SPIMODE);		// если есть возможность - работаем в 16-ти битном режиме
+	hardware_spi_connect_b16(S1D13781_SPIC_SPEED, S1D13781_SPIMODE);		// РµСЃР»Рё РµСЃС‚СЊ РІРѕР·РјРѕР¶РЅРѕСЃС‚СЊ - СЂР°Р±РѕС‚Р°РµРј РІ 16-С‚Рё Р±РёС‚РЅРѕРј СЂРµР¶РёРјРµ
 	prog_select(targetlcd);	
 #else
 	spi_select2(targetlcd, S1D13781_SPIMODE, S1D13781_SPIC_SPEED);	/* Enable SPI */
@@ -129,7 +129,7 @@ static void
 s1d13781_selectslow(void)
 {
 #if WITHSPIEXT16
-	hardware_spi_connect_b16(S1D13781_SPIC_SPEEDSLOW, S1D13781_SPIMODE);		// если есть возможность - работаем в 16-ти битном режиме
+	hardware_spi_connect_b16(S1D13781_SPIC_SPEEDSLOW, S1D13781_SPIMODE);		// РµСЃР»Рё РµСЃС‚СЊ РІРѕР·РјРѕР¶РЅРѕСЃС‚СЊ - СЂР°Р±РѕС‚Р°РµРј РІ 16-С‚Рё Р±РёС‚РЅРѕРј СЂРµР¶РёРјРµ
 	prog_select(targetlcd);	
 #else
 	spi_select2(targetlcd, S1D13781_SPIMODE, S1D13781_SPIC_SPEEDSLOW);	/* Enable SPI */
@@ -252,7 +252,7 @@ static void set_addw_16bit_p1p2_nc(
 
 #endif /* WITHSPIEXT16 */
 
-// Внимание, следом обязательно должно быть ожидание готовности SPI
+// Р’РЅРёРјР°РЅРёРµ, СЃР»РµРґРѕРј РѕР±СЏР·Р°С‚РµР»СЊРЅРѕ РґРѕР»Р¶РЅРѕ Р±С‹С‚СЊ РѕР¶РёРґР°РЅРёРµ РіРѕС‚РѕРІРЅРѕСЃС‚Рё SPI
 // Sets address for reads from comntroller's registes. It includes a dummy reads.
 // Commands:
 // 0x80 - 8 bit write
@@ -322,7 +322,7 @@ static uint_fast16_t set_addr_p1p2_registers_getval16(
 	#endif /* WITHSPIEXT16 */
 }
 
-// используется при заполнении знакогенератора - скорость работы не критична
+// РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РїСЂРё Р·Р°РїРѕР»РЅРµРЅРёРё Р·РЅР°РєРѕРіРµРЅРµСЂР°С‚РѕСЂР° - СЃРєРѕСЂРѕСЃС‚СЊ СЂР°Р±РѕС‚С‹ РЅРµ РєСЂРёС‚РёС‡РЅР°
 static void set_data16(
 	uint_fast16_t data
 	)
@@ -335,7 +335,7 @@ static void set_data16(
 	#endif /* WITHSPIEXT16 */
 }
 
-// используется при выводе растрового изображения
+// РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РїСЂРё РІС‹РІРѕРґРµ СЂР°СЃС‚СЂРѕРІРѕРіРѕ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ
 static void set_data16_p1(
 	uint_fast16_t data
 	)
@@ -347,7 +347,7 @@ static void set_data16_p1(
 		spi_progval8_p2(targetlcd, data >> 8);
 	#endif /* WITHSPIEXT16 */
 }
-// используется при выводе растрового изображения
+// РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РїСЂРё РІС‹РІРѕРґРµ СЂР°СЃС‚СЂРѕРІРѕРіРѕ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ
 static void set_data16_p2(
 	uint_fast16_t data
 	)
@@ -359,7 +359,7 @@ static void set_data16_p2(
 		spi_progval8_p2(targetlcd, data >> 8);
 	#endif /* WITHSPIEXT16 */
 }
-// используется при выводе растрового изображения
+// РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РїСЂРё РІС‹РІРѕРґРµ СЂР°СЃС‚СЂРѕРІРѕРіРѕ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ
 static void set_data16complete(void)
 {
 	#if WITHSPIEXT16
@@ -438,7 +438,7 @@ static void s1d13781_wrcmd32(uint_fast8_t reg, uint_fast32_t val)
 	s1d13781_unselect();
 }
 
-// функция передачи двух 16-ти битных слов подряд
+// С„СѓРЅРєС†РёСЏ РїРµСЂРµРґР°С‡Рё РґРІСѓС… 16-С‚Рё Р±РёС‚РЅС‹С… СЃР»РѕРІ РїРѕРґСЂСЏРґ
 static void s1d13781_wrcmd32_pair(uint_fast8_t reg, uint_fast16_t high, uint_fast16_t low)
 {
 	s1d13781_select();
@@ -464,19 +464,19 @@ static void s1d13781_wrcmdcolor(uint_fast8_t reg, COLOR_T val)
 #if S1D_DISPLAY_BPP == 24
 	s1d13781_wrcmd32(reg, val);
 #elif S1D_DISPLAY_BPP == 16
-	s1d13781_wrcmd16(reg, val);		// сделано 16, так как цвет 16-ти битный
+	s1d13781_wrcmd16(reg, val);		// СЃРґРµР»Р°РЅРѕ 16, С‚Р°Рє РєР°Рє С†РІРµС‚ 16-С‚Рё Р±РёС‚РЅС‹Р№
 #elif S1D_DISPLAY_BPP == 8
-	s1d13781_wrcmd8(reg, val);		// сделано 8, так как цвет 8-ти битный
+	s1d13781_wrcmd8(reg, val);		// СЃРґРµР»Р°РЅРѕ 8, С‚Р°Рє РєР°Рє С†РІРµС‚ 8-С‚Рё Р±РёС‚РЅС‹Р№
 #endif
 }
 
-// настройка bitblt на копирование с расширением цветов
+// РЅР°СЃС‚СЂРѕР№РєР° bitblt РЅР° РєРѕРїРёСЂРѕРІР°РЅРёРµ СЃ СЂР°СЃС€РёСЂРµРЅРёРµРј С†РІРµС‚РѕРІ
 static void s1d13781_colorexpand(void)
 {
 #if S1D_DISPLAY_BPP == 24
 
 	s1d13781_wrcmd16(REG82_BLT_CTRL_1,
-			(0x02 << 2)	| // формат дисплейной памяти: 24 bpb
+			(0x02 << 2)	| // С„РѕСЂРјР°С‚ РґРёСЃРїР»РµР№РЅРѕР№ РїР°РјСЏС‚Рё: 24 bpb
 			(0x00 << 1) | // destiantion linear select
 			(0x01 << 0) | // source linear select (for chargen array of images required)
 			0
@@ -485,7 +485,7 @@ static void s1d13781_colorexpand(void)
 #elif S1D_DISPLAY_BPP == 16
 
 	s1d13781_wrcmd16(REG82_BLT_CTRL_1,
-			(0x01 << 2)	| // формат дисплейной памяти: 16 bpb
+			(0x01 << 2)	| // С„РѕСЂРјР°С‚ РґРёСЃРїР»РµР№РЅРѕР№ РїР°РјСЏС‚Рё: 16 bpb
 			(0x00 << 1) | // destiantion linear select
 			(0x01 << 0) | // source linear select (for chargen array of images required)
 			0
@@ -494,7 +494,7 @@ static void s1d13781_colorexpand(void)
 #elif S1D_DISPLAY_BPP == 8
 
 	s1d13781_wrcmd16(REG82_BLT_CTRL_1,
-			(0x00 << 2)	| // формат дисплейной памяти: 8 bpb
+			(0x00 << 2)	| // С„РѕСЂРјР°С‚ РґРёСЃРїР»РµР№РЅРѕР№ РїР°РјСЏС‚Рё: 8 bpb
 			(0x00 << 1) | // destiantion linear select
 			(0x01 << 0) | // source linear select (for chargen array of images required)
 			0
@@ -508,7 +508,7 @@ static void s1d13781_screencopy(void)
 #if S1D_DISPLAY_BPP == 24
 
 	s1d13781_wrcmd16(REG82_BLT_CTRL_1,
-			(0x02 << 2)	| // формат дисплейной памяти: 24 bpb
+			(0x02 << 2)	| // С„РѕСЂРјР°С‚ РґРёСЃРїР»РµР№РЅРѕР№ РїР°РјСЏС‚Рё: 24 bpb
 			(0x00 << 1) | // destiantion linear select
 			(0x00 << 0) | // source linear select
 			0
@@ -517,7 +517,7 @@ static void s1d13781_screencopy(void)
 #elif S1D_DISPLAY_BPP == 16
 
 	s1d13781_wrcmd16(REG82_BLT_CTRL_1,
-			(0x01 << 2)	| // формат дисплейной памяти: 16 bpb
+			(0x01 << 2)	| // С„РѕСЂРјР°С‚ РґРёСЃРїР»РµР№РЅРѕР№ РїР°РјСЏС‚Рё: 16 bpb
 			(0x00 << 1) | // destiantion linear select
 			(0x00 << 0) | // source linear select
 			0
@@ -526,7 +526,7 @@ static void s1d13781_screencopy(void)
 #elif S1D_DISPLAY_BPP == 8
 
 	s1d13781_wrcmd16(REG82_BLT_CTRL_1,
-			(0x00 << 2)	| // формат дисплейной памяти: 8 bpb
+			(0x00 << 2)	| // С„РѕСЂРјР°С‚ РґРёСЃРїР»РµР№РЅРѕР№ РїР°РјСЏС‚Рё: 8 bpb
 			(0x00 << 1) | // destiantion linear select
 			(0x00 << 0) | // source linear select
 			0
@@ -557,10 +557,10 @@ static uint_fast16_t getprodcode(void)
 	return v;
 }
 
-static uint_fast8_t s1d13781_missing;	// не-ноль, если дисплей не обнаружен
+static uint_fast8_t s1d13781_missing;	// РЅРµ-РЅРѕР»СЊ, РµСЃР»Рё РґРёСЃРїР»РµР№ РЅРµ РѕР±РЅР°СЂСѓР¶РµРЅ
 
-// дождаться выполнения предидущей команды BitBlt engine.
-// если не дождались - возврат 0
+// РґРѕР¶РґР°С‚СЊСЃСЏ РІС‹РїРѕР»РЅРµРЅРёСЏ РїСЂРµРґРёРґСѓС‰РµР№ РєРѕРјР°РЅРґС‹ BitBlt engine.
+// РµСЃР»Рё РЅРµ РґРѕР¶РґР°Р»РёСЃСЊ - РІРѕР·РІСЂР°С‚ 0
 static uint_fast8_t
 bitblt_waitbusy(void)
 {
@@ -583,23 +583,23 @@ bitblt_waitbusy2(void)
 		;
 }
 
-/* заполнение прямоугольника произвольным цветом с помощью BitBlt engine
-   Например, очистка дисплея.
+/* Р·Р°РїРѕР»РЅРµРЅРёРµ РїСЂСЏРјРѕСѓРіРѕР»СЊРЅРёРєР° РїСЂРѕРёР·РІРѕР»СЊРЅС‹Рј С†РІРµС‚РѕРј СЃ РїРѕРјРѕС‰СЊСЋ BitBlt engine
+   РќР°РїСЂРёРјРµСЂ, РѕС‡РёСЃС‚РєР° РґРёСЃРїР»РµСЏ.
 */
 static void 
 bitblt_fill(
-	uint_fast16_t x, uint_fast16_t y, 	// координаты в пикселях
-	uint_fast16_t w, uint_fast16_t h, 	// размеры в пикселях
+	uint_fast16_t x, uint_fast16_t y, 	// РєРѕРѕСЂРґРёРЅР°С‚С‹ РІ РїРёРєСЃРµР»СЏС…
+	uint_fast16_t w, uint_fast16_t h, 	// СЂР°Р·РјРµСЂС‹ РІ РїРёРєСЃРµР»СЏС…
 	COLOR_T color)
 {
-	// дождаться выполнения предидущей команды BitBlt engine.
+	// РґРѕР¶РґР°С‚СЊСЃСЏ РІС‹РїРѕР»РЅРµРЅРёСЏ РїСЂРµРґРёРґСѓС‰РµР№ РєРѕРјР°РЅРґС‹ BitBlt engine.
 	if (bitblt_waitbusy() != 0)
 	{
-		s1d13781_wrcmdcolor(REG9A_BLT_FGCOLOR_0, color);	// сделано 16, так как цвет 16-ти битный
+		s1d13781_wrcmdcolor(REG9A_BLT_FGCOLOR_0, color);	// СЃРґРµР»Р°РЅРѕ 16, С‚Р°Рє РєР°Рє С†РІРµС‚ 16-С‚Рё Р±РёС‚РЅС‹Р№
 		s1d13781_colorexpand();
 
 		// PIPMEMSTART
-		// вычисление начального адреса в видеопамяти
+		// РІС‹С‡РёСЃР»РµРЅРёРµ РЅР°С‡Р°Р»СЊРЅРѕРіРѕ Р°РґСЂРµСЃР° РІ РІРёРґРµРѕРїР°РјСЏС‚Рё
 		const uint_fast32_t dstaddr = S1D_PHYSICAL_VMEM_ADDR + x * (S1D_DISPLAY_BPP / 8) + (uint_fast32_t) y * S1D_DISPLAY_SCANLINE_BYTES;
 		//const uint_fast32_t dstaddr = PIPMEMSTART + x * (S1D_DISPLAY_BPP / 8) + (uint_fast32_t) y * S1D_DISPLAY_SCANLINE_BYTES;
 		// set destination address
@@ -624,7 +624,7 @@ static void s1d13781_setcolor(COLOR_T fgcolor, COLOR_T bgcolor)
 }
 
 
-/*	Функция установки курсора в позицию x,y
+/*	Р¤СѓРЅРєС†РёСЏ СѓСЃС‚Р°РЅРѕРІРєРё РєСѓСЂСЃРѕСЂР° РІ РїРѕР·РёС†РёСЋ x,y
 */
 
 static uint_fast32_t shadow_dstaddr;
@@ -632,12 +632,12 @@ static uint_fast32_t shadow_dstaddr;
 
 
 static void s1d13781_gotoxy(
-	uint_fast32_t x,	// горизонтальная координата в пикселях
-	uint_fast32_t y		// вертикальная координата в пикселях
+	uint_fast32_t x,	// РіРѕСЂРёР·РѕРЅС‚Р°Р»СЊРЅР°СЏ РєРѕРѕСЂРґРёРЅР°С‚Р° РІ РїРёРєСЃРµР»СЏС…
+	uint_fast32_t y		// РІРµСЂС‚РёРєР°Р»СЊРЅР°СЏ РєРѕРѕСЂРґРёРЅР°С‚Р° РІ РїРёРєСЃРµР»СЏС…
 	)
 {
 	// PIPMEMSTART
-	// вычисление начального адреса в видеопамяти
+	// РІС‹С‡РёСЃР»РµРЅРёРµ РЅР°С‡Р°Р»СЊРЅРѕРіРѕ Р°РґСЂРµСЃР° РІ РІРёРґРµРѕРїР°РјСЏС‚Рё
 	shadow_dstaddr = S1D_PHYSICAL_VMEM_ADDR + x * (S1D_DISPLAY_BPP / 8) + y * S1D_DISPLAY_SCANLINE_BYTES;
 	//shadow_dstaddr = PIPMEMSTART + x * (S1D_DISPLAY_BPP / 8) + y) * S1D_DISPLAY_SCANLINE_BYTES;
 }
@@ -650,12 +650,12 @@ static void s1d13781_next_column(
 	shadow_dstaddr += w * (S1D_DISPLAY_BPP / 8);
 }
 
-/* заполнение символами с помощью BitBlt engine
+/* Р·Р°РїРѕР»РЅРµРЅРёРµ СЃРёРјРІРѕР»Р°РјРё СЃ РїРѕРјРѕС‰СЊСЋ BitBlt engine
 */
 static void 
 bitblt_chargen_big(
-	uint_fast8_t w, 	// до 255 * 255 пикселей -
-	uint_fast32_t srcaddr								// откуда брать битмап
+	uint_fast8_t w, 	// РґРѕ 255 * 255 РїРёРєСЃРµР»РµР№ -
+	uint_fast32_t srcaddr								// РѕС‚РєСѓРґР° Р±СЂР°С‚СЊ Р±РёС‚РјР°Рї
 	)
 {
 	// set source address
@@ -666,17 +666,17 @@ bitblt_chargen_big(
 	bitblt_waitbusy2();
 }
 
-/* заполнение картинкой с помощью BitBlt engine
+/* Р·Р°РїРѕР»РЅРµРЅРёРµ РєР°СЂС‚РёРЅРєРѕР№ СЃ РїРѕРјРѕС‰СЊСЋ BitBlt engine
 */
 static void 
 bitblt_picture(
-	uint_fast16_t w, 	// до 65535 пикселей -
-	uint_fast16_t h, 	// до 65535 пикселей -
-	uint_fast32_t dstaddr,								// куда копировать битмап
-	uint_fast32_t srcaddr								// откуда брать битмап
+	uint_fast16_t w, 	// РґРѕ 65535 РїРёРєСЃРµР»РµР№ -
+	uint_fast16_t h, 	// РґРѕ 65535 РїРёРєСЃРµР»РµР№ -
+	uint_fast32_t dstaddr,								// РєСѓРґР° РєРѕРїРёСЂРѕРІР°С‚СЊ Р±РёС‚РјР°Рї
+	uint_fast32_t srcaddr								// РѕС‚РєСѓРґР° Р±СЂР°С‚СЊ Р±РёС‚РјР°Рї
 	)
 {
-	// дождаться выполнения предидущей команды BitBlt engine.
+	// РґРѕР¶РґР°С‚СЊСЃСЏ РІС‹РїРѕР»РЅРµРЅРёСЏ РїСЂРµРґРёРґСѓС‰РµР№ РєРѕРјР°РЅРґС‹ BitBlt engine.
 	if (bitblt_waitbusy() != 0)
 	{
 		s1d13781_wrcmdcolor(REG96_BLT_BGCOLOR_0, stored_bgcolor);
@@ -694,38 +694,38 @@ bitblt_picture(
 	}
 }
 
-/* копирование содержимого окна с перекрытием для водопада */
+/* РєРѕРїРёСЂРѕРІР°РЅРёРµ СЃРѕРґРµСЂР¶РёРјРѕРіРѕ РѕРєРЅР° СЃ РїРµСЂРµРєСЂС‹С‚РёРµРј РґР»СЏ РІРѕРґРѕРїР°РґР° */
 void
 display_scroll_down(
-	uint_fast16_t x,	// левый верзний угол окна
-	uint_fast16_t y,	// левый верзний угол окна
-	uint_fast16_t w, 	// до 65535 пикселей - ширина окна
-	uint_fast16_t h, 	// до 65535 пикселей - высота окна
-	uint_fast16_t n,	// количество строк прокрутки
-	int_fast16_t hshift	// количество пиксеелей для сдвига влево (отрицательное число) или вправо (положительное).
+	uint_fast16_t x,	// Р»РµРІС‹Р№ РІРµСЂР·РЅРёР№ СѓРіРѕР» РѕРєРЅР°
+	uint_fast16_t y,	// Р»РµРІС‹Р№ РІРµСЂР·РЅРёР№ СѓРіРѕР» РѕРєРЅР°
+	uint_fast16_t w, 	// РґРѕ 65535 РїРёРєСЃРµР»РµР№ - С€РёСЂРёРЅР° РѕРєРЅР°
+	uint_fast16_t h, 	// РґРѕ 65535 РїРёРєСЃРµР»РµР№ - РІС‹СЃРѕС‚Р° РѕРєРЅР°
+	uint_fast16_t n,	// РєРѕР»РёС‡РµСЃС‚РІРѕ СЃС‚СЂРѕРє РїСЂРѕРєСЂСѓС‚РєРё
+	int_fast16_t hshift	// РєРѕР»РёС‡РµСЃС‚РІРѕ РїРёРєСЃРµРµР»РµР№ РґР»СЏ СЃРґРІРёРіР° РІР»РµРІРѕ (РѕС‚СЂРёС†Р°С‚РµР»СЊРЅРѕРµ С‡РёСЃР»Рѕ) РёР»Рё РІРїСЂР°РІРѕ (РїРѕР»РѕР¶РёС‚РµР»СЊРЅРѕРµ).
 	)
 {
-	enum { WC = (S1D_DISPLAY_BPP / 8) };	// количество байтов на пиксель
+	enum { WC = (S1D_DISPLAY_BPP / 8) };	// РєРѕР»РёС‡РµСЃС‚РІРѕ Р±Р°Р№С‚РѕРІ РЅР° РїРёРєСЃРµР»СЊ
 
-	// вычисление начального адреса в видеопамяти
+	// РІС‹С‡РёСЃР»РµРЅРёРµ РЅР°С‡Р°Р»СЊРЅРѕРіРѕ Р°РґСЂРµСЃР° РІ РІРёРґРµРѕРїР°РјСЏС‚Рё
 	const uint_fast32_t srcaddr = 
 			S1D_PHYSICAL_VMEM_ADDR + 
 			(uint_fast32_t) (x + w) * WC + 
 			(uint_fast32_t) (y + h - 1 - n) * S1D_DISPLAY_SCANLINE_BYTES;
 
-	// вычисление конечного адреса в видеопамяти
+	// РІС‹С‡РёСЃР»РµРЅРёРµ РєРѕРЅРµС‡РЅРѕРіРѕ Р°РґСЂРµСЃР° РІ РІРёРґРµРѕРїР°РјСЏС‚Рё
 	const uint_fast32_t dstaddr = 
 			S1D_PHYSICAL_VMEM_ADDR + 
 			(uint_fast32_t) (x + w) * WC + 
 			(uint_fast32_t) (y + h - 1) * S1D_DISPLAY_SCANLINE_BYTES;
 
-	// дождаться выполнения предидущей команды BitBlt engine.
+	// РґРѕР¶РґР°С‚СЊСЃСЏ РІС‹РїРѕР»РЅРµРЅРёСЏ РїСЂРµРґРёРґСѓС‰РµР№ РєРѕРјР°РЅРґС‹ BitBlt engine.
 	if (bitblt_waitbusy() != 0)
 	{
 		//s1d13781_wrcmdcolor(REG96_BLT_BGCOLOR_0, stored_bgcolor);
 		//s1d13781_wrcmdcolor(REG9A_BLT_FGCOLOR_0, stored_fgcolor);
 		s1d13781_screencopy();
-		// пересылаем с последнего бацта последнего пикселя окна
+		// РїРµСЂРµСЃС‹Р»Р°РµРј СЃ РїРѕСЃР»РµРґРЅРµРіРѕ Р±Р°С†С‚Р° РїРѕСЃР»РµРґРЅРµРіРѕ РїРёРєСЃРµР»СЏ РѕРєРЅР°
 		// set source address
 		s1d13781_wrcmd32(REG88_BLT_SSADDR_0, srcaddr - 1);		// last byte-alligned address
 		s1d13781_wrcmd32(REG8C_BLT_DSADDR_0, dstaddr - 1);		// last byte-alligned address
@@ -737,38 +737,38 @@ display_scroll_down(
 	}
 }
 	
-/* копирование содержимого окна с перекрытием для водопада */
+/* РєРѕРїРёСЂРѕРІР°РЅРёРµ СЃРѕРґРµСЂР¶РёРјРѕРіРѕ РѕРєРЅР° СЃ РїРµСЂРµРєСЂС‹С‚РёРµРј РґР»СЏ РІРѕРґРѕРїР°РґР° */
 void
 display_scroll_up(
-	uint_fast16_t x,	// левый верзний угол окна
-	uint_fast16_t y,	// левый верзний угол окна
-	uint_fast16_t w, 	// до 65535 пикселей - ширина окна
-	uint_fast16_t h, 	// до 65535 пикселей - высота окна
-	uint_fast16_t n,	// количество строк прокрутки
-	int_fast16_t hshift	// количество пиксеелей для сдвига влево (отрицательное число) или вправо (положительное).
+	uint_fast16_t x,	// Р»РµРІС‹Р№ РІРµСЂР·РЅРёР№ СѓРіРѕР» РѕРєРЅР°
+	uint_fast16_t y,	// Р»РµРІС‹Р№ РІРµСЂР·РЅРёР№ СѓРіРѕР» РѕРєРЅР°
+	uint_fast16_t w, 	// РґРѕ 65535 РїРёРєСЃРµР»РµР№ - С€РёСЂРёРЅР° РѕРєРЅР°
+	uint_fast16_t h, 	// РґРѕ 65535 РїРёРєСЃРµР»РµР№ - РІС‹СЃРѕС‚Р° РѕРєРЅР°
+	uint_fast16_t n,	// РєРѕР»РёС‡РµСЃС‚РІРѕ СЃС‚СЂРѕРє РїСЂРѕРєСЂСѓС‚РєРё
+	int_fast16_t hshift	// РєРѕР»РёС‡РµСЃС‚РІРѕ РїРёРєСЃРµРµР»РµР№ РґР»СЏ СЃРґРІРёРіР° РІР»РµРІРѕ (РѕС‚СЂРёС†Р°С‚РµР»СЊРЅРѕРµ С‡РёСЃР»Рѕ) РёР»Рё РІРїСЂР°РІРѕ (РїРѕР»РѕР¶РёС‚РµР»СЊРЅРѕРµ).
 	)
 {
-	enum { WC = (S1D_DISPLAY_BPP / 8) };	// количество байтов на пиксель
+	enum { WC = (S1D_DISPLAY_BPP / 8) };	// РєРѕР»РёС‡РµСЃС‚РІРѕ Р±Р°Р№С‚РѕРІ РЅР° РїРёРєСЃРµР»СЊ
 
-	// вычисление начального адреса в видеопамяти
+	// РІС‹С‡РёСЃР»РµРЅРёРµ РЅР°С‡Р°Р»СЊРЅРѕРіРѕ Р°РґСЂРµСЃР° РІ РІРёРґРµРѕРїР°РјСЏС‚Рё
 	const uint_fast32_t srcaddr = 
 			S1D_PHYSICAL_VMEM_ADDR + 
 			(uint_fast32_t) (x) * WC + 
 			(uint_fast32_t) (y + n) * S1D_DISPLAY_SCANLINE_BYTES;
 
-	// вычисление конечного адреса в видеопамяти
+	// РІС‹С‡РёСЃР»РµРЅРёРµ РєРѕРЅРµС‡РЅРѕРіРѕ Р°РґСЂРµСЃР° РІ РІРёРґРµРѕРїР°РјСЏС‚Рё
 	const uint_fast32_t dstaddr = 
 			S1D_PHYSICAL_VMEM_ADDR + 
 			(uint_fast32_t) (x) * WC + 
 			(uint_fast32_t) (y + 0) * S1D_DISPLAY_SCANLINE_BYTES;
 
-	// дождаться выполнения предидущей команды BitBlt engine.
+	// РґРѕР¶РґР°С‚СЊСЃСЏ РІС‹РїРѕР»РЅРµРЅРёСЏ РїСЂРµРґРёРґСѓС‰РµР№ РєРѕРјР°РЅРґС‹ BitBlt engine.
 	if (bitblt_waitbusy() != 0)
 	{
 		//s1d13781_wrcmdcolor(REG96_BLT_BGCOLOR_0, stored_bgcolor);
 		//s1d13781_wrcmdcolor(REG9A_BLT_FGCOLOR_0, stored_fgcolor);
 		s1d13781_screencopy();
-		// пересылаем с первого пикселя окна
+		// РїРµСЂРµСЃС‹Р»Р°РµРј СЃ РїРµСЂРІРѕРіРѕ РїРёРєСЃРµР»СЏ РѕРєРЅР°
 		// set source address
 		s1d13781_wrcmd32(REG88_BLT_SSADDR_0, srcaddr);		// bits of address
 		s1d13781_wrcmd32(REG8C_BLT_DSADDR_0, dstaddr);		// bits of address
@@ -782,8 +782,8 @@ display_scroll_up(
 	
 
 
-// загрузка в память видеоконтроллера битовых картинок знакогенераторов
-// Каждый символ - последовательность битов с младшего бита, каждый ситвол выровнен на 16 бит.
+// Р·Р°РіСЂСѓР·РєР° РІ РїР°РјСЏС‚СЊ РІРёРґРµРѕРєРѕРЅС‚СЂРѕР»Р»РµСЂР° Р±РёС‚РѕРІС‹С… РєР°СЂС‚РёРЅРѕРє Р·РЅР°РєРѕРіРµРЅРµСЂР°С‚РѕСЂРѕРІ
+// РљР°Р¶РґС‹Р№ СЃРёРјРІРѕР» - РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕСЃС‚СЊ Р±РёС‚РѕРІ СЃ РјР»Р°РґС€РµРіРѕ Р±РёС‚Р°, РєР°Р¶РґС‹Р№ СЃРёС‚РІРѕР» РІС‹СЂРѕРІРЅРµРЅ РЅР° 16 Р±РёС‚.
 
 static uint_fast8_t chargen_bitpos;
 static uint_fast16_t chargen_bitacc;
@@ -844,28 +844,28 @@ static void chargen_endofchar(void)
 	s1d13781_unselect();
 }
 
-// пробел - 0, узкий пробел - 0. точка - 1
+// РїСЂРѕР±РµР» - 0, СѓР·РєРёР№ РїСЂРѕР±РµР» - 0. С‚РѕС‡РєР° - 1
 static uint_fast8_t
 //NOINLINEAT
 narrowfont_decode(uint_fast8_t c)
 {
 	if (c == ' ' || c == '#')
 		return 0;
-	return 1;		// точка
+	return 1;		// С‚РѕС‡РєР°
 }
 
 static uint_fast8_t
 //NOINLINEAT
 bigfont_decode(uint_fast8_t c)
 {
-	// '#' - узкий пробел
+	// '#' - СѓР·РєРёР№ РїСЂРѕР±РµР»
 	if (c == ' ' || c == '#')
 		return 11;
 	if (c == '_')
-		return 10;		// курсор - позиция редактирвания частоты
+		return 10;		// РєСѓСЂСЃРѕСЂ - РїРѕР·РёС†РёСЏ СЂРµРґР°РєС‚РёСЂРІР°РЅРёСЏ С‡Р°СЃС‚РѕС‚С‹
 	if (c == '.')
-		return 12;		// точка
-	return c - '0';		// остальные - цифры 0..9
+		return 12;		// С‚РѕС‡РєР°
+	return c - '0';		// РѕСЃС‚Р°Р»СЊРЅС‹Рµ - С†РёС„СЂС‹ 0..9
 }
 
 
@@ -876,35 +876,35 @@ smallfont_decode(uint_fast8_t c)
 	return c - ' ';
 }
 
-static uint_fast32_t narrowchargenbase;	// VA места в памяти видеоконтроллера, где располагается знакогенератор узких символов
-static uint_fast32_t narrowchargenstep;	// количество байт на символ в знакогенераторе
+static uint_fast32_t narrowchargenbase;	// VA РјРµСЃС‚Р° РІ РїР°РјСЏС‚Рё РІРёРґРµРѕРєРѕРЅС‚СЂРѕР»Р»РµСЂР°, РіРґРµ СЂР°СЃРїРѕР»Р°РіР°РµС‚СЃСЏ Р·РЅР°РєРѕРіРµРЅРµСЂР°С‚РѕСЂ СѓР·РєРёС… СЃРёРјРІРѕР»РѕРІ
+static uint_fast32_t narrowchargenstep;	// РєРѕР»РёС‡РµСЃС‚РІРѕ Р±Р°Р№С‚ РЅР° СЃРёРјРІРѕР» РІ Р·РЅР°РєРѕРіРµРЅРµСЂР°С‚РѕСЂРµ
 
-static uint_fast32_t bigchargenbase;	// VA места в памяти видеоконтроллера, где располагается знакогенератор больших символов
-static uint_fast32_t bigchargenstep;	// количество байт на символ в знакогенераторе
+static uint_fast32_t bigchargenbase;	// VA РјРµСЃС‚Р° РІ РїР°РјСЏС‚Рё РІРёРґРµРѕРєРѕРЅС‚СЂРѕР»Р»РµСЂР°, РіРґРµ СЂР°СЃРїРѕР»Р°РіР°РµС‚СЃСЏ Р·РЅР°РєРѕРіРµРЅРµСЂР°С‚РѕСЂ Р±РѕР»СЊС€РёС… СЃРёРјРІРѕР»РѕРІ
+static uint_fast32_t bigchargenstep;	// РєРѕР»РёС‡РµСЃС‚РІРѕ Р±Р°Р№С‚ РЅР° СЃРёРјРІРѕР» РІ Р·РЅР°РєРѕРіРµРЅРµСЂР°С‚РѕСЂРµ
 
-static uint_fast32_t halfchargenbase;	// VA места в памяти видеоконтроллера, где располагается знакогенератор средних символов
-static uint_fast32_t halfchargenstep;	// количество байт на символ в знакогенераторе
+static uint_fast32_t halfchargenbase;	// VA РјРµСЃС‚Р° РІ РїР°РјСЏС‚Рё РІРёРґРµРѕРєРѕРЅС‚СЂРѕР»Р»РµСЂР°, РіРґРµ СЂР°СЃРїРѕР»Р°РіР°РµС‚СЃСЏ Р·РЅР°РєРѕРіРµРЅРµСЂР°С‚РѕСЂ СЃСЂРµРґРЅРёС… СЃРёРјРІРѕР»РѕРІ
+static uint_fast32_t halfchargenstep;	// РєРѕР»РёС‡РµСЃС‚РІРѕ Р±Р°Р№С‚ РЅР° СЃРёРјРІРѕР» РІ Р·РЅР°РєРѕРіРµРЅРµСЂР°С‚РѕСЂРµ
 
-static uint_fast32_t smallchargenbase;	// VA места в памяти видеоконтроллера, где располагается знакогенератор больших символов
-static uint_fast32_t smallchargenstep;	// количество байт на символ в знакогенераторе
+static uint_fast32_t smallchargenbase;	// VA РјРµСЃС‚Р° РІ РїР°РјСЏС‚Рё РІРёРґРµРѕРєРѕРЅС‚СЂРѕР»Р»РµСЂР°, РіРґРµ СЂР°СЃРїРѕР»Р°РіР°РµС‚СЃСЏ Р·РЅР°РєРѕРіРµРЅРµСЂР°С‚РѕСЂ Р±РѕР»СЊС€РёС… СЃРёРјРІРѕР»РѕРІ
+static uint_fast32_t smallchargenstep;	// РєРѕР»РёС‡РµСЃС‚РІРѕ Р±Р°Р№С‚ РЅР° СЃРёРјРІРѕР» РІ Р·РЅР°РєРѕРіРµРЅРµСЂР°С‚РѕСЂРµ
 
-static uint_fast32_t smallchargenbase2;	// VA места в памяти видеоконтроллера, где располагается знакогенератор больших символов
-static uint_fast32_t smallchargenstep2;	// количество байт на символ в знакогенераторе
+static uint_fast32_t smallchargenbase2;	// VA РјРµСЃС‚Р° РІ РїР°РјСЏС‚Рё РІРёРґРµРѕРєРѕРЅС‚СЂРѕР»Р»РµСЂР°, РіРґРµ СЂР°СЃРїРѕР»Р°РіР°РµС‚СЃСЏ Р·РЅР°РєРѕРіРµРЅРµСЂР°С‚РѕСЂ Р±РѕР»СЊС€РёС… СЃРёРјРІРѕР»РѕРІ
+static uint_fast32_t smallchargenstep2;	// РєРѕР»РёС‡РµСЃС‚РІРѕ Р±Р°Р№С‚ РЅР° СЃРёРјРІРѕР» РІ Р·РЅР°РєРѕРіРµРЅРµСЂР°С‚РѕСЂРµ
 
-static uint_fast32_t scratchbufbase;	// VA места в памяти видеоконтроллера, где располагается буфер монохромного растра
+static uint_fast32_t scratchbufbase;	// VA РјРµСЃС‚Р° РІ РїР°РјСЏС‚Рё РІРёРґРµРѕРєРѕРЅС‚СЂРѕР»Р»РµСЂР°, РіРґРµ СЂР°СЃРїРѕР»Р°РіР°РµС‚СЃСЏ Р±СѓС„РµСЂ РјРѕРЅРѕС…СЂРѕРјРЅРѕРіРѕ СЂР°СЃС‚СЂР°
 
-// загрузка в память видеоконтроллера битовых картинок знакогенераторов
-// Каждый символ - последовательность битов с младшего бита, каждый ситвол выровнен на 16 бит.
+// Р·Р°РіСЂСѓР·РєР° РІ РїР°РјСЏС‚СЊ РІРёРґРµРѕРєРѕРЅС‚СЂРѕР»Р»РµСЂР° Р±РёС‚РѕРІС‹С… РєР°СЂС‚РёРЅРѕРє Р·РЅР°РєРѕРіРµРЅРµСЂР°С‚РѕСЂРѕРІ
+// РљР°Р¶РґС‹Р№ СЃРёРјРІРѕР» - РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕСЃС‚СЊ Р±РёС‚РѕРІ СЃ РјР»Р°РґС€РµРіРѕ Р±РёС‚Р°, РєР°Р¶РґС‹Р№ СЃРёС‚РІРѕР» РІС‹СЂРѕРІРЅРµРЅ РЅР° 16 Р±РёС‚.
 static void loadchargens(void)
 {
-	chargen_addr = FREEMEMSTART;	// начало свободной памяти в видеоконтроллере
-	uint_fast8_t c;	// номер символа, для которого заполняем буфер знакогенератора.
+	chargen_addr = FREEMEMSTART;	// РЅР°С‡Р°Р»Рѕ СЃРІРѕР±РѕРґРЅРѕР№ РїР°РјСЏС‚Рё РІ РІРёРґРµРѕРєРѕРЅС‚СЂРѕР»Р»РµСЂРµ
+	uint_fast8_t c;	// РЅРѕРјРµСЂ СЃРёРјРІРѕР»Р°, РґР»СЏ РєРѕС‚РѕСЂРѕРіРѕ Р·Р°РїРѕР»РЅСЏРµРј Р±СѓС„РµСЂ Р·РЅР°РєРѕРіРµРЅРµСЂР°С‚РѕСЂР°.
 
-	// выделение в видеопамяти буфера для отрисовки монохромного изображения с последующим отоюражением в соответствии с установленными цветами
+	// РІС‹РґРµР»РµРЅРёРµ РІ РІРёРґРµРѕРїР°РјСЏС‚Рё Р±СѓС„РµСЂР° РґР»СЏ РѕС‚СЂРёСЃРѕРІРєРё РјРѕРЅРѕС…СЂРѕРјРЅРѕРіРѕ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ СЃ РїРѕСЃР»РµРґСѓСЋС‰РёРј РѕС‚РѕСЋСЂР°Р¶РµРЅРёРµРј РІ СЃРѕРѕС‚РІРµС‚СЃС‚РІРёРё СЃ СѓСЃС‚Р°РЅРѕРІР»РµРЅРЅС‹РјРё С†РІРµС‚Р°РјРё
 	scratchbufbase = chargen_addr;
-	chargen_addr += (S1D_DISPLAY_WIDTH + 15) / 16 * 2 * S1D_DISPLAY_HEIGHT;	// размер кратен 16-ти битам.
+	chargen_addr += (S1D_DISPLAY_WIDTH + 15) / 16 * 2 * S1D_DISPLAY_HEIGHT;	// СЂР°Р·РјРµСЂ РєСЂР°С‚РµРЅ 16-С‚Рё Р±РёС‚Р°Рј.
 
-	// Заполнение знакогенератора зауженных символов ('#' - узкий пробел. Точка всегда узкая. ).
+	// Р—Р°РїРѕР»РЅРµРЅРёРµ Р·РЅР°РєРѕРіРµРЅРµСЂР°С‚РѕСЂР° Р·Р°СѓР¶РµРЅРЅС‹С… СЃРёРјРІРѕР»РѕРІ ('#' - СѓР·РєРёР№ РїСЂРѕР±РµР». РўРѕС‡РєР° РІСЃРµРіРґР° СѓР·РєР°СЏ. ).
 	ASSERT(chargen_addr <= S1D_PHYSICAL_VMEM_SIZE);
 	narrowchargenbase = chargen_addr;
 
@@ -923,7 +923,7 @@ static void loadchargens(void)
 		narrowchargenstep = chargen_addr - a;
 	}
 	
-	// Заполнение знакогенератора больших символов
+	// Р—Р°РїРѕР»РЅРµРЅРёРµ Р·РЅР°РєРѕРіРµРЅРµСЂР°С‚РѕСЂР° Р±РѕР»СЊС€РёС… СЃРёРјРІРѕР»РѕРІ
 	ASSERT(chargen_addr <= S1D_PHYSICAL_VMEM_SIZE);
 	bigchargenbase = chargen_addr;
 
@@ -941,7 +941,7 @@ static void loadchargens(void)
 		bigchargenstep = chargen_addr - a;
 	}
 
-	// Заполнение знакогенератора средних символов
+	// Р—Р°РїРѕР»РЅРµРЅРёРµ Р·РЅР°РєРѕРіРµРЅРµСЂР°С‚РѕСЂР° СЃСЂРµРґРЅРёС… СЃРёРјРІРѕР»РѕРІ
 	ASSERT(chargen_addr <= S1D_PHYSICAL_VMEM_SIZE);
 	halfchargenbase = chargen_addr;
 
@@ -959,7 +959,7 @@ static void loadchargens(void)
 		halfchargenstep = chargen_addr - a;
 	}
 
-	// Заполнение знакогенератора маленьких символов
+	// Р—Р°РїРѕР»РЅРµРЅРёРµ Р·РЅР°РєРѕРіРµРЅРµСЂР°С‚РѕСЂР° РјР°Р»РµРЅСЊРєРёС… СЃРёРјРІРѕР»РѕРІ
 	ASSERT(chargen_addr <= S1D_PHYSICAL_VMEM_SIZE);
 	smallchargenbase = chargen_addr;
 
@@ -977,7 +977,7 @@ static void loadchargens(void)
 	}
 #if 0
 	ASSERT(chargen_addr <= S1D_PHYSICAL_VMEM_SIZE);
-	// Заполнение знакогенератора маленьких "2" символов
+	// Р—Р°РїРѕР»РЅРµРЅРёРµ Р·РЅР°РєРѕРіРµРЅРµСЂР°С‚РѕСЂР° РјР°Р»РµРЅСЊРєРёС… "2" СЃРёРјРІРѕР»РѕРІ
 	smallchargenbase2 = chargen_addr;
 
 	for (c = 0; c < (0x80 - 0x20); ++ c)
@@ -1003,35 +1003,35 @@ static void loadchargens(void)
 }
 
 static uint_fast32_t getnarrowcharbase(
-	char cc	// символ для отображения
+	char cc	// СЃРёРјРІРѕР» РґР»СЏ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ
 	)
 {
 	return narrowchargenbase + narrowfont_decode(cc) * narrowchargenstep;
 }
 
 static uint_fast32_t getbigcharbase(
-	char cc	// символ для отображения
+	char cc	// СЃРёРјРІРѕР» РґР»СЏ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ
 	)
 {
 	return bigchargenbase + bigfont_decode(cc) * bigchargenstep;
 }
 
 static uint_fast32_t gethalfcharbase(
-	char cc	// символ для отображения
+	char cc	// СЃРёРјРІРѕР» РґР»СЏ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ
 	)
 {
 	return halfchargenbase + bigfont_decode(cc) * halfchargenstep;
 }
 
 static uint_fast32_t getsmallcharbase(
-	char cc	// символ для отображения
+	char cc	// СЃРёРјРІРѕР» РґР»СЏ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ
 	)
 {
 	return smallchargenbase + smallfont_decode(cc) * smallchargenstep;
 }
 
 static uint_fast32_t getsmallcharbase2(
-	char cc	// символ для отображения
+	char cc	// СЃРёРјРІРѕР» РґР»СЏ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ
 	)
 {
 	return smallchargenbase2 + smallfont_decode(cc) * smallchargenstep2;
@@ -1041,9 +1041,9 @@ static uint_fast32_t getsmallcharbase2(
 
 
 
-// загрузка таблицы цветов для
+// Р·Р°РіСЂСѓР·РєР° С‚Р°Р±Р»РёС†С‹ С†РІРµС‚РѕРІ РґР»СЏ
 // RRRGGGBB
-// В остальных режимах работы просто бредит.
+// Р’ РѕСЃС‚Р°Р»СЊРЅС‹С… СЂРµР¶РёРјР°С… СЂР°Р±РѕС‚С‹ РїСЂРѕСЃС‚Рѕ Р±СЂРµРґРёС‚.
 
 static void
 loadlut(
@@ -1063,21 +1063,21 @@ loadlut(
 
 		switch (color)
 		{
-		case COLOR_BLACK:			ARGB(0, 0, 0);			break;	// 0x00 черный
-		case COLOR_RED:		ARGB(255, 0, 0);		break; 	// 0xE0 красный
-		case COLOR_GREEN:			ARGB(0, 255, 0);		break; 	// 0x1C зеленый
-		case COLOR_BLUE:			ARGB(0, 0, 255);		break; 	// 0x03 синий
+		case COLOR_BLACK:			ARGB(0, 0, 0);			break;	// 0x00 С‡РµСЂРЅС‹Р№
+		case COLOR_RED:		ARGB(255, 0, 0);		break; 	// 0xE0 РєСЂР°СЃРЅС‹Р№
+		case COLOR_GREEN:			ARGB(0, 255, 0);		break; 	// 0x1C Р·РµР»РµРЅС‹Р№
+		case COLOR_BLUE:			ARGB(0, 0, 255);		break; 	// 0x03 СЃРёРЅРёР№
 		case COLOR_DARKRED:		ARGB(128, 0, 0);		break; 	// 
 		case COLOR_DARKGREEN:		ARGB(0, 128, 0);		break; 	// 
 		case COLOR_DARKBLUE:		ARGB(0, 0, 128);		break; 	// 
-		case COLOR_YELLOW:		ARGB(255, 255, 0);		break; 	// 0xFC желтый
-		case COLOR_MAGENTA:		ARGB(255, 0, 255);		break; 	// 0x83 пурпурный
-		case COLOR_CYAN:			ARGB(0, 255, 255);		break; 	// 0x1F голубой
-		case COLOR_WHITE:	ARGB(255, 255, 255);	break;  // 0xff	белый
-		case COLOR_GRAY:			ARGB(128, 128, 128);	break; 	// серый
-		case COLOR_BROWN:			ARGB(0xa5, 0x2a, 0x2a);	break; 	// 0x64 коричневый
-		case COLOR_GOLD:			ARGB(0xff, 0xd7, 0x00);	break; 	// 0xF4 золото
-		case COLOR_PEAR:			ARGB(0xd1, 0xe2, 0x31);	break; 	// 0xDC грушевый
+		case COLOR_YELLOW:		ARGB(255, 255, 0);		break; 	// 0xFC Р¶РµР»С‚С‹Р№
+		case COLOR_MAGENTA:		ARGB(255, 0, 255);		break; 	// 0x83 РїСѓСЂРїСѓСЂРЅС‹Р№
+		case COLOR_CYAN:			ARGB(0, 255, 255);		break; 	// 0x1F РіРѕР»СѓР±РѕР№
+		case COLOR_WHITE:	ARGB(255, 255, 255);	break;  // 0xff	Р±РµР»С‹Р№
+		case COLOR_GRAY:			ARGB(128, 128, 128);	break; 	// СЃРµСЂС‹Р№
+		case COLOR_BROWN:			ARGB(0xa5, 0x2a, 0x2a);	break; 	// 0x64 РєРѕСЂРёС‡РЅРµРІС‹Р№
+		case COLOR_GOLD:			ARGB(0xff, 0xd7, 0x00);	break; 	// 0xF4 Р·РѕР»РѕС‚Рѕ
+		case COLOR_PEAR:			ARGB(0xd1, 0xe2, 0x31);	break; 	// 0xDC РіСЂСѓС€РµРІС‹Р№
 #undef ARGB
 		default:
 			r = ((color & 0xe0) << 0) | ((color & 0x80) ? 0x1f : 0);	// red
@@ -1085,7 +1085,7 @@ loadlut(
 			b = ((color & 0x03) << 6) | ((color & 0x02) ? 0x3f : 0);	// blue
 			break;
 		}
-		/* запись значений в регистры палитры */
+		/* Р·Р°РїРёСЃСЊ Р·РЅР°С‡РµРЅРёР№ РІ СЂРµРіРёСЃС‚СЂС‹ РїР°Р»РёС‚СЂС‹ */
 		#if WITHSPIEXT16
 			hardware_spi_b16_p1((g << 8) | b);
 			hardware_spi_b16_p2(r);
@@ -1105,52 +1105,52 @@ loadlut(
 
 static void
 bitblt_setdstaddr(
-	uint_fast32_t addr		/* адрес в памяти для заполнения с помощью BitBlt engine */
+	uint_fast32_t addr		/* Р°РґСЂРµСЃ РІ РїР°РјСЏС‚Рё РґР»СЏ Р·Р°РїРѕР»РЅРµРЅРёСЏ СЃ РїРѕРјРѕС‰СЊСЋ BitBlt engine */
 	)
 {
 	s1d13781_wrcmd32(REG8C_BLT_DSADDR_0, addr);		// bits of address
 }
 
 
-// Установка постоянных параметров для BitBlt при отображении строки
-// маленьких символов
+// РЈСЃС‚Р°РЅРѕРІРєР° РїРѕСЃС‚РѕСЏРЅРЅС‹С… РїР°СЂР°РјРµС‚СЂРѕРІ РґР»СЏ BitBlt РїСЂРё РѕС‚РѕР±СЂР°Р¶РµРЅРёРё СЃС‚СЂРѕРєРё
+// РјР°Р»РµРЅСЊРєРёС… СЃРёРјРІРѕР»РѕРІ
 static void s1d13781_put_char_begin(void)
 {
-	// дождаться выполнения предидущей команды BitBlt engine.
+	// РґРѕР¶РґР°С‚СЊСЃСЏ РІС‹РїРѕР»РЅРµРЅРёСЏ РїСЂРµРґРёРґСѓС‰РµР№ РєРѕРјР°РЅРґС‹ BitBlt engine.
 	if (bitblt_waitbusy() != 0)
 	{
 		s1d13781_wrcmdcolor(REG96_BLT_BGCOLOR_0, stored_bgcolor);
 		s1d13781_wrcmdcolor(REG9A_BLT_FGCOLOR_0, stored_fgcolor);
 		s1d13781_colorexpand();
-		// todo: разобраться с ошибкой в формате знакогенератора
+		// todo: СЂР°Р·РѕР±СЂР°С‚СЊСЃСЏ СЃ РѕС€РёР±РєРѕР№ РІ С„РѕСЂРјР°С‚Рµ Р·РЅР°РєРѕРіРµРЅРµСЂР°С‚РѕСЂР°
 		s1d13781_wrcmd32_pair(REG92_BLT_WIDTH, SMALLCHARHEIGHT, SMALLCHARWIDTH);	// set bitblt rectangle width and height (pixels) registers.
 		//s1d13781_wrcmd32_pair(REG92_BLT_WIDTH, 15, 16);	// set bitblt rectangle width and height (pixels) registers.
-		s1d13781_wrcmd8(REG86_BLT_CMD, 0x04);	// команда для bitblt - 0x04 - move with color expand
+		s1d13781_wrcmd8(REG86_BLT_CMD, 0x04);	// РєРѕРјР°РЅРґР° РґР»СЏ bitblt - 0x04 - move with color expand
 	}
 }
 
-// Установка постоянных параметров для BitBlt при отображении строки
-// маленьких символов
+// РЈСЃС‚Р°РЅРѕРІРєР° РїРѕСЃС‚РѕСЏРЅРЅС‹С… РїР°СЂР°РјРµС‚СЂРѕРІ РґР»СЏ BitBlt РїСЂРё РѕС‚РѕР±СЂР°Р¶РµРЅРёРё СЃС‚СЂРѕРєРё
+// РјР°Р»РµРЅСЊРєРёС… СЃРёРјРІРѕР»РѕРІ
 static void s1d13781_put_char_begin2(void)
 {
-	// дождаться выполнения предидущей команды BitBlt engine.
+	// РґРѕР¶РґР°С‚СЊСЃСЏ РІС‹РїРѕР»РЅРµРЅРёСЏ РїСЂРµРґРёРґСѓС‰РµР№ РєРѕРјР°РЅРґС‹ BitBlt engine.
 	if (bitblt_waitbusy() != 0)
 	{
 		s1d13781_wrcmdcolor(REG96_BLT_BGCOLOR_0, stored_bgcolor);
 		s1d13781_wrcmdcolor(REG9A_BLT_FGCOLOR_0, stored_fgcolor);
 		s1d13781_colorexpand();
 		s1d13781_wrcmd32_pair(REG92_BLT_WIDTH, SMALLCHARHEIGHT2, SMALLCHARWIDTH2);	// set bitblt rectangle width and height (pixels) registers.
-		s1d13781_wrcmd8(REG86_BLT_CMD, 0x04);	// команда для bitblt - 0x04 - move with color expand
+		s1d13781_wrcmd8(REG86_BLT_CMD, 0x04);	// РєРѕРјР°РЅРґР° РґР»СЏ bitblt - 0x04 - move with color expand
 	}
 }
 
-/* заполнение символами с помощью BitBlt engine
-   Версия функции для фиксированного прямоугольника - размер устанавливается
-   перед началом выдачи последовательности символов
+/* Р·Р°РїРѕР»РЅРµРЅРёРµ СЃРёРјРІРѕР»Р°РјРё СЃ РїРѕРјРѕС‰СЊСЋ BitBlt engine
+   Р’РµСЂСЃРёСЏ С„СѓРЅРєС†РёРё РґР»СЏ С„РёРєСЃРёСЂРѕРІР°РЅРЅРѕРіРѕ РїСЂСЏРјРѕСѓРіРѕР»СЊРЅРёРєР° - СЂР°Р·РјРµСЂ СѓСЃС‚Р°РЅР°РІР»РёРІР°РµС‚СЃСЏ
+   РїРµСЂРµРґ РЅР°С‡Р°Р»РѕРј РІС‹РґР°С‡Рё РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕСЃС‚Рё СЃРёРјРІРѕР»РѕРІ
 */
 static void 
 bitblt_chargen_small(
-	uint_fast32_t srcaddr								// откуда брать битмап
+	uint_fast32_t srcaddr								// РѕС‚РєСѓРґР° Р±СЂР°С‚СЊ Р±РёС‚РјР°Рї
 	)
 {
 	// set source address
@@ -1160,25 +1160,25 @@ bitblt_chargen_small(
 }
 
 
-// Установка постоянных параметров для BitBlt при отображении строки
-// больших символов
+// РЈСЃС‚Р°РЅРѕРІРєР° РїРѕСЃС‚РѕСЏРЅРЅС‹С… РїР°СЂР°РјРµС‚СЂРѕРІ РґР»СЏ BitBlt РїСЂРё РѕС‚РѕР±СЂР°Р¶РµРЅРёРё СЃС‚СЂРѕРєРё
+// Р±РѕР»СЊС€РёС… СЃРёРјРІРѕР»РѕРІ
 static void s1d13781_put_charbig_begin(void)
 {
-	// дождаться выполнения предидущей команды BitBlt engine.
+	// РґРѕР¶РґР°С‚СЊСЃСЏ РІС‹РїРѕР»РЅРµРЅРёСЏ РїСЂРµРґРёРґСѓС‰РµР№ РєРѕРјР°РЅРґС‹ BitBlt engine.
 	if (bitblt_waitbusy() != 0)
 	{
 		s1d13781_wrcmdcolor(REG96_BLT_BGCOLOR_0, stored_bgcolor);
 		s1d13781_wrcmdcolor(REG9A_BLT_FGCOLOR_0, stored_fgcolor);
 		s1d13781_colorexpand();
 		s1d13781_wrcmd16(REG94_BLT_HEIGHT, BIGCHARHEIGHT);
-		s1d13781_wrcmd8(REG86_BLT_CMD, 0x04);	// команда для bitblt - 0x04 - move with color expand
+		s1d13781_wrcmd8(REG86_BLT_CMD, 0x04);	// РєРѕРјР°РЅРґР° РґР»СЏ bitblt - 0x04 - move with color expand
 	}
 }
 
-// Вызов этой функции только внутри s1d13781_put_char_begin() и s1d13781_put_char_end();
+// Р’С‹Р·РѕРІ СЌС‚РѕР№ С„СѓРЅРєС†РёРё С‚РѕР»СЊРєРѕ РІРЅСѓС‚СЂРё s1d13781_put_char_begin() Рё s1d13781_put_char_end();
 static void s1d13781_put_char_small(char cc)
 {
-	// дождаться выполнения предидущей команды BitBlt engine.
+	// РґРѕР¶РґР°С‚СЊСЃСЏ РІС‹РїРѕР»РЅРµРЅРёСЏ РїСЂРµРґРёРґСѓС‰РµР№ РєРѕРјР°РЅРґС‹ BitBlt engine.
 	if (bitblt_waitbusy() != 0)
 	{
 		bitblt_setdstaddr(shadow_dstaddr);
@@ -1187,10 +1187,10 @@ static void s1d13781_put_char_small(char cc)
 	}
 }
 
-// Вызов этой функции только внутри s1d13781_put_char_begin() и s1d13781_put_char_end();
+// Р’С‹Р·РѕРІ СЌС‚РѕР№ С„СѓРЅРєС†РёРё С‚РѕР»СЊРєРѕ РІРЅСѓС‚СЂРё s1d13781_put_char_begin() Рё s1d13781_put_char_end();
 static void s1d13781_put_char_small2(char cc)
 {
-	// дождаться выполнения предидущей команды BitBlt engine.
+	// РґРѕР¶РґР°С‚СЊСЃСЏ РІС‹РїРѕР»РЅРµРЅРёСЏ РїСЂРµРґРёРґСѓС‰РµР№ РєРѕРјР°РЅРґС‹ BitBlt engine.
 	if (bitblt_waitbusy() != 0)
 	{
 		//s1d13781_wrcmd8(REG80_BLT_CTRL_0, 0x80);	// BitBlt reset
@@ -1200,16 +1200,16 @@ static void s1d13781_put_char_small2(char cc)
 	}
 }
 
-// Вызов этой функции только внутри display_wrdata_begin() и 	display_wrdata_end();
+// Р’С‹Р·РѕРІ СЌС‚РѕР№ С„СѓРЅРєС†РёРё С‚РѕР»СЊРєРѕ РІРЅСѓС‚СЂРё display_wrdata_begin() Рё 	display_wrdata_end();
 
 static void s1d13781_put_char_big(char cc)
 {
-	// дождаться выполнения предидущей команды BitBlt engine.
+	// РґРѕР¶РґР°С‚СЊСЃСЏ РІС‹РїРѕР»РЅРµРЅРёСЏ РїСЂРµРґРёРґСѓС‰РµР№ РєРѕРјР°РЅРґС‹ BitBlt engine.
 	if (bitblt_waitbusy() != 0)
 	{
 		bitblt_setdstaddr(shadow_dstaddr);
 
-		// '#' - узкий пробел
+		// '#' - СѓР·РєРёР№ РїСЂРѕР±РµР»
 		if (cc == '.' || cc == '#')
 		{
 			bitblt_chargen_big(BIGCHARW_NARROW, getnarrowcharbase(cc));
@@ -1223,11 +1223,11 @@ static void s1d13781_put_char_big(char cc)
 	}
 }
 
-// Вызов этой функции только внутри display_wrdatabig_begin() и 	display_wrdatabig_end();
+// Р’С‹Р·РѕРІ СЌС‚РѕР№ С„СѓРЅРєС†РёРё С‚РѕР»СЊРєРѕ РІРЅСѓС‚СЂРё display_wrdatabig_begin() Рё 	display_wrdatabig_end();
 
 static void s1d13781_put_char_half(char cc)
 {
-	// дождаться выполнения предидущей команды BitBlt engine.
+	// РґРѕР¶РґР°С‚СЊСЃСЏ РІС‹РїРѕР»РЅРµРЅРёСЏ РїСЂРµРґРёРґСѓС‰РµР№ РєРѕРјР°РЅРґС‹ BitBlt engine.
 	if (bitblt_waitbusy() != 0)
 	{
 		bitblt_setdstaddr(shadow_dstaddr);
@@ -1236,7 +1236,7 @@ static void s1d13781_put_char_half(char cc)
 	}
 }
 
-// рисование незаполненного прямоугольника
+// СЂРёСЃРѕРІР°РЅРёРµ РЅРµР·Р°РїРѕР»РЅРµРЅРЅРѕРіРѕ РїСЂСЏРјРѕСѓРіРѕР»СЊРЅРёРєР°
 static void rectangle(
 	uint_fast16_t x,
 	uint_fast16_t y,
@@ -1255,7 +1255,7 @@ static void rectangle(
 	bitblt_fill(x + thickness, y + thickness, w - 2 * thickness, h - 2 * thickness, color2);							// central panel
 }
 
-// рисование 3D прямоугольника
+// СЂРёСЃРѕРІР°РЅРёРµ 3D РїСЂСЏРјРѕСѓРіРѕР»СЊРЅРёРєР°
 static void rectangle3d(
 	uint_fast16_t x,
 	uint_fast16_t y,
@@ -1268,20 +1268,20 @@ static void rectangle3d(
 	enum { thickness = 2 };
 	enum { state = 0 };
 
-	const uint_fast16_t wi = w - 2 * thickness;		// внутренняя ширина
-	const uint_fast16_t hi = h - 2 * thickness;		// внутренняя высота
-	const uint_fast16_t x1 = x + thickness;			// коордитата внутреннего угла
-	const uint_fast16_t x2 = x + thickness + wi;	// коордитата внутреннего угла
-	const uint_fast16_t y1 = y + thickness;			// коордитата внутреннего угла
-	const uint_fast16_t y2 = y + thickness + hi;	// коордитата внутреннего угла
+	const uint_fast16_t wi = w - 2 * thickness;		// РІРЅСѓС‚СЂРµРЅРЅСЏСЏ С€РёСЂРёРЅР°
+	const uint_fast16_t hi = h - 2 * thickness;		// РІРЅСѓС‚СЂРµРЅРЅСЏСЏ РІС‹СЃРѕС‚Р°
+	const uint_fast16_t x1 = x + thickness;			// РєРѕРѕСЂРґРёС‚Р°С‚Р° РІРЅСѓС‚СЂРµРЅРЅРµРіРѕ СѓРіР»Р°
+	const uint_fast16_t x2 = x + thickness + wi;	// РєРѕРѕСЂРґРёС‚Р°С‚Р° РІРЅСѓС‚СЂРµРЅРЅРµРіРѕ СѓРіР»Р°
+	const uint_fast16_t y1 = y + thickness;			// РєРѕРѕСЂРґРёС‚Р°С‚Р° РІРЅСѓС‚СЂРµРЅРЅРµРіРѕ СѓРіР»Р°
+	const uint_fast16_t y2 = y + thickness + hi;	// РєРѕРѕСЂРґРёС‚Р°С‚Р° РІРЅСѓС‚СЂРµРЅРЅРµРіРѕ СѓРіР»Р°
 	
 	if (state != 0)
 	{
-		// нажатое состояние
+		// РЅР°Р¶Р°С‚РѕРµ СЃРѕСЃС‚РѕСЏРЅРёРµ
 	}
 	else
 	{
-		// отпущенное состояние
+		// РѕС‚РїСѓС‰РµРЅРЅРѕРµ СЃРѕСЃС‚РѕСЏРЅРёРµ
 		bitblt_fill(x, y, w, thickness, color1);						// horizontal top line
 		bitblt_fill(x1, y2, w - thickness, thickness, color2);			// horizontal bottom line
 		bitblt_fill(x, y + thickness, thickness, h - thickness, color1);	// vertical left line
@@ -1307,7 +1307,7 @@ static void display_putpixel(
 	COLOR_T color
 	)
 {
-	// вычисление начального адреса в видеопамяти
+	// РІС‹С‡РёСЃР»РµРЅРёРµ РЅР°С‡Р°Р»СЊРЅРѕРіРѕ Р°РґСЂРµСЃР° РІ РІРёРґРµРѕРїР°РјСЏС‚Рё
 	const uint_fast32_t dstaddr = S1D_PHYSICAL_VMEM_ADDR + x * (S1D_DISPLAY_BPP / 8) + (uint_fast32_t) y * S1D_DISPLAY_SCANLINE_BYTES;
 
 	s1d13781_select();
@@ -1441,25 +1441,25 @@ static void display_putpixel_complete(void)
 /*-----------------------------------------------------  V_Bre
  * void V_Bre (int xn, int yn, int xk, int yk)
  *
- * Подпрограмма иллюстрирующая построение вектора из точки
- * (xn,yn) в точку (xk, yk) методом Брезенхема.
+ * РџРѕРґРїСЂРѕРіСЂР°РјРјР° РёР»Р»СЋСЃС‚СЂРёСЂСѓСЋС‰Р°СЏ РїРѕСЃС‚СЂРѕРµРЅРёРµ РІРµРєС‚РѕСЂР° РёР· С‚РѕС‡РєРё
+ * (xn,yn) РІ С‚РѕС‡РєСѓ (xk, yk) РјРµС‚РѕРґРѕРј Р‘СЂРµР·РµРЅС…РµРјР°.
  *
- * Построение ведется от точки с меньшими  координатами
- * к точке с большими координатами с единичным шагом по
- * координате с большим приращением.
+ * РџРѕСЃС‚СЂРѕРµРЅРёРµ РІРµРґРµС‚СЃСЏ РѕС‚ С‚РѕС‡РєРё СЃ РјРµРЅСЊС€РёРјРё  РєРѕРѕСЂРґРёРЅР°С‚Р°РјРё
+ * Рє С‚РѕС‡РєРµ СЃ Р±РѕР»СЊС€РёРјРё РєРѕРѕСЂРґРёРЅР°С‚Р°РјРё СЃ РµРґРёРЅРёС‡РЅС‹Рј С€Р°РіРѕРј РїРѕ
+ * РєРѕРѕСЂРґРёРЅР°С‚Рµ СЃ Р±РѕР»СЊС€РёРј РїСЂРёСЂР°С‰РµРЅРёРµРј.
  *
- * В общем случае исходный вектор проходит не через вершины
- * растровой сетки, а пересекает ее стороны.
- * Пусть приращение по X больше приращения по Y и оба они > 0.
- * Для очередного значения X нужно выбрать одну двух ближайших
- * координат сетки по Y.
- * Для этого проверяется как проходит  исходный  вектор - выше
- * или ниже середины расстояния между ближайшими значениями Y.
- * Если выше середины,  то Y-координату  надо  увеличить на 1,
- * иначе оставить прежней.
- * Для этой проверки анализируется знак переменной s,
- * соответствующей разности между истинным положением и
- * серединой расстояния между ближайшими Y-узлами сетки.
+ * Р’ РѕР±С‰РµРј СЃР»СѓС‡Р°Рµ РёСЃС…РѕРґРЅС‹Р№ РІРµРєС‚РѕСЂ РїСЂРѕС…РѕРґРёС‚ РЅРµ С‡РµСЂРµР· РІРµСЂС€РёРЅС‹
+ * СЂР°СЃС‚СЂРѕРІРѕР№ СЃРµС‚РєРё, Р° РїРµСЂРµСЃРµРєР°РµС‚ РµРµ СЃС‚РѕСЂРѕРЅС‹.
+ * РџСѓСЃС‚СЊ РїСЂРёСЂР°С‰РµРЅРёРµ РїРѕ X Р±РѕР»СЊС€Рµ РїСЂРёСЂР°С‰РµРЅРёСЏ РїРѕ Y Рё РѕР±Р° РѕРЅРё > 0.
+ * Р”Р»СЏ РѕС‡РµСЂРµРґРЅРѕРіРѕ Р·РЅР°С‡РµРЅРёСЏ X РЅСѓР¶РЅРѕ РІС‹Р±СЂР°С‚СЊ РѕРґРЅСѓ РґРІСѓС… Р±Р»РёР¶Р°Р№С€РёС…
+ * РєРѕРѕСЂРґРёРЅР°С‚ СЃРµС‚РєРё РїРѕ Y.
+ * Р”Р»СЏ СЌС‚РѕРіРѕ РїСЂРѕРІРµСЂСЏРµС‚СЃСЏ РєР°Рє РїСЂРѕС…РѕРґРёС‚  РёСЃС…РѕРґРЅС‹Р№  РІРµРєС‚РѕСЂ - РІС‹С€Рµ
+ * РёР»Рё РЅРёР¶Рµ СЃРµСЂРµРґРёРЅС‹ СЂР°СЃСЃС‚РѕСЏРЅРёСЏ РјРµР¶РґСѓ Р±Р»РёР¶Р°Р№С€РёРјРё Р·РЅР°С‡РµРЅРёСЏРјРё Y.
+ * Р•СЃР»Рё РІС‹С€Рµ СЃРµСЂРµРґРёРЅС‹,  С‚Рѕ Y-РєРѕРѕСЂРґРёРЅР°С‚Сѓ  РЅР°РґРѕ  СѓРІРµР»РёС‡РёС‚СЊ РЅР° 1,
+ * РёРЅР°С‡Рµ РѕСЃС‚Р°РІРёС‚СЊ РїСЂРµР¶РЅРµР№.
+ * Р”Р»СЏ СЌС‚РѕР№ РїСЂРѕРІРµСЂРєРё Р°РЅР°Р»РёР·РёСЂСѓРµС‚СЃСЏ Р·РЅР°Рє РїРµСЂРµРјРµРЅРЅРѕР№ s,
+ * СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РµР№ СЂР°Р·РЅРѕСЃС‚Рё РјРµР¶РґСѓ РёСЃС‚РёРЅРЅС‹Рј РїРѕР»РѕР¶РµРЅРёРµРј Рё
+ * СЃРµСЂРµРґРёРЅРѕР№ СЂР°СЃСЃС‚РѕСЏРЅРёСЏ РјРµР¶РґСѓ Р±Р»РёР¶Р°Р№С€РёРјРё Y-СѓР·Р»Р°РјРё СЃРµС‚РєРё.
  */
 
 static void display_line(int xn, int yn, int xk, int yk, COLOR_T color)
@@ -1467,7 +1467,7 @@ static void display_line(int xn, int yn, int xk, int yk, COLOR_T color)
 	int  dx, dy, s, sx, sy, kl, incr1, incr2;
 	char swap;
 
-	/* Вычисление приращений и шагов */
+	/* Р’С‹С‡РёСЃР»РµРЅРёРµ РїСЂРёСЂР°С‰РµРЅРёР№ Рё С€Р°РіРѕРІ */
 	sx = 0;
 	if ((dx= xk-xn) < 0) 
 	{
@@ -1485,18 +1485,18 @@ static void display_line(int xn, int yn, int xk, int yk, COLOR_T color)
 	} 
 	else if (dy>0) 
 		++ sy;
-	/* Учет наклона */
+	/* РЈС‡РµС‚ РЅР°РєР»РѕРЅР° */
 	swap = 0;
 	if ((kl= dx) < (s= dy)) 
 	{
 		dx= s;  dy= kl;  kl= s; ++swap;
 	}
-	s = (incr1= 2 * dy) - dx; /* incr1 - констан. перевычисления */
-	/* разности если текущее s < 0  и  */
-	/* s - начальное значение разности */
-	incr2 = 2 * dx;         /* Константа для перевычисления    */
-	/* разности если текущее s >= 0    */
-	display_putpixel(xn, yn, color); /* Первый  пиксел вектора       */
+	s = (incr1= 2 * dy) - dx; /* incr1 - РєРѕРЅСЃС‚Р°РЅ. РїРµСЂРµРІС‹С‡РёСЃР»РµРЅРёСЏ */
+	/* СЂР°Р·РЅРѕСЃС‚Рё РµСЃР»Рё С‚РµРєСѓС‰РµРµ s < 0  Рё  */
+	/* s - РЅР°С‡Р°Р»СЊРЅРѕРµ Р·РЅР°С‡РµРЅРёРµ СЂР°Р·РЅРѕСЃС‚Рё */
+	incr2 = 2 * dx;         /* РљРѕРЅСЃС‚Р°РЅС‚Р° РґР»СЏ РїРµСЂРµРІС‹С‡РёСЃР»РµРЅРёСЏ    */
+	/* СЂР°Р·РЅРѕСЃС‚Рё РµСЃР»Рё С‚РµРєСѓС‰РµРµ s >= 0    */
+	display_putpixel(xn, yn, color); /* РџРµСЂРІС‹Р№  РїРёРєСЃРµР» РІРµРєС‚РѕСЂР°       */
 
 	while (--kl >= 0) 
 	{
@@ -1511,7 +1511,7 @@ static void display_line(int xn, int yn, int xk, int yk, COLOR_T color)
 		else 
 			xn+= sx;
 		s += incr1;
-		display_putpixel(xn, yn, color); /* Текущая  точка  вектора   */
+		display_putpixel(xn, yn, color); /* РўРµРєСѓС‰Р°СЏ  С‚РѕС‡РєР°  РІРµРєС‚РѕСЂР°   */
 	}
 }  /* V_Bre */
 
@@ -1558,7 +1558,7 @@ static  int icos(unsigned alpha, unsigned r)
 }
 
 
-// Рисование радиусов
+// Р РёСЃРѕРІР°РЅРёРµ СЂР°РґРёСѓСЃРѕРІ
 static void
 display_radius(int xc, int yc, unsigned gs, unsigned r1, unsigned r2, COLOR_T color)
 {
@@ -1574,8 +1574,8 @@ display_radius(int xc, int yc, unsigned gs, unsigned r1, unsigned r2, COLOR_T co
 
 }
 
-// круговой интерполятор
-// нач.-x, нач.-y, градус начала, градус конуа, радиус, шаг приращения угла
+// РєСЂСѓРіРѕРІРѕР№ РёРЅС‚РµСЂРїРѕР»СЏС‚РѕСЂ
+// РЅР°С‡.-x, РЅР°С‡.-y, РіСЂР°РґСѓСЃ РЅР°С‡Р°Р»Р°, РіСЂР°РґСѓСЃ РєРѕРЅСѓР°, СЂР°РґРёСѓСЃ, С€Р°Рі РїСЂРёСЂР°С‰РµРЅРёСЏ СѓРіР»Р°
 static void
 display_segm(int xc, int yc, unsigned gs, unsigned ge, unsigned r, int step, COLOR_T color)
 {
@@ -1593,14 +1593,14 @@ display_segm(int xc, int yc, unsigned gs, unsigned ge, unsigned r, int step, COL
 		x = xc + vcos;
 		y = yc + vsin;
 
-		if (first != 0) // 1-я точка
+		if (first != 0) // 1-СЏ С‚РѕС‡РєР°
 		{
-			// переместить к началу рисования
+			// РїРµСЂРµРјРµСЃС‚РёС‚СЊ Рє РЅР°С‡Р°Р»Сѓ СЂРёСЃРѕРІР°РЅРёСЏ
 			xo = x, yo = y;
 			first = 0;
 		}
 		else
-		{  // рисовать элемент окружности
+		{  // СЂРёСЃРѕРІР°С‚СЊ СЌР»РµРјРµРЅС‚ РѕРєСЂСѓР¶РЅРѕСЃС‚Рё
 			display_line(xo, yo, x, y, color);
 			xo = x, yo = y;
 		}
@@ -1622,13 +1622,13 @@ display_segm(int xc, int yc, unsigned gs, unsigned ge, unsigned r, int step, COL
 
 	if (first == 0)
 	{
-		// завершение окружности
+		// Р·Р°РІРµСЂС€РµРЅРёРµ РѕРєСЂСѓР¶РЅРѕСЃС‚Рё
 		vsin = isin(ge, r);
 		vcos = icos(ge, r);
 		x = xc + vcos;
 		y = yc + vsin;
 
-		display_line(xo, yo, x, y, color); // рисовать линию
+		display_line(xo, yo, x, y, color); // СЂРёСЃРѕРІР°С‚СЊ Р»РёРЅРёСЋ
 	}
 
 }
@@ -1650,11 +1650,11 @@ display_limb(void)
 	int yc = 9 * ADDRCELLHEIGHT;	//560;
 	int xc = 9 * ADDRCELLHEIGHT;	//120;
 	
-	int gv = 270 - 20;		// угол поворота стрелки
+	int gv = 270 - 20;		// СѓРіРѕР» РїРѕРІРѕСЂРѕС‚Р° СЃС‚СЂРµР»РєРё
 	int rv1 = 8 * ADDRCELLHEIGHT;	//350;
 	int rv2 = rv1 - 5 * ADDRCELLHEIGHT;
-	enum { step1 = 3 };		// шаг для оцифровки S
-	enum { step2 = 4 };		// шаг для оцифровки плюсов
+	enum { step1 = 3 };		// С€Р°Рі РґР»СЏ РѕС†РёС„СЂРѕРІРєРё S
+	enum { step2 = 4 };		// С€Р°Рі РґР»СЏ РѕС†РёС„СЂРѕРІРєРё РїР»СЋСЃРѕРІ
 	static const int markers [] =
 	{
 		//gs + 0 * step1,
@@ -1688,7 +1688,7 @@ display_limb(void)
 	const COLOR_T smeter = COLOR_WHITE;
 	const COLOR_T smeterplus = COLOR_GRAY;
 
-	if (bitblt_waitbusy())	// перед рисованием прямым доступом к видеопамяти дождаться конца работы BitBlt
+	if (bitblt_waitbusy())	// РїРµСЂРµРґ СЂРёСЃРѕРІР°РЅРёРµРј РїСЂСЏРјС‹Рј РґРѕСЃС‚СѓРїРѕРј Рє РІРёРґРµРѕРїР°РјСЏС‚Рё РґРѕР¶РґР°С‚СЊСЃСЏ РєРѕРЅС†Р° СЂР°Р±РѕС‚С‹ BitBlt
 	{
 		//s1d13781_wrcmd8(REG80_BLT_CTRL_0, 0x80);	// BitBlt reset
 
@@ -1715,8 +1715,8 @@ display_limb(void)
 			display_radius(xc, yc, markers2R [i], r1, r1 + 4, smeterplus);
 		}
 
-		//display_segm(xc, yc, gs, ge, rv1, 1, BLUE);	// показывает зоны перемещения стрелки
-		//display_segm(xc, yc, gs, ge, rv2, 1, BLUE);	// показывает зоны перемещения стрелки
+		//display_segm(xc, yc, gs, ge, rv1, 1, BLUE);	// РїРѕРєР°Р·С‹РІР°РµС‚ Р·РѕРЅС‹ РїРµСЂРµРјРµС‰РµРЅРёСЏ СЃС‚СЂРµР»РєРё
+		//display_segm(xc, yc, gs, ge, rv2, 1, BLUE);	// РїРѕРєР°Р·С‹РІР°РµС‚ Р·РѕРЅС‹ РїРµСЂРµРјРµС‰РµРЅРёСЏ СЃС‚СЂРµР»РєРё
 		display_radius(xc - 2, yc, gv, rv1, rv2, COLOR_RED);
 		display_radius(xc - 1, yc, gv, rv1, rv2, COLOR_RED);
 		display_radius(xc, yc, gv, rv1, rv2, COLOR_RED);
@@ -1739,12 +1739,12 @@ s1d13781_pip_init(void)
 	s1d13781_wrcmd32(REG52_PIP_SADDR_0, PIPMEMSTART); 
 	s1d13781_wrcmd16(REG56_PIP_WIDTH, S1D_DISPLAY_WIDTH); 
 	s1d13781_wrcmd16(REG58_PIP_HEIGHT, S1D_DISPLAY_HEIGHT); 
-	s1d13781_wrcmd32_pair(REG5A_PIP_XSTART, 0, 0);		// Y, X, где в основном окнео отображается  PIP
+	s1d13781_wrcmd32_pair(REG5A_PIP_XSTART, 0, 0);		// Y, X, РіРґРµ РІ РѕСЃРЅРѕРІРЅРѕРј РѕРєРЅРµРѕ РѕС‚РѕР±СЂР°Р¶Р°РµС‚СЃСЏ  PIP
 
-	s1d13781_wrcmd16(REG62_ALPHA, 0x0040);		// 0x40 - сквозь PIP не видно MAIN, 0x00 - только MAIN
+	s1d13781_wrcmd16(REG62_ALPHA, 0x0040);		// 0x40 - СЃРєРІРѕР·СЊ PIP РЅРµ РІРёРґРЅРѕ MAIN, 0x00 - С‚РѕР»СЊРєРѕ MAIN
 
 	s1d13781_wrcmd16(REG64_TRANS, 0x0000);		// 0x01 - transparency enabled 
-	s1d13781_wrcmd32(REG66_KEY_0, 0xffd700UL);	// GOLD, key color (uncompresssed - after LUT2)	цвет в распакованном виде
+	s1d13781_wrcmd32(REG66_KEY_0, 0xffd700UL);	// GOLD, key color (uncompresssed - after LUT2)	С†РІРµС‚ РІ СЂР°СЃРїР°РєРѕРІР°РЅРЅРѕРј РІРёРґРµ
 
 	s1d13781_wrcmd16(REG60_PIP_EN, 0x0000);		// 0x01 - normal, 0x00 - off
 }
@@ -1755,12 +1755,12 @@ s1d13781_pip_init(void)
 
 static void s1d13781_initialize(void)
 {
-	/* параметры PLL и тактирования панели. */
+	/* РїР°СЂР°РјРµС‚СЂС‹ PLL Рё С‚Р°РєС‚РёСЂРѕРІР°РЅРёСЏ РїР°РЅРµР»Рё. */
 	enum
 	{
-		PLLDIV = LCDMODE_S1D13781_REFOSC_MHZ,	// делитель опорной частоты
-		PLLMUL = 63,			// множитель опорной частоты
-		CLKDIV = 7				// деление рабочей частоты для получения тактовой частоты для панели
+		PLLDIV = LCDMODE_S1D13781_REFOSC_MHZ,	// РґРµР»РёС‚РµР»СЊ РѕРїРѕСЂРЅРѕР№ С‡Р°СЃС‚РѕС‚С‹
+		PLLMUL = 63,			// РјРЅРѕР¶РёС‚РµР»СЊ РѕРїРѕСЂРЅРѕР№ С‡Р°СЃС‚РѕС‚С‹
+		CLKDIV = 7				// РґРµР»РµРЅРёРµ СЂР°Р±РѕС‡РµР№ С‡Р°СЃС‚РѕС‚С‹ РґР»СЏ РїРѕР»СѓС‡РµРЅРёСЏ С‚Р°РєС‚РѕРІРѕР№ С‡Р°СЃС‚РѕС‚С‹ РґР»СЏ РїР°РЅРµР»Рё
 	};
 
 	/* 13781 init data file */
@@ -1798,7 +1798,7 @@ static void s1d13781_initialize(void)
         { REG42_MAIN_SADDR_0,                   0xffff & (S1D_PHYSICAL_VMEM_ADDR >> 0) },
         { REG44_MAIN_SADDR_1,                   0xffff & (S1D_PHYSICAL_VMEM_ADDR >> 16) },
 
-		// Инициализация BitBlt engine постоянными параметрами
+		// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ BitBlt engine РїРѕСЃС‚РѕСЏРЅРЅС‹РјРё РїР°СЂР°РјРµС‚СЂР°РјРё
 		{ REG90_BLT_RECTOFFSET,				S1D_DISPLAY_WIDTH },
 
 #if S1D_DISPLAY_BPP == 24
@@ -1848,11 +1848,11 @@ static void s1d13781_initialize(void)
 		};
 	}
 
-	// подождать один кадр или больше
+	// РїРѕРґРѕР¶РґР°С‚СЊ РѕРґРёРЅ РєР°РґСЂ РёР»Рё Р±РѕР»СЊС€Рµ
 	local_delay_ms(250);	
 
-	loadlut(0x60000UL);				// LUT1 загрузка таблицы цветов
-	loadlut(0x60400UL);				// LUT2 загрузка таблицы цветов
+	loadlut(0x60000UL);				// LUT1 Р·Р°РіСЂСѓР·РєР° С‚Р°Р±Р»РёС†С‹ С†РІРµС‚РѕРІ
+	loadlut(0x60400UL);				// LUT2 Р·Р°РіСЂСѓР·РєР° С‚Р°Р±Р»РёС†С‹ С†РІРµС‚РѕРІ
 
 	loadchargens();
 
@@ -1866,7 +1866,7 @@ static void s1d13781_initialize(void)
 	s1d13781_setcolor(COLOR_WHITE, display_getbgcolor());
 }
 
-/* установить DE в требуемое состояние */
+/* СѓСЃС‚Р°РЅРѕРІРёС‚СЊ DE РІ С‚СЂРµР±СѓРµРјРѕРµ СЃРѕСЃС‚РѕСЏРЅРёРµ */
 static void
 s1d13781_set_DE(uint_fast8_t state)
 {
@@ -1874,7 +1874,7 @@ s1d13781_set_DE(uint_fast8_t state)
 }
 
 
-/* вызывается при разрешённых прерываниях. */
+/* РІС‹Р·С‹РІР°РµС‚СЃСЏ РїСЂРё СЂР°Р·СЂРµС€С‘РЅРЅС‹С… РїСЂРµСЂС‹РІР°РЅРёСЏС…. */
 void display_initialize(void)
 {
 	//hardware_spi_master_setfreq(SPIC_SPEED10M, 10000000uL);
@@ -2048,11 +2048,11 @@ display_wrdatabig_end(void)
 }
 
 
-/* отображение одной вертикальной полосы на графическом индикаторе */
-/* старшие биты соответствуют верхним пикселям изображения */
-/* вызывается между вызовами display_wrdatabar_begin() и display_wrdatabar_end() */
+/* РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ РѕРґРЅРѕР№ РІРµСЂС‚РёРєР°Р»СЊРЅРѕР№ РїРѕР»РѕСЃС‹ РЅР° РіСЂР°С„РёС‡РµСЃРєРѕРј РёРЅРґРёРєР°С‚РѕСЂРµ */
+/* СЃС‚Р°СЂС€РёРµ Р±РёС‚С‹ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‚ РІРµСЂС…РЅРёРј РїРёРєСЃРµР»СЏРј РёР·РѕР±СЂР°Р¶РµРЅРёСЏ */
+/* РІС‹Р·С‹РІР°РµС‚СЃСЏ РјРµР¶РґСѓ РІС‹Р·РѕРІР°РјРё display_wrdatabar_begin() Рё display_wrdatabar_end() */
 
-// работа с буфером в видеопамяти с начальным смещением scratchbufbase
+// СЂР°Р±РѕС‚Р° СЃ Р±СѓС„РµСЂРѕРј РІ РІРёРґРµРѕРїР°РјСЏС‚Рё СЃ РЅР°С‡Р°Р»СЊРЅС‹Рј СЃРјРµС‰РµРЅРёРµРј scratchbufbase
 void 
 display_barcolumn(uint_fast8_t pattern)
 {
@@ -2068,24 +2068,24 @@ display_wrdatabar_end(void)
 {
 }
 
-// отрисовать буфер на дисплее.
-// работа с буфером в видеопамяти с начальным смещением scratchbufbase
-/* выдать на дисплей монохромный буфер с размерами dx * dy битов */
+// РѕС‚СЂРёСЃРѕРІР°С‚СЊ Р±СѓС„РµСЂ РЅР° РґРёСЃРїР»РµРµ.
+// СЂР°Р±РѕС‚Р° СЃ Р±СѓС„РµСЂРѕРј РІ РІРёРґРµРѕРїР°РјСЏС‚Рё СЃ РЅР°С‡Р°Р»СЊРЅС‹Рј СЃРјРµС‰РµРЅРёРµРј scratchbufbase
+/* РІС‹РґР°С‚СЊ РЅР° РґРёСЃРїР»РµР№ РјРѕРЅРѕС…СЂРѕРјРЅС‹Р№ Р±СѓС„РµСЂ СЃ СЂР°Р·РјРµСЂР°РјРё dx * dy Р±РёС‚РѕРІ */
 void s1d13781_showbuffer(
 	const GX_t * buffer,
-	unsigned dx,	// пиксели
-	unsigned dy,	// пиксели
-	uint_fast8_t x,	// сетка
-	uint_fast8_t y	// сетка
+	unsigned dx,	// РїРёРєСЃРµР»Рё
+	unsigned dy,	// РїРёРєСЃРµР»Рё
+	uint_fast8_t x,	// СЃРµС‚РєР°
+	uint_fast8_t y	// СЃРµС‚РєР°
 	)
 {
 	ASSERT(dx <= S1D_DISPLAY_WIDTH);
 	ASSERT(dy <= S1D_DISPLAY_HEIGHT);
 
-	// дождаться выполнения предидущей команды BitBlt engine.
+	// РґРѕР¶РґР°С‚СЊСЃСЏ РІС‹РїРѕР»РЅРµРЅРёСЏ РїСЂРµРґРёРґСѓС‰РµР№ РєРѕРјР°РЅРґС‹ BitBlt engine.
 	if (bitblt_waitbusy() != 0)
 	{
-		// вычисление начального адреса в видеопамяти
+		// РІС‹С‡РёСЃР»РµРЅРёРµ РЅР°С‡Р°Р»СЊРЅРѕРіРѕ Р°РґСЂРµСЃР° РІ РІРёРґРµРѕРїР°РјСЏС‚Рё
 		const uint_fast32_t dstaddr = S1D_PHYSICAL_VMEM_ADDR + (uint_fast32_t) GRID2X(x) * (S1D_DISPLAY_BPP / 8) + (uint_fast32_t) GRID2Y(y) * S1D_DISPLAY_SCANLINE_BYTES;
 
 		ASSERT((dx % 16) == 0);
@@ -2094,15 +2094,15 @@ void s1d13781_showbuffer(
 		{
 
 			uint_fast8_t init = 1;
-			// перенос монохромного растра в видеопамять
+			// РїРµСЂРµРЅРѕСЃ РјРѕРЅРѕС…СЂРѕРјРЅРѕРіРѕ СЂР°СЃС‚СЂР° РІ РІРёРґРµРѕРїР°РјСЏС‚СЊ
 			s1d13781_select();
 			set_addrwr(scratchbufbase);// Sets address for writes and complete spi transfer
 
 		#if 0//WITHSPIEXT16 && WITHSPIHWDMA
-			// Обратить внимание, передается растр, где младшицй бит левее.
-			// Передача в индикатор по DMA	
+			// РћР±СЂР°С‚РёС‚СЊ РІРЅРёРјР°РЅРёРµ, РїРµСЂРµРґР°РµС‚СЃСЏ СЂР°СЃС‚СЂ, РіРґРµ РјР»Р°РґС€РёС†Р№ Р±РёС‚ Р»РµРІРµРµ.
+			// РџРµСЂРµРґР°С‡Р° РІ РёРЅРґРёРєР°С‚РѕСЂ РїРѕ DMA	
 			const uint_fast32_t len = MGSIZE(dx, dy);
-			arm_hardware_flush((uintptr_t) buffer, len * sizeof (* buffer));	// количество байтов
+			arm_hardware_flush((uintptr_t) buffer, len * sizeof (* buffer));	// РєРѕР»РёС‡РµСЃС‚РІРѕ Р±Р°Р№С‚РѕРІ
 			hardware_spi_master_send_frame_16b(buffer, len);
 
 		#else /* WITHSPIEXT16 && WITHSPIHWDMA */
@@ -2110,7 +2110,7 @@ void s1d13781_showbuffer(
 				uint_fast16_t row, col;
 				for (row = 0; row < dy; ++ row)
 				{
-					const GX_t * const rowstart = buffer + row * ((dx + 15) / 16);	// начало данных строки растра в памяти
+					const GX_t * const rowstart = buffer + row * ((dx + 15) / 16);	// РЅР°С‡Р°Р»Рѕ РґР°РЅРЅС‹С… СЃС‚СЂРѕРєРё СЂР°СЃС‚СЂР° РІ РїР°РјСЏС‚Рё
 					for (col = 0; col < dx; col += 16)
 					{
 						const uint_fast16_t v = rowstart [col / 16];
@@ -2163,8 +2163,8 @@ display_put_char_half(uint_fast8_t c, uint_fast8_t lowhalf)
 }
 
 
-// Вызов этой функции только внутри display_wrdata_begin() и display_wrdata_end();
-// Используется при выводе на графический ндикатор, если ТРЕБУЕТСЯ переключать полосы отображения
+// Р’С‹Р·РѕРІ СЌС‚РѕР№ С„СѓРЅРєС†РёРё С‚РѕР»СЊРєРѕ РІРЅСѓС‚СЂРё display_wrdata_begin() Рё display_wrdata_end();
+// РСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РїСЂРё РІС‹РІРѕРґРµ РЅР° РіСЂР°С„РёС‡РµСЃРєРёР№ РЅРґРёРєР°С‚РѕСЂ, РµСЃР»Рё РўР Р•Р‘РЈР•РўРЎРЇ РїРµСЂРµРєР»СЋС‡Р°С‚СЊ РїРѕР»РѕСЃС‹ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ
 void
 display_put_char_small(uint_fast8_t c, uint_fast8_t lowhalf)
 {
@@ -2173,8 +2173,8 @@ display_put_char_small(uint_fast8_t c, uint_fast8_t lowhalf)
 }
 
 
-// Вызов этой функции только внутри display_wrdata_begin() и display_wrdata_end();
-// Используется при выводе на графический ндикатор, если ТРЕБУЕТСЯ переключать полосы отображения
+// Р’С‹Р·РѕРІ СЌС‚РѕР№ С„СѓРЅРєС†РёРё С‚РѕР»СЊРєРѕ РІРЅСѓС‚СЂРё display_wrdata_begin() Рё display_wrdata_end();
+// РСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РїСЂРё РІС‹РІРѕРґРµ РЅР° РіСЂР°С„РёС‡РµСЃРєРёР№ РЅРґРёРєР°С‚РѕСЂ, РµСЃР»Рё РўР Р•Р‘РЈР•РўРЎРЇ РїРµСЂРµРєР»СЋС‡Р°С‚СЊ РїРѕР»РѕСЃС‹ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ
 void
 display_put_char_small2(uint_fast8_t c, uint_fast8_t lowhalf)
 {
@@ -2182,21 +2182,21 @@ display_put_char_small2(uint_fast8_t c, uint_fast8_t lowhalf)
 	s1d13781_put_char_small(c);
 }
 
-static uint_fast8_t stored_xgrid, stored_ygrid;	// используется в display_dispbar
+static uint_fast8_t stored_xgrid, stored_ygrid;	// РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РІ display_dispbar
 
 void
 display_gotoxy(uint_fast8_t x, uint_fast8_t y)
 {
-	stored_xgrid = x;	// используется в display_dispbar
-	stored_ygrid = y;	// используется в display_dispbar
+	stored_xgrid = x;	// РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РІ display_dispbar
+	stored_ygrid = y;	// РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РІ display_dispbar
 
-	s1d13781_gotoxy(GRID2X(x), GRID2Y(y));		// устанавливаем позицию в символьных координатах
+	s1d13781_gotoxy(GRID2X(x), GRID2Y(y));		// СѓСЃС‚Р°РЅР°РІР»РёРІР°РµРј РїРѕР·РёС†РёСЋ РІ СЃРёРјРІРѕР»СЊРЅС‹С… РєРѕРѕСЂРґРёРЅР°С‚Р°С…
 }
 
-/* работа с цветным буфером */
+/* СЂР°Р±РѕС‚Р° СЃ С†РІРµС‚РЅС‹Рј Р±СѓС„РµСЂРѕРј */
 void display_plotfrom(
 	uint_fast16_t x, 
-	uint_fast16_t y	// Координаты в пикселях
+	uint_fast16_t y	// РљРѕРѕСЂРґРёРЅР°С‚С‹ РІ РїРёРєСЃРµР»СЏС…
 	)
 {
 	s1d13781_gotoxy(x, y);
@@ -2204,10 +2204,10 @@ void display_plotfrom(
 
 
 void display_plotstart(
-	uint_fast16_t height	// Высота окна в пикселях
+	uint_fast16_t height	// Р’С‹СЃРѕС‚Р° РѕРєРЅР° РІ РїРёРєСЃРµР»СЏС…
 	)
 {
-	// дождаться выполнения предидущей команды BitBlt engine.
+	// РґРѕР¶РґР°С‚СЊСЃСЏ РІС‹РїРѕР»РЅРµРЅРёСЏ РїСЂРµРґРёРґСѓС‰РµР№ РєРѕРјР°РЅРґС‹ BitBlt engine.
 	if (bitblt_waitbusy() != 0)
 	{
 	}
@@ -2215,18 +2215,18 @@ void display_plotstart(
 
 void display_plot(
 	const PACKEDCOLOR_T * buffer, 
-	const uint_fast16_t dx,	// Размеры окна в пикселях
+	const uint_fast16_t dx,	// Р Р°Р·РјРµСЂС‹ РѕРєРЅР° РІ РїРёРєСЃРµР»СЏС…
 	uint_fast16_t dy
 	)
 {
 #if 0//WITHSPIEXT16 && WITHSPIHWDMA
-	// Передача в индикатор по DMA	
-	arm_hardware_flush((uintptr_t) buffer, GXSIZE(dx, dy) * sizeof (* buffer));	// количество байтов
+	// РџРµСЂРµРґР°С‡Р° РІ РёРЅРґРёРєР°С‚РѕСЂ РїРѕ DMA	
+	arm_hardware_flush((uintptr_t) buffer, GXSIZE(dx, dy) * sizeof (* buffer));	// РєРѕР»РёС‡РµСЃС‚РІРѕ Р±Р°Р№С‚РѕРІ
 #endif /* WITHSPIEXT16 && WITHSPIHWDMA */
 
 	for (; dy --; shadow_dstaddr += S1D_DISPLAY_SCANLINE_BYTES)
 	{
-		/* начать пересылку по SPI */
+		/* РЅР°С‡Р°С‚СЊ РїРµСЂРµСЃС‹Р»РєСѓ РїРѕ SPI */
 		s1d13781_select();
 
 	#if S1D_DISPLAY_BPP == 24
@@ -2245,11 +2245,11 @@ void display_plot(
 		spi_complete(targetlcd);
 	#endif
 
-		/* произвести пересылку по SPI */
+		/* РїСЂРѕРёР·РІРµСЃС‚Рё РїРµСЂРµСЃС‹Р»РєСѓ РїРѕ SPI */
 		{
-			uint_fast32_t len = dx;	// количество элементов
+			uint_fast32_t len = dx;	// РєРѕР»РёС‡РµСЃС‚РІРѕ СЌР»РµРјРµРЅС‚РѕРІ
 		#if 0//WITHSPIEXT16 && WITHSPIHWDMA
-			// Передача в индикатор по DMA	
+			// РџРµСЂРµРґР°С‡Р° РІ РёРЅРґРёРєР°С‚РѕСЂ РїРѕ DMA	
 			hardware_spi_master_send_frame_16b(buffer, len);
 			buffer += len;
 		#else /* WITHSPIEXT16 && WITHSPIHWDMA */
@@ -2269,7 +2269,7 @@ void display_plot(
 		#endif /* WITHSPIEXT16 && WITHSPIHWDMA */
 		}
 
-		/* закончить пересылку по SPI */
+		/* Р·Р°РєРѕРЅС‡РёС‚СЊ РїРµСЂРµСЃС‹Р»РєСѓ РїРѕ SPI */
 		s1d13781_unselect();
 	}
 }
@@ -2278,16 +2278,16 @@ void display_plotstop(void)
 {
 }
 
-// Вызовы этой функции (или группу вызовов) требуется "обрамить" парой вызовов
-// display_wrdatabar_begin() и display_wrdatabar_end().
+// Р’С‹Р·РѕРІС‹ СЌС‚РѕР№ С„СѓРЅРєС†РёРё (РёР»Рё РіСЂСѓРїРїСѓ РІС‹Р·РѕРІРѕРІ) С‚СЂРµР±СѓРµС‚СЃСЏ "РѕР±СЂР°РјРёС‚СЊ" РїР°СЂРѕР№ РІС‹Р·РѕРІРѕРІ
+// display_wrdatabar_begin() Рё display_wrdatabar_end().
 void display_dispbar(
-	uint_fast8_t width,	/* количество знакомест, занимаемых индикатором */
-	uint_fast8_t value,		/* значение, которое надо отобразить */
-	uint_fast8_t tracevalue,		/* значение маркера, которое надо отобразить */
-	uint_fast8_t topvalue,	/* значение, соответствующее полностью заполненному индикатору */
-	uint_fast8_t pattern,	/* DISPLAY_BAR_HALF или DISPLAY_BAR_FULL */
-	uint_fast8_t patternmax,	/* DISPLAY_BAR_HALF или DISPLAY_BAR_FULL - для отображения запомненного значения */
-	uint_fast8_t emptyp			/* паттерн для заполнения между штрихами */
+	uint_fast8_t width,	/* РєРѕР»РёС‡РµСЃС‚РІРѕ Р·РЅР°РєРѕРјРµСЃС‚, Р·Р°РЅРёРјР°РµРјС‹С… РёРЅРґРёРєР°С‚РѕСЂРѕРј */
+	uint_fast8_t value,		/* Р·РЅР°С‡РµРЅРёРµ, РєРѕС‚РѕСЂРѕРµ РЅР°РґРѕ РѕС‚РѕР±СЂР°Р·РёС‚СЊ */
+	uint_fast8_t tracevalue,		/* Р·РЅР°С‡РµРЅРёРµ РјР°СЂРєРµСЂР°, РєРѕС‚РѕСЂРѕРµ РЅР°РґРѕ РѕС‚РѕР±СЂР°Р·РёС‚СЊ */
+	uint_fast8_t topvalue,	/* Р·РЅР°С‡РµРЅРёРµ, СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РµРµ РїРѕР»РЅРѕСЃС‚СЊСЋ Р·Р°РїРѕР»РЅРµРЅРЅРѕРјСѓ РёРЅРґРёРєР°С‚РѕСЂСѓ */
+	uint_fast8_t pattern,	/* DISPLAY_BAR_HALF РёР»Рё DISPLAY_BAR_FULL */
+	uint_fast8_t patternmax,	/* DISPLAY_BAR_HALF РёР»Рё DISPLAY_BAR_FULL - РґР»СЏ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ Р·Р°РїРѕРјРЅРµРЅРЅРѕРіРѕ Р·РЅР°С‡РµРЅРёСЏ */
+	uint_fast8_t emptyp			/* РїР°С‚С‚РµСЂРЅ РґР»СЏ Р·Р°РїРѕР»РЅРµРЅРёСЏ РјРµР¶РґСѓ С€С‚СЂРёС…Р°РјРё */
 	)
 {
 	const uint_fast16_t h = GRID2Y(1);
@@ -2304,17 +2304,17 @@ void display_dispbar(
 
 void
 display_panel(
-	uint_fast8_t x, // левый верхний угод
+	uint_fast8_t x, // Р»РµРІС‹Р№ РІРµСЂС…РЅРёР№ СѓРіРѕРґ
 	uint_fast8_t y,
-	uint_fast8_t w, // ширина и высота в знакоместах
+	uint_fast8_t w, // С€РёСЂРёРЅР° Рё РІС‹СЃРѕС‚Р° РІ Р·РЅР°РєРѕРјРµСЃС‚Р°С…
 	uint_fast8_t h
 	)
 {
 	rectangle3d(GRID2X(x), GRID2Y(y), GRID2X(w) - 3, GRID2Y(h) - 3, COLOR_GRAY, COLOR_GRAY);
 }
 
-/* аппаратный сброс дисплея - перед инициализаций */
-/* вызывается при разрешённых прерываниях. */
+/* Р°РїРїР°СЂР°С‚РЅС‹Р№ СЃР±СЂРѕСЃ РґРёСЃРїР»РµСЏ - РїРµСЂРµРґ РёРЅРёС†РёР°Р»РёР·Р°С†РёР№ */
+/* РІС‹Р·С‹РІР°РµС‚СЃСЏ РїСЂРё СЂР°Р·СЂРµС€С‘РЅРЅС‹С… РїСЂРµСЂС‹РІР°РЅРёСЏС…. */
 void
 display_reset(void)
 {
@@ -2331,7 +2331,7 @@ display_reset(void)
 }
 
 
-/* Разряжаем конденсаторы питания */
+/* Р Р°Р·СЂСЏР¶Р°РµРј РєРѕРЅРґРµРЅСЃР°С‚РѕСЂС‹ РїРёС‚Р°РЅРёСЏ */
 void display_discharge(void)
 {
 }

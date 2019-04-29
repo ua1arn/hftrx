@@ -1,11 +1,11 @@
 /* $Id$ */
 //
-// Проект HF Dream Receiver (КВ приёмник мечты)
-// автор Гена Завидовский mgs2001@mail.ru
+// РџСЂРѕРµРєС‚ HF Dream Receiver (РљР’ РїСЂРёС‘РјРЅРёРє РјРµС‡С‚С‹)
+// Р°РІС‚РѕСЂ Р“РµРЅР° Р—Р°РІРёРґРѕРІСЃРєРёР№ mgs2001@mail.ru
 // UA1ARN
 //
 
-#include "hardware.h"	/* зависящие от процессора функции работы с портами */
+#include "hardware.h"	/* Р·Р°РІРёСЃСЏС‰РёРµ РѕС‚ РїСЂРѕС†РµСЃСЃРѕСЂР° С„СѓРЅРєС†РёРё СЂР°Р±РѕС‚С‹ СЃ РїРѕСЂС‚Р°РјРё */
 #include "formats.h"	/* sprintf() replacement */
 #include <ctype.h>
 #include <string.h>
@@ -17,7 +17,7 @@
 #include "ff.h"	
 #include "diskio.h"		/* FatFs lower layer API */
 
-#include "display.h"	/* используем функцию получения рабочей частоты */
+#include "display.h"	/* РёСЃРїРѕР»СЊР·СѓРµРј С„СѓРЅРєС†РёСЋ РїРѕР»СѓС‡РµРЅРёСЏ СЂР°Р±РѕС‡РµР№ С‡Р°СЃС‚РѕС‚С‹ */
 #include "audio.h"	
 
 static const struct drvfunc * const drvfuncs [] =
@@ -157,7 +157,7 @@ DWORD get_fattime (void)
 #if WITHUSEAUDIOREC
 ///////////////////////////////////////////////////
 
-static RAMNOINIT_D1 FIL wav_file;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
+static RAMNOINIT_D1 FIL wav_file;			/* РћРїРёСЃР°С‚РµР»СЊ РѕС‚РєСЂС‹С‚РѕРіРѕ С„Р°Р№Р»Р° - РЅРµР»СЊР·СЏ СЂР°СЃРїРѕР»Р°РіР°С‚СЊ РІ Cortex-M4 CCM */
 static FSIZE_t wav_lengthpos_riff;	/* position for write length at RIFF header */
 static FSIZE_t wav_lengthpos_data;	/* position for write length at data subchunk*/
 static unsigned long wave_num_bytes;
@@ -170,10 +170,10 @@ static const unsigned int num_channels = 1;	/* 1: monoaural */
 #endif /* WITHUSEAUDIOREC2CH */
 
 #if WITHUSEAUDIORECCLASSIC
-	// Минимальный формат
-	static const unsigned int DATACHUNKSTARTOFFSET = 0x0024;		// miltibloak write используется через раз (3-1-3-1-3-1-3-1-3-1-1-1-3-1-3-1)
+	// РњРёРЅРёРјР°Р»СЊРЅС‹Р№ С„РѕСЂРјР°С‚
+	static const unsigned int DATACHUNKSTARTOFFSET = 0x0024;		// miltibloak write РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ С‡РµСЂРµР· СЂР°Р· (3-1-3-1-3-1-3-1-3-1-1-1-3-1-3-1)
 #else
-	// С дополнительным объёмом данных (не всеми устройствами распознается)
+	// РЎ РґРѕРїРѕР»РЅРёС‚РµР»СЊРЅС‹Рј РѕР±СЉС‘РјРѕРј РґР°РЅРЅС‹С… (РЅРµ РІСЃРµРјРё СѓСЃС‚СЂРѕР№СЃС‚РІР°РјРё СЂР°СЃРїРѕР·РЅР°РµС‚СЃСЏ)
 	static const unsigned int DATACHUNKSTARTOFFSET = 4096 - 8;	// 4-4-4-4-4-4-4
 #endif
 
@@ -343,7 +343,7 @@ static FRESULT write_wav_header(const char * filename, unsigned int sample_rate)
 		/* offs 0x0010 */ rc = write_little_endian(DATACHUNKSTARTOFFSET - 0x14, 4);   /* SubChunk1Size is 16 - remaining length after this header */
 		if (rc != FR_OK)
 			break;
-		/* Это начало данных для учёта в SubChunk1Size */
+		/* Р­С‚Рѕ РЅР°С‡Р°Р»Рѕ РґР°РЅРЅС‹С… РґР»СЏ СѓС‡С‘С‚Р° РІ SubChunk1Size */
 		/* offs 0x0014 */ rc = write_little_endian(wFormatTag, 2);    /* wFormatTag PCM is format 1 */
 		if (rc != FR_OK)
 			break;
@@ -367,7 +367,7 @@ static FRESULT write_wav_header(const char * filename, unsigned int sample_rate)
  		/* offs 0x0024 */  rc = f_lseek(& wav_file, DATACHUNKSTARTOFFSET);
 		if (rc != FR_OK)
 			break;
-		/* Это конец данных для учёта в SubChunk1Size */
+		/* Р­С‚Рѕ РєРѕРЅРµС† РґР°РЅРЅС‹С… РґР»СЏ СѓС‡С‘С‚Р° РІ SubChunk1Size */
 		rc = f_write(& wav_file, "data", 4, & bw);
 		if (rc != FR_OK || bw != 4)
 			break;
@@ -432,7 +432,7 @@ static FRESULT write_wav_tail(void)
 // See also: http://en.wikipedia.org/wiki/RF64
 
 static uint_fast32_t wave_irecorded;
-static RAMNOINIT_D1 FATFS wave_Fatfs;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
+static RAMNOINIT_D1 FATFS wave_Fatfs;		/* File system object  - РЅРµР»СЊР·СЏ СЂР°СЃРїРѕР»Р°РіР°С‚СЊ РІ Cortex-M4 CCM */
 
 static uint_fast8_t waveUnmount(void)
 {
@@ -451,8 +451,8 @@ static uint_fast8_t waveMount(void)
 	return rc != FR_OK;
 }
 
-// Начинаем запись
-// 1 - неудачно
+// РќР°С‡РёРЅР°РµРј Р·Р°РїРёСЃСЊ
+// 1 - РЅРµСѓРґР°С‡РЅРѕ
 static uint_fast8_t wave_startrecording(void)
 {
 	FRESULT rc;				/* Result code */
@@ -469,7 +469,7 @@ static uint_fast8_t wave_startrecording(void)
 
 	local_snprintf_P(fname, sizeof fname / sizeof fname [0],
 		PSTR("rec_%lu_%04d-%02d-%02d_%02d%02d%02d_%lu.wav"),
-		(hamradio_get_freq_rx() + 500) / 1000uL,	// частота с точностью до килогерц
+		(hamradio_get_freq_rx() + 500) / 1000uL,	// С‡Р°СЃС‚РѕС‚Р° СЃ С‚РѕС‡РЅРѕСЃС‚СЊСЋ РґРѕ РєРёР»РѕРіРµСЂС†
 		year, month, day,
 		hour, minute, secounds,
 		++ ver
@@ -485,7 +485,7 @@ static uint_fast8_t wave_startrecording(void)
 
 	local_snprintf_P(fname, sizeof fname / sizeof fname [0],
 		PSTR("rec_%lu_%08lX_%lu.wav"),
-		(hamradio_get_freq_rx() + 500) / 1000uL,	// частота с точностью до килогерц
+		(hamradio_get_freq_rx() + 500) / 1000uL,	// С‡Р°СЃС‚РѕС‚Р° СЃ С‚РѕС‡РЅРѕСЃС‚СЊСЋ РґРѕ РєРёР»РѕРіРµСЂС†
 		rnd,
 		++ ver
 		);
@@ -496,15 +496,15 @@ static uint_fast8_t wave_startrecording(void)
 
 	rc = write_wav_header(fname, dsp_get_sampleraterx());
 	wave_irecorded = 0;
-	return (rc != FR_OK);	// 1 - ошибка - заканчиваем запись.
+	return (rc != FR_OK);	// 1 - РѕС€РёР±РєР° - Р·Р°РєР°РЅС‡РёРІР°РµРј Р·Р°РїРёСЃСЊ.
 }
 
-// Заканчиваем запись
+// Р—Р°РєР°РЅС‡РёРІР°РµРј Р·Р°РїРёСЃСЊ
 static uint_fast8_t wave_stoprecording(void)
 {
 	FRESULT rc;				/* Result code */
 	rc = write_wav_tail();
-	return (rc != FR_OK);	// 1 - ошибка - заканчиваем запись.
+	return (rc != FR_OK);	// 1 - РѕС€РёР±РєР° - Р·Р°РєР°РЅС‡РёРІР°РµРј Р·Р°РїРёСЃСЊ.
 }
 
 
@@ -512,20 +512,20 @@ static uint_fast8_t wave_resync(void)
 {
 	FRESULT rc;				/* Result code */
 	rc = write_wav_resync();
-	return (rc != FR_OK);	// 1 - ошибка - заканчиваем запись.
+	return (rc != FR_OK);	// 1 - РѕС€РёР±РєР° - Р·Р°РєР°РЅС‡РёРІР°РµРј Р·Р°РїРёСЃСЊ.
 }
 
-// 1 - Заканчиваем запись
-// 2 - Заканчиваем запись и начинаем следующий фрагмент
-// 3 - выполнить resync
+// 1 - Р—Р°РєР°РЅС‡РёРІР°РµРј Р·Р°РїРёСЃСЊ
+// 2 - Р—Р°РєР°РЅС‡РёРІР°РµРј Р·Р°РїРёСЃСЊ Рё РЅР°С‡РёРЅР°РµРј СЃР»РµРґСѓСЋС‰РёР№ С„СЂР°РіРјРµРЅС‚
+// 3 - РІС‹РїРѕР»РЅРёС‚СЊ resync
 static uint_fast8_t wave_nextblockrecording(void)
 {
 	const uint_fast32_t RSYNLEN = 10UL * 1024 * 1024;
-	const uint_fast32_t FILELEN = 695UL * 1024 * 1024;	// Размер ограничивающий файл не кратен предидущему числу
-	//const uint_fast32_t FILELEN = 33UL * 1024 * 1024;	// Размер ограничивающий файл не кратен предидущему числу
+	const uint_fast32_t FILELEN = 695UL * 1024 * 1024;	// Р Р°Р·РјРµСЂ РѕРіСЂР°РЅРёС‡РёРІР°СЋС‰РёР№ С„Р°Р№Р» РЅРµ РєСЂР°С‚РµРЅ РїСЂРµРґРёРґСѓС‰РµРјСѓ С‡РёСЃР»Сѓ
+	//const uint_fast32_t FILELEN = 33UL * 1024 * 1024;	// Р Р°Р·РјРµСЂ РѕРіСЂР°РЅРёС‡РёРІР°СЋС‰РёР№ С„Р°Р№Р» РЅРµ РєСЂР°С‚РµРЅ РїСЂРµРґРёРґСѓС‰РµРјСѓ С‡РёСЃР»Сѓ
 	void * p;
 	unsigned n = takerecordbuffer(& p);
-	if (n != 0)	// количество байтов для записи
+	if (n != 0)	// РєРѕР»РёС‡РµСЃС‚РІРѕ Р±Р°Р№С‚РѕРІ РґР»СЏ Р·Р°РїРёСЃРё
 	{
 		FRESULT rc;				/* Result code */
 		UINT bw;
@@ -533,37 +533,37 @@ static uint_fast8_t wave_nextblockrecording(void)
 		releaserecordbuffer(p);
 
 		if (rc != FR_OK || bw != n)
-			return 1;	// 1 - ошибка - заканчиваем запись.
+			return 1;	// 1 - РѕС€РёР±РєР° - Р·Р°РєР°РЅС‡РёРІР°РµРј Р·Р°РїРёСЃСЊ.
 
 		wave_num_bytes += n;
-		// Периодическая запись структур файла
+		// РџРµСЂРёРѕРґРёС‡РµСЃРєР°СЏ Р·Р°РїРёСЃСЊ СЃС‚СЂСѓРєС‚СѓСЂ С„Р°Р№Р»Р°
 		if (1 && (wave_irecorded += n) >= RSYNLEN)
 		{
 			//debug_printf_P(PSTR("wave_nextblockrecording: force resync\n"));
-			// Каждые 10 мегабайт
+			// РљР°Р¶РґС‹Рµ 10 РјРµРіР°Р±Р°Р№С‚
 			wave_irecorded = 0;
-			return 3;		// 3 - выполнить resync
+			return 3;		// 3 - РІС‹РїРѕР»РЅРёС‚СЊ resync
 			//rc = write_wav_resync();
 			//if (rc != FR_OK)
-			//	return 1;	// 1 - ошибка - заканчиваем запись.
+			//	return 1;	// 1 - РѕС€РёР±РєР° - Р·Р°РєР°РЅС‡РёРІР°РµРј Р·Р°РїРёСЃСЊ.
 			//debug_printf_P(PSTR("wave_nextblockrecording: resync okay\n"));
 		}
 		if (f_size(& wav_file) >= FILELEN)
 		{
-			// Каждые 695 мегабайт
-			return 2;	// Начать следующий фрагмент
+			// РљР°Р¶РґС‹Рµ 695 РјРµРіР°Р±Р°Р№С‚
+			return 2;	// РќР°С‡Р°С‚СЊ СЃР»РµРґСѓСЋС‰РёР№ С„СЂР°РіРјРµРЅС‚
 		}
 	}
-	return 0;	// 1 - ошибка - заканчиваем запись.
+	return 0;	// 1 - РѕС€РёР±РєР° - Р·Р°РєР°РЅС‡РёРІР°РµРј Р·Р°РїРёСЃСЊ.
 }
 
 
-// код завершения из вложенной state machune
+// РєРѕРґ Р·Р°РІРµСЂС€РµРЅРёСЏ РёР· РІР»РѕР¶РµРЅРЅРѕР№ state machune
 enum
 {
-	SDSTATUS_OK,		// можно переходить к следующему
-	SDSTATUS_BUSY,		// состояние state machime не меняется
-	SDSTATUS_ERROR		// ошибка, возможно влтяет на переход к слдующему состояни.
+	SDSTATUS_OK,		// РјРѕР¶РЅРѕ РїРµСЂРµС…РѕРґРёС‚СЊ Рє СЃР»РµРґСѓСЋС‰РµРјСѓ
+	SDSTATUS_BUSY,		// СЃРѕСЃС‚РѕСЏРЅРёРµ state machime РЅРµ РјРµРЅСЏРµС‚СЃСЏ
+	SDSTATUS_ERROR		// РѕС€РёР±РєР°, РІРѕР·РјРѕР¶РЅРѕ РІР»С‚СЏРµС‚ РЅР° РїРµСЂРµС…РѕРґ Рє СЃР»РґСѓСЋС‰РµРјСѓ СЃРѕСЃС‚РѕСЏРЅРё.
 };
 
 enum
@@ -581,14 +581,14 @@ enum
 // AUDIO recording state
 static uint_fast8_t	sdstate = SDSTATE_IDLE;
 
-// перевод state machine в начальное состояние
+// РїРµСЂРµРІРѕРґ state machine РІ РЅР°С‡Р°Р»СЊРЅРѕРµ СЃРѕСЃС‚РѕСЏРЅРёРµ
 void sdcardinitialize(void)
 {
 	sdstate = SDSTATE_IDLE;	
 }
 
 
-// Возвращаем в display2.c состояние записи
+// Р’РѕР·РІСЂР°С‰Р°РµРј РІ display2.c СЃРѕСЃС‚РѕСЏРЅРёРµ Р·Р°РїРёСЃРё
 uint_fast8_t hamradio_get_rec_value(void)
 {
 	return sdstate != SDSTATE_IDLE;
@@ -600,14 +600,14 @@ void sdcardrecord(void)
 	{
 	case SDSTATE_IDLE:
 		debug_printf_P(PSTR("sdcardrecord: start recording\n"));
-		// Начинаем запись
+		// РќР°С‡РёРЅР°РµРј Р·Р°РїРёСЃСЊ
 		if (waveMount() == 0)		/* Register volume work area (never fails) */
 			sdstate = SDSTATE_STARTREC;
 		break;
 	}
 }
 
-void sdcardstop(void)	// функция "остановить запись"
+void sdcardstop(void)	// С„СѓРЅРєС†РёСЏ "РѕСЃС‚Р°РЅРѕРІРёС‚СЊ Р·Р°РїРёСЃСЊ"
 {
 	switch (sdstate)
 	{
@@ -615,7 +615,7 @@ void sdcardstop(void)	// функция "остановить запись"
 	case SDSTATE_BREAKCHUNK:
 	case SDSTATE_RESYNC:
 	case SDSTATE_CONTRECORDING:
-		// Заканчиваем запись
+		// Р—Р°РєР°РЅС‡РёРІР°РµРј Р·Р°РїРёСЃСЊ
 		debug_printf_P(PSTR("sdcardstop: stop recording\n"));
 		wave_stoprecording();
 		sdstate = SDSTATE_UNMOUNT;
@@ -631,8 +631,8 @@ void sdcardtoggle(void)
 		sdcardstop();
 }
 
-// Функци вызывается из основного цикла для периодического "проталкивания"
-// записанных буферов на SD CARD
+// Р¤СѓРЅРєС†Рё РІС‹Р·С‹РІР°РµС‚СЃСЏ РёР· РѕСЃРЅРѕРІРЅРѕРіРѕ С†РёРєР»Р° РґР»СЏ РїРµСЂРёРѕРґРёС‡РµСЃРєРѕРіРѕ "РїСЂРѕС‚Р°Р»РєРёРІР°РЅРёСЏ"
+// Р·Р°РїРёСЃР°РЅРЅС‹С… Р±СѓС„РµСЂРѕРІ РЅР° SD CARD
 void sdcardbgprocess(void)
 {
 	switch (sdstate)
@@ -647,29 +647,29 @@ void sdcardbgprocess(void)
 		{
 		default:
 		//case 1:
-			// Заканчиваем запись
+			// Р—Р°РєР°РЅС‡РёРІР°РµРј Р·Р°РїРёСЃСЊ
 			sdstate = SDSTATE_STOPRECORDING;
 			break;
 
 		case 2:
-			// Заканчиваем запись и начинаем следующий фрагмент
+			// Р—Р°РєР°РЅС‡РёРІР°РµРј Р·Р°РїРёСЃСЊ Рё РЅР°С‡РёРЅР°РµРј СЃР»РµРґСѓСЋС‰РёР№ С„СЂР°РіРјРµРЅС‚
 			sdstate = SDSTATE_BREAKCHUNK;
 			break;
 
 		case 3:
-			// выполнить resync
+			// РІС‹РїРѕР»РЅРёС‚СЊ resync
 			sdstate = SDSTATE_RESYNC;
 			break;
 
 		case 0:
-			// остаемся в состоянии запись
+			// РѕСЃС‚Р°РµРјСЃСЏ РІ СЃРѕСЃС‚РѕСЏРЅРёРё Р·Р°РїРёСЃСЊ
 			break;
 		}
 		break;
 
 	case SDSTATE_RESYNC:
 		debug_printf_P(PSTR("sdcardbgprocess: SDSTATE_RESYNC\n"));
-		// выполнить resync
+		// РІС‹РїРѕР»РЅРёС‚СЊ resync
 		if (wave_resync() == 0)
 			sdstate = SDSTATE_RECORDING;
 		else
@@ -678,7 +678,7 @@ void sdcardbgprocess(void)
 
 	case SDSTATE_BREAKCHUNK:
 		debug_printf_P(PSTR("sdcardbgprocess: SDSTATE_BREAKCHUNK\n"));
-		// Заканчиваем запись и начинаем следующий фрагмент
+		// Р—Р°РєР°РЅС‡РёРІР°РµРј Р·Р°РїРёСЃСЊ Рё РЅР°С‡РёРЅР°РµРј СЃР»РµРґСѓСЋС‰РёР№ С„СЂР°РіРјРµРЅС‚
 		if (wave_stoprecording() == 0)
 			sdstate = SDSTATE_CONTRECORDING;
 		else
@@ -715,13 +715,13 @@ void sdcardbgprocess(void)
 			debug_printf_P(PSTR("sdcardrecord: wave_startrecording success\n"));
 			sdstate = SDSTATE_RECORDING;
 
-			// Освобождаем несколько самых старых буферов для
-			// исключения щёлкания в начале записи
+			// РћСЃРІРѕР±РѕР¶РґР°РµРј РЅРµСЃРєРѕР»СЊРєРѕ СЃР°РјС‹С… СЃС‚Р°СЂС‹С… Р±СѓС„РµСЂРѕРІ РґР»СЏ
+			// РёСЃРєР»СЋС‡РµРЅРёСЏ С‰С‘Р»РєР°РЅРёСЏ РІ РЅР°С‡Р°Р»Рµ Р·Р°РїРёСЃРё
 			uint_fast8_t n;
 			for (n = 0; n < 5; ++ n)
 			{
 				void * p;
-				if (takerecordbuffer(& p) != 0)	// количество байтов для записи
+				if (takerecordbuffer(& p) != 0)	// РєРѕР»РёС‡РµСЃС‚РІРѕ Р±Р°Р№С‚РѕРІ РґР»СЏ Р·Р°РїРёСЃРё
 					releaserecordbuffer(p);
 			}
 			sdstate = SDSTATE_RECORDING;

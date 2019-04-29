@@ -1,7 +1,7 @@
 /* $Id$ */
 //
-// Проект HF Dream Receiver (КВ приёмник мечты)
-// автор Гена Завидовский mgs2001@mail.ru
+// РџСЂРѕРµРєС‚ HF Dream Receiver (РљР’ РїСЂРёС‘РјРЅРёРє РјРµС‡С‚С‹)
+// Р°РІС‚РѕСЂ Р“РµРЅР° Р—Р°РІРёРґРѕРІСЃРєРёР№ mgs2001@mail.ru
 // UA1ARN
 //
 
@@ -69,10 +69,10 @@ static volatile uint_fast16_t usb_cdc_control_state [INTERFACE_count];
 
 	static uint_fast32_t dwDTERate [INTERFACE_count];
 
-	/* хранимое значение после получения CDC_SET_CONTROL_LINE_STATE */
-	/* Биты: RTS = 0x02, DTR = 0x01 */
+	/* С…СЂР°РЅРёРјРѕРµ Р·РЅР°С‡РµРЅРёРµ РїРѕСЃР»Рµ РїРѕР»СѓС‡РµРЅРёСЏ CDC_SET_CONTROL_LINE_STATE */
+	/* Р‘РёС‚С‹: RTS = 0x02, DTR = 0x01 */
 
-	// Обычно используется для переключения на передачу (PTT)
+	// РћР±С‹С‡РЅРѕ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РґР»СЏ РїРµСЂРµРєР»СЋС‡РµРЅРёСЏ РЅР° РїРµСЂРµРґР°С‡Сѓ (PTT)
 	uint_fast8_t usbd_cdc_getrts(void)
 	{
 		return 
@@ -81,7 +81,7 @@ static volatile uint_fast16_t usb_cdc_control_state [INTERFACE_count];
 			0;
 	}
 
-	// Обычно используется для телеграфной манипуляции (KEYDOWN)
+	// РћР±С‹С‡РЅРѕ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РґР»СЏ С‚РµР»РµРіСЂР°С„РЅРѕР№ РјР°РЅРёРїСѓР»СЏС†РёРё (KEYDOWN)
 	uint_fast8_t usbd_cdc_getdtr(void)
 	{
 		return 
@@ -90,24 +90,24 @@ static volatile uint_fast16_t usb_cdc_control_state [INTERFACE_count];
 			0;
 	}
 
-	static volatile uint_fast8_t usbd_cdc_txenabled = 0;	/* виртуальный флаг разрешения прерывания по готовности передатчика - HARDWARE_CDC_ONTXCHAR*/
+	static volatile uint_fast8_t usbd_cdc_txenabled = 0;	/* РІРёСЂС‚СѓР°Р»СЊРЅС‹Р№ С„Р»Р°Рі СЂР°Р·СЂРµС€РµРЅРёСЏ РїСЂРµСЂС‹РІР°РЅРёСЏ РїРѕ РіРѕС‚РѕРІРЅРѕСЃС‚Рё РїРµСЂРµРґР°С‚С‡РёРєР° - HARDWARE_CDC_ONTXCHAR*/
 
-	/* Разрешение/запрещение прерывания по передаче символа */
-	void usbd_cdc_enabletx(uint_fast8_t state)	/* вызывается из обработчика прерываний */
+	/* Р Р°Р·СЂРµС€РµРЅРёРµ/Р·Р°РїСЂРµС‰РµРЅРёРµ РїСЂРµСЂС‹РІР°РЅРёСЏ РїРѕ РїРµСЂРµРґР°С‡Рµ СЃРёРјРІРѕР»Р° */
+	void usbd_cdc_enabletx(uint_fast8_t state)	/* РІС‹Р·С‹РІР°РµС‚СЃСЏ РёР· РѕР±СЂР°Р±РѕС‚С‡РёРєР° РїСЂРµСЂС‹РІР°РЅРёР№ */
 	{
 		usbd_cdc_txenabled = state;
 	}
 
-	static volatile uint_fast8_t usbd_cdc_rxenabled = 0;	/* виртуальный флаг разрешения прерывания по приёму символа - HARDWARE_CDC_ONRXCHAR */
+	static volatile uint_fast8_t usbd_cdc_rxenabled = 0;	/* РІРёСЂС‚СѓР°Р»СЊРЅС‹Р№ С„Р»Р°Рі СЂР°Р·СЂРµС€РµРЅРёСЏ РїСЂРµСЂС‹РІР°РЅРёСЏ РїРѕ РїСЂРёС‘РјСѓ СЃРёРјРІРѕР»Р° - HARDWARE_CDC_ONRXCHAR */
 
-	/* вызывается из обработчика прерываний или при запрещённых прерываниях. */
-	/* Разрешение/запрещение прерываний про приёму символа */
-	void usbd_cdc_enablerx(uint_fast8_t state)	/* вызывается из обработчика прерываний */
+	/* РІС‹Р·С‹РІР°РµС‚СЃСЏ РёР· РѕР±СЂР°Р±РѕС‚С‡РёРєР° РїСЂРµСЂС‹РІР°РЅРёР№ РёР»Рё РїСЂРё Р·Р°РїСЂРµС‰С‘РЅРЅС‹С… РїСЂРµСЂС‹РІР°РЅРёСЏС…. */
+	/* Р Р°Р·СЂРµС€РµРЅРёРµ/Р·Р°РїСЂРµС‰РµРЅРёРµ РїСЂРµСЂС‹РІР°РЅРёР№ РїСЂРѕ РїСЂРёС‘РјСѓ СЃРёРјРІРѕР»Р° */
+	void usbd_cdc_enablerx(uint_fast8_t state)	/* РІС‹Р·С‹РІР°РµС‚СЃСЏ РёР· РѕР±СЂР°Р±РѕС‚С‡РёРєР° РїСЂРµСЂС‹РІР°РЅРёР№ */
 	{
 		usbd_cdc_rxenabled = state;
 	}
 
-	/* передача символа после прерывания о готовности передатчика - вызывается из HARDWARE_CDC_ONTXCHAR */
+	/* РїРµСЂРµРґР°С‡Р° СЃРёРјРІРѕР»Р° РїРѕСЃР»Рµ РїСЂРµСЂС‹РІР°РЅРёСЏ Рѕ РіРѕС‚РѕРІРЅРѕСЃС‚Рё РїРµСЂРµРґР°С‚С‡РёРєР° - РІС‹Р·С‹РІР°РµС‚СЃСЏ РёР· HARDWARE_CDC_ONTXCHAR */
 	void
 	usbd_cdc_tx(void * ctx, uint_fast8_t c)
 	{
@@ -116,7 +116,7 @@ static volatile uint_fast16_t usb_cdc_control_state [INTERFACE_count];
 		cdc1buffin [cdc1buffinlevel ++] = c;
 	}
 
-	/* использование буфера принятых данных */
+	/* РёСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ Р±СѓС„РµСЂР° РїСЂРёРЅСЏС‚С‹С… РґР°РЅРЅС‹С… */
 	static void cdc1out_buffer_save(
 		const uint8_t * data, 
 		uint_fast16_t length
@@ -130,7 +130,7 @@ static volatile uint_fast16_t usb_cdc_control_state [INTERFACE_count];
 		}
 	}
 
-	/* использование буфера принятых данных */
+	/* РёСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ Р±СѓС„РµСЂР° РїСЂРёРЅСЏС‚С‹С… РґР°РЅРЅС‹С… */
 	static void cdc2out_buffer_save(
 		const uint8_t * data, 
 		uint_fast16_t length
@@ -184,8 +184,8 @@ static volatile uint_fast16_t usb_cdc_control_state [INTERFACE_count];
 		static RAMNOINIT_D1 rndis_resp_t buffs [2];
 		uint_fast8_t i;
 
-		InitializeListHead(& rndis_resp_readylist);		// список для выдачи в канал USB
-		InitializeListHead(& rndis_resp_freelist);	// Незаполненные
+		InitializeListHead(& rndis_resp_readylist);		// СЃРїРёСЃРѕРє РґР»СЏ РІС‹РґР°С‡Рё РІ РєР°РЅР°Р» USB
+		InitializeListHead(& rndis_resp_freelist);	// РќРµР·Р°РїРѕР»РЅРµРЅРЅС‹Рµ
 		for (i = 0; i < (sizeof buffs / sizeof buffs [0]); ++ i)
 		{
 			rndis_resp_t * const p = & buffs [i];
@@ -193,7 +193,7 @@ static volatile uint_fast16_t usb_cdc_control_state [INTERFACE_count];
 		}
 		rndis_resp_ptr = NULL;
 	}
-	// получить незаполненный буфер
+	// РїРѕР»СѓС‡РёС‚СЊ РЅРµР·Р°РїРѕР»РЅРµРЅРЅС‹Р№ Р±СѓС„РµСЂ
 	static uint_fast8_t rndis_resp_allocate(uint8_t ** pv)
 	{
 		if (! IsListEmpty(& rndis_resp_freelist))
@@ -207,7 +207,7 @@ static volatile uint_fast16_t usb_cdc_control_state [INTERFACE_count];
 		return 0;
 	}
 
-	// получиь готовый к передаче
+	// РїРѕР»СѓС‡РёСЊ РіРѕС‚РѕРІС‹Р№ Рє РїРµСЂРµРґР°С‡Рµ
 	static uint_fast8_t rndis_resp_ready(uint8_t ** pv)
 	{
 		if (! IsListEmpty(& rndis_resp_readylist))
@@ -221,14 +221,14 @@ static volatile uint_fast16_t usb_cdc_control_state [INTERFACE_count];
 		return 0;
 	}
 
-	// освободить буфер
+	// РѕСЃРІРѕР±РѕРґРёС‚СЊ Р±СѓС„РµСЂ
 	static void rndis_resp_release(uint8_t * addr)
 	{
 		rndis_resp_t * const p = CONTAINING_RECORD(addr, rndis_resp_t, buff);
 		InsertHeadList(& rndis_resp_freelist, & p->item);
 	}
 
-	// записть готовый к передаче
+	// Р·Р°РїРёСЃС‚СЊ РіРѕС‚РѕРІС‹Р№ Рє РїРµСЂРµРґР°С‡Рµ
 	static void rndis_resp_tosensd(uint8_t * addr)
 	{
 		rndis_resp_t * const p = CONTAINING_RECORD(addr, rndis_resp_t, buff);
@@ -248,7 +248,7 @@ static volatile uint_fast16_t usb_cdc_control_state [INTERFACE_count];
 
 #endif /* WITHUSBRNDIS */
 
-// Состояние - выбранные альтернативные конфигурации по каждому интерфейсу USB configuration descriptor
+// РЎРѕСЃС‚РѕСЏРЅРёРµ - РІС‹Р±СЂР°РЅРЅС‹Рµ Р°Р»СЊС‚РµСЂРЅР°С‚РёРІРЅС‹Рµ РєРѕРЅС„РёРіСѓСЂР°С†РёРё РїРѕ РєР°Р¶РґРѕРјСѓ РёРЅС‚РµСЂС„РµР№СЃСѓ USB configuration descriptor
 static uint8_t altinterfaces [INTERFACE_count];
 
 static uint_fast32_t ulmin32(uint_fast32_t a, uint_fast32_t b)
@@ -271,7 +271,7 @@ static uint_fast16_t ulmax16(uint_fast16_t a, uint_fast16_t b)
 	return a > b ? a : b;
 }
 
-/* получить 32-бит значение */
+/* РїРѕР»СѓС‡РёС‚СЊ 32-Р±РёС‚ Р·РЅР°С‡РµРЅРёРµ */
 static uint_fast32_t
 USBD_peek_u32(
 	const uint8_t * buff
@@ -284,7 +284,7 @@ USBD_peek_u32(
 		((uint_fast32_t) buff [0] << 0);
 }
 
-/* записать в буфер для ответа 32-бит значение */
+/* Р·Р°РїРёСЃР°С‚СЊ РІ Р±СѓС„РµСЂ РґР»СЏ РѕС‚РІРµС‚Р° 32-Р±РёС‚ Р·РЅР°С‡РµРЅРёРµ */
 static void USBD_poke_u32(uint8_t * buff, uint_fast32_t v)
 {
 	buff [0] = LO_BYTE(v);
@@ -293,7 +293,7 @@ static void USBD_poke_u32(uint8_t * buff, uint_fast32_t v)
 	buff [3] = HI_32BY(v);
 }
 
-/* записать в буфер для ответа 24-бит значение */
+/* Р·Р°РїРёСЃР°С‚СЊ РІ Р±СѓС„РµСЂ РґР»СЏ РѕС‚РІРµС‚Р° 24-Р±РёС‚ Р·РЅР°С‡РµРЅРёРµ */
 static void USBD_poke_u24(uint8_t * buff, uint_fast32_t v)
 {
 	buff [0] = LO_BYTE(v);
@@ -338,7 +338,7 @@ static uint_fast16_t usbd_getuacinrtsmaxpacket(void)
 
 
 #if WITHUSBCDCEEM
-/* Собираем поток из CDC EEM USB пакетов */
+/* РЎРѕР±РёСЂР°РµРј РїРѕС‚РѕРє РёР· CDC EEM USB РїР°РєРµС‚РѕРІ */
 // construct EEM packets
 enum
 {
@@ -455,12 +455,12 @@ static void cdceemout_buffer_save(
 			{
 				const uint_fast8_t w = (cdceemoutacc & 0xFFFF); 
 				cdceemoutscore = 0;
-				// разбор команды
+				// СЂР°Р·Р±РѕСЂ РєРѕРјР°РЅРґС‹
 				const uint_fast8_t bmType = (w >> 15) & 0x0001;	// 0: EEM data payload 1: EEM Command
 				if (bmType == 0)
 				{
 					const uint_fast8_t bmCRC = (w >> 14) & 0x0001;	// 0: Ethernet Frame CRC is set to 0xdeadbeef 
-					cdceemlength = (w >> 0) & 0x3FFF;					// размер включая 4 байта СКС
+					cdceemlength = (w >> 0) & 0x3FFF;					// СЂР°Р·РјРµСЂ РІРєР»СЋС‡Р°СЏ 4 Р±Р°Р№С‚Р° РЎРљРЎ
 					if (cdceemlength > 0)
 					{
 						if (cdceemlength >= 4)
@@ -504,7 +504,7 @@ static void cdceemout_buffer_save(
 				//PRINTF(PSTR("CDCEEMOUT packets=%lu\n"), (unsigned long) cdceemnpackets);
 
 				//PRINTF(PSTR("crc=%08lX\n"), (cdceemoutacc & 0xFFFFFFFF));
-				// Тут полностью собран ethernet, используем его (или например печатаем содержимое).
+				// РўСѓС‚ РїРѕР»РЅРѕСЃС‚СЊСЋ СЃРѕР±СЂР°РЅ ethernet, РёСЃРїРѕР»СЊР·СѓРµРј РµРіРѕ (РёР»Рё РЅР°РїСЂРёРјРµСЂ РїРµС‡Р°С‚Р°РµРј СЃРѕРґРµСЂР¶РёРјРѕРµ).
 				PRINTF(PSTR("Data pyload length=0x%04X\n"), cdceematcrc);
 				//cdceemout_buffer_print(cdceembuff, cdceematcrc);
 				cdceemout_buffer_print2(cdceembuff, cdceematcrc);
@@ -593,7 +593,7 @@ static void cdceemout_buffer_save(
 /** @defgroup USB_Core_Speed_   USB Core Speed
   * @{
   */  
-// Эти значения пишутся в регистр USB_OTG_DCFG после умножения на USB_OTG_DCFG_DSPD_0
+// Р­С‚Рё Р·РЅР°С‡РµРЅРёСЏ РїРёС€СѓС‚СЃСЏ РІ СЂРµРіРёСЃС‚СЂ USB_OTG_DCFG РїРѕСЃР»Рµ СѓРјРЅРѕР¶РµРЅРёСЏ РЅР° USB_OTG_DCFG_DSPD_0
 #define USB_OTG_SPEED_HIGH                     0U
 #define USB_OTG_SPEED_HIGH_IN_FULL             1U
 #define USB_OTG_SPEED_LOW                      2U  
@@ -832,10 +832,10 @@ typedef struct
                                  This parameter can be any value of @ref USB_EP_Type_                     */ 
     
 #if 0
-  // нигде не используется
+  // РЅРёРіРґРµ РЅРµ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ
   uint8_t   data_pid_start; /*!< Initial data PID
                                 This parameter must be a number between Min_Data = 0 and Max_Data = 1     */
-  // нигде не используется                              
+  // РЅРёРіРґРµ РЅРµ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ                              
   uint8_t   even_odd_frame; /*!< IFrame parity
                                  This parameter must be a number between Min_Data = 0 and Max_Data = 1    */
 #endif
@@ -1384,7 +1384,7 @@ static uint_fast8_t usbd_wait_fifo(PCD_TypeDef * const Instance, uint_fast8_t pi
 
 static uint_fast16_t /* volatile */ g_usb0_function_PipeIgnore [16];
 
-// Эта функция не должна общаться с DCPCTR - она универсальная
+// Р­С‚Р° С„СѓРЅРєС†РёСЏ РЅРµ РґРѕР»Р¶РЅР° РѕР±С‰Р°С‚СЊСЃСЏ СЃ DCPCTR - РѕРЅР° СѓРЅРёРІРµСЂСЃР°Р»СЊРЅР°СЏ
 static unsigned usbd_read_data(PCD_TypeDef * const Instance, uint_fast8_t pipe, uint8_t * data, unsigned size)
 {
 	ASSERT(Instance == WITHUSBHW_DEVICE);
@@ -1467,7 +1467,7 @@ control_transmit0single(USBD_HandleTypeDef *pdev, const uint8_t * data, unsigned
 static const uint8_t * ep0data = NULL;
 static unsigned ep0size = 0;
 
-// Обработчик прерывания по пустому FIFO EP0 IN
+// РћР±СЂР°Р±РѕС‚С‡РёРє РїСЂРµСЂС‹РІР°РЅРёСЏ РїРѕ РїСѓСЃС‚РѕРјСѓ FIFO EP0 IN
 static void control_transmit2(USBD_HandleTypeDef *pdev)
 {
 	USB_OTG_GlobalTypeDef * const Instance = ((PCD_HandleTypeDef *) pdev->pData)->Instance;
@@ -1479,11 +1479,11 @@ static void control_transmit2(USBD_HandleTypeDef *pdev)
 		ep0data += chunk;
 		ep0size -= chunk;
 		if (ep0size == 0 && chunk < USB_OTG_MAX_EP0_SIZE)
-			ep0data = NULL;		// завершающего пакета нулевого размера передавать ненужно
+			ep0data = NULL;		// Р·Р°РІРµСЂС€Р°СЋС‰РµРіРѕ РїР°РєРµС‚Р° РЅСѓР»РµРІРѕРіРѕ СЂР°Р·РјРµСЂР° РїРµСЂРµРґР°РІР°С‚СЊ РЅРµРЅСѓР¶РЅРѕ
 	}
 	else if (ep0data != NULL)
 	{
-		// если последний пакет был кратет USB_OTG_MAX_EP0_SIZE, то передаем пакет нулевого размера
+		// РµСЃР»Рё РїРѕСЃР»РµРґРЅРёР№ РїР°РєРµС‚ Р±С‹Р» РєСЂР°С‚РµС‚ USB_OTG_MAX_EP0_SIZE, С‚Рѕ РїРµСЂРµРґР°РµРј РїР°РєРµС‚ РЅСѓР»РµРІРѕРіРѕ СЂР°Р·РјРµСЂР°
 		control_transmit0single(pdev, ep0data, 0);
 		ep0data = NULL;
 	}
@@ -1555,7 +1555,7 @@ static void nak_ep0(USBD_HandleTypeDef *pdev)
 	if (((Instance->DCPCTR & USB_DCPCTR_PID) >> USB_DCPCTR_PID_SHIFT) == 0x03)
 	{
 		Instance->DCPCTR = (Instance->DCPCTR & ~ USB_DCPCTR_PID) |
-			//1 * (1uL << USB_DCPCTR_CCPL_SHIFT) |	// CCPL - Не имеет значения в моих тестах
+			//1 * (1uL << USB_DCPCTR_CCPL_SHIFT) |	// CCPL - РќРµ РёРјРµРµС‚ Р·РЅР°С‡РµРЅРёСЏ РІ РјРѕРёС… С‚РµСЃС‚Р°С…
 			0x00 * MASK2LSB(USB_DCPCTR_PID) |	// PID 00: NAK response
 			0;
 	}
@@ -1618,7 +1618,7 @@ static void USBD_CtlErrorNec( USBD_HandleTypeDef *pdev,
 }
 
 // BRDY pipe Interrupt handler
-// Заполнение символами буфеа пердатчика
+// Р—Р°РїРѕР»РЅРµРЅРёРµ СЃРёРјРІРѕР»Р°РјРё Р±СѓС„РµР° РїРµСЂРґР°С‚С‡РёРєР°
 static void
 usbd_handler_brdy_bulk_in8(USBD_HandleTypeDef *pdev, uint_fast8_t pipe, uint_fast8_t epnum)
 {
@@ -1631,7 +1631,7 @@ usbd_handler_brdy_bulk_in8(USBD_HandleTypeDef *pdev, uint_fast8_t pipe, uint_fas
 	case USBD_EP_CDC_IN & 0x7F:
 		while (usbd_cdc_txenabled && (cdc1buffinlevel < ARRAY_SIZE(cdc1buffin)))
 		{
-			HARDWARE_CDC_ONTXCHAR(pdev);	// при отсутствии данных usbd_cdc_txenabled устанавливается в 0
+			HARDWARE_CDC_ONTXCHAR(pdev);	// РїСЂРё РѕС‚СЃСѓС‚СЃС‚РІРёРё РґР°РЅРЅС‹С… usbd_cdc_txenabled СѓСЃС‚Р°РЅР°РІР»РёРІР°РµС‚СЃСЏ РІ 0
 		}
 		usbd_write_data(Instance, pipe, cdc1buffin, cdc1buffinlevel);	// pipe=0: DCP
 		cdc1buffinlevel = 0;
@@ -1640,8 +1640,8 @@ usbd_handler_brdy_bulk_in8(USBD_HandleTypeDef *pdev, uint_fast8_t pipe, uint_fas
 	case USBD_EP_CDC_INb & 0x7F:
 		{
 			//unsigned n = VIRTUAL_COM_PORT_IN_DATA_SIZE;
-			//while (usbd_cdc_txenabled != 0 && n --)	// при отсутствии данных usbd_cdc_txenabled устанавливается в 0
-			//	HARDWARE_CDC_ONTXCHAR((void *) Instance);		// отсюда вызовется usbd_cdc_tx() с требуемым для передачи символом.
+			//while (usbd_cdc_txenabled != 0 && n --)	// РїСЂРё РѕС‚СЃСѓС‚СЃС‚РІРёРё РґР°РЅРЅС‹С… usbd_cdc_txenabled СѓСЃС‚Р°РЅР°РІР»РёРІР°РµС‚СЃСЏ РІ 0
+			//	HARDWARE_CDC_ONTXCHAR((void *) Instance);		// РѕС‚СЃСЋРґР° РІС‹Р·РѕРІРµС‚СЃСЏ usbd_cdc_tx() СЃ С‚СЂРµР±СѓРµРјС‹Рј РґР»СЏ РїРµСЂРµРґР°С‡Рё СЃРёРјРІРѕР»РѕРј.
 		}
 		usbd_write_data(Instance, pipe, cdc2buffin, cdc2buffinlevel);	// pipe=0: DCP
 		cdc2buffinlevel = 0;
@@ -1658,7 +1658,7 @@ usbd_handler_brdy_bulk_in8(USBD_HandleTypeDef *pdev, uint_fast8_t pipe, uint_fas
 }
 
 // BRDY pipe Interrupt handler
-// Получение символов из буфера приёмника
+// РџРѕР»СѓС‡РµРЅРёРµ СЃРёРјРІРѕР»РѕРІ РёР· Р±СѓС„РµСЂР° РїСЂРёС‘РјРЅРёРєР°
 static void
 usbd_handler_brdy_bulk_out8(USBD_HandleTypeDef *pdev, uint_fast8_t pipe, uint_fast8_t epnum)
 {
@@ -1670,14 +1670,14 @@ usbd_handler_brdy_bulk_out8(USBD_HandleTypeDef *pdev, uint_fast8_t pipe, uint_fa
 	case USBD_EP_CDC_OUT & 0x7F:
 		{
 			unsigned count = usbd_read_data(Instance, pipe, cdc1buffout, VIRTUAL_COM_PORT_OUT_DATA_SIZE);
-			cdc1out_buffer_save(cdc1buffout, count);	/* использование буфера принятых данных */
+			cdc1out_buffer_save(cdc1buffout, count);	/* РёСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ Р±СѓС„РµСЂР° РїСЂРёРЅСЏС‚С‹С… РґР°РЅРЅС‹С… */
 		}
 		break;
 
 	case USBD_EP_CDC_OUTb & 0x7F:
 		{
 			unsigned count = usbd_read_data(Instance, pipe, cdc2buffout, VIRTUAL_COM_PORT_OUT_DATA_SIZE);
-			cdc2out_buffer_save(cdc2buffout, count);	/* использование буфера принятых данных */
+			cdc2out_buffer_save(cdc2buffout, count);	/* РёСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ Р±СѓС„РµСЂР° РїСЂРёРЅСЏС‚С‹С… РґР°РЅРЅС‹С… */
 		}
 		break;
 #endif /* WITHUSBCDC */
@@ -1687,7 +1687,7 @@ usbd_handler_brdy_bulk_out8(USBD_HandleTypeDef *pdev, uint_fast8_t pipe, uint_fa
 		break;
 	}
 
-	Instance->CFIFOCTR = USB_CFIFOCTR_BCLR;	// BCLR - употребили данные
+	Instance->CFIFOCTR = USB_CFIFOCTR_BCLR;	// BCLR - СѓРїРѕС‚СЂРµР±РёР»Рё РґР°РЅРЅС‹Рµ
 }
 
 #define DEVDRV_USBF_PIPE_IDLE                       (0x00)
@@ -1779,7 +1779,7 @@ static unsigned dcp_out_offset;	// Clear in usbdFunctionReq_seq3
 static uint8_t * dcp_out_ptr;	// Clear in usbdFunctionReq_seq3
 
 // BRDY pipe Interrupt handler
-// Получение символов из буфера приёмника
+// РџРѕР»СѓС‡РµРЅРёРµ СЃРёРјРІРѕР»РѕРІ РёР· Р±СѓС„РµСЂР° РїСЂРёС‘РјРЅРёРєР°
 static void
 usbd_handler_brdy8_dcp_out(USBD_HandleTypeDef *pdev, uint_fast8_t pipe)
 {
@@ -1799,7 +1799,7 @@ static void usb0_function_Resrv_123(USBD_HandleTypeDef *pdev, USBD_SetupReqTyped
 	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
 	PRINTF(PSTR("usb0_function_Resrv_123: interfacev=%u: bRequest=%u, wLength=%u\n"), interfacev, req->bRequest, req->wLength);
 	//PRINTF(PSTR("usb0_function_Resrv_123: ReqTypeRecip=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
-	//stall_ep0(pdev);	// В примерах от renesas стоит stall
+	//stall_ep0(pdev);	// Р’ РїСЂРёРјРµСЂР°С… РѕС‚ renesas СЃС‚РѕРёС‚ stall
 }
 // seq=0
 static void usb0_function_Resrv_0(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef *req)
@@ -1807,7 +1807,7 @@ static void usb0_function_Resrv_0(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef
 	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
 	PRINTF(PSTR("usb0_function_Resrv_0: interfacev=%u: bRequest=%u, wLength=%u\n"), interfacev, req->bRequest, req->wLength);
 	//PRINTF(PSTR("usb0_function_Resrv_0: ReqTypeRecip=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
-	// В примерах от renesas пусто
+	// Р’ РїСЂРёРјРµСЂР°С… РѕС‚ renesas РїСѓСЃС‚Рѕ
 }
 
 // seq=2
@@ -1831,7 +1831,7 @@ static void usb0_function_Resrv_4(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef
 // End of receieve data trough EP0
 static void usb0_function_Resrv_5(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef *req)
 {
-	// В примерах от renesas пусто
+	// Р’ РїСЂРёРјРµСЂР°С… РѕС‚ renesas РїСѓСЃС‚Рѕ
 	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
 	PRINTF(PSTR("usb0_function_Resrv_5: interfacev=%u: bRequest=%u, wLength=%u\n"), interfacev, req->bRequest, req->wLength);
 }
@@ -2035,7 +2035,7 @@ static void usb0_function_GetDescriptor(USBD_HandleTypeDef *pdev, USBD_SetupReqT
 		switch (index)
 		{
 		case 0xF8:
-			// Запрос появляется при запуске MixW2
+			// Р—Р°РїСЂРѕСЃ РїРѕСЏРІР»СЏРµС‚СЃСЏ РїСЂРё Р·Р°РїСѓСЃРєРµ MixW2
 			//USBD_CtlSendData(Instance, StringDescrTbl [STRING_ID_7].data, ulmin16(req->wLength, StringDescrTbl [STRING_ID_7].size));
 			USBD_CtlError(pdev, req);
 			return;
@@ -2129,7 +2129,7 @@ static void usb0_function_GetConfiguration(USBD_HandleTypeDef *pdev, USBD_SetupR
 	// This request returns the current device configuration value.
 	const uint_fast8_t data = stored_bConfiguration; //1;
 
-	static uint8_t buff [1];	// static, так как может переаваться асинхронно
+	static uint8_t buff [1];	// static, С‚Р°Рє РєР°Рє РјРѕР¶РµС‚ РїРµСЂРµР°РІР°С‚СЊСЃСЏ Р°СЃРёРЅС…СЂРѕРЅРЅРѕ
 	buff [0] = LO_BYTE(data);
 
 	USBD_CtlSendData(pdev, buff, ulmin16(ARRAY_SIZE(buff), req->wLength));
@@ -2161,7 +2161,7 @@ static void usb0_function_SynchFrame(USBD_HandleTypeDef *pdev, USBD_SetupReqType
 {
 	//PRINTF(PSTR("usb0_function_SynchFrame: ReqTypeRecip=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
 
-	// This request is used to set and then report an endpoint’s synchronization frame
+	// This request is used to set and then report an endpointвЂ™s synchronization frame
 	// wIndex=endpoint
 	// wLength=2
 	// 
@@ -2238,7 +2238,7 @@ static void usb0_function_SetConfiguration(USBD_HandleTypeDef *pdev, USBD_SetupR
 	stored_bConfiguration = configuration;
 	//PRINTF(PSTR("SetConfiguration: configuration=%02X\n"), LO_BYTE(req->wValue));
 
-	dcp_acksend(pdev);	// убирание этой строки приводит к ошибке enumeration
+	dcp_acksend(pdev);	// СѓР±РёСЂР°РЅРёРµ СЌС‚РѕР№ СЃС‚СЂРѕРєРё РїСЂРёРІРѕРґРёС‚ Рє РѕС€РёР±РєРµ enumeration
 }
 
 /* Control Write No Data Status Stage seq= 5 */
@@ -2293,7 +2293,7 @@ static void usb0_function_SetInterface(USBD_HandleTypeDef *pdev, USBD_SetupReqTy
 	#endif /* WITHUSBUAC3 */
 #endif /* WITHUSBUAC */
 		}
-		dcp_acksend(pdev);	// убирание этой строки приводит к ошибке enumeration
+		dcp_acksend(pdev);	// СѓР±РёСЂР°РЅРёРµ СЌС‚РѕР№ СЃС‚СЂРѕРєРё РїСЂРёРІРѕРґРёС‚ Рє РѕС€РёР±РєРµ enumeration
 	}
 	else
 	{
@@ -2325,7 +2325,7 @@ static void usbdFunctionReq_seq1(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef 
 	// (ReqType & USB_RECIPIENT_MASK) == 0x22: CUR   wIndex = endpoint (low byte)
 	// (ReqType & USB_RECIPIENT_MASK) == 0xA2: RANGE wIndex = endpoint (low byte)
 	
-	// В этой функции формируется ответ на запрос Get Line Coding
+	// Р’ СЌС‚РѕР№ С„СѓРЅРєС†РёРё С„РѕСЂРјРёСЂСѓРµС‚СЃСЏ РѕС‚РІРµС‚ РЅР° Р·Р°РїСЂРѕСЃ Get Line Coding
 	static USBALIGN_BEGIN uint8_t buff [64] USBALIGN_END;
 	switch (interfacev)
 	{
@@ -2463,7 +2463,7 @@ static void usbdVendorReq_seq1(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef *r
 {
 	//PRINTF(PSTR("usbdVendorReq_seq1: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
 	// ReqIndex = interfacei
-	//dcp_acksend(pdev);	// пока так, игнорируя параметры
+	//dcp_acksend(pdev);	// РїРѕРєР° С‚Р°Рє, РёРіРЅРѕСЂРёСЂСѓСЏ РїР°СЂР°РјРµС‚СЂС‹
 	//PRINTF(PSTR("default path: usbdVendorReq_seq1: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
 	if (MsftCompFeatureDescr[0].data != NULL)
 		USBD_CtlSendData(pdev, MsftCompFeatureDescr[0].data, ulmin16(MsftCompFeatureDescr[0].size, req->wLength));
@@ -2474,7 +2474,7 @@ static void usbdVendorReq_seq1(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef *r
 
 // Control Write Data Stage
 // OUT direction
-// Далее следует блок данных с дополнительными параметрами.
+// Р”Р°Р»РµРµ СЃР»РµРґСѓРµС‚ Р±Р»РѕРє РґР°РЅРЅС‹С… СЃ РґРѕРїРѕР»РЅРёС‚РµР»СЊРЅС‹РјРё РїР°СЂР°РјРµС‚СЂР°РјРё.
 static void usbdFunctionReq_seq3(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef *req)
 {
 	//PRINTF(PSTR("usbdFunctionReq_seq3: wLength=%u\n"), req->wLength);
@@ -2548,7 +2548,7 @@ static void usbdVendorReq_seq3(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef *r
 }
 
 // Control Write No Data Status Stage
-// Блока данных не будет, вся необходимая информация в setup request уже передана
+// Р‘Р»РѕРєР° РґР°РЅРЅС‹С… РЅРµ Р±СѓРґРµС‚, РІСЃСЏ РЅРµРѕР±С…РѕРґРёРјР°СЏ РёРЅС„РѕСЂРјР°С†РёСЏ РІ setup request СѓР¶Рµ РїРµСЂРµРґР°РЅР°
 static void usbdFunctionReq_seq5(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef *req)
 {
 	//PRINTF(PSTR("usbdFunctionReq_seq5: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
@@ -2582,7 +2582,7 @@ static void usbdFunctionReq_seq5(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef 
 		break;
 #endif /* WITHUSBCDCEEM */
 #if WITHUSBDFU
-	// похоже сюда только Abort требуется
+	// РїРѕС…РѕР¶Рµ СЃСЋРґР° С‚РѕР»СЊРєРѕ Abort С‚СЂРµР±СѓРµС‚СЃСЏ
 	case INTERFACE_DFU_CONTROL:	// DFU
 		{
 			switch (req->bRequest)
@@ -2945,7 +2945,7 @@ static void usbd_handle_ctrt(USBD_HandleTypeDef *pdev, uint_fast8_t ctsq)
 		//PRINTF(PSTR("actions_seq2\n"));
 		// 2: Control read status stage
 		actions_seq2(pdev, & pdev->request);
-		// после - usbdFunctionReq_seq1 - напимер после запроса GET_LINE_CODING
+		// РїРѕСЃР»Рµ - usbdFunctionReq_seq1 - РЅР°РїРёРјРµСЂ РїРѕСЃР»Рµ Р·Р°РїСЂРѕСЃР° GET_LINE_CODING
 
 		Instance->DCPCTR |= 1 * (1uL << USB_DCPCTR_CCPL_SHIFT);	// CCPL
 		break;
@@ -2965,7 +2965,7 @@ static void usbd_handle_ctrt(USBD_HandleTypeDef *pdev, uint_fast8_t ctsq)
 		//PRINTF(PSTR("actions_seq4\n"));
 		// 4: Control write status stage
 		actions_seq4(pdev, & pdev->request);
-		// после usbd_handler_brdy8_dcp_out
+		// РїРѕСЃР»Рµ usbd_handler_brdy8_dcp_out
 
 		Instance->DCPCTR |= 1 * (1uL << USB_DCPCTR_CCPL_SHIFT);	// CCPL
 		break;
@@ -2999,12 +2999,12 @@ static void usbd_handle_ctrt(USBD_HandleTypeDef *pdev, uint_fast8_t ctsq)
 static const uint_fast8_t usedpipes [] =
 {
 #if WITHUSBUAC
-	HARDWARE_USBD_PIPE_ISOC_OUT,	// ISOC OUT Аудиоданные от компьютера в TRX - D0FIFOB0
-	HARDWARE_USBD_PIPE_ISOC_IN,		// ISOC IN Аудиоданные в компьютер из TRX - D0FIFOB1
+	HARDWARE_USBD_PIPE_ISOC_OUT,	// ISOC OUT РђСѓРґРёРѕРґР°РЅРЅС‹Рµ РѕС‚ РєРѕРјРїСЊСЋС‚РµСЂР° РІ TRX - D0FIFOB0
+	HARDWARE_USBD_PIPE_ISOC_IN,		// ISOC IN РђСѓРґРёРѕРґР°РЅРЅС‹Рµ РІ РєРѕРјРїСЊСЋС‚РµСЂ РёР· TRX - D0FIFOB1
 #endif /* WITHUSBUAC */
 #if WITHUSBCDC
-	HARDWARE_USBD_PIPE_CDC_OUT,		// CDC OUT Данные ком-порта от компьютера в TRX
-	HARDWARE_USBD_PIPE_CDC_IN,		// CDC IN Данные ком-порта в компьютер из TRX
+	HARDWARE_USBD_PIPE_CDC_OUT,		// CDC OUT Р”Р°РЅРЅС‹Рµ РєРѕРј-РїРѕСЂС‚Р° РѕС‚ РєРѕРјРїСЊСЋС‚РµСЂР° РІ TRX
+	HARDWARE_USBD_PIPE_CDC_IN,		// CDC IN Р”Р°РЅРЅС‹Рµ РєРѕРј-РїРѕСЂС‚Р° РІ РєРѕРјРїСЊСЋС‚РµСЂ РёР· TRX
 	HARDWARE_USBD_PIPE_CDC_INT,
 	HARDWARE_USBD_PIPE_CDC_OUTb,	// CDC OUT dummy interfacei
 	HARDWARE_USBD_PIPE_CDC_INb,		// CDC IN dummy interfacei
@@ -3019,8 +3019,8 @@ static const struct { uint8_t pipe, ep; } brdyenbpipes2 [] =
 {
 	//{ 0x00, 0x00 },		// DCP
 #if WITHUSBCDC
-	{ HARDWARE_USBD_PIPE_CDC_OUT, USBD_EP_CDC_OUT },		// CDC OUT Данные ком-порта от компьютера в TRX
-	{ HARDWARE_USBD_PIPE_CDC_IN, USBD_EP_CDC_IN },		// CDC IN Данные ком-порта в компьютер из TRX
+	{ HARDWARE_USBD_PIPE_CDC_OUT, USBD_EP_CDC_OUT },		// CDC OUT Р”Р°РЅРЅС‹Рµ РєРѕРј-РїРѕСЂС‚Р° РѕС‚ РєРѕРјРїСЊСЋС‚РµСЂР° РІ TRX
+	{ HARDWARE_USBD_PIPE_CDC_IN, USBD_EP_CDC_IN },		// CDC IN Р”Р°РЅРЅС‹Рµ РєРѕРј-РїРѕСЂС‚Р° РІ РєРѕРјРїСЊСЋС‚РµСЂ РёР· TRX
 	{ HARDWARE_USBD_PIPE_CDC_OUTb, USBD_EP_CDC_OUTb },	// CDC OUT dummy interfacei
 	{ HARDWARE_USBD_PIPE_CDC_INb, USBD_EP_CDC_INb },		// CDC IN dummy interfacei
 #endif /* WITHUSBCDC */
@@ -3054,14 +3054,14 @@ static void usbd_pipes_enable(PCD_TypeDef * const Instance)
 	for (i = 0; i < sizeof brdyenbpipes2 / sizeof brdyenbpipes2 [0]; ++ i)
 	{
 		const uint_fast8_t pipe = brdyenbpipes2 [i].pipe;
-		Instance->BRDYENB |= (1uL << pipe);	// Прерывание по заполненности приёмного (OUT) или для заполнения передающего (IN) буфера
+		Instance->BRDYENB |= (1uL << pipe);	// РџСЂРµСЂС‹РІР°РЅРёРµ РїРѕ Р·Р°РїРѕР»РЅРµРЅРЅРѕСЃС‚Рё РїСЂРёС‘РјРЅРѕРіРѕ (OUT) РёР»Рё РґР»СЏ Р·Р°РїРѕР»РЅРµРЅРёСЏ РїРµСЂРµРґР°СЋС‰РµРіРѕ (IN) Р±СѓС„РµСЂР°
 	}
 	if (1)
 	{
 		// DCP, control pipe
 		uint_fast8_t pipe = 0;	// PIPE0
-		Instance->BRDYENB |= (1uL << pipe);	// Прерывание по заполненности приёмного (OUT) буфера
-		Instance->BEMPENB |= (1uL << pipe);	// Прерывание окончания передачи передающего (IN) буфера
+		Instance->BRDYENB |= (1uL << pipe);	// РџСЂРµСЂС‹РІР°РЅРёРµ РїРѕ Р·Р°РїРѕР»РЅРµРЅРЅРѕСЃС‚Рё РїСЂРёС‘РјРЅРѕРіРѕ (OUT) Р±СѓС„РµСЂР°
+		Instance->BEMPENB |= (1uL << pipe);	// РџСЂРµСЂС‹РІР°РЅРёРµ РѕРєРѕРЅС‡Р°РЅРёСЏ РїРµСЂРµРґР°С‡Рё РїРµСЂРµРґР°СЋС‰РµРіРѕ (IN) Р±СѓС„РµСЂР°
 	}
 }
 
@@ -3073,13 +3073,13 @@ static void usbd_pipes_disable(PCD_TypeDef * const Instance)
 	{
 		// DCP, control pipe
 		uint_fast8_t pipe = 0;	// PIPE0
-		Instance->BRDYENB &= ~ (1uL << pipe);	// Прерывание по заполненности приёмного (OUT) буфера
-		Instance->BEMPENB &= ~ (1uL << pipe);	// Прерывание окончания передачи передающего (IN) буфера
+		Instance->BRDYENB &= ~ (1uL << pipe);	// РџСЂРµСЂС‹РІР°РЅРёРµ РїРѕ Р·Р°РїРѕР»РЅРµРЅРЅРѕСЃС‚Рё РїСЂРёС‘РјРЅРѕРіРѕ (OUT) Р±СѓС„РµСЂР°
+		Instance->BEMPENB &= ~ (1uL << pipe);	// РџСЂРµСЂС‹РІР°РЅРёРµ РѕРєРѕРЅС‡Р°РЅРёСЏ РїРµСЂРµРґР°С‡Рё РїРµСЂРµРґР°СЋС‰РµРіРѕ (IN) Р±СѓС„РµСЂР°
 	}
 	for (i = 0; i < sizeof brdyenbpipes2 / sizeof brdyenbpipes2 [0]; ++ i)
 	{
 		const uint_fast8_t pipe = brdyenbpipes2 [i].pipe;
-		Instance->BRDYENB &= ~ (1uL << pipe);	// Прерывание по заполненности приёмного (OUT) или для заполнения передающего (IN) буфера
+		Instance->BRDYENB &= ~ (1uL << pipe);	// РџСЂРµСЂС‹РІР°РЅРёРµ РїРѕ Р·Р°РїРѕР»РЅРµРЅРЅРѕСЃС‚Рё РїСЂРёС‘РјРЅРѕРіРѕ (OUT) РёР»Рё РґР»СЏ Р·Р°РїРѕР»РЅРµРЅРёСЏ РїРµСЂРµРґР°СЋС‰РµРіРѕ (IN) Р±СѓС„РµСЂР°
 	}
 	for (i = 0; i < sizeof usedpipes / sizeof usedpipes [0]; ++ i)
 	{
@@ -3104,7 +3104,7 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 	PRINTF(PSTR("usbd_pipes_initialize\n"));
 	/*
 		at initialize:
-		usbd_handler_brdy: после инициализации появляется для тех pipe, у которых dir=0 (read direction)
+		usbd_handler_brdy: РїРѕСЃР»Рµ РёРЅРёС†РёР°Р»РёР·Р°С†РёРё РїРѕСЏРІР»СЏРµС‚СЃСЏ РґР»СЏ С‚РµС… pipe, Сѓ РєРѕС‚РѕСЂС‹С… dir=0 (read direction)
 	*/
 	{
 		Instance->DCPMAXP = (USB_OTG_MAX_EP0_SIZE << USB_DCPMAXP_MXPS_SHIFT);
@@ -3113,7 +3113,7 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 #if WITHUSBCDC
 	if (1)
 	{
-		// Данные CDC из компьютера в трансивер
+		// Р”Р°РЅРЅС‹Рµ CDC РёР· РєРѕРјРїСЊСЋС‚РµСЂР° РІ С‚СЂР°РЅСЃРёРІРµСЂ
 		const uint_fast8_t pipe = HARDWARE_USBD_PIPE_CDC_OUT;	// PIPE3
 		const uint_fast8_t epnum = USBD_EP_CDC_OUT;
 		const uint_fast8_t dir = 0;
@@ -3140,7 +3140,7 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 	}
 	if (1)
 	{
-		// Данные CDC в компьютер из трансивера
+		// Р”Р°РЅРЅС‹Рµ CDC РІ РєРѕРјРїСЊСЋС‚РµСЂ РёР· С‚СЂР°РЅСЃРёРІРµСЂР°
 		const uint_fast8_t pipe = HARDWARE_USBD_PIPE_CDC_IN;	// PIPE4
 		const uint_fast8_t epnum = USBD_EP_CDC_IN;
 		const uint_fast8_t dir = 1;
@@ -3167,7 +3167,7 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 	}
 	if (1)
 	{
-		// Прерывание CDC в компьютер из трансивера
+		// РџСЂРµСЂС‹РІР°РЅРёРµ CDC РІ РєРѕРјРїСЊСЋС‚РµСЂ РёР· С‚СЂР°РЅСЃРёРІРµСЂР°
 		const uint_fast8_t pipe = HARDWARE_USBD_PIPE_CDC_INT;	// PIPE6
 		const uint_fast8_t epnum = USBD_EP_CDC_INT;
 		const uint_fast8_t dir = 1;
@@ -3181,7 +3181,7 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 			(0x0F & epnum) * (1u << USB_PIPECFG_EPNUM_SHIFT) |		// EPNUM endpoint
 			dir * (1u << USB_PIPECFG_DIR_SHIFT) |		// DIR 1: Transmitting direction 0: Receiving direction
 			2 * (1u << USB_PIPECFG_TYPE_SHIFT) |		// TYPE 2: Interrupt transfer
-			0 * USB_PIPECFG_DBLB |		// DBLB - для interrupt должен быть 0
+			0 * USB_PIPECFG_DBLB |		// DBLB - РґР»СЏ interrupt РґРѕР»Р¶РµРЅ Р±С‹С‚СЊ 0
 			0;
 		const unsigned bufsize64 = (VIRTUAL_COM_PORT_INT_SIZE + 63) / 64;
 		Instance->PIPEBUF = ((bufsize64 - 1) << USB_PIPEBUF_BUFSIZE_SHIFT) | (bufnumb64 << USB_PIPEBUF_BUFNMB_SHIFT);
@@ -3193,7 +3193,7 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 	}
 	if (1)
 	{
-		// Данные CDC из компьютера в трансивер
+		// Р”Р°РЅРЅС‹Рµ CDC РёР· РєРѕРјРїСЊСЋС‚РµСЂР° РІ С‚СЂР°РЅСЃРёРІРµСЂ
 		const uint_fast8_t pipe = HARDWARE_USBD_PIPE_CDC_OUTb;	// PIPE14
 		const uint_fast8_t epnum = USBD_EP_CDC_OUTb;
 		const uint_fast8_t dir = 0;
@@ -3219,7 +3219,7 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 	}
 	if (1)
 	{
-		// Данные CDC в компьютер из трансивера
+		// Р”Р°РЅРЅС‹Рµ CDC РІ РєРѕРјРїСЊСЋС‚РµСЂ РёР· С‚СЂР°РЅСЃРёРІРµСЂР°
 		const uint_fast8_t pipe = HARDWARE_USBD_PIPE_CDC_INb;	// PIPE15
 		const uint_fast8_t epnum = USBD_EP_CDC_INb;
 		const uint_fast8_t dir = 1;
@@ -3245,7 +3245,7 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 	}
 	if (1)
 	{
-		// Прерывание CDC в компьютер из трансивера
+		// РџСЂРµСЂС‹РІР°РЅРёРµ CDC РІ РєРѕРјРїСЊСЋС‚РµСЂ РёР· С‚СЂР°РЅСЃРёРІРµСЂР°
 		const uint_fast8_t pipe = HARDWARE_USBD_PIPE_CDC_INTb;	// PIPE7
 		const uint_fast8_t epnum = USBD_EP_CDC_INTb;
 		const uint_fast8_t dir = 1;
@@ -3259,7 +3259,7 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 			(0x0F & epnum) * (1u << USB_PIPECFG_EPNUM_SHIFT) |		// EPNUM endpoint
 			dir * (1u << USB_PIPECFG_DIR_SHIFT) |		// DIR 1: Transmitting direction 0: Receiving direction
 			2 * (1u << USB_PIPECFG_TYPE_SHIFT) |		// TYPE 2: Interrupt transfer
-			0 * USB_PIPECFG_DBLB |		// DBLB - для interrupt должен быть 0
+			0 * USB_PIPECFG_DBLB |		// DBLB - РґР»СЏ interrupt РґРѕР»Р¶РµРЅ Р±С‹С‚СЊ 0
 			0;
 		const unsigned bufsize64 = (VIRTUAL_COM_PORT_INT_SIZE + 63) / 64;
 		Instance->PIPEBUF = ((bufsize64 - 1) << USB_PIPEBUF_BUFSIZE_SHIFT) | (bufnumb64 << USB_PIPEBUF_BUFNMB_SHIFT);
@@ -3277,8 +3277,8 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 #if WITHUSBUAC
 	if (1)
 	{
-		// Данные AUDIO из трансивера в компьютер
-		// Используется канал DMA D1
+		// Р”Р°РЅРЅС‹Рµ AUDIO РёР· С‚СЂР°РЅСЃРёРІРµСЂР° РІ РєРѕРјРїСЊСЋС‚РµСЂ
+		// РСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РєР°РЅР°Р» DMA D1
 		const uint_fast8_t pipe = HARDWARE_USBD_PIPE_ISOC_IN;	// PIPE2
 		const uint_fast8_t epnum = USBD_EP_AUDIO_IN;
 		const uint_fast8_t dir = 1;
@@ -3294,7 +3294,7 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 			(0x0F & epnum) * (1u << USB_PIPECFG_EPNUM_SHIFT) |		// EPNUM endpoint
 			dir * (1u << USB_PIPECFG_DIR_SHIFT) |		// DIR 1: Transmitting direction 0: Receiving direction
 			3 * (1u << USB_PIPECFG_TYPE_SHIFT) |		// TYPE 11: Isochronous transfer
-			////1 * USB_PIPECFG_DBLB |		// DBLB - убрано, т.к PIPEMAXP динамически меняется - поведение не понятно.
+			////1 * USB_PIPECFG_DBLB |		// DBLB - СѓР±СЂР°РЅРѕ, С‚.Рє PIPEMAXP РґРёРЅР°РјРёС‡РµСЃРєРё РјРµРЅСЏРµС‚СЃСЏ - РїРѕРІРµРґРµРЅРёРµ РЅРµ РїРѕРЅСЏС‚РЅРѕ.
 			0;
 		//Instance->PIPEPERI = 
 		//	1 * (1U << 12) |	// IFS
@@ -3307,8 +3307,8 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 
 		Instance->PIPESEL = 0;
 
-		// Разрешение DMA
-		// Сперва без DREQE
+		// Р Р°Р·СЂРµС€РµРЅРёРµ DMA
+		// РЎРїРµСЂРІР° Р±РµР· DREQE
 		Instance->D1FIFOSEL = 
 			pipe * (1uL << USB_DnFIFOSEL_CURPIPE_SHIFT) |	// CURPIPE 0000: DCP
 			2 * (1uL << USB_DnFIFOSEL_MBW_SHIFT) |	// MBW 10: 32-bit width
@@ -3316,7 +3316,7 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 			0;
 		(void) Instance->D1FIFOSEL;
 
-		// Потом выставить DREQE
+		// РџРѕС‚РѕРј РІС‹СЃС‚Р°РІРёС‚СЊ DREQE
 		Instance->D1FIFOSEL = 
 			pipe * (1uL << USB_DnFIFOSEL_CURPIPE_SHIFT) |	// CURPIPE 0000: DCP
 			2 * (1uL << USB_DnFIFOSEL_MBW_SHIFT) |	// MBW 10: 32-bit width
@@ -3328,8 +3328,8 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 #if WITHUSBUAC
 	if (1)
 	{
-		// Данные AUDIO из компьютера в трансивер
-		// Используется канал DMA D0
+		// Р”Р°РЅРЅС‹Рµ AUDIO РёР· РєРѕРјРїСЊСЋС‚РµСЂР° РІ С‚СЂР°РЅСЃРёРІРµСЂ
+		// РСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РєР°РЅР°Р» DMA D0
 		const uint_fast8_t pipe = HARDWARE_USBD_PIPE_ISOC_OUT;	// PIPE1
 		const uint_fast8_t epnum = USBD_EP_AUDIO_OUT;
 		const uint_fast8_t dir = 0;
@@ -3354,8 +3354,8 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 		ASSERT(bufnumb64 <= 0x100);
 
 		Instance->PIPESEL = 0;
-		// Разрешение DMA
-		// Сперва без DREQE
+		// Р Р°Р·СЂРµС€РµРЅРёРµ DMA
+		// РЎРїРµСЂРІР° Р±РµР· DREQE
 		Instance->D0FIFOSEL = 
 			pipe * (1uL << USB_DnFIFOSEL_CURPIPE_SHIFT) |	// CURPIPE 0000: DCP
 			2 * (1uL << USB_DnFIFOSEL_MBW_SHIFT) |	// MBW 10: 32-bit width
@@ -3363,7 +3363,7 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 			0;
 		(void) Instance->D0FIFOSEL;
 
-		// Потом выставить DREQE
+		// РџРѕС‚РѕРј РІС‹СЃС‚Р°РІРёС‚СЊ DREQE
 		Instance->D0FIFOSEL = 
 			pipe * (1uL << USB_DnFIFOSEL_CURPIPE_SHIFT) |	// CURPIPE 0000: DCP
 			2 * (1uL << USB_DnFIFOSEL_MBW_SHIFT) |	// MBW 10: 32-bit width
@@ -3417,7 +3417,7 @@ static void usbd_handle_suspend(PCD_TypeDef * const Instance)
 
 	memset(altinterfaces, 0, sizeof altinterfaces);
 #if WITHUSBCDC
-	/* при потере связи с host снять запрос на передачу */
+	/* РїСЂРё РїРѕС‚РµСЂРµ СЃРІСЏР·Рё СЃ host СЃРЅСЏС‚СЊ Р·Р°РїСЂРѕСЃ РЅР° РїРµСЂРµРґР°С‡Сѓ */
 	usb_cdc_control_state [INTERFACE_CDC_CONTROL_3a] = 0;
 	usb_cdc_control_state [INTERFACE_CDC_CONTROL_3b] = 0;
 	HARDWARE_CDC_ONDISCONNECT();
@@ -3989,7 +3989,7 @@ HAL_StatusTypeDef USB_FlushTxFifo(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t num)
 
 #ifdef USB_HS_PHYC
 /**
-  * @brief  Enables control of a High Speed USB PHYВ’s
+  * @brief  Enables control of a High Speed USB PHYР’вЂ™s
   *         Init the low level hardware : GPIO, CLOCK, NVIC...
   * @param  USBx : Selected device
   * @retval HAL status
@@ -4117,7 +4117,7 @@ static HAL_StatusTypeDef USB_CoreInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG
   }
 
 	// xyz
-	// see Internal DMA Mode—Internal Bus Master burst type: in QL-Hi-Speed-USB-2.0-OTG-Controller-Data-Sheet.pdf
+	// see Internal DMA ModeвЂ”Internal Bus Master burst type: in QL-Hi-Speed-USB-2.0-OTG-Controller-Data-Sheet.pdf
 	if (cfg->dma_enable == USB_ENABLE)
 	{
 		USBx->GAHBCFG = (USBx->GAHBCFG & ~ (USB_OTG_GAHBCFG_HBSTLEN | USB_OTG_GAHBCFG_DMAEN | USB_OTG_GAHBCFG_TXFELVL | USB_OTG_GAHBCFG_PTXFELVL)) |
@@ -4349,7 +4349,7 @@ static HAL_StatusTypeDef USB_DevInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_
 
 	#if CPUSTYLE_STM32H7XX
 		  const int TXTHRLEN = 256;		// in DWORDS: The threshold length has to be at least eight DWORDS.
-		  const int RXTHRLEN = 8;	// in DWORDS: 128 - енумерация проходтит, 256 - нет. 
+		  const int RXTHRLEN = 8;	// in DWORDS: 128 - РµРЅСѓРјРµСЂР°С†РёСЏ РїСЂРѕС…РѕРґС‚РёС‚, 256 - РЅРµС‚. 
 	#else /* CPUSTYLE_STM32H7XX */
 		  const int TXTHRLEN = 64;		// in DWORDS: The threshold length has to be at least eight DWORDS.
 		  const int RXTHRLEN = 2;	// in DWORDS: 
@@ -4614,7 +4614,7 @@ static HAL_StatusTypeDef USB_ActivateDedicatedEndpoint(USB_OTG_GlobalTypeDef *US
 			outep->DOEPCTL = (outep->DOEPCTL & ~ (USB_OTG_DOEPCTL_MPSIZ | USB_OTG_DOEPCTL_EPTYP)) |
 				((ep->maxpacket << USB_OTG_DOEPCTL_MPSIZ_Pos) & USB_OTG_DOEPCTL_MPSIZ ) |
 				(ep->type << USB_OTG_DOEPCTL_EPTYP_Pos ) |
-				//(ep->num << USB_OTG_DIEPCTL_TXFNUM_Pos ) |	// TX FIFO index - зачем это здесь?
+				//(ep->num << USB_OTG_DIEPCTL_TXFNUM_Pos ) |	// TX FIFO index - Р·Р°С‡РµРј СЌС‚Рѕ Р·РґРµСЃСЊ?
 				(USB_OTG_DOEPCTL_USBAEP) |
 				0;
 		} 
@@ -4810,7 +4810,7 @@ HAL_StatusTypeDef USB_EPStartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDef
 		* xfersize = N * maxpacket
 		*/  
 
-		// почему-то используется ep->maxpacket а не ep->xfer_len
+		// РїРѕС‡РµРјСѓ-С‚Рѕ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ ep->maxpacket Р° РЅРµ ep->xfer_len
 
 		if (ep->xfer_len == 0)
 		{
@@ -6192,7 +6192,7 @@ HAL_StatusTypeDef HAL_PCD_EP_Open(PCD_HandleTypeDef *hpcd, uint_fast8_t ep_addr,
 	/* Set initial data PID. */
 	if (ep_type == USBD_EP_TYPE_BULK )
 	{
-		//ep->data_pid_start = 0; // нигде не используется
+		//ep->data_pid_start = 0; // РЅРёРіРґРµ РЅРµ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ
 	}
 
 	__HAL_LOCK(hpcd); 
@@ -6616,7 +6616,7 @@ void HAL_PCD_DisconnectCallback(PCD_HandleTypeDef *hpcd)
 *******************************************************************************/
 
 #if 0
-	// эти константы описаны только для STM32F4xx
+	// СЌС‚Рё РєРѕРЅСЃС‚Р°РЅС‚С‹ РѕРїРёСЃР°РЅС‹ С‚РѕР»СЊРєРѕ РґР»СЏ STM32F4xx
 	/****************************** USB Exported Constants ************************/
 	#define USB_OTG_FS_HOST_MAX_CHANNEL_NBR                8U
 	#define USB_OTG_FS_MAX_IN_ENDPOINTS                    4U    /* Including EP0 */
@@ -6649,11 +6649,11 @@ static uint32_t usbd_makeTXFSIZ(uint_fast16_t base, uint_fast16_t size)
 		0;
 }
 
-// Преобразование размера в байтах размера данных в требования к fifo
-// Расчет аргумента функции HAL_PCDEx_SetRxFiFo, HAL_PCDEx_SetTxFiFo
+// РџСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёРµ СЂР°Р·РјРµСЂР° РІ Р±Р°Р№С‚Р°С… СЂР°Р·РјРµСЂР° РґР°РЅРЅС‹С… РІ С‚СЂРµР±РѕРІР°РЅРёСЏ Рє fifo
+// Р Р°СЃС‡РµС‚ Р°СЂРіСѓРјРµРЅС‚Р° С„СѓРЅРєС†РёРё HAL_PCDEx_SetRxFiFo, HAL_PCDEx_SetTxFiFo
 static uint_fast16_t size2buff4(uint_fast16_t size)
 {
-	const uint_fast16_t size4 = (size + 3) / 4;		// размер в 32-бит значениях
+	const uint_fast16_t size4 = (size + 3) / 4;		// СЂР°Р·РјРµСЂ РІ 32-Р±РёС‚ Р·РЅР°С‡РµРЅРёСЏС…
 	return ulmax16(0x10, size4);
 }
 
@@ -6669,12 +6669,12 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 	// DocID028270 Rev 2 (RM0410): 41.16.6 Device programming model
 
 /*
-3. Set up the Data FIFO RAM for each of the FIFOs – 
+3. Set up the Data FIFO RAM for each of the FIFOs вЂ“ 
 	Program the OTG_GRXFSIZ register, to be able to receive control OUT data and setup data. 
 	If thresholding is not enabled, at a minimum, this must be equal to 
 	1 max packet size of control endpoint 0 + 
 	2 Words (for the status of the control OUT data packet) + 
-	10 Words (for setup packets). – 
+	10 Words (for setup packets). вЂ“ 
 	Program the OTG_DIEPTXF0 register (depending on the FIFO number chosen) 
 	to be able to transmit control IN data. 
 	At a minimum, this must be equal to 1 max packet size of control endpoint 0. 
@@ -6682,17 +6682,17 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
   */
 	uint_fast16_t maxoutpacketsize4 = size2buff4(USB_OTG_MAX_EP0_SIZE);
 
-	// добавление шести обеспечивает работу конфигурации с единственным устройством HID
+	// РґРѕР±Р°РІР»РµРЅРёРµ С€РµСЃС‚Рё РѕР±РµСЃРїРµС‡РёРІР°РµС‚ СЂР°Р±РѕС‚Сѓ РєРѕРЅС„РёРіСѓСЂР°С†РёРё СЃ РµРґРёРЅСЃС‚РІРµРЅРЅС‹Рј СѓСЃС‚СЂРѕР№СЃС‚РІРѕРј HID
 	maxoutpacketsize4 += 6;
 
 	//uint_fast16_t base4;
 	uint_fast8_t numcontrolendpoints = 1;
 	uint_fast8_t numoutendpoints = 1;
 
-	// при addplaces = 3 появился звук на передаче в трансивер (при 2-х компортах)
-	// но если CDC и UAC включать поодиночке, обмен не нарушается и при 0.
-	// todo: найти все-таки документ https://www.synopsys.com/ip_prototyping_kit_usb3otgv2_drd_pc.pdf
-	// еще интересен QL-Hi-Speed-USB-2.0-OTG-Controller-Data-Sheet.pdf
+	// РїСЂРё addplaces = 3 РїРѕСЏРІРёР»СЃСЏ Р·РІСѓРє РЅР° РїРµСЂРµРґР°С‡Рµ РІ С‚СЂР°РЅСЃРёРІРµСЂ (РїСЂРё 2-С… РєРѕРјРїРѕСЂС‚Р°С…)
+	// РЅРѕ РµСЃР»Рё CDC Рё UAC РІРєР»СЋС‡Р°С‚СЊ РїРѕРѕРґРёРЅРѕС‡РєРµ, РѕР±РјРµРЅ РЅРµ РЅР°СЂСѓС€Р°РµС‚СЃСЏ Рё РїСЂРё 0.
+	// todo: РЅР°Р№С‚Рё РІСЃРµ-С‚Р°РєРё РґРѕРєСѓРјРµРЅС‚ https://www.synopsys.com/ip_prototyping_kit_usb3otgv2_drd_pc.pdf
+	// РµС‰Рµ РёРЅС‚РµСЂРµСЃРµРЅ QL-Hi-Speed-USB-2.0-OTG-Controller-Data-Sheet.pdf
 
 	uint_fast8_t addplaces = 3;
 
@@ -6700,7 +6700,7 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 	uint_fast16_t last4 = full4;
 	uint_fast16_t base4 = 0;
 #if WITHUSBCDC
-	// параметры TX FIFO для ендпоинтов, в которые никогда не будут идти данные для передачи
+	// РїР°СЂР°РјРµС‚СЂС‹ TX FIFO РґР»СЏ РµРЅРґРїРѕРёРЅС‚РѕРІ, РІ РєРѕС‚РѕСЂС‹Рµ РЅРёРєРѕРіРґР° РЅРµ Р±СѓРґСѓС‚ РёРґС‚Рё РґР°РЅРЅС‹Рµ РґР»СЏ РїРµСЂРµРґР°С‡Рё
 	const uint_fast16_t size4dummy = 0;//0x10;//bigbuff ? 0x10 : 4;
 	//last4 -= size4dummy;
 	const uint_fast16_t last4dummy = last4;
@@ -6710,7 +6710,7 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 
 #if WITHUSBUAC
 	{
-		/* endpoint передачи звука в компютер */
+		/* endpoint РїРµСЂРµРґР°С‡Рё Р·РІСѓРєР° РІ РєРѕРјРїСЋС‚РµСЂ */
 		const uint_fast8_t pipe = (USBD_EP_AUDIO_IN) & 0x7F;
 
 		numoutendpoints += 1;
@@ -6742,7 +6742,7 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 	}
 #if WITHUSBUAC3
 	{
-		/* endpoint передачи звука (спектра) в компютер */
+		/* endpoint РїРµСЂРµРґР°С‡Рё Р·РІСѓРєР° (СЃРїРµРєС‚СЂР°) РІ РєРѕРјРїСЋС‚РµСЂ */
 		const uint_fast8_t pipe = (USBD_EP_RTS_IN) & 0x7F;
 
 		const int nuacinpackets = 1 * mul2;
@@ -6760,13 +6760,13 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 #if WITHUSBCDC
 	for (i = 0; i < WITHUSBHWCDC_N; ++ i)
 	{
-		/* полнофункциональное устройство */
+		/* РїРѕР»РЅРѕС„СѓРЅРєС†РёРѕРЅР°Р»СЊРЅРѕРµ СѓСЃС‚СЂРѕР№СЃС‚РІРѕ */
 		const uint_fast8_t pipe = (USBD_EP_CDC_IN + i) & 0x7F;
 		const uint_fast8_t pipeint = (USBD_EP_CDC_INT + i) & 0x7F;
 		numoutendpoints += 1;
 		if (bigbuff == 0 && i > 0)
 		{
-			// на маленьких контроллерах только первый USB CDC может обмениваться данными
+			// РЅР° РјР°Р»РµРЅСЊРєРёС… РєРѕРЅС‚СЂРѕР»Р»РµСЂР°С… С‚РѕР»СЊРєРѕ РїРµСЂРІС‹Р№ USB CDC РјРѕР¶РµС‚ РѕР±РјРµРЅРёРІР°С‚СЊСЃСЏ РґР°РЅРЅС‹РјРё
 			instance->DIEPTXF [pipe - 1] = usbd_makeTXFSIZ(last4dummy, size4dummy);
 			instance->DIEPTXF [pipeint - 1] = usbd_makeTXFSIZ(last4dummy, size4dummy);
 
@@ -6801,7 +6801,7 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 
 #if WITHUSBCDCEEM
 	{
-		/* полнофункциональное устройство */
+		/* РїРѕР»РЅРѕС„СѓРЅРєС†РёРѕРЅР°Р»СЊРЅРѕРµ СѓСЃС‚СЂРѕР№СЃС‚РІРѕ */
 		const uint_fast8_t pipe = USBD_EP_CDCEEM_IN & 0x7F;
 
 		numoutendpoints += 1;
@@ -6828,7 +6828,7 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 
 #if WITHUSBCDCECM
 	{
-		/* полнофункциональное устройство */
+		/* РїРѕР»РЅРѕС„СѓРЅРєС†РёРѕРЅР°Р»СЊРЅРѕРµ СѓСЃС‚СЂРѕР№СЃС‚РІРѕ */
 		const uint_fast8_t pipeint = USBD_EP_CDCECM_INT & 0x7F;
 		const uint_fast8_t pipe = USBD_EP_CDCECM_IN & 0x7F;
 
@@ -6854,7 +6854,7 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 
 #if WITHUSBRNDIS
 	{
-		/* полнофункциональное устройство */
+		/* РїРѕР»РЅРѕС„СѓРЅРєС†РёРѕРЅР°Р»СЊРЅРѕРµ СѓСЃС‚СЂРѕР№СЃС‚РІРѕ */
 		const uint_fast8_t pipeint = USBD_EP_RNDIS_INT & 0x7F;
 		const uint_fast8_t pipe = USBD_EP_RNDIS_IN & 0x7F;
 
@@ -6881,7 +6881,7 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 
 #if WITHUSBHID && 0
 	{
-		/* ... устройство */
+		/* ... СѓСЃС‚СЂРѕР№СЃС‚РІРѕ */
 		const uint_fast8_t pipe = USBD_EP_HIDMOUSE_INT & 0x7F;
 
 		const uint_fast16_t size4 = size2buff4(HIDMOUSE_INT_DATA_SIZE);
@@ -6896,7 +6896,7 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 	
 	/* control endpoint TX FIFO */
 	{
-		/* Установить размер TX FIFO EP0 */
+		/* РЈСЃС‚Р°РЅРѕРІРёС‚СЊ СЂР°Р·РјРµСЂ TX FIFO EP0 */
 		const uint_fast16_t size4 = 2 * (size2buff4(USB_OTG_MAX_EP0_SIZE) + add3tx);
 		ASSERT(last4 >= size4);
 		last4 -= size4;
@@ -6905,7 +6905,7 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 	}
 	/* control endpoint RX FIFO */
 	{
-		/* Установить размер RX FIFO -  теперь все что осталоь - используем last4 вместо size4 */
+		/* РЈСЃС‚Р°РЅРѕРІРёС‚СЊ СЂР°Р·РјРµСЂ RX FIFO -  С‚РµРїРµСЂСЊ РІСЃРµ С‡С‚Рѕ РѕСЃС‚Р°Р»РѕСЊ - РёСЃРїРѕР»СЊР·СѓРµРј last4 РІРјРµСЃС‚Рѕ size4 */
 		// (4 * number of control endpoints + 6) + 
 		// ((largest USB packet used / 4) + 1 for status information) + 
 		// (2 * number of OUT endpoints) + 
@@ -6920,7 +6920,7 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 		PRINTF(PSTR("usbd_fifo_initialize11 RX FIFO %u bytes: 4*(full4-last4)=%u bytes (last4=%u, size4=%u)\n"), 4 * size4, 4 * (full4 - last4), last4, size4);
 		ASSERT(last4 >= size4);
 		instance->GRXFSIZ = (instance->GRXFSIZ & ~ USB_OTG_GRXFSIZ_RXFD) |
-			(last4 << USB_OTG_GRXFSIZ_RXFD_Pos) |	// was: size4 - то что осталось
+			(last4 << USB_OTG_GRXFSIZ_RXFD_Pos) |	// was: size4 - С‚Рѕ С‡С‚Рѕ РѕСЃС‚Р°Р»РѕСЃСЊ
 			0;
 		base4 += size4;
 	}
@@ -6942,7 +6942,7 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 	{
 		PRINTF(PSTR("usbd_fifo_initialize: base4=%u, last4=%u, fullsize=%u\n"), (base4 * 4), (last4 * 4), fullsize);
 #if 0
-		// Диагностическая выдача использованного объёма FIFO RAM
+		// Р”РёР°РіРЅРѕСЃС‚РёС‡РµСЃРєР°СЏ РІС‹РґР°С‡Р° РёСЃРїРѕР»СЊР·РѕРІР°РЅРЅРѕРіРѕ РѕР±СЉС‘РјР° FIFO RAM
 		char b [64];
 
 		local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("used=%u"), (base4 * 4) + (fullsize - last4 * 4));
@@ -7416,7 +7416,7 @@ static USBD_StatusTypeDef USBD_XXX_Init(USBD_HandleTypeDef *pdev, uint_fast8_t c
     /* CDC Prepare Out endpoint to receive 1st packet */ 
     USBD_LL_PrepareReceive(pdev, USB_ENDPOINT_OUT(USBD_EP_CDC_OUT), cdc1buffout,  VIRTUAL_COM_PORT_OUT_DATA_SIZE);
     USBD_LL_PrepareReceive(pdev, USB_ENDPOINT_OUT(USBD_EP_CDC_OUTb), cdc2buffout,  VIRTUAL_COM_PORT_OUT_DATA_SIZE);
- 	//USBD_LL_StallEP(pdev, USBD_EP_CDC_OUTb); // нельзя
+ 	//USBD_LL_StallEP(pdev, USBD_EP_CDC_OUTb); // РЅРµР»СЊР·СЏ
 	
 	usb_cdc_control_state [INTERFACE_CDC_CONTROL_3a] = 0;
 	usb_cdc_control_state [INTERFACE_CDC_CONTROL_3b] = 0;
@@ -7536,7 +7536,7 @@ static USBD_StatusTypeDef USBD_XXX_DeInit(USBD_HandleTypeDef *pdev, uint_fast8_t
 	}
 
 	HARDWARE_CDC_ONDISCONNECT();
-	/* при потере связи с host снять запрос на передачу */
+	/* РїСЂРё РїРѕС‚РµСЂРµ СЃРІСЏР·Рё СЃ host СЃРЅСЏС‚СЊ Р·Р°РїСЂРѕСЃ РЅР° РїРµСЂРµРґР°С‡Сѓ */
 	usb_cdc_control_state [INTERFACE_CDC_CONTROL_3a] = 0;
 	usb_cdc_control_state [INTERFACE_CDC_CONTROL_3b] = 0;
 
@@ -7897,7 +7897,7 @@ static USBD_StatusTypeDef USBD_XXX_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 				switch (req->bRequest)
 				{
 				case CDC_SET_CONTROL_LINE_STATE:
-					// Выполнение этого запроса не требует дополнительного чтения данных
+					// Р’С‹РїРѕР»РЅРµРЅРёРµ СЌС‚РѕРіРѕ Р·Р°РїСЂРѕСЃР° РЅРµ С‚СЂРµР±СѓРµС‚ РґРѕРїРѕР»РЅРёС‚РµР»СЊРЅРѕРіРѕ С‡С‚РµРЅРёСЏ РґР°РЅРЅС‹С…
 					//PRINTF(PSTR("USBD_ClassXXX_Setup OUT: CDC_SET_CONTROL_LINE_STATE, wValue=%04X\n"), req->wValue);
 					usb_cdc_control_state [interfacev] = req->wValue;
 					break;
@@ -7951,7 +7951,7 @@ static USBD_StatusTypeDef USBD_XXX_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 				switch (req->bRequest)
 				{
 				case CDC_SET_CONTROL_LINE_STATE:
-					// Выполнение этого запроса не требует дополнительного чтения данных
+					// Р’С‹РїРѕР»РЅРµРЅРёРµ СЌС‚РѕРіРѕ Р·Р°РїСЂРѕСЃР° РЅРµ С‚СЂРµР±СѓРµС‚ РґРѕРїРѕР»РЅРёС‚РµР»СЊРЅРѕРіРѕ С‡С‚РµРЅРёСЏ РґР°РЅРЅС‹С…
 					//PRINTF(PSTR("USBD_ClassXXX_Setup OUT: INTERFACE_CDCEEM_DATA_6 CDC_SET_CONTROL_LINE_STATE, wValue=%04X\n"), req->wValue);
 					//usb_cdc_control_state [interfacev] = req->wValue;
 					break;
@@ -7975,7 +7975,7 @@ static USBD_StatusTypeDef USBD_XXX_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 				switch (req->bRequest)
 				{
 				//case CDC_SET_CONTROL_LINE_STATE:
-					// Выполнение этого запроса не требует дополнительного чтения данных
+					// Р’С‹РїРѕР»РЅРµРЅРёРµ СЌС‚РѕРіРѕ Р·Р°РїСЂРѕСЃР° РЅРµ С‚СЂРµР±СѓРµС‚ РґРѕРїРѕР»РЅРёС‚РµР»СЊРЅРѕРіРѕ С‡С‚РµРЅРёСЏ РґР°РЅРЅС‹С…
 				//	PRINTF(PSTR("USBD_ClassXXX_Setup: INTERFACE_RNDIS_CONTROL_5 CDC_SET_CONTROL_LINE_STATE, wValue=%04X\n"), req->wValue);
 					//usb_cdc_control_state [interfacev] = req->wValue;
 				//	break;
@@ -7999,7 +7999,7 @@ static USBD_StatusTypeDef USBD_XXX_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 				switch (req->bRequest)
 				{
 				//case CDC_SET_CONTROL_LINE_STATE:
-					// Выполнение этого запроса не требует дополнительного чтения данных
+					// Р’С‹РїРѕР»РЅРµРЅРёРµ СЌС‚РѕРіРѕ Р·Р°РїСЂРѕСЃР° РЅРµ С‚СЂРµР±СѓРµС‚ РґРѕРїРѕР»РЅРёС‚РµР»СЊРЅРѕРіРѕ С‡С‚РµРЅРёСЏ РґР°РЅРЅС‹С…
 				//	PRINTF(PSTR("USBD_ClassXXX_Setup: INTERFACE_CDCECM_CONTROL_5 CDC_SET_CONTROL_LINE_STATE, wValue=%04X\n"), req->wValue);
 					//usb_cdc_control_state [interfacev] = req->wValue;
 				//	break;
@@ -8023,7 +8023,7 @@ static USBD_StatusTypeDef USBD_XXX_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 				switch (req->bRequest)
 				{
 				//case CDC_SET_CONTROL_LINE_STATE:
-					// Выполнение этого запроса не требует дополнительного чтения данных
+					// Р’С‹РїРѕР»РЅРµРЅРёРµ СЌС‚РѕРіРѕ Р·Р°РїСЂРѕСЃР° РЅРµ С‚СЂРµР±СѓРµС‚ РґРѕРїРѕР»РЅРёС‚РµР»СЊРЅРѕРіРѕ С‡С‚РµРЅРёСЏ РґР°РЅРЅС‹С…
 					//PRINTF(PSTR("USBD_ClassXXX_Setup OUT: INTERFACE_HID_CONTROL_7 CDC_SET_CONTROL_LINE_STATE, wValue=%04X\n"), req->wValue);
 					//usb_cdc_control_state [interfacev] = req->wValue;
 					//break;
@@ -8047,7 +8047,7 @@ static USBD_StatusTypeDef USBD_XXX_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 				switch (req->bRequest)
 				{
 				//case CDC_SET_CONTROL_LINE_STATE:
-					// Выполнение этого запроса не требует дополнительного чтения данных
+					// Р’С‹РїРѕР»РЅРµРЅРёРµ СЌС‚РѕРіРѕ Р·Р°РїСЂРѕСЃР° РЅРµ С‚СЂРµР±СѓРµС‚ РґРѕРїРѕР»РЅРёС‚РµР»СЊРЅРѕРіРѕ С‡С‚РµРЅРёСЏ РґР°РЅРЅС‹С…
 					//PRINTF(PSTR("USBD_ClassXXX_Setup OUT: INTERFACE_HID_CONTROL_7 CDC_SET_CONTROL_LINE_STATE, wValue=%04X\n"), req->wValue);
 					//usb_cdc_control_state [interfacev] = req->wValue;
 					//break;
@@ -8129,7 +8129,7 @@ static USBD_StatusTypeDef USBD_XXX_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 				USBD_CtlSendStatus(pdev);
 				break;
 
-			// Добавлено для WITHUSBHID
+			// Р”РѕР±Р°РІР»РµРЅРѕ РґР»СЏ WITHUSBHID
 			case USB_REQ_CLEAR_FEATURE:
 				//PRINTF(PSTR("USBD_ClassXXX_Setup: USB_REQ_TYPE_STANDARD USB_REQ_CLEAR_FEATURE interfacev=%d, value=%d\n"), interfacev, LO_BYTE(req->wValue));
 				USBD_CtlSendStatus(pdev);
@@ -8167,7 +8167,7 @@ static USBD_StatusTypeDef USBD_XXX_DataIn (USBD_HandleTypeDef *pdev, uint_fast8_
 #endif
 		while (usbd_cdc_txenabled && (cdc1buffinlevel < ARRAY_SIZE(cdc1buffin)))
 		{
-			HARDWARE_CDC_ONTXCHAR(pdev);	// при отсутствии данных usbd_cdc_txenabled устанавливается в 0
+			HARDWARE_CDC_ONTXCHAR(pdev);	// РїСЂРё РѕС‚СЃСѓС‚СЃС‚РІРёРё РґР°РЅРЅС‹С… usbd_cdc_txenabled СѓСЃС‚Р°РЅР°РІР»РёРІР°РµС‚СЃСЏ РІ 0
 		}
 		USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), cdc1buffin, cdc1buffinlevel);
 		cdc1buffinlevel = 0;
@@ -8176,7 +8176,7 @@ static USBD_StatusTypeDef USBD_XXX_DataIn (USBD_HandleTypeDef *pdev, uint_fast8_
 	case (USBD_EP_CDC_INb & 0x7F):
 		//while (usbd_cdc_txenabled && (cdc2buffinlevel < ARRAY_SIZE(cdc2buffin)))
 		//{
-		//	HARDWARE_CDC_ONTXCHAR(pdev);	// при отсутствии данных usbd_cdc_txenabled устанавливается в 0
+		//	HARDWARE_CDC_ONTXCHAR(pdev);	// РїСЂРё РѕС‚СЃСѓС‚СЃС‚РІРёРё РґР°РЅРЅС‹С… usbd_cdc_txenabled СѓСЃС‚Р°РЅР°РІР»РёРІР°РµС‚СЃСЏ РІ 0
 		//}
 		USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), cdc2buffin, cdc2buffinlevel);
 		cdc2buffinlevel = 0;
@@ -8285,7 +8285,7 @@ static USBD_StatusTypeDef USBD_XXX_DataOut (USBD_HandleTypeDef *pdev, uint_fast8
 		/* CDC EP OUT */
 		// use CDC data
 		//PRINTF(PSTR("0:%u "), USBD_LL_GetRxDataSize(pdev, epnum));
-		cdc1out_buffer_save(cdc1buffout, USBD_LL_GetRxDataSize(pdev, epnum));	/* использование буфера принятых данных */
+		cdc1out_buffer_save(cdc1buffout, USBD_LL_GetRxDataSize(pdev, epnum));	/* РёСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ Р±СѓС„РµСЂР° РїСЂРёРЅСЏС‚С‹С… РґР°РЅРЅС‹С… */
 		//memcpy(cdc1buffin, cdc1buffout, cdc1buffinlevel = USBD_LL_GetRxDataSize(pdev, epnum));
 		/* Prepare Out endpoint to receive next cdc data packet */
 		USBD_LL_PrepareReceive(pdev, USB_ENDPOINT_OUT(epnum), cdc1buffout, VIRTUAL_COM_PORT_OUT_DATA_SIZE);
@@ -8295,7 +8295,7 @@ static USBD_StatusTypeDef USBD_XXX_DataOut (USBD_HandleTypeDef *pdev, uint_fast8
 		/* CDC EP OUT */
 		// use CDC data
 		//PRINTF(PSTR("1:%u "), USBD_LL_GetRxDataSize(pdev, epnum));
-		cdc2out_buffer_save(cdc2buffout, USBD_LL_GetRxDataSize(pdev, epnum));	/* использование буфера принятых данных */
+		cdc2out_buffer_save(cdc2buffout, USBD_LL_GetRxDataSize(pdev, epnum));	/* РёСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ Р±СѓС„РµСЂР° РїСЂРёРЅСЏС‚С‹С… РґР°РЅРЅС‹С… */
 		//memcpy(cdc2buffin, cdc2buffout, cdc2buffinlevel = USBD_LL_GetRxDataSize(pdev, epnum));
 		/* Prepare Out endpoint to receive next cdc data packet */
 		USBD_LL_PrepareReceive(pdev, USB_ENDPOINT_OUT(epnum), cdc2buffout, VIRTUAL_COM_PORT_OUT_DATA_SIZE);
@@ -8566,7 +8566,7 @@ static void USBD_GetDescriptor(USBD_HandleTypeDef *pdev,
 			{
 			case 0x65:
 			case 0xF8:
-				// Запрос появляется при запуске MixW2
+				// Р—Р°РїСЂРѕСЃ РїРѕСЏРІР»СЏРµС‚СЃСЏ РїСЂРё Р·Р°РїСѓСЃРєРµ MixW2
 				//len = StringDescrTbl [STRING_ID_7].size;
 				//pbuf = StringDescrTbl [STRING_ID_7].data;
 				//break;
@@ -9435,7 +9435,7 @@ static void usbd_rndis_ep0_recv(USBD_HandleTypeDef *pdev)
 		TP();
 		break;
 
-	} // switch по типу RNDIS сообщения
+	} // switch РїРѕ С‚РёРїСѓ RNDIS СЃРѕРѕР±С‰РµРЅРёСЏ
 }
 
 #endif /* WITHUSBRNDIS */
@@ -9696,9 +9696,9 @@ USBD_StatusTypeDef USBD_LL_IsoINIncomplete(USBD_HandleTypeDef  *pdev, uint_fast8
 {
 	ASSERT(epnum != 0);
 	USBD_EndpointTypeDef * const pep = & pdev->ep_in [epnum];
-	// epnum всегда 0
+	// epnum РІСЃРµРіРґР° 0
 	//notseq  [epnum] = ! notseq  [epnum];
-	//TP(); // постоянно проходим тут, если нет передачи звука из трансивера в компютер
+	//TP(); // РїРѕСЃС‚РѕСЏРЅРЅРѕ РїСЂРѕС…РѕРґРёРј С‚СѓС‚, РµСЃР»Рё РЅРµС‚ РїРµСЂРµРґР°С‡Рё Р·РІСѓРєР° РёР· С‚СЂР°РЅСЃРёРІРµСЂР° РІ РєРѕРјРїСЋС‚РµСЂ
 	return USBD_OK;
 }
 
@@ -9712,9 +9712,9 @@ USBD_StatusTypeDef USBD_LL_IsoOUTIncomplete(USBD_HandleTypeDef  *pdev, uint_fast
 {
 	ASSERT(epnum != 0);
 	USBD_EndpointTypeDef * const pep = & pdev->ep_out [epnum];
-	// epnum всегда 0
+	// epnum РІСЃРµРіРґР° 0
 	//notseq [epnum] = ! notseq  [epnum];
-	//TP(); // постоянно проходим тут, если нет передачи звука из компютера в трансивер
+	//TP(); // РїРѕСЃС‚РѕСЏРЅРЅРѕ РїСЂРѕС…РѕРґРёРј С‚СѓС‚, РµСЃР»Рё РЅРµС‚ РїРµСЂРµРґР°С‡Рё Р·РІСѓРєР° РёР· РєРѕРјРїСЋС‚РµСЂР° РІ С‚СЂР°РЅСЃРёРІРµСЂ
 	return USBD_OK;
 }
 
@@ -9785,7 +9785,7 @@ static USBD_StatusTypeDef  USBD_AddClass(USBD_HandleTypeDef *pdev, const USBD_Cl
   * @param  epnum : endpoint number   
   * @retval HAL status
   */
-// вызывается только при работе без DMA
+// РІС‹Р·С‹РІР°РµС‚СЃСЏ С‚РѕР»СЊРєРѕ РїСЂРё СЂР°Р±РѕС‚Рµ Р±РµР· DMA
 static HAL_StatusTypeDef PCD_WriteEmptyTxFifo(PCD_HandleTypeDef *hpcd, uint32_t epnum)
 {
 	USB_OTG_GlobalTypeDef * const USBx = hpcd->Instance;  
@@ -9801,7 +9801,7 @@ static HAL_StatusTypeDef PCD_WriteEmptyTxFifo(PCD_HandleTypeDef *hpcd, uint32_t 
 		len = ep->maxpacket;
 	len32b = (len + 3) / 4;
 	int i = 0;
-	// todo: разобраться, почему тут цикл. Это же обработчик прерывания
+	// todo: СЂР°Р·РѕР±СЂР°С‚СЊСЃСЏ, РїРѕС‡РµРјСѓ С‚СѓС‚ С†РёРєР». Р­С‚Рѕ Р¶Рµ РѕР±СЂР°Р±РѕС‚С‡РёРє РїСЂРµСЂС‹РІР°РЅРёСЏ
 	while  ( 
 		((USBx_INEP(epnum)->DTXFSTS & USB_OTG_DTXFSTS_INEPTFSAV) >> USB_OTG_DTXFSTS_INEPTFSAV_Pos) > len32b &&
 		ep->xfer_count < ep->xfer_len &&
@@ -9972,8 +9972,8 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
             
             if (hpcd->Init.dma_enable == USB_ENABLE)
             {
-              inep->xfer_buff += inep->maxpacket; // пересланный размер может отличаться от максимального
-              //inep->xfer_buff += inep->xfer_len; // может быть, так?
+              inep->xfer_buff += inep->maxpacket; // РїРµСЂРµСЃР»Р°РЅРЅС‹Р№ СЂР°Р·РјРµСЂ РјРѕР¶РµС‚ РѕС‚Р»РёС‡Р°С‚СЊСЃСЏ РѕС‚ РјР°РєСЃРёРјР°Р»СЊРЅРѕРіРѕ
+              //inep->xfer_buff += inep->xfer_len; // РјРѕР¶РµС‚ Р±С‹С‚СЊ, С‚Р°Рє?
             }
                                       
             HAL_PCD_DataInStageCallback(hpcd, inep->num);
@@ -10008,7 +10008,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
           if ((epint & USB_OTG_DIEPINT_TXFE) == USB_OTG_DIEPINT_TXFE)
           {
 			  // see (USBx->GAHBCFG & USB_OTG_GAHBCFG_TXFELVL)
-            PCD_WriteEmptyTxFifo(hpcd, epnum);	// вызывается только при работе без DMA
+            PCD_WriteEmptyTxFifo(hpcd, epnum);	// РІС‹Р·С‹РІР°РµС‚СЃСЏ С‚РѕР»СЊРєРѕ РїСЂРё СЂР°Р±РѕС‚Рµ Р±РµР· DMA
           }
         }
         epnum ++;
@@ -14138,7 +14138,7 @@ static const USBD_ClassTypeDef USBD_CLASS_XXX =
   * @param  hpcd: PCD handle
   * @retval None
   */
-// Сейчас все действия по подключению к выводам и прерываниям делаются в hardware_usbd_initialize.
+// РЎРµР№С‡Р°СЃ РІСЃРµ РґРµР№СЃС‚РІРёСЏ РїРѕ РїРѕРґРєР»СЋС‡РµРЅРёСЋ Рє РІС‹РІРѕРґР°Рј Рё РїСЂРµСЂС‹РІР°РЅРёСЏРј РґРµР»Р°СЋС‚СЃСЏ РІ hardware_usbd_initialize.
 void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
 {
 #if CPUSTYLE_R7S721
@@ -14185,7 +14185,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
 	hpcd->Instance->SUSPMODE |= USB_SUSPMODE_SUSPM;	// SUSPM 1: The clock supplied to this module is enabled.
 
 
-	//hpcd->Instance->CFIFOSEL = 0;	// не помогает с первым чтением из DCP
+	//hpcd->Instance->CFIFOSEL = 0;	// РЅРµ РїРѕРјРѕРіР°РµС‚ СЃ РїРµСЂРІС‹Рј С‡С‚РµРЅРёРµРј РёР· DCP
 	//hpcd->Instance->CFIFOCTR = USB_CFIFOCTR_BCLR;	// BCLR
 
 	hpcd->Instance->SOFCFG = 
@@ -14291,7 +14291,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
 
 #elif defined (STM32F40_41xxx)
 
-	//const uint_fast32_t stm32f4xx_pllq = arm_hardware_stm32f7xx_pllq_initialize();	// Настроить выход PLLQ на 48 МГц
+	//const uint_fast32_t stm32f4xx_pllq = arm_hardware_stm32f7xx_pllq_initialize();	// РќР°СЃС‚СЂРѕРёС‚СЊ РІС‹С…РѕРґ PLLQ РЅР° 48 РњР“С†
 	//PRINTF(PSTR("HAL_PCD_MspInit: stm32f4xx_pllq=%lu, freq=%lu\n"), (unsigned long) stm32f4xx_pllq, PLL_FREQ / stm32f4xx_pllq);
 
 	USBD_FS_INITIALIZE();
@@ -14307,7 +14307,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
 
 	if (hpcd->Instance == USB_OTG_HS)
 	{
-		//const uint_fast32_t stm32f4xx_pllq = arm_hardware_stm32f7xx_pllq_initialize();	// Настроить выход PLLQ на 48 МГц
+		//const uint_fast32_t stm32f4xx_pllq = arm_hardware_stm32f7xx_pllq_initialize();	// РќР°СЃС‚СЂРѕРёС‚СЊ РІС‹С…РѕРґ PLLQ РЅР° 48 РњР“С†
 		//PRINTF(PSTR("HAL_PCD_MspInit: stm32f4xx_pllq=%lu, freq=%lu\n"), (unsigned long) stm32f4xx_pllq, PLL_FREQ / stm32f4xx_pllq);
 
 		if (hpcd->Init.phy_itface == USB_OTG_ULPI_PHY)
@@ -14345,7 +14345,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
 	}
 	else if (hpcd->Instance == USB_OTG_FS)
 	{
-		//const uint_fast32_t stm32f4xx_pllq = arm_hardware_stm32f7xx_pllq_initialize();	// Настроить выход PLLQ на 48 МГц
+		//const uint_fast32_t stm32f4xx_pllq = arm_hardware_stm32f7xx_pllq_initialize();	// РќР°СЃС‚СЂРѕРёС‚СЊ РІС‹С…РѕРґ PLLQ РЅР° 48 РњР“С†
 		//PRINTF(PSTR("HAL_PCD_MspInit: stm32f4xx_pllq=%lu, freq=%lu\n"), (unsigned long) stm32f4xx_pllq, PLL_FREQ / stm32f4xx_pllq);
 
 		USBD_FS_INITIALIZE();
@@ -14409,7 +14409,7 @@ static USBD_StatusTypeDef  USBD_LL_FS_Init (PCD_HandleTypeDef * hpcd, USBD_Handl
 	hpcd->Init.low_power_enable = USB_DISABLE;
 	hpcd->Init.lpm_enable = USB_DISABLE;
 	hpcd->Init.battery_charging_enable = USB_ENABLE;
-#if WITHUSBHWVBUSSENSE	/* используется предопределенный вывод VBUS_SENSE */
+#if WITHUSBHWVBUSSENSE	/* РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РїСЂРµРґРѕРїСЂРµРґРµР»РµРЅРЅС‹Р№ РІС‹РІРѕРґ VBUS_SENSE */
 	hpcd->Init.vbus_sensing_enable = USB_ENABLE;
 #else /* WITHUSBHWVBUSSENSE */
 	hpcd->Init.vbus_sensing_enable = USB_DISABLE;
@@ -14425,10 +14425,10 @@ static USBD_StatusTypeDef  USBD_LL_FS_Init (PCD_HandleTypeDef * hpcd, USBD_Handl
 #if CPUSTYLE_R7S721
 	usbd_pipes_initialize(hpcd);
 #elif CPUSTYLE_STM32H7XX
-	// У OTH_HS размер FIFO 4096 байт
+	// РЈ OTH_HS СЂР°Р·РјРµСЂ FIFO 4096 Р±Р°Р№С‚
 	usbd_fifo_initialize(hpcd, 4096, 1);
 #else /* CPUSTYLE_R7S721 */
-	// У OTH_FS размер FIFO 1280 байт
+	// РЈ OTH_FS СЂР°Р·РјРµСЂ FIFO 1280 Р±Р°Р№С‚
 	usbd_fifo_initialize(hpcd, 1280, 0);
 #endif /* CPUSTYLE_R7S721 */
 
@@ -14469,7 +14469,7 @@ static USBD_StatusTypeDef  USBD_LL_HS_Init (PCD_HandleTypeDef * hpcd, USBD_Handl
 
 #endif /* CPUSTYLE_R7S721 */
 
-	#if WITHUSBHWVBUSSENSE	/* используется предопределенный вывод VBUS_SENSE */
+	#if WITHUSBHWVBUSSENSE	/* РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РїСЂРµРґРѕРїСЂРµРґРµР»РµРЅРЅС‹Р№ РІС‹РІРѕРґ VBUS_SENSE */
 		hpcd->Init.vbus_sensing_enable = USB_ENABLE;
 	#else /* WITHUSBHWVBUSSENSE */
 		hpcd->Init.vbus_sensing_enable = USB_DISABLE;
@@ -14493,7 +14493,7 @@ static USBD_StatusTypeDef  USBD_LL_HS_Init (PCD_HandleTypeDef * hpcd, USBD_Handl
 #if CPUSTYLE_R7S721
 	usbd_pipes_initialize(hpcd);
 #else /* CPUSTYLE_R7S721 */
-	// У OTH_HS размер FIFO 4096 байт
+	// РЈ OTH_HS СЂР°Р·РјРµСЂ FIFO 4096 Р±Р°Р№С‚
 	usbd_fifo_initialize(hpcd, 4096, 1);
 #endif /* CPUSTYLE_R7S721 */
 
@@ -14621,7 +14621,7 @@ static USBD_StatusTypeDef USBD_DeInit(USBD_HandleTypeDef *pdev)
 	return USBD_OK;
 }
 
-/* вызывается при запрещённых прерываниях. */
+/* РІС‹Р·С‹РІР°РµС‚СЃСЏ РїСЂРё Р·Р°РїСЂРµС‰С‘РЅРЅС‹С… РїСЂРµСЂС‹РІР°РЅРёСЏС…. */
 static void hardware_usbd_initialize(void)
 {
 	extern USBD_ClassTypeDef  USBD_CLASS_DFU;
@@ -14644,7 +14644,7 @@ static void hardware_usbd_initialize(void)
 #endif /* WITHUSBDFU */
 }
 
-/* вызывается при запрещённых прерываниях. */
+/* РІС‹Р·С‹РІР°РµС‚СЃСЏ РїСЂРё Р·Р°РїСЂРµС‰С‘РЅРЅС‹С… РїСЂРµСЂС‹РІР°РЅРёСЏС…. */
 static void board_usbd_initialize(void)
 {
 	#if WITHUSBHWHIGHSPEED
@@ -14665,7 +14665,7 @@ static void board_usbd_initialize(void)
 	hardware_usbd_dma_enable();
 }
 
-/* вызывается при разрешённых прерываниях. */
+/* РІС‹Р·С‹РІР°РµС‚СЃСЏ РїСЂРё СЂР°Р·СЂРµС€С‘РЅРЅС‹С… РїСЂРµСЂС‹РІР°РЅРёСЏС…. */
 static void board_usbd_activate(void)
 {
 	//PRINTF(PSTR("board_usbd_activate.\n"));
@@ -14674,7 +14674,7 @@ static void board_usbd_activate(void)
 
 	//PRINTF(PSTR("board_usbd_activate done.\n"));
 }
-/* вызывается при разрешённых прерываниях. */
+/* РІС‹Р·С‹РІР°РµС‚СЃСЏ РїСЂРё СЂР°Р·СЂРµС€С‘РЅРЅС‹С… РїСЂРµСЂС‹РІР°РЅРёСЏС…. */
 static void board_usbd_deactivate(void)
 {
   USBD_Stop(&hUsbDevice);
@@ -14682,7 +14682,7 @@ static void board_usbd_deactivate(void)
 
 
 #if WITHUSBHOST//WITHUSEUSBFLASH
-//++++ сюда переносим используемые хостом функции
+//++++ СЃСЋРґР° РїРµСЂРµРЅРѕСЃРёРј РёСЃРїРѕР»СЊР·СѓРµРјС‹Рµ С…РѕСЃС‚РѕРј С„СѓРЅРєС†РёРё
 
 
 /**
@@ -15007,7 +15007,7 @@ void HAL_HCD_MspInit(HCD_HandleTypeDef* hcdHandle)
 	{
 		#if CPUSTYLE_STM32H7XX
 
-			//const uint_fast32_t stm32f4xx_pllq = arm_hardware_stm32f7xx_pllq_initialize();	// Настроить выход PLLQ на 48 МГц
+			//const uint_fast32_t stm32f4xx_pllq = arm_hardware_stm32f7xx_pllq_initialize();	// РќР°СЃС‚СЂРѕРёС‚СЊ РІС‹С…РѕРґ PLLQ РЅР° 48 РњР“С†
 			//PRINTF(PSTR("HAL_HCD_MspInit: stm32f4xx_pllq=%lu, freq=%lu\n"), (unsigned long) stm32f4xx_pllq, PLL_FREQ / stm32f4xx_pllq);
 			USBD_FS_INITIALIZE();
 
@@ -15020,7 +15020,7 @@ void HAL_HCD_MspInit(HCD_HandleTypeDef* hcdHandle)
 			NVIC_EnableIRQ(OTG_FS_IRQn);	// OTG_FS_IRQHandler() enable
 
 		#else
-			//const uint_fast32_t stm32f4xx_pllq = arm_hardware_stm32f7xx_pllq_initialize();	// Настроить выход PLLQ на 48 МГц
+			//const uint_fast32_t stm32f4xx_pllq = arm_hardware_stm32f7xx_pllq_initialize();	// РќР°СЃС‚СЂРѕРёС‚СЊ РІС‹С…РѕРґ PLLQ РЅР° 48 РњР“С†
 			//PRINTF(PSTR("HAL_HCD_MspInit: stm32f4xx_pllq=%lu, freq=%lu\n"), (unsigned long) stm32f4xx_pllq, PLL_FREQ / stm32f4xx_pllq);
 
 			USBD_FS_INITIALIZE();
@@ -15579,7 +15579,7 @@ USBH_StatusTypeDef USBH_FreePipe  (USBH_HandleTypeDef *phost, uint8_t idx)
   * @param  phost: Host Handle
   * @retval USBH Status
   */
-/* вызывается при разрешённых прерываниях. */
+/* РІС‹Р·С‹РІР°РµС‚СЃСЏ РїСЂРё СЂР°Р·СЂРµС€С‘РЅРЅС‹С… РїСЂРµСЂС‹РІР°РЅРёСЏС…. */
 USBH_StatusTypeDef  USBH_Start(USBH_HandleTypeDef *phost)
 {
 	/* Start the low level driver  */
@@ -15597,7 +15597,7 @@ USBH_StatusTypeDef  USBH_Start(USBH_HandleTypeDef *phost)
   * @param  phost: Host Handle
   * @retval USBH Status
   */
-/* вызывается при разрешённых прерываниях. */
+/* РІС‹Р·С‹РІР°РµС‚СЃСЏ РїСЂРё СЂР°Р·СЂРµС€С‘РЅРЅС‹С… РїСЂРµСЂС‹РІР°РЅРёСЏС…. */
 USBH_StatusTypeDef  USBH_Stop(USBH_HandleTypeDef *phost)
 {
   /* Stop and cleanup the low level driver  */
@@ -15620,7 +15620,7 @@ USBH_StatusTypeDef  USBH_Stop(USBH_HandleTypeDef *phost)
   * @param  phost: Host Handle
   * @retval USBH Status
   */
-/* вызывается при разрешённых прерываниях. */
+/* РІС‹Р·С‹РІР°РµС‚СЃСЏ РїСЂРё СЂР°Р·СЂРµС€С‘РЅРЅС‹С… РїСЂРµСЂС‹РІР°РЅРёСЏС…. */
 USBH_StatusTypeDef  USBH_ReEnumerate(USBH_HandleTypeDef *phost)
 {
 	/*Stop Host */ 
@@ -15649,7 +15649,7 @@ USBH_StatusTypeDef  USBH_ReEnumerate(USBH_HandleTypeDef *phost)
   * @param  pUsrFunc: User Callback
   * @retval USBH Status
   */
-/* вызывается при разрешённых прерываниях. */
+/* РІС‹Р·С‹РІР°РµС‚СЃСЏ РїСЂРё СЂР°Р·СЂРµС€С‘РЅРЅС‹С… РїСЂРµСЂС‹РІР°РЅРёСЏС…. */
 USBH_StatusTypeDef  USBH_Init(USBH_HandleTypeDef *phost, void (*pUsrFunc)(USBH_HandleTypeDef *phost, uint8_t ), uint8_t id)
 {
   /* Check whether the USB Host handle is valid */
@@ -17361,7 +17361,7 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
 		break;    
 
 	case HOST_DEV_ATTACHED2:
-		/* после таймаута */
+		/* РїРѕСЃР»Рµ С‚Р°Р№РјР°СѓС‚Р° */
 		phost->device.speed = USBH_LL_GetSpeed(phost);
 
 		phost->gState = HOST_ENUMERATION;
@@ -17443,7 +17443,7 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
     break;
     
 	case HOST_CHECK_CLASS:
-		// Если USBH_GetActiveClass(phost) == 0x01 - работаем с составным устройством.
+		// Р•СЃР»Рё USBH_GetActiveClass(phost) == 0x01 - СЂР°Р±РѕС‚Р°РµРј СЃ СЃРѕСЃС‚Р°РІРЅС‹Рј СѓСЃС‚СЂРѕР№СЃС‚РІРѕРј.
 
 		PRINTF(PSTR("USBH_Process: HOST_CHECK_CLASS (0x%02X)\n"), USBH_GetActiveClass(phost));
 		if (phost->ClassNumber == 0)
@@ -17461,7 +17461,7 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
 				if (phost->pClass [idx] != NULL && phost->pClass [idx]->ClassCode == USBH_GetActiveClass(phost))
 				{
 					phost->pActiveClass = phost->pClass [idx];
-					break;	// или должен был последний из встретив
+					break;	// РёР»Рё РґРѕР»Р¶РµРЅ Р±С‹Р» РїРѕСЃР»РµРґРЅРёР№ РёР· РІСЃС‚СЂРµС‚РёРІ
 				}
 			}
 
@@ -18128,11 +18128,11 @@ void OTG_FS_IRQHandler(void)
 }
 #endif /* WITHUSBHOST */
 
-//---- сюда переносим используемые хостом функции
+//---- СЃСЋРґР° РїРµСЂРµРЅРѕСЃРёРј РёСЃРїРѕР»СЊР·СѓРµРјС‹Рµ С…РѕСЃС‚РѕРј С„СѓРЅРєС†РёРё
 
 
-/* вызывается при запрещённых прерываниях. */
-// пока, для упрощения конфигурирования, поддерживается USB HOST на USB_OTG_FS
+/* РІС‹Р·С‹РІР°РµС‚СЃСЏ РїСЂРё Р·Р°РїСЂРµС‰С‘РЅРЅС‹С… РїСЂРµСЂС‹РІР°РЅРёСЏС…. */
+// РїРѕРєР°, РґР»СЏ СѓРїСЂРѕС‰РµРЅРёСЏ РєРѕРЅС„РёРіСѓСЂРёСЂРѕРІР°РЅРёСЏ, РїРѕРґРґРµСЂР¶РёРІР°РµС‚СЃСЏ USB HOST РЅР° USB_OTG_FS
 static void board_usbh_initialize(void)
 {
 	/* Init Host Library,Add Supported Class and Start the library*/
@@ -18141,8 +18141,8 @@ static void board_usbh_initialize(void)
 	////USBH_RegisterClass(&hUsbHostFS, USBH_MSC_CLASS);
 }
 
-/* вызывается при разрешённых прерываниях. */
-// пока, для упрощения конфигурирования, поддерживается USB HOST на USB_OTG_FS
+/* РІС‹Р·С‹РІР°РµС‚СЃСЏ РїСЂРё СЂР°Р·СЂРµС€С‘РЅРЅС‹С… РїСЂРµСЂС‹РІР°РЅРёСЏС…. */
+// РїРѕРєР°, РґР»СЏ СѓРїСЂРѕС‰РµРЅРёСЏ РєРѕРЅС„РёРіСѓСЂРёСЂРѕРІР°РЅРёСЏ, РїРѕРґРґРµСЂР¶РёРІР°РµС‚СЃСЏ USB HOST РЅР° USB_OTG_FS
 static void board_usbh_activate(void)
 {
 #if CPUSTYLE_R7S721
@@ -18280,7 +18280,7 @@ DRESULT USB_disk_read(
 	return RES_ERROR;
 }
 
-/* запись буферизированных данных на носитель */
+/* Р·Р°РїРёСЃСЊ Р±СѓС„РµСЂРёР·РёСЂРѕРІР°РЅРЅС‹С… РґР°РЅРЅС‹С… РЅР° РЅРѕСЃРёС‚РµР»СЊ */
 static 
 DRESULT USB_Sync(BYTE drv)
 {
@@ -18327,7 +18327,7 @@ const struct drvfunc USBH_drvfunc =
 #endif /* WITHUSEUSBFLASH */
 
 
-/* вызывается при запрещённых прерываниях. */
+/* РІС‹Р·С‹РІР°РµС‚СЃСЏ РїСЂРё Р·Р°РїСЂРµС‰С‘РЅРЅС‹С… РїСЂРµСЂС‹РІР°РЅРёСЏС…. */
 void board_usb_initialize(void)
 {
 #if WITHUSBDFU
@@ -18344,7 +18344,7 @@ void board_usb_initialize(void)
 	//PRINTF(PSTR("board_usb_initialize done.\n"));
 }
 
-/* вызывается при разрешённых прерываниях. */
+/* РІС‹Р·С‹РІР°РµС‚СЃСЏ РїСЂРё СЂР°Р·СЂРµС€С‘РЅРЅС‹С… РїСЂРµСЂС‹РІР°РЅРёСЏС…. */
 void board_usb_activate(void)
 {
 	//PRINTF(PSTR("board_usb_activate start.\n"));
@@ -18358,7 +18358,7 @@ void board_usb_activate(void)
 	//PRINTF(PSTR("board_usb_activate done.\n"));
 }
 
-/* вызывается при разрешённых прерываниях. */
+/* РІС‹Р·С‹РІР°РµС‚СЃСЏ РїСЂРё СЂР°Р·СЂРµС€С‘РЅРЅС‹С… РїСЂРµСЂС‹РІР°РЅРёСЏС…. */
 void board_usb_deactivate(void)
 {
 	//PRINTF(PSTR("board_usb_activate start.\n"));
@@ -18372,7 +18372,7 @@ void board_usb_deactivate(void)
 	//PRINTF(PSTR("board_usb_activate done.\n"));
 }
 
-// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
+// РІС‹Р·С‹РІР°РµС‚СЃСЏ СЃ С‡Р°СЃС‚РѕС‚РѕР№ TICKS_FREQUENCY (РЅР°РїСЂРёРјРµСЂ, 200 Р“С†) СЃ Р·Р°РїСЂРµС‰РµРЅРЅС‹РјРё РїСЂРµСЂС‹РІР°РЅРёСЏРјРё.
 void board_usb_spool(void)
 {
 #if defined (WITHUSBHW_HOST)
@@ -18562,7 +18562,7 @@ static void spidf_write_byte(spitarget_t target, uint_fast8_t v)
 
 void spidf_uninitialize(void)
 {
-	//arm_hardware_pio4_inputs(0xFC);		// Отключить процессор от SERIAL FLASH
+	//arm_hardware_pio4_inputs(0xFC);		// РћС‚РєР»СЋС‡РёС‚СЊ РїСЂРѕС†РµСЃСЃРѕСЂ РѕС‚ SERIAL FLASH
 #if 0
 	// spi multi-io hang off
 	CPG.STBCR9 |= CPG_STBCR9_BIT_MSTP93;	// Module Stop 93	- 1: Clock supply to channel 0 of the SPI multi I/O bus controller is halted.
@@ -18583,7 +18583,7 @@ void spidf_unselect(spitarget_t target)
 {
 	do {	R7S721_TARGET_PORT_S(4, (1U << 5)); } while (0);
 #if 1
-	arm_hardware_pio4_inputs(0x7C);		// Отключить процессор от SERIAL FLASH
+	arm_hardware_pio4_inputs(0x7C);		// РћС‚РєР»СЋС‡РёС‚СЊ РїСЂРѕС†РµСЃСЃРѕСЂ РѕС‚ SERIAL FLASH
 #endif
 }
 
@@ -18674,8 +18674,8 @@ static int testchipDATAFLASH(void)
 	unsigned char mf_dlen;	// Extended Device Information String Length
 
 
-	/* Ожидание бита ~RDY в слове состояния. Для FRAM не имеет смысла.
-	Вставлено для возможности использования DATAFLASH */
+	/* РћР¶РёРґР°РЅРёРµ Р±РёС‚Р° ~RDY РІ СЃР»РѕРІРµ СЃРѕСЃС‚РѕСЏРЅРёСЏ. Р”Р»СЏ FRAM РЅРµ РёРјРµРµС‚ СЃРјС‹СЃР»Р°.
+	Р’СЃС‚Р°РІР»РµРЅРѕ РґР»СЏ РІРѕР·РјРѕР¶РЅРѕСЃС‚Рё РёСЃРїРѕР»СЊР·РѕРІР°РЅРёСЏ DATAFLASH */
 
 	if (timed_dataflash_read_status(target))
 		return 1;
@@ -18957,7 +18957,7 @@ uint16_t MEM_If_Init_HS(void)
 	PRINTF(PSTR("MEM_If_Init_HS\n"));
 	spidf_initialize();
 	testchipDATAFLASH();
-	prepareDATAFLASH();	// снятие защиты со страниц при первом програмимровании через SPI интерфейс
+	prepareDATAFLASH();	// СЃРЅСЏС‚РёРµ Р·Р°С‰РёС‚С‹ СЃРѕ СЃС‚СЂР°РЅРёС† РїСЂРё РїРµСЂРІРѕРј РїСЂРѕРіСЂР°РјРёРјСЂРѕРІР°РЅРёРё С‡РµСЂРµР· SPI РёРЅС‚РµСЂС„РµР№СЃ
 	return (USBD_OK);
 }
 
@@ -19008,7 +19008,7 @@ uint16_t MEM_If_Write_HS(uint8_t *src, uint32_t dest, uint32_t Len)
 		memcpy((void *) ((uintptr_t) dest - BOOTLOADER_APPBASE + BOOTLOADER_APPAREA), src, Len);
 	else
 	{
-		/* программируем бутлоадер */
+		/* РїСЂРѕРіСЂР°РјРјРёСЂСѓРµРј Р±СѓС‚Р»РѕР°РґРµСЂ */
 	}
 #endif /* WITHISBOOTLOADER */
 	return (USBD_OK);
@@ -19622,7 +19622,7 @@ static void DFU_GetStatus(USBD_HandleTypeDef *pdev)
       hdfu->dev_status[2] = 0;
       hdfu->dev_status[3] = 0;
       hdfu->dev_status[4] = hdfu->dev_state;     
-		// здесь строка предотвращет зависания звука при программировании на стирании страницы	
+		// Р·РґРµСЃСЊ СЃС‚СЂРѕРєР° РїСЂРµРґРѕС‚РІСЂР°С‰РµС‚ Р·Р°РІРёСЃР°РЅРёСЏ Р·РІСѓРєР° РїСЂРё РїСЂРѕРіСЂР°РјРјРёСЂРѕРІР°РЅРёРё РЅР° СЃС‚РёСЂР°РЅРёРё СЃС‚СЂР°РЅРёС†С‹	
 	  USBD_DFU_fops_HS.GetStatus(hdfu->data_ptr, DFU_MEDIA_ERASE, hdfu->dev_status);
     }
     break;
@@ -19645,7 +19645,7 @@ static void DFU_GetStatus(USBD_HandleTypeDef *pdev)
       hdfu->dev_status[2] = 0;
       hdfu->dev_status[3] = 0;
       hdfu->dev_status[4] = hdfu->dev_state;     
-	  // не меняет протестиованного поведения
+	  // РЅРµ РјРµРЅСЏРµС‚ РїСЂРѕС‚РµСЃС‚РёРѕРІР°РЅРЅРѕРіРѕ РїРѕРІРµРґРµРЅРёСЏ
 	//USBD_DFU_fops_HS.GetStatus(hdfu->data_ptr, DFU_MEDIA_ERASE, hdfu->dev_status);
     }
     break;

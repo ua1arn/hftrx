@@ -1,11 +1,11 @@
 /* $Id$ */
 //
-// Проект HF Dream Receiver (КВ приёмник мечты)
-// автор Гена Завидовский mgs2001@mail.ru
+// РџСЂРѕРµРєС‚ HF Dream Receiver (РљР’ РїСЂРёС‘РјРЅРёРє РјРµС‡С‚С‹)
+// Р°РІС‚РѕСЂ Р“РµРЅР° Р—Р°РІРёРґРѕРІСЃРєРёР№ mgs2001@mail.ru
 // UA1ARN
 //
 // Siemens S65 Display Control
-/* Индикатор 176*132 с контроллером Epson L2F50126 */
+/* РРЅРґРёРєР°С‚РѕСЂ 176*132 СЃ РєРѕРЅС‚СЂРѕР»Р»РµСЂРѕРј Epson L2F50126 */
 
 #include "hardware.h"
 #include "board.h"
@@ -55,7 +55,7 @@
 
 #define L2F50_SPIMODE SPIC_MODE3
 
-// Условие использования оптимизированных функций обращения к SPI
+// РЈСЃР»РѕРІРёРµ РёСЃРїРѕР»СЊР·РѕРІР°РЅРёСЏ РѕРїС‚РёРјРёР·РёСЂРѕРІР°РЅРЅС‹С… С„СѓРЅРєС†РёР№ РѕР±СЂР°С‰РµРЅРёСЏ Рє SPI
 #define WITHSPIEXT16 (WITHSPIHW && WITHSPI16BIT)
 
 static void
@@ -72,7 +72,7 @@ l2f50_reset(void)
 	local_delay_ms(5);		// delay 5 mS
 }
 
-//  Запись данных без управлениея CS
+//  Р—Р°РїРёСЃСЊ РґР°РЅРЅС‹С… Р±РµР· СѓРїСЂР°РІР»РµРЅРёРµСЏ CS
 static void 
 l2f50_writeData(uint_fast8_t b)
 {
@@ -85,7 +85,7 @@ l2f50_writeData(uint_fast8_t b)
 static void 
 l2f50_writeCmd(uint_fast8_t b)
 {
-	L2F50_CMND();		// Индикатор в режим приема команд 
+	L2F50_CMND();		// РРЅРґРёРєР°С‚РѕСЂ РІ СЂРµР¶РёРј РїСЂРёРµРјР° РєРѕРјР°РЅРґ 
 
 	spi_progval8_p1(targetlcd, b);
 	spi_progval8_p2(targetlcd, 0x00);
@@ -117,7 +117,7 @@ static void l2f50_setcolor(COLOR_T acolor, COLOR_T abkcolor)
 }
 
 // 176*132
-// нормально смотрим - выводы дисплея слева
+// РЅРѕСЂРјР°Р»СЊРЅРѕ СЃРјРѕС‚СЂРёРј - РІС‹РІРѕРґС‹ РґРёСЃРїР»РµСЏ СЃР»РµРІР°
 // l2f50_windowy = (y * CHAR_H);
 // l2f50_windowx = (DIM_X - 1 - x * CHAR_W);
 
@@ -139,37 +139,37 @@ l2f50_set_windowh(uint_fast8_t height)
 		l2f50_writeCmd(SD_CSET);                    //column address set 
 		l2f50_writeData(0x08 + y0);                //start column (X1,Y1) is the upper left corner,
 		l2f50_writeData(0x01);                   //start column
-		l2f50_writeData(0x08 + y1);                //end column (бывает 139 = 8 + 131)
+		l2f50_writeData(0x08 + y1);                //end column (Р±С‹РІР°РµС‚ 139 = 8 + 131)
 		l2f50_writeData(0x01);                   //end column
 
 		l2f50_writeCmd(SD_PSET);                    //page address set 
-		l2f50_writeData(x0);                     //start page, начало по оси х
-		l2f50_writeData(0);                     //end page, конец по оси х (бывает 175)
+		l2f50_writeData(x0);                     //start page, РЅР°С‡Р°Р»Рѕ РїРѕ РѕСЃРё С…
+		l2f50_writeData(0);                     //end page, РєРѕРЅРµС† РїРѕ РѕСЃРё С… (Р±С‹РІР°РµС‚ 175)
 	
 	#else /* LCDMODE_L2F50_TOPDOWN */
 
 		l2f50_writeCmd(SD_CSET);                    //column address set 
 		l2f50_writeData(0x08 + y0);                //start column (X1,Y1) is the upper left corner,
 		l2f50_writeData(0x01);                   //start column
-		l2f50_writeData(0x08 + y1);                //end column (бывает 139 = 8 + 131)
+		l2f50_writeData(0x08 + y1);                //end column (Р±С‹РІР°РµС‚ 139 = 8 + 131)
 		l2f50_writeData(0x01);                   //end column
 
 		l2f50_writeCmd(SD_PSET);                    //page address set 
-		l2f50_writeData(x0);                     //start page, начало по оси х
-		l2f50_writeData(x1);                     //end page, конец по оси х (бывает 175)
+		l2f50_writeData(x0);                     //start page, РЅР°С‡Р°Р»Рѕ РїРѕ РѕСЃРё С…
+		l2f50_writeData(x1);                     //end page, РєРѕРЅРµС† РїРѕ РѕСЃРё С… (Р±С‹РІР°РµС‚ 175)
 	
 	#endif /* LCDMODE_L2F50_TOPDOWN */
 	spi_unselect(targetlcd);
 }
 
-// в режим передачи данных переводим сразу по окончании команд.
+// РІ СЂРµР¶РёРј РїРµСЂРµРґР°С‡Рё РґР°РЅРЅС‹С… РїРµСЂРµРІРѕРґРёРј СЃСЂР°Р·Сѓ РїРѕ РѕРєРѕРЅС‡Р°РЅРёРё РєРѕРјР°РЅРґ.
 static void l2f50_put_char_begin(void)
 {
 #if WITHSPIEXT16
 
 	hardware_spi_connect_b16(SPIC_SPEEDFAST, L2F50_SPIMODE);	/* Enable SPI */
 	prog_select(targetlcd);	/* start sending data to target chip */
-	L2F50_CMND();		// Индикатор в режим приема команд 
+	L2F50_CMND();		// РРЅРґРёРєР°С‚РѕСЂ РІ СЂРµР¶РёРј РїСЂРёРµРјР° РєРѕРјР°РЅРґ 
 	hardware_spi_b16_p1(RAMWR << 8);
 	hardware_spi_complete_b16();
 	L2F50_DATA(); //HIGH   // RS is set to high
@@ -206,12 +206,12 @@ static void l2f50_clear(COLOR_T bg)
 	l2f50_set_windowh(DIM_Y);
 
 	l2f50_put_char_begin();
-	spi_progval8_p1(targetlcd, bkcolor.first);    // Заливка цветом фона
-	spi_progval8_p2(targetlcd, bkcolor.second);    // Заливка цветом фона
+	spi_progval8_p1(targetlcd, bkcolor.first);    // Р—Р°Р»РёРІРєР° С†РІРµС‚РѕРј С„РѕРЅР°
+	spi_progval8_p2(targetlcd, bkcolor.second);    // Р—Р°Р»РёРІРєР° С†РІРµС‚РѕРј С„РѕРЅР°
 	for (i = 0; i < (DIM_X * DIM_Y) - 1; ++ i)
 	{
-		spi_progval8_p2(targetlcd, bkcolor.first);    // Заливка цветом фона
-		spi_progval8_p2(targetlcd, bkcolor.second);    // Заливка цветом фона
+		spi_progval8_p2(targetlcd, bkcolor.first);    // Р—Р°Р»РёРІРєР° С†РІРµС‚РѕРј С„РѕРЅР°
+		spi_progval8_p2(targetlcd, bkcolor.second);    // Р—Р°Р»РёРІРєР° С†РІРµС‚РѕРј С„РѕРЅР°
 	}
 	spi_complete(targetlcd);
 
@@ -306,14 +306,14 @@ static uint_fast8_t
 NOINLINEAT
 bigfont_decode(uint_fast8_t c)
 {
-	// '#' - узкий пробел
+	// '#' - СѓР·РєРёР№ РїСЂРѕР±РµР»
 	if (c == ' ' || c == '#')
 		return 11;
 	if (c == '_')
-		return 10;		// курсор - позиция редактирвания частоты
+		return 10;		// РєСѓСЂСЃРѕСЂ - РїРѕР·РёС†РёСЏ СЂРµРґР°РєС‚РёСЂРІР°РЅРёСЏ С‡Р°СЃС‚РѕС‚С‹
 	if (c == '.')
-		return 12;		// точка
-	return c - '0';		// остальные - цифры 0..9
+		return 12;		// С‚РѕС‡РєР°
+	return c - '0';		// РѕСЃС‚Р°Р»СЊРЅС‹Рµ - С†РёС„СЂС‹ 0..9
 }
 
 
@@ -323,7 +323,7 @@ smallfont_decode(uint_fast8_t c)
 	return c - ' ';
 }
 
-// Вызов этой функции только внутри display_wrdata_begin() и display_wrdata_end();
+// Р’С‹Р·РѕРІ СЌС‚РѕР№ С„СѓРЅРєС†РёРё С‚РѕР»СЊРєРѕ РІРЅСѓС‚СЂРё display_wrdata_begin() Рё display_wrdata_end();
 static void ls020_put_char_small(char cc)
 {
 	const uint_fast8_t c = smallfont_decode((unsigned char) cc);
@@ -338,13 +338,13 @@ static void ls020_put_char_small(char cc)
 }
 
 
-// Вызов этой функции только внутри display_wrdata_begin() и display_wrdata_end();
+// Р’С‹Р·РѕРІ СЌС‚РѕР№ С„СѓРЅРєС†РёРё С‚РѕР»СЊРєРѕ РІРЅСѓС‚СЂРё display_wrdata_begin() Рё display_wrdata_end();
 
 static void ls020_put_char_big(char cc)
 {
-	// '#' - узкий пробел
-	enum { NBV = (BIGCHARH / 8) }; // сколько байтов в одной вертикали
-	uint_fast8_t i = NBV * ((cc == '.' || cc == '#') ? 12 : 0);	// начальная колонка знакогенератора, откуда начинать.
+	// '#' - СѓР·РєРёР№ РїСЂРѕР±РµР»
+	enum { NBV = (BIGCHARH / 8) }; // СЃРєРѕР»СЊРєРѕ Р±Р°Р№С‚РѕРІ РІ РѕРґРЅРѕР№ РІРµСЂС‚РёРєР°Р»Рё
+	uint_fast8_t i = NBV * ((cc == '.' || cc == '#') ? 12 : 0);	// РЅР°С‡Р°Р»СЊРЅР°СЏ РєРѕР»РѕРЅРєР° Р·РЅР°РєРѕРіРµРЅРµСЂР°С‚РѕСЂР°, РѕС‚РєСѓРґР° РЅР°С‡РёРЅР°С‚СЊ.
     const uint_fast8_t c = bigfont_decode((unsigned char) cc);
 	enum { NBYTES = (sizeof ls020_bigfont [c] / sizeof ls020_bigfont [0][0]) };
 	const FLASHMEM uint8_t * const p  = & ls020_bigfont [c][0];
@@ -355,7 +355,7 @@ static void ls020_put_char_big(char cc)
 	}
 }
 
-// Вызов этой функции только внутри display_wrdata_begin() и display_wrdata_end();
+// Р’С‹Р·РѕРІ СЌС‚РѕР№ С„СѓРЅРєС†РёРё С‚РѕР»СЊРєРѕ РІРЅСѓС‚СЂРё display_wrdata_begin() Рё display_wrdata_end();
 
 static void ls020_put_char_half(char cc)
 {
@@ -370,7 +370,7 @@ static void ls020_put_char_half(char cc)
 }
 
 
-/* вызывается между вызовами display_wrdatabar_begin() и display_wrdatabar_end() */
+/* РІС‹Р·С‹РІР°РµС‚СЃСЏ РјРµР¶РґСѓ РІС‹Р·РѕРІР°РјРё display_wrdatabar_begin() Рё display_wrdatabar_end() */
 
 static void ls020_bar_column(uint_fast8_t pattern)
 {
@@ -502,7 +502,7 @@ static void l2f50_initialize(void)
 }
 
 
-/* вызывается при разрешённых прерываниях. */
+/* РІС‹Р·С‹РІР°РµС‚СЃСЏ РїСЂРё СЂР°Р·СЂРµС€С‘РЅРЅС‹С… РїСЂРµСЂС‹РІР°РЅРёСЏС…. */
 void display_initialize(void)
 {
 	
@@ -575,23 +575,23 @@ display_wrdatabig_end(void)
 	l2f50_put_char_end();
 }
 
-/* отображение одной вертикальной полосы на графическом индикаторе */
-/* старшие биты соответствуют верхним пикселям изображения */
-/* вызывается между вызовами display_wrdatabar_begin() и display_wrdatabar_end() */
+/* РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ РѕРґРЅРѕР№ РІРµСЂС‚РёРєР°Р»СЊРЅРѕР№ РїРѕР»РѕСЃС‹ РЅР° РіСЂР°С„РёС‡РµСЃРєРѕРј РёРЅРґРёРєР°С‚РѕСЂРµ */
+/* СЃС‚Р°СЂС€РёРµ Р±РёС‚С‹ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‚ РІРµСЂС…РЅРёРј РїРёРєСЃРµР»СЏРј РёР·РѕР±СЂР°Р¶РµРЅРёСЏ */
+/* РІС‹Р·С‹РІР°РµС‚СЃСЏ РјРµР¶РґСѓ РІС‹Р·РѕРІР°РјРё display_wrdatabar_begin() Рё display_wrdatabar_end() */
 void 
 display_barcolumn(uint_fast8_t pattern)
 {
 	ls020_bar_column(pattern);
 }
 
-/* вызывается между вызовами display_wrdatabig_begin() и display_wrdatabig_end() */
+/* РІС‹Р·С‹РІР°РµС‚СЃСЏ РјРµР¶РґСѓ РІС‹Р·РѕРІР°РјРё display_wrdatabig_begin() Рё display_wrdatabig_end() */
 void
 display_put_char_big(uint_fast8_t c, uint_fast8_t lowhalf)
 {
 	ls020_put_char_big(c);
 }
 
-/* вызывается между вызовами display_wrdatabig_begin() и display_wrdatabig_end() */
+/* РІС‹Р·С‹РІР°РµС‚СЃСЏ РјРµР¶РґСѓ РІС‹Р·РѕРІР°РјРё display_wrdatabig_begin() Рё display_wrdatabig_end() */
 void
 display_put_char_half(uint_fast8_t c, uint_fast8_t lowhalf)
 {
@@ -599,8 +599,8 @@ display_put_char_half(uint_fast8_t c, uint_fast8_t lowhalf)
 }
 
 
-// Вызов этой функции только внутри display_wrdata_begin() и display_wrdata_end();
-// Используется при выводе на графический ндикатор, если ТРЕБУЕТСЯ переключать полосы отображения
+// Р’С‹Р·РѕРІ СЌС‚РѕР№ С„СѓРЅРєС†РёРё С‚РѕР»СЊРєРѕ РІРЅСѓС‚СЂРё display_wrdata_begin() Рё display_wrdata_end();
+// РСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РїСЂРё РІС‹РІРѕРґРµ РЅР° РіСЂР°С„РёС‡РµСЃРєРёР№ РЅРґРёРєР°С‚РѕСЂ, РµСЃР»Рё РўР Р•Р‘РЈР•РўРЎРЇ РїРµСЂРµРєР»СЋС‡Р°С‚СЊ РїРѕР»РѕСЃС‹ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ
 void
 display_put_char_small(uint_fast8_t c, uint_fast8_t lowhalf)
 {
@@ -611,32 +611,32 @@ void
 display_gotoxy(uint_fast8_t x, uint_fast8_t y)
 {
 	#if	LCDMODE_L2F50_TOPDOWN
-		// нормально смотрим - выводы дисплея справа
+		// РЅРѕСЂРјР°Р»СЊРЅРѕ СЃРјРѕС‚СЂРёРј - РІС‹РІРѕРґС‹ РґРёСЃРїР»РµСЏ СЃРїСЂР°РІР°
 		l2f50_windowy = (DIM_Y - 1) - CHAR_H * y;
 		l2f50_windowx = (DIM_X - 1 - x * CHAR_W);
 	#else /* LCDMODE_L2F50_TOPDOWN */
-		// нормально смотрим - выводы дисплея слева
+		// РЅРѕСЂРјР°Р»СЊРЅРѕ СЃРјРѕС‚СЂРёРј - РІС‹РІРѕРґС‹ РґРёСЃРїР»РµСЏ СЃР»РµРІР°
 		l2f50_windowy = (y * CHAR_H);
 		l2f50_windowx = (x * CHAR_W);
 	#endif /* LCDMODE_L2F50_TOPDOWN */
 }
 
-// Координаты в пикселях
+// РљРѕРѕСЂРґРёРЅР°С‚С‹ РІ РїРёРєСЃРµР»СЏС…
 void display_plotfrom(uint_fast16_t x, uint_fast16_t y)
 {
 	#if	LCDMODE_L2F50_TOPDOWN
-		// нормально смотрим - выводы дисплея справа
+		// РЅРѕСЂРјР°Р»СЊРЅРѕ СЃРјРѕС‚СЂРёРј - РІС‹РІРѕРґС‹ РґРёСЃРїР»РµСЏ СЃРїСЂР°РІР°
 		l2f50_windowy = (DIM_Y - 1) - y;
 		l2f50_windowx = (DIM_X - 1 - x);
 	#else /* LCDMODE_L2F50_TOPDOWN */
-		// нормально смотрим - выводы дисплея слева
+		// РЅРѕСЂРјР°Р»СЊРЅРѕ СЃРјРѕС‚СЂРёРј - РІС‹РІРѕРґС‹ РґРёСЃРїР»РµСЏ СЃР»РµРІР°
 		l2f50_windowy = (y);
 		l2f50_windowx = (x);
 	#endif /* LCDMODE_L2F50_TOPDOWN */
 }
 
 void display_plotstart(
-	uint_fast16_t height	// Высота окна в пикселях
+	uint_fast16_t height	// Р’С‹СЃРѕС‚Р° РѕРєРЅР° РІ РїРёРєСЃРµР»СЏС…
 	)
 {
 	l2f50_set_windowh(height);
@@ -650,7 +650,7 @@ void display_plotstop(void)
 
 void display_plot(
 	const PACKEDCOLOR_T * buffer, 
-	uint_fast16_t dx,	// Размеры окна в пикселях
+	uint_fast16_t dx,	// Р Р°Р·РјРµСЂС‹ РѕРєРЅР° РІ РїРёРєСЃРµР»СЏС…
 	uint_fast16_t dy
 	)
 {
@@ -658,8 +658,8 @@ void display_plot(
 }
 
 
-/* аппаратный сброс дисплея - перед инициализаций */
-/* вызывается при разрешённых прерываниях. */
+/* Р°РїРїР°СЂР°С‚РЅС‹Р№ СЃР±СЂРѕСЃ РґРёСЃРїР»РµСЏ - РїРµСЂРµРґ РёРЅРёС†РёР°Р»РёР·Р°С†РёР№ */
+/* РІС‹Р·С‹РІР°РµС‚СЃСЏ РїСЂРё СЂР°Р·СЂРµС€С‘РЅРЅС‹С… РїСЂРµСЂС‹РІР°РЅРёСЏС…. */
 void
 display_reset(void)
 {
@@ -667,7 +667,7 @@ display_reset(void)
 }
 
 
-/* Разряжаем конденсаторы питания */
+/* Р Р°Р·СЂСЏР¶Р°РµРј РєРѕРЅРґРµРЅСЃР°С‚РѕСЂС‹ РїРёС‚Р°РЅРёСЏ */
 void display_discharge(void)
 {
 }

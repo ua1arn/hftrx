@@ -1,11 +1,11 @@
 /* $Id$ */
 //
-// Проект HF Dream Receiver (КВ приёмник мечты)
-// автор Гена Завидовский mgs2001@mail.ru
+// РџСЂРѕРµРєС‚ HF Dream Receiver (РљР’ РїСЂРёС‘РјРЅРёРє РјРµС‡С‚С‹)
+// Р°РІС‚РѕСЂ Р“РµРЅР° Р—Р°РІРёРґРѕРІСЃРєРёР№ mgs2001@mail.ru
 // UA1ARN
 //
 
-#include "hardware.h"	/* зависящие от процессора функции работы с портами */
+#include "hardware.h"	/* Р·Р°РІРёСЃСЏС‰РёРµ РѕС‚ РїСЂРѕС†РµСЃСЃРѕСЂР° С„СѓРЅРєС†РёРё СЂР°Р±РѕС‚С‹ СЃ РїРѕСЂС‚Р°РјРё */
 #include "pio.h"
 
 #include "audio.h"
@@ -16,12 +16,12 @@
 
 typedef struct codechw
 {
-	void (* initialize_rx)(void);	/* инициализация периферии процессора для приёма данных от кодека */
-	void (* initialize_tx)(void);	/* инициализация периферии процессора для передачи данных в кодек */
-	void (* initializedma_rx)(void);	/* инициализация DMA процессора для приёма данных от кодека */
-	void (* initializedma_tx)(void);	/* инициализация DMA процессора для передачи данных в кодек */
-	void (* enable_rx)(void);	/* разрешение приёма данных от кодека */
-	void (* enable_tx)(void);	/* разрешение передачи данных в кодек */
+	void (* initialize_rx)(void);	/* РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РїРµСЂРёС„РµСЂРёРё РїСЂРѕС†РµСЃСЃРѕСЂР° РґР»СЏ РїСЂРёС‘РјР° РґР°РЅРЅС‹С… РѕС‚ РєРѕРґРµРєР° */
+	void (* initialize_tx)(void);	/* РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РїРµСЂРёС„РµСЂРёРё РїСЂРѕС†РµСЃСЃРѕСЂР° РґР»СЏ РїРµСЂРµРґР°С‡Рё РґР°РЅРЅС‹С… РІ РєРѕРґРµРє */
+	void (* initializedma_rx)(void);	/* РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ DMA РїСЂРѕС†РµСЃСЃРѕСЂР° РґР»СЏ РїСЂРёС‘РјР° РґР°РЅРЅС‹С… РѕС‚ РєРѕРґРµРєР° */
+	void (* initializedma_tx)(void);	/* РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ DMA РїСЂРѕС†РµСЃСЃРѕСЂР° РґР»СЏ РїРµСЂРµРґР°С‡Рё РґР°РЅРЅС‹С… РІ РєРѕРґРµРє */
+	void (* enable_rx)(void);	/* СЂР°Р·СЂРµС€РµРЅРёРµ РїСЂРёС‘РјР° РґР°РЅРЅС‹С… РѕС‚ РєРѕРґРµРєР° */
+	void (* enable_tx)(void);	/* СЂР°Р·СЂРµС€РµРЅРёРµ РїРµСЂРµРґР°С‡Рё РґР°РЅРЅС‹С… РІ РєРѕРґРµРє */
 	const char * label;
 } codechw_t;
 
@@ -41,7 +41,7 @@ static void hardware_dummy_enable(void)
 	#error WITHRTS192 require WITHSAI2HW
 #endif /* WITHRTS192 && ! WITHSAI2HW */
 
-// Сейчас в эту память будем читать по DMA
+// РЎРµР№С‡Р°СЃ РІ СЌС‚Сѓ РїР°РјСЏС‚СЊ Р±СѓРґРµРј С‡РёС‚Р°С‚СЊ РїРѕ DMA
 static uintptr_t 
 dma_invalidate16rx(uintptr_t addr)
 {
@@ -50,8 +50,8 @@ dma_invalidate16rx(uintptr_t addr)
 	return addr;
 }
 
-// Сейчас эта память будет записываться по DMA куда-то
-// Потом содержимое не требуется
+// РЎРµР№С‡Р°СЃ СЌС‚Р° РїР°РјСЏС‚СЊ Р±СѓРґРµС‚ Р·Р°РїРёСЃС‹РІР°С‚СЊСЃСЏ РїРѕ DMA РєСѓРґР°-С‚Рѕ
+// РџРѕС‚РѕРј СЃРѕРґРµСЂР¶РёРјРѕРµ РЅРµ С‚СЂРµР±СѓРµС‚СЃСЏ
 static uintptr_t 
 dma_flush16tx(uintptr_t addr)
 {
@@ -59,7 +59,7 @@ dma_flush16tx(uintptr_t addr)
 	return addr;
 }
 
-// Сейчас в эту память будем читать по DMA
+// РЎРµР№С‡Р°СЃ РІ СЌС‚Сѓ РїР°РјСЏС‚СЊ Р±СѓРґРµРј С‡РёС‚Р°С‚СЊ РїРѕ DMA
 static uintptr_t
 dma_invalidate192rts(uintptr_t addr)
 {
@@ -68,8 +68,8 @@ dma_invalidate192rts(uintptr_t addr)
 	return addr;
 }
 
-// Сейчас эта память будет записываться по DMA куда-то
-// Потом содержимое не требуется
+// РЎРµР№С‡Р°СЃ СЌС‚Р° РїР°РјСЏС‚СЊ Р±СѓРґРµС‚ Р·Р°РїРёСЃС‹РІР°С‚СЊСЃСЏ РїРѕ DMA РєСѓРґР°-С‚Рѕ
+// РџРѕС‚РѕРј СЃРѕРґРµСЂР¶РёРјРѕРµ РЅРµ С‚СЂРµР±СѓРµС‚СЃСЏ
 static uintptr_t
 dma_flushxrtstx(uintptr_t addr, unsigned long size)
 {
@@ -77,7 +77,7 @@ dma_flushxrtstx(uintptr_t addr, unsigned long size)
 	arm_hardware_flush_invalidate(addr, size);
 	return addr;
 }
-// Сейчас в эту память будем читать по DMA
+// РЎРµР№С‡Р°СЃ РІ СЌС‚Сѓ РїР°РјСЏС‚СЊ Р±СѓРґРµРј С‡РёС‚Р°С‚СЊ РїРѕ DMA
 static uintptr_t 
 dma_invalidate32rx(uintptr_t addr)
 {
@@ -86,8 +86,8 @@ dma_invalidate32rx(uintptr_t addr)
 	return addr;
 }
 
-// Сейчас эта память будет записываться по DMA куда-то
-// Потом содержимое не требуется
+// РЎРµР№С‡Р°СЃ СЌС‚Р° РїР°РјСЏС‚СЊ Р±СѓРґРµС‚ Р·Р°РїРёСЃС‹РІР°С‚СЊСЃСЏ РїРѕ DMA РєСѓРґР°-С‚Рѕ
+// РџРѕС‚РѕРј СЃРѕРґРµСЂР¶РёРјРѕРµ РЅРµ С‚СЂРµР±СѓРµС‚СЃСЏ
 static uintptr_t dma_flush32tx(uintptr_t addr)
 {
 	arm_hardware_flush_invalidate(addr, DMABUFFSIZE32TX * sizeof (uint32_t));
@@ -101,24 +101,24 @@ enum
 #if WITHSAI1HW
 
 	NBSLOT_SAI1 = WITHSAI1_FRAMEBITS / 32,	
-	// Количество битов в SLOTEN_TX_xxx и SLOTEN_RX_xxx должно быть равно
-	// значениям DMABUFSTEP32RX и DMABUFSTEP32TX соответственно.
+	// РљРѕР»РёС‡РµСЃС‚РІРѕ Р±РёС‚РѕРІ РІ SLOTEN_TX_xxx Рё SLOTEN_RX_xxx РґРѕР»Р¶РЅРѕ Р±С‹С‚СЊ СЂР°РІРЅРѕ
+	// Р·РЅР°С‡РµРЅРёСЏРј DMABUFSTEP32RX Рё DMABUFSTEP32TX СЃРѕРѕС‚РІРµС‚СЃС‚РІРµРЅРЅРѕ.
 	#if WITHSAI1_FRAMEBITS == 256
-		// FPGA версия
+		// FPGA РІРµСЂСЃРёСЏ
 		//#define DMABUFSTEP32RX	(WITHSAI1_FRAMEBITS / 32) //8
 		SLOTEN_RX_SAI1 = 0x00FF,
 
-		// На передачу во всех версиях FPGA используется один и тот же блок
-		// В каждой половине фрейма используется первый слот (первые 32 бита после переключения WS)
-		#define DMABUFSTEP32TX	2		// 2 - каждому сэмплу соответствует два числа в DMA буфере	- I/Q
+		// РќР° РїРµСЂРµРґР°С‡Сѓ РІРѕ РІСЃРµС… РІРµСЂСЃРёСЏС… FPGA РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РѕРґРёРЅ Рё С‚РѕС‚ Р¶Рµ Р±Р»РѕРє
+		// Р’ РєР°Р¶РґРѕР№ РїРѕР»РѕРІРёРЅРµ С„СЂРµР№РјР° РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РїРµСЂРІС‹Р№ СЃР»РѕС‚ (РїРµСЂРІС‹Рµ 32 Р±РёС‚Р° РїРѕСЃР»Рµ РїРµСЂРµРєР»СЋС‡РµРЅРёСЏ WS)
+		#define DMABUFSTEP32TX	2		// 2 - РєР°Р¶РґРѕРјСѓ СЃСЌРјРїР»Сѓ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓРµС‚ РґРІР° С‡РёСЃР»Р° РІ DMA Р±СѓС„РµСЂРµ	- I/Q
 		SLOTEN_TX_SAI1 = 0x0011,	
 
 	#elif WITHSAI1_FRAMEBITS == 64
 		//#if WITHRTS96 || WITHUSEDUALWATCH
 		//	#error WITHRTS96 or WITHUSEDUALWATCH unsupported with 64-bit frame length
 		//#endif /* WITHRTS96 || WITHUSEDUALWATCH */
-		//#define DMABUFSTEP32RX	(WITHSAI1_FRAMEBITS / 32) //2	// 2 - каждому сэмплу соответствует два числа в DMA буфере	- I/Q
-		// Аппаратный кодек
+		//#define DMABUFSTEP32RX	(WITHSAI1_FRAMEBITS / 32) //2	// 2 - РєР°Р¶РґРѕРјСѓ СЃСЌРјРїР»Сѓ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓРµС‚ РґРІР° С‡РёСЃР»Р° РІ DMA Р±СѓС„РµСЂРµ	- I/Q
+		// РђРїРїР°СЂР°С‚РЅС‹Р№ РєРѕРґРµРє
 		SLOTEN_RX_SAI1 = 0x0003,
 		SLOTEN_TX_SAI1 = 0x0003,
 	#else
@@ -129,22 +129,22 @@ enum
 #if WITHSAI2HW
 
 	NBSLOT_SAI2 = WITHSAI2_FRAMEBITS / 32,
-	// Количество битов в SLOTEN_TX_xxx и SLOTEN_RX_xxx должно быть равно
-	// значениям DMABUFSTEP32RX и DMABUFSTEP32TX соответственно.
+	// РљРѕР»РёС‡РµСЃС‚РІРѕ Р±РёС‚РѕРІ РІ SLOTEN_TX_xxx Рё SLOTEN_RX_xxx РґРѕР»Р¶РЅРѕ Р±С‹С‚СЊ СЂР°РІРЅРѕ
+	// Р·РЅР°С‡РµРЅРёСЏРј DMABUFSTEP32RX Рё DMABUFSTEP32TX СЃРѕРѕС‚РІРµС‚СЃС‚РІРµРЅРЅРѕ.
 	#if WITHSAI2_FRAMEBITS == 256
-		// FPGA версия
+		// FPGA РІРµСЂСЃРёСЏ
 		#if WITHUSEDUALWATCH
 			SLOTEN_RX_SAI2 = 0x00FF,
 		#else /* WITHUSEDUALWATCH */
 			SLOTEN_RX_SAI2 = 0x00FF,
 		#endif /* WITHUSEDUALWATCH */
 
-		// На передачу во всех версиях FPGA используется один и тот же блок
-		// В каждой половине фрейма используется первый слот (первые 32 бита после переключения WS)
+		// РќР° РїРµСЂРµРґР°С‡Сѓ РІРѕ РІСЃРµС… РІРµСЂСЃРёСЏС… FPGA РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РѕРґРёРЅ Рё С‚РѕС‚ Р¶Рµ Р±Р»РѕРє
+		// Р’ РєР°Р¶РґРѕР№ РїРѕР»РѕРІРёРЅРµ С„СЂРµР№РјР° РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РїРµСЂРІС‹Р№ СЃР»РѕС‚ (РїРµСЂРІС‹Рµ 32 Р±РёС‚Р° РїРѕСЃР»Рµ РїРµСЂРµРєР»СЋС‡РµРЅРёСЏ WS)
 		SLOTEN_TX_SAI2 = 0x0011,
 
 	#elif WITHSAI2_FRAMEBITS == 64
-		// Аппаратный кодек
+		// РђРїРїР°СЂР°С‚РЅС‹Р№ РєРѕРґРµРє
 		SLOTEN_RX_SAI2 = 0x0003,
 		SLOTEN_TX_SAI2 = 0x0003,
 	#else
@@ -160,7 +160,7 @@ enum
 	static uint_fast32_t 
 	NOINLINEAT
 	calcdivround_exti2s(
-		uint_fast32_t freq		/* требуемая частота на выходе делителя, в герцах. */
+		uint_fast32_t freq		/* С‚СЂРµР±СѓРµРјР°СЏ С‡Р°СЃС‚РѕС‚Р° РЅР° РІС‹С…РѕРґРµ РґРµР»РёС‚РµР»СЏ, РІ РіРµСЂС†Р°С…. */
 		)
 	{
 		return (EXTI2S_FREQ + freq / 2) / freq;
@@ -169,7 +169,7 @@ enum
 	static uint_fast32_t 
 	NOINLINEAT
 	calcdivround_plli2s(
-		uint_fast32_t freq		/* требуемая частота на выходе делителя, в герцах. */
+		uint_fast32_t freq		/* С‚СЂРµР±СѓРµРјР°СЏ С‡Р°СЃС‚РѕС‚Р° РЅР° РІС‹С…РѕРґРµ РґРµР»РёС‚РµР»СЏ, РІ РіРµСЂС†Р°С…. */
 		)
 	{
 		return (PLLI2S_FREQ_OUT + freq / 2) / freq;
@@ -178,11 +178,11 @@ enum
 
 #if WITHI2SHW
 
-// Обработчик прерывания DMA по приему I2S - I2S2_EXT
+// РћР±СЂР°Р±РѕС‚С‡РёРє РїСЂРµСЂС‹РІР°РЅРёСЏ DMA РїРѕ РїСЂРёРµРјСѓ I2S - I2S2_EXT
 // Use arm_hardware_invalidate
 void RAMFUNC_NONILINE DMA1_Stream3_IRQHandler(void)
 {
-	// проверка условия может потребоваться при добавлении обработчика ошибки
+	// РїСЂРѕРІРµСЂРєР° СѓСЃР»РѕРІРёСЏ РјРѕР¶РµС‚ РїРѕС‚СЂРµР±РѕРІР°С‚СЊСЃСЏ РїСЂРё РґРѕР±Р°РІР»РµРЅРёРё РѕР±СЂР°Р±РѕС‚С‡РёРєР° РѕС€РёР±РєРё
 	if ((DMA1->LISR & DMA_LISR_TCIF3) != 0)
 	{
 		const uint_fast8_t b = (DMA1_Stream3->CR & DMA_SxCR_CT) != 0;
@@ -200,7 +200,7 @@ void RAMFUNC_NONILINE DMA1_Stream3_IRQHandler(void)
 	}
 }
 
-// Обработчик прерывания DMA по приему I2S - I2S3
+// РћР±СЂР°Р±РѕС‚С‡РёРє РїСЂРµСЂС‹РІР°РЅРёСЏ DMA РїРѕ РїСЂРёРµРјСѓ I2S - I2S3
 // Use arm_hardware_invalidate
 void RAMFUNC_NONILINE DMA1_Stream0_IRQHandler(void)
 {
@@ -221,7 +221,7 @@ void RAMFUNC_NONILINE DMA1_Stream0_IRQHandler(void)
 	}
 }
 
-// Обработчик прерывания DMA по передаче I2S2
+// РћР±СЂР°Р±РѕС‚С‡РёРє РїСЂРµСЂС‹РІР°РЅРёСЏ DMA РїРѕ РїРµСЂРµРґР°С‡Рµ I2S2
 // Use arm_hardware_flush
 void RAMFUNC_NONILINE DMA1_Stream4_IRQHandler(void)
 {
@@ -238,18 +238,18 @@ void RAMFUNC_NONILINE DMA1_Stream4_IRQHandler(void)
 			release_dmabuffer16(DMA1_Stream4->M1AR);
 			DMA1_Stream4->M1AR = dma_flush16tx(getfilled_dmabuffer16phones());
 		}
-		DMA1->HIFCR = DMA_HIFCR_CTCIF4;	// Clear TC interrupt flag соответствующий stream
+		DMA1->HIFCR = DMA_HIFCR_CTCIF4;	// Clear TC interrupt flag СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РёР№ stream
 	}
 }
 
-// Инициализация DMA по передаче I2S2
+// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ DMA РїРѕ РїРµСЂРµРґР°С‡Рµ I2S2
 // Use arm_hardware_flush
 static void 
 DMA_I2S2_TX_initialize(void)
 {
 	/* SPI2_TX - Stream4, Channel0 */ 
-	/* DMA для передачи по I2S2*/
-	RCC->AHB1ENR |= RCC_AHB1ENR_DMA1EN;//включил DMA1 
+	/* DMA РґР»СЏ РїРµСЂРµРґР°С‡Рё РїРѕ I2S2*/
+	RCC->AHB1ENR |= RCC_AHB1ENR_DMA1EN;//РІРєР»СЋС‡РёР» DMA1 
 	__DSB();
 
 #if CPUSTYLE_STM32H7XX
@@ -270,20 +270,20 @@ DMA_I2S2_TX_initialize(void)
 
 	DMA1_Stream4->FCR &= ~ DMA_SxFCR_DMDIS;	// use direct mode
 	DMA1_Stream4->CR =
-		ch * DMA_SxCR_CHSEL_0 | // канал
+		ch * DMA_SxCR_CHSEL_0 | // РєР°РЅР°Р»
 		0 * DMA_SxCR_MBURST_0 |	// 0: single transfer
 		0 * DMA_SxCR_PBURST_0 |	// 0: single transfer
-		1 * DMA_SxCR_DIR_0 |	// направление - память - периферия
-		1 * DMA_SxCR_MINC |		// инкремент памяти
-		1 * DMA_SxCR_MSIZE_0 |	// длина в памяти - 16р
-		1 * DMA_SxCR_PSIZE_0 |	// длина в SPI_DR- 16р
+		1 * DMA_SxCR_DIR_0 |	// РЅР°РїСЂР°РІР»РµРЅРёРµ - РїР°РјСЏС‚СЊ - РїРµСЂРёС„РµСЂРёСЏ
+		1 * DMA_SxCR_MINC |		// РёРЅРєСЂРµРјРµРЅС‚ РїР°РјСЏС‚Рё
+		1 * DMA_SxCR_MSIZE_0 |	// РґР»РёРЅР° РІ РїР°РјСЏС‚Рё - 16СЂ
+		1 * DMA_SxCR_PSIZE_0 |	// РґР»РёРЅР° РІ SPI_DR- 16СЂ
 		2 * DMA_SxCR_PL_0 |		// Priority level - High
 		0 * DMA_SxCR_CT |		// M0AR selected
 		1 * DMA_SxCR_DBM |		// double buffer mode seelcted
 		0;
 
-	DMA1->HIFCR = DMA_HISR_TCIF4;	// Clear TC interrupt flag соответствующий stream
-	DMA1_Stream4->CR |= DMA_SxCR_TCIE;	// Разрешаем прерывания от DMA
+	DMA1->HIFCR = DMA_HISR_TCIF4;	// Clear TC interrupt flag СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РёР№ stream
+	DMA1_Stream4->CR |= DMA_SxCR_TCIE;	// Р Р°Р·СЂРµС€Р°РµРј РїСЂРµСЂС‹РІР°РЅРёСЏ РѕС‚ DMA
 
 	NVIC_SetPriority(DMA1_Stream4_IRQn, ARM_REALTIME_PRIORITY);
 	NVIC_EnableIRQ(DMA1_Stream4_IRQn);	// DMA1_Stream4_IRQHandler() enable
@@ -291,14 +291,14 @@ DMA_I2S2_TX_initialize(void)
 }
 
 #if defined (I2S2ext)
-/* Инициализация DMA для прёма по I2S2ext*/
+/* РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ DMA РґР»СЏ РїСЂС‘РјР° РїРѕ I2S2ext*/
 // Use arm_hardware_invalidate
 static void 
 DMA_I2S2ext_rx_init(void)
 {
 	const uint_fast8_t ch = 3;
 	/* I2S2_EXT_RX - Stream3, Channel3 */ 
-	RCC->AHB1ENR |= RCC_AHB1ENR_DMA1EN;//включил DMA1 
+	RCC->AHB1ENR |= RCC_AHB1ENR_DMA1EN;//РІРєР»СЋС‡РёР» DMA1 
 	__DSB();
 
 	DMA1_Stream3->PAR = (uint32_t) & I2S2ext->DR;
@@ -309,20 +309,20 @@ DMA_I2S2ext_rx_init(void)
 
 	DMA1_Stream3->FCR &= ~ DMA_SxFCR_DMDIS;	// use direct mode
 	DMA1_Stream3->CR =
-		ch * DMA_SxCR_CHSEL_0 | // канал
+		ch * DMA_SxCR_CHSEL_0 | // РєР°РЅР°Р»
 		0 * DMA_SxCR_MBURST_0 |	// 0: single transfer
 		0 * DMA_SxCR_PBURST_0 |	// 0: single transfer
 		0 * DMA_SxCR_DIR_0 |	// 00: Peripheral-to-memory
-		1 * DMA_SxCR_MINC |		//инкремент памяти
-		1 * DMA_SxCR_MSIZE_0 |	//длина в памяти - 16р
-		1 * DMA_SxCR_PSIZE_0 |	//длина в SPI_DR- 16р
+		1 * DMA_SxCR_MINC |		//РёРЅРєСЂРµРјРµРЅС‚ РїР°РјСЏС‚Рё
+		1 * DMA_SxCR_MSIZE_0 |	//РґР»РёРЅР° РІ РїР°РјСЏС‚Рё - 16СЂ
+		1 * DMA_SxCR_PSIZE_0 |	//РґР»РёРЅР° РІ SPI_DR- 16СЂ
 		2 * DMA_SxCR_PL_0 |		// Priority level - High
 		0 * DMA_SxCR_CT |		// M0AR selected
 		1 * DMA_SxCR_DBM |		// double buffer mode seelcted
 		0;
 
 	DMA1->LIFCR = DMA_LISR_TCIF3;	// Clear TC interrupt flag
-	DMA1_Stream3->CR |= DMA_SxCR_TCIE;	// Разрешаем прерывания от DMA
+	DMA1_Stream3->CR |= DMA_SxCR_TCIE;	// Р Р°Р·СЂРµС€Р°РµРј РїСЂРµСЂС‹РІР°РЅРёСЏ РѕС‚ DMA
 
 	NVIC_SetPriority(DMA1_Stream3_IRQn, ARM_REALTIME_PRIORITY);
 	NVIC_EnableIRQ(DMA1_Stream3_IRQn);	// DMA1_Stream3_IRQHandler() enable
@@ -332,13 +332,13 @@ DMA_I2S2ext_rx_init(void)
 
 #endif /* defined (I2S2ext) */
 
-/* Инициализация DMA для прёма по I2S3 */
+/* РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ DMA РґР»СЏ РїСЂС‘РјР° РїРѕ I2S3 */
 // Use arm_hardware_invalidate
 static void 
 DMA_I2S3_RX_initialize(void)
 {
 	/* I2S3_RX - DMA1, Stream0, Channel0 */ 
-	RCC->AHB1ENR |= RCC_AHB1ENR_DMA1EN;	//включил DMA1 
+	RCC->AHB1ENR |= RCC_AHB1ENR_DMA1EN;	//РІРєР»СЋС‡РёР» DMA1 
 	__DSB();
 
 #if CPUSTYLE_STM32H7XX
@@ -359,20 +359,20 @@ DMA_I2S3_RX_initialize(void)
 
 	DMA1_Stream0->FCR &= ~ DMA_SxFCR_DMDIS;	// use direct mode
 	DMA1_Stream0->CR =
-		ch * DMA_SxCR_CHSEL_0 | // канал
+		ch * DMA_SxCR_CHSEL_0 | // РєР°РЅР°Р»
 		0 * DMA_SxCR_MBURST_0 |	// 0: single transfer
 		0 * DMA_SxCR_PBURST_0 |	// 0: single transfer
 		0 * DMA_SxCR_DIR_0 |	// 00: Peripheral-to-memory
-		1 * DMA_SxCR_MINC |		//инкремент памяти
-		1 * DMA_SxCR_MSIZE_0 |	//длина в памяти - 16р
-		1 * DMA_SxCR_PSIZE_0 |	//длина в SPI_DR- 16р
+		1 * DMA_SxCR_MINC |		//РёРЅРєСЂРµРјРµРЅС‚ РїР°РјСЏС‚Рё
+		1 * DMA_SxCR_MSIZE_0 |	//РґР»РёРЅР° РІ РїР°РјСЏС‚Рё - 16СЂ
+		1 * DMA_SxCR_PSIZE_0 |	//РґР»РёРЅР° РІ SPI_DR- 16СЂ
 		2 * DMA_SxCR_PL_0 |		// Priority level - High
 		0 * DMA_SxCR_CT |		// M0AR selected
 		1 * DMA_SxCR_DBM |		// double buffer mode seelcted
 		0;
 
 	DMA1->LIFCR = DMA_LISR_TCIF0;	// Clear TC interrupt flag
-	DMA1_Stream0->CR |= DMA_SxCR_TCIE;	// Разрешаем прерывания от DMA
+	DMA1_Stream0->CR |= DMA_SxCR_TCIE;	// Р Р°Р·СЂРµС€Р°РµРј РїСЂРµСЂС‹РІР°РЅРёСЏ РѕС‚ DMA
 
 	NVIC_SetPriority(DMA1_Stream0_IRQn, ARM_REALTIME_PRIORITY);
 	NVIC_EnableIRQ(DMA1_Stream0_IRQn);	// DMA1_Stream0_IRQHandler() enable
@@ -381,15 +381,15 @@ DMA_I2S3_RX_initialize(void)
 }
 
 #if defined (I2S2ext)
-// Интерфейс к НЧ кодеку
+// РРЅС‚РµСЂС„РµР№СЃ Рє РќР§ РєРѕРґРµРєСѓ
 static void 
-hardware_i2s2_master_fullduplex_initialize(void)		/* инициализация I2S на STM32F429 */
+hardware_i2s2_master_fullduplex_initialize(void)		/* РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ I2S РЅР° STM32F429 */
 {
 	// SPI2 - master transmit
 	// I2S2ext - slave receive
 
 #if WITHI2SCLOCKFROMPIN
-	// тактовая частота на SPI2 (I2S) подается с внешнего генератора, в процессор вводится через MCK сигнал интерфейса
+	// С‚Р°РєС‚РѕРІР°СЏ С‡Р°СЃС‚РѕС‚Р° РЅР° SPI2 (I2S) РїРѕРґР°РµС‚СЃСЏ СЃ РІРЅРµС€РЅРµРіРѕ РіРµРЅРµСЂР°С‚РѕСЂР°, РІ РїСЂРѕС†РµСЃСЃРѕСЂ РІРІРѕРґРёС‚СЃСЏ С‡РµСЂРµР· MCK СЃРёРіРЅР°Р» РёРЅС‚РµСЂС„РµР№СЃР°
 	#if defined (STM32F446xx)
 		//RCC->DCKCFGR = (RCC->DCKCFGR & ~ (RCC_DCKCFGR_I2S2SRC)) |
 		//	1 * RCC_DCKCFGR_I2S2SRC_0 |	// 01: I2S APB2 clock frequency = I2S_CKIN Alternate function input frequency
@@ -398,13 +398,13 @@ hardware_i2s2_master_fullduplex_initialize(void)		/* инициализация I2S на STM32F
 			1 * RCC_DCKCFGR_I2S1SRC_0 |	// 01: I2S APB1 clock frequency = I2S_CKIN Alternate function input frequency
 			0;
 	#else /* defined (STM32F446xx) */
-		RCC->CFGR |= RCC_CFGR_I2SSRC;	// На STM32F446xx этого бита нет
+		RCC->CFGR |= RCC_CFGR_I2SSRC;	// РќР° STM32F446xx СЌС‚РѕРіРѕ Р±РёС‚Р° РЅРµС‚
 	#endif /* defined (STM32F446xx) */
 
-	//arm_hardware_pioc_altfn50(1UL << 9, AF_SPI2);	// PC9 - MCLK source - I2S_CKIN signal - перенесено в процессорно-зависимый header.
+	//arm_hardware_pioc_altfn50(1UL << 9, AF_SPI2);	// PC9 - MCLK source - I2S_CKIN signal - РїРµСЂРµРЅРµСЃРµРЅРѕ РІ РїСЂРѕС†РµСЃСЃРѕСЂРЅРѕ-Р·Р°РІРёСЃРёРјС‹Р№ header.
 #else /* WITHI2SCLOCKFROMPIN */
 
-	// Возможно использовать только режим с MCLK=256*Fs
+	// Р’РѕР·РјРѕР¶РЅРѕ РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊ С‚РѕР»СЊРєРѕ СЂРµР¶РёРј СЃ MCLK=256*Fs
 	//
 	// MCK: Master Clock (mapped separately) is used, when the I2S is configured in master
 	// mode (and when the MCKOE bit in the SPI_I2SPR register is set), to output this
@@ -414,26 +414,26 @@ hardware_i2s2_master_fullduplex_initialize(void)		/* инициализация I2S на STM32F
 	#if defined (STM32F446xx)
 		#error Reviev STM32F446xx registers programming
 	#else /* defined (STM32F446xx) */
-		// Частота сравнения та же самая, что и в основной PLL
+		// Р§Р°СЃС‚РѕС‚Р° СЃСЂР°РІРЅРµРЅРёСЏ С‚Р° Р¶Рµ СЃР°РјР°СЏ, С‡С‚Рѕ Рё РІ РѕСЃРЅРѕРІРЅРѕР№ PLL
 		// PLLI2SR (at 28) = output divider of VCO frequency
 		RCC->PLLI2SCFGR = (RCC->PLLI2SCFGR & ~ (RCC_PLLI2SCFGR_PLLI2SN | RCC_PLLI2SCFGR_PLLI2SR)) |
 			((PLLI2SN_MUL << RCC_PLLI2SCFGR_PLLI2SN_Pos) & RCC_PLLI2SCFGR_PLLI2SN) |	// PLLI2SN bits = multiplier, freq=192..432 MHz, vale = 2..432
-			2 * RCC_PLLI2SCFGR_PLLI2SR_0 |		// PLLI2SR bits - output divider, 2..7 - константа в calcdivround_plli2s().
+			2 * RCC_PLLI2SCFGR_PLLI2SR_0 |		// PLLI2SR bits - output divider, 2..7 - РєРѕРЅСЃС‚Р°РЅС‚Р° РІ calcdivround_plli2s().
 			0;
 			
-		RCC->CR |= RCC_CR_PLLI2SON;				// Включил PLL
-		while ((RCC->CR & RCC_CR_PLLI2SRDY) == 0)	// пока заработает PLL
+		RCC->CR |= RCC_CR_PLLI2SON;				// Р’РєР»СЋС‡РёР» PLL
+		while ((RCC->CR & RCC_CR_PLLI2SRDY) == 0)	// РїРѕРєР° Р·Р°СЂР°Р±РѕС‚Р°РµС‚ PLL
 			;
 	#endif /* defined (STM32F446xx) */
 
 #endif /* WITHI2SCLOCKFROMPIN */
 
-	// Теперь настроим модуль SPI.
+	// РўРµРїРµСЂСЊ РЅР°СЃС‚СЂРѕРёРј РјРѕРґСѓР»СЊ SPI.
 #if CPUSTYLE_STM32H7XX
-	RCC->APB1LENR |= RCC_APB1LENR_SPI2EN; // Подать тактирование   
+	RCC->APB1LENR |= RCC_APB1LENR_SPI2EN; // РџРѕРґР°С‚СЊ С‚Р°РєС‚РёСЂРѕРІР°РЅРёРµ   
 	__DSB();
 #else /* CPUSTYLE_STM32H7XX */
-	RCC->APB1ENR |= RCC_APB1ENR_SPI2EN; // Подать тактирование   
+	RCC->APB1ENR |= RCC_APB1ENR_SPI2EN; // РџРѕРґР°С‚СЊ С‚Р°РєС‚РёСЂРѕРІР°РЅРёРµ   
 	__DSB();
 #endif /* CPUSTYLE_STM32H7XX */
 	        
@@ -446,7 +446,7 @@ hardware_i2s2_master_fullduplex_initialize(void)		/* инициализация I2S на STM32F
 #else /* WITHI2S_FORMATI2S_PHILIPS */
 		1 * SPI_I2SCFGR_I2SSTD_0 |	// 00: I2S Phillips standard, 01: MSB justified standard (left justified)
 #endif /* WITHI2S_FORMATI2S_PHILIPS */
-		//1 * SPI_I2SCFGR_CKPOL |		// не для H7: от этого бита не зависит: данные на выходе меняются по спадающему фронту
+		//1 * SPI_I2SCFGR_CKPOL |		// РЅРµ РґР»СЏ H7: РѕС‚ СЌС‚РѕРіРѕ Р±РёС‚Р° РЅРµ Р·Р°РІРёСЃРёС‚: РґР°РЅРЅС‹Рµ РЅР° РІС‹С…РѕРґРµ РјРµРЅСЏСЋС‚СЃСЏ РїРѕ СЃРїР°РґР°СЋС‰РµРјСѓ С„СЂРѕРЅС‚Сѓ
 		0;
 
  	I2S2ext->I2SCFGR = i2smode | 1 * SPI_I2SCFGR_I2SCFG_0;	// 10: Master - transmit, 11: Master - receive, 01: Slave - receive
@@ -473,7 +473,7 @@ hardware_i2s2_master_fullduplex_initialize(void)		/* инициализация I2S на STM32F
 		0;
 	I2S2ext->I2SPR = i2spr;
 	SPI2->I2SPR = i2spr;
-	// Подключить I2S к выводам процессора
+	// РџРѕРґРєР»СЋС‡РёС‚СЊ I2S Рє РІС‹РІРѕРґР°Рј РїСЂРѕС†РµСЃСЃРѕСЂР°
 	I2S2HW_INITIALIZE();
 }
 
@@ -481,15 +481,15 @@ hardware_i2s2_master_fullduplex_initialize(void)		/* инициализация I2S на STM32F
 
 #if WITHI2SHWTXSLAVE
 
-// Интерфейс к НЧ кодеку
+// РРЅС‚РµСЂС„РµР№СЃ Рє РќР§ РєРѕРґРµРєСѓ
 static void 
-hardware_i2s2_slave_tx_initialize(void)		/* инициализация I2S2, STM32F4xx */
+hardware_i2s2_slave_tx_initialize(void)		/* РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ I2S2, STM32F4xx */
 {
 #if CPUSTYLE_STM32H7XX
-	RCC->APB1LENR |= RCC_APB1LENR_SPI2EN; // Подать тактирование   
+	RCC->APB1LENR |= RCC_APB1LENR_SPI2EN; // РџРѕРґР°С‚СЊ С‚Р°РєС‚РёСЂРѕРІР°РЅРёРµ   
 	__DSB();
 #else /* CPUSTYLE_STM32H7XX */
-	RCC->APB1ENR |= RCC_APB1ENR_SPI2EN; // Подать тактирование   
+	RCC->APB1ENR |= RCC_APB1ENR_SPI2EN; // РџРѕРґР°С‚СЊ С‚Р°РєС‚РёСЂРѕРІР°РЅРёРµ   
 	__DSB();
 #endif /* CPUSTYLE_STM32H7XX */
 	        
@@ -502,7 +502,7 @@ hardware_i2s2_slave_tx_initialize(void)		/* инициализация I2S2, STM32F4xx */
 #else /* WITHI2S_FORMATI2S_PHILIPS */
 		1 * SPI_I2SCFGR_I2SSTD_0 |	// 00: I2S Phillips standard, 01: MSB justified standard (left justified)
 #endif /* WITHI2S_FORMATI2S_PHILIPS */
-		//1 * SPI_I2SCFGR_CKPOL |		// не для H7: от этого бита не зависит: данные на выходе меняются по спадающему фронту
+		//1 * SPI_I2SCFGR_CKPOL |		// РЅРµ РґР»СЏ H7: РѕС‚ СЌС‚РѕРіРѕ Р±РёС‚Р° РЅРµ Р·Р°РІРёСЃРёС‚: РґР°РЅРЅС‹Рµ РЅР° РІС‹С…РѕРґРµ РјРµРЅСЏСЋС‚СЃСЏ РїРѕ СЃРїР°РґР°СЋС‰РµРјСѓ С„СЂРѕРЅС‚Сѓ
 		0;
 
  	SPI2->I2SCFGR = i2smode | 0 * SPI_I2SCFGR_I2SCFG_0; // 00: Slave - transmit
@@ -510,18 +510,18 @@ hardware_i2s2_slave_tx_initialize(void)		/* инициализация I2S2, STM32F4xx */
 	SPI2->CFG2 |= SPI_CFG2_IOSWP;
 #endif /* CPUSTYLE_STM32H7XX */
 
-	// Подключить I2S к выводам процессора
+	// РџРѕРґРєР»СЋС‡РёС‚СЊ I2S Рє РІС‹РІРѕРґР°Рј РїСЂРѕС†РµСЃСЃРѕСЂР°
 	I2S2HW_INITIALIZE();
 }
 
 #else /* WITHI2SHWTXSLAVE */
 
-// Интерфейс к НЧ кодеку
+// РРЅС‚РµСЂС„РµР№СЃ Рє РќР§ РєРѕРґРµРєСѓ
 static void 
-hardware_i2s2_master_tx_initialize(void)		/* инициализация I2S2, STM32F4xx */
+hardware_i2s2_master_tx_initialize(void)		/* РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ I2S2, STM32F4xx */
 {
 #if WITHI2SCLOCKFROMPIN
-	// тактовая частота на SPI2 (I2S) подается с внешнего генератора, в процессор вводится через MCK сигнал интерфейса
+	// С‚Р°РєС‚РѕРІР°СЏ С‡Р°СЃС‚РѕС‚Р° РЅР° SPI2 (I2S) РїРѕРґР°РµС‚СЃСЏ СЃ РІРЅРµС€РЅРµРіРѕ РіРµРЅРµСЂР°С‚РѕСЂР°, РІ РїСЂРѕС†РµСЃСЃРѕСЂ РІРІРѕРґРёС‚СЃСЏ С‡РµСЂРµР· MCK СЃРёРіРЅР°Р» РёРЅС‚РµСЂС„РµР№СЃР°
 	#if defined (STM32F446xx)
 		//RCC->DCKCFGR = (RCC->DCKCFGR & ~ (RCC_DCKCFGR_I2S2SRC)) |
 		//	1 * RCC_DCKCFGR_I2S2SRC_0 |	// 01: I2S APB2 clock frequency = I2S_CKIN Alternate function input frequency
@@ -532,25 +532,25 @@ hardware_i2s2_master_tx_initialize(void)		/* инициализация I2S2, STM32F4xx */
 	#else /* defined (STM32F446xx) */
 		RCC->CFGR |= RCC_CFGR_I2SSRC;
 	#endif /* defined (STM32F446xx) */
-	//arm_hardware_pioc_altfn50(1UL << 9, AF_SPI2);	// PC9 - MCLK source - I2S_CKIN signal - перенесено в процессорно-зависимый header.
+	//arm_hardware_pioc_altfn50(1UL << 9, AF_SPI2);	// PC9 - MCLK source - I2S_CKIN signal - РїРµСЂРµРЅРµСЃРµРЅРѕ РІ РїСЂРѕС†РµСЃСЃРѕСЂРЅРѕ-Р·Р°РІРёСЃРёРјС‹Р№ header.
 #else /* WITHI2SCLOCKFROMPIN */
 
-	// Возможно использовать только режим с MCLK=256*Fs
+	// Р’РѕР·РјРѕР¶РЅРѕ РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊ С‚РѕР»СЊРєРѕ СЂРµР¶РёРј СЃ MCLK=256*Fs
 	#if defined (STM32F446xx)
 		RCC->DCKCFGR = (RCC->DCKCFGR & ~ (RCC_DCKCFGR_I2S2SRC)) |
 			0 * RCC_DCKCFGR_I2S2SRC_0 |		 // 00: I2S2 clock frequency = f(PLLI2S_R)
 			//1 * RCC_DCKCFGR_I2S2SRC_0 |	 // 01: I2S2 clock frequency = I2S_CKIN Alternate function input frequency
 			//2 * RCC_DCKCFGR_I2S2SRC_0 |	 // 10: I2S2 clock frequency = HSI/HSE depends on PLLSRC bit (PLLCFGR[22])
 			0;
-		// Частота сравнения та же самая, что и в основной PLL
+		// Р§Р°СЃС‚РѕС‚Р° СЃСЂР°РІРЅРµРЅРёСЏ С‚Р° Р¶Рµ СЃР°РјР°СЏ, С‡С‚Рѕ Рё РІ РѕСЃРЅРѕРІРЅРѕР№ PLL
 		// PLLI2SR (at 28) = output divider of VCO frequency
 		RCC->PLLI2SCFGR = (RCC->PLLI2SCFGR & ~ (RCC_PLLI2SCFGR_PLLI2SN | RCC_PLLI2SCFGR_PLLI2SR)) |
 			((PLLI2SN_MUL << RCC_PLLI2SCFGR_PLLI2SN_Pos) & RCC_PLLI2SCFGR_PLLI2SN) |	// PLLI2SN bits = multiplier, freq=192..432 MHz, vale = 2..432
-			2 * RCC_PLLI2SCFGR_PLLI2SR_0 |		// PLLI2SR bits - output divider, 2..7 - константа в calcdivround_plli2s().
+			2 * RCC_PLLI2SCFGR_PLLI2SR_0 |		// PLLI2SR bits - output divider, 2..7 - РєРѕРЅСЃС‚Р°РЅС‚Р° РІ calcdivround_plli2s().
 			0;
 			
-		RCC->CR |= RCC_CR_PLLI2SON;				// Включил PLL
-		while ((RCC->CR & RCC_CR_PLLI2SRDY) == 0)	// пока заработает PLL
+		RCC->CR |= RCC_CR_PLLI2SON;				// Р’РєР»СЋС‡РёР» PLL
+		while ((RCC->CR & RCC_CR_PLLI2SRDY) == 0)	// РїРѕРєР° Р·Р°СЂР°Р±РѕС‚Р°РµС‚ PLL
 			;
 	#else /* defined (STM32F446xx) */
 		//
@@ -560,26 +560,26 @@ hardware_i2s2_master_tx_initialize(void)		/* инициализация I2S2, STM32F4xx */
 		// FS is the audio sampling frequency.
 
 
-		// Частота сравнения та же самая, что и в основной PLL
+		// Р§Р°СЃС‚РѕС‚Р° СЃСЂР°РІРЅРµРЅРёСЏ С‚Р° Р¶Рµ СЃР°РјР°СЏ, С‡С‚Рѕ Рё РІ РѕСЃРЅРѕРІРЅРѕР№ PLL
 		// PLLI2SR (at 28) = output divider of VCO frequency
 		RCC->PLLI2SCFGR = (RCC->PLLI2SCFGR & ~ (RCC_PLLI2SCFGR_PLLI2SN | RCC_PLLI2SCFGR_PLLI2SR)) |
 			((PLLI2SN_MUL << RCC_PLLI2SCFGR_PLLI2SN_Pos) & RCC_PLLI2SCFGR_PLLI2SN) |	// PLLI2SN bits = multiplier, freq=192..432 MHz, vale = 2..432
-			2 * RCC_PLLI2SCFGR_PLLI2SR_0 |		// PLLI2SR bits - output divider, 2..7 - константа в calcdivround_plli2s().
+			2 * RCC_PLLI2SCFGR_PLLI2SR_0 |		// PLLI2SR bits - output divider, 2..7 - РєРѕРЅСЃС‚Р°РЅС‚Р° РІ calcdivround_plli2s().
 			0;
 			
-		RCC->CR |= RCC_CR_PLLI2SON;				// Включил PLL
-		while ((RCC->CR & RCC_CR_PLLI2SRDY) == 0)	// пока заработает PLL
+		RCC->CR |= RCC_CR_PLLI2SON;				// Р’РєР»СЋС‡РёР» PLL
+		while ((RCC->CR & RCC_CR_PLLI2SRDY) == 0)	// РїРѕРєР° Р·Р°СЂР°Р±РѕС‚Р°РµС‚ PLL
 			;
 	#endif /* defined (STM32F446xx) */
 
 #endif /* WITHI2SCLOCKFROMPIN */
 
-	// Теперь настроим модуль SPI.
+	// РўРµРїРµСЂСЊ РЅР°СЃС‚СЂРѕРёРј РјРѕРґСѓР»СЊ SPI.
 #if CPUSTYLE_STM32H7XX
-	RCC->APB1LENR |= RCC_APB1LENR_SPI2EN; // Подать тактирование   
+	RCC->APB1LENR |= RCC_APB1LENR_SPI2EN; // РџРѕРґР°С‚СЊ С‚Р°РєС‚РёСЂРѕРІР°РЅРёРµ   
 	__DSB();
 #else /* CPUSTYLE_STM32H7XX */
-	RCC->APB1ENR |= RCC_APB1ENR_SPI2EN; // Подать тактирование   
+	RCC->APB1ENR |= RCC_APB1ENR_SPI2EN; // РџРѕРґР°С‚СЊ С‚Р°РєС‚РёСЂРѕРІР°РЅРёРµ   
 	__DSB();
 #endif /* CPUSTYLE_STM32H7XX */
 	        
@@ -592,7 +592,7 @@ hardware_i2s2_master_tx_initialize(void)		/* инициализация I2S2, STM32F4xx */
 #else /* WITHI2S_FORMATI2S_PHILIPS */
 		1 * SPI_I2SCFGR_I2SSTD_0 |	// 00: I2S Phillips standard, 01: MSB justified standard (left justified)
 #endif /* WITHI2S_FORMATI2S_PHILIPS */
-		//1 * SPI_I2SCFGR_CKPOL |		// не для H7: от этого бита не зависит: данные на выходе меняются по спадающему фронту
+		//1 * SPI_I2SCFGR_CKPOL |		// РЅРµ РґР»СЏ H7: РѕС‚ СЌС‚РѕРіРѕ Р±РёС‚Р° РЅРµ Р·Р°РІРёСЃРёС‚: РґР°РЅРЅС‹Рµ РЅР° РІС‹С…РѕРґРµ РјРµРЅСЏСЋС‚СЃСЏ РїРѕ СЃРїР°РґР°СЋС‰РµРјСѓ С„СЂРѕРЅС‚Сѓ
 		0;
 
  	SPI2->I2SCFGR = i2smode | 2 * SPI_I2SCFGR_I2SCFG_0; // 10: Master - transmit, 11: Master - receive
@@ -617,7 +617,7 @@ hardware_i2s2_master_tx_initialize(void)		/* инициализация I2S2, STM32F4xx */
 		SPI_I2SPR_MCKOE |
 		0;
 	SPI2->I2SPR = i2spr;
-	// Подключить I2S к выводам процессора
+	// РџРѕРґРєР»СЋС‡РёС‚СЊ I2S Рє РІС‹РІРѕРґР°Рј РїСЂРѕС†РµСЃСЃРѕСЂР°
 	I2S2HW_INITIALIZE();
 }
 
@@ -625,16 +625,16 @@ hardware_i2s2_master_tx_initialize(void)		/* инициализация I2S2, STM32F4xx */
 
 #if WITHI2SHWRXSLAVE
 
-// Интерфейс к НЧ кодеку
+// РРЅС‚РµСЂС„РµР№СЃ Рє РќР§ РєРѕРґРµРєСѓ
 static void 
-hardware_i2s3_slave_rx_initialize(void)		/* инициализация I2S3 STM32F4xx */
+hardware_i2s3_slave_rx_initialize(void)		/* РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ I2S3 STM32F4xx */
 {
 	debug_printf_P(PSTR("hardware_i2s3_slave_rx_initialize\n"));
 #if CPUSTYLE_STM32H7XX
-	RCC->APB1LENR |= RCC_APB1LENR_SPI3EN; // Подать тактирование   
+	RCC->APB1LENR |= RCC_APB1LENR_SPI3EN; // РџРѕРґР°С‚СЊ С‚Р°РєС‚РёСЂРѕРІР°РЅРёРµ   
 	__DSB();
 #else /* CPUSTYLE_STM32H7XX */
-	RCC->APB1ENR |= RCC_APB1ENR_SPI3EN; // Подать тактирование   
+	RCC->APB1ENR |= RCC_APB1ENR_SPI3EN; // РџРѕРґР°С‚СЊ С‚Р°РєС‚РёСЂРѕРІР°РЅРёРµ   
 	__DSB();
 #endif /* CPUSTYLE_STM32H7XX */
 	        
@@ -647,7 +647,7 @@ hardware_i2s3_slave_rx_initialize(void)		/* инициализация I2S3 STM32F4xx */
 #else /* WITHI2S_FORMATI2S_PHILIPS */
 		1 * SPI_I2SCFGR_I2SSTD_0 |	// 00: I2S Phillips standard, 01: MSB justified standard (left justified)
 #endif /* WITHI2S_FORMATI2S_PHILIPS */
-		//1 * SPI_I2SCFGR_CKPOL |		// не для H7: от этого бита не зависит: данные на выходе меняются по спадающему фронту
+		//1 * SPI_I2SCFGR_CKPOL |		// РЅРµ РґР»СЏ H7: РѕС‚ СЌС‚РѕРіРѕ Р±РёС‚Р° РЅРµ Р·Р°РІРёСЃРёС‚: РґР°РЅРЅС‹Рµ РЅР° РІС‹С…РѕРґРµ РјРµРЅСЏСЋС‚СЃСЏ РїРѕ СЃРїР°РґР°СЋС‰РµРјСѓ С„СЂРѕРЅС‚Сѓ
 		0;
 
  	SPI3->I2SCFGR = i2smode | 1 * SPI_I2SCFGR_I2SCFG_0;	// 10: Master - transmit, 11: Master - receive, 01: Slave - receive
@@ -655,7 +655,7 @@ hardware_i2s3_slave_rx_initialize(void)		/* инициализация I2S3 STM32F4xx */
 	//SPI3->CFG2 |= SPI_CFG2_IOSWP;
 #endif /* CPUSTYLE_STM32H7XX */
 
-	// Подключить I2S к выводам процессора
+	// РџРѕРґРєР»СЋС‡РёС‚СЊ I2S Рє РІС‹РІРѕРґР°Рј РїСЂРѕС†РµСЃСЃРѕСЂР°
 	I2S2HW_INITIALIZE();
 
 	debug_printf_P(PSTR("hardware_i2s3_slave_rx_initialize done\n"));
@@ -665,8 +665,8 @@ hardware_i2s3_slave_rx_initialize(void)		/* инициализация I2S3 STM32F4xx */
 
 #if defined (I2S2ext)
 
-/* разрешение работы I2S на STM32F4xx */
-// Интерфейс к НЧ кодеку
+/* СЂР°Р·СЂРµС€РµРЅРёРµ СЂР°Р±РѕС‚С‹ I2S РЅР° STM32F4xx */
+// РРЅС‚РµСЂС„РµР№СЃ Рє РќР§ РєРѕРґРµРєСѓ
 static void 
 hardware_i2s2_fullduplex_enable(void)
 {
@@ -674,8 +674,8 @@ hardware_i2s2_fullduplex_enable(void)
 
 #if CPUSTYLE_STM32H7XX
 
-	I2S2ext->CFG1 |= SPI_CFG1_RXDMAEN; // DMA по приему (slave)
-	SPI2->CFG1 |= SPI_CFG1_TXDMAEN; // DMA по передаче
+	I2S2ext->CFG1 |= SPI_CFG1_RXDMAEN; // DMA РїРѕ РїСЂРёРµРјСѓ (slave)
+	SPI2->CFG1 |= SPI_CFG1_TXDMAEN; // DMA РїРѕ РїРµСЂРµРґР°С‡Рµ
 	I2S2ext->I2SCFGR |= SPI_I2SCFGR_I2SE;		// I2S enable (slave enabled first)
 	I2S2ext->CR1 |= SPI_CR1_CSTART;	// I2S run
 	__DSB();
@@ -685,8 +685,8 @@ hardware_i2s2_fullduplex_enable(void)
 
 #else /* CPUSTYLE_STM32H7XX */
 
-	I2S2ext->CR2 |= SPI_CR2_RXDMAEN; // DMA по приему (slave)
-	SPI2->CR2 |= SPI_CR2_TXDMAEN; // DMA по передаче
+	I2S2ext->CR2 |= SPI_CR2_RXDMAEN; // DMA РїРѕ РїСЂРёРµРјСѓ (slave)
+	SPI2->CR2 |= SPI_CR2_TXDMAEN; // DMA РїРѕ РїРµСЂРµРґР°С‡Рµ
 	I2S2ext->I2SCFGR |= SPI_I2SCFGR_I2SE;		// I2S enable (slave enabled first)
 	__DSB();
 	SPI2->I2SCFGR |= SPI_I2SCFGR_I2SE;		// I2S enable
@@ -697,38 +697,38 @@ hardware_i2s2_fullduplex_enable(void)
 
 #endif /* defined (I2S2ext) */
 
-/* разрешение работы I2S на STM32F4xx */
-// Интерфейс к НЧ кодеку
+/* СЂР°Р·СЂРµС€РµРЅРёРµ СЂР°Р±РѕС‚С‹ I2S РЅР° STM32F4xx */
+// РРЅС‚РµСЂС„РµР№СЃ Рє РќР§ РєРѕРґРµРєСѓ
 static void 
 hardware_i2s2_tx_enable(void)
 {
 #if CPUSTYLE_STM32H7XX
-	SPI2->CFG1 |= SPI_CFG1_TXDMAEN; // DMA по передаче
+	SPI2->CFG1 |= SPI_CFG1_TXDMAEN; // DMA РїРѕ РїРµСЂРµРґР°С‡Рµ
 	SPI2->CR1 |= SPI_CR1_SPE;		// I2S enable
 	SPI2->CR1 |= SPI_CR1_CSTART;	// I2S run
 	__DSB();
 #else /* CPUSTYLE_STM32H7XX */
-	SPI2->CR2 |= SPI_CR2_TXDMAEN; // DMA по передаче
+	SPI2->CR2 |= SPI_CR2_TXDMAEN; // DMA РїРѕ РїРµСЂРµРґР°С‡Рµ
 	SPI2->I2SCFGR |= SPI_I2SCFGR_I2SE;		// I2S enable
 	__DSB();
 #endif /* CPUSTYLE_STM32H7XX */
 }
 
-/* разрешение работы I2S на STM32F4xx */
-// Интерфейс к НЧ кодеку
+/* СЂР°Р·СЂРµС€РµРЅРёРµ СЂР°Р±РѕС‚С‹ I2S РЅР° STM32F4xx */
+// РРЅС‚РµСЂС„РµР№СЃ Рє РќР§ РєРѕРґРµРєСѓ
 static void 
 hardware_i2s3_rx_enable(void)
 {
 #if CPUSTYLE_STM32H7XX
 
-	SPI3->CFG1 |= SPI_CFG1_RXDMAEN; // DMA по приёму
+	SPI3->CFG1 |= SPI_CFG1_RXDMAEN; // DMA РїРѕ РїСЂРёС‘РјСѓ
 	SPI3->CR1 |= SPI_CR1_SPE;		// I2S enable
 	SPI3->CR1 |= SPI_CR1_CSTART;	// I2S run
 	__DSB();
 
 #else /* CPUSTYLE_STM32H7XX */
 
-	SPI3->CR2 |= SPI_CR2_RXDMAEN; // DMA по приёму
+	SPI3->CR2 |= SPI_CR2_RXDMAEN; // DMA РїРѕ РїСЂРёС‘РјСѓ
 	SPI3->I2SCFGR |= SPI_I2SCFGR_I2SE;		// I2S enable
 	__DSB();
 
@@ -738,13 +738,13 @@ hardware_i2s3_rx_enable(void)
 
 
 #if WITHI2SFULLDUPLEXHW
-// платы, где используются DMA_I2S2 и DMA_I2S2ext
+// РїР»Р°С‚С‹, РіРґРµ РёСЃРїРѕР»СЊР·СѓСЋС‚СЃСЏ DMA_I2S2 Рё DMA_I2S2ext
 static const codechw_t audiocodechw =
 {
 	hardware_i2s2_master_fullduplex_initialize,
 	hardware_dummy_initialize,
-	DMA_I2S2ext_rx_init,			// DMA по приёму канал 3
-	DMA_I2S2_TX_initialize,				// DMA по передаче канал 0
+	DMA_I2S2ext_rx_init,			// DMA РїРѕ РїСЂРёС‘РјСѓ РєР°РЅР°Р» 3
+	DMA_I2S2_TX_initialize,				// DMA РїРѕ РїРµСЂРµРґР°С‡Рµ РєР°РЅР°Р» 0
 	hardware_i2s2_fullduplex_enable,
 	hardware_dummy_enable,
 	"i2s2-audiocodechw"
@@ -755,17 +755,17 @@ static const codechw_t audiocodechw =
 static const codechw_t audiocodechw =
 {
 	#if WITHI2SHWRXSLAVE
-		hardware_i2s3_slave_rx_initialize,	/* Интерфейс к НЧ кодеку - микрофон */
+		hardware_i2s3_slave_rx_initialize,	/* РРЅС‚РµСЂС„РµР№СЃ Рє РќР§ РєРѕРґРµРєСѓ - РјРёРєСЂРѕС„РѕРЅ */
 	#else /* WITHI2SHWRXSLAVE */
-		hardware_dummy_initialize,			/* Интерфейс к НЧ кодеку - микрофон */
+		hardware_dummy_initialize,			/* РРЅС‚РµСЂС„РµР№СЃ Рє РќР§ РєРѕРґРµРєСѓ - РјРёРєСЂРѕС„РѕРЅ */
 	#endif /* WITHI2SHWRXSLAVE */
 	#if WITHI2SHWTXSLAVE
-		hardware_i2s2_slave_tx_initialize,	/* Интерфейс к НЧ кодеку - наушники */
+		hardware_i2s2_slave_tx_initialize,	/* РРЅС‚РµСЂС„РµР№СЃ Рє РќР§ РєРѕРґРµРєСѓ - РЅР°СѓС€РЅРёРєРё */
 	#else /* WITHI2SHWTXSLAVE */
-		hardware_i2s2_master_tx_initialize,	/* Интерфейс к НЧ кодеку - наушники */
+		hardware_i2s2_master_tx_initialize,	/* РРЅС‚РµСЂС„РµР№СЃ Рє РќР§ РєРѕРґРµРєСѓ - РЅР°СѓС€РЅРёРєРё */
 	#endif /* WITHI2SHWTXSLAVE */
-	DMA_I2S3_RX_initialize,					// DMA по приёму SPI3_RX - DMA1, Stream0, Channel0
-	DMA_I2S2_TX_initialize,					// DMA по передаче канал 0
+	DMA_I2S3_RX_initialize,					// DMA РїРѕ РїСЂРёС‘РјСѓ SPI3_RX - DMA1, Stream0, Channel0
+	DMA_I2S2_TX_initialize,					// DMA РїРѕ РїРµСЂРµРґР°С‡Рµ РєР°РЅР°Р» 0
 	hardware_i2s3_rx_enable,
 	hardware_i2s2_tx_enable,
 	"i2s2-i2s3-audiocodechw"
@@ -782,7 +782,7 @@ static const codechw_t audiocodechw =
 		static uint_fast32_t 
 		NOINLINEAT
 		calcdivround_extsai(
-			uint_fast32_t freq		/* требуемая частота на выходе делителя, в герцах. */
+			uint_fast32_t freq		/* С‚СЂРµР±СѓРµРјР°СЏ С‡Р°СЃС‚РѕС‚Р° РЅР° РІС‹С…РѕРґРµ РґРµР»РёС‚РµР»СЏ, РІ РіРµСЂС†Р°С…. */
 			)
 		{
 			return (EXTSAI_FREQ + freq / 2) / freq;
@@ -793,7 +793,7 @@ static const codechw_t audiocodechw =
 		static uint_fast32_t 
 		NOINLINEAT
 		calcdivround_pllsai(
-			uint_fast32_t freq		/* требуемая частота на выходе делителя, в герцах. */
+			uint_fast32_t freq		/* С‚СЂРµР±СѓРµРјР°СЏ С‡Р°СЃС‚РѕС‚Р° РЅР° РІС‹С…РѕРґРµ РґРµР»РёС‚РµР»СЏ, РІ РіРµСЂС†Р°С…. */
 			)
 		{
 			return (PLLSAI_FREQ_OUT + freq / 2) / freq;
@@ -823,9 +823,9 @@ static void hardware_sai1_sai2_clock_selection(void)
 
 #if WITHSAICLOCKFROMPIN
 	
-	// Тактовая частота на SAI1 подается с внешнего генератора, в процессор вводится 
-	// через MCK сигнал интерфейса.
-	// SAI2 синхронизируется от SAI1
+	// РўР°РєС‚РѕРІР°СЏ С‡Р°СЃС‚РѕС‚Р° РЅР° SAI1 РїРѕРґР°РµС‚СЃСЏ СЃ РІРЅРµС€РЅРµРіРѕ РіРµРЅРµСЂР°С‚РѕСЂР°, РІ РїСЂРѕС†РµСЃСЃРѕСЂ РІРІРѕРґРёС‚СЃСЏ 
+	// С‡РµСЂРµР· MCK СЃРёРіРЅР°Р» РёРЅС‚РµСЂС„РµР№СЃР°.
+	// SAI2 СЃРёРЅС…СЂРѕРЅРёР·РёСЂСѓРµС‚СЃСЏ РѕС‚ SAI1
 
 	#if defined (STM32F446xx)
 		// clock sources:
@@ -907,7 +907,7 @@ static void hardware_sai1_sai2_clock_selection(void)
 	#else /* defined (STM32F446xx) */
 		RCC->PLLI2SCFGR = 
 			(RCC->PLLI2SCFGR & ~ (RCC_PLLI2SCFGR_PLLI2SQ)) |
-			(2 * RCC_PLLI2SCFGR_PLLI2SQ_0) |	// PLLI2SQ: PLLI2S division factor for SAI1 clock - 2..7 - эта константа используется в calcdivround_pllsai().
+			(2 * RCC_PLLI2SCFGR_PLLI2SQ_0) |	// PLLI2SQ: PLLI2S division factor for SAI1 clock - 2..7 - СЌС‚Р° РєРѕРЅСЃС‚Р°РЅС‚Р° РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РІ calcdivround_pllsai().
 			0;
 		// clock sources:
 		// 0: SAI1-B clock frequency = f(PLLSAI_Q) / PLLSAIDIVQ
@@ -921,8 +921,8 @@ static void hardware_sai1_sai2_clock_selection(void)
 	#endif /* defined (STM32F446xx) */
 
 #else /* WITHSAICLOCKFROMI2S */
-	// Для SAI используется отдельная PLL
-	// Частота сравнения та же самая, что и в основной PLL
+	// Р”Р»СЏ SAI РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РѕС‚РґРµР»СЊРЅР°СЏ PLL
+	// Р§Р°СЃС‚РѕС‚Р° СЃСЂР°РІРЅРµРЅРёСЏ С‚Р° Р¶Рµ СЃР°РјР°СЏ, С‡С‚Рѕ Рё РІ РѕСЃРЅРѕРІРЅРѕР№ PLL
 	// PLLSAIDIVQ
 	#if defined (STM32F446xx)
 		// clock sources:
@@ -949,7 +949,7 @@ static void hardware_sai1_sai2_clock_selection(void)
 		RCC->PLLSAICFGR = 
 			(RCC->PLLSAICFGR & ~ (RCC_PLLSAICFGR_PLLSAIN | RCC_PLLSAICFGR_PLLSAIQ)) |
 			((SAIREF1_MUL << RCC_PLLSAICFGR_PLLSAIN_Pos) & RCC_PLLSAICFGR_PLLSAIN) |	// PLLI2SN bits = multiplier, freq=192..432 MHz, vale = 2..432
-			((2uL << RCC_PLLSAICFGR_PLLSAIQ_Pos) & RCC_PLLSAICFGR_PLLSAIQ) |	// PLLSAI division factor for SAI1 clock: 2..15 - эта константа используется в calcdivround_pllsai().
+			((2uL << RCC_PLLSAICFGR_PLLSAIQ_Pos) & RCC_PLLSAICFGR_PLLSAIQ) |	// PLLSAI division factor for SAI1 clock: 2..15 - СЌС‚Р° РєРѕРЅСЃС‚Р°РЅС‚Р° РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РІ calcdivround_pllsai().
 			0;
 		// clock sources:
 		// RCC_DCKCFGR_SAI1SRC:
@@ -970,8 +970,8 @@ static void hardware_sai1_sai2_clock_selection(void)
 			(0 * RCC_DCKCFGR1_SAI2SEL_0) |	// SAI2 clock frequency = f(PLLSAI_Q) / PLLSAIDIVQ 
 			0;
 
-		RCC->CR |= RCC_CR_PLLSAION;				// Включил PLL
-		while ((RCC->CR & RCC_CR_PLLSAIRDY) == 0)	// пока заработает PLL
+		RCC->CR |= RCC_CR_PLLSAION;				// Р’РєР»СЋС‡РёР» PLL
+		while ((RCC->CR & RCC_CR_PLLSAIRDY) == 0)	// РїРѕРєР° Р·Р°СЂР°Р±РѕС‚Р°РµС‚ PLL
 			;
 
 	#else /* defined (STM32F446xx) */
@@ -979,7 +979,7 @@ static void hardware_sai1_sai2_clock_selection(void)
 		RCC->PLLSAICFGR = 
 			(RCC->PLLSAICFGR & ~ (RCC_PLLSAICFGR_PLLSAIN | RCC_PLLSAICFGR_PLLSAIQ)) |
 			((SAIREF1_MUL << RCC_PLLSAICFGR_PLLSAIN_Pos) & RCC_PLLSAICFGR_PLLSAIN) |	// PLLI2SN bits = multiplier, freq=192..432 MHz, vale = 2..432
-			((2uL << RCC_PLLSAICFGR_PLLSAIQ_Pos) & RCC_PLLSAICFGR_PLLSAIQ) |	// PLLSAI division factor for SAI1 clock: 2..15 - эта константа используется в calcdivround_pllsai().
+			((2uL << RCC_PLLSAICFGR_PLLSAIQ_Pos) & RCC_PLLSAICFGR_PLLSAIQ) |	// PLLSAI division factor for SAI1 clock: 2..15 - СЌС‚Р° РєРѕРЅСЃС‚Р°РЅС‚Р° РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РІ calcdivround_pllsai().
 			0;
 		// clock sources:
 		// 0: SAI1-B clock frequency = f(PLLSAI_Q) / PLLSAIDIVQ
@@ -992,8 +992,8 @@ static void hardware_sai1_sai2_clock_selection(void)
 			(0 * RCC_DCKCFGR_SAI1BSRC_0) |	// SAI1-B clock source selection
 			0;
 
-		RCC->CR |= RCC_CR_PLLSAION;				// Включил PLL
-		while ((RCC->CR & RCC_CR_PLLSAIRDY) == 0)	// пока заработает PLL
+		RCC->CR |= RCC_CR_PLLSAION;				// Р’РєР»СЋС‡РёР» PLL
+		while ((RCC->CR & RCC_CR_PLLSAIRDY) == 0)	// РїРѕРєР° Р·Р°СЂР°Р±РѕС‚Р°РµС‚ PLL
 			;
 	#endif /* defined (STM32F446xx) */
 #endif /* WITHSAICLOCKFROMI2S */
@@ -1005,13 +1005,13 @@ static void hardware_sai1_sai2_clock_selection(void)
 #if WITHSAI1HW
 
 
-// DMA по приему SAI1 - обработчик прерывания
+// DMA РїРѕ РїСЂРёРµРјСѓ SAI1 - РѕР±СЂР°Р±РѕС‚С‡РёРє РїСЂРµСЂС‹РІР°РЅРёСЏ
 // RX	SAI1_B	DMA2	Stream 5	Channel 0
 // Use arm_hardware_invalidate
 
 void RAMFUNC_NONILINE DMA2_Stream5_IRQHandler(void)
 {
-	// проверка условия может потребоваться при добавлении обработчика ошибки
+	// РїСЂРѕРІРµСЂРєР° СѓСЃР»РѕРІРёСЏ РјРѕР¶РµС‚ РїРѕС‚СЂРµР±РѕРІР°С‚СЊСЃСЏ РїСЂРё РґРѕР±Р°РІР»РµРЅРёРё РѕР±СЂР°Р±РѕС‚С‡РёРєР° РѕС€РёР±РєРё
 	if ((DMA2->HISR & DMA_HISR_TCIF5) != 0)
 	{
 		const uint_fast8_t b = (DMA2_Stream5->CR & DMA_SxCR_CT) != 0;
@@ -1025,12 +1025,12 @@ void RAMFUNC_NONILINE DMA2_Stream5_IRQHandler(void)
 			processing_dmabuffer32rx(DMA2_Stream5->M1AR);
 			DMA2_Stream5->M1AR = dma_invalidate32rx(allocate_dmabuffer32rx());
 		}
-		DMA2->HIFCR = DMA_HIFCR_CTCIF5;	// Clear TC interrupt flag соответствующий stream
+		DMA2->HIFCR = DMA_HIFCR_CTCIF5;	// Clear TC interrupt flag СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РёР№ stream
 	}
 /*
 	if ((DMA2->HISR & DMA_HISR_TEIF5) != 0)
 	{
-		DMA2->HIFCR = DMA_HIFCR_CTEIF5;	// Clear ERROR interrupt flag соответствующий stream
+		DMA2->HIFCR = DMA_HIFCR_CTEIF5;	// Clear ERROR interrupt flag СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РёР№ stream
 		DMA2_Stream5->CR &= ~ DMA_SxCR_EN;
 		while (DMA2_Stream5->CR & DMA_SxCR_EN)
 			;
@@ -1038,7 +1038,7 @@ void RAMFUNC_NONILINE DMA2_Stream5_IRQHandler(void)
 	}
 */
 }
-// DMA по передаче SAI1 - обработчик прерывания
+// DMA РїРѕ РїРµСЂРµРґР°С‡Рµ SAI1 - РѕР±СЂР°Р±РѕС‚С‡РёРє РїСЂРµСЂС‹РІР°РЅРёСЏ
 // TX	SAI1_A	DMA2	Stream 1	Channel 0
 // Use arm_hardware_flush
 void DMA2_Stream1_IRQHandler(void)
@@ -1061,14 +1061,14 @@ void DMA2_Stream1_IRQHandler(void)
 }
 
 
-// DMA по передаче SAI1 - инициализация
+// DMA РїРѕ РїРµСЂРµРґР°С‡Рµ SAI1 - РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ
 // TX	SAI1_A	DMA2	Stream 1	Channel 0
 // Use arm_hardware_flush
 static void DMA_SAI1_A_TX_initialize(void)
 {
 	/* SAI1_A - Stream1, Channel0 */ 
-	/* DMA для передачи по I2S2*/
-	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;//включил DMA2 
+	/* DMA РґР»СЏ РїРµСЂРµРґР°С‡Рё РїРѕ I2S2*/
+	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;//РІРєР»СЋС‡РёР» DMA2 
 	__DSB();
 
 #if CPUSTYLE_STM32H7XX
@@ -1088,20 +1088,20 @@ static void DMA_SAI1_A_TX_initialize(void)
 
 	DMA2_Stream1->FCR &= ~ DMA_SxFCR_DMDIS;	// use direct mode
 	DMA2_Stream1->CR =
-		ch * DMA_SxCR_CHSEL_0 | //канал
+		ch * DMA_SxCR_CHSEL_0 | //РєР°РЅР°Р»
 		0 * DMA_SxCR_MBURST_0 |	// 0: single transfer
 		0 * DMA_SxCR_PBURST_0 |	// 0: single transfer
-		1 * DMA_SxCR_DIR_0 | //направление - память - периферия
-		1 * DMA_SxCR_MINC | //инкремент памяти
-		2 * DMA_SxCR_MSIZE_0 | //длина в памяти - 32 bit
-		2 * DMA_SxCR_PSIZE_0 | //длина в DR - 32 bit
+		1 * DMA_SxCR_DIR_0 | //РЅР°РїСЂР°РІР»РµРЅРёРµ - РїР°РјСЏС‚СЊ - РїРµСЂРёС„РµСЂРёСЏ
+		1 * DMA_SxCR_MINC | //РёРЅРєСЂРµРјРµРЅС‚ РїР°РјСЏС‚Рё
+		2 * DMA_SxCR_MSIZE_0 | //РґР»РёРЅР° РІ РїР°РјСЏС‚Рё - 32 bit
+		2 * DMA_SxCR_PSIZE_0 | //РґР»РёРЅР° РІ DR - 32 bit
 		2 * DMA_SxCR_PL_0 |		// Priority level - High
 		0 * DMA_SxCR_CT | // M0AR selected
 		1 * DMA_SxCR_DBM | // double buffer mode seelcted
 		0;
 
 	DMA2->LIFCR = DMA_LISR_TCIF1;	// Clear TC interrupt flag
-	DMA2_Stream1->CR |= DMA_SxCR_TCIE;	// Разрешаем прерывания от DMA
+	DMA2_Stream1->CR |= DMA_SxCR_TCIE;	// Р Р°Р·СЂРµС€Р°РµРј РїСЂРµСЂС‹РІР°РЅРёСЏ РѕС‚ DMA
 
 	NVIC_SetPriority(DMA2_Stream1_IRQn, ARM_REALTIME_PRIORITY);
 	NVIC_EnableIRQ(DMA2_Stream1_IRQn);	// DMA2_Stream1_IRQHandler() enable
@@ -1110,13 +1110,13 @@ static void DMA_SAI1_A_TX_initialize(void)
 
 }
 
-/* DMA для прёма по SAI_1_B  - инициализация */
+/* DMA РґР»СЏ РїСЂС‘РјР° РїРѕ SAI_1_B  - РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ */
 // RX	SAI1_B	DMA2	Stream 5	Channel 0
 // Use arm_hardware_invalidate
 static void DMA_SAI1_B_RX_initialize(void)
 {
 	/* SAI1_B - Stream5, Channel0 */ 
-	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;//включил DMA2 
+	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;//РІРєР»СЋС‡РёР» DMA2 
 	__DSB();
 
 #if CPUSTYLE_STM32H7XX
@@ -1138,20 +1138,20 @@ static void DMA_SAI1_B_RX_initialize(void)
 
 	DMA2_Stream5->FCR &= ~ DMA_SxFCR_DMDIS;	// use direct mode
 	DMA2_Stream5->CR =
-		ch * DMA_SxCR_CHSEL_0 | // канал
+		ch * DMA_SxCR_CHSEL_0 | // РєР°РЅР°Р»
 		0 * DMA_SxCR_MBURST_0 |	// 0: single transfer
 		0 * DMA_SxCR_PBURST_0 |	// 0: single transfer
 		0 * DMA_SxCR_DIR_0 |	// 00: Peripheral-to-memory
-		1 * DMA_SxCR_MINC |		//инкремент памяти
-		2 * DMA_SxCR_MSIZE_0 | //длина в памяти - 32 bit
-		2 * DMA_SxCR_PSIZE_0 | //длина в DR - 32 bit
+		1 * DMA_SxCR_MINC |		//РёРЅРєСЂРµРјРµРЅС‚ РїР°РјСЏС‚Рё
+		2 * DMA_SxCR_MSIZE_0 | //РґР»РёРЅР° РІ РїР°РјСЏС‚Рё - 32 bit
+		2 * DMA_SxCR_PSIZE_0 | //РґР»РёРЅР° РІ DR - 32 bit
 		2 * DMA_SxCR_PL_0 |		// Priority level - High
 		0 * DMA_SxCR_CT |	// M0AR selected
 		1 * DMA_SxCR_DBM |	 // double buffer mode seelcted
 		0;
 
-	DMA2->HIFCR = (DMA_HIFCR_CTCIF5 /* | DMA_HIFCR_CTEIF5 */);	// Clear TC interrupt flag соответствующий stream
-	DMA2_Stream5->CR |= (DMA_SxCR_TCIE /* | DMA_SxCR_TEIE */);	// прерывания от DMA по TC и TE
+	DMA2->HIFCR = (DMA_HIFCR_CTCIF5 /* | DMA_HIFCR_CTEIF5 */);	// Clear TC interrupt flag СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РёР№ stream
+	DMA2_Stream5->CR |= (DMA_SxCR_TCIE /* | DMA_SxCR_TEIE */);	// РїСЂРµСЂС‹РІР°РЅРёСЏ РѕС‚ DMA РїРѕ TC Рё TE
 
 	NVIC_SetPriority(DMA2_Stream5_IRQn, ARM_REALTIME_PRIORITY);
 	NVIC_EnableIRQ(DMA2_Stream5_IRQn);	// DMA2_Stream5_IRQHandler() enable
@@ -1161,12 +1161,12 @@ static void DMA_SAI1_B_RX_initialize(void)
 
 #if WITHSAI1HWTXRXMASTER
 
-static void hardware_sai1_master_fullduplex_initialize(void)		/* инициализация SAI1 на STM32F4xx */
+static void hardware_sai1_master_fullduplex_initialize(void)		/* РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ SAI1 РЅР° STM32F4xx */
 {
 	hardware_sai1_sai2_clock_selection();
 
-	// Теперь настроим модуль SAI.
-	RCC->APB2ENR |= RCC_APB2ENR_SAI1EN; //подать тактирование 
+	// РўРµРїРµСЂСЊ РЅР°СЃС‚СЂРѕРёРј РјРѕРґСѓР»СЊ SAI.
+	RCC->APB2ENR |= RCC_APB2ENR_SAI1EN; //РїРѕРґР°С‚СЊ С‚Р°РєС‚РёСЂРѕРІР°РЅРёРµ 
 	__DSB();
 	
 
@@ -1202,7 +1202,7 @@ static void hardware_sai1_master_fullduplex_initialize(void)		/* инициализация S
 		(1 * SAI_xCR1_OUTDRIV) |	//
 		(0 * SAI_xCR1_MONO) |	// stereo MODE - with IQ pairs - see DMABUFFSIZE32
 		(1 * SAI_xCR1_DMAEN) |	// 1: DMA enable 
-		(1 * SAI_xCR1_CKSTR) |	// 0: данные на выходе меняются по нарастающему фронту, 1: по спадающему
+		(1 * SAI_xCR1_CKSTR) |	// 0: РґР°РЅРЅС‹Рµ РЅР° РІС‹С…РѕРґРµ РјРµРЅСЏСЋС‚СЃСЏ РїРѕ РЅР°СЂР°СЃС‚Р°СЋС‰РµРјСѓ С„СЂРѕРЅС‚Сѓ, 1: РїРѕ СЃРїР°РґР°СЋС‰РµРјСѓ
 		(7 * SAI_xCR1_DS_0) |	// 6: data size - 24 bit, 7: 32 bit, 4: 16 bit
 		(0 * SAI_xCR1_PRTCFG_0) |	// 0: free protocol
 		(nodiv * SAI_xCR1_NODIV) |	// 1: no MCKDIV value
@@ -1262,7 +1262,7 @@ static void hardware_sai1_master_fullduplex_initialize(void)		/* инициализация S
 		((WITHSAI1_FRAMEBITS / 2 - 1) * SAI_xFRCR_FSALL_0) |
 #if WITHSAI1_FORMATI2S_PHILIPS
 		(1 * SAI_xFRCR_FSOFF) |		/* 1: FS is asserted one bit before the first bit of the slot 0. Classic I2S form Philips Semiconductors. "0" value for Sony I2S specs. */
-		(0 * SAI_xFRCR_FSPO) |	/* 0: канал с индексом 0 передается при "0" на WS - перывм. */
+		(0 * SAI_xFRCR_FSPO) |	/* 0: РєР°РЅР°Р» СЃ РёРЅРґРµРєСЃРѕРј 0 РїРµСЂРµРґР°РµС‚СЃСЏ РїСЂРё "0" РЅР° WS - РїРµСЂС‹РІРј. */
 #endif /* WITHSAI1_FORMATI2S_PHILIPS */
 		0;
 	// FRAME CONTROL REGISTER
@@ -1278,12 +1278,12 @@ static void hardware_sai1_master_fullduplex_initialize(void)		/* инициализация S
 
 #else /* WITHSAI1HWTXRXMASTER */
 
-static void hardware_sai1_slave_fullduplex_initialize(void)		/* инициализация SAI1 на STM32F4xx */
+static void hardware_sai1_slave_fullduplex_initialize(void)		/* РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ SAI1 РЅР° STM32F4xx */
 {
 	hardware_sai1_sai2_clock_selection();
 
-	// Теперь настроим модуль SAI.
-	RCC->APB2ENR |= RCC_APB2ENR_SAI1EN; //подать тактирование 
+	// РўРµРїРµСЂСЊ РЅР°СЃС‚СЂРѕРёРј РјРѕРґСѓР»СЊ SAI.
+	RCC->APB2ENR |= RCC_APB2ENR_SAI1EN; //РїРѕРґР°С‚СЊ С‚Р°РєС‚РёСЂРѕРІР°РЅРёРµ 
 	__DSB();
 	
 	SAI1_Block_A->CR1 &= ~ SAI_xCR1_SAIEN;
@@ -1317,7 +1317,7 @@ static void hardware_sai1_slave_fullduplex_initialize(void)		/* инициализация SA
 		(1 * SAI_xCR1_OUTDRIV) |	//
 		(0 * SAI_xCR1_MONO) |	// stereo MODE - with IQ pairs - see DMABUFFSIZE32
 		(1 * SAI_xCR1_DMAEN) |	// 1: DMA enable 
-		(1 * SAI_xCR1_CKSTR) |	// 0: данные на выходе меняются по нарастающему фронту, 1: по спадающему
+		(1 * SAI_xCR1_CKSTR) |	// 0: РґР°РЅРЅС‹Рµ РЅР° РІС‹С…РѕРґРµ РјРµРЅСЏСЋС‚СЃСЏ РїРѕ РЅР°СЂР°СЃС‚Р°СЋС‰РµРјСѓ С„СЂРѕРЅС‚Сѓ, 1: РїРѕ СЃРїР°РґР°СЋС‰РµРјСѓ
 		(7 * SAI_xCR1_DS_0) |	// 6: data size - 24 bit, 7: 32 bit, 4: 16 bit
 		(0 * SAI_xCR1_PRTCFG_0) |	// 0: free protocol
 		//(nodiv * SAI_xCR1_NODIV) |	// 1: no MCKDIV value
@@ -1377,7 +1377,7 @@ static void hardware_sai1_slave_fullduplex_initialize(void)		/* инициализация SA
 		((WITHSAI1_FRAMEBITS / 2 - 1) * SAI_xFRCR_FSALL_0) |
 #if WITHSAI1_FORMATI2S_PHILIPS
 		(1 * SAI_xFRCR_FSOFF) |		/* 1: FS is asserted one bit before the first bit of the slot 0. Classic I2S form Philips Semiconductors. "0" value for Sony I2S specs. */
-		(0 * SAI_xFRCR_FSPO) |	/* 0: канал с индексом 0 передается при "0" на WS - перывм. */
+		(0 * SAI_xFRCR_FSPO) |	/* 0: РєР°РЅР°Р» СЃ РёРЅРґРµРєСЃРѕРј 0 РїРµСЂРµРґР°РµС‚СЃСЏ РїСЂРё "0" РЅР° WS - РїРµСЂС‹РІРј. */
 #endif /* WITHSAI1_FORMATI2S_PHILIPS */
 		0;
 	// FRAME CONTROL REGISTER
@@ -1403,7 +1403,7 @@ static void hardware_sai1_slave_fullduplex_initialize(void)		/* инициализация SA
 
 #endif /* WITHSAI1HWTXRXMASTER */
 
-static void hardware_sai1_enable(void)		/* разрешение работы SAI1 на STM32F4xx */
+static void hardware_sai1_enable(void)		/* СЂР°Р·СЂРµС€РµРЅРёРµ СЂР°Р±РѕС‚С‹ SAI1 РЅР° STM32F4xx */
 {
 	SAI1_Block_B->CR1 |= SAI_xCR1_SAIEN;
 	SAI1_Block_A->CR1 |= SAI_xCR1_SAIEN;
@@ -1417,12 +1417,12 @@ static void hardware_sai1_enable(void)		/* разрешение работы SAI1 на STM32F4xx *
 	//#error WITHSAI1HW must be enabled
 #endif /* ! WITHSAI1HW */
 
-// DMA по приему SAI2 - обработчик прерывания
+// DMA РїРѕ РїСЂРёРµРјСѓ SAI2 - РѕР±СЂР°Р±РѕС‚С‡РёРє РїСЂРµСЂС‹РІР°РЅРёСЏ
 // RX	SAI2_B	DMA2	Stream7	Channel 3
 // Use arm_hardware_invalidate
 void RAMFUNC_NONILINE DMA2_Stream7_IRQHandler(void)
 {
-	// проверка условия может потребоваться при добавлении обработчика ошибки
+	// РїСЂРѕРІРµСЂРєР° СѓСЃР»РѕРІРёСЏ РјРѕР¶РµС‚ РїРѕС‚СЂРµР±РѕРІР°С‚СЊСЃСЏ РїСЂРё РґРѕР±Р°РІР»РµРЅРёРё РѕР±СЂР°Р±РѕС‚С‡РёРєР° РѕС€РёР±РєРё
 	if ((DMA2->HISR & DMA_HISR_TCIF7) != 0)
 	{
 		const uint_fast8_t b = (DMA2_Stream7->CR & DMA_SxCR_CT) != 0;
@@ -1450,12 +1450,12 @@ void RAMFUNC_NONILINE DMA2_Stream7_IRQHandler(void)
 			DMA2_Stream7->M1AR = dma_invalidate32rx(allocate_dmabuffer32rx());
 		}
 #endif /* WITHSUSBSPKONLY */
-		DMA2->HIFCR = DMA_HIFCR_CTCIF7;	// Clear TC interrupt flag соответствующий stream
+		DMA2->HIFCR = DMA_HIFCR_CTCIF7;	// Clear TC interrupt flag СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РёР№ stream
 	}
 /*
 	if ((DMA2->HISR & DMA_HISR_TEIF7) != 0)
 	{
-		DMA2->HIFCR = DMA_HIFCR_CTEIF7;	// Clear ERROR interrupt flag соответствующий stream
+		DMA2->HIFCR = DMA_HIFCR_CTEIF7;	// Clear ERROR interrupt flag СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РёР№ stream
 		DMA2_Stream7->CR &= ~ DMA_SxCR_EN;
 		while (DMA2_Stream7->CR & DMA_SxCR_EN)
 			;
@@ -1468,7 +1468,7 @@ void RAMFUNC_NONILINE DMA2_Stream7_IRQHandler(void)
 // Use arm_hardware_flush
 void DMA2_Stream4_IRQHandler(void)
 {
-	// проверка условия может потребоваться при добавлении обработчика ошибки
+	// РїСЂРѕРІРµСЂРєР° СѓСЃР»РѕРІРёСЏ РјРѕР¶РµС‚ РїРѕС‚СЂРµР±РѕРІР°С‚СЊСЃСЏ РїСЂРё РґРѕР±Р°РІР»РµРЅРёРё РѕР±СЂР°Р±РѕС‚С‡РёРєР° РѕС€РёР±РєРё
 	if ((DMA2->HISR & DMA_HISR_TCIF4) != 0)
 	{
 		const uint_fast8_t b = (DMA2_Stream4->CR & DMA_SxCR_CT) != 0;
@@ -1495,7 +1495,7 @@ void DMA2_Stream4_IRQHandler(void)
 			DMA2_Stream4->M1AR = dma_flush32tx(getfilled_dmabuffer32tx_sub());
 		}
 #endif /* WITHSUSBSPKONLY */
-		DMA2->HIFCR = DMA_HIFCR_CTCIF4;	// Clear TC interrupt flag соответствующий stream
+		DMA2->HIFCR = DMA_HIFCR_CTCIF4;	// Clear TC interrupt flag СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РёР№ stream
 	}
 }
 
@@ -1504,7 +1504,7 @@ void DMA2_Stream4_IRQHandler(void)
 static void DMA_SAI2_A_TX_initializeXXX(void)
 {
 
-	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;//включил DMA2 
+	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;//РІРєР»СЋС‡РёР» DMA2 
 	__DSB();
 
 	#if CPUSTYLE_STM32H7XX
@@ -1524,20 +1524,20 @@ static void DMA_SAI2_A_TX_initializeXXX(void)
 
 	DMA2_Stream4->FCR &= ~ DMA_SxFCR_DMDIS;	// use direct mode
 	DMA2_Stream4->CR =
-		ch * DMA_SxCR_CHSEL_0 | //канал
+		ch * DMA_SxCR_CHSEL_0 | //РєР°РЅР°Р»
 		0 * DMA_SxCR_MBURST_0 |	// 0: single transfer
 		0 * DMA_SxCR_PBURST_0 |	// 0: single transfer
-		1 * DMA_SxCR_DIR_0 | //направление - память - периферия
-		1 * DMA_SxCR_MINC | //инкремент памяти
-		2 * DMA_SxCR_MSIZE_0 | //длина в памяти - 32 bit
-		2 * DMA_SxCR_PSIZE_0 | //длина в DR - 32 bit
+		1 * DMA_SxCR_DIR_0 | //РЅР°РїСЂР°РІР»РµРЅРёРµ - РїР°РјСЏС‚СЊ - РїРµСЂРёС„РµСЂРёСЏ
+		1 * DMA_SxCR_MINC | //РёРЅРєСЂРµРјРµРЅС‚ РїР°РјСЏС‚Рё
+		2 * DMA_SxCR_MSIZE_0 | //РґР»РёРЅР° РІ РїР°РјСЏС‚Рё - 32 bit
+		2 * DMA_SxCR_PSIZE_0 | //РґР»РёРЅР° РІ DR - 32 bit
 		2 * DMA_SxCR_PL_0 |		// Priority level - High
 		0 * DMA_SxCR_CT | // M0AR selected
 		1 * DMA_SxCR_DBM | // double buffer mode seelcted
 		0;
 
-	DMA2->HIFCR = DMA_HIFCR_CTCIF4;	// Clear TC interrupt flag соответствующий stream
-	DMA2_Stream4->CR |= DMA_SxCR_TCIE;	// Разрешаем прерывания от DMA
+	DMA2->HIFCR = DMA_HIFCR_CTCIF4;	// Clear TC interrupt flag СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РёР№ stream
+	DMA2_Stream4->CR |= DMA_SxCR_TCIE;	// Р Р°Р·СЂРµС€Р°РµРј РїСЂРµСЂС‹РІР°РЅРёСЏ РѕС‚ DMA
 
 	NVIC_SetPriority(DMA2_Stream4_IRQn, ARM_REALTIME_PRIORITY);
 	NVIC_EnableIRQ(DMA2_Stream4_IRQn);	// DMA2_Stream4_IRQHandler() enable
@@ -1549,7 +1549,7 @@ static void DMA_SAI2_A_TX_initializeXXX(void)
 // Use arm_hardware_flush
 static void DMA_SAI2_A_TX_initializeAUDIO48(void)
 {
-	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;//включил DMA2 
+	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;//РІРєР»СЋС‡РёР» DMA2 
 	__DSB();
 
 	#if CPUSTYLE_STM32H7XX
@@ -1569,20 +1569,20 @@ static void DMA_SAI2_A_TX_initializeAUDIO48(void)
 
 	DMA2_Stream4->FCR &= ~ DMA_SxFCR_DMDIS;	// use direct mode
 	DMA2_Stream4->CR =
-		ch * DMA_SxCR_CHSEL_0 | //канал
+		ch * DMA_SxCR_CHSEL_0 | //РєР°РЅР°Р»
 		0 * DMA_SxCR_MBURST_0 |	// 0: single transfer
 		0 * DMA_SxCR_PBURST_0 |	// 0: single transfer
-		1 * DMA_SxCR_DIR_0 | //направление - память - периферия
-		1 * DMA_SxCR_MINC | //инкремент памяти
-		2 * DMA_SxCR_MSIZE_0 | //длина в памяти - 32 bit
-		2 * DMA_SxCR_PSIZE_0 | //длина в DR - 32 bit
+		1 * DMA_SxCR_DIR_0 | //РЅР°РїСЂР°РІР»РµРЅРёРµ - РїР°РјСЏС‚СЊ - РїРµСЂРёС„РµСЂРёСЏ
+		1 * DMA_SxCR_MINC | //РёРЅРєСЂРµРјРµРЅС‚ РїР°РјСЏС‚Рё
+		2 * DMA_SxCR_MSIZE_0 | //РґР»РёРЅР° РІ РїР°РјСЏС‚Рё - 32 bit
+		2 * DMA_SxCR_PSIZE_0 | //РґР»РёРЅР° РІ DR - 32 bit
 		2 * DMA_SxCR_PL_0 |		// Priority level - High
 		0 * DMA_SxCR_CT | // M0AR selected
 		1 * DMA_SxCR_DBM | // double buffer mode seelcted
 		0;
 
-	DMA2->HIFCR = DMA_HIFCR_CTCIF4;	// Clear TC interrupt flag соответствующий stream
-	DMA2_Stream4->CR |= DMA_SxCR_TCIE;	// Разрешаем прерывания от DMA
+	DMA2->HIFCR = DMA_HIFCR_CTCIF4;	// Clear TC interrupt flag СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РёР№ stream
+	DMA2_Stream4->CR |= DMA_SxCR_TCIE;	// Р Р°Р·СЂРµС€Р°РµРј РїСЂРµСЂС‹РІР°РЅРёСЏ РѕС‚ DMA
 
 	NVIC_SetPriority(DMA2_Stream4_IRQn, ARM_REALTIME_PRIORITY);
 	NVIC_EnableIRQ(DMA2_Stream4_IRQn);	// DMA2_Stream4_IRQHandler() enable
@@ -1590,12 +1590,12 @@ static void DMA_SAI2_A_TX_initializeAUDIO48(void)
 	DMA2_Stream4->CR |= DMA_SxCR_EN;
 }
 
-/* DMA для прёма по SAI_2_B  - инициализация */
+/* DMA РґР»СЏ РїСЂС‘РјР° РїРѕ SAI_2_B  - РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ */
 //	RX	SAI2_B	DMA2	Stream7	Channel 0	
 // Use arm_hardware_invalidate
 static void DMA_SAI2_B_RX_initializeRTS96(void)
 {
-	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;//включил DMA2 
+	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;//РІРєР»СЋС‡РёР» DMA2 
 	__DSB();
 
 	#if CPUSTYLE_STM32H7XX
@@ -1616,20 +1616,20 @@ static void DMA_SAI2_B_RX_initializeRTS96(void)
 
 	DMA2_Stream7->FCR &= ~ DMA_SxFCR_DMDIS;	// use direct mode
 	DMA2_Stream7->CR =
-		ch * DMA_SxCR_CHSEL_0 | // канал
+		ch * DMA_SxCR_CHSEL_0 | // РєР°РЅР°Р»
 		0 * DMA_SxCR_MBURST_0 |	// 0: single transfer
 		0 * DMA_SxCR_PBURST_0 |	// 0: single transfer
 		0 * DMA_SxCR_DIR_0 |	// 00: Peripheral-to-memory
-		1 * DMA_SxCR_MINC |		//инкремент памяти
-		2 * DMA_SxCR_MSIZE_0 | //длина в памяти - 32 bit
-		2 * DMA_SxCR_PSIZE_0 | //длина в DR - 32 bit
+		1 * DMA_SxCR_MINC |		//РёРЅРєСЂРµРјРµРЅС‚ РїР°РјСЏС‚Рё
+		2 * DMA_SxCR_MSIZE_0 | //РґР»РёРЅР° РІ РїР°РјСЏС‚Рё - 32 bit
+		2 * DMA_SxCR_PSIZE_0 | //РґР»РёРЅР° РІ DR - 32 bit
 		2 * DMA_SxCR_PL_0 |		// Priority level - High
 		0 * DMA_SxCR_CT |	// M0AR selected
 		1 * DMA_SxCR_DBM |	 // double buffer mode seelcted
 		0;
 
-	DMA2->HIFCR = (DMA_HIFCR_CTCIF7 /*| DMA_HIFCR_CTEIF7 */);	// Clear TC interrupt flag соответствующий stream
-	DMA2_Stream7->CR |= (DMA_SxCR_TCIE /* | DMA_SxCR_TEIE */);	// прерывания от DMA по TC и TE
+	DMA2->HIFCR = (DMA_HIFCR_CTCIF7 /*| DMA_HIFCR_CTEIF7 */);	// Clear TC interrupt flag СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РёР№ stream
+	DMA2_Stream7->CR |= (DMA_SxCR_TCIE /* | DMA_SxCR_TEIE */);	// РїСЂРµСЂС‹РІР°РЅРёСЏ РѕС‚ DMA РїРѕ TC Рё TE
 
 	NVIC_SetPriority(DMA2_Stream7_IRQn, ARM_REALTIME_PRIORITY);
 	NVIC_EnableIRQ(DMA2_Stream7_IRQn);	// DMA2_Stream7_IRQHandler() enable
@@ -1637,12 +1637,12 @@ static void DMA_SAI2_B_RX_initializeRTS96(void)
 	DMA2_Stream7->CR |= DMA_SxCR_EN;
 }
 
-/* DMA для прёма по SAI_2_B  - инициализация */
+/* DMA РґР»СЏ РїСЂС‘РјР° РїРѕ SAI_2_B  - РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ */
 //	RX	SAI2_B	DMA2	Stream7	Channel 0	
 // Use arm_hardware_invalidate
 static void DMA_SAI2_B_RX_initializeAUDIO48(void)
 {
-	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;//включил DMA2 
+	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;//РІРєР»СЋС‡РёР» DMA2 
 	__DSB();
 
 	#if CPUSTYLE_STM32H7XX
@@ -1663,20 +1663,20 @@ static void DMA_SAI2_B_RX_initializeAUDIO48(void)
 
 	DMA2_Stream7->FCR &= ~ DMA_SxFCR_DMDIS;	// use direct mode
 	DMA2_Stream7->CR =
-		ch * DMA_SxCR_CHSEL_0 | // канал
+		ch * DMA_SxCR_CHSEL_0 | // РєР°РЅР°Р»
 		0 * DMA_SxCR_MBURST_0 |	// 0: single transfer
 		0 * DMA_SxCR_PBURST_0 |	// 0: single transfer
 		0 * DMA_SxCR_DIR_0 |	// 00: Peripheral-to-memory
-		1 * DMA_SxCR_MINC |		//инкремент памяти
-		2 * DMA_SxCR_MSIZE_0 | //длина в памяти - 32 bit
-		2 * DMA_SxCR_PSIZE_0 | //длина в DR - 32 bit
+		1 * DMA_SxCR_MINC |		//РёРЅРєСЂРµРјРµРЅС‚ РїР°РјСЏС‚Рё
+		2 * DMA_SxCR_MSIZE_0 | //РґР»РёРЅР° РІ РїР°РјСЏС‚Рё - 32 bit
+		2 * DMA_SxCR_PSIZE_0 | //РґР»РёРЅР° РІ DR - 32 bit
 		2 * DMA_SxCR_PL_0 |		// Priority level - High
 		0 * DMA_SxCR_CT |	// M0AR selected
 		1 * DMA_SxCR_DBM |	 // double buffer mode seelcted
 		0;
 
-	DMA2->HIFCR = (DMA_HIFCR_CTCIF7 /*| DMA_HIFCR_CTEIF7 */);	// Clear TC interrupt flag соответствующий stream
-	DMA2_Stream7->CR |= (DMA_SxCR_TCIE /* | DMA_SxCR_TEIE */);	// прерывания от DMA по TC и TE
+	DMA2->HIFCR = (DMA_HIFCR_CTCIF7 /*| DMA_HIFCR_CTEIF7 */);	// Clear TC interrupt flag СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РёР№ stream
+	DMA2_Stream7->CR |= (DMA_SxCR_TCIE /* | DMA_SxCR_TEIE */);	// РїСЂРµСЂС‹РІР°РЅРёСЏ РѕС‚ DMA РїРѕ TC Рё TE
 
 	NVIC_SetPriority(DMA2_Stream7_IRQn, ARM_REALTIME_PRIORITY);
 	NVIC_EnableIRQ(DMA2_Stream7_IRQn);	// DMA2_Stream7_IRQHandler() enable
@@ -1684,16 +1684,16 @@ static void DMA_SAI2_B_RX_initializeAUDIO48(void)
 	DMA2_Stream7->CR |= DMA_SxCR_EN;
 }
 
-/* инициализация SAI2 на STM32F4xx */
-// Обмен 24-битами в 32-х битном слове (три первых слота в каждой половине фрейма) =
-// аудиоданные начиная с младшего байта - для прямой передачи в USB AUDIO
+/* РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ SAI2 РЅР° STM32F4xx */
+// РћР±РјРµРЅ 24-Р±РёС‚Р°РјРё РІ 32-С… Р±РёС‚РЅРѕРј СЃР»РѕРІРµ (С‚СЂРё РїРµСЂРІС‹С… СЃР»РѕС‚Р° РІ РєР°Р¶РґРѕР№ РїРѕР»РѕРІРёРЅРµ С„СЂРµР№РјР°) =
+// Р°СѓРґРёРѕРґР°РЅРЅС‹Рµ РЅР°С‡РёРЅР°СЏ СЃ РјР»Р°РґС€РµРіРѕ Р±Р°Р№С‚Р° - РґР»СЏ РїСЂСЏРјРѕР№ РїРµСЂРµРґР°С‡Рё РІ USB AUDIO
 static void hardware_sai2_slave_fullduplex_initialize(void)		
 {
 	debug_printf_P(PSTR("hardware_sai2_slave_fullduplex_initialize start\n"));
 	hardware_sai1_sai2_clock_selection();
 
-	// Теперь настроим модуль SAI.
-	RCC->APB2ENR |= RCC_APB2ENR_SAI2EN; //подать тактирование 
+	// РўРµРїРµСЂСЊ РЅР°СЃС‚СЂРѕРёРј РјРѕРґСѓР»СЊ SAI.
+	RCC->APB2ENR |= RCC_APB2ENR_SAI2EN; //РїРѕРґР°С‚СЊ С‚Р°РєС‚РёСЂРѕРІР°РЅРёРµ 
 	__DSB();
 	
 
@@ -1706,12 +1706,12 @@ static void hardware_sai2_slave_fullduplex_initialize(void)
 	// 1: Signals generated by the SAI change on SCK falling edge, 
 	//		while signals received by the SAI are sampled on the SCK rising edge.
 
-	// CR1 value (синхронизация с SAI1)
+	// CR1 value (СЃРёРЅС…СЂРѕРЅРёР·Р°С†РёСЏ СЃ SAI1)
 	const portholder_t commoncr1 =
 		(1 * SAI_xCR1_OUTDRIV) |	//
 		(0 * SAI_xCR1_MONO) |	// stereo MODE - with IQ pairs - see DMABUFFSIZE32
 		(1 * SAI_xCR1_DMAEN) |	// 1: DMA enable 
-		(1 * SAI_xCR1_CKSTR) |	// 0: данные на выходе меняются по нарастающему фронту, 1: по спадающему
+		(1 * SAI_xCR1_CKSTR) |	// 0: РґР°РЅРЅС‹Рµ РЅР° РІС‹С…РѕРґРµ РјРµРЅСЏСЋС‚СЃСЏ РїРѕ РЅР°СЂР°СЃС‚Р°СЋС‰РµРјСѓ С„СЂРѕРЅС‚Сѓ, 1: РїРѕ СЃРїР°РґР°СЋС‰РµРјСѓ
 		(7 * SAI_xCR1_DS_0) |	// 6: data size - 24 bit, 7: 32 bit, 4: 16 bit
 		(0 * SAI_xCR1_PRTCFG_0) |	// 0: free protocol
 		//(1 * SAI_xCR1_NODIV) |	// 1: no MCKDIV value
@@ -1768,7 +1768,7 @@ static void hardware_sai2_slave_fullduplex_initialize(void)
 		((WITHSAI2_FRAMEBITS / 2 - 1) * SAI_xFRCR_FSALL_0) |
 #if WITHSAI2_FORMATI2S_PHILIPS
 		(1 * SAI_xFRCR_FSOFF) |		/* 1: FS is asserted one bit before the first bit of the slot 0. Classic I2S form Philips Semiconductors. "0" value for Sony I2S specs. */
-		(0 * SAI_xFRCR_FSPO) |	/* 0: канал с индексом 0 передается при "0" на WS - перывм. */
+		(0 * SAI_xFRCR_FSPO) |	/* 0: РєР°РЅР°Р» СЃ РёРЅРґРµРєСЃРѕРј 0 РїРµСЂРµРґР°РµС‚СЃСЏ РїСЂРё "0" РЅР° WS - РїРµСЂС‹РІРј. */
 #endif /* WITHSAI2_FORMATI2S_PHILIPS */
 		0;
 	// FRAME CONTROL REGISTER
@@ -1779,14 +1779,14 @@ static void hardware_sai2_slave_fullduplex_initialize(void)
 		comm_frcr |
 		0;
 
-	// Формируем синхронизацию для SAI2
+	// Р¤РѕСЂРјРёСЂСѓРµРј СЃРёРЅС…СЂРѕРЅРёР·Р°С†РёСЋ РґР»СЏ SAI2
 	// SAI_GCR_SYNCOUT: 1: Block A used for further synchronization for others SAI
 	SAI1->GCR = (SAI1->GCR & ~ (SAI_GCR_SYNCIN | SAI_GCR_SYNCOUT)) |
 		0 * SAI_GCR_SYNCIN_0 |
 		1 * SAI_GCR_SYNCOUT_0 |
 		0;
 
-	// Получаем синхронизацию от SAI1
+	// РџРѕР»СѓС‡Р°РµРј СЃРёРЅС…СЂРѕРЅРёР·Р°С†РёСЋ РѕС‚ SAI1
 	// SAI2 can select the synchronization from SAI1 by setting SAI2 SYNCIN to 0
 	SAI2->GCR = (SAI2->GCR & ~ (SAI_GCR_SYNCIN | SAI_GCR_SYNCOUT)) |
 		0 * SAI_GCR_SYNCIN_0 |
@@ -1799,12 +1799,12 @@ static void hardware_sai2_slave_fullduplex_initialize(void)
 
 #if WITHSUSBSPKONLY
 
-static void hardware_sai2_master_fullduplex_initialize(void)		/* инициализация SAI2 на STM32F4xx */
+static void hardware_sai2_master_fullduplex_initialize(void)		/* РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ SAI2 РЅР° STM32F4xx */
 {
 	hardware_sai1_sai2_clock_selection();
 
-	// Теперь настроим модуль SAI.
-	RCC->APB2ENR |= RCC_APB2ENR_SAI2EN; //подать тактирование 
+	// РўРµРїРµСЂСЊ РЅР°СЃС‚СЂРѕРёРј РјРѕРґСѓР»СЊ SAI.
+	RCC->APB2ENR |= RCC_APB2ENR_SAI2EN; //РїРѕРґР°С‚СЊ С‚Р°РєС‚РёСЂРѕРІР°РЅРёРµ 
 	__DSB();
 	
 
@@ -1839,7 +1839,7 @@ static void hardware_sai2_master_fullduplex_initialize(void)		/* инициализация S
 		(1 * SAI_xCR1_OUTDRIV) |	//
 		(0 * SAI_xCR1_MONO) |	// stereo MODE - with IQ pairs - see DMABUFFSIZE32
 		(1 * SAI_xCR1_DMAEN) |	// 1: DMA enable 
-		(1 * SAI_xCR1_CKSTR) |	// 0: данные на выходе меняются по нарастающему фронту, 1: по спадающему
+		(1 * SAI_xCR1_CKSTR) |	// 0: РґР°РЅРЅС‹Рµ РЅР° РІС‹С…РѕРґРµ РјРµРЅСЏСЋС‚СЃСЏ РїРѕ РЅР°СЂР°СЃС‚Р°СЋС‰РµРјСѓ С„СЂРѕРЅС‚Сѓ, 1: РїРѕ СЃРїР°РґР°СЋС‰РµРјСѓ
 		(7 * SAI_xCR1_DS_0) |	// 6: data size - 24 bit, 7: 32 bit, 4: 16 bit
 		(0 * SAI_xCR1_PRTCFG_0) |	// 0: free protocol
 		(nodiv * SAI_xCR1_NODIV) |	// 1: no MCKDIV value
@@ -1899,7 +1899,7 @@ static void hardware_sai2_master_fullduplex_initialize(void)		/* инициализация S
 		((WITHSAI2_FRAMEBITS / 2 - 1) * SAI_xFRCR_FSALL_0) |
 #if WITHSAI2_FORMATI2S_PHILIPS
 		(1 * SAI_xFRCR_FSOFF) |		/* 1: FS is asserted one bit before the first bit of the slot 0. Classic I2S form Philips Semiconductors. "0" value for Sony I2S specs. */
-		(0 * SAI_xFRCR_FSPO) |	/* 0: канал с индексом 0 передается при "0" на WS - перывм. */
+		(0 * SAI_xFRCR_FSPO) |	/* 0: РєР°РЅР°Р» СЃ РёРЅРґРµРєСЃРѕРј 0 РїРµСЂРµРґР°РµС‚СЃСЏ РїСЂРё "0" РЅР° WS - РїРµСЂС‹РІРј. */
 #endif /* WITHSAI2_FORMATI2S_PHILIPS */
 		0;
 	// FRAME CONTROL REGISTER
@@ -1915,11 +1915,11 @@ static void hardware_sai2_master_fullduplex_initialize(void)		/* инициализация S
 
 #endif /* WITHSUSBSPKONLY */
 
-static void hardware_sai2_enable(void)		/* разрешение работы SAI2 на STM32F4xx */
+static void hardware_sai2_enable(void)		/* СЂР°Р·СЂРµС€РµРЅРёРµ СЂР°Р±РѕС‚С‹ SAI2 РЅР° STM32F4xx */
 {
-	// при dual watch используется SAI2, но
-	// через него не передаются данные.
-	// Для работы синхронизации запукаются обе части - и приём и передача - в SAI2
+	// РїСЂРё dual watch РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ SAI2, РЅРѕ
+	// С‡РµСЂРµР· РЅРµРіРѕ РЅРµ РїРµСЂРµРґР°СЋС‚СЃСЏ РґР°РЅРЅС‹Рµ.
+	// Р”Р»СЏ СЂР°Р±РѕС‚С‹ СЃРёРЅС…СЂРѕРЅРёР·Р°С†РёРё Р·Р°РїСѓРєР°СЋС‚СЃСЏ РѕР±Рµ С‡Р°СЃС‚Рё - Рё РїСЂРёС‘Рј Рё РїРµСЂРµРґР°С‡Р° - РІ SAI2
 
 	////+++
 	//DMA_SAI2_A_TX_initialize();	// SAI_xCR1_DMAEN in CR already set
@@ -1930,14 +1930,14 @@ static void hardware_sai2_enable(void)		/* разрешение работы SAI2 на STM32F4xx *
 	SAI2_Block_A->CR1 |= SAI_xCR1_SAIEN;
 }
 
-/* DMA для прёма по SAI_2_B  - инициализация */
+/* DMA РґР»СЏ РїСЂС‘РјР° РїРѕ SAI_2_B  - РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ */
 //	RX	SAI2_B	DMA2	Stream7	Channel 0	
 // Use arm_hardware_invalidate
 static void DMA_SAI2_B_RX_initializeWFM(void)
 {
 	debug_printf_P(PSTR("DMA_SAI2_B_RX_initializeWFM start.\n"));
 
-	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;//включил DMA2 
+	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;//РІРєР»СЋС‡РёР» DMA2 
 	__DSB();
 
 	#if CPUSTYLE_STM32H7XX
@@ -1958,20 +1958,20 @@ static void DMA_SAI2_B_RX_initializeWFM(void)
 
 	DMA2_Stream7->FCR &= ~ DMA_SxFCR_DMDIS;	// use direct mode
 	DMA2_Stream7->CR =
-		ch * DMA_SxCR_CHSEL_0 | // канал
+		ch * DMA_SxCR_CHSEL_0 | // РєР°РЅР°Р»
 		0 * DMA_SxCR_MBURST_0 |	// 0: single transfer
 		0 * DMA_SxCR_PBURST_0 |	// 0: single transfer
 		0 * DMA_SxCR_DIR_0 |	// 00: Peripheral-to-memory
-		1 * DMA_SxCR_MINC |		//инкремент памяти
-		2 * DMA_SxCR_MSIZE_0 | //длина в памяти - 32 bit
-		2 * DMA_SxCR_PSIZE_0 | //длина в DR - 32 bit
+		1 * DMA_SxCR_MINC |		//РёРЅРєСЂРµРјРµРЅС‚ РїР°РјСЏС‚Рё
+		2 * DMA_SxCR_MSIZE_0 | //РґР»РёРЅР° РІ РїР°РјСЏС‚Рё - 32 bit
+		2 * DMA_SxCR_PSIZE_0 | //РґР»РёРЅР° РІ DR - 32 bit
 		2 * DMA_SxCR_PL_0 |		// Priority level - High
 		0 * DMA_SxCR_CT |	// M0AR selected
 		1 * DMA_SxCR_DBM |	 // double buffer mode seelcted
 		0;
 
-	DMA2->HIFCR = (DMA_HIFCR_CTCIF7 /*| DMA_HIFCR_CTEIF7 */);	// Clear TC interrupt flag соответствующий stream
-	DMA2_Stream7->CR |= (DMA_SxCR_TCIE /* | DMA_SxCR_TEIE */);	// прерывания от DMA по TC и TE
+	DMA2->HIFCR = (DMA_HIFCR_CTCIF7 /*| DMA_HIFCR_CTEIF7 */);	// Clear TC interrupt flag СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РёР№ stream
+	DMA2_Stream7->CR |= (DMA_SxCR_TCIE /* | DMA_SxCR_TEIE */);	// РїСЂРµСЂС‹РІР°РЅРёСЏ РѕС‚ DMA РїРѕ TC Рё TE
 
 	NVIC_SetPriority(DMA2_Stream7_IRQn, ARM_REALTIME_PRIORITY);
 	NVIC_EnableIRQ(DMA2_Stream7_IRQn);	// DMA2_Stream7_IRQHandler() enable
@@ -1983,10 +1983,10 @@ static void DMA_SAI2_B_RX_initializeWFM(void)
 #if WITHSUSBSPKONLY
 static const codechw_t audiocodechw =
 {
-	hardware_sai2_master_fullduplex_initialize,	/* Интерфейс к НЧ кодеку - микрофон */
+	hardware_sai2_master_fullduplex_initialize,	/* РРЅС‚РµСЂС„РµР№СЃ Рє РќР§ РєРѕРґРµРєСѓ - РјРёРєСЂРѕС„РѕРЅ */
 	hardware_dummy_initialize,
-	DMA_SAI2_B_RX_initializeAUDIO48,					// DMA по приёму SPI3_RX - DMA1, Stream0, Channel0
-	DMA_SAI2_A_TX_initializeAUDIO48,					// DMA по передаче канал TX	SAI2_A	DMA2	Stream 4	Channel 3
+	DMA_SAI2_B_RX_initializeAUDIO48,					// DMA РїРѕ РїСЂРёС‘РјСѓ SPI3_RX - DMA1, Stream0, Channel0
+	DMA_SAI2_A_TX_initializeAUDIO48,					// DMA РїРѕ РїРµСЂРµРґР°С‡Рµ РєР°РЅР°Р» TX	SAI2_A	DMA2	Stream 4	Channel 3
 	hardware_sai2_enable,
 	hardware_dummy_enable,
 	"sai2-audiocodechw"
@@ -2045,9 +2045,9 @@ static const codechw_t fpgacodechw =
 	
 enum
 {
-	R7S721_SSIF_CKDIV1 = 0, // CKDV	0000: AUDIOц/1: 12,288 -> 12,288 (48 kS, 128 bit, stereo)
+	R7S721_SSIF_CKDIV1 = 0, // CKDV	0000: AUDIOС†/1: 12,288 -> 12,288 (48 kS, 128 bit, stereo)
 	R7S721_SSIF_CKDIV2 = 1,
-	R7S721_SSIF_CKDIV4 = 2,	// CKDV	0010: AUDIOц/4: 12,288 -> 3.072 (48 kS, 32 bit, stereo)
+	R7S721_SSIF_CKDIV4 = 2,	// CKDV	0010: AUDIOС†/4: 12,288 -> 3.072 (48 kS, 32 bit, stereo)
 	R7S721_SSIF_CKDIV6 = 8,
 	R7S721_SSIF_CKDIV8 = 3,
 	R7S721_SSIF_CKDIV12 = 9,
@@ -2065,7 +2065,7 @@ enum
 #if WITHI2SHW
 
 // audio codec
-// DMA по приему SSIF0 - обработчик прерывания
+// DMA РїРѕ РїСЂРёРµРјСѓ SSIF0 - РѕР±СЂР°Р±РѕС‚С‡РёРє РїСЂРµСЂС‹РІР°РЅРёСЏ
 
 static RAMFUNC_NONILINE void r7s721_ssif0_rxdma(void)
 {
@@ -2088,7 +2088,7 @@ static RAMFUNC_NONILINE void r7s721_ssif0_rxdma(void)
 }
 
 // audio codec
-// DMA по передаче SSIF0 - обработчик прерывания
+// DMA РїРѕ РїРµСЂРµРґР°С‡Рµ SSIF0 - РѕР±СЂР°Р±РѕС‚С‡РёРє РїСЂРµСЂС‹РІР°РЅРёСЏ
 // Use arm_hardware_flush
 
 static void r7s721_ssif0_txdma(void)
@@ -2113,7 +2113,7 @@ static void r7s721_ssif0_txdma(void)
 
 
 // audio codec
-// DMA по приёму SSIF0
+// DMA РїРѕ РїСЂРёС‘РјСѓ SSIF0
 
 static void r7s721_ssif0_dmarx_initialize(void)
 {
@@ -2128,8 +2128,8 @@ static void r7s721_ssif0_dmarx_initialize(void)
 	DMAC0.N1DA_n = dma_invalidate16rx(allocate_dmabuffer16());
 
     /* Set Transfer Size */
-    DMAC0.N0TB_n = DMABUFFSIZE16 * sizeof (int16_t);	// размер в байтах
-    DMAC0.N1TB_n = DMABUFFSIZE16 * sizeof (int16_t);	// размер в байтах
+    DMAC0.N0TB_n = DMABUFFSIZE16 * sizeof (int16_t);	// СЂР°Р·РјРµСЂ РІ Р±Р°Р№С‚Р°С…
+    DMAC0.N1TB_n = DMABUFFSIZE16 * sizeof (int16_t);	// СЂР°Р·РјРµСЂ РІ Р±Р°Р№С‚Р°С…
 
 	// Values from Table 9.4 On-Chip Peripheral Module Requests
 	// SSIRXI0 (receive data full)
@@ -2146,8 +2146,8 @@ static void r7s721_ssif0_dmarx_initialize(void)
 		1 * (1U << 29) |	// RSW	1: Inverts RSEL automatically after a DMA transaction.
 		0 * (1U << 28) |	// RSEL	0: Executes the Next0 Register Set
 		0 * (1U << 27) |	// SBE	0: Stops the DMA transfer without sweeping the buffer (initial value).
-		0 * (1U << 24) |	// DEM	0: Does not mask the DMA transfer end interrupt - прерывания каждый раз после TC
-		tm * (1U << 22) |	// TM	0: Single transfer mode - берётся из Table 9.4
+		0 * (1U << 24) |	// DEM	0: Does not mask the DMA transfer end interrupt - РїСЂРµСЂС‹РІР°РЅРёСЏ РєР°Р¶РґС‹Р№ СЂР°Р· РїРѕСЃР»Рµ TC
+		tm * (1U << 22) |	// TM	0: Single transfer mode - Р±РµСЂС‘С‚СЃСЏ РёР· Table 9.4
 		0 * (1U << 21) |	// DAD	0: Increment destination address
 		1 * (1U << 20) |	// SAD	1: Fixed source address
 		2 * (1U << 16) |	// DDS	2: 32 bits, 1: 16 bits (Destination Data Size)
@@ -2183,7 +2183,7 @@ static void r7s721_ssif0_dmarx_initialize(void)
 }
 
 // audio codec
-// DMA по передаче SSIF0
+// DMA РїРѕ РїРµСЂРµРґР°С‡Рµ SSIF0
 // Use arm_hardware_flush
 
 static void r7s721_ssif0_dmatx_initialize(void)
@@ -2199,8 +2199,8 @@ static void r7s721_ssif0_dmatx_initialize(void)
     DMAC1.N1DA_n = (uint32_t) & SSIF0.SSIFTDR;	// Fixed destination address
 
     /* Set Transfer Size */
-    DMAC1.N0TB_n = DMABUFFSIZE16 * sizeof (int16_t);	// размер в байтах
-    DMAC1.N1TB_n = DMABUFFSIZE16 * sizeof (int16_t);	// размер в байтах
+    DMAC1.N0TB_n = DMABUFFSIZE16 * sizeof (int16_t);	// СЂР°Р·РјРµСЂ РІ Р±Р°Р№С‚Р°С…
+    DMAC1.N1TB_n = DMABUFFSIZE16 * sizeof (int16_t);	// СЂР°Р·РјРµСЂ РІ Р±Р°Р№С‚Р°С…
 
 	// Values from Table 9.4 On-Chip Peripheral Module Requests
 	// SSITXI0 (transmit data empty)
@@ -2217,8 +2217,8 @@ static void r7s721_ssif0_dmatx_initialize(void)
 		1 * (1U << 29) |	// RSW	1: Inverts RSEL automatically after a DMA transaction.
 		0 * (1U << 28) |	// RSEL	0: Executes the Next0 Register Set
 		0 * (1U << 27) |	// SBE	0: Stops the DMA transfer without sweeping the buffer (initial value).
-		0 * (1U << 24) |	// DEM	0: Does not mask the DMA transfer end interrupt - прерывания каждый раз после TC
-		tm * (1U << 22) |	// TM	0: Single transfer mode - берётся из Table 9.4
+		0 * (1U << 24) |	// DEM	0: Does not mask the DMA transfer end interrupt - РїСЂРµСЂС‹РІР°РЅРёСЏ РєР°Р¶РґС‹Р№ СЂР°Р· РїРѕСЃР»Рµ TC
+		tm * (1U << 22) |	// TM	0: Single transfer mode - Р±РµСЂС‘С‚СЃСЏ РёР· Table 9.4
 		1 * (1U << 21) |	// DAD	1: Fixed destination address
 		0 * (1U << 20) |	// SAD	0: Increment source address
 		2 * (1U << 16) |	// DDS	2: 32 bits, 1: 16 bits (Destination Data Size)
@@ -2253,9 +2253,9 @@ static void r7s721_ssif0_dmatx_initialize(void)
 	DMAC1.CHCTRL_n = 1 * (1U << 0);		// SETEN
 }
 
-// Возможно, удастся перейти на master - но надо решить проблему с очередями (FIFO) в FPGA
-// Была попытка сделать так: AUDIO_X1 формируется только после появления i2s_ready - не работает
-// Правда, и в SLAVE нельзя сказать что работает - около пяти секунд проходит до начала нормальной раболты.
+// Р’РѕР·РјРѕР¶РЅРѕ, СѓРґР°СЃС‚СЃСЏ РїРµСЂРµР№С‚Рё РЅР° master - РЅРѕ РЅР°РґРѕ СЂРµС€РёС‚СЊ РїСЂРѕР±Р»РµРјСѓ СЃ РѕС‡РµСЂРµРґСЏРјРё (FIFO) РІ FPGA
+// Р‘С‹Р»Р° РїРѕРїС‹С‚РєР° СЃРґРµР»Р°С‚СЊ С‚Р°Рє: AUDIO_X1 С„РѕСЂРјРёСЂСѓРµС‚СЃСЏ С‚РѕР»СЊРєРѕ РїРѕСЃР»Рµ РїРѕСЏРІР»РµРЅРёСЏ i2s_ready - РЅРµ СЂР°Р±РѕС‚Р°РµС‚
+// РџСЂР°РІРґР°, Рё РІ SLAVE РЅРµР»СЊР·СЏ СЃРєР°Р·Р°С‚СЊ С‡С‚Рѕ СЂР°Р±РѕС‚Р°РµС‚ - РѕРєРѕР»Рѕ РїСЏС‚Рё СЃРµРєСѓРЅРґ РїСЂРѕС…РѕРґРёС‚ РґРѕ РЅР°С‡Р°Р»Р° РЅРѕСЂРјР°Р»СЊРЅРѕР№ СЂР°Р±РѕР»С‚С‹.
 
 // AUDIO CODEC I2S INTERFACE
 static void r7s721_ssif0_fullduplex_initialize(void)
@@ -2277,17 +2277,17 @@ static void r7s721_ssif0_fullduplex_initialize(void)
 		1 * (1UL << 16) |		// SWL		1: 16 bit	
 		master * (1UL << 15) |		// SCKD		1: Serial bit clock is output, master mode.
 		master * (1UL << 14) |		// SWSD		1: Serial word select is output, master mode.
-		0 * (1UL << 13) |		// SCKP		0: Данные на выходе меняются по спадающему фронту (I2S complaint)
+		0 * (1UL << 13) |		// SCKP		0: Р”Р°РЅРЅС‹Рµ РЅР° РІС‹С…РѕРґРµ РјРµРЅСЏСЋС‚СЃСЏ РїРѕ СЃРїР°РґР°СЋС‰РµРјСѓ С„СЂРѕРЅС‚Сѓ (I2S complaint)
 		0 * (1UL << 12) |		// SWSP		0: SSIWS is low for the 1st channel, high for the 2nd channel.  (I2S complaint)
 		0 * (1UL << 11) |		// SPDP		0: Padding bits are low.	
 		0 * (1UL << 10) |		// SDTA	
-		0 * (1UL << 9) |		// PDTA		1: 16 бит правого канала - биты 31..16 при чтении/записи регистра данных
+		0 * (1UL << 9) |		// PDTA		1: 16 Р±РёС‚ РїСЂР°РІРѕРіРѕ РєР°РЅР°Р»Р° - Р±РёС‚С‹ 31..16 РїСЂРё С‡С‚РµРЅРёРё/Р·Р°РїРёСЃРё СЂРµРіРёСЃС‚СЂР° РґР°РЅРЅС‹С…
 #if WITHI2S_FORMATI2S_PHILIPS
 		0 * (1UL << 8) |		// DEL	0: 1 clock cycle delay between SSIWS and SSIDATA
 #else /* WITHI2S_FORMATI2S_PHILIPS */
 		1 * (1UL << 8) |		// DEL	1: No delay between SSIWS and SSIDATA
 #endif /* WITHI2S_FORMATI2S_PHILIPS */
-		master * R7S721_SSIF_CKDIV8 * (1UL << 4) |		// CKDV	0011: AUDIOц/8: 12,288 -> 1.536 (48 kS, 16 bit, stereo)
+		master * R7S721_SSIF_CKDIV8 * (1UL << 4) |		// CKDV	0011: AUDIOС†/8: 12,288 -> 1.536 (48 kS, 16 bit, stereo)
 		0;
 
 	// FIFO Control Register (SSIFCR)
@@ -2300,7 +2300,7 @@ static void r7s721_ssif0_fullduplex_initialize(void)
 		//1 * (1UL << 0) |		// RFRST Receive FIFO Data Register Reset	
 		0;
 
-	HARDWARE_SSIF0_INITIALIZE();	// Подключение синалалов периферийного блока к выводам процессора
+	HARDWARE_SSIF0_INITIALIZE();	// РџРѕРґРєР»СЋС‡РµРЅРёРµ СЃРёРЅР°Р»Р°Р»РѕРІ РїРµСЂРёС„РµСЂРёР№РЅРѕРіРѕ Р±Р»РѕРєР° Рє РІС‹РІРѕРґР°Рј РїСЂРѕС†РµСЃСЃРѕСЂР°
 }
 
 static void r7s721_ssif0_fullduplex_enable(void)
@@ -2328,7 +2328,7 @@ static const codechw_t audiocodechw =
 #if WITHSAI1HW
 
 // FPGA/IF codec
-// DMA по передаче SSIF1 - обработчик прерывания
+// DMA РїРѕ РїРµСЂРµРґР°С‡Рµ SSIF1 - РѕР±СЂР°Р±РѕС‚С‡РёРє РїСЂРµСЂС‹РІР°РЅРёСЏ
 // Use arm_hardware_flush
 
 static void r7s721_ssif1_txdma(void)
@@ -2352,7 +2352,7 @@ static void r7s721_ssif1_txdma(void)
 }
 
 // FPGA/IF codec
-// DMA по приему SSIF1 - обработчик прерывания
+// DMA РїРѕ РїСЂРёРµРјСѓ SSIF1 - РѕР±СЂР°Р±РѕС‚С‡РёРє РїСЂРµСЂС‹РІР°РЅРёСЏ
 // Use dma_invalidate32rx
 
 static RAMFUNC_NONILINE void r7s721_ssif1_rxdma(void)
@@ -2376,7 +2376,7 @@ static RAMFUNC_NONILINE void r7s721_ssif1_rxdma(void)
 }
 
 // FPGA/IF codec
-// DMA по приёму SSIF1
+// DMA РїРѕ РїСЂРёС‘РјСѓ SSIF1
 // Use dma_invalidate32rx
 
 static void r7s721_ssif1_dmarx_initialize(void)
@@ -2392,8 +2392,8 @@ static void r7s721_ssif1_dmarx_initialize(void)
 	DMAC2.N1DA_n = dma_invalidate32rx(allocate_dmabuffer32rx());
 
 	/* Set Transfer Size */
-	DMAC2.N0TB_n = DMABUFFSIZE32RX * sizeof (int32_t);	// размер в байтах
-	DMAC2.N1TB_n = DMABUFFSIZE32RX * sizeof (int32_t);	// размер в байтах
+	DMAC2.N0TB_n = DMABUFFSIZE32RX * sizeof (int32_t);	// СЂР°Р·РјРµСЂ РІ Р±Р°Р№С‚Р°С…
+	DMAC2.N1TB_n = DMABUFFSIZE32RX * sizeof (int32_t);	// СЂР°Р·РјРµСЂ РІ Р±Р°Р№С‚Р°С…
 
 	// Values from Table 9.4 On-Chip Peripheral Module Requests
 	// SSIRXI1 (receive data full)
@@ -2410,8 +2410,8 @@ static void r7s721_ssif1_dmarx_initialize(void)
 		1 * (1U << 29) |	// RSW	1: Inverts RSEL automatically after a DMA transaction.
 		0 * (1U << 28) |	// RSEL	0: Executes the Next0 Register Set
 		0 * (1U << 27) |	// SBE	0: Stops the DMA transfer without sweeping the buffer (initial value).
-		0 * (1U << 24) |	// DEM	0: Does not mask the DMA transfer end interrupt - прерывания каждый раз после TC
-		tm * (1U << 22) |	// TM	0: Single transfer mode - берётся из Table 9.4
+		0 * (1U << 24) |	// DEM	0: Does not mask the DMA transfer end interrupt - РїСЂРµСЂС‹РІР°РЅРёСЏ РєР°Р¶РґС‹Р№ СЂР°Р· РїРѕСЃР»Рµ TC
+		tm * (1U << 22) |	// TM	0: Single transfer mode - Р±РµСЂС‘С‚СЃСЏ РёР· Table 9.4
 		0 * (1U << 21) |	// DAD	0: Increment destination address
 		1 * (1U << 20) |	// SAD	1: Fixed source address
 		2 * (1U << 16) |	// DDS	2: 32 bits (Destination Data Size)
@@ -2447,7 +2447,7 @@ static void r7s721_ssif1_dmarx_initialize(void)
 }
 
 // FPGA/IF codec
-// DMA по передаче SSIF1
+// DMA РїРѕ РїРµСЂРµРґР°С‡Рµ SSIF1
 // Use arm_hardware_flush
 
 static void r7s721_ssif1_dmatx_initialize(void)
@@ -2463,8 +2463,8 @@ static void r7s721_ssif1_dmatx_initialize(void)
     DMAC3.N1DA_n = (uint32_t) & SSIF1.SSIFTDR;	// Fixed destination address
 
     /* Set Transfer Size */
-    DMAC3.N0TB_n = DMABUFFSIZE32TX * sizeof (int32_t);	// размер в байтах
-    DMAC3.N1TB_n = DMABUFFSIZE32TX * sizeof (int32_t);	// размер в байтах
+    DMAC3.N0TB_n = DMABUFFSIZE32TX * sizeof (int32_t);	// СЂР°Р·РјРµСЂ РІ Р±Р°Р№С‚Р°С…
+    DMAC3.N1TB_n = DMABUFFSIZE32TX * sizeof (int32_t);	// СЂР°Р·РјРµСЂ РІ Р±Р°Р№С‚Р°С…
 
 	// Values from Table 9.4 On-Chip Peripheral Module Requests
 	// SSITXI1 (transmit data empty)
@@ -2481,8 +2481,8 @@ static void r7s721_ssif1_dmatx_initialize(void)
 		1 * (1U << 29) |	// RSW	1: Inverts RSEL automatically after a DMA transaction.
 		0 * (1U << 28) |	// RSEL	0: Executes the Next0 Register Set
 		0 * (1U << 27) |	// SBE	0: Stops the DMA transfer without sweeping the buffer (initial value).
-		0 * (1U << 24) |	// DEM	0: Does not mask the DMA transfer end interrupt - прерывания каждый раз после TC
-		tm * (1U << 22) |	// TM	0: Single transfer mode - берётся из Table 9.4
+		0 * (1U << 24) |	// DEM	0: Does not mask the DMA transfer end interrupt - РїСЂРµСЂС‹РІР°РЅРёСЏ РєР°Р¶РґС‹Р№ СЂР°Р· РїРѕСЃР»Рµ TC
+		tm * (1U << 22) |	// TM	0: Single transfer mode - Р±РµСЂС‘С‚СЃСЏ РёР· Table 9.4
 		1 * (1U << 21) |	// DAD	1: Fixed destination address
 		0 * (1U << 20) |	// SAD	0: Increment source address
 		2 * (1U << 16) |	// DDS	2: 32 bits (Destination Data Size)
@@ -2541,7 +2541,7 @@ static void r7s721_ssif1_fullduplex_initialize(void)
 #endif /*  */
 		master * (1UL << 15) |		// SCKD	1: Serial bit clock is output, master mode.
 		master * (1UL << 14) |		// SWSD	1: Serial word select is output, master mode.
-		0 * (1UL << 13) |		// SCKP	0: Данные на выходе меняются по спадающему фронту (I2S complaint)
+		0 * (1UL << 13) |		// SCKP	0: Р”Р°РЅРЅС‹Рµ РЅР° РІС‹С…РѕРґРµ РјРµРЅСЏСЋС‚СЃСЏ РїРѕ СЃРїР°РґР°СЋС‰РµРјСѓ С„СЂРѕРЅС‚Сѓ (I2S complaint)
 		0 * (1UL << 12) |		// SWSP	0: SSIWS is low for the 1st channel, high for the 2nd channel.  (I2S complaint)
 		0 * (1UL << 11) |		// SPDP 0: Padding bits are low.	
 		0 * (1UL << 10) |		// SDTA	
@@ -2551,7 +2551,7 @@ static void r7s721_ssif1_fullduplex_initialize(void)
 #else /* WITHSAI1_FORMATI2S_PHILIPS */
 		1 * (1UL << 8) |		// DEL	1: No delay between SSIWS and SSIDATA
 #endif /* WITHSAI1_FORMATI2S_PHILIPS */
-		master * R7S721_SSIF_CKDIV1 * (1UL << 4) |		// CKDV	0000: AUDIOц/4: 12,288 -> 12,288 (48 kS, 128 bit, stereo)
+		master * R7S721_SSIF_CKDIV1 * (1UL << 4) |		// CKDV	0000: AUDIOС†/4: 12,288 -> 12,288 (48 kS, 128 bit, stereo)
 		0;
 
 	// FIFO Control Register (SSIFCR)
@@ -2565,7 +2565,7 @@ static void r7s721_ssif1_fullduplex_initialize(void)
 		0;
 
 
-	HARDWARE_SSIF1_INITIALIZE();	// Подключение синалалов периферийного блока к выводам процессора
+	HARDWARE_SSIF1_INITIALIZE();	// РџРѕРґРєР»СЋС‡РµРЅРёРµ СЃРёРЅР°Р»Р°Р»РѕРІ РїРµСЂРёС„РµСЂРёР№РЅРѕРіРѕ Р±Р»РѕРєР° Рє РІС‹РІРѕРґР°Рј РїСЂРѕС†РµСЃСЃРѕСЂР°
 }
 
 static void r7s721_ssif1_fullduplex_enable(void)
@@ -2594,7 +2594,7 @@ static const codechw_t fpgacodechw =
 #if WITHSAI2HW
 
 // FPGA/spectrum channel
-// DMA по приему SSIF2 - обработчик прерывания
+// DMA РїРѕ РїСЂРёРµРјСѓ SSIF2 - РѕР±СЂР°Р±РѕС‚С‡РёРє РїСЂРµСЂС‹РІР°РЅРёСЏ
 
 static RAMFUNC_NONILINE void r7s721_ssif2_rxdma_handler(void)
 {
@@ -2617,7 +2617,7 @@ static RAMFUNC_NONILINE void r7s721_ssif2_rxdma_handler(void)
 }
 
 // FPGA/spectrum channel
-// DMA по приёму SSIF2
+// DMA РїРѕ РїСЂРёС‘РјСѓ SSIF2
 
 static void r7s721_ssif2_dmarx_initialize(void)
 {
@@ -2632,8 +2632,8 @@ static void r7s721_ssif2_dmarx_initialize(void)
 	DMAC4.N1DA_n = dma_invalidate192rts(allocate_dmabuffer192rts());
 
     /* Set Transfer Size */
-    DMAC4.N0TB_n = DMABUFFSIZE192RTS * sizeof (uint8_t);	// размер в байтах
-    DMAC4.N1TB_n = DMABUFFSIZE192RTS * sizeof (uint8_t);	// размер в байтах
+    DMAC4.N0TB_n = DMABUFFSIZE192RTS * sizeof (uint8_t);	// СЂР°Р·РјРµСЂ РІ Р±Р°Р№С‚Р°С…
+    DMAC4.N1TB_n = DMABUFFSIZE192RTS * sizeof (uint8_t);	// СЂР°Р·РјРµСЂ РІ Р±Р°Р№С‚Р°С…
 
 	// Values from Table 9.4 On-Chip Peripheral Module Requests
 	// SSIRTI2 (receive data full)
@@ -2650,8 +2650,8 @@ static void r7s721_ssif2_dmarx_initialize(void)
 		1 * (1U << 29) |	// RSW	1: Inverts RSEL automatically after a DMA transaction.
 		0 * (1U << 28) |	// RSEL	0: Executes the Next0 Register Set
 		0 * (1U << 27) |	// SBE	0: Stops the DMA transfer without sweeping the buffer (initial value).
-		0 * (1U << 24) |	// DEM	0: Does not mask the DMA transfer end interrupt - прерывания каждый раз после TC
-		tm * (1U << 22) |	// TM	0: Single transfer mode - берётся из Table 9.4
+		0 * (1U << 24) |	// DEM	0: Does not mask the DMA transfer end interrupt - РїСЂРµСЂС‹РІР°РЅРёСЏ РєР°Р¶РґС‹Р№ СЂР°Р· РїРѕСЃР»Рµ TC
+		tm * (1U << 22) |	// TM	0: Single transfer mode - Р±РµСЂС‘С‚СЃСЏ РёР· Table 9.4
 		0 * (1U << 21) |	// DAD	0: Increment destination address
 		1 * (1U << 20) |	// SAD	1: Fixed source address
 		2 * (1U << 16) |	// DDS	2: 32 bits (Destination Data Size)
@@ -2711,7 +2711,7 @@ static void r7s721_ssif2_rx_initialize(void)
 #endif /*  */
 		master * (1UL << 15) |		// SCKD	1: Serial bit clock is output, master mode.
 		master * (1UL << 14) |		// SWSD	1: Serial word select is output, master mode.
-		0 * (1UL << 13) |		// SCKP	0: Данные на выходе меняются по спадающему фронту (I2S complaint)
+		0 * (1UL << 13) |		// SCKP	0: Р”Р°РЅРЅС‹Рµ РЅР° РІС‹С…РѕРґРµ РјРµРЅСЏСЋС‚СЃСЏ РїРѕ СЃРїР°РґР°СЋС‰РµРјСѓ С„СЂРѕРЅС‚Сѓ (I2S complaint)
 		0 * (1UL << 12) |		// SWSP	0: SSIWS is low for the 1st channel, high for the 2nd channel.  (I2S complaint)
 		0 * (1UL << 11) |		// SPDP 0: Padding bits are low.	
 		0 * (1UL << 10) |		// SDTA	
@@ -2721,7 +2721,7 @@ static void r7s721_ssif2_rx_initialize(void)
 #else /* WITHSAI1_FORMATI2S_PHILIPS */
 		1 * (1UL << 8) |		// DEL	1: No delay between SSIWS and SSIDATA
 #endif /* WITHSAI1_FORMATI2S_PHILIPS */
-		master * R7S721_SSIF_CKDIV1 * (1UL << 4) |		// CKDV	0000: AUDIOц/4: 12,288 -> 12,288 (48 kS, 128 bit, stereo)
+		master * R7S721_SSIF_CKDIV1 * (1UL << 4) |		// CKDV	0000: AUDIOС†/4: 12,288 -> 12,288 (48 kS, 128 bit, stereo)
 		0;
 
 	// FIFO Control Register (SSIFCR)
@@ -2735,7 +2735,7 @@ static void r7s721_ssif2_rx_initialize(void)
 		0;
 
 
-	HARDWARE_SSIF2_INITIALIZE();	// Подключение синалалов периферийного блока к выводам процессора
+	HARDWARE_SSIF2_INITIALIZE();	// РџРѕРґРєР»СЋС‡РµРЅРёРµ СЃРёРЅР°Р»Р°Р»РѕРІ РїРµСЂРёС„РµСЂРёР№РЅРѕРіРѕ Р±Р»РѕРєР° Рє РІС‹РІРѕРґР°Рј РїСЂРѕС†РµСЃСЃРѕСЂР°
 }
 
 // FPGA/spectrum channel
@@ -2777,8 +2777,8 @@ static const codechw_t fpgaspectrumhw =
 
 #if WITHI2SHW
 
-// Интерфейс к НЧ кодеку
-// Разрешение работы, вызывается при разрешённых прерываниях
+// РРЅС‚РµСЂС„РµР№СЃ Рє РќР§ РєРѕРґРµРєСѓ
+// Р Р°Р·СЂРµС€РµРЅРёРµ СЂР°Р±РѕС‚С‹, РІС‹Р·С‹РІР°РµС‚СЃСЏ РїСЂРё СЂР°Р·СЂРµС€С‘РЅРЅС‹С… РїСЂРµСЂС‹РІР°РЅРёСЏС…
 void hardware_audiocodec_enable(void)
 {
 	audiocodechw.initializedma_rx();
@@ -2787,7 +2787,7 @@ void hardware_audiocodec_enable(void)
 	audiocodechw.enable_tx();
 }
 
-// Интерфейс к НЧ кодеку
+// РРЅС‚РµСЂС„РµР№СЃ Рє РќР§ РєРѕРґРµРєСѓ
 void hardware_audiocodec_initialize(void)
 {
 	debug_printf_P(PSTR("hardware_audiocodec_initialize start\n"));
@@ -2802,7 +2802,7 @@ void hardware_audiocodec_initialize(void)
 
 #if WITHSAI1HW
 
-// Интерфейс к ВЧ кодеку
+// РРЅС‚РµСЂС„РµР№СЃ Рє Р’Р§ РєРѕРґРµРєСѓ
 void hardware_fpgacodec_enable(void)
 {
 	fpgacodechw.initializedma_rx();
@@ -2811,9 +2811,9 @@ void hardware_fpgacodec_enable(void)
 	fpgacodechw.enable_tx();
 }
 
-// Инициализация всех каналов интерфейса к FPGA или к IF CODEC
-// Интерфейс к ВЧ кодеку
-// Если есть WITHSAICLOCKFROMI2S	- это инициализируется после I2S
+// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РІСЃРµС… РєР°РЅР°Р»РѕРІ РёРЅС‚РµСЂС„РµР№СЃР° Рє FPGA РёР»Рё Рє IF CODEC
+// РРЅС‚РµСЂС„РµР№СЃ Рє Р’Р§ РєРѕРґРµРєСѓ
+// Р•СЃР»Рё РµСЃС‚СЊ WITHSAICLOCKFROMI2S	- СЌС‚Рѕ РёРЅРёС†РёР°Р»РёР·РёСЂСѓРµС‚СЃСЏ РїРѕСЃР»Рµ I2S
 void hardware_fpgacodec_initialize(void)
 {
 	debug_printf_P(PSTR("hardware_fpgacodec_initialize start\n"));
@@ -2831,8 +2831,8 @@ void hardware_fpgacodec_initialize(void)
 
 #if WITHSUSBSPKONLY
 
-// Интерфейс к НЧ кодеку
-// Разрешение работы, вызывается при разрешённых прерываниях
+// РРЅС‚РµСЂС„РµР№СЃ Рє РќР§ РєРѕРґРµРєСѓ
+// Р Р°Р·СЂРµС€РµРЅРёРµ СЂР°Р±РѕС‚С‹, РІС‹Р·С‹РІР°РµС‚СЃСЏ РїСЂРё СЂР°Р·СЂРµС€С‘РЅРЅС‹С… РїСЂРµСЂС‹РІР°РЅРёСЏС…
 void hardware_fpgaspectrum_enable(void)
 {
 	debug_printf_P(PSTR("hardware_fpgaspectrum_enable start: %s\n"), audiocodechw.label);
@@ -2843,7 +2843,7 @@ void hardware_fpgaspectrum_enable(void)
 	debug_printf_P(PSTR("hardware_fpgaspectrum_enable done\n"));
 }
 
-// Интерфейс к НЧ кодеку
+// РРЅС‚РµСЂС„РµР№СЃ Рє РќР§ РєРѕРґРµРєСѓ
 void hardware_fpgaspectrum_initialize(void)
 {
 	debug_printf_P(PSTR("hardware_fpgaspectrum_initialize start: %s\n"), audiocodechw.label);
@@ -2855,7 +2855,7 @@ void hardware_fpgaspectrum_initialize(void)
 }
 
 #else /* WITHSUSBSPKONLY */
-// Интерфейс к источнику данных о спектре
+// РРЅС‚РµСЂС„РµР№СЃ Рє РёСЃС‚РѕС‡РЅРёРєСѓ РґР°РЅРЅС‹С… Рѕ СЃРїРµРєС‚СЂРµ
 void hardware_fpgaspectrum_enable(void)
 {
 	fpgaspectrumhw.initializedma_rx();
@@ -2864,9 +2864,9 @@ void hardware_fpgaspectrum_enable(void)
 	//fpgaspectrumhw.enable_tx();
 }
 
-// Инициализация всех каналов интерфейса к FPGA или к IF CODEC
-// Интерфейс к источнику данных о спектре
-// Если есть WITHSAICLOCKFROMI2S	- это инициализируется после I2S
+// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РІСЃРµС… РєР°РЅР°Р»РѕРІ РёРЅС‚РµСЂС„РµР№СЃР° Рє FPGA РёР»Рё Рє IF CODEC
+// РРЅС‚РµСЂС„РµР№СЃ Рє РёСЃС‚РѕС‡РЅРёРєСѓ РґР°РЅРЅС‹С… Рѕ СЃРїРµРєС‚СЂРµ
+// Р•СЃР»Рё РµСЃС‚СЊ WITHSAICLOCKFROMI2S	- СЌС‚Рѕ РёРЅРёС†РёР°Р»РёР·РёСЂСѓРµС‚СЃСЏ РїРѕСЃР»Рµ I2S
 void hardware_fpgaspectrum_initialize(void)
 {
 	debug_printf_P(PSTR("hardware_fpgaspectrum_initialize start: %s\n"), fpgaspectrumhw.label);
@@ -2882,30 +2882,30 @@ void hardware_fpgaspectrum_initialize(void)
 
 #if WITHCPUDACHW
 
-void hardware_dac_initialize(void)		/* инициализация DAC на STM32F4xx */
+void hardware_dac_initialize(void)		/* РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ DAC РЅР° STM32F4xx */
 {
 	debug_printf_P(PSTR("hardware_dac_initialize start\n"));
 #if CPUSTYLE_STM32H7XX
 
-	RCC->APB1LENR |= RCC_APB1LENR_DAC12EN; //подать тактирование 
+	RCC->APB1LENR |= RCC_APB1LENR_DAC12EN; //РїРѕРґР°С‚СЊ С‚Р°РєС‚РёСЂРѕРІР°РЅРёРµ 
 	__DSB();
 
 #elif CPUSTYLE_STM32F
 
-	RCC->APB1ENR |= RCC_APB1ENR_DACEN; //подать тактирование 
+	RCC->APB1ENR |= RCC_APB1ENR_DACEN; //РїРѕРґР°С‚СЊ С‚Р°РєС‚РёСЂРѕРІР°РЅРёРµ 
 	__DSB();
 
 #endif
-	HARDWARE_DAC_INITIALIZE();	/* включить нужные каналы */
+	HARDWARE_DAC_INITIALIZE();	/* РІРєР»СЋС‡РёС‚СЊ РЅСѓР¶РЅС‹Рµ РєР°РЅР°Р»С‹ */
 	debug_printf_P(PSTR("hardware_dac_initialize done\n"));
 }
-// вывод 12-битного значения на ЦАП - канал 1
+// РІС‹РІРѕРґ 12-Р±РёС‚РЅРѕРіРѕ Р·РЅР°С‡РµРЅРёСЏ РЅР° Р¦РђРџ - РєР°РЅР°Р» 1
 void hardware_dac_ch1_setvalue(uint_fast16_t v)
 {
 	DAC1->DHR12R1 = v;
 }
 
-// вывод 12-битного значения на ЦАП - канал 2
+// РІС‹РІРѕРґ 12-Р±РёС‚РЅРѕРіРѕ Р·РЅР°С‡РµРЅРёСЏ РЅР° Р¦РђРџ - РєР°РЅР°Р» 2
 void hardware_dac_ch2_setvalue(uint_fast16_t v)
 {
 	DAC1->DHR12R2 = v;
@@ -2913,14 +2913,14 @@ void hardware_dac_ch2_setvalue(uint_fast16_t v)
 
 #else
 
-void hardware_dac_initialize(void)		/* инициализация DAC на STM32F4xx */
+void hardware_dac_initialize(void)		/* РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ DAC РЅР° STM32F4xx */
 {
 }
-// вывод 12-битного значения на ЦАП - канал 1
+// РІС‹РІРѕРґ 12-Р±РёС‚РЅРѕРіРѕ Р·РЅР°С‡РµРЅРёСЏ РЅР° Р¦РђРџ - РєР°РЅР°Р» 1
 void hardware_dac_ch1_setvalue(uint_fast16_t v)
 {
 }
-// вывод 12-битного значения на ЦАП - канал 2
+// РІС‹РІРѕРґ 12-Р±РёС‚РЅРѕРіРѕ Р·РЅР°С‡РµРЅРёСЏ РЅР° Р¦РђРџ - РєР°РЅР°Р» 2
 void hardware_dac_ch2_setvalue(uint_fast16_t v)
 {
 }
@@ -2933,24 +2933,24 @@ void hardware_dac_ch2_setvalue(uint_fast16_t v)
 #if WITHUSBUAC
 
 // USB AUDIO
-// Канал DMA ещё занят - оставляем в очереди, иначе получить данные через getfilled_dmabufferx
+// РљР°РЅР°Р» DMA РµС‰С‘ Р·Р°РЅСЏС‚ - РѕСЃС‚Р°РІР»СЏРµРј РІ РѕС‡РµСЂРµРґРё, РёРЅР°С‡Рµ РїРѕР»СѓС‡РёС‚СЊ РґР°РЅРЅС‹Рµ С‡РµСЂРµР· getfilled_dmabufferx
 void refreshDMA_uacin(void)
 {
 	if ((DMAC12.CHSTAT_n & DMAC12_CHSTAT_n_EN) != 0)
 	{
-		// Канал DMA ещё занят - новые данные не требуются.
+		// РљР°РЅР°Р» DMA РµС‰С‘ Р·Р°РЅСЏС‚ - РЅРѕРІС‹Рµ РґР°РЅРЅС‹Рµ РЅРµ С‚СЂРµР±СѓСЋС‚СЃСЏ.
 		return;
 	}
 	if (DMAC12.N0SA_n != 0)
 	{
-		// Ситуация - прерывание по концу передачи возникло сейчас,
-		// но ещё не обработано.
+		// РЎРёС‚СѓР°С†РёСЏ - РїСЂРµСЂС‹РІР°РЅРёРµ РїРѕ РєРѕРЅС†Сѓ РїРµСЂРµРґР°С‡Рё РІРѕР·РЅРёРєР»Рѕ СЃРµР№С‡Р°СЃ,
+		// РЅРѕ РµС‰С‘ РЅРµ РѕР±СЂР°Р±РѕС‚Р°РЅРѕ.
 		return;
 	}
 
-	// При наличии следующего блока - запускаем передачу
+	// РџСЂРё РЅР°Р»РёС‡РёРё СЃР»РµРґСѓСЋС‰РµРіРѕ Р±Р»РѕРєР° - Р·Р°РїСѓСЃРєР°РµРј РїРµСЂРµРґР°С‡Сѓ
 	uint_fast16_t size;
-	const uintptr_t addr = getfilled_dmabufferx(& size);	// для передачи в компьютер - может вернуть 0
+	const uintptr_t addr = getfilled_dmabufferx(& size);	// РґР»СЏ РїРµСЂРµРґР°С‡Рё РІ РєРѕРјРїСЊСЋС‚РµСЂ - РјРѕР¶РµС‚ РІРµСЂРЅСѓС‚СЊ 0
 	if (addr != 0)
 	{
 		const uint_fast8_t pipe = HARDWARE_USBD_PIPE_ISOC_IN;	// PIPE2
@@ -2961,7 +2961,7 @@ void refreshDMA_uacin(void)
 		WITHUSBHW_DEVICE->PIPESEL = 0;
 
 		DMAC12.N0SA_n = dma_flushxrtstx(addr, size);
-		DMAC12.N0TB_n = size;	// размер в байтах
+		DMAC12.N0TB_n = size;	// СЂР°Р·РјРµСЂ РІ Р±Р°Р№С‚Р°С…
 
 		//DMAC12.CHCTRL_n = DMAC12_CHCTRL_n_SWRST;		// SWRST
 		//DMAC12.CHCTRL_n = DMAC12_CHCTRL_n_CLRINTMSK;	// CLRINTMSK
@@ -2977,8 +2977,8 @@ void refreshDMA_uacin(void)
 }
 
 // USB AUDIO
-// DMA по передаче USB0 DMA1 - обработчик прерывания
-// DMA по передаче USB1 DMA1 - обработчик прерывания
+// DMA РїРѕ РїРµСЂРµРґР°С‡Рµ USB0 DMA1 - РѕР±СЂР°Р±РѕС‚С‡РёРє РїСЂРµСЂС‹РІР°РЅРёСЏ
+// DMA РїРѕ РїРµСЂРµРґР°С‡Рµ USB1 DMA1 - РѕР±СЂР°Р±РѕС‚С‡РёРє РїСЂРµСЂС‹РІР°РЅРёСЏ
 // Use arm_hardware_flush
 // ARM_REALTIME_PRIORITY
 
@@ -2987,9 +2987,9 @@ void r7s721_usbX_dma1_dmatx_handler(void)
 	ASSERT(DMAC12.N0SA_n != 0);
 	release_dmabufferx(DMAC12.N0SA_n);
 
-	// При наличии следующего блока - запускаем передачу
+	// РџСЂРё РЅР°Р»РёС‡РёРё СЃР»РµРґСѓСЋС‰РµРіРѕ Р±Р»РѕРєР° - Р·Р°РїСѓСЃРєР°РµРј РїРµСЂРµРґР°С‡Сѓ
 	uint_fast16_t size;
-	const uintptr_t addr = getfilled_dmabufferx(& size);	// для передачи в компьютер - может вернуть 0
+	const uintptr_t addr = getfilled_dmabufferx(& size);	// РґР»СЏ РїРµСЂРµРґР°С‡Рё РІ РєРѕРјРїСЊСЋС‚РµСЂ - РјРѕР¶РµС‚ РІРµСЂРЅСѓС‚СЊ 0
 	if (addr != 0)
 	{
 		const uint_fast8_t pipe = HARDWARE_USBD_PIPE_ISOC_IN;	// PIPE2
@@ -3000,7 +3000,7 @@ void r7s721_usbX_dma1_dmatx_handler(void)
 		WITHUSBHW_DEVICE->PIPESEL = 0;
 
 		DMAC12.N0SA_n = dma_flushxrtstx(addr, size);
-		DMAC12.N0TB_n = size;	// размер в байтах
+		DMAC12.N0TB_n = size;	// СЂР°Р·РјРµСЂ РІ Р±Р°Р№С‚Р°С…
 
 		//DMAC12.CHCTRL_n = DMAC12_CHCTRL_n_SWRST;		// SWRST
 		//DMAC12.CHCTRL_n = DMAC12_CHCTRL_n_CLRINTMSK;	// CLRINTMSK
@@ -3017,7 +3017,7 @@ void r7s721_usbX_dma1_dmatx_handler(void)
 
 
 // audio codec
-// DMA по передаче USB0 DMA1
+// DMA РїРѕ РїРµСЂРµРґР°С‡Рµ USB0 DMA1
 // Use arm_hardware_flush
 
 static void r7s721_usb0_dma1_dmatx_initialize(void)
@@ -3031,8 +3031,8 @@ static void r7s721_usb0_dma1_dmatx_initialize(void)
     //DMAC12.N1DA_n = (uint32_t) & WITHUSBHW_DEVICE->D1FIFO.UINT32;	// Fixed destination address
 
     /* Set Transfer Size */
-    //DMAC12.N0TB_n = DMABUFFSIZE16 * sizeof (int16_t);	// размер в байтах
-    //DMAC12.N1TB_n = DMABUFFSIZE16 * sizeof (int16_t);	// размер в байтах
+    //DMAC12.N0TB_n = DMABUFFSIZE16 * sizeof (int16_t);	// СЂР°Р·РјРµСЂ РІ Р±Р°Р№С‚Р°С…
+    //DMAC12.N1TB_n = DMABUFFSIZE16 * sizeof (int16_t);	// СЂР°Р·РјРµСЂ РІ Р±Р°Р№С‚Р°С…
 
 	// Values from Table 9.4 On-Chip Peripheral Module Requests
 	// USB0_DMA1 (channel 1 transmit FIFO empty)
@@ -3050,8 +3050,8 @@ static void r7s721_usb0_dma1_dmatx_initialize(void)
 		0 * (1U << DMAC12_CHCFG_n_RSW_SHIFT) |		// RSW	1: Inverts RSEL automatically after a DMA transaction.
 		0 * (1U << DMAC12_CHCFG_n_RSEL_SHIFT) |		// RSEL	0: Executes the Next0 Register Set
 		0 * (1U << DMAC12_CHCFG_n_SBE_SHIFT) |		// SBE	0: Stops the DMA transfer without sweeping the buffer (initial value).
-		0 * (1U << DMAC12_CHCFG_n_DEM_SHIFT) |		// DEM	0: Does not mask the DMA transfer end interrupt - прерывания каждый раз после TC
-		tm * (1U << DMAC12_CHCFG_n_TM_SHIFT) |		// TM	0: Single transfer mode - берётся из Table 9.4
+		0 * (1U << DMAC12_CHCFG_n_DEM_SHIFT) |		// DEM	0: Does not mask the DMA transfer end interrupt - РїСЂРµСЂС‹РІР°РЅРёСЏ РєР°Р¶РґС‹Р№ СЂР°Р· РїРѕСЃР»Рµ TC
+		tm * (1U << DMAC12_CHCFG_n_TM_SHIFT) |		// TM	0: Single transfer mode - Р±РµСЂС‘С‚СЃСЏ РёР· Table 9.4
 		1 * (1U << DMAC12_CHCFG_n_DAD_SHIFT) |		// DAD	1: Fixed destination address
 		0 * (1U << DMAC12_CHCFG_n_SAD_SHIFT) |		// SAD	0: Increment source address
 		2 * (1U << DMAC12_CHCFG_n_DDS_SHIFT) |		// DDS	2: 32 bits, 1: 16 bits (Destination Data Size)
@@ -3090,9 +3090,9 @@ static USBALIGN_BEGIN uint8_t uacoutbuff0 [VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT] USB
 static USBALIGN_BEGIN uint8_t uacoutbuff1 [VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT] USBALIGN_END;
 
 // USB AUDIO
-// DMA по приему USB0 DMA0 - обработчик прерывания
-// DMA по приему USB1 DMA0 - обработчик прерывания
-// Работает на ARM_SYSTEM_PRIORITY
+// DMA РїРѕ РїСЂРёРµРјСѓ USB0 DMA0 - РѕР±СЂР°Р±РѕС‚С‡РёРє РїСЂРµСЂС‹РІР°РЅРёСЏ
+// DMA РїРѕ РїСЂРёРµРјСѓ USB1 DMA0 - РѕР±СЂР°Р±РѕС‚С‡РёРє РїСЂРµСЂС‹РІР°РЅРёСЏ
+// Р Р°Р±РѕС‚Р°РµС‚ РЅР° ARM_SYSTEM_PRIORITY
 
 static RAMFUNC_NONILINE void r7s721_usbX_dma0_dmarx_handler(void)
 {
@@ -3103,8 +3103,8 @@ static RAMFUNC_NONILINE void r7s721_usbX_dma0_dmarx_handler(void)
 	// 0: Next0 Register Set
 	// 1: Next1 Register Set
 	const uint_fast8_t b = (DMAC13.CHSTAT_n & DMAC13_CHSTAT_n_SR) != 0;	// SR
-	// Фаза в данном случае отличается от проверенной на передаче в кодек (функция r7s721_ssif0_txdma). 
-	// Прием с автопереключением больше нигде не подтвержден.
+	// Р¤Р°Р·Р° РІ РґР°РЅРЅРѕРј СЃР»СѓС‡Р°Рµ РѕС‚Р»РёС‡Р°РµС‚СЃСЏ РѕС‚ РїСЂРѕРІРµСЂРµРЅРЅРѕР№ РЅР° РїРµСЂРµРґР°С‡Рµ РІ РєРѕРґРµРє (С„СѓРЅРєС†РёСЏ r7s721_ssif0_txdma). 
+	// РџСЂРёРµРј СЃ Р°РІС‚РѕРїРµСЂРµРєР»СЋС‡РµРЅРёРµРј Р±РѕР»СЊС€Рµ РЅРёРіРґРµ РЅРµ РїРѕРґС‚РІРµСЂР¶РґРµРЅ.
 	if (b == 0)
 	{
 		uacout_buffer_save(uacoutbuff0, VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT);
@@ -3119,7 +3119,7 @@ static RAMFUNC_NONILINE void r7s721_usbX_dma0_dmarx_handler(void)
 
 
 // USB AUDIO
-// DMA по приёму usb0_dma0
+// DMA РїРѕ РїСЂРёС‘РјСѓ usb0_dma0
 
 static void r7s721_usb0_dma0_dmarx_initialize(void)
 {
@@ -3129,7 +3129,7 @@ static void r7s721_usb0_dma0_dmarx_initialize(void)
 	enum { id = 13 };	// 13: DMAC13
 	// DMAC13
 	/* Set Source Start Address */
-	/* регистры USB PIPE (HARDWARE_USBD_PIPE_ISOC_OUT) */
+	/* СЂРµРіРёСЃС‚СЂС‹ USB PIPE (HARDWARE_USBD_PIPE_ISOC_OUT) */
     DMAC13.N0SA_n = (uint32_t) & WITHUSBHW_DEVICE->D0FIFO.UINT32;	// Fixed source address
     DMAC13.N1SA_n = (uint32_t) & WITHUSBHW_DEVICE->D0FIFO.UINT32;	// Fixed source address
 
@@ -3138,8 +3138,8 @@ static void r7s721_usb0_dma0_dmarx_initialize(void)
 	DMAC13.N1DA_n = (uintptr_t) uacoutbuff1;
 
     /* Set Transfer Size */
-    DMAC13.N0TB_n = VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT;	// размер в байтах
-    DMAC13.N1TB_n = VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT;	// размер в байтах
+    DMAC13.N0TB_n = VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT;	// СЂР°Р·РјРµСЂ РІ Р±Р°Р№С‚Р°С…
+    DMAC13.N1TB_n = VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT;	// СЂР°Р·РјРµСЂ РІ Р±Р°Р№С‚Р°С…
 
 	// Values from Table 9.4 On-Chip Peripheral Module Requests
 	// USB0_DMA0 (channel 0 receive FIFO full)
@@ -3157,8 +3157,8 @@ static void r7s721_usb0_dma0_dmarx_initialize(void)
 		1 * (1U << 29) |	// RSW	1: Inverts RSEL automatically after a DMA transaction.
 		0 * (1U << 28) |	// RSEL	0: Executes the Next0 Register Set
 		0 * (1U << 27) |	// SBE	0: Stops the DMA transfer without sweeping the buffer (initial value).
-		0 * (1U << 24) |	// DEM	0: Does not mask the DMA transfer end interrupt - прерывания каждый раз после TC
-		tm * (1U << 22) |	// TM	0: Single transfer mode - берётся из Table 9.4
+		0 * (1U << 24) |	// DEM	0: Does not mask the DMA transfer end interrupt - РїСЂРµСЂС‹РІР°РЅРёСЏ РєР°Р¶РґС‹Р№ СЂР°Р· РїРѕСЃР»Рµ TC
+		tm * (1U << 22) |	// TM	0: Single transfer mode - Р±РµСЂС‘С‚СЃСЏ РёР· Table 9.4
 		0 * (1U << 21) |	// DAD	0: Increment destination address
 		1 * (1U << 20) |	// SAD	1: Fixed source address
 		2 * (1U << 16) |	// DDS	2: 32 bits, 1: 16 bits (Destination Data Size)
@@ -3195,18 +3195,18 @@ static void r7s721_usb0_dma0_dmarx_initialize(void)
 
 static void r7s721_usb0_dma0_dmarx_enable(void)
 {
-	// Инициализация порта доступа к регистрам FIFO
+	// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РїРѕСЂС‚Р° РґРѕСЃС‚СѓРїР° Рє СЂРµРіРёСЃС‚СЂР°Рј FIFO
 	//const uint_fast8_t pipe = HARDWARE_USBD_PIPE_ISOC_OUT;
 }
 
 static void r7s721_usb0_dma0_dmatx_enable(void)
 {
-	// Инициализация порта доступа к регистрам FIFO
+	// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РїРѕСЂС‚Р° РґРѕСЃС‚СѓРїР° Рє СЂРµРіРёСЃС‚СЂР°Рј FIFO
 	//const uint_fast8_t pipe = HARDWARE_USBD_PIPE_ISOC_IN;
 }
 
 // audio codec
-// DMA по передаче USB1 DMA1
+// DMA РїРѕ РїРµСЂРµРґР°С‡Рµ USB1 DMA1
 // Use arm_hardware_flush
 
 static void r7s721_usb1_dma1_dmatx_initialize(void)
@@ -3220,8 +3220,8 @@ static void r7s721_usb1_dma1_dmatx_initialize(void)
     //DMAC12.N1DA_n = (uint32_t) & WITHUSBHW_DEVICE->D1FIFO.UINT32;	// Fixed destination address
 
     /* Set Transfer Size */
-    //DMAC12.N0TB_n = DMABUFFSIZE16 * sizeof (int16_t);	// размер в байтах
-    //DMAC12.N1TB_n = DMABUFFSIZE16 * sizeof (int16_t);	// размер в байтах
+    //DMAC12.N0TB_n = DMABUFFSIZE16 * sizeof (int16_t);	// СЂР°Р·РјРµСЂ РІ Р±Р°Р№С‚Р°С…
+    //DMAC12.N1TB_n = DMABUFFSIZE16 * sizeof (int16_t);	// СЂР°Р·РјРµСЂ РІ Р±Р°Р№С‚Р°С…
 
 	// Values from Table 9.4 On-Chip Peripheral Module Requests
 	// USB1_DMA1 (channel 1 transmit FIFO empty)
@@ -3239,8 +3239,8 @@ static void r7s721_usb1_dma1_dmatx_initialize(void)
 		0 * (1U << DMAC12_CHCFG_n_RSW_SHIFT) |		// RSW	1: Inverts RSEL automatically after a DMA transaction.
 		0 * (1U << DMAC12_CHCFG_n_RSEL_SHIFT) |		// RSEL	0: Executes the Next0 Register Set
 		0 * (1U << DMAC12_CHCFG_n_SBE_SHIFT) |		// SBE	0: Stops the DMA transfer without sweeping the buffer (initial value).
-		0 * (1U << DMAC12_CHCFG_n_DEM_SHIFT) |		// DEM	0: Does not mask the DMA transfer end interrupt - прерывания каждый раз после TC
-		tm * (1U << DMAC12_CHCFG_n_TM_SHIFT) |		// TM	0: Single transfer mode - берётся из Table 9.4
+		0 * (1U << DMAC12_CHCFG_n_DEM_SHIFT) |		// DEM	0: Does not mask the DMA transfer end interrupt - РїСЂРµСЂС‹РІР°РЅРёСЏ РєР°Р¶РґС‹Р№ СЂР°Р· РїРѕСЃР»Рµ TC
+		tm * (1U << DMAC12_CHCFG_n_TM_SHIFT) |		// TM	0: Single transfer mode - Р±РµСЂС‘С‚СЃСЏ РёР· Table 9.4
 		1 * (1U << DMAC12_CHCFG_n_DAD_SHIFT) |		// DAD	1: Fixed destination address
 		0 * (1U << DMAC12_CHCFG_n_SAD_SHIFT) |		// SAD	0: Increment source address
 		2 * (1U << DMAC12_CHCFG_n_DDS_SHIFT) |		// DDS	2: 32 bits, 1: 16 bits (Destination Data Size)
@@ -3276,7 +3276,7 @@ static void r7s721_usb1_dma1_dmatx_initialize(void)
 }
 
 // USB AUDIO
-// DMA по приёму usb0_dma0
+// DMA РїРѕ РїСЂРёС‘РјСѓ usb0_dma0
 
 static void r7s721_usb1_dma0_dmarx_initialize(void)
 {
@@ -3286,7 +3286,7 @@ static void r7s721_usb1_dma0_dmarx_initialize(void)
 	enum { id = 13 };	// 13: DMAC13
 	// DMAC13
 	/* Set Source Start Address */
-	/* регистры USB PIPE (HARDWARE_USBD_PIPE_ISOC_OUT) */
+	/* СЂРµРіРёСЃС‚СЂС‹ USB PIPE (HARDWARE_USBD_PIPE_ISOC_OUT) */
     DMAC13.N0SA_n = (uint32_t) & WITHUSBHW_DEVICE->D0FIFO.UINT32;	// Fixed source address
     DMAC13.N1SA_n = (uint32_t) & WITHUSBHW_DEVICE->D0FIFO.UINT32;	// Fixed source address
 
@@ -3295,8 +3295,8 @@ static void r7s721_usb1_dma0_dmarx_initialize(void)
 	DMAC13.N1DA_n = (uintptr_t) uacoutbuff1;
 
     /* Set Transfer Size */
-    DMAC13.N0TB_n = VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT;	// размер в байтах
-    DMAC13.N1TB_n = VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT;	// размер в байтах
+    DMAC13.N0TB_n = VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT;	// СЂР°Р·РјРµСЂ РІ Р±Р°Р№С‚Р°С…
+    DMAC13.N1TB_n = VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT;	// СЂР°Р·РјРµСЂ РІ Р±Р°Р№С‚Р°С…
 
 	// Values from Table 9.4 On-Chip Peripheral Module Requests
 	// USB1_DMA0 (channel 0 receive FIFO full)
@@ -3314,8 +3314,8 @@ static void r7s721_usb1_dma0_dmarx_initialize(void)
 		1 * (1U << 29) |	// RSW	1: Inverts RSEL automatically after a DMA transaction.
 		0 * (1U << 28) |	// RSEL	0: Executes the Next0 Register Set
 		0 * (1U << 27) |	// SBE	0: Stops the DMA transfer without sweeping the buffer (initial value).
-		0 * (1U << 24) |	// DEM	0: Does not mask the DMA transfer end interrupt - прерывания каждый раз после TC
-		tm * (1U << 22) |	// TM	0: Single transfer mode - берётся из Table 9.4
+		0 * (1U << 24) |	// DEM	0: Does not mask the DMA transfer end interrupt - РїСЂРµСЂС‹РІР°РЅРёСЏ РєР°Р¶РґС‹Р№ СЂР°Р· РїРѕСЃР»Рµ TC
+		tm * (1U << 22) |	// TM	0: Single transfer mode - Р±РµСЂС‘С‚СЃСЏ РёР· Table 9.4
 		0 * (1U << 21) |	// DAD	0: Increment destination address
 		1 * (1U << 20) |	// SAD	1: Fixed source address
 		2 * (1U << 16) |	// DDS	2: 32 bits, 1: 16 bits (Destination Data Size)
@@ -3352,13 +3352,13 @@ static void r7s721_usb1_dma0_dmarx_initialize(void)
 
 static void r7s721_usb1_dma0_dmarx_enable(void)
 {
-	// Инициализация порта доступа к регистрам FIFO
+	// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РїРѕСЂС‚Р° РґРѕСЃС‚СѓРїР° Рє СЂРµРіРёСЃС‚СЂР°Рј FIFO
 	//const uint_fast8_t pipe = HARDWARE_USBD_PIPE_ISOC_OUT;
 }
 
 static void r7s721_usb1_dma0_dmatx_enable(void)
 {
-	// Инициализация порта доступа к регистрам FIFO
+	// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РїРѕСЂС‚Р° РґРѕСЃС‚СѓРїР° Рє СЂРµРіРёСЃС‚СЂР°Рј FIFO
 	//const uint_fast8_t pipe = HARDWARE_USBD_PIPE_ISOC_IN;
 }
 
@@ -3366,7 +3366,7 @@ static void r7s721_usb1_dma0_dmatx_enable(void)
 
 #elif CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
 
-// Канал DMA ещё занят - оставляем в очереди, иначе получить данные через getfilled_dmabufferx и начать предавать в host
+// РљР°РЅР°Р» DMA РµС‰С‘ Р·Р°РЅСЏС‚ - РѕСЃС‚Р°РІР»СЏРµРј РІ РѕС‡РµСЂРµРґРё, РёРЅР°С‡Рµ РїРѕР»СѓС‡РёС‚СЊ РґР°РЅРЅС‹Рµ С‡РµСЂРµР· getfilled_dmabufferx Рё РЅР°С‡Р°С‚СЊ РїСЂРµРґР°РІР°С‚СЊ РІ host
 void refreshDMA_uacin(void)
 {
 }
@@ -3376,7 +3376,7 @@ void refreshDMA_uacin(void)
 #endif
 
 
-/* вызывается при запрещённых прерываниях. */
+/* РІС‹Р·С‹РІР°РµС‚СЃСЏ РїСЂРё Р·Р°РїСЂРµС‰С‘РЅРЅС‹С… РїСЂРµСЂС‹РІР°РЅРёСЏС…. */
 void hardware_usbd_dma_initialize(void)
 {
 #if CPUSTYLE_R7S721
@@ -3399,7 +3399,7 @@ void hardware_usbd_dma_initialize(void)
 #endif
 }
 
-/* вызывается при запрещённых прерываниях. */
+/* РІС‹Р·С‹РІР°РµС‚СЃСЏ РїСЂРё Р·Р°РїСЂРµС‰С‘РЅРЅС‹С… РїСЂРµСЂС‹РІР°РЅРёСЏС…. */
 void hardware_usbd_dma_enable(void)
 {
 #if CPUSTYLE_R7S721

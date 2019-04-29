@@ -1,29 +1,29 @@
 /* $Id$ */
 //
-// Проект HF Dream Receiver (КВ приёмник мечты)
-// автор Гена Завидовский mgs2001@mail.ru
+// РџСЂРѕРµРєС‚ HF Dream Receiver (РљР’ РїСЂРёС‘РјРЅРёРє РјРµС‡С‚С‹)
+// Р°РІС‚РѕСЂ Р“РµРЅР° Р—Р°РІРёРґРѕРІСЃРєРёР№ mgs2001@mail.ru
 // UA1ARN
 //
-/* Индикатор 176*132 LPH8836-2 с контроллером Hitachi HD66773 */
+/* РРЅРґРёРєР°С‚РѕСЂ 176*132 LPH8836-2 СЃ РєРѕРЅС‚СЂРѕР»Р»РµСЂРѕРј Hitachi HD66773 */
 
 #ifndef LPH88_H_INCLUDED
 #define LPH88_H_INCLUDED
 
-#include "hardware.h"	/* зависящие от процессора функции работы с портами */
+#include "hardware.h"	/* Р·Р°РІРёСЃСЏС‰РёРµ РѕС‚ РїСЂРѕС†РµСЃСЃРѕСЂР° С„СѓРЅРєС†РёРё СЂР°Р±РѕС‚С‹ СЃ РїРѕСЂС‚Р°РјРё */
 
 #if LCDMODE_LPH88
 
-#define DISPLAYMODES_FPS 5	/* количество обновлений отображения режимов работы */
-#define DISPLAY_FPS	10	/* обновление показаний частоты за секунду */
-#define DISPLAYSWR_FPS 5	/* количество обновлений SWR за секунду */
+#define DISPLAYMODES_FPS 5	/* РєРѕР»РёС‡РµСЃС‚РІРѕ РѕР±РЅРѕРІР»РµРЅРёР№ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ СЂРµР¶РёРјРѕРІ СЂР°Р±РѕС‚С‹ */
+#define DISPLAY_FPS	10	/* РѕР±РЅРѕРІР»РµРЅРёРµ РїРѕРєР°Р·Р°РЅРёР№ С‡Р°СЃС‚РѕС‚С‹ Р·Р° СЃРµРєСѓРЅРґСѓ */
+#define DISPLAYSWR_FPS 5	/* РєРѕР»РёС‡РµСЃС‚РІРѕ РѕР±РЅРѕРІР»РµРЅРёР№ SWR Р·Р° СЃРµРєСѓРЅРґСѓ */
 
 // 132 x 176 pixel
 /*
-	Active Display Area 31.284 x 41.712 mmІ (W x H)
-	Blackmatrix area 34,2 x 44,9 mmІ (W x H)
-	Outline Dimensions panel 35.9 x 52,0 mmІ (W x H)
-	Design Viewing Direction 6 o’clock display
-	Controller: 12 o’clock of the display module
+	Active Display Area 31.284 x 41.712 mmР† (W x H)
+	Blackmatrix area 34,2 x 44,9 mmР† (W x H)
+	Outline Dimensions panel 35.9 x 52,0 mmР† (W x H)
+	Design Viewing Direction 6 oвЂ™clock display
+	Controller: 12 oвЂ™clock of the display module
 */
 
 typedef uint_fast16_t COLOR_T;

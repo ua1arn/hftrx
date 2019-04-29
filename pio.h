@@ -5,10 +5,10 @@
 
 #if CPUSTYLE_STM32F
 
-	#define BSRR_S(v) ((v) * GPIO_BSRR_BS0)	/* Преобразование значения для установки бита в регистре */
-	#define BSRR_C(v) ((v) * GPIO_BSRR_BR0)	/* Преобразование значения для сброса бита в регистре */
+	#define BSRR_S(v) ((v) * GPIO_BSRR_BS0)	/* РџСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёРµ Р·РЅР°С‡РµРЅРёСЏ РґР»СЏ СѓСЃС‚Р°РЅРѕРІРєРё Р±РёС‚Р° РІ СЂРµРіРёСЃС‚СЂРµ */
+	#define BSRR_C(v) ((v) * GPIO_BSRR_BR0)	/* РџСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёРµ Р·РЅР°С‡РµРЅРёСЏ РґР»СЏ СЃР±СЂРѕСЃР° Р±РёС‚Р° РІ СЂРµРіРёСЃС‚СЂРµ */
 
-	// Параметры для arm_stm32f30x_hardware_pio_prog
+	// РџР°СЂР°РјРµС‚СЂС‹ РґР»СЏ arm_stm32f30x_hardware_pio_prog
 	#if CPUSTYLE_STM32L0XX		// 0: very low speed, 1: low speed, 2: medium speed, 3: high speed
 		#define GPIO_BSRR_BS0 GPIO_BSRR_BS_0
 		#define GPIO_BSRR_BR0 GPIO_BSRR_BR_0
@@ -60,7 +60,7 @@
 	#endif
 
 	#if CPUSTYLE_STM32L0XX
-		/* Спасибо ST, что исправили опечатки в заголовочном файле */
+		/* РЎРїР°СЃРёР±Рѕ ST, С‡С‚Рѕ РёСЃРїСЂР°РІРёР»Рё РѕРїРµС‡Р°С‚РєРё РІ Р·Р°РіРѕР»РѕРІРѕС‡РЅРѕРј С„Р°Р№Р»Рµ */
 		#define GPIO_MODER_MODER0			GPIO_MODER_MODE0
 		#define GPIO_MODER_MODER0_0			GPIO_MODER_MODE0_0
 		#define	GPIO_PUPDR_PUPDR0			GPIO_PUPDR_PUPD0
@@ -162,17 +162,17 @@ void arm_hardware_piok_outputs2m(unsigned long opins, unsigned long initialstate
 void arm_hardware_piok_outputs50m(unsigned long opins, unsigned long initialstate);
 void arm_hardware_piok_opendrain(unsigned long opins, unsigned long initialstate);
 
-void arm_hardware_pioa_peripha(unsigned long pins);		// выводы присоединены к periph A
-void arm_hardware_pioa_periphb(unsigned long pins);		// выводы присоединены к periph B
-void arm_hardware_pioa_periphc(unsigned long pins);		// выводы присоединены к periph C
-void arm_hardware_pioa_periphd(unsigned long pins);		// выводы присоединены к periph D
-void arm_hardware_piob_peripha(unsigned long pins);		// выводы присоединены к periph A
-void arm_hardware_piob_periphb(unsigned long pins);		// выводы присоединены к periph B
-void arm_hardware_piob_periphc(unsigned long pins);		// выводы присоединены к periph C
-void arm_hardware_piob_periphd(unsigned long pins);		// выводы присоединены к periph D
+void arm_hardware_pioa_peripha(unsigned long pins);		// РІС‹РІРѕРґС‹ РїСЂРёСЃРѕРµРґРёРЅРµРЅС‹ Рє periph A
+void arm_hardware_pioa_periphb(unsigned long pins);		// РІС‹РІРѕРґС‹ РїСЂРёСЃРѕРµРґРёРЅРµРЅС‹ Рє periph B
+void arm_hardware_pioa_periphc(unsigned long pins);		// РІС‹РІРѕРґС‹ РїСЂРёСЃРѕРµРґРёРЅРµРЅС‹ Рє periph C
+void arm_hardware_pioa_periphd(unsigned long pins);		// РІС‹РІРѕРґС‹ РїСЂРёСЃРѕРµРґРёРЅРµРЅС‹ Рє periph D
+void arm_hardware_piob_peripha(unsigned long pins);		// РІС‹РІРѕРґС‹ РїСЂРёСЃРѕРµРґРёРЅРµРЅС‹ Рє periph A
+void arm_hardware_piob_periphb(unsigned long pins);		// РІС‹РІРѕРґС‹ РїСЂРёСЃРѕРµРґРёРЅРµРЅС‹ Рє periph B
+void arm_hardware_piob_periphc(unsigned long pins);		// РІС‹РІРѕРґС‹ РїСЂРёСЃРѕРµРґРёРЅРµРЅС‹ Рє periph C
+void arm_hardware_piob_periphd(unsigned long pins);		// РІС‹РІРѕРґС‹ РїСЂРёСЃРѕРµРґРёРЅРµРЅС‹ Рє periph D
 
-void arm_hardware_pioa_only(unsigned long pins);		// выводы присоединены к PIO
-void arm_hardware_piob_only(unsigned long pins);		// выводы присоединены к PIO
+void arm_hardware_pioa_only(unsigned long pins);		// РІС‹РІРѕРґС‹ РїСЂРёСЃРѕРµРґРёРЅРµРЅС‹ Рє PIO
+void arm_hardware_piob_only(unsigned long pins);		// РІС‹РІРѕРґС‹ РїСЂРёСЃРѕРµРґРёРЅРµРЅС‹ Рє PIO
 
 void arm_hardware_pioa_onchangeinterrupt(unsigned long ipins, unsigned long raise, unsigned long fall, uint32_t priority);
 void arm_hardware_piob_onchangeinterrupt(unsigned long ipins, unsigned long raise, unsigned long fall, uint32_t priority);
@@ -222,7 +222,7 @@ void arm_hardware_pioi_altfn50(unsigned long opins, unsigned af);
 void arm_hardware_pioj_altfn50(unsigned long opins, unsigned af);
 void arm_hardware_piok_altfn50(unsigned long opins, unsigned af);
 
-// включить подтяжку вверх или вниз
+// РІРєР»СЋС‡РёС‚СЊ РїРѕРґС‚СЏР¶РєСѓ РІРІРµСЂС… РёР»Рё РІРЅРёР·
 void arm_hardware_pioa_updown(unsigned long up, unsigned long down);
 void arm_hardware_piob_updown(unsigned long up, unsigned long down);
 void arm_hardware_pioc_updown(unsigned long up, unsigned long down);
@@ -235,7 +235,7 @@ void arm_hardware_pioi_updown(unsigned long up, unsigned long down);
 void arm_hardware_pioj_updown(unsigned long up, unsigned long down);
 void arm_hardware_piok_updown(unsigned long up, unsigned long down);
 
-// отключить подтяжку вверх или вниз
+// РѕС‚РєР»СЋС‡РёС‚СЊ РїРѕРґС‚СЏР¶РєСѓ РІРІРµСЂС… РёР»Рё РІРЅРёР·
 void arm_hardware_pioa_updownoff(unsigned long ipins);
 void arm_hardware_piob_updownoff(unsigned long ipins);
 void arm_hardware_pioc_updownoff(unsigned long ipins);
@@ -264,9 +264,9 @@ void arm_hardware_pioa_analoginput(unsigned long ipins);
 void arm_hardware_piob_analoginput(unsigned long ipins);
 void arm_hardware_pioc_analoginput(unsigned long ipins);
 
-// Функций-макросы установки/сброса битов в указанном порту
+// Р¤СѓРЅРєС†РёР№-РјР°РєСЂРѕСЃС‹ СѓСЃС‚Р°РЅРѕРІРєРё/СЃР±СЂРѕСЃР° Р±РёС‚РѕРІ РІ СѓРєР°Р·Р°РЅРЅРѕРј РїРѕСЂС‚Сѓ
 //
-//  Пример использования:
+//  РџСЂРёРјРµСЂ РёСЃРїРѕР»СЊР·РѕРІР°РЅРёСЏ:
 //		R7S721_TARGET_PORT_S(6, 0x04);	/* P6_2=1 */
 //		R7S721_TARGET_PORT_C(6, 0x04);	/* P6_2=0 */
 
