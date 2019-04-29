@@ -4968,7 +4968,7 @@ static void dsp_latchwaterfall(
 // получить горизонтальную позицию для заданного отклонения в герцах
 static uint_fast16_t
 deltafreq2x(
-	int_fast16_t f0,	// центральная частота
+	int_fast32_t f0,	// центральная частота
 	int_fast16_t delta,	// отклонение от центральной частоты в герцах
 	int_fast32_t bw,	// полоса обзора
 	uint_fast16_t width	// ширина экрана
