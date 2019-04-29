@@ -4,13 +4,12 @@
 Инструкция по подготовке среды компиляции для ARM процессоров находятся ниже.
 
 ## ATMEGA/ATXMEGA:
-
+```
 Каталог проекта не должен собержать в пути русских (или других неанглийских) букв. Пробелы допустимы.
 
 Для компиляции используется
 
-AVR Studio 4.19 (build 730):
-http://www.atmel.com/Images/AvrStudio4Setup.exe
+AVR Studio 4.19 (build 730) http://www.atmel.com/Images/AvrStudio4Setup.exe
 
 В репозитории файл проекта для AVR Studio 4.19 хранится под именем tc1.aps.prototype, его надо переименовать в tc1.aps и открыть в среде как проект.
 Так же требуется переименование файла product.h.prototype в product.h. В нем раскомментировать требуемую конфигурацию и закомментировант не нужную.
@@ -30,9 +29,9 @@ http://sourceforge.net/projects/mingw
 Сборка это часть проекта https://sourceforge.net/projects/mobilechessboar/?source=directory
 Ссылка для скачивания:
 http://kent.dl.sourceforge.net/project/mobilechessboard/avr-gcc%20snapshots%20%28Win32%29/avr-gcc-6.1.1_2016-06-26_mingw32.zip
-
+```
 ## ARM:
-
+```
 1. Настраиваем окружение (компилятор и утилиты для сборки проекта)
 1.1 GNU ARM Toolchain https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm/downloads (последняя проверенная сборка 7-2018-q2-update)
 1.2 Утилиты для сборки (напр. make) отсюда: http://www.yagarto.org/ или отсюда: http://www.cygwin.com/ (проверяем что в командной строке работает команда make, иначе обновляем переменную PATH в системе)
@@ -55,23 +54,23 @@ http://kent.dl.sourceforge.net/project/mobilechessboard/avr-gcc%20snapshots%20%2
 
 5. Прошиваем
 5.1 Скопилированные прошивки находятся в папке /build/<процессор>/
-
+```
 ## FPGA:
-
+```
 Используется Quartis II 13.1 (с апдейтом) Paid version http://download.altera.com/akdlm/software/acdsinst/13.1/162/ib_tar/Quartus-13.1.0.162-windows-complete.tar
 и  апдейт после http://download.altera.com/akdlm/software/acdsinst/13.1.4/182/update/QuartusSetup-13.1.4.182.exe
-
+```
 ## ATMEL ARM:
-
+```
 Требуется Atmel Software Framework 3.27 
 http://www.atmel.com/images/asf-standalone-archive-3.27.0.28.zip
-
+```
 ## Общее:
-
+```
 Выбор целевой конфигурации проекта производится в файле product.h
 На основании выбраной конфигурации и целевого процессора (arm/atmega) выбирается пара конфигурационных файлов
 .\board\*ctlstyle*.h и .\board\*cpustyle*.h.
 ctlstyle описывают внешние (по отношению к процессору) особенности аппаратуры - адреса устройств на шине spi, 
 типы применённых микросхем и тип индикатора (и так далее). 
 cpustyle описывают назначение выводов процессора (распределение по портам ввода/вывода).
-
+```
