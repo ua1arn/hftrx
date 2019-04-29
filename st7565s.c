@@ -1,7 +1,7 @@
 /* $Id$ */
 //
-// РџСЂРѕРµРєС‚ HF Dream Receiver (РљР’ РїСЂРёС‘РјРЅРёРє РјРµС‡С‚С‹)
-// Р°РІС‚РѕСЂ Р“РµРЅР° Р—Р°РІРёРґРѕРІСЃРєРёР№ mgs2001@mail.ru
+// Проект HF Dream Receiver (КВ приёмник мечты)
+// автор Гена Завидовский mgs2001@mail.ru
 // UA1ARN
 //
 
@@ -19,7 +19,7 @@
 #include "st7565s.h"
 
 
-/* СЂР°СЃС‚СЂРѕРІС‹Рµ С€СЂРёС„С‚С‹ */
+/* растровые шрифты */
 #include "./fonts/uc1601s_font_small.c"
 #if FONTSTYLE_ITALIC
 	#include "./fonts/uc1601s_ifont_half.c"
@@ -71,7 +71,7 @@
 #define CMD_TEST  0xF0
 
 
-#define ST7565S_SPIMODE		SPIC_MODE3 /* mode3 & mode0 СЂР°Р±РѕС‚Р°РµС‚, mode2 РЅРµ СЂР°Р±РѕС‚Р°РµС‚ */
+#define ST7565S_SPIMODE		SPIC_MODE3 /* mode3 & mode0 работает, mode2 не работает */
 
 
 #define ST7565S_CTRL() do { board_lcd_rs(0); } while (0)	/* RS: Low: CONTROL */
@@ -96,7 +96,7 @@ st7565s_reset(void)
 
 static void st7565s_write_cmd(uint_fast8_t v1)
 {
-	//ST7565S_CTRL();	/* СЃРґРµР»Р°РЅРѕ СЃРѕСЃС‚РѕСЏРЅРёРµРј РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ RS: Low: select an index or status register */
+	//ST7565S_CTRL();	/* сделано состоянием по умолчанию RS: Low: select an index or status register */
 	/* Enable SPI */
 	spi_select(targetlcd, ST7565S_SPIMODE);
 
@@ -108,10 +108,10 @@ static void st7565s_write_cmd(uint_fast8_t v1)
 	spi_unselect(targetlcd);
 }
 
-// Р’ РєРѕРЅС‚СЂРѕР»Р»РµСЂРµ ST7565s РєРѕРјР°РЅРґС‹ РЅРѕСЂРјР°Р»СЊРЅРѕ РёСЃРїРѕР»РЅСЏСЋС‚СЃСЏ Рё РµСЃР»Рё СЃРЅРёРјР°С‚СЊ /CS РјРµР¶РґСѓ РЅРёРјРё - РЅРѕ РґР»СЏ СѓСЃРєРѕСЂРµРЅРёСЏ РІС‹РґР°С‡Рё СЃРґРµР»Р°СЋ С‚Р°РєСѓСЋ С„СѓРЅРєС†РёСЋ
+// В контроллере ST7565s команды нормально исполняются и если снимать /CS между ними - но для ускорения выдачи сделаю такую функцию
 static void st7565s_write_cmd2(uint_fast8_t v1, uint_fast8_t v2)
 {
-	//ST7565S_CTRL();	/* СЃРґРµР»Р°РЅРѕ СЃРѕСЃС‚РѕСЏРЅРёРµРј РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ RS: Low: select an index or status register */
+	//ST7565S_CTRL();	/* сделано состоянием по умолчанию RS: Low: select an index or status register */
 	/* Enable SPI */
 	spi_select(targetlcd, ST7565S_SPIMODE);
 
@@ -128,23 +128,23 @@ static void st7565s_write_cmd2(uint_fast8_t v1, uint_fast8_t v2)
 static uint_fast8_t st7565s_started;
 
 
-// РЅР°С‡Р°Р»Рѕ РІС‹РґР°С‡Рµ Р±Р°Р№С‚РѕРІ (Р·Р°РїРёСЃРё РІ РІРёРґРµРѕРїР°РјСЏС‚СЊ)
-// Р’С‹Р·С‹РІР°РµС‚СЃСЏ РІ РЅР°С‡Р°Р»Рµ РІС‹РґР°С‡Рё СЃС‚СЂРѕРєРё
+// начало выдаче байтов (записи в видеопамять)
+// Вызывается в начале выдачи строки
 static void st7565s_put_char_begin(void)
 {
     ST7565S_DATA();
 	/* Enable SPI */
 	spi_select(targetlcd, ST7565S_SPIMODE);
-	st7565s_started = 1;		/* РїРµСЂРІС‹Р№ СЃРёРјРІРѕР» РІС‹РґР°С‘Рј Р±РµР· РѕР¶РёРґР°РЅРёСЏ РіРѕС‚РѕРІРЅРѕСЃС‚Рё */
+	st7565s_started = 1;		/* первый символ выдаём без ожидания готовности */
 }
 
 static void st7565s_put_char_end(void)
 {
-	if (st7565s_started == 0)		// Р•СЃР»Рё РІС‹РґР°РґР»Рё С…РѕС‚СЊ РѕРґРёРЅ СЃРёРјРІРѕР»
-		spi_complete(targetlcd);		/* РѕР¶РёРґР°РµРј Р·Р°РІРµСЂС€РµРЅРёСЏ РїРµСЂРµРґР°С‡Рё РїРѕСЃР»РµРґРЅРµРіРѕ Р±Р°Р№С‚Р° */
+	if (st7565s_started == 0)		// Если выдадли хоть один символ
+		spi_complete(targetlcd);		/* ожидаем завершения передачи последнего байта */
 	/* Disable SPI */
 	spi_unselect(targetlcd);
-	ST7565S_CTRL();	/* СЃРґРµР»Р°РЅРѕ СЃРѕСЃС‚РѕСЏРЅРёРµРј РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ RS: Low: select an index or status register */
+	ST7565S_CTRL();	/* сделано состоянием по умолчанию RS: Low: select an index or status register */
 }
 
 
@@ -158,23 +158,23 @@ st7565s_pix8(
 {
 	if (st7565s_started != 0)
 	{
-		spi_progval8_p1(targetlcd, v);	/* РїРµСЂРІС‹Р№ Р±Р°Р№С‚ РІС‹РґР°С‘Рј Р±РµР· РѕР¶РёРґР°РЅРёСЏ РіРѕС‚РѕРІРЅРѕСЃС‚Рё */
+		spi_progval8_p1(targetlcd, v);	/* первый байт выдаём без ожидания готовности */
 		st7565s_started = 0;
 	}
 	else
 	{
-		spi_progval8_p2(targetlcd, v);	/* РїРѕСЃР»РµРґСѓСЋС‰РёРµ Р±Р°Р№С‚С‹ РїРµСЂРµРґР°СЋС‚СЃСЏ СЃ РїСЂРµРґРІР°СЂРёС‚РµР»СЊРЅС‹Рј РѕР¶РёРґР°РЅРёРµРј РіРѕС‚РѕРІРЅРѕСЃС‚Рё */
+		spi_progval8_p2(targetlcd, v);	/* последующие байты передаются с предварительным ожиданием готовности */
 	}
 }
 
 /*
- Р¤СѓРЅРєС†РёСЏ СѓСЃС‚Р°РЅРѕРІРєРё РєСѓСЂСЃРѕСЂР° РІ РїРѕР·РёС†РёСЋ x,y
- X - РєРѕРѕСЂРґРёРЅР°С‚Р° РїРѕ РіРѕСЂРёР·РѕРЅС‚Р°Р»Рё РІ РїСЂРµРґРµР»Р°С… 9..127 .0-132, 
- Y - РєРѕРѕСЂРґРёРЅР°С‚Р° РїРѕ РІРµСЂС‚РёРєР°Р»Рё (СЃС‚СЂРѕРєР°, Page) РІ РїСЂРµРґРµР»Р°С… 0-7
+ Функция установки курсора в позицию x,y
+ X - координата по горизонтали в пределах 9..127 .0-132, 
+ Y - координата по вертикали (строка, Page) в пределах 0-7
 */ 
 static void st7565s_set_addr_column(uint_fast8_t x, uint_fast8_t y)		// 
 {
-	//ST7565S_CTRL();	/* СЃРґРµР»Р°РЅРѕ СЃРѕСЃС‚РѕСЏРЅРёРµРј РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ RS: Low: select an index or status register */
+	//ST7565S_CTRL();	/* сделано состоянием по умолчанию RS: Low: select an index or status register */
 	/* Enable SPI */
 	spi_select(targetlcd, ST7565S_SPIMODE);
 
@@ -217,14 +217,14 @@ static uint_fast8_t
 NOINLINEAT
 bigfont_decode(uint_fast8_t c)
 {
-	// '#' - СѓР·РєРёР№ РїСЂРѕР±РµР»
+	// '#' - узкий пробел
 	if (c == ' ' || c == '#')
 		return 11;
 	if (c == '_')
-		return 10;		// РєСѓСЂСЃРѕСЂ - РїРѕР·РёС†РёСЏ СЂРµРґР°РєС‚РёСЂРІР°РЅРёСЏ С‡Р°СЃС‚РѕС‚С‹
+		return 10;		// курсор - позиция редактирвания частоты
 	if (c == '.')
-		return 12;		// С‚РѕС‡РєР°
-	return c - '0';		// РѕСЃС‚Р°Р»СЊРЅС‹Рµ - С†РёС„СЂС‹ 0..9
+		return 12;		// точка
+	return c - '0';		// остальные - цифры 0..9
 }
 
 static uint_fast8_t 
@@ -234,8 +234,8 @@ smallfont_decode(uint_fast8_t c)
 }
 
 
-// Р’С‹Р·РѕРІС‹ СЌС‚РѕР№ С„СѓРЅРєС†РёРё (РёР»Рё РіСЂСѓРїРїСѓ РІС‹Р·РѕРІРѕРІ) С‚СЂРµР±СѓРµС‚СЃСЏ "РѕР±СЂР°РјРёС‚СЊ" РїР°СЂРѕР№ РІС‹Р·РѕРІРѕРІ
-// st7565s_put_char_begin() Рё st7565s_put_char_end().
+// Вызовы этой функции (или группу вызовов) требуется "обрамить" парой вызовов
+// st7565s_put_char_begin() и st7565s_put_char_end().
 //
 static void st7565s_put_char_small(char cc)
 {
@@ -248,17 +248,17 @@ static void st7565s_put_char_small(char cc)
     	st7565s_pix8(p [i]);
 }
 
-// РјРЅРѕРіРѕРїРѕР»РѕСЃРЅС‹Р№ РІС‹РІРѕРґ СЃРёРјРІРѕР»РѕРІ - Р·Р° РЅРµСЃРєРѕР»СЊРєРѕ РіРѕСЂРёР·РѕРЅС‚Р°Р»СЊРЅС‹С… РїСЂРѕС…РѕРґРѕРІ.
-// РќСѓРјРµСЂР°С†РёСЏ РїРѕР»РѕСЃ - СЃРІРµСЂС…Сѓ РІРЅРёР·, РЅР°С‡РёРЅР°СЏ СЃ 0
+// многополосный вывод символов - за несколько горизонтальных проходов.
+// Нумерация полос - сверху вниз, начиная с 0
 
-// Р’С‹Р·РѕРІС‹ СЌС‚РѕР№ С„СѓРЅРєС†РёРё (РёР»Рё РіСЂСѓРїРїСѓ РІС‹Р·РѕРІРѕРІ) С‚СЂРµР±СѓРµС‚СЃСЏ "РѕР±СЂР°РјРёС‚СЊ" РїР°СЂРѕР№ РІС‹Р·РѕРІРѕРІ
-// st7565s_put_char_begin() Рё st7565s_put_char_end().
+// Вызовы этой функции (или группу вызовов) требуется "обрамить" парой вызовов
+// st7565s_put_char_begin() и st7565s_put_char_end().
 //
 static void st7565s_put_char_big(char cc, uint_fast8_t lowhalf)
 {
-	// '#' - СѓР·РєРёР№ РїСЂРѕР±РµР»
-	enum { NBV = (BIGCHARH / 8) }; // СЃРєРѕР»СЊРєРѕ Р±Р°Р№С‚РѕРІ РІ РѕРґРЅРѕР№ РІРµСЂС‚РёРєР°Р»Рё
-	uint_fast8_t i = 1 * ((cc == '.' || cc == '#') ? 6 : 0);	// РЅР°С‡Р°Р»СЊРЅР°СЏ РєРѕР»РѕРЅРєР° Р·РЅР°РєРѕРіРµРЅРµСЂР°С‚РѕСЂР°, РѕС‚РєСѓРґР° РЅР°С‡РёРЅР°С‚СЊ.
+	// '#' - узкий пробел
+	enum { NBV = (BIGCHARH / 8) }; // сколько байтов в одной вертикали
+	uint_fast8_t i = 1 * ((cc == '.' || cc == '#') ? 6 : 0);	// начальная колонка знакогенератора, откуда начинать.
     const uint_fast8_t c = bigfont_decode((unsigned char) cc);
 	enum { NCOLS = (sizeof uc1601s_bigfont [0][0] / sizeof uc1601s_bigfont [0][0][0]) };
 	const FLASHMEM uint8_t * const p = & uc1601s_bigfont [c][lowhalf][0];
@@ -267,11 +267,11 @@ static void st7565s_put_char_big(char cc, uint_fast8_t lowhalf)
     	st7565s_pix8(p [i]);
 }
 
-// РјРЅРѕРіРѕРїРѕР»РѕСЃРЅС‹Р№ РІС‹РІРѕРґ СЃРёРјРІРѕР»РѕРІ - Р·Р° РЅРµСЃРєРѕР»СЊРєРѕ РіРѕСЂРёР·РѕРЅС‚Р°Р»СЊРЅС‹С… РїСЂРѕС…РѕРґРѕРІ.
-// РќСѓРјРµСЂР°С†РёСЏ РїРѕР»РѕСЃ - СЃРІРµСЂС…Сѓ РІРЅРёР·, РЅР°С‡РёРЅР°СЏ СЃ 0
+// многополосный вывод символов - за несколько горизонтальных проходов.
+// Нумерация полос - сверху вниз, начиная с 0
 
-// Р’С‹Р·РѕРІС‹ СЌС‚РѕР№ С„СѓРЅРєС†РёРё (РёР»Рё РіСЂСѓРїРїСѓ РІС‹Р·РѕРІРѕРІ) С‚СЂРµР±СѓРµС‚СЃСЏ "РѕР±СЂР°РјРёС‚СЊ" РїР°СЂРѕР№ РІС‹Р·РѕРІРѕРІ
-// st7565s_put_char_begin() Рё st7565s_put_char_end().
+// Вызовы этой функции (или группу вызовов) требуется "обрамить" парой вызовов
+// st7565s_put_char_begin() и st7565s_put_char_end().
 //
 static void st7565s_put_char_half(char cc, uint_fast8_t lowhalf)
 {
@@ -285,7 +285,7 @@ static void st7565s_put_char_half(char cc, uint_fast8_t lowhalf)
 
 }
 
-/* РІС‹Р·С‹РІР°РµС‚СЃСЏ РјРµР¶РґСѓ РІС‹Р·РѕРІР°РјРё display_wrdatabar_begin() Рё display_wrdatabar_end() */
+/* вызывается между вызовами display_wrdatabar_begin() и display_wrdatabar_end() */
 static void 
 st7565s_bar_column(uint_fast8_t pattern)
 {
@@ -308,8 +308,8 @@ static void st7565s_set_contrast(uint_fast8_t v)
 
 #if 0
 
-// Р’С‹РєР»СЋС‡РµРЅРёРµ РґРёСЃРїР»РµСЏ (Рё РІРєР»СЋС‡РµРЅРёРµ РµРіРѕ).
-// TODO: РїРµСЂРµРЅРµСЃС‚Рё СЃСЋРґР° СѓРїСЂР°РІР»РµРЅРёРµ РїРёС‚Р°РЅРёРµРј LCD
+// Выключение дисплея (и включение его).
+// TODO: перенести сюда управление питанием LCD
 static void st7565s_disable(uint_fast8_t state)
 {
 	if (state == 0)
@@ -347,7 +347,7 @@ static void pte1206_initialize(void)
 	//st7565s_write_cmd(CMD_SET_DISP_NORMAL);//display reverse: normal   
 #if LCDMODE_PTE1206_TOPDOWN
 	st7565s_write_cmd(CMD_SET_ADC_REVERSE);		// left-right reverse (on 132 columns basis)
-	st7565s_write_cmd(CMD_SET_COM_REVERSE);		// top-down reverse (РїРѕ СѓР·РєРѕР№ СЃС‚РѕСЂРѕРЅРµ РјРµРЅСЏРµС‚СЃСЏ РїРѕСЂСЏРґРѕРє СЃС‚СЂРѕРє)
+	st7565s_write_cmd(CMD_SET_COM_REVERSE);		// top-down reverse (по узкой стороне меняется порядок строк)
 #else /* LCDMODE_ST7565S_TOPDOWN */
 	st7565s_write_cmd(CMD_SET_ADC_NORMAL);
 	st7565s_write_cmd(CMD_SET_COM_NORMAL);
@@ -383,7 +383,7 @@ static void st7565s_initialize(void)
 
 #if LCDMODE_ST7565S_TOPDOWN
 	st7565s_write_cmd(CMD_SET_ADC_REVERSE);		// left-right reverse (on 132 columns basis)
-	st7565s_write_cmd(CMD_SET_COM_REVERSE);		// top-down reverse (РїРѕ СѓР·РєРѕР№ СЃС‚РѕСЂРѕРЅРµ РјРµРЅСЏРµС‚СЃСЏ РїРѕСЂСЏРґРѕРє СЃС‚СЂРѕРє)
+	st7565s_write_cmd(CMD_SET_COM_REVERSE);		// top-down reverse (по узкой стороне меняется порядок строк)
 #else /* LCDMODE_ST7565S_TOPDOWN */
 	st7565s_write_cmd(CMD_SET_ADC_NORMAL);
 	st7565s_write_cmd(CMD_SET_COM_NORMAL);
@@ -395,8 +395,8 @@ static void st7565s_initialize(void)
 	st7565s_write_cmd(CMD_SET_POWER_CONTROL | 0x7);
 	local_delay_ms(50);
 
-	st7565s_write_cmd2(CMD_SET_BOOSTER_FIRST, CMD_SET_BOOSTER_6);	// РґР°РЅРЅР°СЏ РєРѕРјР°РЅРґР° РЅРµ С‚СЂРµР±СѓРµС‚СЃСЏ
-	//st7565s_write_cmd2(CMD_SET_BOOSTER_FIRST, CMD_SET_BOOSTER_234);	// РІРЅРµС€РЅРµРµ РїРёС‚Р°РЅРёРµ РґР°РЅРЅР°СЏ РєРѕРјР°РЅРґР° РЅРµ С‚СЂРµР±СѓРµС‚СЃСЏ
+	st7565s_write_cmd2(CMD_SET_BOOSTER_FIRST, CMD_SET_BOOSTER_6);	// данная команда не требуется
+	//st7565s_write_cmd2(CMD_SET_BOOSTER_FIRST, CMD_SET_BOOSTER_234);	// внешнее питание данная команда не требуется
 
 
 	st7565s_write_cmd(CMD_DISPLAY_ON);
@@ -406,7 +406,7 @@ static void st7565s_initialize(void)
 	debug_printf_P(PSTR("st7565s_initialize() done\n"));
 }
 
-/* РІС‹Р·С‹РІР°РµС‚СЃСЏ РїСЂРё СЂР°Р·СЂРµС€С‘РЅРЅС‹С… РїСЂРµСЂС‹РІР°РЅРёСЏС…. */
+/* вызывается при разрешённых прерываниях. */
 void display_initialize(void)
 {
 	#if LCDMODE_PTE1206
@@ -477,9 +477,9 @@ display_wrdatabig_end(void)
 	st7565s_put_char_end();
 }
 
-/* РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ РѕРґРЅРѕР№ РІРµСЂС‚РёРєР°Р»СЊРЅРѕР№ РїРѕР»РѕСЃС‹ РЅР° РіСЂР°С„РёС‡РµСЃРєРѕРј РёРЅРґРёРєР°С‚РѕСЂРµ */
-/* СЃС‚Р°СЂС€РёРµ Р±РёС‚С‹ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‚ РІРµСЂС…РЅРёРј РїРёРєСЃРµР»СЏРј РёР·РѕР±СЂР°Р¶РµРЅРёСЏ */
-/* РІС‹Р·С‹РІР°РµС‚СЃСЏ РјРµР¶РґСѓ РІС‹Р·РѕРІР°РјРё display_wrdatabar_begin() Рё display_wrdatabar_end() */
+/* отображение одной вертикальной полосы на графическом индикаторе */
+/* старшие биты соответствуют верхним пикселям изображения */
+/* вызывается между вызовами display_wrdatabar_begin() и display_wrdatabar_end() */
 void 
 display_barcolumn(uint_fast8_t pattern)
 {
@@ -499,8 +499,8 @@ display_put_char_half(uint_fast8_t c, uint_fast8_t lowhalf)
 }
 
 
-// Р’С‹Р·РѕРІ СЌС‚РѕР№ С„СѓРЅРєС†РёРё С‚РѕР»СЊРєРѕ РІРЅСѓС‚СЂРё display_wrdata_begin() Рё display_wrdata_end();
-// РСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РїСЂРё РІС‹РІРѕРґРµ РЅР° РіСЂР°С„РёС‡РµСЃРєРёР№ РЅРґРёРєР°С‚РѕСЂ, РµСЃР»Рё РўР Р•Р‘РЈР•РўРЎРЇ РїРµСЂРµРєР»СЋС‡Р°С‚СЊ РїРѕР»РѕСЃС‹ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ
+// Вызов этой функции только внутри display_wrdata_begin() и display_wrdata_end();
+// Используется при выводе на графический ндикатор, если ТРЕБУЕТСЯ переключать полосы отображения
 void
 display_put_char_small(uint_fast8_t c, uint_fast8_t lowhalf)
 {
@@ -508,7 +508,7 @@ display_put_char_small(uint_fast8_t c, uint_fast8_t lowhalf)
 	st7565s_put_char_small(c);
 }
 
-// СЃР°РјС‹Р№ РјР°Р»РµРЅСЊРєРёР№ С€СЂРёС„С‚
+// самый маленький шрифт
 // stub function
 void display_wrdata2_begin(void)
 {
@@ -535,7 +535,7 @@ display_gotoxy(uint_fast8_t x, uint_fast8_t y)
 #endif /* LCDMODE_ST7565S_TOPDOWN */
 }
 
-// РљРѕРѕСЂРґРёРЅР°С‚С‹ РІ РїРёРєСЃРµР»СЏС…
+// Координаты в пикселях
 void display_plotfrom(uint_fast16_t x, uint_fast16_t y)
 {
 #if LCDMODE_ST7565S_TOPDOWN || LCDMODE_PTE1206_TOPDOWN
@@ -547,7 +547,7 @@ void display_plotfrom(uint_fast16_t x, uint_fast16_t y)
 
 
 void display_plotstart(
-	uint_fast16_t height	// Р’С‹СЃРѕС‚Р° РѕРєРЅР° РІ РїРёРєСЃРµР»СЏС…
+	uint_fast16_t height	// Высота окна в пикселях
 	)
 {
 
@@ -555,7 +555,7 @@ void display_plotstart(
 
 void display_plot(
 	const PACKEDCOLOR_T * buffer, 
-	uint_fast16_t dx,	// Р Р°Р·РјРµСЂС‹ РѕРєРЅР° РІ РїРёРєСЃРµР»СЏС…
+	uint_fast16_t dx,	// Размеры окна в пикселях
 	uint_fast16_t dy
 	)
 {
@@ -567,8 +567,8 @@ void display_plotstop(void)
 
 }
 
-/* Р°РїРїР°СЂР°С‚РЅС‹Р№ СЃР±СЂРѕСЃ РґРёСЃРїР»РµСЏ - РїРµСЂРµРґ РёРЅРёС†РёР°Р»РёР·Р°С†РёР№ */
-/* РІС‹Р·С‹РІР°РµС‚СЃСЏ РїСЂРё СЂР°Р·СЂРµС€С‘РЅРЅС‹С… РїСЂРµСЂС‹РІР°РЅРёСЏС…. */
+/* аппаратный сброс дисплея - перед инициализаций */
+/* вызывается при разрешённых прерываниях. */
 void
 display_reset(void)
 {
@@ -576,7 +576,7 @@ display_reset(void)
 }
 
 
-/* Р Р°Р·СЂСЏР¶Р°РµРј РєРѕРЅРґРµРЅСЃР°С‚РѕСЂС‹ РїРёС‚Р°РЅРёСЏ */
+/* Разряжаем конденсаторы питания */
 void display_discharge(void)
 {
 	st7565s_write_cmd(CMD_DISPLAY_OFF);

@@ -1,7 +1,7 @@
 /* $Id$ */
 //
-// РџСЂРѕРµРєС‚ HF Dream Receiver (РљР’ РїСЂРёС‘РјРЅРёРє РјРµС‡С‚С‹)
-// Р°РІС‚РѕСЂ Р“РµРЅР° Р—Р°РІРёРґРѕРІСЃРєРёР№ mgs2001@mail.ru
+// Проект HF Dream Receiver (КВ приёмник мечты)
+// автор Гена Завидовский mgs2001@mail.ru
 // UA1ARN
 //
 
@@ -20,7 +20,7 @@
 
 #include "spifuncs.h"
 
-#include "tlv320aic23.h"	// РєРѕРЅСЃС‚Р°РЅС‚С‹ СѓРїСЂР°РІР»РµРЅРёСЏ СѓСЃРёР»РµРЅРёРµРј РєРѕРґРµРєР°
+#include "tlv320aic23.h"	// константы управления усилением кодека
 #include "nau8822.h"
 
 #if WITHUSEAUDIOREC
@@ -34,7 +34,7 @@
 
 
 #if 0
-// РџРµС‡Р°С‚СЊ РїР°СЂР°РјРµС‚СЂРѕРІ РЅР° СЌРєСЂР°РЅРµ
+// Печать параметров на экране
 static void showpos(uint_fast8_t pos)
 {
 	//static unsigned  count;
@@ -317,11 +317,11 @@ ascii_decode(uint_fast8_t c)
 	return c - ' ';
 }
 
-// Р’С‹Р±РѕСЂРєР° Р·РЅР°С‡РµРЅРёР№ РёР· Р±СѓС„РµСЂР° РёР·РѕР±СЂР°Р¶РµРЅРёСЏ 
-// Р·РЅР°С‡РµРЅРёСЏ:
+// Выборка значений из буфера изображения 
+// значения:
 // 3 - black
 // 2 - while
-// 0 - nothing (РЅРµ РјРѕРґРёС„РёС†РёСЂСѓРµС‚СЃСЏ) - РµСЃР»Рё РІРЅРµ РѕРєРЅР°, СЂР°Р·СЂРµС€С‘РЅРЅРѕРіРѕ Рє РѕР±РЅРѕРІР»РµРЅРёСЋ.
+// 0 - nothing (не модифицируется) - если вне окна, разрешённого к обновлению.
 // col: 0..199. row: 0..95
 static uint_fast8_t getbufferbit(uint_fast8_t col, uint_fast8_t row, uint_fast8_t stage)
 {
@@ -356,12 +356,12 @@ static uint_fast8_t getbufferbit(uint_fast8_t col, uint_fast8_t row, uint_fast8_
 #endif
 }
 
-// С„РѕСЂРјРёСЂРѕРІР°РЅРёРµ Р±Р°Р№С‚РѕРІ РґР»СЏ РїРµСЂРµРґР°С‡Рё РІ РґРёСЃРїР»РµР№ 
+// формирование байтов для передачи в дисплей 
 	// col code 198, 196..0
 static uint_fast8_t getrow4byteseven(uint_fast8_t col, uint_fast8_t row, uint_fast8_t stage)
 {
 	uint_fast8_t r = 0;
-	// row/col - РєРѕРѕСЂРґРёРЅР°С‚С‹ РїРёРєСЃРµР»СЏ
+	// row/col - координаты пикселя
 	r = (r << 2) | getbufferbit(col, row, stage); col -= 2;
 	r = (r << 2) | getbufferbit(col, row, stage); col -= 2;
 	r = (r << 2) | getbufferbit(col, row, stage); col -= 2;
@@ -369,12 +369,12 @@ static uint_fast8_t getrow4byteseven(uint_fast8_t col, uint_fast8_t row, uint_fa
 	return r;
 }
 
-// С„РѕСЂРјРёСЂРѕРІР°РЅРёРµ Р±Р°Р№С‚РѕРІ РґР»СЏ РїРµСЂРµРґР°С‡Рё РІ РґРёСЃРїР»РµР№ 
+// формирование байтов для передачи в дисплей 
 // col code 1, 3..199
 static uint_fast8_t getrow4bytesodd(uint_fast8_t col, uint_fast8_t row, uint_fast8_t stage)
 {
 	uint_fast8_t r = 0;
-	// row/col - РєРѕРѕСЂРґРёРЅР°С‚С‹ РїРёРєСЃРµР»СЏ
+	// row/col - координаты пикселя
 	r = (r << 2) | getbufferbit(col, row, stage); col += 2;
 	r = (r << 2) | getbufferbit(col, row, stage); col += 2;
 	r = (r << 2) | getbufferbit(col, row, stage); col += 2;
@@ -388,7 +388,7 @@ static void eink_BWdummyline(uint_fast8_t bv)
 	spi_select(target, EINC_SPIMODE);
 
 	spi_progval8_p1(target, 0x70);
-	spi_progval8_p2(target, 0x0a);		// 75 Р±Р°Р№С‚ РґР°РЅРЅС‹С…
+	spi_progval8_p2(target, 0x0a);		// 75 байт данных
 	spi_complete(target);
 	spi_unselect(target);
 
@@ -411,7 +411,7 @@ static void eink_dummyline(void)
 	spi_select(target, EINC_SPIMODE);
 
 	spi_progval8_p1(target, 0x70);
-	spi_progval8_p2(target, 0x0a);		// 75 Р±Р°Р№С‚ РґР°РЅРЅС‹С…
+	spi_progval8_p2(target, 0x0a);		// 75 байт данных
 	spi_complete(target);
 	spi_unselect(target);
 
@@ -464,7 +464,7 @@ static void eink_displayimage(uint_fast8_t stage)
 		spi_select(target, EINC_SPIMODE);
 
 		spi_progval8_p1(target, 0x70);
-		spi_progval8_p2(target, 0x0a);		// 75 Р±Р°Р№С‚ РґР°РЅРЅС‹С…
+		spi_progval8_p2(target, 0x0a);		// 75 байт данных
 		spi_complete(target);
 		spi_unselect(target);
 
@@ -3476,7 +3476,7 @@ void fb_initialize(struct fb * p)
 #endif
 }
 
-static RAMNOINIT_D1 char FATFSALIGN_BEGIN rbuff [FF_MAX_SS * 4] FATFSALIGN_END;		// Р±СѓС„РµСЂ Р·Р°РїРёСЃРё - РїСЂРё СЃРѕРІРїР°РґРµРЅРёРё СЃ _MAX_SS РЅРµР»СЊР·СЏ СЂР°СЃРїРѕР»Р°РіР°С‚СЊ РІ Cortex-M4 CCM
+static RAMNOINIT_D1 char FATFSALIGN_BEGIN rbuff [FF_MAX_SS * 4] FATFSALIGN_END;		// буфер записи - при совпадении с _MAX_SS нельзя располагать в Cortex-M4 CCM
 
 
 static void showprogress(
@@ -3488,14 +3488,14 @@ static void showprogress(
 
 static void printtextfile(const char * filename)
 {
-	unsigned long filepos = 0;	// РєРѕР»РёС‡РµСЃС‚РІРѕ РІС‹РґР°РЅРЅС‹С… Р±Р°Р№С‚РѕРІ
-	unsigned long fulllength = 0;	// СЂР°Р·РјРµСЂ С„Р°Р№Р»Р°
-	UINT br = 0;		//  РєРѕР»РёС‡РµСЃС‚РІРѕ СЃС‡РёС‚Р°РЅРЅС‹С… Р±Р°Р№С‚РѕРІ
-	UINT i = 0;			// РЅРѕРјРµСЂ РІС‹РІРѕРґРёРјРѕРіРѕ Р±Р°Р№С‚Р°
+	unsigned long filepos = 0;	// количество выданных байтов
+	unsigned long fulllength = 0;	// размер файла
+	UINT br = 0;		//  количество считанных байтов
+	UINT i = 0;			// номер выводимого байта
 	
 	FRESULT rc;				/* Result code */
-	static RAMNOINIT_D1 FIL Fil;			/* РћРїРёСЃР°С‚РµР»СЊ РѕС‚РєСЂС‹С‚РѕРіРѕ С„Р°Р№Р»Р° - РЅРµР»СЊР·СЏ СЂР°СЃРїРѕР»Р°РіР°С‚СЊ РІ Cortex-M4 CCM */
-	// С‡С‚РµРЅРёРµ С„Р°Р№Р»Р°
+	static RAMNOINIT_D1 FIL Fil;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
+	// чтение файла
 	rc = f_open(& Fil, filename, FA_READ);
 	if (rc) 
 	{
@@ -3504,7 +3504,7 @@ static void printtextfile(const char * filename)
 		return;
 	}
 	
-	// РїРµС‡Р°С‚СЊ С‚РµСЃС‚РѕРІРѕРіРѕ С„Р°Р№Р»Р°
+	// печать тестового файла
 	debug_printf_P(PSTR("Type the file content: '%s'\n"), filename);
 	for (;;)
 	{
@@ -3518,14 +3518,14 @@ static void printtextfile(const char * filename)
 
 		if (i >= br)
 		{
-			// РµСЃР»Рё Р±СѓС„РµСЂ РЅРµ Р·Р°РїРѕР»РЅРµРЅ - С‡РёС‚Р°РµРј
+			// если буфер не заполнен - читаем
 			rc = f_read(& Fil, rbuff, sizeof rbuff, &br);	/* Read a chunk of file */
 			if (rc || !br) 
 				break;			/* Error or end of file */
-			i = 0;		// РЅР°С‡Р°Р»СЊРЅРѕРµ РїРѕР»РѕР¶РµРЅРёРµ СѓРєР°Р·Р°С‚РµР»СЏ РІ Р±СѓС„РµСЂРµ РґР»СЏ РІС‹РІРѕРґР° РґР°РЅРЅС‹С…
+			i = 0;		// начальное положение указателя в буфере для вывода данных
 			showprogress(filepos, fulllength);
 		}
-		else if (0)	// "РїСЂРѕРіР»Р°С‚С‹РІР°РµРј" СЃРёРјРІРѕР»С‹ Р±РµР· РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ
+		else if (0)	// "проглатываем" символы без отображения
 		{
 			++ i;
 			showprogress(++ filepos, fulllength);
@@ -3571,19 +3571,19 @@ static uint_fast8_t rxqpeek(char * ch)
 	return 1;
 }
 
-// СЃРѕС…СЂР°РЅРµРЅРёРµ РїРѕС‚РѕРєР° РґР°РЅРЅС‹С… СЃ CNC РЅР° С„Р»СЌС€РєРµ
+// сохранение потока данных с CNC на флэшке
 static void dosaveserialport(const char * fname)
 {
-	static RAMNOINIT_D1 FIL Fil;			/* РћРїРёСЃР°С‚РµР»СЊ РѕС‚РєСЂС‹С‚РѕРіРѕ С„Р°Р№Р»Р° - РЅРµР»СЊР·СЏ СЂР°СЃРїРѕР»Р°РіР°С‚СЊ РІ Cortex-M4 CCM */
+	static RAMNOINIT_D1 FIL Fil;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
 	unsigned i;
 	FRESULT rc;				/* Result code */
 
 	rc = f_open(& Fil, fname, FA_WRITE | FA_CREATE_ALWAYS);
 	if (rc) return;	//die(rc);
 
-	rxqclear();	// РѕС‡РёСЃС‚РёС‚СЊ Р±СѓС„РµСЂ РїСЂРёРЅСЏС‚С‹С… СЃРёРјРІРѕР»РѕРІ
+	rxqclear();	// очистить буфер принятых символов
 
-	unsigned long filepos;	// РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРѕС…СЂР°РЅС‘РЅРЅС‹С… Р±Р°Р№С‚РѕРІ
+	unsigned long filepos;	// количество сохранённых байтов
 	filepos = 0;
 	i = 0;
 	showprogress(filepos, 0);
@@ -3602,7 +3602,7 @@ static void dosaveserialport(const char * fname)
 		}
 		if (rxqpeek(& c) != 0)
 		{
-			// РїРѕР»СѓС‡РµРЅ РѕС‡РµСЂРµРґРЅРѕР№ СЃРёРјРІРѕР» РёР· РїРѕСЂС‚Р° - СЃРѕС…СЂР°РЅСЏРµРј РІ Р±СѓС„РµСЂ
+			// получен очередной символ из порта - сохраняем в буфер
 			rbuff [i ++] = c;
 			showprogress(++ filepos, 0);
 			if (i >= (sizeof rbuff / sizeof rbuff [0]))
@@ -3666,8 +3666,8 @@ static void fb_print(const struct fb * p, int x, int y, int selected)
 	{
 		display_setcolors(COLOR_GREEN, selected ? COLOR_BLUE: COLOR_BLACK);
 		local_snprintf_P(
-			buff,						// РєСѓРґР° С„РѕСЂРјР°С‚РёСЂРѕРІР°С‚СЊ СЃС‚СЂРѕРєСѓ
-			sizeof buff / sizeof buff [0],	// СЂР°Р·РјРµСЂ Р±СѓС„РµСЂР°
+			buff,						// куда форматировать строку
+			sizeof buff / sizeof buff [0],	// размер буфера
 			"%c%8lu  %s", selected ? '>' : ' ',
 			p->fno.fsize, fn);
 		debug_printf_P(PSTR("%8lu  %s\n"), p->fno.fsize, p->fno.fname);
@@ -3677,12 +3677,12 @@ static void fb_print(const struct fb * p, int x, int y, int selected)
 	//do
 	//{
 	//	display_gotoxy(x, y + lowhalf);
-	//	display_string2(buff, lowhalf);		// РїРµС‡Р°С‚СЊ Р±СѓС„РµСЂР° - РјР°Р»РµРЅСЊРєРёРј С€СЂРёС„С‚РѕРј. 0=РІСЃРµРіРґР° РґР»СЏ РґР°РЅРЅРѕРіРѕ РґРёСЃРїР»РµСЏ
+	//	display_string2(buff, lowhalf);		// печать буфера - маленьким шрифтом. 0=всегда для данного дисплея
 	//} while (lowhalf --);
 }
 #endif
 
-// РџРµС‡Р°С‚СЊ РёРјРµРЅ С„Р°Р№Р»РѕРІ РєРѕСЂРЅРµРІРѕРіРѕ РєР°С‚Р°Р»РѕРіР°.
+// Печать имен файлов корневого каталога.
 void displfiles_buff(const char* path)
 {
     FRESULT res;
@@ -3703,7 +3703,7 @@ void displfiles_buff(const char* path)
 			char *fn;   /* This function is assuming non-Unicode cfg. */
 			struct fb fbt;
 			FILINFO * pfno = & fbt.fno;
- 			fb_initialize(& fbt);		// РїРѕРґРіРѕС‚РѕРІРєР° Рє РёСЃРїРѕР»СЊР·РѕРІР°РЅРёСЋ СЌР»РµРјРµРЅС‚Р° Р±СѓС„РµСЂР°
+ 			fb_initialize(& fbt);		// подготовка к использованию элемента буфера
             res = f_readdir(& dir, pfno);                   /* Read a directory item */
             if (res != FR_OK || pfno->fname[0] == 0) break;  /* Break on error or end of dir */
             if (pfno->fname[0] == '.') continue;             /* Ignore dot entry */
@@ -3811,7 +3811,7 @@ static void sdcard_test(void)
 //test_disk();
 //print_opened_files();
 // SD CARD initializations done.
-// С‚РµСЃС‚ Р·Р°РїРёСЃРё/С‡С‚РµРЅРёСЏ РЅР° SD CARD
+// тест записи/чтения на SD CARD
 
 	for (;;)
 	{
@@ -3832,37 +3832,37 @@ static void sdcard_test(void)
 				return;
 
 			case '1':
-				/* РїРѕРґРіРѕС‚РѕРІРєР° С‚РµСЃС‚РѕРІС‹С… РґР°РЅРЅС‹С… */
+				/* подготовка тестовых данных */
 				debug_printf_P(PSTR("Fill write buffer by 0xff\n"));
 				memset(sectbuffw, 0xff, MMC_SECTORSIZE);
 				break;
 
 			case '2':
-				/* РїРѕРґРіРѕС‚РѕРІРєР° С‚РµСЃС‚РѕРІС‹С… РґР°РЅРЅС‹С… */
+				/* подготовка тестовых данных */
 				debug_printf_P(PSTR("Fill write buffer by 0x00\n"));
 				memset(sectbuffw, 0x00, MMC_SECTORSIZE);
 				break;
 
 			case '3':
-				/* РїРѕРґРіРѕС‚РѕРІРєР° С‚РµСЃС‚РѕРІС‹С… РґР°РЅРЅС‹С… */
+				/* подготовка тестовых данных */
 				debug_printf_P(PSTR("Fill write buffer by 0x55\n"));
 				memset(sectbuffw, 0x55, MMC_SECTORSIZE);
 				break;
 
 			case '4':
-				/* РїРѕРґРіРѕС‚РѕРІРєР° С‚РµСЃС‚РѕРІС‹С… РґР°РЅРЅС‹С… */
+				/* подготовка тестовых данных */
 				debug_printf_P(PSTR("Fill write buffer by 0xaa\n"));
 				memset(sectbuffw, 0xaa, MMC_SECTORSIZE);
 				break;
 
 			case 'c':
-				/* РєРѕРїРёСЂРѕРІР°РЅРёРµ РґР°РЅРЅС‹С… */
+				/* копирование данных */
 				debug_printf_P(PSTR("Copy read buffer to write buffer\n"));
 				memcpy(sectbuffw, sectbuffr, MMC_SECTORSIZE);
 				break;
 
 			case '5':
-				/* РїРѕРґРіРѕС‚РѕРІРєР° С‚РµСЃС‚РѕРІС‹С… РґР°РЅРЅС‹С… */
+				/* подготовка тестовых данных */
 				debug_printf_P(PSTR("Fill write buffer by text data\n"));
 				for (i = 0; i < 16; ++ i)
 				{
@@ -3880,7 +3880,7 @@ static void sdcard_test(void)
 				break;
 
 			case 'w':
-				/* Р·Р°РїРёСЃСЊ С‚РµСЃС‚РѕРІС‹С… РґР°РЅРЅС‹С… */
+				/* запись тестовых данных */
 				debug_printf_P(PSTR("Write SD card, sector = %lu\n"), lba_sector);
 				if (mmcWriteSector(lba_sector, sectbuffw) != MMC_SUCCESS2)
 					debug_printf_P(PSTR("Write error\n"));
@@ -3937,7 +3937,7 @@ static void sdcard_test(void)
 
 					for (pos = 0; pos < v; )
 					{
-						// РїСЂРѕРІРµСЂРєР° РїСЂРµСЂС‹РІР°РЅРёСЏ СЂР°Р±РѕС‚С‹ СЃ РєР»Р°РІРёР°С‚СѓСЂС‹
+						// проверка прерывания работы с клавиатуры
 						char c;
 						if (dbg_getchar(& c))
 						{
@@ -3945,7 +3945,7 @@ static void sdcard_test(void)
 							if (c == 0x1b)
 								break;
 						}
-						// СЂР°Р±РѕС‚Р°
+						// работа
 						const unsigned long sector = pos / MMC_SECTORSIZE;
 						if (mmcReadSector(sector, sectbuffr) != MMC_SUCCESS2)
 						{
@@ -3977,7 +3977,7 @@ static void sdcard_filesystest(void)
 {
 	ALIGNX_BEGIN BYTE work [FF_MAX_SS] ALIGNX_END;
 	FRESULT rc;  
-	static RAMNOINIT_D1 FATFS Fatfs;		/* File system object  - РЅРµР»СЊР·СЏ СЂР°СЃРїРѕР»Р°РіР°С‚СЊ РІ Cortex-M4 CCM */
+	static RAMNOINIT_D1 FATFS Fatfs;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
 	static const char testfile [] = "readme.txt";
 	char testlog [FF_MAX_LFN + 1];
 	//int nlog = 0;
@@ -4022,7 +4022,7 @@ static void sdcard_filesystest(void)
 				debug_printf_P(PSTR("FAT FS test - display root directory.\n"));
 				f_mount(NULL, "", 0);		/* Unregister volume work area (never fails) */
 				f_mount(& Fatfs, "", 0);		/* Register volume work area (never fails) */
-				displfiles_buff("");	// Р—Р°РїРѕР»РЅРµРЅРёРµ Р±СѓС„РµСЂР° РёРјС‘РЅ С„Р°Р№Р»РѕРІ РІ РїР°РјСЏС‚Рё
+				displfiles_buff("");	// Заполнение буфера имён файлов в памяти
 				break;
 
 			case 't':
@@ -4074,8 +4074,8 @@ static void sdcard_filesystest(void)
 
 #endif /* WITHDEBUG && WITHUSEAUDIOREC */
 
-//HARDWARE_SPI_HANGON()	- РїРѕРґРґРµСЂР¶РєР° SPI РїСЂРѕРіСЂР°РјРјР°С‚РѕСЂР° - РїРѕРґРєР»СЋС‡РµРЅРёРµ Рє РїСЂРѕРіСЂР°РјРјРёСЂСѓРµРјРѕРјСѓ СѓСЃС‚СЂРѕР№СЃС‚РІСѓ
-//HARDWARE_SPI_HANGOFF() - РїРѕРґРґРµСЂР¶РєР° SPI РїСЂРѕРіСЂР°РјРјР°С‚РѕСЂР° - РѕС‚РєР»СЋС‡РµРЅРёРµ РѕС‚ РїСЂРѕРіСЂР°РјРјРёСЂСѓРµРјРѕРіРѕ СѓСЃС‚СЂРѕР№СЃС‚РІР°
+//HARDWARE_SPI_HANGON()	- поддержка SPI программатора - подключение к программируемому устройству
+//HARDWARE_SPI_HANGOFF() - поддержка SPI программатора - отключение от программируемого устройства
 
 #if defined(targetdataflash)
 
@@ -4150,8 +4150,8 @@ static int testchipDATAFLASH(void)
 	unsigned char mf_dlen;	// Extended Device Information String Length
 
 
-	/* РћР¶РёРґР°РЅРёРµ Р±РёС‚Р° ~RDY РІ СЃР»РѕРІРµ СЃРѕСЃС‚РѕСЏРЅРёСЏ. Р”Р»СЏ FRAM РЅРµ РёРјРµРµС‚ СЃРјС‹СЃР»Р°.
-	Р’СЃС‚Р°РІР»РµРЅРѕ РґР»СЏ РІРѕР·РјРѕР¶РЅРѕСЃС‚Рё РёСЃРїРѕР»СЊР·РѕРІР°РЅРёСЏ DATAFLASH */
+	/* Ожидание бита ~RDY в слове состояния. Для FRAM не имеет смысла.
+	Вставлено для возможности использования DATAFLASH */
 
 	if (timed_dataflash_read_status(target))
 		return 1;
@@ -4267,8 +4267,8 @@ static int writesinglepageDATAFLASH(unsigned long flashoffset, const unsigned ch
 
 	spi_unselect(target);	/* done sending data to target chip */
 
-	/* РћР¶РёРґР°РЅРёРµ Р±РёС‚Р° ~RDY РІ СЃР»РѕРІРµ СЃРѕСЃС‚РѕСЏРЅРёСЏ. Р”Р»СЏ FRAM РЅРµ РёРјРµРµС‚ СЃРјС‹СЃР»Р°.
-	Р’СЃС‚Р°РІР»РµРЅРѕ РґР»СЏ РІРѕР·РјРѕР¶РЅРѕСЃС‚Рё РёСЃРїРѕР»СЊР·РѕРІР°РЅРёСЏ DATAFLASH */
+	/* Ожидание бита ~RDY в слове состояния. Для FRAM не имеет смысла.
+	Вставлено для возможности использования DATAFLASH */
 
 	if (timed_dataflash_read_status(target))
 		return 1;
@@ -4414,13 +4414,13 @@ static int parsehex(const TCHAR * filename, int (* usedata)(unsigned long addr, 
 	unsigned long ckscalc;
 	unsigned char body [256];
 
-	//unsigned long filepos = 0;	// РєРѕР»РёС‡РµСЃС‚РІРѕ РІС‹РґР°РЅРЅС‹С… Р±Р°Р№С‚РѕРІ
-	UINT br = 0;		//  РєРѕР»РёС‡РµСЃС‚РІРѕ СЃС‡РёС‚Р°РЅРЅС‹С… Р±Р°Р№С‚РѕРІ
-	UINT i = 0;			// РЅРѕРјРµСЂ РІС‹РІРѕРґРёРјРѕРіРѕ Р±Р°Р№С‚Р°
+	//unsigned long filepos = 0;	// количество выданных байтов
+	UINT br = 0;		//  количество считанных байтов
+	UINT i = 0;			// номер выводимого байта
 	
 	FRESULT rc;				/* Result code */
-	static RAMNOINIT_D1 FIL Fil;			/* РћРїРёСЃР°С‚РµР»СЊ РѕС‚РєСЂС‹С‚РѕРіРѕ С„Р°Р№Р»Р° - РЅРµР»СЊР·СЏ СЂР°СЃРїРѕР»Р°РіР°С‚СЊ РІ Cortex-M4 CCM */
-	// С‡С‚РµРЅРёРµ С„Р°Р№Р»Р°
+	static RAMNOINIT_D1 FIL Fil;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
+	// чтение файла
 	rc = f_open(& Fil, filename, FA_READ);
 	if (rc) 
 	{
@@ -4432,11 +4432,11 @@ static int parsehex(const TCHAR * filename, int (* usedata)(unsigned long addr, 
 	{
 		if (i >= br)
 		{
-			// РµСЃР»Рё Р±СѓС„РµСЂ РЅРµ Р·Р°РїРѕР»РЅРµРЅ - С‡РёС‚Р°РµРј
+			// если буфер не заполнен - читаем
 			rc = f_read(& Fil, rbuff, sizeof rbuff, &br);	/* Read a chunk of file */
 			if (rc || !br) 
 				break;			/* Error or end of file */
-			i = 0;		// РЅР°С‡Р°Р»СЊРЅРѕРµ РїРѕР»РѕР¶РµРЅРёРµ СѓРєР°Р·Р°С‚РµР»СЏ РІ Р±СѓС„РµСЂРµ РґР»СЏ РІС‹РІРѕРґР° РґР°РЅРЅС‹С…
+			i = 0;		// начальное положение указателя в буфере для вывода данных
 			//showprogress(filepos, fulllength);
 		}
 		else 
@@ -4642,7 +4642,7 @@ sdcard_proghexfile(const char * hexfile)
 		} while (0);
 		debug_printf_P(PSTR("SPI FLASH programmer done\n"));
 	}
-	spi_hangoff();	// РїРѕСЃР»Рµ СЌС‚РѕРіРѕ РЅРёС‡РµРіРѕ РЅРµ РґРµР»Р°РµРј - С‚Р°Рє РєР°Рє РјРѕР¶РµС‚ РѕРїСЏС‚СЊ РІРєР»СЋС‡РёС‚СЊСЃСЏ SPI - РґР»СЏ СЂР°Р±РѕС‚С‹ СЃ SD РєР°СЂС‚РѕР№
+	spi_hangoff();	// после этого ничего не делаем - так как может опять включиться SPI - для работы с SD картой
 	for (;;)
 		;
 }
@@ -4650,7 +4650,7 @@ sdcard_proghexfile(const char * hexfile)
 static void
 sdcard_progspi(void)
 {
-	static RAMNOINIT_D1 FATFS Fatfs;		/* File system object  - РЅРµР»СЊР·СЏ СЂР°СЃРїРѕР»Р°РіР°С‚СЊ РІ Cortex-M4 CCM */
+	static RAMNOINIT_D1 FATFS Fatfs;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
 	f_mount(& Fatfs, "", 0);		/* Register volume work area (never fails) */
 	sdcard_proghexfile("tc1_r7s721_rom.hex");
 	f_mount(NULL, "", 0);		/* Unregister volume work area (never fails) */
@@ -4662,7 +4662,7 @@ sdcard_progspi(void)
 
 #if 0
 
-// РїРѕРєР°Р· С†РёС„СЂРѕРІС‹С… Р·РЅР°С‡РµРЅРёР№ РїР°СЂР°РјРµС‚СЂРѕРІ.
+// показ цифровых значений параметров.
 static void 
 display_debug_digit(
 	uint_fast32_t value,
@@ -4677,7 +4677,7 @@ display_debug_digit(
 	display_setcolors(MNUVALCOLOR, BGCOLOR);
 	do
 	{
-		display_gotoxy(col, row + lowhalf);		// РєСѓСЂСЃРѕСЂ РІ РЅР°С‡Р°Р»Рѕ РїРµСЂРІРѕР№ СЃС‚СЂРѕРєРё
+		display_gotoxy(col, row + lowhalf);		// курсор в начало первой строки
 		display_menu_value(value, width, comma, rj, lowhalf);
 	} while (lowhalf --);
 }
@@ -4714,7 +4714,7 @@ enum { LEDBIT = 1U << 1 }; // P7_1
 enum { SW1BIT = 1U << 9 }; // P1_9
 
 #if 0 && WITHDEBUG && WITHUART1HW
-// "С‚СЂР°СЃСЃРёСЂРѕРІРєР°" СЃ РїРѕРјРѕС‰СЊСЋ РІС‹РґР°С‡Рё РЅР° SPI РїРѕСЂС‚ РёРЅС„РѕСЂРјР°С†РёРё Рѕ СЃСЂР°Р±РѕС‚Р°РІС€РёС… РїСЂРµСЂС‹РІР°РЅРёСЏС…
+// "трассировка" с помощью выдачи на SPI порт информации о сработавших прерываниях
 static void test_spi_trace(uint_fast8_t v)
 {
 	const spitarget_t target = targetctl1;
@@ -4769,14 +4769,14 @@ static int cat3_puts_impl_P(const FLASHMEM char * s)
 	return 0;
 }
 
-/* РІС‹Р·С‹РІР°РµС‚СЃСЏ РёР· РѕР±СЂР°Р±РѕС‚С‡РёРєР° РїСЂРµСЂС‹РІР°РЅРёР№ */
-// РїСЂРѕРёР·РѕС€Р»Р° РїРѕС‚РµСЂСЏ СЃРёРјРІРѕР»Р° (СЃРёРјРІРѕР»РѕРІ) РїСЂРё РїРѕР»СѓС‡РµРЅРёРё РґР°РЅРЅС‹С… СЃ CAT РєРѕРјРїРѕСЂС‚Р°
+/* вызывается из обработчика прерываний */
+// произошла потеря символа (символов) при получении данных с CAT компорта
 void cat3_rxoverflow(void)
 {
 	++ rxerrcount;
 }
 
-/* РІС‹Р·С‹РІР°РµС‚СЃСЏ РёР· РѕР±СЂР°Р±РѕС‚С‡РёРєР° РїСЂРµСЂС‹РІР°РЅРёР№ */
+/* вызывается из обработчика прерываний */
 void cat3_disconnect(void)
 {
 }
@@ -4853,7 +4853,7 @@ static void serial_irq_loopback_test(void)
 
 #endif /* WITHDEBUG && WITHUART1HW */
 
-// РџРµСЂРёРѕРґРёС‡РµСЃРєРё РІС‹Р·С‹РІР°РµС‚СЃСЏ РІ РіР»Р°РІРЅРѕРј С†РёРєР»Рµ
+// Периодически вызывается в главном цикле
 void looptests(void)
 {
 #if WITHDTMFPROCESSING
@@ -4861,37 +4861,37 @@ void looptests(void)
 #endif
 #if 0 && WITHINTEGRATEDDSP
 	{
-		dsp_speed_diagnostics();	// РїРµС‡Р°С‚СЊ РІ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅС‹Р№ РїРѕСЂС‚ СЂРµР·СѓР»СЊС‚Р°С‚РѕРІ РґРёР°РіРЅРѕСЃС‚РёРєРё
+		dsp_speed_diagnostics();	// печать в последовательный порт результатов диагностики
 		//buffers_diagnostics();
 	}
 #endif
 #if 0 && WITHCURRLEVEL
 	{
-		// РўРµСЃС‚РёСЂРѕРІР°РЅРёРµ РґР°С‚С‡РёРєР° С‚РѕРєР°
+		// Тестирование датчика тока
 		(void) hamradio_get_pacurrent_value(0);
 	}
 #endif
 #if 0 && WITHVOLTLEVEL
 	{
-		// РўРµСЃС‚РёСЂРѕРІР°РЅРёРµ РґР°С‚С‡РёРєР° РЅР°РїСЂСЏР¶РЅРёСЏ
+		// Тестирование датчика напряжния
 		(void) hamradio_get_volt_value();
 	}
 #endif
 #if 0 && WITHTEMPSENSOR
 	{
-		// РўРµСЃС‚РёСЂРѕРІР°РЅРёРµ РґР°С‚С‡РёРєР° С‚РµРјРїРµСЂР°С‚СѓСЂС‹
-		// TODO: РїРѕРєР° РЅРµ РїРѕРєР°Р·С‹РІР°РµС‚ С‚РµРјРїРµСЂР°С‚СѓСЂСѓ!
+		// Тестирование датчика температуры
+		// TODO: пока не показывает температуру!
 		const uint_fast8_t tempi = TEMPIX;
 		const adcvalholder_t v = board_getadc_unfiltered_truevalue(tempi);
-		// РР·РјРµСЂРµРЅРёРµ РѕРїСЂРЅРѕРіРѕ РЅР°РїСЂСЏР¶РµРЅРёСЏ
+		// Измерение опрного напряжения
 		const uint_fast8_t vrefi = VREFIX;
-		const adcvalholder_t ref = board_getadc_unfiltered_truevalue(vrefi);	// С‚РµРєСѓС‰РµРµ Р·РЅР°С‡РµРЅРёРµ РґР°РЅРЅРѕРіРѕ РђР¦Рџ
+		const adcvalholder_t ref = board_getadc_unfiltered_truevalue(vrefi);	// текущее значение данного АЦП
 		if (ref != 0)
 		{
 			const long Vref_mV = (uint_fast32_t) board_getadc_fsval(vrefi) * WITHREFSENSORVAL / ref;
-			// Temperature (in В°C) = {(V25 - VSENSE) / Avg_Slope} + 25.
+			// Temperature (in °C) = {(V25 - VSENSE) / Avg_Slope} + 25.
 			// Average slope = 4.3
-			// Voltage at 25 В°C = 1.43 V
+			// Voltage at 25 °C = 1.43 V
 			const long celsius = (1430 - (v * Vref_mV / board_getadc_fsval(tempi))) / 430 + 2500;
 			debug_printf_P(PSTR("celsius=%3ld.%02ld\n"), celsius / 100, celsius % 100);
 		}
@@ -4900,7 +4900,7 @@ void looptests(void)
 }
 
 #if 0 && CTLSTYLE_V1V
-// "РїСЂРµСЂС‹РІР°С‚РµР»СЊ"
+// "прерыватель"
 
 static void showstate(
 	unsigned offtime,
@@ -4979,9 +4979,9 @@ void hightests(void)
 
 		static RAMNOINIT_D1 ALIGNX_BEGIN float Etalon [2048] ALIGNX_END;
 		static RAMNOINIT_D1 ALIGNX_BEGIN float TM [2048] ALIGNX_END;
-		static RAMNOINIT_D1 FIL WPFile;			/* РћРїРёСЃР°С‚РµР»СЊ РѕС‚РєСЂС‹С‚РѕРіРѕ С„Р°Р№Р»Р° - РЅРµР»СЊР·СЏ СЂР°СЃРїРѕР»Р°РіР°С‚СЊ РІ Cortex-M4 CCM */
+		static RAMNOINIT_D1 FIL WPFile;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
 		static const char fmname [] = "tstdata.dat";
-		static RAMNOINIT_D1 FATFS wave_Fatfs;		/* File system object  - РЅРµР»СЊР·СЏ СЂР°СЃРїРѕР»Р°РіР°С‚СЊ РІ Cortex-M4 CCM */
+		static RAMNOINIT_D1 FATFS wave_Fatfs;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
 	
 		int CountZap=0;
 		int LC=2048;
@@ -5045,12 +5045,12 @@ void hightests(void)
 #endif
 #if 0
 	{
-		// РџРµС‡Р°С‚СЊ Р°РґСЂРµСЃРѕРІ РїРѕ СЂРµР·СѓР»СЊС‚Р°С‚Р°Рј СЂР°Р±РѕС‚С‹ ld
+		// Печать адресов по результатам работы ld
 		extern unsigned long __etext, __bss_start__, __bss_end__, __data_end__, __data_start__, __stack;
 		extern unsigned long __itcmdata_start__, __itcmdata_end__;	// Cortex-M7 specific
-		extern unsigned long __itcm_start__, __itcm_end__;	// Cortex-M7 specific - РѕР±Р»Р°СЃС‚СЊ РїР°РјСЏС‚Рё icm
+		extern unsigned long __itcm_start__, __itcm_end__;	// Cortex-M7 specific - область памяти icm
 		extern unsigned long __ramfunctext;
-		extern unsigned long __dtcm_start__, __dtcm_end__;	// Cortex-M7 specific - РѕР±Р»Р°СЃС‚СЊ РїР°РјСЏС‚Рё icm
+		extern unsigned long __dtcm_start__, __dtcm_end__;	// Cortex-M7 specific - область памяти icm
 
 		debug_printf_P(PSTR("__etext=%p, __bss_start__=%p, __bss_end__=%p, __data_start__=%p, __data_end__=%p\n"), & __etext, & __bss_start__, & __bss_end__, & __data_start__, & __data_end__);
 		debug_printf_P(PSTR("__stack=%p, arm_cpu_initialize=%p\n"), & __stack, arm_cpu_initialize);
@@ -5086,16 +5086,16 @@ void hightests(void)
 #endif
 #if 0
 	{
-		// РЎРёРіРЅР°Р»С‹ СѓРїСЂР°РІР»РµРЅРёСЏ HD44780
+		// Сигналы управления HD44780
 		for (;;)
 		{
-			// РЈСЃС‚Р°РЅРѕРІРёС‚СЊ
+			// Установить
 			//LCD_STROBE_PORT_S(LCD_STROBE_BIT);
 			LCD_RS_PORT_S(ADDRES_BIT);
 			//LCD_WE_PORT_S(WRITEE_BIT);
 			local_delay_ms(20);
 
-			// РЎР±СЂРѕСЃРёС‚СЊ
+			// Сбросить
 			//LCD_STROBE_PORT_C(LCD_STROBE_BIT);
 			LCD_RS_PORT_C(ADDRES_BIT);
 			//LCD_WE_PORT_C(WRITEE_BIT);
@@ -5105,7 +5105,7 @@ void hightests(void)
 #endif
 #if 0
 	{
-		// РІС‹С‡РёСЃР»РµРЅРёСЏ СЃ РїР»Р°РІР°СЋС‰РµР№ С‚РѕС‡РєРѕР№
+		// вычисления с плавающей точкой
 		//
 		//				   1.4142135623730950488016887242096981L
 		// #define M_SQRT2  1.41421356237309504880
@@ -5132,12 +5132,12 @@ void hightests(void)
 #endif
 #if 0 && CTLSTYLE_V1V
 	{
-		// "РїСЂРµСЂС‹РІР°С‚РµР»СЊ"
+		// "прерыватель"
 
-		#define RELAY_PORT PORTD	// РІС‹С…РѕРґС‹ РїСЂРѕС†РµСЃСЃРѕСЂР° - СѓРїСЂР°РІР»РµРЅРёРµ С‚СЂР°РєС‚РѕРј РїРїРµСЂРµРґР°С‡Рё Рё РјР°РЅРёРїСѓР»СЏС†РёРµР№
-		#define RELAY_DDR DDRD		// РїРµСЂРµРєР»СЋС‡РµРЅРёРµ РЅР° РІС‹РІРѕРґ - СѓРїСЂР°РІР»РµРЅРёРµ С‚СЂР°РєС‚РѕРј РїРµСЂРµРґР°С‡Рё Рё РјР°РЅРёРїСѓР»СЏС†РёРµР№
+		#define RELAY_PORT PORTD	// выходы процессора - управление трактом ппередачи и манипуляцией
+		#define RELAY_DDR DDRD		// переключение на вывод - управление трактом передачи и манипуляцией
 
-		// РЈРїСЂР°РІР»РµРЅРёРµ РїРµСЂРµРґР°С‚С‡РёРєРѕРј - СЃРёРіРЅР°Р»С‹ TXPATH_ENABLE (PA11) Рё TXPATH_ENABLE_CW (PA10) - Р°РєС‚РёРІРЅС‹ РїСЂРё РЅСѓР»Рµ РЅР° РІС‹С…РѕРґРµ.
+		// Управление передатчиком - сигналы TXPATH_ENABLE (PA11) и TXPATH_ENABLE_CW (PA10) - активны при нуле на выходе.
 		#define RELAY_BIT		(1U << PD5)
 
 		RELAY_DDR |= RELAY_BIT;
@@ -5261,20 +5261,20 @@ void hightests(void)
 #endif
 #if 0
 	{
-		// Р”РІРёР¶СѓС‰РёРµСЃСЏ РєР°СЂС‚РёРЅРєРё
+		// Движущиеся картинки
 		enum 
 		{ 
 			topreserved = 6,
 			bufY = DIM_Y - GRID2Y(ROWS2GRID(topreserved)), 
 			dx = DIM_X, dy = bufY, 
-			// РєСѓРґР° РІС‹РІРѕРґРёС‚СЊ
+			// куда выводить
 			DBX_0 = CHARS2GRID(0), 
 			DBY_1 = ROWS2GRID(topreserved)
 		};
 		debug_printf_P(PSTR("test: dx=%d, dy=%d\n"), dx, dy);
 
 
-		/* РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ РЅР°РґРїРёСЃРµР№ СЃР°РјС‹Рј РјР°Р»РµРЅСЊРєРёРј С€СЂРёС„С‚РѕРј (8 С‚РѕС‡РµРє) */
+		/* отображение надписей самым маленьким шрифтом (8 точек) */
 		display_setcolors(COLOR_GREEN, COLOR_BLACK);
 		uint_fast8_t lowhalf2 = HALFCOUNT_SMALL2 - 1;
 		do
@@ -5289,7 +5289,7 @@ void hightests(void)
 
 		} while (lowhalf2 --);
 	#if 1
-		/* РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ РЅР°РґРїРёСЃРµР№ РјР°Р»РµРЅСЊРєРёРј С€СЂРёС„С‚РѕРј (16 С‚РѕС‡РµРє) */
+		/* отображение надписей маленьким шрифтом (16 точек) */
 		display_setcolors(COLOR_GREEN, COLOR_BLACK);
 		uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 		do
@@ -5319,10 +5319,10 @@ void hightests(void)
 		for (loop = 0; ;loop = loop < top ? loop + 1 : 0)
 		{
 		
-			// СЂРёСЃРѕРІР°РЅРёРµ Р»РёРЅРёРё
+			// рисование линии
 			unsigned i;
 			for (i = 0; i < bufY; ++ i)
-				display_colorbuffer_set(scr, dx, dy, i + loop, i, COLOR_BLUE);		// РїРѕСЃС‚Р°РІРёС‚СЊ С‚РѕС‡РєСѓ
+				display_colorbuffer_set(scr, dx, dy, i + loop, i, COLOR_BLUE);		// поставить точку
 
 			display_colorbuffer_show(scr, dx, dy, 0, GRID2Y(topreserved));
 			//local_delay_ms(25);
@@ -5352,10 +5352,10 @@ void hightests(void)
 		for (loop = 0; ;loop = loop < top ? loop + 1 : 0)
 		{
 		
-			// СЂРёСЃРѕРІР°РЅРёРµ Р»РёРЅРёРё
+			// рисование линии
 			unsigned i;
 			for (i = 0; i < bufY; ++ i)
-				display_pixelbuffer(scr, dx, dy, i + loop, i);		// РїРѕРіР°СЃРёС‚СЊ С‚РѕС‡РєСѓ
+				display_pixelbuffer(scr, dx, dy, i + loop, i);		// погасить точку
 
 			display_showbuffer(scr, dx, dy, DBX_0, DBY_1);
 			//local_delay_ms(25);
@@ -5376,7 +5376,7 @@ void hightests(void)
 #endif
 #if 0 && WITHDEBUG
 	{
-		// С‚РµСЃС‚РёСЂРѕРІР°РЅРёРµ РїСЂРёС‘РјР° Рё РїРµСЂРµРґР°С‡Рё СЃРёРјРІРѕР»РѕРІ
+		// тестирование приёма и передачи символов
 		debug_printf_P(PSTR("Serial port ECHO test.\n"));
 		for (;;)
 		{
@@ -5391,8 +5391,8 @@ void hightests(void)
 }
 #endif
 #if 0
-	// РўРµСЃС‚ РґР»СЏ РїСЂРѕРІРµСЂРєРё РєРѕСЂСЂРµРєС‚РЅРѕСЃС‚Рё СЂР°Р±РѕС‚С‹ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕРіРѕ РїРѕСЂС‚Р° СЃ РїСЂРµСЂС‹РІР°РЅРёСЏРјРё.
-	// Р”РѕР»Р¶РЅРѕ СЂР°Р±РѕС‚Р°С‚СЊ РїСЂРѕСЃС‚Рѕ "СЌС…Рѕ" РІРІРѕРґРёРјС‹С… СЃРёРјРІРѕР»РѕРІ.
+	// Тест для проверки корректности работы последовательного порта с прерываниями.
+	// Должно работать просто "эхо" вводимых символов.
 	{
 		serial_irq_loopback_test();
 	}
@@ -5476,7 +5476,7 @@ void hightests(void)
 	}
 #endif
 #if 0 && WITHDEBUG && WITHUSEAUDIOREC
-	// РђРІС‚РѕРЅРѕРјРЅС‹Р№ РїСЂРѕРіСЂР°РјРјР°С‚РѕСЂ SPI flash memory
+	// Автономный программатор SPI flash memory
 	{
 		//sdcard_test();
 		////mmcCardSize();
@@ -5551,7 +5551,7 @@ void hightests(void)
 
 		if (0)
 		{
-			// РїРѕР»СѓС‡РµРЅРёРµ РЅРѕРјРµСЂРѕРІ СЃРµРіРјРµРЅС‚РѕРІ LCD
+			// получение номеров сегментов LCD
 			int segment = 0;
 			LCD1x9_seg(segment, 1);
 			for (;;)
@@ -5596,7 +5596,7 @@ void hightests(void)
 			}
 			LCD1x9_clear();
 			{
-				// Р—Р°Р¶РёРіР°РµРј РІСЃРµ СЃРµРіРјРµРЅС‚С‹
+				// Зажигаем все сегменты
 				uint_fast8_t comIndex;
 				for (comIndex = 0; comIndex < 4; ++ comIndex)
 				{
@@ -5611,7 +5611,7 @@ void hightests(void)
 				}
 			}
 			{
-				// Р“Р°СЃРёРј РІСЃРµ СЃРµРіРјРµРЅС‚С‹
+				// Гасим все сегменты
 				uint_fast8_t comIndex;
 				for (comIndex = 0; comIndex < 4; ++ comIndex)
 				{
@@ -5642,7 +5642,7 @@ void hightests(void)
 #endif /* ARM_STM32L051_TQFP32_CPUSTYLE_V1_H_INCLUDED */
 #if 0 && ARM_STM32L051_TQFP32_CPUSTYLE_V1_H_INCLUDED
 	{
-		// РїСЂРѕРІРµСЂРєР° РєРЅРѕРїРѕРє РІРєР»СЋС‡РµРЅРёСЏ-РІС‹РєР»СЋС‡РµРЅРё СЏ РїРёС‚Р°РЅРёСЏ
+		// проверка кнопок включения-выключени я питания
 		test_cpu_pwron(1);
 		for (;;)
 		{
@@ -5700,15 +5700,15 @@ void hightests(void)
 #if 0
 	{
 		// test: initialize TIM2:TIM5
-		// TIM5 РІРєР»СЋС‡С‘РЅ РЅР° РІС‹С…РѕРґ TIM2
-		RCC->APB1ENR |= RCC_APB1ENR_TIM2EN | RCC_APB1ENR_TIM5EN;   // РїРѕРґР°РµРј С‚Р°РєС‚РёСЂРѕРІР°РЅРёРµ РЅР° TIM2 & TIM5
+		// TIM5 включён на выход TIM2
+		RCC->APB1ENR |= RCC_APB1ENR_TIM2EN | RCC_APB1ENR_TIM5EN;   // подаем тактирование на TIM2 & TIM5
 		__DSB();
-		//TIM3->DIER = TIM_DIER_UIE;        	 // СЂР°Р·СЂРµС€РёС‚СЊ СЃРѕР±С‹С‚РёРµ РѕС‚ С‚Р°Р№РјРµСЂР°
+		//TIM3->DIER = TIM_DIER_UIE;        	 // разрешить событие от таймера
 		TIM5->PSC = 1;
 		TIM2->PSC = 1;
 
-		TIM5->CR1 = TIM_CR1_CEN; /* РІРєР»СЋС‡РёС‚СЊ С‚Р°Р№РјРµСЂ */
-		TIM2->CR1 = TIM_CR1_CEN; /* РІРєР»СЋС‡РёС‚СЊ С‚Р°Р№РјРµСЂ */
+		TIM5->CR1 = TIM_CR1_CEN; /* включить таймер */
+		TIM2->CR1 = TIM_CR1_CEN; /* включить таймер */
 		for (;;)
 		{
 			debug_printf_P(PSTR("TIM2:TIM5 CNT=%08lX:%08lX\n"), TIM2->CNT, TIM5->CNT);
@@ -5870,7 +5870,7 @@ void hightests(void)
 			adcvalholder_t f = board_getswrmeter(& r, swrcalibr);
 
 			const uint_fast16_t fullscale = display_getmaxswrlimb() - DISPWRMETER_MIN;
-			uint_fast16_t swr10;		// СЂР°СЃСЃС‡РёС‚Р°РЅРЅРѕРµ  Р·РЅР°С‡РµРЅРёРµ
+			uint_fast16_t swr10;		// рассчитанное  значение
 			if (f < minforward)
 				swr10 = 0;	// SWR=1
 			else if (f <= r)
@@ -5942,15 +5942,15 @@ void hightests(void)
 	}
 #endif
 #if 0
-	// РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ РєР°СЂС‚РёРЅРѕРє
+	// отображение картинок
 	eink_lcd_backlight(1);
 
-	/* Р±СѓС„РµСЂ СЂР°Р·РјРµСЂРѕРј x=64, y=112 С‚РѕС‡РµРє */
+	/* буфер размером x=64, y=112 точек */
 	enum { bufY = DIM_Y - 8, dx = DIM_X, dy = /*24 */ bufY, DBX_0 = 0, DBY_1 = 1};
 	static ALIGNX_BEGIN PACKEDCOLOR_T scr [GXSIZE(dx, dy)] ALIGNX_END;
 
 
-	/* РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ РЅР°РґРїРёСЃРµР№ СЃР°РјС‹Рј РјР°Р»РµРЅСЊРєРёРј С€СЂРёС„С‚РѕРј (8 С‚РѕС‡РµРє) */
+	/* отображение надписей самым маленьким шрифтом (8 точек) */
 	uint_fast8_t lowhalf2 = HALFCOUNT_SMALL2 - 1;
 	do
 	{
@@ -5964,7 +5964,7 @@ void hightests(void)
 	} while (lowhalf2 --);
 
 #if 0
-	/* РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ РЅР°РґРїРёСЃРµР№ РјР°Р»РµРЅСЊРєРёРј С€СЂРёС„С‚РѕРј (16 С‚РѕС‡РµРє) */
+	/* отображение надписей маленьким шрифтом (16 точек) */
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 	do
 	{
@@ -5985,10 +5985,10 @@ void hightests(void)
 	
 		check_poweroff();
 		memset(scr, 0xFF, sizeof scr);
-		// СЂРёСЃРѕРІР°РЅРёРµ Р»РёРЅРёРё
+		// рисование линии
 		unsigned i;
 		for (i = 0; i < bufY; ++ i)
-			display_pixelbuffer(scr [0], dx, dy, i + loop, i);		// РїРѕРіР°СЃРёС‚СЊ С‚РѕС‡РєСѓ
+			display_pixelbuffer(scr [0], dx, dy, i + loop, i);		// погасить точку
 
 		display_showbuffer(scr [0], dx, dy, DBX_0, DBY_1);
 		local_delay_ms(25);
@@ -5996,12 +5996,12 @@ void hightests(void)
 	}
 #endif
 #if 0 && WITHDEBUG
-	// РІРµС‡РЅС‹Р№ С†РёРєР»
+	// вечный цикл
 	for (;;)
 	{
-		i2c_start(0xaa);// Si570: Р°РґСЂРµСЃ 0x55, Р·Р°РїРёСЃСЊ = 0
+		i2c_start(0xaa);// Si570: адрес 0x55, запись = 0
 		i2c_write(135);
-		i2c_write(0x80);	// RST_REG = 1 - РІС‹РєР»СЋС‡Р°РµС‚ РіРµРЅРµСЂР°С†РёСЋ РЅР° РІС‹С…РѕРґРµ Si570
+		i2c_write(0x80);	// RST_REG = 1 - выключает генерацию на выходе Si570
 		i2c_waitsend();
 		i2c_stop();
 			
@@ -6009,10 +6009,10 @@ void hightests(void)
 	}
 #endif
 #if 0 && WITHTX && WITHVOX && WITHDEBUG
-	// РћС‚РѕР±СЂР°Р¶РµРЅРёРµ Р·РЅР°С‡РµРЅРёР№ СЃ РІС‹С…РѕРґР° DSP РјРѕРґСѓР»СЏ - СѓСЂРѕРІРµРЅСЊ VOX
+	// Отображение значений с выхода DSP модуля - уровень VOX
 	{
-		updateboard(1, 1);	/* РїРѕР»РЅР°СЏ РїРµСЂРµРЅР°СЃС‚СЂРѕР№РєР° (РєР°Рє РїРѕСЃР»Рµ СЃРјРµРЅС‹ СЂРµР¶РёРјР°) - СЂРµР¶РёРј РїСЂРёРµРјР° */
-		updateboard2();			/* РЅР°СЃС‚СЂРѕР№РєРё РІР°Р»РєРѕРґРµСЂР° Рё С†РІРµС‚РѕРІРѕР№ СЃС…РµРјС‹ РґРёСЃРїР»РµСЏ. */
+		updateboard(1, 1);	/* полная перенастройка (как после смены режима) - режим приема */
+		updateboard2();			/* настройки валкодера и цветовой схемы дисплея. */
 		for (;;)
 		{
 			//unsigned dsp_getmikev(void);
@@ -6054,13 +6054,13 @@ void hightests(void)
 	}
 #endif
 #if 0 && WITHDEBUG
-	// РўСЂР°РЅСЃРёРІРµСЂ СЃ DSPIF4 "Р’РѕСЂРѕРЅРµРЅРѕРє-DSP"
-	// РћС‚РѕР±СЂР°Р¶РµРЅРёРµ Р·РЅР°С‡РµРЅРёР№ СЃ РґРѕРїРѕР»РЅРёС‚РµР»СЊРЅС‹С… РІС…РѕРґРѕРІ РђР¦Рџ
+	// Трансивер с DSPIF4 "Вороненок-DSP"
+	// Отображение значений с дополнительных входов АЦП
 	for (;;)
 	{
 		if (! display_refreshenabled_wpm())
 			continue;
-		// РїРѕРґС‚РІРµСЂР¶РґР°РµРј, С‡С‚Рѕ РѕР±РЅРѕРІР»РµРЅРёРµ РІС‹РїРѕР»РЅРµРЅРѕ
+		// подтверждаем, что обновление выполнено
 		display_refreshperformed_wpm();
 
 		//const unsigned potrf = board_getadc_filtered_u8(POTIFGAIN, 0, UINT8_MAX);
@@ -6084,7 +6084,7 @@ void hightests(void)
 			char buff [22];
 
 #if 1
-			// СЃРѕРєСЂР°С‰С‘РЅРЅС‹Р№ РІР°СЂРёР°РЅС‚ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ
+			// сокращённый вариант отображения
 			// AF gain
 			local_snprintf_P(buff, sizeof buff / sizeof buff [0], 
 				PSTR("af= %4d"), potaf
@@ -6163,7 +6163,7 @@ void hightests(void)
 	}
 #endif
 #if 0 && WITHDEBUG
-	// С‚РµСЃС‚ РґРёСЃРїР»РµСЏ - РІС‹РІРѕРґ РјРµРЅСЏСЋС‰РёС…СЃСЏ С†РёС„СЂ
+	// тест дисплея - вывод меняющихся цифр
 	{
 		unsigned long i = 0;
 		display_setcolors(COLOR_WHITE, COLOR_BLACK);
@@ -6188,7 +6188,7 @@ void hightests(void)
 	}
 #endif
 #if 0
-	// С‚РµСЃС‚ РґРёСЃРїР»РµСЏ - РїСЂРѕС…РѕРґ РїРѕ РІСЃРµРј РІРѕР·РјРѕР¶РЅС‹Рј СѓСЂРѕРІРЅСЏРј РѕСЃРЅРѕРІРЅС‹С… С†РІРµС‚РѕРІ
+	// тест дисплея - проход по всем возможным уровням основных цветов
 	for (;;)
 	{
 		char b [32];
@@ -6310,7 +6310,7 @@ void hightests(void)
 #endif
 #if 0
 	{
-		// РџСЂРѕРІРµСЂРєР°, РѕС‚РєСѓРґР° РёРґСѓС‚ РїРѕРјРµС…Рё - РѕС‚ I2C РёР»Рё РѕС‚ SPI.
+		// Проверка, откуда идут помехи - от I2C или от SPI.
 		for (;;)
 		{
 
@@ -6322,7 +6322,7 @@ void hightests(void)
 				switch (kbch)
 				{
 				case KBD_CODE_BAND_UP:
-					// РїСЂРѕРІРµСЂРєР° РёРЅРґРёРєР°С‚РѕСЂР°
+					// проверка индикатора
 					for (i = 0; i < 20000; ++ i)
 					{
 						char s [21];
@@ -6331,7 +6331,7 @@ void hightests(void)
 					}
 					break;
 				case KBD_CODE_BAND_DOWN:
-					// РїСЂРѕРІРµСЂРєР° SPI
+					// проверка SPI
 					for (i = 0; i < 10000; ++ i)
 					{
 						synth_lo1_setfreq(i, getlo1div(tx));
@@ -6343,7 +6343,7 @@ void hightests(void)
 	}
 #endif
 #if 0
-	// РўРµСЃС‚РёСЂРѕРІР°РЅРёРµ СЃРєРѕСЂРѕСЃС‚Рё РїРµСЂРµРґР°С‡Рё РїРѕ SPI. РќР° SCK РґРѕР»Р¶РЅР° Р±С‹С‚СЊ С‡Р°СЃС‚РѕС‚Р° SPISPEED
+	// Тестирование скорости передачи по SPI. На SCK должна быть частота SPISPEED
 	for (;;)
 	{
 		const spitarget_t cs = SPI_CSEL4;
@@ -6366,7 +6366,7 @@ void hightests(void)
 #if 0
 	{
 		unsigned phase = 0;
-		// С‚РµСЃС‚РёСЂРѕРІР°РЅРёРµ РІС…РѕРґРѕРІ РјР°РЅРёРїСѓР»СЏС†РёРё, ptt, РєР»СЋС‡Р° Рё CAT
+		// тестирование входов манипуляции, ptt, ключа и CAT
 		for (;;)
 		{
 			uint_fast8_t kbch, repeat;
@@ -6388,18 +6388,18 @@ void hightests(void)
 			debug_printf_P(PSTR("tune=%u, ptt=%u, elkey=%u\n"), tune1, ptt1, elkey);
 			continue;
 
-			display_gotoxy(0, 0);		// РєСѓСЂСЃРѕСЂ РІ РЅР°С‡Р°Р»Рѕ РїРµСЂРІРѕР№ СЃС‚СЂРѕРєРё
+			display_gotoxy(0, 0);		// курсор в начало первой строки
 
 
 			display_string(ptt1 != 0 ? "ptt " : "    ", 0);
 			display_string(ptt2 != 0 ? "cptt " : "     ", 0);
 			display_string(ckey != 0 ? "ckey " : "     ", 0);
 
-			display_gotoxy(0, 2);		// РєСѓСЂСЃРѕСЂ РІ РЅР°С‡Р°Р»Рѕ РІС‚РѕСЂРѕР№ СЃС‚СЂРѕРєРё
+			display_gotoxy(0, 2);		// курсор в начало второй строки
 			display_string((elkey & ELKEY_PADDLE_DIT) != 0 ? "dit " : "     ", 0);
-			display_gotoxy(0, 4);		// РєСѓСЂСЃРѕСЂ РІ РЅР°С‡Р°Р»Рѕ РІС‚РѕСЂРѕР№ СЃС‚СЂРѕРєРё
+			display_gotoxy(0, 4);		// курсор в начало второй строки
 			display_string((elkey & ELKEY_PADDLE_DASH) != 0 ? "dash" : "      ", 0);
-			display_gotoxy(0, 6);		// РєСѓСЂСЃРѕСЂ РІ РЅР°С‡Р°Р»Рѕ РІС‚РѕСЂРѕР№ СЃС‚СЂРѕРєРё
+			display_gotoxy(0, 6);		// курсор в начало второй строки
 			display_string((phase = ! phase) ? " test1" : " test2", 0);
 
 		}
@@ -6407,8 +6407,8 @@ void hightests(void)
 #endif
 #if 0
 	{
-		// С‚РµСЃС‚РёСЂРѕРІР°РЅРёРµ РІР°Р»РєРѕРґРµСЂР° РІ СЂРµР¶РёРјРµ "РёРЅС‚РµР»Р»РµРєС‚СѓР°Р»СЊРЅРѕРіРѕ СѓСЃРєРѕСЂРµРЅРёСЏ"
-		// РќР° РёРЅРґРёРєР°С‚РѕСЂРµ РѕС‚РѕР±СЂР°Р¶Р°РµС‚СЃСЏ СЃРєРѕСЂРѕСЃС‚СЊ РІ РѕР±РѕСЂРѕС‚Р°С… РІ СЃРµРєСѓРЅРґСѓ
+		// тестирование валкодера в режиме "интеллектуального ускорения"
+		// На индикаторе отображается скорость в оборотах в секунду
 		for (;;)
 		{
 			unsigned speed;
@@ -6425,28 +6425,28 @@ void hightests(void)
 			//(void) nrotate;
 			//display_debug_digit(speed * 100UL / ENCODER_NORMALIZED_RESOLUTION, 7, 2, 0);
 			//enum { lowhalf = 0 };
-			//display_gotoxy(0, 1 + lowhalf);		// РєСѓСЂСЃРѕСЂ РІ РЅР°С‡Р°Р»Рѕ РІС‚РѕСЂРѕР№ СЃС‚СЂРѕРєРё
+			//display_gotoxy(0, 1 + lowhalf);		// курсор в начало второй строки
 			//display_string_P(PSTR(" RPS"), lowhalf);
 		}
 	}
 #endif
 #if 0
 	{
-		// С‚РµСЃС‚РёСЂРѕРІР°РЅРёРµ РІР°Р»РєРѕРґРµСЂР° РІ СЂРµР¶РёРјРµ "РёРЅС‚РµР»Р»РµРєС‚СѓР°Р»СЊРЅРѕРіРѕ СѓСЃРєРѕСЂРµРЅРёСЏ"
-		// РќР° РёРЅРґРёРєР°С‚РѕСЂРµ РѕС‚РѕР±СЂР°Р¶Р°РµС‚СЃСЏ СЃРєРѕСЂРѕСЃС‚СЊ РІ РѕР±РѕСЂРѕС‚Р°С… РІ СЃРµРєСѓРЅРґСѓ
+		// тестирование валкодера в режиме "интеллектуального ускорения"
+		// На индикаторе отображается скорость в оборотах в секунду
 		for (;;)
 		{
 			uint_fast8_t jumpsize;
 			int_least16_t nrotate = getRotateHiRes(& jumpsize, 1);
 			(void) nrotate;
-			//display_gotoxy(0, 1);		// РєСѓСЂСЃРѕСЂ РІ РЅР°С‡Р°Р»Рѕ РІС‚РѕСЂРѕР№ СЃС‚СЂРѕРєРё
+			//display_gotoxy(0, 1);		// курсор в начало второй строки
 			display_debug_digit(jumpsize, 7, 0, 0);
 			//display_string_P(PSTR(" SCALE"));
 		}
 	}
 #endif
 #if 0
-	// РџРѕРєР°Р· РІ РѕРґРЅРѕР№ СЃС‚СЂРѕРєРµ С‚СЂРµС… Р·РЅР°С‡РµРЅРёР№ СЃ РђР¦Рџ РєР»Р°РІРёР°С‚СѓСЂС‹
+	// Показ в одной строке трех значений с АЦП клавиатуры
 	for (;;)
 	{
 		uint_fast8_t row;
@@ -6478,9 +6478,9 @@ void hightests(void)
 
 			do
 			{
-				display_gotoxy(0, row * HALFCOUNT_SMALL + lowhalf);		// РєСѓСЂСЃРѕСЂ РІ РЅР°С‡Р°Р»Рѕ РІС‚РѕСЂРѕР№ СЃС‚СЂРѕРєРё
+				display_gotoxy(0, row * HALFCOUNT_SMALL + lowhalf);		// курсор в начало второй строки
 				display_string("ADCx=", lowhalf);
-				display_gotoxy(5, row * HALFCOUNT_SMALL + lowhalf);		// РєСѓСЂСЃРѕСЂ РІ РЅР°С‡Р°Р»Рѕ РІС‚РѕСЂРѕР№ СЃС‚СЂРѕРєРё
+				display_gotoxy(5, row * HALFCOUNT_SMALL + lowhalf);		// курсор в начало второй строки
 				display_menu_value(v0, 5, 255, 0, lowhalf);
 			} while (lowhalf --);
 		}
@@ -6493,8 +6493,8 @@ void hightests(void)
 	{
 		debug_printf_P(PSTR("kbd_test2:\n"));
 		// kbd_test2
-		// РџРѕРєР°Р· СѓСЃР»РѕРІРЅС‹С… РЅРѕРјРµСЂРѕРІ РєР»Р°РІРёС€ РґР»СЏ СЃРѕР·РґР°РЅРёСЏ РЅРѕРІС‹С… РјР°С‚СЂРёС† РїРµСЂРµРєРѕРґРёСЂРѕРІРєРё
-		// Рё С‚РµСЃС‚РёСЂРѕРІР°РЅРёСЏ СЂР°Р±РѕС‚РѕСЃРїРѕСЃРѕР±РЅРѕСЃС‚Рё РєР»Р°РІРёР°С‚СѓСЂС‹.
+		// Показ условных номеров клавиш для создания новых матриц перекодировки
+		// и тестирования работоспособности клавиатуры.
 		enum { menuset = 0 };
 		int v = 0;
 		for (;;)
@@ -6528,7 +6528,7 @@ void hightests(void)
 #if 0
 	{
 		// kbd_test1
-		// РїРѕРєР°Р· РєРѕРґРѕРІ РєР»Р°РІРёС€
+		// показ кодов клавиш
 		enum { menuset = 0 };
 		int v = 0;
 		debug_printf_P(PSTR("kbd_test1:\n"));
@@ -6554,7 +6554,7 @@ void hightests(void)
 		for (;;)
 		{
 			board_set_att(i);
-			board_update();		/* РІС‹РІРµСЃС‚Рё Р·Р°Р±СѓС„РµСЂРёСЂРѕРІР°РЅРЅС‹Рµ РёР·РјРµРЅРµРЅРёСЏ РІ СЂРµРіРёСЃС‚СЂС‹ */
+			board_update();		/* вывести забуферированные изменения в регистры */
 			i = (i + 1) % ATTMODE_COUNT;
 			local_delay_ms(500);
 		}
@@ -6568,7 +6568,7 @@ void hightests(void)
 		for (;;)
 		{
 			board_set_bandf(i);
-			board_update();		/* РІС‹РІРµСЃС‚Рё Р·Р°Р±СѓС„РµСЂРёСЂРѕРІР°РЅРЅС‹Рµ РёР·РјРµРЅРµРЅРёСЏ РІ СЂРµРіРёСЃС‚СЂС‹ */
+			board_update();		/* вывести забуферированные изменения в регистры */
 			i = (i + 1) % 16;
 			local_delay_ms(500);
 		}
@@ -6586,7 +6586,7 @@ void hightests(void)
 				board_set_tx(0);	
 				board_set_bandf(1);	
 				board_set_preamp(pre);
-				board_update();		/* РІС‹РІРµСЃС‚Рё Р·Р°Р±СѓС„РµСЂРёСЂРѕРІР°РЅРЅС‹Рµ РёР·РјРµРЅРµРЅРёСЏ РІ СЂРµРіРёСЃС‚СЂС‹ */
+				board_update();		/* вывести забуферированные изменения в регистры */
 				local_delay_ms(500);
 			}
 		}
@@ -6616,7 +6616,7 @@ void hightests(void)
 							board_set_bandf2(bandf);
 							board_set_bandf3(bandf);
 							board_set_preamp(pre);
-							board_update();		/* РІС‹РІРµСЃС‚Рё Р·Р°Р±СѓС„РµСЂРёСЂРѕРІР°РЅРЅС‹Рµ РёР·РјРµРЅРµРЅРёСЏ РІ СЂРµРіРёСЃС‚СЂС‹ */
+							board_update();		/* вывести забуферированные изменения в регистры */
 							local_delay_ms(100);
 						}
 					}
@@ -6627,7 +6627,7 @@ void hightests(void)
 #endif
 
 #if 0
-	// С‚РµСЃС‚РёСЂРѕРІР°РЅРёРµ СЃРёРіРЅР°Р»РѕРІ РІС‹Р±РѕСЂР° VFO
+	// тестирование сигналов выбора VFO
 	{
 		for (;;)
 		{
@@ -6635,7 +6635,7 @@ void hightests(void)
 			for (i = 0; i < HYBRID_NVFOS; ++ i)
 			{
 				board_ctl_set_vco(i);
-				board_update();		/* РІС‹РІРµСЃС‚Рё Р·Р°Р±СѓС„РµСЂРёСЂРѕРІР°РЅРЅС‹Рµ РёР·РјРµРЅРµРЅРёСЏ РІ СЂРµРіРёСЃС‚СЂС‹ */
+				board_update();		/* вывести забуферированные изменения в регистры */
 				local_delay_ms(500);
 			}
 		}
@@ -6660,7 +6660,7 @@ void hightests(void)
 	i2c_stop();
 
 	#if 0
-		// С‡С‚РµРЅРёРµ РІСЃРµС… СЂРµРіС€РёСЃС‚СЂРѕРІ
+		// чтение всех регшистров
 		for (;;)
 		{
 			int i;
@@ -6671,7 +6671,7 @@ void hightests(void)
 				i2c_start(ADDR | 0x00);
 				i2c_write_withrestart(i);	// register to read: 0x12 - GPIO monitor pin state register
 				i2c_start(ADDR | 0x01);
-				i2c_read(& v1, I2C_READ_ACK_NACK);	/* С‡С‚РµРЅРёРµ РїРµСЂРІРѕРіРѕ Рё РµРґРёРЅСЃС‚РІРµРЅРЅРѕРіРѕ Р±Р°Р№С‚Р° РѕС‚РІРµС‚Р° */
+				i2c_read(& v1, I2C_READ_ACK_NACK);	/* чтение первого и единственного байта ответа */
 				
 				static const FLASHMEM char fmt_1 [] = "%02X";
 				char buff [17];
@@ -6692,7 +6692,7 @@ void hightests(void)
 		i2c_start(ADDR | 0x00);
 		i2c_write_withrestart(0x12);	// register to read: 0x12 - GPIO monitor pin state register
 		i2c_start(ADDR | 0x01);
-		i2c_read(& v1, I2C_READ_ACK_NACK);	/* С‡С‚РµРЅРёРµ РїРµСЂРІРѕРіРѕ Рё РµРґРёРЅСЃС‚РІРµРЅРЅРѕРіРѕ Р±Р°Р№С‚Р° РѕС‚РІРµС‚Р° */
+		i2c_read(& v1, I2C_READ_ACK_NACK);	/* чтение первого и единственного байта ответа */
 
 
 		static const FLASHMEM char fmt_1 [] = "v=%02X";
@@ -6714,7 +6714,7 @@ void hightests(void)
 	//
 	// Test I2C interface
 	i2c_start(0x4e);
-	i2c_write(0xff);	// РІСЃРµ Р±РёС‚С‹ РЅР° РІРІРѕРґ
+	i2c_write(0xff);	// все биты на ввод
 	i2c_waitsend();
 	i2c_stop();
 
@@ -6747,15 +6747,15 @@ void hightests(void)
 			v = (v + 1) % 4;
 			display_dispfreq(v * 1000UL);
 			board_set_att(v);
-			board_update();		/* РІС‹РІРµСЃС‚Рё Р·Р°Р±СѓС„РµСЂРёСЂРѕРІР°РЅРЅС‹Рµ РёР·РјРµРЅРµРЅРёСЏ РІ СЂРµРіРёСЃС‚СЂС‹ */
+			board_update();		/* вывести забуферированные изменения в регистры */
 #if 1
 			double x = v;
-			double v = sin(x);	// РїСЂРѕРІРµСЂРєР° СЂР°Р±РѕС‚С‹ Р±РёР±Р»РёРѕС‚РµС‡РЅС‹С… С„СѓРЅРєС†РёР№ СЃ РїР»Р°РІР°СЋС‰РµР№ С‚РѕС‡РєРѕР№
+			double v = sin(x);	// проверка работы библиотечных функций с плавающей точкой
 			uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 
 			do
 			{
-				display_gotoxy(0, 1 + lowhalf);		// РєСѓСЂСЃРѕСЂ РІ РЅР°С‡Р°Р»Рѕ РїРµСЂРІРѕР№ СЃС‚СЂРѕРєРё
+				display_gotoxy(0, 1 + lowhalf);		// курсор в начало первой строки
 				display_menu_value(v * 1000ul, 7, 2, 1, lowhalf);
 			} while (lowhalf --);
 #endif
@@ -6852,11 +6852,11 @@ void hightests(void)
 #endif
 }
 
-// Р’С‹Р·С‹РІР°РµС‚СЃСЏ РїРµСЂРµРґ РёРЅРёС†РёР°Р»РёР·Р°С†РёРµР№ NVRAM, РЅРѕ РїРѕСЃР»Рµ РёРЅРёС†РёР°Р»РёР·Р°С†РёРё SPI
+// Вызывается перед инициализацией NVRAM, но после инициализации SPI
 void midtests(void)
 {
 #if 0 && CPUSTYLE_R7S721
-	// С‚РµСЃС‚РёСЂРѕРІР°РЅРёРµ СЃРєРѕСЂРѕСЃС‚Рё РїРѕСЃР»Рµ РёРЅРёС†РёР°Р»РёР·Р°С†РёРё MMU
+	// тестирование скорости после инициализации MMU
 	{
 		const uint32_t mask = (1U << 13);	// P6_13
 		// R7S721 pins
@@ -6872,7 +6872,7 @@ void midtests(void)
 #endif
 	//hardware_cw_diagnostics(0, 0, 1);	// 'U'
 #if 0
-	// С‚РµСЃС‚РёСЂРѕРІР°РЅРёРµ СѓРїСЂР°РІР»СЏРµРјРѕРіРѕ РїРѕ SPI СЂРµРіРёСЃС‚СЂР° 
+	// тестирование управляемого по SPI регистра 
 	{
 		for (;;)
 		{
@@ -6915,9 +6915,9 @@ void midtests(void)
 		//}
 		for (;;)
 		{
-			// С‚РµСЃС‚РёСЂРѕРІР°РЅРёРµ Р°РїРїР°СЂР°С‚РЅРѕРіРѕ SPI РІ 16-Р±РёС‚РЅРѕРј СЂРµР¶РёРјРµ
+			// тестирование аппаратного SPI в 16-битном режиме
 			//prog_select(target);	
-			//hardware_spi_connect_b16(SPIC_SPEEDFAST, SPIC_MODE3);		// РµСЃР»Рё РµСЃС‚СЊ РІРѕР·РјРѕР¶РЅРѕСЃС‚СЊ - СЂР°Р±РѕС‚Р°РµРј РІ 16-С‚Рё Р±РёС‚РЅРѕРј СЂРµР¶РёРјРµ
+			//hardware_spi_connect_b16(SPIC_SPEEDFAST, SPIC_MODE3);		// если есть возможность - работаем в 16-ти битном режиме
 			//hardware_spi_b16_p1(0xf0aa);
 			//hardware_spi_complete_b8();
 			//hardware_spi_disconnect();
@@ -6995,14 +6995,14 @@ void midtests(void)
 #endif
 }
 #if STM32F0XX_MD
-void hardware_f051_dac_initialize(void)		/* РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ DAC РЅР° STM32F4xx */
+void hardware_f051_dac_initialize(void)		/* инициализация DAC на STM32F4xx */
 {
-	RCC->APB1ENR |= RCC_APB1ENR_DACEN; //РїРѕРґР°С‚СЊ С‚Р°РєС‚РёСЂРѕРІР°РЅРёРµ 
+	RCC->APB1ENR |= RCC_APB1ENR_DACEN; //подать тактирование 
 	__DSB();
 
 	DAC1->CR = DAC_CR_EN1;
 }
-// РІС‹РІРѕРґ 12-Р±РёС‚РЅРѕРіРѕ Р·РЅР°С‡РµРЅРёСЏ РЅР° Р¦РђРџ - РєР°РЅР°Р» 1
+// вывод 12-битного значения на ЦАП - канал 1
 void hardware_f051_dac_ch1_setvalue(uint_fast16_t v)
 {
 	DAC1->DHR12R1 = v;
@@ -7163,20 +7163,20 @@ void xSWIHandler(void)
 	}
 }
 
-/* Р“Р»Р°РІРЅР°СЏ С„СѓРЅРєС†РёСЏ РїСЂРѕРіСЂР°РјРјС‹ */
+/* Главная функция программы */
 int 
 //__attribute__ ((used))
 nestedirqtest(void)
 {
 	global_disableIRQ();
-	cpu_initialize();		// РІ СЃР»СѓС‡Р°Рµ ARM - РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РїСЂРµСЂС‹РІР°РЅРёР№ Рё РєРѕРЅС‚СЂРѕР»Р»РµСЂРѕРІ, AVR - Р·Р°РїСЂРµС‚ JTAG
+	cpu_initialize();		// в случае ARM - инициализация прерываний и контроллеров, AVR - запрет JTAG
 
 	HARDWARE_DEBUG_INITIALIZE();
 	HARDWARE_DEBUG_SET_SPEED(DEBUGSPEED);
-	// РІС‹РґР°С‡Р° РїРѕРІС‚РѕСЂСЏСЋС‰РµРіРѕСЃСЏ СЃРёРјРІРѕР»Р° РґР»СЏ С‚РµСЃС‚РёСЂРѕРІР°РЅРёСЏ СЃРєРѕСЂРѕСЃС‚Рё РїРµСЂРµРґР°С‡Рё, РµСЃР»Рё РѕС€РёР±РѕС‡РЅР°СЏ РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ
+	// выдача повторяющегося символа для тестирования скорости передачи, если ошибочная инициализация
 	//for (;;)
 	//	dbg_putchar(0xff);
-	// С‚РµСЃС‚РёСЂРѕРІР°РЅРёРµ РїСЂРёС‘РјР° Рё РїРµСЂРµРґР°С‡Рё СЃРёРјРІРѕР»РѕРІ
+	// тестирование приёма и передачи символов
 	debug_printf_P(PSTR("GICC_PMR=%02X\n"), GICC_PMR);
 	debug_printf_P(PSTR("ECHO test. Press ESC for done.\n"));
 	for (;1;)
@@ -7189,7 +7189,7 @@ nestedirqtest(void)
 			dbg_putchar(c);
 		}
 	}
-	board_init_io();		/* РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ С‡РёРїСЃРµР»РµРєС‚РѕРІ Рё SPI, I2C, Р·Р°РіСЂСѓР·РєР° FPGA */
+	board_init_io();		/* инициализация чипселектов и SPI, I2C, загрузка FPGA */
 	hardware_timer_initialize(3);
 	{
 		const uint16_t int_id = OSTMI0TINT_IRQn;
@@ -7277,11 +7277,11 @@ void lowtests(void)
 		//for (;;)
 		dbg_puts_impl_P(PSTR("Version " __DATE__ " " __TIME__ " 2 debug session starts.\n"));
 		#if 0
-			// РІС‹РґР°С‡Р° РїРѕРІС‚РѕСЂСЏСЋС‰РµРіРѕСЃСЏ СЃРёРјРІРѕР»Р° РґР»СЏ С‚РµСЃС‚РёСЂРѕРІР°РЅРёСЏ СЃРєРѕСЂРѕСЃС‚Рё РїРµСЂРµРґР°С‡Рё, РµСЃР»Рё РѕС€РёР±РѕС‡РЅР°СЏ РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ
+			// выдача повторяющегося символа для тестирования скорости передачи, если ошибочная инициализация
 			for (;;)
 				dbg_putchar(0xf0);
 		#endif
-		// С‚РµСЃС‚РёСЂРѕРІР°РЅРёРµ РїСЂРёС‘РјР° Рё РїРµСЂРµРґР°С‡Рё СЃРёРјРІРѕР»РѕРІ
+		// тестирование приёма и передачи символов
 		for (;1;)
 		{
 			char c;
@@ -7298,9 +7298,9 @@ void lowtests(void)
 #endif
 #if 0
 	{
-		// "Р±РµРіР°СЋС‰РёРµ РѕРіРѕРЅСЊРєРё" РЅР° СЃРІРµС‚РѕРґРёРѕРґР°С… - 74HC595
+		// "бегающие огоньки" на светодиодах - 74HC595
 		//arm_hardware_pio1_inputs(0xFF00);
-		// С‚РµСЃС‚РёСЂРѕРІР°РЅРёРµ SPI
+		// тестирование SPI
 		spi_initialize();
 
 		uint_fast8_t i = 0;
@@ -7311,7 +7311,7 @@ void lowtests(void)
 			uint_fast8_t v;
 			//
 			//TP();
-			spi_select2(target, SPIC_MODE3, SPIC_SPEEDFAST);	// Р’ FPGA СЂРµРіРёСЃС‚СЂ С‚Р°РєС‚РёСЂСѓРµС‚СЃСЏ РЅРµ РІ РїСЂСЏРјСѓСЋ
+			spi_select2(target, SPIC_MODE3, SPIC_SPEEDFAST);	// В FPGA регистр тактируется не в прямую
 			spi_progval8_p1(target, 0xFF);		/* read status register */
 			spi_complete(target);
 
@@ -7333,7 +7333,7 @@ void lowtests(void)
 		HARDWARE_DEBUG_SET_SPEED(DEBUGSPEED);
 		//for (;;)
 		dbg_puts_impl_P(PSTR("Version " __DATE__ " " __TIME__ " 3 debug session starts.\n"));
-		// РІС‹РґР°С‡Р° РїРѕРІС‚РѕСЂСЏСЋС‰РµРіРѕСЃСЏ СЃРёРјРІРѕР»Р° РґР»СЏ С‚РµСЃС‚РёСЂРѕРІР°РЅРёСЏ СЃРєРѕСЂРѕСЃС‚Рё РїРµСЂРµРґР°С‡Рё, РµСЃР»Рё РѕС€РёР±РѕС‡РЅР°СЏ РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ
+		// выдача повторяющегося символа для тестирования скорости передачи, если ошибочная инициализация
 		//for (;;)
 		//	dbg_putchar(0xff);
 
@@ -7356,7 +7356,7 @@ void lowtests(void)
 	}
 #endif /* CPUSTYLE_R7S721 */
 #if 0 && CPUSTYLE_R7S721
-	// С‚РµСЃС‚РёСЂРѕРІР°РЅРёРµ СЃРєРѕСЂРѕСЃС‚Рё РґРѕ РёРЅРёС†РёР°Р»РёР·Р°С†РёРё MMU
+	// тестирование скорости до инициализации MMU
 	{
 		const uint32_t mask = (1U << 13);	// P6_13
 		// R7S721 pins
@@ -7372,7 +7372,7 @@ void lowtests(void)
 #endif
 #if 0
 	{
-		// Р¤РѕСЂРјРёСЂРѕРІР°РЅРёРµ РёРјРїСѓР»СЊСЃРѕРІ РЅР° РІС‹РІРѕРґРµ РїСЂРѕС†РµСЃСЃРѕСЂР°
+		// Формирование импульсов на выводе процессора
 		for (;;)
 		{
 			//const uint32_t WORKMASK = 1UL << 31;	// PA31
@@ -7403,6 +7403,6 @@ void lowtests(void)
 #endif
 #if ARM_STM32L051_TQFP32_CPUSTYLE_V1_H_INCLUDED
 	hardware_tim21_initialize();
-	local_delay_ms(100);	// РїРѕРєР° РЅР° РІС‹С…РѕРґРµ РІС‹РїСЂСЏРјРёС‚РµР»СЏ РїРѕСЏРІРёС‚СЃСЏ РЅР°РїСЂСЏР¶РµРЅРёРµ */
+	local_delay_ms(100);	// пока на выходе выпрямителя появится напряжение */
 #endif /* ARM_STM32L051_TQFP32_CPUSTYLE_V1_H_INCLUDED */
 }

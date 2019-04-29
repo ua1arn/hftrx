@@ -1,7 +1,7 @@
 /* $Id$ */
 //
-// РџСЂРѕРµРєС‚ HF Dream Receiver (РљР’ РїСЂРёС‘РјРЅРёРє РјРµС‡С‚С‹)
-// Р°РІС‚РѕСЂ Р“РµРЅР° Р—Р°РІРёРґРѕРІСЃРєРёР№ mgs2001@mail.ru
+// Проект HF Dream Receiver (КВ приёмник мечты)
+// автор Гена Завидовский mgs2001@mail.ru
 // UA1ARN
 //
 
@@ -12,7 +12,7 @@
 #include <stdio.h>
 #include <ctype.h>
 
-// РёСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ Р±РёР±Р»РёРѕС‚РµС‡РЅРѕР№ С„СѓРЅРєС†РёРё С„РѕСЂРјР°С‚РЅРѕРіРѕ РІС‹РІРѕРґР° РІРјРµСЃС‚Рѕ СЃР°РјРѕРїРёСЃРЅРѕР№
+// использование библиотечной функции форматного вывода вместо самописной
 //#define FORMATFROMLIBRARY (CPUSTYLE_ARM_CM7 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM0 /* || CPUSTYLE_ARM_CA9 */)
 
 #if ! FORMATFROMLIBRARY
@@ -27,7 +27,7 @@ static	char *
 uconvert(long unsigned n, uint_fast8_t base, char * s, const FLASHMEM char * dg)
 {	do
 	{
-		//const ldiv_t v = ldiv(n, base);	// AVR GCC: РЅРµР»СЊР·СЏ РїСЂРёРјРµРЅСЏС‚СЊ ldiv - РїСЂРё РїРµСЂРµРїРѕР»РЅРµРЅРёРё (С‡РёСЃР»Р° РІСЂРѕРґРµ -1L) РЅРµРїСЂР°РІРёР»СЊРЅРѕ СЃС‡РёС‚Р°РµС‚
+		//const ldiv_t v = ldiv(n, base);	// AVR GCC: нельзя применять ldiv - при переполнении (числа вроде -1L) неправильно считает
 
 		* -- s = dg[(int) (n % base)];
 		n = n / base;
@@ -286,8 +286,8 @@ vsputchar(void * param, int ch)
 
 #endif /* ! FORMATFROMLIBRARY */
 
-	// Р”Р»СЏ Р°СЂС…РёС‚РµРєС‚СѓСЂС‹ ATMega РѕРїСЂРµРґРµР»РµРЅР° С‚РѕР»СЊРєРѕ СЌС‚Р° С„СѓРЅРєС†РёСЏ -
-	// СЃ СЂР°СЃРїРѕР»РѕР¶РµРЅРёРµРј С„РѕСЂРјР°С‚РЅРѕР№ СЃС‚СЂРѕРєРёРё РІ РїР°РјСЏС‚Рё РїСЂРѕРіСЂР°РјРј.
+	// Для архитектуры ATMega определена только эта функция -
+	// с расположением форматной строкии в памяти программ.
 uint_fast8_t local_snprintf_P( char *buffer, uint_fast8_t count, const FLASHMEM char *format, ... )
 {
 	va_list	ap;
@@ -306,12 +306,12 @@ uint_fast8_t local_snprintf_P( char *buffer, uint_fast8_t count, const FLASHMEM 
 	pr.count = count;
 
 	va_start(ap, format);
-	// РёСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ СЃР°РјРѕРїРёСЃРЅРѕР№ С„СѓРЅРєС†РёРё
-	n = local_format(& pr, vsputchar, format, ap);		// РЅРёРєРѕРіРґР° РЅРµ РІРѕР·РІСЂР°С‰Р°РµС‚СЃСЏ РѕС€РёР±РєР°
+	// использование самописной функции
+	n = local_format(& pr, vsputchar, format, ap);		// никогда не возвращается ошибка
 	va_end(ap);
 	vsputchar(& pr, '\0');
 #endif /* FORMATFROMLIBRARY */
-	return n == -1 ? count - 1 : n;	// РёР·РјРµРЅРµРЅРѕ РѕС‚ СЃС‚Р°РЅРґР°СЂС‚РЅРѕРіРѕ РїРѕРІРµРґРµРЅРёСЏ = РІСЃРµРіРґР° РґР»РёРЅРЅСѓ РІРѕР·РІСЂР°С‰Р°РµРј.
+	return n == -1 ? count - 1 : n;	// изменено от стандартного поведения = всегда длинну возвращаем.
 }
 
 #if WITHDEBUG
@@ -320,7 +320,7 @@ uint_fast8_t local_snprintf_P( char *buffer, uint_fast8_t count, const FLASHMEM 
 
 /*	Formatted output to standart output stream.	*/
 /*	User-side of console output.			*/
-// РёСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ Р±РёР±Р»РёРѕС‚РµС‡РЅРѕР№ С„СѓРЅРєС†РёРё (РїРѕРґРґРµСЂР¶РєР° РїРµС‡Р°С‚Рё С‡РёСЃРµР» СЃ РїР»Р°РІР°СЋС‰РµР№ С‚РѕС‡РєРѕР№).
+// использование библиотечной функции (поддержка печати чисел с плавающей точкой).
 
 void debug_printf_P(const FLASHMEM char *format, ... )
 {
@@ -345,14 +345,14 @@ dbg_local_putchar(void * param, int ch)
 
 /*	Formatted output to standart output stream.	*/
 /*	User-side of console output.			*/
-// РёСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ СЃР°РјРѕРїРёСЃРЅРѕР№ С„СѓРЅРєС†РёРё
+// использование самописной функции
 
 void debug_printf_P(const FLASHMEM char *format, ... )
 {
 	va_list	ap;
 	va_start(ap, format);
 
-	local_format(NULL, dbg_local_putchar, format, ap);		// РЅРёРєРѕРіРґР° РЅРµ РІРѕР·РІСЂР°С‰Р°РµС‚СЃСЏ РѕС€РёР±РєР°
+	local_format(NULL, dbg_local_putchar, format, ap);		// никогда не возвращается ошибка
 
 	va_end(ap);
 }

@@ -1,11 +1,11 @@
 /* $Id$ */
 //
-// РџСЂРѕРµРєС‚ HF Dream Receiver (РљР’ РїСЂРёС‘РјРЅРёРє РјРµС‡С‚С‹)
-// Р°РІС‚РѕСЂ Р“РµРЅР° Р—Р°РІРёРґРѕРІСЃРєРёР№ mgs2001@mail.ru
+// Проект HF Dream Receiver (КВ приёмник мечты)
+// автор Гена Завидовский mgs2001@mail.ru
 // UA1ARN
 //
-// TFT РїР°РЅРµР»СЊ 320 * 240 ADI_3.2_AM-240320D4TOQW-T00H(R)
-// РўРѕР»СЊРєРѕ СЂР°Р±РѕС‚Р°РµС‚ РјРµРґР»РµРЅРЅРѕ.
+// TFT панель 320 * 240 ADI_3.2_AM-240320D4TOQW-T00H(R)
+// Только работает медленно.
 
 
 #include "hardware.h"
@@ -22,7 +22,7 @@
 #include "ili9320.h"
 
 #if DSTYLE_G_X320_Y240
-	// Р”Р»СЏ РґРёСЃРїР»РµРµРІ 320 * 240
+	// Для дисплеев 320 * 240
 
 	#include "./fonts/ILI9341_font_small.c"	
 	#include "./fonts/ILI9341_font_half.c"	
@@ -56,7 +56,7 @@
 
 /* SPI interface definitions */
 
-#define ILI9320_SPI_IDCODE		(0x70)		// РїРѕСЃС‚РѕСЏРЅРЅР°СЏ С‡Р°СЃС‚СЊ РїРµСЂРІРѕРіРѕ Р±Р°Р№С‚Р°
+#define ILI9320_SPI_IDCODE		(0x70)		// постоянная часть первого байта
 #define ILI9320_SPI_ID(x)		((x) << 2)
 #define ILI9320_SPI_READ		(0x01)		// WR = 1
 #define ILI9320_SPI_WRITE		(0x00)		// WR = 0
@@ -74,13 +74,13 @@ LCD_CtrlWrite_ILI9320(
 		ILI9320_SPI_WRITE	| 
 		ILI9320_SPI_INDEX	|	// RS = 0
 		ILI9320_SPI_ID(0)	|
-		ILI9320_SPI_IDCODE;	//0x70		// РїРѕСЃС‚РѕСЏРЅРЅР°СЏ С‡Р°СЃС‚СЊ РїРµСЂРІРѕРіРѕ Р±Р°Р№С‚Р°
+		ILI9320_SPI_IDCODE;	//0x70		// постоянная часть первого байта
 
 	const uint_fast8_t v2 = 
 		ILI9320_SPI_WRITE	| 
 		ILI9320_SPI_DATA	|	// RS = 1
 		ILI9320_SPI_ID(0)	|
-		ILI9320_SPI_IDCODE;	//0x70		// РїРѕСЃС‚РѕСЏРЅРЅР°СЏ С‡Р°СЃС‚СЊ РїРµСЂРІРѕРіРѕ Р±Р°Р№С‚Р°
+		ILI9320_SPI_IDCODE;	//0x70		// постоянная часть первого байта
 
 	spi_select(targetlcd, ILI9320_SPIMODE);
 	spi_progval8_p1(targetlcd, v1);
@@ -109,13 +109,13 @@ LCD_Read_ILI9320(
 		ILI9320_SPI_WRITE	| 
 		ILI9320_SPI_INDEX	|	// rs = 0
 		ILI9320_SPI_ID(0)	|
-		ILI9320_SPI_IDCODE };	//0x70		// РїРѕСЃС‚РѕСЏРЅРЅР°СЏ С‡Р°СЃС‚СЊ РїРµСЂРІРѕРіРѕ Р±Р°Р№С‚Р°
+		ILI9320_SPI_IDCODE };	//0x70		// постоянная часть первого байта
 
 	enum { v2 = 
 		ILI9320_SPI_READ	| 
 		ILI9320_SPI_DATA	|	// rs = 1
 		ILI9320_SPI_ID(0)	|
-		ILI9320_SPI_IDCODE };	//0x70		// РїРѕСЃС‚РѕСЏРЅРЅР°СЏ С‡Р°СЃС‚СЊ РїРµСЂРІРѕРіРѕ Р±Р°Р№С‚Р°
+		ILI9320_SPI_IDCODE };	//0x70		// постоянная часть первого байта
 
 	spi_select(targetlcd, ILI9320_SPIMODE);
 	spi_progval8_p1(targetlcd, v1);
@@ -136,7 +136,7 @@ LCD_Read_ILI9320(
 }
 
 
-// РІ СЂРµР¶РёРј РїРµСЂРµРґР°С‡Рё РґР°РЅРЅС‹С… РїРµСЂРµРІРѕРґРёРј СЃСЂР°Р·Сѓ РїРѕ РѕРєРѕРЅС‡Р°РЅРёРё РєРѕРјР°РЅРґ.
+// в режим передачи данных переводим сразу по окончании команд.
 static void ili9320_put_char_begin(void)
 {
 	uint_fast16_t addr = 0x22;	
@@ -144,13 +144,13 @@ static void ili9320_put_char_begin(void)
 		ILI9320_SPI_WRITE	| 
 		ILI9320_SPI_INDEX	|	// RS = 0
 		ILI9320_SPI_ID(0)	|
-		ILI9320_SPI_IDCODE;	//0x70		// РїРѕСЃС‚РѕСЏРЅРЅР°СЏ С‡Р°СЃС‚СЊ РїРµСЂРІРѕРіРѕ Р±Р°Р№С‚Р°
+		ILI9320_SPI_IDCODE;	//0x70		// постоянная часть первого байта
 
 	const uint_fast8_t v2 = 
 		ILI9320_SPI_WRITE	| 
 		ILI9320_SPI_DATA	|	// RS = 1
 		ILI9320_SPI_ID(0)	|
-		ILI9320_SPI_IDCODE;	//0x70		// РїРѕСЃС‚РѕСЏРЅРЅР°СЏ С‡Р°СЃС‚СЊ РїРµСЂРІРѕРіРѕ Р±Р°Р№С‚Р°
+		ILI9320_SPI_IDCODE;	//0x70		// постоянная часть первого байта
 
 	spi_select(targetlcd, ILI9320_SPIMODE);
 	spi_progval8_p1(targetlcd, v1);
@@ -175,24 +175,24 @@ ili9320_put_pixel_p1(
 	COLOR_T color
 	)
 {
-	spi_progval8_p1(targetlcd, color >> 8);	// СЃРјРѕС‚СЂРµС‚СЊ Р±РёС‚ TRI Р° СЂРµРіРёСЃС‚СЂРµ 03
-	spi_progval8_p2(targetlcd, color >> 0);	// СЃРјРѕС‚СЂРµС‚СЊ Р±РёС‚ TRI Р° СЂРµРіРёСЃС‚СЂРµ 03
+	spi_progval8_p1(targetlcd, color >> 8);	// смотреть бит TRI а регистре 03
+	spi_progval8_p2(targetlcd, color >> 0);	// смотреть бит TRI а регистре 03
 }
 static void
 ili9320_put_pixel_p2(	
 	COLOR_T color
 	)
 {
-	spi_progval8_p2(targetlcd, color >> 8);	// СЃРјРѕС‚СЂРµС‚СЊ Р±РёС‚ TRI Р° СЂРµРіРёСЃС‚СЂРµ 03
-	spi_progval8_p2(targetlcd, color >> 0);	// СЃРјРѕС‚СЂРµС‚СЊ Р±РёС‚ TRI Р° СЂРµРіРёСЃС‚СЂРµ 03
+	spi_progval8_p2(targetlcd, color >> 8);	// смотреть бит TRI а регистре 03
+	spi_progval8_p2(targetlcd, color >> 0);	// смотреть бит TRI а регистре 03
 }
 static void
 ili9320_put_pixel_p3(	
 	COLOR_T color
 	)
 {
-	spi_progval8_p2(targetlcd, color >> 8);	// СЃРјРѕС‚СЂРµС‚СЊ Р±РёС‚ TRI Р° СЂРµРіРёСЃС‚СЂРµ 03
-	spi_progval8_p2(targetlcd, color >> 0);	// СЃРјРѕС‚СЂРµС‚СЊ Р±РёС‚ TRI Р° СЂРµРіРёСЃС‚СЂРµ 03
+	spi_progval8_p2(targetlcd, color >> 8);	// смотреть бит TRI а регистре 03
+	spi_progval8_p2(targetlcd, color >> 0);	// смотреть бит TRI а регистре 03
 	spi_complete(targetlcd);
 }
 
@@ -251,14 +251,14 @@ static uint_fast8_t
 NOINLINEAT
 bigfont_decode(uint_fast8_t c)
 {
-	// '#' - СѓР·РєРёР№ РїСЂРѕР±РµР»
+	// '#' - узкий пробел
 	if (c == ' ' || c == '#')
 		return 11;
 	if (c == '_')
-		return 10;		// РєСѓСЂСЃРѕСЂ - РїРѕР·РёС†РёСЏ СЂРµРґР°РєС‚РёСЂРІР°РЅРёСЏ С‡Р°СЃС‚РѕС‚С‹
+		return 10;		// курсор - позиция редактирвания частоты
 	if (c == '.')
-		return 12;		// С‚РѕС‡РєР°
-	return c - '0';		// РѕСЃС‚Р°Р»СЊРЅС‹Рµ - С†РёС„СЂС‹ 0..9
+		return 12;		// точка
+	return c - '0';		// остальные - цифры 0..9
 }
 
 
@@ -269,7 +269,7 @@ smallfont_decode(uint_fast8_t c)
 }
 
 
-// Р’С‹Р·РѕРІ СЌС‚РѕР№ С„СѓРЅРєС†РёРё С‚РѕР»СЊРєРѕ РІРЅСѓС‚СЂРё display_wrdata_begin() Рё 	display_wrdata_end();
+// Вызов этой функции только внутри display_wrdata_begin() и 	display_wrdata_end();
 static void ili9320_put_char_fast(char cc, uint_fast8_t lowhalf)
 {
 	uint_fast8_t i = 0;
@@ -283,13 +283,13 @@ static void ili9320_put_char_fast(char cc, uint_fast8_t lowhalf)
 }
 
 
-// Р’С‹Р·РѕРІ СЌС‚РѕР№ С„СѓРЅРєС†РёРё С‚РѕР»СЊРєРѕ РІРЅСѓС‚СЂРё display_wrdata_begin() Рё 	display_wrdata_end();
+// Вызов этой функции только внутри display_wrdata_begin() и 	display_wrdata_end();
 
 static void ili9320_put_char_big(char cc, uint_fast8_t lowhalf)
 {
-	// '#' - СѓР·РєРёР№ РїСЂРѕР±РµР»
-	enum { NBV = (BIGCHARH / 8) }; // СЃРєРѕР»СЊРєРѕ Р±Р°Р№С‚РѕРІ РІ РѕРґРЅРѕР№ РІРµСЂС‚РёРєР°Р»Рё
-	uint_fast8_t i = NBV * ((cc == '.' || cc == '#') ? 12 : 0);	// РЅР°С‡Р°Р»СЊРЅР°СЏ РєРѕР»РѕРЅРєР° Р·РЅР°РєРѕРіРµРЅРµСЂР°С‚РѕСЂР°, РѕС‚РєСѓРґР° РЅР°С‡РёРЅР°С‚СЊ.
+	// '#' - узкий пробел
+	enum { NBV = (BIGCHARH / 8) }; // сколько байтов в одной вертикали
+	uint_fast8_t i = NBV * ((cc == '.' || cc == '#') ? 12 : 0);	// начальная колонка знакогенератора, откуда начинать.
     const uint_fast8_t c = bigfont_decode((unsigned char) cc);
 	enum { NBYTES = (sizeof ILI9320_bigfont [0] / sizeof ILI9320_bigfont [0][0]) };
 	const FLASHMEM uint8_t * const p = & ILI9320_bigfont [c][0];
@@ -300,7 +300,7 @@ static void ili9320_put_char_big(char cc, uint_fast8_t lowhalf)
 	}
 }
 
-// Р’С‹Р·РѕРІ СЌС‚РѕР№ С„СѓРЅРєС†РёРё С‚РѕР»СЊРєРѕ РІРЅСѓС‚СЂРё display_wrdata_begin() Рё 	display_wrdata_end();
+// Вызов этой функции только внутри display_wrdata_begin() и 	display_wrdata_end();
 
 static void ili9320_put_char_half(char cc, uint_fast8_t lowhalf)
 {
@@ -315,7 +315,7 @@ static void ili9320_put_char_half(char cc, uint_fast8_t lowhalf)
 }
 
 
-/* РІС‹Р·С‹РІР°РµС‚СЃСЏ РјРµР¶РґСѓ РІС‹Р·РѕРІР°РјРё display_wrdatabar_begin() Рё display_wrdatabar_end() */
+/* вызывается между вызовами display_wrdatabar_begin() и display_wrdatabar_end() */
 static void ili9320_bar_column(uint_fast8_t pattern)
 {
 	ili9320_pix8(pattern);
@@ -326,14 +326,14 @@ static uint_fast8_t saved_y;
 static void ili9320_set_windowh(uint_fast8_t height)
 {
 #if LCDMODE_ILI9320_TOPDOWN
-	/* РїРµСЂРµРІС‘СЂРЅСѓС‚РѕРµ РёР·РѕР±СЂР°Р¶РµРЅРёРµ */
-	// РѕС‚РєСЂС‹С‚СЊ СЃС‚СЂРѕРєСѓ РґР»СЏ Р·Р°РїРёСЃРё С‚РµРєСЃС‚Р°
+	/* перевёрнутое изображение */
+	// открыть строку для записи текста
 	LCD_CtrlWrite_ILI9320(0x0050, saved_y - (height - 1)); // Horizontal GRAM Start Address
 	LCD_CtrlWrite_ILI9320(0x0051, saved_y /* + (height - 1) */ ); // Horizontal GRAM End Address
 	LCD_CtrlWrite_ILI9320(0x0020, saved_y);
 #else /* LCDMODE_ILI9320_TOPDOWN */
-	/* РЅРѕСЂРјР°Р»СЊРЅРѕРµ РёР·РѕР±СЂР°Р¶РµРЅРёРµ */
-	// РѕС‚РєСЂС‹С‚СЊ СЃС‚СЂРѕРєСѓ РґР»СЏ Р·Р°РїРёСЃРё С‚РµРєСЃС‚Р°
+	/* нормальное изображение */
+	// открыть строку для записи текста
 	LCD_CtrlWrite_ILI9320(0x0050, saved_y); // Horizontal GRAM Start Address
 	LCD_CtrlWrite_ILI9320(0x0051, saved_y + (height - 1)); // Horizontal GRAM End Address
 	LCD_CtrlWrite_ILI9320(0x0020, saved_y);
@@ -343,17 +343,17 @@ static void ili9320_set_windowh(uint_fast8_t height)
 
 
 /*
- Р¤СѓРЅРєС†РёСЏ СѓСЃС‚Р°РЅРѕРІРєРё РєСѓСЂСЃРѕСЂР° РІ РїРѕР·РёС†РёСЋ x,y
- X - РєРѕРѕСЂРґРёРЅР°С‚Р° РїРѕ РіРѕСЂРёР·РѕРЅС‚Р°Р»Рё РІ РїСЂРµРґРµР»Р°С… 0-175,
- Y - РєРѕРѕСЂРґРёРЅР°С‚Р° РїРѕ РІРµСЂС‚РёРєР°Р»Рё (СЃС‚СЂРѕРєР°) РІ РїСЂРµРґРµР»Р°С… 8 Р±РёС‚
+ Функция установки курсора в позицию x,y
+ X - координата по горизонтали в пределах 0-175,
+ Y - координата по вертикали (строка) в пределах 8 бит
 */
 static void ili9320_set_graddr(uint_fast16_t x)
 {
 #if LCDMODE_ILI9320_TOPDOWN
-	/* РїРµСЂРµРІС‘СЂРЅСѓС‚РѕРµ РёР·РѕР±СЂР°Р¶РµРЅРёРµ */
+	/* перевёрнутое изображение */
 	LCD_CtrlWrite_ILI9320(0x0021, x);
 #else /* LCDMODE_ILI9320_TOPDOWN */
-	/* РЅРѕСЂРјР°Р»СЊРЅРѕРµ РёР·РѕР±СЂР°Р¶РµРЅРёРµ */
+	/* нормальное изображение */
 	LCD_CtrlWrite_ILI9320(0x0021, x);
 #endif	/* LCDMODE_ILI9320_TOPDOWN */
 }
@@ -378,8 +378,8 @@ static void ili9320_clear(COLOR_T bg)
 
 }
 
-// СЃРєРѕРїРёСЂРѕРІР°РЅРѕ РёР· РґР°С‚Р°С€РёС‚Р°.
-// РїРѕРґ СЂР°Р·РЅС‹Рµ РІРёРґС‹ РїР°РЅРµР»РµР№ С‚Р°Рј СЂР°Р·Р»РёС‡РЅС‹Рµ РёРЅРёС†РёР°Р»РёР·Р°С†РёРѕР»РЅРЅС‹Рµ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕСЃС‚С‚Рё.
+// скопировано из даташита.
+// под разные виды панелей там различные инициализациолнные последовательностти.
 // CPT QVGA 3.2" Panel
 static
 void ILI9320_CPT32_Initial(void)
@@ -392,10 +392,10 @@ void ILI9320_CPT32_Initial(void)
 	LCD_CtrlWrite_ILI9320(0x0001, 0x0100); // set SS and SM bit
 	LCD_CtrlWrite_ILI9320(0x0002, 0x0700); // set 1 line inversion
 #if LCDMODE_ILI9320_TOPDOWN
-	/* РїРµСЂРµРІС‘СЂРЅСѓС‚РѕРµ РёР·РѕР±СЂР°Р¶РµРЅРёРµ */
+	/* перевёрнутое изображение */
 	LCD_CtrlWrite_ILI9320(0x0003, 0x1020 /* 0x1030 */); // set GRAM write direction and BGR=1.
 #else /* LCDMODE_ILI9320_TOPDOWN */
-	/* РЅРѕСЂРјР°Р»СЊРЅРѕРµ РёР·РѕР±СЂР°Р¶РµРЅРёРµ */
+	/* нормальное изображение */
 	LCD_CtrlWrite_ILI9320(0x0003, 0x1010 /* 0x1030 */); // set GRAM write direction and BGR=1.
 #endif	/* LCDMODE_ILI9320_TOPDOWN */
 	LCD_CtrlWrite_ILI9320(0x0004, 0x0000); // Resize register
@@ -506,7 +506,7 @@ static void ili9320_initialize(void)
 	//ili9320_clear();
 
 #if 0
-	// РџРµС‡Р°С‚СЊ РїР°СЂР°РјРµС‚СЂРѕРІ РЅР° СЌРєСЂР°РЅРµ
+	// Печать параметров на экране
 	for (;;)
 	{
 		//static unsigned  count;
@@ -530,14 +530,14 @@ static void ili9320_initialize(void)
 	//	;
 }
 
-/* РІС‹Р·С‹РІР°РµС‚СЃСЏ РїСЂРё СЂР°Р·СЂРµС€С‘РЅРЅС‹С… РїСЂРµСЂС‹РІР°РЅРёСЏС…. */
+/* вызывается при разрешённых прерываниях. */
 void display_initialize(void)
 {
 
 	ili9320_initialize();
 #if 0
 	ili9320_clear(BLACK);
-	// РџРµС‡Р°С‚СЊ РїР°СЂР°РјРµС‚СЂРѕРІ РЅР° СЌРєСЂР°РЅРµ
+	// Печать параметров на экране
 	for (;;)
 	{
 		uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
@@ -625,9 +625,9 @@ display_wrdatabig_end(void)
 	ili9320_put_char_end();
 }
 
-/* РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ РѕРґРЅРѕР№ РІРµСЂС‚РёРєР°Р»СЊРЅРѕР№ РїРѕР»РѕСЃС‹ РЅР° РіСЂР°С„РёС‡РµСЃРєРѕРј РёРЅРґРёРєР°С‚РѕСЂРµ */
-/* СЃС‚Р°СЂС€РёРµ Р±РёС‚С‹ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‚ РІРµСЂС…РЅРёРј РїРёРєСЃРµР»СЏРј РёР·РѕР±СЂР°Р¶РµРЅРёСЏ */
-/* РІС‹Р·С‹РІР°РµС‚СЃСЏ РјРµР¶РґСѓ РІС‹Р·РѕРІР°РјРё display_wrdatabar_begin() Рё display_wrdatabar_end() */
+/* отображение одной вертикальной полосы на графическом индикаторе */
+/* старшие биты соответствуют верхним пикселям изображения */
+/* вызывается между вызовами display_wrdatabar_begin() и display_wrdatabar_end() */
 void 
 display_barcolumn(uint_fast8_t pattern)
 {
@@ -647,8 +647,8 @@ display_put_char_half(uint_fast8_t c, uint_fast8_t lowhalf)
 }
 
 
-// Р’С‹Р·РѕРІ СЌС‚РѕР№ С„СѓРЅРєС†РёРё С‚РѕР»СЊРєРѕ РІРЅСѓС‚СЂРё display_wrdata_begin() Рё display_wrdata_end();
-// РСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РїСЂРё РІС‹РІРѕРґРµ РЅР° РіСЂР°С„РёС‡РµСЃРєРёР№ РЅРґРёРєР°С‚РѕСЂ, РµСЃР»Рё РўР Р•Р‘РЈР•РўРЎРЇ РїРµСЂРµРєР»СЋС‡Р°С‚СЊ РїРѕР»РѕСЃС‹ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ
+// Вызов этой функции только внутри display_wrdata_begin() и display_wrdata_end();
+// Используется при выводе на графический ндикатор, если ТРЕБУЕТСЯ переключать полосы отображения
 void
 display_put_char_small(uint_fast8_t c, uint_fast8_t lowhalf)
 {
@@ -659,32 +659,32 @@ void
 display_gotoxy(uint_fast8_t x, uint_fast8_t y)
 {
 #if LCDMODE_ILI9320_TOPDOWN
-	/* РїРµСЂРµРІС‘СЂРЅСѓС‚РѕРµ РёР·РѕР±СЂР°Р¶РµРЅРёРµ */
+	/* перевёрнутое изображение */
 	saved_y = (DIM_Y - 1) - (y * CHAR_H);
 	ili9320_set_graddr((x * CHAR_W));
 #else /* LCDMODE_ILI9320_TOPDOWN */
-	/* РЅРѕСЂРјР°Р»СЊРЅРѕРµ РёР·РѕР±СЂР°Р¶РµРЅРёРµ */
+	/* нормальное изображение */
 	saved_y = (y * CHAR_H);
 	ili9320_set_graddr((DIM_X - 1) - (x * CHAR_W));
 #endif	/* LCDMODE_ILI9320_TOPDOWN */
 }
 
-// РљРѕРѕСЂРґРёРЅР°С‚С‹ РІ РїРёРєСЃРµР»СЏС…
+// Координаты в пикселях
 void display_plotfrom(uint_fast16_t x, uint_fast16_t y)
 {
 #if LCDMODE_ILI9320_TOPDOWN
-	/* РїРµСЂРµРІС‘СЂРЅСѓС‚РѕРµ РёР·РѕР±СЂР°Р¶РµРЅРёРµ */
+	/* перевёрнутое изображение */
 	saved_y = (DIM_Y - 1) - (y);
 	ili9320_set_graddr((x));
 #else /* LCDMODE_ILI9320_TOPDOWN */
-	/* РЅРѕСЂРјР°Р»СЊРЅРѕРµ РёР·РѕР±СЂР°Р¶РµРЅРёРµ */
+	/* нормальное изображение */
 	saved_y = (y);
 	ili9320_set_graddr((DIM_X - 1) - (x));
 #endif	/* LCDMODE_ILI9320_TOPDOWN */
 }
 
 void display_plotstart(
-	uint_fast16_t height	// Р’С‹СЃРѕС‚Р° РѕРєРЅР° РІ РїРёРєСЃРµР»СЏС…
+	uint_fast16_t height	// Высота окна в пикселях
 	)
 {
 	ili9320_set_windowh(height);
@@ -698,7 +698,7 @@ void display_plotstop(void)
 
 void display_plot(
 	const PACKEDCOLOR_T * buffer, 
-	uint_fast16_t dx,	// Р Р°Р·РјРµСЂС‹ РѕРєРЅР° РІ РїРёРєСЃРµР»СЏС…
+	uint_fast16_t dx,	// Размеры окна в пикселях
 	uint_fast16_t dy
 	)
 {
@@ -706,8 +706,8 @@ void display_plot(
 }
 
 
-/* Р°РїРїР°СЂР°С‚РЅС‹Р№ СЃР±СЂРѕСЃ РґРёСЃРїР»РµСЏ - РїРµСЂРµРґ РёРЅРёС†РёР°Р»РёР·Р°С†РёР№ */
-/* РІС‹Р·С‹РІР°РµС‚СЃСЏ РїСЂРё СЂР°Р·СЂРµС€С‘РЅРЅС‹С… РїСЂРµСЂС‹РІР°РЅРёСЏС…. */
+/* аппаратный сброс дисплея - перед инициализаций */
+/* вызывается при разрешённых прерываниях. */
 void display_reset(void)
 {
 	//************* Reset LCD Driver ****************//
@@ -723,7 +723,7 @@ void display_reset(void)
 }
 
 
-/* Р Р°Р·СЂСЏР¶Р°РµРј РєРѕРЅРґРµРЅСЃР°С‚РѕСЂС‹ РїРёС‚Р°РЅРёСЏ */
+/* Разряжаем конденсаторы питания */
 void display_discharge(void)
 {
 }

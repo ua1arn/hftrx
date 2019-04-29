@@ -1,10 +1,10 @@
 /* $Id$ */
 //
-// РџСЂРѕРµРєС‚ HF Dream Receiver (РљР’ РїСЂРёС‘РјРЅРёРє РјРµС‡С‚С‹)
-// Р°РІС‚РѕСЂ Р“РµРЅР° Р—Р°РІРёРґРѕРІСЃРєРёР№ mgs2001@mail.ru
+// Проект HF Dream Receiver (КВ приёмник мечты)
+// автор Гена Завидовский mgs2001@mail.ru
 // UA1ARN
 //
-#include "hardware.h"	/* Р·Р°РІРёСЃСЏС‰РёРµ РѕС‚ РїСЂРѕС†РµСЃСЃРѕСЂР° С„СѓРЅРєС†РёРё СЂР°Р±РѕС‚С‹ СЃ РїРѕСЂС‚Р°РјРё */
+#include "hardware.h"	/* зависящие от процессора функции работы с портами */
 #include "list.h"
 #include "formats.h"	// for debug prints
 
@@ -29,11 +29,11 @@ enum
 	BUFFTAG_total
 };
 
-	/* РѕС‚Р»Р°РґРѕС‡РЅС‹Рµ РІСЂР°РїРїРµСЂС‹ РґР»СЏ С„СѓРЅРєС†РёР№ СЂР°Р±РѕС‚С‹ СЃРѕ СЃРїРёСЃРєРѕРј - РїРѕР·РІРѕР»СЏСЋС‚ РїРѕР»СѓС‡РёС‚СЊ СЂР°Р·РјРµСЂ РѕС‡РµСЂРµРґРё */
+	/* отладочные врапперы для функций работы со списком - позволяют получить размер очереди */
 	typedef struct listcnt
 	{
 		LIST_ENTRY item0;
-		uint_fast8_t Count;	// РєРѕР»РёС‡РµСЃС‚РІРѕ СЌР»РјРµРЅС‚РѕРІ РІ СЃРїРёСЃРєРµ
+		uint_fast8_t Count;	// количество элментов в списке
 	} LIST_ENTRY2, * PLIST_ENTRY2;
 
 	#define LIST2PRINT(name) do { \
@@ -65,7 +65,7 @@ enum
 	RemoveTailList2(PLIST_ENTRY2 ListHead)
 	{
 		(ListHead)->Count -= 1;
-		const PLIST_ENTRY t = RemoveTailList(& (ListHead)->item0);	/* РїСЂСЏРјРѕ РІРµСЂРЅСѓС‚СЊ Р·РЅР°С‡РµРЅРёРµ RemoveTailList РЅРµР»СЊР·СЏ - Microsoft СЃРґРµР»Р°Р» РЅРµ СЃРѕРІСЃРµРј РїСЂР°РІРёР»СЊРЅС‹Р№ РјР°РєСЂРѕСЃ. РќРѕ РїРѕ РґСЂСѓРіРѕРјСѓ Рё РЅРµ РїР»СѓС‡РёР»РѕСЃСЊ Р±С‹ РІ СЃС‚Р°РЅРґР°СЂС‚РЅРѕРј СЏР·С‹РєРµ C. */
+		const PLIST_ENTRY t = RemoveTailList(& (ListHead)->item0);	/* прямо вернуть значение RemoveTailList нельзя - Microsoft сделал не совсем правильный макрос. Но по другому и не плучилось бы в стандартном языке C. */
 		return t;
 	}
 
@@ -75,23 +75,23 @@ enum
 		return (ListHead)->Count;
 	}
 
-	/* РіРѕС‚РѕРІРЅРѕСЃС‚СЊ Р±СѓС„РµСЂРѕРІ СЃ "РіРёСЃС‚РµСЂРµР·РёСЃРѕРј". */
+	/* готовность буферов с "гистерезисом". */
 	__STATIC_INLINE uint_fast8_t fiforeadyupdate(
-		uint_fast8_t ready,		// С‚РµРєСѓС‰РµРµ СЃРѕСЃС‚РѕСЏРЅРёРµ РіРѕС‚РѕРІРЅРѕСЃС‚Рё
-		uint_fast8_t Count,		// СЃРєРѕР»СЊРєРѕ СЌР»РµРјРµРЅС‚РѕРІ СЃРµР№С‡Р°СЃ РІ РѕС‡РµСЂРµРґРё
-		uint_fast8_t normal		// РіСЂР°РЅРёС†Р° РІРєР»СЋС‡РµРЅРёСЏ РіРѕС‚РѕРІРЅРѕСЃС‚Рё
+		uint_fast8_t ready,		// текущее состояние готовности
+		uint_fast8_t Count,		// сколько элементов сейчас в очереди
+		uint_fast8_t normal		// граница включения готовности
 		)
 	{
 		return ready ? Count != 0 : Count >= normal;
 	}
 
 
-	/* РѕС‚Р»Р°РґРѕС‡РЅС‹Рµ РІСЂР°РїРїРµСЂС‹ РґР»СЏ С„СѓРЅРєС†РёР№ СЂР°Р±РѕС‚С‹ СЃРѕ СЃРїРёСЃРєРѕРј - РїРѕР·РІРѕР»СЏСЋС‚ РїРѕР»СѓС‡РёС‚СЊ СЂР°Р·РјРµСЂ РѕС‡РµСЂРµРґРё */
+	/* отладочные врапперы для функций работы со списком - позволяют получить размер очереди */
 	typedef struct listcnt3
 	{
 		LIST_ENTRY2 item2;
-		uint_fast8_t RdyLevel;	// РўСЂРµР±СѓРµРјРѕРµ РєРѕР»РёС‡РµСЃС‚РІРѕ
-		uint_fast8_t Rdy;		// РєРѕР»РёС‡РµСЃС‚РІРѕ СЌР»РјРµРЅС‚РѕРІ РІ СЃРїРёСЃРєРµ
+		uint_fast8_t RdyLevel;	// Требуемое количество
+		uint_fast8_t Rdy;		// количество элментов в списке
 	} LIST_ENTRY3, * PLIST_ENTRY3;
 
 	__STATIC_INLINE int
@@ -118,7 +118,7 @@ enum
 	__STATIC_INLINE PLIST_ENTRY
 	RemoveTailList3(PLIST_ENTRY3 ListHead)
 	{
-		const PLIST_ENTRY t = RemoveTailList2(& (ListHead)->item2);	/* РїСЂСЏРјРѕ РІРµСЂРЅСѓС‚СЊ Р·РЅР°С‡РµРЅРёРµ RemoveTailList РЅРµР»СЊР·СЏ - Microsoft СЃРґРµР»Р°Р» РЅРµ СЃРѕРІСЃРµРј РїСЂР°РІРёР»СЊРЅС‹Р№ РјР°РєСЂРѕСЃ. РќРѕ РїРѕ РґСЂСѓРіРѕРјСѓ Рё РЅРµ РїР»СѓС‡РёР»РѕСЃСЊ Р±С‹ РІ СЃС‚Р°РЅРґР°СЂС‚РЅРѕРј СЏР·С‹РєРµ C. */
+		const PLIST_ENTRY t = RemoveTailList2(& (ListHead)->item2);	/* прямо вернуть значение RemoveTailList нельзя - Microsoft сделал не совсем правильный макрос. Но по другому и не плучилось бы в стандартном языке C. */
 		(ListHead)->Rdy = fiforeadyupdate((ListHead)->Rdy, (ListHead)->item2.Count, (ListHead)->RdyLevel);
 		return t;
 	}
@@ -181,7 +181,7 @@ enum
 	}
 #endif
 	//////////////////////////////////
-	// РЎРёСЃС‚РµРјР° Р±СѓС„РµСЂРёР·Р°С†РёРё Р°СѓРґРёРѕРґР°РЅРЅС‹С…
+	// Система буферизации аудиоданных
 	//
 	// Audio CODEC in/out
 	typedef ALIGNX_BEGIN struct voice16_tag
@@ -204,25 +204,25 @@ enum
 		ALIGNX_BEGIN uint32_t buff [DMABUFFSIZE32RX] ALIGNX_END;
 	} ALIGNX_END voice32rx_t;
 
-	static const uint_fast8_t VOICESMIKE16NORMAL = 5;	// РќРѕСЂРјР°Р»СЊРЅРѕРµ РєРѕР»РёС‡РµСЃС‚РІРѕ Р±СѓС„РµСЂРѕРІ РІ РѕС‡РµСЂРµРґРё
-	static LIST_ENTRY3 voicesmike16;	// Р±СѓС„РµСЂС‹ СЃ РѕС†РёС„СЂРѕРІР°РЅРЅС‹РјРё Р·РІСѓРєР°РјРё СЃ РјРёРєСЂРѕС„РѕРЅР°/Line in
-	static LIST_ENTRY3 resample16;		// Р±СѓС„РµСЂС‹ РѕС‚ USB РґР»СЏ СЃРёРЅС…СЂРѕРЅРёР·Р°С†РёРё
+	static const uint_fast8_t VOICESMIKE16NORMAL = 5;	// Нормальное количество буферов в очереди
+	static LIST_ENTRY3 voicesmike16;	// буферы с оцифрованными звуками с микрофона/Line in
+	static LIST_ENTRY3 resample16;		// буферы от USB для синхронизации
 
 	static LIST_ENTRY2 voicesfree16;
-	static LIST_ENTRY2 voicesphones16;	// Р±СѓС„РµСЂС‹, РїСЂРµРґРЅР°Р·РЅР°С‡РµРЅРЅС‹Рµ РґР»СЏ РІС‹РґР°С‡Рё РЅР° РЅР°СѓС€РЅРёРєРё
+	static LIST_ENTRY2 voicesphones16;	// буферы, предназначенные для выдачи на наушники
 
-	static LIST_ENTRY2 voicesready32tx;	// Р±СѓС„РµСЂС‹, РїСЂРµРґРЅР°Р·РЅР°С‡РµРЅРЅС‹Рµ РґР»СЏ РІС‹РґР°С‡Рё РЅР° IF DAC
+	static LIST_ENTRY2 voicesready32tx;	// буферы, предназначенные для выдачи на IF DAC
 	static LIST_ENTRY2 voicesfree32tx;
 	static LIST_ENTRY2 voicesfree32rx;
 
-	static LIST_ENTRY2 speexfree16;		// РЎРІРѕР±РѕРґРЅС‹Рµ Р±СѓС„РµСЂС‹
-	static LIST_ENTRY2 speexready16;	// Р‘СѓС„РµСЂС‹ РґР»СЏ РѕР±СЂР°Р±РѕС‚РєРё speex
+	static LIST_ENTRY2 speexfree16;		// Свободные буферы
+	static LIST_ENTRY2 speexready16;	// Буферы для обработки speex
 	//static int speexready16enable;
 
-	static volatile uint_fast8_t uacoutplayer = 0;	/* СЂРµР¶РёРј РїСЂРѕСЃР»СѓС€РёРІР°РЅРёСЏ РІС‹С…РѕРґР° РєРѕРјРїСЊСЋС‚РµСЂР° РІ РЅР°СѓС€РЅРёРєР°С… С‚СЂР°РЅСЃРёРІРµСЂР° - РѕС‚Р»Р°РґРѕС‡РЅС‹Р№ СЂРµР¶РёРј */
-	static volatile uint_fast8_t uacoutmike = 0;	/* РЅР° РІС…РѕРґ С‚СЂР°РЅСЃРёРІРµСЂР° Р±РµСЂСѓС‚СЃСЏ Р°СѓРґРёРѕРґР°РЅРЅС‹Рµ СЃ USB РІРёСЂС‚СѓР°Р»СЊРЅРѕР№ РїР»Р°С‚С‹, Р° РЅРµ СЃ РјРёРєСЂРѕС„РѕРЅР° */
-	static volatile uint_fast8_t uacinalt = UACINALT_NONE;		/* РІС‹Р±РѕСЂ Р°Р»СЊС‚РµСЂРЅР°С‚РёРІРЅРѕР№ РєРѕРЅС„РёРіСѓСЂР°С†РёРё РґР»СЏ UAC IN interface */
-	static volatile uint_fast8_t uacinrtsalt = UACINRTSALT_NONE;		/* РІС‹Р±РѕСЂ Р°Р»СЊС‚РµСЂРЅР°С‚РёРІРЅРѕР№ РєРѕРЅС„РёРіСѓСЂР°С†РёРё РґР»СЏ RTS UAC IN interface */
+	static volatile uint_fast8_t uacoutplayer = 0;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
+	static volatile uint_fast8_t uacoutmike = 0;	/* на вход трансивера берутся аудиоданные с USB виртуальной платы, а не с микрофона */
+	static volatile uint_fast8_t uacinalt = UACINALT_NONE;		/* выбор альтернативной конфигурации для UAC IN interface */
+	static volatile uint_fast8_t uacinrtsalt = UACINRTSALT_NONE;		/* выбор альтернативной конфигурации для RTS UAC IN interface */
 	static volatile uint_fast8_t uacoutalt;
 
 #if 1//WITHUSBUAC
@@ -241,11 +241,11 @@ enum
 		{
 			LIST_ENTRY item;	// layout should be same in uacin16_t, voice96rts_t and voice192rts_t
 			uint_fast8_t tag;	// layout should be same in uacin16_t, voice96rts_t and voice192rts_t
-			ALIGNX_BEGIN uint8_t buff [DMABUFFSIZE192RTS] ALIGNX_END;		// СЃРїРµРєС‚СЂ, 2*24*192 kS/S
+			ALIGNX_BEGIN uint8_t buff [DMABUFFSIZE192RTS] ALIGNX_END;		// спектр, 2*24*192 kS/S
 		} ALIGNX_END voice192rts_t;
 
 		static LIST_ENTRY2 voicesfree192rts;
-		static LIST_ENTRY2 uacin192rts;	// Р‘СѓС„РµСЂС‹ РґР»СЏ Р·Р°РїРёСЃРё РІ РІСѓРґРёРѕРєР°РЅР°Р» USB Рє РєРѕРјРїСЊСЋС‚РµСЂСѓ СЃРїРµРєС‚СЂР°, 2*32*192 kS/S
+		static LIST_ENTRY2 uacin192rts;	// Буферы для записи в вудиоканал USB к компьютеру спектра, 2*32*192 kS/S
 	
 	#endif /* WITHRTS192 */
 
@@ -255,17 +255,17 @@ enum
 		{
 			LIST_ENTRY item;	// layout should be same in uacin16_t, voice96rts_t and voice192rts_t
 			uint_fast8_t tag;	// layout should be same in uacin16_t, voice96rts_t and voice192rts_t
-			ALIGNX_BEGIN uint8_t buff [DMABUFFSIZE96RTS] ALIGNX_END;		// СЃРїРµРєС‚СЂ, 2*24*192 kS/S
+			ALIGNX_BEGIN uint8_t buff [DMABUFFSIZE96RTS] ALIGNX_END;		// спектр, 2*24*192 kS/S
 		} ALIGNX_END voice96rts_t;
 
 		static LIST_ENTRY2 voicesfree96rts;
-		static LIST_ENTRY2 uacin96rts;	// Р‘СѓС„РµСЂС‹ РґР»СЏ Р·Р°РїРёСЃРё РІ РІСѓРґРёРѕРєР°РЅР°Р» USB Рє РєРѕРјРїСЊСЋС‚РµСЂ СЃРїРµРєС‚СЂР°, 2*32*192 kS/S
+		static LIST_ENTRY2 uacin96rts;	// Буферы для записи в вудиоканал USB к компьютер спектра, 2*32*192 kS/S
 	
 	#endif /* WITHRTS96 */
 
 	static LIST_ENTRY2 uacinfree16;
-	static LIST_ENTRY2 uacinready16;	// Р‘СѓС„РµСЂС‹ РґР»СЏ Р·Р°РїРёСЃРё РІ РІСѓРґРёРѕРєР°РЅР°Р» USB Рє РєРѕРјРїСЊСЋС‚РµСЂ 2*16*24 kS/S
-	//static const uint_fast8_t VOICESMIKE16NORMAL = VOICESMIKE16NORMAL;	// РќРѕСЂРјР°Р»СЊРЅРѕРµ РєРѕР»РёС‡РµСЃС‚РІРѕ Р±СѓС„РµСЂРѕРІ РІ РѕС‡РµСЂРµРґРё
+	static LIST_ENTRY2 uacinready16;	// Буферы для записи в вудиоканал USB к компьютер 2*16*24 kS/S
+	//static const uint_fast8_t VOICESMIKE16NORMAL = VOICESMIKE16NORMAL;	// Нормальное количество буферов в очереди
 
 #endif /* WITHUSBUAC */
 
@@ -273,7 +273,7 @@ enum
 
 #if WITHUSEAUDIOREC
 
-	#define SDCARDBUFFSIZE16 (2048)	// СЂР°Р·РјРµСЂ РґР°РЅРЅС‹С… РґРѕР»Р¶РµРЅ Р±С‹С‚СЊ РЅРµ РјРµРЅСЊС€Рµ СЂР°Р·РјРµСЂР° РєР»Р°СЃС‚РµСЂР° РЅР° SD РєР°СЂС‚Рµ
+	#define SDCARDBUFFSIZE16 (2048)	// размер данных должен быть не меньше размера кластера на SD карте
 
 	typedef ALIGNX_BEGIN struct records16
 	{
@@ -281,8 +281,8 @@ enum
 		ALIGNX_BEGIN int16_t buff [SDCARDBUFFSIZE16] ALIGNX_END;
 	} ALIGNX_END records16_t;
 
-	static LIST_ENTRY2 recordsfree16;		// РЎРІРѕР±РѕРґРЅС‹Рµ Р±СѓС„РµСЂС‹
-	static LIST_ENTRY2 recordsready16;	// Р‘СѓС„РµСЂС‹ РґР»СЏ Р·Р°РїРёСЃРё РЅР° SD CARD
+	static LIST_ENTRY2 recordsfree16;		// Свободные буферы
+	static LIST_ENTRY2 recordsready16;	// Буферы для записи на SD CARD
 
 	static volatile unsigned recdropped;
 	static volatile unsigned recbuffered;
@@ -299,13 +299,13 @@ typedef struct modems8
 	uint8_t buff [MODEMBUFFERSIZE8];
 } modems8_t;
 
-static LIST_ENTRY2 modemsfree8;		// РЎРІРѕР±РѕРґРЅС‹Рµ Р±СѓС„РµСЂС‹
-static LIST_ENTRY2 modemsrx8;	// Р‘СѓС„РµСЂС‹ СЃ РїСЂРёРЅСЏС‚С‹РјС‚Рё С‡РµСЂРµР· РјРѕРґРµРј РґР°РЅРЅС‹РјРё
-//static LIST_ENTRY modemstx8;	// Р‘СѓС„РµСЂС‹ СЃ РґР°РЅРЅС‹РјРё РґР»СЏ РїРµСЂРµРґР°С‡Рё С‡РµСЂРµР· РјРѕРґРµРј
+static LIST_ENTRY2 modemsfree8;		// Свободные буферы
+static LIST_ENTRY2 modemsrx8;	// Буферы с принятымти через модем данными
+//static LIST_ENTRY modemstx8;	// Буферы с данными для передачи через модем
 
 #endif /* WITHMODEM */
 
-/* CРѕРѕР±С‰РµРЅРёСЏ РѕС‚ СѓСЂРѕРІРЅСЏ РѕР±СЂР°Р±РѕС‚С‡РёРєРѕРІ РїСЂРµСЂС‹РІР°РЅРёР№ Рє user-level С„СѓРЅРєС†РёСЏРј. */
+/* Cообщения от уровня обработчиков прерываний к user-level функциям. */
 
 typedef struct message
 {
@@ -314,15 +314,15 @@ typedef struct message
 	uint8_t data [MSGBUFFERSIZE8];
 } message_t;
 
-static LIST_ENTRY msgsfree8;		// РЎРІРѕР±РѕРґРЅС‹Рµ Р±СѓС„РµСЂС‹
-static LIST_ENTRY msgsready8;		// Р—Р°РїРѕР»РЅРµРЅРЅС‹Рµ - РіРѕС‚РѕРІС‹Рµ Рє РѕР±СЂР°Р±РѕС‚РєРµ
+static LIST_ENTRY msgsfree8;		// Свободные буферы
+static LIST_ENTRY msgsready8;		// Заполненные - готовые к обработке
 
 #if WITHBUFFERSDEBUG
 	static volatile unsigned n1, n1wfm, n2, n3, n4, n5, n6;
 	static volatile unsigned e1, e2, e3, e4, e5, e6, e7;
 	static volatile unsigned nbadd, nbdel, nbzero;
 
-	static volatile unsigned debugcount_ms10;	// СЃ С‚РѕС‡РЅРѕСЃС‚СЊСЋ 0.1 ms
+	static volatile unsigned debugcount_ms10;	// с точностью 0.1 ms
 
 	static volatile unsigned debugcount_uacout;
 	static volatile unsigned debugcount_mikeadc;
@@ -337,7 +337,7 @@ static LIST_ENTRY msgsready8;		// Р—Р°РїРѕР»РЅРµРЅРЅС‹Рµ - РіРѕС‚РѕРІС‹Рµ Рє РѕР
 
 static ticker_t buffticker;
 
-/* РІС‹Р·С‹РІР°РµС‚СЃСЏ РёР· РѕР±СЂР°Р±РѕС‚С‡РёРєР° С‚Р°Р№РјРµСЂРЅРѕРіРѕ РїСЂРµСЂС‹РІР°РЅРёСЏ */
+/* вызывается из обработчика таймерного прерывания */
 static void buffers_spool(void * ctx)
 {
 #if WITHBUFFERSDEBUG
@@ -500,7 +500,7 @@ typedef ALIGNX_BEGIN struct denoise16
 	ALIGNX_BEGIN int16_t buff [NTRX * SPEEXNN] ALIGNX_END;
 } ALIGNX_END denoise16_t;
 
-// Р‘СѓС„РµСЂС‹ СЃ РїСЂРёРЅСЏС‚С‹РјС‚Рё РѕС‚ РѕР±СЂР°Р±РѕС‚С‡РёРєРѕРІ РїСЂРµСЂС‹РІР°РЅРёР№ СЃРѕРѕР±С‰РµРЅРёСЏРјРё
+// Буферы с принятымти от обработчиков прерываний сообщениями
 uint_fast8_t takespeexready_user(int16_t * * dest)
 {
 	ASSERT_IRQL_USER();
@@ -522,7 +522,7 @@ uint_fast8_t takespeexready_user(int16_t * * dest)
 	return 0;
 }
 
-// РћСЃРІРѕР±РѕР¶РґРµРЅРёРµ РѕР±СЂР°Р±РѕС‚Р°РЅРЅРѕРіРѕ Р±СѓС„РµСЂР° СЃРѕРѕР±С‰РµРЅРёСЏ
+// Освобождение обработанного буфера сообщения
 void releasespeexbuffer_user(int16_t * t)
 {
 	ASSERT_IRQL_USER();
@@ -584,7 +584,7 @@ void savesampleout16denoise(FLOAT_t ch0, FLOAT_t ch1)
 }
 #endif /* WITHINTEGRATEDDSP */
 
-// РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ СЃРёСЃС‚РµРјС‹ Р±СѓС„РµСЂРѕРІ
+// инициализация системы буферов
 void buffers_initialize(void)
 {
 #if WITHBUFFERSDEBUG
@@ -596,10 +596,10 @@ void buffers_initialize(void)
 
 	static voice16_t voicesarray16 [48];
 
-	InitializeListHead3(& resample16, VOICESMIKE16NORMAL);	// Р±СѓС„РµСЂС‹ РѕС‚ USB РґР»СЏ СЃРёРЅС…СЂРѕРЅРёР·Р°С†РёРё
-	InitializeListHead3(& voicesmike16, VOICESMIKE16NORMAL);	// СЃРїРёСЃРѕРє РѕС†РёС„СЂРѕРІР°РЅРЅС‹С… СЃ РђР¦Рџ
-	InitializeListHead2(& voicesphones16);	// СЃРїРёСЃРѕРє РґР»СЏ РІС‹РґР°С‡Рё РЅР° Р¦РђРџ
-	InitializeListHead2(& voicesfree16);	// РќРµР·Р°РїРѕР»РЅРµРЅРЅС‹Рµ
+	InitializeListHead3(& resample16, VOICESMIKE16NORMAL);	// буферы от USB для синхронизации
+	InitializeListHead3(& voicesmike16, VOICESMIKE16NORMAL);	// список оцифрованных с АЦП
+	InitializeListHead2(& voicesphones16);	// список для выдачи на ЦАП
+	InitializeListHead2(& voicesfree16);	// Незаполненные
 	for (i = 0; i < (sizeof voicesarray16 / sizeof voicesarray16 [0]); ++ i)
 	{
 		voice16_t * const p = & voicesarray16 [i];
@@ -610,8 +610,8 @@ void buffers_initialize(void)
 
 	static uacin16_t uacinarray16 [24];
 
-	InitializeListHead2(& uacinfree16);	// РќРµР·Р°РїРѕР»РЅРµРЅРЅС‹Рµ
-	InitializeListHead2(& uacinready16);	// СЃРїРёСЃРѕРє РґР»СЏ РІС‹РґР°С‡Рё РІ РєР°РЅР°Р» USB AUDIO
+	InitializeListHead2(& uacinfree16);	// Незаполненные
+	InitializeListHead2(& uacinready16);	// список для выдачи в канал USB AUDIO
 
 	for (i = 0; i < (sizeof uacinarray16 / sizeof uacinarray16 [0]); ++ i)
 	{
@@ -632,8 +632,8 @@ void buffers_initialize(void)
 		ASSERT(offsetof(uacin16_t, buff) == offsetof(voice96rts_t, buff));
 		ASSERT(offsetof(uacin16_t, tag) == offsetof(voice96rts_t, tag));
 
-		InitializeListHead2(& uacin192rts);		// СЃРїРёСЃРѕРє РґР»СЏ РІС‹РґР°С‡Рё РІ РєР°РЅР°Р» USB AUDIO - СЃРїРµРєС‚СЂ
-		InitializeListHead2(& voicesfree192rts);	// РќРµР·Р°РїРѕР»РЅРµРЅРЅС‹Рµ
+		InitializeListHead2(& uacin192rts);		// список для выдачи в канал USB AUDIO - спектр
+		InitializeListHead2(& voicesfree192rts);	// Незаполненные
 		for (i = 0; i < (sizeof voicesarray192rts / sizeof voicesarray192rts [0]); ++ i)
 		{
 			voice192rts_t * const p = & voicesarray192rts [i];
@@ -651,8 +651,8 @@ void buffers_initialize(void)
 		ASSERT(offsetof(uacin16_t, buff) == offsetof(voice96rts_t, buff));
 		ASSERT(offsetof(uacin16_t, tag) == offsetof(voice96rts_t, tag));
 
-		InitializeListHead2(& uacin96rts);		// СЃРїРёСЃРѕРє РґР»СЏ РІС‹РґР°С‡Рё РІ РєР°РЅР°Р» USB AUDIO - СЃРїРµРєС‚СЂ
-		InitializeListHead2(& voicesfree96rts);	// РќРµР·Р°РїРѕР»РЅРµРЅРЅС‹Рµ
+		InitializeListHead2(& uacin96rts);		// список для выдачи в канал USB AUDIO - спектр
+		InitializeListHead2(& voicesfree96rts);	// Незаполненные
 		for (i = 0; i < (sizeof voicesarray96rts / sizeof voicesarray96rts [0]); ++ i)
 		{
 			voice96rts_t * const p = & voicesarray96rts [i];
@@ -666,17 +666,17 @@ void buffers_initialize(void)
 
 	static voice32tx_t voicesarray32tx [6];
 
-	InitializeListHead2(& voicesready32tx);	// СЃРїРёСЃРѕРє РґР»СЏ РІС‹РґР°С‡Рё РЅР° Р¦РђРџ
-	InitializeListHead2(& voicesfree32tx);	// РќРµР·Р°РїРѕР»РЅРµРЅРЅС‹Рµ
+	InitializeListHead2(& voicesready32tx);	// список для выдачи на ЦАП
+	InitializeListHead2(& voicesfree32tx);	// Незаполненные
 	for (i = 0; i < (sizeof voicesarray32tx / sizeof voicesarray32tx [0]); ++ i)
 	{
 		voice32tx_t * const p = & voicesarray32tx [i];
 		InsertHeadList2(& voicesfree32tx, & p->item);
 	}
 
-	static voice32rx_t voicesarray32rx [6];	// Р±РµР· WFM РЅР°РґРѕ 2
+	static voice32rx_t voicesarray32rx [6];	// без WFM надо 2
 
-	InitializeListHead2(& voicesfree32rx);	// РќРµР·Р°РїРѕР»РЅРµРЅРЅС‹Рµ
+	InitializeListHead2(& voicesfree32rx);	// Незаполненные
 	for (i = 0; i < (sizeof voicesarray32rx / sizeof voicesarray32rx [0]); ++ i)
 	{
 		voice32rx_t * const p = & voicesarray32rx [i];
@@ -699,9 +699,9 @@ void buffers_initialize(void)
 		RAMNOINIT_D1 static records16_t recordsarray16 [16];
 	#endif
 
-	/* РџРѕРґРіРѕС‚РѕРІРєР° Р±СѓС„РµСЂРѕРІ РґР»СЏ Р·Р°РїРёСЃРё РЅР° SD CARD */
-	InitializeListHead2(& recordsready16);	// Р—Р°РїРѕР»РЅРµРЅРЅС‹Рµ - РіРѕС‚РѕРІС‹Рµ РґР»СЏ Р·Р°РїРёСЃРё РЅР° SD CARD
-	InitializeListHead2(& recordsfree16);	// РќРµР·Р°РїРѕР»РЅРµРЅРЅС‹Рµ
+	/* Подготовка буферов для записи на SD CARD */
+	InitializeListHead2(& recordsready16);	// Заполненные - готовые для записи на SD CARD
+	InitializeListHead2(& recordsfree16);	// Незаполненные
 	for (i = 0; i < (sizeof recordsarray16 / sizeof recordsarray16 [0]); ++ i)
 	{
 		records16_t * const p = & recordsarray16 [i];
@@ -713,10 +713,10 @@ void buffers_initialize(void)
 #if WITHMODEM
 	static modems8_t modemsarray8 [8];
 
-	/* РџРѕРґРіРѕС‚РѕРІРєР° Р±СѓС„РµСЂРѕРІ РґР»СЏ РѕР±РјРµРЅР° СЃ РјРѕРґРµРјРѕРј */
-	InitializeListHead2(& modemsrx8);	// Р—Р°РїРѕР»РЅРµРЅРЅС‹Рµ - РїСЂРёРЅСЏС‚С‹Рµ СЃ РјРѕРґРµРјР°
-	//InitializeListHead2(& modemstx8);	// Р—Р°РїРѕР»РЅРµРЅРЅС‹Рµ - РіРѕС‚РѕРІС‹Рµ РґР»СЏ РїРµСЂРµРґР°С‡Рё С‡РµСЂРµР· РјРѕРґРµРј
-	InitializeListHead2(& modemsfree8);	// РќРµР·Р°РїРѕР»РЅРµРЅРЅС‹Рµ
+	/* Подготовка буферов для обмена с модемом */
+	InitializeListHead2(& modemsrx8);	// Заполненные - принятые с модема
+	//InitializeListHead2(& modemstx8);	// Заполненные - готовые для передачи через модем
+	InitializeListHead2(& modemsfree8);	// Незаполненные
 	for (i = 0; i < (sizeof modemsarray8 / sizeof modemsarray8 [0]); ++ i)
 	{
 		modems8_t * const p = & modemsarray8 [i];
@@ -727,8 +727,8 @@ void buffers_initialize(void)
 
 	static denoise16_t speexarray16 [3];
 
-	InitializeListHead2(& speexfree16);	// РќРµР·Р°РїРѕР»РЅРµРЅРЅС‹Рµ
-	InitializeListHead2(& speexready16);	// Р”Р»СЏ РѕР±СЂР°Р±РѕС‚РєРё
+	InitializeListHead2(& speexfree16);	// Незаполненные
+	InitializeListHead2(& speexready16);	// Для обработки
 
 	for (i = 0; i < (sizeof speexarray16 / sizeof speexarray16 [0]); ++ i)
 	{
@@ -738,12 +738,12 @@ void buffers_initialize(void)
 
 #endif /* WITHINTEGRATEDDSP */
 
-	/* CРѕРѕР±С‰РµРЅРёСЏ РѕС‚ СѓСЂРѕРІРЅСЏ РѕР±СЂР°Р±РѕС‚С‡РёРєРѕРІ РїСЂРµСЂС‹РІР°РЅРёР№ Рє user-level С„СѓРЅРєС†РёСЏРј. */
+	/* Cообщения от уровня обработчиков прерываний к user-level функциям. */
 	static message_t messagesarray8 [12];
 
-	/* РџРѕРґРіРѕС‚РѕРІРєР° Р±СѓС„РµСЂРѕРІ РґР»СЏ РѕР±РјРµРЅР° СЃ РјРѕРґРµРјРѕРј */
-	InitializeListHead(& msgsready8);	// Р—Р°РїРѕР»РЅРµРЅРЅС‹Рµ - РіРѕС‚РѕРІС‹Рµ Рє РѕР±СЂР°Р±РѕС‚РєРµ
-	InitializeListHead(& msgsfree8);	// РќРµР·Р°РїРѕР»РЅРµРЅРЅС‹Рµ
+	/* Подготовка буферов для обмена с модемом */
+	InitializeListHead(& msgsready8);	// Заполненные - готовые к обработке
+	InitializeListHead(& msgsfree8);	// Незаполненные
 	for (i = 0; i < (sizeof messagesarray8 / sizeof messagesarray8 [0]); ++ i)
 	{
 		message_t * const p = & messagesarray8 [i];
@@ -752,9 +752,9 @@ void buffers_initialize(void)
 	}
 }
 
-/* CРѕРѕР±С‰РµРЅРёСЏ РѕС‚ СѓСЂРѕРІРЅСЏ РѕР±СЂР°Р±РѕС‚С‡РёРєРѕРІ РїСЂРµСЂС‹РІР°РЅРёР№ Рє user-level С„СѓРЅРєС†РёСЏРј. */
+/* Cообщения от уровня обработчиков прерываний к user-level функциям. */
 
-// Р‘СѓС„РµСЂС‹ СЃ РїСЂРёРЅСЏС‚С‹РјС‚Рё РѕС‚ РѕР±СЂР°Р±РѕС‚С‡РёРєРѕРІ РїСЂРµСЂС‹РІР°РЅРёР№ СЃРѕРѕР±С‰РµРЅРёСЏРјРё
+// Буферы с принятымти от обработчиков прерываний сообщениями
 uint_fast8_t takemsgready_user(uint8_t * * dest)
 {
 	ASSERT_IRQL_USER();
@@ -777,7 +777,7 @@ uint_fast8_t takemsgready_user(uint8_t * * dest)
 }
 
 
-// РћСЃРІРѕР±РѕР¶РґРµРЅРёРµ РѕР±СЂР°Р±РѕС‚Р°РЅРЅРѕРіРѕ Р±СѓС„РµСЂР° СЃРѕРѕР±С‰РµРЅРёСЏ
+// Освобождение обработанного буфера сообщения
 void releasemsgbuffer_user(uint8_t * dest)
 {
 	ASSERT_IRQL_USER();
@@ -789,7 +789,7 @@ void releasemsgbuffer_user(uint8_t * dest)
 	global_enableIRQ();
 }
 
-// Р‘СѓС„РµСЂ РґР»СЏ С„РѕСЂРјРёСЂРѕРІР°РЅРёСЏ СЃРѕРѕР±С‰РµРЅРёСЏ
+// Буфер для формирования сообщения
 size_t takemsgbufferfree_low(uint8_t * * dest)
 {
 	ASSERT_IRQL_SYSTEM();
@@ -806,7 +806,7 @@ size_t takemsgbufferfree_low(uint8_t * * dest)
 	return 0;
 }
 
-// РїРѕРјРµСЃС‚РёС‚СЊ СЃРѕРѕР±С‰РµРЅРёРµ РІ РѕС‡РµСЂРµРґСЊ Рє РёСЃРїРѕР»РЅРµРЅРёСЋ 
+// поместить сообщение в очередь к исполнению 
 void placesemsgbuffer_low(uint_fast8_t type, uint8_t * dest)
 {
 	ASSERT_IRQL_SYSTEM();
@@ -822,7 +822,7 @@ void placesemsgbuffer_low(uint_fast8_t type, uint8_t * dest)
 #if WITHINTEGRATEDDSP
 
 
-// РЎРѕС…СЂР°РЅРёС‚СЊ Р·РІСѓРє РЅР° Р·РІСѓРєРѕРІРѕР№ РІС‹С…РѕРґ С‚СЂР°РЅСЃРёРІРµСЂР°
+// Сохранить звук на звуковой выход трансивера
 static RAMFUNC void buffers_tophones16(voice16_t * p)
 {
 	LOCK(& locklist16);
@@ -830,7 +830,7 @@ static RAMFUNC void buffers_tophones16(voice16_t * p)
 	UNLOCK(& locklist16);
 }
 
-// РЎРѕС…СЂР°РЅРёС‚СЊ Р·РІСѓРє РІ РЅРёРєСѓРґР°...
+// Сохранить звук в никуда...
 static RAMFUNC void buffers_tonull16(voice16_t * p)
 {
 	LOCK(& locklist16);
@@ -838,7 +838,7 @@ static RAMFUNC void buffers_tonull16(voice16_t * p)
 	UNLOCK(& locklist16);
 }
 
-// РЎРѕС…СЂР°РЅРёС‚СЊ USB UAC IN Р±СѓС„РµСЂ РІ РЅРёРєСѓРґР°...
+// Сохранить USB UAC IN буфер в никуда...
 static RAMFUNC void buffers_tonulluacin(uacin16_t * p)
 {
 	LOCK(& locklist16);
@@ -846,7 +846,7 @@ static RAMFUNC void buffers_tonulluacin(uacin16_t * p)
 	UNLOCK(& locklist16);
 }
 
-// РЎРѕС…СЂР°РЅРёС‚СЊ Р·РІСѓРє РЅР° РІС…РѕРґ РїРµСЂРµРґР°С‚С‡РёРєР°
+// Сохранить звук на вход передатчика
 static RAMFUNC void buffers_tomodulators16(voice16_t * p)
 {
 	LOCK(& locklist16);
@@ -854,13 +854,13 @@ static RAMFUNC void buffers_tomodulators16(voice16_t * p)
 	UNLOCK(& locklist16);
 }
 
-// РЎРѕС…СЂР°РЅРёС‚СЊ Р·РІСѓРє РѕС‚ РђР¦Рџ РїРёРєСЂРѕС„РѕРЅР°
+// Сохранить звук от АЦП пикрофона
 static RAMFUNC void buffers_savefrommikeadc(voice16_t * p)
 {
 
 #if WITHBUFFERSDEBUG
-	// РїРѕРґСЃС‡С‘С‚ СЃРєРѕСЂРѕСЃС‚Рё РІ СЃСЌРјРїР»Р°С… Р·Р° СЃРµРєСѓРЅРґСѓ
-	debugcount_mikeadc += sizeof p->buff / sizeof p->buff [0] / DMABUFSTEP16;	// РІ Р±СѓС„РµСЂРµ РїР°СЂС‹ СЃСЌРјРїР»РѕРІ РїРѕ РґРІР° Р±Р°Р№С‚Р°
+	// подсчёт скорости в сэмплах за секунду
+	debugcount_mikeadc += sizeof p->buff / sizeof p->buff [0] / DMABUFSTEP16;	// в буфере пары сэмплов по два байта
 #endif /* WITHBUFFERSDEBUG */
 
 	if (uacoutmike == 0)
@@ -870,11 +870,11 @@ static RAMFUNC void buffers_savefrommikeadc(voice16_t * p)
 
 }
 
-// РЎРѕС…СЂР°РЅРёС‚СЊ Р·РІСѓРє РїРѕСЃР»Рµ РїРѕР»СѓС‡РµРЅРёСЏ РёР· РЅРµРіРѕ РёРЅС„РѕСЂРјР°С†РёРё РґР»СЏ РјРѕРґСѓР»СЏС‚РѕСЂР°
+// Сохранить звук после получения из него информации для модулятора
 static RAMFUNC void buffers_aftermodulators(voice16_t * p)
 {
-	// РµСЃР»Рё РїРѕС‚РѕРє РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ Рё РєР°Рє РёСЃС‚РѕС‡РЅРёРє Р°СѓРґРёРѕРёРЅС„РѕСЂРјР°С†РёРё РґР»СЏ РјРѕРґСѓР»СЏС‚РѕСЂР° Рё РґР»СЏ РґРёРЅР°РјРёРєРѕРІ,
-	// РІ РґРёРЅР°РјРёРєРё Р±СѓРґРµС‚ РЅР°РїСЂР°РІР»РµРЅ РїРѕСЃР»Рµ РјРѕРґСѓР»СЏС‚РѕСЂР°
+	// если поток используется и как источник аудиоинформации для модулятора и для динамиков,
+	// в динамики будет направлен после модулятора
 
 	if (uacoutplayer && uacoutmike)
 		buffers_tophones16(p);
@@ -883,18 +883,18 @@ static RAMFUNC void buffers_aftermodulators(voice16_t * p)
 }
 
 //////////////////////////////////////////
-// РџРѕСЌР»РµРјРµРЅС‚РЅРѕРµ С‡С‚РµРЅРёРµ Р±СѓС„РµСЂР° AF ADC
+// Поэлементное чтение буфера AF ADC
 
 // 16 bit, signed
-// РІ РїР°СЂРµ Р·РЅР°С‡РµРЅРёР№, РІРѕР·РІСЂР°С‰Р°РµРјС‹С… РґР°РЅРЅРѕР№ С„СѓРЅРєС†РёРµР№, vi РїРѕР»СѓС‡Р°РµС‚ Р·РЅР°С‡РµРЅРёРµ РѕС‚ РјРёРєСЂРѕС„РѕРЅР°. vq Р·Р°СЂРµР·РµСЂРІРёСЂРѕРІР°РЅРЅРѕ РґР»СЏ СЂР°Р±РѕС‚С‹ ISB (РґРІРµ РЅРµР·Р°РІРёСЃРёРјС‹С… Р±РѕРєРѕРІС‹С…)
-// РџСЂРё РѕС‚СЃСѓС‚СЃС‚РІРёРё РґР°РЅРЅС‹С… РІ РѕС‡РµСЂРµРґРё - РІРѕР·РІСЂР°С‰Р°РµРј 0
-// TODO: РїРµСЂРµРґРµР»Р°СЊ РЅР° denoise16_t
+// в паре значений, возвращаемых данной функцией, vi получает значение от микрофона. vq зарезервированно для работы ISB (две независимых боковых)
+// При отсутствии данных в очереди - возвращаем 0
+// TODO: переделаь на denoise16_t
 RAMFUNC uint_fast8_t getsampmlemike(INT32P_t * v)
 {
 	enum { L, R };
 	static voice16_t * p = NULL;
-	static unsigned pos = 0;	// РїРѕР·РёС†РёСЏ РїРѕ РІС‹С…РѕРґРЅРѕРјСѓ РєРѕР»РёС‡РµСЃС‚РІСѓ
-	const unsigned CNT = (DMABUFFSIZE16 / DMABUFSTEP16);	// С„РёРєСЃРёСЂРѕРІР°РЅРЅРѕРµ С‡РёСЃР»Рѕ СЃСЌРјРїР»РѕРІ РІРѕ РІС…РѕРґРЅРѕРј Р±СѓС„РµСЂРµ
+	static unsigned pos = 0;	// позиция по выходному количеству
+	const unsigned CNT = (DMABUFFSIZE16 / DMABUFSTEP16);	// фиксированное число сэмплов во входном буфере
 
 	LOCK(& locklist16);
 	if (p == NULL)
@@ -908,7 +908,7 @@ RAMFUNC uint_fast8_t getsampmlemike(INT32P_t * v)
 		}
 		else
 		{
-			// РњРёРєСЂРѕС„РѕРЅРЅС‹Р№ РєРѕРґРµРє РµС‰С‘ РЅРµ СѓСЃРїРµР» РЅР°С‡Р°С‚СЊ СЂР°Р±РѕС‚Р°С‚СЊ - РІРѕР·РІСЂР°С‰Р°РµРј 0.
+			// Микрофонный кодек ещё не успел начать работать - возвращаем 0.
 			UNLOCK(& locklist16);
 			return 0;
 		}
@@ -918,9 +918,9 @@ RAMFUNC uint_fast8_t getsampmlemike(INT32P_t * v)
 		UNLOCK(& locklist16);
 	}
 
-	// РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ РґР°РЅРЅС‹С….
-	v->ivqv [L] = (int16_t) p->buff [pos * DMABUFSTEP16 + L];	// РјРёРєСЂРѕС„РѕРЅ РёР»Рё Р»РµРІС‹Р№ РєР°РЅР°Р»
-	v->ivqv [R] = (int16_t) p->buff [pos * DMABUFSTEP16 + R];	// РїСЂР°РІС‹Р№ РєР°РЅР°Р»
+	// Использование данных.
+	v->ivqv [L] = (int16_t) p->buff [pos * DMABUFSTEP16 + L];	// микрофон или левый канал
+	v->ivqv [R] = (int16_t) p->buff [pos * DMABUFSTEP16 + R];	// правый канал
 
 	if (++ pos >= CNT)
 	{
@@ -930,16 +930,16 @@ RAMFUNC uint_fast8_t getsampmlemike(INT32P_t * v)
 	return 1;	
 }
 
-// РЎРѕС…СЂР°РЅРёС‚СЊ Р·РІСѓРє РѕС‚ РЅРµСЃРёРЅС…СЂРѕРЅРЅРѕРіРѕ РёСЃС‚РѕС‡РЅРёРєР° - USB - РґР»СЏ РїРѕСЃР»РµРґСѓСЋС‰РµРіРѕ СЂРµСЃСЌРјРїР»РёРЅРіР°
+// Сохранить звук от несинхронного источника - USB - для последующего ресэмплинга
 RAMFUNC static void buffers_savetoresampling16(voice16_t * p)
 {
 	LOCK(& locklist16);
-	// РџРѕРјРµРµСЃС‚РёС‚СЊ РІ РѕС‡РµСЂРµРґСЊ РїСЂРёРЅСЏС‚С‹С… СЃ USB UAC
+	// Помеестить в очередь принятых с USB UAC
 	InsertHeadList3(& resample16, & p->item);
 
 	if (GetCountList3(& resample16) > (VOICESMIKE16NORMAL * 2))
 	{
-		// РР·-Р·Р° РѕС€РёР±РѕРє СЃ Р°СЃРёРЅС…СЂРѕРЅРЅС‹Рј Р°СѓРґРёРѕ РїСЂРёС€Р»РѕСЃСЊ РґРѕР±Р°РІРёС‚СЊ РѕРіСЂР°РЅРёС‡РµРЅРёРµ РЅР° СЂР°Р·РјРµСЂ СЌС‚РѕР№ РѕС‡РµСЂРµРґРё
+		// Из-за ошибок с асинхронным аудио пришлось добавить ограничение на размер этой очереди
 		const PLIST_ENTRY t = RemoveTailList3(& resample16);
 
 		InsertHeadList2(& voicesfree16, t);
@@ -963,20 +963,20 @@ static uint_fast8_t isaudio48(void)
 }
 
 // UAC IN samplerate
-// todo: СЃРґРµР»Р°С‚СЊ РЅРѕСЂРјР°Р»СЊРЅС‹Р№ СЂР°СЃС‡С‘С‚ РґР»СЏ РЅРµРєСЂСѓРіР»С‹С… Р·РЅР°С‡РµРЅРёР№ ARMI2SRATE
+// todo: сделать нормальный расчёт для некруглых значений ARMI2SRATE
 int_fast32_t dsp_get_samplerateuacin_audio48(void)
 {
 	return dsp_get_sampleraterx();
 }
 // UAC IN samplerate
-// todo: СЃРґРµР»Р°С‚СЊ РЅРѕСЂРјР°Р»СЊРЅС‹Р№ СЂР°СЃС‡С‘С‚ РґР»СЏ РЅРµРєСЂСѓРіР»С‹С… Р·РЅР°С‡РµРЅРёР№ ARMI2SRATE
+// todo: сделать нормальный расчёт для некруглых значений ARMI2SRATE
 int_fast32_t dsp_get_samplerateuacin_rts96(void)
 {
 	return dsp_get_sampleraterxscaled(2);
 }
 
 // UAC IN samplerate
-// todo: СЃРґРµР»Р°С‚СЊ РЅРѕСЂРјР°Р»СЊРЅС‹Р№ СЂР°СЃС‡С‘С‚ РґР»СЏ РЅРµРєСЂСѓРіР»С‹С… Р·РЅР°С‡РµРЅРёР№ ARMI2SRATE
+// todo: сделать нормальный расчёт для некруглых значений ARMI2SRATE
 int_fast32_t dsp_get_samplerateuacin_rts192(void)
 {
 	return dsp_get_sampleraterxscaled(4);
@@ -1016,20 +1016,20 @@ static uint_fast8_t isrts192(void)
 #endif /* WITHUSBHW && WITHUSBUAC */
 }
 
-// РЎРѕС…СЂР°РЅРёС‚СЊ Р±СѓС„РµСЂ СЃСЌРјРїР»РѕРІ РґР»СЏ РїРµСЂРµРґР°С‡Рё РІ РєРѕРјРїСЊСЋС‚РµСЂ
+// Сохранить буфер сэмплов для передачи в компьютер
 static RAMFUNC void
 buffers_savetouacin192rts(voice192rts_t * p)
 {
 #if WITHBUFFERSDEBUG
-	// РїРѕРґСЃС‡С‘С‚ СЃРєРѕСЂРѕСЃС‚Рё РІ СЃСЌРјРїР»Р°С… Р·Р° СЃРµРєСѓРЅРґСѓ
-	debugcount_rtsadc += sizeof p->buff / sizeof p->buff [0] / DMABUFSTEP192RTS;	// РІ Р±СѓС„РµСЂРµ РїР°СЂС‹ СЃСЌРјРїР»РѕРІ РїРѕ С‡РµС‚С‹СЂРµ Р±Р°Р№С‚Р°
+	// подсчёт скорости в сэмплах за секунду
+	debugcount_rtsadc += sizeof p->buff / sizeof p->buff [0] / DMABUFSTEP192RTS;	// в буфере пары сэмплов по четыре байта
 #endif /* WITHBUFFERSDEBUG */
 
 	LOCK(& locklist16);
 	InsertHeadList2(& uacin192rts, & p->item);
 	UNLOCK(& locklist16);
 
-	refreshDMA_uacin();		// РµСЃР»Рё DMA  РѕСЃС‚Р°РЅРѕРІР»РµРЅРѕ - РЅР°С‡Р°С‚СЊ РѕР±РјРµРЅ
+	refreshDMA_uacin();		// если DMA  остановлено - начать обмен
 }
 
 static void buffers_savetonull192rts(voice192rts_t * p)
@@ -1059,20 +1059,20 @@ static uint_fast8_t isrts96(void)
 #endif /* WITHUSBHW && WITHUSBUAC */
 }
 
-// РЎРѕС…СЂР°РЅРёС‚СЊ Р±СѓС„РµСЂ СЃСЌРјРїР»РѕРІ РґР»СЏ РїРµСЂРµРґР°С‡Рё РІ РєРѕРјРїСЊСЋС‚РµСЂ
+// Сохранить буфер сэмплов для передачи в компьютер
 static RAMFUNC void
 buffers_savetouacin96rts(voice96rts_t * p)
 {
 #if WITHBUFFERSDEBUG
-	// РїРѕРґСЃС‡С‘С‚ СЃРєРѕСЂРѕСЃС‚Рё РІ СЃСЌРјРїР»Р°С… Р·Р° СЃРµРєСѓРЅРґСѓ
-	debugcount_rtsadc += sizeof p->buff / sizeof p->buff [0] / DMABUFSTEP96RTS;	// РІ Р±СѓС„РµСЂРµ РїР°СЂС‹ СЃСЌРјРїР»РѕРІ РїРѕ С‚СЂРё Р±Р°Р№С‚Р°
+	// подсчёт скорости в сэмплах за секунду
+	debugcount_rtsadc += sizeof p->buff / sizeof p->buff [0] / DMABUFSTEP96RTS;	// в буфере пары сэмплов по три байта
 #endif /* WITHBUFFERSDEBUG */
 	
 	LOCK(& locklist16);
 	InsertHeadList2(& uacin96rts, & p->item);
 	UNLOCK(& locklist16);
 
-	refreshDMA_uacin();		// РµСЃР»Рё DMA  РѕСЃС‚Р°РЅРѕРІР»РµРЅРѕ - РЅР°С‡Р°С‚СЊ РѕР±РјРµРЅ
+	refreshDMA_uacin();		// если DMA  остановлено - начать обмен
 }
 
 static void buffers_savetonull96rts(voice96rts_t * p)
@@ -1084,19 +1084,19 @@ static void buffers_savetonull96rts(voice96rts_t * p)
 
 #endif /* WITHRTS96 && WITHUSBHW && WITHUSBUAC */
 
-// РЎРѕС…СЂР°РЅРёС‚СЊ Р±СѓС„РµСЂ СЃСЌРјРїР»РѕРІ РґР»СЏ РїРµСЂРµРґР°С‡Рё РІ РєРѕРјРїСЊСЋС‚РµСЂ
+// Сохранить буфер сэмплов для передачи в компьютер
 static RAMFUNC void
 buffers_savetouacin(uacin16_t * p)
 {
 #if WITHBUFFERSDEBUG
-	// РїРѕРґСЃС‡С‘С‚ СЃРєРѕСЂРѕСЃС‚Рё РІ СЃСЌРјРїР»Р°С… Р·Р° СЃРµРєСѓРЅРґСѓ
-	debugcount_uacin += sizeof p->buff / sizeof p->buff [0] / DMABUFSTEPUACIN16;	// РІ Р±СѓС„РµСЂРµ РїР°СЂС‹ СЃСЌРјРїР»РѕРІ РїРѕ С‚СЂРё Р±Р°Р№С‚Р°
+	// подсчёт скорости в сэмплах за секунду
+	debugcount_uacin += sizeof p->buff / sizeof p->buff [0] / DMABUFSTEPUACIN16;	// в буфере пары сэмплов по три байта
 #endif /* WITHBUFFERSDEBUG */
 	LOCK(& locklist16);
 	InsertHeadList2(& uacinready16, & p->item);
 	UNLOCK(& locklist16);
 
-	refreshDMA_uacin();		// РµСЃР»Рё DMA  РѕСЃС‚Р°РЅРѕРІР»РµРЅРѕ - РЅР°С‡Р°С‚СЊ РѕР±РјРµРЅ
+	refreshDMA_uacin();		// если DMA  остановлено - начать обмен
 }
 
 #else
@@ -1108,8 +1108,8 @@ int_fast32_t dsp_get_samplerateuacin_rts(void)		// RTS samplerate
 
 #endif /* WITHUSBUAC */
 
-// +++ РљРѕРјРјСѓС‚Р°С†РёСЏ РїРѕС‚РѕРєРѕРІ Р°СѓРґРёРѕРґР°РЅРЅС‹С…
-// РїРµСЂРІС‹Р№ РєР°РЅР°Р» РІС‹С…РѕРґР° РїСЂРёС‘РјРЅРёРєР° - РґР»СЏ РїСЂРѕСЃР»СѓС€РёРІР°РЅРёСЏ
+// +++ Коммутация потоков аудиоданных
+// первый канал выхода приёмника - для прослушивания
 static RAMFUNC void
 buffers_savefromrxout(voice16_t * p)
 {
@@ -1119,13 +1119,13 @@ buffers_savefromrxout(voice16_t * p)
 		buffers_tophones16(p);
 }
 
-// РїСЂРёРЅСЏР»Рё РґР°РЅРЅС‹Рµ РѕС‚ USB AUDIO
+// приняли данные от USB AUDIO
 static RAMFUNC void
 buffers_savefromuacout(voice16_t * p)
 {
 #if WITHBUFFERSDEBUG
-	// РїРѕРґСЃС‡С‘С‚ СЃРєРѕСЂРѕСЃС‚Рё РІ СЃСЌРјРїР»Р°С… Р·Р° СЃРµРєСѓРЅРґСѓ
-	debugcount_uacout += sizeof p->buff / sizeof p->buff [0] / DMABUFSTEP16;	// РІ Р±СѓС„РµСЂРµ РїР°СЂС‹ СЃСЌРјРїР»РѕРІ РїРѕ РґРІР° Р±Р°Р№С‚Р°
+	// подсчёт скорости в сэмплах за секунду
+	debugcount_uacout += sizeof p->buff / sizeof p->buff [0] / DMABUFSTEP16;	// в буфере пары сэмплов по два байта
 #endif /* WITHBUFFERSDEBUG */
 
 #if WITHUSBUAC
@@ -1140,12 +1140,12 @@ buffers_savefromuacout(voice16_t * p)
 }
 
 #if WITHUSBUAC
-// РїСЂРёРЅСЏР»Рё РґР°РЅРЅС‹Рµ РѕС‚ СЃРёРЅС…СЂРѕРЅРёР·Р°С‚РѕСЂР°
+// приняли данные от синхронизатора
 static RAMFUNC void
 buffers_savefromresampling(voice16_t * p)
 {
-	// РµСЃР»Рё РїРѕС‚РѕРє РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ Рё РєР°Рє РёСЃС‚РѕС‡РЅРёРє Р°СѓРґРёРѕРёРЅС„РѕСЂРјР°С†РёРё РґР»СЏ РјРѕРґСѓР»СЏС‚РѕСЂР° Рё РґР»СЏ РґРёРЅР°РјРёРєРѕРІ,
-	// РІ РґРёРЅР°РјРёРєРё Р±СѓРґРµС‚ РЅР°РїСЂР°РІР»РµРЅ РїРѕСЃР»Рµ РјРѕРґСѓР»СЏС‚РѕСЂР°
+	// если поток используется и как источник аудиоинформации для модулятора и для динамиков,
+	// в динамики будет направлен после модулятора
 
 	if (uacoutmike != 0)
 		buffers_tomodulators16(p);
@@ -1166,18 +1166,18 @@ static RAMFUNC unsigned long ulmin(
 	return a < b ? a : b;
 }
 
-// РІРѕР·РІСЂР°С‰Р°РµС‚ РєРѕР»РёС‡РµСЃС‚РІРѕ РїРѕР»СѓС‡РµРЅС‹С… СЃСЌРјРїР»РѕРІ
+// возвращает количество полученых сэмплов
 static RAMFUNC unsigned getsamplemsuacout(
-	int16_t * buff,	// С‚РµРєСѓС‰Р°СЏ РїРѕР·РёС†РёСЏ РІ С†РµР»РµРІРѕРј Р±СѓС„РµСЂРµ
-	unsigned size		// РєРѕР»РёС‡РµСЃС‚РІРѕ РѕСЃС‚Р°РІС€РёС…СЃСЏ РѕРґРёРЅРѕС‡РЅС‹С… СЃСЌРјРїР»РѕРІ
+	int16_t * buff,	// текущая позиция в целевом буфере
+	unsigned size		// количество оставшихся одиночных сэмплов
 	)
 {
 	static voice16_t * p = NULL;
 	enum { NPARTS = 3 };
 	static uint_fast8_t part = 0;
-	static int16_t * datas [NPARTS] = { NULL, NULL };		// РЅР°С‡Р°Р»СЊРЅС‹Р№ Р°РґСЂРµСЃ РїР°СЂС‹ СЃСЌРјРїР»РѕРІ РІРѕ РІС…РѕРґРЅРѕРј Р±СѓС„РµСЂРµ
-	static unsigned sizes [NPARTS] = { 0, 0 };			// РєРѕР»РёС‡РµСЃС‚РІРѕ СЃСЌРјРїР»РѕРІ РІРѕ РІС…РѕРґРЅРѕРј Р±СѓС„РµСЂРµ
-	// РёСЃРїСЂР°РІР»СЏРµРјР°СЏ РїРѕРіСЂРµС€РЅРѕСЃС‚СЊ = 0.02% - РѕРґРёРЅ СЃСЌРјРїР» РґРѕР±Р°РІРёС‚СЊ/СѓР±СЂР°С‚СЊ РЅР° 5000 СЃСЌРјРїР»РѕРІ
+	static int16_t * datas [NPARTS] = { NULL, NULL };		// начальный адрес пары сэмплов во входном буфере
+	static unsigned sizes [NPARTS] = { 0, 0 };			// количество сэмплов во входном буфере
+	// исправляемая погрешность = 0.02% - один сэмпл добавить/убрать на 5000 сэмплов
 	enum { SKIPPED = 5000 / (DMABUFFSIZE16 / DMABUFSTEP16) };
 
 	static unsigned skipsense = SKIPPED;
@@ -1190,10 +1190,10 @@ static RAMFUNC unsigned getsamplemsuacout(
 #if WITHBUFFERSDEBUG
 			++ nbzero;
 #endif /* WITHBUFFERSDEBUG */
-			// РњРёРєСЂРѕС„РѕРЅРЅС‹Р№ РєРѕРґРµРє РµС‰С‘ РЅРµ СѓСЃРїРµР» РЅР°С‡Р°С‚СЊ СЂР°Р±РѕС‚Р°С‚СЊ - РІРѕР·РІСЂР°С‰Р°РµРј 0.
+			// Микрофонный кодек ещё не успел начать работать - возвращаем 0.
 			UNLOCK(& locklist16);
-			memset(buff, 0x00, size * sizeof (* buff));	// С‚РёС€РёРЅР°
-			return size;	// РЅРѕР»СЊ РЅРµР»СЊР·СЏ РІРѕР·РІСЂР°С‰Р°С‚СЊ - Р·Р°С†РёРєР»РёРІР°РµС‚СЃСЏ РїСЂРѕСѓРµР»СѓСЂР° СЂРµСЃСЌРјРїР»РёРЅРіР°
+			memset(buff, 0x00, size * sizeof (* buff));	// тишина
+			return size;	// ноль нельзя возвращать - зацикливается проуелура ресэмплинга
 		}
 		else
 		{
@@ -1213,29 +1213,29 @@ static RAMFUNC unsigned getsamplemsuacout(
 
 			if (valid && GetCountList3(& resample16) <= LOW)
 			{
-				// РґРѕР±Р°РІР»СЏРµС‚СЃСЏ РѕРґРёРЅ СЃСЌРјРїР» Рє РІС‹С…РѕРґРЅРѕРјСѓ РїРѕС‚РѕРєСѓ СЂР°Р· РІ SKIPPED Р±Р»РѕРєРѕРІ
+				// добавляется один сэмпл к выходному потоку раз в SKIPPED блоков
 #if WITHBUFFERSDEBUG
 				++ nbadd;
 #endif /* WITHBUFFERSDEBUG */
 
 #if 0
 				part = NPARTS - 2;
-				datas [part + 0] = & p->buff [0];	// РґСѓР±Р»РёСЂСѓРµРј РїРµСЂРІС‹Р№ СЃСЌРјРїР»
+				datas [part + 0] = & p->buff [0];	// дублируем первый сэмпл
 				sizes [part + 0] = DMABUFSTEP16;
 				datas [part + 1] = & p->buff [0];
 				sizes [part + 1] = DMABUFFSIZE16;
 #else
 				static int16_t addsample [DMABUFSTEP16];
 				enum { HALF = DMABUFFSIZE16 / 2 };
-				// Р·РЅР°С‡РµРЅРёСЏ РєР°Рє СЃСЂРµРґРЅРµРµ Р°СЂРёС„РјРµС‚РёС‡РµСЃРєРѕРµ СЃСЌРјРїР»РѕРІ, РјРµР¶РґСѓ РєРѕС‚РѕСЂС‹РјРё РІСЃС‚Р°РІР»СЏРµРј РґРѕРїРѕР»РЅРёС‚РµР»СЊРЅС‹Р№.
+				// значения как среднее арифметическое сэмплов, между которыми вставляем дополнительный.
 				addsample [0] = ((int_fast32_t) p->buff [HALF - DMABUFSTEP16 + 0] +  p->buff [HALF + 0]) / 2;	// Left
 				addsample [1] = ((int_fast32_t) p->buff [HALF - DMABUFSTEP16 + 1] +  p->buff [HALF + 1]) / 2;	// Right
 				part = NPARTS - 3;
-				datas [0] = & p->buff [0];		// С‡Р°СЃС‚СЊ РїРµСЂРµРґ РІСЃС‚Р°РІРєРѕР№
+				datas [0] = & p->buff [0];		// часть перед вставкой
 				sizes [0] = HALF;
-				datas [1] = & addsample [0];	// РІСЃС‚Р°РІР»СЏРµРјС‹Рµ РґР°РЅРЅС‹Рµ
+				datas [1] = & addsample [0];	// вставляемые данные
 				sizes [1] = DMABUFSTEP16;
-				datas [2] = & p->buff [HALF];	// С‡Р°СЃС‚СЊ РїРѕСЃР»Рµ РІСЃС‚Р°РІРєРё
+				datas [2] = & p->buff [HALF];	// часть после вставки
 				sizes [2] = DMABUFFSIZE16 - HALF;
 #endif
 			}
@@ -1244,14 +1244,14 @@ static RAMFUNC unsigned getsamplemsuacout(
 #if WITHBUFFERSDEBUG
 				++ nbdel;
 #endif /* WITHBUFFERSDEBUG */
-				// СѓР±РёСЂР°РµС‚СЃСЏ РѕРґРёРЅ СЃСЌРјРїР» РёР· РІС‹С…РѕРґРЅРѕРіРѕ РїРѕС‚РѕРєР° СЂР°Р· РІ SKIPPED Р±Р»РѕРєРѕРІ
+				// убирается один сэмпл из выходного потока раз в SKIPPED блоков
 				part = NPARTS - 1;
-				datas [part] = & p->buff [DMABUFSTEP16];	// РїСЂРѕРїСѓСЃРєР°РµРј РїРµСЂРІС‹Р№ СЃСЌРјРїР»
+				datas [part] = & p->buff [DMABUFSTEP16];	// пропускаем первый сэмпл
 				sizes [part] = DMABUFFSIZE16 - DMABUFSTEP16;
 			}
 			else
 			{
-				// Р РµСЃСЌРјРїР»РёРЅРі РЅРµ С‚СЂРµР±СѓРµС‚СЃСЏ РёР»Рё РЅРµС‚ Р·Р°РїР°СЃР° РІС…РѕРґРЅС‹С… РґР°РЅРЅС‹С…
+				// Ресэмплинг не требуется или нет запаса входных данных
 				part = NPARTS - 1;
 				datas [part] = & p->buff [0];
 				sizes [part] = DMABUFFSIZE16;
@@ -1276,27 +1276,27 @@ static RAMFUNC unsigned getsamplemsuacout(
 	return chunk;
 }
 
-// С„РѕСЂРјРёСЂРѕРІР°РЅРёРµ РѕРґРЅРѕРіРѕ Р±СѓС„РµСЂР° СЃРёРЅС…СЂРѕРЅРЅРѕРіРѕ РїРѕС‚РѕРєР° РёР· N РЅРµСЃРёРЅС…СЂРѕРЅРЅРѕРіРѕ
+// формирование одного буфера синхронного потока из N несинхронного
 static RAMFUNC void buffers_resample(void)
 {
-	const uintptr_t addr = allocate_dmabuffer16();	// РІС‹С…РѕРґРЅРѕР№ Р±СѓС„РµСЂ
+	const uintptr_t addr = allocate_dmabuffer16();	// выходной буфер
 	voice16_t * const p = CONTAINING_RECORD(addr, voice16_t, buff);
 	//
-	// РІС‹РїРѕР»РЅРµРЅРёРµ СЂРµСЃСЌРјРїР»РёРЅРіР°
+	// выполнение ресэмплинга
 	unsigned pos;
 	for (pos = 0; pos < DMABUFFSIZE16; )
 	{
 		pos += getsamplemsuacout(& p->buff [pos], DMABUFFSIZE16 - pos);
 	}
 
-	// РЅР°РїСЂР°РІР»РµРЅРёРµ РїРѕР»СѓС‡РёРІС€РµРіРѕСЃСЏ Р±СѓС„РµСЂР° РїРѕР»СѓС‡Р°С‚РµР»СЋ.
+	// направление получившегося буфера получателю.
 	buffers_savefromresampling(p);
 }
 #endif /* WITHUSBUAC */
-// --- РљРѕРјРјСѓС‚Р°С†РёСЏ РїРѕС‚РѕРєРѕРІ Р°СѓРґРёРѕРґР°РЅРЅС‹С…
+// --- Коммутация потоков аудиоданных
 
 #if WITHUSEAUDIOREC
-// РџРѕСЌР»РµРјРµРЅС‚РЅРѕРµ Р·Р°РїРѕР»РЅРµРЅРёРµ Р±СѓС„РµСЂР° SD CARD
+// Поэлементное заполнение буфера SD CARD
 
 unsigned long hamradio_get_recdropped(void)
 {
@@ -1312,7 +1312,7 @@ int hamradio_get_recdbuffered(void)
 // 16 bit, signed
 void RAMFUNC savesamplerecord16SD(int_fast16_t left, int_fast16_t right)
 {
-	// РµСЃР»Рё РµСЃС‚СЊ РёРЅРёС†РёР°Р»РёР·РёСЂРѕРІР°РЅРЅС‹Р№ РєР°РЅР°Р» РґР»СЏ РІС‹РґР°С‡Рё Р·РІСѓРєР°
+	// если есть инициализированный канал для выдачи звука
 	static records16_t * preparerecord16 = NULL;
 	static unsigned level16record = 0;
 
@@ -1327,14 +1327,14 @@ void RAMFUNC savesamplerecord16SD(int_fast16_t left, int_fast16_t right)
 		{
 			-- recbuffered;
 			++ recdropped;
-			// Р•СЃР»Рё РЅРµС‚ СЃРІРѕР±РѕРґРЅС‹С… - РёСЃРїРѕР»СЊР·СѓРј СЃР°РјС‹Р№ РґР°РІРЅРѕ РїРѕРґРіРѕС‚РѕРІР»РµРЅРЅС‹Р№ РґР»СЏ Р·Р°РїРёСЃРё Р±СѓС„РµСЂ
+			// Если нет свободных - использум самый давно подготовленный для записи буфер
 			PLIST_ENTRY t = RemoveTailList2(& recordsready16);
 			preparerecord16 = CONTAINING_RECORD(t, records16_t, item);
 		}
 		
-		// РџРѕРґРіРѕС‚РѕРІРєР° Рє Р·Р°РїРёСЃРё С„Р°Р№Р»Р° WAV СЃРѕ РјРЅРѕР¶РµСЃС‚РІРѕРј DATA CHUNK, РЅРѕ РїРѕР»СѓС‡РёРІС€РёР№СЃСЏ С„Р°Р№Р»
-		// РЅРѕСЂРјР°Р»СЊРЅРѕ С‡РёС‚Р°РµС‚ С‚РѕР»СЊРєРѕ ADOBE AUDITION, Windows Media Player 12 РїСЂРѕРёРіСЂС‹РІР°РµС‚ С‚РѕР»СЊРєРѕ РѕРґРёРЅ - РїРµСЂРІС‹Р№.
-		// Windows Media Player Classic (https://github.com/mpc-hc/mpc-hc) РІРѕРѕР±С‰Рµ РЅРµ РїСЂРѕРёРіСЂС‹РІР°РµС‚ СЌС‚РѕС‚ С„Р°Р№Р».
+		// Подготовка к записи файла WAV со множеством DATA CHUNK, но получившийся файл
+		// нормально читает только ADOBE AUDITION, Windows Media Player 12 проигрывает только один - первый.
+		// Windows Media Player Classic (https://github.com/mpc-hc/mpc-hc) вообще не проигрывает этот файл.
 		
 		//preparerecord16->buff [0] = 'd' | 'a' * 256;
 		//preparerecord16->buff [1] = 't' | 'a' * 256;
@@ -1346,12 +1346,12 @@ void RAMFUNC savesamplerecord16SD(int_fast16_t left, int_fast16_t right)
 	}
 
 #if WITHUSEAUDIOREC2CH
-	// Р—Р°РїРёСЃСЊ Р·РІСѓРєР° РЅР° SD CARD РІ СЃС‚РµСЂРµРѕ
+	// Запись звука на SD CARD в стерео
 	preparerecord16->buff [level16record ++] = left;	// sample value
 	preparerecord16->buff [level16record ++] = right;	// sample value
 
 #else /* WITHUSEAUDIOREC2CH */
-	// Р—Р°РїРёСЃСЊ Р·РІСѓРєР° РЅР° SD CARD РІ РјРѕРЅРѕ
+	// Запись звука на SD CARD в моно
 	preparerecord16->buff [level16record ++] = left;	// sample value
 
 #endif /* WITHUSEAUDIOREC2CH */
@@ -1393,7 +1393,7 @@ void releaserecordbuffer(void * dest)
 #if WITHMODEM
 
 
-// Р‘СѓС„РµСЂС‹ СЃ РїСЂРёРЅСЏС‚С‹РјС‚Рё С‡РµСЂРµР· РјРѕРґРµРј РґР°РЅРЅС‹РјРё
+// Буферы с принятымти через модем данными
 size_t takemodemrxbuffer(uint8_t * * dest)
 {
 	global_disableIRQ();
@@ -1410,7 +1410,7 @@ size_t takemodemrxbuffer(uint8_t * * dest)
 	return 0;
 }
 
-// Р‘СѓС„РµСЂС‹ РґР»СЏ Р·Р°РїРѕР»РЅРµРЅРёСЏ РґР°РЅРЅС‹РјРё
+// Буферы для заполнения данными
 size_t takemodembuffer(uint8_t * * dest)
 {
 	global_disableIRQ();
@@ -1427,8 +1427,8 @@ size_t takemodembuffer(uint8_t * * dest)
 	return 0;
 }
 
-// Р‘СѓС„РµСЂС‹ РґР»СЏ Р·Р°РїРѕР»РЅРµРЅРёСЏ РґР°РЅРЅС‹РјРё
-// РІС‹Р·С‹РІР°РµС‚СЃСЏ РёР· real-time РѕР±СЂР°Р±РѕС‚С‡РёРєР° РїСЂРµСЂС‹РІР°РЅРёСЏ
+// Буферы для заполнения данными
+// вызывается из real-time обработчика прерывания
 size_t takemodembuffer_low(uint8_t * * dest)
 {
 	if (! IsListEmpty2(& modemsfree8))
@@ -1442,8 +1442,8 @@ size_t takemodembuffer_low(uint8_t * * dest)
 	return 0;
 }
 
-// Р“РѕС‚РѕРІ Р±СѓС„РµСЂ СЃ РїСЂРёРЅСЏС‚С‹РјРё РґР°РЅРЅС‹РјРё
-// РІС‹Р·С‹РІР°РµС‚СЃСЏ РёР· real-time РѕР±СЂР°Р±РѕС‚С‡РёРєР° РїСЂРµСЂС‹РІР°РЅРёСЏ
+// Готов буфер с принятыми данными
+// вызывается из real-time обработчика прерывания
 void savemodemrxbuffer_low(uint8_t * dest, size_t length)
 {
 	modems8_t * const p = CONTAINING_RECORD(dest, modems8_t, buff);
@@ -1459,7 +1459,7 @@ void releasemodembuffer(uint8_t * dest)
 	global_enableIRQ();
 }
 
-// РІС‹Р·С‹РІР°РµС‚СЃСЏ РёР· real-time РѕР±СЂР°Р±РѕС‚С‡РёРєР° РїСЂРµСЂС‹РІР°РЅРёСЏ
+// вызывается из real-time обработчика прерывания
 void releasemodembuffer_low(uint8_t * dest)
 {
 	modems8_t * const p = CONTAINING_RECORD(dest, modems8_t, buff);
@@ -1468,7 +1468,7 @@ void releasemodembuffer_low(uint8_t * dest)
 
 #endif /* WITHMODEM */
 
-// Р­С‚РѕР№ С„СѓРЅРєС†РёРµР№ РїРѕР»СЊР·СѓСЋС‚СЃСЏ РѕР±СЂР°Р±РѕС‚С‡РёРєРё РїСЂРµСЂС‹РІР°РЅРёР№ DMA РЅР° РїРµСЂРµРґР°С‡Сѓ РґР°РЅРЅС‹С… РїРѕ SAI
+// Этой функцией пользуются обработчики прерываний DMA на передачу данных по SAI
 RAMFUNC uintptr_t allocate_dmabuffer32tx(void)
 {
 	LOCK(& locklist32);
@@ -1481,8 +1481,8 @@ RAMFUNC uintptr_t allocate_dmabuffer32tx(void)
 	}
 	else if (! IsListEmpty2(& voicesready32tx))
 	{
-		// РћС€РёР±РѕС‡РЅР°СЏ СЃРёС‚СѓР°С†РёСЏ - РµСЃР»Рё Р±СѓС„РµСЂС‹ РЅРµ РѕСЃРІРѕР±РѕР¶РґРµРЅС‹ РІРѕРІСЂРµРјСЏ -
-		// Р±РµСЂС‘Рј РёР· РѕС‡РµСЂРµРґРё РіРѕС‚РѕРІС‹С… Рє РїРµСЂРµРґР°С‡Рµ
+		// Ошибочная ситуация - если буферы не освобождены вовремя -
+		// берём из очереди готовых к передаче
 
 		uint_fast8_t n = 3;
 		do
@@ -1506,7 +1506,7 @@ RAMFUNC uintptr_t allocate_dmabuffer32tx(void)
 	UNLOCK(& locklist32);
 }
 
-// Р­С‚РѕР№ С„СѓРЅРєС†РёРµР№ РїРѕР»СЊР·СѓСЋС‚СЃСЏ РѕР±СЂР°Р±РѕС‚С‡РёРєРё РїСЂРµСЂС‹РІР°РЅРёР№ DMA РЅР° РїСЂРёС‘Рј РґР°РЅРЅС‹С… РїРѕ SAI
+// Этой функцией пользуются обработчики прерываний DMA на приём данных по SAI
 RAMFUNC uintptr_t allocate_dmabuffer32rx(void)
 {
 	LOCK(& locklist32);
@@ -1526,7 +1526,7 @@ RAMFUNC uintptr_t allocate_dmabuffer32rx(void)
 	UNLOCK(& locklist32);
 }
 
-// Р­С‚РѕР№ С„СѓРЅРєС†РёРµР№ РїРѕР»СЊР·СѓСЋС‚СЃСЏ РѕР±СЂР°Р±РѕС‚С‡РёРєРё РїСЂРµСЂС‹РІР°РЅРёР№ DMA РЅР° РїРµСЂРµРґР°С‡Сѓ Рё РїСЂРёС‘Рј РґР°РЅРЅС‹С… РїРѕ I2S Рё USB AUDIO
+// Этой функцией пользуются обработчики прерываний DMA на передачу и приём данных по I2S и USB AUDIO
 RAMFUNC uintptr_t allocate_dmabuffer16(void)
 {
 	LOCK(& locklist16);
@@ -1540,8 +1540,8 @@ RAMFUNC uintptr_t allocate_dmabuffer16(void)
 #if WITHUSBUAC
 	else if (! IsListEmpty3(& resample16))
 	{
-		// РћС€РёР±РѕС‡РЅР°СЏ СЃРёС‚СѓР°С†РёСЏ - РµСЃР»Рё Р±СѓС„РµСЂС‹ РЅРµ РѕСЃРІРѕР±РѕР¶РґРµРЅС‹ РІРѕРІСЂРµРјСЏ -
-		// Р±РµСЂС‘Рј РёР· РѕС‡РµСЂРµРґРё РіРѕС‚РѕРІС‹С… Рє СЂРµСЃСЌРјРїР»РёРЅРіСѓ
+		// Ошибочная ситуация - если буферы не освобождены вовремя -
+		// берём из очереди готовых к ресэмплингу
 		uint_fast8_t n = 3;
 		do
 		{
@@ -1562,8 +1562,8 @@ RAMFUNC uintptr_t allocate_dmabuffer16(void)
 #endif /* WITHUSBUAC */
 	else if (! IsListEmpty2(& voicesphones16))
 	{
-		// РћС€РёР±РѕС‡РЅР°СЏ СЃРёС‚СѓР°С†РёСЏ - РµСЃР»Рё Р±СѓС„РµСЂС‹ РЅРµ РѕСЃРІРѕР±РѕР¶РґРµРЅС‹ РІРѕРІСЂРµРјСЏ -
-		// Р±РµСЂС‘Рј РёР· РѕС‡РµСЂРµРґРё РіРѕС‚РѕРІС‹С… Рє РїСЂРѕСЃР»СѓС€РёРІР°РЅРёСЋ
+		// Ошибочная ситуация - если буферы не освобождены вовремя -
+		// берём из очереди готовых к прослушиванию
 
 		uint_fast8_t n = 3;
 		do
@@ -1590,8 +1590,8 @@ RAMFUNC uintptr_t allocate_dmabuffer16(void)
 	}
 }
 
-// Р­С‚РѕР№ С„СѓРЅРєС†РёРµР№ РїРѕР»СЊР·СѓСЋС‚СЃСЏ РѕР±СЂР°Р±РѕС‚С‡РёРєРё РїСЂРµСЂС‹РІР°РЅРёР№ DMA
-// РїРµСЂРµРґР°Р»Рё Р±СѓС„РµСЂ, СЃС‡РёС‚Р°С‚СЊ СЃРІРѕР±РѕРґРЅС‹Рј
+// Этой функцией пользуются обработчики прерываний DMA
+// передали буфер, считать свободным
 void RAMFUNC release_dmabuffer32tx(uintptr_t addr)
 {
 	ASSERT(addr != 0);
@@ -1601,8 +1601,8 @@ void RAMFUNC release_dmabuffer32tx(uintptr_t addr)
 	UNLOCK(& locklist32);
 }
 
-// Р­С‚РѕР№ С„СѓРЅРєС†РёРµР№ РїРѕР»СЊР·СѓСЋС‚СЃСЏ РѕР±СЂР°Р±РѕС‚С‡РёРєРё РїСЂРµСЂС‹РІР°РЅРёР№ DMA
-// РїРµСЂРµРґР°Р»Рё Р±СѓС„РµСЂ, СЃС‡РёС‚Р°С‚СЊ СЃРІРѕР±РѕРґРЅС‹Рј
+// Этой функцией пользуются обработчики прерываний DMA
+// передали буфер, считать свободным
 void RAMFUNC release_dmabuffer16(uintptr_t addr)
 {
 	ASSERT(addr != 0);
@@ -1610,8 +1610,8 @@ void RAMFUNC release_dmabuffer16(uintptr_t addr)
 	buffers_tonull16(p);
 }
 
-// Р­С‚РѕР№ С„СѓРЅРєС†РёРµР№ РїРѕР»СЊР·СѓСЋС‚СЃСЏ РѕР±СЂР°Р±РѕС‚С‡РёРєРё РїСЂРµСЂС‹РІР°РЅРёР№ DMA
-// РѕР±СЂР°Р±РѕС‚Р°С‚СЊ Р±СѓС„РµСЂ РїРѕСЃР»Рµ РѕС†РёС„СЂРѕРІРєРё AF ADC
+// Этой функцией пользуются обработчики прерываний DMA
+// обработать буфер после оцифровки AF ADC
 void RAMFUNC processing_dmabuffer16rx(uintptr_t addr)
 {
 	ASSERT(addr != 0);
@@ -1622,8 +1622,8 @@ void RAMFUNC processing_dmabuffer16rx(uintptr_t addr)
 	buffers_savefrommikeadc(p);
 }
 
-// Р­С‚РѕР№ С„СѓРЅРєС†РёРµР№ РїРѕР»СЊР·СѓСЋС‚СЃСЏ РѕР±СЂР°Р±РѕС‚С‡РёРєРё РїСЂРµСЂС‹РІР°РЅРёР№ DMA
-// РѕР±СЂР°Р±РѕС‚Р°С‚СЊ Р±СѓС„РµСЂ РїРѕСЃР»Рµ РїСЂРёС‘РјР° РїР°РєРµС‚Р° СЃ USB AUDIO
+// Этой функцией пользуются обработчики прерываний DMA
+// обработать буфер после приёма пакета с USB AUDIO
 void RAMFUNC processing_dmabuffer16rxuac(uintptr_t addr)
 {
 	ASSERT(addr != 0);
@@ -1634,9 +1634,9 @@ void RAMFUNC processing_dmabuffer16rxuac(uintptr_t addr)
 	buffers_savefromuacout(p);
 }
 
-// Р­С‚РѕР№ С„СѓРЅРєС†РёРµР№ РїРѕР»СЊР·СѓСЋС‚СЃСЏ РѕР±СЂР°Р±РѕС‚С‡РёРєРё РїСЂРµСЂС‹РІР°РЅРёР№ DMA
-// РѕР±СЂР°Р±РѕС‚Р°С‚СЊ Р±СѓС„РµСЂ РїРѕСЃР»Рµ РѕС†РёС„СЂРѕРІРєРё IF ADC (MAIN RX/SUB RX)
-// Р’С‹Р·С‹РІР°РµС‚СЃСЏ РЅР° ARM_REALTIME_PRIORITY СѓСЂРѕРІРЅРµ.
+// Этой функцией пользуются обработчики прерываний DMA
+// обработать буфер после оцифровки IF ADC (MAIN RX/SUB RX)
+// Вызывается на ARM_REALTIME_PRIORITY уровне.
 void RAMFUNC processing_dmabuffer32rx(uintptr_t addr)
 {
 	enum { CNT16 = DMABUFFSIZE16 / DMABUFSTEP16 };
@@ -1645,8 +1645,8 @@ void RAMFUNC processing_dmabuffer32rx(uintptr_t addr)
 	voice32rx_t * const p = CONTAINING_RECORD(addr, voice32rx_t, buff);
 #if WITHBUFFERSDEBUG
 	++ n1;
-	// РїРѕРґСЃС‡С‘С‚ СЃРєРѕСЂРѕСЃС‚Рё РІ СЃСЌРјРїР»Р°С… Р·Р° СЃРµРєСѓРЅРґСѓ
-	debugcount_rx32adc += CNT32RX;	// РІ Р±СѓС„РµСЂРµ РїР°СЂС‹ СЃСЌРјРїР»РѕРІ РїРѕ С‡РµС‚С‹СЂРµ Р±Р°Р№С‚Р°
+	// подсчёт скорости в сэмплах за секунду
+	debugcount_rx32adc += CNT32RX;	// в буфере пары сэмплов по четыре байта
 #endif /* WITHBUFFERSDEBUG */
 	dsp_extbuffer32rx(p->buff);
 
@@ -1659,7 +1659,7 @@ void RAMFUNC processing_dmabuffer32rx(uintptr_t addr)
 	rx32adc += CNT32RX; 
 	while (rx32adc >= CNT16)
 	{
-		buffers_resample();		// С„РѕСЂРјРёСЂРѕРІР°РЅРёРµ РѕРґРЅРѕРіРѕ Р±СѓС„РµСЂР° СЃРёРЅС…СЂРѕРЅРЅРѕРіРѕ РїРѕС‚РѕРєР° РёР· N РЅРµСЃРёРЅС…СЂРѕРЅРЅРѕРіРѕ
+		buffers_resample();		// формирование одного буфера синхронного потока из N несинхронного
 #if ! WITHI2SHW
 		release_dmabuffer16(getfilled_dmabuffer16phones());
 #endif /* WITHI2SHW */
@@ -1668,9 +1668,9 @@ void RAMFUNC processing_dmabuffer32rx(uintptr_t addr)
 #endif /* WITHUSBUAC */
 }
 
-// Р­С‚РѕР№ С„СѓРЅРєС†РёРµР№ РїРѕР»СЊР·СѓСЋС‚СЃСЏ РѕР±СЂР°Р±РѕС‚С‡РёРєРё РїСЂРµСЂС‹РІР°РЅРёР№ DMA
-// РѕР±СЂР°Р±РѕС‚Р°С‚СЊ Р±СѓС„РµСЂ РїРѕСЃР»Рµ РѕС†РёС„СЂРѕРІРєРё IF ADC (MAIN RX/SUB RX)
-// Р’С‹Р·С‹РІР°РµС‚СЃСЏ РЅР° ARM_REALTIME_PRIORITY СѓСЂРѕРІРЅРµ.
+// Этой функцией пользуются обработчики прерываний DMA
+// обработать буфер после оцифровки IF ADC (MAIN RX/SUB RX)
+// Вызывается на ARM_REALTIME_PRIORITY уровне.
 void RAMFUNC processing_dmabuffer32wfm(uintptr_t addr)
 {
 	//enum { CNT16 = DMABUFFSIZE16 / DMABUFSTEP16 };
@@ -1679,8 +1679,8 @@ void RAMFUNC processing_dmabuffer32wfm(uintptr_t addr)
 	voice32rx_t * const p = CONTAINING_RECORD(addr, voice32rx_t, buff);
 #if WITHBUFFERSDEBUG
 	++ n1wfm;
-	// РїРѕРґСЃС‡С‘С‚ СЃРєРѕСЂРѕСЃС‚Рё РІ СЃСЌРјРїР»Р°С… Р·Р° СЃРµРєСѓРЅРґСѓ
-	debugcount_rx32wfm += CNT32RX;	// РІ Р±СѓС„РµСЂРµ РїР°СЂС‹ СЃСЌРјРїР»РѕРІ РїРѕ С‡РµС‚С‹СЂРµ Р±Р°Р№С‚Р°
+	// подсчёт скорости в сэмплах за секунду
+	debugcount_rx32wfm += CNT32RX;	// в буфере пары сэмплов по четыре байта
 #endif /* WITHBUFFERSDEBUG */
 	dsp_extbuffer32wfm(p->buff);
 
@@ -1691,8 +1691,8 @@ void RAMFUNC processing_dmabuffer32wfm(uintptr_t addr)
 }
 
 #if WITHRTS192
-// Р­С‚РѕР№ С„СѓРЅРєС†РёРµР№ РїРѕР»СЊР·СѓСЋС‚СЃСЏ РѕР±СЂР°Р±РѕС‚С‡РёРєРё РїСЂРµСЂС‹РІР°РЅРёР№ DMA
-// РѕР±СЂР°Р±РѕС‚Р°С‚СЊ Р±СѓС„РµСЂ РїРѕСЃР»Рµ РѕС†РёС„СЂРѕРІРєРё - РєР°РЅР°Р» СЃРїРµРєС‚СЂРѕР°РЅР°Р»РёР·Р°С‚РѕСЂР°
+// Этой функцией пользуются обработчики прерываний DMA
+// обработать буфер после оцифровки - канал спектроанализатора
 void RAMFUNC processing_dmabuffer32rts(uintptr_t addr)
 {
 	ASSERT(addr != 0);
@@ -1715,13 +1715,13 @@ void RAMFUNC processing_dmabuffer32rts(uintptr_t addr)
 #endif /* WITHRTS192 */
 
 
-// Р­С‚РѕР№ С„СѓРЅРєС†РёРµР№ РїРѕР»СЊР·СѓСЋС‚СЃСЏ РѕР±СЂР°Р±РѕС‚С‡РёРєРё РїСЂРµСЂС‹РІР°РЅРёР№ DMA
-// РїРѕР»СѓС‡РёС‚СЊ Р±СѓС„РµСЂ РґР»СЏ РїРµСЂРµРґР°С‡Рё С‡РµСЂРµР· IF DAC
+// Этой функцией пользуются обработчики прерываний DMA
+// получить буфер для передачи через IF DAC
 uintptr_t getfilled_dmabuffer32tx_main(void)
 {
 #if WITHBUFFERSDEBUG
-	// РїРѕРґСЃС‡С‘С‚ СЃРєРѕСЂРѕСЃС‚Рё РІ СЃСЌРјРїР»Р°С… Р·Р° СЃРµРєСѓРЅРґСѓ
-	debugcount_tx32dac += DMABUFFSIZE32TX / DMABUFSTEP32TX;	// РІ Р±СѓС„РµСЂРµ РїР°СЂС‹ СЃСЌРјРїР»РѕРІ РїРѕ С‡РµС‚С‹СЂРµ Р±Р°Р№С‚Р°
+	// подсчёт скорости в сэмплах за секунду
+	debugcount_tx32dac += DMABUFFSIZE32TX / DMABUFSTEP32TX;	// в буфере пары сэмплов по четыре байта
 #endif /* WITHBUFFERSDEBUG */
 
 	LOCK(& locklist32);
@@ -1733,23 +1733,23 @@ uintptr_t getfilled_dmabuffer32tx_main(void)
 		return (uintptr_t) & p->buff;
 	}
 	UNLOCK(& locklist32);
-	return allocate_dmabuffer32tx();	// Р°РІР°СЂРёР№РЅР°СЏ РІРµС‚РєР° - СЂР°Р±РѕС‚Р°РµС‚ РїРµСЂРІС‹Рµ РЅРµСЃРєРѕР»СЊРєРѕ СЂР°Р·
+	return allocate_dmabuffer32tx();	// аварийная ветка - работает первые несколько раз
 }
 
-// Р­С‚РѕР№ С„СѓРЅРєС†РёРµР№ РїРѕР»СЊР·СѓСЋС‚СЃСЏ РѕР±СЂР°Р±РѕС‚С‡РёРєРё РїСЂРµСЂС‹РІР°РЅРёР№ DMA
-// РїРѕР»СѓС‡РёС‚СЊ Р±СѓС„РµСЂ РґР»СЏ РїРµСЂРµРґР°С‡Рё С‡РµСЂРµР· IF DAC2
+// Этой функцией пользуются обработчики прерываний DMA
+// получить буфер для передачи через IF DAC2
 uintptr_t getfilled_dmabuffer32tx_sub(void)
 {
 	return allocate_dmabuffer32tx();
 }
 
-// Р­С‚РѕР№ С„СѓРЅРєС†РёРµР№ РїРѕР»СЊР·СѓСЋС‚СЃСЏ РѕР±СЂР°Р±РѕС‚С‡РёРєРё РїСЂРµСЂС‹РІР°РЅРёР№ DMA
-// РїРѕР»СѓС‡РёС‚СЊ Р±СѓС„РµСЂ РґР»СЏ РїРµСЂРµРґР°С‡Рё С‡РµСЂРµР· AF DAC
+// Этой функцией пользуются обработчики прерываний DMA
+// получить буфер для передачи через AF DAC
 uintptr_t getfilled_dmabuffer16phones(void)
 {
 #if WITHBUFFERSDEBUG
-	// РїРѕРґСЃС‡С‘С‚ СЃРєРѕСЂРѕСЃС‚Рё РІ СЃСЌРјРїР»Р°С… Р·Р° СЃРµРєСѓРЅРґСѓ
-	debugcount_phonesdac += DMABUFFSIZE16 / DMABUFSTEP16;	// РІ Р±СѓС„РµСЂРµ РїР°СЂС‹ СЃСЌРјРїР»РѕРІ РїРѕ РґРІР° Р±Р°Р№С‚Р°
+	// подсчёт скорости в сэмплах за секунду
+	debugcount_phonesdac += DMABUFFSIZE16 / DMABUFSTEP16;	// в буфере пары сэмплов по два байта
 #endif /* WITHBUFFERSDEBUG */
 
 	LOCK(& locklist16);
@@ -1767,15 +1767,15 @@ uintptr_t getfilled_dmabuffer16phones(void)
 #endif /* WITHBUFFERSDEBUG */
 	const uintptr_t addr = allocate_dmabuffer16();
 	voice16_t * const p = CONTAINING_RECORD(addr, voice16_t, buff);
-	memset(p->buff, 0, sizeof p->buff);	// Р—Р°РїРѕР»РЅРµРЅРёРµ "С‚РёС€РёРЅРѕР№"
+	memset(p->buff, 0, sizeof p->buff);	// Заполнение "тишиной"
 	dsp_addsidetone(p->buff);
 	return (uintptr_t) & p->buff;
 }
 
 //////////////////////////////////////////
-// РџРѕСЌР»РµРјРµРЅС‚РЅРѕРµ Р·Р°РїРѕР»РЅРµРЅРёРµ Р±СѓС„РµСЂР° IF DAC
+// Поэлементное заполнение буфера IF DAC
 
-// Р’С‹Р·С‹РІР°РµС‚СЃСЏ РёР· ARM_REALTIME_PRIORITY РѕР±СЂР°Р±РѕС‚С‡РёРєР° РїСЂРµСЂС‹РІР°РЅРёСЏ
+// Вызывается из ARM_REALTIME_PRIORITY обработчика прерывания
 // 32 bit, signed
 void savesampleout32stereo(int_fast32_t ch0, int_fast32_t ch1)
 {
@@ -1805,11 +1805,11 @@ void savesampleout32stereo(int_fast32_t ch0, int_fast32_t ch1)
 }
 
 //////////////////////////////////////////
-// РџРѕСЌР»РµРјРµРЅС‚РЅРѕРµ Р·Р°РїРѕР»РЅРµРЅРёРµ Р±СѓС„РµСЂР° AF DAC
+// Поэлементное заполнение буфера AF DAC
 
 void savesampleout16stereo_user(int_fast32_t ch0, int_fast32_t ch1)
 {
-	// РµСЃР»Рё РµСЃС‚СЊ РёРЅРёС†РёР°Р»РёР·РёСЂРѕРІР°РЅРЅС‹Р№ РєР°РЅР°Р» РґР»СЏ РІС‹РґР°С‡Рё Р·РІСѓРєР°
+	// если есть инициализированный канал для выдачи звука
 	static voice16_t * p = NULL;
 	static unsigned n;
 
@@ -1841,7 +1841,7 @@ void savesampleout16stereo_user(int_fast32_t ch0, int_fast32_t ch1)
 
 	#if WITHRTS96
 
-		// Р­С‚РѕР№ С„СѓРЅРєС†РёРµР№ РїРѕР»СЊР·СѓСЋС‚СЃСЏ РѕР±СЂР°Р±РѕС‚С‡РёРєРё РїСЂРµСЂС‹РІР°РЅРёР№ DMA РЅР° РїСЂРёС‘Рј РґР°РЅРЅС‹С… РїРѕ SAI
+		// Этой функцией пользуются обработчики прерываний DMA на приём данных по SAI
 		static uintptr_t allocate_dmabuffer96rts(void)
 		{
 			LOCK(& locklist32);
@@ -1857,9 +1857,9 @@ void savesampleout16stereo_user(int_fast32_t ch0, int_fast32_t ch1)
 			}
 			else if (! IsListEmpty2(& uacin96rts))
 			{
-				// РћС€РёР±РѕС‡РЅР°СЏ СЃРёС‚СѓР°С†РёСЏ - РµСЃР»Рё Р±СѓС„РµСЂС‹ РЅРµ РѕСЃРІРѕР±РѕР¶РґРµРЅС‹ РІРѕРІСЂРµРјСЏ -
-				// Р±РµСЂС‘Рј РёР· РѕС‡РµСЂРµРґРё РіРѕС‚РѕРІС‹С… Рє РїРµСЂРµРґР°С‡Рµ РІ РєРѕРјРїСЊСЋС‚РµСЂ РїРѕ USB.
-				// РћС‡РµСЂРµРґСЊ РѕС‡РёС‰Р°РµС‚СЃСЏ РІРѕР·РјРѕР¶РЅРѕ РЅРµ РїРѕР»РЅРѕСЃС‚СЊСЋ.
+				// Ошибочная ситуация - если буферы не освобождены вовремя -
+				// берём из очереди готовых к передаче в компьютер по USB.
+				// Очередь очищается возможно не полностью.
 				uint_fast8_t n = 3;
 				do
 				{
@@ -1884,8 +1884,8 @@ void savesampleout16stereo_user(int_fast32_t ch0, int_fast32_t ch1)
 			UNLOCK(& locklist32);
 		}
 
-		// Р­С‚РѕР№ С„СѓРЅРєС†РёРµР№ РїРѕР»СЊР·СѓСЋС‚СЃСЏ РѕР±СЂР°Р±РѕС‚С‡РёРєРё РїСЂРµСЂС‹РІР°РЅРёР№ DMA
-		// РїРµСЂРµРґР°Р»Рё Р±СѓС„РµСЂ, СЃС‡РёС‚Р°С‚СЊ СЃРІРѕР±РѕРґРЅС‹Рј
+		// Этой функцией пользуются обработчики прерываний DMA
+		// передали буфер, считать свободным
 		static void release_dmabuffer96rts(uintptr_t addr)
 		{
 			LOCK(& locklist32);
@@ -1894,9 +1894,9 @@ void savesampleout16stereo_user(int_fast32_t ch0, int_fast32_t ch1)
 			UNLOCK(& locklist32);
 		}
 
-		// Р­С‚РѕР№ С„СѓРЅРєС†РёРµР№ РїРѕР»СЊР·СѓСЋС‚СЃСЏ РѕР±СЂР°Р±РѕС‚С‡РёРєРё РїСЂРµСЂС‹РІР°РЅРёР№ DMA
-		// РїРѕР»СѓС‡РёС‚СЊ Р±СѓС„РµСЂ РґР»СЏ РїРµСЂРµРґР°С‡Рё РІ РєРѕРјРїСЊСЋС‚РµСЂ, С‡РµСЂРµР· USB AUDIO
-		// Р•СЃР»Рё РІ РґР°РЅРЅС‹Р№ РјРѕРјРµРЅС‚ РЅРµС‚ РіРѕС‚РѕРІРѕРіРѕ Р±СѓС„РµСЂР°, РІРѕР·РІСЂР°С‚ 0
+		// Этой функцией пользуются обработчики прерываний DMA
+		// получить буфер для передачи в компьютер, через USB AUDIO
+		// Если в данный момент нет готового буфера, возврат 0
 		static uint32_t getfilled_dmabuffer96uacinrts(void)
 		{
 			LOCK(& locklist16);
@@ -1911,13 +1911,13 @@ void savesampleout16stereo_user(int_fast32_t ch0, int_fast32_t ch1)
 			return 0;
 		}
 
-		// РџРѕСЌР»РµРјРµРЅС‚РЅРѕРµ Р·Р°РїРѕР»РЅРµРЅРёРµ Р±СѓС„РµСЂР° RTS96
+		// Поэлементное заполнение буфера RTS96
 
-		// Р’С‹Р·С‹РІР°РµС‚СЃСЏ РёР· ARM_REALTIME_PRIORITY РѕР±СЂР°Р±РѕС‚С‡РёРєР° РїСЂРµСЂС‹РІР°РЅРёСЏ
-		// vl, vr: 32 bit, signed - РїСЂРµРѕР±СЂР°Р·СѓРµРј Рє С‚СЂРµР±СѓРµРјРѕРјСѓ С„РѕСЂРјР°С‚Сѓ РґР»СЏ РїРµСЂРµРґР°С‡Рё РїРѕ USB Р·РґРµСЃСЊ.
+		// Вызывается из ARM_REALTIME_PRIORITY обработчика прерывания
+		// vl, vr: 32 bit, signed - преобразуем к требуемому формату для передачи по USB здесь.
 		void savesampleout96stereo(int_fast32_t ch0, int_fast32_t ch1)
 		{
-			// РµСЃР»Рё РµСЃС‚СЊ РёРЅРёС†РёР°Р»РёР·РёСЂРѕРІР°РЅРЅС‹Р№ РєР°РЅР°Р» РґР»СЏ РІС‹РґР°С‡Рё Р·РІСѓРєР°
+			// если есть инициализированный канал для выдачи звука
 			static voice96rts_t * p = NULL;
 			static unsigned n;
 
@@ -1955,9 +1955,9 @@ void savesampleout16stereo_user(int_fast32_t ch0, int_fast32_t ch1)
 
 	#if WITHRTS192
 
-		// Р­С‚РѕР№ С„СѓРЅРєС†РёРµР№ РїРѕР»СЊР·СѓСЋС‚СЃСЏ РѕР±СЂР°Р±РѕС‚С‡РёРєРё РїСЂРµСЂС‹РІР°РЅРёР№ DMA
-		// РїРѕР»СѓС‡РёС‚СЊ Р±СѓС„РµСЂ РґР»СЏ РїРµСЂРµРґР°С‡Рё РІ РєРѕРјРїСЊСЋС‚РµСЂ, С‡РµСЂРµР· USB AUDIO
-		// Р•СЃР»Рё РІ РґР°РЅРЅС‹Р№ РјРѕРјРµРЅС‚ РЅРµС‚ РіРѕС‚РѕРІРѕРіРѕ Р±СѓС„РµСЂР°, РІРѕР·РІСЂР°С‚ 0
+		// Этой функцией пользуются обработчики прерываний DMA
+		// получить буфер для передачи в компьютер, через USB AUDIO
+		// Если в данный момент нет готового буфера, возврат 0
 		static uintptr_t getfilled_dmabuffer192uacinrts(void)
 		{
 			LOCK(& locklist16);
@@ -1972,7 +1972,7 @@ void savesampleout16stereo_user(int_fast32_t ch0, int_fast32_t ch1)
 			return 0;
 		}
 
-		// Р­С‚РѕР№ С„СѓРЅРєС†РёРµР№ РїРѕР»СЊР·СѓСЋС‚СЃСЏ РѕР±СЂР°Р±РѕС‚С‡РёРєРё РїСЂРµСЂС‹РІР°РЅРёР№ DMA РЅР° РїСЂРёС‘Рј РґР°РЅРЅС‹С… РїРѕ SAI
+		// Этой функцией пользуются обработчики прерываний DMA на приём данных по SAI
 		uint32_t allocate_dmabuffer192rts(void)
 		{
 			LOCK(& locklist32);
@@ -1988,9 +1988,9 @@ void savesampleout16stereo_user(int_fast32_t ch0, int_fast32_t ch1)
 			}
 			else if (! IsListEmpty2(& uacin192rts))
 			{
-				// РћС€РёР±РѕС‡РЅР°СЏ СЃРёС‚СѓР°С†РёСЏ - РµСЃР»Рё Р±СѓС„РµСЂС‹ РЅРµ РѕСЃРІРѕР±РѕР¶РґРµРЅС‹ РІРѕРІСЂРµРјСЏ -
-				// Р±РµСЂС‘Рј РёР· РѕС‡РµСЂРµРґРё РіРѕС‚РѕРІС‹С… Рє РїРµСЂРµРґР°С‡Рµ РІ РєРѕРјРїСЊСЋС‚РµСЂ РїРѕ USB.
-				// РћС‡РµСЂРµРґСЊ РѕС‡РёС‰Р°РµС‚СЃСЏ РІРѕР·РјРѕР¶РЅРѕ РЅРµ РїРѕР»РЅРѕСЃС‚СЊСЋ.
+				// Ошибочная ситуация - если буферы не освобождены вовремя -
+				// берём из очереди готовых к передаче в компьютер по USB.
+				// Очередь очищается возможно не полностью.
 				uint_fast8_t n = 3;
 				do
 				{
@@ -2015,8 +2015,8 @@ void savesampleout16stereo_user(int_fast32_t ch0, int_fast32_t ch1)
 			UNLOCK(& locklist32);
 		}
 
-		// Р­С‚РѕР№ С„СѓРЅРєС†РёРµР№ РїРѕР»СЊР·СѓСЋС‚СЃСЏ РѕР±СЂР°Р±РѕС‚С‡РёРєРё РїСЂРµСЂС‹РІР°РЅРёР№ DMA
-		// РїРµСЂРµРґР°Р»Рё Р±СѓС„РµСЂ, СЃС‡РёС‚Р°С‚СЊ СЃРІРѕР±РѕРґРЅС‹Рј
+		// Этой функцией пользуются обработчики прерываний DMA
+		// передали буфер, считать свободным
 		static void release_dmabuffer192rts(uint32_t addr)
 		{
 			LOCK(& locklist32);
@@ -2026,13 +2026,13 @@ void savesampleout16stereo_user(int_fast32_t ch0, int_fast32_t ch1)
 		}
 
 		// NOT USED
-		// РџРѕСЌР»РµРјРµРЅС‚РЅРѕРµ Р·Р°РїРѕР»РЅРµРЅРёРµ Р±СѓС„РµСЂР° RTS192
+		// Поэлементное заполнение буфера RTS192
 
-		// Р’С‹Р·С‹РІР°РµС‚СЃСЏ РёР· ARM_REALTIME_PRIORITY РѕР±СЂР°Р±РѕС‚С‡РёРєР° РїСЂРµСЂС‹РІР°РЅРёСЏ
-		// vl, vr: 32 bit, signed - РїСЂРµРѕР±СЂР°Р·СѓРµРј Рє С‚СЂРµР±СѓРµРјРѕРјСѓ С„РѕСЂРјР°С‚Сѓ РґР»СЏ РїРµСЂРµРґР°С‡Рё РїРѕ USB Р·РґРµСЃСЊ.
+		// Вызывается из ARM_REALTIME_PRIORITY обработчика прерывания
+		// vl, vr: 32 bit, signed - преобразуем к требуемому формату для передачи по USB здесь.
 		void savesampleout192stereo(int_fast32_t ch0, int_fast32_t ch1)
 		{
-			// РµСЃР»Рё РµСЃС‚СЊ РёРЅРёС†РёР°Р»РёР·РёСЂРѕРІР°РЅРЅС‹Р№ РєР°РЅР°Р» РґР»СЏ РІС‹РґР°С‡Рё Р·РІСѓРєР°
+			// если есть инициализированный канал для выдачи звука
 			static voice192rts_t * p = NULL;
 			static unsigned n;
 
@@ -2082,8 +2082,8 @@ void savesampleout16stereo_user(int_fast32_t ch0, int_fast32_t ch1)
 		}
 		else if (! IsListEmpty2(& uacinready16))
 		{
-			// РћС€РёР±РѕС‡РЅР°СЏ СЃРёС‚СѓР°С†РёСЏ - РµСЃР»Рё Р±СѓС„РµСЂС‹ РЅРµ РѕСЃРІРѕР±РѕР¶РґРµРЅС‹ РІРѕРІСЂРµРјСЏ -
-			// Р±РµСЂС‘Рј РёР· РѕС‡РµСЂРµРґРё РіРѕС‚РѕРІС‹С… Рє РїРµСЂРµРґР°С‡Рµ
+			// Ошибочная ситуация - если буферы не освобождены вовремя -
+			// берём из очереди готовых к передаче
 
 			uint_fast8_t n = 3;
 			do
@@ -2108,9 +2108,9 @@ void savesampleout16stereo_user(int_fast32_t ch0, int_fast32_t ch1)
 		return 0;
 	}
 
-	// Р­С‚РѕР№ С„СѓРЅРєС†РёРµР№ РїРѕР»СЊР·СѓСЋС‚СЃСЏ РѕР±СЂР°Р±РѕС‚С‡РёРєРё РїСЂРµСЂС‹РІР°РЅРёР№ DMA
-	// РїРѕР»СѓС‡РёС‚СЊ Р±СѓС„РµСЂ РґР»СЏ РїРµСЂРµРґР°С‡Рё РІ РєРѕРјРїСЊСЋС‚РµСЂ, С‡РµСЂРµР· USB AUDIO
-	// Р•СЃР»Рё РІ РґР°РЅРЅС‹Р№ РјРѕРјРµРЅС‚ РЅРµС‚ РіРѕС‚РѕРІРѕРіРѕ Р±СѓС„РµСЂР°, РІРѕР·РІСЂР°С‚ 0
+	// Этой функцией пользуются обработчики прерываний DMA
+	// получить буфер для передачи в компьютер, через USB AUDIO
+	// Если в данный момент нет готового буфера, возврат 0
 	static uintptr_t getfilled_dmabuffer16uacin(void)
 	{
 		LOCK(& locklist16);
@@ -2125,13 +2125,13 @@ void savesampleout16stereo_user(int_fast32_t ch0, int_fast32_t ch1)
 		return 0;
 	}
 
-	// Р’С‹Р·С‹РІР°РµС‚СЃСЏ РёР· ARM_REALTIME_PRIORITY РѕР±СЂР°Р±РѕС‚С‡РёРєР° РїСЂРµСЂС‹РІР°РЅРёСЏ
-	// vl, vr: 16 bit, signed - С‚СЂРµР±СѓРµРјС‹Р№ С„РѕСЂРјР°С‚ РґР»СЏ РїРµСЂРµРґР°С‡Рё РїРѕ USB.
+	// Вызывается из ARM_REALTIME_PRIORITY обработчика прерывания
+	// vl, vr: 16 bit, signed - требуемый формат для передачи по USB.
 
 	void savesamplerecord16uacin(int_fast16_t ch0, int_fast16_t ch1)
 	{
 	#if WITHUSBHW && WITHUSBUAC
-		// РµСЃР»Рё РµСЃС‚СЊ РёРЅРёС†РёР°Р»РёР·РёСЂРѕРІР°РЅРЅС‹Р№ РєР°РЅР°Р» РґР»СЏ РІС‹РґР°С‡Рё Р·РІСѓРєР°
+		// если есть инициализированный канал для выдачи звука
 		static uacin16_t * p = NULL;
 		static unsigned n = 0;
 
@@ -2177,13 +2177,13 @@ void savesampleout192stereo(int_fast32_t ch0, int_fast32_t ch1)
 
 #if WITHUSBUAC
 
-/* СЂРµР¶РёРј РїСЂРѕСЃР»СѓС€РёРІР°РЅРёСЏ РІС‹С…РѕРґР° РєРѕРјРїСЊСЋС‚РµСЂР° РІ РЅР°СѓС€РЅРёРєР°С… С‚СЂР°РЅСЃРёРІРµСЂР° - РѕС‚Р»Р°РґРѕС‡РЅС‹Р№ СЂРµР¶РёРј */
+/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
 void board_set_uacplayer(uint_fast8_t v)
 {
 	uacoutplayer = v;
 }
 
-/* РЅР° РІС…РѕРґ С‚СЂР°РЅСЃРёРІРµСЂР° Р±РµСЂСѓС‚СЃСЏ Р°СѓРґРёРѕРґР°РЅРЅС‹Рµ СЃ USB РІРёСЂС‚СѓР°Р»СЊРЅРѕР№ РїР»Р°С‚С‹, Р° РЅРµ СЃ РјРёРєСЂРѕС„РѕРЅР° */
+/* на вход трансивера берутся аудиоданные с USB виртуальной платы, а не с микрофона */
 void board_set_uacmike(uint_fast8_t v)
 {
 	uacoutmike = v;
@@ -2191,7 +2191,7 @@ void board_set_uacmike(uint_fast8_t v)
 
 
 void 
-buffers_set_uacinalt(uint_fast8_t v)	/* РІС‹Р±РѕСЂ Р°Р»СЊС‚РµСЂРЅР°С‚РёРІРЅРѕР№ РєРѕРЅС„РёРіСѓСЂР°С†РёРё РґР»СЏ UAC IN interface */
+buffers_set_uacinalt(uint_fast8_t v)	/* выбор альтернативной конфигурации для UAC IN interface */
 {
 	//debug_printf_P(PSTR("buffers_set_uacinalt: v=%d\n"), v);
 	uacinalt = v;
@@ -2200,7 +2200,7 @@ buffers_set_uacinalt(uint_fast8_t v)	/* РІС‹Р±РѕСЂ Р°Р»СЊС‚РµСЂРЅР°С‚РёРІРЅРѕР№ 
 #if WITHUSBUAC3
 
 void 
-buffers_set_uacinrtsalt(uint_fast8_t v)	/* РІС‹Р±РѕСЂ Р°Р»СЊС‚РµСЂРЅР°С‚РёРІРЅРѕР№ РєРѕРЅС„РёРіСѓСЂР°С†РёРё РґР»СЏ UAC IN interface */
+buffers_set_uacinrtsalt(uint_fast8_t v)	/* выбор альтернативной конфигурации для UAC IN interface */
 {
 	//debug_printf_P(PSTR("buffers_set_uacinrtsalt: v=%d\n"), v);
 	uacinrtsalt = v;
@@ -2209,7 +2209,7 @@ buffers_set_uacinrtsalt(uint_fast8_t v)	/* РІС‹Р±РѕСЂ Р°Р»СЊС‚РµСЂРЅР°С‚РёРІРЅРѕ
 #endif /* WITHUSBUAC3 */
 
 void 
-buffers_set_uacoutalt(uint_fast8_t v)	/* РІС‹Р±РѕСЂ Р°Р»СЊС‚РµСЂРЅР°С‚РёРІРЅРѕР№ РєРѕРЅС„РёРіСѓСЂР°С†РёРё РґР»СЏ UAC OUT interface */
+buffers_set_uacoutalt(uint_fast8_t v)	/* выбор альтернативной конфигурации для UAC OUT interface */
 {
 	//debug_printf_P(PSTR("buffers_set_uacoutalt: v=%d\n"), v);
 	uacoutalt = v;
@@ -2224,22 +2224,22 @@ static uint_fast16_t ulmin16(uint_fast16_t a, uint_fast16_t b)
 }
 
 static uintptr_t uacoutaddr;	// address of DMABUFFSIZE16 * sizeof (int16_t) bytes
-static uint_fast16_t uacoutbufflevel;	// РєРѕР»РёС‡РµСЃС‚РІРѕ Р±Р°Р№С‚РѕРІР® РЅР° РєРѕС‚РѕСЂС‹Рµ Р·Р°РїРѕР»РЅРµРЅ Р±СѓС„РµСЂ
+static uint_fast16_t uacoutbufflevel;	// количество байтовЮ на которые заполнен буфер
 
-/* РІС‹Р·С‹РІР°РµС‚СЃСЏ РїСЂРё Р·Р°РїСЂРµС‰С‘РЅРЅС‹С… РїСЂРµСЂС‹РІР°РЅРёСЏС…. */
+/* вызывается при запрещённых прерываниях. */
 void uacout_buffer_initialize(void)
 {
 	uacoutaddr = 0;
 	uacoutbufflevel = 0;
 }
 
-/* РІС‹Р·С‹РІР°С‚СЃСЏ РёР· ARM_SYSTEM_PRIORITY С„СѓРЅРєС†РёРё РѕР±СЂР°Р±РѕС‚С‡РёРєР° РїСЂРµСЂС‹РІР°РЅРёСЏ */
+/* вызыватся из ARM_SYSTEM_PRIORITY функции обработчика прерывания */
 void uacout_buffer_start(void)
 {
 	if (uacoutaddr)
 		TP();
 }
-/* РІС‹Р·С‹РІР°С‚СЃСЏ РёР· ARM_SYSTEM_PRIORITY С„СѓРЅРєС†РёРё РѕР±СЂР°Р±РѕС‚С‡РёРєР° РїСЂРµСЂС‹РІР°РЅРёСЏ */
+/* вызыватся из ARM_SYSTEM_PRIORITY функции обработчика прерывания */
 void uacout_buffer_stop(void)
 {
 	if (uacoutaddr != 0)
@@ -2252,17 +2252,17 @@ void uacout_buffer_stop(void)
 	}
 }
 
-/* РІС‹Р·С‹РІР°С‚СЃСЏ РёР· РЅРµ-realtime С„СѓРЅРєС†РёРё РѕР±СЂР°Р±РѕС‚С‡РёРєР° РїСЂРµСЂС‹РІР°РЅРёСЏ */
-// Р Р°Р±РѕС‚Р°РµС‚ РЅР° ARM_SYSTEM_PRIORITY
+/* вызыватся из не-realtime функции обработчика прерывания */
+// Работает на ARM_SYSTEM_PRIORITY
 void uacout_buffer_save(const uint8_t * buff, uint_fast16_t size)
 {
-	const size_t dmabuffer16size = DMABUFFSIZE16 * sizeof (int16_t);	// СЂР°Р·РјРµСЂ РІ Р±Р°Р№С‚Р°С…
+	const size_t dmabuffer16size = DMABUFFSIZE16 * sizeof (int16_t);	// размер в байтах
 
 #if WITHUABUACOUTAUDIO48MONO
 
 	for (;;)
 	{
-		const uint_fast16_t insamples = size / 2;	// РєРѕР»РёС‡РµСЃС‚РІРѕ СЃСЌРјРїР»РѕРІ РІРѕ РІС…РѕРґРЅРѕРј Р±СѓС„РµСЂРµ
+		const uint_fast16_t insamples = size / 2;	// количество сэмплов во входном буфере
 		const uint_fast16_t outsamples = (dmabuffer16size - uacoutbufflevel) / 2 / DMABUFSTEP16;
 		const uint_fast16_t chunksamples = ulmin16(insamples, outsamples);
 		if (chunksamples == 0)
@@ -2276,7 +2276,7 @@ void uacout_buffer_save(const uint8_t * buff, uint_fast16_t size)
 		}
 		//memcpy((uint8_t *) uacoutaddr + uacoutbufflevel, buff, chunk);
 		{
-			// РєРѕРїРёСЂРѕРІР°РЅРёРµ РЅСѓР¶РЅРѕРіРѕ РєРѕР»РёС‡РµСЃС‚РІР° СЃСЌРјРїР»РѕРІ СЃ РїСЂРµСЂР±СЂР°Р·РѕРІР°РЅРёРµРј РёР· РјРѕРЅРѕ РІ СЃС‚РµСЂРµРѕ
+			// копирование нужного количества сэмплов с прербразованием из моно в стерео
 			const uint16_t * src = (const uint16_t *) buff;
 			uint16_t * dst = (uint16_t *) ((uint8_t *) uacoutaddr + uacoutbufflevel);
 			uint_fast16_t n = chunksamples;
@@ -2288,9 +2288,9 @@ void uacout_buffer_save(const uint8_t * buff, uint_fast16_t size)
 			}
 		}
 		const uint_fast16_t inchunk = chunksamples * 2;
-		const uint_fast16_t outchunk = chunksamples * 2 * DMABUFSTEP16;	// СЂР°Р·С…РјРµСЂ РІ Р±Р°Р№С‚Р°С…
-		size -= inchunk;	// РїСЂРѕС…РѕРґ РїРѕ РІС…РѕРґРѕРјСѓ Р±СѓС„РµСЂСѓ
-		buff += inchunk;	// РїСЂРѕС…РѕРґ РІС…РѕРґРѕРјСѓ Р±СѓС„РµСЂСѓ
+		const uint_fast16_t outchunk = chunksamples * 2 * DMABUFSTEP16;	// разхмер в байтах
+		size -= inchunk;	// проход по входому буферу
+		buff += inchunk;	// проход входому буферу
 
 		if ((uacoutbufflevel += outchunk) >= dmabuffer16size)
 		{
@@ -2316,10 +2316,10 @@ void uacout_buffer_save(const uint8_t * buff, uint_fast16_t size)
 			uacoutbufflevel = 0;
 		}
 		memcpy((uint8_t *) uacoutaddr + uacoutbufflevel, buff, chunk);
-		size -= chunk;		// РїСЂРѕС…РѕРґ РїРѕ РІС…РѕРґРѕРјСѓ Р±СѓС„РµСЂСѓ
-		buff += chunk;		// РїСЂРѕС…РѕРґ РїРѕ РІС…РѕРґРѕРјСѓ Р±СѓС„РµСЂСѓ
+		size -= chunk;		// проход по входому буферу
+		buff += chunk;		// проход по входому буферу
 
-		if ((uacoutbufflevel += chunk) >= dmabuffer16size)	// РїСЂРѕС…РѕРґ РїРѕ РІС‹РІС…РѕРґРѕРјСѓ Р±СѓС„РµСЂСѓ
+		if ((uacoutbufflevel += chunk) >= dmabuffer16size)	// проход по вывходому буферу
 		{
 			global_disableIRQ();
 			processing_dmabuffer16rxuac(uacoutaddr);
@@ -2334,7 +2334,7 @@ void uacout_buffer_save(const uint8_t * buff, uint_fast16_t size)
 /* --- UAC OUT data save */
 
 
-/* РѕСЃРІРѕР±РѕРґРёС‚СЊ Р±СѓС„РµСЂ РѕРґРЅРѕРіРѕ РёР· С‚РёРїРѕРІ, РєРѕС‚РѕСЂС‹Рµ РјРѕРіСѓС‚ РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊСЃСЏ РґР»СЏ РїРµСЂРµРґР°СЏРё Р°СѓРґРёРѕРґР°РЅРЅС‹С… РІ РєРѕРјРїСЊСЋС‚РµСЂ РїРѕ USB */
+/* освободить буфер одного из типов, которые могут использоваться для передаяи аудиоданных в компьютер по USB */
 void release_dmabufferx(uintptr_t addr)
 {
 	ASSERT(addr != 0);
@@ -2364,7 +2364,7 @@ void release_dmabufferx(uintptr_t addr)
 	}
 }
 
-/* РїРѕР»СѓС‡РёС‚СЊ Р±СѓС„РµСЂ РѕРґРЅРѕРіРѕ РёР· С‚РёРїРѕРІ, РєРѕС‚РѕСЂС‹Рµ РјРѕРіСѓС‚ РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊСЃСЏ РґР»СЏ РїРµСЂРµРґР°СЏРё Р°СѓРґРёРѕРґР°РЅРЅС‹С… РІ РєРѕРјРїСЊСЋС‚РµСЂ РїРѕ USB */
+/* получить буфер одного из типов, которые могут использоваться для передаяи аудиоданных в компьютер по USB */
 uintptr_t getfilled_dmabufferx(uint_fast16_t * sizep)
 {
 #if WITHBUFFERSDEBUG
@@ -2402,7 +2402,7 @@ uintptr_t getfilled_dmabufferx(uint_fast16_t * sizep)
 	}
 }
 
-/* РїРѕР»СѓС‡РёС‚СЊ Р±СѓС„РµСЂ РѕРґРЅРѕРіРѕ РёР· С‚РёРїРѕРІ, РєРѕС‚РѕСЂС‹Рµ РјРѕРіСѓС‚ РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊСЃСЏ РґР»СЏ РїРµСЂРµРґР°СЏРё Р°СѓРґРёРѕРґР°РЅРЅС‹С… РІ РєРѕРјРїСЊСЋС‚РµСЂ РїРѕ USB */
+/* получить буфер одного из типов, которые могут использоваться для передаяи аудиоданных в компьютер по USB */
 uintptr_t getfilled_dmabufferxrts(uint_fast16_t * sizep)
 {
 #if WITHBUFFERSDEBUG

@@ -1,7 +1,7 @@
 /* $Id$ */
 //
-// РџСЂРѕРµРєС‚ HF Dream Receiver (РљР’ РїСЂРёС‘РјРЅРёРє РјРµС‡С‚С‹)
-// Р°РІС‚РѕСЂ Р“РµРЅР° Р—Р°РІРёРґРѕРІСЃРєРёР№ mgs2001@mail.ru
+// Проект HF Dream Receiver (КВ приёмник мечты)
+// автор Гена Завидовский mgs2001@mail.ru
 // UA1ARN
 //
 
@@ -9,8 +9,8 @@
 #include "board.h"
 #include "synthcalcs.h"
 
-// РќР° 8-Р±РёС‚РЅРѕРј РјРёРєСЂРѕРїСЂРѕС†РµСЃСЃРѕСЂРµ РґР»СЏ СѓСЃРєРѕСЂРµРЅРёСЏ РІС‹С‡РёСЃР»РµРЅРёР№
-// С‡Р°СЃС‚РѕС‚Р° РѕРєСЂСѓРіР»СЏРµС‚СЃСЏ (РѕС‚Р±СЂР°СЃС‹РІР°СЋС‚СЃСЏ РјР»Р°РґС€РёРµ 16 Р±РёС‚).
+// На 8-битном микропроцессоре для ускорения вычислений
+// частота округляется (отбрасываются младшие 16 бит).
 
 #if CPUSTYLE_ATMEGA || CPUSTYLE_ATXMEGA
 
@@ -30,7 +30,7 @@
 
 #if BANDSELSTYLERE_RX3QSP
 
-	// РґРёР°РїР°Р·РѕРЅРЅС‹Рµ С„РёР»СЊС‚СЂС‹ РїРѕ Р·Р°РїСЂРѕСЃСѓ RX3QSP
+	// диапазонные фильтры по запросу RX3QSP
 
 	static const fseltype_t board_bandfs [] =
 	{
@@ -44,11 +44,11 @@
 		(fseltype_t) (23100000UL >> BANDDIVPOWER),
 		(fseltype_t) (26450000UL >> BANDDIVPOWER),
 	};
-	#define BANDCALCS	(sizeof board_bandfs / sizeof board_bandfs [0])	/* Р Р°Р·РјРµСЂРЅРѕСЃС‚СЊ РјР°СЃСЃРёРІР° РіСЂР°РЅРёС† РґРёР°РїР°Р·РѕРЅРѕРІ Рё РЅРµРѕР±С…РѕРґРёРјРѕСЃС‚СЊ С„СѓРЅРєС†РёРё РїРѕРёСЃРєР° РїРѕ РЅРµРјСѓ. */
+	#define BANDCALCS	(sizeof board_bandfs / sizeof board_bandfs [0])	/* Размерность массива границ диапазонов и необходимость функции поиска по нему. */
 
 #elif CTLREGMODE16_NIKOLAI
 
-	// РґРёР°РїР°Р·РѕРЅРЅС‹Рµ С„РёР»СЊС‚СЂС‹ РїРѕ Р·Р°РїСЂРѕСЃСѓ RX3QSP
+	// диапазонные фильтры по запросу RX3QSP
 
 	static const fseltype_t board_bandfs [] =
 	{
@@ -56,11 +56,11 @@
 		(fseltype_t) (5500000UL >> BANDDIVPOWER),
 		(fseltype_t) (15000000UL >> BANDDIVPOWER),
 	};
-	#define BANDCALCS	(sizeof board_bandfs / sizeof board_bandfs [0])	/* Р Р°Р·РјРµСЂРЅРѕСЃС‚СЊ РјР°СЃСЃРёРІР° РіСЂР°РЅРёС† РґРёР°РїР°Р·РѕРЅРѕРІ Рё РЅРµРѕР±С…РѕРґРёРјРѕСЃС‚СЊ С„СѓРЅРєС†РёРё РїРѕРёСЃРєР° РїРѕ РЅРµРјСѓ. */
+	#define BANDCALCS	(sizeof board_bandfs / sizeof board_bandfs [0])	/* Размерность массива границ диапазонов и необходимость функции поиска по нему. */
 
 #elif BANDSELSTYLERE_R3PAV 
 
-	// 8 РґРёР°РїР°Р·РѕРЅРЅС‹С… Р¤РќР§ РіРґРµ 12Рј Рё 10Рј СЃРѕРІРјРµС‰РµРЅРЅС‹ РґР»СЏ РґРµС€РёС„СЂР°С‚РѕСЂР° 74HCT238
+	// 8 диапазонных ФНЧ где 12м и 10м совмещенны для дешифратора 74HCT238
 
 	static fseltype_t board_bandfs [] =
 	{
@@ -78,11 +78,11 @@
 		(fseltype_t) (250000000UL >> BANDDIVPOWER), 
 
 	};
-	#define BANDCALCS	(sizeof board_bandfs / sizeof board_bandfs [0])	/* Р Р°Р·РјРµСЂРЅРѕСЃС‚СЊ РјР°СЃСЃРёРІР° РіСЂР°РЅРёС† РґРёР°РїР°Р·РѕРЅРѕРІ Рё РЅРµРѕР±С…РѕРґРёРјРѕСЃС‚СЊ С„СѓРЅРєС†РёРё РїРѕРёСЃРєР° РїРѕ РЅРµРјСѓ. */
+	#define BANDCALCS	(sizeof board_bandfs / sizeof board_bandfs [0])	/* Размерность массива границ диапазонов и необходимость функции поиска по нему. */
 
 #elif REQUEST_FOR_RN4NAB
 
-	// РґРёР°РїР°Р·РѕРЅРЅС‹Рµ С„РёР»СЊС‚СЂС‹ РєР°Рє РІ SDR RA4NAL http://ra4nal.qrz.ru http://ra4nal.lanstek.ru
+	// диапазонные фильтры как в SDR RA4NAL http://ra4nal.qrz.ru http://ra4nal.lanstek.ru
 
 	static const fseltype_t board_bandfs [] =
 	{
@@ -95,7 +95,7 @@
 		(fseltype_t) (21500000UL >> BANDDIVPOWER),
 		(fseltype_t) (30000000UL >> BANDDIVPOWER),
 	};
-	#define BANDCALCS	(sizeof board_bandfs / sizeof board_bandfs [0])	/* Р Р°Р·РјРµСЂРЅРѕСЃС‚СЊ РјР°СЃСЃРёРІР° РіСЂР°РЅРёС† РґРёР°РїР°Р·РѕРЅРѕРІ Рё РЅРµРѕР±С…РѕРґРёРјРѕСЃС‚СЊ С„СѓРЅРєС†РёРё РїРѕРёСЃРєР° РїРѕ РЅРµРјСѓ. */
+	#define BANDCALCS	(sizeof board_bandfs / sizeof board_bandfs [0])	/* Размерность массива границ диапазонов и необходимость функции поиска по нему. */
 
 #elif STYLE_TS850_V1
 
@@ -116,7 +116,7 @@
 		(fseltype_t) (22000000UL >> BANDDIVPOWER),
 		(fseltype_t) (30000000UL >> BANDDIVPOWER),
 	};
-	#define BANDCALCS	(sizeof board_bandfs / sizeof board_bandfs [0])	/* Р Р°Р·РјРµСЂРЅРѕСЃС‚СЊ РјР°СЃСЃРёРІР° РіСЂР°РЅРёС† РґРёР°РїР°Р·РѕРЅРѕРІ Рё РЅРµРѕР±С…РѕРґРёРјРѕСЃС‚СЊ С„СѓРЅРєС†РёРё РїРѕРёСЃРєР° РїРѕ РЅРµРјСѓ. */
+	#define BANDCALCS	(sizeof board_bandfs / sizeof board_bandfs [0])	/* Размерность массива границ диапазонов и необходимость функции поиска по нему. */
 
 #elif \
 	CTLSTYLE_RA4YBO || \
@@ -129,8 +129,8 @@
 	#define BANDF_FREQ_SCALE 1661809UL
 	#define BANDF_FREQ_DENOM 1000000UL
 
-	#define BANDCALCS	12	//	/* Р Р°Р·РјРµСЂРЅРѕСЃС‚СЊ РјР°СЃСЃРёРІР° РіСЂР°РЅРёС† РґРёР°РїР°Р·РѕРЅРѕРІ Рё РЅРµРѕР±С…РѕРґРёРјРѕСЃС‚СЊ С„СѓРЅРєС†РёРё РїРѕРёСЃРєР° РїРѕ РЅРµРјСѓ. */
-	#define BANDF_USE_BANDINIT 1	/* РЅРµРѕР±С…РѕРґРёРјРѕСЃС‚СЊ С„СѓРЅРєС†РёРё РёРЅРёС†РёР°Р»РёР·Р°С†РёРё. */
+	#define BANDCALCS	12	//	/* Размерность массива границ диапазонов и необходимость функции поиска по нему. */
+	#define BANDF_USE_BANDINIT 1	/* необходимость функции инициализации. */
 
 	static fseltype_t board_bandfs [BANDCALCS];
 
@@ -146,8 +146,8 @@
 	#define BANDF_FREQ_SCALE 1661809UL
 	#define BANDF_FREQ_DENOM 1000000UL
 
-	#define BANDCALCS	13	//	/* Р Р°Р·РјРµСЂРЅРѕСЃС‚СЊ РјР°СЃСЃРёРІР° РіСЂР°РЅРёС† РґРёР°РїР°Р·РѕРЅРѕРІ Рё РЅРµРѕР±С…РѕРґРёРјРѕСЃС‚СЊ С„СѓРЅРєС†РёРё РїРѕРёСЃРєР° РїРѕ РЅРµРјСѓ. */
-	#define BANDF_USE_BANDINIT 1	/* РЅРµРѕР±С…РѕРґРёРјРѕСЃС‚СЊ С„СѓРЅРєС†РёРё РёРЅРёС†РёР°Р»РёР·Р°С†РёРё. */
+	#define BANDCALCS	13	//	/* Размерность массива границ диапазонов и необходимость функции поиска по нему. */
+	#define BANDF_USE_BANDINIT 1	/* необходимость функции инициализации. */
 
 	static fseltype_t board_bandfs [BANDCALCS];
 
@@ -160,7 +160,7 @@
 	BANDSELSTYLERE_LOCONV15M || \
 	0
 
-	// РґРёР°РїР°Р·РѕРЅРЅС‹Рµ С„РёР»СЊС‚СЂС‹ РѕСЂРёРµРЅС‚РёСЂРѕРІР°РЅС‹ РЅР° Р»СЋР±РёС‚РµР»СЊСЃРєРёРµ РґРёР°РїР°Р·РѕРЅС‹
+	// диапазонные фильтры ориентированы на любительские диапазоны
 	/* for version 0...1.6, 1.6...32.0 MHz - 10 bands. */
 	//#define BANDF_FREQMIN 1600000UL
 
@@ -179,14 +179,14 @@
 		(fseltype_t) (100000000UL >> BANDDIVPOWER),
 		(fseltype_t) (250000000UL >> BANDDIVPOWER),
 	};
-	#define BANDCALCS	(sizeof board_bandfs / sizeof board_bandfs [0])	/* Р Р°Р·РјРµСЂРЅРѕСЃС‚СЊ РјР°СЃСЃРёРІР° РіСЂР°РЅРёС† РґРёР°РїР°Р·РѕРЅРѕРІ Рё РЅРµРѕР±С…РѕРґРёРјРѕСЃС‚СЊ С„СѓРЅРєС†РёРё РїРѕРёСЃРєР° РїРѕ РЅРµРјСѓ. */
+	#define BANDCALCS	(sizeof board_bandfs / sizeof board_bandfs [0])	/* Размерность массива границ диапазонов и необходимость функции поиска по нему. */
 
 #elif \
 	BANDSELSTYLERE_LOCONV15M_NLB || \
 	BANDSELSTYLERE_LOCONV32M_NLB || \
 	0
 
-	// РґРёР°РїР°Р·РѕРЅРЅС‹Рµ С„РёР»СЊС‚СЂС‹ РѕСЂРёРµРЅС‚РёСЂРѕРІР°РЅС‹ РЅР° Р»СЋР±РёС‚РµР»СЊСЃРєРёРµ РґРёР°РїР°Р·РѕРЅС‹
+	// диапазонные фильтры ориентированы на любительские диапазоны
 	/* for version 1.6...32.0 MHz - 9 bands. */
 	//#define BANDF_FREQMIN 1600000UL
 
@@ -204,7 +204,7 @@
 		(fseltype_t) (100000000UL >> BANDDIVPOWER),
 		(fseltype_t) (250000000UL >> BANDDIVPOWER),
 	};
-	#define BANDCALCS	(sizeof board_bandfs / sizeof board_bandfs [0])	/* Р Р°Р·РјРµСЂРЅРѕСЃС‚СЊ РјР°СЃСЃРёРІР° РіСЂР°РЅРёС† РґРёР°РїР°Р·РѕРЅРѕРІ Рё РЅРµРѕР±С…РѕРґРёРјРѕСЃС‚СЊ С„СѓРЅРєС†РёРё РїРѕРёСЃРєР° РїРѕ РЅРµРјСѓ. */
+	#define BANDCALCS	(sizeof board_bandfs / sizeof board_bandfs [0])	/* Размерность массива границ диапазонов и необходимость функции поиска по нему. */
 
 #elif \
 	BANDSELSTYLERE_UPCONV56M || \
@@ -218,8 +218,8 @@
 	#define BANDF_FREQ_SCALE 1661809UL
 	#define BANDF_FREQ_DENOM 1000000UL
 
-	#define BANDCALCS	7	/* Р Р°Р·РјРµСЂРЅРѕСЃС‚СЊ РјР°СЃСЃРёРІР° РіСЂР°РЅРёС† РґРёР°РїР°Р·РѕРЅРѕРІ Рё РЅРµРѕР±С…РѕРґРёРјРѕСЃС‚СЊ С„СѓРЅРєС†РёРё РїРѕРёСЃРєР° РїРѕ РЅРµРјСѓ. */
-	#define BANDF_USE_BANDINIT 1	/* РЅРµРѕР±С…РѕРґРёРјРѕСЃС‚СЊ С„СѓРЅРєС†РёРё РёРЅРёС†РёР°Р»РёР·Р°С†РёРё. */
+	#define BANDCALCS	7	/* Размерность массива границ диапазонов и необходимость функции поиска по нему. */
+	#define BANDF_USE_BANDINIT 1	/* необходимость функции инициализации. */
 
 	static fseltype_t board_bandfs [BANDCALCS];
 
@@ -241,7 +241,7 @@
 		(fseltype_t) (32000000uL >> BANDDIVPOWER),
 		(fseltype_t) (50000000uL >> BANDDIVPOWER),
 	};
-	#define BANDCALCS	(sizeof board_bandfs / sizeof board_bandfs [0])	/* Р Р°Р·РјРµСЂРЅРѕСЃС‚СЊ РјР°СЃСЃРёРІР° РіСЂР°РЅРёС† РґРёР°РїР°Р·РѕРЅРѕРІ Рё РЅРµРѕР±С…РѕРґРёРјРѕСЃС‚СЊ С„СѓРЅРєС†РёРё РїРѕРёСЃРєР° РїРѕ РЅРµРјСѓ. */
+	#define BANDCALCS	(sizeof board_bandfs / sizeof board_bandfs [0])	/* Размерность массива границ диапазонов и необходимость функции поиска по нему. */
 #elif \
 	BANDSELSTYLE_OLEG4Z_V2 || \
 	0
@@ -267,7 +267,7 @@
 		(fseltype_t) (900000000uL >> BANDDIVPOWER),	// #17 3	900-1200 MHz
 		(fseltype_t) (1200000000uL >> BANDDIVPOWER),// #18 4	1200-1700 MHz
 	};
-	#define BANDCALCS	(sizeof board_bandfs / sizeof board_bandfs [0])	/* Р Р°Р·РјРµСЂРЅРѕСЃС‚СЊ РјР°СЃСЃРёРІР° РіСЂР°РЅРёС† РґРёР°РїР°Р·РѕРЅРѕРІ Рё РЅРµРѕР±С…РѕРґРёРјРѕСЃС‚СЊ С„СѓРЅРєС†РёРё РїРѕРёСЃРєР° РїРѕ РЅРµРјСѓ. */
+	#define BANDCALCS	(sizeof board_bandfs / sizeof board_bandfs [0])	/* Размерность массива границ диапазонов и необходимость функции поиска по нему. */
 
 #elif \
 	BANDSELSTYLE_LADVABEST || \
@@ -277,42 +277,42 @@
 
 	static fseltype_t board_bandfs [] =
 	{
-		//(fseltype_t) (1600000 >> BANDDIVPOWER), // 2.645751 #0 1 РІС‹РІ. 
-		(fseltype_t) (2645751 >> BANDDIVPOWER), // 5.157518 #1 2 РІС‹РІ. 
-		(fseltype_t) (5157518 >> BANDDIVPOWER), // 8.527602 #2 3 РІС‹РІ. 
-		(fseltype_t) (8527602 >> BANDDIVPOWER), // 11.920570 #3 4 РІС‹РІ. 
-		(fseltype_t) (11920570 >> BANDDIVPOWER), // 16.102043 #4 5 РІС‹РІ. 
-		(fseltype_t) (16102043 >> BANDDIVPOWER), // 19.532741 #5 6 РІС‹РІ. 
-		(fseltype_t) (19532741 >> BANDDIVPOWER), // 23.106070 #6 7 РІС‹РІ. 
-		(fseltype_t) (23106070 >> BANDDIVPOWER), // 26.452221 #7 8 РІС‹РІ. 
-		(fseltype_t) (26452221 >> BANDDIVPOWER), // 27.980000 #8 9 РІС‹РІ. 
-		(fseltype_t) (27980000 >> BANDDIVPOWER), // 28.690000 #9 10 РІС‹РІ. 
-		(fseltype_t) (28690000 >> BANDDIVPOWER), // 35.000000 #10 11 РІС‹РІ. 
-		(fseltype_t) (35000000 >> BANDDIVPOWER), // 48.000000 #11 13 РІС‹РІ. 
-		(fseltype_t) (48000000 >> BANDDIVPOWER), // 100.000000 #12 14 РІС‹РІ. 
-		(fseltype_t) (100000000 >> BANDDIVPOWER), // 250.000000 #13 15 РІС‹РІ.
+		//(fseltype_t) (1600000 >> BANDDIVPOWER), // 2.645751 #0 1 выв. 
+		(fseltype_t) (2645751 >> BANDDIVPOWER), // 5.157518 #1 2 выв. 
+		(fseltype_t) (5157518 >> BANDDIVPOWER), // 8.527602 #2 3 выв. 
+		(fseltype_t) (8527602 >> BANDDIVPOWER), // 11.920570 #3 4 выв. 
+		(fseltype_t) (11920570 >> BANDDIVPOWER), // 16.102043 #4 5 выв. 
+		(fseltype_t) (16102043 >> BANDDIVPOWER), // 19.532741 #5 6 выв. 
+		(fseltype_t) (19532741 >> BANDDIVPOWER), // 23.106070 #6 7 выв. 
+		(fseltype_t) (23106070 >> BANDDIVPOWER), // 26.452221 #7 8 выв. 
+		(fseltype_t) (26452221 >> BANDDIVPOWER), // 27.980000 #8 9 выв. 
+		(fseltype_t) (27980000 >> BANDDIVPOWER), // 28.690000 #9 10 выв. 
+		(fseltype_t) (28690000 >> BANDDIVPOWER), // 35.000000 #10 11 выв. 
+		(fseltype_t) (35000000 >> BANDDIVPOWER), // 48.000000 #11 13 выв. 
+		(fseltype_t) (48000000 >> BANDDIVPOWER), // 100.000000 #12 14 выв. 
+		(fseltype_t) (100000000 >> BANDDIVPOWER), // 250.000000 #13 15 выв.
 	};
-	#define BANDCALCS	(sizeof board_bandfs / sizeof board_bandfs [0])	/* Р Р°Р·РјРµСЂРЅРѕСЃС‚СЊ РјР°СЃСЃРёРІР° РіСЂР°РЅРёС† РґРёР°РїР°Р·РѕРЅРѕРІ Рё РЅРµРѕР±С…РѕРґРёРјРѕСЃС‚СЊ С„СѓРЅРєС†РёРё РїРѕРёСЃРєР° РїРѕ РЅРµРјСѓ. */
+	#define BANDCALCS	(sizeof board_bandfs / sizeof board_bandfs [0])	/* Размерность массива границ диапазонов и необходимость функции поиска по нему. */
 
-	#define TUNE_BOTTOM 1600000L			/* РЅРёР¶РЅСЏСЏ С‡Р°СЃС‚РѕС‚Р° РЅР°СЃС‚СЂРѕР№РєРё */
+	#define TUNE_BOTTOM 1600000L			/* нижняя частота настройки */
 
 #elif \
 		BANDSELSTYLERE_UHF_137M_174M || \
 		0
 	/* UHF 137..174 MHz */
-	//#define TUNE_BOTTOM 137000000L		/* РЅРёР¶РЅСЏСЏ С‡Р°СЃС‚РѕС‚Р° РЅР°СЃС‚СЂРѕР№РєРё */
-	//#define TUNE_TOP 174000000L			/* РІРµСЂС…РЅСЏСЏ С‡Р°СЃС‚РѕС‚Р° РЅР°СЃС‚СЂРѕР№РєРё */
+	//#define TUNE_BOTTOM 137000000L		/* нижняя частота настройки */
+	//#define TUNE_TOP 174000000L			/* верхняя частота настройки */
 
 #elif \
 		BANDSELSTYLERE_NOTHING || \
 		CTLSTYLE_V5 || \
 		FQMODEL_FMRADIO || \
 		0
-	// Р’ СЌС‚РёС… Р°РїРїР°СЂР°С‚Р°С… РЅРµ С‚СЂРµР±РѕРІР°Р»РѕСЃСЊ РІС‹Р±РёСЂР°С‚СЊ РґРёР°РїР°Р·РѕРЅРЅС‹Рµ С„РёР»СЊС‚СЂС‹
+	// В этих аппаратах не требовалось выбирать диапазонные фильтры
 #elif \
 	BANDSELSTYLERE_RA4YBO_AM0 || \
 	0
-	// Р’С‹С‡РёСЃР»РµРЅРёСЏ РїСЂРѕРёР·РІРѕРґСЏС‚СЃСЏ РІ bandf_calc
+	// Вычисления производятся в bandf_calc
 #else
 	#error No band selection hardware supported
 #endif
@@ -346,7 +346,7 @@ void bandf_calc_initialize(void)
 #endif /* BANDF_USE_BANDINIT */
 }
 
-/* РїРѕР»СѓС‡РёС‚СЊ РЅРѕРјРµСЂ РґРёР°РїР°Р·РѕРЅРЅРѕРіРѕ С„РёР»СЊС‚СЂР° РїРµСЂРµРґР°С‚С‡РёРєР° РїРѕ С‡Р°СЃС‚РѕС‚Рµ */
+/* получить номер диапазонного фильтра передатчика по частоте */
 uint8_t bandf2_calc(
 	uint_fast32_t freq
 	 )
@@ -369,7 +369,7 @@ uint8_t bandf2_calc(
 #elif \
 	(CTLSTYLE_STORCH_V8 && ARM_R7S72_TQFP176_CTLSTYLE_STORCH_V8_R4DZ_H_INCLUDED) || \
 	0
-	/* РїР»Р°С‚Р° СѓСЃРёР»РёС‚РµР»СЏ 2*RD100 */
+	/* плата усилителя 2*RD100 */
 	// R4DZ version: 1.8-2.0  3.5-4.0,   7-7.2,   10-10.2.  14-18.2    21-30
 	const unsigned long M0p1 = 1000uL * 100;
 	const fseltype_t f = (fseltype_t) (freq >> BANDDIVPOWER);
@@ -393,7 +393,7 @@ uint8_t bandf2_calc(
 	CTLREGMODE_STORCH_V3 || \
 	CTLREGMODE_STORCH_V7 || \
 	0
-	/* РїР»Р°С‚Р° СѓСЃРёР»РёС‚РµР»СЏ 2*RD100 */
+	/* плата усилителя 2*RD100 */
 	const unsigned long M0p1 = 1000uL * 100;
 	const fseltype_t f = (fseltype_t) (freq >> BANDDIVPOWER);
 
@@ -433,8 +433,8 @@ uint8_t bandf2_calc(
 	return 6;		// BPF7 actime
 
 #elif \
-	CTLREGMODE_RAVENDSP_V1 || /* РўСЂР°РЅСЃРёРІРµСЂ Р’РѕСЂРѕРЅРµРЅРѕРє СЃ IF DSP С‚СЂР°РєС‚РѕРј */ \
-	CTLREGMODE_RAVENDSP_V3 || /* "Р’РѕСЂРѕРЅС‘РЅРѕРє" СЃ DSP Рё FPGA */ \
+	CTLREGMODE_RAVENDSP_V1 || /* Трансивер Вороненок с IF DSP трактом */ \
+	CTLREGMODE_RAVENDSP_V3 || /* "Воронёнок" с DSP и FPGA */ \
 	CTLREGMODE_RAVENDSP_V4 || \
 	CTLREGMODE_RAVENDSP_V5 || \
 	CTLREGMODE_RAVENDSP_V6 || \
@@ -469,24 +469,24 @@ uint8_t bandf2_calc(
 #endif
 }
 
-/* РїРѕР»СѓС‡РёС‚СЊ РЅРѕРјРµСЂ РґРёР°РїР°Р·РѕРЅРЅРѕРіРѕ С„РёР»СЊС‚СЂР° РїРѕ С‡Р°СЃС‚РѕС‚Рµ */
+/* получить номер диапазонного фильтра по частоте */
 uint8_t bandf_calc(
 	uint_fast32_t freq
 	 )
 {
 #ifdef BANDCALCS
-  	const fseltype_t freqloc = (fseltype_t) (freq >> BANDDIVPOWER);	// РїСЂРёРІРµРґС‘РЅРЅР°СЏ Рє РЅСѓР¶РЅРѕР№ СЂР°Р·РјРµСЂРЅРѕСЃС‚Рё С‡Р°СЃС‚РѕС‚Р° РїСЂРёС‘РјР°
+  	const fseltype_t freqloc = (fseltype_t) (freq >> BANDDIVPOWER);	// приведённая к нужной размерности частота приёма
 
 	uint_fast8_t bottom = 0;
 	uint_fast8_t top = (sizeof board_bandfs / sizeof board_bandfs [0]) - 1;
-	// Р”РІРѕРёС‡РЅС‹Р№ РїРѕРёСЃРє
+	// Двоичный поиск
 	while (bottom < top)
 	{
 		const uint_fast8_t middle = (top - bottom) / 2 + bottom;
 
 		if (board_bandfs [middle] > freqloc)
 		{
-			top = middle;	// РЅРёР¶РЅСЏСЏ РіСЂР°РЅРёС†Р° РґРёР°РїР°Р·РѕРЅР° Р·РЅР°С‡РµРЅРёР№ С‚РµРєСѓС‰РµРіРѕ СЌР»РµРјРµРЅС‚Р° СЃСЂР°РІРЅРµРЅРёСЏ Р±РѕР»СЊС€Рµ Р·РЅР°С‡РµРЅРёСЏ РїРѕРёСЃРєР° - РїСЂРѕРґРѕР»Р¶Р°РµРј РїРѕРёСЃРє РІ РЅРёР¶РЅРµР№ РїРѕР»РѕРІРёРЅРµ
+			top = middle;	// нижняя граница диапазона значений текущего элемента сравнения больше значения поиска - продолжаем поиск в нижней половине
 			continue;
 		}
 		if (board_bandfs [middle + 1] < freqloc)	
@@ -514,7 +514,7 @@ uint8_t bandf_calc(
 #endif /* BANDCALCS */
 }
 
-/* РїРѕР»СѓС‡РёС‚СЊ РєРѕРґ РґР»СЏ СѓРїСЂР°РІР»РµРЅРёСЏ С‡РµСЂРµР· СЂР°Р·СЉРµРј ACC */
+/* получить код для управления через разъем ACC */
 uint8_t bandf3_calc(
 	uint_fast32_t freq
 	 )
@@ -532,9 +532,9 @@ uint8_t bandf3_calc(
 	CTLSTYLE_STORCH_V2 || \
 	CTLSTYLE_STORCH_V3 || \
 	0
-	// С‚Рµ С‚СЂР°РЅСЃРёРІРµСЂС‹, Сѓ РєРѕС‚РѕСЂС‹С… РµСЃС‚СЊ РІС‹С…РѕРґ ACC
+	// те трансиверы, у которых есть выход ACC
 
-	/* РіСЂР°РЅРёС†С‹ РґРёР°РїР°Р·РѕРЅРѕРІ РґР»СЏ СѓРїСЂР°РІР»РµРЅРёСЏ С‡РµСЂРµР· СЂР°Р·СЉРµРј ACC */
+	/* границы диапазонов для управления через разъем ACC */
 	/* FT-891 style */
 	static fseltype_t board_band3fs [] =
 	{
@@ -551,18 +551,18 @@ uint8_t bandf3_calc(
 		(fseltype_t) ( 56000000UL >> BANDDIVPOWER), 
 	};
 
-  	const fseltype_t freqloc = (fseltype_t) (freq >> BANDDIVPOWER);	// РїСЂРёРІРµРґС‘РЅРЅР°СЏ Рє РЅСѓР¶РЅРѕР№ СЂР°Р·РјРµСЂРЅРѕСЃС‚Рё С‡Р°СЃС‚РѕС‚Р° РїСЂРёС‘РјР°
+  	const fseltype_t freqloc = (fseltype_t) (freq >> BANDDIVPOWER);	// приведённая к нужной размерности частота приёма
 
 	uint_fast8_t bottom = 0;
 	uint_fast8_t top = (sizeof board_band3fs / sizeof board_band3fs [0]) - 1;
-	// Р”РІРѕРёС‡РЅС‹Р№ РїРѕРёСЃРє
+	// Двоичный поиск
 	while (bottom < top)
 	{
 		const uint_fast8_t middle = (top - bottom) / 2 + bottom;
 
 		if (board_band3fs [middle] > freqloc)
 		{
-			top = middle;	// РЅРёР¶РЅСЏСЏ РіСЂР°РЅРёС†Р° РґРёР°РїР°Р·РѕРЅР° Р·РЅР°С‡РµРЅРёР№ С‚РµРєСѓС‰РµРіРѕ СЌР»РµРјРµРЅС‚Р° СЃСЂР°РІРЅРµРЅРёСЏ Р±РѕР»СЊС€Рµ Р·РЅР°С‡РµРЅРёСЏ РїРѕРёСЃРєР° - РїСЂРѕРґРѕР»Р¶Р°РµРј РїРѕРёСЃРє РІ РЅРёР¶РЅРµР№ РїРѕР»РѕРІРёРЅРµ
+			top = middle;	// нижняя граница диапазона значений текущего элемента сравнения больше значения поиска - продолжаем поиск в нижней половине
 			continue;
 		}
 		if (board_band3fs [middle + 1] < freqloc)	

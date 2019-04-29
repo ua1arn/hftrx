@@ -1,7 +1,7 @@
 /* $Id$ */
 //
-// РџСЂРѕРµРєС‚ HF Dream Receiver (РљР’ РїСЂРёС‘РјРЅРёРє РјРµС‡С‚С‹)
-// Р°РІС‚РѕСЂ Р“РµРЅР° Р—Р°РІРёРґРѕРІСЃРєРёР№ mgs2001@mail.ru
+// Проект HF Dream Receiver (КВ приёмник мечты)
+// автор Гена Завидовский mgs2001@mail.ru
 // UA1ARN
 //
 
@@ -15,7 +15,7 @@
 
 #if LCDMODE_PCF8535 || LCDMODE_PCF8531
 
-/* СЂР°СЃС‚СЂРѕРІС‹Рµ С€СЂРёС„С‚С‹ */
+/* растровые шрифты */
 #include "./fonts/uc1601s_font_small.c"
 #if FONTSTYLE_ITALIC
 	#include "./fonts/uc1601s_ifont_half.c"
@@ -99,14 +99,14 @@
 	#define LCD_VMUL_X4 0x0A //[S1:S0] = 2: multiplication factor 4
 	#define LCD_VMUL_X5 0x0B //[S1:S0] = 3: multiplication factor 5
 
-	#define LCD_TC_0_00 0x10 //[TC2:TC0] = 0: temp. coeff. 0.00E-3 1/В°C
-	#define LCD_TC_0_44 0x11 //[TC2:TC0] = 1: temp. coeff. -0.44E-3 1/В°C
-	#define LCD_TC_1_10 0x12 //[TC2:TC0] = 2: temp. coeff. -1.10E-3 1/В°C
-	#define LCD_TC_1_45 0x13 //[TC2:TC0] = 3: temp. coeff. -1.45E-3 1/В°C
-	#define LCD_TC_1_91 0x14 //[TC2:TC0] = 4: temp. coeff. -1.91E-3 1/В°C
-	#define LCD_TC_2_15 0x15 //[TC2:TC0] = 5: temp. coeff. -2.15E-3 1/В°C
-	#define LCD_TC_2_32 0x16 //[TC2:TC0] = 6: temp. coeff. -2.32E-3 1/В°C
-	#define LCD_TC_2_74 0x17 //[TC2:TC0] = 7: temp. coeff. -2.74E-3 1/В°C
+	#define LCD_TC_0_00 0x10 //[TC2:TC0] = 0: temp. coeff. 0.00E-3 1/°C
+	#define LCD_TC_0_44 0x11 //[TC2:TC0] = 1: temp. coeff. -0.44E-3 1/°C
+	#define LCD_TC_1_10 0x12 //[TC2:TC0] = 2: temp. coeff. -1.10E-3 1/°C
+	#define LCD_TC_1_45 0x13 //[TC2:TC0] = 3: temp. coeff. -1.45E-3 1/°C
+	#define LCD_TC_1_91 0x14 //[TC2:TC0] = 4: temp. coeff. -1.91E-3 1/°C
+	#define LCD_TC_2_15 0x15 //[TC2:TC0] = 5: temp. coeff. -2.15E-3 1/°C
+	#define LCD_TC_2_32 0x16 //[TC2:TC0] = 6: temp. coeff. -2.32E-3 1/°C
+	#define LCD_TC_2_74 0x17 //[TC2:TC0] = 7: temp. coeff. -2.74E-3 1/°C
 
 	#define LCD_START_TM 0x21 //TM = 1: start temperature measurement
 
@@ -141,16 +141,16 @@ pcf8535_reset(void)
 }
 
 /*
- Р¤СѓРЅРєС†РёСЏ СѓСЃС‚Р°РЅРѕРІРєРё РєСѓСЂСЃРѕСЂР° РІ РїРѕР·РёС†РёСЋ x,y
- X - РєРѕРѕСЂРґРёРЅР°С‚Р° РїРѕ РіРѕСЂРёР·РѕРЅС‚Р°Р»Рё РІ РїСЂРµРґРµР»Р°С… 0-132, 
- Y - РєРѕРѕСЂРґРёРЅР°С‚Р° РїРѕ РІРµСЂС‚РёРєР°Р»Рё (СЃС‚СЂРѕРєР°, Page) РІ РїСЂРµРґРµР»Р°С… 0-7
+ Функция установки курсора в позицию x,y
+ X - координата по горизонтали в пределах 0-132, 
+ Y - координата по вертикали (строка, Page) в пределах 0-7
 */ 
 static void pcf8535_set_addr_column(uint_fast8_t x, uint_fast8_t y)		// 
 {
 
-	i2c_start(LCD_ADDR_W);           // Р°РґСЂРµСЃ
+	i2c_start(LCD_ADDR_W);           // адрес
 	i2c_write(LCD_CTRL);     // control byte
-	i2c_write(LCD_PAGE_FN);           // РЅР° РѕСЃРЅРѕРІРЅ СЃС‚СЂ
+	i2c_write(LCD_PAGE_FN);           // на основн стр
 	i2c_write(x >= 128 ? LCD_XM_1 : LCD_XM_0);
 	i2c_write(LCD_ADDR_Y | (y & 0x0f));     // Y = 0;
 	i2c_write(LCD_ADDR_X | (x & 0x7f));     // X = 0;
@@ -168,7 +168,7 @@ static void pcf8535_clear(void)
 
 		pcf8535_set_addr_column(0, cnt_y);
 
-		i2c_start(LCD_ADDR_W);	// Р°РґСЂРµСЃ
+		i2c_start(LCD_ADDR_W);	// адрес
 		i2c_write(LCD_DATA); // control byte
 
 	    for (cnt_x = 0; cnt_x < DIM_X; ++ cnt_x)
@@ -187,14 +187,14 @@ static uint_fast8_t
 NOINLINEAT
 bigfont_decode(uint_fast8_t c)
 {
-	// '#' - СѓР·РєРёР№ РїСЂРѕР±РµР»
+	// '#' - узкий пробел
 	if (c == ' ' || c == '#')
 		return 11;
 	if (c == '_')
-		return 10;		// РєСѓСЂСЃРѕСЂ - РїРѕР·РёС†РёСЏ СЂРµРґР°РєС‚РёСЂРІР°РЅРёСЏ С‡Р°СЃС‚РѕС‚С‹
+		return 10;		// курсор - позиция редактирвания частоты
 	if (c == '.')
-		return 12;		// С‚РѕС‡РєР°
-	return c - '0';		// РѕСЃС‚Р°Р»СЊРЅС‹Рµ - С†РёС„СЂС‹ 0..9
+		return 12;		// точка
+	return c - '0';		// остальные - цифры 0..9
 }
 
 static uint_fast8_t 
@@ -204,16 +204,16 @@ smallfont_decode(uint_fast8_t c)
 }
 
 
-// РЅР°С‡Р°Р»Рѕ РІС‹РґР°С‡Рµ Р±Р°Р№С‚РѕРІ (Р·Р°РїРёСЃРё РІ РІРёРґРµРѕРїР°РјСЏС‚СЊ)
-// Р’С‹Р·С‹РІР°РµС‚СЃСЏ РІ РЅР°С‡Р°Р»Рµ РІС‹РґР°С‡Рё СЃС‚СЂРѕРєРё
+// начало выдаче байтов (записи в видеопамять)
+// Вызывается в начале выдачи строки
 static void pcf8535_put_char_begin(void)
 {
-	i2c_start(LCD_ADDR_W);	// Р°РґСЂРµСЃ
+	i2c_start(LCD_ADDR_W);	// адрес
 	i2c_write(LCD_DATA); // control byte
 }
 
-// РєРѕРЅРµС† РІС‹РґР°С‡Рµ Р±Р°Р№С‚РѕРІ (Р·Р°РїРёСЃРё РІ РІРёРґРµРѕРїР°РјСЏС‚СЊ)
-// Р’С‹Р·С‹РІР°РµС‚СЃСЏ РІ РєРѕРЅС†Рµ РІС‹РґР°С‡Рё СЃС‚СЂРѕРєРё
+// конец выдаче байтов (записи в видеопамять)
+// Вызывается в конце выдачи строки
 static void pcf8535_put_char_end(void)
 {
 	i2c_waitsend();
@@ -230,8 +230,8 @@ static void putvbuff(uint_fast8_t c)
 #endif /* LCDMODE_PCF8531 */
 }
 
-// Р’С‹Р·РѕРІС‹ СЌС‚РѕР№ С„СѓРЅРєС†РёРё (РёР»Рё РіСЂСѓРїРїСѓ РІС‹Р·РѕРІРѕРІ) С‚СЂРµР±СѓРµС‚СЃСЏ "РѕР±СЂР°РјРёС‚СЊ" РїР°СЂРѕР№ РІС‹Р·РѕРІРѕРІ
-// uc1601s_put_char_begin() Рё uc1601s_put_char_end().
+// Вызовы этой функции (или группу вызовов) требуется "обрамить" парой вызовов
+// uc1601s_put_char_begin() и uc1601s_put_char_end().
 //
 static void pcf8535_put_char_small(char cc)
 {
@@ -245,16 +245,16 @@ static void pcf8535_put_char_small(char cc)
 }
 
 
-// РјРЅРѕРіРѕРїРѕР»РѕСЃРЅС‹Р№ РІС‹РІРѕРґ СЃРёРјРІРѕР»РѕРІ - Р·Р° РЅРµСЃРєРѕР»СЊРєРѕ РіРѕСЂРёР·РѕРЅС‚Р°Р»СЊРЅС‹С… РїСЂРѕС…РѕРґРѕРІ.
-// РќСѓРјРµСЂР°С†РёСЏ РїРѕР»РѕСЃ - СЃРІРµСЂС…Сѓ РІРЅРёР·, РЅР°С‡РёРЅР°СЏ СЃ 0
+// многополосный вывод символов - за несколько горизонтальных проходов.
+// Нумерация полос - сверху вниз, начиная с 0
 
-// Р’С‹Р·РѕРІС‹ СЌС‚РѕР№ С„СѓРЅРєС†РёРё (РёР»Рё РіСЂСѓРїРїСѓ РІС‹Р·РѕРІРѕРІ) С‚СЂРµР±СѓРµС‚СЃСЏ "РѕР±СЂР°РјРёС‚СЊ" РїР°СЂРѕР№ РІС‹Р·РѕРІРѕРІ
-// uc1601s_put_char_begin() Рё uc1601s_put_char_end().
+// Вызовы этой функции (или группу вызовов) требуется "обрамить" парой вызовов
+// uc1601s_put_char_begin() и uc1601s_put_char_end().
 //
 static void pcf8535_put_char_big(char cc, uint_fast8_t lowhalf)
 {
-	enum { NBV = (BIGCHARH / 8) }; // СЃРєРѕР»СЊРєРѕ Р±Р°Р№С‚РѕРІ РІ РѕРґРЅРѕР№ РІРµСЂС‚РёРєР°Р»Рё
-	uint_fast8_t i = 1 * ((cc == '.' || cc == '#') ? 6 : 0);	// РЅР°С‡Р°Р»СЊРЅР°СЏ РєРѕР»РѕРЅРєР° Р·РЅР°РєРѕРіРµРЅРµСЂР°С‚РѕСЂР°, РѕС‚РєСѓРґР° РЅР°С‡РёРЅР°С‚СЊ.
+	enum { NBV = (BIGCHARH / 8) }; // сколько байтов в одной вертикали
+	uint_fast8_t i = 1 * ((cc == '.' || cc == '#') ? 6 : 0);	// начальная колонка знакогенератора, откуда начинать.
     const uint_fast8_t c = bigfont_decode((unsigned char) cc);
 	enum { NCOLS = (sizeof uc1601s_bigfont [c][lowhalf] / sizeof uc1601s_bigfont [c][lowhalf] [0]) };
 	const FLASHMEM uint8_t * p = & uc1601s_bigfont [c][lowhalf][0];
@@ -263,11 +263,11 @@ static void pcf8535_put_char_big(char cc, uint_fast8_t lowhalf)
     	putvbuff(p [i]);
 }
 
-// РјРЅРѕРіРѕРїРѕР»РѕСЃРЅС‹Р№ РІС‹РІРѕРґ СЃРёРјРІРѕР»РѕРІ - Р·Р° РЅРµСЃРєРѕР»СЊРєРѕ РіРѕСЂРёР·РѕРЅС‚Р°Р»СЊРЅС‹С… РїСЂРѕС…РѕРґРѕРІ.
-// РќСѓРјРµСЂР°С†РёСЏ РїРѕР»РѕСЃ - СЃРІРµСЂС…Сѓ РІРЅРёР·, РЅР°С‡РёРЅР°СЏ СЃ 0
+// многополосный вывод символов - за несколько горизонтальных проходов.
+// Нумерация полос - сверху вниз, начиная с 0
 
-// Р’С‹Р·РѕРІС‹ СЌС‚РѕР№ С„СѓРЅРєС†РёРё (РёР»Рё РіСЂСѓРїРїСѓ РІС‹Р·РѕРІРѕРІ) С‚СЂРµР±СѓРµС‚СЃСЏ "РѕР±СЂР°РјРёС‚СЊ" РїР°СЂРѕР№ РІС‹Р·РѕРІРѕРІ
-// uc1601s_put_char_begin() Рё uc1601s_put_char_end().
+// Вызовы этой функции (или группу вызовов) требуется "обрамить" парой вызовов
+// uc1601s_put_char_begin() и uc1601s_put_char_end().
 //
 static void pcf8535_put_char_half(char cc, uint_fast8_t lowhalf)
 {
@@ -281,7 +281,7 @@ static void pcf8535_put_char_half(char cc, uint_fast8_t lowhalf)
 }
 
 
-/* РІС‹Р·С‹РІР°РµС‚СЃСЏ РјРµР¶РґСѓ РІС‹Р·РѕРІР°РјРё display_wrdatabar_begin() Рё display_wrdatabar_end() */
+/* вызывается между вызовами display_wrdatabar_begin() и display_wrdatabar_end() */
 static void 
 pcf8535_bar_column(uint_fast8_t pattern)
 {
@@ -309,8 +309,8 @@ static void pcf8535_set_contrast(uint_fast8_t v)
 
 #if 0
 
-// Р’С‹РєР»СЋС‡РµРЅРёРµ РґРёСЃРїР»РµСЏ (Рё РІРєР»СЋС‡РµРЅРёРµ РµРіРѕ).
-// TODO: РїРµСЂРµРЅРµСЃС‚Рё СЃСЋРґР° СѓРїСЂР°РІР»РµРЅРёРµ РїРёС‚Р°РЅРёРµРј LCD
+// Выключение дисплея (и включение его).
+// TODO: перенести сюда управление питанием LCD
 static void pcf8535_disable(uint_fast8_t state)
 {
 	if (state == 0)
@@ -377,15 +377,15 @@ static void pcf8535_initialize(void)
 	i2c_write(LCD_PAGE_DS);  //select Display Setting Command Page
 #if LCDMODE_TIC154
 	#if LCDMODE_PCF8535_TOPDOWN
-		i2c_write(LCD_NO_MIRROR); //set mirror mode for use with TIC154 - СЃ Р·РµСЂРєР°Р»РёСЂРѕРІР°РЅРёРµРј РїРѕ РіРѕСЂРёР·РѕРЅС‚Р°Р»Рё
+		i2c_write(LCD_NO_MIRROR); //set mirror mode for use with TIC154 - с зеркалированием по горизонтали
 	#else
-		i2c_write(LCD_XY_MIRROR); //set mirror mode for use with TIC154 - СЃ Р·РµСЂРєР°Р»РёСЂРѕРІР°РЅРёРµРј РїРѕ РіРѕСЂРёР·РѕРЅС‚Р°Р»Рё Рё РІРµСЂС‚РёРєР°Р»Рё
+		i2c_write(LCD_XY_MIRROR); //set mirror mode for use with TIC154 - с зеркалированием по горизонтали и вертикали
 	#endif
 #else
 	#if LCDMODE_PCF8535_TOPDOWN
-		i2c_write(LCD_X_MIRROR); //set mirror mode for use with TIC218 - Р±РµР· Р·РµСЂРєР°Р»РёСЂРѕРІР°РЅРёСЏ РїРѕ РІРµСЂС‚РёРєР°Р»Рё
+		i2c_write(LCD_X_MIRROR); //set mirror mode for use with TIC218 - без зеркалирования по вертикали
 	#else
-		i2c_write(LCD_Y_MIRROR); //set mirror mode for use with TIC218 - Р±РµР· Р·РµСЂРєР°Р»РёСЂРѕРІР°РЅРёСЏ РїРѕ РіРѕСЂРёР·РѕРЅС‚Р°Р»Рё
+		i2c_write(LCD_Y_MIRROR); //set mirror mode for use with TIC218 - без зеркалирования по горизонтали
 	#endif
 #endif
 
@@ -397,7 +397,7 @@ static void pcf8535_initialize(void)
 	i2c_waitsend();
 	i2c_stop();
 
-	// РџРѕРґРєР»СЋС‡Р°РµРј РґРёСЃРїР»РµР№ РІ РѕР±С…РѕРґ РїСЂРµРѕР±СЂР°Р·РѕРІР°С‚РµР»СЏ.
+	// Подключаем дисплей в обход преобразователя.
 
 	i2c_start(LCD_ADDR_W);
 	i2c_write(LCD_CTRL);     //control byte
@@ -412,7 +412,7 @@ static void pcf8535_initialize(void)
 
 	local_delay_ms(RECHARGEDELAY_MS);
 
-	// РџСЂРѕРіСЂР°РјРјРёСЂРѕРІР°РЅРёРµ РїСЂРµРѕР±СЂР°Р·РѕРІР°С‚РµР»СЏ РїРёС‚Р°РЅРёСЏ.
+	// Программирование преобразователя питания.
 
 	i2c_start(LCD_ADDR_W);
 	i2c_write(LCD_CTRL);     //control byte
@@ -421,7 +421,7 @@ static void pcf8535_initialize(void)
 	i2c_write(LCD_PAGE_FN);  //select Function and RAM Command Page
 	i2c_write(LCD_PAGE_HV);  //select HV-gen Command Page
 
-	i2c_write(LCD_TC_1_10);  //temp. coeff. -1.10E-3 1/В°C
+	i2c_write(LCD_TC_1_10);  //temp. coeff. -1.10E-3 1/°C
 	i2c_write(LCD_V_LCD + (vbias & 0x7f)); //set Vlcd
 	i2c_write(LCD_HV_LOW);   //PRS = 0, HVE = 1
 	i2c_waitsend();
@@ -429,8 +429,8 @@ static void pcf8535_initialize(void)
 
 	local_delay_ms(RECHARGEDELAY_MS);
 
-	// РџСЂРѕРіСЂР°РјРјРёСЂРѕРІР°РЅРёРµ РїСЂРµРѕР±СЂР°Р·РѕРІР°С‚РµР»СЏ РїРёС‚Р°РЅРёСЏ.
-	// РџРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕРµ СѓРІРµР»РёС‡РµРЅРёРµ РЅР°РїСЂСЏР¶РµРЅРёСЏ РЅР° РІС‹С…РѕРґРµ РїСЂРµРѕР±СЂР°Р·РѕРІР°С‚РµР»СЏ.
+	// Программирование преобразователя питания.
+	// Последовательное увеличение напряжения на выходе преобразователя.
 	unsigned char i;
 	for (i = 0; i < 2; ++ i)
 	{
@@ -450,7 +450,7 @@ static void pcf8535_initialize(void)
 		local_delay_ms(RECHARGEDELAY_MS);
 	}
 
-	/* РїРµСЂРµРєР»СЋС‡Р°РµРј РґРёСЃРїР»РµР№ РЅР° РїСЂРµРѕР±СЂР°Р·РѕРІР°С‚РµР»СЊ РЅР°РїСЂСЏР¶РµРЅРёСЏ. */
+	/* переключаем дисплей на преобразователь напряжения. */
 	i2c_start(LCD_ADDR_W);
 	i2c_write(LCD_CTRL);     //control byte
 
@@ -464,7 +464,7 @@ static void pcf8535_initialize(void)
 }
 
 
-/* РІС‹Р·С‹РІР°РµС‚СЃСЏ РїСЂРё СЂР°Р·СЂРµС€С‘РЅРЅС‹С… РїСЂРµСЂС‹РІР°РЅРёСЏС…. */
+/* вызывается при разрешённых прерываниях. */
 void display_initialize(void)
 {
 	if (0)
@@ -558,9 +558,9 @@ display_wrdatabig_end(void)
 	pcf8535_put_char_end();
 }
 
-/* РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ РѕРґРЅРѕР№ РІРµСЂС‚РёРєР°Р»СЊРЅРѕР№ РїРѕР»РѕСЃС‹ РЅР° РіСЂР°С„РёС‡РµСЃРєРѕРј РёРЅРґРёРєР°С‚РѕСЂРµ */
-/* СЃС‚Р°СЂС€РёРµ Р±РёС‚С‹ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‚ РІРµСЂС…РЅРёРј РїРёРєСЃРµР»СЏРј РёР·РѕР±СЂР°Р¶РµРЅРёСЏ */
-/* РІС‹Р·С‹РІР°РµС‚СЃСЏ РјРµР¶РґСѓ РІС‹Р·РѕРІР°РјРё display_wrdatabar_begin() Рё display_wrdatabar_end() */
+/* отображение одной вертикальной полосы на графическом индикаторе */
+/* старшие биты соответствуют верхним пикселям изображения */
+/* вызывается между вызовами display_wrdatabar_begin() и display_wrdatabar_end() */
 void 
 display_barcolumn(uint_fast8_t pattern)
 {
@@ -592,16 +592,16 @@ display_put_char_half(uint_fast8_t c, uint_fast8_t lowhalf)
 }
 
 
-// Р’С‹Р·РѕРІ СЌС‚РѕР№ С„СѓРЅРєС†РёРё С‚РѕР»СЊРєРѕ РІРЅСѓС‚СЂРё display_wrdata_begin() Рё display_wrdata_end();
-// РСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РїСЂРё РІС‹РІРѕРґРµ РЅР° РіСЂР°С„РёС‡РµСЃРєРёР№ РЅРґРёРєР°С‚РѕСЂ, РµСЃР»Рё РўР Р•Р‘РЈР•РўРЎРЇ РїРµСЂРµРєР»СЋС‡Р°С‚СЊ РїРѕР»РѕСЃС‹ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ
+// Вызов этой функции только внутри display_wrdata_begin() и display_wrdata_end();
+// Используется при выводе на графический ндикатор, если ТРЕБУЕТСЯ переключать полосы отображения
 void
 display_put_char_small(uint_fast8_t c, uint_fast8_t lowhalf)
 {
 	(void) lowhalf;
 	pcf8535_put_char_small(c);
 }
-// Р’С‹Р·РѕРІ СЌС‚РѕР№ С„СѓРЅРєС†РёРё С‚РѕР»СЊРєРѕ РІРЅСѓС‚СЂРё display_wrdata_begin() Рё display_wrdata_end();
-// РСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РїСЂРё РІС‹РІРѕРґРµ РЅР° РіСЂР°С„РёС‡РµСЃРєРёР№ РЅРґРёРєР°С‚РѕСЂ, РµСЃР»Рё РўР Р•Р‘РЈР•РўРЎРЇ РїРµСЂРµРєР»СЋС‡Р°С‚СЊ РїРѕР»РѕСЃС‹ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ
+// Вызов этой функции только внутри display_wrdata_begin() и display_wrdata_end();
+// Используется при выводе на графический ндикатор, если ТРЕБУЕТСЯ переключать полосы отображения
 void
 display_put_char_small2(uint_fast8_t c, uint_fast8_t lowhalf)
 {
@@ -617,14 +617,14 @@ display_gotoxy(uint_fast8_t x, uint_fast8_t y)
 {
 	pcf8535_set_addr_column(x * CHAR_W, y);
 }
-// РљРѕРѕСЂРґРёРЅР°С‚С‹ РІ РїРёРєСЃРµР»СЏС…
+// Координаты в пикселях
 void display_plotfrom(uint_fast16_t x, uint_fast16_t y)
 {
 	pcf8535_set_addr_column(x, y / CHAR_H);
 }
 
 void display_plotstart(
-	uint_fast16_t height	// Р’С‹СЃРѕС‚Р° РѕРєРЅР° РІ РїРёРєСЃРµР»СЏС…
+	uint_fast16_t height	// Высота окна в пикселях
 	)
 {
 
@@ -632,7 +632,7 @@ void display_plotstart(
 
 void display_plot(
 	const PACKEDCOLOR_T * buffer, 
-	uint_fast16_t dx,	// Р Р°Р·РјРµСЂС‹ РѕРєРЅР° РІ РїРёРєСЃРµР»СЏС…
+	uint_fast16_t dx,	// Размеры окна в пикселях
 	uint_fast16_t dy
 	)
 {
@@ -645,8 +645,8 @@ void display_plotstop(void)
 }
 
 
-/* Р°РїРїР°СЂР°С‚РЅС‹Р№ СЃР±СЂРѕСЃ РґРёСЃРїР»РµСЏ - РїРµСЂРµРґ РёРЅРёС†РёР°Р»РёР·Р°С†РёР№ */
-/* РІС‹Р·С‹РІР°РµС‚СЃСЏ РїСЂРё СЂР°Р·СЂРµС€С‘РЅРЅС‹С… РїСЂРµСЂС‹РІР°РЅРёСЏС…. */
+/* аппаратный сброс дисплея - перед инициализаций */
+/* вызывается при разрешённых прерываниях. */
 void
 display_reset(void)
 {
@@ -654,7 +654,7 @@ display_reset(void)
 }
 
 
-/* Р Р°Р·СЂСЏР¶Р°РµРј РєРѕРЅРґРµРЅСЃР°С‚РѕСЂС‹ РїРёС‚Р°РЅРёСЏ */
+/* Разряжаем конденсаторы питания */
 void display_discharge(void)
 {
 }

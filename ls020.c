@@ -1,14 +1,14 @@
 /* $Id$ */
 //
-// РџСЂРѕРµРєС‚ HF Dream Receiver (РљР’ РїСЂРёС‘РјРЅРёРє РјРµС‡С‚С‹)
-// Р°РІС‚РѕСЂ Р“РµРЅР° Р—Р°РІРёРґРѕРІСЃРєРёР№ mgs2001@mail.ru
+// Проект HF Dream Receiver (КВ приёмник мечты)
+// автор Гена Завидовский mgs2001@mail.ru
 // UA1ARN
 //
-// Р”РѕСЂР°Р±РѕС‚РєРё РґР»СЏ LS020 Р’Р°СЃРёР»РёР№ Р›РёРЅС‹РІС‹Р№, livas60@mail.ru
+// Доработки для LS020 Василий Линывый, livas60@mail.ru
 //
 // Siemens S65 Display Control
 
-/* РРЅРґРёРєР°С‚РѕСЂ 176*132 Sharp LS020B8UD06 СЃ РєРѕРЅС‚СЂРѕР»Р»РµСЂРѕРј LR38826 */
+/* Индикатор 176*132 Sharp LS020B8UD06 с контроллером LR38826 */
 
 
 #include "hardware.h"
@@ -53,7 +53,7 @@ static void
 //NOINLINEAT
 ls020_wrcmd16(uint_fast8_t hi, uint_fast8_t lo)
 {
-	LS020_CMND();		// РРЅРґРёРєР°С‚РѕСЂ РІ СЂРµР¶РёРј РїСЂРёРµРјР° РєРѕРјР°РЅРґ 
+	LS020_CMND();		// Индикатор в режим приема команд 
 
 	spi_select(targetlcd, LS020_SPIMODE);
 	spi_progval8_p1(targetlcd, hi);
@@ -63,10 +63,10 @@ ls020_wrcmd16(uint_fast8_t hi, uint_fast8_t lo)
 
 }
 
-// РІ СЂРµР¶РёРј РїРµСЂРµРґР°С‡Рё РґР°РЅРЅС‹С… РїРµСЂРµРІРѕРґРёРј СЃСЂР°Р·Сѓ РїРѕ РѕРєРѕРЅС‡Р°РЅРёРё РєРѕРјР°РЅРґ.
+// в режим передачи данных переводим сразу по окончании команд.
 static void ls020_put_char_begin(void)
 {
-	LS020_DATA();		// РРЅРґРёРєР°С‚РѕСЂ РІ СЂРµР¶РёРј РїСЂРёРµРјР° РґР°РЅРЅС‹С… 
+	LS020_DATA();		// Индикатор в режим приема данных 
 	spi_select(targetlcd, LS020_SPIMODE);
 }
 
@@ -128,14 +128,14 @@ static uint_fast8_t
 NOINLINEAT
 bigfont_decode(uint_fast8_t c)
 {
-	// '#' - СѓР·РєРёР№ РїСЂРѕР±РµР»
+	// '#' - узкий пробел
 	if (c == ' ' || c == '#')
 		return 11;
 	if (c == '_')
-		return 10;		// РєСѓСЂСЃРѕСЂ - РїРѕР·РёС†РёСЏ СЂРµРґР°РєС‚РёСЂРІР°РЅРёСЏ С‡Р°СЃС‚РѕС‚С‹
+		return 10;		// курсор - позиция редактирвания частоты
 	if (c == '.')
-		return 12;		// С‚РѕС‡РєР°
-	return c - '0';		// РѕСЃС‚Р°Р»СЊРЅС‹Рµ - С†РёС„СЂС‹ 0..9
+		return 12;		// точка
+	return c - '0';		// остальные - цифры 0..9
 }
 
 
@@ -145,7 +145,7 @@ smallfont_decode(uint_fast8_t c)
 	return c - ' ';
 }
 
-// Р’С‹Р·РѕРІ СЌС‚РѕР№ С„СѓРЅРєС†РёРё С‚РѕР»СЊРєРѕ РІРЅСѓС‚СЂРё display_wrdata_begin() Рё 	display_wrdata_end();
+// Вызов этой функции только внутри display_wrdata_begin() и 	display_wrdata_end();
 static void ls020_put_char_small(char cc)
 {
 	const uint_fast8_t c = smallfont_decode((unsigned char) cc);
@@ -160,12 +160,12 @@ static void ls020_put_char_small(char cc)
 }
 
 
-// Р’С‹Р·РѕРІ СЌС‚РѕР№ С„СѓРЅРєС†РёРё С‚РѕР»СЊРєРѕ РІРЅСѓС‚СЂРё display_wrdata_begin() Рё 	display_wrdata_end();
+// Вызов этой функции только внутри display_wrdata_begin() и 	display_wrdata_end();
 
 static void ls020_put_char_big(char cc)
 {
-	enum { NBV = (BIGCHARH / 8) }; // СЃРєРѕР»СЊРєРѕ Р±Р°Р№С‚РѕРІ РІ РѕРґРЅРѕР№ РІРµСЂС‚РёРєР°Р»Рё
-	uint_fast8_t i = NBV * ((cc == '.' || cc == '#') ? 12 : 0);	// РЅР°С‡Р°Р»СЊРЅР°СЏ РєРѕР»РѕРЅРєР° Р·РЅР°РєРѕРіРµРЅРµСЂР°С‚РѕСЂР°, РѕС‚РєСѓРґР° РЅР°С‡РёРЅР°С‚СЊ.
+	enum { NBV = (BIGCHARH / 8) }; // сколько байтов в одной вертикали
+	uint_fast8_t i = NBV * ((cc == '.' || cc == '#') ? 12 : 0);	// начальная колонка знакогенератора, откуда начинать.
     const uint_fast8_t c = bigfont_decode((unsigned char) cc);
 	enum { NBYTES = (sizeof ls020_bigfont [c] / sizeof ls020_bigfont [0][0]) };
 	const FLASHMEM uint8_t * const p  = & ls020_bigfont [c][0];
@@ -176,7 +176,7 @@ static void ls020_put_char_big(char cc)
 	}
 }
 
-// Р’С‹Р·РѕРІ СЌС‚РѕР№ С„СѓРЅРєС†РёРё С‚РѕР»СЊРєРѕ РІРЅСѓС‚СЂРё display_wrdata_begin() Рё 	display_wrdata_end();
+// Вызов этой функции только внутри display_wrdata_begin() и 	display_wrdata_end();
 
 static void ls020_put_char_half(char cc)
 {
@@ -191,7 +191,7 @@ static void ls020_put_char_half(char cc)
 }
 
 
-/* РІС‹Р·С‹РІР°РµС‚СЃСЏ РјРµР¶РґСѓ РІС‹Р·РѕРІР°РјРё display_wrdatabar_begin() Рё display_wrdatabar_end() */
+/* вызывается между вызовами display_wrdatabar_begin() и display_wrdatabar_end() */
 
 static void ls020_bar_column(uint_fast8_t pattern)
 {
@@ -224,7 +224,7 @@ ls020_set_windowh(uint_fast8_t height)
 	const uint_fast8_t y1 = ls020_windowy;
 
 #if	LCDMODE_LS020_TOPDOWN
-	// РџРµСЂРµРІС‘СЂРЅСѓС‚РѕРµ РёР·РѕР±СЂР°Р¶РµРЅРёРµ
+	// Перевёрнутое изображение
 	// 180 degree rotation:  AEx < ASx
 	ls020_wrcmd16(0xEF, 0x80); 	// Set page 0x80
 
@@ -232,7 +232,7 @@ ls020_set_windowh(uint_fast8_t height)
 	ls020_wrcmd16(AEX, y1 - (height - 1)); 	// window top
 
 	ls020_wrcmd16(ASY, x1); 	// window left
-	// РїРµСЂРµРЅРµСЃРµРЅРѕ РІ РёРЅРёС†РёР°Р»РёР·Р°С†РёСЋ - РїРѕСЃС‚РѕСЏРЅРЅС‹Р№ РїР°СЂР°РјРµС‚СЂ
+	// перенесено в инициализацию - постоянный параметр
 	//ls020_wrcmd16(AEY, DIM_X - 1);	// window right
 
 
@@ -240,21 +240,21 @@ ls020_set_windowh(uint_fast8_t height)
 	
 	ls020_wrcmd16(0xEF, 0x80); 	// Set page 0x80
 
-	// РїСЂСЏРјРѕРµ РёР·РѕР±СЂР°Р¶РµРЅРёРµ
+	// прямое изображение
 	// x-axis line symmetry (mirror image): AEx > ASx
 	ls020_wrcmd16(ASX, y1); // window top
 	ls020_wrcmd16(AEX, y1 + (height - 1)); 	// window bottom
 
 	ls020_wrcmd16(ASY, x1); 	// window left
-	// РїРµСЂРµРЅРµСЃРµРЅРѕ РІ РёРЅРёС†РёР°Р»РёР·Р°С†РёСЋ - РїРѕСЃС‚РѕСЏРЅРЅС‹Р№ РїР°СЂР°РјРµС‚СЂ
+	// перенесено в инициализацию - постоянный параметр
 	//ls020_wrcmd16(AEY, 0);			// window right
 #endif /* LCDMODE_LS020_TOPDOWN */
 }
 
 /*
- Р¤СѓРЅРєС†РёСЏ СѓСЃС‚Р°РЅРѕРІРєРё РєСѓСЂСЃРѕСЂР° РІ РїРѕР·РёС†РёСЋ x,y
- X - РєРѕРѕСЂРґРёРЅР°С‚Р° РїРѕ РіРѕСЂРёР·РѕРЅС‚Р°Р»Рё РІ РїСЂРµРґРµР»Р°С… 0-175,
- Y - РєРѕРѕСЂРґРёРЅР°С‚Р° РїРѕ РІРµСЂС‚РёРєР°Р»Рё (СЃС‚СЂРѕРєР°) РІ РїСЂРµРґРµР»Р°С… 8 Р±РёС‚
+ Функция установки курсора в позицию x,y
+ X - координата по горизонтали в пределах 0-175,
+ Y - координата по вертикали (строка) в пределах 8 бит
 */
 static void ls020_set_addr_column(uint_fast8_t x1, uint_fast8_t y1)
 {
@@ -272,18 +272,18 @@ static void ls020_clear(COLOR_T bg)
 	ls020_set_windowh(DIM_Y);
 
 	ls020_put_char_begin();
-	// СѓСЃРєРѕСЂРµРЅРЅС‹Р№ РІР°СЂРёР°РЅС‚
-	spi_progval8_p1(targetlcd, bg);    // Р—Р°Р»РёРІРєР° С†РІРµС‚РѕРј С„РѕРЅР°
+	// ускоренный вариант
+	spi_progval8_p1(targetlcd, bg);    // Заливка цветом фона
 	for (i = 0; i < (DIM_X * DIM_Y) - 1; ++ i)
 	{
-		spi_progval8_p2(targetlcd, bg);    // Р—Р°Р»РёРІРєР° С†РІРµС‚РѕРј С„РѕРЅР°
+		spi_progval8_p2(targetlcd, bg);    // Заливка цветом фона
 	}
 	spi_complete(targetlcd);
 	ls020_put_char_end();
 }
 
 #if 1
-// РїСЂРѕС†РµРґСѓСЂР° РїРѕРґРіРѕС‚РѕРІРєРё РґРёСЃРїР»РµСЏ Рє РІС‹РєР»СЋС‡РµРЅРёСЋ
+// процедура подготовки дисплея к выключению
 static void ls020_poweroff(void)
 {
   ls020_wrcmd16(0xEF, 0x00); ls020_wrcmd16(0x7E, 0x04); ls020_wrcmd16(0xEF, 0xB0); ls020_wrcmd16(0x5A, 0x48); 
@@ -386,7 +386,7 @@ static void ls020_initialize(void)
 	ls020_wrcmd16(0x00, 0x00);
 
 	/*
-		Р’Р·СЏС‚Рѕ РѕС‚СЃСЋРґР°: http://juras.yourbb.be/viewtopic.php?f=2&t=24&start=0
+		Взято отсюда: http://juras.yourbb.be/viewtopic.php?f=2&t=24&start=0
 
 		ls020_wrcmd16(0xE800); // Set 8-bit host-mode, color format: RRRGGGBB
 
@@ -411,30 +411,30 @@ static void ls020_initialize(void)
 		
 	*/
 
-	/* СѓСЃС‚Р°РЅРѕРІРёС‚СЊ РЅР°РїСЂР°РІР»РµРЅРёРµ Р·Р°РїРѕР»РЅРµРЅРёСЏ РІ РѕРєРЅРµ Рё РїРѕСЃС‚РѕСЏРЅРЅС‹Рµ РїР°СЂР°РјРµС‚СЂС‹ */
+	/* установить направление заполнения в окне и постоянные параметры */
 #if	LCDMODE_LS020_TOPDOWN
 
-	// РџРµСЂРµРІС‘СЂРЅСѓС‚РѕРµ РёР·РѕР±СЂР°Р¶РµРЅРёРµ
+	// Перевёрнутое изображение
 	ls020_wrcmd16(0xEF, 0x80); 	// Set page 0x80
 	//ls020_wrcmd16(0x18, 0x00); 	// normal mode:  AEx > ASx
 	ls020_wrcmd16(0x18, 0x01); 	// y-axis symmetry (mirror image): AEx < ASx 
-	// РїРµСЂРµРЅРµСЃРµРЅРѕ РІ РёРЅРёС†РёР°Р»РёР·Р°С†РёСЋ - РїРѕСЃС‚РѕСЏРЅРЅС‹Р№ РїР°СЂР°РјРµС‚СЂ
+	// перенесено в инициализацию - постоянный параметр
 	ls020_wrcmd16(AEY, DIM_X - 1);	// window right
 
 #else /* LCDMODE_LS020_TOPDOWN */
 
-	// РїСЂСЏРјРѕРµ РёР·РѕР±СЂР°Р¶РµРЅРёРµ
+	// прямое изображение
 	ls020_wrcmd16(0xEF, 0x80); 	// Set page 0x80
 	//ls020_wrcmd16(0x18, 0x01); 	// y-axis symmetry (mirror image): AEx < ASx 
 	ls020_wrcmd16(0x18, 0x02); 	// x-axis line symmetry (mirror image): AEx > ASx
-	// РїРµСЂРµРЅРµСЃРµРЅРѕ РІ РёРЅРёС†РёР°Р»РёР·Р°С†РёСЋ - РїРѕСЃС‚РѕСЏРЅРЅС‹Р№ РїР°СЂР°РјРµС‚СЂ
+	// перенесено в инициализацию - постоянный параметр
 	ls020_wrcmd16(AEY, 0);			// window right
 
 #endif /* LCDMODE_LS020_TOPDOWN */
 	ls020_set_contrast(vbias);
 }
 
-/* РІС‹Р·С‹РІР°РµС‚СЃСЏ РїСЂРё СЂР°Р·СЂРµС€С‘РЅРЅС‹С… РїСЂРµСЂС‹РІР°РЅРёСЏС…. */
+/* вызывается при разрешённых прерываниях. */
 void display_initialize(void)
 {
 	
@@ -502,9 +502,9 @@ display_wrdatabig_end(void)
 	ls020_put_char_end();
 }
 
-/* РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ РѕРґРЅРѕР№ РІРµСЂС‚РёРєР°Р»СЊРЅРѕР№ РїРѕР»РѕСЃС‹ РЅР° РіСЂР°С„РёС‡РµСЃРєРѕРј РёРЅРґРёРєР°С‚РѕСЂРµ */
-/* СЃС‚Р°СЂС€РёРµ Р±РёС‚С‹ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‚ РІРµСЂС…РЅРёРј РїРёРєСЃРµР»СЏРј РёР·РѕР±СЂР°Р¶РµРЅРёСЏ */
-/* РІС‹Р·С‹РІР°РµС‚СЃСЏ РјРµР¶РґСѓ РІС‹Р·РѕРІР°РјРё display_wrdatabar_begin() Рё display_wrdatabar_end() */
+/* отображение одной вертикальной полосы на графическом индикаторе */
+/* старшие биты соответствуют верхним пикселям изображения */
+/* вызывается между вызовами display_wrdatabar_begin() и display_wrdatabar_end() */
 void 
 display_barcolumn(uint_fast8_t pattern)
 {
@@ -524,8 +524,8 @@ display_put_char_half(uint_fast8_t c, uint_fast8_t lowhalf)
 }
 
 
-// Р’С‹Р·РѕРІ СЌС‚РѕР№ С„СѓРЅРєС†РёРё С‚РѕР»СЊРєРѕ РІРЅСѓС‚СЂРё display_wrdata_begin() Рё display_wrdata_end();
-// РСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РїСЂРё РІС‹РІРѕРґРµ РЅР° РіСЂР°С„РёС‡РµСЃРєРёР№ РЅРґРёРєР°С‚РѕСЂ, РµСЃР»Рё РўР Р•Р‘РЈР•РўРЎРЇ РїРµСЂРµРєР»СЋС‡Р°С‚СЊ РїРѕР»РѕСЃС‹ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ
+// Вызов этой функции только внутри display_wrdata_begin() и display_wrdata_end();
+// Используется при выводе на графический ндикатор, если ТРЕБУЕТСЯ переключать полосы отображения
 void
 display_put_char_small(uint_fast8_t c, uint_fast8_t lowhalf)
 {
@@ -539,27 +539,27 @@ void
 display_gotoxy(uint_fast8_t x, uint_fast8_t y)
 {
 #if	LCDMODE_LS020_TOPDOWN
-	// РџРµСЂРµРІС‘СЂРЅСѓС‚РѕРµ РёР·РѕР±СЂР°Р¶РµРЅРёРµ
+	// Перевёрнутое изображение
 	ls020_set_addr_column(x * CHAR_W, (DIM_Y - 1) - y * CHAR_H); // Rotate 180 degrees
 #else /* LCDMODE_LS020_TOPDOWN */
-	// РїСЂСЏРјРѕРµ РёР·РѕР±СЂР°Р¶РµРЅРёРµ
+	// прямое изображение
 	ls020_set_addr_column((DIM_X - 1) - (x * CHAR_W), y * CHAR_H); // Rotate 180 degrees
 #endif /* LCDMODE_LS020_TOPDOWN */
 }
-// РљРѕРѕСЂРґРёРЅР°С‚С‹ РІ РїРёРєСЃРµР»СЏС…
+// Координаты в пикселях
 void display_plotfrom(uint_fast16_t x, uint_fast16_t y)
 {
 #if	LCDMODE_LS020_TOPDOWN
-	// РџРµСЂРµРІС‘СЂРЅСѓС‚РѕРµ РёР·РѕР±СЂР°Р¶РµРЅРёРµ
+	// Перевёрнутое изображение
 	ls020_set_addr_column(x, (DIM_Y - 1) - y); // Rotate 180 degrees
 #else /* LCDMODE_LS020_TOPDOWN */
-	// РїСЂСЏРјРѕРµ РёР·РѕР±СЂР°Р¶РµРЅРёРµ
+	// прямое изображение
 	ls020_set_addr_column((DIM_X - 1) - (x), y); // Rotate 180 degrees
 #endif /* LCDMODE_LS020_TOPDOWN */
 }
 
 void display_plotstart(
-	uint_fast16_t height	// Р’С‹СЃРѕС‚Р° РѕРєРЅР° РІ РїРёРєСЃРµР»СЏС…
+	uint_fast16_t height	// Высота окна в пикселях
 	)
 {
 	ls020_set_windowh(height);
@@ -573,7 +573,7 @@ void display_plotstop(void)
 
 void display_plot(
 	const PACKEDCOLOR_T * buffer, 
-	uint_fast16_t dx,	// Р Р°Р·РјРµСЂС‹ РѕРєРЅР° РІ РїРёРєСЃРµР»СЏС…
+	uint_fast16_t dx,	// Размеры окна в пикселях
 	uint_fast16_t dy
 	)
 {
@@ -581,8 +581,8 @@ void display_plot(
 }
 
 
-/* Р°РїРїР°СЂР°С‚РЅС‹Р№ СЃР±СЂРѕСЃ РґРёСЃРїР»РµСЏ - РїРµСЂРµРґ РёРЅРёС†РёР°Р»РёР·Р°С†РёР№ */
-/* РІС‹Р·С‹РІР°РµС‚СЃСЏ РїСЂРё СЂР°Р·СЂРµС€С‘РЅРЅС‹С… РїСЂРµСЂС‹РІР°РЅРёСЏС…. */
+/* аппаратный сброс дисплея - перед инициализаций */
+/* вызывается при разрешённых прерываниях. */
 void
 display_reset(void)
 {
@@ -590,7 +590,7 @@ display_reset(void)
 }
 
 
-/* Р Р°Р·СЂСЏР¶Р°РµРј РєРѕРЅРґРµРЅСЃР°С‚РѕСЂС‹ РїРёС‚Р°РЅРёСЏ */
+/* Разряжаем конденсаторы питания */
 void display_discharge(void)
 {
 	ls020_poweroff();

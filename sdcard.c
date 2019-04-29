@@ -1,11 +1,11 @@
 /* $Id$ */
 //
-// РџСЂРѕРµРєС‚ HF Dream Receiver (РљР’ РїСЂРёС‘РјРЅРёРє РјРµС‡С‚С‹)
-// Р°РІС‚РѕСЂ Р“РµРЅР° Р—Р°РІРёРґРѕРІСЃРєРёР№ mgs2001@mail.ru
+// Проект HF Dream Receiver (КВ приёмник мечты)
+// автор Гена Завидовский mgs2001@mail.ru
 // UA1ARN
 //
 
-#include "hardware.h"	/* Р·Р°РІРёСЃСЏС‰РёРµ РѕС‚ РїСЂРѕС†РµСЃСЃРѕСЂР° С„СѓРЅРєС†РёРё СЂР°Р±РѕС‚С‹ СЃ РїРѕСЂС‚Р°РјРё */
+#include "hardware.h"	/* зависящие от процессора функции работы с портами */
 #include "formats.h"	/* sprintf() replacement */
 #include <ctype.h>
 #include <string.h>
@@ -18,7 +18,7 @@
 #include "ff.h"	
 #include "diskio.h"		/* FatFs lower layer API */
 
-#include "display.h"	/* РёСЃРїРѕР»СЊР·СѓРµРј С„СѓРЅРєС†РёСЋ РїРѕР»СѓС‡РµРЅРёСЏ СЂР°Р±РѕС‡РµР№ С‡Р°СЃС‚РѕС‚С‹ */
+#include "display.h"	/* используем функцию получения рабочей частоты */
 #include "keyboard.h"	
 #include "audio.h"	
 
@@ -89,7 +89,7 @@
 
 
 
-// Р¤СѓРЅРєС†РёСЏ РїРѕР»СѓС‡РµРЅРёСЏ Р·РЅР°С‡РµРЅРёСЏ Р±РёС‚Р° РїРѕ РЅРѕРјРµСЂСѓ РёР· РјР°СЃСЃРёРІР°
+// Функция получения значения бита по номеру из массива
 static unsigned long array_get_bit(const uint8_t * data, unsigned total, unsigned leftbit)
 {
 	const unsigned bitfromstart = (total - 1) - leftbit;
@@ -99,7 +99,7 @@ static unsigned long array_get_bit(const uint8_t * data, unsigned total, unsigne
 
 }
 
-// Р¤СѓРЅРєС†РёСЏ РїРѕР»СѓС‡РµРЅРёСЏ Р·РЅР°С‡РµРЅРёСЏ Р±РёС‚РѕРІРѕРіРѕ РїРѕР»СЏ РёР· РјР°СЃСЃРёРІР°
+// Функция получения значения битового поля из массива
 static unsigned long array_get_bits(const uint8_t * data, unsigned total, unsigned leftbit, unsigned width)
 {
 	unsigned long v = 0;
@@ -109,7 +109,7 @@ static unsigned long array_get_bits(const uint8_t * data, unsigned total, unsign
 }
 
 static void sd_power_enable(
-	uint_fast8_t enable	// С„Р»Р°Рі СѓРїСЂР°РІР»РµРЅРёСЏ РІРєР»СЋС‡РµРЅРёРµРј РїРёС‚Р°РЅРёСЏ SD РєР°СЂС‚С‹
+	uint_fast8_t enable	// флаг управления включением питания SD карты
 	)
 {
 	board_set_sdcardpoweron(enable);
@@ -141,7 +141,7 @@ static uint_fast64_t sdhost_sdcard_parse_CSD(const uint8_t * bv)
 {
 	uint_fast64_t MMC_CardSize = 0;
 	uint_fast32_t mmc_C_SIZE = 0;
-	// РћР±СЂР°Р±РѕС‚РєР° РёРЅС„РѕСЂРјР°С†РёРѕР»РЅРЅРѕРіРѕ Р±Р»РѕРєР° (Code length is 128 bits = 16 bytes)
+	// Обработка информациолнного блока (Code length is 128 bits = 16 bytes)
 	//
 	const uint_fast8_t csdv = array_get_bits(bv, 128, 127, 2);	//  [127:126] - csd structure version
 	PRINTF("CSD version=0x%02x\n", csdv);
@@ -151,7 +151,7 @@ static uint_fast64_t sdhost_sdcard_parse_CSD(const uint8_t * bv)
 	{	
 	case 1:
 		// CSD version 2.0
-		// Р Р°СЃС‡С‘С‚ РѕР±СЉС‘РјР° РєР°СЂС‚С‹ РїР°РјСЏС‚Рё РїРѕ СЃС‚СЂСѓРєС‚СѓСЂРµ РІРµСЂСЃРёРё 2
+		// Расчёт объёма карты памяти по структуре версии 2
 		mmc_C_SIZE = array_get_bits(bv, 128, 69, 22);	// [69:48] This parameter is used to calculate the user data area capacity in the SD memory card (not include the protected area).
 
 		//PRINTF("mmc_C_SIZE = %lu\n", (unsigned long) mmc_C_SIZE);
@@ -320,7 +320,7 @@ static uint_fast8_t sdhost_use_cmd20;
 /* Assert the CS signal, active low (CS=0) */
 static void SDCARD_CS_LOW(void)
 {
-	spi_select2(targetsdcard, SPIC_MODE3, SPIC_SPEEDSDCARD);	// MODE0/MODE3 - СЃРјРѕС‚СЂРё РєРѕРјРјРµРЅС‚Р°СЂРёР№ РІС‹С€Рµ
+	spi_select2(targetsdcard, SPIC_MODE3, SPIC_SPEEDSDCARD);	// MODE0/MODE3 - смотри комментарий выше
 }
 
 /* Deassert the CS signal (CS=1) */
@@ -329,7 +329,7 @@ static void SDCARD_CS_HIGH(void)
 	spi_unselect(targetsdcard);
 }
 
-// СѓСЃС‚Р°РЅРѕРІРёС‚СЊ СЃРєРѕСЂРѕСЃС‚СЊ SPI РґР»СЏ СѓРєР°Р·Р°РЅРЅРѕРіРѕ РєР°РЅР°Р»Р° РєРѕРЅС‚СЂРѕР»Р»РµСЂР°
+// установить скорость SPI для указанного канала контроллера
 void hardware_sdhost_setspeed(unsigned long ticksfreq)
 {
 	hardware_spi_master_setfreq(SPIC_SPEEDSDCARD, ticksfreq);
@@ -339,8 +339,8 @@ void hardware_sdhost_setbuswidth(uint_fast8_t use4bit)
 {
 }
 
-/* РІСЃРїРѕРјРѕРіР°С‚РµР»СЊРЅР°СЏ РїРѕРґРїСЂРѕРіСЂР°РјРјР° СЂР°СЃС‡С‘С‚Р° CRC РґР»СЏ РѕРґРЅРѕРіРѕ Р±РёС‚Р°.
-   CRC С…СЂР°РЅРёС‚СЃСЏ РІ СЃС‚Р°СЂС€РёС… 7 Р±РёС‚Р°С….
+/* вспомогательная подпрограмма расчёта CRC для одного бита.
+   CRC хранится в старших 7 битах.
 */
 static  uint_fast8_t crc7b1(uint_fast8_t crc, uint_fast8_t v1)
 {
@@ -357,7 +357,7 @@ static  uint_fast8_t crc7b1(uint_fast8_t crc, uint_fast8_t v1)
 	return crc & 0xFF;
 }
 
-/* РІСЃРїРѕРјРѕРіР°С‚РµР»СЊРЅР°СЏ РїРѕРґРїСЂРѕРіСЂР°РјРјР° СЂР°СЃС‡С‘С‚Р° CRC РґР»СЏ РѕРґРЅРѕРіРѕ Р±Р°Р№С‚Р° */
+/* вспомогательная подпрограмма расчёта CRC для одного байта */
 static uint_fast8_t crc7b8(uint_fast8_t crc, uint_fast8_t v8)
 {
 	crc = crc7b1(crc, v8 & 0x80);
@@ -404,7 +404,7 @@ void SDIO_IRQHandler(void)
 #endif
 
 
-/* DMA РґР»СЏ РѕР±РјРµРЅР° СЃ SD CARD  - СѓСЃС‚Р°РЅРѕРІРєР° РїР°СЂР°РјРµС‚СЂРѕРІ СЃР»РµРґСѓСЋС‰РµРіРѕ РѕР±РјРµРЅР° */
+/* DMA для обмена с SD CARD  - установка параметров следующего обмена */
 //	RX	SAI2_B	DMA2	Stream6	Channel 4	
 static void DMA_SDIO_setparams(
 	uintptr_t addr,
@@ -419,13 +419,13 @@ static void DMA_SDIO_setparams(
 
 #elif CPUSTYLE_R7S721
 
-	// DMA РїРѕ РїРµСЂРµРґР°С‡Рµ SDHI0
+	// DMA по передаче SDHI0
 
 	enum { id = 14 };	// 14: DMAC14
 
 	DMAC14.CHCTRL_n = 1 * (1U << DMAC14_CHCTRL_n_SWRST_SHIFT);		// SWRST
 	//DMAC14.CHCTRL_n = 1 * (1U << DMAC14_CHCTRL_n_CLRINTMSK_SHIFT);	// CLRINTMSK
-	DMAC14.CHCTRL_n = 1 * (1U << DMAC14_CHCTRL_n_SETINTMSK_SHIFT);	// SETINTMSK - Р·Р°РїСЂРµС‰Р°РµРј РїСЂРµСЂС‹РІР°РЅРёРµ РѕС‚ РєРѕРЅС‚СЂРѕР»Р»РµСЂР° DMA
+	DMAC14.CHCTRL_n = 1 * (1U << DMAC14_CHCTRL_n_SETINTMSK_SHIFT);	// SETINTMSK - запрещаем прерывание от контроллера DMA
 
 	if (direction != 0)
 	{
@@ -434,7 +434,7 @@ static void DMA_SDIO_setparams(
 		// DMAC14
 		DMAC14.N0SA_n = addr;	// Source address
 		DMAC14.N0DA_n = (uint32_t) & SDHI0.SD_BUF0;	// Fixed destination address
-		DMAC14.N0TB_n = length0 * count;	// СЂР°Р·РјРµСЂ РІ Р±Р°Р№С‚Р°С…
+		DMAC14.N0TB_n = length0 * count;	// размер в байтах
 
 		// Values from Table 9.4 On-Chip Peripheral Module Requests
 		// SDHI0 (transmit data empty)
@@ -451,8 +451,8 @@ static void DMA_SDIO_setparams(
 			0 * (1U << 29) |	// RSW	0: Does not invert RSEL automatically after a DMA transaction
 			0 * (1U << 28) |	// RSEL	0: Executes the Next0 Register Set
 			0 * (1U << 27) |	// SBE	0: Stops the DMA transfer without sweeping the buffer (initial value).
-			0 * (1U << 24) |	// DEM	0: Does not mask the DMA transfer end interrupt - РїСЂРµСЂС‹РІР°РЅРёСЏ РєР°Р¶РґС‹Р№ СЂР°Р· РїРѕСЃР»Рµ TC
-			tm * (1U << 22) |	// TM	0: Single transfer mode - Р±РµСЂС‘С‚СЃСЏ РёР· Table 9.4
+			0 * (1U << 24) |	// DEM	0: Does not mask the DMA transfer end interrupt - прерывания каждый раз после TC
+			tm * (1U << 22) |	// TM	0: Single transfer mode - берётся из Table 9.4
 			1 * (1U << 21) |	// DAD	1: Fixed destination address
 			0 * (1U << 20) |	// SAD	0: Increment source address
 			2 * (1U << 16) |	// DDS	2: 32 bits (Destination Data Size)
@@ -477,7 +477,7 @@ static void DMA_SDIO_setparams(
 		// DMAC14
 		DMAC14.N0SA_n = (uint32_t) & SDHI0.SD_BUF0;		// Fixed source addess
 		DMAC14.N0DA_n = addr;	// destination address
-		DMAC14.N0TB_n = length0 * count;	// СЂР°Р·РјРµСЂ РІ Р±Р°Р№С‚Р°С…
+		DMAC14.N0TB_n = length0 * count;	// размер в байтах
 
 		// Values from Table 9.4 On-Chip Peripheral Module Requests
 		// SDHI0 (transmit data empty)
@@ -494,8 +494,8 @@ static void DMA_SDIO_setparams(
 			0 * (1U << 29) |	// RSW	0: Does not invert RSEL automatically after a DMA transaction.
 			0 * (1U << 28) |	// RSEL	0: Executes the Next0 Register Set
 			0 * (1U << 27) |	// SBE	0: Stops the DMA transfer without sweeping the buffer (initial value).
-			0 * (1U << 24) |	// DEM	0: Does not mask the DMA transfer end interrupt - РїСЂРµСЂС‹РІР°РЅРёСЏ РєР°Р¶РґС‹Р№ СЂР°Р· РїРѕСЃР»Рµ TC
-			tm * (1U << 22) |	// TM	0: Single transfer mode - Р±РµСЂС‘С‚СЃСЏ РёР· Table 9.4
+			0 * (1U << 24) |	// DEM	0: Does not mask the DMA transfer end interrupt - прерывания каждый раз после TC
+			tm * (1U << 22) |	// TM	0: Single transfer mode - берётся из Table 9.4
 			0 * (1U << 21) |	// DAD	0: Increment destination address
 			1 * (1U << 20) |	// SAD	1: Fixed source address
 			2 * (1U << 16) |	// DDS	2: 32 bits (Destination Data Size)
@@ -515,7 +515,7 @@ static void DMA_SDIO_setparams(
 	}
 
 
-	// РЈСЃС‚Р°РЅРѕРІРєР° СЂРµР¶РёРјР° РґР»СЏ РІСЃРµС… РєР°РЅР°Р»РѕРІ (8..15)
+	// Установка режима для всех каналов (8..15)
     DMAC815.DCTRL_0_7 = (DMAC815.DCTRL_0_7 & ~ (/*(1U << 1) | */(1U << 0))) |
 		//1 * (1U << 1) |		// LVINT	1: Level output
 		1 * (1U << 0) |		// PR		1: Round robin mode
@@ -552,7 +552,7 @@ static void DMA_SDIO_setparams(
 
 #elif CPUSTYLE_STM32H7XX
 
-	// РІ РїСЂРѕС†РµСЃСЃРѕСЂРµ РґР»СЏ РѕР±РјРµРЅР° СЃ SDIO РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РІС‹РґРµР»РµРЅРЅС‹Р№ Р±Р»РѕРє DMA
+	// в процессоре для обмена с SDIO используется выделенный блок DMA
 
 	SDMMC1->IDMACTRL |= SDMMC_IDMA_IDMAEN;
 	SDMMC1->IDMABASE0 = addr;
@@ -569,7 +569,7 @@ static void DMA_SDIO_setparams(
 	/* DMA2	Stream6	Channel 4 */ 
 	const uint_fast8_t ch = 4;
 
-	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;	// РІРєР»СЋС‡РёР» DMA2 
+	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;	// включил DMA2 
 	__DSB();
 
 #if CPUSTYLE_STM32F7XX
@@ -580,13 +580,13 @@ static void DMA_SDIO_setparams(
 
 	DMA2_Stream6->M0AR = addr;
 	DMA2_Stream6->NDTR = (DMA2_Stream6->NDTR & ~ DMA_SxNDT) |
-		(1 * DMA_SxNDT_0);		// РћСЃРѕР±С‹Р№ СЃР»СѓС‡Р°Р№ - СЂРµРіРёСЃС‚СЂ РёРіРЅРѕСЂРёСЂСѓРµС‚СЃСЏ. Р’ РїСЂРёРјРµСЂР°С… РѕС‚ ST РїРёС€РµС‚СЃСЏ 1
+		(1 * DMA_SxNDT_0);		// Особый случай - регистр игнорируется. В примерах от ST пишется 1
 
 	if (direction == 0)
 	{
 		// Read from SD CARD
 		//DMA2_Stream6->NDTR = (DMA2_Stream6->NDTR & ~ DMA_SxNDT) |
-		//	(length0 * count / 4 * DMA_SxNDT_0);		// РћСЃРѕР±С‹Р№ СЃР»СѓС‡Р°Р№ - СЂРµРіРёСЃС‚СЂ РёРіРЅРѕСЂРёСЂСѓРµС‚СЃСЏ. Р’ РїСЂРёРјРµСЂР°С… РѕС‚ ST РїРёС€РµС‚СЃСЏ 1
+		//	(length0 * count / 4 * DMA_SxNDT_0);		// Особый случай - регистр игнорируется. В примерах от ST пишется 1
 
 		DMA2_Stream6->FCR =
 			1 * DMA_SxFCR_DMDIS |	// use FIFO mode
@@ -595,15 +595,15 @@ static void DMA_SDIO_setparams(
 
 		DMA2_Stream6->CR =
 			0 * DMA_SxCR_DIR_0 |	// 00: Peripheral-to-memory
-			ch * DMA_SxCR_CHSEL_0 | // РєР°РЅР°Р»
+			ch * DMA_SxCR_CHSEL_0 | // канал
 			1 * DMA_SxCR_PFCTRL |	// 1: The peripheral is the flow controller (required for SDIO/SDMMC connected DMA)
 			1 * DMA_SxCR_MBURST_0 |	// 01: INCR4 (incremental burst of 4 beats)
 			1 * DMA_SxCR_PBURST_0 |	// 01: INCR4 (incremental burst of 4 beats)
 			//0 * DMA_SxCR_DIR_0 |	// 00: Peripheral-to-memory
-			1 * DMA_SxCR_MINC |		//РёРЅРєСЂРµРјРµРЅС‚ РїР°РјСЏС‚Рё
-			2 * DMA_SxCR_MSIZE_0 | //РґР»РёРЅР° РІ РїР°РјСЏС‚Рё - 32 bit
-			2 * DMA_SxCR_PSIZE_0 | //РґР»РёРЅР° РІ DR - 32 bit
-			//1 * DMA_SxCR_CIRC | //С†РёРєР»РёС‡РµСЃРєРёР№ СЂРµР¶РёРј РЅРµ С‚СЂРµР±СѓРµС‚СЃСЏ РїСЂРё DBM
+			1 * DMA_SxCR_MINC |		//инкремент памяти
+			2 * DMA_SxCR_MSIZE_0 | //длина в памяти - 32 bit
+			2 * DMA_SxCR_PSIZE_0 | //длина в DR - 32 bit
+			//1 * DMA_SxCR_CIRC | //циклический режим не требуется при DBM
 			2 * DMA_SxCR_PL_0 |		// Priority level - High
 			0 * DMA_SxCR_CT |	// M0AR selected
 			//0 * DMA_SxCR_DBM |	 // double buffer mode seelcted
@@ -614,7 +614,7 @@ static void DMA_SDIO_setparams(
 		// Write to SD CARD
 
 		//DMA2_Stream6->NDTR = (DMA2_Stream6->NDTR & ~ DMA_SxNDT) |
-		//	(length0 * count * DMA_SxNDT_0);		// РћСЃРѕР±С‹Р№ СЃР»СѓС‡Р°Р№ - СЂРµРіРёСЃС‚СЂ РёРіРЅРѕСЂРёСЂСѓРµС‚СЃСЏ. Р’ РїСЂРёРјРµСЂР°С… РѕС‚ ST РїРёС€РµС‚СЃСЏ 1
+		//	(length0 * count * DMA_SxNDT_0);		// Особый случай - регистр игнорируется. В примерах от ST пишется 1
 
 		DMA2_Stream6->FCR =
 			1 * DMA_SxFCR_DMDIS |	// use FIFO mode
@@ -623,23 +623,23 @@ static void DMA_SDIO_setparams(
 
 		DMA2_Stream6->CR =
 			1 * DMA_SxCR_DIR_0 |	// 01: Memory-to-peripherial
-			ch * DMA_SxCR_CHSEL_0 | // РєР°РЅР°Р»
+			ch * DMA_SxCR_CHSEL_0 | // канал
 			1 * DMA_SxCR_PFCTRL |	// 1: The peripheral is the flow controller (required for SDIO/SDMMC connected DMA)
 			0 * DMA_SxCR_MBURST_0 |	// 00: single transfer (changed from read !)
 			1 * DMA_SxCR_PBURST_0 |	// 01: INCR4 (incremental burst of 4 beats)
 			//0 * DMA_SxCR_DIR_0 |	// 00: Peripheral-to-memory
-			1 * DMA_SxCR_MINC |		//РёРЅРєСЂРµРјРµРЅС‚ РїР°РјСЏС‚Рё
-			0 * DMA_SxCR_MSIZE_0 | //РґР»РёРЅР° РІ РїР°РјСЏС‚Рё - 8 bit (changed from read !)
-			2 * DMA_SxCR_PSIZE_0 | //РґР»РёРЅР° РІ DR - 32 bit
-			//1 * DMA_SxCR_CIRC | //С†РёРєР»РёС‡РµСЃРєРёР№ СЂРµР¶РёРј РЅРµ С‚СЂРµР±СѓРµС‚СЃСЏ РїСЂРё DBM
+			1 * DMA_SxCR_MINC |		//инкремент памяти
+			0 * DMA_SxCR_MSIZE_0 | //длина в памяти - 8 bit (changed from read !)
+			2 * DMA_SxCR_PSIZE_0 | //длина в DR - 32 bit
+			//1 * DMA_SxCR_CIRC | //циклический режим не требуется при DBM
 			2 * DMA_SxCR_PL_0 |		// Priority level - High
 			0 * DMA_SxCR_CT |	// M0AR selected
 			//0 * DMA_SxCR_DBM |	 // double buffer mode seelcted
 			0;
 	}
 
-	DMA2->HIFCR = (DMA_HIFCR_CTCIF6 /*| DMA_HIFCR_CTEIF6 */);	// Clear TC interrupt flag СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РёР№ stream
-	//DMA2_Stream6->CR |= (DMA_SxCR_TCIE /* | DMA_SxCR_TEIE */);	// СЂР°Р·СЂРµС€РёС‚СЊ РїСЂРµСЂС‹РІР°РЅРёСЏ РѕС‚ DMA РїРѕ TC Рё TE
+	DMA2->HIFCR = (DMA_HIFCR_CTCIF6 /*| DMA_HIFCR_CTEIF6 */);	// Clear TC interrupt flag соответствующий stream
+	//DMA2_Stream6->CR |= (DMA_SxCR_TCIE /* | DMA_SxCR_TEIE */);	// разрешить прерывания от DMA по TC и TE
 	
 	DMA2_Stream6->CR |= DMA_SxCR_EN;
 
@@ -665,7 +665,7 @@ static uint_fast8_t DMA_sdio_waitdone(void)
 	return 0;
 
 #elif CPUSTYLE_STM32H7XX
-	// РІ РїСЂРѕС†РµСЃСЃРѕСЂРµ РґР»СЏ РѕР±РјРµРЅР° СЃ SDIO РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РІС‹РґРµР»РµРЅРЅС‹Р№ Р±Р»РѕРє DMA
+	// в процессоре для обмена с SDIO используется выделенный блок DMA
 	// check result
 	if ((SDMMC1->STA & (SDMMC_STA_DATAEND | SDMMC_STA_DCRCFAIL | SDMMC_STA_DTIMEOUT)) != SDMMC_STA_DATAEND)
 		return 1;
@@ -679,16 +679,16 @@ static uint_fast8_t DMA_sdio_waitdone(void)
 	}
 
 	if ((DMA2->HISR & DMA_HISR_TCIF6) != 0)
-		DMA2->HIFCR = DMA_HIFCR_CTCIF6;		// СЃР±СЂРѕСЃРёР» С„Р»Р°Рі - DMA РіРѕС‚РѕРІРѕ РЅР°С‡РёРЅР°С‚СЊ СЃ РЅР°С‡Р°Р»Р°
+		DMA2->HIFCR = DMA_HIFCR_CTCIF6;		// сбросил флаг - DMA готово начинать с начала
 	else
 	{
 		PRINTF(PSTR("DMA_sdio_waitdone: force stop, NDTR=%lu\n"), DMA2_Stream6->NDTR);
-		// DMA РµС‰С‘ РјРѕР¶РµС‚ РїРµСЂРµРґР°РІР°С‚СЊ
-		// РќР°РґРѕ РїСЂРёРІРµСЃС‚Рё РІ РЅР°С‡Р°Р»СЊРЅРѕРµ СЃРѕСЃС‚РѕСЏРЅРёРµ
+		// DMA ещё может передавать
+		// Надо привести в начальное состояние
 		DMA2_Stream6->CR &= ~ DMA_SxCR_EN;
 		while ((DMA2_Stream6->CR &  DMA_SxCR_EN) != 0)
 			;
-		//DMA2_Stream6->CR |= DMA_SxCR_EN;	// РїРµСЂРµР·Р°РїСѓСЃРє DMA
+		//DMA2_Stream6->CR |= DMA_SxCR_EN;	// перезапуск DMA
 	}
 	return 0;
 
@@ -697,7 +697,7 @@ static uint_fast8_t DMA_sdio_waitdone(void)
 #endif
 }
 
-// РћР±РјРµРЅ СЃ SD CARD Р·Р°РєРѕРЅС‡РµРЅ Р°РІР°СЂРёР№РЅРѕ. РћСЃС‚Р°РЅРѕРІРёС‚СЊ DMA
+// Обмен с SD CARD закончен аварийно. Остановить DMA
 static void DMA_sdio_cancel(void)
 {
 #if ! WITHSDHCHW
@@ -710,7 +710,7 @@ static void DMA_sdio_cancel(void)
 	SDHI0.CC_EXT_MODE &= ~ (1uL << 1);	// DMASDRW
 
 #elif CPUSTYLE_STM32H7XX
-	// РІ РїСЂРѕС†РµСЃСЃРѕСЂРµ РґР»СЏ РѕР±РјРµРЅР° СЃ SDIO РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РІС‹РґРµР»РµРЅРЅС‹Р№ Р±Р»РѕРє DMA
+	// в процессоре для обмена с SDIO используется выделенный блок DMA
 	//SDMMC1->CMD = SDMMC_CMD_CMDSTOP;
 
 	SDMMC1->IDMACTRL &= ~ SDMMC_IDMA_IDMAEN;
@@ -719,12 +719,12 @@ static void DMA_sdio_cancel(void)
 
 	{
 		//PRINTF(PSTR("DMA_sdio_cancel: force stop, NDTR=%lu\n"), DMA2_Stream6->NDTR);
-		// DMA РµС‰С‘ РјРѕР¶РµС‚ РїРµСЂРµРґР°РІР°С‚СЊ
-		// РќР°РґРѕ РїСЂРёРІРµСЃС‚Рё РІ РЅР°С‡Р°Р»СЊРЅРѕРµ СЃРѕСЃС‚РѕСЏРЅРёРµ
+		// DMA ещё может передавать
+		// Надо привести в начальное состояние
 		DMA2_Stream6->CR &= ~ DMA_SxCR_EN;
 		while ((DMA2_Stream6->CR &  DMA_SxCR_EN) != 0)
 			;
-		//DMA2_Stream6->CR |= DMA_SxCR_EN;	// РїРµСЂРµР·Р°РїСѓСЃРє DMA
+		//DMA2_Stream6->CR |= DMA_SxCR_EN;	// перезапуск DMA
 	}
 
 #else
@@ -824,7 +824,7 @@ void /*__attribute__((interrupt)) */ SDMMC1_IRQHandler(void)
 #endif /* CPUSTYLE_STM32H7XX */
 
 
-// РћР¶РёРґР°РЅРёРµ РѕРєРѕРЅС‡Р°РЅРёСЏ РѕР±РјРµРЅР° data path state machine
+// Ожидание окончания обмена data path state machine
 static uint_fast8_t sdhost_dpsm_wait(uint_fast8_t txmode)
 {
 #if ! WITHSDHCHW
@@ -884,8 +884,8 @@ static void sdhost_dpsm_wait_fifo_empty(void)
 #elif CPUSTYLE_R7S721
 
 #elif CPUSTYLE_STM32H7XX
-	// РІ РїСЂРѕС†РµСЃСЃРѕСЂРµ РґР»СЏ РѕР±РјРµРЅР° СЃ SDIO РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РІС‹РґРµР»РµРЅРЅС‹Р№ Р±Р»РѕРє DMA
-	// TODO: РЅР°Р№С‚Рё СЃРїРѕСЃРѕР± РєРѕРЅС‚СЂРѕР»СЏ СЃРѕСЃС‚РѕСЏРЅРёСЏ FIFO
+	// в процессоре для обмена с SDIO используется выделенный блок DMA
+	// TODO: найти способ контроля состояния FIFO
 	for (;;)
 	{
 		//const uint_fast32_t fifocnt = SDMMC1->FIFOCNT;
@@ -915,7 +915,7 @@ static void sdhost_dpsm_wait_fifo_empty(void)
 #endif
 }
 
-// РїРѕРґРіРѕС‚РѕРІРєР° Рє РѕР±РјРµРЅСѓ data path state machine
+// подготовка к обмену data path state machine
 static void sdhost_dpsm_prepare(uintptr_t addr, uint_fast8_t txmode, uint_fast32_t len, uint_fast32_t lenpower)
 {
 #if ! WITHSDHCHW
@@ -1088,7 +1088,7 @@ static portholder_t encode_appcmd(uint_fast8_t cmd)
 	return cmd;
 }
 
-// Р—Р°РїСѓСЃС‚РёС‚СЊ РЅР° РІС‹РїРѕР»РЅРµРЅРёРµ РєРѕРјР°РЅРґСѓ, РЅРµ РІРѕР·РІСЂР°С‰Р°СЋС‰СѓСЋ responce
+// Запустить на выполнение команду, не возвращающую responce
 static void sdhost_no_resp(portholder_t cmd, uint_fast32_t arg)
 {
 #if ! WITHSDHCHW
@@ -1124,7 +1124,7 @@ static void sdhost_no_resp(portholder_t cmd, uint_fast32_t arg)
 	// Issue command
 	SDHI0.SD_ARG0 = arg >> 0;
 	SDHI0.SD_ARG1 = arg >> 16;
-	SDHI0.SD_CMD = cmd;				// Р’С‹РїРѕР»РЅРµРЅРёРµ РєРѕРјР°РЅРґС‹ РЅР°С‡РёРЅР°РµС‚СЃСЏ РїРѕСЃР»Рµ Р·Р°РїРёСЃРё РІ СЌС‚РѕС‚ СЂРµРіРёСЃС‚СЂ
+	SDHI0.SD_CMD = cmd;				// Выполнение команды начинается после записи в этот регистр
 
 #elif CPUSTYLE_STM32H7XX
 
@@ -1167,7 +1167,7 @@ static void sdhost_no_resp(portholder_t cmd, uint_fast32_t arg)
 #endif
 }
 
-// Р—Р°РїСѓСЃС‚РёС‚СЊ РЅР° РІС‹РїРѕР»РЅРµРЅРёРµ РєРѕРјР°РЅРґСѓ, РІРѕР·РІСЂР°С‰Р°СЋС‰СѓСЋ short responce
+// Запустить на выполнение команду, возвращающую short responce
 static void sdhost_short_resp2(portholder_t cmd, uint_fast32_t arg, uint_fast8_t nocrc)
 {
 #if ! WITHSDHCHW
@@ -1204,7 +1204,7 @@ static void sdhost_short_resp2(portholder_t cmd, uint_fast32_t arg, uint_fast8_t
 	// Issue command
 	SDHI0.SD_ARG0 = arg >> 0;
 	SDHI0.SD_ARG1 = arg >> 16;
-	SDHI0.SD_CMD = cmd;				// Р’С‹РїРѕР»РЅРµРЅРёРµ РєРѕРјР°РЅРґС‹ РЅР°С‡РёРЅР°РµС‚СЃСЏ РїРѕСЃР»Рµ Р·Р°РїРёСЃРё РІ СЌС‚РѕС‚ СЂРµРіРёСЃС‚СЂ
+	SDHI0.SD_CMD = cmd;				// Выполнение команды начинается после записи в этот регистр
 
 #elif CPUSTYLE_STM32H7XX
 
@@ -1247,13 +1247,13 @@ static void sdhost_short_resp2(portholder_t cmd, uint_fast32_t arg, uint_fast8_t
 #endif
 }
 
-// РљРѕРјР°РЅРґР° Р±РµР· РїРµСЂРµСЃС‹Р»РєРё РґР°РЅРЅС‹С…
+// Команда без пересылки данных
 static void sdhost_short_resp(portholder_t cmd, uint_fast32_t arg)
 {
 	sdhost_short_resp2(cmd, arg, 0);
 }
 
-// Р—Р°РїСѓСЃС‚РёС‚СЊ РЅР° РІС‹РїРѕР»РЅРµРЅРёРµ РєРѕРјР°РЅРґСѓ, РІРѕР·РІСЂР°С‰Р°СЋС‰СѓСЋ long responce
+// Запустить на выполнение команду, возвращающую long responce
 static void sdhost_long_resp(portholder_t cmd, uint_fast32_t arg)
 {
 #if ! WITHSDHCHW
@@ -1290,7 +1290,7 @@ static void sdhost_long_resp(portholder_t cmd, uint_fast32_t arg)
 	// Issue command
 	SDHI0.SD_ARG0 = arg >> 0;
 	SDHI0.SD_ARG1 = arg >> 16;
-	SDHI0.SD_CMD = cmd;				// Р’С‹РїРѕР»РЅРµРЅРёРµ РєРѕРјР°РЅРґС‹ РЅР°С‡РёРЅР°РµС‚СЃСЏ РїРѕСЃР»Рµ Р·Р°РїРёСЃРё РІ СЌС‚РѕС‚ СЂРµРіРёСЃС‚СЂ
+	SDHI0.SD_CMD = cmd;				// Выполнение команды начинается после записи в этот регистр
 
 #elif CPUSTYLE_STM32H7XX
 
@@ -1333,7 +1333,7 @@ static void sdhost_long_resp(portholder_t cmd, uint_fast32_t arg)
 #endif
 }
 
-// РџСЂРѕРІРµСЂРєР° СЃРѕРІРїР°РґРµРЅРёСЏ РѕС‚РІРµС‚Р° СЃ РєРѕРґРѕРј РєРѕРјР°РЅРґС‹
+// Проверка совпадения ответа с кодом команды
 static uint_fast8_t sdhost_verify_resp(uint_fast8_t cmd)
 {
 #if ! WITHSDHCHW
@@ -1376,7 +1376,7 @@ static uint_fast8_t sdhost_verify_resp(uint_fast8_t cmd)
 	return 1;
 #endif
 }
-// Р”РѕР¶РґР°С‚СЊСЃСЏ РѕРєРѕРЅС‡Р°РЅРёСЏ РІС‹РїРѕР»РЅРµРЅРёСЏ РєРѕРјР°РЅРґС‹ (Р±РµР· РѕР±РјРµРЅР° РґР°РЅРЅС‹РјРё Рё Р±РµР· РїРѕР»СѓС‡РµРЅРёСЏ РѕС‚РІРµС‚Р°) Рё РІРµСЂРЅСѓС‚СЊ РєРѕРґ РѕС€РёР±РєРё
+// Дождаться окончания выполнения команды (без обмена данными и без получения ответа) и вернуть код ошибки
 static uint_fast8_t sdhost_get_none_resp(void)
 {
 #if ! WITHSDHCHW
@@ -1430,10 +1430,10 @@ static uint_fast8_t sdhost_get_none_resp(void)
 	
 	SDMMC1->ICR = SDMMC_ICR_CMDSENTC;
 
-	// Р•СЃР»Рё Р±С‹Р»Р° РѕС€РёР±РєР° CRC РїСЂРё РїСЂРёС‘РјРµ РѕС‚РІРµС‚Р° - СЃР±СЂРѕСЃРёС‚СЊ РµС‘
+	// Если была ошибка CRC при приёме ответа - сбросить её
 	if ((SDMMC1->STA & SDMMC_STA_CCRCFAIL) != 0)
 		SDMMC1->ICR = SDMMC_ICR_CCRCFAILC;
-	// Р•СЃР»Рё Р±С‹Р»Р° РѕС€РёР±РєР° С‚Р°Р№РјР°СѓС‚Р° РїСЂРё РїСЂРёС‘РјРµ РѕС‚РІРµС‚Р° - СЃР±СЂРѕСЃРёС‚СЊ РµС‘
+	// Если была ошибка таймаута при приёме ответа - сбросить её
 	if ((SDMMC1->STA & SDMMC_STA_CTIMEOUT) != 0)
 		SDMMC1->ICR = SDMMC_ICR_CTIMEOUTC;
 
@@ -1454,10 +1454,10 @@ static uint_fast8_t sdhost_get_none_resp(void)
 	
 	SDIO->ICR = SDIO_ICR_CMDSENTC;
 
-	// Р•СЃР»Рё Р±С‹Р»Р° РѕС€РёР±РєР° CRC РїСЂРё РїСЂРёС‘РјРµ РѕС‚РІРµС‚Р° - СЃР±СЂРѕСЃРёС‚СЊ РµС‘
+	// Если была ошибка CRC при приёме ответа - сбросить её
 	if ((SDIO->STA & SDIO_STA_CCRCFAIL) != 0)
 		SDIO->ICR = SDIO_ICR_CCRCFAILC;
-	// Р•СЃР»Рё Р±С‹Р»Р° РѕС€РёР±РєР° С‚Р°Р№РјР°СѓС‚Р° РїСЂРё РїСЂРёС‘РјРµ РѕС‚РІРµС‚Р° - СЃР±СЂРѕСЃРёС‚СЊ РµС‘
+	// Если была ошибка таймаута при приёме ответа - сбросить её
 	if ((SDIO->STA & SDIO_STA_CTIMEOUT) != 0)
 		SDIO->ICR = SDIO_ICR_CTIMEOUTC;
 
@@ -1470,7 +1470,7 @@ static uint_fast8_t sdhost_get_none_resp(void)
 #endif
 }
 
-// Р”РѕР¶РґР°С‚СЊСЃСЏ РѕРєРѕРЅС‡Р°РЅРёСЏ РІС‹РїРѕР»РЅРµРЅРёСЏ РєРѕРјР°РЅРґС‹ (Р±РµР· РѕР±РјРµРЅР° РґР°РЅРЅС‹РјРё) Рё РІРµСЂРЅСѓС‚СЊ РєРѕРґ РѕС€РёР±РєРё
+// Дождаться окончания выполнения команды (без обмена данными) и вернуть код ошибки
 static uint_fast8_t sdhost_get_resp(void)
 {
 #if ! WITHSDHCHW
@@ -1534,10 +1534,10 @@ static uint_fast8_t sdhost_get_resp(void)
 		PRINTF(PSTR("sdhost_get_resp error, STA=%08lX, DCOUNT=%08lX\n"), SDMMC1->STA, SDMMC1->DCOUNT & SDMMC_DCOUNT_DATACOUNT);
 	}
 	SDMMC1->ICR = SDMMC_ICR_CMDRENDC;
-	// Р•СЃР»Рё Р±С‹Р»Р° РѕС€РёР±РєР° CRC РїСЂРё РїСЂРёС‘РјРµ РѕС‚РІРµС‚Р° - СЃР±СЂРѕСЃРёС‚СЊ РµС‘
+	// Если была ошибка CRC при приёме ответа - сбросить её
 	if ((SDMMC1->STA & SDMMC_STA_CCRCFAIL) != 0)
 		SDMMC1->ICR = SDMMC_ICR_CCRCFAILC;
-	// Р•СЃР»Рё Р±С‹Р»Р° РѕС€РёР±РєР° С‚Р°Р№РјР°СѓС‚Р° РїСЂРё РїСЂРёС‘РјРµ РѕС‚РІРµС‚Р° - СЃР±СЂРѕСЃРёС‚СЊ РµС‘
+	// Если была ошибка таймаута при приёме ответа - сбросить её
 	if ((SDMMC1->STA & SDMMC_STA_CTIMEOUT) != 0)
 		SDMMC1->ICR = SDMMC_ICR_CTIMEOUTC;
 #if defined (SDMMC_STA_DTIMEOUT)
@@ -1567,10 +1567,10 @@ static uint_fast8_t sdhost_get_resp(void)
 	}
 
 	SDIO->ICR = SDIO_ICR_CMDRENDC;
-	// Р•СЃР»Рё Р±С‹Р»Р° РѕС€РёР±РєР° CRC РїСЂРё РїСЂРёС‘РјРµ РѕС‚РІРµС‚Р° - СЃР±СЂРѕСЃРёС‚СЊ РµС‘
+	// Если была ошибка CRC при приёме ответа - сбросить её
 	if ((SDIO->STA & SDIO_STA_CCRCFAIL) != 0)
 		SDIO->ICR = SDIO_ICR_CCRCFAILC;
-	// Р•СЃР»Рё Р±С‹Р»Р° РѕС€РёР±РєР° С‚Р°Р№РјР°СѓС‚Р° РїСЂРё РїСЂРёС‘РјРµ РѕС‚РІРµС‚Р° - СЃР±СЂРѕСЃРёС‚СЊ РµС‘
+	// Если была ошибка таймаута при приёме ответа - сбросить её
 	if ((SDIO->STA & SDIO_STA_CTIMEOUT) != 0)
 		SDIO->ICR = SDIO_ICR_CTIMEOUTC;
 
@@ -1583,8 +1583,8 @@ static uint_fast8_t sdhost_get_resp(void)
 #endif
 }
 
-// Р”РѕР¶РґР°С‚СЊСЃСЏ РѕРєРѕРЅС‡Р°РЅРёСЏ РІС‹РїРѕР»РЅРµРЅРёСЏ РєРѕРјР°РЅРґС‹ (Р±РµР· РѕР±РјРµРЅР° РґР°РЅРЅС‹РјРё Рё Р±РµР· РїРѕР»СѓС‡РµРЅРёСЏ РѕС‚РІРµС‚Р°) Рё РІРµСЂРЅСѓС‚СЊ РєРѕРґ РѕС€РёР±РєРё
-// РћС‚РІРµС‚ РїРµСЂРµРґР°РµС‚СЃСЏ Р±РµР· СЃС„РѕСЂРјРёСЂРІР°РЅРЅРѕРіРѕ CRC, РїРѕСЌС‚РѕРјСѓ РґР°РЅРЅР°СЏ РѕС€РёР±РєР° РёРіРЅРѕСЂРёСЂСѓРµС‚СЃСЏ.
+// Дождаться окончания выполнения команды (без обмена данными и без получения ответа) и вернуть код ошибки
+// Ответ передается без сформирванного CRC, поэтому данная ошибка игнорируется.
 // All responses, except for the R3 response type, are protected by a CRC.
 static uint_fast8_t sdhost_get_resp_nocrc(void)
 {
@@ -1647,10 +1647,10 @@ static uint_fast8_t sdhost_get_resp_nocrc(void)
 	}
 
 	SDMMC1->ICR = SDMMC_ICR_CMDRENDC;
-	// Р•СЃР»Рё Р±С‹Р»Р° РѕС€РёР±РєР° CRC РїСЂРё РїСЂРёС‘РјРµ РѕС‚РІРµС‚Р° - СЃР±СЂРѕСЃРёС‚СЊ РµС‘
+	// Если была ошибка CRC при приёме ответа - сбросить её
 	if ((SDMMC1->STA & SDMMC_STA_CCRCFAIL) != 0)
 		SDMMC1->ICR = SDMMC_ICR_CCRCFAILC;
-	// Р•СЃР»Рё Р±С‹Р»Р° РѕС€РёР±РєР° С‚Р°Р№РјР°СѓС‚Р° РїСЂРё РїСЂРёС‘РјРµ РѕС‚РІРµС‚Р° - СЃР±СЂРѕСЃРёС‚СЊ РµС‘
+	// Если была ошибка таймаута при приёме ответа - сбросить её
 	if ((SDMMC1->STA & SDMMC_STA_CTIMEOUT) != 0)
 		SDMMC1->ICR = SDMMC_ICR_CTIMEOUTC;
 
@@ -1672,10 +1672,10 @@ static uint_fast8_t sdhost_get_resp_nocrc(void)
 	}
 
 	SDIO->ICR = SDIO_ICR_CMDRENDC;
-	// Р•СЃР»Рё Р±С‹Р»Р° РѕС€РёР±РєР° CRC РїСЂРё РїСЂРёС‘РјРµ РѕС‚РІРµС‚Р° - СЃР±СЂРѕСЃРёС‚СЊ РµС‘
+	// Если была ошибка CRC при приёме ответа - сбросить её
 	if ((SDIO->STA & SDIO_STA_CCRCFAIL) != 0)
 		SDIO->ICR = SDIO_ICR_CCRCFAILC;
-	// Р•СЃР»Рё Р±С‹Р»Р° РѕС€РёР±РєР° С‚Р°Р№РјР°СѓС‚Р° РїСЂРё РїСЂРёС‘РјРµ РѕС‚РІРµС‚Р° - СЃР±СЂРѕСЃРёС‚СЊ РµС‘
+	// Если была ошибка таймаута при приёме ответа - сбросить её
 	if ((SDIO->STA & SDIO_STA_CTIMEOUT) != 0)
 		SDIO->ICR = SDIO_ICR_CTIMEOUTC;
 
@@ -1861,7 +1861,7 @@ static uint_fast8_t sdhost_get_R7(uint_fast8_t cmd, uint_fast32_t * resp32)
 // Code length = 136 bits
 static uint_fast8_t sdhost_get_R2(uint8_t * resp128)
 {
-	const uint_fast8_t ec = sdhost_get_resp();	/* РЅРµ РїСЂРѕРІРµСЂСЏРµС‚СЃСЏ СЃРѕРІРїР°РґРµРЅРёРµ command index */
+	const uint_fast8_t ec = sdhost_get_resp();	/* не проверяется совпадение command index */
 	if (ec == 0)
 	{
 		sdhost_get_resp128bit(resp128);
@@ -1926,7 +1926,7 @@ static uint_fast8_t sdhost_stop_transmission(void)
 }
 
 
-// РћР¶РёРґР°РµРј Р·Р°РІРµСЂС€РµРЅРёСЏ.
+// Ожидаем завершения.
 static uint_fast8_t sdhost_sdcard_waitstatus(void)
 {
 	uint_fast8_t cardstate = 0xFF;
@@ -1964,10 +1964,10 @@ static uint_fast8_t sdhost_sdcard_waitstatus(void)
 			return 0;
 
 		case 7:	// Programming
-			continue;	// РѕР¶РёРґР°РµРј РѕРєРѕРЅС‡Р°РЅРёСЏ Р·Р°РїРёСЃРё
+			continue;	// ожидаем окончания записи
 
 		//case 6:	// Rcv
-		//	continue;	// РїРѕС‚СЂРµР±РѕРІР°Р»РѕСЃСЊ РїСЂРё РёСЃРїРѕР»СЊР·РѕРІР°РЅРёРё Р±Р»РѕС‡РЅРѕР№ Р·Р°РїРёСЃРё
+		//	continue;	// потребовалось при использовании блочной записи
 
 		default:
 			PRINTF(PSTR("sdhost_sdcard_waitstatus, resp=%08lX, cardstate=%u\n"), (unsigned long) resp, (unsigned) cardstate);
@@ -1978,27 +1978,27 @@ static uint_fast8_t sdhost_sdcard_waitstatus(void)
 	return 1;
 }
 
-// РџРѕР»СѓС‡РёС‚СЊ РєСЂР°С‚РЅРѕСЃС‚СЊ Р°СЂРіСѓРјРµРЅС‚Р° РґР»СЏ РєРѕРјР°РЅРґС‹ SD_CMD_READ_SINGLE_BLOCK/SD_CMD_WRITE_SINGLE_BLOCK
-//  Р’ Р·Р°РІРёСЃРёРјРѕСЃС‚Рё РѕС‚ С‚РёРїР° SD РєР°СЂС‚С‹ Р°РґСЂРµСЃ СЌС‚Рѕ LBA РёР»Рё СЃРјРµС‰РµРЅРёРµ РІ Р±Р°Р№С‚Р°С…
+// Получить кратность аргумента для команды SD_CMD_READ_SINGLE_BLOCK/SD_CMD_WRITE_SINGLE_BLOCK
+//  В зависимости от типа SD карты адрес это LBA или смещение в байтах
 static uint_fast32_t sdhost_getaddresmultiplier(void)
 {
 	//if ((cmd58answer & 0x40000000) != 0)	//CCS (Card Capacity Status)
 	if ((sdhost_SDType & SD_HIGH_CAPACITY) != 0)	//CCS (Card Capacity Status)
 	{
 		//PRINTF(PSTR("SDHC or SDXC (High Capacity)\n"));
-		return 1; //mmcAddressMultiplier = 1;	// Р”Р»СЏ SDHC (Р°РґСЂРµСЃР°С†РёСЏ РёРґС‘С‚ РІ 512-С‚Рё Р±Р°Р№С‚РѕРІС‹С… Р±Р»РѕРєР°С…)
+		return 1; //mmcAddressMultiplier = 1;	// Для SDHC (адресация идёт в 512-ти байтовых блоках)
 	}
 	else
 	{
 		//PRINTF(PSTR("SDSD - up to 2GB\n"));
-		return 512; //mmcAddressMultiplier = MMC_SECTORSIZE;	// Р”Р»СЏ РѕР±С‹С‡РЅС‹С… SD РєР°СЂС‚
+		return 512; //mmcAddressMultiplier = MMC_SECTORSIZE;	// Для обычных SD карт
 	}
 }
 
 	/*
 	if (1)
 	{
-		// 128 MB РєР°СЂС‚Р°
+		// 128 MB карта
 		// set block length
 		if (sdhost_sdcard_setblocklen(sdhost_getblocksize) != 0)
 			return 1;
@@ -2017,8 +2017,8 @@ static uint_fast32_t sdhost_getaddresmultiplier(void)
 	}
 	*/
 
-// РџРѕР»СѓС‡РёС‚СЊ Р·РЅР°С‡РµРєРЅРёРµ Р°СЂРіСѓРјРµРЅС‚Р° РґР»СЏ РєРѕРјР°РЅРґС‹ SD_CMD_SET_BLOCKLEN
-//  Р’ Р·Р°РІРёСЃРёРјРѕСЃС‚Рё РѕС‚ С‚РёРїР° РєР°СЂС‚С‹ СЂР°Р·РјРµСЂ Р±Р»РѕРєР° 1 РёР»Рё 512
+// Получить значекние аргумента для команды SD_CMD_SET_BLOCKLEN
+//  В зависимости от типа карты размер блока 1 или 512
 /*
 	In case of SDSC Card, block length is set by this command.
 	In case of SDHC and SDXC Cards, block length of the memory access
@@ -2031,8 +2031,8 @@ static uint_fast32_t sdhost_getblocksize(void)
 }
 
 
-// Р’С‹РґР°С‚СЊ РїСЂРµС„РёРєСЃРЅСѓСЋ РєРѕРјР°РЅРґСѓ APP_CMD Рё СЃР»РµРґСѓСЋС‰СѓСЋ Р·Р° РЅРµР№ ACMDxxx
-// РџРѕР»СѓС‡РёС‚СЊ R1 responce
+// Выдать префиксную команду APP_CMD и следующую за ней ACMDxxx
+// Получить R1 responce
 static uint_fast8_t sdhost_short_acmd_resp_R1(uint_fast8_t cmd, uint_fast32_t arg, uint_fast32_t * resp)
 {
 	sdhost_short_resp(encode_cmd(SD_CMD_APP_CMD), sdhost_sdcard_RCA << 16);
@@ -2042,8 +2042,8 @@ static uint_fast8_t sdhost_short_acmd_resp_R1(uint_fast8_t cmd, uint_fast32_t ar
 	return sdhost_get_R1(cmd, resp);
 }
 
-// Р’С‹РґР°С‚СЊ РїСЂРµС„РёРєСЃРЅСѓСЋ РєРѕРјР°РЅРґСѓ APP_CMD Рё СЃР»РµРґСѓСЋС‰СѓСЋ Р·Р° РЅРµР№ ACMDxxx
-// РџРѕР»СѓС‡РёС‚СЊ R3 responce
+// Выдать префиксную команду APP_CMD и следующую за ней ACMDxxx
+// Получить R3 responce
 // All responses, except for the R3 response type, are protected by a CRC.
 static uint_fast8_t sdhost_short_acmd_resp_R3(uint_fast8_t cmd, uint_fast32_t arg, uint_fast32_t * resp)
 {
@@ -2116,7 +2116,7 @@ static uint32_t SDWriteBlock(uint32_t address, const void* buffer, uint32_t size
    }
 
    PRINTF(" WR1:%x ", SDMMC1->RESP1);
- 	arm_hardware_flush_invalidate((uintptr_t) buffer, 512 * size);	// РЎРµР№С‡Р°СЃ СЌС‚Сѓ РїР°РјСЏС‚СЊ Р±СѓРґРµРј Р·Р°РїРёСЃС‹РІР°С‚СЊ РїРѕ DMA, РїРѕС‚РѕРј СЃРѕРґРµСЂР¶РёРјРѕРµ РЅРµ С‚СЂРµР±СѓРµС‚СЃСЏ
+ 	arm_hardware_flush_invalidate((uintptr_t) buffer, 512 * size);	// Сейчас эту память будем записывать по DMA, потом содержимое не требуется
   //SCB_CleanDCache_by_Addr(buffer, size*512);
 
    //Program data length register
@@ -2214,19 +2214,19 @@ DRESULT SD_disk_write(
 		}
 	}
 
-	arm_hardware_flush_invalidate((uintptr_t) buff, 512 * count);	// РЎРµР№С‡Р°СЃ СЌС‚Сѓ РїР°РјСЏС‚СЊ Р±СѓРґРµРј Р·Р°РїРёСЃС‹РІР°С‚СЊ РїРѕ DMA, РїРѕС‚РѕРј СЃРѕРґРµСЂР¶РёРјРѕРµ РЅРµ С‚СЂРµР±СѓРµС‚СЃСЏ
+	arm_hardware_flush_invalidate((uintptr_t) buff, 512 * count);	// Сейчас эту память будем записывать по DMA, потом содержимое не требуется
 
 	if (count < 2)
 	{
 		// wriite single block
 		//PRINTF(PSTR("write single block\n"));
-		// РЎРїРµСЂРІР° РЅР°СЃС‚СЂР°РёРІР°РµС‚СЃСЏ DMA, Р·Р°С‚РµРј РІС‹РґР°РµС‚СЃСЏ РєРѕРјР°РЅРґР° SD_CMD_WRITE_SINGLE_BLOCK
-		// Р Р°Р±РѕС‚Р°РµС‚ Рё РЅР° STM32Fxxx
+		// Сперва настраивается DMA, затем выдается команда SD_CMD_WRITE_SINGLE_BLOCK
+		// Работает и на STM32Fxxx
 
 		DMA_SDIO_setparams((uintptr_t) buff, 512, count, txmode);
 #if CPUSTYLE_STM32H7XX
 		// H7 need here: 
-		sdhost_dpsm_prepare((uintptr_t) buff, txmode, 512 * count, 9);		// РїРѕРґРіРѕС‚РѕРІРєР° Рє РѕР±РјРµРЅСѓ data path state machine - РїСЂРё Р·Р°РїРёСЃРё РїРѕСЃР»Рµ РІС‹РґР°С‡Рё РєРѕРјР°РЅРґС‹
+		sdhost_dpsm_prepare((uintptr_t) buff, txmode, 512 * count, 9);		// подготовка к обмену data path state machine - при записи после выдачи команды
 #endif /* CPUSTYLE_STM32H7XX */
 		// write block
 		sdhost_short_resp(encode_cmd(SD_CMD_WRITE_SINGLE_BLOCK), sector * sdhost_getaddresmultiplier());	// CMD24
@@ -2239,7 +2239,7 @@ DRESULT SD_disk_write(
 
 #if ! CPUSTYLE_STM32H7XX
 		// other then H7 need here
-		sdhost_dpsm_prepare((uintptr_t) buff, txmode, 512 * count, 9);		// РїРѕРґРіРѕС‚РѕРІРєР° Рє РѕР±РјРµРЅСѓ data path state machine - РїСЂРё Р·Р°РїРёСЃРё РїРѕСЃР»Рµ РІС‹РґР°С‡Рё РєРѕРјР°РЅРґС‹
+		sdhost_dpsm_prepare((uintptr_t) buff, txmode, 512 * count, 9);		// подготовка к обмену data path state machine - при записи после выдачи команды
 #endif /* ! CPUSTYLE_STM32H7XX */
 
 		if (sdhost_dpsm_wait(txmode) != 0)
@@ -2286,12 +2286,12 @@ DRESULT SD_disk_write(
 		}
 
 		// write multiblock
-		// РЎРїРµСЂРІР° РЅР°СЃС‚СЂР°РёРІР°РµС‚СЃСЏ DMA, Р·Р°С‚РµРј РІС‹РґР°РµС‚СЃСЏ РєРѕРјР°РЅРґР° SD_CMD_WRITE_MULT_BLOCK
-		// Р Р°Р±РѕС‚Р°РµС‚ Рё РЅР° STM32Fxxx
+		// Сперва настраивается DMA, затем выдается команда SD_CMD_WRITE_MULT_BLOCK
+		// Работает и на STM32Fxxx
 		DMA_SDIO_setparams((uintptr_t) buff, 512, count, txmode);
 #if CPUSTYLE_STM32H7XX
 		// H7 need here: 
-		sdhost_dpsm_prepare((uintptr_t) buff, txmode, 512 * count, 9);		// РїРѕРґРіРѕС‚РѕРІРєР° Рє РѕР±РјРµРЅСѓ data path state machine - РїСЂРё Р·Р°РїРёСЃРё РїРѕСЃР»Рµ РІС‹РґР°С‡Рё РєРѕРјР°РЅРґС‹
+		sdhost_dpsm_prepare((uintptr_t) buff, txmode, 512 * count, 9);		// подготовка к обмену data path state machine - при записи после выдачи команды
 #endif /* CPUSTYLE_STM32H7XX */
 
 		// write blocks
@@ -2305,7 +2305,7 @@ DRESULT SD_disk_write(
 
 #if ! CPUSTYLE_STM32H7XX
 		// other then H7 need here
-		sdhost_dpsm_prepare((uintptr_t) buff, txmode, 512 * count, 9);		// РїРѕРґРіРѕС‚РѕРІРєР° Рє РѕР±РјРµРЅСѓ data path state machine - РїСЂРё Р·Р°РїРёСЃРё РїРѕСЃР»Рµ РІС‹РґР°С‡Рё РєРѕРјР°РЅРґС‹
+		sdhost_dpsm_prepare((uintptr_t) buff, txmode, 512 * count, 9);		// подготовка к обмену data path state machine - при записи после выдачи команды
 #endif /* ! CPUSTYLE_STM32H7XX */
 
 		if (sdhost_dpsm_wait(txmode) != 0)
@@ -2328,7 +2328,7 @@ DRESULT SD_disk_write(
 			DMA_sdio_cancel();
 
 			#if ! CPUSTYLE_R7S721
-			// Р’ РїСЂРѕС†РµСЃСЃРѕСЂРµ CPUSTYLE_R7S721 РєРѕРјР°РЅРґР° CMD12 С„РѕСЂРјРёСЂСѓРµС‚СЃСЏ Р°РїРїР°СЂР°С‚СѓСЂРѕР№
+			// В процессоре CPUSTYLE_R7S721 команда CMD12 формируется аппаратурой
 			if (sdhost_use_cmd23 == 0)
 			{
 				if (sdhost_stop_transmission() != 0)
@@ -2381,14 +2381,14 @@ DRESULT SD_disk_read(
 	}
 
 
-	arm_hardware_flush_invalidate((uintptr_t) buff, 512 * count);	// РЎРµР№С‡Р°СЃ СЌС‚Сѓ РїР°РјСЏС‚СЊ Р±СѓРґРµРј Р·Р°РїРёСЃС‹РІР°С‚СЊ РїРѕ DMA, РїРѕС‚РѕРј СЃРѕРґРµСЂР¶РёРјРѕРµ РЅРµ С‚СЂРµР±СѓРµС‚СЃСЏ
+	arm_hardware_flush_invalidate((uintptr_t) buff, 512 * count);	// Сейчас эту память будем записывать по DMA, потом содержимое не требуется
 
 	if (count < 2)
 	{
 		//PRINTF(PSTR("read one block\n"));
 		// read one block
 		DMA_SDIO_setparams((uintptr_t) buff, 512, count, txmode);
-		sdhost_dpsm_prepare((uintptr_t) buff, txmode, 512 * count, 9);		// РїРѕРґРіРѕС‚РѕРІРєР° Рє РѕР±РјРµРЅСѓ data path state machine - РїСЂРё С‡С‚РµРЅРёРё РїРµСЂРµРґ РІС‹РґР°С‡РµР№ РєРѕРјР°РЅРґС‹
+		sdhost_dpsm_prepare((uintptr_t) buff, txmode, 512 * count, 9);		// подготовка к обмену data path state machine - при чтении перед выдачей команды
 		//TP();
 
 		// read block
@@ -2433,7 +2433,7 @@ DRESULT SD_disk_read(
 		}
 
 		DMA_SDIO_setparams((uintptr_t) buff, 512, count, txmode);
-		sdhost_dpsm_prepare((uintptr_t) buff, txmode, 512 * count, 9);		// РїРѕРґРіРѕС‚РѕРІРєР° Рє РѕР±РјРµРЅСѓ data path state machine - РїСЂРё С‡С‚РµРЅРёРё РїРµСЂРµРґ РІС‹РґР°С‡РµР№ РєРѕРјР°РЅРґС‹
+		sdhost_dpsm_prepare((uintptr_t) buff, txmode, 512 * count, 9);		// подготовка к обмену data path state machine - при чтении перед выдачей команды
 
 		// read block
 		sdhost_short_resp(encode_cmd(SD_CMD_READ_MULT_BLOCK), sector * sdhost_getaddresmultiplier());	// CMD18
@@ -2462,7 +2462,7 @@ DRESULT SD_disk_read(
 			sdhost_dpsm_wait_fifo_empty();
 			DMA_sdio_cancel();
 			#if ! CPUSTYLE_R7S721
-			// Р’ РїСЂРѕС†РµСЃСЃРѕСЂРµ CPUSTYLE_R7S721 РєРѕРјР°РЅРґР° CMD12 С„РѕСЂРјРёСЂСѓРµС‚СЃСЏ Р°РїРїР°СЂР°С‚СѓСЂРѕР№
+			// В процессоре CPUSTYLE_R7S721 команда CMD12 формируется аппаратурой
 			if (sdhost_use_cmd23 == 0)
 			{
 				if (sdhost_stop_transmission() != 0)
@@ -2495,7 +2495,7 @@ static uint_fast8_t sdhost_sdcard_checkversion(void)
 			return 0;
 		}
 	}
-	/* РЅРµ РїРѕР»СѓС‡Р°РµС‚СЃСЏ... */
+	/* не получается... */
 
 	sdhost_SDType = SD_STD_CAPACITY;
 	sdhost_CardType = SDIO_STD_CAPACITY_SD_CARD_V1_1; /*!< SD Card 1.0 */
@@ -2572,8 +2572,8 @@ static uint_fast8_t sdhost_read_registers_acmd(uint16_t acmd, uint8_t * buff, un
 	
 	//PRINTF(PSTR("sdhost_read_registers_acmd: sdhost_CardType=%08lX, sdhost_SDType=%08lX\n"), (unsigned long) sdhost_CardType, (unsigned long) sdhost_SDType);
 
-	sdhost_dpsm_prepare((uintptr_t) buff, txmode, size, lenpower);		// РїРѕРґРіРѕС‚РѕРІРєР° Рє РѕР±РјРµРЅСѓ data path state machine - РїСЂРё С‡С‚РµРЅРёРёРїРµСЂРµРґ РІС‹РґР°С‡РµР№ РєРѕРјР°РЅРґС‹
-	arm_hardware_flush_invalidate((uintptr_t) buff, sizeofarray);	// РЎРµР№С‡Р°СЃ СЌС‚Сѓ РїР°РјСЏС‚СЊ Р±СѓРґРµРј Р·Р°РїРёСЃС‹РІР°С‚СЊ РїРѕ DMA, РїРѕС‚РѕРј СЃРѕРґРµСЂР¶РёРјРѕРµ РЅРµ С‚СЂРµР±СѓРµС‚СЃСЏ
+	sdhost_dpsm_prepare((uintptr_t) buff, txmode, size, lenpower);		// подготовка к обмену data path state machine - при чтенииперед выдачей команды
+	arm_hardware_flush_invalidate((uintptr_t) buff, sizeofarray);	// Сейчас эту память будем записывать по DMA, потом содержимое не требуется
 	DMA_SDIO_setparams((uintptr_t) buff, size, 1, txmode);
 
 	// read block
@@ -2661,7 +2661,7 @@ static uint_fast8_t sdhost_sdcard_identification(void)
 	sdhost_use_cmd23 = 0;
 	sdhost_use_cmd20 = 0;
 #if 0 && WITHSDHCHW
-	static RAMNOINIT_D1 ALIGNX_BEGIN uint8_t sdhost_sdcard_SCR [32] ALIGNX_END;	// РЅР°РґРѕ С‚РѕР»СЊРєРѕ 8 Р±Р°Р№С‚, РЅРѕ РєР°РєР°СЏ-С‚Рѕ РїСЂРѕСЋР»РµРјР° СЃ РєСЌС€ - СЂР°Р±РѕС‚Р°РµС‚ РїСЂРё 32 Рё Р±РѕР»РµРµ
+	static RAMNOINIT_D1 ALIGNX_BEGIN uint8_t sdhost_sdcard_SCR [32] ALIGNX_END;	// надо только 8 байт, но какая-то проюлема с кэш - работает при 32 и более
 
 	if (sdhost_read_registers_acmd(SD_CMD_SD_APP_SEND_SCR, sdhost_sdcard_SCR, 8, 3, sizeof sdhost_sdcard_SCR) == 0)		// ACMD51
 	{
@@ -2848,7 +2848,7 @@ DRESULT SD_Get_Sector_Count (
 	return RES_OK;
 }
 
-/* Р·Р°РїРёСЃСЊ Р±СѓС„РµСЂРёР·РёСЂРѕРІР°РЅРЅС‹С… РґР°РЅРЅС‹С… РЅР° РЅРѕСЃРёС‚РµР»СЊ */
+/* запись буферизированных данных на носитель */
 static 
 DRESULT SD_Sync(BYTE drv)
 {
@@ -2977,12 +2977,12 @@ const struct drvfunc SD_drvfunc =
 
 
 /* SD card definitions */
-static char mmcInit(void);	// Р’С‹Р·С‹РІР°РµС‚СЃСЏ, РїРѕРґСЂР°Р·СѓРјРµРІР°СЏ С‡С‚Рѕ CS СѓСЃС‚Р°РЅРѕРІР»РµРЅ
+static char mmcInit(void);	// Вызывается, подразумевая что CS установлен
 
 /* Assert the CS signal, active low (CS=0) */
 static void SDCARD_CS_LOW(void)
 {
-	spi_select2(targetsdcard, SPIC_MODE0, SPIC_SPEEDSDCARD);	// MODE0/MODE3 - СЃРјРѕС‚СЂРё РєРѕРјРјРµРЅС‚Р°СЂРёР№ РІС‹С€Рµ
+	spi_select2(targetsdcard, SPIC_MODE0, SPIC_SPEEDSDCARD);	// MODE0/MODE3 - смотри комментарий выше
 }
 
 /* Deassert the CS signal (CS=1) */
@@ -2990,7 +2990,7 @@ static void SDCARD_CS_HIGH(void)
 {
 	spi_unselect(targetsdcard);
 }
-// СѓСЃС‚Р°РЅРѕРІРёС‚СЊ СЃРєРѕСЂРѕСЃС‚СЊ SPI РґР»СЏ СѓРєР°Р·Р°РЅРЅРѕРіРѕ РєР°РЅР°Р»Р° РєРѕРЅС‚СЂРѕР»Р»РµСЂР°
+// установить скорость SPI для указанного канала контроллера
 static void sdcard_spi_setfreq(unsigned long freq)
 {
 	hardware_spi_master_setfreq(SPIC_SPEEDSDCARD, freq);
@@ -3128,7 +3128,7 @@ static uint_fast8_t mmcGetXXResponse(uint_fast8_t resp)
 
 	uint_fast8_t response;
 
-	while (i <= RESPLIMITREAD)	// Сѓ Р±РѕР»СЊС€РёС… РєР°СЂС‚ РїР°РјСЏС‚Рё СЃРёР»СЊРЅРѕ СѓРІРµР»РёС‡РµРЅРѕ РІСЂРµРјСЏ РѕР¶РёРґР°РЅРёСЏ РЅР°С‡Р°Р»Р° С‡С‚РµРЅРёСЏ РґР°РЅРЅС‹С…
+	while (i <= RESPLIMITREAD)	// у больших карт памяти сильно увеличено время ожидания начала чтения данных
 	{
 		response = spi_read_byte(targetsdcard, 0xff);
 		if (response == resp)
@@ -3139,8 +3139,8 @@ static uint_fast8_t mmcGetXXResponse(uint_fast8_t resp)
 	return response;
 }
 
-/* РІСЃРїРѕРјРѕРіР°С‚РµР»СЊРЅР°СЏ РїРѕРґРїСЂРѕРіСЂР°РјРјР° СЂР°СЃС‡С‘С‚Р° CRC РґР»СЏ РѕРґРЅРѕРіРѕ Р±РёС‚Р°.
-   CRC С…СЂР°РЅРёС‚СЃСЏ РІ СЃС‚Р°СЂС€РёС… 7 Р±РёС‚Р°С….
+/* вспомогательная подпрограмма расчёта CRC для одного бита.
+   CRC хранится в старших 7 битах.
 */
 static  uint_fast8_t crc7b1(uint_fast8_t crc, uint_fast8_t v1)
 {
@@ -3163,7 +3163,7 @@ static void mmcSendDummyByte(void)
 	spi_complete(targetsdcard);
 }
 
-/* РІСЃРїРѕРјРѕРіР°С‚РµР»СЊРЅР°СЏ РїРѕРґРїСЂРѕРіСЂР°РјРјР° СЂР°СЃС‡С‘С‚Р° CRC РґР»СЏ РѕРґРЅРѕРіРѕ Р±Р°Р№С‚Р° */
+/* вспомогательная подпрограмма расчёта CRC для одного байта */
 static uint_fast8_t crc7b8(uint_fast8_t crc, uint_fast8_t v8)
 {
 	crc = crc7b1(crc, v8 & 0x80);
@@ -3210,12 +3210,12 @@ static void mmcSendCmd(uint_fast8_t cmd, uint_fast32_t data)
 }
 
 static uint_fast8_t mmcCardVersion2;
-// Р”Р»СЏ РќР• SDHC (Р°РґСЂРµСЃР°С†РёСЏ РёРґС‘С‚ РІ Р±Р°Р№С‚Р°С…)
-// Р”Р»СЏ SDHC (Р°РґСЂРµСЃР°С†РёСЏ РёРґС‘С‚ РІ 512-С‚Рё Р±Р°Р№С‚РѕРІС‹С… Р±Р»РѕРєР°С…)
+// Для НЕ SDHC (адресация идёт в байтах)
+// Для SDHC (адресация идёт в 512-ти байтовых блоках)
 static uint_fast32_t mmcAddressMultiplier;
 
 // set MMC in Idle mode
-// Р’С‹Р·С‹РІР°РµС‚СЃСЏ, РїРѕРґСЂР°Р·СѓРјРµРІР°СЏ С‡С‚Рѕ CS СѓСЃС‚Р°РЅРѕРІР»РµРЅ
+// Вызывается, подразумевая что CS установлен
 static char mmcGoIdle(void)
 {
 	unsigned char response;
@@ -3226,7 +3226,7 @@ static char mmcGoIdle(void)
 	SDCARD_CS_LOW();
 	mmcSendDummyByte();
 	//Send Command 0 to put MMC in SPI mode
-	mmcSendCmdCRC7(MMC_GO_IDLE_STATE, 0);	// CMD0 - РћР±СЏР·Р°С‚РµР»СЊРЅРѕ СЃ РїСЂР°РІРёР»СЊРЅС‹Рј CRC
+	mmcSendCmdCRC7(MMC_GO_IDLE_STATE, 0);	// CMD0 - Обязательно с правильным CRC
 	//Now wait for READY RESPONSE
 	if ((response = mmcGetResponseR1()) != 0x01)
 	{
@@ -3234,7 +3234,7 @@ static char mmcGoIdle(void)
 	}
 
 	mmcSendDummyByte();
-	mmcSendCmdCRC7(MMC_SEND_IF_COND, 0x000001aa);	// CMD8 - РћР±СЏР·Р°С‚РµР»СЊРЅРѕ СЃ РїСЂР°РІРёР»СЊРЅС‹Рј CRC. 3.3 Volt VCC
+	mmcSendCmdCRC7(MMC_SEND_IF_COND, 0x000001aa);	// CMD8 - Обязательно с правильным CRC. 3.3 Volt VCC
 	response = mmcGetResponseR7(& cmd8answer);
 	if ((response & 0x04) != 0)	// illegal command or pattern not match
 	{
@@ -3358,12 +3358,12 @@ static char mmcGoIdle(void)
 			if ((cmd58answer & 0x40000000) != 0)	//CCS (Card Capacity Status)
 			{
 				PRINTF(PSTR("SDHC or SDXC (High Capacity)\n"));
-				mmcAddressMultiplier = 1;	// Р”Р»СЏ SDHC (Р°РґСЂРµСЃР°С†РёСЏ РёРґС‘С‚ РІ 512-С‚Рё Р±Р°Р№С‚РѕРІС‹С… Р±Р»РѕРєР°С…)
+				mmcAddressMultiplier = 1;	// Для SDHC (адресация идёт в 512-ти байтовых блоках)
 			}
 			else
 			{
 				PRINTF(PSTR("SDSD - up to 2GB\n"));
-				mmcAddressMultiplier = MMC_SECTORSIZE;	// Р”Р»СЏ РѕР±С‹С‡РЅС‹С… SD РєР°СЂС‚
+				mmcAddressMultiplier = MMC_SECTORSIZE;	// Для обычных SD карт
 			}
 		}
 	}
@@ -3397,10 +3397,10 @@ uint_fast64_t MMC_ReadCardSize(void)
 		if (mmcGetXXResponse(MMC_START_DATA_BLOCK_TOKEN) == MMC_START_DATA_BLOCK_TOKEN)
 		{
 			static RAMNOINIT_D1 ALIGNX_BEGIN uint8_t bv [16] ALIGNX_END;
-			// РњРѕРіСѓС‚ Р±С‹С‚СЊ РѕРіСЂР°РЅРёС‡РµРЅРёСЏ СЂР°Р±РѕС‚С‹ DMA СЃ РЅРµРєРѕС‚РѕСЂС‹РјРё РІРёРґР°РјРё РїР°РјСЏС‚Рё
-			// РќР°РїСЂРёРјРµСЂ РІ STM32F4x РЅРµС‚ РґРѕСЃС‚СѓРїР° Рє CCM РїР°РјСЏС‚Рё РїРѕ DMA
+			// Могут быть ограничения работы DMA с некоторыми видами памяти
+			// Например в STM32F4x нет доступа к CCM памяти по DMA
 
-			prog_spi_read_frame(targetsdcard, bv, 16);	// РџСЂРѕРіСЂР°РјРјРЅР°СЏ СЂРµР°Р»РёР·Р°С†РёСЏ С‡С‚РµРЅРёСЏ СЂР°Р±РѕС‚Р°РµС‚ СЃ Р»СЋР±РѕР№ РїР°РјСЏС‚СЊСЋ, РІС‹РґР°РµС‚ 0xFF РЅР° MOSI
+			prog_spi_read_frame(targetsdcard, bv, 16);	// Программная реализация чтения работает с любой памятью, выдает 0xFF на MOSI
 			
 			spi_read_byte(targetsdcard, 0xff);  // least Ncr (max = 4 bytes) cycles after
 			spi_read_byte(targetsdcard, 0xff);  // least Ncr (max = 4 bytes) cycles after
@@ -3408,7 +3408,7 @@ uint_fast64_t MMC_ReadCardSize(void)
 			spi_read_byte(targetsdcard, 0xff);  // least Ncr (max = 4 bytes) cycles after
 			// the card response is received
 			spi_read_byte(targetsdcard, 0xff);
-			MMC_CardSize = sdhost_sdcard_parse_CSD(bv);	// РћР±СЂР°Р±РѕС‚РєР° РёРЅС„РѕСЂРјР°С†РёРѕР»РЅРЅРѕРіРѕ Р±Р»РѕРєР° (Code length is 128 bits = 16 bytes)
+			MMC_CardSize = sdhost_sdcard_parse_CSD(bv);	// Обработка информациолнного блока (Code length is 128 bits = 16 bytes)
 
 		}
 	}
@@ -3422,7 +3422,7 @@ uint_fast64_t MMC_ReadCardSize(void)
 
 }
 
-// Р’С‹Р·С‹РІР°РµС‚СЃСЏ, РїРѕРґСЂР°Р·СѓРјРµРІР°СЏ С‡С‚Рѕ CS СѓСЃС‚Р°РЅРѕРІР»РµРЅ
+// Вызывается, подразумевая что CS установлен
 static char mmcInit(void)
 {
 	char ec;
@@ -3437,7 +3437,7 @@ static char mmcInit(void)
 	for(i = 0; i <= 9; i ++)
 		spi_read_byte(targetsdcard, 0xff);
 
-	ec = mmcGoIdle();	// Р’С‹Р·С‹РІР°РµС‚СЃСЏ, РїРѕРґСЂР°Р·СѓРјРµРІР°СЏ С‡С‚Рѕ CS СѓСЃС‚Р°РЅРѕРІР»РµРЅ
+	ec = mmcGoIdle();	// Вызывается, подразумевая что CS установлен
 
 	if (ec == 0)
 	{
@@ -3477,7 +3477,7 @@ static char mmcSetBlockLength (unsigned long blocklength)
 	// get response from MMC - make sure that its 0x00 (R1 ok response format)
 	if (mmcGetResponseR1() != 0x00)
 	{ 
-		ec = mmcInit();	// Р’С‹Р·С‹РІР°РµС‚СЃСЏ, РїРѕРґСЂР°Р·СѓРјРµРІР°СЏ С‡С‚Рѕ CS СѓСЃС‚Р°РЅРѕРІР»РµРЅ
+		ec = mmcInit();	// Вызывается, подразумевая что CS установлен
 
 		if (ec == 0)
 		{
@@ -3489,7 +3489,7 @@ static char mmcSetBlockLength (unsigned long blocklength)
 	}
 	else
 		ec = MMC_BLOCK_SET_ERROR;
-	// РїРµСЂРµРЅРµСЃРµРЅРѕ СЃСЋРґР° - РїРµСЂРµРґ РѕС‚РїСѓСЃРєР°РЅРёРµРј CS
+	// перенесено сюда - перед отпусканием CS
 	// Send 8 Clock pulses of delay.
 	spi_read_byte(targetsdcard, 0xff);
 
@@ -3572,7 +3572,7 @@ static char mmcReadSectors(
 		SDCARD_CS_LOW();
 
 		mmcSendDummyByte();
-		if (waitwhilebusy() != 0)	// 1) РІСЃС‚Р°РІР»СЏСЋ РІ РЅР°С‡Р°Р»Рѕ РІСЃРµС… С„СѓРЅРєС†РёР№ С‡С‚РµРЅРёСЏ/Р·Р°РїРёСЃРё/sync
+		if (waitwhilebusy() != 0)	// 1) вставляю в начало всех функций чтения/записи/sync
 		{
 			SDCARD_CS_HIGH();
 			return MMC_RESPONSE_ERROR;
@@ -3625,7 +3625,7 @@ static char mmcReadSectors(
 		SDCARD_CS_LOW();
 
 		mmcSendDummyByte();
-		if (waitwhilebusy() != 0)	// 1) РІСЃС‚Р°РІР»СЏСЋ РІ РЅР°С‡Р°Р»Рѕ РІСЃРµС… С„СѓРЅРєС†РёР№ С‡С‚РµРЅРёСЏ/Р·Р°РїРёСЃРё/sync
+		if (waitwhilebusy() != 0)	// 1) вставляю в начало всех функций чтения/записи/sync
 		{
 			SDCARD_CS_HIGH();
 			return MMC_RESPONSE_ERROR;
@@ -3708,7 +3708,7 @@ static char mmcWriteSectors(
 		SDCARD_CS_LOW();
 		// send write command
 		mmcSendDummyByte();
-		if (waitwhilebusy() != 0)	// 1) РІСЃС‚Р°РІР»СЏСЋ РІ РЅР°С‡Р°Р»Рѕ РІСЃРµС… С„СѓРЅРєС†РёР№ С‡С‚РµРЅРёСЏ/Р·Р°РїРёСЃРё/sync
+		if (waitwhilebusy() != 0)	// 1) вставляю в начало всех функций чтения/записи/sync
 		{
 			SDCARD_CS_HIGH();
 			return MMC_RESPONSE_ERROR;
@@ -3764,7 +3764,7 @@ static char mmcWriteSectors(
 		// CS = LOW (on)
 		SDCARD_CS_LOW();
 		mmcSendDummyByte();
-		if (waitwhilebusy() != 0)	// 1) РІСЃС‚Р°РІР»СЏСЋ РІ РЅР°С‡Р°Р»Рѕ РІСЃРµС… С„СѓРЅРєС†РёР№ С‡С‚РµРЅРёСЏ/Р·Р°РїРёСЃРё/sync
+		if (waitwhilebusy() != 0)	// 1) вставляю в начало всех функций чтения/записи/sync
 		{
 			SDCARD_CS_HIGH();
 			return MMC_RESPONSE_ERROR;
@@ -3840,7 +3840,7 @@ static char mmcWriteSectors(
 
 			// read the data response xxx0<status>1 : status 010: Data accected, status 101: Data
 			//   rejected due to a crc error, status 110: Data rejected due to a Write error.
-			//waitwhilebusy();	// 1) РѕС‚СЃСЋРґР° СѓР±РёСЂР°СЋ Рё РІСЃС‚Р°РІР»СЏСЋ РІ РЅР°С‡Р°Р»Рѕ РІСЃРµС… С„СѓРЅРєС†РёР№ С‡С‚РµРЅРёСЏ/Р·Р°РїРёСЃРё/sync
+			//waitwhilebusy();	// 1) отсюда убираю и вставляю в начало всех функций чтения/записи/sync
 
 			rvalue = count == 0 ? MMC_SUCCESS : MMC_WRITE_ERROR;
 		}
@@ -3929,13 +3929,13 @@ DRESULT MMC_disk_write (
 	return RES_OK;
 }
 
-/* Р·Р°РїРёСЃСЊ Р±СѓС„РµСЂРёР·РёСЂРѕРІР°РЅРЅС‹С… РґР°РЅРЅС‹С… РЅР° РЅРѕСЃРёС‚РµР»СЊ */
+/* запись буферизированных данных на носитель */
 static 
 DRESULT MMC_Sync(BYTE drv)
 {
 	SDCARD_CS_LOW();
 	mmcSendDummyByte();
-	if (waitwhilebusy() != 0)	// 1) РІСЃС‚Р°РІР»СЏСЋ РІ РЅР°С‡Р°Р»Рѕ РІСЃРµС… С„СѓРЅРєС†РёР№ С‡С‚РµРЅРёСЏ/Р·Р°РїРёСЃРё/sync
+	if (waitwhilebusy() != 0)	// 1) вставляю в начало всех функций чтения/записи/sync
 	{
 		SDCARD_CS_HIGH();
 		return RES_ERROR;

@@ -1,11 +1,11 @@
 /* $Id$ */
 //
-// РџСЂРѕРµРєС‚ HF Dream Receiver (РљР’ РїСЂРёС‘РјРЅРёРє РјРµС‡С‚С‹)
-// Р°РІС‚РѕСЂ Р“РµРЅР° Р—Р°РІРёРґРѕРІСЃРєРёР№ mgs2001@mail.ru
+// Проект HF Dream Receiver (КВ приёмник мечты)
+// автор Гена Завидовский mgs2001@mail.ru
 // UA1ARN
 //
 
-#include "hardware.h"	/* Р·Р°РІРёСЃСЏС‰РёРµ РѕС‚ РїСЂРѕС†РµСЃСЃРѕСЂР° С„СѓРЅРєС†РёРё СЂР°Р±РѕС‚С‹ СЃ РїРѕСЂС‚Р°РјРё */
+#include "hardware.h"	/* зависящие от процессора функции работы с портами */
 #include "board.h"
 #include "audio.h"
 #include "fftwrap.h"
@@ -13,7 +13,7 @@
 #include "formats.h"	// for debug prints
 #include "display.h"	// for debug prints
 
-#include "tlv320aic23.h"	// РєРѕРЅСЃС‚Р°РЅС‚С‹ СѓРїСЂР°РІР»РµРЅРёСЏ СѓСЃРёР»РµРЅРёРµРј РєРѕРґРµРєР°
+#include "tlv320aic23.h"	// константы управления усилением кодека
 #include "nau8822.h"
 #include "wm8994.h"
 
@@ -28,7 +28,7 @@
 #endif /* defined   (__GNUC__)  */
 
 //#define WITHLIMITEDAGCATTACK 1
-#define DUALFILTERSPROCESSING 1	// Р¤РёР»СЊС‚СЂС‹ РќР§ РґР»СЏ Р»РµРІРѕРіРѕ Рё РїСЂР°РІРѕРіРѕ РєР°РЅР°Р»РѕРІ - РІС‹РЅСЃРµРЅРѕ РІ РєРѕРЅС„РёРіСѓСЂР°С†РёРѕРЅРЅС‹Р№ С„Р°Р№Р»
+#define DUALFILTERSPROCESSING 1	// Фильтры НЧ для левого и правого каналов - вынсено в конфигурационный файл
 //#define WITHDOUBLEFIRCOEFS 1
 
 #if WITHUSEDUALWATCH && WITHDSPLOCALFIR
@@ -92,86 +92,86 @@
 	#include <arm_neon.h>
 #endif /* __ARM_NEON */
 
-// ARMSAIRATE - sample rate IF РєРѕРґРµРєР° РІ РіРµСЂС†Р°С…
+// ARMSAIRATE - sample rate IF кодека в герцах
 #define NSAITICKS(t_ms) ((uint_fast16_t) (((uint_fast32_t) (t_ms) * ARMSAIRATE + 500) / 1000))
 
 ///////////////////////////////////////
 //
 
-static uint_fast8_t		glob_trxpath = 0;			/* РўСЂР°РєС‚, Рє РєРѕС‚РѕСЂРѕРјСѓ РѕС‚РЅРѕСЃСЏС‚СЃСЏ РІСЃРµ РїРѕСЃР»РµРґСѓСЋС‰РёРµ РІС‹Р·РѕРІС‹. РџСЂРё РїРµСЂРµСЂРµРґР°СЏРµ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РёРЅРґРµРєСЃ 0 */
+static uint_fast8_t		glob_trxpath = 0;			/* Тракт, к которому относятся все последующие вызовы. При перередаяе используется индекс 0 */
 static uint_fast16_t 	glob_ifgain = BOARD_IFGAIN_MIN;
 static uint_fast8_t 	glob_dspmodes [2] = { DSPCTL_MODE_IDLE, DSPCTL_MODE_IDLE, };
 
-static uint_fast8_t		glob_agcrate [2] = { 20, 20 }; //10	// 10 РґР‘ РёР·РјРµРЅРµРЅРёРµ РІС…РѕРґРЅРѕРіРѕ РЅР° 1 РґР‘ РІС‹С…РѕРґРЅРѕРіРѕ
+static uint_fast8_t		glob_agcrate [2] = { 20, 20 }; //10	// 10 дБ изменение входного на 1 дБ выходного
 static uint_fast8_t 	glob_agc_t1 [2] = { 95, 95 };
 static uint_fast8_t 	glob_agc_t2 [2] = { 2, 2 };
 static uint_fast8_t 	glob_agc_thung [2] = { 3, 3 };	// 0.3 S
 static uint_fast8_t 	glob_agc_t4 [2] = { 120, 120 };
 
-static int_fast16_t 	glob_aflowcutrx [2] = { 300, 300 } ;		// Р§Р°СЃС‚РѕС‚Р° РЅРёР·РєРѕС‡Р°СЃС‚РѕС‚РЅРѕРіРѕ СЃСЂРµР·Р° РїРѕР»РѕСЃС‹ РїСЂРѕРїСѓСЃРєР°РЅРёСЏ (РІ 10 Р“С† РґРёСЃРєСЂРµС‚Р°С…)
-static int_fast16_t 	glob_afhighcutrx [2] = { 3400, 3400 };	// Р§Р°СЃС‚РѕС‚Р° РІС‹СЃРѕРєРѕС‡Р°СЃС‚РѕС‚РЅРѕРіРѕ СЃСЂРµР·Р° РїРѕР»РѕСЃС‹ РїСЂРѕРїСѓСЃРєР°РЅРёСЏ (РІ 100 Р“С† РґРёСЃРєСЂРµС‚Р°С…)
+static int_fast16_t 	glob_aflowcutrx [2] = { 300, 300 } ;		// Частота низкочастотного среза полосы пропускания (в 10 Гц дискретах)
+static int_fast16_t 	glob_afhighcutrx [2] = { 3400, 3400 };	// Частота высокочастотного среза полосы пропускания (в 100 Гц дискретах)
 
-static int_fast16_t 	glob_aflowcuttx = 300 ;		// Р§Р°СЃС‚РѕС‚Р° РЅРёР·РєРѕС‡Р°СЃС‚РѕС‚РЅРѕРіРѕ СЃСЂРµР·Р° РїРѕР»РѕСЃС‹ РїСЂРѕРїСѓСЃРєР°РЅРёСЏ (РІ 10 Р“С† РґРёСЃРєСЂРµС‚Р°С…)
-static int_fast16_t 	glob_afhighcuttx = 3400;	// Р§Р°СЃС‚РѕС‚Р° РІС‹СЃРѕРєРѕС‡Р°СЃС‚РѕС‚РЅРѕРіРѕ СЃСЂРµР·Р° РїРѕР»РѕСЃС‹ РїСЂРѕРїСѓСЃРєР°РЅРёСЏ (РІ 100 Р“С† РґРёСЃРєСЂРµС‚Р°С…)
+static int_fast16_t 	glob_aflowcuttx = 300 ;		// Частота низкочастотного среза полосы пропускания (в 10 Гц дискретах)
+static int_fast16_t 	glob_afhighcuttx = 3400;	// Частота высокочастотного среза полосы пропускания (в 100 Гц дискретах)
 
-static int_fast16_t		glob_fullbw6 [2] = { 1000, 1000 };		/* Р§Р°СЃС‚РѕС‚Р° СЃСЂРµР·Р° С„РёР»СЊС‚СЂРѕРІ РџР§ РІ Р°Р»РіРѕСЂРёС‚РјРµ РЈРёРІРµСЂР° */
+static int_fast16_t		glob_fullbw6 [2] = { 1000, 1000 };		/* Частота среза фильтров ПЧ в алгоритме Уивера */
 static int_fast32_t		glob_lo6 [2] = { 0, 0 };
-//static uint_fast8_t		glob_fltsofter [2] = { WITHFILTSOFTMIN, WITHFILTSOFTMIN }; /* WITHFILTSOFTMIN..WITHFILTSOFTMAX РљРѕРґ СѓРїСЂР°РІР»РµРЅРёСЏ СЃРіР»Р°Р¶РёРІР°РЅРёРµРј СЃРєР°С‚РѕРІ С„РёР»СЊС‚СЂР° РѕСЃРЅРѕРІРЅРѕР№ СЃРµР»РµРєС†РёРё РЅР° РїСЂРёС‘РјРµ */
+//static uint_fast8_t		glob_fltsofter [2] = { WITHFILTSOFTMIN, WITHFILTSOFTMIN }; /* WITHFILTSOFTMIN..WITHFILTSOFTMAX Код управления сглаживанием скатов фильтра основной селекции на приёме */
 
 static uint_fast8_t 	glob_nfm_sql_lelel = 127;
 static uint_fast8_t 	glob_nfm_sql_off = 0;
 static uint_fast8_t 	glob_squelch;
 
-static uint_fast8_t 	glob_swapiq = 0;	// РїРѕРјРµРЅСЏС‚СЊ РјРµСЃС‚Р°РјРё I Рё Q СЃСЌРјРїР»С‹ РІ РїРѕС‚РѕРєРµ RTS96
+static uint_fast8_t 	glob_swapiq = 0;	// поменять местами I и Q сэмплы в потоке RTS96
 
 // codec-related parameters
 static uint_fast16_t 	glob_afgain;
-static uint_fast8_t 	glob_afmute;	/* РѕС‚РєР»СЋС‡РёС‚СЊ Р·РІСѓРє РІ РЅР°СѓС€РЅРёРєР°С… Рё РґРёРЅР°РјРёРєР°С… */
-static uint_fast8_t 	glob_lineinput;	/* РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ line input РІРјРµСЃС‚Рѕ РјРёРєСЂРѕС„РѕРЅР° */
-static uint_fast8_t 	glob_mikebust20db;	/* Р’РєР»СЋС‡РµРЅРёРµ СѓСЃРёР»РёС‚РµР»СЏ 20 РґР‘ Р·Р° РјРёРєСЂРѕС„РѕРЅРѕРј */
-static uint_fast8_t		glob_mikeagc = 1;	/* Р’РєР»СЋС‡РµРЅРёРµ РїСЂРѕРіСЂР°РјРјРЅРѕР№ РђР РЈ РїРµСЂРµРґ РјРѕРґСѓР»СЏС‚РѕСЂРѕРј */
-static uint_fast8_t		glob_mikeagcgain = 40;	/* РїСЂРµРґРµР» СѓСЃРёР»РµРЅРёСЏ РІ РђР РЈ */
-static uint_fast8_t		glob_mikehclip;			/* РїР°СЂР°РјРµС‚СЂ РѕРіСЂР°РЅРёС‡РёС‚РµР»СЏ РјРёРєСЂРѕС„РѕРЅР°	*/
+static uint_fast8_t 	glob_afmute;	/* отключить звук в наушниках и динамиках */
+static uint_fast8_t 	glob_lineinput;	/* используется line input вместо микрофона */
+static uint_fast8_t 	glob_mikebust20db;	/* Включение усилителя 20 дБ за микрофоном */
+static uint_fast8_t		glob_mikeagc = 1;	/* Включение программной АРУ перед модулятором */
+static uint_fast8_t		glob_mikeagcgain = 40;	/* предел усиления в АРУ */
+static uint_fast8_t		glob_mikehclip;			/* параметр ограничителя микрофона	*/
 #if defined(CODEC1_TYPE)
-static uint_fast8_t 	glob_mikeequal;	// Р’РєР»СЋС‡РµРЅРёРµ РѕР±СЂР°Р±РѕС‚РєРё СЃРёРіРЅР°Р»Р° СЃ РјРёРєСЂРѕС„РѕРЅР° (СЌС„С„РµРєС‚С‹, СЌРєРІР°Р»Р°Р№Р·РµСЂ, ...)
-static uint_fast8_t		glob_codec1_gains [HARDWARE_CODEC1_NPROCPARAMS]; // = { -2, -1, -3, +6, +9 };	// РїР°СЂР°РјРµС‚СЂС‹ СЌРєРІР°Р»Р°Р№Р·РµСЂР°
+static uint_fast8_t 	glob_mikeequal;	// Включение обработки сигнала с микрофона (эффекты, эквалайзер, ...)
+static uint_fast8_t		glob_codec1_gains [HARDWARE_CODEC1_NPROCPARAMS]; // = { -2, -1, -3, +6, +9 };	// параметры эквалайзера
 #endif /* defined(CODEC1_TYPE) */
 
 static uint_fast16_t 	glob_lineamp = WITHLINEINGAINMAX;
 static uint_fast16_t	glob_mik1level = WITHMIKEINGAINMAX;
-static uint_fast8_t 	glob_txaudio = BOARD_TXAUDIO_MIKE;	// РїСЂРё SSB/AM/FM РїРµСЂРµРґР°С‡Р° СЃ С‚РµСЃС‚РѕРІС‹С… РёСЃС‚РѕС‡РЅРёРєРѕРІ
+static uint_fast8_t 	glob_txaudio = BOARD_TXAUDIO_MIKE;	// при SSB/AM/FM передача с тестовых источников
 
-static uint_fast16_t 	glob_notch_freq = 1000;	/* С‡Р°СЃС‚РѕС‚Р° NOTCH С„РёР»СЊС‚СЂР° */
-static uint_fast16_t	glob_notch_width = 500;	/* РїРѕР»РѕСЃР° NOTCH С„РёР»СЊС‚СЂР° */
-static uint_fast8_t 	glob_notch_on;		/* РІРєР»СЋС‡РµРЅРёРµ NOTCH С„РёР»СЊС‚СЂР° */
+static uint_fast16_t 	glob_notch_freq = 1000;	/* частота NOTCH фильтра */
+static uint_fast16_t	glob_notch_width = 500;	/* полоса NOTCH фильтра */
+static uint_fast8_t 	glob_notch_on;		/* включение NOTCH фильтра */
 
 static uint_fast8_t 	glob_cwedgetime = 4;		/* CW Rise Time (in 1 ms discrete) */
-static uint_fast8_t 	glob_sidetonelevel = 10;	/* РЈСЂРѕРІРµРЅСЊ СЃРёРіРЅР°Р»Р° СЃР°РјРѕРєРѕРЅС‚СЂРѕР»СЏ РІ РїСЂРѕС†РµРЅС‚Р°С… - 0%..100% */
-static uint_fast8_t 	glob_subtonelevel = 0;	/* РЈСЂРѕРІРµРЅСЊ СЃРёРіРЅР°Р»Р° CTCSS РІ РїСЂРѕС†РµРЅС‚Р°С… - 0%..100% */
-static uint_fast8_t 	glob_amdepth = 30;		/* Р“Р»СѓР±РёРЅР° РјРѕРґСѓР»СЏС†РёРё РІ РђРњ - 0..100% */
-static uint_fast8_t		glob_dacscale = 100;	/* РќР° РєР°РєСѓСЋ С‡Р°СЃС‚СЊ (РІ РїСЂРѕС†РµРЅС‚Р°С…) РѕС‚ РїРѕР»РЅРѕР№ Р°РјРїР»РёС‚СѓРґС‹ РёСЃРїРѕР»СЊР·С†РµС‚СЃСЏ Р¦РђРџ РїРµСЂРµРґР°С‚С‡РёРєР° */
+static uint_fast8_t 	glob_sidetonelevel = 10;	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
+static uint_fast8_t 	glob_subtonelevel = 0;	/* Уровень сигнала CTCSS в процентах - 0%..100% */
+static uint_fast8_t 	glob_amdepth = 30;		/* Глубина модуляции в АМ - 0..100% */
+static uint_fast8_t		glob_dacscale = 100;	/* На какую часть (в процентах) от полной амплитуды использцется ЦАП передатчика */
 
 static uint_fast8_t 	glob_digigainmax = 96;
-static uint_fast8_t		glob_gvad605 = UINT8_MAX;	/* РЅР°РїСЂСЏР¶РµРЅРёРµ РЅР° AD605 (СѓРїСЂР°РІР»РµРЅРёРµ СѓСЃРёР»РµРЅРёРµРј С‚СЂР°РєС‚Р° РџР§ */
+static uint_fast8_t		glob_gvad605 = UINT8_MAX;	/* напряжение на AD605 (управление усилением тракта ПЧ */
 
-static int_fast16_t		glob_fsadcpower10 = 0;	// РјРѕС‰РЅРѕСЃС‚СЊ, СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰Р°СЏ full scale РѕС‚ IF ADC СЃ С‚РѕС‡РЅРѕСЃС‚СЊСЋ 0.1 РґР‘РјР’С‚
+static int_fast16_t		glob_fsadcpower10 = 0;	// мощность, соответствующая full scale от IF ADC с точностью 0.1 дБмВт
 
-static uint_fast8_t		glob_modem_mode;		// РїСЂРёРјРµРЅСЏРµРјР°СЏ РјРѕРґСѓР»СЏС†РёСЏ
-static uint_fast32_t	glob_modem_speed100 = 3125;	// СЃРєРѕСЂРѕСЃС‚СЊ РїРµСЂРµРґР°С‡Рё СЃ С‚РѕС‡РЅРѕСЃС‚СЊСЋ 1/100 Р±РѕРґ
+static uint_fast8_t		glob_modem_mode;		// применяемая модуляция
+static uint_fast32_t	glob_modem_speed100 = 3125;	// скорость передачи с точностью 1/100 бод
 
-static int_fast8_t		glob_afresponcerx;	// РёР·РјРµРЅРµРЅРёРµ С‚РµРјР±СЂР° Р·РІСѓРєР° РІ РєР°РЅР°Р»Рµ РїСЂРёРµРјРЅРёРєР° - РЅР° Samplerate/2 РђР§РҐ СЃС‚Р°РЅРѕРІРёС‚СЃСЏ РЅР° СЃС‚РѕР»СЊРєРѕ РґРµС†РёР±РµР» 
-static int_fast8_t		glob_afresponcetx;	// РёР·РјРµРЅРµРЅРёРµ С‚РµРјР±СЂР° Р·РІСѓРєР° РІ РєР°РЅР°Р»Рµ РїРµСЂРµРґР°С‚С‡РёРєР° - РЅР° Samplerate/2 РђР§РҐ СЃС‚Р°РЅРѕРІРёС‚СЃСЏ РЅР° СЃС‚РѕР»СЊРєРѕ РґРµС†РёР±РµР» 
+static int_fast8_t		glob_afresponcerx;	// изменение тембра звука в канале приемника - на Samplerate/2 АЧХ становится на столько децибел 
+static int_fast8_t		glob_afresponcetx;	// изменение тембра звука в канале передатчика - на Samplerate/2 АЧХ становится на столько децибел 
 
-static int_fast8_t		glob_swaprts;		// СѓРїСЂР°РІР»РµРЅРёРµ Р±РѕРєРѕРІРѕР№ РІС‹С…РѕРґР° СЃРїРµРєС‚СЂРѕР°РЅР°Р»РёР·Р°С‚РѕСЂР°
+static int_fast8_t		glob_swaprts;		// управление боковой выхода спектроанализатора
 
-static uint_fast8_t		glob_mainsubrxmode = BOARD_RXMAINSUB_A_A;	// Р›РµРІС‹Р№/РїСЂР°РІС‹Р№, A - main RX, B - sub RX
+static uint_fast8_t		glob_mainsubrxmode = BOARD_RXMAINSUB_A_A;	// Левый/правый, A - main RX, B - sub RX
 
 
 #if WITHINTEGRATEDDSP
 
-#define NPROF 2	/* РєРѕР»РёС‡РµСЃС‚РІРѕ РїСЂРѕС„РёР»РµР№ РїР°СЂР°РјРµС‚СЂРѕРІ DSP С„РёР»СЊС‚СЂРѕРІ. */
+#define NPROF 2	/* количество профилей параметров DSP фильтров. */
 
-// РћРїСЂРµРґРµР»РµРЅРёСЏ РґР»СЏ СЂР°Р±РѕС‚ РїРѕ РѕРїС‚РёРјРёР·Р°С†РёРё Р±С‹СЃС‚СЂРѕРґРµР№СЃС‚РІРёСЏ
+// Определения для работ по оптимизации быстродействия
 #if WITHDEBUG && 0
 
 	// stm32f746, no dualwatch:
@@ -204,9 +204,9 @@ static uint_fast8_t		glob_mainsubrxmode = BOARD_RXMAINSUB_A_A;	// Р›РµРІС‹Р№/РїС
 			if (perft < t2) \
 			{ \
 				const uint_fast32_t vdt = t2 - perft; \
-				dtlast = vdt; /* С‚РµРєСѓС‰РµРµ Р·РЅР°С‡РµРЅРёРµ РґР»РёС‚РµР»СЊРЅРѕСЃС‚Рё */ \
+				dtlast = vdt; /* текущее значение длительности */ \
 				if (vdt > dtmax) \
-					dtmax = vdt; /* РјР°РєСЃРёРјР°Р»СЊРЅРѕРµ Р·РЅР°С‡РµРЅРёРµ РґР»РёС‚РµР»СЊРЅРѕСЃС‚Рё */ \
+					dtmax = vdt; /* максимальное значение длительности */ \
 				++ dtcount; \
 			} \
 		} while (0);
@@ -220,9 +220,9 @@ static uint_fast8_t		glob_mainsubrxmode = BOARD_RXMAINSUB_A_A;	// Р›РµРІС‹Р№/РїС
 			if (perft2 < t2) \
 			{ \
 				const uint_fast32_t vdt = t2 - perft2; \
-				dtlast2 = vdt; /* С‚РµРєСѓС‰РµРµ Р·РЅР°С‡РµРЅРёРµ РґР»РёС‚РµР»СЊРЅРѕСЃС‚Рё */ \
+				dtlast2 = vdt; /* текущее значение длительности */ \
 				if (vdt > dtmax2) \
-					dtmax2 = vdt; /* РјР°РєСЃРёРјР°Р»СЊРЅРѕРµ Р·РЅР°С‡РµРЅРёРµ РґР»РёС‚РµР»СЊРЅРѕСЃС‚Рё */ \
+					dtmax2 = vdt; /* максимальное значение длительности */ \
 				++ dtcount2; \
 			} \
 		} while (0);
@@ -236,9 +236,9 @@ static uint_fast8_t		glob_mainsubrxmode = BOARD_RXMAINSUB_A_A;	// Р›РµРІС‹Р№/РїС
 			if (perft3 < t2) \
 			{ \
 				const uint_fast32_t vdt = t2 - perft3; \
-				dtlast3 = vdt; /* С‚РµРєСѓС‰РµРµ Р·РЅР°С‡РµРЅРёРµ РґР»РёС‚РµР»СЊРЅРѕСЃС‚Рё */ \
+				dtlast3 = vdt; /* текущее значение длительности */ \
 				if (vdt > dtmax3) \
-					dtmax3 = vdt; /* РјР°РєСЃРёРјР°Р»СЊРЅРѕРµ Р·РЅР°С‡РµРЅРёРµ РґР»РёС‚РµР»СЊРЅРѕСЃС‚Рё */ \
+					dtmax3 = vdt; /* максимальное значение длительности */ \
 				++ dtcount3; \
 			} \
 		} while (0);
@@ -286,8 +286,8 @@ static uint_fast8_t		glob_mainsubrxmode = BOARD_RXMAINSUB_A_A;	// Р›РµРІС‹Р№/РїС
 
 
 
-// РћРіСЂР°РЅРёС‡РµРЅРёРµ Р°Р»РіРѕСЂРёС‚РјР° РіРµРЅРµСЂР°С‚С†РёРё РїР°СЂР°РјРµС‚СЂРѕРІ С„РёР»СЊС‚СЂР° - РЅРµС‡С‘С‚РЅРѕРµ Р·РЅР°С‡РµРЅРёРµ Ntap.
-// РљСЂРѕРјРµ С‚РѕРіРѕ, РґР»СЏ С„СѓРЅРєС†РёР№ С„РёР»СЊС‚СЂР°С†РёРё СЃ РёСЃРїРѕР»СЊР·РѕРІР°РЅРёРµРј СЃРёРјРјРµС‚СЂРёРё РєРѕСЌС„С„РёС†РёРµРЅС‚РѕРІ, С‚СЂРµР±СѓРµС‚СЃСЏ РєСЂР°С‚РЅРѕСЃС‚СЊ 2 РїРѕР»РѕРІРёРЅС‹ Ntap
+// Ограничение алгоритма генератции параметров фильтра - нечётное значение Ntap.
+// Кроме того, для функций фильтрации с использованием симметрии коэффициентов, требуется кратность 2 половины Ntap
 
 #define NtapValidate(n)	((unsigned) (n) / 8 * 8 + 1)
 #define NtapCoeffs(n)	((unsigned) (n) / 2 + 1)
@@ -295,16 +295,16 @@ static uint_fast8_t		glob_mainsubrxmode = BOARD_RXMAINSUB_A_A;	// Р›РµРІС‹Р№/РїС
 #if WITHDSPEXTFIR || WITHDSPEXTDDC
 
 
-	// РџР°СЂР°РјРµС‚СЂС‹ С„РёР»СЊС‚СЂРѕРІ РІ СЃР»СѓС‡Р°Рµ РёСЃРїРѕР»СЊР·РѕРІР°РЅРёСЏ FPGA СЃ С„РёР»СЊС‚СЂРѕРј РЅР° РєРІР°РґСЂР°С‚СѓСЂРЅС‹С… РєР°РЅР°Р»Р°С…
-	#define Ntap_trxi_IQ		1535	// Р¤РёР»СЊС‚СЂ РІ FPGA
-	#define HARDWARE_COEFWIDTH	24		// Р Р°Р·СЂСЏРґРЅРѕСЃС‚СЊ РєРѕСЌС„С„РёС†РёРµРЅС‚РѕРІ. format is S0.22
+	// Параметры фильтров в случае использования FPGA с фильтром на квадратурных каналах
+	#define Ntap_trxi_IQ		1535	// Фильтр в FPGA
+	#define HARDWARE_COEFWIDTH	24		// Разрядность коэффициентов. format is S0.22
 
-	// Р¤РёР»СЊС‚СЂ РґР»СЏ РєРІР°РґСЂР°С‚СѓСЂРЅС‹С… РєР°РЅР°Р»РѕРІ РїСЂРёС‘РјРЅРёРєР° Рё РїРµСЂРµРґР°С‚С‡РёРєР° РІ FPGA (С†РµР»РѕС‡РёСЃР»РµРЅРЅС‹Р№).
-	// РџР°СЂР°РјРµС‚СЂС‹ РґР»СЏ РїРµСЂРµРґР°С‡Рё РІ FPGA
+	// Фильтр для квадратурных каналов приёмника и передатчика в FPGA (целочисленный).
+	// Параметры для передачи в FPGA
 	#if WITHDOUBLEFIRCOEFS && (__ARM_FP & 0x08)
-		static double FIRCwndL_trxi_IQ [NtapCoeffs(Ntap_trxi_IQ)];			// РїРѕРґРіРѕС‚РѕРІР»РµРЅРЅС‹Рµ Р·РЅР°С‡РµРЅРёСЏ С„СѓРЅРєС†РёРё РѕРєРЅР°
+		static double FIRCwndL_trxi_IQ [NtapCoeffs(Ntap_trxi_IQ)];			// подготовленные значения функции окна
 	#else
-		static FLOAT_t FIRCwnd_trxi_IQ [NtapCoeffs(Ntap_trxi_IQ)];			// РїРѕРґРіРѕС‚РѕРІР»РµРЅРЅС‹Рµ Р·РЅР°С‡РµРЅРёСЏ С„СѓРЅРєС†РёРё РѕРєРЅР°
+		static FLOAT_t FIRCwnd_trxi_IQ [NtapCoeffs(Ntap_trxi_IQ)];			// подготовленные значения функции окна
 	#endif
 
 #endif /* WITHDSPEXTFIR || WITHDSPEXTDDC */
@@ -313,31 +313,31 @@ static uint_fast8_t		glob_mainsubrxmode = BOARD_RXMAINSUB_A_A;	// Р›РµРІС‹Р№/РїС
 
 
 	#if CPUSTYLE_R7S721 && ! WITHUSEDUALWATCH
-		// Р‘РµР· WITHUSEDUALWATCH
+		// Без WITHUSEDUALWATCH
 		#define Ntap_tx_MIKE	NtapValidate(481)
 	#elif CPUSTYLE_R7S721
-		// РµСЃС‚СЊ СЂРµР¶РёРј WITHUSEDUALWATCH
+		// есть режим WITHUSEDUALWATCH
 		#define Ntap_tx_MIKE	NtapValidate(481)
 	#elif (defined (STM32F767xx) || defined (STM32F769xx)) && ! WITHUSEDUALWATCH
-		// Р‘РµР· WITHUSEDUALWATCH
+		// Без WITHUSEDUALWATCH
 		#define Ntap_tx_MIKE	NtapValidate(241)
 	#elif (defined (STM32F767xx) || defined (STM32F769xx))
-		// РµСЃС‚СЊ СЂРµР¶РёРј WITHUSEDUALWATCH
+		// есть режим WITHUSEDUALWATCH
 		#define Ntap_tx_MIKE	NtapValidate(241)
 	#elif CPUSTYLE_STM32H7XX && ! WITHUSEDUALWATCH
-		// Р‘РµР· WITHUSEDUALWATCH
+		// Без WITHUSEDUALWATCH
 		#define Ntap_tx_MIKE	NtapValidate(241)
 	#elif CPUSTYLE_STM32H7XX
-		// РµСЃС‚СЊ СЂРµР¶РёРј WITHUSEDUALWATCH
+		// есть режим WITHUSEDUALWATCH
 		#define Ntap_tx_MIKE	NtapValidate(241)
 	#elif CPUSTYLE_STM32F7XX && ! WITHUSEDUALWATCH
-		// Р‘РµР· WITHUSEDUALWATCH
+		// Без WITHUSEDUALWATCH
 		#define Ntap_tx_MIKE	NtapValidate(241)
 	#elif CPUSTYLE_STM32F7XX
-		// РµСЃС‚СЊ СЂРµР¶РёРј WITHUSEDUALWATCH
+		// есть режим WITHUSEDUALWATCH
 		#define Ntap_tx_MIKE	NtapValidate(241)
 	#elif CPUSTYLE_STM32F4XX && ! WITHUSEDUALWATCH
-		// Р‘РµР· WITHUSEDUALWATCH (С‚РѕР»СЊРєРѕ)
+		// Без WITHUSEDUALWATCH (только)
 		#define Ntap_tx_MIKE	NtapValidate(129)
 	#else
 		#error Not suitable CPUSTYLE_xxx and WITHUSEDUALWATCH combination
@@ -346,7 +346,7 @@ static uint_fast8_t		glob_mainsubrxmode = BOARD_RXMAINSUB_A_A;	// Р›РµРІС‹Р№/РїС
 #endif /* WITHDSPEXTFIR */
 
 #if WITHDSPLOCALFIR	
-	/* Р¤РёР»СЊС‚СЂР°С†РёСЏ РєРІР°РґСЂР°С‚СѓСЂ РѕСЃСѓС‰РµСЃС‚РІР»СЏРµС‚СЃСЏ РїСЂРѕС†РµСЃСЃРѕСЂРѕРј */
+	/* Фильтрация квадратур осуществляется процессором */
 	#if CPUSTYLE_R7S721
 		#define Ntap_rx_SSB_IQ	NtapValidate(241)	// SSB/CW filters: complex numbers, floating-point implementation
 		#define Ntap_tx_SSB_IQ	NtapValidate(241)	// SSB/CW TX filter: complex numbers, floating-point implementation
@@ -361,24 +361,24 @@ static uint_fast8_t		glob_mainsubrxmode = BOARD_RXMAINSUB_A_A;	// Р›РµРІС‹Р№/РїС
 		#define Ntap_tx_MIKE	NtapValidate(105)	// single samples, floating point implementation
 	#endif
 
-	// Р¤РёР»СЊС‚СЂ РґР»СЏ РєРІР°РґСЂР°С‚СѓСЂРЅС‹С… РєР°РЅР°Р»РѕРІ РїСЂРёС‘РјРЅРёРєР° (floating point).
+	// Фильтр для квадратурных каналов приёмника (floating point).
 	static FLOAT_t FIRCoef_rx_SSB_IQ [NPROF] [NtapCoeffs(Ntap_rx_SSB_IQ)] = { { 0 }, { 0 } };
-	static FLOAT_t FIRCwnd_rx_SSB_IQ [NtapCoeffs(Ntap_rx_SSB_IQ)];			// РїРѕРґРіРѕС‚РѕРІР»РµРЅРЅС‹Рµ Р·РЅР°С‡РµРЅРёСЏ С„СѓРЅРєС†РёРё РѕРєРЅР°
+	static FLOAT_t FIRCwnd_rx_SSB_IQ [NtapCoeffs(Ntap_rx_SSB_IQ)];			// подготовленные значения функции окна
 
-	// Р¤РёР»СЊС‚СЂ РґР»СЏ РєРІР°РґСЂР°С‚СѓСЂРЅС‹С… РєР°РЅР°Р»РѕРІ РїРµСЂРµРґР°С‚С‡РёРєР° (floating point)
+	// Фильтр для квадратурных каналов передатчика (floating point)
 	static FLOAT_t FIRCoef_tx_SSB_IQ [NPROF] [NtapCoeffs(Ntap_tx_SSB_IQ)] = { { 0 }, { 0 } };
-	static FLOAT_t FIRCwnd_tx_SSB_IQ [NtapCoeffs(Ntap_tx_SSB_IQ)];			// РїРѕРґРіРѕС‚РѕРІР»РµРЅРЅС‹Рµ Р·РЅР°С‡РµРЅРёСЏ С„СѓРЅРєС†РёРё РѕРєРЅР°
+	static FLOAT_t FIRCwnd_tx_SSB_IQ [NtapCoeffs(Ntap_tx_SSB_IQ)];			// подготовленные значения функции окна
 
 #endif /* WITHDSPLOCALFIR */
 
-// Р¤РёР»СЊС‚СЂ РґР»СЏ РїРµСЂРµРґР°С‚С‡РёРєР° (floating point)
-// РћР±СЂР°Р±Р°С‚С‹РІР°РµС‚СЃСЏ РєР°Рє РЅРµСЃРёРјРјРµС‚СЂРёС‡РЅС‹Р№
+// Фильтр для передатчика (floating point)
+// Обрабатывается как несимметричный
 static FLOAT_t FIRCoef_tx_MIKE [NPROF] [NtapCoeffs(Ntap_tx_MIKE)] = { { 1 }, { 1 } };
-static FLOAT_t FIRCwnd_tx_MIKE [NtapCoeffs(Ntap_tx_MIKE)] = { 1 };			// РїРѕРґРіРѕС‚РѕРІР»РµРЅРЅС‹Рµ Р·РЅР°С‡РµРЅРёСЏ С„СѓРЅРєС†РёРё РѕРєРЅР°
+static FLOAT_t FIRCwnd_tx_MIKE [NtapCoeffs(Ntap_tx_MIKE)] = { 1 };			// подготовленные значения функции окна
 
 #define	Ntap_rx_AUDIO	NtapValidate(SPEEXNN * 2 - 7)
 static FLOAT_t FIRCoef_rx_AUDIO [NtapCoeffs(Ntap_rx_AUDIO)] = { 1 };
-static FLOAT_t FIRCwnd_rx_AUDIO [NtapCoeffs(Ntap_rx_AUDIO)] = { 1 };			// РїРѕРґРіРѕС‚РѕРІР»РµРЅРЅС‹Рµ Р·РЅР°С‡РµРЅРёСЏ С„СѓРЅРєС†РёРё РѕРєРЅР°
+static FLOAT_t FIRCwnd_rx_AUDIO [NtapCoeffs(Ntap_rx_AUDIO)] = { 1 };			// подготовленные значения функции окна
 
 //static void * fft_lookup;
 
@@ -394,25 +394,25 @@ static struct Complex Sig [FFTSizeFilters] = { { 1 }, { 1 } };
    spx_ifft(st->fft_lookup, SIGft, st->frame);
 #endif
 
-/* РћР±СЂР°Р±РѕС‚РєР° РїСЂРѕРёР·РІРѕРґРёС‚СЃСЏ РІСЃРµРіРґР° РІ РЅР°РёР±РѕР»СЊС€РµР№ СЂР°Р·СЂСЏРґРЅРѕСЃС‚Рё СѓС‡Р°РІСЃС‚РІСѓСЋС‰РёС… РєРѕРґРµРєРѕРІ. */
-/* С‚СЂРµР±СѓРµС‚СЃСЏ СЃРѕРіР»Р°СЃРѕРІР°С‚СЊ СЂР°Р·СЂСЏРґРЅРѕСЃС‚СЊ РґР°РЅРЅС‹С… IF Рё AF РєРѕРґРµРєРѕРІ. */
+/* Обработка производится всегда в наибольшей разрядности учавствующих кодеков. */
+/* требуется согласовать разрядность данных IF и AF кодеков. */
 #if (WITHIFDACWIDTH > WITHAFADCWIDTH)
-	#define TXINSCALE		(1 << (WITHIFDACWIDTH - WITHAFADCWIDTH))		// С…Р°СЂР°РєС‚РµСЂРёР·СѓРµС‚ СЂР°Р·РЅРёС†Сѓ РІ СЂР°Р·СЂСЏРґРЅРѕСЃС‚Рё РђР¦Рџ РёСЃС‚РѕС‡РЅРёРєР° СЃРёРіРЅР°Р»Р° Рё РІС‹С…РѕРґРЅРѕРіРѕ Р¦РђРџ
+	#define TXINSCALE		(1 << (WITHIFDACWIDTH - WITHAFADCWIDTH))		// характеризует разницу в разрядности АЦП источника сигнала и выходного ЦАП
 	#define TXOUTDENOM		1
 #elif (WITHIFDACWIDTH == WITHAFADCWIDTH)
-	#define TXINSCALE		1				// С…Р°СЂР°РєС‚РµСЂРёР·СѓРµС‚ СЂР°Р·РЅРёС†Сѓ РІ СЂР°Р·СЂСЏРґРЅРѕСЃС‚Рё РђР¦Рџ РёСЃС‚РѕС‡РЅРёРєР° СЃРёРіРЅР°Р»Р° Рё РІС‹С…РѕРґРЅРѕРіРѕ Р¦РђРџ
+	#define TXINSCALE		1				// характеризует разницу в разрядности АЦП источника сигнала и выходного ЦАП
 	#define TXOUTDENOM		1
 #else
 	#error Strange WITHIFDACWIDTH & WITHAFADCWIDTH relations
 #endif
 
-/* С‚СЂРµР±СѓРµС‚СЃСЏ СЃРѕРіР»Р°СЃРѕРІР°С‚СЊ СЂР°Р·СЂСЏРґРЅРѕСЃС‚СЊ РґР°РЅРЅС‹С… IF Рё AF РєРѕРґРµРєРѕРІ. */
+/* требуется согласовать разрядность данных IF и AF кодеков. */
 #if (WITHIFADCWIDTH > WITHAFDACWIDTH)
 	#define RXINSCALE		1
-	#define RXOUTDENOM		(1 << (WITHIFADCWIDTH - WITHAFDACWIDTH))				// С…Р°СЂР°РєС‚РµСЂРёР·СѓРµС‚ СЂР°Р·РЅРёС†Сѓ РІ СЂР°Р·СЂСЏРґРЅРѕСЃС‚Рё РђР¦Рџ РёСЃС‚РѕС‡РЅРёРєР° СЃРёРіРЅР°Р»Р° Рё РІС‹С…РѕРґРЅРѕРіРѕ Р¦РђРџ
+	#define RXOUTDENOM		(1 << (WITHIFADCWIDTH - WITHAFDACWIDTH))				// характеризует разницу в разрядности АЦП источника сигнала и выходного ЦАП
 #elif (WITHIFADCWIDTH == WITHAFDACWIDTH)
 	#define RXINSCALE		1
-	#define RXOUTDENOM		1				// С…Р°СЂР°РєС‚РµСЂРёР·СѓРµС‚ СЂР°Р·РЅРёС†Сѓ РІ СЂР°Р·СЂСЏРґРЅРѕСЃС‚Рё РђР¦Рџ РёСЃС‚РѕС‡РЅРёРєР° СЃРёРіРЅР°Р»Р° Рё РІС‹С…РѕРґРЅРѕРіРѕ Р¦РђРџ
+	#define RXOUTDENOM		1				// характеризует разницу в разрядности АЦП источника сигнала и выходного ЦАП
 #else
 	#error Strange WITHIFADCWIDTH & WITHAFDACWIDTH relations
 #endif
@@ -430,18 +430,18 @@ static FLOAT_t rxlevelfence = INT32_MAX;
 
 static FLOAT_t mikefenceIN = INT16_MAX;
 static FLOAT_t mikefenceOUT = INT16_MAX;
-static FLOAT_t phonefence = INT16_MAX;	// Р Р°Р·СЂСЏРґРЅРѕСЃС‚СЊ РїРѕСЃС‚СѓРїР°СЋС‰РµРіРѕ РЅР° РЅР°СѓС€РЅРёРєРё СЃРёРіРЅР°Р»Р°
+static FLOAT_t phonefence = INT16_MAX;	// Разрядность поступающего на наушники сигнала
 
 static FLOAT_t rxoutdenom = 1 / (FLOAT_t) RXOUTDENOM;
 
 static volatile FLOAT_t nbfence;
-static volatile FLOAT_t nfmoutscale;	// РјР°СЃС€С‚Р°Р±РёСЂРѕРІР°РЅРёРµ (INT32_MAX + 1) Рє phonefence
+static volatile FLOAT_t nfmoutscale;	// масштабирование (INT32_MAX + 1) к phonefence
 
-static uint_fast8_t gwprof = 0;	// work profile - РёРЅРґРµРєСЃ РєРѕРЅС„РёРіСѓСЂР°С†РёРѕРЅРЅРѕР№ РёРЅС„РѕСЂРјР°С†РёРё, РёСЃРїРѕР»СЊСѓРµРјС‹Р№ РґР»СЏ СЂР°Р±РѕС‚С‹ */
+static uint_fast8_t gwprof = 0;	// work profile - индекс конфигурационной информации, испольуемый для работы */
 
 static uint_fast8_t globDSPMode [NPROF] [2] = { { DSPCTL_MODE_IDLE, DSPCTL_MODE_IDLE }, { DSPCTL_MODE_IDLE, DSPCTL_MODE_IDLE } };
 
-/* РџР°СЂР°РјРµС‚СЂС‹ РђРњ РјРѕРґСѓР»СЏС‚РѕСЂР° */
+/* Параметры АМ модулятора */
 static volatile FLOAT_t amshapesignalHALF;
 static volatile FLOAT_t amcarrierHALF;
 static volatile FLOAT_t scaleDAC = 1;
@@ -450,7 +450,7 @@ static FLOAT_t shapeSidetoneStep(void);		// 0..1
 static FLOAT_t shapeCWEnvelopStep(void);	// 0..1
 static uint_fast8_t getTxShapeNotComplete(void);
 
-static uint_fast8_t getRxGate(void);	/* СЂР°Р·СЂРµС€РµРЅРёРµ СЂР°Р±РѕС‚С‹ С‚СЂР°РєС‚Р° РІ СЂРµР¶РёРјРµ РїСЂРёС‘РјР° */
+static uint_fast8_t getRxGate(void);	/* разрешение работы тракта в режиме приёма */
 
 //#include "sinetable.h"
 //#include "sinetable_15.h"
@@ -459,10 +459,10 @@ static uint_fast8_t getRxGate(void);	/* СЂР°Р·СЂРµС€РµРЅРёРµ СЂР°Р±РѕС‚С‹ С‚СЂР°
 //#include "sinetable_12.h"
 typedef uint32_t ncoftw_t;
 typedef int32_t ncoftwi_t;
-#define NCOFTWBITS 32	// РєРѕР»РёС‡РµСЃС‚РІРѕ Р±РёС‚РѕРІ РІ ncoftw_t
+#define NCOFTWBITS 32	// количество битов в ncoftw_t
 #define ASH (NCOFTWBITS - TABLELOG2)	// 22 = 32 - log2(number of items in sintable)
 #define FTW2ANGLEI(ftw)	((uint32_t) (ftw) >> ASH)
-#define FTW2ANGLEQ(ftw)	((uint32_t) ((ftw) + 0x40000000L) >> ASH)	// РєРѕСЃРёРЅСѓСЃ РѕРїРµСЂРµР¶Р°РµС‚ РЅР° С‡РµС‚РІРµСЂС‚СЊ РѕР±РѕСЂРѕС‚Р°
+#define FTW2ANGLEQ(ftw)	((uint32_t) ((ftw) + 0x40000000L) >> ASH)	// косинус опережает на четверть оборота
 #define FTWROUND(ftw) ((uint32_t) (ftw))
 #define FTWAF001(freq) (((int_fast64_t) (freq) << NCOFTWBITS) / ARMI2SRATE100)
 #define FTWAF(freq) (((int_fast64_t) (freq) << NCOFTWBITS) / ARMI2SRATE)
@@ -474,7 +474,7 @@ static RAMFUNC FLOAT_t peekvalf(uint32_t a)
 	const ncoftw_t mask = (1UL << (TABLELOG2 - 2)) - 1;
 	const ncoftw_t quoter = 1UL << (TABLELOG2 - 2);
 	const ncoftw_t index = a & mask;
-	switch (a >> (TABLELOG2 - 2))	 // РїРѕР»СѓС‡РёС‚СЊ РЅРѕРјРµСЂ РєРІР°РґСЂР°РЅС‚Р° РїРѕ РёРЅРґРµРєСЃСѓ РІ С‚Р°Р±Р»РёС†Рµ
+	switch (a >> (TABLELOG2 - 2))	 // получить номер квадранта по индексу в таблице
 	{
 	case 0: return sintable4f_fs [index];
 	case 1: return sintable4f_fs [quoter - index];
@@ -491,7 +491,7 @@ static RAMFUNC int peekvali16(uint32_t a)
 	const ncoftw_t mask = (1UL << (TABLELOG2 - 2)) - 1;
 	const ncoftw_t quoter = 1UL << (TABLELOG2 - 2);
 	const ncoftw_t index = a & mask;
-	switch (a >> (TABLELOG2 - 2))	 // РїРѕР»СѓС‡РёС‚СЊ РЅРѕРјРµСЂ РєРІР°РґСЂР°РЅС‚Р° РїРѕ РёРЅРґРµРєСЃСѓ РІ С‚Р°Р±Р»РёС†Рµ
+	switch (a >> (TABLELOG2 - 2))	 // получить номер квадранта по индексу в таблице
 	{
 	case 0: return sintable4i32_fs [index] >> 16;
 	case 1: return sintable4i32_fs [quoter - index] >> 16;
@@ -506,7 +506,7 @@ static RAMFUNC int peekvali24(uint32_t a)
 	const ncoftw_t mask = (1UL << (TABLELOG2 - 2)) - 1;
 	const ncoftw_t quoter = 1UL << (TABLELOG2 - 2);
 	const ncoftw_t index = a & mask;
-	switch (a >> (TABLELOG2 - 2))	 // РїРѕР»СѓС‡РёС‚СЊ РЅРѕРјРµСЂ РєРІР°РґСЂР°РЅС‚Р° РїРѕ РёРЅРґРµРєСЃСѓ РІ С‚Р°Р±Р»РёС†Рµ
+	switch (a >> (TABLELOG2 - 2))	 // получить номер квадранта по индексу в таблице
 	{
 	case 0: return sintable4i32_fs [index] >> 8;
 	case 1: return sintable4i32_fs [quoter - index] >> 8;
@@ -521,7 +521,7 @@ static RAMFUNC int32_t peekvali32(uint32_t a)
 	const ncoftw_t mask = (1UL << (TABLELOG2 - 2)) - 1;
 	const ncoftw_t quoter = 1UL << (TABLELOG2 - 2);
 	const ncoftw_t index = a & mask;
-	switch (a >> (TABLELOG2 - 2))	 // РїРѕР»СѓС‡РёС‚СЊ РЅРѕРјРµСЂ РєРІР°РґСЂР°РЅС‚Р° РїРѕ РёРЅРґРµРєСЃСѓ РІ С‚Р°Р±Р»РёС†Рµ
+	switch (a >> (TABLELOG2 - 2))	 // получить номер квадранта по индексу в таблице
 	{
 	case 0: return sintable4i32_fs [index];
 	case 1: return sintable4i32_fs [quoter - index];
@@ -552,7 +552,7 @@ static ncoftw_t angle_monofreq2;
 
 int get_rout16(void)
 {
-	// Р¤РѕСЂРјРёСЂРѕРІР°РЅРёРµ Р·РЅР°С‡РµРЅРёСЏ РґР»СЏ ROUT
+	// Формирование значения для ROUT
 	const int v = peekvali16(FTW2ANGLEI(angle_rout));
 	angle_rout = FTWROUND(angle_rout + anglestep_rout);
 	return v;
@@ -560,7 +560,7 @@ int get_rout16(void)
 
 int get_lout16(void)
 {
-	// Р¤РѕСЂРјРёСЂРѕРІР°РЅРёРµ Р·РЅР°С‡РµРЅРёСЏ РґР»СЏ LOUT
+	// Формирование значения для LOUT
 	const int v = peekvali16(FTW2ANGLEI(angle_lout));
 	angle_lout = FTWROUND(angle_lout + anglestep_lout);
 	return v;
@@ -568,7 +568,7 @@ int get_lout16(void)
 
 static int get_rout24(void)
 {
-	// Р¤РѕСЂРјРёСЂРѕРІР°РЅРёРµ Р·РЅР°С‡РµРЅРёСЏ РґР»СЏ ROUT
+	// Формирование значения для ROUT
 	const int v = peekvali24(FTW2ANGLEI(angle_rout2));
 	angle_rout2 = FTWROUND(angle_rout2 + anglestep_rout2);
 	return v;
@@ -576,7 +576,7 @@ static int get_rout24(void)
 
 static int get_lout24(void)
 {
-	// Р¤РѕСЂРјРёСЂРѕРІР°РЅРёРµ Р·РЅР°С‡РµРЅРёСЏ РґР»СЏ LOUT
+	// Формирование значения для LOUT
 	const int v = peekvali24(FTW2ANGLEI(angle_lout2));
 	angle_lout2 = FTWROUND(angle_lout2 + anglestep_lout2);
 	return v;
@@ -635,14 +635,14 @@ static ncoftw_t angle_toneout;
 
 static RAMFUNC FLOAT_t get_singletonefloat(void)
 {
-	// Р¤РѕСЂРјРёСЂРѕРІР°РЅРёРµ Р·РЅР°С‡РµРЅРёСЏ РґР»СЏ LOUT
+	// Формирование значения для LOUT
 	const FLOAT_t v = peekvalf(FTW2ANGLEI(angle_toneout));
 	angle_toneout = FTWROUND(angle_toneout + anglestep_toneout);
 	return v;
 }
 
-// РґРІСѓС…С‚РѕРЅР°Р»СЊРЅС‹Р№ РіРµРЅРµСЂР°С‚РѕСЂ РґР»СЏ РЅР°СЃС‚СЂРѕР№РєРё
-// РїР°СЂР°РјРµС‚СЂС‹ С‡Р°СЃС‚РѕС‚
+// двухтональный генератор для настройки
+// параметры частот
 
 // American (AT&T)
 // dial tone 350 and 440 Hz
@@ -657,10 +657,10 @@ static ncoftw_t anglestep_af2 = FTWAF(1900);
 static ncoftw_t angle_af1;
 static ncoftw_t angle_af2;
 
-// РґРІСѓС…С‚РѕРЅР°Р»СЊРЅС‹Р№ РіРµРЅРµСЂР°С‚РѕСЂ РґР»СЏ РЅР°СЃС‚СЂРѕР№РєРё
+// двухтональный генератор для настройки
 static RAMFUNC FLOAT_t get_dualtonefloat(void)
 {
-	// Р¤РѕСЂРјРёСЂРѕРІР°РЅРёРµ Р·РЅР°С‡РµРЅРёСЏ РІС‹Р±РѕСЂРєРё
+	// Формирование значения выборки
 	const FLOAT_t v1 = peekvalf(FTW2ANGLEI(angle_af1));
 	const FLOAT_t v2 = peekvalf(FTW2ANGLEI(angle_af2));
 	angle_af1 = FTWROUND(angle_af1 + anglestep_af1);
@@ -670,7 +670,7 @@ static RAMFUNC FLOAT_t get_dualtonefloat(void)
 
 
 //////////////////////////////////////////
-// РџРѕР»СѓС‡РµРЅРёРµ РєРІР°РґСЂР°С‚СѓСЂРЅС‹С… Р·РЅР°С‡РµРЅРёР№ РґР»СЏ РґР°РЅРЅРѕР№ С‡Р°СЃС‚РѕС‚С‹
+// Получение квадратурных значений для данной частоты
 /*
 static ncoftw_t anglestep_aflosim = FTWAF(700);
 static ncoftw_t angle_aflosim = 0;
@@ -684,13 +684,13 @@ static INT32P_t get_int32_aflosim(void)
 }
 */
 
-static unsigned delaysetlo6 [NTRX] = { 0, };	// Р·Р°РґРµСЂР¶РєР° РїРµСЂРµРєР»СЋС‡РµРЅРёСЏ С‡Р°СЃС‚РѕС‚С‹ lo6 РЅР° Р°СЂРµРјСЏ РїСЂРѕС…РѕРґР° СЃРёРіРЅР°Р»Р° С‡РµСЂРµР· FPGA FIR
+static unsigned delaysetlo6 [NTRX] = { 0, };	// задержка переключения частоты lo6 на аремя прохода сигнала через FPGA FIR
 static ncoftw_t anglestep_aflo [NTRX] = { 0, };
 static ncoftw_t anglestep_aflo_shadow [NTRX] = { 0, };
 static ncoftw_t angle_aflo [NTRX] = { 0, };
 const ncoftw_t gnfmdeviationftw = FTWAF(2500);	// 2.5 kHz (-2.5..+2.5) deviation
 
-// СѓСЃС‚Р°РЅРѕРІРёС‚СЊ С‡Р°СЃС‚РѕС‚Сѓ
+// установить частоту
 static void nco_setlo_ftw(ncoftw_t ftw, uint_fast8_t pathi)
 {
 #if WITHDSPEXTFIR || WITHDSPEXTDDC
@@ -703,22 +703,22 @@ static void nco_setlo_ftw(ncoftw_t ftw, uint_fast8_t pathi)
 	anglestep_aflo [pathi] = ftw;
 	if (ftw == 0)
 	{
-		/* Р”Р»СЏ РѕР±РµСЃРїРµС‡РµРЅРёСЏ 0.7 РѕС‚ РјР°РєСЃРёРјР°Р»СЊРЅРѕР№ Р°РјРїР»РёС‚СѓРґС‹ РїРѕСЃР»Рµ СЃСѓРјРјРёСЂРѕРІР°РЅРёСЏ РєРІР°РґСЂР°С‚СѓСЂРЅС‹С… СЃРѕСЃС‚Р°РІР»СЏСЋС‰РёС… РІ FPA */
+		/* Для обеспечения 0.7 от максимальной амплитуды после суммирования квадратурных составляющих в FPA */
 		angle_aflo [pathi] = 0;	// 0 Pi
 	}
 #endif
 }
 
-/* Р·Р°РґРµСЂР¶РєР° СѓСЃС‚Р°РЅРѕРІРєРё РЅРѕРІРѕРіРѕ Р·РЅР°С‡РµРЅРёРµ С‡Р°СЃС‚РѕС‚С‹ РіРµРЅРµСЂР°С‚РѕСЂР° */
+/* задержка установки нового значение частоты генератора */
 static RAMFUNC void nco_setlo_delay(uint_fast8_t pathi, uint_fast8_t tx)
 {
 #if WITHDSPEXTFIR || WITHDSPEXTDDC || WITHDSPLOCALFIR
 	if (tx != 0)
 	{
-		delaysetlo6 [pathi] = 0;	// РїСЂРµРґРѕС‚РІСЂР°С‰Р°РµРј РїРѕРІС‚РѕСЂРЅРѕРµ СЃСЂР°Р±Р°С‚С‹РІР°РЅРёРµ
+		delaysetlo6 [pathi] = 0;	// предотвращаем повторное срабатывание
 		if ((anglestep_aflo [pathi] = anglestep_aflo_shadow [pathi]) == 0)
 		{
-			/* Р”Р»СЏ РѕР±РµСЃРїРµС‡РµРЅРёСЏ 0.7 РѕС‚ РјР°РєСЃРёРјР°Р»СЊРЅРѕР№ Р°РјРїР»РёС‚СѓРґС‹ РїРѕСЃР»Рµ СЃСѓРјРјРёСЂРѕРІР°РЅРёСЏ РєРІР°РґСЂР°С‚СѓСЂРЅС‹С… СЃРѕСЃС‚Р°РІР»СЏСЋС‰РёС… РІ FPA */
+			/* Для обеспечения 0.7 от максимальной амплитуды после суммирования квадратурных составляющих в FPA */
 			angle_aflo [pathi] = 0;	// 0 Pi
 		}
 	}
@@ -726,14 +726,14 @@ static RAMFUNC void nco_setlo_delay(uint_fast8_t pathi, uint_fast8_t tx)
 	{
 		if ((anglestep_aflo [pathi] = anglestep_aflo_shadow [pathi]) == 0)
 		{
-			/* Р”Р»СЏ РѕР±РµСЃРїРµС‡РµРЅРёСЏ 0.7 РѕС‚ РјР°РєСЃРёРјР°Р»СЊРЅРѕР№ Р°РјРїР»РёС‚СѓРґС‹ РїРѕСЃР»Рµ СЃСѓРјРјРёСЂРѕРІР°РЅРёСЏ РєРІР°РґСЂР°С‚СѓСЂРЅС‹С… СЃРѕСЃС‚Р°РІР»СЏСЋС‰РёС… РІ FPA */
+			/* Для обеспечения 0.7 от максимальной амплитуды после суммирования квадратурных составляющих в FPA */
 			angle_aflo [pathi] = 0;	// 0 Pi
 		}
 	}
 #endif
 }
 
-// РџРѕР»СѓС‡РµРЅРёРµ РєРІР°РґСЂР°С‚СѓСЂРЅС‹С… Р·РЅР°С‡РµРЅРёР№ РґР»СЏ РґР°РЅРЅРѕР№ С‡Р°СЃС‚РѕС‚С‹ СЃРѕ СЃРјРµС‰РµРЅРёРµРј (РІ РіРµСЂС†Р°С…)
+// Получение квадратурных значений для данной частоты со смещением (в герцах)
 // Returned is a full scale value
 static RAMFUNC FLOAT32P_t get_float_aflo_delta(long int deltaftw, uint_fast8_t pathi)
 {
@@ -745,7 +745,7 @@ static RAMFUNC FLOAT32P_t get_float_aflo_delta(long int deltaftw, uint_fast8_t p
 }
 
 #if 0
-// РџРѕР»СѓС‡РµРЅРёРµ РєРІР°РґСЂР°С‚СѓСЂРЅС‹С… Р·РЅР°С‡РµРЅРёР№ РґР»СЏ РґР°РЅРЅРѕР№ С‡Р°СЃС‚РѕС‚С‹ СЃРѕ СЃРјРµС‰РµРЅРёРµРј (РІ РіРµСЂС†Р°С…)
+// Получение квадратурных значений для данной частоты со смещением (в герцах)
 // Returned is a full scale value
 static RAMFUNC INT32P_t get_int32_aflo_delta(long int deltaftw, uint_fast8_t pathi)
 {
@@ -761,11 +761,11 @@ static RAMFUNC INT32P_t get_int32_aflo_delta(long int deltaftw, uint_fast8_t pat
 
 #if ! WITHDSPEXTDDC
 
-static const ncoftw_t anglestep_iflo = (1U << (NCOFTWBITS - 2));	// СѓСЃС‚Р°РЅРѕРІРёС‚СЊ С‡Р°СЃС‚РѕС‚Сѓ РІ 1/4 sample rate
+static const ncoftw_t anglestep_iflo = (1U << (NCOFTWBITS - 2));	// установить частоту в 1/4 sample rate
 static ncoftw_t angle_iflo = 0;
 
 
-// РџРѕР»СѓС‡РµРЅРёРµ РєРІР°РґСЂР°С‚СѓСЂРЅС‹С… Р·РЅР°С‡РµРЅРёР№ РґР»СЏ РґР°РЅРЅРѕР№ С‡Р°СЃС‚РѕС‚С‹
+// Получение квадратурных значений для данной частоты
 static FLOAT32P_t get_float4_iflo(void)
 {
 	static const FLOAT_t sintable4f [4] = { + 0, + 1, + 0, - 1 };
@@ -782,7 +782,7 @@ static FLOAT32P_t get_float4_iflo(void)
 
 #if 1
 
-// С„СѓРЅРєС†РёРё РґР»СЏ Р·Р°РјРµРЅС‹ СЃС‚Р°РЅРґР°СЂС‚РЅРѕР№ Р±РёР±Р»РёРѕС‚РµРєРё
+// функции для замены стандартной библиотеки
 
 #define FP_OPER 1		/* FPU op code error			*/
 #define FP_ZDIV 2		/* FPU divide by zero			*/
@@ -1058,21 +1058,21 @@ FLOAT_t local_exp(FLOAT_t x)
 
 //////////////////////////////////////////
 
-// РџСЂРµРѕР±СЂР°Р·РѕРІР°С‚СЊ РѕС‚РЅРѕС€РµРЅРёРµ РЅР°РїСЂСЏР¶РµРЅРёР№ РІС‹СЂР°Р¶РµРЅРЅРѕРµ РІ "СЂР°Р·Р°С…" Рє РґРµС†РёР±РµР»Р°Рј.
+// Преобразовать отношение напряжений выраженное в "разах" к децибелам.
 
 static FLOAT_t ratio2db(FLOAT_t ratio)
 {
 	return LOG10F(ratio) * 20;
 }
 
-// РџСЂРµРѕР±СЂР°Р·РѕРІР°С‚СЊ РѕС‚РЅРѕС€РµРЅРёРµ РІС‹СЂР°Р¶РµРЅРЅРѕРµ РІ РґРµС†РёР±РµР»Р°С… Рє "СЂР°Р·Р°Рј" РѕС‚РЅРѕС€РµРЅРёСЏ РЅР°РїСЂСЏР¶РµРЅРёР№.
+// Преобразовать отношение выраженное в децибелах к "разам" отношения напряжений.
 
 static FLOAT_t db2ratio(FLOAT_t valueDBb)
 {
 	return POWF(10, valueDBb / 20);
 }
 
-/* РїРѕР»СѓС‡РµРЅРёРµ РїРёРєРѕРІРѕРіРѕ Р·РЅР°С‡РµРЅРёСЏ РђР§РҐ */
+/* получение пикового значения АЧХ */
 static FLOAT_t getmaxresponce(void)
 {
 	FLOAT_t r = (FLOAT_t) 1 / 16384;
@@ -1087,7 +1087,7 @@ static FLOAT_t getmaxresponce(void)
 //  calculate impulse response of FIR filter
 //====================================================
 
-// РџРѕР»СѓС‡РµРЅРёРµ РђР§РҐ РёР· РєРѕСЌС„С„РёС†РёРµРЅС‚РѕРІ СЃРёРјРјРјРµС‚СЂРёС‡РЅРѕРіРѕ FIR
+// Получение АЧХ из коэффициентов симмметричного FIR
 
 static void imp_response(const FLOAT_t *dCoeff, int iCoefNum) 
 {
@@ -1162,13 +1162,13 @@ static void scalecoeffs(FLOAT_t *dCoeff, int iCoefNum, FLOAT_t scale)
 static void fir_design_applaywindow(FLOAT_t *dCoeff, const FLOAT_t *dWindow, int iCoefNum);
 static void fir_design_applaywindowL(double *dCoeff, const double *dWindow, int iCoefNum);
 
-// slope: РёР·РјРµРЅРµРЅРёРµ С‚РµРјР±СЂР° Р·РІСѓРєР° - РЅР° Samplerate/2 РђР§РҐ СЃС‚Р°РЅРѕРІРёС‚СЃСЏ РЅР° СЃС‚РѕР»СЊРєРѕ РґРµС†РёР±РµР» 
-// scale: РѕР±С‰РёР№ РјР°СЃС€С‚Р°Р± РёР·РјРµРЅРµРЅРёСЏ РђР§РҐ
+// slope: изменение тембра звука - на Samplerate/2 АЧХ становится на столько децибел 
+// scale: общий масштаб изменения АЧХ
 static void correctspectrumcomplex(int_fast8_t targetdb)
 {
 #if 1
 	const FLOAT_t slope = db2ratio(targetdb);
-	// Р¦РµРЅС‚СЂ СЃРёРјРјРµС‚СЂРёРё Sig - СЏС‡РµР№РєР° СЃ РёРЅРґРµРєСЃРѕРј FFTSizeFilters / 2
+	// Центр симметрии Sig - ячейка с индексом FFTSizeFilters / 2
 	FLOAT_t scale = 1;
 	const FLOAT_t step = POWF(slope, (FLOAT_t) 1 / (FFTSizeFilters / 2 - 1));
 	const int n = FFTSizeFilters / 2;
@@ -1180,17 +1180,17 @@ static void correctspectrumcomplex(int_fast8_t targetdb)
 		Sig [FFTSizeFilters - i].real = Sig [i].real;
 		Sig [FFTSizeFilters - i].imag = - Sig [i].imag;
 	}
-	/* РєРѕСЂСЂРµРєС‚РёСЂСѓРµРј С†РµРЅС‚СЂР°Р»СЊРЅС‹Р№ СЌР»РµРјРµРЅС‚ РјР°СЃСЃРёРІР° */
+	/* корректируем центральный элемент массива */
 	Sig [FFTSizeFilters / 2].real *= scale;
 	Sig [FFTSizeFilters / 2].imag *= scale;
-	/* Р»РёС€РЅРёР№? */
+	/* лишний? */
 	//Sig [0].real = 0;
 	//Sig [0].imag = 0;
 #else
 
 	// https://ru.wikipedia.org/wiki/%D0%A6%D0%B2%D0%B5%D1%82%D0%B0_%D1%88%D1%83%D0%BC%D0%B0
-	// Р‘СЂРѕСѓРЅРѕРІСЃРєРёР№ (РєСЂР°СЃРЅС‹Р№, "РєРѕСЂРёС‡РЅРµРІС‹Р№") С€СѓРј
-	// Р­РЅРµСЂРіРёСЏ С€СѓРјР° РїР°РґР°РµС‚ РЅР° 6 РґРµС†РёР±РµР» РЅР° РѕРєС‚Р°РІСѓ
+	// Броуновский (красный, "коричневый") шум
+	// Энергия шума падает на 6 децибел на октаву
 	const FLOAT_t ratio = db2ratio(targetdb);
 	const FLOAT_t slope = LOG10F(ratio) / (FLOAT_t) M_LOG2E;
 	const int n = FFTSizeFilters / 2;
@@ -1205,7 +1205,7 @@ static void correctspectrumcomplex(int_fast8_t targetdb)
 		Sig [FFTSizeFilters - i].real = Sig [i].real;
 		Sig [FFTSizeFilters - i].imag = - Sig [i].imag;
 	}
-	/* РєРѕСЂСЂРµРєС‚РёСЂСѓРµРј С†РµРЅС‚СЂР°Р»СЊРЅС‹Р№ СЌР»РµРјРµРЅС‚ РјР°СЃСЃРёРІР° */
+	/* корректируем центральный элемент массива */
 	Sig [FFTSizeFilters / 2].real *= ratio;
 	Sig [FFTSizeFilters / 2].imag *= ratio;
 #endif
@@ -1220,12 +1220,12 @@ static void correctspectrumcomplex(int_fast8_t targetdb)
 	//arm_cmplx_mag_squared_f32(sg, MagArr, MagLen);
 }
 
-// Р¤РѕСЂРјРёСЂРѕРІР°РЅРёРµ РЅР°РєР»РѕРЅР° РђР§РҐ Р·РІСѓРєРѕРІРѕРіРѕ С‚СЂР°РєС‚Р° РїСЂРёРµРјРЅРёРєР°
+// Формирование наклона АЧХ звукового тракта приемника
 static void fir_design_adjust_rx(FLOAT_t *dCoeff, const FLOAT_t *dWindow, int iCoefNum, uint_fast8_t usewindow)
 {
 	if (glob_afresponcerx != 0)
 	{
-		imp_response(dCoeff, iCoefNum);	// РџРѕР»СѓС‡РµРЅРёРµ РђР§РҐ РёР· РєРѕСЌС„С„РёС†РёРµРЅС‚РѕРІ СЃРёРјРјРјРµС‚СЂРёС‡РЅРѕРіРѕ FIR
+		imp_response(dCoeff, iCoefNum);	// Получение АЧХ из коэффициентов симмметричного FIR
 		correctspectrumcomplex(glob_afresponcerx);
 		sigtocoeffs(dCoeff, iCoefNum);
 	}
@@ -1233,30 +1233,30 @@ static void fir_design_adjust_rx(FLOAT_t *dCoeff, const FLOAT_t *dWindow, int iC
 	if (usewindow != 0)
 		fir_design_applaywindow(dCoeff, dWindow, iCoefNum);
 
-	imp_response(dCoeff, iCoefNum);	// РџРѕР»СѓС‡РµРЅРёРµ РђР§РҐ РёР· РєРѕСЌС„С„РёС†РёРµРЅС‚РѕРІ СЃРёРјРјРјРµС‚СЂРёС‡РЅРѕРіРѕ FIR РґР»СЏ РїРѕСЃР»РµРґСѓСЋС‰РµРіРѕ РјР°СЃС€С‚Р°Р±РёСЂРѕРІР°РЅРёСЏ РєРѕСЌС„С„РёС†РёРµРЅС‚РѕРІ
+	imp_response(dCoeff, iCoefNum);	// Получение АЧХ из коэффициентов симмметричного FIR для последующего масштабирования коэффициентов
 	const FLOAT_t resp = getmaxresponce();
-	scalecoeffs(dCoeff, iCoefNum, 1 / resp);	// РЅРѕСЂРјР°Р»С‚РёР·Р°С†РёСЏ Рє. РїРµСЂРµРґР°С†Рё Рє Р·Р°РґР°РЅРЅРѕРјСѓ Р·РЅР°С‡РµРЅРёСЋ (1)
+	scalecoeffs(dCoeff, iCoefNum, 1 / resp);	// нормалтизация к. передаци к заданному значению (1)
 }
 
-// Р¤РѕСЂРјРёСЂРѕРІР°РЅРёРµ РЅР°РєР»РѕРЅР° РђР§РҐ Р·РІСѓРєРѕРІРѕРіРѕ С‚СЂР°РєС‚Р° РїРµСЂРµРґР°С‚С‡РёРєР°
+// Формирование наклона АЧХ звукового тракта передатчика
 static void fir_design_adjust_tx(FLOAT_t *dCoeff, const FLOAT_t *dWindow, int iCoefNum)
 {
 	if (glob_afresponcetx != 0)
 	{
-		imp_response(dCoeff, iCoefNum);	// РџРѕР»СѓС‡РµРЅРёРµ РђР§РҐ РёР· РєРѕСЌС„С„РёС†РёРµРЅС‚РѕРІ СЃРёРјРјРјРµС‚СЂРёС‡РЅРѕРіРѕ FIR
+		imp_response(dCoeff, iCoefNum);	// Получение АЧХ из коэффициентов симмметричного FIR
 		correctspectrumcomplex(glob_afresponcetx);
 		sigtocoeffs(dCoeff, iCoefNum);
 	}
 	fir_design_applaywindow(dCoeff, dWindow, iCoefNum);
-	imp_response(dCoeff, iCoefNum);	// РџРѕР»СѓС‡РµРЅРёРµ РђР§РҐ РёР· РєРѕСЌС„С„РёС†РёРµРЅС‚РѕРІ СЃРёРјРјРјРµС‚СЂРёС‡РЅРѕРіРѕ FIR РґР»СЏ РїРѕСЃР»РµРґСѓСЋС‰РµРіРѕ РјР°СЃС€С‚Р°Р±РёСЂРѕРІР°РЅРёСЏ РєРѕСЌС„С„РёС†РёРµРЅС‚РѕРІ
+	imp_response(dCoeff, iCoefNum);	// Получение АЧХ из коэффициентов симмметричного FIR для последующего масштабирования коэффициентов
 	const FLOAT_t resp = getmaxresponce();
-	scalecoeffs(dCoeff, iCoefNum, 1 / resp);	// РЅРѕСЂРјР°Р»С‚РёР·Р°С†РёСЏ Рє. РїРµСЂРµРґР°С†Рё Рє Р·Р°РґР°РЅРЅРѕРјСѓ Р·РЅР°С‡РµРЅРёСЋ (1)
+	scalecoeffs(dCoeff, iCoefNum, 1 / resp);	// нормалтизация к. передаци к заданному значению (1)
 }
 
-// Р Р°СЃС‡С‘С‚ РєРѕСЌС„С„РёС†РёРµРЅС‚Р° РґР»СЏ СЂР°Р±РѕС‚С‹ РІ РґРёСЃРєСЂРµС‚РЅРѕРј РІСЂРµРјРµРЅРё СЃРёСЃС‚РµРјС‹ РђР РЈ.
-// РІС‹Р·С‹РІР°РµС‚СЃСЏ РЅР° РєР°Р¶РґС‹Р№ СЃСЌРјРїР» СЃ РђР¦Рџ - С‡Р°СЃС‚РѕС‚Р° ARMSAIRATE РІ РіРµСЂС†Р°С….
-// РђСЂРіСѓРјРµРЅС‚: РїРѕСЃС‚РѕСЏРЅРЅР°СЏ РІСЂРµРјРµРЅРё С†РµРїРё РІ СЃРµРєСѓРЅРґР°С…
-// Р РµР·СѓР»СЊС‚Р°С‚: 1 - РјРіРЅРѕРІРµРЅРЅРѕ, 0 - РЅРёРєРѕРіРґР°
+// Расчёт коэффициента для работы в дискретном времени системы АРУ.
+// вызывается на каждый сэмпл с АЦП - частота ARMSAIRATE в герцах.
+// Аргумент: постоянная времени цепи в секундах
+// Результат: 1 - мгновенно, 0 - никогда
 
 static FLOAT_t MAKETAUIF(FLOAT_t t)
 {
@@ -1270,8 +1270,8 @@ static FLOAT_t MAKETAUIF(FLOAT_t t)
 	return 1 - step;
 }
 
-// РђСЂРіСѓРјРµРЅС‚: РїРѕСЃС‚РѕСЏРЅРЅР°СЏ РІСЂРµРјРµРЅРё С†РµРїРё РІ СЃРµРєСѓРЅРґР°С…
-// Р РµР·СѓР»СЊС‚Р°С‚: 1 - РјРіРЅРѕРІРµРЅРЅРѕ, 0 - РЅРёРєРѕРіРґР°
+// Аргумент: постоянная времени цепи в секундах
+// Результат: 1 - мгновенно, 0 - никогда
 static FLOAT_t MAKETAUAF(FLOAT_t t)
 {
 	if (t == 0)
@@ -1284,17 +1284,17 @@ static FLOAT_t MAKETAUAF(FLOAT_t t)
 	return 1 - step;
 }
 
-// Р РµР·СѓР»СЊС‚Р°С‚: 1 - РјРіРЅРѕРІРµРЅРЅРѕ
+// Результат: 1 - мгновенно
 static FLOAT_t MAKETAUAF0(void)
 {
 	return 1;
 }
 
-// РёРЅС‚РµРіСЂРёСЂСѓСЋС‰РµРµ Р·РІРµРЅРѕ.
+// интегрирующее звено.
 // v1 - current value, v2 - charger value
 // R2 by series with capacitor
-// chargespeed 0: РЅРёРєРѕРіРґР°, 1: РјРіРЅРѕРІРµРЅРЅРѕ
-// Р‘РѕР»СЊС€РёРј Р·РЅР°С‡РµРЅРёСЏРј СЃРёРіРЅР°Р»Р° СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‚ Р±РѕР»РµРµ РїРѕР»РѕР¶РёС‚РµР»СЊРЅС‹Рµ Р·РЅР°С‡РµРЅРёСЏ.
+// chargespeed 0: никогда, 1: мгновенно
+// Большим значениям сигнала соответствуют более положительные значения.
 
 static void charge2(volatile FLOAT_t * vcap, FLOAT_t vinput, FLOAT_t chargespeed)
 {
@@ -1303,32 +1303,32 @@ static void charge2(volatile FLOAT_t * vcap, FLOAT_t vinput, FLOAT_t chargespeed
 
 typedef struct agcstate
 {
-	FLOAT_t  agcfastcap;	// СЂР°Р·РЅРёС†Р° РїРѕСЃР»Рµ РІС‹РїСЂСЏРјР»РµРЅРёСЏ
-	FLOAT_t  agcslowcap;	// СЂР°Р·РЅРёС†Р° РїРѕСЃР»Рµ РІС‹РїСЂСЏРјР»РµРЅРёСЏ
-	unsigned agchangticks;				// СЃРєРѕР»СЊРєРѕ СЃСЌРјРїР»РѕРІ РЅР°РґРѕ СЃРѕС…СЂР°РЅСЏС‚СЊ agcslowcap РЅРµРёР·РјРµРЅРЅС‹Рј.
+	FLOAT_t  agcfastcap;	// разница после выпрямления
+	FLOAT_t  agcslowcap;	// разница после выпрямления
+	unsigned agchangticks;				// сколько сэмплов надо сохранять agcslowcap неизменным.
 } agcstate_t;
 
 typedef struct agcparams
 {
-	uint_fast8_t agcoff;	// РїСЂРёР·РЅР°Рє РѕС‚РєР»СЋС‡РµРЅРёСЏ РђР РЈ
+	uint_fast8_t agcoff;	// признак отключения АРУ
 
-	// Р’СЂРµРјРµРЅРЅС‹Рµ РїР°Р°СЂРјРµС‚СЂС‹ РђР РЈ
+	// Временные паарметры АРУ
 
-	// РїРѕСЃС‚РѕСЏРЅРЅС‹Рµ РІСЂРµРјРµРЅРё С†РµРїРё РђР РЈ РґР»СЏ СЂРµР°РєС†РёРё РЅР° РёРјРїСѓР»СЊСЃРЅС‹Рµ РїРѕРјРµС…Рё (Р±С‹СЃС‚СЂР°СЏ РђР РЈ).
-	FLOAT_t dischargespeedfast;	//0.02f;	// 1 - РјРіРЅРѕРІРµРЅРЅРѕ, 0 - РЅРёРєРѕРіРґР°
+	// постоянные времени цепи АРУ для реакции на импульсные помехи (быстрая АРУ).
+	FLOAT_t dischargespeedfast;	//0.02f;	// 1 - мгновенно, 0 - никогда
 	FLOAT_t	chargespeedfast;
 
-	// РїРѕСЃС‚РѕСЏРЅРЅС‹Рµ РІСЂРµРјРµРЅРё РѕСЃРЅРѕРІРЅРѕРіРѕ С„РёР»СЊС‚СЂР° РђР РЈ -  РІСЂРµРјСЏ Р·Р°СЂСЏРґС‹ РґРѕР»Р¶РЅРѕ Р±С‹С‚СЊ С‚РѕРіРѕ Р¶Рµ РїРѕСЂСЏРґРєР°, С‡С‚Рѕ Рё СЂР°Р·СЂСЏРґ С†РµРїРё Р±С‹СЃС‚СЂРѕР№ РђР РЈ
-	FLOAT_t chargespeedslow;		//0.05f;	// 1 - РјРіРЅРѕРІРµРЅРЅРѕ, 0 - РЅРёРєРѕРіРґР°
-	FLOAT_t dischargespeedslow;	// 1 - РјРіРЅРѕРІРµРЅРЅРѕ, 0 - РЅРёРєРѕРіРґР°
-	unsigned hungticks;				// СЃРєРѕР»СЊРєРѕ СЃСЌРјРїР»РѕРІ РЅР°РґРѕ СЃРѕС…СЂР°РЅСЏС‚СЊ agcslowcap РЅРµРёР·РјРµРЅРЅС‹Рј.
+	// постоянные времени основного фильтра АРУ -  время заряды должно быть того же порядка, что и разряд цепи быстрой АРУ
+	FLOAT_t chargespeedslow;		//0.05f;	// 1 - мгновенно, 0 - никогда
+	FLOAT_t dischargespeedslow;	// 1 - мгновенно, 0 - никогда
+	unsigned hungticks;				// сколько сэмплов надо сохранять agcslowcap неизменным.
 
-	// РђРјРїР»РёС‚СѓРґРЅС‹Рµ РїР°СЂР°РјРµС‚СЂС‹ РђР РЈ
+	// Амплитудные параметры АРУ
 
-	FLOAT_t gainlimit;				// РњР°РєСЃРёРјР°Р»СЊРЅРѕРµ СѓСЃРёР»РµРЅРёРµ РІ СЂР°Р·Р°С… РїРѕ РЅР°РїСЂСЏР¶РµРЅРёСЋ, РґРѕРїСѓСЃС‚РёРјРѕРµ РґР»СЏ РђР РЈ
+	FLOAT_t gainlimit;				// Максимальное усиление в разах по напряжению, допустимое для АРУ
 	FLOAT_t	mininput;
-	FLOAT_t levelfence;				// РњР°РєСЃРёРјР°Р»СЊРЅРЅРѕРµ Р·РЅР°С‡РµРЅРёРµ РЅР° РІС‹С…РѕР»Рµ РђР РЈ
-	FLOAT_t agcfactor;				// РџР°СЂР°РјРµС‚СЂ РїСЂРё РІС‹С‡РёСЃР»РµРЅРёРё "СЃРїРѕСЂС‚РёРІРЅРѕР№" РђР РЈ
+	FLOAT_t levelfence;				// Максимальнное значение на выхоле АРУ
+	FLOAT_t agcfactor;				// Параметр при вычислении "спортивной" АРУ
 } agcparams_t;
 
 
@@ -1340,7 +1340,7 @@ static FLOAT_t agc_calcagcfactor(uint_fast8_t rate)
 	return - (1 - 1 / (FLOAT_t) rate);
 }
 
-// РќР°С‡Р°Р»СЊРЅР°СЏ СѓСЃС‚Р°РЅРѕРІРєР°  РїР°СЂР°РјРµС‚СЂРѕРІ РђР РЈ РїСЂРёС‘РјРЅРёРєР°
+// Начальная установка  параметров АРУ приёмника
 
 static void agc_parameters_initialize(volatile agcparams_t * agcp)
 {
@@ -1366,7 +1366,7 @@ static void agc_parameters_initialize(volatile agcparams_t * agcp)
 	//debug_printf_P(PSTR("agc_parameters_initialize: dischargespeedfast=%f, chargespeedfast=%f\n"), agcp->dischargespeedfast, agcp->chargespeedfast);
 }
 
-// РЈСЃС‚Р°РЅРѕРІРєР° РїР°СЂР°РјРµС‚СЂРѕРІ РђР РЈ РїСЂРёС‘РјРЅРёРєР°
+// Установка параметров АРУ приёмника
 
 static void agc_parameters_update(volatile agcparams_t * const agcp, FLOAT_t gainlimit, uint_fast8_t pathi)
 {
@@ -1374,11 +1374,11 @@ static void agc_parameters_update(volatile agcparams_t * const agcp, FLOAT_t gai
 
 	agcp->agcoff = (glob_agc == BOARD_AGCCODE_OFF);
 
-	agcp->dischargespeedfast = MAKETAUIF((int) glob_agc_t4 [pathi] * (FLOAT_t) 0.001);	// РІ РјРёР»РёСЃРµРєСѓРЅРґР°С…
+	agcp->dischargespeedfast = MAKETAUIF((int) glob_agc_t4 [pathi] * (FLOAT_t) 0.001);	// в милисекундах
 
-	agcp->chargespeedslow = MAKETAUIF((int) glob_agc_t1 [pathi] * (FLOAT_t) 0.001);	// РІ РјРёР»РёСЃРµРєСѓРЅРґР°С…
-	agcp->dischargespeedslow = MAKETAUIF((int) glob_agc_t2 [pathi] * (FLOAT_t) 0.1);	// РІ СЃРѕС‚РЅСЏС… РјРёР»РёСЃРµРєСѓРЅРґ (0.1 СЃРµРєСѓРЅРґС‹)
-	agcp->hungticks = NSAITICKS(glob_agc_thung [pathi] * 100);			// РІ СЃРѕС‚РЅСЏС… РјРёР»РёСЃРµРєСѓРЅРґ (0.1 СЃРµРєСѓРЅРґС‹)
+	agcp->chargespeedslow = MAKETAUIF((int) glob_agc_t1 [pathi] * (FLOAT_t) 0.001);	// в милисекундах
+	agcp->dischargespeedslow = MAKETAUIF((int) glob_agc_t2 [pathi] * (FLOAT_t) 0.1);	// в сотнях милисекунд (0.1 секунды)
+	agcp->hungticks = NSAITICKS(glob_agc_thung [pathi] * 100);			// в сотнях милисекунд (0.1 секунды)
 
 	agcp->gainlimit = gainlimit;
 	agcp->agcfactor = flatgain ? (FLOAT_t) -1 : agc_calcagcfactor(glob_agcrate [pathi]);
@@ -1386,7 +1386,7 @@ static void agc_parameters_update(volatile agcparams_t * const agcp, FLOAT_t gai
 	//debug_printf_P(PSTR("agc_parameters_update: dischargespeedfast=%f, chargespeedfast=%f\n"), agcp->dischargespeedfast, agcp->chargespeedfast);
 }
 
-// РЈСЃС‚Р°РЅРѕРІРєР° РїР°СЂР°РјРµС‚СЂРѕРІ S-РјРµС‚СЂР° РїСЂРёС‘РјРЅРёРєР°
+// Установка параметров S-метра приёмника
 
 static void agc_smeter_parameters_update(volatile agcparams_t * const agcp, FLOAT_t gainlimit, uint_fast8_t pathi)
 {
@@ -1394,11 +1394,11 @@ static void agc_smeter_parameters_update(volatile agcparams_t * const agcp, FLOA
 
 	agcp->agcoff = (glob_agc == BOARD_AGCCODE_OFF);
 
-	agcp->dischargespeedfast = MAKETAUIF((int) glob_agc_t4 [pathi] * (FLOAT_t) 0.001);	// РІ РјРёР»РёСЃРµРєСѓРЅРґР°С…
+	agcp->dischargespeedfast = MAKETAUIF((int) glob_agc_t4 [pathi] * (FLOAT_t) 0.001);	// в милисекундах
 
 	agcp->chargespeedslow = MAKETAUIF((FLOAT_t) 0.015);	// 15 mS
 	agcp->dischargespeedslow = MAKETAUIF((FLOAT_t) 0.3);	// 300 mS
-	agcp->hungticks = NSAITICKS(800);			// РІ СЃРѕС‚РЅСЏС… РјРёР»РёСЃРµРєСѓРЅРґ (0.8 СЃРµРєСѓРЅРґС‹)
+	agcp->hungticks = NSAITICKS(800);			// в сотнях милисекунд (0.8 секунды)
 
 	agcp->gainlimit = gainlimit;
 	agcp->agcfactor = flatgain ? (FLOAT_t) -1 : agc_calcagcfactor(glob_agcrate [pathi]);
@@ -1406,7 +1406,7 @@ static void agc_smeter_parameters_update(volatile agcparams_t * const agcp, FLOA
 	//debug_printf_P(PSTR("agc_parameters_update: dischargespeedfast=%f, chargespeedfast=%f\n"), agcp->dischargespeedfast, agcp->chargespeedfast);
 }
 
-// РќР°С‡Р°Р»СЊРЅР°СЏ СѓСЃС‚Р°РЅРѕРІРєР° РїР°СЂР°РјРµС‚СЂРѕРІ РђР РЈ РјРёРєСЂРѕС„РѕРЅРЅРѕРіРѕ С‚СЂР°РєС‚Р° РїРµСЂРµРґР°С‚С‡РёРєР°
+// Начальная установка параметров АРУ микрофонного тракта передатчика
 
 static void comp_parameters_initialize(volatile agcparams_t * agcp)
 {
@@ -1426,7 +1426,7 @@ static void comp_parameters_initialize(volatile agcparams_t * agcp)
 	agcp->agcfactor = (FLOAT_t) - 1;
 }
 
-// РЈСЃС‚Р°РЅРѕРІРєР° РїР°СЂР°РјРµС‚СЂРѕРІ РђР РЈ РїРµСЂРµРґР°С‚С‡РёРєР°
+// Установка параметров АРУ передатчика
 
 static void comp_parameters_update(volatile agcparams_t * const agcp, FLOAT_t gainlimit)
 {
@@ -1436,55 +1436,55 @@ static void comp_parameters_update(volatile agcparams_t * const agcp, FLOAT_t ga
 	agcp->levelfence = txlevelfenceSSB;
 }
 
-// РґРµС‚РµРєС‚РѕСЂ РђР РЈ - РїРѕРґРґРµСЂР¶РёРІР°РµС‚ РІС‹С…РѕРґРЅРѕРµ Р·РЅР°С‡РµРЅРёРµ РїСЂРѕРїРѕСЂС†РёРѕРЅР°Р»СЊРЅРѕ СЃРёРіРЅР°Р»Сѓ 
-// СЃРѕ РІСЃРµРјРё РїРѕР»РѕР¶РµРЅРЅС‹РјРё Р·Р°РґРµСЂР¶РєР°РјРё РЅР° СЃСЂР°Р±Р°С‚С‹РІР°РЅРёРµ/РѕС‚РїСѓСЃРєР°РЅРёРµ
+// детектор АРУ - поддерживает выходное значение пропорционально сигналу 
+// со всеми положенными задержками на срабатывание/отпускание
 
 static void
 performagc(const volatile agcparams_t * agcp, volatile agcstate_t * st, FLOAT_t sample)
 {
-	// Р±С‹СЃС‚СЂР°СЏ С†РµРїСЊ РђР РЈ
+	// быстрая цепь АРУ
 	if (st->agcfastcap < sample)
 	{
-		// Р·Р°СЂСЏР¶Р°РµС‚СЃСЏ РІ СЃРѕРѕС‚РІРµС‚СЃС‚РІРёРё СЃ РїР°СЂР°РјРµС‚СЂРѕРј agcp->chargespeedfast
+		// заряжается в соответствии с параметром agcp->chargespeedfast
 		charge2(& st->agcfastcap, sample, agcp->chargespeedfast);
 	}
 	else
 	{
-		// СЂР°Р·СЂСЏРґ СЃРѕ СЃРєРѕСЂРѕСЃС‚СЊСЋ agcp->dischargespeedfast
+		// разряд со скоростью agcp->dischargespeedfast
 		charge2(& st->agcfastcap, sample, agcp->dischargespeedfast);
 	}
 
-	// РјРµРґР»РµРЅРЅР°СЏ С†РµРїСЊ РђР РЈ
+	// медленная цепь АРУ
 	// hang time processing
-	if (st->agcslowcap < st->agcfastcap)	// С‚СЂРµР±СѓРµС‚СЃСЏ Р·Р°СЂСЏРґ slow С†РµРїРё
+	if (st->agcslowcap < st->agcfastcap)	// требуется заряд slow цепи
 	{
-		// Р·Р°СЂСЏР¶Р°РµС‚СЃСЏ
+		// заряжается
 		charge2(& st->agcslowcap, st->agcfastcap, agcp->chargespeedslow);
 		st->agchangticks = agcp->hungticks;
 	}
-	else if (st->agcslowcap > st->agcfastcap)	// С‚СЂРµР±СѓРµС‚СЃСЏ Р·Р°СЂСЏРґ slow С†РµРїРё
+	else if (st->agcslowcap > st->agcfastcap)	// требуется заряд slow цепи
 	{
 		if (st->agchangticks == 0)
 		{
-			// СЂР°Р·СЂСЏР¶Р°РµС‚СЃСЏ
+			// разряжается
 			charge2(& st->agcslowcap, st->agcfastcap, agcp->dischargespeedslow);
 		}
 		else
 		{
-			// Р–РґРµРј РѕРєРѕРЅС‡Р°РЅРёСЏ hang time
+			// Ждем окончания hang time
 			st->agchangticks -= 1;
 		}
 	}
 	else
 	{
-		// РЅРµ РјРµРЅСЏРµС‚СЃСЏ Р·РЅР°С‡РµРЅРёРµ
+		// не меняется значение
 		st->agchangticks = agcp->hungticks;
 	}
 }
 
 static FLOAT_t performagcresultslow(const volatile agcstate_t * st)
 {
-	return FMAXF(st->agcfastcap, st->agcslowcap);	// СЂР°Р·РЅРёС†Р° РїРѕСЃР»Рµ РР›Р
+	return FMAXF(st->agcfastcap, st->agcslowcap);	// разница после ИЛИ
 }
 
 static FLOAT_t performagcresultfast(const volatile agcstate_t * st)
@@ -1499,13 +1499,13 @@ static FLOAT_t mikeinlevel;
 static FLOAT_t VOXDISCHARGE;
 static FLOAT_t VOXCHARGE = 0;
 
-// Р’РѕР·РІСЂР°С‰Р°РµС‚ Р·РЅР°С‡РµРЅРёСЏ 0..255
+// Возвращает значения 0..255
 uint_fast8_t dsp_getvox(uint_fast8_t fullscale)
 {
-	return mikeinlevel * UINT8_MAX / mikefenceIN;	// РјР°СЃС€Р°Р±РёСЂРѕРІР°РЅРёРµ q15 Рє 0..255
+	return mikeinlevel * UINT8_MAX / mikefenceIN;	// масшабирование q15 к 0..255
 }
 
-// Р’РѕР·РІСЂР°С‰Р°РµС‚ Р·РЅР°С‡РµРЅРёСЏ 0..255
+// Возвращает значения 0..255
 uint_fast8_t dsp_getavox(uint_fast8_t fullscale)
 {
 	return 0;
@@ -1513,11 +1513,11 @@ uint_fast8_t dsp_getavox(uint_fast8_t fullscale)
 
 static void voxmeter_initialize(void)
 {
-	VOXCHARGE = MAKETAUAF0();	// РџРёРєРѕРІС‹Р№ РґРµС‚РµРєС‚РѕСЂ СЃРѕ РІСЂРµРјРµРЅРµРј Р·Р°СЂР°РґР° 0
-	VOXDISCHARGE = MAKETAUAF((FLOAT_t) 0.02);	// РџРёРєРѕРІС‹Р№ РґРµС‚РµРєС‚РѕСЂ СЃРѕ РІСЂРµРјРµРЅРµРј СЂР°Р·СЂСЏРґР° 0.02 СЃРµРєСѓРЅРґС‹
+	VOXCHARGE = MAKETAUAF0();	// Пиковый детектор со временем зарада 0
+	VOXDISCHARGE = MAKETAUAF((FLOAT_t) 0.02);	// Пиковый детектор со временем разряда 0.02 секунды
 }
 
-// РЁСѓРјРѕРїРѕРґР°РІРёС‚РµР»СЊ NFM
+// Шумоподавитель NFM
 
 static FLOAT_t NBTAU;
 static FLOAT_t holdmaxv3;
@@ -1535,11 +1535,11 @@ long getholdmax3(void)
 
 
 /////////////////////////////
-// Р¤РѕСЂРјРёСЂРѕРІР°РЅРёРµ Р°СѓРґРёРѕРїРѕС‚РѕРєР° Рє РѕРїРµСЂР°С‚РѕСЂСѓ
+// Формирование аудиопотока к оператору
 //
 
 #if 0
-/* Р¤РёР»СЊС‚СЂ, РёСЃРїРѕР»СЊР·СѓСЋС‰РёР№ СЃРіРµРЅРµСЂРёСЂРѕРІР°РЅРЅС‹Рµ MATLAB С‚Р°Р±Р»РёС†С‹ РїР°СЂР°РјРµС‚СЂРѕРІ.
+/* Фильтр, использующий сгенерированные MATLAB таблицы параметров.
  * Tnx to RX9CIM
  */
 static FLOAT_t iir_filter(
@@ -1570,8 +1570,8 @@ static FLOAT_t iir_filter(
 }
 #endif
 
-// РџРѕР»СѓС‡РёС‚СЊ СѓСЃРёР»РµРЅРёРµ С„РёР»СЊС‚СЂР° РЅР° С‡Р°СЃС‚РѕС‚Рµ 0
-// РњР°СЃСЃРёРІ РєРѕСЌС„С„РёС†РёРµРЅС‚РѕРІ РґР»СЏ СЃРёРјРјРµС‚СЂРёС‡РЅРѕРіРѕ С„РёР»СЊС‚СЂР°
+// Получить усиление фильтра на частоте 0
+// Массив коэффициентов для симметричного фильтра
 static FLOAT_t testgain_float_DC(const FLOAT_t * dCoeff, int iCoefNum)
 {
 	const int iHalfLen = (iCoefNum - 1) / 2;
@@ -1579,14 +1579,14 @@ static FLOAT_t testgain_float_DC(const FLOAT_t * dCoeff, int iCoefNum)
 	FLOAT_t dSum = 0;
 	for (iCnt = 0; iCnt < iHalfLen; iCnt ++)
 	{
-		dSum += dCoeff [iCnt] * 2;	// РЈРјРЅРѕР¶РµРЅРёРµ РЅР° 2 - С‚Р°Рє РєР°Рє СЂР°СЃС‡РёС‚Р°РЅР° РїРѕР»РѕРІРёРЅР° РєРѕСЌС„С„РёС†РёРµРЅС‚РѕРІ (СЃРёРјРјРµС‚СЂРёС‡РЅС‹Р№ С„РёР»СЊС‚СЂ)
+		dSum += dCoeff [iCnt] * 2;	// Умножение на 2 - так как расчитана половина коэффициентов (симметричный фильтр)
 	}
-	dSum += dCoeff [iHalfLen];		// РїСЂРѕРіРЅРѕР·РёСЂСѓРµРјРѕРµ СѓСЃРёР»РµРЅРёРµ РґР»СЏ С„РёР»СЊС‚СЂР° СЃ float РѕРїРµСЂР°С†РёСЏРјРё
-	return FABSF(dSum);		// РџРѕР»СѓС‡Р°РµРј РјРѕРґСѓР»СЊ СѓСЃРёР»РµРЅРёСЏ РЅР° РїРѕСЃС‚РѕСЏРЅРЅРѕР№ СЃРѕСЃС‚Р°РІР»СЏСЋС‰РµР№.
+	dSum += dCoeff [iHalfLen];		// прогнозируемое усиление для фильтра с float операциями
+	return FABSF(dSum);		// Получаем модуль усиления на постоянной составляющей.
 }
 
-// РџРѕР»СѓС‡РёС‚СЊ СѓСЃРёР»РµРЅРёРµ С„РёР»СЊС‚СЂР° РЅР° С‡Р°СЃС‚РѕС‚Рµ 0
-// РњР°СЃСЃРёРІ РєРѕСЌС„С„РёС†РёРµРЅС‚РѕРІ РґР»СЏ СЃРёРјРјРµС‚СЂРёС‡РЅРѕРіРѕ С„РёР»СЊС‚СЂР°
+// Получить усиление фильтра на частоте 0
+// Массив коэффициентов для симметричного фильтра
 static double testgain_float_DCL(const double * dCoeff, int iCoefNum)
 {
 	const int iHalfLen = (iCoefNum - 1) / 2;
@@ -1594,10 +1594,10 @@ static double testgain_float_DCL(const double * dCoeff, int iCoefNum)
 	double dSum = 0;
 	for (iCnt = 0; iCnt < iHalfLen; iCnt ++)
 	{
-		dSum += dCoeff [iCnt] * 2;	// РЈРјРЅРѕР¶РµРЅРёРµ РЅР° 2 - С‚Р°Рє РєР°Рє СЂР°СЃС‡РёС‚Р°РЅР° РїРѕР»РѕРІРёРЅР° РєРѕСЌС„С„РёС†РёРµРЅС‚РѕРІ (СЃРёРјРјРµС‚СЂРёС‡РЅС‹Р№ С„РёР»СЊС‚СЂ)
+		dSum += dCoeff [iCnt] * 2;	// Умножение на 2 - так как расчитана половина коэффициентов (симметричный фильтр)
 	}
-	dSum += dCoeff [iHalfLen];		// РїСЂРѕРіРЅРѕР·РёСЂСѓРµРјРѕРµ СѓСЃРёР»РµРЅРёРµ РґР»СЏ С„РёР»СЊС‚СЂР° СЃ float РѕРїРµСЂР°С†РёСЏРјРё
-	return fabs(dSum);		// РџРѕР»СѓС‡Р°РµРј РјРѕРґСѓР»СЊ СѓСЃРёР»РµРЅРёСЏ РЅР° РїРѕСЃС‚РѕСЏРЅРЅРѕР№ СЃРѕСЃС‚Р°РІР»СЏСЋС‰РµР№.
+	dSum += dCoeff [iHalfLen];		// прогнозируемое усиление для фильтра с float операциями
+	return fabs(dSum);		// Получаем модуль усиления на постоянной составляющей.
 }
 
 #if 0
@@ -1653,11 +1653,11 @@ static FLOAT_t fir_design_window(int iCnt, int iCoefNum)
 {
 	const int n = iCoefNum - 1;
 	const FLOAT_t a = (FLOAT_t) M_TWOPI * iCnt / n;
-	const FLOAT_t a2 = 2 * (FLOAT_t) M_TWOPI * iCnt / n;	// РґР»СЏ РїРѕРІС‹С€РµРЅРёСЏ С‚РѕС‡РЅРѕСЃС‚Рё СѓРјРЅРѕР¶РµРЅРёРµ РїРµСЂРµРЅРµСЃРµРЅРѕ РґРѕ РґРµР»РµРЅРёСЏ
-	const FLOAT_t a3 = 3 * (FLOAT_t) M_TWOPI * iCnt / n;	// РґР»СЏ РїРѕРІС‹С€РµРЅРёСЏ С‚РѕС‡РЅРѕСЃС‚Рё СѓРјРЅРѕР¶РµРЅРёРµ РїРµСЂРµРЅРµСЃРµРЅРѕ РґРѕ РґРµР»РµРЅРёСЏ
-	const FLOAT_t a4 = 4 * (FLOAT_t) M_TWOPI * iCnt / n;	// РґР»СЏ РїРѕРІС‹С€РµРЅРёСЏ С‚РѕС‡РЅРѕСЃС‚Рё СѓРјРЅРѕР¶РµРЅРёРµ РїРµСЂРµРЅРµСЃРµРЅРѕ РґРѕ РґРµР»РµРЅРёСЏ
-	const FLOAT_t a5 = 5 * (FLOAT_t) M_TWOPI * iCnt / n;	// РґР»СЏ РїРѕРІС‹С€РµРЅРёСЏ С‚РѕС‡РЅРѕСЃС‚Рё СѓРјРЅРѕР¶РµРЅРёРµ РїРµСЂРµРЅРµСЃРµРЅРѕ РґРѕ РґРµР»РµРЅРёСЏ
-	const FLOAT_t a6 = 6 * (FLOAT_t) M_TWOPI * iCnt / n;	// РґР»СЏ РїРѕРІС‹С€РµРЅРёСЏ С‚РѕС‡РЅРѕСЃС‚Рё СѓРјРЅРѕР¶РµРЅРёРµ РїРµСЂРµРЅРµСЃРµРЅРѕ РґРѕ РґРµР»РµРЅРёСЏ
+	const FLOAT_t a2 = 2 * (FLOAT_t) M_TWOPI * iCnt / n;	// для повышения точности умножение перенесено до деления
+	const FLOAT_t a3 = 3 * (FLOAT_t) M_TWOPI * iCnt / n;	// для повышения точности умножение перенесено до деления
+	const FLOAT_t a4 = 4 * (FLOAT_t) M_TWOPI * iCnt / n;	// для повышения точности умножение перенесено до деления
+	const FLOAT_t a5 = 5 * (FLOAT_t) M_TWOPI * iCnt / n;	// для повышения точности умножение перенесено до деления
+	const FLOAT_t a6 = 6 * (FLOAT_t) M_TWOPI * iCnt / n;	// для повышения точности умножение перенесено до деления
 	
 	switch (BOARD_WTYPE_BLACKMAN_HARRIS_MOD)
 	{
@@ -1709,7 +1709,7 @@ static FLOAT_t fir_design_window(int iCnt, int iCoefNum)
 		}
 	case BOARD_WTYPE_BLACKMAN_HARRIS_7TERM:
 		// Blackman-Harris 7-term
-		// РќР° float СЃ РѕРґРёРЅР°СЂРЅРѕР№ С‚РѕС‡РЅРѕСЃС‚СЊСЋ РЅРµ РёРјРµРµС‚ СЃРјС‹СЃР»Р° РїРµСЂРµС…РѕРґРёС‚СЊ СЃ BOARD_WTYPE_BLACKMAN_HARRIS
+		// На float с одинарной точностью не имеет смысла переходить с BOARD_WTYPE_BLACKMAN_HARRIS
 		{
 			const FLOAT_t w = (
 				+ (FLOAT_t) 0.27105140069342
@@ -1766,11 +1766,11 @@ static double fir_design_windowL(int iCnt, int iCoefNum)
 {
 	const int n = iCoefNum - 1;
 	const double a = (double) M_TWOPI * iCnt / n;
-	const double a2 = 2 * (double) M_TWOPI * iCnt / n;	// РґР»СЏ РїРѕРІС‹С€РµРЅРёСЏ С‚РѕС‡РЅРѕСЃС‚Рё СѓРјРЅРѕР¶РµРЅРёРµ РїРµСЂРµРЅРµСЃРµРЅРѕ РґРѕ РґРµР»РµРЅРёСЏ
-	const double a3 = 3 * (double) M_TWOPI * iCnt / n;	// РґР»СЏ РїРѕРІС‹С€РµРЅРёСЏ С‚РѕС‡РЅРѕСЃС‚Рё СѓРјРЅРѕР¶РµРЅРёРµ РїРµСЂРµРЅРµСЃРµРЅРѕ РґРѕ РґРµР»РµРЅРёСЏ
-	const double a4 = 4 * (double) M_TWOPI * iCnt / n;	// РґР»СЏ РїРѕРІС‹С€РµРЅРёСЏ С‚РѕС‡РЅРѕСЃС‚Рё СѓРјРЅРѕР¶РµРЅРёРµ РїРµСЂРµРЅРµСЃРµРЅРѕ РґРѕ РґРµР»РµРЅРёСЏ
-	const double a5 = 5 * (double) M_TWOPI * iCnt / n;	// РґР»СЏ РїРѕРІС‹С€РµРЅРёСЏ С‚РѕС‡РЅРѕСЃС‚Рё СѓРјРЅРѕР¶РµРЅРёРµ РїРµСЂРµРЅРµСЃРµРЅРѕ РґРѕ РґРµР»РµРЅРёСЏ
-	const double a6 = 6 * (double) M_TWOPI * iCnt / n;	// РґР»СЏ РїРѕРІС‹С€РµРЅРёСЏ С‚РѕС‡РЅРѕСЃС‚Рё СѓРјРЅРѕР¶РµРЅРёРµ РїРµСЂРµРЅРµСЃРµРЅРѕ РґРѕ РґРµР»РµРЅРёСЏ
+	const double a2 = 2 * (double) M_TWOPI * iCnt / n;	// для повышения точности умножение перенесено до деления
+	const double a3 = 3 * (double) M_TWOPI * iCnt / n;	// для повышения точности умножение перенесено до деления
+	const double a4 = 4 * (double) M_TWOPI * iCnt / n;	// для повышения точности умножение перенесено до деления
+	const double a5 = 5 * (double) M_TWOPI * iCnt / n;	// для повышения точности умножение перенесено до деления
+	const double a6 = 6 * (double) M_TWOPI * iCnt / n;	// для повышения точности умножение перенесено до деления
 	
 	switch (BOARD_WTYPE_BLACKMAN_HARRIS_MOD)
 	{
@@ -1822,7 +1822,7 @@ static double fir_design_windowL(int iCnt, int iCoefNum)
 		}
 	case BOARD_WTYPE_BLACKMAN_HARRIS_7TERM:
 		// Blackman-Harris 7-term
-		// РќР° float СЃ РѕРґРёРЅР°СЂРЅРѕР№ С‚РѕС‡РЅРѕСЃС‚СЊСЋ РЅРµ РёРјРµРµС‚ СЃРјС‹СЃР»Р° РїРµСЂРµС…РѕРґРёС‚СЊ СЃ BOARD_WTYPE_BLACKMAN_HARRIS
+		// На float с одинарной точностью не имеет смысла переходить с BOARD_WTYPE_BLACKMAN_HARRIS
 		{
 			const double w = (
 				+ (double) 0.27105140069342
@@ -1876,8 +1876,8 @@ static double fir_design_windowL(int iCnt, int iCoefNum)
 
 ////////////////////////////////////////////////
 
-// Р Р°СЃС‡С‘С‚ С„РёР»СЊС‚СЂР° РЅРёР¶РЅРёС… С‡Р°СЃС‚РѕС‚
-// Р Р°СЃС‡С‘С‚ С„РёР»СЊС‚СЂР° Р±РµР· РЅР°Р»РѕР¶РµРЅРёСЏ РѕРєРѕРЅРЅРѕР№ С„СѓРЅРєС†РёРё
+// Расчёт фильтра нижних частот
+// Расчёт фильтра без наложения оконной функции
 static void fir_design_lowpass(FLOAT_t *dCoeff, int iCoefNum, FLOAT_t m_fCutHigh)
 {
 	const int iHalfLen = (iCoefNum - 1) / 2;
@@ -1897,8 +1897,8 @@ static void fir_design_lowpass(FLOAT_t *dCoeff, int iCoefNum, FLOAT_t m_fCutHigh
 	}
 }
 
-// Р Р°СЃС‡С‘С‚ С„РёР»СЊС‚СЂР° РЅРёР¶РЅРёС… С‡Р°СЃС‚РѕС‚
-// Р Р°СЃС‡С‘С‚ С„РёР»СЊС‚СЂР° Р±РµР· РЅР°Р»РѕР¶РµРЅРёСЏ РѕРєРѕРЅРЅРѕР№ С„СѓРЅРєС†РёРё
+// Расчёт фильтра нижних частот
+// Расчёт фильтра без наложения оконной функции
 static void fir_design_lowpassL(double *dCoeff, int iCoefNum, double m_fCutHigh)
 {
 	const int iHalfLen = (iCoefNum - 1) / 2;
@@ -1918,9 +1918,9 @@ static void fir_design_lowpassL(double *dCoeff, int iCoefNum, double m_fCutHigh)
 	}
 }
 
-// Р Р°СЃС‡С‘С‚ С„РёР»СЊС‚СЂР° - РїСЂРѕР±РєРё
+// Расчёт фильтра - пробки
 // ((CutLow > 0.0) && (CutHigh < 1.0) && (CutLow < CutHigh))
-// Р Р°СЃС‡С‘С‚ С„РёР»СЊС‚СЂР° Р±РµР· РЅР°Р»РѕР¶РµРЅРёСЏ РѕРєРѕРЅРЅРѕР№ С„СѓРЅРєС†РёРё
+// Расчёт фильтра без наложения оконной функции
 static void fir_design_bandstop(FLOAT_t * dCoeff, int iCoefNum, FLOAT_t fCutLow, FLOAT_t fCutHigh)
 {
 	const int iHalfLen = (iCoefNum - 1) / 2;
@@ -1942,7 +1942,7 @@ static void fir_design_bandstop(FLOAT_t * dCoeff, int iCoefNum, FLOAT_t fCutLow,
 	dCoeff [iHalfLen] += 1;   
 }
 
-// Р Р°СЃС‡С‘С‚ С„РёР»СЊС‚СЂР° Р±РµР· РЅР°Р»РѕР¶РµРЅРёСЏ РѕРєРѕРЅРЅРѕР№ С„СѓРЅРєС†РёРё
+// Расчёт фильтра без наложения оконной функции
 static void fir_design_passtrough(FLOAT_t * dCoeff, int iCoefNum, FLOAT_t dGain)
 {
 	const int iHalfLen = (iCoefNum - 1) / 2;
@@ -1955,12 +1955,12 @@ static void fir_design_passtrough(FLOAT_t * dCoeff, int iCoefNum, FLOAT_t dGain)
 	dCoeff [iHalfLen] = dGain;
 }
 
-// Р‘РµР· РЅР°Р»РѕР¶РµРЅРёСЏ РѕРєРѕРЅРЅРѕР№ С„СѓРЅРєС†РёРё
+// Без наложения оконной функции
 static void fir_design_bandpass(FLOAT_t * dCoeff, int iCoefNum, FLOAT_t fCutLow, FLOAT_t fCutHigh)
 {
 	const int iHalfLen = (iCoefNum - 1) / 2;
 	//float dCoeff [iHalfLen + 1];	/* Use GCC extension */
-	//const float dGain = 1;		// РўСЂРµР±СѓРµРјРѕРµ СѓСЃРёР»РµРЅРёРµ С„РёР»СЊС‚СЂР°
+	//const float dGain = 1;		// Требуемое усиление фильтра
 	int iCnt;
 
 	dCoeff [iHalfLen] = fCutHigh - fCutLow;
@@ -1973,7 +1973,7 @@ static void fir_design_bandpass(FLOAT_t * dCoeff, int iCoefNum, FLOAT_t fCutLow,
 	}
 }
 
-// РќР°Р»РѕР¶РµРЅРёРµ РѕРєРѕРЅРЅРѕР№ С„СѓРЅРєС†РёРё
+// Наложение оконной функции
 static void fir_design_applaywindow(FLOAT_t *dCoeff, const FLOAT_t *dWindow, int iCoefNum)
 {
 	const int j = NtapCoeffs(iCoefNum);
@@ -1984,7 +1984,7 @@ static void fir_design_applaywindow(FLOAT_t *dCoeff, const FLOAT_t *dWindow, int
 	}
 }
 
-// РќР°Р»РѕР¶РµРЅРёРµ РѕРєРѕРЅРЅРѕР№ С„СѓРЅРєС†РёРё
+// Наложение оконной функции
 static void fir_design_applaywindowL(double *dCoeff, const double *dWindow, int iCoefNum)
 {
 	const int j = NtapCoeffs(iCoefNum);
@@ -1995,7 +1995,7 @@ static void fir_design_applaywindowL(double *dCoeff, const double *dWindow, int 
 	}
 }
 
-// РїРѕРґРіРѕС‚РѕРІРєР° Р±СѓС„РµСЂР° СЃ РѕРєРѕРЅРЅРѕР№ С„СѓРЅРєС†РёРµР№
+// подготовка буфера с оконной функцией
 static void fir_design_windowbuff(FLOAT_t *dWindow, int iCoefNum)
 {
 	const int j = NtapCoeffs(iCoefNum);
@@ -2006,7 +2006,7 @@ static void fir_design_windowbuff(FLOAT_t *dWindow, int iCoefNum)
 	}
 }
 
-// РїРѕРґРіРѕС‚РѕРІРєР° Р±СѓС„РµСЂР° СЃ РѕРєРѕРЅРЅРѕР№ С„СѓРЅРєС†РёРµР№
+// подготовка буфера с оконной функцией
 static void fir_design_windowbuffL(double *dWindow, int iCoefNum)
 {
 	const int j = NtapCoeffs(iCoefNum);
@@ -2017,7 +2017,7 @@ static void fir_design_windowbuffL(double *dWindow, int iCoefNum)
 	}
 }
 
-// РњР°СЃС€С‚Р°Р±РёСЂРѕРІР°РЅРёРµ РґР»СЏ СЃРёРјРјРµС‚СЂРёС‡РЅРѕРіРѕ С„РёР»СЊС‚СЂР°
+// Масштабирование для симметричного фильтра
 static void fir_design_scale(FLOAT_t * dCoeff, int iCoefNum, FLOAT_t dScale)
 {
 	const int j = NtapCoeffs(iCoefNum);
@@ -2030,7 +2030,7 @@ static void fir_design_scale(FLOAT_t * dCoeff, int iCoefNum, FLOAT_t dScale)
 	}
 }
 
-// РњР°СЃС€С‚Р°Р±РёСЂРѕРІР°РЅРёРµ РґР»СЏ СЃРёРјРјРµС‚СЂРёС‡РЅРѕРіРѕ С„РёР»СЊС‚СЂР°
+// Масштабирование для симметричного фильтра
 static void fir_design_scaleL(double * dCoeff, int iCoefNum, double dScale)
 {
 	const int j = NtapCoeffs(iCoefNum);
@@ -2044,16 +2044,16 @@ static void fir_design_scaleL(double * dCoeff, int iCoefNum, double dScale)
 }
 
 #if 0
-/* РїРѕР»СѓС‡РµРЅРёРµ РѕРіСЂР°РЅРёС‡РЅРЅРѕРіРѕ СЂР°Р·РјРµСЂР° С„РёР»СЊС‚СЂР° */
+/* получение ограничнного размера фильтра */
 static int getCoefNumLtdValidated(int iCoefNum)
 {
-	enum { WITHFILTSOFTDENOM = 10, WITHFILTSOFTSCALE = 8 };	// РљРѕР»РёС‡РµСЃС‚РІРѕ РєРѕСЌС„С„РёС†РёРµРЅС‚РѕРІ СѓРјРµРЅСЊС€Р°РµС‚СЃСЏ РґРѕ 0.2 РѕС‚ РёСЃС…РѕРґРЅРѕРіРѕ Р·РЅР°С‡РµРЅРёСЏ
+	enum { WITHFILTSOFTDENOM = 10, WITHFILTSOFTSCALE = 8 };	// Количество коэффициентов уменьшается до 0.2 от исходного значения
 	const int iCoefNumLtd = iCoefNum * WITHFILTSOFTSCALE * (glob_fltsofter - WITHFILTSOFTMIN) / (WITHFILTSOFTDENOM * (WITHFILTSOFTMAX - WITHFILTSOFTMIN));
 	return NtapValidate(iCoefNum - iCoefNumLtd);
 }
 #endif
 
-/* СЂР°СЃС‡С‘С‚ РїР°Р°СЂРјРµС‚СЂРѕРІ - С‡Р°СЃС‚РѕС‚Р° РґР»СЏ С„СѓРЅРєС†РёР№ РїРѕСЃС‚РѕРµРЅРёСЏ С„РёР»СЊС‚СЂРѕРІ */
+/* расчёт паарметров - частота для функций постоения фильтров */
 #define GETNORMFREQ(freq)	((freq) * 2 / (FLOAT_t) ARMSAIRATE)
 #define GETNORMFREQAUDIO(freq)	((freq) * 2 / (FLOAT_t) ARMI2SRATE)
 #define GETNORMFREQAUDIOL(freq)	((freq) * 2 / (double) ARMI2SRATE)
@@ -2073,7 +2073,7 @@ static void fir_design_lowpass_freq(FLOAT_t * dCoeff, int iCoefNum, int iCutHigh
 	fir_design_lowpass(dCoeff, iCoefNum, fir_design_normfreq(iCutHigh));
 }
 
-// СЃ СѓРїСЂР°РІР»РµРЅРёРµРј РєСЂСѓС‚РёР·РЅРѕР№ СЃРєР°С‚РѕРІ Рё РЅРѕСЂРјРёСЂРѕРІР°РЅРёРµРј СѓСЃРёР»РµРЅРёСЏ, СЃ РЅР°Р»РѕР¶РµРЅРёРµРј РѕРєРЅР°
+// с управлением крутизной скатов и нормированием усиления, с наложением окна
 static void fir_design_lowpass_freq_scaled(FLOAT_t * dCoeff, const FLOAT_t * dWindow, int iCoefNum, int iCutHigh, FLOAT_t dGain)
 {
 	fir_design_lowpass(dCoeff, iCoefNum, fir_design_normfreq(iCutHigh));
@@ -2081,7 +2081,7 @@ static void fir_design_lowpass_freq_scaled(FLOAT_t * dCoeff, const FLOAT_t * dWi
 	fir_design_scale(dCoeff, iCoefNum, dGain / testgain_float_DC(dCoeff, iCoefNum));
 }
 
-// СЃ СѓРїСЂР°РІР»РµРЅРёРµРј РєСЂСѓС‚РёР·РЅРѕР№ СЃРєР°С‚РѕРІ Рё РЅРѕСЂРјРёСЂРѕРІР°РЅРёРµРј СѓСЃРёР»РµРЅРёСЏ, СЃ РЅР°Р»РѕР¶РµРЅРёРµРј РѕРєРЅР°
+// с управлением крутизной скатов и нормированием усиления, с наложением окна
 static void fir_design_lowpass_freq_scaledL(double * dCoeff, const double * dWindow, int iCoefNum, int iCutHigh, double dGain)
 {
 	fir_design_lowpassL(dCoeff, iCoefNum, fir_design_normfreqL(iCutHigh));
@@ -2089,7 +2089,7 @@ static void fir_design_lowpass_freq_scaledL(double * dCoeff, const double * dWin
 	fir_design_scaleL(dCoeff, iCoefNum, dGain / testgain_float_DCL(dCoeff, iCoefNum));
 }
 
-// РњР°СЃСЃРёРІ РєРѕСЌС„С„РёС†РёРµРЅС‚РѕРІ РґР»СЏ РЅРµСЃРёРјРјРµС‚СЂРёС‡РЅРѕРіРѕ С„РёР»СЊС‚СЂР°
+// Массив коэффициентов для несимметричного фильтра
 static void fir_design_bandpass_freq(FLOAT_t * dCoeff, int iCoefNum, int iCutLow, int iCutHigh)
 {
 	fir_design_bandpass(dCoeff, iCoefNum, fir_design_normfreq(iCutLow), fir_design_normfreq(iCutHigh));
@@ -2097,13 +2097,13 @@ static void fir_design_bandpass_freq(FLOAT_t * dCoeff, int iCoefNum, int iCutLow
 
 #if WITHDSPEXTFIR
 
-// РїСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёРµ Рє С†РµР»С‹Рј
+// преобразование к целым
 static void fir_design_copy_integers(int_fast32_t * lCoeff, const FLOAT_t * dCoeff, int iCoefNum)
 {
 	const FLOAT_t scaleout = POWF(2, HARDWARE_COEFWIDTH - 1);
 	int iCnt;
 	const int j = NtapCoeffs(iCoefNum);
-	// РєРѕРїРёСЂСѓРµРј СЂРµР·СѓР»СЊС‚Р°С‚.
+	// копируем результат.
 	for (iCnt = 0; iCnt < j; iCnt ++)
 	{
 		lCoeff [iCnt] = dCoeff [iCnt] * scaleout;
@@ -2113,17 +2113,17 @@ static void fir_design_copy_integers(int_fast32_t * lCoeff, const FLOAT_t * dCoe
 static void fir_design_integer_lowpass_scaled(int_fast32_t *lCoeff, const FLOAT_t *dWindow, int iCoefNum, int iCutHigh, FLOAT_t dGain)
 {
 	FLOAT_t dCoeff [NtapCoeffs(iCoefNum)];	/* Use GCC extension */
-	fir_design_lowpass_freq_scaled(dCoeff, dWindow, iCoefNum, iCutHigh, dGain);	// СЃ СѓРїСЂР°РІР»РµРЅРёРµРј РєСЂСѓС‚РёР·РЅРѕР№ СЃРєР°С‚РѕРІ Рё РЅРѕСЂРјРёСЂРѕРІР°РЅРёРµРј СѓСЃРёР»РµРЅРёСЏ, СЃ РЅР°Р»РѕР¶РµРЅРёРµРј РѕРєРЅР°
+	fir_design_lowpass_freq_scaled(dCoeff, dWindow, iCoefNum, iCutHigh, dGain);	// с управлением крутизной скатов и нормированием усиления, с наложением окна
 	fir_design_copy_integers(lCoeff, dCoeff, iCoefNum);
 }
 
-// РїСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёРµ Рє С†РµР»С‹Рј
+// преобразование к целым
 static void fir_design_copy_integersL(int_fast32_t * lCoeff, const double * dCoeff, int iCoefNum)
 {
 	const double scaleout = pow(2, HARDWARE_COEFWIDTH - 1);
 	int iCnt;
 	const int j = NtapCoeffs(iCoefNum);
-	// РєРѕРїРёСЂСѓРµРј СЂРµР·СѓР»СЊС‚Р°С‚.
+	// копируем результат.
 	for (iCnt = 0; iCnt < j; iCnt ++)
 	{
 		lCoeff [iCnt] = dCoeff [iCnt] * scaleout;
@@ -2133,7 +2133,7 @@ static void fir_design_copy_integersL(int_fast32_t * lCoeff, const double * dCoe
 static void fir_design_integer_lowpass_scaledL(int_fast32_t *lCoeff, const double *dWindow, int iCoefNum, int iCutHigh, double dGain)
 {
 	double dCoeff [NtapCoeffs(iCoefNum)];	/* Use GCC extension */
-	fir_design_lowpass_freq_scaledL(dCoeff, dWindow, iCoefNum, iCutHigh, dGain);	// СЃ СѓРїСЂР°РІР»РµРЅРёРµРј РєСЂСѓС‚РёР·РЅРѕР№ СЃРєР°С‚РѕРІ Рё РЅРѕСЂРјРёСЂРѕРІР°РЅРёРµРј СѓСЃРёР»РµРЅРёСЏ, СЃ РЅР°Р»РѕР¶РµРЅРёРµРј РѕРєРЅР°
+	fir_design_lowpass_freq_scaledL(dCoeff, dWindow, iCoefNum, iCutHigh, dGain);	// с управлением крутизной скатов и нормированием усиления, с наложением окна
 	fir_design_copy_integersL(lCoeff, dCoeff, iCoefNum);
 }
 
@@ -2193,27 +2193,27 @@ static RAMFUNC FLOAT32P_t scalepair_int32(INT32P_t a, int_fast32_t b)
 
 
 #if WITHDSPEXTDDC
-// Р¤РёР»СЊС‚СЂ РєРІР°РґСЂР°С‚СѓСЂРЅС‹С… РєР°РЅР°Р»РѕРІ РїСЂРёС‘РјРЅРёРєР°
-// РСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РІ СЃР»СѓС‡Р°Рµ РІРЅРµС€РЅРµРіРѕ DDCV
+// Фильтр квадратурных каналов приёмника
+// Используется в случае внешнего DDCV
 static RAMFUNC_NONILINE FLOAT32P_t filter_firp_rx_SSB_IQ(FLOAT32P_t NewSample)
 {
 	const FLOAT_t * const k = FIRCoef_rx_SSB_IQ [gwprof];
 	enum { Ntap = Ntap_rx_SSB_IQ, NtapHalf = Ntap / 2 };
-	// Р±СѓС„РµСЂ СЃ СЃРѕС…СЂР°РЅРµРЅРЅС‹РјРё Р·РЅР°С‡РµРЅРёСЏРјРё СЃСЌРјРїР»РѕРІ
+	// буфер с сохраненными значениями сэмплов
 	static FLOAT32P_t x [Ntap * 2] = { { { 0, 0 }, }, };
 	static uint_fast16_t fir_head = 0;
 
 	// shift the old samples
-	// fir_head -  РќР°С‡Р°Р»Рѕ РѕР±СЂР°Р±Р°С‚С‹РІР°РµРјРѕР№ С‡Р°СЃС‚Рё Р±СѓС„РµСЂР°
-	// fir_head + Ntap -  РџРѕР·РёС†РёСЏ Р·Р° РєРѕРЅС†РѕРј РѕР±СЂР°Р±Р°С‚С‹РІР°РµРјРѕРіРѕ Р±СѓС„РµСЂ
+	// fir_head -  Начало обрабатываемой части буфера
+	// fir_head + Ntap -  Позиция за концом обрабатываемого буфер
 	fir_head = (fir_head == 0) ? (Ntap - 1) : (fir_head - 1);
     x [fir_head] = x [fir_head + Ntap] = NewSample;
 
-	uint_fast16_t bh = fir_head + NtapHalf;			// РќР°С‡Р°Р»Рѕ РѕР±СЂР°Р±Р°С‚С‹РІР°РµРјРѕР№ С‡Р°СЃС‚Рё Р±СѓС„РµСЂР°
-	uint_fast16_t bt = bh;	// РџРѕР·РёС†РёСЏ Р·Р° РєРѕРЅС†РѕРј РѕР±СЂР°Р±Р°С‚С‹РІР°РµРјРѕРіРѕ Р±СѓС„РµСЂР°
+	uint_fast16_t bh = fir_head + NtapHalf;			// Начало обрабатываемой части буфера
+	uint_fast16_t bt = bh;	// Позиция за концом обрабатываемого буфера
     // Calculate the new output
 	uint_fast16_t n = NtapHalf;
-	// Р’С‹Р±РѕСЂРєР° РІ СЃРµСЂРµРґРёРЅРµ Р±СѓС„РµСЂР°
+	// Выборка в середине буфера
 	FLOAT32P_t v = scalepair(x [bh], k [n]);            // sample at middle of buffer
 	do
 	{	
@@ -2232,27 +2232,27 @@ static RAMFUNC_NONILINE FLOAT32P_t filter_firp_rx_SSB_IQ(FLOAT32P_t NewSample)
 
     return v;
 }
-// Р¤РёР»СЊС‚СЂ РєРІР°РґСЂР°С‚СѓСЂРЅС‹С… РєР°РЅР°Р»РѕРІ РїРµСЂРµРґР°С‚С‡РёРєР°
-// РСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РІ СЃР»СѓС‡Р°Рµ РІРЅРµС€РЅРµРіРѕ DUC
+// Фильтр квадратурных каналов передатчика
+// Используется в случае внешнего DUC
 static RAMFUNC_NONILINE FLOAT32P_t filter_firp_tx_SSB_IQ(FLOAT32P_t NewSample)
 {
 	const FLOAT_t * const k = FIRCoef_tx_SSB_IQ [gwprof];
 	enum { Ntap = Ntap_tx_SSB_IQ, NtapHalf = Ntap / 2 };
-	// Р±СѓС„РµСЂ СЃ СЃРѕС…СЂР°РЅРµРЅРЅС‹РјРё Р·РЅР°С‡РµРЅРёСЏРјРё СЃСЌРјРїР»РѕРІ
+	// буфер с сохраненными значениями сэмплов
 	static FLOAT32P_t x [Ntap * 2] = { { { 0, 0 }, }, };
 	static uint_fast16_t fir_head = 0;
 
 	// shift the old samples
-	// fir_head -  РќР°С‡Р°Р»Рѕ РѕР±СЂР°Р±Р°С‚С‹РІР°РµРјРѕР№ С‡Р°СЃС‚Рё Р±СѓС„РµСЂР°
-	// fir_head + Ntap -  РџРѕР·РёС†РёСЏ Р·Р° РєРѕРЅС†РѕРј РѕР±СЂР°Р±Р°С‚С‹РІР°РµРјРѕРіРѕ Р±СѓС„РµСЂ
+	// fir_head -  Начало обрабатываемой части буфера
+	// fir_head + Ntap -  Позиция за концом обрабатываемого буфер
 	fir_head = (fir_head == 0) ? (Ntap - 1) : (fir_head - 1);
     x [fir_head] = x [fir_head + Ntap] = NewSample;
 
-	uint_fast16_t bh = fir_head + NtapHalf;			// РќР°С‡Р°Р»Рѕ РѕР±СЂР°Р±Р°С‚С‹РІР°РµРјРѕР№ С‡Р°СЃС‚Рё Р±СѓС„РµСЂР°
-	uint_fast16_t bt = bh;	// РџРѕР·РёС†РёСЏ Р·Р° РєРѕРЅС†РѕРј РѕР±СЂР°Р±Р°С‚С‹РІР°РµРјРѕРіРѕ Р±СѓС„РµСЂР°
+	uint_fast16_t bh = fir_head + NtapHalf;			// Начало обрабатываемой части буфера
+	uint_fast16_t bt = bh;	// Позиция за концом обрабатываемого буфера
     // Calculate the new output
 	uint_fast16_t n = NtapHalf;
-	// Р’С‹Р±РѕСЂРєР° РІ СЃРµСЂРµРґРёРЅРµ Р±СѓС„РµСЂР°
+	// Выборка в середине буфера
 	FLOAT32P_t v = scalepair(x [bh], k [n]);            // sample at middle of buffer
 	do
 	{	
@@ -2273,8 +2273,8 @@ static RAMFUNC_NONILINE FLOAT32P_t filter_firp_tx_SSB_IQ(FLOAT32P_t NewSample)
 }
 
 #else  /* WITHDSPEXTDDC */
-// РџСЂРёС‘РјРЅРёРє
-// Р¤РёР»СЊС‚СЂ (floating point) РґР»СЏ РєРІР°РґСЂР°С‚СѓСЂРЅС‹С… СЃРёРіРЅР°Р»РѕРІ. РћРїС‚РёРјРёР·Р°С†РёСЏ РїРѕРґ multiplier 0 1 0 -1.
+// Приёмник
+// Фильтр (floating point) для квадратурных сигналов. Оптимизация под multiplier 0 1 0 -1.
 // Speed tests: DT=145 (129), ntaps=481
 
 static RAMFUNC_NONILINE FLOAT32P_t filter_fir4_rx_SSB_IQ(FLOAT32P_t NewSample, uint_fast8_t useI) 
@@ -2283,13 +2283,13 @@ static RAMFUNC_NONILINE FLOAT32P_t filter_fir4_rx_SSB_IQ(FLOAT32P_t NewSample, u
 	enum { Ntap = Ntap_rx_SSB_IQ, NtapHalf = Ntap / 2 };
 	FLOAT32P_t rv;
 
-	// Р±СѓС„РµСЂ СЃ СЃРѕС…СЂР°РЅРµРЅРЅС‹РјРё Р·РЅР°С‡РµРЅРёСЏРјРё СЃСЌРјРїР»РѕРІ
+	// буфер с сохраненными значениями сэмплов
 	static FLOAT32P_t x [Ntap * 2] = { { { 0, 0, }, }, }; // input samples (force CCM allocation)
-	static uint_fast16_t fir_head = 0;		// РїРѕР·РёС†РёСЏ Р·Р°РїРёСЃРё РІ Р±СѓС„РµСЂ РІ РїРѕСЃР»РµРґРЅРёР№ СЂР°Р·
+	static uint_fast16_t fir_head = 0;		// позиция записи в буфер в последний раз
 
 	// shift the old samples
-	// fir_head -  РќР°С‡Р°Р»Рѕ РѕР±СЂР°Р±Р°С‚С‹РІР°РµРјРѕР№ С‡Р°СЃС‚Рё Р±СѓС„РµСЂР°
-	// fir_head + Ntap -  РџРѕР·РёС†РёСЏ Р·Р° РєРѕРЅС†РѕРј РѕР±СЂР°Р±Р°С‚С‹РІР°РµРјРѕРіРѕ Р±СѓС„РµСЂ
+	// fir_head -  Начало обрабатываемой части буфера
+	// fir_head + Ntap -  Позиция за концом обрабатываемого буфер
 	fir_head = (fir_head == 0) ? (Ntap - 1) : (fir_head - 1);
 	const uint_fast16_t fir_tail = fir_head + Ntap;
 	// Calculate the new output
@@ -2297,88 +2297,88 @@ static RAMFUNC_NONILINE FLOAT32P_t filter_fir4_rx_SSB_IQ(FLOAT32P_t NewSample, u
 	uint_fast16_t n;
 	if (useI != 0)
 	{
-		// Р•СЃР»Рё С‚РµРєСѓС‰РёР№ == 0 - РµРіРѕ Рё РІСЃРµ С‡РµСЂРµР· РѕРґРёРЅ РёРіРЅРѕСЂРёСЂСѓРµРј
+		// Если текущий == 0 - его и все через один игнорируем
 		x [fir_head].IV = NewSample.IV;
 		x [fir_tail].IV = NewSample.IV;
 		//
-		// РЎСѓРјРјРёСЂРѕРІР°РЅРёРµ I
+		// Суммирование I
 		//
-		// Р’С‹Р±РѕСЂРєР° РІ СЃРµСЂРµРґРёРЅРµ Р±СѓС„РµСЂР°
+		// Выборка в середине буфера
 		rv.IV = k [NtapHalf] * x [fir_head + NtapHalf].IV;
-		uint_fast16_t bh = fir_head;	// РќР°С‡Р°Р»Рѕ РѕР±СЂР°Р±Р°С‚С‹РІР°РµРјРѕР№ С‡Р°СЃС‚Рё Р±СѓС„РµСЂР°
-		uint_fast16_t bt = fir_tail;	// РџРѕР·РёС†РёСЏ Р·Р° РєРѕРЅС†РѕРј РѕР±СЂР°Р±Р°С‚С‹РІР°РµРјРѕРіРѕ Р±СѓС„РµСЂР°
-		// NewSample.QV Р·РґРµСЃСЊ СЂР°РІРЅРѕ 0 - РјРѕР¶РЅРѕ РЅРµ СЃСѓРјРјРёСЂРѕРІР°С‚СЊ
+		uint_fast16_t bh = fir_head;	// Начало обрабатываемой части буфера
+		uint_fast16_t bt = fir_tail;	// Позиция за концом обрабатываемого буфера
+		// NewSample.QV здесь равно 0 - можно не суммировать
 		n = 0;
 		do
 		{	
-			// Р’С‹С‡РёСЃР»СЏРµРј I
-			// 1_23 * 1_31 = 1_54. Р­С‚Рѕ РїРѕСЃР»Рµ СѓРјРЅРѕР¶РµРЅРёСЏ РЅР° FIRCoef.
+			// Вычисляем I
+			// 1_23 * 1_31 = 1_54. Это после умножения на FIRCoef.
 			rv.IV += k [n ++] * (x [bh ++].IV + x [-- bt].IV);
-			// РџСЂРѕРїСѓСЃРєР°РµРј Q
+			// Пропускаем Q
 			++ n;
 			++ bh;
 			-- bt;
 		}
 		while (n < NtapHalf);
 		//
-		// РЎСѓРјРјРёСЂРѕРІР°РЅРёРµ Q
+		// Суммирование Q
 		//
 		rv.QV = 0;
-		bh = fir_head;			// РќР°С‡Р°Р»Рѕ РѕР±СЂР°Р±Р°С‚С‹РІР°РµРјРѕР№ С‡Р°СЃС‚Рё Р±СѓС„РµСЂР°
-		bt = fir_tail;			// РџРѕР·РёС†РёСЏ Р·Р° РєРѕРЅС†РѕРј РѕР±СЂР°Р±Р°С‚С‹РІР°РµРјРѕРіРѕ Р±СѓС„РµСЂР°
+		bh = fir_head;			// Начало обрабатываемой части буфера
+		bt = fir_tail;			// Позиция за концом обрабатываемого буфера
 		n = 0;
 		do
 		{	
-			// РџСЂРѕРїСѓСЃРєР°РµРј I
+			// Пропускаем I
 			++ n;
 			++ bh;
 			-- bt;
-			// Р’С‹С‡РёСЃР»СЏРµРј Q
-			// 1_23 * 1_31 = 1_54. Р­С‚Рѕ РїРѕСЃР»Рµ СѓРјРЅРѕР¶РµРЅРёСЏ РЅР° FIRCoef.
+			// Вычисляем Q
+			// 1_23 * 1_31 = 1_54. Это после умножения на FIRCoef.
 			rv.QV += k [n ++] * (x [bh ++].QV + x [-- bt].QV);
 		}
 		while (n < NtapHalf);
 	}
 	else
 	{
-		// Р•СЃР»Рё С‚РµРєСѓС‰РёР№ == 0 - РµРіРѕ Рё РІСЃРµ С‡РµСЂРµР· РѕРґРёРЅ РёРіРЅРѕСЂРёСЂСѓРµРј
+		// Если текущий == 0 - его и все через один игнорируем
 		x [fir_head].QV = NewSample.QV;
 		x [fir_tail].QV = NewSample.QV;
 		//
-		// РЎСѓРјРјРёСЂРѕРІР°РЅРёРµ Q
+		// Суммирование Q
 		//
-		// Р’С‹Р±РѕСЂРєР° РІ СЃРµСЂРµРґРёРЅРµ Р±СѓС„РµСЂР°
+		// Выборка в середине буфера
 		rv.QV = k [NtapHalf] * x [fir_head + NtapHalf].QV;
-		uint_fast16_t bh = fir_head;	// РќР°С‡Р°Р»Рѕ РѕР±СЂР°Р±Р°С‚С‹РІР°РµРјРѕР№ С‡Р°СЃС‚Рё Р±СѓС„РµСЂР°
-		uint_fast16_t bt = fir_tail;	// РџРѕР·РёС†РёСЏ Р·Р° РєРѕРЅС†РѕРј РѕР±СЂР°Р±Р°С‚С‹РІР°РµРјРѕРіРѕ Р±СѓС„РµСЂР°
-		// NewSample.IV Р·РґРµСЃСЊ СЂР°РІРЅРѕ 0 - РјРѕР¶РЅРѕ РЅРµ СЃСѓРјРјРёСЂРѕРІР°С‚СЊ
+		uint_fast16_t bh = fir_head;	// Начало обрабатываемой части буфера
+		uint_fast16_t bt = fir_tail;	// Позиция за концом обрабатываемого буфера
+		// NewSample.IV здесь равно 0 - можно не суммировать
 		n = 0;
 		do
 		{	
-			// Р’С‹С‡РёСЃР»СЏРµРј Q
-			// 1_23 * 1_31 = 1_54. Р­С‚Рѕ РїРѕСЃР»Рµ СѓРјРЅРѕР¶РµРЅРёСЏ РЅР° FIRCoef.
+			// Вычисляем Q
+			// 1_23 * 1_31 = 1_54. Это после умножения на FIRCoef.
 			rv.QV += k [n ++] * (x [bh ++].QV + x [-- bt].QV);
-			// РџСЂРѕРїСѓСЃРєР°РµРј I
+			// Пропускаем I
 			++ n;
 			++ bh;
 			-- bt;
 		}
 		while (n < NtapHalf);
 		//
-		// РЎСѓРјРјРёСЂРѕРІР°РЅРёРµ I
+		// Суммирование I
 		//
 		rv.IV = 0;
-		bh = fir_head;			// РќР°С‡Р°Р»Рѕ РѕР±СЂР°Р±Р°С‚С‹РІР°РµРјРѕР№ С‡Р°СЃС‚Рё Р±СѓС„РµСЂР°
-		bt = fir_tail;			// РџРѕР·РёС†РёСЏ Р·Р° РєРѕРЅС†РѕРј РѕР±СЂР°Р±Р°С‚С‹РІР°РµРјРѕРіРѕ Р±СѓС„РµСЂР°
+		bh = fir_head;			// Начало обрабатываемой части буфера
+		bt = fir_tail;			// Позиция за концом обрабатываемого буфера
 		n = 0;
 		do
 		{	
-			// РџСЂРѕРїСѓСЃРєР°РµРј Q
+			// Пропускаем Q
 			++ n;
 			++ bh;
 			-- bt;
-			// Р’С‹С‡РёСЃР»СЏРµРј I
-			// 1_23 * 1_31 = 1_54. Р­С‚Рѕ РїРѕСЃР»Рµ СѓРјРЅРѕР¶РµРЅРёСЏ РЅР° FIRCoef.
+			// Вычисляем I
+			// 1_23 * 1_31 = 1_54. Это после умножения на FIRCoef.
 			rv.IV += k [n ++] * (x [bh ++].IV + x [-- bt].IV);
 		}
 		while (n < NtapHalf);
@@ -2386,24 +2386,24 @@ static RAMFUNC_NONILINE FLOAT32P_t filter_fir4_rx_SSB_IQ(FLOAT32P_t NewSample, u
     return rv;
 }
 
-// Р¤РёР»СЊС‚СЂ РєРІР°РґСЂР°С‚СѓСЂРЅС‹С… РєР°РЅР°Р»РѕРІ РїРµСЂРµРґР°С‚С‡РёРєР°. РћРїС‚РёРјРёР·Р°С†РёСЏ РїРѕРґ multiplier 0 1 0 -1.
-// Р РµР·СѓР»СЊС‚Р°С‚С‹ РёРЅС‚РµСЂРµСЃСѓСЋС‚ РЅРµ РІСЃРµ, Р° РІ Р·Р°РІРёСЃРёРјРѕСЃС‚Рё РѕС‚ useI
+// Фильтр квадратурных каналов передатчика. Оптимизация под multiplier 0 1 0 -1.
+// Результаты интересуют не все, а в зависимости от useI
 static RAMFUNC_NONILINE FLOAT32P_t filter_fir4_tx_SSB_IQ(FLOAT32P_t NewSample, uint_fast8_t useI) 
 {
 	const FLOAT_t * const k = FIRCoef_tx_SSB_IQ [gwprof];
 	enum { Ntap = Ntap_tx_SSB_IQ, NtapHalf = Ntap / 2 };
-	// Р±СѓС„РµСЂ СЃ СЃРѕС…СЂР°РЅРµРЅРЅС‹РјРё Р·РЅР°С‡РµРЅРёСЏРјРё СЃСЌРјРїР»РѕРІ
+	// буфер с сохраненными значениями сэмплов
 	static FLOAT32P_t x [Ntap * 2] = { { { 0, 0, }, }, }; // input samples (force CCM allocation)
 	static uint_fast16_t fir_head = 0;
 
 	// shift the old samples
-	// fir_head -  РќР°С‡Р°Р»Рѕ РѕР±СЂР°Р±Р°С‚С‹РІР°РµРјРѕР№ С‡Р°СЃС‚Рё Р±СѓС„РµСЂР°
-	// fir_head + Ntap -  РџРѕР·РёС†РёСЏ Р·Р° РєРѕРЅС†РѕРј РѕР±СЂР°Р±Р°С‚С‹РІР°РµРјРѕРіРѕ Р±СѓС„РµСЂ
+	// fir_head -  Начало обрабатываемой части буфера
+	// fir_head + Ntap -  Позиция за концом обрабатываемого буфер
 	fir_head = (fir_head == 0) ? (Ntap - 1) : (fir_head - 1);
 
-	// Р•СЃР»Рё С‚РµРєСѓС‰РёР№ == 0 - РµРіРѕ Рё РІСЃРµ С‡РµСЂРµР· РѕРґРёРЅ РёРіРЅРѕСЂРёСЂСѓРµРј
-	uint_fast16_t bh = fir_head;			// РќР°С‡Р°Р»Рѕ РѕР±СЂР°Р±Р°С‚С‹РІР°РµРјРѕР№ С‡Р°СЃС‚Рё Р±СѓС„РµСЂР°
-	uint_fast16_t bt = fir_head + Ntap;	// РџРѕР·РёС†РёСЏ Р·Р° РєРѕРЅС†РѕРј РѕР±СЂР°Р±Р°С‚С‹РІР°РµРјРѕРіРѕ Р±СѓС„РµСЂР°
+	// Если текущий == 0 - его и все через один игнорируем
+	uint_fast16_t bh = fir_head;			// Начало обрабатываемой части буфера
+	uint_fast16_t bt = fir_head + Ntap;	// Позиция за концом обрабатываемого буфера
     // Calculate the new output
     x [bh] = NewSample;
     x [bt] = NewSample;
@@ -2411,26 +2411,26 @@ static RAMFUNC_NONILINE FLOAT32P_t filter_fir4_tx_SSB_IQ(FLOAT32P_t NewSample, u
 	FLOAT32P_t v = { { 0, 0 }, };
 	if (useI != 0)
 	{
-		// РќР° РІС‹С…РѕРґРµ РёРЅС‚РµСЂРµСЃСѓРµС‚ С‚РѕР»СЊРєРѕ I
+		// На выходе интересует только I
 		do
 		{	
 			v.IV += k [n ++] * (x [bh ++].IV + x [-- bt].IV);
 			v.IV += k [n ++] * (x [bh ++].IV + x [-- bt].IV);
 		}
 		while (n < NtapHalf);
-		// Р’С‹Р±РѕСЂРєР° РІ СЃРµСЂРµРґРёРЅРµ Р±СѓС„РµСЂР°
+		// Выборка в середине буфера
 		v.IV += k [NtapHalf] * x [bh].IV;
 	}
 	else
 	{
-		// РќР° РІС‹С…РѕРґРµ РёРЅС‚РµСЂРµСЃСѓРµС‚ С‚РѕР»СЊРєРѕ Q
+		// На выходе интересует только Q
 		do
 		{	
 			v.QV += k [n ++] * (x [bh ++].QV + x [-- bt].QV);
 			v.QV += k [n ++] * (x [bh ++].QV + x [-- bt].QV);
 		}
 		while (n < NtapHalf);
-		// Р’С‹Р±РѕСЂРєР° РІ СЃРµСЂРµРґРёРЅРµ Р±СѓС„РµСЂР°
+		// Выборка в середине буфера
 		v.QV += k [NtapHalf] * x [bh].QV;
 	}
 
@@ -2440,12 +2440,12 @@ static RAMFUNC_NONILINE FLOAT32P_t filter_fir4_tx_SSB_IQ(FLOAT32P_t NewSample, u
 
 #endif /* WITHDSPLOCALFIR */
 
-/* Р’С‹РїРѕР»РЅРµРЅРёРµ РѕР±СЂР°Р±РѕС‚РєРё РІ СЃРёРјРјРµС‚СЂРёС‡РЅРѕРј FIR С„РёР»СЊС‚СЂРµ */
+/* Выполнение обработки в симметричном FIR фильтре */
 static RAMFUNC FLOAT_t filter_fir_compute(const FLOAT_t * const pk0, const FLOAT_t * xbh, uint_fast16_t n)
 {
-	const FLOAT_t * xbt = xbh;		// РїРѕР·РёС†РёСЏ СЃРїСЂР°РІР° РѕС‚ С†РµРЅС‚СЂР°
+	const FLOAT_t * xbt = xbh;		// позиция справа от центра
     // Calculate the new output
-	// Р’С‹Р±РѕСЂРєР° РІ СЃРµСЂРµРґРёРЅРµ Р±СѓС„РµСЂР°
+	// Выборка в середине буфера
 	FLOAT_t v = pk0 [-- n] * * -- xbh;             // sample at middle of buffer
 #if __ARM_NEON_FP && DSP_FLOAT_BITSMANTISSA == 24
 	float32x4_t v4 = vdupq_n_f32(0);
@@ -2453,23 +2453,23 @@ static RAMFUNC FLOAT_t filter_fir_compute(const FLOAT_t * const pk0, const FLOAT
 	do
 	{	
 #if __ARM_NEON_FP && DSP_FLOAT_BITSMANTISSA == 24
-		// РїРѕР»СѓС‡РёСЊ Р·РЅР°С‡РµРЅРёСЏ РёР· Р»РµРІРѕР№ РїРѕР»РѕРІРёРЅС‹
+		// получиь значения из левой половины
 		xbh -= 4;
 		const float32x4_t vh = vld1q_f32(xbh);
-		// РїРѕР»СѓС‡РёС‚СЊ Р·РЅР°С‡РµРЅРёСЏ РёР· РїСЂР°РІРѕР№ РїРѕР»РѕРІРёРЅС‹ (С‚СЂРµР±СѓРµС‚СЃСЏ РёР·РјРµРЅРµРЅРёС‚СЊ РїРѕСЂСЏРґРѕРє РЅР° РїСЂРѕС‚РёРІРѕРїРѕР»РѕР¶РЅС‹Р№)
+		// получить значения из правой половины (требуется измененить порядок на противоположный)
 		const float32x4_t vt = vld1q_f32(xbt);
 		xbt += 4;
-		/* СЃСѓРјРјРёСЂСѓРµРј Р»РµРІСѓСЋ СЃ РїСЂР°РІРѕР№ */
+		/* суммируем левую с правой */
 		const float32x4_t va = vaddq_f32(
-			vrev64q_f32(vcombine_f32(vget_high_f32(vt), vget_low_f32(vt))), // РјРµРЅСЏРµРј РїРѕСЂСЏРґРѕРє РЅР° РїСЂРѕС‚РёРІРѕРїРѕР»РѕР¶РЅС‹Р№
+			vrev64q_f32(vcombine_f32(vget_high_f32(vt), vget_low_f32(vt))), // меняем порядок на противоположный
 			vh);
-		/* РєРѕСЌС„С„РёС†РёРµРЅС‚С‹ */
+		/* коэффициенты */
 		n -= 4;
 		const float32x4_t vk = vld1q_f32(& pk0 [n]);
-		/* СѓРјРЅРѕР¶РµРЅРёРµ СЃ РЅР°РєРѕРїР»РµРЅРёРµРј */
+		/* умножение с накоплением */
 		v4 = vmlaq_f32(v4, va, vk);
 #elif defined (FMAF)
-		v = FMAF(pk0 [-- n], * -- xbh + * xbt ++, v);	/* РІС‹С‡РёСЃР»РµРЅРёРµ СЂРµР·СѓР»СЊС‚Р°С‚Р° Р±РµР· РїРѕС‚РµСЂРё С‚РѕС‡РЅРѕСЃС‚Рё РёР·-Р·Р° РѕРєСЂСѓРіР»РµРЅРёСЏ РїРѕСЃР»Рµ СѓРјРЅРѕР¶РµРЅРёСЏ */
+		v = FMAF(pk0 [-- n], * -- xbh + * xbt ++, v);	/* вычисление результата без потери точности из-за округления после умножения */
 #else /* defined (FMAF) */
 		v += pk0 [-- n] * (* -- xbh + * xbt ++);
 #endif /* defined (FMAF) */
@@ -2485,11 +2485,11 @@ static RAMFUNC FLOAT_t filter_fir_compute(const FLOAT_t * const pk0, const FLOAT
 	return v;
 }
 
-// Р¤РёР»СЊС‚СЂ РјРёРєСЂРѕС„РѕРЅР° РїРµСЂРµРґР°С‚С‡РёРєР°
+// Фильтр микрофона передатчика
 static RAMFUNC_NONILINE FLOAT_t filter_fir_tx_MIKE(FLOAT_t NewSample, uint_fast8_t bypass) 
 {
 	enum { Ntap = Ntap_tx_MIKE, NtapHalf = Ntap / 2 };
-	// Р±СѓС„РµСЂ СЃ СЃРѕС…СЂР°РЅРµРЅРЅС‹РјРё Р·РЅР°С‡РµРЅРёСЏРјРё СЃСЌРјРїР»РѕРІ
+	// буфер с сохраненными значениями сэмплов
 	static FLOAT_t xshift [Ntap * 2] = { 0, };
 	static uint_fast16_t fir_head = 0;
 
@@ -2526,7 +2526,7 @@ static int_fast16_t audio_validatebw6(int_fast16_t n)
 	return (n == INT16_MAX || n < bw6limit) ? n : INT16_MAX;
 }
 
-// РЈСЃС‚Р°РЅРѕРІРєР° РїР°СЂР°РјРµС‚СЂРѕРІ С‚СЂР°РєС‚Р° РїСЂРёС‘РјРЅРёРєР°
+// Установка параметров тракта приёмника
 static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 {
 #if WITHDSPEXTDDC && WITHDSPEXTFIR
@@ -2541,8 +2541,8 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 		const FLOAT_t txfiltergain = 1;
 	#endif /* WITHDSPLOCALFIR */
 #else /* WITHDSPEXTDDC */
-	const FLOAT_t rxfiltergain = 2;	// Р”Р»СЏ IQ С„РёР»СЊС‚СЂР° РјРѕР¶РЅРѕ С‚Р°Рє - РґР»СЏ РєРѕРјРїРµРЅСЃР°С†РёРё 0.5 СѓСЃРёР»РµРЅРёСЏ РёР·-Р·Р° РїРµСЂРµРјРЅРѕР¶РёС‚РµР»СЏ РїРµСЂРµРґ РЅРёРј.
-	const FLOAT_t txfiltergain = 2;	// Р”Р»СЏ IQ С„РёР»СЊС‚СЂР° РјРѕР¶РЅРѕ С‚Р°Рє - РґР»СЏ РєРѕРјРїРµРЅСЃР°С†РёРё 0.5 СѓСЃРёР»РµРЅРёСЏ РёР·-Р·Р° РїРµСЂРµРјРЅРѕР¶РёС‚РµР»СЏ РїРµСЂРµРґ РЅРёРј.
+	const FLOAT_t rxfiltergain = 2;	// Для IQ фильтра можно так - для компенсации 0.5 усиления из-за перемножителя перед ним.
+	const FLOAT_t txfiltergain = 2;	// Для IQ фильтра можно так - для компенсации 0.5 усиления из-за перемножителя перед ним.
 #endif /* WITHDSPEXTDDC */
 
 	debug_printf_P(PSTR("audio_setup_wiver: fullbw6[%u]=%u\n"), (unsigned) pathi, (unsigned) fullbw6);
@@ -2568,7 +2568,7 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 		if (isdspmoderx(dspmode))
 		{
 			if (1)
-				fir_design_lowpass_freq_scaled(FIRCoef_rx_SSB_IQ [spf], FIRCwnd_rx_SSB_IQ, Ntap_rx_SSB_IQ, cutfreq, rxfiltergain);	// СЃ СѓРїСЂР°РІР»РµРЅРёРµРј РєСЂСѓС‚РёР·РЅРѕР№ СЃРєР°С‚РѕРІ Рё РЅРѕСЂРјРёСЂРѕРІР°РЅРёРµРј СѓСЃРёР»РµРЅРёСЏ, СЃ РЅР°Р»РѕР¶РµРЅРёРµРј РѕРєРЅР°
+				fir_design_lowpass_freq_scaled(FIRCoef_rx_SSB_IQ [spf], FIRCwnd_rx_SSB_IQ, Ntap_rx_SSB_IQ, cutfreq, rxfiltergain);	// с управлением крутизной скатов и нормированием усиления, с наложением окна
 			else
 				{
 					FLOAT_t dGain = 1;
@@ -2576,13 +2576,13 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 					int iCoefNum = Ntap_rx_SSB_IQ;
 					fir_design_lowpass(dCoeff, iCoefNum, fir_design_normfreq(cutfreq));
 					if (dspmode == DSPCTL_MODE_RX_AM)
-						fir_design_adjust_rx(FIRCoef_rx_SSB_IQ [spf], FIRCwnd_rx_SSB_IQ, Ntap_rx_SSB_IQ, 0);	// Р¤РѕСЂРјРёСЂРѕРІР°РЅРёРµ РЅР°РєР»РѕРЅР° РђР§РҐ
+						fir_design_adjust_rx(FIRCoef_rx_SSB_IQ [spf], FIRCwnd_rx_SSB_IQ, Ntap_rx_SSB_IQ, 0);	// Формирование наклона АЧХ
 					fir_design_applaywindow(dCoeff, FIRCwnd_rx_SSB_IQ, iCoefNum);
 					fir_design_scale(dCoeff, iCoefNum, dGain / testgain_float_DC(dCoeff, iCoefNum));
 				}
 		}
 		else if (isdspmodetx(dspmode))
-			fir_design_lowpass_freq_scaled(FIRCoef_tx_SSB_IQ [spf], FIRCwnd_tx_SSB_IQ, Ntap_tx_SSB_IQ, cutfreq, txfiltergain);	// СЃ СѓРїСЂР°РІР»РµРЅРёРµРј РєСЂСѓС‚РёР·РЅРѕР№ СЃРєР°С‚РѕРІ Рё РЅРѕСЂРјРёСЂРѕРІР°РЅРёРµРј СѓСЃРёР»РµРЅРёСЏ, СЃ РЅР°Р»РѕР¶РµРЅРёРµРј РѕРєРЅР°
+			fir_design_lowpass_freq_scaled(FIRCoef_tx_SSB_IQ [spf], FIRCwnd_tx_SSB_IQ, Ntap_tx_SSB_IQ, cutfreq, txfiltergain);	// с управлением крутизной скатов и нормированием усиления, с наложением окна
 
 	#else /* WITHDSPLOCALFIR */
 
@@ -2596,11 +2596,11 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 			const int iCoefNum = Ntap_trxi_IQ;
 			const FLOAT_t * const dWindow = FIRCwnd_trxi_IQ;
 			double dCoeff [NtapCoeffs(iCoefNum)];	/* Use GCC extension */
-			//fir_design_lowpass_freq_scaledL(dCoeff, dWindow, iCoefNum, iCutHigh, dGain);	// СЃ СѓРїСЂР°РІР»РµРЅРёРµРј РєСЂСѓС‚РёР·РЅРѕР№ СЃРєР°С‚РѕРІ Рё РЅРѕСЂРјРёСЂРѕРІР°РЅРёРµРј СѓСЃРёР»РµРЅРёСЏ, СЃ РЅР°Р»РѕР¶РµРЅРёРµРј РѕРєРЅР°
+			//fir_design_lowpass_freq_scaledL(dCoeff, dWindow, iCoefNum, iCutHigh, dGain);	// с управлением крутизной скатов и нормированием усиления, с наложением окна
 			{
 				fir_design_lowpassL(dCoeff, iCoefNum, fir_design_normfreqL(iCutHigh));
 				if (dspmode == DSPCTL_MODE_RX_AM)
-					fir_design_adjust_rxL(FIRCoef_rx_SSB_IQ [spf], FIRCwndL_trxi_IQ, iCoefNum, 0);	// Р¤РѕСЂРјРёСЂРѕРІР°РЅРёРµ РЅР°РєР»РѕРЅР° РђР§РҐ
+					fir_design_adjust_rxL(FIRCoef_rx_SSB_IQ [spf], FIRCwndL_trxi_IQ, iCoefNum, 0);	// Формирование наклона АЧХ
 				fir_design_applaywindowL(dCoeff, dWindow, iCoefNum);
 				fir_design_scaleL(dCoeff, iCoefNum, 1 / testgain_float_DCL(dCoeff, iCoefNum));
 			}
@@ -2616,11 +2616,11 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 			const int iCoefNum = Ntap_trxi_IQ;
 			const FLOAT_t * const dWindow = FIRCwnd_trxi_IQ;
 			FLOAT_t dCoeff [NtapCoeffs(iCoefNum)];	/* Use GCC extension */
-			//fir_design_lowpass_freq_scaled(dCoeff, dWindow, iCoefNum, iCutHigh, dGain);	// СЃ СѓРїСЂР°РІР»РµРЅРёРµРј РєСЂСѓС‚РёР·РЅРѕР№ СЃРєР°С‚РѕРІ Рё РЅРѕСЂРјРёСЂРѕРІР°РЅРёРµРј СѓСЃРёР»РµРЅРёСЏ, СЃ РЅР°Р»РѕР¶РµРЅРёРµРј РѕРєРЅР°
+			//fir_design_lowpass_freq_scaled(dCoeff, dWindow, iCoefNum, iCutHigh, dGain);	// с управлением крутизной скатов и нормированием усиления, с наложением окна
 			{
 				fir_design_lowpass(dCoeff, iCoefNum, fir_design_normfreq(cutfreq));
 				if (dspmode == DSPCTL_MODE_RX_AM)
-					fir_design_adjust_rx(dCoeff, dWindow, iCoefNum, 0);	// Р¤РѕСЂРјРёСЂРѕРІР°РЅРёРµ РЅР°РєР»РѕРЅР° РђР§РҐ
+					fir_design_adjust_rx(dCoeff, dWindow, iCoefNum, 0);	// Формирование наклона АЧХ
 				fir_design_applaywindow(dCoeff, dWindow, iCoefNum);
 				fir_design_scale(dCoeff, iCoefNum, 1 / testgain_float_DC(dCoeff, iCoefNum));
 			}
@@ -2632,43 +2632,43 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 	}
 
 #if WITHDSPEXTFIR && WITHDSPLOCALFIR
-	// РµСЃР»Рё РµСЃС‚СЊ Рё РІРЅРµС€РЅРёР№ Рё РІРЅСѓС‚СЂРµРЅРЅРёР№ С„РёР»СЊС‚СЂ - РІРЅРµС€РЅРёР№ РїРµСЂРІРѕРґРёС‚СЃСЏ РІ СЂРµР¶РёРј passtrough - РґР»СЏ С‚РµСЃС‚РёСЂРѕРІР°РЅРёСЏ
+	// если есть и внешний и внутренний фильтр - внешний перводится в режим passtrough - для тестирования
 	fir_design_integers_passtrough(FIRCoef_trxi_IQ, Ntap_trxi_IQ, 1);
 #endif /* WITHDSPEXTDDC && WITHDSPLOCALFIR */
 
 #if WITHDSPEXTDDC && WITHDSPEXTFIR
-	// Р·Р°РіСЂСѓР·РєР° РєРѕСЌС„С„РёС†РёРµРЅС‚РѕРІ С„РёР»СЊС‚СЂР° РІ FPGA
-	//writecoefs(FIRCoef_trxi_IQ, Ntap_trxi_IQ);	/* РїРµС‡Р°С‚СЊ РєРѕСЌС„С„РёС†РёРµРЅС‚РѕРІ С„РёР»СЊС‚СЂР° */
+	// загрузка коэффициентов фильтра в FPGA
+	//writecoefs(FIRCoef_trxi_IQ, Ntap_trxi_IQ);	/* печать коэффициентов фильтра */
 	board_reload_fir(pathi, FIRCoef_trxi_IQ, Ntap_trxi_IQ, HARDWARE_COEFWIDTH);
 #endif /* WITHDSPEXTDDC && WITHDSPEXTFIR */
 }
 
-// РЈСЃС‚Р°РЅРѕРІРєР° РїР°СЂР°РјРµС‚СЂРѕРІ С‚СЂР°РєС‚Р° РїРµСЂРµРґР°С‚С‡РёРєР°
+// Установка параметров тракта передатчика
 static void audio_setup_mike(const uint_fast8_t spf)
 {
 	FLOAT_t * const dCoeff = FIRCoef_tx_MIKE [spf];
 	const FLOAT_t * const dWindow = FIRCwnd_tx_MIKE;
 	enum { iCoefNum = Ntap_tx_MIKE };
 
-	switch (glob_dspmodes [0])	// 0 - РґР»СЏ РїРµСЂРµРґР°С‚С‡РёРєР°
+	switch (glob_dspmodes [0])	// 0 - для передатчика
 	{
 	case DSPCTL_MODE_TX_BPSK:
-		// 15-С‚Рё РіРµСЂС†РѕРІС‹Р№ Р¤РќР§ РїРµСЂРµРґ РјРѕРґСѓР»СЏС‚РѕСЂРѕРј - РёР· "РєР°РЅРѕРЅРёС‡РµСЃРєРѕРіРѕ" РѕРїРёСЃР°РЅРёСЏ РјРѕРґСѓР»СЏС†РёРё РІ СЃС‚Р°С‚СЊРµ РІ QEX July/Aug 1999 7 - x9907003.pdf
+		// 15-ти герцовый ФНЧ перед модулятором - из "канонического" описания модуляции в статье в QEX July/Aug 1999 7 - x9907003.pdf
 		fir_design_lowpass_freq(dCoeff, iCoefNum, 15);
-		fir_design_scale(dCoeff, iCoefNum, 1 / testgain_float_DC(dCoeff, iCoefNum));	// РњР°СЃС€С‚Р°Р±РёСЂРѕРІР°РЅРёРµ РґР»СЏ РЅРµСЃРёРјРјРµС‚СЂРёС‡РЅРѕРіРѕ С„РёР»СЊС‚СЂР°
+		fir_design_scale(dCoeff, iCoefNum, 1 / testgain_float_DC(dCoeff, iCoefNum));	// Масштабирование для несимметричного фильтра
 		fir_design_applaywindow(dCoeff, dWindow, iCoefNum);
 		break;
 
-	// Р“РѕР»РѕСЃРѕРІС‹Рµ СЂРµР¶РёРјРёС‹
+	// Голосовые режимиы
 	case DSPCTL_MODE_TX_NFM:
 	case DSPCTL_MODE_TX_SSB:
 	case DSPCTL_MODE_TX_AM:
 	case DSPCTL_MODE_TX_FREEDV:
 		fir_design_bandpass_freq(dCoeff, iCoefNum, glob_aflowcuttx, glob_afhighcuttx);
-		fir_design_adjust_tx(dCoeff, dWindow, iCoefNum);	// РџСЂРёРјРµРЅРµРЅРёРµ СЌРєРІР°Р»Р°Р№Р·РµСЂР° Рє РјРёРєСЂРѕС„РѕРЅСѓ
+		fir_design_adjust_tx(dCoeff, dWindow, iCoefNum);	// Применение эквалайзера к микрофону
 		break;
 
-	// РІ СЂРµР¶РёРјРµ РїСЂРёРµРјР° РёР»Рё РІ СЂРµР¶РёРјР°С… РїРµСЂРµРґР°С‡Рё Р±РµР· РјРёРєСЂРѕС„РѕРЅР° - РЅРёС‡РµРіРѕ РЅРµ РґРµР»Р°РµРј
+	// в режиме приема или в режимах передачи без микрофона - ничего не делаем
 	default:
 		fir_design_passtrough(dCoeff, iCoefNum, 1);
 		break;
@@ -2677,7 +2677,7 @@ static void audio_setup_mike(const uint_fast8_t spf)
 
 #if WITHCPUDACHW
 
-	//#define HARDWARE_DACBITS 12	/* Р¦РђРџ СЂР°Р±РѕС‚Р°РµС‚ СЃ 12-Р±РёС‚РЅС‹РјРё Р·РЅР°С‡РµРЅРёСЏРјРё */
+	//#define HARDWARE_DACBITS 12	/* ЦАП работает с 12-битными значениями */
 
 	// AGC dac constans
 	enum
@@ -2698,7 +2698,7 @@ static void audio_setup_mike(const uint_fast8_t spf)
 		dac_agc_lowcode = dacFScode * dacXagclowvoltage / dacrefvoltage,
 		dac_agc_coderange = dac_agc_highcode - dac_agc_lowcode,
 
-		// Р·Р°РіР»СѓС€РєР°
+		// заглушка
 		//dacXagchighvotage = 3300,	// 0.1..1.25 volt - AD9744 REFERENCE INPUT range (after 18k/10k chain).
 		//dacXagclowvoltage = 280,
 
@@ -2736,7 +2736,7 @@ static void audio_setup_mike(const uint_fast8_t spf)
 
 #if 0 && WITHDACOUTDSPAGC
 
-static void setagcattenuation(long code, uint_fast8_t tx)	// РІ РєРѕРґР°С… Р¦РђРџ
+static void setagcattenuation(long code, uint_fast8_t tx)	// в кодах ЦАП
 {
 	if (tx != 0)
 		HARDWARE_DAC_AGC(0);
@@ -2744,7 +2744,7 @@ static void setagcattenuation(long code, uint_fast8_t tx)	// РІ РєРѕРґР°С… Р¦РђР
 		HARDWARE_DAC_AGC(dac_agc_highcode - ((code > dac_agc_coderange) ? dac_agc_coderange : code));
 }
 
-static void setlevelindicator(long code)	// РІ РєРѕРґР°С… Р¦РђРџ
+static void setlevelindicator(long code)	// в кодах ЦАП
 {
 	hardware_dac_ch2_setvalue((dacFScode - 1) > code ? (dacFScode - 1) : code);
 }
@@ -2752,8 +2752,8 @@ static void setlevelindicator(long code)	// РІ РєРѕРґР°С… Р¦РђРџ
 
 #endif /* WITHDACOUTDSPAGC */
 
-// СѓСЃС‚Р°РЅРѕРІРёС‚СЊ С‡Р°СЃС‚РѕС‚С‹ СЃСЂРµР·Р° С‚СЂР°РєС‚Р° РџР§
-// Р’С‹Р·С‹РІР°РµС‚СЃСЏ РёР· РїРѕР»СЊР·РѕРІР°С‚РµР»СЊСЃРєРѕР№ РїСЂРѕРіСЂР°РјРјС‹, РЅРѕ РјРѕР¶РµС‚ Р±С‹С‚СЊ РІС‹Р·РІР°РЅР° Рё РґРѕ РёРЅРёС†РёР°Р»РёР·Р°С†РёРё DSP - РІС‹Р·С‹РІР°РµС‚СЃСЏ РёР· updateboard.
+// установить частоты среза тракта ПЧ
+// Вызывается из пользовательской программы, но может быть вызвана и до инициализации DSP - вызывается из updateboard.
 static void audio_update(const uint_fast8_t spf, uint_fast8_t pathi)
 {
 	globDSPMode  [spf] [pathi] = glob_dspmodes [pathi];
@@ -2764,13 +2764,13 @@ static void audio_update(const uint_fast8_t spf, uint_fast8_t pathi)
 #endif /* WITHLOOPBACKTEST */
 
 
-	// РІС‚РѕСЂРѕР№ С„РёР»СЊС‚СЂ РіСЂСѓР·РёС‚СЃСЏ С‚РѕР»СЊРєРѕ РІ СЂРµР¶РёРјРµ РїСЂРёС‘РјР° (РѕР±РµСЃРїРµС‡РёРІР°С‚СЃСЏ РІРЅРµС€РЅРёРј С†РёРєР»РѕРј).
-	audio_setup_wiver(spf, pathi);	/* РЈСЃС‚Р°РЅРѕРІРєР° РїР°СЂР°РјРµС‚СЂРѕРІ Р¤РќР§ РІ С‚СЂР°РєС‚Рµ РѕР±СЂР°Р±РѕС‚РєРё СЃРёРіРЅР°Р»Р° Р°Р»РіРѕСЂРёС‚Рј РЈРёРІРµСЂР° */
+	// второй фильтр грузится только в режиме приёма (обеспечиватся внешним циклом).
+	audio_setup_wiver(spf, pathi);	/* Установка параметров ФНЧ в тракте обработки сигнала алгоритм Уивера */
 
 	const ncoftw_t lo6_ftw = FTWAF(- glob_lo6 [pathi]);
 	nco_setlo_ftw(lo6_ftw, pathi);
 
-	debug_cleardtmax();		// СЃР±СЂРѕСЃ РјР°РєСЃРёРјР°Р»СЊРЅРѕРіРѕ Р·РЅР°С‡РµРЅРёСЏ РІ С‚РµСЃС‚Рµ РїСЂРѕРёР·РІРѕРґРёС‚РµР»СЊРЅРѕСЃС‚Рё DSP
+	debug_cleardtmax();		// сброс максимального значения в тесте производительности DSP
 
 #if 1
 	debug_printf_P(PSTR("audio_update[pathi=%d]: dsp_mode=%d, bw6=%d, lo6=%d, rx=%d..%d, tx=%d..%d\n"), 
@@ -2790,8 +2790,8 @@ static int freq2index(unsigned freq)
 	return (uint_fast64_t) freq * SPEEXNN * 2 / ARMI2SRATE;
 }
 
-// slope: РёР·РјРµРЅРµРЅРёРµ С‚РµРјР±СЂР° Р·РІСѓРєР° - РЅР° Samplerate/2 РђР§РҐ СЃС‚Р°РЅРѕРІРёС‚СЃСЏ РЅР° СЃС‚РѕР»СЊРєРѕ РґРµС†РёР±РµР» 
-// scale: РѕР±С‰РёР№ РјР°СЃС€С‚Р°Р± РёР·РјРµРЅРµРЅРёСЏ РђР§РҐ
+// slope: изменение тембра звука - на Samplerate/2 АЧХ становится на столько децибел 
+// scale: общий масштаб изменения АЧХ
 static void correctspectrum(float * resp, int_fast8_t targetdb)
 {
 	const FLOAT_t slope = db2ratio(targetdb);
@@ -2820,7 +2820,7 @@ static void copytospeex(float * frame)
 	const FLOAT_t r2 = db2ratio(- 80);
 	const FLOAT_t r3 = db2ratio(- 60);
 
-	/* РЈРґР°Р»РµРЅРёРµ РїРѕСЃС‚РѕСЏРЅРЅРѕР№ СЃРѕСЃС‚Р°РІР»СЏСЋС‰РµР№ РїРѕ РІРѕР·РјРѕР¶РЅРѕСЃС‚Рё */
+	/* Удаление постоянной составляющей по возможности */
 	frame [0] *= r1;
 	frame [1] *= r2;
 	frame [2] *= r3;
@@ -2838,21 +2838,21 @@ void dsp_recalceq(uint_fast8_t pathi, float * frame)
 	switch (glob_dspmodes [pathi])
 	{
 	case DSPCTL_MODE_RX_DSB:
-		// Р’ СЌС‚РѕРј СЂРµР¶РёРјРµ С„РёР»СЊС‚СЂ РЅРµ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ
+		// В этом режиме фильтр не используется
 		//fir_design_passtrough(dCoeff, iCoefNum, 1);
-		// Р¤РќР§
+		// ФНЧ
 		fir_design_lowpass_freq(dCoeff, iCoefNum, cutfreqhigh);
-		fir_design_adjust_rx(dCoeff, dWindow, iCoefNum, 1);	// Р¤РѕСЂРјРёСЂРѕРІР°РЅРёРµ РЅР°РєР»РѕРЅР° РђР§РҐ
-		imp_response(dCoeff, iCoefNum);	// РџРѕР»СѓС‡РµРЅРёРµ РђР§РҐ РёР· РєРѕСЌС„С„РёС†РёРµРЅС‚РѕРІ СЃРёРјРјРјРµС‚СЂРёС‡РЅРѕРіРѕ FIR
+		fir_design_adjust_rx(dCoeff, dWindow, iCoefNum, 1);	// Формирование наклона АЧХ
+		imp_response(dCoeff, iCoefNum);	// Получение АЧХ из коэффициентов симмметричного FIR
 		copytospeex(frame);
 		break;
 
 	case DSPCTL_MODE_RX_SAM:
-		// Р¤РќР§
+		// ФНЧ
 		//fir_design_lowpass_freq(dCoeff, iCoefNum, cutfreqhigh);
 		fir_design_bandpass_freq(dCoeff, iCoefNum, cutfreqlow, cutfreqhigh);
-		fir_design_adjust_rx(dCoeff, dWindow, iCoefNum, 1);	// Р¤РѕСЂРјРёСЂРѕРІР°РЅРёРµ РЅР°РєР»РѕРЅР° РђР§РҐ
-		imp_response(dCoeff, iCoefNum);	// РџРѕР»СѓС‡РµРЅРёРµ РђР§РҐ РёР· РєРѕСЌС„С„РёС†РёРµРЅС‚РѕРІ СЃРёРјРјРјРµС‚СЂРёС‡РЅРѕРіРѕ FIR
+		fir_design_adjust_rx(dCoeff, dWindow, iCoefNum, 1);	// Формирование наклона АЧХ
+		imp_response(dCoeff, iCoefNum);	// Получение АЧХ из коэффициентов симмметричного FIR
 		copytospeex(frame);
 		break;
 
@@ -2862,43 +2862,43 @@ void dsp_recalceq(uint_fast8_t pathi, float * frame)
 		// audio
 		if (glob_notch_on != 0)
 		{
-			// С‡Р°СЃС‚РѕС‚С‹ SSB С„РёР»СЊС‚СЂР°
+			// частоты SSB фильтра
 			//const int fssbL = cutfreqlow;
 			//const int fssbH = cutfreqhigh;
 
-			// Р§Р°СЃС‚РѕС‚С‹ NOTCH С„РёР»СЊС‚СЂР°
+			// Частоты NOTCH фильтра
 			const int fNotch = inside(cutfreqlow + glob_notch_width / 2, glob_notch_freq, cutfreqhigh - glob_notch_width / 2);
 			const int fcutL = fNotch - glob_notch_width / 2;
 			const int fcutH = fNotch + glob_notch_width / 2;
 			if (1)
 			{
-				// Р Р°СЃС‡РёС‚С‹РІР°РµС‚СЃСЏ Notch
+				// Расчитывается Notch
 				fir_design_bandstop(dCoeff, iCoefNum, fir_design_normfreq(fcutL), fir_design_normfreq(fcutH));
-				fir_design_scale(dCoeff, iCoefNum, 1 / testgain_float_DC(dCoeff, iCoefNum));	// РњР°СЃС€С‚Р°Р±РёСЂРѕРІР°РЅРёРµ РґР»СЏ РЅРµСЃРёРјРјРµС‚СЂРёС‡РЅРѕРіРѕ С„РёР»СЊС‚СЂР°
-				fir_design_adjust_rx(dCoeff, dWindow, iCoefNum, 0);	// Р¤РѕСЂРјРёСЂРѕРІР°РЅРёРµ РЅР°РєР»РѕРЅР° РђР§РҐ, Р±РµР· РїСЂРёРјРµРЅРµРЅРёСЏ РѕРєРѕРЅРЅРѕР№ С„СѓРЅРєС†РёРё
-				imp_response(dCoeff, iCoefNum);	// РџРѕР»СѓС‡РµРЅРёРµ РђР§РҐ РёР· РєРѕСЌС„С„РёС†РёРµРЅС‚РѕРІ СЃРёРјРјРјРµС‚СЂРёС‡РЅРѕРіРѕ FIR
+				fir_design_scale(dCoeff, iCoefNum, 1 / testgain_float_DC(dCoeff, iCoefNum));	// Масштабирование для несимметричного фильтра
+				fir_design_adjust_rx(dCoeff, dWindow, iCoefNum, 0);	// Формирование наклона АЧХ, без применения оконной функции
+				imp_response(dCoeff, iCoefNum);	// Получение АЧХ из коэффициентов симмметричного FIR
 				copytospeex(frame);
 			}
 			else
 			{
 				FLOAT_t dC2 [NtapCoeffs(iCoefNum)];
 				int i;
-				// СЂР°СЃС‡РёС‚С‹РІР°РµС‚СЃСЏ РґРІР° РЅРµРїРµСЂРµРєСЂС‹РІР°СЋС‰РёС…СЃСЏ РїРѕР»РѕСЃРѕРІС‹С… С„РёР»СЊС‚СЂР°
-				fir_design_bandpass_freq(dC2, iCoefNum, cutfreqlow, fcutL);	// РЅРёР·РєРѕС‡Р°СЃС‚РѕС‚РЅР°СЏ РїРѕР»РѕСЃР° РїСЂРѕРїСѓСЃРєР°РЅРёСЏ
-				fir_design_bandpass_freq(dCoeff, iCoefNum, fcutH, cutfreqhigh);	// РІС‹СЃРѕРєРѕС‡Р°СЃС‚РѕС‚РЅР°СЏ РїРѕР»РѕСЃР° РїСЂРѕРїСѓСЃРєР°РЅРёСЏ
-				// СЃСѓРјРјРёСЂРѕРІР°РЅРёРµ СЌРѕСЌС„С„РёС†РёРµРЅС‚РѕРІ
+				// расчитывается два неперекрывающихся полосовых фильтра
+				fir_design_bandpass_freq(dC2, iCoefNum, cutfreqlow, fcutL);	// низкочастотная полоса пропускания
+				fir_design_bandpass_freq(dCoeff, iCoefNum, fcutH, cutfreqhigh);	// высокочастотная полоса пропускания
+				// суммирование эоэффициентов
 				for (i = 0; i < NtapCoeffs(iCoefNum); ++ i)
 					dCoeff [i] += dC2 [i];
-				fir_design_adjust_rx(dCoeff, dWindow, iCoefNum, 0);	// Р¤РѕСЂРјРёСЂРѕРІР°РЅРёРµ РЅР°РєР»РѕРЅР° РђР§РҐ, Р±РµР· РїСЂРёРјРµРЅРµРЅРёСЏ РѕРєРѕРЅРЅРѕР№ С„СѓРЅРєС†РёРё
-				imp_response(dCoeff, iCoefNum);	// РџРѕР»СѓС‡РµРЅРёРµ РђР§РҐ РёР· РєРѕСЌС„С„РёС†РёРµРЅС‚РѕРІ СЃРёРјРјРјРµС‚СЂРёС‡РЅРѕРіРѕ FIR
+				fir_design_adjust_rx(dCoeff, dWindow, iCoefNum, 0);	// Формирование наклона АЧХ, без применения оконной функции
+				imp_response(dCoeff, iCoefNum);	// Получение АЧХ из коэффициентов симмметричного FIR
 				copytospeex(frame);
 			}
 		}
 		else
 		{
 			fir_design_bandpass_freq(dCoeff, iCoefNum, cutfreqlow, cutfreqhigh);
-			fir_design_adjust_rx(dCoeff, dWindow, iCoefNum, 1);	// Р¤РѕСЂРјРёСЂРѕРІР°РЅРёРµ РЅР°РєР»РѕРЅР° РђР§РҐ
-			imp_response(dCoeff, iCoefNum);	// РџРѕР»СѓС‡РµРЅРёРµ РђР§РҐ РёР· РєРѕСЌС„С„РёС†РёРµРЅС‚РѕРІ СЃРёРјРјРјРµС‚СЂРёС‡РЅРѕРіРѕ FIR
+			fir_design_adjust_rx(dCoeff, dWindow, iCoefNum, 1);	// Формирование наклона АЧХ
+			imp_response(dCoeff, iCoefNum);	// Получение АЧХ из коэффициентов симмметричного FIR
 			copytospeex(frame);
 		}
 		break;
@@ -2907,16 +2907,16 @@ void dsp_recalceq(uint_fast8_t pathi, float * frame)
 	case DSPCTL_MODE_RX_FREEDV:
 		// audio
 		fir_design_bandpass_freq(dCoeff, iCoefNum, cutfreqlow, cutfreqhigh);
-		fir_design_adjust_rx(dCoeff, dWindow, iCoefNum, 1);	// Р¤РѕСЂРјРёСЂРѕРІР°РЅРёРµ РЅР°РєР»РѕРЅР° РђР§РҐ
-		imp_response(dCoeff, iCoefNum);	// РџРѕР»СѓС‡РµРЅРёРµ РђР§РҐ РёР· РєРѕСЌС„С„РёС†РёРµРЅС‚РѕРІ СЃРёРјРјРјРµС‚СЂРёС‡РЅРѕРіРѕ FIR
+		fir_design_adjust_rx(dCoeff, dWindow, iCoefNum, 1);	// Формирование наклона АЧХ
+		imp_response(dCoeff, iCoefNum);	// Получение АЧХ из коэффициентов симмметричного FIR
 		copytospeex(frame);
 		break;
 
 	case DSPCTL_MODE_RX_DRM:
 		// audio
-		// Р’ СЌС‚РѕРј СЂРµР¶РёРјРµ С„РёР»СЊС‚СЂ РЅРµ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ
-		fir_design_passtrough(dCoeff, iCoefNum, 1);		// СЃРёРіРЅР°Р» С‡РµСЂРµР· РќР§ С„РёР»СЊС‚СЂ РЅРµ РїСЂРѕС…РѕРґРёС‚
-		imp_response(dCoeff, iCoefNum);	// РџРѕР»СѓС‡РµРЅРёРµ РђР§РҐ РёР· РєРѕСЌС„С„РёС†РёРµРЅС‚РѕРІ СЃРёРјРјРјРµС‚СЂРёС‡РЅРѕРіРѕ FIR
+		// В этом режиме фильтр не используется
+		fir_design_passtrough(dCoeff, iCoefNum, 1);		// сигнал через НЧ фильтр не проходит
+		imp_response(dCoeff, iCoefNum);	// Получение АЧХ из коэффициентов симмметричного FIR
 		copytospeex(frame);
 		break;
 
@@ -2924,15 +2924,15 @@ void dsp_recalceq(uint_fast8_t pathi, float * frame)
 	case DSPCTL_MODE_RX_NFM:
 		// audio
 		fir_design_bandpass_freq(dCoeff, iCoefNum, cutfreqlow, cutfreqhigh);
-		fir_design_adjust_rx(dCoeff, dWindow, iCoefNum, 1);	// Р¤РѕСЂРјРёСЂРѕРІР°РЅРёРµ РЅР°РєР»РѕРЅР° РђР§РҐ
-		imp_response(dCoeff, iCoefNum);	// РџРѕР»СѓС‡РµРЅРёРµ РђР§РҐ РёР· РєРѕСЌС„С„РёС†РёРµРЅС‚РѕРІ СЃРёРјРјРјРµС‚СЂРёС‡РЅРѕРіРѕ FIR
+		fir_design_adjust_rx(dCoeff, dWindow, iCoefNum, 1);	// Формирование наклона АЧХ
+		imp_response(dCoeff, iCoefNum);	// Получение АЧХ из коэффициентов симмметричного FIR
 		copytospeex(frame);
 		break;
 
-	// РІ СЂРµР¶РёРјРµ РїРµСЂРµРґР°С‡Рё
+	// в режиме передачи
 	default:
-		fir_design_passtrough(dCoeff, iCoefNum, 1);		// СЃРёРіРЅР°Р» С‡РµСЂРµР· РќР§ С„РёР»СЊС‚СЂ РЅРµ РїСЂРѕС…РѕРґРёС‚
-		imp_response(dCoeff, iCoefNum);	// РџРѕР»СѓС‡РµРЅРёРµ РђР§РҐ РёР· РєРѕСЌС„С„РёС†РёРµРЅС‚РѕРІ СЃРёРјРјРјРµС‚СЂРёС‡РЅРѕРіРѕ FIR
+		fir_design_passtrough(dCoeff, iCoefNum, 1);		// сигнал через НЧ фильтр не проходит
+		imp_response(dCoeff, iCoefNum);	// Получение АЧХ из коэффициентов симмметричного FIR
 		copytospeex(frame);
 		break;
 	}
@@ -2946,7 +2946,7 @@ void dsp_recalceq(uint_fast8_t pathi, float * frame)
 static uint_fast32_t g_TxBitFreqFTW = 0;
 
 
-// Р’РѕР·РІСЂР°С‰Р°РµС‚ РЅРµ-0 РєР°Р¶РґС‹Рµ 32 РјСЃ (31.25 Р“С†) - РІС‹Р·С‹РІР°РµС‚СЃСЏ СЃ С‡Р°СЃС‚РѕС‚РѕР№ ARMI2SRATE
+// Возвращает не-0 каждые 32 мс (31.25 Гц) - вызывается с частотой ARMI2SRATE
 static int bpsk31_phase_tick(void)
 {
 	static uint_fast32_t bps31_tx_bitrateNCO;
@@ -2958,7 +2958,7 @@ static int bpsk31_phase_tick(void)
 static 
 uint_fast8_t 
 pbsk_get_phase(
-	uint_fast8_t suspend	// РїРµСЂРµРґР°РІР°С‚СЊ РјРѕРґРµРјСѓ РµС‰С‘ СЂР°РЅРѕ - РЅРµ РїРѕР»РЅРѕСЃС‚СЊСЋ Р·Р°РІРµСЂС€РµРЅРѕ С„РѕСЂРјРёСЂРѕРІР°РЅРёРµ РѕРіРёР±Р°СЋС‰РµР№
+	uint_fast8_t suspend	// передавать модему ещё рано - не полностью завершено формирование огибающей
 	)
 {
 	static uint_fast8_t phase;
@@ -2970,13 +2970,13 @@ pbsk_get_phase(
 	return phase;
 }
 
-static volatile uint_fast8_t	glob_modemmode;		// РїСЂРёРјРµРЅСЏРµРјР°СЏ РјРѕРґСѓР»СЏС†РёСЏ (bpsk/qpsk)
-static volatile uint_fast32_t	glob_modemspeed100;	// СЃРєРѕСЂРѕСЃС‚СЊ РїРµСЂРµРґР°С‡Рё СЃ С‚РѕС‡РЅРѕСЃС‚СЊСЋ 1/100 Р±РѕРґ
+static volatile uint_fast8_t	glob_modemmode;		// применяемая модуляция (bpsk/qpsk)
+static volatile uint_fast32_t	glob_modemspeed100;	// скорость передачи с точностью 1/100 бод
 
 static uint16_t m_RxBitPhase;
 static uint16_t g_RxBitFreqFTW;
 
-// РґРµРјРѕРґСѓР»СЏС‚РѕСЂ BPSK
+// демодулятор BPSK
 static void demod_bpsk2_symbol(int_fast32_t i, int_fast32_t q, int level)
 {
 	static int_fast32_t oldi, oldq;
@@ -2996,7 +2996,7 @@ static void demod_bpsk(int_fast32_t RxSin, int_fast32_t RxCos)
 
 	enum 
 	{
-		BITFILTERLENGTH = 16,	// РЅРµ С‚СЂРѕРіР°С‚СЊ
+		BITFILTERLENGTH = 16,	// не трогать
 	};
 
 	typedef long SAMPLEHOLDER_T;
@@ -3010,7 +3010,7 @@ static void demod_bpsk(int_fast32_t RxSin, int_fast32_t RxCos)
 		int	level = 30;
 		long ampl = (ISum >> 16) * (ISum >> 16) + (QSum >> 16) * (QSum >> 16);
 
-		// Р»РѕРіР°СЂРёС„Рј РїРѕ РѕСЃРЅРѕРІРЅРёСЏСЋ 2
+		// логарифм по основнияю 2
 		while (ampl > 0)
 		{
 			level += 1;
@@ -3045,9 +3045,9 @@ static void demod_bpsk(int_fast32_t RxSin, int_fast32_t RxCos)
 }
 
 /////////////////////////////
-// РРЅС‚РµСЂС„РµР№СЃРЅР°СЏ С„СѓРЅРєС†РёСЏ РґРµРјРѕРґСѓР»СЏС‚РѕСЂР°
-// Р’С‹Р·С‹Р°РµС‚СЃСЏ СЃ С‡Р°СЃС‚РѕС‚РѕР№ ARMI2SRATE РіРµСЂС†
-// iq - РєРІР°РґСЂР°С‚СѓСЂР°, РїРѕР»СѓС‡РµРЅРЅР°СЏ РѕС‚ СЂР°РґРёРѕС‚СЂР°РєС‚Р°
+// Интерфейсная функция демодулятора
+// Вызыается с частотой ARMI2SRATE герц
+// iq - квадратура, полученная от радиотракта
 
 static void modem_demod_iq(FLOAT32P_t iq)
 {
@@ -3063,21 +3063,21 @@ static void modem_demod_iq(FLOAT32P_t iq)
 		break;
 	}
 }
-// РРЅС‚РµСЂС„РµР№СЃРЅР°СЏ С„СѓРЅРєС†РёСЏ РјРѕРґСѓР»СЏС‚РѕСЂР°
-// Р’С‹Р·С‹Р°РµС‚СЃСЏ СЃ С‡Р°СЃС‚РѕС‚РѕР№ ARMI2SRATE РіРµСЂС†
-// РІРµСЂСЃРёСЏ РґР»СЏ РІС‹СЃРѕРєРѕСЃРєРѕСЂРѕСЃС‚РЅС‹С… РјРѕРґРµРјРѕРІ
+// Интерфейсная функция модулятора
+// Вызыается с частотой ARMI2SRATE герц
+// версия для высокоскоростных модемов
 static int modem_get_tx_b(
-	uint_fast8_t suspend	// РїРµСЂРµРґР°РІР°С‚СЊ РјРѕРґРµРјСѓ РµС‰С‘ СЂР°РЅРѕ - РЅРµ РїРѕР»РЅРѕСЃС‚СЊСЋ Р·Р°РІРµСЂС€РµРЅРѕ С„РѕСЂРјРёСЂРѕРІР°РЅРёРµ РѕРіРёР±Р°СЋС‰РµР№
+	uint_fast8_t suspend	// передавать модему ещё рано - не полностью завершено формирование огибающей
 	)
 {
 
 	return pbsk_get_phase(suspend);	
 }
-// РРЅС‚РµСЂС„РµР№СЃРЅР°СЏ С„СѓРЅРєС†РёСЏ РјРѕРґСѓР»СЏС‚РѕСЂР°
-// Р’С‹Р·С‹Р°РµС‚СЃСЏ СЃ С‡Р°СЃС‚РѕС‚РѕР№ ARMI2SRATE РіРµСЂС†
-// РІРµСЂСЃРёСЏ РґР»СЏ РЅРёР·РєРѕСЃРєРѕСЂРѕСЃС‚РЅС‹С… РјРѕРґРµРјРѕРІ
+// Интерфейсная функция модулятора
+// Вызыается с частотой ARMI2SRATE герц
+// версия для низкоскоростных модемов
 static FLOAT32P_t modem_get_tx_iq(
-	uint_fast8_t suspend	// РїРµСЂРµРґР°РІР°С‚СЊ РјРѕРґРµРјСѓ РµС‰С‘ СЂР°РЅРѕ - РЅРµ РїРѕР»РЅРѕСЃС‚СЊСЋ Р·Р°РІРµСЂС€РµРЅРѕ С„РѕСЂРјРёСЂРѕРІР°РЅРёРµ РѕРіРёР±Р°СЋС‰РµР№
+	uint_fast8_t suspend	// передавать модему ещё рано - не полностью завершено формирование огибающей
 	)
 {
 	switch (glob_modemmode)
@@ -3118,7 +3118,7 @@ static void modem_set_rx_speed(uint_fast32_t speed100)
 }
 
 
-/* РЈСЃС‚Р°РЅРѕРІРёС‚СЊ СЃРєРѕСЂРѕСЃС‚СЊ, РїР°СЂР°РјРµС‚СЂ СЃ С‚РѕС‡РЅРѕСЃС‚СЊСЋ 1/100 Р±РѕРґ */
+/* Установить скорость, параметр с точностью 1/100 бод */
 static void 
 modem_set_speed(uint_fast32_t speed100)
 {
@@ -3131,7 +3131,7 @@ modem_set_speed(uint_fast32_t speed100)
 	}
 }
 
-/* РЈСЃС‚Р°РЅРѕРІРёС‚СЊ РјРѕРґСѓР»СЏС†РёСЋ РґР»СЏ РјРѕРґРµРјР° */
+/* Установить модуляцию для модема */
 void modem_set_mode(uint_fast8_t modemmode)
 {
 	if (glob_modemmode != modemmode)
@@ -3159,7 +3159,7 @@ static void agc_state_initialize(volatile agcstate_t * st, const volatile agcpar
 	const FLOAT_t f0 = agcp->levelfence;
 	const FLOAT_t m0 = agcp->mininput;
 	const FLOAT_t siglevel = 0;
-	const FLOAT_t level = FMINF(FMAXF(m0, siglevel), f0);	// СЂР°Р±РѕС‚Р°РµРј РІ РґРёР°РїР°Р·РѕРЅРµ РѕС‚ 1 РґРѕ f
+	const FLOAT_t level = FMINF(FMAXF(m0, siglevel), f0);	// работаем в диапазоне от 1 до f
 	const FLOAT_t ratio = (agcp->agcoff ? m0 : level) / f0;
 
 	const FLOAT_t streingth_log = LOGF(ratio);
@@ -3169,36 +3169,36 @@ static void agc_state_initialize(volatile agcstate_t * st, const volatile agcpar
 	st->agcslowcap = caplevel;
 }
 
-// Р”Р»СЏ СЂР°Р±РѕС‚С‹ С„СѓРЅРєС†РёРё performagc С‚СЂРµР±СѓРµС‚СЃСЏ siglevel, Р±РѕР»СЊС€С‚Рµ Р·РЅР°С‡РµРЅРёСЏ РєРѕС‚РѕСЂРѕРіРѕ 
-// СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‚ Р±РѕР»СЊС€РёРј СѓСЂРѕРІРЅСЏРј СЃРёРіРЅР°Р»Р°. РјРѕР¶РµС‚ Р±С‹С‚СЊ РѕС‚СЂРёС†Р°С‚РµР»СЊРЅС‹Рј
+// Для работы функции performagc требуется siglevel, больште значения которого 
+// соответствуют большим уровням сигнала. может быть отрицательным
 static RAMFUNC FLOAT_t agccalcstrength(const volatile agcparams_t * const agcp, FLOAT_t siglevel)
 {
 	const FLOAT_t f0 = agcp->levelfence;
 	const FLOAT_t m0 = agcp->mininput;
-	const FLOAT_t level = FMINF(FMAXF(m0, siglevel), f0);	// СЂР°Р±РѕС‚Р°РµРј РІ РґРёР°РїР°Р·РѕРЅРµ РѕС‚ 1 РґРѕ levelfence
+	const FLOAT_t level = FMINF(FMAXF(m0, siglevel), f0);	// работаем в диапазоне от 1 до levelfence
 	const FLOAT_t ratio = (agcp->agcoff ? m0 : level) / f0;
 
 	const FLOAT_t streingth_log = LOGF(ratio);
 	return streingth_log;
 }
 
-// РџРѕ РѕС‚С„РёР»СЊС‚СЂРѕРІР°РЅРѕРјСѓ РІ СЃРѕРѕС‚РІРµС‚СЃС‚РІРёРё СЃ Р·Р°РґР°РЅРЅС‹РјРё РІСЂРµРјРµРЅРЅС‹РјРµ РїР°СЂР°РјРµС‚СЂР°РјРё РїРѕРєР°Р·Р°С‚Р»СЋ
-// СЃРёР»С‹ СЃРёРіРЅР°Р»Р° РїРѕР»СѓС‡Р°РµРј С‚СЂРµР±СѓРµРјРѕРµ СѓСЃРёР»РµРЅРёРµ (РІ СЂР°Р·Р°С… РѕС‚РЅРѕС€РµРЅРёСЏ РЅР°РїСЂСЏР¶РµРЅРёР№).
+// По отфильтрованому в соответствии с заданными временныме параметрами показатлю
+// силы сигнала получаем требуемое усиление (в разах отношения напряжений).
 static RAMFUNC FLOAT_t agccalcgain(const volatile agcparams_t * const agcp, FLOAT_t streingth)
 {
 	const FLOAT_t gain0 = POWF((FLOAT_t) M_E, streingth * agcp->agcfactor);
-	// СЂРµР°Р»РёР·Р°С†РёСЏ "СЃРїРѕСЂС‚РёРІРЅРѕР№" РђР РЈ
-	// РЈРІРµР»РёС‡РµРЅРёСЋ СЃРёРіРЅР°Р»Р° РЅР° glob_agcrate РґРµС†РёР±РµР» РґРѕР»Р¶РЅРѕ СЃРѕРѕС‚РІРµС‚СЃС‚РІРѕРІР°С‚СЊ 
-	// СѓРІРµР»РёС‡РµРЅРёРµ РІС‹С…РѕРґР° РїСЂРёС‘РјРЅРёРєР° РЅР° 1 РґРµС†С‚РёР±РµР»
+	// реализация "спортивной" АРУ
+	// Увеличению сигнала на glob_agcrate децибел должно соответствовать 
+	// увеличение выхода приёмника на 1 децтибел
 	const FLOAT_t gain = FMINF(agcp->gainlimit, gain0);
 	return gain;
 }
 
-// РџРѕ РѕС‚С„РёР»СЊС‚СЂРѕРІР°РЅРѕРјСѓ РІ СЃРѕРѕС‚РІРµС‚СЃС‚РІРёРё СЃ Р·Р°РґР°РЅРЅС‹РјРё РІСЂРµРјРµРЅРЅС‹РјРµ РїР°СЂР°РјРµС‚СЂР°РјРё РїРѕРєР°Р·Р°С‚Р»СЋ
-// СЃРёР»С‹ СЃРёРіРЅР°Р»Р° РїРѕР»СѓС‡Р°РµРј РѕС‚РЅРѕСЃРёС‚РµР»СЊРЅС‹Р№ СѓСЂРѕРІРµРЅСЊ (Р»РѕРіР°СЂРёС„РјРёСЂРѕРІР°РЅРЅС‹Р№)
+// По отфильтрованому в соответствии с заданными временныме параметрами показатлю
+// силы сигнала получаем относительный уровень (логарифмированный)
 static RAMFUNC FLOAT_t agccalcstrengthlog10(const volatile agcparams_t * const agcp, FLOAT_t streingth)
 {
-	return streingth / agclogof10;	// СѓР¶Рµ Р»РѕРіР°СЂРёС„РјРёСЂРѕРІР°РЅРѕ
+	return streingth / agclogof10;	// уже логарифмировано
 }
 
 static RAMFUNC FLOAT_t agc_getsiglevel(
@@ -3207,30 +3207,30 @@ static RAMFUNC FLOAT_t agc_getsiglevel(
 {
 	const FLOAT_t sample1 = SQRTF((FLOAT_t) sampleiq.IV * sampleiq.IV + (FLOAT_t) sampleiq.QV * sampleiq.QV);
 	return sample1;
-	const FLOAT_t sample2 = FMAXF(FABSF(sampleiq.IV), FABSF(sampleiq.QV));	// РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ СЌС‚Р° С„РѕСЂРјСѓР»Р°, С‚Р°Рє РєР°Рє С†РµР»СЊ - РёСЃРєР»СЋС‡РёС‚СЊ Р°СЂРёС„РјРµС‚РёС‡РµСЃРєРѕРµ РїРµСЂРµРїРѕР»РЅРµРЅРёРµ.
+	const FLOAT_t sample2 = FMAXF(FABSF(sampleiq.IV), FABSF(sampleiq.QV));	// используется эта формула, так как цель - исключить арифметическое переполнение.
 	const FLOAT_t sample = FMAXF(sample1, sample2);
 
 	//return sample2;
 	return sample;
 }
 //
-// РїРѕСЃС‚РѕСЏРЅРЅС‹Рµ РІСЂРµРјРµРЅРё СЃРёСЃС‚РµРјС‹ РђР РЈ
-// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ СЃРґРµР»Р°РЅР° РґР»СЏ С‚РѕРіРѕ, С‡С‚РѕР±С‹ РїРѕРјРµСЃС‚РёС‚СЊ СЌС‚Рё РїРµСЂРµРјРµРЅРЅС‹Рµ РІ РѕР±СЋР»Р°СЃС‚СЊ CCM РїР°РјСЏС‚Рё
-// РџСЂРёСЃРІРѕРµРЅРёРµ РѕСЃРјС‹СЃР»РµРЅРЅС‹С… Р·РЅР°С‡РµРЅРёР№ РїСЂРѕРёР·РІРѕРґРёС‚СЃСЏ РІ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РёС… С„СѓРЅРєС†РёСЏС… РёРЅРёС†РёР°Р»РёР·Р°С†РёРё.
+// постоянные времени системы АРУ
+// Инициализация сделана для того, чтобы поместить эти переменные в обюласть CCM памяти
+// Присвоение осмысленных значений производится в соответствующих функциях инициализации.
 
-static volatile agcstate_t rxsmeterstate [NTRX] = { { 0, } };	// РќР° РєР°Р¶РґС‹Р№ РїСЂРёС‘РјРЅРёРє
-static volatile agcstate_t rxagcstate [NTRX] = { { 0, } };	// РќР° РєР°Р¶РґС‹Р№ РїСЂРёС‘РјРЅРёРє
+static volatile agcstate_t rxsmeterstate [NTRX] = { { 0, } };	// На каждый приёмник
+static volatile agcstate_t rxagcstate [NTRX] = { { 0, } };	// На каждый приёмник
 static volatile agcstate_t txagcstate = { 0, };
 
 static volatile agcparams_t rxsmeterparams = { 0, };
 static volatile agcparams_t rxagcparams [NPROF] [NTRX] = { { { 0, } } };
 static volatile agcparams_t txagcparams [NPROF] = { { 0, } };
-static volatile uint_fast8_t gwagcprofrx = 0;	// work profile - РёРЅРґРµРєСЃ РєРѕРЅС„РёРіСѓСЂР°С†РёРѕРЅРЅРѕР№ РёРЅС„РѕСЂРјР°С†РёРё, РёСЃРїРѕР»СЊСѓРµРјС‹Р№ РґР»СЏ СЂР°Р±РѕС‚С‹ */
-static volatile uint_fast8_t gwagcproftx = 0;	// work profile - РёРЅРґРµРєСЃ РєРѕРЅС„РёРіСѓСЂР°С†РёРѕРЅРЅРѕР№ РёРЅС„РѕСЂРјР°С†РёРё, РёСЃРїРѕР»СЊСѓРµРјС‹Р№ РґР»СЏ СЂР°Р±РѕС‚С‹ */
+static volatile uint_fast8_t gwagcprofrx = 0;	// work profile - индекс конфигурационной информации, испольуемый для работы */
+static volatile uint_fast8_t gwagcproftx = 0;	// work profile - индекс конфигурационной информации, испольуемый для работы */
 //	
 static void agc_initialize(void)
 {
-	// РЈСЃС‚Р°РЅРѕРІРєР° РїР°СЂР°РјРµС‚СЂРѕРІ РђР РЈ РїСЂРёС‘РјРЅРёРєР°
+	// Установка параметров АРУ приёмника
 	gwagcprofrx = 0;
 	gwagcproftx = 0;
 
@@ -3250,7 +3250,7 @@ static void agc_initialize(void)
 			agc_state_initialize(& rxsmeterstate [pathi], & rxsmeterparams);
 		}
 
-		// РњРёРєСЂРѕС„РѕРЅ РІСЃРµРіРґР° СЃ flatgain=1
+		// Микрофон всегда с flatgain=1
 		comp_parameters_initialize(& txagcparams [profile]);
 		agc_state_initialize(& txagcstate, & txagcparams [profile]);
 	}
@@ -3258,7 +3258,7 @@ static void agc_initialize(void)
 #if WITHDSPEXTDDC
 
 #elif WITHDACOUTDSPAGC
-	setagcattenuation(0, 0);	// РІ РєРѕРґР°С… Р¦РђРџ СѓРјРµРЅСЊС€РµРЅРёРµ СѓСЃРёР»РµРЅРёСЏ
+	setagcattenuation(0, 0);	// в кодах ЦАП уменьшение усиления
 	setlevelindicator(0);
 #endif /* WITHDSPEXTDDC */
 }
@@ -3271,7 +3271,7 @@ agc_delaysignal(
 {
 #if WITHLIMITEDAGCATTACK
 
-	enum { DLY = NSAITICKS(5) };	// РґР°РЅРЅС‹Рµ Р·Р°РґРµСЂР¶РёРІР°СЋС‚СЃСЏ РЅР° СѓРєР°Р·Р°РЅРЅРѕРµ РєРѕР»РёС‡РµСЃС‚РІРѕ mS
+	enum { DLY = NSAITICKS(5) };	// данные задерживаются на указанное количество mS
 
 	static FLOAT32P_t data [NTRX] [DLY] = { { { 0, 0 }, } };
 	static unsigned pos [NTRX] = { 0, };
@@ -3280,9 +3280,9 @@ agc_delaysignal(
 	unsigned posv = * pp;
 	FLOAT32P_t * const pdata = & data [pathi] [posv];
 
-	const FLOAT32P_t r = * pdata;	// РїРѕР»СѓС‡Р°РµРј Р·Р°РґРµСЂР¶Р°РЅРЅС‹Рµ РґР°РЅРЅС‹Рµ
-	* pdata = v;					// Р·Р°РїРёСЃС‹РІР°РµРј РІРЅРѕРІСЊ РїРѕСЃС‚СѓРїРёРІС€РёРµ
-	* pp = (posv == 0) ? (DLY - 1) : (posv - 1);	// РѕР±РµСЃРїРµС‡РµРЅРёРµ РєРѕР»СЊС†РµРІРѕРіРѕ РїРµСЂРјРµС‰РµРЅРёСЏ РёРЅРґРµРєСЃР°
+	const FLOAT32P_t r = * pdata;	// получаем задержанные данные
+	* pdata = v;					// записываем вновь поступившие
+	* pp = (posv == 0) ? (DLY - 1) : (posv - 1);	// обеспечение кольцевого пермещения индекса
 
 	return r;
 
@@ -3293,8 +3293,8 @@ agc_delaysignal(
 #endif /* WITHLIMITEDAGCATTACK */
 }
 
-// РђР РЈ РІРїРµСЂС‘Рґ РґР»СЏ floaing-point С‚СЂР°РєС‚Р°
-// РїРѕР»СѓС‡РµРЅРёРµ РёР·РјРµСЂРµРЅРЅРѕРіРѕ СѓСЂРѕРІРЅСЏ СЃРёРіРЅР°Р»Р°
+// АРУ вперёд для floaing-point тракта
+// получение измеренного уровня сигнала
 static RAMFUNC FLOAT_t agc_measure_float(
 	const uint_fast8_t dspmode, 
 	FLOAT32P_t sampleiq, 
@@ -3308,22 +3308,22 @@ static RAMFUNC FLOAT_t agc_measure_float(
 	const volatile agcparams_t * const agcp = & rxagcparams [gwagcprofrx] [pathi];
 	volatile agcstate_t * const st = & rxagcstate [pathi];
 	//BEGIN_STAMP();
-	const FLOAT_t strength = agccalcstrength(agcp, siglevel0);	// РїРѕР»СѓС‡РµРЅРёРµ Р»РѕРіР°СЂРёС„РјРёС‡РµСЃРєРѕРіРѕ С…РЅР°С‡РµРЅРёСЏ СѓСЂРѕРІРЅСЏ СЃРёРіРЅР°Р»Р°
+	const FLOAT_t strength = agccalcstrength(agcp, siglevel0);	// получение логарифмического хначения уровня сигнала
 	//END_STAMP();
 
-	// РїРѕРєР°Р· S-РјРµС‚СЂР°
-	performagc(& rxsmeterparams, & rxsmeterstate [pathi], strength);	// РёР·РјРµСЂРёС‚РµР»СЊ СѓСЂРѕРІРЅСЏ СЃРёРіРЅР°Р»Р°
+	// показ S-метра
+	performagc(& rxsmeterparams, & rxsmeterstate [pathi], strength);	// измеритель уровня сигнала
 
 	//BEGIN_STAMP();
-	performagc(agcp, st, strength);	// РёР·РјРµСЂРёС‚РµР»СЊ СѓСЂРѕРІРЅСЏ СЃРёРіРЅР°Р»Р°
+	performagc(agcp, st, strength);	// измеритель уровня сигнала
 	//END_STAMP();
 
 	END_STAMP3();
 	return performagcresultslow(st);
 }
 
-// РђР РЈ РІРїРµСЂС‘Рґ РґР»СЏ floaing-point С‚СЂР°РєС‚Р°
-// РїРѕР»СѓС‡РµРЅРёРµ СѓСЃРёР»РµРЅРёСЏ
+// АРУ вперёд для floaing-point тракта
+// получение усиления
 static RAMFUNC FLOAT_t agc_getgain_float(
 	FLOAT_t fltstrengthslow,
 	uint_fast8_t pathi
@@ -3347,8 +3347,8 @@ static RAMFUNC int agc_squelchopen(
 {
 	return fltstrengthslow > manualsquelch [pathi];
 }
-// Р¤СѓРЅРєС†РёСЏ РґР»СЏ S-РјРµС‚СЂР° - РїРѕР»СѓС‡РµРЅРёРµ РґРµСЃСЏС‚РёС‡РЅРѕРіРѕ Р»РѕРіР°СЂРёС„РјР° СѓСЂРѕРІРЅСЏ СЃРёРіРЅР°Р»Р° РѕС‚ FS
-/* Р’С‹Р·С‹РІР°РµС‚СЃСЏ РёР· user-mode РїСЂРѕРіСЂР°РјРјС‹ */
+// Функция для S-метра - получение десятичного логарифма уровня сигнала от FS
+/* Вызывается из user-mode программы */
 static void agc_reset(
 	uint_fast8_t pathi
 	)
@@ -3361,7 +3361,7 @@ static void agc_reset(
 	st->agcfastcap = m0;
 	st->agcslowcap = m0;
 	global_enableIRQ();
-#if ! CTLSTYLE_V1D		// РЅРµ РџР»Р°С‚Р° STM32F429I-DISCO СЃ РїСЂРѕС†РµСЃСЃРѕСЂРѕРј STM32F429ZIT6 - РЅР° РЅРµР№ РїСЂРёРµРјР° РЅРµС‚
+#if ! CTLSTYLE_V1D		// не Плата STM32F429I-DISCO с процессором STM32F429ZIT6 - на ней приема нет
 	for (;;)
 	{
 		local_delay_ms(1);
@@ -3386,8 +3386,8 @@ static void agc_reset(
 #endif
 }
 
-// Р¤СѓРЅРєС†РёСЏ РґР»СЏ S-РјРµС‚СЂР° - РїРѕР»СѓС‡РµРЅРёРµ РґРµСЃСЏС‚РёС‡РЅРѕРіРѕ Р»РѕРіР°СЂРёС„РјР° СѓСЂРѕРІРЅСЏ СЃРёРіРЅР°Р»Р° РѕС‚ FS
-/* Р’С‹Р·С‹РІР°РµС‚СЃСЏ РёР· user-mode РїСЂРѕРіСЂР°РјРјС‹ */
+// Функция для S-метра - получение десятичного логарифма уровня сигнала от FS
+/* Вызывается из user-mode программы */
 static FLOAT_t agc_forvard_getstreigthlog10(
 	FLOAT_t * tracemax,
 	uint_fast8_t pathi
@@ -3396,23 +3396,23 @@ static FLOAT_t agc_forvard_getstreigthlog10(
 	volatile agcparams_t * const agcp = & rxsmeterparams;
 	volatile const agcstate_t * const st = & rxsmeterstate [pathi];
 
-	const FLOAT_t fltstrengthfast = performagcresultfast(st);	// РёР·РјРµСЂРёС‚РµР»СЊ СѓСЂРѕРІРЅСЏ СЃРёРіРЅР°Р»Р°
-	const FLOAT_t fltstrengthslow = performagcresultslow(st);	// РёР·РјРµСЂРёС‚РµР»СЊ СѓСЂРѕРІРЅСЏ СЃРёРіРЅР°Р»Р°
+	const FLOAT_t fltstrengthfast = performagcresultfast(st);	// измеритель уровня сигнала
+	const FLOAT_t fltstrengthslow = performagcresultslow(st);	// измеритель уровня сигнала
 	* tracemax = agccalcstrengthlog10(agcp, fltstrengthslow);
 	return agccalcstrengthlog10(agcp, fltstrengthfast);
 }
 
-/* РїРѕР»СѓС‡РёС‚СЊ Р·РЅР°С‡РµРЅРёРµ СѓСЂРѕРІРЅСЏ СЃРёРіРЅР°Р»Р° РІ РґРµС†РёР±РµР»Р°С…, РѕС‚СЃС‚СѓРїР°СЏ РѕС‚ upper */
+/* получить значение уровня сигнала в децибелах, отступая от upper */
 /* -73.01dBm == 50 uV rms == S9 */
-/* Р’С‹Р·С‹РІР°РµС‚СЃСЏ РёР· user-mode РїСЂРѕРіСЂР°РјРјС‹ */
+/* Вызывается из user-mode программы */
 uint_fast8_t 
 dsp_getsmeter(uint_fast8_t * tracemax, uint_fast8_t lower, uint_fast8_t upper, uint_fast8_t clean)
 {
-	const uint_fast8_t pathi = 0;	// С‚СЂР°РєС‚, РёСЃРїРѕР»СЊСѓРµРјС‹Р№ РґР»СЏ РїРѕРєР°Р·Р° s-РјРµС‚СЂР°
+	const uint_fast8_t pathi = 0;	// тракт, испольуемый для показа s-метра
 	//if (clean != 0)
 	//	agc_reset(pathi);
 	FLOAT_t tmaxf;
-	int level = upper + (int) (agc_forvard_getstreigthlog10(& tmaxf, pathi) * 200 + (glob_fsadcpower10 + 5)) / 10;	// РїСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёРµ РІ РґРµС†РёР±РµР»С‹ Рё РѕС‚СЃС‚СѓРїР°РµРј РѕС‚ РїСЂР°РІРѕР№ РіСЂР°РЅРёС†С‹ С€РєР°Р»С‹
+	int level = upper + (int) (agc_forvard_getstreigthlog10(& tmaxf, pathi) * 200 + (glob_fsadcpower10 + 5)) / 10;	// преобразование в децибелы и отступаем от правой границы шкалы
 	int tmax = upper + (int) (tmaxf * 200 + (glob_fsadcpower10 + 5)) / 10;
 
 	if (tmax > (int) upper)
@@ -3433,8 +3433,8 @@ static FLOAT_t mickecliplevelp [NPROF] = { + INT_MAX, + INT_MAX };
 static FLOAT_t mickeclipleveln [NPROF] = { - INT_MAX, - INT_MAX };
 static FLOAT_t mickeclipscale [NPROF] = { 1, 1 };
 
-// Р°СЂСѓ Рё РєРѕРјРїСЂРµСЃСЃРѕСЂ РјРёРєСЂРѕС„РѕРЅР°
-// РќР° РІС…РѕРґРµ СѓР¶Рµ РЅРѕСЂРјРёСЂРѕРІР°РЅРЅС‹Р№ Рє txlevelfenceSSB СЃРёРіРЅР°Р»
+// ару и компрессор микрофона
+// На входе уже нормированный к txlevelfenceSSB сигнал
 static RAMFUNC FLOAT_t txmikeagc(FLOAT_t vi)
 {
 	volatile agcparams_t * const agcp = & txagcparams [gwagcproftx];
@@ -3443,13 +3443,13 @@ static RAMFUNC FLOAT_t txmikeagc(FLOAT_t vi)
 		const FLOAT_t siglevel0 = FABSF(vi);
 		volatile agcstate_t * const st = & txagcstate;
 
-		performagc(agcp, st, agccalcstrength(agcp, siglevel0));	// РёР·РјРµСЂРёС‚РµР»СЊ СѓСЂРѕРІРЅСЏ СЃРёРіРЅР°Р»Р°
+		performagc(agcp, st, agccalcstrength(agcp, siglevel0));	// измеритель уровня сигнала
 		const FLOAT_t gain = agccalcgain(agcp, performagcresultslow(st));
 		vi *= gain;
 	}
 
 	{
-		// РћРіСЂР°РЅРёС‡РёС‚РµР»СЊ
+		// Ограничитель
 		const FLOAT_t levelp = mickecliplevelp [gwagcproftx];
 		const FLOAT_t leveln = mickeclipleveln [gwagcproftx];
 		if (vi > levelp)	
@@ -3463,7 +3463,7 @@ static RAMFUNC FLOAT_t txmikeagc(FLOAT_t vi)
 }
 
 
-/* РїРѕР»СѓС‡РµРЅРёСЏ РїСЂРёР·РЅР°РєР° РїРµСЂРµРїРѕР»РЅРµРЅРёСЏ РђР¦Рџ РјРёРєСЂРѕС„РѕРЅРЅРѕРіРѕ С‚СЂР°РєС‚Р° - РІС‹Р·С‹РІР°РµС‚СЃСЏ РёР· user mode */
+/* получения признака переполнения АЦП микрофонного тракта - вызывается из user mode */
 uint_fast8_t dsp_getmikeadcoverflow(void)
 {
 	volatile agcstate_t * const st = & txagcstate;
@@ -3555,28 +3555,28 @@ static RAMFUNC float iir_nfmnbbpf(FLOAT_t NewSample) {
 
 }
 
-/* Р—РЅР°С‡РµРЅРёСЏ 0..1 */
+/* Значения 0..1 */
 
 static FLOAT_t sidetonevolume = 0; //(glob_sidetonelevel / (FLOAT_t) 100);
 static FLOAT_t mainvolumerx = 1; //1 - sidetonevolume;
 static FLOAT_t subtonevolume = 0; //(glob_subtonelevel / (FLOAT_t) 100);
 static FLOAT_t mainvolumetx = 1; //1 - subtonevolume;
 
-// Р—РґРµСЃСЊ Р·РЅР°С‡РµРЅРёРµ РІС‹Р±РѕСЂРєРё РІ РґРёР°РїР°Р·РѕРЅРµ, РґРѕРїСѓСЃС‚РёРјРѕРј РґР»СЏ РєРѕРґРµРєР°
+// Здесь значение выборки в диапазоне, допустимом для кодека
 static RAMFUNC FLOAT_t injectsidetone(FLOAT_t v, FLOAT_t sdtn)
 {
 
 	return v * mainvolumerx + sdtn * sidetonevolume;
 }
 
-// Р—РґРµСЃСЊ Р·РЅР°С‡РµРЅРёРµ РІС‹Р±РѕСЂРєРё РІ РґРёР°РїР°Р·РѕРЅРµ, РґРѕРїСѓСЃС‚РёРјРѕРј РґР»СЏ РєРѕРґРµРєР°
+// Здесь значение выборки в диапазоне, допустимом для кодека
 static RAMFUNC FLOAT_t injectsubtone(FLOAT_t v, FLOAT_t ctcss)
 {
 
 	return v * mainvolumetx + ctcss * subtonevolume;
 }
 
-// РџРѕРґРґРµСЂР¶РєР° РіРµРЅРµСЂР°С†РёРё Р±РµР»РѕРіРѕ С€СѓРјР°
+// Поддержка генерации белого шума
 static unsigned long local_random(unsigned long num)
 {
 
@@ -3594,7 +3594,7 @@ static unsigned long local_random(unsigned long num)
 static RAMFUNC FLOAT_t preparevi(
 	int vi0,
 	uint_fast8_t dspmode,
-	FLOAT_t ctcss	// СЃСѓР±С‚РѕРЅ, audio sample in range [- txlevelfence.. + txlevelfence]
+	FLOAT_t ctcss	// субтон, audio sample in range [- txlevelfence.. + txlevelfence]
 	)
 {
 	FLOAT_t vi0f = vi0;
@@ -3602,46 +3602,46 @@ static RAMFUNC FLOAT_t preparevi(
 	switch (dspmode)
 	{
 	case DSPCTL_MODE_TX_BPSK:
-		return txlevelfenceBPSK;	// РїРѕСЃС‚РѕСЏРЅРЅР°СЏ СЃРѕСЃС‚Р°РІР»СЏСЋС‰Р°СЏ СЃ РјР°РєСЃРёРјР°Р»СЊРЅС‹Рј СѓСЂРѕРІРЅРµРј
+		return txlevelfenceBPSK;	// постоянная составляющая с максимальным уровнем
 
 	case DSPCTL_MODE_TX_CW:
-		return txlevelfenceHALF;	// РїРѕСЃС‚РѕСЏРЅРЅР°СЏ СЃРѕСЃС‚Р°РІР»СЏСЋС‰Р°СЏ СЃ РјР°РєСЃРёРјР°Р»СЊРЅС‹Рј СѓСЂРѕРІРЅРµРј
+		return txlevelfenceHALF;	// постоянная составляющая с максимальным уровнем
 
 	case DSPCTL_MODE_TX_SSB:
 	case DSPCTL_MODE_TX_AM:
 	case DSPCTL_MODE_TX_NFM:
 	case DSPCTL_MODE_TX_FREEDV:
-		// РСЃС‚РѕС‡РЅРёРє РЅРѕСЂРјРёСЂСѓРµС‚СЃСЏ Рє txlevelfenceSSB
+		// Источник нормируется к txlevelfenceSSB
 		switch (glob_txaudio)
 		{
 		case BOARD_TXAUDIO_MIKE:
 		case BOARD_TXAUDIO_LINE:
-			// РёСЃС‚РѕС‡РЅРёРє - РјРёРєСЂРѕС„РѕРЅ
-			// РґРѕРїРѕР»РЅРёС‚РµР»СЊРЅРѕ СЂР°Р±РѕС‚Р°РµС‚ РѕРіСЂР°РЅРёС‡РёС‚РµР»СЊ.
+			// источник - микрофон
+			// дополнительно работает ограничитель.
 			// see glob_mik1level (0..100)
-			return injectsubtone(txmikeagc(vi0f * txlevelfenceSSB / mikefenceIN), ctcss); //* TXINSCALE; // РёСЃС‚РѕС‡РЅРёРє СЃРёРіРЅР°Р»Р° - РјРёРєСЂРѕС„РѕРЅ
+			return injectsubtone(txmikeagc(vi0f * txlevelfenceSSB / mikefenceIN), ctcss); //* TXINSCALE; // источник сигнала - микрофон
 
 #if WITHUSBUAC
 		case BOARD_TXAUDIO_USB:
 #endif /* WITHUSBUAC */
 		default:
-			// РёСЃС‚РѕС‡РЅРёРє - LINE IN РёР»Рё USB
+			// источник - LINE IN или USB
 			// see glob_mik1level (0..100)
-			return injectsubtone(vi0f * txlevelfenceSSB / mikefenceIN, ctcss); //* TXINSCALE; // РёСЃС‚РѕС‡РЅРёРє СЃРёРіРЅР°Р»Р° - РјРёРєСЂРѕС„РѕРЅ
+			return injectsubtone(vi0f * txlevelfenceSSB / mikefenceIN, ctcss); //* TXINSCALE; // источник сигнала - микрофон
 
 		case BOARD_TXAUDIO_NOISE:
-			// РёСЃС‚РѕС‡РЅРёРє - С€СѓРј
-			//vf = filter_fir_tx_MIKE((local_random(2UL * IFDACMAXVAL) - IFDACMAXVAL), 0);	// С€СѓРј
+			// источник - шум
+			//vf = filter_fir_tx_MIKE((local_random(2UL * IFDACMAXVAL) - IFDACMAXVAL), 0);	// шум
 			// return audio sample in range [- txlevelfence.. + txlevelfence]
-			return injectsubtone((int) (local_random(2 * txlevelfenceSSB_INTEGER - 1) - txlevelfenceSSB_INTEGER), ctcss);	// С€СѓРј
+			return injectsubtone((int) (local_random(2 * txlevelfenceSSB_INTEGER - 1) - txlevelfenceSSB_INTEGER), ctcss);	// шум
 
 		case BOARD_TXAUDIO_2TONE:
-			// РёСЃС‚РѕС‡РЅРёРє - РґРІСѓС…С‚РѕРЅРѕРІС‹Р№ СЃРёРіРЅР°Р»
+			// источник - двухтоновый сигнал
 			// return audio sample in range [- txlevelfence.. + txlevelfence]
-			return injectsubtone(get_dualtonefloat() * txlevelfenceSSB, ctcss);		// РёСЃС‚РѕС‡РЅРёРє СЃРёРіРЅР°Р»Р° - РґРІСѓС…С‚РѕРЅР°Р»СЊРЅС‹Р№ РіРµРЅРµСЂР°С‚РѕСЂ РґР»СЏ РЅР°СЃС‚СЂРѕР№РєРё
+			return injectsubtone(get_dualtonefloat() * txlevelfenceSSB, ctcss);		// источник сигнала - двухтональный генератор для настройки
 
 		case BOARD_TXAUDIO_1TONE:
-			// РёСЃС‚РѕС‡РЅРёРє - СЃРёРЅСѓСЃРѕРёРґР°Р»СЊРЅС‹Р№ СЃРёРіРЅР°Р»
+			// источник - синусоидальный сигнал
 			// return audio sample in range [- txlevelfence.. + txlevelfence]
 			return injectsubtone(get_singletonefloat() * txlevelfenceSSB, ctcss);
 
@@ -3649,24 +3649,24 @@ static RAMFUNC FLOAT_t preparevi(
 			return injectsubtone(0, ctcss);
 		}
 	}
-	// Р’ СЂРµР¶РёРјРµ РїСЂРёС‘РјР° РёР»Рё bypass РЅРёС‡РµРіРѕ РЅРµ РґРµР»Р°РµРј.
+	// В режиме приёма или bypass ничего не делаем.
 	return 0;
 }
 
-/* РїРѕР»СѓС‡РёС‚СЊ I/Q РїР°СЂСѓ РґР»СЏ РїРµСЂРµРґР°С‡Рё РІ up-converter */
+/* получить I/Q пару для передачи в up-converter */
 static RAMFUNC FLOAT32P_t baseband_modulator(
 	FLOAT_t vi,
 	uint_fast8_t dspmode,
 	FLOAT_t shape
 	)
 {
-	const uint_fast8_t pathi = 0;	// С‚СЂР°РєС‚, РёСЃРїРѕР»СЊСѓРµРјС‹Р№ РїСЂРё РїРµСЂРµРґР°С‡Рµ
+	const uint_fast8_t pathi = 0;	// тракт, испольуемый при передаче
 	switch (dspmode)
 	{
 	default:
 		{
 			const FLOAT32P_t vfb = { { 0, 0 } };
-			// Р’ СЂРµР¶РёРјРµ РїСЂРёС‘РјР° РЅРёС‡РµРіРѕ РЅРµ РґРµР»Р°РµРј.
+			// В режиме приёма ничего не делаем.
 			return vfb;
 		}
 
@@ -3711,7 +3711,7 @@ static RAMFUNC FLOAT32P_t baseband_modulator(
 	case DSPCTL_MODE_TX_NFM:
 		{
 			// vi - audio sample in range [- txlevelfence.. + txlevelfence]
-			const long int deltaftw = (long) gnfmdeviationftw * vi / txlevelfenceSSB;	// РЈС‡РёС‚С‹РІР°РµС‚СЃСЏ РЅРѕСЂРјРёСЂРѕРІР°РЅРёРµ РёСЃС‚РѕС‡РЅРёРєР° Р·РІСѓРєР°
+			const long int deltaftw = (long) gnfmdeviationftw * vi / txlevelfenceSSB;	// Учитывается нормирование источника звука
 			//const FLOAT32P_t vfb = scalepair_int32(get_int32_aflo_delta(deltaftw, pathi), txlevelfenceHALF * shape);
 			const FLOAT32P_t vfb = scalepair(get_float_aflo_delta(deltaftw, pathi), txlevelfenceNFM * shape);
 			return vfb;
@@ -3719,7 +3719,7 @@ static RAMFUNC FLOAT32P_t baseband_modulator(
 	}
 }
 
-// Р’ РєР°РЅР°Р»Рµ РІСЃРµРіРґР° LEFT JUSTIFIED
+// В канале всегда LEFT JUSTIFIED
 
 static RAMFUNC int_fast32_t iq2tx(int_fast32_t v)
 {
@@ -3730,31 +3730,31 @@ static RAMFUNC int_fast32_t iq2tx(int_fast32_t v)
 #if WITHDSPEXTDDC
 
 
-// РџРµСЂРµРґР°С‚С‡РёРє - С„РѕСЂРјРёСЂРѕРІР°РЅРёРµ РѕРґРЅРѕРіРѕ СЃСЌРјРїРґР° (РїР°СЂС‹ I/Q).
-// РѕР±СЂР°Р±Р°С‚С‹РІР°РµС‚СЃСЏ 16 Р±РёС‚РЅРѕРµ (WITHAFADCWIDTH) С‡РёСЃР»Рѕ
-// РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РІ СЃР»СѓС‡Р°Рµ РІРЅРµС€РЅРµРіРѕ DUC
+// Передатчик - формирование одного сэмпда (пары I/Q).
+// обрабатывается 16 битное (WITHAFADCWIDTH) число
+// используется в случае внешнего DUC
 static RAMFUNC void processafadcsampleiq(
-	INT32P_t vi0,	// РІС‹Р±РѕСЂРєР° СЃ РјРёРєСЂРѕС„РѕРЅР° (РІ vi)
+	INT32P_t vi0,	// выборка с микрофона (в vi)
 	uint_fast8_t dspmode,
-	FLOAT_t shape,	// 0..1 - РѕРіРёР±Р°СЋС‰Р°СЏ
-	FLOAT_t ctcss	// СЃСѓР±С‚РѕРЅ, audio sample in range [- txlevelfence.. + txlevelfence]
+	FLOAT_t shape,	// 0..1 - огибающая
+	FLOAT_t ctcss	// субтон, audio sample in range [- txlevelfence.. + txlevelfence]
 	)
 {
 	// vi - audio sample in range [- txlevelfence.. + txlevelfence]
-	FLOAT_t vi = preparevi(vi0.IV, dspmode, ctcss);	// vi РЅРѕСЂРјРёСЂРѕРІР°РЅ Рє СЂР°Р·СЂСЏРґРЅРѕСЃС‚Рё РІС‹С…РѕРґРЅРѕРіРѕ Р¦РђРџ
+	FLOAT_t vi = preparevi(vi0.IV, dspmode, ctcss);	// vi нормирован к разрядности выходного ЦАП
 	if (isdspmodetx(dspmode))
 	{
 #if WITHMODEM
 		if (dspmode == DSPCTL_MODE_TX_BPSK)
 		{
-			// РІС‹СЃРѕРєРѕСЃРєРѕСЂРѕСЃС‚РЅРѕР№ РјРѕРґРµРј. Р”Рѕ РІС‹Р·РѕРІР° baseband_modulator Рё РІ РЅС‘Рј modem_get_tx_iq РґРµР»Рѕ РЅРµ РґРѕС…РѕРґРёС‚.
+			// высокоскоростной модем. До вызова baseband_modulator и в нём modem_get_tx_iq дело не доходит.
 			const int txb = modem_get_tx_b(getTxShapeNotComplete());
 	#if WITHMODEMIQLOOPBACK
 			const int_fast32_t ph = (1 - txb * 2);
 			const FLOAT32P_t iq = { { ph, ph } };
 			modem_demod_iq(iq);	// debug loopback
 	#endif /* WITHMODEMIQLOOPBACK */
-			const int vv = txb ? 0 : - 1;	// txiq[63] СѓРїСЂР°РІР»СЏРµС‚ РёРЅРІРµСЂСЃРёРµР№ СЃРёРіРЅР°Р»Р° РїРµСЂРµР¶ РђР¦Рџ
+			const int vv = txb ? 0 : - 1;	// txiq[63] управляет инверсией сигнала переж АЦП
 			savesampleout32stereo(vv, vv);
 			return;
 		}
@@ -3767,11 +3767,11 @@ static RAMFUNC void processafadcsampleiq(
 #else /* WITHDSPLOCALFIR */
 		const FLOAT32P_t vfb = baseband_modulator(vi, dspmode, shape);
 #endif /* WITHDSPLOCALFIR */
-		savesampleout32stereo(iq2tx(vfb.IV), iq2tx(vfb.QV));	// Р—Р°РїРёСЃСЊ РІ РїРѕС‚РѕРє Рє РїРµСЂРµРґР°С‚С‡РёРєСѓ I/Q Р·РЅР°С‡РµРЅРёР№.
+		savesampleout32stereo(iq2tx(vfb.IV), iq2tx(vfb.QV));	// Запись в поток к передатчику I/Q значений.
 	}
 	else
 	{
-		filter_fir_tx_MIKE(vi, 1);		// Р¤РёР»СЊС‚СЂ РЅРµ РїСЂРёРјРµРЅСЏРµС‚СЃСЏ, С‚РѕР»СЊРєРѕ РІС‹РїРѕР»РЅСЏРµС‚СЃСЏ СЃРґРІРёРі РІ Р»РёРЅРёРё Р·Р°РґРµСЂР¶РєРё
+		filter_fir_tx_MIKE(vi, 1);		// Фильтр не применяется, только выполняется сдвиг в линии задержки
 		savesampleout32stereo(0, 0);
 	}
 }
@@ -3779,36 +3779,36 @@ static RAMFUNC void processafadcsampleiq(
 #else /* WITHDSPEXTDDC */
 
 
-// РџР•Р Р•Р”РђР§Рђ
-// РѕР±СЂР°Р±Р°С‚С‹РІР°РµС‚СЃСЏ 16 Р±РёС‚РЅРѕРµ (WITHAFADCWIDTH) С‡РёСЃР»Рѕ
+// ПЕРЕДАЧА
+// обрабатывается 16 битное (WITHAFADCWIDTH) число
 static RAMFUNC void processafadcsample(
-	INT32P_t vi0,	// РІС‹Р±РѕСЂРєР° СЃ РјРёРєСЂРѕС„РѕРЅР° (РІ vi)
+	INT32P_t vi0,	// выборка с микрофона (в vi)
 	uint_fast8_t dspmode,
-	FLOAT_t shape,	// 0..1 - РѕРіРёР±Р°СЋС‰Р°СЏ
-	FLOAT_t ctcss	// СЃСѓР±С‚РѕРЅ, audio sample in range [- txlevelfence.. + txlevelfence]
+	FLOAT_t shape,	// 0..1 - огибающая
+	FLOAT_t ctcss	// субтон, audio sample in range [- txlevelfence.. + txlevelfence]
 	)
 {
 #if WITHDSPLOCALFIR == 0
 	#error WITHDSPLOCALFIR should be defined
 #endif /* WITHDSPLOCALFIR == 0 */
 
-	FLOAT_t vi = preparevi(vi0.IV, dspmode, ctcss);	// vi РЅРѕСЂРјРёСЂРѕРІР°РЅ Рє СЂР°Р·СЂСЏРґРЅРѕСЃС‚Рё РІС‹С…РѕРґРЅРѕРіРѕ Р¦РђРџ
+	FLOAT_t vi = preparevi(vi0.IV, dspmode, ctcss);	// vi нормирован к разрядности выходного ЦАП
 	// vi - audio sample in range [- txlevelfence.. + txlevelfence]
 	if (isdspmodetx(dspmode))
 	{
 		vi = filter_fir_tx_MIKE(vi, 0);
 		const FLOAT32P_t vfb = baseband_modulator(vi, dspmode, shape);
-		// Р—РґРµСЃСЊ, РёРјРµСЏ РєРІР°РґСЂР°С‚СѓСЂРЅС‹Рµ СЃРёРіРЅР°Р»С‹ vfb.IV Рё vfb.QV, 
-		// РїСЂРѕРёР·РІРѕРґРёРј Digital Up Conversion
-		const FLOAT32P_t v_if = get_float4_iflo();	// С‡Р°СЃС‚РѕС‚Р° 12 РєР“С† - 1/4 С‡Р°СЃС‚РѕС‚С‹ РІС‹Р±РѕСЂРѕРє РђР¦Рџ - РјРѕР¶РЅРѕ РІРѕСЃРїРѕР»СЊР·РѕРІР°С‚СЊСЃСЏ С†РµР»С‹РјРё Р·РЅР°С‡РµРЅРёСЏРјРё.
-		const FLOAT32P_t e1 = filter_fir4_tx_SSB_IQ(vfb, v_if.IV != 0);		// 1.85 kHz - С„РёР»СЊС‚СЂ РёРјРµРµС‚ СѓСЃРёР»РµРЅРёРµ 2.0
-		const FLOAT_t r = (e1.QV * v_if.QV + e1.IV * v_if.IV);	// РїРµСЂРµРЅРѕСЃРёРј РЅР° РІС‹С…РѕРґРЅСѓСЋ С‡Р°СЃС‚РѕС‚Сѓ ("+" - Р±РµР· РёРЅРІРµСЂСЃРёРё).
-		// РРЅС‚РµСЂС„РµР№СЃ СЃ Р’Р§ - РѕРґРЅРѕРєР°РЅР°Р»СЊРЅС‹Р№ ADC/DAC
-		savesampleout32stereo(iq2tx(r * shape), 0);	// РєРѕРґРµРє РїРѕР»СѓС‡Р°РµС‚ 24 Р±РёС‚Р° left justified РІ 32-С… Р±РёС‚РЅРѕРј С‡РёСЃР»Рµ.
+		// Здесь, имея квадратурные сигналы vfb.IV и vfb.QV, 
+		// производим Digital Up Conversion
+		const FLOAT32P_t v_if = get_float4_iflo();	// частота 12 кГц - 1/4 частоты выборок АЦП - можно воспользоваться целыми значениями.
+		const FLOAT32P_t e1 = filter_fir4_tx_SSB_IQ(vfb, v_if.IV != 0);		// 1.85 kHz - фильтр имеет усиление 2.0
+		const FLOAT_t r = (e1.QV * v_if.QV + e1.IV * v_if.IV);	// переносим на выходную частоту ("+" - без инверсии).
+		// Интерфейс с ВЧ - одноканальный ADC/DAC
+		savesampleout32stereo(iq2tx(r * shape), 0);	// кодек получает 24 бита left justified в 32-х битном числе.
 	}
 	else
 	{
-		filter_fir_tx_MIKE(vi, 1);		// Р¤РёР»СЊС‚СЂ РЅРµ РїСЂРёРјРµРЅСЏРµС‚СЃСЏ, С‚РѕР»СЊРєРѕ РІС‹РїРѕР»РЅСЏРµС‚СЃСЏ СЃРґРІРёРі РІ Р»РёРЅРёРё Р·Р°РґРµСЂР¶РєРё
+		filter_fir_tx_MIKE(vi, 1);		// Фильтр не применяется, только выполняется сдвиг в линии задержки
 		savesampleout32stereo(0, 0);
 	}
 }
@@ -3848,13 +3848,13 @@ static RAMFUNC FLOAT_t arctan2(FLOAT_t y, FLOAT_t x)
 
 //////////////////////////
 
-// Р”РµРјРѕРґСѓР»СЏС†РёСЏ FM
+// Демодуляция FM
 static RAMFUNC ncoftwi_t demodulator_FM(
 	FLOAT32P_t vp1,
 	const uint_fast8_t pathi				// 0/1: main_RX/sub_RX
 	)
 {
-	// Р—РґРµСЃСЊ, РёРјРµСЏ РєРІР°РґСЂР°С‚СѓСЂРЅС‹Рµ СЃРёРіРЅР°Р»С‹ vp1.IV Рё vp1.QV, РЅР°С‡РёРЅР°РµРј РґРµРјРѕРґСѓР»СЏС†РёРё
+	// Здесь, имея квадратурные сигналы vp1.IV и vp1.QV, начинаем демодуляции
 	//
 	// tnx Vladimir Vassilevsky
 	// http://www.dsprelated.com/showmessage/71491/2.php
@@ -3863,7 +3863,7 @@ static RAMFUNC ncoftwi_t demodulator_FM(
 
 	if (vp1.IV == 0 && vp1.QV == 0)
 		vp1.QV = 1;
-	const ncoftwi_t fi = OMEGA2FTWI(ATAN2F(vp1.QV, vp1.IV));	//  returns a value in the range вЂ“pi to pi radians, using the signs of both parameters to determine the quadrant of the return value.
+	const ncoftwi_t fi = OMEGA2FTWI(ATAN2F(vp1.QV, vp1.IV));	//  returns a value in the range –pi to pi radians, using the signs of both parameters to determine the quadrant of the return value.
 
 	const ncoftwi_t d_fi = (ncoftwi_t) (fi - prev_fi [pathi]);
 	prev_fi [pathi] = fi;
@@ -3911,8 +3911,8 @@ struct amd
 
 static struct amd amds [NTRX] = { { 0 }, };	// force CCM allocation
 
-/* РџРѕР»СѓС‡РёС‚СЊ РёРЅС„РѕСЂРјР°С†РёСЋ РѕР± РѕС€РёР±РєРµ РЅР°СЃС‚СЂРѕР№РєРё РІ СЂРµР¶РёРјРµ SAM */
-/* РџРѕР»СѓС‡РёС‚СЊ Р·РЅР°С‡РµРЅРёРµ РѕС‚РєР»РѕРЅРµРЅРёСЏ С‡Р°СЃС‚РѕС‚С‹ СЃ С‚РѕС‡РЅРѕСЃС‚СЊСЋ 0.1 РіРµСЂС†Р° */
+/* Получить информацию об ошибке настройки в режиме SAM */
+/* Получить значение отклонения частоты с точностью 0.1 герца */
 uint_fast8_t hamradio_get_samdelta10(int_fast32_t * p, uint_fast8_t pathi)
 {
 	const uint_fast32_t sample_rate10 = ARMSAIRATE * 10;
@@ -3923,7 +3923,7 @@ uint_fast8_t hamradio_get_samdelta10(int_fast32_t * p, uint_fast8_t pathi)
 
 static volatile int32_t saved_delta_fi [NTRX] = { 0, };	// force CCM allocation
 
-/* РџРѕР»СѓС‡РёС‚СЊ Р·РЅР°С‡РµРЅРёРµ РѕС‚РєР»РѕРЅРµРЅРёСЏ С‡Р°СЃС‚РѕС‚С‹ СЃ С‚РѕС‡РЅРѕСЃС‚СЊСЋ 0.1 РіРµСЂС†Р° */
+/* Получить значение отклонения частоты с точностью 0.1 герца */
 uint_fast8_t dsp_getfreqdelta10(int_fast32_t * p, uint_fast8_t pathi)
 {
 	const uint_fast32_t sample_rate10 = ARMSAIRATE * 10;
@@ -4011,17 +4011,17 @@ flush_amd(struct amd * a)
 }
 #endif
 
-// Р”РµРјРѕРґСѓР»СЏС†РёСЏ SAM
+// Демодуляция SAM
 static RAMFUNC FLOAT_t 
 demodulator_SAM(
 	FLOAT32P_t vp1,
 	const uint_fast8_t pathi				// 0/1: main_RX/sub_RX
 	)
 {
-	// taken from Warren PrattР’Т‘s WDSP, 2016
+	// taken from Warren PrattВґs WDSP, 2016
 	// http://svn.tapr.org/repos_sdr_hpsdr/trunk/W5WC/PowerSDR_HPSDR_mRX_PS/Source/wdsp/amd.c
 
-	FLOAT_t audio;	// РІС‹С…РѕРґРЅРѕР№ СЃСЌРјРїР» (РЅРµРЅРѕСЂРјРёСЂРѕРІР°РЅРЅРіРѕРµ Р·РЅР°С‡РµРЅРёРµ).
+	FLOAT_t audio;	// выходной сэмпл (ненормированнгое значение).
 	FLOAT32P_t vco;
 	FLOAT_t corr [2];
 	ncoftwi_t deti;
@@ -4114,18 +4114,18 @@ demodulator_SAM(
 
 	del_outi = a->fil_outi;
 	a->fil_outi = (int32_t) ((a->g1i * deti) >> 32) + a->omegai;
-	a->phsi += del_outi;	/* "Р·Р°РІРѕСЂРѕС‚" РїРѕ РјРѕРґСѓР»СЋ M_TWOPI Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРё РѕР±РµСЃРїРµС‡РёРІР°РµС‚СЃСЏ С†РµР»РѕС‡РёСЃР»РµРЅРЅС‹Рј РїРµСЂРµРїРѕР»РЅРµРЅРёРµРј */
+	a->phsi += del_outi;	/* "заворот" по модулю M_TWOPI автоматически обеспечивается целочисленным переполнением */
 
 	return audio;
 }
 
 
-// РџР РРЃРњ
-// РћР±СЂР°Р±Р°С‚С‹РІР°РµС‚СЃСЏ floating point РєРІР°РґСЂР°С‚СѓСЂР°
-// РџСЂРё РЅРµРѕР±С…РѕРґРёРјРѕСЃС‚Рё РїСЂРёРјРµРЅСЏРµС‚СЃСЏ РђР РЈ
-// Р’РѕР·РІСЂР°С‰Р°РµС‚СЃСЏ СЃСЌРјРїР» - РІС‹С…РѕРґ РґРµС‚РµРєС‚РѕСЂР°, РЅРѕСЂРјР°Р»С‚Р·РѕРІР°РЅРЅС‹Р№ РґР»СЏ РїРѕРїР°РґР°РЅРёСЏ РІ РґРёР°РїР°Р·РѕРЅ WITHAFDACWIDTH
+// ПРИЁМ
+// Обрабатывается floating point квадратура
+// При необходимости применяется АРУ
+// Возвращается сэмпл - выход детектора, нормалтзованный для попадания в диапазон WITHAFDACWIDTH
 static RAMFUNC_NONILINE FLOAT_t baseband_demodulator(
-	FLOAT32P_t vp0f,					// РљРІР°РґСЂР°С‚СѓСЂРЅС‹Рµ Р·РЅР°С‡РµРЅРёСЏ РІС‹Р±РѕСЂРєРё
+	FLOAT32P_t vp0f,					// Квадратурные значения выборки
 	const uint_fast8_t dspmode, 
 	const uint_fast8_t pathi				// 0/1: main_RX/sub_RX
 	)
@@ -4140,7 +4140,7 @@ static RAMFUNC_NONILINE FLOAT_t baseband_demodulator(
 	switch (dspmode)
 	{
 	default:
-		// СЂРµР¶РёРј РїРµСЂРµРґР°С‡Рё
+		// режим передачи
 		{
 			r = 0;	
 		}
@@ -4156,8 +4156,8 @@ static RAMFUNC_NONILINE FLOAT_t baseband_demodulator(
 			const FLOAT_t fltstrengthslow = agc_measure_float(dspmode, vp0f, pathi);
 			const FLOAT_t gain = agc_getgain_float(fltstrengthslow, pathi);
 			const FLOAT32P_t vp1 = scalepair(agc_delaysignal(vp0f, pathi), gain);
-			const FLOAT32P_t af = get_float_aflo_delta(0, pathi);	// СЃСЂРµРґРЅСЏСЏ С‡Р°СЃС‚РѕС‚Р° РІС‹С…РѕРґРЅРѕРіРѕ СЃРїРµРєС‚СЂР°
-			r = (vp1.QV * af.QV + vp1.IV * af.IV); // РїРµСЂРµРЅРѕСЃРёРј РЅР° РІС‹С…РѕРґРЅСѓСЋ С‡Р°СЃС‚РѕС‚Сѓ ("+" - Р±РµР· РёРЅРІРµСЂСЃРёРё).
+			const FLOAT32P_t af = get_float_aflo_delta(0, pathi);	// средняя частота выходного спектра
+			r = (vp1.QV * af.QV + vp1.IV * af.IV); // переносим на выходную частоту ("+" - без инверсии).
 			r = r * rxoutdenom;
 			r *= agc_squelchopen(fltstrengthslow, pathi);
 		}
@@ -4170,7 +4170,7 @@ static RAMFUNC_NONILINE FLOAT_t baseband_demodulator(
 			/*const FLOAT_t fltstrengthslow = */ agc_measure_float(dspmode, vp0f, pathi);
 			//const FLOAT_t gain = agc_getgain_float(fltstrengthslow, pathi);
 			//INT32P_t vp0i32;
-			//saved_delta_fi [pathi] = demodulator_FM(vp0f, pathi);	// РїРѕРіСЂРµС€РЅРѕСЃС‚СЊ РЅР°СЃС‚СЂРѕР№РєРё - С‚СЂРµР±СѓРµС‚СЃСЏ С„РёР»СЊС‚СЂРѕРІР°С‚СЊ Р¤РќР§
+			//saved_delta_fi [pathi] = demodulator_FM(vp0f, pathi);	// погрешность настройки - требуется фильтровать ФНЧ
 			modem_demod_iq(vp0f);
 		}
 		r = 0;
@@ -4180,18 +4180,18 @@ static RAMFUNC_NONILINE FLOAT_t baseband_demodulator(
 	case DSPCTL_MODE_RX_NFM:
 		if (/*DUALRXFLT || */pathi == 0)
 		{
-			// Р”РµРјРѕРґСѓР»СЏС†РёСЏ NBFM
+			// Демодуляция NBFM
 			const FLOAT_t fltstrengthslow = agc_measure_float(dspmode, vp0f, pathi);
 			//const FLOAT_t gain = agc_getgain_float(fltstrengthslow, pathi);
-			saved_delta_fi [pathi] = demodulator_FM(vp0f, pathi);	// РїРѕРіСЂРµС€РЅРѕСЃС‚СЊ РЅР°СЃС‚СЂРѕР№РєРё - С‚СЂРµР±СѓРµС‚СЃСЏ С„РёР»СЊС‚СЂРѕРІР°С‚СЊ Р¤РќР§
-			//const int fdelta10 = ((int64_t) saved_delta_fi [pathi] * ARMSAIRATE * 10) >> 32;	// РћС‚РєР»РЅРµРЅРёРµ С‡Р°СЃС‚РѕС‚С‹ РІ 0.1 РіРµСЂС† РµРґРёРЅРёС†Р°С…
-			// Р·РЅР°С‡РµРЅРёРµ РґР»СЏ РїСЂРѕСЃР»СѓС€РёРІР°РЅРёСЏ
+			saved_delta_fi [pathi] = demodulator_FM(vp0f, pathi);	// погрешность настройки - требуется фильтровать ФНЧ
+			//const int fdelta10 = ((int64_t) saved_delta_fi [pathi] * ARMSAIRATE * 10) >> 32;	// Отклнение частоты в 0.1 герц единицах
+			// значение для прослушивания
 			// 0.707 == M_SQRT1_2
 			const FLOAT_t sample = saved_delta_fi [pathi]; //(FLOAT_t) M_SQRT1_2;
-			r = sample * nfmoutscale; //* rxoutdenom;	// РјР°СЃС€С‚Р°Р±РёСЂРѕРІР°РЅРёРµ Рє СЂР°Р·СЂСЏРґРЅРѕСЃС‚Рё Р°СѓРґРёРѕ-РєРѕРґРµРєР° 1_31 -> 1_15
+			r = sample * nfmoutscale; //* rxoutdenom;	// масштабирование к разрядности аудио-кодека 1_31 -> 1_15
 			if (glob_nfm_sql_off == 0)
 			{
-				// "С€СѓРјРѕРґР°РІ"
+				// "шумодав"
 				testholdmax3(iir_nfmnbbpf(sample));
 				const int nbopen = getholdmax3() < nbfence;
 				r = (nbopen != 0) ? r : (r / 16);
@@ -4206,13 +4206,13 @@ static RAMFUNC_NONILINE FLOAT_t baseband_demodulator(
 		if (DUALRXFLT || pathi == 0)
 		{
 			/* AM demodulation */
-			// Р—РґРµСЃСЊ, РёРјРµСЏ РєРІР°РґСЂР°С‚СѓСЂРЅС‹Рµ СЃРёРіРЅР°Р»С‹ vp1.IV Рё vp1.QV, РЅР°С‡РёРЅР°РµРј РґРµРјРѕРґСѓР»СЏС†РёРё
+			// Здесь, имея квадратурные сигналы vp1.IV и vp1.QV, начинаем демодуляции
 			const FLOAT_t fltstrengthslow = agc_measure_float(dspmode, vp0f, pathi);
 			const FLOAT_t gain = agc_getgain_float(fltstrengthslow, pathi);
 			const FLOAT32P_t vp1 = scalepair(agc_delaysignal(vp0f, pathi), gain);
-			// Р”РµРјРѕРґСѓР»СЏС†РёСЏ РђРњ
+			// Демодуляция АМ
 			const FLOAT_t sample = SQRTF(vp1.IV * vp1.IV + vp1.QV * vp1.QV);// * (FLOAT_t) 0.5; //M_SQRT1_2;
-			//saved_delta_fi [pathi] = demodulator_FM(vp2, pathi);	// РїРѕРіСЂРµС€РЅРѕСЃС‚СЊ РЅР°СЃС‚СЂРѕР№РєРё - С‚СЂРµР±СѓРµС‚СЃСЏ С„РёР»СЊС‚СЂРѕРІР°С‚СЊ Р¤РќР§
+			//saved_delta_fi [pathi] = demodulator_FM(vp2, pathi);	// погрешность настройки - требуется фильтровать ФНЧ
 			r = sample * rxoutdenom;
 			r *= agc_squelchopen(fltstrengthslow, pathi);
 		}
@@ -4228,13 +4228,13 @@ static RAMFUNC_NONILINE FLOAT_t baseband_demodulator(
 		if (/*DUALRXFLT || */pathi == 0)
 		{
 			/* synchronous AM demodulation */
-			// Р—РґРµСЃСЊ, РёРјРµСЏ РєРІР°РґСЂР°С‚СѓСЂРЅС‹Рµ СЃРёРіРЅР°Р»С‹ vp1.IV Рё vp1.QV, РЅР°С‡РёРЅР°РµРј РґРµРјРѕРґСѓР»СЏС†РёРё
+			// Здесь, имея квадратурные сигналы vp1.IV и vp1.QV, начинаем демодуляции
 			const FLOAT_t fltstrengthslow = agc_measure_float(dspmode, vp0f, pathi);
 			const FLOAT_t gain = agc_getgain_float(fltstrengthslow, pathi);
 			const FLOAT32P_t vp1 = scalepair(agc_delaysignal(vp0f, pathi), gain);
 			//const FLOAT_t sample = SQRTF(vp1.IV * vp1.IV + vp1.QV * vp1.QV) * (FLOAT_t) 0.5; //M_SQRT1_2;
-			//saved_delta_fi [pathi] = demodulator_FM(vp2, pathi);	// РїРѕРіСЂРµС€РЅРѕСЃС‚СЊ РЅР°СЃС‚СЂРѕР№РєРё - С‚СЂРµР±СѓРµС‚СЃСЏ С„РёР»СЊС‚СЂРѕРІР°С‚СЊ Р¤РќР§
-			// Р”РµРјРѕРґСѓР»СЏС†РёСЏ SРђРњ
+			//saved_delta_fi [pathi] = demodulator_FM(vp2, pathi);	// погрешность настройки - требуется фильтровать ФНЧ
+			// Демодуляция SАМ
 			const FLOAT_t sample = demodulator_SAM(vp1, pathi);
 			r = sample * rxoutdenom;
 			r *= agc_squelchopen(fltstrengthslow, pathi);
@@ -4246,19 +4246,19 @@ static RAMFUNC_NONILINE FLOAT_t baseband_demodulator(
 	return r;
 }
 
-// Р Р°СЃС€РёСЂРµРЅРёРµ Р·РЅР°РєРѕРІРѕРіРѕ 24/32 Р±РёС‚РЅРѕРіРѕ С‡РёСЃР»Р° (left justified) РґРѕ 32 Р±РёС‚
+// Расширение знакового 24/32 битного числа (left justified) до 32 бит
 static RAMFUNC int_fast32_t q23lj_to_q31(uint32_t v)
 {
-	return ((int32_t) v >> (32 - WITHIFADCWIDTH));	// СЃ РєРѕРґРµРєР° РїСЂРёРЅСЏС‚Рѕ left justified 24 Р±РёС‚Р° РІ 32-С… Р±РёС‚РЅРѕРј С‡РёСЃР»Рµ
+	return ((int32_t) v >> (32 - WITHIFADCWIDTH));	// с кодека принято left justified 24 бита в 32-х битном числе
 }
 
 #if WITHDSPEXTDDC
 
-// РџР РРЃРњ
-// РћР±СЂР°Р±Р°С‚С‹РІР°РµС‚СЃСЏ 32-С… Р±РёС‚РЅР°СЏ РєРІР°РґСЂР°С‚СѓСЂР°
-// Р’РѕР·РІСЂР°С‰Р°РµС‚СЃСЏ СЃСЌРјРїР» - РІС‹С…РѕРґ РґРµС‚РµРєС‚РѕСЂР°
+// ПРИЁМ
+// Обрабатывается 32-х битная квадратура
+// Возвращается сэмпл - выход детектора
 static FLOAT32P_t processifadcsampleIQ_ISB(
-	const int32_t iv0, const int32_t qv0		// РљРІР°РґСЂР°С‚СѓСЂРЅС‹Рµ Р·РЅР°С‡РµРЅРёСЏ РІС‹Р±РѕСЂРєРё
+	const int32_t iv0, const int32_t qv0		// Квадратурные значения выборки
 	)
 {
 	enum { pathi = 0 };				// 0/1: main_RX/sub_RX
@@ -4267,11 +4267,11 @@ static FLOAT32P_t processifadcsampleIQ_ISB(
 	return rv;
 }
 
-// РџР РРЃРњ
-// РћР±СЂР°Р±Р°С‚С‹РІР°РµС‚СЃСЏ 32-С… Р±РёС‚РЅР°СЏ РєРІР°РґСЂР°С‚СѓСЂР°
-// Р’РѕР·РІСЂР°С‰Р°РµС‚СЃСЏ СЃСЌРјРїР» - РІС‹С…РѕРґ РґРµС‚РµРєС‚РѕСЂР°
+// ПРИЁМ
+// Обрабатывается 32-х битная квадратура
+// Возвращается сэмпл - выход детектора
 static RAMFUNC FLOAT_t processifadcsampleIQ(
-	const uint32_t iv0, const uint32_t qv0,		// РљРІР°РґСЂР°С‚СѓСЂРЅС‹Рµ Р·РЅР°С‡РµРЅРёСЏ РІС‹Р±РѕСЂРєРё
+	const uint32_t iv0, const uint32_t qv0,		// Квадратурные значения выборки
 	const uint_fast8_t dspmode, 
 	const uint_fast8_t pathi				// 0/1: main_RX/sub_RX
 	)
@@ -4294,9 +4294,9 @@ static RAMFUNC FLOAT_t processifadcsampleIQ(
 
 #else /* WITHDSPEXTDDC */
 
-// РџР РРЃРњ
-// РћР±СЂР°Р±Р°С‚С‹РІР°РµС‚СЃСЏ 24-С… Р±РёС‚РЅРѕРµ С‡РёСЃР»Рѕ.
-// Р’РѕР·РІСЂР°С‰Р°РµС‚СЃСЏ СЃСЌРјРїР» - РІС‹С…РѕРґ РґРµС‚РµРєС‚РѕСЂР°
+// ПРИЁМ
+// Обрабатывается 24-х битное число.
+// Возвращается сэмпл - выход детектора
 //
 static RAMFUNC FLOAT_t processifadcsamplei(uint32_t v1, uint_fast8_t dspmode)
 {
@@ -4304,10 +4304,10 @@ static RAMFUNC FLOAT_t processifadcsamplei(uint32_t v1, uint_fast8_t dspmode)
 
 	if (isdspmoderx(dspmode))
 	{
-		// down-converter СЃ 12 РєР“С† РЅР° zero IF
+		// down-converter с 12 кГц на zero IF
 		const FLOAT32P_t if_lo = get_float4_iflo();
 		BEGIN_STAMP();
-		const FLOAT32P_t vp0 = filter_fir4_rx_SSB_IQ(scalepair(if_lo, q23lj_to_q31(v1) * RXINSCALE), if_lo.IV != 0); // С‡Р°СЃС‚РѕС‚Р° 12 РєР“С† - 1/4 С‡Р°СЃС‚РѕС‚С‹ РІС‹Р±РѕСЂРѕРє РђР¦Рџ - РјРѕР¶РЅРѕ РІРѕСЃРїРѕР»СЊР·РѕРІР°С‚СЊСЃСЏ С†РµР»С‹РјРё Р·РЅР°С‡РµРЅРёСЏРјРё.
+		const FLOAT32P_t vp0 = filter_fir4_rx_SSB_IQ(scalepair(if_lo, q23lj_to_q31(v1) * RXINSCALE), if_lo.IV != 0); // частота 12 кГц - 1/4 частоты выборок АЦП - можно воспользоваться целыми значениями.
 		END_STAMP();
 		return baseband_demodulator(vp0, dspmode, pathi);
 	}
@@ -4322,25 +4322,25 @@ static RAMFUNC FLOAT_t processifadcsamplei(uint32_t v1, uint_fast8_t dspmode)
 
 #if WITHLOOPBACKTEST
 
-// РћР±РµСЃРїРµС‡РµРЅРёРµ СЂР°Р±РѕС‚С‹ С‚РµСЃС‚РѕРІРѕРіРѕ РєР°РЅР°Р»Р° РїСЂРѕС…РѕР¶РґРµРЅРёСЏ СЃС‚РµСЂРµРѕ Р·РІСѓРєР°
+// Обеспечение работы тестового канала прохождения стерео звука
 static INT32P_t loopbacktestaudio(INT32P_t vi0, uint_fast8_t dspmode, FLOAT_t shape)
 {
 	INT32P_t vi;
-	vi = vi0;		// РџСЂРѕСЃР»СѓС€РёРІР°РЅРёРµ РјРёРєСЂРѕС„РѕРЅРЅРѕРіРѕ СЃРёРіРЅР°Р»Р°
+	vi = vi0;		// Прослушивание микрофонного сигнала
 	//
-	// Р—РґРµСЃСЊ РІС‹Р±РёСЂР°РµРј, С‡С‚Рѕ РїСЂРѕСЃР»СѓС€РёРІР°РµРј РїСЂРё С‚РµСЃС‚Рµ
+	// Здесь выбираем, что прослушиваем при тесте
 	BEGIN_STAMP2();
 	//vi.IV = txmikeagc(vi.IV * txlevelfence / mikefenceIN) / TXINSCALE;
-	//vi.IV = filter_fir_rx_AUDIO_A(vi.IV);		// РџСЂРѕСЃР»СѓС€РёРІР°РЅРёРµ РјРёРєСЂРѕС„РѕРЅРЅРѕРіРѕ СЃРёРіРЅР°Р»Р° С‡РµСЂРµР· С„РёР»СЊС‚СЂ РїСЂРёС‘РјРЅРёРєР°
-	//vi.IV = filter_fir_tx_MIKE(vi.IV, 0);		// РџСЂРѕСЃР»СѓС€РёРІР°РЅРёРµ РјРёРєСЂРѕС„РѕРЅРЅРѕРіРѕ СЃРёРіРЅР°Р»Р° С‡РµСЂРµР· С„РёР»СЊС‚СЂ РїРµСЂРµРґР°С‚С‡РёРєР°
+	//vi.IV = filter_fir_rx_AUDIO_A(vi.IV);		// Прослушивание микрофонного сигнала через фильтр приёмника
+	//vi.IV = filter_fir_tx_MIKE(vi.IV, 0);		// Прослушивание микрофонного сигнала через фильтр передатчика
 	END_STAMP2();
-	//vi.IV = 0;	// Р·Р°РіР»СѓС€РёС‚СЊ Р»РµРІС‹Р№ РєР°РЅР°Р»
-	//vi.QV = 0;	// Р·Р°РіР»СѓС€РёС‚СЊ РїСЂР°РІС‹Р№ РєР°РЅР°Р»
-	//vi.IV = get_dualtone16();	// РґРІСѓС…С‚РѕРЅРѕРІС‹Р№ СЃРёРіРЅР°Р»
+	//vi.IV = 0;	// заглушить левый канал
+	//vi.QV = 0;	// заглушить правый канал
+	//vi.IV = get_dualtone16();	// двухтоновый сигнал
 
 #if WITHSECTOGGLE
 
-	// РіРµРЅРµСЂР°С†РёСЏ РїРµСЂРµРёРѕРґРёС‡РµСЃРєРѕРіРѕ СЃРёРіРЅР°Р»Р°
+	// генерация переиодического сигнала
 	{
 		FLOAT_t v = (get_lout16() + get_rout16()) * shape / 2;
 		vi.IV = v;
@@ -4349,15 +4349,15 @@ static INT32P_t loopbacktestaudio(INT32P_t vi0, uint_fast8_t dspmode, FLOAT_t sh
 
 #elif 0
 
-	// РЎР°РјРѕРїСЂРѕСЃР»СѓС€РёРІР°РЅРёРµ РјРёРєСЂРѕС„РѕРЅР°
-	vi.QV = vi.IV;	// РІ РїСЂР°РІС‹Р№ РєР°РЅР°Р» РєРѕРїРёСЂСѓРµРј Р»РµРІС‹Р№ РєР°РЅР°Р» (РјРёРєСЂРѕС„РѕРЅ)
+	// Самопрослушивание микрофона
+	vi.QV = vi.IV;	// в правый канал копируем левый канал (микрофон)
 
 #else /* WITHSECTOGGLE */
 
-	// Р“РµРЅРµСЂР°С†РёСЏ РґРІСѓС… С‚РѕРЅРѕРІ РґР»СЏ СЂР°Р·РЅС‹С… РєР°РЅР°Р»РѕРІ
-	vi.IV = get_lout16();		// С‚РѕРЅ 700 Hz
-	vi.QV = get_rout16();		// С‚РѕРЅ 500 Hz
-	//vi.QV = vi.IV;	// РІ РїСЂР°РІС‹Р№ РєР°РЅР°Р» РєРѕРїРёСЂСѓРµРј Р»РµРІС‹Р№ РєР°РЅР°Р» (РјРёРєСЂРѕС„РѕРЅ)
+	// Генерация двух тонов для разных каналов
+	vi.IV = get_lout16();		// тон 700 Hz
+	vi.QV = get_rout16();		// тон 500 Hz
+	//vi.QV = vi.IV;	// в правый канал копируем левый канал (микрофон)
 
 #endif /* WITHSECTOGGLE */
 
@@ -4380,7 +4380,7 @@ static INT32P_t loopbacktestaudio(INT32P_t vi0, uint_fast8_t dspmode, FLOAT_t sh
 
 #endif /* WITHLOOPBACKTEST */
 
-/* РїРѕР»СѓС‡РёС‚СЊ РѕС‡РµСЂРµРґРЅРѕР№ РѕС†РёС„СЂРѕРІР°РЅС‹Р№ СЃСЌРјРїР» СЃ РјРёРєСЂРѕС„РѕРЅР° РёР»Рё USB AUDIO РєР°РЅР°Р»Р°. 16-bit samples */
+/* получить очередной оцифрованый сэмпл с микрофона или USB AUDIO канала. 16-bit samples */
 static RAMFUNC INT32P_t getsampmlemike2(void)			
 {
 	INT32P_t v;
@@ -4389,8 +4389,8 @@ static RAMFUNC INT32P_t getsampmlemike2(void)
 		v.IV = 0;
 		v.QV = 0;
 	}
-	// VOX detector Рё СЂР°Р·СЂСЏРґРЅР°СЏ С†РµРїСЊ
-	// РџРѕРґРґРµСЂР¶РєР° СЂР°Р±РѕС‚С‹ VOX
+	// VOX detector и разрядная цепь
+	// Поддержка работы VOX
 	const FLOAT_t vi0f = FMAXF(FABSF(v.IV), FABSF(v.QV));
 	charge2(& mikeinlevel, vi0f, (mikeinlevel < vi0f) ? VOXCHARGE : VOXDISCHARGE);
 
@@ -4399,17 +4399,17 @@ static RAMFUNC INT32P_t getsampmlemike2(void)
 
 #if WITHDTMFPROCESSING
 
-// === РћРїСЂРµРґРµР»СЏРµРј РїРѕС‚СЂРµР±РЅС‹Рµ Р±Р»РѕРєРё РґР°РЅРЅС‹С…
-// *** Р‘СѓС„РµСЂР° РґРµРєРѕРґРёСЂРѕРІР°РЅРЅС‹С… "Р±Р»РѕРєРѕРІ" TDM-РєР°РЅР°Р»РѕРІ
-// ***  (РїРѕ 2 Р±СѓС„РµСЂР° РЅР° РїСЂРёРµРј Рё РїРµСЂРµРґР°С‡Сѓ)
+// === Определяем потребные блоки данных
+// *** Буфера декодированных "блоков" TDM-каналов
+// ***  (по 2 буфера на прием и передачу)
 
 
-#define DTMF_STEPS              205 // Р§РёСЃР»Рѕ С€Р°РіРѕРІ РїСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёСЏ РґР°РЅРЅС‹С…
-                                    //  РїСЂРё DTMF-РґРµС‚РµРєС†РёРё
-                                    //  (РґР»РёРЅР° Р±СѓС„РµСЂР° РґР°РЅРЅС‹С… РѕРґРЅРѕРіРѕ РєР°РЅР°Р»Р° РїСЂРёРµРјРЅРёРєР° РґР»СЏ
-                                    //      Р°РЅР°Р»РёР·Р° DTMF-РёРЅС„РѕСЂРјР°С†РёРё)
-#define DTMF_FREQ               8   // Р§РёСЃР»Рѕ DTMF-С‡Р°СЃС‚РѕС‚
-#define DTMF_EMPTY              (-1)  // РљРѕРґ РѕС‚СЃСѓС‚СЃС‚РІРёСЏ РїСЂРёРЅСЏС‚РѕР№ С†РёС„СЂС‹
+#define DTMF_STEPS              205 // Число шагов преобразования данных
+                                    //  при DTMF-детекции
+                                    //  (длина буфера данных одного канала приемника для
+                                    //      анализа DTMF-информации)
+#define DTMF_FREQ               8   // Число DTMF-частот
+#define DTMF_EMPTY              (-1)  // Код отсутствия принятой цифры
 
 
 static int16_t inp_samples [DTMF_STEPS];
@@ -4425,17 +4425,17 @@ static FLOAT_t powIQ(FLOAT_t i, FLOAT_t q)
 
         Function Name    : int16_t Dtmf_receive (DTMF_buffer_info *)
 
-        Description      : Р¤СѓРЅРєС†РёСЏ РґРµС‚РµРєС†РёРё DTMF-РЅР°Р±РѕСЂР°
+        Description      : Функция детекции DTMF-набора
 
-        Parameters       : РЈРєР°Р·Р°С‚РµР»СЊ РЅР° Р±СѓС„РµСЂ Р·РЅР°С‡РµРЅРёР№ РІС…РѕРґРЅРѕРіРѕ РїРѕС‚РѕРєР°
-                            С„РёРєСЃРёСЂРѕРІР°РЅРЅРѕР№ РґР»РёРЅС‹
+        Parameters       : Указатель на буфер значений входного потока
+                            фиксированной длины
 
-        Returns          : РљРѕРґ РѕРїСЂРµРґРµР»РµРЅРЅРѕР№ С†РёС„СЂС‹
+        Returns          : Код определенной цифры
 
 *******************************************************************************/
 int16_t Dtmf_receive (const int16_t * samples)
 {
-	// *** РўР°Р±Р»РёС†С‹ РєРѕСЌС„С„РёС†РёРµРЅС‚РѕРІ S Рё C РґР»СЏ РІРѕСЃСЊРјРё С‡Р°СЃС‚РѕС‚ DTMF (697-1633 Р“С†)
+	// *** Таблицы коэффициентов S и C для восьми частот DTMF (697-1633 Гц)
 	static const FLOAT_t S_coeff [DTMF_FREQ] = 
 	{
 		0.520488f / 1, 0.568561f / 1, 0.620326f / 1, 0.673593f / 1,
@@ -4447,38 +4447,38 @@ int16_t Dtmf_receive (const int16_t * samples)
 		0.582052f / 1, 0.498185f / 1, 0.399309f / 1, 0.284266f / 1,
 	};
 
-	// *** РўР°Р±Р»РёС†Р° РїРѕР»СѓС‡РµРЅРёСЏ РєРѕРґР° РїСЂРёРЅСЏС‚РѕР№ DTMF-С†РёС„СЂС‹
+	// *** Таблица получения кода принятой DTMF-цифры
 	static const int16_t Dtmf_code [16] = 
 		{0x01,0x04,0x07,0x0B,0x02,0x05,0x08,0x0A,
 		0x03,0x06,0x09,0x0C,0x0D,0x0E,0x0F,0x00};
 
-	FLOAT_t         SinA [DTMF_FREQ]; // = { 0.0 };            // Р’С‹С‡РёСЃР»СЏРµРјС‹Рµ Р·РЅР°С‡РµРЅРёСЏ СЃРёРЅСѓСЃР°
-	FLOAT_t         CosA [DTMF_FREQ]; // = { 0.0 };            //  Рё РєРѕСЃРёРЅСѓСЃР°
-	FLOAT_t         furie_image[DTMF_FREQ][2]; // = { { 0.0, 0.0 } };  // Р’РµС‰РµСЃС‚РІРµРЅРЅР°СЏ Рё РјРЅРёРјР°СЏ С‡Р°СЃС‚Рё С‡Р°СЃС‚РѕС‚
-	FLOAT_t         powS [DTMF_FREQ];            // Р’С‹С‡РёСЃР»СЏРµРјС‹Рµ Р·РЅР°С‡РµРЅРёСЏ СЃРёРЅСѓСЃР°
+	FLOAT_t         SinA [DTMF_FREQ]; // = { 0.0 };            // Вычисляемые значения синуса
+	FLOAT_t         CosA [DTMF_FREQ]; // = { 0.0 };            //  и косинуса
+	FLOAT_t         furie_image[DTMF_FREQ][2]; // = { { 0.0, 0.0 } };  // Вещественная и мнимая части частот
+	FLOAT_t         powS [DTMF_FREQ];            // Вычисляемые значения синуса
 	int     i,j;
 
 
     // *** Initialisation section ***
-    // --- РРЅРёС†РёР°Р»РёР·РёСЂСѓРµРј РґР°РЅРЅС‹Рµ С„СѓРЅРєС†РёРё
+    // --- Инициализируем данные функции
     for (i = 0; i < DTMF_FREQ; ++i)
     {
-        furie_image[i][0] = 0.0f;    // Р’РµС‰РµСЃС‚РІРµРЅРЅР°СЏ С‡Р°СЃС‚СЊ
-        furie_image[i][1] = 0.0f;    // РњРЅРёРјР°СЏ С‡Р°СЃС‚СЊ
-        SinA[i] = 0.0f;               // Р—РЅР°С‡РµРЅРёРµ СЃРёРЅСѓСЃР°
-        CosA[i] = 0.7f;               // Р—РЅР°С‡РµРЅРёРµ РєРѕСЃРёРЅСѓСЃР°
-//        CosA[i] = 1.0f;               // Р—РЅР°С‡РµРЅРёРµ РєРѕСЃРёРЅСѓСЃР°
+        furie_image[i][0] = 0.0f;    // Вещественная часть
+        furie_image[i][1] = 0.0f;    // Мнимая часть
+        SinA[i] = 0.0f;               // Значение синуса
+        CosA[i] = 0.7f;               // Значение косинуса
+//        CosA[i] = 1.0f;               // Значение косинуса
     }
-    // *** РћР±СЂР°Р±РѕС‚РєР° РёРЅС„РѕСЂРјР°С†РёРё ***
-    // РћСЃСѓС‰РµСЃС‚РІР»СЏРµРј РІС‹С‡РёСЃР»РµРЅРёРµ РІРµС‰РµСЃС‚РІРµРЅРЅРѕР№ Рё РјРЅРёРјРѕР№ СЃРѕСЃС‚Р°РІР»СЏСЋС‰РёС… Р¤СѓСЂСЊРµ-РѕР±СЂР°Р·Р°
-    //  РїРѕ РІСЃРµРј 8 С‡Р°СЃС‚РѕС‚Р°Рј
+    // *** Обработка информации ***
+    // Осуществляем вычисление вещественной и мнимой составляющих Фурье-образа
+    //  по всем 8 частотам
     for ( i = 0; i < DTMF_STEPS; ++i )
     {   
-		// Р”Р»СЏ РєР°Р¶РґРѕРіРѕ С€Р°РіР° РїСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёСЏ
+		// Для каждого шага преобразования
 		const float sample = samples [i];
 
         for ( j = 0; j < DTMF_FREQ; ++j )
-        {   // Р”Р»СЏ РєР°Р¶РґРѕР№ DTMF-С‡Р°СЃС‚РѕС‚С‹
+        {   // Для каждой DTMF-частоты
             FLOAT_t Cosv = CosA [j];
             FLOAT_t Sinv = SinA [j];
 			FLOAT_t sin_tmp = Sinv;
@@ -4490,56 +4490,56 @@ int16_t Dtmf_receive (const int16_t * samples)
         }
     }
 
-    // Р’С‹С‡РёСЃР»СЏРµРј Р·РЅР°С‡РµРЅРёСЏ РєРІР°РґСЂР°С‚РѕРІ РІРµСЃРѕРІ СЂР°Р·Р»РѕР¶РµРЅРЅС‹С… С‡Р°СЃС‚РѕС‚
+    // Вычисляем значения квадратов весов разложенных частот
     for ( j = 0; j < DTMF_FREQ; ++j )
-    {   // РСЃРїРѕР»СЊР·СѓРµРј РґР»СЏ С…СЂР°РЅРµРЅРёСЏ РІРµСЃРѕРІ РјР°СЃСЃРёРІ Sin
+    {   // Используем для хранения весов массив Sin
         powS [j] = powIQ(furie_image[j][0], furie_image[j][1]);
     }
 
-    // РџРµСЂРІС‹Рµ 4 Р·РЅР°С‡РµРЅРёСЏ powS [j] - РІРµСЃР° РјР»Р°РґС€РёС… 4-С… С‡Р°СЃС‚РѕС‚,
-    // РІС‚РѕСЂС‹Рµ 4 Р·РЅР°С‡РµРЅРёСЏ powS [j] - РІРµСЃР° СЃС‚Р°СЂС€РёС… 4-С… С‡Р°СЃС‚РѕС‚,
-    // РСЃРїРѕР»СЊР·СѓРµРј РґР»СЏ РѕРїСЂРµРґРµР»РµРЅРёСЏ С‡Р°СЃС‚РѕС‚ СЃ РјР°РєСЃРёРјР°Р»СЊРЅС‹Рј РІРµСЃРѕРј РјР°СЃСЃРёРІ Cos []
+    // Первые 4 значения powS [j] - веса младших 4-х частот,
+    // вторые 4 значения powS [j] - веса старших 4-х частот,
+    // Используем для определения частот с максимальным весом массив Cos []
 	 int     il, ih;
 	FLOAT_t tcos0;
 	FLOAT_t tcos1;
 
 	tcos0 = 0; //powS [0];
 	il = 0;
-	for ( j = 0; j < DTMF_FREQ/2; ++j )   // РћРїСЂРµРґРµР»СЏРµРј РЅР°РёР±РѕР»СЊС€РёР№ РІРµСЃ РјР»Р°РґС€РёС… С‡Р°СЃС‚РѕС‚
+	for ( j = 0; j < DTMF_FREQ/2; ++j )   // Определяем наибольший вес младших частот
         if ( powS[j] > tcos0 )
         {   tcos0 = powS[j];
-            il = j;                 // Р—Р°РїРѕРјРёРЅР°РµРј РёРЅРґРµРєСЃ С‡Р°СЃС‚РѕС‚С‹ РјР°РєСЃРёРјР°Р»СЊРЅРѕРіРѕ РІРµСЃР°
+            il = j;                 // Запоминаем индекс частоты максимального веса
         }
 
 	tcos1 = 0; //powS [DTMF_FREQ/2];
 	ih = 0; //DTMF_FREQ/2;
-    for ( j = DTMF_FREQ/2; j < DTMF_FREQ; ++j )     // РћРїСЂРµРґРµР»СЏРµРј РЅР°РёР±РѕР»СЊС€РёР№ РІРµСЃ СЃС‚Р°СЂС€РёС… С‡Р°СЃС‚РѕС‚
+    for ( j = DTMF_FREQ/2; j < DTMF_FREQ; ++j )     // Определяем наибольший вес старших частот
         if ( powS[j] > tcos1 )
         {   tcos1 = powS[j];
-            ih = j;                 // Р—Р°РїРѕРјРёРЅР°РµРј РёРЅРґРµРєСЃ С‡Р°СЃС‚РѕС‚С‹ РјР°РєСЃРёРјР°Р»СЊРЅРѕРіРѕ РІРµСЃР°
+            ih = j;                 // Запоминаем индекс частоты максимального веса
         }
-	const FLOAT_t fence = 4;		// РѕС‚РЅРѕС€РµРЅРёРµ РјРѕС‰РЅРѕСЃС‚РµР№
-    // РџСЂРѕРІРµСЂСЏРµРј РїСЂРµРІРѕСЃС…РѕРґСЃС‚РІРѕ РЅР°Р№РґРµРЅРЅС‹С… РЅР°РёР±РѕР»СЊС€РёС… РІРµСЃРѕРІ РЅРµ РјРµРЅРµРµ, С‡РµРј РІ 16 СЂР°Р·
+	const FLOAT_t fence = 4;		// отношение мощностей
+    // Проверяем превосходство найденных наибольших весов не менее, чем в 16 раз
     for ( i = 0; i < DTMF_FREQ / 2; ++ i )
     {   if ( i == il )  
             continue;
-        if ( tcos0 / powS[i] < fence )  // РћРґРЅР° РёР· РјР»Р°РґС€РёС… С‡Р°СЃС‚РѕС‚ РЅРµ РјРµРЅСЊС€Рµ РјР°РєСЃРёРјР°Р»СЊРЅРѕР№
-                                        //  РєР°Рє РјРёРЅРёРјСѓРј РІ 16 СЂР°Р·
-            return  DTMF_EMPTY;         // РЈСЃР»РѕРІРёРµ РЅР°РґРµР¶РЅРѕРіРѕ РїСЂРёРµРјР° РЅРµ РІС‹РїРѕР»РЅРµРЅРѕ
+        if ( tcos0 / powS[i] < fence )  // Одна из младших частот не меньше максимальной
+                                        //  как минимум в 16 раз
+            return  DTMF_EMPTY;         // Условие надежного приема не выполнено
     }
 
     for ( i = DTMF_FREQ / 2; i < DTMF_FREQ; ++ i )
     {   if ( i == ih )
             continue;
-        if ( tcos1 / powS [i] < fence )  // РћРґРЅР° РёР· СЃС‚Р°СЂС€РёС… С‡Р°СЃС‚РѕС‚ РЅРµ РјРµРЅСЊС€Рµ РјР°РєСЃРёРјР°Р»СЊРЅРѕР№
-                                        //  РєР°Рє РјРёРЅРёРјСѓРј РІ 16 СЂР°Р·
-            return  DTMF_EMPTY;         // РЈСЃР»РѕРІРёРµ РЅР°РґРµР¶РЅРѕРіРѕ РїСЂРёРµРјР° РЅРµ РІС‹РїРѕР»РЅРµРЅРѕ
+        if ( tcos1 / powS [i] < fence )  // Одна из старших частот не меньше максимальной
+                                        //  как минимум в 16 раз
+            return  DTMF_EMPTY;         // Условие надежного приема не выполнено
     }
 
 	if (tcos0 == 0 || tcos1 == 0)
 		return DTMF_EMPTY;
 
-    // РћРїСЂРµРґРµР»СЏРµРј Рё РІРѕР·РІСЂР°С‰Р°РµРј РїСЂРёРЅСЏС‚СѓСЋ С†РёС„СЂСѓ
+    // Определяем и возвращаем принятую цифру
     return (Dtmf_code [il | (ih & 3) << 2]);
 }
 
@@ -4605,10 +4605,10 @@ static RAMFUNC uint_fast8_t isneedfiltering(uint_fast8_t dspmode)
 		return 1;
 
 #if WITHUSBUAC
-	case DSPCTL_MODE_RX_DRM:	// РІ СЌС‚РѕРј СЂРµР¶РёРјРµ РЅРµ РїСЂРѕС…РѕРґРёС‚ РІ РЅР°СѓС€РЅРёРєРё
+	case DSPCTL_MODE_RX_DRM:	// в этом режиме не проходит в наушники
 		return 0;
 #else /* WITHUSBUAC */
-	case DSPCTL_MODE_RX_DRM:	// РІ СЌС‚РѕРј СЂРµР¶РёРјРµ РЅРµ РїСЂРѕС…РѕРґРёС‚ РІ РЅР°СѓС€РЅРёРєРё
+	case DSPCTL_MODE_RX_DRM:	// в этом режиме не проходит в наушники
 		return 0;
 #endif /* WITHUSBUAC */
 
@@ -4637,10 +4637,10 @@ static RAMFUNC uint_fast8_t isneedmute(uint_fast8_t dspmode)
 		return 1;
 
 #if WITHUSBUAC
-	case DSPCTL_MODE_RX_DRM:	// РІ СЌС‚РѕРј СЂРµР¶РёРјРµ РЅРµ РїСЂРѕС…РѕРґРёС‚ РІ РЅР°СѓС€РЅРёРєРё
+	case DSPCTL_MODE_RX_DRM:	// в этом режиме не проходит в наушники
 		return 1;
 #else /* WITHUSBUAC */
-	case DSPCTL_MODE_RX_DRM:	// РІ СЌС‚РѕРј СЂРµР¶РёРјРµ РїСЂРѕС…РѕРґРёС‚ РІ РЅР°СѓС€РЅРёРєРё
+	case DSPCTL_MODE_RX_DRM:	// в этом режиме проходит в наушники
 		return 0;
 #endif /* WITHUSBUAC */
 
@@ -4652,7 +4652,7 @@ static RAMFUNC uint_fast8_t isneedmute(uint_fast8_t dspmode)
 
 #if (WITHRTS96 || WITHRTS192) && ! WITHTRANSPARENTIQ
 
-// РџРѕРґРґРµСЂР¶РєР° РїР°РЅРѕСЂРїР°РјС‹ Рё РІРѕРґРѕРїР°РґР°
+// Поддержка панорпамы и водопада
 
 enum { NTap256 = FFTSizeSpectrum };
 
@@ -4667,7 +4667,7 @@ uint_fast8_t hamradio_get_notchvalueXXX(int_fast32_t * p)
 static float32_t x256 [NTap256 * 4] = { 1, };
 static uint_fast16_t fft_head = 0;
 
-// С„РѕСЂРјРёСЂРѕРІР°РЅРёРµ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ СЃРїРµРєС‚СЂР°
+// формирование отображения спектра
 void saveIQRTSxx(FLOAT_t iv, FLOAT_t qv)
 {
 	if (rendering == 0)
@@ -4675,8 +4675,8 @@ void saveIQRTSxx(FLOAT_t iv, FLOAT_t qv)
 		//const struct Complex NewSample = { iv, qv };
 
 		// shift the old samples
-		// fft_head -  РќР°С‡Р°Р»Рѕ РѕР±СЂР°Р±Р°С‚С‹РІР°РµРјРѕР№ С‡Р°СЃС‚Рё Р±СѓС„РµСЂР°
-		// fft_head + NTap256 -  РџРѕР·РёС†РёСЏ Р·Р° РєРѕРЅС†РѕРј РѕР±СЂР°Р±Р°С‚С‹РІР°РµРјРѕРіРѕ Р±СѓС„РµСЂ
+		// fft_head -  Начало обрабатываемой части буфера
+		// fft_head + NTap256 -  Позиция за концом обрабатываемого буфер
 		fft_head = (fft_head == 0) ? (NTap256 - 1) : (fft_head - 1);
 		x256 [fft_head * 2 + 0] = x256 [(fft_head + NTap256) * 2 + 0] = qv;
 		x256 [fft_head * 2 + 1] = x256 [(fft_head + NTap256) * 2 + 1] = iv;
@@ -4755,8 +4755,8 @@ static int raster2fft(
 	
 }
 
-// РїСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёРµ РёРЅРґРµРєСЃР° РјР°СЃСЃРёРІР° FFT
-// РІ РіРѕСЂРёР·РѕРЅС‚Р°Р»СЊРЅСѓСЋ РєРѕРѕСЂРґРёРЅР°С‚Сѓ РѕРєРЅР° РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ СЃРїРµРєС‚СЂР°
+// преобразование индекса массива FFT
+// в горизонтальную координату окна отображения спектра
 static int mapfft2raster(
 	int i,		/* FFT buffer index */
 	int dx,		/* Raster width */
@@ -4765,19 +4765,19 @@ static int mapfft2raster(
 {
 	//int dxz = dx / zoom;
 	const int xx = (i * (dx - 1)) / ((int) FFTSizeSpectrum - 1);
-	const int x = (xx + dx / 2) % dx;	// РїРµСЂРµРјРµС‰РµРЅРёРµ С†РµРЅС‚СЂР°Р»СЊРЅРѕР№ С‡Р°СЃС‚РѕС‚С‹
+	const int x = (xx + dx / 2) % dx;	// перемещение центральной частоты
 	ASSERT(x < dx && x >= 0);
 	return x;
 }
 
-// РќРѕСЂРјРёСЂРѕРІР°РЅРёРµ СѓСЂРѕРІРЅСЏ СЃРёРіРЅР°Р»Р° Рє С€РєР°Р»Рµ
-// РІРѕР·РІСЂР°С‰Р°РµС‚ Р·РЅР°С‡РµРЅРёСЏ РѕС‚ 0 РґРѕ ymax РІРєР»СЋС‡РёС‚РµР»СЊРЅРѕ
-// 0 - РјРёРЅРёРјР°Р»СЊРЅС‹Р№ СЃРёРіРЅР°Р», ymax - РјР°РєСЃРёРјР°Р»СЊРЅС‹Р№
+// Нормирование уровня сигнала к шкале
+// возвращает значения от 0 до ymax включительно
+// 0 - минимальный сигнал, ymax - максимальный
 int dsp_mag2y(
 	FLOAT_t mag, 
 	int ymax, 
-	int_fast16_t topdb,		/* СЃРєРѕР»СЊРєРѕ РЅРµ РїРѕРєР°Р·С‹РІР°С‚СЊ СЃРІРµСЂС…Сѓ (positive number of decibels) */
-	int_fast16_t fulldb		/* РІС‹СЃРѕС‚Р° СЃРїРµРєС‚СЂРѕР°РЅР°Р»РёР·Р°С‚РѕСЂР° (positive number of decibels) */
+	int_fast16_t topdb,		/* сколько не показывать сверху (positive number of decibels) */
+	int_fast16_t fulldb		/* высота спектроанализатора (positive number of decibels) */
 	)
 {
 	const FLOAT_t r = ratio2db(mag / rxlevelfence);
@@ -4790,8 +4790,8 @@ int dsp_mag2y(
 	return y;
 }
 
-// РљРѕРїСЂРѕРІР°РЅРёРµ РёРЅС„РѕСЂРјР°С†РёРё Рѕ СЃРїРµРєС‚СЂРµ СЃ С‚РµРєСѓС‰СѓСЋ СЃС‚СЂРѕРєСѓ Р±СѓС„РµСЂР° 
-// wfarray (РїСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёРµ Рє РїРёРєСЃРµР»СЏРј СЂР°СЃС‚СЂР° */
+// Копрование информации о спектре с текущую строку буфера 
+// wfarray (преобразование к пикселям растра */
 void dsp_getspectrumrow(
 	FLOAT_t * const hbase,
 	uint_fast16_t dx,	// pixel X width of display window
@@ -4802,7 +4802,7 @@ void dsp_getspectrumrow(
 	uint_fast16_t i;
 	uint_fast16_t x;
 	rendering = 1;
-	float32_t * const sig = & x256 [fft_head * 2];	// РїРµСЂРІС‹Р№ СЌР»РµРјРµРЅС‚ РјР°СЃСЃРёРІР° РєРѕРјРїР»РµРєСЃРЅС‹С… С‡РёСЃРµР»
+	float32_t * const sig = & x256 [fft_head * 2];	// первый элемент массива комплексных чисел
 	adjustwmwp(sig);
 	/* Process the data through the CFFT/CIFFT module */
 	arm_cfft_f32(FFTCONFIGSpectrum, sig, 0, 1);	// forward transform
@@ -4818,14 +4818,14 @@ void dsp_getspectrumrow(
 
 #else
 
-	// РѕС‡РёСЃС‚РєР° СЃС‚СЂРѕРєРё Р±СѓС„РµСЂР° РёСЃС‚РѕСЂРёРё РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ
+	// очистка строки буфера истории отображения
 	for (x = 0; x < dx; ++ x)
 	{
 		FLOAT_t * const p1 = & hbase [x];
 		* p1 = 0;
 	}
 
-	// РєРѕРїРёСЂРѕРІР°РЅРёРµ РІ Р±СѓС„РµСЂ РёСЃС‚РѕСЂРёРё РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ
+	// копирование в буфер истории отображения
 	for (i = 0; i < FFTSizeSpectrum; ++ i)
 	{
 		const int x = mapfft2raster(i, dx, zoom);
@@ -4842,7 +4842,7 @@ static void
 dsp_rasterinitialize(void)
 {
 	buildsigwnd();
-	//printsigwnd();	// РїРµС‡Р°С‚СЊ РѕРєРѕРЅРЅС‹С… РєРѕСЌС„С„РёС†РёРµРЅС‚РѕРІ РґР»СЏ С„РѕСЂРјРёСЂРѕРІР°РЅРёСЏ С‚Р°Р±Р»РёС†С‹ РІРѕ FLASH
+	//printsigwnd();	// печать оконных коэффициентов для формирования таблицы во FLASH
 	//toplogdb = LOG10F((FLOAT_t) INT32_MAX / waterfalrange);
 }
 
@@ -4861,9 +4861,9 @@ void dsp_getspectrumrow(
 	}
 }
 
-// РќРѕСЂРјРёСЂРѕРІР°РЅРёРµ СѓСЂРѕРІРЅСЏ СЃРёРіРЅР°Р»Р° Рє С€РєР°Р»Рµ
-// РІРѕР·РІСЂР°С‰Р°РµС‚ Р·РЅР°С‡РµРЅРёСЏ РѕС‚ 0 РґРѕ dy РІРєР»СЋС‡РёС‚РµР»СЊРЅРѕ
-// 0 - РјРёРЅРёРјР°Р»СЊРЅС‹Р№ СЃРёРіРЅР°Р», ymax - РјР°РєСЃРёРјР°Р»СЊРЅС‹Р№
+// Нормирование уровня сигнала к шкале
+// возвращает значения от 0 до dy включительно
+// 0 - минимальный сигнал, ymax - максимальный
 int dsp_mag2y(FLOAT_t mag, int ymax, int_fast16_t topdb, int_fast16_t fulldb)
 {
 	return 0;
@@ -4872,13 +4872,13 @@ int dsp_mag2y(FLOAT_t mag, int ymax, int_fast16_t topdb, int_fast16_t fulldb)
 #endif /* (WITHRTS96 || WITHRTS192) && ! WITHTRANSPARENTIQ */
 
 #if WITHDSPEXTDDC
-// РёСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ РґР°РЅРЅС‹С… Рѕ СЃРїРµРєС‚СЂРµ, РїРµСЂРµРґР°РІР°РµРјС‹С… РІ РѕР±С‰РµРј С„СЂРµР№РјРµ
+// использование данных о спектре, передаваемых в общем фрейме
 static void RAMFUNC 
 saverts96(const uint32_t * buff)
 {
 #if WITHRTS96 && ! WITHTRANSPARENTIQ
 #if WITHUSBHW && WITHUSBUAC
-	// РµСЃР»Рё РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РєРѕРЅРІРµСЂС‚РѕСЂ РЅР° Rafael Micro R820T - С‚СЂРµР±СѓРµС‚СЃСЏ РёРЅРІРµСЂСЃРёСЏ СЃРїРµРєС‚СЂР°
+	// если используется конвертор на Rafael Micro R820T - требуется инверсия спектра
 	if (glob_swapiq != glob_swaprts)
 	{
 		savesampleout96stereo(
@@ -4903,8 +4903,8 @@ saverts96(const uint32_t * buff)
 	}
 #endif /* WITHUSBHW && WITHUSBUAC */
 
-	// С„РѕСЂРјРёСЂРѕРІР°РЅРёРµ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ СЃРїРµРєС‚СЂР°
-	// РµСЃР»Рё РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РєРѕРЅРІРµСЂС‚РѕСЂ РЅР° Rafael Micro R820T - С‚СЂРµР±СѓРµС‚СЃСЏ РёРЅРІРµСЂСЃРёСЏ СЃРїРµРєС‚СЂР°
+	// формирование отображения спектра
+	// если используется конвертор на Rafael Micro R820T - требуется инверсия спектра
 	if (glob_swaprts != 0)
 	{
 			saveIQRTSxx(
@@ -4992,7 +4992,7 @@ demod_WFM(
 
 	static int prev_fi = 0;
 
-	const int fi = ((int16_t) (0x4000 * normalized_atan2(q, i)));	//  returns a value in the range вЂ“pi to pi radians, using the signs of both parameters to determine the quadrant of the return value.
+	const int fi = ((int16_t) (0x4000 * normalized_atan2(q, i)));	//  returns a value in the range –pi to pi radians, using the signs of both parameters to determine the quadrant of the return value.
 
 	const int d_fi = (int16_t) (fi - prev_fi);
 	prev_fi = fi;
@@ -5021,8 +5021,8 @@ getmonitx(
 }
 
 #if WITHDSPEXTDDC
-// РћР±СЂР°Р±РѕС‚РєР° РїРѕР»СѓС‡РµРЅРЅРѕРіРѕ РѕС‚ DMA Р±СѓС„РµСЂР° СЃ РІС‹Р±РѕСЂРєР°РјРё РёР»Рё РєРІР°РґСЂР°С‚СѓСЂР°РјРё (РёР»Рё РґРІСѓС…РєР°РЅР°Р»СЊРЅС‹Р№ РїСЂРёС‘Рј).
-// Р’С‹Р·С‹РІР°РµС‚СЃСЏ РЅР° ARM_REALTIME_PRIORITY СѓСЂРѕРІРЅРµ.
+// Обработка полученного от DMA буфера с выборками или квадратурами (или двухканальный приём).
+// Вызывается на ARM_REALTIME_PRIORITY уровне.
 void RAMFUNC dsp_extbuffer32wfm(const uint32_t * buff)
 {
 	ASSERT(buff != NULL);
@@ -5050,24 +5050,24 @@ void RAMFUNC dsp_extbuffer32wfm(const uint32_t * buff)
 
 #endif /* WITHDSPEXTDDC */
 
-// Р’С‹РґР°С‡Р° РІ USB UAC
+// Выдача в USB UAC
 static RAMFUNC void recordsampleUAC(int left, int right)
 {
 #if WITHUSBUAC
-	savesamplerecord16uacin(left, right);	// Р—Р°РїРёСЃСЊ РґРµРјРѕРґСѓР»РёСЂРѕРІР°РЅРЅРѕРіРѕ СЃРёРіРЅР°Р»Р° Р±РµР· РѕР·РІСѓС‡РєРё РєР»Р°РІРёС€ РІ USB 
+	savesamplerecord16uacin(left, right);	// Запись демодулированного сигнала без озвучки клавиш в USB 
 #endif /* WITHUSBUAC */
 }
 
-// Р—Р°РїРёСЃСЊ РЅР° SD CARD
+// Запись на SD CARD
 static RAMFUNC void recordsampleSD(int left, int right)
 {
 #if WITHUSEAUDIOREC
-	savesamplerecord16SD(left, right);	// Р—Р°РїРёСЃСЊ РґРµРјРѕРґСѓР»РёСЂРѕРІР°РЅРЅРѕРіРѕ СЃРёРіРЅР°Р»Р° Р±РµР· РѕР·РІСѓС‡РєРё РєР»Р°РІРёС€ РЅР° SD CARD
+	savesamplerecord16SD(left, right);	// Запись демодулированного сигнала без озвучки клавиш на SD CARD
 #endif /* WITHUSEAUDIOREC */
 }
 
-// РїРµСЂРµРґ РїРµСЂРµРґР°С‡РµР№ РїРѕ DMA РІ Р°СѓРґРёРѕРєРѕРґРµРє
-//  Р—РґРµСЃСЊ РѕС‚РІРµС‚РІР»СЏСЋС‚СЃСЏ РїРѕС‚РѕРєРё РІ USB Рё РґР»СЏ Р·Р°РїРёСЃРё РЅР° SD CARD
+// перед передачей по DMA в аудиокодек
+//  Здесь ответвляются потоки в USB и для записи на SD CARD
 // realtime level
 void dsp_addsidetone(int16_t * buff)
 {
@@ -5080,7 +5080,7 @@ void dsp_addsidetone(int16_t * buff)
 	for (i = 0; i < DMABUFFSIZE16; i += DMABUFSTEP16)
 	{
 		int16_t * const b = & buff [i];
-		const FLOAT_t sdtn = get_float_sidetone() * phonefence * shapeSidetoneStep();	// Р—РґРµСЃСЊ Р·РЅР°С‡РµРЅРёРµ РІС‹Р±РѕСЂРєРё РІ РґРёР°РїР°Р·РѕРЅРµ, РґРѕРїСѓСЃС‚РёРјРѕРј РґР»СЏ РєРѕРґРµРєР°
+		const FLOAT_t sdtn = get_float_sidetone() * phonefence * shapeSidetoneStep();	// Здесь значение выборки в диапазоне, допустимом для кодека
 		const int16_t monitx = getmonitx(dspmodeA, sdtn, 0);
 
 		int_fast16_t left = b [L];
@@ -5089,7 +5089,7 @@ void dsp_addsidetone(int16_t * buff)
 		switch (glob_mainsubrxmode)
 		{
 		case BOARD_RXMAINSUB_A_A:
-			right = left;		// Р”Р»СЏ РїСЂРµРґРѕС‚РІСЂР°С‰РµРЅРёСЏ РїРѕСЃС‹Р»РєРё РїРѕ USB РґР°РЅРЅС‹С… РѕС‚ РЅРµРёРЅРёС†РёР°Р»РёР·РёСЂРѕРІР°РЅРЅРѕРіРѕ С‚СЂР°РєС‚Р° РїСЂРёРµРјРЅРёРєР° B
+			right = left;		// Для предотвращения посылки по USB данных от неинициализированного тракта приемника B
 			break;
 		case BOARD_RXMAINSUB_B_B:
 			left = right;
@@ -5098,13 +5098,13 @@ void dsp_addsidetone(int16_t * buff)
 		//
 		if (tx)
 		{
-			recordsampleSD(monitx, monitx);	// Р—Р°РїРёСЃСЊ РґРµРјРѕРґСѓР»РёСЂРѕРІР°РЅРЅРѕРіРѕ СЃРёРіРЅР°Р»Р° Р±РµР· РѕР·РІСѓС‡РєРё РєР»Р°РІРёС€
-			recordsampleUAC(monitx, monitx);	// Р—Р°РїРёСЃСЊ РІ UAC РґРµРјРѕРґСѓР»РёСЂРѕРІР°РЅРЅРѕРіРѕ СЃРёРіРЅР°Р»Р° Р±РµР· РѕР·РІСѓС‡РєРё РєР»Р°РІРёС€
+			recordsampleSD(monitx, monitx);	// Запись демодулированного сигнала без озвучки клавиш
+			recordsampleUAC(monitx, monitx);	// Запись в UAC демодулированного сигнала без озвучки клавиш
 		}
 		else
 		{
-			recordsampleSD(left, right);	// Р—Р°РїРёСЃСЊ РґРµРјРѕРґСѓР»РёСЂРѕРІР°РЅРЅРѕРіРѕ СЃРёРіРЅР°Р»Р° Р±РµР· РѕР·РІСѓС‡РєРё РєР»Р°РІРёС€
-			recordsampleUAC(left, right);	// Р—Р°РїРёСЃСЊ РІ UAC РґРµРјРѕРґСѓР»РёСЂРѕРІР°РЅРЅРѕРіРѕ СЃРёРіРЅР°Р»Р° Р±РµР· РѕР·РІСѓС‡РєРё РєР»Р°РІРёС€
+			recordsampleSD(left, right);	// Запись демодулированного сигнала без озвучки клавиш
+			recordsampleUAC(left, right);	// Запись в UAC демодулированного сигнала без озвучки клавиш
 		}
 
 		switch (glob_mainsubrxmode)
@@ -5138,8 +5138,8 @@ void dsp_addsidetone(int16_t * buff)
 	}
 }
 
-// РћР±СЂР°Р±РѕС‚РєР° РїРѕР»СѓС‡РµРЅРЅРѕРіРѕ РѕС‚ DMA Р±СѓС„РµСЂР° СЃ РІС‹Р±РѕСЂРєР°РјРё РёР»Рё РєРІР°РґСЂР°С‚СѓСЂР°РјРё (РёР»Рё РґРІСѓС…РєР°РЅР°Р»СЊРЅС‹Р№ РїСЂРёС‘Рј).
-// Р’С‹Р·С‹РІР°РµС‚СЃСЏ РЅР° ARM_REALTIME_PRIORITY СѓСЂРѕРІРЅРµ.
+// Обработка полученного от DMA буфера с выборками или квадратурами (или двухканальный приём).
+// Вызывается на ARM_REALTIME_PRIORITY уровне.
 void RAMFUNC dsp_extbuffer32rx(const uint32_t * buff)
 {
 	ASSERT(buff != NULL);
@@ -5157,11 +5157,11 @@ void RAMFUNC dsp_extbuffer32rx(const uint32_t * buff)
 	{
 	#if ! WITHTRANSPARENTIQ
 		const FLOAT_t ctcss = get_float_subtone() * txlevelfenceSSB;
-		const INT32P_t vi = getsampmlemike2();	// СЃ РјРёРєСЂРѕС„РѕРЅР° (РёР»Рё 0, РµСЃР»Рё РµС‰С‘ РЅРµ Р·Р°РїСѓСЃС‚РёР»СЃСЏ) */
+		const INT32P_t vi = getsampmlemike2();	// с микрофона (или 0, если ещё не запустился) */
 		const FLOAT_t shape = shapeCWEnvelopStep() * scaleDAC;	// 0..1
 	#endif /* ! WITHTRANSPARENTIQ */
 
-	/* РѕС‚СЃСЂРѕС‡РєР° СѓСЃС‚Р°РЅРѕРІРєРё С‡Р°СЃС‚РѕС‚С‹ lo6 РЅР° РІСЂРµРјСЏ РїСЂРѕС…РѕР¶РґРµРЅРёСЏ СЃРёРіРЅР°Р»Р° С‡РµСЂРµР· FPGA FIR - Р°РѕСЃР»Рµ СЃРјРµРЅС‹ С‡Р°СЃС‚РѕС‚С‹ LO1 */
+	/* отсрочка установки частоты lo6 на время прохождения сигнала через FPGA FIR - аосле смены частоты LO1 */
 	#if WITHUSEDUALWATCH
 		nco_setlo_delay(0, tx);
 		nco_setlo_delay(1, tx);
@@ -5170,33 +5170,33 @@ void RAMFUNC dsp_extbuffer32rx(const uint32_t * buff)
 	#endif /* WITHUSEDUALWATCH */
 
 #if WITHSUSBSPKONLY
-		// С‚РµСЃС‚РёСЂРѕРІР°РЅРёРµ РІ СЂРµР¶РёРјРµ USB SPEAKER
+		// тестирование в режиме USB SPEAKER
 
 		if (isdspmodetx(dspmodeA))
 		{
 			//const INT32P_t dual = loopbacktestaudio(vi, dspmodeA, shape);
 			INT32P_t dual;
-			dual.IV = get_lout16();		// С‚РѕРЅ 700 Hz
-			dual.QV = get_rout16();		// С‚РѕРЅ 500 Hz
-			savesampleout32stereo(iq2tx(dual.IV), iq2tx(dual.QV));	// РєРѕРґРµРє РїРѕР»СѓС‡Р°РµС‚ 24 Р±РёС‚Р° left justified РІ 32-С… Р±РёС‚РЅРѕРј С‡РёСЃР»Рµ.
+			dual.IV = get_lout16();		// тон 700 Hz
+			dual.QV = get_rout16();		// тон 500 Hz
+			savesampleout32stereo(iq2tx(dual.IV), iq2tx(dual.QV));	// кодек получает 24 бита left justified в 32-х битном числе.
 			//savesampleout16stereo(injectsidetone(dual.IV, sdtn), injectsidetone(dual.QV, sdtn));
-			recordsampleUAC(dual.IV, dual.QV);	// Р—Р°РїРёСЃСЊ РІ UAC РґРµРјРѕРґСѓР»РёСЂРѕРІР°РЅРЅРѕРіРѕ СЃРёРіРЅР°Р»Р° Р±РµР· РѕР·РІСѓС‡РєРё РєР»Р°РІРёС€
+			recordsampleUAC(dual.IV, dual.QV);	// Запись в UAC демодулированного сигнала без озвучки клавиш
 		}
 		else if (isdspmoderx(dspmodeA))
 		{
 			//const INT32P_t dual = loopbacktestaudio(vi, dspmodeA, shape);
 			const INT32P_t dual = vi;
-			savesampleout32stereo(iq2tx(dual.IV), iq2tx(dual.QV));	// РєРѕРґРµРє РїРѕР»СѓС‡Р°РµС‚ 24 Р±РёС‚Р° left justified РІ 32-С… Р±РёС‚РЅРѕРј С‡РёСЃР»Рµ.
+			savesampleout32stereo(iq2tx(dual.IV), iq2tx(dual.QV));	// кодек получает 24 бита left justified в 32-х битном числе.
 			//savesampleout16stereo(injectsidetone(dual.IV, sdtn), injectsidetone(dual.QV, sdtn));
-			recordsampleUAC(get_lout16(), get_rout16());	// Р—Р°РїРёСЃСЊ РІ UAC РґРµРјРѕРґСѓР»РёСЂРѕРІР°РЅРЅРѕРіРѕ СЃРёРіРЅР°Р»Р° Р±РµР· РѕР·РІСѓС‡РєРё РєР»Р°РІРёС€
+			recordsampleUAC(get_lout16(), get_rout16());	// Запись в UAC демодулированного сигнала без озвучки клавиш
 		}
 		else
 		{
-			savesampleout32stereo(iq2tx(0), iq2tx(0));	// РєРѕРґРµРє РїРѕР»СѓС‡Р°РµС‚ 24 Р±РёС‚Р° left justified РІ 32-С… Р±РёС‚РЅРѕРј С‡РёСЃР»Рµ.
+			savesampleout32stereo(iq2tx(0), iq2tx(0));	// кодек получает 24 бита left justified в 32-х битном числе.
 		}
 
 #elif WITHTRANSPARENTIQ
-		/* РїСЂРѕС†РµСЃСЃРѕСЂ РїСЂРѕСЃС‚Рѕ РїРѕРґРґРµСЂР¶РёРІР°РµС‚ РґРІСѓРЅР°РїСЂР°РІР»РµРЅРЅС‹Р№ РѕР±РјРµРЅ РјРµР¶РґСѓ USB Рё FPGA */
+		/* процессор просто поддерживает двунаправленный обмен между USB и FPGA */
 	
 		savesampleout96stereo(
 			(int_fast32_t) buff [i + DMABUF32RX0I],
@@ -5205,21 +5205,21 @@ void RAMFUNC dsp_extbuffer32rx(const uint32_t * buff)
 
 		static INT32P_t vi;
 		static uint_fast8_t outupsamplecnt;
-		if ((outupsamplecnt ++ & 0x01) == 0)	// РІ СЃС‚РѕСЂРѕРЅСѓ РїРµСЂРµРґР°С‚С‡РёРєР° РёРґСѓС‚ 96 РєР“С† С„СЂРµР№РјС‹
+		if ((outupsamplecnt ++ & 0x01) == 0)	// в сторону передатчика идут 96 кГц фреймы
 		{
-			vi = getsampmlemike2();	// СЃ РјРёРєСЂРѕС„РѕРЅР° (РёР»Рё 0, РµСЃР»Рё РµС‰С‘ РЅРµ Р·Р°РїСѓСЃС‚РёР»СЃСЏ) */
+			vi = getsampmlemike2();	// с микрофона (или 0, если ещё не запустился) */
 		}
 		savesampleout32stereo(vi.IV << 16, vi.QV << 16);
 
 #elif WITHDTMFPROCESSING
-		// С‚РµСЃС‚РёСЂРѕРІР°РЅРёРµ СЂР°СЃРїРѕР·РЅР°С‡Р°РЅРёСЏ DTMF
+		// тестирование распозначания DTMF
 
 		INT32P_t dual;
 		//dual.IV = vi.IV; //get_lout16();
 		dual.IV = get_lout16();
 		dual.QV = 0;
-		processafadcsampleiq(dual, dspmodeA, shape, ctcss);	// РџРµСЂРµРґР°С‚С‡РёРє - С„РѕСЂРјРёСЂРѕРІР°РЅРёРµ РѕРґРЅРѕРіРѕ СЃСЌРјРїРґР° (РїР°СЂС‹ I/Q).
-		// РўРµСЃС‚РёСЂРѕРІР°РЅРёРµ СЂР°СЃРїРѕР·РЅР°РІР°РЅРёСЏ DTMF
+		processafadcsampleiq(dual, dspmodeA, shape, ctcss);	// Передатчик - формирование одного сэмпда (пары I/Q).
+		// Тестирование распознавания DTMF
 		if (dtmfbi < DTMF_STEPS)
 		{
 			inp_samples [dtmfbi] = vi.IV;
@@ -5228,17 +5228,17 @@ void RAMFUNC dsp_extbuffer32rx(const uint32_t * buff)
 		savesampleout16denoise(dual.IV, dual.QV);
 
 #elif WITHDSPEXTDDC
-	// Р РµР¶РёРјС‹ С‚СЂР°РЅСЃРёРІРµСЂРѕРІ СЃ РІРЅРµС€РЅРёРј DDC
+	// Режимы трансиверов с внешним DDC
 
 #if 0
 	int32_t * const dbuff = (int32_t *) buff;
 
-	// РїСЂРёРµРјРЅРёРє
+	// приемник
 	const FLOAT32P_t simval = scalepair(get_float_monofreq(), rxlevelfence);	// frequency
 	dbuff [i + DMABUF32RX0I] = simval.IV;
 	dbuff [i + DMABUF32RX0Q] = simval.QV;
 
-	// РїС„РЅРѕСЂР°РјР°
+	// пфнорама
 	const FLOAT32P_t simval0 = scalepair(get_float_monofreq2(), rxlevelfence);	// frequency2
 	dbuff [i + DMABUF32RTS0I] = simval0.IV;
 	dbuff [i + DMABUF32RTS0Q] = simval0.QV;
@@ -5249,51 +5249,51 @@ void RAMFUNC dsp_extbuffer32rx(const uint32_t * buff)
 
 #endif
 
-	saverts96(buff + i);	// РёСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ РґР°РЅРЅС‹С… Рѕ СЃРїРµРєС‚СЂРµ, РїРµСЂРµРґР°РІР°РµРјС‹С… РІ РѕР±С‰РµРј С„СЂРµР№РјРµ
+	saverts96(buff + i);	// использование данных о спектре, передаваемых в общем фрейме
 
 	#if WITHLOOPBACKTEST
 
 		const INT32P_t dual = loopbacktestaudio(vi, dspmodeA, shape);
-		processafadcsampleiq(dual, dspmodeA, shape, ctcss);	// РџРµСЂРµРґР°С‚С‡РёРє - С„РѕСЂРјРёСЂРѕРІР°РЅРёРµ РѕРґРЅРѕРіРѕ СЃСЌРјРїРґР° (РїР°СЂС‹ I/Q).
+		processafadcsampleiq(dual, dspmodeA, shape, ctcss);	// Передатчик - формирование одного сэмпда (пары I/Q).
 		//
-		// РўРµСЃС‚РёСЂРѕРІР°РЅРёРµ РёСЃС‚РѕС‡РЅРёРєРѕРІ Рё РїРѕС‚СЂРµР±РёС‚РµР»РµР№ Р·РІСѓРєР°
+		// Тестирование источников и потребителей звука
 		savesampleout16denoise(dual.IV, dual.QV);
 
 	#elif WITHUSBHEADSET
-		/* С‚СЂР°РЅСЃРёРІРµСЂ СЂР°Р±РѕС‚Р°РµС‚ USB РіР°СЂРЅРёС‚СѓСЂРѕР№ РґР»СЏ РєРѕРјРїСЋС‚РµСЂР° - СЂРµР¶РёРј С‚РµСЃС‚РёСЂРѕРІР°РЅРёСЏ */
+		/* трансивер работает USB гарнитурой для компютера - режим тестирования */
 
-		savesampleout16denoise(0, 0);	// РџРѕСЃРµ С„РёР»СЊС‚СЂР°С†РёРё Р±СѓРґРµС‚ РїСЂРѕРёРіРЅРѕСЂРёСЂРѕРІР°РЅРЅРѕ
+		savesampleout16denoise(0, 0);	// Посе фильтрации будет проигнорированно
 		savesampleout32stereo(iq2tx(0), iq2tx(0));
 
 	#elif WITHUSEDUALWATCH
 
-		processafadcsampleiq(vi, dspmodeA, shape, ctcss);	// РџРµСЂРµРґР°С‚С‡РёРє - С„РѕСЂРјРёСЂРѕРІР°РЅРёРµ РѕРґРЅРѕРіРѕ СЃСЌРјРїРґР° (РїР°СЂС‹ I/Q).
+		processafadcsampleiq(vi, dspmodeA, shape, ctcss);	// Передатчик - формирование одного сэмпда (пары I/Q).
 		//
-		// Р”РІСѓС…РєР°РЅР°Р»СЊРЅС‹Р№ РїСЂРёС‘РјРЅРёРє
+		// Двухканальный приёмник
 
 		if (dspmodeA == DSPCTL_MODE_RX_ISB)
 		{
-			/* РїСЂРёРµРј РЅРµР·Р°РІРёСЃРёРјС‹С… Р±РѕРєРѕРІС‹С… РїРѕР»РѕСЃ */
-			// РћР±СЂР°Р±РѕС‚РєР° Р±СѓС„РµСЂР° СЃ РїР°СЂР°РјРё Р·РЅР°С‡РµРЅРёР№
+			/* прием независимых боковых полос */
+			// Обработка буфера с парами значений
 			const FLOAT32P_t pair = processifadcsampleIQ_ISB(
-				(int_fast32_t) buff [i + DMABUF32RX0I] * rxgate,	// Р Р°СЃС€РёСЂСЏРµРј 24-С… Р±РёС‚РЅС‹Рµ С‡РёСЃР»Р° РґРѕ 32 Р±РёС‚
-				(int_fast32_t) buff [i + DMABUF32RX0Q] * rxgate	// Р Р°СЃС€РёСЂСЏРµРј 24-С… Р±РёС‚РЅС‹Рµ С‡РёСЃР»Р° РґРѕ 32 Р±РёС‚
+				(int_fast32_t) buff [i + DMABUF32RX0I] * rxgate,	// Расширяем 24-х битные числа до 32 бит
+				(int_fast32_t) buff [i + DMABUF32RX0Q] * rxgate	// Расширяем 24-х битные числа до 32 бит
 				);	
-			savesampleout16denoise(pair.IV, pair.QV);	/* Рє line output РїРѕРґРєР»СЋС‡РµРЅ РјРѕРґРµРј - РѕР·РІСѓС‡РєСѓ Р·Р°РїСЂРµС‰Р°РµРј */
+			savesampleout16denoise(pair.IV, pair.QV);	/* к line output подключен модем - озвучку запрещаем */
 		}
 		else
 		{
 			// buff data layout: I main/I sub/Q main/Q sub
 			const FLOAT_t rxA = processifadcsampleIQ(
-				(int_fast32_t) buff [i + DMABUF32RX0I] * rxgate,	// Р Р°СЃС€РёСЂСЏРµРј 24-С… Р±РёС‚РЅС‹Рµ С‡РёСЃР»Р° РґРѕ 32 Р±РёС‚
-				(int_fast32_t) buff [i + DMABUF32RX0Q] * rxgate,	// Р Р°СЃС€РёСЂСЏРµРј 24-С… Р±РёС‚РЅС‹Рµ С‡РёСЃР»Р° РґРѕ 32 Р±РёС‚
+				(int_fast32_t) buff [i + DMABUF32RX0I] * rxgate,	// Расширяем 24-х битные числа до 32 бит
+				(int_fast32_t) buff [i + DMABUF32RX0Q] * rxgate,	// Расширяем 24-х битные числа до 32 бит
 				dspmodeA,
 				0	// MAIN RX
 				);
 
 			const FLOAT_t rxB = processifadcsampleIQ(
-				(int_fast32_t) buff [i + DMABUF32RX1I] * rxgate,	// Р Р°СЃС€РёСЂСЏРµРј 24-С… Р±РёС‚РЅС‹Рµ С‡РёСЃР»Р° РґРѕ 32 Р±РёС‚
-				(int_fast32_t) buff [i + DMABUF32RX1Q] * rxgate,	// Р Р°СЃС€РёСЂСЏРµРј 24-С… Р±РёС‚РЅС‹Рµ С‡РёСЃР»Р° РґРѕ 32 Р±РёС‚
+				(int_fast32_t) buff [i + DMABUF32RX1I] * rxgate,	// Расширяем 24-х битные числа до 32 бит
+				(int_fast32_t) buff [i + DMABUF32RX1Q] * rxgate,	// Расширяем 24-х битные числа до 32 бит
 				dspmodeB,
 				1	// SUB RX
 				);	
@@ -5302,8 +5302,8 @@ void RAMFUNC dsp_extbuffer32rx(const uint32_t * buff)
 
 	#else /* WITHUSEDUALWATCH */
 
-		processafadcsampleiq(vi, dspmodeA, shape, ctcss);	// РџРµСЂРµРґР°С‚С‡РёРє - С„РѕСЂРјРёСЂРѕРІР°РЅРёРµ РѕРґРЅРѕРіРѕ СЃСЌРјРїРґР° (РїР°СЂС‹ I/Q).
-		// РћРґРЅРѕРєР°РЅР°Р»СЊРЅС‹Р№ РїСЂРёС‘РјРЅРёРє
+		processafadcsampleiq(vi, dspmodeA, shape, ctcss);	// Передатчик - формирование одного сэмпда (пары I/Q).
+		// Одноканальный приёмник
 
 		if (dspmodeA == DSPCTL_MODE_RX_WFM)
 		{
@@ -5316,20 +5316,20 @@ void RAMFUNC dsp_extbuffer32rx(const uint32_t * buff)
 		}
 		else if (dspmodeA == DSPCTL_MODE_RX_ISB)
 		{
-			/* РїСЂРёРµРј РЅРµР·Р°РІРёСЃРёРјС‹С… Р±РѕРєРѕРІС‹С… РїРѕР»РѕСЃ */
-			// РћР±СЂР°Р±РѕС‚РєР° Р±СѓС„РµСЂР° СЃ РїР°СЂР°РјРё Р·РЅР°С‡РµРЅРёР№
+			/* прием независимых боковых полос */
+			// Обработка буфера с парами значений
 			const FLOAT32P_t rv = processifadcsampleIQ_ISB(
-				(int_fast32_t) buff [i + DMABUF32RX0I] * rxgate,	// Р Р°СЃС€РёСЂСЏРµРј 24-С… Р±РёС‚РЅС‹Рµ С‡РёСЃР»Р° РґРѕ 32 Р±РёС‚
-				(int_fast32_t) buff [i + DMABUF32RX0Q] * rxgate	// Р Р°СЃС€РёСЂСЏРµРј 24-С… Р±РёС‚РЅС‹Рµ С‡РёСЃР»Р° РґРѕ 32 Р±РёС‚
+				(int_fast32_t) buff [i + DMABUF32RX0I] * rxgate,	// Расширяем 24-х битные числа до 32 бит
+				(int_fast32_t) buff [i + DMABUF32RX0Q] * rxgate	// Расширяем 24-х битные числа до 32 бит
 				);	
-			savesampleout16denoise(rv.IV, rv.QV);	/* Рє line output РїРѕРґРєР»СЋС‡РµРЅ РјРѕРґРµРј - РѕР·РІСѓС‡РєСѓ Р·Р°РїСЂРµС‰Р°РµРј */
+			savesampleout16denoise(rv.IV, rv.QV);	/* к line output подключен модем - озвучку запрещаем */
 		}
 		else
 		{
-			// РћР±СЂР°Р±РѕС‚РєР° Р±СѓС„РµСЂР° СЃ РїР°СЂР°РјРё Р·РЅР°С‡РµРЅРёР№
+			// Обработка буфера с парами значений
 			const FLOAT_t left = processifadcsampleIQ(
-				(int_fast32_t) buff [i + DMABUF32RX0I] * rxgate,	// Р Р°СЃС€РёСЂСЏРµРј 24-С… Р±РёС‚РЅС‹Рµ С‡РёСЃР»Р° РґРѕ 32 Р±РёС‚
-				(int_fast32_t) buff [i + DMABUF32RX0Q] * rxgate,	// Р Р°СЃС€РёСЂСЏРµРј 24-С… Р±РёС‚РЅС‹Рµ С‡РёСЃР»Р° РґРѕ 32 Р±РёС‚
+				(int_fast32_t) buff [i + DMABUF32RX0I] * rxgate,	// Расширяем 24-х битные числа до 32 бит
+				(int_fast32_t) buff [i + DMABUF32RX0Q] * rxgate,	// Расширяем 24-х битные числа до 32 бит
 				dspmodeA,
 				0		// MAIN RX
 				);	
@@ -5339,20 +5339,20 @@ void RAMFUNC dsp_extbuffer32rx(const uint32_t * buff)
 	#endif /*  DMABUFSTEP32 == 4 */
 
 #else /* WITHDSPEXTDDC */
-	// Р РµР¶РёРјС‹ С‚СЂР°РЅСЃРёРІРµСЂРѕРІ Р±РµР· РІРЅРµС€РЅРєРіРѕ DDC
+	// Режимы трансиверов без внешнкго DDC
 
 	#if WITHLOOPBACKTEST
 
 		const INT32P_t dual = loopbacktestaudio(vi, dspmodeA, shape);
-		processafadcsample(dual, dspmodeA, shape, ctcss);	// РѕР±СЂР°Р±РѕС‚РєР° РѕРґРЅРѕРіРѕ СЃСЌРјРїР»Р° СЃ РјРёРєСЂРѕС„РѕРЅР°
+		processafadcsample(dual, dspmodeA, shape, ctcss);	// обработка одного сэмпла с микрофона
 		//
-		// РўРµСЃС‚РёСЂРѕРІР°РЅРёРµ РёСЃС‚РѕС‡РЅРёРєРѕРІ Рё РїРѕС‚СЂРµР±РёС‚РµР»РµР№ Р·РІСѓРєР°
+		// Тестирование источников и потребителей звука
 		savesampleout16denoise(dual.IV, dual.QV);
 
 	#else /* WITHLOOPBACKTEST */
 
-		processafadcsample(vi, dspmodeA, shape, ctcss);	// РџРµСЂРµРґР°С‚С‡РёРє - РёСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ РїСЂРёРЅСЏС‚РѕРіРѕ СЃ AF ADC Р±СѓС„РµСЂР°
-		const FLOAT_t left = processifadcsamplei(buff [i + DMABUF32RX] * rxgate, dspmodeA);	// Р Р°СЃС€РёСЂСЏРµРј 24-С… Р±РёС‚РЅС‹Рµ С‡РёСЃР»Р° РґРѕ 32 Р±РёС‚
+		processafadcsample(vi, dspmodeA, shape, ctcss);	// Передатчик - использование принятого с AF ADC буфера
+		const FLOAT_t left = processifadcsamplei(buff [i + DMABUF32RX] * rxgate, dspmodeA);	// Расширяем 24-х битные числа до 32 бит
 		savesampleout16denoise(left, left);
 
 	#endif /* WITHLOOPBACKTEST */
@@ -5361,9 +5361,9 @@ void RAMFUNC dsp_extbuffer32rx(const uint32_t * buff)
 }
 
 //////////////////////////////////////////
-// glob_cwedgetime - РґР»РёС‚РµР»СЊРЅРѕСЃС‚СЊ РЅР°СЂР°СЃС‚Р°РЅРёСЏ/СЃРїР°РґР° РѕРіРёР±Р°СЋС‰РµР№ CW (Рё СЃРёРіРЅР°Р»Р° СЃР°РјРѕРєРѕРЅС‚СЂРѕР»СЏ) РІ РµРґРёРЅРёС†Р°С… РјРёР»РёСЃРµРєСѓРЅРґ
+// glob_cwedgetime - длительность нарастания/спада огибающей CW (и сигнала самоконтроля) в единицах милисекунд
 
-static volatile unsigned enveloplen0 = NSAITICKS(5) + 1;	/* РР·РјРµРЅСЏРµС‚СЃСЏ С‡РµСЂРµР· РјРµРЅСЋ. */
+static volatile unsigned enveloplen0 = NSAITICKS(5) + 1;	/* Изменяется через меню. */
 static unsigned shapeSidetonePos = 0;
 static volatile uint_fast8_t shapeSidetoneInpit = 0;
 
@@ -5372,19 +5372,19 @@ static volatile uint_fast8_t cwgateflag = 0;
 static volatile uint_fast8_t rxgateflag = 0;
 
 // 0..1
-static RAMFUNC FLOAT_t peakshapef(unsigned shapePos)	/* shapePos: РѕС‚ 0 РґРѕ enveloplen0 РІРєР»СЋС‡РёС‚РµР»СЊРЅРѕ. */
+static RAMFUNC FLOAT_t peakshapef(unsigned shapePos)	/* shapePos: от 0 до enveloplen0 включительно. */
 {
 	const ftw_t halfcircle = (ftw_t) 1U << (NCOFTWBITS - 1);
 	const FLOAT_t v = (1 - peekvalf(FTW2ANGLEQ((uint_fast64_t) shapePos * halfcircle / enveloplen0))) * (FLOAT_t) 0.5;	// v = - cos(angle)
 	return v;
 }
 
-// Р¤РѕСЂРјРёСЂРѕРІР°РЅРёРµ РѕРіРёР±Р°СЋС‰РµР№ РґР»СЏ СЃР°РјРѕРєРѕРЅС‚СЂРѕР»Р°
+// Формирование огибающей для самоконтрола
 // 0..1
 static RAMFUNC FLOAT_t shapeSidetoneStep(void)
 {
 	const unsigned enveloplen = enveloplen0;
-	/* РїСЂРё СЂРµРіСѓР»РёСЂРѕРІРєРµ РґР»РёС‚РµР»СЊРЅРѕСЃС‚Рё РЅР°СЂР°СЃС‚Р°РЅРёСЏ/СЃРїР°РґР° РёР· РјРµРЅСЋ С‚РµРєСѓС‰Р°СЏ РїРѕР·РёС†РёСЏ РЅРµ РєРѕСЂСЂРµРєС‚РёСЂСѓРµС‚СЃСЏ */
+	/* при регулировке длительности нарастания/спада из меню текущая позиция не корректируется */
 	if (shapeSidetoneInpit >= enveloplen)
 		shapeSidetoneInpit = enveloplen;
 
@@ -5397,12 +5397,12 @@ static RAMFUNC FLOAT_t shapeSidetoneStep(void)
 	return v;
 }
 
-// Р¤РѕСЂРјРёСЂРѕРІР°РЅРёРµ РѕРіРёР±Р°СЋС‰РµР№ РґР»СЏ РїРµСЂРµРґР°С‡Рё
+// Формирование огибающей для передачи
 // 0..1
 static RAMFUNC FLOAT_t shapeCWEnvelopStep(void)
 {
 	const unsigned enveloplen = enveloplen0;
-	/* РїСЂРё СЂРµРіСѓР»РёСЂРѕРІРєРµ РґР»РёС‚РµР»СЊРЅРѕСЃС‚Рё РЅР°СЂР°СЃС‚Р°РЅРёСЏ/СЃРїР°РґР° РёР· РјРµРЅСЋ С‚РµРєСѓС‰Р°СЏ РїРѕР·РёС†РёСЏ РЅРµ РєРѕСЂСЂРµРєС‚РёСЂСѓРµС‚СЃСЏ */
+	/* при регулировке длительности нарастания/спада из меню текущая позиция не корректируется */
 	if (shapeCWEnvelopPos >= enveloplen)
 		shapeCWEnvelopPos = enveloplen;
 	const FLOAT_t v = peakshapef(shapeCWEnvelopPos);
@@ -5414,17 +5414,17 @@ static RAMFUNC FLOAT_t shapeCWEnvelopStep(void)
 	return v;
 }
 
-// Р’РѕР·РІСЂР°С‚ РїСЂРёР·РЅР°РєР° С‚РѕРіРѕ, С‡С‚Рѕ РїРµСЂРµРґР°РІР°С‚СЊ РјРѕРґРµРјСѓ РµС‰С‘ СЂР°РЅРѕ - РЅРµ РїРѕР»РЅРѕСЃС‚СЊСЋ Р·Р°РІРµСЂС€РµРЅРѕ С„РѕСЂРјРёСЂРѕРІР°РЅРёРµ РѕРіРёР±Р°СЋС‰РµР№
+// Возврат признака того, что передавать модему ещё рано - не полностью завершено формирование огибающей
 static RAMFUNC uint_fast8_t getTxShapeNotComplete(void)
 {
 	const unsigned enveloplen = enveloplen0;
-	/* РїСЂРё СЂРµРіСѓР»РёСЂРѕРІРєРµ РґР»РёС‚РµР»СЊРЅРѕСЃС‚Рё РЅР°СЂР°СЃС‚Р°РЅРёСЏ/СЃРїР°РґР° РёР· РјРµРЅСЋ С‚РµРєСѓС‰Р°СЏ РїРѕР·РёС†РёСЏ РЅРµ РєРѕСЂСЂРµРєС‚РёСЂСѓРµС‚СЃСЏ */
+	/* при регулировке длительности нарастания/спада из меню текущая позиция не корректируется */
 	if (shapeCWEnvelopPos >= enveloplen)
 		shapeCWEnvelopPos = enveloplen;
 	return shapeCWEnvelopPos != enveloplen;
 }
 
-/* СЂР°Р·СЂРµС€РµРЅРёРµ СЂР°Р±РѕС‚С‹ С‚СЂР°РєС‚Р° РІ СЂРµР¶РёРјРµ РїСЂРёС‘РјР° */
+/* разрешение работы тракта в режиме приёма */
 static uint_fast8_t getRxGate(void)
 {
 #if TXGFV_RX != 0
@@ -5435,7 +5435,7 @@ static uint_fast8_t getRxGate(void)
 }
 
 
-// РјР°РЅРёРїСѓР»СЏС†РёСЏ Рё РїРµСЂРµРєР»СЋС‡РµРЅРёРµ РЅР° РїРµСЂРµРґР°С‡Сѓ
+// манипуляция и переключение на передачу
 void dsp_txpath_set(portholder_t txpathstate)
 {
 #if WITHINTEGRATEDDSP
@@ -5452,7 +5452,7 @@ void dsp_txpath_set(portholder_t txpathstate)
 
 //////////////////////////////////////////
 
-/* РїРѕСЃР»Рµ РёР·РјРµРЅРµРЅРёСЏ РЅР°Р±РѕСЂР° С„РѕСЂРјРёСЂСѓРµРјС‹С… Р·РІСѓРєРѕРІ - РѕР±РЅРѕРІР»РµРЅРёРµ РїСЂРѕРіСЂР°РјРјРёСЂРѕРІР°РЅРёСЏ С‚Р°Р№РјРµСЂР°. */
+/* после изменения набора формируемых звуков - обновление программирования таймера. */
 void hardware_sounds_disable(void)
 {
 	//anglestep_sidetone = 0;
@@ -5463,7 +5463,7 @@ void hardware_sounds_disable(void)
 	#error SIDETONE_TARGET_BIT != 0
 #endif
 // called from interrupt or with disabled interrupts
-// РІСЃРµРіРґР° РІРєР»СЋС‡Р°РµРј РіРµРЅРµСЂР°С†РёСЋ РІС‹С…РѕРґРЅРѕРіРѕ СЃРёРіРЅР°Р»Р°
+// всегда включаем генерацию выходного сигнала
 void hardware_sounds_setfreq(
 	uint_fast8_t prei,		// returned value from hardware_calc_sound_params
 	unsigned value
@@ -5476,14 +5476,14 @@ void hardware_sounds_setfreq(
 // return code: prescaler
 uint_fast8_t
 hardware_calc_sound_params(
-	uint_least16_t tonefreq,	/* tonefreq - С‡Р°СЃС‚РѕС‚Р° РІ РґРµСЃСЏС‚С‹С… РґРѕР»СЏС… РіРµСЂС†Р°. РњРёРЅРёРјСѓРј - 400 РіРµСЂС† (РѕРїСЂРµРґРµР»РµРЅРѕ РЅР°Р±РѕСЂРѕРј РєРѕРјР°РЅРґ CAT). */
+	uint_least16_t tonefreq,	/* tonefreq - частота в десятых долях герца. Минимум - 400 герц (определено набором команд CAT). */
 	unsigned * pvalue)
 {
-	* pvalue = FTWAF001(tonefreq * 10u);	// Р’ СЃРѕС‚С‹С… РґРѕР»СЏС… РіРµСЂС†Р°
+	* pvalue = FTWAF001(tonefreq * 10u);	// В сотых долях герца
 	return 0;
 }
 
-/* РџРѕР»СѓС‡РёС‚СЊ Р·РЅР°С‡РµРЅРёРµ РІС…РѕРґРЅРѕР№ РџР§ РґР»СЏ РѕР±СЂР°Р±РѕС‚РєРё DSP */
+/* Получить значение входной ПЧ для обработки DSP */
 int_fast32_t
 dsp_get_ifreq(void)
 {
@@ -5494,61 +5494,61 @@ dsp_get_ifreq(void)
 #endif /* WITHDSPEXTDDC */
 }
 
-/* РџРѕР»СѓС‡РёС‚СЊ Р·РЅР°С‡РµРЅРёРµ С‡Р°СЃС‚РѕС‚С‹ РІС‹Р±РѕСЂРѕРє РІС‹С…РѕРґРЅРѕРіРѕ РїРѕС‚РѕРєР° DSP */
+/* Получить значение частоты выборок выходного потока DSP */
 int_fast32_t
 dsp_get_sampleraterx(void)
 {
 	return ARMI2SRATE;
 }
 
-/* РџРѕР»СѓС‡РёС‚СЊ Р·РЅР°С‡РµРЅРёРµ С‡Р°СЃС‚РѕС‚С‹ РІС‹Р±РѕСЂРѕРє РІС‹С…РѕРґРЅРѕРіРѕ РїРѕС‚РѕРєР° DSP, СѓРІРµР»РёС‡РµРЅРЅРѕРµ РІ scale СЂР°Р· */
+/* Получить значение частоты выборок выходного потока DSP, увеличенное в scale раз */
 int_fast32_t
 dsp_get_sampleraterxscaled(uint_fast8_t scale)
 {
 	return ARMI2SRATEX(scale);
 }
 
-/* РџРѕР»СѓС‡РёС‚СЊ Р·РЅР°С‡РµРЅРёРµ С‡Р°СЃС‚РѕС‚С‹ РІС‹Р±РѕСЂРѕРє РІС…РѕРґРЅРѕРіРѕ РїРѕС‚РѕРєР° DSP */
+/* Получить значение частоты выборок входного потока DSP */
 int_fast32_t
 dsp_get_sampleratetx(void)
 {
 	return ARMI2SRATE;
 }
 
-/* РџРѕР»СѓС‡РёС‚СЊ Р·РЅР°С‡РµРЅРёРµ С‡Р°СЃС‚РѕС‚С‹ РІС‹Р±РѕСЂРѕРє РІС‹С…РѕРґРЅРѕРіРѕ РїРѕС‚РѕРєР° DSP */
+/* Получить значение частоты выборок выходного потока DSP */
 int_fast32_t
 dsp_get_samplerate100(void)
 {
 	return ARMI2SRATE100;
 }
 
-// РџРµСЂРµРґР°С‡Р° РїР°СЂР°РјРµС‚СЂРѕРІ РІ DSP РјРѕРґСѓР»СЊ
-// РћР±РЅРѕРІР»РµРЅРёРµ РїР°СЂР°РјРµС‚СЂРѕРІ РїСЂРёРµРјРЅРёРєР° (РєСЂРѕРјРµ С„РёР»СЊС‚СЂРѕРІ).
+// Передача параметров в DSP модуль
+// Обновление параметров приемника (кроме фильтров).
 static void 
 rxparam_update(uint_fast8_t profile, uint_fast8_t pathi)
 {
-	// РџР°СЂР°РјРµС‚СЂС‹ РђР РЈ РїСЂРёС‘РјРЅРёРєР°
+	// Параметры АРУ приёмника
 	{
-		const int gainmax = glob_digigainmax;	// Р’РµСЂС…РЅРёР№ РїСЂРµРґРµР» СЂРµРіСѓР»РёСЂРѕРІРєРё СѓСЃРёР»РµРЅРёСЏ
-		const int gainmin = 0;	// РќРёР¶РЅРёР№ РїСЂРµРґРµР» СЂРµРіСѓР»РёСЂРѕРІРєРё СѓСЃРёР»РµРЅРёСЏ
+		const int gainmax = glob_digigainmax;	// Верхний предел регулировки усиления
+		const int gainmin = 0;	// Нижний предел регулировки усиления
 		const int gaindb = ((gainmax - gainmin) * (int) (glob_ifgain - BOARD_IFGAIN_MIN) / (int) (BOARD_IFGAIN_MAX - BOARD_IFGAIN_MIN)) + gainmin;	// -20..+100 dB
 		const FLOAT_t manualrfgain = db2ratio(gaindb);
 		
-		agc_parameters_update(& rxagcparams [profile] [pathi], manualrfgain, pathi);	// РїСЂРёС‘РјРЅРёРє #0,#1
+		agc_parameters_update(& rxagcparams [profile] [pathi], manualrfgain, pathi);	// приёмник #0,#1
 	}
 
-	// РџР°СЂР°РјРµС‚СЂС‹ S-РјРµС‚СЂР° РїСЂРёС‘РјРЅРёРєР°
+	// Параметры S-метра приёмника
 	{
-		const int gainmax = glob_digigainmax;	// Р’РµСЂС…РЅРёР№ РїСЂРµРґРµР» СЂРµРіСѓР»РёСЂРѕРІРєРё СѓСЃРёР»РµРЅРёСЏ
-		const int gainmin = 0;	// РќРёР¶РЅРёР№ РїСЂРµРґРµР» СЂРµРіСѓР»РёСЂРѕРІРєРё СѓСЃРёР»РµРЅРёСЏ
+		const int gainmax = glob_digigainmax;	// Верхний предел регулировки усиления
+		const int gainmin = 0;	// Нижний предел регулировки усиления
 		const int gaindb = ((gainmax - gainmin) * (int) (glob_ifgain - BOARD_IFGAIN_MIN) / (int) (BOARD_IFGAIN_MAX - BOARD_IFGAIN_MIN)) + gainmin;	// -20..+100 dB
 		const FLOAT_t manualrfgain = db2ratio(gaindb);
 		
-		agc_smeter_parameters_update(& rxsmeterparams, manualrfgain, 0);	// РєР°Рє Сѓ РїСЂРёРµРјРЅРёРєР° #0
+		agc_smeter_parameters_update(& rxsmeterparams, manualrfgain, 0);	// как у приемника #0
 	}
 
 
-	// РџР°СЂР°РјРµС‚СЂС‹ SAM РїСЂРёС‘РјРЅРёРєР°
+	// Параметры SAM приёмника
 	{
 		const int pll = 4000;
 		const int zeta_help = 65;
@@ -5559,7 +5559,7 @@ rxparam_update(uint_fast8_t profile, uint_fast8_t pathi)
 		create_amd(& amds [pathi], 0, - pll, + pll, zeta, omegaN, tauR, tauI);
 	}
 
-	// С€СѓРјРѕРґР°РІ
+	// шумодав
 	{
 		const volatile agcparams_t * const agcp = & rxsmeterparams;
 
@@ -5568,10 +5568,10 @@ rxparam_update(uint_fast8_t profile, uint_fast8_t pathi)
 		manualsquelch [pathi] = (int) glob_squelch * (upper - lower) / SQUELCHMAX + lower;
 	}
 
-	// С€СѓРјРѕРґР°РІ NFM
+	// шумодав NFM
 	nbfence = POWF(2, WITHIFADCWIDTH - 8) * (int) glob_nfm_sql_lelel;	// glob_nfm_sql_lelel: 0..255
 
-	// РЈСЂРѕРІРµРЅСЊ СЃРёРіРЅР°Р»Р° СЃР°РјРѕРєРѕРЅС‚СЂРѕР»СЏ
+	// Уровень сигнала самоконтроля
 #if WITHUSBHEADSET
 	sidetonevolume = 0;
 	mainvolumerx = 1 - sidetonevolume;
@@ -5580,17 +5580,17 @@ rxparam_update(uint_fast8_t profile, uint_fast8_t pathi)
 #endif /* WITHUSBHEADSET */
 	mainvolumerx = 1 - sidetonevolume;
 }
-// РџРµСЂРµРґР°С‡Р° РїР°СЂР°РјРµС‚СЂРѕРІ РІ DSP РјРѕРґСѓР»СЊ
-// РћР±РЅРѕРІР»РµРЅРёРµ РїР°СЂР°РјРµС‚СЂРѕРІ РїРµСЂРµРґР°С‚С‡РёРєР° (РєСЂРѕРјРµ С„РёР»СЊС‚СЂРѕРІ).
+// Передача параметров в DSP модуль
+// Обновление параметров передатчика (кроме фильтров).
 static void 
 txparam_update(uint_fast8_t profile)
 {
 
-	// РџР°СЂР°РјРµС‚СЂС‹ РђР РЈ РјРёРєСЂРѕС„РѕРЅР°
+	// Параметры АРУ микрофона
 	comp_parameters_update(& txagcparams [profile], (int) glob_mikeagcgain);
 
 	{
-		// РќР°СЃС‚СЂРѕР№РєР° РѕРіСЂР°РЅРёС‡РёС‚РµР»СЏ
+		// Настройка ограничителя
 		const FLOAT_t FS = txagcparams [profile].levelfence;	// txlevelfenceSSB
 		const FLOAT_t grade = 1 - (glob_mikehclip / (FLOAT_t) 100);
 		mickeclipscale [profile] = 1 / grade;
@@ -5612,21 +5612,21 @@ txparam_update(uint_fast8_t profile)
 
 #if WITHCPUDACHW && WITHPOWERTRIM
 	// ALC
-	// СЂРµРіСѓР»РёСЂРѕРІРєР° РЅР°РїСЂСЏР¶РµРЅРёСЏ РЅР° REFERENCE INPUT TXDAC AD9744 
+	// регулировка напряжения на REFERENCE INPUT TXDAC AD9744 
 	HARDWARE_DAC_ALC((glob_opowerlevel - WITHPOWERTRIMMIN) * dac_dacfs_coderange / (WITHPOWERTRIMMAX - WITHPOWERTRIMMIN) + dac_dacfs_lowcode);
 #endif /* WITHCPUDACHW && WITHPOWERTRIM */
 }
 
-// РџРµСЂРµРґР°С‡Р° РїР°СЂР°РјРµС‚СЂРѕРІ РІ DSP РјРѕРґСѓР»СЊ
+// Передача параметров в DSP модуль
 static void 
 trxparam_update(void)
 {
 	// CW & sidetone edge
-	enveloplen0 = NSAITICKS(glob_cwedgetime) + 1;		/* РєРѕР»РёС‡РµСЃС‚РІРѕ СЃСЌРјРїР»РѕРІ, Р·Р° РєРѕС‚РѕСЂРѕРµ РјРµРЅСЏРµС‚СЃСЏ РѕРіРёР±Р°СЋС‰Р°СЏ */
+	enveloplen0 = NSAITICKS(glob_cwedgetime) + 1;		/* количество сэмплов, за которое меняется огибающая */
 
 }
 
-/* РІС‹Р·С‹РІР°РµС‚СЃСЏ РїСЂРё СЂР°Р·СЂРµС€С‘РЅРЅС‹С… РїСЂРµСЂС‹РІР°РЅРёСЏС…. */
+/* вызывается при разрешённых прерываниях. */
 void dsp_initialize(void)
 {
 	debug_printf_P(PSTR("dsp_initialize start.\n"));
@@ -5660,54 +5660,54 @@ void dsp_initialize(void)
 	// 0.707 == M_SQRT1_2
 	/* http://gregstoll.dyndns.org/~gregstoll/floattohex/ use for tests */
 
-	// Р Р°Р·СЂСЏРґРЅРѕСЃС‚СЊ РїРµСЂРµРґР°СЋС‰РµРіРѕ С‚СЂР°РєС‚Р°
+	// Разрядность передающего тракта
 	#if WITHIFDACWIDTH > DSP_FLOAT_BITSMANTISSA
-		const int_fast32_t dacFS = 0x7ffff000L >> (32 - WITHIFDACWIDTH);	/* 0x7ffff800L С‚Р°Рє РєР°Рє float РёРјРµРµС‚ РјР°РєСЃРёРјСѓРј 24 Р±РёС‚Р° РІ РјР°РЅС‚РёСЃСЃРµ (23 СЏРІРЅС‹С… Рё РѕРґРёРЅ - СЃС‚Р°СЂС€РёР№ - РїРѕРґСЂР°Р·СѓРјРµРІР°РµС‚СЃСЏ РІСЃРµРіРґР° РµРґРёРЅРёС†Р°) */
+		const int_fast32_t dacFS = 0x7ffff000L >> (32 - WITHIFDACWIDTH);	/* 0x7ffff800L так как float имеет максимум 24 бита в мантиссе (23 явных и один - старший - подразумевается всегда единица) */
 	#else /* WITHIFDACWIDTH > DSP_FLOAT_BITSMANTISSA */
 		const int_fast32_t dacFS = (((uint_fast64_t) 1 << (WITHIFDACWIDTH - 1)) - 1);
 	#endif /* WITHIFDACWIDTH > DSP_FLOAT_BITSMANTISSA */
 
-	const FLOAT_t txlevelfence = dacFS /* * db2ratio(- (FLOAT_t) 1.75) */ * (FLOAT_t) M_SQRT1_2;	// РєРѕРЅС‚СЂРѕР»РёСЂРѕРІР°С‚СЊ РїРѕ РѕС‚СЃСѓС‚СЃС‚РІРёСЋ РёРЅРґРёРєР°С†РёРё РїРµСЂРµРїРѕР»РЅРµРЅРёСЏ DUC РїСЂРё РїРµСЂРµРґР°С‡Рµ
-	txlevelfenceHALF = txlevelfence / 2;	// Р”Р»СЏ СЂРµР¶РёРјРѕРІ СЃ lo6=0 - Сѓ РєРѕС‚РѕСЂС‹С… РЅРµС‚ РїРѕРґР°РІР»РµРЅРёСЏ РЅРµСЂР°Р±РѕС‡РµР№ Р±РѕРєРѕРІРѕР№
+	const FLOAT_t txlevelfence = dacFS /* * db2ratio(- (FLOAT_t) 1.75) */ * (FLOAT_t) M_SQRT1_2;	// контролировать по отсутствию индикации переполнения DUC при передаче
+	txlevelfenceHALF = txlevelfence / 2;	// Для режимов с lo6=0 - у которых нет подавления нерабочей боковой
 
 	txlevelfenceSSB = txlevelfence * (FLOAT_t) M_SQRT1_2;
-	txlevelfenceSSB_INTEGER = txlevelfenceSSB;	// Р”Р»СЏ РёСЃС‚РѕС‡РЅРёРєР° С€СѓРјР°
+	txlevelfenceSSB_INTEGER = txlevelfenceSSB;	// Для источника шума
 	txlevelfenceBPSK = txlevelfence / (FLOAT_t) 1.5;
 	txlevelfenceNFM = txlevelfence / 2;
 	txlevelfenceCW = txlevelfence / 2;
 
-	// Р Р°Р·СЂСЏРґРЅРѕСЃС‚СЊ РїСЂРёС‘РјРЅРѕРіРѕ С‚СЂР°РєС‚Р°
+	// Разрядность приёмного тракта
 	#if WITHIFADCWIDTH > DSP_FLOAT_BITSMANTISSA
-		const int_fast32_t adcFS = (0x7ffff000L >> (32 - WITHIFADCWIDTH));	/* 0x7ffff800L С‚Р°Рє РєР°Рє float РёРјРµРµС‚ РјР°РєСЃРёРјСѓРј 24 Р±РёС‚Р° РІ РјР°РЅС‚РёСЃСЃРµ (23 СЏРІРЅС‹С… Рё РѕРґРёРЅ - СЃС‚Р°СЂС€РёР№ - РїРѕРґСЂР°Р·СѓРјРµРІР°РµС‚СЃСЏ РІСЃРµРіРґР° РµРґРёРЅРёС†Р°) */
+		const int_fast32_t adcFS = (0x7ffff000L >> (32 - WITHIFADCWIDTH));	/* 0x7ffff800L так как float имеет максимум 24 бита в мантиссе (23 явных и один - старший - подразумевается всегда единица) */
 	#else /* WITHIFADCWIDTH > DSP_FLOAT_BITSMANTISSA */
 		const int_fast32_t adcFS = (((uint_fast64_t) 1 << (WITHIFADCWIDTH - 1)) - 1);
 	#endif /* WITHIFADCWIDTH > DSP_FLOAT_BITSMANTISSA */
 
 	rxlevelfence = adcFS * db2ratio(- 1);
-	// Р Р°Р·СЂСЏРґРЅРѕСЃС‚СЊ РїРѕСЃС‚СѓРїР°СЋС‰РµРіРѕ СЃ РјРёРєСЂРѕС„РѕРЅР° СЃРёРіРЅР°Р»Р°
-	mikefenceIN = POWF(2, WITHAFADCWIDTH - 1) - 1;	// СЂР°Р·СЂСЏРґРЅРѕСЃС‚СЊ СЃРёРіРЅР°Р»Р° РѕС‚ РјРёРєСЂРѕС„РѕРЅРЅРѕРіРѕ РєРѕРґРµРєР° РЅР° СЃРёСЃС‚РµРјСѓ РђР РЈ
-	mikefenceOUT = (POWF(2, WITHAFADCWIDTH - 1) - 1) * db2ratio(- 1);	// РјР°РєСЃРёРјР°Р»СЊРЅРѕРµ Р·РЅР°С‡РµРЅРёРµ РЅР° РІС‹С…РѕРґРµ СЃРёСЃС‚РµРјС‹ РђР РЈ Рё РєРѕРЅС‚СЂРѕР»СЏ РїРµСЂРµРїРѕР»РЅРµРЅРёСЏ
+	// Разрядность поступающего с микрофона сигнала
+	mikefenceIN = POWF(2, WITHAFADCWIDTH - 1) - 1;	// разрядность сигнала от микрофонного кодека на систему АРУ
+	mikefenceOUT = (POWF(2, WITHAFADCWIDTH - 1) - 1) * db2ratio(- 1);	// максимальное значение на выходе системы АРУ и контроля переполнения
 
-	// Р Р°Р·СЂСЏРґРЅРѕСЃС‚СЊ РїРѕСЃС‚СѓРїР°СЋС‰РµРіРѕ РЅР° РЅР°СѓС€РЅРёРєРё СЃРёРіРЅР°Р»Р°
+	// Разрядность поступающего на наушники сигнала
 	phonefence = (POWF(2, WITHAFDACWIDTH - 1) - 1)  * db2ratio(- 1);
-	// РјР°СЃС€С‚Р°Р±РёСЂРѕРІР°РЅРёРµ (INT32_MAX + 1) Рє phonefence
+	// масштабирование (INT32_MAX + 1) к phonefence
 	nfmoutscale = POWF(2, - (int) (NCOFTWBITS - 1)) * phonefence;
 
 	agc_initialize();
 	voxmeter_initialize();
 	trxparam_update();
-	const uint_fast8_t rprofile = ! gwagcprofrx;	// РёРЅРґРµРєСЃ РїСЂРѕС„РёР»СЏ, РєРѕС‚РѕСЂС‹Р№ СЃС‚Р°РЅРµС‚ СЂР°Р±РѕС‡РёРј
+	const uint_fast8_t rprofile = ! gwagcprofrx;	// индекс профиля, который станет рабочим
 
 	uint_fast8_t pathi;
 	for (pathi = 0; pathi < NTRX; ++ pathi)
 		rxparam_update(rprofile, pathi);
 	gwagcprofrx = rprofile;
 
-	const uint_fast8_t tprofile = ! gwagcproftx;	// РёРЅРґРµРєСЃ РїСЂРѕС„РёР»СЏ, РєРѕС‚РѕСЂС‹Р№ СЃС‚Р°РЅРµС‚ СЂР°Р±РѕС‡РёРј
+	const uint_fast8_t tprofile = ! gwagcproftx;	// индекс профиля, который станет рабочим
 	txparam_update(tprofile);
 	gwagcproftx = tprofile;
 
-	const uint_fast8_t spf = ! gwprof;	// РёРЅРґРµРєСЃ РїСЂРѕС„РёР»СЏ РґР»СЏ РїРѕРґРіРѕС‚РѕРІРєРё РїР°СЂР°РјРµС‚СЂРѕРІ DSP
+	const uint_fast8_t spf = ! gwprof;	// индекс профиля для подготовки параметров DSP
 
 	audio_setup_mike(spf);
 	for (pathi = 0; pathi < NTRX; ++ pathi)
@@ -5733,27 +5733,27 @@ void dsp_initialize(void)
 void 
 prog_dsplreg(void)
 {
-	const uint_fast8_t pathn = isdspmodetx(glob_dspmodes [0]) ? 1 : NTRX;	// РїСЂРё РїРµСЂРµРґР°С‡Рµ С‚РѕР»СЊРєРѕ С‚СЂР°РєС‚ СЃ РёРґРµРєСЃРѕРј 0
+	const uint_fast8_t pathn = isdspmodetx(glob_dspmodes [0]) ? 1 : NTRX;	// при передаче только тракт с идексом 0
 	trxparam_update();
-	const uint_fast8_t rprofile = ! gwagcprofrx;	// РёРЅРґРµРєСЃ РїСЂРѕС„РёР»СЏ, РєРѕС‚РѕСЂС‹Р№ СЃС‚Р°РЅРµС‚ СЂР°Р±РѕС‡РёРј
+	const uint_fast8_t rprofile = ! gwagcprofrx;	// индекс профиля, который станет рабочим
 	uint_fast8_t pathi;
 	for (pathi = 0; pathi < pathn; ++ pathi)
 		rxparam_update(rprofile, pathi);
 	gwagcprofrx = rprofile;
 
-	const uint_fast8_t tprofile = ! gwagcproftx;	// РёРЅРґРµРєСЃ РїСЂРѕС„РёР»СЏ, РєРѕС‚РѕСЂС‹Р№ СЃС‚Р°РЅРµС‚ СЂР°Р±РѕС‡РёРј
+	const uint_fast8_t tprofile = ! gwagcproftx;	// индекс профиля, который станет рабочим
 	txparam_update(tprofile);
 	gwagcproftx = tprofile;
 
 #if (CTLSTYLE_RAVENDSP_V1 || CTLSTYLE_DSPV1A)
 	if (isdspmoderx(glob_dspmodes [0]))
 	{
-		// СѓСЃРёР»РµРЅРёРµ С‚СЂР°РєС‚Р° РџР§ (AD605)
+		// усиление тракта ПЧ (AD605)
 		HARDWARE_DAC_AGC((glob_gvad605 * dac_agc_coderange) / UINT8_MAX + dac_agc_lowcode);
 	}
 	else
 	{
-		// РїСЂРё РїРµСЂРµРґР°С‡Рµ Р·Р°РєСЂС‹С‚СЊ
+		// при передаче закрыть
 		HARDWARE_DAC_AGC(0);
 	}
 #endif /* (CTLSTYLE_RAVENDSP_V1 || CTLSTYLE_DSPV1A) */
@@ -5763,9 +5763,9 @@ prog_dsplreg(void)
 void 
 prog_fltlreg(void)
 {
-	const uint_fast8_t pathn = isdspmodetx(glob_dspmodes [0]) ? 1 : NTRX;	// РїСЂРё РїРµСЂРµРґР°С‡Рµ С‚РѕР»СЊРєРѕ С‚СЂР°РєС‚ СЃ РёРґРµРєСЃРѕРј 0
-	// РћР±РЅРѕРІР»РµРЅРёРµ СЂР°СЃС‡РёС‚С‹РІР°РµРјС‹С… РїР°СЂР°РјРµС‚СЂРѕРІ
-	const uint_fast8_t spf = ! gwprof;	// РёРЅРґРµРєСЃ РїСЂРѕС„РёР»СЏ РґР»СЏ РїРѕРґРіРѕС‚РѕРІРєРё РїР°СЂР°РјРµС‚СЂРѕРІ DSP
+	const uint_fast8_t pathn = isdspmodetx(glob_dspmodes [0]) ? 1 : NTRX;	// при передаче только тракт с идексом 0
+	// Обновление расчитываемых параметров
+	const uint_fast8_t spf = ! gwprof;	// индекс профиля для подготовки параметров DSP
 
 	audio_setup_mike(spf);
 	uint_fast8_t pathi;
@@ -5777,10 +5777,10 @@ prog_fltlreg(void)
 	modem_update();
 }
 
-#elif WITHEXTERNALDDSP /* РёРјРµРµС‚СЃСЏ СѓРїСЂР°РІР»РµРЅРёРµ РІРЅРµС€РЅРµР№ DSP РїР»Р°С‚РѕР№. */
+#elif WITHEXTERNALDDSP /* имеется управление внешней DSP платой. */
 
 
-#define DSPREG_SPIMODE	SPIC_MODE3	// DSP module РґР»СЏ СѓРїСЂР°РІР»РµРЅРёСЏ РїР»Р°С‚РѕР№ "Р”СЏС‚РµР»"
+#define DSPREG_SPIMODE	SPIC_MODE3	// DSP module для управления платой "Дятел"
 
 void 
 prog_dsplreg(void)
@@ -5795,7 +5795,7 @@ prog_dsplreg(void)
 	buff [DSPCTL_OFFSET_AFGAIN_LO] = glob_afgain;
 	buff [DSPCTL_OFFSET_IFGAIN_HI] = glob_ifgain >> 8;
 	buff [DSPCTL_OFFSET_IFGAIN_LO] = glob_ifgain;
-	buff [DSPCTL_OFFSET_AFMUTE] = glob_afmute;	/* РѕС‚РєР»СЋС‡РёС‚СЊ Р·РІСѓРє РІ РЅР°СѓС€РЅРёРєР°С… Рё РґРёРЅР°РјРёРєР°С… */
+	buff [DSPCTL_OFFSET_AFMUTE] = glob_afmute;	/* отключить звук в наушниках и динамиках */
 	buff [DSPCTL_OFFSET_AGCOFF] = (glob_agc == BOARD_AGCCODE_OFF);
 	buff [DSPCTL_OFFSET_MICLEVEL_HI] = glob_mik1level >> 8;
 	buff [DSPCTL_OFFSET_MICLEVEL_LO] = glob_mik1level;
@@ -5842,11 +5842,11 @@ prog_dsplreg(void)
 	spi_unselect(target);
 }
 
-/* 1/4 FS (12 kHz) РёР»Рё 0 РґР»СЏ DSP */
+/* 1/4 FS (12 kHz) или 0 для DSP */
 int_fast32_t
 dsp_get_ifreq(void)
 {
-	return DEFAULT_DSP_IF;		/* РїСЂРѕ С‡Р°СЃС‚РѕС‚Сѓ РџР§ РІРЅРµС€РЅРµРіРѕ DSP Р·РЅР°РµРј С‚РѕР»СЊРєРѕ РїРѕ СЌС‚РѕРјСѓ РѕРїСЂРµРґРµР»РµРЅРёСЋ. */
+	return DEFAULT_DSP_IF;		/* про частоту ПЧ внешнего DSP знаем только по этому определению. */
 }
 
 void 
@@ -5878,17 +5878,17 @@ prog_codec1reg(void)
 	// also use glob_mik1level
 	ifc1->setvolume(glob_afgain, glob_afmute, glob_loudspeaker_off);
 	ifc1->setlineinput(glob_lineinput, glob_mikebust20db, glob_mik1level, glob_lineamp);
-	ifc1->setprocparams(glob_mikeequal, glob_codec1_gains);	/* РїР°СЂР°РјРµС‚СЂС‹ РѕР±СЂР°Р±РѕС‚РєРё Р·РІСѓРєР° СЃ РјРёРєСЂРѕС„РѕРЅР° (СЌС…Рѕ, СЌРєРІР°Р»Р°Р№Р·РµСЂ, ...) */
+	ifc1->setprocparams(glob_mikeequal, glob_codec1_gains);	/* параметры обработки звука с микрофона (эхо, эквалайзер, ...) */
 
 #endif /* defined(CODEC1_TYPE) */
 }
 
 
-static uint_fast8_t flag_dsp1reg;	/* РїСЂРёР·РЅР°Рє РјРѕРґРёС„РёРєР°С†РёРё С‚РµРЅРµРІС‹С… Р·РЅР°С‡РµРЅРёР№. РўСЂРµР±СѓРµС‚СЃСЏ РІС‹РІРѕРґ РІ СЂРµРіРёСЃС‚СЂС‹ */
-static uint_fast8_t flag_flt1reg;	/* РїСЂРёР·РЅР°Рє РјРѕРґРёС„РёРєР°С†РёРё С‚РµРЅРµРІС‹С… Р·РЅР°С‡РµРЅРёР№. РўСЂРµР±СѓРµС‚СЃСЏ РІС‹РІРѕРґ РІ СЂРµРіРёСЃС‚СЂС‹ */
-static uint_fast8_t flag_codec1reg;	/* РїСЂРёР·РЅР°Рє РјРѕРґРёС„РёРєР°С†РёРё С‚РµРЅРµРІС‹С… Р·РЅР°С‡РµРЅРёР№. РўСЂРµР±СѓРµС‚СЃСЏ РІС‹РІРѕРґ РІ СЂРµРіРёСЃС‚СЂС‹ */
+static uint_fast8_t flag_dsp1reg;	/* признак модификации теневых значений. Требуется вывод в регистры */
+static uint_fast8_t flag_flt1reg;	/* признак модификации теневых значений. Требуется вывод в регистры */
+static uint_fast8_t flag_codec1reg;	/* признак модификации теневых значений. Требуется вывод в регистры */
 
-/* Р·Р°РїСЂРѕСЃ РјРѕР¶РµС‚ СѓСЃС‚Р°РЅР°РІР»РёРІР°С‚СЊСЃСЏ РёР· РѕР±СЂР°Р±РѕС‚С‡РёРєР° РїСЂРµСЂС‹РІР°РЅРёСЏ РІ СЃР»СѓС‡Р°Рµ WITHSPISLAVE */
+/* запрос может устанавливаться из обработчика прерывания в случае WITHSPISLAVE */
 void prog_dsplreg_update(void)
 {	
 	uint_fast8_t f;
@@ -5906,7 +5906,7 @@ void prog_dsplreg_update(void)
 		prog_dsplreg();
 	}
 }
-/* Р·Р°РїСЂРѕСЃ РјРѕР¶РµС‚ СѓСЃС‚Р°РЅР°РІР»РёРІР°С‚СЊСЃСЏ РёР· РѕР±СЂР°Р±РѕС‚С‡РёРєР° РїСЂРµСЂС‹РІР°РЅРёСЏ РІ СЃР»СѓС‡Р°Рµ WITHSPISLAVE */
+/* запрос может устанавливаться из обработчика прерывания в случае WITHSPISLAVE */
 void prog_fltlreg_update(void)
 {	
 	uint_fast8_t f;
@@ -5925,8 +5925,8 @@ void prog_fltlreg_update(void)
 	}
 }
 
-/* Р·Р°РїСЂРѕСЃ РјРѕР¶РµС‚ СѓСЃС‚Р°РЅР°РІР»РёРІР°С‚СЊСЃСЏ РёР· РѕР±СЂР°Р±РѕС‚С‡РёРєР° РїСЂРµСЂС‹РІР°РЅРёСЏ РІ СЃР»СѓС‡Р°Рµ WITHSPISLAVE */
-void prog_codecreg_update(void)		// СѓСЃР»РѕР»РІРЅРѕРµ РѕР±РЅРѕРІР»РµРЅРёРµ СЂРµРіРёСЃС‚СЂРѕРІ Р°СѓРґРёРѕ РєРѕРґРµРєР°
+/* запрос может устанавливаться из обработчика прерывания в случае WITHSPISLAVE */
+void prog_codecreg_update(void)		// услолвное обновление регистров аудио кодека
 {
 	uint_fast8_t f;
 #if WITHSPISLAVE
@@ -5944,27 +5944,27 @@ void prog_codecreg_update(void)		// СѓСЃР»РѕР»РІРЅРѕРµ РѕР±РЅРѕРІР»РµРЅРёРµ СЂРµ
 	}
 }
 
-/* Р¤СѓРЅРєС†РёСЏ РјРѕР¶РµС‚ РІС‹Р·С‹РІР°С‚СЊСЃСЏ РёР· РѕР±СЂР°Р±РѕС‚С‡РёРєР° РїСЂРµСЂС‹РІР°РЅРёСЏ РІ СЃР»СѓС‡Р°Рµ WITHSPISLAVE */
-/* РЈСЃС‚Р°РЅРѕРІРєР° Р·Р°РїСЂРѕСЃР° РЅР° РѕР±РЅРѕРІР»РµРЅРёРµ СЃРёРіРЅР°Р»РѕРІ СѓРїСЂР°РІР»РµРЅРёСЏ */
+/* Функция может вызываться из обработчика прерывания в случае WITHSPISLAVE */
+/* Установка запроса на обновление сигналов управления */
 void
 board_dsp1regchanged(void)
 {
 	flag_dsp1reg = 1; 
 }
-/* Р¤СѓРЅРєС†РёСЏ РјРѕР¶РµС‚ РІС‹Р·С‹РІР°С‚СЊСЃСЏ РёР· РѕР±СЂР°Р±РѕС‚С‡РёРєР° РїСЂРµСЂС‹РІР°РЅРёСЏ РІ СЃР»СѓС‡Р°Рµ WITHSPISLAVE */
-/* РЈСЃС‚Р°РЅРѕРІРєР° Р·Р°РїСЂРѕСЃР° РЅР° РѕР±РЅРѕРІР»РµРЅРёРµ СЃРёРіРЅР°Р»РѕРІ СѓРїСЂР°РІР»РµРЅРёСЏ */
+/* Функция может вызываться из обработчика прерывания в случае WITHSPISLAVE */
+/* Установка запроса на обновление сигналов управления */
 void
 board_flt1regchanged(void)
 {
-#if WITHEXTERNALDDSP /* РёРјРµРµС‚СЃСЏ СѓРїСЂР°РІР»РµРЅРёРµ РІРЅРµС€РЅРµР№ DSP РїР»Р°С‚РѕР№. */
-	// РІ СЌС‚РѕРј СЃР»СѓС‡Р°Рµ РѕР±СЂР°С‰Р°РµРјСЃСЏ Рє РґСЂСѓРіРѕР№ С„СѓРЅРєС†РёРё
+#if WITHEXTERNALDDSP /* имеется управление внешней DSP платой. */
+	// в этом случае обращаемся к другой функции
 	flag_dsp1reg = 1; 
 #else /* WITHEXTERNALDDSP */
 	flag_flt1reg = 1; 
 #endif /* WITHEXTERNALDDSP */
 }
-/* Р¤СѓРЅРєС†РёСЏ РјРѕР¶РµС‚ РІС‹Р·С‹РІР°С‚СЊСЃСЏ РёР· РѕР±СЂР°Р±РѕС‚С‡РёРєР° РїСЂРµСЂС‹РІР°РЅРёСЏ РІ СЃР»СѓС‡Р°Рµ WITHSPISLAVE */
-/* РЈСЃС‚Р°РЅРѕРІРєР° Р·Р°РїСЂРѕСЃР° РЅР° РѕР±РЅРѕРІР»РµРЅРёРµ СЃРёРіРЅР°Р»РѕРІ СѓРїСЂР°РІР»РµРЅРёСЏ */
+/* Функция может вызываться из обработчика прерывания в случае WITHSPISLAVE */
+/* Установка запроса на обновление сигналов управления */
 void
 board_codec1regchanged(void)
 {
@@ -5974,14 +5974,14 @@ board_codec1regchanged(void)
 ////////////////////////////////
 
 
-/* РўСЂР°РєС‚, Рє РєРѕС‚РѕСЂРѕРјСѓ РѕС‚РЅРѕСЃСЏС‚СЃСЏ РІСЃРµ РїРѕСЃР»РµРґСѓСЋС‰РёРµ РІС‹Р·РѕРІС‹. РџСЂРё РїРµСЂРµСЂРµРґР°СЏРµ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РёРЅРґРµРєСЃ 0 */
+/* Тракт, к которому относятся все последующие вызовы. При перередаяе используется индекс 0 */
 void board_set_trxpath(uint_fast8_t v)
 {
 	glob_trxpath = v;
 }
 
 
-/*	РњРѕС‰РЅРѕСЃС‚СЊ, СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰Р°СЏ full scale РѕС‚ IF ADC */
+/*	Мощность, соответствующая full scale от IF ADC */
 void
 board_set_fsadcpower10(int_fast16_t v)
 {
@@ -6003,7 +6003,7 @@ board_set_ifgain(uint_fast16_t v)
 }
 
 void
-board_set_agcrate(uint_fast8_t n)	/* РЅР° n РґРµС†РёР±РµР» РёР·РјРµРЅРµРЅРёСЏ РІС…РѕРґРЅРѕРіРѕ СЃРёРіРЅР°Р»Р° 1 РґР‘ РІС‹С…РѕРґРЅРѕРіРѕ. UINT8_MAX - "РїР»РѕСЃРєР°СЏ" РђР РЈ */
+board_set_agcrate(uint_fast8_t n)	/* на n децибел изменения входного сигнала 1 дБ выходного. UINT8_MAX - "плоская" АРУ */
 {
 	if (glob_agcrate [glob_trxpath] != n)
 	{
@@ -6013,7 +6013,7 @@ board_set_agcrate(uint_fast8_t n)	/* РЅР° n РґРµС†РёР±РµР» РёР·РјРµРЅРµРЅРёСЏ РІ
 }
 
 void
-board_set_agc_t1(uint_fast8_t n)	/* РїРѕРґСЃС‚СЂРѕР№РєР° РїР°СЂР°РјРµС‚СЂР° РђР РЈ */
+board_set_agc_t1(uint_fast8_t n)	/* подстройка параметра АРУ */
 {
 	if (glob_agc_t1 [glob_trxpath] != n)
 	{
@@ -6023,7 +6023,7 @@ board_set_agc_t1(uint_fast8_t n)	/* РїРѕРґСЃС‚СЂРѕР№РєР° РїР°СЂР°РјРµС‚СЂР° РђР 
 }
 
 void
-board_set_agc_t2(uint_fast8_t n)	/* РїРѕРґСЃС‚СЂРѕР№РєР° РїР°СЂР°РјРµС‚СЂР° РђР РЈ */
+board_set_agc_t2(uint_fast8_t n)	/* подстройка параметра АРУ */
 {
 	if (glob_agc_t2 [glob_trxpath] != n)
 	{
@@ -6033,7 +6033,7 @@ board_set_agc_t2(uint_fast8_t n)	/* РїРѕРґСЃС‚СЂРѕР№РєР° РїР°СЂР°РјРµС‚СЂР° РђР 
 }
 
 void
-board_set_agc_t4(uint_fast8_t n)	/* РїРѕРґСЃС‚СЂРѕР№РєР° РїР°СЂР°РјРµС‚СЂР° РђР РЈ */
+board_set_agc_t4(uint_fast8_t n)	/* подстройка параметра АРУ */
 {
 	if (glob_agc_t4 [glob_trxpath] != n)
 	{
@@ -6043,7 +6043,7 @@ board_set_agc_t4(uint_fast8_t n)	/* РїРѕРґСЃС‚СЂРѕР№РєР° РїР°СЂР°РјРµС‚СЂР° РђР 
 }
 
 void
-board_set_agc_thung(uint_fast8_t n)	/* РїРѕРґСЃС‚СЂРѕР№РєР° РїР°СЂР°РјРµС‚СЂР° РђР РЈ HUNG TIME */
+board_set_agc_thung(uint_fast8_t n)	/* подстройка параметра АРУ HUNG TIME */
 {
 	if (glob_agc_thung [glob_trxpath] != n)
 	{
@@ -6053,7 +6053,7 @@ board_set_agc_thung(uint_fast8_t n)	/* РїРѕРґСЃС‚СЂРѕР№РєР° РїР°СЂР°РјРµС‚СЂР° Р
 }
 
 void 
-board_set_nfm_sql_lelel(uint_fast8_t n)	/* СѓСЂРѕРІРµРЅСЊ РѕС‚РєСЂС‹РІР°РЅРёСЏ С€СѓРјРѕРїРѕРґР°РІРёС‚РµР»СЏ NFM */
+board_set_nfm_sql_lelel(uint_fast8_t n)	/* уровень открывания шумоподавителя NFM */
 {
 	if (glob_nfm_sql_lelel != n)
 	{
@@ -6063,7 +6063,7 @@ board_set_nfm_sql_lelel(uint_fast8_t n)	/* СѓСЂРѕРІРµРЅСЊ РѕС‚РєСЂС‹РІР°РЅРёСЏ С
 }
 
 void 
-board_set_squelch(uint_fast8_t n)	/* СѓСЂРѕРІРµРЅСЊ РѕС‚РєСЂС‹РІР°РЅРёСЏ С€СѓРјРѕРїРѕРґР°РІРёС‚РµР»СЏ */
+board_set_squelch(uint_fast8_t n)	/* уровень открывания шумоподавителя */
 {
 	if (glob_squelch != n)
 	{
@@ -6073,7 +6073,7 @@ board_set_squelch(uint_fast8_t n)	/* СѓСЂРѕРІРµРЅСЊ РѕС‚РєСЂС‹РІР°РЅРёСЏ С€СѓРјР
 }
 
 void 
-board_set_nfm_sql_off(uint_fast8_t v)	/* РѕС‚РєР»СЋС‡РµРЅРёРµ С€СѓРјРѕРїРѕРґР°РІРёС‚РµР»СЏ NFM */
+board_set_nfm_sql_off(uint_fast8_t v)	/* отключение шумоподавителя NFM */
 {
 	const uint_fast8_t n = v != 0;
 	if (glob_nfm_sql_off != n)
@@ -6084,7 +6084,7 @@ board_set_nfm_sql_off(uint_fast8_t v)	/* РѕС‚РєР»СЋС‡РµРЅРёРµ С€СѓРјРѕРїРѕРґР°РІ
 }
 
 void 
-board_set_swapiq(uint_fast8_t v)	/* РїРѕРјРµРЅСЏС‚СЊ РјРµСЃС‚Р°РјРё I Рё Q СЃСЌРјРїР»С‹ РІ РїРѕС‚РѕРєРµ RTS96 */
+board_set_swapiq(uint_fast8_t v)	/* поменять местами I и Q сэмплы в потоке RTS96 */
 {
 	const uint_fast8_t n = v != 0;
 	if (glob_swapiq != n)
@@ -6095,7 +6095,7 @@ board_set_swapiq(uint_fast8_t v)	/* РїРѕРјРµРЅСЏС‚СЊ РјРµСЃС‚Р°РјРё I Рё Q СЃСЌР
 }
 
 void 
-board_set_swaprts(uint_fast8_t v)	/* РµСЃР»Рё РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РєРѕРЅРІРµСЂС‚РѕСЂ РЅР° Rafael Micro R820T - С‚СЂРµР±СѓРµС‚СЃСЏ РёРЅРІРµСЂСЃРёСЏ СЃРїРµРєС‚СЂР° */
+board_set_swaprts(uint_fast8_t v)	/* если используется конвертор на Rafael Micro R820T - требуется инверсия спектра */
 {
 	const uint_fast8_t n = v != 0;
 	if (glob_swaprts != n)
@@ -6106,38 +6106,38 @@ board_set_swaprts(uint_fast8_t v)	/* РµСЃР»Рё РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РєРѕРЅРІР
 }
 
 void 
-board_set_notch_freq(uint_fast16_t n)	/* С‡Р°СЃС‚РѕС‚Р° NOTCH С„РёР»СЊС‚СЂР° */
+board_set_notch_freq(uint_fast16_t n)	/* частота NOTCH фильтра */
 {
 	if (glob_notch_freq != n)
 	{
 		glob_notch_freq = n;
-		board_flt1regchanged();		// РїР°СЂР°РјРµС‚СЂС‹ СЌС‚РѕР№ С„СѓРЅРєС†РёРё РёСЃРїРѕР»СЊР·СѓСЋС‚СЃСЏ РІ audio_update();
+		board_flt1regchanged();		// параметры этой функции используются в audio_update();
 	}
 }
 
 void 
-board_set_notch_width(uint_fast16_t n)	/* РїРѕР»РѕСЃР° NOTCH С„РёР»СЊС‚СЂР° */
+board_set_notch_width(uint_fast16_t n)	/* полоса NOTCH фильтра */
 {
 	if (glob_notch_width != n)
 	{
 		glob_notch_width = n;
-		board_flt1regchanged();		// РїР°СЂР°РјРµС‚СЂС‹ СЌС‚РѕР№ С„СѓРЅРєС†РёРё РёСЃРїРѕР»СЊР·СѓСЋС‚СЃСЏ РІ audio_update();
+		board_flt1regchanged();		// параметры этой функции используются в audio_update();
 	}
 }
 
 void 
-board_set_notch_on(uint_fast8_t v)	/* РІРєР»СЋС‡РµРЅРёРµ NOTCH С„РёР»СЊС‚СЂР° */
+board_set_notch_on(uint_fast8_t v)	/* включение NOTCH фильтра */
 {
 	const uint_fast8_t n = v != 0;
 	if (glob_notch_on != n)
 	{
 		glob_notch_on = n;
-		board_flt1regchanged();		// РїР°СЂР°РјРµС‚СЂС‹ СЌС‚РѕР№ С„СѓРЅРєС†РёРё РёСЃРїРѕР»СЊР·СѓСЋС‚СЃСЏ РІ audio_update();
+		board_flt1regchanged();		// параметры этой функции используются в audio_update();
 	}
 }
 
 void 
-board_set_sidetonelevel(uint_fast8_t n)	/* РЈСЂРѕРІРµРЅСЊ СЃРёРіРЅР°Р»Р° СЃР°РјРѕРєРѕРЅС‚СЂРѕР»СЏ РІ РїСЂРѕС†РµРЅС‚Р°С… - 0%..100% */
+board_set_sidetonelevel(uint_fast8_t n)	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
 {
 	if (glob_sidetonelevel != n)
 	{
@@ -6147,7 +6147,7 @@ board_set_sidetonelevel(uint_fast8_t n)	/* РЈСЂРѕРІРµРЅСЊ СЃРёРіРЅР°Р»Р° СЃР°РјР
 }
 
 void 
-board_set_subtonelevel(uint_fast8_t n)	/* РЈСЂРѕРІРµРЅСЊ СЃРёРіРЅР°Р»Р° CTCSS РІ РїСЂРѕС†РµРЅС‚Р°С… - 0%..100% */
+board_set_subtonelevel(uint_fast8_t n)	/* Уровень сигнала CTCSS в процентах - 0%..100% */
 {
 	if (glob_subtonelevel != n)
 	{
@@ -6157,7 +6157,7 @@ board_set_subtonelevel(uint_fast8_t n)	/* РЈСЂРѕРІРµРЅСЊ СЃРёРіРЅР°Р»Р° CTCSS РІ
 }
 
 void 
-board_set_cwedgetime(uint_fast8_t n)	/* Р’СЂРµРјСЏ РЅР°СЂР°СЃС‚Р°РЅРёСЏ/СЃРїР°РґР° РѕРіРёР±Р°СЋС‰РµР№ С‚РµР»РµРіСЂР°С„Р° РїСЂРё РїРµСЂРµРґР°С‡Рµ - РІ 1 РјСЃ */
+board_set_cwedgetime(uint_fast8_t n)	/* Время нарастания/спада огибающей телеграфа при передаче - в 1 мс */
 {
 	if (glob_cwedgetime != n)
 	{
@@ -6167,7 +6167,7 @@ board_set_cwedgetime(uint_fast8_t n)	/* Р’СЂРµРјСЏ РЅР°СЂР°СЃС‚Р°РЅРёСЏ/СЃРїР°Рґ
 }
 
 void 
-board_set_amdepth(uint_fast8_t n)	/* Р“Р»СѓР±РёРЅР° РјРѕРґСѓР»СЏС†РёРё РІ РђРњ - 0..100% */
+board_set_amdepth(uint_fast8_t n)	/* Глубина модуляции в АМ - 0..100% */
 {
 	if (glob_amdepth != n)
 	{
@@ -6177,7 +6177,7 @@ board_set_amdepth(uint_fast8_t n)	/* Р“Р»СѓР±РёРЅР° РјРѕРґСѓР»СЏС†РёРё РІ РђРњ -
 }
 
 void 
-board_set_dacscale(uint_fast8_t n)	/* РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ Р°РјРїР»РёС‚СѓРґС‹ СЃРёРіРЅР°Р»Р° СЃ Р¦РђРџ РїРµСЂРµРґР°С‚С‡РёРєР° - 0..100% */
+board_set_dacscale(uint_fast8_t n)	/* Использование амплитуды сигнала с ЦАП передатчика - 0..100% */
 {
 	if (glob_dacscale != n)
 	{
@@ -6187,7 +6187,7 @@ board_set_dacscale(uint_fast8_t n)	/* РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ Р°РјРїР»РёС‚СѓР
 }
 
 void 
-board_set_mik1level(uint_fast16_t n)	/* СѓСЃРёР»РµРЅРёРµ РјРёРєСЂРѕС„РѕРЅРЅРѕРіРѕ СѓСЃРёР»РёС‚РµР»СЏ */
+board_set_mik1level(uint_fast16_t n)	/* усиление микрофонного усилителя */
 {
 	if (glob_mik1level != n)
 	{
@@ -6196,7 +6196,7 @@ board_set_mik1level(uint_fast16_t n)	/* СѓСЃРёР»РµРЅРёРµ РјРёРєСЂРѕС„РѕРЅРЅРѕРіР
 	}
 }
 
-// РџР°СЂР°РјРµС‚СЂ РґР»СЏ СЂРµРіСѓР»РёСЂРѕРІРєРё СѓСЂРѕРІРЅСЏ РЅР° РІС‹С…РѕРґРµ Р°СѓРґРёРѕ-Р¦РђРџ
+// Параметр для регулировки уровня на выходе аудио-ЦАП
 void
 board_set_afgain(uint_fast16_t v)
 {
@@ -6207,7 +6207,7 @@ board_set_afgain(uint_fast16_t v)
 	}
 }
 
-// РђР»СЊС‚РµСЂРЅР°С‚РёРІРЅС‹Рµ РёСЃС‚РѕС‡РЅРёРєРё СЃРёРіРЅР°Р»Р° РїСЂРё РїРµСЂРµРґР°С‡Рµ
+// Альтернативные источники сигнала при передаче
 void
 board_set_txaudio(uint_fast8_t v)
 {
@@ -6218,7 +6218,7 @@ board_set_txaudio(uint_fast8_t v)
 	}
 }
 
-// РџР°СЂР°РјРµС‚СЂ РґР»СЏ СЂРµРіСѓР»РёСЂРѕРІРєРё СѓСЂРѕРІРЅСЏ РЅР° РІС…РѕРґРµ Р°СѓРґРёРѕ-Р¦РђРџ РїСЂРё СЂР°Р±РѕС‚Рµ СЃ LINE IN
+// Параметр для регулировки уровня на входе аудио-ЦАП при работе с LINE IN
 void
 board_set_lineamp(uint_fast16_t v)
 {
@@ -6230,7 +6230,7 @@ board_set_lineamp(uint_fast16_t v)
 }
 
 
-// Р’РєР»СЋС‡РµРЅРёРµ line input РІРјРµСЃС‚Рѕ РјРёРєСЂРѕС„РѕРЅР°
+// Включение line input вместо микрофона
 void
 board_set_lineinput(uint_fast8_t n)
 {
@@ -6242,7 +6242,7 @@ board_set_lineinput(uint_fast8_t n)
 	}
 }
 
-// Р’РєР»СЋС‡РµРЅРёРµ РїСЂРµРґСѓСЃРёР»РёС‚РµР»СЏ Р·Р° РјРёРєСЂРѕС„РѕРЅРѕРј
+// Включение предусилителя за микрофоном
 void
 board_set_mikebust20db(uint_fast8_t n)
 {
@@ -6254,7 +6254,7 @@ board_set_mikebust20db(uint_fast8_t n)
 	}
 }
 
-/* Р’РєР»СЋС‡РµРЅРёРµ РїСЂРѕРіСЂР°РјРјРЅРѕР№ РђР РЈ РїРµСЂРµРґ РјРѕРґСѓР»СЏС‚РѕСЂРѕРј */
+/* Включение программной АРУ перед модулятором */
 void
 board_set_mikeagc(uint_fast8_t n)
 {
@@ -6266,7 +6266,7 @@ board_set_mikeagc(uint_fast8_t n)
 	}
 }
 
-/* РњР°РєСЃРёРјР°Р»СЊРЅРѕРµ СѓСЃРёРґРµРЅРёРµ РђР РЈ РјРёРєСЂРѕС„РѕРЅР° */
+/* Максимальное усидение АРУ микрофона */
 void
 board_set_mikeagcgain(uint_fast8_t v)
 {
@@ -6277,7 +6277,7 @@ board_set_mikeagcgain(uint_fast8_t v)
 	}
 }
 
-/* РћРіСЂР°РЅРёС‡РёС‚РµР»СЊ РІ С‚СЂР°РєС‚Рµ РјРёРєСЂРѕС„РѕРЅР° */
+/* Ограничитель в тракте микрофона */
 void
 board_set_mikehclip(uint_fast8_t v)
 {
@@ -6288,7 +6288,7 @@ board_set_mikehclip(uint_fast8_t v)
 	}
 }
 
-/* РёР·РјРµРЅРµРЅРёРµ С‚РµРјР±СЂР° Р·РІСѓРєР° - РЅР° Samplerate/2 РђР§РҐ РїР°РґР°РµС‚ РЅР° СЃС‚РѕР»СЊРєРѕ РґРµС†РёР±РµР»  */
+/* изменение тембра звука - на Samplerate/2 АЧХ падает на столько децибел  */
 void
 board_set_afresponcerx(int_fast8_t v)
 {
@@ -6298,7 +6298,7 @@ board_set_afresponcerx(int_fast8_t v)
 		board_flt1regchanged();
 	}
 }
-/* РёР·РјРµРЅРµРЅРёРµ С‚РµРјР±СЂР° Р·РІСѓРєР° - РЅР° Samplerate/2 РђР§РҐ РїР°РґР°РµС‚ РЅР° СЃС‚РѕР»СЊРєРѕ РґРµС†РёР±РµР»  */
+/* изменение тембра звука - на Samplerate/2 АЧХ падает на столько децибел  */
 void
 board_set_afresponcetx(int_fast8_t v)
 {
@@ -6310,7 +6310,7 @@ board_set_afresponcetx(int_fast8_t v)
 }
 
 #if defined(CODEC1_TYPE) && WITHAFCODEC1HAVEPROC
-// РІРєР»СЋС‡РµРЅРёРµ РѕР±СЂР°Р±РѕС‚РєРё СЃРёРіРЅР°Р»Р° СЃ РјРёРєСЂРѕС„РѕРЅР° (СЌС„С„РµРєС‚С‹, СЌРєРІР°Р»Р°Р№Р·РµСЂ, ...)
+// включение обработки сигнала с микрофона (эффекты, эквалайзер, ...)
 void
 board_set_mikeequal(uint_fast8_t n)
 {
@@ -6322,7 +6322,7 @@ board_set_mikeequal(uint_fast8_t n)
 	}
 }
 
-// Р­РєРІР°Р»Р°Р№Р·РµСЂ 80Hz 230Hz 650Hz 	1.8kHz 5.3kHz
+// Эквалайзер 80Hz 230Hz 650Hz 	1.8kHz 5.3kHz
 void board_set_mikeequalparams(const uint_fast8_t * p)
 {
 	// 
@@ -6336,7 +6336,7 @@ void board_set_mikeequalparams(const uint_fast8_t * p)
 
 #endif /* defined(CODEC1_TYPE) && WITHAFCODEC1HAVEPROC */
 
-/* РѕС‚РєР»СЋС‡РёС‚СЊ Р·РІСѓРє РІ РЅР°СѓС€РЅРёРєР°С… Рё РґРёРЅР°РјРёРєР°С… */
+/* отключить звук в наушниках и динамиках */
 void
 board_set_afmute(uint_fast8_t n)
 {
@@ -6348,14 +6348,14 @@ board_set_afmute(uint_fast8_t n)
 	}
 }
 
-// РџР°СЂР°РјРµС‚СЂ РґР»СЏ СѓСЃС‚Р°РЅРѕРІРєРё СЂРµР¶РёРјР° СЂР°Р±РѕС‚С‹ РїСЂРёС‘РјРЅРёРєР° A/РїРµСЂРµРґР°С‚С‡РёРєР° A
+// Параметр для установки режима работы приёмника A/передатчика A
 void
 board_set_dspmode(uint_fast8_t v)
 {
 	if (glob_dspmodes [glob_trxpath] != v)
 	{
 		glob_dspmodes [glob_trxpath] = v;
-		board_flt1regchanged();		// РїР°СЂР°РјРµС‚СЂС‹ СЌС‚РѕР№ С„СѓРЅРєС†РёРё РёСЃРїРѕР»СЊР·СѓСЋС‚СЃСЏ РІ audio_update();
+		board_flt1regchanged();		// параметры этой функции используются в audio_update();
 	}
 }
 
@@ -6368,70 +6368,70 @@ void board_set_lo6(int_fast32_t f)
 	}
 }
 
-/* РЈСЃС‚Р°РЅРѕРІРєР° С‡Р°СЃС‚РѕС‚С‹ СЃСЂРµР·Р° С„РёР»СЊС‚СЂРѕРІ РџР§ РІ Р°Р»РіРѕСЂРёС‚РјРµ РЈРёРІРµСЂР° - РїР°СЂР°РјРµС‚СЂ РїРѕР»РЅР°СЏ РїРѕР»РѕСЃР° РїСЂРѕРїСѓСЃРєР°РЅРёСЏ */
+/* Установка частоты среза фильтров ПЧ в алгоритме Уивера - параметр полная полоса пропускания */
 void board_set_fullbw6(int_fast16_t n)
 {
 	if (glob_fullbw6 [glob_trxpath] != n)
 	{
 		glob_fullbw6 [glob_trxpath] = n;
-		board_flt1regchanged();	// РїР°СЂР°РјРµС‚СЂС‹ СЌС‚РѕР№ С„СѓРЅРєС†РёРё РёСЃРїРѕР»СЊР·СѓСЋС‚СЃСЏ РІ audio_update();
+		board_flt1regchanged();	// параметры этой функции используются в audio_update();
 	}
 }
 
 #if 0
-/* РљРѕРґ СѓРїСЂР°РІР»РµРЅРёСЏ СЃРіР»Р°Р¶РёРІР°РЅРёРµРј СЃРєР°С‚РѕРІ С„РёР»СЊС‚СЂР° РѕСЃРЅРѕРІРЅРѕР№ СЃРµР»РµРєС†РёРё РЅР° РїСЂРёС‘РјРµ */
+/* Код управления сглаживанием скатов фильтра основной селекции на приёме */
 /* WITHFILTSOFTMIN..WITHFILTSOFTMAX */
 void board_set_fltsofter(uint_fast8_t n)
 {
 	if (glob_fltsofter [glob_trxpath] != n)
 	{
 		glob_fltsofter [glob_trxpath] = n;
-		board_flt1regchanged();	// РїР°СЂР°РјРµС‚СЂС‹ СЌС‚РѕР№ С„СѓРЅРєС†РёРё РёСЃРїРѕР»СЊР·СѓСЋС‚СЃСЏ РІ audio_update();
+		board_flt1regchanged();	// параметры этой функции используются в audio_update();
 	}
 }
 #endif
 
 void 
-board_set_aflowcutrx(int_fast16_t n)	/* РќРёР¶РЅСЏСЏ С‡Р°СЃС‚РѕС‚Р° СЃСЂРµР·Р° С„РёР»СЊС‚СЂР° РќР§ РїРѕ РїСЂРёРµРјСѓ */
+board_set_aflowcutrx(int_fast16_t n)	/* Нижняя частота среза фильтра НЧ по приему */
 {
 	if (glob_aflowcutrx [glob_trxpath] != n)
 	{
 		glob_aflowcutrx [glob_trxpath] = n;
-		board_flt1regchanged();	// РїР°СЂР°РјРµС‚СЂС‹ СЌС‚РѕР№ С„СѓРЅРєС†РёРё РёСЃРїРѕР»СЊР·СѓСЋС‚СЃСЏ РІ audio_update();
+		board_flt1regchanged();	// параметры этой функции используются в audio_update();
 	}
 }
 
 void 
-board_set_afhighcutrx(int_fast16_t n)	/* Р’РµСЂС…РЅСЏСЏ С‡Р°СЃС‚РѕС‚Р° СЃСЂРµР·Р° С„РёР»СЊС‚СЂР° РќР§ РїРѕ РїСЂРёРµРјСѓ */
+board_set_afhighcutrx(int_fast16_t n)	/* Верхняя частота среза фильтра НЧ по приему */
 {
 	if (glob_afhighcutrx [glob_trxpath] != n)
 	{
 		glob_afhighcutrx [glob_trxpath] = n;
-		board_flt1regchanged();	// РїР°СЂР°РјРµС‚СЂС‹ СЌС‚РѕР№ С„СѓРЅРєС†РёРё РёСЃРїРѕР»СЊР·СѓСЋС‚СЃСЏ РІ audio_update();
+		board_flt1regchanged();	// параметры этой функции используются в audio_update();
 	}
 }
 
 void 
-board_set_aflowcuttx(int_fast16_t n)	/* РќРёР¶РЅСЏСЏ С‡Р°СЃС‚РѕС‚Р° СЃСЂРµР·Р° С„РёР»СЊС‚СЂР° РќР§ РїРѕ РїРµСЂРµРґР°С‡Рµ */
+board_set_aflowcuttx(int_fast16_t n)	/* Нижняя частота среза фильтра НЧ по передаче */
 {
 	if (glob_aflowcuttx != n)
 	{
 		glob_aflowcuttx = n;
-		board_flt1regchanged();	// РїР°СЂР°РјРµС‚СЂС‹ СЌС‚РѕР№ С„СѓРЅРєС†РёРё РёСЃРїРѕР»СЊР·СѓСЋС‚СЃСЏ РІ audio_update();
+		board_flt1regchanged();	// параметры этой функции используются в audio_update();
 	}
 }
 
 void 
-board_set_afhighcuttx(int_fast16_t n)	/* Р’РµСЂС…РЅСЏСЏ С‡Р°СЃС‚РѕС‚Р° СЃСЂРµР·Р° С„РёР»СЊС‚СЂР° РќР§ РїРѕ РїРµСЂРµРґР°С‡Рµ */
+board_set_afhighcuttx(int_fast16_t n)	/* Верхняя частота среза фильтра НЧ по передаче */
 {
 	if (glob_afhighcuttx != n)
 	{
 		glob_afhighcuttx = n;
-		board_flt1regchanged();	// РїР°СЂР°РјРµС‚СЂС‹ СЌС‚РѕР№ С„СѓРЅРєС†РёРё РёСЃРїРѕР»СЊР·СѓСЋС‚СЃСЏ РІ audio_update();
+		board_flt1regchanged();	// параметры этой функции используются в audio_update();
 	}
 }
 
-/* РґРёР°РїР°Р·РѕРЅ СЂСѓС‡РЅРѕР№ СЂРµРіСѓР»РёСЂРѕРІРєРё С†РёС„СЂРѕРІРѕРіРѕ СѓСЃРёР»РµРЅРёСЏ - РјР°РєСЃРёРјР°Р»СЊРЅРѕРµ Р·РЅР°С‡РµРЅРёРµ */
+/* диапазон ручной регулировки цифрового усиления - максимальное значение */
 void
 board_set_digigainmax(uint_fast8_t v)
 {
@@ -6442,7 +6442,7 @@ board_set_digigainmax(uint_fast8_t v)
 	}
 }
 
-/* РЅР°РїСЂСЏР¶РµРЅРёРµ РЅР° AD605 (СѓРїСЂР°РІР»РµРЅРёРµ СѓСЃРёР»РµРЅРёРµРј С‚СЂР°РєС‚Р° РџР§ */
+/* напряжение на AD605 (управление усилением тракта ПЧ */
 void
 board_set_gvad605(uint_fast8_t v)
 {
@@ -6453,7 +6453,7 @@ board_set_gvad605(uint_fast8_t v)
 	}
 }
 
-// СЃРєРѕСЂРѕСЃС‚СЊ РїРµСЂРµРґР°С‡Рё СЃ С‚РѕС‡РЅРѕСЃС‚СЊСЋ 1/100 Р±РѕРґ
+// скорость передачи с точностью 1/100 бод
 void
 board_set_modem_speed100(uint_fast32_t v)
 {
@@ -6464,7 +6464,7 @@ board_set_modem_speed100(uint_fast32_t v)
 	}
 }
 
-// РїСЂРёРјРµРЅСЏРµРјР°СЏ РјРѕРґСѓР»СЏС†РёСЏ
+// применяемая модуляция
 void
 board_set_modem_mode(uint_fast8_t v)
 {
@@ -6475,7 +6475,7 @@ board_set_modem_mode(uint_fast8_t v)
 	}
 }
 
-// Р›РµРІС‹Р№/РїСЂР°РІС‹Р№, A - main RX, B - sub RX
+// Левый/правый, A - main RX, B - sub RX
 void board_set_mainsubrxmode(uint_fast8_t v)
 {
 	glob_mainsubrxmode = v;
@@ -6483,7 +6483,7 @@ void board_set_mainsubrxmode(uint_fast8_t v)
 
 #if WITHSPISLAVE
 
-// РІС‹Р·С‹РІР°РµС‚СЃСЏ РёР· РїСЂРµСЂС‹РІР°РЅРёСЏ РґР»СЏ РѕР±СЂР°Р±РѕС‚РєРё РїСЂРёРЅСЏС‚РѕРіРѕ Р±Р»РѕРєР° РґР°РЅРЅС‹С…
+// вызывается из прерывания для обработки принятого блока данных
 void hardware_spi_slave_callback(uint8_t * buff, uint_fast8_t len)
 {
 	if (len == DSPCTL_BUFSIZE)
@@ -6502,7 +6502,7 @@ void hardware_spi_slave_callback(uint8_t * buff, uint_fast8_t len)
 		board_set_agc_t2(buff [DSPCTL_OFFSET_AGC_T2]);
 		board_set_agc_t4(buff [DSPCTL_OFFSET_AGC_T4]);
 		board_set_agc_thung(buff [DSPCTL_OFFSET_AGC_THUNG]);
-		board_set_agcrate(buff [DSPCTL_OFFSET_AGCRATE]);	// РЅР° n РґРµС†РёР±РµР» РёР·РјРµРЅРµРЅРёСЏ РІС…РѕРґРЅРѕРіРѕ СЃРёРіРЅР°Р»Р° 1 РґР‘ РІС‹С…РѕРґРЅРѕРіРѕ. UINT8_MAX - "РїР»РѕСЃРєР°СЏ" РђР РЈ
+		board_set_agcrate(buff [DSPCTL_OFFSET_AGCRATE]);	// на n децибел изменения входного сигнала 1 дБ выходного. UINT8_MAX - "плоская" АРУ
 	
 		board_set_mik1level(buff [DSPCTL_OFFSET_MICLEVEL_HI] * 256 + buff [DSPCTL_OFFSET_MICLEVEL_LO]);
 		board_set_nfm_sql_lelel(buff [DSPCTL_OFFSET_NFMSQLLEVEL]);

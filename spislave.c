@@ -1,11 +1,11 @@
 /* $Id$ */
 //
-// ÐŸÑ€Ð¾ÐµÐºÑ‚ HF Dream Receiver (ÐšÐ’ Ð¿Ñ€Ð¸Ñ‘Ð¼Ð½Ð¸Ðº Ð¼ÐµÑ‡Ñ‚Ñ‹)
-// Ð°Ð²Ñ‚Ð¾Ñ€ Ð“ÐµÐ½Ð° Ð—Ð°Ð²Ð¸Ð´Ð¾Ð²ÑÐºÐ¸Ð¹ mgs2001@mail.ru
+// Ïðîåêò HF Dream Receiver (ÊÂ ïðè¸ìíèê ìå÷òû)
+// àâòîð Ãåíà Çàâèäîâñêèé mgs2001@mail.ru
 // UA1ARN
 //
 
-#include "hardware.h"	/* Ð·Ð°Ð²Ð¸ÑÑÑ‰Ð¸Ðµ Ð¾Ñ‚ Ð¿Ñ€Ð¾Ñ†ÐµÑÑÐ¾Ñ€Ð° Ñ„ÑƒÐ½ÐºÑ†Ð¸Ð¸ Ñ€Ð°Ð±Ð¾Ñ‚Ñ‹ Ñ Ð¿Ð¾Ñ€Ñ‚Ð°Ð¼Ð¸ */
+#include "hardware.h"	/* çàâèñÿùèå îò ïðîöåññîðà ôóíêöèè ðàáîòû ñ ïîðòàìè */
 #include "spifuncs.h"
 #include "board.h"
 
@@ -24,13 +24,13 @@ static uint8_t spi3rxbuf16 [DSPCTL_BUFSIZE];
 
 #if CPUSTYLE_STM32F4XX
 
-/* DMA Ð´Ð»Ñ Ð¿Ñ€Ñ‘Ð¼Ð° Ð¿Ð¾ SPI3 */
+/* DMA äëÿ ïð¸ìà ïî SPI3 */
 // RX	SPI3	DMA1	Stream 0	Channel 0
 
 static void DMA1_SPI3_RX_initialize(void)
 {
 	/* SPI3_RX - Stream0, Channel0 */ 
-	RCC->AHB1ENR |= RCC_AHB1ENR_DMA1EN;//Ð²ÐºÐ»ÑŽÑ‡Ð¸Ð» DMA1 
+	RCC->AHB1ENR |= RCC_AHB1ENR_DMA1EN;//âêëþ÷èë DMA1 
 	__DSB();
 
 #if CPUSTYLE_STM32H7XX
@@ -44,18 +44,18 @@ static void DMA1_SPI3_RX_initialize(void)
 
 	DMA1_Stream0->FCR &= ~ DMA_SxFCR_DMDIS;	// use direct mode
 	DMA1_Stream0->CR =
-		(ch * DMA_SxCR_CHSEL_0) |	//ÐºÐ°Ð½Ð°Ð»
+		(ch * DMA_SxCR_CHSEL_0) |	//êàíàë
 		(0 * DMA_SxCR_MBURST_0) |	// 0: single transfer
 		(0 * DMA_SxCR_PBURST_0) |	// 0: single transfer
 		(0 * DMA_SxCR_DIR_0) |	// 00: Peripheral-to-memory
-		(1 * DMA_SxCR_MINC) |	//Ð¸Ð½ÐºÑ€ÐµÐ¼ÐµÐ½Ñ‚ Ð¿Ð°Ð¼ÑÑ‚Ð¸
-		(0 * DMA_SxCR_MSIZE_0) | //Ð´Ð»Ð¸Ð½Ð° Ð² Ð¿Ð°Ð¼ÑÑ‚Ð¸ - 8 bit
-		(0 * DMA_SxCR_PSIZE_0) | //Ð´Ð»Ð¸Ð½Ð° Ð² DR - 8 bit
+		(1 * DMA_SxCR_MINC) |	//èíêðåìåíò ïàìÿòè
+		(0 * DMA_SxCR_MSIZE_0) | //äëèíà â ïàìÿòè - 8 bit
+		(0 * DMA_SxCR_PSIZE_0) | //äëèíà â DR - 8 bit
 		(0 * DMA_SxCR_PL_0) |		// Priority level - low
 		(0 * DMA_SxCR_CT) | // M0AR selected
 		0;
 
-	// ÐŸÐ¾Ð´Ð³Ð¾Ñ‚Ð¾Ð²ÐºÐ° DMA Ðº ÑÐ»ÐµÐ´ÑƒÑŽÑ‰ÐµÐ¼Ñƒ Ð¿Ñ€Ð¸Ñ‘Ð¼Ñƒ Ñ Ð½Ð°Ñ‡Ð°Ð»Ð° Ð±ÑƒÑ„ÐµÑ€Ð°
+	// Ïîäãîòîâêà DMA ê ñëåäóþùåìó ïðè¸ìó ñ íà÷àëà áóôåðà
 	DMA1_Stream0->M0AR = (uint32_t) spi3rxbuf16;
 	//DMA1_Stream0->M1AR = (uint32_t) spi3rxbuf16_1;
 	DMA1_Stream0->NDTR = (DMA1_Stream0->NDTR & ~ DMA_SxNDT) |
@@ -64,7 +64,7 @@ static void DMA1_SPI3_RX_initialize(void)
 
 }
 
-// todo: Ñ€Ð°Ð·Ð¾Ð±Ñ€Ð°Ñ‚ÑŒÑÑ Ñ Ð·Ð°Ð¿Ð¾Ð»Ð½ÐµÐ½Ð¸ÐµÐ¼ Ð±ÑƒÑ„ÐµÑ€Ð°, ÐµÑÐ»Ð¸ Ð¾Ð¶Ð¸Ð´Ð°ÐµÐ¼ Ð¼ÐµÐ½ÑŒÑˆÐµ, Ñ‡ÐµÐ¼ Ð½Ð°Ð¼ Ð¿ÐµÑ€ÐµÐ´Ð°Ð»Ð¸.
+// todo: ðàçîáðàòüñÿ ñ çàïîëíåíèåì áóôåðà, åñëè îæèäàåì ìåíüøå, ÷åì íàì ïåðåäàëè.
 static RAMFUNC void stm32fxxx_pinirq_SPISLAVE(portholder_t pr)
 {
 	if ((pr & EXTI_PR_PR15) != 0)
@@ -72,25 +72,25 @@ static RAMFUNC void stm32fxxx_pinirq_SPISLAVE(portholder_t pr)
 		const unsigned len = DSPCTL_BUFSIZE - DMA1_Stream0->NDTR;
 		if ((DMA1->LISR & DMA_LISR_TCIF0) != 0)
 		{
-			// DMA Ð´Ð¾Ð¿ÐµÑ€ÐµÐ´Ð°Ð²Ð°Ð» Ð´Ð¾ ÐºÐ¾Ð½Ñ†Ð°, Ð²Ð¾Ð·Ð¼Ð¾Ð¶Ð½Ð¾ ÐµÑÑ‚ÑŒ ÑÐ¸Ð¼Ð²Ð¾Ð»Ñ‹ Ð² Ð±ÑƒÑ„ÐµÑ€Ðµ SPI
+			// DMA äîïåðåäàâàë äî êîíöà, âîçìîæíî åñòü ñèìâîëû â áóôåðå SPI
 			while ((SPI3->SR & SPI_SR_RXNE) != 0)	
 				(void) SPI3->DR;
-			DMA1->LIFCR = DMA_LIFCR_CTCIF0;		// ÑÐ±Ñ€Ð¾ÑÐ¸Ð» Ñ„Ð»Ð°Ð³ - DMA Ð³Ð¾Ñ‚Ð¾Ð²Ð¾ Ð½Ð°Ñ‡Ð¸Ð½Ð°Ñ‚ÑŒ Ñ Ð½Ð°Ñ‡Ð°Ð»Ð°
+			DMA1->LIFCR = DMA_LIFCR_CTCIF0;		// ñáðîñèë ôëàã - DMA ãîòîâî íà÷èíàòü ñ íà÷àëà
 		}
 		else
 		{
-			// DMA ÐµÑ‰Ñ‘ Ð¼Ð¾Ð¶ÐµÑ‚ Ð¿ÐµÑ€ÐµÐ´Ð°Ð²Ð°Ñ‚ÑŒ
-			// ÐÐ°Ð´Ð¾ Ð¿Ñ€Ð¸Ð²ÐµÑÑ‚Ð¸ Ð² Ð½Ð°Ñ‡Ð°Ð»ÑŒÐ½Ð¾Ðµ ÑÐ¾ÑÑ‚Ð¾ÑÐ½Ð¸Ðµ
+			// DMA åù¸ ìîæåò ïåðåäàâàòü
+			// Íàäî ïðèâåñòè â íà÷àëüíîå ñîñòîÿíèå
 			DMA1_Stream0->CR &= ~ DMA_SxCR_EN;
 			while ((DMA1_Stream0->CR &  DMA_SxCR_EN) != 0)
 				;
 		}
-		DMA1_Stream0->CR |= DMA_SxCR_EN;	// Ð¿ÐµÑ€ÐµÐ·Ð°Ð¿ÑƒÑÐº DMA
+		DMA1_Stream0->CR |= DMA_SxCR_EN;	// ïåðåçàïóñê DMA
 		hardware_spi_slave_callback(spi3rxbuf16, len);
 	}
 }
 
-// ÐŸÑ€ÐµÑ€Ñ‹Ð²Ð°Ð½Ð¸Ðµ Ð¿Ð¾ Ð½Ð°Ñ€Ð°ÑÑ‚Ð°ÑŽÑ‰ÐµÐ¼Ñƒ Ñ„Ñ€Ð¾Ð½Ñ‚Ñƒ Ð½Ð° PA15
+// Ïðåðûâàíèå ïî íàðàñòàþùåìó ôðîíòó íà PA15
 void EXTI15_10_IRQHandler(void)
 {
 	const portholder_t pr = EXTI->PR & (EXTI_IMR_MR15 | EXTI_IMR_MR14 | EXTI_IMR_MR14 | EXTI_IMR_MR12 | EXTI_IMR_MR11 | EXTI_IMR_MR10);
@@ -103,39 +103,39 @@ void EXTI15_10_IRQHandler(void)
 
 
 #if CPUSTYLE_AT91SAM7S || CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
-	static portholder_t csr_val [SPIC_MODES_COUNT];	/* Ð´Ð»Ñ spi mode0..mode3 */
-	static portholder_t csr_val16w [SPIC_MODES_COUNT];	/* Ð´Ð»Ñ spi mode0..mode3 Ð² Ñ€ÐµÐ¶Ð¸Ð¼Ðµ 16-Ñ‚Ð¸ Ð±Ð¸Ñ‚Ð½Ñ‹Ñ… ÑÐ»Ð¾Ð². */
+	static portholder_t csr_val [SPIC_MODES_COUNT];	/* äëÿ spi mode0..mode3 */
+	static portholder_t csr_val16w [SPIC_MODES_COUNT];	/* äëÿ spi mode0..mode3 â ðåæèìå 16-òè áèòíûõ ñëîâ. */
 #elif CPUSTYLE_STM32F1XX || CPUSTYLE_STM32F4XX
-	static portholder_t cr1_val [SPIC_MODES_COUNT];	/* Ð´Ð»Ñ spi mode0..mode3 */
-	static portholder_t cr1_val16w [SPIC_MODES_COUNT];	/* Ð´Ð»Ñ spi mode0..mode3 Ð² Ñ€ÐµÐ¶Ð¸Ð¼Ðµ 16-Ñ‚Ð¸ Ð±Ð¸Ñ‚Ð½Ñ‹Ñ… ÑÐ»Ð¾Ð². */
+	static portholder_t cr1_val [SPIC_MODES_COUNT];	/* äëÿ spi mode0..mode3 */
+	static portholder_t cr1_val16w [SPIC_MODES_COUNT];	/* äëÿ spi mode0..mode3 â ðåæèìå 16-òè áèòíûõ ñëîâ. */
 #elif CPUSTYLE_STM32F30X
-	static portholder_t cr1_val [SPIC_MODES_COUNT];	/* Ð´Ð»Ñ spi mode0..mode3 */
+	static portholder_t cr1_val [SPIC_MODES_COUNT];	/* äëÿ spi mode0..mode3 */
 #elif CPUSTYLE_ATMEGA
-	static portholder_t spcr_val [SPIC_MODES_COUNT];	/* Ð´Ð»Ñ spi mode0..mode3 */
+	static portholder_t spcr_val [SPIC_MODES_COUNT];	/* äëÿ spi mode0..mode3 */
 	static portholder_t spsr_val ;
 #elif CPUSTYLE_ATXMEGA
-	static portholder_t spi_ctl_val [SPIC_MODES_COUNT];	/* Ð´Ð»Ñ spi mode0..mode3 */
+	static portholder_t spi_ctl_val [SPIC_MODES_COUNT];	/* äëÿ spi mode0..mode3 */
 #elif CPUSTYLE_R7S721
-	static portholder_t spi_spcmd_val [SPIC_MODES_COUNT];	/* Ð´Ð»Ñ spi mode0..mode3 */
-	static portholder_t spi_spcmd_val16w [SPIC_MODES_COUNT];	/* Ð´Ð»Ñ spi mode0..mode3 */
+	static portholder_t spi_spcmd_val [SPIC_MODES_COUNT];	/* äëÿ spi mode0..mode3 */
+	static portholder_t spi_spcmd_val16w [SPIC_MODES_COUNT];	/* äëÿ spi mode0..mode3 */
 #endif /* */
 
-/* Ð¸Ð½Ð¸Ñ†Ð¸Ð°Ð»Ð¸Ð·Ð°Ñ†Ð¸Ñ Ð¸ Ð¿ÐµÑ€ÐµÐ²Ð¾Ð´ Ð² ÑÐ¾ÑÑ‚Ð¾ÑÐ½Ð¸Ðµ "Ð¾Ñ‚ÐºÐ»ÑŽÑ‡ÐµÐ½Ð¾" */
-// Ð²Ñ‹Ð·Ñ‹Ð²Ð°ÐµÑ‚ÑÑ Ð¿Ñ€Ð¸ Ð·Ð°Ð¿Ñ€ÐµÑ‰Ñ‘Ð½Ð½Ñ‹Ñ… Ð¿Ñ€ÐµÑ€Ñ‹Ð²Ð°Ð½Ð¸ÑÑ….
+/* èíèöèàëèçàöèÿ è ïåðåâîä â ñîñòîÿíèå "îòêëþ÷åíî" */
+// âûçûâàåòñÿ ïðè çàïðåù¸ííûõ ïðåðûâàíèÿõ.
 void hardware_spi_slave_initialize(void)		
 {
 #if CPUSTYLE_STM32F4XX
 
 #if CPUSTYLE_STM32H7XX
-	RCC->APB1LENR |= RCC_APB1LENR_SPI3EN; // ÐŸÐ¾Ð´Ð°Ñ‚ÑŒ Ñ‚Ð°ÐºÑ‚Ð¸Ñ€Ð¾Ð²Ð°Ð½Ð¸Ðµ   
+	RCC->APB1LENR |= RCC_APB1LENR_SPI3EN; // Ïîäàòü òàêòèðîâàíèå   
 	__DSB();
 #else /* CPUSTYLE_STM32H7XX */
-	RCC->APB1ENR |= RCC_APB1ENR_SPI3EN; // ÐŸÐ¾Ð´Ð°Ñ‚ÑŒ Ñ‚Ð°ÐºÑ‚Ð¸Ñ€Ð¾Ð²Ð°Ð½Ð¸Ðµ   
+	RCC->APB1ENR |= RCC_APB1ENR_SPI3EN; // Ïîäàòü òàêòèðîâàíèå   
 	__DSB();
 #endif /* CPUSTYLE_STM32H7XX */
 
-	SPI3->CR1 = 0x0000;             //Ð¾Ñ‡Ð¸ÑÑ‚Ð¸Ñ‚ÑŒ Ð¿ÐµÑ€Ð²Ñ‹Ð¹ ÑƒÐ¿Ñ€Ð°Ð²Ð»ÑÑŽÑ‰Ð¸Ð¹ Ñ€ÐµÐ³Ð¸ÑÑ‚Ñ€
-	SPI3->CR2 = 0x0000;             //Ð¾Ñ‡Ð¸ÑÑ‚Ð¸Ñ‚ÑŒ Ð²Ñ‚Ð¾Ñ€Ð¾Ð¹ ÑƒÐ¿Ñ€Ð°Ð²Ð»ÑÑŽÑ‰Ð¸Ð¹ Ñ€ÐµÐ³Ð¸ÑÑ‚Ñ€
+	SPI3->CR1 = 0x0000;             //î÷èñòèòü ïåðâûé óïðàâëÿþùèé ðåãèñòð
+	SPI3->CR2 = 0x0000;             //î÷èñòèòü âòîðîé óïðàâëÿþùèé ðåãèñòð
 
 	DMA1_SPI3_RX_initialize();		// ch=0, DMAMUX=61
 #if CPUSTYLE_STM32H7XX
@@ -149,15 +149,15 @@ void hardware_spi_slave_initialize(void)
 	const uint_fast32_t cr1bitsslave    = SPI_CR1_SPE;
 	const uint_fast32_t cr1bits16wslave = cr1bitsslave | SPI_CR1_DFF;
 
-	// Ð¿Ð¾Ð´Ð³Ð¾Ñ‚Ð¾Ð²ÐºÐ° ÑƒÐ¿Ñ€Ð°Ð²Ð»ÑÑŽÑ‰Ð¸Ñ… ÑÐ»Ð¾Ð² Ð´Ð»Ñ Ñ€Ð°Ð·Ð½Ñ‹Ñ… spi mode, Ð¸ÑÐ¿Ð¾Ð»ÑŒÐ·ÑƒÐµÐ¼Ñ‹Ñ… ÐºÐ¾Ð½Ñ‚Ñ€Ð¾Ð»Ð»ÐµÑ€Ð¾Ð¼.
-	// 8-Ð±Ð¸Ñ‚Ð½Ð°Ñ Ð¿ÐµÑ€ÐµÐ´Ð°Ñ‡Ð°
+	// ïîäãîòîâêà óïðàâëÿþùèõ ñëîâ äëÿ ðàçíûõ spi mode, èñïîëüçóåìûõ êîíòðîëëåðîì.
+	// 8-áèòíàÿ ïåðåäà÷à
 	cr1_val [SPIC_MODE0] = cr1bitsslave;					// TODO: not tested
 	cr1_val [SPIC_MODE1] = cr1bitsslave | SPI_CR1_CPHA;	// TODO: not tested
 	cr1_val [SPIC_MODE2] = cr1bitsslave | SPI_CR1_CPOL;	// CLK leave HIGH	
 	cr1_val [SPIC_MODE3] = cr1bitsslave | SPI_CR1_CPOL | SPI_CR1_CPHA; // wrk = CLK leave "HIGH"
 
-	// Ð¿Ð¾Ð´Ð³Ð¾Ñ‚Ð¾Ð²ÐºÐ° ÑƒÐ¿Ñ€Ð°Ð²Ð»ÑÑŽÑ‰Ð¸Ñ… ÑÐ»Ð¾Ð² Ð´Ð»Ñ Ñ€Ð°Ð·Ð½Ñ‹Ñ… spi mode, Ð¸ÑÐ¿Ð¾Ð»ÑŒÐ·ÑƒÐµÐ¼Ñ‹Ñ… ÐºÐ¾Ð½Ñ‚Ñ€Ð¾Ð»Ð»ÐµÑ€Ð¾Ð¼.
-	// 16-Ð±Ð¸Ñ‚Ð½Ð°Ñ Ð¿ÐµÑ€ÐµÐ´Ð°Ñ‡Ð°
+	// ïîäãîòîâêà óïðàâëÿþùèõ ñëîâ äëÿ ðàçíûõ spi mode, èñïîëüçóåìûõ êîíòðîëëåðîì.
+	// 16-áèòíàÿ ïåðåäà÷à
 	cr1_val16w [SPIC_MODE0] = cr1bits16wslave;
 	cr1_val16w [SPIC_MODE1] = cr1bits16wslave | SPI_CR1_CPHA;
 	cr1_val16w [SPIC_MODE2] = cr1bits16wslave | SPI_CR1_CPOL;	// CLK leave HIGH	
@@ -175,11 +175,11 @@ void hardware_spi_slave_initialize(void)
 #endif
 }
 
-// Ð²Ñ‹Ð·Ñ‹Ð²Ð°ÐµÑ‚ÑÑ Ð¿Ñ€Ð¸ Ñ€Ð°Ð·Ñ€ÐµÑˆÑ‘Ð½Ð½Ñ‹Ñ… Ð¿Ñ€ÐµÑ€Ñ‹Ð²Ð°Ð½Ð¸ÑÑ….
+// âûçûâàåòñÿ ïðè ðàçðåø¸ííûõ ïðåðûâàíèÿõ.
 void hardware_spi_slave_enable(uint_fast8_t spimode)		
 {
 #if CPUSTYLE_STM32F4XX
-	// ÐŸÐµÑ€ÐµÐºÐ»ÑŽÑ‡ÐµÐ½Ð¸Ðµ Ð² Ñ€ÐµÐ¶Ð¸Ð¼ Ð¿Ñ€Ð¸Ñ‘Ð¼Ð° - 8 Ð±Ð¸Ñ‚
+	// Ïåðåêëþ÷åíèå â ðåæèì ïðè¸ìà - 8 áèò
 	SPI3->CR1 = cr1_val [spimode];
 
 #else

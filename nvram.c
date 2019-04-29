@@ -1,7 +1,7 @@
 /* $Id$ */
 //
-// РџСЂРѕРµРєС‚ HF Dream Receiver (РљР’ РїСЂРёС‘РјРЅРёРє РјРµС‡С‚С‹)
-// Р°РІС‚РѕСЂ Р“РµРЅР° Р—Р°РІРёРґРѕРІСЃРєРёР№ mgs2001@mail.ru
+// Проект HF Dream Receiver (КВ приёмник мечты)
+// автор Гена Завидовский mgs2001@mail.ru
 // UA1ARN
 //
 
@@ -31,35 +31,35 @@
 	#error NVRAM_TYPE or NVRAM_END not defined here
 #endif
 
-// РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ РїСЂРѕРІРµСЂРєРё РїРµСЂРµРґ СЂР°Р±РѕС‚РѕР№ СЃ FRAM РЅРµ С‚СЂРµР±СѓРµС‚СЃСЏ,
-// РєСЂРѕРјРµ С‚РѕРіРѕ РїСЂРё РѕС‚СЃСѓС‚СЃС‚РІСѓСЋС‰РµР№ РјРёРєСЂРѕСЃС…РµРјРµ BUSY РІСЃРµРіРґР° Р±СѓРґРµС‚ РІ "1" - РїСЂРѕРіСЂР°РјРјР° Р±СѓРґРµС‚ РІРёСЃРµС‚СЊ Р±РµР· РґРёР°РіРЅРѕСЃС‚РёРєРё.
+// Использование проверки перед работой с FRAM не требуется,
+// кроме того при отсутствующей микросхеме BUSY всегда будет в "1" - программа будет висеть без диагностики.
 
 #if \
 	NVRAM_TYPE == NVRAM_TYPE_FM25L04 ||		/* SERIAL FRAM 4KBit	*/ \
 	0
-	static const uint_fast8_t nvram_abytes = 0;		/* 0 - 1 Р±Р°Р№С‚ Р°РґСЂРµСЃР°, 1 - РґРІР° Р±Р°Р№С‚Р° Р°РґСЂРµСЃР°, 2 - С‚СЂРё Р±Р°Р№С‚Р° Р°РґСЂРµСЃР° */
-	static const uint_fast8_t nvram_chstatus = 0;	/* 0 - fram - РЅРµС‚ РЅСѓР¶РґС‹ РїСЂРѕРІРµСЂСЏС‚СЊ СЃС‚Р°С‚СѓСЃ Рё СЂР°Р·Р±РёРІР°С‚СЊ Р·Р°РїРёСЃСЊ РЅР° СЃС‚СЂР°РЅРёС†С‹ */
+	static const uint_fast8_t nvram_abytes = 0;		/* 0 - 1 байт адреса, 1 - два байта адреса, 2 - три байта адреса */
+	static const uint_fast8_t nvram_chstatus = 0;	/* 0 - fram - нет нужды проверять статус и разбивать запись на страницы */
 #elif \
 	NVRAM_TYPE == NVRAM_TYPE_FM25L16 ||		/* SERIAL FRAM 16Kbit	*/ \
 	NVRAM_TYPE == NVRAM_TYPE_FM25L64 ||		/* SERIAL FRAM 64Kbit	*/ \
 	NVRAM_TYPE == NVRAM_TYPE_FM25L256 ||	/* SERIAL FRAM 256KBit	*/ \
 	0
-	static const uint_fast8_t nvram_abytes = 1;		/* 0 - 1 Р±Р°Р№С‚ Р°РґСЂРµСЃР°, 1 - РґРІР° Р±Р°Р№С‚Р° Р°РґСЂРµСЃР°, 2 - С‚СЂРё Р±Р°Р№С‚Р° Р°РґСЂРµСЃР° */
-	static const uint_fast8_t nvram_chstatus = 0;	/* 0 - fram - РЅРµС‚ РЅСѓР¶РґС‹ РїСЂРѕРІРµСЂСЏС‚СЊ СЃС‚Р°С‚СѓСЃ Рё СЂР°Р·Р±РёРІР°С‚СЊ Р·Р°РїРёСЃСЊ РЅР° СЃС‚СЂР°РЅРёС†С‹ */
+	static const uint_fast8_t nvram_abytes = 1;		/* 0 - 1 байт адреса, 1 - два байта адреса, 2 - три байта адреса */
+	static const uint_fast8_t nvram_chstatus = 0;	/* 0 - fram - нет нужды проверять статус и разбивать запись на страницы */
 #elif \
 	NVRAM_TYPE == NVRAM_TYPE_AT25040A ||	/* SERIAL EEPROM 4KBit	*/ \
 	0
-	static const uint_fast8_t nvram_abytes = 0;		/* 0 - 1 Р±Р°Р№С‚ Р°РґСЂРµСЃР°, 1 - РґРІР° Р±Р°Р№С‚Р° Р°РґСЂРµСЃР°, 2 - С‚СЂРё Р±Р°Р№С‚Р° Р°РґСЂРµСЃР° */
-	static const uint_fast8_t nvram_chstatus = 1;	/* 0 - fram - РЅРµС‚ РЅСѓР¶РґС‹ РїСЂРѕРІРµСЂСЏС‚СЊ СЃС‚Р°С‚СѓСЃ Рё СЂР°Р·Р±РёРІР°С‚СЊ Р·Р°РїРёСЃСЊ РЅР° СЃС‚СЂР°РЅРёС†С‹ */
+	static const uint_fast8_t nvram_abytes = 0;		/* 0 - 1 байт адреса, 1 - два байта адреса, 2 - три байта адреса */
+	static const uint_fast8_t nvram_chstatus = 1;	/* 0 - fram - нет нужды проверять статус и разбивать запись на страницы */
 #elif \
 	NVRAM_TYPE == NVRAM_TYPE_AT25L16 ||		/* SERIAL EEPROM 16Kbit	*/ \
 	NVRAM_TYPE == NVRAM_TYPE_AT25256A ||	/* SERIAL EEPROM 256KBit */ \
 	0
-	static const uint_fast8_t nvram_abytes = 1;		/* 0 - 1 Р±Р°Р№С‚ Р°РґСЂРµСЃР°, 1 - РґРІР° Р±Р°Р№С‚Р° Р°РґСЂРµСЃР°, 2 - С‚СЂРё Р±Р°Р№С‚Р° Р°РґСЂРµСЃР° */
-	static const uint_fast8_t nvram_chstatus = 1;	/* 0 - fram - РЅРµС‚ РЅСѓР¶РґС‹ РїСЂРѕРІРµСЂСЏС‚СЊ СЃС‚Р°С‚СѓСЃ */
+	static const uint_fast8_t nvram_abytes = 1;		/* 0 - 1 байт адреса, 1 - два байта адреса, 2 - три байта адреса */
+	static const uint_fast8_t nvram_chstatus = 1;	/* 0 - fram - нет нужды проверять статус */
 #elif NVRAM_TYPE == NVRAM_TYPE_FM25XXXX 	/* SERIAL FRAM autodetect	*/
-	static uint_fast8_t nvram_abytes = 0;		/* 0 - 1 Р±Р°Р№С‚ Р°РґСЂРµСЃР°, 1 - РґРІР° Р±Р°Р№С‚Р° Р°РґСЂРµСЃР°, 2 - С‚СЂРё Р±Р°Р№С‚Р° Р°РґСЂРµСЃР° */
-	static const uint_fast8_t nvram_chstatus = 0;	/* 1 - eeprom - РЅР°РґРѕ РїСЂРѕРІРµСЂСЏС‚СЊ СЃС‚Р°С‚СѓСЃ Рё СЂР°Р·Р±РёРІР°С‚СЊ Р·Р°РїРёСЃСЊ РЅР° СЃС‚СЂР°РЅРёС†С‹ */
+	static uint_fast8_t nvram_abytes = 0;		/* 0 - 1 байт адреса, 1 - два байта адреса, 2 - три байта адреса */
+	static const uint_fast8_t nvram_chstatus = 0;	/* 1 - eeprom - надо проверять статус и разбивать запись на страницы */
 	void
 	nvram_set_abytes(uint_fast8_t v)
 	{
@@ -105,12 +105,12 @@ eeprom_writeenable(
 	spitarget_t target	/* addressing to chip */
 	)
 {
-	// +++ Р РђР—Р Р•РЁР•РќРР• Р—РђРџРРЎР
+	// +++ РАЗРЕШЕНИЕ ЗАПИСИ
 	spi_select(target, NVRAM_SPIMODE);	/* start sending data to target chip */
 	spi_progval8_p1(target, WREN);		/* set write-enable latch */
 	spi_complete(target);
 	spi_unselect(target);	/* done sending data to target chip */
-	// --- Р РђР—Р Р•РЁР•РќРР• Р—РђРџРРЎР
+	// --- РАЗРЕШЕНИЕ ЗАПИСИ
 }
 
 
@@ -119,15 +119,15 @@ static void
 //NOINLINEAT
 eeprom_a1_write(
 	spitarget_t target,	/* addressing to chip */
-	uint_fast16_t addr, 	/* РЅР°С‡Р°Р»СЊРЅРѕРµ СЃРјРµС‰РµРЅРёРµ РїР°РјСЏС‚Рё РґР»СЏ РѕР±РјРµРЅР° */
+	uint_fast16_t addr, 	/* начальное смещение памяти для обмена */
 	const void * data, 
-	uint_fast8_t len)	/* РєРѕР»РёС‡РµСЃС‚РІРѕ Р±Р°Р№С‚ */
+	uint_fast8_t len)	/* количество байт */
 {
 	uint_fast8_t i;
 
 
 	eeprom_writeenable(target);
-	// +++ Р—Р°РїРёСЃСЊ РґР°РЅРЅС‹С…
+	// +++ Запись данных
 	spi_select(target, NVRAM_SPIMODE);	/* start sending data to target chip */
 	spi_progval8_p1(target, (addr > 0xff) * 0x08 | WRITE);		/* write, a8=0 or a8=1 */
 	spi_progval8_p2(target, addr);
@@ -135,7 +135,7 @@ eeprom_a1_write(
 		spi_progval8_p2(target, ((const unsigned char *) data) [i]);
 	spi_complete(target);
 	spi_unselect(target);	/* done sending data to target chip */
-	// --- Р—Р°РїРёСЃСЊ РґР°РЅРЅС‹С…
+	// --- Запись данных
 }
 
 /* one byte + one bit address 512-byte chips */
@@ -268,11 +268,11 @@ eeprom_initialize(
 	// VDD(min) to First Access Start - 10 mS
 	local_delay_ms(20);
 
-	/* РћР¶РёРґР°РЅРёРµ Р±РёС‚Р° ~RDY РІ СЃР»РѕРІРµ СЃРѕСЃС‚РѕСЏРЅРёСЏ. Р”Р»СЏ FRAM РЅРµ РёРјРµРµС‚ СЃРјС‹СЃР»Р°.
-	Р’СЃС‚Р°РІР»РµРЅРѕ РґР»СЏ РІРѕР·РјРѕР¶РЅРѕСЃС‚Рё РёСЃРїРѕР»СЊР·РѕРІР°РЅРёСЏ EEPROM */
+	/* Ожидание бита ~RDY в слове состояния. Для FRAM не имеет смысла.
+	Вставлено для возможности использования EEPROM */
 	eeprom_wait_until_ready(target);
 
-	// РїСЂРёРЅСѓРґРёС‚РµР»СЊРЅРѕРµ "РїРµСЂРµРґС‘СЂРіРёРІР°РЅРёРµ" СЃРёРіРЅР°Р»Р° С‡РёРїСЃРµР»РµРєС‚ - СЂРµС€РµРЅРёРµ РїСЂРѕР±Р»РµРјС‹ СЃ Р·Р°РїСѓСЃРєРѕРј.
+	// принудительное "передёргивание" сигнала чипселект - решение проблемы с запуском.
 	//prog_select(targetnvram);	/* done sending data to target chip */
 	//spi_unselect(targetnvram);	/* done sending data to target chip */
 
@@ -294,8 +294,8 @@ static void
 //NOINLINEAT
 nvram_write_withinpage(uint_least16_t addr, const void * data, uint_fast8_t len)
 {
-	/* РћР¶РёРґР°РЅРёРµ Р±РёС‚Р° ~RDY РІ СЃР»РѕРІРµ СЃРѕСЃС‚РѕСЏРЅРёСЏ. Р”Р»СЏ FRAM РЅРµ РёРјРµРµС‚ СЃРјС‹СЃР»Р°.
-	Р’СЃС‚Р°РІР»РµРЅРѕ РґР»СЏ РІРѕР·РјРѕР¶РЅРѕСЃС‚Рё РёСЃРїРѕР»СЊР·РѕРІР°РЅРёСЏ EEPROM */
+	/* Ожидание бита ~RDY в слове состояния. Для FRAM не имеет смысла.
+	Вставлено для возможности использования EEPROM */
 	eeprom_wait_until_ready(targetnvram);
 
 	switch (nvram_abytes)
@@ -321,11 +321,11 @@ ui16min(uint_least16_t a, uint_least16_t b)
 
 #endif /* NVRAM_TYPE != NVRAM_TYPE_CPUEEPROM && NVRAM_TYPE != NVRAM_TYPE_BKPSRAM */
 
-/* РёРЅС‚РµСЂС„РµР№СЃРЅС‹Рµ С„СѓРЅРєС†РёРё NVRAM */
+/* интерфейсные функции NVRAM */
 
 #if CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX
 #if (NVRAM_TYPE == NVRAM_TYPE_BKPSRAM)
-	// Р Р°Р·СЂРµС€РёС‚СЊ Р·Р°РїРёСЃСЊ РІ Backup domain
+	// Разрешить запись в Backup domain
 	static void stm32f4xx_bdenable(void)
 	{
 	#if CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX
@@ -343,7 +343,7 @@ ui16min(uint_least16_t a, uint_least16_t b)
 	#endif /* CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX */
 	}
 
-	// Р—Р°РїСЂРµС‚РёС‚СЊ Р·Р°РїРёСЃСЊ РІ Backup domain
+	// Запретить запись в Backup domain
 	static void stm32f4xx_bddisable(void)
 	{
 	#if CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX
@@ -370,23 +370,23 @@ void nvram_initialize(void)
 
 	#if CPUSTYLE_STM32F
 		// RCC_APB1ENR_RTCAPBEN ???
-		RCC->APB1ENR |= RCC_APB1ENR_PWREN;	// РІРєР»СЋС‡РёС‚СЊ С‚Р°РєС‚РёСЂРѕРІР°РЅРёРµ power management
+		RCC->APB1ENR |= RCC_APB1ENR_PWREN;	// включить тактирование power management
 		__DSB();
 
 		stm32f4xx_bdenable();
-		RCC->AHB1ENR |= RCC_AHB1ENR_BKPSRAMEN;	// РІРєР»СЋС‡РёР» BKPSRAM 
+		RCC->AHB1ENR |= RCC_AHB1ENR_BKPSRAMEN;	// включил BKPSRAM 
 		__DSB();
 
 		#if defined (PWR_CSR1_BRE)
 
-			PWR->CSR1 |= PWR_CSR1_BRE;			// Р Р°Р·СЂРµС€РёС‚СЊ РїРёС‚Р°РЅРёРµ BACKUP SRAM РѕС‚ Р±Р°С‚Р°СЂРµРё РїСЂРё РІС‹РєР»СЋС‡РµРЅРЅРѕРј РїРёС‚Р°РЅРёРё РїСЂРѕС†РµСЃСЃРѕСЂР°
-			while ((PWR->CSR1 & PWR_CSR1_BRR) == 0)	// РґРѕР¶РґР°С‚СЊСЃСЏ РіРѕС‚РѕРІРЅРѕСЃС‚Рё
+			PWR->CSR1 |= PWR_CSR1_BRE;			// Разрешить питание BACKUP SRAM от батареи при выключенном питании процессора
+			while ((PWR->CSR1 & PWR_CSR1_BRR) == 0)	// дождаться готовности
 				;
 
 		#elif defined (PWR_CSR_BRE)
 
-			PWR->CSR |= PWR_CSR_BRE;			// Р Р°Р·СЂРµС€РёС‚СЊ РїРёС‚Р°РЅРёРµ BACKUP SRAM РѕС‚ Р±Р°С‚Р°СЂРµРё РїСЂРё РІС‹РєР»СЋС‡РµРЅРЅРѕРј РїРёС‚Р°РЅРёРё РїСЂРѕС†РµСЃСЃРѕСЂР°
-			while ((PWR->CSR & PWR_CSR_BRR) == 0)	// РґРѕР¶РґР°С‚СЊСЃСЏ РіРѕС‚РѕРІРЅРѕСЃС‚Рё
+			PWR->CSR |= PWR_CSR_BRE;			// Разрешить питание BACKUP SRAM от батареи при выключенном питании процессора
+			while ((PWR->CSR & PWR_CSR_BRR) == 0)	// дождаться готовности
 				;
 
 		#endif /* defined (PWR_CSR1_BRE) */
@@ -446,30 +446,30 @@ nvram_write(nvramaddress_t addr, const void * data, uint_fast8_t len)
 #else
 	if (nvram_chstatus == 0 || len == 1)
 	{
-		// СЂР°Р·Р±РёРІРєРё Р·Р°РїРёСЃРё РЅР° СЃС‚СЂР°РЅРёС†С‹ РЅРµ С‚СЂРµР±СѓРµС‚СЃСЏ - FRAM РёР»Рё Р·Р°РїРёСЃСЊ РµРґРёРЅСЃС‚РІРµРЅРЅРѕРіРѕ Р±Р°Р№С‚Р° РІ EEPROM
+		// разбивки записи на страницы не требуется - FRAM или запись единственного байта в EEPROM
 		nvram_write_withinpage(addr, data, len);
 	}
 	else
 	{
-		// Р”Р»СЏ EEPROM С‚СЂРµР±СѓРµС‚СЃСЏ СЃРѕР±Р»СЋРґР°С‚СЊ РЅРµРїРµСЂРµС…РѕРґ РѕРґРЅРѕР№ РѕРїРµСЂР°С†РёРё Р·Р°РїРёСЃРё С‡РµСЂРµР· РіСЂР°РЅРёС†С‹ СЃС‚СЂР°РЅРёС†
+		// Для EEPROM требуется соблюдать непереход одной операции записи через границы страниц
 		const uint_least16_t EEPROMPAGELENGTH = (EEPROMPAGEMASK + 1);
 		const uint8_t * const bp = data;
 		uint_least16_t score = 0;
 		if ((addr & EEPROMPAGEMASK) != 0)
 		{
-			/* Р·Р°РїРёСЃСЊ РїРµСЂРІРѕР№ СЃС‚СЂР°РЅРёС†С‹, РµСЃР»Рё РЅР°С‡Р°Р»Рѕ РЅРµ РІС‹СЂРѕРІРЅРµРЅРѕ */
+			/* запись первой страницы, если начало не выровнено */
 			score = ui16min(EEPROMPAGELENGTH - (addr & EEPROMPAGEMASK), len);
 			nvram_write_withinpage(addr, bp, score);
 		}
 		while ((len - score) >= EEPROMPAGELENGTH)
 		{
-			/* Р·Р°РїРёСЃСЊ РїРѕР»СЃР»РµРґСѓСЋС‰РёС… - РІС‹СЂРѕРІРЅРµРЅРЅС‹С… СЃС‚СЂР°РЅРёС† */
+			/* запись полследующих - выровненных страниц */
 			nvram_write_withinpage(addr + score, bp + score, EEPROMPAGELENGTH);
 			score += EEPROMPAGELENGTH;
 		}
 		if ((len - score) != 0)
 		{
-			/* Р·Р°РїРёСЃСЊ РїРѕСЃР»РµРґРЅРµР№ - РІС‹СЂРѕРІРЅРµРЅРЅРѕР№ РЅРѕ РЅРµ РїРѕР»РЅРѕР№ СЃС‚СЂР°РЅРёС†С‹ */
+			/* запись последней - выровненной но не полной страницы */
 			nvram_write_withinpage(addr + score, bp + score, len - score);
 		}
 	}
@@ -513,8 +513,8 @@ nvram_read(nvramaddress_t addr, void * data, uint_fast8_t len)
 		eeprom_busy_wait();
 		eeprom_read_block(data, (void *) addr, len);
 #else
-	/* РћР¶РёРґР°РЅРёРµ Р±РёС‚Р° ~RDY РІ СЃР»РѕРІРµ СЃРѕСЃС‚РѕСЏРЅРёСЏ. Р”Р»СЏ FRAM РЅРµ РёРјРµРµС‚ СЃРјС‹СЃР»Р°.
-	Р’СЃС‚Р°РІР»РµРЅРѕ РґР»СЏ РІРѕР·РјРѕР¶РЅРѕСЃС‚Рё РёСЃРїРѕР»СЊР·РѕРІР°РЅРёСЏ EEPROM */
+	/* Ожидание бита ~RDY в слове состояния. Для FRAM не имеет смысла.
+	Вставлено для возможности использования EEPROM */
 	eeprom_wait_until_ready(targetnvram);
 
 	switch (nvram_abytes)
@@ -537,7 +537,7 @@ nvram_read(nvramaddress_t addr, void * data, uint_fast8_t len)
 
 
 
-/* РІС‹Р±РѕСЂРєР° РїРѕ СѓРєР°Р·Р°РЅРЅРѕРјСѓ РёРЅРґРµРєСЃСѓ РёР· FRAM РѕРґРЅРѕРіРѕ Р±Р°Р№С‚Р° */
+/* выборка по указанному индексу из FRAM одного байта */
 uint_fast8_t 
 //NOINLINEAT
 restore_i8(nvramaddress_t addr)
@@ -547,7 +547,7 @@ restore_i8(nvramaddress_t addr)
 	return v;
 }
 
-/* СЃРѕС…СЂР°РЅРµРЅРёРµ РїРѕ СѓРєР°Р·Р°РЅРЅРѕРјСѓ РёРЅРґРµРєСЃСѓ РІ FRAM РѕРґРЅРѕРіРѕ Р±Р°Р№С‚Р° */
+/* сохранение по указанному индексу в FRAM одного байта */
 void 
 //NOINLINEAT
 save_i8(nvramaddress_t addr, uint8_t v)
@@ -555,7 +555,7 @@ save_i8(nvramaddress_t addr, uint8_t v)
 	nvram_write(addr, & v, sizeof v);
 }
 
-/* РІС‹Р±РѕСЂРєР° РїРѕ СѓРєР°Р·Р°РЅРЅРѕРјСѓ РёРЅРґРµРєСЃСѓ РёР· FRAM РѕРґРЅРѕРіРѕ 16-Р±РёС‚РЅРѕРіРѕ СЃР»РѕРІР° */
+/* выборка по указанному индексу из FRAM одного 16-битного слова */
 uint_fast16_t 
 //NOINLINEAT
 restore_i16(nvramaddress_t addr)
@@ -565,7 +565,7 @@ restore_i16(nvramaddress_t addr)
 	return v;
 }
 
-/* СЃРѕС…СЂР°РЅРµРЅРёРµ РїРѕ СѓРєР°Р·Р°РЅРЅРѕРјСѓ РёРЅРґРµРєСЃСѓ РІ FRAM РѕРґРЅРѕРіРѕ 16-Р±РёС‚РЅРѕРіРѕ СЃР»РѕРІР° */
+/* сохранение по указанному индексу в FRAM одного 16-битного слова */
 void 
 //NOINLINEAT
 save_i16(nvramaddress_t addr, uint16_t v)
@@ -573,7 +573,7 @@ save_i16(nvramaddress_t addr, uint16_t v)
 	nvram_write(addr, & v, sizeof v);
 }
 
-/* РІС‹Р±РѕСЂРєР° РїРѕ СѓРєР°Р·Р°РЅРЅРѕРјСѓ РёРЅРґРµРєСЃСѓ РёР· FRAM РѕРґРЅРѕРіРѕ 32-Р±РёС‚РЅРѕРіРѕ СЃР»РѕРІР° */
+/* выборка по указанному индексу из FRAM одного 32-битного слова */
 uint_fast32_t 
 //NOINLINEAT
 restore_i32(nvramaddress_t addr)
@@ -583,7 +583,7 @@ restore_i32(nvramaddress_t addr)
 	return v;
 }
 
-/* СЃРѕС…СЂР°РЅРµРЅРёРµ РїРѕ СѓРєР°Р·Р°РЅРЅРѕРјСѓ РёРЅРґРµРєСЃСѓ РІ FRAM РѕРґРЅРѕРіРѕ 32-Р±РёС‚РЅРѕРіРѕ СЃР»РѕРІР° */
+/* сохранение по указанному индексу в FRAM одного 32-битного слова */
 void 
 //NOINLINEAT
 save_i32(nvramaddress_t addr, uint32_t v)
@@ -594,7 +594,7 @@ save_i32(nvramaddress_t addr, uint32_t v)
 #else /* defined (NVRAM_TYPE) && (NVRAM_TYPE != NVRAM_TYPE_NOTHING) */
 
 #if 1
-/* РІС‹Р±РѕСЂРєР° РїРѕ СѓРєР°Р·Р°РЅРЅРѕРјСѓ РёРЅРґРµРєСЃСѓ РёР· FRAM РѕРґРЅРѕРіРѕ Р±Р°Р№С‚Р° */
+/* выборка по указанному индексу из FRAM одного байта */
 uint_fast8_t 
 //NOINLINEAT
 restore_i8(nvramaddress_t addr)
@@ -602,14 +602,14 @@ restore_i8(nvramaddress_t addr)
 	return 0;
 }
 
-/* СЃРѕС…СЂР°РЅРµРЅРёРµ РїРѕ СѓРєР°Р·Р°РЅРЅРѕРјСѓ РёРЅРґРµРєСЃСѓ РІ FRAM РѕРґРЅРѕРіРѕ Р±Р°Р№С‚Р° */
+/* сохранение по указанному индексу в FRAM одного байта */
 void 
 //NOINLINEAT
 save_i8(nvramaddress_t addr, uint8_t v)
 {
 }
 
-/* РІС‹Р±РѕСЂРєР° РїРѕ СѓРєР°Р·Р°РЅРЅРѕРјСѓ РёРЅРґРµРєСЃСѓ РёР· FRAM РѕРґРЅРѕРіРѕ 16-Р±РёС‚РЅРѕРіРѕ СЃР»РѕРІР° */
+/* выборка по указанному индексу из FRAM одного 16-битного слова */
 uint_fast16_t 
 //NOINLINEAT
 restore_i16(nvramaddress_t addr)
@@ -617,14 +617,14 @@ restore_i16(nvramaddress_t addr)
 	return 0;
 }
 
-/* СЃРѕС…СЂР°РЅРµРЅРёРµ РїРѕ СѓРєР°Р·Р°РЅРЅРѕРјСѓ РёРЅРґРµРєСЃСѓ РІ FRAM РѕРґРЅРѕРіРѕ 16-Р±РёС‚РЅРѕРіРѕ СЃР»РѕРІР° */
+/* сохранение по указанному индексу в FRAM одного 16-битного слова */
 void 
 //NOINLINEAT
 save_i16(nvramaddress_t addr, uint16_t v)
 {
 }
 
-/* РІС‹Р±РѕСЂРєР° РїРѕ СѓРєР°Р·Р°РЅРЅРѕРјСѓ РёРЅРґРµРєСЃСѓ РёР· FRAM РѕРґРЅРѕРіРѕ 32-Р±РёС‚РЅРѕРіРѕ СЃР»РѕРІР° */
+/* выборка по указанному индексу из FRAM одного 32-битного слова */
 uint_fast32_t 
 //NOINLINEAT
 restore_i32(nvramaddress_t addr)
@@ -632,7 +632,7 @@ restore_i32(nvramaddress_t addr)
 	return 0;
 }
 
-/* СЃРѕС…СЂР°РЅРµРЅРёРµ РїРѕ СѓРєР°Р·Р°РЅРЅРѕРјСѓ РёРЅРґРµРєСЃСѓ РІ FRAM РѕРґРЅРѕРіРѕ 32-Р±РёС‚РЅРѕРіРѕ СЃР»РѕРІР° */
+/* сохранение по указанному индексу в FRAM одного 32-битного слова */
 void 
 //NOINLINEAT
 save_i32(nvramaddress_t addr, uint32_t v)

@@ -1,8 +1,8 @@
 /* $Id$ */
 //
 //
-// РџСЂРѕРµРєС‚ HF Dream Receiver (РљР’ РїСЂРёС‘РјРЅРёРє РјРµС‡С‚С‹)
-// Р°РІС‚РѕСЂ Р“РµРЅР° Р—Р°РІРёРґРѕРІСЃРєРёР№ mgs2001@mail.ru
+// Проект HF Dream Receiver (КВ приёмник мечты)
+// автор Гена Завидовский mgs2001@mail.ru
 // UA1ARN
 //
 #include "hardware.h"
@@ -17,10 +17,10 @@
 #include "audio.h"
 
 //
-// РЈРїСЂР°РІР»РµРЅРёРµ РєРѕРґРµРєРѕРј CS4272
+// Управление кодеком CS4272
 //
-// Р’ slave mode РґР°РЅРЅС‹Р№ РєРѕРґРµРє РёР·РјРµРЅСЏРµС‚ РІС‹РґР°РІР°РµС‚РјС‹Рµ РґР°РЅРЅС‹Рµ РїРѕ СЃРїР°РґР°СЋС‰РµРј С„СЂРѕРЅС‚Сѓ СЃРёРіРЅР°Р»Р° SCLK.
-// РЎСѓРґСЏ РїРѕ РґРѕРєСѓРјРµРЅС‚Р°С†РёРё, РѕР¶РёРґР°РµС‚ С‡С‚Рѕ РјР°СЃС‚РµСЂ С‚Р°Рє Р¶Рµ РёР·РјРµРЅСЏРµС‚ РІС‹РґР°РІР°РµРјС‹Рµ РґР°РЅРЅС‹Рµ РїРѕ СЃРїР°РґР°СЋС‰РµРјСѓ С„СЂРѕРЅС‚Сѓ SCLK.
+// В slave mode данный кодек изменяет выдаваетмые данные по спадающем фронту сигнала SCLK.
+// Судя по документации, ожидает что мастер так же изменяет выдаваемые данные по спадающему фронту SCLK.
 //
 
 #define CS4272_SPIMODE		SPIC_MODE3
@@ -49,8 +49,8 @@
 #define MODE_CONTROL_2_CPEN 0x02
 #define MODE_CONTROL_2_LOOP 0x10
 
-// С‚Р°Рє РєР°Рє РЅР° РїСЂРёС‘РјРµ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ 32-Р±РёС‚РЅС‹Р№ С„СЂРµР№Рј, РјРѕР¶РЅРѕ РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊ С‚РѕР»СЊРєРѕ
-// С„РѕСЂРјР°С‚ left justified - С‚Р°Рє РєР°Рє РєРѕРґРµРє "РЅРµ Р·РЅР°РµС‚" РєРѕРіРґР° Р·Р°РєРѕРЅС‡РёС‚СЃСЏ С„СЂРµР№Рј.
+// так как на приёме используется 32-битный фрейм, можно использовать только
+// формат left justified - так как кодек "не знает" когда закончится фрейм.
 enum { USE_I2S = 0 };	// 0 = left justified, 1 = phillips I2S
 
 
@@ -62,7 +62,7 @@ static void cs4272_setreg(
 #if CODEC_TYPE_CS4272_STANDALONE
 	return;
 #elif CODEC_TYPE_CS4272_USE_SPI
-	// РєРѕРґРµРє СѓРїСЂР°РІР»СЏРµС‚СЃСЏ РїРѕ SPI
+	// кодек управляется по SPI
 	const spitarget_t target = targetcodec2;	/* addressing to chip */
 
 	spi_select2(target, CS4272_SPIMODE, CS4272_SPIC_SPEED);	/* Enable SPI */
@@ -73,7 +73,7 @@ static void cs4272_setreg(
 	spi_unselect(target);
 
 #else
-	// РєРѕРґРµРє СѓРїСЂР°РІР»СЏРµС‚СЃСЏ РїРѕ I2C
+	// кодек управляется по I2C
 	i2c_start(CS4272_ADDRESS_W);
 	i2c_write(mapv);
 	i2c_write(datav);
@@ -93,13 +93,13 @@ static void cs4272_setreg(
 #endif
 }
 
-// MCLK РґРѕР»Р¶РµРЅ СѓР¶Рµ РїРѕРґР°РІР°С‚СЊСЃСЏ РІ РјРѕРјРµРЅС‚ РёРЅРёС†РёР°Р»РёР·Р°С†РёРё
+// MCLK должен уже подаваться в момент инициализации
 static void cs4272_initialize_fullduplex(void)
 {
-	board_codec2_nreset(1);	// Р’С‹СЃС‚Р°РІРёС‚СЊ СЃРёРіРЅР°Р» СЃР±СЂРѕСЃР°
+	board_codec2_nreset(1);	// Выставить сигнал сброса
 	board_update();
 	local_delay_ms(2);
-	board_codec2_nreset(0);	// СЃРЅСЏС‚СЊ СЃРёРіРЅР°Р» СЃР±СЂРѕСЃР°
+	board_codec2_nreset(0);	// снять сигнал сброса
 	board_update();
 
 #if CODEC_TYPE_CS4272_STANDALONE
@@ -154,7 +154,7 @@ const codec2if_t * board_getfpgacodecif(void)
 {
 	static const char codecname [] = "CS4272";
 
-	/* РРЅС‚РµСЂС„РµР№СЃ С†РїСЂР°РІР»РµРЅРёСЏ РєРѕРґРµРєРѕРј */
+	/* Интерфейс цправления кодеком */
 	static const codec2if_t ifc =
 	{
 		cs4272_initialize_fullduplex,

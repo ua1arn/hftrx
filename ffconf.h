@@ -287,7 +287,7 @@
 
 
 /*--- End of configuration options ---*/
-//#include "hardware.h"	// РЅРµ Р·Р°Р±С‹С‚СЊ РґРѕР±Р°РІРёС‚СЊ FATFSALIGN_BEGIN/FATFSALIGN_END Рє РјР°СЃСЃРёРІР°Рј СЂР°Р·РјРµСЂРѕРј _MAX_SS Р±Р°Р№С‚.
+//#include "hardware.h"	// не забыть добавить FATFSALIGN_BEGIN/FATFSALIGN_END к массивам размером _MAX_SS байт.
 
 #define FATFSALIGN_BEGIN __attribute__ ((aligned (32)))
 #define FATFSALIGN_END /* nothing */

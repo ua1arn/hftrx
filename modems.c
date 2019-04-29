@@ -1,7 +1,7 @@
 /* $Id$ */
 //
 
-#include "hardware.h"	/* Р·Р°РІРёСЃСЏС‰РёРµ РѕС‚ РїСЂРѕС†РµСЃСЃРѕСЂР° С„СѓРЅРєС†РёРё СЂР°Р±РѕС‚С‹ СЃ РїРѕСЂС‚Р°РјРё */
+#include "hardware.h"	/* зависящие от процессора функции работы с портами */
 #include "board.h"
 #include "audio.h"
 #include "spifuncs.h"
@@ -18,7 +18,7 @@
 //////////////////
 // ++++++
 
-// СЃРѕСЃС‚РѕСЏРЅРёСЏ РєРѕРЅРµС‡РЅРѕРіРѕ Р°РІС‚РѕРјР°С‚Р° РјРѕРґСѓР»СЏС‚РѕСЂР°
+// состояния конечного автомата модулятора
 enum modem_tx_states
 {
 	MODEM_TX_STOPPED,
@@ -43,7 +43,7 @@ static const uint_fast32_t MODEM_CRC_INITVAL = 0xFFFF;
 static const uint_fast32_t MODEM_CRC_MASK = 0xFFFF;
 static const uint_fast32_t MODEM_CRC_BITS = 16;
 
-// РџР°СЂР°РјРµС‚СЂС‹ СЃРєСЂРµРјР±Р»РµСЂР°
+// Параметры скремблера
 static const uint_fast32_t MODEM_SCRAMBLER_POLYNOM = (0x21);
 static const uint_fast32_t MODEM_SCRAMBLER_INITVAL = (0x7F);
 static const uint_fast32_t MODEM_SCRAMBLER_LASTBIT = ((uint_fast32_t) 1 << 6);
@@ -52,40 +52,40 @@ static const uint_fast32_t MODEM_MARKER = 0xAB5D;
 static const uint_fast32_t MODEM_MARKER_MASK = 0xFFFF;
 static const uint_fast32_t MODEM_MARKER_BITS = 16;
 
-// РћР±С‰РёРµ РїРµСЂР°РјРµС‚СЂС‹ РїР°РєРµС‚Р°
-static const uint_fast32_t MODEM_HEAD_BITS = 24;	// РґР»РёРЅР° СЃРёРЅС…СЂРѕРЅРёР·РёСЂСѓСЋС‰РµР№ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕСЃС‚Рё РІ РЅР°С‡Р°Р»Рµ РїР°РєРµС‚Р°
+// Общие пераметры пакета
+static const uint_fast32_t MODEM_HEAD_BITS = 24;	// длина синхронизирующей последовательности в начале пакета
 static const uint_fast32_t MODEM_OCTET_BITS = 8;
 static const uint_fast32_t MODEM_TAIL_BITS = 8;
 
-static const uint_fast32_t MODEM_SIZE_MASK = 0x03FF;	// Р—Р°РІРёСЃРёС‚ РѕС‚ MODEMBUFFERSIZE8
+static const uint_fast32_t MODEM_SIZE_MASK = 0x03FF;	// Зависит от MODEMBUFFERSIZE8
 static const uint_fast32_t MODEM_SIZE_BITS = 10;
 
 enum { TXBPSKPAGES = 2 };
 
-#define	MODEMBINADDRESSSIZE	12		// Р±Р°Р№С‚РѕРІ РІ Р±СѓС„РµСЂРµ Р°РґСЂРµСЃР°
+#define	MODEMBINADDRESSSIZE	12		// байтов в буфере адреса
 
 typedef struct txbpskholder_tag
 {
-	unsigned activetxbpsksize;		// РєРѕР»РёС‡РµСЃС‚РІРѕ РґРѕСЃС‚РѕРІРµСЂРЅС‹С… Р±Р°Р№С‚РѕРІ РІ Р±СѓС„РµСЂРµ
-	uint8_t activetxbpskdata [MODEMBUFFERSIZE8];	// Р±СѓС„РµСЂ СЃ РґР°РЅРЅС‹РјРё РґР»СЏ РїРµСЂРµРґР°С‡Рё
+	unsigned activetxbpsksize;		// количество достоверных байтов в буфере
+	uint8_t activetxbpskdata [MODEMBUFFERSIZE8];	// буфер с данными для передачи
 } txdataholder_t;
 
-static uint8_t ownaddressbuff [MODEMBINADDRESSSIZE];		// СЃРІРѕР№ СЃРѕР±СЃС‚РІРµРЅРЅС‹Р№ Р°РґСЂРµСЃ
-static uint_fast8_t mastermode;		// 0 вЂ“ slave, 1 - master
+static uint8_t ownaddressbuff [MODEMBINADDRESSSIZE];		// свой собственный адрес
+static uint_fast8_t mastermode;		// 0 – slave, 1 - master
 
 static txdataholder_t bhs [TXBPSKPAGES];
 static volatile uint_fast8_t activetxbpskpage;
 
 static uint_fast8_t modem_tx_state = MODEM_TX_STOPPED;
 static uint_fast8_t modem_tx_return = MODEM_TX_STOPPED;
-static uint_fast32_t modem_tx_crc;	/* РЅР°РєРѕРїР»РµРЅРёРµ CRC РґР»СЏ РїРµСЂРµРґР°С‡Рё */
+static uint_fast32_t modem_tx_crc;	/* накопление CRC для передачи */
 static uint_fast32_t modem_tx_scrambler;
-static uint_fast32_t modem_tx_acc;	/* Р±РёС‚РѕРІР°СЏ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕСЃС‚СЊ РґР»СЏ РјРѕРґСѓР»СЏС‚РѕСЂР° */
-static uint_fast32_t modem_tx_bitmask;/* РїРѕР»РѕР¶РµРЅРёРµ Р±РёС‚Р° РІ Р°РєРєСѓРјСѓР»СЏС‚РѕСЂРµ РґР»СЏ РїРµСЂРµРґР°С‡Рё */
-static uint_fast32_t modem_tx_bitcount;/* РєРѕР»РёС‡РµСЃС‚РІРѕ РѕРґРёРЅР°РєРѕРІС‹С… РїРµСЂРµРґР°РІР°РµРјС‹С… Р±РёС‚РѕРІ */
-static uint_fast32_t modem_tx_level;		// С‚РµРєСѓС‰Р°СЏ РїРѕР·РёС†РёСЏ РґР»СЏ РїРµСЂРµРґР°С‡Рё РґР°РЅРЅС‹С…
+static uint_fast32_t modem_tx_acc;	/* битовая последовательность для модулятора */
+static uint_fast32_t modem_tx_bitmask;/* положение бита в аккумуляторе для передачи */
+static uint_fast32_t modem_tx_bitcount;/* количество одинаковых передаваемых битов */
+static uint_fast32_t modem_tx_level;		// текущая позиция для передачи данных
 
-// СЃРѕСЃС‚РѕСЏРЅРёСЏ РєРѕРЅРµС‡РЅРѕРіРѕ Р°РІС‚РѕРјР°С‚Р° РґРµРјРѕРґСѓР»СЏС‚РѕСЂР°
+// состояния конечного автомата демодулятора
 enum modem_rx_states
 {
 	MODEM_RX_STOPPED,
@@ -98,21 +98,21 @@ enum modem_rx_states
 };
 
 static uint_fast8_t modem_rx_state = MODEM_RX_STOPPED;
-static uint_fast32_t modem_rx_crc;	/* РЅР°РєРѕРїР»РµРЅРёРµ CRC РґР»СЏ РїСЂРёС‘РјР° */
-static uint_fast32_t modem_rx_acc;	/* Р±РёС‚РѕРІР°СЏ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕСЃС‚СЊ РІС‹С…РѕРґР° РґРµРјРѕРґСѓР»СЏС‚РѕСЂР° */
+static uint_fast32_t modem_rx_crc;	/* накопление CRC для приёма */
+static uint_fast32_t modem_rx_acc;	/* битовая последовательность выхода демодулятора */
 static uint_fast32_t modem_rx_scrambler;
-static uint_fast32_t modem_rx_bits;	/* РєРѕР»РёС‡РµСЃС‚РІРѕ Р±РёС‚РѕРІ РІ Р°РєРєСѓРјСѓР»СЏС‚РѕСЂРµ */
-static uint_fast32_t modem_rx_length;/* РґР»РёС‚РµР»СЊРЅРѕСЃС‚СЊ РЅР°С…РѕР¶РґРµРЅРёСЏ РІ СЃРѕСЃС‚РѕСЏРЅРёРё (РјРЅРѕРіРѕС„СѓРЅРєС†РёРѕРЅР°Р»СЊРЅР°СЏ РїРµСЂРµРјРµРЅРЅР°СЏ) */
+static uint_fast32_t modem_rx_bits;	/* количество битов в аккумуляторе */
+static uint_fast32_t modem_rx_length;/* длительность нахождения в состоянии (многофункциональная переменная) */
 static uint8_t * modem_rx_buffer;
-static size_t modem_rx_maxlength;	// СЂР°Р·РјРµСЂ Р±СѓС„РµСЂР° РґР»СЏ СЃРѕС…СЂР°РЅРµРЅРёСЏ РґР°РЅРЅС‹С… РїСЂРёРЅСЏС‚С‹С… РёР· СЂР°РґРёРѕРєР°РЅР°Р»Р°
-static uint_fast32_t modem_rx_bodylen;	// РїСЂРёРЅСЏС‚С‹Р№ СЂР°Р·РјРµСЂ
+static size_t modem_rx_maxlength;	// размер буфера для сохранения данных принятых из радиоканала
+static uint_fast32_t modem_rx_bodylen;	// принятый размер
 
-// С„СѓРЅРєС†РёРё
+// функции
 
-// РћР±РЅРѕРІР»РµРЅРёРµ CRC РґР»СЏ РѕС‡РµСЂРµРґРЅРѕРіРѕ Р±РёС‚Р°
+// Обновление CRC для очередного бита
 static uint_fast32_t crcupdate(
 	uint_fast32_t crc,
-	uint_fast8_t v		// РѕС‡РµСЂРµРґРЅРѕР№ Р±РёС‚
+	uint_fast8_t v		// очередной бит
 	)
 {
 	const uint_fast32_t MODEM_CRC_LASTBIT = (uint_fast32_t) 1 << (MODEM_CRC_BITS - 1);
@@ -123,7 +123,7 @@ static uint_fast32_t crcupdate(
 }
 
 
-// РћР±РЅРѕРІР»РµРЅРёРµ СЃРєСЂРµРјР±Р»РµСЂР° РґР»СЏ РѕС‡РµСЂРµРґРЅРѕРіРѕ Р±РёС‚Р°
+// Обновление скремблера для очередного бита
 static uint_fast32_t scramblerpdate(
 	uint_fast32_t crc
 	)
@@ -137,9 +137,9 @@ static uint_fast32_t scramblerpdate(
 
 static void
 modem_tx_pushstate_value_scrambled(
-	uint_fast8_t state,		// СЃРѕСЃС‚РѕСЏРЅРµ РїРѕСЃР»Рµ РІРѕР·РІСЂР°С‚Р°
-	uint_fast32_t value,		// Р·РЅР°С‡РµРЅРёРµ РґР»СЏ РїРµСЂРµРґР°С‡Рё
-	uint_fast32_t length		// РєРѕР»РёС‡РµСЃС‚РІРѕ Р±РёС‚
+	uint_fast8_t state,		// состояне после возврата
+	uint_fast32_t value,		// значение для передачи
+	uint_fast32_t length		// количество бит
 	)
 {
 	modem_tx_state = MODEM_TX_VALUE_SCRAMBLE;
@@ -152,9 +152,9 @@ modem_tx_pushstate_value_scrambled(
 
 static void
 modem_tx_pushstate_value_not_scrambled(
-	uint_fast8_t state,		// СЃРѕСЃС‚РѕСЏРЅРµ РїРѕСЃР»Рµ РІРѕР·РІСЂР°С‚Р°
-	uint_fast32_t value,		// Р·РЅР°С‡РµРЅРёРµ РґР»СЏ РїРµСЂРµРґР°С‡Рё
-	uint_fast32_t length		// РєРѕР»РёС‡РµСЃС‚РІРѕ Р±РёС‚
+	uint_fast8_t state,		// состояне после возврата
+	uint_fast32_t value,		// значение для передачи
+	uint_fast32_t length		// количество бит
 	)
 {
 	modem_tx_state = MODEM_TX_VALUE_NO_SCRAMBLE;
@@ -166,9 +166,9 @@ modem_tx_pushstate_value_not_scrambled(
 
 static void
 modem_tx_pushstate_bits(
-	uint_fast8_t state,		// СЃРѕСЃС‚РѕСЏРЅРµ РїРѕСЃР»Рµ РІРѕР·РІСЂР°С‚Р°
-	uint_fast8_t value,		// Р·РЅР°С‡РµРЅРёРµ РґР»СЏ РїРµСЂРµРґР°С‡Рё (РјР»Р°РґС€РёР№ Р±РёС‚)
-	uint_fast32_t length		// РєРѕР»РёС‡РµСЃС‚РІРѕ Р±РёС‚
+	uint_fast8_t state,		// состояне после возврата
+	uint_fast8_t value,		// значение для передачи (младший бит)
+	uint_fast32_t length		// количество бит
 	)
 {
 	modem_tx_state = MODEM_TX_CONST;
@@ -178,35 +178,35 @@ modem_tx_pushstate_bits(
 	modem_tx_bitcount = length;
 }
 
-// СЃР±СЂРѕСЃ СЃРєСЂСЌРјР±Р»РµСЂР° РїРµСЂРµРґР°С‚С‡РёРєР°
+// сброс скрэмблера передатчика
 static void modem_tx_initscrambler(void)
 {
 	modem_tx_scrambler = MODEM_SCRAMBLER_INITVAL;
 }
 
-// Р’РѕР·РІСЂР°С‚ 0/1 - РІС‹С…РѕРґ СЃРєСЂСЌРјР±Р»РµСЂР° РїРµСЂРµРґР°С‚С‡РёРєР°
+// Возврат 0/1 - выход скрэмблера передатчика
 static uint_fast8_t modem_tx_nextscramblebit(void)
 {
 	modem_tx_scrambler = scramblerpdate(modem_tx_scrambler);
 	return modem_tx_scrambler & 0x01;
 }
 
-// СЃР±СЂРѕСЃ СЃРєСЂСЌРјР±Р»РµСЂР° РїСЂРёС‘РјРЅРёРєР°
+// сброс скрэмблера приёмника
 static void modem_rx_initscrambler(void)
 {
 	modem_rx_scrambler = MODEM_SCRAMBLER_INITVAL;
 }
 
-// Р’РѕР·РІСЂР°С‚ 0/1 - РІС‹С…РѕРґ СЃРєСЂСЌРјР±Р»РµСЂР° РїСЂРёС‘РјРЅРёРєР°
+// Возврат 0/1 - выход скрэмблера приёмника
 static uint_fast8_t modem_rx_nextscramblebit(void)
 {
 	modem_rx_scrambler = scramblerpdate(modem_rx_scrambler);
 	return modem_rx_scrambler & 0x01;
 }
 
-// С„СѓРЅРєС†РёСЏ РїРµСЂРµС…РѕРґР° РїРѕ РєРѕРЅРµС‡РЅРѕРјСѓ Р°РІС‚РѕРјР°С‚Сѓ СЃРѕСЃС‚РѕСЏРЅРёР№ РїРµСЂРµРґР°С‚С‡РёРєР°
+// функция перехода по конечному автомату состояний передатчика
 static void modem_tx_frame_nextstate(
-	uint_fast8_t suspend	// РїРµСЂРµРґР°РІР°С‚СЊ РјРѕРґРµРјСѓ РµС‰С‘ СЂР°РЅРѕ - РЅРµ РїРѕР»РЅРѕСЃС‚СЊСЋ Р·Р°РІРµСЂС€РµРЅРѕ С„РѕСЂРјРёСЂРѕРІР°РЅРёРµ РѕРіРёР±Р°СЋС‰РµР№
+	uint_fast8_t suspend	// передавать модему ещё рано - не полностью завершено формирование огибающей
 	)
 {
 	if (suspend)
@@ -239,7 +239,7 @@ static void modem_tx_frame_nextstate(
 			else
 			{
 				modem_tx_pushstate_value_scrambled(MODEM_TX_PAD2, modem_tx_crc, MODEM_CRC_BITS);
-				bh->activetxbpsksize = 0; /* Р’СЃРµ РґР°РЅРЅС‹Рµ РёСЃРїРѕР»СЊР·РѕРІР°РЅС‹ - РїРѕРґРіРѕС‚Р°РІР»РёРІР°РµРј Р±СѓС„РµСЂ Рє Р·Р°РїРѕР»РЅРµРЅРёСЋ */
+				bh->activetxbpsksize = 0; /* Все данные использованы - подготавливаем буфер к заполнению */
 			}
 		}
 		break;
@@ -251,9 +251,9 @@ static void modem_tx_frame_nextstate(
 
 }
 
-// С„РѕСЂРјРёСЂРѕРІР°РЅРёРµ Р±РёС‚Р° РґР»СЏ РїРµСЂРµРґР°С‡Рё
+// формирование бита для передачи
 static uint_fast8_t modem_frame_getnextbit(
-	uint_fast8_t suspend	// РїРµСЂРµРґР°РІР°С‚СЊ РјРѕРґРµРјСѓ РµС‰С‘ СЂР°РЅРѕ - РЅРµ РїРѕР»РЅРѕСЃС‚СЊСЋ Р·Р°РІРµСЂС€РµРЅРѕ С„РѕСЂРјРёСЂРѕРІР°РЅРёРµ РѕРіРёР±Р°СЋС‰РµР№
+	uint_fast8_t suspend	// передавать модему ещё рано - не полностью завершено формирование огибающей
 	 )
 {
 	if (suspend)
@@ -281,7 +281,7 @@ static uint_fast8_t modem_frame_getnextbit(
 	return v;
 }
 
-// РѕР±СЂР°Р±РѕС‚РєР° Р±РёС‚Р° РЅР° РїСЂРёС‘РјРµ
+// обработка бита на приёме
 void
 modem_frames_decode(
 	uint_fast8_t v
@@ -291,13 +291,13 @@ modem_frames_decode(
 	switch (modem_rx_state)
 	{
 	case MODEM_RX_STOPPED:
-		// РёРіРЅРѕСЂРёСЂРѕРІР°РЅРёРµ РїРѕС‚РѕРєР°
+		// игнорирование потока
 		modem_rx_maxlength = takemodembuffer_low(& modem_rx_buffer);
 		modem_rx_state = MODEM_RX_MARKER;
 		break;
 
 	case MODEM_RX_MARKER:
-		// РїРѕРёСЃРє РјР°СЂРєРµСЂР° РїСЂРё РїСЂРёС‘РјРµ
+		// поиск маркера при приёме
 		modem_rx_acc = modem_rx_acc * 2 + (v != 0);
 		if (++ modem_rx_bits >= MODEM_MARKER_BITS)
 		{
@@ -311,14 +311,14 @@ modem_frames_decode(
 			}
 			else
 			{
-				// РїСЂРѕРґРѕР»Р¶Р°РµРј РїРѕРёСЃРє РјР°РєСЂРµСЂР°
+				// продолжаем поиск макрера
 				modem_rx_bits = MODEM_MARKER_BITS;
 			}
 		}
 		break;
 
 	case MODEM_RX_BODYLENGTH:
-		// РїРѕР»СѓС‡РµРЅРёРµ СЂР°Р·РјРµСЂР° Р±Р»РѕРєР° (MODEM_SIZE_BITS Р±РёС‚)
+		// получение размера блока (MODEM_SIZE_BITS бит)
 		{
 			const uint_fast8_t databit = (v != 0) ^ modem_rx_nextscramblebit();
 			modem_rx_acc = modem_rx_acc * 2 + databit;
@@ -328,7 +328,7 @@ modem_frames_decode(
 				modem_rx_bits = 0;
 				modem_rx_bodylen = 1 + (modem_rx_acc & MODEM_SIZE_MASK);
 				if (modem_rx_bodylen > modem_rx_maxlength)
-					modem_rx_state = MODEM_RX_MARKER;	// РѕС€РёР±РєР° - РїС‹С‚Р°РµРјСЃСЏ РїСЂРёРЅСЏС‚СЊ СЃР»РµРґСѓСЋС‰РёР№ Р±Р»РѕРє
+					modem_rx_state = MODEM_RX_MARKER;	// ошибка - пытаемся принять следующий блок
 				else
 					modem_rx_state = MODEM_RX_BODY;
 			}
@@ -336,7 +336,7 @@ modem_frames_decode(
 		break;
 
 	case MODEM_RX_BODY:
-		// РїРѕР»СѓС‡РµРЅРёРµ РїРѕР»РµР·РЅС‹С… РґР°РЅРЅС‹С… Р±Р»РѕРєР°
+		// получение полезных данных блока
 		{
 			const uint_fast8_t databit = (v != 0) ^ modem_rx_nextscramblebit();
 			modem_rx_acc = modem_rx_acc * 2 + databit;
@@ -361,19 +361,19 @@ modem_frames_decode(
 			const uint_fast8_t databit = (v != 0) ^ modem_rx_nextscramblebit();
 			//modem_rx_acc = modem_rx_acc * 2 + databit;
 			modem_rx_crc = crcupdate(modem_rx_crc, databit);
-			if (++ modem_rx_bits >= 16)	// РєРѕР»РёС‡РµСЃС‚РІРѕ Р±РёС‚РѕРІ РІ CRC
+			if (++ modem_rx_bits >= 16)	// количество битов в CRC
 			{
 				if ((modem_rx_crc & MODEM_CRC_MASK) == 0)
 				{
-					// РџСЂРёРЅСЏС‚ РїСЂР°РІРёР»СЊРЅС‹Р№ Р±Р»РѕРє РґР°РЅРЅС‹С…
+					// Принят правильный блок данных
 					savemodemrxbuffer_low(modem_rx_buffer, modem_rx_length);
 					modem_rx_maxlength = takemodembuffer_low(& modem_rx_buffer);
 				}
 				else
 				{
-					// Р±Р»РѕРє РґР°РЅРЅС‹С… РїСЂРёРЅСЏС‚ СЃ РѕС€РёР±РєРѕР№
+					// блок данных принят с ошибкой
 				}
-				modem_rx_state = MODEM_RX_MARKER;	// РїС‹С‚Р°РµРјСЃСЏ РїСЂРёРЅСЏС‚СЊ СЃР»РµРґСѓСЋС‰РёР№ Р±Р»РѕРє
+				modem_rx_state = MODEM_RX_MARKER;	// пытаемся принять следующий блок
 			}
 		}
 		break;
@@ -382,8 +382,8 @@ modem_frames_decode(
 
 // -----
 
-// Р’С‹Р·С‹РІР°РµС‚СЃСЏ РёР· РѕР±СЂР°Р±РѕС‚С‡РёРєР° - NMEA PARSER
-// Р¤РѕСЂРјРёСЂРѕРІР°РЅРёРµ Р±Р»РѕРєР° РґР°РЅРЅС‹С… РґР»СЏ РїРµСЂРµРґР°С‡Рё - СЃРѕС…СЂР°РЅРµРЅРёРµ РѕС‡РµСЂРµРґРЅРѕРіРѕ Р±Р°С†С‚Р°
+// Вызывается из обработчика - NMEA PARSER
+// Формирование блока данных для передачи - сохранение очередного бацта
 static void modem_placenextchartosend(uint_fast8_t page, uint_fast8_t c)
 {
 	if (page >= TXBPSKPAGES)
@@ -405,8 +405,8 @@ static unsigned modem_getbuffsize(uint_fast8_t page)
 }
 
 
-// Р’С‹Р·С‹РІР°РµС‚СЃСЏ РёР· РѕР±СЂР°Р±РѕС‚С‡РёРєР° - NMEA PARSER
-// РќР°С‡Р°С‚СЊ РїРµСЂРµРґР°С‡Сѓ (РєРѕРЅРµС† РЅР°РєРѕРїР»РµРЅРёСЏ РґСЏРЅРЅС‹С… РЅР° РїРµСЂРµРґР°С‡Сѓ)
+// Вызывается из обработчика - NMEA PARSER
+// Начать передачу (конец накопления дянных на передачу)
 static void modem_flushsend(
 	uint_fast8_t page
 	)
@@ -423,14 +423,14 @@ static void modem_flushsend(
 	global_enableIRQ();
 }
 
-// Р’С‹Р·С‹РІР°РµС‚СЃСЏ РёР· РѕР±СЂР°Р±РѕС‚С‡РёРєР° - NMEA PARSER
-// РџСЂРµСЂРІР°С‚СЊ РїРµСЂРµРґР°С‡Сѓ
+// Вызывается из обработчика - NMEA PARSER
+// Прервать передачу
 static void modem_cancelsending(uint_fast8_t page)
 {
 	if (page >= TXBPSKPAGES)
 		return;
 	txdataholder_t * const bh = & bhs [page];
-	// РѕС‡РёС‰Р°РµРј Р±СѓС„РµСЂ РґР»СЏ СЃР»РµРґСѓСЋС‰РµРіРѕ Р·Р°РїРѕР»РЅРµРЅРёСЏ
+	// очищаем буфер для следующего заполнения
 	global_disableIRQ();
 	bh->activetxbpsksize = 0;
 	if (activetxbpskpage == page)
@@ -441,12 +441,12 @@ static void modem_cancelsending(uint_fast8_t page)
 
 //++++++++++++++++
 
-// РћС‡РµСЂРµРґРё СЃРёРјРІРѕР»РѕРІ РґР»СЏ РѕР±РјРµРЅР° СЃ host 
+// Очереди символов для обмена с host 
 enum { qSZ = MODEMBUFFERSIZE8 * 4 };
 static uint8_t queue [qSZ];
 static volatile unsigned qp, qg;
 
-// РџРµСЂРµРґР°С‚СЊ СЃРёРјРІРѕР» РІ host
+// Передать символ в host
 static uint_fast8_t	qput(uint_fast8_t c)
 {
 	unsigned qpt = qp;
@@ -461,7 +461,7 @@ static uint_fast8_t	qput(uint_fast8_t c)
 	return 0;
 }
 
-// РџРѕР»СѓС‡РёС‚СЊ СЃРёРјРІРѕР» РІ host
+// Получить символ в host
 static uint_fast8_t qget(uint_fast8_t * pc)
 {
 	if (qp != qg)
@@ -473,13 +473,13 @@ static uint_fast8_t qget(uint_fast8_t * pc)
 	return 0;
 }
 
-// РїРѕР»СѓС‡РёС‚СЊ СЃРѕСЃС‚РѕСЏРЅРёРµ РѕС‡РµСЂРµРґРё РїРµСЂРµРґР°С‡Рё
+// получить состояние очереди передачи
 static uint_fast8_t qempty(void)
 {
 	return qp == qg;
 }
 
-// РџРµСЂРµРґР°С‚СЊ РјР°СЃСЃРёРІ СЃРёРјРІРѕР»РѕРІ
+// Передать массив символов
 static void qputs(const char * s, int n)
 {
 	while (n --)
@@ -487,9 +487,9 @@ static void qputs(const char * s, int n)
 }
 
 
-/* С„СѓРЅРєС†РёСЏ РІС‹Р·С‹РІР°РµС‚СЃСЏ РёР· РїРѕР»СЊР·РѕРІР°С‚РµР»СЊСЃРєРѕР№ РїСЂРѕРіСЂР°РјРјС‹. */
-// РІС‹Р·С‹РІР°РµС‚СЃСЏ РёР· user mode
-// Р’РѕР·РІСЂР°С‰Р°РµС‚ РЅРµ-0 РґР»СЏ Р·Р°РїСЂРѕСЃР° РЅР° РїРµСЂРµС…РѕРґ РІ СЂРµР¶РёРј РїРµСЂРµРґР°С‡Рё
+/* функция вызывается из пользовательской программы. */
+// вызывается из user mode
+// Возвращает не-0 для запроса на переход в режим передачи
 uint_fast8_t 
 modem_get_ptt(void)
 {
@@ -503,7 +503,7 @@ modem_get_ptt(void)
 
 
 uint_fast8_t modem_getnextbit(
-	uint_fast8_t suspend	// РїРµСЂРµРґР°РІР°С‚СЊ РјРѕРґРµРјСѓ РµС‰С‘ СЂР°РЅРѕ - РЅРµ РїРѕР»РЅРѕСЃС‚СЊСЋ Р·Р°РІРµСЂС€РµРЅРѕ С„РѕСЂРјРёСЂРѕРІР°РЅРёРµ РѕРіРёР±Р°СЋС‰РµР№
+	uint_fast8_t suspend	// передавать модему ещё рано - не полностью завершено формирование огибающей
 	 )
 {
 	modem_tx_frame_nextstate(suspend);
@@ -511,10 +511,10 @@ uint_fast8_t modem_getnextbit(
 }
 
 
-/* РІС‹Р·С‹РІР°РµС‚СЃСЏ РїСЂРё СЂР°Р·СЂРµС€С‘РЅРЅС‹С… РїСЂРµСЂС‹РІР°РЅРёСЏС…. */
+/* вызывается при разрешённых прерываниях. */
 void modem_initialze(void)
 {
-	// РїРѕР»СѓС‡РµРЅРёРµ РїСЂРёР·РЅР°РєР° СЂР°Р±РѕС‚С‹ MASTER
+	// получение признака работы MASTER
 #if CTLREGMODE_STORCH_V4
 	arm_hardware_piof_outputs(0x0002, 0x0002);
 	arm_hardware_piof_inputs(0x0001);
@@ -525,7 +525,7 @@ void modem_initialze(void)
 #endif /* CTLREGMODE_STORCH_V4 */
 
 #if defined (UID_BASE)
-	// С„РѕСЂРјРёСЂРѕРІР°РЅРёРµ Р±СѓС„РµСЂР° СЃРѕР±СЃС‚РІРµРЅРЅРѕРіРѕ Р°РґСЂРµСЃР°
+	// формирование буфера собственного адреса
 	const uint32_t * const uidbase = (const uint32_t *) UID_BASE;
 	ownaddressbuff [0x00] = uidbase [0] >> 24;
 	ownaddressbuff [0x01] = uidbase [0] >> 16;
@@ -546,9 +546,9 @@ void modem_initialze(void)
 enum nmeaparser_states
 {
 	NMEAST_INITIALIZED,
-	NMEAST_OPENED,	// РІСЃС‚СЂРµС‚РёР»СЃСЏ СЃРёРјРІРѕР» '$'
-	NMEAST_CHSHI,	// РїСЂС‘Рј СЃС‚Р°СЂС€РµРіРѕ СЃРёРјРІРѕР»Р° РєРѕРЅС‚СЂРѕР»СЊРЅРѕР№ СЃСѓРјРјС‹
-	NMEAST_CHSLO,	// РїСЂРёС‘Рј РјР»Р°РґС€РµРіРѕ СЃРёРјРІРѕР»Р° РєРѕРЅС‚СЂРѕР»СЊРЅРѕР№ СЃСѓРјРјС‹
+	NMEAST_OPENED,	// встретился символ '$'
+	NMEAST_CHSHI,	// прём старшего символа контрольной суммы
+	NMEAST_CHSLO,	// приём младшего символа контрольной суммы
 
 
 	//
@@ -560,13 +560,13 @@ enum nmeaparser_states
 static uint_fast8_t nmeaparser_state = NMEAST_INITIALIZED;
 static uint_fast8_t nmeaparser_checksum;
 static uint_fast8_t nmeaparser_chsval;
-static uint_fast8_t nmeaparser_param;		// РЅРѕРјРµСЂ РїСЂРёРЅРёРјР°РµРјРѕРіРѕ РїР°СЂР°РјРµС‚СЂР° РІ СЃС‚СЂРѕРєРµ
-static uint_fast8_t nmeaparser_chars;		// РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРёРјРІРѕР»РѕРІ, РїРѕРјРµС‰С‘РЅРЅС‹С… РІ Р±СѓС„РµСЂ
+static uint_fast8_t nmeaparser_param;		// номер принимаемого параметра в строке
+static uint_fast8_t nmeaparser_chars;		// количество символов, помещённых в буфер
 
 #define NMEA_PARAMS			5
 #define NMEA_CHARSSMALL		16
 #define NMEA_CHARSBIG		257
-#define NMEA_BIGFIELD		3	// РЅРѕРјРµСЂ Р±РѕР»СЊС€РѕРіРѕ РїРѕР»СЏ
+#define NMEA_BIGFIELD		3	// номер большого поля
 
 static char nmeaparser_buffsmall [NMEA_PARAMS] [NMEA_CHARSSMALL];
 static char nmeaparser_buffbig [NMEA_CHARSBIG];
@@ -621,7 +621,7 @@ static size_t nmeaparser_sendbin_buffer(int index, const uint8_t * databuff, siz
 	size_t pos;
 	static char buff [NMEA_CHARSBIG + 30];
 	const size_t size = sizeof buff / sizeof buff [0];
-	// Р¤РѕСЂРјРёСЂРѕРІР°РЅРёРµ Р·Р°РіРѕР»РѕРІРєР°
+	// Формирование заголовка
 	size_t len = local_snprintf_P(
 		buff, 
 		size, 
@@ -633,17 +633,17 @@ static size_t nmeaparser_sendbin_buffer(int index, const uint8_t * databuff, siz
 	qput(0xff);
 	qputs(buff, len);
 
-	// Р¤РѕСЂРјРёСЂРѕРІР°РЅРёРµ С‚РµР»Р° РґР°РЅРЅС‹С…
+	// Формирование тела данных
 	for (pos = 0; pos < datalen && pos < 64; )
 	{
 		const uint_fast8_t v = (uint8_t) databuff [pos ++];
 		qput(bin2hex [v / 16]);
 		qput(bin2hex [v % 16]);
 	}
-	// Р”РѕР±Р°РІР»РµРЅРёРµ СЂР°Р·РґРµР»РёС‚РµР»СЏ
+	// Добавление разделителя
 	buff [len ++] = '*';
 
-	// РџРѕРґСЃС‡РµС‚ РєРѕРЅС‚СЂРѕР»СЊРЅРѕР№ СЃСѓРјРјС‹
+	// Подсчет контрольной суммы
 	{
 		const uint_fast8_t v = calcxorv(buff + 1, len - 1);
 		qput(bin2hex [v / 16]);
@@ -658,22 +658,22 @@ static size_t nmeaparser_sendbin_buffer(int index, const uint8_t * databuff, siz
 static unsigned ticks;
 static unsigned volatile rxerrchar;
 
-static int numvolts1(int val)	// РќР°РїСЂСЏР¶РµРЅРёРµ РІ СЃРѕС‚РЅСЏС… РјРёР»Р»РёРІРѕР»СЊС‚ С‚.Рµ. 151 = 15.1 РІРѕР»СЊС‚Р°
+static int numvolts1(int val)	// Напряжение в сотнях милливольт т.е. 151 = 15.1 вольта
 {
 	return val / 10;
 }
-static int numvolts01(int val	)// РќР°РїСЂСЏР¶РµРЅРёРµ РІ СЃРѕС‚РЅСЏС… РјРёР»Р»РёРІРѕР»СЊС‚ С‚.Рµ. 151 = 15.1 РІРѕР»СЊС‚Р°
+static int numvolts01(int val	)// Напряжение в сотнях милливольт т.е. 151 = 15.1 вольта
 {
 	if (val < 0)
 		val = - val;
 	return val % 10;
 }
 
-static int numamps1(int val)	// РўРѕРє РІ РґРµСЃСЏС‚РєР°С… РјРёР»РёР°РјРїРµСЂ (РґРѕ 2.55 Р°РјРїРµСЂР°), РјРѕР¶РµС‚ Р±С‹С‚СЊ РѕС‚СЂРёС†Р°С‚РµР»СЊРЅС‹Рј
+static int numamps1(int val)	// Ток в десятках милиампер (до 2.55 ампера), может быть отрицательным
 {
 	return val / 100;
 }
-static int numamps001(int val)	// РўРѕРє РІ РґРµСЃСЏС‚РєР°С… РјРёР»РёР°РјРїРµСЂ (РґРѕ 2.55 Р°РјРїРµСЂР°), РјРѕР¶РµС‚ Р±С‹С‚СЊ РѕС‚СЂРёС†Р°С‚РµР»СЊРЅС‹Рј
+static int numamps001(int val)	// Ток в десятках милиампер (до 2.55 ампера), может быть отрицательным
 {
 	if (val < 0)
 		val = - val;
@@ -689,7 +689,7 @@ isownaddressmatch(
 {
 #if CTLREGMODE_STORCH_V4
 	if (len < (MODEMBINADDRESSSIZE * 2))
-		return 0;	// СЃРѕРѕР±С‰РµРЅРёРµ РјРµРЅСЊС€Рµ С‡РµРј РЅР°РґРѕ РґР»СЏ РґРІСѓС… РїРѕР»РµР№ Р°РґСЂРµСЃР° - РЅРµ СЃРѕРІРїР°Р»Рѕ
+		return 0;	// сообщение меньше чем надо для двух полей адреса - не совпало
 	return memcmp(ownaddressbuff, buff + len - MODEMBINADDRESSSIZE * 2, MODEMBINADDRESSSIZE) == 0;
 #else /* CTLREGMODE_STORCH_V4 */
 	return 1;
@@ -712,8 +712,8 @@ void modem_spool(void)
 		// new version
 		// $GPMDR,2,160550000,30000,13.4,+1.55,75,003E003A3234510D37343138,NN*HH
 		const uint32_t * const uidbase = (const uint32_t *) UID_BASE;
-		const uint_fast8_t volt = hamradio_get_volt_value();	// РќР°РїСЂСЏР¶РµРЅРёРµ РІ СЃРѕС‚РЅСЏС… РјРёР»Р»РёРІРѕР»СЊС‚ С‚.Рµ. 151 = 15.1 РІРѕР»СЊС‚Р°
-		const int_fast16_t drain = hamradio_get_pacurrent_value();	// РўРѕРє РІ РґРµСЃСЏС‚РєР°С… РјРёР»РёР°РјРїРµСЂ (РґРѕ 2.55 Р°РјРїРµСЂР°), РјРѕР¶РµС‚ Р±С‹С‚СЊ РѕС‚СЂРёС†Р°С‚РµР»СЊРЅС‹Рј
+		const uint_fast8_t volt = hamradio_get_volt_value();	// Напряжение в сотнях милливольт т.е. 151 = 15.1 вольта
+		const int_fast16_t drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (до 2.55 ампера), может быть отрицательным
 		const size_t len = local_snprintf_P(buff, sizeof buff / sizeof buff [0], 
 			PSTR("$GPMDR,"
 			"%ld,"	// type of information
@@ -760,7 +760,7 @@ void modem_spool(void)
 	{
 		if (len != 0)
 		{
-			//  Р•СЃР»Рё РµСЃС‚СЊ Р±СѓС„РµСЂ СЃ РїСЂРёРЅСЏС‚С‹РјРё РґР°РЅРЅС‹РјРё - РїРµСЂРµРґР°С‚СЊ РІ РєРѕРјРїСЊСЋС‚РµСЂ
+			//  Если есть буфер с принятыми данными - передать в компьютер
 			if (mastermode != 0 || isownaddressmatch(buff, len))
 			{
 				size_t pos = 0;
@@ -781,11 +781,11 @@ static volatile uint_fast32_t modemspeed100;
 static volatile uint_fast8_t paramschangedmode;
 static volatile uint_fast32_t modemmode;
 
-// Р¤СѓРЅРєС†РёСЏ РѕР±РЅРѕРІР»РµРЅРёСЏ (С‡Р°СЃС‚РѕС‚С‹, ...) - РІС‹Р·С‹РІР°РµС‚СЃСЏ РёР· РѕСЃРЅРѕРІРЅРѕРіРѕ С†РёРєР»Р° РїСЂРѕРіСЂР°РјРјС‹, user mode.
+// Функция обновления (частоты, ...) - вызывается из основного цикла программы, user mode.
 
 uint_fast8_t processmodem(void)
 {
-	uint_fast8_t any = 0;	// РµСЃР»Рё С‡С‚Рѕ-С‚Рѕ РїРѕРјРµРЅСЏР»РѕСЃСЊ РІ СЂРµР¶РёРјР°С…
+	uint_fast8_t any = 0;	// если что-то поменялось в режимах
 	uint_fast8_t f;
 
 	disableIRQ();
@@ -824,8 +824,8 @@ uint_fast8_t processmodem(void)
 	return any;	
 }
 
-/* РІС‹Р·С‹РІР°РµС‚СЃСЏ РёР· РѕР±СЂР°Р±РѕС‚С‡РёРєР° РїСЂРµСЂС‹РІР°РЅРёР№ */
-// РїСЂРёРЅСЏС‚С‹Р№ СЃРёРјРІРѕР» СЃ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕРіРѕ РїРѕСЂС‚Р°
+/* вызывается из обработчика прерываний */
+// принятый символ с последовательного порта
 void modem_parsechar(uint_fast8_t c)
 {
 	switch (nmeaparser_state)
@@ -835,8 +835,8 @@ void modem_parsechar(uint_fast8_t c)
 		{
 			nmeaparser_checksum = '*';
 			nmeaparser_state = NMEAST_OPENED;
-			nmeaparser_param = 0;		// РЅРѕРјРµСЂ РїСЂРёРЅРёРјР°РµРјРѕРіРѕ РїР°СЂР°РјРµС‚СЂР° РІ СЃС‚СЂРѕРєРµ
-			nmeaparser_chars = 0;		// РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРёРјРІРѕР»РѕРІ, РїРѕРјРµС‰С‘РЅРЅС‹С… РІ Р±СѓС„РµСЂ
+			nmeaparser_param = 0;		// номер принимаемого параметра в строке
+			nmeaparser_chars = 0;		// количество символов, помещённых в буфер
 		}
 		break;
 
@@ -844,17 +844,17 @@ void modem_parsechar(uint_fast8_t c)
 		nmeaparser_checksum ^= c;
 		if (c == ',')
 		{
-			// Р·Р°РєСЂС‹РІР°РµРј Р±СѓС„РµСЂ РїР°СЂР°РјРµС‚СЂР°, РїРµСЂРµС…РѕРґРёРј Рє СЃР»РµРґСѓСЋС‰РµРјСѓ РїР°СЂР°РјРµС‚СЂСѓ
+			// закрываем буфер параметра, переходим к следующему параметру
 			nmeaparser_get_buff(nmeaparser_param) [nmeaparser_chars] = '\0';
 			nmeaparser_param += 1;
 			nmeaparser_chars = 0;
 		}
 		else if (c == '*')
 		{
-			// Р·Р°РєСЂС‹РІР°РµРј Р±СѓС„РµСЂ РїР°СЂР°РјРµС‚СЂР°, РїРµСЂРµС…РѕРґРёРј Рє СЃР»РµРґСѓСЋС‰РµРјСѓ РїР°СЂР°РјРµС‚СЂСѓ
+			// закрываем буфер параметра, переходим к следующему параметру
 			nmeaparser_get_buff(nmeaparser_param) [nmeaparser_chars] = '\0';
 			nmeaparser_param += 1;
-			// РїРµСЂРµС…РѕРґРёРј Рє РїСЂРёС‘РјСѓ РєРѕРЅС‚СЂРѕР»СЊРЅРѕР№ СЃСѓРјРјС‹
+			// переходим к приёму контрольной суммы
 			nmeaparser_state = NMEAST_CHSHI;
 		}
 		else if (nmeaparser_param < NMEA_PARAMS && nmeaparser_chars < (nmeaparser_get_buffsize(nmeaparser_param) - 1))
@@ -864,7 +864,7 @@ void modem_parsechar(uint_fast8_t c)
 			//stat_l1 = stat_l1 > nmeaparser_chars ? stat_l1 : nmeaparser_chars;
 		}
 		else
-			nmeaparser_state = NMEAST_INITIALIZED;	// РїСЂРё РѕС€РёР±РєР°С… С„РѕСЂРјР°С‚Р° СЃС‚СЂРѕРєРё
+			nmeaparser_state = NMEAST_INITIALIZED;	// при ошибках формата строки
 		break;
 
 	case NMEAST_CHSHI:
@@ -875,7 +875,7 @@ void modem_parsechar(uint_fast8_t c)
 	case NMEAST_CHSLO:
 		//debugstate();
 		nmeaparser_state = NMEAST_INITIALIZED;
-		////if (nmeaparser_checksum == (nmeaparser_chsval + hex2int(c)))	// РґР»СЏ С‚РµСЃС‚Рѕ РїСЂРѕРІРµСЂРєР° РєРѕРЅС‚СЂРѕР»СЊРЅРѕР№ СЃСѓРјРјС‹ РѕС‚РєР»СЋС‡РµРЅР°
+		////if (nmeaparser_checksum == (nmeaparser_chsval + hex2int(c)))	// для тесто проверка контрольной суммы отключена
 		{
 			if (nmeaparser_param >= 2 && strcmp(nmeaparser_get_buff(0), "GPMDS") == 0)
 			{
@@ -886,7 +886,7 @@ void modem_parsechar(uint_fast8_t c)
 					switch (code)
 					{
 					case 1:
-						// Р·Р°РїРѕР»РЅСЏРµРј Р±СѓС„РµСЂ
+						// заполняем буфер
 						{
 
 							char * const buff = nmeaparser_get_buff(3);
@@ -901,7 +901,7 @@ void modem_parsechar(uint_fast8_t c)
 						}
 						break;
 					case 2:
-						// Р Р°РЅРµРµ РЅР°РєРѕРїР»РµРЅРЅС‹Рµ РґР°РЅРЅС‹Рµ РїРµСЂРµРґР°С‚СЊ СЃ СѓРєР°Р·Р°РЅРёРµРј Р°РґСЂРµСЃР° РїРѕР»СѓС‡Р°С‚РµР»СЏ
+						// Ранее накопленные данные передать с указанием адреса получателя
 						{
 							char * const buff = nmeaparser_get_buff(3);
 							const size_t j = strlen(buff);
@@ -936,7 +936,7 @@ void modem_parsechar(uint_fast8_t c)
 					switch (code)
 					{
 					case 2:
-						// Р Р°РЅРµРµ РЅР°РєРѕРїР»РµРЅРЅС‹Рµ РґР°РЅРЅС‹Рµ РїРµСЂРµРґР°С‚СЊ Рє РјР°СЃС‚РµСЂСѓ (Р±РµР· СѓРєР°Р·Р°РЅРёСЏ Р°РґСЂРµСЃР° РѕР»СѓС‡Р°С‚РµР»СЏ)
+						// Ранее накопленные данные передать к мастеру (без указания адреса олучателя)
 						{
 #if CTLREGMODE_STORCH_V4
 							unsigned i;
@@ -957,11 +957,11 @@ void modem_parsechar(uint_fast8_t c)
 
 					case 3:
 						modem_cancelsending(p2);
-						// РЎР±СЂРѕСЃРёС‚СЊ СЂР°РЅРµРµ РЅР°РєРѕРїР»РµРЅРЅС‹Рµ РґР°РЅРЅС‹Рµ (РЅРµ РїРµСЂРµРґР°РІР°С‚СЊ)
+						// Сбросить ранее накопленные данные (не передавать)
 						break;
 					case 4:
-						// РЈСЃС‚Р°РЅРѕРІРёС‚СЊ СЂР°Р±РѕС‡СѓСЋ С‡Р°СЃС‚РѕС‚Сѓ
-						// Р§Р°СЃС‚РѕС‚Р° РІ РіРµСЂС†Р°С…
+						// Установить рабочую частоту
+						// Частота в герцах
 						{
 							modemfreq = p2;
 							paramschangedfreq = 1;
@@ -969,24 +969,24 @@ void modem_parsechar(uint_fast8_t c)
 						}
 						break;
 					case 5:
-						// РЈСЃС‚Р°РЅРѕРІРёС‚СЊ СЃРєРѕСЂРѕСЃС‚СЊ РїРµСЂРµРґР°С‡Рё РІ СЌС„РёСЂРµ
-						// Baud rate (РІ СЃРѕС‚С‹С… РґРѕР»СЏС… Р±РѕРґР°)
+						// Установить скорость передачи в эфире
+						// Baud rate (в сотых долях бода)
 						{
 							modemspeed100 = p2;
 							paramschangedspeed = 1;
 						}
 						break;
 					case 6:
-						// РЈСЃС‚Р°РЅРѕРІРёС‚СЊ С‚РёРї РјРѕРґСѓР»СЏС†РёРё
-						// 0 вЂ“ BPSK, 1 - QPSK
+						// Установить тип модуляции
+						// 0 – BPSK, 1 - QPSK
 						{
 							modemmode = p2;
 							paramschangedmode = 1;
 						}
 						break;
 					case 7:
-						// РЈСЃС‚Р°РЅРѕРІРёС‚СЊ СЂРµР¶С‚Рј Р°СЂР±С‚С‹ СЃРµР±СЏ РІ СЂРµР¶РёРјРµ РјР°СЃС‚РµСЂ (1) РёР»Рё СЃР»СЌР№РІ (0) - 0 РїРѕ РІРєР»СЋС‡РµРЅРёСЋ РїРёС‚Р°РЅРёСЏ
-						// 0 вЂ“ slave, 1 - master
+						// Установить режтм арбты себя в режиме мастер (1) или слэйв (0) - 0 по включению питания
+						// 0 – slave, 1 - master
 						{
 							mastermode = p2;
 						}
@@ -1002,20 +1002,20 @@ void modem_parsechar(uint_fast8_t c)
 	}
 }
 
-/* РІС‹Р·С‹РІР°РµС‚СЃСЏ РёР· РѕР±СЂР°Р±РѕС‚С‡РёРєР° РїСЂРµСЂС‹РІР°РЅРёР№ */
-// РїСЂРѕРёР·РѕС€Р»Р° РїРѕС‚РµСЂСЏ СЃРёРјРІРѕР»Р° (СЃРёРјРІРѕР»РѕРІ) РїСЂРё РїРѕР»СѓС‡РµРЅРёРё РґР°РЅРЅС‹С… СЃ CAT РєРѕРјРїРѕСЂС‚Р°
+/* вызывается из обработчика прерываний */
+// произошла потеря символа (символов) при получении данных с CAT компорта
 void modem_rxoverflow(void)
 {
 	++ rxerrchar;
 }
-/* РІС‹Р·С‹РІР°РµС‚СЃСЏ РёР· РѕР±СЂР°Р±РѕС‚С‡РёРєР° РїСЂРµСЂС‹РІР°РЅРёР№ */
+/* вызывается из обработчика прерываний */
 void modem_disconnect(void)
 {
 	
 }
 
-/* РІС‹Р·С‹РІР°РµС‚СЃСЏ РёР· РѕР±СЂР°Р±РѕС‚С‡РёРєР° РїСЂРµСЂС‹РІР°РЅРёР№ */
-// РєРѕРјРїРѕСЂС‚ РіРѕС‚РѕРІ РїРµСЂРµРґР°РІР°С‚СЊ
+/* вызывается из обработчика прерываний */
+// компорт готов передавать
 void modem_sendchar(void * ctx)
 {
 	uint_fast8_t c;
@@ -1033,7 +1033,7 @@ void modem_sendchar(void * ctx)
 
 #else /* WITHMODEM */
 
-// Р¤СѓРЅРєС†РёСЏ РѕР±РЅРѕРІР»РµРЅРёСЏ (С‡Р°СЃС‚РѕС‚С‹, ...) - РІС‹Р·С‹РІР°РµС‚СЃСЏ РёР· РѕСЃРЅРѕРІРЅРѕРіРѕ С†РёРєР»Р° РїСЂРѕРіСЂР°РјРјС‹, user mode.
+// Функция обновления (частоты, ...) - вызывается из основного цикла программы, user mode.
 
 uint_fast8_t processmodem(void)
 {

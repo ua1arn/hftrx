@@ -1,7 +1,7 @@
 /* $Id$ */
 //
-// РџСЂРѕРµРєС‚ HF Dream Receiver (РљР’ РїСЂРёС‘РјРЅРёРє РјРµС‡С‚С‹)
-// Р°РІС‚РѕСЂ Р“РµРЅР° Р—Р°РІРёРґРѕРІСЃРєРёР№ mgs2001@mail.ru
+// Проект HF Dream Receiver (КВ приёмник мечты)
+// автор Гена Завидовский mgs2001@mail.ru
 // UA1ARN
 //
 #include "hardware.h"
@@ -14,17 +14,17 @@
 
 #if defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_WM8994)
 //
-// РЈРїСЂР°РІР»РµРЅРёРµ РєРѕРґРµРєРѕРј CIRRUS LOGIC WM8994ECS/R
+// Управление кодеком CIRRUS LOGIC WM8994ECS/R
 // https://raw.githubusercontent.com/jaz303/stm32f746g-discovery-gcc/master/lib/Drivers/BSP/Components/wm8994/wm8994.c
 //
 #include "audio.h"
 #include "wm8994.h"
 
-// Clock period, SCLK no less then 80 nS (РЅРµ РІС‹С€Рµ 12.5 РњР“С†)
+// Clock period, SCLK no less then 80 nS (не выше 12.5 МГц)
 #define WM8994_SPIMODE		SPIC_MODE3
-#define WM8994_ADDRESS_W	0x34	// I2C address (РЅР° РїР»Р°С‚РµSTM32F746G-DISCO): 0x34
+#define WM8994_ADDRESS_W	0x34	// I2C address (на платеSTM32F746G-DISCO): 0x34
 
-// РЈСЃР»РѕРІРёРµ РёСЃРїРѕР»СЊР·РѕРІР°РЅРёСЏ РѕРїС‚РёРјРёР·РёСЂРѕРІР°РЅРЅС‹С… С„СѓРЅРєС†РёР№ РѕР±СЂР°С‰РµРЅРёСЏ Рє SPI
+// Условие использования оптимизированных функций обращения к SPI
 #define WITHSPIEXT16 (WITHSPIHW && WITHSPI16BIT)
 
 /* data is
@@ -49,7 +49,7 @@ static void wm8994_setreg(
 	)
 {
 #if CODEC_TYPE_WM8994_USE_SPI
-	// РєРѕРґРµРє СѓРїСЂР°РІР»СЏРµС‚СЃСЏ РїРѕ SPI
+	// кодек управляется по SPI
 	const spitarget_t target = targetcodec1;	/* addressing to chip */
 
 	#if WITHSPIEXT16
@@ -76,7 +76,7 @@ static void wm8994_setreg(
 
 #else /* CODEC_TYPE_WM8994_USE_SPI */
 
-	// РєРѕРґРµРє СѓРїСЂР°РІР»СЏРµС‚СЃСЏ РїРѕ I2C
+	// кодек управляется по I2C
 	i2c_start(WM8994_ADDRESS_W);
 	i2c_write(regv >> 8);
 	i2c_write(regv >> 0);
@@ -88,7 +88,7 @@ static void wm8994_setreg(
 #endif /* CODEC_TYPE_WM8994_USE_SPI */
 }
 
-/* РЈСЃС‚Р°РЅРѕРІРєР° РіСЂРѕРјРєРѕСЃС‚Рё РЅР° РЅР°СѓС€РЅРёРєРё */
+/* Установка громкости на наушники */
 static void wm8994_setvolume(uint_fast16_t gain, uint_fast8_t mute, uint_fast8_t mutespk)
 {
 	// 0x3F: +6 dB
@@ -100,14 +100,14 @@ static void wm8994_setvolume(uint_fast16_t gain, uint_fast8_t mute, uint_fast8_t
 	const uint_fast16_t mutehpmask = mute || (gain == BOARD_AFGAIN_MIN) ? 0x000 : 0x040;
 	const uint_fast16_t mutespkmask = mute || mutespk || (gain == BOARD_AFGAIN_MIN) ? 0x000 : 0x040;
 
-	// РЈСЃС‚Р°РЅРѕРІРєР° СѓСЂРѕРІРЅСЏ РІС‹РІРѕРґР° РЅР° РЅР°СѓС€РЅРёРєРё
+	// Установка уровня вывода на наушники
 	/* Left Headphone Volume */
 	wm8994_setreg(WM8994_LEFT_OUTPUT_VOLUME, levelhp | 0x000 | mutehpmask);	// pending update
 
 	/* Right Headphone Volume */
 	wm8994_setreg(WM8994_RIGHT_OUTPUT_VOLUME, levelhp | 0x100 | mutehpmask);
 
-	// РЈСЃС‚Р°РЅРѕРІРєР° СѓСЂРѕРІРЅСЏ РІС‹РІРѕРґР° РЅР° РґРёРЅР°РјРёРєРё
+	// Установка уровня вывода на динамики
 	/* Left Speaker Volume */
 	wm8994_setreg(WM8994_SPEAKER_VOLUME_LEFT, levelspk | 0x000 | mutespkmask);	// pending update
 
@@ -115,7 +115,7 @@ static void wm8994_setvolume(uint_fast16_t gain, uint_fast8_t mute, uint_fast8_t
 	wm8994_setreg(WM8994_SPEAKER_VOLUME_RIGHT, levelspk | 0x100 | mutespkmask);
 }
 
-/* Р’С‹Р±РѕСЂ LINE IN РєР°Рє РёСЃС‚РѕС‡РЅРёРєР° РґР»СЏ РђР¦Рџ РІРјРµСЃС‚Рѕ РјРёРєСЂРѕС„РѕРЅР° */
+/* Выбор LINE IN как источника для АЦП вместо микрофона */
 static void wm8994_lineinput(uint_fast8_t linein, uint_fast8_t mikebust20db, uint_fast16_t mikegain, uint_fast16_t linegain)
 {
 	// PGA codes:
@@ -126,11 +126,11 @@ static void wm8994_lineinput(uint_fast8_t linein, uint_fast8_t mikebust20db, uin
 	 /* Input volume */
 	if (linein != 0)
 	{
-		// РїРµСЂРµРєР»СЋС‡РµРЅРёРµ РЅР° Р»РёРЅРµР№РЅС‹Р№ РІС…РѕРґ
+		// переключение на линейный вход
 	}
 	else
 	{
-		// РїРµСЂРµРєР»СЋС‡РµРЅРёРµ РЅР° РјРёРєСЂРѕС„РѕРЅ
+		// переключение на микрофон
 		const uint_fast8_t mikepgaval = (mikegain - WITHMIKEINGAINMIN) * (0x3f) / (WITHMIKEINGAINMAX - WITHMIKEINGAINMIN) + 0x00;
 		/* Left AIF1 ADC1 volume */
 		wm8994_setreg(WM8994_AIF1_ADC1_LEFT_VOLUME, mikepgaval | 0x000);	// pending gain changes
@@ -146,15 +146,15 @@ static void wm8994_lineinput(uint_fast8_t linein, uint_fast8_t mikebust20db, uin
 	}
 
 #if 0
-	// РњРёРєСЂРѕС„РѕРЅ РїРѕРґРєР»СЋС‡РµРЅ Рє LMICN, LMICP=common
-	// Р’С…РѕРґС‹ RMICN, RMICP РЅРёРєСѓРґР° РЅРµ РїРѕРґРєР»СЋС‡РµРЅС‹
-	// Line input РїРѕРґРєР»СЋС‡РµРЅС‹ Рє LAUXIN, RAUXIN
+	// Микрофон подключен к LMICN, LMICP=common
+	// Входы RMICN, RMICP никуда не подключены
+	// Line input подключены к LAUXIN, RAUXIN
 //{0x0f, 0x1ff},
 //{0x10, 0x1ff},
 	if (linein != 0)
 	{
-		// РїРµСЂРµРєР»СЋС‡РµРЅРёРµ РЅР° Р»РёРЅРµР№РЅС‹Р№ РІС…РѕРґ
-		// Line input РїРѕРґРєР»СЋС‡РµРЅС‹ Рє LAUXIN, RAUXIN
+		// переключение на линейный вход
+		// Line input подключены к LAUXIN, RAUXIN
 		//const uint_fast8_t auxinpgaval = 0x1; // 1..7: -12..+6 dB
 		const uint_fast8_t auxinpgaval = (linegain - WITHLINEINGAINMIN) * (0x07 - 0x01) / (WITHLINEINGAINMAX - WITHLINEINGAINMIN) + 0x01;
 		//const uint_fast8_t auxinpgaval = 0x10;	// 0x10 - default, 0x00..0x3f mean -12 db..+35.25 dB in 0.75 dB step
@@ -167,8 +167,8 @@ static void wm8994_lineinput(uint_fast8_t linein, uint_fast8_t mikebust20db, uin
 	}
 	else
 	{
-		// РїРµСЂРµРєР»СЋС‡РµРЅРёРµ РЅР° РјРёРєСЂРѕС„РѕРЅ
-		// РњРёРєСЂРѕС„РѕРЅ РїРѕРґРєР»СЋС‡РµРЅ Рє LMICN, LMICP=common
+		// переключение на микрофон
+		// Микрофон подключен к LMICN, LMICP=common
 		//const uint_fast8_t mikepgaval = 0x10;	// 0x10 - default, 0x00..0x3f mean -12 db..+35.25 dB in 0.75 dB step
 		const uint_fast8_t mikepgaval = (mikegain - WITHMIKEINGAINMIN) * (0x3f) / (WITHMIKEINGAINMAX - WITHMIKEINGAINMIN) + 0x00;
 		//
@@ -180,7 +180,7 @@ static void wm8994_lineinput(uint_fast8_t linein, uint_fast8_t mikebust20db, uin
 		//
 	}
 
-	// РЈСЃС‚Р°РЅРѕРІРєР° С‡СѓРІСЃС‚РІРёС‚РµР»СЊРЅРѕСЃС‚СЊ РђР¦Рџ РЅРµ С‚СЂРµР±СѓРµС‚СЃСЏ - СЃС‚РѕРёС‚ РјР°РєСЃРёРјР°Р»СЊРЅР°СЏ РїРѕСЃР»Рµ СЃР±СЂРѕСЃР°
+	// Установка чувствительность АЦП не требуется - стоит максимальная после сброса
 	//uint_fast8_t level = 255;
 	//wm8994_setreg(WM8994_LEFT_ADC_DIGITAL_VOLUME, level | 0);
 	//wm8994_setreg(WM8994_RIGHT_ADC_DIGITAL_VOLUME, level | 0x100);
@@ -188,10 +188,10 @@ static void wm8994_lineinput(uint_fast8_t linein, uint_fast8_t mikebust20db, uin
 }
 
 
-/* РџР°СЂР°РјРµС‚СЂС‹ РѕР±СЂР°Р±РѕС‚РєРё Р·РІСѓРєР° СЃ РјРёРєСЂРѕС„РѕРЅР° (СЌС…Рѕ, СЌРєРІР°Р»Р°Р№Р·РµСЂ, ...) */
+/* Параметры обработки звука с микрофона (эхо, эквалайзер, ...) */
 static void wm8994_setprocparams(
-	uint_fast8_t procenable,		/* РІРєР»СЋС‡РµРЅРёРµ РѕР±СЂР°Р±РѕС‚РєРё */
-	const uint_fast8_t * gains		/* РјР°СЃСЃРёРІ СЃ РїР°СЂР°РјРµС‚СЂР°РјРё */
+	uint_fast8_t procenable,		/* включение обработки */
+	const uint_fast8_t * gains		/* массив с параметрами */
 	)
 {
 #if 0
@@ -199,18 +199,18 @@ static void wm8994_setprocparams(
 	//enum { wide = 0, freq = 1 }; // default settings
 	enum { wide = 1, freq = 0 }; // default settings
 
-	// РЎРјС‹СЃР» Р·РЅР°С‡РµРЅРёСЏ freq
+	// Смысл значения freq
 	//	freq	EQ1 (High Pass) EQ2 (Band Pass) EQ3 (Band Pass) EQ4 (Band Pass) EQ5 (Low Pass) 
 	//	0 		80Hz 			230Hz 			650Hz 			1.8kHz 			5.3kHz 
 	//	1 		105Hz 			300Hz 			850Hz 			2.4kHz 			6.9kHz 
 	//	2 		135Hz 			385Hz 			1.1kHz 			3.2kHz 			9.0kHz 
 	//	3 		175Hz 			500Hz 			1.4kHz 			4.1kHz 			11.7kHz 
 
-	// РќР°Р·РЅР°С‡РµРЅРёРµ СЂР°Р±РѕС‚С‹ СЌРєРІР°Р»Р°Р№Р·РµСЂР° РІ СЂС‚Р°РєС‚Рµ ADC РґРµР»Р°РµС‚СЃСЏ Р±РёС‚РѕРј 0x100 РІ СЂРіРёСЃС‚СЂРµ WM8994_EQ1
+	// Назначение работы эквалайзера в ртакте ADC делается битом 0x100 в ргистре WM8994_EQ1
 	if (procenable == 0)
 	{
-		// Р’С‹РєР»СЋС‡РµРЅРѕ - РІСЃРµ Р·РЅР°С‡РµРЅРёСЏ РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ
-		// digital gain control РґРѕР»Р¶РЅРѕ Р±С‹С‚СЊ РІ РґРёР°РїР°Р·РѕРЅРµ 0..24 (+12 db .. -12dB), 12 СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓРµС‚ 0 dB
+		// Выключено - все значения по умолчанию
+		// digital gain control должно быть в диапазоне 0..24 (+12 db .. -12dB), 12 соответствует 0 dB
 		enum { gain = 0 }; // default settings
 		wm8994_setreg(WM8994_EQ1, // low cutoff - 0x22C reset value
 			1 * (1u << 8) |	// 1 = block operates on digital stream to DAC
@@ -242,8 +242,8 @@ static void wm8994_setprocparams(
 #if HARDWARE_CODEC1_NPROCPARAMS != 5
 	#error Wrong value of HARDWARE_CODEC1_NPROCPARAMS
 #endif
-		// digital gain control РґРѕР»Р¶РЅРѕ Р±С‹С‚СЊ РІ РґРёР°РїР°Р·РѕРЅРµ 0..24 (+12 db .. -12dB), 12 СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓРµС‚ 0 dB
-		// Р’РєР»СЋС‡РµРЅРѕ
+		// digital gain control должно быть в диапазоне 0..24 (+12 db .. -12dB), 12 соответствует 0 dB
+		// Включено
 		wm8994_setreg(WM8994_EQ1, // low cutoff - 0x22C reset value
 			0 * (1u << 8) |	// 0 = block operates on digital stream from ADC, 1 = block operates on digital stream to DAC
 			freq * (1u << 5) | // Equalizer band 1 low pass -3dB cut-off frequency selection
@@ -615,14 +615,14 @@ board_getaudiocodecif(void)
 
 	static const char codecname [] = "WM8994";
 
-	/* РРЅС‚РµСЂС„РµР№СЃ С†РїСЂР°РІР»РµРЅРёСЏ РєРѕРґРµРєРѕРј */
+	/* Интерфейс цправления кодеком */
 	static const codec1if_t ifc =
 	{
 		wm8994_initialize_slave_fullduplex,
-		wm8994_setvolume,		/* РЈСЃС‚Р°РЅРѕРІРєР° РіСЂРѕРјРєРѕСЃС‚Рё РЅР° РЅР°СѓС€РЅРёРєРё */
-		wm8994_lineinput,		/* Р’С‹Р±РѕСЂ LINE IN РєР°Рє РёСЃС‚РѕС‡РЅРёРєР° РґР»СЏ РђР¦Рџ РІРјРµСЃС‚Рѕ РјРёРєСЂРѕС„РѕРЅР° */
-		wm8994_setprocparams,	/* РџР°СЂР°РјРµС‚СЂС‹ РѕР±СЂР°Р±РѕС‚РєРё Р·РІСѓРєР° СЃ РјРёРєСЂРѕС„РѕРЅР° (СЌС…Рѕ, СЌРєРІР°Р»Р°Р№Р·РµСЂ, ...) */
-		codecname				/* РќР°Р·РІР°РЅРёРµ РєРѕРґРµРєР° (РІСЃРµРіРґР° РїРѕСЃР»РµРґРЅРёР№ СЌР»РµРјРµРЅС‚ РІ СЃС‚СЂСѓРєС‚СѓСЂРµ) */
+		wm8994_setvolume,		/* Установка громкости на наушники */
+		wm8994_lineinput,		/* Выбор LINE IN как источника для АЦП вместо микрофона */
+		wm8994_setprocparams,	/* Параметры обработки звука с микрофона (эхо, эквалайзер, ...) */
+		codecname				/* Название кодека (всегда последний элемент в структуре) */
 	};
 
 	return & ifc;

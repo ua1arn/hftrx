@@ -1,7 +1,7 @@
 /* $Id$ */
 //
-// РџСЂРѕРµРєС‚ HF Dream Receiver (РљР’ РїСЂРёС‘РјРЅРёРє РјРµС‡С‚С‹)
-// Р°РІС‚РѕСЂ Р“РµРЅР° Р—Р°РІРёРґРѕРІСЃРєРёР№ mgs2001@mail.ru
+// Проект HF Dream Receiver (КВ приёмник мечты)
+// автор Гена Завидовский mgs2001@mail.ru
 // UA1ARN
 //
 #include "hardware.h"
@@ -14,16 +14,16 @@
 
 #if defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L)
 //
-// РЈРїСЂР°РІР»РµРЅРёРµ РєРѕРґРµРєРѕРј NOVOTON NAU8822L
+// Управление кодеком NOVOTON NAU8822L
 //
 #include "audio.h"
 #include "nau8822.h"
 
-// Clock period, SCLK no less then 80 nS (РЅРµ РІС‹С€Рµ 12.5 РњР“С†)
+// Clock period, SCLK no less then 80 nS (не выше 12.5 МГц)
 #define NAU8822_SPIMODE		SPIC_MODE3
 #define NAU8822_ADDRESS_W	0x34	// I2C address: 0x34
 
-// РЈСЃР»РѕРІРёРµ РёСЃРїРѕР»СЊР·РѕРІР°РЅРёСЏ РѕРїС‚РёРјРёР·РёСЂРѕРІР°РЅРЅС‹С… С„СѓРЅРєС†РёР№ РѕР±СЂР°С‰РµРЅРёСЏ Рє SPI
+// Условие использования оптимизированных функций обращения к SPI
 #define WITHSPIEXT16 (WITHSPIHW && WITHSPI16BIT)
 
 /* data is
@@ -50,7 +50,7 @@ static void nau8822_setreg(
 	const uint_fast16_t fulldata = regv * 512 + (datav & 0x1ff);
 
 #if CODEC_TYPE_NAU8822_USE_SPI
-	// РєРѕРґРµРє СѓРїСЂР°РІР»СЏРµС‚СЃСЏ РїРѕ SPI
+	// кодек управляется по SPI
 	const spitarget_t target = targetcodec1;	/* addressing to chip */
 
 	#if WITHSPIEXT16
@@ -74,7 +74,7 @@ static void nau8822_setreg(
 
 #else /* CODEC_TYPE_NAU8822_USE_SPI */
 
-	// РєРѕРґРµРє СѓРїСЂР°РІР»СЏРµС‚СЃСЏ РїРѕ I2C
+	// кодек управляется по I2C
 	i2c_start(NAU8822_ADDRESS_W);
 	i2c_write(fulldata >> 8);
 	i2c_write(fulldata >> 0);
@@ -84,7 +84,7 @@ static void nau8822_setreg(
 #endif /* CODEC_TYPE_NAU8822_USE_SPI */
 }
 
-/* РЈСЃС‚Р°РЅРѕРІРєР° РіСЂРѕРјРєРѕСЃС‚Рё РЅР° РЅР°СѓС€РЅРёРєРё */
+/* Установка громкости на наушники */
 static void nau8822_setvolume(uint_fast16_t gain, uint_fast8_t mute, uint_fast8_t mutespk)
 {
 	uint_fast8_t vmutehp = 0;
@@ -104,14 +104,14 @@ static void nau8822_setvolume(uint_fast16_t gain, uint_fast8_t mute, uint_fast8_
 	}
 	//debug_printf_P(PSTR("nau8822_setvolume: level=%02x start\n"), level);
 
-	// РЈСЃС‚Р°РЅРѕРІРєР° СѓСЂРѕРІРЅСЏ РІС‹РІРѕРґР° РЅР° РЅР°СѓС€РЅРёРєРё
+	// Установка уровня вывода на наушники
 	nau8822_setreg(NAU8822_LOUT1_HP_CONTROL, vmutehp | (levelhp & 0x3F) | 0);
 	nau8822_setreg(NAU8822_ROUT1_HP_CONTROL, vmutehp | (levelhp & 0x3F) | 0x100);
 
 //{0x34, 0x139},
 //{0x35, 0x139},
 
-	// РЈСЃС‚Р°РЅРѕРІРєР° СѓСЂРѕРІРЅСЏ РІС‹РІРѕРґР° РЅР° РґРёРЅР°РјРёРє
+	// Установка уровня вывода на динамик
 	nau8822_setreg(NAU8822_LOUT2_SPK_CONTROL, vmutespk | (levelspk & 0x3F) | 0);
 	nau8822_setreg(NAU8822_ROUT2_SPK_CONTROL, vmutespk | (levelspk & 0x3F) | 0x100);
 //{0x36, 0x139},
@@ -119,18 +119,18 @@ static void nau8822_setvolume(uint_fast16_t gain, uint_fast8_t mute, uint_fast8_
 
 }
 
-/* Р’С‹Р±РѕСЂ LINE IN РєР°Рє РёСЃС‚РѕС‡РЅРёРєР° РґР»СЏ РђР¦Рџ РІРјРµСЃС‚Рѕ РјРёРєСЂРѕС„РѕРЅР° */
+/* Выбор LINE IN как источника для АЦП вместо микрофона */
 static void nau8822_lineinput(uint_fast8_t linein, uint_fast8_t mikebust20db, uint_fast16_t mikegain, uint_fast16_t linegain)
 {
-	// РњРёРєСЂРѕС„РѕРЅ РїРѕРґРєР»СЋС‡РµРЅ Рє LMICN, LMICP=common
-	// Р’С…РѕРґС‹ RMICN, RMICP РЅРёРєСѓРґР° РЅРµ РїРѕРґРєР»СЋС‡РµРЅС‹
-	// Line input РїРѕРґРєР»СЋС‡РµРЅС‹ Рє LAUXIN, RAUXIN
+	// Микрофон подключен к LMICN, LMICP=common
+	// Входы RMICN, RMICP никуда не подключены
+	// Line input подключены к LAUXIN, RAUXIN
 //{0x0f, 0x1ff},
 //{0x10, 0x1ff},
 	if (linein != 0)
 	{
-		// РїРµСЂРµРєР»СЋС‡РµРЅРёРµ РЅР° Р»РёРЅРµР№РЅС‹Р№ РІС…РѕРґ
-		// Line input РїРѕРґРєР»СЋС‡РµРЅС‹ Рє LAUXIN, RAUXIN
+		// переключение на линейный вход
+		// Line input подключены к LAUXIN, RAUXIN
 		//const uint_fast8_t auxinpgaval = 0x1; // 1..7: -12..+6 dB
 		const uint_fast8_t auxinpgaval = (linegain - WITHLINEINGAINMIN) * (0x07 - 0x01) / (WITHLINEINGAINMAX - WITHLINEINGAINMIN) + 0x01;
 		//const uint_fast8_t auxinpgaval = 0x10;	// 0x10 - default, 0x00..0x3f mean -12 db..+35.25 dB in 0.75 dB step
@@ -143,8 +143,8 @@ static void nau8822_lineinput(uint_fast8_t linein, uint_fast8_t mikebust20db, ui
 	}
 	else
 	{
-		// РїРµСЂРµРєР»СЋС‡РµРЅРёРµ РЅР° РјРёРєСЂРѕС„РѕРЅ
-		// РњРёРєСЂРѕС„РѕРЅ РїРѕРґРєР»СЋС‡РµРЅ Рє LMICN, LMICP=common
+		// переключение на микрофон
+		// Микрофон подключен к LMICN, LMICP=common
 		//const uint_fast8_t mikepgaval = 0x10;	// 0x10 - default, 0x00..0x3f mean -12 db..+35.25 dB in 0.75 dB step
 		const uint_fast8_t mikepgaval = (mikegain - WITHMIKEINGAINMIN) * (0x3f) / (WITHMIKEINGAINMAX - WITHMIKEINGAINMIN) + 0x00;
 		//
@@ -158,28 +158,28 @@ static void nau8822_lineinput(uint_fast8_t linein, uint_fast8_t mikebust20db, ui
 }
 
 
-/* РџР°СЂР°РјРµС‚СЂС‹ РѕР±СЂР°Р±РѕС‚РєРё Р·РІСѓРєР° СЃ РјРёРєСЂРѕС„РѕРЅР° (СЌС…Рѕ, СЌРєРІР°Р»Р°Р№Р·РµСЂ, ...) */
+/* Параметры обработки звука с микрофона (эхо, эквалайзер, ...) */
 static void nau8822_setprocparams(
-	uint_fast8_t procenable,		/* РІРєР»СЋС‡РµРЅРёРµ РѕР±СЂР°Р±РѕС‚РєРё */
-	const uint_fast8_t * gains		/* РјР°СЃСЃРёРІ СЃ РїР°СЂР°РјРµС‚СЂР°РјРё */
+	uint_fast8_t procenable,		/* включение обработки */
+	const uint_fast8_t * gains		/* массив с параметрами */
 	)
 {
 	//debug_printf_P(PSTR("codec: procenable=%d, gains={ %2d,%2d,%2d,%2d,%2d }\n"), procenable, gains [0], gains [1], gains [2], gains [3], gains [4]);
 	//enum { wide = 0, freq = 1 }; // default settings
 	enum { wide = 1, freq = 0 }; // default settings
 
-	// РЎРјС‹СЃР» Р·РЅР°С‡РµРЅРёСЏ freq
+	// Смысл значения freq
 	//	freq	EQ1 (High Pass) EQ2 (Band Pass) EQ3 (Band Pass) EQ4 (Band Pass) EQ5 (Low Pass) 
 	//	0 		80Hz 			230Hz 			650Hz 			1.8kHz 			5.3kHz 
 	//	1 		105Hz 			300Hz 			850Hz 			2.4kHz 			6.9kHz 
 	//	2 		135Hz 			385Hz 			1.1kHz 			3.2kHz 			9.0kHz 
 	//	3 		175Hz 			500Hz 			1.4kHz 			4.1kHz 			11.7kHz 
 
-	// РќР°Р·РЅР°С‡РµРЅРёРµ СЂР°Р±РѕС‚С‹ СЌРєРІР°Р»Р°Р№Р·РµСЂР° РІ СЂС‚Р°РєС‚Рµ ADC РґРµР»Р°РµС‚СЃСЏ Р±РёС‚РѕРј 0x100 РІ СЂРіРёСЃС‚СЂРµ NAU8822_EQ1
+	// Назначение работы эквалайзера в ртакте ADC делается битом 0x100 в ргистре NAU8822_EQ1
 	if (procenable == 0)
 	{
-		// Р’С‹РєР»СЋС‡РµРЅРѕ - РІСЃРµ Р·РЅР°С‡РµРЅРёСЏ РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ
-		// digital gain control РґРѕР»Р¶РЅРѕ Р±С‹С‚СЊ РІ РґРёР°РїР°Р·РѕРЅРµ 0..24 (+12 db .. -12dB), 12 СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓРµС‚ 0 dB
+		// Выключено - все значения по умолчанию
+		// digital gain control должно быть в диапазоне 0..24 (+12 db .. -12dB), 12 соответствует 0 dB
 		enum { gain = 0 }; // default settings
 		nau8822_setreg(NAU8822_EQ1, // low cutoff - 0x22C reset value
 			1 * (1u << 8) |	// 1 = block operates on digital stream to DAC
@@ -211,8 +211,8 @@ static void nau8822_setprocparams(
 #if HARDWARE_CODEC1_NPROCPARAMS != 5
 	#error Wrong value of HARDWARE_CODEC1_NPROCPARAMS
 #endif
-		// digital gain control РґРѕР»Р¶РЅРѕ Р±С‹С‚СЊ РІ РґРёР°РїР°Р·РѕРЅРµ 0..24 (+12 db .. -12dB), 12 СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓРµС‚ 0 dB
-		// Р’РєР»СЋС‡РµРЅРѕ
+		// digital gain control должно быть в диапазоне 0..24 (+12 db .. -12dB), 12 соответствует 0 dB
+		// Включено
 		nau8822_setreg(NAU8822_EQ1, // low cutoff - 0x22C reset value
 			0 * (1u << 8) |	// 0 = block operates on digital stream from ADC, 1 = block operates on digital stream to DAC
 			freq * (1u << 5) | // Equalizer band 1 low pass -3dB cut-off frequency selection
@@ -246,12 +246,12 @@ static void nau8822_initialize_slave_fullduplex(void)
 
 	nau8822_setreg(NAU8822_RESET, 0x00);	// RESET
 
-	const uint_fast8_t level = 0;	// Р”Рѕ РёРЅРёС†РёР°Р»РёР·Р°С†РёРё С‚РёС€РёРЅР°
-	// РЈСЃС‚Р°РЅРѕРІРєР° СѓСЂРѕРІРЅСЏ РІС‹РІРѕРґР° РЅР° РЅР°СѓС€РЅРёРєРё
+	const uint_fast8_t level = 0;	// До инициализации тишина
+	// Установка уровня вывода на наушники
 	nau8822_setreg(NAU8822_LOUT1_HP_CONTROL, level | 0);
 	nau8822_setreg(NAU8822_ROUT1_HP_CONTROL, level | 0x100);
 
-	// РЈСЃС‚Р°РЅРѕРІРєР° СѓСЂРѕРІРЅСЏ РІС‹РІРѕРґР° РЅР° РґРёРЅР°РјРёРє
+	// Установка уровня вывода на динамик
 	nau8822_setreg(NAU8822_LOUT2_SPK_CONTROL, level | 0);
 	nau8822_setreg(NAU8822_ROUT2_SPK_CONTROL, level | 0x100);
 
@@ -287,7 +287,7 @@ static void nau8822_initialize_slave_fullduplex(void)
 
 #endif /* CODEC_TYPE_NAU8822_USE_8KS */
 
-	// РЈСЃС‚Р°РЅРѕРІРєР° РїР°СЂР°РјРµС‚СЂРѕРІ СѓРјРЅРѕР¶РёС‚РµР»СЏ Р·Р° Р¦РђРџ РЅРµ С‚СЂРµР±СѓРµС‚СЃСЏ - РІСЃРµРіРґР° РјР°РєСЃРёРјР°Р»СЊРЅС‹Р№ СѓСЂРѕРІРµРЅСЊ.
+	// Установка параметров умножителя за ЦАП не требуется - всегда максимальный уровень.
 	//nau8822_setreg(NAU8822_LEFT_DAC_DIGITAL_VOLUME, 255 | 0);
 	//nau8822_setreg(NAU8822_RIGHT_DAC_DIGITAL_VOLUME, 255 | 0x100);
 //{0xb , 0x1ff},
@@ -311,11 +311,11 @@ static void nau8822_initialize_slave_fullduplex(void)
 	nau8822_setreg(NAU8822_LEFT_MIXER_CONTROL, 0x001);
 	nau8822_setreg(NAU8822_RIGHT_MIXER_CONTROL, 0x001);
 
-	// РњРёРєСЂРѕС„РѕРЅ РїРѕРґРєР»СЋС‡РµРЅ Рє LMICN, LMICP=common
+	// Микрофон подключен к LMICN, LMICP=common
 	nau8822_setreg(NAU8822_INPUT_CONTROL, 0x003);
 
-	// РЈСЃС‚Р°РЅРѕРІРєР° С‡СѓРІСЃС‚РІРёС‚РµР»СЊРЅРѕСЃС‚СЊ РђР¦Рџ РЅРµ С‚СЂРµР±СѓРµС‚СЃСЏ - СЃС‚РѕРёС‚ РјР°РєСЃРёРјР°Р»СЊРЅР°СЏ РїРѕСЃР»Рµ СЃР±СЂРѕСЃР°
-	// РЅРѕ РЅР° РІСЃСЏРєРёР№ СЃР»СѓСЏР°Р№ РґР»СЏ РїРѕРЅСЏС‚РЅРѕСЃС‚Рё РїСЂРѕРіСЂР°РјРёСЂСѓРµРј.
+	// Установка чувствительность АЦП не требуется - стоит максимальная после сброса
+	// но на всякий слуяай для понятности програмируем.
 	const uint_fast8_t mklevel = 255;
 	nau8822_setreg(NAU8822_LEFT_ADC_DIGITAL_VOLUME, mklevel | 0);
 	nau8822_setreg(NAU8822_RIGHT_ADC_DIGITAL_VOLUME, mklevel | 0x100);
@@ -331,14 +331,14 @@ board_getaudiocodecif(void)
 
 	static const char codecname [] = "NAU8822";
 
-	/* РРЅС‚РµСЂС„РµР№СЃ С†РїСЂР°РІР»РµРЅРёСЏ РєРѕРґРµРєРѕРј */
+	/* Интерфейс цправления кодеком */
 	static const codec1if_t ifc =
 	{
 		nau8822_initialize_slave_fullduplex,
-		nau8822_setvolume,		/* РЈСЃС‚Р°РЅРѕРІРєР° РіСЂРѕРјРєРѕСЃС‚Рё РЅР° РЅР°СѓС€РЅРёРєРё */
-		nau8822_lineinput,		/* Р’С‹Р±РѕСЂ LINE IN РєР°Рє РёСЃС‚РѕС‡РЅРёРєР° РґР»СЏ РђР¦Рџ РІРјРµСЃС‚Рѕ РјРёРєСЂРѕС„РѕРЅР° */
-		nau8822_setprocparams,	/* РџР°СЂР°РјРµС‚СЂС‹ РѕР±СЂР°Р±РѕС‚РєРё Р·РІСѓРєР° СЃ РјРёРєСЂРѕС„РѕРЅР° (СЌС…Рѕ, СЌРєРІР°Р»Р°Р№Р·РµСЂ, ...) */
-		codecname				/* РќР°Р·РІР°РЅРёРµ РєРѕРґРµРєР° (РІСЃРµРіРґР° РїРѕСЃР»РµРґРЅРёР№ СЌР»РµРјРµРЅС‚ РІ СЃС‚СЂСѓРєС‚СѓСЂРµ) */
+		nau8822_setvolume,		/* Установка громкости на наушники */
+		nau8822_lineinput,		/* Выбор LINE IN как источника для АЦП вместо микрофона */
+		nau8822_setprocparams,	/* Параметры обработки звука с микрофона (эхо, эквалайзер, ...) */
+		codecname				/* Название кодека (всегда последний элемент в структуре) */
 	};
 
 	return & ifc;

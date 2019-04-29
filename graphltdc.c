@@ -1,7 +1,7 @@
 /* $Id$ */
 //
-// РџСЂРѕРµРєС‚ HF Dream Receiver (РљР’ РїСЂРёС‘РјРЅРёРє РјРµС‡С‚С‹)
-// Р°РІС‚РѕСЂ Р“РµРЅР° Р—Р°РІРёРґРѕРІСЃРєРёР№ mgs2001@mail.ru
+// Проект HF Dream Receiver (КВ приёмник мечты)
+// автор Гена Завидовский mgs2001@mail.ru
 // UA1ARN
 //
 // STM32F42XX LCD-TFT Controller (LTDC)
@@ -24,7 +24,7 @@
 #if LCDMODE_LQ043T3DX02K
 	// Sony PSP-1000 display panel
 	// LQ043T3DX02K panel (272*480)
-	// RK043FN48H-CT672B  panel (272*480) - РїР»Р°С‚Р° STM32F746G-DISCO
+	// RK043FN48H-CT672B  panel (272*480) - плата STM32F746G-DISCO
 	/** 
 	  * @brief  RK043FN48H Size  
 	  */    
@@ -301,21 +301,21 @@ VDC5_fillLUT_L8(
 
 		switch (color)
 		{
-		case TFTRGB(0, 0, 0)			/*COLOR_BLACK*/:		XRGB(0, 0, 0);			break;	// 0x00 С‡РµСЂРЅС‹Р№
-		case TFTRGB(255, 0, 0)			/*COLOR_RED*/:			XRGB(255, 0, 0);		break; 	// 0xE0 РєСЂР°СЃРЅС‹Р№
-		case TFTRGB(0, 255, 0)			/*COLOR_GREEN*/:		XRGB(0, 255, 0);		break; 	// 0x1C Р·РµР»РµРЅС‹Р№
-		case TFTRGB(0, 0, 255)			/*COLOR_BLUE*/:			XRGB(0, 0, 255);		break; 	// 0x03 СЃРёРЅРёР№
+		case TFTRGB(0, 0, 0)			/*COLOR_BLACK*/:		XRGB(0, 0, 0);			break;	// 0x00 черный
+		case TFTRGB(255, 0, 0)			/*COLOR_RED*/:			XRGB(255, 0, 0);		break; 	// 0xE0 красный
+		case TFTRGB(0, 255, 0)			/*COLOR_GREEN*/:		XRGB(0, 255, 0);		break; 	// 0x1C зеленый
+		case TFTRGB(0, 0, 255)			/*COLOR_BLUE*/:			XRGB(0, 0, 255);		break; 	// 0x03 синий
 		case TFTRGB(128, 0, 0)			/*COLOR_DARKRED*/:		XRGB(128, 0, 0);		break; 	// 
 		case TFTRGB(0, 128, 0)			/*COLOR_DARKGREEN*/:	XRGB(0, 128, 0);		break; 	// 
 		case TFTRGB(0, 0, 128)			/*COLOR_DARKBLUE*/:		XRGB(0, 0, 128);		break; 	// 
-		case TFTRGB(255, 255, 0)		/*COLOR_YELLOW*/:		XRGB(255, 255, 0);		break; 	// 0xFC Р¶РµР»С‚С‹Р№
-		case TFTRGB(255, 0, 255)		/*COLOR_MAGENTA*/:		XRGB(255, 0, 255);		break; 	// 0x83 РїСѓСЂРїСѓСЂРЅС‹Р№
-		case TFTRGB(0, 255, 255)		/*COLOR_CYAN*/:			XRGB(0, 255, 255);		break; 	// 0x1F РіРѕР»СѓР±РѕР№
-		case TFTRGB(255, 255, 255)		/*COLOR_WHITE*/:		XRGB(255, 255, 255);	break;  // 0xff	Р±РµР»С‹Р№
-		case TFTRGB(128, 128, 128)		/*COLOR_GRAY*/:			XRGB(128, 128, 128);	break; 	// СЃРµСЂС‹Р№
-		case TFTRGB(0xa5, 0x2a, 0x2a)	/*COLOR_BROWN*/:		XRGB(0xa5, 0x2a, 0x2a);	break; 	// 0x64 РєРѕСЂРёС‡РЅРµРІС‹Р№
-		case TFTRGB(0xff, 0xd7, 0x00)	/*COLOR_GOLD*/:			XRGB(0xff, 0xd7, 0x00);	break; 	// 0xF4 Р·РѕР»РѕС‚Рѕ
-		case TFTRGB(0xd1, 0xe2, 0x31)	/*COLOR_PEAR*/:			XRGB(0xd1, 0xe2, 0x31);	break; 	// 0xDC РіСЂСѓС€РµРІС‹Р№
+		case TFTRGB(255, 255, 0)		/*COLOR_YELLOW*/:		XRGB(255, 255, 0);		break; 	// 0xFC желтый
+		case TFTRGB(255, 0, 255)		/*COLOR_MAGENTA*/:		XRGB(255, 0, 255);		break; 	// 0x83 пурпурный
+		case TFTRGB(0, 255, 255)		/*COLOR_CYAN*/:			XRGB(0, 255, 255);		break; 	// 0x1F голубой
+		case TFTRGB(255, 255, 255)		/*COLOR_WHITE*/:		XRGB(255, 255, 255);	break;  // 0xff	белый
+		case TFTRGB(128, 128, 128)		/*COLOR_GRAY*/:			XRGB(128, 128, 128);	break; 	// серый
+		case TFTRGB(0xa5, 0x2a, 0x2a)	/*COLOR_BROWN*/:		XRGB(0xa5, 0x2a, 0x2a);	break; 	// 0x64 коричневый
+		case TFTRGB(0xff, 0xd7, 0x00)	/*COLOR_GOLD*/:			XRGB(0xff, 0xd7, 0x00);	break; 	// 0xF4 золото
+		case TFTRGB(0xd1, 0xe2, 0x31)	/*COLOR_PEAR*/:			XRGB(0xd1, 0xe2, 0x31);	break; 	// 0xDC грушевый
 #undef XRGB
 		default:
 			r = ((color & 0xe0) << 0) | ((color & 0x80) ? 0x1f : 0);	// red
@@ -323,7 +323,7 @@ VDC5_fillLUT_L8(
 			b = ((color & 0x03) << 6) | ((color & 0x02) ? 0x3f : 0);	// blue
 			break;
 		}
-		/* Р·Р°РїРёСЃСЊ Р·РЅР°С‡РµРЅРёР№ РІ СЂРµРіРёСЃС‚СЂС‹ РїР°Р»РёС‚СЂС‹ */
+		/* запись значений в регистры палитры */
 		SETREG32_CK(reg + color, 8, 24, 0x00);	// alpha
 		SETREG32_CK(reg + color, 8, 16, r);
 		SETREG32_CK(reg + color, 8, 8, g);
@@ -648,7 +648,7 @@ void arm_hardware_ltdc_pip_off(void)	// set PIP framebuffer address
 static void vdc5fb_init_graphics(struct st_vdc5 * const vdc)
 {
 
-	const unsigned ROWSIZE = sizeof framebuff [0];	// СЂР°Р·РјРµСЂ РѕРґРЅРѕР№ СЃС‚СЂРѕРєРё РІ Р±Р°Р№С‚Р°С…
+	const unsigned ROWSIZE = sizeof framebuff [0];	// размер одной строки в байтах
 
 #if LCDMODE_LTDC_L8
 	const unsigned grx_format_MAIN = 0x05;	// GRx_FORMAT 5: CLUT8
@@ -920,7 +920,7 @@ static void vdc5fb_init_outcnt(struct st_vdc5 * const vdc)
 	////////////////////////////////////////////////////////////////
 	// OUT
 	SETREG32_CK(& vdc->OUT_CLK_PHASE, 1, 8, 0x00);	// OUTCNT_LCD_EDGE 0: Output changed at the rising edge of LCD_CLK pin, data latched at falling edge
-	SETREG32_CK(& vdc->OUT_SET, 2, 8, 0x00);	// OUT_FRQ_SEL Clock Frequency Control 0: 100% speed вЂ” (parallel RGB)
+	SETREG32_CK(& vdc->OUT_SET, 2, 8, 0x00);	// OUT_FRQ_SEL Clock Frequency Control 0: 100% speed — (parallel RGB)
 	SETREG32_CK(& vdc->OUT_SET, 2, 12, 0x02);	// OUT_FORMAT Output Format Select 2: RGB565
 
 #if 0
@@ -1238,7 +1238,7 @@ arm_hardware_ltdc_initialize(void)
 	struct st_vdc5 * const vdc = & VDC50;
 
 	debug_printf_P(PSTR("arm_hardware_ltdc_initialize start, WIDTH=%d, HEIGHT=%d\n"), WIDTH, HEIGHT);
-	const unsigned ROWSIZE = sizeof framebuff [0];	// СЂР°Р·РјРµСЂ РѕРґРЅРѕР№ СЃС‚СЂРѕРєРё РІ Р±Р°Р№С‚Р°С…
+	const unsigned ROWSIZE = sizeof framebuff [0];	// размер одной строки в байтах
 
 
 	/* ---- Supply clock to the video display controller 5  ---- */
@@ -1258,7 +1258,7 @@ arm_hardware_ltdc_initialize(void)
 
 
 	/* Configure the LCD Control pins */
-	HARDWARE_LTDC_INITIALIZE(BOARD_DEMODE);	// РїРѕРґРєР»СЋС‡РµРЅРёРµ Рє РІС‹РІРѕРґР°Рј РїСЂРѕС†РµСЃСЃРѕСЂР° СЃРёРіРЅР°Р»РѕРІ РїРµСЂРёС„РµСЂРёР№РЅРѕРіРѕ РєРѕРЅС‚СЂРѕР»Р»РµСЂР°
+	HARDWARE_LTDC_INITIALIZE(BOARD_DEMODE);	// подключение к выводам процессора сигналов периферийного контроллера
 
 #if defined (BOARD_DEVALUE)
 	HARDWARE_LTDC_SET_DISP(BOARD_DEMODE, BOARD_DEVALUE);
@@ -1294,11 +1294,11 @@ arm_hardware_ltdc_initialize(void)
 /*
 This register defines the blending factors F1 and F2.
 The general blending formula is: BC = BF1 x C + BF2 x Cs
-вЂў BC = Blended color
-вЂў BF1 = Blend Factor 1
-вЂў C = Current layer color
-вЂў BF2 = Blend Factor 2
-вЂў Cs = subjacent layers blended color
+• BC = Blended color
+• BF1 = Blend Factor 1
+• C = Current layer color
+• BF2 = Blend Factor 2
+• Cs = subjacent layers blended color
 */
 #define LTDC_BlendingFactor1_CA                       (4 << LTDC_LxBFCR_BF1_Pos)	//((uint32_t)0x00000400)
 #define LTDC_BlendingFactor1_PAxCA                    (6 << LTDC_LxBFCR_BF1_Pos)	//((uint32_t)0x00000600)
@@ -1464,7 +1464,7 @@ typedef struct
 #if LCDMODE_LTDC_L24
 
 
-// РЎРѕР·РґР°С‘Рј РїР°Р»РёС‚СЂСѓ РІС‹РїРѕР»РЅСЏСЋС‰СѓСЋ РїСЂРѕСЃС‚Рѕ С‚СЂР°РЅСЃР»СЏС†РёСЋ Р·РЅР°С‡РµРЅРёСЏ 
+// Создаём палитру выполняющую просто трансляцию значения 
 static void
 fillLUT_L24(
 	LTDC_Layer_TypeDef* LTDC_Layerx
@@ -1476,7 +1476,7 @@ fillLUT_L24(
 	{
 		uint_fast8_t r = color, g = color, b = color;
 		
-		/* Р·Р°РїРёСЃСЊ Р·РЅР°С‡РµРЅРёР№ РІ СЂРµРіРёСЃС‚СЂС‹ РїР°Р»РёС‚СЂС‹ */
+		/* запись значений в регистры палитры */
 		LTDC_Layerx->CLUTWR = 
 			((color << 24) & LTDC_LxCLUTWR_CLUTADD) |
 			((r << 16) & LTDC_LxCLUTWR_RED) |
@@ -1503,21 +1503,21 @@ fillLUT_L8(
 
 		switch (color)
 		{
-		case TFTRGB(0, 0, 0)			/*COLOR_BLACK*/:		XRGB(0, 0, 0);			break;	// 0x00 С‡РµСЂРЅС‹Р№
-		case TFTRGB(255, 0, 0)			/*COLOR_RED*/:			XRGB(255, 0, 0);		break; 	// 0xE0 РєСЂР°СЃРЅС‹Р№
-		case TFTRGB(0, 255, 0)			/*COLOR_GREEN*/:		XRGB(0, 255, 0);		break; 	// 0x1C Р·РµР»РµРЅС‹Р№
-		case TFTRGB(0, 0, 255)			/*COLOR_BLUE*/:			XRGB(0, 0, 255);		break; 	// 0x03 СЃРёРЅРёР№
+		case TFTRGB(0, 0, 0)			/*COLOR_BLACK*/:		XRGB(0, 0, 0);			break;	// 0x00 черный
+		case TFTRGB(255, 0, 0)			/*COLOR_RED*/:			XRGB(255, 0, 0);		break; 	// 0xE0 красный
+		case TFTRGB(0, 255, 0)			/*COLOR_GREEN*/:		XRGB(0, 255, 0);		break; 	// 0x1C зеленый
+		case TFTRGB(0, 0, 255)			/*COLOR_BLUE*/:			XRGB(0, 0, 255);		break; 	// 0x03 синий
 		case TFTRGB(128, 0, 0)			/*COLOR_DARKRED*/:		XRGB(128, 0, 0);		break; 	// 
 		case TFTRGB(0, 128, 0)			/*COLOR_DARKGREEN*/:	XRGB(0, 128, 0);		break; 	// 
 		case TFTRGB(0, 0, 128)			/*COLOR_DARKBLUE*/:		XRGB(0, 0, 128);		break; 	// 
-		case TFTRGB(255, 255, 0)		/*COLOR_YELLOW*/:		XRGB(255, 255, 0);		break; 	// 0xFC Р¶РµР»С‚С‹Р№
-		case TFTRGB(255, 0, 255)		/*COLOR_MAGENTA*/:		XRGB(255, 0, 255);		break; 	// 0x83 РїСѓСЂРїСѓСЂРЅС‹Р№
-		case TFTRGB(0, 255, 255)		/*COLOR_CYAN*/:			XRGB(0, 255, 255);		break; 	// 0x1F РіРѕР»СѓР±РѕР№
-		case TFTRGB(255, 255, 255)		/*COLOR_WHITE*/:		XRGB(255, 255, 255);	break;  // 0xff	Р±РµР»С‹Р№
-		case TFTRGB(128, 128, 128)		/*COLOR_GRAY*/:			XRGB(128, 128, 128);	break; 	// СЃРµСЂС‹Р№
-		case TFTRGB(0xa5, 0x2a, 0x2a)	/*COLOR_BROWN*/:		XRGB(0xa5, 0x2a, 0x2a);	break; 	// 0x64 РєРѕСЂРёС‡РЅРµРІС‹Р№
-		case TFTRGB(0xff, 0xd7, 0x00)	/*COLOR_GOLD*/:			XRGB(0xff, 0xd7, 0x00);	break; 	// 0xF4 Р·РѕР»РѕС‚Рѕ
-		case TFTRGB(0xd1, 0xe2, 0x31)	/*COLOR_PEAR*/:			XRGB(0xd1, 0xe2, 0x31);	break; 	// 0xDC РіСЂСѓС€РµРІС‹Р№
+		case TFTRGB(255, 255, 0)		/*COLOR_YELLOW*/:		XRGB(255, 255, 0);		break; 	// 0xFC желтый
+		case TFTRGB(255, 0, 255)		/*COLOR_MAGENTA*/:		XRGB(255, 0, 255);		break; 	// 0x83 пурпурный
+		case TFTRGB(0, 255, 255)		/*COLOR_CYAN*/:			XRGB(0, 255, 255);		break; 	// 0x1F голубой
+		case TFTRGB(255, 255, 255)		/*COLOR_WHITE*/:		XRGB(255, 255, 255);	break;  // 0xff	белый
+		case TFTRGB(128, 128, 128)		/*COLOR_GRAY*/:			XRGB(128, 128, 128);	break; 	// серый
+		case TFTRGB(0xa5, 0x2a, 0x2a)	/*COLOR_BROWN*/:		XRGB(0xa5, 0x2a, 0x2a);	break; 	// 0x64 коричневый
+		case TFTRGB(0xff, 0xd7, 0x00)	/*COLOR_GOLD*/:			XRGB(0xff, 0xd7, 0x00);	break; 	// 0xF4 золото
+		case TFTRGB(0xd1, 0xe2, 0x31)	/*COLOR_PEAR*/:			XRGB(0xd1, 0xe2, 0x31);	break; 	// 0xDC грушевый
 #undef XRGB
 		default:
 			r = ((color & 0xe0) << 0) | ((color & 0x80) ? 0x1f : 0);	// red
@@ -1525,7 +1525,7 @@ fillLUT_L8(
 			b = ((color & 0x03) << 6) | ((color & 0x02) ? 0x3f : 0);	// blue
 			break;
 		}
-		/* Р·Р°РїРёСЃСЊ Р·РЅР°С‡РµРЅРёР№ РІ СЂРµРіРёСЃС‚СЂС‹ РїР°Р»РёС‚СЂС‹ */
+		/* запись значений в регистры палитры */
 		LTDC_Layerx->CLUTWR = 
 			((color << LTDC_LxCLUTWR_CLUTADD_Pos) & LTDC_LxCLUTWR_CLUTADD) |
 			((r << LTDC_LxCLUTWR_RED_Pos) & LTDC_LxCLUTWR_RED) |
@@ -1578,7 +1578,7 @@ LTDC_LayerInit(LTDC_Layer_TypeDef* LTDC_Layerx, const LTDC_Layer_InitTypeDef* LT
 	LTDC_Layerx->DCCR = LTDC_Layer_InitStruct->LTDC_DefaultColor;
 
 	/* Specifies the constant alpha value */      
-	// alpha РєР°РЅР°Р» РµСЃР»Рё РІ РІРёРґРµРѕР±СѓС„РµСЂРµ РЅРµ С…СЂР°РЅРёС‚СЃСЏ Р·РЅР°С‡РµРЅРёРµ РІ РєР°Р¶РґРѕРј РїРёРєСЃРµР»Рµ
+	// alpha канал если в видеобуфере не хранится значение в каждом пикселе
 	LTDC_Layerx->CACR = (LTDC_Layerx->CACR & ~ (LTDC_LxCACR_CONSTA)) |
 		(LTDC_Layer_InitStruct->LTDC_ConstantAlpha << LTDC_LxCACR_CONSTA_Pos) |
 		0;
@@ -1654,10 +1654,10 @@ static void LCD_LayerInit(
 	const pipparams_t * wnd,
 	uint32_t LTDC_PixelFormat,
 	unsigned scale_h,
-	unsigned pixelsize	// РґР»СЏ СЂР°СЃС‡РµС‚Р° СЂР°Р·РјРµСЂР° СЃС‚СЂРѕРєРё РІ Р±Р°Р№С‚Р°С…
+	unsigned pixelsize	// для расчета размера строки в байтах
 	)
 {
-	const unsigned ROWSIZE = (pixelsize * wnd->w);	// СЂР°Р·РјРµСЂ РѕРґРЅРѕР№ СЃС‚СЂРѕРєРё РІ Р±Р°Р№С‚Р°С…
+	const unsigned ROWSIZE = (pixelsize * wnd->w);	// размер одной строки в байтах
 
 	LTDC_Layer_InitTypeDef LTDC_Layer_InitStruct; 
 	/* Windowing configuration */
@@ -1673,13 +1673,13 @@ static void LCD_LayerInit(
 
 	/* Pixel Format configuration*/
 	LTDC_Layer_InitStruct.LTDC_PixelFormat = LTDC_PixelFormat;
-	/* Alpha constant (255 totally opaque = РЅРµРїСЂРѕР·СЂР°С‡РЅС‹Р№) */
+	/* Alpha constant (255 totally opaque = непрозрачный) */
 	LTDC_Layer_InitStruct.LTDC_ConstantAlpha = 255; 
 	/* Default Color configuration (configure A,R,G,B component values) */          
-	LTDC_Layer_InitStruct.LTDC_DefaultColor = 0; // transparent=РїСЂРѕР·СЂР°С‡РЅС‹Р№ black color. outside active layer area        
+	LTDC_Layer_InitStruct.LTDC_DefaultColor = 0; // transparent=прозрачный black color. outside active layer area        
 	/* Configure blending factors */       
-	LTDC_Layer_InitStruct.LTDC_BlendingFactor_1 = LTDC_BlendingFactor1_CA; // СѓРјРЅРѕР¶РёС‚РµР»СЊ РґР»СЏ РїРёРєСЃРµР»СЏ РёР· С‚РµРєСѓС‰РµРіРѕ СЃР»РѕСЏ
-	LTDC_Layer_InitStruct.LTDC_BlendingFactor_2 = LTDC_BlendingFactor2_CA; // СѓРјРЅРѕР¶РёС‚РµР»СЊ РґР»СЏ РїРёРєСЃРµР»СЏ РёР· СЂР°СЃРїРѕР»РѕР¶РµРЅРЅРѕРіРѕ РЅРёР¶Рµ СЃР»РѕСЏ
+	LTDC_Layer_InitStruct.LTDC_BlendingFactor_1 = LTDC_BlendingFactor1_CA; // умножитель для пикселя из текущего слоя
+	LTDC_Layer_InitStruct.LTDC_BlendingFactor_2 = LTDC_BlendingFactor2_CA; // умножитель для пикселя из расположенного ниже слоя
 
 	/* the length of one line of pixels in bytes + 3 then :
 	Line Lenth = Active high width x number of bytes per pixel + 3 
@@ -1718,25 +1718,25 @@ static void LCD_LayerInit(
 
 #if WITHUSELTDCTRANSPARENCY
 
-// СЂР°Р±РѕС‚Р° СЃ РїСЂРѕР·СЂР°С‡РЅРѕСЃС‚СЊСЋ РЅР°Рґ Р·РѕРЅРѕР№ PIP
+// работа с прозрачностью над зоной PIP
 #define LAYER_PIP	LTDC_Layer1		// PIP layer
 #define LAYER_MAIN	LTDC_Layer2
 
 #else /* WITHUSELTDCTRANSPARENCY */
 
-// PIP РїРµСЂРµРєСЂС‹РІР°РµС‚ СЃР»РѕР№ РїРѕРґ РЅРёРј
+// PIP перекрывает слой под ним
 #define LAYER_PIP	LTDC_Layer2		// PIP layer = RGB565 format
 #define LAYER_MAIN	LTDC_Layer1		// L8 or RGB565 format
 
 #endif /* WITHUSELTDCTRANSPARENCY */
 
-/* РР·РјРµРЅРµРЅРёРµ РЅР°СЃС‚СЂРѕРµРє РґР»СЏ СЂР°Р±РѕС‚С‹ СЃР»РѕСЏ РєР°Рє "РІРµСЂС…РЅРµРіРѕ" РїСЂРё С„РѕСЂРјРёСЂРѕРІР°РЅРёРёРё РЅР°Р»РѕР¶РµРЅРёСЏ */
+/* Изменение настроек для работы слоя как "верхнего" при формированиии наложения */
 static void LCD_LayerInitMain(
 	LTDC_Layer_TypeDef* LTDC_Layerx
 	)
 {
-	// РїСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёРµ РёР· СѓРїР°РєРѕРІР°РЅРЅРѕРіРѕ РїРёРєСЃРµР»СЏ RGB565 РїРѕ РїСЂР°РІРёР»Р°Рј pfc LTDC
-	// РІ С‚СЂРµР±СѓСЋС‰РёР№СЃСЏ RGB888
+	// преобразование из упакованного пикселя RGB565 по правилам pfc LTDC
+	// в требующийся RGB888
 	const unsigned long key = COLOR_KEY;
 	const unsigned long keyr = (key >> 11) & 0x1F;
 	const unsigned long keyg = (key >> 6) & 0x3F;
@@ -1756,22 +1756,22 @@ static void LCD_LayerInitMain(
 #endif /* WITHUSELTDCTRANSPARENCY */
 
 #if 1
-	// alpha РєР°РЅР°Р» РµСЃР»Рё РІ РІРёРґРµРѕР±СѓС„РµСЂРµ РЅРµ С…СЂР°РЅРёС‚СЃСЏ Р·РЅР°С‡РµРЅРёРµ РІ РєР°Р¶РґРѕРј РїРёРєСЃРµР»Рµ
+	// alpha канал если в видеобуфере не хранится значение в каждом пикселе
 	LTDC_Layerx->CACR = (LTDC_Layerx->CACR & ~ (LTDC_LxCACR_CONSTA)) |
-		(255 << LTDC_LxCACR_CONSTA_Pos) |	/* Alpha constant (255 totally opaque=РЅРµРїСЂРѕР·СЂР°С‡РЅС‹Р№) */
+		(255 << LTDC_LxCACR_CONSTA_Pos) |	/* Alpha constant (255 totally opaque=непрозрачный) */
 		0;
 #endif
 }
 
-/* РР·РјРµРЅРµРЅРёРµ РЅР°СЃС‚СЂРѕРµРє РґР»СЏ СЂР°Р±РѕС‚С‹ СЃР»РѕСЏ РєР°Рє "РЅРёР¶РЅРµРіРѕ" РїСЂРё С„РѕСЂРјРёСЂРѕРІР°РЅРёРёРё РЅР°Р»РѕР¶РµРЅРёСЏ */
+/* Изменение настроек для работы слоя как "нижнего" при формированиии наложения */
 static void LCD_LayerInitPIP(
 	LTDC_Layer_TypeDef* LTDC_Layerx
 	)
 {
 #if 1
-	// alpha РєР°РЅР°Р» РµСЃР»Рё РІ РІРёРґРµРѕР±СѓС„РµСЂРµ РЅРµ С…СЂР°РЅРёС‚СЃСЏ Р·РЅР°С‡РµРЅРёРµ РІ РєР°Р¶РґРѕРј РїРёРєСЃРµР»Рµ
+	// alpha канал если в видеобуфере не хранится значение в каждом пикселе
 	LTDC_Layerx->CACR = (LTDC_Layerx->CACR & ~ (LTDC_LxCACR_CONSTA)) |
-		(255 << LTDC_LxCACR_CONSTA_Pos) |	/* Alpha constant (255 totally opaque=РЅРµРїСЂРѕР·СЂР°С‡РЅС‹Р№) */
+		(255 << LTDC_LxCACR_CONSTA_Pos) |	/* Alpha constant (255 totally opaque=непрозрачный) */
 		0;
 #endif
 }
@@ -1781,7 +1781,7 @@ arm_hardware_ltdc_initialize(void)
 {
 	debug_printf_P(PSTR("arm_hardware_ltdc_initialize start, WIDTH=%d, HEIGHT=%d\n"), WIDTH, HEIGHT);
 
-	//const unsigned ROWSIZE = sizeof framebuff [0];	// СЂР°Р·РјРµСЂ РѕРґРЅРѕР№ СЃС‚СЂРѕРєРё РІ Р±Р°Р№С‚Р°С…
+	//const unsigned ROWSIZE = sizeof framebuff [0];	// размер одной строки в байтах
 	//const unsigned rowsize2 = (sizeof (PACKEDCOLOR_T) * DIM_SECOND);
 	//ASSERT(ROWSIZE == rowsize2);
 	debug_printf_P(PSTR("arm_hardware_ltdc_initialize: framebuff=%p\n"), framebuff);
@@ -1807,7 +1807,7 @@ arm_hardware_ltdc_initialize(void)
 #endif /* CPUSTYLE_STM32H7XX */
 
 	/* Configure the LCD Control pins */
-	HARDWARE_LTDC_INITIALIZE(BOARD_DEMODE);	// РїРѕРґРєР»СЋС‡РµРЅРёРµ Рє РІС‹РІРѕРґР°Рј РїСЂРѕС†РµСЃСЃРѕСЂР° СЃРёРіРЅР°Р»РѕРІ РїРµСЂРёС„РµСЂРёР№РЅРѕРіРѕ РєРѕРЅС‚СЂРѕР»Р»РµСЂР°
+	HARDWARE_LTDC_INITIALIZE(BOARD_DEMODE);	// подключение к выводам процессора сигналов периферийного контроллера
 
 	/* LTDC Initialization -------------------------------------------------------*/
 	LTDC_InitTypeDef LTDC_InitStruct;
@@ -1869,18 +1869,18 @@ arm_hardware_ltdc_initialize(void)
 	LCD_LayerInit(LAYER_MAIN, LEFTMARGIN, TOPMARGIN, & mainwnd, LTDC_Pixelformat_L8, 1, sizeof (PACKEDCOLOR_T));
 
 #else
-	/* Р‘РµР· РїР°Р»РёС‚СЂС‹ */
+	/* Без палитры */
 	LCD_LayerInit(LAYER_MAIN, LEFTMARGIN, TOPMARGIN, & mainwnd, LTDC_Pixelformat_RGB565, 1, sizeof (PACKEDCOLOR_T));
 
 #endif /* LCDMODE_LTDC_L8 */
 
 #if LCDMODE_LTDC_PIP16
 
-	LCD_LayerInitMain(LAYER_MAIN);	// РґРѕРІРµСЃС‚Рё РёРЅРёС†РёР°Р»РёР·Р°С†РёСЋ
+	LCD_LayerInitMain(LAYER_MAIN);	// довести инициализацию
 
 	// Bottom layer
 	LCD_LayerInit(LAYER_PIP, LEFTMARGIN, TOPMARGIN, & pipwnd, LTDC_Pixelformat_RGB565, 1, sizeof (uint16_t));
-	LCD_LayerInitPIP(LAYER_PIP);	// РґРѕРІРµСЃС‚Рё РёРЅРёС†РёР°Р»РёР·Р°С†РёСЋ
+	LCD_LayerInitPIP(LAYER_PIP);	// довести инициализацию
 
 #endif /* LCDMODE_LTDC_PIP16 */
 
@@ -1890,15 +1890,15 @@ arm_hardware_ltdc_initialize(void)
 	LTDC->GCR |= LTDC_GCR_LTDCEN;
 
 #if LCDMODE_LTDC_L24
-	fillLUT_L24(LAYER_MAIN);	// РїСЂСЏРјР°СЏ С‚СЂР°РЅСЃР»СЏС†РёСЏ РІСЃРµС… СЊР°Р№С‚РѕРІ РёР· РїР°РјСЏС‚Рё РЅР° РІС‹С…РѕРґ. Р·Р°РіСЂСѓР·РєР° РїР°Р»РёС‚СЂС‹ - РёРјРµРµС‚ СЃРјС‹СЃР» РґРѕ Reload
+	fillLUT_L24(LAYER_MAIN);	// прямая трансляция всех ьайтов из памяти на выход. загрузка палитры - имеет смысл до Reload
 #elif LCDMODE_LTDC_L8
-	fillLUT_L8(LAYER_MAIN);	// Р·Р°РіСЂСѓР·РєР° РїР°Р»РёС‚СЂС‹ - РёРјРµРµС‚ СЃРјС‹СЃР» РґРѕ Reload
+	fillLUT_L8(LAYER_MAIN);	// загрузка палитры - имеет смысл до Reload
 #endif /* LCDMODE_LTDC_L8 */
 
 	/* LTDC reload configuration */  
 	LTDC->SRCR = LTDC_SRCR_IMR;	/* Immediately Reload. */
 
-	// LQ043T3DX02K rules: While вЂњVSYNCвЂќ is вЂњLowвЂќ, donвЂ™t change вЂњDISPвЂќ signal вЂњLowвЂќ to вЂњHighвЂќ. 
+	// LQ043T3DX02K rules: While “VSYNC” is “Low”, don’t change “DISP” signal “Low” to “High”. 
 #if defined (BOARD_DEVALUE)
 	HARDWARE_LTDC_SET_DISP(BOARD_DEMODE, BOARD_DEVALUE);
 #else

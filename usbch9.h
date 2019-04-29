@@ -27,17 +27,17 @@
 #if WITHUSBUAC
 	#if WITHUSBUAC3
 
-		#define WITHUSBHWCDC_N	2	// РєРѕР»РёС‡РµСЃС‚РІРѕ РІРёСЂС‚СѓР°Р»СЊРЅС‹С… РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅС‹С… РїРѕСЂС‚РѕРІ
+		#define WITHUSBHWCDC_N	2	// количество виртуальных последовательных портов
 
 	#else /* WITHUSBUAC3 */
 
-		#define WITHUSBHWCDC_N	2	// РєРѕР»РёС‡РµСЃС‚РІРѕ РІРёСЂС‚СѓР°Р»СЊРЅС‹С… РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅС‹С… РїРѕСЂС‚РѕРІ
+		#define WITHUSBHWCDC_N	2	// количество виртуальных последовательных портов
 
 	#endif /* WITHUSBUAC3 */
 #endif /* WITHUSBUAC */
 
 #if ! defined (WITHUSBHWCDC_N)
-	#define WITHUSBHWCDC_N	2	// РєРѕР»РёС‡РµСЃС‚РІРѕ РІРёСЂС‚СѓР°Р»СЊРЅС‹С… РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅС‹С… РїРѕСЂС‚РѕРІ
+	#define WITHUSBHWCDC_N	2	// количество виртуальных последовательных портов
 #endif /* ! defined (WITHUSBHWCDC_N) */
 
 
@@ -53,34 +53,34 @@ enum
 
 #if WITHUSBUAC
 	#if WITHUSBUAC3
-		USBD_EP_AUDIO_IN,	// ISOC IN РђСѓРґРёРѕРґР°РЅРЅС‹Рµ РІ РєРѕРјРїСЊСЋС‚РµСЂ РёР· TRX
-		USBD_EP_RTS_IN,	// ISOC IN РђСѓРґРёРѕРґР°РЅРЅС‹Рµ РІ РєРѕРјРїСЊСЋС‚РµСЂ РёР· TRX
+		USBD_EP_AUDIO_IN,	// ISOC IN Аудиоданные в компьютер из TRX
+		USBD_EP_RTS_IN,	// ISOC IN Аудиоданные в компьютер из TRX
 	#else
-		USBD_EP_AUDIO_IN,	// ISOC IN РђСѓРґРёРѕРґР°РЅРЅС‹Рµ РІ РєРѕРјРїСЊСЋС‚РµСЂ РёР· TRX
+		USBD_EP_AUDIO_IN,	// ISOC IN Аудиоданные в компьютер из TRX
 	#endif
 #endif /* WITHUSBUAC */
 
 #if WITHUSBCDC
-	USBD_EP_CDC_IN,		// CDC IN Р”Р°РЅРЅС‹Рµ РєРѕРј-РїРѕСЂС‚Р° РІ РєРѕРјРїСЊСЋС‚РµСЂ РёР· TRX
-	USBD_EP_CDC_INb,	// CDC IN Р”Р°РЅРЅС‹Рµ РєРѕРј-РїРѕСЂС‚Р° РІ РєРѕРјРїСЊСЋС‚РµСЂ РёР· TRX
+	USBD_EP_CDC_IN,		// CDC IN Данные ком-порта в компьютер из TRX
+	USBD_EP_CDC_INb,	// CDC IN Данные ком-порта в компьютер из TRX
 	USBD_EP_CDC_INlast = USBD_EP_CDC_IN + WITHUSBHWCDC_N - 1,
 
-	USBD_EP_CDC_INT,	// CDC INT РЎРѕР±С‹С‚РёСЏ РєРѕРј-РїРѕСЂС‚Р° РІ РєРѕРјРїСЊСЋС‚РµСЂ РёР· TRX
-	USBD_EP_CDC_INTb,	// CDC INT РЎРѕР±С‹С‚РёСЏ РєРѕРј-РїРѕСЂС‚Р° РІ РєРѕРјРїСЊСЋС‚РµСЂ РёР· TRX
+	USBD_EP_CDC_INT,	// CDC INT События ком-порта в компьютер из TRX
+	USBD_EP_CDC_INTb,	// CDC INT События ком-порта в компьютер из TRX
 	USBD_EP_CDC_INTlast = USBD_EP_CDC_INT + WITHUSBHWCDC_N - 1,
 #endif /* WITHUSBCDC */
 
 #if WITHUSBCDCEEM
-	USBD_EP_CDCEEM_IN,	// CDC IN Р”Р°РЅРЅС‹Рµ РєРѕРј-РїРѕСЂС‚Р° РІ РєРѕРјРїСЊСЋС‚РµСЂ РёР· TRX
+	USBD_EP_CDCEEM_IN,	// CDC IN Данные ком-порта в компьютер из TRX
 #endif /* WITHUSBCDCEEM */
 
 #if WITHUSBCDCECM
-	USBD_EP_CDCECM_INT,	// CDC INT РЎРѕР±С‹С‚РёСЏ РєРѕРј-РїРѕСЂС‚Р° РІ РєРѕРјРїСЊСЋС‚РµСЂ РёР· TRX
-	USBD_EP_CDCECM_IN,	// CDC IN Р”Р°РЅРЅС‹Рµ РєРѕРј-РїРѕСЂС‚Р° РІ РєРѕРјРїСЊСЋС‚РµСЂ РёР· TRX
+	USBD_EP_CDCECM_INT,	// CDC INT События ком-порта в компьютер из TRX
+	USBD_EP_CDCECM_IN,	// CDC IN Данные ком-порта в компьютер из TRX
 #endif /* WITHUSBCDCECM */
 
 #if WITHUSBHID
-	//USBD_EP_HIDMOUSE_INT,	// HID INT РЎРѕР±С‹С‚РёСЏ РјР°РЅРёРїСѓР»СЏС‚РѕСЂР° РІ РєРѕРјРїСЊСЋС‚РµСЂ РёР· TRX
+	//USBD_EP_HIDMOUSE_INT,	// HID INT События манипулятора в компьютер из TRX
 #endif /* WITHUSBHID */
 
 #if WITHUSBDFU
@@ -103,22 +103,22 @@ enum
 	#if WITHUSBUAC3
 		USBD_EP_AUDIO_OUT,
 	#else
-		USBD_EP_AUDIO_OUT,	// ISOC OUT РђСѓРґРёРѕРґР°РЅРЅС‹Рµ РѕС‚ РєРѕРјРїСЊСЋС‚РµСЂР° РІ TRX
+		USBD_EP_AUDIO_OUT,	// ISOC OUT Аудиоданные от компьютера в TRX
 	#endif
 #endif /* WITHUSBUAC */
 
 #if WITHUSBCDC
-	USBD_EP_CDC_OUT,	// CDC OUT Р”Р°РЅРЅС‹Рµ РєРѕРј-РїРѕСЂС‚Р° РѕС‚ РєРѕРјРїСЊСЋС‚РµСЂР° РІ TRX
-	USBD_EP_CDC_OUTb,	// CDC OUT Р”Р°РЅРЅС‹Рµ РєРѕРј-РїРѕСЂС‚Р° РѕС‚ РєРѕРјРїСЊСЋС‚РµСЂР° РІ TRX
+	USBD_EP_CDC_OUT,	// CDC OUT Данные ком-порта от компьютера в TRX
+	USBD_EP_CDC_OUTb,	// CDC OUT Данные ком-порта от компьютера в TRX
 	USBD_EP_CDC_OUTlast = USBD_EP_CDC_OUT + WITHUSBHWCDC_N - 1,
 #endif /* WITHUSBCDC */
 
 #if WITHUSBCDCEEM
-	USBD_EP_CDCEEM_OUT,	// CDC OUT Р”Р°РЅРЅС‹Рµ РєРѕРј-РїРѕСЂС‚Р° РѕС‚ РєРѕРјРїСЊСЋС‚РµСЂР° РІ TRX
+	USBD_EP_CDCEEM_OUT,	// CDC OUT Данные ком-порта от компьютера в TRX
 #endif /* WITHUSBCDCEEM */
 
 #if WITHUSBCDCECM
-	USBD_EP_CDCECM_OUT,	// CDC OUT Р”Р°РЅРЅС‹Рµ РєРѕРј-РїРѕСЂС‚Р° РѕС‚ РєРѕРјРїСЊСЋС‚РµСЂР° РІ TRX
+	USBD_EP_CDCECM_OUT,	// CDC OUT Данные ком-порта от компьютера в TRX
 #endif /* WITHUSBCDCECM */
 
 #if WITHUSBHID
@@ -190,8 +190,8 @@ enum
 #define  ARRAY_SIZE(a)  (sizeof(a)/sizeof(a[0]))
 
 // Descriptor IDs
-// РРґРµРЅС‚РёС„РёРєР°С‚РѕСЂС‹ РјРѕРіСѓС‚ Р±С‹С‚СЊ РїСЂРѕРёР·РІРѕР»СЊРЅС‹РјРё С‡РёСЃР»Р°РјРё (РєСЂРѕРјРµ РЅСѓР»СЏ)
-// РџСЂРёРјРµРЅРµРЅР° Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєР°СЏ РЅСѓРјРµСЂР°С†РёСЏ С‚РµСЂРјРёРЅР°Р»РѕРІ РІ РєР°Р¶РґРѕР№ С†РµРїРѕС‡РєРµ.
+// Идентификаторы могут быть произвольными числами (кроме нуля)
+// Применена автоматическая нумерация терминалов в каждой цепочке.
 enum
 {
 	TERMINAL_ID_UNDEFINED = 0,
@@ -200,7 +200,7 @@ enum
 	TERMINAL_UACIN48_UACINRTS = 35,	// fill_UACIN48_function or fill_UACIN48_INRTS_function
 	TERMINAL_UACINRTS = 75,	// fill_UACINRTS_function
 
-	TERMINAL_ID_SELECTOR_6 = 150,	// Input selector - РІС‹РЅРµСЃРµРЅРѕ РёР·-Р·Р° РЅРµСѓРґРѕР±СЃС‚РІР° РёСЃРїРѕР»СЊР·РѕРІР°РЅРёСЏ: Р·РЅР°С‡РµРЅРёРµ РїСЂРѕРІРµСЂСЏРµС‚СЃСЏ
+	TERMINAL_ID_SELECTOR_6 = 150,	// Input selector - вынесено из-за неудобства использования: значение проверяется
 
 	//TERMINAL_ID_count
 };
@@ -209,19 +209,19 @@ enum
 
 #define TERMINAL_ID_SELECTOR_6_INPUTS 2
 
-#define	WITHPLAINDESCROPTOR	1		/* РЅРµ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РјРЅРѕР¶РµСЃС‚РІРѕ РєРѕРЅС„РёРіСѓСЂР°С†РёР№ */
+#define	WITHPLAINDESCROPTOR	1		/* не используется множество конфигураций */
 
 #if WITHPLAINDESCROPTOR
 
 #if WITHUSBUAC
 	#if WITHUSBUAC3
-		//#define INTERFACE_UAC_count 2	/* РєРѕР»РёС‡РµСЃС‚РІРѕ РёРЅС‚РµСЂС„РµР№СЃРѕРІ РІ РѕРґРЅРѕРј UAC */
+		//#define INTERFACE_UAC_count 2	/* количество интерфейсов в одном UAC */
 	#else /* WITHUSBUAC3 */
-		//#define INTERFACE_UAC_count 3	/* РєРѕР»РёС‡РµСЃС‚РІРѕ РёРЅС‚РµСЂС„РµР№СЃРѕРІ РІ РѕРґРЅРѕРј UAC */
+		//#define INTERFACE_UAC_count 3	/* количество интерфейсов в одном UAC */
 	#endif /* WITHUSBUAC3 */
 #endif /* WITHUSBUAC */
 
-/* РџРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕСЃС‚СЊ РІ РґР°РЅРЅРѕРј enum РґРѕР»Р¶РЅР° СЃРѕРѕС‚РІРµС‚СЃС‚РІРѕРІР°С‚СЊ РїРѕСЂСЏРґРєСѓ РёСЃРїРѕР»СЊР·РѕРІР°РЅРёСЏ РІ fill_Configuration_main_group */
+/* Последовательность в данном enum должна соответствовать порядку использования в fill_Configuration_main_group */
 enum
 {
 
@@ -274,15 +274,15 @@ enum
 	INTERFACE_DFU_CONTROL,		/* DFU control Interface */
 #endif /* WITHUSBDFU */
 	// 
-	INTERFACE_count				/* Р—РЅР°С‡РµРЅРёРµ РґР»СЏ configuration descriptor */
+	INTERFACE_count				/* Значение для configuration descriptor */
 };
 
-#define INTERFACE_CDCACM_count 2	/* РєРѕР»РёС‡РµСЃС‚РІРѕ РёРЅС‚РµСЂС„РµР№СЃРѕРІ РІ РѕРґРЅРѕРј CDC */
-#define INTERFACE_CDCEEM_count 1	/* РєРѕР»РёС‡РµСЃС‚РІРѕ РёРЅС‚РµСЂС„РµР№СЃРѕРІ РІ РѕРґРЅРѕРј CDC EEM */
-#define INTERFACE_CDCECM_count 2	/* РєРѕР»РёС‡РµСЃС‚РІРѕ РёРЅС‚РµСЂС„РµР№СЃРѕРІ РІ РѕРґРЅРѕРј CDC EEM */
-#define INTERFACE_HID_count 1	/* РєРѕР»РёС‡РµСЃС‚РІРѕ РёРЅС‚РµСЂС„РµР№СЃРѕРІ РІ РѕРґРЅРѕРј HID */
-#define INTERFACE_RNDIS_count 2	/* РєРѕР»РёС‡РµСЃС‚РІРѕ РёРЅС‚РµСЂС„РµР№СЃРѕРІ РІ РѕРґРЅРѕРј RNDIS */
-#define INTERFACE_DFU_count 1	/* РєРѕР»РёС‡РµСЃС‚РІРѕ РёРЅС‚РµСЂС„РµР№СЃРѕРІ РІ РѕРґРЅРѕРј DFU */
+#define INTERFACE_CDCACM_count 2	/* количество интерфейсов в одном CDC */
+#define INTERFACE_CDCEEM_count 1	/* количество интерфейсов в одном CDC EEM */
+#define INTERFACE_CDCECM_count 2	/* количество интерфейсов в одном CDC EEM */
+#define INTERFACE_HID_count 1	/* количество интерфейсов в одном HID */
+#define INTERFACE_RNDIS_count 2	/* количество интерфейсов в одном RNDIS */
+#define INTERFACE_DFU_count 1	/* количество интерфейсов в одном DFU */
 
 //#define INTERFACE_UAC_count (INTERFACE_AUDIO_last - INTERFACE_AUDIO_CONTROL_SPK)
 
@@ -290,9 +290,9 @@ enum
 
 	#if WITHUSBUAC
 		#if WITHUSBUAC3
-			//#define INTERFACE_UAC_count 2	/* РєРѕР»РёС‡РµСЃС‚РІРѕ РёРЅС‚РµСЂС„РµР№СЃРѕРІ РІ РѕРґРЅРѕРј UAC */
+			//#define INTERFACE_UAC_count 2	/* количество интерфейсов в одном UAC */
 		#else /* WITHUSBUAC3 */
-			//#define INTERFACE_UAC_count 3	/* РєРѕР»РёС‡РµСЃС‚РІРѕ РёРЅС‚РµСЂС„РµР№СЃРѕРІ РІ РѕРґРЅРѕРј UAC */
+			//#define INTERFACE_UAC_count 3	/* количество интерфейсов в одном UAC */
 		#endif /* WITHUSBUAC3 */
 	#endif /* WITHUSBUAC */
 
@@ -364,12 +364,12 @@ enum
 		};
 	#endif /* WITHUSBDFU */
 
-	#define INTERFACE_CDCACM_count 2	/* РєРѕР»РёС‡РµСЃС‚РІРѕ РёРЅС‚РµСЂС„РµР№СЃРѕРІ РІ РѕРґРЅРѕРј CDC */
-	#define INTERFACE_CDCEEM_count 1	/* РєРѕР»РёС‡РµСЃС‚РІРѕ РёРЅС‚РµСЂС„РµР№СЃРѕРІ РІ РѕРґРЅРѕРј CDC EEM */
-	#define INTERFACE_CDCECM_count 2	/* РєРѕР»РёС‡РµСЃС‚РІРѕ РёРЅС‚РµСЂС„РµР№СЃРѕРІ РІ РѕРґРЅРѕРј CDC ECM */
-	#define INTERFACE_HID_count 1	/* РєРѕР»РёС‡РµСЃС‚РІРѕ РёРЅС‚РµСЂС„РµР№СЃРѕРІ РІ РѕРґРЅРѕРј HID */
-	#define INTERFACE_RNDIS_count 2	/* РєРѕР»РёС‡РµСЃС‚РІРѕ РёРЅС‚РµСЂС„РµР№СЃРѕРІ РІ РѕРґРЅРѕРј RNDIS */
-	#define INTERFACE_DFU_count 1	/* РєРѕР»РёС‡РµСЃС‚РІРѕ РёРЅС‚РµСЂС„РµР№СЃРѕРІ РІ РѕРґРЅРѕРј DFU */
+	#define INTERFACE_CDCACM_count 2	/* количество интерфейсов в одном CDC */
+	#define INTERFACE_CDCEEM_count 1	/* количество интерфейсов в одном CDC EEM */
+	#define INTERFACE_CDCECM_count 2	/* количество интерфейсов в одном CDC ECM */
+	#define INTERFACE_HID_count 1	/* количество интерфейсов в одном HID */
+	#define INTERFACE_RNDIS_count 2	/* количество интерфейсов в одном RNDIS */
+	#define INTERFACE_DFU_count 1	/* количество интерфейсов в одном DFU */
 
 	enum
 	{

@@ -1,7 +1,7 @@
 /*
  * SpeechProc.c
  *
- *  Created on: 10 РЅРѕСЏР±. 2018 Рі.
+ *  Created on: 10 нояб. 2018 г.
  *      Author: Admin
  */
 #include "SpeechProc.h"
@@ -19,8 +19,8 @@ compparam_t NoiseGate;
 
 uint tmp_filter_bank_fmin[N_FILTER];
 uint tmp_filter_bank_fmax[N_FILTER];
-uint tmp_mb_filter_sharpness;//РїРѕСЂСЏРґРѕРє С„РёР»СЊС‚СЂРѕРІ РєРѕРјРїСЂРµСЃСЃРѕСЂР° - РѕС‚ 64 РґРѕ 512
-uint tmp_out_filter_sharpness;//РїРѕСЂСЏРґРѕРє С„РёР»СЊС‚СЂРѕРІ РєРѕРјРїСЂРµСЃСЃРѕСЂР° - РѕС‚ 64 РґРѕ 512
+uint tmp_mb_filter_sharpness;//порядок фильтров компрессора - от 64 до 512
+uint tmp_out_filter_sharpness;//порядок фильтров компрессора - от 64 до 512
 __attribute__((section (".dtcmram"))) float Reverberator_Delay[REVERBERATOR_DELAY_MAX_LEN];
 __attribute__((section (".dtcmram"))) filter_bank_t FiltBank;
 dc_reject_t DcInReject, DcOutReject;
@@ -222,10 +222,10 @@ in[i]*=tmp;
 void SpeechCompressorInit(compparam_t* param)
 {
   /*
-  type_comp - 0 - РѕР±С‹С‡РЅС‹Р№, 1 - СЃРѕС„С‚ РєРЅРё
-  РЇ РЅРµ СЃС‚Р°Р» Р·Р°РјРѕСЂР°С‡РёРІР°С‚СЊСЃСЏ Рё РґРµР»Р°С‚СЊ СЂР°Р·РЅС‹Рµ СЃС‚СЂСѓРєС‚СѓСЂС‹ РІ
-  Р·Р°РІРёСЃРёРјРѕСЃС‚Рё РѕС‚ С‚РёРїР° РєРѕРјРїСЂРµСЃСЃРѕСЂР°. РџРѕСЌС‚РѕРјСѓ РЅР° РѕР±Р° С‚РёРїР° - С…Р°СЂРґ Рё СЃРѕС„С‚
-  С„СѓРЅРєС†РёСЏ РѕРґРЅР°
+  type_comp - 0 - обычный, 1 - софт кни
+  Я не стал заморачиваться и делать разные структуры в
+  зависимости от типа компрессора. Поэтому на оба типа - хард и софт
+  функция одна
   */
   param->sr=SAMPLE_RATE;
     param->slope=1.0f-1.0f/param->ratio;
@@ -239,8 +239,8 @@ void SpeechCompressorInit(compparam_t* param)
 
 void SpeechCompressor
     (
-        float*  wav_in,     // СЃРёРіРЅР°Р»
-        int     n,          // РєРѕР»РёС‡РµСЃС‚РІРѕ СЃСЌРјРїР»РѕРІ
+        float*  wav_in,     // сигнал
+        int     n,          // количество сэмплов
         compparam_t* param
     )
 {
@@ -260,7 +260,7 @@ void SpeechCompressor
   {
      param->env =param->env* param->alpha_rel+param->beta_rel*tmp;
   }
-    // РїСЂРѕСЃС‚РѕР№ 1:N РєРѕРјРїСЂРµСЃСЃРѕСЂ
+    // простой 1:N компрессор
     if (param->env> param->threshold)
     param->gain =powf((param->threshold/param->env),(param->slope));
     else param->gain=1;
@@ -276,8 +276,8 @@ void SpeechCompressor
 
 void NoiseGateProc
     (
-        float*  wav_in,     // СЃРёРіРЅР°Р»
-        int     n,          // РєРѕР»РёС‡РµСЃС‚РІРѕ СЃСЌРјРїР»РѕРІ
+        float*  wav_in,     // сигнал
+        int     n,          // количество сэмплов
 		compparam_t* param
     )
 {
@@ -357,10 +357,10 @@ in[i]=y;
 void SoftKneeCompInit(soft_kneecompp_t* param)
 {
   /*
-  type_comp - 0 - РѕР±С‹С‡РЅС‹Р№, 1 - СЃРѕС„С‚ РєРЅРё
-  РЇ РЅРµ СЃС‚Р°Р» Р·Р°РјРѕСЂР°С‡РёРІР°С‚СЊСЃСЏ Рё РґРµР»Р°С‚СЊ СЂР°Р·РЅС‹Рµ СЃС‚СЂСѓРєС‚СѓСЂС‹ РІ
-  Р·Р°РІРёСЃРёРјРѕСЃС‚Рё РѕС‚ С‚РёРїР° РєРѕРјРїСЂРµСЃСЃРѕСЂР°. РџРѕСЌС‚РѕРјСѓ РЅР° РѕР±Р° С‚РёРїР° - С…Р°СЂРґ Рё СЃРѕС„С‚
-  С„СѓРЅРєС†РёСЏ РѕРґРЅР°
+  type_comp - 0 - обычный, 1 - софт кни
+  Я не стал заморачиваться и делать разные структуры в
+  зависимости от типа компрессора. Поэтому на оба типа - хард и софт
+  функция одна
   */
   param->sr=SAMPLE_RATE;
 
@@ -384,8 +384,8 @@ void SoftKneeCompInit(soft_kneecompp_t* param)
 
 void SoftKneeCompressor
     (
-        float*  wav_in,     // СЃРёРіРЅР°Р»
-        int     n,          // РєРѕР»РёС‡РµСЃС‚РІРѕ СЃСЌРјРїР»РѕРІ
+        float*  wav_in,     // сигнал
+        int     n,          // количество сэмплов
         soft_kneecompp_t* param
     )
 {
@@ -438,10 +438,10 @@ if (param->knee_width_dB > 0.0f && param->env_dB > param->knee_low_bound_dB && p
 void LimitterInit(limitparam_t* param)
 {
   /*
-  type_comp - 0 - РѕР±С‹С‡РЅС‹Р№, 1 - СЃРѕС„С‚ РєРЅРё
-  РЇ РЅРµ СЃС‚Р°Р» Р·Р°РјРѕСЂР°С‡РёРІР°С‚СЊСЃСЏ Рё РґРµР»Р°С‚СЊ СЂР°Р·РЅС‹Рµ СЃС‚СЂСѓРєС‚СѓСЂС‹ РІ
-  Р·Р°РІРёСЃРёРјРѕСЃС‚Рё РѕС‚ С‚РёРїР° РєРѕРјРїСЂРµСЃСЃРѕСЂР°. РџРѕСЌС‚РѕРјСѓ РЅР° РѕР±Р° С‚РёРїР° - С…Р°СЂРґ Рё СЃРѕС„С‚
-  С„СѓРЅРєС†РёСЏ РѕРґРЅР°
+  type_comp - 0 - обычный, 1 - софт кни
+  Я не стал заморачиваться и делать разные структуры в
+  зависимости от типа компрессора. Поэтому на оба типа - хард и софт
+  функция одна
   */
   param->threshold_dB=(-1)*SpOptions.limitter_level;//LIMITTER_UP_THRESHOLD;
   if(param->tatt>=20)param->tatt=20;
@@ -458,8 +458,8 @@ void LimitterInit(limitparam_t* param)
 
 void LimitterCompressor
     (
-        float*  wav_in,     // СЃРёРіРЅР°Р»
-        int     n,          // РєРѕР»РёС‡РµСЃС‚РІРѕ СЃСЌРјРїР»РѕРІ
+        float*  wav_in,     // сигнал
+        int     n,          // количество сэмплов
         limitparam_t* param
     )
 {
@@ -484,7 +484,7 @@ void LimitterCompressor
   {
       param->env =param->env* param->alpha_rel+param->beta_rel*tmp;
   }
-    // РїСЂРѕСЃС‚РѕР№ 1:N РєРѕРјРїСЂРµСЃСЃРѕСЂ
+    // простой 1:N компрессор
   if (param->env> param->threshold)
     param->gain =powf((param->threshold/param->env),(param->slope));
   else param->gain=1;
@@ -520,7 +520,7 @@ ptr->b[2] = 1/(1+ptr->be);
 ptr->w[i] = 0;*/
 }
 
-void ManualNotch(uint F0, uint Df, float* inp,int size,NotchFilter* ptr)//СЂСѓС‡РЅРѕР№ РЅРѕС‡СЊ, РЅРµ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ.
+void ManualNotch(uint F0, uint Df, float* inp,int size,NotchFilter* ptr)//ручной ночь, не используется.
 {
 float x;
 int i;
@@ -588,13 +588,13 @@ for(i=0;i<N_FILTER-1;i++)
 for(i=1;i<N_FILTER-2;i++)
 design_FIR_coefs_real_var_order (SpOptions.filter_bank_fmin[i],SpOptions.filter_bank_fmax[i],
 		                          SpOptions.mb_filter_sharpness,
-								 (COMPLEX*)&FiltBank.filter[i][0].re);//С„СѓРЅРєС†РёСЏ РІС‹С‡РёСЃР»СЏРµС‚ РєРѕСЌС„С„РёС†РёРµРЅС‚С‹ РїРѕР»РѕСЃРѕРІРѕРіРѕ С„РёР»СЊС‚СЂР°
+								 (COMPLEX*)&FiltBank.filter[i][0].re);//функция вычисляет коэффициенты полосового фильтра
 
 design_FIR_coefs_real_var_order(SpOptions.filter_bank_fmin[N_FILTER-2],
 								11000,
 								SpOptions.mb_filter_sharpness,
 								(COMPLEX*)&FiltBank.filter[N_FILTER-2][0].re);
-if(SpOptions.filter_bank_fmin[N_FILTER-1]!=0)//РµСЃР»Рё РЅРµ Р¤РќР§
+if(SpOptions.filter_bank_fmin[N_FILTER-1]!=0)//если не ФНЧ
 design_FIR_coefs_real_var_order(SpOptions.filter_bank_fmin[N_FILTER-1],SpOptions.filter_bank_fmax[N_FILTER-1],
 			SpOptions.out_filter_sharpness,
 			(COMPLEX*)&FiltBank.filter[N_FILTER-1][0].re);
@@ -620,7 +620,7 @@ SpOptions.FilterSpectrum[i][k]=(int8_t)tmp;
 	}
 }
 */
-//РўРµРїРµСЂСЊ РЅР°РґРѕ РєРѕРјРїРµРЅСЃРёСЂРѕРІР°С‚СЊ СѓСЃРёР»РµРЅРёРµ РїРѕ С„РёР»СЊС‚СЂР°Рј
+//Теперь надо компенсировать усиление по фильтрам
 /*
 for(i=0;i<N_FILTER;i++)
 {
@@ -647,13 +647,13 @@ void Reverberator (float* input, int n)
 {
 int i;
 static int Dp=0;
-uint delay_len;//РґР»РёРЅР° Р·Р°РґРµСЂР¶РєРё, РїРµСЂРµРІРѕРґРёС‚ РјСЃ РІ СЃСЌРјРїР»С‹
+uint delay_len;//длина задержки, переводит мс в сэмплы
 float y, x, sD,u;
 float b1=0.07f;
 float b0=0.1f;
 static float v1, v0;
 float a=SpOptions.reverb_echo_gain;
-a*=0.8f;//Р”Р»СЏ "РїРѕРґРіРѕРЅРєРё РјР°СЃС€С‚Р°Р±РёСЂРѕРІР°РЅРёСЏ", С‚.Рє. РІС…РѕРґРЅРѕРµ Р·РЅР°С‡РµРЅРёРµ 1-100 (РІ РёС‚РѕРіРµ 0,01-1,0), Р° РїСЂРё РєРѕСЌС„С„.0,8 Р°Р»РіРѕСЂРёС‚Рј СЂР°Р±РѕС‚Р°РµС‚ РЅРµСЃС‚Р°Р±РёР»СЊРЅРѕ.
+a*=0.8f;//Для "подгонки масштабирования", т.к. входное значение 1-100 (в итоге 0,01-1,0), а при коэфф.0,8 алгоритм работает нестабильно.
 if (SpOptions.reverb_delay<=REVERBERATOR_MAX_DELAY)
 delay_len=SpOptions.reverb_delay*SAMPLE_RATE/1000;
 else
@@ -675,8 +675,8 @@ if (Dp>=(delay_len))Dp=0;
 
 
 
-void SpeechProcessor (int* in,//РІС…РѕРґ РѕС‚ РєРѕРґРµРєР°
-					int* out //РІС‹С…РѕРґ РєРѕРґРµРєР°
+void SpeechProcessor (int* in,//вход от кодека
+					int* out //выход кодека
 		)
 {
 int i,k;
@@ -694,7 +694,7 @@ if(SpOptions.input_type==0)
 for(i=0;i<FFT_FILTER_SIZE;i+=2) SoundProcessor.TmpBuf[i/2]=(float)in[i];
 else for(i=0;i<FFT_FILTER_SIZE;i+=2) SoundProcessor.TmpBuf[i/2]=(float)in[i+1];
 
-DC_OFFSET_REJECTION_Tx (SoundProcessor.TmpBuf, FFT_FILTER_SIZE/2,&DcInReject);//РІС‹СЂРµР·Р°Р» РїРѕСЃС‚РѕСЏРЅРєСѓ
+DC_OFFSET_REJECTION_Tx (SoundProcessor.TmpBuf, FFT_FILTER_SIZE/2,&DcInReject);//вырезал постоянку
 
 if(SpOptions.notch_en)
 ManualNotch(SpOptions.notch_frequency, SpOptions.notch_width,
@@ -707,14 +707,14 @@ if(SpOptions.ng_en)
 	NoiseGate.ratio=SpOptions.ng_ratio;
 	NoiseGate.tatt=SpOptions.ng_tatt;
 	SpeechCompressorInit(&NoiseGate);
-	NoiseGateProc(SoundProcessor.TmpBuf,     // СЃРёРіРЅР°Р»
-				FFT_FILTER_SIZE/2,          // РєРѕР»РёС‡РµСЃС‚РІРѕ СЃСЌРјРїР»РѕРІ
+	NoiseGateProc(SoundProcessor.TmpBuf,     // сигнал
+				FFT_FILTER_SIZE/2,          // количество сэмплов
 				&NoiseGate);
 }
 
-if(SpOptions.ph_rot_en)//РµСЃР»Рё С„Р°Р·РѕРІС‹Р№ СЂРѕС‚Р°С‚РѕСЂ РІРєР»СЋС‡РµРЅ
+if(SpOptions.ph_rot_en)//если фазовый ротатор включен
 {
-PhRotator ( SoundProcessor.TmpBuf,//С„Р°Р·РѕРІСЂР°С‰Р°С‚РµР»СЊ
+PhRotator ( SoundProcessor.TmpBuf,//фазовращатель
 		    FFT_FILTER_SIZE/2,
             SAMPLE_RATE,
 			SpOptions.ph_rot_freq,
@@ -751,7 +751,7 @@ for (k=0;k<N_POLOS;k++)
 {
 	arm_cmplx_mult_cmplx_f32((float*)SoundProcessor.CompCfftBuff,
 			(float*)&FiltBank.filter[k][0].re,
-			(float*)SoundProcessor.CompTmpCfftBuff,FFT_FILTER_SIZE/2);//Р—РґРµСЃСЊ СЃСЂР°Р·Сѓ С„РёР»СЊС‚СЂСѓСЋ
+			(float*)SoundProcessor.CompTmpCfftBuff,FFT_FILTER_SIZE/2);//Здесь сразу фильтрую
 	arm_rfft_fast_f32(&RfftSp, (float*)SoundProcessor.CompTmpCfftBuff, SoundProcessor.CompRfftBuff,1);  //Here happens
 
 	SpeechCompressor(&SoundProcessor.CompRfftBuff[FFT_FILTER_SIZE/2],FFT_FILTER_SIZE/2,&CB[k]);
@@ -810,7 +810,7 @@ LimitterCompressor(SoundProcessor.TmpBuf,FFT_FILTER_SIZE/2,&Limitter);
 	{
     arm_cmplx_mult_cmplx_f32((float*)SoundProcessor.CompCfftBuff,
 				(float*)&FiltBank.filter[N_FILTER-1][0].re,
-				(float*)SoundProcessor.CompCfftBuff,FFT_FILTER_SIZE/2);//Р—РґРµСЃСЊ СЃСЂР°Р·Сѓ С„РёР»СЊС‚СЂСѓСЋ
+				(float*)SoundProcessor.CompCfftBuff,FFT_FILTER_SIZE/2);//Здесь сразу фильтрую
 	}
 	arm_rfft_fast_f32(&RfftSp, (float*)SoundProcessor.CompCfftBuff, SoundProcessor.OutRfftBuff,1);
 	for(i=0;i<FFT_FILTER_SIZE/2;i++)

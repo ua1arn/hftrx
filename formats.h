@@ -1,7 +1,7 @@
 /* $Id$ */
 //
-// РџСЂРѕРµРєС‚ HF Dream Receiver (РљР’ РїСЂРёС‘РјРЅРёРє РјРµС‡С‚С‹)
-// Р°РІС‚РѕСЂ Р“РµРЅР° Р—Р°РІРёРґРѕРІСЃРєРёР№ mgs2001@mail.ru
+// Проект HF Dream Receiver (КВ приёмник мечты)
+// автор Гена Завидовский mgs2001@mail.ru
 // UA1ARN
 //
 #include <stdarg.h>
@@ -10,6 +10,6 @@
 #include <inttypes.h>	// format specifiers for printing
 
 uint_fast8_t local_snprintf_P( char *buffer, uint_fast8_t count, const FLASHMEM char *format, ... );
-// РћС‚Р»Р°РґРѕС‡РЅР°СЏ РїРµС‡Р°С‚СЊ
+// Отладочная печать
 void debug_printf_P(const FLASHMEM char *format, ... );
 

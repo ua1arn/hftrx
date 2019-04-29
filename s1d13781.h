@@ -1,26 +1,26 @@
 /* $Id$ */
 //
-// РџСЂРѕРµРєС‚ HF Dream Receiver (РљР’ РїСЂРёС‘РјРЅРёРє РјРµС‡С‚С‹)
-// Р°РІС‚РѕСЂ Р“РµРЅР° Р—Р°РІРёРґРѕРІСЃРєРёР№ mgs2001@mail.ru
+// Проект HF Dream Receiver (КВ приёмник мечты)
+// автор Гена Завидовский mgs2001@mail.ru
 // UA1ARN
 //
-// РџРѕРґРґРµСЂР¶РєР° РєРѕРЅС‚СЂРѕР»Р»РµСЂР° TFT РїР°РЅРµР»Рё Epson S1D13781
+// Поддержка контроллера TFT панели Epson S1D13781
 //
 
 #ifndef S1D13781_H_INCLUDED
 #define S1D13781_H_INCLUDED
 
-#include "hardware.h"	/* Р·Р°РІРёСЃСЏС‰РёРµ РѕС‚ РїСЂРѕС†РµСЃСЃРѕСЂР° С„СѓРЅРєС†РёРё СЂР°Р±РѕС‚С‹ СЃ РїРѕСЂС‚Р°РјРё */
+#include "hardware.h"	/* зависящие от процессора функции работы с портами */
 
 #if LCDMODE_S1D13781 //|| LCDMODE_LQ043T3DX02K
 
-#define DISPLAYMODES_FPS 5	/* РєРѕР»РёС‡РµСЃС‚РІРѕ РѕР±РЅРѕРІР»РµРЅРёР№ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ СЂРµР¶РёРјРѕРІ СЂР°Р±РѕС‚С‹ */
-#define DISPLAY_FPS	20	/* РѕР±РЅРѕРІР»РµРЅРёРµ РїРѕРєР°Р·Р°РЅРёР№ С‡Р°СЃС‚РѕС‚С‹ РґРµСЃСЏС‚СЊ СЂР°Р· РІ СЃРµРєСѓРЅРґСѓ */
-#define DISPLAYSWR_FPS 10	/* РєРѕР»РёС‡РµСЃС‚РІРѕ РѕР±РЅРѕРІР»РµРЅРёР№ SWR Рё РїР°РЅРѕСЂР°РјС‹ Р·Р° СЃРµРєСѓРЅРґСѓ */
+#define DISPLAYMODES_FPS 5	/* количество обновлений отображения режимов работы */
+#define DISPLAY_FPS	20	/* обновление показаний частоты десять раз в секунду */
+#define DISPLAYSWR_FPS 10	/* количество обновлений SWR и панорамы за секунду */
 
 #if LCDMODE_S1D13781
 
-	// СЂР°Р·РјРµСЂС‹ РјРѕРіСѓС‚ РѕС‚Р»РёС‡Р°С‚СЊСЃСЏ - РґР»СЏ СЌРјСѓР»СЏС†РёРё РјРµР»РєРёС… РґРёСЃРїР»РµРµРІ РЅР° СЌС‚РѕРј.
+	// размеры могут отличаться - для эмуляции мелких дисплеев на этом.
 	//#define DIM_X               480
 	//#define DIM_Y              272
 	#define S1D_DISPLAY_WIDTH               480
@@ -39,27 +39,27 @@
 		// 24 bpp
 		#define S1D_DISPLAY_BPP                 24
 		#define S1D_DISPLAY_SCANLINE_BYTES      (S1D_DISPLAY_WIDTH * 3)
-		#define S1D_PHYSICAL_VMEM_REQUIRED      391680L		// РїР°РјСЏС‚СЊ Р±РµР· СѓС‡С‘С‚Р° PIP
+		#define S1D_PHYSICAL_VMEM_REQUIRED      391680L		// память без учёта PIP
 
 	#elif 1
 
 		// 16 bpp
 		#define S1D_DISPLAY_BPP                 16
 		#define S1D_DISPLAY_SCANLINE_BYTES      (S1D_DISPLAY_WIDTH * 2)
-		#define S1D_PHYSICAL_VMEM_REQUIRED      261120L		// РїР°РјСЏС‚СЊ Р±РµР· СѓС‡С‘С‚Р° PIP
+		#define S1D_PHYSICAL_VMEM_REQUIRED      261120L		// память без учёта PIP
 
 	#else
 
 		// 8 bpp
 		#define S1D_DISPLAY_BPP                 8
 		#define S1D_DISPLAY_SCANLINE_BYTES      (S1D_DISPLAY_WIDTH * 1)
-		#define S1D_PHYSICAL_VMEM_REQUIRED      130560L		// РїР°РјСЏС‚СЊ Р±РµР· СѓС‡С‘С‚Р° PIP
+		#define S1D_PHYSICAL_VMEM_REQUIRED      130560L		// память без учёта PIP
 
 	#endif
 
 	#define FREEMEMSTART S1D_PHYSICAL_VMEM_REQUIRED
-	//#define FREEMEMSTART (S1D_PHYSICAL_VMEM_REQUIRED * 2) // СЌРєСЃРїРµСЂРµРјРµРЅС‚С‹ СЃ PIP
-	#define PIPMEMSTART (S1D_PHYSICAL_VMEM_REQUIRED * 1) // СЌРєСЃРїРµСЂРµРјРµРЅС‚С‹ СЃ PIP
+	//#define FREEMEMSTART (S1D_PHYSICAL_VMEM_REQUIRED * 2) // эксперементы с PIP
+	#define PIPMEMSTART (S1D_PHYSICAL_VMEM_REQUIRED * 1) // эксперементы с PIP
 	// 480 x 272 pixel
 
 #endif

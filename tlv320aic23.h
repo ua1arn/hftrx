@@ -1,7 +1,7 @@
 /* $Id$ */
 //
-// РџСЂРѕРµРєС‚ HF Dream Receiver (РљР’ РїСЂРёС‘РјРЅРёРє РјРµС‡С‚С‹)
-// Р°РІС‚РѕСЂ Р“РµРЅР° Р—Р°РІРёРґРѕРІСЃРєРёР№ mgs2001@mail.ru
+// Проект HF Dream Receiver (КВ приёмник мечты)
+// автор Гена Завидовский mgs2001@mail.ru
 // UA1ARN
 //
 /*
@@ -59,7 +59,7 @@
 #define TLV320AIC23_DEEMP_32K           0x0002
 #define TLV320AIC23_DEEMP_44K           0x0004
 #define TLV320AIC23_DEEMP_48K           0x0006
-#define TLV320AIC23_ADCHP_ONFF          0x0001	/* РџР РћР’Р•Р Р•РќРћ: Р¤Р’Р§ РїРµСЂРµРґ РђР¦Рџ - РЅР°Р»РёС‡РёРµ Р±РёС‚Р° РѕР·РЅР°С‡Р°РµС‚ Р’Р«РљР›Р®Р§РРўР¬ */
+#define TLV320AIC23_ADCHP_ONFF          0x0001	/* ПРОВЕРЕНО: ФВЧ перед АЦП - наличие бита означает ВЫКЛЮЧИТЬ */
 
 /* Power control down register */
 #define TLV320AIC23_DEVICE_PWR_OFF      0x0080
@@ -112,8 +112,8 @@
 
 
 #if defined (CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_TLV320AIC23B)
-	//#define WITHAFCODEC1HAVEPROC	1	/* РєРѕРґРµРє РёРјРµРµС‚ СѓРїСЂР°РІР»РµРЅРёРµ РѕР±СЂР°Р±РѕС‚РєРѕР№ РјРёРєСЂРѕС„РѕРЅРЅРѕРіРѕ СЃРёРіРЅР°Р»Р° */
-	#define WITHAFCODEC1HAVELINEINLEVEL	1	/* РєРѕРґРµРє РёРјРµРµС‚ СѓРїСЂР°РІР»РµРЅРёРµ СѓСЃРёР»РµРЅРёРµРј СЃ Р»РёРЅРµР№РЅРѕРіРѕ РІС…РѕРґР° */
+	//#define WITHAFCODEC1HAVEPROC	1	/* кодек имеет управление обработкой микрофонного сигнала */
+	#define WITHAFCODEC1HAVELINEINLEVEL	1	/* кодек имеет управление усилением с линейного входа */
 	#define	HARDWARE_CODEC1_NPROCPARAMS	5
 #endif /* defined (CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_TLV320AIC23B) */
 

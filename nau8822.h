@@ -78,9 +78,9 @@
 #define NAU8822_DEVICE_ID			0x3f
 #define NAU8822_DAC_DITHER			0x41
 
-#define	NAU8822L_OUT_SPK_MAX	0x39	// РЅРµРїРµСЂРµРіСЂСѓР¶Р°СЋС‰РµРµ Р·РЅР°С‡РµРЅРёРµ. Р’РѕР·РјРѕР¶РЅРѕ РґРѕ 0x3F
+#define	NAU8822L_OUT_SPK_MAX	0x39	// неперегружающее значение. Возможно до 0x3F
 #define	NAU8822L_OUT_SPK_MIN	0x00
-#define	NAU8822L_OUT_HP_MAX		0x39	// РЅРµРїРµСЂРµРіСЂСѓР¶Р°СЋС‰РµРµ Р·РЅР°С‡РµРЅРёРµ. Р’РѕР·РјРѕР¶РЅРѕ РґРѕ 0x3F
+#define	NAU8822L_OUT_HP_MAX		0x39	// неперегружающее значение. Возможно до 0x3F
 #define	NAU8822L_OUT_HP_MIN		0x00
 
 // Menu parameter BOARD_AFGAIN_MAX
@@ -89,12 +89,12 @@
 
 
 #if defined (CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L)
-	#define WITHAFCODEC1HAVEPROC	1	/* РєРѕРґРµРє РёРјРµРµС‚ СѓРїСЂР°РІР»РµРЅРёРµ РѕР±СЂР°Р±РѕС‚РєРѕР№ РјРёРєСЂРѕС„РѕРЅРЅРѕРіРѕ СЃРёРіРЅР°Р»Р° */
-	#define WITHAFCODEC1HAVELINEINLEVEL	1	/* РєРѕРґРµРє РёРјРµРµС‚ СѓРїСЂР°РІР»РµРЅРёРµ СѓСЃРёР»РµРЅРёРµРј СЃ Р»РёРЅРµР№РЅРѕРіРѕ РІС…РѕРґР° */
+	#define WITHAFCODEC1HAVEPROC	1	/* кодек имеет управление обработкой микрофонного сигнала */
+	#define WITHAFCODEC1HAVELINEINLEVEL	1	/* кодек имеет управление усилением с линейного входа */
 	#define	HARDWARE_CODEC1_NPROCPARAMS	5
 	//#if WITHPOTAFGAIN
-	//	#define	BOARD_AFGAIN_MIN	NAU8822L_OUT_VOL_MIN		/* РєРѕРґ СѓРїСЂР°РІР»РµРЅРёСЏ СѓСЃРёР»РµРЅРёРµРј РќР§ С‚СЂР°РєС‚Р° */
-	//	#define	BOARD_AFGAIN_MAX	NAU8822L_OUT_VOL_MAX		/* РєРѕРґ СѓРїСЂР°РІР»РµРЅРёСЏ СѓСЃРёР»РµРЅРёРµРј РќР§ С‚СЂР°РєС‚Р° */
+	//	#define	BOARD_AFGAIN_MIN	NAU8822L_OUT_VOL_MIN		/* код управления усилением НЧ тракта */
+	//	#define	BOARD_AFGAIN_MAX	NAU8822L_OUT_VOL_MAX		/* код управления усилением НЧ тракта */
 	//#endif /* WITHPOTAFGAIN */
 #endif /* defined (CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L) */
 

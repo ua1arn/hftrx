@@ -1,7 +1,7 @@
 /* $Id$ */
 //
-// РџСЂРѕРµРєС‚ HF Dream Receiver (РљР’ РїСЂРёС‘РјРЅРёРє РјРµС‡С‚С‹)
-// Р°РІС‚РѕСЂ Р“РµРЅР° Р—Р°РІРёРґРѕРІСЃРєРёР№ mgs2001@mail.ru
+// Проект HF Dream Receiver (КВ приёмник мечты)
+// автор Гена Завидовский mgs2001@mail.ru
 // UA1ARN
 //
 
@@ -57,33 +57,33 @@
 
 	#define USB_FUNCTION_PRODUCT_ID	0x0750
 	#define PRODUCTSTR "Storch TRX Bootloader"
-	#define BUILD_ID 1	// РјРѕРґРёС„РёРєР°С‚РѕСЂ serial sumber
+	#define BUILD_ID 1	// модификатор serial sumber
 	#define USB_FUNCTION_RELEASE_NO	0x0000
 
 #elif WITHUSBUAC && WITHUSBUAC3
 	#define PRODUCTSTR "Storch TRX"
 	#define USB_FUNCTION_PRODUCT_ID	0x0737
 	#if WITHRTS96
-		#define BUILD_ID 6	// РјРѕРґРёС„РёРєР°С‚РѕСЂ serial sumber
+		#define BUILD_ID 6	// модификатор serial sumber
 		#define USB_FUNCTION_RELEASE_NO	0x0106
 	#elif WITHRTS192
-		#define BUILD_ID 5	// РјРѕРґРёС„РёРєР°С‚РѕСЂ serial sumber
+		#define BUILD_ID 5	// модификатор serial sumber
 		#define USB_FUNCTION_RELEASE_NO	0x0105
 	#else
-		#define BUILD_ID 4	// РјРѕРґРёС„РёРєР°С‚РѕСЂ serial sumber
+		#define BUILD_ID 4	// модификатор serial sumber
 		#define USB_FUNCTION_RELEASE_NO	0x0104
 	#endif
 #else /* WITHUSBUAC && WITHUSBUAC3 */
 	#define PRODUCTSTR "Storch TRX"
 	#define USB_FUNCTION_PRODUCT_ID	0x0738
 	#if WITHRTS96
-		#define BUILD_ID 2	// РјРѕРґРёС„РёРєР°С‚РѕСЂ serial sumber
+		#define BUILD_ID 2	// модификатор serial sumber
 		#define USB_FUNCTION_RELEASE_NO	0x0102
 	#elif WITHRTS192
-		#define BUILD_ID 1	// РјРѕРґРёС„РёРєР°С‚РѕСЂ serial sumber
+		#define BUILD_ID 1	// модификатор serial sumber
 		#define USB_FUNCTION_RELEASE_NO	0x0101
 	#else
-		#define BUILD_ID 0	// РјРѕРґРёС„РёРєР°С‚РѕСЂ serial sumber
+		#define BUILD_ID 0	// модификатор serial sumber
 		#define USB_FUNCTION_RELEASE_NO	0x0100
 	#endif
 #endif /* WITHUSBUAC && WITHUSBUAC3 */
@@ -127,7 +127,7 @@ enum
 
 	//STRING_ID_b,	// tag for USB Speaker Audio Feature Unit Descriptor
 
-	STRING_ID_Left, STRING_ID_Right,	// РРґСѓС‚ РїРѕРґСЂСЏРґ
+	STRING_ID_Left, STRING_ID_Right,	// Идут подряд
 
 	STRING_ID_RNDIS,
 	STRING_ID_HIDa,
@@ -226,7 +226,7 @@ static printhex(unsigned long voffs, const unsigned char * buff, unsigned length
 	for (i = 0; i < rows; ++ i)
 	{
 		int trl = 16;
-		//const int trl = ((length - 1) - i * 16) % 16 + 1;	// РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРёРјРІРѕР»РѕРІ РІ РґР°РЅРЅРѕР№ СЃС‚СЂРѕРєРµ
+		//const int trl = ((length - 1) - i * 16) % 16 + 1;	// количество символов в данной строке
 
 		debug_printf_P(PSTR("%08lX "), voffs + i * 16);
 		for (j = 0; j < trl; ++ j)
@@ -278,7 +278,7 @@ static unsigned r9fill_31(uint_fast8_t fill, uint8_t * buff, unsigned maxsize)
 	if (fill != 0 && buff != NULL)
 	{ 
 		const uint_fast16_t bcdCDC = CDC_V1_10;	/* bcdCDC: spec release number */
-		// Р’С‹Р·РѕРІ РґР»СЏ Р·Р°РїРѕР»РЅРµРЅРёСЏ, Р° РЅРµ С‚РѕР»СЊРєРѕ РґР»СЏ РїСЂРѕРІРµСЂРєРё Р·Р°РЅРёРјР°РµРјРѕРіРѕ РјРµСЃС‚Р° РІ Р±СѓС„РµСЂРµ
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = CDC_INTERFACE_DESCRIPTOR_TYPE;   /* bDescriptorType: CS_INTERFACE */
 		* buff ++ = 0x00;   /* bDescriptorSubtype: Header Func Desc */
@@ -291,7 +291,7 @@ static unsigned r9fill_31(uint_fast8_t fill, uint8_t * buff, unsigned maxsize)
 #if WITHUSBUAC
 
 #if 0
-	// Р’Р°СЂРёР°РЅС‚ Oleg UR3IQO
+	// Вариант Oleg UR3IQO
 	static const uint_fast8_t USBD_UACIN_EP_ATTRIBUTES = 
 		USB_ENDPOINT_USAGE_DATA | 
 		USB_ENDPOINT_SYNC_SYNCHRONOUS | 
@@ -302,7 +302,7 @@ static unsigned r9fill_31(uint_fast8_t fill, uint8_t * buff, unsigned maxsize)
 		USB_ENDPOINT_SYNC_SYNCHRONOUS | 
 		USB_ENDPOINT_TYPE_ISOCHRONOUS;
 #else
-	// РњРѕР№ РІР°СЂРёР°РЅС‚
+	// Мой вариант
 	static const uint_fast8_t USBD_UACIN_EP_ATTRIBUTES = 
 		USB_ENDPOINT_USAGE_IMPLICIT_FEEDBACK | 
 		USB_ENDPOINT_SYNC_ASYNCHRONOUS | 
@@ -328,7 +328,7 @@ static unsigned r9fill_clock_source(uint_fast8_t fill, uint8_t * buff, unsigned 
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		// Р’С‹Р·РѕРІ РґР»СЏ Р·Р°РїРѕР»РЅРµРЅРёСЏ; Р° РЅРµ С‚РѕР»СЊРєРѕ РґР»СЏ РїСЂРѕРІРµСЂРєРё Р·Р°РЅРёРјР°РµРјРѕРіРѕ РјРµСЃС‚Р° РІ Р±СѓС„РµСЂРµ
+		// Вызов для заполнения; а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = CS_INTERFACE;       /* bDescriptorType(0x24): CS_INTERFACE */ 
 		* buff ++ = 0x0A;       /* bDescriptorSubType(0x0A): CLOCK_SOURCE */ 
@@ -361,7 +361,7 @@ static unsigned UAC_InterfaceAssociationDescriptor(uint_fast8_t fill, uint8_t * 
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		// Р’С‹Р·РѕРІ РґР»СЏ Р·Р°РїРѕР»РЅРµРЅРёСЏ, Р° РЅРµ С‚РѕР»СЊРєРѕ РґР»СЏ РїСЂРѕРІРµСЂРєРё Р·Р°РЅРёРјР°РµРјРѕРіРѕ РјРµСЃС‚Р° РІ Р±СѓС„РµСЂРµ
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = USB_INTERFACE_ASSOC_DESCRIPTOR_TYPE;	// bDescriptorType: IAD
 		* buff ++ = bFirstInterface;			// bFirstInterface
@@ -388,7 +388,7 @@ static unsigned r9fill_3(uint_fast8_t fill, uint8_t * buff, unsigned maxsize,
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		// Р’С‹Р·РѕРІ РґР»СЏ Р·Р°РїРѕР»РЅРµРЅРёСЏ, Р° РЅРµ С‚РѕР»СЊРєРѕ РґР»СЏ РїСЂРѕРІРµСЂРєРё Р·Р°РЅРёРјР°РµРјРѕРіРѕ РјРµСЃС‚Р° РІ Р±СѓС„РµСЂРµ
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = USB_INTERFACE_DESCRIPTOR_TYPE;      /* bDescriptorType */
 		* buff ++ = bInterfaceNumber;					/* bInterfaceNumber */
@@ -406,7 +406,7 @@ static unsigned r9fill_3(uint_fast8_t fill, uint8_t * buff, unsigned maxsize,
 // Audio Control Input Terminal Descriptor 
 // audio10.pdf: Table 4-3: Input Terminal Descriptor
 // Sereo signal source
-// Audio РёР»Рё RTS
+// Audio или RTS
 static unsigned UAC_AudioControlIT_IN(uint_fast8_t fill, uint8_t * buff, unsigned maxsize, uint_fast8_t bTerminalID, uint_fast8_t offset)
 {
 	const uint_fast8_t length = 12;
@@ -421,7 +421,7 @@ static unsigned UAC_AudioControlIT_IN(uint_fast8_t fill, uint8_t * buff, unsigne
 		const uint_fast16_t wChannelConfig = bNrChannels == 1 ? 
 			AUDIO_CHANNEL_M : // Mono
 			(AUDIO_CHANNEL_L | AUDIO_CHANNEL_R);	// Left Front & Right Front
-		// Р’С‹Р·РѕРІ РґР»СЏ Р·Р°РїРѕР»РЅРµРЅРёСЏ, Р° РЅРµ С‚РѕР»СЊРєРѕ РґР»СЏ РїСЂРѕРІРµСЂРєРё Р·Р°РЅРёРјР°РµРјРѕРіРѕ РјРµСЃС‚Р° РІ Р±СѓС„РµСЂРµ
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = AUDIO_INTERFACE_DESCRIPTOR_TYPE; // CS_INTERFACE Descriptor Type
 		* buff ++ = AUDIO_CONTROL_INPUT_TERMINAL;    // INPUT_TERMINAL 0x02 descriptor subtype
@@ -450,11 +450,11 @@ static unsigned UAC_AudioControlIT_INRTS(uint_fast8_t fill, uint8_t * buff, unsi
 	{
 		// 4.3.2.1 Input Terminal Descriptor 
 		const uint_fast16_t wTerminalType = AUDIO_TERMINAL_RADIO_RECEIVER;
-		const uint_fast8_t bNrChannels = HARDWARE_USBD_AUDIO_IN_CHANNELS_RTS; // РґР»СЏ РєР°РЅР°Р»Р° СЃРѕ СЃРїРµРєС‚СЂРѕРј РІСЃРµРіРґР° СЃС‚РµСЂРµРѕ. РЅРѕ СЌС‚Рѕ РЅРµ С‚СѓС‚ СѓРєР°Р·Р°РЅРѕ
+		const uint_fast8_t bNrChannels = HARDWARE_USBD_AUDIO_IN_CHANNELS_RTS; // для канала со спектром всегда стерео. но это не тут указано
 		const uint_fast16_t wChannelConfig = bNrChannels == 1 ? 
 			AUDIO_CHANNEL_M : // Mono
 			(AUDIO_CHANNEL_L | AUDIO_CHANNEL_R);	// Left Front & Right Front
-		// Р’С‹Р·РѕРІ РґР»СЏ Р·Р°РїРѕР»РЅРµРЅРёСЏ, Р° РЅРµ С‚РѕР»СЊРєРѕ РґР»СЏ РїСЂРѕРІРµСЂРєРё Р·Р°РЅРёРјР°РµРјРѕРіРѕ РјРµСЃС‚Р° РІ Р±СѓС„РµСЂРµ
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = AUDIO_INTERFACE_DESCRIPTOR_TYPE; // CS_INTERFACE Descriptor Type
 		* buff ++ = AUDIO_CONTROL_INPUT_TERMINAL;    // INPUT_TERMINAL 0x02 descriptor subtype
@@ -508,7 +508,7 @@ static unsigned UAC_AudioControlIT_OUT(
 		* buff ++ = LO_BYTE(wChannelConfig);                /* wChannelConfig 0x0003  Front Left; Front Right */
 		* buff ++ = HI_BYTE(wChannelConfig);
 		* buff ++ = STRING_ID_Left;							/* iChannelNames */
-		* buff ++ = STRING_ID_d0 + offset;					/* iTerminal - РїРѕСЏРІР»СЏРµС‚СЃСЏ РєР°Рє pop-up РІ РїР°РЅРµР»Рё СѓРїСЂР°РІР»РµРЅРёСЏ ASIO4ALL */
+		* buff ++ = STRING_ID_d0 + offset;					/* iTerminal - появляется как pop-up в панели управления ASIO4ALL */
 		/* 12 bytes*/
 	}
 	return length;
@@ -516,7 +516,7 @@ static unsigned UAC_AudioControlIT_OUT(
 
 /*! USB Microphone Output Terminal Descriptor bSourceID -> bTerminalID */
 // Audio Control Output Terminal Descriptor 
-// Audio РёР»Рё RTS
+// Audio или RTS
 static unsigned UAC_AudioControlOT_IN(
 	uint_fast8_t fill, uint8_t * buff, unsigned maxsize, 
 	uint_fast8_t bTerminalID,
@@ -532,7 +532,7 @@ static unsigned UAC_AudioControlOT_IN(
 	{
 		// 
 		const uint_fast16_t wTerminalType = AUDIO_TERMINAL_USB_STREAMING;
-		// Р’С‹Р·РѕРІ РґР»СЏ Р·Р°РїРѕР»РЅРµРЅРёСЏ, Р° РЅРµ С‚РѕР»СЊРєРѕ РґР»СЏ РїСЂРѕРІРµСЂРєРё Р·Р°РЅРёРјР°РµРјРѕРіРѕ РјРµСЃС‚Р° РІ Р±СѓС„РµСЂРµ
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = AUDIO_INTERFACE_DESCRIPTOR_TYPE; // CS_INTERFACE Descriptor Type (bDescriptorType)
 		* buff ++ = AUDIO_CONTROL_OUTPUT_TERMINAL;   // OUTPUT_TERMINAL descriptor subtype (bDescriptorSubtype)
@@ -554,7 +554,7 @@ static unsigned UAC_AudioSelectorUnit_IN(
 	)
 {
 	//unsigned i;
-	const uint_fast8_t bNrInPins = TERMINAL_ID_SELECTOR_6_INPUTS;	// РєРѕР»РёС‡РµСЃС‚РІРѕ РІС…РѕРґРЅС‹С… РїРѕС‚РѕРєРѕРІ
+	const uint_fast8_t bNrInPins = TERMINAL_ID_SELECTOR_6_INPUTS;	// количество входных потоков
 	const uint_fast8_t length = 6 + bNrInPins;
 	ASSERT(maxsize >= length);
 	if (maxsize < length)
@@ -576,17 +576,17 @@ static unsigned UAC_AudioSelectorUnit_IN(
 
 // Audio Control Feature Unit Descriptor 
 // See 4.3.2.5 Feature Unit Descriptor for details
-// Р’ РЅР°С€РµРј СЃР»СѓС‡Р°Рµ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РґР»СЏ РїРѕРґР°РІР»РµРЅРёСЏ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ СЂР°Р·РґРµР»СЊРЅС‹С… СЌР»РµРјРµРЅС‚РѕРІ СЂРµРіСѓР»РёСЂРѕРІРєРё СѓСЂРѕРІРЅСЏ РїРѕ РєР°РЅР°Р»Р°Рј
+// В нашем случае используется для подавления отображения раздельных элементов регулировки уровня по каналам
 static unsigned UAC_AudioFeatureUnit(
 	uint_fast8_t fill, uint8_t * buff, unsigned maxsize,
 	uint_fast8_t bUnitID,
 	uint_fast8_t bSourceID
 	)
 {
-	// РџР°СЂР°РјРµС‚СЂ РѕРїСЂРµРґРµР»СЏРµС‚, РєРєРёРµ СѓРїСЂР°РІР»СЏСЋС‰РёРµ СЌР»РµРјРµРЅС‚С‹ РїРѕСЏРІР»СЏСЋС‚СЃСЏ РЅР° СЃС‚СЂР°РЅРёС‡РєРµ СѓРїСЂР°РІР»РµРЅРёСЏ "Custom"
-	// РџСЂРёС‡РµРј, РЅР° СЌС‚РѕР№ СЃС‚СЂР°РЅРёС‡РєРµ СЃРѕР±СЂР°РЅС‹ РІСЃРµ СѓРїСЂР°РІР»СЏСЋС‰РёРµ СЌР»РµРјРµРЅС‚С‹ СЃРѕ РІСЃРµС… Feature Unit Descriptor 
-	// РІ РїСѓС‚Рё СЃРёРіРЅР°Р»Р° РґР°РЅРЅРѕРіРѕ РёСЃС‚РѕС‡РЅРёРєР° Р·РІСѓРєР°.
-	// РќРµ РјРѕР¶РµС‚ Р±С‹С‚СЊ РЅСѓР»С‘Рј.
+	// Параметр определяет, ккие управляющие элементы появляются на страничке управления "Custom"
+	// Причем, на этой страничке собраны все управляющие элементы со всех Feature Unit Descriptor 
+	// в пути сигнала данного источника звука.
+	// Не может быть нулём.
 	const uint_fast32_t bmaControls = 
 		AUDIO_CONTROL_MUTE |
 		AUDIO_CONTROL_VOLUME |
@@ -596,7 +596,7 @@ static unsigned UAC_AudioFeatureUnit(
 		0;
 
 	const uint_fast8_t n = 1; // 1: Only master channel controls, 3: master, left and right
-	const uint_fast8_t bControlSize = 2;	/* Р”РѕСЃС‚Р°С‚РѕС‡РЅРѕ, С‡С‚РѕР±С‹ РІРјРµСЃС‚РёС‚СЊ РІСЃРµ РѕРїСЂРµРґРµР»РµРЅРЅС‹Рµ РґР»СЏ bmaControls Р±РёС‚С‹ */
+	const uint_fast8_t bControlSize = 2;	/* Достаточно, чтобы вместить все определенные для bmaControls биты */
 	const uint_fast8_t length = 7 + bControlSize * n;
 	ASSERT(maxsize >= length);
 	if (maxsize < length)
@@ -610,7 +610,7 @@ static unsigned UAC_AudioFeatureUnit(
 		* buff ++ = AUDIO_CONTROL_FEATURE_UNIT;     /* bDescriptorSubtype */
 		* buff ++ = bUnitID;             			/* bUnitID */
 		* buff ++ = bSourceID;						/* bSourceID */
-		* buff ++ = bControlSize;                   /* bControlSize - РєРѕР»С‚С‡РµСЃС‚РІРѕ СЌР»РµРјРµРЅС‚РѕРІ РІ СЃР»РµРґСѓСЋС‰РµРј СЌР»РµРјРµРЅС‚Рµ, РїРѕРІС‚РѕСЂСЏСЋС‰РµРјСЃСЏ РґР»СЏ РєР°Р¶РґРѕРіРѕ РєР°РЅР°Р»Р° */
+		* buff ++ = bControlSize;                   /* bControlSize - колтчество элементов в следующем элементе, повторяющемся для каждого канала */
 		for (i = 0; i < n; ++ i)
 		{
 			uint_fast32_t v = bmaControls;
@@ -628,7 +628,7 @@ static unsigned UAC_AudioFeatureUnit(
 }
 
 //
-// Р•СЃР»Рё РІС‹С…РѕРґ AUDIO_TERMINAL_RADIO_TRANSMITTER, Р·Р°РєР»Р°РґРєРё enchancements РЅРµС‚
+// Если выход AUDIO_TERMINAL_RADIO_TRANSMITTER, закладки enchancements нет
 // Audio Control Output Terminal Descriptor 
 // bSourceID -> bTerminalID
 // audio48 only
@@ -661,15 +661,15 @@ static unsigned UAC_AudioControlOT_OUT(
 	return length;
 }
 
-#define WITHUSENOFU 0	// 1 - Р±РµР· РёСЃРїРѕР»СЊР·РѕРІР°РЅРёСЏ Feature Unit, 0 - СЃ РёСЃРїРѕР»СЊР·РѕРІР°РЅРёРµРј, РёРіРЅРѕСЂРёСЂРѕРІР°РЅРёРµ СѓРїСЂР°РІР»РµРЅРёСЏ РіСЂРѕРјРєРѕСЃС‚СЊСЋ
+#define WITHUSENOFU 0	// 1 - без использования Feature Unit, 0 - с использованием, игнорирование управления громкостью
 
-// Р—Р°РїРѕР»РЅРµРЅРёРµ СЃС…РµРјС‹ РІРІРѕРґР° Р·РІСѓРєР°
+// Заполнение схемы ввода звука
 // IN data flow
-// Р­Р»РµРјРµРЅС‚С‹ РґРѕР±Р°РІР»РѕСЏСЋС‚СЃСЏ РІ РґРµСЃРєСЂРёРїРѕС‚РѕСЂ РІ РїРѕСЂСЏРґРєРµ РѕР±СЂР°С‚РЅРѕРј РїРѕСЂСЏРґРєСѓ РїСЂРѕС…РѕР¶РґРµРЅРёСЏ РёРЅС„РѕСЂРјР°С†РёРѕРЅРЅРѕРіРѕ РїРѕС‚РѕРєР°
+// Элементы добавлояются в дескрипотор в порядке обратном порядку прохождения информационного потока
 // 
 static unsigned UAC_AudioControlIfCircuitIN48(
 	uint_fast8_t fill, uint8_t * p, unsigned maxsize, 
-	uint_fast8_t bTerminalID,	// Р—Р°РІРµСЂС€Р°СЋС‰РёР№ РїРѕС‚РѕРє РѕР±СЂР°СЊРѕС‚РєРё С‚РµСЂРјРёРЅР°Р»
+	uint_fast8_t bTerminalID,	// Завершающий поток обраьотки терминал
 	uint_fast8_t offset
 	)
 {
@@ -677,13 +677,13 @@ static unsigned UAC_AudioControlIfCircuitIN48(
 
 	if (WITHUSENOFU)
 	{
-		// РўРѕР»СЊРєРѕ РѕРґРёРЅ РёСЃС‚РѕС‡РЅРёРє РґР»СЏ РєРѕРјРїСЊСЋС‚РµСЂР°
+		// Только один источник для компьютера
 		n += UAC_AudioControlOT_IN(fill, p + n, maxsize - n,  bTerminalID, bTerminalID + 1, offset);	/* AUDIO_TERMINAL_USB_STREAMING Terminal Descriptor TERMINAL_ID_IT_2 -> TERMINAL_UACIN48_UACINRTS */
 		n += UAC_AudioControlIT_IN(fill, p + n, maxsize - n, bTerminalID + 1, offset);	/* AUDIO_TERMINAL_RADIO_RECEIVER */
 	}
 	else
 	{
-		// РўРѕР»СЊРєРѕ РѕРґРёРЅ РёСЃС‚РѕС‡РЅРёРє РґР»СЏ РєРѕРјРїСЊСЋС‚РµСЂР°
+		// Только один источник для компьютера
 		n += UAC_AudioControlOT_IN(fill, p + n, maxsize - n,  bTerminalID, bTerminalID + 1, offset);	/* AUDIO_TERMINAL_USB_STREAMING Terminal Descriptor TERMINAL_ID_FU_AUDIO -> TERMINAL_UACIN48_UACINRTS */
 		n += UAC_AudioFeatureUnit(fill, p + n, maxsize - n, bTerminalID + 1, bTerminalID + 2);	/* USB microphone Audio Feature Unit Descriptor TERMINAL_UACOUT48 -> TERMINAL_ID_FU_AUDIO */
 		n += UAC_AudioControlIT_IN(fill, p + n, maxsize - n, bTerminalID + 2, offset);	/* AUDIO_TERMINAL_RADIO_RECEIVER */
@@ -692,12 +692,12 @@ static unsigned UAC_AudioControlIfCircuitIN48(
 	return n;
 }
 
-// Р—Р°РїРѕР»РЅРµРЅРёРµ СЃС…РµРјС‹ РІС‹РІРѕРґР° Р·РІСѓРєР°
+// Заполнение схемы вывода звука
 // OUT data flow
 // audio48 only
 static unsigned UAC_AudioControlIfCircuitOUT48(
 	uint_fast8_t fill, uint8_t * p, unsigned maxsize, 
-	uint_fast8_t bTerminalID,	// Р—Р°РІРµСЂС€Р°СЋС‰РёР№ РїРѕС‚РѕРє РѕР±СЂР°СЊРѕС‚РєРё С‚РµСЂРјРёРЅР°Р»
+	uint_fast8_t bTerminalID,	// Завершающий поток обраьотки терминал
 	uint_fast8_t offset
 	)
 {
@@ -705,7 +705,7 @@ static unsigned UAC_AudioControlIfCircuitOUT48(
 
 	if (WITHUSENOFU)
 	{
-		// Р±РµР· feature unit РјРµР¶РґСѓ IT Рё OT
+		// без feature unit между IT и OT
 		n += UAC_AudioControlIT_OUT(fill, p + n, maxsize - n, bTerminalID, offset);	/* AUDIO_TERMINAL_USB_STREAMING Input Terminal Descriptor TERMINAL_UACOUT48 + offset */
 		n += UAC_AudioControlOT_OUT(fill, p + n, maxsize - n, bTerminalID + 1, bTerminalID);	/* AUDIO_TERMINAL_RADIO_TRANSMITTER Output Terminal Descriptor TERMINAL_UACOUT48 + offset -> TERMINAL_ID_OT_3 + offset */
 	}
@@ -719,11 +719,11 @@ static unsigned UAC_AudioControlIfCircuitOUT48(
 	return n;
 }
 
-// Р­Р»РµРјРµРЅС‚С‹ РґРѕР±Р°РІР»РѕСЏСЋС‚СЃСЏ РІ РґРµСЃРєСЂРёРїРѕС‚РѕСЂ РІ РїРѕСЂСЏРґРєРµ РѕР±СЂР°С‚РЅРѕРј РїРѕСЂСЏРґРєСѓ РїСЂРѕС…РѕР¶РґРµРЅРёСЏ РёРЅС„РѕСЂРјР°С†РёРѕРЅРЅРѕРіРѕ РїРѕС‚РѕРєР°
+// Элементы добавлояются в дескрипотор в порядке обратном порядку прохождения информационного потока
 // 
 static unsigned UAC_AudioControlIfCircuitINRTS(
 	uint_fast8_t fill, uint8_t * p, unsigned maxsize, 
-	uint_fast8_t bTerminalID,	// Р—Р°РІРµСЂС€Р°СЋС‰РёР№ РїРѕС‚РѕРє РѕР±СЂР°СЊРѕС‚РєРё С‚РµСЂРјРёРЅР°Р»
+	uint_fast8_t bTerminalID,	// Завершающий поток обраьотки терминал
 	uint_fast8_t offset
 	)
 {
@@ -731,7 +731,7 @@ static unsigned UAC_AudioControlIfCircuitINRTS(
 
 	if (WITHUSENOFU)
 	{
-		// РўРѕР»СЊРєРѕ РѕРґРёРЅ РёСЃС‚РѕС‡РЅРёРє РґР»СЏ РєРѕРјРїСЊСЋС‚РµСЂР°
+		// Только один источник для компьютера
 		n += UAC_AudioControlOT_IN(fill, p + n, maxsize - n,  bTerminalID, bTerminalID + 1, offset);	/* AUDIO_TERMINAL_USB_STREAMING Terminal Descriptor TERMINAL_ID_IT_2 -> TERMINAL_UACIN48_UACINRTS */
 		n += UAC_AudioControlIT_INRTS(fill, p + n, maxsize - n, bTerminalID + 1, offset);	/* AUDIO_TERMINAL_RADIO_RECEIVER */
 	}
@@ -752,7 +752,7 @@ typedef unsigned (* pathfn_t)(uint_fast8_t fill, uint8_t * p, unsigned maxsize, 
 static unsigned UAC_AudioControlIfHeader(
 	uint_fast8_t fill, uint8_t * buff, unsigned maxsize,
 	const uint_fast8_t * coll,		// array of data interfaces in this functional device
-	const uint_fast8_t * terminalID,	// Р’С‹С…РѕРґРЅРѕР№ С‚РµРјСЂРјРёРЅР°Р» С†РµРїРѕС‡РєРё
+	const uint_fast8_t * terminalID,	// Выходной темрминал цепочки
 	const pathfn_t * paths,
 	uint_fast8_t bInCollection,		// size of array
 	uint_fast8_t offset
@@ -771,7 +771,7 @@ static unsigned UAC_AudioControlIfHeader(
 	{
 		// 4.3.2 Class-Specific AC Interface Descriptor
 		const uint_fast16_t bcdADC = 0x0100;	// Revision of class specification - 1.0
-		// Р’С‹Р·РѕРІ РґР»СЏ Р·Р°РїРѕР»РЅРµРЅРёСЏ, Р° РЅРµ С‚РѕР»СЊРєРѕ РґР»СЏ РїСЂРѕРІРµСЂРєРё Р·Р°РЅРёРјР°РµРјРѕРіРѕ РјРµСЃС‚Р° РІ Р±СѓС„РµСЂРµ
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;							/* bLength */
 		* buff ++ = AUDIO_INTERFACE_DESCRIPTOR_TYPE;/* bDescriptorType */
 		* buff ++ = AUDIO_CONTROL_HEADER;           /* bDescriptorSubtype */
@@ -808,7 +808,7 @@ static unsigned r9fill_10(
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		// Р’С‹Р·РѕРІ РґР»СЏ Р·Р°РїРѕР»РЅРµРЅРёСЏ, Р° РЅРµ С‚РѕР»СЊРєРѕ РґР»СЏ РїСЂРѕРІРµСЂРєРё Р·Р°РЅРёРјР°РµРјРѕРіРѕ РјРµСЃС‚Р° РІ Р±СѓС„РµСЂРµ
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;							/* bLength */
 		* buff ++ = USB_INTERFACE_DESCRIPTOR_TYPE;  /* bDescriptorType */
 		* buff ++ = bInterfaceNumber; //;                 /* bInterfaceNumber */
@@ -835,7 +835,7 @@ static unsigned r9fill_13(uint_fast8_t fill, uint8_t * buff, unsigned maxsize)
 	if (fill != 0 && buff != NULL)
 	{
 		const uint_fast32_t samplefreq1 = dsp_get_samplerateuacout();
-		// Р’С‹Р·РѕРІ РґР»СЏ Р·Р°РїРѕР»РЅРµРЅРёСЏ, Р° РЅРµ С‚РѕР»СЊРєРѕ РґР»СЏ РїСЂРѕРІРµСЂРєРё Р·Р°РЅРёРјР°РµРјРѕРіРѕ РјРµСЃС‚Р° РІ Р±СѓС„РµСЂРµ
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = AUDIO_INTERFACE_DESCRIPTOR_TYPE;		/* bDescriptorType */
 		* buff ++ = AUDIO_STREAMING_FORMAT_TYPE;			/* bDescriptorSubtype */
@@ -863,7 +863,7 @@ static unsigned r9fill_14(uint_fast8_t fill, uint8_t * buff, unsigned maxsize, u
 	if (fill != 0 && buff != NULL)
 	{
 		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT);
-		// Р’С‹Р·РѕРІ РґР»СЏ Р·Р°РїРѕР»РЅРµРЅРёСЏ, Р° РЅРµ С‚РѕР»СЊРєРѕ РґР»СЏ РїСЂРѕРІРµСЂРєРё Р·Р°РЅРёРјР°РµРјРѕРіРѕ РјРµСЃС‚Р° РІ Р±СѓС„РµСЂРµ
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = USB_ENDPOINT_DESCRIPTOR_TYPE;         /* bDescriptorType */
 		* buff ++ = bEndpointAddress;               /* bEndpointAddress 1 out endpoint*/
@@ -888,7 +888,7 @@ static unsigned r9fill_15(uint_fast8_t fill, uint8_t * buff, unsigned maxsize)
 	if (fill != 0 && buff != NULL)
 	{
 		const uint_fast16_t wLockDelay = 0;
-		// Р’С‹Р·РѕРІ РґР»СЏ Р·Р°РїРѕР»РЅРµРЅРёСЏ, Р° РЅРµ С‚РѕР»СЊРєРѕ РґР»СЏ РїСЂРѕРІРµСЂРєРё Р·Р°РЅРёРјР°РµРјРѕРіРѕ РјРµСЃС‚Р° РІ Р±СѓС„РµСЂРµ
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;							/* bLength */
 		* buff ++ = AUDIO_ENDPOINT_DESCRIPTOR_TYPE; /* 0x25 bDescriptorType */
 		* buff ++ = AUDIO_ENDPOINT_GENERAL;         /* 0x01 bDescriptor */
@@ -915,7 +915,7 @@ static unsigned r9fill_24(
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		// Р’С‹Р·РѕРІ РґР»СЏ Р·Р°РїРѕР»РЅРµРЅРёСЏ, Р° РЅРµ С‚РѕР»СЊРєРѕ РґР»СЏ РїСЂРѕРІРµСЂРєРё Р·Р°РЅРёРјР°РµРјРѕРіРѕ РјРµСЃС‚Р° РІ Р±СѓС„РµСЂРµ
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;							/* bLength */
 		* buff ++ = USB_INTERFACE_DESCRIPTOR_TYPE;  // INTERFACE descriptor type (bDescriptorType)
 		* buff ++ = bInterfaceNumber;			// Index of this interface. (bInterfaceNumber)
@@ -941,7 +941,7 @@ static unsigned UAC_r9fill_26_audio48(uint_fast8_t fill, uint8_t * buff, unsigne
 	if (fill != 0 && buff != NULL)
 	{
 		const uint_fast32_t samplefreq1 = dsp_get_samplerateuacin_audio48();
-		// Р’С‹Р·РѕРІ РґР»СЏ Р·Р°РїРѕР»РЅРµРЅРёСЏ, Р° РЅРµ С‚РѕР»СЊРєРѕ РґР»СЏ РїСЂРѕРІРµСЂРєРё Р·Р°РЅРёРјР°РµРјРѕРіРѕ РјРµСЃС‚Р° РІ Р±СѓС„РµСЂРµ
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = AUDIO_INTERFACE_DESCRIPTOR_TYPE;// CS_INTERFACE Descriptor Type (bDescriptorType) 0x24
 		* buff ++ = AUDIO_STREAMING_FORMAT_TYPE;   // FORMAT_TYPE subtype. (bDescriptorSubtype) 0x02
@@ -968,7 +968,7 @@ static unsigned UAC_r9fill_27_audio48(uint_fast8_t fill, uint8_t * buff, unsigne
 	if (fill != 0 && buff != NULL)
 	{
 		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(VIRTUAL_AUDIO_PORT_DATA_SIZE_IN_AUDIO48); // was: 0x300
-		// Р’С‹Р·РѕРІ РґР»СЏ Р·Р°РїРѕР»РЅРµРЅРёСЏ, Р° РЅРµ С‚РѕР»СЊРєРѕ РґР»СЏ РїСЂРѕРІРµСЂРєРё Р·Р°РЅРёРјР°РµРјРѕРіРѕ РјРµСЃС‚Р° РІ Р±СѓС„РµСЂРµ
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;							/* bLength */
 		* buff ++ = USB_ENDPOINT_DESCRIPTOR_TYPE;	// bDescriptorType
 		* buff ++ = bEndpointAddress;                    // bEndpointAddress
@@ -995,7 +995,7 @@ static unsigned UAC_r9fill_26_rts96(uint_fast8_t fill, uint8_t * buff, unsigned 
 	if (fill != 0 && buff != NULL)
 	{
 		const uint_fast32_t samplefreq1 = dsp_get_samplerateuacin_rts96();
-		// Р’С‹Р·РѕРІ РґР»СЏ Р·Р°РїРѕР»РЅРµРЅРёСЏ, Р° РЅРµ С‚РѕР»СЊРєРѕ РґР»СЏ РїСЂРѕРІРµСЂРєРё Р·Р°РЅРёРјР°РµРјРѕРіРѕ РјРµСЃС‚Р° РІ Р±СѓС„РµСЂРµ
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = AUDIO_INTERFACE_DESCRIPTOR_TYPE;// CS_INTERFACE Descriptor Type (bDescriptorType) 0x24
 		* buff ++ = AUDIO_STREAMING_FORMAT_TYPE;   // FORMAT_TYPE subtype. (bDescriptorSubtype) 0x02
@@ -1022,7 +1022,7 @@ static unsigned UAC_r9fill_27_rts96(uint_fast8_t fill, uint8_t * buff, unsigned 
 	if (fill != 0 && buff != NULL)
 	{
 		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(VIRTUAL_AUDIO_PORT_DATA_SIZE_IN_RTS96); // was: 0x300
-		// Р’С‹Р·РѕРІ РґР»СЏ Р·Р°РїРѕР»РЅРµРЅРёСЏ, Р° РЅРµ С‚РѕР»СЊРєРѕ РґР»СЏ РїСЂРѕРІРµСЂРєРё Р·Р°РЅРёРјР°РµРјРѕРіРѕ РјРµСЃС‚Р° РІ Р±СѓС„РµСЂРµ
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;							/* bLength */
 		* buff ++ = USB_ENDPOINT_DESCRIPTOR_TYPE;	// bDescriptorType
 		* buff ++ = bEndpointAddress;                    // bEndpointAddress
@@ -1051,7 +1051,7 @@ static unsigned UAC_r9fill_26_rts192(uint_fast8_t fill, uint8_t * buff, unsigned
 	if (fill != 0 && buff != NULL)
 	{
 		const uint_fast32_t samplefreq1 = dsp_get_samplerateuacin_rts192();
-		// Р’С‹Р·РѕРІ РґР»СЏ Р·Р°РїРѕР»РЅРµРЅРёСЏ, Р° РЅРµ С‚РѕР»СЊРєРѕ РґР»СЏ РїСЂРѕРІРµСЂРєРё Р·Р°РЅРёРјР°РµРјРѕРіРѕ РјРµСЃС‚Р° РІ Р±СѓС„РµСЂРµ
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = AUDIO_INTERFACE_DESCRIPTOR_TYPE;// CS_INTERFACE Descriptor Type (bDescriptorType) 0x24
 		* buff ++ = AUDIO_STREAMING_FORMAT_TYPE;   // FORMAT_TYPE subtype. (bDescriptorSubtype) 0x02
@@ -1078,7 +1078,7 @@ static unsigned UAC_r9fill_27_rts192(uint_fast8_t fill, uint8_t * buff, unsigned
 	if (fill != 0 && buff != NULL)
 	{
 		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(VIRTUAL_AUDIO_PORT_DATA_SIZE_IN_RTS192); // was: 0x300
-		// Р’С‹Р·РѕРІ РґР»СЏ Р·Р°РїРѕР»РЅРµРЅРёСЏ, Р° РЅРµ С‚РѕР»СЊРєРѕ РґР»СЏ РїСЂРѕРІРµСЂРєРё Р·Р°РЅРёРјР°РµРјРѕРіРѕ РјРµСЃС‚Р° РІ Р±СѓС„РµСЂРµ
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;							/* bLength */
 		* buff ++ = USB_ENDPOINT_DESCRIPTOR_TYPE;	// bDescriptorType
 		* buff ++ = bEndpointAddress;                    // bEndpointAddress
@@ -1094,7 +1094,7 @@ static unsigned UAC_r9fill_27_rts192(uint_fast8_t fill, uint8_t * buff, unsigned
 
 #endif /* WITHRTS192 */
 
-/* USB Microphone Class-specific Isoc. Audio Data Endpoint Descriptor (CODE == 7) OK - РїРѕРґС‚РІРµСЂР¶РґРµРЅРѕ РґРѕРєСѓРјРµРЅС‚Р°С†РёРµР№*/
+/* USB Microphone Class-specific Isoc. Audio Data Endpoint Descriptor (CODE == 7) OK - подтверждено документацией*/
 static unsigned r9fill_28(uint_fast8_t fill, uint8_t * buff, unsigned maxsize)
 {
 	const uint_fast8_t length = 7;
@@ -1104,7 +1104,7 @@ static unsigned r9fill_28(uint_fast8_t fill, uint8_t * buff, unsigned maxsize)
 	if (fill != 0 && buff != NULL)
 	{
 		const uint_fast16_t wLockDelay = 0;
-		// Р’С‹Р·РѕРІ РґР»СЏ Р·Р°РїРѕР»РЅРµРЅРёСЏ, Р° РЅРµ С‚РѕР»СЊРєРѕ РґР»СЏ РїСЂРѕРІРµСЂРєРё Р·Р°РЅРёРјР°РµРјРѕРіРѕ РјРµСЃС‚Р° РІ Р±СѓС„РµСЂРµ
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = AUDIO_ENDPOINT_DESCRIPTOR_TYPE;    // CS_ENDPOINT Descriptor Type (bDescriptorType) 0x25
 		* buff ++ = AUDIO_ENDPOINT_GENERAL;            // GENERAL subtype. (bDescriptorSubtype) 0x01
@@ -1128,7 +1128,7 @@ static unsigned UAC_AudioStreamingIf(uint_fast8_t fill, uint8_t * buff, unsigned
 	if (fill != 0 && buff != NULL)
 	{
 		const uint_fast16_t wFormatTag = AUDIO_FORMAT_PCM;	/* wFormatTag */
-		// Р’С‹Р·РѕРІ РґР»СЏ Р·Р°РїРѕР»РЅРµРЅРёСЏ, Р° РЅРµ С‚РѕР»СЊРєРѕ РґР»СЏ РїСЂРѕРІРµСЂРєРё Р·Р°РЅРёРјР°РµРјРѕРіРѕ РјРµСЃС‚Р° РІ Р±СѓС„РµСЂРµ
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = AUDIO_INTERFACE_DESCRIPTOR_TYPE;      /* bDescriptorType CS_INTERFACE */
 		* buff ++ = AUDIO_STREAMING_GENERAL;              /* bDescriptorSubtype AS_GENERAL */
@@ -1199,7 +1199,7 @@ static unsigned fill_UACINRTS_function(uint_fast8_t fill, uint8_t * p, unsigned 
 	n += UAC_AudioStreamingIf(fill, p + n, maxsize - n, terminalID);	/* USB Microphone Class-specific AS General Interface Descriptor (for output TERMINAL_UACIN48_UACINRTS) (CODE == 5) */
 	n += UAC_r9fill_26_rts96(fill, p + n, maxsize - n);		/* USB Microphone Type I Format Type Descriptor (CODE == 6) 48000 */
 	n += UAC_r9fill_27_rts96(fill, p + n, maxsize - n, highspeed, epinrts, offset);	/* Endpoint Descriptor USBD_EP_AUDIO_IN In, Isochronous, 125 us */
-	n += r9fill_28(fill, p + n, maxsize - n);	/* USB Microphone Class-specific Isoc. Audio Data Endpoint Descriptor (CODE == 7) OK - РїРѕРґС‚РІРµСЂР¶РґРµРЅРѕ РґРѕРєСѓРјРµРЅС‚Р°С†РёРµР№*/
+	n += r9fill_28(fill, p + n, maxsize - n);	/* USB Microphone Class-specific Isoc. Audio Data Endpoint Descriptor (CODE == 7) OK - подтверждено документацией*/
 #endif /* WITHRTS96 */
 
 #if WITHRTS192
@@ -1208,7 +1208,7 @@ static unsigned fill_UACINRTS_function(uint_fast8_t fill, uint8_t * p, unsigned 
 	n += UAC_AudioStreamingIf(fill, p + n, maxsize - n, terminalID);	/* USB Microphone Class-specific AS General Interface Descriptor (for output TERMINAL_UACIN48_UACINRTS) (CODE == 5) */
 	n += UAC_r9fill_26_rts192(fill, p + n, maxsize - n);		/* USB Microphone Type I Format Type Descriptor (CODE == 6) 48000 */
 	n += UAC_r9fill_27_rts192(fill, p + n, maxsize - n, highspeed, epinrts, offset);	/* Endpoint Descriptor USBD_EP_AUDIO_IN In, Isochronous, 125 us */
-	n += r9fill_28(fill, p + n, maxsize - n);	/* USB Microphone Class-specific Isoc. Audio Data Endpoint Descriptor (CODE == 7) OK - РїРѕРґС‚РІРµСЂР¶РґРµРЅРѕ РґРѕРєСѓРјРµРЅС‚Р°С†РёРµР№*/
+	n += r9fill_28(fill, p + n, maxsize - n);	/* USB Microphone Class-specific Isoc. Audio Data Endpoint Descriptor (CODE == 7) OK - подтверждено документацией*/
 #endif /* WITHRTS192 */
 	return n;
 }
@@ -1239,7 +1239,7 @@ static unsigned fill_UACIN48_INRTS_function(uint_fast8_t fill, uint8_t * p, unsi
 	n += UAC_AudioStreamingIf(fill, p + n, maxsize - n, terminalID);	/* USB Microphone Class-specific AS General Interface Descriptor (for output TERMINAL_UACIN48_UACINRTS) (CODE == 5) */
 	n += UAC_r9fill_26_audio48(fill, p + n, maxsize - n);		/* USB Microphone Type I Format Type Descriptor (CODE == 6) 48000 */
 	n += UAC_r9fill_27_audio48(fill, p + n, maxsize - n, highspeed, epin, offset);	/* Endpoint Descriptor USBD_EP_AUDIO_IN In, Isochronous, 125 us */
-	n += r9fill_28(fill, p + n, maxsize - n);	/* USB Microphone Class-specific Isoc. Audio Data Endpoint Descriptor (CODE == 7) OK - РїРѕРґС‚РІРµСЂР¶РґРµРЅРѕ РґРѕРєСѓРјРµРЅС‚Р°С†РёРµР№*/
+	n += r9fill_28(fill, p + n, maxsize - n);	/* USB Microphone Class-specific Isoc. Audio Data Endpoint Descriptor (CODE == 7) OK - подтверждено документацией*/
 
 #if WITHRTS96
 	// IN data flow: radio RX specrum data
@@ -1247,7 +1247,7 @@ static unsigned fill_UACIN48_INRTS_function(uint_fast8_t fill, uint8_t * p, unsi
 	n += UAC_AudioStreamingIf(fill, p + n, maxsize - n, terminalID);	/* USB Microphone Class-specific AS General Interface Descriptor (for output TERMINAL_UACIN48_UACINRTS) (CODE == 5) */
 	n += UAC_r9fill_26_rts96(fill, p + n, maxsize - n);		/* USB Microphone Type I Format Type Descriptor (CODE == 6) 48000 */
 	n += UAC_r9fill_27_rts96(fill, p + n, maxsize - n, highspeed, epin, offset);	/* Endpoint Descriptor USBD_EP_AUDIO_IN In, Isochronous, 125 us */
-	n += r9fill_28(fill, p + n, maxsize - n);	/* USB Microphone Class-specific Isoc. Audio Data Endpoint Descriptor (CODE == 7) OK - РїРѕРґС‚РІРµСЂР¶РґРµРЅРѕ РґРѕРєСѓРјРµРЅС‚Р°С†РёРµР№*/
+	n += r9fill_28(fill, p + n, maxsize - n);	/* USB Microphone Class-specific Isoc. Audio Data Endpoint Descriptor (CODE == 7) OK - подтверждено документацией*/
 #endif /* WITHRTS96 */
 
 #if WITHRTS192
@@ -1256,7 +1256,7 @@ static unsigned fill_UACIN48_INRTS_function(uint_fast8_t fill, uint8_t * p, unsi
 	n += UAC_AudioStreamingIf(fill, p + n, maxsize - n, terminalID);	/* USB Microphone Class-specific AS General Interface Descriptor (for output TERMINAL_UACIN48_UACINRTS) (CODE == 5) */
 	n += UAC_r9fill_26_rts192(fill, p + n, maxsize - n);		/* USB Microphone Type I Format Type Descriptor (CODE == 6) 48000 */
 	n += UAC_r9fill_27_rts192(fill, p + n, maxsize - n, highspeed, epin, offset);	/* Endpoint Descriptor USBD_EP_AUDIO_IN In, Isochronous, 125 us */
-	n += r9fill_28(fill, p + n, maxsize - n);	/* USB Microphone Class-specific Isoc. Audio Data Endpoint Descriptor (CODE == 7) OK - РїРѕРґС‚РІРµСЂР¶РґРµРЅРѕ РґРѕРєСѓРјРµРЅС‚Р°С†РёРµР№*/
+	n += r9fill_28(fill, p + n, maxsize - n);	/* USB Microphone Class-specific Isoc. Audio Data Endpoint Descriptor (CODE == 7) OK - подтверждено документацией*/
 #endif /* WITHRTS192 */
 	return n;
 }
@@ -1299,7 +1299,7 @@ static unsigned fill_UAC_function(uint_fast8_t fill, uint8_t * p, unsigned maxsi
 
 
 	#if WITHUSBUAC3
-		/* РѕС‚РґРµР»СЊРЅС‹Рµ С„СѓРЅРєС†РёРё РґР»СЏ РїРµСЂРµРґР°С‡Рё РІ РєРѕРјРїСЋС‚РµСЂ СЃРїРµРєС‚СЂР° Рё Р·РІСѓРєР° */
+		/* отдельные функции для передачи в компютер спектра и звука */
 		n += fill_UACIN48_function(fill, p + n, maxsize - n, highspeed, 0);
 		#if WITHRTS96 || WITHRTS192
 			n += fill_UACINRTS_function(fill, p + n, maxsize - n, highspeed, 1);
@@ -1308,7 +1308,7 @@ static unsigned fill_UAC_function(uint_fast8_t fill, uint8_t * p, unsigned maxsi
 		#endif /* WITHRTS96 || WITHRTS192 */
 
 	#else /* WITHUSBUAC3 */
-		/* СЂР°Р·РґРёС‡РЅС‹Рµ С„РѕСЂРјР°С‚С‹ РґР»СЏ РїРµСЂРµРґР°С‡Рё РІ РєРѕРјРїСЋС‚РµСЂ РґР»СЏ РїРµСЂРµРґР°С‡Рё СЃРїРµРєС‚СЂР° Рё Р·РІСѓРєР° */
+		/* раздичные форматы для передачи в компютер для передачи спектра и звука */
 		n += fill_UACIN48_INRTS_function(fill, p + n, maxsize - n, highspeed, 0);
 
 	#endif /* WITHUSBUAC3 */
@@ -1337,7 +1337,7 @@ static unsigned CDCACM_InterfaceAssociationDescriptor_a(uint_fast8_t fill, uint8
 	{
 		// 0x02/0x02/0x01 - cdc
 		// 0x02/0x0c/0x07 - CDC Ethernet Emulation Model
-		// Р’С‹Р·РѕРІ РґР»СЏ Р·Р°РїРѕР»РЅРµРЅРёСЏ, Р° РЅРµ С‚РѕР»СЊРєРѕ РґР»СЏ РїСЂРѕРІРµСЂРєРё Р·Р°РЅРёРјР°РµРјРѕРіРѕ РјРµСЃС‚Р° РІ Р±СѓС„РµСЂРµ
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = USB_INTERFACE_ASSOC_DESCRIPTOR_TYPE;	// bDescriptorType: IAD
 		* buff ++ = INTERFACE_CDC_CONTROL_3a + offset * INTERFACE_CDCACM_count;	// bFirstInterface
@@ -1345,7 +1345,7 @@ static unsigned CDCACM_InterfaceAssociationDescriptor_a(uint_fast8_t fill, uint8
 		* buff ++ = USB_DEVICE_CLASS_COMMUNICATIONS;	// bFunctionClass: CDC
 		* buff ++ = CDC_ABSTRACT_CONTROL_MODEL;			// bFunctionSubClass
 		* buff ++ = CDC_PROTOCOL_COMMON_AT_COMMANDS;	// bFunctionProtocol
-		* buff ++ = STRING_ID_4a + offset;				// iFunction - Storch HF TRX CAT - РїРѕСЏРІР»СЏРµС‚СЃСЏ, РµСЃР»Рё СЃРґРµР»Р°С‚СЊ РЅРµ С‚РѕС‚ bFunctionSubClass
+		* buff ++ = STRING_ID_4a + offset;				// iFunction - Storch HF TRX CAT - появляется, если сделать не тот bFunctionSubClass
 	}
 	return length;
 }
@@ -1360,7 +1360,7 @@ static unsigned CDCACM_InterfaceDescriptorControlIf_a(uint_fast8_t fill, uint8_t
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		// Р’С‹Р·РѕРІ РґР»СЏ Р·Р°РїРѕР»РЅРµРЅРёСЏ, Р° РЅРµ С‚РѕР»СЊРєРѕ РґР»СЏ РїСЂРѕРІРµСЂРєРё Р·Р°РЅРёРјР°РµРјРѕРіРѕ РјРµСЃС‚Р° РІ Р±СѓС„РµСЂРµ
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = USB_INTERFACE_DESCRIPTOR_TYPE;  /* bDescriptorType: Interface */  /* Interface descriptor type */
 		* buff ++ = INTERFACE_CDC_CONTROL_3a + offset * INTERFACE_CDCACM_count;   /* bInterfaceNumber: Number of Interface */
@@ -1384,7 +1384,7 @@ static unsigned CDCACM_r9fill_32_a(uint_fast8_t fill, uint8_t * buff, unsigned m
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		// Р’С‹Р·РѕРІ РґР»СЏ Р·Р°РїРѕР»РЅРµРЅРёСЏ, Р° РЅРµ С‚РѕР»СЊРєРѕ РґР»СЏ РїСЂРѕРІРµСЂРєРё Р·Р°РЅРёРјР°РµРјРѕРіРѕ РјРµСЃС‚Р° РІ Р±СѓС„РµСЂРµ
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = CS_INTERFACE;   /* bDescriptorType: CS_INTERFACE */
 		* buff ++ = 0x01;   /* bDescriptorSubtype: Call Management Func Desc */
@@ -1404,7 +1404,7 @@ static unsigned CDC_UnionFunctionalDescriptor_a(uint_fast8_t fill, uint8_t * buf
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		// Р’С‹Р·РѕРІ РґР»СЏ Р·Р°РїРѕР»РЅРµРЅРёСЏ, Р° РЅРµ С‚РѕР»СЊРєРѕ РґР»СЏ РїСЂРѕРІРµСЂРєРё Р·Р°РЅРёРјР°РµРјРѕРіРѕ РјРµСЃС‚Р° РІ Р±СѓС„РµСЂРµ
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						/* bFunctionLength */
 		* buff ++ = CS_INTERFACE;				/* bDescriptorType: CS_INTERFACE */
 		* buff ++ = CDC_UNION;						/* bDescriptorSubtype: Union func desc */
@@ -1428,7 +1428,7 @@ static unsigned CDCACM_InterfaceDescriptorDataIf_a(
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		// Р’С‹Р·РѕРІ РґР»СЏ Р·Р°РїРѕР»РЅРµРЅРёСЏ, Р° РЅРµ С‚РѕР»СЊРєРѕ РґР»СЏ РїСЂРѕРІРµСЂРєРё Р·Р°РЅРёРјР°РµРјРѕРіРѕ РјРµСЃС‚Р° РІ Р±СѓС„РµСЂРµ
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = USB_INTERFACE_DESCRIPTOR_TYPE;  /* bDescriptorType: */
 		* buff ++ = INTERFACE_CDC_DATA_4a + offset * INTERFACE_CDCACM_count;   /* bInterfaceNumber: Number of Interface */
@@ -1452,7 +1452,7 @@ static unsigned CDCACM_ACMFunctionalDescriptor(uint_fast8_t fill, uint8_t * buff
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		// Р’С‹Р·РѕРІ РґР»СЏ Р·Р°РїРѕР»РЅРµРЅРёСЏ, Р° РЅРµ С‚РѕР»СЊРєРѕ РґР»СЏ РїСЂРѕРІРµСЂРєРё Р·Р°РЅРёРјР°РµРјРѕРіРѕ РјРµСЃС‚Р° РІ Р±СѓС„РµСЂРµ
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		// defined in PSTN120.pdf 5.3.2 Abstract Control Management Functional Descriptor 
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = CS_INTERFACE;   /* bDescriptorType: CS_INTERFACE */
@@ -1473,7 +1473,7 @@ static unsigned r9fill_35(uint_fast8_t fill, uint8_t * buff, unsigned maxsize, i
 	if (fill != 0 && buff != NULL)
 	{
 		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(VIRTUAL_COM_PORT_INT_SIZE);
-		// Р’С‹Р·РѕРІ РґР»СЏ Р·Р°РїРѕР»РЅРµРЅРёСЏ, Р° РЅРµ С‚РѕР»СЊРєРѕ РґР»СЏ РїСЂРѕРІРµСЂРєРё Р·Р°РЅРёРјР°РµРјРѕРіРѕ РјРµСЃС‚Р° РІ Р±СѓС„РµСЂРµ
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;							/* bLength */
 		* buff ++ = USB_ENDPOINT_DESCRIPTOR_TYPE; 	/* bDescriptorType: Endpoint */
 		* buff ++ = bEndpointAddress;			/* bEndpointAddress: (IN) */
@@ -1496,7 +1496,7 @@ static unsigned r9fill_37(uint_fast8_t fill, uint8_t * buff, unsigned maxsize, u
 	if (fill != 0 && buff != NULL)
 	{
 		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(VIRTUAL_COM_PORT_OUT_DATA_SIZE);
-		// Р’С‹Р·РѕРІ РґР»СЏ Р·Р°РїРѕР»РЅРµРЅРёСЏ, Р° РЅРµ С‚РѕР»СЊРєРѕ РґР»СЏ РїСЂРѕРІРµСЂРєРё Р·Р°РЅРёРјР°РµРјРѕРіРѕ РјРµСЃС‚Р° РІ Р±СѓС„РµСЂРµ
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;							/* bLength */
 		* buff ++ = USB_ENDPOINT_DESCRIPTOR_TYPE;   /* bDescriptorType: Endpoint */
 		* buff ++ = bEndpointAddress;				/* bEndpointAddress: (OUT2) */
@@ -1519,7 +1519,7 @@ static unsigned r9fill_38(uint_fast8_t fill, uint8_t * buff, unsigned maxsize, u
 	if (fill != 0 && buff != NULL)
 	{
 		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(VIRTUAL_COM_PORT_IN_DATA_SIZE);
-		// Р’С‹Р·РѕРІ РґР»СЏ Р·Р°РїРѕР»РЅРµРЅРёСЏ, Р° РЅРµ С‚РѕР»СЊРєРѕ РґР»СЏ РїСЂРѕРІРµСЂРєРё Р·Р°РЅРёРјР°РµРјРѕРіРѕ РјРµСЃС‚Р° РІ Р±СѓС„РµСЂРµ
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;							/* bLength */
 		* buff ++ = USB_ENDPOINT_DESCRIPTOR_TYPE;	/* bDescriptorType: Endpoint */
 		* buff ++ = bEndpointAddress;				/* bEndpointAddress: (IN2) */
@@ -1585,7 +1585,7 @@ static unsigned CDCEEM_InterfaceAssociationDescriptor(
 		// 0x02/0x0c/0x07 - CDC Ethernet Emulation Model
 		// http://blog.metrotek.spb.ru/2011/07/07/usb-set-na-cortex-m3/
 
-		// Р’С‹Р·РѕРІ РґР»СЏ Р·Р°РїРѕР»РЅРµРЅРёСЏ, Р° РЅРµ С‚РѕР»СЊРєРѕ РґР»СЏ РїСЂРѕРІРµСЂРєРё Р·Р°РЅРёРјР°РµРјРѕРіРѕ РјРµСЃС‚Р° РІ Р±СѓС„РµСЂРµ
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = USB_INTERFACE_ASSOC_DESCRIPTOR_TYPE;	// bDescriptorType: IAD
 		* buff ++ = INTERFACE_CDCEEM_DATA_6;				// bFirstInterface
@@ -1598,7 +1598,7 @@ static unsigned CDCEEM_InterfaceAssociationDescriptor(
 	return length;
 }
 
-// РРЅС„РѕСЂРјР°С†РёСЏ Рѕ С‚РёРїРµ С‚СЂРµР±СѓРµРјРѕРіРѕ РґСЂР°Р№РІРµСЂР° Р±РµСЂРµС‚СЃСЏ РѕС‚СЃСЋРґР° РїРѕ РєРѕРґР°Рј РІ bInterfaceClass, bInterfaceSubclass, bInterfaceProtocol
+// Информация о типе требуемого драйвера берется отсюда по кодам в bInterfaceClass, bInterfaceSubclass, bInterfaceProtocol
 static unsigned CDCEEM_r9fill_24(uint_fast8_t fill, uint8_t * buff, unsigned maxsize, 
 	uint_fast8_t bInterfaceNumber, 
 	uint_fast8_t bAlternateSetting, 
@@ -1612,7 +1612,7 @@ static unsigned CDCEEM_r9fill_24(uint_fast8_t fill, uint8_t * buff, unsigned max
 	if (fill != 0 && buff != NULL)
 	{
 		// 0x02/0x0c/0x07 - CDC Ethernet Emulation Model
-		// Р’С‹Р·РѕРІ РґР»СЏ Р·Р°РїРѕР»РЅРµРЅРёСЏ, Р° РЅРµ С‚РѕР»СЊРєРѕ РґР»СЏ РїСЂРѕРІРµСЂРєРё Р·Р°РЅРёРјР°РµРјРѕРіРѕ РјРµСЃС‚Р° РІ Р±СѓС„РµСЂРµ
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = USB_INTERFACE_DESCRIPTOR_TYPE;    // INTERFACE descriptor type (bDescriptorType) 0x04
 		* buff ++ = bInterfaceNumber; // Index of this interface. (bInterfaceNumber) ?????????? (3<) (1<<) (1<M)
@@ -1637,7 +1637,7 @@ static unsigned CDCEEM_r9fill_37(uint_fast8_t fill, uint8_t * buff, unsigned max
 	if (fill != 0 && buff != NULL)
 	{
 		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(USBD_CDCEEM_BUFSIZE);
-		// Р’С‹Р·РѕРІ РґР»СЏ Р·Р°РїРѕР»РЅРµРЅРёСЏ, Р° РЅРµ С‚РѕР»СЊРєРѕ РґР»СЏ РїСЂРѕРІРµСЂРєРё Р·Р°РЅРёРјР°РµРјРѕРіРѕ РјРµСЃС‚Р° РІ Р±СѓС„РµСЂРµ
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;							/* bLength */
 		* buff ++ = USB_ENDPOINT_DESCRIPTOR_TYPE;   /* bDescriptorType: Endpoint */
 		* buff ++ = bEndpointAddress;				/* bEndpointAddress: (OUT2) */
@@ -1660,7 +1660,7 @@ static unsigned CDCEEM_r9fill_38(uint_fast8_t fill, uint8_t * buff, unsigned max
 	if (fill != 0 && buff != NULL)
 	{
 		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(USBD_CDCEEM_BUFSIZE);
-		// Р’С‹Р·РѕРІ РґР»СЏ Р·Р°РїРѕР»РЅРµРЅРёСЏ, Р° РЅРµ С‚РѕР»СЊРєРѕ РґР»СЏ РїСЂРѕРІРµСЂРєРё Р·Р°РЅРёРјР°РµРјРѕРіРѕ РјРµСЃС‚Р° РІ Р±СѓС„РµСЂРµ
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;							/* bLength */
 		* buff ++ = USB_ENDPOINT_DESCRIPTOR_TYPE;	/* bDescriptorType: Endpoint */
 		* buff ++ = bEndpointAddress;				/* bEndpointAddress: (IN2) */
@@ -1680,8 +1680,8 @@ static unsigned fill_CDCEEM_function(uint_fast8_t fill, uint8_t * p, unsigned ma
 	unsigned n = 0;
 
 	// iadclasscode_r10.pdf
-	// InterfaceAssociationDescriptor С‚СЂРµР±СѓРµС‚СЃСЏ С‚РѕР»СЊРєРѕ РґР»СЏ РјРЅРѕРіРѕРёРЅС‚РµСЂС„РµР№СЃРЅС‹С… 
-	// РџСЂРѕРІРґР°, С‚Р°Рј РЅР°РїРёСЃР°РЅРѕ С‡С‚Рѕ iadclasscode_r10.pdf
+	// InterfaceAssociationDescriptor требуется только для многоинтерфейсных 
+	// Провда, там написано что iadclasscode_r10.pdf
 	n += CDCEEM_InterfaceAssociationDescriptor(fill, p + n, maxsize - n);	/* CDC EEM: Interface Association Descriptor Abstract Control Model */
 	n += CDCEEM_r9fill_24(fill, p + n, maxsize - n, INTERFACE_CDCEEM_DATA_6, 0x00, 2);	/* INTERFACE_CDCEEM_DATA_6 Data class interface descriptor */
 	n += CDCEEM_r9fill_38(fill, p + n, maxsize - n, USB_ENDPOINT_IN(USBD_EP_CDCEEM_IN));	/* Endpoint Descriptor USBD_EP_CDCECM_IN In, Bulk, 64 bytes */
@@ -1706,7 +1706,7 @@ static unsigned CDCECM_InterfaceAssociationDescriptor(uint_fast8_t fill, uint8_t
 	{
 		// 0x02/0x02/0x01 - cdc
 		// 0x02/0x0c/0x07 - CDC Ethernet Emulation Model
-		// Р’С‹Р·РѕРІ РґР»СЏ Р·Р°РїРѕР»РЅРµРЅРёСЏ, Р° РЅРµ С‚РѕР»СЊРєРѕ РґР»СЏ РїСЂРѕРІРµСЂРєРё Р·Р°РЅРёРјР°РµРјРѕРіРѕ РјРµСЃС‚Р° РІ Р±СѓС„РµСЂРµ
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = USB_INTERFACE_ASSOC_DESCRIPTOR_TYPE;	// bDescriptorType: IAD
 		* buff ++ = INTERFACE_CDCECM_CONTROL_5;				// bFirstInterface
@@ -1730,7 +1730,7 @@ static unsigned CDCECM_InterfaceDescriptorControlIf(uint_fast8_t fill, uint8_t *
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		// Р’С‹Р·РѕРІ РґР»СЏ Р·Р°РїРѕР»РЅРµРЅРёСЏ, Р° РЅРµ С‚РѕР»СЊРєРѕ РґР»СЏ РїСЂРѕРІРµСЂРєРё Р·Р°РЅРёРјР°РµРјРѕРіРѕ РјРµСЃС‚Р° РІ Р±СѓС„РµСЂРµ
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = USB_INTERFACE_DESCRIPTOR_TYPE;  /* bDescriptorType: Interface */  /* Interface descriptor type */
 		* buff ++ = INTERFACE_CDCECM_CONTROL_5;   /* bInterfaceNumber: Number of Interface */
@@ -1755,7 +1755,7 @@ static unsigned CDCECM_UnionFunctionalDescriptor(uint_fast8_t fill, uint8_t * bu
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		// Р’С‹Р·РѕРІ РґР»СЏ Р·Р°РїРѕР»РЅРµРЅРёСЏ, Р° РЅРµ С‚РѕР»СЊРєРѕ РґР»СЏ РїСЂРѕРІРµСЂРєРё Р·Р°РЅРёРјР°РµРјРѕРіРѕ РјРµСЃС‚Р° РІ Р±СѓС„РµСЂРµ
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						/* bFunctionLength */
 		* buff ++ = CS_INTERFACE;				/* bDescriptorType: CS_INTERFACE */
 		* buff ++ = CDC_UNION;						/* bDescriptorSubtype: Union func desc */
@@ -1779,7 +1779,7 @@ static unsigned CDCECM_EthernetNetworkingFunctionalDescriptor(uint_fast8_t fill,
 		const uint_fast16_t wNumberMCFilters = 0;
 		const uint_fast8_t bNumberPowerFilters = 0;
 
-		// Р’С‹Р·РѕРІ РґР»СЏ Р·Р°РїРѕР»РЅРµРЅРёСЏ, Р° РЅРµ С‚РѕР»СЊРєРѕ РґР»СЏ РїСЂРѕРІРµСЂРєРё Р·Р°РЅРёРјР°РµРјРѕРіРѕ РјРµСЃС‚Р° РІ Р±СѓС„РµСЂРµ
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						/* bFunctionLength */
 		* buff ++ = CS_INTERFACE;				/* bDescriptorType: CS_INTERFACE */
 		* buff ++ = 0x0F;						/* bDescriptorSubtype: Ethernet Networking Functional Descriptor */
@@ -1810,7 +1810,7 @@ static unsigned CDCECM_r9fill_35(uint_fast8_t fill, uint8_t * buff, unsigned max
 	if (fill != 0 && buff != NULL)
 	{
 		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(USBD_CDCECM_INT_SIZE);
-		// Р’С‹Р·РѕРІ РґР»СЏ Р·Р°РїРѕР»РЅРµРЅРёСЏ, Р° РЅРµ С‚РѕР»СЊРєРѕ РґР»СЏ РїСЂРѕРІРµСЂРєРё Р·Р°РЅРёРјР°РµРјРѕРіРѕ РјРµСЃС‚Р° РІ Р±СѓС„РµСЂРµ
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;							/* bLength */
 		* buff ++ = USB_ENDPOINT_DESCRIPTOR_TYPE; 	/* bDescriptorType: Endpoint */
 		* buff ++ = bEndpointAddress;			/* bEndpointAddress: (IN) */
@@ -1832,7 +1832,7 @@ static unsigned CDCECM_r9fill_37(uint_fast8_t fill, uint8_t * buff, unsigned max
 	if (fill != 0 && buff != NULL)
 	{
 		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(USBD_CDCECM_OUT_BUFSIZE);
-		// Р’С‹Р·РѕРІ РґР»СЏ Р·Р°РїРѕР»РЅРµРЅРёСЏ, Р° РЅРµ С‚РѕР»СЊРєРѕ РґР»СЏ РїСЂРѕРІРµСЂРєРё Р·Р°РЅРёРјР°РµРјРѕРіРѕ РјРµСЃС‚Р° РІ Р±СѓС„РµСЂРµ
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;							/* bLength */
 		* buff ++ = USB_ENDPOINT_DESCRIPTOR_TYPE;   /* bDescriptorType: Endpoint */
 		* buff ++ = bEndpointAddress;				/* bEndpointAddress: (OUT2) */
@@ -1855,7 +1855,7 @@ static unsigned CDCECM_r9fill_38(uint_fast8_t fill, uint8_t * buff, unsigned max
 	if (fill != 0 && buff != NULL)
 	{
 		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(USBD_CDCECM_IN_BUFSIZE);
-		// Р’С‹Р·РѕРІ РґР»СЏ Р·Р°РїРѕР»РЅРµРЅРёСЏ, Р° РЅРµ С‚РѕР»СЊРєРѕ РґР»СЏ РїСЂРѕРІРµСЂРєРё Р·Р°РЅРёРјР°РµРјРѕРіРѕ РјРµСЃС‚Р° РІ Р±СѓС„РµСЂРµ
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;							/* bLength */
 		* buff ++ = USB_ENDPOINT_DESCRIPTOR_TYPE;	/* bDescriptorType: Endpoint */
 		* buff ++ = bEndpointAddress;				/* bEndpointAddress: (IN2) */
@@ -1880,7 +1880,7 @@ static unsigned CDCECM_InterfaceDescriptorDataIf(
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		// Р’С‹Р·РѕРІ РґР»СЏ Р·Р°РїРѕР»РЅРµРЅРёСЏ, Р° РЅРµ С‚РѕР»СЊРєРѕ РґР»СЏ РїСЂРѕРІРµСЂРєРё Р·Р°РЅРёРјР°РµРјРѕРіРѕ РјРµСЃС‚Р° РІ Р±СѓС„РµСЂРµ
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = USB_INTERFACE_DESCRIPTOR_TYPE;    // INTERFACE descriptor type (bDescriptorType) 0x04
 		* buff ++ = bInterfaceNumber; // Index of this interface. (bInterfaceNumber) ?????????? (3<) (1<<) (1<M)
@@ -1932,7 +1932,7 @@ static unsigned RNDIS_InterfaceAssociationDescriptor(uint_fast8_t fill, uint8_t 
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		// Р’С‹Р·РѕРІ РґР»СЏ Р·Р°РїРѕР»РЅРµРЅРёСЏ, Р° РЅРµ С‚РѕР»СЊРєРѕ РґР»СЏ РїСЂРѕРІРµСЂРєРё Р·Р°РЅРёРјР°РµРјРѕРіРѕ РјРµСЃС‚Р° РІ Р±СѓС„РµСЂРµ
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = USB_INTERFACE_ASSOC_DESCRIPTOR_TYPE;	// bDescriptorType: IAD
 		* buff ++ = INTERFACE_RNDIS_CONTROL_5;				// bFirstInterface
@@ -1958,7 +1958,7 @@ static unsigned RNDIS_InterfaceDescriptorControlIf(uint_fast8_t fill, uint8_t * 
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		// Р’С‹Р·РѕРІ РґР»СЏ Р·Р°РїРѕР»РЅРµРЅРёСЏ, Р° РЅРµ С‚РѕР»СЊРєРѕ РґР»СЏ РїСЂРѕРІРµСЂРєРё Р·Р°РЅРёРјР°РµРјРѕРіРѕ РјРµСЃС‚Р° РІ Р±СѓС„РµСЂРµ
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = USB_INTERFACE_DESCRIPTOR_TYPE;  /* bDescriptorType: Interface */  /* Interface descriptor type */
 		* buff ++ = INTERFACE_RNDIS_CONTROL_5;   /* bInterfaceNumber: Number of Interface */
@@ -1982,7 +1982,7 @@ static unsigned RNDIS_r9fill_32(uint_fast8_t fill, uint8_t * buff, unsigned maxs
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		// Р’С‹Р·РѕРІ РґР»СЏ Р·Р°РїРѕР»РЅРµРЅРёСЏ, Р° РЅРµ С‚РѕР»СЊРєРѕ РґР»СЏ РїСЂРѕРІРµСЂРєРё Р·Р°РЅРёРјР°РµРјРѕРіРѕ РјРµСЃС‚Р° РІ Р±СѓС„РµСЂРµ
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = CS_INTERFACE;   /* bDescriptorType: CS_INTERFACE */
 		* buff ++ = 0x01;   /* bDescriptorSubtype: Call Management Func Desc */
@@ -2001,7 +2001,7 @@ static unsigned RNDIS_ACMFunctionalDescriptor(uint_fast8_t fill, uint8_t * buff,
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		// Р’С‹Р·РѕРІ РґР»СЏ Р·Р°РїРѕР»РЅРµРЅРёСЏ, Р° РЅРµ С‚РѕР»СЊРєРѕ РґР»СЏ РїСЂРѕРІРµСЂРєРё Р·Р°РЅРёРјР°РµРјРѕРіРѕ РјРµСЃС‚Р° РІ Р±СѓС„РµСЂРµ
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		// defined in PSTN120.pdf 5.3.2 Abstract Control Management Functional Descriptor 
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = CS_INTERFACE;   /* bDescriptorType: CS_INTERFACE */
@@ -2022,7 +2022,7 @@ static unsigned RNDIS_UnionFunctionalDescriptor(uint_fast8_t fill, uint8_t * buf
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		// Р’С‹Р·РѕРІ РґР»СЏ Р·Р°РїРѕР»РЅРµРЅРёСЏ, Р° РЅРµ С‚РѕР»СЊРєРѕ РґР»СЏ РїСЂРѕРІРµСЂРєРё Р·Р°РЅРёРјР°РµРјРѕРіРѕ РјРµСЃС‚Р° РІ Р±СѓС„РµСЂРµ
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						/* bFunctionLength */
 		* buff ++ = CS_INTERFACE;				/* bDescriptorType: CS_INTERFACE */
 		* buff ++ = CDC_UNION;						/* bDescriptorSubtype: Union func desc */
@@ -2044,7 +2044,7 @@ static unsigned RNDIS_r9fill_35(uint_fast8_t fill, uint8_t * buff, unsigned maxs
 	if (fill != 0 && buff != NULL)
 	{
 		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(USBD_RNDIS_INT_SIZE);
-		// Р’С‹Р·РѕРІ РґР»СЏ Р·Р°РїРѕР»РЅРµРЅРёСЏ, Р° РЅРµ С‚РѕР»СЊРєРѕ РґР»СЏ РїСЂРѕРІРµСЂРєРё Р·Р°РЅРёРјР°РµРјРѕРіРѕ РјРµСЃС‚Р° РІ Р±СѓС„РµСЂРµ
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;							/* bLength */
 		* buff ++ = USB_ENDPOINT_DESCRIPTOR_TYPE; 	/* bDescriptorType: Endpoint */
 		* buff ++ = bEndpointAddress;			/* bEndpointAddress: (IN) */
@@ -2066,7 +2066,7 @@ static unsigned RNDIS_InterfaceDescriptorDataIf(uint_fast8_t fill, uint8_t * buf
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		// Р’С‹Р·РѕРІ РґР»СЏ Р·Р°РїРѕР»РЅРµРЅРёСЏ, Р° РЅРµ С‚РѕР»СЊРєРѕ РґР»СЏ РїСЂРѕРІРµСЂРєРё Р·Р°РЅРёРјР°РµРјРѕРіРѕ РјРµСЃС‚Р° РІ Р±СѓС„РµСЂРµ
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = USB_INTERFACE_DESCRIPTOR_TYPE;  /* bDescriptorType: */
 		* buff ++ = INTERFACE_RNDIS_DATA_6;			 /* bInterfaceNumber: Number of Interface */
@@ -2091,7 +2091,7 @@ static unsigned RNDIS_r9fill_38(uint_fast8_t fill, uint8_t * buff, unsigned maxs
 	if (fill != 0 && buff != NULL)
 	{
 		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(USBD_RNDIS_IN_BUFSIZE);
-		// Р’С‹Р·РѕРІ РґР»СЏ Р·Р°РїРѕР»РЅРµРЅРёСЏ, Р° РЅРµ С‚РѕР»СЊРєРѕ РґР»СЏ РїСЂРѕРІРµСЂРєРё Р·Р°РЅРёРјР°РµРјРѕРіРѕ РјРµСЃС‚Р° РІ Р±СѓС„РµСЂРµ
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;							/* bLength */
 		* buff ++ = USB_ENDPOINT_DESCRIPTOR_TYPE;	/* bDescriptorType: Endpoint */
 		* buff ++ = bEndpointAddress;				/* bEndpointAddress: (IN2) */
@@ -2113,7 +2113,7 @@ static unsigned RNDIS_r9fill_37(uint_fast8_t fill, uint8_t * buff, unsigned maxs
 	if (fill != 0 && buff != NULL)
 	{
 		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(USBD_RNDIS_OUT_BUFSIZE);
-		// Р’С‹Р·РѕРІ РґР»СЏ Р·Р°РїРѕР»РЅРµРЅРёСЏ, Р° РЅРµ С‚РѕР»СЊРєРѕ РґР»СЏ РїСЂРѕРІРµСЂРєРё Р·Р°РЅРёРјР°РµРјРѕРіРѕ РјРµСЃС‚Р° РІ Р±СѓС„РµСЂРµ
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;							/* bLength */
 		* buff ++ = USB_ENDPOINT_DESCRIPTOR_TYPE;   /* bDescriptorType: Endpoint */
 		* buff ++ = bEndpointAddress;				/* bEndpointAddress: (OUT2) */
@@ -2168,7 +2168,7 @@ static unsigned HID_InterfaceDescriptorXXXX(uint_fast8_t fill, uint8_t * buff, u
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		// Р’С‹Р·РѕРІ РґР»СЏ Р·Р°РїРѕР»РЅРµРЅРёСЏ, Р° РЅРµ С‚РѕР»СЊРєРѕ РґР»СЏ РїСЂРѕРІРµСЂРєРё Р·Р°РЅРёРјР°РµРјРѕРіРѕ РјРµСЃС‚Р° РІ Р±СѓС„РµСЂРµ
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;								/* bLength */
 		* buff ++ = USB_INTERFACE_DESCRIPTOR_TYPE;		/* bDescriptorType: */
 		* buff ++ = INTERFACE_HID_CONTROL_7;			// bInterfaceNumber
@@ -2191,7 +2191,7 @@ static unsigned HID_Descriptor(uint_fast8_t fill, uint8_t * buff, unsigned maxsi
 	if (fill != 0 && buff != NULL)
 	{
 		const uint_fast16_t bcdHID = 0x0111;	// Revision of class specification - 1.11
-		// Р’С‹Р·РѕРІ РґР»СЏ Р·Р°РїРѕР»РЅРµРЅРёСЏ, Р° РЅРµ С‚РѕР»СЊРєРѕ РґР»СЏ РїСЂРѕРІРµСЂРєРё Р·Р°РЅРёРјР°РµРјРѕРіРѕ РјРµСЃС‚Р° РІ Р±СѓС„РµСЂРµ
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;					/* bLength */
 		* buff ++ = HID_DESCRIPTOR_TYPE;	/* bDescriptorType = HID */
 		* buff ++ = LO_BYTE(bcdHID);		/* bcdHID */
@@ -2218,7 +2218,7 @@ static unsigned fill_HID_Mouse_IntEP(uint_fast8_t fill, uint8_t * buff, unsigned
 	if (fill != 0 && buff != NULL)
 	{
 		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(HIDMOUSE_INT_DATA_SIZE);
-		// Р’С‹Р·РѕРІ РґР»СЏ Р·Р°РїРѕР»РЅРµРЅРёСЏ, Р° РЅРµ С‚РѕР»СЊРєРѕ РґР»СЏ РїСЂРѕРІРµСЂРєРё Р·Р°РЅРёРјР°РµРјРѕРіРѕ РјРµСЃС‚Р° РІ Р±СѓС„РµСЂРµ
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;							/* bLength */
 		* buff ++ = USB_ENDPOINT_DESCRIPTOR_TYPE; 	/* bDescriptorType: Endpoint */
 		* buff ++ = bEndpointAddress;			/* bEndpointAddress: (IN) */
@@ -2514,7 +2514,7 @@ static unsigned DFU_InterfaceAssociationDescriptor(
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		// Р’С‹Р·РѕРІ РґР»СЏ Р·Р°РїРѕР»РЅРµРЅРёСЏ, Р° РЅРµ С‚РѕР»СЊРєРѕ РґР»СЏ РїСЂРѕРІРµСЂРєРё Р·Р°РЅРёРјР°РµРјРѕРіРѕ РјРµСЃС‚Р° РІ Р±СѓС„РµСЂРµ
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = USB_INTERFACE_ASSOC_DESCRIPTOR_TYPE;	// bDescriptorType: IAD
 		* buff ++ = bFirstInterface;			// bFirstInterface
@@ -2541,7 +2541,7 @@ static unsigned DFU_InterfaceDescriptor(uint_fast8_t fill, uint8_t * buff, unsig
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		// Р’С‹Р·РѕРІ РґР»СЏ Р·Р°РїРѕР»РЅРµРЅРёСЏ, Р° РЅРµ С‚РѕР»СЊРєРѕ РґР»СЏ РїСЂРѕРІРµСЂРєРё Р·Р°РЅРёРјР°РµРјРѕРіРѕ РјРµСЃС‚Р° РІ Р±СѓС„РµСЂРµ
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = USB_INTERFACE_DESCRIPTOR_TYPE; /* bDescriptorType */
 		* buff ++ = bInterfaceNumber;			/* bInterfaceNumber */
@@ -2569,7 +2569,7 @@ static unsigned DFU_FunctionalDescriptorReadWrite(
 	{
 		// ? DFU_DETACH_MASK
 		const uint_fast8_t bmAttributes = 
-			//1 * (1u << 3) |		/* Bit 3: bitWillDetach - РµСЃС‚СЊ Сѓ STM32H7 */
+			//1 * (1u << 3) |		/* Bit 3: bitWillDetach - есть у STM32H7 */
 			1 * (1u << 2) |		/* Bit 2: bitManifestationTolerant  */
 			1 * (1u << 1) |		/* Bit 1: upload capable ( bitCanUpload ) */
 			1 * (1u << 0) |		/* Bit 0: download capable  */
@@ -2577,7 +2577,7 @@ static unsigned DFU_FunctionalDescriptorReadWrite(
 		const uint_fast16_t bcdDFUVersion = 0x0110;
 		const uint_fast16_t wDetachTimeOut = 500;
 		const uint_fast16_t wTransferSize = USBD_DFU_XFER_SIZE;
-		// Р’С‹Р·РѕРІ РґР»СЏ Р·Р°РїРѕР»РЅРµРЅРёСЏ, Р° РЅРµ С‚РѕР»СЊРєРѕ РґР»СЏ РїСЂРѕРІРµСЂРєРё Р·Р°РЅРёРјР°РµРјРѕРіРѕ РјРµСЃС‚Р° РІ Р±СѓС„РµСЂРµ
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = DFU_DESCRIPTOR_TYPE;	// bDescriptorType: DFU FUNCTIONAL descriptor type 
 		* buff ++ = bmAttributes;		// bmAttributes
@@ -2603,7 +2603,7 @@ static unsigned DFU_FunctionalDescriptorWriteOnly(
 	{
 		// ? DFU_DETACH_MASK
 		const uint_fast8_t bmAttributes = 
-			1 * (1u << 3) |		/* Bit 3: bitWillDetach - РµСЃС‚СЊ Сѓ STM32H7 */
+			1 * (1u << 3) |		/* Bit 3: bitWillDetach - есть у STM32H7 */
 			1 * (1u << 2) |		/* Bit 2: bitManifestationTolerant  */
 			//1 * (1u << 1) |		/* Bit 1: upload capable ( bitCanUpload ) */
 			1 * (1u << 0) |		/* Bit 0: download capable  */
@@ -2611,7 +2611,7 @@ static unsigned DFU_FunctionalDescriptorWriteOnly(
 		const uint_fast16_t bcdDFUVersion = 0x0110;
 		const uint_fast16_t wDetachTimeOut = 500;
 		const uint_fast16_t wTransferSize = USBD_DFU_XFER_SIZE;
-		// Р’С‹Р·РѕРІ РґР»СЏ Р·Р°РїРѕР»РЅРµРЅРёСЏ, Р° РЅРµ С‚РѕР»СЊРєРѕ РґР»СЏ РїСЂРѕРІРµСЂРєРё Р·Р°РЅРёРјР°РµРјРѕРіРѕ РјРµСЃС‚Р° РІ Р±СѓС„РµСЂРµ
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = DFU_DESCRIPTOR_TYPE;	// bDescriptorType: DFU FUNCTIONAL descriptor type 
 		* buff ++ = bmAttributes;		// bmAttributes
@@ -2709,7 +2709,7 @@ static unsigned fill_Configuration_descriptor(
 		return 0;
 	if (buff != NULL)
 	{
-		// Р’С‹Р·РѕРІ РґР»СЏ Р·Р°РїРѕР»РЅРµРЅРёСЏ, Р° РЅРµ С‚РѕР»СЊРєРѕ РґР»СЏ РїСЂРѕРІРµСЂРєРё Р·Р°РЅРёРјР°РµРјРѕРіРѕ РјРµСЃС‚Р° РІ Р±СѓС„РµСЂРµ
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;                                      /* bLength */ 
 		* buff ++ = highspeed ? USB_OTHER_SPEED_CONFIG_DESCRIPTOR_TYPE : USB_CONFIGURATION_DESCRIPTOR_TYPE;      /* descriptor type */ 
 		* buff ++ = LO_BYTE(totalsize);		/* length of packed config descr. (16 bit) */
@@ -2718,7 +2718,7 @@ static unsigned fill_Configuration_descriptor(
 		* buff ++ = bConfigurationValue;    /* bConfigurationValue - Value to use as an argument to the SetConfiguration() request to select this configuration */
 		* buff ++ = STRING_ID_0;       		/* iConfiguration - Index of string descriptor describing this configuration */
 		* buff ++ = 0xC0;                   /* bmAttributes  BUS Powred, self powered */
-		* buff ++ = USB_CONFIG_POWER_MA(250);/* bMaxPower = 250 mA. РЎРґРµР»Р°РЅРѕ РєР°Рє РїРѕРїС‹С‚РєР° СѓР»СѓС‡С€РёС‚СЊ СЂР°Р±РѕС‚Сѓ С‡РµСЂРµР· Р°РєС‚РёРІРЅС‹Рµ USB РёР·РѕР»СЏС‚РѕСЂС‹ РґР»СЏ РѕР±РµСЃРїРµС‡РµРЅРёСЏ РёС… РїРёС‚Р°РЅРёСЏ. */
+		* buff ++ = USB_CONFIG_POWER_MA(250);/* bMaxPower = 250 mA. Сделано как попытка улучшить работу через активные USB изоляторы для обеспечения их питания. */
 
 		fill_main_group(1, buff, maxsize - length, highspeedEPs);
 	}
@@ -2734,7 +2734,7 @@ static unsigned fill_Device_descriptor(uint8_t * buff, unsigned maxsize, uint_fa
 		return 0;
 	if (buff != NULL)
 	{
-		// Р’С‹Р·РѕРІ РґР»СЏ Р·Р°РїРѕР»РЅРµРЅРёСЏ, Р° РЅРµ С‚РѕР»СЊРєРѕ РґР»СЏ РїСЂРѕРІРµСЂРєРё Р·Р°РЅРёРјР°РµРјРѕРіРѕ РјРµСЃС‚Р° РІ Р±СѓС„РµСЂРµ
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;					    /*  0:bLength */
 		* buff ++ = USB_DEVICE_DESCRIPTOR_TYPE;         /*  1:bDescriptorType */
 		* buff ++ = LO_BYTE(USB_FUNCTION_BCD_USB);      /*  2:bcdUSB_FUNCTION_lo */
@@ -2767,7 +2767,7 @@ static unsigned fill_DeviceQualifier_descriptor(uint8_t * buff, unsigned maxsize
 		return 0;
 	if (buff != NULL)
 	{
-		// Р’С‹Р·РѕРІ РґР»СЏ Р·Р°РїРѕР»РЅРµРЅРёСЏ, Р° РЅРµ С‚РѕР»СЊРєРѕ РґР»СЏ РїСЂРѕРІРµСЂРєРё Р·Р°РЅРёРјР°РµРјРѕРіРѕ РјРµСЃС‚Р° РІ Р±СѓС„РµСЂРµ
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;                                 /*  0:bLength */
 		* buff ++ = USB_DEVICE_QUALIFIER_DESCRIPTOR_TYPE;	/*  1:bDescriptorType */
 		* buff ++ = LO_BYTE(USB_FUNCTION_BCD_USB);			/*  2:bcdUSB_FUNCTION_lo */
@@ -2794,7 +2794,7 @@ static unsigned fill_devcaps_usb20ext(uint_fast8_t fill, uint8_t * buff, unsigne
 		const uint_fast32_t bmAttributes = 
 			(1uL << 1) |	/* Link Power Management capability bit set */
 			0;
-		// Р’С‹Р·РѕРІ РґР»СЏ Р·Р°РїРѕР»РЅРµРЅРёСЏ, Р° РЅРµ С‚РѕР»СЊРєРѕ РґР»СЏ РїСЂРѕРІРµСЂРєРё Р·Р°РЅРёРјР°РµРјРѕРіРѕ РјРµСЃС‚Р° РІ Р±СѓС„РµСЂРµ
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						/* bLength */
 		* buff ++ = USB_DEVICE_CAPABITY_DESCRIPTOR_TYPE;	/* bDescriptorType: Device Capability */
 		* buff ++ = 0x02;						/* bDevCapabilityType: 0x02: USB 2.0 Extension */
@@ -2826,7 +2826,7 @@ static unsigned fill_devcaps_ContainerID(uint_fast8_t fill, uint8_t * buff, unsi
 		static const GUID ContainerID = 
 			{ 0x1d614fe7, 0x58c2, 0x42d8, { 0x94, 0x2e, 0xcc, 0x2a, 0x69, 0x62, 0x18, 0xdb } };
 
-		// Р’С‹Р·РѕРІ РґР»СЏ Р·Р°РїРѕР»РЅРµРЅРёСЏ, Р° РЅРµ С‚РѕР»СЊРєРѕ РґР»СЏ РїСЂРѕРІРµСЂРєРё Р·Р°РЅРёРјР°РµРјРѕРіРѕ РјРµСЃС‚Р° РІ Р±СѓС„РµСЂРµ
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						/* bLength */
 		* buff ++ = USB_DEVICE_CAPABITY_DESCRIPTOR_TYPE;	/* bDescriptorType: Device Capability */
 		* buff ++ = 0x04;						/* bDevCapabilityType: 0x04: Container ID */
@@ -2860,7 +2860,7 @@ static unsigned fill_BinaryDeviceObjectStore_descriptor(uint8_t * buff, unsigned
 		return 0;
 	if (buff != NULL)
 	{
-		// Р’С‹Р·РѕРІ РґР»СЏ Р·Р°РїРѕР»РЅРµРЅРёСЏ, Р° РЅРµ С‚РѕР»СЊРєРѕ РґР»СЏ РїСЂРѕРІРµСЂРєРё Р·Р°РЅРёРјР°РµРјРѕРіРѕ РјРµСЃС‚Р° РІ Р±СѓС„РµСЂРµ
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;                                 /*  0:bLength */
 		* buff ++ = USB_BOS_TYPE;							/*  1:bDescriptorType */
 		* buff ++ = LO_BYTE(totalsize);						/* wTotalLength length of packed config descr. (16 bit) */
@@ -2885,7 +2885,7 @@ static unsigned fill_langid_descriptor(uint8_t * buff, unsigned maxsize, uint_fa
 		return 0;
 	if (buff != NULL)
 	{
-		// Р’С‹Р·РѕРІ РґР»СЏ Р·Р°РїРѕР»РЅРµРЅРёСЏ, Р° РЅРµ С‚РѕР»СЊРєРѕ РґР»СЏ РїСЂРѕРІРµСЂРєРё Р·Р°РЅРёРјР°РµРјРѕРіРѕ РјРµСЃС‚Р° РІ Р±СѓС„РµСЂРµ
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;                          /* bLength */ 
 		* buff ++ = USB_STRING_DESCRIPTOR_TYPE;           /* descriptor type */ 
 		* buff ++ = LO_BYTE(langid); 
@@ -2894,7 +2894,7 @@ static unsigned fill_langid_descriptor(uint8_t * buff, unsigned maxsize, uint_fa
 	return length;
 }
 
-// todo: РѕРіСЂР°РЅРёС‡РёС‚СЊ СЂР°Р·РјРµСЂ РґРµСЃРєСЂРёРїС‚РѕСЂР° Р·РЅР°С‡РµРЅРёРµРј 254
+// todo: ограничить размер дескриптора значением 254
 static unsigned fill_string_descriptor(uint8_t * buff, unsigned maxsize, const char * s)
 {
 	const unsigned length = 2 + 2 * strlen(s);
@@ -2903,7 +2903,7 @@ static unsigned fill_string_descriptor(uint8_t * buff, unsigned maxsize, const c
 		return 0;
 	if (buff != NULL)
 	{
-		// Р’С‹Р·РѕРІ РґР»СЏ Р·Р°РїРѕР»РЅРµРЅРёСЏ, Р° РЅРµ С‚РѕР»СЊРєРѕ РґР»СЏ РїСЂРѕРІРµСЂРєРё Р·Р°РЅРёРјР°РµРјРѕРіРѕ РјРµСЃС‚Р° РІ Р±СѓС„РµСЂРµ
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;                                      /* bLength */ 
 		* buff ++ = USB_STRING_DESCRIPTOR_TYPE;           /* descriptor type */ 
 		for (;;)
@@ -2911,7 +2911,7 @@ static unsigned fill_string_descriptor(uint8_t * buff, unsigned maxsize, const c
 			const int c = (unsigned char) * s ++;
 			if (c == '\0')
 				break;
-			const wchar_t wc = c;	// todo: РґР»СЏ РЅРµ-english РїСЂРµРѕР±СЂР°Р·РѕРІС‹РІР°С‚СЊ
+			const wchar_t wc = c;	// todo: для не-english преобразовывать
 			* buff ++ = LO_BYTE(wc);
 			* buff ++ = HI_BYTE(wc);
 		}
@@ -2919,7 +2919,7 @@ static unsigned fill_string_descriptor(uint8_t * buff, unsigned maxsize, const c
 	return length;
 }
 
-// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РґРµСЃРєСЂРёРїС‚РѕСЂР° РїСЂРѕРёР·РІРѕР»СЊРЅС‹Рј РјР°СЃСЃРёРІРѕРј РґР°РЅРЅС‹С…
+// Инициализация дескриптора произвольным массивом данных
 static unsigned fill_pattern_descriptor(uint_fast8_t fill, uint8_t * buff, unsigned maxsize, const void * pattern, unsigned length)
 {
 	ASSERT(maxsize >= length);
@@ -2927,13 +2927,13 @@ static unsigned fill_pattern_descriptor(uint_fast8_t fill, uint8_t * buff, unsig
 		return 0;
 	if (fill && buff != NULL)
 	{
-		// Р’С‹Р·РѕРІ РґР»СЏ Р·Р°РїРѕР»РЅРµРЅРёСЏ, Р° РЅРµ С‚РѕР»СЊРєРѕ РґР»СЏ РїСЂРѕРІРµСЂРєРё Р·Р°РЅРёРјР°РµРјРѕРіРѕ РјРµСЃС‚Р° РІ Р±СѓС„РµСЂРµ
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		memcpy(buff, pattern, length);
 	}
 	return length;
 }
 
-// todo: РѕРіСЂР°РЅРёС‡РёС‚СЊ СЂР°Р·РјРµСЂ РґРµСЃРєСЂРёРїС‚РѕСЂР° Р·РЅР°С‡РµРЅРёРµРј 254
+// todo: ограничить размер дескриптора значением 254
 static unsigned fill_wstring_descriptor(uint8_t * buff, unsigned maxsize, const wchar_t * s)
 {
 	const unsigned length = 2 + 2 * wcslen(s);
@@ -2942,7 +2942,7 @@ static unsigned fill_wstring_descriptor(uint8_t * buff, unsigned maxsize, const 
 		return 0;
 	if (buff != NULL)
 	{
-		// Р’С‹Р·РѕРІ РґР»СЏ Р·Р°РїРѕР»РЅРµРЅРёСЏ, Р° РЅРµ С‚РѕР»СЊРєРѕ РґР»СЏ РїСЂРѕРІРµСЂРєРё Р·Р°РЅРёРјР°РµРјРѕРіРѕ РјРµСЃС‚Р° РІ Р±СѓС„РµСЂРµ
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;                                      /* bLength */ 
 		* buff ++ = USB_STRING_DESCRIPTOR_TYPE;           /* descriptor type */ 
 		for (;;)
@@ -2978,8 +2978,8 @@ uint_fast8_t usbd_get_stringsdesc_count(void)
 }
 
 
-// Р”РёРЅР°РјРёС‡РµСЃРєРѕРµ С„РѕСЂРјРёСЂРѕРІР°РЅРёРµ РґРµСЃРєСЂРёРїС‚РѕСЂРѕРІ
-/* РІС‹Р·С‹РІР°РµС‚СЃСЏ РїСЂРё Р·Р°РїСЂРµС‰С‘РЅРЅС‹С… РїСЂРµСЂС‹РІР°РЅРёСЏС…. */
+// Динамическое формирование дескрипторов
+/* вызывается при запрещённых прерываниях. */
 void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 {
 	unsigned score = 0;
@@ -3188,8 +3188,8 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 	{
 		static const char strFlashDesc_3 [] = "@SPI Flash APPLICATION: M25Px/0x%08lx/%02u*%03uKg";	// 128 k for bootloader
 		unsigned partlen;
-		// Р¤РѕСЂРјРёСЂРѕРІР°РЅРёРµ MAC Р°РґСЂРµСЃР° РґР°РЅРЅРѕРіРѕ СѓСЃС‚СЂРѕР№СЃС‚РІР°
-		// TODO: РџСЂРё РјРѕРґРёС„РёРєР°С†РёРё РЅРµ Р·Р°Р±С‹С‚СЊ РїСЂРѕ РґРѕСЃС‚РѕРІРµСЂРЅРѕСЃС‚СЊ Р·РЅР°С‡РµРЅРёР№
+		// Формирование MAC адреса данного устройства
+		// TODO: При модификации не забыть про достоверность значений
 		const uint_fast8_t id = STRING_ID_DFU_0;
 		char b [128];
 		local_snprintf_P(b, ARRAY_SIZE(b), strFlashDesc_3, 
@@ -3207,8 +3207,8 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 		// Re-write bootloader parameters
 		static const char strFlashDesc_3 [] = "@SPI Flash BOOTLOADER: M25Px/0x%08lx/%02u*%03uKg";	// 128 k for bootloader
 		unsigned partlen;
-		// Р¤РѕСЂРјРёСЂРѕРІР°РЅРёРµ MAC Р°РґСЂРµСЃР° РґР°РЅРЅРѕРіРѕ СѓСЃС‚СЂРѕР№СЃС‚РІР°
-		// TODO: РџСЂРё РјРѕРґРёС„РёРєР°С†РёРё РЅРµ Р·Р°Р±С‹С‚СЊ РїСЂРѕ РґРѕСЃС‚РѕРІРµСЂРЅРѕСЃС‚СЊ Р·РЅР°С‡РµРЅРёР№
+		// Формирование MAC адреса данного устройства
+		// TODO: При модификации не забыть про достоверность значений
 		const uint_fast8_t id = STRING_ID_DFU_1;
 		char b [128];
 		local_snprintf_P(b, ARRAY_SIZE(b), strFlashDesc_3, 
@@ -3227,8 +3227,8 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 		// RAM target for debug
 		static const char strFlashDesc_3 [] = "@SRAM APPLICATION/0x%08lx/%02u*%03uKg";	// 128 k for bootloader
 		unsigned partlen;
-		// Р¤РѕСЂРјРёСЂРѕРІР°РЅРёРµ MAC Р°РґСЂРµСЃР° РґР°РЅРЅРѕРіРѕ СѓСЃС‚СЂРѕР№СЃС‚РІР°
-		// TODO: РџСЂРё РјРѕРґРёС„РёРєР°С†РёРё РЅРµ Р·Р°Р±С‹С‚СЊ РїСЂРѕ РґРѕСЃС‚РѕРІРµСЂРЅРѕСЃС‚СЊ Р·РЅР°С‡РµРЅРёР№
+		// Формирование MAC адреса данного устройства
+		// TODO: При модификации не забыть про достоверность значений
 		const uint_fast8_t id = STRING_ID_DFU_2;
 		char b [128];
 		local_snprintf_P(b, ARRAY_SIZE(b), strFlashDesc_3, 
@@ -3247,8 +3247,8 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 #if WITHUSBCDCECM || WITHUSBCDCEEM
 	{
 		unsigned partlen;
-		// Р¤РѕСЂРјРёСЂРѕРІР°РЅРёРµ MAC Р°РґСЂРµСЃР° РґР°РЅРЅРѕРіРѕ СѓСЃС‚СЂРѕР№СЃС‚РІР°
-		// TODO: РџСЂРё РјРѕРґРёС„РёРєР°С†РёРё РЅРµ Р·Р°Р±С‹С‚СЊ РїСЂРѕ РґРѕСЃС‚РѕРІРµСЂРЅРѕСЃС‚СЊ Р·РЅР°С‡РµРЅРёР№
+		// Формирование MAC адреса данного устройства
+		// TODO: При модификации не забыть про достоверность значений
 		const uint_fast8_t id = STRING_ID_MACADDRESS;
 		char b [64];
 		local_snprintf_P(b, ARRAY_SIZE(b), PSTR("3089846A96AB"));
@@ -3264,7 +3264,7 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 
 #if CTLSTYLE_SW2011ALL || WITHUSBNOUNIQUE
 	{
-		// РЅР° С‚СЂР°РЅСЃРёРІРµСЂР°Рµ SW20xx РјРёРЅРёРјР°Р»СЊРЅР°СЏ РїСЂРёРІСЏР·РєР° Рє СѓРЅРёРєР°Р»СЊРЅС‹Рј РѕСЃРѕР±РµРЅРЅРѕСЃС‚СЏРј С‚СЂР°РЅСЃРёРІРµСЂР°
+		// на трансиверае SW20xx минимальная привязка к уникальным особенностям трансивера
 		unsigned partlen;
 		const uint_fast8_t id = STRING_ID_3;
 		char b [64];

@@ -1,38 +1,38 @@
 /* $Id$ */
 //
-// РџСЂРѕРµРєС‚ HF Dream Receiver (РљР’ РїСЂРёС‘РјРЅРёРє РјРµС‡С‚С‹)
-// Р°РІС‚РѕСЂ Р“РµРЅР° Р—Р°РІРёРґРѕРІСЃРєРёР№ mgs2001@mail.ru
+// Проект HF Dream Receiver (КВ приёмник мечты)
+// автор Гена Завидовский mgs2001@mail.ru
 // UA1ARN
 //
 
 #ifndef ENCODER_H_INCLUDED
 #define ENCODER_H_INCLUDED
 
-#include "hardware.h"	/* Р·Р°РІРёСЃСЏС‰РёРµ РѕС‚ РїСЂРѕС†РµСЃСЃРѕСЂР° С„СѓРЅРєС†РёРё СЂР°Р±РѕС‚С‹ СЃ РїРѕСЂС‚Р°РјРё */
+#include "hardware.h"	/* зависящие от процессора функции работы с портами */
 
 
-#define ENCODER_SLOW_STEPS 48	/* С€Р°РіРѕРІ РЅР° РѕРґРёРЅ РѕР±РѕСЂРѕС‚ РІР°Р»РєРѕРґРµСЂР° РЅР° РјРёРЅРёРјР°Р»СЊРЅРѕР№ СЃРєРѕСЂРѕСЃС‚Рё РІСЂР°С‰РµРЅРёСЏ  */
-#define ENCODER_MENU_STEPS 24	/* РєРѕР»РёС‡РµСЃС‚РІРѕ РёР·РјРµРЅРµРЅРёР№ РЅР°СЃС‚СЂР°РёРІР°РµРјРѕРіРѕ РїР°СЂР°РјРµС‚СЂР° РЅР° РѕРґРёРЅ РѕР±РѕСЂРѕС‚ РІР°Р»РєРѕРґРµСЂР° */
+#define ENCODER_SLOW_STEPS 48	/* шагов на один оборот валкодера на минимальной скорости вращения  */
+#define ENCODER_MENU_STEPS 24	/* количество изменений настраиваемого параметра на один оборот валкодера */
 
 
-int_least16_t getRotateHiRes(uint_fast8_t * jumpsize, uint_fast8_t hiresdiv);	/* РїРѕР»СѓС‡РµРЅРёРµ РЅР°РєРѕРїР»РµРЅРЅС‹С… Р·РЅР°С‡РµРЅРёР№ РїСЂРµСЂС‹РІР°РЅРёР№ РѕС‚ РІР°Р»РєРѕРґРµСЂР°. РЅР°РєРѕРїРёС‚РµР»СЊ СЃР±СЂР°СЃС‹РІР°РµС‚СЃСЏ */
-int_least16_t getRotateHiRes2(uint_fast8_t * jumpsize);	/* РїРѕР»СѓС‡РµРЅРёРµ РЅР°РєРѕРїР»РµРЅРЅС‹С… Р·РЅР°С‡РµРЅРёР№ РїСЂРµСЂС‹РІР°РЅРёР№ РѕС‚ РІР°Р»РєРѕРґРµСЂР°. РЅР°РєРѕРїРёС‚РµР»СЊ СЃР±СЂР°СЃС‹РІР°РµС‚СЃСЏ */
-void encoder_clear(void);	/* РЅР°РєРѕРїРёС‚РµР»СЊ СЃР±СЂР°СЃС‹РІР°РµС‚СЃСЏ */
-int getRotateLoRes(uint_fast8_t hiresdiv); /* РїРѕР»СѓС‡РµРЅРёРµ "СЂРµРґСѓС†РёСЂРѕРІР°РЅРЅРѕРіРѕ" РєРѕР»РёС‡РµСЃС‚РІР° РїСЂРµСЂС‹РІР°РЅРёР№ РѕС‚ РІР°Р»РєРѕРґРµСЂР°. */
+int_least16_t getRotateHiRes(uint_fast8_t * jumpsize, uint_fast8_t hiresdiv);	/* получение накопленных значений прерываний от валкодера. накопитель сбрасывается */
+int_least16_t getRotateHiRes2(uint_fast8_t * jumpsize);	/* получение накопленных значений прерываний от валкодера. накопитель сбрасывается */
+void encoder_clear(void);	/* накопитель сбрасывается */
+int getRotateLoRes(uint_fast8_t hiresdiv); /* получение "редуцированного" количества прерываний от валкодера. */
 void encoder_initialize(void);
 void encoder_pushback(int outsteps, uint_fast8_t hiresdiv);
 void encoder_kbdctl(
-	uint_fast8_t code, 		// РєРѕРґ РєР»Р°РІРёС€Рё
-	uint_fast8_t accel		// 0 - РѕРґРёРЅРѕС‡РЅРѕРµ РЅР°Р¶Р°С‚РёРµ РЅР° РєР»Р°РІРёС€Сѓ, РёРЅР°С‡Рµ Р°РІС‚РѕРїРѕРІС‚РѕСЂ
+	uint_fast8_t code, 		// код клавиши
+	uint_fast8_t accel		// 0 - одиночное нажатие на клавишу, иначе автоповтор
 	);
 
 int encoder_get_snapshot(unsigned * speed, const uint_fast8_t derate);
 int encoder2_get_snapshot(unsigned * speed, const uint_fast8_t derate);
 
-void encoder_set_resolution(uint_fast8_t resolution, uint_fast8_t dynamic);	// РїР°СЂР°РјРµС‚СЂ - РґРµР»С‘РЅРЅРѕРµ РЅР° ENCRESSCALE Р·РЅР°С‡РµРЅРёРµ.
+void encoder_set_resolution(uint_fast8_t resolution, uint_fast8_t dynamic);	// параметр - делённое на ENCRESSCALE значение.
 
-#define ENCODER_NORMALIZED_RESOLUTION (1440)	// РІРёСЂС‚СѓР°Р»СЊРЅС‹С… РёРјРїСѓР»СЊСЃРѕРІ Р·Р° РѕР±РѕСЂРѕС‚ РІ СЃРµРєСѓРЅРґСѓ - РЅРѕСЂРјР°Р»РёР·РѕРІР°РЅРЅР°СЏ СЃРєРѕСЂРѕСЃС‚СЊ
-//#define ENCODER_NORMALIZED_RESOLUTION (144)	// РІРёСЂС‚СѓР°Р»СЊРЅС‹С… РёРјРїСѓР»СЊСЃРѕРІ Р·Р° РѕР±РѕСЂРѕС‚ РІ СЃРµРєСѓРЅРґСѓ - РЅРѕСЂРјР°Р»РёР·РѕРІР°РЅРЅР°СЏ СЃРєРѕСЂРѕСЃС‚СЊ
+#define ENCODER_NORMALIZED_RESOLUTION (1440)	// виртуальных импульсов за оборот в секунду - нормализованная скорость
+//#define ENCODER_NORMALIZED_RESOLUTION (144)	// виртуальных импульсов за оборот в секунду - нормализованная скорость
 
 #define ENCRESSCALE 4UL
 

@@ -1,7 +1,7 @@
 /* $Id$ */
 //
-// РџСЂРѕРµРєС‚ HF Dream Receiver (РљР’ РїСЂРёС‘РјРЅРёРє РјРµС‡С‚С‹)
-// Р°РІС‚РѕСЂ Р“РµРЅР° Р—Р°РІРёРґРѕРІСЃРєРёР№ mgs2001@mail.ru
+// Проект HF Dream Receiver (КВ приёмник мечты)
+// автор Гена Завидовский mgs2001@mail.ru
 // UA1ARN
 //
 #include "hardware.h"
@@ -13,18 +13,18 @@
 
 #if defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_TLV320AIC23B)
 //
-// РЈРїСЂР°РІР»РµРЅРёРµ РєРѕРґРµРєРѕРј TLV320AIC23B (WM8731)
+// Управление кодеком TLV320AIC23B (WM8731)
 //
-// Р’ slave mode РґР°РЅРЅС‹Р№ РєРѕРґРµРє РёР·РјРµРЅСЏРµС‚ РІС‹РґР°РІР°РµС‚РјС‹Рµ РґР°РЅРЅС‹Рµ РїРѕ СЃРїР°РґР°СЋС‰РµРј С„СЂРѕРЅС‚Сѓ СЃРёРіРЅР°Р»Р° BCLK.
-// РЎСѓРґСЏ РїРѕ РґРѕРєСѓРјРµРЅС‚Р°С†РёРё, РѕР¶РёРґР°РµС‚ С‡С‚Рѕ РјР°СЃС‚РµСЂ С‚Р°Рє Р¶Рµ РёР·РјРµРЅСЏРµС‚ РІС‹РґР°РІР°РµРјС‹Рµ РґР°РЅРЅС‹Рµ РїРѕ СЃРїР°РґР°СЋС‰РµРјСѓ С„СЂРѕРЅС‚Сѓ BCLK.
+// В slave mode данный кодек изменяет выдаваетмые данные по спадающем фронту сигнала BCLK.
+// Судя по документации, ожидает что мастер так же изменяет выдаваемые данные по спадающему фронту BCLK.
 //
 #include "audio.h"
 #include "tlv320aic23.h"
 
-// Clock period, SCLK no less then 80 nS (РЅРµ РІС‹С€Рµ 12.5 РњР“С†)
+// Clock period, SCLK no less then 80 nS (не выше 12.5 МГц)
 #define TLV320AIC23_SPIMODE		SPIC_MODE3	// Linux initialize in mode 0
 
-// РЈСЃР»РѕРІРёРµ РёСЃРїРѕР»СЊР·РѕРІР°РЅРёСЏ РѕРїС‚РёРјРёР·РёСЂРѕРІР°РЅРЅС‹С… С„СѓРЅРєС†РёР№ РѕР±СЂР°С‰РµРЅРёСЏ Рє SPI
+// Условие использования оптимизированных функций обращения к SPI
 #define WITHSPIEXT16 (WITHSPIHW && WITHSPI16BIT)
 
 // The TLV320AIC23B is a write only device and responds only if R/W is 0.
@@ -38,7 +38,7 @@ static void tlv320aic23_setreg(
 	const uint_fast16_t fulldata = regv * 512 + (datav & 0x1ff);
 
 #if CODEC_TYPE_TLV320AIC23B_USE_SPI
-	// РєРѕРґРµРє СѓРїСЂР°РІР»СЏРµС‚СЃСЏ РїРѕ SPI
+	// кодек управляется по SPI
 	const spitarget_t target = targetcodec1;	/* addressing to chip */
 
 	#if WITHSPIEXT16
@@ -62,7 +62,7 @@ static void tlv320aic23_setreg(
 
 #else /* CODEC_TYPE_TLV320AIC23B_USE_SPI */
 
-	// РєРѕРґРµРє СѓРїСЂР°РІР»СЏРµС‚СЃСЏ РїРѕ I2C
+	// кодек управляется по I2C
 	i2c_start(TLV320AIC23_ADDRESS_W);
 	i2c_write(fulldata >> 8);
 	i2c_write(fulldata >> 0);
@@ -77,11 +77,11 @@ static void tlv320aic23_initialize_slave_fullduplex(void)
 	tlv320aic23_setreg(TLV320AIC23_RESET, 0x00);	// RESET
 
 	tlv320aic23_setreg(TLV320AIC23_PWR,			
-		TLV320AIC23_CLK_OFF |	// Р’С‹РєР»СЋС‡Р°РµРј РІС‹С…РѕРґ С‚Р°РєС‚РѕРІРѕР№ С‡Р°СЃС‚РѕС‚С‹ (РІС‹РІРѕРґ 02) - РјРѕР¶РЅРѕ РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊ РґР»СЏ С‚РµСЃС‚РёСЂРѕРІР°РЅРёСЏ - РЅР° РЅРµР·Р°РїСЂРѕРіСЂР°РјРјРёСЂРѕРІР°РЅРЅРѕР№ РјРёРєСЂРѕСЃС…РµРјРµ СЃРёРіРЅР°Р» РїСЂРёСЃСѓС‚СЃС‚РІСѓРµС‚
-		TLV320AIC23_OSC_OFF |	// Р’С‹РєР»СЋС‡Р°РµРј РєРІР°СЂС†РµРІС‹Р№ РіРµРЅРµСЂР°С‚РѕСЂ
-		//TLV320AIC23_OUT_OFF |	// Р’С‹РєР»СЋС‡Р°РµРј СѓСЃРёР»РёС‚РµР»СЊ РЅР°СѓС€РЅРёРєРѕРІ
-		//TLV320AIC23_ADC_OFF |	// Р’С‹РєР»СЋС‡Р°РµРј РђР¦Рџ
-		//TLV320AIC23_LINE_OFF |	// Р’С‹РєР»СЋС‡Р°РµРј Line input
+		TLV320AIC23_CLK_OFF |	// Выключаем выход тактовой частоты (вывод 02) - можно использовать для тестирования - на незапрограммированной микросхеме сигнал присутствует
+		TLV320AIC23_OSC_OFF |	// Выключаем кварцевый генератор
+		//TLV320AIC23_OUT_OFF |	// Выключаем усилитель наушников
+		//TLV320AIC23_ADC_OFF |	// Выключаем АЦП
+		//TLV320AIC23_LINE_OFF |	// Выключаем Line input
 		0
 		);	
 
@@ -96,10 +96,10 @@ static void tlv320aic23_initialize_slave_fullduplex(void)
 		0
 		);
 
-	// РР·-Р·Р° РѕРіСЂР°РЅРёС‡РµРЅРёР№ SPI/I2S РєРѕРЅС‚СЂРѕР»Р»РµСЂР° РЅР° STM32 РІРѕР·РјРѕР¶РЅРѕ 
-	// РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊ С‚РѕР»СЊРєРѕ СЂРµР¶РёРј СЃ MCLK=256*Fs
-	// Р’РЅСѓС‚СЂРµРЅРЅРёР№ РґРµР»РёС‚РµР»СЊ РѕС‚ MCLK РґРѕ Р±РёС‚РѕРІРѕР№ СЃРёРЅС…СЂРѕРЅРёР·Р°С†РёРё - /8
-	// РќР° MCLK РѕР¶РёРґР°РµРј 12.288 РњР“С†
+	// Из-за ограничений SPI/I2S контроллера на STM32 возможно 
+	// использовать только режим с MCLK=256*Fs
+	// Внутренний делитель от MCLK до битовой синхронизации - /8
+	// На MCLK ожидаем 12.288 МГц
 	// See TI SLWS106H table 3.3.2.2 Normal-Mode Sampling Rates
 
 #if CODEC_TYPE_TLV320AIC23B_USE_8KS
@@ -123,19 +123,19 @@ static void tlv320aic23_initialize_slave_fullduplex(void)
 #endif /* CODEC_TYPE_TLV320AIC23B_USE_8KS */
 
 #if 1 //WITHDEBUG
-	// Р’РІРµРґРµРЅРѕ РґР»СЏ С‚РѕРіРѕ, С‡С‚РѕР±С‹ РїСЂРё РѕС€РёР±РєР°С… РІ РЅР°СЃС‚СЂРѕР№РєРµ РєРѕРґРµРє Р±С‹Р» РЅР°СЃС‚СЂРѕРµРЅ РЅР° РІС‹РґР°С‡Сѓ Р·РІСѓРєР°.
-	// Р’С‹Р±РёСЂР°РµРј РІС…РѕРґ СЃ РјРёРєСЂРѕС„РѕРЅР°, РІРєР»СЋС‡РёС‚СЊ Р¦РђРџ
+	// Введено для того, чтобы при ошибках в настройке кодек был настроен на выдачу звука.
+	// Выбираем вход с микрофона, включить ЦАП
 	// mic input
 	tlv320aic23_setreg(TLV320AIC23_ANLG, 
 		TLV320AIC23_DAC_SELECTED |
 		//TLV320AIC23_MICM_MUTED |
-		1 * TLV320AIC23_MICB_20DB |			// 1 - РІРєР»СЋС‡РµРЅРёРµ РїСЂРµРґСѓСЃРёР»РёС‚РµР»СЏ РјРёРєСЂРѕС„РѕРЅР°
-		TLV320AIC23_INSEL_MIC |			// РћС†РёС„СЂРѕРІРєР° СЃ РјРёРєСЂРѕС„РѕРЅР° Р° РЅРµ СЃ line in
+		1 * TLV320AIC23_MICB_20DB |			// 1 - включение предусилителя микрофона
+		TLV320AIC23_INSEL_MIC |			// Оцифровка с микрофона а не с line in
 		0
 		);
 
 	tlv320aic23_setreg(TLV320AIC23_DIGT, 
-		0 * TLV320AIC23_ADCHP_ONFF |			/* Р¤Р’Р§ РїРµСЂРµРґ РђР¦Рџ - РЅР°Р»РёС‡РёРµ Р±РёС‚Р° РѕР·РЅР°С‡Р°РµС‚ Р’Р«РљР›Р®Р§РРўР¬ */
+		0 * TLV320AIC23_ADCHP_ONFF |			/* ФВЧ перед АЦП - наличие бита означает ВЫКЛЮЧИТЬ */
 		0
 		);
 #endif /* WITHDEBUG */
@@ -146,65 +146,65 @@ static void tlv320aic23_initialize_slave_fullduplex(void)
 		);
 }
 
-/* РЈСЃС‚Р°РЅРѕРІРєР° РіСЂРѕРјРєРѕСЃС‚Рё РЅР° РЅР°СѓС€РЅРёРєРё */
+/* Установка громкости на наушники */
 static void tlv320aic23_setvolume(uint_fast16_t gain, uint_fast8_t mute, uint_fast8_t mutespk)
 {
 	uint_fast8_t level = (gain - BOARD_AFGAIN_MIN) * (TLV320AIC23_OUT_VOL_MAX - TLV320AIC23_OUT_VOL_MIN) / (BOARD_AFGAIN_MAX - BOARD_AFGAIN_MIN) + TLV320AIC23_OUT_VOL_MIN;
-	(void) mutespk;	// СѓРїСЂР°РІР»РµРЅРёСЏ РіСЂРѕРјРєРѕСЃС‚СЊСЋ РЅР° Р»РёРЅРµР№РЅРѕРј РІС‹С…РѕРґРµ РІ СЌС‚РѕРј РєРѕРґРµРєРµ РЅРµС‚
+	(void) mutespk;	// управления громкостью на линейном выходе в этом кодеке нет
 	tlv320aic23_setreg(TLV320AIC23_LCHNVOL, 
 		(mute == 0) * (level & TLV320AIC23_OUT_VOL_MASK) |
-		TLV320AIC23_LRS_ENABLED |	/* Р»РµРІС‹Р№ Рё РїСЂР°РІС‹Р№ РѕРґРЅРѕРІСЂРµРјРµРЅРЅРѕ */
-		0 * TLV320AIC23_LZC_ON |	/* СЃРёРЅС…СЂРѕРЅРёР·Р°С†РёСЏ СЃ РїРµСЂРµС…РѕРґРѕРј С‡РµСЂРµР· "0" */
+		TLV320AIC23_LRS_ENABLED |	/* левый и правый одновременно */
+		0 * TLV320AIC23_LZC_ON |	/* синхронизация с переходом через "0" */
 		0
 		);
 }
 
-/* Р’С‹Р±РѕСЂ LINE IN РєР°Рє РёСЃС‚РѕС‡РЅРёРєР° РґР»СЏ РђР¦Рџ РІРјРµСЃС‚Рѕ РјРёРєСЂРѕС„РѕРЅР° */
+/* Выбор LINE IN как источника для АЦП вместо микрофона */
 static void tlv320aic23_lineinput(uint_fast8_t v, uint_fast8_t mikebust20db, uint_fast16_t mikegain, uint_fast16_t linegain)
 {
 	//debug_printf_P(PSTR("tlv320aic23_lineinput: glob_mik1level=%d\n"), mikegain);
-	(void) mikegain;	// СѓРїСЂР°РІР»РµРЅРёСЏ СѓСЃРёР»РµРЅРёРµРј РјРёРєСЂРѕС„РѕРЅР° РІ СЌС‚РѕРј РєРѕРґРµРєРµ РЅРµС‚
+	(void) mikegain;	// управления усилением микрофона в этом кодеке нет
 	if (v != 0)
 	{
 		uint_fast8_t level = (linegain - WITHLINEINGAINMIN) * (TLV320AIC23_IN_VOL_MAX - TLV320AIC23_IN_VOL_MIN) / (WITHLINEINGAINMAX - WITHLINEINGAINMIN) + TLV320AIC23_IN_VOL_MIN;
 		tlv320aic23_setreg(TLV320AIC23_LINVOL, 
-			TLV320AIC23_LRS_ENABLED |	/* Р»РµРІС‹Р№ Рё РїСЂР°РІС‹Р№ РѕРґРЅРѕРІСЂРµРјРµРЅРЅРѕ */
+			TLV320AIC23_LRS_ENABLED |	/* левый и правый одновременно */
 			(level & TLV320AIC23_IN_VOL_MASK) |
 			0
 			);
-		// РІС…РѕРґ СЃ line input
+		// вход с line input
 		// line input
 		tlv320aic23_setreg(TLV320AIC23_ANLG, 
 			TLV320AIC23_DAC_SELECTED |
 			TLV320AIC23_MICM_MUTED |
 			//TLV320AIC23_MICB_20DB |
-			//TLV320AIC23_INSEL_MIC |			// РћС†РёС„СЂРѕРІРєР° СЃ РјРёРєСЂРѕС„РѕРЅР° Р° РЅРµ СЃ line in
+			//TLV320AIC23_INSEL_MIC |			// Оцифровка с микрофона а не с line in
 			0
 			);
 	}
 	else
 	{
-		// РІС…РѕРґ СЃ РјРёРєСЂРѕС„РѕРЅР°
+		// вход с микрофона
 		// mic input
 		tlv320aic23_setreg(TLV320AIC23_ANLG, 
 			TLV320AIC23_DAC_SELECTED |
 			//TLV320AIC23_MICM_MUTED |
-			(mikebust20db != 0) * TLV320AIC23_MICB_20DB |			// 1 - РІРєР»СЋС‡РµРЅРёРµ РїСЂРµРґСѓСЃРёР»РёС‚РµР»СЏ РјРёРєСЂРѕС„РѕРЅР°
-			TLV320AIC23_INSEL_MIC |			// РћС†РёС„СЂРѕРІРєР° СЃ РјРёРєСЂРѕС„РѕРЅР° Р° РЅРµ СЃ line in
+			(mikebust20db != 0) * TLV320AIC23_MICB_20DB |			// 1 - включение предусилителя микрофона
+			TLV320AIC23_INSEL_MIC |			// Оцифровка с микрофона а не с line in
 			0
 			);
 	}
 	tlv320aic23_setreg(TLV320AIC23_DIGT, 
-		0 * TLV320AIC23_ADCHP_ONFF |			/* Р¤Р’Р§ РїРµСЂРµРґ РђР¦Рџ - РЅР°Р»РёС‡РёРµ Р±РёС‚Р° РѕР·РЅР°С‡Р°РµС‚ Р’Р«РљР›Р®Р§РРўР¬ */
+		0 * TLV320AIC23_ADCHP_ONFF |			/* ФВЧ перед АЦП - наличие бита означает ВЫКЛЮЧИТЬ */
 		0
 		);
 }
 
 
-/* РџР°СЂР°РјРµС‚СЂС‹ РѕР±СЂР°Р±РѕС‚РєРё Р·РІСѓРєР° СЃ РјРёРєСЂРѕС„РѕРЅР° (СЌС…Рѕ, СЌРєРІР°Р»Р°Р№Р·РµСЂ, ...) */
+/* Параметры обработки звука с микрофона (эхо, эквалайзер, ...) */
 static void tlv320aic23_setprocparams(
-	uint_fast8_t procenable,		/* РІРєР»СЋС‡РµРЅРёРµ РѕР±СЂР°Р±РѕС‚РєРё */
-	const uint_fast8_t * gains		/* РјР°СЃСЃРёРІ СЃ РїР°СЂР°РјРµС‚СЂР°РјРё */
+	uint_fast8_t procenable,		/* включение обработки */
+	const uint_fast8_t * gains		/* массив с параметрами */
 	)
 {
 
@@ -217,14 +217,14 @@ board_getaudiocodecif(void)
 
 	static const char codecname [] = "TLV320AIC23";
 
-	/* РРЅС‚РµСЂС„РµР№СЃ С†РїСЂР°РІР»РµРЅРёСЏ РєРѕРґРµРєРѕРј */
+	/* Интерфейс цправления кодеком */
 	static const codec1if_t ifc =
 	{
 		tlv320aic23_initialize_slave_fullduplex,
-		tlv320aic23_setvolume,	/* РЈСЃС‚Р°РЅРѕРІРєР° РіСЂРѕРјРєРѕСЃС‚Рё РЅР° РЅР°СѓС€РЅРёРєРё */
-		tlv320aic23_lineinput,	/* Р’С‹Р±РѕСЂ LINE IN РєР°Рє РёСЃС‚РѕС‡РЅРёРєР° РґР»СЏ РђР¦Рџ РІРјРµСЃС‚Рѕ РјРёРєСЂРѕС„РѕРЅР° */
-		tlv320aic23_setprocparams,	/* РџР°СЂР°РјРµС‚СЂС‹ РѕР±СЂР°Р±РѕС‚РєРё Р·РІСѓРєР° СЃ РјРёРєСЂРѕС„РѕРЅР° (СЌС…Рѕ, СЌРєРІР°Р»Р°Р№Р·РµСЂ, ...) */
-		codecname				/* РќР°Р·РІР°РЅРёРµ РєРѕРґРµРєР° (РІСЃРµРіРґР° РїРѕСЃР»РµРґРЅРёР№ СЌР»РµРјРµРЅС‚ РІ СЃС‚СЂСѓРєС‚СѓСЂРµ) */
+		tlv320aic23_setvolume,	/* Установка громкости на наушники */
+		tlv320aic23_lineinput,	/* Выбор LINE IN как источника для АЦП вместо микрофона */
+		tlv320aic23_setprocparams,	/* Параметры обработки звука с микрофона (эхо, эквалайзер, ...) */
+		codecname				/* Название кодека (всегда последний элемент в структуре) */
 	};
 
 	return & ifc;

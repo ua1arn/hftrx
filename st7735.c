@@ -1,13 +1,13 @@
 /* $Id$ */
 //
-// РџСЂРѕРµРєС‚ HF Dream Receiver (РљР’ РїСЂРёС‘РјРЅРёРє РјРµС‡С‚С‹)
-// Р°РІС‚РѕСЂ Р“РµРЅР° Р—Р°РІРёРґРѕРІСЃРєРёР№ mgs2001@mail.ru
+// Проект HF Dream Receiver (КВ приёмник мечты)
+// автор Гена Завидовский mgs2001@mail.ru
 // UA1ARN
 //
-// TFT РїР°РЅРµР»СЊ 160 * 128 HY-1.8-SPI
-// РљСЂРѕРјРµ С‚РѕРіРѕ, СЌС‚РѕС‚ С„Р°Р№Р» РґР»СЏ РѕР±СЃР»СѓР¶РёРІР°РЅРёСЏ LCDMODE_ILI9163
-/* РРЅРґРёРєР°С‚РѕСЂ 160*128 СЃ РєРѕРЅС‚СЂРѕР»Р»РµСЂРѕРј Sitronix ST7735 */
-/* РРЅРґРёРєР°С‚РѕСЂ 320*240 СЃ РєРѕРЅС‚СЂРѕР»Р»РµСЂРѕРј ILITEK ILI9341 */
+// TFT панель 160 * 128 HY-1.8-SPI
+// Кроме того, этот файл для обслуживания LCDMODE_ILI9163
+/* Индикатор 160*128 с контроллером Sitronix ST7735 */
+/* Индикатор 320*240 с контроллером ILITEK ILI9341 */
 
 // Original copyright:
 /***************************************************
@@ -53,7 +53,7 @@
 #if DSTYLE_G_X320_Y240
 	// LCDMODE_ILI9341
 
-	// Р”Р»СЏ РґРёСЃРїР»РµРµРІ 320 * 240
+	// Для дисплеев 320 * 240
 	#include "./fonts/ILI9341_font_small.c"
 	#include "./fonts/ILI9341_font_half.c"
 	#include "./fonts/ILI9341_font_big.c"
@@ -75,11 +75,11 @@
 
 
 #define ST7735_SPIMODE		SPIC_MODE3
-//#define ST7735_SPISPEED		SPIC_SPEED10M	// РІ РѕРїРёСЃРЅРёРё РєРѕРЅС‚СЂРѕР»Р»РµСЂР° ILI9341 РјРёРЅРёРјР°Р»СЊРЅС‹Р№ РїРµСЂРёРѕРґ СѓРєР°Р·Р°РЅ 100 nS
-//#define ST7735_SPISPEED		SPIC_SPEED10M	// РІ РѕРїРёСЃРЅРёРё РєРѕРЅС‚СЂРѕР»Р»РµСЂР° ST7735 РјРёРЅРёРјР°Р»СЊРЅС‹Р№ РїРµСЂРёРѕРґ СѓРєР°Р·Р°РЅ 150 nS
+//#define ST7735_SPISPEED		SPIC_SPEED10M	// в описнии контроллера ILI9341 минимальный период указан 100 nS
+//#define ST7735_SPISPEED		SPIC_SPEED10M	// в описнии контроллера ST7735 минимальный период указан 150 nS
 #define ST7735_SPISPEED		SPIC_SPEED25M
 
-// РЈСЃР»РѕРІРёРµ РёСЃРїРѕР»СЊР·РѕРІР°РЅРёСЏ РѕРїС‚РёРјРёР·РёСЂРѕРІР°РЅРЅС‹С… С„СѓРЅРєС†РёР№ РѕР±СЂР°С‰РµРЅРёСЏ Рє SPI
+// Условие использования оптимизированных функций обращения к SPI
 #define WITHSPIEXT16 (WITHSPIHW && WITHSPI16BIT)
 
 #define ST7735_CMND() do { board_lcd_rs(0); } while (0)	/* RS: Low: command data */
@@ -88,7 +88,7 @@
 static uint_fast8_t colstart, rowstart, tabcolor; // May be overridden in init func
 
 
-// РІ СЂРµР¶РёРј РїРµСЂРµРґР°С‡Рё РґР°РЅРЅС‹С… РїРµСЂРµРІРѕРґРёРј СЃСЂР°Р·Сѓ РїРѕ РѕРєРѕРЅС‡Р°РЅРёРё РєРѕРјР°РЅРґ.
+// в режим передачи данных переводим сразу по окончании команд.
 static void st7735_put_char_begin(void)
 {
 #if WITHSPIEXT16
@@ -96,7 +96,7 @@ static void st7735_put_char_begin(void)
 	hardware_spi_connect_b16(ST7735_SPISPEED, ST7735_SPIMODE);	/* Enable SPI */
 	prog_select(targetlcd);	/* start sending data to target chip */
 	ST7735_CMND();	/* RS: Low: select an index or status register */
-	hardware_spi_b16_p1(ST7735_RAMWR);	// СЃС‚Р°СЂС€Р°СЏ РїРѕР»РѕРІРёРЅР° - 0 - 'NOP' command
+	hardware_spi_b16_p1(ST7735_RAMWR);	// старшая половина - 0 - 'NOP' command
 	hardware_spi_complete_b16();
 	ST7735_DATA();	/* RS: High: select a control register */
 
@@ -423,7 +423,7 @@ st7735_pixelsmooth_p3(
 	return fg;
 }
 
-// Р’С‹РґР°С‚СЊ РІРѕСЃРµРјСЊ С†РІРµС‚РЅС‹С… РїРёРєСЃРµР»РµР№
+// Выдать восемь цветных пикселей
 static void 
 //NOINLINEAT
 st7735_pix8(
@@ -439,7 +439,7 @@ st7735_pix8(
 	st7735_pixel_p2(v & 0x40);
 	st7735_pixel_p3(v & 0x80);
 }
-// Р’С‹РґР°С‚СЊ РІРѕСЃРµРјСЊ С†РІРµС‚РЅС‹С… РїРёРєСЃРµР»РµР№
+// Выдать восемь цветных пикселей
 static uint_fast8_t 
 //NOINLINEAT
 st7735_pix8smooth(
@@ -473,14 +473,14 @@ static uint_fast8_t
 //NOINLINEAT
 bigfont_decode(uint_fast8_t c)
 {
-	// '#' - СѓР·РєРёР№ РїСЂРѕР±РµР»
+	// '#' - узкий пробел
 	if (c == ' ' || c == '#')
 		return 11;
 	if (c == '_')
-		return 10;		// РєСѓСЂСЃРѕСЂ - РїРѕР·РёС†РёСЏ СЂРµРґР°РєС‚РёСЂРІР°РЅРёСЏ С‡Р°СЃС‚РѕС‚С‹
+		return 10;		// курсор - позиция редактирвания частоты
 	if (c == '.')
-		return 12;		// С‚РѕС‡РєР°
-	return c - '0';		// РѕСЃС‚Р°Р»СЊРЅС‹Рµ - С†РёС„СЂС‹ 0..9
+		return 12;		// точка
+	return c - '0';		// остальные - цифры 0..9
 }
 
 
@@ -490,7 +490,7 @@ smallfont_decode(uint_fast8_t c)
 	return c - ' ';
 }
 
-// Р’С‹Р·РѕРІ СЌС‚РѕР№ С„СѓРЅРєС†РёРё С‚РѕР»СЊРєРѕ РІРЅСѓС‚СЂРё display_wrdata_begin() Рё 	display_wrdata_end();
+// Вызов этой функции только внутри display_wrdata_begin() и 	display_wrdata_end();
 static void st7735_put_char_small(char cc)
 {
 	uint_fast8_t i = 0;
@@ -499,16 +499,16 @@ static void st7735_put_char_small(char cc)
 	const FLASHMEM uint8_t * p = & ls020_smallfont [c][0];
 	
 	for (; i < NBYTES; ++ i)
-		st7735_pix8(p [i]);	// Р’С‹РґР°С‚СЊ РІРѕСЃРµРјСЊ С†РІРµС‚РЅС‹С… РїРёРєСЃРµР»РµР№
+		st7735_pix8(p [i]);	// Выдать восемь цветных пикселей
 }
 
 
-// Р’С‹Р·РѕРІ СЌС‚РѕР№ С„СѓРЅРєС†РёРё С‚РѕР»СЊРєРѕ РІРЅСѓС‚СЂРё display_wrdatabig_begin() Рё display_wrdatabig_end();
+// Вызов этой функции только внутри display_wrdatabig_begin() и display_wrdatabig_end();
 static void st7735_put_char_big(char cc)
 {
-	// '#' - СѓР·РєРёР№ РїСЂРѕР±РµР»
-	enum { NBV = (BIGCHARH / 8) }; // СЃРєРѕР»СЊРєРѕ Р±Р°Р№С‚РѕРІ РІ РѕРґРЅРѕР№ РІРµСЂС‚РёРєР°Р»Рё
-	uint_fast8_t i = NBV * ((cc == '.' || cc == '#') ? 12 : 0);	// РЅР°С‡Р°Р»СЊРЅР°СЏ РєРѕР»РѕРЅРєР° Р·РЅР°РєРѕРіРµРЅРµСЂР°С‚РѕСЂР°, РѕС‚РєСѓРґР° РЅР°С‡РёРЅР°С‚СЊ.
+	// '#' - узкий пробел
+	enum { NBV = (BIGCHARH / 8) }; // сколько байтов в одной вертикали
+	uint_fast8_t i = NBV * ((cc == '.' || cc == '#') ? 12 : 0);	// начальная колонка знакогенератора, откуда начинать.
     const uint_fast8_t c = bigfont_decode((unsigned char) cc);
 	enum { NBYTES = (sizeof ls020_bigfont [0] / sizeof ls020_bigfont [0][0]) };
 	const FLASHMEM uint8_t * p = & ls020_bigfont [c][0];
@@ -517,7 +517,7 @@ static void st7735_put_char_big(char cc)
 	uint_fast8_t col;
 	for (col = i / NBV; col < NBYTES / NBV; ++ col)
 	{
-		uint_fast8_t last = 0;	// Р¤РѕРЅ
+		uint_fast8_t last = 0;	// Фон
 		uint_fast8_t row;
 		for (row = 0; row < NBV; ++ row)
 			last = st7735_pix8smooth(p [i ++], last);
@@ -525,15 +525,15 @@ static void st7735_put_char_big(char cc)
 	}
 #else /* WITHFONTSMOOTHING */
 	for (; i < NBYTES; ++ i)
-		st7735_pix8(p [i]);	// Р’С‹РґР°С‚СЊ РІРѕСЃРµРјСЊ С†РІРµС‚РЅС‹С… РїРёРєСЃРµР»РµР№
+		st7735_pix8(p [i]);	// Выдать восемь цветных пикселей
 #endif /* WITHFONTSMOOTHING */
 }
 
 
-// Р’С‹Р·РѕРІ СЌС‚РѕР№ С„СѓРЅРєС†РёРё С‚РѕР»СЊРєРѕ РІРЅСѓС‚СЂРё display_wrdatabig_begin() Рё display_wrdatabig_end();
+// Вызов этой функции только внутри display_wrdatabig_begin() и display_wrdatabig_end();
 static void st7735_put_char_half(char cc)
 {
-	enum { NBV = (BIGCHARH / 8) }; // СЃРєРѕР»СЊРєРѕ Р±Р°Р№С‚РѕРІ РІ РѕРґРЅРѕР№ РІРµСЂС‚РёРєР°Р»Рё
+	enum { NBV = (BIGCHARH / 8) }; // сколько байтов в одной вертикали
 	uint_fast8_t i = 0;
     const uint_fast8_t c = bigfont_decode((unsigned char) cc);
 	enum { NBYTES = (sizeof ls020_halffont [0] / sizeof ls020_halffont [0][0]) };
@@ -543,7 +543,7 @@ static void st7735_put_char_half(char cc)
 	uint_fast8_t col;
 	for (col = 0; col < NBYTES / NBV; ++ col)
 	{
-		uint_fast8_t last = 0;	// Р¤РѕРЅ
+		uint_fast8_t last = 0;	// Фон
 		uint_fast8_t row;
 		for (row = 0; row < NBV; ++ row)
 			last = st7735_pix8smooth(p [i ++], last);
@@ -551,13 +551,13 @@ static void st7735_put_char_half(char cc)
 	}
 #else /* WITHFONTSMOOTHING */
 	for (; i < NBYTES; ++ i)
-		st7735_pix8(p [i]);	// Р’С‹РґР°С‚СЊ РІРѕСЃРµРјСЊ С†РІРµС‚РЅС‹С… РїРёРєСЃРµР»РµР№
+		st7735_pix8(p [i]);	// Выдать восемь цветных пикселей
 #endif /* WITHFONTSMOOTHING */
 }
 
-static uint_fast8_t st7735_y;	/* РІ РїРёРєСЃРµР»СЏС… */
+static uint_fast8_t st7735_y;	/* в пикселях */
 
-// РѕС‚РєСЂС‹С‚СЊ РґР»СЏ Р·Р°РїРёСЃРё РїРѕР»РѕСЃСѓ РІС‹СЃРѕС‚РѕР№ СЃ СЃРёРјРІРѕР» Рё С€РёСЂРёРЅРѕР№ РґРѕ РїСЂР°РІРѕРіРѕ РєСЂР°СЏ
+// открыть для записи полосу высотой с символ и шириной до правого края
 static void
 st7735_set_strype(uint_fast8_t height)
 {
@@ -569,7 +569,7 @@ st7735_set_strype(uint_fast8_t height)
 	hardware_spi_connect_b16(ST7735_SPISPEED, ST7735_SPIMODE);	/* Enable SPI */
 	prog_select(targetlcd);	/* start sending data to target chip */
 	ST7735_CMND();	/* RS: Low: select an index or status register */
-	hardware_spi_b16_p1(ST7735_CASET);	// СЃС‚Р°СЂС€Р°СЏ РїРѕР»РѕРІРёРЅР° - 0 - 'NOP' command
+	hardware_spi_b16_p1(ST7735_CASET);	// старшая половина - 0 - 'NOP' command
 	hardware_spi_complete_b16();
 	ST7735_DATA();	/* RS: High: select a control register */
 	#if LCDMODE_ILI9163
@@ -605,7 +605,7 @@ st7735_set_strype(uint_fast8_t height)
 
 #endif /* WITHSPIEXT16 */
 }
-// РўРёРї РґР»СЏ С…СЂР°РЅРµРЅРёСЏ РіРѕСЂРёР·РѕРЅС‚Р°Р»СЊРЅРѕР№ РєРѕРѕСЂРґРёРЅР°С‚С‹
+// Тип для хранения горизонтальной координаты
 #if DIM_X > 254
 	typedef uint_fast16_t xholder_t;
 #else
@@ -613,9 +613,9 @@ st7735_set_strype(uint_fast8_t height)
 #endif
 
 /*
- Р¤СѓРЅРєС†РёСЏ СѓСЃС‚Р°РЅРѕРІРєРё РєСѓСЂСЃРѕСЂР° РІ РїРѕР·РёС†РёСЋ x,y
- X - РєРѕРѕСЂРґРёРЅР°С‚Р° РїРѕ РіРѕСЂРёР·РѕРЅС‚Р°Р»Рё РІ РїСЂРµРґРµР»Р°С… 0-175 (0-319),
- Y - РєРѕРѕСЂРґРёРЅР°С‚Р° РїРѕ РІРµСЂС‚РёРєР°Р»Рё (СЃС‚СЂРѕРєР°) РІ РїСЂРµРґРµР»Р°С… 8 Р±РёС‚
+ Функция установки курсора в позицию x,y
+ X - координата по горизонтали в пределах 0-175 (0-319),
+ Y - координата по вертикали (строка) в пределах 8 бит
 */
 static void 
 //NOINLINEAT
@@ -632,7 +632,7 @@ st7735_set_addr_column(
 	hardware_spi_connect_b16(ST7735_SPISPEED, ST7735_SPIMODE);
 	prog_select(targetlcd);	/* start sending data to target chip */
 	ST7735_CMND();	/* RS: Low: select an index or status register */
-	hardware_spi_b16_p1(ST7735_RASET);	// СЃС‚Р°СЂС€Р°СЏ РїРѕР»РѕРІРёРЅР° - 0 - 'NOP' command
+	hardware_spi_b16_p1(ST7735_RASET);	// старшая половина - 0 - 'NOP' command
 	hardware_spi_complete_b16();
 	ST7735_DATA();	/* RS: High: select a control register */
 	#if LCDMODE_ILI9163
@@ -674,13 +674,13 @@ static void st7735_clear(COLOR_T bg)
 	unsigned long i;
 	
 	display_gotoxy(0, 0);
-	st7735_set_strype(DIM_Y);	// СѓСЃС‚Р°РЅРѕРІРёС‚СЊ РѕРєРЅРѕ РІС‹СЃРѕС‚РѕР№ РІ РІРµСЃСЊ СЌРєСЂР°РЅ
+	st7735_set_strype(DIM_Y);	// установить окно высотой в весь экран
 
 	st7735_setcolor(COLOR_WHITE, bg, bg);
 	st7735_put_char_begin();
 	for (i = 0; i < ((unsigned long) DIM_Y * DIM_X) / 8; ++ i)
 	{
-		st7735_pix8(0x00);	// Р’С‹РґР°С‚СЊ РІРѕСЃРµРјСЊ РїРёРєСЃРµР»РµР№ С†РІРµС‚Р° С„РѕРЅР°
+		st7735_pix8(0x00);	// Выдать восемь пикселей цвета фона
 	}
 	st7735_put_char_end();
 
@@ -920,8 +920,8 @@ ili9341_initcmds [] = {                  // Initialization commands for ilitek i
 	LCD_DFC, 4,		// 18 Display Function Control (B6h)
 		0x0A, //Display Function Control  0x000a   
 		0xA2, //0x0082,
-		0x27,	// 320 lines РґРѕР±Р°РІР»РµРЅРѕ РёР· РїРµСЂРµРєР»СЋС‡РµРЅРёСЏ РІ RGB MODE - Сѓ РєРѕРјР°РЅРґС‹ РІРѕРѕР±С‰Рµ0С‚Рѕ С‡РµС‚С‹СЂРµ РїР°СЂР°РјРµС‚СЂР°
-		0x04,	// РґРѕР±Р°РІР»РµРЅРѕ РёР· РїРµСЂРµРєР»СЋС‡РµРЅРёСЏ РІ RGB MODE - Сѓ РєРѕРјР°РЅРґС‹ РІРѕРѕР±С‰Рµ0С‚Рѕ С‡РµС‚С‹СЂРµ РїР°СЂР°РјРµС‚СЂР°
+		0x27,	// 320 lines добавлено из переключения в RGB MODE - у команды вообще0то четыре параметра
+		0x04,	// добавлено из переключения в RGB MODE - у команды вообще0то четыре параметра
 
 	LCD_VCOM2, 1, //19:Set VCOMH/VCOML VCOM Control 2
 		0xb8, //VCOM Control , VMF[6:0]   0x00BC b8
@@ -962,8 +962,8 @@ ili9341_initcmdsST [] =
 		0x00, 0x1B, 
 	LCD_DFC, 4,
 		0x0A, 
-		0xA2, 	// РґРѕР±Р°РІР»РµРЅРѕ РёР· РїРµСЂРµРєР»СЋС‡РµРЅРёСЏ РІ RGB MODE - Сѓ РєРѕРјР°РЅРґС‹ РІРѕРѕР±С‰Рµ0С‚Рѕ С‡РµС‚С‹СЂРµ РїР°СЂР°РјРµС‚СЂР°
-		0x27, 	// 320 lines РґРѕР±Р°РІР»РµРЅРѕ РёР· РїРµСЂРµРєР»СЋС‡РµРЅРёСЏ РІ RGB MODE - Сѓ РєРѕРјР°РЅРґС‹ РІРѕРѕР±С‰Рµ0С‚Рѕ С‡РµС‚С‹СЂРµ РїР°СЂР°РјРµС‚СЂР°
+		0xA2, 	// добавлено из переключения в RGB MODE - у команды вообще0то четыре параметра
+		0x27, 	// 320 lines добавлено из переключения в RGB MODE - у команды вообще0то четыре параметра
 		0x04, 
 	LCD_POWER1, 1,
 		0x10, 
@@ -993,7 +993,7 @@ ili9341_initcmdsST [] =
 		150, 
 	LCD_DISPLAY_ON, 0,
 };
-/* РїРµСЂРµС…РѕРґ РІ RGB */
+/* переход в RGB */
 static const FLASHMEM uint8_t
 ili9341_switchtorgb_cmds_ST [] = 
 {
@@ -1005,14 +1005,14 @@ LCD_DFC, 4,
 	0xA7, 
 	0x27, 
 	0x04, 
-/* РїРµСЂРµС…РѕРґ РІ RGB */
+/* переход в RGB */
 LCD_INTERFACE, 3, // | DELAY_FLAG,
 	0x01, 
 	0x00, 
 	0x06, 
 	//150,
 };
-// РљРѕРјР°РЅРґС‹ РїРµСЂРµС…РѕРґР° РІ RGB СЂРµР¶РёРј РёРЅС‚РµСЂС„РµР№СЃР° (РѕР±РЅРѕРІР»РµРЅРёРµ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ СЃ РІРЅРµС€РЅРµРіРѕ РёСЃС‚РѕС‡РЅРёРєР°).
+// Команды перехода в RGB режим интерфейса (обновление изображения с внешнего источника).
 static const FLASHMEM uint8_t
 ili9341_switchtorgb_cmds [] = {                  // commands for ilitek ili9341 screens
 	3, 			     	      // 14 commands in list:
@@ -1132,7 +1132,7 @@ static void st7735_initialize(void)
 #if LCDMODE_ILI9341
     // colstart, rowstart left at default '0' values
 	#if useSTinit
-		commandList(ili9341_initcmdsST);	// Р­С‚Р° СЃС‚СЂРѕРєР° РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РІ СЃР»СѓС‡Р°Рµ РїСЂРёРјРµРЅРµРЅРёСЏ РёРЅРёС†РёР°Р»РёР·Р°С†РёРё РѕС‚ ST
+		commandList(ili9341_initcmdsST);	// Эта строка используется в случае применения инициализации от ST
 	#else
 		commandList(ili9341_initcmds);
 	#endif
@@ -1151,7 +1151,7 @@ static void st7735_initialize(void)
 
 }
 
-/* РџРµСЂРµРєР»СЋС‡РµРЅРёРµ РґРёСЃРїР»РµСЏ РІ СЂРµР¶РёРј РѕР±РЅРѕРІР»РµРЅРёСЏ РІРёРґРµРѕРїР°РјСЏС‚Рё РїРѕ РїР°СЂР°Р»Р»РµР»СЊРЅРѕРјСѓ РёРЅС‚РµСЂС„РµР№СЃСѓ. */
+/* Переключение дисплея в режим обновления видеопамяти по параллельному интерфейсу. */
 static void st7735_switchtorgb(void)
 {
 #if LCDMODE_ILI9341 || LCDMODE_ILI9163
@@ -1166,7 +1166,7 @@ static void st7735_switchtorgb(void)
 #endif /* LCDMODE_ILI9341 */
 }
 
-/* РІС‹Р·С‹РІР°РµС‚СЃСЏ РїСЂРё СЂР°Р·СЂРµС€С‘РЅРЅС‹С… РїСЂРµСЂС‹РІР°РЅРёСЏС…. */
+/* вызывается при разрешённых прерываниях. */
 void display_initialize(void)
 {
 	//hardware_spi_master_setfreq(SPIC_SPEED10M, 10000000uL);
@@ -1174,7 +1174,7 @@ void display_initialize(void)
 
 	st7735_initialize();
 	#if LCDMODE_LTDC
-		st7735_switchtorgb();	/* РџРµСЂРµРєР»СЋС‡РµРЅРёРµ РґРёСЃРїР»РµСЏ РІ СЂРµР¶РёРј РѕР±РЅРѕРІР»РµРЅРёСЏ РІРёРґРµРѕРїР°РјСЏС‚Рё РїРѕ РїР°СЂР°Р»Р»РµР»СЊРЅРѕРјСѓ РёРЅС‚РµСЂС„РµР№СЃСѓ. */
+		st7735_switchtorgb();	/* Переключение дисплея в режим обновления видеопамяти по параллельному интерфейсу. */
 	#endif
 }
 
@@ -1243,9 +1243,9 @@ display_wrdatabig_end(void)
 	st7735_put_char_end();
 }
 
-/* РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ РѕРґРЅРѕР№ РІРµСЂС‚РёРєР°Р»СЊРЅРѕР№ РїРѕР»РѕСЃС‹ РЅР° РіСЂР°С„РёС‡РµСЃРєРѕРј РёРЅРґРёРєР°С‚РѕСЂРµ */
-/* СЃС‚Р°СЂС€РёРµ Р±РёС‚С‹ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‚ РІРµСЂС…РЅРёРј РїРёРєСЃРµР»СЏРј РёР·РѕР±СЂР°Р¶РµРЅРёСЏ */
-/* РІС‹Р·С‹РІР°РµС‚СЃСЏ РјРµР¶РґСѓ РІС‹Р·РѕРІР°РјРё display_wrdatabar_begin() Рё display_wrdatabar_end() */
+/* отображение одной вертикальной полосы на графическом индикаторе */
+/* старшие биты соответствуют верхним пикселям изображения */
+/* вызывается между вызовами display_wrdatabar_begin() и display_wrdatabar_end() */
 void 
 display_barcolumn(uint_fast8_t pattern)
 {
@@ -1278,16 +1278,16 @@ display_put_char_half(uint_fast8_t c, uint_fast8_t lowhalf)
 }
 
 
-// Р’С‹Р·РѕРІ СЌС‚РѕР№ С„СѓРЅРєС†РёРё С‚РѕР»СЊРєРѕ РІРЅСѓС‚СЂРё display_wrdata_begin() Рё display_wrdata_end();
-// РСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РїСЂРё РІС‹РІРѕРґРµ РЅР° РіСЂР°С„РёС‡РµСЃРєРёР№ РЅРґРёРєР°С‚РѕСЂ, РµСЃР»Рё РўР Р•Р‘РЈР•РўРЎРЇ РїРµСЂРµРєР»СЋС‡Р°С‚СЊ РїРѕР»РѕСЃС‹ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ
+// Вызов этой функции только внутри display_wrdata_begin() и display_wrdata_end();
+// Используется при выводе на графический ндикатор, если ТРЕБУЕТСЯ переключать полосы отображения
 void
 display_put_char_small(uint_fast8_t c, uint_fast8_t lowhalf)
 {
 	st7735_put_char_small(c);
 }
 
-// Р’С‹Р·РѕРІ СЌС‚РѕР№ С„СѓРЅРєС†РёРё С‚РѕР»СЊРєРѕ РІРЅСѓС‚СЂРё display_wrdata2_begin() Рё display_wrdata2_end();
-// РСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РїСЂРё РІС‹РІРѕРґРµ РЅР° РіСЂР°С„РёС‡РµСЃРєРёР№ РЅРґРёРєР°С‚РѕСЂ, РµСЃР»Рё РўР Р•Р‘РЈР•РўРЎРЇ РїРµСЂРµРєР»СЋС‡Р°С‚СЊ РїРѕР»РѕСЃС‹ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ
+// Вызов этой функции только внутри display_wrdata2_begin() и display_wrdata2_end();
+// Используется при выводе на графический ндикатор, если ТРЕБУЕТСЯ переключать полосы отображения
 void
 display_put_char_small2(uint_fast8_t c, uint_fast8_t lowhalf)
 {
@@ -1297,19 +1297,19 @@ display_put_char_small2(uint_fast8_t c, uint_fast8_t lowhalf)
 void
 display_gotoxy(uint_fast8_t x, uint_fast8_t y)
 {
-	st7735_y = y * CHAR_H;		/* РїРµСЂРµС…РѕРґ РѕС‚ СЃРёРјРІРѕР»СЊРЅС‹С… РєРѕРѕСЂРґРёРЅР°С‚ Рє СЌРєСЂР°РЅРЅС‹Рј */
+	st7735_y = y * CHAR_H;		/* переход от символьных координат к экранным */
 	st7735_set_addr_column(x * CHAR_W);
 }
 
-// РљРѕРѕСЂРґРёРЅР°С‚С‹ РІ РїРёРєСЃРµР»СЏС…
+// Координаты в пикселях
 void display_plotfrom(uint_fast16_t x, uint_fast16_t y)
 {
-	st7735_y = y;		/* РїРµСЂРµС…РѕРґ РѕС‚ СЃРёРјРІРѕР»СЊРЅС‹С… РєРѕРѕСЂРґРёРЅР°С‚ Рє СЌРєСЂР°РЅРЅС‹Рј */
+	st7735_y = y;		/* переход от символьных координат к экранным */
 	st7735_set_addr_column(x);
 }
 
 void display_plotstart(
-	uint_fast16_t height	// Р’С‹СЃРѕС‚Р° РѕРєРЅР° РІ РїРёРєСЃРµР»СЏС…
+	uint_fast16_t height	// Высота окна в пикселях
 	)
 {
 	st7735_set_strype(height);
@@ -1323,14 +1323,14 @@ void display_plotstop(void)
 
 void display_plot(
 	const PACKEDCOLOR_T * buffer, 
-	uint_fast16_t dx,	// Р Р°Р·РјРµСЂС‹ РѕРєРЅР° РІ РїРёРєСЃРµР»СЏС…
+	uint_fast16_t dx,	// Размеры окна в пикселях
 	uint_fast16_t dy
 	)
 {
-	uint_fast32_t len = GXSIZE(dx, dy);	// РєРѕР»РёС‡РµСЃС‚РІРѕ СЌР»РµРјРµРЅС‚РѕРІ
+	uint_fast32_t len = GXSIZE(dx, dy);	// количество элементов
 #if WITHSPIEXT16 && WITHSPIHWDMA
-	// РџРµСЂРµРґР°С‡Р° РІ РёРЅРґРёРєР°С‚РѕСЂ РїРѕ DMA	
-	arm_hardware_flush((uintptr_t) buffer, len * sizeof (* buffer));	// РєРѕР»РёС‡РµСЃС‚РІРѕ Р±Р°Р№С‚РѕРІ
+	// Передача в индикатор по DMA	
+	arm_hardware_flush((uintptr_t) buffer, len * sizeof (* buffer));	// количество байтов
 	hardware_spi_master_send_frame_16b(buffer, len);
 #else /* WITHSPIEXT16 */
 	if (len >= 3)
@@ -1357,8 +1357,8 @@ display_getreadystate(void)
 
 #endif /* ! LCDMODE_LTDC */
 
-/* Р°РїРїР°СЂР°С‚РЅС‹Р№ СЃР±СЂРѕСЃ РґРёСЃРїР»РµСЏ - РїРµСЂРµРґ РёРЅРёС†РёР°Р»РёР·Р°С†РёР№ */
-/* РІС‹Р·С‹РІР°РµС‚СЃСЏ РїСЂРё СЂР°Р·СЂРµС€С‘РЅРЅС‹С… РїСЂРµСЂС‹РІР°РЅРёСЏС…. */
+/* аппаратный сброс дисплея - перед инициализаций */
+/* вызывается при разрешённых прерываниях. */
 void display_reset(void)
 {
 #if LCDMODE_ILI9163
@@ -1385,7 +1385,7 @@ void display_reset(void)
 
 
 
-/* Р Р°Р·СЂСЏР¶Р°РµРј РєРѕРЅРґРµРЅСЃР°С‚РѕСЂС‹ РїРёС‚Р°РЅРёСЏ */
+/* Разряжаем конденсаторы питания */
 void display_discharge(void)
 {
 	spi_select2(targetlcd, ST7735_SPIMODE, ST7735_SPISPEED);	/* Enable SPI */

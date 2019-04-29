@@ -1,7 +1,7 @@
 /*
  * SpeechProc.h
  *
- *  Created on: 10 РЅРѕСЏР±. 2018 Рі.
+ *  Created on: 10 нояб. 2018 г.
  *      Author: Admin
  */
 
@@ -30,12 +30,12 @@
 #define BAND6_MAX_FREQ 5000
 #define LIMITTER_LOOK_AHEAD (100)//10ms
 #define MAX_24bit_FLOAT 8388607.0f
-#define LIMITTER_UP_THRESHOLD -1// РІ РґР‘
+#define LIMITTER_UP_THRESHOLD -1// в дБ
 #define N_POLOS 6
 #define LIM_LAH_DELAY 120
 #define PH_STAGES_MAX 31
 #define COMP_SMOOTH_FACTOR 0.999f
-#define N_FILTER (N_POLOS+1)//РѕР±С‰РµРµ РєРѕР»РёС‡РµСЃС‚РІРѕ С„РёР»СЊС‚СЂРѕРІ, 6 - РЅР° РєРѕРјРїСЂРµСЃСЃРѕСЂ Рё 7-Р№ - РЅР° РІС‹С…РѕРґРЅСѓСЋ С„РёР»СЊС‚СЂР°С†РёСЋ
+#define N_FILTER (N_POLOS+1)//общее количество фильтров, 6 - на компрессор и 7-й - на выходную фильтрацию
 #define REVERBERATOR_MAX_DELAY 100//100//ms
 #define REVERBERATOR_DELAY_MAX_LEN (REVERBERATOR_MAX_DELAY*SAMPLE_RATE/1000)
 #define DC_OFFSET_COEFF 126.0f //63 - 10Hz, 126-20Hz, 190-30Hz, 250 - 40Hz
@@ -91,33 +91,33 @@ typedef struct
 {
 	int8_t MAG[FFT_FILTER_SIZE];
 
-	uint input_type;//0- РјРёРєСЂРѕС„РѕРЅ, 1- Р»РёРЅРµР№РЅС‹Р№ РІС…РѕРґ
+	uint input_type;//0- микрофон, 1- линейный вход
 
 	uint notch_en;
-		uint notch_frequency;//0...1000Р“С† СЃ С€Р°РіРѕРј 1Р“С†
-		uint notch_width;//5...300 СЃ С€Р°РіРѕРј 5Р“С†
+		uint notch_frequency;//0...1000Гц с шагом 1Гц
+		uint notch_width;//5...300 с шагом 5Гц
 
 	uint ng_en;
 	int ng_threshold_dB;//0...-100
-	uint ng_trel;//РєР°Рє Сѓ РєРѕРјРїСЂРµСЃСЃРѕСЂР°
-	float ng_ratio;//РєР°Рє Сѓ РєРѕРјРїСЂРµСЃСЃРѕСЂР°
-	float ng_tatt;//РєР°Рє Сѓ РєРѕРјРїСЂРµСЃСЃРѕСЂР°
+	uint ng_trel;//как у компрессора
+	float ng_ratio;//как у компрессора
+	float ng_tatt;//как у компрессора
 
-	uint ph_rot_en;//РІРєР»/РІС‹РєР» С„Р°Р·РѕРІС‹Р№ СЂРѕС‚Р°С‚РѕСЂ
-	 uint ph_rot_freq;//С‡Р°СЃС‚РѕС‚Р° С„Р°Р·РѕРІРѕРіРѕ СЂРѕС‚Р°С‚РѕСЂР°
-	 uint ph_rot_stage;//РєРѕР»РёС‡РµСЃС‚РІРѕ РєР°СЃРєР°РґРѕРІ С„Р°Р·РѕРІРѕРіРѕ СЂРѕС‚Р°С‚РѕСЂР°
-	 float symmetry;//РїРѕРєР°Р·Р°С‚РµР»СЊ СЃРёРјРјРµС‚СЂРёРё, С‚РѕР»СЊРєРѕ С‡С‚РµРЅРёРµ
-	 int pre_gain;//-40...+40РґР‘
+	uint ph_rot_en;//вкл/выкл фазовый ротатор
+	 uint ph_rot_freq;//частота фазового ротатора
+	 uint ph_rot_stage;//количество каскадов фазового ротатора
+	 float symmetry;//показатель симметрии, только чтение
+	 int pre_gain;//-40...+40дБ
 
-	 uint mb_comp_en;//РІРєР»/РІС‹РєР» РјРЅРѕРіРѕРїРѕР»РѕСЃРЅРѕРіРѕ РєРѕРјРїСЂРµСЃСЃРѕСЂР°
+	 uint mb_comp_en;//вкл/выкл многополосного компрессора
 	 int mb_comp_threshold_dB[N_POLOS];
 	 float mb_comp_tatt[N_POLOS];
 	 uint mb_comp_trel[N_POLOS];
 	 float mb_comp_ratio[N_POLOS];
-	 int mb_comp_env[N_POLOS];//СѓСЃСЂРµРґРЅРµРЅРЅР°СЏ Р°РјРїР»РёС‚СѓРґР° РІ РґР‘
+	 int mb_comp_env[N_POLOS];//усредненная амплитуда в дБ
 
 	 uint eq_en;
-	 int eq_gain[N_POLOS];//-15...+15РґР‘
+	 int eq_gain[N_POLOS];//-15...+15дБ
 
 	 uint soft_knee_comp_en;
 	 int soft_knee_comp_threshold_dB;
@@ -127,10 +127,10 @@ typedef struct
 	 float soft_knee;
 	 int soft_knee_comp_env;
 
-	 int post_gain;//-40...+40РґР‘
+	 int post_gain;//-40...+40дБ
 
-	 uint reverb_en;//РІРєР»/РІС‹РєР» СЂСЂРµРІРµСЂР±РµСЂР°С‚РѕСЂ
-	 uint reverb_delay;//РІ РјРёР»Р»РёСЃРµРєСѓРЅРґР°С…, РЅРѕ РЅРµ Р±РѕР»РµРµ 100
+	 uint reverb_en;//вкл/выкл рревербератор
+	 uint reverb_delay;//в миллисекундах, но не более 100
 	 float reverb_echo_gain;//0.0...1.0
 
 	 float limitter_tatt;
@@ -138,44 +138,44 @@ typedef struct
 	 int limitter_level;
 
 	 uint out_filter_en;
-	 uint filter_bank_fmin[N_FILTER];//0-5 - РґР»СЏ РєРѕРјРїСЂРµСЃРѕСЂР°, 6-Р№ - РґР»СЏ РІС‹С…РѕРґРЅРѕР№ С„РёР»СЊС‚СЂР°С†РёРё, С€Р°Рі 5Р“С†
+	 uint filter_bank_fmin[N_FILTER];//0-5 - для компресора, 6-й - для выходной фильтрации, шаг 5Гц
 	 uint filter_bank_fmax[N_FILTER];
 /*
- * filter_bank_fmin[0] - РЅРµ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ
- * filter_bank_fmax[0] - РґР»СЏ 1Р№ РїРѕР»РѕСЃС‹ РєРѕРјРїСЂРµСЃСЃРѕСЂР° РІРµСЂС…РЅСЏСЏ С‡Р°СЃС‚РѕС‚Р°, СЌС‚Рѕ Р¤РќР§
+ * filter_bank_fmin[0] - не используется
+ * filter_bank_fmax[0] - для 1й полосы компрессора верхняя частота, это ФНЧ
  *
- * filter_bank_fmin[1] - РґР»СЏ 2Р№ РїРѕР»РѕСЃС‹ РєРѕРјРїСЂРµСЃСЃРѕСЂР° РЅРёР¶РЅСЏСЏ С‡Р°СЃС‚РѕС‚Р°, СЌС‚Рѕ РїРѕР»РѕСЃРѕРІРѕР№ С„РёР»СЊС‚СЂ
- * filter_bank_fmax[1] - РґР»СЏ 2Р№ РїРѕР»РѕСЃС‹ РєРѕРјРїСЂРµСЃСЃРѕСЂР° РІРµСЂС…РЅСЏСЏ С‡Р°СЃС‚РѕС‚Р°, СЌС‚Рѕ РїРѕР»РѕСЃРѕРІРѕР№ С„РёР»СЊС‚СЂ
+ * filter_bank_fmin[1] - для 2й полосы компрессора нижняя частота, это полосовой фильтр
+ * filter_bank_fmax[1] - для 2й полосы компрессора верхняя частота, это полосовой фильтр
  *
- * filter_bank_fmin[2] - РґР»СЏ 3Р№ РїРѕР»РѕСЃС‹ РєРѕРјРїСЂРµСЃСЃРѕСЂР° РЅРёР¶РЅСЏСЏ С‡Р°СЃС‚РѕС‚Р°, СЌС‚Рѕ РїРѕР»РѕСЃРѕРІРѕР№ С„РёР»СЊС‚СЂ
- * filter_bank_fmax[2] - РґР»СЏ 3Р№ РїРѕР»РѕСЃС‹ РєРѕРјРїСЂРµСЃСЃРѕСЂР° РІРµСЂС…РЅСЏСЏ С‡Р°СЃС‚РѕС‚Р°, СЌС‚Рѕ РїРѕР»РѕСЃРѕРІРѕР№ С„РёР»СЊС‚СЂ
+ * filter_bank_fmin[2] - для 3й полосы компрессора нижняя частота, это полосовой фильтр
+ * filter_bank_fmax[2] - для 3й полосы компрессора верхняя частота, это полосовой фильтр
  *
- * filter_bank_fmin[3] - РґР»СЏ 4Р№ РїРѕР»РѕСЃС‹ РєРѕРјРїСЂРµСЃСЃРѕСЂР° РЅРёР¶РЅСЏСЏ С‡Р°СЃС‚РѕС‚Р°, СЌС‚Рѕ РїРѕР»РѕСЃРѕРІРѕР№ С„РёР»СЊС‚СЂ
- * filter_bank_fmax[3] - РґР»СЏ 4Р№ РїРѕР»РѕСЃС‹ РєРѕРјРїСЂРµСЃСЃРѕСЂР° РІРµСЂС…РЅСЏСЏ С‡Р°СЃС‚РѕС‚Р°, СЌС‚Рѕ РїРѕР»РѕСЃРѕРІРѕР№ С„РёР»СЊС‚СЂ
+ * filter_bank_fmin[3] - для 4й полосы компрессора нижняя частота, это полосовой фильтр
+ * filter_bank_fmax[3] - для 4й полосы компрессора верхняя частота, это полосовой фильтр
  *
- * filter_bank_fmin[4] - РґР»СЏ 5Р№ РїРѕР»РѕСЃС‹ РєРѕРјРїСЂРµСЃСЃРѕСЂР° РЅРёР¶РЅСЏСЏ С‡Р°СЃС‚РѕС‚Р°, СЌС‚Рѕ РїРѕР»РѕСЃРѕРІРѕР№ С„РёР»СЊС‚СЂ
- * filter_bank_fmax[4] - РґР»СЏ 5Р№ РїРѕР»РѕСЃС‹ РєРѕРјРїСЂРµСЃСЃРѕСЂР° РІРµСЂС…РЅСЏСЏ С‡Р°СЃС‚РѕС‚Р°, СЌС‚Рѕ РїРѕР»РѕСЃРѕРІРѕР№ С„РёР»СЊС‚СЂ
+ * filter_bank_fmin[4] - для 5й полосы компрессора нижняя частота, это полосовой фильтр
+ * filter_bank_fmax[4] - для 5й полосы компрессора верхняя частота, это полосовой фильтр
  *
- * filter_bank_fmin[5] - РґР»СЏ 6Р№ РїРѕР»РѕСЃС‹ РєРѕРјРїСЂРµСЃСЃРѕСЂР° РЅРёР¶РЅСЏСЏ С‡Р°СЃС‚РѕС‚Р°, СЌС‚Рѕ Р¤Р’Р§
- * filter_bank_fmax[5] - РЅРµ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ
+ * filter_bank_fmin[5] - для 6й полосы компрессора нижняя частота, это ФВЧ
+ * filter_bank_fmax[5] - не используется
  *
- * filter_bank_fmin[6] - РґР»СЏ РІС‹С…РѕРґРЅРѕРіРѕ С„РёР»СЊС‚СЂР° РЅРёР¶РЅСЏСЏ С‡Р°СЃС‚РѕС‚Р°, СЌС‚Рѕ РїРѕР»РѕСЃРѕРІРѕР№ С„РёР»СЊС‚СЂ
- * filter_bank_fmax[6] - РґР»СЏ РІС‹С…РѕРґРЅРѕРіРѕ С„РёР»СЊС‚СЂР° РІРµСЂС…РЅСЏСЏ С‡Р°СЃС‚РѕС‚Р°, СЌС‚Рѕ РїРѕР»РѕСЃРѕРІРѕР№ С„РёР»СЊС‚СЂ
+ * filter_bank_fmin[6] - для выходного фильтра нижняя частота, это полосовой фильтр
+ * filter_bank_fmax[6] - для выходного фильтра верхняя частота, это полосовой фильтр
  *
  * */
 	// int8_t FilterSpectrum[N_FILTER][FFT_FILTER_SIZE/2];
 
-	 uint mb_filter_sharpness;//РїРѕСЂСЏРґРѕРє С„РёР»СЊС‚СЂРѕРІ РєРѕРјРїСЂРµСЃСЃРѕСЂР° - РѕС‚ 64 РґРѕ 512
-	 uint out_filter_sharpness;//РїРѕСЂСЏРґРѕРє С„РёР»СЊС‚СЂРѕРІ РєРѕРјРїСЂРµСЃСЃРѕСЂР° - РѕС‚ 64 РґРѕ 512
+	 uint mb_filter_sharpness;//порядок фильтров компрессора - от 64 до 512
+	 uint out_filter_sharpness;//порядок фильтров компрессора - от 64 до 512
 }SpProcOpt_t;
 
 typedef struct
 {
 float max_level_dB;
-float  slope;//РєРѕРјРїСЂРµСЃСЃРёСЏ, РІ РґР‘
+float  slope;//компрессия, в дБ
 uint     sr;
 float threshold;
-int threshold_dB;//РґР‘, РјРёРЅРёРјСѓРј -90, С‡РёСЃР»Рѕ РѕС‚РЅРѕСЃРёС‚РµР»СЊРЅРѕ max_level_dB, РѕС‚СЂРёС†Р°С‚РµР»СЊРЅРѕРµ
+int threshold_dB;//дБ, минимум -90, число относительно max_level_dB, отрицательное
 float gain;
 float gain_dB;
 float env;
@@ -184,7 +184,7 @@ float ratio;
 uint trel;
 float alpha_rel;
 float beta_rel;
-float tatt;//РІСЂРµРјСЏ Р°С‚Р°РєРё, РІ РјСЃ,
+float tatt;//время атаки, в мс,
 float alpha_att;
 float beta_att;
 float ave_out;
@@ -196,10 +196,10 @@ compparam_t;
 typedef struct
 {
 float max_level_dB;
-float  slope;//РєРѕРјРїСЂРµСЃСЃРёСЏ, РІ РґР‘
+float  slope;//компрессия, в дБ
 uint     sr;
 float threshold;
-int threshold_dB;//РґР‘, РјРёРЅРёРјСѓРј -90, С‡РёСЃР»Рѕ РѕС‚РЅРѕСЃРёС‚РµР»СЊРЅРѕ max_level_dB, РѕС‚СЂРёС†Р°С‚РµР»СЊРЅРѕРµ
+int threshold_dB;//дБ, минимум -90, число относительно max_level_dB, отрицательное
 float gain;
 float gain_dB;
 float env;
@@ -208,7 +208,7 @@ float ratio;
 uint trel;
 float alpha_rel;
 float beta_rel;
-float tatt;//РІСЂРµРјСЏ Р°С‚Р°РєРё, РІ РјСЃ,
+float tatt;//время атаки, в мс,
 float alpha_att;
 float beta_att;
 float ave_out;
@@ -238,7 +238,7 @@ float w[3];
 //float fs;// sample rate
 float Df;//bandwidth
 float G;
-//float GdB;//С‚СЂРµР±СѓРµРјРѕРµ СѓСЃРёР»РµРЅРёРµ , РІ РґР‘
+//float GdB;//требуемое усиление , в дБ
 float GB;
 float be;
 float c0;
@@ -250,10 +250,10 @@ eqparam_t;
 typedef struct
 {
 float max_level_dB;
-float  slope;//РєРѕРјРїСЂРµСЃСЃРёСЏ, РІ РґР‘
+float  slope;//компрессия, в дБ
 uint     sr;
 float threshold;
-int threshold_dB;//РґР‘, РјРёРЅРёРјСѓРј -90, С‡РёСЃР»Рѕ РѕС‚РЅРѕСЃРёС‚РµР»СЊРЅРѕ max_level_dB, РѕС‚СЂРёС†Р°С‚РµР»СЊРЅРѕРµ
+int threshold_dB;//дБ, минимум -90, число относительно max_level_dB, отрицательное
 float gain;
 float gain_dB;
 float env;
@@ -262,7 +262,7 @@ float ratio;
 uint trel;
 float alpha_rel;
 float beta_rel;
-float tatt;//РІСЂРµРјСЏ Р°С‚Р°РєРё, РІ РјСЃ,
+float tatt;//время атаки, в мс,
 float alpha_att;
 float beta_att;
 float ave_out;
@@ -273,8 +273,8 @@ int lah_mask;
 float lah_delay[LIM_LAH_DELAY];
 }
 limitparam_t;
-extern void SpeechProcessor (int* in,//РІС…РѕРґ РѕС‚ РєРѕРґРµРєР°
-					int* out//РІС‹С…РѕРґ РєРѕРґРµРєР°
+extern void SpeechProcessor (int* in,//вход от кодека
+					int* out//выход кодека
 		) ;
 
 #define ENC1_REV 0

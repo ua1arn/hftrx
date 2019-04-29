@@ -4816,9 +4816,9 @@
 #define WM8958_DSP2_RUN_SHIFT                        0  /* DSP2_RUN */
 #define WM8958_DSP2_RUN_WIDTH                        1  /* DSP2_RUN */
 
-#define	WM8994L_OUT_SPK_MAX	0x39	// РЅРµРїРµСЂРµРіСЂСѓР¶Р°СЋС‰РµРµ Р·РЅР°С‡РµРЅРёРµ. Р’РѕР·РјРѕР¶РЅРѕ РґРѕ 0x3F
+#define	WM8994L_OUT_SPK_MAX	0x39	// неперегружающее значение. Возможно до 0x3F
 #define	WM8994L_OUT_SPK_MIN	0x00
-#define	WM8994L_OUT_HP_MAX		0x39	// РЅРµРїРµСЂРµРіСЂСѓР¶Р°СЋС‰РµРµ Р·РЅР°С‡РµРЅРёРµ. Р’РѕР·РјРѕР¶РЅРѕ РґРѕ 0x3F
+#define	WM8994L_OUT_HP_MAX		0x39	// неперегружающее значение. Возможно до 0x3F
 #define	WM8994L_OUT_HP_MIN		0x00
 
 // Menu parameter BOARD_AFGAIN_MAX
@@ -4827,8 +4827,8 @@
 
 
 #if defined (CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_WM8994)
-	#define WITHAFCODEC1HAVEPROC	1	/* РєРѕРґРµРє РёРјРµРµС‚ СѓРїСЂР°РІР»РµРЅРёРµ РѕР±СЂР°Р±РѕС‚РєРѕР№ РјРёРєСЂРѕС„РѕРЅРЅРѕРіРѕ СЃРёРіРЅР°Р»Р° */
-	#define WITHAFCODEC1HAVELINEINLEVEL	1	/* РєРѕРґРµРє РёРјРµРµС‚ СѓРїСЂР°РІР»РµРЅРёРµ СѓСЃРёР»РµРЅРёРµРј СЃ Р»РёРЅРµР№РЅРѕРіРѕ РІС…РѕРґР° */
+	#define WITHAFCODEC1HAVEPROC	1	/* кодек имеет управление обработкой микрофонного сигнала */
+	#define WITHAFCODEC1HAVELINEINLEVEL	1	/* кодек имеет управление усилением с линейного входа */
 	#define	HARDWARE_CODEC1_NPROCPARAMS	5
 #endif /* defined (CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L) */
 

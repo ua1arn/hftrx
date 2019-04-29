@@ -1,7 +1,7 @@
 /* $Id$ */
 //
-// РџСЂРѕРµРєС‚ HF Dream Receiver (РљР’ РїСЂРёС‘РјРЅРёРє РјРµС‡С‚С‹)
-// Р°РІС‚РѕСЂ Р“РµРЅР° Р—Р°РІРёРґРѕРІСЃРєРёР№ mgs2001@mail.ru
+// Проект HF Dream Receiver (КВ приёмник мечты)
+// автор Гена Завидовский mgs2001@mail.ru
 // UA1ARN
 //
 #ifndef PARAMDEPEND_H_INCLUDED
@@ -14,25 +14,25 @@
 	#define CPU_FREQ 48000000uL
 	//#define CPU_FREQ 12000000uL
 
-	#define ADC_FREQ	500000uL	/* С‚Р°РєС‚РѕРІР°СЏ С‡Р°СЃС‚РѕС‚Р° SAR РїСЂРµРѕР±СЂР°Р·РѕРІР°С‚РµР»СЏ РђР¦Рџ. */
+	#define ADC_FREQ	500000uL	/* тактовая частота SAR преобразователя АЦП. */
 
 	#define TICKS_FREQUENCY		(200uL * 1) // at ARM - 400 Hz
 
 	//#define SCL_CLOCK  100000uL	/* 100 kHz I2C/TWI speed */
 	#define SCL_CLOCK	400000uL	/* 400 kHz I2C/TWI speed */
 
-	#define SPISPEED (4UL * 1000 * 1000)	/* 4 MHz РЅР° SCLK - С‚СЂРµР±СѓРµРјР°СЏ СЃРєРѕСЂРѕСЃС‚СЊ РїРµСЂРµРґР°С‡Рё РїРѕ SPI */
-	#define	SPISPEED400k	400000uL	/* 400 kHz РґР»СЏ РЅРёР·РєРѕСЃРєРѕСЂРѕСЃС‚РЅС‹С… РјРёРєСЂРѕСЃС…РµРј */
-	#define	SPISPEED100k	100000uL	/* 100 kHz РґР»СЏ РЅРёР·РєРѕСЃРєРѕСЂРѕСЃС‚РЅС‹С… РјРёРєСЂРѕСЃС…РµРј */
+	#define SPISPEED (4UL * 1000 * 1000)	/* 4 MHz на SCLK - требуемая скорость передачи по SPI */
+	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
+	#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
 
 	#define ARM_REALTIME_PRIORITY	AT91C_AIC_PRIOR_HIGHEST 
 	#define ARM_SYSTEM_PRIORITY		AT91C_AIC_PRIOR_LOWEST 
 
 	#define ADCVREF_CPU	33		// 3.3 volt
-	//#define HARDWARE_DACBITS 12	/* Р¦РђРџ СЂР°Р±РѕС‚Р°РµС‚ СЃ 12-Р±РёС‚РЅС‹РјРё Р·РЅР°С‡РµРЅРёСЏРјРё */
-	#define HARDWARE_ADCBITS 8	/* РђР¦Рџ СЂР°Р±РѕС‚Р°РµС‚ СЃ 8-Р±РёС‚РЅС‹РјРё Р·РЅР°С‡РµРЅРёСЏРјРё */
-	#define HARDWARE_ADCINPUTS	8	/* РґРѕ 8-С‚Рё РІС…РѕРґРѕРІ РђР¦Рџ */
-	/* С‚РёРї РґР»СЏ С…СЂР°РЅРµРЅРёСЏ РґР°РЅРЅС‹С…, СЃС‡РёС‚Р°РЅРЅС‹С… СЃ РђР¦Рџ */
+	//#define HARDWARE_DACBITS 12	/* ЦАП работает с 12-битными значениями */
+	#define HARDWARE_ADCBITS 8	/* АЦП работает с 8-битными значениями */
+	#define HARDWARE_ADCINPUTS	8	/* до 8-ти входов АЦП */
+	/* тип для хранения данных, считанных с АЦП */
 	typedef uint_fast16_t adcvalholder_t;		
 
 
@@ -47,27 +47,27 @@
 	#define CPU_FREQ (PLL_FREQ / 1)	// 48 MHz
 	//#define CPU_FREQ 180000000uL
 	//#define CPU_FREQ 168000000uL
-	/* С‡Р°СЃС‚РѕС‚С‹, РїРѕРґР°СЋС‰РёРµСЃСЏ РЅР° РїРµСЂРёС„РµСЂРёСЋ */
+	/* частоты, подающиеся на периферию */
 	#define	PCLK1_FREQ (CPU_FREQ / 1)	// 48 MHz PCLK1 frequency
 	#define	PCLK2_FREQ (CPU_FREQ / 1)	// 48 MHz PCLK2 frequency
-	#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config СЃС‚Р°РЅР°РІР»РёРІР°РµС‚ SysTick_CTRL_CLKSOURCE_Msk - РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ С‡Р°СЃС‚РѕС‚Р° РїСЂРѕС†РµСЃСЃРѕСЂР°
+	#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config станавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
 
 	#define TICKS_FREQUENCY		(200uL * 1) // at ARM - 400 Hz
 
 	// ADC clock frequency: 0.6..14 MHz
-	#define ADC_FREQ	12000000uL	/* С‚Р°РєС‚РѕРІР°СЏ С‡Р°СЃС‚РѕС‚Р° SAR РїСЂРµРѕР±СЂР°Р·РѕРІР°С‚РµР»СЏ РђР¦Рџ. */
+	#define ADC_FREQ	12000000uL	/* тактовая частота SAR преобразователя АЦП. */
 	#define SCL_CLOCK	400000uL	/* 400 kHz I2C/TWI speed */
 
-	#define SPISPEED (PCLK1_FREQ / 4)	/* 12 MHz РЅР° SCLK - С‚СЂРµР±СѓРµРјР°СЏ СЃРєРѕСЂРѕСЃС‚СЊ РїРµСЂРµРґР°С‡Рё РїРѕ SPI */
-	#define	SPISPEED400k	400000uL	/* 400 kHz РґР»СЏ РЅРёР·РєРѕСЃРєРѕСЂРѕСЃС‚РЅС‹С… РјРёРєСЂРѕСЃС…РµРј */
-	#define	SPISPEED100k	100000uL	/* 100 kHz РґР»СЏ РЅРёР·РєРѕСЃРєРѕСЂРѕСЃС‚РЅС‹С… РјРёРєСЂРѕСЃС…РµРј */
+	#define SPISPEED (PCLK1_FREQ / 4)	/* 12 MHz на SCLK - требуемая скорость передачи по SPI */
+	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
+	#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
 
 	#define ADCVREF_CPU	33		// 3.3 volt
 	#define DACVREF_CPU	33		// 3.3 volt
-	#define HARDWARE_DACBITS 12	/* Р¦РђРџ СЂР°Р±РѕС‚Р°РµС‚ СЃ 12-Р±РёС‚РЅС‹РјРё Р·РЅР°С‡РµРЅРёСЏРјРё */
-	#define HARDWARE_ADCBITS 12	/* РђР¦Рџ СЂР°Р±РѕС‚Р°РµС‚ СЃ 12-Р±РёС‚РЅС‹РјРё Р·РЅР°С‡РµРЅРёСЏРјРё */
-	#define HARDWARE_ADCINPUTS	32	/* РґРѕ 32-С‚Рё РІС…РѕРґРѕРІ РђР¦Рџ */
-	/* С‚РёРї РґР»СЏ С…СЂР°РЅРµРЅРёСЏ РґР°РЅРЅС‹С…, СЃС‡РёС‚Р°РЅРЅС‹С… СЃ РђР¦Рџ */
+	#define HARDWARE_DACBITS 12	/* ЦАП работает с 12-битными значениями */
+	#define HARDWARE_ADCBITS 12	/* АЦП работает с 12-битными значениями */
+	#define HARDWARE_ADCINPUTS	32	/* до 32-ти входов АЦП */
+	/* тип для хранения данных, считанных с АЦП */
 	typedef uint_fast16_t adcvalholder_t;		
 	#define WITHREFSENSORVAL	1210	/* Reference voltage: STM32F746, STM32F429, STM32F446 = 1.21V */
 
@@ -75,9 +75,9 @@
 	//
 	// STM32L051K6T processor
 
-	#define	REFINFREQ 16000000uL 		/* definition from stm32f0xx.h РЅРµР»СЊР·СЏ РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊ - SPISPEED РёСЃРїРѕР»СЊР·С†С‚СЃСЏ РІ СѓСЃР»РѕРІРЅРѕР№ РєРѕРјРїРёР»СЏС†РёРё */
-	//#define	REFINFREQ 4000000uL 	/* definition from stm32f0xx.h РЅРµР»СЊР·СЏ РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊ - SPISPEED РёСЃРїРѕР»СЊР·С†С‚СЃСЏ РІ СѓСЃР»РѕРІРЅРѕР№ РєРѕРјРїРёР»СЏС†РёРё */
-	//#define	REFINFREQ 2100000uL 	/* definition from stm32f0xx.h РЅРµР»СЊР·СЏ РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊ - SPISPEED РёСЃРїРѕР»СЊР·С†С‚СЃСЏ РІ СѓСЃР»РѕРІРЅРѕР№ РєРѕРјРїРёР»СЏС†РёРё */
+	#define	REFINFREQ 16000000uL 		/* definition from stm32f0xx.h нельзя использовать - SPISPEED использцтся в условной компиляции */
+	//#define	REFINFREQ 4000000uL 	/* definition from stm32f0xx.h нельзя использовать - SPISPEED использцтся в условной компиляции */
+	//#define	REFINFREQ 2100000uL 	/* definition from stm32f0xx.h нельзя использовать - SPISPEED использцтся в условной компиляции */
 	//#define REF1_DIV 2
 	//#define REF1_MUL 12	// 48 MHz
 	// HSI without PLL
@@ -88,27 +88,27 @@
 	#define CPU_FREQ (PLL_FREQ / 1)	// 48 MHz
 	//#define CPU_FREQ 180000000uL
 	//#define CPU_FREQ 168000000uL
-	/* С‡Р°СЃС‚РѕС‚С‹, РїРѕРґР°СЋС‰РёРµСЃСЏ РЅР° РїРµСЂРёС„РµСЂРёСЋ */
+	/* частоты, подающиеся на периферию */
 	#define	PCLK1_FREQ (CPU_FREQ / 1)	// 48 MHz PCLK1 frequency
 	#define	PCLK2_FREQ (CPU_FREQ / 1)	// 48 MHz PCLK2 frequency
-	#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config СЃС‚Р°РЅР°РІР»РёРІР°РµС‚ SysTick_CTRL_CLKSOURCE_Msk - РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ С‡Р°СЃС‚РѕС‚Р° РїСЂРѕС†РµСЃСЃРѕСЂР°
+	#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config станавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
 
 	#define TICKS_FREQUENCY		(200uL * 1) // at ARM - 200 Hz
 
 	// ADC clock frequency: 0.6..14 MHz
-	#define ADC_FREQ	12000000uL	/* С‚Р°РєС‚РѕРІР°СЏ С‡Р°СЃС‚РѕС‚Р° SAR РїСЂРµРѕР±СЂР°Р·РѕРІР°С‚РµР»СЏ РђР¦Рџ. */
+	#define ADC_FREQ	12000000uL	/* тактовая частота SAR преобразователя АЦП. */
 	#define SCL_CLOCK	400000uL	/* 400 kHz I2C/TWI speed */
 
-	#define SPISPEED (PCLK1_FREQ / 1)	/* 8 MHz РЅР° SCLK - С‚СЂРµР±СѓРµРјР°СЏ СЃРєРѕСЂРѕСЃС‚СЊ РїРµСЂРµРґР°С‡Рё РїРѕ SPI */
-	#define	SPISPEED400k	400000uL	/* 400 kHz РґР»СЏ РЅРёР·РєРѕСЃРєРѕСЂРѕСЃС‚РЅС‹С… РјРёРєСЂРѕСЃС…РµРј */
-	#define	SPISPEED100k	100000uL	/* 100 kHz РґР»СЏ РЅРёР·РєРѕСЃРєРѕСЂРѕСЃС‚РЅС‹С… РјРёРєСЂРѕСЃС…РµРј */
+	#define SPISPEED (PCLK1_FREQ / 1)	/* 8 MHz на SCLK - требуемая скорость передачи по SPI */
+	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
+	#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
 
 	#define ADCVREF_CPU	30		// 3.3 volt
 	#define DACVREF_CPU	33		// 3.3 volt
-	#define HARDWARE_DACBITS 12	/* Р¦РђРџ СЂР°Р±РѕС‚Р°РµС‚ СЃ 12-Р±РёС‚РЅС‹РјРё Р·РЅР°С‡РµРЅРёСЏРјРё */
-	#define HARDWARE_ADCBITS 12	/* РђР¦Рџ СЂР°Р±РѕС‚Р°РµС‚ СЃ 12-Р±РёС‚РЅС‹РјРё Р·РЅР°С‡РµРЅРёСЏРјРё */
-	#define HARDWARE_ADCINPUTS	32	/* РґРѕ 32-С‚Рё РІС…РѕРґРѕРІ РђР¦Рџ */
-	/* С‚РёРї РґР»СЏ С…СЂР°РЅРµРЅРёСЏ РґР°РЅРЅС‹С…, СЃС‡РёС‚Р°РЅРЅС‹С… СЃ РђР¦Рџ */
+	#define HARDWARE_DACBITS 12	/* ЦАП работает с 12-битными значениями */
+	#define HARDWARE_ADCBITS 12	/* АЦП работает с 12-битными значениями */
+	#define HARDWARE_ADCINPUTS	32	/* до 32-ти входов АЦП */
+	/* тип для хранения данных, считанных с АЦП */
 	typedef uint_fast16_t adcvalholder_t;		
 	#define WITHREFSENSORVAL	1224	/* Reference voltage: STM32L031xx = 1.224V */
 
@@ -126,26 +126,26 @@
 		#define	PCLK1_TIMERS_FREQ (CPU_FREQ / 1)
 		#define	PCLK2_FREQ (CPU_FREQ / 1)	// PCLK2 frequency
 	#endif
-	#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config СЃС‚Р°РЅР°РІР»РёРІР°РµС‚ SysTick_CTRL_CLKSOURCE_Msk - РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ С‡Р°СЃС‚РѕС‚Р° РїСЂРѕС†РµСЃСЃРѕСЂР°
+	#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config станавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
 
-	#define SPISPEED (PCLK1_FREQ / 4)	/* 9.0 MHz РЅР° SCLK - С‚СЂРµР±СѓРµРјР°СЏ СЃРєРѕСЂРѕСЃС‚СЊ РїРµСЂРµРґР°С‡Рё РїРѕ SPI */
+	#define SPISPEED (PCLK1_FREQ / 4)	/* 9.0 MHz на SCLK - требуемая скорость передачи по SPI */
 	#define TICKS_FREQUENCY		(200uL * 1) // at ARM - 200 Hz
-	#define	SPISPEED400k	400000uL	/* 400 kHz РґР»СЏ РЅРёР·РєРѕСЃРєРѕСЂРѕСЃС‚РЅС‹С… РјРёРєСЂРѕСЃС…РµРј */
-	#define	SPISPEED100k	100000uL	/* 100 kHz РґР»СЏ РЅРёР·РєРѕСЃРєРѕСЂРѕСЃС‚РЅС‹С… РјРёРєСЂРѕСЃС…РµРј */
+	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
+	#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
 
 
 	// ADC clock frequency: 1..20 MHz
-	#define ADC_FREQ	2000000uL	/* С‚Р°РєС‚РѕРІР°СЏ С‡Р°СЃС‚РѕС‚Р° SAR РїСЂРµРѕР±СЂР°Р·РѕРІР°С‚РµР»СЏ РђР¦Рџ. */
-	//#define ADC_FREQ	16000000uL	/* С‚Р°РєС‚РѕРІР°СЏ С‡Р°СЃС‚РѕС‚Р° SAR РїСЂРµРѕР±СЂР°Р·РѕРІР°С‚РµР»СЏ РђР¦Рџ. */
+	#define ADC_FREQ	2000000uL	/* тактовая частота SAR преобразователя АЦП. */
+	//#define ADC_FREQ	16000000uL	/* тактовая частота SAR преобразователя АЦП. */
 
 	#define SCL_CLOCK	400000uL	/* 400 kHz I2C/TWI speed */
 
 	#define ADCVREF_CPU	33		// 3.3 volt
 	#define DACVREF_CPU	33		// 3.3 volt
-	#define HARDWARE_DACBITS 12	/* Р¦РђРџ СЂР°Р±РѕС‚Р°РµС‚ СЃ 12-Р±РёС‚РЅС‹РјРё Р·РЅР°С‡РµРЅРёСЏРјРё */
-	#define HARDWARE_ADCBITS 12	/* РђР¦Рџ СЂР°Р±РѕС‚Р°РµС‚ СЃ 12-Р±РёС‚РЅС‹РјРё Р·РЅР°С‡РµРЅРёСЏРјРё */
-	#define HARDWARE_ADCINPUTS	32	/* РґРѕ 32-С‚Рё РІС…РѕРґРѕРІ РђР¦Рџ */
-	/* С‚РёРї РґР»СЏ С…СЂР°РЅРµРЅРёСЏ РґР°РЅРЅС‹С…, СЃС‡РёС‚Р°РЅРЅС‹С… СЃ РђР¦Рџ */
+	#define HARDWARE_DACBITS 12	/* ЦАП работает с 12-битными значениями */
+	#define HARDWARE_ADCBITS 12	/* АЦП работает с 12-битными значениями */
+	#define HARDWARE_ADCINPUTS	32	/* до 32-ти входов АЦП */
+	/* тип для хранения данных, считанных с АЦП */
 	typedef uint_fast16_t adcvalholder_t;		
 	#define WITHREFSENSORVAL	1210	/* Reference voltage: STM32F746, STM32F429, STM32F446 = 1.21V */
 
@@ -198,16 +198,16 @@
 
 		//
 		#if WITHCPUXOSC
-			// СЃ РіРµРЅРµСЂР°С‚РѕСЂРѕРј
+			// с генератором
 			#define	REFINFREQ WITHCPUXOSC
 		#elif WITHCPUXTAL
-			// СЃ РєРІР°СЂС†РµРј
+			// с кварцем
 			#define	REFINFREQ WITHCPUXTAL
 		#elif CPUSTYLE_STM32H7XX
-			// РќР° РІРЅСѓС‚СЂРµРЅРЅРµРј РіРµРЅРµСЂР°С‚РѕСЂРµ
+			// На внутреннем генераторе
 			#define	REFINFREQ 64000000uL
 		#else /* WITHCPUXTAL */
-			// РќР° РІРЅСѓС‚СЂРµРЅРЅРµРј РіРµРЅРµСЂР°С‚РѕСЂРµ
+			// На внутреннем генераторе
 			#define	REFINFREQ 16000000uL
 		#endif /* WITHCPUXTAL */
 
@@ -224,11 +224,11 @@
 
 			#define CPU_FREQ (PLL_FREQ / 4)	// 172032000uL
 
-			/* С‡Р°СЃС‚РѕС‚С‹, РїРѕРґР°СЋС‰РёРµСЃСЏ РЅР° РїРµСЂРёС„РµСЂРёСЋ */
+			/* частоты, подающиеся на периферию */
 			#define	PCLK1_FREQ (CPU_FREQ / 2)	// 42 MHz PCLK1 frequency - ti,er clocks is 85 MHz
 			#define	PCLK1_TIMERS_FREQ (CPU_FREQ / 1)	// 42 MHz PCLK1 frequency - ti,er clocks is 85 MHz
 			#define	PCLK2_FREQ (CPU_FREQ / 1)	// 84 MHz PCLK2 frequency
-			#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config СЃС‚Р°РЅР°РІР»РёРІР°РµС‚ SysTick_CTRL_CLKSOURCE_Msk - РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ С‡Р°СЃС‚РѕС‚Р° РїСЂРѕС†РµСЃСЃРѕСЂР°
+			#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config станавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
 
  		#elif CPUSTYLE_STM32H7XX
 
@@ -240,12 +240,12 @@
 
 			#define CPU_FREQ (PLL_FREQ / 2)	// 172032000uL
 
-			/* С‡Р°СЃС‚РѕС‚С‹, РїРѕРґР°СЋС‰РёРµСЃСЏ РЅР° РїРµСЂРёС„РµСЂРёСЋ */
+			/* частоты, подающиеся на периферию */
 			#define	PCLK1_FREQ (CPU_FREQ / 4)	// 42 MHz PCLK1 frequency
 			#define	PCLK1_TIMERS_FREQ (CPU_FREQ / 2)	// 42 MHz PCLK1 frequency
 			#define	PCLK2_FREQ (CPU_FREQ / 4)	// 84 MHz PCLK2 frequency
 			#define	PCLK2_TIMERS_FREQ (CPU_FREQ / 2)	// 84 MHz PCLK2 frequency
-			#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config СЃС‚Р°РЅР°РІР»РёРІР°РµС‚ SysTick_CTRL_CLKSOURCE_Msk - РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ С‡Р°СЃС‚РѕС‚Р° РїСЂРѕС†РµСЃСЃРѕСЂР°
+			#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config станавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
 			#define PER_CK_FREQ 64000000uL	// 2. The per_ck clock could be hse_ck, hsi_ker_ck or csi_ker_ck according to CKPERSEL selection.
 
 		#else
@@ -258,16 +258,16 @@
 
 			#define CPU_FREQ (PLL_FREQ / 2)	// 172032000uL
 
-			/* С‡Р°СЃС‚РѕС‚С‹, РїРѕРґР°СЋС‰РёРµСЃСЏ РЅР° РїРµСЂРёС„РµСЂРёСЋ */
+			/* частоты, подающиеся на периферию */
 			#define	PCLK1_FREQ (CPU_FREQ / 4)	// 42 MHz PCLK1 frequency
 			#define	PCLK1_TIMERS_FREQ (CPU_FREQ / 4)	// 42 MHz PCLK1 frequency
 			#define	PCLK2_FREQ (CPU_FREQ / 2)	// 84 MHz PCLK2 frequency
-			#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config СЃС‚Р°РЅР°РІР»РёРІР°РµС‚ SysTick_CTRL_CLKSOURCE_Msk - РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ С‡Р°СЃС‚РѕС‚Р° РїСЂРѕС†РµСЃСЃРѕСЂР°
+			#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config станавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
 		#endif
 
 	#elif CPUSTYLE_STM32F30X
 		//
-		//#define WITHCPUXTAL 8000000uL	// Р•СЃР»Рё РµСЃС‚СЊ РІРЅРµС€РЅРёР№ РєРІР°СЂС† РЅР° РїСЂРѕС†РµСЃСЃРѕСЂРµ.
+		//#define WITHCPUXTAL 8000000uL	// Если есть внешний кварц на процессоре.
 		#if WITHCPUXTAL
 			#define	REFINFREQ WITHCPUXTAL
 			#define REF1_DIV 1
@@ -288,7 +288,7 @@
 			#define	PCLK1_FREQ (CPU_FREQ / 1)	// PCLK1 frequency
 			#define	PCLK2_FREQ (CPU_FREQ / 1)	// PCLK2 frequency
 		#endif
-		#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config СЃС‚Р°РЅР°РІР»РёРІР°РµС‚ SysTick_CTRL_CLKSOURCE_Msk - РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ С‡Р°СЃС‚РѕС‚Р° РїСЂРѕС†РµСЃСЃРѕСЂР°
+		#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config станавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
 
 	#endif
 
@@ -297,37 +297,37 @@
 	// ADC clock frequency: 1..20 MHz
 	#define SCL_CLOCK	400000uL	/* 400 kHz I2C/TWI speed */
 
-	//#define SPISPEED (PCLK1_FREQ / 16)	/* 3.5 MHz РЅР° SCLK - С‚СЂРµР±СѓРµРјР°СЏ СЃРєРѕСЂРѕСЃС‚СЊ РїРµСЂРµРґР°С‡Рё РїРѕ SPI */
-	//#define SPISPEED (PCLK1_FREQ / 8)	/* 7 MHz РЅР° SCLK - С‚СЂРµР±СѓРµРјР°СЏ СЃРєРѕСЂРѕСЃС‚СЊ РїРµСЂРµРґР°С‡Рё РїРѕ SPI */
-	#define SPISPEED (PCLK1_FREQ / 4)	/* 14 MHz РЅР° SCLK - С‚СЂРµР±СѓРµРјР°СЏ СЃРєРѕСЂРѕСЃС‚СЊ РїРµСЂРµРґР°С‡Рё РїРѕ SPI */
-	#define SPISPEEDUFAST 12000000uL//(PCLK1_FREQ / 2)	/* 28 РЅР° SCLK - С‚СЂРµР±СѓРµРјР°СЏ СЃРєРѕСЂРѕСЃС‚СЊ РїРµСЂРµРґР°С‡Рё РїРѕ SPI */
-	#define	SPISPEED400k	400000uL	/* 400 kHz РґР»СЏ РЅРёР·РєРѕСЃРєРѕСЂРѕСЃС‚РЅС‹С… РјРёРєСЂРѕСЃС…РµРј */
-	#define	SPISPEED100k	100000uL	/* 100 kHz РґР»СЏ РЅРёР·РєРѕСЃРєРѕСЂРѕСЃС‚РЅС‹С… РјРёРєСЂРѕСЃС…РµРј */
+	//#define SPISPEED (PCLK1_FREQ / 16)	/* 3.5 MHz на SCLK - требуемая скорость передачи по SPI */
+	//#define SPISPEED (PCLK1_FREQ / 8)	/* 7 MHz на SCLK - требуемая скорость передачи по SPI */
+	#define SPISPEED (PCLK1_FREQ / 4)	/* 14 MHz на SCLK - требуемая скорость передачи по SPI */
+	#define SPISPEEDUFAST 12000000uL//(PCLK1_FREQ / 2)	/* 28 на SCLK - требуемая скорость передачи по SPI */
+	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
+	#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
 
 	#define ADCVREF_CPU	33		// 3.3 volt
 	#define DACVREF_CPU	33		// 3.3 volt
-	#define HARDWARE_DACBITS 12	/* Р¦РђРџ СЂР°Р±РѕС‚Р°РµС‚ СЃ 12-Р±РёС‚РЅС‹РјРё Р·РЅР°С‡РµРЅРёСЏРјРё */
-	#define HARDWARE_ADCINPUTS	32	/* РґРѕ 32-С‚Рё РІС…РѕРґРѕРІ РђР¦Рџ */
-	/* С‚РёРї РґР»СЏ С…СЂР°РЅРµРЅРёСЏ РґР°РЅРЅС‹С…, СЃС‡РёС‚Р°РЅРЅС‹С… СЃ РђР¦Рџ */
+	#define HARDWARE_DACBITS 12	/* ЦАП работает с 12-битными значениями */
+	#define HARDWARE_ADCINPUTS	32	/* до 32-ти входов АЦП */
+	/* тип для хранения данных, считанных с АЦП */
 	typedef uint_fast16_t adcvalholder_t;	
 	#if CPUSTYLE_STM32H7XX
-		//#define HARDWARE_ADCBITS 8	/* РђР¦Рџ СЂР°Р±РѕС‚Р°РµС‚ СЃ 8-Р±РёС‚РЅС‹РјРё Р·РЅР°С‡РµРЅРёСЏРјРё */
-		//#define HARDWARE_ADCBITS 10	/* РђР¦Рџ СЂР°Р±РѕС‚Р°РµС‚ СЃ 10-Р±РёС‚РЅС‹РјРё Р·РЅР°С‡РµРЅРёСЏРјРё */
-		#define HARDWARE_ADCBITS 12	/* РђР¦Рџ СЂР°Р±РѕС‚Р°РµС‚ СЃ 12-Р±РёС‚РЅС‹РјРё Р·РЅР°С‡РµРЅРёСЏРјРё */
-		//#define HARDWARE_ADCBITS 14	/* РђР¦Рџ СЂР°Р±РѕС‚Р°РµС‚ СЃ 14-Р±РёС‚РЅС‹РјРё Р·РЅР°С‡РµРЅРёСЏРјРё */
-		//#define HARDWARE_ADCBITS 16	/* РђР¦Рџ СЂР°Р±РѕС‚Р°РµС‚ СЃ 16-Р±РёС‚РЅС‹РјРё Р·РЅР°С‡РµРЅРёСЏРјРё */
-		#define ADC_FREQ	10000000uL	/* С‚Р°РєС‚РѕРІР°СЏ С‡Р°СЃС‚РѕС‚Р° SAR РїСЂРµРѕР±СЂР°Р·РѕРІР°С‚РµР»СЏ РђР¦Рџ. */
+		//#define HARDWARE_ADCBITS 8	/* АЦП работает с 8-битными значениями */
+		//#define HARDWARE_ADCBITS 10	/* АЦП работает с 10-битными значениями */
+		#define HARDWARE_ADCBITS 12	/* АЦП работает с 12-битными значениями */
+		//#define HARDWARE_ADCBITS 14	/* АЦП работает с 14-битными значениями */
+		//#define HARDWARE_ADCBITS 16	/* АЦП работает с 16-битными значениями */
+		#define ADC_FREQ	10000000uL	/* тактовая частота SAR преобразователя АЦП. */
 		#define WITHREFSENSORVAL	1240	/* Reference voltage: STM32H743 1.180 1.216 1.255 */
 	#elif CPUSTYLE_STM32F7XX || CPUSTYLE_STM32F4XX
-		//#define HARDWARE_ADCBITS 6	/* РђР¦Рџ СЂР°Р±РѕС‚Р°РµС‚ СЃ 6-Р±РёС‚РЅС‹РјРё Р·РЅР°С‡РµРЅРёСЏРјРё */
-		//#define HARDWARE_ADCBITS 8	/* РђР¦Рџ СЂР°Р±РѕС‚Р°РµС‚ СЃ 8-Р±РёС‚РЅС‹РјРё Р·РЅР°С‡РµРЅРёСЏРјРё */
-		//#define HARDWARE_ADCBITS 10	/* РђР¦Рџ СЂР°Р±РѕС‚Р°РµС‚ СЃ 10-Р±РёС‚РЅС‹РјРё Р·РЅР°С‡РµРЅРёСЏРјРё */
-		#define HARDWARE_ADCBITS 12	/* РђР¦Рџ СЂР°Р±РѕС‚Р°РµС‚ СЃ 12-Р±РёС‚РЅС‹РјРё Р·РЅР°С‡РµРЅРёСЏРјРё */
-		#define ADC_FREQ	28000000uL	/* С‚Р°РєС‚РѕРІР°СЏ С‡Р°СЃС‚РѕС‚Р° SAR РїСЂРµРѕР±СЂР°Р·РѕРІР°С‚РµР»СЏ РђР¦Рџ. */
+		//#define HARDWARE_ADCBITS 6	/* АЦП работает с 6-битными значениями */
+		//#define HARDWARE_ADCBITS 8	/* АЦП работает с 8-битными значениями */
+		//#define HARDWARE_ADCBITS 10	/* АЦП работает с 10-битными значениями */
+		#define HARDWARE_ADCBITS 12	/* АЦП работает с 12-битными значениями */
+		#define ADC_FREQ	28000000uL	/* тактовая частота SAR преобразователя АЦП. */
 		#define WITHREFSENSORVAL	1210	/* Reference voltage: STM32F746, STM32F429, STM32F446 = 1.21V */
 	#else
-		#define HARDWARE_ADCBITS 12	/* РђР¦Рџ СЂР°Р±РѕС‚Р°РµС‚ СЃ 12-Р±РёС‚РЅС‹РјРё Р·РЅР°С‡РµРЅРёСЏРјРё */
-		#define ADC_FREQ	2000000uL	/* С‚Р°РєС‚РѕРІР°СЏ С‡Р°СЃС‚РѕС‚Р° SAR РїСЂРµРѕР±СЂР°Р·РѕРІР°С‚РµР»СЏ РђР¦Рџ. */
+		#define HARDWARE_ADCBITS 12	/* АЦП работает с 12-битными значениями */
+		#define ADC_FREQ	2000000uL	/* тактовая частота SAR преобразователя АЦП. */
 		#define WITHREFSENSORVAL	1210	/* Reference voltage: STM32F746, STM32F429, STM32F446 = 1.21V */
 	#endif
 
@@ -338,26 +338,26 @@
 	//#define CPU_FREQ 48000000uL
 	//#define CPU_FREQ 32000000uL
 	//#define CPU_FREQ 12000000uL
-	#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config СЃС‚Р°РЅР°РІР»РёРІР°РµС‚ SysTick_CTRL_CLKSOURCE_Msk - РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ С‡Р°СЃС‚РѕС‚Р° РїСЂРѕС†РµСЃСЃРѕСЂР°
+	#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config станавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
 
 	// ADC clock frequency: 1..20 MHz
-	#define ADC_FREQ	2000000uL	/* С‚Р°РєС‚РѕРІР°СЏ С‡Р°СЃС‚РѕС‚Р° SAR РїСЂРµРѕР±СЂР°Р·РѕРІР°С‚РµР»СЏ РђР¦Рџ. */
-	//#define ADC_FREQ	16000000uL	/* С‚Р°РєС‚РѕРІР°СЏ С‡Р°СЃС‚РѕС‚Р° SAR РїСЂРµРѕР±СЂР°Р·РѕРІР°С‚РµР»СЏ РђР¦Рџ. */
+	#define ADC_FREQ	2000000uL	/* тактовая частота SAR преобразователя АЦП. */
+	//#define ADC_FREQ	16000000uL	/* тактовая частота SAR преобразователя АЦП. */
 
 	#define TICKS_FREQUENCY		(200uL * 1) // at ARM - 400 Hz
 
 	//#define SCL_CLOCK  100000uL	/* 100 kHz I2C/TWI speed */
 	#define SCL_CLOCK	400000uL	/* 400 kHz I2C/TWI speed */
 
-	#define SPISPEED (4UL * 1000 * 1000)	/* 4 MHz РЅР° SCLK - С‚СЂРµР±СѓРµРјР°СЏ СЃРєРѕСЂРѕСЃС‚СЊ РїРµСЂРµРґР°С‡Рё РїРѕ SPI */
-	#define	SPISPEED400k	400000uL	/* 400 kHz РґР»СЏ РЅРёР·РєРѕСЃРєРѕСЂРѕСЃС‚РЅС‹С… РјРёРєСЂРѕСЃС…РµРј */
-	#define	SPISPEED100k	100000uL	/* 100 kHz РґР»СЏ РЅРёР·РєРѕСЃРєРѕСЂРѕСЃС‚РЅС‹С… РјРёРєСЂРѕСЃС…РµРј */
+	#define SPISPEED (4UL * 1000 * 1000)	/* 4 MHz на SCLK - требуемая скорость передачи по SPI */
+	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
+	#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
 
 	#define ADCVREF_CPU	33		// 3.3 volt
-	//#define HARDWARE_DACBITS 12	/* Р¦РђРџ СЂР°Р±РѕС‚Р°РµС‚ СЃ 12-Р±РёС‚РЅС‹РјРё Р·РЅР°С‡РµРЅРёСЏРјРё */
-	#define HARDWARE_ADCBITS 10	/* РђР¦Рџ СЂР°Р±РѕС‚Р°РµС‚ СЃ 10-Р±РёС‚РЅС‹РјРё Р·РЅР°С‡РµРЅРёСЏРјРё */
-	#define HARDWARE_ADCINPUTS	16	/* РґРѕ 16-С‚Рё РІС…РѕРґРѕРІ РђР¦Рџ */
-	/* С‚РёРї РґР»СЏ С…СЂР°РЅРµРЅРёСЏ РґР°РЅРЅС‹С…, СЃС‡РёС‚Р°РЅРЅС‹С… СЃ РђР¦Рџ */
+	//#define HARDWARE_DACBITS 12	/* ЦАП работает с 12-битными значениями */
+	#define HARDWARE_ADCBITS 10	/* АЦП работает с 10-битными значениями */
+	#define HARDWARE_ADCINPUTS	16	/* до 16-ти входов АЦП */
+	/* тип для хранения данных, считанных с АЦП */
 	typedef uint_fast16_t adcvalholder_t;		
 
 #elif CPUSTYLE_ATSAM4S
@@ -367,38 +367,38 @@
 	//#define CPU_FREQ 48000000uL
 	//#define CPU_FREQ 32000000uL
 	//#define CPU_FREQ 12000000uL
-	#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config СЃС‚Р°РЅР°РІР»РёРІР°РµС‚ SysTick_CTRL_CLKSOURCE_Msk - РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ С‡Р°СЃС‚РѕС‚Р° РїСЂРѕС†РµСЃСЃРѕСЂР°
+	#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config станавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
 
 	// ADC clock frequency: 1..20 MHz
-	#define ADC_FREQ	2000000uL	/* С‚Р°РєС‚РѕРІР°СЏ С‡Р°СЃС‚РѕС‚Р° SAR РїСЂРµРѕР±СЂР°Р·РѕРІР°С‚РµР»СЏ РђР¦Рџ. */
-	//#define ADC_FREQ	16000000uL	/* С‚Р°РєС‚РѕРІР°СЏ С‡Р°СЃС‚РѕС‚Р° SAR РїСЂРµРѕР±СЂР°Р·РѕРІР°С‚РµР»СЏ РђР¦Рџ. */
+	#define ADC_FREQ	2000000uL	/* тактовая частота SAR преобразователя АЦП. */
+	//#define ADC_FREQ	16000000uL	/* тактовая частота SAR преобразователя АЦП. */
 
 	#define TICKS_FREQUENCY		(200uL * 1) // at ARM - 400 Hz
 
 	//#define SCL_CLOCK  100000uL	/* 100 kHz I2C/TWI speed */
 	#define SCL_CLOCK	400000uL	/* 400 kHz I2C/TWI speed */
 
-	#define SPISPEED (4UL * 1000 * 1000)	/* 4 MHz РЅР° SCLK - С‚СЂРµР±СѓРµРјР°СЏ СЃРєРѕСЂРѕСЃС‚СЊ РїРµСЂРµРґР°С‡Рё РїРѕ SPI */
-	#define	SPISPEED400k	400000uL	/* 400 kHz РґР»СЏ РЅРёР·РєРѕСЃРєРѕСЂРѕСЃС‚РЅС‹С… РјРёРєСЂРѕСЃС…РµРј */
-	#define	SPISPEED100k	100000uL	/* 100 kHz РґР»СЏ РЅРёР·РєРѕСЃРєРѕСЂРѕСЃС‚РЅС‹С… РјРёРєСЂРѕСЃС…РµРј */
+	#define SPISPEED (4UL * 1000 * 1000)	/* 4 MHz на SCLK - требуемая скорость передачи по SPI */
+	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
+	#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
 
 	#define ADCVREF_CPU	33		// 3.3 volt
-	//#define HARDWARE_DACBITS 12	/* Р¦РђРџ СЂР°Р±РѕС‚Р°РµС‚ СЃ 12-Р±РёС‚РЅС‹РјРё Р·РЅР°С‡РµРЅРёСЏРјРё */
-	#define HARDWARE_ADCBITS 10	/* РђР¦Рџ СЂР°Р±РѕС‚Р°РµС‚ СЃ 10-Р±РёС‚РЅС‹РјРё Р·РЅР°С‡РµРЅРёСЏРјРё */
-	#define HARDWARE_ADCINPUTS	16	/* РґРѕ 16-С‚Рё РІС…РѕРґРѕРІ РђР¦Рџ */
-	/* С‚РёРї РґР»СЏ С…СЂР°РЅРµРЅРёСЏ РґР°РЅРЅС‹С…, СЃС‡РёС‚Р°РЅРЅС‹С… СЃ РђР¦Рџ */
+	//#define HARDWARE_DACBITS 12	/* ЦАП работает с 12-битными значениями */
+	#define HARDWARE_ADCBITS 10	/* АЦП работает с 10-битными значениями */
+	#define HARDWARE_ADCINPUTS	16	/* до 16-ти входов АЦП */
+	/* тип для хранения данных, считанных с АЦП */
 	typedef uint_fast16_t adcvalholder_t;		
 
 #elif CPUSTYLE_AT91SAM9XE
 
-	#define CPU_FREQ (196608000uL / 2)	// С‡Р°СЃС‚РѕС‚Р° РїРµСЂРёС„РµСЂРёРё (РїСЂРѕС†РµСЃСЃРѕСЂРЅР°СЏ РїРѕСЃР»Рµ РґРµР»РµРЅРёСЏ).
+	#define CPU_FREQ (196608000uL / 2)	// частота периферии (процессорная после деления).
 	//#define CPU_FREQ 14400000uL
 	//#define SCL_CLOCK  100000L	/* 100 kHz I2C/TWI speed */
 	#define SCL_CLOCK  400000uL	/* 400 kHz I2C/TWI speed */
 
-	#define SPISPEED (4UL * 1000 * 1000)	/* 4 MHz РЅР° SCLK - С‚СЂРµР±СѓРµРјР°СЏ СЃРєРѕСЂРѕСЃС‚СЊ РїРµСЂРµРґР°С‡Рё РїРѕ SPI */
-	#define	SPISPEED400k	400000uL	/* 400 kHz РґР»СЏ РЅРёР·РєРѕСЃРєРѕСЂРѕСЃС‚РЅС‹С… РјРёРєСЂРѕСЃС…РµРј */
-	#define	SPISPEED100k	100000uL	/* 100 kHz РґР»СЏ РЅРёР·РєРѕСЃРєРѕСЂРѕСЃС‚РЅС‹С… РјРёРєСЂРѕСЃС…РµРј */
+	#define SPISPEED (4UL * 1000 * 1000)	/* 4 MHz на SCLK - требуемая скорость передачи по SPI */
+	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
+	#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
 
 	#define TICKS_FREQUENCY		200U // 200 Hz
 
@@ -406,29 +406,29 @@
 	#define ARM_SYSTEM_PRIORITY		AT91C_AIC_PRIOR_LOWEST 
 
 	#define ADCVREF_CPU	33		// 3.3 volt
-	//#define HARDWARE_DACBITS 12	/* Р¦РђРџ СЂР°Р±РѕС‚Р°РµС‚ СЃ 12-Р±РёС‚РЅС‹РјРё Р·РЅР°С‡РµРЅРёСЏРјРё */
-	#define HARDWARE_ADCBITS 12	/* РђР¦Рџ СЂР°Р±РѕС‚Р°РµС‚ СЃ 12-Р±РёС‚РЅС‹РјРё Р·РЅР°С‡РµРЅРёСЏРјРё */
-	#define HARDWARE_ADCINPUTS	8	/* РґРѕ 8-С‚Рё РІС…РѕРґРѕРІ РђР¦Рџ */
-	/* С‚РёРї РґР»СЏ С…СЂР°РЅРµРЅРёСЏ РґР°РЅРЅС‹С…, СЃС‡РёС‚Р°РЅРЅС‹С… СЃ РђР¦Рџ */
+	//#define HARDWARE_DACBITS 12	/* ЦАП работает с 12-битными значениями */
+	#define HARDWARE_ADCBITS 12	/* АЦП работает с 12-битными значениями */
+	#define HARDWARE_ADCINPUTS	8	/* до 8-ти входов АЦП */
+	/* тип для хранения данных, считанных с АЦП */
 	typedef uint_fast16_t adcvalholder_t;		
 
 #elif CPUSTYLE_MK20DX	// Tennesy 3.1 - Freescale Semiconductor - KINETIS MK20DX256VLH7
 
-	// todo: Р·Р°РїРѕР»РЅРёС‚СЊ РїСЂР°РІРёР»СЊРЅС‹РјРё Р·РЅР°С‡РµРЅРёСЏРјРё
-	#define CPU_FREQ 72000000	// С‡Р°СЃС‚РѕС‚Р° РїРµСЂРёС„РµСЂРёРё (РїСЂРѕС†РµСЃСЃРѕСЂРЅР°СЏ РїРѕСЃР»Рµ РґРµР»РµРЅРёСЏ).
+	// todo: заполнить правильными значениями
+	#define CPU_FREQ 72000000	// частота периферии (процессорная после деления).
 	#define SCL_CLOCK  400000uL	/* 400 kHz I2C/TWI speed */
-	#define SPISPEED (4UL * 1000 * 1000)	/* 4 MHz РЅР° SCLK - С‚СЂРµР±СѓРµРјР°СЏ СЃРєРѕСЂРѕСЃС‚СЊ РїРµСЂРµРґР°С‡Рё РїРѕ SPI */
-	#define	SPISPEED400k	400000uL	/* 400 kHz РґР»СЏ РЅРёР·РєРѕСЃРєРѕСЂРѕСЃС‚РЅС‹С… РјРёРєСЂРѕСЃС…РµРј */
-	#define	SPISPEED100k	100000uL	/* 100 kHz РґР»СЏ РЅРёР·РєРѕСЃРєРѕСЂРѕСЃС‚РЅС‹С… РјРёРєСЂРѕСЃС…РµРј */
+	#define SPISPEED (4UL * 1000 * 1000)	/* 4 MHz на SCLK - требуемая скорость передачи по SPI */
+	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
+	#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
 
 	#define TICKS_FREQUENCY		200U // 200 Hz
 
 	#define ADCVREF_CPU	33		// 3.3 volt
-	//#define HARDWARE_DACBITS 12	/* Р¦РђРџ СЂР°Р±РѕС‚Р°РµС‚ СЃ 12-Р±РёС‚РЅС‹РјРё Р·РЅР°С‡РµРЅРёСЏРјРё */
-	#define HARDWARE_ADCBITS 10	/* РђР¦Рџ СЂР°Р±РѕС‚Р°РµС‚ СЃ 10-Р±РёС‚РЅС‹РјРё Р·РЅР°С‡РµРЅРёСЏРјРё */
-	#define HARDWARE_ADCINPUTS	16	/* РґРѕ 16-С‚Рё РІС…РѕРґРѕРІ РђР¦Рџ */
+	//#define HARDWARE_DACBITS 12	/* ЦАП работает с 12-битными значениями */
+	#define HARDWARE_ADCBITS 10	/* АЦП работает с 10-битными значениями */
+	#define HARDWARE_ADCINPUTS	16	/* до 16-ти входов АЦП */
 
-	/* С‚РёРї РґР»СЏ С…СЂР°РЅРµРЅРёСЏ РґР°РЅРЅС‹С…, СЃС‡РёС‚Р°РЅРЅС‹С… СЃ РђР¦Рџ */
+	/* тип для хранения данных, считанных с АЦП */
 	typedef uint_fast16_t adcvalholder_t;		
 
 #elif CPUSTYLE_ATMEGA
@@ -444,26 +444,26 @@
 	#define SCL_CLOCK  400000uL	/* 400 kHz I2C/TWI speed */
 	//#define SCL_CLOCK  40000uL	/* 40 kHz I2C/TWI speed */
 
-	#define SPISPEED (CPU_FREQ / 2) /* 4 (5) MHz РЅР° SCLK - С‚СЂРµР±СѓРµРјР°СЏ СЃРєРѕСЂРѕСЃС‚СЊ РїРµСЂРµРґР°С‡Рё РїРѕ SPI */
-	#define	SPISPEED400k	400000uL	/* 400 kHz РґР»СЏ РЅРёР·РєРѕСЃРєРѕСЂРѕСЃС‚РЅС‹С… РјРёРєСЂРѕСЃС…РµРј */
-	#define	SPISPEED100k	100000uL	/* 100 kHz РґР»СЏ РЅРёР·РєРѕСЃРєРѕСЂРѕСЃС‚РЅС‹С… РјРёРєСЂРѕСЃС…РµРј */
+	#define SPISPEED (CPU_FREQ / 2) /* 4 (5) MHz на SCLK - требуемая скорость передачи по SPI */
+	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
+	#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
 
-	#define ADC_FREQ	250000uL	/* С‚Р°РєС‚РѕРІР°СЏ С‡Р°СЃС‚РѕС‚Р° SAR РїСЂРµРѕР±СЂР°Р·РѕРІР°С‚РµР»СЏ РђР¦Рџ. */
+	#define ADC_FREQ	250000uL	/* тактовая частота SAR преобразователя АЦП. */
 
 	#define ADCVREF_CPU	33		// 3.3 volt
 	//#define ADCVREF_CPU	50		// 5.0 volt
 
-	//#define HARDWARE_DACBITS 12	/* Р¦РђРџ СЂР°Р±РѕС‚Р°РµС‚ СЃ 12-Р±РёС‚РЅС‹РјРё Р·РЅР°С‡РµРЅРёСЏРјРё */
-	//#define HARDWARE_ADCBITS 8	/* РђР¦Рџ СЂР°Р±РѕС‚Р°РµС‚ СЃ 8-Р±РёС‚РЅС‹РјРё Р·РЅР°С‡РµРЅРёСЏРјРё */
-	#define HARDWARE_ADCBITS 10	/* РђР¦Рџ СЂР°Р±РѕС‚Р°РµС‚ СЃ 10-Р±РёС‚РЅС‹РјРё Р·РЅР°С‡РµРЅРёСЏРјРё */
+	//#define HARDWARE_DACBITS 12	/* ЦАП работает с 12-битными значениями */
+	//#define HARDWARE_ADCBITS 8	/* АЦП работает с 8-битными значениями */
+	#define HARDWARE_ADCBITS 10	/* АЦП работает с 10-битными значениями */
 
-	#define HARDWARE_ADCINPUTS	8	/* РґРѕ 8-С‚Рё РІС…РѕРґРѕРІ РђР¦Рџ */
+	#define HARDWARE_ADCINPUTS	8	/* до 8-ти входов АЦП */
 
 	#if HARDWARE_ADCBITS == 8
-		/* С‚РёРї РґР»СЏ С…СЂР°РЅРµРЅРёСЏ РґР°РЅРЅС‹С…, СЃС‡РёС‚Р°РЅРЅС‹С… СЃ РђР¦Рџ */
+		/* тип для хранения данных, считанных с АЦП */
 		typedef uint_fast8_t adcvalholder_t;		
 	#elif HARDWARE_ADCBITS == 10
-		/* С‚РёРї РґР»СЏ С…СЂР°РЅРµРЅРёСЏ РґР°РЅРЅС‹С…, СЃС‡РёС‚Р°РЅРЅС‹С… СЃ РђР¦Рџ */
+		/* тип для хранения данных, считанных с АЦП */
 		typedef uint_fast16_t adcvalholder_t;		
 	#else
 		#error Erong HARDWARE_ADCBITS value
@@ -481,30 +481,30 @@
 	//#define SCL_CLOCK  250000uL		/* 250 kHz I2C/TWI speed */
 	#define SCL_CLOCK  400000uL	/* 400 kHz I2C/TWI speed */
 
-	#define SPISPEED (8000000) /* 4 (5) MHz РЅР° SCLK - С‚СЂРµР±СѓРµРјР°СЏ СЃРєРѕСЂРѕСЃС‚СЊ РїРµСЂРµРґР°С‡Рё РїРѕ SPI */
-	#define	SPISPEED400k	400000uL	/* 400 kHz РґР»СЏ РЅРёР·РєРѕСЃРєРѕСЂРѕСЃС‚РЅС‹С… РјРёРєСЂРѕСЃС…РµРј */
-	#define	SPISPEED100k	100000uL	/* 100 kHz РґР»СЏ РЅРёР·РєРѕСЃРєРѕСЂРѕСЃС‚РЅС‹С… РјРёРєСЂРѕСЃС…РµРј */
+	#define SPISPEED (8000000) /* 4 (5) MHz на SCLK - требуемая скорость передачи по SPI */
+	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
+	#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
 
-	#define ADC_FREQ	125000uL	/* С‚Р°РєС‚РѕРІР°СЏ С‡Р°СЃС‚РѕС‚Р° SAR РїСЂРµРѕР±СЂР°Р·РѕРІР°С‚РµР»СЏ РђР¦Рџ. */
+	#define ADC_FREQ	125000uL	/* тактовая частота SAR преобразователя АЦП. */
 
 
 	#define ADCVREF_CPU	25		// 2.5 volt
-	#define HARDWARE_ADCBITS 8	/* РђР¦Рџ СЂР°Р±РѕС‚Р°РµС‚ СЃ 8-Р±РёС‚РЅС‹РјРё Р·РЅР°С‡РµРЅРёСЏРјРё */
+	#define HARDWARE_ADCBITS 8	/* АЦП работает с 8-битными значениями */
 
-	#define HARDWARE_ADCINPUTS	8	/* РґРѕ 8-С‚Рё РІС…РѕРґРѕРІ РђР¦Рџ */
-	/* С‚РёРї РґР»СЏ С…СЂР°РЅРµРЅРёСЏ РґР°РЅРЅС‹С…, СЃС‡РёС‚Р°РЅРЅС‹С… СЃ РђР¦Рџ */
+	#define HARDWARE_ADCINPUTS	8	/* до 8-ти входов АЦП */
+	/* тип для хранения данных, считанных с АЦП */
 	typedef uint_fast8_t adcvalholder_t;		
 
 #elif CPUSTYPE_TMS320F2833X
 
 	#define TICKS_FREQUENCY	 (200U * 2)	// 400 Hz - use compare/match interrupt
-	#define HARDWARE_ADCBITS 12	/* РђР¦Рџ СЂР°Р±РѕС‚Р°РµС‚ СЃ 12-Р±РёС‚РЅС‹РјРё Р·РЅР°С‡РµРЅРёСЏРјРё */
-	/* С‚РёРї РґР»СЏ С…СЂР°РЅРµРЅРёСЏ РґР°РЅРЅС‹С…, СЃС‡РёС‚Р°РЅРЅС‹С… СЃ РђР¦Рџ */
+	#define HARDWARE_ADCBITS 12	/* АЦП работает с 12-битными значениями */
+	/* тип для хранения данных, считанных с АЦП */
 	typedef uint_fast16_t adcvalholder_t;		
 
 #elif CPUSTYLE_R7S721
 
-	//#define WITHCPUXTAL 12000000uL			/* РќР° РїСЂРѕС†РµСЃСЃРѕСЂРµ СѓСЃС‚Р°РЅРѕРІР»РµРЅ РєРІР°СЂС† 12.000 РњР“С† */
+	//#define WITHCPUXTAL 12000000uL			/* На процессоре установлен кварц 12.000 МГц */
 	#define CPU_FREQ	(30 * WITHCPUXTAL)		/* 12 MHz * 30 - clock mode 0, xtal 12 MHz */
 
 	#define BCLOCK_FREQ		(CPU_FREQ / 3)		// 120 MHz
@@ -514,19 +514,19 @@
 	#define TICKS_FREQUENCY		(200uL * 1) // at ARM - 400 Hz
 
 	// ADC clock frequency: 1..20 MHz
-	#define ADC_FREQ	2000000uL	/* С‚Р°РєС‚РѕРІР°СЏ С‡Р°СЃС‚РѕС‚Р° SAR РїСЂРµРѕР±СЂР°Р·РѕРІР°С‚РµР»СЏ РђР¦Рџ. */
+	#define ADC_FREQ	2000000uL	/* тактовая частота SAR преобразователя АЦП. */
 	#define SCL_CLOCK	400000uL	/* 400 kHz I2C/TWI speed */
 
-	#define SPISPEED 8000000uL	/* 8 MHz (10.5) РЅР° SCLK - С‚СЂРµР±СѓРµРјР°СЏ СЃРєРѕСЂРѕСЃС‚СЊ РїРµСЂРµРґР°С‡Рё РїРѕ SPI */
+	#define SPISPEED 8000000uL	/* 8 MHz (10.5) на SCLK - требуемая скорость передачи по SPI */
 	#define SPISPEEDUFAST (P1CLOCK_FREQ / 3)	// 20 MHz
-	#define	SPISPEED400k	400000uL	/* 400 kHz РґР»СЏ РЅРёР·РєРѕСЃРєРѕСЂРѕСЃС‚РЅС‹С… РјРёРєСЂРѕСЃС…РµРј */
-	#define	SPISPEED100k	100000uL	/* 100 kHz РґР»СЏ РЅРёР·РєРѕСЃРєРѕСЂРѕСЃС‚РЅС‹С… РјРёРєСЂРѕСЃС…РµРј */
+	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
+	#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
 
 	#define ADCVREF_CPU	33		// 3.3 volt
-	#define HARDWARE_ADCBITS 12	/* РђР¦Рџ СЂР°Р±РѕС‚Р°РµС‚ СЃ 12-Р±РёС‚РЅС‹РјРё Р·РЅР°С‡РµРЅРёСЏРјРё */
+	#define HARDWARE_ADCBITS 12	/* АЦП работает с 12-битными значениями */
 
-	#define HARDWARE_ADCINPUTS	8	/* РґРѕ 8-С‚Рё РІС…РѕРґРѕРІ РђР¦Рџ */
-	/* С‚РёРї РґР»СЏ С…СЂР°РЅРµРЅРёСЏ РґР°РЅРЅС‹С…, СЃС‡РёС‚Р°РЅРЅС‹С… СЃ РђР¦Рџ */
+	#define HARDWARE_ADCINPUTS	8	/* до 8-ти входов АЦП */
+	/* тип для хранения данных, считанных с АЦП */
 	typedef uint_fast16_t adcvalholder_t;		
 
 	enum
@@ -541,7 +541,7 @@
 		R7S721_PIOALT_8	= 0x07	/* 8th Alternative */
 	};
 
-	/* РІРёРґРёРјС‹Рµ РІ РєРѕРЅС‚СЂРѕР»Р»РµСЂРµ РїСЂРµСЂС‹РІР°РЅРёСЏ СЂРµРіРёСЃС‚СЂС‹ РѕС‚ ARM CORE */
+	/* видимые в контроллере прерывания регистры от ARM CORE */
 	#define ARM_CA9_PRIORITYSHIFT 3	/* ICCPMR[7:3] is valid bit */
 
 	#define GICC_PMR		(INTC.ICCPMR)	// 4.4.2 Interrupt Priority Mask Register, GICC_PMR
@@ -552,7 +552,7 @@
 	#define GICC_CTLR		(INTC.ICCICR)
 	#define GICD_IPRIORITYRn(n) (((volatile uint8_t *) & INTC.ICDIPR0) [(n)])
 
-	#define ARM_CA9_CACHELEVELMAX	1	/* РјР°РєСЃРёРјР°Р»СЊРЅС‹Р№ СѓСЂРѕРІРµРЅСЊ cache РІ РїСЂРѕС†РµСЃСЃРѕСЂРµ */
+	#define ARM_CA9_CACHELEVELMAX	1	/* максимальный уровень cache в процессоре */
 
 #else
 
@@ -581,7 +581,7 @@
 		#define ASSERT_IRQL_USER() ASSERT(1)
 
 		#if 0 && WITHDEBUG
-			// РѕС‚Р»Р°РґРѕС‡РЅР°СЏ РІРµСЂСЃРёСЏ - РєРѕРЅС‚СЂРѕР»СЊ РїСЂР°РІРёР»СЊРЅРѕРіРѕ РєРѕРЅС‚РµРєСЃС‚Р° Р·Р°РїСЂРµС‚Р°/СЂР°Р·СЂРµС€РµРЅРёСЏ РїСЂРµСЂС‹РІР°РЅРёР№
+			// отладочная версия - контроль правильного контекста запрета/разрешения прерываний
 			#define enableIRQ() do { \
 					if (__get_BASEPRI() != gARM_BASEPRI_ONLY_REALTIME) \
 					{ \
@@ -601,8 +601,8 @@
 					__set_BASEPRI(gARM_BASEPRI_ONLY_REALTIME); \
 				} while (0)
 		#else
-			#define enableIRQ() do { __set_BASEPRI(gARM_BASEPRI_ALL_ENABLED); } while (0)	// СЂР°Р·СЂРµС€РµРЅС‹ РІСЃРµ
-			#define disableIRQ() do { __set_BASEPRI(gARM_BASEPRI_ONLY_REALTIME); } while (0) // СЂР°Р·СЂРµС€РµРЅС‹ С‚РѕР»СЊРєРѕ realtime
+			#define enableIRQ() do { __set_BASEPRI(gARM_BASEPRI_ALL_ENABLED); } while (0)	// разрешены все
+			#define disableIRQ() do { __set_BASEPRI(gARM_BASEPRI_ONLY_REALTIME); } while (0) // разрешены только realtime
 		#endif
 		
 	#else /* WITHNESTEDINTERRUPTS */
@@ -619,7 +619,7 @@
 	#define global_enableIRQ() do { __enable_irq(); } while (0)
 	#define global_disableIRQ() do { __disable_irq(); } while (0)
 
-	/* РїРѕР»СѓС‡РµРЅРёРµ Р°РґСЂРµСЃР° РґР»СЏ Р°С‚РѕРјР°СЂРЅРѕРіРѕ РґРѕСЃС‚СѓРїР° Рє Р±РёС‚Р°Рј (СЃ) demiurg_spb */
+	/* получение адреса для атомарного доступа к битам (с) demiurg_spb */
 	/*
 	static __attribute__( ( always_inline ) ) volatile uint32_t* bb_bit_address(volatile uint32_t* p, uint_fast8_t bit)
 	{
@@ -683,7 +683,7 @@
 
 
 		#if 0 && WITHDEBUG
-			// РѕС‚Р»Р°РґРѕС‡РЅР°СЏ РІРµСЂСЃРёСЏ - РєРѕРЅС‚СЂРѕР»СЊ РїСЂР°РІРёР»СЊРЅРѕРіРѕ РєРѕРЅС‚РµРєСЃС‚Р° Р·Р°РїСЂРµС‚Р°/СЂР°Р·СЂРµС€РµРЅРёСЏ РїСЂРµСЂС‹РІР°РЅРёР№
+			// отладочная версия - контроль правильного контекста запрета/разрешения прерываний
 			#define enableIRQ() do { \
 					if (GIC_GetInterfacePriorityMask() != gARM_BASEPRI_ONLY_REALTIME) \
 					{ \
@@ -703,11 +703,11 @@
 					GIC_SetInterfacePriorityMask(gARM_BASEPRI_ONLY_REALTIME); \
 				} while (0)
 		#else
-			// СЂР°Р·СЂРµС€РµРЅС‹ РІСЃРµ
+			// разрешены все
 			#define enableIRQ() do { \
 					GIC_SetInterfacePriorityMask(gARM_BASEPRI_ALL_ENABLED); \
 				} while (0)
-			// СЂР°Р·СЂРµС€РµРЅС‹ С‚РѕР»СЊРєРѕ realtime
+			// разрешены только realtime
 			#define disableIRQ() do { \
 					GIC_SetInterfacePriorityMask(gARM_BASEPRI_ONLY_REALTIME); \
 				} while (0)
@@ -773,7 +773,7 @@
 
 
 
-/* С‚РёРїС‹ РїСЂРёРјРµРЅСЏРµРјС‹С… РјРёРєСЂРѕСЃС…РµРј */
+/* типы применяемых микросхем */
 
 #define DDS_TYPE_AD9852		1	// AD9854 also supported
 #define DDS_TYPE_AD9857		2
@@ -801,11 +801,11 @@
 #define PLL_TYPE_SI570		30	// Silabs Si570
 #define PLL_TYPE_SI5351A	31	// Silabs Si5351A 10-MSOP (three outputs)
 #define	PLL_TYPE_RFFC5071	32	// RFMD (Qorvo) RFFC5071 http://www.rfmd.com/store/integrated-synthesizers-with-mixers/rffc5071-1.html
-#define PLL_TYPE_NONE		33	// Р¤РђРџР§ РІРЅРµС€РЅСЏСЏ, РЅРёРєР°Рє РЅРµ СѓРїСЂР°РІР»СЏРµС‚СЃСЏ.
+#define PLL_TYPE_NONE		33	// ФАПЧ внешняя, никак не управляется.
 
 #define DAC_TYPE_AD5260		36		// 256-positions potentiometer
 
-#define CODEC_TYPE_FPGAV1		37	// РєРІР°РґСЂР°С‚СѓСЂС‹ РїРѕР»СѓС‡Р°РµРј РѕС‚ FPGA
+#define CODEC_TYPE_FPGAV1		37	// квадратуры получаем от FPGA
 #define CODEC_TYPE_TLV320AIC23B	38	// TI TLV320AIC23B
 #define CODEC_TYPE_CS4272		39	// CS CS4272
 #define CODEC_TYPE_NAU8822L		40	// NUVOTON NAU8822L
@@ -823,7 +823,7 @@
 
 // Start of NVRAM definitions section
 // NOTE: DO NOT USE any types of FLASH memory chips, only EEPROM or FRAM chips are supported.
-// РїРѕРґРґРµСЂР¶РёРІР°СЋС‚СЃСЏ С‚РѕР»СЊРєРѕ FRAM РёР»Рё EEPROM. FLASH РЅРµ РїРѕРґРґРµСЂР¶РёРІР°СЋС‚СЃСЏ.
+// поддерживаются только FRAM или EEPROM. FLASH не поддерживаются.
 #define NVRAM_TYPE_FM25XXXX		50	/* SERIAL FRAM AUTODETECT	*/
 #define NVRAM_TYPE_FM25L04		51	/* SERIAL FRAM 4KBit	*/
 #define NVRAM_TYPE_FM25L16		52	/* SERIAL FRAM 16Kbit	*/
@@ -834,9 +834,9 @@
 #define NVRAM_TYPE_AT25L16		56	/* SERIAL EEPROM 16Kbit	*/
 #define NVRAM_TYPE_AT25256A		57	/* SERIAL EEPROM 256KBit	*/
 
-#define NVRAM_TYPE_CPUEEPROM		58	/* EEPROM РїР°РјСЏС‚СЊ РїСЂРѕС†РµСЃСЃРѕСЂР° */
+#define NVRAM_TYPE_CPUEEPROM		58	/* EEPROM память процессора */
 #define	NVRAM_TYPE_BKPSRAM			59	/* Backup SRAM */
-#define	NVRAM_TYPE_NOTHING			60	/* РІРѕРѕР±С‰Рµ РѕС‚СЃСѓС‚СЃС‚РІСѓРµС‚ */
+#define	NVRAM_TYPE_NOTHING			60	/* вообще отсутствует */
 
 #define IF3_TYPE_DCRX	1
 #define IF3_TYPE_128	2
@@ -850,34 +850,34 @@
 #define IF3_TYPE_6000	10
 #define IF3_TYPE_8000	11
 #define IF3_TYPE_8192	12
-#define IF3_TYPE_8215	13	// РєРІР°СЂС†РµРІС‹Рµ С„РёР»СЊС‚СЂС‹ РѕС‚  С‚СЂР°РЅСЃРёРІРµСЂР° FT-747 - 8215 kHz
+#define IF3_TYPE_8215	13	// кварцевые фильтры от  трансивера FT-747 - 8215 kHz
 #define IF3_TYPE_8868	14
 #define IF3_TYPE_9045	15
 #define IF3_TYPE_9000	16
 #define IF3_TYPE_10000	17
 #define IF3_TYPE_10700	18
-#define IF3_TYPE_CUSTOM	19	// РїР°СЂР°РјРµС‚СЂС‹ С‡Р°СЃС‚РѕС‚ Р·Р°РґР°СЋС‚СЃСЏ РѕС‚РґРµР»СЊРЅС‹РјРё define, РІС‹РЅРµСЃРµРЅС‹РјРё РІ board\*_cylstyle_*.h
+#define IF3_TYPE_CUSTOM	19	// параметры частот задаются отдельными define, вынесеными в board\*_cylstyle_*.h
 #define IF3_TYPE_BYPASS	20
-#define IF3_TYPE_6000_SW2015	21	// СЃР»РµРіРєР° РґСЂСѓРіР°СЏ С‡Р°СЃС‚РѕС‚Р° РІРµСЂС…РЅРµРіРѕ СЃРєР°С‚Р°
+#define IF3_TYPE_6000_SW2015	21	// слегка другая частота верхнего ската
 #define IF3_TYPE_5250	22
 
-/* РІСЃРµ РІРѕР·РјРѕР¶РЅС‹Рµ С„РёР»СЊС‚СЂС‹. РќРµ РЅРѕР»СЊ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РµРј Р±РёС‚Рµ IF3_FMASK СЂР°Р·СЂРµС€Р°РµС‚ РІРєР»СЋС‡РµРЅРёРµ/РІС‹РєР»СЋС‡РµРЅРёРµ РґР°РЅРЅРѕРіРѕ С„РёР»СЊС‚СЂР°. */
-#define IF3_FMASK_0P3	(1U << 0)	/* РЅР°Р»РёС‡РёРµ С„РёР»СЊС‚СЂР° 0.3 РєР“С†	*/
-#define IF3_FMASK_0P5	(1U << 1)	/* РЅР°Р»РёС‡РёРµ С„РёР»СЊС‚СЂР° 0.5 РєР“С†	*/
-#define IF3_FMASK_1P0	(1U << 2)	/* РЅР°Р»РёС‡РёРµ С„РёР»СЊС‚СЂР° 1.0 РєР“С†	*/
-#define IF3_FMASK_1P5	(1U << 3)	/* РЅР°Р»РёС‡РёРµ С„РёР»СЊС‚СЂР° 1.5 РєР“С†	*/
-#define IF3_FMASK_1P8	(1U << 4)	/* РЅР°Р»РёС‡РёРµ С„РёР»СЊС‚СЂР° 1.8 РєР“С†	*/
-#define IF3_FMASK_2P1	(1U << 5)	/* РЅР°Р»РёС‡РёРµ С„РёР»СЊС‚СЂР° 2.1 РєР“С†	*/
-#define IF3_FMASK_2P4	(1U << 6)	/* РЅР°Р»РёС‡РёРµ С„РёР»СЊС‚СЂР° 2.4 РєР“С†	*/
-#define IF3_FMASK_2P7	(1U << 7)	/* РЅР°Р»РёС‡РёРµ С„РёР»СЊС‚СЂР° 2.7 РєР“С†	*/
-#define IF3_FMASK_3P1	(1U << 8)	/* РЅР°Р»РёС‡РёРµ С„РёР»СЊС‚СЂР° 3.1 РєР“С†	*/
-#define IF3_FMASK_6P0	(1U << 9)	/* РЅР°Р»РёС‡РёРµ С„РёР»СЊС‚СЂР° 6.0 РєР“С†	*/
-#define IF3_FMASK_7P8	(1U << 10)	/* РЅР°Р»РёС‡РёРµ С„РёР»СЊС‚СЂР° 7.8 РєР“С†	*/
-#define IF3_FMASK_8P0	(1U << 11)	/* РЅР°Р»РёС‡РёРµ С„РёР»СЊС‚СЂР° 8.0 РєР“С†	*/
-#define IF3_FMASK_9P0	(1U << 12)	/* РЅР°Р»РёС‡РёРµ С„РёР»СЊС‚СЂР° 9.0 РєР“С†	*/
-#define IF3_FMASK_15P0	(1U << 13)	/* РЅР°Р»РёС‡РёРµ С„РёР»СЊС‚СЂР° 15.0 РєР“С†	*/
-#define IF3_FMASK_17P0	(1U << 14)	/* РЅР°Р»РёС‡РёРµ С„РёР»СЊС‚СЂР° 17.0 РєР“С†	*/
-#define IF3_FMASK_120P0	(1U << 15)	/* РЅР°Р»РёС‡РёРµ С„РёР»СЊС‚СЂР° 120 РєР“С†	*/
+/* все возможные фильтры. Не ноль соответствующем бите IF3_FMASK разрешает включение/выключение данного фильтра. */
+#define IF3_FMASK_0P3	(1U << 0)	/* наличие фильтра 0.3 кГц	*/
+#define IF3_FMASK_0P5	(1U << 1)	/* наличие фильтра 0.5 кГц	*/
+#define IF3_FMASK_1P0	(1U << 2)	/* наличие фильтра 1.0 кГц	*/
+#define IF3_FMASK_1P5	(1U << 3)	/* наличие фильтра 1.5 кГц	*/
+#define IF3_FMASK_1P8	(1U << 4)	/* наличие фильтра 1.8 кГц	*/
+#define IF3_FMASK_2P1	(1U << 5)	/* наличие фильтра 2.1 кГц	*/
+#define IF3_FMASK_2P4	(1U << 6)	/* наличие фильтра 2.4 кГц	*/
+#define IF3_FMASK_2P7	(1U << 7)	/* наличие фильтра 2.7 кГц	*/
+#define IF3_FMASK_3P1	(1U << 8)	/* наличие фильтра 3.1 кГц	*/
+#define IF3_FMASK_6P0	(1U << 9)	/* наличие фильтра 6.0 кГц	*/
+#define IF3_FMASK_7P8	(1U << 10)	/* наличие фильтра 7.8 кГц	*/
+#define IF3_FMASK_8P0	(1U << 11)	/* наличие фильтра 8.0 кГц	*/
+#define IF3_FMASK_9P0	(1U << 12)	/* наличие фильтра 9.0 кГц	*/
+#define IF3_FMASK_15P0	(1U << 13)	/* наличие фильтра 15.0 кГц	*/
+#define IF3_FMASK_17P0	(1U << 14)	/* наличие фильтра 17.0 кГц	*/
+#define IF3_FMASK_120P0	(1U << 15)	/* наличие фильтра 120 кГц	*/
 
 
 
@@ -887,13 +887,13 @@
 
 
 #if 0	// Heavy eeprom size optimization
-	// РїРѕСЃР»РµРґРЅРёР№ С€Р°РЅСЃ СѓРјРµРЅСЊС€РёС‚СЊ Р·Р°РЅРёРјР°РµРјСѓСЋ РїСЂРѕРіСЂР°РјРјРѕР№ РІ РџР—РЈ РїР°РјСЏС‚СЊ.
+	// последний шанс уменьшить занимаемую программой в ПЗУ память.
 
 	#define NVRAM_END	255U
 
 #else
 	#if defined (NVRAM_TYPE) && (NVRAM_TYPE == NVRAM_TYPE_FM25XXXX)
-		#define NVRAM_END 511U	// РµСЃР»Рё Р°РІС‚РѕРѕРїСЂРµРґРµР»РµРЅРёРµ - РґРѕР»Р¶РЅРѕ РІР»РµР·Р°С‚СЊ РІ СЃР°РјР№ РјР°Р»РµРЅСЊРєРёР№ С‡РёРї.
+		#define NVRAM_END 511U	// если автоопределение - должно влезать в самй маленький чип.
 	#elif defined (NVRAM_TYPE) && (NVRAM_TYPE == NVRAM_TYPE_FM25L04)
 		#define NVRAM_END 511U
 	#elif defined (NVRAM_TYPE) && (NVRAM_TYPE == NVRAM_TYPE_AT25040A)
@@ -908,7 +908,7 @@
 		#define NVRAM_END 32767U
 	#elif defined (NVRAM_TYPE) && (NVRAM_TYPE == NVRAM_TYPE_AT25256A)
 
-		#define NVRAM_END 32767U		/* РЅР° СЃР°РјРѕРј РґРµР»Рµ 64 РєРёР»РѕР±Р°Р№С‚, РЅРѕ РІ СЌС‚РѕРј РїСЂРёРјРµРЅРµРЅРёРё РёСЃРїРѕР»СЊР·eРµРј РЅРµ Р±РѕР»РµРµ 32K */
+		#define NVRAM_END 32767U		/* на самом деле 64 килобайт, но в этом применении использeем не более 32K */
 
 	#elif defined (NVRAM_TYPE) && (NVRAM_TYPE == NVRAM_TYPE_CPUEEPROM) && CPUSTYLE_ATMEGA
 
@@ -923,10 +923,10 @@
 #endif	// Heavy eeprom size optimization
 
 #if defined (PLL1_TYPE) && (PLL1_TYPE == PLL_TYPE_MC145170)
-	//#define WITHSPISW 	1	/* РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ РїСЂРѕРіСЂР°РјРјРЅРѕРіРѕ РєРѕРЅС‚СЂРѕР»Р»РµСЂР° SPI */
+	//#define WITHSPISW 	1	/* Использование программного контроллера SPI */
 #endif
 #if defined (PLL2_TYPE) && (PLL2_TYPE == PLL_TYPE_MC145170)
-	//#define WITHSPISW 	1	/* РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ РїСЂРѕРіСЂР°РјРјРЅРѕРіРѕ РєРѕРЅС‚СЂРѕР»Р»РµСЂР° SPI */
+	//#define WITHSPISW 	1	/* Использование программного контроллера SPI */
 #endif
 
 
@@ -961,7 +961,7 @@
 	#define DIM_Y 272
 	#define LCDMODE_COLORED	1
 	#define LCDMODE_HORFILL	1
-	#define LTDC_DOTCLK	9000000uL	// С‡Р°СЃС‚РѕС‚Р° РїРёРєСЃРµР»РµР№ РїСЂРё СЂР°Р±РѕС‚Рµ СЃ РёРЅС‚РµСЂС„РµР№СЃРѕРј RGB
+	#define LTDC_DOTCLK	9000000uL	// частота пикселей при работе с интерфейсом RGB
 #endif /* LCDMODE_S1D13781 */
 
 #if LCDMODE_AT070TN90	/* AT070TN90 panel (800*480) - 7" display */
@@ -969,7 +969,7 @@
 	#define DIM_Y 480
 	#define LCDMODE_COLORED	1
 	#define LCDMODE_HORFILL	1
-	#define LTDC_DOTCLK	30000000uL	// С‡Р°СЃС‚РѕС‚Р° РїРёРєСЃРµР»РµР№ РїСЂРё СЂР°Р±РѕС‚Рµ СЃ РёРЅС‚РµСЂС„РµР№СЃРѕРј RGB
+	#define LTDC_DOTCLK	30000000uL	// частота пикселей при работе с интерфейсом RGB
 #endif /* LCDMODE_AT070TN90 */
 
 #if LCDMODE_AT070TNA2	/* AT070TNA2 panel (1024*600) - 7" display */
@@ -977,7 +977,7 @@
 	#define DIM_Y 600
 	#define LCDMODE_COLORED	1
 	#define LCDMODE_HORFILL	1
-	#define LTDC_DOTCLK	60000000uL	// С‡Р°СЃС‚РѕС‚Р° РїРёРєСЃРµР»РµР№ РїСЂРё СЂР°Р±РѕС‚Рµ СЃ РёРЅС‚РµСЂС„РµР№СЃРѕРј RGB 40.8..67.2
+	#define LTDC_DOTCLK	60000000uL	// частота пикселей при работе с интерфейсом RGB 40.8..67.2
 #endif /* LCDMODE_AT070TN90 */
 
 #if LCDMODE_S1D13781		/* PSP-1000 with S1D113780 */
@@ -1010,7 +1010,7 @@
 	#define DIM_Y 64
 #endif /* LCDMODE_RDX0077 */
 
-#if LCDMODE_RDT065				/* RDT065 - РРЅРґРёРєР°С‚РѕСЂ 132*64 СЃ РєРѕРЅС‚СЂРѕР»Р»РµСЂРѕРј UC1601, XMIRROR & TOPDOWN */
+#if LCDMODE_RDT065				/* RDT065 - Индикатор 132*64 с контроллером UC1601, XMIRROR & TOPDOWN */
 	#define LCDMODE_HARD_I2C	1	/* I2C interface */
 	#define LCDMODE_SPI_RN	1	/* SPI only, with Reset, no Address need */
 	#define DIM_X 132
@@ -1056,7 +1056,7 @@
 	#define LCDMODE_COLORED	1
 #endif /* LCDMODE_ILI9320 */
 
-#if LCDMODE_ILI9225	/* SF-TC220H-9223A-N - ILI9225РЎ based color graphics display */
+#if LCDMODE_ILI9225	/* SF-TC220H-9223A-N - ILI9225С based color graphics display */
 	#define LCDMODE_HARD_SPI	1	/* SPI interface */
 	#define LCDMODE_SPI_RA	1	/* SPI only, with Reset, with Address */
 	#define DIM_X 220
@@ -1085,8 +1085,8 @@
 	#define DIM_X 160
 	#define DIM_Y 128
 	#define LCDMODE_COLORED	1
-	#define LCDMODE_RGB565 1	// СЃС‚Р°СЂС‹Р№ РґРёСЃРїР»РµР№
-	//#define LCDMODE_BGR565 1	// РїРµСЂРµРІРµСЂРЅСѓС‚С‹Рµ С†С‹РµС‚Р°
+	#define LCDMODE_RGB565 1	// старый дисплей
+	//#define LCDMODE_BGR565 1	// перевернутые цыета
 #endif /* LCDMODE_ST7735 */
 
 #if LCDMODE_ILI9341
@@ -1095,7 +1095,7 @@
 	#define DIM_X 320
 	#define DIM_Y 240
 	#define LCDMODE_COLORED	1
-	#define LTDC_DOTCLK	3000000uL	// С‡Р°СЃС‚РѕС‚Р° РїРёРєСЃРµР»РµР№ РїСЂРё СЂР°Р±РѕС‚Рµ СЃ РёРЅС‚РµСЂС„РµР№СЃРѕРј RGB
+	#define LTDC_DOTCLK	3000000uL	// частота пикселей при работе с интерфейсом RGB
 	#define LCDMODE_RGB565 1
 #endif
 
@@ -1106,10 +1106,10 @@
 	#define DIM_Y 240
 	#define LCDMODE_COLORED	1
 	#define LCDMODE_HORFILL	1
-	#define LTDC_DOTCLK	24000000uL	// С‡Р°СЃС‚РѕС‚Р° РїРёРєСЃРµР»РµР№ РїСЂРё СЂР°Р±РѕС‚Рµ СЃ РёРЅС‚РµСЂС„РµР№СЃРѕРј RGB (РІ СЂРµР·СѓР»СЊС‚Р°С‚Рµ РѕРєР°Р·Р°Р»РѕСЃСЊ 7.2 РњР“С†)
+	#define LTDC_DOTCLK	24000000uL	// частота пикселей при работе с интерфейсом RGB (в результате оказалось 7.2 МГц)
 #endif
 
-#if LCDMODE_ILI9163			/* СЌС‚РѕС‚ РєРѕРЅС‚СЂРѕР»Р»РµСЂ РѕР±СЃР»СѓР¶РёРІР°РµС‚СЃСЏ РІ РѕСЃРЅРѕРІРЅРѕРј СЃРѕРІРїР°РґР°СЋС‰РёРј СЃ ST7735 РєРѕРґРѕРј */
+#if LCDMODE_ILI9163			/* этот контроллер обслуживается в основном совпадающим с ST7735 кодом */
 	#define LCDMODE_HARD_SPI	1	/* SPI interface */
 	#define LCDMODE_SPI_RA	1	/* SPI only, with Reset, with Address */
 	#define DIM_X 176
@@ -1119,9 +1119,9 @@
 
 
 	#if LCDMODE_ILI9163_TOPDOWN
-		#undef LCDMODE_ST7735_TOPDOWN 	// РІ РѕСЃРЅРѕРІРЅРѕРј СЃРѕРІРїР°РґР°СЋС‰РёР№ РЅР°Р±РѕСЂ С„СѓРЅРєС†РёР№
+		#undef LCDMODE_ST7735_TOPDOWN 	// в основном совпадающий набор функций
 	#else
-		#define LCDMODE_ST7735_TOPDOWN 1	// РІ РѕСЃРЅРѕРІРЅРѕРј СЃРѕРІРїР°РґР°СЋС‰РёР№ РЅР°Р±РѕСЂ С„СѓРЅРєС†РёР№
+		#define LCDMODE_ST7735_TOPDOWN 1	// в основном совпадающий набор функций
 	#endif
 #endif
 
@@ -1133,134 +1133,134 @@
 #endif /* LCDMODE_ST7565S || LCDMODE_PTE1206 */
 
 /*
- * Р’С‹Р±РѕСЂ РѕРїРёСЃР°С‚РµР»СЏ СЂР°СЃРїРѕР»РѕР¶РµРЅРёСЏ СЌР»РµРјРµРЅС‚РѕРІ, РѕС‚Р±СЂР°Р¶Р°РµРјС‹С… РЅР° РґРёСЃРїР»РµРµ.
+ * Выбор описателя расположения элементов, отбражаемых на дисплее.
  */
 #if DIM_X == 480 && DIM_Y == 272
 	#define DSTYLE_G_X480_Y272	1	/* LQ043T3DX02K panel (272*480) - SONY PSP-1000 display */
-	#define CHARS2GRID(columns) ((columns) * 1)		/* РїРµСЂРµРІРµСЃС‚Рё РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРёРјРІРѕР»РѕРІ РІ СЏС‡РµР№РєС‚ СЃРµС‚РєРё СЂР°Р·РјРµС‚РєРё РѕС‚РѕР±СЂР°Р¶РЅРёСЏ */
-	#define ROWS2GRID(rows) ((rows) * 1)		/* РїРµСЂРµРІРµСЃС‚Рё РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРёРјРІРѕР»РѕРІ РІ СЏС‡РµР№РєС‚ СЃРµС‚РєРё СЂР°Р·РјРµС‚РєРё РѕС‚РѕР±СЂР°Р¶РЅРёСЏ */
-	#define GRID2X(cellsx) ((cellsx) * 16)	/* РїРµСЂРµРІРѕРґ СЏС‡РµРµРє СЃРµС‚РєРё СЂР°Р·РјРµС‚РєРё РІ РЅРѕРјРµСЂ РїРёРєСЃРµР»СЏ РїРѕ РіРѕСЂРёР·РѕРЅС‚Р°Р»Рј */
-	#define GRID2Y(cellsy) ((cellsy) * 5)	/* РїРµСЂРµРІРѕРґ СЏС‡РµРµРє СЃРµС‚РєРё СЂР°Р·РјРµС‚РєРё РІ РЅРѕРјРµСЂ РїРёРєСЃРµР»СЏ РїРѕ РІРµСЂС‚РёРєР°Р»Рё */
+	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в ячейкт сетки разметки отображния */
+	#define ROWS2GRID(rows) ((rows) * 1)		/* перевести количество символов в ячейкт сетки разметки отображния */
+	#define GRID2X(cellsx) ((cellsx) * 16)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
+	#define GRID2Y(cellsy) ((cellsy) * 5)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
 
 #elif DIM_X == 800 && DIM_Y == 480
 	#define DSTYLE_G_X800_Y480	1	/* AT070TN90 panel (800*480) - 7" display */
-	#define CHARS2GRID(columns) ((columns) * 1)		/* РїРµСЂРµРІРµСЃС‚Рё РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРёРјРІРѕР»РѕРІ РІ СЏС‡РµР№РєС‚ СЃРµС‚РєРё СЂР°Р·РјРµС‚РєРё РѕС‚РѕР±СЂР°Р¶РЅРёСЏ */
-	#define ROWS2GRID(rows) ((rows) * 1)		/* РїРµСЂРµРІРµСЃС‚Рё РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРёРјРІРѕР»РѕРІ РІ СЏС‡РµР№РєС‚ СЃРµС‚РєРё СЂР°Р·РјРµС‚РєРё РѕС‚РѕР±СЂР°Р¶РЅРёСЏ */
-	#define GRID2X(cellsx) ((cellsx) * 16)	/* РїРµСЂРµРІРѕРґ СЏС‡РµРµРє СЃРµС‚РєРё СЂР°Р·РјРµС‚РєРё РІ РЅРѕРјРµСЂ РїРёРєСЃРµР»СЏ РїРѕ РіРѕСЂРёР·РѕРЅС‚Р°Р»Рј */
-	#define GRID2Y(cellsy) ((cellsy) * 5)	/* РїРµСЂРµРІРѕРґ СЏС‡РµРµРє СЃРµС‚РєРё СЂР°Р·РјРµС‚РєРё РІ РЅРѕРјРµСЂ РїРёРєСЃРµР»СЏ РїРѕ РІРµСЂС‚РёРєР°Р»Рё */
+	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в ячейкт сетки разметки отображния */
+	#define ROWS2GRID(rows) ((rows) * 1)		/* перевести количество символов в ячейкт сетки разметки отображния */
+	#define GRID2X(cellsx) ((cellsx) * 16)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
+	#define GRID2Y(cellsy) ((cellsy) * 5)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
 
 #elif DIM_X == 1024 && DIM_Y == 600
 	#define DSTYLE_G_X800_Y480	1	/* AT070TN90 panel (800*480) - 7" display */
 	//#define DSTYLE_G_X1024_Y600	1	/* AT070TNA2 panel (1024*600) - 7" display */
-	#define CHARS2GRID(columns) ((columns) * 1)		/* РїРµСЂРµРІРµСЃС‚Рё РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРёРјРІРѕР»РѕРІ РІ СЏС‡РµР№РєС‚ СЃРµС‚РєРё СЂР°Р·РјРµС‚РєРё РѕС‚РѕР±СЂР°Р¶РЅРёСЏ */
-	#define ROWS2GRID(rows) ((rows) * 1)		/* РїРµСЂРµРІРµСЃС‚Рё РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРёРјРІРѕР»РѕРІ РІ СЏС‡РµР№РєС‚ СЃРµС‚РєРё СЂР°Р·РјРµС‚РєРё РѕС‚РѕР±СЂР°Р¶РЅРёСЏ */
-	#define GRID2X(cellsx) ((cellsx) * 16)	/* РїРµСЂРµРІРѕРґ СЏС‡РµРµРє СЃРµС‚РєРё СЂР°Р·РјРµС‚РєРё РІ РЅРѕРјРµСЂ РїРёРєСЃРµР»СЏ РїРѕ РіРѕСЂРёР·РѕРЅС‚Р°Р»Рј */
-	#define GRID2Y(cellsy) ((cellsy) * 5)	/* РїРµСЂРµРІРѕРґ СЏС‡РµРµРє СЃРµС‚РєРё СЂР°Р·РјРµС‚РєРё РІ РЅРѕРјРµСЂ РїРёРєСЃРµР»СЏ РїРѕ РІРµСЂС‚РёРєР°Р»Рё */
+	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в ячейкт сетки разметки отображния */
+	#define ROWS2GRID(rows) ((rows) * 1)		/* перевести количество символов в ячейкт сетки разметки отображния */
+	#define GRID2X(cellsx) ((cellsx) * 16)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
+	#define GRID2Y(cellsy) ((cellsy) * 5)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
 
 #elif DIM_X == 220 && DIM_Y == 176
-	#define DSTYLE_G_X220_Y176	1	// РРЅРґРёРєР°С‚РѕСЂ 220*176 SF-TC220H-9223A-N_IC_ILI9225C_2011-01-15 СЃ РєРѕРЅС‚СЂРѕР»Р»РµСЂРѕРј ILI9225РЎ
+	#define DSTYLE_G_X220_Y176	1	// Индикатор 220*176 SF-TC220H-9223A-N_IC_ILI9225C_2011-01-15 с контроллером ILI9225С
 	#define CHAR_W	8
 	#define CHAR_H	8
 	#define SMALLCHARH 16 /* Font height */
-	#define CHARS2GRID(columns) ((columns) * 1)		/* РїРµСЂРµРІРµСЃС‚Рё РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРёРјРІРѕР»РѕРІ РІ СЏС‡РµР№РєС‚ СЃРµС‚РєРё СЂР°Р·РјРµС‚РєРё РѕС‚РѕР±СЂР°Р¶РЅРёСЏ */
-	#define ROWS2GRID(rows) ((rows) * 1)		/* РїРµСЂРµРІРµСЃС‚Рё РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРёРјРІРѕР»РѕРІ РІ СЏС‡РµР№РєС‚ СЃРµС‚РєРё СЂР°Р·РјРµС‚РєРё РѕС‚РѕР±СЂР°Р¶РЅРёСЏ */
-	#define GRID2X(cellsx) ((cellsx) * CHAR_W)	/* РїРµСЂРµРІРѕРґ СЏС‡РµРµРє СЃРµС‚РєРё СЂР°Р·РјРµС‚РєРё РІ РЅРѕРјРµСЂ РїРёРєСЃРµР»СЏ РїРѕ РіРѕСЂРёР·РѕРЅС‚Р°Р»Рј */
-	#define GRID2Y(cellsy) ((cellsy) * CHAR_H)	/* РїРµСЂРµРІРѕРґ СЏС‡РµРµРє СЃРµС‚РєРё СЂР°Р·РјРµС‚РєРё РІ РЅРѕРјРµСЂ РїРёРєСЃРµР»СЏ РїРѕ РІРµСЂС‚РёРєР°Р»Рё */
+	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в ячейкт сетки разметки отображния */
+	#define ROWS2GRID(rows) ((rows) * 1)		/* перевести количество символов в ячейкт сетки разметки отображния */
+	#define GRID2X(cellsx) ((cellsx) * CHAR_W)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
+	#define GRID2Y(cellsy) ((cellsy) * CHAR_H)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
 		
 #elif DIM_X == 240 && DIM_Y == 128
 	#define DSTYLE_G_X240_Y128	1
 	#define CHAR_W	8
 	#define CHAR_H	8
 	#define SMALLCHARH 16 /* Font height */
-	#define CHARS2GRID(columns) ((columns) * 1)		/* РїРµСЂРµРІРµСЃС‚Рё РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРёРјРІРѕР»РѕРІ РІ СЏС‡РµР№РєС‚ СЃРµС‚РєРё СЂР°Р·РјРµС‚РєРё РѕС‚РѕР±СЂР°Р¶РЅРёСЏ */
-	#define ROWS2GRID(rows) ((rows) * 2)		/* РїРµСЂРµРІРµСЃС‚Рё РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРёРјРІРѕР»РѕРІ РІ СЏС‡РµР№РєС‚ СЃРµС‚РєРё СЂР°Р·РјРµС‚РєРё РѕС‚РѕР±СЂР°Р¶РЅРёСЏ */
-	#define GRID2X(cellsx) ((cellsx) * CHAR_W)	/* РїРµСЂРµРІРѕРґ СЏС‡РµРµРє СЃРµС‚РєРё СЂР°Р·РјРµС‚РєРё РІ РЅРѕРјРµСЂ РїРёРєСЃРµР»СЏ РїРѕ РіРѕСЂРёР·РѕРЅС‚Р°Р»Рј */
-	#define GRID2Y(cellsy) ((cellsy) * CHAR_H)	/* РїРµСЂРµРІРѕРґ СЏС‡РµРµРє СЃРµС‚РєРё СЂР°Р·РјРµС‚РєРё РІ РЅРѕРјРµСЂ РїРёРєСЃРµР»СЏ РїРѕ РІРµСЂС‚РёРєР°Р»Рё */
+	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в ячейкт сетки разметки отображния */
+	#define ROWS2GRID(rows) ((rows) * 2)		/* перевести количество символов в ячейкт сетки разметки отображния */
+	#define GRID2X(cellsx) ((cellsx) * CHAR_W)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
+	#define GRID2Y(cellsy) ((cellsy) * CHAR_H)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
 
 #elif DIM_X == 160 && DIM_Y == 128
 	#define DSTYLE_G_X160_Y128	1	// ST7735
 	#define CHAR_W	8
 	#define CHAR_H	8
 	#define SMALLCHARH 16 /* Font height */
-	#define CHARS2GRID(columns) ((columns) * 1)		/* РїРµСЂРµРІРµСЃС‚Рё РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРёРјРІРѕР»РѕРІ РІ СЏС‡РµР№РєС‚ СЃРµС‚РєРё СЂР°Р·РјРµС‚РєРё РѕС‚РѕР±СЂР°Р¶РЅРёСЏ */
-	#define ROWS2GRID(rows) ((rows) * 1)		/* РїРµСЂРµРІРµСЃС‚Рё РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРёРјРІРѕР»РѕРІ РІ СЏС‡РµР№РєС‚ СЃРµС‚РєРё СЂР°Р·РјРµС‚РєРё РѕС‚РѕР±СЂР°Р¶РЅРёСЏ */
-	#define GRID2X(cellsx) ((cellsx) * CHAR_W)	/* РїРµСЂРµРІРѕРґ СЏС‡РµРµРє СЃРµС‚РєРё СЂР°Р·РјРµС‚РєРё РІ РЅРѕРјРµСЂ РїРёРєСЃРµР»СЏ РїРѕ РіРѕСЂРёР·РѕРЅС‚Р°Р»Рј */
-	#define GRID2Y(cellsy) ((cellsy) * CHAR_H)	/* РїРµСЂРµРІРѕРґ СЏС‡РµРµРє СЃРµС‚РєРё СЂР°Р·РјРµС‚РєРё РІ РЅРѕРјРµСЂ РїРёРєСЃРµР»СЏ РїРѕ РІРµСЂС‚РёРєР°Р»Рё */
+	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в ячейкт сетки разметки отображния */
+	#define ROWS2GRID(rows) ((rows) * 1)		/* перевести количество символов в ячейкт сетки разметки отображния */
+	#define GRID2X(cellsx) ((cellsx) * CHAR_W)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
+	#define GRID2Y(cellsy) ((cellsy) * CHAR_H)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
 
 #elif DIM_X == 128 && DIM_Y == 64
 	#define DSTYLE_G_X128_Y64	1	
 	#define CHAR_W	6
 	#define CHAR_H	8
 	#define SMALLCHARH 8 /* Font height */
-	#define CHARS2GRID(columns) ((columns) * 1)		/* РїРµСЂРµРІРµСЃС‚Рё РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРёРјРІРѕР»РѕРІ РІ СЏС‡РµР№РєС‚ СЃРµС‚РєРё СЂР°Р·РјРµС‚РєРё РѕС‚РѕР±СЂР°Р¶РЅРёСЏ */
-	#define ROWS2GRID(rows) ((rows) * 1)		/* РїРµСЂРµРІРµСЃС‚Рё РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРёРјРІРѕР»РѕРІ РІ СЏС‡РµР№РєС‚ СЃРµС‚РєРё СЂР°Р·РјРµС‚РєРё РѕС‚РѕР±СЂР°Р¶РЅРёСЏ */
-	#define GRID2X(cellsx) ((cellsx) * CHAR_W)	/* РїРµСЂРµРІРѕРґ СЏС‡РµРµРє СЃРµС‚РєРё СЂР°Р·РјРµС‚РєРё РІ РЅРѕРјРµСЂ РїРёРєСЃРµР»СЏ РїРѕ РіРѕСЂРёР·РѕРЅС‚Р°Р»Рј */
-	#define GRID2Y(cellsy) ((cellsy) * CHAR_H)	/* РїРµСЂРµРІРѕРґ СЏС‡РµРµРє СЃРµС‚РєРё СЂР°Р·РјРµС‚РєРё РІ РЅРѕРјРµСЂ РїРёРєСЃРµР»СЏ РїРѕ РІРµСЂС‚РёРєР°Р»Рё */
+	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в ячейкт сетки разметки отображния */
+	#define ROWS2GRID(rows) ((rows) * 1)		/* перевести количество символов в ячейкт сетки разметки отображния */
+	#define GRID2X(cellsx) ((cellsx) * CHAR_W)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
+	#define GRID2Y(cellsy) ((cellsy) * CHAR_H)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
 
 #elif DIM_X == 132 && DIM_Y == 64
 	#define DSTYLE_G_X132_Y64	1
-	//#define DSTYLE_G_X128_Y64	1	/* RDX0077 - РїСЂРѕРІРµСЂРєРё РґРёР·Р°Р№РЅР° РЅР° РґСЂСѓРіРёС… РёРЅРґРёРєР°С‚РѕСЂР°С…	*/
+	//#define DSTYLE_G_X128_Y64	1	/* RDX0077 - проверки дизайна на других индикаторах	*/
 	#define CHAR_W	6
 	#define CHAR_H	8
 	#define SMALLCHARH 8 /* Font height */
-	#define CHARS2GRID(columns) ((columns) * 1)		/* РїРµСЂРµРІРµСЃС‚Рё РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРёРјРІРѕР»РѕРІ РІ СЏС‡РµР№РєС‚ СЃРµС‚РєРё СЂР°Р·РјРµС‚РєРё РѕС‚РѕР±СЂР°Р¶РЅРёСЏ */
-	#define ROWS2GRID(rows) ((rows) * 1)		/* РїРµСЂРµРІРµСЃС‚Рё РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРёРјРІРѕР»РѕРІ РІ СЏС‡РµР№РєС‚ СЃРµС‚РєРё СЂР°Р·РјРµС‚РєРё РѕС‚РѕР±СЂР°Р¶РЅРёСЏ */
-	#define GRID2X(cellsx) ((cellsx) * CHAR_W)	/* РїРµСЂРµРІРѕРґ СЏС‡РµРµРє СЃРµС‚РєРё СЂР°Р·РјРµС‚РєРё РІ РЅРѕРјРµСЂ РїРёРєСЃРµР»СЏ РїРѕ РіРѕСЂРёР·РѕРЅС‚Р°Р»Рј */
-	#define GRID2Y(cellsy) ((cellsy) * CHAR_H)	/* РїРµСЂРµРІРѕРґ СЏС‡РµРµРє СЃРµС‚РєРё СЂР°Р·РјРµС‚РєРё РІ РЅРѕРјРµСЂ РїРёРєСЃРµР»СЏ РїРѕ РІРµСЂС‚РёРєР°Р»Рё */
+	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в ячейкт сетки разметки отображния */
+	#define ROWS2GRID(rows) ((rows) * 1)		/* перевести количество символов в ячейкт сетки разметки отображния */
+	#define GRID2X(cellsx) ((cellsx) * CHAR_W)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
+	#define GRID2Y(cellsy) ((cellsy) * CHAR_H)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
 
 #elif DIM_X == 133 && DIM_Y == 64
 	// LCDMODE_TIC154
 	// LCDMODE_TIC218
 	#define DSTYLE_G_X132_Y64	1
-	//#define DSTYLE_G_X128_Y64	1	/* RDX0077 - РїСЂРѕРІРµСЂРєРё РґРёР·Р°Р№РЅР° РЅР° РґСЂСѓРіРёС… РёРЅРґРёРєР°С‚РѕСЂР°С…	*/
+	//#define DSTYLE_G_X128_Y64	1	/* RDX0077 - проверки дизайна на других индикаторах	*/
 	#define CHAR_W	6
 	#define CHAR_H	8
 	#define SMALLCHARH 8 /* Font height */
-	#define CHARS2GRID(columns) ((columns) * 1)		/* РїРµСЂРµРІРµСЃС‚Рё РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРёРјРІРѕР»РѕРІ РІ СЏС‡РµР№РєС‚ СЃРµС‚РєРё СЂР°Р·РјРµС‚РєРё РѕС‚РѕР±СЂР°Р¶РЅРёСЏ */
-	#define ROWS2GRID(rows) ((rows) * 1)		/* РїРµСЂРµРІРµСЃС‚Рё РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРёРјРІРѕР»РѕРІ РІ СЏС‡РµР№РєС‚ СЃРµС‚РєРё СЂР°Р·РјРµС‚РєРё РѕС‚РѕР±СЂР°Р¶РЅРёСЏ */
-	#define GRID2X(cellsx) ((cellsx) * CHAR_W)	/* РїРµСЂРµРІРѕРґ СЏС‡РµРµРє СЃРµС‚РєРё СЂР°Р·РјРµС‚РєРё РІ РЅРѕРјРµСЂ РїРёРєСЃРµР»СЏ РїРѕ РіРѕСЂРёР·РѕРЅС‚Р°Р»Рј */
-	#define GRID2Y(cellsy) ((cellsy) * CHAR_H)	/* РїРµСЂРµРІРѕРґ СЏС‡РµРµРє СЃРµС‚РєРё СЂР°Р·РјРµС‚РєРё РІ РЅРѕРјРµСЂ РїРёРєСЃРµР»СЏ РїРѕ РІРµСЂС‚РёРєР°Р»Рё */
+	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в ячейкт сетки разметки отображния */
+	#define ROWS2GRID(rows) ((rows) * 1)		/* перевести количество символов в ячейкт сетки разметки отображния */
+	#define GRID2X(cellsx) ((cellsx) * CHAR_W)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
+	#define GRID2Y(cellsy) ((cellsy) * CHAR_H)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
 
 #elif DIM_X == 176 && DIM_Y == 132		
 	#define DSTYLE_G_X176_Y132	1		// ls020/lph88
 	#define CHAR_W	8
 	#define CHAR_H	8
 	#define SMALLCHARH 16 /* Font height */
-	#define CHARS2GRID(columns) ((columns) * 1)		/* РїРµСЂРµРІРµСЃС‚Рё РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРёРјРІРѕР»РѕРІ РІ СЏС‡РµР№РєС‚ СЃРµС‚РєРё СЂР°Р·РјРµС‚РєРё РѕС‚РѕР±СЂР°Р¶РЅРёСЏ */
-	#define ROWS2GRID(rows) ((rows) * 1)		/* РїРµСЂРµРІРµСЃС‚Рё РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРёРјРІРѕР»РѕРІ РІ СЏС‡РµР№РєС‚ СЃРµС‚РєРё СЂР°Р·РјРµС‚РєРё РѕС‚РѕР±СЂР°Р¶РЅРёСЏ */
-	#define GRID2X(cellsx) ((cellsx) * CHAR_W)	/* РїРµСЂРµРІРѕРґ СЏС‡РµРµРє СЃРµС‚РєРё СЂР°Р·РјРµС‚РєРё РІ РЅРѕРјРµСЂ РїРёРєСЃРµР»СЏ РїРѕ РіРѕСЂРёР·РѕРЅС‚Р°Р»Рј */
-	#define GRID2Y(cellsy) ((cellsy) * CHAR_H)	/* РїРµСЂРµРІРѕРґ СЏС‡РµРµРє СЃРµС‚РєРё СЂР°Р·РјРµС‚РєРё РІ РЅРѕРјРµСЂ РїРёРєСЃРµР»СЏ РїРѕ РІРµСЂС‚РёРєР°Р»Рё */
+	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в ячейкт сетки разметки отображния */
+	#define ROWS2GRID(rows) ((rows) * 1)		/* перевести количество символов в ячейкт сетки разметки отображния */
+	#define GRID2X(cellsx) ((cellsx) * CHAR_W)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
+	#define GRID2Y(cellsy) ((cellsy) * CHAR_H)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
 
 #elif DIM_X == 320 && DIM_Y == 240
 	#define DSTYLE_G_X320_Y240	1	
 	#define CHAR_W	10
 	#define CHAR_H	8
 	#define SMALLCHARH 16 /* Font height */
-	#define CHARS2GRID(columns) ((columns) * 1)		/* РїРµСЂРµРІРµСЃС‚Рё РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРёРјРІРѕР»РѕРІ РІ СЏС‡РµР№РєС‚ СЃРµС‚РєРё СЂР°Р·РјРµС‚РєРё РѕС‚РѕР±СЂР°Р¶РЅРёСЏ */
-	#define ROWS2GRID(rows) ((rows) * 1)		/* РїРµСЂРµРІРµСЃС‚Рё РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРёРјРІРѕР»РѕРІ РІ СЏС‡РµР№РєС‚ СЃРµС‚РєРё СЂР°Р·РјРµС‚РєРё РѕС‚РѕР±СЂР°Р¶РЅРёСЏ */
-	#define GRID2X(cellsx) ((cellsx) * CHAR_W)	/* РїРµСЂРµРІРѕРґ СЏС‡РµРµРє СЃРµС‚РєРё СЂР°Р·РјРµС‚РєРё РІ РЅРѕРјРµСЂ РїРёРєСЃРµР»СЏ РїРѕ РіРѕСЂРёР·РѕРЅС‚Р°Р»Рј */
-	#define GRID2Y(cellsy) ((cellsy) * CHAR_H)	/* РїРµСЂРµРІРѕРґ СЏС‡РµРµРє СЃРµС‚РєРё СЂР°Р·РјРµС‚РєРё РІ РЅРѕРјРµСЂ РїРёРєСЃРµР»СЏ РїРѕ РІРµСЂС‚РёРєР°Р»Рё */
+	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в ячейкт сетки разметки отображния */
+	#define ROWS2GRID(rows) ((rows) * 1)		/* перевести количество символов в ячейкт сетки разметки отображния */
+	#define GRID2X(cellsx) ((cellsx) * CHAR_W)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
+	#define GRID2Y(cellsy) ((cellsy) * CHAR_H)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
 
 #elif DIM_X == 64 && DIM_Y == 32
 	#define DSTYLE_G_X64_Y32	1	
 	#define CHAR_W	6
 	#define CHAR_H	8
 	#define SMALLCHARH 8 /* Font height */
-	#define CHARS2GRID(columns) ((columns) * 1)		/* РїРµСЂРµРІРµСЃС‚Рё РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРёРјРІРѕР»РѕРІ РІ СЏС‡РµР№РєС‚ СЃРµС‚РєРё СЂР°Р·РјРµС‚РєРё РѕС‚РѕР±СЂР°Р¶РЅРёСЏ */
-	#define ROWS2GRID(rows) ((rows) * 1)		/* РїРµСЂРµРІРµСЃС‚Рё РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРёРјРІРѕР»РѕРІ РІ СЏС‡РµР№РєС‚ СЃРµС‚РєРё СЂР°Р·РјРµС‚РєРё РѕС‚РѕР±СЂР°Р¶РЅРёСЏ */
-	#define GRID2X(cellsx) ((cellsx) * CHAR_W)	/* РїРµСЂРµРІРѕРґ СЏС‡РµРµРє СЃРµС‚РєРё СЂР°Р·РјРµС‚РєРё РІ РЅРѕРјРµСЂ РїРёРєСЃРµР»СЏ РїРѕ РіРѕСЂРёР·РѕРЅС‚Р°Р»Рј */
-	#define GRID2Y(cellsy) ((cellsy) * CHAR_H)	/* РїРµСЂРµРІРѕРґ СЏС‡РµРµРє СЃРµС‚РєРё СЂР°Р·РјРµС‚РєРё РІ РЅРѕРјРµСЂ РїРёРєСЃРµР»СЏ РїРѕ РІРµСЂС‚РёРєР°Р»Рё */
+	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в ячейкт сетки разметки отображния */
+	#define ROWS2GRID(rows) ((rows) * 1)		/* перевести количество символов в ячейкт сетки разметки отображния */
+	#define GRID2X(cellsx) ((cellsx) * CHAR_W)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
+	#define GRID2Y(cellsy) ((cellsy) * CHAR_H)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
 
 #elif DIM_X == 128 && DIM_Y == 32
-	#define DSTYLE_G_X64_Y32	1	/* G1203H - РїСЂРѕРІРµСЂРєРё	*/
+	#define DSTYLE_G_X64_Y32	1	/* G1203H - проверки	*/
 	//#define DSTYLE_G_X128_Y32	1	
 	#define CHAR_W	6
 	#define CHAR_H	8
 	#define SMALLCHARH 8 /* Font height */
-	#define CHARS2GRID(columns) ((columns) * 1)		/* РїРµСЂРµРІРµСЃС‚Рё РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРёРјРІРѕР»РѕРІ РІ СЏС‡РµР№РєС‚ СЃРµС‚РєРё СЂР°Р·РјРµС‚РєРё РѕС‚РѕР±СЂР°Р¶РЅРёСЏ */
-	#define ROWS2GRID(rows) ((rows) * 1)		/* РїРµСЂРµРІРµСЃС‚Рё РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРёРјРІРѕР»РѕРІ РІ СЏС‡РµР№РєС‚ СЃРµС‚РєРё СЂР°Р·РјРµС‚РєРё РѕС‚РѕР±СЂР°Р¶РЅРёСЏ */
-	#define GRID2X(cellsx) ((cellsx) * CHAR_W)	/* РїРµСЂРµРІРѕРґ СЏС‡РµРµРє СЃРµС‚РєРё СЂР°Р·РјРµС‚РєРё РІ РЅРѕРјРµСЂ РїРёРєСЃРµР»СЏ РїРѕ РіРѕСЂРёР·РѕРЅС‚Р°Р»Рј */
-	#define GRID2Y(cellsy) ((cellsy) * CHAR_H)	/* РїРµСЂРµРІРѕРґ СЏС‡РµРµРє СЃРµС‚РєРё СЂР°Р·РјРµС‚РєРё РІ РЅРѕРјРµСЂ РїРёРєСЃРµР»СЏ РїРѕ РІРµСЂС‚РёРєР°Р»Рё */
+	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в ячейкт сетки разметки отображния */
+	#define ROWS2GRID(rows) ((rows) * 1)		/* перевести количество символов в ячейкт сетки разметки отображния */
+	#define GRID2X(cellsx) ((cellsx) * CHAR_W)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
+	#define GRID2Y(cellsy) ((cellsy) * CHAR_H)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
 
 #elif LCDMODE_HD44780 && LCDMODE_WH2002
 	#define DSTYLE_T_X20_Y2	1	
@@ -1286,482 +1286,482 @@
 	#error Wrong LCDMODE_HARD_I2C and LCDMODE_HARD_SPI definitions
 #endif
 
-// РћРїСЂРµРґРµР»РµРЅРёСЏ С„СѓРЅРєС†РёРѕРЅР°Р»СЊРЅРѕСЃС‚Рё РІ Р·Р°РІРёСЃРёРјРѕСЃС‚Рё РѕС‚ С‚РѕРіРѕ, РєР°РєРѕР№ РЅР°Р±РѕСЂ СѓРїСЂР°РІР»СЏСЋС‰РёС… Р±РёС‚РѕРІ РёРјРµРµС‚СЃСЏ.
+// Определения функциональности в зависимости от того, какой набор управляющих битов имеется.
 #if CTLREGSTYLE_SW2012_MINI
 
-	#define WITHPOWERTRIM		1	// РРјРµРµС‚СЃСЏ СѓРїСЂР°РІР»РµРЅРёРµ РјРѕС‰РЅРѕСЃС‚СЊСЋ
-	#define WITHPOWERTRIMMIN	1	// РќРёР¶РЅРёР№ РїСЂРµРґРµР» СЂРµРіСѓР»РёСЂРѕРІРєРё (РїРѕРєР°Р·С‹РІР°РµС‚С‹Р№ РЅР° РґРёСЃРїР»РµРµ)
-	#define WITHPOWERTRIMMAX	4	// Р’РµСЂС…РЅРёР№ РїСЂРµРґРµР» СЂРµРіСѓР»РёСЂРѕРІРєРё (РїРѕРєР°Р·С‹РІР°РµС‚С‹Р№ РЅР° РґРёСЃРїР»РµРµ)
-	#define	WITHMUTEALL			1	// РћС‚РєР»СЋС‡РµРЅРёРµ РјРёРєСЂРѕС„РѕРЅР° РІРѕ РІСЃРµС… СЂРµР¶РёРјР°С…
-	#define WITHONEATTONEAMP	1	/* С‚РѕР»СЊРєРѕ РѕРґРЅРѕ РїРѕР»РѕР¶РµРЅРёРµ Р°С‚С‚РµРЅСЋР°С‚РѕСЂР° Рё РЈР’Р§ */
+	#define WITHPOWERTRIM		1	// Имеется управление мощностью
+	#define WITHPOWERTRIMMIN	1	// Нижний предел регулировки (показываетый на дисплее)
+	#define WITHPOWERTRIMMAX	4	// Верхний предел регулировки (показываетый на дисплее)
+	#define	WITHMUTEALL			1	// Отключение микрофона во всех режимах
+	#define WITHONEATTONEAMP	1	/* только одно положение аттенюатора и УВЧ */
 
 
-	/* РєРѕРґС‹ РІС…РѕРґРѕРІ РєРѕРјРјСѓС‚Р°С‚РѕСЂР° РёСЃС‚РѕС‡РЅРёРєРѕРІ СЃРёРіРЅР°Р»Р° РґР»СЏ РЈРќР§ РїСЂРёС‘РјРЅРёРєР° */
+	/* коды входов коммутатора источников сигнала для УНЧ приёмника */
 	#define BOARD_DETECTOR_MUTE 0x00
 	#define BOARD_DETECTOR_SSB 0x00
 	#define BOARD_DETECTOR_AM 0x00
 	#define BOARD_DETECTOR_FM 0x00
 	#define BOARD_DETECTOR_WFM 0x00
-	#define BOARD_DETECTOR_TUNE 0x00	/* РєРѕРЅС„РёРіСѓСЂР°С†РёСЏ РїР»Р°С‚С‹ РґР»СЏ СЂРµР¶РёРјР° TUNE (CWZ РЅР° РїРµСЂРµРґР°С‡Сѓ) */
+	#define BOARD_DETECTOR_TUNE 0x00	/* конфигурация платы для режима TUNE (CWZ на передачу) */
 
-	/* РєРѕРґС‹ С„РёР»СЊС‚СЂРѕРІ РІС‚РѕСЂРѕР№ РџР§, РІС‹РґР°РІР°РµРјС‹Рµ РЅР° РґРµС€РёС„СЂР°С‚РѕСЂС‹ */
+	/* коды фильтров второй ПЧ, выдаваемые на дешифраторы */
 	#define	BOARD_FILTERCODE_0	0x00
 	#define	BOARD_FILTERCODE_1	0x01
 
 	//#define	BOARD_AGCCODE_0		0x00
 	//#define	BOARD_AGCCODE_1		0x01
-	#define WITHAGCMODENONE		1	/* Р РµР¶РёРјР°РјРё РђР РЈ РЅРµ СѓРїСЂР°РІР»СЏРµРј */
+	#define WITHAGCMODENONE		1	/* Режимами АРУ не управляем */
 	#define BOARD_AGCCODE_OFF	0
 
 #elif CTLREGSTYLE_SW2012C
 
-	#define WITHPOWERTRIM		1	// РРјРµРµС‚СЃСЏ СѓРїСЂР°РІР»РµРЅРёРµ РјРѕС‰РЅРѕСЃС‚СЊСЋ
-	#define WITHPOWERTRIMMIN	1	// РќРёР¶РЅРёР№ РїСЂРµРґРµР» СЂРµРіСѓР»РёСЂРѕРІРєРё (РїРѕРєР°Р·С‹РІР°РµС‚С‹Р№ РЅР° РґРёСЃРїР»РµРµ)
-	#define WITHPOWERTRIMMAX	4	// Р’РµСЂС…РЅРёР№ РїСЂРµРґРµР» СЂРµРіСѓР»РёСЂРѕРІРєРё (РїРѕРєР°Р·С‹РІР°РµС‚С‹Р№ РЅР° РґРёСЃРїР»РµРµ)
-	#define	WITHMUTEALL			1	// РћС‚РєР»СЋС‡РµРЅРёРµ РјРёРєСЂРѕС„РѕРЅР° РІРѕ РІСЃРµС… СЂРµР¶РёРјР°С…
-	#define WITHONEATTONEAMP	1	/* С‚РѕР»СЊРєРѕ РѕРґРЅРѕ РїРѕР»РѕР¶РµРЅРёРµ Р°С‚С‚РµРЅСЋР°С‚РѕСЂР° Рё РЈР’Р§ */
+	#define WITHPOWERTRIM		1	// Имеется управление мощностью
+	#define WITHPOWERTRIMMIN	1	// Нижний предел регулировки (показываетый на дисплее)
+	#define WITHPOWERTRIMMAX	4	// Верхний предел регулировки (показываетый на дисплее)
+	#define	WITHMUTEALL			1	// Отключение микрофона во всех режимах
+	#define WITHONEATTONEAMP	1	/* только одно положение аттенюатора и УВЧ */
 
 
-	/* РєРѕРґС‹ РІС…РѕРґРѕРІ РєРѕРјРјСѓС‚Р°С‚РѕСЂР° РёСЃС‚РѕС‡РЅРёРєРѕРІ СЃРёРіРЅР°Р»Р° РґР»СЏ РЈРќР§ РїСЂРёС‘РјРЅРёРєР° */
+	/* коды входов коммутатора источников сигнала для УНЧ приёмника */
 	#define BOARD_DETECTOR_MUTE 0x00
 	#define BOARD_DETECTOR_SSB 0x00
 	#define BOARD_DETECTOR_AM 0x00
 	#define BOARD_DETECTOR_FM 0x00
 	#define BOARD_DETECTOR_WFM 0x00
-	#define BOARD_DETECTOR_TUNE 0x00	/* РєРѕРЅС„РёРіСѓСЂР°С†РёСЏ РїР»Р°С‚С‹ РґР»СЏ СЂРµР¶РёРјР° TUNE (CWZ РЅР° РїРµСЂРµРґР°С‡Сѓ) */
+	#define BOARD_DETECTOR_TUNE 0x00	/* конфигурация платы для режима TUNE (CWZ на передачу) */
 
-	/* РєРѕРґС‹ С„РёР»СЊС‚СЂРѕРІ РІС‚РѕСЂРѕР№ РџР§, РІС‹РґР°РІР°РµРјС‹Рµ РЅР° РґРµС€РёС„СЂР°С‚РѕСЂС‹ */
+	/* коды фильтров второй ПЧ, выдаваемые на дешифраторы */
 	#define	BOARD_FILTERCODE_0	0x00
 	#define	BOARD_FILTERCODE_1	0x01
 
 	//#define	BOARD_AGCCODE_0		0x00
 	//#define	BOARD_AGCCODE_1		0x01
-	#define WITHAGCMODENONE		1	/* Р РµР¶РёРјР°РјРё РђР РЈ РЅРµ СѓРїСЂР°РІР»СЏРµРј */
+	#define WITHAGCMODENONE		1	/* Режимами АРУ не управляем */
 	#define BOARD_AGCCODE_OFF	0
 
 #elif CTLREGSTYLE_SW2012CN
-	// СѓРїСЂР°РІР»СЏСЋС‰РёРµ СЂРµРіРёСЃС‚СЂС‹ SW2012MINI COLOR 2 c С†РІРµС‚РЅС‹Рј РґРёСЃРїР»РµРµРј ILI9163 Рё СЂРµРіСѓР»РёСЂРѕРІРєРѕР№ РІС‹С…РѕРґРЅРѕР№ РјРѕС‰РЅРѕСЃС‚Рё
-	// СѓРїСЂР°РІР»СЏСЋС‰РёРµ СЂРµРіРёСЃС‚СЂС‹ SW2016MINI
+	// управляющие регистры SW2012MINI COLOR 2 c цветным дисплеем ILI9163 и регулировкой выходной мощности
+	// управляющие регистры SW2016MINI
 
-	#define WITHPOWERTRIM		1	// РРјРµРµС‚СЃСЏ СѓРїСЂР°РІР»РµРЅРёРµ РјРѕС‰РЅРѕСЃС‚СЊСЋ
-	#define WITHPOWERTRIMMIN	1	// РќРёР¶РЅРёР№ РїСЂРµРґРµР» СЂРµРіСѓР»РёСЂРѕРІРєРё (РїРѕРєР°Р·С‹РІР°РµС‚С‹Р№ РЅР° РґРёСЃРїР»РµРµ)
-	#define WITHPOWERTRIMMAX	4	// Р’РµСЂС…РЅРёР№ РїСЂРµРґРµР» СЂРµРіСѓР»РёСЂРѕРІРєРё (РїРѕРєР°Р·С‹РІР°РµС‚С‹Р№ РЅР° РґРёСЃРїР»РµРµ)
-	#define	WITHMUTEALL			1	// РћС‚РєР»СЋС‡РµРЅРёРµ РјРёРєСЂРѕС„РѕРЅР° РІРѕ РІСЃРµС… СЂРµР¶РёРјР°С…
-	#define WITHONEATTONEAMP	1	/* С‚РѕР»СЊРєРѕ РѕРґРЅРѕ РїРѕР»РѕР¶РµРЅРёРµ Р°С‚С‚РµРЅСЋР°С‚РѕСЂР° Рё РЈР’Р§ */
+	#define WITHPOWERTRIM		1	// Имеется управление мощностью
+	#define WITHPOWERTRIMMIN	1	// Нижний предел регулировки (показываетый на дисплее)
+	#define WITHPOWERTRIMMAX	4	// Верхний предел регулировки (показываетый на дисплее)
+	#define	WITHMUTEALL			1	// Отключение микрофона во всех режимах
+	#define WITHONEATTONEAMP	1	/* только одно положение аттенюатора и УВЧ */
 
 
-	/* РєРѕРґС‹ РІС…РѕРґРѕРІ РєРѕРјРјСѓС‚Р°С‚РѕСЂР° РёСЃС‚РѕС‡РЅРёРєРѕРІ СЃРёРіРЅР°Р»Р° РґР»СЏ РЈРќР§ РїСЂРёС‘РјРЅРёРєР° */
+	/* коды входов коммутатора источников сигнала для УНЧ приёмника */
 	#define BOARD_DETECTOR_MUTE 0x00
 	#define BOARD_DETECTOR_SSB 0x00
 	#define BOARD_DETECTOR_AM 0x00
 	#define BOARD_DETECTOR_FM 0x00
 	#define BOARD_DETECTOR_WFM 0x00
-	#define BOARD_DETECTOR_TUNE 0x00	/* РєРѕРЅС„РёРіСѓСЂР°С†РёСЏ РїР»Р°С‚С‹ РґР»СЏ СЂРµР¶РёРјР° TUNE (CWZ РЅР° РїРµСЂРµРґР°С‡Сѓ) */
+	#define BOARD_DETECTOR_TUNE 0x00	/* конфигурация платы для режима TUNE (CWZ на передачу) */
 
-	/* РєРѕРґС‹ С„РёР»СЊС‚СЂРѕРІ РІС‚РѕСЂРѕР№ РџР§, РІС‹РґР°РІР°РµРјС‹Рµ РЅР° РґРµС€РёС„СЂР°С‚РѕСЂС‹ */
+	/* коды фильтров второй ПЧ, выдаваемые на дешифраторы */
 	#define	BOARD_FILTERCODE_0	0x00
 	#define	BOARD_FILTERCODE_1	0x01
 
 	//#define	BOARD_AGCCODE_0		0x00
 	//#define	BOARD_AGCCODE_1		0x01
-	#define WITHAGCMODENONE		1	/* Р РµР¶РёРјР°РјРё РђР РЈ РЅРµ СѓРїСЂР°РІР»СЏРµРј */
+	#define WITHAGCMODENONE		1	/* Режимами АРУ не управляем */
 	#define BOARD_AGCCODE_OFF	0
 
 #elif CTLREGSTYLE_SW2012CN_RN3ZOB
 
-	#define WITHPOWERTRIM		1	// РРјРµРµС‚СЃСЏ СѓРїСЂР°РІР»РµРЅРёРµ РјРѕС‰РЅРѕСЃС‚СЊСЋ
-	#define WITHPOWERTRIMMIN	1	// РќРёР¶РЅРёР№ РїСЂРµРґРµР» СЂРµРіСѓР»РёСЂРѕРІРєРё (РїРѕРєР°Р·С‹РІР°РµС‚С‹Р№ РЅР° РґРёСЃРїР»РµРµ)
-	#define WITHPOWERTRIMMAX	4	// Р’РµСЂС…РЅРёР№ РїСЂРµРґРµР» СЂРµРіСѓР»РёСЂРѕРІРєРё (РїРѕРєР°Р·С‹РІР°РµС‚С‹Р№ РЅР° РґРёСЃРїР»РµРµ)
-	#define	WITHMUTEALL			1	// РћС‚РєР»СЋС‡РµРЅРёРµ РјРёРєСЂРѕС„РѕРЅР° РІРѕ РІСЃРµС… СЂРµР¶РёРјР°С…
-	#define WITHONEATTONEAMP	1	/* С‚РѕР»СЊРєРѕ РѕРґРЅРѕ РїРѕР»РѕР¶РµРЅРёРµ Р°С‚С‚РµРЅСЋР°С‚РѕСЂР° Рё РЈР’Р§ */
+	#define WITHPOWERTRIM		1	// Имеется управление мощностью
+	#define WITHPOWERTRIMMIN	1	// Нижний предел регулировки (показываетый на дисплее)
+	#define WITHPOWERTRIMMAX	4	// Верхний предел регулировки (показываетый на дисплее)
+	#define	WITHMUTEALL			1	// Отключение микрофона во всех режимах
+	#define WITHONEATTONEAMP	1	/* только одно положение аттенюатора и УВЧ */
 
 
-	/* РєРѕРґС‹ РІС…РѕРґРѕРІ РєРѕРјРјСѓС‚Р°С‚РѕСЂР° РёСЃС‚РѕС‡РЅРёРєРѕРІ СЃРёРіРЅР°Р»Р° РґР»СЏ РЈРќР§ РїСЂРёС‘РјРЅРёРєР° */
+	/* коды входов коммутатора источников сигнала для УНЧ приёмника */
 	#define BOARD_DETECTOR_MUTE 0x00
 	#define BOARD_DETECTOR_SSB 0x00
 	#define BOARD_DETECTOR_AM 0x00
 	#define BOARD_DETECTOR_FM 0x00
 	#define BOARD_DETECTOR_WFM 0x00
-	#define BOARD_DETECTOR_TUNE 0x00	/* РєРѕРЅС„РёРіСѓСЂР°С†РёСЏ РїР»Р°С‚С‹ РґР»СЏ СЂРµР¶РёРјР° TUNE (CWZ РЅР° РїРµСЂРµРґР°С‡Сѓ) */
+	#define BOARD_DETECTOR_TUNE 0x00	/* конфигурация платы для режима TUNE (CWZ на передачу) */
 
-	/* РєРѕРґС‹ С„РёР»СЊС‚СЂРѕРІ РІС‚РѕСЂРѕР№ РџР§, РІС‹РґР°РІР°РµРјС‹Рµ РЅР° РґРµС€РёС„СЂР°С‚РѕСЂС‹ */
+	/* коды фильтров второй ПЧ, выдаваемые на дешифраторы */
 	#define	BOARD_FILTERCODE_0	0x00
 	#define	BOARD_FILTERCODE_1	0x01
 
 	//#define	BOARD_AGCCODE_0		0x00
 	//#define	BOARD_AGCCODE_1		0x01
-	#define WITHAGCMODENONE		1	/* Р РµР¶РёРјР°РјРё РђР РЈ РЅРµ СѓРїСЂР°РІР»СЏРµРј */
+	#define WITHAGCMODENONE		1	/* Режимами АРУ не управляем */
 	#define BOARD_AGCCODE_OFF	0
 
 #elif CTLREGSTYLE_SW2013SF
 
-	#define WITHPOWERLPHP		1	// РРјРµРµС‚СЃСЏ РїРµСЂРµРєР»СЋС‡РµРЅРёРµ Рё РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ HP / LP
-	#define WITHPOWERTRIMMIN	0	// РќРёР¶РЅРёР№ РїСЂРµРґРµР» СЂРµРіСѓР»РёСЂРѕРІРєРё
-	#define WITHPOWERTRIMMAX	1	// Р’РµСЂС…РЅРёР№ РїСЂРµРґРµР» СЂРµРіСѓР»РёСЂРѕРІРєРё
-	#define	WITHMUTEALL			1	// РћС‚РєР»СЋС‡РµРЅРёРµ РјРёРєСЂРѕС„РѕРЅР° РІРѕ РІСЃРµС… СЂРµР¶РёРјР°С…
-	#define WITHONEATTONEAMP	1	/* С‚РѕР»СЊРєРѕ РѕРґРЅРѕ РїРѕР»РѕР¶РµРЅРёРµ Р°С‚С‚РµРЅСЋР°С‚РѕСЂР° Рё РЈР’Р§ */
+	#define WITHPOWERLPHP		1	// Имеется переключение и отображение HP / LP
+	#define WITHPOWERTRIMMIN	0	// Нижний предел регулировки
+	#define WITHPOWERTRIMMAX	1	// Верхний предел регулировки
+	#define	WITHMUTEALL			1	// Отключение микрофона во всех режимах
+	#define WITHONEATTONEAMP	1	/* только одно положение аттенюатора и УВЧ */
 
 
-	/* РєРѕРґС‹ РІС…РѕРґРѕРІ РєРѕРјРјСѓС‚Р°С‚РѕСЂР° РёСЃС‚РѕС‡РЅРёРєРѕРІ СЃРёРіРЅР°Р»Р° РґР»СЏ РЈРќР§ РїСЂРёС‘РјРЅРёРєР° */
+	/* коды входов коммутатора источников сигнала для УНЧ приёмника */
 	#define BOARD_DETECTOR_MUTE 0x00
 	#define BOARD_DETECTOR_SSB 0x00
 	#define BOARD_DETECTOR_AM 0x00
 	#define BOARD_DETECTOR_FM 0x00
 	#define BOARD_DETECTOR_WFM 0x00
-	#define BOARD_DETECTOR_TUNE 0x00	/* РєРѕРЅС„РёРіСѓСЂР°С†РёСЏ РїР»Р°С‚С‹ РґР»СЏ СЂРµР¶РёРјР° TUNE (CWZ РЅР° РїРµСЂРµРґР°С‡Сѓ) */
+	#define BOARD_DETECTOR_TUNE 0x00	/* конфигурация платы для режима TUNE (CWZ на передачу) */
 
-	/* РєРѕРґС‹ С„РёР»СЊС‚СЂРѕРІ РІС‚РѕСЂРѕР№ РџР§, РІС‹РґР°РІР°РµРјС‹Рµ РЅР° РґРµС€РёС„СЂР°С‚РѕСЂС‹ */
+	/* коды фильтров второй ПЧ, выдаваемые на дешифраторы */
 	#define	BOARD_FILTERCODE_0	0x00
 	#define	BOARD_FILTERCODE_1	0x01
 
 	//#define	BOARD_AGCCODE_0		0x00
 	//#define	BOARD_AGCCODE_1		0x01
-	#define WITHAGCMODENONE		1	/* Р РµР¶РёРјР°РјРё РђР РЈ РЅРµ СѓРїСЂР°РІР»СЏРµРј */
+	#define WITHAGCMODENONE		1	/* Режимами АРУ не управляем */
 	#define BOARD_AGCCODE_OFF	0
 
 #elif CTLREGSTYLE_SW2013SF_V1		// for UT4UA
 
-	#define WITHPOWERLPHP		1	// РРјРµРµС‚СЃСЏ РїРµСЂРµРєР»СЋС‡РµРЅРёРµ Рё РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ HP / LP
-	#define WITHPOWERTRIMMIN	0	// РќРёР¶РЅРёР№ РїСЂРµРґРµР» СЂРµРіСѓР»РёСЂРѕРІРєРё
-	#define WITHPOWERTRIMMAX	1	// Р’РµСЂС…РЅРёР№ РїСЂРµРґРµР» СЂРµРіСѓР»РёСЂРѕРІРєРё
-	#define	WITHMUTEALL			1	// РћС‚РєР»СЋС‡РµРЅРёРµ РјРёРєСЂРѕС„РѕРЅР° РІРѕ РІСЃРµС… СЂРµР¶РёРјР°С…
-	#define WITHONEATTONEAMP	1	/* С‚РѕР»СЊРєРѕ РѕРґРЅРѕ РїРѕР»РѕР¶РµРЅРёРµ Р°С‚С‚РµРЅСЋР°С‚РѕСЂР° Рё РЈР’Р§ */
-	#define WITHLCDBACKLIGHT	1	// РРјРµРµС‚СЃСЏ СѓРїСЂР°РІР»РµРЅРёРµ РїРѕРґСЃРІРµС‚РєРѕР№ РґРёСЃРїР»РµСЏ 
-	#define WITHLCDBACKLIGHTMIN	1	// РќРёР¶РЅРёР№ РїСЂРµРґРµР» СЂРµРіСѓР»РёСЂРѕРІРєРё (РїРѕРєР°Р·С‹РІР°РµС‚С‹Р№ РЅР° РґРёСЃРїР»РµРµ)
-	#define WITHLCDBACKLIGHTMAX	3	// Р’РµСЂС…РЅРёР№ РїСЂРµРґРµР» СЂРµРіСѓР»РёСЂРѕРІРєРё (РїРѕРєР°Р·С‹РІР°РµС‚С‹Р№ РЅР° РґРёСЃРїР»РµРµ)
+	#define WITHPOWERLPHP		1	// Имеется переключение и отображение HP / LP
+	#define WITHPOWERTRIMMIN	0	// Нижний предел регулировки
+	#define WITHPOWERTRIMMAX	1	// Верхний предел регулировки
+	#define	WITHMUTEALL			1	// Отключение микрофона во всех режимах
+	#define WITHONEATTONEAMP	1	/* только одно положение аттенюатора и УВЧ */
+	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея 
+	#define WITHLCDBACKLIGHTMIN	1	// Нижний предел регулировки (показываетый на дисплее)
+	#define WITHLCDBACKLIGHTMAX	3	// Верхний предел регулировки (показываетый на дисплее)
 
 	//#define	BOARD_AGCCODE_0		0x00
 	//#define	BOARD_AGCCODE_1		0x01
-	#define WITHAGCMODENONE		1	/* Р РµР¶РёРјР°РјРё РђР РЈ РЅРµ СѓРїСЂР°РІР»СЏРµРј */
+	#define WITHAGCMODENONE		1	/* Режимами АРУ не управляем */
 	#define BOARD_AGCCODE_OFF	0
 
-	/* РєРѕРґС‹ РІС…РѕРґРѕРІ РєРѕРјРјСѓС‚Р°С‚РѕСЂР° РёСЃС‚РѕС‡РЅРёРєРѕРІ СЃРёРіРЅР°Р»Р° РґР»СЏ РЈРќР§ РїСЂРёС‘РјРЅРёРєР° */
+	/* коды входов коммутатора источников сигнала для УНЧ приёмника */
 	#define BOARD_DETECTOR_MUTE 0x00
 	#define BOARD_DETECTOR_SSB 0x00
 	#define BOARD_DETECTOR_AM 0x00
 	#define BOARD_DETECTOR_FM 0x00
 	#define BOARD_DETECTOR_WFM 0x00
-	#define BOARD_DETECTOR_TUNE 0x00	/* РєРѕРЅС„РёРіСѓСЂР°С†РёСЏ РїР»Р°С‚С‹ РґР»СЏ СЂРµР¶РёРјР° TUNE (CWZ РЅР° РїРµСЂРµРґР°С‡Сѓ) */
+	#define BOARD_DETECTOR_TUNE 0x00	/* конфигурация платы для режима TUNE (CWZ на передачу) */
 
-	/* РєРѕРґС‹ С„РёР»СЊС‚СЂРѕРІ РІС‚РѕСЂРѕР№ РџР§, РІС‹РґР°РІР°РµРјС‹Рµ РЅР° РґРµС€РёС„СЂР°С‚РѕСЂС‹ */
+	/* коды фильтров второй ПЧ, выдаваемые на дешифраторы */
 	#define	BOARD_FILTERCODE_0	0x00
 	#define	BOARD_FILTERCODE_1	0x01
 
 #elif CTLREGSTYLE_SW2013RDX
 
-	#define WITHLCDBACKLIGHT	1	// РРјРµРµС‚СЃСЏ СѓРїСЂР°РІР»РµРЅРёРµ РїРѕРґСЃРІРµС‚РєРѕР№ РґРёСЃРїР»РµСЏ 
-	#define WITHLCDBACKLIGHTMIN	1	// РќРёР¶РЅРёР№ РїСЂРµРґРµР» СЂРµРіСѓР»РёСЂРѕРІРєРё (РїРѕРєР°Р·С‹РІР°РµС‚С‹Р№ РЅР° РґРёСЃРїР»РµРµ)
-	#define WITHLCDBACKLIGHTMAX	4	// Р’РµСЂС…РЅРёР№ РїСЂРµРґРµР» СЂРµРіСѓР»РёСЂРѕРІРєРё (РїРѕРєР°Р·С‹РІР°РµС‚С‹Р№ РЅР° РґРёСЃРїР»РµРµ)
-	#define WITHPOWERLPHP		1	// РРјРµРµС‚СЃСЏ РїРµСЂРµРєР»СЋС‡РµРЅРёРµ Рё РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ HP / LP
-	#define WITHPOWERTRIMMIN	0	// РќРёР¶РЅРёР№ РїСЂРµРґРµР» СЂРµРіСѓР»РёСЂРѕРІРєРё
-	#define WITHPOWERTRIMMAX	1	// Р’РµСЂС…РЅРёР№ РїСЂРµРґРµР» СЂРµРіСѓР»РёСЂРѕРІРєРё
-	#define	WITHMUTEALL			1	// РћС‚РєР»СЋС‡РµРЅРёРµ РјРёРєСЂРѕС„РѕРЅР° РІРѕ РІСЃРµС… СЂРµР¶РёРјР°С…
-	#define WITHONEATTONEAMP	1	/* С‚РѕР»СЊРєРѕ РѕРґРЅРѕ РїРѕР»РѕР¶РµРЅРёРµ Р°С‚С‚РµРЅСЋР°С‚РѕСЂР° Рё РЈР’Р§ */
+	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея 
+	#define WITHLCDBACKLIGHTMIN	1	// Нижний предел регулировки (показываетый на дисплее)
+	#define WITHLCDBACKLIGHTMAX	4	// Верхний предел регулировки (показываетый на дисплее)
+	#define WITHPOWERLPHP		1	// Имеется переключение и отображение HP / LP
+	#define WITHPOWERTRIMMIN	0	// Нижний предел регулировки
+	#define WITHPOWERTRIMMAX	1	// Верхний предел регулировки
+	#define	WITHMUTEALL			1	// Отключение микрофона во всех режимах
+	#define WITHONEATTONEAMP	1	/* только одно положение аттенюатора и УВЧ */
 
-	/* РєРѕРґС‹ РІС…РѕРґРѕРІ РєРѕРјРјСѓС‚Р°С‚РѕСЂР° РёСЃС‚РѕС‡РЅРёРєРѕРІ СЃРёРіРЅР°Р»Р° РґР»СЏ РЈРќР§ РїСЂРёС‘РјРЅРёРєР° */
+	/* коды входов коммутатора источников сигнала для УНЧ приёмника */
 	#define BOARD_DETECTOR_MUTE 0x00
 	#define BOARD_DETECTOR_SSB 0x00
 	#define BOARD_DETECTOR_AM 0x00
 	#define BOARD_DETECTOR_FM 0x00
 	#define BOARD_DETECTOR_WFM 0x00
-	#define BOARD_DETECTOR_TUNE 0x00	/* РєРѕРЅС„РёРіСѓСЂР°С†РёСЏ РїР»Р°С‚С‹ РґР»СЏ СЂРµР¶РёРјР° TUNE (CWZ РЅР° РїРµСЂРµРґР°С‡Сѓ) */
+	#define BOARD_DETECTOR_TUNE 0x00	/* конфигурация платы для режима TUNE (CWZ на передачу) */
 
-	/* РєРѕРґС‹ С„РёР»СЊС‚СЂРѕРІ РІС‚РѕСЂРѕР№ РџР§, РІС‹РґР°РІР°РµРјС‹Рµ РЅР° РґРµС€РёС„СЂР°С‚РѕСЂС‹ */
+	/* коды фильтров второй ПЧ, выдаваемые на дешифраторы */
 	#define	BOARD_FILTERCODE_0	0x00
 	#define	BOARD_FILTERCODE_1	0x01
 
 	//#define	BOARD_AGCCODE_0		0x00
 	//#define	BOARD_AGCCODE_1		0x01
-	#define WITHAGCMODENONE		1	/* Р РµР¶РёРјР°РјРё РђР РЈ РЅРµ СѓРїСЂР°РІР»СЏРµРј */
+	#define WITHAGCMODENONE		1	/* Режимами АРУ не управляем */
 	#define BOARD_AGCCODE_OFF	0
 	#define WITHNOTCHONOFF		1	/* notch on/off */
 
 #elif CTLREGSTYLE_SW2013RDX_UY5UM_WO240
 
-	#define WITHLCDBACKLIGHT	1	// РРјРµРµС‚СЃСЏ СѓРїСЂР°РІР»РµРЅРёРµ РїРѕРґСЃРІРµС‚РєРѕР№ РґРёСЃРїР»РµСЏ 
-	#define WITHLCDBACKLIGHTMIN	1	// РќРёР¶РЅРёР№ РїСЂРµРґРµР» СЂРµРіСѓР»РёСЂРѕРІРєРё (РїРѕРєР°Р·С‹РІР°РµС‚С‹Р№ РЅР° РґРёСЃРїР»РµРµ)
-	#define WITHLCDBACKLIGHTMAX	4	// Р’РµСЂС…РЅРёР№ РїСЂРµРґРµР» СЂРµРіСѓР»РёСЂРѕРІРєРё (РїРѕРєР°Р·С‹РІР°РµС‚С‹Р№ РЅР° РґРёСЃРїР»РµРµ)
-	#define WITHPOWERLPHP		1	// РРјРµРµС‚СЃСЏ РїРµСЂРµРєР»СЋС‡РµРЅРёРµ Рё РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ HP / LP
-	#define WITHPOWERTRIMMIN	0	// РќРёР¶РЅРёР№ РїСЂРµРґРµР» СЂРµРіСѓР»РёСЂРѕРІРєРё
-	#define WITHPOWERTRIMMAX	1	// Р’РµСЂС…РЅРёР№ РїСЂРµРґРµР» СЂРµРіСѓР»РёСЂРѕРІРєРё
-	#define	WITHMUTEALL			1	// РћС‚РєР»СЋС‡РµРЅРёРµ РјРёРєСЂРѕС„РѕРЅР° РІРѕ РІСЃРµС… СЂРµР¶РёРјР°С…
-	#define WITHONEATTONEAMP	1	/* С‚РѕР»СЊРєРѕ РѕРґРЅРѕ РїРѕР»РѕР¶РµРЅРёРµ Р°С‚С‚РµРЅСЋР°С‚РѕСЂР° Рё РЈР’Р§ */
+	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея 
+	#define WITHLCDBACKLIGHTMIN	1	// Нижний предел регулировки (показываетый на дисплее)
+	#define WITHLCDBACKLIGHTMAX	4	// Верхний предел регулировки (показываетый на дисплее)
+	#define WITHPOWERLPHP		1	// Имеется переключение и отображение HP / LP
+	#define WITHPOWERTRIMMIN	0	// Нижний предел регулировки
+	#define WITHPOWERTRIMMAX	1	// Верхний предел регулировки
+	#define	WITHMUTEALL			1	// Отключение микрофона во всех режимах
+	#define WITHONEATTONEAMP	1	/* только одно положение аттенюатора и УВЧ */
 
-	/* РєРѕРґС‹ РІС…РѕРґРѕРІ РєРѕРјРјСѓС‚Р°С‚РѕСЂР° РёСЃС‚РѕС‡РЅРёРєРѕРІ СЃРёРіРЅР°Р»Р° РґР»СЏ РЈРќР§ РїСЂРёС‘РјРЅРёРєР° */
+	/* коды входов коммутатора источников сигнала для УНЧ приёмника */
 	#define BOARD_DETECTOR_MUTE 0x00
 	#define BOARD_DETECTOR_SSB 0x00
 	#define BOARD_DETECTOR_AM 0x00
 	#define BOARD_DETECTOR_FM 0x00
 	#define BOARD_DETECTOR_WFM 0x00
-	#define BOARD_DETECTOR_TUNE 0x00	/* РєРѕРЅС„РёРіСѓСЂР°С†РёСЏ РїР»Р°С‚С‹ РґР»СЏ СЂРµР¶РёРјР° TUNE (CWZ РЅР° РїРµСЂРµРґР°С‡Сѓ) */
+	#define BOARD_DETECTOR_TUNE 0x00	/* конфигурация платы для режима TUNE (CWZ на передачу) */
 
-	/* РєРѕРґС‹ С„РёР»СЊС‚СЂРѕРІ РІС‚РѕСЂРѕР№ РџР§, РІС‹РґР°РІР°РµРјС‹Рµ РЅР° РґРµС€РёС„СЂР°С‚РѕСЂС‹ */
+	/* коды фильтров второй ПЧ, выдаваемые на дешифраторы */
 	#define	BOARD_FILTERCODE_0	0x00
 	#define	BOARD_FILTERCODE_1	0x01
 
 	//#define	BOARD_AGCCODE_0		0x00
 	//#define	BOARD_AGCCODE_1		0x01
-	#define WITHAGCMODENONE		1	/* Р РµР¶РёРјР°РјРё РђР РЈ РЅРµ СѓРїСЂР°РІР»СЏРµРј */
+	#define WITHAGCMODENONE		1	/* Режимами АРУ не управляем */
 	#define BOARD_AGCCODE_OFF	0
 	#define WITHNOTCHONOFF		1	/* notch on/off */
 
 #elif CTLREGSTYLE_SW2014NFM
 
-	#define WITHPOWERLPHP		1	// РРјРµРµС‚СЃСЏ РїРµСЂРµРєР»СЋС‡РµРЅРёРµ Рё РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ HP / LP
-	#define WITHPOWERTRIMMIN	0	// РќРёР¶РЅРёР№ РїСЂРµРґРµР» СЂРµРіСѓР»РёСЂРѕРІРєРё
-	#define WITHPOWERTRIMMAX	1	// Р’РµСЂС…РЅРёР№ РїСЂРµРґРµР» СЂРµРіСѓР»РёСЂРѕРІРєРё
-	#define	WITHMUTEALL			1	// РћС‚РєР»СЋС‡РµРЅРёРµ РјРёРєСЂРѕС„РѕРЅР° РІРѕ РІСЃРµС… СЂРµР¶РёРјР°С…
-	#define WITHONEATTONEAMP	1	/* С‚РѕР»СЊРєРѕ РѕРґРЅРѕ РїРѕР»РѕР¶РµРЅРёРµ Р°С‚С‚РµРЅСЋР°С‚РѕСЂР° Рё РЈР’Р§ */
+	#define WITHPOWERLPHP		1	// Имеется переключение и отображение HP / LP
+	#define WITHPOWERTRIMMIN	0	// Нижний предел регулировки
+	#define WITHPOWERTRIMMAX	1	// Верхний предел регулировки
+	#define	WITHMUTEALL			1	// Отключение микрофона во всех режимах
+	#define WITHONEATTONEAMP	1	/* только одно положение аттенюатора и УВЧ */
 
-	/* РєРѕРґС‹ РІС…РѕРґРѕРІ РєРѕРјРјСѓС‚Р°С‚РѕСЂР° РёСЃС‚РѕС‡РЅРёРєРѕРІ СЃРёРіРЅР°Р»Р° РґР»СЏ РЈРќР§ РїСЂРёС‘РјРЅРёРєР° */
+	/* коды входов коммутатора источников сигнала для УНЧ приёмника */
 	#define BOARD_DETECTOR_MUTE 0x00
 	#define BOARD_DETECTOR_SSB 0x00
 	#define BOARD_DETECTOR_AM 0x00
 	#define BOARD_DETECTOR_FM 0x00
 	#define BOARD_DETECTOR_WFM 0x00
-	#define BOARD_DETECTOR_TUNE 0x00	/* РєРѕРЅС„РёРіСѓСЂР°С†РёСЏ РїР»Р°С‚С‹ РґР»СЏ СЂРµР¶РёРјР° TUNE (CWZ РЅР° РїРµСЂРµРґР°С‡Сѓ) */
+	#define BOARD_DETECTOR_TUNE 0x00	/* конфигурация платы для режима TUNE (CWZ на передачу) */
 
-	/* РєРѕРґС‹ С„РёР»СЊС‚СЂРѕРІ РІС‚РѕСЂРѕР№ РџР§, РІС‹РґР°РІР°РµРјС‹Рµ РЅР° РґРµС€РёС„СЂР°С‚РѕСЂС‹ */
+	/* коды фильтров второй ПЧ, выдаваемые на дешифраторы */
 	#define	BOARD_FILTERCODE_0	0x00
 	#define	BOARD_FILTERCODE_1	0x01
 
 	//#define	BOARD_AGCCODE_0		0x00
 	//#define	BOARD_AGCCODE_1		0x01
-	#define WITHAGCMODENONE		1	/* Р РµР¶РёРјР°РјРё РђР РЈ РЅРµ СѓРїСЂР°РІР»СЏРµРј */
+	#define WITHAGCMODENONE		1	/* Режимами АРУ не управляем */
 	#define BOARD_AGCCODE_OFF	0
 
-	#define WITHNBONOFF		1	/* СѓРїСЂР°РІР»РµРЅРёРµ РІРєР»СЋС‡РµРЅРёРµРј-РІС‹РєР»СЋС‡РµРЅРёРµРј С€СѓРјРѕРїРѕРґР°РІРёС‚РµР»СЏ РїСЂРё РїСЂРёС‘РјРµ NFM */
-	#define WITHSUBTONES	1	/* РІС‹РїРѕР»РЅСЏРµС‚СЃСЏ С„РѕСЂРјРёСЂРѕРІР°РЅРёРµ СЃСѓР±С‚РѕРЅР° РїСЂРё РїРµСЂРµРґР°С‡Рµ NFM */
+	#define WITHNBONOFF		1	/* управление включением-выключением шумоподавителя при приёме NFM */
+	#define WITHSUBTONES	1	/* выполняется формирование субтона при передаче NFM */
 
 
 #elif CTLREGSTYLE_SW2016VHF
 
-	#define WITHPOWERLPHP		1	// РРјРµРµС‚СЃСЏ РїРµСЂРµРєР»СЋС‡РµРЅРёРµ Рё РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ HP / LP
-	#define WITHPOWERTRIMMIN	0	// РќРёР¶РЅРёР№ РїСЂРµРґРµР» СЂРµРіСѓР»РёСЂРѕРІРєРё
-	#define WITHPOWERTRIMMAX	1	// Р’РµСЂС…РЅРёР№ РїСЂРµРґРµР» СЂРµРіСѓР»РёСЂРѕРІРєРё
-	#define	WITHMUTEALL			1	// РћС‚РєР»СЋС‡РµРЅРёРµ РјРёРєСЂРѕС„РѕРЅР° РІРѕ РІСЃРµС… СЂРµР¶РёРјР°С…
-	#define WITHONEATTONEAMP	1	/* С‚РѕР»СЊРєРѕ РѕРґРЅРѕ РїРѕР»РѕР¶РµРЅРёРµ Р°С‚С‚РµРЅСЋР°С‚РѕСЂР° Рё РЈР’Р§ */
+	#define WITHPOWERLPHP		1	// Имеется переключение и отображение HP / LP
+	#define WITHPOWERTRIMMIN	0	// Нижний предел регулировки
+	#define WITHPOWERTRIMMAX	1	// Верхний предел регулировки
+	#define	WITHMUTEALL			1	// Отключение микрофона во всех режимах
+	#define WITHONEATTONEAMP	1	/* только одно положение аттенюатора и УВЧ */
 
-	/* РєРѕРґС‹ РІС…РѕРґРѕРІ РєРѕРјРјСѓС‚Р°С‚РѕСЂР° РёСЃС‚РѕС‡РЅРёРєРѕРІ СЃРёРіРЅР°Р»Р° РґР»СЏ РЈРќР§ РїСЂРёС‘РјРЅРёРєР° */
+	/* коды входов коммутатора источников сигнала для УНЧ приёмника */
 	#define BOARD_DETECTOR_MUTE 0x00
 	#define BOARD_DETECTOR_SSB 0x00
 	#define BOARD_DETECTOR_AM 0x00
 	#define BOARD_DETECTOR_FM 0x00
 	#define BOARD_DETECTOR_WFM 0x00
-	#define BOARD_DETECTOR_TUNE 0x00	/* РєРѕРЅС„РёРіСѓСЂР°С†РёСЏ РїР»Р°С‚С‹ РґР»СЏ СЂРµР¶РёРјР° TUNE (CWZ РЅР° РїРµСЂРµРґР°С‡Сѓ) */
+	#define BOARD_DETECTOR_TUNE 0x00	/* конфигурация платы для режима TUNE (CWZ на передачу) */
 
-	/* РєРѕРґС‹ С„РёР»СЊС‚СЂРѕРІ РІС‚РѕСЂРѕР№ РџР§, РІС‹РґР°РІР°РµРјС‹Рµ РЅР° РґРµС€РёС„СЂР°С‚РѕСЂС‹ */
+	/* коды фильтров второй ПЧ, выдаваемые на дешифраторы */
 	#define	BOARD_FILTERCODE_0	0x00
 	#define	BOARD_FILTERCODE_1	0x01
 
 	//#define	BOARD_AGCCODE_0		0x00
 	//#define	BOARD_AGCCODE_1		0x01
-	#define WITHAGCMODENONE		1	/* Р РµР¶РёРјР°РјРё РђР РЈ РЅРµ СѓРїСЂР°РІР»СЏРµРј */
+	#define WITHAGCMODENONE		1	/* Режимами АРУ не управляем */
 	#define BOARD_AGCCODE_OFF	0
 
-	#define WITHNBONOFF		1	/* СѓРїСЂР°РІР»РµРЅРёРµ РІРєР»СЋС‡РµРЅРёРµРј-РІС‹РєР»СЋС‡РµРЅРёРµРј С€СѓРјРѕРїРѕРґР°РІРёС‚РµР»СЏ РїСЂРё РїСЂРёС‘РјРµ NFM */
-	#define WITHSUBTONES	1	/* РІС‹РїРѕР»РЅСЏРµС‚СЃСЏ С„РѕСЂРјРёСЂРѕРІР°РЅРёРµ СЃСѓР±С‚РѕРЅР° РїСЂРё РїРµСЂРµРґР°С‡Рµ NFM */
+	#define WITHNBONOFF		1	/* управление включением-выключением шумоподавителя при приёме NFM */
+	#define WITHSUBTONES	1	/* выполняется формирование субтона при передаче NFM */
 
-#elif CTLREGSTYLE_SW2013RDX_UY5UM	/* СЃ СЂРµРіСѓР»РёСЂРѕРІРєРѕР№ РјРѕС‰РЅРѕСЃС‚Рё R-2R РЅР° СЃРёРіРЅР°Р»Р°С… РІС‹Р±РѕСЂР° РґРёР°РїР°Р·РѕРЅРЅРѕРіРѕ С„РёР»СЊС‚СЂР° */
+#elif CTLREGSTYLE_SW2013RDX_UY5UM	/* с регулировкой мощности R-2R на сигналах выбора диапазонного фильтра */
 
-	#define WITHPOWERTRIM		1	// РРјРµРµС‚СЃСЏ СѓРїСЂР°РІР»РµРЅРёРµ РјРѕС‰РЅРѕСЃС‚СЊСЋ
-	#define WITHPOWERTRIMMIN	1	// РќРёР¶РЅРёР№ РїСЂРµРґРµР» СЂРµРіСѓР»РёСЂРѕРІРєРё (РїРѕРєР°Р·С‹РІР°РµС‚С‹Р№ РЅР° РґРёСЃРїР»РµРµ)
-	#define WITHPOWERTRIMMAX	16	// Р’РµСЂС…РЅРёР№ РїСЂРµРґРµР» СЂРµРіСѓР»РёСЂРѕРІРєРё (РїРѕРєР°Р·С‹РІР°РµС‚С‹Р№ РЅР° РґРёСЃРїР»РµРµ)
+	#define WITHPOWERTRIM		1	// Имеется управление мощностью
+	#define WITHPOWERTRIMMIN	1	// Нижний предел регулировки (показываетый на дисплее)
+	#define WITHPOWERTRIMMAX	16	// Верхний предел регулировки (показываетый на дисплее)
 
-	#define WITHLCDBACKLIGHT	1	// РРјРµРµС‚СЃСЏ СѓРїСЂР°РІР»РµРЅРёРµ РїРѕРґСЃРІРµС‚РєРѕР№ РґРёСЃРїР»РµСЏ 
-	#define WITHLCDBACKLIGHTMIN	1	// РќРёР¶РЅРёР№ РїСЂРµРґРµР» СЂРµРіСѓР»РёСЂРѕРІРєРё (РїРѕРєР°Р·С‹РІР°РµС‚С‹Р№ РЅР° РґРёСЃРїР»РµРµ)
-	#define WITHLCDBACKLIGHTMAX	4	// Р’РµСЂС…РЅРёР№ РїСЂРµРґРµР» СЂРµРіСѓР»РёСЂРѕРІРєРё (РїРѕРєР°Р·С‹РІР°РµС‚С‹Р№ РЅР° РґРёСЃРїР»РµРµ)
-	#define	WITHMUTEALL			1	// РћС‚РєР»СЋС‡РµРЅРёРµ РјРёРєСЂРѕС„РѕРЅР° РІРѕ РІСЃРµС… СЂРµР¶РёРјР°С…
-	#define WITHONEATTONEAMP	1	/* С‚РѕР»СЊРєРѕ РѕРґРЅРѕ РїРѕР»РѕР¶РµРЅРёРµ Р°С‚С‚РµРЅСЋР°С‚РѕСЂР° Рё РЈР’Р§ */
+	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея 
+	#define WITHLCDBACKLIGHTMIN	1	// Нижний предел регулировки (показываетый на дисплее)
+	#define WITHLCDBACKLIGHTMAX	4	// Верхний предел регулировки (показываетый на дисплее)
+	#define	WITHMUTEALL			1	// Отключение микрофона во всех режимах
+	#define WITHONEATTONEAMP	1	/* только одно положение аттенюатора и УВЧ */
 
-	/* РєРѕРґС‹ РІС…РѕРґРѕРІ РєРѕРјРјСѓС‚Р°С‚РѕСЂР° РёСЃС‚РѕС‡РЅРёРєРѕРІ СЃРёРіРЅР°Р»Р° РґР»СЏ РЈРќР§ РїСЂРёС‘РјРЅРёРєР° */
+	/* коды входов коммутатора источников сигнала для УНЧ приёмника */
 	#define BOARD_DETECTOR_MUTE 0x00
 	#define BOARD_DETECTOR_SSB 0x00
 	#define BOARD_DETECTOR_AM 0x00
 	#define BOARD_DETECTOR_FM 0x00
 	#define BOARD_DETECTOR_WFM 0x00
-	#define BOARD_DETECTOR_TUNE 0x00	/* РєРѕРЅС„РёРіСѓСЂР°С†РёСЏ РїР»Р°С‚С‹ РґР»СЏ СЂРµР¶РёРјР° TUNE (CWZ РЅР° РїРµСЂРµРґР°С‡Сѓ) */
+	#define BOARD_DETECTOR_TUNE 0x00	/* конфигурация платы для режима TUNE (CWZ на передачу) */
 
-	/* РєРѕРґС‹ С„РёР»СЊС‚СЂРѕРІ РІС‚РѕСЂРѕР№ РџР§, РІС‹РґР°РІР°РµРјС‹Рµ РЅР° РґРµС€РёС„СЂР°С‚РѕСЂС‹ */
+	/* коды фильтров второй ПЧ, выдаваемые на дешифраторы */
 	#define	BOARD_FILTERCODE_0	0x00
 	#define	BOARD_FILTERCODE_1	0x01
 
 	//#define	BOARD_AGCCODE_0		0x00
 	//#define	BOARD_AGCCODE_1		0x01
-	#define WITHAGCMODENONE		1	/* Р РµР¶РёРјР°РјРё РђР РЈ РЅРµ СѓРїСЂР°РІР»СЏРµРј */
+	#define WITHAGCMODENONE		1	/* Режимами АРУ не управляем */
 	#define BOARD_AGCCODE_OFF	0
 
-#elif CTLREGSTYLE_SW2013RDX_LTIYUR	// SW2013SF СЃ РёРЅРґРёРєР°С‚РѕСЂРѕРј RDX154
+#elif CTLREGSTYLE_SW2013RDX_LTIYUR	// SW2013SF с индикатором RDX154
 
-	#define WITHLCDBACKLIGHT	1	// РРјРµРµС‚СЃСЏ СѓРїСЂР°РІР»РµРЅРёРµ РїРѕРґСЃРІРµС‚РєРѕР№ РґРёСЃРїР»РµСЏ 
-	#define WITHLCDBACKLIGHTMIN	1	// РќРёР¶РЅРёР№ РїСЂРµРґРµР» СЂРµРіСѓР»РёСЂРѕРІРєРё (РїРѕРєР°Р·С‹РІР°РµС‚С‹Р№ РЅР° РґРёСЃРїР»РµРµ)
-	#define WITHLCDBACKLIGHTMAX	4	// Р’РµСЂС…РЅРёР№ РїСЂРµРґРµР» СЂРµРіСѓР»РёСЂРѕРІРєРё (РїРѕРєР°Р·С‹РІР°РµС‚С‹Р№ РЅР° РґРёСЃРїР»РµРµ)
-	#define WITHPOWERLPHP		1	// РРјРµРµС‚СЃСЏ РїРµСЂРµРєР»СЋС‡РµРЅРёРµ Рё РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ HP / LP
-	#define WITHPOWERTRIMMIN	0	// РќРёР¶РЅРёР№ РїСЂРµРґРµР» СЂРµРіСѓР»РёСЂРѕРІРєРё
-	#define WITHPOWERTRIMMAX	1	// Р’РµСЂС…РЅРёР№ РїСЂРµРґРµР» СЂРµРіСѓР»РёСЂРѕРІРєРё
-	#define	WITHMUTEALL			1	// РћС‚РєР»СЋС‡РµРЅРёРµ РјРёРєСЂРѕС„РѕРЅР° РІРѕ РІСЃРµС… СЂРµР¶РёРјР°С…
-	#define WITHONEATTONEAMP	1	/* С‚РѕР»СЊРєРѕ РѕРґРЅРѕ РїРѕР»РѕР¶РµРЅРёРµ Р°С‚С‚РµРЅСЋР°С‚РѕСЂР° Рё РЈР’Р§ */
+	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея 
+	#define WITHLCDBACKLIGHTMIN	1	// Нижний предел регулировки (показываетый на дисплее)
+	#define WITHLCDBACKLIGHTMAX	4	// Верхний предел регулировки (показываетый на дисплее)
+	#define WITHPOWERLPHP		1	// Имеется переключение и отображение HP / LP
+	#define WITHPOWERTRIMMIN	0	// Нижний предел регулировки
+	#define WITHPOWERTRIMMAX	1	// Верхний предел регулировки
+	#define	WITHMUTEALL			1	// Отключение микрофона во всех режимах
+	#define WITHONEATTONEAMP	1	/* только одно положение аттенюатора и УВЧ */
 
-	/* РєРѕРґС‹ РІС…РѕРґРѕРІ РєРѕРјРјСѓС‚Р°С‚РѕСЂР° РёСЃС‚РѕС‡РЅРёРєРѕРІ СЃРёРіРЅР°Р»Р° РґР»СЏ РЈРќР§ РїСЂРёС‘РјРЅРёРєР° */
+	/* коды входов коммутатора источников сигнала для УНЧ приёмника */
 	#define BOARD_DETECTOR_MUTE 0x00
 	#define BOARD_DETECTOR_SSB 0x00
 	#define BOARD_DETECTOR_AM 0x00
 	#define BOARD_DETECTOR_FM 0x00
 	#define BOARD_DETECTOR_WFM 0x00
-	#define BOARD_DETECTOR_TUNE 0x00	/* РєРѕРЅС„РёРіСѓСЂР°С†РёСЏ РїР»Р°С‚С‹ РґР»СЏ СЂРµР¶РёРјР° TUNE (CWZ РЅР° РїРµСЂРµРґР°С‡Сѓ) */
+	#define BOARD_DETECTOR_TUNE 0x00	/* конфигурация платы для режима TUNE (CWZ на передачу) */
 
-	/* РєРѕРґС‹ С„РёР»СЊС‚СЂРѕРІ РІС‚РѕСЂРѕР№ РџР§, РІС‹РґР°РІР°РµРјС‹Рµ РЅР° РґРµС€РёС„СЂР°С‚РѕСЂС‹ */
+	/* коды фильтров второй ПЧ, выдаваемые на дешифраторы */
 	#define	BOARD_FILTERCODE_0	0x00
 	#define	BOARD_FILTERCODE_1	0x01
 
-	//#define WITHAGCMODENONE		1	/* Р РµР¶РёРјР°РјРё РђР РЈ РЅРµ СѓРїСЂР°РІР»СЏРµРј */
-	#define WITHAGCMODEONOFF 1	/* СЃСЂРµРґРё СЂРµР¶РёРјРѕРІ РђР РЈ РµСЃС‚СЊ С‚РѕР»СЊРєРѕ РІРєР»СЋС‡РµРЅРѕ-РІС‹РєР»СЋС‡РµРЅРѕ */
+	//#define WITHAGCMODENONE		1	/* Режимами АРУ не управляем */
+	#define WITHAGCMODEONOFF 1	/* среди режимов АРУ есть только включено-выключено */
 	#define WITHNOTCHONOFF		1	/* notch on/off */
 
 	#define	BOARD_AGCCODE_0		0x00
 	#define	BOARD_AGCCODE_1		0x01
 
-#elif CTLREGMODE8_UR5YFV	/* 8 Р±РёС‚ - РІРµСЂСЃРёСЏ СЃРёРЅС‚РµР·Р°С‚РѕСЂР° 4z5ky */
+#elif CTLREGMODE8_UR5YFV	/* 8 бит - версия синтезатора 4z5ky */
 
-	#define WITHONEATTONEAMP	1	/* С‚РѕР»СЊРєРѕ РѕРґРЅРѕ РїРѕР»РѕР¶РµРЅРёРµ Р°С‚С‚РµРЅСЋР°С‚РѕСЂР° Рё РЈР’Р§ - "РїРѕ РєСЂСѓРіСѓ". */
-	#define WITHAGCMODENONE		1	/* Р РµР¶РёРјР°РјРё РђР РЈ РЅРµ СѓРїСЂР°РІР»СЏРµРј */
+	#define WITHONEATTONEAMP	1	/* только одно положение аттенюатора и УВЧ - "по кругу". */
+	#define WITHAGCMODENONE		1	/* Режимами АРУ не управляем */
 	#define BOARD_DETECTOR_MUTE 0x00
 	#define BOARD_DETECTOR_SSB 0x00
 	#define BOARD_DETECTOR_AM 0x00
 	#define BOARD_DETECTOR_FM 0x00
-	#define BOARD_DETECTOR_TUNE 0x00	/* РєРѕРЅС„РёРіСѓСЂР°С†РёСЏ РїР»Р°С‚С‹ РґР»СЏ СЂРµР¶РёРјР° TUNE (CWZ РЅР° РїРµСЂРµРґР°С‡Сѓ) */
+	#define BOARD_DETECTOR_TUNE 0x00	/* конфигурация платы для режима TUNE (CWZ на передачу) */
 
 	#define	BOARD_FILTERCODE_1	0x01
 
-	/* РєРѕРґС‹ С„РёР»СЊС‚СЂРѕРІ РІС‚РѕСЂРѕР№ РџР§, РІС‹РґР°РІР°РµРјС‹Рµ РЅР° РґРµС€РёС„СЂР°С‚РѕСЂС‹ */
+	/* коды фильтров второй ПЧ, выдаваемые на дешифраторы */
 	//#define BOARD_FILTER_0P5		0x01	/* 0.5 or 0.3 kHz filter */
 	//#define BOARD_FILTER_3P1		0x00	/* 3.1 or 2.75 kHz filter */
 
 #elif CTLREGMODE16
 
-	/* Р’РёРґС‹ СѓРїСЂР°РІР»РµРЅРёРµ РЈР’Р§ Рё Р°С‚С‚РµРЅСЋР°С‚РѕСЂРѕРј */
-	//#define WITHATT1PRE1		1	// РЈРїСЂР°РІР»РµРЅРёРµ РЈР’Р§ Рё РѕРґРёРЅРѕС‡РЅС‹Рј Р°С‚С‚РµРЅСЋР°С‚РѕСЂРѕРј
-	//#define WITHATT2_6DB		1	// РЈРїСЂР°РІР»РµРЅРёРµ РґРІСѓС…РєР°СЃРєР°РґРЅС‹Рј Р°С‚С‚РµРЅСЋР°С‚РѕСЂРѕРј Р±РµР· СѓРїСЂР°РІР»РµРЅРёСЏ РЈР’Р§
-	//#define WITHONEATTONEAMP	1	/* С‚РѕР»СЊРєРѕ РѕРґРЅРѕ РїРѕР»РѕР¶РµРЅРёРµ Р°С‚С‚РµРЅСЋР°С‚РѕСЂР° Рё РЈР’Р§ - "РїРѕ РєСЂСѓРіСѓ". */
-	#define WITHPREAMPATT2_6DB		1	// РЈРїСЂР°РІР»РµРЅРёРµ РЈР’Р§ Рё РґРІСѓС…РєР°СЃРєР°РґРЅС‹Рј Р°С‚С‚РµРЅСЋР°С‚РѕСЂРѕРј СЃ Р·Р°С‚СѓС…Р°РЅРёСЏРјРё 0 - 6 - 12 - 18 dB */
+	/* Виды управление УВЧ и аттенюатором */
+	//#define WITHATT1PRE1		1	// Управление УВЧ и одиночным аттенюатором
+	//#define WITHATT2_6DB		1	// Управление двухкаскадным аттенюатором без управления УВЧ
+	//#define WITHONEATTONEAMP	1	/* только одно положение аттенюатора и УВЧ - "по кругу". */
+	#define WITHPREAMPATT2_6DB		1	// Управление УВЧ и двухкаскадным аттенюатором с затуханиями 0 - 6 - 12 - 18 dB */
 
-	/* РєРѕРґС‹ РІС…РѕРґРѕРІ РєРѕРјРјСѓС‚Р°С‚РѕСЂР° РёСЃС‚РѕС‡РЅРёРєРѕРІ СЃРёРіРЅР°Р»Р° РґР»СЏ РЈРќР§ РїСЂРёС‘РјРЅРёРєР° */
+	/* коды входов коммутатора источников сигнала для УНЧ приёмника */
 	#define BOARD_DETECTOR_MUTE 0x00
 	#define BOARD_DETECTOR_SSB 0x00
 	#define BOARD_DETECTOR_AM 0x00
 	#define BOARD_DETECTOR_FM 0x00
-	#define BOARD_DETECTOR_TUNE 0x00	/* РєРѕРЅС„РёРіСѓСЂР°С†РёСЏ РїР»Р°С‚С‹ РґР»СЏ СЂРµР¶РёРјР° TUNE (CWZ РЅР° РїРµСЂРµРґР°С‡Сѓ) */
+	#define BOARD_DETECTOR_TUNE 0x00	/* конфигурация платы для режима TUNE (CWZ на передачу) */
 	//#define BOARD_DETECTOR_WFM 0x04
-	/* РєРѕРґС‹ С„РёР»СЊС‚СЂРѕРІ РІС‚РѕСЂРѕР№ РџР§, РІС‹РґР°РІР°РµРјС‹Рµ РЅР° РґРµС€РёС„СЂР°С‚РѕСЂС‹ */
+	/* коды фильтров второй ПЧ, выдаваемые на дешифраторы */
 	#define	BOARD_FILTERCODE_0	0x00
 	#define	BOARD_FILTERCODE_1	0x01
 
 	#define	BOARD_AGCCODE_0		0x00
 	#define	BOARD_AGCCODE_1		0x01
-	#define WITHAGCMODENONE 1	/* СЃСЂРµРґРё СЂРµР¶РёРјРѕРІ РђР РЈ РµСЃС‚СЊ С‚РѕР»СЊРєРѕ РІРєР»СЋС‡РµРЅРѕ-РІС‹РєР»СЋС‡РµРЅРѕ */
+	#define WITHAGCMODENONE 1	/* среди режимов АРУ есть только включено-выключено */
 	#define BOARD_AGCCODE_OFF	1
 
 #elif CTLREGMODE16_UR3VBM
 
-	/* Р’РёРґС‹ СѓРїСЂР°РІР»РµРЅРёРµ РЈР’Р§ Рё Р°С‚С‚РµРЅСЋР°С‚РѕСЂРѕРј */
-	//#define WITHATT1PRE1		1	// РЈРїСЂР°РІР»РµРЅРёРµ РЈР’Р§ Рё РѕРґРёРЅРѕС‡РЅС‹Рј Р°С‚С‚РµРЅСЋР°С‚РѕСЂРѕРј
-	//#define WITHATT2_6DB		1	// РЈРїСЂР°РІР»РµРЅРёРµ РґРІСѓС…РєР°СЃРєР°РґРЅС‹Рј Р°С‚С‚РµРЅСЋР°С‚РѕСЂРѕРј Р±РµР· СѓРїСЂР°РІР»РµРЅРёСЏ РЈР’Р§
-	//#define WITHONEATTONEAMP	1	/* С‚РѕР»СЊРєРѕ РѕРґРЅРѕ РїРѕР»РѕР¶РµРЅРёРµ Р°С‚С‚РµРЅСЋР°С‚РѕСЂР° Рё РЈР’Р§ - "РїРѕ РєСЂСѓРіСѓ". */
-	#define WITHPREAMPATT2_6DB		1	// РЈРїСЂР°РІР»РµРЅРёРµ РЈР’Р§ Рё РґРІСѓС…РєР°СЃРєР°РґРЅС‹Рј Р°С‚С‚РµРЅСЋР°С‚РѕСЂРѕРј СЃ Р·Р°С‚СѓС…Р°РЅРёСЏРјРё 0 - 6 - 12 - 18 dB */
+	/* Виды управление УВЧ и аттенюатором */
+	//#define WITHATT1PRE1		1	// Управление УВЧ и одиночным аттенюатором
+	//#define WITHATT2_6DB		1	// Управление двухкаскадным аттенюатором без управления УВЧ
+	//#define WITHONEATTONEAMP	1	/* только одно положение аттенюатора и УВЧ - "по кругу". */
+	#define WITHPREAMPATT2_6DB		1	// Управление УВЧ и двухкаскадным аттенюатором с затуханиями 0 - 6 - 12 - 18 dB */
 
-	/* РєРѕРґС‹ РІС…РѕРґРѕРІ РєРѕРјРјСѓС‚Р°С‚РѕСЂР° РёСЃС‚РѕС‡РЅРёРєРѕРІ СЃРёРіРЅР°Р»Р° РґР»СЏ РЈРќР§ РїСЂРёС‘РјРЅРёРєР° */
+	/* коды входов коммутатора источников сигнала для УНЧ приёмника */
 	#define BOARD_DETECTOR_MUTE 0x00
 	#define BOARD_DETECTOR_SSB 0x00
 	#define BOARD_DETECTOR_AM 0x00
 	#define BOARD_DETECTOR_FM 0x00
-	#define BOARD_DETECTOR_TUNE 0x00	/* РєРѕРЅС„РёРіСѓСЂР°С†РёСЏ РїР»Р°С‚С‹ РґР»СЏ СЂРµР¶РёРјР° TUNE (CWZ РЅР° РїРµСЂРµРґР°С‡Сѓ) */
+	#define BOARD_DETECTOR_TUNE 0x00	/* конфигурация платы для режима TUNE (CWZ на передачу) */
 	//#define BOARD_DETECTOR_WFM 0x04
-	/* РєРѕРґС‹ С„РёР»СЊС‚СЂРѕРІ РІС‚РѕСЂРѕР№ РџР§, РІС‹РґР°РІР°РµРјС‹Рµ РЅР° РґРµС€РёС„СЂР°С‚РѕСЂС‹ */
+	/* коды фильтров второй ПЧ, выдаваемые на дешифраторы */
 	#define	BOARD_FILTERCODE_0	0x00
 	#define	BOARD_FILTERCODE_1	0x01
 
 	#define	BOARD_AGCCODE_0		0x00
 	#define	BOARD_AGCCODE_1		0x01
-	#define WITHAGCMODENONE 1	/* СЃСЂРµРґРё СЂРµР¶РёРјРѕРІ РђР РЈ РµСЃС‚СЊ С‚РѕР»СЊРєРѕ РІРєР»СЋС‡РµРЅРѕ-РІС‹РєР»СЋС‡РµРЅРѕ */
+	#define WITHAGCMODENONE 1	/* среди режимов АРУ есть только включено-выключено */
 	#define BOARD_AGCCODE_OFF	1
 
 #elif CTLREGMODE16_RN3ZOB
-	#define WITHATT2_6DB		1	// РЈРїСЂР°РІР»РµРЅРёРµ РґРІСѓС…РєР°СЃРєР°РґРЅС‹Рј Р°С‚С‚РµРЅСЋР°С‚РѕСЂРѕРј Р±РµР· СѓРїСЂР°РІР»РµРЅРёСЏ РЈР’Р§
-	/* РєРѕРґС‹ РІС…РѕРґРѕРІ РєРѕРјРјСѓС‚Р°С‚РѕСЂР° РёСЃС‚РѕС‡РЅРёРєРѕРІ СЃРёРіРЅР°Р»Р° РґР»СЏ РЈРќР§ РїСЂРёС‘РјРЅРёРєР° */
+	#define WITHATT2_6DB		1	// Управление двухкаскадным аттенюатором без управления УВЧ
+	/* коды входов коммутатора источников сигнала для УНЧ приёмника */
 	#define BOARD_DETECTOR_MUTE 0x00
 	#define BOARD_DETECTOR_SSB 0x00
 	#define BOARD_DETECTOR_AM 0x00
 	#define BOARD_DETECTOR_FM 0x00
 	//#define BOARD_DETECTOR_WFM 0x04
-	#define BOARD_DETECTOR_TUNE 0x00	/* РєРѕРЅС„РёРіСѓСЂР°С†РёСЏ РїР»Р°С‚С‹ РґР»СЏ СЂРµР¶РёРјР° TUNE (CWZ РЅР° РїРµСЂРµРґР°С‡Сѓ) */
-	/* РєРѕРґС‹ С„РёР»СЊС‚СЂРѕРІ РІС‚РѕСЂРѕР№ РџР§, РІС‹РґР°РІР°РµРјС‹Рµ РЅР° РґРµС€РёС„СЂР°С‚РѕСЂС‹ */
+	#define BOARD_DETECTOR_TUNE 0x00	/* конфигурация платы для режима TUNE (CWZ на передачу) */
+	/* коды фильтров второй ПЧ, выдаваемые на дешифраторы */
 	#define	BOARD_FILTERCODE_0	0x00
 	#define	BOARD_FILTERCODE_1	0x01
 
 	#define	BOARD_AGCCODE_0		0x00
 	#define	BOARD_AGCCODE_1		0x01
-	//#define WITHAGCMODEONOFF 1	/* СЃСЂРµРґРё СЂРµР¶РёРјРѕРІ РђР РЈ РµСЃС‚СЊ С‚РѕР»СЊРєРѕ РІРєР»СЋС‡РµРЅРѕ-РІС‹РєР»СЋС‡РµРЅРѕ */
+	//#define WITHAGCMODEONOFF 1	/* среди режимов АРУ есть только включено-выключено */
 #elif CTLREGMODE16_DC
 
-	#define WITHPREAMPATT2_6DB		1	// РЈРїСЂР°РІР»РµРЅРёРµ РЈР’Р§ Рё РґРІСѓС…РєР°СЃРєР°РґРЅС‹Рј Р°С‚С‚РµРЅСЋР°С‚РѕСЂРѕРј СЃ Р·Р°С‚СѓС…Р°РЅРёСЏРјРё 0 - 6 - 12 - 18 dB */
-	/* РєРѕРґС‹ РІС…РѕРґРѕРІ РєРѕРјРјСѓС‚Р°С‚РѕСЂР° РёСЃС‚РѕС‡РЅРёРєРѕРІ СЃРёРіРЅР°Р»Р° РґР»СЏ РЈРќР§ РїСЂРёС‘РјРЅРёРєР° */
+	#define WITHPREAMPATT2_6DB		1	// Управление УВЧ и двухкаскадным аттенюатором с затуханиями 0 - 6 - 12 - 18 dB */
+	/* коды входов коммутатора источников сигнала для УНЧ приёмника */
 	#define BOARD_DETECTOR_MUTE 0x00
 	#define BOARD_DETECTOR_SSB 0x00
 	#define BOARD_DETECTOR_AM 0x00
 	#define BOARD_DETECTOR_FM 0x00
 	//#define BOARD_DETECTOR_WFM 0x04
-	#define BOARD_DETECTOR_TUNE 0x00	/* РєРѕРЅС„РёРіСѓСЂР°С†РёСЏ РїР»Р°С‚С‹ РґР»СЏ СЂРµР¶РёРјР° TUNE (CWZ РЅР° РїРµСЂРµРґР°С‡Сѓ) */
-	/* РєРѕРґС‹ С„РёР»СЊС‚СЂРѕРІ РІС‚РѕСЂРѕР№ РџР§, РІС‹РґР°РІР°РµРјС‹Рµ РЅР° РґРµС€РёС„СЂР°С‚РѕСЂС‹ */
+	#define BOARD_DETECTOR_TUNE 0x00	/* конфигурация платы для режима TUNE (CWZ на передачу) */
+	/* коды фильтров второй ПЧ, выдаваемые на дешифраторы */
 	#define	BOARD_FILTERCODE_0	0x00
 	#define	BOARD_FILTERCODE_1	0x01
 
 	#define	BOARD_AGCCODE_0		0x00
 	#define	BOARD_AGCCODE_1		0x01
-	//#define WITHAGCMODEONOFF 1	/* СЃСЂРµРґРё СЂРµР¶РёРјРѕРІ РђР РЈ РµСЃС‚СЊ С‚РѕР»СЊРєРѕ РІРєР»СЋС‡РµРЅРѕ-РІС‹РєР»СЋС‡РµРЅРѕ */
+	//#define WITHAGCMODEONOFF 1	/* среди режимов АРУ есть только включено-выключено */
 
 #elif CTLREGSTYLE_SW2011
 
-	#define WITHLCDBACKLIGHT	1	// РРјРµРµС‚СЃСЏ СѓРїСЂР°РІР»РµРЅРёРµ РїРѕРґСЃРІРµС‚РєРѕР№ РґРёСЃРїР»РµСЏ 
-	#define WITHLCDBACKLIGHTMIN	1	// РќРёР¶РЅРёР№ РїСЂРµРґРµР» СЂРµРіСѓР»РёСЂРѕРІРєРё (РїРѕРєР°Р·С‹РІР°РµС‚С‹Р№ РЅР° РґРёСЃРїР»РµРµ)
-	#define WITHLCDBACKLIGHTMAX	3	// Р’РµСЂС…РЅРёР№ РїСЂРµРґРµР» СЂРµРіСѓР»РёСЂРѕРІРєРё (РїРѕРєР°Р·С‹РІР°РµС‚С‹Р№ РЅР° РґРёСЃРїР»РµРµ)
-	#define	WITHMUTEALL			1	// РћС‚РєР»СЋС‡РµРЅРёРµ РјРёРєСЂРѕС„РѕРЅР° РІРѕ РІСЃРµС… СЂРµР¶РёРјР°С…
-	#define WITHONEATTONEAMP	1	/* С‚РѕР»СЊРєРѕ РѕРґРЅРѕ РїРѕР»РѕР¶РµРЅРёРµ Р°С‚С‚РµРЅСЋР°С‚РѕСЂР° Рё РЈР’Р§ */
+	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея 
+	#define WITHLCDBACKLIGHTMIN	1	// Нижний предел регулировки (показываетый на дисплее)
+	#define WITHLCDBACKLIGHTMAX	3	// Верхний предел регулировки (показываетый на дисплее)
+	#define	WITHMUTEALL			1	// Отключение микрофона во всех режимах
+	#define WITHONEATTONEAMP	1	/* только одно положение аттенюатора и УВЧ */
 
 
-	/* РєРѕРґС‹ РІС…РѕРґРѕРІ РєРѕРјРјСѓС‚Р°С‚РѕСЂР° РёСЃС‚РѕС‡РЅРёРєРѕРІ СЃРёРіРЅР°Р»Р° РґР»СЏ РЈРќР§ РїСЂРёС‘РјРЅРёРєР° */
+	/* коды входов коммутатора источников сигнала для УНЧ приёмника */
 	#define BOARD_DETECTOR_MUTE 0x00
 	#define BOARD_DETECTOR_SSB 0x00
 	#define BOARD_DETECTOR_AM 0x00
 	#define BOARD_DETECTOR_FM 0x00
 	//#define BOARD_DETECTOR_WFM 0x04
-	#define BOARD_DETECTOR_TUNE 0x00	/* РєРѕРЅС„РёРіСѓСЂР°С†РёСЏ РїР»Р°С‚С‹ РґР»СЏ СЂРµР¶РёРјР° TUNE (CWZ РЅР° РїРµСЂРµРґР°С‡Сѓ) */
+	#define BOARD_DETECTOR_TUNE 0x00	/* конфигурация платы для режима TUNE (CWZ на передачу) */
 
-	/* РєРѕРґС‹ С„РёР»СЊС‚СЂРѕРІ РІС‚РѕСЂРѕР№ РџР§, РІС‹РґР°РІР°РµРјС‹Рµ РЅР° РґРµС€РёС„СЂР°С‚РѕСЂС‹ */
+	/* коды фильтров второй ПЧ, выдаваемые на дешифраторы */
 	#define	BOARD_FILTERCODE_0	0x00
 	#define	BOARD_FILTERCODE_1	0x01
 
 	//#define	BOARD_AGCCODE_0		0x00
 	//#define	BOARD_AGCCODE_1		0x01
-	#define WITHAGCMODENONE		1	/* Р РµР¶РёРјР°РјРё РђР РЈ РЅРµ СѓРїСЂР°РІР»СЏРµРј */
+	#define WITHAGCMODENONE		1	/* Режимами АРУ не управляем */
 	#define BOARD_AGCCODE_OFF	0	// stub
 
 #elif CTLREGSTYLE_SW2011N
 
-	#define WITHLCDBACKLIGHT	1	// РРјРµРµС‚СЃСЏ СѓРїСЂР°РІР»РµРЅРёРµ РїРѕРґСЃРІРµС‚РєРѕР№ РґРёСЃРїР»РµСЏ 
-	#define WITHLCDBACKLIGHTMIN	1	// РќРёР¶РЅРёР№ РїСЂРµРґРµР» СЂРµРіСѓР»РёСЂРѕРІРєРё (РїРѕРєР°Р·С‹РІР°РµС‚С‹Р№ РЅР° РґРёСЃРїР»РµРµ)
-	#define WITHLCDBACKLIGHTMAX	3	// Р’РµСЂС…РЅРёР№ РїСЂРµРґРµР» СЂРµРіСѓР»РёСЂРѕРІРєРё (РїРѕРєР°Р·С‹РІР°РµС‚С‹Р№ РЅР° РґРёСЃРїР»РµРµ)
-	#define	WITHMUTEALL			1	// РћС‚РєР»СЋС‡РµРЅРёРµ РјРёРєСЂРѕС„РѕРЅР° РІРѕ РІСЃРµС… СЂРµР¶РёРјР°С…
-	#define WITHONEATTONEAMP	1	/* С‚РѕР»СЊРєРѕ РѕРґРЅРѕ РїРѕР»РѕР¶РµРЅРёРµ Р°С‚С‚РµРЅСЋР°С‚РѕСЂР° Рё РЈР’Р§ */
+	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея 
+	#define WITHLCDBACKLIGHTMIN	1	// Нижний предел регулировки (показываетый на дисплее)
+	#define WITHLCDBACKLIGHTMAX	3	// Верхний предел регулировки (показываетый на дисплее)
+	#define	WITHMUTEALL			1	// Отключение микрофона во всех режимах
+	#define WITHONEATTONEAMP	1	/* только одно положение аттенюатора и УВЧ */
 
 
-	/* РєРѕРґС‹ РІС…РѕРґРѕРІ РєРѕРјРјСѓС‚Р°С‚РѕСЂР° РёСЃС‚РѕС‡РЅРёРєРѕРІ СЃРёРіРЅР°Р»Р° РґР»СЏ РЈРќР§ РїСЂРёС‘РјРЅРёРєР° */
+	/* коды входов коммутатора источников сигнала для УНЧ приёмника */
 	#define BOARD_DETECTOR_MUTE 0x00
 	#define BOARD_DETECTOR_SSB 0x00
 	#define BOARD_DETECTOR_AM 0x00
 	#define BOARD_DETECTOR_FM 0x00
 	//#define BOARD_DETECTOR_WFM 0x04
-	#define BOARD_DETECTOR_TUNE 0x00	/* РєРѕРЅС„РёРіСѓСЂР°С†РёСЏ РїР»Р°С‚С‹ РґР»СЏ СЂРµР¶РёРјР° TUNE (CWZ РЅР° РїРµСЂРµРґР°С‡Сѓ) */
-	/* РєРѕРґС‹ С„РёР»СЊС‚СЂРѕРІ РІС‚РѕСЂРѕР№ РџР§, РІС‹РґР°РІР°РµРјС‹Рµ РЅР° РґРµС€РёС„СЂР°С‚РѕСЂС‹ */
+	#define BOARD_DETECTOR_TUNE 0x00	/* конфигурация платы для режима TUNE (CWZ на передачу) */
+	/* коды фильтров второй ПЧ, выдаваемые на дешифраторы */
 	#define	BOARD_FILTERCODE_0	0x00
 	#define	BOARD_FILTERCODE_1	0x01
 
@@ -1769,47 +1769,47 @@
 
 	//#define	BOARD_AGCCODE_0		0x00
 	//#define	BOARD_AGCCODE_1		0x01
-	#define WITHAGCMODENONE		1	/* Р РµР¶РёРјР°РјРё РђР РЈ РЅРµ СѓРїСЂР°РІР»СЏРµРј */
+	#define WITHAGCMODENONE		1	/* Режимами АРУ не управляем */
 	#define BOARD_AGCCODE_OFF	0	// stub
 
-#elif CTLREGMODE32_V1	/* СѓРїСЂР°РІР»СЏСЋС‰РёР№ СЂРµРіРёСЃС‚СЂ - "Р’РѕСЂРѕР±РµР№-3" СЃ 3*ULN2003 */
+#elif CTLREGMODE32_V1	/* управляющий регистр - "Воробей-3" с 3*ULN2003 */
 
-	#define WITHLCDBACKLIGHT	1	// РРјРµРµС‚СЃСЏ СѓРїСЂР°РІР»РµРЅРёРµ РїРѕРґСЃРІРµС‚РєРѕР№ РґРёСЃРїР»РµСЏ 
-	#define WITHLCDBACKLIGHTMIN	0	// РќРёР¶РЅРёР№ РїСЂРµРґРµР» СЂРµРіСѓР»РёСЂРѕРІРєРё (РїРѕРєР°Р·С‹РІР°РµС‚С‹Р№ РЅР° РґРёСЃРїР»РµРµ)
-	#define WITHLCDBACKLIGHTMAX	3	// Р’РµСЂС…РЅРёР№ РїСЂРµРґРµР» СЂРµРіСѓР»РёСЂРѕРІРєРё (РїРѕРєР°Р·С‹РІР°РµС‚С‹Р№ РЅР° РґРёСЃРїР»РµРµ)
-	#define WITHKBDBACKLIGHT	1	// РРјРµРµС‚СЃСЏ СѓРїСЂР°РІР»РµРЅРёРµ РїРѕРґСЃРІРµС‚РєРѕР№ РєР»Р°РІРёР°С‚СѓСЂС‹ 
+	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея 
+	#define WITHLCDBACKLIGHTMIN	0	// Нижний предел регулировки (показываетый на дисплее)
+	#define WITHLCDBACKLIGHTMAX	3	// Верхний предел регулировки (показываетый на дисплее)
+	#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры 
 
-	/* РєРѕРґС‹ РІС…РѕРґРѕРІ РєРѕРјРјСѓС‚Р°С‚РѕСЂР° РёСЃС‚РѕС‡РЅРёРєРѕРІ СЃРёРіРЅР°Р»Р° РґР»СЏ РЈРќР§ РїСЂРёС‘РјРЅРёРєР° (2 Р±РёС‚Р°) */
+	/* коды входов коммутатора источников сигнала для УНЧ приёмника (2 бита) */
 	#define BOARD_DETECTOR_FM 	0x01
 	#define BOARD_DETECTOR_SSB 	0x00
 	#define BOARD_DETECTOR_AM 	0x02
 	#define BOARD_DETECTOR_MUTE 0x00
-	#define BOARD_DETECTOR_TUNE 0x00	/* РєРѕРЅС„РёРіСѓСЂР°С†РёСЏ РїР»Р°С‚С‹ РґР»СЏ СЂРµР¶РёРјР° TUNE (CWZ РЅР° РїРµСЂРµРґР°С‡Сѓ) */
+	#define BOARD_DETECTOR_TUNE 0x00	/* конфигурация платы для режима TUNE (CWZ на передачу) */
 
-	/* РєРѕРґС‹ С„РёР»СЊС‚СЂРѕРІ РІС‚РѕСЂРѕР№ РџР§, РІС‹РґР°РІР°РµРјС‹Рµ РЅР° РґРµС€РёС„СЂР°С‚РѕСЂС‹ */
+	/* коды фильтров второй ПЧ, выдаваемые на дешифраторы */
 	#define	BOARD_FILTERCODE_0	0x01
 	#define	BOARD_FILTERCODE_1	0x02
 	#define	BOARD_FILTERCODE_2	0x04
-	//#define WITHAGCMODEONOFF 1	/* СЃСЂРµРґРё СЂРµР¶РёРјРѕРІ РђР РЈ РµСЃС‚СЊ С‚РѕР»СЊРєРѕ РІРєР»СЋС‡РµРЅРѕ-РІС‹РєР»СЋС‡РµРЅРѕ */
+	//#define WITHAGCMODEONOFF 1	/* среди режимов АРУ есть только включено-выключено */
 	//#define	BOARD_AGCCODE_0		0x00
 	//#define	BOARD_AGCCODE_1		0x01
 	#define	BOARD_AGCCODE_ON		0x00
 	#define	BOARD_AGCCODE_OFF		0x01
 
-#elif CTLREGMODE24_V1	/* СѓРїСЂР°РІР»СЏСЋС‰РёР№ СЂРµРіРёСЃС‚СЂ - "Р’РѕСЂРѕР±РµР№" Рё "РљРѕР»РёР±СЂРё" */
+#elif CTLREGMODE24_V1	/* управляющий регистр - "Воробей" и "Колибри" */
 
-	#define WITHLCDBACKLIGHT	1	// РРјРµРµС‚СЃСЏ СѓРїСЂР°РІР»РµРЅРёРµ РїРѕРґСЃРІРµС‚РєРѕР№ РґРёСЃРїР»РµСЏ 
-	#define WITHLCDBACKLIGHTMIN	0	// РќРёР¶РЅРёР№ РїСЂРµРґРµР» СЂРµРіСѓР»РёСЂРѕРІРєРё (РїРѕРєР°Р·С‹РІР°РµС‚С‹Р№ РЅР° РґРёСЃРїР»РµРµ)
-	#define WITHLCDBACKLIGHTMAX	3	// Р’РµСЂС…РЅРёР№ РїСЂРµРґРµР» СЂРµРіСѓР»РёСЂРѕРІРєРё (РїРѕРєР°Р·С‹РІР°РµС‚С‹Р№ РЅР° РґРёСЃРїР»РµРµ)
-	#define WITHKBDBACKLIGHT	1	// РРјРµРµС‚СЃСЏ СѓРїСЂР°РІР»РµРЅРёРµ РїРѕРґСЃРІРµС‚РєРѕР№ РєР»Р°РІРёР°С‚СѓСЂС‹ 
+	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея 
+	#define WITHLCDBACKLIGHTMIN	0	// Нижний предел регулировки (показываетый на дисплее)
+	#define WITHLCDBACKLIGHTMAX	3	// Верхний предел регулировки (показываетый на дисплее)
+	#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры 
 
-	/* РєРѕРґС‹ РІС…РѕРґРѕРІ РєРѕРјРјСѓС‚Р°С‚РѕСЂР° РёСЃС‚РѕС‡РЅРёРєРѕРІ СЃРёРіРЅР°Р»Р° РґР»СЏ РЈРќР§ РїСЂРёС‘РјРЅРёРєР° */
+	/* коды входов коммутатора источников сигнала для УНЧ приёмника */
 	#define BOARD_DETECTOR_MUTE 	(0x02)
 	#define BOARD_DETECTOR_SSB 	(0x00)
 	#define BOARD_DETECTOR_AM 	(0x01)
 	#define BOARD_DETECTOR_FM 	(0x03)
-	#define BOARD_DETECTOR_TUNE 0x00	/* РєРѕРЅС„РёРіСѓСЂР°С†РёСЏ РїР»Р°С‚С‹ РґР»СЏ СЂРµР¶РёРјР° TUNE (CWZ РЅР° РїРµСЂРµРґР°С‡Сѓ) */
-	/* РєРѕРґС‹ С„РёР»СЊС‚СЂРѕРІ РІС‚РѕСЂРѕР№ РџР§, РІС‹РґР°РІР°РµРјС‹Рµ РЅР° РґРµС€РёС„СЂР°С‚РѕСЂС‹ */
+	#define BOARD_DETECTOR_TUNE 0x00	/* конфигурация платы для режима TUNE (CWZ на передачу) */
+	/* коды фильтров второй ПЧ, выдаваемые на дешифраторы */
 	#define	BOARD_FILTERCODE_0	0x00
 	#define	BOARD_FILTERCODE_1	0x01
 	#define	BOARD_FILTERCODE_2	0x02
@@ -1819,16 +1819,16 @@
 
 #elif CTLREGMODE24_UA3DKC
 
-	#define WITHPREAMPATT2_10DB		1	// РЈРїСЂР°РІР»РµРЅРёРµ РЈР’Р§ Рё РґРІСѓС…РєР°СЃРєР°РґРЅС‹Рј Р°С‚С‚РµРЅСЋР°С‚РѕСЂРѕРј
-	#define WITHAGCMODEONOFF	1	// РђР РЈ РІРєР»/РІС‹РєР»
-	/* РєРѕРґС‹ РІС…РѕРґРѕРІ РєРѕРјРјСѓС‚Р°С‚РѕСЂР° РёСЃС‚РѕС‡РЅРёРєРѕРІ СЃРёРіРЅР°Р»Р° РґР»СЏ РЈРќР§ РїСЂРёС‘РјРЅРёРєР° */
+	#define WITHPREAMPATT2_10DB		1	// Управление УВЧ и двухкаскадным аттенюатором
+	#define WITHAGCMODEONOFF	1	// АРУ вкл/выкл
+	/* коды входов коммутатора источников сигнала для УНЧ приёмника */
 	#define BOARD_DETECTOR_MUTE 0x02
 	#define BOARD_DETECTOR_SSB 0x00
 	#define BOARD_DETECTOR_AM 0x01
 	#define BOARD_DETECTOR_FM 0x03
-	#define BOARD_DETECTOR_TUNE 0x00	/* РєРѕРЅС„РёРіСѓСЂР°С†РёСЏ РїР»Р°С‚С‹ РґР»СЏ СЂРµР¶РёРјР° TUNE (CWZ РЅР° РїРµСЂРµРґР°С‡Сѓ) */
+	#define BOARD_DETECTOR_TUNE 0x00	/* конфигурация платы для режима TUNE (CWZ на передачу) */
 
-	/* РєРѕРґС‹ С„РёР»СЊС‚СЂРѕРІ РІС‚РѕСЂРѕР№ РџР§, РІС‹РґР°РІР°РµРјС‹Рµ РЅР° РґРµС€РёС„СЂР°С‚РѕСЂС‹ */
+	/* коды фильтров второй ПЧ, выдаваемые на дешифраторы */
 	#define	BOARD_FILTERCODE_0	0x00
 	#define	BOARD_FILTERCODE_1	0x01
 	#define	BOARD_FILTERCODE_2	0x02
@@ -1837,27 +1837,27 @@
 	#define	BOARD_AGCCODE_ON	0x00
 	#define	BOARD_AGCCODE_OFF	0x01
 
-#elif CTLREGMODE_V8A			// РІРѕСЂРѕРЅС‘РЅРѕРє
+#elif CTLREGMODE_V8A			// воронёнок
 
-	/* РєРѕРґС‹ РІС…РѕРґРѕРІ РєРѕРјРјСѓС‚Р°С‚РѕСЂР° РёСЃС‚РѕС‡РЅРёРєРѕРІ СЃРёРіРЅР°Р»Р° РґР»СЏ РЈРќР§ РїСЂРёС‘РјРЅРёРєР° */
+	/* коды входов коммутатора источников сигнала для УНЧ приёмника */
 	#define BOARD_DETECTOR_MUTE 	(0x02)
 	#define BOARD_DETECTOR_SSB 	(0x00)
 	#define BOARD_DETECTOR_AM 	(0x01)
 	#define BOARD_DETECTOR_FM 	(0x03)
-	#define BOARD_DETECTOR_TUNE 0x00	/* РєРѕРЅС„РёРіСѓСЂР°С†РёСЏ РїР»Р°С‚С‹ РґР»СЏ СЂРµР¶РёРјР° TUNE (CWZ РЅР° РїРµСЂРµРґР°С‡Сѓ) */
+	#define BOARD_DETECTOR_TUNE 0x00	/* конфигурация платы для режима TUNE (CWZ на передачу) */
 
-	/* РєРѕРґС‹ С„РёР»СЊС‚СЂРѕРІ РІС‚РѕСЂРѕР№ РџР§, РІС‹РґР°РІР°РµРјС‹Рµ РЅР° РґРµС€РёС„СЂР°С‚РѕСЂС‹ */
+	/* коды фильтров второй ПЧ, выдаваемые на дешифраторы */
 	#define	BOARD_FILTERCODE_0	0x01
 	#define	BOARD_FILTERCODE_1	0x02
 	#define	BOARD_FILTERCODE_2	0x04
 	#define	BOARD_FILTERCODE_3	0x08
 
-	#define WITHPREAMPATT2_6DB		1	// РЈРїСЂР°РІР»РµРЅРёРµ РЈР’Р§ Рё РґРІСѓС…РєР°СЃРєР°РґРЅС‹Рј Р°С‚С‚РµРЅСЋР°С‚РѕСЂРѕРј СЃ Р·Р°С‚СѓС…Р°РЅРёСЏРјРё 0 - 6 - 12 - 18 dB */
+	#define WITHPREAMPATT2_6DB		1	// Управление УВЧ и двухкаскадным аттенюатором с затуханиями 0 - 6 - 12 - 18 dB */
 
 	#if WITHIF4DSP
-		// Р’СЂРµРјРµРЅРЅРѕ, РґР»СЏ РїСЂРѕРІРµСЂРєРё
-		//#define WITHAGCMODEONOFF	1	// РђР РЈ РІРєР»/РІС‹РєР»
-		//#define	WITHMIC1LEVEL		1	// СѓСЃС‚Р°РЅРѕРІРєР° СѓСЃРёР»РµРЅРёСЏ РјРёРєСЂРѕС„РѕРЅР°
+		// Временно, для проверки
+		//#define WITHAGCMODEONOFF	1	// АРУ вкл/выкл
+		//#define	WITHMIC1LEVEL		1	// установка усиления микрофона
 
 	#else /* WITHIF4DSP */
 
@@ -1871,12 +1871,12 @@
 		#define	BOARD_AGCCODE_MED	BOARD_AGCCODE_1
 		#define	BOARD_AGCCODE_SLOW	BOARD_AGCCODE_2
 		#define	BOARD_AGCCODE_LONG	BOARD_AGCCODE_3
-		#define WITHAGCMODE5STAGES	1	// 4 СЃРєРѕСЂРѕСЃС‚Рё Рё РІС‹РєР»СЋС‡РµРЅРЅРѕ 
+		#define WITHAGCMODE5STAGES	1	// 4 скорости и выключенно 
 	#endif /* WITHIF4DSP */
 
 #elif CTLSTYLE_V5
 
-	#define WITHPREAMPATT2_10DB		1	// РЈРїСЂР°РІР»РµРЅРёРµ РЈР’Р§ Рё РґРІСѓС…РєР°СЃРєР°РґРЅС‹Рј Р°С‚С‚РµРЅСЋР°С‚РѕСЂРѕРј
+	#define WITHPREAMPATT2_10DB		1	// Управление УВЧ и двухкаскадным аттенюатором
 
 	#define	BOARD_AGCCODE_0		0x00
 	#define	BOARD_AGCCODE_1		0x01
@@ -1891,8 +1891,8 @@
 
 #elif (ATMEGA_CTLSTYLE_V7_H_INCLUDED || ARM_CTLSTYLE_V7_H_INCLUDED || ARM_CTLSTYLE_V7A_H_INCLUDED)
 
-	#define WITHPREAMPATT2_10DB		1	// РЈРїСЂР°РІР»РµРЅРёРµ РЈР’Р§ Рё РґРІСѓС…РєР°СЃРєР°РґРЅС‹Рј Р°С‚С‚РµРЅСЋР°С‚РѕСЂРѕРј
-	#define WITHAGCMODE5STAGES	1	// 4 СЃРєРѕСЂРѕСЃС‚Рё Рё РІС‹РєР»СЋС‡РµРЅРЅРѕ 
+	#define WITHPREAMPATT2_10DB		1	// Управление УВЧ и двухкаскадным аттенюатором
+	#define WITHAGCMODE5STAGES	1	// 4 скорости и выключенно 
 
 	#define	BOARD_AGCCODE_0		0x00
 	#define	BOARD_AGCCODE_1		0x01
@@ -1907,27 +1907,27 @@
 
 #elif CTLREGSTYLE_DISCO32
 
-	/* РєРѕРґС‹ РІС…РѕРґРѕРІ РєРѕРјРјСѓС‚Р°С‚РѕСЂР° РёСЃС‚РѕС‡РЅРёРєРѕРІ СЃРёРіРЅР°Р»Р° РґР»СЏ РЈРќР§ РїСЂРёС‘РјРЅРёРєР° */
+	/* коды входов коммутатора источников сигнала для УНЧ приёмника */
 	#define BOARD_DETECTOR_MUTE 0
 	#define BOARD_DETECTOR_SSB 	0
 	#define BOARD_DETECTOR_AM 	0
 	#define BOARD_DETECTOR_FM 	0
-	#define BOARD_DETECTOR_TUNE 0x00	/* РєРѕРЅС„РёРіСѓСЂР°С†РёСЏ РїР»Р°С‚С‹ РґР»СЏ СЂРµР¶РёРјР° TUNE (CWZ РЅР° РїРµСЂРµРґР°С‡Сѓ) */
-	/* РєРѕРґС‹ С„РёР»СЊС‚СЂРѕРІ РІС‚РѕСЂРѕР№ РџР§, РІС‹РґР°РІР°РµРјС‹Рµ РЅР° РґРµС€РёС„СЂР°С‚РѕСЂС‹ */
+	#define BOARD_DETECTOR_TUNE 0x00	/* конфигурация платы для режима TUNE (CWZ на передачу) */
+	/* коды фильтров второй ПЧ, выдаваемые на дешифраторы */
 	#define	BOARD_FILTERCODE_0	0
 	#define	BOARD_FILTERCODE_1	0
 	#define	BOARD_FILTERCODE_2	0
 	#define	BOARD_FILTERCODE_3	0
 
-#elif CTLREGSTYLE_NOCTLREG			// РћС‚СЃСѓС‚СЃС‚РІСѓСЋС‰РёР№ СЂРµРіРёСЃС‚СЂ СѓРїСЂР°РІР»РµРЅРёСЏ
+#elif CTLREGSTYLE_NOCTLREG			// Отсутствующий регистр управления
 
-	/* РєРѕРґС‹ РІС…РѕРґРѕРІ РєРѕРјРјСѓС‚Р°С‚РѕСЂР° РёСЃС‚РѕС‡РЅРёРєРѕРІ СЃРёРіРЅР°Р»Р° РґР»СЏ РЈРќР§ РїСЂРёС‘РјРЅРёРєР° */
+	/* коды входов коммутатора источников сигнала для УНЧ приёмника */
 	#define BOARD_DETECTOR_MUTE 0
 	#define BOARD_DETECTOR_SSB 	0
 	#define BOARD_DETECTOR_AM 	0
 	#define BOARD_DETECTOR_FM 	0
-	#define BOARD_DETECTOR_TUNE 0x00	/* РєРѕРЅС„РёРіСѓСЂР°С†РёСЏ РїР»Р°С‚С‹ РґР»СЏ СЂРµР¶РёРјР° TUNE (CWZ РЅР° РїРµСЂРµРґР°С‡Сѓ) */
-	/* РєРѕРґС‹ С„РёР»СЊС‚СЂРѕРІ РІС‚РѕСЂРѕР№ РџР§, РІС‹РґР°РІР°РµРјС‹Рµ РЅР° РґРµС€РёС„СЂР°С‚РѕСЂС‹ */
+	#define BOARD_DETECTOR_TUNE 0x00	/* конфигурация платы для режима TUNE (CWZ на передачу) */
+	/* коды фильтров второй ПЧ, выдаваемые на дешифраторы */
 	#define	BOARD_FILTERCODE_0	0
 	#define	BOARD_FILTERCODE_1	0
 	#define	BOARD_FILTERCODE_2	0

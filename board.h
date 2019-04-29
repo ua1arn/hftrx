@@ -1,8 +1,8 @@
 /* $Id$ */
 /* Pin manipulation functioms */
 //
-// РџСЂРѕРµРєС‚ HF Dream Receiver (РљР’ РїСЂРёС‘РјРЅРёРє РјРµС‡С‚С‹)
-// Р°РІС‚РѕСЂ Р“РµРЅР° Р—Р°РІРёРґРѕРІСЃРєРёР№ mgs2001@mail.ru
+// Проект HF Dream Receiver (КВ приёмник мечты)
+// автор Гена Завидовский mgs2001@mail.ru
 // UA1ARN
 //
 
@@ -13,16 +13,16 @@
 
 #include <stdint.h>
 
-void board_reset(void);			// РІС‹РґР°С‡Р° СЃРёРіРЅР°Р»Р° reset_n
+void board_reset(void);			// выдача сигнала reset_n
 void board_init_io(void);
 //void board_init_io2(void);	// debug
 void board_init_chips(void);
 void board_init_chips2(void);
-uint_fast8_t boad_fpga_adcoverflow(void);	/* РїРѕР»СѓС‡РµРЅРёСЏ РїСЂРёР·РЅР°РєР° РїРµСЂРµРїРѕР»РЅРµРЅРёСЏ РђР¦Рџ РїСЂРёС‘РјРЅРѕРіРѕ С‚СЂР°РєС‚Р° */
-uint_fast8_t boad_mike_adcoverflow(void);	/* РїРѕР»СѓС‡РµРЅРёСЏ РїСЂРёР·РЅР°РєР° РїРµСЂРµРїРѕР»РЅРµРЅРёСЏ РђР¦Рџ РјРёРєСЂРѕС„РѕРЅРЅРѕРіРѕ С‚СЂР°РєС‚Р° */
+uint_fast8_t boad_fpga_adcoverflow(void);	/* получения признака переполнения АЦП приёмного тракта */
+uint_fast8_t boad_mike_adcoverflow(void);	/* получения признака переполнения АЦП микрофонного тракта */
 
 
-uint_fast32_t getvcoranges(uint_fast8_t vco, uint_fast8_t top);	/* С„СѓРЅРєС†РёСЏ РґР»СЏ РЅР°СЃС‚СЂРѕР№РєРё Р“РЈРќ */
+uint_fast32_t getvcoranges(uint_fast8_t vco, uint_fast8_t top);	/* функция для настройки ГУН */
 
 void prog_dds1_ftw(const ftw_t * value);
 void prog_dds1_ftw_sub(const ftw_t * value);
@@ -31,8 +31,8 @@ void prog_dds1_ftw_sub4(const ftw_t * value);
 void prog_dds1_ftw_noioupdate(const ftw_t * value);
 void prog_dds2_ftw(const ftw_t * value);
 void prog_dds3_ftw(const ftw_t * value);
-void prog_rts1_ftw(const ftw_t * value);	// РЈСЃС‚Р°РЅРѕРІРєР° С†РµРЅС‚СЂР°Р»СЊРЅРѕР№ С‡Р°СЃС‚РѕС‚С‹ РїР°РЅРѕСЂР°РјРЅРѕРіРѕ РёРЅРґРёРєР°С‚РѕСЂР°
-void prog_xvtr_freq(uint_fast32_t f,uint_fast8_t enable);	// РЈСЃС‚Р°РЅРѕРІРєР° С‡Р°СЃС‚РѕС‚С‹ РєРѕРЅРІРµСЂС‚РѕСЂР°
+void prog_rts1_ftw(const ftw_t * value);	// Установка центральной частоты панорамного индикатора
+void prog_xvtr_freq(uint_fast32_t f,uint_fast8_t enable);	// Установка частоты конвертора
 
 typedef uint_fast32_t pllhint_t;
 
@@ -43,81 +43,81 @@ uint_fast16_t si570_get_divider(pllhint_t hint);
 void si570_n(pllhint_t hint, const phase_t * value);
 
 //void prog_pll1_r(const phase_t * value);
-uint_fast8_t board_pll1_set_n(const phase_t * value, pllhint_t hint, uint_fast8_t stop);	/* СѓСЃС‚Р°РЅРѕРІРєР° С‚СЂРµР±СѓРµРјРѕРіРѕ РґРµР»РёС‚РµР»СЏ Рё РєРѕРЅС„РёРіСѓСЂР°С†РёРё Р“РЈРќ РЅР° РѕСЃРЅРѕРІР°РЅРёРё hint (РµСЃР»Рё С‚СЂРµР±СѓРµС‚СЃСЏ) */
-pllhint_t board_pll1_get_hint(uint_fast32_t f);		/* РІС‹С…РѕРґРЅРѕР№ РґРµР»РёС‚РµР»СЊ Р·Р° VCO Рё РєРѕРґ VCO РїРѕ РІС‹С…РѕРґРЅРѕР№ С‡Р°СЃС‚РѕС‚Рµ */
-uint_fast16_t board_pll1_get_divider(pllhint_t hint);	/* РїРѕР»СѓС‡РµРЅРёРµ Р·РЅР°С‡РµРЅРёСЏ РІС‹С…РґРЅРѕРіРѕ РґРµР»РёС‚РµР»СЏ РёР· hint */
-void board_pll1_set_vco(pllhint_t hint);		/* СѓСЃС‚Р°РЅРѕРІРєР° РєРѕРЅС„РёРіСѓСЂР°С†РёРё Р“РЈРќ РЅР° РѕСЃРЅРѕРІР°РЅРёРё hint */
-void board_pll1_set_vcodivider(pllhint_t hint);	/* СѓСЃС‚Р°РЅРѕРІРєР° РІС‹С…РѕРґРЅРѕРіРѕ РґРµР»РёС‚РµР»СЏ Р“РЈРќ РЅР° РѕСЃРЅРѕРІР°РЅРёРё hint */
+uint_fast8_t board_pll1_set_n(const phase_t * value, pllhint_t hint, uint_fast8_t stop);	/* установка требуемого делителя и конфигурации ГУН на основании hint (если требуется) */
+pllhint_t board_pll1_get_hint(uint_fast32_t f);		/* выходной делитель за VCO и код VCO по выходной частоте */
+uint_fast16_t board_pll1_get_divider(pllhint_t hint);	/* получение значения выхдного делителя из hint */
+void board_pll1_set_vco(pllhint_t hint);		/* установка конфигурации ГУН на основании hint */
+void board_pll1_set_vcodivider(pllhint_t hint);	/* установка выходного делителя ГУН на основании hint */
 
 extern int_fast32_t si570_get_xtall_base(void); 
 extern uint_fast16_t si570_xtall_offset; 
-#define OSCSHIFT 15000UL	/* РїРѕР»РѕРІРёРЅР° РґРёР°РїР°Р·РѕРЅР° РїРµСЂРµСЃС‚СЂРѕР№РєРё С‡Р°СЃС‚РѕС‚С‹ РѕРїРѕСЂРЅРѕРіРѕ РіРµРЅРµСЂР°С‚РѕСЂР° (РІ РіРµСЂС†Р°С…). */
+#define OSCSHIFT 15000UL	/* половина диапазона перестройки частоты опорного генератора (в герцах). */
 
 void prog_pll2_n(const phase_t * value);
 void prog_pll2_r(const phase_t * value);
-void board_update(void);		/* РІС‹Р·РІР°С‚СЊ СЌС‚Сѓ С„СѓРЅРєС†РёСЋ РґР»СЏ РІС‹РІРѕРґР° С‚РµРЅРµРІС‹С… Р·РЅР°С‡РµРЅРёР№ РІ СЂРµРіРёСЃС‚СЂС‹ */
+void board_update(void);		/* вызвать эту функцию для вывода теневых значений в регистры */
 
 void board_flt1regchanged(void);
 void board_codec1regchanged(void);
 
 void prog_dds1_setlevel(uint_fast8_t percent);
 
-void board_set_lctl1(uint_fast8_t v); // СѓРїСЂР°РІР»РµРЅРёРµ РІРЅРµС€РЅРёРј СЃРёРіРЅР°Р»РѕРј
+void board_set_lctl1(uint_fast8_t v); // управление внешним сигналом
 
 
-void board_set_tx(uint_fast8_t v);	/* РІРєР»СЋС‡РµРЅРёРµ РЅР° РїРµСЂРµРґР°С‡Сѓ */
-void board_set_opowerlevel(uint_fast8_t n);	/* СѓСЃС‚Р°РЅРѕРІРёС‚СЊ РІС‹С…РѕРґРЅСѓСЋ РјРѕС‰РЅРѕСЃС‚СЊ WITHPOWERTRIMMIN..WITHPOWERTRIMMAX */
+void board_set_tx(uint_fast8_t v);	/* включение на передачу */
+void board_set_opowerlevel(uint_fast8_t n);	/* установить выходную мощность WITHPOWERTRIMMIN..WITHPOWERTRIMMAX */
 
 void board_set_att(uint_fast8_t v);
 void board_set_antenna(uint_fast8_t v);
 void board_set_agc(uint_fast8_t n);
-void board_set_sleep(uint_fast8_t v);	/* РїРµСЂРµРІРµСЃС‚Рё РІ СЂРµР¶РёРј РјРёРЅРёРјР°Р»СЊРЅРѕРіРѕ РїРѕС‚СЂРµР±Р»РµРЅРёСЏ */
+void board_set_sleep(uint_fast8_t v);	/* перевести в режим минимального потребления */
 
-void board_set_maxlabdac(uint_fast16_t n);	/* Р·РЅР°С‡РµРЅРёРµ РЅР° РІС‹С…РѕРґРµ Р¦РђРџ РґР»СЏ СѓРІРѕРґР° С‡Р°СЃС‚РѕС‚С‹ РѕРїРѕСЂРЅРѕРіРѕ РіРµРЅРµСЂР°С‚РѕСЂР° PLL */
+void board_set_maxlabdac(uint_fast16_t n);	/* значение на выходе ЦАП для увода частоты опорного генератора PLL */
 
-void board_setfanflag(uint_fast8_t v);	/* РІРєР»СЋС‡РёС‚СЊ РІРµРЅС‚РёР»СЏС‚РѕСЂ */
-void board_set_mainsubrxmode(uint_fast8_t v);	// Р›РµРІС‹Р№/РїСЂР°РІС‹Р№, A - main RX, B - sub RX
+void board_setfanflag(uint_fast8_t v);	/* включить вентилятор */
+void board_set_mainsubrxmode(uint_fast8_t v);	// Левый/правый, A - main RX, B - sub RX
 void board_set_detector(uint_fast8_t v);
 void board_set_nfm(uint_fast8_t v);
-void board_set_nfmnbon(uint_fast8_t v);	/* Р’РєР»СЋС‡РЅРёРµ noise blanker РЅР° SW2014FM */
+void board_set_nfmnbon(uint_fast8_t v);	/* Включние noise blanker на SW2014FM */
 void board_set_filter(uint_fast16_t v);
-void board_set_bandf(uint_fast8_t n);	/*  РґРёР°РїР°Р·РѕРЅРЅС‹Р№ С„РёР»СЊС‚СЂ РїСЂРёС‘РјРЅРёРєР° */
-void board_set_bandf2(uint_fast8_t n);	/* РґРёР°РїР°Р·РѕРЅРЅС‹Р№ С„РёР»СЊС‚СЂ РїРµСЂРµРґР°С‚С‡РёРєР° */
-void board_set_bandf3(uint_fast8_t n);	/* СѓРїСЂР°РІР»РµРЅРёРµ С‡РµСЂРµР· СЂР°Р·СЉРµРј ACC */
-void board_set_bcdfreq100k(uint_fast16_t bcdfreq);	/* Р”Р»СЏ РІС‹Р±РѕСЂР° РґРёР°РїР°Р·РѕРЅР° - С‡Р°СЃС‚РѕС‚Р° СЃ РґРёСЃРєСЂРµС‚РЅРѕСЃС‚СЊСЋ 100 РєР“С† */
-void board_set_pabias(uint_fast8_t n);	/* СѓСЃС‚Р°РЅРѕРІРёС‚СЊ С‚РѕРє РїРѕРєРѕСЏ РІС‹С…РѕРґРЅРѕРіРѕ РєР°СЃРєР°РґР° РїРµСЂРµРґР°С‚С‡РёРєР° */
-void board_set_bandfonhpf(uint_fast8_t n);	/* СѓСЃС‚Р°РЅРѕРІРёС‚СЊ РєРѕРґ РІС‹Р±РѕСЂР° РґРёР°РїР°Р·РѕРЅРЅРѕРіРѕ С„РёР»СЊС‚СЂР°, СЃ РєРѕС‚РѕСЂРѕРіРѕ РІРєР»СЋС‡Р°РµС‚СЃСЏ Р¤Р’Р§ РїРµСЂРµРґ РЈР’Р§ РІ SW20xx */
-void board_set_bandfonuhf(uint_fast8_t n);	/* РЈСЃС‚Р°РЅРѕРІРёС‚СЊ РєРѕРґ РґРёР°РїР°Р·РѕРЅРЅРѕРіРѕ С„РёР»СЊС‚СЂР°, РЅР° РєРѕС‚РѕСЂРѕРј РІРєРґСЋС‡Р°С‚СЊ UHF */
-void board_set_if4lsb(uint_fast8_t v);	/* С‚СЂРµР±СѓРµС‚СЃСЏ РґР»СЏ РїСЂРёРµРјРЅРёРєРѕРІ РїСЂСЏРјРѕРіРѕ РїСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёСЏ */
-//void board_set_fltsofter(uint_fast8_t n);/* РљРѕРґ СѓРїСЂР°РІР»РµРЅРёСЏ СЃРіР»Р°Р¶РёРІР°РЅРёРµРј СЃРєР°С‚РѕРІ С„РёР»СЊС‚СЂР° РѕСЃРЅРѕРІРЅРѕР№ СЃРµР»РµРєС†РёРё РЅР° РїСЂРёС‘РјРµ */
-void board_set_narrow(uint_fast8_t v);	/* СѓСЃС‚Р°РЅРѕРІРєР° СЂРµР¶РёРјР° РїСЂРµРјР° С‚РµР»РµРіСЂР°С„Р° (РќР§) */
-void board_set_notch(uint_fast8_t v);		/* РЅРµ РЅСѓР»РµРІРѕР№ Р°СЂРіСѓРјРµРЅС‚ - РІРєР»СЋС‡РµРЅРёРµ РќР§ СЂРµР¶РµРєС‚РѕСЂРЅРѕРіРѕ С„РёР»СЊС‚СЂР° */
-void board_set_notchnarrow(uint_fast8_t v);		/* РЅРµ РЅСѓР»РµРІРѕР№ Р°СЂРіСѓРјРµРЅС‚ - РІРєР»СЋС‡РµРЅРёРµ РќР§ СЂРµР¶РµРєС‚РѕСЂРЅРѕРіРѕ С„РёР»СЊС‚СЂР° РІ СЂРµР¶РёРјРµ CW */
-void board_set_vox(uint_fast8_t v);		/* РЅРµ РЅСѓР»РµРІРѕР№ Р°СЂРіСѓРјРµРЅС‚ - РІРєР»СЋС‡РµРЅРёРµ VOX (РґР»СЏ РІРЅРµС€РЅРёС… СЃС…РµРј) */
-void board_set_preamp(uint_fast8_t v); /* РІРєР»СЋС‡РµРЅРёРµ РЈР’Р§ */
-void board_set_adcfifo(uint_fast8_t v);	/* РўСЂРµР±СѓРµС‚СЃСЏ С„РѕСЂРјРёСЂРѕРІР°РЅРёРµ РєРѕРґР° РґР»СЏ Р¦РђРџ РІ СЂРµР¶РёРјРµ Р±РµР·Р·РЅР°РєРѕРІРѕРіРѕ РєРѕРґР° */
-void board_set_adcoffset(int_fast16_t n); /* СЃРјРµС‰РµРЅРёРµ РґР»СЏ РІС‹С…РѕРґРЅРѕРіРѕ СЃРёРіРЅР°Р»Р° СЃ РђР¦Рџ */
-void board_set_xvrtr(uint_fast8_t v);	/* Р Р°Р·СЂРµС€РёС‚СЊ СЂР°Р±РѕС‚Сѓ РєРѕРЅРІРµСЂС‚РѕСЂР° */
-void board_set_dacstraight(uint_fast8_t v);	/* РўСЂРµР±СѓРµС‚СЃСЏ С„РѕСЂРјРёСЂРѕРІР°РЅРёРµ РєРѕРґР° РґР»СЏ Р¦РђРџ РІ СЂРµР¶РёРјРµ Р±РµР·Р·РЅР°РєРѕРІРѕРіРѕ РєРѕРґР° */
-void board_set_dactest(uint_fast8_t v);	/* РІРјРµСЃС‚Рѕ РІС‹С…РѕРґР° РёРЅС‚РµСЂРїРѕР»СЏС‚РѕСЂР° Рє Р¦РђРџ РїРµСЂРµРґР°С‚С‡РёРєР° РїРѕРґРєР»СЋС‡Р°РµС‚СЃСЏ РІС‹С…РѕРґ NCO */
-void board_set_tx_inh_enable(uint_fast8_t v);	/* СЂР°Р·СЂРµС€РµРЅРёРµ СЂРµР°РєС†РёРё РЅР° РІС…РѕРґ tx_inh */
-void board_set_tx_bpsk_enable(uint_fast8_t v);	/* СЂР°Р·СЂРµС€РµРЅРёРµ РїСЂСЏРјРѕРіРѕ С„РѕСЂРјРёСЂРѕРІР°РЅРёСЏ РјРѕРґСѓР»СЏС†РёРё РІ FPGA */
+void board_set_bandf(uint_fast8_t n);	/*  диапазонный фильтр приёмника */
+void board_set_bandf2(uint_fast8_t n);	/* диапазонный фильтр передатчика */
+void board_set_bandf3(uint_fast8_t n);	/* управление через разъем ACC */
+void board_set_bcdfreq100k(uint_fast16_t bcdfreq);	/* Для выбора диапазона - частота с дискретностью 100 кГц */
+void board_set_pabias(uint_fast8_t n);	/* установить ток покоя выходного каскада передатчика */
+void board_set_bandfonhpf(uint_fast8_t n);	/* установить код выбора диапазонного фильтра, с которого включается ФВЧ перед УВЧ в SW20xx */
+void board_set_bandfonuhf(uint_fast8_t n);	/* Установить код диапазонного фильтра, на котором вкдючать UHF */
+void board_set_if4lsb(uint_fast8_t v);	/* требуется для приемников прямого преобразования */
+//void board_set_fltsofter(uint_fast8_t n);/* Код управления сглаживанием скатов фильтра основной селекции на приёме */
+void board_set_narrow(uint_fast8_t v);	/* установка режима према телеграфа (НЧ) */
+void board_set_notch(uint_fast8_t v);		/* не нулевой аргумент - включение НЧ режекторного фильтра */
+void board_set_notchnarrow(uint_fast8_t v);		/* не нулевой аргумент - включение НЧ режекторного фильтра в режиме CW */
+void board_set_vox(uint_fast8_t v);		/* не нулевой аргумент - включение VOX (для внешних схем) */
+void board_set_preamp(uint_fast8_t v); /* включение УВЧ */
+void board_set_adcfifo(uint_fast8_t v);	/* Требуется формирование кода для ЦАП в режиме беззнакового кода */
+void board_set_adcoffset(int_fast16_t n); /* смещение для выходного сигнала с АЦП */
+void board_set_xvrtr(uint_fast8_t v);	/* Разрешить работу конвертора */
+void board_set_dacstraight(uint_fast8_t v);	/* Требуется формирование кода для ЦАП в режиме беззнакового кода */
+void board_set_dactest(uint_fast8_t v);	/* вместо выхода интерполятора к ЦАП передатчика подключается выход NCO */
+void board_set_tx_inh_enable(uint_fast8_t v);	/* разрешение реакции на вход tx_inh */
+void board_set_tx_bpsk_enable(uint_fast8_t v);	/* разрешение прямого формирования модуляции в FPGA */
 void board_set_mode_wfm(uint_fast8_t v);
-void board_set_dither(uint_fast8_t v);	/* СѓРїСЂР°РІР»РµРЅРёРµ Р·Р°С€СѓРјР»РµРЅРёРµРј РІ LTC2208 */
-void board_set_adcrand(uint_fast8_t v);	/* СѓРїСЂР°РІР»РµРЅРёРµ РёРЅС‚РµСЂС„РµР№СЃРѕРј РІ LTC2208 */
-void board_set_dacscale(uint_fast8_t n);	/* РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ Р°РјРїР»РёС‚СѓРґС‹ СЃРёРіРЅР°Р»Р° СЃ Р¦РђРџ РїРµСЂРµРґР°С‚С‡РёРєР° - 0..100% */
-void board_set_dac1(uint_fast8_t n);	/* РїРѕРґСЃС‚СЂРѕР№РєР° РѕРїРѕСЂРЅРѕРіРѕ РіРµРЅРµСЂР°С‚РѕСЂР° */
-void board_set_bglight(uint_fast8_t n);	/* Р’РєР»СЋС‡РµРЅРёРµ РїРѕРґСЃРІРµС‚РєРё РґРёСЃРїР»РµСЏ */
-void board_set_kblight(uint_fast8_t v);	/* Р’РєР»СЋС‡РµРЅРёРµ РїРѕРґСЃРІРµС‚РєРё РєР»Р°РІРёР°С‚СѓСЂС‹ */
-void board_set_blfreq(uint_fast32_t n);	/* СѓСЃС‚Р°РЅРѕРІРєР° РґРµР»РёС‚РµР»СЏ РґР»СЏ С„РѕСЂРјРёСЂРѕРІР°РЅРёСЏ СЂР°Р±РѕС‡РµР№ С‡Р°СЃС‚РѕС‚С‹ РїСЂРµРѕР±СЂР°Р·РѕРІР°С‚РµР»СЏ РїРѕРґСЃРІРµС‚РєРё */
-void board_set_txcw(uint_fast8_t v);	/* Р’РєР»СЋС‡РµРЅРёРµ РїРµСЂРµРґР°С‡Рё РІ РѕР±С…РѕРґ Р±Р°Р»Р°РЅСЃРЅРѕРіРѕ РјРѕРґСѓР»СЏС‚РѕСЂР° */
-void board_set_txgate(uint_fast8_t v);	/* СЂР°Р·СЂРµС€РµРЅРёРµ РґСЂР°Р№РІРµСЂР° Рё РѕРєРѕРЅРµС‡РЅРѕРіРѕ СѓСЃРёР»РёС‚РµР»СЏ */
+void board_set_dither(uint_fast8_t v);	/* управление зашумлением в LTC2208 */
+void board_set_adcrand(uint_fast8_t v);	/* управление интерфейсом в LTC2208 */
+void board_set_dacscale(uint_fast8_t n);	/* Использование амплитуды сигнала с ЦАП передатчика - 0..100% */
+void board_set_dac1(uint_fast8_t n);	/* подстройка опорного генератора */
+void board_set_bglight(uint_fast8_t n);	/* Включение подсветки дисплея */
+void board_set_kblight(uint_fast8_t v);	/* Включение подсветки клавиатуры */
+void board_set_blfreq(uint_fast32_t n);	/* установка делителя для формирования рабочей частоты преобразователя подсветки */
+void board_set_txcw(uint_fast8_t v);	/* Включение передачи в обход балансного модулятора */
+void board_set_txgate(uint_fast8_t v);	/* разрешение драйвера и оконечного усилителя */
 void board_set_scalelo1(uint_fast8_t n);	/* SW-2011-RDX */
-void board_set_tuner_C(uint_fast8_t n);	/* СѓСЃС‚Р°РЅРѕРІРєР° Р·РЅР°С‡РµРЅРёРµ РєРѕРЅРґРµРЅСЃР°С‚РѕСЂР° РІ СЃРѕРіР»Р°СЃСѓСЋС‰РµРј СѓСЃС‚СЂРѕР№СЃС‚РІРµ */
-void board_set_tuner_L(uint_fast8_t n);	/* СѓСЃС‚Р°РЅРѕРІРєР° Р·РЅР°С‡РµРЅРёРµ РёРЅРґСѓРєС‚РёРІРЅРѕСЃС‚Рё РІ СЃРѕРіР»Р°СЃСѓСЋС‰РµРј СѓСЃС‚СЂРѕР№СЃС‚РІРµ */
-void board_set_tuner_type(uint_fast8_t v);	/* РІР°СЂРёР°РЅС‚ РїРѕРІС‹С€Р°СЋС‰РµРіРѕ/РїРѕРЅРёР¶Р°СЋС‰РµРіРѕ СЃРѕРіР»Р°СЃРѕРІР°РЅРёСЏ */
-void board_set_tuner_bypass(uint_fast8_t v);	/* РѕР±С…РѕРґ СЃРѕРіР»Р°СЃСѓСЋС‰РµРіРѕ СѓСЃС‚СЂРѕР№СЃС‚РІР° */
-void board_set_autotune(uint_fast8_t v);	/* РќР°С…РѕРґРёРјСЃСЏ РІ СЂРµР¶РёРјРµ РЅР°СЃС‚СЂРѕР№РєРё СЃРѕРіР»Р°СЃСѓСЋС‰РµРіРѕ СѓСЃС‚СЂРѕР№СЃС‚РІР° */
+void board_set_tuner_C(uint_fast8_t n);	/* установка значение конденсатора в согласующем устройстве */
+void board_set_tuner_L(uint_fast8_t n);	/* установка значение индуктивности в согласующем устройстве */
+void board_set_tuner_type(uint_fast8_t v);	/* вариант повышающего/понижающего согласования */
+void board_set_tuner_bypass(uint_fast8_t v);	/* обход согласующего устройства */
+void board_set_autotune(uint_fast8_t v);	/* Находимся в режиме настройки согласующего устройства */
 
 void board_set_user1(uint_fast8_t v);
 void board_set_user2(uint_fast8_t v);
@@ -125,54 +125,54 @@ void board_set_user3(uint_fast8_t v);
 void board_set_user4(uint_fast8_t v);
 void board_set_user5(uint_fast8_t v);
 
-void board_set_reset_n(uint_fast8_t v);	/* СѓСЃС‚Р°РЅРѕРІРєР° СЃРёРіРЅР°Р»Р° RESET РІСЃРµРј СѓСЃС‚СЂРѕР№СЃС‚РІР°Рј */
-void board_set_flt_reset_n(uint_fast8_t v);	/* СѓСЃС‚Р°РЅРѕРІРєР° СЃРёРіРЅР°Р»Р° RESET Р±Р»РѕРєР°Рј С„РёР»СЊС‚СЂРѕРІ РІ FPGA */
-void board_set_i2s_enable(uint_fast8_t v);	/* СЂР°Р·СЂРµС€РµРЅРёРµ РіРµРЅРµСЂР°С†РёРё С‚Р°РєС‚РѕРІРѕР№ С‡Р°СЃС‚РѕС‚С‹ РґР»СЏ I2S РІ FPGA */
+void board_set_reset_n(uint_fast8_t v);	/* установка сигнала RESET всем устройствам */
+void board_set_flt_reset_n(uint_fast8_t v);	/* установка сигнала RESET блокам фильтров в FPGA */
+void board_set_i2s_enable(uint_fast8_t v);	/* разрешение генерации тактовой частоты для I2S в FPGA */
 
-void board_set_stage1level(uint_fast8_t v);		/* СѓРїСЂР°РІР»РµРЅРёРµ С‚РѕРєРѕРј РїРµСЂРІРѕРіРѕ РєР°СЃРєР°РґР° СѓСЃРёР»РµРЅРёСЏ hermes */
-void board_set_stage2level(uint_fast8_t v);		/* СѓРїСЂР°РІР»РµРЅРёРµ С‚РѕРєРѕРј РІС‚РѕСЂРѕРіРѕ РєР°СЃРєР°РґР° СѓСЃРёР»РµРЅРёСЏ hermes */
-void board_set_sdcardpoweron(uint_fast8_t n);	/* РЅРµ-0: РІРєР»СЋС‡РёС‚СЊ РїРёС‚Р°РЅРёРµ SD CARD */
-void board_set_usbflashpoweron(uint_fast8_t n);	/* РЅРµ-0: РІРєР»СЋС‡РёС‚СЊ РїРёС‚Р°РЅРёРµ USB FLASH */
-void board_set_attvalue(uint_fast8_t v);		/* СѓСЃС‚Р°РЅРѕРІРёС‚СЊ Р·РЅР°С‡РµРЅРёРµ Р°С‚С‚РµРЅСЋР°С‚РѕСЂР° СЃРёРіРЅР°Р»-РіРµРЅРµСЂР°С‚РѕСЂР° */
+void board_set_stage1level(uint_fast8_t v);		/* управление током первого каскада усиления hermes */
+void board_set_stage2level(uint_fast8_t v);		/* управление током второго каскада усиления hermes */
+void board_set_sdcardpoweron(uint_fast8_t n);	/* не-0: включить питание SD CARD */
+void board_set_usbflashpoweron(uint_fast8_t n);	/* не-0: включить питание USB FLASH */
+void board_set_attvalue(uint_fast8_t v);		/* установить значение аттенюатора сигнал-генератора */
 void prog_dac1_a_value(uint_fast8_t v);
 void prog_dac1_b_value(uint_fast8_t v);
 void board_set_affilter(uint_fast8_t v);
 void board_set_loudspeaker(uint_fast8_t v);
-void board_set_digigainmax(uint_fast8_t v);		/* РґРёР°РїР°Р·РѕРЅ СЂСѓС‡РЅРѕР№ СЂРµРіСѓР»РёСЂРѕРІРєРё С†РёС„СЂРѕРІРѕРіРѕ СѓСЃРёР»РµРЅРёСЏ - РјР°РєСЃРёРјР°Р»СЊРЅРѕРµ Р·РЅР°С‡РµРЅРёРµ */
-void board_set_gvad605(uint_fast8_t v);		/* РЅР°РїСЂСЏР¶РµРЅРёРµ РЅР° AD605 (СѓРїСЂР°РІР»РµРЅРёРµ СѓСЃРёР»РµРЅРёРµРј С‚СЂР°РєС‚Р° РџР§ */
-void board_set_fsadcpower10(int_fast16_t v);		/*	РњРѕС‰РЅРѕСЃС‚СЊ, СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰Р°СЏ full scale РѕС‚ IF ADC */
-uint_fast32_t board_get_fqmeter(void);			/* РїРѕР»СѓС‡РёС‚СЊ Р·РЅР°С‡РµРЅРёРµ РёР·РјРµСЂРµРЅРЅРѕР№ С‡Р°СЃС‚РѕС‚С‹ */
+void board_set_digigainmax(uint_fast8_t v);		/* диапазон ручной регулировки цифрового усиления - максимальное значение */
+void board_set_gvad605(uint_fast8_t v);		/* напряжение на AD605 (управление усилением тракта ПЧ */
+void board_set_fsadcpower10(int_fast16_t v);		/*	Мощность, соответствующая full scale от IF ADC */
+uint_fast32_t board_get_fqmeter(void);			/* получить значение измеренной частоты */
 void board_ctl_set_vco(uint_fast8_t n);	// 0..3, 0..5 - code of VCO
-void board_setlo2xtal(uint_fast8_t n);	// РЅРѕРјРµСЂ РєРІР°СЂС†Р° РґР»СЏ РёРЅС‚РµСЂРїРѕР»СЏС†РёРѕРЅРЅРѕРіРѕ РїСЂРёРµРјРЅРёРєР°
-void board_codec2_nreset(uint_fast8_t v);	/* С„РѕСЂРјРёСЂРѕРІР°РЅРёРµ СЃРёРіРЅР°Р»Р° "RESET" РґР»СЏ codec2. 0 - СЃРЅСЏС‚СЊ СЂРµСЃРµС‚. */
-void board_set_modem_speed100(uint_fast32_t v);	// СЃРєРѕСЂРѕСЃС‚СЊ РїРµСЂРµРґР°С‡Рё СЃ С‚РѕС‡РЅРѕСЃС‚СЊСЋ 1/100 Р±РѕРґ
-void board_set_modem_mode(uint_fast8_t v);	// РїСЂРёРјРµРЅСЏРµРјР°СЏ РјРѕРґСѓР»СЏС†РёСЏ
+void board_setlo2xtal(uint_fast8_t n);	// номер кварца для интерполяционного приемника
+void board_codec2_nreset(uint_fast8_t v);	/* формирование сигнала "RESET" для codec2. 0 - снять ресет. */
+void board_set_modem_speed100(uint_fast32_t v);	// скорость передачи с точностью 1/100 бод
+void board_set_modem_mode(uint_fast8_t v);	// применяемая модуляция
 
-void board_lcd_rs(uint_fast8_t v);	// РІС‹СЃС‚Р°РІРёС‚СЊ СѓСЂРѕРІРµРЅСЊ РЅР° СЃРёРіРЅР°Р»Рµ lcd register select - РЅРµ С‚СЂРµР±СѓРµС‚СЃСЏ board_update
-void board_lcd_reset(uint_fast8_t v);	// РІС‹СЃС‚Р°РІРёС‚СЊ СѓСЂРѕРІРµРЅСЊ РЅР° СЃРёРіРЅР°Р»Рµ lcd reset
+void board_lcd_rs(uint_fast8_t v);	// выставить уровень на сигнале lcd register select - не требуется board_update
+void board_lcd_reset(uint_fast8_t v);	// выставить уровень на сигнале lcd reset
 
-/* Р·РІСѓРєРё - РїРѕРґР·РІСѓС‡РєР° РЅР°Р¶Р°С‚РёР№ Рё СЃР°РјРѕРєРѕРЅС‚СЂРѕР»СЊ РІ С‚РµР»РµРіСЂР°С„Рµ */
-/* РІС‹Р·С‹РІР°РµС‚СЃСЏ РїСЂРё Р·Р°РїСЂРµС‰С‘РЅРЅС‹С… РїСЂРµСЂС‹РІР°РЅРёСЏС…. */
+/* звуки - подзвучка нажатий и самоконтроль в телеграфе */
+/* вызывается при запрещённых прерываниях. */
 void board_beep_initialize(void);
 
-void board_sidetone_setfreq(uint_least16_t freq);	/* freq - С‡Р°СЃС‚РѕС‚Р° РІ РіРµСЂС†Р°С…. РњРёРЅРёРјСѓРј - 400 РіРµСЂС† (РѕРїСЂРµРґРµР»РµРЅРѕ РЅР°Р±РѕСЂРѕРј РєРѕРјР°РЅРґ CAT).*/
-void board_keybeep_setfreq(uint_least16_t freq);	/* freq - С‡Р°СЃС‚РѕС‚Р° РІ РіРµСЂС†Р°С…. */
-/* С„СѓРЅРєС†РёРё СЂР°Р·СЂРµС€РµРЅРёСЏ РІС‹РґР°С‡Рё Р·РІСѓРєРѕРІРѕРіРѕ СЃРёРіРЅР°Р»Р° - РјРѕРіСѓС‚ РїРµСЂРµРєСЂС‹РІР°С‚СЊСЃСЏ. */
+void board_sidetone_setfreq(uint_least16_t freq);	/* freq - частота в герцах. Минимум - 400 герц (определено набором команд CAT).*/
+void board_keybeep_setfreq(uint_least16_t freq);	/* freq - частота в герцах. */
+/* функции разрешения выдачи звукового сигнала - могут перекрываться. */
 void board_sidetone_enable(uint_fast8_t state);
-/* РІС‹Р·С‹РІР°РµС‚СЃСЏ РїСЂРё Р·Р°РїСЂРµС‰С‘РЅРЅС‹С… РїСЂРµСЂС‹РІР°РЅРёСЏС…. */
+/* вызывается при запрещённых прерываниях. */
 void board_keybeep_enable(uint_fast8_t state);
 void board_testsound_enable(uint_fast8_t state);
-void board_subtone_setfreq(uint_least16_t tonefreq01);	/* tonefreq - С‡Р°СЃС‚РѕС‚Р° РІ РґРµСЃСЏС‚С‹С… РґРѕР»СЏС… РіРµСЂС†Р°. */
+void board_subtone_setfreq(uint_least16_t tonefreq01);	/* tonefreq - частота в десятых долях герца. */
 void board_subtone_enable(uint_fast8_t state);
 
-/* Р·Р°РіСЂСѓР·РєР° РєРѕСЌС„С„РёС†РёРµРЅС‚РѕРІ FIR С„РёР»СЊС‚СЂР° РІ FPGA */
+/* загрузка коэффициентов FIR фильтра в FPGA */
 void board_fpga_fir_initialize(void);
-void board_reload_fir(uint_fast8_t ifir, const int_fast32_t * const k, unsigned Ntap, unsigned CWidth); /* Р’С‹РґР°С‡Р° СЂР°СЃС‡РёС‚Р°РЅРЅС‹С… РїР°СЂР°РјРµС‚СЂРѕРІ С„РёР»СЊС‚СЂР° РІ FPGA (СЃРёРјРјРµС‚СЂРёС‡РЅС‹Рµ) */
-/* СѓРїСЂР°РІР»РµРЅРёРµ РїРѕР»РѕСЃРѕРІС‹РјРё С„РёР»СЊС‚СЂР°РјРё - bandpass.c */
+void board_reload_fir(uint_fast8_t ifir, const int_fast32_t * const k, unsigned Ntap, unsigned CWidth); /* Выдача расчитанных параметров фильтра в FPGA (симметричные) */
+/* управление полосовыми фильтрами - bandpass.c */
 void bandf_calc_initialize(void);
-uint8_t bandf_calc(uint_fast32_t freq);	/* РїРѕР»СѓС‡РёС‚СЊ РЅРѕРјРµСЂ РґРёР°РїР°Р·РѕРЅРЅРѕРіРѕ С„РёР»СЊС‚СЂР° РїРѕ С‡Р°СЃС‚РѕС‚Рµ */
-uint8_t bandf2_calc(uint_fast32_t freq);	/* РїРѕР»СѓС‡РёС‚СЊ РЅРѕРјРµСЂ РґРёР°РїР°Р·РѕРЅРЅРѕРіРѕ С„РёР»СЊС‚СЂР° РїРµСЂРµРґР°С‚С‡РёРєР° РїРѕ С‡Р°СЃС‚РѕС‚Рµ */
-uint8_t bandf3_calc(uint_fast32_t freq);	/* РїРѕР»СѓС‡РёС‚СЊ РєРѕРґ РґР»СЏ СѓРїСЂР°РІР»РµРЅРёСЏ С‡РµСЂРµР· СЂР°Р·СЉРµРј ACC */
+uint8_t bandf_calc(uint_fast32_t freq);	/* получить номер диапазонного фильтра по частоте */
+uint8_t bandf2_calc(uint_fast32_t freq);	/* получить номер диапазонного фильтра передатчика по частоте */
+uint8_t bandf3_calc(uint_fast32_t freq);	/* получить код для управления через разъем ACC */
 
 void board_rtc_getdate(
 	uint_fast16_t * year,
@@ -220,29 +220,29 @@ uint_fast8_t board_rtc_chip_initialize(void);
 		#error NVRAM_END required, may be missing NVRAM_TYPE
 	#endif
 	#if (NVRAM_END > 255)
-		typedef uint_least16_t nvramaddress_t;				/* РјРѕР¶РЅРѕ СЃРґРµР»Р°С‚СЊ 8 Р±РёС‚. СЃРјРµС‰РµРЅРёРµ РІ NVRAM. Р•СЃР»Рё MENUNONVRAM - С‚РѕР»СЊРєРѕ РјРµРЅСЏРµРј РІ РїР°РјСЏС‚Рё */
+		typedef uint_least16_t nvramaddress_t;				/* можно сделать 8 бит. смещение в NVRAM. Если MENUNONVRAM - только меняем в памяти */
 	#else /* (NVRAM_END > 255) */
-		typedef uint_least8_t nvramaddress_t;				/* РјРѕР¶РЅРѕ СЃРґРµР»Р°С‚СЊ 8 Р±РёС‚. СЃРјРµС‰РµРЅРёРµ РІ NVRAM. Р•СЃР»Рё MENUNONVRAM - С‚РѕР»СЊРєРѕ РјРµРЅСЏРµРј РІ РїР°РјСЏС‚Рё */
+		typedef uint_least8_t nvramaddress_t;				/* можно сделать 8 бит. смещение в NVRAM. Если MENUNONVRAM - только меняем в памяти */
 	#endif /* (NVRAM_END > 255) */
 
 #else /* defined (NVRAM_TYPE) && (NVRAM_TYPE != NVRAM_TYPE_NOTHING) */
 
-	typedef uint_least16_t nvramaddress_t;				/* РјРѕР¶РЅРѕ СЃРґРµР»Р°С‚СЊ 8 Р±РёС‚. СЃРјРµС‰РµРЅРёРµ РІ NVRAM. Р•СЃР»Рё MENUNONVRAM - С‚РѕР»СЊРєРѕ РјРµРЅСЏРµРј РІ РїР°РјСЏС‚Рё */
+	typedef uint_least16_t nvramaddress_t;				/* можно сделать 8 бит. смещение в NVRAM. Если MENUNONVRAM - только меняем в памяти */
 
 #endif /* defined (NVRAM_TYPE) && (NVRAM_TYPE != NVRAM_TYPE_NOTHING) */
 
-void save_i32(nvramaddress_t addr, uint32_t v);	/* СЃРѕС…СЂР°РЅРµРЅРёРµ РїРѕ СѓРєР°Р·Р°РЅРЅРѕРјСѓ РёРЅРґРµРєСЃСѓ РІ FRAM РѕРґРЅРѕРіРѕ 32-Р±РёС‚РЅРѕРіРѕ СЃР»РѕРІР° */
-uint_fast32_t restore_i32(nvramaddress_t addr); /* РІС‹Р±РѕСЂРєР° РїРѕ СѓРєР°Р·Р°РЅРЅРѕРјСѓ РёРЅРґРµРєСЃСѓ РёР· FRAM РѕРґРЅРѕРіРѕ 32-Р±РёС‚РЅРѕРіРѕ СЃР»РѕРІР° */
-void save_i16(nvramaddress_t addr, uint16_t v); /* СЃРѕС…СЂР°РЅРµРЅРёРµ РїРѕ СѓРєР°Р·Р°РЅРЅРѕРјСѓ РёРЅРґРµРєСЃСѓ РІ FRAM РѕРґРЅРѕРіРѕ 16-Р±РёС‚РЅРѕРіРѕ СЃР»РѕРІР° */
-uint_fast16_t restore_i16(nvramaddress_t addr); /* РІС‹Р±РѕСЂРєР° РїРѕ СѓРєР°Р·Р°РЅРЅРѕРјСѓ РёРЅРґРµРєСЃСѓ РёР· FRAM РѕРґРЅРѕРіРѕ 16-Р±РёС‚РЅРѕРіРѕ СЃР»РѕРІР° */
-void save_i8(nvramaddress_t addr, uint8_t v); /* СЃРѕС…СЂР°РЅРµРЅРёРµ РїРѕ СѓРєР°Р·Р°РЅРЅРѕРјСѓ РёРЅРґРµРєСЃСѓ РІ FRAM РѕРґРЅРѕРіРѕ Р±Р°Р№С‚Р° */
-uint_fast8_t restore_i8(nvramaddress_t addr); /* РІС‹Р±РѕСЂРєР° РїРѕ СѓРєР°Р·Р°РЅРЅРѕРјСѓ РёРЅРґРµРєСЃСѓ РёР· FRAM РѕРґРЅРѕРіРѕ Р±Р°Р№С‚Р° */
+void save_i32(nvramaddress_t addr, uint32_t v);	/* сохранение по указанному индексу в FRAM одного 32-битного слова */
+uint_fast32_t restore_i32(nvramaddress_t addr); /* выборка по указанному индексу из FRAM одного 32-битного слова */
+void save_i16(nvramaddress_t addr, uint16_t v); /* сохранение по указанному индексу в FRAM одного 16-битного слова */
+uint_fast16_t restore_i16(nvramaddress_t addr); /* выборка по указанному индексу из FRAM одного 16-битного слова */
+void save_i8(nvramaddress_t addr, uint8_t v); /* сохранение по указанному индексу в FRAM одного байта */
+uint_fast8_t restore_i8(nvramaddress_t addr); /* выборка по указанному индексу из FRAM одного байта */
 
 
-/* РїРѕР»СѓС‡РёС‚СЊ Р·РЅР°С‡РµРЅРёРµ forward & reflected ADC */
+/* получить значение forward & reflected ADC */
 adcvalholder_t board_getswrmeter(
-	adcvalholder_t * reflected, 	// РІ Р·РЅР°СЏРµРЅРёСЏС… РђР¦Рџ
-	uint_fast8_t swrcalibr	// 90..110 - РєРѕСЂСЂРµРєС†РёСЏ
+	adcvalholder_t * reflected, 	// в знаяениях АЦП
+	uint_fast8_t swrcalibr	// 90..110 - коррекция
 	);	
 uint_fast8_t board_getpwrmeter(
 	uint_fast8_t * toptrace	// peak hold
@@ -265,11 +265,11 @@ void usbd_descriptors_initialize(uint_fast8_t deschs);
 void hardware_usbd_dma_initialize(void);
 void hardware_usbd_dma_enable(void);
 
-uint_fast8_t board_get_adcinputs(void);	/* РїРѕР»СѓС‡РёС‚СЊ РєРѕР»РёС‡РµСЃС‚РІРѕ РєР°РЅР°Р»РѕРІ РђР¦Рџ, Р·Р°РґРµР№СЃС‚РІРѕРІР°РЅРЅС‹С… РІ СѓСЃС‚СЂРѕР№СЃС‚РІРµ */
-uint_fast8_t board_get_adcch(uint_fast8_t index);	/* РїРѕР»СѓС‡РёС‚СЊ РєР°РЅР°Р» РђР¦Рџ РЅРѕ РёРЅРґРµРєСЃСѓ РІ С‚Р°Р±Р»РёС†Рµ */
+uint_fast8_t board_get_adcinputs(void);	/* получить количество каналов АЦП, задействованных в устройстве */
+uint_fast8_t board_get_adcch(uint_fast8_t index);	/* получить канал АЦП но индексу в таблице */
 
 void board_adc_store_data(uint_fast8_t i, adcvalholder_t v);
-void board_adc_filtering(void);	// Р¤СѓРЅРєС†РёСЏ РІС‹Р·С‹РІР°РµС‚СЃСЏ РёР· РѕР±СЂР°Р±РѕС‚С‡РёРєР° РїСЂРµСЂС‹РІР°РЅРёСЏ РїРѕСЃР»Рµ РїРѕР»СѓС‡РµРЅРёСЏ Р·РЅР°С‡РµРЅРёСЏ РѕС‚ РїРѕСЃР»РµРґРЅРµРіРѕ РєР°РЅР°Р»Р° РђР¦Рџ
+void board_adc_filtering(void);	// Функция вызывается из обработчика прерывания после получения значения от последнего канала АЦП
 
 adcvalholder_t filter_hyst(
 	adcvalholder_t * pv0, 
@@ -278,17 +278,17 @@ adcvalholder_t filter_hyst(
 
 void 
 modemchangefreq(
-	uint_fast32_t f		// С‡Р°СЃС‚РѕС‚Р°, РєРѕС‚РѕСЂСѓСЋ СѓСЃС‚Р°РЅР°РІР»РёРІР°РµРј РїРѕ РєРѕРјР°РЅРґРµ РѕС‚ modem
+	uint_fast32_t f		// частота, которую устанавливаем по команде от modem
 	);
 
 void 
 modemchangespeed(
-	uint_fast32_t speed100		// СЃРєРѕСЂРѕСЃС‚СЊ, РєРѕС‚РѕСЂСѓСЋ СѓСЃС‚Р°РЅР°РІР»РёРІР°РµРј РїРѕ РєРѕРјР°РЅРґРµ РѕС‚ modem
+	uint_fast32_t speed100		// скорость, которую устанавливаем по команде от modem
 	);
 
 void 
 modemchangemode(
-	uint_fast32_t modemmode		// СЂРµР¶РёРј, РєРѕС‚РѕСЂС‹Р№ СѓСЃС‚Р°РЅР°РІР»РёРІР°РµРј РїРѕ РєРѕРјР°РЅРґРµ РѕС‚ modem
+	uint_fast32_t modemmode		// режим, который устанавливаем по команде от modem
 	);
 
 int gettxstate(void);
@@ -296,34 +296,34 @@ int gettxstate(void);
 
 enum 
 {
-	BOARD_ADCFILTER_DIRECT,		/* С„РёР»СЊС‚СЂР°С†РёСЏ РЅРµ РїСЂРёРјРµРЅСЏРµС‚СЃСЏ (Р·РЅР°С‡РµРЅРёРµ РґР»СЏ РІСЃРµС… РєР°РЅР°Р»РѕРІ РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ) */
-	BOARD_ADCFILTER_AVERAGEPWR,	/* СѓСЃСЂРµРґРЅРµРЅРёРµ РґР»СЏ РёР·РјРµСЂРёС‚РµР»СЏ РјРѕС‰РЅРѕСЃС‚Рё - С‚РѕР»СЊРєРѕ РѕРґРёРЅ РєР°РЅР°Р» */
-	BOARD_ADCFILTER_TRACETOP3S,	/* РћС‚СЃР»РµР¶РёРІР°РЅРёРµ РјР°РєСЃРёРјСѓРјР° СЃ РїРѕСЃС‚РѕСЏРЅРЅРѕР№ РІСЂРµРјРµРЅРё 3 СЃРµРєСѓРЅРґС‹ */
-	BOARD_ADCFILTER_LPF,			/* Р¤РќР§, РїР°СЂР°РјРµС‚СЂ Р·Р°РґР°РµС‚СЃСЏ РІ РІРёРґРµ С‡РёСЃР»Р° СЃ С„РёРєСЃРёСЂРѕРІР°РЅРЅРѕР№ С‚РѕС‡РєРѕР№ */
+	BOARD_ADCFILTER_DIRECT,		/* фильтрация не применяется (значение для всех каналов по умолчанию) */
+	BOARD_ADCFILTER_AVERAGEPWR,	/* усреднение для измерителя мощности - только один канал */
+	BOARD_ADCFILTER_TRACETOP3S,	/* Отслеживание максимума с постоянной времени 3 секунды */
+	BOARD_ADCFILTER_LPF,			/* ФНЧ, параметр задается в виде числа с фиксированной точкой */
 	//
 	BOARD_ADCFILTER_TYPECOUNT
 };
 
-uint_fast8_t board_getadc_filtered_u8(uint_fast8_t i, uint_fast8_t lower, uint_fast8_t upper);	/* РїРѕР»СѓС‡РёС‚СЊ Р·РЅР°С‡РµРЅРёРµ РѕС‚ РђР¦Рџ РІ РґРёР°РїР°Р·РѕРЅРµ lower..upper (РІРєР»СЋС‡Р°СЏ РіСЂР°РЅРёС†С‹) */
-uint_fast8_t board_getpot_filtered_u8(uint_fast8_t i, uint_fast8_t lower, uint_fast8_t upper);	/* РїРѕР»СѓС‡РёС‚СЊ Р·РЅР°С‡РµРЅРёРµ РѕС‚ РђР¦Рџ РІ РґРёР°РїР°Р·РѕРЅРµ lower..upper (РІРєР»СЋС‡Р°СЏ РіСЂР°РЅРёС†С‹) */
-uint_fast16_t board_getadc_filtered_u16(uint_fast8_t i, uint_fast16_t lower, uint_fast16_t upper);	/* РїРѕР»СѓС‡РёС‚СЊ Р·РЅР°С‡РµРЅРёРµ РѕС‚ РђР¦Рџ РІ РґРёР°РїР°Р·РѕРЅРµ lower..upper (РІРєР»СЋС‡Р°СЏ РіСЂР°РЅРёС†С‹) */
-uint_fast16_t board_getpot_filtered_u16(uint_fast8_t i, uint_fast16_t lower, uint_fast16_t upper);	/* РїРѕР»СѓС‡РёС‚СЊ Р·РЅР°С‡РµРЅРёРµ РѕС‚ РђР¦Рџ РІ РґРёР°РїР°Р·РѕРЅРµ lower..upper (РІРєР»СЋС‡Р°СЏ РіСЂР°РЅРёС†С‹) */
-uint_fast8_t board_getadc_smoothed_u8(uint_fast8_t i, uint_fast8_t lower, uint_fast8_t upper);	/* РїСЂРё РёР·РјРµРЅРµРЅРёРё РѕС‚С„РёР»СЊС‚СЂРѕРІР°РЅРЅРѕРіРѕ Р·РЅР°С‡РµРЅРёСЏ СЌС‚РѕРіРѕ РђР¦Рџ РІРѕР·РІСЂР°С‰Р°РµРјРѕРµ Р·РЅР°С‡РµРЅРёРµ РЅР° РєР°Р¶РґРѕРј РІС‹Р·РѕРІРµ РїСЂРёР±Р»РёР¶Р°РµС‚СЃСЏ Рє РЅРµРјСѓ РЅР° 1 */
-uint_fast8_t board_getadc_unfiltered_u8(uint_fast8_t i, uint_fast8_t lower, uint_fast8_t upper);	/* РїРѕР»СѓС‡РёС‚СЊ Р·РЅР°С‡РµРЅРёРµ РѕС‚ РђР¦Рџ РІ РґРёР°РїР°Р·РѕРЅРµ lower..upper (РІРєР»СЋС‡Р°СЏ РіСЂР°РЅРёС†С‹) */
-uint_fast16_t board_getadc_unfiltered_u16(uint_fast8_t i, uint_fast16_t lower, uint_fast16_t upper);	/* РїРѕР»СѓС‡РёС‚СЊ Р·РЅР°С‡РµРЅРёРµ РѕС‚ РђР¦Рџ РІ РґРёР°РїР°Р·РѕРЅРµ lower..upper (РІРєР»СЋС‡Р°СЏ РіСЂР°РЅРёС†С‹) */
-uint_fast32_t board_getadc_unfiltered_u32(uint_fast8_t i, uint_fast32_t lower, uint_fast32_t upper);	/* РїРѕР»СѓС‡РёС‚СЊ Р·РЅР°С‡РµРЅРёРµ РѕС‚ РђР¦Рџ РІ РґРёР°РїР°Р·РѕРЅРµ 0..255 */
-adcvalholder_t board_getadc_filtered_truevalue(uint_fast8_t i);	/* РїРѕР»СѓС‡РёС‚СЊ Р·РЅР°С‡РµРЅРёРµ РѕС‚ РђР¦Рџ */
-adcvalholder_t board_getadc_unfiltered_truevalue(uint_fast8_t i);	/* РїРѕР»СѓС‡РёС‚СЊ Р·РЅР°С‡РµРЅРёРµ РѕС‚ РђР¦Рџ */
-adcvalholder_t board_getadc_fsval(uint_fast8_t i);	/* РїРѕР»СѓС‡РёС‚СЊ РјР°РєСЃРёРјР°Р»СЊРЅРѕРµ РІРѕР·РјРѕР¶РЅРѕРµ Р·РЅР°С‡РµРЅРёРµ РѕС‚ РђР¦Рџ */
-//void hardware_set_adc_filter(uint_fast8_t i, uint_fast8_t v);	/* СѓСЃС‚Р°РЅРѕРІРёС‚СЊ СЃРїРѕСЃРѕР± С„РёР»СЊС‚СЂР°С†РёРё РґР°РЅРЅС‹С… (РІ РјРѕРјРµРЅС‚ РІС‹Р±РѕСЂРєРё РёС… СЂРµРіРёСЃС‚СЂР° РђР¦Рџ */
-//void hardware_set_adc_filterLPF(uint_fast8_t i, uint_fast8_t k);	/* РЈСЃС‚Р°РЅРѕРІРёС‚СЊ СЃРїРѕСЃРѕР± С„РёР»СЊС‚СЂР°С†РёРё LPF Рё С‡Р°СЃС‚РѕС‚Сѓ СЃСЂРµР·Р° - РїР°СЂР°РјРµС‚СЂ 1.0..0.0, СѓРјРЅРѕР¶РµРЅРЅРѕРµ РЅР° BOARD_ADCFILTER_LPF_DENOM */
-#define BOARD_ADCFILTER_LPF_DENOM	128		/* РїРѕР»РѕР¶РµРЅРёРµ С„РёРєСЃРёСЂРѕРІР°РЅРЅРѕР№ С‚РѕС‡РєРё РїСЂРё С„РёР»СЊС‚СЂР°С†РёРё BOARD_ADCFILTER_LPF */
+uint_fast8_t board_getadc_filtered_u8(uint_fast8_t i, uint_fast8_t lower, uint_fast8_t upper);	/* получить значение от АЦП в диапазоне lower..upper (включая границы) */
+uint_fast8_t board_getpot_filtered_u8(uint_fast8_t i, uint_fast8_t lower, uint_fast8_t upper);	/* получить значение от АЦП в диапазоне lower..upper (включая границы) */
+uint_fast16_t board_getadc_filtered_u16(uint_fast8_t i, uint_fast16_t lower, uint_fast16_t upper);	/* получить значение от АЦП в диапазоне lower..upper (включая границы) */
+uint_fast16_t board_getpot_filtered_u16(uint_fast8_t i, uint_fast16_t lower, uint_fast16_t upper);	/* получить значение от АЦП в диапазоне lower..upper (включая границы) */
+uint_fast8_t board_getadc_smoothed_u8(uint_fast8_t i, uint_fast8_t lower, uint_fast8_t upper);	/* при изменении отфильтрованного значения этого АЦП возвращаемое значение на каждом вызове приближается к нему на 1 */
+uint_fast8_t board_getadc_unfiltered_u8(uint_fast8_t i, uint_fast8_t lower, uint_fast8_t upper);	/* получить значение от АЦП в диапазоне lower..upper (включая границы) */
+uint_fast16_t board_getadc_unfiltered_u16(uint_fast8_t i, uint_fast16_t lower, uint_fast16_t upper);	/* получить значение от АЦП в диапазоне lower..upper (включая границы) */
+uint_fast32_t board_getadc_unfiltered_u32(uint_fast8_t i, uint_fast32_t lower, uint_fast32_t upper);	/* получить значение от АЦП в диапазоне 0..255 */
+adcvalholder_t board_getadc_filtered_truevalue(uint_fast8_t i);	/* получить значение от АЦП */
+adcvalholder_t board_getadc_unfiltered_truevalue(uint_fast8_t i);	/* получить значение от АЦП */
+adcvalholder_t board_getadc_fsval(uint_fast8_t i);	/* получить максимальное возможное значение от АЦП */
+//void hardware_set_adc_filter(uint_fast8_t i, uint_fast8_t v);	/* установить способ фильтрации данных (в момент выборки их регистра АЦП */
+//void hardware_set_adc_filterLPF(uint_fast8_t i, uint_fast8_t k);	/* Установить способ фильтрации LPF и частоту среза - параметр 1.0..0.0, умноженное на BOARD_ADCFILTER_LPF_DENOM */
+#define BOARD_ADCFILTER_LPF_DENOM	128		/* положение фиксированной точки при фильтрации BOARD_ADCFILTER_LPF */
 
 
 enum
 {
-	STTE_OK,		// РјРѕР¶РЅРѕ РїРµСЂРµС…РѕРґРёС‚СЊ Рє СЃР»РµРґСѓСЋС‰РµРј СЃРѕСЃС‚РѕСЏРЅРёСЋ.
-	STTE_BYUSY,		// РІР»РѕР¶РµРЅРЅР°СЏ state machine РµС‰Рµ РІС‹РїРѕР»РЅСЏРµС‚ СЃРІРѕРё С„РєРЅРєС†РёРё - С‚СЂРµР±СѓРµС‚СЃСЏ РїРѕРІС‚РѕСЂРЅС‹Р№ РІС…РѕРґ.
+	STTE_OK,		// можно переходить к следующем состоянию.
+	STTE_BYUSY,		// вложенная state machine еще выполняет свои фкнкции - требуется повторный вход.
 	//
 	STTE_count
 };

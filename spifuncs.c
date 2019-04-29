@@ -1,17 +1,17 @@
 /* $Id$ */
 //
-// РџСЂРѕРµРєС‚ HF Dream Receiver (РљР’ РїСЂРёС‘РјРЅРёРє РјРµС‡С‚С‹)
-// Р°РІС‚РѕСЂ Р“РµРЅР° Р—Р°РІРёРґРѕРІСЃРєРёР№ mgs2001@mail.ru
+// Проект HF Dream Receiver (КВ приёмник мечты)
+// автор Гена Завидовский mgs2001@mail.ru
 // UA1ARN
 //
 
-#include "hardware.h"	/* Р·Р°РІРёСЃСЏС‰РёРµ РѕС‚ РїСЂРѕС†РµСЃСЃРѕСЂР° С„СѓРЅРєС†РёРё СЂР°Р±РѕС‚С‹ СЃ РїРѕСЂС‚Р°РјРё */
+#include "hardware.h"	/* зависящие от процессора функции работы с портами */
 #include "spifuncs.h"
 
 #include <stdlib.h>
 //#include <assert.h>
 
-// Р±РёС‚РѕРІС‹Рµ РјР°СЃРєРё, СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РёРµ Р±РёС‚Сѓ РІ Р±Р°Р№С‚Рµ РїРѕ РµРіРѕ РЅРѕРјРµСЂСѓ.
+// битовые маски, соответствующие биту в байте по его номеру.
 const uint_fast8_t rbvalues [8] =
 {
 	0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 
@@ -25,7 +25,7 @@ const uint_fast8_t rbvalues [8] =
 
 #if UC1608_CSP
 
-// Р’С‹РґР°С‡Р° РµРґРёРЅРёС‡РєРё РєР°Рє С‡РёРїСЃРµР»РµРєС‚
+// Выдача единички как чипселект
 static void 
 spi_select255(void)
 {
@@ -39,7 +39,7 @@ spi_select255(void)
 	hardware_spi_io_delay(); 
 }
 
-// СЃРЅСЏС‚СЊ С‡РёРїСЃРµР»РµРєС‚
+// снять чипселект
 static void 
 spi_unselect255(void)
 {
@@ -59,8 +59,8 @@ spi_hwinit255(void)
 	#if CPUSTYLE_ARM || CPUSTYLE_ATXMEGA
 		UC1608_CSP_INITIALIZE();
 	#elif (CPUSTYLE_ATMEGA)
-		UC1608_CSP_PORT &= ~ UC1608_CSP;	/* РЅРµР°РєС‚РёРІРЅРѕРµ СЃРѕСЃС‚РѕСЏРЅРёРµ */
-		UC1608_CSP_DDR |= UC1608_CSP;		/* Р’С‹С…РѕРґ */
+		UC1608_CSP_PORT &= ~ UC1608_CSP;	/* неактивное состояние */
+		UC1608_CSP_DDR |= UC1608_CSP;		/* Выход */
 	#else
 		#error Undefined CPUSTYLE_XXX
 	#endif
@@ -74,7 +74,7 @@ spi_cs_disable(void)
 #if CPUSTYLE_ARM || CPUSTYLE_ATXMEGA
 
 	#if WITHSPISPLIT	
-		/* РґР»СЏ РґРІСѓС… СЂР°Р·РЅС‹С… РїРѕС‚СЂРµР±РёС‚РµР»РµР№ С„РѕСЂРјРёСЂСѓСЋС‚СЃСЏ РѕС‚РґРµР»СЊРЅС‹Рµ СЃРёРіРЅР°Р»С‹ MOSI, SCK, CS */
+		/* для двух разных потребителей формируются отдельные сигналы MOSI, SCK, CS */
 		SPI0_TARGET_PORT_S(SPI0_CS_BIT);
 		SPI1_TARGET_PORT_S(SPI1_CS_BIT);
 		#if defined (SPI_CSEL2)
@@ -84,26 +84,26 @@ spi_cs_disable(void)
 
 	#if SPI_ALLCS_BITS != 0 && SPI_ALLCS_BITSNEG != 0
 
-		SPI_ALLCS_PORT_S(SPI_ALLCS_BITS & (SPI_ALLCS_BITS ^ SPI_ALLCS_BITSNEG));	// Р—Р°РїСЂРµС‰РµРЅРёРµ - РІСЃРµ Р±РёС‚С‹ С‡РёРїСЃРµР»РµРєС‚РѕРІ РІ 1, С‚Сѓ С‡С‚Рѕ Р°РєС‚РёРІРЅС‹ "1" - РІ "0".
-		SPI_ALLCS_PORT_C(SPI_ALLCS_BITS & SPI_ALLCS_BITSNEG);	// Р—Р°РїСЂРµС‰РµРЅРёРµ - РІСЃРµ Р±РёС‚С‹ С‡РёРїСЃРµР»РµРєС‚РѕРІ РІ 1, С‚Сѓ С‡С‚Рѕ Р°РєС‚РёРІРЅС‹ "1" - РІ "0".
+		SPI_ALLCS_PORT_S(SPI_ALLCS_BITS & (SPI_ALLCS_BITS ^ SPI_ALLCS_BITSNEG));	// Запрещение - все биты чипселектов в 1, ту что активны "1" - в "0".
+		SPI_ALLCS_PORT_C(SPI_ALLCS_BITS & SPI_ALLCS_BITSNEG);	// Запрещение - все биты чипселектов в 1, ту что активны "1" - в "0".
 
 	#elif SPI_ALLCS_BITS != 0
 
-		SPI_ALLCS_PORT_S(SPI_ALLCS_BITS);	// Р—Р°РїСЂРµС‰РµРЅРёРµ - РІСЃРµ Р±РёС‚С‹ С‡РёРїСЃРµР»РµРєС‚РѕРІ РІ 1
+		SPI_ALLCS_PORT_S(SPI_ALLCS_BITS);	// Запрещение - все биты чипселектов в 1
 
 	#endif /* defined (SPI_ALLCS_BITS) */
 
 	#if defined (SPI_NAEN_BIT)
-		SPI_NAEN_PORT_S(SPI_NAEN_BIT);	// Р—Р°РїСЂРµС‰РµРЅРёРµ С‡РёРїСЃРµР»РµРєС‚РѕРІ РµРґРёРЅРёС†РµР№
+		SPI_NAEN_PORT_S(SPI_NAEN_BIT);	// Запрещение чипселектов единицей
 	#elif defined (SPI_AEN_BIT)
-		SPI_AEN_PORT_C(SPI_AEN_BIT);	// Р—Р°РїСЂРµС‰РµРЅРёРµ С‡РёРїСЃРµР»РµРєС‚РѕРІ РЅСѓР»С‘Рј
+		SPI_AEN_PORT_C(SPI_AEN_BIT);	// Запрещение чипселектов нулём
 	#endif
 	hardware_spi_io_delay(); 
 
 #elif (CPUSTYLE_ATMEGA)
 
 	#if WITHSPISPLIT
-		/* РґР»СЏ РґРІСѓС… СЂР°Р·РЅС‹С… РїРѕС‚СЂРµР±РёС‚РµР»РµР№ С„РѕСЂРјРёСЂСѓСЋС‚СЃСЏ РѕС‚РґРµР»СЊРЅС‹Рµ СЃРёРіРЅР°Р»С‹ MOSI, SCK, CS */
+		/* для двух разных потребителей формируются отдельные сигналы MOSI, SCK, CS */
 		SPI0_TARGET_CS_PORT |= SPI0_CS_BIT;
 		SPI1_TARGET_CS_PORT |= SPI1_CS_BIT;
 		#if defined (SPI_CSEL2)
@@ -113,19 +113,19 @@ spi_cs_disable(void)
 
 	#if SPI_ALLCS_BITS != 0 && SPI_ALLCS_BITSNEG != 0
 
-		SPI_ALLCS_PORT |= (SPI_ALLCS_BITS & (SPI_ALLCS_BITS ^ SPI_ALLCS_BITSNEG));	// Р—Р°РїСЂРµС‰РµРЅРёРµ - РІСЃРµ Р±РёС‚С‹ С‡РёРїСЃРµР»РµРєС‚РѕРІ РІ 1, С‚Сѓ С‡С‚Рѕ Р°РєС‚РёРІРЅС‹ "1" - РІ "0".
-		SPI_ALLCS_PORT &= ~ (SPI_ALLCS_BITS & SPI_ALLCS_BITSNEG);	// Р—Р°РїСЂРµС‰РµРЅРёРµ - РІСЃРµ Р±РёС‚С‹ С‡РёРїСЃРµР»РµРєС‚РѕРІ РІ 1, С‚Сѓ С‡С‚Рѕ Р°РєС‚РёРІРЅС‹ "1" - РІ "0".
+		SPI_ALLCS_PORT |= (SPI_ALLCS_BITS & (SPI_ALLCS_BITS ^ SPI_ALLCS_BITSNEG));	// Запрещение - все биты чипселектов в 1, ту что активны "1" - в "0".
+		SPI_ALLCS_PORT &= ~ (SPI_ALLCS_BITS & SPI_ALLCS_BITSNEG);	// Запрещение - все биты чипселектов в 1, ту что активны "1" - в "0".
 
 	#elif SPI_ALLCS_BITS != 0
 
-		SPI_ALLCS_PORT |= SPI_ALLCS_BITS;	// Р’СЃРµ Р±РёС‚С‹ С‡РёРїСЃРµР»РµРєС‚РѕРІ РІ 1
+		SPI_ALLCS_PORT |= SPI_ALLCS_BITS;	// Все биты чипселектов в 1
 
 	#endif /* defined (SPI_ALLCS_BITS) */
 
 	#if defined (SPI_NAEN_BIT)
-		SPI_NAEN_PORT |= SPI_NAEN_BIT;	// Р—Р°РїСЂРµС‰РµРЅРёРµ С‡РёРїСЃРµР»РµРєС‚РѕРІ РµРґРёРЅРёС†РµР№
+		SPI_NAEN_PORT |= SPI_NAEN_BIT;	// Запрещение чипселектов единицей
 	#elif defined (SPI_AEN_BIT)
-		SPI_AEN_PORT &= ~ SPI_AEN_BIT;	// Р—Р°РїСЂРµС‰РµРЅРёРµ С‡РёРїСЃРµР»РµРєС‚РѕРІ РЅСѓР»С‘Рј
+		SPI_AEN_PORT &= ~ SPI_AEN_BIT;	// Запрещение чипселектов нулём
 	#endif
 	hardware_spi_io_delay(); 
 #else
@@ -143,7 +143,7 @@ spi_cs_enable(
 #if CPUSTYLE_ARM || CPUSTYLE_ATXMEGA
 
 	#if WITHSPISPLIT
-		/* РґР»СЏ РґРІСѓС… СЂР°Р·РЅС‹С… РїРѕС‚СЂРµР±РёС‚РµР»РµР№ С„РѕСЂРјРёСЂСѓСЋС‚СЃСЏ РѕС‚РґРµР»СЊРЅС‹Рµ СЃРёРіРЅР°Р»С‹ MOSI, SCK, CS */
+		/* для двух разных потребителей формируются отдельные сигналы MOSI, SCK, CS */
 		switch (target)
 		{
 		case SPI_CSEL0:
@@ -161,7 +161,7 @@ spi_cs_enable(
 
 	#endif /* WITHSPISPLIT */
 
-	// Р±РµР·РґРµС€РёС„СЂР°С‚РѕСЂРЅР°СЏ СЃС…РµРјР° СѓРїСЂР°РІР»РµРЅРёСЏ - CS С„РѕСЂРјРёСЂСѓСЋС‚СЃСЏ РІС‹С…РѕРґР°РјРё РїСЂРѕС†РµСЃСЃРѕСЂР° РЅР°РїСЂСЏРјСѓСЋ.
+	// бездешифраторная схема управления - CS формируются выходами процессора напрямую.
 	#if SPI_ALLCS_BITS != 0 && SPI_ALLCS_BITSNEG != 0
 		if ((target & SPI_ALLCS_BITSNEG) != 0)
 			SPI_ALLCS_PORT_S(target & SPI_ALLCS_BITSNEG);
@@ -171,7 +171,7 @@ spi_cs_enable(
 		if ((target & SPI_ALLCS_BITS) != 0)
 			SPI_ALLCS_PORT_C(target);
 	#endif /* defined (SPI_ALLCS_BITS) */
-	// РЈРїСЂР°РІР»РµРЅРёРµ СЃС‚СЂРѕР±РѕРј РґРµС€РёС„СЂР°С‚РѕСЂР°
+	// Управление стробом дешифратора
 	#if defined (SPI_NAEN_BIT)
 		if ((target & SPI_ALLCS_BITS) == 0)
 			SPI_NAEN_PORT_C(SPI_NAEN_BIT);
@@ -184,7 +184,7 @@ spi_cs_enable(
 #elif (CPUSTYLE_ATMEGA)
 
 	#if WITHSPISPLIT
-		/* РґР»СЏ РґРІСѓС… СЂР°Р·РЅС‹С… РїРѕС‚СЂРµР±РёС‚РµР»РµР№ С„РѕСЂРјРёСЂСѓСЋС‚СЃСЏ РѕС‚РґРµР»СЊРЅС‹Рµ СЃРёРіРЅР°Р»С‹ MOSI, SCK, CS */
+		/* для двух разных потребителей формируются отдельные сигналы MOSI, SCK, CS */
 		switch (target)
 		{
 		case SPI_CSEL0:
@@ -201,10 +201,10 @@ spi_cs_enable(
 		}
 	#endif /* WITHSPISPLIT */
 
-	// Р±РµР·РґРµС€РёС„СЂР°С‚РѕСЂРЅР°СЏ СЃС…РµРјР° СѓРїСЂР°РІР»РµРЅРёСЏ - CS С„РѕСЂРјРёСЂСѓСЋС‚СЃСЏ РІС‹С…РѕРґР°РјРё РїСЂРѕС†РµСЃСЃРѕСЂР° РЅР°РїСЂСЏРјСѓСЋ.
+	// бездешифраторная схема управления - CS формируются выходами процессора напрямую.
 	#if SPI_ALLCS_BITS != 0 && SPI_ALLCS_BITSNEG != 0
 		if ((target & SPI_ALLCS_BITSNEG) != 0)
-			SPI_ALLCS_PORT |= (target & SPI_ALLCS_BITSNEG);	// СѓСЃС‚Р°РЅРѕРІРёС‚СЊ РІ "1", РµСЃР»Рё СЌС‚РѕС‚ РІС‹С…РѕРґ С‚СЂРµР±СѓРµС‚ "1" РєР°Рє Р°РєС‚РёРІРЅРѕРµ СЃРѕСЃС‚РѕСЏРЅРёРµ
+			SPI_ALLCS_PORT |= (target & SPI_ALLCS_BITSNEG);	// установить в "1", если этот выход требует "1" как активное состояние
 		else if ((target & SPI_ALLCS_BITS) != 0)
 			SPI_ALLCS_PORT &= ~ (SPI_ALLCS_BITS & (target ^ SPI_ALLCS_BITSNEG));
 	#elif SPI_ALLCS_BITS != 0
@@ -212,7 +212,7 @@ spi_cs_enable(
 			SPI_ALLCS_PORT &= ~ target;
 	#endif /* defined (SPI_ALLCS_BITS) */
 
-	// РЈРїСЂР°РІР»РµРЅРёРµ СЃС‚СЂРѕР±РѕРј РґРµС€РёС„СЂР°С‚РѕСЂР°
+	// Управление стробом дешифратора
 	#if defined (SPI_NAEN_BIT)
 		if ((target & SPI_ALLCS_BITS) == 0)
 			SPI_NAEN_PORT &= ~ SPI_NAEN_BIT;
@@ -293,7 +293,7 @@ prog_pulse_ioupdate(void)
 	#endif
 #elif defined (targetupd1)
 
-	// Р•СЃР»Рё РґР»СЏ DDS С‚СЂРµР±СѓРµС‚СЃСЏ СЃРёРіРЅР°Р» IOUPDAYE Рё РЅРµ РІС‹РґРµР»РµРЅ Р±РёС‚ РІ РїРѕСЂС‚Сѓ - СѓРїСЂР°РІР»СЏРµРј С‚СѓС‚.
+	// Если для DDS требуется сигнал IOUPDAYE и не выделен бит в порту - управляем тут.
 	prog_select(targetupd1);
 	prog_unselect(targetupd1);
 
@@ -302,7 +302,7 @@ prog_pulse_ioupdate(void)
 
 #if SPI_BIDIRECTIONAL
 
-/* РїРµСЂРµРєР»СЋС‡РµРЅРёРµ РІС‹РІРѕРґР° SPI DATA РЅР° С‡С‚РµРЅРёРµ */
+/* переключение вывода SPI DATA на чтение */
 void 
 prog_spi_to_read_impl(void)
 {
@@ -310,7 +310,7 @@ prog_spi_to_read_impl(void)
 	hardware_spi_io_delay();  
 }
 
-/* РїРµСЂРµРєР»СЋС‡РµРЅРёРµ РІС‹РІРѕРґР° SPI DATA РЅР° РІС‹РґР°С‡Сѓ РґР°РЅРЅР°С…. РЎРѕСЃС‚РѕСЏРЅРµ РїРѕСЃР»Рµ РёРЅРёС†РёР°Р»РёР·Р°С†РёРё РїРѕСЂС‚Р° */
+/* переключение вывода SPI DATA на выдачу даннах. Состояне после инициализации порта */
 void 
 prog_spi_to_write_impl(void)
 {
@@ -324,7 +324,7 @@ prog_spi_to_write_impl(void)
 
 #if ! WITHSPISPLIT
 	/*
-	 * РїСЂРѕСЃС‚Рѕ РІС‹РґР°С‡Р° С‚Р°РєС‚РѕРІРѕРіРѕ СЃРёРіРЅР°Р»Р° Рё С‡С‚РµРЅРёРµ РѕРґРЅРѕРіРѕ Р±РёС‚Р°
+	 * просто выдача тактового сигнала и чтение одного бита
 	 */
 	static
 	uint_fast8_t 
@@ -341,7 +341,7 @@ prog_spi_to_write_impl(void)
 	}
 
 	//////////////////////////
-	// РџРѕР»СѓС‡РµРЅРёРµ 8 Р±РёС‚ СЃ SPI
+	// Получение 8 бит с SPI
 	uint_fast8_t 
 	prog_spi_read_byte_impl(uint_fast8_t bytetosend)
 	{
@@ -350,9 +350,9 @@ prog_spi_to_write_impl(void)
 		while (i --)
 		{
 		#if ! SPI_BIDIRECTIONAL
-			SDO_SET(bytetosend & 0x80);		// Р·Р°РїРёСЃСЊ Р±РёС‚Р° РёРЅС„РѕСЂРјР°С†РёРё
+			SDO_SET(bytetosend & 0x80);		// запись бита информации
 		#endif /*  ! SPI_BIDIRECTIONAL */
-			v = v * 2 + spi_pulse_clk();	// СЃРїР°РґР°СЋС‰РёР№ РїРµСЂРµРїР°Рґ РЅР° SPI CLK РїРµСЂРµРєР»СЋС‡Р°РµС‚ FRAM РІ СЂРµР¶РёРј РІС‹РґР°С‡Рё
+			v = v * 2 + spi_pulse_clk();	// спадающий перепад на SPI CLK переключает FRAM в режим выдачи
 			bytetosend <<= 1;
 		}
 		return v;
@@ -366,7 +366,7 @@ uint8_t phase_getbit(
 	uint_fast8_t i		/* bit position, LSB = 0 */
 	)
 {
-	/* РєР»СЋС‡РµРІРѕРµ СЃР»РѕРІРѕ const СѓРґР°Р»РµРЅРѕ РґР»СЏ РїРѕРјРµС‰РµРЅРёСЏ РєРѕРЅСЃС‚Р°РЅС‚ РІ RAM (РЅР° ARM) РґР»СЏ РїРѕРІС‹С€РµРЅРёСЏ Р±С‹СЃС‚СЂРѕРґРµР№СЃС‚РІРёСЏ. */
+	/* ключевое слово const удалено для помещения констант в RAM (на ARM) для повышения быстродействия. */
 	static /* const */ uint_fast8_t mask [8] = { 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80 };
 	//return (((const uint8_t *) v) [i >> 3] & mask [i & 07]);
 
@@ -403,7 +403,7 @@ void RAMFUNC_NONILINE (prog_val_impl)(
 	}
 }
 
-// РІС‹РґР°С‡Р° 8-РјРё Р±РёС‚ РЅР° SPI
+// выдача 8-ми бит на SPI
 void NOINLINEAT (prog_val8_impl)(
 	spitarget_t target,	/* addressing to chip */
 	uint_fast8_t value
@@ -437,7 +437,7 @@ prog_spi_send_frame(
 }
 
 // Read a frame of bytes via SPI
-// РќР° СЃРёРіРЅР°Р»Рµ MOSI РїСЂРё СЌС‚РѕРј РґРѕР»Р¶РЅРѕ РѕР±РµСЃРїР°С‡РёРІР°С‚СЊСЃСЏ СЃРѕСЃС‚РѕСЏРЅРёРµ Р»РѕРіРёС‡РµСЃРєРѕР№ "1" РґР»СЏ РєРѕСЂСЂРµРєС‚РЅРѕР№ СЂР°Р±РѕС‚С‹ SD CARD
+// На сигнале MOSI при этом должно обеспачиваться состояние логической "1" для корректной работы SD CARD
 void 
 prog_spi_read_frame(
 	spitarget_t target,
@@ -450,7 +450,7 @@ prog_spi_read_frame(
 }
 
 /* 
- * РёРЅС‚РµСЂС„РµР№СЃ СЃ РїР»Р°С‚РѕР№ - СѓРїСЂР°РІР»РµРЅРёРµ С‡РёРїСЃРµР»РµРєС‚РѕРј
+ * интерфейс с платой - управление чипселектом
  */
 
 void prog_select_impl(
@@ -487,15 +487,15 @@ prog_select_init(void)
 #endif /* SPI_CSEL255 */
 
 #if defined (SPI_ALLCS_INITIALIZE)
-	SPI_ALLCS_INITIALIZE();		/* РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ Р»РёРёР№ РІС‹Р±РѕСЂР° РїРµСЂРёС„РµСЂРёР№РЅС‹С… РјРёРєСЂРѕСЃС…РµРј */
+	SPI_ALLCS_INITIALIZE();		/* инициализация лиий выбора периферийных микросхем */
 #endif /* defined (SPI_ALLCS_INITIALIZE) */
 
 #if defined (SPI_ADDRESS_AEN_INITIALIZE)
-	SPI_ADDRESS_AEN_INITIALIZE();	/* РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ СЃРёРіРЅР°Р»РѕРІ СѓРїСЂР°РІР»РґРµРЅРёСЏ РґРµС€РёС„СЂР°С‚РѕСЂРѕРј CS */
+	SPI_ADDRESS_AEN_INITIALIZE();	/* инициализация сигналов управлдения дешифратором CS */
 #endif /* defined (SPI_ADDRESS_AEN_INITIALIZE) */
 
 #if defined (SPI_ADDRESS_NAEN_INITIALIZE)
-	SPI_ADDRESS_NAEN_INITIALIZE();	/* РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ СЃРёРіРЅР°Р»РѕРІ СѓРїСЂР°РІР»РґРµРЅРёСЏ РґРµС€РёС„СЂР°С‚РѕСЂРѕРј CS */
+	SPI_ADDRESS_NAEN_INITIALIZE();	/* инициализация сигналов управлдения дешифратором CS */
 #endif /* defined (SPI_ADDRESS_NAEN_INITIALIZE) */
 
 #if defined (SPI_IOUPDATE_INITIALIZE)
@@ -508,7 +508,7 @@ prog_select_init(void)
 
 	//spi_to_write(target);
 	spi_cs_disable();	// chip select inactive
-	//SCLK_SET();	// initial state of SCLK - logical "1" - РѕР±РµСЃРїРµС‡РёРІР°РµС‚СЃСЏ РІ hardwate_spi_select_init()
+	//SCLK_SET();	// initial state of SCLK - logical "1" - обеспечивается в hardwate_spi_select_init()
 }
 
 /*
@@ -520,7 +520,7 @@ prog_select_init(void)
 
 */
 
-// Р¤СѓРЅРєС†РёСЏ СЂР°Р·РІРѕСЂРѕС‚Р° РјР»Р°РґС€РёС… РІРѕСЃСЊРјРё Р±РёС‚
+// Функция разворота младших восьми бит
 uint_fast8_t revbits8(uint_fast8_t v)
 {
 	uint_fast8_t b = v & 0xff;
@@ -529,7 +529,7 @@ uint_fast8_t revbits8(uint_fast8_t v)
 }
 
 #if 0
-/* Р’С‹РґР°С‡Р° Р±Р°Р№С‚Р° РњР›РђР”РЁРРњ Р±РёС‚РѕРј РІРїРµСЂС‘Рґ */
+/* Выдача байта МЛАДШИМ битом вперёд */
 const FLASHMEM unsigned char revbittable [256] = 
 {
 	0x00, 0x80, 0x40, 0xC0, 0x20, 0xA0, 0x60, 0xE0, 0x10, 0x90, 0x50, 0xD0, 0x30, 0xB0, 0x70, 0xF0,
@@ -557,21 +557,21 @@ void spi_initialize(void)
 
 #if WITHSPIHW && WITHSPISW
 
-	// РїСЂРѕРіСЂР°РјРјРЅС‹Р№ Рё Р°РїРїР°СЂР°С‚РЅС‹Р№ SPI
+	// программный и аппаратный SPI
 
-	// Р”Р»СЏ СЂР°Р±РѕС‚С‹ Hittite HMC830 РІ Open mode РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ С‚СЂРµР±СѓС‚Рµn СѓСЃР»РѕРІРёРµ "b":
+	// Для работы Hittite HMC830 в Open mode инициализация требутеn условие "b":
 	// a. If a rising edge on SEN is detected first HMC Mode is selected.
 	// b. If a rising edge on SCLK is detected first Open mode is selected.
 
-	SPIIO_INITIALIZE();			// РѕСЃРЅРѕРІРЅС‹Рµ СЃРёРіРЅР°Р»С‹ SPI РїСЂРё РїСЂРѕРіСЂР°РјРјРЅРѕРј СѓРїСЂР°РІР»РµРЅРёРё
+	SPIIO_INITIALIZE();			// основные сигналы SPI при программном управлении
 	hardware_spi_master_initialize();
 	prog_select_init();		// spi CS initialize
 
 #elif WITHSPIHW
 
-	// С‚РѕР»СЊРєРѕ Р°РїРїР°СЂР°С‚РЅС‹Р№ SPI
+	// только аппаратный SPI
 
-	// Р”Р»СЏ СЂР°Р±РѕС‚С‹ Hittite HMC830 РІ Open mode РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ С‚СЂРµР±СѓС‚Рµn СѓСЃР»РѕРІРёРµ "b":
+	// Для работы Hittite HMC830 в Open mode инициализация требутеn условие "b":
 	// a. If a rising edge on SEN is detected first HMC Mode is selected.
 	// b. If a rising edge on SCLK is detected first Open mode is selected.
 
@@ -580,13 +580,13 @@ void spi_initialize(void)
 
 #elif WITHSPISW
 
-	// С‚РѕР»СЊРєРѕ РїСЂРѕРіСЂР°РјРјРЅС‹Р№ SPI
+	// только программный SPI
 
-	// Р”Р»СЏ СЂР°Р±РѕС‚С‹ Hittite HMC830 РІ Open mode РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ С‚СЂРµР±СѓС‚Рµn СѓСЃР»РѕРІРёРµ "b":
+	// Для работы Hittite HMC830 в Open mode инициализация требутеn условие "b":
 	// a. If a rising edge on SEN is detected first HMC Mode is selected.
 	// b. If a rising edge on SCLK is detected first Open mode is selected.
 
-	SPIIO_INITIALIZE();			// РѕСЃРЅРѕРІРЅС‹Рµ СЃРёРіРЅР°Р»С‹ SPI РїСЂРё РїСЂРѕРіСЂР°РјРјРЅРѕРј СѓРїСЂР°РІР»РµРЅРёРё
+	SPIIO_INITIALIZE();			// основные сигналы SPI при программном управлении
 	prog_select_init();		// spi CS initialize
 
 #endif
@@ -600,8 +600,8 @@ void spi_initialize(void)
 #if defined (SPISPEED400k) || defined (SPISPEED100k)
 	hardware_spi_master_setfreq(SPIC_SPEED100k, SPISPEED100k);		// 100 kHz for MICROCHIP MCP3204/MCP3208
 	hardware_spi_master_setfreq(SPIC_SPEED400k, SPISPEED400k);
-	hardware_spi_master_setfreq(SPIC_SPEED4M, 4000000uL);	/* 4 MHz РґР»СЏ CS4272 */
-	hardware_spi_master_setfreq(SPIC_SPEED10M, 10000000uL);	/* 10 MHz РґР»СЏ ILI9341 */
+	hardware_spi_master_setfreq(SPIC_SPEED4M, 4000000uL);	/* 4 MHz для CS4272 */
+	hardware_spi_master_setfreq(SPIC_SPEED10M, 10000000uL);	/* 10 MHz для ILI9341 */
 	hardware_spi_master_setfreq(SPIC_SPEED25M, 25000000uL);	/* 25 MHz  */
 #endif /* (SPISPEED400k) || defined (SPISPEED100k) */
 

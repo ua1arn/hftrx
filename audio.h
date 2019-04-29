@@ -1,7 +1,7 @@
 /* $Id$ */
 //
-// РџСЂРѕРµРєС‚ HF Dream Receiver (РљР’ РїСЂРёС‘РјРЅРёРє РјРµС‡С‚С‹)
-// Р°РІС‚РѕСЂ Р“РµРЅР° Р—Р°РІРёРґРѕРІСЃРєРёР№ mgs2001@mail.ru
+// Проект HF Dream Receiver (КВ приёмник мечты)
+// автор Гена Завидовский mgs2001@mail.ru
 // UA1ARN
 //
 
@@ -33,28 +33,28 @@
 #define MODEMBUFFERSIZE8	1024
 
 #if WITHUSEDUALWATCH
-	#define NTRX 2	/* РєРѕР»РёС‡РµСЃС‚РІРѕ С‚СЂР°РєС‚РѕРІ РїСЂРёРµРјРЅРёРєР°. */
+	#define NTRX 2	/* количество трактов приемника. */
 #else /* WITHUSEDUALWATCH */
-	#define NTRX 1	/* РєРѕР»РёС‡РµСЃС‚РІРѕ С‚СЂР°РєС‚РѕРІ РїСЂРёРµРјРЅРёРєР°. */
+	#define NTRX 1	/* количество трактов приемника. */
 #endif /* WITHUSEDUALWATCH */
 
-/* РџСЂРёРјРµРЅС‘РЅРЅР°СЏ СЃРёСЃС‚РµРјР° РґРёСЃРїРµС‚С‡РµСЂРёР·Р°С†РёРё С‚СЂРµР±СѓРµС‚, 
-   С‡С‚РѕР±С‹ РІРѕ РІСЃРµС… Р±СѓС„РµСЂР°С… РїРѕРјРµС‰Р°Р»РѕСЃСЊ РЅРµ РјРµРЅСЊС€Рµ СЃСЌРјРїР»РѕРІ, 
-   С‡РµРј РІ DMABUFFSIZE32RX 
+/* Применённая система диспетчеризации требует, 
+   чтобы во всех буферах помещалось не меньше сэмплов, 
+   чем в DMABUFFSIZE32RX 
  */
 #if WITHDSPEXTDDC
 
 	#if CPUSTYLE_R7S721
 
 		// buff data layout: I main/I sub/Q main/Q sub
-		#define DMABUFSTEP32RX	8		// РљР°Р¶РґРѕРјСѓ СЃСЌРјРїР»Сѓ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓРµС‚ РІРѕСЃРµРјСЊ С‡РёСЃРµР» РІ DMA Р±СѓС„РµСЂРµ
+		#define DMABUFSTEP32RX	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
 
 		#define DMABUF32RX0I	0		// RX0, I
 		#define DMABUF32RX1I	1		// RX1, I
 		#define DMABUF32RX0Q	4		// RX0, Q
 		#define DMABUF32RX1Q	5		// RX1, Q
 
-		#define DMABUFSTEP32TX	8		// РљР°Р¶РґРѕРјСѓ СЃСЌРјРїР»Сѓ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓРµС‚ РІРѕСЃРµРјСЊ С‡РёСЃРµР» РІ DMA Р±СѓС„РµСЂРµ
+		#define DMABUFSTEP32TX	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
 		#define DMABUF32TXI	0		// TX, I
 		#define DMABUF32TXQ	4		// TX, Q
 
@@ -78,12 +78,12 @@
 		#define DMABUF32RXWFM3I	3		// WFM NEWEST
 		#define DMABUF32RXWFM3Q	7		// WFM
 
-		#define DMABUFSTEP16	2		// 2 - РєР°Р¶РґРѕРјСѓ СЃСЌРјРїР»Сѓ РїСЂРё РѕР±РјРµРЅРµ СЃ AUDIO CODEC СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓРµС‚ РґРІР° С‡РёСЃР»Р° РІ DMA Р±СѓС„РµСЂРµ
+		#define DMABUFSTEP16	2		// 2 - каждому сэмплу при обмене с AUDIO CODEC соответствует два числа в DMA буфере
 
 	#elif CPUSTYLE_STM32F
 
 		// buff data layout: I main/I sub/Q main/Q sub
-		#define DMABUFSTEP32RX	8		// РљР°Р¶РґРѕРјСѓ СЃСЌРјРїР»Сѓ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓРµС‚ РІРѕСЃРµРјСЊ С‡РёСЃРµР» РІ DMA Р±СѓС„РµСЂРµ
+		#define DMABUFSTEP32RX	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
 
 		#define DMABUF32RX0I	0		// RX0, I
 		#define DMABUF32RX1I	1		// RX1, I
@@ -110,67 +110,67 @@
 		#define DMABUF32RXWFM3I	3		// WFM NEWEST
 		#define DMABUF32RXWFM3Q	7		// WFM
 		
-		#define DMABUFSTEP32TX	2		// 2 - РєР°Р¶РґРѕРјСѓ СЃСЌРјРїР»Сѓ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓРµС‚ РґРІР° С‡РёСЃР»Р° РІ DMA Р±СѓС„РµСЂРµ	- I/Q
+		#define DMABUFSTEP32TX	2		// 2 - каждому сэмплу соответствует два числа в DMA буфере	- I/Q
 		#define DMABUF32TXI	0		// TX, I
 		#define DMABUF32TXQ	1		// TX, Q
 
-		#define DMABUFSTEP16	2		// 2 - РєР°Р¶РґРѕРјСѓ СЃСЌРјРїР»Сѓ РїСЂРё РѕР±РјРµРЅРµ СЃ AUDIO CODEC СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓРµС‚ РґРІР° С‡РёСЃР»Р° РІ DMA Р±СѓС„РµСЂРµ
+		#define DMABUFSTEP16	2		// 2 - каждому сэмплу при обмене с AUDIO CODEC соответствует два числа в DMA буфере
 
 	#endif
 
 #else /* WITHDSPEXTDDC */
 	// buff data layout: ADC data/unused channel
 	#define DMABUF32RX		0		// ADC data index
-	#define DMABUFSTEP32RX	(WITHSAI1_FRAMEBITS / 32) //2		// 2 - РєР°Р¶РґРѕРјСѓ СЃСЌРјРїР»Сѓ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓРµС‚ РґРІР° С‡РёСЃР»Р° РІ DMA Р±СѓС„РµСЂРµ
+	#define DMABUFSTEP32RX	(WITHSAI1_FRAMEBITS / 32) //2		// 2 - каждому сэмплу соответствует два числа в DMA буфере
 	#define DMABUF32RXI	0		// RX0, I
 	#define DMABUF32RXQ	1		// RX0, Q
 
-	#define DMABUFSTEP32TX	2		// 2 - РєР°Р¶РґРѕРјСѓ СЃСЌРјРїР»Сѓ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓРµС‚ РґРІР° С‡РёСЃР»Р° РІ DMA Р±СѓС„РµСЂРµ	- I/Q
+	#define DMABUFSTEP32TX	2		// 2 - каждому сэмплу соответствует два числа в DMA буфере	- I/Q
 	#define DMABUF32TXI	0		// TX, I
 	#define DMABUF32TXQ	1		// TX, Q
 
-	#define DMABUFSTEP16	2		// 2 - РєР°Р¶РґРѕРјСѓ СЃСЌРјРїР»Сѓ РїСЂРё РѕР±РјРµРЅРµ СЃ AUDIO CODEC СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓРµС‚ РґРІР° С‡РёСЃР»Р° РІ DMA Р±СѓС„РµСЂРµ
+	#define DMABUFSTEP16	2		// 2 - каждому сэмплу при обмене с AUDIO CODEC соответствует два числа в DMA буфере
 
 #endif /* WITHDSPEXTDDC */
 
 
-// РўСЂРµР±РѕРІР°РЅРёСЏ РїРѕ РєСЂР°С‚РЅРѕСЃС‚Рё СЂР°Р·РјРµСЂР° Р±СѓС„РµСЂР° РґР»СЏ РїРµСЂРµРґР°С‡Рё РїРѕ USB DMA
+// Требования по кратности размера буфера для передачи по USB DMA
 #if CPUSTYLE_R7S721
 	#define HARDWARE_RTSDMABYTES	4
 #else /* CPUSTYLE_R7S721 */
 	#define HARDWARE_RTSDMABYTES	1
 #endif /* CPUSTYLE_R7S721 */
 
-#define DMABUFSTEPUACIN16	2		// 2 - РєР°Р¶РґРѕРјСѓ СЃСЌРјРїР»Сѓ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓРµС‚ РґРІР° С‡РёСЃР»Р° РІ DMA Р±СѓС„РµСЂРµ
-#define HARDWARE_USBD_AUDIO_IN_CHANNELS	2	/* РґР»СЏ РІСЃРµС… РєР°РЅР°Р»РѕРІ РІ IN РЅР°РїСЂР°РІР»РµРЅРёРё */
+#define DMABUFSTEPUACIN16	2		// 2 - каждому сэмплу соответствует два числа в DMA буфере
+#define HARDWARE_USBD_AUDIO_IN_CHANNELS	2	/* для всех каналов в IN направлении */
 
-// РєРѕСЂСЂРµРєС†РёСЏ СЂР°Р·РјРµСЂР° СЃ СѓС‡РµС‚РѕРј С‚СЂРµР±СѓРµРјРѕРіРѕ РІС‹СЂР°РІРЅРёРІР°РЅРёСЏ
+// коррекция размера с учетом требуемого выравнивания
 #define DMAHWEPADJUST(sz, granulation) (((sz) + ((granulation) - 1)) / (granulation) * (granulation))
 
-/* РєРѕРЅСЃС‚Р°РЅС‚С‹. РЎ Р·Р°РїР°СЃРѕРј С‡С‚РѕР±С‹ СЂР°Р±РѕС‚Р°Р»Рѕ Рё РїСЂРё С‚Р°РєС‚РѕРІРѕР№ 125 РњР“С† РЅР° FPGA РїСЂРё РґРµС†РёРјР°С†РёРё 2560 = 48.828125 kHz sample rate */
-//#define MSOUTSAMPLES	49 /* РєРѕР»РёС‡РµСЃС‚РІРѕ СЃСЌРјРїР»РѕРІ Р·Р° РјРёР»РёСЃРµРєСѓРЅРґСѓ РІ UAC OUT */
-// Р±РµР· Р·Р°РїР°СЃР° - С‚РѕР»СЊРєРѕ РґР»СЏ 48000
-#define MSOUTSAMPLES	48 /* РєРѕР»РёС‡РµСЃС‚РІРѕ СЃСЌРјРїР»РѕРІ Р·Р° РјРёР»РёСЃРµРєСѓРЅРґСѓ РІ UAC OUT */
-#define MSINSAMPLES		(MSOUTSAMPLES + 1) /* РєРѕР»РёС‡РµСЃС‚РІРѕ СЃСЌРјРїР»РѕРІ Р·Р° РјРёР»РёСЃРµРєСѓРЅРґСѓ РІ UAC IN */
+/* константы. С запасом чтобы работало и при тактовой 125 МГц на FPGA при децимации 2560 = 48.828125 kHz sample rate */
+//#define MSOUTSAMPLES	49 /* количество сэмплов за милисекунду в UAC OUT */
+// без запаса - только для 48000
+#define MSOUTSAMPLES	48 /* количество сэмплов за милисекунду в UAC OUT */
+#define MSINSAMPLES		(MSOUTSAMPLES + 1) /* количество сэмплов за милисекунду в UAC IN */
 
 
-#define DMABUFFSIZEUACIN16 (MSINSAMPLES * DMABUFSTEPUACIN16)	/* СЂР°Р·РјРµСЂ РїРѕРґ USB ENDPOINT PACKET SIZE Р’ Р±СѓС„РµСЂРµ РїРѕРјРµС‰Р°СЋС‚СЃСЏ РїР°СЂС‹ Р·РЅР°С‡РµРЅРёР№ - СЃС‚РµСЂРµРѕ РєРѕРґРµРє */
+#define DMABUFFSIZEUACIN16 (MSINSAMPLES * DMABUFSTEPUACIN16)	/* размер под USB ENDPOINT PACKET SIZE В буфере помещаются пары значений - стерео кодек */
 
-/* РµСЃР»Рё РїСЂРёРѕСЂРёС‚РµС‚ РїСЂРµСЂС‹РІР°РЅРёР№ USB РЅРµ РІС‹С€Рµ С‡РµРј Сѓ Р°СѓРґРёРѕР±СЂР°Р±РѕС‚РєРё - РѕРЅР° РґРѕР»Р¶РЅР° РґР»РёС‚СЊСЃСЏ РЅРµ Р±РѕР»РµРµ 1 РјСЃ (WITHRTS192 - 0.5 ms) */
-#define DMABUFCLUSTER	19	// РџСЂРµСЂС‹РІР°РЅРёСЏ РїРѕ РїСЂРёРµРјСѓ РѕС‚ IF CODEC РёР»Рё FPGA RX РґРѕР»Р¶РЅС‹ РїСЂРѕРёСЃС…РѕРґРёС‚СЊ РЅРµ СЂРµР¶Рµ 1 СЂР°Р· РІ РјРёР»РёСЃРµРєСѓРЅРґСѓ (С‡С‚РѕР±С‹ USB СЂР°Р±РѕС‚Р°С‚СЊ РјРѕРіР»Рѕ) */
+/* если приоритет прерываний USB не выше чем у аудиобработки - она должна длиться не более 1 мс (WITHRTS192 - 0.5 ms) */
+#define DMABUFCLUSTER	19	// Прерывания по приему от IF CODEC или FPGA RX должны происходить не реже 1 раз в милисекунду (чтобы USB работать могло) */
 
 #define DMABUFFSIZE16	(DMABUFCLUSTER * DMABUFSTEP16 * 4)		/* AF CODEC */
 #define DMABUFFSIZE32RX (DMABUFCLUSTER * DMABUFSTEP32RX)		/* FPGA RX or IF CODEC RX */
 #define DMABUFFSIZE32TX (DMABUFCLUSTER * DMABUFSTEP32TX * 4)	/* FPGA TX or IF CODEC TX	*/
 
-// РџР°СЂР°РјРµС‚СЂС‹ РґР»СЏ РєР°РЅР°Р»Р° РїРµСЂРµРґР°С‡Рё Real Time Spectrum - stereo, 32 bit, 192 kS/S
-#define DMABUFSTEP192RTS 8	// 8: СЃС‚РµСЂРµРѕ РїРѕ 32 Р±РёС‚, 6: СЃС‚РµСЂРµРѕ РїРѕ 24 Р±РёС‚
+// Параметры для канала передачи Real Time Spectrum - stereo, 32 bit, 192 kS/S
+#define DMABUFSTEP192RTS 8	// 8: стерео по 32 бит, 6: стерео по 24 бит
 #define DMABUFFSIZE192RTS_AJ (128/*288*/ * DMABUFSTEP192RTS)
 
 #define DMABUFFSIZE192RTS DMAHWEPADJUST(DMABUFFSIZE192RTS_AJ, DMABUFSTEP192RTS * HARDWARE_RTSDMABYTES)
 
-#define DMABUFSTEP96RTS 6	// 6: СЃС‚РµСЂРµРѕ РїРѕ 24 Р±РёС‚
-#define DMABUFFSIZE96RTS_AJ ((MSOUTSAMPLES * 2 + 1) * DMABUFSTEP96RTS) //((96 + 4) * DMABUFSTEP96RTS)		// 588 - РґРѕР»Р¶РЅРѕ Р±С‹С‚СЊ РєСЂР°С‚РЅРѕ 4 Р±Р°Р№С‚Р°Рј - РґР»СЏ СЂР°Р±РѕС‚С‹ DMA РІ Renesas
+#define DMABUFSTEP96RTS 6	// 6: стерео по 24 бит
+#define DMABUFFSIZE96RTS_AJ ((MSOUTSAMPLES * 2 + 1) * DMABUFSTEP96RTS) //((96 + 4) * DMABUFSTEP96RTS)		// 588 - должно быть кратно 4 байтам - для работы DMA в Renesas
 
 #define DMABUFFSIZE96RTS DMAHWEPADJUST(DMABUFFSIZE96RTS_AJ, DMABUFSTEP96RTS * HARDWARE_RTSDMABYTES)
 
@@ -186,7 +186,7 @@
 #endif /* WITHRTS96 */
 #if WITHRTS192
 
-	// РџРѕ РєР°РЅР°Р»Сѓ real-time СЃРїРµРєС‚СЂР° СЃС‚РµСЂРµРѕ, 32 Р±РёС‚, 192 РєР“С† - 288*2*4 = 2304 Р±Р°Р№С‚Р°
+	// По каналу real-time спектра стерео, 32 бит, 192 кГц - 288*2*4 = 2304 байта
 	// stereo, 32 bit samples
 	#define HARDWARE_USBD_AUDIO_IN_SAMPLEBITS_RTS192	32
 	#define VIRTUAL_AUDIO_PORT_DATA_SIZE_IN_RTS192		(DMABUFFSIZE192RTS * sizeof (int8_t))
@@ -196,10 +196,10 @@
 
 #endif /* WITHRTS192 */
 
-#define HARDWARE_USBD_AUDIO_IN_CHANNELS_RTS		2	// I/Q РІСЃРµРіРґР° СЃС‚РµСЂРµРѕ
+#define HARDWARE_USBD_AUDIO_IN_CHANNELS_RTS		2	// I/Q всегда стерео
 
 // stereo, 16 bit samples
-// РџРѕ Р·РІСѓРєРѕРІРѕРјСѓ РєР°РЅР°Р»Сѓ РїРµСЂРµРґР°РµС‚СЃСЏ СЃС‚РµСЂРµРѕ, 16 Р±РёС‚, 48 РєР“С† - 288 Р±Р°Р№С‚ СЂР°Р·РјРµСЂ РґР°РЅРЅС‹С… РІ РµРЅРґРїРѕРЅС‚С‚
+// По звуковому каналу передается стерео, 16 бит, 48 кГц - 288 байт размер данных в ендпонтт
 #define HARDWARE_USBD_AUDIO_IN_SAMPLEBITS_AUDIO48	16
 #define HARDWARE_USBD_AUDIO_IN_CHANNELS_AUDIO48		2
 #define VIRTUAL_AUDIO_PORT_DATA_SIZE_IN_AUDIO48		(DMABUFFSIZEUACIN16 * sizeof (uint16_t))
@@ -211,16 +211,16 @@
 	a bInterval of 4 means a period of 8 (2^(4-1))."
 
   */
-#define HSINTERVAL_AUDIO48 4	// endpoint descriptor parameters - РґР»СЏ РѕР±РµСЃРїРµС‡РµРЅРёСЏ 1 РєР“С† РїРµСЂРёРѕРґР°
+#define HSINTERVAL_AUDIO48 4	// endpoint descriptor parameters - для обеспечения 1 кГц периода
 #define FSINTERVAL_AUDIO48 1
 
-#define HSINTERVAL_8MS 7	// endpoint descriptor parameters - РґР»СЏ РѕР±РµСЃРїРµС‡РµРЅРёСЏ 10 ms РїРµСЂРёРѕРґР°
+#define HSINTERVAL_8MS 7	// endpoint descriptor parameters - для обеспечения 10 ms периода
 #define FSINTERVAL_8MS 8
 
-#define HSINTERVAL_32MS 9	// endpoint descriptor parameters - РґР»СЏ РѕР±РµСЃРїРµС‡РµРЅРёСЏ 32 ms РїРµСЂРёРѕРґР°
+#define HSINTERVAL_32MS 9	// endpoint descriptor parameters - для обеспечения 32 ms периода
 #define FSINTERVAL_32MS 32
 
-#define HSINTERVAL_256MS 12	// endpoint descriptor parameters - РґР»СЏ РѕР±РµСЃРїРµС‡РµРЅРёСЏ 255 ms РїРµСЂРёРѕРґР° (interrupt endpoint for CDC)
+#define HSINTERVAL_256MS 12	// endpoint descriptor parameters - для обеспечения 255 ms периода (interrupt endpoint for CDC)
 #define FSINTERVAL_255MS 255
 
 
@@ -231,7 +231,7 @@
 	#define HARDWARE_USBD_AUDIO_OUT_CHANNELS	2
 #endif /* WITHUABUACOUTAUDIO48MONO */
 
-// РёСЃРїРѕР»СЊР·СѓСЋС‚СЃСЏ СЃРІРѕРё Р±СѓС„РµСЂС‹
+// используются свои буферы
 #define VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT	( \
 	MSOUTSAMPLES * \
 	((HARDWARE_USBD_AUDIO_OUT_SAMPLEBITS * HARDWARE_USBD_AUDIO_OUT_CHANNELS + 7) / 8) \
@@ -322,7 +322,7 @@ struct Complex
 	FLOAT_t imag;
 };
 
-	/* РґР»СЏ РІРѕР·РјРѕР¶РЅРѕСЃС‚Рё СЂР°Р±РѕС‚С‹ СЃ С„СѓРЅРєС†РёСЏРјРё СЃРѕРїСЂРѕС†РµСЃСЃРѕСЂР° NEON - vld1_f32 РЅР°РїСЂРёРјРµСЂ */
+	/* для возможности работы с функциями сопроцессора NEON - vld1_f32 например */
 	#define IV ivqv [0]
 	#define QV ivqv [1]
 
@@ -338,14 +338,14 @@ struct Complex
 
 
 uint_fast8_t modem_getnextbit(
-	uint_fast8_t suspend	// РїРµСЂРµРґР°РІР°С‚СЊ РјРѕРґРµРјСѓ РµС‰С‘ СЂР°РЅРѕ - РЅРµ РїРѕР»РЅРѕСЃС‚СЊСЋ Р·Р°РІРµСЂС€РµРЅРѕ С„РѕСЂРјРёСЂРѕРІР°РЅРёРµ РѕРіРёР±Р°СЋС‰РµР№
+	uint_fast8_t suspend	// передавать модему ещё рано - не полностью завершено формирование огибающей
 	 );
-// РѕР±СЂР°Р±РѕС‚РєР° Р±РёС‚Р° РЅР° РїСЂРёС‘РјРµ
+// обработка бита на приёме
 void
 modem_frames_decode(
 	uint_fast8_t v
 	);
-	uint_fast8_t getsampmlemike(INT32P_t * v);			/* РїРѕР»СѓС‡РёС‚СЊ РѕС‡РµСЂРµРґРЅРѕР№ РѕС†РёС„СЂРѕРІР°РЅС‹Р№ СЃСЌРјРїР» СЃ РјРёРєСЂРѕС„РѕРЅР° */
+	uint_fast8_t getsampmlemike(INT32P_t * v);			/* получить очередной оцифрованый сэмпл с микрофона */
 
 	FLOAT_t local_log(FLOAT_t x);
 	FLOAT_t local_pow(FLOAT_t x, FLOAT_t y);
@@ -365,11 +365,11 @@ void release_dmabuffer32tx(uintptr_t addr);
 uintptr_t allocate_dmabuffer16(void);
 void release_dmabuffer16(uintptr_t addr);
 
-uintptr_t getfilled_dmabufferx(uint_fast16_t * sizep);	/* РїРѕР»СѓС‡РёС‚СЊ Р±СѓС„РµСЂ РѕРґРЅРѕРіРѕ РёР· С‚РёРїРѕРІ, РєРѕС‚РѕСЂС‹Рµ РјРѕРіСѓС‚ РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊСЃСЏ РґР»СЏ РїРµСЂРµРґР°СЏРё Р°СѓРґРёРѕРґР°РЅРЅС‹С… РІ РєРѕРјРїСЊСЋС‚РµСЂ РїРѕ USB */
-uintptr_t getfilled_dmabufferxrts(uint_fast16_t * sizep);	/* РїРѕР»СѓС‡РёС‚СЊ Р±СѓС„РµСЂ РѕРґРЅРѕРіРѕ РёР· С‚РёРїРѕРІ, РєРѕС‚РѕСЂС‹Рµ РјРѕРіСѓС‚ РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊСЃСЏ РґР»СЏ РїРµСЂРµРґР°СЏРё Р°СѓРґРёРѕРґР°РЅРЅС‹С… РІ РєРѕРјРїСЊСЋС‚РµСЂ РїРѕ USB */
-void release_dmabufferx(uintptr_t addr);	/* РѕСЃРІРѕР±РѕРґРёС‚СЊ Р±СѓС„РµСЂ РѕРґРЅРѕРіРѕ РёР· С‚РёРїРѕРІ, РєРѕС‚РѕСЂС‹Рµ РјРѕРіСѓС‚ РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊСЃСЏ РґР»СЏ РїРµСЂРµРґР°СЏРё Р°СѓРґРёРѕРґР°РЅРЅС‹С… РІ РєРѕРјРїСЊСЋС‚РµСЂ РїРѕ USB */
+uintptr_t getfilled_dmabufferx(uint_fast16_t * sizep);	/* получить буфер одного из типов, которые могут использоваться для передаяи аудиоданных в компьютер по USB */
+uintptr_t getfilled_dmabufferxrts(uint_fast16_t * sizep);	/* получить буфер одного из типов, которые могут использоваться для передаяи аудиоданных в компьютер по USB */
+void release_dmabufferx(uintptr_t addr);	/* освободить буфер одного из типов, которые могут использоваться для передаяи аудиоданных в компьютер по USB */
 
-void refreshDMA_uacin(void); // РљР°РЅР°Р» DMA РµС‰С‘ Р·Р°РЅСЏС‚ - РѕСЃС‚Р°РІР»СЏРµРј РІ РѕС‡РµСЂРµРґРё, РёРЅР°С‡Рµ РїРѕР»СѓС‡РёС‚СЊ РґР°РЅРЅС‹Рµ С‡РµСЂРµР· getfilled_dmabufferx
+void refreshDMA_uacin(void); // Канал DMA ещё занят - оставляем в очереди, иначе получить данные через getfilled_dmabufferx
 
 uintptr_t getfilled_dmabuffer32tx_main(void);
 uintptr_t getfilled_dmabuffer32tx_sub(void);
@@ -377,10 +377,10 @@ uintptr_t getfilled_dmabuffer16phones(void);
 
 void dsp_extbuffer32rx(const uint32_t * buff);	// RX
 void dsp_extbuffer32wfm(const uint32_t * buff);	// RX
-void dsp_addsidetone(int16_t * buff);			// РїРµСЂРµРґ РїРµСЂРµРґР°С‡РµР№ РїРѕ DMA РІ Р°СѓРґРёРѕРєРѕРґРµРє
+void dsp_addsidetone(int16_t * buff);			// перед передачей по DMA в аудиокодек
 
-void processing_dmabuffer16rx(uintptr_t addr);	// РѕР±СЂР°Р±РѕС‚Р°С‚СЊ Р±СѓС„РµСЂ РїРѕСЃР»Рµ РѕС†РёС„СЂРѕРІРєРё AF ADC
-void processing_dmabuffer16rxuac(uintptr_t addr);	// РѕР±СЂР°Р±РѕС‚Р°С‚СЊ Р±СѓС„РµСЂ РїРѕСЃР»Рµ РїСЂРёС‘РјР° РїР°РєРµС‚Р° СЃ USB AUDIO
+void processing_dmabuffer16rx(uintptr_t addr);	// обработать буфер после оцифровки AF ADC
+void processing_dmabuffer16rxuac(uintptr_t addr);	// обработать буфер после приёма пакета с USB AUDIO
 void processing_dmabuffer32rx(uintptr_t addr);
 void processing_dmabuffer32rts(uintptr_t addr);
 void processing_dmabuffer32wfm(uintptr_t addr);
@@ -390,16 +390,16 @@ void savesamplerecord16uacin(int_fast16_t ch0, int_fast16_t ch1); /* to USB AUDI
 unsigned takerecordbuffer(void * * dest);
 void releaserecordbuffer(void * dest);
 
-// РћР±СЃР»СѓР¶РёРІР°РЅРёРµ РјРѕРґРµРјР°
-size_t takemodemtxbuffer(uint8_t * * dest);	// Р‘СѓС„РµСЂС‹ СЃ РґР°РЅРЅС‹РјРё РґР»СЏ РїРµСЂРµРґР°С‡Рё С‡РµСЂРµР· РјРѕРґРµРј
-size_t takemodemtxbuffer_low(uint8_t * * dest);	// Р‘СѓС„РµСЂС‹ СЃ РґР°РЅРЅС‹РјРё РґР»СЏ РїРµСЂРµРґР°С‡Рё С‡РµСЂРµР· РјРѕРґРµРј
-uint_fast8_t statusmodemtxbuffer(void);		// РµСЃС‚СЊ Р»Рё Р±СѓС„РµСЂС‹ РґР»СЏ РїРµСЂРµРґР°С‡Рё
-size_t takemodemrxbuffer(uint8_t * * dest);	// Р‘СѓС„РµСЂС‹ СЃ РїСЂРёРЅСЏС‚С‹РјС‚Рё С‡РµСЂРµР· РјРѕРґРµРј РґР°РЅРЅС‹РјРё
-size_t takemodembuffer(uint8_t * * dest);	// Р‘СѓС„РµСЂС‹ РґР»СЏ Р·Р°РїРѕР»РЅРµРЅРёСЏ РґР°РЅРЅС‹РјРё
-size_t takemodembuffer_low(uint8_t * * dest);	// Р‘СѓС„РµСЂС‹ РґР»СЏ Р·Р°РїРѕР»РЅРµРЅРёСЏ РґР°РЅРЅС‹РјРё
-void savemodemrxbuffer(uint8_t * dest, unsigned size_t);	// Р“РѕС‚РѕРІ Р±СѓС„РµСЂ СЃ РїСЂРёРЅСЏС‚С‹РјРё РґР°РЅРЅС‹РјРё
-void savemodemrxbuffer_low(uint8_t * dest, unsigned size_t);	// Р“РѕС‚РѕРІ Р±СѓС„РµСЂ СЃ РїСЂРёРЅСЏС‚С‹РјРё РґР°РЅРЅС‹РјРё
-void savemodemtxbuffer(uint8_t * dest, unsigned size_t);	// Р“РѕС‚РѕРІ Р±СѓС„РµСЂ СЃ РґР°РЅРЅС‹РјРё РґР»СЏ РїРµСЂРµРґР°С‡Рё
+// Обслуживание модема
+size_t takemodemtxbuffer(uint8_t * * dest);	// Буферы с данными для передачи через модем
+size_t takemodemtxbuffer_low(uint8_t * * dest);	// Буферы с данными для передачи через модем
+uint_fast8_t statusmodemtxbuffer(void);		// есть ли буферы для передачи
+size_t takemodemrxbuffer(uint8_t * * dest);	// Буферы с принятымти через модем данными
+size_t takemodembuffer(uint8_t * * dest);	// Буферы для заполнения данными
+size_t takemodembuffer_low(uint8_t * * dest);	// Буферы для заполнения данными
+void savemodemrxbuffer(uint8_t * dest, unsigned size_t);	// Готов буфер с принятыми данными
+void savemodemrxbuffer_low(uint8_t * dest, unsigned size_t);	// Готов буфер с принятыми данными
+void savemodemtxbuffer(uint8_t * dest, unsigned size_t);	// Готов буфер с данными для передачи
 void releasemodembuffer(uint8_t * dest);
 void releasemodembuffer_low(uint8_t * dest);
 
@@ -423,93 +423,93 @@ void savesampleout16denoise(FLOAT_t ch0, FLOAT_t ch1);
 
 uint32_t allocate_dmabuffer192rts(void);
 
-int get_lout16(void); // С‚РµСЃС‚РѕРІС‹Рµ С„СѓРЅРєС†РёРё
+int get_lout16(void); // тестовые функции
 int get_rout16(void);
 
 void prog_dsplreg(void);
 void prog_fltlreg(void);
 void prog_codec1reg(void);
-void prog_codecreg_update(void);		// СѓСЃР»РѕР»РІРЅРѕРµ РѕР±РЅРѕРІР»РµРЅРёРµ СЂРµРіРёСЃС‚СЂРѕРІ Р°СѓРґРёРѕ РєРѕРґРµРєР°
+void prog_codecreg_update(void);		// услолвное обновление регистров аудио кодека
 void prog_dsplreg_update(void);
 void prog_fltlreg_update(void);
 void board_dsp1regchanged(void);
 void prog_codec1reg(void);
 
 
-void board_set_trxpath(uint_fast8_t v);	/* РўСЂР°РєС‚, Рє РєРѕС‚РѕСЂРѕРјСѓ РѕС‚РЅРѕСЃСЏС‚СЃСЏ РІСЃРµ РїРѕСЃР»РµРґСѓСЋС‰РёРµ РІС‹Р·РѕРІС‹. РџСЂРё РїРµСЂРµСЂРµРґР°СЏРµ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РёРЅРґРµРєСЃ 0 */
-void board_set_mikemute(uint_fast8_t v);	/* РѕС‚РєР»СЋС‡РёС‚СЊ РјРёРєСЂРѕС„РѕРЅРЅС‹Р№ СѓСЃРёР»РёС‚РµР»СЊ */
-void board_set_mik1level(uint_fast16_t v);	/* СѓСЃРёР»РµРЅРёРµ РјРёРєСЂРѕС„РѕРЅРЅРѕРіРѕ СѓСЃРёР»РёС‚РµР»СЏ */
-void board_set_agcrate(uint_fast8_t v);	/* РЅР° n РґРµС†РёР±РµР» РёР·РјРµРЅРµРЅРёСЏ РІС…РѕРґРЅРѕРіРѕ СЃРёРіРЅР°Р»Р° 1 РґР‘ РІС‹С…РѕРґРЅРѕРіРѕ. UINT8_MAX - "РїР»РѕСЃРєР°СЏ" РђР РЈ */
-void board_set_agc_t1(uint_fast8_t v);	/* РїРѕРґСЃС‚СЂРѕР№РєР° РїР°СЂР°РјРµС‚СЂР° РђР РЈ */
-void board_set_agc_t2(uint_fast8_t v);	/* РїРѕРґСЃС‚СЂРѕР№РєР° РїР°СЂР°РјРµС‚СЂР° РђР РЈ */
-void board_set_agc_t4(uint_fast8_t v);	/* РїРѕРґСЃС‚СЂРѕР№РєР° РїР°СЂР°РјРµС‚СЂР° РђР РЈ */
-void board_set_agc_thung(uint_fast8_t v);	/* РїРѕРґСЃС‚СЂРѕР№РєР° РїР°СЂР°РјРµС‚СЂР° РђР РЈ */
-void board_set_nfm_sql_lelel(uint_fast8_t v);	/* СѓСЂРѕРІРµРЅСЊ РѕС‚РєСЂС‹РІР°РЅРёСЏ С€СѓРјРѕРїРѕРґР°РІРёС‚РµР»СЏ NFM */
-void board_set_squelch(uint_fast8_t v);	/* СѓСЂРѕРІРµРЅСЊ РѕС‚РєСЂС‹РІР°РЅРёСЏ С€СѓРјРѕРїРѕРґР°РІРёС‚РµР»СЏ */
-void board_set_nfm_sql_off(uint_fast8_t v);	/* РѕС‚РєР»СЋС‡РµРЅРёРµ С€СѓРјРѕРїРѕРґР°РІРёС‚РµР»СЏ NFM */
-void board_set_notch_freq(uint_fast16_t n);	/* С‡Р°СЃС‚РѕС‚Р° NOTCH С„РёР»СЊС‚СЂР° */
-void board_set_notch_width(uint_fast16_t n);	/* РїРѕР»РѕСЃР° NOTCH С„РёР»СЊС‚СЂР° */
-void board_set_notch_on(uint_fast8_t v);	/* РІРєР»СЋС‡РµРЅРёРµ NOTCH С„РёР»СЊС‚СЂР° */
-void board_set_cwedgetime(uint_fast8_t n);	/* Р’СЂРµРјСЏ РЅР°СЂР°СЃС‚Р°РЅРёСЏ/СЃРїР°РґР° РѕРіРёР±Р°СЋС‰РµР№ С‚РµР»РµРіСЂР°С„Р° РїСЂРё РїРµСЂРµРґР°С‡Рµ - РІ 1 РјСЃ */
-void board_set_sidetonelevel(uint_fast8_t n);	/* РЈСЂРѕРІРµРЅСЊ СЃРёРіРЅР°Р»Р° СЃР°РјРѕРєРѕРЅС‚СЂРѕР»СЏ РІ РїСЂРѕС†РµРЅС‚Р°С… - 0%..100% */
-void board_set_subtonelevel(uint_fast8_t n);	/* РЈСЂРѕРІРµРЅСЊ СЃРёРіРЅР°Р»Р° CTCSS РІ РїСЂРѕС†РµРЅС‚Р°С… - 0%..100% */
-void board_set_amdepth(uint_fast8_t n);		/* Р“Р»СѓР±РёРЅР° РјРѕРґСѓР»СЏС†РёРё РІ РђРњ - 0..100% */
-void board_set_swapiq(uint_fast8_t v);	/* РџРѕРјРµРЅСЏС‚СЊ РјРµСЃС‚Р°РјРё I Рё Q СЃСЌРјРїР»С‹ РІ РїРѕС‚РѕРєРµ RTS96 */
-void board_set_swaprts(uint_fast8_t v);	/* РµСЃР»Рё РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РєРѕРЅРІРµСЂС‚РѕСЂ РЅР° Rafael Micro R820T - С‚СЂРµР±СѓРµС‚СЃСЏ РёРЅРІРµСЂСЃРёСЏ СЃРїРµРєС‚СЂР° */
-void buffers_set_uacinalt(uint_fast8_t v);	/* РІС‹Р±РѕСЂ Р°Р»СЊС‚РµСЂРЅР°С‚РёРІРЅРѕР№ РєРѕРЅС„РёРіСѓСЂР°С†РёРё РґР»СЏ UAC IN interface */
-void buffers_set_uacoutalt(uint_fast8_t v);	/* РІС‹Р±РѕСЂ Р°Р»СЊС‚РµСЂРЅР°С‚РёРІРЅРѕР№ РєРѕРЅС„РёРіСѓСЂР°С†РёРё РґР»СЏ UAC OUT interface */
-void buffers_set_uacinrtsalt(uint_fast8_t v);	/* РІС‹Р±РѕСЂ Р°Р»СЊС‚РµСЂРЅР°С‚РёРІРЅРѕР№ РєРѕРЅС„РёРіСѓСЂР°С†РёРё РґР»СЏ UAC IN interface */
+void board_set_trxpath(uint_fast8_t v);	/* Тракт, к которому относятся все последующие вызовы. При перередаяе используется индекс 0 */
+void board_set_mikemute(uint_fast8_t v);	/* отключить микрофонный усилитель */
+void board_set_mik1level(uint_fast16_t v);	/* усиление микрофонного усилителя */
+void board_set_agcrate(uint_fast8_t v);	/* на n децибел изменения входного сигнала 1 дБ выходного. UINT8_MAX - "плоская" АРУ */
+void board_set_agc_t1(uint_fast8_t v);	/* подстройка параметра АРУ */
+void board_set_agc_t2(uint_fast8_t v);	/* подстройка параметра АРУ */
+void board_set_agc_t4(uint_fast8_t v);	/* подстройка параметра АРУ */
+void board_set_agc_thung(uint_fast8_t v);	/* подстройка параметра АРУ */
+void board_set_nfm_sql_lelel(uint_fast8_t v);	/* уровень открывания шумоподавителя NFM */
+void board_set_squelch(uint_fast8_t v);	/* уровень открывания шумоподавителя */
+void board_set_nfm_sql_off(uint_fast8_t v);	/* отключение шумоподавителя NFM */
+void board_set_notch_freq(uint_fast16_t n);	/* частота NOTCH фильтра */
+void board_set_notch_width(uint_fast16_t n);	/* полоса NOTCH фильтра */
+void board_set_notch_on(uint_fast8_t v);	/* включение NOTCH фильтра */
+void board_set_cwedgetime(uint_fast8_t n);	/* Время нарастания/спада огибающей телеграфа при передаче - в 1 мс */
+void board_set_sidetonelevel(uint_fast8_t n);	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
+void board_set_subtonelevel(uint_fast8_t n);	/* Уровень сигнала CTCSS в процентах - 0%..100% */
+void board_set_amdepth(uint_fast8_t n);		/* Глубина модуляции в АМ - 0..100% */
+void board_set_swapiq(uint_fast8_t v);	/* Поменять местами I и Q сэмплы в потоке RTS96 */
+void board_set_swaprts(uint_fast8_t v);	/* если используется конвертор на Rafael Micro R820T - требуется инверсия спектра */
+void buffers_set_uacinalt(uint_fast8_t v);	/* выбор альтернативной конфигурации для UAC IN interface */
+void buffers_set_uacoutalt(uint_fast8_t v);	/* выбор альтернативной конфигурации для UAC OUT interface */
+void buffers_set_uacinrtsalt(uint_fast8_t v);	/* выбор альтернативной конфигурации для UAC IN interface */
 void board_set_lo6(int_fast32_t f);
-void board_set_fullbw6(int_fast16_t f);	/* РЈСЃС‚Р°РЅРѕРІРєР° С‡Р°СЃС‚РѕС‚С‹ СЃСЂРµР·Р° С„РёР»СЊС‚СЂРѕРІ РџР§ РІ Р°Р»РіРѕСЂРёС‚РјРµ РЈРёРІРµСЂР° - РїР°СЂР°РјРµС‚СЂ РїРѕР»РЅР°СЏ РїРѕР»РѕСЃР° РїСЂРѕРїСѓСЃРєР°РЅРёСЏ */
+void board_set_fullbw6(int_fast16_t f);	/* Установка частоты среза фильтров ПЧ в алгоритме Уивера - параметр полная полоса пропускания */
 
-void board_set_aflowcutrx(int_fast16_t v);		/* РќРёР¶РЅСЏСЏ С‡Р°СЃС‚РѕС‚Р° СЃСЂРµР·Р° С„РёР»СЊС‚СЂР° РќР§ */
-void board_set_afhighcutrx(int_fast16_t v);	/* Р’РµСЂС…РЅСЏСЏ С‡Р°СЃС‚РѕС‚Р° СЃСЂРµР·Р° С„РёР»СЊС‚СЂР° РќР§ */
-void board_set_aflowcuttx(int_fast16_t v);		/* РќРёР¶РЅСЏСЏ С‡Р°СЃС‚РѕС‚Р° СЃСЂРµР·Р° С„РёР»СЊС‚СЂР° РќР§ */
-void board_set_afhighcuttx(int_fast16_t v);	/* Р’РµСЂС…РЅСЏСЏ С‡Р°СЃС‚РѕС‚Р° СЃСЂРµР·Р° С„РёР»СЊС‚СЂР° РќР§ */
+void board_set_aflowcutrx(int_fast16_t v);		/* Нижняя частота среза фильтра НЧ */
+void board_set_afhighcutrx(int_fast16_t v);	/* Верхняя частота среза фильтра НЧ */
+void board_set_aflowcuttx(int_fast16_t v);		/* Нижняя частота среза фильтра НЧ */
+void board_set_afhighcuttx(int_fast16_t v);	/* Верхняя частота среза фильтра НЧ */
 
-void board_set_afgain(uint_fast16_t v);	// РџР°СЂР°РјРµС‚СЂ РґР»СЏ СЂРµРіСѓР»РёСЂРѕРІРєРё СѓСЂРѕРІРЅСЏ РЅР° РІС‹С…РѕРґРµ Р°СѓРґРёРѕ-Р¦РђРџ
-void board_set_ifgain(uint_fast16_t v);	// РџР°СЂР°РјРµС‚СЂ РґР»СЏ СЂРµРіСѓР»РёСЂРѕРІРєРё СѓСЃРёР»РµРЅРёСЏ РџР§/Р’Р§
-void board_set_dspmode(uint_fast8_t v);	// РџР°СЂР°РјРµС‚СЂ РґР»СЏ СѓСЃС‚Р°РЅРѕРІРєРё СЂРµР¶РёРјР° СЂР°Р±РѕС‚С‹ РїСЂРёС‘РјРЅРёРєР° A/РїРµСЂРµРґР°С‚С‡РёРєР° A
-void board_set_lineinput(uint_fast8_t n);	// Р’РєР»СЋС‡РµРЅРёРµ line input РІРјРµСЃС‚Рѕ РјРёРєСЂРѕС„РѕРЅР°
-void board_set_lineamp(uint_fast16_t v);	// РџР°СЂР°РјРµС‚СЂ РґР»СЏ СЂРµРіСѓР»РёСЂРѕРІРєРё СѓСЂРѕРІРЅСЏ РЅР° РІС…РѕРґРµ Р°СѓРґРёРѕ-Р¦РђРџ РїСЂРё СЂР°Р±РѕС‚Рµ СЃ LINE IN
-void board_set_txaudio(uint_fast8_t v);	// РђР»СЊС‚РµСЂРЅР°С‚РёРІРЅС‹Рµ РёСЃС‚РѕС‡РЅРёРєРё СЃРёРіРЅР°Р»Р° РїСЂРё РїРµСЂРµРґР°С‡Рµ
-void board_set_mikebust20db(uint_fast8_t n);	// Р’РєР»СЋС‡РµРЅРёРµ РїСЂРµРґСѓСЃРёР»РёС‚РµР»СЏ Р·Р° РјРёРєСЂРѕС„РѕРЅРѕРј
-void board_set_afmute(uint_fast8_t n);	// РћС‚РєР»СЋС‡РµРЅРёРµ Р·РІСѓРєР°
-void board_set_mikeequal(uint_fast8_t n);	// РІРєР»СЋС‡РµРЅРёРµ РѕР±СЂР°Р±РѕС‚РєРё СЃРёРіРЅР°Р»Р° СЃ РјРёРєСЂРѕС„РѕРЅР° (СЌС„С„РµРєС‚С‹, СЌРєРІР°Р»Р°Р№Р·РµСЂ, ...)
-void board_set_mikeequalparams(const uint_fast8_t * p);	// Р­РєРІР°Р»Р°Р№Р·РµСЂ 80Hz 230Hz 650Hz 	1.8kHz 5.3kHz
-void board_set_mikeagc(uint_fast8_t n);		/* Р’РєР»СЋС‡РµРЅРёРµ РїСЂРѕРіСЂР°РјРјРЅРѕР№ РђР РЈ РїРµСЂРµРґ РјРѕРґСѓР»СЏС‚РѕСЂРѕРј */
-void board_set_mikeagcgain(uint_fast8_t v);	/* РњР°РєСЃРёРјР°Р»СЊРЅРѕРµ СѓСЃРёРґРµРЅРёРµ РђР РЈ РјРёРєСЂРѕС„РѕРЅР° */
-void board_set_afresponcerx(int_fast8_t v);	/* РёР·РјРµРЅРµРЅРёРµ С‚РµРјР±СЂР° Р·РІСѓРєР° РІ РєР°РЅР°Р»Рµ РїСЂРёРµРјРЅРёРєР° */
-void board_set_afresponcetx(int_fast8_t v);	/* РёР·РјРµРЅРµРЅРёРµ С‚РµРјР±СЂР° Р·РІСѓРєР° РІ РєР°РЅР°Р»Рµ РїРµСЂРµРґР°С‚С‡РёРєР° */
-void board_set_mikehclip(uint_fast8_t gmikehclip);	/* РћРіСЂР°РЅРёС‡РёС‚РµР»СЊ */
+void board_set_afgain(uint_fast16_t v);	// Параметр для регулировки уровня на выходе аудио-ЦАП
+void board_set_ifgain(uint_fast16_t v);	// Параметр для регулировки усиления ПЧ/ВЧ
+void board_set_dspmode(uint_fast8_t v);	// Параметр для установки режима работы приёмника A/передатчика A
+void board_set_lineinput(uint_fast8_t n);	// Включение line input вместо микрофона
+void board_set_lineamp(uint_fast16_t v);	// Параметр для регулировки уровня на входе аудио-ЦАП при работе с LINE IN
+void board_set_txaudio(uint_fast8_t v);	// Альтернативные источники сигнала при передаче
+void board_set_mikebust20db(uint_fast8_t n);	// Включение предусилителя за микрофоном
+void board_set_afmute(uint_fast8_t n);	// Отключение звука
+void board_set_mikeequal(uint_fast8_t n);	// включение обработки сигнала с микрофона (эффекты, эквалайзер, ...)
+void board_set_mikeequalparams(const uint_fast8_t * p);	// Эквалайзер 80Hz 230Hz 650Hz 	1.8kHz 5.3kHz
+void board_set_mikeagc(uint_fast8_t n);		/* Включение программной АРУ перед модулятором */
+void board_set_mikeagcgain(uint_fast8_t v);	/* Максимальное усидение АРУ микрофона */
+void board_set_afresponcerx(int_fast8_t v);	/* изменение тембра звука в канале приемника */
+void board_set_afresponcetx(int_fast8_t v);	/* изменение тембра звука в канале передатчика */
+void board_set_mikehclip(uint_fast8_t gmikehclip);	/* Ограничитель */
 
-void board_set_uacplayer(uint_fast8_t v);	/* СЂРµР¶РёРј РїСЂРѕСЃР»СѓС€РёРІР°РЅРёСЏ РІС‹С…РѕРґР° РєРѕРјРїСЊСЋС‚РµСЂР° РІ РЅР°СѓС€РЅРёРєР°С… С‚СЂР°РЅСЃРёРІРµСЂР° - РѕС‚Р»Р°РґРѕС‡РЅС‹Р№ СЂРµР¶РёРј */
-void board_set_uacmike(uint_fast8_t v);	/* РЅР° РІС…РѕРґ С‚СЂР°РЅСЃРёРІРµСЂР° Р±РµСЂСѓС‚СЃСЏ Р°СѓРґРёРѕРґР°РЅРЅС‹Рµ СЃ USB РІРёСЂС‚СѓР°Р»СЊРЅРѕР№ РїР»Р°С‚С‹, Р° РЅРµ СЃ РјРёРєСЂРѕС„РѕРЅР° */
+void board_set_uacplayer(uint_fast8_t v);	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
+void board_set_uacmike(uint_fast8_t v);	/* на вход трансивера берутся аудиоданные с USB виртуальной платы, а не с микрофона */
 
 void dsp_initialize(void);
 
 #if WITHINTEGRATEDDSP
-	// РљРѕРїСЂРѕРІР°РЅРёРµ РёРЅС„РѕСЂРјР°С†РёРё Рѕ СЃРїРµРєС‚СЂРµ СЃ С‚РµРєСѓС‰СѓСЋ СЃС‚СЂРѕРєСѓ Р±СѓС„РµСЂР° 
-	// wfarray (РїСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёРµ Рє РїРёРєСЃРµР»СЏРј СЂР°СЃС‚СЂР° */
+	// Копрование информации о спектре с текущую строку буфера 
+	// wfarray (преобразование к пикселям растра */
 	void dsp_getspectrumrow(
 		FLOAT_t * const hbase,
 		uint_fast16_t dx,	// pixel X width of display window
 		uint_fast8_t zoom	// horisontal magnification
 		);
-	// РќРѕСЂРјРёСЂРѕРІР°РЅРёРµ СѓСЂРѕРІРЅСЏ СЃРёРіРЅР°Р»Р° Рє С€РєР°Р»Рµ
-	// РІРѕР·РІСЂР°С‰Р°РµС‚ Р·РЅР°С‡РµРЅРёСЏ РѕС‚ 0 РґРѕ ymax РІРєР»СЋС‡РёС‚РµР»СЊРЅРѕ
-	// 0 - РјРёРЅРёРјР°Р»СЊРЅС‹Р№ СЃРёРіРЅР°Р», ymax - РјР°РєСЃРёРјР°Р»СЊРЅС‹Р№
+	// Нормирование уровня сигнала к шкале
+	// возвращает значения от 0 до ymax включительно
+	// 0 - минимальный сигнал, ymax - максимальный
 	int dsp_mag2y(FLOAT_t mag, int ymax, int_fast16_t topdb, int_fast16_t fulldb);	
 
-	void saveIQRTSxx(FLOAT_t iv, FLOAT_t qv);	// С„РѕСЂРјРёСЂРѕРІР°РЅРёРµ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ СЃРїРµРєС‚СЂР°
+	void saveIQRTSxx(FLOAT_t iv, FLOAT_t qv);	// формирование отображения спектра
 
 #endif /* WITHINTEGRATEDDSP */
 
-int_fast32_t dsp_get_ifreq(void);		/* РџРѕР»СѓС‡РёС‚СЊ Р·РЅР°С‡РµРЅРёРµ РІС…РѕРґРЅРѕР№ РџР§ РґР»СЏ РѕР±СЂР°Р±РѕС‚РєРё DSP */
-int_fast32_t dsp_get_sampleraterx(void);	/* РџРѕР»СѓС‡РёС‚СЊ Р·РЅР°С‡РµРЅРёРµ С‡Р°СЃС‚РѕС‚С‹ РІС‹Р±РѕСЂРѕРє РІС‹С…РѕРґРЅРѕРіРѕ РїРѕС‚РѕРєР° DSP */
-int_fast32_t dsp_get_sampleraterxscaled(uint_fast8_t scale);	/* РџРѕР»СѓС‡РёС‚СЊ Р·РЅР°С‡РµРЅРёРµ С‡Р°СЃС‚РѕС‚С‹ РІС‹Р±РѕСЂРѕРє РІС‹С…РѕРґРЅРѕРіРѕ РїРѕС‚РѕРєР° DSP */
-int_fast32_t dsp_get_sampleratetx(void);	/* РџРѕР»СѓС‡РёС‚СЊ Р·РЅР°С‡РµРЅРёРµ С‡Р°СЃС‚РѕС‚С‹ РІС‹Р±РѕСЂРѕРє РІС…РѕРґРЅРѕРіРѕ РїРѕС‚РѕРєР° DSP */
-int_fast32_t dsp_get_samplerate100(void);	/* РџРѕР»СѓС‡РёС‚СЊ Р·РЅР°С‡РµРЅРёРµ С‡Р°СЃС‚РѕС‚С‹ РІС‹Р±РѕСЂРѕРє РІС‹С…РѕРґРЅРѕРіРѕ РїРѕС‚РѕРєР° DSP */
+int_fast32_t dsp_get_ifreq(void);		/* Получить значение входной ПЧ для обработки DSP */
+int_fast32_t dsp_get_sampleraterx(void);	/* Получить значение частоты выборок выходного потока DSP */
+int_fast32_t dsp_get_sampleraterxscaled(uint_fast8_t scale);	/* Получить значение частоты выборок выходного потока DSP */
+int_fast32_t dsp_get_sampleratetx(void);	/* Получить значение частоты выборок входного потока DSP */
+int_fast32_t dsp_get_samplerate100(void);	/* Получить значение частоты выборок выходного потока DSP */
 
 int_fast32_t dsp_get_samplerateuacin_audio48(void);		// UAC IN samplerate
 int_fast32_t dsp_get_samplerateuacin_rts96(void);		// UAC IN samplerate
@@ -517,11 +517,11 @@ int_fast32_t dsp_get_samplerateuacin_rts192(void);		// UAC IN samplerate
 int_fast32_t dsp_get_samplerateuacin_rts(void);			// RTS samplerate
 int_fast32_t dsp_get_samplerateuacout(void);			// UAC OUT samplerate
 
-uint_fast8_t dsp_getsmeter(uint_fast8_t * tracemax, uint_fast8_t lower, uint_fast8_t upper, uint_fast8_t clean);	/* РїРѕР»СѓС‡РёС‚СЊ Р·РЅР°С‡РµРЅРёРµ РѕС‚ РђР¦Рџ s-РјРµС‚СЂР° */
-uint_fast8_t dsp_getvox(uint_fast8_t fullscale);	/* РїРѕР»СѓС‡РёС‚СЊ Р·РЅР°С‡РµРЅРёРµ РѕС‚ РґРµС‚РµРєС‚РѕСЂР° VOX */
-uint_fast8_t dsp_getavox(uint_fast8_t fullscale);	/* РїРѕР»СѓС‡РёС‚СЊ Р·РЅР°С‡РµРЅРёРµ РѕС‚ РґРµС‚РµРєС‚РѕСЂР° Anti-VOX */
-uint_fast8_t dsp_getfreqdelta10(int_fast32_t * p, uint_fast8_t pathi);	/* РџРѕР»СѓС‡РёС‚СЊ Р·РЅР°С‡РµРЅРёРµ РѕС‚РєР»РѕРЅРµРЅРёСЏ С‡Р°СЃС‚РѕС‚С‹ СЃ С‚РѕС‡РЅРѕСЃС‚СЊСЋ 0.1 РіРµСЂС†Р° */
-uint_fast8_t dsp_getmikeadcoverflow(void); /* РїРѕР»СѓС‡РµРЅРёСЏ РїСЂРёР·РЅР°РєР° РїРµСЂРµРїРѕР»РЅРµРЅРёСЏ РђР¦Рџ РјРёРєСЂРѕС„РѕРЅРЅРѕРіРѕ С‚СЂР°РєС‚Р° */
+uint_fast8_t dsp_getsmeter(uint_fast8_t * tracemax, uint_fast8_t lower, uint_fast8_t upper, uint_fast8_t clean);	/* получить значение от АЦП s-метра */
+uint_fast8_t dsp_getvox(uint_fast8_t fullscale);	/* получить значение от детектора VOX */
+uint_fast8_t dsp_getavox(uint_fast8_t fullscale);	/* получить значение от детектора Anti-VOX */
+uint_fast8_t dsp_getfreqdelta10(int_fast32_t * p, uint_fast8_t pathi);	/* Получить значение отклонения частоты с точностью 0.1 герца */
+uint_fast8_t dsp_getmikeadcoverflow(void); /* получения признака переполнения АЦП микрофонного тракта */
 
 void dsp_speed_diagnostics(void);	/* DSP speed test */
 void buffers_diagnostics(void);
@@ -531,26 +531,26 @@ void dsp_recalceq(uint_fast8_t pathi, float * frame);
 void modem_initialze(void);
 uint_fast8_t modem_get_ptt(void);
 
-/* РРЅС‚РµСЂС„РµР№СЃ Рє AF РєРѕРґРµРєСѓ */
+/* Интерфейс к AF кодеку */
 typedef struct codec1if_tag
 {
 	void (* initialize)(void);
-	void (* setvolume)(uint_fast16_t gain, uint_fast8_t mute, uint_fast8_t mutespk);	/* РЈСЃС‚Р°РЅРѕРІРєР° РіСЂРѕРјРєРѕСЃС‚Рё РЅР° РЅР°СѓС€РЅРёРєРё */
-	void (* setlineinput)(uint_fast8_t linein, uint_fast8_t mikebust20db, uint_fast16_t mikegain, uint_fast16_t linegain);	/* Р’С‹Р±РѕСЂ LINE IN РєР°Рє РёСЃС‚РѕС‡РЅРёРєР° РґР»СЏ РђР¦Рџ РІРјРµСЃС‚Рѕ РјРёРєСЂРѕС„РѕРЅР° */
-	void (* setprocparams)(uint_fast8_t procenable, const uint_fast8_t * gains);	/* РїР°СЂР°РјРµС‚СЂС‹ РѕР±СЂР°Р±РѕС‚РєРё Р·РІСѓРєР° СЃ РјРёРєСЂРѕС„РѕРЅР° (СЌС…Рѕ, СЌРєРІР°Р»Р°Р№Р·РµСЂ, ...) */
-	const char * label;									/* РќР°Р·РІР°РЅРёРµ РєРѕРґРµРєР° (РІСЃРµРіРґР° РїРѕСЃР»РµРґРЅРёР№ СЌР»РµРјРµРЅС‚ РІ СЃС‚СЂСѓРєС‚СѓСЂРµ) */
+	void (* setvolume)(uint_fast16_t gain, uint_fast8_t mute, uint_fast8_t mutespk);	/* Установка громкости на наушники */
+	void (* setlineinput)(uint_fast8_t linein, uint_fast8_t mikebust20db, uint_fast16_t mikegain, uint_fast16_t linegain);	/* Выбор LINE IN как источника для АЦП вместо микрофона */
+	void (* setprocparams)(uint_fast8_t procenable, const uint_fast8_t * gains);	/* параметры обработки звука с микрофона (эхо, эквалайзер, ...) */
+	const char * label;									/* Название кодека (всегда последний элемент в структуре) */
 } codec1if_t;
 
-const codec1if_t * board_getaudiocodecif(void);		// РїРѕР»СѓС‡РёС‚СЊ РёРЅС‚РµСЂС„РµР№СЃ СѓРїСЂР°РІР»РµРЅРёСЏ РєРѕРґРµРєРѕРј РІ СЃС‚РѕСЂРѕРЅСѓ РѕРїРµСЂР°С‚РѕСЂР°
+const codec1if_t * board_getaudiocodecif(void);		// получить интерфейс управления кодеком в сторону оператора
 
-/* РРЅС‚РµСЂС„РµР№СЃ Рє IF РєРѕРґРµРєСѓ */
+/* Интерфейс к IF кодеку */
 typedef struct codec2if_tag
 {
 	void (* initialize)(void);
 	const char * label;
 } codec2if_t;
 
-const codec2if_t * board_getfpgacodecif(void);		// РїРѕР»СѓС‡РёС‚СЊ РёРЅС‚РµСЂС„РµР№СЃ СѓРїСЂР°РІР»РµРЅРёСЏ РєРѕРґРµРєРѕРј РґР»СЏ РїРѕР»СѓС‡РµРЅРёСЏ РґР°РЅРЅС‹С… Рѕ СЂР°РґРёРѕСЃРёРіРЅР°Р»Рµ
+const codec2if_t * board_getfpgacodecif(void);		// получить интерфейс управления кодеком для получения данных о радиосигнале
 
 /* +++ UAC OUT data save */
 void uacout_buffer_initialize(void);
