@@ -7042,13 +7042,17 @@ static void
 audioproc_spool_user(void)
 {
 	int16_t * p;
-
+	const uint_fast8_t mode = submodes [gsubmode].mode;
+	const uint_fast8_t nospeex = mode == MODE_DIGI || gdatamode; 
 	while (takespeexready_user(& p))
 	{
-		speex_preprocess_run(st_handles [0], p + 0);	// left channel
-#if WITHUSEDUALWATCH
-		speex_preprocess_run(st_handles [1], p + SPEEXNN);	// right channel
-#endif /* WITHUSEDUALWATCH */
+		if (! nospeex)
+		{
+			speex_preprocess_run(st_handles [0], p + 0);	// left channel
+	#if WITHUSEDUALWATCH
+			speex_preprocess_run(st_handles [1], p + SPEEXNN);	// right channel
+	#endif /* WITHUSEDUALWATCH */
+		}
 		unsigned i;
 		for (i = 0; i < SPEEXNN; ++ i)
 		{
