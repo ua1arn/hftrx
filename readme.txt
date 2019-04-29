@@ -1,6 +1,9 @@
+# Проект HF Dream Receiver (КВ приёмник мечты)
+## автор Гена Завидовский mgs2001@mail.ru UA1ARN
+
 Инструкция по подготовке среды компиляции для ARM процессоров находятся ниже.
 
-ATMEGA/ATXMEGA:
+## ATMEGA/ATXMEGA:
 
 Каталог проекта не должен собержать в пути русских (или других неанглийских) букв. Пробелы допустимы.
 
@@ -28,15 +31,15 @@ http://sourceforge.net/projects/mingw
 Ссылка для скачивания:
 http://kent.dl.sourceforge.net/project/mobilechessboard/avr-gcc%20snapshots%20%28Win32%29/avr-gcc-6.1.1_2016-06-26_mingw32.zip
 
-ARM:
+## ARM:
 
 1. Настраиваем окружение (компилятор и утилиты для сборки проекта)
 1.1 GNU ARM Toolchain https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm/downloads (последняя проверенная сборка 7-2018-q2-update)
 1.2 Утилиты для сборки (напр. make) отсюда: http://www.yagarto.org/ или отсюда: http://www.cygwin.com/ (проверяем что в командной строке работает команда make, иначе обновляем переменную PATH в системе)
+1.3 Утилиты для работы с GIT репозиториями https://git-scm.com/downloads
 
-2. Скачиваем дополнительные библиотеки, распаковываем их на уровень выше, чем папка проекта
-2.1 CMSIS https://github.com/ARM-software/CMSIS_5/releases
-2.2 В случае использования процессора Cortex-A9 используем форк https://github.com/XGudron/CMSIS_5
+2. Скачиваем дополнительные библиотеки, распаковываем их на уровень выше, чем папка проекта.
+2.1 CMSIS, используем оптимизированный форк, для этого в папке выше проекта вводим команду "git clone https://github.com/XGudron/CMSIS_5"
 
 3. Устанавливаем IDE для разработки
 3.1 Скачиваем и устанавливаем Eclipse https://www.eclipse.org/downloads/
@@ -44,28 +47,26 @@ ARM:
 3.3 В верхнем меню Help -> Eclipse Marketplace, устанавливаем обновления
 3.4 В верхнем меню Help -> Eclipse Marketplace, используя поиск, устанавливаем расширение GNU MCU Eclipse
 
-4. Выбираем тип аппаратуры и собираем проект
-4.1 Копируем файл product.h.prototype в product.h
-4.2 Раскомментируем нужные нам константы с выбранной конфигурацией
-4.3 В меню Eclipse, Project -> Build configurations -> Set active выбираем необходимый процессор (или через выпадающее меню с молотком в ToolBox)
+4. Собираем проект
+4.1 Скачаваем последнюю версию проекта командой "git clone https://github.com/ua1arn/hftrx"
+4.2 Копируем файл product.h.prototype в product.h
+4.3 Раскомментируем нужные нам константы с выбранной конфигурацией
+4.4 В меню Eclipse, Project -> Build configurations -> Set active выбираем необходимый процессор (или через выпадающее меню с молотком в ToolBox)
 
-FPGA:
+5. Прошиваем
+5.1 Скопилированные прошивки находятся в папке /build/<процессор>/
 
-Используется Quartis II 13.1 (с апдейтом) Paid version
+## FPGA:
 
-http://download.altera.com/akdlm/software/acdsinst/13.1/162/ib_tar/Quartus-13.1.0.162-windows-complete.tar
+Используется Quartis II 13.1 (с апдейтом) Paid version http://download.altera.com/akdlm/software/acdsinst/13.1/162/ib_tar/Quartus-13.1.0.162-windows-complete.tar
+и  апдейт после http://download.altera.com/akdlm/software/acdsinst/13.1.4/182/update/QuartusSetup-13.1.4.182.exe
 
-и  апдейт после
-
-http://download.altera.com/akdlm/software/acdsinst/13.1.4/182/update/QuartusSetup-13.1.4.182.exe
-
-ATMEL ARM:
+## ATMEL ARM:
 
 Требуется Atmel Software Framework 3.27 
-
 http://www.atmel.com/images/asf-standalone-archive-3.27.0.28.zip
 
-Общее:
+## Общее:
 
 Выбор целевой конфигурации проекта производится в файле product.h
 На основании выбраной конфигурации и целевого процессора (arm/atmega) выбирается пара конфигурационных файлов
