@@ -109,7 +109,7 @@ LIBS    = $(DLIBS) $(ULIBS)
 
 #MCFLAGS = -mcpu=$(MCU) $(CORE) -funroll-loops -fgraphite-identity -ffunction-sections -fdata-sections -ffat-lto-objects
 MCFLAGS = -mcpu=$(MCU) $(CORE) \
-	-I"../../xdk-asf-3.27.0/sam/utils/cmsis/sam3s/include"
+	-I"../../../xdk-asf/sam/utils/cmsis/sam3s/include"
 #
 #ASFLAGS = $(MCFLAGS) $(OPT) $(LTO) -g -gdwarf-2 -Wa,-amhls=$(<:.s=.lst) $(ADEFS)
 ASFLAGS = $(MCFLAGS) $(OPT) $(LTO) -g -gdwarf-2 $(ADEFS)

@@ -36,6 +36,7 @@ http://www.atmel.com/images/avr-toolchain-installer-3.4.2.1573-win32.win32.x86.e
 
 2. Скачиваем дополнительные библиотеки, распаковываем их на уровень выше, чем папка проекта. <br>
 2.1 CMSIS, используем оптимизированный форк, для этого в папке выше проекта вводим команду "git clone https://github.com/XGudron/CMSIS_5"
+2.2 В случае использования Atmel ARM (SAM) процессоров, скачать и распаковать в папку "xdk-asf" пакет Advanced Software Framework (ASF) https://www.microchip.com/mplab/avr-support/advanced-software-framework
 
 3. Устанавливаем IDE для разработки <br>
 3.1 Скачиваем и устанавливаем Eclipse https://www.eclipse.org/downloads/ <br>
