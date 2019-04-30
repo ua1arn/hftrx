@@ -1,42 +1,19 @@
 # Проект HF Dream Receiver (КВ приёмник мечты)
 ## автор Гена Завидовский mgs2001@mail.ru UA1ARN
 
-Инструкция по подготовке среды компиляции для ARM процессоров находятся ниже.
+Инструкция по подготовке среды и компиляции:
 
-## ATMEGA/ATXMEGA:
-
-Каталог проекта не должен собержать в пути русских (или других неанглийских) букв. Пробелы допустимы.
-
-Для компиляции используется
-
-AVR Studio 4.19 (build 730) http://www.atmel.com/Images/AvrStudio4Setup.exe
-
-В репозитории файл проекта для AVR Studio 4.19 хранится под именем tc1.aps.prototype, его надо переименовать в tc1.aps и открыть в среде как проект.<br>
-Так же требуется переименование файла product.h.prototype в product.h. В нем раскомментировать требуемую конфигурацию и закомментировант не нужную.
-
-Должно быть установленно<br>
-Atmel AVR 8-bit and 32-bit Toolchain 3.4.2 - Windows<br> 
-http://www.atmel.com/images/avr-toolchain-installer-3.4.2.1573-win32.win32.x86.exe
-
-Для обеспечения работы под x64 версиями Windows 8.x, Windows 10 скачать http://www.madwizard.org/download/electronics/msys-1.0-vista64.zip <br>
-И разархивировать msys-1.0.dll в тот же каталог, где находится make.exe<br>
-Или взять данный файл (или целиком пакет) с download page проекта MinGW - Minimalist GNU for Windows http://sourceforge.net/projects/mingw
-
-Протестировано использование avr-gcc версии avr-gcc-6.1.1 - скачанный архив надо распаковать и настроить на использование avr-gcc из него. <br>
-Утилита make используется из комплекта toolchain от ATMEL. <br>
-Сборка это часть проекта https://sourceforge.net/projects/mobilechessboar/?source=directory <br>
-Ссылка для скачивания: http://kent.dl.sourceforge.net/project/mobilechessboard/avr-gcc%20snapshots%20%28Win32%29/avr-gcc-6.1.1_2016-06-26_mingw32.zip
-
-## ARM:
+## Микроконтроллер:
 
 1. Настраиваем окружение (компилятор и утилиты для сборки проекта) <br>
-1.1 GNU ARM Toolchain https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm/downloads (последняя проверенная сборка 7-2018-q2-update) <br>
-1.2 Утилиты для сборки (напр. make) отсюда: http://www.yagarto.org/ или отсюда: http://www.cygwin.com/ (проверяем что в командной строке работает команда make, иначе обновляем переменную PATH в системе) <br>
-1.3 Утилиты для работы с GIT репозиториями https://git-scm.com/downloads
+1.1 **ARM** GNU ARM Toolchain https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm/downloads (последняя проверенная сборка 7-2018-q2-update) <br>
+1.2 **ATMEGA/ATXMEGA** AVR 8-bit Toolchain https://www.microchip.com/mplab/avr-support/avr-and-arm-toolchains-c-compilers (распаковываем, прописываем путь к папке BIN в переменную окружения PATH)<br>
+1.3 Утилиты для сборки (напр. make) отсюда: http://www.yagarto.org/ или отсюда: http://www.cygwin.com/ (проверяем что в командной строке работает команда make, иначе обновляем переменную PATH в системе) <br>
+1.4 Утилиты для работы с GIT репозиториями https://git-scm.com/downloads
 
 2. Скачиваем дополнительные библиотеки, распаковываем их на уровень выше, чем папка проекта. <br>
-2.1 CMSIS, используем оптимизированный форк, для этого в папке выше проекта вводим команду "git clone https://github.com/XGudron/CMSIS_5"
-2.2 В случае использования Atmel ARM (SAM) процессоров, скачать и распаковать в папку "xdk-asf" пакет Advanced Software Framework (ASF) https://www.microchip.com/mplab/avr-support/advanced-software-framework
+2.1 **ARM** CMSIS, используем оптимизированный форк, для этого в папке выше проекта вводим команду "git clone https://github.com/XGudron/CMSIS_5"
+2.2 **ATMEL ARM** В случае использования Atmel ARM (SAM) процессоров, скачать и распаковать в папку "xdk-asf" пакет Advanced Software Framework (ASF) https://www.microchip.com/mplab/avr-support/advanced-software-framework
 
 3. Устанавливаем IDE для разработки <br>
 3.1 Скачиваем и устанавливаем Eclipse https://www.eclipse.org/downloads/ <br>
@@ -58,11 +35,6 @@ http://www.atmel.com/images/avr-toolchain-installer-3.4.2.1573-win32.win32.x86.e
 
 Используется Quartis II 13.1 (с апдейтом) Paid version http://download.altera.com/akdlm/software/acdsinst/13.1/162/ib_tar/Quartus-13.1.0.162-windows-complete.tar <br>
 и  апдейт после http://download.altera.com/akdlm/software/acdsinst/13.1.4/182/update/QuartusSetup-13.1.4.182.exe
-
-## ATMEL ARM:
-
-Требуется Atmel Software Framework 3.27  <br>
-http://www.atmel.com/images/asf-standalone-archive-3.27.0.28.zip
 
 ## Общее:
 
