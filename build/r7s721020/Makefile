@@ -121,7 +121,7 @@ LDFLAGS_BOOT = $(MCFLAGS) $(LTO) $(OPT) -nostartfiles -T$(LDSCRIPT_BOOT) -Wl,-Ma
 LDFLAGS_APP = $(MCFLAGS) $(LTO) $(OPT) -nostartfiles -T$(LDSCRIPT_APP) -Wl,-Map=$(PROJECT)_app.map,--cref $(LIBDIR)
 
 # Generate dependency information
-CPFLAGS += -MD -MP -MF ./dep/$(@F).d
+CPFLAGS += -MD -MP -MF ./$(@F).d
 
 # Experemental optimisation flags
 #CPFLAGS += -fno-inline-small-functions 
@@ -170,11 +170,11 @@ clean:
 	-rm -f $(SRC:.c=.lst)
 	-rm -f $(ASRC:.s=.s.bak)
 	-rm -f $(ASRC:.s=.lst)
-	-rm -fR ./dep/*.d
+	-rm -fR ./*.d
 
 # 
 # Include the dependency files, should be the last of the makefile
 #
--include $(shell mkdir ./dep 2>/dev/null) $(wildcard ./dep/*)
+-include $(wildcard ./*.d)
 
 # *** EOF ***
