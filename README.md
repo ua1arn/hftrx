@@ -12,7 +12,7 @@
 1.4 Утилиты для работы с GIT репозиториями https://git-scm.com/downloads
 
 2. Скачиваем дополнительные библиотеки, распаковываем их на уровень выше, чем папка проекта. <br>
-2.1 **ARM** CMSIS, используем оптимизированный форк, для этого в папке выше проекта вводим команду "git clone https://github.com/XGudron/CMSIS_5"
+2.1 **ARM** CMSIS, используем оптимизированный форк, для этого в папке выше проекта вводим команду "git clone https://github.com/XGudron/CMSIS_5" <br>
 2.2 **ATMEL ARM** В случае использования Atmel ARM (SAM) процессоров, скачать и распаковать в папку "xdk-asf" пакет Advanced Software Framework (ASF) https://www.microchip.com/mplab/avr-support/advanced-software-framework
 
 3. Устанавливаем IDE для разработки <br>
