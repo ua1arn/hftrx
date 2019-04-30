@@ -46,9 +46,10 @@ http://www.atmel.com/images/avr-toolchain-installer-3.4.2.1573-win32.win32.x86.e
 
 4. Собираем проект <br>
 4.1 Скачаваем последнюю версию проекта командой "git clone https://github.com/ua1arn/hftrx" <br>
-4.2 Копируем файл product.h.prototype в product.h <br>
-4.3 Раскомментируем нужные нам константы с выбранной конфигурацией <br>
-4.4 В меню Eclipse, Project -> Build configurations -> Set active выбираем необходимый процессор (или через выпадающее меню с молотком в ToolBox)
+4.2 Открываем проект через File -> Open projects from File System
+4.3 Копируем файл product.h.prototype в product.h <br>
+4.4 Раскомментируем нужные нам константы с выбранной конфигурацией <br>
+4.5 В меню Eclipse, Project -> Build configurations -> Set active выбираем необходимый процессор (или через выпадающее меню с молотком в ToolBox). Build target выбираем default.
 
 5. Прошиваем <br>
 5.1 Скопилированные прошивки находятся в папке /build/<процессор>/
