@@ -1,8 +1,3 @@
-#atmega32a_8
-#atmega644p_8
-#atmega644p_10
-#atmega328_16
-#atmega328_8
 *.o
 *.d
 *.hex
@@ -15,8 +10,4 @@
 *.7z
 *.bin
 product.h
-tc1msvc.opt
-tc1msvc.plg
-tc1.aws
-
 boards/atmega644_ctlstyle_v1.h
