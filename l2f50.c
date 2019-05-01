@@ -22,9 +22,9 @@
 #include "spifuncs.h"
 #include "l2f50.h"
 
-#include "./fonts/ls020_font_small.c"
-#include "./fonts/ls020_font_half.c"
-#include "./fonts/ls020_font_big.c"
+#include "./fonts/ls020_font_small.h"
+#include "./fonts/ls020_font_half.h"
+#include "./fonts/ls020_font_big.h"
 
 
 

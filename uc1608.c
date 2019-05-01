@@ -21,16 +21,16 @@
 
 /* растровые шрифты */
 
-#include "./fonts/uc1601s_font_small.c"	// в одну полосу- small2
+#include "./fonts/uc1601s_font_small.h"	// в одну полосу- small2
 
 #if FONTSTYLE_ITALIC
-	#include "./fonts/uc1608_font_small.c"
-	#include "./fonts/uc1608_font_half.c"
-	#include "./fonts/uc1608_font_big.c"
+	#include "./fonts/uc1608_font_small.h"
+	#include "./fonts/uc1608_font_half.h"
+	#include "./fonts/uc1608_font_big.h"
 #else
-	#include "./fonts/uc1608_sphm_font_small.c"
-	#include "./fonts/uc1608_sphm_font_half.c"
-	#include "./fonts/uc1608_sphm_font_big.c"
+	#include "./fonts/uc1608_sphm_font_small.h"
+	#include "./fonts/uc1608_sphm_font_half.h"
+	#include "./fonts/uc1608_sphm_font_big.h"
 #endif
 
 

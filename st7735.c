@@ -54,9 +54,9 @@
 	// LCDMODE_ILI9341
 
 	// Для дисплеев 320 * 240
-	#include "./fonts/ILI9341_font_small.c"
-	#include "./fonts/ILI9341_font_half.c"
-	#include "./fonts/ILI9341_font_big.c"
+	#include "./fonts/ILI9341_font_small.h"
+	#include "./fonts/ILI9341_font_half.h"
+	#include "./fonts/ILI9341_font_big.h"
 
 	#define	ls020_smallfont	ILI9341_smallfont
 	#define	ls020_halffont	ILI9341_halffont
@@ -67,9 +67,9 @@
 	// LCDMODE_ST7735 - 160 * 128
 	// LCDMODE_ILI9163 - 176 * 132
 
-	#include "./fonts/ls020_font_small.c"
-	#include "./fonts/ls020_font_half.c"
-	#include "./fonts/ls020_font_big.c"
+	#include "./fonts/ls020_font_small.h"
+	#include "./fonts/ls020_font_half.h"
+	#include "./fonts/ls020_font_big.h"
 
 #endif /* DSTYLE_G_X320_Y240 */
 

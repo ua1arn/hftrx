@@ -31,9 +31,9 @@
 
 	// Для дисплеев 320 * 240
 
-	#include "./fonts/ILI9341_font_small.c"
-	#include "./fonts/ILI9341_font_half.c"
-	#include "./fonts/ILI9341_font_big.c"
+	#include "./fonts/ILI9341_font_small.h"
+	#include "./fonts/ILI9341_font_half.h"
+	#include "./fonts/ILI9341_font_big.h"
 
 	#define	ls020_smallfont	ILI9341_smallfont
 	#define	ILI9225_halffont	ILI9341_halffont

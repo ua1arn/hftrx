@@ -16,13 +16,13 @@
 #if LCDMODE_PCF8535 || LCDMODE_PCF8531
 
 /* נאסענמגûו רנטפעû */
-#include "./fonts/uc1601s_font_small.c"
+#include "./fonts/uc1601s_font_small.h"
 #if FONTSTYLE_ITALIC
-	#include "./fonts/uc1601s_ifont_half.c"
-	#include "./fonts/uc1601s_ifont_big.c"
+	#include "./fonts/uc1601s_ifont_half.h"
+	#include "./fonts/uc1601s_ifont_big.h"
 #else /* FONTSTYLE_ITALIC */
-	#include "./fonts/uc1601s_font_half.c"
-	#include "./fonts/uc1601s_font_big.c"
+	#include "./fonts/uc1601s_font_half.h"
+	#include "./fonts/uc1601s_font_big.h"
 #endif /* FONTSTYLE_ITALIC */
 
 	// PCF8535, PCF8531 Address:

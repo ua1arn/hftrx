@@ -24,9 +24,9 @@
 #if DSTYLE_G_X320_Y240
 	// Для дисплеев 320 * 240
 
-	#include "./fonts/ILI9341_font_small.c"	
-	#include "./fonts/ILI9341_font_half.c"	
-	#include "./fonts/ILI9341_font_big.c"	
+	#include "./fonts/ILI9341_font_small.h"
+	#include "./fonts/ILI9341_font_half.h"
+	#include "./fonts/ILI9341_font_big.h"
 
 	#define	ILI9320_smallfont	ILI9341_smallfont
 	#define	ILI9320_halffont	ILI9341_halffont
@@ -35,9 +35,9 @@
 #else /* DSTYLE_G_X320_Y240 */
 
 	#error Undefined display layout
-	#include "./fonts/ILI9320_font_small.c"	// similar to ls020_small_font
-	#include "./fonts/ILI9320_font_half.c"
-	#include "./fonts/ILI9320_font_big.c"	// BIGCHARH 32
+	#include "./fonts/ILI9320_font_small.h"	// similar to ls020_small_font
+	#include "./fonts/ILI9320_font_half.h"
+	#include "./fonts/ILI9320_font_big.h"	// BIGCHARH 32
 
 #endif /* DSTYLE_G_X320_Y240 */
 

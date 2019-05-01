@@ -23,9 +23,9 @@
 
 #include "ls020.h"
 
-#include "./fonts/ls020_font_small.c"
-#include "./fonts/ls020_font_half.c"
-#include "./fonts/ls020_font_big.c"
+#include "./fonts/ls020_font_small.h"
+#include "./fonts/ls020_font_half.h"
+#include "./fonts/ls020_font_big.h"
 
 #define LS020_SPIMODE SPIC_MODE3
 
