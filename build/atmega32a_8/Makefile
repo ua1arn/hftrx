@@ -42,7 +42,7 @@ LINKONLYOBJECTS =
 SRCDIR = ../..
 SRC +=
 ASRC +=
-UINCDIR += ../..  ../../rza1x_inc ../../inc
+UINCDIR +=
 ULIBDIR +=
 ULIBS += 
 include $(SRCDIR)/sources_atmega.mak
@@ -52,7 +52,7 @@ OBJECTS = $(ASRC:.s=.o) $(SRC:.c=.o)
 all: $(OBJECTS) $(TARGET) tc1_atmega32_8.hex tc1_atmega32_8.eep size
 
 %o: $(addprefix $(SRCDIR)/, %c)
-	$(CC) -c $(CFLAGS) $(INCDIR) $< -o $@
+	$(CC) -c $(CFLAGS) $(UINCDIR) $< -o $@
 
 %o: $(addprefix $(SRCDIR)/, %s)
 	$(AS) -c $(ASMFLAGS) $< -o $@

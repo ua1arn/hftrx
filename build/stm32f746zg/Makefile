@@ -80,7 +80,7 @@ SRC +=
 ASRC +=
 
 # List all user directories here
-UINCDIR += ../../ ../../inc
+UINCDIR +=
 
 # List the user directory to look for the libraries here
 ULIBDIR +=

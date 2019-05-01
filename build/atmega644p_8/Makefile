@@ -40,7 +40,7 @@ HEX_EEPROM_FLAGS += --change-section-lma .eeprom=0 --no-change-warnings
 SRCDIR = ../..
 SRC +=
 ASRC +=
-UINCDIR += ../..  ../../rza1x_inc ../../inc
+UINCDIR +=
 ULIBDIR +=
 ULIBS += 
 include $(SRCDIR)/sources_atmega.mak

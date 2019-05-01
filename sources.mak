@@ -44,7 +44,7 @@ SRC += \
 ASRC +=
 
 # List all user directories here
-UINCDIR += .. ../..
+UINCDIR +=  ../.. ../../inc
 
 # List the user directory to look for the libraries here
 ULIBDIR +=

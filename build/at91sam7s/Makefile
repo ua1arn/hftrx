@@ -85,7 +85,7 @@ ASRC = \
  crt_sam7s.s
 
 # List all user directories here
-UINCDIR += ../../ ../../inc
+UINCDIR +=
 
 # List the user directory to look for the libraries here
 ULIBDIR +=
