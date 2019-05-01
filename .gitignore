@@ -1,8 +1,8 @@
-atmega32a_8
-atmega644p_8
-atmega644p_10
-atmega328_16
-atmega328_8
+#atmega32a_8
+#atmega644p_8
+#atmega644p_10
+#atmega328_16
+#atmega328_8
 *.o
 *.d
 *.hex
