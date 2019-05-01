@@ -47,19 +47,21 @@ ULIBDIR +=
 ULIBS += 
 include $(SRCDIR)/sources_atmega.mak
 OBJECTS = $(ASRC:.s=.o) $(SRC:.c=.o)
+INCDIR  = $(patsubst %,-I%,$(DINCDIR) $(UINCDIR))
+LIBDIR  = $(patsubst %,-L%,$(DLIBDIR) $(ULIBDIR))
 
 ## Build
 all: $(OBJECTS) $(TARGET) tc1_atmega32_8.hex tc1_atmega32_8.eep size
 
 %o: $(addprefix $(SRCDIR)/, %c)
-	$(CC) -c $(CFLAGS) $(UINCDIR) $< -o $@
+	$(CC) -c $(CFLAGS) $(INCDIR) $< -o $@
 
 %o: $(addprefix $(SRCDIR)/, %s)
 	$(AS) -c $(ASMFLAGS) $< -o $@
 
 ##Link
 $(TARGET): $(OBJECTS)
-	 $(CC) $(LDFLAGS) $(OBJECTS) $(LINKONLYOBJECTS) $(LIBDIRS) $(LIBS) -o $(TARGET)
+	 $(CC) $(LDFLAGS) $(OBJECTS) $(LINKONLYOBJECTS) $(LIBDIR) $(LIBS) -o $(TARGET)
 
 %.hex: $(TARGET)
 	avr-objcopy -O ihex $(HEX_FLASH_FLAGS)  $< $@
