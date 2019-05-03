@@ -1,7 +1,7 @@
 /* $Id$ */
 //
-// Проект HF Dream Receiver (КВ приёмник мечты)
-// автор Гена Завидовский mgs2001@mail.ru
+// РџСЂРѕРµРєС‚ HF Dream Receiver (РљР’ РїСЂРёС‘РјРЅРёРє РјРµС‡С‚С‹)
+// Р°РІС‚РѕСЂ Р“РµРЅР° Р—Р°РІРёРґРѕРІСЃРєРёР№ mgs2001@mail.ru
 // UA1ARN
 //
 
@@ -15,7 +15,7 @@
 #include <string.h>
 #include <math.h>
 
-#define WITHPLACEHOLDERS 1	//  отображение макета с еще незанятыми полями
+#define WITHPLACEHOLDERS 1	//  РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ РјР°РєРµС‚Р° СЃ РµС‰Рµ РЅРµР·Р°РЅСЏС‚С‹РјРё РїРѕР»СЏРјРё
 
 // todo: switch off -Wunused-function
 
@@ -23,13 +23,13 @@
 struct editfreq
 {
 	uint_fast32_t freq;
-	uint_fast8_t blinkpos;		// позиция (степень 10) редактируесого символа
-	uint_fast8_t blinkstate;	// в месте редактируемого символа отображается подчёркивание (0 - пробел)
+	uint_fast8_t blinkpos;		// РїРѕР·РёС†РёСЏ (СЃС‚РµРїРµРЅСЊ 10) СЂРµРґР°РєС‚РёСЂСѓРµСЃРѕРіРѕ СЃРёРјРІРѕР»Р°
+	uint_fast8_t blinkstate;	// РІ РјРµСЃС‚Рµ СЂРµРґР°РєС‚РёСЂСѓРµРјРѕРіРѕ СЃРёРјРІРѕР»Р° РѕС‚РѕР±СЂР°Р¶Р°РµС‚СЃСЏ РїРѕРґС‡С‘СЂРєРёРІР°РЅРёРµ (0 - РїСЂРѕР±РµР»)
 };
 #endif /* WITHDIRECTFREQENER */
 
-// формирование данных спектра для последующего отображения
-// спектра или водопада
+// С„РѕСЂРјРёСЂРѕРІР°РЅРёРµ РґР°РЅРЅС‹С… СЃРїРµРєС‚СЂР° РґР»СЏ РїРѕСЃР»РµРґСѓСЋС‰РµРіРѕ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ
+// СЃРїРµРєС‚СЂР° РёР»Рё РІРѕРґРѕРїР°РґР°
 static void dsp_latchwaterfall(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
@@ -50,19 +50,19 @@ static void display2_colorbuff(
 	uint_fast8_t y, 
 	void * pv
 	);
-// Отображение шкалы S-метра и других измерителей
+// РћС‚РѕР±СЂР°Р¶РµРЅРёРµ С€РєР°Р»С‹ S-РјРµС‚СЂР° Рё РґСЂСѓРіРёС… РёР·РјРµСЂРёС‚РµР»РµР№
 static void display2_legend(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
 	void * pv
 	);
-// Отображение шкалы S-метра
+// РћС‚РѕР±СЂР°Р¶РµРЅРёРµ С€РєР°Р»С‹ S-РјРµС‚СЂР°
 static void display2_legend_rx(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
 	void * pv
 	);
-// Отображение шкалы SWR-метра и других измерителе
+// РћС‚РѕР±СЂР°Р¶РµРЅРёРµ С€РєР°Р»С‹ SWR-РјРµС‚СЂР° Рё РґСЂСѓРіРёС… РёР·РјРµСЂРёС‚РµР»Рµ
 static void display2_legend_tx(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
@@ -71,16 +71,16 @@ static void display2_legend_tx(
 
 static PACKEDCOLOR565_T * getscratchpip(void);
 
-// Параметры отображения спектра и водопада
+// РџР°СЂР°РјРµС‚СЂС‹ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ СЃРїРµРєС‚СЂР° Рё РІРѕРґРѕРїР°РґР°
 
-static int_fast16_t glob_gridstep = 10000;	// 10 kHz - шаг сетки
+static int_fast16_t glob_gridstep = 10000;	// 10 kHz - С€Р°Рі СЃРµС‚РєРё
 
 
 // waterfall/spectrum parameters
-static uint_fast8_t glob_fillspect;	/* заливать заполнением площадь под графиком спектра */
-static int_fast16_t glob_topdb = 0;	/* сколько не показывать сверху */
-static int_fast16_t glob_fulldb = 80;	/* высота спектроанализатора */
-static uint_fast8_t glob_zoomx = 1;	/* уменьшение отображаемого участка спектра */
+static uint_fast8_t glob_fillspect;	/* Р·Р°Р»РёРІР°С‚СЊ Р·Р°РїРѕР»РЅРµРЅРёРµРј РїР»РѕС‰Р°РґСЊ РїРѕРґ РіСЂР°С„РёРєРѕРј СЃРїРµРєС‚СЂР° */
+static int_fast16_t glob_topdb = 0;	/* СЃРєРѕР»СЊРєРѕ РЅРµ РїРѕРєР°Р·С‹РІР°С‚СЊ СЃРІРµСЂС…Сѓ */
+static int_fast16_t glob_fulldb = 80;	/* РІС‹СЃРѕС‚Р° СЃРїРµРєС‚СЂРѕР°РЅР°Р»РёР·Р°С‚РѕСЂР° */
+static uint_fast8_t glob_zoomx = 1;	/* СѓРјРµРЅСЊС€РµРЅРёРµ РѕС‚РѕР±СЂР°Р¶Р°РµРјРѕРіРѕ СѓС‡Р°СЃС‚РєР° СЃРїРµРєС‚СЂР° */
 
 //#define WIDEFREQ (TUNE_TOP > 100000000L)
 
@@ -98,7 +98,7 @@ static const FLASHMEM int32_t vals10 [] =
 	1UL,
 };
 
-// Отображение цифр в поле "больших цифр" - индикатор основной частоты настройки аппарата.
+// РћС‚РѕР±СЂР°Р¶РµРЅРёРµ С†РёС„СЂ РІ РїРѕР»Рµ "Р±РѕР»СЊС€РёС… С†РёС„СЂ" - РёРЅРґРёРєР°С‚РѕСЂ РѕСЃРЅРѕРІРЅРѕР№ С‡Р°СЃС‚РѕС‚С‹ РЅР°СЃС‚СЂРѕР№РєРё Р°РїРїР°СЂР°С‚Р°.
 static void 
 NOINLINEAT
 display_value_big(
@@ -107,9 +107,9 @@ display_value_big(
 	uint_fast8_t comma, // = 2;	// comma position (from right, inside width)
 	uint_fast8_t comma2,	// = comma + 3;		// comma position (from right, inside width)
 	uint_fast8_t rj,	// = 1;		// right truncated
-	uint_fast8_t blinkpos,		// позиция, где символ заменён пробелом
-	uint_fast8_t blinkstate,	// 0 - пробел, 1 - курсор
-	uint_fast8_t withhalf,		// 0 - только большие цифры
+	uint_fast8_t blinkpos,		// РїРѕР·РёС†РёСЏ, РіРґРµ СЃРёРјРІРѕР» Р·Р°РјРµРЅС‘РЅ РїСЂРѕР±РµР»РѕРј
+	uint_fast8_t blinkstate,	// 0 - РїСЂРѕР±РµР», 1 - РєСѓСЂСЃРѕСЂ
+	uint_fast8_t withhalf,		// 0 - С‚РѕР»СЊРєРѕ Р±РѕР»СЊС€РёРµ С†РёС„СЂС‹
 	uint_fast8_t lowhalf		// lower half
 	)
 {
@@ -117,18 +117,18 @@ display_value_big(
 	const uint_fast8_t j = (sizeof vals10 /sizeof vals10 [0]) - rj;
 	uint_fast8_t i = (j - width);
 	uint_fast8_t z = 1;	// only zeroes
-	uint_fast8_t half = 0;	// отображаем после второй запатой - маленьким шрифтом
+	uint_fast8_t half = 0;	// РѕС‚РѕР±СЂР°Р¶Р°РµРј РїРѕСЃР»Рµ РІС‚РѕСЂРѕР№ Р·Р°РїР°С‚РѕР№ - РјР°Р»РµРЅСЊРєРёРј С€СЂРёС„С‚РѕРј
 
 	display_wrdatabig_begin();
 	for (; i < j; ++ i)
 	{
 		const ldiv_t res = ldiv(freq, vals10 [i]);
-		const uint_fast8_t g = (j - i);		// десятичная степень текущего разряда на отображении
+		const uint_fast8_t g = (j - i);		// РґРµСЃСЏС‚РёС‡РЅР°СЏ СЃС‚РµРїРµРЅСЊ С‚РµРєСѓС‰РµРіРѕ СЂР°Р·СЂСЏРґР° РЅР° РѕС‚РѕР±СЂР°Р¶РµРЅРёРё
 
-		// разделитель десятков мегагерц
+		// СЂР°Р·РґРµР»РёС‚РµР»СЊ РґРµСЃСЏС‚РєРѕРІ РјРµРіР°РіРµСЂС†
 		if (comma2 == g)
 		{
-			display_put_char_big((z == 0) ? '.' : '#', lowhalf);	// '#' - узкий пробел. Точка всегда узкая
+			display_put_char_big((z == 0) ? '.' : '#', lowhalf);	// '#' - СѓР·РєРёР№ РїСЂРѕР±РµР». РўРѕС‡РєР° РІСЃРµРіРґР° СѓР·РєР°СЏ
 		}
 		else if (comma == g)
 		{
@@ -140,7 +140,7 @@ display_value_big(
 		if (blinkpos == g)
 		{
 			const uint_fast8_t bc = blinkstate ? '_' : ' ';
-			// эта позиция редактирования частоты. Справа от неё включаем все нули
+			// СЌС‚Р° РїРѕР·РёС†РёСЏ СЂРµРґР°РєС‚РёСЂРѕРІР°РЅРёСЏ С‡Р°СЃС‚РѕС‚С‹. РЎРїСЂР°РІР° РѕС‚ РЅРµС‘ РІРєР»СЋС‡Р°РµРј РІСЃРµ РЅСѓР»Рё
 			z = 0;
 			if (half)
 				display_put_char_half(bc, lowhalf);
@@ -179,13 +179,13 @@ display_value_small(
 	const uint_fast8_t wsign = (width & WSIGNFLAG) != 0;
 	const uint_fast8_t wminus = (width & WMINUSFLAG) != 0;
 	const uint_fast8_t j = (sizeof vals10 /sizeof vals10 [0]) - rj;
-	uint_fast8_t i = j - (width & WWIDTHFLAG);	// Номер цифры по порядку
+	uint_fast8_t i = j - (width & WWIDTHFLAG);	// РќРѕРјРµСЂ С†РёС„СЂС‹ РїРѕ РїРѕСЂСЏРґРєСѓ
 	uint_fast8_t z = 1;	// only zeroes
 
 	display_wrdata_begin();
 	if (wsign || wminus)
 	{
-		// отображение со знаком.
+		// РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ СЃРѕ Р·РЅР°РєРѕРј.
 		z = 0;
 		if (freq < 0)
 		{
@@ -201,7 +201,7 @@ display_value_small(
 	{
 		const ldiv_t res = ldiv(freq, vals10 [i]);
 		const uint_fast8_t g = (j - i);
-		// разделитель десятков мегагерц
+		// СЂР°Р·РґРµР»РёС‚РµР»СЊ РґРµСЃСЏС‚РєРѕРІ РјРµРіР°РіРµСЂС†
 		if (comma2 == g)
 		{
 			display_put_char_small((z == 0) ? '.' : ' ', lowhalf);
@@ -225,7 +225,7 @@ display_value_small(
 }
 
 
-// Отображение частоты. Герцы так же большим шрифтом.
+// РћС‚РѕР±СЂР°Р¶РµРЅРёРµ С‡Р°СЃС‚РѕС‚С‹. Р“РµСЂС†С‹ С‚Р°Рє Р¶Рµ Р±РѕР»СЊС€РёРј С€СЂРёС„С‚РѕРј.
 static void display_freqXbig_a(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
@@ -247,7 +247,7 @@ static void display_freqXbig_a(
 		do
 		{
 			display_gotoxy(x, y + lowhalf);
-			display_value_big(efp->freq, fullwidth, comma, comma + 3, rj, efp->blinkpos, efp->blinkstate, 0, lowhalf);	// отрисовываем верхнюю часть строки
+			display_value_big(efp->freq, fullwidth, comma, comma + 3, rj, efp->blinkpos, efp->blinkstate, 0, lowhalf);	// РѕС‚СЂРёСЃРѕРІС‹РІР°РµРј РІРµСЂС…РЅСЋСЋ С‡Р°СЃС‚СЊ СЃС‚СЂРѕРєРё
 		} while (lowhalf --);
 #endif /* WITHDIRECTFREQENER */
 	}
@@ -261,12 +261,12 @@ static void display_freqXbig_a(
 		do
 		{
 			display_gotoxy(x, y + lowhalf);
-			display_value_big(freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 0, lowhalf);	// отрисовываем верхнюю часть строки
+			display_value_big(freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 0, lowhalf);	// РѕС‚СЂРёСЃРѕРІС‹РІР°РµРј РІРµСЂС…РЅСЋСЋ С‡Р°СЃС‚СЊ СЃС‚СЂРѕРєРё
 		} while (lowhalf --);
 	}
 }
 
-// Отображение частоты. Герцы маленьким шрифтом.
+// РћС‚РѕР±СЂР°Р¶РµРЅРёРµ С‡Р°СЃС‚РѕС‚С‹. Р“РµСЂС†С‹ РјР°Р»РµРЅСЊРєРёРј С€СЂРёС„С‚РѕРј.
 static void display_freqX_a(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
@@ -287,7 +287,7 @@ static void display_freqX_a(
 		do
 		{
 			display_gotoxy(x, y + lowhalf);
-			display_value_big(efp->freq, fullwidth, comma, comma + 3, rj, efp->blinkpos, efp->blinkstate, 1, lowhalf);	// отрисовываем верхнюю часть строки
+			display_value_big(efp->freq, fullwidth, comma, comma + 3, rj, efp->blinkpos, efp->blinkstate, 1, lowhalf);	// РѕС‚СЂРёСЃРѕРІС‹РІР°РµРј РІРµСЂС…РЅСЋСЋ С‡Р°СЃС‚СЊ СЃС‚СЂРѕРєРё
 		} while (lowhalf --);
 #endif /* WITHDIRECTFREQENER */
 	}
@@ -301,12 +301,12 @@ static void display_freqX_a(
 		do
 		{
 			display_gotoxy(x, y + lowhalf);
-			display_value_big(freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1, lowhalf);	// отрисовываем верхнюю часть строки
+			display_value_big(freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1, lowhalf);	// РѕС‚СЂРёСЃРѕРІС‹РІР°РµРј РІРµСЂС…РЅСЋСЋ С‡Р°СЃС‚СЊ СЃС‚СЂРѕРєРё
 		} while (lowhalf --);
 	}
 }
 
-// Верстия отображения без точки между мегагерцами и сотнями килогерц (для текстовых дисплееев)
+// Р’РµСЂСЃС‚РёСЏ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ Р±РµР· С‚РѕС‡РєРё РјРµР¶РґСѓ РјРµРіР°РіРµСЂС†Р°РјРё Рё СЃРѕС‚РЅСЏРјРё РєРёР»РѕРіРµСЂС† (РґР»СЏ С‚РµРєСЃС‚РѕРІС‹С… РґРёСЃРїР»РµРµРµРІ)
 // FREQ B
 static void display_freqchr_a(
 	uint_fast8_t x, 
@@ -328,7 +328,7 @@ static void display_freqchr_a(
 		do
 		{
 			display_gotoxy(x, y + lowhalf);
-			display_value_big(efp->freq, fullwidth, comma, 255, rj, efp->blinkpos, efp->blinkstate, 1, lowhalf);	// отрисовываем верхнюю часть строки
+			display_value_big(efp->freq, fullwidth, comma, 255, rj, efp->blinkpos, efp->blinkstate, 1, lowhalf);	// РѕС‚СЂРёСЃРѕРІС‹РІР°РµРј РІРµСЂС…РЅСЋСЋ С‡Р°СЃС‚СЊ СЃС‚СЂРѕРєРё
 		} while (lowhalf --);
 #endif /* WITHDIRECTFREQENER */
 	}
@@ -342,12 +342,12 @@ static void display_freqchr_a(
 		do
 		{
 			display_gotoxy(x, y + lowhalf);
-			display_value_big(freq, fullwidth, comma, 255, rj, blinkpos, blinkstate, 1, lowhalf);	// отрисовываем верхнюю часть строки
+			display_value_big(freq, fullwidth, comma, 255, rj, blinkpos, blinkstate, 1, lowhalf);	// РѕС‚СЂРёСЃРѕРІС‹РІР°РµРј РІРµСЂС…РЅСЋСЋ С‡Р°СЃС‚СЊ СЃС‚СЂРѕРєРё
 		} while (lowhalf --);
 	}
 }
 
-// Верстия отображения без точки между мегагерцами и сотнями килогерц (для текстовых дисплееев)
+// Р’РµСЂСЃС‚РёСЏ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ Р±РµР· С‚РѕС‡РєРё РјРµР¶РґСѓ РјРµРіР°РіРµСЂС†Р°РјРё Рё СЃРѕС‚РЅСЏРјРё РєРёР»РѕРіРµСЂС† (РґР»СЏ С‚РµРєСЃС‚РѕРІС‹С… РґРёСЃРїР»РµРµРµРІ)
 // FREQ B
 static void display_freqchr_b(
 	uint_fast8_t x, 
@@ -370,7 +370,7 @@ static void display_freqchr_b(
 		do
 		{
 			display_gotoxy(x, y + lowhalf);
-			display_value_big(efp->freq, fullwidth, comma, 255, rj, efp->blinkpos, efp->blinkstate, 1, lowhalf);	// отрисовываем верхнюю часть строки
+			display_value_big(efp->freq, fullwidth, comma, 255, rj, efp->blinkpos, efp->blinkstate, 1, lowhalf);	// РѕС‚СЂРёСЃРѕРІС‹РІР°РµРј РІРµСЂС…РЅСЋСЋ С‡Р°СЃС‚СЊ СЃС‚СЂРѕРєРё
 		} while (lowhalf --);
 #endif /* WITHDIRECTFREQENER */
 	}
@@ -385,7 +385,7 @@ static void display_freqchr_b(
 		do
 		{
 			display_gotoxy(x, y + lowhalf);
-			display_value_big(freq, fullwidth, comma, 255, 1, blinkpos, blinkstate, 1, lowhalf);	// отрисовываем верхнюю часть строки
+			display_value_big(freq, fullwidth, comma, 255, 1, blinkpos, blinkstate, 1, lowhalf);	// РѕС‚СЂРёСЃРѕРІС‹РІР°РµРј РІРµСЂС…РЅСЋСЋ С‡Р°СЃС‚СЊ СЃС‚СЂРѕРєРё
 		} while (lowhalf --);
 	}
 }
@@ -411,7 +411,7 @@ static void display_freqX_b(
 	} while (lowhalf --);
 }
 
-// отладочная функция измерителя опорной частоты
+// РѕС‚Р»Р°РґРѕС‡РЅР°СЏ С„СѓРЅРєС†РёСЏ РёР·РјРµСЂРёС‚РµР»СЏ РѕРїРѕСЂРЅРѕР№ С‡Р°СЃС‚РѕС‚С‹
 static void display_freqmeter10(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
@@ -428,15 +428,15 @@ static void display_freqmeter10(
 }
 
 
-// отображение текста (из FLASH) с атрибутами по состоянию
+// РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ С‚РµРєСЃС‚Р° (РёР· FLASH) СЃ Р°С‚СЂРёР±СѓС‚Р°РјРё РїРѕ СЃРѕСЃС‚РѕСЏРЅРёСЋ
 static void 
 NOINLINEAT
 display2_text_P(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	const FLASHMEM char * const * labels,	// массив указателей на текст
-	const COLOR_T * colorsfg,			// массив цветов face
-	const COLOR_T * colorsbg,			// массив цветов background
+	const FLASHMEM char * const * labels,	// РјР°СЃСЃРёРІ СѓРєР°Р·Р°С‚РµР»РµР№ РЅР° С‚РµРєСЃС‚
+	const COLOR_T * colorsfg,			// РјР°СЃСЃРёРІ С†РІРµС‚РѕРІ face
+	const COLOR_T * colorsbg,			// РјР°СЃСЃРёРІ С†РІРµС‚РѕРІ background
 	uint_fast8_t state
 	)
 {
@@ -448,15 +448,15 @@ display2_text_P(
 	display_at_P(x, y, labels [state]);
 }
 
-// отображение текста с атрибутами по состоянию
+// РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ С‚РµРєСЃС‚Р° СЃ Р°С‚СЂРёР±СѓС‚Р°РјРё РїРѕ СЃРѕСЃС‚РѕСЏРЅРёСЋ
 static void 
 NOINLINEAT
 display2_text(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	const char * const * labels,	// массив указателей на текст
-	const COLOR_T * colorsfg,			// массив цветов face
-	const COLOR_T * colorsbg,			// массив цветов background
+	const char * const * labels,	// РјР°СЃСЃРёРІ СѓРєР°Р·Р°С‚РµР»РµР№ РЅР° С‚РµРєСЃС‚
+	const COLOR_T * colorsfg,			// РјР°СЃСЃРёРІ С†РІРµС‚РѕРІ face
+	const COLOR_T * colorsbg,			// РјР°СЃСЃРёРІ С†РІРµС‚РѕРІ background
 	uint_fast8_t state
 	)
 {
@@ -468,7 +468,7 @@ display2_text(
 	display_at(x, y, labels [state]);
 }
 
-// Отображение режимов TX / RX
+// РћС‚РѕР±СЂР°Р¶РµРЅРёРµ СЂРµР¶РёРјРѕРІ TX / RX
 static void display_txrxstatecompact(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
@@ -482,29 +482,29 @@ static void display_txrxstatecompact(
 #endif /* WITHTX */
 }
 
-// todo: учесть LCDMODE_COLORED
+// todo: СѓС‡РµСЃС‚СЊ LCDMODE_COLORED
 
-// параметры отображения состояния прием/пеердача
+// РїР°СЂР°РјРµС‚СЂС‹ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ СЃРѕСЃС‚РѕСЏРЅРёСЏ РїСЂРёРµРј/РїРµРµСЂРґР°С‡Р°
 static const COLOR_T colorsfg_2alarm [2] = { COLOR_BLACK, COLOR_BLACK, };
 static const COLOR_T colorsbg_2alarm [2] = { COLOR_GREEN, COLOR_RED, };
 
-// параметры отображения состояний из трех вариантов
+// РїР°СЂР°РјРµС‚СЂС‹ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ СЃРѕСЃС‚РѕСЏРЅРёР№ РёР· С‚СЂРµС… РІР°СЂРёР°РЅС‚РѕРІ
 static const COLOR_T colorsfg_4state [4] = { COLOR_BLACK, COLOR_WHITE, COLOR_WHITE, COLOR_WHITE, };
 static const COLOR_T colorsbg_4state [4] = { COLOR_GREEN, COLOR_DARKGREEN, COLOR_DARKGREEN, COLOR_DARKGREEN, };
 
-// параметры отображения состояний из двух вариантов
+// РїР°СЂР°РјРµС‚СЂС‹ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ СЃРѕСЃС‚РѕСЏРЅРёР№ РёР· РґРІСѓС… РІР°СЂРёР°РЅС‚РѕРІ
 static const COLOR_T colorsfg_2state [2] = { COLOR_BLACK, COLOR_WHITE, };
 static const COLOR_T colorsbg_2state [2] = { COLOR_GREEN, COLOR_DARKGREEN, };
 
-// параметры отображения текстов без вариантов
+// РїР°СЂР°РјРµС‚СЂС‹ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ С‚РµРєСЃС‚РѕРІ Р±РµР· РІР°СЂРёР°РЅС‚РѕРІ
 static const COLOR_T colorsfg_1state [1] = { COLOR_GREEN, };
-static const COLOR_T colorsbg_1state [1] = { COLOR_BLACK, };	// устанавливается в цвет фона из палитры
+static const COLOR_T colorsbg_1state [1] = { COLOR_BLACK, };	// СѓСЃС‚Р°РЅР°РІР»РёРІР°РµС‚СЃСЏ РІ С†РІРµС‚ С„РѕРЅР° РёР· РїР°Р»РёС‚СЂС‹
 
-// параметры отображения текстов без вариантов
+// РїР°СЂР°РјРµС‚СЂС‹ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ С‚РµРєСЃС‚РѕРІ Р±РµР· РІР°СЂРёР°РЅС‚РѕРІ
 static const COLOR_T colorsfg_1gold [1] = { COLOR_YELLOW, };
-static const COLOR_T colorsbg_1gold [1] = { COLOR_BLACK, };	// устанавливается в цвет фона из палитры
+static const COLOR_T colorsbg_1gold [1] = { COLOR_BLACK, };	// СѓСЃС‚Р°РЅР°РІР»РёРІР°РµС‚СЃСЏ РІ С†РІРµС‚ С„РѕРЅР° РёР· РїР°Р»РёС‚СЂС‹
 
-// Отображение режимов TX / RX
+// РћС‚РѕР±СЂР°Р¶РµРЅРёРµ СЂРµР¶РёРјРѕРІ TX / RX
 static void display_txrxstate2(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
@@ -545,7 +545,7 @@ static void display_recstatus(
 
 #endif /* WITHUSEAUDIOREC */
 }
-// Отображение режима записи аудио фрагмента
+// РћС‚РѕР±СЂР°Р¶РµРЅРёРµ СЂРµР¶РёРјР° Р·Р°РїРёСЃРё Р°СѓРґРёРѕ С„СЂР°РіРјРµРЅС‚Р°
 static void display_rec3(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
@@ -564,7 +564,7 @@ static void display_rec3(
 #endif /* WITHUSEAUDIOREC */
 }
 
-// отображение состояния USB HOST
+// РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ СЃРѕСЃС‚РѕСЏРЅРёСЏ USB HOST
 static void display_usb1(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
@@ -586,7 +586,7 @@ void display_2states(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
 	uint_fast8_t state,
-	const char * state1,	// активное
+	const char * state1,	// Р°РєС‚РёРІРЅРѕРµ
 	const char * state0
 	)
 {
@@ -602,7 +602,7 @@ void display_2states_P(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
 	uint_fast8_t state,
-	const FLASHMEM char * state1,	// активное
+	const FLASHMEM char * state1,	// Р°РєС‚РёРІРЅРѕРµ
 	const FLASHMEM char * state0
 	)
 {
@@ -614,7 +614,7 @@ void display_2states_P(
 	display2_text_P(x, y, labels, colorsfg_2state, colorsbg_2state, state);
 }
 
-// параметры, не меняющие состояния цветом
+// РїР°СЂР°РјРµС‚СЂС‹, РЅРµ РјРµРЅСЏСЋС‰РёРµ СЃРѕСЃС‚РѕСЏРЅРёСЏ С†РІРµС‚РѕРј
 void display_1state_P(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
@@ -624,7 +624,7 @@ void display_1state_P(
 	display2_text_P(x, y, & label, colorsfg_1state, colorsbg_1state, 0);
 }
 
-// параметры, не меняющие состояния цветом
+// РїР°СЂР°РјРµС‚СЂС‹, РЅРµ РјРµРЅСЏСЋС‰РёРµ СЃРѕСЃС‚РѕСЏРЅРёСЏ С†РІРµС‚РѕРј
 void display_1state(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
@@ -644,7 +644,7 @@ static const FLASHMEM char text_nul5_P [] = "     ";
 static const char text_nul3 [] = "   ";
 static const char text_nul5 [] = "     ";
 
-// Отображение режима NR ON/OFF
+// РћС‚РѕР±СЂР°Р¶РµРЅРёРµ СЂРµР¶РёРјР° NR ON/OFF
 static void display_nr3(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
@@ -658,7 +658,7 @@ static void display_nr3(
 #endif /* WITHIF4DSP */
 }
 
-// Отображение режима NOCH ON/OFF
+// РћС‚РѕР±СЂР°Р¶РµРЅРёРµ СЂРµР¶РёРјР° NOCH ON/OFF
 static void display_notch5(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
@@ -672,7 +672,7 @@ static void display_notch5(
 #endif /* WITHNOTCHONOFF || WITHNOTCHFREQ */
 }
 
-// Отображение частоты NOCH
+// РћС‚РѕР±СЂР°Р¶РµРЅРёРµ С‡Р°СЃС‚РѕС‚С‹ NOCH
 static void display_notchfreq5(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
@@ -688,7 +688,7 @@ static void display_notchfreq5(
 #endif /* WITHNOTCHONOFF || WITHNOTCHFREQ */
 }
 
-// Отображение режима NOCH ON/OFF
+// РћС‚РѕР±СЂР°Р¶РµРЅРёРµ СЂРµР¶РёРјР° NOCH ON/OFF
 static void display_notch3(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
@@ -753,7 +753,7 @@ static void display_XXXXX5(
 #endif /* WITHPLACEHOLDERS */
 }
 
-// Отображение режима передачи аудио с USB
+// РћС‚РѕР±СЂР°Р¶РµРЅРёРµ СЂРµР¶РёРјР° РїРµСЂРµРґР°С‡Рё Р°СѓРґРёРѕ СЃ USB
 static void display_datamode4(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
@@ -768,7 +768,7 @@ static void display_datamode4(
 #endif /* WITHTX */
 }
 
-// Отображение режима передачи аудио с USB
+// РћС‚РѕР±СЂР°Р¶РµРЅРёРµ СЂРµР¶РёРјР° РїРµСЂРµРґР°С‡Рё Р°СѓРґРёРѕ СЃ USB
 static void display_datamode3(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
@@ -783,7 +783,7 @@ static void display_datamode3(
 #endif /* WITHTX */
 }
 
-// Отображение режима автонастройки
+// РћС‚РѕР±СЂР°Р¶РµРЅРёРµ СЂРµР¶РёРјР° Р°РІС‚РѕРЅР°СЃС‚СЂРѕР№РєРё
 static void display_atu3(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
@@ -799,7 +799,7 @@ static void display_atu3(
 }
 
 
-// Отображение режима General Coverage / HAM bands
+// РћС‚РѕР±СЂР°Р¶РµРЅРёРµ СЂРµР¶РёРјР° General Coverage / HAM bands
 static void display_genham1(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
@@ -815,7 +815,7 @@ static void display_genham1(
 #endif /* WITHBCBANDS */
 }
 
-// Отображение режима обхода тюнера
+// РћС‚РѕР±СЂР°Р¶РµРЅРёРµ СЂРµР¶РёРјР° РѕР±С…РѕРґР° С‚СЋРЅРµСЂР°
 static void display_byp3(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
@@ -830,7 +830,7 @@ static void display_byp3(
 #endif /* WITHTX */
 }
 
-// Отображение режима VOX
+// РћС‚РѕР±СЂР°Р¶РµРЅРёРµ СЂРµР¶РёРјР° VOX
 static void display_vox3(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
@@ -845,8 +845,8 @@ static void display_vox3(
 #endif /* WITHTX */
 }
 
-// Отображение режимов VOX и TUNE
-// Если VOX не предусмотрен, только TUNE
+// РћС‚РѕР±СЂР°Р¶РµРЅРёРµ СЂРµР¶РёРјРѕРІ VOX Рё TUNE
+// Р•СЃР»Рё VOX РЅРµ РїСЂРµРґСѓСЃРјРѕС‚СЂРµРЅ, С‚РѕР»СЊРєРѕ TUNE
 static void display_voxtune3(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
@@ -882,9 +882,9 @@ static void display_voxtune3(
 #endif /* WITHTX */
 }
 
-// Отображение режимов VOX и TUNE
-// Длинный текст
-// Если VOX не предусмотрен, только TUNE
+// РћС‚РѕР±СЂР°Р¶РµРЅРёРµ СЂРµР¶РёРјРѕРІ VOX Рё TUNE
+// Р”Р»РёРЅРЅС‹Р№ С‚РµРєСЃС‚
+// Р•СЃР»Рё VOX РЅРµ РїСЂРµРґСѓСЃРјРѕС‚СЂРµРЅ, С‚РѕР»СЊРєРѕ TUNE
 static void display_voxtune4(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
@@ -910,9 +910,9 @@ static void display_voxtune4(
 #endif /* WITHTX */
 }
 
-// Отображение режимов VOX и TUNE
-// Однобуквенные обозначения
-// Если VOX не предусмотрен, только TUNE
+// РћС‚РѕР±СЂР°Р¶РµРЅРёРµ СЂРµР¶РёРјРѕРІ VOX Рё TUNE
+// РћРґРЅРѕР±СѓРєРІРµРЅРЅС‹Рµ РѕР±РѕР·РЅР°С‡РµРЅРёСЏ
+// Р•СЃР»Рё VOX РЅРµ РїСЂРµРґСѓСЃРјРѕС‚СЂРµРЅ, С‚РѕР»СЊРєРѕ TUNE
 static void display_voxtune1(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
@@ -991,7 +991,7 @@ static void display_lockstate1(
 	display_at_P(x, y, hamradio_get_lockvalue() ? PSTR("*") : PSTR(" "));
 }
 
-// Отображение PBT
+// РћС‚РѕР±СЂР°Р¶РµРЅРёРµ PBT
 static void display_pbt(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
@@ -1025,7 +1025,7 @@ static void display_rxbw3(
 }
 
 
-// текущее состояние DUAL WATCH
+// С‚РµРєСѓС‰РµРµ СЃРѕСЃС‚РѕСЏРЅРёРµ DUAL WATCH
 static void display_mainsub3(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
@@ -1050,7 +1050,7 @@ static void display_pre3(
 	display2_text_P(x, y, labels, colorsfg_1state, colorsbg_1state, 0);
 }
 
-// переполнение АЦП (надо показывать как REDRM_BARS - с таймерным обновлением)
+// РїРµСЂРµРїРѕР»РЅРµРЅРёРµ РђР¦Рџ (РЅР°РґРѕ РїРѕРєР°Р·С‹РІР°С‚СЊ РєР°Рє REDRM_BARS - СЃ С‚Р°Р№РјРµСЂРЅС‹Рј РѕР±РЅРѕРІР»РµРЅРёРµРј)
 static void display_ovf3(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
@@ -1079,7 +1079,7 @@ static void display_ovf3(
 #endif /* WITHDSPEXTDDC */
 }
 
-// RX preamplifier или переполнение АЦП (надо показывать как REDRM_BARS - с таймерным обновлением)
+// RX preamplifier РёР»Рё РїРµСЂРµРїРѕР»РЅРµРЅРёРµ РђР¦Рџ (РЅР°РґРѕ РїРѕРєР°Р·С‹РІР°С‚СЊ РєР°Рє REDRM_BARS - СЃ С‚Р°Р№РјРµСЂРЅС‹Рј РѕР±РЅРѕРІР»РµРЅРёРµРј)
 static void display_preovf3(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
@@ -1140,7 +1140,7 @@ static void display_hplp2(
 #endif /* WITHPOWERLPHP */
 }
 
-// RX att, при передаче показывает TX
+// RX att, РїСЂРё РїРµСЂРµРґР°С‡Рµ РїРѕРєР°Р·С‹РІР°РµС‚ TX
 static void display_att_tx3(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
@@ -1174,7 +1174,7 @@ static void display_agc4(
 	display_1state_P(x, y, hamradio_get_agc4_value_P());
 }
 
-// VFO mode - одним символом (первым от слова SPLIT или пробелом)
+// VFO mode - РѕРґРЅРёРј СЃРёРјРІРѕР»РѕРј (РїРµСЂРІС‹Рј РѕС‚ СЃР»РѕРІР° SPLIT РёР»Рё РїСЂРѕР±РµР»РѕРј)
 static void display_vfomode1(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
@@ -1226,7 +1226,7 @@ static void display_voltlevelV5(
 	)
 {
 #if WITHVOLTLEVEL && WITHCPUADCHW
-	uint_fast8_t volt = hamradio_get_volt_value();	// Напряжение в сотнях милливольт т.е. 151 = 15.1 вольта
+	uint_fast8_t volt = hamradio_get_volt_value();	// РќР°РїСЂСЏР¶РµРЅРёРµ РІ СЃРѕС‚РЅСЏС… РјРёР»Р»РёРІРѕР»СЊС‚ С‚.Рµ. 151 = 15.1 РІРѕР»СЊС‚Р°
 
 	display_setcolors(colorsfg_1state [0], colorsbg_1state [0]);
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
@@ -1248,7 +1248,7 @@ static void display_voltlevel4(
 	)
 {
 #if WITHVOLTLEVEL && WITHCPUADCHW
-	const uint_fast8_t volt = hamradio_get_volt_value();	// Напряжение в сотнях милливольт т.е. 151 = 15.1 вольта
+	const uint_fast8_t volt = hamradio_get_volt_value();	// РќР°РїСЂСЏР¶РµРЅРёРµ РІ СЃРѕС‚РЅСЏС… РјРёР»Р»РёРІРѕР»СЊС‚ С‚.Рµ. 151 = 15.1 РІРѕР»СЊС‚Р°
 
 	display_setcolors(colorsfg_1state [0], colorsbg_1state [0]);
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
@@ -1260,7 +1260,7 @@ static void display_voltlevel4(
 #endif /* WITHVOLTLEVEL && WITHCPUADCHW */
 }
 
-// отображение целых градусов
+// РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ С†РµР»С‹С… РіСЂР°РґСѓСЃРѕРІ
 static void display_thermo4(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
@@ -1268,7 +1268,7 @@ static void display_thermo4(
 	)
 {
 #if WITHTHERMOLEVEL && WITHCPUADCHW
-	int_fast16_t tempv = hamradio_get_temperature_value() / 10;	// Градусы в десятых долях в целые градусы
+	int_fast16_t tempv = hamradio_get_temperature_value() / 10;	// Р“СЂР°РґСѓСЃС‹ РІ РґРµСЃСЏС‚С‹С… РґРѕР»СЏС… РІ С†РµР»С‹Рµ РіСЂР°РґСѓСЃС‹
 
 	display_setcolors(colorsfg_1state [0], colorsbg_1state [0]);
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
@@ -1277,7 +1277,7 @@ static void display_thermo4(
 		display_gotoxy(x + CHARS2GRID(0), y + lowhalf);	
 		display_value_small(tempv, 3 | WSIGNFLAG, 0, 255, 0, lowhalf);
 		//display_gotoxy(x + CHARS2GRID(4), y + lowhalf);	
-		//display_string_P(PSTR("С"), lowhalf);
+		//display_string_P(PSTR("РЎ"), lowhalf);
 	} while (lowhalf --);
 #endif /* WITHTHERMOLEVEL && WITHCPUADCHW */
 }
@@ -1291,7 +1291,7 @@ static void display_currlevelA6(
 	)
 {
 #if WITHCURRLEVEL && WITHCPUADCHW
-	int_fast16_t drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (до 2.55 ампера), может быть отрицательным
+	int_fast16_t drain = hamradio_get_pacurrent_value();	// РўРѕРє РІ РґРµСЃСЏС‚РєР°С… РјРёР»РёР°РјРїРµСЂ (РґРѕ 2.55 Р°РјРїРµСЂР°), РјРѕР¶РµС‚ Р±С‹С‚СЊ РѕС‚СЂРёС†Р°С‚РµР»СЊРЅС‹Рј
 
 	display_setcolors(colorsfg_1state [0], colorsbg_1state [0]);
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
@@ -1313,7 +1313,7 @@ static void display_currlevel5(
 	)
 {
 #if WITHCURRLEVEL && WITHCPUADCHW
-	int_fast16_t drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (до 2.55 ампера), может быть отрицательным
+	int_fast16_t drain = hamradio_get_pacurrent_value();	// РўРѕРє РІ РґРµСЃСЏС‚РєР°С… РјРёР»РёР°РјРїРµСЂ (РґРѕ 2.55 Р°РјРїРµСЂР°), РјРѕР¶РµС‚ Р±С‹С‚СЊ РѕС‚СЂРёС†Р°С‚РµР»СЊРЅС‹Рј
 
 	display_setcolors(colorsfg_1state [0], colorsbg_1state [0]);
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
@@ -1334,7 +1334,7 @@ static void display_currlevel5alt(
 	)
 {
 #if WITHCURRLEVEL && WITHCPUADCHW
-	int_fast16_t drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (до 2.55 ампера), может быть отрицательным
+	int_fast16_t drain = hamradio_get_pacurrent_value();	// РўРѕРє РІ РґРµСЃСЏС‚РєР°С… РјРёР»РёР°РјРїРµСЂ (РґРѕ 2.55 Р°РјРїРµСЂР°), РјРѕР¶РµС‚ Р±С‹С‚СЊ РѕС‚СЂРёС†Р°С‚РµР»СЊРЅС‹Рј
 
 	display_setcolors(colorsfg_1state [0], colorsbg_1state [0]);
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
@@ -1348,7 +1348,7 @@ static void display_currlevel5alt(
 #endif /* WITHCURRLEVEL && WITHCPUADCHW */
 }
 
-// Отображение уровня сигнала в dBm
+// РћС‚РѕР±СЂР°Р¶РµРЅРёРµ СѓСЂРѕРІРЅСЏ СЃРёРіРЅР°Р»Р° РІ dBm
 static void display_siglevel7(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
@@ -1391,7 +1391,7 @@ static void display_span9(
 
 #endif /* WITHIF4DSP */
 }
-// Отображение уровня сигнала в баллах шкалы S
+// РћС‚РѕР±СЂР°Р¶РµРЅРёРµ СѓСЂРѕРІРЅСЏ СЃРёРіРЅР°Р»Р° РІ Р±Р°Р»Р»Р°С… С€РєР°Р»С‹ S
 // S9+60
 static void display_siglevel5(
 	uint_fast8_t x, 
@@ -1462,8 +1462,8 @@ static void display_freqdelta8(
 {
 #if WITHINTEGRATEDDSP
 	int_fast32_t deltaf;
-	const uint_fast8_t f = dsp_getfreqdelta10(& deltaf, 0);		/* Получить значение отклонения частоты с точностью 0.1 герца для приемника A */
-	deltaf = - deltaf;	// ошибка по частоте преобразуется в расстройку
+	const uint_fast8_t f = dsp_getfreqdelta10(& deltaf, 0);		/* РџРѕР»СѓС‡РёС‚СЊ Р·РЅР°С‡РµРЅРёРµ РѕС‚РєР»РѕРЅРµРЅРёСЏ С‡Р°СЃС‚РѕС‚С‹ СЃ С‚РѕС‡РЅРѕСЃС‚СЊСЋ 0.1 РіРµСЂС†Р° РґР»СЏ РїСЂРёРµРјРЅРёРєР° A */
+	deltaf = - deltaf;	// РѕС€РёР±РєР° РїРѕ С‡Р°СЃС‚РѕС‚Рµ РїСЂРµРѕР±СЂР°Р·СѓРµС‚СЃСЏ РІ СЂР°СЃСЃС‚СЂРѕР№РєСѓ
 	display_setcolors(colorsfg_1state [0], colorsbg_1state [0]);
 	if (f != 0)
 	{
@@ -1481,7 +1481,7 @@ static void display_freqdelta8(
 #endif /* WITHINTEGRATEDDSP */
 }
 
-/* Получить информацию об ошибке настройки в режиме SAM */
+/* РџРѕР»СѓС‡РёС‚СЊ РёРЅС„РѕСЂРјР°С†РёСЋ РѕР± РѕС€РёР±РєРµ РЅР°СЃС‚СЂРѕР№РєРё РІ СЂРµР¶РёРјРµ SAM */
 static void display_samfreqdelta8(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
@@ -1490,8 +1490,8 @@ static void display_samfreqdelta8(
 {
 #if WITHINTEGRATEDDSP
 	int_fast32_t deltaf;
-	const uint_fast8_t f = hamradio_get_samdelta10(& deltaf, 0);		/* Получить значение отклонения частоты с точностью 0.1 герца для приемника A */
-	deltaf = - deltaf;	// ошибка по частоте преобразуется в расстройку
+	const uint_fast8_t f = hamradio_get_samdelta10(& deltaf, 0);		/* РџРѕР»СѓС‡РёС‚СЊ Р·РЅР°С‡РµРЅРёРµ РѕС‚РєР»РѕРЅРµРЅРёСЏ С‡Р°СЃС‚РѕС‚С‹ СЃ С‚РѕС‡РЅРѕСЃС‚СЊСЋ 0.1 РіРµСЂС†Р° РґР»СЏ РїСЂРёРµРјРЅРёРєР° A */
+	deltaf = - deltaf;	// РѕС€РёР±РєР° РїРѕ С‡Р°СЃС‚РѕС‚Рµ РїСЂРµРѕР±СЂР°Р·СѓРµС‚СЃСЏ РІ СЂР°СЃСЃС‚СЂРѕР№РєСѓ
 	display_setcolors(colorsfg_1state [0], colorsbg_1state [0]);
 	if (f != 0)
 	{
@@ -1510,7 +1510,7 @@ static void display_samfreqdelta8(
 }
 
 // d.d - 3 places
-// текущее значение верхней частоты среза НЧ фильтра АМ/ЧМ
+// С‚РµРєСѓС‰РµРµ Р·РЅР°С‡РµРЅРёРµ РІРµСЂС…РЅРµР№ С‡Р°СЃС‚РѕС‚С‹ СЃСЂРµР·Р° РќР§ С„РёР»СЊС‚СЂР° РђРњ/Р§Рњ
 static void display_amfmhighcut4(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
@@ -1519,7 +1519,7 @@ static void display_amfmhighcut4(
 {
 #if WITHAMHIGHKBDADJ
 	uint_fast8_t flag;
-	const uint_fast8_t v = hamradio_get_amfm_highcut10_value(& flag);	// текущее значение верхней частоты среза НЧ фильтра АМ/ЧМ (в десятках герц)
+	const uint_fast8_t v = hamradio_get_amfm_highcut10_value(& flag);	// С‚РµРєСѓС‰РµРµ Р·РЅР°С‡РµРЅРёРµ РІРµСЂС…РЅРµР№ С‡Р°СЃС‚РѕС‚С‹ СЃСЂРµР·Р° РќР§ С„РёР»СЊС‚СЂР° РђРњ/Р§Рњ (РІ РґРµСЃСЏС‚РєР°С… РіРµСЂС†)
 
 	display_setcolors(colorsfg_2state [flag], colorsbg_2state [flag]);
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
@@ -1531,7 +1531,7 @@ static void display_amfmhighcut4(
 #endif /* WITHAMHIGHKBDADJ */
 }
 
-// Печать времени - часы, минуты и секунды
+// РџРµС‡Р°С‚СЊ РІСЂРµРјРµРЅРё - С‡Р°СЃС‹, РјРёРЅСѓС‚С‹ Рё СЃРµРєСѓРЅРґС‹
 static void display_time8(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
@@ -1552,7 +1552,7 @@ static void display_time8(
 #endif /* WITHNMEA */
 }
 
-// Печать времени - только часы и минуты, без секунд
+// РџРµС‡Р°С‚СЊ РІСЂРµРјРµРЅРё - С‚РѕР»СЊРєРѕ С‡Р°СЃС‹ Рё РјРёРЅСѓС‚С‹, Р±РµР· СЃРµРєСѓРЅРґ
 static void display_time5(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
@@ -1566,7 +1566,7 @@ static void display_time5(
 	board_rtc_gettime(& hour, & minute, & secounds);
 	local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("%02d%c%02d"), 
 		hour, 
-		((secounds & 1) ? ' ' : ':'),	// мигающее двоеточие с периодом две секунды
+		((secounds & 1) ? ' ' : ':'),	// РјРёРіР°СЋС‰РµРµ РґРІРѕРµС‚РѕС‡РёРµ СЃ РїРµСЂРёРѕРґРѕРј РґРІРµ СЃРµРєСѓРЅРґС‹
 		minute
 		);
 
@@ -1575,7 +1575,7 @@ static void display_time5(
 #endif /* WITHNMEA */
 }
 
-// Печать времени - только часы и минуты, без секунд
+// РџРµС‡Р°С‚СЊ РІСЂРµРјРµРЅРё - С‚РѕР»СЊРєРѕ С‡Р°СЃС‹ Рё РјРёРЅСѓС‚С‹, Р±РµР· СЃРµРєСѓРЅРґ
 // Jan-01 13:40
 static void display_datetime12(
 	uint_fast8_t x, 
@@ -1611,7 +1611,7 @@ static void display_datetime12(
 		months [month - 1],
 		day,
 		hour, 
-		((secounds & 1) ? ' ' : ':'),	// мигающее двоеточие с периодом две секунды
+		((secounds & 1) ? ' ' : ':'),	// РјРёРіР°СЋС‰РµРµ РґРІРѕРµС‚РѕС‡РёРµ СЃ РїРµСЂРёРѕРґРѕРј РґРІРµ СЃРµРєСѓРЅРґС‹
 		minute
 		);
 
@@ -1622,10 +1622,10 @@ static void display_datetime12(
 
 struct dzone
 {
-	uint_fast8_t x; // левый верхний угол
+	uint_fast8_t x; // Р»РµРІС‹Р№ РІРµСЂС…РЅРёР№ СѓРіРѕР»
 	uint_fast8_t y;
-	void (* redraw)(uint_fast8_t x, uint_fast8_t y, void * pv);	// функция отображения элемента
-	uint_fast8_t key;		// при каких обновлениях перерисовывается этот элемент
+	void (* redraw)(uint_fast8_t x, uint_fast8_t y, void * pv);	// С„СѓРЅРєС†РёСЏ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ СЌР»РµРјРµРЅС‚Р°
+	uint_fast8_t key;		// РїСЂРё РєР°РєРёС… РѕР±РЅРѕРІР»РµРЅРёСЏС… РїРµСЂРµСЂРёСЃРѕРІС‹РІР°РµС‚СЃСЏ СЌС‚РѕС‚ СЌР»РµРјРµРЅС‚
 	uint_fast8_t subset;
 };
 
@@ -1633,7 +1633,7 @@ struct dzone
 
 #define PAGESLEEP 7
 
-#define REDRSUBSET(page)		(1U << (page))	// сдвиги соответствуют номеру отображаемого набора элементов
+#define REDRSUBSET(page)		(1U << (page))	// СЃРґРІРёРіРё СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‚ РЅРѕРјРµСЂСѓ РѕС‚РѕР±СЂР°Р¶Р°РµРјРѕРіРѕ РЅР°Р±РѕСЂР° СЌР»РµРјРµРЅС‚РѕРІ
 
 #define REDRSUBSET_ALL ( \
 		REDRSUBSET(0) | \
@@ -1649,30 +1649,30 @@ struct dzone
 
 enum
 {
-	REDRM_MODE,		// поля меняющиемя при изменении режимов работы, LOCK state
-	REDRM_FREQ,		// индикаторы частоты
-	REDRM_FRQB,	// индикаторы частоты
+	REDRM_MODE,		// РїРѕР»СЏ РјРµРЅСЏСЋС‰РёРµРјСЏ РїСЂРё РёР·РјРµРЅРµРЅРёРё СЂРµР¶РёРјРѕРІ СЂР°Р±РѕС‚С‹, LOCK state
+	REDRM_FREQ,		// РёРЅРґРёРєР°С‚РѕСЂС‹ С‡Р°СЃС‚РѕС‚С‹
+	REDRM_FRQB,	// РёРЅРґРёРєР°С‚РѕСЂС‹ С‡Р°СЃС‚РѕС‚С‹
 	REDRM_BARS,		// S-meter, SWR-meter, voltmeter
-	REDRM_VOLT,		// вольтметр (редко меняющиеся параметры)
+	REDRM_VOLT,		// РІРѕР»СЊС‚РјРµС‚СЂ (СЂРµРґРєРѕ РјРµРЅСЏСЋС‰РёРµСЃСЏ РїР°СЂР°РјРµС‚СЂС‹)
 
-	REDRM_MFXX,		// код редактируемого параметра
-	REDRM_MLBL,		// название редактируемого параметра
-	REDRM_MVAL,		// значение параметра меню
+	REDRM_MFXX,		// РєРѕРґ СЂРµРґР°РєС‚РёСЂСѓРµРјРѕРіРѕ РїР°СЂР°РјРµС‚СЂР°
+	REDRM_MLBL,		// РЅР°Р·РІР°РЅРёРµ СЂРµРґР°РєС‚РёСЂСѓРµРјРѕРіРѕ РїР°СЂР°РјРµС‚СЂР°
+	REDRM_MVAL,		// Р·РЅР°С‡РµРЅРёРµ РїР°СЂР°РјРµС‚СЂР° РјРµРЅСЋ
 	REDRM_count
 };
 
-/* Описания расположения элементов на дисплеях */
+/* РћРїРёСЃР°РЅРёСЏ СЂР°СЃРїРѕР»РѕР¶РµРЅРёСЏ СЌР»РµРјРµРЅС‚РѕРІ РЅР° РґРёСЃРїР»РµСЏС… */
 
 #if DSTYLE_T_X20_Y4
 
 	enum
 	{
-		BDTH_ALLRX = 14,	// ширина зоны для отображение полосы на индикаторе
-		BDTH_RIGHTRX = 5,	// ширина индикатора плюсов
-		BDTH_LEFTRX = BDTH_ALLRX - BDTH_RIGHTRX,	// ширина индикатора баллов
+		BDTH_ALLRX = 14,	// С€РёСЂРёРЅР° Р·РѕРЅС‹ РґР»СЏ РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ РїРѕР»РѕСЃС‹ РЅР° РёРЅРґРёРєР°С‚РѕСЂРµ
+		BDTH_RIGHTRX = 5,	// С€РёСЂРёРЅР° РёРЅРґРёРєР°С‚РѕСЂР° РїР»СЋСЃРѕРІ
+		BDTH_LEFTRX = BDTH_ALLRX - BDTH_RIGHTRX,	// С€РёСЂРёРЅР° РёРЅРґРёРєР°С‚РѕСЂР° Р±Р°Р»Р»РѕРІ
 		BDTH_SPACERX = 0,
 		//
-	#if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
+	#if WITHSHOWSWRPWR	/* РЅР° РґРёСЃРїР»РµРµ РѕРґРЅРѕРІСЂРµРјРµРЅРЅРѕ РѕС‚РѕР±СЂР°Р¶Р°СЋС‚СЃСЏ SWR-meter Рё PWR-meter */
 		BDTH_ALLSWR = 9,
 		BDTH_SPACESWR = 1,
 		BDTH_ALLPWR = 4,
@@ -1684,21 +1684,21 @@ enum
 		BDTH_SPACEPWR = BDTH_SPACERX
 	#endif /* WITHSHOWSWRPWR */
 	};
-	#define SWRMAX	(SWRMIN * 40 / 10)	// 4.0 - значение на полной шкале
+	#define SWRMAX	(SWRMIN * 40 / 10)	// 4.0 - Р·РЅР°С‡РµРЅРёРµ РЅР° РїРѕР»РЅРѕР№ С€РєР°Р»Рµ
 
 	enum {
-		DPAGE0,					// Страница, в которой отображаются основные (или все) 
-		DPAGE1,					// Страница, в которой отображаются основные (или все) 
+		DPAGE0,					// РЎС‚СЂР°РЅРёС†Р°, РІ РєРѕС‚РѕСЂРѕР№ РѕС‚РѕР±СЂР°Р¶Р°СЋС‚СЃСЏ РѕСЃРЅРѕРІРЅС‹Рµ (РёР»Рё РІСЃРµ) 
+		DPAGE1,					// РЎС‚СЂР°РЅРёС†Р°, РІ РєРѕС‚РѕСЂРѕР№ РѕС‚РѕР±СЂР°Р¶Р°СЋС‚СЃСЏ РѕСЃРЅРѕРІРЅС‹Рµ (РёР»Рё РІСЃРµ) 
 		DISPLC_MODCOUNT,
 	};
 	enum {
 		DPAGEEXT = REDRSUBSET(DPAGE0) | REDRSUBSET(DPAGE1)
 	};
-	#define DISPLC_WIDTH	7	// количество цифр в отображении частоты
-	#define DISPLC_RJ		1	// количество скрытых справа цифр в отображении частоты
+	#define DISPLC_WIDTH	7	// РєРѕР»РёС‡РµСЃС‚РІРѕ С†РёС„СЂ РІ РѕС‚РѕР±СЂР°Р¶РµРЅРёРё С‡Р°СЃС‚РѕС‚С‹
+	#define DISPLC_RJ		1	// РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРєСЂС‹С‚С‹С… СЃРїСЂР°РІР° С†РёС„СЂ РІ РѕС‚РѕР±СЂР°Р¶РµРЅРёРё С‡Р°СЃС‚РѕС‚С‹
 	static const FLASHMEM struct dzone dzones [] =
 	{
-		{	0, 0,	display_freqchr_a,	REDRM_FREQ, DPAGEEXT, },	// частота для символьных дисплеев
+		{	0, 0,	display_freqchr_a,	REDRM_FREQ, DPAGEEXT, },	// С‡Р°СЃС‚РѕС‚Р° РґР»СЏ СЃРёРјРІРѕР»СЊРЅС‹С… РґРёСЃРїР»РµРµРІ
 		//{	0, 0,	display_txrxstate2,	REDRM_MODE, DPAGEEXT, },
 		{	9, 0,	display_mode3_a,	REDRM_MODE,	DPAGEEXT, },	// SSB/CW/AM/FM/...
 		{	12, 0,	display_lockstate1,	REDRM_MODE, DPAGEEXT, },
@@ -1711,7 +1711,7 @@ enum
 		{	8, 1,	display_time8,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// TIME
 	#endif /* defined (RTC1_TYPE) */
 	#if WITHUSEDUALWATCH
-		{	0, 1,	display_freqchr_b,	REDRM_FREQ, REDRSUBSET(DPAGE1), },	// частота для символьных дисплеев
+		{	0, 1,	display_freqchr_b,	REDRM_FREQ, REDRSUBSET(DPAGE1), },	// С‡Р°СЃС‚РѕС‚Р° РґР»СЏ СЃРёРјРІРѕР»СЊРЅС‹С… РґРёСЃРїР»РµРµРІ
 		{	17, 1,	display_mainsub3, REDRM_MODE, DPAGEEXT, },	// main/sub RX
 	#endif /* WITHUSEDUALWATCH */
 
@@ -1724,42 +1724,42 @@ enum
 	#endif /* WITHVOLTLEVEL && WITHCURRLEVEL */
 #if WITHIF4DSP
 	#if WITHUSEAUDIOREC
-		{	13, 3,	display_rec3,		REDRM_BARS, DPAGEEXT, },	// Отображение режима записи аудио фрагмента
+		{	13, 3,	display_rec3,		REDRM_BARS, DPAGEEXT, },	// РћС‚РѕР±СЂР°Р¶РµРЅРёРµ СЂРµР¶РёРјР° Р·Р°РїРёСЃРё Р°СѓРґРёРѕ С„СЂР°РіРјРµРЅС‚Р°
 	#endif /* WITHUSEAUDIOREC */
 #endif /* WITHIF4DSP */
 		{	17, 3,	display_agc3,		REDRM_MODE, DPAGEEXT, },
 
 	#if WITHMENU 
-		{	0, 0,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
-		{	0, 1,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
-		{	4, 1,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
-		{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
+		{	0, 0,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// Р·РЅР°С‡РµРЅРёРµ РїР°СЂР°РјРµС‚СЂР°
+		{	0, 1,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// РєРѕРґ СЂРµРґР°РєС‚РёСЂСѓРµРјРѕРіРѕ РїР°СЂР°РјРµС‚СЂР°
+		{	4, 1,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// РЅР°Р·РІР°РЅРёРµ СЂРµРґР°РєС‚РёСЂСѓРµРјРѕРіРѕ РїР°СЂР°РјРµС‚СЂР°
+		{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// СЃРѕСЃС‚РѕСЏРЅРёРµ Р±Р»РѕРєРёСЂРѕРІРєРё РІР°Р»РєРѕРґРµСЂР°
 	#endif /* WITHMENU */
 	};
 
 #elif DSTYLE_T_X20_Y2
 	/*
-		Вот то, как сейчас описан дисплей 2*20, предлагаю внести в это 
-		изменения (вместо рисования картинок) - это будет отдельный, 
-		твой персональный формат.
-		Можно указывать, какой элемент в каком из наборов отображаемых символов находится. 
-		Если есть желание для приёма и передачи сделать разные элементы - укажи это в комментарии, 
-		я дополню. Просто эти замещающие друг друга элементы должны занимать одинаковое 
-		место на экране, затирая старое изображение при переключении режима отображения. 
-		То, что переключается по MENU (REDRSUBSET(0)/REDRSUBSET(1)) - перерисовывается со стиранием экрана.
+		Р’РѕС‚ С‚Рѕ, РєР°Рє СЃРµР№С‡Р°СЃ РѕРїРёСЃР°РЅ РґРёСЃРїР»РµР№ 2*20, РїСЂРµРґР»Р°РіР°СЋ РІРЅРµСЃС‚Рё РІ СЌС‚Рѕ 
+		РёР·РјРµРЅРµРЅРёСЏ (РІРјРµСЃС‚Рѕ СЂРёСЃРѕРІР°РЅРёСЏ РєР°СЂС‚РёРЅРѕРє) - СЌС‚Рѕ Р±СѓРґРµС‚ РѕС‚РґРµР»СЊРЅС‹Р№, 
+		С‚РІРѕР№ РїРµСЂСЃРѕРЅР°Р»СЊРЅС‹Р№ С„РѕСЂРјР°С‚.
+		РњРѕР¶РЅРѕ СѓРєР°Р·С‹РІР°С‚СЊ, РєР°РєРѕР№ СЌР»РµРјРµРЅС‚ РІ РєР°РєРѕРј РёР· РЅР°Р±РѕСЂРѕРІ РѕС‚РѕР±СЂР°Р¶Р°РµРјС‹С… СЃРёРјРІРѕР»РѕРІ РЅР°С…РѕРґРёС‚СЃСЏ. 
+		Р•СЃР»Рё РµСЃС‚СЊ Р¶РµР»Р°РЅРёРµ РґР»СЏ РїСЂРёС‘РјР° Рё РїРµСЂРµРґР°С‡Рё СЃРґРµР»Р°С‚СЊ СЂР°Р·РЅС‹Рµ СЌР»РµРјРµРЅС‚С‹ - СѓРєР°Р¶Рё СЌС‚Рѕ РІ РєРѕРјРјРµРЅС‚Р°СЂРёРё, 
+		СЏ РґРѕРїРѕР»РЅСЋ. РџСЂРѕСЃС‚Рѕ СЌС‚Рё Р·Р°РјРµС‰Р°СЋС‰РёРµ РґСЂСѓРі РґСЂСѓРіР° СЌР»РµРјРµРЅС‚С‹ РґРѕР»Р¶РЅС‹ Р·Р°РЅРёРјР°С‚СЊ РѕРґРёРЅР°РєРѕРІРѕРµ 
+		РјРµСЃС‚Рѕ РЅР° СЌРєСЂР°РЅРµ, Р·Р°С‚РёСЂР°СЏ СЃС‚Р°СЂРѕРµ РёР·РѕР±СЂР°Р¶РµРЅРёРµ РїСЂРё РїРµСЂРµРєР»СЋС‡РµРЅРёРё СЂРµР¶РёРјР° РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ. 
+		РўРѕ, С‡С‚Рѕ РїРµСЂРµРєР»СЋС‡Р°РµС‚СЃСЏ РїРѕ MENU (REDRSUBSET(0)/REDRSUBSET(1)) - РїРµСЂРµСЂРёСЃРѕРІС‹РІР°РµС‚СЃСЏ СЃРѕ СЃС‚РёСЂР°РЅРёРµРј СЌРєСЂР°РЅР°.
 
 	*/
 	enum
 	{
-		BDTH_ALLRX = 12,	// ширина зоны для отображение полосы на индикаторе
-		BDTH_RIGHTRX = 4,	// ширина индикатора плюсов
-		BDTH_LEFTRX = BDTH_ALLRX - BDTH_RIGHTRX,	// ширина индикатора баллов
-		BDTH_SPACERX = 1,		/* количество позиций, затираемых справа от полосы S-метра */
-	#if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
+		BDTH_ALLRX = 12,	// С€РёСЂРёРЅР° Р·РѕРЅС‹ РґР»СЏ РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ РїРѕР»РѕСЃС‹ РЅР° РёРЅРґРёРєР°С‚РѕСЂРµ
+		BDTH_RIGHTRX = 4,	// С€РёСЂРёРЅР° РёРЅРґРёРєР°С‚РѕСЂР° РїР»СЋСЃРѕРІ
+		BDTH_LEFTRX = BDTH_ALLRX - BDTH_RIGHTRX,	// С€РёСЂРёРЅР° РёРЅРґРёРєР°С‚РѕСЂР° Р±Р°Р»Р»РѕРІ
+		BDTH_SPACERX = 1,		/* РєРѕР»РёС‡РµСЃС‚РІРѕ РїРѕР·РёС†РёР№, Р·Р°С‚РёСЂР°РµРјС‹С… СЃРїСЂР°РІР° РѕС‚ РїРѕР»РѕСЃС‹ S-РјРµС‚СЂР° */
+	#if WITHSHOWSWRPWR	/* РЅР° РґРёСЃРїР»РµРµ РѕРґРЅРѕРІСЂРµРјРµРЅРЅРѕ РѕС‚РѕР±СЂР°Р¶Р°СЋС‚СЃСЏ SWR-meter Рё PWR-meter */
 		BDTH_ALLSWR = 6,
-		BDTH_SPACESWR = 1,	/* количество позиций, затираемых справа от полосы SWR-метра */
+		BDTH_SPACESWR = 1,	/* РєРѕР»РёС‡РµСЃС‚РІРѕ РїРѕР·РёС†РёР№, Р·Р°С‚РёСЂР°РµРјС‹С… СЃРїСЂР°РІР° РѕС‚ РїРѕР»РѕСЃС‹ SWR-РјРµС‚СЂР° */
 		BDTH_ALLPWR = 5,
-		BDTH_SPACEPWR = 0	/* количество позиций, затираемых справа от полосы PWR-метра */
+		BDTH_SPACEPWR = 0	/* РєРѕР»РёС‡РµСЃС‚РІРѕ РїРѕР·РёС†РёР№, Р·Р°С‚РёСЂР°РµРјС‹С… СЃРїСЂР°РІР° РѕС‚ РїРѕР»РѕСЃС‹ PWR-РјРµС‚СЂР° */
 	#else /* WITHSHOWSWRPWR */
 		BDTH_ALLSWR = BDTH_ALLRX,
 		BDTH_SPACESWR = BDTH_SPACERX,
@@ -1767,45 +1767,45 @@ enum
 		BDTH_SPACEPWR = BDTH_SPACERX
 	#endif /* WITHSHOWSWRPWR */
 	};
-	#define SWRMAX	(SWRMIN * 40 / 10)	// 4.0 - значение на полной шкале
+	#define SWRMAX	(SWRMIN * 40 / 10)	// 4.0 - Р·РЅР°С‡РµРЅРёРµ РЅР° РїРѕР»РЅРѕР№ С€РєР°Р»Рµ
 
 	enum {
-		DPAGE0,					// Страница, в которой отображаются основные (или все) 
+		DPAGE0,					// РЎС‚СЂР°РЅРёС†Р°, РІ РєРѕС‚РѕСЂРѕР№ РѕС‚РѕР±СЂР°Р¶Р°СЋС‚СЃСЏ РѕСЃРЅРѕРІРЅС‹Рµ (РёР»Рё РІСЃРµ) 
 		DPAGE_SMETER,
 		DPAGE_TIME,
 		DISPLC_MODCOUNT
 	};
-	#define DISPLC_WIDTH	7	// количество цифр в отображении частоты
-	#define DISPLC_RJ		1	// количество скрытых справа цифр в отображении частоты
+	#define DISPLC_WIDTH	7	// РєРѕР»РёС‡РµСЃС‚РІРѕ С†РёС„СЂ РІ РѕС‚РѕР±СЂР°Р¶РµРЅРёРё С‡Р°СЃС‚РѕС‚С‹
+	#define DISPLC_RJ		1	// РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРєСЂС‹С‚С‹С… СЃРїСЂР°РІР° С†РёС„СЂ РІ РѕС‚РѕР±СЂР°Р¶РµРЅРёРё С‡Р°СЃС‚РѕС‚С‹
 	static const FLASHMEM struct dzone dzones [] =
 	{
-		// строка 0
+		// СЃС‚СЂРѕРєР° 0
 		{	0, 0,	display_vfomode3,	REDRM_MODE, REDRSUBSET_ALL, },	// SPLIT
-		{	4, 0,	display_freqchr_a,	REDRM_FREQ, REDRSUBSET_ALL, },	// частота для символьных дисплеев
+		{	4, 0,	display_freqchr_a,	REDRM_FREQ, REDRSUBSET_ALL, },	// С‡Р°СЃС‚РѕС‚Р° РґР»СЏ СЃРёРјРІРѕР»СЊРЅС‹С… РґРёСЃРїР»РµРµРІ
 		{	12, 0,	display_lockstate1,	REDRM_MODE, REDRSUBSET_ALL, },
 		{	13, 0,	display_mode3_a,	REDRM_MODE,	REDRSUBSET_ALL, },	// SSB/CW/AM/FM/...
 		{	17, 0,	display_rxbw3,		REDRM_MODE, REDRSUBSET_ALL, },
-		// строка 1 - постоянные элементы
+		// СЃС‚СЂРѕРєР° 1 - РїРѕСЃС‚РѕСЏРЅРЅС‹Рµ СЌР»РµРјРµРЅС‚С‹
 		{	0, 1,	display_voxtune3,	REDRM_MODE, REDRSUBSET_ALL, },
-		// строка 1
+		// СЃС‚СЂРѕРєР° 1
 		{	4, 1,	display_att_tx3,	REDRM_MODE, REDRSUBSET(DPAGE0), },
 	#if WITHDSPEXTDDC
 		{	9, 1,	display_preovf3,	REDRM_BARS, REDRSUBSET(DPAGE0), },	// ovf/pre
 	#else /* WITHDSPEXTDDC */
 		{	9, 1,	display_pre3,		REDRM_MODE, REDRSUBSET(DPAGE0), },	// pre
 	#endif /* WITHDSPEXTDDC */
-		// строка 1
+		// СЃС‚СЂРѕРєР° 1
 		{	4, 1,	display2_bars,		REDRM_BARS, REDRSUBSET(DPAGE_SMETER), },	// S-METER, SWR-METER, POWER-METER
 		{	4, 1,	display_time8,		REDRM_BARS, REDRSUBSET(DPAGE_TIME), },	// TIME
-		// строка 1 - постоянные элементы
+		// СЃС‚СЂРѕРєР° 1 - РїРѕСЃС‚РѕСЏРЅРЅС‹Рµ СЌР»РµРјРµРЅС‚С‹
 		{	17, 1,	display_agc3,		REDRM_MODE, REDRSUBSET_ALL, },
 
 		//{	0, 0,	display_txrxstate2,	REDRM_MODE, REDRSUBSET_ALL, },
 	#if WITHMENU
-		{	0, 0,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
-		{	0, 1,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
-		{	4, 1,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
-		{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
+		{	0, 0,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// Р·РЅР°С‡РµРЅРёРµ РїР°СЂР°РјРµС‚СЂР°
+		{	0, 1,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// РєРѕРґ СЂРµРґР°РєС‚РёСЂСѓРµРјРѕРіРѕ РїР°СЂР°РјРµС‚СЂР°
+		{	4, 1,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// РЅР°Р·РІР°РЅРёРµ СЂРµРґР°РєС‚РёСЂСѓРµРјРѕРіРѕ РїР°СЂР°РјРµС‚СЂР°
+		{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// СЃРѕСЃС‚РѕСЏРЅРёРµ Р±Р»РѕРєРёСЂРѕРІРєРё РІР°Р»РєРѕРґРµСЂР°
 	#endif /* WITHMENU */
 	};
 
@@ -1813,15 +1813,15 @@ enum
 
 	enum
 	{
-		BDTH_ALLRX = 12,	// ширина зоны для отображение полосы на индикаторе
-		BDTH_RIGHTRX = 4,	// ширина индикатора плюсов
-		BDTH_LEFTRX = BDTH_ALLRX - BDTH_RIGHTRX,	// ширина индикатора баллов
-		BDTH_SPACERX = 1,		/* количество позиций, затираемых справа от полосы S-метра */
-	#if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
+		BDTH_ALLRX = 12,	// С€РёСЂРёРЅР° Р·РѕРЅС‹ РґР»СЏ РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ РїРѕР»РѕСЃС‹ РЅР° РёРЅРґРёРєР°С‚РѕСЂРµ
+		BDTH_RIGHTRX = 4,	// С€РёСЂРёРЅР° РёРЅРґРёРєР°С‚РѕСЂР° РїР»СЋСЃРѕРІ
+		BDTH_LEFTRX = BDTH_ALLRX - BDTH_RIGHTRX,	// С€РёСЂРёРЅР° РёРЅРґРёРєР°С‚РѕСЂР° Р±Р°Р»Р»РѕРІ
+		BDTH_SPACERX = 1,		/* РєРѕР»РёС‡РµСЃС‚РІРѕ РїРѕР·РёС†РёР№, Р·Р°С‚РёСЂР°РµРјС‹С… СЃРїСЂР°РІР° РѕС‚ РїРѕР»РѕСЃС‹ S-РјРµС‚СЂР° */
+	#if WITHSHOWSWRPWR	/* РЅР° РґРёСЃРїР»РµРµ РѕРґРЅРѕРІСЂРµРјРµРЅРЅРѕ РѕС‚РѕР±СЂР°Р¶Р°СЋС‚СЃСЏ SWR-meter Рё PWR-meter */
 		BDTH_ALLSWR = 6,
-		BDTH_SPACESWR = 1,	/* количество позиций, затираемых справа от полосы SWR-метра */
+		BDTH_SPACESWR = 1,	/* РєРѕР»РёС‡РµСЃС‚РІРѕ РїРѕР·РёС†РёР№, Р·Р°С‚РёСЂР°РµРјС‹С… СЃРїСЂР°РІР° РѕС‚ РїРѕР»РѕСЃС‹ SWR-РјРµС‚СЂР° */
 		BDTH_ALLPWR = 5,
-		BDTH_SPACEPWR = 0	/* количество позиций, затираемых справа от полосы PWR-метра */
+		BDTH_SPACEPWR = 0	/* РєРѕР»РёС‡РµСЃС‚РІРѕ РїРѕР·РёС†РёР№, Р·Р°С‚РёСЂР°РµРјС‹С… СЃРїСЂР°РІР° РѕС‚ РїРѕР»РѕСЃС‹ PWR-РјРµС‚СЂР° */
 	#else /* WITHSHOWSWRPWR */
 		BDTH_ALLSWR = BDTH_ALLRX,
 		BDTH_SPACESWR = BDTH_SPACERX,
@@ -1829,27 +1829,27 @@ enum
 		BDTH_SPACEPWR = BDTH_SPACERX
 	#endif /* WITHSHOWSWRPWR */
 	};
-	#define SWRMAX	(SWRMIN * 40 / 10)	// 4.0 - значение на полной шкале
+	#define SWRMAX	(SWRMIN * 40 / 10)	// 4.0 - Р·РЅР°С‡РµРЅРёРµ РЅР° РїРѕР»РЅРѕР№ С€РєР°Р»Рµ
 
 	enum {
-		DPAGE0,					// Страница, в которой отображаются основные (или все) 
-		DPAGE1 = 0,					// Страница, в которой отображаются основные (или все) 
+		DPAGE0,					// РЎС‚СЂР°РЅРёС†Р°, РІ РєРѕС‚РѕСЂРѕР№ РѕС‚РѕР±СЂР°Р¶Р°СЋС‚СЃСЏ РѕСЃРЅРѕРІРЅС‹Рµ (РёР»Рё РІСЃРµ) 
+		DPAGE1 = 0,					// РЎС‚СЂР°РЅРёС†Р°, РІ РєРѕС‚РѕСЂРѕР№ РѕС‚РѕР±СЂР°Р¶Р°СЋС‚СЃСЏ РѕСЃРЅРѕРІРЅС‹Рµ (РёР»Рё РІСЃРµ) 
 		DISPLC_MODCOUNT
 	};
-	#define DISPLC_WIDTH	7	// количество цифр в отображении частоты
-	#define DISPLC_RJ		1	// количество скрытых справа цифр в отображении частоты
+	#define DISPLC_WIDTH	7	// РєРѕР»РёС‡РµСЃС‚РІРѕ С†РёС„СЂ РІ РѕС‚РѕР±СЂР°Р¶РµРЅРёРё С‡Р°СЃС‚РѕС‚С‹
+	#define DISPLC_RJ		1	// РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРєСЂС‹С‚С‹С… СЃРїСЂР°РІР° С†РёС„СЂ РІ РѕС‚РѕР±СЂР°Р¶РµРЅРёРё С‡Р°СЃС‚РѕС‚С‹
 	static const FLASHMEM struct dzone dzones [] =
 	{
 		{	0, 0,	display_vfomode3,	REDRM_MODE, REDRSUBSET(DPAGE0) | REDRSUBSET(DPAGE1), },	// SPLIT
-		{	4, 0,	display_freqchr_a,	REDRM_FREQ, REDRSUBSET(DPAGE0) | REDRSUBSET(DPAGE1), },	// частота для символьных дисплеев
+		{	4, 0,	display_freqchr_a,	REDRM_FREQ, REDRSUBSET(DPAGE0) | REDRSUBSET(DPAGE1), },	// С‡Р°СЃС‚РѕС‚Р° РґР»СЏ СЃРёРјРІРѕР»СЊРЅС‹С… РґРёСЃРїР»РµРµРІ
 		{	12, 0,	display_lockstate1, REDRM_MODE, REDRSUBSET(DPAGE0) | REDRSUBSET(DPAGE1), },
 		{	4, 1,	display2_bars,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// S-METER, SWR-METER, POWER-METER
 		//{	0, 1, display_pbt,		REDRM_BARS, REDRSUBSET(DPAGE1), },	// PBT +00.00
 	#if WITHMENU
-		{	0, 0,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
-		{	0, 1,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
-		{	4, 1,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
-		{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
+		{	0, 0,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// Р·РЅР°С‡РµРЅРёРµ РїР°СЂР°РјРµС‚СЂР°
+		{	0, 1,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// РєРѕРґ СЂРµРґР°РєС‚РёСЂСѓРµРјРѕРіРѕ РїР°СЂР°РјРµС‚СЂР°
+		{	4, 1,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// РЅР°Р·РІР°РЅРёРµ СЂРµРґР°РєС‚РёСЂСѓРµРјРѕРіРѕ РїР°СЂР°РјРµС‚СЂР°
+		{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// СЃРѕСЃС‚РѕСЏРЅРёРµ Р±Р»РѕРєРёСЂРѕРІРєРё РІР°Р»РєРѕРґРµСЂР°
 	#endif /* WITHMENU */
 	};
 
@@ -1857,12 +1857,12 @@ enum
 
 	enum
 	{
-		BDTH_ALLRX = 12,	// ширина зоны для отображение полосы на индикаторе
-		BDTH_RIGHTRX = 4,	// ширина индикатора плюсов
-		BDTH_LEFTRX = BDTH_ALLRX - BDTH_RIGHTRX,	// ширина индикатора баллов
+		BDTH_ALLRX = 12,	// С€РёСЂРёРЅР° Р·РѕРЅС‹ РґР»СЏ РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ РїРѕР»РѕСЃС‹ РЅР° РёРЅРґРёРєР°С‚РѕСЂРµ
+		BDTH_RIGHTRX = 4,	// С€РёСЂРёРЅР° РёРЅРґРёРєР°С‚РѕСЂР° РїР»СЋСЃРѕРІ
+		BDTH_LEFTRX = BDTH_ALLRX - BDTH_RIGHTRX,	// С€РёСЂРёРЅР° РёРЅРґРёРєР°С‚РѕСЂР° Р±Р°Р»Р»РѕРІ
 		BDTH_SPACERX = 0,
 		//
-	#if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
+	#if WITHSHOWSWRPWR	/* РЅР° РґРёСЃРїР»РµРµ РѕРґРЅРѕРІСЂРµРјРµРЅРЅРѕ РѕС‚РѕР±СЂР°Р¶Р°СЋС‚СЃСЏ SWR-meter Рё PWR-meter */
 		BDTH_ALLSWR = 7,
 		BDTH_SPACESWR = 1,
 		BDTH_ALLPWR = 4,
@@ -1874,29 +1874,29 @@ enum
 		BDTH_SPACEPWR = BDTH_SPACERX
 	#endif /* WITHSHOWSWRPWR */
 	};
-	#define SWRMAX	40	// 4.0 - значение на полной шкале
+	#define SWRMAX	40	// 4.0 - Р·РЅР°С‡РµРЅРёРµ РЅР° РїРѕР»РЅРѕР№ С€РєР°Р»Рµ
 	enum {
-		DPAGE0,					// Страница, в которой отображаются основные (или все) 
+		DPAGE0,					// РЎС‚СЂР°РЅРёС†Р°, РІ РєРѕС‚РѕСЂРѕР№ РѕС‚РѕР±СЂР°Р¶Р°СЋС‚СЃСЏ РѕСЃРЅРѕРІРЅС‹Рµ (РёР»Рё РІСЃРµ) 
 		//
 		DISPLC_MODCOUNT
 	};
-	#define DISPLC_WIDTH	7	// количество цифр в отображении частоты
-	#define DISPLC_RJ		1	// количество скрытых справа цифр в отображении частоты
+	#define DISPLC_WIDTH	7	// РєРѕР»РёС‡РµСЃС‚РІРѕ С†РёС„СЂ РІ РѕС‚РѕР±СЂР°Р¶РµРЅРёРё С‡Р°СЃС‚РѕС‚С‹
+	#define DISPLC_RJ		1	// РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРєСЂС‹С‚С‹С… СЃРїСЂР°РІР° С†РёС„СЂ РІ РѕС‚РѕР±СЂР°Р¶РµРЅРёРё С‡Р°СЃС‚РѕС‚С‹
 	static const FLASHMEM struct dzone dzones [] =
 	{
-		{	0, 0,	display_freqchr_a,	REDRM_FREQ, REDRSUBSET_ALL, },	// частота для символьных дисплеев
+		{	0, 0,	display_freqchr_a,	REDRM_FREQ, REDRSUBSET_ALL, },	// С‡Р°СЃС‚РѕС‚Р° РґР»СЏ СЃРёРјРІРѕР»СЊРЅС‹С… РґРёСЃРїР»РµРµРІ
 	};
 
 #elif DSTYLE_T_X16_Y2 && CTLSTYLE_RA4YBO_AM0
 
 	enum
 	{
-		BDTH_ALLRX = 15,	// ширина зоны для отображение полосы на индикаторе
-		BDTH_RIGHTRX = 5,	// ширина индикатора плюсов
-		BDTH_LEFTRX = BDTH_ALLRX - BDTH_RIGHTRX,	// ширина индикатора баллов
+		BDTH_ALLRX = 15,	// С€РёСЂРёРЅР° Р·РѕРЅС‹ РґР»СЏ РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ РїРѕР»РѕСЃС‹ РЅР° РёРЅРґРёРєР°С‚РѕСЂРµ
+		BDTH_RIGHTRX = 5,	// С€РёСЂРёРЅР° РёРЅРґРёРєР°С‚РѕСЂР° РїР»СЋСЃРѕРІ
+		BDTH_LEFTRX = BDTH_ALLRX - BDTH_RIGHTRX,	// С€РёСЂРёРЅР° РёРЅРґРёРєР°С‚РѕСЂР° Р±Р°Р»Р»РѕРІ
 		BDTH_SPACERX = 0,
 		//
-	#if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
+	#if WITHSHOWSWRPWR	/* РЅР° РґРёСЃРїР»РµРµ РѕРґРЅРѕРІСЂРµРјРµРЅРЅРѕ РѕС‚РѕР±СЂР°Р¶Р°СЋС‚СЃСЏ SWR-meter Рё PWR-meter */
 		BDTH_ALLSWR = 7,
 		BDTH_SPACESWR = 1,
 		BDTH_ALLPWR = 7,
@@ -1908,25 +1908,25 @@ enum
 		BDTH_SPACEPWR = BDTH_SPACERX
 	#endif /* WITHSHOWSWRPWR */
 	};
-	#define SWRMAX	40	// 4.0 - значение на полной шкале
+	#define SWRMAX	40	// 4.0 - Р·РЅР°С‡РµРЅРёРµ РЅР° РїРѕР»РЅРѕР№ С€РєР°Р»Рµ
 	enum {
-		DPAGE0,					// Страница, в которой отображаются основные (или все) 
+		DPAGE0,					// РЎС‚СЂР°РЅРёС†Р°, РІ РєРѕС‚РѕСЂРѕР№ РѕС‚РѕР±СЂР°Р¶Р°СЋС‚СЃСЏ РѕСЃРЅРѕРІРЅС‹Рµ (РёР»Рё РІСЃРµ) 
 		//
 		DISPLC_MODCOUNT
 	};
 
-	#define DISPLC_WIDTH	6	// количество цифр в отображении частоты
-	#define DISPLC_RJ		1	// количество скрытых справа цифр в отображении частоты
+	#define DISPLC_WIDTH	6	// РєРѕР»РёС‡РµСЃС‚РІРѕ С†РёС„СЂ РІ РѕС‚РѕР±СЂР°Р¶РµРЅРёРё С‡Р°СЃС‚РѕС‚С‹
+	#define DISPLC_RJ		1	// РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРєСЂС‹С‚С‹С… СЃРїСЂР°РІР° С†РёС„СЂ РІ РѕС‚РѕР±СЂР°Р¶РµРЅРёРё С‡Р°СЃС‚РѕС‚С‹
 	static const FLASHMEM struct dzone dzones [] =
 	{
-		{	0, 0,	display_freqchr_a,	REDRM_FREQ, REDRSUBSET(DPAGE0), },	// частота для символьных дисплеев
+		{	0, 0,	display_freqchr_a,	REDRM_FREQ, REDRSUBSET(DPAGE0), },	// С‡Р°СЃС‚РѕС‚Р° РґР»СЏ СЃРёРјРІРѕР»СЊРЅС‹С… РґРёСЃРїР»РµРµРІ
 		{	8, 0,	display_att4,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 		{	13, 0,	display_rxbw3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 		{	1, 1,	display2_bars_amv0,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// S-METER, SWR-METER, POWER-METER
 	#if WITHMENU 
-		{	0, 0,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
-		{	0, 1,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
-		{	4, 1,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
+		{	0, 0,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// Р·РЅР°С‡РµРЅРёРµ РїР°СЂР°РјРµС‚СЂР°
+		{	0, 1,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// РєРѕРґ СЂРµРґР°РєС‚РёСЂСѓРµРјРѕРіРѕ РїР°СЂР°РјРµС‚СЂР°
+		{	4, 1,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// РЅР°Р·РІР°РЅРёРµ СЂРµРґР°РєС‚РёСЂСѓРµРјРѕРіРѕ РїР°СЂР°РјРµС‚СЂР°
 	#endif /* WITHMENU */
 	};
 
@@ -1934,12 +1934,12 @@ enum
 
 	enum
 	{
-		BDTH_ALLRX = 16,	// ширина зоны для отображение полосы на индикаторе
-		BDTH_RIGHTRX = 5,	// ширина индикатора плюсов
-		BDTH_LEFTRX = BDTH_ALLRX - BDTH_RIGHTRX,	// ширина индикатора баллов
+		BDTH_ALLRX = 16,	// С€РёСЂРёРЅР° Р·РѕРЅС‹ РґР»СЏ РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ РїРѕР»РѕСЃС‹ РЅР° РёРЅРґРёРєР°С‚РѕСЂРµ
+		BDTH_RIGHTRX = 5,	// С€РёСЂРёРЅР° РёРЅРґРёРєР°С‚РѕСЂР° РїР»СЋСЃРѕРІ
+		BDTH_LEFTRX = BDTH_ALLRX - BDTH_RIGHTRX,	// С€РёСЂРёРЅР° РёРЅРґРёРєР°С‚РѕСЂР° Р±Р°Р»Р»РѕРІ
 		BDTH_SPACERX = 0,
 		//
-	#if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
+	#if WITHSHOWSWRPWR	/* РЅР° РґРёСЃРїР»РµРµ РѕРґРЅРѕРІСЂРµРјРµРЅРЅРѕ РѕС‚РѕР±СЂР°Р¶Р°СЋС‚СЃСЏ SWR-meter Рё PWR-meter */
 		BDTH_ALLSWR = 7,
 		BDTH_SPACESWR = 1,
 		BDTH_ALLPWR = 8,
@@ -1951,10 +1951,10 @@ enum
 		BDTH_SPACEPWR = BDTH_SPACERX
 	#endif /* WITHSHOWSWRPWR */
 	};
-	#define SWRMAX	40	// 4.0 - значение на полной шкале
+	#define SWRMAX	40	// 4.0 - Р·РЅР°С‡РµРЅРёРµ РЅР° РїРѕР»РЅРѕР№ С€РєР°Р»Рµ
 	enum {
-		DPAGE0,					// Страница, в которой отображаются основные (или все) 
-		DPAGE_SMETER,			// Страница с отображением S-метра, SWR-метра
+		DPAGE0,					// РЎС‚СЂР°РЅРёС†Р°, РІ РєРѕС‚РѕСЂРѕР№ РѕС‚РѕР±СЂР°Р¶Р°СЋС‚СЃСЏ РѕСЃРЅРѕРІРЅС‹Рµ (РёР»Рё РІСЃРµ) 
+		DPAGE_SMETER,			// РЎС‚СЂР°РЅРёС†Р° СЃ РѕС‚РѕР±СЂР°Р¶РµРЅРёРµРј S-РјРµС‚СЂР°, SWR-РјРµС‚СЂР°
 	#if WITHUSEAUDIOREC
 		//DPAGE_SDCARD,
 	#endif /* WITHUSEAUDIOREC */
@@ -1973,17 +1973,17 @@ enum
 		//
 		DISPLC_MODCOUNT
 	};
-	#define DISPLC_WIDTH	7	// количество цифр в отображении частоты
-	#define DISPLC_RJ		1	// количество скрытых справа цифр в отображении частоты
+	#define DISPLC_WIDTH	7	// РєРѕР»РёС‡РµСЃС‚РІРѕ С†РёС„СЂ РІ РѕС‚РѕР±СЂР°Р¶РµРЅРёРё С‡Р°СЃС‚РѕС‚С‹
+	#define DISPLC_RJ		1	// РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРєСЂС‹С‚С‹С… СЃРїСЂР°РІР° С†РёС„СЂ РІ РѕС‚РѕР±СЂР°Р¶РµРЅРёРё С‡Р°СЃС‚РѕС‚С‹
 	static const FLASHMEM struct dzone dzones [] =
 	{
-		{	0, 0,	display_freqchr_a,	REDRM_FREQ, REDRSUBSET_ALL, },	// частота для символьных дисплеев
+		{	0, 0,	display_freqchr_a,	REDRM_FREQ, REDRSUBSET_ALL, },	// С‡Р°СЃС‚РѕС‚Р° РґР»СЏ СЃРёРјРІРѕР»СЊРЅС‹С… РґРёСЃРїР»РµРµРІ
 		{	8, 0,	display_lockstate1, REDRM_MODE, REDRSUBSET_ALL, },
 		{	9, 0,	display_mode3_a,	REDRM_MODE,	REDRSUBSET_ALL, },	// SSB/CW/AM/FM/...
 		{	13, 0,	display_rxbw3,		REDRM_MODE, REDRSUBSET_ALL, },
 
 		{	0, 1,	display_vfomode3,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// SPLIT
-		{	4, 1,	display_att_tx3,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// при скрытом s-metre, при передаче показывает TX
+		{	4, 1,	display_att_tx3,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// РїСЂРё СЃРєСЂС‹С‚РѕРј s-metre, РїСЂРё РїРµСЂРµРґР°С‡Рµ РїРѕРєР°Р·С‹РІР°РµС‚ TX
 	#if WITHDSPEXTDDC
 		{	9, 1,	display_preovf3,	REDRM_BARS, REDRSUBSET(DPAGE0), },	// ovf/pre
 	#else /* WITHDSPEXTDDC */
@@ -1991,7 +1991,7 @@ enum
 	#endif /* WITHDSPEXTDDC */
 #if WITHIF4DSP
 	#if WITHUSEAUDIOREC
-		{	13, 1,	display_rec3,		REDRM_BARS, REDRSUBSET(DPAGE0) /*| REDRSUBSET(DPAGE_SMETER)*/, },	// Отображение режима записи аудио фрагмента
+		{	13, 1,	display_rec3,		REDRM_BARS, REDRSUBSET(DPAGE0) /*| REDRSUBSET(DPAGE_SMETER)*/, },	// РћС‚РѕР±СЂР°Р¶РµРЅРёРµ СЂРµР¶РёРјР° Р·Р°РїРёСЃРё Р°СѓРґРёРѕ С„СЂР°РіРјРµРЅС‚Р°
 	#endif /* WITHUSEAUDIOREC */
 #else /* WITHIF4DSP */
 		{	13, 1,	display_agc3,		REDRM_MODE, REDRSUBSET(DPAGE0) /*| REDRSUBSET(DPAGE_SMETER)*/, },
@@ -2004,7 +2004,7 @@ enum
 		{	6, 1,	display_currlevelA6, REDRM_VOLT, REDRSUBSET(DPAGE_VOLTS), },	// amphermeter with "A"
 	#endif /* WITHVOLTLEVEL && WITHCURRLEVEL */
 	#if WITHMODEM
-		{	0, 1,	display_freqdelta8, REDRM_BARS, REDRSUBSET(DPAGE_BPSK), },	// выход ЧМ демодулятора
+		{	0, 1,	display_freqdelta8, REDRM_BARS, REDRSUBSET(DPAGE_BPSK), },	// РІС‹С…РѕРґ Р§Рњ РґРµРјРѕРґСѓР»СЏС‚РѕСЂР°
 	#endif /* WITHMODEM */
 	#if WITHUSEDUALWATCH
 		{	0, 1,	display_freqchr_b,	REDRM_FREQ, REDRSUBSET(DPAGE_SUBRX), },	// FREQ B
@@ -2014,7 +2014,7 @@ enum
 
 	//#if WITHUSEAUDIOREC
 	//	{	0, 1,	display_recstatus,	REDRM_BARS, REDRSUBSET(DPAGE_SDCARD), },	// recording debug information
-	//	{	13, 1,	display_rec3,		REDRM_BARS, REDRSUBSET(DPAGE_SDCARD), },	// Отображение режима записи аудио фрагмента
+	//	{	13, 1,	display_rec3,		REDRM_BARS, REDRSUBSET(DPAGE_SDCARD), },	// РћС‚РѕР±СЂР°Р¶РµРЅРёРµ СЂРµР¶РёРјР° Р·Р°РїРёСЃРё Р°СѓРґРёРѕ С„СЂР°РіРјРµРЅС‚Р°
 	//#endif /* WITHUSEAUDIOREC */
 
 	#if defined (RTC1_TYPE)
@@ -2023,7 +2023,7 @@ enum
 		{	9, 1,	display_mainsub3,	REDRM_BARS, REDRSUBSET(DPAGE_TIME), },	// main/sub RX
 	#endif /* WITHUSEDUALWATCH */
 	#if WITHUSEAUDIOREC
-		{	13, 1,	display_rec3,		REDRM_BARS, REDRSUBSET(DPAGE_TIME), },	// Отображение режима записи аудио фрагмента
+		{	13, 1,	display_rec3,		REDRM_BARS, REDRSUBSET(DPAGE_TIME), },	// РћС‚РѕР±СЂР°Р¶РµРЅРёРµ СЂРµР¶РёРјР° Р·Р°РїРёСЃРё Р°СѓРґРёРѕ С„СЂР°РіРјРµРЅС‚Р°
 	#endif /* WITHUSEAUDIOREC */
 	#endif /* defined (RTC1_TYPE) */
 
@@ -2031,10 +2031,10 @@ enum
 		//{	0, 0,	display_txrxstate2,	REDRM_MODE, REDRSUBSET_ALL, },
 		//{	0, 0,	display_voxtune3,	REDRM_MODE, REDRSUBSET_ALL, },
 	#if WITHMENU
-		{	0, 0,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
-		{	0, 1,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
-		{	4, 1,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
-		{	15, 0,	display_lockstate1,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
+		{	0, 0,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// Р·РЅР°С‡РµРЅРёРµ РїР°СЂР°РјРµС‚СЂР°
+		{	0, 1,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// РєРѕРґ СЂРµРґР°РєС‚РёСЂСѓРµРјРѕРіРѕ РїР°СЂР°РјРµС‚СЂР°
+		{	4, 1,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// РЅР°Р·РІР°РЅРёРµ СЂРµРґР°РєС‚РёСЂСѓРµРјРѕРіРѕ РїР°СЂР°РјРµС‚СЂР°
+		{	15, 0,	display_lockstate1,	REDRM_MODE, REDRSUBSET_MENU, },	// СЃРѕСЃС‚РѕСЏРЅРёРµ Р±Р»РѕРєРёСЂРѕРІРєРё РІР°Р»РєРѕРґРµСЂР°
 	#endif /* WITHMENU */
 	};
 
@@ -2042,12 +2042,12 @@ enum
 
 	enum
 	{
-		BDTH_ALLRX = 14,	// ширина зоны для отображение полосы на индикаторе
-		BDTH_RIGHTRX = 5,	// ширина индикатора плюсов
-		BDTH_LEFTRX = BDTH_ALLRX - BDTH_RIGHTRX,	// ширина индикатора баллов
+		BDTH_ALLRX = 14,	// С€РёСЂРёРЅР° Р·РѕРЅС‹ РґР»СЏ РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ РїРѕР»РѕСЃС‹ РЅР° РёРЅРґРёРєР°С‚РѕСЂРµ
+		BDTH_RIGHTRX = 5,	// С€РёСЂРёРЅР° РёРЅРґРёРєР°С‚РѕСЂР° РїР»СЋСЃРѕРІ
+		BDTH_LEFTRX = BDTH_ALLRX - BDTH_RIGHTRX,	// С€РёСЂРёРЅР° РёРЅРґРёРєР°С‚РѕСЂР° Р±Р°Р»Р»РѕРІ
 		BDTH_SPACERX = 0,
 		//
-	#if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
+	#if WITHSHOWSWRPWR	/* РЅР° РґРёСЃРїР»РµРµ РѕРґРЅРѕРІСЂРµРјРµРЅРЅРѕ РѕС‚РѕР±СЂР°Р¶Р°СЋС‚СЃСЏ SWR-meter Рё PWR-meter */
 		BDTH_ALLSWR = 9,
 		BDTH_SPACESWR = 1,
 		BDTH_ALLPWR = 4,
@@ -2059,23 +2059,23 @@ enum
 		BDTH_SPACEPWR = BDTH_SPACERX
 	#endif /* WITHSHOWSWRPWR */
 	};
-	#define SWRMAX	40	// 4.0 - значение на полной шкале
+	#define SWRMAX	40	// 4.0 - Р·РЅР°С‡РµРЅРёРµ РЅР° РїРѕР»РЅРѕР№ С€РєР°Р»Рµ
 
 	enum {
-		DPAGE0,					// Страница, в которой отображаются основные (или все) 
+		DPAGE0,					// РЎС‚СЂР°РЅРёС†Р°, РІ РєРѕС‚РѕСЂРѕР№ РѕС‚РѕР±СЂР°Р¶Р°СЋС‚СЃСЏ РѕСЃРЅРѕРІРЅС‹Рµ (РёР»Рё РІСЃРµ) 
 		DISPLC_MODCOUNT
 	};
-	#define DISPLC_WIDTH	7	// количество цифр в отображении частоты
-	#define DISPLC_RJ		1	// количество скрытых справа цифр в отображении частоты
+	#define DISPLC_WIDTH	7	// РєРѕР»РёС‡РµСЃС‚РІРѕ С†РёС„СЂ РІ РѕС‚РѕР±СЂР°Р¶РµРЅРёРё С‡Р°СЃС‚РѕС‚С‹
+	#define DISPLC_RJ		1	// РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРєСЂС‹С‚С‹С… СЃРїСЂР°РІР° С†РёС„СЂ РІ РѕС‚РѕР±СЂР°Р¶РµРЅРёРё С‡Р°СЃС‚РѕС‚С‹
 	static const FLASHMEM struct dzone dzones [] =
 	{
-		{	0, 0,	display_freqchr_a,	REDRM_FREQ, REDRSUBSET_ALL, },	// частота для символьных дисплеев
+		{	0, 0,	display_freqchr_a,	REDRM_FREQ, REDRSUBSET_ALL, },	// С‡Р°СЃС‚РѕС‚Р° РґР»СЏ СЃРёРјРІРѕР»СЊРЅС‹С… РґРёСЃРїР»РµРµРІ
 		{	8, 0,	display_lockstate1, REDRM_MODE, REDRSUBSET_ALL, },
 		{	9, 0,	display_mode3_a,	REDRM_MODE,	REDRSUBSET_ALL, },	// SSB/CW/AM/FM/...
 		{	13, 0,	display_rxbw3,		REDRM_MODE, REDRSUBSET_ALL, },
 
 		{	0, 1,	display_vfomode3,	REDRM_MODE, REDRSUBSET_ALL, },	// SPLIT
-		{	4, 1,	display_att_tx3,	REDRM_MODE, REDRSUBSET_ALL, },		// при передаче показывает TX
+		{	4, 1,	display_att_tx3,	REDRM_MODE, REDRSUBSET_ALL, },		// РїСЂРё РїРµСЂРµРґР°С‡Рµ РїРѕРєР°Р·С‹РІР°РµС‚ TX
 	#if WITHDSPEXTDDC
 		{	9, 1,	display_preovf3,	REDRM_BARS, REDRSUBSET_ALL, },	// ovf/pre
 	#else /* WITHDSPEXTDDC */
@@ -2094,10 +2094,10 @@ enum
 		//{	0, 0,	display_voxtune3,	REDRM_MODE, REDRSUBSET_ALL, },
 
 	#if WITHMENU
-		{	0, 0,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра параметра
-		{	0, 1,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
-		{	4, 1,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
-		{	15, 0,	display_lockstate1,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
+		{	0, 0,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// Р·РЅР°С‡РµРЅРёРµ РїР°СЂР°РјРµС‚СЂР° РїР°СЂР°РјРµС‚СЂР°
+		{	0, 1,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// РєРѕРґ СЂРµРґР°РєС‚РёСЂСѓРµРјРѕРіРѕ РїР°СЂР°РјРµС‚СЂР°
+		{	4, 1,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// РЅР°Р·РІР°РЅРёРµ СЂРµРґР°РєС‚РёСЂСѓРµРјРѕРіРѕ РїР°СЂР°РјРµС‚СЂР°
+		{	15, 0,	display_lockstate1,	REDRM_MODE, REDRSUBSET_MENU, },	// СЃРѕСЃС‚РѕСЏРЅРёРµ Р±Р»РѕРєРёСЂРѕРІРєРё РІР°Р»РєРѕРґРµСЂР°
 	#endif /* WITHMENU */
 	};
 
@@ -2109,9 +2109,9 @@ enum
 
 	enum
 	{
-		BDTH_ALLRX = 9,	// ширина зоны для отображение полосы на индикаторе
-		BDTH_RIGHTRX = 3,	// ширина индикатора плюсов
-		BDTH_LEFTRX = BDTH_ALLRX - BDTH_RIGHTRX,	// ширина индикатора баллов
+		BDTH_ALLRX = 9,	// С€РёСЂРёРЅР° Р·РѕРЅС‹ РґР»СЏ РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ РїРѕР»РѕСЃС‹ РЅР° РёРЅРґРёРєР°С‚РѕСЂРµ
+		BDTH_RIGHTRX = 3,	// С€РёСЂРёРЅР° РёРЅРґРёРєР°С‚РѕСЂР° РїР»СЋСЃРѕРІ
+		BDTH_LEFTRX = BDTH_ALLRX - BDTH_RIGHTRX,	// С€РёСЂРёРЅР° РёРЅРґРёРєР°С‚РѕСЂР° Р±Р°Р»Р»РѕРІ
 		BDTH_SPACERX = 0,
 		//
 		BDTH_ALLSWR = BDTH_ALLRX,
@@ -2121,20 +2121,20 @@ enum
 	};
 	enum
 	{
-		PATTERN_SPACE = 0x00,	/* очищаем место за SWR и PWR метром этим символом */
-		PATTERN_BAR_FULL = 0x7e,	//0x7C,	// правый бит - нижний
-		PATTERN_BAR_HALF = 0x1e,	//0x38,	// правый бит - нижний
+		PATTERN_SPACE = 0x00,	/* РѕС‡РёС‰Р°РµРј РјРµСЃС‚Рѕ Р·Р° SWR Рё PWR РјРµС‚СЂРѕРј СЌС‚РёРј СЃРёРјРІРѕР»РѕРј */
+		PATTERN_BAR_FULL = 0x7e,	//0x7C,	// РїСЂР°РІС‹Р№ Р±РёС‚ - РЅРёР¶РЅРёР№
+		PATTERN_BAR_HALF = 0x1e,	//0x38,	// РїСЂР°РІС‹Р№ Р±РёС‚ - РЅРёР¶РЅРёР№
 		PATTERN_BAR_EMPTYFULL = 0x42,	//0x00
 		PATTERN_BAR_EMPTYHALF = 0x12	//0x00
 	};
-	#define SWRMAX	(SWRMIN * 40 / 10)	// 4.0 - значение на полной шкале
+	#define SWRMAX	(SWRMIN * 40 / 10)	// 4.0 - Р·РЅР°С‡РµРЅРёРµ РЅР° РїРѕР»РЅРѕР№ С€РєР°Р»Рµ
 
 	enum {
-		DPAGE0,					// Страница, в которой отображаются основные (или все) 
+		DPAGE0,					// РЎС‚СЂР°РЅРёС†Р°, РІ РєРѕС‚РѕСЂРѕР№ РѕС‚РѕР±СЂР°Р¶Р°СЋС‚СЃСЏ РѕСЃРЅРѕРІРЅС‹Рµ (РёР»Рё РІСЃРµ) 
 		DISPLC_MODCOUNT
 	};
-	#define DISPLC_WIDTH	7	// количество цифр в отображении частоты
-	#define DISPLC_RJ		1	// количество скрытых справа цифр в отображении частоты
+	#define DISPLC_WIDTH	7	// РєРѕР»РёС‡РµСЃС‚РІРѕ С†РёС„СЂ РІ РѕС‚РѕР±СЂР°Р¶РµРЅРёРё С‡Р°СЃС‚РѕС‚С‹
+	#define DISPLC_RJ		1	// РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРєСЂС‹С‚С‹С… СЃРїСЂР°РІР° С†РёС„СЂ РІ РѕС‚РѕР±СЂР°Р¶РµРЅРёРё С‡Р°СЃС‚РѕС‚С‹
 	static const FLASHMEM struct dzone dzones [] =
 	{
 		{	0, 0,	display_txrxstate2, REDRM_MODE, REDRSUBSET(DPAGE0), },
@@ -2143,17 +2143,17 @@ enum
 
 		{	0, 1,	display_freqX_a,	REDRM_FREQ, REDRSUBSET(DPAGE0), },
 
-		{	9, 2,	display_vfomode1,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// SPLIT - одним символом
+		{	9, 2,	display_vfomode1,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// SPLIT - РѕРґРЅРёРј СЃРёРјРІРѕР»РѕРј
 		{	0, 2,	display2_bars,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// S-METER, SWR-METER, POWER-METER
 
 		{	6, 3,	display_rxbw3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 		{	9, 3,	display_lockstate1, REDRM_MODE, REDRSUBSET(DPAGE0), },
 		{	0, 3,	display_voxtune3,	REDRM_MODE, REDRSUBSET(DPAGE0), },
 	#if WITHMENU 
-		{	0, 0,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
-		{	0, 3,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
-		{	0, 2,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
-		{	9, 3,	display_lockstate1,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
+		{	0, 0,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// Р·РЅР°С‡РµРЅРёРµ РїР°СЂР°РјРµС‚СЂР°
+		{	0, 3,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// РєРѕРґ СЂРµРґР°РєС‚РёСЂСѓРµРјРѕРіРѕ РїР°СЂР°РјРµС‚СЂР°
+		{	0, 2,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// РЅР°Р·РІР°РЅРёРµ СЂРµРґР°РєС‚РёСЂСѓРµРјРѕРіРѕ РїР°СЂР°РјРµС‚СЂР°
+		{	9, 3,	display_lockstate1,	REDRM_MODE, REDRSUBSET_MENU, },	// СЃРѕСЃС‚РѕСЏРЅРёРµ Р±Р»РѕРєРёСЂРѕРІРєРё РІР°Р»РєРѕРґРµСЂР°
 	#endif /* WITHMENU */
 	};
 
@@ -2167,11 +2167,11 @@ enum
 
 		enum
 		{
-			BDTH_ALLRX = 21,	// ширина зоны для отображение полосы на индикаторе
-			BDTH_RIGHTRX = 11,	// ширина индикатора плюсов 
-			BDTH_LEFTRX = BDTH_ALLRX - BDTH_RIGHTRX,	// ширина индикатора баллов
+			BDTH_ALLRX = 21,	// С€РёСЂРёРЅР° Р·РѕРЅС‹ РґР»СЏ РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ РїРѕР»РѕСЃС‹ РЅР° РёРЅРґРёРєР°С‚РѕСЂРµ
+			BDTH_RIGHTRX = 11,	// С€РёСЂРёРЅР° РёРЅРґРёРєР°С‚РѕСЂР° РїР»СЋСЃРѕРІ 
+			BDTH_LEFTRX = BDTH_ALLRX - BDTH_RIGHTRX,	// С€РёСЂРёРЅР° РёРЅРґРёРєР°С‚РѕСЂР° Р±Р°Р»Р»РѕРІ
 			BDTH_SPACERX = 0,
-		#if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
+		#if WITHSHOWSWRPWR	/* РЅР° РґРёСЃРїР»РµРµ РѕРґРЅРѕРІСЂРµРјРµРЅРЅРѕ РѕС‚РѕР±СЂР°Р¶Р°СЋС‚СЃСЏ SWR-meter Рё PWR-meter */
 			BDTH_ALLSWR = 9,
 			BDTH_SPACESWR = 1,
 			BDTH_ALLPWR = 11,
@@ -2185,17 +2185,17 @@ enum
 		};
 		//					  "012345678901234567890"
 		#define SMETERMAP 	  " 1 3 5 7 9 + 20 40 60"	//
-		#if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
+		#if WITHSHOWSWRPWR	/* РЅР° РґРёСЃРїР»РµРµ РѕРґРЅРѕРІСЂРµРјРµРЅРЅРѕ РѕС‚РѕР±СЂР°Р¶Р°СЋС‚СЃСЏ SWR-meter Рё PWR-meter */
 			#define SWRPWRMAP "1 | 2 | 3 0%   | 100%" 
-			#define SWRMAX	(SWRMIN * 30 / 10)	// 3.0 - значение на полной шкале
+			#define SWRMAX	(SWRMIN * 30 / 10)	// 3.0 - Р·РЅР°С‡РµРЅРёРµ РЅР° РїРѕР»РЅРѕР№ С€РєР°Р»Рµ
 		#else
 			#define POWERMAP  " 0 10 20 40 60 80 100"
 			#define SWRMAP    "1    |    2    |   3 "	// 
-			#define SWRMAX	(SWRMIN * 31 / 10)	// 3.1 - значение на полной шкале
+			#define SWRMAX	(SWRMIN * 31 / 10)	// 3.1 - Р·РЅР°С‡РµРЅРёРµ РЅР° РїРѕР»РЅРѕР№ С€РєР°Р»Рµ
 		#endif
 		enum
 		{
-			PATTERN_SPACE = 0x00,	/* очищаем место за SWR и PWR метром этим символом */
+			PATTERN_SPACE = 0x00,	/* РѕС‡РёС‰Р°РµРј РјРµСЃС‚Рѕ Р·Р° SWR Рё PWR РјРµС‚СЂРѕРј СЌС‚РёРј СЃРёРјРІРѕР»РѕРј */
 		#if 1
 			PATTERN_BAR_FULL = 0x7e,
 			PATTERN_BAR_HALF = 0x7e,
@@ -2210,11 +2210,11 @@ enum
 		};
 
 		enum {
-			DPAGE0,					// Страница, в которой отображаются основные (или все) 
+			DPAGE0,					// РЎС‚СЂР°РЅРёС†Р°, РІ РєРѕС‚РѕСЂРѕР№ РѕС‚РѕР±СЂР°Р¶Р°СЋС‚СЃСЏ РѕСЃРЅРѕРІРЅС‹Рµ (РёР»Рё РІСЃРµ) 
 			DISPLC_MODCOUNT
 		};
-		#define DISPLC_WIDTH	8	// количество цифр в отображении частоты
-		#define DISPLC_RJ		1	// количество скрытых справа цифр в отображении частоты
+		#define DISPLC_WIDTH	8	// РєРѕР»РёС‡РµСЃС‚РІРѕ С†РёС„СЂ РІ РѕС‚РѕР±СЂР°Р¶РµРЅРёРё С‡Р°СЃС‚РѕС‚С‹
+		#define DISPLC_RJ		1	// РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРєСЂС‹С‚С‹С… СЃРїСЂР°РІР° С†РёС„СЂ РІ РѕС‚РѕР±СЂР°Р¶РµРЅРёРё С‡Р°СЃС‚РѕС‚С‹
 		static const FLASHMEM struct dzone dzones [] =
 		{
 			{	0, 0,	display_txrxstate2, REDRM_MODE, REDRSUBSET(DPAGE0), },	// TX/RX
@@ -2238,12 +2238,12 @@ enum
 			{	11, 5,	display_byp3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 
 			{	0, 6,	display2_bars,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// S-METER, SWR-METER, POWER-METER
-			{	0, 7,	display2_legend,	REDRM_MODE, REDRSUBSET(DPAGE0), },// Отображение оцифровки шкалы S-метра
+			{	0, 7,	display2_legend,	REDRM_MODE, REDRSUBSET(DPAGE0), },// РћС‚РѕР±СЂР°Р¶РµРЅРёРµ РѕС†РёС„СЂРѕРІРєРё С€РєР°Р»С‹ S-РјРµС‚СЂР°
 		#if WITHMENU
-			{	0, 0,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
-			{	0, 1,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
-			{	4, 1,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
-			{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
+			{	0, 0,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// Р·РЅР°С‡РµРЅРёРµ РїР°СЂР°РјРµС‚СЂР°
+			{	0, 1,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// РєРѕРґ СЂРµРґР°РєС‚РёСЂСѓРµРјРѕРіРѕ РїР°СЂР°РјРµС‚СЂР°
+			{	4, 1,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// РЅР°Р·РІР°РЅРёРµ СЂРµРґР°РєС‚РёСЂСѓРµРјРѕРіРѕ РїР°СЂР°РјРµС‚СЂР°
+			{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// СЃРѕСЃС‚РѕСЏРЅРёРµ Р±Р»РѕРєРёСЂРѕРІРєРё РІР°Р»РєРѕРґРµСЂР°
 		#endif /* WITHMENU */
 		};
 
@@ -2251,11 +2251,11 @@ enum
 
 		enum
 		{
-			BDTH_ALLRX = 17,	// ширина зоны для отображение полосы на индикаторе
-			BDTH_RIGHTRX = 6,	// ширина индикатора плюсов 
-			BDTH_LEFTRX = BDTH_ALLRX - BDTH_RIGHTRX,	// ширина индикатора баллов
+			BDTH_ALLRX = 17,	// С€РёСЂРёРЅР° Р·РѕРЅС‹ РґР»СЏ РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ РїРѕР»РѕСЃС‹ РЅР° РёРЅРґРёРєР°С‚РѕСЂРµ
+			BDTH_RIGHTRX = 6,	// С€РёСЂРёРЅР° РёРЅРґРёРєР°С‚РѕСЂР° РїР»СЋСЃРѕРІ 
+			BDTH_LEFTRX = BDTH_ALLRX - BDTH_RIGHTRX,	// С€РёСЂРёРЅР° РёРЅРґРёРєР°С‚РѕСЂР° Р±Р°Р»Р»РѕРІ
 			BDTH_SPACERX = 0,
-		#if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
+		#if WITHSHOWSWRPWR	/* РЅР° РґРёСЃРїР»РµРµ РѕРґРЅРѕРІСЂРµРјРµРЅРЅРѕ РѕС‚РѕР±СЂР°Р¶Р°СЋС‚СЃСЏ SWR-meter Рё PWR-meter */
 			BDTH_ALLSWR = 10,
 			BDTH_SPACESWR = 1,
 			BDTH_ALLPWR = 6,
@@ -2269,10 +2269,10 @@ enum
 		};
 		//#define SMETERMAP "1 3 5 7 9 + 20 40 60"
 		//#define POWERMAP  "0 10 20 40 60 80 100"
-		#define SWRMAX	(SWRMIN * 40 / 10)	// 4.0 - значение на полной шкале
+		#define SWRMAX	(SWRMIN * 40 / 10)	// 4.0 - Р·РЅР°С‡РµРЅРёРµ РЅР° РїРѕР»РЅРѕР№ С€РєР°Р»Рµ
 		enum
 		{
-			PATTERN_SPACE = 0x00,	/* очищаем место за SWR и PWR метром этим символом */
+			PATTERN_SPACE = 0x00,	/* РѕС‡РёС‰Р°РµРј РјРµСЃС‚Рѕ Р·Р° SWR Рё PWR РјРµС‚СЂРѕРј СЌС‚РёРј СЃРёРјРІРѕР»РѕРј */
 			PATTERN_BAR_FULL = 0x7e,
 			PATTERN_BAR_HALF = 0x3c,
 			PATTERN_BAR_EMPTYFULL = 0x42,
@@ -2280,11 +2280,11 @@ enum
 		};
 
 		enum {
-			DPAGE0,					// Страница, в которой отображаются основные (или все) 
+			DPAGE0,					// РЎС‚СЂР°РЅРёС†Р°, РІ РєРѕС‚РѕСЂРѕР№ РѕС‚РѕР±СЂР°Р¶Р°СЋС‚СЃСЏ РѕСЃРЅРѕРІРЅС‹Рµ (РёР»Рё РІСЃРµ) 
 			DISPLC_MODCOUNT
 		};
-		#define DISPLC_WIDTH	7	// количество цифр в отображении частоты
-		#define DISPLC_RJ		1	// количество скрытых справа цифр в отображении частоты
+		#define DISPLC_WIDTH	7	// РєРѕР»РёС‡РµСЃС‚РІРѕ С†РёС„СЂ РІ РѕС‚РѕР±СЂР°Р¶РµРЅРёРё С‡Р°СЃС‚РѕС‚С‹
+		#define DISPLC_RJ		1	// РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРєСЂС‹С‚С‹С… СЃРїСЂР°РІР° С†РёС„СЂ РІ РѕС‚РѕР±СЂР°Р¶РµРЅРёРё С‡Р°СЃС‚РѕС‚С‹
 		static const FLASHMEM struct dzone dzones [] =
 		{
 			{	0,	0,	display_txrxstate2, REDRM_MODE, REDRSUBSET(DPAGE0), },
@@ -2301,10 +2301,10 @@ enum
 			{	18, 7,	display_agc3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 			{	0,	7,	display2_bars,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// S-METER, SWR-METER, POWER-METER
 		#if WITHMENU
-			{	0, 0,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
-			{	0, 1,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
-			{	4, 1,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
-			{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
+			{	0, 0,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// Р·РЅР°С‡РµРЅРёРµ РїР°СЂР°РјРµС‚СЂР°
+			{	0, 1,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// РєРѕРґ СЂРµРґР°РєС‚РёСЂСѓРµРјРѕРіРѕ РїР°СЂР°РјРµС‚СЂР°
+			{	4, 1,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// РЅР°Р·РІР°РЅРёРµ СЂРµРґР°РєС‚РёСЂСѓРµРјРѕРіРѕ РїР°СЂР°РјРµС‚СЂР°
+			{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// СЃРѕСЃС‚РѕСЏРЅРёРµ Р±Р»РѕРєРёСЂРѕРІРєРё РІР°Р»РєРѕРґРµСЂР°
 		#endif /* WITHMENU */
 		};
 
@@ -2312,7 +2312,7 @@ enum
 
 #elif DSTYLE_G_X132_Y64
 	// RDX0154
-	// по горизонтали 22 знакоместа (x=0..21)
+	// РїРѕ РіРѕСЂРёР·РѕРЅС‚Р°Р»Рё 22 Р·РЅР°РєРѕРјРµСЃС‚Р° (x=0..21)
 	#define CHAR_W	6
 	#define CHAR_H	8
 	#define SMALLCHARH 8 /* Font height */
@@ -2321,11 +2321,11 @@ enum
 		// SW20XXX 
 		enum
 		{
-			BDTH_ALLRX = 21,	// ширина зоны для отображение полосы на индикаторе
-			BDTH_RIGHTRX = 11,	// ширина индикатора плюсов 
-			BDTH_LEFTRX = BDTH_ALLRX - BDTH_RIGHTRX,	// ширина индикатора баллов
+			BDTH_ALLRX = 21,	// С€РёСЂРёРЅР° Р·РѕРЅС‹ РґР»СЏ РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ РїРѕР»РѕСЃС‹ РЅР° РёРЅРґРёРєР°С‚РѕСЂРµ
+			BDTH_RIGHTRX = 11,	// С€РёСЂРёРЅР° РёРЅРґРёРєР°С‚РѕСЂР° РїР»СЋСЃРѕРІ 
+			BDTH_LEFTRX = BDTH_ALLRX - BDTH_RIGHTRX,	// С€РёСЂРёРЅР° РёРЅРґРёРєР°С‚РѕСЂР° Р±Р°Р»Р»РѕРІ
 			BDTH_SPACERX = 0,
-		#if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
+		#if WITHSHOWSWRPWR	/* РЅР° РґРёСЃРїР»РµРµ РѕРґРЅРѕРІСЂРµРјРµРЅРЅРѕ РѕС‚РѕР±СЂР°Р¶Р°СЋС‚СЃСЏ SWR-meter Рё PWR-meter */
 			BDTH_ALLSWR = 9,
 			BDTH_SPACESWR = 1,
 			BDTH_ALLPWR = 11,
@@ -2339,17 +2339,17 @@ enum
 		};
 		//					  "0123456789012345678901"
 		#define SMETERMAP 	  " 1 3 5 7 9 + 20 40 60 "	//
-		#if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
+		#if WITHSHOWSWRPWR	/* РЅР° РґРёСЃРїР»РµРµ РѕРґРЅРѕРІСЂРµРјРµРЅРЅРѕ РѕС‚РѕР±СЂР°Р¶Р°СЋС‚СЃСЏ SWR-meter Рё PWR-meter */
 			#define SWRPWRMAP "1 | 2 | 3 0%   | 100% " 
-			#define SWRMAX	(SWRMIN * 30 / 10)	// 3.0 - значение на полной шкале
+			#define SWRMAX	(SWRMIN * 30 / 10)	// 3.0 - Р·РЅР°С‡РµРЅРёРµ РЅР° РїРѕР»РЅРѕР№ С€РєР°Р»Рµ
 		#else
 			#define POWERMAP  " 0 10 20 40 60 80 100 "
 			#define SWRMAP    "1    |    2    |   3  "	// 
-			#define SWRMAX	(SWRMIN * 32 / 10)	// 3.2 - значение на полной шкале
+			#define SWRMAX	(SWRMIN * 32 / 10)	// 3.2 - Р·РЅР°С‡РµРЅРёРµ РЅР° РїРѕР»РЅРѕР№ С€РєР°Р»Рµ
 		#endif
 		enum
 		{
-			PATTERN_SPACE = 0x00,	/* очищаем место за SWR и PWR метром этим символом */
+			PATTERN_SPACE = 0x00,	/* РѕС‡РёС‰Р°РµРј РјРµСЃС‚Рѕ Р·Р° SWR Рё PWR РјРµС‚СЂРѕРј СЌС‚РёРј СЃРёРјРІРѕР»РѕРј */
 		#if 1
 			PATTERN_BAR_FULL = 0x7e,
 			PATTERN_BAR_HALF = 0x7e,
@@ -2364,12 +2364,12 @@ enum
 		};
 
 		enum {
-			DPAGE0,					// Страница, в которой отображаются основные (или все) 
+			DPAGE0,					// РЎС‚СЂР°РЅРёС†Р°, РІ РєРѕС‚РѕСЂРѕР№ РѕС‚РѕР±СЂР°Р¶Р°СЋС‚СЃСЏ РѕСЃРЅРѕРІРЅС‹Рµ (РёР»Рё РІСЃРµ) 
 			DISPLC_MODCOUNT
 		};
-		#define DISPLC_WIDTH	8	// количество цифр в отображении частоты
-		#define DISPLC_RJ		1	// количество скрытых справа цифр в отображении частоты
-		// по горизонтали 22 знакоместа (x=0..21)
+		#define DISPLC_WIDTH	8	// РєРѕР»РёС‡РµСЃС‚РІРѕ С†РёС„СЂ РІ РѕС‚РѕР±СЂР°Р¶РµРЅРёРё С‡Р°СЃС‚РѕС‚С‹
+		#define DISPLC_RJ		1	// РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРєСЂС‹С‚С‹С… СЃРїСЂР°РІР° С†РёС„СЂ РІ РѕС‚РѕР±СЂР°Р¶РµРЅРёРё С‡Р°СЃС‚РѕС‚С‹
+		// РїРѕ РіРѕСЂРёР·РѕРЅС‚Р°Р»Рё 22 Р·РЅР°РєРѕРјРµСЃС‚Р° (x=0..21)
 		static const FLASHMEM struct dzone dzones [] =
 		{
 			{	0,	0,	display_txrxstate2, REDRM_MODE, REDRSUBSET(DPAGE0), },	// TX/RX
@@ -2399,12 +2399,12 @@ enum
 		#endif /* WITHTX && WITHAUTOTUNER */
 
 			{	0,	6,	display2_bars,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// S-METER, SWR-METER, POWER-METER
-			{	0,	7,	display2_legend,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// Отображение оцифровки шкалы S-метра
+			{	0,	7,	display2_legend,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// РћС‚РѕР±СЂР°Р¶РµРЅРёРµ РѕС†РёС„СЂРѕРІРєРё С€РєР°Р»С‹ S-РјРµС‚СЂР°
 		#if WITHMENU
-			{	0,	0,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
-			{	0,	1,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
-			{	4,	1,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
-			{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
+			{	0,	0,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// Р·РЅР°С‡РµРЅРёРµ РїР°СЂР°РјРµС‚СЂР°
+			{	0,	1,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// РєРѕРґ СЂРµРґР°РєС‚РёСЂСѓРµРјРѕРіРѕ РїР°СЂР°РјРµС‚СЂР°
+			{	4,	1,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// РЅР°Р·РІР°РЅРёРµ СЂРµРґР°РєС‚РёСЂСѓРµРјРѕРіРѕ РїР°СЂР°РјРµС‚СЂР°
+			{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// СЃРѕСЃС‚РѕСЏРЅРёРµ Р±Р»РѕРєРёСЂРѕРІРєРё РІР°Р»РєРѕРґРµСЂР°
 		#endif /* WITHMENU */
 		};
 
@@ -2412,11 +2412,11 @@ enum
 
 		enum
 		{
-			BDTH_ALLRX = 17,	// ширина зоны для отображение полосы на индикаторе
-			BDTH_RIGHTRX = 6,	// ширина индикатора плюсов
-			BDTH_LEFTRX = BDTH_ALLRX - BDTH_RIGHTRX,	// ширина индикатора баллов
+			BDTH_ALLRX = 17,	// С€РёСЂРёРЅР° Р·РѕРЅС‹ РґР»СЏ РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ РїРѕР»РѕСЃС‹ РЅР° РёРЅРґРёРєР°С‚РѕСЂРµ
+			BDTH_RIGHTRX = 6,	// С€РёСЂРёРЅР° РёРЅРґРёРєР°С‚РѕСЂР° РїР»СЋСЃРѕРІ
+			BDTH_LEFTRX = BDTH_ALLRX - BDTH_RIGHTRX,	// С€РёСЂРёРЅР° РёРЅРґРёРєР°С‚РѕСЂР° Р±Р°Р»Р»РѕРІ
 			BDTH_SPACERX = 0,
-		#if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
+		#if WITHSHOWSWRPWR	/* РЅР° РґРёСЃРїР»РµРµ РѕРґРЅРѕРІСЂРµРјРµРЅРЅРѕ РѕС‚РѕР±СЂР°Р¶Р°СЋС‚СЃСЏ SWR-meter Рё PWR-meter */
 			BDTH_ALLSWR = 8,
 			BDTH_SPACESWR = 1,
 			BDTH_ALLPWR = 8,
@@ -2430,20 +2430,20 @@ enum
 		};
 		enum
 		{
-			PATTERN_SPACE = 0x00,	/* очищаем место за SWR и PWR метром этим символом */
+			PATTERN_SPACE = 0x00,	/* РѕС‡РёС‰Р°РµРј РјРµСЃС‚Рѕ Р·Р° SWR Рё PWR РјРµС‚СЂРѕРј СЌС‚РёРј СЃРёРјРІРѕР»РѕРј */
 			PATTERN_BAR_FULL = 0xFF,
 			PATTERN_BAR_HALF = 0x3c,
 			PATTERN_BAR_EMPTYFULL = 0x00,	//0x00
 			PATTERN_BAR_EMPTYHALF = 0x00	//0x00
 		};
-		#define SWRMAX	(SWRMIN * 40 / 10)	// 4.0 - значение на полной шкале
+		#define SWRMAX	(SWRMIN * 40 / 10)	// 4.0 - Р·РЅР°С‡РµРЅРёРµ РЅР° РїРѕР»РЅРѕР№ С€РєР°Р»Рµ
 
 		enum {
-			DPAGE0,					// Страница, в которой отображаются основные (или все) 
+			DPAGE0,					// РЎС‚СЂР°РЅРёС†Р°, РІ РєРѕС‚РѕСЂРѕР№ РѕС‚РѕР±СЂР°Р¶Р°СЋС‚СЃСЏ РѕСЃРЅРѕРІРЅС‹Рµ (РёР»Рё РІСЃРµ) 
 			DISPLC_MODCOUNT
 		};
-		#define DISPLC_WIDTH	7	// количество цифр в отображении частоты
-		#define DISPLC_RJ		1	// количество скрытых справа цифр в отображении частоты
+		#define DISPLC_WIDTH	7	// РєРѕР»РёС‡РµСЃС‚РІРѕ С†РёС„СЂ РІ РѕС‚РѕР±СЂР°Р¶РµРЅРёРё С‡Р°СЃС‚РѕС‚С‹
+		#define DISPLC_RJ		1	// РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРєСЂС‹С‚С‹С… СЃРїСЂР°РІР° С†РёС„СЂ РІ РѕС‚РѕР±СЂР°Р¶РµРЅРёРё С‡Р°СЃС‚РѕС‚С‹
 		static const FLASHMEM struct dzone dzones [] =
 		{
 			{	0, 0,	display_txrxstate2, REDRM_MODE, REDRSUBSET(DPAGE0), },
@@ -2467,7 +2467,7 @@ enum
 
 	#if WITHIF4DSP
 		#if WITHUSEAUDIOREC
-			{	19, 7,	display_rec3,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// Отображение режима записи аудио фрагмента
+			{	19, 7,	display_rec3,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// РћС‚РѕР±СЂР°Р¶РµРЅРёРµ СЂРµР¶РёРјР° Р·Р°РїРёСЃРё Р°СѓРґРёРѕ С„СЂР°РіРјРµРЅС‚Р°
 		#endif /* WITHUSEAUDIOREC */
 	#else /* WITHIF4DSP */
 			{	19, 7,	display_agc3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
@@ -2479,10 +2479,10 @@ enum
 			{	0, 7,	display2_bars,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// S-METER, SWR-METER, POWER-METER
 
 		#if WITHMENU
-			{	0, 0,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
-			{	0, 1,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
-			{	4, 1,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
-			{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
+			{	0, 0,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// Р·РЅР°С‡РµРЅРёРµ РїР°СЂР°РјРµС‚СЂР°
+			{	0, 1,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// РєРѕРґ СЂРµРґР°РєС‚РёСЂСѓРµРјРѕРіРѕ РїР°СЂР°РјРµС‚СЂР°
+			{	4, 1,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// РЅР°Р·РІР°РЅРёРµ СЂРµРґР°РєС‚РёСЂСѓРµРјРѕРіРѕ РїР°СЂР°РјРµС‚СЂР°
+			{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// СЃРѕСЃС‚РѕСЏРЅРёРµ Р±Р»РѕРєРёСЂРѕРІРєРё РІР°Р»РєРѕРґРµСЂР°
 		#endif /* WITHMENU */
 		};
 
@@ -2496,15 +2496,15 @@ enum
 	#define SMALLCHARH 16 /* Font height */
 
 	#if DSTYLE_UR3LMZMOD && WITHONEATTONEAMP
-		// используется в послдних версиях sw2013 mini - CTLSTYLE_SW2012CN и CTLSTYLE_SW2012CN5
+		// РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РІ РїРѕСЃР»РґРЅРёС… РІРµСЂСЃРёСЏС… sw2013 mini - CTLSTYLE_SW2012CN Рё CTLSTYLE_SW2012CN5
 
 		enum
 		{
-			BDTH_ALLRX = 20,	// ширина зоны для отображение полосы на индикаторе
-			BDTH_RIGHTRX = 11,	// ширина индикатора плюсов 
-			BDTH_LEFTRX = BDTH_ALLRX - BDTH_RIGHTRX,	// ширина индикатора баллов
+			BDTH_ALLRX = 20,	// С€РёСЂРёРЅР° Р·РѕРЅС‹ РґР»СЏ РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ РїРѕР»РѕСЃС‹ РЅР° РёРЅРґРёРєР°С‚РѕСЂРµ
+			BDTH_RIGHTRX = 11,	// С€РёСЂРёРЅР° РёРЅРґРёРєР°С‚РѕСЂР° РїР»СЋСЃРѕРІ 
+			BDTH_LEFTRX = BDTH_ALLRX - BDTH_RIGHTRX,	// С€РёСЂРёРЅР° РёРЅРґРёРєР°С‚РѕСЂР° Р±Р°Р»Р»РѕРІ
 			BDTH_SPACERX = 0,
-		#if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
+		#if WITHSHOWSWRPWR	/* РЅР° РґРёСЃРїР»РµРµ РѕРґРЅРѕРІСЂРµРјРµРЅРЅРѕ РѕС‚РѕР±СЂР°Р¶Р°СЋС‚СЃСЏ SWR-meter Рё PWR-meter */
 			BDTH_ALLSWR = 9,
 			BDTH_SPACESWR = 1,
 			BDTH_ALLPWR = 10,
@@ -2517,18 +2517,18 @@ enum
 		#endif /* WITHSHOWSWRPWR */
 		};
 		#define SMETERMAP "1 3 5 7 9 + 20 40 60"	//
-		#if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
+		#if WITHSHOWSWRPWR	/* РЅР° РґРёСЃРїР»РµРµ РѕРґРЅРѕРІСЂРµРјРµРЅРЅРѕ РѕС‚РѕР±СЂР°Р¶Р°СЋС‚СЃСЏ SWR-meter Рё PWR-meter */
 			//                "01234567890123456789"
 			#define SWRPWRMAP "1 | 2 | 3 0%  | 100%"
-			#define SWRMAX	(SWRMIN * 30 / 10)	// 3.0 - значение на полной шкале
+			#define SWRMAX	(SWRMIN * 30 / 10)	// 3.0 - Р·РЅР°С‡РµРЅРёРµ РЅР° РїРѕР»РЅРѕР№ С€РєР°Р»Рµ
 		#else /* WITHSHOWSWRPWR */
 			#define POWERMAP  "0 10 20 40 60 80 100"
 			#define SWRMAP    "1    |    2    |   3"	// 
-			#define SWRMAX	(SWRMIN * 30 / 10)	// 3.0 - значение на полной шкале
+			#define SWRMAX	(SWRMIN * 30 / 10)	// 3.0 - Р·РЅР°С‡РµРЅРёРµ РЅР° РїРѕР»РЅРѕР№ С€РєР°Р»Рµ
 		#endif /* WITHSHOWSWRPWR */
 		enum
 		{
-			PATTERN_SPACE = 0x00,	/* очищаем место за SWR и PWR метром этим символом */
+			PATTERN_SPACE = 0x00,	/* РѕС‡РёС‰Р°РµРј РјРµСЃС‚Рѕ Р·Р° SWR Рё PWR РјРµС‚СЂРѕРј СЌС‚РёРј СЃРёРјРІРѕР»РѕРј */
 		#if 1
 			PATTERN_BAR_FULL = 0xFF,
 			PATTERN_BAR_HALF = 0xFF,
@@ -2543,11 +2543,11 @@ enum
 		};
 
 		enum {
-			DPAGE0,					// Страница, в которой отображаются основные (или все) 
+			DPAGE0,					// РЎС‚СЂР°РЅРёС†Р°, РІ РєРѕС‚РѕСЂРѕР№ РѕС‚РѕР±СЂР°Р¶Р°СЋС‚СЃСЏ РѕСЃРЅРѕРІРЅС‹Рµ (РёР»Рё РІСЃРµ) 
 			DISPLC_MODCOUNT
 		};
-		#define DISPLC_WIDTH	7	// количество цифр в отображении частоты
-		#define DISPLC_RJ		1	// количество скрытых справа цифр в отображении частоты
+		#define DISPLC_WIDTH	7	// РєРѕР»РёС‡РµСЃС‚РІРѕ С†РёС„СЂ РІ РѕС‚РѕР±СЂР°Р¶РµРЅРёРё С‡Р°СЃС‚РѕС‚С‹
+		#define DISPLC_RJ		1	// РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРєСЂС‹С‚С‹С… СЃРїСЂР°РІР° С†РёС„СЂ РІ РѕС‚РѕР±СЂР°Р¶РµРЅРёРё С‡Р°СЃС‚РѕС‚С‹
 		static const FLASHMEM struct dzone dzones [] =
 		{
 			{	0, 0,	display_txrxstate2, REDRM_MODE, REDRSUBSET(DPAGE0), },
@@ -2574,14 +2574,14 @@ enum
 			{	15, 11,	display_voltlevelV5, REDRM_VOLT, REDRSUBSET(DPAGE0), },	// voltmeter with "V"
 
 			{	0, 13,	display2_bars,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// S-METER, SWR-METER, POWER-METER
-			{	0, 14,	display2_legend,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// Отображение оцифровки шкалы S-метра
+			{	0, 14,	display2_legend,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// РћС‚РѕР±СЂР°Р¶РµРЅРёРµ РѕС†РёС„СЂРѕРІРєРё С€РєР°Р»С‹ S-РјРµС‚СЂР°
 
 		#if WITHMENU
-			{	4, 0,	display_menu_group,	REDRM_MLBL, REDRSUBSET_MENU, },	// название группы
-			{	0, 2,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
-			{	4, 2,	display_menu_lblng,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
-			{	0, 4,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
-			{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
+			{	4, 0,	display_menu_group,	REDRM_MLBL, REDRSUBSET_MENU, },	// РЅР°Р·РІР°РЅРёРµ РіСЂСѓРїРїС‹
+			{	0, 2,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// РєРѕРґ СЂРµРґР°РєС‚РёСЂСѓРµРјРѕРіРѕ РїР°СЂР°РјРµС‚СЂР°
+			{	4, 2,	display_menu_lblng,	REDRM_MLBL, REDRSUBSET_MENU, },	// РЅР°Р·РІР°РЅРёРµ СЂРµРґР°РєС‚РёСЂСѓРµРјРѕРіРѕ РїР°СЂР°РјРµС‚СЂР°
+			{	0, 4,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// Р·РЅР°С‡РµРЅРёРµ РїР°СЂР°РјРµС‚СЂР°
+			{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// СЃРѕСЃС‚РѕСЏРЅРёРµ Р±Р»РѕРєРёСЂРѕРІРєРё РІР°Р»РєРѕРґРµСЂР°
 		#endif /* WITHMENU */
 
 		};
@@ -2590,11 +2590,11 @@ enum
 
 		enum
 		{
-			BDTH_ALLRX = 15,	// ширина зоны для отображение полосы на индикаторе
-			BDTH_RIGHTRX = 5,	// ширина индикатора плюсов
-			BDTH_LEFTRX = BDTH_ALLRX - BDTH_RIGHTRX,	// ширина индикатора баллов
+			BDTH_ALLRX = 15,	// С€РёСЂРёРЅР° Р·РѕРЅС‹ РґР»СЏ РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ РїРѕР»РѕСЃС‹ РЅР° РёРЅРґРёРєР°С‚РѕСЂРµ
+			BDTH_RIGHTRX = 5,	// С€РёСЂРёРЅР° РёРЅРґРёРєР°С‚РѕСЂР° РїР»СЋСЃРѕРІ
+			BDTH_LEFTRX = BDTH_ALLRX - BDTH_RIGHTRX,	// С€РёСЂРёРЅР° РёРЅРґРёРєР°С‚РѕСЂР° Р±Р°Р»Р»РѕРІ
 			BDTH_SPACERX = 0,
-		#if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
+		#if WITHSHOWSWRPWR	/* РЅР° РґРёСЃРїР»РµРµ РѕРґРЅРѕРІСЂРµРјРµРЅРЅРѕ РѕС‚РѕР±СЂР°Р¶Р°СЋС‚СЃСЏ SWR-meter Рё PWR-meter */
 			BDTH_ALLSWR = 7,
 			BDTH_SPACESWR = 1,
 			BDTH_ALLPWR = 7,
@@ -2608,20 +2608,20 @@ enum
 		};
 		enum
 		{
-			PATTERN_SPACE = 0x00,	/* очищаем место за SWR и PWR метром этим символом */
+			PATTERN_SPACE = 0x00,	/* РѕС‡РёС‰Р°РµРј РјРµСЃС‚Рѕ Р·Р° SWR Рё PWR РјРµС‚СЂРѕРј СЌС‚РёРј СЃРёРјРІРѕР»РѕРј */
 			PATTERN_BAR_FULL = 0xFF,
 			PATTERN_BAR_HALF = 0x3c,
 			PATTERN_BAR_EMPTYFULL = 0x81,
 			PATTERN_BAR_EMPTYHALF = 0x24
 		};
-		#define SWRMAX	(SWRMIN * 40 / 10)	// 4.0 - значение на полной шкале
+		#define SWRMAX	(SWRMIN * 40 / 10)	// 4.0 - Р·РЅР°С‡РµРЅРёРµ РЅР° РїРѕР»РЅРѕР№ С€РєР°Р»Рµ
 
 		enum {
-			DPAGE0,					// Страница, в которой отображаются основные (или все) 
+			DPAGE0,					// РЎС‚СЂР°РЅРёС†Р°, РІ РєРѕС‚РѕСЂРѕР№ РѕС‚РѕР±СЂР°Р¶Р°СЋС‚СЃСЏ РѕСЃРЅРѕРІРЅС‹Рµ (РёР»Рё РІСЃРµ) 
 			DISPLC_MODCOUNT
 		};
-		#define DISPLC_WIDTH	7	// количество цифр в отображении частоты
-		#define DISPLC_RJ		1	// количество скрытых справа цифр в отображении частоты
+		#define DISPLC_WIDTH	7	// РєРѕР»РёС‡РµСЃС‚РІРѕ С†РёС„СЂ РІ РѕС‚РѕР±СЂР°Р¶РµРЅРёРё С‡Р°СЃС‚РѕС‚С‹
+		#define DISPLC_RJ		1	// РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРєСЂС‹С‚С‹С… СЃРїСЂР°РІР° С†РёС„СЂ РІ РѕС‚РѕР±СЂР°Р¶РµРЅРёРё С‡Р°СЃС‚РѕС‚С‹
 		static const FLASHMEM struct dzone dzones [] =
 		{
 			{	0,	0,	display_txrxstate2, REDRM_MODE, REDRSUBSET(DPAGE0), },
@@ -2650,11 +2650,11 @@ enum
 
 			{	0, 14,	display2_bars,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// S-METER, SWR-METER, POWER-METER
 		#if WITHMENU
-			{	4, 0,	display_menu_group,	REDRM_MLBL, REDRSUBSET_MENU, },	// название группы
-			{	0, 2,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
-			{	4, 2,	display_menu_lblng,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
-			{	0, 4,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
-			{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
+			{	4, 0,	display_menu_group,	REDRM_MLBL, REDRSUBSET_MENU, },	// РЅР°Р·РІР°РЅРёРµ РіСЂСѓРїРїС‹
+			{	0, 2,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// РєРѕРґ СЂРµРґР°РєС‚РёСЂСѓРµРјРѕРіРѕ РїР°СЂР°РјРµС‚СЂР°
+			{	4, 2,	display_menu_lblng,	REDRM_MLBL, REDRSUBSET_MENU, },	// РЅР°Р·РІР°РЅРёРµ СЂРµРґР°РєС‚РёСЂСѓРµРјРѕРіРѕ РїР°СЂР°РјРµС‚СЂР°
+			{	0, 4,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// Р·РЅР°С‡РµРЅРёРµ РїР°СЂР°РјРµС‚СЂР°
+			{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// СЃРѕСЃС‚РѕСЏРЅРёРµ Р±Р»РѕРєРёСЂРѕРІРєРё РІР°Р»РєРѕРґРµСЂР°
 		#endif /* WITHMENU */
 		};
 
@@ -2667,14 +2667,14 @@ enum
 	#define SMALLCHARH 16 /* Font height */
 
 	#if DSTYLE_UR3LMZMOD && WITHONEATTONEAMP
-		// SW20XXX - только одно положение аттенюатора и УВЧ - "по кругу"
+		// SW20XXX - С‚РѕР»СЊРєРѕ РѕРґРЅРѕ РїРѕР»РѕР¶РµРЅРёРµ Р°С‚С‚РµРЅСЋР°С‚РѕСЂР° Рё РЈР’Р§ - "РїРѕ РєСЂСѓРіСѓ"
 		enum
 		{
-			BDTH_ALLRX = 20,	// ширина зоны для отображение полосы на индикаторе
-			BDTH_RIGHTRX = 11,	// ширина индикатора плюсов
-			BDTH_LEFTRX = BDTH_ALLRX - BDTH_RIGHTRX,	// ширина индикатора баллов
+			BDTH_ALLRX = 20,	// С€РёСЂРёРЅР° Р·РѕРЅС‹ РґР»СЏ РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ РїРѕР»РѕСЃС‹ РЅР° РёРЅРґРёРєР°С‚РѕСЂРµ
+			BDTH_RIGHTRX = 11,	// С€РёСЂРёРЅР° РёРЅРґРёРєР°С‚РѕСЂР° РїР»СЋСЃРѕРІ
+			BDTH_LEFTRX = BDTH_ALLRX - BDTH_RIGHTRX,	// С€РёСЂРёРЅР° РёРЅРґРёРєР°С‚РѕСЂР° Р±Р°Р»Р»РѕРІ
 			BDTH_SPACERX = 0,
-		#if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
+		#if WITHSHOWSWRPWR	/* РЅР° РґРёСЃРїР»РµРµ РѕРґРЅРѕРІСЂРµРјРµРЅРЅРѕ РѕС‚РѕР±СЂР°Р¶Р°СЋС‚СЃСЏ SWR-meter Рё PWR-meter */
 			BDTH_ALLSWR = 9,
 			BDTH_SPACESWR = 1,
 			BDTH_ALLPWR = 10,
@@ -2687,18 +2687,18 @@ enum
 		#endif /* WITHSHOWSWRPWR */
 		};
 		#define SMETERMAP     "1 3 5 7 9 + 20 40 60"
-		#if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
+		#if WITHSHOWSWRPWR	/* РЅР° РґРёСЃРїР»РµРµ РѕРґРЅРѕРІСЂРµРјРµРЅРЅРѕ РѕС‚РѕР±СЂР°Р¶Р°СЋС‚СЃСЏ SWR-meter Рё PWR-meter */
 			//                "01234567890123456789"
 			#define SWRPWRMAP "1 | 2 | 3 0%  | 100%"
-			#define SWRMAX	(SWRMIN * 30 / 10)	// 3.0 - значение на полной шкале
+			#define SWRMAX	(SWRMIN * 30 / 10)	// 3.0 - Р·РЅР°С‡РµРЅРёРµ РЅР° РїРѕР»РЅРѕР№ С€РєР°Р»Рµ
 		#else /* WITHSHOWSWRPWR */
 			#define SWRMAP    "1    |    2    |   3"	// 
 			#define POWERMAP  "0 10 20 40 60 80 100"
-			#define SWRMAX	(SWRMIN * 30 / 10)	// 3.0 - значение на полной шкале
+			#define SWRMAX	(SWRMIN * 30 / 10)	// 3.0 - Р·РЅР°С‡РµРЅРёРµ РЅР° РїРѕР»РЅРѕР№ С€РєР°Р»Рµ
 		#endif /* WITHSHOWSWRPWR */
 		enum
 		{
-			PATTERN_SPACE = 0x00,	/* очищаем место за SWR и PWR метром этим символом */
+			PATTERN_SPACE = 0x00,	/* РѕС‡РёС‰Р°РµРј РјРµСЃС‚Рѕ Р·Р° SWR Рё PWR РјРµС‚СЂРѕРј СЌС‚РёРј СЃРёРјРІРѕР»РѕРј */
 			PATTERN_BAR_FULL = 0xFF,
 			PATTERN_BAR_HALF = 0x3c,
 			//PATTERN_BAR_FULL = 0x7e,
@@ -2708,11 +2708,11 @@ enum
 		};
 
 		enum {
-			DPAGE0,					// Страница, в которой отображаются основные (или все) 
+			DPAGE0,					// РЎС‚СЂР°РЅРёС†Р°, РІ РєРѕС‚РѕСЂРѕР№ РѕС‚РѕР±СЂР°Р¶Р°СЋС‚СЃСЏ РѕСЃРЅРѕРІРЅС‹Рµ (РёР»Рё РІСЃРµ) 
 			DISPLC_MODCOUNT
 		};
-		#define DISPLC_WIDTH	7	// количество цифр в отображении частоты
-		#define DISPLC_RJ		1	// количество скрытых справа цифр в отображении частоты
+		#define DISPLC_WIDTH	7	// РєРѕР»РёС‡РµСЃС‚РІРѕ С†РёС„СЂ РІ РѕС‚РѕР±СЂР°Р¶РµРЅРёРё С‡Р°СЃС‚РѕС‚С‹
+		#define DISPLC_RJ		1	// РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРєСЂС‹С‚С‹С… СЃРїСЂР°РІР° С†РёС„СЂ РІ РѕС‚РѕР±СЂР°Р¶РµРЅРёРё С‡Р°СЃС‚РѕС‚С‹
 		static const FLASHMEM struct dzone dzones [] =
 		{
 			{	0, 0,	display_txrxstate2, REDRM_MODE, REDRSUBSET(DPAGE0), },
@@ -2732,27 +2732,27 @@ enum
 			{	17, 10,	display_mode3_b,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
 			{	5, 10,	display_freqX_b,	REDRM_FRQB, REDRSUBSET(DPAGE0), },
 			{	0, 13,	display2_bars,		REDRM_BARS, REDRSUBSET(DPAGE0), },		// S-METER, SWR-METER, POWER-METER
-			{	1, 14,	display2_legend,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// Отображение оцифровки шкалы S-метра
+			{	1, 14,	display2_legend,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// РћС‚РѕР±СЂР°Р¶РµРЅРёРµ РѕС†РёС„СЂРѕРІРєРё С€РєР°Р»С‹ S-РјРµС‚СЂР°
 		#if WITHMENU
-			{	0, 0,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
-			{	0, 2,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
-			{	4, 2,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
-			{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
+			{	0, 0,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// Р·РЅР°С‡РµРЅРёРµ РїР°СЂР°РјРµС‚СЂР°
+			{	0, 2,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// РєРѕРґ СЂРµРґР°РєС‚РёСЂСѓРµРјРѕРіРѕ РїР°СЂР°РјРµС‚СЂР°
+			{	4, 2,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// РЅР°Р·РІР°РЅРёРµ СЂРµРґР°РєС‚РёСЂСѓРµРјРѕРіРѕ РїР°СЂР°РјРµС‚СЂР°
+			{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// СЃРѕСЃС‚РѕСЏРЅРёРµ Р±Р»РѕРєРёСЂРѕРІРєРё РІР°Р»РєРѕРґРµСЂР°
 		#endif /* WITHMENU */
 		};
 
 	#elif DSTYLE_UR3LMZMOD
-		// Управление УВЧ и двухкаскадным аттенюатором
-		// отображение АРУ
-		// Для CTLSTYLE_RA4YBO_V1
+		// РЈРїСЂР°РІР»РµРЅРёРµ РЈР’Р§ Рё РґРІСѓС…РєР°СЃРєР°РґРЅС‹Рј Р°С‚С‚РµРЅСЋР°С‚РѕСЂРѕРј
+		// РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ РђР РЈ
+		// Р”Р»СЏ CTLSTYLE_RA4YBO_V1
 
 		enum
 		{
-			BDTH_ALLRX = 20,	// ширина зоны для отображение полосы на индикаторе
-			BDTH_RIGHTRX = 11,	// ширина индикатора плюсов
-			BDTH_LEFTRX = BDTH_ALLRX - BDTH_RIGHTRX,	// ширина индикатора баллов
+			BDTH_ALLRX = 20,	// С€РёСЂРёРЅР° Р·РѕРЅС‹ РґР»СЏ РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ РїРѕР»РѕСЃС‹ РЅР° РёРЅРґРёРєР°С‚РѕСЂРµ
+			BDTH_RIGHTRX = 11,	// С€РёСЂРёРЅР° РёРЅРґРёРєР°С‚РѕСЂР° РїР»СЋСЃРѕРІ
+			BDTH_LEFTRX = BDTH_ALLRX - BDTH_RIGHTRX,	// С€РёСЂРёРЅР° РёРЅРґРёРєР°С‚РѕСЂР° Р±Р°Р»Р»РѕРІ
 			BDTH_SPACERX = 0,
-		#if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
+		#if WITHSHOWSWRPWR	/* РЅР° РґРёСЃРїР»РµРµ РѕРґРЅРѕРІСЂРµРјРµРЅРЅРѕ РѕС‚РѕР±СЂР°Р¶Р°СЋС‚СЃСЏ SWR-meter Рё PWR-meter */
 			BDTH_ALLSWR = 9,
 			BDTH_SPACESWR = 1,
 			BDTH_ALLPWR = 10,
@@ -2765,18 +2765,18 @@ enum
 		#endif /* WITHSHOWSWRPWR */
 		};
 		#define SMETERMAP     "1 3 5 7 9 + 20 40 60"
-		#if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
+		#if WITHSHOWSWRPWR	/* РЅР° РґРёСЃРїР»РµРµ РѕРґРЅРѕРІСЂРµРјРµРЅРЅРѕ РѕС‚РѕР±СЂР°Р¶Р°СЋС‚СЃСЏ SWR-meter Рё PWR-meter */
 			//                "01234567890123456789"
 			#define SWRPWRMAP "1 | 2 | 3 0%  | 100%"
-			#define SWRMAX	(SWRMIN * 30 / 10)	// 3.0 - значение на полной шкале
+			#define SWRMAX	(SWRMIN * 30 / 10)	// 3.0 - Р·РЅР°С‡РµРЅРёРµ РЅР° РїРѕР»РЅРѕР№ С€РєР°Р»Рµ
 		#else /* WITHSHOWSWRPWR */
 			#define SWRMAP    "1    |    2    |   3"	// 
 			#define POWERMAP  "0 10 20 40 60 80 100"
-			#define SWRMAX	(SWRMIN * 30 / 10)	// 3.0 - значение на полной шкале
+			#define SWRMAX	(SWRMIN * 30 / 10)	// 3.0 - Р·РЅР°С‡РµРЅРёРµ РЅР° РїРѕР»РЅРѕР№ С€РєР°Р»Рµ
 		#endif /* WITHSHOWSWRPWR */
 		enum
 		{
-			PATTERN_SPACE = 0x00,	/* очищаем место за SWR и PWR метром этим символом */
+			PATTERN_SPACE = 0x00,	/* РѕС‡РёС‰Р°РµРј РјРµСЃС‚Рѕ Р·Р° SWR Рё PWR РјРµС‚СЂРѕРј СЌС‚РёРј СЃРёРјРІРѕР»РѕРј */
 			PATTERN_BAR_FULL = 0xFF,
 			PATTERN_BAR_HALF = 0x3c,
 			//PATTERN_BAR_FULL = 0x7e,
@@ -2786,11 +2786,11 @@ enum
 		};
 
 		enum {
-			DPAGE0,					// Страница, в которой отображаются основные (или все) 
+			DPAGE0,					// РЎС‚СЂР°РЅРёС†Р°, РІ РєРѕС‚РѕСЂРѕР№ РѕС‚РѕР±СЂР°Р¶Р°СЋС‚СЃСЏ РѕСЃРЅРѕРІРЅС‹Рµ (РёР»Рё РІСЃРµ) 
 			DISPLC_MODCOUNT
 		};
-		#define DISPLC_WIDTH	8	// количество цифр в отображении частоты
-		#define DISPLC_RJ		1	// количество скрытых справа цифр в отображении частоты
+		#define DISPLC_WIDTH	8	// РєРѕР»РёС‡РµСЃС‚РІРѕ С†РёС„СЂ РІ РѕС‚РѕР±СЂР°Р¶РµРЅРёРё С‡Р°СЃС‚РѕС‚С‹
+		#define DISPLC_RJ		1	// РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРєСЂС‹С‚С‹С… СЃРїСЂР°РІР° С†РёС„СЂ РІ РѕС‚РѕР±СЂР°Р¶РµРЅРёРё С‡Р°СЃС‚РѕС‚С‹
 		static const FLASHMEM struct dzone dzones [] =
 		{
 			{	0, 0,	display_txrxstate2, REDRM_MODE, REDRSUBSET(DPAGE0), },
@@ -2813,12 +2813,12 @@ enum
 			{	16, 10,	display_mode3_b,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
 
 			{	0, 13,	display2_bars,		REDRM_BARS, REDRSUBSET(DPAGE0), },		// S-METER, SWR-METER, POWER-METER
-			{	1, 14,	display2_legend,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// Отображение оцифровки шкалы S-метра
+			{	1, 14,	display2_legend,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// РћС‚РѕР±СЂР°Р¶РµРЅРёРµ РѕС†РёС„СЂРѕРІРєРё С€РєР°Р»С‹ S-РјРµС‚СЂР°
 		#if WITHMENU
-			{	0, 0,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
-			{	0, 2,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
-			{	4, 2,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
-			{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
+			{	0, 0,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// Р·РЅР°С‡РµРЅРёРµ РїР°СЂР°РјРµС‚СЂР°
+			{	0, 2,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// РєРѕРґ СЂРµРґР°РєС‚РёСЂСѓРµРјРѕРіРѕ РїР°СЂР°РјРµС‚СЂР°
+			{	4, 2,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// РЅР°Р·РІР°РЅРёРµ СЂРµРґР°РєС‚РёСЂСѓРµРјРѕРіРѕ РїР°СЂР°РјРµС‚СЂР°
+			{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// СЃРѕСЃС‚РѕСЏРЅРёРµ Р±Р»РѕРєРёСЂРѕРІРєРё РІР°Р»РєРѕРґРµСЂР°
 		#endif /* WITHMENU */
 		};
 
@@ -2827,11 +2827,11 @@ enum
 
 		enum
 		{
-			BDTH_ALLRX = 17,	// ширина зоны для отображение полосы на индикаторе
-			BDTH_RIGHTRX = 6,	// ширина индикатора плюсов
-			BDTH_LEFTRX = BDTH_ALLRX - BDTH_RIGHTRX,	// ширина индикатора баллов
+			BDTH_ALLRX = 17,	// С€РёСЂРёРЅР° Р·РѕРЅС‹ РґР»СЏ РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ РїРѕР»РѕСЃС‹ РЅР° РёРЅРґРёРєР°С‚РѕСЂРµ
+			BDTH_RIGHTRX = 6,	// С€РёСЂРёРЅР° РёРЅРґРёРєР°С‚РѕСЂР° РїР»СЋСЃРѕРІ
+			BDTH_LEFTRX = BDTH_ALLRX - BDTH_RIGHTRX,	// С€РёСЂРёРЅР° РёРЅРґРёРєР°С‚РѕСЂР° Р±Р°Р»Р»РѕРІ
 			BDTH_SPACERX = 0,
-		#if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
+		#if WITHSHOWSWRPWR	/* РЅР° РґРёСЃРїР»РµРµ РѕРґРЅРѕРІСЂРµРјРµРЅРЅРѕ РѕС‚РѕР±СЂР°Р¶Р°СЋС‚СЃСЏ SWR-meter Рё PWR-meter */
 			BDTH_ALLSWR = 8,
 			BDTH_SPACESWR = 1,
 			BDTH_ALLPWR = 8,
@@ -2842,28 +2842,28 @@ enum
 			BDTH_ALLPWR = BDTH_ALLRX,
 			BDTH_SPACEPWR = BDTH_SPACERX,
 		#endif /* WITHSHOWSWRPWR */
-			BDCV_ALLRX = ROWS2GRID(1),		// количество ячееек, отведенное под S-метр, панораму, иные отображения
-			BDCV_SPMRX = BDCV_ALLRX,	// вертикальный размер спектра в ячейках		};
-			BDCV_WFLRX = BDCV_ALLRX,	// вертикальный размер водопада в ячейках		};
-			BDCO_SPMRX = 0,	// смещение спектра по вертикали в ячейках от начала общего поля
-			BDCO_WFLRX = 0	// смещение водопада по вертикали в ячейках от начала общего поля
+			BDCV_ALLRX = ROWS2GRID(1),		// РєРѕР»РёС‡РµСЃС‚РІРѕ СЏС‡РµРµРµРє, РѕС‚РІРµРґРµРЅРЅРѕРµ РїРѕРґ S-РјРµС‚СЂ, РїР°РЅРѕСЂР°РјСѓ, РёРЅС‹Рµ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ
+			BDCV_SPMRX = BDCV_ALLRX,	// РІРµСЂС‚РёРєР°Р»СЊРЅС‹Р№ СЂР°Р·РјРµСЂ СЃРїРµРєС‚СЂР° РІ СЏС‡РµР№РєР°С…		};
+			BDCV_WFLRX = BDCV_ALLRX,	// РІРµСЂС‚РёРєР°Р»СЊРЅС‹Р№ СЂР°Р·РјРµСЂ РІРѕРґРѕРїР°РґР° РІ СЏС‡РµР№РєР°С…		};
+			BDCO_SPMRX = 0,	// СЃРјРµС‰РµРЅРёРµ СЃРїРµРєС‚СЂР° РїРѕ РІРµСЂС‚РёРєР°Р»Рё РІ СЏС‡РµР№РєР°С… РѕС‚ РЅР°С‡Р°Р»Р° РѕР±С‰РµРіРѕ РїРѕР»СЏ
+			BDCO_WFLRX = 0	// СЃРјРµС‰РµРЅРёРµ РІРѕРґРѕРїР°РґР° РїРѕ РІРµСЂС‚РёРєР°Р»Рё РІ СЏС‡РµР№РєР°С… РѕС‚ РЅР°С‡Р°Р»Р° РѕР±С‰РµРіРѕ РїРѕР»СЏ
 		};
 		enum
 		{
-			PATTERN_SPACE = 0x00,	/* очищаем место за SWR и PWR метром этим символом */
+			PATTERN_SPACE = 0x00,	/* РѕС‡РёС‰Р°РµРј РјРµСЃС‚Рѕ Р·Р° SWR Рё PWR РјРµС‚СЂРѕРј СЌС‚РёРј СЃРёРјРІРѕР»РѕРј */
 			PATTERN_BAR_FULL = 0xFF,
 			PATTERN_BAR_HALF = 0x3c,
 			PATTERN_BAR_EMPTYFULL = 0x00,	//0x00
 			PATTERN_BAR_EMPTYHALF = 0x00	//0x00
 		};
-		#define SWRMAX	(SWRMIN * 40 / 10)	// 4.0 - значение на полной шкале
+		#define SWRMAX	(SWRMIN * 40 / 10)	// 4.0 - Р·РЅР°С‡РµРЅРёРµ РЅР° РїРѕР»РЅРѕР№ С€РєР°Р»Рµ
 
 		enum {
-			DPAGE0,					// Страница, в которой отображаются основные (или все) 
+			DPAGE0,					// РЎС‚СЂР°РЅРёС†Р°, РІ РєРѕС‚РѕСЂРѕР№ РѕС‚РѕР±СЂР°Р¶Р°СЋС‚СЃСЏ РѕСЃРЅРѕРІРЅС‹Рµ (РёР»Рё РІСЃРµ) 
 			DISPLC_MODCOUNT
 		};
-		#define DISPLC_WIDTH	8	// количество цифр в отображении частоты
-		#define DISPLC_RJ		1	// количество скрытых справа цифр в отображении частоты
+		#define DISPLC_WIDTH	8	// РєРѕР»РёС‡РµСЃС‚РІРѕ С†РёС„СЂ РІ РѕС‚РѕР±СЂР°Р¶РµРЅРёРё С‡Р°СЃС‚РѕС‚С‹
+		#define DISPLC_RJ		1	// РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРєСЂС‹С‚С‹С… СЃРїСЂР°РІР° С†РёС„СЂ РІ РѕС‚РѕР±СЂР°Р¶РµРЅРёРё С‡Р°СЃС‚РѕС‚С‹
 		static const FLASHMEM struct dzone dzones [] =
 		{
 			{	0,	0,	display_txrxstate2, REDRM_MODE, REDRSUBSET(DPAGE0), },
@@ -2883,17 +2883,17 @@ enum
 			{	0,	14,	display2_bars,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// S-METER, SWR-METER, POWER-METER
 			{	18, 14,	display_agc3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 		#if WITHMENU
-			{	0, 0,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
-			{	0, 2,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
-			{	4, 2,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
-			{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
+			{	0, 0,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// Р·РЅР°С‡РµРЅРёРµ РїР°СЂР°РјРµС‚СЂР°
+			{	0, 2,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// РєРѕРґ СЂРµРґР°РєС‚РёСЂСѓРµРјРѕРіРѕ РїР°СЂР°РјРµС‚СЂР°
+			{	4, 2,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// РЅР°Р·РІР°РЅРёРµ СЂРµРґР°РєС‚РёСЂСѓРµРјРѕРіРѕ РїР°СЂР°РјРµС‚СЂР°
+			{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// СЃРѕСЃС‚РѕСЏРЅРёРµ Р±Р»РѕРєРёСЂРѕРІРєРё РІР°Р»РєРѕРґРµСЂР°
 		#endif /* WITHMENU */
 		};
 
 	#endif /* DSTYLE_UR3LMZMOD */
 
 #elif DSTYLE_G_X220_Y176
-	// Индикатор 220*176 SF-TC220H-9223A-N_IC_ILI9225C_2011-01-15 с контроллером ILI9225С
+	// РРЅРґРёРєР°С‚РѕСЂ 220*176 SF-TC220H-9223A-N_IC_ILI9225C_2011-01-15 СЃ РєРѕРЅС‚СЂРѕР»Р»РµСЂРѕРј ILI9225РЎ
 	// x= 27 characters
 	#define CHAR_W	8
 	#define CHAR_H	8
@@ -2903,11 +2903,11 @@ enum
 
 		enum
 		{
-			BDTH_ALLRX = 27,	// ширина зоны для отображение полосы на индикаторе
-			BDTH_RIGHTRX = 14,	// ширина индикатора плюсов
-			BDTH_LEFTRX = BDTH_ALLRX - BDTH_RIGHTRX,	// ширина индикатора баллов
+			BDTH_ALLRX = 27,	// С€РёСЂРёРЅР° Р·РѕРЅС‹ РґР»СЏ РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ РїРѕР»РѕСЃС‹ РЅР° РёРЅРґРёРєР°С‚РѕСЂРµ
+			BDTH_RIGHTRX = 14,	// С€РёСЂРёРЅР° РёРЅРґРёРєР°С‚РѕСЂР° РїР»СЋСЃРѕРІ
+			BDTH_LEFTRX = BDTH_ALLRX - BDTH_RIGHTRX,	// С€РёСЂРёРЅР° РёРЅРґРёРєР°С‚РѕСЂР° Р±Р°Р»Р»РѕРІ
 			BDTH_SPACERX = 0,
-		#if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
+		#if WITHSHOWSWRPWR	/* РЅР° РґРёСЃРїР»РµРµ РѕРґРЅРѕРІСЂРµРјРµРЅРЅРѕ РѕС‚РѕР±СЂР°Р¶Р°СЋС‚СЃСЏ SWR-meter Рё PWR-meter */
 			BDTH_ALLSWR = 9,
 			BDTH_SPACESWR = 1,
 			BDTH_ALLPWR = 16,
@@ -2922,17 +2922,17 @@ enum
 		// 27 horisontal places
 		//                    "012345678901234567890123456"
 			#define SMETERMAP "1  3  5  7  9 + 20  40  60 "
-		#if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
-			#define SWRMAX	(SWRMIN * 30 / 10)	// 3.0 - значение на полной шкале
+		#if WITHSHOWSWRPWR	/* РЅР° РґРёСЃРїР»РµРµ РѕРґРЅРѕРІСЂРµРјРµРЅРЅРѕ РѕС‚РѕР±СЂР°Р¶Р°СЋС‚СЃСЏ SWR-meter Рё PWR-meter */
+			#define SWRMAX	(SWRMIN * 30 / 10)	// 3.0 - Р·РЅР°С‡РµРЅРёРµ РЅР° РїРѕР»РЅРѕР№ С€РєР°Р»Рµ
 			#define SWRPWRMAP "1 | 2 | 3 0%     |    100% "
 		#else
 			#define POWERMAP  "0  10  20  40  60  80  100"
 			#define SWRMAP    "1    -    2    -    3    -"	// 
-			#define SWRMAX	(SWRMIN * 36 / 10)	// 3.6 - значение на полной шкале
+			#define SWRMAX	(SWRMIN * 36 / 10)	// 3.6 - Р·РЅР°С‡РµРЅРёРµ РЅР° РїРѕР»РЅРѕР№ С€РєР°Р»Рµ
 		#endif
 		enum
 		{
-			PATTERN_SPACE = 0x00,	/* очищаем место за SWR и PWR метром этим символом */
+			PATTERN_SPACE = 0x00,	/* РѕС‡РёС‰Р°РµРј РјРµСЃС‚Рѕ Р·Р° SWR Рё PWR РјРµС‚СЂРѕРј СЌС‚РёРј СЃРёРјРІРѕР»РѕРј */
 			PATTERN_BAR_FULL = 0xFF,
 			PATTERN_BAR_HALF = 0xFF,
 			PATTERN_BAR_EMPTYFULL = 0x81,	//0x00
@@ -2940,11 +2940,11 @@ enum
 		};
 
 		enum {
-			DPAGE0,					// Страница, в которой отображаются основные (или все) 
+			DPAGE0,					// РЎС‚СЂР°РЅРёС†Р°, РІ РєРѕС‚РѕСЂРѕР№ РѕС‚РѕР±СЂР°Р¶Р°СЋС‚СЃСЏ РѕСЃРЅРѕРІРЅС‹Рµ (РёР»Рё РІСЃРµ) 
 			DISPLC_MODCOUNT
 		};
-		#define DISPLC_WIDTH	8	// количество цифр в отображении частоты
-		#define DISPLC_RJ		1	// количество скрытых справа цифр в отображении частоты
+		#define DISPLC_WIDTH	8	// РєРѕР»РёС‡РµСЃС‚РІРѕ С†РёС„СЂ РІ РѕС‚РѕР±СЂР°Р¶РµРЅРёРё С‡Р°СЃС‚РѕС‚С‹
+		#define DISPLC_RJ		1	// РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРєСЂС‹С‚С‹С… СЃРїСЂР°РІР° С†РёС„СЂ РІ РѕС‚РѕР±СЂР°Р¶РµРЅРёРё С‡Р°СЃС‚РѕС‚С‹
 		static const FLASHMEM struct dzone dzones [] =
 		{
 			{	0, 0,	display_txrxstate2, REDRM_MODE, REDRSUBSET(DPAGE0), },
@@ -2962,7 +2962,7 @@ enum
 			{	24, 11,	display_mode3_b,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
 
 			{	0, 14,	display2_bars,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// S-METER, SWR-METER, POWER-METER
-			{	0, 17,	display2_legend,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// Отображение оцифровки шкалы S-метра
+			{	0, 17,	display2_legend,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// РћС‚РѕР±СЂР°Р¶РµРЅРёРµ РѕС†РёС„СЂРѕРІРєРё С€РєР°Р»С‹ S-РјРµС‚СЂР°
 
 			{	0, 20,	display_lockstate4, REDRM_MODE, REDRSUBSET(DPAGE0), },
 			{	9, 20,	display_voxtune4,	REDRM_MODE, REDRSUBSET(DPAGE0), },
@@ -2973,10 +2973,10 @@ enum
 			{	18, 20,	display_byp3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 			{	22, 20,	display_voltlevelV5, REDRM_VOLT, REDRSUBSET(DPAGE0), },	// voltmeter
 		#if WITHMENU
-			{	0, 0,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
-			{	0, 2,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
-			{	4, 2,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
-			{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
+			{	0, 0,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// Р·РЅР°С‡РµРЅРёРµ РїР°СЂР°РјРµС‚СЂР°
+			{	0, 2,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// РєРѕРґ СЂРµРґР°РєС‚РёСЂСѓРµРјРѕРіРѕ РїР°СЂР°РјРµС‚СЂР°
+			{	4, 2,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// РЅР°Р·РІР°РЅРёРµ СЂРµРґР°РєС‚РёСЂСѓРµРјРѕРіРѕ РїР°СЂР°РјРµС‚СЂР°
+			{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// СЃРѕСЃС‚РѕСЏРЅРёРµ Р±Р»РѕРєРёСЂРѕРІРєРё РІР°Р»РєРѕРґРµСЂР°
 		#endif /* WITHMENU */
 		};
 
@@ -2984,11 +2984,11 @@ enum
 		// KEYBSTYLE_SW2013SF_US2IT
 		enum
 		{
-			BDTH_ALLRX = 27,	// ширина зоны для отображение полосы на индикаторе
-			BDTH_RIGHTRX = 14,	// ширина индикатора плюсов
-			BDTH_LEFTRX = BDTH_ALLRX - BDTH_RIGHTRX,	// ширина индикатора баллов
+			BDTH_ALLRX = 27,	// С€РёСЂРёРЅР° Р·РѕРЅС‹ РґР»СЏ РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ РїРѕР»РѕСЃС‹ РЅР° РёРЅРґРёРєР°С‚РѕСЂРµ
+			BDTH_RIGHTRX = 14,	// С€РёСЂРёРЅР° РёРЅРґРёРєР°С‚РѕСЂР° РїР»СЋСЃРѕРІ
+			BDTH_LEFTRX = BDTH_ALLRX - BDTH_RIGHTRX,	// С€РёСЂРёРЅР° РёРЅРґРёРєР°С‚РѕСЂР° Р±Р°Р»Р»РѕРІ
 			BDTH_SPACERX = 0,
-		#if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
+		#if WITHSHOWSWRPWR	/* РЅР° РґРёСЃРїР»РµРµ РѕРґРЅРѕРІСЂРµРјРµРЅРЅРѕ РѕС‚РѕР±СЂР°Р¶Р°СЋС‚СЃСЏ SWR-meter Рё PWR-meter */
 			BDTH_ALLSWR = 9,
 			BDTH_SPACESWR = 1,
 			BDTH_ALLPWR = 16,
@@ -3003,17 +3003,17 @@ enum
 		// 27 horisontal places
 		//                    "012345678901234567890123456"
 			#define SMETERMAP "1  3  5  7  9 + 20  40  60 "
-		#if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
-			#define SWRMAX	(SWRMIN * 30 / 10)	// 3.0 - значение на полной шкале
+		#if WITHSHOWSWRPWR	/* РЅР° РґРёСЃРїР»РµРµ РѕРґРЅРѕРІСЂРµРјРµРЅРЅРѕ РѕС‚РѕР±СЂР°Р¶Р°СЋС‚СЃСЏ SWR-meter Рё PWR-meter */
+			#define SWRMAX	(SWRMIN * 30 / 10)	// 3.0 - Р·РЅР°С‡РµРЅРёРµ РЅР° РїРѕР»РЅРѕР№ С€РєР°Р»Рµ
 			#define SWRPWRMAP "1 | 2 | 3 0%     |    100% "
 		#else
 			#define POWERMAP  "0  10  20  40  60  80  100"
 			#define SWRMAP    "1    -    2    -    3    -"	// 
-			#define SWRMAX	(SWRMIN * 36 / 10)	// 3.6 - значение на полной шкале
+			#define SWRMAX	(SWRMIN * 36 / 10)	// 3.6 - Р·РЅР°С‡РµРЅРёРµ РЅР° РїРѕР»РЅРѕР№ С€РєР°Р»Рµ
 		#endif
 		enum
 		{
-			PATTERN_SPACE = 0x00,	/* очищаем место за SWR и PWR метром этим символом */
+			PATTERN_SPACE = 0x00,	/* РѕС‡РёС‰Р°РµРј РјРµСЃС‚Рѕ Р·Р° SWR Рё PWR РјРµС‚СЂРѕРј СЌС‚РёРј СЃРёРјРІРѕР»РѕРј */
 			PATTERN_BAR_FULL = 0xFF,
 			PATTERN_BAR_HALF = 0xFF,
 			PATTERN_BAR_EMPTYFULL = 0x81,	//0x00
@@ -3021,11 +3021,11 @@ enum
 		};
 
 		enum {
-			DPAGE0,					// Страница, в которой отображаются основные (или все) 
+			DPAGE0,					// РЎС‚СЂР°РЅРёС†Р°, РІ РєРѕС‚РѕСЂРѕР№ РѕС‚РѕР±СЂР°Р¶Р°СЋС‚СЃСЏ РѕСЃРЅРѕРІРЅС‹Рµ (РёР»Рё РІСЃРµ) 
 			DISPLC_MODCOUNT
 		};
-		#define DISPLC_WIDTH	8	// количество цифр в отображении частоты
-		#define DISPLC_RJ		1	// количество скрытых справа цифр в отображении частоты
+		#define DISPLC_WIDTH	8	// РєРѕР»РёС‡РµСЃС‚РІРѕ С†РёС„СЂ РІ РѕС‚РѕР±СЂР°Р¶РµРЅРёРё С‡Р°СЃС‚РѕС‚С‹
+		#define DISPLC_RJ		1	// РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРєСЂС‹С‚С‹С… СЃРїСЂР°РІР° С†РёС„СЂ РІ РѕС‚РѕР±СЂР°Р¶РµРЅРёРё С‡Р°СЃС‚РѕС‚С‹
 		static const FLASHMEM struct dzone dzones [] =
 		{
 			{	0, 0,	display_txrxstate2, REDRM_MODE, REDRSUBSET(DPAGE0), },
@@ -3043,7 +3043,7 @@ enum
 			{	24, 11,	display_mode3_b,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
 
 			{	0, 14,	display2_bars,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// S-METER, SWR-METER, POWER-METER
-			{	0, 16,	display2_legend,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// Отображение оцифровки шкалы S-метра
+			{	0, 16,	display2_legend,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// РћС‚РѕР±СЂР°Р¶РµРЅРёРµ РѕС†РёС„СЂРѕРІРєРё С€РєР°Р»С‹ S-РјРµС‚СЂР°
 
 		#if defined (RTC1_TYPE)
 			{	0, 18,	display_datetime12,	REDRM_BARS, REDRSUBSET(DPAGE0), },	// DATE&TIME Jan 01 13:40
@@ -3055,10 +3055,10 @@ enum
 			{	18, 20,	display_byp3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 			{	22, 20,	display_voltlevelV5, REDRM_VOLT, REDRSUBSET(DPAGE0), },	// voltmeter
 		#if WITHMENU
-			{	0, 0,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
-			{	0, 2,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
-			{	4, 2,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
-			{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
+			{	0, 0,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// Р·РЅР°С‡РµРЅРёРµ РїР°СЂР°РјРµС‚СЂР°
+			{	0, 2,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// РєРѕРґ СЂРµРґР°РєС‚РёСЂСѓРµРјРѕРіРѕ РїР°СЂР°РјРµС‚СЂР°
+			{	4, 2,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// РЅР°Р·РІР°РЅРёРµ СЂРµРґР°РєС‚РёСЂСѓРµРјРѕРіРѕ РїР°СЂР°РјРµС‚СЂР°
+			{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// СЃРѕСЃС‚РѕСЏРЅРёРµ Р±Р»РѕРєРёСЂРѕРІРєРё РІР°Р»РєРѕРґРµСЂР°
 		#endif /* WITHMENU */
 		};
 
@@ -3066,11 +3066,11 @@ enum
 
 		enum
 		{
-			BDTH_ALLRX = 17,	// ширина зоны для отображение полосы на индикаторе
-			BDTH_RIGHTRX = 6,	// ширина индикатора плюсов
-			BDTH_LEFTRX = BDTH_ALLRX - BDTH_RIGHTRX,	// ширина индикатора баллов
+			BDTH_ALLRX = 17,	// С€РёСЂРёРЅР° Р·РѕРЅС‹ РґР»СЏ РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ РїРѕР»РѕСЃС‹ РЅР° РёРЅРґРёРєР°С‚РѕСЂРµ
+			BDTH_RIGHTRX = 6,	// С€РёСЂРёРЅР° РёРЅРґРёРєР°С‚РѕСЂР° РїР»СЋСЃРѕРІ
+			BDTH_LEFTRX = BDTH_ALLRX - BDTH_RIGHTRX,	// С€РёСЂРёРЅР° РёРЅРґРёРєР°С‚РѕСЂР° Р±Р°Р»Р»РѕРІ
 			BDTH_SPACERX = 0,
-		#if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
+		#if WITHSHOWSWRPWR	/* РЅР° РґРёСЃРїР»РµРµ РѕРґРЅРѕРІСЂРµРјРµРЅРЅРѕ РѕС‚РѕР±СЂР°Р¶Р°СЋС‚СЃСЏ SWR-meter Рё PWR-meter */
 			BDTH_ALLSWR = 8,
 			BDTH_SPACESWR = 1,
 			BDTH_ALLPWR = 8,
@@ -3084,20 +3084,20 @@ enum
 		};
 		enum
 		{
-			PATTERN_SPACE = 0x00,	/* очищаем место за SWR и PWR метром этим символом */
+			PATTERN_SPACE = 0x00,	/* РѕС‡РёС‰Р°РµРј РјРµСЃС‚Рѕ Р·Р° SWR Рё PWR РјРµС‚СЂРѕРј СЌС‚РёРј СЃРёРјРІРѕР»РѕРј */
 			PATTERN_BAR_FULL = 0xFF,
 			PATTERN_BAR_HALF = 0x3c,
 			PATTERN_BAR_EMPTYFULL = 0x00,	//0x00
 			PATTERN_BAR_EMPTYHALF = 0x00	//0x00
 		};
-		#define SWRMAX	(SWRMIN * 40 / 10)	// 4.0 - значение на полной шкале
+		#define SWRMAX	(SWRMIN * 40 / 10)	// 4.0 - Р·РЅР°С‡РµРЅРёРµ РЅР° РїРѕР»РЅРѕР№ С€РєР°Р»Рµ
 
 		enum {
-			DPAGE0,					// Страница, в которой отображаются основные (или все) 
+			DPAGE0,					// РЎС‚СЂР°РЅРёС†Р°, РІ РєРѕС‚РѕСЂРѕР№ РѕС‚РѕР±СЂР°Р¶Р°СЋС‚СЃСЏ РѕСЃРЅРѕРІРЅС‹Рµ (РёР»Рё РІСЃРµ) 
 			DISPLC_MODCOUNT
 		};
-		#define DISPLC_WIDTH	7	// количество цифр в отображении частоты
-		#define DISPLC_RJ		1	// количество скрытых справа цифр в отображении частоты
+		#define DISPLC_WIDTH	7	// РєРѕР»РёС‡РµСЃС‚РІРѕ С†РёС„СЂ РІ РѕС‚РѕР±СЂР°Р¶РµРЅРёРё С‡Р°СЃС‚РѕС‚С‹
+		#define DISPLC_RJ		1	// РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРєСЂС‹С‚С‹С… СЃРїСЂР°РІР° С†РёС„СЂ РІ РѕС‚РѕР±СЂР°Р¶РµРЅРёРё С‡Р°СЃС‚РѕС‚С‹
 		static const FLASHMEM struct dzone dzones [] =
 		{
 			{	0, 0,	display_txrxstate2, REDRM_MODE, REDRSUBSET(DPAGE0), },
@@ -3122,10 +3122,10 @@ enum
 			{	19, 20,	display_byp3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 			{	23, 20,	display_voltlevel4, REDRM_VOLT, REDRSUBSET(DPAGE0), },	// voltmeter without "V"
 		#if WITHMENU
-			{	0, 0,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
-			{	0, 2,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
-			{	4, 2,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
-			{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
+			{	0, 0,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// Р·РЅР°С‡РµРЅРёРµ РїР°СЂР°РјРµС‚СЂР°
+			{	0, 2,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// РєРѕРґ СЂРµРґР°РєС‚РёСЂСѓРµРјРѕРіРѕ РїР°СЂР°РјРµС‚СЂР°
+			{	4, 2,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// РЅР°Р·РІР°РЅРёРµ СЂРµРґР°РєС‚РёСЂСѓРµРјРѕРіРѕ РїР°СЂР°РјРµС‚СЂР°
+			{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// СЃРѕСЃС‚РѕСЏРЅРёРµ Р±Р»РѕРєРёСЂРѕРІРєРё РІР°Р»РєРѕРґРµСЂР°
 		#endif /* WITHMENU */
 		};
 
@@ -3142,11 +3142,11 @@ enum
 
 		enum
 		{
-			BDTH_ALLRX = 30,	// ширина зоны для отображение полосы на индикаторе
-			BDTH_LEFTRX = 15,	// ширина индикатора баллов
-			BDTH_RIGHTRX = BDTH_ALLRX - BDTH_LEFTRX,	// ширина индикатора плюсов 
+			BDTH_ALLRX = 30,	// С€РёСЂРёРЅР° Р·РѕРЅС‹ РґР»СЏ РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ РїРѕР»РѕСЃС‹ РЅР° РёРЅРґРёРєР°С‚РѕСЂРµ
+			BDTH_LEFTRX = 15,	// С€РёСЂРёРЅР° РёРЅРґРёРєР°С‚РѕСЂР° Р±Р°Р»Р»РѕРІ
+			BDTH_RIGHTRX = BDTH_ALLRX - BDTH_LEFTRX,	// С€РёСЂРёРЅР° РёРЅРґРёРєР°С‚РѕСЂР° РїР»СЋСЃРѕРІ 
 			BDTH_SPACERX = 0,
-		#if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
+		#if WITHSHOWSWRPWR	/* РЅР° РґРёСЃРїР»РµРµ РѕРґРЅРѕРІСЂРµРјРµРЅРЅРѕ РѕС‚РѕР±СЂР°Р¶Р°СЋС‚СЃСЏ SWR-meter Рё PWR-meter */
 			BDTH_ALLSWR = 9,
 			BDTH_SPACESWR = 1,
 			BDTH_ALLPWR = 20,
@@ -3160,31 +3160,31 @@ enum
 		};
 		//					  "012345678901234567890123456789"
 		#define SMETERMAP 	  "S 1  3  5  7  9  +20  +40  +60"	//
-		#if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
+		#if WITHSHOWSWRPWR	/* РЅР° РґРёСЃРїР»РµРµ РѕРґРЅРѕРІСЂРµРјРµРЅРЅРѕ РѕС‚РѕР±СЂР°Р¶Р°СЋС‚СЃСЏ SWR-meter Рё PWR-meter */
 			#define SWRPWRMAP "1 | 2 | 3 0%      50%     100%" 
-			#define SWRMAX	(SWRMIN * 30 / 10)	// 3.0 - значение на полной шкале
+			#define SWRMAX	(SWRMIN * 30 / 10)	// 3.0 - Р·РЅР°С‡РµРЅРёРµ РЅР° РїРѕР»РЅРѕР№ С€РєР°Р»Рµ
 		#else
 			#error Not designed for work DSTYLE_UR3LMZMOD without WITHSHOWSWRPWR
 			//#define POWERMAP  " 0 10 20 40 60 80 100"
 			//#define SWRMAP    "1    |    2    |   3 "	// 
-			//#define SWRMAX	(SWRMIN * 31 / 10)	// 3.1 - значение на полной шкале
+			//#define SWRMAX	(SWRMIN * 31 / 10)	// 3.1 - Р·РЅР°С‡РµРЅРёРµ РЅР° РїРѕР»РЅРѕР№ С€РєР°Р»Рµ
 		#endif
 		enum
 		{
-			PATTERN_SPACE = 0x00,	/* очищаем место за SWR и PWR метром этим символом */
+			PATTERN_SPACE = 0x00,	/* РѕС‡РёС‰Р°РµРј РјРµСЃС‚Рѕ Р·Р° SWR Рё PWR РјРµС‚СЂРѕРј СЌС‚РёРј СЃРёРјРІРѕР»РѕРј */
 			PATTERN_BAR_FULL = 0xFF,
 			PATTERN_BAR_HALF = 0xFF,
 			PATTERN_BAR_EMPTYFULL = 0x81,
 			PATTERN_BAR_EMPTYHALF = 0x81
 		};
-		#define SWRMAX	(SWRMIN * 40 / 10)	// 4.0 - значение на полной шкале
+		#define SWRMAX	(SWRMIN * 40 / 10)	// 4.0 - Р·РЅР°С‡РµРЅРёРµ РЅР° РїРѕР»РЅРѕР№ С€РєР°Р»Рµ
 
 		enum {
-			DPAGE0,					// Страница, в которой отображаются основные (или все) 
+			DPAGE0,					// РЎС‚СЂР°РЅРёС†Р°, РІ РєРѕС‚РѕСЂРѕР№ РѕС‚РѕР±СЂР°Р¶Р°СЋС‚СЃСЏ РѕСЃРЅРѕРІРЅС‹Рµ (РёР»Рё РІСЃРµ) 
 			DISPLC_MODCOUNT
 		};
-		#define DISPLC_WIDTH	8	// количество цифр в отображении частоты
-		#define DISPLC_RJ		1	// количество скрытых справа цифр в отображении частоты
+		#define DISPLC_WIDTH	8	// РєРѕР»РёС‡РµСЃС‚РІРѕ С†РёС„СЂ РІ РѕС‚РѕР±СЂР°Р¶РµРЅРёРё С‡Р°СЃС‚РѕС‚С‹
+		#define DISPLC_RJ		1	// РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРєСЂС‹С‚С‹С… СЃРїСЂР°РІР° С†РёС„СЂ РІ РѕС‚РѕР±СЂР°Р¶РµРЅРёРё С‡Р°СЃС‚РѕС‚С‹
 		static const FLASHMEM struct dzone dzones [] =
 		{
 		/* ---------------------------------- */
@@ -3204,7 +3204,7 @@ enum
 			{	27, 8,	display_mode3_b,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
 		/* ---------------------------------- */
 			{	0,	11,	display2_bars,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// S-METER, SWR-METER, POWER-METER
-			{	0,	12,	display2_legend,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// Отображение оцифровки шкалы S-метра
+			{	0,	12,	display2_legend,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// РћС‚РѕР±СЂР°Р¶РµРЅРёРµ РѕС†РёС„СЂРѕРІРєРё С€РєР°Р»С‹ S-РјРµС‚СЂР°
 			/* ---------------------------------- */
 			{	0,	14,	display_voxtune3,	REDRM_MODE, REDRSUBSET(DPAGE0), },
 	#if WITHNOTCHONOFF || WITHNOTCHFREQ
@@ -3227,10 +3227,10 @@ enum
 		#endif /* WITHNOTCHONOFF || WITHNOTCHFREQ */
 		/* ---------------------------------- */
 	#if WITHMENU
-			{	0,	0,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
-			{	0,	2,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
-			{	4,	2,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
-			{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
+			{	0,	0,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// Р·РЅР°С‡РµРЅРёРµ РїР°СЂР°РјРµС‚СЂР°
+			{	0,	2,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// РєРѕРґ СЂРµРґР°РєС‚РёСЂСѓРµРјРѕРіРѕ РїР°СЂР°РјРµС‚СЂР°
+			{	4,	2,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// РЅР°Р·РІР°РЅРёРµ СЂРµРґР°РєС‚РёСЂСѓРµРјРѕРіРѕ РїР°СЂР°РјРµС‚СЂР°
+			{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// СЃРѕСЃС‚РѕСЏРЅРёРµ Р±Р»РѕРєРёСЂРѕРІРєРё РІР°Р»РєРѕРґРµСЂР°
 		#if WITHVOLTLEVEL && WITHCURRLEVEL
 			{	0,	9,	display_voltlevelV5, REDRM_VOLT, REDRSUBSET_MENU, },	// voltmeter with "V"
 			{	6,	9,	display_currlevelA6, REDRM_VOLT, REDRSUBSET_MENU, },	// amphermeter with "A"
@@ -3243,17 +3243,17 @@ enum
 		// x=30, y=16
 		enum
 		{
-			BDCV_ALLRX = 7,			// количество ячееек, отведенное под S-метр, панораму, иные отображения
-			BDCV_SPMRX = BDCV_ALLRX,	// вертикальный размер спектра в ячейках		};
-			BDCV_WFLRX = BDCV_ALLRX,	// вертикальный размер водопада в ячейках		};
-			BDCO_SPMRX = 0,	// смещение спектра по вертикали в ячейках от начала общего поля
-			BDCO_WFLRX = 0,	// смещение водопада по вертикали в ячейках от начала общего поля
+			BDCV_ALLRX = 7,			// РєРѕР»РёС‡РµСЃС‚РІРѕ СЏС‡РµРµРµРє, РѕС‚РІРµРґРµРЅРЅРѕРµ РїРѕРґ S-РјРµС‚СЂ, РїР°РЅРѕСЂР°РјСѓ, РёРЅС‹Рµ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ
+			BDCV_SPMRX = BDCV_ALLRX,	// РІРµСЂС‚РёРєР°Р»СЊРЅС‹Р№ СЂР°Р·РјРµСЂ СЃРїРµРєС‚СЂР° РІ СЏС‡РµР№РєР°С…		};
+			BDCV_WFLRX = BDCV_ALLRX,	// РІРµСЂС‚РёРєР°Р»СЊРЅС‹Р№ СЂР°Р·РјРµСЂ РІРѕРґРѕРїР°РґР° РІ СЏС‡РµР№РєР°С…		};
+			BDCO_SPMRX = 0,	// СЃРјРµС‰РµРЅРёРµ СЃРїРµРєС‚СЂР° РїРѕ РІРµСЂС‚РёРєР°Р»Рё РІ СЏС‡РµР№РєР°С… РѕС‚ РЅР°С‡Р°Р»Р° РѕР±С‰РµРіРѕ РїРѕР»СЏ
+			BDCO_WFLRX = 0,	// СЃРјРµС‰РµРЅРёРµ РІРѕРґРѕРїР°РґР° РїРѕ РІРµСЂС‚РёРєР°Р»Рё РІ СЏС‡РµР№РєР°С… РѕС‚ РЅР°С‡Р°Р»Р° РѕР±С‰РµРіРѕ РїРѕР»СЏ
 
-			BDTH_ALLRX = 30,	// ширина зоны для отображение полосы на индикаторе
-			BDTH_LEFTRX = 15,	// ширина индикатора баллов
-			BDTH_RIGHTRX = BDTH_ALLRX - BDTH_LEFTRX,	// ширина индикатора плюсов 
+			BDTH_ALLRX = 30,	// С€РёСЂРёРЅР° Р·РѕРЅС‹ РґР»СЏ РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ РїРѕР»РѕСЃС‹ РЅР° РёРЅРґРёРєР°С‚РѕСЂРµ
+			BDTH_LEFTRX = 15,	// С€РёСЂРёРЅР° РёРЅРґРёРєР°С‚РѕСЂР° Р±Р°Р»Р»РѕРІ
+			BDTH_RIGHTRX = BDTH_ALLRX - BDTH_LEFTRX,	// С€РёСЂРёРЅР° РёРЅРґРёРєР°С‚РѕСЂР° РїР»СЋСЃРѕРІ 
 			BDTH_SPACERX = 0,
-		#if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
+		#if WITHSHOWSWRPWR	/* РЅР° РґРёСЃРїР»РµРµ РѕРґРЅРѕРІСЂРµРјРµРЅРЅРѕ РѕС‚РѕР±СЂР°Р¶Р°СЋС‚СЃСЏ SWR-meter Рё PWR-meter */
 			BDTH_ALLSWR = 9,
 			BDTH_SPACESWR = 1,
 			BDTH_ALLPWR = 20,
@@ -3267,28 +3267,28 @@ enum
 		};
 		//					  "012345678901234567890123456789"
 		#define SMETERMAP 	  "S 1  3  5  7  9  +20  +40  +60"	//
-		//#if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
+		//#if WITHSHOWSWRPWR	/* РЅР° РґРёСЃРїР»РµРµ РѕРґРЅРѕРІСЂРµРјРµРЅРЅРѕ РѕС‚РѕР±СЂР°Р¶Р°СЋС‚СЃСЏ SWR-meter Рё PWR-meter */
 			#define SWRPWRMAP "1 | 2 | 3 0%      50%     100%" 
-			#define SWRMAX	(SWRMIN * 30 / 10)	// 3.0 - значение на полной шкале
+			#define SWRMAX	(SWRMIN * 30 / 10)	// 3.0 - Р·РЅР°С‡РµРЅРёРµ РЅР° РїРѕР»РЅРѕР№ С€РєР°Р»Рµ
 		//#else
 		//	#error Not designed for work DSTYLE_UR3LMZMOD without WITHSHOWSWRPWR
 			//#define POWERMAP  " 0 10 20 40 60 80 100"
 			//#define SWRMAP    "1    |    2    |   3 "	// 
-			//#define SWRMAX	(SWRMIN * 31 / 10)	// 3.1 - значение на полной шкале
+			//#define SWRMAX	(SWRMIN * 31 / 10)	// 3.1 - Р·РЅР°С‡РµРЅРёРµ РЅР° РїРѕР»РЅРѕР№ С€РєР°Р»Рµ
 		//#endif
 		enum
 		{
-			PATTERN_SPACE = 0x00,	/* очищаем место за SWR и PWR метром этим символом */
+			PATTERN_SPACE = 0x00,	/* РѕС‡РёС‰Р°РµРј РјРµСЃС‚Рѕ Р·Р° SWR Рё PWR РјРµС‚СЂРѕРј СЌС‚РёРј СЃРёРјРІРѕР»РѕРј */
 			PATTERN_BAR_FULL = 0xFF,
 			PATTERN_BAR_HALF = 0xFF,
 			PATTERN_BAR_EMPTYFULL = 0x81,
 			PATTERN_BAR_EMPTYHALF = 0x81
 		};
-		//#define SWRMAX	(SWRMIN * 40 / 10)	// 4.0 - значение на полной шкале
+		//#define SWRMAX	(SWRMIN * 40 / 10)	// 4.0 - Р·РЅР°С‡РµРЅРёРµ РЅР° РїРѕР»РЅРѕР№ С€РєР°Р»Рµ
 
 		enum {
-			DPAGE0,					// Страница, в которой отображаются основные (или все) 
-			DPAGE1,					// Страница, в которой отображаются основные (или все) 
+			DPAGE0,					// РЎС‚СЂР°РЅРёС†Р°, РІ РєРѕС‚РѕСЂРѕР№ РѕС‚РѕР±СЂР°Р¶Р°СЋС‚СЃСЏ РѕСЃРЅРѕРІРЅС‹Рµ (РёР»Рё РІСЃРµ) 
+			DPAGE1,					// РЎС‚СЂР°РЅРёС†Р°, РІ РєРѕС‚РѕСЂРѕР№ РѕС‚РѕР±СЂР°Р¶Р°СЋС‚СЃСЏ РѕСЃРЅРѕРІРЅС‹Рµ (РёР»Рё РІСЃРµ) 
 			DISPLC_MODCOUNT
 		};
 		enum
@@ -3299,8 +3299,8 @@ enum
 			PGLATCH = PGALL,
 			PGunused
 		};
-		#define DISPLC_WIDTH	8	// количество цифр в отображении частоты
-		#define DISPLC_RJ		1	// количество скрытых справа цифр в отображении частоты
+		#define DISPLC_WIDTH	8	// РєРѕР»РёС‡РµСЃС‚РІРѕ С†РёС„СЂ РІ РѕС‚РѕР±СЂР°Р¶РµРЅРёРё С‡Р°СЃС‚РѕС‚С‹
+		#define DISPLC_RJ		1	// РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРєСЂС‹С‚С‹С… СЃРїСЂР°РІР° С†РёС„СЂ РІ РѕС‚РѕР±СЂР°Р¶РµРЅРёРё С‡Р°СЃС‚РѕС‚С‹
 		static const FLASHMEM struct dzone dzones [] =
 		{
 		/* ---------------------------------- */
@@ -3320,7 +3320,7 @@ enum
 			{	27, 4,	display_voxtune3,	REDRM_MODE, PGALL, },
 		/* ---------------------------------- */
 		#if WITHUSEAUDIOREC
-			{	0,	7,	display_rec3,		REDRM_BARS, PGALL, },	// Отображение режима записи аудио фрагмента
+			{	0,	7,	display_rec3,		REDRM_BARS, PGALL, },	// РћС‚РѕР±СЂР°Р¶РµРЅРёРµ СЂРµР¶РёРјР° Р·Р°РїРёСЃРё Р°СѓРґРёРѕ С„СЂР°РіРјРµРЅС‚Р°
 		#endif /* WITHUSEAUDIOREC */
 			{	4,	7,	display_mainsub3, REDRM_MODE, PGALL, },	// main/sub RX
 			{	8,	7,	display_vfomode3,	REDRM_MODE, PGALL, },	// SPL
@@ -3328,11 +3328,11 @@ enum
 			{	27, 7,	display_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
 		/* ---------------------------------- */
 			{	0,	9,	display2_bars,		REDRM_BARS, PG0, },	// S-METER, SWR-METER, POWER-METER
-			{	0,	10,	display2_legend,	REDRM_MODE, PG0, },	// Отображение оцифровки шкалы S-метра
+			{	0,	10,	display2_legend,	REDRM_MODE, PG0, },	// РћС‚РѕР±СЂР°Р¶РµРЅРёРµ РѕС†РёС„СЂРѕРІРєРё С€РєР°Р»С‹ S-РјРµС‚СЂР°
 			/* ---------------------------------- */
-			{	0,	9,	dsp_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
-			{	0,	9,	display2_spectrum,	REDRM_BARS, PG1, },// подготовка изображения спектра
-			{	0,	9,	display2_colorbuff,	REDRM_BARS,	PG1, },// Отображение водопада и/или спектра
+			{	0,	9,	dsp_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// С„РѕСЂРјРёСЂРѕРІР°РЅРёРµ РґР°РЅРЅС‹С… СЃРїРµРєС‚СЂР° РґР»СЏ РїРѕСЃР»РµРґСѓСЋС‰РµРіРѕ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ СЃРїРµРєС‚СЂР° РёР»Рё РІРѕРґРѕРїР°РґР°
+			{	0,	9,	display2_spectrum,	REDRM_BARS, PG1, },// РїРѕРґРіРѕС‚РѕРІРєР° РёР·РѕР±СЂР°Р¶РµРЅРёСЏ СЃРїРµРєС‚СЂР°
+			{	0,	9,	display2_colorbuff,	REDRM_BARS,	PG1, },// РћС‚РѕР±СЂР°Р¶РµРЅРёРµ РІРѕРґРѕРїР°РґР° Рё/РёР»Рё СЃРїРµРєС‚СЂР°
 			/* ---------------------------------- */
 		#if defined (RTC1_TYPE)
 			{	0,	14,	display_time5,		REDRM_BARS, PG0, },	// TIME
@@ -3346,16 +3346,16 @@ enum
 		#if WITHAMHIGHKBDADJ
 			{	6, 14,	display_amfmhighcut4,REDRM_MODE, PG0, },	// 3.70
 		#endif /* WITHAMHIGHKBDADJ */
-			{	18, 14,	display_samfreqdelta8, REDRM_BARS, PG0 | REDRSUBSET_MENU, },	/* Получить информацию об ошибке настройки в режиме SAM */
+			{	18, 14,	display_samfreqdelta8, REDRM_BARS, PG0 | REDRSUBSET_MENU, },	/* РџРѕР»СѓС‡РёС‚СЊ РёРЅС„РѕСЂРјР°С†РёСЋ РѕР± РѕС€РёР±РєРµ РЅР°СЃС‚СЂРѕР№РєРё РІ СЂРµР¶РёРјРµ SAM */
 		#if WITHNOTCHONOFF || WITHNOTCHFREQ
 			{	27, 14,	display_notch3, REDRM_MODE, PG0, },	// 3.7
 		#endif /* WITHNOTCHONOFF || WITHNOTCHFREQ */
 		/* ---------------------------------- */
 	#if WITHMENU
-			{	0,	9,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
-			{	0,	11,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
-			{	4,	11,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
-			//{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
+			{	0,	9,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// Р·РЅР°С‡РµРЅРёРµ РїР°СЂР°РјРµС‚СЂР°
+			{	0,	11,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// РєРѕРґ СЂРµРґР°РєС‚РёСЂСѓРµРјРѕРіРѕ РїР°СЂР°РјРµС‚СЂР°
+			{	4,	11,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// РЅР°Р·РІР°РЅРёРµ СЂРµРґР°РєС‚РёСЂСѓРµРјРѕРіРѕ РїР°СЂР°РјРµС‚СЂР°
+			//{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// СЃРѕСЃС‚РѕСЏРЅРёРµ Р±Р»РѕРєРёСЂРѕРІРєРё РІР°Р»РєРѕРґРµСЂР°
 		#if WITHVOLTLEVEL && WITHCURRLEVEL
 			//{	0,	9,	display_voltlevelV5, REDRM_VOLT, REDRSUBSET_MENU, },	// voltmeter with "V"
 			//{	6,	9,	display_currlevelA6, REDRM_VOLT, REDRSUBSET_MENU, },	// amphermeter with "A"
@@ -3369,16 +3369,16 @@ enum
 
 		enum
 		{
-			BDCV_ALLRX = 7,			// количество ячееек, отведенное под S-метр, панораму, иные отображения
-			BDCV_SPMRX = BDCV_ALLRX,	// вертикальный размер спектра в ячейках		};
-			BDCV_WFLRX = BDCV_ALLRX,	// вертикальный размер водопада в ячейках		};
-			BDCO_SPMRX = 0,	// смещение спектра по вертикали в ячейках от начала общего поля
-			BDCO_WFLRX = 0,	// смещение водопада по вертикали в ячейках от начала общего поля
-			BDTH_ALLRX = 30,	// ширина зоны для отображение полосы на индикаторе
-			BDTH_LEFTRX = 15,	// ширина индикатора баллов
-			BDTH_RIGHTRX = BDTH_ALLRX - BDTH_LEFTRX,	// ширина индикатора плюсов 
+			BDCV_ALLRX = 7,			// РєРѕР»РёС‡РµСЃС‚РІРѕ СЏС‡РµРµРµРє, РѕС‚РІРµРґРµРЅРЅРѕРµ РїРѕРґ S-РјРµС‚СЂ, РїР°РЅРѕСЂР°РјСѓ, РёРЅС‹Рµ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ
+			BDCV_SPMRX = BDCV_ALLRX,	// РІРµСЂС‚РёРєР°Р»СЊРЅС‹Р№ СЂР°Р·РјРµСЂ СЃРїРµРєС‚СЂР° РІ СЏС‡РµР№РєР°С…		};
+			BDCV_WFLRX = BDCV_ALLRX,	// РІРµСЂС‚РёРєР°Р»СЊРЅС‹Р№ СЂР°Р·РјРµСЂ РІРѕРґРѕРїР°РґР° РІ СЏС‡РµР№РєР°С…		};
+			BDCO_SPMRX = 0,	// СЃРјРµС‰РµРЅРёРµ СЃРїРµРєС‚СЂР° РїРѕ РІРµСЂС‚РёРєР°Р»Рё РІ СЏС‡РµР№РєР°С… РѕС‚ РЅР°С‡Р°Р»Р° РѕР±С‰РµРіРѕ РїРѕР»СЏ
+			BDCO_WFLRX = 0,	// СЃРјРµС‰РµРЅРёРµ РІРѕРґРѕРїР°РґР° РїРѕ РІРµСЂС‚РёРєР°Р»Рё РІ СЏС‡РµР№РєР°С… РѕС‚ РЅР°С‡Р°Р»Р° РѕР±С‰РµРіРѕ РїРѕР»СЏ
+			BDTH_ALLRX = 30,	// С€РёСЂРёРЅР° Р·РѕРЅС‹ РґР»СЏ РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ РїРѕР»РѕСЃС‹ РЅР° РёРЅРґРёРєР°С‚РѕСЂРµ
+			BDTH_LEFTRX = 15,	// С€РёСЂРёРЅР° РёРЅРґРёРєР°С‚РѕСЂР° Р±Р°Р»Р»РѕРІ
+			BDTH_RIGHTRX = BDTH_ALLRX - BDTH_LEFTRX,	// С€РёСЂРёРЅР° РёРЅРґРёРєР°С‚РѕСЂР° РїР»СЋСЃРѕРІ 
 			BDTH_SPACERX = 0,
-		#if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
+		#if WITHSHOWSWRPWR	/* РЅР° РґРёСЃРїР»РµРµ РѕРґРЅРѕРІСЂРµРјРµРЅРЅРѕ РѕС‚РѕР±СЂР°Р¶Р°СЋС‚СЃСЏ SWR-meter Рё PWR-meter */
 			BDTH_ALLSWR = 9,
 			BDTH_SPACESWR = 1,
 			BDTH_ALLPWR = 20,
@@ -3392,29 +3392,29 @@ enum
 		};
 		//					  "012345678901234567890123456789"
 		#define SMETERMAP 	  "S 1  3  5  7  9  +20  +40  +60"	//
-		//#if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
+		//#if WITHSHOWSWRPWR	/* РЅР° РґРёСЃРїР»РµРµ РѕРґРЅРѕРІСЂРµРјРµРЅРЅРѕ РѕС‚РѕР±СЂР°Р¶Р°СЋС‚СЃСЏ SWR-meter Рё PWR-meter */
 			#define SWRPWRMAP "1 | 2 | 3 0%      50%     100%" 
-			#define SWRMAX	(SWRMIN * 30 / 10)	// 3.0 - значение на полной шкале
+			#define SWRMAX	(SWRMIN * 30 / 10)	// 3.0 - Р·РЅР°С‡РµРЅРёРµ РЅР° РїРѕР»РЅРѕР№ С€РєР°Р»Рµ
 		//#else
 		//	#error Not designed for work DSTYLE_UR3LMZMOD without WITHSHOWSWRPWR
 			//#define POWERMAP  " 0 10 20 40 60 80 100"
 			//#define SWRMAP    "1    |    2    |   3 "	// 
-			//#define SWRMAX	(SWRMIN * 31 / 10)	// 3.1 - значение на полной шкале
+			//#define SWRMAX	(SWRMIN * 31 / 10)	// 3.1 - Р·РЅР°С‡РµРЅРёРµ РЅР° РїРѕР»РЅРѕР№ С€РєР°Р»Рµ
 		//#endif
 		enum
 		{
-			PATTERN_SPACE = 0x00,	/* очищаем место за SWR и PWR метром этим символом */
+			PATTERN_SPACE = 0x00,	/* РѕС‡РёС‰Р°РµРј РјРµСЃС‚Рѕ Р·Р° SWR Рё PWR РјРµС‚СЂРѕРј СЌС‚РёРј СЃРёРјРІРѕР»РѕРј */
 			PATTERN_BAR_FULL = 0xFF,
 			PATTERN_BAR_HALF = 0xFF,
 			PATTERN_BAR_EMPTYFULL = 0x81,
 			PATTERN_BAR_EMPTYHALF = 0x81
 		};
-		//#define SWRMAX	(SWRMIN * 40 / 10)	// 4.0 - значение на полной шкале
+		//#define SWRMAX	(SWRMIN * 40 / 10)	// 4.0 - Р·РЅР°С‡РµРЅРёРµ РЅР° РїРѕР»РЅРѕР№ С€РєР°Р»Рµ
 
 		enum {
-			DPAGE0,					// Страница, в которой отображаются основные (или все) 
+			DPAGE0,					// РЎС‚СЂР°РЅРёС†Р°, РІ РєРѕС‚РѕСЂРѕР№ РѕС‚РѕР±СЂР°Р¶Р°СЋС‚СЃСЏ РѕСЃРЅРѕРІРЅС‹Рµ (РёР»Рё РІСЃРµ) 
 		#if WITHDSPEXTDDC
-			DPAGE1,					// Страница, в которой отображаются основные (или все) 
+			DPAGE1,					// РЎС‚СЂР°РЅРёС†Р°, РІ РєРѕС‚РѕСЂРѕР№ РѕС‚РѕР±СЂР°Р¶Р°СЋС‚СЃСЏ РѕСЃРЅРѕРІРЅС‹Рµ (РёР»Рё РІСЃРµ) 
 		#endif /* WITHDSPEXTDDC */
 			DISPLC_MODCOUNT
 		};
@@ -3430,8 +3430,8 @@ enum
 			PGLATCH = PGALL,
 			PGunused
 		};
-		#define DISPLC_WIDTH	8	// количество цифр в отображении частоты
-		#define DISPLC_RJ		1	// количество скрытых справа цифр в отображении частоты
+		#define DISPLC_WIDTH	8	// РєРѕР»РёС‡РµСЃС‚РІРѕ С†РёС„СЂ РІ РѕС‚РѕР±СЂР°Р¶РµРЅРёРё С‡Р°СЃС‚РѕС‚С‹
+		#define DISPLC_RJ		1	// РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРєСЂС‹С‚С‹С… СЃРїСЂР°РІР° С†РёС„СЂ РІ РѕС‚РѕР±СЂР°Р¶РµРЅРёРё С‡Р°СЃС‚РѕС‚С‹
 		static const FLASHMEM struct dzone dzones [] =
 		{
 		/* ---------------------------------- */
@@ -3457,7 +3457,7 @@ enum
 			{	27, 4,	display_voxtune3,	REDRM_MODE, PGALL, },
 		/* ---------------------------------- */
 		#if WITHUSEAUDIOREC
-			{	0,	7,	display_rec3,		REDRM_BARS, PGALL, },	// Отображение режима записи аудио фрагмента
+			{	0,	7,	display_rec3,		REDRM_BARS, PGALL, },	// РћС‚РѕР±СЂР°Р¶РµРЅРёРµ СЂРµР¶РёРјР° Р·Р°РїРёСЃРё Р°СѓРґРёРѕ С„СЂР°РіРјРµРЅС‚Р°
 		#endif /* WITHUSEAUDIOREC */
 			{	4,	7,	display_mainsub3, REDRM_MODE, PGALL, },	// main/sub RX
 			{	8,	7,	display_vfomode3,	REDRM_MODE, PGALL, },	// SPL
@@ -3465,13 +3465,13 @@ enum
 			{	27, 7,	display_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
 		/* ---------------------------------- */
 			{	0,	9,	display2_bars,		REDRM_BARS, PG0 | REDRSUBSET_MENU, },	// S-METER, SWR-METER, POWER-METER
-			{	0,	10,	display2_legend,	REDRM_MODE, PG0 | REDRSUBSET_MENU, },	// Отображение оцифровки шкалы S-метра
+			{	0,	10,	display2_legend,	REDRM_MODE, PG0 | REDRSUBSET_MENU, },	// РћС‚РѕР±СЂР°Р¶РµРЅРёРµ РѕС†РёС„СЂРѕРІРєРё С€РєР°Р»С‹ S-РјРµС‚СЂР°
 			/* ---------------------------------- */
 		#if WITHDSPEXTDDC
 
-			{	0,	9,	dsp_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
-			{	0,	9,	display2_spectrum,	REDRM_BARS, PG1, },// подготовка изображения спектра
-			{	0,	9,	display2_colorbuff,	REDRM_BARS,	PG1, },// Отображение водопада и/или спектра
+			{	0,	9,	dsp_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// С„РѕСЂРјРёСЂРѕРІР°РЅРёРµ РґР°РЅРЅС‹С… СЃРїРµРєС‚СЂР° РґР»СЏ РїРѕСЃР»РµРґСѓСЋС‰РµРіРѕ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ СЃРїРµРєС‚СЂР° РёР»Рё РІРѕРґРѕРїР°РґР°
+			{	0,	9,	display2_spectrum,	REDRM_BARS, PG1, },// РїРѕРґРіРѕС‚РѕРІРєР° РёР·РѕР±СЂР°Р¶РµРЅРёСЏ СЃРїРµРєС‚СЂР°
+			{	0,	9,	display2_colorbuff,	REDRM_BARS,	PG1, },// РћС‚РѕР±СЂР°Р¶РµРЅРёРµ РІРѕРґРѕРїР°РґР° Рё/РёР»Рё СЃРїРµРєС‚СЂР°
 		#else /* WITHDSPEXTDDC */
 			{	27, 12,	display_atu3,		REDRM_MODE, PGALL, },	// ATU
 			{	27, 14,	display_byp3,		REDRM_MODE, PGALL, },	// BYP
@@ -3489,16 +3489,16 @@ enum
 		#if WITHAMHIGHKBDADJ
 			{	6, 14,	display_amfmhighcut4,REDRM_MODE, PG0, },	// 3.70
 		#endif /* WITHAMHIGHKBDADJ */
-			{	18, 14,	display_samfreqdelta8, REDRM_BARS, PG0 | REDRSUBSET_MENU, },	/* Получить информацию об ошибке настройки в режиме SAM */
+			{	18, 14,	display_samfreqdelta8, REDRM_BARS, PG0 | REDRSUBSET_MENU, },	/* РџРѕР»СѓС‡РёС‚СЊ РёРЅС„РѕСЂРјР°С†РёСЋ РѕР± РѕС€РёР±РєРµ РЅР°СЃС‚СЂРѕР№РєРё РІ СЂРµР¶РёРјРµ SAM */
 		#if WITHNOTCHONOFF || WITHNOTCHFREQ
 			{	27, 14,	display_notch3, REDRM_MODE, PG0, },	// 3.7
 		#endif /* WITHNOTCHONOFF || WITHNOTCHFREQ */
 		/* ---------------------------------- */
 	#if WITHMENU
-			{	0,	12,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
-			{	0,	14,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
-			{	4,	14,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
-			//{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
+			{	0,	12,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// Р·РЅР°С‡РµРЅРёРµ РїР°СЂР°РјРµС‚СЂР°
+			{	0,	14,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// РєРѕРґ СЂРµРґР°РєС‚РёСЂСѓРµРјРѕРіРѕ РїР°СЂР°РјРµС‚СЂР°
+			{	4,	14,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// РЅР°Р·РІР°РЅРёРµ СЂРµРґР°РєС‚РёСЂСѓРµРјРѕРіРѕ РїР°СЂР°РјРµС‚СЂР°
+			//{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// СЃРѕСЃС‚РѕСЏРЅРёРµ Р±Р»РѕРєРёСЂРѕРІРєРё РІР°Р»РєРѕРґРµСЂР°
 		#if WITHVOLTLEVEL && WITHCURRLEVEL
 			//{	0,	14,	display_voltlevelV5, REDRM_VOLT, REDRSUBSET_MENU, },	// voltmeter with "V"
 			//{	6,	14,	display_currlevelA6, REDRM_VOLT, REDRSUBSET_MENU, },	// amphermeter with "A"
@@ -3509,22 +3509,22 @@ enum
 	#endif /* DSTYLE_UR3LMZMOD && WITHONEATTONEAMP */
 
 #elif DSTYLE_G_X320_Y240
-	// TFT панель 320 * 240 ADI_3.2_AM-240320D4TOQW-T00H(R)
-	// 320*240 SF-TC240T-9370-T с контроллером ILI9341
-	// 32*15 знакомест 10*16
+	// TFT РїР°РЅРµР»СЊ 320 * 240 ADI_3.2_AM-240320D4TOQW-T00H(R)
+	// 320*240 SF-TC240T-9370-T СЃ РєРѕРЅС‚СЂРѕР»Р»РµСЂРѕРј ILI9341
+	// 32*15 Р·РЅР°РєРѕРјРµСЃС‚ 10*16
 	#define CHAR_W	10
 	#define CHAR_H	8
 	#define SMALLCHARH 16 /* Font height */
 
 	#if DSTYLE_UR3LMZMOD && WITHONEATTONEAMP
-		// TFT панель 320 * 240
+		// TFT РїР°РЅРµР»СЊ 320 * 240
 		enum
 		{
-			BDTH_ALLRX = 20,	// ширина зоны для отображение полосы на индикаторе
-			BDTH_RIGHTRX = 11,	// ширина индикатора плюсов
-			BDTH_LEFTRX = BDTH_ALLRX - BDTH_RIGHTRX,	// ширина индикатора баллов
+			BDTH_ALLRX = 20,	// С€РёСЂРёРЅР° Р·РѕРЅС‹ РґР»СЏ РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ РїРѕР»РѕСЃС‹ РЅР° РёРЅРґРёРєР°С‚РѕСЂРµ
+			BDTH_RIGHTRX = 11,	// С€РёСЂРёРЅР° РёРЅРґРёРєР°С‚РѕСЂР° РїР»СЋСЃРѕРІ
+			BDTH_LEFTRX = BDTH_ALLRX - BDTH_RIGHTRX,	// С€РёСЂРёРЅР° РёРЅРґРёРєР°С‚РѕСЂР° Р±Р°Р»Р»РѕРІ
 			BDTH_SPACERX = 0,
-		#if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
+		#if WITHSHOWSWRPWR	/* РЅР° РґРёСЃРїР»РµРµ РѕРґРЅРѕРІСЂРµРјРµРЅРЅРѕ РѕС‚РѕР±СЂР°Р¶Р°СЋС‚СЃСЏ SWR-meter Рё PWR-meter */
 			BDTH_ALLSWR = 5,
 			BDTH_SPACESWR = 1,
 			BDTH_ALLPWR = 10,
@@ -3539,10 +3539,10 @@ enum
 		#define SMETERMAP "1 3 5 7 9 + 20 40 60"
 		#define SWRPWRMAP "1 2 3  0%   |   100%" 
 		#define POWERMAP  "0 10 20 40 60 80 100"
-		#define SWRMAX	(SWRMIN * 30 / 10)	// 3.0 - значение на полной шкале
+		#define SWRMAX	(SWRMIN * 30 / 10)	// 3.0 - Р·РЅР°С‡РµРЅРёРµ РЅР° РїРѕР»РЅРѕР№ С€РєР°Р»Рµ
 		enum
 		{
-			PATTERN_SPACE = 0x00,	/* очищаем место за SWR и PWR метром этим символом */
+			PATTERN_SPACE = 0x00,	/* РѕС‡РёС‰Р°РµРј РјРµСЃС‚Рѕ Р·Р° SWR Рё PWR РјРµС‚СЂРѕРј СЌС‚РёРј СЃРёРјРІРѕР»РѕРј */
 			PATTERN_BAR_FULL = 0xFF,
 			PATTERN_BAR_HALF = 0xFF,
 			PATTERN_BAR_EMPTYFULL = 0x00,
@@ -3550,11 +3550,11 @@ enum
 		};
 
 		enum {
-			DPAGE0,					// Страница, в которой отображаются основные (или все) 
+			DPAGE0,					// РЎС‚СЂР°РЅРёС†Р°, РІ РєРѕС‚РѕСЂРѕР№ РѕС‚РѕР±СЂР°Р¶Р°СЋС‚СЃСЏ РѕСЃРЅРѕРІРЅС‹Рµ (РёР»Рё РІСЃРµ) 
 			DISPLC_MODCOUNT
 		};
-		#define DISPLC_WIDTH	8	// количество цифр в отображении частоты
-		#define DISPLC_RJ		1	// количество скрытых справа цифр в отображении частоты
+		#define DISPLC_WIDTH	8	// РєРѕР»РёС‡РµСЃС‚РІРѕ С†РёС„СЂ РІ РѕС‚РѕР±СЂР°Р¶РµРЅРёРё С‡Р°СЃС‚РѕС‚С‹
+		#define DISPLC_RJ		1	// РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРєСЂС‹С‚С‹С… СЃРїСЂР°РІР° С†РёС„СЂ РІ РѕС‚РѕР±СЂР°Р¶РµРЅРёРё С‡Р°СЃС‚РѕС‚С‹
 		static const FLASHMEM struct dzone dzones [] =
 		{
 			{	0, 0,	display_txrxstate2, REDRM_MODE, REDRSUBSET(DPAGE0), },
@@ -3577,32 +3577,32 @@ enum
 		#endif /* defined (RTC1_TYPE) */
 			{	18, 28,	display_agc3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 		#if WITHMENU
-			{	4, 0,	display_menu_group,	REDRM_MLBL, REDRSUBSET_MENU, },	// название группы
-			{	0, 2,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
-			{	4, 2,	display_menu_lblng,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
-			{	0, 4,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
-			{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
+			{	4, 0,	display_menu_group,	REDRM_MLBL, REDRSUBSET_MENU, },	// РЅР°Р·РІР°РЅРёРµ РіСЂСѓРїРїС‹
+			{	0, 2,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// РєРѕРґ СЂРµРґР°РєС‚РёСЂСѓРµРјРѕРіРѕ РїР°СЂР°РјРµС‚СЂР°
+			{	4, 2,	display_menu_lblng,	REDRM_MLBL, REDRSUBSET_MENU, },	// РЅР°Р·РІР°РЅРёРµ СЂРµРґР°РєС‚РёСЂСѓРµРјРѕРіРѕ РїР°СЂР°РјРµС‚СЂР°
+			{	0, 4,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// Р·РЅР°С‡РµРЅРёРµ РїР°СЂР°РјРµС‚СЂР°
+			{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// СЃРѕСЃС‚РѕСЏРЅРёРµ Р±Р»РѕРєРёСЂРѕРІРєРё РІР°Р»РєРѕРґРµСЂР°
 		#endif /* WITHMENU */
 		};
 
 	#else /* DSTYLE_UR3LMZMOD && WITHONEATTONEAMP */
-		// TFT панель 320 * 240
-		// для Аиста
+		// TFT РїР°РЅРµР»СЊ 320 * 240
+		// РґР»СЏ РђРёСЃС‚Р°
 		enum
 		{
-			BDCV_ALLRX = 9,	// общая высота, отведенная под S-метр, панораму, водопад и иные отображения
+			BDCV_ALLRX = 9,	// РѕР±С‰Р°СЏ РІС‹СЃРѕС‚Р°, РѕС‚РІРµРґРµРЅРЅР°СЏ РїРѕРґ S-РјРµС‚СЂ, РїР°РЅРѕСЂР°РјСѓ, РІРѕРґРѕРїР°Рґ Рё РёРЅС‹Рµ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ
 
-			BDCO_SPMRX = 0,	// смещение спектра по вертикали в ячейках от начала общего поля
-			BDCV_SPMRX = 4,	// вертикальный размер спектра в ячейках
+			BDCO_SPMRX = 0,	// СЃРјРµС‰РµРЅРёРµ СЃРїРµРєС‚СЂР° РїРѕ РІРµСЂС‚РёРєР°Р»Рё РІ СЏС‡РµР№РєР°С… РѕС‚ РЅР°С‡Р°Р»Р° РѕР±С‰РµРіРѕ РїРѕР»СЏ
+			BDCV_SPMRX = 4,	// РІРµСЂС‚РёРєР°Р»СЊРЅС‹Р№ СЂР°Р·РјРµСЂ СЃРїРµРєС‚СЂР° РІ СЏС‡РµР№РєР°С…
 
-			BDCO_WFLRX = 4,	// смещение водопада по вертикали в ячейках от начала общего поля
-			BDCV_WFLRX = 5,	// вертикальный размер водопада в ячейках
+			BDCO_WFLRX = 4,	// СЃРјРµС‰РµРЅРёРµ РІРѕРґРѕРїР°РґР° РїРѕ РІРµСЂС‚РёРєР°Р»Рё РІ СЏС‡РµР№РєР°С… РѕС‚ РЅР°С‡Р°Р»Р° РѕР±С‰РµРіРѕ РїРѕР»СЏ
+			BDCV_WFLRX = 5,	// РІРµСЂС‚РёРєР°Р»СЊРЅС‹Р№ СЂР°Р·РјРµСЂ РІРѕРґРѕРїР°РґР° РІ СЏС‡РµР№РєР°С…
 
-			BDTH_ALLRX = 26,	// ширина зоны для отображение полосы на индикаторе
-			BDTH_RIGHTRX = 16,	// ширина индикатора плюсов
-			BDTH_LEFTRX = BDTH_ALLRX - BDTH_RIGHTRX,	// ширина индикатора баллов
+			BDTH_ALLRX = 26,	// С€РёСЂРёРЅР° Р·РѕРЅС‹ РґР»СЏ РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ РїРѕР»РѕСЃС‹ РЅР° РёРЅРґРёРєР°С‚РѕСЂРµ
+			BDTH_RIGHTRX = 16,	// С€РёСЂРёРЅР° РёРЅРґРёРєР°С‚РѕСЂР° РїР»СЋСЃРѕРІ
+			BDTH_LEFTRX = BDTH_ALLRX - BDTH_RIGHTRX,	// С€РёСЂРёРЅР° РёРЅРґРёРєР°С‚РѕСЂР° Р±Р°Р»Р»РѕРІ
 			BDTH_SPACERX = 0,
-		#if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
+		#if WITHSHOWSWRPWR	/* РЅР° РґРёСЃРїР»РµРµ РѕРґРЅРѕРІСЂРµРјРµРЅРЅРѕ РѕС‚РѕР±СЂР°Р¶Р°СЋС‚СЃСЏ SWR-meter Рё PWR-meter */
 			BDTH_ALLSWR = 8,
 			BDTH_SPACESWR = 1,
 			BDTH_ALLPWR = 8,
@@ -3616,19 +3616,19 @@ enum
 		};
 		enum
 		{
-			PATTERN_SPACE = 0x00,	/* очищаем место за SWR и PWR метром этим символом */
+			PATTERN_SPACE = 0x00,	/* РѕС‡РёС‰Р°РµРј РјРµСЃС‚Рѕ Р·Р° SWR Рё PWR РјРµС‚СЂРѕРј СЌС‚РёРј СЃРёРјРІРѕР»РѕРј */
 			PATTERN_BAR_FULL = 0x7e,
 			PATTERN_BAR_HALF = 0x3c,
 			PATTERN_BAR_EMPTYFULL = 0x00,
 			PATTERN_BAR_EMPTYHALF = 0x00
 		};
-		#define SWRMAX	(SWRMIN * 40 / 10)	// 4.0 - значение на полной шкале
+		#define SWRMAX	(SWRMIN * 40 / 10)	// 4.0 - Р·РЅР°С‡РµРЅРёРµ РЅР° РїРѕР»РЅРѕР№ С€РєР°Р»Рµ
 
 		enum 
 		{
-			DPAGE0,					// Страница, в которой отображаются основные (или все) 
+			DPAGE0,					// РЎС‚СЂР°РЅРёС†Р°, РІ РєРѕС‚РѕСЂРѕР№ РѕС‚РѕР±СЂР°Р¶Р°СЋС‚СЃСЏ РѕСЃРЅРѕРІРЅС‹Рµ (РёР»Рё РІСЃРµ) 
 		#if WITHIF4DSP
-			DPAGE1,					// Страница, в которой отображается спектр иводопад
+			DPAGE1,					// РЎС‚СЂР°РЅРёС†Р°, РІ РєРѕС‚РѕСЂРѕР№ РѕС‚РѕР±СЂР°Р¶Р°РµС‚СЃСЏ СЃРїРµРєС‚СЂ РёРІРѕРґРѕРїР°Рґ
 		#endif /* WITHIF4DSP */
 			DISPLC_MODCOUNT
 		};
@@ -3640,11 +3640,11 @@ enum
 		#else /* WITHIF4DSP */
 			PGALL = PG0 | REDRSUBSET_MENU,
 		#endif /* WITHIF4DSP */
-			PGLATCH = PGALL,	// страницы, на которых возможно отображение водопада или панорамы.
+			PGLATCH = PGALL,	// СЃС‚СЂР°РЅРёС†С‹, РЅР° РєРѕС‚РѕСЂС‹С… РІРѕР·РјРѕР¶РЅРѕ РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ РІРѕРґРѕРїР°РґР° РёР»Рё РїР°РЅРѕСЂР°РјС‹.
 			PGunused
 		};
-		#define DISPLC_WIDTH	8	// количество цифр в отображении частоты
-		#define DISPLC_RJ		1	// количество скрытых справа цифр в отображении частоты
+		#define DISPLC_WIDTH	8	// РєРѕР»РёС‡РµСЃС‚РІРѕ С†РёС„СЂ РІ РѕС‚РѕР±СЂР°Р¶РµРЅРёРё С‡Р°СЃС‚РѕС‚С‹
+		#define DISPLC_RJ		1	// РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРєСЂС‹С‚С‹С… СЃРїСЂР°РІР° С†РёС„СЂ РІ РѕС‚РѕР±СЂР°Р¶РµРЅРёРё С‡Р°СЃС‚РѕС‚С‹
 		static const FLASHMEM struct dzone dzones [] =
 		{
 #if ! WITHISBOOTLOADER
@@ -3671,15 +3671,15 @@ enum
 			//---
 			{	0,	18,	display2_bars,		REDRM_BARS, PG0, },	// S-METER, SWR-METER, POWER-METER
 		#if WITHIF4DSP
-			{	0,	18,	dsp_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
-			{	0,	18,	display2_spectrum,	REDRM_BARS, PG1, },// подготовка изображения спектра
-			{	0,	18,	display2_waterfall,	REDRM_BARS, PG1, },// подготовка изображения водопада
-			{	0,	18,	display2_colorbuff,	REDRM_BARS,	PG1, },// Отображение водопада и/или спектра
+			{	0,	18,	dsp_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// С„РѕСЂРјРёСЂРѕРІР°РЅРёРµ РґР°РЅРЅС‹С… СЃРїРµРєС‚СЂР° РґР»СЏ РїРѕСЃР»РµРґСѓСЋС‰РµРіРѕ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ СЃРїРµРєС‚СЂР° РёР»Рё РІРѕРґРѕРїР°РґР°
+			{	0,	18,	display2_spectrum,	REDRM_BARS, PG1, },// РїРѕРґРіРѕС‚РѕРІРєР° РёР·РѕР±СЂР°Р¶РµРЅРёСЏ СЃРїРµРєС‚СЂР°
+			{	0,	18,	display2_waterfall,	REDRM_BARS, PG1, },// РїРѕРґРіРѕС‚РѕРІРєР° РёР·РѕР±СЂР°Р¶РµРЅРёСЏ РІРѕРґРѕРїР°РґР°
+			{	0,	18,	display2_colorbuff,	REDRM_BARS,	PG1, },// РћС‚РѕР±СЂР°Р¶РµРЅРёРµ РІРѕРґРѕРїР°РґР° Рё/РёР»Рё СЃРїРµРєС‚СЂР°
 
 			{	27, 18,	display_siglevel5,	REDRM_BARS, PGALL, },	// signal level
 		#endif /* WITHIF4DSP */
 			//---
-			//{	22, 25,	display_samfreqdelta8, REDRM_BARS, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
+			//{	22, 25,	display_samfreqdelta8, REDRM_BARS, PGALL, },	/* РџРѕР»СѓС‡РёС‚СЊ РёРЅС„РѕСЂРјР°С†РёСЋ РѕР± РѕС€РёР±РєРµ РЅР°СЃС‚СЂРѕР№РєРё РІ СЂРµР¶РёРјРµ SAM */
 
 		#if WITHVOLTLEVEL
 			{	0, 28,	display_voltlevelV5, REDRM_VOLT, PGALL, },	// voltmeter with "V"
@@ -3691,26 +3691,26 @@ enum
 			{	13, 28,	display_time8,		REDRM_BARS, PGALL, },	// TIME
 		#endif /* defined (RTC1_TYPE) */
 		#if WITHUSEAUDIOREC
-			{	25, 28,	display_rec3,		REDRM_BARS, PGALL, },	// Отображение режима записи аудио фрагмента
+			{	25, 28,	display_rec3,		REDRM_BARS, PGALL, },	// РћС‚РѕР±СЂР°Р¶РµРЅРёРµ СЂРµР¶РёРјР° Р·Р°РїРёСЃРё Р°СѓРґРёРѕ С„СЂР°РіРјРµРЅС‚Р°
 		#endif /* WITHUSEAUDIOREC */
 		#if WITHMENU
-			{	4, 19,	display_menu_group,	REDRM_MLBL, REDRSUBSET_MENU, },	// название группы
-			{	0, 21,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
-			{	0, 24,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
-			{	4, 24,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
-			//{	9,	27,	display_freqmeter10,	REDRM_VOLT, REDRSUBSET_MENU, },	// отладочная функция измерителя опорной частоты
-			{	9, 27,	display_samfreqdelta8, REDRM_BARS, REDRSUBSET_MENU, },	/* Получить информацию об ошибке настройки в режиме SAM */
+			{	4, 19,	display_menu_group,	REDRM_MLBL, REDRSUBSET_MENU, },	// РЅР°Р·РІР°РЅРёРµ РіСЂСѓРїРїС‹
+			{	0, 21,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// Р·РЅР°С‡РµРЅРёРµ РїР°СЂР°РјРµС‚СЂР°
+			{	0, 24,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// РєРѕРґ СЂРµРґР°РєС‚РёСЂСѓРµРјРѕРіРѕ РїР°СЂР°РјРµС‚СЂР°
+			{	4, 24,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// РЅР°Р·РІР°РЅРёРµ СЂРµРґР°РєС‚РёСЂСѓРµРјРѕРіРѕ РїР°СЂР°РјРµС‚СЂР°
+			//{	9,	27,	display_freqmeter10,	REDRM_VOLT, REDRSUBSET_MENU, },	// РѕС‚Р»Р°РґРѕС‡РЅР°СЏ С„СѓРЅРєС†РёСЏ РёР·РјРµСЂРёС‚РµР»СЏ РѕРїРѕСЂРЅРѕР№ С‡Р°СЃС‚РѕС‚С‹
+			{	9, 27,	display_samfreqdelta8, REDRM_BARS, REDRSUBSET_MENU, },	/* РџРѕР»СѓС‡РёС‚СЊ РёРЅС„РѕСЂРјР°С†РёСЋ РѕР± РѕС€РёР±РєРµ РЅР°СЃС‚СЂРѕР№РєРё РІ СЂРµР¶РёРјРµ SAM */
 		#endif /* WITHMENU */
 #endif /* ! WITHISBOOTLOADER */
 		};
 
-		/* получить координаты окна с панорамой и/или водопадом. */
+		/* РїРѕР»СѓС‡РёС‚СЊ РєРѕРѕСЂРґРёРЅР°С‚С‹ РѕРєРЅР° СЃ РїР°РЅРѕСЂР°РјРѕР№ Рё/РёР»Рё РІРѕРґРѕРїР°РґРѕРј. */
 		void display2_getpipparams(pipparams_t * p)
 		{
-			p->x = GRID2X(0);	// позиция верхнего левого угла в пикселях
-			p->y = GRID2Y(18);	// позиция верхнего левого угла в пикселях
-			p->w = GRID2X(CHARS2GRID(BDTH_ALLRX));	// размер по горизонтали в пикселях
-			p->h = GRID2Y(BDCV_ALLRX);				// размер по вертикали в пикселях
+			p->x = GRID2X(0);	// РїРѕР·РёС†РёСЏ РІРµСЂС…РЅРµРіРѕ Р»РµРІРѕРіРѕ СѓРіР»Р° РІ РїРёРєСЃРµР»СЏС…
+			p->y = GRID2Y(18);	// РїРѕР·РёС†РёСЏ РІРµСЂС…РЅРµРіРѕ Р»РµРІРѕРіРѕ СѓРіР»Р° РІ РїРёРєСЃРµР»СЏС…
+			p->w = GRID2X(CHARS2GRID(BDTH_ALLRX));	// СЂР°Р·РјРµСЂ РїРѕ РіРѕСЂРёР·РѕРЅС‚Р°Р»Рё РІ РїРёРєСЃРµР»СЏС…
+			p->h = GRID2Y(BDCV_ALLRX);				// СЂР°Р·РјРµСЂ РїРѕ РІРµСЂС‚РёРєР°Р»Рё РІ РїРёРєСЃРµР»СЏС…
 			p->frame = (uintptr_t) getscratchpip();
 		}
 
@@ -3718,28 +3718,28 @@ enum
 
 #elif DSTYLE_G_X480_Y272 && WITHSPECTRUMWF
 
-	// TFT панель SONY PSP-1000
+	// TFT РїР°РЅРµР»СЊ SONY PSP-1000
 	// 272/5 = 54, 480/16=30
 
-	#if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
+	#if WITHSHOWSWRPWR	/* РЅР° РґРёСЃРїР»РµРµ РѕРґРЅРѕРІСЂРµРјРµРЅРЅРѕ РѕС‚РѕР±СЂР°Р¶Р°СЋС‚СЃСЏ SWR-meter Рё PWR-meter */
 		//					"012345678901234567890123"
 		#define SWRPWRMAP	"1   2   3   4  0% | 100%" 
-		#define SWRMAX	(SWRMIN * 40 / 10)	// 4.0 - значение на полной шкале
+		#define SWRMAX	(SWRMIN * 40 / 10)	// 4.0 - Р·РЅР°С‡РµРЅРёРµ РЅР° РїРѕР»РЅРѕР№ С€РєР°Р»Рµ
 	#else
 		//					"012345678901234567890123"
 		#define POWERMAP	"0    25    50   75   100"
 		#define SWRMAP		"1   |   2  |   3   |   4"	// 
-		#define SWRMAX	(SWRMIN * 40 / 10)	// 4.0 - значение на полной шкале
+		#define SWRMAX	(SWRMIN * 40 / 10)	// 4.0 - Р·РЅР°С‡РµРЅРёРµ РЅР° РїРѕР»РЅРѕР№ С€РєР°Р»Рµ
 	#endif
 	//						"012345678901234567890123"
 	#define SMETERMAP		"1  3  5  7  9 +20 +40 60"
 	enum
 	{
-		BDTH_ALLRX = 24,	// ширина зоны для отображение полосы на индикаторе
-		BDTH_LEFTRX = 12,	// ширина индикатора баллов
-		BDTH_RIGHTRX = BDTH_ALLRX - BDTH_LEFTRX,	// ширина индикатора плюсов
+		BDTH_ALLRX = 24,	// С€РёСЂРёРЅР° Р·РѕРЅС‹ РґР»СЏ РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ РїРѕР»РѕСЃС‹ РЅР° РёРЅРґРёРєР°С‚РѕСЂРµ
+		BDTH_LEFTRX = 12,	// С€РёСЂРёРЅР° РёРЅРґРёРєР°С‚РѕСЂР° Р±Р°Р»Р»РѕРІ
+		BDTH_RIGHTRX = BDTH_ALLRX - BDTH_LEFTRX,	// С€РёСЂРёРЅР° РёРЅРґРёРєР°С‚РѕСЂР° РїР»СЋСЃРѕРІ
 		BDTH_SPACERX = 0,
-	#if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
+	#if WITHSHOWSWRPWR	/* РЅР° РґРёСЃРїР»РµРµ РѕРґРЅРѕРІСЂРµРјРµРЅРЅРѕ РѕС‚РѕР±СЂР°Р¶Р°СЋС‚СЃСЏ SWR-meter Рё PWR-meter */
 		BDTH_ALLSWR = 13,
 		BDTH_SPACESWR = 2,
 		BDTH_ALLPWR = 9,
@@ -3751,26 +3751,26 @@ enum
 		BDTH_SPACEPWR = BDTH_SPACERX,
 	#endif /* WITHSHOWSWRPWR */
 
-		BDCV_ALLRX = ROWS2GRID(23),	// количество ячееек, отведенное под S-метр, панораму, иные отображения
+		BDCV_ALLRX = ROWS2GRID(23),	// РєРѕР»РёС‡РµСЃС‚РІРѕ СЏС‡РµРµРµРє, РѕС‚РІРµРґРµРЅРЅРѕРµ РїРѕРґ S-РјРµС‚СЂ, РїР°РЅРѕСЂР°РјСѓ, РёРЅС‹Рµ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ
 
 	#if WITHSEPARATEWFL
-		/* без совмещения на одном экрание водопада и панорамы */
-		BDCO_SPMRX = ROWS2GRID(0),	// смещение спектра по вертикали в ячейках от начала общего поля
-		BDCO_WFLRX = ROWS2GRID(0)	// смещение водопада по вертикали в ячейках от начала общего поля
-		BDCV_SPMRX = BDCV_ALLRX,	// вертикальный размер спектра в ячейках		};
-		BDCV_WFLRX = BDCV_ALLRX,	// вертикальный размер водопада в ячейках		};
+		/* Р±РµР· СЃРѕРІРјРµС‰РµРЅРёСЏ РЅР° РѕРґРЅРѕРј СЌРєСЂР°РЅРёРµ РІРѕРґРѕРїР°РґР° Рё РїР°РЅРѕСЂР°РјС‹ */
+		BDCO_SPMRX = ROWS2GRID(0),	// СЃРјРµС‰РµРЅРёРµ СЃРїРµРєС‚СЂР° РїРѕ РІРµСЂС‚РёРєР°Р»Рё РІ СЏС‡РµР№РєР°С… РѕС‚ РЅР°С‡Р°Р»Р° РѕР±С‰РµРіРѕ РїРѕР»СЏ
+		BDCO_WFLRX = ROWS2GRID(0)	// СЃРјРµС‰РµРЅРёРµ РІРѕРґРѕРїР°РґР° РїРѕ РІРµСЂС‚РёРєР°Р»Рё РІ СЏС‡РµР№РєР°С… РѕС‚ РЅР°С‡Р°Р»Р° РѕР±С‰РµРіРѕ РїРѕР»СЏ
+		BDCV_SPMRX = BDCV_ALLRX,	// РІРµСЂС‚РёРєР°Р»СЊРЅС‹Р№ СЂР°Р·РјРµСЂ СЃРїРµРєС‚СЂР° РІ СЏС‡РµР№РєР°С…		};
+		BDCV_WFLRX = BDCV_ALLRX,	// РІРµСЂС‚РёРєР°Р»СЊРЅС‹Р№ СЂР°Р·РјРµСЂ РІРѕРґРѕРїР°РґР° РІ СЏС‡РµР№РєР°С…		};
 	#else /* WITHSEPARATEWFL */
-		/* совмещение на одном экрание водопада и панорамы */
-		BDCO_SPMRX = ROWS2GRID(0),	// смещение спектра по вертикали в ячейках от начала общего поля
-		BDCV_SPMRX = ROWS2GRID(12),	// вертикальный размер спектра в ячейках		};
-		BDCO_WFLRX = BDCV_SPMRX,	// смещение водопада по вертикали в ячейках от начала общего поля
-		BDCV_WFLRX = BDCV_ALLRX - BDCO_WFLRX	// вертикальный размер водопада в ячейках		};
+		/* СЃРѕРІРјРµС‰РµРЅРёРµ РЅР° РѕРґРЅРѕРј СЌРєСЂР°РЅРёРµ РІРѕРґРѕРїР°РґР° Рё РїР°РЅРѕСЂР°РјС‹ */
+		BDCO_SPMRX = ROWS2GRID(0),	// СЃРјРµС‰РµРЅРёРµ СЃРїРµРєС‚СЂР° РїРѕ РІРµСЂС‚РёРєР°Р»Рё РІ СЏС‡РµР№РєР°С… РѕС‚ РЅР°С‡Р°Р»Р° РѕР±С‰РµРіРѕ РїРѕР»СЏ
+		BDCV_SPMRX = ROWS2GRID(12),	// РІРµСЂС‚РёРєР°Р»СЊРЅС‹Р№ СЂР°Р·РјРµСЂ СЃРїРµРєС‚СЂР° РІ СЏС‡РµР№РєР°С…		};
+		BDCO_WFLRX = BDCV_SPMRX,	// СЃРјРµС‰РµРЅРёРµ РІРѕРґРѕРїР°РґР° РїРѕ РІРµСЂС‚РёРєР°Р»Рё РІ СЏС‡РµР№РєР°С… РѕС‚ РЅР°С‡Р°Р»Р° РѕР±С‰РµРіРѕ РїРѕР»СЏ
+		BDCV_WFLRX = BDCV_ALLRX - BDCO_WFLRX	// РІРµСЂС‚РёРєР°Р»СЊРЅС‹Р№ СЂР°Р·РјРµСЂ РІРѕРґРѕРїР°РґР° РІ СЏС‡РµР№РєР°С…		};
 	#endif /* WITHSEPARATEWFL */
 	};
 
 	enum
 	{
-		PATTERN_SPACE = 0x00,	/* очищаем место за SWR и PWR метром этим символом */
+		PATTERN_SPACE = 0x00,	/* РѕС‡РёС‰Р°РµРј РјРµСЃС‚Рѕ Р·Р° SWR Рё PWR РјРµС‚СЂРѕРј СЌС‚РёРј СЃРёРјРІРѕР»РѕРј */
 		PATTERN_BAR_FULL = 0xFF,
 		PATTERN_BAR_HALF = 0x3c,
 		PATTERN_BAR_EMPTYFULL = 0x00,	//0x00
@@ -3778,12 +3778,12 @@ enum
 	};
 
 	#if WITHSEPARATEWFL
-		/* без совмещения на одном экрание водопада и панорамы */
+		/* Р±РµР· СЃРѕРІРјРµС‰РµРЅРёСЏ РЅР° РѕРґРЅРѕРј СЌРєСЂР°РЅРёРµ РІРѕРґРѕРїР°РґР° Рё РїР°РЅРѕСЂР°РјС‹ */
 		enum 
 		{
-			DPAGE0,					// Страница, в которой отображаются основные (или все) 
-			DPAGE1,					// Страница, в которой отображается спектр
-			DPAGE2,					// Страница, в которой отображается водопад
+			DPAGE0,					// РЎС‚СЂР°РЅРёС†Р°, РІ РєРѕС‚РѕСЂРѕР№ РѕС‚РѕР±СЂР°Р¶Р°СЋС‚СЃСЏ РѕСЃРЅРѕРІРЅС‹Рµ (РёР»Рё РІСЃРµ) 
+			DPAGE1,					// РЎС‚СЂР°РЅРёС†Р°, РІ РєРѕС‚РѕСЂРѕР№ РѕС‚РѕР±СЂР°Р¶Р°РµС‚СЃСЏ СЃРїРµРєС‚СЂ
+			DPAGE2,					// РЎС‚СЂР°РЅРёС†Р°, РІ РєРѕС‚РѕСЂРѕР№ РѕС‚РѕР±СЂР°Р¶Р°РµС‚СЃСЏ РІРѕРґРѕРїР°Рґ
 			DISPLC_MODCOUNT
 		};
 
@@ -3794,18 +3794,18 @@ enum
 			PG2 = REDRSUBSET(DPAGE2),
 			PGSLP = REDRSUBSET_SLEEP,
 			PGALL = PG0 | PG1 | PG2 | REDRSUBSET_MENU,
-			PGLATCH = PGALL,	// страницы, на которых возможно отображение водопада или панорамы.
-			PGSWR = PG0,	// страница отоюражения S-meter и SWR-meter
+			PGLATCH = PGALL,	// СЃС‚СЂР°РЅРёС†С‹, РЅР° РєРѕС‚РѕСЂС‹С… РІРѕР·РјРѕР¶РЅРѕ РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ РІРѕРґРѕРїР°РґР° РёР»Рё РїР°РЅРѕСЂР°РјС‹.
+			PGSWR = PG0,	// СЃС‚СЂР°РЅРёС†Р° РѕС‚РѕСЋСЂР°Р¶РµРЅРёСЏ S-meter Рё SWR-meter
 			PGWFL = PG2,
 			PGSPE = PG1,
 			PGunused
 		};
 	#else /* WITHSEPARATEWFL */
-		/* совмещение на одном экрание водопада и панорамы */
+		/* СЃРѕРІРјРµС‰РµРЅРёРµ РЅР° РѕРґРЅРѕРј СЌРєСЂР°РЅРёРµ РІРѕРґРѕРїР°РґР° Рё РїР°РЅРѕСЂР°РјС‹ */
 		enum 
 		{
-			DPAGE0,					// Страница, в которой отображаются основные (или все) 
-			DPAGE1,					// Страница, в которой отображается спектр и водопад
+			DPAGE0,					// РЎС‚СЂР°РЅРёС†Р°, РІ РєРѕС‚РѕСЂРѕР№ РѕС‚РѕР±СЂР°Р¶Р°СЋС‚СЃСЏ РѕСЃРЅРѕРІРЅС‹Рµ (РёР»Рё РІСЃРµ) 
+			DPAGE1,					// РЎС‚СЂР°РЅРёС†Р°, РІ РєРѕС‚РѕСЂРѕР№ РѕС‚РѕР±СЂР°Р¶Р°РµС‚СЃСЏ СЃРїРµРєС‚СЂ Рё РІРѕРґРѕРїР°Рґ
 			DISPLC_MODCOUNT
 		};
 
@@ -3814,21 +3814,21 @@ enum
 			PG0 = REDRSUBSET(DPAGE0),
 			PG1 = REDRSUBSET(DPAGE1),
 			PGALL = PG0 | PG1 | REDRSUBSET_MENU,
-			PGWFL = PG0,	// страница отображения водопада
-			PGSPE = PG0,	// страница отображения панорамы
-			PGSWR = PG1,	// страница отоюражения S-meter и SWR-meter
-			PGLATCH = PGALL,	// страницы, на которых возможно отображение водопада или панорамы.
+			PGWFL = PG0,	// СЃС‚СЂР°РЅРёС†Р° РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ РІРѕРґРѕРїР°РґР°
+			PGSPE = PG0,	// СЃС‚СЂР°РЅРёС†Р° РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ РїР°РЅРѕСЂР°РјС‹
+			PGSWR = PG1,	// СЃС‚СЂР°РЅРёС†Р° РѕС‚РѕСЋСЂР°Р¶РµРЅРёСЏ S-meter Рё SWR-meter
+			PGLATCH = PGALL,	// СЃС‚СЂР°РЅРёС†С‹, РЅР° РєРѕС‚РѕСЂС‹С… РІРѕР·РјРѕР¶РЅРѕ РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ РІРѕРґРѕРїР°РґР° РёР»Рё РїР°РЅРѕСЂР°РјС‹.
 			PGSLP = REDRSUBSET_SLEEP,
 			PGunused
 		};
 	#endif /* WITHSEPARATEWFL */
 
 	#if TUNE_TOP > 100000000uL
-		#define DISPLC_WIDTH	9	// количество цифр в отображении частоты
+		#define DISPLC_WIDTH	9	// РєРѕР»РёС‡РµСЃС‚РІРѕ С†РёС„СЂ РІ РѕС‚РѕР±СЂР°Р¶РµРЅРёРё С‡Р°СЃС‚РѕС‚С‹
 	#else
-		#define DISPLC_WIDTH	8	// количество цифр в отображении частоты
+		#define DISPLC_WIDTH	8	// РєРѕР»РёС‡РµСЃС‚РІРѕ С†РёС„СЂ РІ РѕС‚РѕР±СЂР°Р¶РµРЅРёРё С‡Р°СЃС‚РѕС‚С‹
 	#endif
-	#define DISPLC_RJ		0	// количество скрытых справа цифр в отображении частоты
+	#define DISPLC_RJ		0	// РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРєСЂС‹С‚С‹С… СЃРїСЂР°РІР° С†РёС„СЂ РІ РѕС‚РѕР±СЂР°Р¶РµРЅРёРё С‡Р°СЃС‚РѕС‚С‹
 
 	static const FLASHMEM struct dzone dzones [] =
 	{
@@ -3836,7 +3836,7 @@ enum
 		{	3,	0,	display_ant5,		REDRM_MODE, PGALL, },
 		{	9,	0,	display_att4,		REDRM_MODE, PGALL, },
 		{	14,	0,	display_preovf3,	REDRM_BARS, PGALL, },
-		{	18,	0,	display_genham1,	REDRM_BARS, PGALL, },	// Отображение режима General Coverage / HAM bands
+		{	18,	0,	display_genham1,	REDRM_BARS, PGALL, },	// РћС‚РѕР±СЂР°Р¶РµРЅРёРµ СЂРµР¶РёРјР° General Coverage / HAM bands
 
 	#if WITHENCODER2
 		{	21, 0,	display_fnlabel9,	REDRM_MODE, PGALL, },	// FUNC item label
@@ -3853,9 +3853,9 @@ enum
 		{	26, 30,	display_datamode3,	REDRM_MODE, PGALL, },	// DATA mode indicator
 		{	26, 35,	display_atu3,		REDRM_MODE, PGALL, },	// TUNER state (optional)
 		{	26, 40,	display_byp3,		REDRM_MODE, PGALL, },	// TUNER BYPASS state (optional)
-		{	26, 45,	display_rec3,		REDRM_BARS, PGALL, },	// Отображение режима записи аудио фрагмента
+		{	26, 45,	display_rec3,		REDRM_BARS, PGALL, },	// РћС‚РѕР±СЂР°Р¶РµРЅРёРµ СЂРµР¶РёРјР° Р·Р°РїРёСЃРё Р°СѓРґРёРѕ С„СЂР°РіРјРµРЅС‚Р°
 		
-		{	0,	7,	display_freqX_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Частота (большие цифры)
+		{	0,	7,	display_freqX_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Р§Р°СЃС‚РѕС‚Р° (Р±РѕР»СЊС€РёРµ С†РёС„СЂС‹)
 		{	21, 10,	display_mode3_a,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
 		{	26, 10,	display_rxbw3,		REDRM_MODE, PGALL, },	// 3.1 / 0,5 / WID / NAR
 		{	21, 15,	display_mainsub3,	REDRM_MODE, PGALL, },	// main/sub RX: A/A, A/B, B/A, etc
@@ -3866,23 +3866,23 @@ enum
 		{	21, 20,	display_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
 
 #if 1
-		{	0,	25,	display2_legend_rx,	REDRM_MODE, PGSWR, },	// Отображение оцифровки шкалы S-метра
+		{	0,	25,	display2_legend_rx,	REDRM_MODE, PGSWR, },	// РћС‚РѕР±СЂР°Р¶РµРЅРёРµ РѕС†РёС„СЂРѕРІРєРё С€РєР°Р»С‹ S-РјРµС‚СЂР°
 		{	0,	30,	display2_bars_rx,	REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
-		{	0,	35,	display2_legend_tx,	REDRM_MODE, PGSWR, },	// Отображение оцифровки шкалы PWR & SWR-метра
+		{	0,	35,	display2_legend_tx,	REDRM_MODE, PGSWR, },	// РћС‚РѕР±СЂР°Р¶РµРЅРёРµ РѕС†РёС„СЂРѕРІРєРё С€РєР°Р»С‹ PWR & SWR-РјРµС‚СЂР°
 		{	0,	40,	display2_bars_tx,	REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
 #else
 		{	0,	25,	display2_adctest,	REDRM_BARS, PGSWR, },	// ADC raw data print
 #endif
 
 	#if WITHSPECTRUMWF
-		{	0,	25,	dsp_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
-		{	0,	25,	display2_spectrum,	REDRM_BARS, PGSPE, },// подготовка изображения спектра
-		{	0,	25,	display2_waterfall,	REDRM_BARS, PGWFL, },// подготовка изображения водопада
-		{	0,	25,	display2_colorbuff,	REDRM_BARS,	PGWFL | PGSPE, },// Отображение водопада и/или спектра
+		{	0,	25,	dsp_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// С„РѕСЂРјРёСЂРѕРІР°РЅРёРµ РґР°РЅРЅС‹С… СЃРїРµРєС‚СЂР° РґР»СЏ РїРѕСЃР»РµРґСѓСЋС‰РµРіРѕ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ СЃРїРµРєС‚СЂР° РёР»Рё РІРѕРґРѕРїР°РґР°
+		{	0,	25,	display2_spectrum,	REDRM_BARS, PGSPE, },// РїРѕРґРіРѕС‚РѕРІРєР° РёР·РѕР±СЂР°Р¶РµРЅРёСЏ СЃРїРµРєС‚СЂР°
+		{	0,	25,	display2_waterfall,	REDRM_BARS, PGWFL, },// РїРѕРґРіРѕС‚РѕРІРєР° РёР·РѕР±СЂР°Р¶РµРЅРёСЏ РІРѕРґРѕРїР°РґР°
+		{	0,	25,	display2_colorbuff,	REDRM_BARS,	PGWFL | PGSPE, },// РћС‚РѕР±СЂР°Р¶РµРЅРёРµ РІРѕРґРѕРїР°РґР° Рё/РёР»Рё СЃРїРµРєС‚СЂР°
 	#endif /* WITHSPECTRUMWF */
 
 	
-		//{	0,	51,	display_samfreqdelta8, REDRM_BARS, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
+		//{	0,	51,	display_samfreqdelta8, REDRM_BARS, PGALL, },	/* РџРѕР»СѓС‡РёС‚СЊ РёРЅС„РѕСЂРјР°С†РёСЋ РѕР± РѕС€РёР±РєРµ РЅР°СЃС‚СЂРѕР№РєРё РІ СЂРµР¶РёРјРµ SAM */
 		{	0,	51,	display_time8,		REDRM_BARS, PGALL,	},	// TIME
 		{	9,	51,	display_siglevel5,	REDRM_BARS, PGALL, },	// signal level in S points
 		{	15, 51,	display_thermo4,	REDRM_VOLT, PGALL, },	// thermo sensor
@@ -3901,49 +3901,49 @@ enum
 		{	20, 24,	display_voltlevelV5, REDRM_VOLT, PGSLP, },	// voltmeter with "V"
 
 	#if WITHMENU
-		{	4,	25,	display_menu_group,	REDRM_MLBL, REDRSUBSET_MENU, },	// название группы
-		{	0,	30,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
-		{	4,	30,	display_menu_lblng,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
-		{	0,	35,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
-		{	0,	40,	display_samfreqdelta8, REDRM_BARS, REDRSUBSET_MENU, },	/* Получить информацию об ошибке настройки в режиме SAM */
+		{	4,	25,	display_menu_group,	REDRM_MLBL, REDRSUBSET_MENU, },	// РЅР°Р·РІР°РЅРёРµ РіСЂСѓРїРїС‹
+		{	0,	30,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// РєРѕРґ СЂРµРґР°РєС‚РёСЂСѓРµРјРѕРіРѕ РїР°СЂР°РјРµС‚СЂР°
+		{	4,	30,	display_menu_lblng,	REDRM_MLBL, REDRSUBSET_MENU, },	// РЅР°Р·РІР°РЅРёРµ СЂРµРґР°РєС‚РёСЂСѓРµРјРѕРіРѕ РїР°СЂР°РјРµС‚СЂР°
+		{	0,	35,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// Р·РЅР°С‡РµРЅРёРµ РїР°СЂР°РјРµС‚СЂР°
+		{	0,	40,	display_samfreqdelta8, REDRM_BARS, REDRSUBSET_MENU, },	/* РџРѕР»СѓС‡РёС‚СЊ РёРЅС„РѕСЂРјР°С†РёСЋ РѕР± РѕС€РёР±РєРµ РЅР°СЃС‚СЂРѕР№РєРё РІ СЂРµР¶РёРјРµ SAM */
 	#endif /* WITHMENU */
 	};
 
-	/* получить координаты окна с панорамой и/или водопадом. */
+	/* РїРѕР»СѓС‡РёС‚СЊ РєРѕРѕСЂРґРёРЅР°С‚С‹ РѕРєРЅР° СЃ РїР°РЅРѕСЂР°РјРѕР№ Рё/РёР»Рё РІРѕРґРѕРїР°РґРѕРј. */
 	void display2_getpipparams(pipparams_t * p)
 	{
-		p->x = GRID2X(0);	// позиция верхнего левого угла в пикселях
-		p->y = GRID2Y(25);	// позиция верхнего левого угла в пикселях
-		p->w = GRID2X(CHARS2GRID(BDTH_ALLRX));	// размер по горизонтали в пикселях
-		p->h = GRID2Y(BDCV_ALLRX);				// размер по вертикали в пикселях
+		p->x = GRID2X(0);	// РїРѕР·РёС†РёСЏ РІРµСЂС…РЅРµРіРѕ Р»РµРІРѕРіРѕ СѓРіР»Р° РІ РїРёРєСЃРµР»СЏС…
+		p->y = GRID2Y(25);	// РїРѕР·РёС†РёСЏ РІРµСЂС…РЅРµРіРѕ Р»РµРІРѕРіРѕ СѓРіР»Р° РІ РїРёРєСЃРµР»СЏС…
+		p->w = GRID2X(CHARS2GRID(BDTH_ALLRX));	// СЂР°Р·РјРµСЂ РїРѕ РіРѕСЂРёР·РѕРЅС‚Р°Р»Рё РІ РїРёРєСЃРµР»СЏС…
+		p->h = GRID2Y(BDCV_ALLRX);				// СЂР°Р·РјРµСЂ РїРѕ РІРµСЂС‚РёРєР°Р»Рё РІ РїРёРєСЃРµР»СЏС…
 		p->frame = (uintptr_t) getscratchpip();
 	}
 
 #elif DSTYLE_G_X480_Y272
 
-	// TFT панель SONY PSP-1000
+	// TFT РїР°РЅРµР»СЊ SONY PSP-1000
 	// 272/5 = 54, 480/16=30
-	// без панорамы и водопада
+	// Р±РµР· РїР°РЅРѕСЂР°РјС‹ Рё РІРѕРґРѕРїР°РґР°
 
-	#if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
+	#if WITHSHOWSWRPWR	/* РЅР° РґРёСЃРїР»РµРµ РѕРґРЅРѕРІСЂРµРјРµРЅРЅРѕ РѕС‚РѕР±СЂР°Р¶Р°СЋС‚СЃСЏ SWR-meter Рё PWR-meter */
 		//					"012345678901234567890123"
 		#define SWRPWRMAP	"1   2   3   4  0% | 100%" 
-		#define SWRMAX	(SWRMIN * 40 / 10)	// 4.0 - значение на полной шкале
+		#define SWRMAX	(SWRMIN * 40 / 10)	// 4.0 - Р·РЅР°С‡РµРЅРёРµ РЅР° РїРѕР»РЅРѕР№ С€РєР°Р»Рµ
 	#else
 		//					"012345678901234567890123"
 		#define POWERMAP	"0    25    50   75   100"
 		#define SWRMAP		"1   |   2  |   3   |   4"	// 
-		#define SWRMAX	(SWRMIN * 40 / 10)	// 4.0 - значение на полной шкале
+		#define SWRMAX	(SWRMIN * 40 / 10)	// 4.0 - Р·РЅР°С‡РµРЅРёРµ РЅР° РїРѕР»РЅРѕР№ С€РєР°Р»Рµ
 	#endif
 	//						"012345678901234567890123"
 	#define SMETERMAP		"1  3  5  7  9 +20 +40 60"
 	enum
 	{
-		BDTH_ALLRX = 24,	// ширина зоны для отображение полосы на индикаторе
-		BDTH_LEFTRX = 12,	// ширина индикатора баллов
-		BDTH_RIGHTRX = BDTH_ALLRX - BDTH_LEFTRX,	// ширина индикатора плюсов
+		BDTH_ALLRX = 24,	// С€РёСЂРёРЅР° Р·РѕРЅС‹ РґР»СЏ РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ РїРѕР»РѕСЃС‹ РЅР° РёРЅРґРёРєР°С‚РѕСЂРµ
+		BDTH_LEFTRX = 12,	// С€РёСЂРёРЅР° РёРЅРґРёРєР°С‚РѕСЂР° Р±Р°Р»Р»РѕРІ
+		BDTH_RIGHTRX = BDTH_ALLRX - BDTH_LEFTRX,	// С€РёСЂРёРЅР° РёРЅРґРёРєР°С‚РѕСЂР° РїР»СЋСЃРѕРІ
 		BDTH_SPACERX = 0,
-	#if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
+	#if WITHSHOWSWRPWR	/* РЅР° РґРёСЃРїР»РµРµ РѕРґРЅРѕРІСЂРµРјРµРЅРЅРѕ РѕС‚РѕР±СЂР°Р¶Р°СЋС‚СЃСЏ SWR-meter Рё PWR-meter */
 		BDTH_ALLSWR = 13,
 		BDTH_SPACESWR = 2,
 		BDTH_ALLPWR = 9,
@@ -3955,40 +3955,40 @@ enum
 		BDTH_SPACEPWR = BDTH_SPACERX,
 	#endif /* WITHSHOWSWRPWR */
 
-		BDCV_ALLRX = ROWS2GRID(20),	// количество ячееек, отведенное под S-метр, панораму, иные отображения
+		BDCV_ALLRX = ROWS2GRID(20),	// РєРѕР»РёС‡РµСЃС‚РІРѕ СЏС‡РµРµРµРє, РѕС‚РІРµРґРµРЅРЅРѕРµ РїРѕРґ S-РјРµС‚СЂ, РїР°РЅРѕСЂР°РјСѓ, РёРЅС‹Рµ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ
 	};
 
 	enum
 	{
-		PATTERN_SPACE = 0x00,	/* очищаем место за SWR и PWR метром этим символом */
+		PATTERN_SPACE = 0x00,	/* РѕС‡РёС‰Р°РµРј РјРµСЃС‚Рѕ Р·Р° SWR Рё PWR РјРµС‚СЂРѕРј СЌС‚РёРј СЃРёРјРІРѕР»РѕРј */
 		PATTERN_BAR_FULL = 0xFF,
 		PATTERN_BAR_HALF = 0x3c,
 		PATTERN_BAR_EMPTYFULL = 0x00,	//0x00
 		PATTERN_BAR_EMPTYHALF = 0x00	//0x00
 	};
 
-		/* совмещение на одном экрание водопада и панорамы */
+		/* СЃРѕРІРјРµС‰РµРЅРёРµ РЅР° РѕРґРЅРѕРј СЌРєСЂР°РЅРёРµ РІРѕРґРѕРїР°РґР° Рё РїР°РЅРѕСЂР°РјС‹ */
 		enum 
 		{
-			DPAGE0,					// Страница, в которой отображаются основные (или все) 
+			DPAGE0,					// РЎС‚СЂР°РЅРёС†Р°, РІ РєРѕС‚РѕСЂРѕР№ РѕС‚РѕР±СЂР°Р¶Р°СЋС‚СЃСЏ РѕСЃРЅРѕРІРЅС‹Рµ (РёР»Рё РІСЃРµ) 
 			DISPLC_MODCOUNT
 		};
 
 		enum
 		{
 			PG0 = REDRSUBSET(DPAGE0),
-			PGSWR = PG0,	// страница отоюражения S-meter и SWR-meter
+			PGSWR = PG0,	// СЃС‚СЂР°РЅРёС†Р° РѕС‚РѕСЋСЂР°Р¶РµРЅРёСЏ S-meter Рё SWR-meter
 			PGALL = PG0 | REDRSUBSET_MENU,
 			PGSLP = REDRSUBSET_SLEEP,
 			PGunused
 		};
 
 	#if TUNE_TOP > 100000000uL
-		#define DISPLC_WIDTH	9	// количество цифр в отображении частоты
+		#define DISPLC_WIDTH	9	// РєРѕР»РёС‡РµСЃС‚РІРѕ С†РёС„СЂ РІ РѕС‚РѕР±СЂР°Р¶РµРЅРёРё С‡Р°СЃС‚РѕС‚С‹
 	#else
-		#define DISPLC_WIDTH	8	// количество цифр в отображении частоты
+		#define DISPLC_WIDTH	8	// РєРѕР»РёС‡РµСЃС‚РІРѕ С†РёС„СЂ РІ РѕС‚РѕР±СЂР°Р¶РµРЅРёРё С‡Р°СЃС‚РѕС‚С‹
 	#endif
-	#define DISPLC_RJ		0	// количество скрытых справа цифр в отображении частоты
+	#define DISPLC_RJ		0	// РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРєСЂС‹С‚С‹С… СЃРїСЂР°РІР° С†РёС„СЂ РІ РѕС‚РѕР±СЂР°Р¶РµРЅРёРё С‡Р°СЃС‚РѕС‚С‹
 
 	static const FLASHMEM struct dzone dzones [] =
 	{
@@ -3996,7 +3996,7 @@ enum
 		{	3,	0,	display_ant5,		REDRM_MODE, PGALL, },
 		{	9,	0,	display_att4,		REDRM_MODE, PGALL, },
 		{	14,	0,	display_preovf3,	REDRM_BARS, PGALL, },
-		{	18,	0,	display_genham1,	REDRM_BARS, PGALL, },	// Отображение режима General Coverage / HAM bands
+		{	18,	0,	display_genham1,	REDRM_BARS, PGALL, },	// РћС‚РѕР±СЂР°Р¶РµРЅРёРµ СЂРµР¶РёРјР° General Coverage / HAM bands
 
 	#if WITHENCODER2
 		{	21, 0,	display_fnlabel9,	REDRM_MODE, PGALL, },	// FUNC item label
@@ -4012,9 +4012,9 @@ enum
 		{	25, 30,	display_lockstate4, REDRM_MODE, PGALL, },	// LOCK
 		{	26, 35,	display_atu3,		REDRM_MODE, PGALL, },	// TUNER state (optional)
 		{	26, 40,	display_byp3,		REDRM_MODE, PGALL, },	// TUNER BYPASS state (optional)
-		{	26, 45,	display_rec3,		REDRM_BARS, PGALL, },	// Отображение режима записи аудио фрагмента
+		{	26, 45,	display_rec3,		REDRM_BARS, PGALL, },	// РћС‚РѕР±СЂР°Р¶РµРЅРёРµ СЂРµР¶РёРјР° Р·Р°РїРёСЃРё Р°СѓРґРёРѕ С„СЂР°РіРјРµРЅС‚Р°
 		
-		{	0,	7,	display_freqX_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Частота (большие цифры)
+		{	0,	7,	display_freqX_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Р§Р°СЃС‚РѕС‚Р° (Р±РѕР»СЊС€РёРµ С†РёС„СЂС‹)
 		{	21, 10,	display_mode3_a,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
 		{	26, 10,	display_rxbw3,		REDRM_MODE, PGALL, },	// 3.1 / 0,5 / WID / NAR
 		{	21, 15,	display_mainsub3,	REDRM_MODE, PGALL, },	// main/sub RX: A/A, A/B, B/A, etc
@@ -4023,12 +4023,12 @@ enum
 		{	8,	22,	display_freqX_b,	REDRM_FRQB, PGALL, },	// SUB FREQ
 		{	21, 22,	display_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
 
-		{	0,	30,	display2_legend_rx,	REDRM_MODE, PGSWR, },	// Отображение оцифровки шкалы S-метра
+		{	0,	30,	display2_legend_rx,	REDRM_MODE, PGSWR, },	// РћС‚РѕР±СЂР°Р¶РµРЅРёРµ РѕС†РёС„СЂРѕРІРєРё С€РєР°Р»С‹ S-РјРµС‚СЂР°
 		{	0,	35,	display2_bars_rx,	REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
-		{	0,	40,	display2_legend_tx,	REDRM_MODE, PGSWR, },	// Отображение оцифровки шкалы PWR & SWR-метра
+		{	0,	40,	display2_legend_tx,	REDRM_MODE, PGSWR, },	// РћС‚РѕР±СЂР°Р¶РµРЅРёРµ РѕС†РёС„СЂРѕРІРєРё С€РєР°Р»С‹ PWR & SWR-РјРµС‚СЂР°
 		{	0,	45,	display2_bars_tx,	REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
 
-		//{	0,	51,	display_samfreqdelta8, REDRM_BARS, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
+		//{	0,	51,	display_samfreqdelta8, REDRM_BARS, PGALL, },	/* РџРѕР»СѓС‡РёС‚СЊ РёРЅС„РѕСЂРјР°С†РёСЋ РѕР± РѕС€РёР±РєРµ РЅР°СЃС‚СЂРѕР№РєРё РІ СЂРµР¶РёРјРµ SAM */
 		{	0,	51,	display_time8,		REDRM_BARS, PGALL,	},	// TIME
 		{	9,	51,	display_siglevel5,	REDRM_BARS, PGALL, },	// signal level in S points
 		{	15, 51,	display_thermo4,	REDRM_VOLT, PGALL, },	// thermo sensor
@@ -4044,49 +4044,49 @@ enum
 		{	20, 24,	display_voltlevelV5, REDRM_VOLT, PGSLP, },	// voltmeter with "V"
 
 	#if WITHMENU
-		{	4,	25,	display_menu_group,	REDRM_MLBL, REDRSUBSET_MENU, },	// название группы
-		{	0,	30,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
-		{	4,	30,	display_menu_lblng,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
-		{	14,	30,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
-		{	0,	35,	display_samfreqdelta8, REDRM_BARS, REDRSUBSET_MENU, },	/* Получить информацию об ошибке настройки в режиме SAM */
+		{	4,	25,	display_menu_group,	REDRM_MLBL, REDRSUBSET_MENU, },	// РЅР°Р·РІР°РЅРёРµ РіСЂСѓРїРїС‹
+		{	0,	30,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// РєРѕРґ СЂРµРґР°РєС‚РёСЂСѓРµРјРѕРіРѕ РїР°СЂР°РјРµС‚СЂР°
+		{	4,	30,	display_menu_lblng,	REDRM_MLBL, REDRSUBSET_MENU, },	// РЅР°Р·РІР°РЅРёРµ СЂРµРґР°РєС‚РёСЂСѓРµРјРѕРіРѕ РїР°СЂР°РјРµС‚СЂР°
+		{	14,	30,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// Р·РЅР°С‡РµРЅРёРµ РїР°СЂР°РјРµС‚СЂР°
+		{	0,	35,	display_samfreqdelta8, REDRM_BARS, REDRSUBSET_MENU, },	/* РџРѕР»СѓС‡РёС‚СЊ РёРЅС„РѕСЂРјР°С†РёСЋ РѕР± РѕС€РёР±РєРµ РЅР°СЃС‚СЂРѕР№РєРё РІ СЂРµР¶РёРјРµ SAM */
 	#endif /* WITHMENU */
 	};
 
-	/* получить координаты окна с панорамой и/или водопадом. */
+	/* РїРѕР»СѓС‡РёС‚СЊ РєРѕРѕСЂРґРёРЅР°С‚С‹ РѕРєРЅР° СЃ РїР°РЅРѕСЂР°РјРѕР№ Рё/РёР»Рё РІРѕРґРѕРїР°РґРѕРј. */
 	void display2_getpipparams(pipparams_t * p)
 	{
-		p->x = GRID2X(0);	// позиция верхнего левого угла в пикселях
-		p->y = GRID2Y(30);	// позиция верхнего левого угла в пикселях
-		p->w = GRID2X(CHARS2GRID(BDTH_ALLRX));	// размер по горизонтали в пикселях
-		p->h = GRID2Y(BDCV_ALLRX);				// размер по вертикали в пикселях
+		p->x = GRID2X(0);	// РїРѕР·РёС†РёСЏ РІРµСЂС…РЅРµРіРѕ Р»РµРІРѕРіРѕ СѓРіР»Р° РІ РїРёРєСЃРµР»СЏС…
+		p->y = GRID2Y(30);	// РїРѕР·РёС†РёСЏ РІРµСЂС…РЅРµРіРѕ Р»РµРІРѕРіРѕ СѓРіР»Р° РІ РїРёРєСЃРµР»СЏС…
+		p->w = GRID2X(CHARS2GRID(BDTH_ALLRX));	// СЂР°Р·РјРµСЂ РїРѕ РіРѕСЂРёР·РѕРЅС‚Р°Р»Рё РІ РїРёРєСЃРµР»СЏС…
+		p->h = GRID2Y(BDCV_ALLRX);				// СЂР°Р·РјРµСЂ РїРѕ РІРµСЂС‚РёРєР°Р»Рё РІ РїРёРєСЃРµР»СЏС…
 		p->frame = (uintptr_t) getscratchpip();
 	}
 
 #elif DSTYLE_G_X800_Y480 && WITHSPECTRUMWF
 
-	// TFT панель AT070TN90
+	// TFT РїР°РЅРµР»СЊ AT070TN90
 	// 480/5 = 96, 800/16=50
 
-	#if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
+	#if WITHSHOWSWRPWR	/* РЅР° РґРёСЃРїР»РµРµ РѕРґРЅРѕРІСЂРµРјРµРЅРЅРѕ РѕС‚РѕР±СЂР°Р¶Р°СЋС‚СЃСЏ SWR-meter Рё PWR-meter */
 		//					"012345678901234567890123"
 		#define SWRPWRMAP	"1   2   3   4  0% | 100%" 
-		#define SWRMAX	(SWRMIN * 40 / 10)	// 4.0 - значение на полной шкале
+		#define SWRMAX	(SWRMIN * 40 / 10)	// 4.0 - Р·РЅР°С‡РµРЅРёРµ РЅР° РїРѕР»РЅРѕР№ С€РєР°Р»Рµ
 	#else
 		//					"012345678901234567890123"
 		#define POWERMAP	"0    25    50   75   100"
 		#define SWRMAP		"1   |   2  |   3   |   4"	// 
-		#define SWRMAX	(SWRMIN * 40 / 10)	// 4.0 - значение на полной шкале
+		#define SWRMAX	(SWRMIN * 40 / 10)	// 4.0 - Р·РЅР°С‡РµРЅРёРµ РЅР° РїРѕР»РЅРѕР№ С€РєР°Р»Рµ
 	#endif
 	//						"012345678901234567890123"
 	#define SMETERMAP		"1  3  5  7  9 +20 +40 60"
 	enum
 	{
-		BDTH_ALLRX = 40,	// ширина зоны для отображение полосы на индикаторе
+		BDTH_ALLRX = 40,	// С€РёСЂРёРЅР° Р·РѕРЅС‹ РґР»СЏ РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ РїРѕР»РѕСЃС‹ РЅР° РёРЅРґРёРєР°С‚РѕСЂРµ
 
-		BDTH_LEFTRX = 12,	// ширина индикатора баллов
-		BDTH_RIGHTRX = BDTH_ALLRX - BDTH_LEFTRX,	// ширина индикатора плюсов
+		BDTH_LEFTRX = 12,	// С€РёСЂРёРЅР° РёРЅРґРёРєР°С‚РѕСЂР° Р±Р°Р»Р»РѕРІ
+		BDTH_RIGHTRX = BDTH_ALLRX - BDTH_LEFTRX,	// С€РёСЂРёРЅР° РёРЅРґРёРєР°С‚РѕСЂР° РїР»СЋСЃРѕРІ
 		BDTH_SPACERX = 0,
-	#if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
+	#if WITHSHOWSWRPWR	/* РЅР° РґРёСЃРїР»РµРµ РѕРґРЅРѕРІСЂРµРјРµРЅРЅРѕ РѕС‚РѕР±СЂР°Р¶Р°СЋС‚СЃСЏ SWR-meter Рё PWR-meter */
 		BDTH_ALLSWR = 13,
 		BDTH_SPACESWR = 2,
 		BDTH_ALLPWR = 9,
@@ -4098,25 +4098,25 @@ enum
 		BDTH_SPACEPWR = BDTH_SPACERX,
 	#endif /* WITHSHOWSWRPWR */
 
-		BDCV_ALLRX = ROWS2GRID(60),	// количество ячееек, отведенное под S-метр, панораму, иные отображения
+		BDCV_ALLRX = ROWS2GRID(60),	// РєРѕР»РёС‡РµСЃС‚РІРѕ СЏС‡РµРµРµРє, РѕС‚РІРµРґРµРЅРЅРѕРµ РїРѕРґ S-РјРµС‚СЂ, РїР°РЅРѕСЂР°РјСѓ, РёРЅС‹Рµ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ
 	#if WITHSEPARATEWFL
-		/* без совмещения на одном экрание водопада и панорамы */
-		BDCO_SPMRX = ROWS2GRID(0),	// смещение спектра по вертикали в ячейках от начала общего поля
-		BDCO_WFLRX = ROWS2GRID(0)	// смещение водопада по вертикали в ячейках от начала общего поля
-		BDCV_SPMRX = BDCV_ALLRX,	// вертикальный размер спектра в ячейках		};
-		BDCV_WFLRX = BDCV_ALLRX,	// вертикальный размер водопада в ячейках		};
+		/* Р±РµР· СЃРѕРІРјРµС‰РµРЅРёСЏ РЅР° РѕРґРЅРѕРј СЌРєСЂР°РЅРёРµ РІРѕРґРѕРїР°РґР° Рё РїР°РЅРѕСЂР°РјС‹ */
+		BDCO_SPMRX = ROWS2GRID(0),	// СЃРјРµС‰РµРЅРёРµ СЃРїРµРєС‚СЂР° РїРѕ РІРµСЂС‚РёРєР°Р»Рё РІ СЏС‡РµР№РєР°С… РѕС‚ РЅР°С‡Р°Р»Р° РѕР±С‰РµРіРѕ РїРѕР»СЏ
+		BDCO_WFLRX = ROWS2GRID(0)	// СЃРјРµС‰РµРЅРёРµ РІРѕРґРѕРїР°РґР° РїРѕ РІРµСЂС‚РёРєР°Р»Рё РІ СЏС‡РµР№РєР°С… РѕС‚ РЅР°С‡Р°Р»Р° РѕР±С‰РµРіРѕ РїРѕР»СЏ
+		BDCV_SPMRX = BDCV_ALLRX,	// РІРµСЂС‚РёРєР°Р»СЊРЅС‹Р№ СЂР°Р·РјРµСЂ СЃРїРµРєС‚СЂР° РІ СЏС‡РµР№РєР°С…		};
+		BDCV_WFLRX = BDCV_ALLRX,	// РІРµСЂС‚РёРєР°Р»СЊРЅС‹Р№ СЂР°Р·РјРµСЂ РІРѕРґРѕРїР°РґР° РІ СЏС‡РµР№РєР°С…		};
 	#else /* WITHSEPARATEWFL */
-		/* совмещение на одном экрание водопада и панорамы */
-		BDCO_SPMRX = ROWS2GRID(0),	// смещение спектра по вертикали в ячейках от начала общего поля
-		BDCV_SPMRX = ROWS2GRID(22),	// вертикальный размер спектра в ячейках		};
-		BDCO_WFLRX = BDCV_SPMRX,	// смещение водопада по вертикали в ячейках от начала общего поля
-		BDCV_WFLRX = BDCV_ALLRX - BDCV_SPMRX	// вертикальный размер водопада в ячейках		};
+		/* СЃРѕРІРјРµС‰РµРЅРёРµ РЅР° РѕРґРЅРѕРј СЌРєСЂР°РЅРёРµ РІРѕРґРѕРїР°РґР° Рё РїР°РЅРѕСЂР°РјС‹ */
+		BDCO_SPMRX = ROWS2GRID(0),	// СЃРјРµС‰РµРЅРёРµ СЃРїРµРєС‚СЂР° РїРѕ РІРµСЂС‚РёРєР°Р»Рё РІ СЏС‡РµР№РєР°С… РѕС‚ РЅР°С‡Р°Р»Р° РѕР±С‰РµРіРѕ РїРѕР»СЏ
+		BDCV_SPMRX = ROWS2GRID(22),	// РІРµСЂС‚РёРєР°Р»СЊРЅС‹Р№ СЂР°Р·РјРµСЂ СЃРїРµРєС‚СЂР° РІ СЏС‡РµР№РєР°С…		};
+		BDCO_WFLRX = BDCV_SPMRX,	// СЃРјРµС‰РµРЅРёРµ РІРѕРґРѕРїР°РґР° РїРѕ РІРµСЂС‚РёРєР°Р»Рё РІ СЏС‡РµР№РєР°С… РѕС‚ РЅР°С‡Р°Р»Р° РѕР±С‰РµРіРѕ РїРѕР»СЏ
+		BDCV_WFLRX = BDCV_ALLRX - BDCV_SPMRX	// РІРµСЂС‚РёРєР°Р»СЊРЅС‹Р№ СЂР°Р·РјРµСЂ РІРѕРґРѕРїР°РґР° РІ СЏС‡РµР№РєР°С…		};
 	#endif /* WITHSEPARATEWFL */
 	};
 
 	enum
 	{
-		PATTERN_SPACE = 0x00,	/* очищаем место за SWR и PWR метром этим символом */
+		PATTERN_SPACE = 0x00,	/* РѕС‡РёС‰Р°РµРј РјРµСЃС‚Рѕ Р·Р° SWR Рё PWR РјРµС‚СЂРѕРј СЌС‚РёРј СЃРёРјРІРѕР»РѕРј */
 		PATTERN_BAR_FULL = 0xFF,
 		PATTERN_BAR_HALF = 0x3c,
 		PATTERN_BAR_EMPTYFULL = 0x00,	//0x00
@@ -4124,12 +4124,12 @@ enum
 	};
 
 	#if WITHSEPARATEWFL
-		/* без совмещения на одном экрание водопада и панорамы */
+		/* Р±РµР· СЃРѕРІРјРµС‰РµРЅРёСЏ РЅР° РѕРґРЅРѕРј СЌРєСЂР°РЅРёРµ РІРѕРґРѕРїР°РґР° Рё РїР°РЅРѕСЂР°РјС‹ */
 		enum 
 		{
-			DPAGE0,					// Страница, в которой отображаются основные (или все) 
-			DPAGE1,					// Страница, в которой отображается спектр
-			DPAGE2,					// Страница, в которой отображается водопад
+			DPAGE0,					// РЎС‚СЂР°РЅРёС†Р°, РІ РєРѕС‚РѕСЂРѕР№ РѕС‚РѕР±СЂР°Р¶Р°СЋС‚СЃСЏ РѕСЃРЅРѕРІРЅС‹Рµ (РёР»Рё РІСЃРµ) 
+			DPAGE1,					// РЎС‚СЂР°РЅРёС†Р°, РІ РєРѕС‚РѕСЂРѕР№ РѕС‚РѕР±СЂР°Р¶Р°РµС‚СЃСЏ СЃРїРµРєС‚СЂ
+			DPAGE2,					// РЎС‚СЂР°РЅРёС†Р°, РІ РєРѕС‚РѕСЂРѕР№ РѕС‚РѕР±СЂР°Р¶Р°РµС‚СЃСЏ РІРѕРґРѕРїР°Рґ
 			DISPLC_MODCOUNT
 		};
 
@@ -4140,18 +4140,18 @@ enum
 			PG2 = REDRSUBSET(DPAGE2),
 			PGSLP = REDRSUBSET_SLEEP,
 			PGALL = PG0 | PG1 | PG2 | REDRSUBSET_MENU,
-			PGLATCH = PGALL,	// страницы, на которых возможно отображение водопада или панорамы.
-			PGSWR = PG0,	// страница отоюражения S-meter и SWR-meter
+			PGLATCH = PGALL,	// СЃС‚СЂР°РЅРёС†С‹, РЅР° РєРѕС‚РѕСЂС‹С… РІРѕР·РјРѕР¶РЅРѕ РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ РІРѕРґРѕРїР°РґР° РёР»Рё РїР°РЅРѕСЂР°РјС‹.
+			PGSWR = PG0,	// СЃС‚СЂР°РЅРёС†Р° РѕС‚РѕСЋСЂР°Р¶РµРЅРёСЏ S-meter Рё SWR-meter
 			PGWFL = PG2,
 			PGSPE = PG1,
 			PGunused
 		};
 	#else /* WITHSEPARATEWFL */
-		/* совмещение на одном экрание водопада и панорамы */
+		/* СЃРѕРІРјРµС‰РµРЅРёРµ РЅР° РѕРґРЅРѕРј СЌРєСЂР°РЅРёРµ РІРѕРґРѕРїР°РґР° Рё РїР°РЅРѕСЂР°РјС‹ */
 		enum 
 		{
-			DPAGE0,					// Страница, в которой отображаются основные (или все) 
-			DPAGE1,					// Страница, в которой отображается спектр и водопад
+			DPAGE0,					// РЎС‚СЂР°РЅРёС†Р°, РІ РєРѕС‚РѕСЂРѕР№ РѕС‚РѕР±СЂР°Р¶Р°СЋС‚СЃСЏ РѕСЃРЅРѕРІРЅС‹Рµ (РёР»Рё РІСЃРµ) 
+			DPAGE1,					// РЎС‚СЂР°РЅРёС†Р°, РІ РєРѕС‚РѕСЂРѕР№ РѕС‚РѕР±СЂР°Р¶Р°РµС‚СЃСЏ СЃРїРµРєС‚СЂ Рё РІРѕРґРѕРїР°Рґ
 			DISPLC_MODCOUNT
 		};
 
@@ -4160,10 +4160,10 @@ enum
 			PG0 = REDRSUBSET(DPAGE0),
 			PG1 = REDRSUBSET(DPAGE1),
 			PGALL = PG0 | PG1 | REDRSUBSET_MENU,
-			PGWFL = PG0,	// страница отображения водопада
-			PGSPE = PG0,	// страница отображения панорамы
-			PGSWR = PG1,	// страница отоюражения S-meter и SWR-meter
-			PGLATCH = PGALL,	// страницы, на которых возможно отображение водопада или панорамы.
+			PGWFL = PG0,	// СЃС‚СЂР°РЅРёС†Р° РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ РІРѕРґРѕРїР°РґР°
+			PGSPE = PG0,	// СЃС‚СЂР°РЅРёС†Р° РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ РїР°РЅРѕСЂР°РјС‹
+			PGSWR = PG1,	// СЃС‚СЂР°РЅРёС†Р° РѕС‚РѕСЋСЂР°Р¶РµРЅРёСЏ S-meter Рё SWR-meter
+			PGLATCH = PGALL,	// СЃС‚СЂР°РЅРёС†С‹, РЅР° РєРѕС‚РѕСЂС‹С… РІРѕР·РјРѕР¶РЅРѕ РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ РІРѕРґРѕРїР°РґР° РёР»Рё РїР°РЅРѕСЂР°РјС‹.
 			PGSLP = REDRSUBSET_SLEEP,
 			PGunused
 		};
@@ -4176,16 +4176,16 @@ enum
 		};
 
 	#if 1//TUNE_TOP > 100000000uL
-		#define DISPLC_WIDTH	9	// количество цифр в отображении частоты
+		#define DISPLC_WIDTH	9	// РєРѕР»РёС‡РµСЃС‚РІРѕ С†РёС„СЂ РІ РѕС‚РѕР±СЂР°Р¶РµРЅРёРё С‡Р°СЃС‚РѕС‚С‹
 	#else
-		#define DISPLC_WIDTH	8	// количество цифр в отображении частоты
+		#define DISPLC_WIDTH	8	// РєРѕР»РёС‡РµСЃС‚РІРѕ С†РёС„СЂ РІ РѕС‚РѕР±СЂР°Р¶РµРЅРёРё С‡Р°СЃС‚РѕС‚С‹
 	#endif
-	#define DISPLC_RJ		0	// количество скрытых справа цифр в отображении частоты
+	#define DISPLC_RJ		0	// РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРєСЂС‹С‚С‹С… СЃРїСЂР°РІР° С†РёС„СЂ РІ РѕС‚РѕР±СЂР°Р¶РµРЅРёРё С‡Р°СЃС‚РѕС‚С‹
 
 	// 480/5 = 96, 800/16=50
 	// 272/5 = 54, 480/16=30 (old)
-	//#define GRID2X(cellsx) ((cellsx) * 16)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
-	//#define GRID2Y(cellsy) ((cellsy) * 5)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
+	//#define GRID2X(cellsx) ((cellsx) * 16)	/* РїРµСЂРµРІРѕРґ СЏС‡РµРµРє СЃРµС‚РєРё СЂР°Р·РјРµС‚РєРё РІ РЅРѕРјРµСЂ РїРёРєСЃРµР»СЏ РїРѕ РіРѕСЂРёР·РѕРЅС‚Р°Р»Рј */
+	//#define GRID2Y(cellsy) ((cellsy) * 5)	/* РїРµСЂРµРІРѕРґ СЏС‡РµРµРє СЃРµС‚РєРё СЂР°Р·РјРµС‚РєРё РІ РЅРѕРјРµСЂ РїРёРєСЃРµР»СЏ РїРѕ РІРµСЂС‚РёРєР°Р»Рё */
 	//#define SMALLCHARH 15 /* Font height */
 	//#define SMALLCHARW 16 /* Font width */
 	static const FLASHMEM struct dzone dzones [] =
@@ -4194,7 +4194,7 @@ enum
 		{	3,	0,	display_ant5,		REDRM_MODE, PGALL, },
 		{	9,	0,	display_att4,		REDRM_MODE, PGALL, },
 		{	14,	0,	display_preovf3,	REDRM_BARS, PGALL, },
-		{	18,	0,	display_genham1,	REDRM_BARS, PGALL, },	// Отображение режима General Coverage / HAM bands
+		{	18,	0,	display_genham1,	REDRM_BARS, PGALL, },	// РћС‚РѕР±СЂР°Р¶РµРЅРёРµ СЂРµР¶РёРјР° General Coverage / HAM bands
 		{	21,	0,	display_lockstate3, REDRM_MODE, PGALL, },	// LCK
 
 	#if WITHENCODER2
@@ -4212,9 +4212,9 @@ enum
 //		{	46, 35,	display_nr3,		REDRM_MODE, PGALL, },	// NR
 		{	46, 40,	display_atu3,		REDRM_MODE, PGALL, },	// TUNER state (optional)
 		{	46, 45,	display_byp3,		REDRM_MODE, PGALL, },	// TUNER BYPASS state (optional)
-		{	46, 50,	display_rec3,		REDRM_BARS, PGALL, },	// Отображение режима записи аудио фрагмента
+		{	46, 50,	display_rec3,		REDRM_BARS, PGALL, },	// РћС‚РѕР±СЂР°Р¶РµРЅРёРµ СЂРµР¶РёРјР° Р·Р°РїРёСЃРё Р°СѓРґРёРѕ С„СЂР°РіРјРµРЅС‚Р°
 		
-		{	0,	7,	display_freqX_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Частота (большие цифры)
+		{	0,	7,	display_freqX_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Р§Р°СЃС‚РѕС‚Р° (Р±РѕР»СЊС€РёРµ С†РёС„СЂС‹)
 		{	21, 10,	display_mode3_a,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
 		{	26, 10,	display_rxbw3,		REDRM_MODE, PGALL, },	// 3.1 / 0,5 / WID / NAR
 		{	30, 10,	display_nr3,		REDRM_MODE, PGALL, },	// NR : was: AGC
@@ -4225,27 +4225,27 @@ enum
 		{	21, 20,	display_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
 
 		{	0,	25,	display_siglevel5,	REDRM_BARS, PGALL, },	// signal level in S points
-		{	6,	25,	display_samfreqdelta8, REDRM_BARS, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
+		{	6,	25,	display_samfreqdelta8, REDRM_BARS, PGALL, },	/* РџРѕР»СѓС‡РёС‚СЊ РёРЅС„РѕСЂРјР°С†РёСЋ РѕР± РѕС€РёР±РєРµ РЅР°СЃС‚СЂРѕР№РєРё РІ СЂРµР¶РёРјРµ SAM */
 
 #if 1
-		{	0,	DLES,	display2_legend_rx,	REDRM_MODE, PGSWR, },	// Отображение оцифровки шкалы S-метра
+		{	0,	DLES,	display2_legend_rx,	REDRM_MODE, PGSWR, },	// РћС‚РѕР±СЂР°Р¶РµРЅРёРµ РѕС†РёС„СЂРѕРІРєРё С€РєР°Р»С‹ S-РјРµС‚СЂР°
 		{	0,	35,	display2_bars_rx,	REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
-		{	0,	40,	display2_legend_tx,	REDRM_MODE, PGSWR, },	// Отображение оцифровки шкалы PWR & SWR-метра
+		{	0,	40,	display2_legend_tx,	REDRM_MODE, PGSWR, },	// РћС‚РѕР±СЂР°Р¶РµРЅРёРµ РѕС†РёС„СЂРѕРІРєРё С€РєР°Р»С‹ PWR & SWR-РјРµС‚СЂР°
 		{	0,	45,	display2_bars_tx,	REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
 #else
 		{	0,	DLES,	display2_adctest,	REDRM_BARS, PGSWR, },	// ADC raw data print
 #endif
 
 	#if WITHSPECTRUMWF
-		{	0,	DLES,	dsp_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
-		{	0,	DLES,	display2_spectrum,	REDRM_BARS, PGSPE, },// подготовка изображения спектра
-		{	0,	DLES,	display2_waterfall,	REDRM_BARS, PGWFL, },// подготовка изображения водопада
-		{	0,	DLES,	display2_colorbuff,	REDRM_BARS,	PGWFL | PGSPE, },// Отображение водопада и/или спектра
+		{	0,	DLES,	dsp_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// С„РѕСЂРјРёСЂРѕРІР°РЅРёРµ РґР°РЅРЅС‹С… СЃРїРµРєС‚СЂР° РґР»СЏ РїРѕСЃР»РµРґСѓСЋС‰РµРіРѕ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ СЃРїРµРєС‚СЂР° РёР»Рё РІРѕРґРѕРїР°РґР°
+		{	0,	DLES,	display2_spectrum,	REDRM_BARS, PGSPE, },// РїРѕРґРіРѕС‚РѕРІРєР° РёР·РѕР±СЂР°Р¶РµРЅРёСЏ СЃРїРµРєС‚СЂР°
+		{	0,	DLES,	display2_waterfall,	REDRM_BARS, PGWFL, },// РїРѕРґРіРѕС‚РѕРІРєР° РёР·РѕР±СЂР°Р¶РµРЅРёСЏ РІРѕРґРѕРїР°РґР°
+		{	0,	DLES,	display2_colorbuff,	REDRM_BARS,	PGWFL | PGSPE, },// РћС‚РѕР±СЂР°Р¶РµРЅРёРµ РІРѕРґРѕРїР°РґР° Рё/РёР»Рё СЃРїРµРєС‚СЂР°
 	#endif /* WITHSPECTRUMWF */
 
 	
 		{	0,	DLE1,	display_datetime12,	REDRM_BARS, PGALL,	},	// TIME
-		{	13,	DLE1,	display_span9,		REDRM_MODE, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
+		{	13,	DLE1,	display_span9,		REDRM_MODE, PGALL, },	/* РџРѕР»СѓС‡РёС‚СЊ РёРЅС„РѕСЂРјР°С†РёСЋ РѕР± РѕС€РёР±РєРµ РЅР°СЃС‚СЂРѕР№РєРё РІ СЂРµР¶РёРјРµ SAM */
 		{	23, DLE1,	display_thermo4,	REDRM_VOLT, PGALL, },	// thermo sensor
 
 		{	39, DLE1,	display_currlevel5, REDRM_VOLT, PGALL, },	// PA drain current d.dd without "A"
@@ -4259,21 +4259,21 @@ enum
 		{	20, 25,	display_voltlevelV5, REDRM_VOLT, PGSLP, },	// voltmeter with "V"
 
 	#if WITHMENU
-		{	4,	30,	display_menu_group,	REDRM_MLBL, REDRSUBSET_MENU, },	// название группы
-		{	0,	35,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
-		{	4,	35,	display_menu_lblng,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
-		{	0,	40,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
-		{	0,	45,	display_samfreqdelta8, REDRM_BARS, REDRSUBSET_MENU, },	/* Получить информацию об ошибке настройки в режиме SAM */
+		{	4,	30,	display_menu_group,	REDRM_MLBL, REDRSUBSET_MENU, },	// РЅР°Р·РІР°РЅРёРµ РіСЂСѓРїРїС‹
+		{	0,	35,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// РєРѕРґ СЂРµРґР°РєС‚РёСЂСѓРµРјРѕРіРѕ РїР°СЂР°РјРµС‚СЂР°
+		{	4,	35,	display_menu_lblng,	REDRM_MLBL, REDRSUBSET_MENU, },	// РЅР°Р·РІР°РЅРёРµ СЂРµРґР°РєС‚РёСЂСѓРµРјРѕРіРѕ РїР°СЂР°РјРµС‚СЂР°
+		{	0,	40,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// Р·РЅР°С‡РµРЅРёРµ РїР°СЂР°РјРµС‚СЂР°
+		{	0,	45,	display_samfreqdelta8, REDRM_BARS, REDRSUBSET_MENU, },	/* РџРѕР»СѓС‡РёС‚СЊ РёРЅС„РѕСЂРјР°С†РёСЋ РѕР± РѕС€РёР±РєРµ РЅР°СЃС‚СЂРѕР№РєРё РІ СЂРµР¶РёРјРµ SAM */
 	#endif /* WITHMENU */
 	};
 
-	/* получить координаты окна с панорамой и/или водопадом. */
+	/* РїРѕР»СѓС‡РёС‚СЊ РєРѕРѕСЂРґРёРЅР°С‚С‹ РѕРєРЅР° СЃ РїР°РЅРѕСЂР°РјРѕР№ Рё/РёР»Рё РІРѕРґРѕРїР°РґРѕРј. */
 	void display2_getpipparams(pipparams_t * p)
 	{
-		p->x = GRID2X(0);	// позиция верхнего левого угла в пикселях
-		p->y = GRID2Y(DLES);	// позиция верхнего левого угла в пикселях
-		p->w = GRID2X(CHARS2GRID(BDTH_ALLRX));	// размер по горизонтали в пикселях
-		p->h = GRID2Y(BDCV_ALLRX);				// размер по вертикали в пикселях
+		p->x = GRID2X(0);	// РїРѕР·РёС†РёСЏ РІРµСЂС…РЅРµРіРѕ Р»РµРІРѕРіРѕ СѓРіР»Р° РІ РїРёРєСЃРµР»СЏС…
+		p->y = GRID2Y(DLES);	// РїРѕР·РёС†РёСЏ РІРµСЂС…РЅРµРіРѕ Р»РµРІРѕРіРѕ СѓРіР»Р° РІ РїРёРєСЃРµР»СЏС…
+		p->w = GRID2X(CHARS2GRID(BDTH_ALLRX));	// СЂР°Р·РјРµСЂ РїРѕ РіРѕСЂРёР·РѕРЅС‚Р°Р»Рё РІ РїРёРєСЃРµР»СЏС…
+		p->h = GRID2Y(BDCV_ALLRX);				// СЂР°Р·РјРµСЂ РїРѕ РІРµСЂС‚РёРєР°Р»Рё РІ РїРёРєСЃРµР»СЏС…
 		p->frame = (uintptr_t) getscratchpip();
 	}
 
@@ -4312,36 +4312,36 @@ static uint_fast8_t display_mapbar(
 }
 #if WITHBARS
 
-// количество точек в отображении мощности на диспле
+// РєРѕР»РёС‡РµСЃС‚РІРѕ С‚РѕС‡РµРє РІ РѕС‚РѕР±СЂР°Р¶РµРЅРёРё РјРѕС‰РЅРѕСЃС‚Рё РЅР° РґРёСЃРїР»Рµ
 static uint_fast16_t display_getpwrfullwidth(void)
 {
 	return GRID2X(CHARS2GRID(BDTH_ALLPWR));
 }
 
 #if LCDMODE_HD44780
-	// На HD44780 используется псевдографика
+	// РќР° HD44780 РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РїСЃРµРІРґРѕРіСЂР°С„РёРєР°
 
 #elif LCDMODE_S1D13781 && ! LCDMODE_LTDC
 
 
 #else /* LCDMODE_HD44780 */
 
-// Вызовы этой функции (или группу вызовов) требуется "обрамить" парой вызовов
-// display_wrdatabar_begin() и display_wrdatabar_end().
+// Р’С‹Р·РѕРІС‹ СЌС‚РѕР№ С„СѓРЅРєС†РёРё (РёР»Рё РіСЂСѓРїРїСѓ РІС‹Р·РѕРІРѕРІ) С‚СЂРµР±СѓРµС‚СЃСЏ "РѕР±СЂР°РјРёС‚СЊ" РїР°СЂРѕР№ РІС‹Р·РѕРІРѕРІ
+// display_wrdatabar_begin() Рё display_wrdatabar_end().
 //
 void 
 //NOINLINEAT
 display_dispbar(
-	uint_fast8_t width,	/* количество знакомест, занимаемых индикатором */
-	uint_fast8_t value,		/* значение, которое надо отобразить */
-	uint_fast8_t tracevalue,		/* значение маркера, которое надо отобразить */
-	uint_fast8_t topvalue,	/* значение, соответствующее полностью заполненному индикатору */
-	uint_fast8_t pattern,	/* DISPLAY_BAR_HALF или DISPLAY_BAR_FULL */
-	uint_fast8_t patternmax,	/* DISPLAY_BAR_HALF или DISPLAY_BAR_FULL - для отображения запомненного значения */
-	uint_fast8_t emptyp			/* паттерн для заполнения между штрихами */
+	uint_fast8_t width,	/* РєРѕР»РёС‡РµСЃС‚РІРѕ Р·РЅР°РєРѕРјРµСЃС‚, Р·Р°РЅРёРјР°РµРјС‹С… РёРЅРґРёРєР°С‚РѕСЂРѕРј */
+	uint_fast8_t value,		/* Р·РЅР°С‡РµРЅРёРµ, РєРѕС‚РѕСЂРѕРµ РЅР°РґРѕ РѕС‚РѕР±СЂР°Р·РёС‚СЊ */
+	uint_fast8_t tracevalue,		/* Р·РЅР°С‡РµРЅРёРµ РјР°СЂРєРµСЂР°, РєРѕС‚РѕСЂРѕРµ РЅР°РґРѕ РѕС‚РѕР±СЂР°Р·РёС‚СЊ */
+	uint_fast8_t topvalue,	/* Р·РЅР°С‡РµРЅРёРµ, СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РµРµ РїРѕР»РЅРѕСЃС‚СЊСЋ Р·Р°РїРѕР»РЅРµРЅРЅРѕРјСѓ РёРЅРґРёРєР°С‚РѕСЂСѓ */
+	uint_fast8_t pattern,	/* DISPLAY_BAR_HALF РёР»Рё DISPLAY_BAR_FULL */
+	uint_fast8_t patternmax,	/* DISPLAY_BAR_HALF РёР»Рё DISPLAY_BAR_FULL - РґР»СЏ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ Р·Р°РїРѕРјРЅРµРЅРЅРѕРіРѕ Р·РЅР°С‡РµРЅРёСЏ */
+	uint_fast8_t emptyp			/* РїР°С‚С‚РµСЂРЅ РґР»СЏ Р·Р°РїРѕР»РЅРµРЅРёСЏ РјРµР¶РґСѓ С€С‚СЂРёС…Р°РјРё */
 	)
 {
-	//enum { DISPLAY_BAR_LEVELS = 6 };	// количество градаций в одном знакоместе
+	//enum { DISPLAY_BAR_LEVELS = 6 };	// РєРѕР»РёС‡РµСЃС‚РІРѕ РіСЂР°РґР°С†РёР№ РІ РѕРґРЅРѕРј Р·РЅР°РєРѕРјРµСЃС‚Рµ
 
 	value = value < 0 ? 0 : value;
 	const uint_fast16_t wfull = GRID2X(width);
@@ -4385,7 +4385,7 @@ display_dispbar(
 
 #endif /* WITHBARS */
 
-// Адресация для s-meter
+// РђРґСЂРµСЃР°С†РёСЏ РґР»СЏ s-meter
 static void
 display_bars_address_rx(
 	uint_fast8_t x, 
@@ -4396,7 +4396,7 @@ display_bars_address_rx(
 	display_gotoxy(x + xoffs, y);
 }
 
-// Адресация для swr-meter
+// РђРґСЂРµСЃР°С†РёСЏ РґР»СЏ swr-meter
 static void
 display_bars_address_swr(
 	uint_fast8_t x, 
@@ -4407,7 +4407,7 @@ display_bars_address_swr(
 	display_bars_address_rx(x, y, xoffs);
 }
 
-// Адресация для pwr-meter
+// РђРґСЂРµСЃР°С†РёСЏ РґР»СЏ pwr-meter
 static void
 display_bars_address_pwr(
 	uint_fast8_t x, 
@@ -4415,27 +4415,27 @@ display_bars_address_pwr(
 	uint_fast8_t xoffs	// grid
 	)
 {
-#if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
+#if WITHSHOWSWRPWR	/* РЅР° РґРёСЃРїР»РµРµ РѕРґРЅРѕРІСЂРµРјРµРЅРЅРѕ РѕС‚РѕР±СЂР°Р¶Р°СЋС‚СЃСЏ SWR-meter Рё PWR-meter */
 	display_bars_address_rx(x, y, xoffs + CHARS2GRID(BDTH_ALLSWR + BDTH_SPACESWR));
 #else
 	display_bars_address_rx(x, y, xoffs);
 #endif
 }
 
-// координаьы для общего блока PWR & SWR
+// РєРѕРѕСЂРґРёРЅР°СЊС‹ РґР»СЏ РѕР±С‰РµРіРѕ Р±Р»РѕРєР° PWR & SWR
 void display_swrmeter(  
 	uint_fast8_t x, 
 	uint_fast8_t y, 
 	adcvalholder_t f,	// forward, 
-	adcvalholder_t r,	// reflected (скорректированное)
+	adcvalholder_t r,	// reflected (СЃРєРѕСЂСЂРµРєС‚РёСЂРѕРІР°РЅРЅРѕРµ)
 	uint_fast16_t minforward
 	)
 {
 #if WITHBARS
-	// SWRMIN - значение 10 - соответствует SWR = 1.0, точность = 0.1
-	// SWRMAX - какая цифра стоит в конце шкалы SWR-метра (30 = КСВ 3.0)
+	// SWRMIN - Р·РЅР°С‡РµРЅРёРµ 10 - СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓРµС‚ SWR = 1.0, С‚РѕС‡РЅРѕСЃС‚СЊ = 0.1
+	// SWRMAX - РєР°РєР°СЏ С†РёС„СЂР° СЃС‚РѕРёС‚ РІ РєРѕРЅС†Рµ С€РєР°Р»С‹ SWR-РјРµС‚СЂР° (30 = РљРЎР’ 3.0)
 	const uint_fast16_t fullscale = SWRMAX - SWRMIN;
-	uint_fast16_t swr10;		// рассчитанное  значение
+	uint_fast16_t swr10;		// СЂР°СЃСЃС‡РёС‚Р°РЅРЅРѕРµ  Р·РЅР°С‡РµРЅРёРµ
 	if (f < minforward)
 		swr10 = 0;	// SWR=1
 	else if (f <= r)
@@ -4458,7 +4458,7 @@ void display_swrmeter(
 
 	if (BDTH_SPACESWR != 0)
 	{
-		// заполняем пустое место за индикаторм КСВ
+		// Р·Р°РїРѕР»РЅСЏРµРј РїСѓСЃС‚РѕРµ РјРµСЃС‚Рѕ Р·Р° РёРЅРґРёРєР°С‚РѕСЂРј РљРЎР’
 		display_bars_address_swr(x, y, CHARS2GRID(BDTH_ALLSWR));
 		display_wrdatabar_begin();
 		display_dispbar(BDTH_SPACESWR, 0, 1, 1, PATTERN_SPACE, PATTERN_SPACE, PATTERN_SPACE);
@@ -4468,9 +4468,9 @@ void display_swrmeter(
 #endif /* WITHBARS */
 }
 
-// Вызывается из display2_bars_amv0 (версия для CTLSTYLE_RA4YBO_AM0)
-// координаьы для общего блока PWR & SWR
-// используется место для SWR
+// Р’С‹Р·С‹РІР°РµС‚СЃСЏ РёР· display2_bars_amv0 (РІРµСЂСЃРёСЏ РґР»СЏ CTLSTYLE_RA4YBO_AM0)
+// РєРѕРѕСЂРґРёРЅР°СЊС‹ РґР»СЏ РѕР±С‰РµРіРѕ Р±Р»РѕРєР° PWR & SWR
+// РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РјРµСЃС‚Рѕ РґР»СЏ SWR
 void display_modulationmeter_amv0(  
 	uint_fast8_t x, 
 	uint_fast8_t y, 
@@ -4497,7 +4497,7 @@ void display_modulationmeter_amv0(
 
 	if (BDTH_SPACESWR != 0)
 	{
-		// заполняем пустое место за индикаторм КСВ
+		// Р·Р°РїРѕР»РЅСЏРµРј РїСѓСЃС‚РѕРµ РјРµСЃС‚Рѕ Р·Р° РёРЅРґРёРєР°С‚РѕСЂРј РљРЎР’
 		display_bars_address_swr(x, y, CHARS2GRID(BDTH_ALLSWR));
 		display_wrdatabar_begin();
 		display_dispbar(BDTH_SPACESWR, 0, 1, 1, PATTERN_SPACE, PATTERN_SPACE, PATTERN_SPACE);
@@ -4506,18 +4506,18 @@ void display_modulationmeter_amv0(
 
 #endif /* WITHBARS */
 }
-// координаьы для общего блока PWR & SWR
-// Вызывается из display2_bars_amv0 (версия для CTLSTYLE_RA4YBO_AM0)
+// РєРѕРѕСЂРґРёРЅР°СЊС‹ РґР»СЏ РѕР±С‰РµРіРѕ Р±Р»РѕРєР° PWR & SWR
+// Р’С‹Р·С‹РІР°РµС‚СЃСЏ РёР· display2_bars_amv0 (РІРµСЂСЃРёСЏ РґР»СЏ CTLSTYLE_RA4YBO_AM0)
 void display_pwrmeter_amv0(  
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	uint_fast8_t value,			// текущее значение
-	uint_fast8_t tracemax,		// max hold значение
-	uint_fast8_t maxpwrcali		// значение для отклонения на всю шкалу
+	uint_fast8_t value,			// С‚РµРєСѓС‰РµРµ Р·РЅР°С‡РµРЅРёРµ
+	uint_fast8_t tracemax,		// max hold Р·РЅР°С‡РµРЅРёРµ
+	uint_fast8_t maxpwrcali		// Р·РЅР°С‡РµРЅРёРµ РґР»СЏ РѕС‚РєР»РѕРЅРµРЅРёСЏ РЅР° РІСЃСЋ С€РєР°Р»Сѓ
 	)
 {
 #if WITHBARS
-	const uint_fast16_t fullscale = display_getpwrfullwidth();	// количество точек в отображении мощности на диспле
+	const uint_fast16_t fullscale = display_getpwrfullwidth();	// РєРѕР»РёС‡РµСЃС‚РІРѕ С‚РѕС‡РµРє РІ РѕС‚РѕР±СЂР°Р¶РµРЅРёРё РјРѕС‰РЅРѕСЃС‚Рё РЅР° РґРёСЃРїР»Рµ
 #if WITHPWRLIN
 	uint_fast8_t v = (uint_fast32_t) value * fullscale / ((uint_fast32_t) maxpwrcali);
 	uint_fast8_t t = (uint_fast32_t) tracemax * fullscale / ((uint_fast32_t) maxpwrcali);
@@ -4542,7 +4542,7 @@ void display_pwrmeter_amv0(
 
 	if (BDTH_SPACEPWR != 0)
 	{
-		// заполняем пустое место за индикаторм мощности
+		// Р·Р°РїРѕР»РЅСЏРµРј РїСѓСЃС‚РѕРµ РјРµСЃС‚Рѕ Р·Р° РёРЅРґРёРєР°С‚РѕСЂРј РјРѕС‰РЅРѕСЃС‚Рё
 		display_bars_address_pwr(x, y, CHARS2GRID(BDTH_ALLPWR));
 		display_wrdatabar_begin();
 		display_dispbar(BDTH_SPACEPWR, 0, 1, 1, PATTERN_SPACE, PATTERN_SPACE, PATTERN_SPACE);
@@ -4555,14 +4555,14 @@ void display_pwrmeter_amv0(
 void display_smeter_amv0(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	uint_fast8_t value,		// текущее значение
-	uint_fast8_t tracemax,	// метка запомненного максимума
+	uint_fast8_t value,		// С‚РµРєСѓС‰РµРµ Р·РЅР°С‡РµРЅРёРµ
+	uint_fast8_t tracemax,	// РјРµС‚РєР° Р·Р°РїРѕРјРЅРµРЅРЅРѕРіРѕ РјР°РєСЃРёРјСѓРјР°
 	uint_fast8_t level9,	// s9 level
 	uint_fast8_t delta1,	// s9 - s0 delta
 	uint_fast8_t delta2)	// s9+50 - s9 delta
 {
 #if WITHBARS
-	tracemax = value > tracemax ? value : tracemax;	// защита от рассогласования значений
+	tracemax = value > tracemax ? value : tracemax;	// Р·Р°С‰РёС‚Р° РѕС‚ СЂР°СЃСЃРѕРіР»Р°СЃРѕРІР°РЅРёСЏ Р·РЅР°С‡РµРЅРёР№
 	//delta1 = delta1 > level9 ? level9 : delta1;
 	
 	const uint_fast8_t leftmin = level9 - delta1;
@@ -4578,13 +4578,13 @@ void display_smeter_amv0(
 	display_bars_address_rx(x, y, CHARS2GRID(0));
 	display_setcolors(LCOLOR, BGCOLOR);
 	display_wrdatabar_begin();
-	display_dispbar(BDTH_LEFTRX, mapleftval, mapleftmax, delta1, PATTERN_BAR_HALF, PATTERN_BAR_FULL, PATTERN_BAR_EMPTYHALF);		//ниже 9 баллов ничего
+	display_dispbar(BDTH_LEFTRX, mapleftval, mapleftmax, delta1, PATTERN_BAR_HALF, PATTERN_BAR_FULL, PATTERN_BAR_EMPTYHALF);		//РЅРёР¶Рµ 9 Р±Р°Р»Р»РѕРІ РЅРёС‡РµРіРѕ
 	display_wrdatabar_end();
 	//
 	display_bars_address_rx(x, y, CHARS2GRID(BDTH_LEFTRX));
 	display_setcolors(RCOLOR, BGCOLOR);
 	display_wrdatabar_begin();
-	display_dispbar(BDTH_RIGHTRX, maprightval, maprightmax, delta2, PATTERN_BAR_FULL, PATTERN_BAR_FULL, PATTERN_BAR_EMPTYFULL);		// выше 9 баллов ничего нет.
+	display_dispbar(BDTH_RIGHTRX, maprightval, maprightmax, delta2, PATTERN_BAR_FULL, PATTERN_BAR_FULL, PATTERN_BAR_EMPTYFULL);		// РІС‹С€Рµ 9 Р±Р°Р»Р»РѕРІ РЅРёС‡РµРіРѕ РЅРµС‚.
 	display_wrdatabar_end();
 
 	if (BDTH_SPACERX != 0)
@@ -4598,17 +4598,17 @@ void display_smeter_amv0(
 #endif /* WITHBARS */
 }
 
-// координаьы для общего блока PWR & SWR
+// РєРѕРѕСЂРґРёРЅР°СЊС‹ РґР»СЏ РѕР±С‰РµРіРѕ Р±Р»РѕРєР° PWR & SWR
 void display_pwrmeter(  
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	uint_fast8_t value,			// текущее значение
-	uint_fast8_t tracemax,		// max hold значение
-	uint_fast8_t maxpwrcali		// значение для отклонения на всю шкалу
+	uint_fast8_t value,			// С‚РµРєСѓС‰РµРµ Р·РЅР°С‡РµРЅРёРµ
+	uint_fast8_t tracemax,		// max hold Р·РЅР°С‡РµРЅРёРµ
+	uint_fast8_t maxpwrcali		// Р·РЅР°С‡РµРЅРёРµ РґР»СЏ РѕС‚РєР»РѕРЅРµРЅРёСЏ РЅР° РІСЃСЋ С€РєР°Р»Сѓ
 	)
 {
 #if WITHBARS
-	const uint_fast16_t fullscale = display_getpwrfullwidth();	// количество точек в отображении мощности на диспле
+	const uint_fast16_t fullscale = display_getpwrfullwidth();	// РєРѕР»РёС‡РµСЃС‚РІРѕ С‚РѕС‡РµРє РІ РѕС‚РѕР±СЂР°Р¶РµРЅРёРё РјРѕС‰РЅРѕСЃС‚Рё РЅР° РґРёСЃРїР»Рµ
 #if WITHPWRLIN
 	uint_fast8_t v = (uint_fast32_t) value * fullscale / ((uint_fast32_t) maxpwrcali);
 	uint_fast8_t t = (uint_fast32_t) tracemax * fullscale / ((uint_fast32_t) maxpwrcali);
@@ -4629,7 +4629,7 @@ void display_pwrmeter(
 
 	if (BDTH_SPACEPWR != 0)
 	{
-		// заполняем пустое место за индикаторм мощности
+		// Р·Р°РїРѕР»РЅСЏРµРј РїСѓСЃС‚РѕРµ РјРµСЃС‚Рѕ Р·Р° РёРЅРґРёРєР°С‚РѕСЂРј РјРѕС‰РЅРѕСЃС‚Рё
 		display_bars_address_pwr(x, y, CHARS2GRID(BDTH_ALLPWR));
 		display_wrdatabar_begin();
 		display_dispbar(BDTH_SPACEPWR, 0, 1, 1, PATTERN_SPACE, PATTERN_SPACE, PATTERN_SPACE);
@@ -4642,14 +4642,14 @@ void display_pwrmeter(
 void display_smeter(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	uint_fast8_t value,		// текущее значение
-	uint_fast8_t tracemax,	// метка запомненного максимума
+	uint_fast8_t value,		// С‚РµРєСѓС‰РµРµ Р·РЅР°С‡РµРЅРёРµ
+	uint_fast8_t tracemax,	// РјРµС‚РєР° Р·Р°РїРѕРјРЅРµРЅРЅРѕРіРѕ РјР°РєСЃРёРјСѓРјР°
 	uint_fast8_t level9,	// s9 level
 	uint_fast8_t delta1,	// s9 - s0 delta
 	uint_fast8_t delta2)	// s9+50 - s9 delta
 {
 #if WITHBARS
-	tracemax = value > tracemax ? value : tracemax;	// защита от рассогласования значений
+	tracemax = value > tracemax ? value : tracemax;	// Р·Р°С‰РёС‚Р° РѕС‚ СЂР°СЃСЃРѕРіР»Р°СЃРѕРІР°РЅРёСЏ Р·РЅР°С‡РµРЅРёР№
 	//delta1 = delta1 > level9 ? level9 : delta1;
 	
 	const uint_fast8_t leftmin = level9 - delta1;
@@ -4661,13 +4661,13 @@ void display_smeter(
 	display_bars_address_rx(x, y, CHARS2GRID(0));
 	display_setcolors(LCOLOR, BGCOLOR);
 	display_wrdatabar_begin();
-	display_dispbar(BDTH_LEFTRX, mapleftval, mapleftmax, delta1, PATTERN_BAR_HALF, PATTERN_BAR_FULL, PATTERN_BAR_EMPTYHALF);		//ниже 9 баллов ничего
+	display_dispbar(BDTH_LEFTRX, mapleftval, mapleftmax, delta1, PATTERN_BAR_HALF, PATTERN_BAR_FULL, PATTERN_BAR_EMPTYHALF);		//РЅРёР¶Рµ 9 Р±Р°Р»Р»РѕРІ РЅРёС‡РµРіРѕ
 	display_wrdatabar_end();
 	//
 	display_bars_address_rx(x, y, CHARS2GRID(BDTH_LEFTRX));
 	display_setcolors(RCOLOR, BGCOLOR);
 	display_wrdatabar_begin();
-	display_dispbar(BDTH_RIGHTRX, maprightval, maprightmax, delta2, PATTERN_BAR_FULL, PATTERN_BAR_FULL, PATTERN_BAR_EMPTYFULL);		// выше 9 баллов ничего нет.
+	display_dispbar(BDTH_RIGHTRX, maprightval, maprightmax, delta2, PATTERN_BAR_FULL, PATTERN_BAR_FULL, PATTERN_BAR_EMPTYFULL);		// РІС‹С€Рµ 9 Р±Р°Р»Р»РѕРІ РЅРёС‡РµРіРѕ РЅРµС‚.
 	display_wrdatabar_end();
 
 	if (BDTH_SPACERX != 0)
@@ -4682,7 +4682,7 @@ void display_smeter(
 }
 //--- bars
 
-// Отображение шкалы S-метра и других измерителей
+// РћС‚РѕР±СЂР°Р¶РµРЅРёРµ С€РєР°Р»С‹ S-РјРµС‚СЂР° Рё РґСЂСѓРіРёС… РёР·РјРµСЂРёС‚РµР»РµР№
 static void display2_legend_rx(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
@@ -4704,7 +4704,7 @@ static void display2_legend_rx(
 #endif /* LCDMODE_LTDC_PIP16 */
 }
 
-// Отображение шкалы SWR-метра и других измерителей
+// РћС‚РѕР±СЂР°Р¶РµРЅРёРµ С€РєР°Р»С‹ SWR-РјРµС‚СЂР° Рё РґСЂСѓРіРёС… РёР·РјРµСЂРёС‚РµР»РµР№
 static void display2_legend_tx(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
@@ -4718,10 +4718,10 @@ static void display2_legend_tx(
 	{
 		display_gotoxy(x, y + lowhalf);
 		#if WITHSWRMTR
-			#if WITHSHOWSWRPWR /* на дисплее одновременно отображаются SWR-meter и PWR-meter */
+			#if WITHSHOWSWRPWR /* РЅР° РґРёСЃРїР»РµРµ РѕРґРЅРѕРІСЂРµРјРµРЅРЅРѕ РѕС‚РѕР±СЂР°Р¶Р°СЋС‚СЃСЏ SWR-meter Рё PWR-meter */
 					display_string_P(PSTR(SWRPWRMAP), lowhalf);
 			#else
-					if (swrmode) 	// Если TUNE то показываем шкалу КСВ
+					if (swrmode) 	// Р•СЃР»Рё TUNE С‚Рѕ РїРѕРєР°Р·С‹РІР°РµРј С€РєР°Р»Сѓ РљРЎР’
 						display_string_P(PSTR(SWRMAP), lowhalf);
 					else
 						display_string_P(PSTR(POWERMAP), lowhalf);
@@ -4741,7 +4741,7 @@ static void display2_legend_tx(
 }
 
 
-// Отображение шкалы S-метра и других измерителей
+// РћС‚РѕР±СЂР°Р¶РµРЅРёРµ С€РєР°Р»С‹ S-РјРµС‚СЂР° Рё РґСЂСѓРіРёС… РёР·РјРµСЂРёС‚РµР»РµР№
 static void display2_legend(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
@@ -4759,17 +4759,17 @@ static void display2_legend(
 
 enum 
 {
-	ALLDX = GRID2X(CHARS2GRID(BDTH_ALLRX)),	// размер по горизонтали в пикселях
-	ALLDY = GRID2Y(BDCV_ALLRX),				// размер по вертикали в пикселях части отведенной водопаду
-	WFDY = GRID2Y(BDCV_WFLRX),				// размер по вертикали в пикселях части отведенной водопаду
-	WFY0 = GRID2Y(BDCO_WFLRX),				// смещение по вертикали в пикселях части отведенной водопаду
-	SPDY = GRID2Y(BDCV_SPMRX),				// размер по вертикали в пикселях части отведенной спектру
-	SPY0 = GRID2Y(BDCO_SPMRX)				// смещение по вертикали в пикселях части отведенной спектру
+	ALLDX = GRID2X(CHARS2GRID(BDTH_ALLRX)),	// СЂР°Р·РјРµСЂ РїРѕ РіРѕСЂРёР·РѕРЅС‚Р°Р»Рё РІ РїРёРєСЃРµР»СЏС…
+	ALLDY = GRID2Y(BDCV_ALLRX),				// СЂР°Р·РјРµСЂ РїРѕ РІРµСЂС‚РёРєР°Р»Рё РІ РїРёРєСЃРµР»СЏС… С‡Р°СЃС‚Рё РѕС‚РІРµРґРµРЅРЅРѕР№ РІРѕРґРѕРїР°РґСѓ
+	WFDY = GRID2Y(BDCV_WFLRX),				// СЂР°Р·РјРµСЂ РїРѕ РІРµСЂС‚РёРєР°Р»Рё РІ РїРёРєСЃРµР»СЏС… С‡Р°СЃС‚Рё РѕС‚РІРµРґРµРЅРЅРѕР№ РІРѕРґРѕРїР°РґСѓ
+	WFY0 = GRID2Y(BDCO_WFLRX),				// СЃРјРµС‰РµРЅРёРµ РїРѕ РІРµСЂС‚РёРєР°Р»Рё РІ РїРёРєСЃРµР»СЏС… С‡Р°СЃС‚Рё РѕС‚РІРµРґРµРЅРЅРѕР№ РІРѕРґРѕРїР°РґСѓ
+	SPDY = GRID2Y(BDCV_SPMRX),				// СЂР°Р·РјРµСЂ РїРѕ РІРµСЂС‚РёРєР°Р»Рё РІ РїРёРєСЃРµР»СЏС… С‡Р°СЃС‚Рё РѕС‚РІРµРґРµРЅРЅРѕР№ СЃРїРµРєС‚СЂСѓ
+	SPY0 = GRID2Y(BDCO_SPMRX)				// СЃРјРµС‰РµРЅРёРµ РїРѕ РІРµСЂС‚РёРєР°Р»Рё РІ РїРёРєСЃРµР»СЏС… С‡Р°СЃС‚Рё РѕС‚РІРµРґРµРЅРЅРѕР№ СЃРїРµРєС‚СЂСѓ
 };
 
 #if LCDMODE_LTDC_PIP16
 
-	// один буфер установлен для отображения, второй еше отображается. Третий заполняем новым изображением.
+	// РѕРґРёРЅ Р±СѓС„РµСЂ СѓСЃС‚Р°РЅРѕРІР»РµРЅ РґР»СЏ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ, РІС‚РѕСЂРѕР№ РµС€Рµ РѕС‚РѕР±СЂР°Р¶Р°РµС‚СЃСЏ. РўСЂРµС‚РёР№ Р·Р°РїРѕР»РЅСЏРµРј РЅРѕРІС‹Рј РёР·РѕР±СЂР°Р¶РµРЅРёРµРј.
 	enum { NPIPS = 3 };
 	static RAMFRAMEBUFF ALIGNX_BEGIN PACKEDCOLOR565_T colorpips [NPIPS] [GXSIZE(ALLDX, ALLDY)] ALIGNX_END;
 	static int pipphase;
@@ -4800,7 +4800,7 @@ static const FLOAT_t spectrum_alpha = 1 - (FLOAT_t) 0.25;	// old value coefficie
 static const FLOAT_t waterfall_beta = 0.75;					// incoming value coefficient
 static const FLOAT_t waterfall_alpha = 1 - (FLOAT_t) 0.75;	// old value coefficient
 
-static FLOAT_t spavgarray [ALLDX] = { 1 };	// массив входных данных для отображения (через фильтры).
+static FLOAT_t spavgarray [ALLDX] = { 1 };	// РјР°СЃСЃРёРІ РІС…РѕРґРЅС‹С… РґР°РЅРЅС‹С… РґР»СЏ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ (С‡РµСЂРµР· С„РёР»СЊС‚СЂС‹).
 
 static FLOAT_t filter_waterfall(
 	uint_fast16_t x
@@ -4825,15 +4825,15 @@ static FLOAT_t filter_spectrum(
 }
 
 #if (! LCDMODE_S1D13781_NHWACCEL && LCDMODE_S1D13781)
-	static uint8_t wfarray [1][ALLDX];	// массив "водопада"
-	enum { wfrow = 0 };				// строка, в которую последней занесены данные
+	static uint8_t wfarray [1][ALLDX];	// РјР°СЃСЃРёРІ "РІРѕРґРѕРїР°РґР°"
+	enum { wfrow = 0 };				// СЃС‚СЂРѕРєР°, РІ РєРѕС‚РѕСЂСѓСЋ РїРѕСЃР»РµРґРЅРµР№ Р·Р°РЅРµСЃРµРЅС‹ РґР°РЅРЅС‹Рµ
 #else
-	static uint8_t wfarray [WFDY][ALLDX];	// массив "водопада"
-	static uint_fast16_t wfrow;				// строка, в которую последней занесены данные
+	static uint8_t wfarray [WFDY][ALLDX];	// РјР°СЃСЃРёРІ "РІРѕРґРѕРїР°РґР°"
+	static uint_fast16_t wfrow;				// СЃС‚СЂРѕРєР°, РІ РєРѕС‚РѕСЂСѓСЋ РїРѕСЃР»РµРґРЅРµР№ Р·Р°РЅРµСЃРµРЅС‹ РґР°РЅРЅС‹Рµ
 #endif
 
-static uint_fast32_t wffreq;			// частота центра спектра, для которой в последной раз отрисовали.
-static uint_fast8_t wfzoom;				// масштаб, с которым выводили спектр
+static uint_fast32_t wffreq;			// С‡Р°СЃС‚РѕС‚Р° С†РµРЅС‚СЂР° СЃРїРµРєС‚СЂР°, РґР»СЏ РєРѕС‚РѕСЂРѕР№ РІ РїРѕСЃР»РµРґРЅРѕР№ СЂР°Р· РѕС‚СЂРёСЃРѕРІР°Р»Рё.
+static uint_fast8_t wfzoom;				// РјР°СЃС€С‚Р°Р±, СЃ РєРѕС‚РѕСЂС‹Рј РІС‹РІРѕРґРёР»Рё СЃРїРµРєС‚СЂ
 
 enum { PALETTESIZE = 256 };
 static PACKEDCOLOR565_T wfpalette [PALETTESIZE];
@@ -4841,13 +4841,13 @@ static PACKEDCOLOR565_T wfpalette [PALETTESIZE];
 #define COLOR565_GRIDCOLOR		TFTRGB565(128, 128, 0)		//COLOR_GRAY - center marker
 #define COLOR565_GRIDCOLOR2		TFTRGB565(128, 0, 0x00)		//COLOR_DARKRED - other markers
 #define COLOR565_SPECTRUMBG		TFTRGB565(0, 0, 0)			//COLOR_BLACK
-#define COLOR565_SPECTRUMBG2	TFTRGB565(0, 128, 128)		//COLOR_CYAN - полоса пропускания приемника
-//#define COLOR565_SPECTRUMBG2	TFTRGB565(0x80, 0x80, 0x00)	//COLOR_OLIVE - полоса пропускания приемника
+#define COLOR565_SPECTRUMBG2	TFTRGB565(0, 128, 128)		//COLOR_CYAN - РїРѕР»РѕСЃР° РїСЂРѕРїСѓСЃРєР°РЅРёСЏ РїСЂРёРµРјРЅРёРєР°
+//#define COLOR565_SPECTRUMBG2	TFTRGB565(0x80, 0x80, 0x00)	//COLOR_OLIVE - РїРѕР»РѕСЃР° РїСЂРѕРїСѓСЃРєР°РЅРёСЏ РїСЂРёРµРјРЅРёРєР°
 #define COLOR565_SPECTRUMFG		TFTRGB565(0, 255, 0)		//COLOR_GREEN
 #define COLOR565_SPECTRUMFENCE	TFTRGB565(255, 255, 255)	//COLOR_WHITE
 #define COLOR565_SPECTRUMLINE	TFTRGB565(0, 255, 0)	//COLOR_GREEN
 
-// Код взят из проекта Malamute
+// РљРѕРґ РІР·СЏС‚ РёР· РїСЂРѕРµРєС‚Р° Malamute
 static void wfpalette_initialize(void)
 {
 	int type = 0;
@@ -4895,8 +4895,8 @@ static void wfpalette_initialize(void)
 		// a = 0
 		for (i = 0; i < 64; ++ i)
 		{
-			// для i = 0..15 результат формулы = ноль
-			wfpalette [a + i] = TFTRGB565(0, 0, (int) (powf((float) 0.0625 * i, 4)));	// проверить результат перед попыткой применить целочисленные вычисления!
+			// РґР»СЏ i = 0..15 СЂРµР·СѓР»СЊС‚Р°С‚ С„РѕСЂРјСѓР»С‹ = РЅРѕР»СЊ
+			wfpalette [a + i] = TFTRGB565(0, 0, (int) (powf((float) 0.0625 * i, 4)));	// РїСЂРѕРІРµСЂРёС‚СЊ СЂРµР·СѓР»СЊС‚Р°С‚ РїРµСЂРµРґ РїРѕРїС‹С‚РєРѕР№ РїСЂРёРјРµРЅРёС‚СЊ С†РµР»РѕС‡РёСЃР»РµРЅРЅС‹Рµ РІС‹С‡РёСЃР»РµРЅРёСЏ!
 		}
 		a += i;
 		// a = 64
@@ -4933,8 +4933,8 @@ static void wfpalette_initialize(void)
 	}
 }
 
-// формирование данных спектра для последующего отображения
-// спектра или водопада
+// С„РѕСЂРјРёСЂРѕРІР°РЅРёРµ РґР°РЅРЅС‹С… СЃРїРµРєС‚СЂР° РґР»СЏ РїРѕСЃР»РµРґСѓСЋС‰РµРіРѕ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ
+// СЃРїРµРєС‚СЂР° РёР»Рё РІРѕРґРѕРїР°РґР°
 static void dsp_latchwaterfall(
 	uint_fast8_t x0, 
 	uint_fast8_t y0, 
@@ -4947,7 +4947,7 @@ static void dsp_latchwaterfall(
 	(void) pv;
 
 
-	// запоминание информации спектра для спектрограммы
+	// Р·Р°РїРѕРјРёРЅР°РЅРёРµ РёРЅС„РѕСЂРјР°С†РёРё СЃРїРµРєС‚СЂР° РґР»СЏ СЃРїРµРєС‚СЂРѕРіСЂР°РјРјС‹
 	dsp_getspectrumrow(spavgarray, ALLDX, glob_zoomx);
 
 #if (! LCDMODE_S1D13781_NHWACCEL && LCDMODE_S1D13781)
@@ -4955,23 +4955,23 @@ static void dsp_latchwaterfall(
 	wfrow = (wfrow == 0) ? (WFDY - 1) : (wfrow - 1);
 #endif
 
-	// запоминание информации спектра для водопада
+	// Р·Р°РїРѕРјРёРЅР°РЅРёРµ РёРЅС„РѕСЂРјР°С†РёРё СЃРїРµРєС‚СЂР° РґР»СЏ РІРѕРґРѕРїР°РґР°
 	for (x = 0; x < ALLDX; ++ x)
 	{
-		// без усреднения для водопада
-		const int val = dsp_mag2y(filter_waterfall(x), PALETTESIZE - 1, glob_topdb, glob_fulldb); // возвращает значения от 0 до dy включительно
-		// запись в буфер водопада
+		// Р±РµР· СѓСЃСЂРµРґРЅРµРЅРёСЏ РґР»СЏ РІРѕРґРѕРїР°РґР°
+		const int val = dsp_mag2y(filter_waterfall(x), PALETTESIZE - 1, glob_topdb, glob_fulldb); // РІРѕР·РІСЂР°С‰Р°РµС‚ Р·РЅР°С‡РµРЅРёСЏ РѕС‚ 0 РґРѕ dy РІРєР»СЋС‡РёС‚РµР»СЊРЅРѕ
+		// Р·Р°РїРёСЃСЊ РІ Р±СѓС„РµСЂ РІРѕРґРѕРїР°РґР°
 		wfarray [wfrow] [x] = val;
 	}
 }
 
-// получить горизонтальную позицию для заданного отклонения в герцах
+// РїРѕР»СѓС‡РёС‚СЊ РіРѕСЂРёР·РѕРЅС‚Р°Р»СЊРЅСѓСЋ РїРѕР·РёС†РёСЋ РґР»СЏ Р·Р°РґР°РЅРЅРѕРіРѕ РѕС‚РєР»РѕРЅРµРЅРёСЏ РІ РіРµСЂС†Р°С…
 static uint_fast16_t
 deltafreq2x(
-	int_fast32_t f0,	// центральная частота
-	int_fast16_t delta,	// отклонение от центральной частоты в герцах
-	int_fast32_t bw,	// полоса обзора
-	uint_fast16_t width	// ширина экрана
+	int_fast32_t f0,	// С†РµРЅС‚СЂР°Р»СЊРЅР°СЏ С‡Р°СЃС‚РѕС‚Р°
+	int_fast16_t delta,	// РѕС‚РєР»РѕРЅРµРЅРёРµ РѕС‚ С†РµРЅС‚СЂР°Р»СЊРЅРѕР№ С‡Р°СЃС‚РѕС‚С‹ РІ РіРµСЂС†Р°С…
+	int_fast32_t bw,	// РїРѕР»РѕСЃР° РѕР±Р·РѕСЂР°
+	uint_fast16_t width	// С€РёСЂРёРЅР° СЌРєСЂР°РЅР°
 	)
 {
 	//const int_fast32_t dp = (delta + bw / 2) * width / bw;
@@ -4979,15 +4979,15 @@ deltafreq2x(
 	return dp;
 }
 
-// Поставить цветную точку.
-// Формат RGB565
+// РџРѕСЃС‚Р°РІРёС‚СЊ С†РІРµС‚РЅСѓСЋ С‚РѕС‡РєСѓ.
+// Р¤РѕСЂРјР°С‚ RGB565
 void display_colorbuffer_xor_vline(
 	PACKEDCOLOR565_T * buffer,
 	uint_fast16_t dx,	
 	uint_fast16_t dy,
-	uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
-	uint_fast16_t row0,	// вертикальная координата пикселя (0..dy-1) сверху вниз
-	uint_fast16_t h,	// высота
+	uint_fast16_t col,	// РіРѕСЂРёР·РѕРЅС‚Р°Р»СЊРЅР°СЏ РєРѕРѕСЂРґРёРЅР°С‚Р° РїРёРєСЃРµР»СЏ (0..dx-1) СЃР»РµРІР° РЅР°РїСЂР°РІРѕ
+	uint_fast16_t row0,	// РІРµСЂС‚РёРєР°Р»СЊРЅР°СЏ РєРѕРѕСЂРґРёРЅР°С‚Р° РїРёРєСЃРµР»СЏ (0..dy-1) СЃРІРµСЂС…Сѓ РІРЅРёР·
+	uint_fast16_t h,	// РІС‹СЃРѕС‚Р°
 	COLOR565_T color
 	)
 {
@@ -4995,16 +4995,16 @@ void display_colorbuffer_xor_vline(
 		display_colorbuffer_xor(buffer, dx, dy, col, row0 ++, color);
 }
 
-// Поставить цветную точку.
-// Формат RGB565
+// РџРѕСЃС‚Р°РІРёС‚СЊ С†РІРµС‚РЅСѓСЋ С‚РѕС‡РєСѓ.
+// Р¤РѕСЂРјР°С‚ RGB565
 static void 
 display_colorbuffer_set_vline(
 	PACKEDCOLOR565_T * buffer,
 	uint_fast16_t dx,	
 	uint_fast16_t dy,
-	uint_fast16_t col,	// горизонтальная координата начального пикселя (0..dx-1) слева направо
-	uint_fast16_t row0,	// вертикальная координата начального пикселя (0..dy-1) сверху вниз
-	uint_fast16_t h,	// высота
+	uint_fast16_t col,	// РіРѕСЂРёР·РѕРЅС‚Р°Р»СЊРЅР°СЏ РєРѕРѕСЂРґРёРЅР°С‚Р° РЅР°С‡Р°Р»СЊРЅРѕРіРѕ РїРёРєСЃРµР»СЏ (0..dx-1) СЃР»РµРІР° РЅР°РїСЂР°РІРѕ
+	uint_fast16_t row0,	// РІРµСЂС‚РёРєР°Р»СЊРЅР°СЏ РєРѕРѕСЂРґРёРЅР°С‚Р° РЅР°С‡Р°Р»СЊРЅРѕРіРѕ РїРёРєСЃРµР»СЏ (0..dy-1) СЃРІРµСЂС…Сѓ РІРЅРёР·
+	uint_fast16_t h,	// РІС‹СЃРѕС‚Р°
 	COLOR565_T color
 	)
 {
@@ -5012,45 +5012,45 @@ display_colorbuffer_set_vline(
 		display_colorbuffer_set(buffer, dx, dy, col, row0 ++, color);
 }
 
-// отрисовка маркеров частот
+// РѕС‚СЂРёСЃРѕРІРєР° РјР°СЂРєРµСЂРѕРІ С‡Р°СЃС‚РѕС‚
 static void 
 display_colorgrid(
 	PACKEDCOLOR565_T * buffer,
-	uint_fast16_t row0,	// вертикальная координата начала занимаемой области (0..dy-1) сверху вниз
-	uint_fast16_t h,	// высота
+	uint_fast16_t row0,	// РІРµСЂС‚РёРєР°Р»СЊРЅР°СЏ РєРѕРѕСЂРґРёРЅР°С‚Р° РЅР°С‡Р°Р»Р° Р·Р°РЅРёРјР°РµРјРѕР№ РѕР±Р»Р°СЃС‚Рё (0..dy-1) СЃРІРµСЂС…Сѓ РІРЅРёР·
+	uint_fast16_t h,	// РІС‹СЃРѕС‚Р°
 	int_fast32_t f0,	// center frequency
 	int_fast32_t bw		// span
 	)
 {
-	COLOR565_T color0 = COLOR565_GRIDCOLOR;	// макркр на центре
+	COLOR565_T color0 = COLOR565_GRIDCOLOR;	// РјР°РєСЂРєСЂ РЅР° С†РµРЅС‚СЂРµ
 	COLOR565_T color = COLOR565_GRIDCOLOR2;
 	// 
-	const int_fast32_t go = f0 % (int) glob_gridstep;	// шаг сетки
-	const int_fast32_t gs = (int) glob_gridstep;	// шаг сетки
+	const int_fast32_t go = f0 % (int) glob_gridstep;	// С€Р°Рі СЃРµС‚РєРё
+	const int_fast32_t gs = (int) glob_gridstep;	// С€Р°Рі СЃРµС‚РєРё
 	const int_fast32_t halfbw = bw / 2;
-	int_fast32_t df;	// кратное сетке значение
+	int_fast32_t df;	// РєСЂР°С‚РЅРѕРµ СЃРµС‚РєРµ Р·РЅР°С‡РµРЅРёРµ
 	for (df = - halfbw / gs * gs - go; df < halfbw; df += gs)
 	{
 		uint_fast16_t xmarker;
 
 		if (df > - halfbw)
 		{
-			// маркер центральной частоты обзора - XOR линию
+			// РјР°СЂРєРµСЂ С†РµРЅС‚СЂР°Р»СЊРЅРѕР№ С‡Р°СЃС‚РѕС‚С‹ РѕР±Р·РѕСЂР° - XOR Р»РёРЅРёСЋ
 			xmarker = deltafreq2x(f0, df, bw, ALLDX);
 			display_colorbuffer_xor_vline(buffer, ALLDX, ALLDY, xmarker, row0, h, color);
 		}
 	}
 }
 
-// Спектр на монохромных дисплеях 
-// или на цвентых,где есть возможность раскаски растровой картинки.
+// РЎРїРµРєС‚СЂ РЅР° РјРѕРЅРѕС…СЂРѕРјРЅС‹С… РґРёСЃРїР»РµСЏС… 
+// РёР»Рё РЅР° С†РІРµРЅС‚С‹С…,РіРґРµ РµСЃС‚СЊ РІРѕР·РјРѕР¶РЅРѕСЃС‚СЊ СЂР°СЃРєР°СЃРєРё СЂР°СЃС‚СЂРѕРІРѕР№ РєР°СЂС‚РёРЅРєРё.
 
 #define HHWMG ((! LCDMODE_S1D13781_NHWACCEL && LCDMODE_S1D13781) || LCDMODE_UC1608 || LCDMODE_UC1601)
 
 #if HHWMG
 static ALIGNX_BEGIN GX_t spectmonoscr [MGSIZE(ALLDX, SPDY)] ALIGNX_END;
 #endif /* HHWMG */
-// подготовка изображения спектра
+// РїРѕРґРіРѕС‚РѕРІРєР° РёР·РѕР±СЂР°Р¶РµРЅРёСЏ СЃРїРµРєС‚СЂР°
 static void display2_spectrum(
 	uint_fast8_t x0, 
 	uint_fast8_t y0, 
@@ -5058,42 +5058,42 @@ static void display2_spectrum(
 	)
 {
 #if HHWMG
-	// Спектр на монохромных дисплеях 
-	// или на цвентых,где есть возможность раскаски растровой картинки.
+	// РЎРїРµРєС‚СЂ РЅР° РјРѕРЅРѕС…СЂРѕРјРЅС‹С… РґРёСЃРїР»РµСЏС… 
+	// РёР»Рё РЅР° С†РІРµРЅС‚С‹С…,РіРґРµ РµСЃС‚СЊ РІРѕР·РјРѕР¶РЅРѕСЃС‚СЊ СЂР°СЃРєР°СЃРєРё СЂР°СЃС‚СЂРѕРІРѕР№ РєР°СЂС‚РёРЅРєРё.
 
 	if (hamradio_get_tx() == 0)
 	{
 		const uint_fast32_t f0 = hamradio_get_freq_a();	/* frequecy at middle of spectrum */
 		const int_fast32_t bw = display_zoomedbw();
-		uint_fast16_t xleft = deltafreq2x(f0, hamradio_getleft_bp(0), bw, ALLDX);	// левый край шторуи
-		uint_fast16_t xright = deltafreq2x(f0, hamradio_getright_bp(0), bw, ALLDX);	// правый край шторки
+		uint_fast16_t xleft = deltafreq2x(f0, hamradio_getleft_bp(0), bw, ALLDX);	// Р»РµРІС‹Р№ РєСЂР°Р№ С€С‚РѕСЂСѓРё
+		uint_fast16_t xright = deltafreq2x(f0, hamradio_getright_bp(0), bw, ALLDX);	// РїСЂР°РІС‹Р№ РєСЂР°Р№ С€С‚РѕСЂРєРё
 
 		if (xright == xleft)
 			xright = xleft + 1;
 
-		// формирование растра
+		// С„РѕСЂРјРёСЂРѕРІР°РЅРёРµ СЂР°СЃС‚СЂР°
 		display_pixelbuffer_clear(spectmonoscr, ALLDX, SPDY);
-		// центральная частота
+		// С†РµРЅС‚СЂР°Р»СЊРЅР°СЏ С‡Р°СЃС‚РѕС‚Р°
 		const uint_fast16_t xmarker = deltafreq2x(f0, 0, bw, ALLDX);
 
 		if (glob_fillspect == 0)
 		{
-			/* рисуем спектр ломанной линией */
+			/* СЂРёСЃСѓРµРј СЃРїРµРєС‚СЂ Р»РѕРјР°РЅРЅРѕР№ Р»РёРЅРёРµР№ */
 			uint_fast16_t x;
 			uint_fast16_t ylast = 0;
-			// отображение спектра
+			// РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ СЃРїРµРєС‚СЂР°
 			for (x = 0; x < ALLDX; ++ x)
 			{
 				uint_fast16_t ynew = SPDY - 1 - dsp_mag2y(filter_spectrum(x), SPDY - 1, glob_topdb, glob_fulldb);
 				if (x != 0)
 					display_pixelbuffer_line(spectmonoscr, ALLDX, SPDY, x - 1, ylast, x, ynew);
 				ylast = ynew;
-				// формирование изображения шторки.(XOR)
+				// С„РѕСЂРјРёСЂРѕРІР°РЅРёРµ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ С€С‚РѕСЂРєРё.(XOR)
 				if (x >= xleft && x <= xright)
 				{
 					uint_fast16_t y;
 					for (y = 0; y < SPDY; ++ y)
-						display_pixelbuffer_xor(spectmonoscr, ALLDX, SPDY, x, SPY0 + y);	// xor точку
+						display_pixelbuffer_xor(spectmonoscr, ALLDX, SPDY, x, SPY0 + y);	// xor С‚РѕС‡РєСѓ
 				}
 			}
 		}
@@ -5101,27 +5101,27 @@ static void display2_spectrum(
 		{
 			uint_fast16_t x;
 			uint_fast16_t y;
-			// маркер центральной частоты обзора
+			// РјР°СЂРєРµСЂ С†РµРЅС‚СЂР°Р»СЊРЅРѕР№ С‡Р°СЃС‚РѕС‚С‹ РѕР±Р·РѕСЂР°
 			for (y = 0; y < SPDY; ++ y)
 			{
-				display_pixelbuffer(spectmonoscr, ALLDX, SPDY, xmarker, SPY0 + y);	// погасить точку
+				display_pixelbuffer(spectmonoscr, ALLDX, SPDY, xmarker, SPY0 + y);	// РїРѕРіР°СЃРёС‚СЊ С‚РѕС‡РєСѓ
 			}
 
-			// отображение спектра
+			// РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ СЃРїРµРєС‚СЂР°
 			for (x = 0; x < ALLDX; ++ x)
 			{
 				uint_fast16_t y;
-				// формирование изображения шторки.
+				// С„РѕСЂРјРёСЂРѕРІР°РЅРёРµ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ С€С‚РѕСЂРєРё.
 				if (x >= xleft && x <= xright)
 				{
 					for (y = 0; y < SPDY; ++ y)
-						display_pixelbuffer_xor(spectmonoscr, ALLDX, SPDY, x, SPY0 + y);	// xor точку
+						display_pixelbuffer_xor(spectmonoscr, ALLDX, SPDY, x, SPY0 + y);	// xor С‚РѕС‡РєСѓ
 				}
-				// Формирование графика
-				// логарифм - в вертикальную координату
-				const int yv = SPDY - 1 - dsp_mag2y(filter_spectrum(x), SPDY - 1, glob_topdb, glob_fulldb);	//отображаемый уровень, yv = 0..SPDY
+				// Р¤РѕСЂРјРёСЂРѕРІР°РЅРёРµ РіСЂР°С„РёРєР°
+				// Р»РѕРіР°СЂРёС„Рј - РІ РІРµСЂС‚РёРєР°Р»СЊРЅСѓСЋ РєРѕРѕСЂРґРёРЅР°С‚Сѓ
+				const int yv = SPDY - 1 - dsp_mag2y(filter_spectrum(x), SPDY - 1, glob_topdb, glob_fulldb);	//РѕС‚РѕР±СЂР°Р¶Р°РµРјС‹Р№ СѓСЂРѕРІРµРЅСЊ, yv = 0..SPDY
 				for (y = yv; y < SPDY; ++ y)
-					display_pixelbuffer_xor(spectmonoscr, ALLDX, SPDY, x, SPY0 + y);	// xor точку
+					display_pixelbuffer_xor(spectmonoscr, ALLDX, SPDY, x, SPY0 + y);	// xor С‚РѕС‡РєСѓ
 			}
 		}
 	}
@@ -5136,28 +5136,28 @@ static void display2_spectrum(
 	(void) x0;
 	(void) y0;
 	(void) pv;
-	// Спектр на цветных дисплеях, не поддерживающих ускоренного 
-	// построения изображения по bitmap с раскрашиванием
+	// РЎРїРµРєС‚СЂ РЅР° С†РІРµС‚РЅС‹С… РґРёСЃРїР»РµСЏС…, РЅРµ РїРѕРґРґРµСЂР¶РёРІР°СЋС‰РёС… СѓСЃРєРѕСЂРµРЅРЅРѕРіРѕ 
+	// РїРѕСЃС‚СЂРѕРµРЅРёСЏ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ РїРѕ bitmap СЃ СЂР°СЃРєСЂР°С€РёРІР°РЅРёРµРј
 	if (hamradio_get_tx() == 0)
 	{
 		const uint_fast32_t f0 = hamradio_get_freq_a();	/* frequecy at middle of spectrum */
 		const int_fast32_t bw = display_zoomedbw();
-		uint_fast16_t xleft = deltafreq2x(f0, hamradio_getleft_bp(0), bw, ALLDX);	// левый край шторуи
-		uint_fast16_t xright = deltafreq2x(f0, hamradio_getright_bp(0), bw, ALLDX);	// правый край шторки
+		uint_fast16_t xleft = deltafreq2x(f0, hamradio_getleft_bp(0), bw, ALLDX);	// Р»РµРІС‹Р№ РєСЂР°Р№ С€С‚РѕСЂСѓРё
+		uint_fast16_t xright = deltafreq2x(f0, hamradio_getright_bp(0), bw, ALLDX);	// РїСЂР°РІС‹Р№ РєСЂР°Р№ С€С‚РѕСЂРєРё
 
 		if (xright == xleft)
 			xright = xleft + 1;
 
 		if (glob_fillspect == 0)
 		{
-			/* рисуем спектр ломанной линией */
+			/* СЂРёСЃСѓРµРј СЃРїРµРєС‚СЂ Р»РѕРјР°РЅРЅРѕР№ Р»РёРЅРёРµР№ */
 			uint_fast16_t ylast = 0;
 			
 			uint_fast16_t x;
 			for (x = 0; x < ALLDX; ++ x)
 			{
-				const uint_fast8_t inband = (x >= xleft && x <= xright);	// в полосе пропускания приемника = "шторка"
-				// формирование фона растра
+				const uint_fast8_t inband = (x >= xleft && x <= xright);	// РІ РїРѕР»РѕСЃРµ РїСЂРѕРїСѓСЃРєР°РЅРёСЏ РїСЂРёРµРјРЅРёРєР° = "С€С‚РѕСЂРєР°"
+				// С„РѕСЂРјРёСЂРѕРІР°РЅРёРµ С„РѕРЅР° СЂР°СЃС‚СЂР°
 				display_colorbuffer_set_vline(colorpip, ALLDX, ALLDY, x, SPY0, SPDY, inband ? COLOR565_SPECTRUMBG2 : COLOR565_SPECTRUMBG);
 
 				uint_fast16_t ynew = SPDY - 1 - dsp_mag2y(filter_spectrum(x), SPDY - 1, glob_topdb, glob_fulldb);
@@ -5165,46 +5165,46 @@ static void display2_spectrum(
 					display_colorbuffer_line_set(colorpip, ALLDX, ALLDY, x - 1, ylast, x, ynew, COLOR565_SPECTRUMLINE);
 				ylast = ynew;
 			}
-			display_colorgrid(colorpip, SPY0, SPDY, f0, bw);	// отрисовка маркеров частот
+			display_colorgrid(colorpip, SPY0, SPDY, f0, bw);	// РѕС‚СЂРёСЃРѕРІРєР° РјР°СЂРєРµСЂРѕРІ С‡Р°СЃС‚РѕС‚
 		}
 		else
 		{
 			uint_fast16_t x;
 			uint_fast16_t y;
-			// отображение спектра
+			// РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ СЃРїРµРєС‚СЂР°
 			for (x = 0; x < ALLDX; ++ x)
 			{
-				const uint_fast8_t inband = (x >= xleft && x <= xright);	// в полосе пропускания приемника = "шторка"
-				// логарифм - в вертикальную координату
-				const int yv = SPDY - 1 - dsp_mag2y(filter_spectrum(x), SPDY - 1, glob_topdb, glob_fulldb);	// возвращает значения от 0 до SPDY включительно
-				// Формирование графика
+				const uint_fast8_t inband = (x >= xleft && x <= xright);	// РІ РїРѕР»РѕСЃРµ РїСЂРѕРїСѓСЃРєР°РЅРёСЏ РїСЂРёРµРјРЅРёРєР° = "С€С‚РѕСЂРєР°"
+				// Р»РѕРіР°СЂРёС„Рј - РІ РІРµСЂС‚РёРєР°Р»СЊРЅСѓСЋ РєРѕРѕСЂРґРёРЅР°С‚Сѓ
+				const int yv = SPDY - 1 - dsp_mag2y(filter_spectrum(x), SPDY - 1, glob_topdb, glob_fulldb);	// РІРѕР·РІСЂР°С‰Р°РµС‚ Р·РЅР°С‡РµРЅРёСЏ РѕС‚ 0 РґРѕ SPDY РІРєР»СЋС‡РёС‚РµР»СЊРЅРѕ
+				// Р¤РѕСЂРјРёСЂРѕРІР°РЅРёРµ РіСЂР°С„РёРєР°
 
-				// формирование фона растра - верхняя часть графика
+				// С„РѕСЂРјРёСЂРѕРІР°РЅРёРµ С„РѕРЅР° СЂР°СЃС‚СЂР° - РІРµСЂС…РЅСЏСЏ С‡Р°СЃС‚СЊ РіСЂР°С„РёРєР°
 				display_colorbuffer_set_vline(colorpip, ALLDX, ALLDY, x, SPY0, yv, inband ? COLOR565_SPECTRUMBG2 : COLOR565_SPECTRUMBG);
 
-				// точку на границе
+				// С‚РѕС‡РєСѓ РЅР° РіСЂР°РЅРёС†Рµ
 				if (yv < SPDY)
 				{
 					display_colorbuffer_set(colorpip, ALLDX, ALLDY, x, yv + SPY0, COLOR565_SPECTRUMFENCE);	
 
-					// Нижняя часть экрана
+					// РќРёР¶РЅСЏСЏ С‡Р°СЃС‚СЊ СЌРєСЂР°РЅР°
 					const int yb = yv + 1;
 					if (yb < SPDY)
 					{
-						// формирование занятой области растра
+						// С„РѕСЂРјРёСЂРѕРІР°РЅРёРµ Р·Р°РЅСЏС‚РѕР№ РѕР±Р»Р°СЃС‚Рё СЂР°СЃС‚СЂР°
 						display_colorbuffer_set_vline(colorpip, ALLDX, ALLDY, x, yb + SPY0, SPDY - yb, COLOR565_SPECTRUMFG);
 					}
 				}
 			}
-			display_colorgrid(colorpip, SPY0, SPDY, f0, bw);	// отрисовка маркеров частот
+			display_colorgrid(colorpip, SPY0, SPDY, f0, bw);	// РѕС‚СЂРёСЃРѕРІРєР° РјР°СЂРєРµСЂРѕРІ С‡Р°СЃС‚РѕС‚
 		}
 	}
 
 #endif
 }
 
-// стираем целиком старое изображение водопада
-// в строке wfrow - новое
+// СЃС‚РёСЂР°РµРј С†РµР»РёРєРѕРј СЃС‚Р°СЂРѕРµ РёР·РѕР±СЂР°Р¶РµРЅРёРµ РІРѕРґРѕРїР°РґР°
+// РІ СЃС‚СЂРѕРєРµ wfrow - РЅРѕРІРѕРµ
 static void wflclear(void)
 {
 	const size_t rowsize = sizeof wfarray [0];
@@ -5218,9 +5218,9 @@ static void wflclear(void)
 	}
 }
 
-// частота увеличилась - надо сдвигать картинку влево
-// нужно сохрянять часть старого изображения
-// в строке wfrow - новое
+// С‡Р°СЃС‚РѕС‚Р° СѓРІРµР»РёС‡РёР»Р°СЃСЊ - РЅР°РґРѕ СЃРґРІРёРіР°С‚СЊ РєР°СЂС‚РёРЅРєСѓ РІР»РµРІРѕ
+// РЅСѓР¶РЅРѕ СЃРѕС…СЂСЏРЅСЏС‚СЊ С‡Р°СЃС‚СЊ СЃС‚Р°СЂРѕРіРѕ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ
+// РІ СЃС‚СЂРѕРєРµ wfrow - РЅРѕРІРѕРµ
 static void wflshiftleft(uint_fast16_t pixels)
 {
 	const size_t rowsize = sizeof wfarray [0];
@@ -5237,9 +5237,9 @@ static void wflshiftleft(uint_fast16_t pixels)
 	}
 }
 
-// частота уменьшилась - надо сдвигать картинку вправо
-// нужно сохрянять часть старого изображения
-// в строке wfrow - новое
+// С‡Р°СЃС‚РѕС‚Р° СѓРјРµРЅСЊС€РёР»Р°СЃСЊ - РЅР°РґРѕ СЃРґРІРёРіР°С‚СЊ РєР°СЂС‚РёРЅРєСѓ РІРїСЂР°РІРѕ
+// РЅСѓР¶РЅРѕ СЃРѕС…СЂСЏРЅСЏС‚СЊ С‡Р°СЃС‚СЊ СЃС‚Р°СЂРѕРіРѕ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ
+// РІ СЃС‚СЂРѕРєРµ wfrow - РЅРѕРІРѕРµ
 static void wflshiftright(uint_fast16_t pixels)
 {
 	const size_t rowsize = sizeof wfarray [0];
@@ -5258,7 +5258,7 @@ static void wflshiftright(uint_fast16_t pixels)
 
 
 
-// отрисовка вновь появившихся данных на водопаде (в случае использования аппаратного scroll видеопамяти).
+// РѕС‚СЂРёСЃРѕРІРєР° РІРЅРѕРІСЊ РїРѕСЏРІРёРІС€РёС…СЃСЏ РґР°РЅРЅС‹С… РЅР° РІРѕРґРѕРїР°РґРµ (РІ СЃР»СѓС‡Р°Рµ РёСЃРїРѕР»СЊР·РѕРІР°РЅРёСЏ Р°РїРїР°СЂР°С‚РЅРѕРіРѕ scroll РІРёРґРµРѕРїР°РјСЏС‚Рё).
 static void display_wfputrow(uint_fast16_t x, uint_fast16_t y, const uint8_t * p)
 {
 	enum { dx = ALLDX, dy = 1 };
@@ -5267,13 +5267,13 @@ static void display_wfputrow(uint_fast16_t x, uint_fast16_t y, const uint8_t * p
 	for (xp = 0; xp < dx; ++ xp)
 		display_colorbuffer_set(b, dx, dy, xp, 0, wfpalette [p [xp]]);
 
-	// маркер центральной частоты обзора
+	// РјР°СЂРєРµСЂ С†РµРЅС‚СЂР°Р»СЊРЅРѕР№ С‡Р°СЃС‚РѕС‚С‹ РѕР±Р·РѕСЂР°
 	//display_colorbuffer_xor(b, dx, dy, dx / 2, 0, COLOR565_GRIDCOLOR);
 
 	display_colorbuffer_show(b, dx, dy, x, y);
 }
 
-// подготовка изображения водопада
+// РїРѕРґРіРѕС‚РѕРІРєР° РёР·РѕР±СЂР°Р¶РµРЅРёСЏ РІРѕРґРѕРїР°РґР°
 static void display2_waterfall(
 	uint_fast8_t x0, 
 	uint_fast8_t y0, 
@@ -5289,42 +5289,42 @@ static void display2_waterfall(
 		int_fast16_t hshift = 0;
 
 	#if 1
-		// следы спектра ("водопад")
-		// сдвигаем вниз, отрисовываем только верхнюю строку
+		// СЃР»РµРґС‹ СЃРїРµРєС‚СЂР° ("РІРѕРґРѕРїР°Рґ")
+		// СЃРґРІРёРіР°РµРј РІРЅРёР·, РѕС‚СЂРёСЃРѕРІС‹РІР°РµРј С‚РѕР»СЊРєРѕ РІРµСЂС…РЅСЋСЋ СЃС‚СЂРѕРєСѓ
 		display_scroll_down(GRID2X(x0), GRID2Y(y0) + WFY0, ALLDX, WFDY, 1, hshift);
 		while (display_getreadystate() == 0)
 			;
 		x = 0;
 		display_wfputrow(GRID2X(x0) + x, GRID2Y(y0) + 0 + WFY0, & wfarray [wfrow] [0]);	// display_plot inside for one row
 	#elif 0
-		// следы спектра ("фонтан")
-		// сдвигаем вверх, отрисовываем только нижнюю строку
+		// СЃР»РµРґС‹ СЃРїРµРєС‚СЂР° ("С„РѕРЅС‚Р°РЅ")
+		// СЃРґРІРёРіР°РµРј РІРІРµСЂС…, РѕС‚СЂРёСЃРѕРІС‹РІР°РµРј С‚РѕР»СЊРєРѕ РЅРёР¶РЅСЋСЋ СЃС‚СЂРѕРєСѓ
 		display_scroll_up(GRID2X(x0), GRID2Y(y0) + WFY0, ALLDX, WFDY, 1, hshift);
 		while (display_getreadystate() == 0)
 			;
 		x = 0;
 		display_wfputrow(GRID2X(x0) + x, GRID2Y(y0) + WFDY - 1 + WFY0, & wfarray [wfrow] [0]);	// display_plot inside for one row
 	#else
-		// следы спектра ("водопад")
-		// отрисовываем весь экран
+		// СЃР»РµРґС‹ СЃРїРµРєС‚СЂР° ("РІРѕРґРѕРїР°Рґ")
+		// РѕС‚СЂРёСЃРѕРІС‹РІР°РµРј РІРµСЃСЊ СЌРєСЂР°РЅ
 		while (display_getreadystate() == 0)
 			;
 		for (y = 0; y < WFDY; ++ y)
 		{
-			// отрисовка горизонтальными линиями
+			// РѕС‚СЂРёСЃРѕРІРєР° РіРѕСЂРёР·РѕРЅС‚Р°Р»СЊРЅС‹РјРё Р»РёРЅРёСЏРјРё
 			x = 0;
 			display_wfputrow(GRID2X(x0) + x, GRID2Y(y0) + y + WFY0, & wfarray [(wfrow + y) % WFDY] [0]);	// display_plot inside for one row
 		}
 	#endif
 
 #elif HHWMG
-	// Спектр на монохромных дисплеях 
-	// или на цвентых,где есть возможность раскаски растровой картинки.
+	// РЎРїРµРєС‚СЂ РЅР° РјРѕРЅРѕС…СЂРѕРјРЅС‹С… РґРёСЃРїР»РµСЏС… 
+	// РёР»Рё РЅР° С†РІРµРЅС‚С‹С…,РіРґРµ РµСЃС‚СЊ РІРѕР·РјРѕР¶РЅРѕСЃС‚СЊ СЂР°СЃРєР°СЃРєРё СЂР°СЃС‚СЂРѕРІРѕР№ РєР°СЂС‚РёРЅРєРё.
 
-	// следы спектра ("водопад") на монохромных дисплеях
+	// СЃР»РµРґС‹ СЃРїРµРєС‚СЂР° ("РІРѕРґРѕРїР°Рґ") РЅР° РјРѕРЅРѕС…СЂРѕРјРЅС‹С… РґРёСЃРїР»РµСЏС…
 
 #else /* */
-	// следы спектра ("водопад") на цветных дисплеях
+	// СЃР»РµРґС‹ СЃРїРµРєС‚СЂР° ("РІРѕРґРѕРїР°Рґ") РЅР° С†РІРµС‚РЅС‹С… РґРёСЃРїР»РµСЏС…
 	(void) x0;
 	(void) y0;
 	(void) pv;
@@ -5340,52 +5340,52 @@ static void display2_waterfall(
 #if ! WITHSEPARATEWFL
 		if (wffreq == 0 || wfzoom != glob_zoomx)
 		{
-			// стираем целиком старое изображение водопада
-			// в строке wfrow - новое
+			// СЃС‚РёСЂР°РµРј С†РµР»РёРєРѕРј СЃС‚Р°СЂРѕРµ РёР·РѕР±СЂР°Р¶РµРЅРёРµ РІРѕРґРѕРїР°РґР°
+			// РІ СЃС‚СЂРѕРєРµ wfrow - РЅРѕРІРѕРµ
 			wflclear();
 		}
 		else if (wffreq == f0)
 		{
-			// не менялась частота
+			// РЅРµ РјРµРЅСЏР»Р°СЃСЊ С‡Р°СЃС‚РѕС‚Р°
 		}
 		else if (wffreq > f0)
 		{
-			// частота уменьшилась - надо сдвигать картинку вправо
+			// С‡Р°СЃС‚РѕС‚Р° СѓРјРµРЅСЊС€РёР»Р°СЃСЊ - РЅР°РґРѕ СЃРґРІРёРіР°С‚СЊ РєР°СЂС‚РёРЅРєСѓ РІРїСЂР°РІРѕ
 			const uint_fast32_t delta = wffreq - f0;
 			if (delta < bw / 2)
 			{
-				// нужно сохрянять часть старого изображения
-				// в строке wfrow - новое
+				// РЅСѓР¶РЅРѕ СЃРѕС…СЂСЏРЅСЏС‚СЊ С‡Р°СЃС‚СЊ СЃС‚Р°СЂРѕРіРѕ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ
+				// РІ СЃС‚СЂРѕРєРµ wfrow - РЅРѕРІРѕРµ
 				wflshiftright(xm - deltafreq2x(f0, 0 - delta, bw, ALLDX));
 			}
 			else
 			{
-				// стараем целиком старое изображение водопада
-				// в строке wfrow - новое
+				// СЃС‚Р°СЂР°РµРј С†РµР»РёРєРѕРј СЃС‚Р°СЂРѕРµ РёР·РѕР±СЂР°Р¶РµРЅРёРµ РІРѕРґРѕРїР°РґР°
+				// РІ СЃС‚СЂРѕРєРµ wfrow - РЅРѕРІРѕРµ
 				wflclear();
 			}
 		}
 		else
 		{
-			// частота увеличилась - надо сдвигать картинку влево
+			// С‡Р°СЃС‚РѕС‚Р° СѓРІРµР»РёС‡РёР»Р°СЃСЊ - РЅР°РґРѕ СЃРґРІРёРіР°С‚СЊ РєР°СЂС‚РёРЅРєСѓ РІР»РµРІРѕ
 			const uint_fast32_t delta = f0 - wffreq;
 			if (delta < bw / 2)
 			{
-				// нужно сохрянять часть старого изображения
-				// в строке wfrow - новое
+				// РЅСѓР¶РЅРѕ СЃРѕС…СЂСЏРЅСЏС‚СЊ С‡Р°СЃС‚СЊ СЃС‚Р°СЂРѕРіРѕ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ
+				// РІ СЃС‚СЂРѕРєРµ wfrow - РЅРѕРІРѕРµ
 				wflshiftleft(deltafreq2x(f0, delta, bw, ALLDX) - xm);
 			}
 			else
 			{
-				// стираем целиком старое изображение водопада
-				// в строке 0 - новое
+				// СЃС‚РёСЂР°РµРј С†РµР»РёРєРѕРј СЃС‚Р°СЂРѕРµ РёР·РѕР±СЂР°Р¶РµРЅРёРµ РІРѕРґРѕРїР°РґР°
+				// РІ СЃС‚СЂРѕРєРµ 0 - РЅРѕРІРѕРµ
 				wflclear();
 			}
 		}
 #endif /* ! WITHSEPARATEWFL */
 
-		// формирование растра
-		// следы спектра ("водопад")
+		// С„РѕСЂРјРёСЂРѕРІР°РЅРёРµ СЂР°СЃС‚СЂР°
+		// СЃР»РµРґС‹ СЃРїРµРєС‚СЂР° ("РІРѕРґРѕРїР°Рґ")
 		for (x = 0; x < ALLDX; ++ x)
 		{
 			for (y = 0; y < WFDY; ++ y)
@@ -5396,14 +5396,14 @@ static void display2_waterfall(
 #if 0
 		if (1)
 		{
-			// маркер центральной частоты обзора
-			// XOR линию
+			// РјР°СЂРєРµСЂ С†РµРЅС‚СЂР°Р»СЊРЅРѕР№ С‡Р°СЃС‚РѕС‚С‹ РѕР±Р·РѕСЂР°
+			// XOR Р»РёРЅРёСЋ
 			uint_fast16_t xmarker = xm;
 			display_colorbuffer_xor_vline(colorpip, ALLDX, ALLDY, xmarker, WFY0, WFDY, COLOR565_GRIDCOLOR);
 		}
 		else
 		{
-			display_colorgrid(colorpip, WFY0, WFDY, freq, bw);	// отрисовка маркеров частот
+			display_colorgrid(colorpip, WFY0, WFDY, freq, bw);	// РѕС‚СЂРёСЃРѕРІРєР° РјР°СЂРєРµСЂРѕРІ С‡Р°СЃС‚РѕС‚
 		}
 #endif
 		wffreq = f0;
@@ -5416,8 +5416,8 @@ static void display2_waterfall(
 #endif /* LCDMODE_S1D13781 */
 }
 
-// отображение ранее подготовленного буфера
-// Отображение водопада и/или спектра
+// РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ СЂР°РЅРµРµ РїРѕРґРіРѕС‚РѕРІР»РµРЅРЅРѕРіРѕ Р±СѓС„РµСЂР°
+// РћС‚РѕР±СЂР°Р¶РµРЅРёРµ РІРѕРґРѕРїР°РґР° Рё/РёР»Рё СЃРїРµРєС‚СЂР°
 static void display2_colorbuff(
 	uint_fast8_t x0, 
 	uint_fast8_t y0, 
@@ -5425,8 +5425,8 @@ static void display2_colorbuff(
 	)
 {
 #if HHWMG
-	// Спектр на монохромных дисплеях 
-	// или на цвентых,где есть возможность раскаски растровой картинки.
+	// РЎРїРµРєС‚СЂ РЅР° РјРѕРЅРѕС…СЂРѕРјРЅС‹С… РґРёСЃРїР»РµСЏС… 
+	// РёР»Рё РЅР° С†РІРµРЅС‚С‹С…,РіРґРµ РµСЃС‚СЊ РІРѕР·РјРѕР¶РЅРѕСЃС‚СЊ СЂР°СЃРєР°СЃРєРё СЂР°СЃС‚СЂРѕРІРѕР№ РєР°СЂС‚РёРЅРєРё.
 	display_showbuffer(spectmonoscr, ALLDX, SPDY, x0, y0);
 
 #else /* */
@@ -5476,7 +5476,7 @@ static void display2_waterfall(
 {
 }
 
-// отображение ранее подготовленного буфера
+// РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ СЂР°РЅРµРµ РїРѕРґРіРѕС‚РѕРІР»РµРЅРЅРѕРіРѕ Р±СѓС„РµСЂР°
 static void display2_colorbuff(
 	uint_fast8_t x0, 
 	uint_fast8_t y0, 
@@ -5491,24 +5491,24 @@ static void display2_colorbuff(
 
 #if STMD
 
-// параметры state machine отображения
-static uint_fast8_t reqs [REDRM_count];		// запросы на отображение
-static uint_fast8_t subsets [REDRM_count];	// параметр прохода по списку отображения.
-static uint_fast8_t walkis [REDRM_count];	// индекс в списке параметров отображения в данном проходе
-static uint_fast8_t keyi;					// запрос на отображение, выполняющийся сейчас.
+// РїР°СЂР°РјРµС‚СЂС‹ state machine РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ
+static uint_fast8_t reqs [REDRM_count];		// Р·Р°РїСЂРѕСЃС‹ РЅР° РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ
+static uint_fast8_t subsets [REDRM_count];	// РїР°СЂР°РјРµС‚СЂ РїСЂРѕС…РѕРґР° РїРѕ СЃРїРёСЃРєСѓ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ.
+static uint_fast8_t walkis [REDRM_count];	// РёРЅРґРµРєСЃ РІ СЃРїРёСЃРєРµ РїР°СЂР°РјРµС‚СЂРѕРІ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ РІ РґР°РЅРЅРѕРј РїСЂРѕС…РѕРґРµ
+static uint_fast8_t keyi;					// Р·Р°РїСЂРѕСЃ РЅР° РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ, РІС‹РїРѕР»РЅСЏСЋС‰РёР№СЃСЏ СЃРµР№С‡Р°СЃ.
 
 #endif /* STMD */
 
 static uint_fast8_t
 getsubset(
-	uint_fast8_t menuset,	/* индекс режима отображения (0..DISPLC_MODCOUNT - 1) */
-	uint_fast8_t extra		/* находимся в режиме отображения настроек */
+	uint_fast8_t menuset,	/* РёРЅРґРµРєСЃ СЂРµР¶РёРјР° РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ (0..DISPLC_MODCOUNT - 1) */
+	uint_fast8_t extra		/* РЅР°С…РѕРґРёРјСЃСЏ РІ СЂРµР¶РёРјРµ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ РЅР°СЃС‚СЂРѕРµРє */
 	)
 {
 	return extra ? REDRSUBSET_MENU : REDRSUBSET(menuset);
 }
 
-// выполнение отрисовки всех элементов за раз.
+// РІС‹РїРѕР»РЅРµРЅРёРµ РѕС‚СЂРёСЃРѕРІРєРё РІСЃРµС… СЌР»РµРјРµРЅС‚РѕРІ Р·Р° СЂР°Р·.
 static void 
 display_walktrough(
 	uint_fast8_t key,
@@ -5530,7 +5530,7 @@ display_walktrough(
 }
 
 
-// заказ на выполнение отрисовки всех элементов через state machine.
+// Р·Р°РєР°Р· РЅР° РІС‹РїРѕР»РЅРµРЅРёРµ РѕС‚СЂРёСЃРѕРІРєРё РІСЃРµС… СЌР»РµРјРµРЅС‚РѕРІ С‡РµСЂРµР· state machine.
 static void 
 display_walktroughsteps(
 	uint_fast8_t key,
@@ -5549,7 +5549,7 @@ display_walktroughsteps(
 }
 
 // Interface functions
-// выполнение шагов state machine отображения дисплея
+// РІС‹РїРѕР»РЅРµРЅРёРµ С€Р°РіРѕРІ state machine РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ РґРёСЃРїР»РµСЏ
 void display2_bgprocess(void)
 {
 #if STMD
@@ -5562,7 +5562,7 @@ void display2_bgprocess(void)
 			break;
 		keyi = (keyi == (REDRM_count - 1)) ? 0 : (keyi + 1);
 		if (keyi == keyi0)
-			return;			// не нашли ни одного запроса
+			return;			// РЅРµ РЅР°С€Р»Рё РЅРё РѕРґРЅРѕРіРѕ Р·Р°РїСЂРѕСЃР°
 	}
 
 	//return;
@@ -5578,23 +5578,23 @@ void display2_bgprocess(void)
 	}
 	if (walkis [keyi] >= WALKCOUNT)
 	{
-		reqs [keyi] = 0;	// снять запрос на отображение данного типа элементов
+		reqs [keyi] = 0;	// СЃРЅСЏС‚СЊ Р·Р°РїСЂРѕСЃ РЅР° РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ РґР°РЅРЅРѕРіРѕ С‚РёРїР° СЌР»РµРјРµРЅС‚РѕРІ
 		keyi = (keyi == (REDRM_count - 1)) ? 0 : (keyi + 1);
 	}
 #endif /* STMD */
 }
 
 // Interface functions
-// сброс state machine отображения дисплея и очистить дисплей
+// СЃР±СЂРѕСЃ state machine РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ РґРёСЃРїР»РµСЏ Рё РѕС‡РёСЃС‚РёС‚СЊ РґРёСЃРїР»РµР№
 void display2_bgreset(void)
 {
 	uint_fast8_t i;
 
-	// очистить дисплей.
+	// РѕС‡РёСЃС‚РёС‚СЊ РґРёСЃРїР»РµР№.
 	display_clear();	
 
 #if STMD
-	// сброс state machine отображения дисплея
+	// СЃР±СЂРѕСЃ state machine РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ РґРёСЃРїР»РµСЏ
 	for (i = 0; i < REDRM_count; ++ i)
 	{
 		reqs [i] = 0;
@@ -5604,29 +5604,29 @@ void display2_bgreset(void)
 #endif /* STMD */
 
 #if WITHSPECTRUMWF && ! LCDMODE_HD44780
-	// инициализация палитры волопада
+	// РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РїР°Р»РёС‚СЂС‹ РІРѕР»РѕРїР°РґР°
 	wfpalette_initialize();
 #endif /* WITHSPECTRUMWF */
 }
 
 // Interface functions
 void display_mode_subset(
-	uint_fast8_t menuset	/* индекс режима отображения (0..DISPLC_MODCOUNT - 1) */
+	uint_fast8_t menuset	/* РёРЅРґРµРєСЃ СЂРµР¶РёРјР° РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ (0..DISPLC_MODCOUNT - 1) */
 	)
 {
 	display_walktroughsteps(REDRM_MODE, getsubset(menuset, 0));
 }
 
 void display_barmeters_subset(
-	uint_fast8_t menuset,	/* индекс режима отображения (0..3) */
-	uint_fast8_t extra		/* находимся в режиме отображения настроек */
+	uint_fast8_t menuset,	/* РёРЅРґРµРєСЃ СЂРµР¶РёРјР° РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ (0..3) */
+	uint_fast8_t extra		/* РЅР°С…РѕРґРёРјСЃСЏ РІ СЂРµР¶РёРјРµ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ РЅР°СЃС‚СЂРѕРµРє */
 	)
 {
 	display_walktroughsteps(REDRM_BARS, getsubset(menuset, extra));
 }
 
 void display_dispfreq_ab(
-	uint_fast8_t menuset	/* индекс режима отображения (0..DISPLC_MODCOUNT - 1) */
+	uint_fast8_t menuset	/* РёРЅРґРµРєСЃ СЂРµР¶РёРјР° РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ (0..DISPLC_MODCOUNT - 1) */
 	)
 {
 	display_walktroughsteps(REDRM_FREQ, getsubset(menuset, 0));
@@ -5635,9 +5635,9 @@ void display_dispfreq_ab(
 
 void display_dispfreq_a2(
 	uint_fast32_t freq,
-	uint_fast8_t blinkpos,		// позиция (степень 10) редактируесого символа
-	uint_fast8_t blinkstate,	// в месте редактируемого символа отображается подчёркивание (0 - пробел)
-	uint_fast8_t menuset	/* индекс режима отображения (0..DISPLC_MODCOUNT - 1) */
+	uint_fast8_t blinkpos,		// РїРѕР·РёС†РёСЏ (СЃС‚РµРїРµРЅСЊ 10) СЂРµРґР°РєС‚РёСЂСѓРµСЃРѕРіРѕ СЃРёРјРІРѕР»Р°
+	uint_fast8_t blinkstate,	// РІ РјРµСЃС‚Рµ СЂРµРґР°РєС‚РёСЂСѓРµРјРѕРіРѕ СЃРёРјРІРѕР»Р° РѕС‚РѕР±СЂР°Р¶Р°РµС‚СЃСЏ РїРѕРґС‡С‘СЂРєРёРІР°РЅРёРµ (0 - РїСЂРѕР±РµР»)
+	uint_fast8_t menuset	/* РёРЅРґРµРєСЃ СЂРµР¶РёРјР° РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ (0..DISPLC_MODCOUNT - 1) */
 	)
 {
 #if WITHDIRECTFREQENER
@@ -5654,17 +5654,17 @@ void display_dispfreq_a2(
 }
 
 void display_volts(
-	uint_fast8_t menuset,	/* индекс режима отображения (0..DISPLC_MODCOUNT - 1) */
-	uint_fast8_t extra		/* находимся в режиме отображения настроек */
+	uint_fast8_t menuset,	/* РёРЅРґРµРєСЃ СЂРµР¶РёРјР° РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ (0..DISPLC_MODCOUNT - 1) */
+	uint_fast8_t extra		/* РЅР°С…РѕРґРёРјСЃСЏ РІ СЂРµР¶РёРјРµ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ РЅР°СЃС‚СЂРѕРµРє */
 	)
 {
 	display_walktroughsteps(REDRM_VOLT, getsubset(menuset, extra));
 }
 
-// отображения названия параметра или группы
+// РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ РЅР°Р·РІР°РЅРёСЏ РїР°СЂР°РјРµС‚СЂР° РёР»Рё РіСЂСѓРїРїС‹
 void display_menuitemlabel(
 	void * pv,
-	uint_fast8_t byname			/* был выполнен прямой вход в меню */
+	uint_fast8_t byname			/* Р±С‹Р» РІС‹РїРѕР»РЅРµРЅ РїСЂСЏРјРѕР№ РІС…РѕРґ РІ РјРµРЅСЋ */
 	)
 {
 	display_walktrough(REDRM_FREQ, REDRSUBSET_MENU, NULL);
@@ -5678,7 +5678,7 @@ void display_menuitemlabel(
 	display_walktrough(REDRM_MVAL, REDRSUBSET_MENU, pv);
 }
 
-// отображение значения параметра
+// РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ Р·РЅР°С‡РµРЅРёСЏ РїР°СЂР°РјРµС‚СЂР°
 void display_menuitemvalue(
 	void * pv
 	)
@@ -5687,19 +5687,19 @@ void display_menuitemvalue(
 }
 
 
-// последний номер варианта отображения (menuset)
+// РїРѕСЃР»РµРґРЅРёР№ РЅРѕРјРµСЂ РІР°СЂРёР°РЅС‚Р° РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ (menuset)
 uint_fast8_t display_getpagesmax(void)
 {
 	return DISPLC_MODCOUNT - 1;
 }
 
-// номер варианта отображения для "сна"
+// РЅРѕРјРµСЂ РІР°СЂРёР°РЅС‚Р° РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ РґР»СЏ "СЃРЅР°"
 uint_fast8_t display_getpagesleep(void)
 {
 	return PAGESLEEP;
 }
 
-// получить параметры отображения частоты (для функции прямого ввода)
+// РїРѕР»СѓС‡РёС‚СЊ РїР°СЂР°РјРµС‚СЂС‹ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ С‡Р°СЃС‚РѕС‚С‹ (РґР»СЏ С„СѓРЅРєС†РёРё РїСЂСЏРјРѕРіРѕ РІРІРѕРґР°)
 uint_fast8_t display_getfreqformat(
 	uint_fast8_t * prjv
 	)
@@ -5708,29 +5708,29 @@ uint_fast8_t display_getfreqformat(
 	return DISPLC_WIDTH;
 }
 
-// Установка параметров отображения
-/* заливать заполнением площадь под графиком спектра */
+// РЈСЃС‚Р°РЅРѕРІРєР° РїР°СЂР°РјРµС‚СЂРѕРІ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ
+/* Р·Р°Р»РёРІР°С‚СЊ Р·Р°РїРѕР»РЅРµРЅРёРµРј РїР»РѕС‰Р°РґСЊ РїРѕРґ РіСЂР°С„РёРєРѕРј СЃРїРµРєС‚СЂР° */
 void
 board_set_fillspect(uint_fast8_t v)
 {
 	glob_fillspect = v != 0;
 }
 
-/* сколько не показывать сверху */
+/* СЃРєРѕР»СЊРєРѕ РЅРµ РїРѕРєР°Р·С‹РІР°С‚СЊ СЃРІРµСЂС…Сѓ */
 void
 board_set_topdb(int_fast16_t v)
 {
 	glob_topdb = v;
 }
 
-// Установить высоту спектрограммымы
+// РЈСЃС‚Р°РЅРѕРІРёС‚СЊ РІС‹СЃРѕС‚Сѓ СЃРїРµРєС‚СЂРѕРіСЂР°РјРјС‹РјС‹
 void
 board_set_fulldb(int_fast16_t v)
 {
 	glob_fulldb = v;
 }
 
-/* уменьшение отображаемого участка спектра */
+/* СѓРјРµРЅСЊС€РµРЅРёРµ РѕС‚РѕР±СЂР°Р¶Р°РµРјРѕРіРѕ СѓС‡Р°СЃС‚РєР° СЃРїРµРєС‚СЂР° */
 void
 board_set_zoomx(uint_fast8_t v)
 {

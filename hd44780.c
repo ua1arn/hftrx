@@ -1,11 +1,11 @@
 /* $Id$ */
 //
-// Проект HF Dream Receiver (КВ приёмник мечты)
-// автор Гена Завидовский mgs2001@mail.ru
+// РџСЂРѕРµРєС‚ HF Dream Receiver (РљР’ РїСЂРёС‘РјРЅРёРє РјРµС‡С‚С‹)
+// Р°РІС‚РѕСЂ Р“РµРЅР° Р—Р°РІРёРґРѕРІСЃРєРёР№ mgs2001@mail.ru
 // UA1ARN
 //
 
-#include "hardware.h"	/* зависящие от процессора функции работы с портами */
+#include "hardware.h"	/* Р·Р°РІРёСЃСЏС‰РёРµ РѕС‚ РїСЂРѕС†РµСЃСЃРѕСЂР° С„СѓРЅРєС†РёРё СЂР°Р±РѕС‚С‹ СЃ РїРѕСЂС‚Р°РјРё */
 
 #if LCDMODE_HD44780
 
@@ -26,7 +26,7 @@
 #define HD44780_BUSYFLAG 0x80
 
 #if ! LCDMODE_HARD_SPI
-/* задержка на переходные процессы в проводах и буферах между индикатором и контроллером */
+/* Р·Р°РґРµСЂР¶РєР° РЅР° РїРµСЂРµС…РѕРґРЅС‹Рµ РїСЂРѕС†РµСЃСЃС‹ РІ РїСЂРѕРІРѕРґР°С… Рё Р±СѓС„РµСЂР°С… РјРµР¶РґСѓ РёРЅРґРёРєР°С‚РѕСЂРѕРј Рё РєРѕРЅС‚СЂРѕР»Р»РµСЂРѕРј */
 static void hd44780_delay(void)
 {
 	hardware_spi_io_delay();
@@ -38,7 +38,7 @@ static void hd44780_delay(void)
 
 #if LCDMODE_HARD_SPI
 
-/* Можно только в случае использования SPI MODE3 */
+/* РњРѕР¶РЅРѕ С‚РѕР»СЊРєРѕ РІ СЃР»СѓС‡Р°Рµ РёСЃРїРѕР»СЊР·РѕРІР°РЅРёСЏ SPI MODE3 */
 #define OLED_SPIMODE SPIC_MODE3
 
 #elif CPUSTYLE_ARM
@@ -61,7 +61,7 @@ hd44780_pulse_strobe(void)
 
 	LCD_STROBE_PORT_S(LCD_STROBE_BIT); 	// activate EN signal
 	hd44780_delay();
-	v = DISPLAY_BUS_DATA_GET();	/* получить данные с шины LCD */
+	v = DISPLAY_BUS_DATA_GET();	/* РїРѕР»СѓС‡РёС‚СЊ РґР°РЅРЅС‹Рµ СЃ С€РёРЅС‹ LCD */
 	LCD_STROBE_PORT_C(LCD_STROBE_BIT); 	// deactivate EN signal
 	hd44780_delay();
 	return v;
@@ -74,7 +74,7 @@ hd44780_pulse_strobe(void)
 	static void 
 	hd44780_to_read(uint_fast8_t rs)
 	{
-		LCD_DATA_INITIALIZE_READ();	// переключить порт на чтение с выводов
+		LCD_DATA_INITIALIZE_READ();	// РїРµСЂРµРєР»СЋС‡РёС‚СЊ РїРѕСЂС‚ РЅР° С‡С‚РµРЅРёРµ СЃ РІС‹РІРѕРґРѕРІ
 
 		if (rs)
 			LCD_RS_PORT_S(ADDRES_BIT);
@@ -82,7 +82,7 @@ hd44780_pulse_strobe(void)
 			LCD_RS_PORT_C(ADDRES_BIT);
 
 		LCD_WE_PORT_S(WRITEE_BIT);	// H: READ DATA, L:WRITE DATA
-		hd44780_delay();		// это может быть посделняя операция перед проверкой состояния
+		hd44780_delay();		// СЌС‚Рѕ РјРѕР¶РµС‚ Р±С‹С‚СЊ РїРѕСЃРґРµР»РЅСЏСЏ РѕРїРµСЂР°С†РёСЏ РїРµСЂРµРґ РїСЂРѕРІРµСЂРєРѕР№ СЃРѕСЃС‚РѕСЏРЅРёСЏ
 	}
 #endif
 
@@ -102,11 +102,11 @@ hd44780_to_write(uint_fast8_t rs, uint_fast8_t nibble)
 #elif defined (WRITEE_BIT_ZERO)
 	LCD_WE_PORT_C(WRITEE_BIT_ZERO);	// H: READ DATA, L:WRITE DATA
 #endif
-	LCD_DATA_INITIALIZE_WRITE(nibble);	// открыть выходы порта
+	LCD_DATA_INITIALIZE_WRITE(nibble);	// РѕС‚РєСЂС‹С‚СЊ РІС‹С…РѕРґС‹ РїРѕСЂС‚Р°
 }
 
 // ARM subroutinue
-/* вызывается при запрещённых прерываниях. */
+/* РІС‹Р·С‹РІР°РµС‚СЃСЏ РїСЂРё Р·Р°РїСЂРµС‰С‘РЅРЅС‹С… РїСЂРµСЂС‹РІР°РЅРёСЏС…. */
 void 
 hd44780_io_initialize(void)
 {
@@ -142,7 +142,7 @@ hd44780_pulse_strobe(void)
 
 	LCD_STROBE_PORT |= LCD_STROBE_BIT; 	// activate EN signal
 	hd44780_delay();
-	v = DISPLAY_BUS_DATA_GET();	/* получить данные с шины LCD */
+	v = DISPLAY_BUS_DATA_GET();	/* РїРѕР»СѓС‡РёС‚СЊ РґР°РЅРЅС‹Рµ СЃ С€РёРЅС‹ LCD */
 	LCD_STROBE_PORT &= ~ LCD_STROBE_BIT; // deactivate EN signal
 	hd44780_delay();
 	return v;
@@ -188,7 +188,7 @@ hd44780_to_write(uint_fast8_t rs, uint_fast8_t nibble)
 	LCD_DATA_DIRECTION |= LCD_DATAS_BITS;
 }
 // ATMega subroutinue
-/* вызывается при запрещённых прерываниях. */
+/* РІС‹Р·С‹РІР°РµС‚СЃСЏ РїСЂРё Р·Р°РїСЂРµС‰С‘РЅРЅС‹С… РїСЂРµСЂС‹РІР°РЅРёСЏС…. */
 void
 //NOINLINEAT
 hd44780_io_initialize(void)
@@ -224,7 +224,7 @@ hd44780_read_status(void)
 	enum { rs = 0 };	// rs=0: status register will be read - initial state
 
 #if LCDMODE_HARD_SPI
-	const spitarget_t target = targetlcd;	/* адрес контроллера дисплея на SPI шине */
+	const spitarget_t target = targetlcd;	/* Р°РґСЂРµСЃ РєРѕРЅС‚СЂРѕР»Р»РµСЂР° РґРёСЃРїР»РµСЏ РЅР° SPI С€РёРЅРµ */
 	uint_fast8_t v;
 
 	prog_select(target);	/* start sending data to target chip */
@@ -233,7 +233,7 @@ hd44780_read_status(void)
 	prog_bit(target, 0x01);	/* 1 - read, 0 - write. */
 
 	#if WITHSPIHW
-		/* Можно только в случае использования SPI MODE3 */
+		/* РњРѕР¶РЅРѕ С‚РѕР»СЊРєРѕ РІ СЃР»СѓС‡Р°Рµ РёСЃРїРѕР»СЊР·РѕРІР°РЅРёСЏ SPI MODE3 */
 		hardware_spi_connect(SPIC_SPEEDFAST, OLED_SPIMODE);
 		(void) hardware_spi_b16(0xff);
 		v = hardware_spi_b16(0xff);
@@ -242,8 +242,8 @@ hd44780_read_status(void)
 	#else /* WITHSPIHW */
 
 		prog_spi_to_read(target);
-		(void) spi_read_byte(target, 0xff);	/* dummy byte - пропускаем */
-		v = spi_read_byte(target, 0xff);		/* получаем данные */
+		(void) spi_read_byte(target, 0xff);	/* dummy byte - РїСЂРѕРїСѓСЃРєР°РµРј */
+		v = spi_read_byte(target, 0xff);		/* РїРѕР»СѓС‡Р°РµРј РґР°РЅРЅС‹Рµ */
 		prog_spi_to_write(target);
 	#endif /* WITHSPIHW */
 	prog_unselect(target);	/* done sending data to target chip */
@@ -263,7 +263,7 @@ hd44780_read_status(void)
 
 		return (hi * 16) + lo;
 	#else /* defined (WRITEE_BIT) */
-		local_delay_ms(2);	// задержка - вызов этой функции происходит 1 раз.
+		local_delay_ms(2);	// Р·Р°РґРµСЂР¶РєР° - РІС‹Р·РѕРІ СЌС‚РѕР№ С„СѓРЅРєС†РёРё РїСЂРѕРёСЃС…РѕРґРёС‚ 1 СЂР°Р·.
 		return 0;
 	#endif /* defined (WRITEE_BIT) */
 
@@ -271,7 +271,7 @@ hd44780_read_status(void)
 }
 
 // architecture-independet function
-// возвращаем 0 если не дождались готовности
+// РІРѕР·РІСЂР°С‰Р°РµРј 0 РµСЃР»Рё РЅРµ РґРѕР¶РґР°Р»РёСЃСЊ РіРѕС‚РѕРІРЅРѕСЃС‚Рё
 static 
 uint_fast8_t
 //NOINLINEAT
@@ -280,28 +280,28 @@ hd44780_wait_ready(void)
 	uint_fast8_t n;
 
     // not need switch to read - is a default state
-	// но эти выводы могут быть использованы совместно с чем-либо (SPI).
+	// РЅРѕ СЌС‚Рё РІС‹РІРѕРґС‹ РјРѕРіСѓС‚ Р±С‹С‚СЊ РёСЃРїРѕР»СЊР·РѕРІР°РЅС‹ СЃРѕРІРјРµСЃС‚РЅРѕ СЃ С‡РµРј-Р»РёР±Рѕ (SPI).
 	for (n = 255; -- n;)
 	{
 		const uint_fast8_t stsh = hd44780_read_status();	// read status byte: 4 calls of hd44780_delay(). = 80 uS. 200*80uS = 1.6 mS
 
 		if ((stsh & HD44780_BUSYFLAG) == 0)
-			return 1;	// Дождались готовности
+			return 1;	// Р”РѕР¶РґР°Р»РёСЃСЊ РіРѕС‚РѕРІРЅРѕСЃС‚Рё
 	}
 	return 0;
 }
 
 
-/* дождаться готовности индикатора, подготовится к записи данных. */
+/* РґРѕР¶РґР°С‚СЊСЃСЏ РіРѕС‚РѕРІРЅРѕСЃС‚Рё РёРЅРґРёРєР°С‚РѕСЂР°, РїРѕРґРіРѕС‚РѕРІРёС‚СЃСЏ Рє Р·Р°РїРёСЃРё РґР°РЅРЅС‹С…. */
 void 
-hd44780_put_char_begin(void)	/* Выдать CSB при использовании SPI интерфейса */
+hd44780_put_char_begin(void)	/* Р’С‹РґР°С‚СЊ CSB РїСЂРё РёСЃРїРѕР»СЊР·РѕРІР°РЅРёРё SPI РёРЅС‚РµСЂС„РµР№СЃР° */
 {
 	enum { rs = 1 };		/* Register select: 0 - data register, 1 - command register */
 
 	hd44780_wait_ready();
 
 #if LCDMODE_HARD_SPI
-	const spitarget_t target = targetlcd;	/* адрес контроллера дисплея на SPI шине */
+	const spitarget_t target = targetlcd;	/* Р°РґСЂРµСЃ РєРѕРЅС‚СЂРѕР»Р»РµСЂР° РґРёСЃРїР»РµСЏ РЅР° SPI С€РёРЅРµ */
 
 
 	prog_select(target);	/* start sending data to target chip */
@@ -310,23 +310,23 @@ hd44780_put_char_begin(void)	/* Выдать CSB при использовании SPI интерфейса */
 	prog_bit(target, 0x00);	/* 1 - read, 0 - write. */
 
 	#if WITHSPIHW
-		/* Можно только в случае использования SPI MODE3 */
+		/* РњРѕР¶РЅРѕ С‚РѕР»СЊРєРѕ РІ СЃР»СѓС‡Р°Рµ РёСЃРїРѕР»СЊР·РѕРІР°РЅРёСЏ SPI MODE3 */
 		hardware_spi_connect(SPIC_SPEEDFAST, OLED_SPIMODE);
 	#endif /* WITHSPIHW */
 
 #else /* LCDMODE_HARD_SPI */
-	/* паралельный интерфейс */
+	/* РїР°СЂР°Р»РµР»СЊРЅС‹Р№ РёРЅС‚РµСЂС„РµР№СЃ */
 	hd44780_to_write(rs, 0);	// data register select
 #endif /* LCDMODE_HARD_SPI */
 }
 
-void hd44780_put_char_end(void)	/* Снять CSB при использовании SPI интерфейса */
+void hd44780_put_char_end(void)	/* РЎРЅСЏС‚СЊ CSB РїСЂРё РёСЃРїРѕР»СЊР·РѕРІР°РЅРёРё SPI РёРЅС‚РµСЂС„РµР№СЃР° */
 {
 #if LCDMODE_HARD_SPI
-	const spitarget_t target = targetlcd;	/* адрес контроллера дисплея на SPI шине */
+	const spitarget_t target = targetlcd;	/* Р°РґСЂРµСЃ РєРѕРЅС‚СЂРѕР»Р»РµСЂР° РґРёСЃРїР»РµСЏ РЅР° SPI С€РёРЅРµ */
 
 	#if WITHSPIHW
-		/* Можно только в случае использования SPI MODE3 */
+		/* РњРѕР¶РЅРѕ С‚РѕР»СЊРєРѕ РІ СЃР»СѓС‡Р°Рµ РёСЃРїРѕР»СЊР·РѕРІР°РЅРёСЏ SPI MODE3 */
 		hardware_spi_disconnect();
 	#endif /* WITHSPIHW */
 
@@ -340,28 +340,28 @@ void hd44780_put_char_end(void)	/* Снять CSB при использовании SPI интерфейса */
 
 // architecture-independet function
 // rs = 1
-// Выдача байта данных без проверки готовности.
-// Для индикатора на последовательном интерфейсе - выдача в послеовательности без
-// перевода CSB в активное состояние и выдачи двух битов RS и #WE в начале.
-// Эти операйии делаются в функции hd44780_put_char_begin(). По окончании
-// передачи блока вызывается вункция hd44780_put_char_end().
+// Р’С‹РґР°С‡Р° Р±Р°Р№С‚Р° РґР°РЅРЅС‹С… Р±РµР· РїСЂРѕРІРµСЂРєРё РіРѕС‚РѕРІРЅРѕСЃС‚Рё.
+// Р”Р»СЏ РёРЅРґРёРєР°С‚РѕСЂР° РЅР° РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕРј РёРЅС‚РµСЂС„РµР№СЃРµ - РІС‹РґР°С‡Р° РІ РїРѕСЃР»РµРѕРІР°С‚РµР»СЊРЅРѕСЃС‚Рё Р±РµР·
+// РїРµСЂРµРІРѕРґР° CSB РІ Р°РєС‚РёРІРЅРѕРµ СЃРѕСЃС‚РѕСЏРЅРёРµ Рё РІС‹РґР°С‡Рё РґРІСѓС… Р±РёС‚РѕРІ RS Рё #WE РІ РЅР°С‡Р°Р»Рµ.
+// Р­С‚Рё РѕРїРµСЂР°Р№РёРё РґРµР»Р°СЋС‚СЃСЏ РІ С„СѓРЅРєС†РёРё hd44780_put_char_begin(). РџРѕ РѕРєРѕРЅС‡Р°РЅРёРё
+// РїРµСЂРµРґР°С‡Рё Р±Р»РѕРєР° РІС‹Р·С‹РІР°РµС‚СЃСЏ РІСѓРЅРєС†РёСЏ hd44780_put_char_end().
 void 
 //NOINLINEAT
 hd44780_wrdata_fast(
 	uint_fast8_t v)
 {
 #if LCDMODE_HARD_SPI
-	const spitarget_t target = targetlcd;	/* адрес контроллера дисплея на SPI шине */
+	const spitarget_t target = targetlcd;	/* Р°РґСЂРµСЃ РєРѕРЅС‚СЂРѕР»Р»РµСЂР° РґРёСЃРїР»РµСЏ РЅР° SPI С€РёРЅРµ */
 
 #if WITHSPIHW
 	(void) target;
 	hardware_spi_b16(v);
 #else
-	prog_val(target, v, 8);		/* передаём данные */
+	prog_val(target, v, 8);		/* РїРµСЂРµРґР°С‘Рј РґР°РЅРЅС‹Рµ */
 #endif /* WITHSPIHW */
 
 #else /* LCDMODE_HARD_SPI */
-	// паралельный режим обмиена с индикатором
+	// РїР°СЂР°Р»РµР»СЊРЅС‹Р№ СЂРµР¶РёРј РѕР±РјРёРµРЅР° СЃ РёРЅРґРёРєР°С‚РѕСЂРѕРј
 	hd44780_send4(v >> 4);
 	hd44780_pulse_strobe();
 
@@ -378,7 +378,7 @@ static void
 hd44780_wrdata_slow(
 	uint_fast8_t v)
 {
-	hd44780_put_char_begin();	/* Выдать CSB при использовании SPI интерфейса и два бита о записи данных */
+	hd44780_put_char_begin();	/* Р’С‹РґР°С‚СЊ CSB РїСЂРё РёСЃРїРѕР»СЊР·РѕРІР°РЅРёРё SPI РёРЅС‚РµСЂС„РµР№СЃР° Рё РґРІР° Р±РёС‚Р° Рѕ Р·Р°РїРёСЃРё РґР°РЅРЅС‹С… */
 	hd44780_wrdata_fast(v);
 	hd44780_put_char_end();
 }
@@ -395,12 +395,12 @@ hd44780_wrcmd(
 	if (hd44780_wait_ready() != 0)
 	{
 #if LCDMODE_HARD_SPI
-		const spitarget_t target = targetlcd;	/* адрес контроллера дисплея на SPI шине */
+		const spitarget_t target = targetlcd;	/* Р°РґСЂРµСЃ РєРѕРЅС‚СЂРѕР»Р»РµСЂР° РґРёСЃРїР»РµСЏ РЅР° SPI С€РёРЅРµ */
 
 		prog_select(target);	/* start sending data to target chip */
 		prog_bit(target, rs);	/* register select */
 		prog_bit(target, 0x00);	/* 1 - read, 0 - write. */
-		prog_val(target, v, 8);		/* передаём данные */
+		prog_val(target, v, 8);		/* РїРµСЂРµРґР°С‘Рј РґР°РЅРЅС‹Рµ */
 		prog_unselect(target);	/* done sending data to target chip */
 
 #else
@@ -418,7 +418,7 @@ hd44780_wrcmd(
 #if ! LCDMODE_HARD_SPI
 
 // architecture-independet function
-// вывод четырёхбитного управляющего слова в процессе инициализации дисплея.
+// РІС‹РІРѕРґ С‡РµС‚С‹СЂС‘С…Р±РёС‚РЅРѕРіРѕ СѓРїСЂР°РІР»СЏСЋС‰РµРіРѕ СЃР»РѕРІР° РІ РїСЂРѕС†РµСЃСЃРµ РёРЅРёС†РёР°Р»РёР·Р°С†РёРё РґРёСЃРїР»РµСЏ.
 // rs = 0
 static void
 //NOINLINEAT
@@ -443,7 +443,7 @@ testdisplay(void)
 {
 	const uint_fast8_t signature = 0x56; //0x36;
 
-	hd44780_wrcmd(0x80 | signature);	/* переключение на работу с DDRAM */  
+	hd44780_wrcmd(0x80 | signature);	/* РїРµСЂРµРєР»СЋС‡РµРЅРёРµ РЅР° СЂР°Р±РѕС‚Сѓ СЃ DDRAM */  
 
 	return (hd44780_read_status() & ~ HD44780_BUSYFLAG) == signature;
 }
@@ -461,48 +461,48 @@ hd44780_gotoaddr(uint_fast8_t addr)
 
 static void hd44780_clear(void)
 {
-	hd44780_wrcmd(0x01);		// очистка дисплея
+	hd44780_wrcmd(0x01);		// РѕС‡РёСЃС‚РєР° РґРёСЃРїР»РµСЏ
 //	hd44780_wrcmd(0x02);		// home
 	#if ! defined (WRITEE_BIT)
 		local_delay_ms(20);
 	#endif
 }
 
-/* вызывается между вызовами display_wrdatabar_begin() и display_wrdatabar_end() */
+/* РІС‹Р·С‹РІР°РµС‚СЃСЏ РјРµР¶РґСѓ РІС‹Р·РѕРІР°РјРё display_wrdatabar_begin() Рё display_wrdatabar_end() */
 static void hd44780_bar_column(uint_fast8_t pattern)
 {
 	hd44780_wrdata_slow(pattern);
 }
 
 #if WITHBARS
-// Вокруг этой функции вызывать hd44780_put_char_begin() и hd44780_put_char_end().
+// Р’РѕРєСЂСѓРі СЌС‚РѕР№ С„СѓРЅРєС†РёРё РІС‹Р·С‹РІР°С‚СЊ hd44780_put_char_begin() Рё hd44780_put_char_end().
 
 void
 display_dispbar(
-	uint_fast8_t width,	/* количество знакомест, занимаемых индикатором */
-	/* was: unsigned int */ uint_fast8_t value,		/* значение, которое надо отобразить */
-	uint_fast8_t tracevalue,		/* значение маркера, которое надо отобразить */
-	/* was: unsigned int */ uint_fast8_t topvalue,	/* значение, соответствующее полностью заполненному индикатору */
-	uint_fast8_t charbase, /* PATTERN_BAR_HALF или PATTERN_BAR_FULL */
-	uint_fast8_t fullbasetop, /* PATTERN_BAR_HALF или PATTERN_BAR_FULL */
+	uint_fast8_t width,	/* РєРѕР»РёС‡РµСЃС‚РІРѕ Р·РЅР°РєРѕРјРµСЃС‚, Р·Р°РЅРёРјР°РµРјС‹С… РёРЅРґРёРєР°С‚РѕСЂРѕРј */
+	/* was: unsigned int */ uint_fast8_t value,		/* Р·РЅР°С‡РµРЅРёРµ, РєРѕС‚РѕСЂРѕРµ РЅР°РґРѕ РѕС‚РѕР±СЂР°Р·РёС‚СЊ */
+	uint_fast8_t tracevalue,		/* Р·РЅР°С‡РµРЅРёРµ РјР°СЂРєРµСЂР°, РєРѕС‚РѕСЂРѕРµ РЅР°РґРѕ РѕС‚РѕР±СЂР°Р·РёС‚СЊ */
+	/* was: unsigned int */ uint_fast8_t topvalue,	/* Р·РЅР°С‡РµРЅРёРµ, СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РµРµ РїРѕР»РЅРѕСЃС‚СЊСЋ Р·Р°РїРѕР»РЅРµРЅРЅРѕРјСѓ РёРЅРґРёРєР°С‚РѕСЂСѓ */
+	uint_fast8_t charbase, /* PATTERN_BAR_HALF РёР»Рё PATTERN_BAR_FULL */
+	uint_fast8_t fullbasetop, /* PATTERN_BAR_HALF РёР»Рё PATTERN_BAR_FULL */
 	uint_fast8_t emptybase)	
 {
 	const div_t d = div(value * GRID2X(CHARS2GRID(width)) / topvalue, GRID2X(CHARS2GRID(1)));
 	uint_fast8_t i;
 
-	// hd44780_put_char_begin и hd44780_wrdata_fast на OLED здесь не работают.
+	// hd44780_put_char_begin Рё hd44780_wrdata_fast РЅР° OLED Р·РґРµСЃСЊ РЅРµ СЂР°Р±РѕС‚Р°СЋС‚.
 	for (i = 0; i < d.quot; ++ i)
 	{
-		hd44780_bar_column(GRID2X(CHARS2GRID(1)) + charbase);	/* полностью заполненный прямоугольник */
+		hd44780_bar_column(GRID2X(CHARS2GRID(1)) + charbase);	/* РїРѕР»РЅРѕСЃС‚СЊСЋ Р·Р°РїРѕР»РЅРµРЅРЅС‹Р№ РїСЂСЏРјРѕСѓРіРѕР»СЊРЅРёРє */
 	}
 	if (d.rem != 0)
 	{
-		hd44780_bar_column(d.rem + charbase);	/* частично заполненныё прямоугольник - заполненность определяется типом */
+		hd44780_bar_column(d.rem + charbase);	/* С‡Р°СЃС‚РёС‡РЅРѕ Р·Р°РїРѕР»РЅРµРЅРЅС‹С‘ РїСЂСЏРјРѕСѓРіРѕР»СЊРЅРёРє - Р·Р°РїРѕР»РЅРµРЅРЅРѕСЃС‚СЊ РѕРїСЂРµРґРµР»СЏРµС‚СЃСЏ С‚РёРїРѕРј */
 		++ i;
 	}
 	for (; i < width; ++ i)
 	{
-		hd44780_bar_column(0x00 + charbase);	/* пустой прямоугольник */
+		hd44780_bar_column(0x00 + charbase);	/* РїСѓСЃС‚РѕР№ РїСЂСЏРјРѕСѓРіРѕР»СЊРЅРёРє */
 	}
 }
 
@@ -511,32 +511,32 @@ display_dispbar(
 static void
 //NOINLINEAT
 hd44780_progbar(
-		uint_fast8_t code,	/* код символа (0..7) */
+		uint_fast8_t code,	/* РєРѕРґ СЃРёРјРІРѕР»Р° (0..7) */
 		uint_fast8_t mask5bit,
 		uint_fast8_t allbits,
 		uint_fast8_t blank)
 {
 	uint_fast8_t i;
 
-	hd44780_wrcmd(0x40 | (code & 0x07) * 8);	/* переключение на работу с SGRAM */  
+	hd44780_wrcmd(0x40 | (code & 0x07) * 8);	/* РїРµСЂРµРєР»СЋС‡РµРЅРёРµ РЅР° СЂР°Р±РѕС‚Сѓ СЃ SGRAM */  
 
-	// hd44780_put_char_begin и hd44780_wrdata_fast на OLED здесь не работают.
-	// придётся медленным способом...
+	// hd44780_put_char_begin Рё hd44780_wrdata_fast РЅР° OLED Р·РґРµСЃСЊ РЅРµ СЂР°Р±РѕС‚Р°СЋС‚.
+	// РїСЂРёРґС‘С‚СЃСЏ РјРµРґР»РµРЅРЅС‹Рј СЃРїРѕСЃРѕР±РѕРј...
 	for (i = 0; i < blank; ++ i)
 	{
-		hd44780_wrdata_slow(0x00);	/* верхняя часть без точек */
+		hd44780_wrdata_slow(0x00);	/* РІРµСЂС…РЅСЏСЏ С‡Р°СЃС‚СЊ Р±РµР· С‚РѕС‡РµРє */
 	}
-	hd44780_wrdata_slow(allbits);	/* первая строка всегда с разметкой */
+	hd44780_wrdata_slow(allbits);	/* РїРµСЂРІР°СЏ СЃС‚СЂРѕРєР° РІСЃРµРіРґР° СЃ СЂР°Р·РјРµС‚РєРѕР№ */
 	++ i;
 	for (; i < 6; ++ i)
 	{
 		hd44780_wrdata_slow(mask5bit & 0x1f);
 	}
 	
-	hd44780_wrdata_slow(allbits);	/* пследняя строка всегда с разметкой */
-	hd44780_wrdata_slow(0x00);	/* нижняя часть без точек */
+	hd44780_wrdata_slow(allbits);	/* РїСЃР»РµРґРЅСЏСЏ СЃС‚СЂРѕРєР° РІСЃРµРіРґР° СЃ СЂР°Р·РјРµС‚РєРѕР№ */
+	hd44780_wrdata_slow(0x00);	/* РЅРёР¶РЅСЏСЏ С‡Р°СЃС‚СЊ Р±РµР· С‚РѕС‡РµРє */
 
-	hd44780_wrcmd(0x80);	/* переключение на работу с DDRAM */  
+	hd44780_wrcmd(0x80);	/* РїРµСЂРµРєР»СЋС‡РµРЅРёРµ РЅР° СЂР°Р±РѕС‚Сѓ СЃ DDRAM */  
 }
 
 
@@ -544,27 +544,27 @@ static void
 hd44780_initbar(void)
 {
 	const uint_fast8_t blank = 3;
-	/* Программирование знакогенератора символами для использлвания в S-метре */
+	/* РџСЂРѕРіСЂР°РјРјРёСЂРѕРІР°РЅРёРµ Р·РЅР°РєРѕРіРµРЅРµСЂР°С‚РѕСЂР° СЃРёРјРІРѕР»Р°РјРё РґР»СЏ РёСЃРїРѕР»СЊР·Р»РІР°РЅРёСЏ РІ S-РјРµС‚СЂРµ */
 #if GRID2X(CHARS2GRID(1)) == 3
-	/* на каждом знакоместе три градации уровня */
-	hd44780_progbar(PATTERN_BAR_HALF + 0, (uint_fast8_t) (0x15 << 6), 0x15, blank);	/* пустой прямоугольник */
+	/* РЅР° РєР°Р¶РґРѕРј Р·РЅР°РєРѕРјРµСЃС‚Рµ С‚СЂРё РіСЂР°РґР°С†РёРё СѓСЂРѕРІРЅСЏ */
+	hd44780_progbar(PATTERN_BAR_HALF + 0, (uint_fast8_t) (0x15 << 6), 0x15, blank);	/* РїСѓСЃС‚РѕР№ РїСЂСЏРјРѕСѓРіРѕР»СЊРЅРёРє */
 	hd44780_progbar(PATTERN_BAR_HALF + 1, (uint_fast8_t) (0x15 << 4), 0x15, blank);
-	hd44780_progbar(PATTERN_BAR_HALF + 2, (uint_fast8_t) (0x15 << 2), 0x15, blank);	/* полносьтю заполненный прямоугольник */
-	hd44780_progbar(PATTERN_BAR_HALF + 3, (uint_fast8_t) (0x15 << 0), 0x15, blank);	/* полносьтю заполненный прямоугольник */
+	hd44780_progbar(PATTERN_BAR_HALF + 2, (uint_fast8_t) (0x15 << 2), 0x15, blank);	/* РїРѕР»РЅРѕСЃСЊС‚СЋ Р·Р°РїРѕР»РЅРµРЅРЅС‹Р№ РїСЂСЏРјРѕСѓРіРѕР»СЊРЅРёРє */
+	hd44780_progbar(PATTERN_BAR_HALF + 3, (uint_fast8_t) (0x15 << 0), 0x15, blank);	/* РїРѕР»РЅРѕСЃСЊС‚СЋ Р·Р°РїРѕР»РЅРµРЅРЅС‹Р№ РїСЂСЏРјРѕСѓРіРѕР»СЊРЅРёРє */
 
-	hd44780_progbar(PATTERN_BAR_FULL + 0, (uint_fast8_t) (0x15 << 6), 0x15, 1);	/* пустой прямоугольник */
+	hd44780_progbar(PATTERN_BAR_FULL + 0, (uint_fast8_t) (0x15 << 6), 0x15, 1);	/* РїСѓСЃС‚РѕР№ РїСЂСЏРјРѕСѓРіРѕР»СЊРЅРёРє */
 	hd44780_progbar(PATTERN_BAR_FULL + 1, (uint_fast8_t) (0x15 << 4), 0x15, 1);
-	hd44780_progbar(PATTERN_BAR_FULL + 2, (uint_fast8_t) (0x15 << 2), 0x15, 1);	/* полносьтю заполненный прямоугольник */
-	hd44780_progbar(PATTERN_BAR_FULL + 3, (uint_fast8_t) (0x15 << 0), 0x15, 1);	/* полносьтю заполненный прямоугольник */
+	hd44780_progbar(PATTERN_BAR_FULL + 2, (uint_fast8_t) (0x15 << 2), 0x15, 1);	/* РїРѕР»РЅРѕСЃСЊС‚СЋ Р·Р°РїРѕР»РЅРµРЅРЅС‹Р№ РїСЂСЏРјРѕСѓРіРѕР»СЊРЅРёРє */
+	hd44780_progbar(PATTERN_BAR_FULL + 3, (uint_fast8_t) (0x15 << 0), 0x15, 1);	/* РїРѕР»РЅРѕСЃСЊС‚СЋ Р·Р°РїРѕР»РЅРµРЅРЅС‹Р№ РїСЂСЏРјРѕСѓРіРѕР»СЊРЅРёРє */
 #elif GRID2X(CHARS2GRID(1)) == 2
-	/* на каждом знакоместе две градации уровня */
-	hd44780_progbar(PATTERN_BAR_HALF + 0, (uint_fast8_t) (0x1b << 6), 0x1b, blank);	/* пустой прямоугольник */
+	/* РЅР° РєР°Р¶РґРѕРј Р·РЅР°РєРѕРјРµСЃС‚Рµ РґРІРµ РіСЂР°РґР°С†РёРё СѓСЂРѕРІРЅСЏ */
+	hd44780_progbar(PATTERN_BAR_HALF + 0, (uint_fast8_t) (0x1b << 6), 0x1b, blank);	/* РїСѓСЃС‚РѕР№ РїСЂСЏРјРѕСѓРіРѕР»СЊРЅРёРє */
 	hd44780_progbar(PATTERN_BAR_HALF + 1, (uint_fast8_t) (0x1b << 3), 0x1b, blank);
-	hd44780_progbar(PATTERN_BAR_HALF + 2, (uint_fast8_t) (0x1b << 0), 0x1b, blank);	/* полносьтю заполненный прямоугольник */
+	hd44780_progbar(PATTERN_BAR_HALF + 2, (uint_fast8_t) (0x1b << 0), 0x1b, blank);	/* РїРѕР»РЅРѕСЃСЊС‚СЋ Р·Р°РїРѕР»РЅРµРЅРЅС‹Р№ РїСЂСЏРјРѕСѓРіРѕР»СЊРЅРёРє */
 
-	hd44780_progbar(PATTERN_BAR_FULL + 0, (uint_fast8_t) (0x1b << 6), 0x1b, 1);	/* пустой прямоугольник */
+	hd44780_progbar(PATTERN_BAR_FULL + 0, (uint_fast8_t) (0x1b << 6), 0x1b, 1);	/* РїСѓСЃС‚РѕР№ РїСЂСЏРјРѕСѓРіРѕР»СЊРЅРёРє */
 	hd44780_progbar(PATTERN_BAR_FULL + 1, (uint_fast8_t) (0x1b << 3), 0x1b, 1);
-	hd44780_progbar(PATTERN_BAR_FULL + 2, (uint_fast8_t) (0x1b << 0), 0x1b, 1);	/* полносьтю заполненный прямоугольник */
+	hd44780_progbar(PATTERN_BAR_FULL + 2, (uint_fast8_t) (0x1b << 0), 0x1b, 1);	/* РїРѕР»РЅРѕСЃСЊС‚СЋ Р·Р°РїРѕР»РЅРµРЅРЅС‹Р№ РїСЂСЏРјРѕСѓРіРѕР»СЊРЅРёРє */
 #else
 	#error CHARS2GRID(n) undefined
 #endif
@@ -591,9 +591,9 @@ hd44780_initialize(void)
 	hd44780_powerondelay();
 
 #if ! LCDMODE_HARD_SPI
-	/* при работе по паралельной шине */
+	/* РїСЂРё СЂР°Р±РѕС‚Рµ РїРѕ РїР°СЂР°Р»РµР»СЊРЅРѕР№ С€РёРЅРµ */
 
-	// Переключение дисплея из любого состояния в 4-х битную шину.
+	// РџРµСЂРµРєР»СЋС‡РµРЅРёРµ РґРёСЃРїР»РµСЏ РёР· Р»СЋР±РѕРіРѕ СЃРѕСЃС‚РѕСЏРЅРёСЏ РІ 4-С… Р±РёС‚РЅСѓСЋ С€РёРЅСѓ.
 #if defined (WRITEE_BIT)
 	if (!testdisplay())
 	{
@@ -613,36 +613,36 @@ hd44780_initialize(void)
 	hd44780_wrcmd4_nowait(0x02);
 #endif
 
-	// Остальная инициализация
+	// РћСЃС‚Р°Р»СЊРЅР°СЏ РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ
 	hd44780_wrcmd(0x28);		// 4 bit, two lines
 
 #else
-	// Инициализация для режима работы SPI (8 бит, 2 строки).
+	// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РґР»СЏ СЂРµР¶РёРјР° СЂР°Р±РѕС‚С‹ SPI (8 Р±РёС‚, 2 СЃС‚СЂРѕРєРё).
 	hd44780_wrcmd(0x38);		// 8 bit, two lines
 #endif
 
 	// Display enable command
 	hd44780_wrcmd(0x17);		// WINSTAR OLED displays: character mode, power on
-	hd44780_wrcmd(0x0c);     // Function Set: ВКЛ.LCD , КУРСОР ОТКЛ., МИГАНИЕ КУРС. ОТКЛ.
+	hd44780_wrcmd(0x0c);     // Function Set: Р’РљР›.LCD , РљРЈР РЎРћР  РћРўРљР›., РњРР“РђРќРР• РљРЈР РЎ. РћРўРљР›.
 
-	hd44780_wrcmd(0x06);		// Entry Mode Set: автомат перемещение курсора вправо
+	hd44780_wrcmd(0x06);		// Entry Mode Set: Р°РІС‚РѕРјР°С‚ РїРµСЂРµРјРµС‰РµРЅРёРµ РєСѓСЂСЃРѕСЂР° РІРїСЂР°РІРѕ
 
 
 #if WITHBARS
-	hd44780_initbar();		// заполнение изображений передопредлённых символов.
+	hd44780_initbar();		// Р·Р°РїРѕР»РЅРµРЅРёРµ РёР·РѕР±СЂР°Р¶РµРЅРёР№ РїРµСЂРµРґРѕРїСЂРµРґР»С‘РЅРЅС‹С… СЃРёРјРІРѕР»РѕРІ.
 #endif /* WITHBARS */
 	hd44780_wrcmd(0x02);		// home
 
 
-	display_gotoxy(0, 0);	/* переключение на работу с DDRAM - хоть и делается при инициализации BARS, без BARS нужно. */
-	display_clear();	// обязательно требуется для нормальной работы, например, адресации.
+	display_gotoxy(0, 0);	/* РїРµСЂРµРєР»СЋС‡РµРЅРёРµ РЅР° СЂР°Р±РѕС‚Сѓ СЃ DDRAM - С…РѕС‚СЊ Рё РґРµР»Р°РµС‚СЃСЏ РїСЂРё РёРЅРёС†РёР°Р»РёР·Р°С†РёРё BARS, Р±РµР· BARS РЅСѓР¶РЅРѕ. */
+	display_clear();	// РѕР±СЏР·Р°С‚РµР»СЊРЅРѕ С‚СЂРµР±СѓРµС‚СЃСЏ РґР»СЏ РЅРѕСЂРјР°Р»СЊРЅРѕР№ СЂР°Р±РѕС‚С‹, РЅР°РїСЂРёРјРµСЂ, Р°РґСЂРµСЃР°С†РёРё.
 
-	// тестовая выдача
+	// С‚РµСЃС‚РѕРІР°СЏ РІС‹РґР°С‡Р°
 	hd44780_wrdata_slow('O');
 	hd44780_wrdata_slow('K');
 	hd44780_wrdata_slow('>');
 
-	// тест для контроля правильности подбора задержек
+	// С‚РµСЃС‚ РґР»СЏ РєРѕРЅС‚СЂРѕР»СЏ РїСЂР°РІРёР»СЊРЅРѕСЃС‚Рё РїРѕРґР±РѕСЂР° Р·Р°РґРµСЂР¶РµРє
 #if 0
 	for (;;)
 	{
@@ -685,7 +685,7 @@ void display_setcolors3(COLOR_T fg, COLOR_T bg, COLOR_T fgbg)
 void
 display_wrdata_begin(void)
 {
-	hd44780_put_char_begin();	/* Выдать CSB при использовании SPI интерфейса и два бита о записи данных */
+	hd44780_put_char_begin();	/* Р’С‹РґР°С‚СЊ CSB РїСЂРё РёСЃРїРѕР»СЊР·РѕРІР°РЅРёРё SPI РёРЅС‚РµСЂС„РµР№СЃР° Рё РґРІР° Р±РёС‚Р° Рѕ Р·Р°РїРёСЃРё РґР°РЅРЅС‹С… */
 }
 
 void
@@ -708,7 +708,7 @@ display_wrdatabar_end(void)
 void
 display_wrdatabig_begin(void)
 {
-	hd44780_put_char_begin();	/* Выдать CSB при использовании SPI интерфейса и два бита о записи данных */
+	hd44780_put_char_begin();	/* Р’С‹РґР°С‚СЊ CSB РїСЂРё РёСЃРїРѕР»СЊР·РѕРІР°РЅРёРё SPI РёРЅС‚РµСЂС„РµР№СЃР° Рё РґРІР° Р±РёС‚Р° Рѕ Р·Р°РїРёСЃРё РґР°РЅРЅС‹С… */
 }
 
 
@@ -718,9 +718,9 @@ display_wrdatabig_end(void)
 	hd44780_put_char_end();
 }
 
-/* отображение одной вертикальной полосы на графическом индикаторе */
-/* старшие биты соответствуют верхним пикселям изображения */
-/* вызывается между вызовами display_wrdatabar_begin() и display_wrdatabar_end() */
+/* РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ РѕРґРЅРѕР№ РІРµСЂС‚РёРєР°Р»СЊРЅРѕР№ РїРѕР»РѕСЃС‹ РЅР° РіСЂР°С„РёС‡РµСЃРєРѕРј РёРЅРґРёРєР°С‚РѕСЂРµ */
+/* СЃС‚Р°СЂС€РёРµ Р±РёС‚С‹ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‚ РІРµСЂС…РЅРёРј РїРёРєСЃРµР»СЏРј РёР·РѕР±СЂР°Р¶РµРЅРёСЏ */
+/* РІС‹Р·С‹РІР°РµС‚СЃСЏ РјРµР¶РґСѓ РІС‹Р·РѕРІР°РјРё display_wrdatabar_begin() Рё display_wrdatabar_end() */
 void 
 display_barcolumn(uint_fast8_t pattern)
 {
@@ -742,8 +742,8 @@ display_put_char_half(uint_fast8_t c, uint_fast8_t lowhalf)
 }
 
 
-// Вызов этой функции только внутри display_wrdata_begin() и display_wrdata_end();
-// Используется при выводе на графический ндикатор, если ТРЕБУЕТСЯ переключать полосы отображения
+// Р’С‹Р·РѕРІ СЌС‚РѕР№ С„СѓРЅРєС†РёРё С‚РѕР»СЊРєРѕ РІРЅСѓС‚СЂРё display_wrdata_begin() Рё display_wrdata_end();
+// РСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РїСЂРё РІС‹РІРѕРґРµ РЅР° РіСЂР°С„РёС‡РµСЃРєРёР№ РЅРґРёРєР°С‚РѕСЂ, РµСЃР»Рё РўР Р•Р‘РЈР•РўРЎРЇ РїРµСЂРµРєР»СЋС‡Р°С‚СЊ РїРѕР»РѕСЃС‹ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ
 void
 display_put_char_small(uint_fast8_t c, uint_fast8_t lowhalf)
 {
@@ -751,7 +751,7 @@ display_put_char_small(uint_fast8_t c, uint_fast8_t lowhalf)
 	hd44780_wrdata_fast(c);
 }
 
-// самый маленький шрифт
+// СЃР°РјС‹Р№ РјР°Р»РµРЅСЊРєРёР№ С€СЂРёС„С‚
 // stub function
 void display_wrdata2_begin(void)
 {
@@ -777,7 +777,7 @@ display_gotoxy(uint_fast8_t x, uint_fast8_t y)
 	default:
 	case 0:	addr = 0x00; break;
 	case 1:	addr = 0x40; break;
-#if LCDMODE_WH2004 /* || LCDMODE_WH1604 */		// для отладки - показать дизайн 1604 на индикаторе 2004
+#if LCDMODE_WH2004 /* || LCDMODE_WH1604 */		// РґР»СЏ РѕС‚Р»Р°РґРєРё - РїРѕРєР°Р·Р°С‚СЊ РґРёР·Р°Р№РЅ 1604 РЅР° РёРЅРґРёРєР°С‚РѕСЂРµ 2004
 	case 2:	addr = 0x14; break;	// WINSTAR WH2004
 	case 3:	addr = 0x54; break;	// WINSTAR WH2004
 #elif LCDMODE_WH1604
@@ -791,13 +791,13 @@ display_gotoxy(uint_fast8_t x, uint_fast8_t y)
 	hd44780_gotoaddr(addr + x);
 }
 
-// Координаты в пикселях
+// РљРѕРѕСЂРґРёРЅР°С‚С‹ РІ РїРёРєСЃРµР»СЏС…
 void display_plotfrom(uint_fast16_t x, uint_fast16_t y)
 {
 }
 
 void display_plotstart(
-	uint_fast16_t height	// Высота окна в пикселях
+	uint_fast16_t height	// Р’С‹СЃРѕС‚Р° РѕРєРЅР° РІ РїРёРєСЃРµР»СЏС…
 	)
 {
 
@@ -805,7 +805,7 @@ void display_plotstart(
 
 void display_plot(
 	const PACKEDCOLOR_T * buffer, 
-	uint_fast16_t dx,	// Размеры окна в пикселях
+	uint_fast16_t dx,	// Р Р°Р·РјРµСЂС‹ РѕРєРЅР° РІ РїРёРєСЃРµР»СЏС…
 	uint_fast16_t dy
 	)
 {
@@ -818,8 +818,8 @@ void display_plotstop(void)
 }
 
 
-/* аппаратный сброс дисплея - перед инициализаций */
-/* вызывается при разрешённых прерываниях. */
+/* Р°РїРїР°СЂР°С‚РЅС‹Р№ СЃР±СЂРѕСЃ РґРёСЃРїР»РµСЏ - РїРµСЂРµРґ РёРЅРёС†РёР°Р»РёР·Р°С†РёР№ */
+/* РІС‹Р·С‹РІР°РµС‚СЃСЏ РїСЂРё СЂР°Р·СЂРµС€С‘РЅРЅС‹С… РїСЂРµСЂС‹РІР°РЅРёСЏС…. */
 void
 display_reset(void)
 {
@@ -827,13 +827,13 @@ display_reset(void)
 }
 
 
-/* вызывается при разрешённых прерываниях. */
+/* РІС‹Р·С‹РІР°РµС‚СЃСЏ РїСЂРё СЂР°Р·СЂРµС€С‘РЅРЅС‹С… РїСЂРµСЂС‹РІР°РЅРёСЏС…. */
 void display_initialize(void)
 {
 	hd44780_initialize();
 }
 
-/* Разряжаем конденсаторы питания */
+/* Р Р°Р·СЂСЏР¶Р°РµРј РєРѕРЅРґРµРЅСЃР°С‚РѕСЂС‹ РїРёС‚Р°РЅРёСЏ */
 void display_discharge(void)
 {
 }

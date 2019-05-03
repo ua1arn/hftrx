@@ -1,10 +1,10 @@
 /* $Id$ */
 //
-// Проект HF Dream Receiver (КВ приёмник мечты)
-// автор Гена Завидовский mgs2001@mail.ru
+// РџСЂРѕРµРєС‚ HF Dream Receiver (РљР’ РїСЂРёС‘РјРЅРёРє РјРµС‡С‚С‹)
+// Р°РІС‚РѕСЂ Р“РµРЅР° Р—Р°РІРёРґРѕРІСЃРєРёР№ mgs2001@mail.ru
 // UA1ARN
 //
-// Доработки для LS020 Василий Линывый, livas60@mail.ru
+// Р”РѕСЂР°Р±РѕС‚РєРё РґР»СЏ LS020 Р’Р°СЃРёР»РёР№ Р›РёРЅС‹РІС‹Р№, livas60@mail.ru
 //
 
 #include "hardware.h"
@@ -16,7 +16,7 @@
 #include <string.h>
 
 #if LCDMODE_LTDC && ! defined (SDRAM_BANK_ADDR)
-	// буфер экрана
+	// Р±СѓС„РµСЂ СЌРєСЂР°РЅР°
 	RAMFRAMEBUFF ALIGNX_BEGIN FRAMEBUFF_T framebuff0 ALIGNX_END;	//L8 (8-bit Luminance or CLUT)
 #endif /* LCDMODE_LTDC */
 
@@ -37,15 +37,15 @@
 
 #endif /* LCDMODE_LTDC */
 
-/* заполнение прямоугольной области буфера цветом */
+/* Р·Р°РїРѕР»РЅРµРЅРёРµ РїСЂСЏРјРѕСѓРіРѕР»СЊРЅРѕР№ РѕР±Р»Р°СЃС‚Рё Р±СѓС„РµСЂР° С†РІРµС‚РѕРј */
 void 
 display_fillrect(
 	PACKEDCOLOR_T * buffer,
-	uint_fast16_t dx,	// размеры буфера
+	uint_fast16_t dx,	// СЂР°Р·РјРµСЂС‹ Р±СѓС„РµСЂР°
 	uint_fast16_t dy,
-	uint_fast16_t col,	// позиция окна в буфере,
+	uint_fast16_t col,	// РїРѕР·РёС†РёСЏ РѕРєРЅР° РІ Р±СѓС„РµСЂРµ,
 	uint_fast16_t row,
-	uint_fast16_t w,	// размер окна
+	uint_fast16_t w,	// СЂР°Р·РјРµСЂ РѕРєРЅР°
 	uint_fast16_t h,
 	COLOR_T color
 	)
@@ -59,7 +59,7 @@ display_fillrect(
 
 	arm_hardware_flush((uintptr_t) buffer, sizeof (* buffer) * dx * dy);
 
-	/* целевой растр */
+	/* С†РµР»РµРІРѕР№ СЂР°СЃС‚СЂ */
 	DMA2D->OMAR = (uintptr_t) & buffer [row * dx + col];
 	DMA2D->OOR = (DMA2D->OOR & ~ (DMA2D_OOR_LO)) |
 		((dx - w) << DMA2D_OOR_LO_Pos) |
@@ -84,13 +84,13 @@ display_fillrect(
 		1 * DMA2D_AMTCR_EN |
 		0;
 
-	/* запустить операцию */
+	/* Р·Р°РїСѓСЃС‚РёС‚СЊ РѕРїРµСЂР°С†РёСЋ */
 	DMA2D->CR = (DMA2D->CR & ~ (DMA2D_CR_MODE)) |
 		3 * DMA2D_CR_MODE_0 |	// 11: Register-to-memory (no FG nor BG, only output stage active)
 		1 * DMA2D_CR_START |
 		0;
 
-	/* ожидаем выполнения операции */
+	/* РѕР¶РёРґР°РµРј РІС‹РїРѕР»РЅРµРЅРёСЏ РѕРїРµСЂР°С†РёРё */
 	while ((DMA2D->CR & DMA2D_CR_START) != 0)
 		;
 
@@ -114,15 +114,15 @@ display_fillrect(
 #endif /* LCDMODE_LTDC */
 }
 
-/* заполнение прямоугольной области буфера цветом */
+/* Р·Р°РїРѕР»РЅРµРЅРёРµ РїСЂСЏРјРѕСѓРіРѕР»СЊРЅРѕР№ РѕР±Р»Р°СЃС‚Рё Р±СѓС„РµСЂР° С†РІРµС‚РѕРј */
 void 
 dma2d_fillrect2_RGB565(
 	PACKEDCOLOR565_T * buffer,
-	uint_fast16_t dx,	// размеры буфера
+	uint_fast16_t dx,	// СЂР°Р·РјРµСЂС‹ Р±СѓС„РµСЂР°
 	uint_fast16_t dy,
-	uint_fast16_t col,	// позиция окна в буфере,
+	uint_fast16_t col,	// РїРѕР·РёС†РёСЏ РѕРєРЅР° РІ Р±СѓС„РµСЂРµ,
 	uint_fast16_t row,
-	uint_fast16_t w,	// размер окна
+	uint_fast16_t w,	// СЂР°Р·РјРµСЂ РѕРєРЅР°
 	uint_fast16_t h,
 	COLOR565_T color
 	)
@@ -136,7 +136,7 @@ dma2d_fillrect2_RGB565(
 
 	arm_hardware_flush((uintptr_t) buffer, sizeof (* buffer) * GXSIZE(dx, dy));
 
-	/* целевой растр */
+	/* С†РµР»РµРІРѕР№ СЂР°СЃС‚СЂ */
 	DMA2D->OMAR = (uintptr_t) & buffer [row * dx + col];
 	DMA2D->OOR = (DMA2D->OOR & ~ (DMA2D_OOR_LO)) |
 		((dx - w) << DMA2D_OOR_LO_Pos) |
@@ -161,13 +161,13 @@ dma2d_fillrect2_RGB565(
 		1 * DMA2D_AMTCR_EN |
 		0;
 
-	/* запустить операцию */
+	/* Р·Р°РїСѓСЃС‚РёС‚СЊ РѕРїРµСЂР°С†РёСЋ */
 	DMA2D->CR = (DMA2D->CR & ~ (DMA2D_CR_MODE)) |
 		3 * DMA2D_CR_MODE_0 |	// 11: Register-to-memory (no FG nor BG, only output stage active)
 		1 * DMA2D_CR_START |
 		0;
 
-	/* ожидаем выполнения операции */
+	/* РѕР¶РёРґР°РµРј РІС‹РїРѕР»РЅРµРЅРёСЏ РѕРїРµСЂР°С†РёРё */
 	while ((DMA2D->CR & DMA2D_CR_START) != 0)
 		;
 
@@ -193,7 +193,7 @@ dma2d_fillrect2_RGB565(
 }
 
 
-/* заполнение прямоугольного буфера цветом */
+/* Р·Р°РїРѕР»РЅРµРЅРёРµ РїСЂСЏРјРѕСѓРіРѕР»СЊРЅРѕРіРѕ Р±СѓС„РµСЂР° С†РІРµС‚РѕРј */
 static void 
 dma2d_fillrect(
 	PACKEDCOLOR565_T * buffer,
@@ -229,7 +229,7 @@ display_getbgcolor(void)
 
 
 
-// Используется при выводе на графический индикатор,
+// РСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РїСЂРё РІС‹РІРѕРґРµ РЅР° РіСЂР°С„РёС‡РµСЃРєРёР№ РёРЅРґРёРєР°С‚РѕСЂ,
 void
 display_string(const char * s, uint_fast8_t lowhalf)
 {
@@ -241,7 +241,7 @@ display_string(const char * s, uint_fast8_t lowhalf)
 	display_wrdata_end();
 }
 
-// Используется при выводе на графический индикатор,
+// РСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РїСЂРё РІС‹РІРѕРґРµ РЅР° РіСЂР°С„РёС‡РµСЃРєРёР№ РёРЅРґРёРєР°С‚РѕСЂ,
 void
 display_string_P(const FLASHMEM  char * s, uint_fast8_t lowhalf)
 {
@@ -253,8 +253,8 @@ display_string_P(const FLASHMEM  char * s, uint_fast8_t lowhalf)
 	display_wrdata_end();
 }
 
-// Используется при выводе на графический индикатор,
-// самый маленький шрифт
+// РСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РїСЂРё РІС‹РІРѕРґРµ РЅР° РіСЂР°С„РёС‡РµСЃРєРёР№ РёРЅРґРёРєР°С‚РѕСЂ,
+// СЃР°РјС‹Р№ РјР°Р»РµРЅСЊРєРёР№ С€СЂРёС„С‚
 void
 display_string2(const char * s, uint_fast8_t lowhalf)
 {
@@ -268,8 +268,8 @@ display_string2(const char * s, uint_fast8_t lowhalf)
 
 
 
-// Используется при выводе на графический индикатор,
-// самый маленький шрифт
+// РСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РїСЂРё РІС‹РІРѕРґРµ РЅР° РіСЂР°С„РёС‡РµСЃРєРёР№ РёРЅРґРёРєР°С‚РѕСЂ,
+// СЃР°РјС‹Р№ РјР°Р»РµРЅСЊРєРёР№ С€СЂРёС„С‚
 void
 display_string2_P(const FLASHMEM  char * s, uint_fast8_t lowhalf)
 {
@@ -282,7 +282,7 @@ display_string2_P(const FLASHMEM  char * s, uint_fast8_t lowhalf)
 }
 
 
-// Выдача строки из ОЗУ в указанное место экрана.
+// Р’С‹РґР°С‡Р° СЃС‚СЂРѕРєРё РёР· РћР—РЈ РІ СѓРєР°Р·Р°РЅРЅРѕРµ РјРµСЃС‚Рѕ СЌРєСЂР°РЅР°.
 void 
 //NOINLINEAT
 display_at(uint_fast8_t x, uint_fast8_t y, const char * s)
@@ -297,7 +297,7 @@ display_at(uint_fast8_t x, uint_fast8_t y, const char * s)
 	} while (lowhalf --);
 }
 
-// Выдача строки из ПЗУ в указанное место экрана.
+// Р’С‹РґР°С‡Р° СЃС‚СЂРѕРєРё РёР· РџР—РЈ РІ СѓРєР°Р·Р°РЅРЅРѕРµ РјРµСЃС‚Рѕ СЌРєСЂР°РЅР°.
 void 
 //NOINLINEAT
 display_at_P(uint_fast8_t x, uint_fast8_t y, const FLASHMEM char * s)
@@ -312,13 +312,13 @@ display_at_P(uint_fast8_t x, uint_fast8_t y, const FLASHMEM char * s)
 	} while (lowhalf --);
 }
 
-/* выдать на дисплей монохромный буфер с размерами dx * dy битов */
+/* РІС‹РґР°С‚СЊ РЅР° РґРёСЃРїР»РµР№ РјРѕРЅРѕС…СЂРѕРјРЅС‹Р№ Р±СѓС„РµСЂ СЃ СЂР°Р·РјРµСЂР°РјРё dx * dy Р±РёС‚РѕРІ */
 void display_showbuffer(
 	const GX_t * buffer,
-	unsigned dx,	// пиксели
-	unsigned dy,	// пиксели
-	uint_fast8_t col,	// сетка
-	uint_fast8_t row	// сетка
+	unsigned dx,	// РїРёРєСЃРµР»Рё
+	unsigned dy,	// РїРёРєСЃРµР»Рё
+	uint_fast8_t col,	// СЃРµС‚РєР°
+	uint_fast8_t row	// СЃРµС‚РєР°
 	)
 {
 #if LCDMODE_S1D13781
@@ -328,8 +328,8 @@ void display_showbuffer(
 #else /* LCDMODE_S1D13781 */
 
 	#if WITHSPIHWDMA && (LCDMODE_UC1608 | 0)
-		// на LCDMODE_S1D13781 почему-то DMA сбивает контроллер
-		arm_hardware_flush((uintptr_t) buffer, sizeof (* buffer) * MGSIZE(dx, dy));	// количество байтов
+		// РЅР° LCDMODE_S1D13781 РїРѕС‡РµРјСѓ-С‚Рѕ DMA СЃР±РёРІР°РµС‚ РєРѕРЅС‚СЂРѕР»Р»РµСЂ
+		arm_hardware_flush((uintptr_t) buffer, sizeof (* buffer) * MGSIZE(dx, dy));	// РєРѕР»РёС‡РµСЃС‚РІРѕ Р±Р°Р№С‚РѕРІ
 	#endif
 
 	uint_fast8_t lowhalf = (dy) / 8 - 1;
@@ -338,18 +338,18 @@ void display_showbuffer(
 	do
 	{
 		uint_fast8_t pos;
-		const GX_t * const p = buffer + lowhalf * dx;	// начало данных горизонтальной полосы в памяти
+		const GX_t * const p = buffer + lowhalf * dx;	// РЅР°С‡Р°Р»Рѕ РґР°РЅРЅС‹С… РіРѕСЂРёР·РѕРЅС‚Р°Р»СЊРЅРѕР№ РїРѕР»РѕСЃС‹ РІ РїР°РјСЏС‚Рё
 		//debug_printf_P(PSTR("display_showbuffer: col=%d, row=%d, lowhalf=%d\n"), col, row, lowhalf);
-		display_plotfrom(GRID2X(col), GRID2Y(row) + lowhalf * 8);		// курсор в начало первой строки
-		// выдача горизонтальной полосы
+		display_plotfrom(GRID2X(col), GRID2Y(row) + lowhalf * 8);		// РєСѓСЂСЃРѕСЂ РІ РЅР°С‡Р°Р»Рѕ РїРµСЂРІРѕР№ СЃС‚СЂРѕРєРё
+		// РІС‹РґР°С‡Р° РіРѕСЂРёР·РѕРЅС‚Р°Р»СЊРЅРѕР№ РїРѕР»РѕСЃС‹
 		display_wrdatabar_begin();
 	#if WITHSPIHWDMA && (0)
-		// на LCDMODE_S1D13781 почему-то DMA сбивает контроллер
-		// на LCDMODE_UC1608 портит мохранене теузей частоты и режима работы (STM32F746xx)
+		// РЅР° LCDMODE_S1D13781 РїРѕС‡РµРјСѓ-С‚Рѕ DMA СЃР±РёРІР°РµС‚ РєРѕРЅС‚СЂРѕР»Р»РµСЂ
+		// РЅР° LCDMODE_UC1608 РїРѕСЂС‚РёС‚ РјРѕС…СЂР°РЅРµРЅРµ С‚РµСѓР·РµР№ С‡Р°СЃС‚РѕС‚С‹ Рё СЂРµР¶РёРјР° СЂР°Р±РѕС‚С‹ (STM32F746xx)
 		hardware_spi_master_send_frame(p, dx);
 	#else
 		for (pos = 0; pos < dx; ++ pos)
-			display_barcolumn(p [pos]);	// Выдать восемь цветных пикселей, младший бит - самый верхний в растре
+			display_barcolumn(p [pos]);	// Р’С‹РґР°С‚СЊ РІРѕСЃРµРјСЊ С†РІРµС‚РЅС‹С… РїРёРєСЃРµР»РµР№, РјР»Р°РґС€РёР№ Р±РёС‚ - СЃР°РјС‹Р№ РІРµСЂС…РЅРёР№ РІ СЂР°СЃС‚СЂРµ
 	#endif
 		display_wrdatabar_end();
 	} while (lowhalf --);
@@ -359,33 +359,33 @@ void display_showbuffer(
 
 #if LCDMODE_S1D13781
 
-	// младший бит левее
+	// РјР»Р°РґС€РёР№ Р±РёС‚ Р»РµРІРµРµ
 	static const uint_fast16_t mapcolumn [16] =
 	{
-		0x0001, 0x0002, 0x0004, 0x0008, 0x0010, 0x0020, 0x0040, 0x0080, // биты для манипуляций с видеобуфером
+		0x0001, 0x0002, 0x0004, 0x0008, 0x0010, 0x0020, 0x0040, 0x0080, // Р±РёС‚С‹ РґР»СЏ РјР°РЅРёРїСѓР»СЏС†РёР№ СЃ РІРёРґРµРѕР±СѓС„РµСЂРѕРј
 		0x0100, 0x0200, 0x0400, 0x0800, 0x1000, 0x2000, 0x4000, 0x8000,
 	};
 
 #elif LCDMODE_UC1608 || LCDMODE_UC1601
 
-	/* старшие биты соответствуют верхним пикселям изображения */
-	// млдший бит ниже в растре
+	/* СЃС‚Р°СЂС€РёРµ Р±РёС‚С‹ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‚ РІРµСЂС…РЅРёРј РїРёРєСЃРµР»СЏРј РёР·РѕР±СЂР°Р¶РµРЅРёСЏ */
+	// РјР»РґС€РёР№ Р±РёС‚ РЅРёР¶Рµ РІ СЂР°СЃС‚СЂРµ
 	static const uint_fast8_t mapcolumn [8] =
 	{
-		0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01, // биты для манипуляций с видеобуфером
+		0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01, // Р±РёС‚С‹ РґР»СЏ РјР°РЅРёРїСѓР»СЏС†РёР№ СЃ РІРёРґРµРѕР±СѓС„РµСЂРѕРј
 	};
 #else /* LCDMODE_UC1608 || LCDMODE_UC1601 */
 
-	/* младшие биты соответствуют верхним пикселям изображения */
-	// млдший бит выше в растре
+	/* РјР»Р°РґС€РёРµ Р±РёС‚С‹ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‚ РІРµСЂС…РЅРёРј РїРёРєСЃРµР»СЏРј РёР·РѕР±СЂР°Р¶РµРЅРёСЏ */
+	// РјР»РґС€РёР№ Р±РёС‚ РІС‹С€Рµ РІ СЂР°СЃС‚СЂРµ
 	static const uint_fast8_t mapcolumn [8] =
 	{
-		0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, // биты для манипуляций с видеобуфером
+		0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, // Р±РёС‚С‹ РґР»СЏ РјР°РЅРёРїСѓР»СЏС†РёР№ СЃ РІРёРґРµРѕР±СѓС„РµСЂРѕРј
 	};
 
 #endif /* LCDMODE_UC1608 || LCDMODE_UC1601 */
 
-// начальная инициализация буфера
+// РЅР°С‡Р°Р»СЊРЅР°СЏ РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ Р±СѓС„РµСЂР°
 void display_colorbuffer_fill(
 	PACKEDCOLOR565_T * buffer,
 	uint_fast16_t dx,	
@@ -439,62 +439,62 @@ void display_colorbuffer_fill(
 #endif /* defined (DMA2D) && LCDMODE_LTDC && ! LCDMODE_LTDC_L8 */
 }
 
-// поставить цветную точку.
+// РїРѕСЃС‚Р°РІРёС‚СЊ С†РІРµС‚РЅСѓСЋ С‚РѕС‡РєСѓ.
 void display_colorbuffer_set(
 	PACKEDCOLOR565_T * buffer,
 	uint_fast16_t dx,	
 	uint_fast16_t dy,
-	uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
-	uint_fast16_t row,	// вертикальная координата пикселя (0..dy-1) сверху вниз
+	uint_fast16_t col,	// РіРѕСЂРёР·РѕРЅС‚Р°Р»СЊРЅР°СЏ РєРѕРѕСЂРґРёРЅР°С‚Р° РїРёРєСЃРµР»СЏ (0..dx-1) СЃР»РµРІР° РЅР°РїСЂР°РІРѕ
+	uint_fast16_t row,	// РІРµСЂС‚РёРєР°Р»СЊРЅР°СЏ РєРѕРѕСЂРґРёРЅР°С‚Р° РїРёРєСЃРµР»СЏ (0..dy-1) СЃРІРµСЂС…Сѓ РІРЅРёР·
 	COLOR565_T color
 	)
 {
 	ASSERT(col < dx);
 	ASSERT(row < dy);
 #if LCDMODE_HORFILL
-	// индекс младшей размерности перебирает горизонтальную координату дисплея
+	// РёРЅРґРµРєСЃ РјР»Р°РґС€РµР№ СЂР°Р·РјРµСЂРЅРѕСЃС‚Рё РїРµСЂРµР±РёСЂР°РµС‚ РіРѕСЂРёР·РѕРЅС‚Р°Р»СЊРЅСѓСЋ РєРѕРѕСЂРґРёРЅР°С‚Сѓ РґРёСЃРїР»РµСЏ
 	buffer [dx * row + col] = color;
 #else /* LCDMODE_HORFILL */
-	// индекс младшей размерности перебирает вертикальную координату дисплея
+	// РёРЅРґРµРєСЃ РјР»Р°РґС€РµР№ СЂР°Р·РјРµСЂРЅРѕСЃС‚Рё РїРµСЂРµР±РёСЂР°РµС‚ РІРµСЂС‚РёРєР°Р»СЊРЅСѓСЋ РєРѕРѕСЂРґРёРЅР°С‚Сѓ РґРёСЃРїР»РµСЏ
 	buffer [dy * col + row] = color;
 #endif /* LCDMODE_HORFILL */
 }
 
-// поставить цветную точку.
+// РїРѕСЃС‚Р°РІРёС‚СЊ С†РІРµС‚РЅСѓСЋ С‚РѕС‡РєСѓ.
 void display_colorbuffer_xor(
 	PACKEDCOLOR565_T * buffer,
 	uint_fast16_t dx,	
 	uint_fast16_t dy,
-	uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
-	uint_fast16_t row,	// вертикальная координата пикселя (0..dy-1) сверху вниз
+	uint_fast16_t col,	// РіРѕСЂРёР·РѕРЅС‚Р°Р»СЊРЅР°СЏ РєРѕРѕСЂРґРёРЅР°С‚Р° РїРёРєСЃРµР»СЏ (0..dx-1) СЃР»РµРІР° РЅР°РїСЂР°РІРѕ
+	uint_fast16_t row,	// РІРµСЂС‚РёРєР°Р»СЊРЅР°СЏ РєРѕРѕСЂРґРёРЅР°С‚Р° РїРёРєСЃРµР»СЏ (0..dy-1) СЃРІРµСЂС…Сѓ РІРЅРёР·
 	COLOR565_T color
 	)
 {
 	ASSERT(col < dx);
 	ASSERT(row < dy);
 #if LCDMODE_HORFILL
-	// индекс младшей размерности перебирает горизонтальную координату дисплея
+	// РёРЅРґРµРєСЃ РјР»Р°РґС€РµР№ СЂР°Р·РјРµСЂРЅРѕСЃС‚Рё РїРµСЂРµР±РёСЂР°РµС‚ РіРѕСЂРёР·РѕРЅС‚Р°Р»СЊРЅСѓСЋ РєРѕРѕСЂРґРёРЅР°С‚Сѓ РґРёСЃРїР»РµСЏ
 	buffer [dx * row + col] ^= color;
 #else /* LCDMODE_HORFILL */
-	// индекс младшей размерности перебирает вертикальную координату дисплея
+	// РёРЅРґРµРєСЃ РјР»Р°РґС€РµР№ СЂР°Р·РјРµСЂРЅРѕСЃС‚Рё РїРµСЂРµР±РёСЂР°РµС‚ РІРµСЂС‚РёРєР°Р»СЊРЅСѓСЋ РєРѕРѕСЂРґРёРЅР°С‚Сѓ РґРёСЃРїР»РµСЏ
 	buffer [dy * col + row] ^= color;
 #endif /* LCDMODE_HORFILL */
 }
 
 #if LCDMODE_LTDC_PIP16
 
-// Выдать буфер на дисплей
+// Р’С‹РґР°С‚СЊ Р±СѓС„РµСЂ РЅР° РґРёСЃРїР»РµР№
 void display_colorbuffer_show(
 	const PACKEDCOLOR565_T * buffer,
 	uint_fast16_t dx,	
 	uint_fast16_t dy,
-	uint_fast16_t col,	// горизонтальная координата левого верхнего угла на экране (0..dx-1) слева направо
-	uint_fast16_t row	// вертикальная координата левого верхнего угла на экране (0..dy-1) сверху вниз
+	uint_fast16_t col,	// РіРѕСЂРёР·РѕРЅС‚Р°Р»СЊРЅР°СЏ РєРѕРѕСЂРґРёРЅР°С‚Р° Р»РµРІРѕРіРѕ РІРµСЂС…РЅРµРіРѕ СѓРіР»Р° РЅР° СЌРєСЂР°РЅРµ (0..dx-1) СЃР»РµРІР° РЅР°РїСЂР°РІРѕ
+	uint_fast16_t row	// РІРµСЂС‚РёРєР°Р»СЊРЅР°СЏ РєРѕРѕСЂРґРёРЅР°С‚Р° Р»РµРІРѕРіРѕ РІРµСЂС…РЅРµРіРѕ СѓРіР»Р° РЅР° СЌРєСЂР°РЅРµ (0..dy-1) СЃРІРµСЂС…Сѓ РІРЅРёР·
 	)
 {
 }
 
-// установить данный буфер как область для PIP
+// СѓСЃС‚Р°РЅРѕРІРёС‚СЊ РґР°РЅРЅС‹Р№ Р±СѓС„РµСЂ РєР°Рє РѕР±Р»Р°СЃС‚СЊ РґР»СЏ PIP
 void display_colorbuffer_pip(
 	const PACKEDCOLOR565_T * buffer,
 	uint_fast16_t dx,	
@@ -507,13 +507,13 @@ void display_colorbuffer_pip(
 
 #else /* LCDMODE_LTDC_PIP16 */
 
-// Выдать буфер на дисплей
+// Р’С‹РґР°С‚СЊ Р±СѓС„РµСЂ РЅР° РґРёСЃРїР»РµР№
 void display_colorbuffer_show(
 	const PACKEDCOLOR565_T * buffer,
 	uint_fast16_t dx,	
 	uint_fast16_t dy,
-	uint_fast16_t col,	// горизонтальная координата левого верхнего угла на экране (0..dx-1) слева направо
-	uint_fast16_t row	// вертикальная координата левого верхнего угла на экране (0..dy-1) сверху вниз
+	uint_fast16_t col,	// РіРѕСЂРёР·РѕРЅС‚Р°Р»СЊРЅР°СЏ РєРѕРѕСЂРґРёРЅР°С‚Р° Р»РµРІРѕРіРѕ РІРµСЂС…РЅРµРіРѕ СѓРіР»Р° РЅР° СЌРєСЂР°РЅРµ (0..dx-1) СЃР»РµРІР° РЅР°РїСЂР°РІРѕ
+	uint_fast16_t row	// РІРµСЂС‚РёРєР°Р»СЊРЅР°СЏ РєРѕРѕСЂРґРёРЅР°С‚Р° Р»РµРІРѕРіРѕ РІРµСЂС…РЅРµРіРѕ СѓРіР»Р° РЅР° СЌРєСЂР°РЅРµ (0..dy-1) СЃРІРµСЂС…Сѓ РІРЅРёР·
 	)
 {
 #if defined (DMA2D) && LCDMODE_LTDC
@@ -522,22 +522,22 @@ void display_colorbuffer_show(
 
 #if LCDMODE_HORFILL
 
-	/* исходный растр */
+	/* РёСЃС…РѕРґРЅС‹Р№ СЂР°СЃС‚СЂ */
 	DMA2D->FGMAR = (uintptr_t) buffer;
 	DMA2D->FGOR = (DMA2D->FGOR & ~ (DMA2D_FGOR_LO)) |
 		(0 << DMA2D_FGOR_LO_Pos) |
 		0;
-	/* целевой растр */
+	/* С†РµР»РµРІРѕР№ СЂР°СЃС‚СЂ */
 	DMA2D->OMAR = (uintptr_t) & framebuff [row] [col];
 	DMA2D->OOR = (DMA2D->OOR & ~ (DMA2D_OOR_LO)) |
 		((DIM_X - dx) << DMA2D_OOR_LO_Pos) |
 		0;
-	/* размер пересылаемого растра */
+	/* СЂР°Р·РјРµСЂ РїРµСЂРµСЃС‹Р»Р°РµРјРѕРіРѕ СЂР°СЃС‚СЂР° */
 	DMA2D->NLR = (DMA2D->NLR & ~ (DMA2D_NLR_NL | DMA2D_NLR_PL)) |
 		(dy << DMA2D_NLR_NL_Pos) |
 		(dx << DMA2D_NLR_PL_Pos) |
 		0;
-	/* формат пикселя */
+	/* С„РѕСЂРјР°С‚ РїРёРєСЃРµР»СЏ */
 	DMA2D->FGPFCCR = (DMA2D->FGPFCCR & ~ (DMA2D_FGPFCCR_CM)) |
 		DMA2D_FGPFCCR_CM_VALUE |	/* Color mode - framebuffer pixel format */
 		0;
@@ -548,13 +548,13 @@ void display_colorbuffer_show(
 		1 * DMA2D_AMTCR_EN |
 		0;
 
-	/* запустить операцию */
+	/* Р·Р°РїСѓСЃС‚РёС‚СЊ РѕРїРµСЂР°С†РёСЋ */
 	DMA2D->CR = (DMA2D->CR & ~ (DMA2D_CR_MODE)) |
 		0 * DMA2D_CR_MODE_0 |	// 00: Memory-to-memory (FG fetch only)
 		1 * DMA2D_CR_START |
 		0;
 
-	/* ожидаем выполнения операции */
+	/* РѕР¶РёРґР°РµРј РІС‹РїРѕР»РЅРµРЅРёСЏ РѕРїРµСЂР°С†РёРё */
 	while ((DMA2D->CR & DMA2D_CR_START) != 0)
 		;
 
@@ -578,7 +578,7 @@ void display_colorbuffer_show(
 // The algorithm used to draw the line is "Bresenham's line
 // algorithm". 
 #define SWAP(a, b)  do { (a) ^= (b); (b) ^= (a); (a) ^= (b); } while (0)
-// Нарисовать линию указанным цветом
+// РќР°СЂРёСЃРѕРІР°С‚СЊ Р»РёРЅРёСЋ СѓРєР°Р·Р°РЅРЅС‹Рј С†РІРµС‚РѕРј
 void display_colorbuffer_line_set(
 	PACKEDCOLOR565_T * buffer,
 	uint_fast16_t dx,	
@@ -643,59 +643,59 @@ void display_colorbuffer_line_set(
 
 #undef SWAP
 
-// погасить точку
+// РїРѕРіР°СЃРёС‚СЊ С‚РѕС‡РєСѓ
 void display_pixelbuffer(
 	GX_t * buffer,
 	uint_fast16_t dx,	
 	uint_fast16_t dy,
-	uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
-	uint_fast16_t row	// вертикальная координата пикселя (0..dy-1) сверху вниз
+	uint_fast16_t col,	// РіРѕСЂРёР·РѕРЅС‚Р°Р»СЊРЅР°СЏ РєРѕРѕСЂРґРёРЅР°С‚Р° РїРёРєСЃРµР»СЏ (0..dx-1) СЃР»РµРІР° РЅР°РїСЂР°РІРѕ
+	uint_fast16_t row	// РІРµСЂС‚РёРєР°Р»СЊРЅР°СЏ РєРѕРѕСЂРґРёРЅР°С‚Р° РїРёРєСЃРµР»СЏ (0..dy-1) СЃРІРµСЂС…Сѓ РІРЅРёР·
 	)
 {
 #if LCDMODE_S1D13781
 
-	//row = (dy - 1) - row;		// смена направления
-	GX_t * const rowstart = buffer + row * ((dx + 15) / 16);	// начало данных строки растра в памяти
+	//row = (dy - 1) - row;		// СЃРјРµРЅР° РЅР°РїСЂР°РІР»РµРЅРёСЏ
+	GX_t * const rowstart = buffer + row * ((dx + 15) / 16);	// РЅР°С‡Р°Р»Рѕ РґР°РЅРЅС‹С… СЃС‚СЂРѕРєРё СЂР°СЃС‚СЂР° РІ РїР°РјСЏС‚Рё
 	GX_t * const p = rowstart + col / 16;	
-	//* p |= mapcolumn [col % 16];	// установить точку
-	* p &= ~ mapcolumn [col % 16];	// погасить точку
-	//* p ^= mapcolumn [col % 16];	// инвертировать точку
+	//* p |= mapcolumn [col % 16];	// СѓСЃС‚Р°РЅРѕРІРёС‚СЊ С‚РѕС‡РєСѓ
+	* p &= ~ mapcolumn [col % 16];	// РїРѕРіР°СЃРёС‚СЊ С‚РѕС‡РєСѓ
+	//* p ^= mapcolumn [col % 16];	// РёРЅРІРµСЂС‚РёСЂРѕРІР°С‚СЊ С‚РѕС‡РєСѓ
 
 #else /* LCDMODE_S1D13781 */
 
-	//row = (dy - 1) - row;		// смена направления
-	GX_t * const p = buffer + (row / 8) * dx + col;	// начало данных горизонтальной полосы в памяти
-	//* p |= mapcolumn [row % 8];	// установить точку
-	* p &= ~ mapcolumn [row % 8];	// погасить точку
-	//* p ^= mapcolumn [row % 8];	// инвертировать точку
+	//row = (dy - 1) - row;		// СЃРјРµРЅР° РЅР°РїСЂР°РІР»РµРЅРёСЏ
+	GX_t * const p = buffer + (row / 8) * dx + col;	// РЅР°С‡Р°Р»Рѕ РґР°РЅРЅС‹С… РіРѕСЂРёР·РѕРЅС‚Р°Р»СЊРЅРѕР№ РїРѕР»РѕСЃС‹ РІ РїР°РјСЏС‚Рё
+	//* p |= mapcolumn [row % 8];	// СѓСЃС‚Р°РЅРѕРІРёС‚СЊ С‚РѕС‡РєСѓ
+	* p &= ~ mapcolumn [row % 8];	// РїРѕРіР°СЃРёС‚СЊ С‚РѕС‡РєСѓ
+	//* p ^= mapcolumn [row % 8];	// РёРЅРІРµСЂС‚РёСЂРѕРІР°С‚СЊ С‚РѕС‡РєСѓ
 
 #endif /* LCDMODE_S1D13781 */
 }
 
-/* Исключающее ИЛИ с точкой в растре */
+/* РСЃРєР»СЋС‡Р°СЋС‰РµРµ РР›Р СЃ С‚РѕС‡РєРѕР№ РІ СЂР°СЃС‚СЂРµ */
 void display_pixelbuffer_xor(
 	GX_t * buffer,
 	uint_fast16_t dx,	
 	uint_fast16_t dy,
-	uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
-	uint_fast16_t row	// вертикальная координата пикселя (0..dy-1) сверху вниз
+	uint_fast16_t col,	// РіРѕСЂРёР·РѕРЅС‚Р°Р»СЊРЅР°СЏ РєРѕРѕСЂРґРёРЅР°С‚Р° РїРёРєСЃРµР»СЏ (0..dx-1) СЃР»РµРІР° РЅР°РїСЂР°РІРѕ
+	uint_fast16_t row	// РІРµСЂС‚РёРєР°Р»СЊРЅР°СЏ РєРѕРѕСЂРґРёРЅР°С‚Р° РїРёРєСЃРµР»СЏ (0..dy-1) СЃРІРµСЂС…Сѓ РІРЅРёР·
 	)
 {
 #if LCDMODE_S1D13781
-	//row = (dy - 1) - row;		// смена направления
-	GX_t * const rowstart = buffer + row * ((dx + 15) / 16);	// начало данных строки растра в памяти
+	//row = (dy - 1) - row;		// СЃРјРµРЅР° РЅР°РїСЂР°РІР»РµРЅРёСЏ
+	GX_t * const rowstart = buffer + row * ((dx + 15) / 16);	// РЅР°С‡Р°Р»Рѕ РґР°РЅРЅС‹С… СЃС‚СЂРѕРєРё СЂР°СЃС‚СЂР° РІ РїР°РјСЏС‚Рё
 	GX_t * const p = rowstart + col / 16;	
-	//* p |= mapcolumn [col % 16];	// установить точку
-	//* p &= ~ mapcolumn [col % 16];	// погасить точку
-	* p ^= mapcolumn [col % 16];	// инвертировать точку
+	//* p |= mapcolumn [col % 16];	// СѓСЃС‚Р°РЅРѕРІРёС‚СЊ С‚РѕС‡РєСѓ
+	//* p &= ~ mapcolumn [col % 16];	// РїРѕРіР°СЃРёС‚СЊ С‚РѕС‡РєСѓ
+	* p ^= mapcolumn [col % 16];	// РёРЅРІРµСЂС‚РёСЂРѕРІР°С‚СЊ С‚РѕС‡РєСѓ
 
 #else /* LCDMODE_S1D13781 */
 
-	//row = (dy - 1) - row;		// смена направления
-	GX_t * const p = buffer + (row / 8) * dx + col;	// начало данных горизонтальной полосы в памяти
-	//* p |= mapcolumn [row % 8];	// установить точку
-	//* p &= ~ mapcolumn [row % 8];	// погасить точку
-	* p ^= mapcolumn [row % 8];	// инвертировать точку
+	//row = (dy - 1) - row;		// СЃРјРµРЅР° РЅР°РїСЂР°РІР»РµРЅРёСЏ
+	GX_t * const p = buffer + (row / 8) * dx + col;	// РЅР°С‡Р°Р»Рѕ РґР°РЅРЅС‹С… РіРѕСЂРёР·РѕРЅС‚Р°Р»СЊРЅРѕР№ РїРѕР»РѕСЃС‹ РІ РїР°РјСЏС‚Рё
+	//* p |= mapcolumn [row % 8];	// СѓСЃС‚Р°РЅРѕРІРёС‚СЊ С‚РѕС‡РєСѓ
+	//* p &= ~ mapcolumn [row % 8];	// РїРѕРіР°СЃРёС‚СЊ С‚РѕС‡РєСѓ
+	* p ^= mapcolumn [row % 8];	// РёРЅРІРµСЂС‚РёСЂРѕРІР°С‚СЊ С‚РѕС‡РєСѓ
 
 #endif /* LCDMODE_S1D13781 */
 }
@@ -706,7 +706,7 @@ void display_pixelbuffer_clear(
 	uint_fast16_t dy
 	)
 {
-	memset(buffer, 0xFF, (size_t) MGSIZE(dx, dy) * (sizeof * buffer));			// рисование способом погасить точку
+	memset(buffer, 0xFF, (size_t) MGSIZE(dx, dy) * (sizeof * buffer));			// СЂРёСЃРѕРІР°РЅРёРµ СЃРїРѕСЃРѕР±РѕРј РїРѕРіР°СЃРёС‚СЊ С‚РѕС‡РєСѓ
 }
 
 // Routine to draw a line in the RGB565 color to the LCD.
@@ -714,7 +714,7 @@ void display_pixelbuffer_clear(
 // The algorithm used to draw the line is "Bresenham's line
 // algorithm". 
 #define SWAP(a, b)  do { (a) ^= (b); (b) ^= (a); (a) ^= (b); } while (0)
-// Нарисовать линию указанным цветом
+// РќР°СЂРёСЃРѕРІР°С‚СЊ Р»РёРЅРёСЋ СѓРєР°Р·Р°РЅРЅС‹Рј С†РІРµС‚РѕРј
 void display_pixelbuffer_line(
 	GX_t * buffer,
 	uint_fast16_t dx,	
@@ -781,8 +781,8 @@ void display_pixelbuffer_line(
 
 static void 
 bitblt_fill(
-	uint_fast16_t x, uint_fast16_t y, 	// координаты в пикселях
-	uint_fast16_t w, uint_fast16_t h, 	// размеры в пикселях
+	uint_fast16_t x, uint_fast16_t y, 	// РєРѕРѕСЂРґРёРЅР°С‚С‹ РІ РїРёРєСЃРµР»СЏС…
+	uint_fast16_t w, uint_fast16_t h, 	// СЂР°Р·РјРµСЂС‹ РІ РїРёРєСЃРµР»СЏС…
 	COLOR_T color)
 {
 
@@ -858,10 +858,10 @@ void display_barstest(void)
 #endif /* LCDMODE_LTDC */
 
 /*
- * настройка портов для последующей работы с дополнительными (кроме последовательного канала)
- * сигналами дисплея.
+ * РЅР°СЃС‚СЂРѕР№РєР° РїРѕСЂС‚РѕРІ РґР»СЏ РїРѕСЃР»РµРґСѓСЋС‰РµР№ СЂР°Р±РѕС‚С‹ СЃ РґРѕРїРѕР»РЅРёС‚РµР»СЊРЅС‹РјРё (РєСЂРѕРјРµ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕРіРѕ РєР°РЅР°Р»Р°)
+ * СЃРёРіРЅР°Р»Р°РјРё РґРёСЃРїР»РµСЏ.
  */
-/* вызывается при запрещённых прерываниях. */
+/* РІС‹Р·С‹РІР°РµС‚СЃСЏ РїСЂРё Р·Р°РїСЂРµС‰С‘РЅРЅС‹С… РїСЂРµСЂС‹РІР°РЅРёСЏС…. */
 void display_hardware_initialize(void)
 {
 	debug_printf_P(PSTR("display_hardware_initialize start\n"));
@@ -890,8 +890,8 @@ void display_hardware_initialize(void)
 #if LCDMODE_LTDC
 
 #if DSTYLE_G_X320_Y240
-	// в знакогенераторе изображения символов "по вертикалти"
-	// Для дисплеев 320 * 240
+	// РІ Р·РЅР°РєРѕРіРµРЅРµСЂР°С‚РѕСЂРµ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ СЃРёРјРІРѕР»РѕРІ "РїРѕ РІРµСЂС‚РёРєР°Р»С‚Рё"
+	// Р”Р»СЏ РґРёСЃРїР»РµРµРІ 320 * 240
 	#include "./fonts/ILI9341_font_small.h"
 	#include "./fonts/ILI9341_font_half.h"
 	#include "./fonts/ILI9341_font_big.h"
@@ -901,19 +901,19 @@ void display_hardware_initialize(void)
 	#define	ls020_bigfont	ILI9341_bigfont
 
 #elif DSTYLE_G_X480_Y272
-	// в знакогенераторе изображения символов "по горизонтали"
+	// РІ Р·РЅР°РєРѕРіРµРЅРµСЂР°С‚РѕСЂРµ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ СЃРёРјРІРѕР»РѕРІ "РїРѕ РіРѕСЂРёР·РѕРЅС‚Р°Р»Рё"
 	#include "./fonts/S1D13781_font_small_LTDC.h"
 	#include "./fonts/S1D13781_font_half_LTDC.h"
 	#include "./fonts/S1D13781_font_big_LTDC.h"
 
 #elif DSTYLE_G_X800_Y480
-	// в знакогенераторе изображения символов "по горизонтали"
+	// РІ Р·РЅР°РєРѕРіРµРЅРµСЂР°С‚РѕСЂРµ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ СЃРёРјРІРѕР»РѕРІ "РїРѕ РіРѕСЂРёР·РѕРЅС‚Р°Р»Рё"
 	#include "./fonts/S1D13781_font_small_LTDC.h"
 	#include "./fonts/S1D13781_font_half_LTDC.h"
 	#include "./fonts/S1D13781_font_big_LTDC.h"
 
 #else /*  */
-	// в знакогенераторе изображения символов "по вертикалти"
+	// РІ Р·РЅР°РєРѕРіРµРЅРµСЂР°С‚РѕСЂРµ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ СЃРёРјРІРѕР»РѕРІ "РїРѕ РІРµСЂС‚РёРєР°Р»С‚Рё"
 	//#error Undefined display layout
 
 	#include "./fonts/ls020_font_small.h"
@@ -927,16 +927,16 @@ void display_hardware_initialize(void)
 #endif /* ! LCDMODE_LTDC_L24 */
 
 
-/* позиция в растре, куда будет выдаваться следующий пиксель */
+/* РїРѕР·РёС†РёСЏ РІ СЂР°СЃС‚СЂРµ, РєСѓРґР° Р±СѓРґРµС‚ РІС‹РґР°РІР°С‚СЊСЃСЏ СЃР»РµРґСѓСЋС‰РёР№ РїРёРєСЃРµР»СЊ */
 static PACKEDCOLOR_T ltdc_fg, ltdc_bg;
 
 #if ! LCDMODE_LTDC_L24
 static const FLASHMEM PACKEDCOLOR_T (* byte2run) [256][8] = & byte2run_COLOR_WHITE_COLOR_BLACK;
 #endif /* ! LCDMODE_LTDC_L24 */
 
-static unsigned ltdc_first, ltdc_second;	// в пикселях
-static unsigned ltdc_h;						// высота символа (полосы) в пикселях
-static unsigned ltdc_secondoffs;			// в пикселях
+static unsigned ltdc_first, ltdc_second;	// РІ РїРёРєСЃРµР»СЏС…
+static unsigned ltdc_h;						// РІС‹СЃРѕС‚Р° СЃРёРјРІРѕР»Р° (РїРѕР»РѕСЃС‹) РІ РїРёРєСЃРµР»СЏС…
+static unsigned ltdc_secondoffs;			// РІ РїРёРєСЃРµР»СЏС…
 
 void display_setcolors(COLOR_T fg, COLOR_T bg)
 {
@@ -983,35 +983,35 @@ void display_setcolors3(COLOR_T fg, COLOR_T bg, COLOR_T fgbg)
 	display_setcolors(fg, bg);
 }
 
-// Выдать один цветной пиксель
+// Р’С‹РґР°С‚СЊ РѕРґРёРЅ С†РІРµС‚РЅРѕР№ РїРёРєСЃРµР»СЊ
 static void 
 ltdc_pix1color(
-	uint_fast8_t cgcol,		// смещение в пикселях относительно координат, поставленных display_gotoxy
+	uint_fast8_t cgcol,		// СЃРјРµС‰РµРЅРёРµ РІ РїРёРєСЃРµР»СЏС… РѕС‚РЅРѕСЃРёС‚РµР»СЊРЅРѕ РєРѕРѕСЂРґРёРЅР°С‚, РїРѕСЃС‚Р°РІР»РµРЅРЅС‹С… display_gotoxy
 	uint_fast8_t cgrow,
 	PACKEDCOLOR_T color
 	)
 {
 	PACKEDCOLOR_T * const p = & framebuff [ltdc_first + cgrow] [ltdc_second + ltdc_secondoffs + cgcol];
-	// размещаем пиксели по горизонтали
+	// СЂР°Р·РјРµС‰Р°РµРј РїРёРєСЃРµР»Рё РїРѕ РіРѕСЂРёР·РѕРЅС‚Р°Р»Рё
 	//debug_printf_P(PSTR("framebuff=%p, ltdc_first=%d, cgrow=%d, ltdc_second=%d, ltdc_secondoffs=%d, cgcol=%d\n"), framebuff, ltdc_first, cgrow, ltdc_second, ltdc_secondoffs, cgcol);
 	* p = color;
 	arm_hardware_flush((uintptr_t) p, sizeof * p);
 }
 
 
-// Выдать один цветной пиксель (фон/символ)
+// Р’С‹РґР°С‚СЊ РѕРґРёРЅ С†РІРµС‚РЅРѕР№ РїРёРєСЃРµР»СЊ (С„РѕРЅ/СЃРёРјРІРѕР»)
 static void 
 ltdc_pixel(
-	uint_fast8_t cgcol,		// смещение в пикселях относительно координат, поставленных display_gotoxy
+	uint_fast8_t cgcol,		// СЃРјРµС‰РµРЅРёРµ РІ РїРёРєСЃРµР»СЏС… РѕС‚РЅРѕСЃРёС‚РµР»СЊРЅРѕ РєРѕРѕСЂРґРёРЅР°С‚, РїРѕСЃС‚Р°РІР»РµРЅРЅС‹С… display_gotoxy
 	uint_fast8_t cgrow,
-	uint_fast8_t v			// 0 - цвет background, иначе - foreground
+	uint_fast8_t v			// 0 - С†РІРµС‚ background, РёРЅР°С‡Рµ - foreground
 	)
 {
 	ltdc_pix1color(cgcol, cgrow, v ? ltdc_fg : ltdc_bg);
 }
 
 
-// Выдать восемь цветных пикселей, младший бит - самый верхний в растре
+// Р’С‹РґР°С‚СЊ РІРѕСЃРµРјСЊ С†РІРµС‚РЅС‹С… РїРёРєСЃРµР»РµР№, РјР»Р°РґС€РёР№ Р±РёС‚ - СЃР°РјС‹Р№ РІРµСЂС…РЅРёР№ РІ СЂР°СЃС‚СЂРµ
 static void 
 ltdc_vertical_pixN(
 	uint_fast8_t v,		// pattern
@@ -1021,7 +1021,7 @@ ltdc_vertical_pixN(
 
 #if LCDMODE_LTDC_L24 || LCDMODE_HORFILL
 
-	// TODO: для паттернов шире чем восемь бит, повторить нужное число раз.
+	// TODO: РґР»СЏ РїР°С‚С‚РµСЂРЅРѕРІ С€РёСЂРµ С‡РµРј РІРѕСЃРµРјСЊ Р±РёС‚, РїРѕРІС‚РѕСЂРёС‚СЊ РЅСѓР¶РЅРѕРµ С‡РёСЃР»Рѕ СЂР°Р·.
 	ltdc_pixel(0, 0, v & 0x01);
 	ltdc_pixel(0, 1, v & 0x02);
 	ltdc_pixel(0, 2, v & 0x04);
@@ -1034,8 +1034,8 @@ ltdc_vertical_pixN(
 	++ ltdc_secondoffs;
 
 #else /* LCDMODE_LTDC_L24 */
-	// размещаем пиксели по горизонтали
-	// TODO: для паттернов шире чем восемь бит, повторить нужное число раз.
+	// СЂР°Р·РјРµС‰Р°РµРј РїРёРєСЃРµР»Рё РїРѕ РіРѕСЂРёР·РѕРЅС‚Р°Р»Рё
+	// TODO: РґР»СЏ РїР°С‚С‚РµСЂРЅРѕРІ С€РёСЂРµ С‡РµРј РІРѕСЃРµРјСЊ Р±РёС‚, РїРѕРІС‚РѕСЂРёС‚СЊ РЅСѓР¶РЅРѕРµ С‡РёСЃР»Рѕ СЂР°Р·.
 	const FLASHMEM PACKEDCOLOR_T * const pcl = (* byte2run) [v];
 	memcpy(& framebuff [ltdc_first] [ltdc_second + ltdc_secondoffs], pcl, sizeof (* pcl) * w);
 	arm_hardware_flush((uintptr_t) & framebuff [ltdc_first] [ltdc_second + ltdc_secondoffs], sizeof (PACKEDCOLOR_T) * w);
@@ -1052,14 +1052,14 @@ static uint_fast8_t
 //NOINLINEAT
 bigfont_decode(uint_fast8_t c)
 {
-	// '#' - узкий пробел
+	// '#' - СѓР·РєРёР№ РїСЂРѕР±РµР»
 	if (c == ' ' || c == '#')
 		return 11;
 	if (c == '_')
-		return 10;		// курсор - позиция редактирвания частоты
+		return 10;		// РєСѓСЂСЃРѕСЂ - РїРѕР·РёС†РёСЏ СЂРµРґР°РєС‚РёСЂРІР°РЅРёСЏ С‡Р°СЃС‚РѕС‚С‹
 	if (c == '.')
-		return 12;		// точка
-	return c - '0';		// остальные - цифры 0..9
+		return 12;		// С‚РѕС‡РєР°
+	return c - '0';		// РѕСЃС‚Р°Р»СЊРЅС‹Рµ - С†РёС„СЂС‹ 0..9
 }
 
 
@@ -1070,7 +1070,7 @@ smallfont_decode(uint_fast8_t c)
 }
 
 #if LCDMODE_HORFILL
-// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
+// РґР»СЏ СЃР»СѓС‡Р°СЏ РєРѕРіРґР° РіРѕСЂРёР·РѕРЅС‚Р°Р»СЊРЅС‹Рµ РїРёРєСЃРµР»Рё РІ РІРёРґРµРѕРїСЏРјСЏС‚Рё СЂР°СЃРїРѕР»Р°РіР°СЋС‚СЃСЏ РїРѕРґСЂСЏРґ
 
 static void
 ltdc_horizontal_pixels(
@@ -1096,7 +1096,7 @@ ltdc_horizontal_pixels(
 	arm_hardware_flush((uintptr_t) t, sizeof (* t) * width);
 }
 
-// Вызов этой функции только внутри display_wrdata_begin() и 	display_wrdata_end();
+// Р’С‹Р·РѕРІ СЌС‚РѕР№ С„СѓРЅРєС†РёРё С‚РѕР»СЊРєРѕ РІРЅСѓС‚СЂРё display_wrdata_begin() Рё 	display_wrdata_end();
 static void ltdc_horizontal_put_char_small(char cc)
 {
 	const uint_fast8_t width = SMALLCHARW;
@@ -1109,10 +1109,10 @@ static void ltdc_horizontal_put_char_small(char cc)
 	ltdc_second += width;
 }
 
-// Вызов этой функции только внутри display_wrdatabig_begin() и display_wrdatabig_end();
+// Р’С‹Р·РѕРІ СЌС‚РѕР№ С„СѓРЅРєС†РёРё С‚РѕР»СЊРєРѕ РІРЅСѓС‚СЂРё display_wrdatabig_begin() Рё display_wrdatabig_end();
 static void ltdc_horizontal_put_char_big(char cc)
 {
-	const uint_fast8_t width = ((cc == '.' || cc == '#') ? BIGCHARW_NARROW  : BIGCHARW);	// полнаяширина символа в пикселях
+	const uint_fast8_t width = ((cc == '.' || cc == '#') ? BIGCHARW_NARROW  : BIGCHARW);	// РїРѕР»РЅР°СЏС€РёСЂРёРЅР° СЃРёРјРІРѕР»Р° РІ РїРёРєСЃРµР»СЏС…
     const uint_fast8_t c = bigfont_decode((unsigned char) cc);
 	uint_fast8_t cgrow;
 	for (cgrow = 0; cgrow < BIGCHARH; ++ cgrow)
@@ -1122,7 +1122,7 @@ static void ltdc_horizontal_put_char_big(char cc)
 	ltdc_second += width;
 }
 
-// Вызов этой функции только внутри display_wrdatabig_begin() и display_wrdatabig_end();
+// Р’С‹Р·РѕРІ СЌС‚РѕР№ С„СѓРЅРєС†РёРё С‚РѕР»СЊРєРѕ РІРЅСѓС‚СЂРё display_wrdatabig_begin() Рё display_wrdatabig_end();
 static void ltdc_horizontal_put_char_half(char cc)
 {
 	const uint_fast8_t width = HALFCHARW;
@@ -1137,7 +1137,7 @@ static void ltdc_horizontal_put_char_half(char cc)
 
 #else /* LCDMODE_HORFILL */
 
-// Вызов этой функции только внутри display_wrdata_begin() и 	display_wrdata_end();
+// Р’С‹Р·РѕРІ СЌС‚РѕР№ С„СѓРЅРєС†РёРё С‚РѕР»СЊРєРѕ РІРЅСѓС‚СЂРё display_wrdata_begin() Рё 	display_wrdata_end();
 static void ltdc_vertical_put_char_small(char cc)
 {
 	uint_fast8_t i = 0;
@@ -1146,24 +1146,24 @@ static void ltdc_vertical_put_char_small(char cc)
 	const FLASHMEM uint8_t * const p = & ls020_smallfont [c] [0];
 	
 	for (; i < NBYTES; ++ i)
-		ltdc_vertical_pixN(p [i], 8);	// Выдать восемь цветных пикселей, младший бит - самый верхний в растре
+		ltdc_vertical_pixN(p [i], 8);	// Р’С‹РґР°С‚СЊ РІРѕСЃРµРјСЊ С†РІРµС‚РЅС‹С… РїРёРєСЃРµР»РµР№, РјР»Р°РґС€РёР№ Р±РёС‚ - СЃР°РјС‹Р№ РІРµСЂС…РЅРёР№ РІ СЂР°СЃС‚СЂРµ
 }
 
-// Вызов этой функции только внутри display_wrdatabig_begin() и display_wrdatabig_end();
+// Р’С‹Р·РѕРІ СЌС‚РѕР№ С„СѓРЅРєС†РёРё С‚РѕР»СЊРєРѕ РІРЅСѓС‚СЂРё display_wrdatabig_begin() Рё display_wrdatabig_end();
 static void ltdc_vertical_put_char_big(char cc)
 {
-	// '#' - узкий пробел
-	enum { NBV = (BIGCHARH / 8) }; // сколько байтов в одной вертикали
-	uint_fast8_t i = NBV * ((cc == '.' || cc == '#') ? 12 : 0);	// начальная колонка знакогенератора, откуда начинать.
+	// '#' - СѓР·РєРёР№ РїСЂРѕР±РµР»
+	enum { NBV = (BIGCHARH / 8) }; // СЃРєРѕР»СЊРєРѕ Р±Р°Р№С‚РѕРІ РІ РѕРґРЅРѕР№ РІРµСЂС‚РёРєР°Р»Рё
+	uint_fast8_t i = NBV * ((cc == '.' || cc == '#') ? 12 : 0);	// РЅР°С‡Р°Р»СЊРЅР°СЏ РєРѕР»РѕРЅРєР° Р·РЅР°РєРѕРіРµРЅРµСЂР°С‚РѕСЂР°, РѕС‚РєСѓРґР° РЅР°С‡РёРЅР°С‚СЊ.
     const uint_fast8_t c = bigfont_decode((unsigned char) cc);
 	enum { NBYTES = (sizeof ls020_bigfont [0] / sizeof ls020_bigfont [0] [0]) };
 	const FLASHMEM uint8_t * const p = & ls020_bigfont [c] [0];
 	
 	for (; i < NBYTES; ++ i)
-		ltdc_vertical_pixN(p [i], 8);	// Выдать восемь цветных пикселей, младший бит - самый верхний в растре
+		ltdc_vertical_pixN(p [i], 8);	// Р’С‹РґР°С‚СЊ РІРѕСЃРµРјСЊ С†РІРµС‚РЅС‹С… РїРёРєСЃРµР»РµР№, РјР»Р°РґС€РёР№ Р±РёС‚ - СЃР°РјС‹Р№ РІРµСЂС…РЅРёР№ РІ СЂР°СЃС‚СЂРµ
 }
 
-// Вызов этой функции только внутри display_wrdatabig_begin() и display_wrdatabig_end();
+// Р’С‹Р·РѕРІ СЌС‚РѕР№ С„СѓРЅРєС†РёРё С‚РѕР»СЊРєРѕ РІРЅСѓС‚СЂРё display_wrdatabig_begin() Рё display_wrdatabig_end();
 static void ltdc_vertical_put_char_half(char cc)
 {
 	uint_fast8_t i = 0;
@@ -1172,45 +1172,45 @@ static void ltdc_vertical_put_char_half(char cc)
 	const FLASHMEM uint8_t * const p = & ls020_halffont [c] [0];
 	
 	for (; i < NBYTES; ++ i)
-		ltdc_vertical_pixN(p [i], 8);	// Выдать восемь цветных пикселей, младший бит - самый верхний в растре
+		ltdc_vertical_pixN(p [i], 8);	// Р’С‹РґР°С‚СЊ РІРѕСЃРµРјСЊ С†РІРµС‚РЅС‹С… РїРёРєСЃРµР»РµР№, РјР»Р°РґС€РёР№ Р±РёС‚ - СЃР°РјС‹Р№ РІРµСЂС…РЅРёР№ РІ СЂР°СЃС‚СЂРµ
 }
 
 #endif /* LCDMODE_HORFILL */
 
 
 
-/* копирование содержимого окна с перекрытием для водопада */
+/* РєРѕРїРёСЂРѕРІР°РЅРёРµ СЃРѕРґРµСЂР¶РёРјРѕРіРѕ РѕРєРЅР° СЃ РїРµСЂРµРєСЂС‹С‚РёРµРј РґР»СЏ РІРѕРґРѕРїР°РґР° */
 void
 display_scroll_down(
-	uint_fast16_t x0,	// левый верхний угол окна
-	uint_fast16_t y0,	// левый верхний угол окна
-	uint_fast16_t w, 	// до 65535 пикселей - ширина окна
-	uint_fast16_t h, 	// до 65535 пикселей - высота окна
-	uint_fast16_t n,	// количество строк прокрутки
-	int_fast16_t hshift	// количество пиксеелей для сдвига влево (отрицательное число) или вправо (положительное).
+	uint_fast16_t x0,	// Р»РµРІС‹Р№ РІРµСЂС…РЅРёР№ СѓРіРѕР» РѕРєРЅР°
+	uint_fast16_t y0,	// Р»РµРІС‹Р№ РІРµСЂС…РЅРёР№ СѓРіРѕР» РѕРєРЅР°
+	uint_fast16_t w, 	// РґРѕ 65535 РїРёРєСЃРµР»РµР№ - С€РёСЂРёРЅР° РѕРєРЅР°
+	uint_fast16_t h, 	// РґРѕ 65535 РїРёРєСЃРµР»РµР№ - РІС‹СЃРѕС‚Р° РѕРєРЅР°
+	uint_fast16_t n,	// РєРѕР»РёС‡РµСЃС‚РІРѕ СЃС‚СЂРѕРє РїСЂРѕРєСЂСѓС‚РєРё
+	int_fast16_t hshift	// РєРѕР»РёС‡РµСЃС‚РІРѕ РїРёРєСЃРµРµР»РµР№ РґР»СЏ СЃРґРІРёРіР° РІР»РµРІРѕ (РѕС‚СЂРёС†Р°С‚РµР»СЊРЅРѕРµ С‡РёСЃР»Рѕ) РёР»Рё РІРїСЂР°РІРѕ (РїРѕР»РѕР¶РёС‚РµР»СЊРЅРѕРµ).
 	)
 {
 #if defined (DMA2D) && LCDMODE_LTDC
 
 #if LCDMODE_HORFILL
 
-	/* TODO: В DMA2D нет средств управления направлением пересылки, потому данный код копирует сам на себя данные (размножает) */
-	/* исходный растр */
+	/* TODO: Р’ DMA2D РЅРµС‚ СЃСЂРµРґСЃС‚РІ СѓРїСЂР°РІР»РµРЅРёСЏ РЅР°РїСЂР°РІР»РµРЅРёРµРј РїРµСЂРµСЃС‹Р»РєРё, РїРѕС‚РѕРјСѓ РґР°РЅРЅС‹Р№ РєРѕРґ РєРѕРїРёСЂСѓРµС‚ СЃР°Рј РЅР° СЃРµР±СЏ РґР°РЅРЅС‹Рµ (СЂР°Р·РјРЅРѕР¶Р°РµС‚) */
+	/* РёСЃС…РѕРґРЅС‹Р№ СЂР°СЃС‚СЂ */
 	DMA2D->FGMAR = (uintptr_t) & framebuff [y0 + 0] [x0];
 	DMA2D->FGOR = (DMA2D->FGOR & ~ (DMA2D_FGOR_LO)) |
 		((DIM_X - w) << DMA2D_FGOR_LO_Pos) |
 		0;
-	/* целевой растр */
+	/* С†РµР»РµРІРѕР№ СЂР°СЃС‚СЂ */
 	DMA2D->OMAR = (uintptr_t) & framebuff [y0 + n] [x0];
 	DMA2D->OOR = (DMA2D->OOR & ~ (DMA2D_OOR_LO)) |
 		((DIM_X - w) << DMA2D_OOR_LO_Pos) |
 		0;
-	/* размер пересылаемого растра */
+	/* СЂР°Р·РјРµСЂ РїРµСЂРµСЃС‹Р»Р°РµРјРѕРіРѕ СЂР°СЃС‚СЂР° */
 	DMA2D->NLR = (DMA2D->NLR & ~ (DMA2D_NLR_NL | DMA2D_NLR_PL)) |
 		((h - n) << DMA2D_NLR_NL_Pos) |
 		(w << DMA2D_NLR_PL_Pos) |
 		0;
-	/* формат пикселя */
+	/* С„РѕСЂРјР°С‚ РїРёРєСЃРµР»СЏ */
 	DMA2D->FGPFCCR = (DMA2D->FGPFCCR & ~ (DMA2D_FGPFCCR_CM)) |
 		DMA2D_FGPFCCR_CM_VALUE |	/* Color mode - framebuffer pixel format */
 		0;
@@ -1221,13 +1221,13 @@ display_scroll_down(
 		1 * DMA2D_AMTCR_EN |
 		0;
 
-	/* запустить операцию */
+	/* Р·Р°РїСѓСЃС‚РёС‚СЊ РѕРїРµСЂР°С†РёСЋ */
 	DMA2D->CR = (DMA2D->CR & ~ (DMA2D_CR_MODE)) |
 		0 * DMA2D_CR_MODE_0 |	// 00: Memory-to-memory (FG fetch only)
 		1 * DMA2D_CR_START |
 		0;
 
-	/* ожидаем выполнения операции */
+	/* РѕР¶РёРґР°РµРј РІС‹РїРѕР»РЅРµРЅРёСЏ РѕРїРµСЂР°С†РёРё */
 	while ((DMA2D->CR & DMA2D_CR_START) != 0)
 		;
 
@@ -1247,36 +1247,36 @@ display_getreadystate(void)
 #endif /* defined (DMA2D) && LCDMODE_LTDC */
 }
 
-/* копирование содержимого окна с перекрытием для водопада */
+/* РєРѕРїРёСЂРѕРІР°РЅРёРµ СЃРѕРґРµСЂР¶РёРјРѕРіРѕ РѕРєРЅР° СЃ РїРµСЂРµРєСЂС‹С‚РёРµРј РґР»СЏ РІРѕРґРѕРїР°РґР° */
 void
 display_scroll_up(
-	uint_fast16_t x0,	// левый верхний угол окна
-	uint_fast16_t y0,	// левый верхний угол окна
-	uint_fast16_t w, 	// до 65535 пикселей - ширина окна
-	uint_fast16_t h, 	// до 65535 пикселей - высота окна
-	uint_fast16_t n,	// количество строк прокрутки
-	int_fast16_t hshift	// количество пиксеелей для сдвига влево (отрицательное число) или вправо (положительное).
+	uint_fast16_t x0,	// Р»РµРІС‹Р№ РІРµСЂС…РЅРёР№ СѓРіРѕР» РѕРєРЅР°
+	uint_fast16_t y0,	// Р»РµРІС‹Р№ РІРµСЂС…РЅРёР№ СѓРіРѕР» РѕРєРЅР°
+	uint_fast16_t w, 	// РґРѕ 65535 РїРёРєСЃРµР»РµР№ - С€РёСЂРёРЅР° РѕРєРЅР°
+	uint_fast16_t h, 	// РґРѕ 65535 РїРёРєСЃРµР»РµР№ - РІС‹СЃРѕС‚Р° РѕРєРЅР°
+	uint_fast16_t n,	// РєРѕР»РёС‡РµСЃС‚РІРѕ СЃС‚СЂРѕРє РїСЂРѕРєСЂСѓС‚РєРё
+	int_fast16_t hshift	// РєРѕР»РёС‡РµСЃС‚РІРѕ РїРёРєСЃРµРµР»РµР№ РґР»СЏ СЃРґРІРёРіР° РІР»РµРІРѕ (РѕС‚СЂРёС†Р°С‚РµР»СЊРЅРѕРµ С‡РёСЃР»Рѕ) РёР»Рё РІРїСЂР°РІРѕ (РїРѕР»РѕР¶РёС‚РµР»СЊРЅРѕРµ).
 	)
 {
 #if defined (DMA2D) && LCDMODE_LTDC
 #if LCDMODE_HORFILL
 
-	/* исходный растр */
+	/* РёСЃС…РѕРґРЅС‹Р№ СЂР°СЃС‚СЂ */
 	DMA2D->FGMAR = (uintptr_t) & framebuff [y0 + n] [x0];
 	DMA2D->FGOR = (DMA2D->FGOR & ~ (DMA2D_FGOR_LO)) |
 		((DIM_X - w) << DMA2D_FGOR_LO_Pos) |
 		0;
-	/* целевой растр */
+	/* С†РµР»РµРІРѕР№ СЂР°СЃС‚СЂ */
 	DMA2D->OMAR = (uintptr_t) & framebuff [y0 + 0] [x0];
 	DMA2D->OOR = (DMA2D->OOR & ~ (DMA2D_OOR_LO)) |
 		((DIM_X - w) << DMA2D_OOR_LO_Pos) |
 		0;
-	/* размер пересылаемого растра */
+	/* СЂР°Р·РјРµСЂ РїРµСЂРµСЃС‹Р»Р°РµРјРѕРіРѕ СЂР°СЃС‚СЂР° */
 	DMA2D->NLR = (DMA2D->NLR & ~ (DMA2D_NLR_NL | DMA2D_NLR_PL)) |
 		((h - n) << DMA2D_NLR_NL_Pos) |
 		(w << DMA2D_NLR_PL_Pos) |
 		0;
-	/* формат пикселя */
+	/* С„РѕСЂРјР°С‚ РїРёРєСЃРµР»СЏ */
 	DMA2D->FGPFCCR = (DMA2D->FGPFCCR & ~ (DMA2D_FGPFCCR_CM)) |
 		DMA2D_FGPFCCR_CM_VALUE |	/* Color mode - framebuffer pixel format */
 		0;
@@ -1287,13 +1287,13 @@ display_scroll_up(
 		1 * DMA2D_AMTCR_EN |
 		0;
 
-	/* запустить операцию */
+	/* Р·Р°РїСѓСЃС‚РёС‚СЊ РѕРїРµСЂР°С†РёСЋ */
 	DMA2D->CR = (DMA2D->CR & ~ (DMA2D_CR_MODE)) |
 		0 * DMA2D_CR_MODE_0 |	// 00: Memory-to-memory (FG fetch only)
 		1 * DMA2D_CR_START |
 		0;
 
-	/* ожидаем выполнения операции */
+	/* РѕР¶РёРґР°РµРј РІС‹РїРѕР»РЅРµРЅРёСЏ РѕРїРµСЂР°С†РёРё */
 	while ((DMA2D->CR & DMA2D_CR_START) != 0)
 		;
 
@@ -1303,7 +1303,7 @@ display_scroll_up(
 }
 
 
-/* индивидуальные функции драйвера дисплея - реализованы в соответствующем из файлов */
+/* РёРЅРґРёРІРёРґСѓР°Р»СЊРЅС‹Рµ С„СѓРЅРєС†РёРё РґСЂР°Р№РІРµСЂР° РґРёСЃРїР»РµСЏ - СЂРµР°Р»РёР·РѕРІР°РЅС‹ РІ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РµРј РёР· С„Р°Р№Р»РѕРІ */
 void display_clear(void)
 {
 	const COLOR_T bg = display_getbgcolor();
@@ -1364,7 +1364,7 @@ void display_gotoxy(uint_fast8_t x, uint_fast8_t y)
 	ASSERT(ltdc_second < DIM_SECOND);
 }
 
-// Координаты в пикселях
+// РљРѕРѕСЂРґРёРЅР°С‚С‹ РІ РїРёРєСЃРµР»СЏС…
 void display_plotfrom(uint_fast16_t x, uint_fast16_t y)
 {
 #if LCDMODE_ILI8961 || LCDMODE_LQ043T3DX02K
@@ -1380,7 +1380,7 @@ void display_plotfrom(uint_fast16_t x, uint_fast16_t y)
 }
 
 void display_plotstart(
-	uint_fast16_t height	// Высота окна в пикселях
+	uint_fast16_t height	// Р’С‹СЃРѕС‚Р° РѕРєРЅР° РІ РїРёРєСЃРµР»СЏС…
 	)
 {
 
@@ -1388,7 +1388,7 @@ void display_plotstart(
 
 void display_plot(
 	const PACKEDCOLOR_T * buffer, 
-	uint_fast16_t dx,	// Размеры окна в пикселях
+	uint_fast16_t dx,	// Р Р°Р·РјРµСЂС‹ РѕРєРЅР° РІ РїРёРєСЃРµР»СЏС…
 	uint_fast16_t dy
 	)
 {
@@ -1422,7 +1422,7 @@ void display_plotstop(void)
 
 }
 
-// самый маленький шрифт
+// СЃР°РјС‹Р№ РјР°Р»РµРЅСЊРєРёР№ С€СЂРёС„С‚
 void display_wrdata2_begin(void)
 {
 	ltdc_secondoffs = 0;
@@ -1442,24 +1442,24 @@ void display_put_char_small2(uint_fast8_t c, uint_fast8_t lowhalf)
 #endif /* LCDMODE_HORFILL */
 }
 
-// полоса индикатора
+// РїРѕР»РѕСЃР° РёРЅРґРёРєР°С‚РѕСЂР°
 void display_wrdatabar_begin(void)
 {
 	ltdc_secondoffs = 0;
 	ltdc_h = 8;
 }
 
-// Выдать восемь цветных пикселей, младший бит - самый верхний в растре
+// Р’С‹РґР°С‚СЊ РІРѕСЃРµРјСЊ С†РІРµС‚РЅС‹С… РїРёРєСЃРµР»РµР№, РјР»Р°РґС€РёР№ Р±РёС‚ - СЃР°РјС‹Р№ РІРµСЂС…РЅРёР№ РІ СЂР°СЃС‚СЂРµ
 void display_barcolumn(uint_fast8_t pattern)
 {
-	ltdc_vertical_pixN(pattern, 8);	// Выдать восемь цветных пикселей, младший бит - самый верхний в растре
+	ltdc_vertical_pixN(pattern, 8);	// Р’С‹РґР°С‚СЊ РІРѕСЃРµРјСЊ С†РІРµС‚РЅС‹С… РїРёРєСЃРµР»РµР№, РјР»Р°РґС€РёР№ Р±РёС‚ - СЃР°РјС‹Р№ РІРµСЂС…РЅРёР№ РІ СЂР°СЃС‚СЂРµ
 }
 
 void display_wrdatabar_end(void)
 {
 }
 
-// большие и средние цифры (частота)
+// Р±РѕР»СЊС€РёРµ Рё СЃСЂРµРґРЅРёРµ С†РёС„СЂС‹ (С‡Р°СЃС‚РѕС‚Р°)
 void display_wrdatabig_begin(void)
 {
 	ltdc_secondoffs = 0;
@@ -1488,7 +1488,7 @@ void display_wrdatabig_end(void)
 {
 }
 
-// обычный шрифт
+// РѕР±С‹С‡РЅС‹Р№ С€СЂРёС„С‚
 void display_wrdata_begin(void)
 {
 	ltdc_secondoffs = 0;
@@ -1510,10 +1510,10 @@ void display_wrdata_end(void)
 
 #if LCDMODE_LQ043T3DX02K || LCDMODE_AT070TN90 || LCDMODE_AT070TNA2
 
-// заглушки
+// Р·Р°РіР»СѓС€РєРё
 
-/* аппаратный сброс дисплея - перед инициализаций */
-/* вызывается при разрешённых прерываниях. */
+/* Р°РїРїР°СЂР°С‚РЅС‹Р№ СЃР±СЂРѕСЃ РґРёСЃРїР»РµСЏ - РїРµСЂРµРґ РёРЅРёС†РёР°Р»РёР·Р°С†РёР№ */
+/* РІС‹Р·С‹РІР°РµС‚СЃСЏ РїСЂРё СЂР°Р·СЂРµС€С‘РЅРЅС‹С… РїСЂРµСЂС‹РІР°РЅРёСЏС…. */
 void
 display_reset(void)
 {
@@ -1527,7 +1527,7 @@ display_reset(void)
 	board_update();
 	local_delay_ms(50); // Delay 50 ms
 }
-/* вызывается при разрешённых прерываниях. */
+/* РІС‹Р·С‹РІР°РµС‚СЃСЏ РїСЂРё СЂР°Р·СЂРµС€С‘РЅРЅС‹С… РїСЂРµСЂС‹РІР°РЅРёСЏС…. */
 void display_initialize(void)
 {
 }
@@ -1536,7 +1536,7 @@ void display_set_contrast(uint_fast8_t v)
 {
 }
 
-/* Разряжаем конденсаторы питания */
+/* Р Р°Р·СЂСЏР¶Р°РµРј РєРѕРЅРґРµРЅСЃР°С‚РѕСЂС‹ РїРёС‚Р°РЅРёСЏ */
 void display_discharge(void)
 {
 }

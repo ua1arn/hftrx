@@ -1,11 +1,11 @@
 /* $Id$ */
 //
-// Проект HF Dream Receiver (КВ приёмник мечты)
-// автор Гена Завидовский mgs2001@mail.ru
+// РџСЂРѕРµРєС‚ HF Dream Receiver (РљР’ РїСЂРёС‘РјРЅРёРє РјРµС‡С‚С‹)
+// Р°РІС‚РѕСЂ Р“РµРЅР° Р—Р°РІРёРґРѕРІСЃРєРёР№ mgs2001@mail.ru
 // UA1ARN
 //
 
-#include "hardware.h"	/* зависящие от процессора функции работы с портами */
+#include "hardware.h"	/* Р·Р°РІРёСЃСЏС‰РёРµ РѕС‚ РїСЂРѕС†РµСЃСЃРѕСЂР° С„СѓРЅРєС†РёРё СЂР°Р±РѕС‚С‹ СЃ РїРѕСЂС‚Р°РјРё */
 #include "keyboard.h"
 
 #include <string.h>
@@ -35,33 +35,33 @@ static unsigned long ulmax(
 
 // ATMega32 timers:
 // 8 bit timer0 - system ticks
-// 16 bit timer1 - прерывания с периодом 1/ELKEY_DISCRETE от длительности точки
-// 8 bit timer2 - beep (CW sidetone) - генерация сигнала самоконтроля на PD7(OC2)
+// 16 bit timer1 - РїСЂРµСЂС‹РІР°РЅРёСЏ СЃ РїРµСЂРёРѕРґРѕРј 1/ELKEY_DISCRETE РѕС‚ РґР»РёС‚РµР»СЊРЅРѕСЃС‚Рё С‚РѕС‡РєРё
+// 8 bit timer2 - beep (CW sidetone) - РіРµРЅРµСЂР°С†РёСЏ СЃРёРіРЅР°Р»Р° СЃР°РјРѕРєРѕРЅС‚СЂРѕР»СЏ РЅР° PD7(OC2)
 
 // ATMega644 timers:
 // 8 bit timer0 - system ticks
-// 16 bit timer1 - прерывания с периодом 1/ELKEY_DISCRETE от длительности точки
-// 8 bit timer2 - beep (CW sidetone) - генерация сигнала самоконтроля на PD7(OC2)
+// 16 bit timer1 - РїСЂРµСЂС‹РІР°РЅРёСЏ СЃ РїРµСЂРёРѕРґРѕРј 1/ELKEY_DISCRETE РѕС‚ РґР»РёС‚РµР»СЊРЅРѕСЃС‚Рё С‚РѕС‡РєРё
+// 8 bit timer2 - beep (CW sidetone) - РіРµРЅРµСЂР°С†РёСЏ СЃРёРіРЅР°Р»Р° СЃР°РјРѕРєРѕРЅС‚СЂРѕР»СЏ РЅР° PD7(OC2)
 // 16 bit timer3 - UNUSED (avaliable only on ATMega1284P)
 
 // ATMega328 timers:
-// 8 bit timer0 - beep (CW sidetone) - генерация сигнала самоконтроля на PD6(OC0A)
-// 16 bit timer1 - прерывания с периодом 1/ELKEY_DISCRETE от длительности точки
+// 8 bit timer0 - beep (CW sidetone) - РіРµРЅРµСЂР°С†РёСЏ СЃРёРіРЅР°Р»Р° СЃР°РјРѕРєРѕРЅС‚СЂРѕР»СЏ РЅР° PD6(OC0A)
+// 16 bit timer1 - РїСЂРµСЂС‹РІР°РЅРёСЏ СЃ РїРµСЂРёРѕРґРѕРј 1/ELKEY_DISCRETE РѕС‚ РґР»РёС‚РµР»СЊРЅРѕСЃС‚Рё С‚РѕС‡РєРё
 // 8 bit timer2 - system ticks
 
 // ATXMega timers:
 // TCC1: 1/ELKEY_DISCRETE dot length timer 
-// TCD1: beep (CW sidetone) - генерация сигнала самоконтроля
+// TCD1: beep (CW sidetone) - РіРµРЅРµСЂР°С†РёСЏ СЃРёРіРЅР°Р»Р° СЃР°РјРѕРєРѕРЅС‚СЂРѕР»СЏ
 // TCC0: system ticks
 
 // AT91SAM7Sxxx timers
 // TC0: LFM timer 
-// TC1: beep (CW sidetone) - генерация сигнала самоконтроля
+// TC1: beep (CW sidetone) - РіРµРЅРµСЂР°С†РёСЏ СЃРёРіРЅР°Р»Р° СЃР°РјРѕРєРѕРЅС‚СЂРѕР»СЏ
 // TC2: 1/ELKEY_DISCRETE dot length timer
 
 // ATSAMSSxxx timers
 // TC0: LFM timer 
-// TC1: beep (CW sidetone) - генерация сигнала самоконтроля
+// TC1: beep (CW sidetone) - РіРµРЅРµСЂР°С†РёСЏ СЃРёРіРЅР°Р»Р° СЃР°РјРѕРєРѕРЅС‚СЂРѕР»СЏ
 // TC2: 1/ELKEY_DISCRETE dot length timer
 // TC3: UNUSED 
 // TC4: UNUSED 
@@ -69,7 +69,7 @@ static unsigned long ulmax(
 
 // STM32 timers
 // TIM3: 1/ELKEY_DISCRETE dot length timer 
-// TIM4: beep (CW sidetone) - генерация сигнала самоконтроля
+// TIM4: beep (CW sidetone) - РіРµРЅРµСЂР°С†РёСЏ СЃРёРіРЅР°Р»Р° СЃР°РјРѕРєРѕРЅС‚СЂРѕР»СЏ
 
 // R7S721xxxx timers
 // OSTM1: 1/ELKEY_DISCRETE dot length timer 
@@ -78,69 +78,69 @@ static unsigned long ulmax(
 uint_fast32_t 
 NOINLINEAT
 calcdivround2(
-	uint_fast32_t ref,	/* частота на входе делителя, в герцах. */
-	uint_fast32_t freq	/* требуемая частота на выходе делителя, в герцах. */
+	uint_fast32_t ref,	/* С‡Р°СЃС‚РѕС‚Р° РЅР° РІС…РѕРґРµ РґРµР»РёС‚РµР»СЏ, РІ РіРµСЂС†Р°С…. */
+	uint_fast32_t freq	/* С‚СЂРµР±СѓРµРјР°СЏ С‡Р°СЃС‚РѕС‚Р° РЅР° РІС‹С…РѕРґРµ РґРµР»РёС‚РµР»СЏ, РІ РіРµСЂС†Р°С…. */
 	)
 {
 	return (ref < freq) ? 1 : ((ref + freq / 2) / freq);
 }
 
 #if CPUSTYLE_STM32F
-	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
+	// SysTick_Config СѓСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ SysTick_CTRL_CLKSOURCE_Msk - РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ С‡Р°СЃС‚РѕС‚Р° РїСЂРѕС†РµСЃСЃРѕСЂР°
 	static uint_fast32_t 
 	NOINLINEAT
 	calcdivround_systick(
-		uint_fast32_t freq		/* требуемая частота на выходе делителя, в герцах. */
+		uint_fast32_t freq		/* С‚СЂРµР±СѓРµРјР°СЏ С‡Р°СЃС‚РѕС‚Р° РЅР° РІС‹С…РѕРґРµ РґРµР»РёС‚РµР»СЏ, РІ РіРµСЂС†Р°С…. */
 		)
 	{
 		return calcdivround2(SYSTICK_FREQ, freq);
 	}
 
-	/* для устройств на шине APB1 (up to 36 MHz) */
+	/* РґР»СЏ СѓСЃС‚СЂРѕР№СЃС‚РІ РЅР° С€РёРЅРµ APB1 (up to 36 MHz) */
 	static uint_fast32_t 
 	NOINLINEAT
 	calcdivround_pclk1(
-		uint_fast32_t freq		/* требуемая частота на выходе делителя, в герцах. */
+		uint_fast32_t freq		/* С‚СЂРµР±СѓРµРјР°СЏ С‡Р°СЃС‚РѕС‚Р° РЅР° РІС‹С…РѕРґРµ РґРµР»РёС‚РµР»СЏ, РІ РіРµСЂС†Р°С…. */
 		)
 	{
 		return calcdivround2(PCLK1_FREQ, freq);
 	}
 
-	/* для устройствтактирующихся от HSI48 */
+	/* РґР»СЏ СѓСЃС‚СЂРѕР№СЃС‚РІС‚Р°РєС‚РёСЂСѓСЋС‰РёС…СЃСЏ РѕС‚ HSI48 */
 	static uint_fast32_t 
 	NOINLINEAT
 	calcdivround_hsi48(
-		uint_fast32_t freq		/* требуемая частота на выходе делителя, в герцах. */
+		uint_fast32_t freq		/* С‚СЂРµР±СѓРµРјР°СЏ С‡Р°СЃС‚РѕС‚Р° РЅР° РІС‹С…РѕРґРµ РґРµР»РёС‚РµР»СЏ, РІ РіРµСЂС†Р°С…. */
 		)
 	{
 		return calcdivround2(48000000uL, freq);
 	}
 
-	/* для устройств на шине APB1 (up to 36 MHz) - таймеры */
+	/* РґР»СЏ СѓСЃС‚СЂРѕР№СЃС‚РІ РЅР° С€РёРЅРµ APB1 (up to 36 MHz) - С‚Р°Р№РјРµСЂС‹ */
 	static uint_fast32_t 
 	NOINLINEAT
 	calcdivround_pclk1_timers(
-		uint_fast32_t freq		/* требуемая частота на выходе делителя, в герцах. */
+		uint_fast32_t freq		/* С‚СЂРµР±СѓРµРјР°СЏ С‡Р°СЃС‚РѕС‚Р° РЅР° РІС‹С…РѕРґРµ РґРµР»РёС‚РµР»СЏ, РІ РіРµСЂС†Р°С…. */
 		)
 	{
 		return calcdivround2(PCLK1_TIMERS_FREQ, freq);
 	}
 
-	/* для устройств на шине APB2 (up to 72 MHz) */
+	/* РґР»СЏ СѓСЃС‚СЂРѕР№СЃС‚РІ РЅР° С€РёРЅРµ APB2 (up to 72 MHz) */
 	static uint_fast32_t 
 	NOINLINEAT
 	calcdivround_pclk2(
-		uint_fast32_t freq		/* требуемая частота на выходе делителя, в герцах. */
+		uint_fast32_t freq		/* С‚СЂРµР±СѓРµРјР°СЏ С‡Р°СЃС‚РѕС‚Р° РЅР° РІС‹С…РѕРґРµ РґРµР»РёС‚РµР»СЏ, РІ РіРµСЂС†Р°С…. */
 		)
 	{
 		return calcdivround2(PCLK2_FREQ, freq);
 	}
 #if SIDETONE_TARGET_BIT != 0
-	/* для устройств на шине APB2 (up to 72 MHz) */
+	/* РґР»СЏ СѓСЃС‚СЂРѕР№СЃС‚РІ РЅР° С€РёРЅРµ APB2 (up to 72 MHz) */
 	static uint_fast32_t 
 	NOINLINEAT
 	calcdivround10_pclk2(
-		uint_fast32_t freq		/* требуемая частота на выходе делителя, в десятых долях герца. */
+		uint_fast32_t freq		/* С‚СЂРµР±СѓРµРјР°СЏ С‡Р°СЃС‚РѕС‚Р° РЅР° РІС‹С…РѕРґРµ РґРµР»РёС‚РµР»СЏ, РІ РґРµСЃСЏС‚С‹С… РґРѕР»СЏС… РіРµСЂС†Р°. */
 		)
 	{
 		return calcdivround2(10UL * PCLK2_FREQ, freq);
@@ -148,11 +148,11 @@ calcdivround2(
 #endif /* SIDETONE_TARGET_BIT != 0 */
 
 #if CPUSTYLE_STM32H7XX
-	/* для устройств тактирующихся от per_ck */
+	/* РґР»СЏ СѓСЃС‚СЂРѕР№СЃС‚РІ С‚Р°РєС‚РёСЂСѓСЋС‰РёС…СЃСЏ РѕС‚ per_ck */
 	static uint_fast32_t 
 	NOINLINEAT
 	calcdivround_per_ck(
-		uint_fast32_t freq		/* требуемая частота на выходе делителя, в герцах. */
+		uint_fast32_t freq		/* С‚СЂРµР±СѓРµРјР°СЏ С‡Р°СЃС‚РѕС‚Р° РЅР° РІС‹С…РѕРґРµ РґРµР»РёС‚РµР»СЏ, РІ РіРµСЂС†Р°С…. */
 		)
 	{
 		return calcdivround2(PER_CK_FREQ, freq);
@@ -161,19 +161,19 @@ calcdivround2(
 
 #elif CPUSTYLE_R7S721
 
-	/* для устройств тактирующихся от P0 clock */
+	/* РґР»СЏ СѓСЃС‚СЂРѕР№СЃС‚РІ С‚Р°РєС‚РёСЂСѓСЋС‰РёС…СЃСЏ РѕС‚ P0 clock */
 	static uint_fast32_t 
 	calcdivround_p0clock(
-		uint_fast32_t freq		/* требуемая частота на выходе делителя, в герцах. */
+		uint_fast32_t freq		/* С‚СЂРµР±СѓРµРјР°СЏ С‡Р°СЃС‚РѕС‚Р° РЅР° РІС‹С…РѕРґРµ РґРµР»РёС‚РµР»СЏ, РІ РіРµСЂС†Р°С…. */
 		)
 	{
 		return calcdivround2(P0CLOCK_FREQ, freq);
 	}
 
-	/* для устройств тактирующихся от P1 clock */
+	/* РґР»СЏ СѓСЃС‚СЂРѕР№СЃС‚РІ С‚Р°РєС‚РёСЂСѓСЋС‰РёС…СЃСЏ РѕС‚ P1 clock */
 	static uint_fast32_t 
 	calcdivround_p1clock(
-		uint_fast32_t freq		/* требуемая частота на выходе делителя, в герцах. */
+		uint_fast32_t freq		/* С‚СЂРµР±СѓРµРјР°СЏ С‡Р°СЃС‚РѕС‚Р° РЅР° РІС‹С…РѕРґРµ РґРµР»РёС‚РµР»СЏ, РІ РіРµСЂС†Р°С…. */
 		)
 	{
 		return calcdivround2(P1CLOCK_FREQ, freq);
@@ -186,7 +186,7 @@ calcdivround2(
 	static uint_fast32_t 
 	NOINLINEAT
 	calcdivround(
-		uint_fast32_t freq		/* требуемая частота на выходе делителя, в герцах. */
+		uint_fast32_t freq		/* С‚СЂРµР±СѓРµРјР°СЏ С‡Р°СЃС‚РѕС‚Р° РЅР° РІС‹С…РѕРґРµ РґРµР»РёС‚РµР»СЏ, РІ РіРµСЂС†Р°С…. */
 		)
 	{
 		return calcdivround2(CPU_FREQ, freq);
@@ -195,7 +195,7 @@ calcdivround2(
 	static uint_fast32_t 
 	NOINLINEAT
 	calcdivround_systick(
-		uint_fast32_t freq		/* требуемая частота на выходе делителя, в герцах. */
+		uint_fast32_t freq		/* С‚СЂРµР±СѓРµРјР°СЏ С‡Р°СЃС‚РѕС‚Р° РЅР° РІС‹С…РѕРґРµ РґРµР»РёС‚РµР»СЏ, РІ РіРµСЂС†Р°С…. */
 		)
 	{
 		return calcdivround2(CPU_FREQ, freq);
@@ -205,7 +205,7 @@ calcdivround2(
 	static uint_fast32_t 
 	NOINLINEAT
 	calcdivround10(
-		uint_fast32_t freq		/* требуемая частота на выходе делителя, в десятых долях герца. */
+		uint_fast32_t freq		/* С‚СЂРµР±СѓРµРјР°СЏ С‡Р°СЃС‚РѕС‚Р° РЅР° РІС‹С…РѕРґРµ РґРµР»РёС‚РµР»СЏ, РІ РґРµСЃСЏС‚С‹С… РґРѕР»СЏС… РіРµСЂС†Р°. */
 		)
 	{
 		return calcdivround2(10UL * CPU_FREQ, freq);
@@ -214,10 +214,10 @@ calcdivround2(
 
 #endif
 
- // возврат позиции старшего значащего бита в числе
+ // РІРѕР·РІСЂР°С‚ РїРѕР·РёС†РёРё СЃС‚Р°СЂС€РµРіРѕ Р·РЅР°С‡Р°С‰РµРіРѕ Р±РёС‚Р° РІ С‡РёСЃР»Рµ
 static uint_fast8_t 
 ilog2(
-	unsigned long v		// число на анализ
+	unsigned long v		// С‡РёСЃР»Рѕ РЅР° Р°РЅР°Р»РёР·
 	)
 {
 	uint_fast8_t n;
@@ -229,18 +229,18 @@ ilog2(
 }
 
 
-// Вариант функции для расчёта делителя определяющего скорость передачи
-// на UART AT91SAM7S, делитель для АЦП ATMega (значение делителя не требуется уменьшать на 1).
+// Р’Р°СЂРёР°РЅС‚ С„СѓРЅРєС†РёРё РґР»СЏ СЂР°СЃС‡С‘С‚Р° РґРµР»РёС‚РµР»СЏ РѕРїСЂРµРґРµР»СЏСЋС‰РµРіРѕ СЃРєРѕСЂРѕСЃС‚СЊ РїРµСЂРµРґР°С‡Рё
+// РЅР° UART AT91SAM7S, РґРµР»РёС‚РµР»СЊ РґР»СЏ РђР¦Рџ ATMega (Р·РЅР°С‡РµРЅРёРµ РґРµР»РёС‚РµР»СЏ РЅРµ С‚СЂРµР±СѓРµС‚СЃСЏ СѓРјРµРЅСЊС€Р°С‚СЊ РЅР° 1).
 static uint_fast8_t 
 //NOINLINEAT
 calcdivider(
-	uint_fast32_t divider, // ожидаемый коэффициент деления всей системы
-	uint_fast8_t width,			// количество разрядов в счётчике
-	uint_fast16_t taps,			// маска битов - выходов прескалера. 0x01 - означает bypass, 0x02 - делитель на 2... 0x400 - делитель на 1024
-	unsigned * dvalue,		// Значение для записи в регистр сравнения делителя
+	uint_fast32_t divider, // РѕР¶РёРґР°РµРјС‹Р№ РєРѕСЌС„С„РёС†РёРµРЅС‚ РґРµР»РµРЅРёСЏ РІСЃРµР№ СЃРёСЃС‚РµРјС‹
+	uint_fast8_t width,			// РєРѕР»РёС‡РµСЃС‚РІРѕ СЂР°Р·СЂСЏРґРѕРІ РІ СЃС‡С‘С‚С‡РёРєРµ
+	uint_fast16_t taps,			// РјР°СЃРєР° Р±РёС‚РѕРІ - РІС‹С…РѕРґРѕРІ РїСЂРµСЃРєР°Р»РµСЂР°. 0x01 - РѕР·РЅР°С‡Р°РµС‚ bypass, 0x02 - РґРµР»РёС‚РµР»СЊ РЅР° 2... 0x400 - РґРµР»РёС‚РµР»СЊ РЅР° 1024
+	unsigned * dvalue,		// Р—РЅР°С‡РµРЅРёРµ РґР»СЏ Р·Р°РїРёСЃРё РІ СЂРµРіРёСЃС‚СЂ СЃСЂР°РІРЅРµРЅРёСЏ РґРµР»РёС‚РµР»СЏ
 	uint_fast8_t substract)
 {
-	const uint_fast8_t rbmax = 16; //позиция старшего значащего бита в маске TAPS
+	const uint_fast8_t rbmax = 16; //РїРѕР·РёС†РёСЏ СЃС‚Р°СЂС€РµРіРѕ Р·РЅР°С‡Р°С‰РµРіРѕ Р±РёС‚Р° РІ РјР°СЃРєРµ TAPS
 	uint_fast8_t rb, rbi;
 	uint_fast16_t prescaler = 1U;
 
@@ -248,38 +248,38 @@ calcdivider(
 	{
 		if ((taps & prescaler) != 0)
 		{
-			// такой предделитель существует.
+			// С‚Р°РєРѕР№ РїСЂРµРґРґРµР»РёС‚РµР»СЊ СЃСѓС‰РµСЃС‚РІСѓРµС‚.
 			const uint_fast32_t modulus = ((divider + prescaler / 2) / prescaler) - substract;
 			if (ilog2(modulus) <= width)
 			{
-				// найдена подходящая комбинация
-				// rb - степень двойки - деление предделителя.
-				// rbi - номер кода для записи в регистр предделителя.
-				// modulus - что загрузить в регистр сравнения делителя.
+				// РЅР°Р№РґРµРЅР° РїРѕРґС…РѕРґСЏС‰Р°СЏ РєРѕРјР±РёРЅР°С†РёСЏ
+				// rb - СЃС‚РµРїРµРЅСЊ РґРІРѕР№РєРё - РґРµР»РµРЅРёРµ РїСЂРµРґРґРµР»РёС‚РµР»СЏ.
+				// rbi - РЅРѕРјРµСЂ РєРѕРґР° РґР»СЏ Р·Р°РїРёСЃРё РІ СЂРµРіРёСЃС‚СЂ РїСЂРµРґРґРµР»РёС‚РµР»СЏ.
+				// modulus - С‡С‚Рѕ Р·Р°РіСЂСѓР·РёС‚СЊ РІ СЂРµРіРёСЃС‚СЂ СЃСЂР°РІРЅРµРЅРёСЏ РґРµР»РёС‚РµР»СЏ.
 				* dvalue = (unsigned) modulus;
 				return rbi;
 			}
-			++ rbi;		// переходим к следующему предделителю в списке.
+			++ rbi;		// РїРµСЂРµС…РѕРґРёРј Рє СЃР»РµРґСѓСЋС‰РµРјСѓ РїСЂРµРґРґРµР»РёС‚РµР»СЋ РІ СЃРїРёСЃРєРµ.
 		}
 	}
-	// Не подобрать комбинацию прескалера и делителя для ожидаемого коэффициента деления.
-	* dvalue = (1U << width) - 1;	// просто пустышка - максимальный делитель
-	return (rbi - 1);	// если надо обраьатывать невозможность подбора - возврат rbmax
+	// РќРµ РїРѕРґРѕР±СЂР°С‚СЊ РєРѕРјР±РёРЅР°С†РёСЋ РїСЂРµСЃРєР°Р»РµСЂР° Рё РґРµР»РёС‚РµР»СЏ РґР»СЏ РѕР¶РёРґР°РµРјРѕРіРѕ РєРѕСЌС„С„РёС†РёРµРЅС‚Р° РґРµР»РµРЅРёСЏ.
+	* dvalue = (1U << width) - 1;	// РїСЂРѕСЃС‚Рѕ РїСѓСЃС‚С‹С€РєР° - РјР°РєСЃРёРјР°Р»СЊРЅС‹Р№ РґРµР»РёС‚РµР»СЊ
+	return (rbi - 1);	// РµСЃР»Рё РЅР°РґРѕ РѕР±СЂР°СЊР°С‚С‹РІР°С‚СЊ РЅРµРІРѕР·РјРѕР¶РЅРѕСЃС‚СЊ РїРѕРґР±РѕСЂР° - РІРѕР·РІСЂР°С‚ rbmax
 }
 
-static uint_fast32_t arm_hardware_stm32f7xx_pllq_initialize(void);	// Настроить выход PLLQ на 48 МГц
+static uint_fast32_t arm_hardware_stm32f7xx_pllq_initialize(void);	// РќР°СЃС‚СЂРѕРёС‚СЊ РІС‹С…РѕРґ PLLQ РЅР° 48 РњР“С†
 
 #if CPUSTYLE_AT91SAM7S
 
-	// Параметры функции calcdivider().
+	// РџР°СЂР°РјРµС‚СЂС‹ С„СѓРЅРєС†РёРё calcdivider().
 	enum 
 	{ 
 		AT91SAM7_TIMER_WIDTH = 16,	AT91SAM7_TIMER_TAPS = (1024 | 128 | 32 | 8 | 2), 
-		AT91SAM7_UART_BRGR_WIDTH = 16,	AT91SAM7_UART_BRGR_TAPS = (16),	// Регистр UART_BRGR не требует уменьшения на 1
-		AT91SAM7_USART_BRGR_WIDTH = 16,	AT91SAM7_USART_BRGR_TAPS = (16 | 8),	// Регистр US_BRGR не требует уменьшения на 1
+		AT91SAM7_UART_BRGR_WIDTH = 16,	AT91SAM7_UART_BRGR_TAPS = (16),	// Р РµРіРёСЃС‚СЂ UART_BRGR РЅРµ С‚СЂРµР±СѓРµС‚ СѓРјРµРЅСЊС€РµРЅРёСЏ РЅР° 1
+		AT91SAM7_USART_BRGR_WIDTH = 16,	AT91SAM7_USART_BRGR_TAPS = (16 | 8),	// Р РµРіРёСЃС‚СЂ US_BRGR РЅРµ С‚СЂРµР±СѓРµС‚ СѓРјРµРЅСЊС€РµРЅРёСЏ РЅР° 1
 		AT91SAM7_PITPIV_WIDTH = 20,	AT91SAM7_PITPIV_TAPS = (16),	// Periodic Interval Timer (PIT)
-		AT91SAM7_TWI_WIDTH = 8,	AT91SAM7_TWI_TAPS = (255),	// I2C interface (TWI) используется MCLK / 2
-		AT91SAM7_ADC_PRESCAL_WIDTH = 6, AT91SAM7_ADC_PRESCAL_TAPS = 2,	// используется MCLK / 2
+		AT91SAM7_TWI_WIDTH = 8,	AT91SAM7_TWI_TAPS = (255),	// I2C interface (TWI) РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ MCLK / 2
+		AT91SAM7_ADC_PRESCAL_WIDTH = 6, AT91SAM7_ADC_PRESCAL_TAPS = 2,	// РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ MCLK / 2
 		//
 		AT91SAM7_fillPAD
 	};
@@ -296,9 +296,9 @@ static uint_fast32_t arm_hardware_stm32f7xx_pllq_initialize(void);	// Настроить 
 
 #elif CPUSTYLE_STM32F
 
-	// Параметры функции calcdivider().
+	// РџР°СЂР°РјРµС‚СЂС‹ С„СѓРЅРєС†РёРё calcdivider().
 	// 
-	// В stm32 три вида таймеров - General-purpose (2..5, 9..14), Advanced-control (1 & 8) & Basic (6 & 7)
+	// Р’ stm32 С‚СЂРё РІРёРґР° С‚Р°Р№РјРµСЂРѕРІ - General-purpose (2..5, 9..14), Advanced-control (1 & 8) & Basic (6 & 7)
 	enum 
 	{ 
 		//STM32F_GP_TIMER_WIDTH = 16,	STM32F_GP_TIMER_TAPS = (65535), // General-purpose timers
@@ -323,25 +323,25 @@ static uint_fast32_t arm_hardware_stm32f7xx_pllq_initialize(void);	// Настроить 
 		STM32F_LTDC_DIV_WIDTH = 3, // valid values for RCC_PLLSAICFGR_PLLSAIR: 2..7
 			STM32F_LTDC_DIV_TAPS = (16 | 8 | 4 | 2),	// valid values for RCC_DCKCFGR_PLLSAIDIVR: 0: /2, 1: /4, 2: /8, 3: /16
 
-		//STM32F103_BRGR_WIDTH = 16,	STM32F103_BRGR_TAPS = (16 | 8),	// Регистр US_BRGR не требует уменьшения на 1
+		//STM32F103_BRGR_WIDTH = 16,	STM32F103_BRGR_TAPS = (16 | 8),	// Р РµРіРёСЃС‚СЂ US_BRGR РЅРµ С‚СЂРµР±СѓРµС‚ СѓРјРµРЅСЊС€РµРЅРёСЏ РЅР° 1
 		//STM32F103_PITPIV_WIDTH = 20,	STM32F103_PITPIV_TAPS = (16),	// Periodic Interval Timer (PIT)
 		//STM32F103_TWI_WIDTH = 8,	STM32F103_TWI_TAPS = (255),	// I2C interface (TWI)
-		//STM32F103_ADC_PRESCAL_WIDTH = 8, STM32F103_ADC_PRESCAL_TAPS = 2,	// используется MCLK / 2
+		//STM32F103_ADC_PRESCAL_WIDTH = 8, STM32F103_ADC_PRESCAL_TAPS = 2,	// РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ MCLK / 2
 		//
 		STM32F_fillPAD
 	};
 
 #elif CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
-	// Параметры функции calcdivider().
+	// РџР°СЂР°РјРµС‚СЂС‹ С„СѓРЅРєС†РёРё calcdivider().
 	enum 
 	{ 
 		ATSAM3S_TIMER_WIDTH = 16,	ATSAM3S_TIMER_TAPS = (1024 | 128 | 32 | 8 | 2), 
-		ATSAM3S_UART_BRGR_WIDTH = 16,	ATSAM3S_UART_BRGR_TAPS = (16),	// Регистр US_BRGR не требует уменьшения на 1
-		ATSAM3S_USART_BRGR_WIDTH = 16,	ATSAM3S_USART_BRGR_TAPS = (16 | 8),	// Регистр US_BRGR не требует уменьшения на 1
+		ATSAM3S_UART_BRGR_WIDTH = 16,	ATSAM3S_UART_BRGR_TAPS = (16),	// Р РµРіРёСЃС‚СЂ US_BRGR РЅРµ С‚СЂРµР±СѓРµС‚ СѓРјРµРЅСЊС€РµРЅРёСЏ РЅР° 1
+		ATSAM3S_USART_BRGR_WIDTH = 16,	ATSAM3S_USART_BRGR_TAPS = (16 | 8),	// Р РµРіРёСЃС‚СЂ US_BRGR РЅРµ С‚СЂРµР±СѓРµС‚ СѓРјРµРЅСЊС€РµРЅРёСЏ РЅР° 1
 		ATSAM3S_PITPIV_WIDTH = 20,	ATSAM3S_PITPIV_TAPS = (16),	// Periodic Interval Timer (PIT)
 		ATSAM3S_TWI_WIDTH = 8,	ATSAM3S_TWI_TAPS = (255),	// I2C interface (TWI)
-		ATSAM3S_ADC_PRESCAL_WIDTH = 8, ATSAM3S_ADC_PRESCAL_TAPS = 2,	// используется MCLK / 2
+		ATSAM3S_ADC_PRESCAL_WIDTH = 8, ATSAM3S_ADC_PRESCAL_TAPS = 2,	// РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ MCLK / 2
 		//
 		ATSAM3S_fillPAD
 	};
@@ -358,7 +358,7 @@ static uint_fast32_t arm_hardware_stm32f7xx_pllq_initialize(void);	// Настроить 
 
 #elif CPUSTYLE_ATMEGA
 
-	// Параметры функции calcdivider().
+	// РџР°СЂР°РјРµС‚СЂС‹ С„СѓРЅРєС†РёРё calcdivider().
 	enum 
 	{ 
 		ATMEGA_SPCR_WIDTH = 0,			ATMEGA_SPCR_TAPS = (128 | 64 | 32 | 16 | 8 | 4 | 2), 
@@ -378,8 +378,8 @@ static uint_fast32_t arm_hardware_stm32f7xx_pllq_initialize(void);	// Настроить 
 		ATMEGA8_fillPAD
 
 	};
-	// spcr и spsr - скорость SPI. Индексы соответствуют номерам битов в ATMEGA_SPCR_TAPS
-	// Document: 8272E–AVR–04/2013, Table 18-5. Relationship between SCK and the oscillator frequency.
+	// spcr Рё spsr - СЃРєРѕСЂРѕСЃС‚СЊ SPI. РРЅРґРµРєСЃС‹ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‚ РЅРѕРјРµСЂР°Рј Р±РёС‚РѕРІ РІ ATMEGA_SPCR_TAPS
+	// Document: 8272EвЂ“AVRвЂ“04/2013, Table 18-5. Relationship between SCK and the oscillator frequency.
 	static const FLASHMEM struct spcr_spsr_tag { uint_fast8_t spsr, spcr; } spcr_spsr [] =
 	{
 		{ (1U << SPI2X), 	(0U << SPR1) | (0U << SPR0), }, 	/* /2 */
@@ -392,13 +392,13 @@ static uint_fast32_t arm_hardware_stm32f7xx_pllq_initialize(void);	// Настроить 
 	};
 
 #elif CPUSTYLE_ATXMEGA
-	// Параметры функции calcdivider().
+	// РџР°СЂР°РјРµС‚СЂС‹ С„СѓРЅРєС†РёРё calcdivider().
 	enum 
 	{ 
 		ATXMEGA_TIMER_WIDTH = 16,	ATXMEGA_TIMER_TAPS = (1024 | 256 | 64 | 8 | 4 | 2 | 1),
 		ATXMEGA_SPIBR_WIDTH = 0,	ATXMEGA_SPIBR_TAPS = (128 | 64 | 32 | 16 | 8 | 4 | 2), 
 		ATXMEGA_UBR_WIDTH = 12,
-			ATXMEGA_UBR_GRADE = 3, // Допустимы значения 0 (без дробного делителя), 1, 2 и 3 (с периодом 8)	
+			ATXMEGA_UBR_GRADE = 3, // Р”РѕРїСѓСЃС‚РёРјС‹ Р·РЅР°С‡РµРЅРёСЏ 0 (Р±РµР· РґСЂРѕР±РЅРѕРіРѕ РґРµР»РёС‚РµР»СЏ), 1, 2 Рё 3 (СЃ РїРµСЂРёРѕРґРѕРј 8)	
 			ATXMEGA_UBR_TAPS = (16 | 8) >> ATXMEGA_UBR_GRADE, ATXMEGA_UBR_BSEL = (0 - ATXMEGA_UBR_GRADE),
 		//
 		ATXMEGA_fillPAD
@@ -420,7 +420,7 @@ static uint_fast32_t arm_hardware_stm32f7xx_pllq_initialize(void);	// Настроить 
 
 	enum 
 	{ 
-		R7S721_SCIF_SCBRR_WIDTH = 8,	R7S721_SCIF_SCBRR_TAPS = (2048 | 1024 | 512 | 256 | 128 | 64 | 32 | 16 ),	// Регистр SCIFx.SCBRR требует уменьшение на 1
+		R7S721_SCIF_SCBRR_WIDTH = 8,	R7S721_SCIF_SCBRR_TAPS = (2048 | 1024 | 512 | 256 | 128 | 64 | 32 | 16 ),	// Р РµРіРёСЃС‚СЂ SCIFx.SCBRR С‚СЂРµР±СѓРµС‚ СѓРјРµРЅСЊС€РµРЅРёРµ РЅР° 1
 		R7S721_RSPI_SPBR_WIDTH = 8,		R7S721_RSPI_SPBR_TAPS = (16 | 8 | 4 | 2),
 	};
 
@@ -481,7 +481,7 @@ hardware_uart1_set_speed(uint_fast32_t baudrate)
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
 	#if HARDWARE_ARM_USEUSART0
-		// Использование автоматического расчёта предделителя
+		// РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРіРѕ СЂР°СЃС‡С‘С‚Р° РїСЂРµРґРґРµР»РёС‚РµР»СЏ
 		unsigned value;
 		const uint_fast8_t prei = calcdivider(calcdivround(baudrate), ATSAM3S_USART_BRGR_WIDTH, ATSAM3S_USART_BRGR_TAPS, & value, 0);
 		USART0->US_BRGR = value;
@@ -494,7 +494,7 @@ hardware_uart1_set_speed(uint_fast32_t baudrate)
 			USART0->US_MR &= ~ US_MR_OVER;
 		}
 	#elif HARDWARE_ARM_USEUSART1
-		// Использование автоматического расчёта предделителя
+		// РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРіРѕ СЂР°СЃС‡С‘С‚Р° РїСЂРµРґРґРµР»РёС‚РµР»СЏ
 		unsigned value;
 		const uint_fast8_t prei = calcdivider(calcdivround(baudrate), ATSAM3S_USART_BRGR_WIDTH, ATSAM3S_USART_BRGR_TAPS, & value, 0);
 		USART1->US_BRGR = value;
@@ -508,12 +508,12 @@ hardware_uart1_set_speed(uint_fast32_t baudrate)
 		}
 
 	#elif HARDWARE_ARM_USEUART0
-		// Использование автоматического расчёта предделителя
+		// РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРіРѕ СЂР°СЃС‡С‘С‚Р° РїСЂРµРґРґРµР»РёС‚РµР»СЏ
 		unsigned value;
 		calcdivider(calcdivround(baudrate), ATSAM3S_UART_BRGR_WIDTH, ATSAM3S_UART_BRGR_TAPS, & value, 0);
 		UART0->UART_BRGR = value;
 	#elif HARDWARE_ARM_USEUART1
-		// Использование автоматического расчёта предделителя
+		// РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРіРѕ СЂР°СЃС‡С‘С‚Р° РїСЂРµРґРґРµР»РёС‚РµР»СЏ
 		unsigned value;
 		calcdivider(calcdivround(baudrate), ATSAM3S_UART_BRGR_WIDTH, ATSAM3S_UART_BRGR_TAPS, & value, 0);
 		UART1->UART_BRGR = value;
@@ -523,7 +523,7 @@ hardware_uart1_set_speed(uint_fast32_t baudrate)
 
 #elif CPUSTYLE_AT91SAM7S
 
-	// Использование автоматического расчёта предделителя
+	// РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРіРѕ СЂР°СЃС‡С‘С‚Р° РїСЂРµРґРґРµР»РёС‚РµР»СЏ
 	unsigned value;
 	const uint_fast8_t prei = calcdivider(calcdivround(baudrate), AT91SAM7_USART_BRGR_WIDTH, AT91SAM7_USART_BRGR_TAPS, & value, 0);
 	
@@ -553,7 +553,7 @@ hardware_uart1_set_speed(uint_fast32_t baudrate)
 
 #elif CPUSTYLE_ATMEGA_XXX4
 
-	// Использование автоматического расчёта предделителя
+	// РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРіРѕ СЂР°СЃС‡С‘С‚Р° РїСЂРµРґРґРµР»РёС‚РµР»СЏ
 	unsigned value;
 	const uint_fast8_t prei = calcdivider(calcdivround(baudrate), ATMEGA_UBR_WIDTH, ATMEGA_UBR_TAPS, & value, 1);
 
@@ -562,12 +562,12 @@ hardware_uart1_set_speed(uint_fast32_t baudrate)
 	else
 		UCSR0A &= ~ (1U << U2X0);
 
-	UBRR0 = value;	/* Значение получено уже уменьшенное на 1 */
+	UBRR0 = value;	/* Р—РЅР°С‡РµРЅРёРµ РїРѕР»СѓС‡РµРЅРѕ СѓР¶Рµ СѓРјРµРЅСЊС€РµРЅРЅРѕРµ РЅР° 1 */
 
 
 #elif CPUSTYLE_ATMEGA128
 
-	// Использование автоматического расчёта предделителя
+	// РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРіРѕ СЂР°СЃС‡С‘С‚Р° РїСЂРµРґРґРµР»РёС‚РµР»СЏ
 	unsigned value;
 	const uint_fast8_t prei = calcdivider(calcdivround(baudrate), ATMEGA_UBR_WIDTH, ATMEGA_UBR_TAPS, & value, 1);
 
@@ -576,12 +576,12 @@ hardware_uart1_set_speed(uint_fast32_t baudrate)
 	else
 		UCSR0A &= ~ (1U << U2X0);
 
-	UBRR0H = (value >> 8) & 0xff;	/* Значение получено уже уменьшенное на 1 */
+	UBRR0H = (value >> 8) & 0xff;	/* Р—РЅР°С‡РµРЅРёРµ РїРѕР»СѓС‡РµРЅРѕ СѓР¶Рµ СѓРјРµРЅСЊС€РµРЅРЅРѕРµ РЅР° 1 */
 	UBRR0L = value & 0xff;
 
 #elif CPUSTYLE_ATMEGA
 
-	// Использование автоматического расчёта предделителя
+	// РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРіРѕ СЂР°СЃС‡С‘С‚Р° РїСЂРµРґРґРµР»РёС‚РµР»СЏ
 	unsigned value;
 	const uint_fast8_t prei = calcdivider(calcdivround(baudrate), ATMEGA_UBR_WIDTH, ATMEGA_UBR_TAPS, & value, 1);
 
@@ -590,27 +590,27 @@ hardware_uart1_set_speed(uint_fast32_t baudrate)
 	else
 		UCSRA &= ~ (1U << U2X);
 
-	UBRRH = (value >> 8) & 0xff;	/* Значение получено уже уменьшенное на 1 */
+	UBRRH = (value >> 8) & 0xff;	/* Р—РЅР°С‡РµРЅРёРµ РїРѕР»СѓС‡РµРЅРѕ СѓР¶Рµ СѓРјРµРЅСЊС€РµРЅРЅРѕРµ РЅР° 1 */
 	UBRRL = value & 0xff;
 
 #elif CPUSTYLE_ATXMEGAXXXA4
 
-	// Использование автоматического расчёта предделителя
+	// РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРіРѕ СЂР°СЃС‡С‘С‚Р° РїСЂРµРґРґРµР»РёС‚РµР»СЏ
 	unsigned value;
 	const uint_fast8_t prei = calcdivider(calcdivround(baudrate), ATXMEGA_UBR_WIDTH, ATXMEGA_UBR_TAPS, & value, 1);
 	if (prei == 0)
 		USARTE0.CTRLB |= USART_CLK2X_bm;
 	else
 		USARTE0.CTRLB &= ~USART_CLK2X_bm;
-	// todo: проверить требование к порядку обращения к портам 
-	USARTE0.BAUDCTRLA = (value & 0xff);	/* Значение получено уже уменьшенное на 1 */
+	// todo: РїСЂРѕРІРµСЂРёС‚СЊ С‚СЂРµР±РѕРІР°РЅРёРµ Рє РїРѕСЂСЏРґРєСѓ РѕР±СЂР°С‰РµРЅРёСЏ Рє РїРѕСЂС‚Р°Рј 
+	USARTE0.BAUDCTRLA = (value & 0xff);	/* Р—РЅР°С‡РµРЅРёРµ РїРѕР»СѓС‡РµРЅРѕ СѓР¶Рµ СѓРјРµРЅСЊС€РµРЅРЅРѕРµ РЅР° 1 */
 	USARTE0.BAUDCTRLB = (ATXMEGA_UBR_BSEL << 4) | ((value >> 8) & 0x0f);
 
 #elif CPUSTYLE_STM32F
 
 	// uart1 on apb2 up to 72/36 MHz
 
-	USART1->BRR = calcdivround_pclk2(baudrate);		// младшие 4 бита - это дробная часть.
+	USART1->BRR = calcdivround_pclk2(baudrate);		// РјР»Р°РґС€РёРµ 4 Р±РёС‚Р° - СЌС‚Рѕ РґСЂРѕР±РЅР°СЏ С‡Р°СЃС‚СЊ.
 
 #elif CPUSTYPE_TMS320F2833X
 
@@ -622,7 +622,7 @@ hardware_uart1_set_speed(uint_fast32_t baudrate)
 
 #elif CPUSTYLE_R7S721
 
-	// Использование автоматического расчёта предделителя
+	// РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРіРѕ СЂР°СЃС‡С‘С‚Р° РїСЂРµРґРґРµР»РёС‚РµР»СЏ
 	unsigned value;
 	const uint_fast8_t prei = calcdivider(calcdivround_p1clock(baudrate), R7S721_SCIF_SCBRR_WIDTH, R7S721_SCIF_SCBRR_TAPS, & value, 1);
 
@@ -652,7 +652,7 @@ hardware_uart2_set_speed(uint_fast32_t baudrate)
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
 	#if HARDWARE_ARM_USEUSART0
-		// Использование автоматического расчёта предделителя
+		// РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРіРѕ СЂР°СЃС‡С‘С‚Р° РїСЂРµРґРґРµР»РёС‚РµР»СЏ
 		unsigned value;
 		const uint_fast8_t prei = calcdivider(calcdivround(baudrate), ATSAM3S_USART_BRGR_WIDTH, ATSAM3S_USART_BRGR_TAPS, & value, 0);
 		USART0->US_BRGR = value;
@@ -665,7 +665,7 @@ hardware_uart2_set_speed(uint_fast32_t baudrate)
 			USART0->US_MR &= ~ US_MR_OVER;
 		}
 	#elif HARDWARE_ARM_USEUSART1
-		// Использование автоматического расчёта предделителя
+		// РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРіРѕ СЂР°СЃС‡С‘С‚Р° РїСЂРµРґРґРµР»РёС‚РµР»СЏ
 		unsigned value;
 		const uint_fast8_t prei = calcdivider(calcdivround(baudrate), ATSAM3S_USART_BRGR_WIDTH, ATSAM3S_USART_BRGR_TAPS, & value, 0);
 		USART1->US_BRGR = value;
@@ -679,12 +679,12 @@ hardware_uart2_set_speed(uint_fast32_t baudrate)
 		}
 
 	#elif HARDWARE_ARM_USEUART0
-		// Использование автоматического расчёта предделителя
+		// РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРіРѕ СЂР°СЃС‡С‘С‚Р° РїСЂРµРґРґРµР»РёС‚РµР»СЏ
 		unsigned value;
 		calcdivider(calcdivround(baudrate), ATSAM3S_UART_BRGR_WIDTH, ATSAM3S_UART_BRGR_TAPS, & value, 0);
 		UART0->UART_BRGR = value;
 	#elif HARDWARE_ARM_USEUART1
-		// Использование автоматического расчёта предделителя
+		// РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРіРѕ СЂР°СЃС‡С‘С‚Р° РїСЂРµРґРґРµР»РёС‚РµР»СЏ
 		unsigned value;
 		calcdivider(calcdivround(baudrate), ATSAM3S_UART_BRGR_WIDTH, ATSAM3S_UART_BRGR_TAPS, & value, 0);
 		UART1->UART_BRGR = value;
@@ -694,7 +694,7 @@ hardware_uart2_set_speed(uint_fast32_t baudrate)
 
 #elif CPUSTYLE_AT91SAM7S
 
-	// Использование автоматического расчёта предделителя
+	// РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРіРѕ СЂР°СЃС‡С‘С‚Р° РїСЂРµРґРґРµР»РёС‚РµР»СЏ
 	unsigned value;
 	const uint_fast8_t prei = calcdivider(calcdivround(baudrate), AT91SAM7_USART_BRGR_WIDTH, AT91SAM7_USART_BRGR_TAPS, & value, 0);
 	
@@ -724,7 +724,7 @@ hardware_uart2_set_speed(uint_fast32_t baudrate)
 
 #elif CPUSTYLE_ATMEGA_XXX4
 
-	// Использование автоматического расчёта предделителя
+	// РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРіРѕ СЂР°СЃС‡С‘С‚Р° РїСЂРµРґРґРµР»РёС‚РµР»СЏ
 	unsigned value;
 	const uint_fast8_t prei = calcdivider(calcdivround(baudrate), ATMEGA_UBR_WIDTH, ATMEGA_UBR_TAPS, & value, 1);
 
@@ -733,12 +733,12 @@ hardware_uart2_set_speed(uint_fast32_t baudrate)
 	else
 		UCSR1A &= ~ (1U << U2X1);
 
-	UBRR1 = value;	/* Значение получено уже уменьшенное на 1 */
+	UBRR1 = value;	/* Р—РЅР°С‡РµРЅРёРµ РїРѕР»СѓС‡РµРЅРѕ СѓР¶Рµ СѓРјРµРЅСЊС€РµРЅРЅРѕРµ РЅР° 1 */
 
 
 #elif CPUSTYLE_ATMEGA128
 
-	// Использование автоматического расчёта предделителя
+	// РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРіРѕ СЂР°СЃС‡С‘С‚Р° РїСЂРµРґРґРµР»РёС‚РµР»СЏ
 	unsigned value;
 	const uint_fast8_t prei = calcdivider(calcdivround(baudrate), ATMEGA_UBR_WIDTH, ATMEGA_UBR_TAPS, & value, 1);
 
@@ -747,7 +747,7 @@ hardware_uart2_set_speed(uint_fast32_t baudrate)
 	else
 		UCSR1A &= ~ (1U << U2X1);
 
-	UBRR1H = (value >> 8) & 0xff;	/* Значение получено уже уменьшенное на 1 */
+	UBRR1H = (value >> 8) & 0xff;	/* Р—РЅР°С‡РµРЅРёРµ РїРѕР»СѓС‡РµРЅРѕ СѓР¶Рµ СѓРјРµРЅСЊС€РµРЅРЅРѕРµ РЅР° 1 */
 	UBRR1L = value & 0xff;
 
 #elif CPUSTYLE_ATMEGA
@@ -756,22 +756,22 @@ hardware_uart2_set_speed(uint_fast32_t baudrate)
 
 #elif CPUSTYLE_ATXMEGAXXXA4
 
-	// Использование автоматического расчёта предделителя
+	// РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРіРѕ СЂР°СЃС‡С‘С‚Р° РїСЂРµРґРґРµР»РёС‚РµР»СЏ
 	unsigned value;
 	const uint_fast8_t prei = calcdivider(calcdivround(baudrate), ATXMEGA_UBR_WIDTH, ATXMEGA_UBR_TAPS, & value, 1);
 	if (prei == 0)
 		USARTE1.CTRLB |= USART_CLK2X_bm;
 	else
 		USARTE1.CTRLB &= ~USART_CLK2X_bm;
-	// todo: проверить требование к порядку обращения к портам 
-	USARTE1.BAUDCTRLA = (value & 0xff);	/* Значение получено уже уменьшенное на 1 */
+	// todo: РїСЂРѕРІРµСЂРёС‚СЊ С‚СЂРµР±РѕРІР°РЅРёРµ Рє РїРѕСЂСЏРґРєСѓ РѕР±СЂР°С‰РµРЅРёСЏ Рє РїРѕСЂС‚Р°Рј 
+	USARTE1.BAUDCTRLA = (value & 0xff);	/* Р—РЅР°С‡РµРЅРёРµ РїРѕР»СѓС‡РµРЅРѕ СѓР¶Рµ СѓРјРµРЅСЊС€РµРЅРЅРѕРµ РЅР° 1 */
 	USARTE1.BAUDCTRLB = (ATXMEGA_UBR_BSEL << 4) | ((value >> 8) & 0x0f);
 
 #elif CPUSTYLE_STM32F
 
 	// uart2 on apb1
 
-	USART2->BRR = calcdivround_pclk1(baudrate);		// младшие 4 бита - это дробная часть.
+	USART2->BRR = calcdivround_pclk1(baudrate);		// РјР»Р°РґС€РёРµ 4 Р±РёС‚Р° - СЌС‚Рѕ РґСЂРѕР±РЅР°СЏ С‡Р°СЃС‚СЊ.
 
 #elif CPUSTYPE_TMS320F2833X
 
@@ -783,7 +783,7 @@ hardware_uart2_set_speed(uint_fast32_t baudrate)
 
 #elif CPUSTYLE_R7S721
 
-	// Использование автоматического расчёта предделителя
+	// РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРіРѕ СЂР°СЃС‡С‘С‚Р° РїСЂРµРґРґРµР»РёС‚РµР»СЏ
 	unsigned value;
 	const uint_fast8_t prei = calcdivider(calcdivround_p1clock(baudrate), R7S721_SCIF_SCBRR_WIDTH, R7S721_SCIF_SCBRR_TAPS, & value, 1);
 
@@ -810,7 +810,7 @@ void hardware_twi_master_configure(void)
 {
 #if CPUSTYLE_ATMEGA
 
-	// Использование автоматического расчёта предделителя
+	// РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРіРѕ СЂР°СЃС‡С‘С‚Р° РїСЂРµРґРґРµР»РёС‚РµР»СЏ
 	unsigned value;
 	const uint_fast8_t prei = calcdivider(calcdivround(SCL_CLOCK * 2) - 8, ATMEGA_TWBR_WIDTH, ATMEGA_TWBR_TAPS, & value, 0);
 
@@ -828,7 +828,7 @@ void hardware_twi_master_configure(void)
 
     // Set master mode
     AT91C_BASE_TWI->TWI_CR = AT91C_TWI_MSEN;
-	// Использование автоматического расчёта предделителя
+	// РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРіРѕ СЂР°СЃС‡С‘С‚Р° РїСЂРµРґРґРµР»РёС‚РµР»СЏ
 	unsigned value;
 	const uint_fast8_t prei = calcdivider(calcdivround(SCL_CLOCK * 2) - 3, AT91SAM7_TWI_WIDTH, AT91SAM7_TWI_TAPS, & value, 0);
 
@@ -836,7 +836,7 @@ void hardware_twi_master_configure(void)
 
 #elif CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
-	PMC->PMC_PCER0 = (1UL << ID_TWI0);	 // разрешить тактированние этого блока
+	PMC->PMC_PCER0 = (1UL << ID_TWI0);	 // СЂР°Р·СЂРµС€РёС‚СЊ С‚Р°РєС‚РёСЂРѕРІР°РЅРЅРёРµ СЌС‚РѕРіРѕ Р±Р»РѕРєР°
 	//
     // Reset the TWI
     TWI0->TWI_CR = TWI_CR_SWRST;
@@ -844,7 +844,7 @@ void hardware_twi_master_configure(void)
 
     // Set master mode
     TWI0->TWI_CR = TWI_CR_MSEN;
-	// Использование автоматического расчёта предделителя
+	// РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРіРѕ СЂР°СЃС‡С‘С‚Р° РїСЂРµРґРґРµР»РёС‚РµР»СЏ
 	unsigned value;
 	const uint_fast8_t prei = calcdivider(calcdivround(SCL_CLOCK * 2) - 4, ATSAM3S_TWI_WIDTH, ATSAM3S_TWI_TAPS, & value, 1);
 	//prei = 0;
@@ -860,13 +860,13 @@ void hardware_twi_master_configure(void)
 
 #elif CPUSTYLE_STM32F1XX || CPUSTYLE_STM32F4XX
 
-	//конфигурирую непосредствено І2С
-	RCC->APB1ENR |= (RCC_APB1ENR_I2C1EN); //вкл тактирование контроллера I2C
+	//РєРѕРЅС„РёРіСѓСЂРёСЂСѓСЋ РЅРµРїРѕСЃСЂРµРґСЃС‚РІРµРЅРѕ Р†2РЎ
+	RCC->APB1ENR |= (RCC_APB1ENR_I2C1EN); //РІРєР» С‚Р°РєС‚РёСЂРѕРІР°РЅРёРµ РєРѕРЅС‚СЂРѕР»Р»РµСЂР° I2C
 	__DSB();
 
 	I2C1->CR1 |= I2C_CR1_SWRST;
 	I2C1->CR1 &= ~ I2C_CR1_SWRST;
-	I2C1->CR1 &= ~ I2C_CR1_PE; // все конфигурации необходимо проводить только со сброшеным битом PE
+	I2C1->CR1 &= ~ I2C_CR1_PE; // РІСЃРµ РєРѕРЅС„РёРіСѓСЂР°С†РёРё РЅРµРѕР±С…РѕРґРёРјРѕ РїСЂРѕРІРѕРґРёС‚СЊ С‚РѕР»СЊРєРѕ СЃРѕ СЃР±СЂРѕС€РµРЅС‹Рј Р±РёС‚РѕРј PE
 
 /*
 	The FREQ bits must be configured with the APB clock frequency value (I2C peripheral
@@ -882,40 +882,40 @@ void hardware_twi_master_configure(void)
 		0;
 	// (1000 ns / 125 ns = 8 + 1)
 	// (1000 ns / 22 ns = 45 + 1)
-	I2C1->TRISE = 46; //время установления логического уровня в количестве цыклах тактового генератора I2C
+	I2C1->TRISE = 46; //РІСЂРµРјСЏ СѓСЃС‚Р°РЅРѕРІР»РµРЅРёСЏ Р»РѕРіРёС‡РµСЃРєРѕРіРѕ СѓСЂРѕРІРЅСЏ РІ РєРѕР»РёС‡РµСЃС‚РІРµ С†С‹РєР»Р°С… С‚Р°РєС‚РѕРІРѕРіРѕ РіРµРЅРµСЂР°С‚РѕСЂР° I2C
 	
 	I2C1->CCR = (I2C1->CCR & ~ (I2C_CCR_CCR | I2C_CCR_FS | I2C_CCR_DUTY)) |
-		(calcdivround_pclk1(SCL_CLOCK * 25) & I2C_CCR_CCR) |	// Делитель для получения 10 МГц (400 кHz * 25)
+		(calcdivround_pclk1(SCL_CLOCK * 25) & I2C_CCR_CCR) |	// Р”РµР»РёС‚РµР»СЊ РґР»СЏ РїРѕР»СѓС‡РµРЅРёСЏ 10 РњР“С† (400 РєHz * 25)
 	#if SCL_CLOCK == 400000UL
 		I2C_CCR_FS | 
 		I2C_CCR_DUTY | // T high = 9 * CCR * TPCLK1, T low = 16 * CCR * TPCLK1: full cycle = 25 * CCR * TPCLK1
 	#endif /* SCL_CLOCK == 400000UL */
 		0;
 
-	I2C1->CR1 |= I2C_CR1_ACK | I2C_CR1_PE; // включаю тактирование переферии І2С
+	I2C1->CR1 |= I2C_CR1_ACK | I2C_CR1_PE; // РІРєР»СЋС‡Р°СЋ С‚Р°РєС‚РёСЂРѕРІР°РЅРёРµ РїРµСЂРµС„РµСЂРёРё Р†2РЎ
 
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX
 
-	//конфигурирую непосредствено І2С
-	RCC->APB1ENR |= (RCC_APB1ENR_I2C1EN); //вкл тактирование контроллера I2C
+	//РєРѕРЅС„РёРіСѓСЂРёСЂСѓСЋ РЅРµРїРѕСЃСЂРµРґСЃС‚РІРµРЅРѕ Р†2РЎ
+	RCC->APB1ENR |= (RCC_APB1ENR_I2C1EN); //РІРєР» С‚Р°РєС‚РёСЂРѕРІР°РЅРёРµ РєРѕРЅС‚СЂРѕР»Р»РµСЂР° I2C
 	__DSB();
     // set I2C1 clock to PCLCK (72/64/36 MHz)
     RCC->CFGR3 |= RCC_CFGR3_I2C1SW;		// PCLK1_FREQ or PCLK2_FREQ (PCLK of this BUS, PCLK1) selected as I2C spi clock source
 
 
-	I2C1->CR1 &= ~ I2C_CR1_PE; // все конфигурации необходимо проводить только со сброшеным битом PE
+	I2C1->CR1 &= ~ I2C_CR1_PE; // РІСЃРµ РєРѕРЅС„РёРіСѓСЂР°С†РёРё РЅРµРѕР±С…РѕРґРёРјРѕ РїСЂРѕРІРѕРґРёС‚СЊ С‚РѕР»СЊРєРѕ СЃРѕ СЃР±СЂРѕС€РµРЅС‹Рј Р±РёС‚РѕРј PE
 
-	//I2C1->CR2 = (I2C1->CR2 & ~I2C_CR2_FREQ) | I2C_CR2_FREQ_0 * ( PCLK2_FREQ / SCL_CLOCK); // частота тактирования модуля I2C1 до делителя равна FREQ_IN
+	//I2C1->CR2 = (I2C1->CR2 & ~I2C_CR2_FREQ) | I2C_CR2_FREQ_0 * ( PCLK2_FREQ / SCL_CLOCK); // С‡Р°СЃС‚РѕС‚Р° С‚Р°РєС‚РёСЂРѕРІР°РЅРёСЏ РјРѕРґСѓР»СЏ I2C1 РґРѕ РґРµР»РёС‚РµР»СЏ СЂР°РІРЅР° FREQ_IN
 	//I2C1->CR2 = I2C_CR2_FREQ_0 * 4; //255; // |= I2C_CR2_FREQ;	// debug
 
 	I2C1->TIMINGR = (I2C1->TIMINGR & ~ I2C_TIMINGR_PRESC) | (4UL << 28);
 
 	//I2C1->CCR &= ~I2C_CCR_CCR;
-	//I2C1->CCR |= (1000/(2*40000)) * ((I2C1->CR2&I2C_CR2_FREQ) / I2C_CR2_FREQ_0); // конечный коэффциент деления
+	//I2C1->CCR |= (1000/(2*40000)) * ((I2C1->CR2&I2C_CR2_FREQ) / I2C_CR2_FREQ_0); // РєРѕРЅРµС‡РЅС‹Р№ РєРѕСЌС„С„С†РёРµРЅС‚ РґРµР»РµРЅРёСЏ
 	////I2C1->CCR = 40; //36; // / 4;	//|= I2C_CCR_CCR;	// debug
 	//I2C1->CCR |= I2C_CCR_FS;
 
-	//I2C1->TRISE = 9; //время установления логического уровня в количестве циклов тактового генератора I2C
+	//I2C1->TRISE = 9; //РІСЂРµРјСЏ СѓСЃС‚Р°РЅРѕРІР»РµРЅРёСЏ Р»РѕРіРёС‡РµСЃРєРѕРіРѕ СѓСЂРѕРІРЅСЏ РІ РєРѕР»РёС‡РµСЃС‚РІРµ С†РёРєР»РѕРІ С‚Р°РєС‚РѕРІРѕРіРѕ РіРµРЅРµСЂР°С‚РѕСЂР° I2C
 
     // disable analog filter
     I2C1->CR1 |= I2C_CR1_ANFOFF;
@@ -924,11 +924,11 @@ void hardware_twi_master_configure(void)
     const uint_fast8_t scldel = 5;
     I2C1->TIMINGR = 0x30000C19 | ((scldel & 0x0F) << 20) | ((sdadel & 0x0F) << 16);
 
-	I2C1->CR1 |= I2C_CR1_PE; // включаю тактирование периферии І2С
+	I2C1->CR1 |= I2C_CR1_PE; // РІРєР»СЋС‡Р°СЋ С‚Р°РєС‚РёСЂРѕРІР°РЅРёРµ РїРµСЂРёС„РµСЂРёРё Р†2РЎ
 
 #elif CPUSTYLE_STM32F7XX
-	//конфигурирую непосредствено І2С
-	RCC->APB1ENR |= (RCC_APB1ENR_I2C1EN); //вкл тактирование контроллера I2C
+	//РєРѕРЅС„РёРіСѓСЂРёСЂСѓСЋ РЅРµРїРѕСЃСЂРµРґСЃС‚РІРµРЅРѕ Р†2РЎ
+	RCC->APB1ENR |= (RCC_APB1ENR_I2C1EN); //РІРєР» С‚Р°РєС‚РёСЂРѕРІР°РЅРёРµ РєРѕРЅС‚СЂРѕР»Р»РµСЂР° I2C
 	__DSB();
 
 	// Disable the I2Cx peripheral
@@ -939,7 +939,7 @@ void hardware_twi_master_configure(void)
 	// Set timings. Asuming I2CCLK is 50 MHz (APB1 clock source)
 	I2C1->TIMINGR = 
 		//0x00912732 |		// Discovery BSP code from ST examples
-		0x00913742 |		// подобрано для 400 кГц
+		0x00913742 |		// РїРѕРґРѕР±СЂР°РЅРѕ РґР»СЏ 400 РєР“С†
 		4 * (1uL << I2C_TIMINGR_PRESC_Pos) |			// prescaler, was: 0
 		0;
 
@@ -961,8 +961,8 @@ void hardware_twi_master_configure(void)
 	I2C1->CR1 |= I2C_CR1_PE;
 
 #elif CPUSTYLE_STM32H7XX
-	//конфигурирую непосредствено І2С
-	RCC->APB1LENR |= (RCC_APB1LENR_I2C1EN); //вкл тактирование контроллера I2C
+	//РєРѕРЅС„РёРіСѓСЂРёСЂСѓСЋ РЅРµРїРѕСЃСЂРµРґСЃС‚РІРµРЅРѕ Р†2РЎ
+	RCC->APB1LENR |= (RCC_APB1LENR_I2C1EN); //РІРєР» С‚Р°РєС‚РёСЂРѕРІР°РЅРёРµ РєРѕРЅС‚СЂРѕР»Р»РµСЂР° I2C
 	__DSB();
 
 	// Disable the I2Cx peripheral
@@ -973,7 +973,7 @@ void hardware_twi_master_configure(void)
 	// Set timings. Asuming I2CCLK is 50 MHz (APB1 clock source)
 	I2C1->TIMINGR = 
 		//0x00912732 |		// Discovery BSP code from ST examples
-		0x00913742 |		// подобрано для 400 кГц
+		0x00913742 |		// РїРѕРґРѕР±СЂР°РЅРѕ РґР»СЏ 400 РєР“С†
 		4 * (1uL << I2C_TIMINGR_PRESC_Pos) |			// prescaler, was: 0
 		0;
 
@@ -1002,30 +1002,30 @@ void hardware_twi_master_configure(void)
 #endif /* WITHTWIHW */
 
 #if WITHCPUADCHW
-static void hardware_adc_startonescan(void);		// хотя бы один вход (s-метр) есть.
+static void hardware_adc_startonescan(void);		// С…РѕС‚СЏ Р±С‹ РѕРґРёРЅ РІС…РѕРґ (s-РјРµС‚СЂ) РµСЃС‚СЊ.
 #endif /* WITHCPUADCHW */
 
 /* 
-	Машинно-независимый обработчик прерываний. 
-	Вызывается с периодом 1/ELKEY_DISCRETE от длительности точки 
+	РњР°С€РёРЅРЅРѕ-РЅРµР·Р°РІРёСЃРёРјС‹Р№ РѕР±СЂР°Р±РѕС‚С‡РёРє РїСЂРµСЂС‹РІР°РЅРёР№. 
+	Р’С‹Р·С‹РІР°РµС‚СЃСЏ СЃ РїРµСЂРёРѕРґРѕРј 1/ELKEY_DISCRETE РѕС‚ РґР»РёС‚РµР»СЊРЅРѕСЃС‚Рё С‚РѕС‡РєРё 
 */
 static RAMFUNC void spool_elkeybundle(void)
 {
 #if WITHOPERA4BEACON
 	spool_0p128();
 #elif WITHELKEY
-	elkey_spool_dots();		// вызывается с периодом 1/ELKEY_DISCRETE от длительности точки
+	elkey_spool_dots();		// РІС‹Р·С‹РІР°РµС‚СЃСЏ СЃ РїРµСЂРёРѕРґРѕРј 1/ELKEY_DISCRETE РѕС‚ РґР»РёС‚РµР»СЊРЅРѕСЃС‚Рё С‚РѕС‡РєРё
 #endif /* WITHOPERA4BEACON */
 }
 
 /* 
-	Машинно-независимый обработчик прерываний. 
-	Вызывается при изменении состояния входов электронного ключа,
-    входа манипуляции от CAT (CAT_DTR). 
+	РњР°С€РёРЅРЅРѕ-РЅРµР·Р°РІРёСЃРёРјС‹Р№ РѕР±СЂР°Р±РѕС‚С‡РёРє РїСЂРµСЂС‹РІР°РЅРёР№. 
+	Р’С‹Р·С‹РІР°РµС‚СЃСЏ РїСЂРё РёР·РјРµРЅРµРЅРёРё СЃРѕСЃС‚РѕСЏРЅРёСЏ РІС…РѕРґРѕРІ СЌР»РµРєС‚СЂРѕРЅРЅРѕРіРѕ РєР»СЋС‡Р°,
+    РІС…РѕРґР° РјР°РЅРёРїСѓР»СЏС†РёРё РѕС‚ CAT (CAT_DTR). 
 */
 static RAMFUNC void spool_elkeyinputsbundle(void)
 {
-	//key_spool_inputs();	// опрос состояния электронного ключа и запоминание факта нажатия
+	//key_spool_inputs();	// РѕРїСЂРѕСЃ СЃРѕСЃС‚РѕСЏРЅРёСЏ СЌР»РµРєС‚СЂРѕРЅРЅРѕРіРѕ РєР»СЋС‡Р° Рё Р·Р°РїРѕРјРёРЅР°РЅРёРµ С„Р°РєС‚Р° РЅР°Р¶Р°С‚РёСЏ
 }
 
 
@@ -1059,9 +1059,9 @@ static void tickers_spool(void)
 	}
 }
 
-/* Машинно-независимый обработчик прерываний. */
-// Функции с побочным эффектом - отсчитывание времени. 
-// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
+/* РњР°С€РёРЅРЅРѕ-РЅРµР·Р°РІРёСЃРёРјС‹Р№ РѕР±СЂР°Р±РѕС‚С‡РёРє РїСЂРµСЂС‹РІР°РЅРёР№. */
+// Р¤СѓРЅРєС†РёРё СЃ РїРѕР±РѕС‡РЅС‹Рј СЌС„С„РµРєС‚РѕРј - РѕС‚СЃС‡РёС‚С‹РІР°РЅРёРµ РІСЂРµРјРµРЅРё. 
+// РџСЂРё РІРѕР·РјРѕР¶РЅРѕСЃС‚Рё РІС‹Р·С‹РІР°СЋС‚СЃСЏ СЃС‚РѕР»СЊРєРѕ СЂР°Р·, СЃРєРѕР»СЊРєРѕ РїСЂРѕРёР·РѕС€Р»Рѕ С‚Р°Р№РјРµСЂРЅС‹С… РїСЂРµСЂС‹РІР°РЅРёР№.
 static RAMFUNC void spool_systimerbundle1(void)
 {
 	static uint_fast16_t spool_1stickcount;
@@ -1070,17 +1070,17 @@ static RAMFUNC void spool_systimerbundle1(void)
 	enum { TICKS1000MS = NTICKS(1000) };
 	//spool_lfm();
 #if WITHENCODER
-	enc_spool();	// таймер для динамического изменения шага перестройки
+	enc_spool();	// С‚Р°Р№РјРµСЂ РґР»СЏ РґРёРЅР°РјРёС‡РµСЃРєРѕРіРѕ РёР·РјРµРЅРµРЅРёСЏ С€Р°РіР° РїРµСЂРµСЃС‚СЂРѕР№РєРё
 #endif /* WITHENCODER */
-	display_spool();	// отсчёт времени по запрещению обновления дисплея при вращении валкодера
+	display_spool();	// РѕС‚СЃС‡С‘С‚ РІСЂРµРјРµРЅРё РїРѕ Р·Р°РїСЂРµС‰РµРЅРёСЋ РѕР±РЅРѕРІР»РµРЅРёСЏ РґРёСЃРїР»РµСЏ РїСЂРё РІСЂР°С‰РµРЅРёРё РІР°Р»РєРѕРґРµСЂР°
 #if WITHMODEM 
 	modem_spool();
 #endif /* WITHMODEM */
 #if WITHUSBHW
 	board_usb_spool();
 #endif /* WITHUSBHW */
-	spool_encinterrupt2();	/* прерывание по изменению сигнала на входах от валкодера #2*/
-	// Формирование секундного прерывания
+	spool_encinterrupt2();	/* РїСЂРµСЂС‹РІР°РЅРёРµ РїРѕ РёР·РјРµРЅРµРЅРёСЋ СЃРёРіРЅР°Р»Р° РЅР° РІС…РѕРґР°С… РѕС‚ РІР°Р»РєРѕРґРµСЂР° #2*/
+	// Р¤РѕСЂРјРёСЂРѕРІР°РЅРёРµ СЃРµРєСѓРЅРґРЅРѕРіРѕ РїСЂРµСЂС‹РІР°РЅРёСЏ
 	if (++ spool_1stickcount >= TICKS1000MS)
 	{
 		spool_1stickcount = 0;
@@ -1090,9 +1090,9 @@ static RAMFUNC void spool_systimerbundle1(void)
 	tickers_spool();
 }
 
-/* Машинно-независимый обработчик прерываний. */
-// Функции с побочным эффектом редиспетчеризайии. 
-// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
+/* РњР°С€РёРЅРЅРѕ-РЅРµР·Р°РІРёСЃРёРјС‹Р№ РѕР±СЂР°Р±РѕС‚С‡РёРє РїСЂРµСЂС‹РІР°РЅРёР№. */
+// Р¤СѓРЅРєС†РёРё СЃ РїРѕР±РѕС‡РЅС‹Рј СЌС„С„РµРєС‚РѕРј СЂРµРґРёСЃРїРµС‚С‡РµСЂРёР·Р°Р№РёРё. 
+// Р•СЃР»Рё РїСЂРѕРїСѓС‰РµРЅС‹ РїСЂРµСЂС‹РІР°РЅРёСЏ, РєРѕРјРїРµРЅСЃРёСЂРѕРІР°С‚СЊ РґРѕРїРѕР»РЅРёС‚РµР»СЊРЅС‹РјРё РІС‹Р·РѕРІР°РјРё РЅРµС‚ СЃРјС‹СЃР»Р°.
 static RAMFUNC void spool_systimerbundle2(void)
 {
 #if WITHKEYBOARD
@@ -1101,15 +1101,15 @@ static RAMFUNC void spool_systimerbundle2(void)
 #endif /* ! KEYBOARD_USE_ADC */
 #endif /* WITHKEYBOARD */
 #if WITHCPUADCHW
-	hardware_adc_startonescan();	// хотя бы один вход (s-метр) есть.
+	hardware_adc_startonescan();	// С…РѕС‚СЏ Р±С‹ РѕРґРёРЅ РІС…РѕРґ (s-РјРµС‚СЂ) РµСЃС‚СЊ.
 #endif /* WITHCPUADCHW */
 }
 
 #if WITHCPUADCHW
 /* 
-	Машинно-независимый обработчик прерываний. 
-	Вызывается с периодом 1/TIMETICKS по окончании получения данных всех каналов АЦП, 
-	перечисленных в таблице adcinputs.
+	РњР°С€РёРЅРЅРѕ-РЅРµР·Р°РІРёСЃРёРјС‹Р№ РѕР±СЂР°Р±РѕС‚С‡РёРє РїСЂРµСЂС‹РІР°РЅРёР№. 
+	Р’С‹Р·С‹РІР°РµС‚СЃСЏ СЃ РїРµСЂРёРѕРґРѕРј 1/TIMETICKS РїРѕ РѕРєРѕРЅС‡Р°РЅРёРё РїРѕР»СѓС‡РµРЅРёСЏ РґР°РЅРЅС‹С… РІСЃРµС… РєР°РЅР°Р»РѕРІ РђР¦Рџ, 
+	РїРµСЂРµС‡РёСЃР»РµРЅРЅС‹С… РІ С‚Р°Р±Р»РёС†Рµ adcinputs.
 */
 static RAMFUNC void spool_adcdonebundle(void)
 {
@@ -1129,8 +1129,8 @@ static RAMFUNC void spool_adcdonebundle(void)
 	void  
 	SysTick_Handler(void)
 	{
-		spool_systimerbundle1();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
-		spool_systimerbundle2();	// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
+		spool_systimerbundle1();	// РџСЂРё РІРѕР·РјРѕР¶РЅРѕСЃС‚Рё РІС‹Р·С‹РІР°СЋС‚СЃСЏ СЃС‚РѕР»СЊРєРѕ СЂР°Р·, СЃРєРѕР»СЊРєРѕ РїСЂРѕРёР·РѕС€Р»Рѕ С‚Р°Р№РјРµСЂРЅС‹С… РїСЂРµСЂС‹РІР°РЅРёР№.
+		spool_systimerbundle2();	// Р•СЃР»Рё РїСЂРѕРїСѓС‰РµРЅС‹ РїСЂРµСЂС‹РІР°РЅРёСЏ, РєРѕРјРїРµРЅСЃРёСЂРѕРІР°С‚СЊ РґРѕРїРѕР»РЅРёС‚РµР»СЊРЅС‹РјРё РІС‹Р·РѕРІР°РјРё РЅРµС‚ СЃРјС‹СЃР»Р°.
 	}
 	
 	#if WITHELKEY
@@ -1153,7 +1153,7 @@ static RAMFUNC void spool_adcdonebundle(void)
 
 	#endif /* WITHELKEY */
 
-	/* прерывания от валколера при наличии в системе вложенных прерываний вызываются на уровне приоритета REALTINE */
+	/* РїСЂРµСЂС‹РІР°РЅРёСЏ РѕС‚ РІР°Р»РєРѕР»РµСЂР° РїСЂРё РЅР°Р»РёС‡РёРё РІ СЃРёСЃС‚РµРјРµ РІР»РѕР¶РµРЅРЅС‹С… РїСЂРµСЂС‹РІР°РЅРёР№ РІС‹Р·С‹РІР°СЋС‚СЃСЏ РЅР° СѓСЂРѕРІРЅРµ РїСЂРёРѕСЂРёС‚РµС‚Р° REALTINE */
 	static RAMFUNC void stm32fxxx_pinirq(portholder_t pr)
 	{
 	#if WITHELKEY && defined (ELKEY_BIT_LEFT) && defined (ELKEY_BIT_RIGHT)
@@ -1165,13 +1165,13 @@ static RAMFUNC void spool_adcdonebundle(void)
 	#if WITHENCODER && defined (ENCODER_BITS)
 		if ((pr & ENCODER_BITS) != 0)
 		{
-			spool_encinterrupt();	/* прерывание по изменению сигнала на входах от валкодера #1*/
+			spool_encinterrupt();	/* РїСЂРµСЂС‹РІР°РЅРёРµ РїРѕ РёР·РјРµРЅРµРЅРёСЋ СЃРёРіРЅР°Р»Р° РЅР° РІС…РѕРґР°С… РѕС‚ РІР°Р»РєРѕРґРµСЂР° #1*/
 		}
 	#endif /* WITHENCODER && defined (ENCODER_BITS) */
 	#if WITHENCODER && defined (ENCODER2_BITS)
 		if ((pr & ENCODER2_BITS) != 0)
 		{
-			spool_encinterrupt2();	/* прерывание по изменению сигнала на входах от валкодера #2*/
+			spool_encinterrupt2();	/* РїСЂРµСЂС‹РІР°РЅРёРµ РїРѕ РёР·РјРµРЅРµРЅРёСЋ СЃРёРіРЅР°Р»Р° РЅР° РІС…РѕРґР°С… РѕС‚ РІР°Р»РєРѕРґРµСЂР° #2*/
 		}
 	#endif /* WITHENCODER && ENCODER2_BITS */
 	}
@@ -1362,7 +1362,7 @@ static RAMFUNC void spool_adcdonebundle(void)
 	#if WITHENCODER && defined (ENCODER_BITS)
 		if ((state & (ENCODER_BITS)) != 0) // re-enable interrupt from PIO
 		{
-			spool_encinterrupt();	/* прерывание по изменению сигнала на входах от валкодера */
+			spool_encinterrupt();	/* РїСЂРµСЂС‹РІР°РЅРёРµ РїРѕ РёР·РјРµРЅРµРЅРёСЋ СЃРёРіРЅР°Р»Р° РЅР° РІС…РѕРґР°С… РѕС‚ РІР°Р»РєРѕРґРµСЂР° */
 		}
 	#endif /* WITHENCODER && defined (ENCODER_BITS) */
 	#if WITHELKEY && defined (ELKEY_BIT_LEFT) && defined (ELKEY_BIT_RIGHT)
@@ -1382,8 +1382,8 @@ static RAMFUNC void spool_adcdonebundle(void)
 	void RAMFUNC_NONILINE 
 	SysTick_Handler(void)
 	{
-		spool_systimerbundle1();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
-		spool_systimerbundle2();	// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
+		spool_systimerbundle1();	// РџСЂРё РІРѕР·РјРѕР¶РЅРѕСЃС‚Рё РІС‹Р·С‹РІР°СЋС‚СЃСЏ СЃС‚РѕР»СЊРєРѕ СЂР°Р·, СЃРєРѕР»СЊРєРѕ РїСЂРѕРёР·РѕС€Р»Рѕ С‚Р°Р№РјРµСЂРЅС‹С… РїСЂРµСЂС‹РІР°РЅРёР№.
+		spool_systimerbundle2();	// Р•СЃР»Рё РїСЂРѕРїСѓС‰РµРЅС‹ РїСЂРµСЂС‹РІР°РЅРёСЏ, РєРѕРјРїРµРЅСЃРёСЂРѕРІР°С‚СЊ РґРѕРїРѕР»РЅРёС‚РµР»СЊРЅС‹РјРё РІС‹Р·РѕРІР°РјРё РЅРµС‚ СЃРјС‹СЃР»Р°.
 	}
 
 	// AT91C_ID_TC2 - 1/20 dot length interval timer
@@ -1428,7 +1428,7 @@ static RAMFUNC void spool_adcdonebundle(void)
 	#if WITHENCODER && defined (ENCODER_BITS)
 		if ((state & (ENCODER_BITS)) != 0) // re-enable interrupt from PIO
 		{
-			spool_encinterrupt();	/* прерывание по изменению сигнала на входах от валкодера */
+			spool_encinterrupt();	/* РїСЂРµСЂС‹РІР°РЅРёРµ РїРѕ РёР·РјРµРЅРµРЅРёСЋ СЃРёРіРЅР°Р»Р° РЅР° РІС…РѕРґР°С… РѕС‚ РІР°Р»РєРѕРґРµСЂР° */
 		}
 	#endif /* WITHENCODER && defined (ENCODER_BITS) */
 	#if WITHELKEY && defined (ELKEY_BIT_LEFT) && defined (ELKEY_BIT_RIGHT)
@@ -1471,7 +1471,7 @@ static RAMFUNC void spool_adcdonebundle(void)
 	{
 		if ((AT91C_BASE_PITC->PITC_PISR & AT91C_PITC_PITS) != 0)
 		{
-			// Обработчик Periodic Interval Timer (PIT)
+			// РћР±СЂР°Р±РѕС‚С‡РёРє Periodic Interval Timer (PIT)
 			uint_fast32_t cnt = (AT91C_BASE_PITC->PITC_PIVR & AT91C_PITC_PICNT) >> 20;	// Reset interrupt request from Periodic interval timer.
 			while (cnt --)
 				spool_systimerbundle1();
@@ -1483,32 +1483,32 @@ static RAMFUNC void spool_adcdonebundle(void)
 
 	ISR(INT0_vect)
 	{
-		spool_encinterrupt();	/* прерывание по изменению сигнала на входах от валкодера */
+		spool_encinterrupt();	/* РїСЂРµСЂС‹РІР°РЅРёРµ РїРѕ РёР·РјРµРЅРµРЅРёСЋ СЃРёРіРЅР°Р»Р° РЅР° РІС…РѕРґР°С… РѕС‚ РІР°Р»РєРѕРґРµСЂР° */
 	}
 
 	ISR(INT1_vect)
 	{
-		spool_encinterrupt();	/* прерывание по изменению сигнала на входах от валкодера */
+		spool_encinterrupt();	/* РїСЂРµСЂС‹РІР°РЅРёРµ РїРѕ РёР·РјРµРЅРµРЅРёСЋ СЃРёРіРЅР°Р»Р° РЅР° РІС…РѕРґР°С… РѕС‚ РІР°Р»РєРѕРґРµСЂР° */
 	}
 
-	// Обработчик вызывается с частотой TICKS_FREQUENCY герц.
+	// РћР±СЂР°Р±РѕС‚С‡РёРє РІС‹Р·С‹РІР°РµС‚СЃСЏ СЃ С‡Р°СЃС‚РѕС‚РѕР№ TICKS_FREQUENCY РіРµСЂС†.
 	#if CPUSTYLE_ATMEGA328
 		ISR(TIMER2_COMPA_vect)
 		{
-			spool_systimerbundle1();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
-			spool_systimerbundle2();	// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
+			spool_systimerbundle1();	// РџСЂРё РІРѕР·РјРѕР¶РЅРѕСЃС‚Рё РІС‹Р·С‹РІР°СЋС‚СЃСЏ СЃС‚РѕР»СЊРєРѕ СЂР°Р·, СЃРєРѕР»СЊРєРѕ РїСЂРѕРёР·РѕС€Р»Рѕ С‚Р°Р№РјРµСЂРЅС‹С… РїСЂРµСЂС‹РІР°РЅРёР№.
+			spool_systimerbundle2();	// Р•СЃР»Рё РїСЂРѕРїСѓС‰РµРЅС‹ РїСЂРµСЂС‹РІР°РЅРёСЏ, РєРѕРјРїРµРЅСЃРёСЂРѕРІР°С‚СЊ РґРѕРїРѕР»РЅРёС‚РµР»СЊРЅС‹РјРё РІС‹Р·РѕРІР°РјРё РЅРµС‚ СЃРјС‹СЃР»Р°.
 		}
 	#elif CPUSTYLE_ATMEGA_XXX4
 		ISR(TIMER0_COMPA_vect)
 		{
-			spool_systimerbundle1();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
-			spool_systimerbundle2();	// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
+			spool_systimerbundle1();	// РџСЂРё РІРѕР·РјРѕР¶РЅРѕСЃС‚Рё РІС‹Р·С‹РІР°СЋС‚СЃСЏ СЃС‚РѕР»СЊРєРѕ СЂР°Р·, СЃРєРѕР»СЊРєРѕ РїСЂРѕРёР·РѕС€Р»Рѕ С‚Р°Р№РјРµСЂРЅС‹С… РїСЂРµСЂС‹РІР°РЅРёР№.
+			spool_systimerbundle2();	// Р•СЃР»Рё РїСЂРѕРїСѓС‰РµРЅС‹ РїСЂРµСЂС‹РІР°РЅРёСЏ, РєРѕРјРїРµРЅСЃРёСЂРѕРІР°С‚СЊ РґРѕРїРѕР»РЅРёС‚РµР»СЊРЅС‹РјРё РІС‹Р·РѕРІР°РјРё РЅРµС‚ СЃРјС‹СЃР»Р°.
 		}
 	#else /* CPUSTYLE_ATMEGA_XXX4 */
 		ISR(TIMER0_COMP_vect)
 		{
-			spool_systimerbundle1();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
-			spool_systimerbundle2();	// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
+			spool_systimerbundle1();	// РџСЂРё РІРѕР·РјРѕР¶РЅРѕСЃС‚Рё РІС‹Р·С‹РІР°СЋС‚СЃСЏ СЃС‚РѕР»СЊРєРѕ СЂР°Р·, СЃРєРѕР»СЊРєРѕ РїСЂРѕРёР·РѕС€Р»Рѕ С‚Р°Р№РјРµСЂРЅС‹С… РїСЂРµСЂС‹РІР°РЅРёР№.
+			spool_systimerbundle2();	// Р•СЃР»Рё РїСЂРѕРїСѓС‰РµРЅС‹ РїСЂРµСЂС‹РІР°РЅРёСЏ, РєРѕРјРїРµРЅСЃРёСЂРѕРІР°С‚СЊ РґРѕРїРѕР»РЅРёС‚РµР»СЊРЅС‹РјРё РІС‹Р·РѕРІР°РјРё РЅРµС‚ СЃРјС‹СЃР»Р°.
 		}
 	#endif /* CPUSTYLE_ATMEGA_XXX4 */
 
@@ -1518,7 +1518,7 @@ static RAMFUNC void spool_adcdonebundle(void)
 	{
 		spool_elkeybundle();
 	}
-	// Обработчик по изменению состояния входов PTT и электронного ключа
+	// РћР±СЂР°Р±РѕС‚С‡РёРє РїРѕ РёР·РјРµРЅРµРЅРёСЋ СЃРѕСЃС‚РѕСЏРЅРёСЏ РІС…РѕРґРѕРІ PTT Рё СЌР»РµРєС‚СЂРѕРЅРЅРѕРіРѕ РєР»СЋС‡Р°
 	#if CPUSTYLE_ATMEGA_XXX4
 		#if WITHELKEY && defined (ELKEY_BIT_LEFT) && defined (ELKEY_BIT_RIGHT)
 			// PC7 - PTT input, PC6 & PC5 - eectronic key inputs
@@ -1530,7 +1530,7 @@ static RAMFUNC void spool_adcdonebundle(void)
 		#if defined (FROMCAT_BIT_DTR) && defined (DTRPCICR_BIT) && (PCICR_BIT != DTRPCICR_BIT)
 			ISR(DTRPCIVECT)
 			{
-				spool_elkeyinputsbundle();	// по изменению PTT
+				spool_elkeyinputsbundle();	// РїРѕ РёР·РјРµРЅРµРЅРёСЋ PTT
 			}
 		#endif
 	#endif /* CPUSTYLE_ATMEGA_XXX4 && defined (PCIVECT) */
@@ -1541,18 +1541,18 @@ static RAMFUNC void spool_adcdonebundle(void)
 
 	ISR(PORTC_INT0_vect)
 	{
-		spool_encinterrupt();	/* прерывание по изменению сигнала на входах от валкодера */
+		spool_encinterrupt();	/* РїСЂРµСЂС‹РІР°РЅРёРµ РїРѕ РёР·РјРµРЅРµРЅРёСЋ СЃРёРіРЅР°Р»Р° РЅР° РІС…РѕРґР°С… РѕС‚ РІР°Р»РєРѕРґРµСЂР° */
 	}
 
 	ISR(PORTC_INT1_vect)
 	{
-		spool_encinterrupt();	/* прерывание по изменению сигнала на входах от валкодера */
+		spool_encinterrupt();	/* РїСЂРµСЂС‹РІР°РЅРёРµ РїРѕ РёР·РјРµРЅРµРЅРёСЋ СЃРёРіРЅР°Р»Р° РЅР° РІС…РѕРґР°С… РѕС‚ РІР°Р»РєРѕРґРµСЂР° */
 	}
 
 	ISR(TCC0_CCA_vect)
 	{
-		spool_systimerbundle1();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
-		spool_systimerbundle2();	// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
+		spool_systimerbundle1();	// РџСЂРё РІРѕР·РјРѕР¶РЅРѕСЃС‚Рё РІС‹Р·С‹РІР°СЋС‚СЃСЏ СЃС‚РѕР»СЊРєРѕ СЂР°Р·, СЃРєРѕР»СЊРєРѕ РїСЂРѕРёР·РѕС€Р»Рѕ С‚Р°Р№РјРµСЂРЅС‹С… РїСЂРµСЂС‹РІР°РЅРёР№.
+		spool_systimerbundle2();	// Р•СЃР»Рё РїСЂРѕРїСѓС‰РµРЅС‹ РїСЂРµСЂС‹РІР°РЅРёСЏ, РєРѕРјРїРµРЅСЃРёСЂРѕРІР°С‚СЊ РґРѕРїРѕР»РЅРёС‚РµР»СЊРЅС‹РјРё РІС‹Р·РѕРІР°РјРё РЅРµС‚ СЃРјС‹СЃР»Р°.
 	}
 
 	// Timer 1 output compare A interrupt service routine
@@ -1560,7 +1560,7 @@ static RAMFUNC void spool_adcdonebundle(void)
 	{
 		spool_elkeybundle();
 	}
-	// Обработчик по изменению состояния входов PTT и электронного ключа
+	// РћР±СЂР°Р±РѕС‚С‡РёРє РїРѕ РёР·РјРµРЅРµРЅРёСЋ СЃРѕСЃС‚РѕСЏРЅРёСЏ РІС…РѕРґРѕРІ PTT Рё СЌР»РµРєС‚СЂРѕРЅРЅРѕРіРѕ РєР»СЋС‡Р°
 	//#if CPUSTYLE_ATMEGA_XXX4
 	// PC7 - PTT input, PC6 & PC5 - eectronic key inputs
 	//ISR(PCIVECT)
@@ -1574,14 +1574,14 @@ static RAMFUNC void spool_adcdonebundle(void)
 
 #elif CPUSTYLE_R7S721
 
-	// Таймер "тиков"
+	// РўР°Р№РјРµСЂ "С‚РёРєРѕРІ"
 	static void r7s721_ostm0_interrupt(void)
 	{
-		spool_systimerbundle1();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
-		spool_systimerbundle2();	// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
+		spool_systimerbundle1();	// РџСЂРё РІРѕР·РјРѕР¶РЅРѕСЃС‚Рё РІС‹Р·С‹РІР°СЋС‚СЃСЏ СЃС‚РѕР»СЊРєРѕ СЂР°Р·, СЃРєРѕР»СЊРєРѕ РїСЂРѕРёР·РѕС€Р»Рѕ С‚Р°Р№РјРµСЂРЅС‹С… РїСЂРµСЂС‹РІР°РЅРёР№.
+		spool_systimerbundle2();	// Р•СЃР»Рё РїСЂРѕРїСѓС‰РµРЅС‹ РїСЂРµСЂС‹РІР°РЅРёСЏ, РєРѕРјРїРµРЅСЃРёСЂРѕРІР°С‚СЊ РґРѕРїРѕР»РЅРёС‚РµР»СЊРЅС‹РјРё РІС‹Р·РѕРІР°РјРё РЅРµС‚ СЃРјС‹СЃР»Р°.
 	}
 
-	// Таймер электронного ключа
+	// РўР°Р№РјРµСЂ СЌР»РµРєС‚СЂРѕРЅРЅРѕРіРѕ РєР»СЋС‡Р°
 	static void r7s721_ostm1_interrupt(void)
 	{
 		spool_elkeybundle();
@@ -1593,7 +1593,7 @@ static RAMFUNC void spool_adcdonebundle(void)
 #endif
 
 //static volatile uint_fast8_t hardware_reqshutdown;
-/* возвращаем запрос на выключение - от компаратора питания */
+/* РІРѕР·РІСЂР°С‰Р°РµРј Р·Р°РїСЂРѕСЃ РЅР° РІС‹РєР»СЋС‡РµРЅРёРµ - РѕС‚ РєРѕРјРїР°СЂР°С‚РѕСЂР° РїРёС‚Р°РЅРёСЏ */
 uint_fast8_t 
 hardware_getshutdown(void)
 {
@@ -1606,8 +1606,8 @@ hardware_getshutdown(void)
 #endif
 }
 
-// Инициализация таймера, вызывающего прерывания с частотой TICKS_FREQUENCY.
-// Должо вызываться позже настройки ADC
+// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ С‚Р°Р№РјРµСЂР°, РІС‹Р·С‹РІР°СЋС‰РµРіРѕ РїСЂРµСЂС‹РІР°РЅРёСЏ СЃ С‡Р°СЃС‚РѕС‚РѕР№ TICKS_FREQUENCY.
+// Р”РѕР»Р¶Рѕ РІС‹Р·С‹РІР°С‚СЊСЃСЏ РїРѕР·Р¶Рµ РЅР°СЃС‚СЂРѕР№РєРё ADC
 void 
 hardware_timer_initialize(uint_fast32_t ticksfreq)
 {
@@ -1621,14 +1621,14 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 
 	// ATMega328
 	// Timer/Counter 2 initialization
-	// Использование автоматического расчёта предделителя
+	// РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРіРѕ СЂР°СЃС‡С‘С‚Р° РїСЂРµРґРґРµР»РёС‚РµР»СЏ
 	unsigned value;
 	const uint_fast8_t prei = calcdivider(calcdivround(ticksfreq), ATMEGA_TIMER2_WIDTH, ATMEGA_TIMER2_TAPS, & value, 1);
 
 	ASSR = 0x00;
 	TCCR2A = (1u << WGM01);	// CTC mode = 0x02
-	TCCR2B = prei + 1; // прескалер
-	OCR2A = value;	// делитель - программирование полного периода
+	TCCR2B = prei + 1; // РїСЂРµСЃРєР°Р»РµСЂ
+	OCR2A = value;	// РґРµР»РёС‚РµР»СЊ - РїСЂРѕРіСЂР°РјРјРёСЂРѕРІР°РЅРёРµ РїРѕР»РЅРѕРіРѕ РїРµСЂРёРѕРґР°
 	OCR2B = 0x00;
 	TIMSK2 |= (1U << OCIE2A);	//0x02;	// enable interrupt from Timer/Counter 2 - use TIMER2_COMP_vect
 
@@ -1639,12 +1639,12 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 	// Modern ATMega644
 
 	// Timer/Counter 0 initialization
-	// Использование автоматического расчёта предделителя
+	// РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРіРѕ СЂР°СЃС‡С‘С‚Р° РїСЂРµРґРґРµР»РёС‚РµР»СЏ
 	unsigned value;
 	const uint_fast8_t prei = calcdivider(calcdivround(ticksfreq), ATMEGA_TIMER0_WIDTH, ATMEGA_TIMER0_TAPS, & value, 1);
 	TCCR0A = (1u << WGM01);	// CTC mode = 0x02
-	TCCR0B = prei + 1; // прескалер
-	OCR0A = value;	// делитель - программирование полного периода
+	TCCR0B = prei + 1; // РїСЂРµСЃРєР°Р»РµСЂ
+	OCR0A = value;	// РґРµР»РёС‚РµР»СЊ - РїСЂРѕРіСЂР°РјРјРёСЂРѕРІР°РЅРёРµ РїРѕР»РЅРѕРіРѕ РїРµСЂРёРѕРґР°
 	OCR0B = 0x00;
 	TIMSK0 |= (1U << OCIE0A);	// enable interrupt from Timer/Counter 0 - use TIMER0_COMPA_vect
 
@@ -1654,11 +1654,11 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 	// ATMega128/ATMega64
 
 	// Timer/Counter 0 initialization
-	// Использование автоматического расчёта предделителя
+	// РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРіРѕ СЂР°СЃС‡С‘С‚Р° РїСЂРµРґРґРµР»РёС‚РµР»СЏ
 	unsigned value;
 	const uint_fast8_t prei = calcdivider(calcdivround(ticksfreq), ATMEGA128_TIMER0_WIDTH, ATMEGA128_TIMER0_TAPS, & value, 1);
-	TCCR0 = (1U << WGM01) | (prei + 1);	// прескалер
-	OCR0 = value;	// делитель - программирование полного периода
+	TCCR0 = (1U << WGM01) | (prei + 1);	// РїСЂРµСЃРєР°Р»РµСЂ
+	OCR0 = value;	// РґРµР»РёС‚РµР»СЊ - РїСЂРѕРіСЂР°РјРјРёСЂРѕРІР°РЅРёРµ РїРѕР»РЅРѕРіРѕ РїРµСЂРёРѕРґР°
 
 	TIMSK |= (1U << OCIE0);	// enable interrupt from Timer/Counter 0 - use TIMER0_COMP_vect
 
@@ -1668,11 +1668,11 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 	// Classic ATMega32
 
 	// Timer/Counter 0 initialization
-	// Использование автоматического расчёта предделителя
+	// РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРіРѕ СЂР°СЃС‡С‘С‚Р° РїСЂРµРґРґРµР»РёС‚РµР»СЏ
 	unsigned value;
 	const uint_fast8_t prei = calcdivider(calcdivround(ticksfreq), ATMEGA_TIMER0_WIDTH, ATMEGA_TIMER0_TAPS, & value, 1);
-	TCCR0 = (1U << WGM01) | (prei + 1);	// прескалер
-	OCR0 = value;	// делитель - программирование полного периода
+	TCCR0 = (1U << WGM01) | (prei + 1);	// РїСЂРµСЃРєР°Р»РµСЂ
+	OCR0 = value;	// РґРµР»РёС‚РµР»СЊ - РїСЂРѕРіСЂР°РјРјРёСЂРѕРІР°РЅРёРµ РїРѕР»РЅРѕРіРѕ РїРµСЂРёРѕРґР°
 
 	TIMSK |= (1U << OCIE0);	// enable interrupt from Timer/Counter 0 - use TIMER0_COMP_vect
 
@@ -1680,7 +1680,7 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 
 #elif CPUSTYLE_AT91SAM7S
 
-	// Использование автоматического расчёта предделителя
+	// РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРіРѕ СЂР°СЃС‡С‘С‚Р° РїСЂРµРґРґРµР»РёС‚РµР»СЏ
 	unsigned value;
 	/* const uint_fast8_t prei = */ calcdivider(calcdivround(ticksfreq), AT91SAM7_PITPIV_WIDTH, AT91SAM7_PITPIV_TAPS, & value, 1);
 
@@ -1691,7 +1691,7 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 		AT91C_PITC_PITIEN;
 
 	// possible chip errata
-	AT91C_BASE_RTTC->RTTC_RTMR &= ~AT91C_RTTC_ALMIEN;		// запретить Real Time Timer Controller
+	AT91C_BASE_RTTC->RTTC_RTMR &= ~AT91C_RTTC_ALMIEN;		// Р·Р°РїСЂРµС‚РёС‚СЊ Real Time Timer Controller
 
 	// programming interrupts from SYS
     AT91C_BASE_AIC->AIC_IDCR = (1UL << AT91C_ID_SYS);		// disable interrupt
@@ -1704,15 +1704,15 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 
 #elif CPUSTYLE_ATXMEGAXXXA4
 
-	// Использование автоматического расчёта предделителя
+	// РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРіРѕ СЂР°СЃС‡С‘С‚Р° РїСЂРµРґРґРµР»РёС‚РµР»СЏ
 	unsigned value;
 	const uint_fast8_t prei = calcdivider(calcdivround(ticksfreq), ATXMEGA_TIMER_WIDTH, ATXMEGA_TIMER_TAPS, & value, 1);
-	// программирование таймера
+	// РїСЂРѕРіСЂР°РјРјРёСЂРѕРІР°РЅРёРµ С‚Р°Р№РјРµСЂР°
 	TCC0.CCA = value;	// timer/counter C0, compare register A, see TCC0_CCA_vect
 	TCC0.CTRLA = (prei + 1);
 	TCC0.CTRLB = (TC_WGMODE_FRQ_gc);
 	TCC0.INTCTRLB = (TC_CCAINTLVL_HI_gc);
-	// разрешение прерываний на входе в PMIC
+	// СЂР°Р·СЂРµС€РµРЅРёРµ РїСЂРµСЂС‹РІР°РЅРёР№ РЅР° РІС…РѕРґРµ РІ PMIC
 	PMIC.CTRL |= (PMIC_HILVLEN_bm | PMIC_MEDLVLEN_bm | PMIC_LOLVLEN_bm);
 
 #elif CPUSTYLE_R7S721
@@ -1757,33 +1757,33 @@ hardware_encoder_initialize(void)
 #endif /* WITHENCODER */
 }
 
-/* Чтение состояния выходов валкодера #1 - в два младших бита */
-/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
+/* Р§С‚РµРЅРёРµ СЃРѕСЃС‚РѕСЏРЅРёСЏ РІС‹С…РѕРґРѕРІ РІР°Р»РєРѕРґРµСЂР° #1 - РІ РґРІР° РјР»Р°РґС€РёС… Р±РёС‚Р° */
+/* РЎРѕСЃС‚РѕСЏРЅРёРµ С„Р°Р·С‹ A - РІ Р±РёС‚Рµ СЃ РІРµСЃРѕРј 2, С„Р°Р·С‹ B - РІ Р±РёС‚Рµ СЃ РІРµСЃРѕРј 1 */
 
 uint_fast8_t 
 hardware_get_encoder_bits(void)
 {
 #if WITHENCODER && defined (ENCODER_BITS) && defined (ENCODER_SHIFT)
-	return (ENCODER_INPUT_PORT & ENCODER_BITS) >> ENCODER_SHIFT;	// Биты валкодера #1
+	return (ENCODER_INPUT_PORT & ENCODER_BITS) >> ENCODER_SHIFT;	// Р‘РёС‚С‹ РІР°Р»РєРѕРґРµСЂР° #1
 #elif WITHENCODER && defined (ENCODER_BITS)
 	const portholder_t v = ENCODER_INPUT_PORT;
-	return ((v & ENCODER_BITA) != 0) * 2 + ((v & ENCODER_BITB) != 0);	// Биты идут не подряд
+	return ((v & ENCODER_BITA) != 0) * 2 + ((v & ENCODER_BITB) != 0);	// Р‘РёС‚С‹ РёРґСѓС‚ РЅРµ РїРѕРґСЂСЏРґ
 #else /* WITHENCODER */
 	return 0;
 #endif /* WITHENCODER */
 }
 
-/* Чтение состояния выходов валкодера #2 - в два младших бита */
-/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
+/* Р§С‚РµРЅРёРµ СЃРѕСЃС‚РѕСЏРЅРёСЏ РІС‹С…РѕРґРѕРІ РІР°Р»РєРѕРґРµСЂР° #2 - РІ РґРІР° РјР»Р°РґС€РёС… Р±РёС‚Р° */
+/* РЎРѕСЃС‚РѕСЏРЅРёРµ С„Р°Р·С‹ A - РІ Р±РёС‚Рµ СЃ РІРµСЃРѕРј 2, С„Р°Р·С‹ B - РІ Р±РёС‚Рµ СЃ РІРµСЃРѕРј 1 */
 
 uint_fast8_t 
 hardware_get_encoder2_bits(void)
 {
 #if WITHENCODER && ENCODER2_BITS && defined (ENCODER2_SHIFT)
-	return (ENCODER2_INPUT_PORT & ENCODER2_BITS) >> ENCODER2_SHIFT;	// Биты валкодера #2
+	return (ENCODER2_INPUT_PORT & ENCODER2_BITS) >> ENCODER2_SHIFT;	// Р‘РёС‚С‹ РІР°Р»РєРѕРґРµСЂР° #2
 #elif WITHENCODER && ENCODER2_BITS
 	const portholder_t v = ENCODER2_INPUT_PORT;
-	return ((v & ENCODER2_BITA) != 0) * 2 + ((v & ENCODER2_BITB) != 0);	// Биты идут не подряд
+	return ((v & ENCODER2_BITA) != 0) * 2 + ((v & ENCODER2_BITB) != 0);	// Р‘РёС‚С‹ РёРґСѓС‚ РЅРµ РїРѕРґСЂСЏРґ
 #else /* WITHENCODER */
 	return 0;
 #endif /* WITHENCODER */
@@ -1805,10 +1805,10 @@ void RAMFUNC_NONILINE ADC_Handler(void)
 	//const unsigned long sr = ADC->ADC_ISR;	// ADC_IER_DRDY, ADC_ISR_DRDY
 	(void) ADC->ADC_ISR;	// ADC_IER_DRDY, ADC_ISR_DRDY
 
-	// ATSAM3Sxx считывает только 10 или 12 бит
+	// ATSAM3Sxx СЃС‡РёС‚С‹РІР°РµС‚ С‚РѕР»СЊРєРѕ 10 РёР»Рё 12 Р±РёС‚
 	// Read the 8 most significant bits
 	// of the AD conversion result
-	board_adc_store_data(board_get_adcch(adc_input), ADC->ADC_LCDR & ADC_LCDR_LDATA_Msk);	// на этом цикле используем результат
+	board_adc_store_data(board_get_adcch(adc_input), ADC->ADC_LCDR & ADC_LCDR_LDATA_Msk);	// РЅР° СЌС‚РѕРј С†РёРєР»Рµ РёСЃРїРѕР»СЊР·СѓРµРј СЂРµР·СѓР»СЊС‚Р°С‚
 	// Select next ADC input
 	for (;;)
 	{
@@ -1841,7 +1841,7 @@ static RAMFUNC_NONILINE void AT91F_ADC_IRQHandler(void)
 	(void) AT91C_BASE_ADC->ADC_SR;
 	// Read the 8 most significant bits
 	// of the AD conversion result
-	board_adc_store_data(board_get_adcch(adc_input), AT91C_BASE_ADC->ADC_LCDR & AT91C_ADC_LDATA);	// на этом цикле используем результат
+	board_adc_store_data(board_get_adcch(adc_input), AT91C_BASE_ADC->ADC_LCDR & AT91C_ADC_LDATA);	// РЅР° СЌС‚РѕРј С†РёРєР»Рµ РёСЃРїРѕР»СЊР·СѓРµРј СЂРµР·СѓР»СЊС‚Р°С‚
 	// Select next ADC input
 	for (;;)
 	{
@@ -1869,7 +1869,7 @@ static RAMFUNC_NONILINE void AT91F_ADC_IRQHandler(void)
 
 #elif CPUSTYLE_ATMEGA
 	///////adc
-	// получение кода выбора входа
+	// РїРѕР»СѓС‡РµРЅРёРµ РєРѕРґР° РІС‹Р±РѕСЂР° РІС…РѕРґР°
 	static uint_fast8_t hardware_atmega_admux(uint_fast8_t ch)
 	{
 		enum { ATMEGA_ADC_VREF_TYPE = ((0UL << REFS1) | (1UL << REFS0))	}; // AVCC used as reference volage
@@ -1920,7 +1920,7 @@ static RAMFUNC_NONILINE void AT91F_ADC_IRQHandler(void)
 	// adc
 	ISR(ADCA_CH0_vect)
 	{
-			// на этом цикле используем результат
+			// РЅР° СЌС‚РѕРј С†РёРєР»Рµ РёСЃРїРѕР»СЊР·СѓРµРј СЂРµР·СѓР»СЊС‚Р°С‚
 		#if HARDWARE_ADCBITS == 8
 			// Select next ADC input
 			// Read the 8 most significant bits
@@ -1959,13 +1959,13 @@ static RAMFUNC_NONILINE void AT91F_ADC_IRQHandler(void)
 // For SM32H7XXX: ADC_IRQn is a same vector as ADC1_2_IRQn (decimal 18)
 
 
-/* Отображение номеров каналов АЦП процессоров STM32Fxxx в каналы процессора STM32H7 */
+/* РћС‚РѕР±СЂР°Р¶РµРЅРёРµ РЅРѕРјРµСЂРѕРІ РєР°РЅР°Р»РѕРІ РђР¦Рџ РїСЂРѕС†РµСЃСЃРѕСЂРѕРІ STM32Fxxx РІ РєР°РЅР°Р»С‹ РїСЂРѕС†РµСЃСЃРѕСЂР° STM32H7 */
 typedef struct adcinmap_tag
 {
-	uint_fast8_t ch;	// номер канала в периферийном блоке процессора
-	ADC_TypeDef * adc;	// периферийный блок процессора
+	uint_fast8_t ch;	// РЅРѕРјРµСЂ РєР°РЅР°Р»Р° РІ РїРµСЂРёС„РµСЂРёР№РЅРѕРј Р±Р»РѕРєРµ РїСЂРѕС†РµСЃСЃРѕСЂР°
+	ADC_TypeDef * adc;	// РїРµСЂРёС„РµСЂРёР№РЅС‹Р№ Р±Р»РѕРє РїСЂРѕС†РµСЃСЃРѕСЂР°
 	ADC_Common_TypeDef * adccommon;
-	uint_fast8_t thold_uS01;	// минимальное время выборки для данного канала - десятые доли микросекунды
+	uint_fast8_t thold_uS01;	// РјРёРЅРёРјР°Р»СЊРЅРѕРµ РІСЂРµРјСЏ РІС‹Р±РѕСЂРєРё РґР»СЏ РґР°РЅРЅРѕРіРѕ РєР°РЅР°Р»Р° - РґРµСЃСЏС‚С‹Рµ РґРѕР»Рё РјРёРєСЂРѕСЃРµРєСѓРЅРґС‹
 } adcinmap_t;
 
 static const adcinmap_t * getadcmap(uint_fast8_t adci)
@@ -2008,7 +2008,7 @@ ADCs_IRQHandler(ADC_TypeDef * p)
 	if ((adc->ISR & ADC_ISR_EOS) != 0)
 	{
 		adc->ISR = ADC_ISR_EOS;		// EOS (end of regular sequence) flag
-		board_adc_store_data(board_get_adcch(adc_input), (adc->DR & ADC_DR_RDATA) >> ADC_DR_RDATA_Pos);	// на этом цикле используем результат
+		board_adc_store_data(board_get_adcch(adc_input), (adc->DR & ADC_DR_RDATA) >> ADC_DR_RDATA_Pos);	// РЅР° СЌС‚РѕРј С†РёРєР»Рµ РёСЃРїРѕР»СЊР·СѓРµРј СЂРµР·СѓР»СЊС‚Р°С‚
 		// Select next ADC input
 		for (;;)
 		{
@@ -2024,16 +2024,16 @@ ADCs_IRQHandler(ADC_TypeDef * p)
 				const uint_fast8_t adci = board_get_adcch(adc_input);
 				if (adci < BOARD_ADCXBASE)
 				{
-					// Установить следующий вход (блок ADC может измениться)
+					// РЈСЃС‚Р°РЅРѕРІРёС‚СЊ СЃР»РµРґСѓСЋС‰РёР№ РІС…РѕРґ (Р±Р»РѕРє ADC РјРѕР¶РµС‚ РёР·РјРµРЅРёС‚СЊСЃСЏ)
 					const adcinmap_t * const adcmap = getadcmap(adci);
 					ADC_TypeDef * const adc = adcmap->adc;
 
 					ASSERT((adc->CR & (ADC_CR_JADSTART | ADC_CR_ADSTART)) == 0);
 					adc->SQR1 = (adc->SQR1 & ~ (ADC_SQR1_L | ADC_SQR1_SQ1)) |
-						0 * ADC_SQR1_L_0 |	// Выбираем преобразование с одного канала. Сканирования нет.
+						0 * ADC_SQR1_L_0 |	// Р’С‹Р±РёСЂР°РµРј РїСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёРµ СЃ РѕРґРЅРѕРіРѕ РєР°РЅР°Р»Р°. РЎРєР°РЅРёСЂРѕРІР°РЅРёСЏ РЅРµС‚.
 						adcmap->ch * ADC_SQR1_SQ1_0 |
 						0;
-					adc->CR |= ADC_CR_ADSTART;	// Запуск преобразования
+					adc->CR |= ADC_CR_ADSTART;	// Р—Р°РїСѓСЃРє РїСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёСЏ
 					break;
 				}
 			}
@@ -2064,8 +2064,8 @@ ADC1_2_IRQHandler(void)
 {
 	ASSERT(adc_input < board_get_adcinputs());
 	//const unsigned long sr = ADC1->SR;
-	ADC1->SR = 0;		// Сбрасываем все запросы прерывания.
-	board_adc_store_data(board_get_adcch(adc_input), ADC1->DR & ADC_DR_DATA);	// на этом цикле используем результат
+	ADC1->SR = 0;		// РЎР±СЂР°СЃС‹РІР°РµРј РІСЃРµ Р·Р°РїСЂРѕСЃС‹ РїСЂРµСЂС‹РІР°РЅРёСЏ.
+	board_adc_store_data(board_get_adcch(adc_input), ADC1->DR & ADC_DR_DATA);	// РЅР° СЌС‚РѕРј С†РёРєР»Рµ РёСЃРїРѕР»СЊР·СѓРµРј СЂРµР·СѓР»СЊС‚Р°С‚
 	// Select next ADC input
 	for (;;)
 	{
@@ -2097,7 +2097,7 @@ ADC1_2_IRQHandler(void)
 		ADC1_COMP_IRQHandler(void)
 		{
 			ASSERT(adc_input < board_get_adcinputs());
-			board_adc_store_data(board_get_adcch(adc_input), ADC1->DR & ADC_DR_DATA);	// используем результат
+			board_adc_store_data(board_get_adcch(adc_input), ADC1->DR & ADC_DR_DATA);	// РёСЃРїРѕР»СЊР·СѓРµРј СЂРµР·СѓР»СЊС‚Р°С‚
 			ADC1->ISR = ADC_ISR_EOC;
 			ADC1->CHSELR = 1UL <<  board_get_adcch(adc_input);
 			// Select next ADC input
@@ -2127,7 +2127,7 @@ ADC1_2_IRQHandler(void)
 		ADC1_IRQHandler(void)
 		{
 			ASSERT(adc_input < board_get_adcinputs());
-			board_adc_store_data(board_get_adcch(adc_input), ADC1->DR & ADC_DR_DATA);	// используем результат
+			board_adc_store_data(board_get_adcch(adc_input), ADC1->DR & ADC_DR_DATA);	// РёСЃРїРѕР»СЊР·СѓРµРј СЂРµР·СѓР»СЊС‚Р°С‚
 			ADC1->ISR = ADC_ISR_EOC;
 			ADC1->CHSELR = 1UL <<  board_get_adcch(adc_input);
 			// Select next ADC input
@@ -2160,7 +2160,7 @@ ADC1_2_IRQHandler(void)
 	ADC1_COMP_IRQHandler(void)
 	{
 		ASSERT(adc_input < board_get_adcinputs());
-		board_adc_store_data(board_get_adcch(adc_input), ADC1->DR & ADC_DR_DATA);	// используем результат
+		board_adc_store_data(board_get_adcch(adc_input), ADC1->DR & ADC_DR_DATA);	// РёСЃРїРѕР»СЊР·СѓРµРј СЂРµР·СѓР»СЊС‚Р°С‚
 		ADC1->ISR = ADC_ISR_EOC;
 		ADC1->CHSELR |= 1UL <<  board_get_adcch(adc_input);
 		// Select next ADC input
@@ -2193,8 +2193,8 @@ ADC1_2_IRQHandler(void)
 {
 	ASSERT(adc_input < board_get_adcinputs());
 	//const unsigned long sr = ADC1->SR;
-	ADC1->ISR = 0;		// Сбрасываем все запросы прерывания.
-	board_adc_store_data(board_get_adcch(adc_input), ADC1->DR & ADC_DR_RDATA);	// на этом цикле используем результат
+	ADC1->ISR = 0;		// РЎР±СЂР°СЃС‹РІР°РµРј РІСЃРµ Р·Р°РїСЂРѕСЃС‹ РїСЂРµСЂС‹РІР°РЅРёСЏ.
+	board_adc_store_data(board_get_adcch(adc_input), ADC1->DR & ADC_DR_RDATA);	// РЅР° СЌС‚РѕРј С†РёРєР»Рµ РёСЃРїРѕР»СЊР·СѓРµРј СЂРµР·СѓР»СЊС‚Р°С‚
 	// Select next ADC input
 	for (;;)
 	{
@@ -2244,15 +2244,15 @@ r7s721_adi_irq_handler(void)
 	*/
 	ASSERT(adc_input < board_get_adcinputs());
 	//const unsigned long sr = ADC1->SR;
-	////ADC1->ISR = 0;		// Сбрасываем все запросы прерывания.
-	board_adc_store_data(board_get_adcch(adc_input), (& ADC.ADDRA) [board_get_adcch(adc_input)] >> 4);	// на этом цикле используем результат
+	////ADC1->ISR = 0;		// РЎР±СЂР°СЃС‹РІР°РµРј РІСЃРµ Р·Р°РїСЂРѕСЃС‹ РїСЂРµСЂС‹РІР°РЅРёСЏ.
+	board_adc_store_data(board_get_adcch(adc_input), (& ADC.ADDRA) [board_get_adcch(adc_input)] >> 4);	// РЅР° СЌС‚РѕРј С†РёРєР»Рµ РёСЃРїРѕР»СЊР·СѓРµРј СЂРµР·СѓР»СЊС‚Р°С‚
 	// Select next ADC input
 	for (;;)
 	{
 		if (++ adc_input >= board_get_adcinputs())
 		{
 			ADC.ADCSR &= ~ ADC_SR_ADF;	// ADF: A/D end flag - Cleared by reading ADF while ADF = 1, then writing 0 to ADF
-			// Это был последний вход
+			// Р­С‚Рѕ Р±С‹Р» РїРѕСЃР»РµРґРЅРёР№ РІС…РѕРґ
 			board_adc_filtering();
 			spool_adcdonebundle();
 			break;
@@ -2264,7 +2264,7 @@ r7s721_adi_irq_handler(void)
 			if (adci < BOARD_ADCXBASE)
 			{
 				ADC.ADCSR = (ADC.ADCSR & ~ (ADC_SR_ADF | ADC_SR_CH)) | 
-					(adci << ADC_SR_CH_SHIFT) |	// канал для преобразования
+					(adci << ADC_SR_CH_SHIFT) |	// РєР°РЅР°Р» РґР»СЏ РїСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёСЏ
 					1 * ADC_SR_ADST |	// ADST: Single mode: A/D conversion starts
 					0;
 				break;
@@ -2277,7 +2277,7 @@ r7s721_adi_irq_handler(void)
 	#error No CPUSTYLE_XXXXX defined
 #endif
 
-// Получение битов используемых каналов АЦП (до шестнадцати штук).
+// РџРѕР»СѓС‡РµРЅРёРµ Р±РёС‚РѕРІ РёСЃРїРѕР»СЊР·СѓРµРјС‹С… РєР°РЅР°Р»РѕРІ РђР¦Рџ (РґРѕ С€РµСЃС‚РЅР°РґС†Р°С‚Рё С€С‚СѓРє).
 static portholder_t
 build_adc_mask(void)
 {
@@ -2286,7 +2286,7 @@ build_adc_mask(void)
 
 	for (i = 0; i < board_get_adcinputs(); ++ i)
 	{
-		mask |= (portholder_t) 1 << board_get_adcch(i);	// ADC_CHER_CH0 или AT91C_ADC_CH0
+		mask |= (portholder_t) 1 << board_get_adcch(i);	// ADC_CHER_CH0 РёР»Рё AT91C_ADC_CH0
 	}
 	return mask;
 }
@@ -2315,9 +2315,9 @@ void hardware_adc_initialize(void)
 
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
-    PMC->PMC_PCER0 = (1UL << ID_ADC);		// разрешить тактовую для ADC
+    PMC->PMC_PCER0 = (1UL << ID_ADC);		// СЂР°Р·СЂРµС€РёС‚СЊ С‚Р°РєС‚РѕРІСѓСЋ РґР»СЏ ADC
 	ADC->ADC_CR = ADC_CR_SWRST;	// reset ADC
-	/* программирование канала PDC, связанного с ADC */
+	/* РїСЂРѕРіСЂР°РјРјРёСЂРѕРІР°РЅРёРµ РєР°РЅР°Р»Р° PDC, СЃРІСЏР·Р°РЅРЅРѕРіРѕ СЃ ADC */
 
 	//ADC->ADC_PTCR = PERIPH_PTCR_RXTDIS | PERIPH_PTCR_TXTDIS;
 
@@ -2333,7 +2333,7 @@ void hardware_adc_initialize(void)
 	unsigned prescal;
 	calcdivider(calcdivround(ADC_FREQ), ATSAM3S_ADC_PRESCAL_WIDTH, ATSAM3S_ADC_PRESCAL_TAPS, & prescal, 1);
 	// Settling time to change offset and gain
-	const unsigned long tADCnS = (1000000000UL + (ADC_FREQ / 2)) / ADC_FREQ;	// Количество наносекунд в периоде частоты ADC_FREQ
+	const unsigned long tADCnS = (1000000000UL + (ADC_FREQ / 2)) / ADC_FREQ;	// РљРѕР»РёС‡РµСЃС‚РІРѕ РЅР°РЅРѕСЃРµРєСѓРЅРґ РІ РїРµСЂРёРѕРґРµ С‡Р°СЃС‚РѕС‚С‹ ADC_FREQ
     const unsigned int tracktime = ulmin(16, ulmax(1, (205 + (tADCnS / 2)) / (tADCnS == 0 ? 1 : tADCnS)));
 
 	ADC->ADC_MR = 
@@ -2342,17 +2342,17 @@ void hardware_adc_initialize(void)
 		(ADC_MR_PRESCAL(prescal)) |	
 		//ADC_MR_TRANSFER(0) |
 	#if HARDWARE_ADCBITS == 10
-		ADC_MR_LOWRES_BITS_10 |	// Канал PDC при этом передаёт по два байта
+		ADC_MR_LOWRES_BITS_10 |	// РљР°РЅР°Р» PDC РїСЂРё СЌС‚РѕРј РїРµСЂРµРґР°С‘С‚ РїРѕ РґРІР° Р±Р°Р№С‚Р°
 	#elif HARDWARE_ADCBITS == 12
-		ADC_MR_LOWRES_BITS_12 |	// Канал PDC при этом передаёт по два байта
+		ADC_MR_LOWRES_BITS_12 |	// РљР°РЅР°Р» PDC РїСЂРё СЌС‚РѕРј РїРµСЂРµРґР°С‘С‚ РїРѕ РґРІР° Р±Р°Р№С‚Р°
 	#else
 		#error Wrong HARDWARE_ADCBITS value
 	#endif
-		ADC_MR_TRGEN_DIS	| // запуск переобразования от команд
+		ADC_MR_TRGEN_DIS	| // Р·Р°РїСѓСЃРє РїРµСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёСЏ РѕС‚ РєРѕРјР°РЅРґ
 		0;
 
-	/* какие из каналов включать.. */
-	ADC->ADC_IER = ADC_IER_DRDY;	/* прерывание после завершения очередного преобразования. */
+	/* РєР°РєРёРµ РёР· РєР°РЅР°Р»РѕРІ РІРєР»СЋС‡Р°С‚СЊ.. */
+	ADC->ADC_IER = ADC_IER_DRDY;	/* РїСЂРµСЂС‹РІР°РЅРёРµ РїРѕСЃР»Рµ Р·Р°РІРµСЂС€РµРЅРёСЏ РѕС‡РµСЂРµРґРЅРѕРіРѕ РїСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёСЏ. */
 
 	////ADC->ADC_CR = ADC_CR_START;	// start ADC
 	////while ((ADC->ADC_ISR & ADC_ISR_DRDY) == 0)
@@ -2363,7 +2363,7 @@ void hardware_adc_initialize(void)
 
 #elif CPUSTYLE_AT91SAM7S
 
-	AT91C_BASE_PMC->PMC_PCER = (1UL << AT91C_ID_ADC);		// разрешить тактовую для ADC
+	AT91C_BASE_PMC->PMC_PCER = (1UL << AT91C_ID_ADC);		// СЂР°Р·СЂРµС€РёС‚СЊ С‚Р°РєС‚РѕРІСѓСЋ РґР»СЏ ADC
 	AT91C_BASE_ADC->ADC_CR = AT91C_ADC_SWRST;	// reset ADC
 
 	// adc characteristics: in 10 bit mode ADC clock max is 5 MHz, in 8 bit mode - 8 MHz
@@ -2371,22 +2371,22 @@ void hardware_adc_initialize(void)
 
 	unsigned prescal;
 	calcdivider(calcdivround(ADC_FREQ), AT91SAM7_ADC_PRESCAL_WIDTH, AT91SAM7_ADC_PRESCAL_TAPS, & prescal, 1);
-	const unsigned long tADCnS = (1000000000UL + (ADC_FREQ / 2)) / ADC_FREQ;	// Количество наносекунд в периоде частоты ADC_FREQ
+	const unsigned long tADCnS = (1000000000UL + (ADC_FREQ / 2)) / ADC_FREQ;	// РљРѕР»РёС‡РµСЃС‚РІРѕ РЅР°РЅРѕСЃРµРєСѓРЅРґ РІ РїРµСЂРёРѕРґРµ С‡Р°СЃС‚РѕС‚С‹ ADC_FREQ
     const unsigned int shtm = ulmin(15, ulmax(0, (600 + (tADCnS / 2)) / (tADCnS == 0 ? 1 : tADCnS)));
 
 	AT91C_BASE_ADC->ADC_MR = 
 		(AT91C_ADC_SHTIM & (shtm << 24)) |		// SampleAndHoldTime - up to 15
 		(AT91C_ADC_PRESCAL & ((prescal) << 8)) |	// up to 1023	- mck 
 	#if HARDWARE_ADCBITS == 10
-		AT91C_ADC_LOWRES_10_BIT |	// Канал PDC при этом передаёт по два байта
+		AT91C_ADC_LOWRES_10_BIT |	// РљР°РЅР°Р» PDC РїСЂРё СЌС‚РѕРј РїРµСЂРµРґР°С‘С‚ РїРѕ РґРІР° Р±Р°Р№С‚Р°
 	#elif HARDWARE_ADCBITS == 8
-		AT91C_ADC_LOWRES_8_BIT |	// Канал PDC при этом передаёт по байту
+		AT91C_ADC_LOWRES_8_BIT |	// РљР°РЅР°Р» PDC РїСЂРё СЌС‚РѕРј РїРµСЂРµРґР°С‘С‚ РїРѕ Р±Р°Р№С‚Сѓ
 	#else
 		#error Wrong HARDWARE_ADCBITS value
 	#endif
 		0;
 
-	AT91C_BASE_ADC->ADC_IER = AT91C_ADC_DRDY;	/* прерывание после завершения очередного преобразования. */
+	AT91C_BASE_ADC->ADC_IER = AT91C_ADC_DRDY;	/* РїСЂРµСЂС‹РІР°РЅРёРµ РїРѕСЃР»Рµ Р·Р°РІРµСЂС€РµРЅРёСЏ РѕС‡РµСЂРµРґРЅРѕРіРѕ РїСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёСЏ. */
 
 	// programming interrupts from ADC
 	AT91C_BASE_AIC->AIC_IDCR = (1UL << AT91C_ID_ADC);
@@ -2399,14 +2399,14 @@ void hardware_adc_initialize(void)
 
 #elif CPUSTYLE_ATMEGA
 
-	// Использование автоматического расчёта предделителя
-	// Хотя, 128 (prei = 6) годится для всех частот - 8 МГц и выше. Ниже - уменьшаем.
+	// РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРіРѕ СЂР°СЃС‡С‘С‚Р° РїСЂРµРґРґРµР»РёС‚РµР»СЏ
+	// РҐРѕС‚СЏ, 128 (prei = 6) РіРѕРґРёС‚СЃСЏ РґР»СЏ РІСЃРµС… С‡Р°СЃС‚РѕС‚ - 8 РњР“С† Рё РІС‹С€Рµ. РќРёР¶Рµ - СѓРјРµРЅСЊС€Р°РµРј.
 	unsigned value;
 	const uint_fast8_t prei = calcdivider(calcdivround(ADC_FREQ), ATMEGA_ADPS_WIDTH, ATMEGA_ADPS_TAPS, & value, 1);
 
 	#if CPUSTYLE_ATMEGA_XXX4
 
-		DIDR0 = build_adc_mask();	// запретить цифровые входы на входах АЦП
+		DIDR0 = build_adc_mask();	// Р·Р°РїСЂРµС‚РёС‚СЊ С†РёС„СЂРѕРІС‹Рµ РІС…РѕРґС‹ РЅР° РІС…РѕРґР°С… РђР¦Рџ
 		ADCSRA = (1U << ADEN) | (1U << ADIE ) | prei;
 
 	#else /* CPUSTYLE_ATMEGA_XXX4 */
@@ -2419,18 +2419,18 @@ void hardware_adc_initialize(void)
 #elif CPUSTYLE_ATXMEGAXXXA4
 
 	#warning TODO: write atxmega code - ADC init
-	// Использование автоматического расчёта предделителя
-	// Хотя, 128 (prei = 6) годится для всех частот - 8 МГц и выше. Ниже - уменьшаем.
+	// РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРіРѕ СЂР°СЃС‡С‘С‚Р° РїСЂРµРґРґРµР»РёС‚РµР»СЏ
+	// РҐРѕС‚СЏ, 128 (prei = 6) РіРѕРґРёС‚СЃСЏ РґР»СЏ РІСЃРµС… С‡Р°СЃС‚РѕС‚ - 8 РњР“С† Рё РІС‹С€Рµ. РќРёР¶Рµ - СѓРјРµРЅСЊС€Р°РµРј.
 	////unsigned value;
 	////const uint_fast8_t prei = calcdivider(calcdivround(ADC_FREQ), ATXMEGA_ADPS_WIDTH, ATXMEGA_ADPS_TAPS, & value, 1);
 
 	////ADCA.PRESCALER = prei;
-	//DIDR0 = build_adc_mask();	// запретить цифровые входы на входах АЦП
+	//DIDR0 = build_adc_mask();	// Р·Р°РїСЂРµС‚РёС‚СЊ С†РёС„СЂРѕРІС‹Рµ РІС…РѕРґС‹ РЅР° РІС…РѕРґР°С… РђР¦Рџ
 	//ADCSRA = (1U << ADEN) | (1U << ADIE );
 
 #if 0
-		// код из electronix.ru
-	/* инициализация АЦП */
+		// РєРѕРґ РёР· electronix.ru
+	/* РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РђР¦Рџ */
 	ADCA.CTRLA = 0x05;
 	ADCA.CTRLB = 0x00;
 	ADCA.PRESCALER = ADC_PRESCALER_DIV256_gc; // 0x6; // ADC_PRESCALER_DIV256_gc
@@ -2439,9 +2439,9 @@ void hardware_adc_initialize(void)
 
 	uint16_t get_adc()
 	{	
-		ADCA.REFCTRL |= (1U << 5); // подаем смещение с пина AREFA	
-		ADCA.CH1.MUXCTRL =	0x20; // выбираем ножку 	
-		ADCA.CH1.CTRL =	(ADC_CH_START_bm | ADC_CH_INPUTMODE_SINGLEENDED_gc); //0x81;	//запускаем преобразавние	
+		ADCA.REFCTRL |= (1U << 5); // РїРѕРґР°РµРј СЃРјРµС‰РµРЅРёРµ СЃ РїРёРЅР° AREFA	
+		ADCA.CH1.MUXCTRL =	0x20; // РІС‹Р±РёСЂР°РµРј РЅРѕР¶РєСѓ 	
+		ADCA.CH1.CTRL =	(ADC_CH_START_bm | ADC_CH_INPUTMODE_SINGLEENDED_gc); //0x81;	//Р·Р°РїСѓСЃРєР°РµРј РїСЂРµРѕР±СЂР°Р·Р°РІРЅРёРµ	
 		_delay_us(30);	
 		return ADCA.CH1.RES;
 	}
@@ -2457,23 +2457,23 @@ void hardware_adc_initialize(void)
 
 	#if defined (ADC2)
 
-		RCC->APB2ENR |= (RCC_APB2ENR_ADC1EN | RCC_APB2ENR_ADC2EN);    // Затактировали АЦП  
+		RCC->APB2ENR |= (RCC_APB2ENR_ADC1EN | RCC_APB2ENR_ADC2EN);    // Р—Р°С‚Р°РєС‚РёСЂРѕРІР°Р»Рё РђР¦Рџ  
 		__DSB();
 		NVIC_SetPriority(ADC1_2_IRQn, ARM_SYSTEM_PRIORITY);
-		NVIC_EnableIRQ(ADC1_2_IRQn);    //Включаем прерывания с АЦП. Обрабатывает ADC1_2_IRQHandler() 
+		NVIC_EnableIRQ(ADC1_2_IRQn);    //Р’РєР»СЋС‡Р°РµРј РїСЂРµСЂС‹РІР°РЅРёСЏ СЃ РђР¦Рџ. РћР±СЂР°Р±Р°С‚С‹РІР°РµС‚ ADC1_2_IRQHandler() 
 
 	#else /* defined (ADC2) */
 
-		RCC->APB2ENR |= (RCC_APB2ENR_ADC1EN);    // Затактировали АЦП  
+		RCC->APB2ENR |= (RCC_APB2ENR_ADC1EN);    // Р—Р°С‚Р°РєС‚РёСЂРѕРІР°Р»Рё РђР¦Рџ  
 		__DSB();
 		NVIC_SetPriority(ADC1_IRQn, ARM_SYSTEM_PRIORITY);
-		NVIC_EnableIRQ(ADC1_IRQn);    //Включаем прерывания с АЦП. Обрабатывает ADC1_2_IRQHandler() 
+		NVIC_EnableIRQ(ADC1_IRQn);    //Р’РєР»СЋС‡Р°РµРј РїСЂРµСЂС‹РІР°РЅРёСЏ СЃ РђР¦Рџ. РћР±СЂР°Р±Р°С‚С‹РІР°РµС‚ ADC1_2_IRQHandler() 
 
 	#endif /* defined (ADC2) */
 
 
-	ADC1->CR2 &= ~ ADC_CR2_CONT;     //Сбрасываем бит. Включение одиночных преобразований.  
-	ADC1->SQR1 &= ~ ADC_SQR1_L;     //Выбираем преобразование с одного канала. Сканирования нет.  
+	ADC1->CR2 &= ~ ADC_CR2_CONT;     //РЎР±СЂР°СЃС‹РІР°РµРј Р±РёС‚. Р’РєР»СЋС‡РµРЅРёРµ РѕРґРёРЅРѕС‡РЅС‹С… РїСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёР№.  
+	ADC1->SQR1 &= ~ ADC_SQR1_L;     //Р’С‹Р±РёСЂР°РµРј РїСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёРµ СЃ РѕРґРЅРѕРіРѕ РєР°РЅР°Р»Р°. РЎРєР°РЅРёСЂРѕРІР°РЅРёСЏ РЅРµС‚.  
 
 	#if WITHREFSENSOR || WITHTEMPSENSOR
 		ADC1->CR2 |= ADC_CR2_TSVREFE;
@@ -2481,11 +2481,11 @@ void hardware_adc_initialize(void)
 
 
 
-	// установка врмени выборки для данного канала
-	//const uint_fast32_t cycles = NTICKSADC01(adcmap->thold_uS01);	// в десятых долях микросекунды
+	// СѓСЃС‚Р°РЅРѕРІРєР° РІСЂРјРµРЅРё РІС‹Р±РѕСЂРєРё РґР»СЏ РґР°РЅРЅРѕРіРѕ РєР°РЅР°Р»Р°
+	//const uint_fast32_t cycles = NTICKSADC01(adcmap->thold_uS01);	// РІ РґРµСЃСЏС‚С‹С… РґРѕР»СЏС… РјРёРєСЂРѕСЃРµРєСѓРЅРґС‹
 	const uint_fast8_t t = 4;	// 0..7
-	/* Устанавливаем sample time одинаковое на всех каналах 
-		Значения и время выборки
+	/* РЈСЃС‚Р°РЅР°РІР»РёРІР°РµРј sample time РѕРґРёРЅР°РєРѕРІРѕРµ РЅР° РІСЃРµС… РєР°РЅР°Р»Р°С… 
+		Р—РЅР°С‡РµРЅРёСЏ Рё РІСЂРµРјСЏ РІС‹Р±РѕСЂРєРё
 		0: 1.5 cycles
 		1: 7.5 cycles
 		2: 13.5 cycles
@@ -2519,18 +2519,18 @@ void hardware_adc_initialize(void)
 			ADC_SMPR1_SMP11_0 | ADC_SMPR1_SMP10_0) |
 		0;
 
-	ADC1->CR1 |= ADC_CR1_EOCIE;    //Включили прерываия при окончании преобразования.  
+	ADC1->CR1 |= ADC_CR1_EOCIE;    //Р’РєР»СЋС‡РёР»Рё РїСЂРµСЂС‹РІР°РёСЏ РїСЂРё РѕРєРѕРЅС‡Р°РЅРёРё РїСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёСЏ.  
 
-	//	ADC1->CR2 |= ADC_CR2_TSVREFE;	// для тестов
+	//	ADC1->CR2 |= ADC_CR2_TSVREFE;	// РґР»СЏ С‚РµСЃС‚РѕРІ
 
-	ADC1->CR2 |= ADC_CR2_CAL; //Запуск калибровки АЦП
+	ADC1->CR2 |= ADC_CR2_CAL; //Р—Р°РїСѓСЃРє РєР°Р»РёР±СЂРѕРІРєРё РђР¦Рџ
 	while ((ADC1->CR2 & ADC_CR2_CAL) == 0)
-		; //Ожидаем окончания калибровки
+		; //РћР¶РёРґР°РµРј РѕРєРѕРЅС‡Р°РЅРёСЏ РєР°Р»РёР±СЂРѕРІРєРё
 
 	#if defined (ADC2)
-		ADC2->CR2 |= ADC_CR2_CAL; //Запуск калибровки АЦП
+		ADC2->CR2 |= ADC_CR2_CAL; //Р—Р°РїСѓСЃРє РєР°Р»РёР±СЂРѕРІРєРё РђР¦Рџ
 		while ((ADC2->CR2 & ADC_CR2_CAL) == 0)
-			; //Ожидаем окончания калибровки
+			; //РћР¶РёРґР°РµРј РѕРєРѕРЅС‡Р°РЅРёСЏ РєР°Р»РёР±СЂРѕРІРєРё
 	#endif /* defined (ADC2) */
 
 #elif CPUSTYLE_STM32H7XX
@@ -2538,16 +2538,16 @@ void hardware_adc_initialize(void)
 	const uint_fast32_t ainmask = build_adc_mask();
 	HARDWARE_ADC_INITIALIZE(ainmask);
 
-	RCC->AHB1ENR |= RCC_AHB1ENR_ADC12EN;	// Затактировали АЦП  
+	RCC->AHB1ENR |= RCC_AHB1ENR_ADC12EN;	// Р—Р°С‚Р°РєС‚РёСЂРѕРІР°Р»Рё РђР¦Рџ  
 	__DSB();
-	RCC->AHB4ENR |= RCC_AHB4ENR_ADC3EN;		// Затактировали АЦП  
+	RCC->AHB4ENR |= RCC_AHB4ENR_ADC3EN;		// Р—Р°С‚Р°РєС‚РёСЂРѕРІР°Р»Рё РђР¦Рџ  
 	__DSB();
 	#if WITHREFSENSOR
-		RCC->APB4ENR |= RCC_APB4ENR_VREFEN;		// Затактировали источник опорного напрядения (для нормирования значений с АЦП)  
+		RCC->APB4ENR |= RCC_APB4ENR_VREFEN;		// Р—Р°С‚Р°РєС‚РёСЂРѕРІР°Р»Рё РёСЃС‚РѕС‡РЅРёРє РѕРїРѕСЂРЅРѕРіРѕ РЅР°РїСЂСЏРґРµРЅРёСЏ (РґР»СЏ РЅРѕСЂРјРёСЂРѕРІР°РЅРёСЏ Р·РЅР°С‡РµРЅРёР№ СЃ РђР¦Рџ)  
 	__DSB();
 	#endif /* WITHREFSENSOR */
 
-	// расчет делителя для тактирования АЦП
+	// СЂР°СЃС‡РµС‚ РґРµР»РёС‚РµР»СЏ РґР»СЏ С‚Р°РєС‚РёСЂРѕРІР°РЅРёСЏ РђР¦Рџ
 	unsigned value;
 	const uint_fast8_t prei = calcdivider(calcdivround_hsi48(ADC_FREQ), 0, (512 | 256 | 128 | 64 | 32 | 16 | 8 | 4 | 2), & value, 0);
 	static const uint_fast8_t presc [] = 
@@ -2603,8 +2603,8 @@ void hardware_adc_initialize(void)
 
 		adc->PCSEL |= ((1U << adcmap->ch) << ADC_PCSEL_PCSEL_Pos) & ADC_PCSEL_PCSEL_Msk;
 
-		// установка врмени выборки для данного канала
-		const uint_fast32_t cycles = NTICKSADC01(adcmap->thold_uS01);	// в десятых долях микросекунды
+		// СѓСЃС‚Р°РЅРѕРІРєР° РІСЂРјРµРЅРё РІС‹Р±РѕСЂРєРё РґР»СЏ РґР°РЅРЅРѕРіРѕ РєР°РЅР°Р»Р°
+		const uint_fast32_t cycles = NTICKSADC01(adcmap->thold_uS01);	// РІ РґРµСЃСЏС‚С‹С… РґРѕР»СЏС… РјРёРєСЂРѕСЃРµРєСѓРЅРґС‹
 		uint_fast8_t tcode;
 		if (cycles >= 8105)	// 810.5 clocks
 			tcode = 7;
@@ -2678,12 +2678,12 @@ void hardware_adc_initialize(void)
 	}
 
 	NVIC_SetPriority(ADC_IRQn, ARM_SYSTEM_PRIORITY);
-	NVIC_EnableIRQ(ADC_IRQn);    // Включаем прерывания с АЦП. Обрабатывает ADC_IRQHandler() 
+	NVIC_EnableIRQ(ADC_IRQn);    // Р’РєР»СЋС‡Р°РµРј РїСЂРµСЂС‹РІР°РЅРёСЏ СЃ РђР¦Рџ. РћР±СЂР°Р±Р°С‚С‹РІР°РµС‚ ADC_IRQHandler() 
 	NVIC_SetPriority(ADC3_IRQn, ARM_SYSTEM_PRIORITY);
-	NVIC_EnableIRQ(ADC3_IRQn);    // Включаем прерывания с АЦП. Обрабатывает ADC3_IRQHandler() 
+	NVIC_EnableIRQ(ADC3_IRQn);    // Р’РєР»СЋС‡Р°РµРј РїСЂРµСЂС‹РІР°РЅРёСЏ СЃ РђР¦Рџ. РћР±СЂР°Р±Р°С‚С‹РІР°РµС‚ ADC3_IRQHandler() 
 
-	// первый запуск производится в hardware_adc_startonescan().
-	// А здесь всё...
+	// РїРµСЂРІС‹Р№ Р·Р°РїСѓСЃРє РїСЂРѕРёР·РІРѕРґРёС‚СЃСЏ РІ hardware_adc_startonescan().
+	// Рђ Р·РґРµСЃСЊ РІСЃС‘...
 
 #elif CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX
 
@@ -2692,9 +2692,9 @@ void hardware_adc_initialize(void)
 	// Initialization ADC
 
 #if defined (RCC_APB2ENR_ADC2EN)
-	RCC->APB2ENR |= (RCC_APB2ENR_ADC1EN | RCC_APB2ENR_ADC2EN /* | RCC_APB2ENR_ADC3EN */);    //Затактировали АЦП  
+	RCC->APB2ENR |= (RCC_APB2ENR_ADC1EN | RCC_APB2ENR_ADC2EN /* | RCC_APB2ENR_ADC3EN */);    //Р—Р°С‚Р°РєС‚РёСЂРѕРІР°Р»Рё РђР¦Рџ  
 #else
-	RCC->APB2ENR |= (RCC_APB2ENR_ADC1EN /* | RCC_APB2ENR_ADC2EN | RCC_APB2ENR_ADC3EN */);    //Затактировали АЦП  
+	RCC->APB2ENR |= (RCC_APB2ENR_ADC1EN /* | RCC_APB2ENR_ADC2EN | RCC_APB2ENR_ADC3EN */);    //Р—Р°С‚Р°РєС‚РёСЂРѕРІР°Р»Рё РђР¦Рџ  
 #endif
 	__DSB();
 
@@ -2708,7 +2708,7 @@ void hardware_adc_initialize(void)
 		0x01,	// 01: PCLK2 divided by 4
 		0x03,	// 11: PCLK2 divided by 8
 	};
-	const uint_fast32_t cycles = NTICKSADC01(10);	// в десятых долях микросекунды
+	const uint_fast32_t cycles = NTICKSADC01(10);	// РІ РґРµСЃСЏС‚С‹С… РґРѕР»СЏС… РјРёРєСЂРѕСЃРµРєСѓРЅРґС‹
 	debug_printf_P(PSTR("hardware_adc_initialize: prei=%u, presc=0x%02X, cycles=%u\n"), prei, presc [prei], cycles);
 
 	ADC->CCR = (ADC->CCR & ~ (ADC_CCR_ADCPRE | ADC_CCR_TSVREFE)) | 
@@ -2720,14 +2720,14 @@ void hardware_adc_initialize(void)
 	
 
 	NVIC_SetPriority(ADC_IRQn, ARM_SYSTEM_PRIORITY);
-	NVIC_EnableIRQ(ADC_IRQn);    //Включаем прерывания с АЦП. Обрабатывает ADC_IRQHandler() 
+	NVIC_EnableIRQ(ADC_IRQn);    //Р’РєР»СЋС‡Р°РµРј РїСЂРµСЂС‹РІР°РЅРёСЏ СЃ РђР¦Рџ. РћР±СЂР°Р±Р°С‚С‹РІР°РµС‚ ADC_IRQHandler() 
 
-	ADC1->CR2 &= ~ ADC_CR2_CONT;     //Сбрасываем бит. Включение одиночных преобразований.  
-	ADC1->SQR1 &= ~ ADC_SQR1_L;     //Выбираем преобразование с одного канала. Сканирования нет.  
+	ADC1->CR2 &= ~ ADC_CR2_CONT;     //РЎР±СЂР°СЃС‹РІР°РµРј Р±РёС‚. Р’РєР»СЋС‡РµРЅРёРµ РѕРґРёРЅРѕС‡РЅС‹С… РїСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёР№.  
+	ADC1->SQR1 &= ~ ADC_SQR1_L;     //Р’С‹Р±РёСЂР°РµРј РїСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёРµ СЃ РѕРґРЅРѕРіРѕ РєР°РЅР°Р»Р°. РЎРєР°РЅРёСЂРѕРІР°РЅРёСЏ РЅРµС‚.  
 
 
-	/* Устанавливаем sample time одинаковое на всех каналах 
-		Значения и время выборки
+	/* РЈСЃС‚Р°РЅР°РІР»РёРІР°РµРј sample time РѕРґРёРЅР°РєРѕРІРѕРµ РЅР° РІСЃРµС… РєР°РЅР°Р»Р°С… 
+		Р—РЅР°С‡РµРЅРёСЏ Рё РІСЂРµРјСЏ РІС‹Р±РѕСЂРєРё
 		0: 1.5 cycles
 		1: 7.5 cycles
 		2: 13.5 cycles
@@ -2749,8 +2749,8 @@ void hardware_adc_initialize(void)
 			110: 144 cycles
 			111: 480 cycles
 	*/
-	// установка врмени выборки для данного канала
-	//const uint_fast32_t cycles = NTICKSADC01(adcmap->thold_uS01);	// в десятых долях микросекунды
+	// СѓСЃС‚Р°РЅРѕРІРєР° РІСЂРјРµРЅРё РІС‹Р±РѕСЂРєРё РґР»СЏ РґР°РЅРЅРѕРіРѕ РєР°РЅР°Р»Р°
+	//const uint_fast32_t cycles = NTICKSADC01(adcmap->thold_uS01);	// РІ РґРµСЃСЏС‚С‹С… РґРѕР»СЏС… РјРёРєСЂРѕСЃРµРєСѓРЅРґС‹
 	// The temperature sensor is internally connected to the same input channel as VBAT, ADC1_IN18,
 #if defined(STM32F767xx)
 	// sampling time = 100nS .. 16uS
@@ -2792,7 +2792,7 @@ void hardware_adc_initialize(void)
 		0;
 
 	ADC1->CR1 = (ADC1->CR1 & ~ (ADC_CR1_RES | ADC_CR1_EOCIE)) |
-		ADC_CR1_EOCIE |   //Включили прерываия при окончании преобразования.  
+		ADC_CR1_EOCIE |   //Р’РєР»СЋС‡РёР»Рё РїСЂРµСЂС‹РІР°РёСЏ РїСЂРё РѕРєРѕРЅС‡Р°РЅРёРё РїСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёСЏ.  
 	#if HARDWARE_ADCBITS == 6
 		(3 << ADC_CR1_RES_Pos) |	// ADC 6-bit resolution
 	#elif HARDWARE_ADCBITS == 8
@@ -2806,11 +2806,11 @@ void hardware_adc_initialize(void)
 	#endif
 		0;
 
-	ADC1->CR2 |= ADC_CR2_ADON;	// Запуск преобразования
+	ADC1->CR2 |= ADC_CR2_ADON;	// Р—Р°РїСѓСЃРє РїСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёСЏ
 	local_delay_us(10);		// tSTAB
 
-	// первый запуск производится в hardware_adc_startonescan().
-	// А здесь всё...
+	// РїРµСЂРІС‹Р№ Р·Р°РїСѓСЃРє РїСЂРѕРёР·РІРѕРґРёС‚СЃСЏ РІ hardware_adc_startonescan().
+	// Рђ Р·РґРµСЃСЊ РІСЃС‘...
 
 #elif CPUSTYLE_STM32F30X
 
@@ -2821,18 +2821,18 @@ void hardware_adc_initialize(void)
 
 	// Initialization ADC. 
 	RCC->CFGR2 = (RCC->CFGR2 & ~ (RCC_CFGR2_ADCPRE12)) | RCC_CFGR2_ADCPRE12_DIV4; // RCC_CFGR_ADCPRE12_DIV2;    //  
-	//RCC->APB2ENR |= (RCC_APB2ENR_ADC1EN | RCC_APB2ENR_ADC2EN);    //Затактировали АЦП  
+	//RCC->APB2ENR |= (RCC_APB2ENR_ADC1EN | RCC_APB2ENR_ADC2EN);    //Р—Р°С‚Р°РєС‚РёСЂРѕРІР°Р»Рё РђР¦Рџ  
 
 
 	NVIC_SetPriority(ADC1_2_IRQn, ARM_SYSTEM_PRIORITY);
-	NVIC_EnableIRQ(ADC1_2_IRQn);    //Включаем прерывания с АЦП. Обрабатывает ADC1_2_IRQHandler() 
+	NVIC_EnableIRQ(ADC1_2_IRQn);    //Р’РєР»СЋС‡Р°РµРј РїСЂРµСЂС‹РІР°РЅРёСЏ СЃ РђР¦Рџ. РћР±СЂР°Р±Р°С‚С‹РІР°РµС‚ ADC1_2_IRQHandler() 
 
-	ADC1->CFGR &= ~ ADC_CFGR_CONT;     //Сбрасываем бит. Включение одиночных преобразований.  
-	ADC1->SQR1 &= ~ ADC_SQR1_L;     //Выбираем преобразование с одного канала. Сканирования нет.  
+	ADC1->CFGR &= ~ ADC_CFGR_CONT;     //РЎР±СЂР°СЃС‹РІР°РµРј Р±РёС‚. Р’РєР»СЋС‡РµРЅРёРµ РѕРґРёРЅРѕС‡РЅС‹С… РїСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёР№.  
+	ADC1->SQR1 &= ~ ADC_SQR1_L;     //Р’С‹Р±РёСЂР°РµРј РїСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёРµ СЃ РѕРґРЅРѕРіРѕ РєР°РЅР°Р»Р°. РЎРєР°РЅРёСЂРѕРІР°РЅРёСЏ РЅРµС‚.  
 
 
-	/* Устанавливаем sample time одинаковое на всех каналах 
-		Значения и время выборки
+	/* РЈСЃС‚Р°РЅР°РІР»РёРІР°РµРј sample time РѕРґРёРЅР°РєРѕРІРѕРµ РЅР° РІСЃРµС… РєР°РЅР°Р»Р°С… 
+		Р—РЅР°С‡РµРЅРёСЏ Рё РІСЂРµРјСЏ РІС‹Р±РѕСЂРєРё
 		0: 1.5 cycles
 		1: 7.5 cycles
 		2: 13.5 cycles
@@ -2868,20 +2868,20 @@ void hardware_adc_initialize(void)
 			ADC_SMPR1_SMP1_0 | ADC_SMPR1_SMP0_0) |
 		0;
 
-	ADC1->IER |= ADC_IER_EOS;    //Включили прерываия при окончании преобразования.  
+	ADC1->IER |= ADC_IER_EOS;    //Р’РєР»СЋС‡РёР»Рё РїСЂРµСЂС‹РІР°РёСЏ РїСЂРё РѕРєРѕРЅС‡Р°РЅРёРё РїСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёСЏ.  
 
-	//	ADC1->CR2 |= ADC_CR2_TSVREFE;	// для тестов
+	//	ADC1->CR2 |= ADC_CR2_TSVREFE;	// РґР»СЏ С‚РµСЃС‚РѕРІ
 
-	//ADC1->CR |= ADC_CR_ADCAL; //Запуск калибровки АЦП
+	//ADC1->CR |= ADC_CR_ADCAL; //Р—Р°РїСѓСЃРє РєР°Р»РёР±СЂРѕРІРєРё РђР¦Рџ
 	//while ((ADC1->CR & ADC_CR_ADCAL) == 0)
-	//	; //Ожидаем окончания калибровки
+	//	; //РћР¶РёРґР°РµРј РѕРєРѕРЅС‡Р°РЅРёСЏ РєР°Р»РёР±СЂРѕРІРєРё
 
-	//ADC2->CR |= ADC_CR_ADCAL; //Запуск калибровки АЦП
+	//ADC2->CR |= ADC_CR_ADCAL; //Р—Р°РїСѓСЃРє РєР°Р»РёР±СЂРѕРІРєРё РђР¦Рџ
 	//while ((ADC2->CR & ADC_CR_ADCAL) == 0)
-	//	; //Ожидаем окончания калибровки
+	//	; //РћР¶РёРґР°РµРј РѕРєРѕРЅС‡Р°РЅРёСЏ РєР°Р»РёР±СЂРѕРІРєРё
 
-	// первый запуск производится в hardware_adc_startonescan().
-	// А здесь всё...
+	// РїРµСЂРІС‹Р№ Р·Р°РїСѓСЃРє РїСЂРѕРёР·РІРѕРґРёС‚СЃСЏ РІ hardware_adc_startonescan().
+	// Рђ Р·РґРµСЃСЊ РІСЃС‘...
 
 #elif CPUSTYLE_STM32F0XX
 
@@ -2905,7 +2905,7 @@ void hardware_adc_initialize(void)
 
 	//Initialization ADC. PortC.0 ADC 10  
 	RCC->CFGR = (RCC->CFGR & ~ (RCC_CFGR_ADCPRE)) | RCC_CFGR_ADCPRE_DIV4; // RCC_CFGR_ADCPRE12_DIV2;    //  
-	RCC->APB2ENR |= RCC_APB2ENR_ADC1EN;    //Затактировали АЦП  
+	RCC->APB2ENR |= RCC_APB2ENR_ADC1EN;    //Р—Р°С‚Р°РєС‚РёСЂРѕРІР°Р»Рё РђР¦Рџ  
 	__DSB();
 
 	ADC1->CFGR1 =
@@ -2918,7 +2918,7 @@ void hardware_adc_initialize(void)
 
 	ADC1->IER = ADC_IER_EOCIE;
 
-	// Калибровка.
+	// РљР°Р»РёР±СЂРѕРІРєР°.
 	ADC1->CR = ADC_CR_ADCAL;
 	while ((ADC1->CR & ADC_CR_ADCAL) != 0)
 		;
@@ -2928,14 +2928,14 @@ void hardware_adc_initialize(void)
 
 	#if STM32F0XX_MD
 		NVIC_SetPriority(ADC1_COMP_IRQn, ARM_SYSTEM_PRIORITY);
-		NVIC_EnableIRQ(ADC1_COMP_IRQn);    //Включаем прерывания с АЦП. Обрабатывает ADC1_COMP_IRQHandler() 
+		NVIC_EnableIRQ(ADC1_COMP_IRQn);    //Р’РєР»СЋС‡Р°РµРј РїСЂРµСЂС‹РІР°РЅРёСЏ СЃ РђР¦Рџ. РћР±СЂР°Р±Р°С‚С‹РІР°РµС‚ ADC1_COMP_IRQHandler() 
 	#else /* STM32F0XX_MD */
 		NVIC_SetPriority(ADC1_IRQn, ARM_SYSTEM_PRIORITY);
-		NVIC_EnableIRQ(ADC1_IRQn);    //Включаем прерывания с АЦП. Обрабатывает ADC1_IRQHandler() 
+		NVIC_EnableIRQ(ADC1_IRQn);    //Р’РєР»СЋС‡Р°РµРј РїСЂРµСЂС‹РІР°РЅРёСЏ СЃ РђР¦Рџ. РћР±СЂР°Р±Р°С‚С‹РІР°РµС‚ ADC1_IRQHandler() 
 	#endif /* STM32F0XX_MD */
 
-	// первый запуск производится в hardware_adc_startonescan().
-	// А здесь всё...
+	// РїРµСЂРІС‹Р№ Р·Р°РїСѓСЃРє РїСЂРѕРёР·РІРѕРґРёС‚СЃСЏ РІ hardware_adc_startonescan().
+	// Рђ Р·РґРµСЃСЊ РІСЃС‘...
 
 #elif CPUSTYLE_R7S721
 
@@ -2961,8 +2961,8 @@ void hardware_adc_initialize(void)
 		GIC_EnableIRQ(int_id);
 	}
 
-	// первый запуск производится в hardware_adc_startonescan().
-	// А здесь всё...
+	// РїРµСЂРІС‹Р№ Р·Р°РїСѓСЃРє РїСЂРѕРёР·РІРѕРґРёС‚СЃСЏ РІ hardware_adc_startonescan().
+	// Рђ Р·РґРµСЃСЊ РІСЃС‘...
 
 #elif CPUSTYLE_STM32L0XX
 
@@ -2973,7 +2973,7 @@ void hardware_adc_initialize(void)
 
 	//Initialization ADC. PortC.0 ADC 10  
 	RCC->CFGR = (RCC->CFGR & ~ (RCC_CFGR_ADCPRE)) | RCC_CFGR_ADCPRE_DIV4; // RCC_CFGR_ADCPRE12_DIV2;    //  
-	RCC->APB2ENR |= RCC_APB2ENR_ADC1EN;    //Затактировали АЦП  
+	RCC->APB2ENR |= RCC_APB2ENR_ADC1EN;    //Р—Р°С‚Р°РєС‚РёСЂРѕРІР°Р»Рё РђР¦Рџ  
 	__DSB();
 
 	ADC1->CFGR1 =
@@ -2986,7 +2986,7 @@ void hardware_adc_initialize(void)
 
 	ADC1->IER = ADC_IER_EOCIE;
 
-	// Калибровка.
+	// РљР°Р»РёР±СЂРѕРІРєР°.
 	ADC1->CR = ADC_CR_ADCAL;
 	while ((ADC1->CR & ADC_CR_ADCAL) != 0)
 		;
@@ -2995,11 +2995,11 @@ void hardware_adc_initialize(void)
 	ADC1->CR = ADC_CR_ADEN;
 
 	NVIC_SetPriority(ADC1_COMP_IRQn, ARM_SYSTEM_PRIORITY);
-	NVIC_EnableIRQ(ADC1_COMP_IRQn);    //Включаем прерывания с АЦП. Обрабатывает ADC1_COMP_IRQHandler() 
+	NVIC_EnableIRQ(ADC1_COMP_IRQn);    //Р’РєР»СЋС‡Р°РµРј РїСЂРµСЂС‹РІР°РЅРёСЏ СЃ РђР¦Рџ. РћР±СЂР°Р±Р°С‚С‹РІР°РµС‚ ADC1_COMP_IRQHandler() 
 	#endif
 
-	// первый запуск производится в hardware_adc_startonescan().
-	// А здесь всё...
+	// РїРµСЂРІС‹Р№ Р·Р°РїСѓСЃРє РїСЂРѕРёР·РІРѕРґРёС‚СЃСЏ РІ hardware_adc_startonescan().
+	// Рђ Р·РґРµСЃСЊ РІСЃС‘...
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -3008,13 +3008,13 @@ void hardware_adc_initialize(void)
 	//debug_printf_P(PSTR("hardware_adc_initialize done\n"));
 }
 
-// хотя бы один вход (s-метр) есть.
+// С…РѕС‚СЏ Р±С‹ РѕРґРёРЅ РІС…РѕРґ (s-РјРµС‚СЂ) РµСЃС‚СЊ.
 static void 
 hardware_adc_startonescan(void)
 {
-	//ASSERT((adc_input == 0) || (adc_input == board_get_adcinputs()));	// проверяем, успело ли отработать ранее запущенное преобразование
+	//ASSERT((adc_input == 0) || (adc_input == board_get_adcinputs()));	// РїСЂРѕРІРµСЂСЏРµРј, СѓСЃРїРµР»Рѕ Р»Рё РѕС‚СЂР°Р±РѕС‚Р°С‚СЊ СЂР°РЅРµРµ Р·Р°РїСѓС‰РµРЅРЅРѕРµ РїСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёРµ
 	if ((adc_input != 0) && (adc_input < board_get_adcinputs()))
-		return;	// не успели
+		return;	// РЅРµ СѓСЃРїРµР»Рё
 	for (adc_input = 0; adc_input < board_get_adcinputs(); ++ adc_input)
 	{
 		if (board_get_adcch(adc_input) < BOARD_ADCXBASE)
@@ -3054,21 +3054,21 @@ hardware_adc_startonescan(void)
 
 #elif CPUSTYLE_STM32H7XX
 	
-	// Установить следующий вход (блок ADC может измениться)
+	// РЈСЃС‚Р°РЅРѕРІРёС‚СЊ СЃР»РµРґСѓСЋС‰РёР№ РІС…РѕРґ (Р±Р»РѕРє ADC РјРѕР¶РµС‚ РёР·РјРµРЅРёС‚СЊСЃСЏ)
 	const adcinmap_t * const adcmap = getadcmap(board_get_adcch(adc_input));
 	ADC_TypeDef * const adc = adcmap->adc;
 
 	ASSERT((adc->CR & (ADC_CR_JADSTART | ADC_CR_ADSTART)) == 0);
 	adc->SQR1 = (adc->SQR1 & ~ (ADC_SQR1_L | ADC_SQR1_SQ1)) |
-		0 * ADC_SQR1_L_0 |	//Выбираем преобразование с одного канала. Сканирования нет.
+		0 * ADC_SQR1_L_0 |	//Р’С‹Р±РёСЂР°РµРј РїСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёРµ СЃ РѕРґРЅРѕРіРѕ РєР°РЅР°Р»Р°. РЎРєР°РЅРёСЂРѕРІР°РЅРёСЏ РЅРµС‚.
 		adcmap->ch * ADC_SQR1_SQ1_0 |
 		0;
-	adc->CR |= ADC_CR_ADSTART;	// Запуск преобразования
+	adc->CR |= ADC_CR_ADSTART;	// Р—Р°РїСѓСЃРє РїСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёСЏ
 
 #elif CPUSTYLE_STM32F1XX || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX
 	//#warning TODO: to be implemented for CPUSTYLE_STM32F1XX
 
-	// Установить следующий вход
+	// РЈСЃС‚Р°РЅРѕРІРёС‚СЊ СЃР»РµРґСѓСЋС‰РёР№ РІС…РѕРґ
 	ADC1->SQR3 = (ADC1->SQR3 & ~ ADC_SQR3_SQ1) | (ADC_SQR3_SQ1_0 * board_get_adcch(adc_input)); 
 	#if CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX
 		ADC1->CR2 |= ADC_CR2_SWSTART;	// !!!!
@@ -3077,7 +3077,7 @@ hardware_adc_startonescan(void)
 #elif CPUSTYLE_STM32F30X
 	#warning TODO: Add code for STM32F30X support
 
-	// Установить следующий вход
+	// РЈСЃС‚Р°РЅРѕРІРёС‚СЊ СЃР»РµРґСѓСЋС‰РёР№ РІС…РѕРґ
 	ADC1->SQR1 = (ADC1->SQR1 & ~ ADC_SQR1_SQ1) | (ADC_SQR1_SQ1_0 * board_get_adcch(adc_input)); 
 	ADC1->CR |= ADC_CR_ADSTART;	// ADC Start of Regular conversion
 
@@ -3089,9 +3089,9 @@ hardware_adc_startonescan(void)
 #elif CPUSTYLE_R7S721
 	//#warning TODO: Add code for R7S721 ADC support
 	// 27.4.1 Single Mode
-	// Установить следующий вход
+	// РЈСЃС‚Р°РЅРѕРІРёС‚СЊ СЃР»РµРґСѓСЋС‰РёР№ РІС…РѕРґ
 	ADC.ADCSR = (ADC.ADCSR & ~ (ADC_SR_CH)) | 
-		(board_get_adcch(adc_input) << ADC_SR_CH_SHIFT) |	// канал для преобразования
+		(board_get_adcch(adc_input) << ADC_SR_CH_SHIFT) |	// РєР°РЅР°Р» РґР»СЏ РїСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёСЏ
 		1 * ADC_SR_ADST |	// ADST: Single mode: A/D conversion starts
 		0;
 
@@ -3135,11 +3135,11 @@ hardware_adc_startonescan(void)
 
 
 #if WITHDCDCFREQCTL
-	//static uint_fast16_t dcdcrefdiv = 62;	/* делится частота внутреннего генератора 48 МГц */
+	//static uint_fast16_t dcdcrefdiv = 62;	/* РґРµР»РёС‚СЃСЏ С‡Р°СЃС‚РѕС‚Р° РІРЅСѓС‚СЂРµРЅРЅРµРіРѕ РіРµРЅРµСЂР°С‚РѕСЂР° 48 РњР“С† */
 
 	/* 
-		получение делителя частоты для синхронизации DC-DC конверторов 
-		для исключения попадания в полосу обзора панорамы гармоник этой частоты. 
+		РїРѕР»СѓС‡РµРЅРёРµ РґРµР»РёС‚РµР»СЏ С‡Р°СЃС‚РѕС‚С‹ РґР»СЏ СЃРёРЅС…СЂРѕРЅРёР·Р°С†РёРё DC-DC РєРѕРЅРІРµСЂС‚РѕСЂРѕРІ 
+		РґР»СЏ РёСЃРєР»СЋС‡РµРЅРёСЏ РїРѕРїР°РґР°РЅРёСЏ РІ РїРѕР»РѕСЃСѓ РѕР±Р·РѕСЂР° РїР°РЅРѕСЂР°РјС‹ РіР°СЂРјРѕРЅРёРє СЌС‚РѕР№ С‡Р°СЃС‚РѕС‚С‹. 
 	*/
 	uint_fast16_t
 	getbldivider(
@@ -3148,7 +3148,7 @@ hardware_adc_startonescan(void)
 	{
 #if CPUSTYLE_R7S721
 
-		return calcdivround_p0clock(760000uL * 2);	// на выходе формирователя делитель на 2 - требуемую частоту умножаем на два
+		return calcdivround_p0clock(760000uL * 2);	// РЅР° РІС‹С…РѕРґРµ С„РѕСЂРјРёСЂРѕРІР°С‚РµР»СЏ РґРµР»РёС‚РµР»СЊ РЅР° 2 - С‚СЂРµР±СѓРµРјСѓСЋ С‡Р°СЃС‚РѕС‚Сѓ СѓРјРЅРѕР¶Р°РµРј РЅР° РґРІР°
 
 #elif CPUSTYLE_STM32H7XX
 		struct FREQ 
@@ -3157,7 +3157,7 @@ hardware_adc_startonescan(void)
 			uint32_t fmin;
 			uint32_t fmax;
 		};
-		// пока для проверки работоспособности. Таблицу надо расчитать.
+		// РїРѕРєР° РґР»СЏ РїСЂРѕРІРµСЂРєРё СЂР°Р±РѕС‚РѕСЃРїРѕСЃРѕР±РЅРѕСЃС‚Рё. РўР°Р±Р»РёС†Сѓ РЅР°РґРѕ СЂР°СЃС‡РёС‚Р°С‚СЊ.
 		static const FLASHMEM struct FREQ freqs [] = {
 		  { 63, 6900000uL,  UINT32_MAX },
 		  { 62, 0,		6900000uL },	
@@ -3165,16 +3165,16 @@ hardware_adc_startonescan(void)
 
 		uint_fast8_t high = (sizeof freqs / sizeof freqs [0]);
 		uint_fast8_t low = 0;
-		uint_fast8_t middle;	// результат поиска
+		uint_fast8_t middle;	// СЂРµР·СѓР»СЊС‚Р°С‚ РїРѕРёСЃРєР°
 
-		// Двоичный поиск
+		// Р”РІРѕРёС‡РЅС‹Р№ РїРѕРёСЃРє
 		while (low < high)
 		{
 			middle = (high - low) / 2 + low;
-			if (freq < freqs [middle].fmin)	// нижняя граница не включается - для обеспечения формального попадания частоты DCO в рабочий диапазон
+			if (freq < freqs [middle].fmin)	// РЅРёР¶РЅСЏСЏ РіСЂР°РЅРёС†Р° РЅРµ РІРєР»СЋС‡Р°РµС‚СЃСЏ - РґР»СЏ РѕР±РµСЃРїРµС‡РµРЅРёСЏ С„РѕСЂРјР°Р»СЊРЅРѕРіРѕ РїРѕРїР°РґР°РЅРёСЏ С‡Р°СЃС‚РѕС‚С‹ DCO РІ СЂР°Р±РѕС‡РёР№ РґРёР°РїР°Р·РѕРЅ
 				low = middle + 1;
 			else if (freq >= freqs [middle].fmax)
-				high = middle;		// переходим к поиску в меньших индексах
+				high = middle;		// РїРµСЂРµС…РѕРґРёРј Рє РїРѕРёСЃРєСѓ РІ РјРµРЅСЊС€РёС… РёРЅРґРµРєСЃР°С…
 			else
 				goto found;
 		}
@@ -3218,14 +3218,14 @@ hardware_adc_startonescan(void)
 
 #elif CPUSTYLE_STM32H7XX
 		/* TIM16_CH1 - PF6 */
-		RCC->APB2ENR |= RCC_APB2ENR_TIM16EN;   //подаем тактирование на TIM16
+		RCC->APB2ENR |= RCC_APB2ENR_TIM16EN;   //РїРѕРґР°РµРј С‚Р°РєС‚РёСЂРѕРІР°РЅРёРµ РЅР° TIM16
 		__DSB();
 
 		TIM16->CCMR1 = 
-			3 * TIM_CCMR1_OC1M_0 |	// для кодов более 7 использовать TIM_CCMR1_OC1M_3. Output Compare 1 Mode = 3
+			3 * TIM_CCMR1_OC1M_0 |	// РґР»СЏ РєРѕРґРѕРІ Р±РѕР»РµРµ 7 РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊ TIM_CCMR1_OC1M_3. Output Compare 1 Mode = 3
 			0;
 		TIM16->CCER = TIM_CCER_CC1E;
-		//TIM16->DIER = TIM_DIER_UIE;        	 // разрешить событие от таймера
+		//TIM16->DIER = TIM_DIER_UIE;        	 // СЂР°Р·СЂРµС€РёС‚СЊ СЃРѕР±С‹С‚РёРµ РѕС‚ С‚Р°Р№РјРµСЂР°
 		TIM16->BDTR = TIM_BDTR_MOE;
 #endif /* CPUSTYLE_STM32H7XX, CPUSTYLE_R7S721 */
 		debug_printf_P(PSTR("hardware_blfreq_initialize done\n"));
@@ -3240,16 +3240,16 @@ hardware_adc_startonescan(void)
 
 #elif CPUSTYLE_STM32H7XX
 		/* TIM16_CH1 - PF6 */
-		unsigned value;	/* делитель */
+		unsigned value;	/* РґРµР»РёС‚РµР»СЊ */
 		const uint_fast8_t prei = calcdivider(v, STM32F_TIM4_TIMER_WIDTH, STM32F_TIM4_TIMER_TAPS, & value, 1);
 		TIM16->PSC = ((1UL << prei) - 1) & TIM_PSC_PSC;
 
 		TIM16->ARR = value;
-		//TIM16->CR1 = TIM_CR1_CEN | TIM_CR1_ARPE; /* разрешить перезагрузку и включить таймер = перенесено в установку скорости - если счётчик успевал превысить значение ARR - считал до конца */
+		//TIM16->CR1 = TIM_CR1_CEN | TIM_CR1_ARPE; /* СЂР°Р·СЂРµС€РёС‚СЊ РїРµСЂРµР·Р°РіСЂСѓР·РєСѓ Рё РІРєР»СЋС‡РёС‚СЊ С‚Р°Р№РјРµСЂ = РїРµСЂРµРЅРµСЃРµРЅРѕ РІ СѓСЃС‚Р°РЅРѕРІРєСѓ СЃРєРѕСЂРѕСЃС‚Рё - РµСЃР»Рё СЃС‡С‘С‚С‡РёРє СѓСЃРїРµРІР°Р» РїСЂРµРІС‹СЃРёС‚СЊ Р·РЅР°С‡РµРЅРёРµ ARR - СЃС‡РёС‚Р°Р» РґРѕ РєРѕРЅС†Р° */
 
 		//TIM16->CCR1 = (value / 2) & TIM_CCR1_CCR1;	// TIM16_CH1 - wave output
 		//TIM16->ARR = value;
-		TIM16->CR1 = TIM_CR1_CEN | TIM_CR1_ARPE;	/* разрешить перезагрузку и включить таймер */
+		TIM16->CR1 = TIM_CR1_CEN | TIM_CR1_ARPE;	/* СЂР°Р·СЂРµС€РёС‚СЊ РїРµСЂРµР·Р°РіСЂСѓР·РєСѓ Рё РІРєР»СЋС‡РёС‚СЊ С‚Р°Р№РјРµСЂ */
 #endif /* CPUSTYLE_STM32H7XX, CPUSTYLE_R7S721 */
 	}
 
@@ -3268,7 +3268,7 @@ hardware_adc_startonescan(void)
 	#endif
 #endif
 
-/* после изменения набора формируемых звуков - обновление программирования таймера. */
+/* РїРѕСЃР»Рµ РёР·РјРµРЅРµРЅРёСЏ РЅР°Р±РѕСЂР° С„РѕСЂРјРёСЂСѓРµРјС‹С… Р·РІСѓРєРѕРІ - РѕР±РЅРѕРІР»РµРЅРёРµ РїСЂРѕРіСЂР°РјРјРёСЂРѕРІР°РЅРёСЏ С‚Р°Р№РјРµСЂР°. */
 void hardware_sounds_disable(void)
 {
 
@@ -3282,26 +3282,26 @@ void hardware_sounds_disable(void)
 
 #elif CPUSTYLE_ATMEGA328
 
-	// генерация сигнала самоконтроля на PD6(OC0A)
+	// РіРµРЅРµСЂР°С†РёСЏ СЃРёРіРЅР°Р»Р° СЃР°РјРѕРєРѕРЅС‚СЂРѕР»СЏ РЅР° PD6(OC0A)
 	TCCR0B = 0x00;	// 0 - Normal port operation, OC0A disconnected.
 
 #elif CPUSTYLE_ATMEGA_XXX4
-	// генерация сигнала самоконтроля на PD7(OC2)
+	// РіРµРЅРµСЂР°С†РёСЏ СЃРёРіРЅР°Р»Р° СЃР°РјРѕРєРѕРЅС‚СЂРѕР»СЏ РЅР° PD7(OC2)
 
-	// 8-bit таймер должен сгенерировать переключения выхода с частотой минимум 800 герц (для получения тона 400 герц).
+	// 8-bit С‚Р°Р№РјРµСЂ РґРѕР»Р¶РµРЅ СЃРіРµРЅРµСЂРёСЂРѕРІР°С‚СЊ РїРµСЂРµРєР»СЋС‡РµРЅРёСЏ РІС‹С…РѕРґР° СЃ С‡Р°СЃС‚РѕС‚РѕР№ РјРёРЅРёРјСѓРј 800 РіРµСЂС† (РґР»СЏ РїРѕР»СѓС‡РµРЅРёСЏ С‚РѕРЅР° 400 РіРµСЂС†).
 	TCCR2B = 0x00;	// 0 - Normal port operation, OC2 disconnected.
 
 #elif CPUSTYLE_ATMEGA128
 	// ATMega128/ATMega64
-	// генерация сигнала самоконтроля на PD7(OC2)
+	// РіРµРЅРµСЂР°С†РёСЏ СЃРёРіРЅР°Р»Р° СЃР°РјРѕРєРѕРЅС‚СЂРѕР»СЏ РЅР° PD7(OC2)
 
-	// 8-bit таймер должен сгенерировать переключения выхода с частотой минимум 800 герц (для получения тона 400 герц).
+	// 8-bit С‚Р°Р№РјРµСЂ РґРѕР»Р¶РµРЅ СЃРіРµРЅРµСЂРёСЂРѕРІР°С‚СЊ РїРµСЂРµРєР»СЋС‡РµРЅРёСЏ РІС‹С…РѕРґР° СЃ С‡Р°СЃС‚РѕС‚РѕР№ РјРёРЅРёРјСѓРј 800 РіРµСЂС† (РґР»СЏ РїРѕР»СѓС‡РµРЅРёСЏ С‚РѕРЅР° 400 РіРµСЂС†).
 	TCCR2 = TCCR2WGM;	// (1U << WGM21) | (1U << COM20)
 
 #elif CPUSTYLE_ATMEGA32
-	// генерация сигнала самоконтроля на PD7(OC2)
+	// РіРµРЅРµСЂР°С†РёСЏ СЃРёРіРЅР°Р»Р° СЃР°РјРѕРєРѕРЅС‚СЂРѕР»СЏ РЅР° PD7(OC2)
 
-	// 8-bit таймер должен сгенерировать переключения выхода с частотой минимум 800 герц (для получения тона 400 герц).
+	// 8-bit С‚Р°Р№РјРµСЂ РґРѕР»Р¶РµРЅ СЃРіРµРЅРµСЂРёСЂРѕРІР°С‚СЊ РїРµСЂРµРєР»СЋС‡РµРЅРёСЏ РІС‹С…РѕРґР° СЃ С‡Р°СЃС‚РѕС‚РѕР№ РјРёРЅРёРјСѓРј 800 РіРµСЂС† (РґР»СЏ РїРѕР»СѓС‡РµРЅРёСЏ С‚РѕРЅР° 400 РіРµСЂС†).
 	TCCR2 = TCCR2WGM;	// (1U << WGM21) | (1U << COM20)
 
 #elif CPUSTYLE_ATXMEGAXXXA4
@@ -3322,7 +3322,7 @@ void hardware_sounds_disable(void)
 
 
 // called from interrupt or with disabled interrupts
-// всегда включаем генерацию выходного сигнала
+// РІСЃРµРіРґР° РІРєР»СЋС‡Р°РµРј РіРµРЅРµСЂР°С†РёСЋ РІС‹С…РѕРґРЅРѕРіРѕ СЃРёРіРЅР°Р»Р°
 void hardware_sounds_setfreq(
 	uint_fast8_t prei,
 	unsigned value
@@ -3332,7 +3332,7 @@ void hardware_sounds_setfreq(
 
 	TC0->TC_CHANNEL [1].TC_CMR =
 		(TC0->TC_CHANNEL [1].TC_CMR & ~ TC_CMR_TCCLKS_Msk) | tc_cmr_tcclks [prei];
-	TC0->TC_CHANNEL [1].TC_RC = value;	// программирование полупериода (выход с триггерам)
+	TC0->TC_CHANNEL [1].TC_RC = value;	// РїСЂРѕРіСЂР°РјРјРёСЂРѕРІР°РЅРёРµ РїРѕР»СѓРїРµСЂРёРѕРґР° (РІС‹С…РѕРґ СЃ С‚СЂРёРіРіРµСЂР°Рј)
 
 	HARDWARE_SIDETONE_CONNECT();
 
@@ -3340,88 +3340,88 @@ void hardware_sounds_setfreq(
 
 	AT91C_BASE_TCB->TCB_TC1.TC_CMR =
 		(AT91C_BASE_TCB->TCB_TC1.TC_CMR & ~ AT91C_TC_CLKS) | tc_cmr_clks [prei];
-	AT91C_BASE_TCB->TCB_TC1.TC_RC = value;	// программирование полупериода (выход с триггерам)
+	AT91C_BASE_TCB->TCB_TC1.TC_RC = value;	// РїСЂРѕРіСЂР°РјРјРёСЂРѕРІР°РЅРёРµ РїРѕР»СѓРїРµСЂРёРѕРґР° (РІС‹С…РѕРґ СЃ С‚СЂРёРіРіРµСЂР°Рј)
 
 	HARDWARE_SIDETONE_CONNECT();
 
 #elif CPUSTYLE_ATMEGA328
 	// 
-	// compare match после записи делителя отменяется на один цикл
+	// compare match РїРѕСЃР»Рµ Р·Р°РїРёСЃРё РґРµР»РёС‚РµР»СЏ РѕС‚РјРµРЅСЏРµС‚СЃСЏ РЅР° РѕРґРёРЅ С†РёРєР»
 	// timer2 - 8 bit wide.
-	// генерация сигнала самоконтроля на PD6(OC0A) - выход делителя на 2
-	// TCCR2B – Timer/Counter Control Register B
+	// РіРµРЅРµСЂР°С†РёСЏ СЃРёРіРЅР°Р»Р° СЃР°РјРѕРєРѕРЅС‚СЂРѕР»СЏ РЅР° PD6(OC0A) - РІС‹С…РѕРґ РґРµР»РёС‚РµР»СЏ РЅР° 2
+	// TCCR2B вЂ“ Timer/Counter Control Register B
 	const uint_fast8_t tccrXBval = (prei + 1);
-	if ((TCCR0B != tccrXBval) || (OCR0A > value))	// таймер может отработать до максимального значения счётчика, если уменьшаем TOP
+	if ((TCCR0B != tccrXBval) || (OCR0A > value))	// С‚Р°Р№РјРµСЂ РјРѕР¶РµС‚ РѕС‚СЂР°Р±РѕС‚Р°С‚СЊ РґРѕ РјР°РєСЃРёРјР°Р»СЊРЅРѕРіРѕ Р·РЅР°С‡РµРЅРёСЏ СЃС‡С‘С‚С‡РёРєР°, РµСЃР»Рё СѓРјРµРЅСЊС€Р°РµРј TOP
 	{
-		TCCR0B = 0x00;		// останавливаем таймер.
-		OCR0A = value;		// загружаем новое значение TOP
-		TCNT0 = 0x00;		// сбрасыаваем счётчик
-		TCCR0B = tccrXBval;	// запускаем таймер
+		TCCR0B = 0x00;		// РѕСЃС‚Р°РЅР°РІР»РёРІР°РµРј С‚Р°Р№РјРµСЂ.
+		OCR0A = value;		// Р·Р°РіСЂСѓР¶Р°РµРј РЅРѕРІРѕРµ Р·РЅР°С‡РµРЅРёРµ TOP
+		TCNT0 = 0x00;		// СЃР±СЂР°СЃС‹Р°РІР°РµРј СЃС‡С‘С‚С‡РёРє
+		TCCR0B = tccrXBval;	// Р·Р°РїСѓСЃРєР°РµРј С‚Р°Р№РјРµСЂ
 	}
 	else
-		OCR0A = value;	// период станет длиннее
+		OCR0A = value;	// РїРµСЂРёРѕРґ СЃС‚Р°РЅРµС‚ РґР»РёРЅРЅРµРµ
 
 #elif CPUSTYLE_ATMEGA_XXX4
 	// 
 	// timer2 - 8 bit wide.
-	// генерация сигнала самоконтроля на PD7(OC2) - выход делителя на 2
-	// Пототму в расчёте используется tonefreq * 2
-	// TCCR2B – Timer/Counter Control Register B
+	// РіРµРЅРµСЂР°С†РёСЏ СЃРёРіРЅР°Р»Р° СЃР°РјРѕРєРѕРЅС‚СЂРѕР»СЏ РЅР° PD7(OC2) - РІС‹С…РѕРґ РґРµР»РёС‚РµР»СЏ РЅР° 2
+	// РџРѕС‚РѕС‚РјСѓ РІ СЂР°СЃС‡С‘С‚Рµ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ tonefreq * 2
+	// TCCR2B вЂ“ Timer/Counter Control Register B
 	const uint_fast8_t tccrXBval = (prei + 1);
-	if ((TCCR2B != tccrXBval) || (OCR2A > value))	// таймер может отработать до максимального значения счётчика, если уменьшаем TOP
+	if ((TCCR2B != tccrXBval) || (OCR2A > value))	// С‚Р°Р№РјРµСЂ РјРѕР¶РµС‚ РѕС‚СЂР°Р±РѕС‚Р°С‚СЊ РґРѕ РјР°РєСЃРёРјР°Р»СЊРЅРѕРіРѕ Р·РЅР°С‡РµРЅРёСЏ СЃС‡С‘С‚С‡РёРєР°, РµСЃР»Рё СѓРјРµРЅСЊС€Р°РµРј TOP
 	{
-		TCCR2B = 0x00;		// останавливаем таймер.
-		OCR2A = value;		// загружаем новое значение TOP
-		TCNT2 = 0x00;		// сбрасыаваем счётчик
-		TCCR2B = tccrXBval;	// запускаем таймер
+		TCCR2B = 0x00;		// РѕСЃС‚Р°РЅР°РІР»РёРІР°РµРј С‚Р°Р№РјРµСЂ.
+		OCR2A = value;		// Р·Р°РіСЂСѓР¶Р°РµРј РЅРѕРІРѕРµ Р·РЅР°С‡РµРЅРёРµ TOP
+		TCNT2 = 0x00;		// СЃР±СЂР°СЃС‹Р°РІР°РµРј СЃС‡С‘С‚С‡РёРє
+		TCCR2B = tccrXBval;	// Р·Р°РїСѓСЃРєР°РµРј С‚Р°Р№РјРµСЂ
 	}
 	else
-		OCR2A = value;	// период станет длиннее
+		OCR2A = value;	// РїРµСЂРёРѕРґ СЃС‚Р°РЅРµС‚ РґР»РёРЅРЅРµРµ
 
 #elif CPUSTYLE_ATMEGA128
 	// ATMega128/ATMega64
 
 	// 
 	// timer2 - 8 bit wide.
-	// генерация сигнала самоконтроля на PD7(OC2) - выход делителя на 2
-	// Пототму в расчёте используется tonefreq * 2
+	// РіРµРЅРµСЂР°С†РёСЏ СЃРёРіРЅР°Р»Р° СЃР°РјРѕРєРѕРЅС‚СЂРѕР»СЏ РЅР° PD7(OC2) - РІС‹С…РѕРґ РґРµР»РёС‚РµР»СЏ РЅР° 2
+	// РџРѕС‚РѕС‚РјСѓ РІ СЂР°СЃС‡С‘С‚Рµ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ tonefreq * 2
 	// TCCR2WGM = (1U << WGM21) | (1U << COM20)
 	const uint_fast8_t tccrXBval = TCCR2WGM | (prei + 1);
-	if ((TCCR2 != tccrXBval) || (OCR2 > value))		// таймер может отработать до максимального значения счётчика, если уменьшаем TOP
+	if ((TCCR2 != tccrXBval) || (OCR2 > value))		// С‚Р°Р№РјРµСЂ РјРѕР¶РµС‚ РѕС‚СЂР°Р±РѕС‚Р°С‚СЊ РґРѕ РјР°РєСЃРёРјР°Р»СЊРЅРѕРіРѕ Р·РЅР°С‡РµРЅРёСЏ СЃС‡С‘С‚С‡РёРєР°, РµСЃР»Рё СѓРјРµРЅСЊС€Р°РµРј TOP
 	{
-		TCCR2 = TCCR2WGM;	// (1U << WGM21) | (1U << COM20) останавливаем таймер
-		OCR2 = value;		// загружаем новое значение TOP
-		TCNT2 = 0x00;		// сбрасыаваем счётчик
-		TCCR2 = tccrXBval;	// запускаем таймер
+		TCCR2 = TCCR2WGM;	// (1U << WGM21) | (1U << COM20) РѕСЃС‚Р°РЅР°РІР»РёРІР°РµРј С‚Р°Р№РјРµСЂ
+		OCR2 = value;		// Р·Р°РіСЂСѓР¶Р°РµРј РЅРѕРІРѕРµ Р·РЅР°С‡РµРЅРёРµ TOP
+		TCNT2 = 0x00;		// СЃР±СЂР°СЃС‹Р°РІР°РµРј СЃС‡С‘С‚С‡РёРє
+		TCCR2 = tccrXBval;	// Р·Р°РїСѓСЃРєР°РµРј С‚Р°Р№РјРµСЂ
 	}
 	else
-		OCR2 = value;		// период станет длиннее
+		OCR2 = value;		// РїРµСЂРёРѕРґ СЃС‚Р°РЅРµС‚ РґР»РёРЅРЅРµРµ
 
 #elif CPUSTYLE_ATMEGA32
 
 	// 
 	// timer2 - 8 bit wide.
-	// генерация сигнала самоконтроля на PD7(OC2) - выход делителя на 2
-	// Пототму в расчёте используется tonefreq * 2
+	// РіРµРЅРµСЂР°С†РёСЏ СЃРёРіРЅР°Р»Р° СЃР°РјРѕРєРѕРЅС‚СЂРѕР»СЏ РЅР° PD7(OC2) - РІС‹С…РѕРґ РґРµР»РёС‚РµР»СЏ РЅР° 2
+	// РџРѕС‚РѕС‚РјСѓ РІ СЂР°СЃС‡С‘С‚Рµ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ tonefreq * 2
 	// TCCR2WGM = (1U << WGM21) | (1U << COM20)
 	const uint_fast8_t tccrXBval = TCCR2WGM | (prei + 1);
-	if ((TCCR2 != tccrXBval) || (OCR2 > value))		// таймер может отработать до максимального значения счётчика, если уменьшаем TOP
+	if ((TCCR2 != tccrXBval) || (OCR2 > value))		// С‚Р°Р№РјРµСЂ РјРѕР¶РµС‚ РѕС‚СЂР°Р±РѕС‚Р°С‚СЊ РґРѕ РјР°РєСЃРёРјР°Р»СЊРЅРѕРіРѕ Р·РЅР°С‡РµРЅРёСЏ СЃС‡С‘С‚С‡РёРєР°, РµСЃР»Рё СѓРјРµРЅСЊС€Р°РµРј TOP
 	{
-		TCCR2 = TCCR2WGM;	// (1U << WGM21) | (1U << COM20) останавливаем таймер
-		OCR2 = value;		// загружаем новое значение TOP
-		TCNT2 = 0x00;		// сбрасыаваем счётчик
-		TCCR2 = tccrXBval;	// запускаем таймер
+		TCCR2 = TCCR2WGM;	// (1U << WGM21) | (1U << COM20) РѕСЃС‚Р°РЅР°РІР»РёРІР°РµРј С‚Р°Р№РјРµСЂ
+		OCR2 = value;		// Р·Р°РіСЂСѓР¶Р°РµРј РЅРѕРІРѕРµ Р·РЅР°С‡РµРЅРёРµ TOP
+		TCNT2 = 0x00;		// СЃР±СЂР°СЃС‹Р°РІР°РµРј СЃС‡С‘С‚С‡РёРє
+		TCCR2 = tccrXBval;	// Р·Р°РїСѓСЃРєР°РµРј С‚Р°Р№РјРµСЂ
 	}
 	else
-		OCR2 = value;		// период станет длиннее
+		OCR2 = value;		// РїРµСЂРёРѕРґ СЃС‚Р°РЅРµС‚ РґР»РёРЅРЅРµРµ
 
 #elif CPUSTYLE_ATXMEGAXXXA4
 
-	// программирование таймера
+	// РїСЂРѕРіСЂР°РјРјРёСЂРѕРІР°РЅРёРµ С‚Р°Р№РјРµСЂР°
 	TCD1.CCA = value;	// timer/counter C1, compare register A, see TCC1_CCA_vect
 	TCD1.CTRLA = (prei + 1);
 	//TCC2.INTCTRLB = (TC_CCAINTLVL_MED_gc);
-	// разрешение прерываний на входе в PMIC
+	// СЂР°Р·СЂРµС€РµРЅРёРµ РїСЂРµСЂС‹РІР°РЅРёР№ РЅР° РІС…РѕРґРµ РІ PMIC
 	//PMIC.CTRL |= (PMIC_HILVLEN_bm | PMIC_MEDLVLEN_bm | PMIC_LOLVLEN_bm);
 
 #elif CPUSTYLE_STM32F
@@ -3430,7 +3430,7 @@ void hardware_sounds_setfreq(
 
 	TIM4->CCR3 = (value / 2) & TIM_CCR3_CCR3;	// TIM4_CH3 - sound output
 	TIM4->ARR = value;
-	TIM4->CR1 = TIM_CR1_CEN | TIM_CR1_ARPE;	/* разрешить перезагрузку и включить таймер */
+	TIM4->CR1 = TIM_CR1_CEN | TIM_CR1_ARPE;	/* СЂР°Р·СЂРµС€РёС‚СЊ РїРµСЂРµР·Р°РіСЂСѓР·РєСѓ Рё РІРєР»СЋС‡РёС‚СЊ С‚Р°Р№РјРµСЂ */
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -3439,10 +3439,10 @@ void hardware_sounds_setfreq(
 }
 
 /* 
-	формирование сигнала самоконтроля.
-	На процессоре AT91SAM7S64 манипуляция осуществляется отключением таймера от выхода.
-	Повторный запуск таймера возможен только с флагом AT91C_TC_SWTRG, а при этом
-	происходит его сброс (перезапуск) - тон искажённый.
+	С„РѕСЂРјРёСЂРѕРІР°РЅРёРµ СЃРёРіРЅР°Р»Р° СЃР°РјРѕРєРѕРЅС‚СЂРѕР»СЏ.
+	РќР° РїСЂРѕС†РµСЃСЃРѕСЂРµ AT91SAM7S64 РјР°РЅРёРїСѓР»СЏС†РёСЏ РѕСЃСѓС‰РµСЃС‚РІР»СЏРµС‚СЃСЏ РѕС‚РєР»СЋС‡РµРЅРёРµРј С‚Р°Р№РјРµСЂР° РѕС‚ РІС‹С…РѕРґР°.
+	РџРѕРІС‚РѕСЂРЅС‹Р№ Р·Р°РїСѓСЃРє С‚Р°Р№РјРµСЂР° РІРѕР·РјРѕР¶РµРЅ С‚РѕР»СЊРєРѕ СЃ С„Р»Р°РіРѕРј AT91C_TC_SWTRG, Р° РїСЂРё СЌС‚РѕРј
+	РїСЂРѕРёСЃС…РѕРґРёС‚ РµРіРѕ СЃР±СЂРѕСЃ (РїРµСЂРµР·Р°РїСѓСЃРє) - С‚РѕРЅ РёСЃРєР°Р¶С‘РЅРЅС‹Р№.
 */
 void 
 hardware_beep_initialize(void)
@@ -3451,7 +3451,7 @@ hardware_beep_initialize(void)
 
 	// --- TC1 used to generate CW sidetone ---
 	// PA15: Peripheral B: TIOA1
-	PMC->PMC_PCER0 = (1UL << ID_TC1);	 // разрешить тактированние этого блока (ID_TC0..ID_TC5 avaliable)
+	PMC->PMC_PCER0 = (1UL << ID_TC1);	 // СЂР°Р·СЂРµС€РёС‚СЊ С‚Р°РєС‚РёСЂРѕРІР°РЅРЅРёРµ СЌС‚РѕРіРѕ Р±Р»РѕРєР° (ID_TC0..ID_TC5 avaliable)
 	
 	//TC0->TC_BMR = (TC0->TC_BMR & ~ TC_BMR_TC1XC1S_Msk) | TC_BMR_TC1XC1S_TIOA0;
 	TC0->TC_CHANNEL [1].TC_CCR = TC_CCR_CLKDIS; // disable TC1 clock
@@ -3477,7 +3477,7 @@ hardware_beep_initialize(void)
 
 	// --- TC1 used to generate CW sidetone ---
 	// PA15: Peripheral B: TIOA1
-	AT91C_BASE_PMC->PMC_PCER = (1UL << AT91C_ID_TC1); // разрешить тактированние этого блока (AT91C_ID_TC0..AT91C_ID_TC2 avaliable)
+	AT91C_BASE_PMC->PMC_PCER = (1UL << AT91C_ID_TC1); // СЂР°Р·СЂРµС€РёС‚СЊ С‚Р°РєС‚РёСЂРѕРІР°РЅРЅРёРµ СЌС‚РѕРіРѕ Р±Р»РѕРєР° (AT91C_ID_TC0..AT91C_ID_TC2 avaliable)
 	
 	////AT91C_BASE_TCB->TCB_BMR = (AT91C_BASE_TCB->TCB_BMR & ~ AT91C_TCB_TC1XC1S) | AT91C_TCB_TC1XC1S_TIOA0;
 	AT91C_BASE_TCB->TCB_TC1.TC_CCR = AT91C_TC_CLKDIS; // disable TC1 clock
@@ -3500,7 +3500,7 @@ hardware_beep_initialize(void)
 	HARDWARE_SIDETONE_INITIALIZE();
 
 #elif CPUSTYLE_ATMEGA328
-	// генерация сигнала самоконтроля на PD6(OC0A)
+	// РіРµРЅРµСЂР°С†РёСЏ СЃРёРіРЅР°Р»Р° СЃР°РјРѕРєРѕРЅС‚СЂРѕР»СЏ РЅР° PD6(OC0A)
 	// Timer/Counter 0 initialization
 	// Timer/Counter 0 initialization
 	// Clock source: System Clock
@@ -3510,7 +3510,7 @@ hardware_beep_initialize(void)
 	// OC0B output: Disconnected
 	TCCR0A = 0x42;
 	TCCR0B = 0x00;
-	// обязательно - настройка вывода процессора как выхода.
+	// РѕР±СЏР·Р°С‚РµР»СЊРЅРѕ - РЅР°СЃС‚СЂРѕР№РєР° РІС‹РІРѕРґР° РїСЂРѕС†РµСЃСЃРѕСЂР° РєР°Рє РІС‹С…РѕРґР°.
 	SIDETONE_TARGET_DDR |= SIDETONE_TARGET_BIT; 	// output pin connection - test without this string need.
 	SIDETONE_TARGET_PORT &= ~ SIDETONE_TARGET_BIT; // disable pull-up
 
@@ -3524,7 +3524,7 @@ hardware_beep_initialize(void)
 	ASSR = 0x00;
 	TCCR2A = (1U << COM2A0) | (1U << WGM21);	// 0x42, (1U << WGM21) only - OC2A disconnected
 	TCCR2B = 0x00;
-	// обязательно - настройка вывода процессора как выхода.
+	// РѕР±СЏР·Р°С‚РµР»СЊРЅРѕ - РЅР°СЃС‚СЂРѕР№РєР° РІС‹РІРѕРґР° РїСЂРѕС†РµСЃСЃРѕСЂР° РєР°Рє РІС‹С…РѕРґР°.
 	SIDETONE_TARGET_DDR |= SIDETONE_TARGET_BIT; // output pin connection - strongly need for working
 	SIDETONE_TARGET_PORT &= ~ SIDETONE_TARGET_BIT; // disable pull-up
 
@@ -3537,7 +3537,7 @@ hardware_beep_initialize(void)
 	// OC2 output: Toggle on compare match
 	ASSR = 0x00;
 	TCCR2 = TCCR2WGM;	// (1U << WGM21) | (1U << COM20)
-	// обязательно - настройка вывода процессора как выхода.
+	// РѕР±СЏР·Р°С‚РµР»СЊРЅРѕ - РЅР°СЃС‚СЂРѕР№РєР° РІС‹РІРѕРґР° РїСЂРѕС†РµСЃСЃРѕСЂР° РєР°Рє РІС‹С…РѕРґР°.
 	SIDETONE_TARGET_DDR |= SIDETONE_TARGET_BIT; // (1U << DDD7);	// output pin connection - test without this string need.
 	SIDETONE_TARGET_PORT &= ~ SIDETONE_TARGET_BIT; // (1U << PD7);	// disable pull-up
 
@@ -3549,7 +3549,7 @@ hardware_beep_initialize(void)
 	// OC2 output: Toggle on compare match
 	ASSR = 0x00;
 	TCCR2 = TCCR2WGM;	// (1U << WGM21) | (1U << COM20)
-	// обязательно - настройка вывода процессора как выхода.
+	// РѕР±СЏР·Р°С‚РµР»СЊРЅРѕ - РЅР°СЃС‚СЂРѕР№РєР° РІС‹РІРѕРґР° РїСЂРѕС†РµСЃСЃРѕСЂР° РєР°Рє РІС‹С…РѕРґР°.
 	SIDETONE_TARGET_DDR |= SIDETONE_TARGET_BIT; // (1U << DDD7);	// output pin connection - test without this string need.
 	SIDETONE_TARGET_PORT &= ~ SIDETONE_TARGET_BIT; // (1U << PD7);	// disable pull-up
 
@@ -3561,7 +3561,7 @@ hardware_beep_initialize(void)
 #elif CPUSTYLE_STM32F
 
 	// apb1
-	RCC->APB1ENR |= RCC_APB1ENR_TIM4EN;   //подаем тактирование на TIM4
+	RCC->APB1ENR |= RCC_APB1ENR_TIM4EN;   //РїРѕРґР°РµРј С‚Р°РєС‚РёСЂРѕРІР°РЅРёРµ РЅР° TIM4
 	__DSB();
 
 	TIM4->CCMR2 = TIM_CCMR2_OC3M_0 | TIM_CCMR2_OC3M_1 | TIM_CCMR2_OC3M_2;	// Output Compare 3 Mode
@@ -3578,7 +3578,7 @@ hardware_beep_initialize(void)
 // return code: prescaler
 uint_fast8_t
 hardware_calc_sound_params(
-	uint_least16_t tonefreq,	/* tonefreq - частота в десятых долях герца. Минимум - 400 герц (определено набором команд CAT). */
+	uint_least16_t tonefreq,	/* tonefreq - С‡Р°СЃС‚РѕС‚Р° РІ РґРµСЃСЏС‚С‹С… РґРѕР»СЏС… РіРµСЂС†Р°. РњРёРЅРёРјСѓРј - 400 РіРµСЂС† (РѕРїСЂРµРґРµР»РµРЅРѕ РЅР°Р±РѕСЂРѕРј РєРѕРјР°РЅРґ CAT). */
 	unsigned * pvalue)
 {
 
@@ -3592,16 +3592,16 @@ hardware_calc_sound_params(
 
 #elif CPUSTYLE_ATMEGA328
 	// 
-	// compare match после записи делителя отменяется на один цикл
+	// compare match РїРѕСЃР»Рµ Р·Р°РїРёСЃРё РґРµР»РёС‚РµР»СЏ РѕС‚РјРµРЅСЏРµС‚СЃСЏ РЅР° РѕРґРёРЅ С†РёРєР»
 	// timer0 - 8 bit wide.
-	// генерация сигнала самоконтроля на PD6(OC0A) - выход делителя на 2
+	// РіРµРЅРµСЂР°С†РёСЏ СЃРёРіРЅР°Р»Р° СЃР°РјРѕРєРѕРЅС‚СЂРѕР»СЏ РЅР° PD6(OC0A) - РІС‹С…РѕРґ РґРµР»РёС‚РµР»СЏ РЅР° 2
 	return calcdivider(calcdivround10(tonefreq * 2), ATMEGA_TIMER0_WIDTH, ATMEGA_TIMER0_TAPS, pvalue, 1);
 
 #elif CPUSTYLE_ATMEGA_XXX4
 	// 
 	// timer2 - 8 bit wide.
-	// генерация сигнала самоконтроля на PD7(OC2) - выход делителя на 2
-	// Пототму в расчёте используется tonefreq * 2
+	// РіРµРЅРµСЂР°С†РёСЏ СЃРёРіРЅР°Р»Р° СЃР°РјРѕРєРѕРЅС‚СЂРѕР»СЏ РЅР° PD7(OC2) - РІС‹С…РѕРґ РґРµР»РёС‚РµР»СЏ РЅР° 2
+	// РџРѕС‚РѕС‚РјСѓ РІ СЂР°СЃС‡С‘С‚Рµ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ tonefreq * 2
 	return calcdivider(calcdivround10(tonefreq * 2), ATMEGA_TIMER2_WIDTH, ATMEGA_TIMER2_TAPS, pvalue, 1);
 
 #elif CPUSTYLE_ATMEGA128
@@ -3609,16 +3609,16 @@ hardware_calc_sound_params(
 
 	// 
 	// timer2 - 8 bit wide.
-	// генерация сигнала самоконтроля на PD7(OC2) - выход делителя на 2
-	// Пототму в расчёте используется tonefreq * 2
+	// РіРµРЅРµСЂР°С†РёСЏ СЃРёРіРЅР°Р»Р° СЃР°РјРѕРєРѕРЅС‚СЂРѕР»СЏ РЅР° PD7(OC2) - РІС‹С…РѕРґ РґРµР»РёС‚РµР»СЏ РЅР° 2
+	// РџРѕС‚РѕС‚РјСѓ РІ СЂР°СЃС‡С‘С‚Рµ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ tonefreq * 2
 	return calcdivider(calcdivround10(tonefreq * 2), ATMEGA_TIMER2_WIDTH, ATMEGA_TIMER2_TAPS, pvalue, 1);
 
 #elif CPUSTYLE_ATMEGA32
 
 	// 
 	// timer2 - 8 bit wide.
-	// генерация сигнала самоконтроля на PD7(OC2) - выход делителя на 2
-	// Пототму в расчёте используется tonefreq * 2
+	// РіРµРЅРµСЂР°С†РёСЏ СЃРёРіРЅР°Р»Р° СЃР°РјРѕРєРѕРЅС‚СЂРѕР»СЏ РЅР° PD7(OC2) - РІС‹С…РѕРґ РґРµР»РёС‚РµР»СЏ РЅР° 2
+	// РџРѕС‚РѕС‚РјСѓ РІ СЂР°СЃС‡С‘С‚Рµ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ tonefreq * 2
 	return calcdivider(calcdivround10(tonefreq * 2), ATMEGA_TIMER2_WIDTH, ATMEGA_TIMER2_TAPS, pvalue, 1);
 
 #elif CPUSTYLE_ATXMEGAXXXA4
@@ -3653,26 +3653,26 @@ hardware_beep_initialize(void)
 	#endif
 
 	#if CPUSTYLE_AT91SAM7S || CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
-		static portholder_t spi_csr_val8w [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 */
-		static portholder_t spi_csr_val16w [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 в режиме 16-ти битных слов. */
+		static portholder_t spi_csr_val8w [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* РґР»СЏ spi mode0..mode3 */
+		static portholder_t spi_csr_val16w [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* РґР»СЏ spi mode0..mode3 РІ СЂРµР¶РёРјРµ 16-С‚Рё Р±РёС‚РЅС‹С… СЃР»РѕРІ. */
 	#elif CPUSTYLE_STM32H7XX
 		static portholder_t spi_cfg1_val8w;
 		static portholder_t spi_cfg1_val16w;
-		static portholder_t spi_cfg2_val [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 */
+		static portholder_t spi_cfg2_val [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* РґР»СЏ spi mode0..mode3 */
 	#elif CPUSTYLE_STM32F1XX || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32L0XX
-		static portholder_t spi_cr1_val8w [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 */
-		static portholder_t spi_cr1_val16w [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 в режиме 16-ти битных слов. */
+		static portholder_t spi_cr1_val8w [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* РґР»СЏ spi mode0..mode3 */
+		static portholder_t spi_cr1_val16w [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* РґР»СЏ spi mode0..mode3 РІ СЂРµР¶РёРјРµ 16-С‚Рё Р±РёС‚РЅС‹С… СЃР»РѕРІ. */
 	#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX
-		static portholder_t spi_cr1_val8w [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 */
+		static portholder_t spi_cr1_val8w [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* РґР»СЏ spi mode0..mode3 */
 	#elif CPUSTYLE_ATMEGA
-		static portholder_t spcr_val [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 */
+		static portholder_t spcr_val [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* РґР»СЏ spi mode0..mode3 */
 		static portholder_t spsr_val [SPIC_SPEEDS_COUNT];
 	#elif CPUSTYLE_ATXMEGA
-		static portholder_t spi_ctl_val [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 */
+		static portholder_t spi_ctl_val [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* РґР»СЏ spi mode0..mode3 */
 	#elif CPUSTYLE_R7S721
 		static portholder_t spi_spbr_val [SPIC_SPEEDS_COUNT];
-		static portholder_t spi_spcmd0_val8w [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 */
-		static portholder_t spi_spcmd0_val16w [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 */
+		static portholder_t spi_spcmd0_val8w [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* РґР»СЏ spi mode0..mode3 */
+		static portholder_t spi_spcmd0_val16w [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* РґР»СЏ spi mode0..mode3 */
 	#endif /* CPUSTYLE_STM32F1XX */
 
 #if WITHSPIHWDMA
@@ -3683,12 +3683,12 @@ hardware_beep_initialize(void)
 
 #if CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
 
-/* Инициализация DMA для прёма по SPI1 */
+/* РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ DMA РґР»СЏ РїСЂС‘РјР° РїРѕ SPI1 */
 	// DMA2: SPI1_RX: Stream 0: Channel 3
 static void DMA2_SPI1_RX_initialize(void)
 {
 	/* SPI1_RX - Stream0, Channel3 */ 
-	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;//включил DMA2 
+	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;//РІРєР»СЋС‡РёР» DMA2 
 	__DSB();
 
 	#if CPUSTYLE_STM32H7XX
@@ -3705,27 +3705,27 @@ static void DMA2_SPI1_RX_initialize(void)
 	DMA2_Stream0->FCR &= ~ DMA_SxFCR_DMDIS;	// use Direct mode
 	//DMA2_Stream0->FCR |= DMA_SxFCR_DMDIS;	// Direct mode disabled
 	DMA2_Stream0->CR =
-		(ch * DMA_SxCR_CHSEL_0) |	// канал
+		(ch * DMA_SxCR_CHSEL_0) |	// РєР°РЅР°Р»
 		(3 * DMA_SxCR_MBURST_0) |	// INCR16 (incremental burst of 16 beats) - ignored in Direct mode
 		(3 * DMA_SxCR_PBURST_0) |	// INCR16 (incremental burst of 16 beats) - ignored in Direct mode
 		(0 * DMA_SxCR_PL_0) |		// Priority level - low
 		(0 * DMA_SxCR_DIR_0) |		// 00: Peripheral-to-memory
-		(1 * DMA_SxCR_MINC) |		// инкремент адреса памяти
-		(0 * DMA_SxCR_MSIZE_0) |	// длина в памяти - 8 bit - устанавливается перед обменом
-		(0 * DMA_SxCR_PSIZE_0) |	// длина в DR - 8 bit - устанавливается перед обменом
-		//(1 * DMA_SxCR_CIRC) |		// циклический режим не требуется при DBM
+		(1 * DMA_SxCR_MINC) |		// РёРЅРєСЂРµРјРµРЅС‚ Р°РґСЂРµСЃР° РїР°РјСЏС‚Рё
+		(0 * DMA_SxCR_MSIZE_0) |	// РґР»РёРЅР° РІ РїР°РјСЏС‚Рё - 8 bit - СѓСЃС‚Р°РЅР°РІР»РёРІР°РµС‚СЃСЏ РїРµСЂРµРґ РѕР±РјРµРЅРѕРј
+		(0 * DMA_SxCR_PSIZE_0) |	// РґР»РёРЅР° РІ DR - 8 bit - СѓСЃС‚Р°РЅР°РІР»РёРІР°РµС‚СЃСЏ РїРµСЂРµРґ РѕР±РјРµРЅРѕРј
+		//(1 * DMA_SxCR_CIRC) |		// С†РёРєР»РёС‡РµСЃРєРёР№ СЂРµР¶РёРј РЅРµ С‚СЂРµР±СѓРµС‚СЃСЏ РїСЂРё DBM
 		(0 * DMA_SxCR_CT) |			// M0AR selected
 		//(1 * DMA_SxCR_DBM) |		// double buffer mode seelcted
 		0;
 }
 
-// Инициализация DMA для передачи SPI1
+// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ DMA РґР»СЏ РїРµСЂРµРґР°С‡Рё SPI1
 // DMA2: SPI1_TX: Stream 3: Channel 3
 static void DMA2_SPI1_TX_initialize(void)
 {
 	// DMA2: SPI1_TX: Stream 3: Channel 3
-	/* DMA для передачи по SPI1 */
-	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;	// включил DMA2 
+	/* DMA РґР»СЏ РїРµСЂРµРґР°С‡Рё РїРѕ SPI1 */
+	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;	// РІРєР»СЋС‡РёР» DMA2 
 	__DSB();
 
 	#if CPUSTYLE_STM32H7XX
@@ -3743,24 +3743,24 @@ static void DMA2_SPI1_TX_initialize(void)
 	DMA2_Stream3->FCR &= ~ DMA_SxFCR_DMDIS;	// use direct mode
 	//DMA2_Stream3->FCR |= DMA_SxFCR_DMDIS;	// Direct mode disabled
 	DMA2_Stream3->CR =
-		(ch * DMA_SxCR_CHSEL_0) |	// канал
+		(ch * DMA_SxCR_CHSEL_0) |	// РєР°РЅР°Р»
 		(3 * DMA_SxCR_MBURST_0) |	// INCR16 (incremental burst of 16 beats) - ignored in Direct mode
 		(3 * DMA_SxCR_PBURST_0) |	// INCR16 (incremental burst of 16 beats) - ignored in Direct mode
 		(0 * DMA_SxCR_PL_0) |		// Priority level - low
-		(1 * DMA_SxCR_DIR_0) |		// направление - память - периферия
-		(1 * DMA_SxCR_MINC) |		// инкремент адреса памяти
-		(0 * DMA_SxCR_MSIZE_0) |	// длина в памяти - 8bit - устанавливается перед обменом
-		(0 * DMA_SxCR_PSIZE_0) |	// длина в SPI_DR- 8bit - устанавливается перед обменом
-		//(1 * DMA_SxCR_CIRC) |		// циклический режим не требуется при DBM
+		(1 * DMA_SxCR_DIR_0) |		// РЅР°РїСЂР°РІР»РµРЅРёРµ - РїР°РјСЏС‚СЊ - РїРµСЂРёС„РµСЂРёСЏ
+		(1 * DMA_SxCR_MINC) |		// РёРЅРєСЂРµРјРµРЅС‚ Р°РґСЂРµСЃР° РїР°РјСЏС‚Рё
+		(0 * DMA_SxCR_MSIZE_0) |	// РґР»РёРЅР° РІ РїР°РјСЏС‚Рё - 8bit - СѓСЃС‚Р°РЅР°РІР»РёРІР°РµС‚СЃСЏ РїРµСЂРµРґ РѕР±РјРµРЅРѕРј
+		(0 * DMA_SxCR_PSIZE_0) |	// РґР»РёРЅР° РІ SPI_DR- 8bit - СѓСЃС‚Р°РЅР°РІР»РёРІР°РµС‚СЃСЏ РїРµСЂРµРґ РѕР±РјРµРЅРѕРј
+		//(1 * DMA_SxCR_CIRC) |		// С†РёРєР»РёС‡РµСЃРєРёР№ СЂРµР¶РёРј РЅРµ С‚СЂРµР±СѓРµС‚СЃСЏ РїСЂРё DBM
 		(0 * DMA_SxCR_CT) |			// M0AR selected
 		//(1 * DMA_SxCR_DBM) |		// double buffer mode seelcted
 		0;
 }
 
 #if 1
-// Ожидание завершения обмена
+// РћР¶РёРґР°РЅРёРµ Р·Р°РІРµСЂС€РµРЅРёСЏ РѕР±РјРµРЅР°
 static void DMA2_waitTC(
-	uint_fast8_t i		// 0..7 - номер Stream
+	uint_fast8_t i		// 0..7 - РЅРѕРјРµСЂ Stream
 	)
 {
 	uint_fast8_t mask = 1UL <<((i & 0x01) * 6);
@@ -3768,34 +3768,34 @@ static void DMA2_waitTC(
 	{
 		if (i >= 6)
 		{
-			// Дожидаемся завершения обмена канала DMA
-			while ((DMA2->HISR & (DMA_HISR_TCIF6 * mask)) == 0)	// ожидаем завершения обмена по соответствушему stream
+			// Р”РѕР¶РёРґР°РµРјСЃСЏ Р·Р°РІРµСЂС€РµРЅРёСЏ РѕР±РјРµРЅР° РєР°РЅР°Р»Р° DMA
+			while ((DMA2->HISR & (DMA_HISR_TCIF6 * mask)) == 0)	// РѕР¶РёРґР°РµРј Р·Р°РІРµСЂС€РµРЅРёСЏ РѕР±РјРµРЅР° РїРѕ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓС€РµРјСѓ stream
 				;
-			DMA2->HIFCR = DMA_HIFCR_CTCIF6 * mask;		// сбросил флаг соответствующий stream
+			DMA2->HIFCR = DMA_HIFCR_CTCIF6 * mask;		// СЃР±СЂРѕСЃРёР» С„Р»Р°Рі СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РёР№ stream
 		}
 		else
 		{
-			// Дожидаемся завершения обмена канала DMA
-			while ((DMA2->HISR & (DMA_HISR_TCIF4 * mask)) == 0)	// ожидаем завершения обмена по соответствушему stream
+			// Р”РѕР¶РёРґР°РµРјСЃСЏ Р·Р°РІРµСЂС€РµРЅРёСЏ РѕР±РјРµРЅР° РєР°РЅР°Р»Р° DMA
+			while ((DMA2->HISR & (DMA_HISR_TCIF4 * mask)) == 0)	// РѕР¶РёРґР°РµРј Р·Р°РІРµСЂС€РµРЅРёСЏ РѕР±РјРµРЅР° РїРѕ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓС€РµРјСѓ stream
 				;
-			DMA2->HIFCR = DMA_HIFCR_CTCIF4 * mask;		// сбросил флаг соответствующий stream
+			DMA2->HIFCR = DMA_HIFCR_CTCIF4 * mask;		// СЃР±СЂРѕСЃРёР» С„Р»Р°Рі СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РёР№ stream
 		}
 	}
 	else
 	{
 		if (i >= 2)
 		{
-			// Дожидаемся завершения обмена канала DMA
-			while ((DMA2->LISR & (DMA_LISR_TCIF2 * mask)) == 0)	// ожидаем завершения обмена по соответствушему stream
+			// Р”РѕР¶РёРґР°РµРјСЃСЏ Р·Р°РІРµСЂС€РµРЅРёСЏ РѕР±РјРµРЅР° РєР°РЅР°Р»Р° DMA
+			while ((DMA2->LISR & (DMA_LISR_TCIF2 * mask)) == 0)	// РѕР¶РёРґР°РµРј Р·Р°РІРµСЂС€РµРЅРёСЏ РѕР±РјРµРЅР° РїРѕ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓС€РµРјСѓ stream
 				;
-			DMA2->LIFCR = DMA_LIFCR_CTCIF2 * mask;		// сбросил флаг соответствующий stream
+			DMA2->LIFCR = DMA_LIFCR_CTCIF2 * mask;		// СЃР±СЂРѕСЃРёР» С„Р»Р°Рі СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РёР№ stream
 		}
 		else
 		{
-			// Дожидаемся завершения обмена канала DMA
-			while ((DMA2->LISR & (DMA_LISR_TCIF0 * mask)) == 0)	// ожидаем завершения обмена по соответствушему stream
+			// Р”РѕР¶РёРґР°РµРјСЃСЏ Р·Р°РІРµСЂС€РµРЅРёСЏ РѕР±РјРµРЅР° РєР°РЅР°Р»Р° DMA
+			while ((DMA2->LISR & (DMA_LISR_TCIF0 * mask)) == 0)	// РѕР¶РёРґР°РµРј Р·Р°РІРµСЂС€РµРЅРёСЏ РѕР±РјРµРЅР° РїРѕ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓС€РµРјСѓ stream
 				;
-			DMA2->LIFCR = DMA_LIFCR_CTCIF0 * mask;		// сбросил флаг соответствующий stream
+			DMA2->LIFCR = DMA_LIFCR_CTCIF0 * mask;		// СЃР±СЂРѕСЃРёР» С„Р»Р°Рі СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РёР№ stream
 		}
 	}
 }
@@ -3804,12 +3804,12 @@ static void DMA2_waitTC(
 
 #elif CPUSTYLE_STM32F1XX
 
-// Инициализация DMA для прёма по SPI1
+// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ DMA РґР»СЏ РїСЂС‘РјР° РїРѕ SPI1
 static void DMA2_SPI1_RX_initialize(void)
 {
 }
 
-// Инициализация DMA для передачи SPI1
+// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ DMA РґР»СЏ РїРµСЂРµРґР°С‡Рё SPI1
 static void DMA2_SPI1_TX_initialize(void)
 {
 }
@@ -3818,15 +3818,15 @@ static void DMA2_SPI1_TX_initialize(void)
 
 #endif /* WITHSPIHWDMA */
 
-/* Управление SPI. Так как некоторые периферийные устройства не могут работать с 8-битовыми блоками
-   на шине, в таких случаях формирование делается программно - аппаратный SPI при этом отключается
+/* РЈРїСЂР°РІР»РµРЅРёРµ SPI. РўР°Рє РєР°Рє РЅРµРєРѕС‚РѕСЂС‹Рµ РїРµСЂРёС„РµСЂРёР№РЅС‹Рµ СѓСЃС‚СЂРѕР№СЃС‚РІР° РЅРµ РјРѕРіСѓС‚ СЂР°Р±РѕС‚Р°С‚СЊ СЃ 8-Р±РёС‚РѕРІС‹РјРё Р±Р»РѕРєР°РјРё
+   РЅР° С€РёРЅРµ, РІ С‚Р°РєРёС… СЃР»СѓС‡Р°СЏС… С„РѕСЂРјРёСЂРѕРІР°РЅРёРµ РґРµР»Р°РµС‚СЃСЏ РїСЂРѕРіСЂР°РјРјРЅРѕ - Р°РїРїР°СЂР°С‚РЅС‹Р№ SPI РїСЂРё СЌС‚РѕРј РѕС‚РєР»СЋС‡Р°РµС‚СЃСЏ
    */
-/* инициализация и перевод в состояние "отключено" */
+/* РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ Рё РїРµСЂРµРІРѕРґ РІ СЃРѕСЃС‚РѕСЏРЅРёРµ "РѕС‚РєР»СЋС‡РµРЅРѕ" */
 void hardware_spi_master_initialize(void)		
 {
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
-	// инициализация контроллера SPI
+	// РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РєРѕРЅС‚СЂРѕР»Р»РµСЂР° SPI
 
 	// Get clock 
     PMC->PMC_PCER0 = (1UL << ID_PIOA) | (1UL << ID_SPI);	/* Need PIO too */
@@ -3840,7 +3840,7 @@ void hardware_spi_master_initialize(void)
     SPI->SPI_CR = SPI_CR_SPIDIS;
 
 
-	// Работаем с Fixed Peripheral Selectionб и без Peripheral Chip Select Decoding
+	// Р Р°Р±РѕС‚Р°РµРј СЃ Fixed Peripheral SelectionР± Рё Р±РµР· Peripheral Chip Select Decoding
     // USE following line for MASTER MODE operation
     //SPI->SPI_MR = AT91C_SPI_MSTR | AT91C_SPI_MODFDIS | AT91C_SPI_PS_FIXED; 
     SPI->SPI_MR = SPI_MR_MSTR | SPI_MR_MODFDIS | (SPI_MR_PS * 0); 
@@ -3862,7 +3862,7 @@ void hardware_spi_master_initialize(void)
 
 #elif CPUSTYLE_AT91SAM7S
 
-	// инициализация контроллера SPI
+	// РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РєРѕРЅС‚СЂРѕР»Р»РµСЂР° SPI
    
    // Get clock 
     AT91C_BASE_PMC->PMC_PCER = (1UL << AT91C_ID_PIOA) | (1UL << AT91C_ID_SPI);/* Need PIO too */
@@ -3875,7 +3875,7 @@ void hardware_spi_master_initialize(void)
     AT91C_BASE_SPI->SPI_CR = AT91C_SPI_SWRST;
     AT91C_BASE_SPI->SPI_CR = AT91C_SPI_SPIDIS;
 
-	// Работаем с Fixed Peripheral Selectionб и без Peripheral Chip Select Decoding
+	// Р Р°Р±РѕС‚Р°РµРј СЃ Fixed Peripheral SelectionР± Рё Р±РµР· Peripheral Chip Select Decoding
     // USE following line for MASTER MODE operation
     AT91C_BASE_SPI->SPI_MR = AT91C_SPI_MSTR | AT91C_SPI_MODFDIS | AT91C_SPI_PS_FIXED; 
 
@@ -3898,7 +3898,7 @@ void hardware_spi_master_initialize(void)
 #elif CPUSTYLE_ATMEGA
 
 	// SPI initialization
-	SPCR = 0x00;	/* отключить */
+	SPCR = 0x00;	/* РѕС‚РєР»СЋС‡РёС‚СЊ */
 
     // setup PIO pins for SPI bus, disconnect from peripherials
 	SPIIO_INITIALIZE();
@@ -3907,66 +3907,66 @@ void hardware_spi_master_initialize(void)
 #elif CPUSTYLE_ATXMEGA
 
 	// SPI initialization
-	TARGETHARD_SPI.CTRL = 0x00;	/* отключить */
+	TARGETHARD_SPI.CTRL = 0x00;	/* РѕС‚РєР»СЋС‡РёС‚СЊ */
 
     // setup PIO pins for SPI bus, disconnect from peripherials
 	SPIIO_INITIALIZE();
 
 #elif CPUSTYLE_STM32F1XX
 
-	// Начнем с настройки порта:
-	RCC->APB2ENR |= RCC_APB2ENR_AFIOEN;     //включить тактирование альтернативных функций
+	// РќР°С‡РЅРµРј СЃ РЅР°СЃС‚СЂРѕР№РєРё РїРѕСЂС‚Р°:
+	RCC->APB2ENR |= RCC_APB2ENR_AFIOEN;     //РІРєР»СЋС‡РёС‚СЊ С‚Р°РєС‚РёСЂРѕРІР°РЅРёРµ Р°Р»СЊС‚РµСЂРЅР°С‚РёРІРЅС‹С… С„СѓРЅРєС†РёР№
 	__DSB();
 	cpu_stm32f1xx_setmapr(AFIO_MAPR_SPI1_REMAP);
 
-	// Теперь настроим модуль SPI.
-	RCC->APB2ENR |= RCC_APB2ENR_SPI1EN; //подать тактирование                                 
+	// РўРµРїРµСЂСЊ РЅР°СЃС‚СЂРѕРёРј РјРѕРґСѓР»СЊ SPI.
+	RCC->APB2ENR |= RCC_APB2ENR_SPI1EN; //РїРѕРґР°С‚СЊ С‚Р°РєС‚РёСЂРѕРІР°РЅРёРµ                                 
 	__DSB();
-	SPI1->CR1 = 0x0000;             //очистить первый управляющий регистр
-	SPI1->CR2 = 0x0000;	// SPI_CR2_SSOE;             //очистить второй управляющий регистр
+	SPI1->CR1 = 0x0000;             //РѕС‡РёСЃС‚РёС‚СЊ РїРµСЂРІС‹Р№ СѓРїСЂР°РІР»СЏСЋС‰РёР№ СЂРµРіРёСЃС‚СЂ
+	SPI1->CR2 = 0x0000;	// SPI_CR2_SSOE;             //РѕС‡РёСЃС‚РёС‚СЊ РІС‚РѕСЂРѕР№ СѓРїСЂР°РІР»СЏСЋС‰РёР№ СЂРµРіРёСЃС‚СЂ
 
 	#if WITHSPIHWDMA
-		DMA2_SPI1_TX_initialize();	// stream 3, канал 3
-		DMA2_SPI1_RX_initialize();	// stream 0. канал 3
+		DMA2_SPI1_TX_initialize();	// stream 3, РєР°РЅР°Р» 3
+		DMA2_SPI1_RX_initialize();	// stream 0. РєР°РЅР°Р» 3
 	#endif /* WITHSPIHWDMA */
 
-	/* настраиваем в режиме disconnect */
+	/* РЅР°СЃС‚СЂР°РёРІР°РµРј РІ СЂРµР¶РёРјРµ disconnect */
 	SPIIO_INITIALIZE();
 
 #elif CPUSTYLE_STM32F4XX
-	// Начнем с настройки порта:
-	//RCC->APB2ENR |= RCC_APB2ENR_AFIOEN;     //включить тактирование альтернативных функций
+	// РќР°С‡РЅРµРј СЃ РЅР°СЃС‚СЂРѕР№РєРё РїРѕСЂС‚Р°:
+	//RCC->APB2ENR |= RCC_APB2ENR_AFIOEN;     //РІРєР»СЋС‡РёС‚СЊ С‚Р°РєС‚РёСЂРѕРІР°РЅРёРµ Р°Р»СЊС‚РµСЂРЅР°С‚РёРІРЅС‹С… С„СѓРЅРєС†РёР№
 	//__DSB();
 	//cpu_stm32f1xx_setmapr(AFIO_MAPR_SPI1_REMAP);
 
-	// Теперь настроим модуль SPI.
-	RCC->APB2ENR |= RCC_APB2ENR_SPI1EN; //подать тактирование                                 
+	// РўРµРїРµСЂСЊ РЅР°СЃС‚СЂРѕРёРј РјРѕРґСѓР»СЊ SPI.
+	RCC->APB2ENR |= RCC_APB2ENR_SPI1EN; //РїРѕРґР°С‚СЊ С‚Р°РєС‚РёСЂРѕРІР°РЅРёРµ                                 
 	__DSB();
-	SPI1->CR1 = 0x0000;             //очистить первый управляющий регистр
-	SPI1->CR2 = 0x0000;	// SPI_CR2_SSOE;             //очистить второй управляющий регистр
+	SPI1->CR1 = 0x0000;             //РѕС‡РёСЃС‚РёС‚СЊ РїРµСЂРІС‹Р№ СѓРїСЂР°РІР»СЏСЋС‰РёР№ СЂРµРіРёСЃС‚СЂ
+	SPI1->CR2 = 0x0000;	// SPI_CR2_SSOE;             //РѕС‡РёСЃС‚РёС‚СЊ РІС‚РѕСЂРѕР№ СѓРїСЂР°РІР»СЏСЋС‰РёР№ СЂРµРіРёСЃС‚СЂ
 
 	#if WITHSPIHWDMA
-		DMA2_SPI1_TX_initialize();	// stream 3, канал 3
-		DMA2_SPI1_RX_initialize();	// stream 0. канал 3
+		DMA2_SPI1_TX_initialize();	// stream 3, РєР°РЅР°Р» 3
+		DMA2_SPI1_RX_initialize();	// stream 0. РєР°РЅР°Р» 3
 	#endif /* WITHSPIHWDMA */
 
-	/* настраиваем в режиме disconnect */
+	/* РЅР°СЃС‚СЂР°РёРІР°РµРј РІ СЂРµР¶РёРјРµ disconnect */
 	SPIIO_INITIALIZE();
 
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
 
-	// Настроим модуль SPI.
-	RCC->APB2ENR |= RCC_APB2ENR_SPI1EN; //подать тактирование                                 
+	// РќР°СЃС‚СЂРѕРёРј РјРѕРґСѓР»СЊ SPI.
+	RCC->APB2ENR |= RCC_APB2ENR_SPI1EN; //РїРѕРґР°С‚СЊ С‚Р°РєС‚РёСЂРѕРІР°РЅРёРµ                                 
 	__DSB();
-	//SPI1->CR1 = 0x0000;             //очистить первый управляющий регистр
+	//SPI1->CR1 = 0x0000;             //РѕС‡РёСЃС‚РёС‚СЊ РїРµСЂРІС‹Р№ СѓРїСЂР°РІР»СЏСЋС‰РёР№ СЂРµРіРёСЃС‚СЂ
 	//SPI1->CR2 = 0x0000;
 
 	#if WITHSPIHWDMA
-		DMA2_SPI1_TX_initialize();	// stream 3, канал 3
-		DMA2_SPI1_RX_initialize();	// stream 0. канал 3
+		DMA2_SPI1_TX_initialize();	// stream 3, РєР°РЅР°Р» 3
+		DMA2_SPI1_RX_initialize();	// stream 0. РєР°РЅР°Р» 3
 	#endif /* WITHSPIHWDMA */
 
-	/* настраиваем в режиме disconnect */
+	/* РЅР°СЃС‚СЂР°РёРІР°РµРј РІ СЂРµР¶РёРјРµ disconnect */
 	SPIIO_INITIALIZE();
 
 #elif CPUSTYLE_R7S721
@@ -4014,12 +4014,12 @@ void hardware_spi_master_initialize(void)
 	HW_SPIUSED->SPSCR =		/*  (SPSCR) */
 		0x00 |
 		0;
-	// Сбросить буферы
+	// РЎР±СЂРѕСЃРёС‚СЊ Р±СѓС„РµСЂС‹
 	HW_SPIUSED->SPBFCR =		/* Buffer Control Register (SPBFCR) */
 		(1U << 7) |		// TXRST - TX buffer reset
 		(1U << 6) |		// RXRST - TX buffer reset
 		0;
-	// Разрешить буферы
+	// Р Р°Р·СЂРµС€РёС‚СЊ Р±СѓС„РµСЂС‹
 	HW_SPIUSED->SPBFCR =		/* Buffer Control Register (SPBFCR) */
 		(3U << 4) |		// TX buffer trigger level = 0
 		0;
@@ -4040,8 +4040,8 @@ void hardware_spi_master_initialize(void)
 		DMAC15.N0DA_n = (uint32_t) & HW_SPIUSED->SPDR.UINT16 [R_IO_L];	// Fixed destination address for 16-bit transfers
 
 		/* Set Transfer Size */
-		//DMAC15.N0TB_n = DMABUFFSIZE16 * sizeof (int16_t);	// размер в байтах
-		//DMAC15.N1TB_n = DMABUFFSIZE16 * sizeof (int16_t);	// размер в байтах
+		//DMAC15.N0TB_n = DMABUFFSIZE16 * sizeof (int16_t);	// СЂР°Р·РјРµСЂ РІ Р±Р°Р№С‚Р°С…
+		//DMAC15.N1TB_n = DMABUFFSIZE16 * sizeof (int16_t);	// СЂР°Р·РјРµСЂ РІ Р±Р°Р№С‚Р°С…
 
 		// Values from Table 9.4 On-Chip Peripheral Module Requests
 		// SPTI0 (transmit data empty)
@@ -4059,8 +4059,8 @@ void hardware_spi_master_initialize(void)
 			0 * (1U << DMAC15_CHCFG_n_RSW_SHIFT) |		// RSW	1: Inverts RSEL automatically after a DMA transaction.
 			0 * (1U << DMAC15_CHCFG_n_RSEL_SHIFT) |		// RSEL	0: Executes the Next0 Register Set
 			0 * (1U << DMAC15_CHCFG_n_SBE_SHIFT) |		// SBE	0: Stops the DMA transfer without sweeping the buffer (initial value).
-			0 * (1U << DMAC15_CHCFG_n_DEM_SHIFT) |		// DEM	0: Does not mask the DMA transfer end interrupt - прерывания каждый раз после TC
-			tm * (1U << DMAC15_CHCFG_n_TM_SHIFT) |		// TM	0: Single transfer mode - берётся из Table 9.4
+			0 * (1U << DMAC15_CHCFG_n_DEM_SHIFT) |		// DEM	0: Does not mask the DMA transfer end interrupt - РїСЂРµСЂС‹РІР°РЅРёСЏ РєР°Р¶РґС‹Р№ СЂР°Р· РїРѕСЃР»Рµ TC
+			tm * (1U << DMAC15_CHCFG_n_TM_SHIFT) |		// TM	0: Single transfer mode - Р±РµСЂС‘С‚СЃСЏ РёР· Table 9.4
 			1 * (1U << DMAC15_CHCFG_n_DAD_SHIFT) |		// DAD	1: Fixed destination address
 			0 * (1U << DMAC15_CHCFG_n_SAD_SHIFT) |		// SAD	0: Increment source address
 			1 * (1U << DMAC15_CHCFG_n_DDS_SHIFT) |		// DDS	2: 32 bits, 1: 16 bits (Destination Data Size)
@@ -4111,7 +4111,7 @@ void hardware_spi_master_setfreq(uint_fast8_t spispeedindex, int_fast32_t spispe
 	const unsigned dlybs = 0;
 	const unsigned dlybct = 0;
 
-	// 8-ми битые передачи
+	// 8-РјРё Р±РёС‚С‹Рµ РїРµСЂРµРґР°С‡Рё
     const unsigned long csrbits = 
 		SPI_CSR_BITS_8_BIT  |	// (SPI) 8 Bits Per transfer
 		SPI_CSR_SCBR(scbr) | // (SPI_CSR_SCBR_Msk & (scbr <<  SPI_CSR_SCBR_Pos)) |	// (SPI) Serial Clock Baud Rate
@@ -4119,7 +4119,7 @@ void hardware_spi_master_setfreq(uint_fast8_t spispeedindex, int_fast32_t spispe
 		SPI_CSR_DLYBS(dlybs) | // (SPI_CSR_DLYBS_Msk & (dlybs << SPI_CSR_DLYBS_Pos)) |
 		SPI_CSR_DLYBCT(dlybct) | // (SPI_CSR_DLYBCT_Msk & (dlybct << SPI_CSR_DLYBCT_Pos)) |
 		0;
-	// 16-ти битые передачи
+	// 16-С‚Рё Р±РёС‚С‹Рµ РїРµСЂРµРґР°С‡Рё
     const unsigned long csrbits16w = 
 		SPI_CSR_BITS_16_BIT |	// (SPI) 16 Bits Per transfer
 		SPI_CSR_SCBR(scbr) | // (SPI_CSR_SCBR_Msk & (scbr <<  SPI_CSR_SCBR_Pos)) |	// (SPI) Serial Clock Baud Rate
@@ -4128,15 +4128,15 @@ void hardware_spi_master_setfreq(uint_fast8_t spispeedindex, int_fast32_t spispe
 		SPI_CSR_DLYBCT(dlybct) | // (SPI_CSR_DLYBCT_Msk & (dlybct << SPI_CSR_DLYBCT_Pos)) |
 		0;
 
-	// подготовка управляющих слов для разных spi mode, используемых контроллером.
-	// 8-битная передача
+	// РїРѕРґРіРѕС‚РѕРІРєР° СѓРїСЂР°РІР»СЏСЋС‰РёС… СЃР»РѕРІ РґР»СЏ СЂР°Р·РЅС‹С… spi mode, РёСЃРїРѕР»СЊР·СѓРµРјС‹С… РєРѕРЅС‚СЂРѕР»Р»РµСЂРѕРј.
+	// 8-Р±РёС‚РЅР°СЏ РїРµСЂРµРґР°С‡Р°
 	spi_csr_val8w [spispeedindex][SPIC_MODE0] = csrbits | SPI_CSR_NCPHA;
 	spi_csr_val8w [spispeedindex][SPIC_MODE1] = csrbits;
 	spi_csr_val8w [spispeedindex][SPIC_MODE2] = csrbits | SPI_CSR_CPOL | SPI_CSR_NCPHA;
 	spi_csr_val8w [spispeedindex][SPIC_MODE3] = csrbits | SPI_CSR_CPOL;
 
-	// подготовка управляющих слов для разных spi mode, используемых контроллером.
-	// 16-битная передача
+	// РїРѕРґРіРѕС‚РѕРІРєР° СѓРїСЂР°РІР»СЏСЋС‰РёС… СЃР»РѕРІ РґР»СЏ СЂР°Р·РЅС‹С… spi mode, РёСЃРїРѕР»СЊР·СѓРµРјС‹С… РєРѕРЅС‚СЂРѕР»Р»РµСЂРѕРј.
+	// 16-Р±РёС‚РЅР°СЏ РїРµСЂРµРґР°С‡Р°
 	spi_csr_val16w [spispeedindex][SPIC_MODE0] = csrbits16w | SPI_CSR_NCPHA;
 	spi_csr_val16w [spispeedindex][SPIC_MODE1] = csrbits16w;
 	spi_csr_val16w [spispeedindex][SPIC_MODE2] = csrbits16w | SPI_CSR_CPOL | SPI_CSR_NCPHA;
@@ -4149,7 +4149,7 @@ void hardware_spi_master_setfreq(uint_fast8_t spispeedindex, int_fast32_t spispe
 	const unsigned dlybs = 0;
 	const unsigned dlybct = 0;
 
-	// 8-ми битые передачи
+	// 8-РјРё Р±РёС‚С‹Рµ РїРµСЂРµРґР°С‡Рё
     const unsigned long csrbits = 
 		AT91C_SPI_BITS_8 |	// (SPI) 8 Bits Per transfer
 		(AT91C_SPI_SCBR & (scbr <<  8)) |	// (SPI) Serial Clock Baud Rate
@@ -4157,7 +4157,7 @@ void hardware_spi_master_setfreq(uint_fast8_t spispeedindex, int_fast32_t spispe
 		(AT91C_SPI_DLYBS & (dlybs << 16)) |
 		(AT91C_SPI_DLYBCT & (dlybct << 24)) |
 		0;
-	// 16-ти битые передачи
+	// 16-С‚Рё Р±РёС‚С‹Рµ РїРµСЂРµРґР°С‡Рё
     const unsigned long csrbits16w = 
 		AT91C_SPI_BITS_16 |	// (SPI) 16 Bits Per transfer
 		(AT91C_SPI_SCBR & (scbr <<  8)) |	// (SPI) Serial Clock Baud Rate
@@ -4166,15 +4166,15 @@ void hardware_spi_master_setfreq(uint_fast8_t spispeedindex, int_fast32_t spispe
 		(AT91C_SPI_DLYBCT & (dlybct << 24)) |
 		0;
 
-	// подготовка управляющих слов для разных spi mode, используемых контроллером.
-	// 8-битная передача
+	// РїРѕРґРіРѕС‚РѕРІРєР° СѓРїСЂР°РІР»СЏСЋС‰РёС… СЃР»РѕРІ РґР»СЏ СЂР°Р·РЅС‹С… spi mode, РёСЃРїРѕР»СЊР·СѓРµРјС‹С… РєРѕРЅС‚СЂРѕР»Р»РµСЂРѕРј.
+	// 8-Р±РёС‚РЅР°СЏ РїРµСЂРµРґР°С‡Р°
 	spi_csr_val8w [spispeedindex][SPIC_MODE0] = csrbits | AT91C_SPI_NCPHA;
 	spi_csr_val8w [spispeedindex][SPIC_MODE1] = csrbits;
 	spi_csr_val8w [spispeedindex][SPIC_MODE2] = csrbits | AT91C_SPI_CPOL | AT91C_SPI_NCPHA;
 	spi_csr_val8w [spispeedindex][SPIC_MODE3] = csrbits | AT91C_SPI_CPOL;
 
-	// подготовка управляющих слов для разных spi mode, используемых контроллером.
-	// 16-битная передача
+	// РїРѕРґРіРѕС‚РѕРІРєР° СѓРїСЂР°РІР»СЏСЋС‰РёС… СЃР»РѕРІ РґР»СЏ СЂР°Р·РЅС‹С… spi mode, РёСЃРїРѕР»СЊР·СѓРµРјС‹С… РєРѕРЅС‚СЂРѕР»Р»РµСЂРѕРј.
+	// 16-Р±РёС‚РЅР°СЏ РїРµСЂРµРґР°С‡Р°
 	spi_csr_val16w [spispeedindex][SPIC_MODE0] = csrbits16w | AT91C_SPI_NCPHA;
 	spi_csr_val16w [spispeedindex][SPIC_MODE1] = csrbits16w;
 	spi_csr_val16w [spispeedindex][SPIC_MODE2] = csrbits16w | AT91C_SPI_CPOL | AT91C_SPI_NCPHA;
@@ -4184,11 +4184,11 @@ void hardware_spi_master_setfreq(uint_fast8_t spispeedindex, int_fast32_t spispe
 
 	// SPI initialization
 
-	// Использование автоматического расчёта предделителя
-	unsigned value;	/* делителя нет, есть только прескалер - значение делителя не используется */
+	// РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРіРѕ СЂР°СЃС‡С‘С‚Р° РїСЂРµРґРґРµР»РёС‚РµР»СЏ
+	unsigned value;	/* РґРµР»РёС‚РµР»СЏ РЅРµС‚, РµСЃС‚СЊ С‚РѕР»СЊРєРѕ РїСЂРµСЃРєР°Р»РµСЂ - Р·РЅР°С‡РµРЅРёРµ РґРµР»РёС‚РµР»СЏ РЅРµ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ */
 	const uint_fast8_t prei = calcdivider(calcdivround(spispeed), ATMEGA_SPCR_WIDTH, ATMEGA_SPCR_TAPS, & value, 1);
 	const uint_fast8_t spcr = spcr_spsr [prei].spcr | (1U << SPE) | (1U << MSTR);
-	// С FRAM FM25L04 работает MODE3 и MODE0
+	// РЎ FRAM FM25L04 СЂР°Р±РѕС‚Р°РµС‚ MODE3 Рё MODE0
 	spcr_val [spispeedindex][SPIC_MODE0] = (0U << CPOL) | (0U << CPHA) | spcr;
 	spcr_val [spispeedindex][SPIC_MODE1] = (0U << CPOL) | (1U << CPHA) | spcr;
 	spcr_val [spispeedindex][SPIC_MODE2] = (1U << CPOL) | (0U << CPHA) | spcr;
@@ -4200,11 +4200,11 @@ void hardware_spi_master_setfreq(uint_fast8_t spispeedindex, int_fast32_t spispe
 
 	// SPI initialization
 
-	// Использование автоматического расчёта предделителя
-	unsigned value;	/* делителя нет, есть только прескалер - значение делителя не используется */
+	// РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРіРѕ СЂР°СЃС‡С‘С‚Р° РїСЂРµРґРґРµР»РёС‚РµР»СЏ
+	unsigned value;	/* РґРµР»РёС‚РµР»СЏ РЅРµС‚, РµСЃС‚СЊ С‚РѕР»СЊРєРѕ РїСЂРµСЃРєР°Р»РµСЂ - Р·РЅР°С‡РµРЅРёРµ РґРµР»РёС‚РµР»СЏ РЅРµ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ */
 	const uint_fast8_t prei = calcdivider(calcdivround(spispeed), ATXMEGA_SPIBR_WIDTH, ATXMEGA_SPIBR_TAPS, & value, 1);
 	const uint_fast8_t ctl = spi_ctl [prei] | SPI_MASTER_bm | SPI_ENABLE_bm;
-	// С FRAM FM25L04 работает MODE3 и MODE0
+	// РЎ FRAM FM25L04 СЂР°Р±РѕС‚Р°РµС‚ MODE3 Рё MODE0
 	spi_ctl_val [spispeedindex][SPIC_MODE0] = SPI_MODE_0_gc | ctl;	// SPI MODE0,
 	spi_ctl_val [spispeedindex][SPIC_MODE1] = SPI_MODE_1_gc | ctl;	// SPI MODE1,
 	spi_ctl_val [spispeedindex][SPIC_MODE2] = SPI_MODE_2_gc | ctl;	// SPI MODE2,
@@ -4212,7 +4212,7 @@ void hardware_spi_master_setfreq(uint_fast8_t spispeedindex, int_fast32_t spispe
 
 #elif CPUSTYLE_STM32F1XX || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32L0XX
 
-	unsigned value;	/* делителя нет, есть только прескалер - значение делителя не используется */
+	unsigned value;	/* РґРµР»РёС‚РµР»СЏ РЅРµС‚, РµСЃС‚СЊ С‚РѕР»СЊРєРѕ РїСЂРµСЃРєР°Р»РµСЂ - Р·РЅР°С‡РµРЅРёРµ РґРµР»РёС‚РµР»СЏ РЅРµ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ */
 	const uint_fast8_t prei = calcdivider(calcdivround_pclk2(spispeed), STM32F_SPIBR_WIDTH, STM32F_SPIBR_TAPS, & value, 1);
 
 	const uint_fast32_t cr1baudrate = (prei * SPI_CR1_BR_0) & SPI_CR1_BR;
@@ -4228,15 +4228,15 @@ void hardware_spi_master_setfreq(uint_fast8_t spispeedindex, int_fast32_t spispe
 		CR1_MODE3 = SPI_CR1_CPOL | SPI_CR1_CPHA		// wrk = CLK leave "HIGH"
 	};
 
-	// подготовка управляющих слов для разных spi mode, используемых контроллером.
-	// 8-битная передача
+	// РїРѕРґРіРѕС‚РѕРІРєР° СѓРїСЂР°РІР»СЏСЋС‰РёС… СЃР»РѕРІ РґР»СЏ СЂР°Р·РЅС‹С… spi mode, РёСЃРїРѕР»СЊР·СѓРµРјС‹С… РєРѕРЅС‚СЂРѕР»Р»РµСЂРѕРј.
+	// 8-Р±РёС‚РЅР°СЏ РїРµСЂРµРґР°С‡Р°
 	spi_cr1_val8w [spispeedindex][SPIC_MODE0] = cr1bits | CR1_MODE0;
 	spi_cr1_val8w [spispeedindex][SPIC_MODE1] = cr1bits | CR1_MODE1;
 	spi_cr1_val8w [spispeedindex][SPIC_MODE2] = cr1bits | CR1_MODE2;
 	spi_cr1_val8w [spispeedindex][SPIC_MODE3] = cr1bits | CR1_MODE3; 
 
-	// подготовка управляющих слов для разных spi mode, используемых контроллером.
-	// 16-битная передача
+	// РїРѕРґРіРѕС‚РѕРІРєР° СѓРїСЂР°РІР»СЏСЋС‰РёС… СЃР»РѕРІ РґР»СЏ СЂР°Р·РЅС‹С… spi mode, РёСЃРїРѕР»СЊР·СѓРµРјС‹С… РєРѕРЅС‚СЂРѕР»Р»РµСЂРѕРј.
+	// 16-Р±РёС‚РЅР°СЏ РїРµСЂРµРґР°С‡Р°
 	spi_cr1_val16w [spispeedindex][SPIC_MODE0] = cr1bits16w | CR1_MODE0;
 	spi_cr1_val16w [spispeedindex][SPIC_MODE1] = cr1bits16w | CR1_MODE1;
 	spi_cr1_val16w [spispeedindex][SPIC_MODE2] = cr1bits16w | CR1_MODE2;	
@@ -4244,7 +4244,7 @@ void hardware_spi_master_setfreq(uint_fast8_t spispeedindex, int_fast32_t spispe
 
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX
 
-	unsigned value;	/* делителя нет, есть только прескалер - значение делителя не используется */
+	unsigned value;	/* РґРµР»РёС‚РµР»СЏ РЅРµС‚, РµСЃС‚СЊ С‚РѕР»СЊРєРѕ РїСЂРµСЃРєР°Р»РµСЂ - Р·РЅР°С‡РµРЅРёРµ РґРµР»РёС‚РµР»СЏ РЅРµ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ */
 	const uint_fast8_t prei = calcdivider(calcdivround_pclk2(spispeed), STM32F_SPIBR_WIDTH, STM32F_SPIBR_TAPS, & value, 1);
 
 	const uint_fast32_t cr1baudrate = (prei * SPI_CR1_BR_0) & SPI_CR1_BR;
@@ -4257,8 +4257,8 @@ void hardware_spi_master_setfreq(uint_fast8_t spispeedindex, int_fast32_t spispe
 		CR1_MODE3 = SPI_CR1_CPOL | SPI_CR1_CPHA		// wrk = CLK leave "HIGH"
 	};
 
-	// подготовка управляющих слов для разных spi mode, используемых контроллером.
-	// 8-битная или 16-битная передача программируется в CR2
+	// РїРѕРґРіРѕС‚РѕРІРєР° СѓРїСЂР°РІР»СЏСЋС‰РёС… СЃР»РѕРІ РґР»СЏ СЂР°Р·РЅС‹С… spi mode, РёСЃРїРѕР»СЊР·СѓРµРјС‹С… РєРѕРЅС‚СЂРѕР»Р»РµСЂРѕРј.
+	// 8-Р±РёС‚РЅР°СЏ РёР»Рё 16-Р±РёС‚РЅР°СЏ РїРµСЂРµРґР°С‡Р° РїСЂРѕРіСЂР°РјРјРёСЂСѓРµС‚СЃСЏ РІ CR2
 	spi_cr1_val8w [spispeedindex][SPIC_MODE0] = cr1bits | CR1_MODE0;
 	spi_cr1_val8w [spispeedindex][SPIC_MODE1] = cr1bits | CR1_MODE1;
 	spi_cr1_val8w [spispeedindex][SPIC_MODE2] = cr1bits | CR1_MODE2;
@@ -4266,7 +4266,7 @@ void hardware_spi_master_setfreq(uint_fast8_t spispeedindex, int_fast32_t spispe
 
 #elif CPUSTYLE_STM32H7XX
 
-	unsigned value;	/* делителя нет, есть только прескалер - значение делителя не используется */
+	unsigned value;	/* РґРµР»РёС‚РµР»СЏ РЅРµС‚, РµСЃС‚СЊ С‚РѕР»СЊРєРѕ РїСЂРµСЃРєР°Р»РµСЂ - Р·РЅР°С‡РµРЅРёРµ РґРµР»РёС‚РµР»СЏ РЅРµ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ */
 	const uint_fast8_t prei = calcdivider(calcdivround_per_ck(spispeed), STM32F_SPIBR_WIDTH, STM32F_SPIBR_TAPS, & value, 1);
 	const uint_fast32_t cfg1baudrate = (prei * SPI_CFG1_MBR_0) & SPI_CFG1_MBR;
 	//debug_printf_P(PSTR("hardware_spi_master_setfreq: prei=%u, value=%u, spispeed=%u\n"), prei, value, spispeed);
@@ -4288,8 +4288,8 @@ void hardware_spi_master_setfreq(uint_fast8_t spispeedindex, int_fast32_t spispe
 		CFG2_MODE3 = SPI_CFG2_CPOL | SPI_CFG2_CPHA		// wrk = CLK leave "HIGH"
 	};
 
-	// подготовка управляющих слов для разных spi mode, используемых контроллером.
-	// 8-битная или 16-битная передача программируется в CR2
+	// РїРѕРґРіРѕС‚РѕРІРєР° СѓРїСЂР°РІР»СЏСЋС‰РёС… СЃР»РѕРІ РґР»СЏ СЂР°Р·РЅС‹С… spi mode, РёСЃРїРѕР»СЊР·СѓРµРјС‹С… РєРѕРЅС‚СЂРѕР»Р»РµСЂРѕРј.
+	// 8-Р±РёС‚РЅР°СЏ РёР»Рё 16-Р±РёС‚РЅР°СЏ РїРµСЂРµРґР°С‡Р° РїСЂРѕРіСЂР°РјРјРёСЂСѓРµС‚СЃСЏ РІ CR2
 	spi_cfg2_val [spispeedindex][SPIC_MODE0] = cfg2bits | CFG2_MODE0;
 	spi_cfg2_val [spispeedindex][SPIC_MODE1] = cfg2bits | CFG2_MODE1;
 	spi_cfg2_val [spispeedindex][SPIC_MODE2] = cfg2bits | CFG2_MODE2;	
@@ -4298,7 +4298,7 @@ void hardware_spi_master_setfreq(uint_fast8_t spispeedindex, int_fast32_t spispe
 #elif CPUSTYLE_R7S721
 
 	// Command Register (SPCMD)
-	// подготовка управляющих слов для разных spi mode, используемых контроллером.
+	// РїРѕРґРіРѕС‚РѕРІРєР° СѓРїСЂР°РІР»СЏСЋС‰РёС… СЃР»РѕРІ РґР»СЏ СЂР°Р·РЅС‹С… spi mode, РёСЃРїРѕР»СЊР·СѓРµРјС‹С… РєРѕРЅС‚СЂРѕР»Р»РµСЂРѕРј.
 	enum
 	{
 		SPCMD_CPHA = RSPIn_SPCMD0_CPHA,
@@ -4326,8 +4326,8 @@ void hardware_spi_master_setfreq(uint_fast8_t spispeedindex, int_fast32_t spispe
 		0;
 
 	spi_spbr_val [spispeedindex] = value;	// Bit Rate Register (SPBR)
-	// подготовка управляющих слов для разных spi mode, используемых контроллером.
-	// 8-битная передача
+	// РїРѕРґРіРѕС‚РѕРІРєР° СѓРїСЂР°РІР»СЏСЋС‰РёС… СЃР»РѕРІ РґР»СЏ СЂР°Р·РЅС‹С… spi mode, РёСЃРїРѕР»СЊР·СѓРµРјС‹С… РєРѕРЅС‚СЂРѕР»Р»РµСЂРѕРј.
+	// 8-Р±РёС‚РЅР°СЏ РїРµСЂРµРґР°С‡Р°
 	const uint16_t spcmd8bw = spcmd0 | 0x0700;	// 0x0700 - 8 bit
 
 	spi_spcmd0_val8w [spispeedindex][SPIC_MODE0] = spcmd8bw | SPCMD_MODE0;
@@ -4335,8 +4335,8 @@ void hardware_spi_master_setfreq(uint_fast8_t spispeedindex, int_fast32_t spispe
 	spi_spcmd0_val8w [spispeedindex][SPIC_MODE2] = spcmd8bw | SPCMD_MODE2;
 	spi_spcmd0_val8w [spispeedindex][SPIC_MODE3] = spcmd8bw | SPCMD_MODE3;
 
-	// подготовка управляющих слов для разных spi mode, используемых контроллером.
-	// 16-битная передача
+	// РїРѕРґРіРѕС‚РѕРІРєР° СѓРїСЂР°РІР»СЏСЋС‰РёС… СЃР»РѕРІ РґР»СЏ СЂР°Р·РЅС‹С… spi mode, РёСЃРїРѕР»СЊР·СѓРµРјС‹С… РєРѕРЅС‚СЂРѕР»Р»РµСЂРѕРј.
+	// 16-Р±РёС‚РЅР°СЏ РїРµСЂРµРґР°С‡Р°
 	const uint16_t spcmd16w = spcmd0 | 0x0F00;	// 0x0200 or 0x0300 - 32 bit
 
 	spi_spcmd0_val16w [spispeedindex][SPIC_MODE0] = spcmd16w | SPCMD_MODE0;
@@ -4349,15 +4349,15 @@ void hardware_spi_master_setfreq(uint_fast8_t spispeedindex, int_fast32_t spispe
 #endif
 }
 
-/* управление состоянием "подключено */
+/* СѓРїСЂР°РІР»РµРЅРёРµ СЃРѕСЃС‚РѕСЏРЅРёРµРј "РїРѕРґРєР»СЋС‡РµРЅРѕ */
 void hardware_spi_connect(uint_fast8_t spispeedindex, uint_fast8_t spimode)
 {
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
-	// инициализация контроллера SPI
-	enum { OUTMASK = PIO_PA13A_MOSI | PIO_PA14A_SPCK };		// битовая маска, определяет каким выводом шевелить
-	enum { INPMASK = PIO_PA12A_MISO };		// битовая маска, определяет откуда ввод
-	enum { WORKMASK = OUTMASK | INPMASK };		// битовая маска, включает и ввод и вывод
+	// РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РєРѕРЅС‚СЂРѕР»Р»РµСЂР° SPI
+	enum { OUTMASK = PIO_PA13A_MOSI | PIO_PA14A_SPCK };		// Р±РёС‚РѕРІР°СЏ РјР°СЃРєР°, РѕРїСЂРµРґРµР»СЏРµС‚ РєР°РєРёРј РІС‹РІРѕРґРѕРј С€РµРІРµР»РёС‚СЊ
+	enum { INPMASK = PIO_PA12A_MISO };		// Р±РёС‚РѕРІР°СЏ РјР°СЃРєР°, РѕРїСЂРµРґРµР»СЏРµС‚ РѕС‚РєСѓРґР° РІРІРѕРґ
+	enum { WORKMASK = OUTMASK | INPMASK };		// Р±РёС‚РѕРІР°СЏ РјР°СЃРєР°, РІРєР»СЋС‡Р°РµС‚ Рё РІРІРѕРґ Рё РІС‹РІРѕРґ
 
 	SPI->SPI_CSR [0] = spi_csr_val8w [spispeedindex][spimode];
 
@@ -4367,9 +4367,9 @@ void hardware_spi_connect(uint_fast8_t spispeedindex, uint_fast8_t spimode)
 
 #elif CPUSTYLE_AT91SAM7S
 
-	enum { OUTMASK = AT91C_PA13_MOSI | AT91C_PA14_SPCK };		// битовая маска, определяет каким выводом шевелить
-	enum { INPMASK = AT91C_PA12_MISO };		// битовая маска, определяет откуда ввод
-	enum { WORKMASK = OUTMASK | INPMASK };		// битовая маска, включает и ввод и вывод
+	enum { OUTMASK = AT91C_PA13_MOSI | AT91C_PA14_SPCK };		// Р±РёС‚РѕРІР°СЏ РјР°СЃРєР°, РѕРїСЂРµРґРµР»СЏРµС‚ РєР°РєРёРј РІС‹РІРѕРґРѕРј С€РµРІРµР»РёС‚СЊ
+	enum { INPMASK = AT91C_PA12_MISO };		// Р±РёС‚РѕРІР°СЏ РјР°СЃРєР°, РѕРїСЂРµРґРµР»СЏРµС‚ РѕС‚РєСѓРґР° РІРІРѕРґ
+	enum { WORKMASK = OUTMASK | INPMASK };		// Р±РёС‚РѕРІР°СЏ РјР°СЃРєР°, РІРєР»СЋС‡Р°РµС‚ Рё РІРІРѕРґ Рё РІС‹РІРѕРґ
 
 	AT91C_SPI_CSR [0] = spi_csr_val8w [spispeedindex][spimode];
 
@@ -4406,14 +4406,14 @@ void hardware_spi_connect(uint_fast8_t spispeedindex, uint_fast8_t spimode)
 		// 2.6.7 I2C1 with SPI1 remapped and used in master mode
 		// Workaround:
 		// When using SPI1 remapped, the I2C1 clock must be disabled.
-		RCC->APB1ENR &= ~ (RCC_APB1ENR_I2C1EN); // выкл тактирование контроллера I2C
+		RCC->APB1ENR &= ~ (RCC_APB1ENR_I2C1EN); // РІС‹РєР» С‚Р°РєС‚РёСЂРѕРІР°РЅРёРµ РєРѕРЅС‚СЂРѕР»Р»РµСЂР° I2C
 		__DSB();
 	#endif
 	SPI1->CR1 = spi_cr1_val8w [spispeedindex][spimode];
 
 #elif CPUSTYLE_STM32F4XX || CPUSTYLE_STM32L0XX
 
-	// В этих процессорах и входы и выходы перекдючаются на ALT FN
+	// Р’ СЌС‚РёС… РїСЂРѕС†РµСЃСЃРѕСЂР°С… Рё РІС…РѕРґС‹ Рё РІС‹С…РѕРґС‹ РїРµСЂРµРєРґСЋС‡Р°СЋС‚СЃСЏ РЅР° ALT FN
 	HARDWARE_SPI_CONNECT();
 
 	#if WITHTWIHW
@@ -4421,14 +4421,14 @@ void hardware_spi_connect(uint_fast8_t spispeedindex, uint_fast8_t spimode)
 		// 2.6.7 I2C1 with SPI1 remapped and used in master mode
 		// Workaround:
 		// When using SPI1 remapped, the I2C1 clock must be disabled.
-		RCC->APB1ENR &= ~ (RCC_APB1ENR_I2C1EN); // выкл тактирование контроллера I2C
+		RCC->APB1ENR &= ~ (RCC_APB1ENR_I2C1EN); // РІС‹РєР» С‚Р°РєС‚РёСЂРѕРІР°РЅРёРµ РєРѕРЅС‚СЂРѕР»Р»РµСЂР° I2C
 		__DSB();
 	#endif
 	SPI1->CR1 = spi_cr1_val8w [spispeedindex][spimode];
 
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX
 
-	// В этих процессорах и входы и выходы перекдючаются на ALT FN
+	// Р’ СЌС‚РёС… РїСЂРѕС†РµСЃСЃРѕСЂР°С… Рё РІС…РѕРґС‹ Рё РІС‹С…РѕРґС‹ РїРµСЂРµРєРґСЋС‡Р°СЋС‚СЃСЏ РЅР° ALT FN
 	HARDWARE_SPI_CONNECT();
 
 	#if WITHTWIHW
@@ -4436,7 +4436,7 @@ void hardware_spi_connect(uint_fast8_t spispeedindex, uint_fast8_t spimode)
 		// 2.6.7 I2C1 with SPI1 remapped and used in master mode
 		// Workaround:
 		// When using SPI1 remapped, the I2C1 clock must be disabled.
-		RCC->APB1ENR &= ~ (RCC_APB1ENR_I2C1EN); // выкл тактирование контроллера I2C
+		RCC->APB1ENR &= ~ (RCC_APB1ENR_I2C1EN); // РІС‹РєР» С‚Р°РєС‚РёСЂРѕРІР°РЅРёРµ РєРѕРЅС‚СЂРѕР»Р»РµСЂР° I2C
 		__DSB();
 	#endif
 	SPI1->CR1 = spi_cr1_val8w [spispeedindex][spimode];
@@ -4473,7 +4473,7 @@ void hardware_spi_connect(uint_fast8_t spispeedindex, uint_fast8_t spimode)
 
 }
 
-/* управление состоянием "подключено" */
+/* СѓРїСЂР°РІР»РµРЅРёРµ СЃРѕСЃС‚РѕСЏРЅРёРµРј "РїРѕРґРєР»СЋС‡РµРЅРѕ" */
 void hardware_spi_disconnect(void)
 {
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
@@ -4501,7 +4501,7 @@ void hardware_spi_disconnect(void)
 		// 2.6.7 I2C1 with SPI1 remapped and used in master mode
 		// Workaround:
 		// When using SPI1 remapped, the I2C1 clock must be disabled.
-		RCC->APB1ENR |= (RCC_APB1ENR_I2C1EN); // вкл тактирование контроллера I2C
+		RCC->APB1ENR |= (RCC_APB1ENR_I2C1EN); // РІРєР» С‚Р°РєС‚РёСЂРѕРІР°РЅРёРµ РєРѕРЅС‚СЂРѕР»Р»РµСЂР° I2C
 		__DSB();
 	#endif
 
@@ -4518,34 +4518,34 @@ void hardware_spi_disconnect(void)
 
 }
 
-/* дождаться завершения передачи (на atmega оптимизированно по скорости - без чиения регистра данных). */
+/* РґРѕР¶РґР°С‚СЊСЃСЏ Р·Р°РІРµСЂС€РµРЅРёСЏ РїРµСЂРµРґР°С‡Рё (РЅР° atmega РѕРїС‚РёРјРёР·РёСЂРѕРІР°РЅРЅРѕ РїРѕ СЃРєРѕСЂРѕСЃС‚Рё - Р±РµР· С‡РёРµРЅРёСЏ СЂРµРіРёСЃС‚СЂР° РґР°РЅРЅС‹С…). */
 static void
 hardware_spi_ready_b8_void(void)
 {
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
-	/* дождаться завершения приёма/передачи */
+	/* РґРѕР¶РґР°С‚СЊСЃСЏ Р·Р°РІРµСЂС€РµРЅРёСЏ РїСЂРёС‘РјР°/РїРµСЂРµРґР°С‡Рё */
 	while ((SPI->SPI_SR & SPI_SR_RDRF) == 0)
 		;
 	(void) SPI->SPI_RDR;
 
 #elif CPUSTYLE_AT91SAM7S
 
-	/* дождаться завершения приёма/передачи */
+	/* РґРѕР¶РґР°С‚СЊСЃСЏ Р·Р°РІРµСЂС€РµРЅРёСЏ РїСЂРёС‘РјР°/РїРµСЂРµРґР°С‡Рё */
 	while ((AT91C_BASE_SPI->SPI_SR & AT91C_SPI_RDRF) == 0)
 		;
 	(void) AT91C_BASE_SPI->SPI_RDR;
 
 #elif CPUSTYLE_ATMEGA
 
-	/* дождаться завершения приёма/передачи */
+	/* РґРѕР¶РґР°С‚СЊСЃСЏ Р·Р°РІРµСЂС€РµРЅРёСЏ РїСЂРёС‘РјР°/РїРµСЂРµРґР°С‡Рё */
 	while ((SPSR & (1U << SPIF)) == 0)
 		;
 	//(void) SPDR;
 
 #elif CPUSTYLE_ATXMEGA
 
-	/* дождаться завершения приёма/передачи */
+	/* РґРѕР¶РґР°С‚СЊСЃСЏ Р·Р°РІРµСЂС€РµРЅРёСЏ РїСЂРёС‘РјР°/РїРµСЂРµРґР°С‡Рё */
 	while ((TARGETHARD_SPI.STATUS & SPI_IF_bm) == 0)
 		;
 	//(void) TARGETHARD_SPI.DATA;
@@ -4576,32 +4576,32 @@ hardware_spi_ready_b8_void(void)
 #endif
 }
 
-portholder_t hardware_spi_complete_b8(void)	/* дождаться готовности */
+portholder_t hardware_spi_complete_b8(void)	/* РґРѕР¶РґР°С‚СЊСЃСЏ РіРѕС‚РѕРІРЅРѕСЃС‚Рё */
 {
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
-	/* дождаться завершения приёма/передачи */
+	/* РґРѕР¶РґР°С‚СЊСЃСЏ Р·Р°РІРµСЂС€РµРЅРёСЏ РїСЂРёС‘РјР°/РїРµСЂРµРґР°С‡Рё */
 	while ((SPI->SPI_SR & SPI_SR_RDRF) == 0)
 		;
 	return (SPI->SPI_RDR & SPI_TDR_TD_Msk);
 
 #elif CPUSTYLE_AT91SAM7S
 
-	/* дождаться завершения приёма/передачи */
+	/* РґРѕР¶РґР°С‚СЊСЃСЏ Р·Р°РІРµСЂС€РµРЅРёСЏ РїСЂРёС‘РјР°/РїРµСЂРµРґР°С‡Рё */
 	while ((AT91C_BASE_SPI->SPI_SR & AT91C_SPI_RDRF) == 0)
 		;
 	return (AT91C_BASE_SPI->SPI_RDR & AT91C_SPI_TD);
 
 #elif CPUSTYLE_ATMEGA
 
-	/* дождаться завершения приёма/передачи */
+	/* РґРѕР¶РґР°С‚СЊСЃСЏ Р·Р°РІРµСЂС€РµРЅРёСЏ РїСЂРёС‘РјР°/РїРµСЂРµРґР°С‡Рё */
 	while ((SPSR & (1U << SPIF)) == 0)
 		;
 	return SPDR;
 
 #elif CPUSTYLE_ATXMEGA
 
-	/* дождаться завершения приёма/передачи */
+	/* РґРѕР¶РґР°С‚СЊСЃСЏ Р·Р°РІРµСЂС€РµРЅРёСЏ РїСЂРёС‘РјР°/РїРµСЂРµРґР°С‡Рё */
 	while ((TARGETHARD_SPI.STATUS & SPI_IF_bm) == 0)
 		;
 	return TARGETHARD_SPI.DATA;
@@ -4644,8 +4644,8 @@ hardware_spi_master_setdma8bit_rx(void)
 #if CPUSTYLE_STM32F4XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
 	// DMA2: SPI1_RX: Stream 0: Channel 3
 	DMA2_Stream0->CR = (DMA2_Stream0->CR & ~ (DMA_SxCR_MSIZE | DMA_SxCR_PSIZE)) |
-		(0 * DMA_SxCR_MSIZE_0) |	// длина в памяти - 8bit
-		(0 * DMA_SxCR_PSIZE_0) |	// длина в SPI_DR- 8bit
+		(0 * DMA_SxCR_MSIZE_0) |	// РґР»РёРЅР° РІ РїР°РјСЏС‚Рё - 8bit
+		(0 * DMA_SxCR_PSIZE_0) |	// РґР»РёРЅР° РІ SPI_DR- 8bit
 		0;
 #elif CPUSTYLE_R7S721
 	DMAC15.N0SA_n = (uint32_t) & HW_SPIUSED->SPDR.UINT8 [R_IO_LL];	// Fixed destination address for 8-bit transfers
@@ -4665,8 +4665,8 @@ hardware_spi_master_setdma16bit_rx(void)
 #if CPUSTYLE_STM32F4XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
 	// DMA2: SPI1_RX: Stream 0: Channel 3
 	DMA2_Stream0->CR = (DMA2_Stream0->CR & ~ (DMA_SxCR_MSIZE | DMA_SxCR_PSIZE)) |
-		(1 * DMA_SxCR_MSIZE_0) |	// длина в памяти - 16bit
-		(1 * DMA_SxCR_PSIZE_0) |	// длина в SPI_DR- 16bit
+		(1 * DMA_SxCR_MSIZE_0) |	// РґР»РёРЅР° РІ РїР°РјСЏС‚Рё - 16bit
+		(1 * DMA_SxCR_PSIZE_0) |	// РґР»РёРЅР° РІ SPI_DR- 16bit
 		0;
 #elif CPUSTYLE_R7S721
 	//DMAC15.N0SA_n = (uint32_t) & HW_SPIUSED->SPDR.UINT8 [R_IO_LL];	// Fixed source address for 8-bit transfers
@@ -4686,8 +4686,8 @@ hardware_spi_master_setdma8bit_tx(void)
 #if CPUSTYLE_STM32F4XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
 	// DMA2: SPI1_TX: Stream 3: Channel 3
 	DMA2_Stream3->CR = (DMA2_Stream3->CR & ~ (DMA_SxCR_MSIZE | DMA_SxCR_PSIZE)) |
-		(0 * DMA_SxCR_MSIZE_0) |	// длина в памяти - 8bit
-		(0 * DMA_SxCR_PSIZE_0) |	// длина в SPI_DR- 8bit
+		(0 * DMA_SxCR_MSIZE_0) |	// РґР»РёРЅР° РІ РїР°РјСЏС‚Рё - 8bit
+		(0 * DMA_SxCR_PSIZE_0) |	// РґР»РёРЅР° РІ SPI_DR- 8bit
 		0;
 #elif CPUSTYLE_R7S721
 	DMAC15.N0DA_n = (uint32_t) & HW_SPIUSED->SPDR.UINT8 [R_IO_LL];	// Fixed destination address for 8-bit transfers
@@ -4707,8 +4707,8 @@ hardware_spi_master_setdma16bit_tx(void)
 #if CPUSTYLE_STM32F4XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
 	// DMA2: SPI1_TX: Stream 3: Channel 3
 	DMA2_Stream3->CR = (DMA2_Stream3->CR & ~ (DMA_SxCR_MSIZE | DMA_SxCR_PSIZE)) |
-		(1 * DMA_SxCR_MSIZE_0) |	// длина в памяти - 16bit
-		(1 * DMA_SxCR_PSIZE_0) |	// длина в SPI_DR- 16bit
+		(1 * DMA_SxCR_MSIZE_0) |	// РґР»РёРЅР° РІ РїР°РјСЏС‚Рё - 16bit
+		(1 * DMA_SxCR_PSIZE_0) |	// РґР»РёРЅР° РІ SPI_DR- 16bit
 		0;
 #elif CPUSTYLE_R7S721
 	//DMAC15.N0DA_n = (uint32_t) & HW_SPIUSED->SPDR.UINT8 [R_IO_LL];	// Fixed destination address for 8-bit transfers
@@ -4727,11 +4727,11 @@ static void
 hardware_spi_master_send_frame_8bpartial(
 	//spitarget_t target,	/* addressing to chip */
 	const uint8_t * buffer, 
-	uint_fast32_t size		/* количество пересылаемых 8-ти битных элементов */
+	uint_fast32_t size		/* РєРѕР»РёС‡РµСЃС‚РІРѕ РїРµСЂРµСЃС‹Р»Р°РµРјС‹С… 8-С‚Рё Р±РёС‚РЅС‹С… СЌР»РµРјРµРЅС‚РѕРІ */
 	)
 {
 #if 0
-	// имитация
+	// РёРјРёС‚Р°С†РёСЏ
 	if (size == 1)
 	{
 		hardware_spi_b8_p1(* buffer);
@@ -4749,40 +4749,40 @@ hardware_spi_master_send_frame_8bpartial(
 #elif CPUSTYLE_SAM9XE
 
 	AT91C_BASE_SPI1->SPI_TPR = (unsigned long) buffer;
-	AT91C_BASE_SPI1->SPI_TCR = size;	// запуск передатчика
+	AT91C_BASE_SPI1->SPI_TCR = size;	// Р·Р°РїСѓСЃРє РїРµСЂРµРґР°С‚С‡РёРєР°
 
 	while ((AT91C_BASE_SPI1->SPI_SR & AT91C_SPI_ENDTX) == 0)
 		;
-	// дождаться, пока последний байт выйдет из передатчика
+	// РґРѕР¶РґР°С‚СЊСЃСЏ, РїРѕРєР° РїРѕСЃР»РµРґРЅРёР№ Р±Р°Р№С‚ РІС‹Р№РґРµС‚ РёР· РїРµСЂРµРґР°С‚С‡РёРєР°
 	while ((AT91C_BASE_SPI1->SPI_SR & AT91C_SPI_TXEMPTY) == 0)
 		;
-	// сбростить возможно имеющийся флаг готовности приёмника
+	// СЃР±СЂРѕСЃС‚РёС‚СЊ РІРѕР·РјРѕР¶РЅРѕ РёРјРµСЋС‰РёР№СЃСЏ С„Р»Р°Рі РіРѕС‚РѕРІРЅРѕСЃС‚Рё РїСЂРёС‘РјРЅРёРєР°
 	(void) AT91C_BASE_SPI1->SPI_RDR;
 
 #elif CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
 	SPI->SPI_TPR = (unsigned long) buffer;
-	SPI->SPI_TCR = size;	// запуск передатчика
+	SPI->SPI_TCR = size;	// Р·Р°РїСѓСЃРє РїРµСЂРµРґР°С‚С‡РёРєР°
 
 	while ((SPI->SPI_SR & SPI_SR_ENDTX) == 0)
 		;
-	// дождаться, пока последний байт выйдет из передатчика
+	// РґРѕР¶РґР°С‚СЊСЃСЏ, РїРѕРєР° РїРѕСЃР»РµРґРЅРёР№ Р±Р°Р№С‚ РІС‹Р№РґРµС‚ РёР· РїРµСЂРµРґР°С‚С‡РёРєР°
 	while ((SPI->SPI_SR & SPI_SR_TXEMPTY) == 0)
 		;
-	// сбростить возможно имеющийся флаг готовности приёмника
+	// СЃР±СЂРѕСЃС‚РёС‚СЊ РІРѕР·РјРѕР¶РЅРѕ РёРјРµСЋС‰РёР№СЃСЏ С„Р»Р°Рі РіРѕС‚РѕРІРЅРѕСЃС‚Рё РїСЂРёС‘РјРЅРёРєР°
 	(void) SPI->SPI_RDR;
 
 #elif CPUSTYLE_AT91SAM7S
 
 	AT91C_BASE_SPI->SPI_TPR = (unsigned long) buffer;
-	AT91C_BASE_SPI->SPI_TCR = size;	// запуск передатчика
+	AT91C_BASE_SPI->SPI_TCR = size;	// Р·Р°РїСѓСЃРє РїРµСЂРµРґР°С‚С‡РёРєР°
 
 	while ((AT91C_BASE_SPI->SPI_SR & AT91C_SPI_ENDTX) == 0)
 		;
-	// дождаться, пока последний байт выйдет из передатчика
+	// РґРѕР¶РґР°С‚СЊСЃСЏ, РїРѕРєР° РїРѕСЃР»РµРґРЅРёР№ Р±Р°Р№С‚ РІС‹Р№РґРµС‚ РёР· РїРµСЂРµРґР°С‚С‡РёРєР°
 	while ((AT91C_BASE_SPI->SPI_SR & AT91C_SPI_TXEMPTY) == 0)
 		;
-	// сбростить возможно имеющийся флаг готовности приёмника
+	// СЃР±СЂРѕСЃС‚РёС‚СЊ РІРѕР·РјРѕР¶РЅРѕ РёРјРµСЋС‰РёР№СЃСЏ С„Р»Р°Рі РіРѕС‚РѕРІРЅРѕСЃС‚Рё РїСЂРёС‘РјРЅРёРєР°
 	(void) AT91C_BASE_SPI->SPI_RDR;
 
 #elif CPUSTYLE_STM32F4XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
@@ -4800,30 +4800,30 @@ hardware_spi_master_send_frame_8bpartial(
 
 	// DMA2: SPI1_TX: Stream 3: Channel 3
 	#if CPUSTYLE_STM32H7XX
-		SPI1->CFG1 |= SPI_CFG1_TXDMAEN; // DMA по передаче
+		SPI1->CFG1 |= SPI_CFG1_TXDMAEN; // DMA РїРѕ РїРµСЂРµРґР°С‡Рµ
 	#else /* CPUSTYLE_STM32H7XX */
-		SPI1->CR2 |= SPI_CR2_TXDMAEN; // DMA по передаче
+		SPI1->CR2 |= SPI_CR2_TXDMAEN; // DMA РїРѕ РїРµСЂРµРґР°С‡Рµ
 	#endif /* CPUSTYLE_STM32H7XX */
 
 	DMA2_Stream3->M0AR = (uintptr_t) buffer;
 	DMA2_Stream3->NDTR = (DMA2_Stream3->NDTR & ~ DMA_SxNDT) |
 		(size * DMA_SxNDT_0);
-	DMA2_Stream3->CR |= DMA_SxCR_EN;		// перезапуск DMA
+	DMA2_Stream3->CR |= DMA_SxCR_EN;		// РїРµСЂРµР·Р°РїСѓСЃРє DMA
 
-	// Дожидаемся завершения обмена передающего канала DMA
-	while ((DMA2->LISR & DMA_LISR_TCIF3) == 0)	// ожидаем завершения обмена по соответствушему stream
+	// Р”РѕР¶РёРґР°РµРјСЃСЏ Р·Р°РІРµСЂС€РµРЅРёСЏ РѕР±РјРµРЅР° РїРµСЂРµРґР°СЋС‰РµРіРѕ РєР°РЅР°Р»Р° DMA
+	while ((DMA2->LISR & DMA_LISR_TCIF3) == 0)	// РѕР¶РёРґР°РµРј Р·Р°РІРµСЂС€РµРЅРёСЏ РѕР±РјРµРЅР° РїРѕ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓС€РµРјСѓ stream
 		;
-	DMA2->LIFCR = DMA_LIFCR_CTCIF3;		// сбросил флаг соответствующий stream
-	//DMA2_waitTC(3);	// ожидаем завершения обмена по соответствушему stream
+	DMA2->LIFCR = DMA_LIFCR_CTCIF3;		// СЃР±СЂРѕСЃРёР» С„Р»Р°Рі СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РёР№ stream
+	//DMA2_waitTC(3);	// РѕР¶РёРґР°РµРј Р·Р°РІРµСЂС€РµРЅРёСЏ РѕР±РјРµРЅР° РїРѕ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓС€РµРјСѓ stream
 
 	DMA2_Stream3->CR &= ~ DMA_SxCR_EN;
 	while ((DMA2_Stream3->CR &  DMA_SxCR_EN) != 0)
 		;
 
 	#if CPUSTYLE_STM32H7XX
-		SPI1->CFG1 &= ~ SPI_CFG1_TXDMAEN; // запретить DMA по передаче
+		SPI1->CFG1 &= ~ SPI_CFG1_TXDMAEN; // Р·Р°РїСЂРµС‚РёС‚СЊ DMA РїРѕ РїРµСЂРµРґР°С‡Рµ
 	#else /* CPUSTYLE_STM32H7XX */
-		SPI1->CR2 &= ~ SPI_CR2_TXDMAEN; // запретить DMA по передаче
+		SPI1->CR2 &= ~ SPI_CR2_TXDMAEN; // Р·Р°РїСЂРµС‚РёС‚СЊ DMA РїРѕ РїРµСЂРµРґР°С‡Рµ
 	#endif /* CPUSTYLE_STM32H7XX */
 
 	#if CPUSTYLE_STM32H7XX
@@ -4861,17 +4861,17 @@ hardware_spi_master_send_frame_8bpartial(
 
 #elif CPUSTYLE_R7S721
 
-	HW_SPIUSED->SPBFCR |= RSPIn_SPBFCR_RXRST;		// Запретить прием
+	HW_SPIUSED->SPBFCR |= RSPIn_SPBFCR_RXRST;		// Р—Р°РїСЂРµС‚РёС‚СЊ РїСЂРёРµРј
 
-	DMAC15.N0TB_n = (uint_fast32_t) size * sizeof (* buffer);	// размер в байтах
+	DMAC15.N0TB_n = (uint_fast32_t) size * sizeof (* buffer);	// СЂР°Р·РјРµСЂ РІ Р±Р°Р№С‚Р°С…
 	DMAC15.N0SA_n = (uintptr_t) buffer;			// source address
 	DMAC15.CHCTRL_n = DMAC15_CHCTRL_n_SETEN;		// SETEN
 
-	/* ждем окончания пересылки */
+	/* Р¶РґРµРј РѕРєРѕРЅС‡Р°РЅРёСЏ РїРµСЂРµСЃС‹Р»РєРё */
 	while ((DMAC15.CHSTAT_n & DMAC15_CHSTAT_n_END) == 0)	// END
 		;
 
-	/* ждем окончания передачи последнего элемента */
+	/* Р¶РґРµРј РѕРєРѕРЅС‡Р°РЅРёСЏ РїРµСЂРµРґР°С‡Рё РїРѕСЃР»РµРґРЅРµРіРѕ СЌР»РµРјРµРЅС‚Р° */
 	while ((HW_SPIUSED->SPSR & RSPIn_SPSR_TEND) == 0)	// TEND bit
 		;
 
@@ -4879,7 +4879,7 @@ hardware_spi_master_send_frame_8bpartial(
 	DMAC15.CHCTRL_n = DMAC15_CHCTRL_n_CLRTC;		// CLRTC
 	DMAC15.CHCTRL_n = DMAC15_CHCTRL_n_CLREND;		// CLREND
 
-	HW_SPIUSED->SPBFCR &= ~ RSPIn_SPBFCR_RXRST;		// Разрешить прием
+	HW_SPIUSED->SPBFCR &= ~ RSPIn_SPBFCR_RXRST;		// Р Р°Р·СЂРµС€РёС‚СЊ РїСЂРёРµРј
 
 #else
 	#error Undefined CPUSTYLE_xxxx
@@ -4893,11 +4893,11 @@ static void
 hardware_spi_master_send_frame_16bpartial(
 	//spitarget_t target,	/* addressing to chip */
 	const uint16_t * buffer, 
-	uint_fast32_t size		/* количество пересылаемых 16-ти битных элементов */
+	uint_fast32_t size		/* РєРѕР»РёС‡РµСЃС‚РІРѕ РїРµСЂРµСЃС‹Р»Р°РµРјС‹С… 16-С‚Рё Р±РёС‚РЅС‹С… СЌР»РµРјРµРЅС‚РѕРІ */
 	)
 {
 #if 0
-	// имитация
+	// РёРјРёС‚Р°С†РёСЏ
 	if (size == 1)
 	{
 		hardware_spi_b16_p1(* buffer);
@@ -4915,40 +4915,40 @@ hardware_spi_master_send_frame_16bpartial(
 #elif CPUSTYLE_SAM9XE
 
 	AT91C_BASE_SPI1->SPI_TPR = (unsigned long) buffer;
-	AT91C_BASE_SPI1->SPI_TCR = size;	// запуск передатчика
+	AT91C_BASE_SPI1->SPI_TCR = size;	// Р·Р°РїСѓСЃРє РїРµСЂРµРґР°С‚С‡РёРєР°
 
 	while ((AT91C_BASE_SPI1->SPI_SR & AT91C_SPI_ENDTX) == 0)
 		;
-	// дождаться, пока последний байт выйдет из передатчика
+	// РґРѕР¶РґР°С‚СЊСЃСЏ, РїРѕРєР° РїРѕСЃР»РµРґРЅРёР№ Р±Р°Р№С‚ РІС‹Р№РґРµС‚ РёР· РїРµСЂРµРґР°С‚С‡РёРєР°
 	while ((AT91C_BASE_SPI1->SPI_SR & AT91C_SPI_TXEMPTY) == 0)
 		;
-	// сбростить возможно имеющийся флаг готовности приёмника
+	// СЃР±СЂРѕСЃС‚РёС‚СЊ РІРѕР·РјРѕР¶РЅРѕ РёРјРµСЋС‰РёР№СЃСЏ С„Р»Р°Рі РіРѕС‚РѕРІРЅРѕСЃС‚Рё РїСЂРёС‘РјРЅРёРєР°
 	(void) AT91C_BASE_SPI1->SPI_RDR;
 
 #elif CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
 	SPI->SPI_TPR = (unsigned long) buffer;
-	SPI->SPI_TCR = size;	// запуск передатчика
+	SPI->SPI_TCR = size;	// Р·Р°РїСѓСЃРє РїРµСЂРµРґР°С‚С‡РёРєР°
 
 	while ((SPI->SPI_SR & SPI_SR_ENDTX) == 0)
 		;
-	// дождаться, пока последний байт выйдет из передатчика
+	// РґРѕР¶РґР°С‚СЊСЃСЏ, РїРѕРєР° РїРѕСЃР»РµРґРЅРёР№ Р±Р°Р№С‚ РІС‹Р№РґРµС‚ РёР· РїРµСЂРµРґР°С‚С‡РёРєР°
 	while ((SPI->SPI_SR & SPI_SR_TXEMPTY) == 0)
 		;
-	// сбростить возможно имеющийся флаг готовности приёмника
+	// СЃР±СЂРѕСЃС‚РёС‚СЊ РІРѕР·РјРѕР¶РЅРѕ РёРјРµСЋС‰РёР№СЃСЏ С„Р»Р°Рі РіРѕС‚РѕРІРЅРѕСЃС‚Рё РїСЂРёС‘РјРЅРёРєР°
 	(void) SPI->SPI_RDR;
 
 #elif CPUSTYLE_AT91SAM7S
 
 	AT91C_BASE_SPI->SPI_TPR = (unsigned long) buffer;
-	AT91C_BASE_SPI->SPI_TCR = size;	// запуск передатчика
+	AT91C_BASE_SPI->SPI_TCR = size;	// Р·Р°РїСѓСЃРє РїРµСЂРµРґР°С‚С‡РёРєР°
 
 	while ((AT91C_BASE_SPI->SPI_SR & AT91C_SPI_ENDTX) == 0)
 		;
-	// дождаться, пока последний байт выйдет из передатчика
+	// РґРѕР¶РґР°С‚СЊСЃСЏ, РїРѕРєР° РїРѕСЃР»РµРґРЅРёР№ Р±Р°Р№С‚ РІС‹Р№РґРµС‚ РёР· РїРµСЂРµРґР°С‚С‡РёРєР°
 	while ((AT91C_BASE_SPI->SPI_SR & AT91C_SPI_TXEMPTY) == 0)
 		;
-	// сбростить возможно имеющийся флаг готовности приёмника
+	// СЃР±СЂРѕСЃС‚РёС‚СЊ РІРѕР·РјРѕР¶РЅРѕ РёРјРµСЋС‰РёР№СЃСЏ С„Р»Р°Рі РіРѕС‚РѕРІРЅРѕСЃС‚Рё РїСЂРёС‘РјРЅРёРєР°
 	(void) AT91C_BASE_SPI->SPI_RDR;
 
 #elif CPUSTYLE_STM32F4XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
@@ -4966,30 +4966,30 @@ hardware_spi_master_send_frame_16bpartial(
 
 	// DMA2: SPI1_TX: Stream 3: Channel 3
 	#if CPUSTYLE_STM32H7XX
-		SPI1->CFG1 |= SPI_CFG1_TXDMAEN; // DMA по передаче
+		SPI1->CFG1 |= SPI_CFG1_TXDMAEN; // DMA РїРѕ РїРµСЂРµРґР°С‡Рµ
 	#else /* CPUSTYLE_STM32H7XX */
-		SPI1->CR2 |= SPI_CR2_TXDMAEN; // DMA по передаче
+		SPI1->CR2 |= SPI_CR2_TXDMAEN; // DMA РїРѕ РїРµСЂРµРґР°С‡Рµ
 	#endif /* CPUSTYLE_STM32H7XX */
 
 	DMA2_Stream3->M0AR = (uintptr_t) buffer;
 	DMA2_Stream3->NDTR = (DMA2_Stream3->NDTR & ~ DMA_SxNDT) |
 		(size * DMA_SxNDT_0);
-	DMA2_Stream3->CR |= DMA_SxCR_EN;		// перезапуск DMA
+	DMA2_Stream3->CR |= DMA_SxCR_EN;		// РїРµСЂРµР·Р°РїСѓСЃРє DMA
 
-	// Дожидаемся завершения обмена передающего канала DMA
-	while ((DMA2->LISR & DMA_LISR_TCIF3) == 0)	// ожидаем завершения обмена по соответствушему stream
+	// Р”РѕР¶РёРґР°РµРјСЃСЏ Р·Р°РІРµСЂС€РµРЅРёСЏ РѕР±РјРµРЅР° РїРµСЂРµРґР°СЋС‰РµРіРѕ РєР°РЅР°Р»Р° DMA
+	while ((DMA2->LISR & DMA_LISR_TCIF3) == 0)	// РѕР¶РёРґР°РµРј Р·Р°РІРµСЂС€РµРЅРёСЏ РѕР±РјРµРЅР° РїРѕ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓС€РµРјСѓ stream
 		;
-	DMA2->LIFCR = DMA_LIFCR_CTCIF3;		// сбросил флаг соответствующий stream
-	//DMA2_waitTC(3);	// ожидаем завершения обмена по соответствушему stream
+	DMA2->LIFCR = DMA_LIFCR_CTCIF3;		// СЃР±СЂРѕСЃРёР» С„Р»Р°Рі СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РёР№ stream
+	//DMA2_waitTC(3);	// РѕР¶РёРґР°РµРј Р·Р°РІРµСЂС€РµРЅРёСЏ РѕР±РјРµРЅР° РїРѕ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓС€РµРјСѓ stream
 
 	DMA2_Stream3->CR &= ~ DMA_SxCR_EN;
 	while ((DMA2_Stream3->CR &  DMA_SxCR_EN) != 0)
 		;
 
 	#if CPUSTYLE_STM32H7XX
-		SPI1->CFG1 &= ~ SPI_CFG1_TXDMAEN; // запретить DMA по передаче
+		SPI1->CFG1 &= ~ SPI_CFG1_TXDMAEN; // Р·Р°РїСЂРµС‚РёС‚СЊ DMA РїРѕ РїРµСЂРµРґР°С‡Рµ
 	#else /* CPUSTYLE_STM32H7XX */
-		SPI1->CR2 &= ~ SPI_CR2_TXDMAEN; // запретить DMA по передаче
+		SPI1->CR2 &= ~ SPI_CR2_TXDMAEN; // Р·Р°РїСЂРµС‚РёС‚СЊ DMA РїРѕ РїРµСЂРµРґР°С‡Рµ
 	#endif /* CPUSTYLE_STM32H7XX */
 
 	#if CPUSTYLE_STM32H7XX
@@ -5026,17 +5026,17 @@ hardware_spi_master_send_frame_16bpartial(
 
 #elif CPUSTYLE_R7S721
 
-	HW_SPIUSED->SPBFCR |= RSPIn_SPBFCR_RXRST;		// Запретить прием
+	HW_SPIUSED->SPBFCR |= RSPIn_SPBFCR_RXRST;		// Р—Р°РїСЂРµС‚РёС‚СЊ РїСЂРёРµРј
 
-	DMAC15.N0TB_n = (uint_fast32_t) size * sizeof (* buffer);	// размер в байтах
+	DMAC15.N0TB_n = (uint_fast32_t) size * sizeof (* buffer);	// СЂР°Р·РјРµСЂ РІ Р±Р°Р№С‚Р°С…
 	DMAC15.N0SA_n = (uintptr_t) buffer;			// source address
 	DMAC15.CHCTRL_n = DMAC15_CHCTRL_n_SETEN;		// SETEN
 
-	/* ждем окончания пересылки */
+	/* Р¶РґРµРј РѕРєРѕРЅС‡Р°РЅРёСЏ РїРµСЂРµСЃС‹Р»РєРё */
 	while ((DMAC15.CHSTAT_n & DMAC15_CHSTAT_n_END) == 0)	// END
 		;
 
-	/* ждем окончания передачи последнего элемента */
+	/* Р¶РґРµРј РѕРєРѕРЅС‡Р°РЅРёСЏ РїРµСЂРµРґР°С‡Рё РїРѕСЃР»РµРґРЅРµРіРѕ СЌР»РµРјРµРЅС‚Р° */
 	while ((HW_SPIUSED->SPSR & RSPIn_SPSR_TEND) == 0)	// TEND bit
 		;
 
@@ -5044,7 +5044,7 @@ hardware_spi_master_send_frame_16bpartial(
 	DMAC15.CHCTRL_n = DMAC15_CHCTRL_n_CLRTC;		// CLRTC
 	DMAC15.CHCTRL_n = DMAC15_CHCTRL_n_CLREND;		// CLREND
 
-	HW_SPIUSED->SPBFCR &= ~ RSPIn_SPBFCR_RXRST;		// Разрешить прием
+	HW_SPIUSED->SPBFCR &= ~ RSPIn_SPBFCR_RXRST;		// Р Р°Р·СЂРµС€РёС‚СЊ РїСЂРёРµРј
 
 #else
 	#error Undefined CPUSTYLE_xxxx
@@ -5052,64 +5052,64 @@ hardware_spi_master_send_frame_16bpartial(
 }
 
 // Read a frame of bytes via SPI
-// На сигнале MOSI при это должно обеспачиваться состояние логической "1" для корректной работы SD CARD
+// РќР° СЃРёРіРЅР°Р»Рµ MOSI РїСЂРё СЌС‚Рѕ РґРѕР»Р¶РЅРѕ РѕР±РµСЃРїР°С‡РёРІР°С‚СЊСЃСЏ СЃРѕСЃС‚РѕСЏРЅРёРµ Р»РѕРіРёС‡РµСЃРєРѕР№ "1" РґР»СЏ РєРѕСЂСЂРµРєС‚РЅРѕР№ СЂР°Р±РѕС‚С‹ SD CARD
 static void 
 hardware_spi_master_read_frame_16bpartial(
 	//spitarget_t target,	/* addressing to chip */
 	uint16_t * buffer, 
-	uint_fast32_t size		/* количество пересылаемых 16-ти битных элементов */
+	uint_fast32_t size		/* РєРѕР»РёС‡РµСЃС‚РІРѕ РїРµСЂРµСЃС‹Р»Р°РµРјС‹С… 16-С‚Рё Р±РёС‚РЅС‹С… СЌР»РµРјРµРЅС‚РѕРІ */
 	)
 {
 #if CPUSTYLE_SAM9XE
 
-	HARDWARE_SPI_DISCONNECT_MOSI();	// выход данных в "1" - для нормальной работы SD CARD
+	HARDWARE_SPI_DISCONNECT_MOSI();	// РІС‹С…РѕРґ РґР°РЅРЅС‹С… РІ "1" - РґР»СЏ РЅРѕСЂРјР°Р»СЊРЅРѕР№ СЂР°Р±РѕС‚С‹ SD CARD
 
 	AT91C_BASE_SPI1->SPI_TPR = (unsigned long) buffer;
 	AT91C_BASE_SPI1->SPI_RPR = (unsigned long) buffer;
-	AT91C_BASE_SPI1->SPI_RCR = size;	// разрешить работу приёмника
-	AT91C_BASE_SPI1->SPI_TCR = size;	// запуск передатчика (выдача синхронизации)
+	AT91C_BASE_SPI1->SPI_RCR = size;	// СЂР°Р·СЂРµС€РёС‚СЊ СЂР°Р±РѕС‚Сѓ РїСЂРёС‘РјРЅРёРєР°
+	AT91C_BASE_SPI1->SPI_TCR = size;	// Р·Р°РїСѓСЃРє РїРµСЂРµРґР°С‚С‡РёРєР° (РІС‹РґР°С‡Р° СЃРёРЅС…СЂРѕРЅРёР·Р°С†РёРё)
 
-	while ((AT91C_BASE_SPI1->SPI_SR & AT91C_SPI_ENDRX) == 0)	// было TX
+	while ((AT91C_BASE_SPI1->SPI_SR & AT91C_SPI_ENDRX) == 0)	// Р±С‹Р»Рѕ TX
 		;
-	// дождаться, пока последний байт выйдет из передатчика
+	// РґРѕР¶РґР°С‚СЊСЃСЏ, РїРѕРєР° РїРѕСЃР»РµРґРЅРёР№ Р±Р°Р№С‚ РІС‹Р№РґРµС‚ РёР· РїРµСЂРµРґР°С‚С‡РёРєР°
 	while ((AT91C_BASE_SPI1->SPI_SR & AT91C_SPI_TXEMPTY) == 0)
 		;
 
-	HARDWARE_SPI_CONNECT_MOSI();	// Возвращаем в обычный режим работы
+	HARDWARE_SPI_CONNECT_MOSI();	// Р’РѕР·РІСЂР°С‰Р°РµРј РІ РѕР±С‹С‡РЅС‹Р№ СЂРµР¶РёРј СЂР°Р±РѕС‚С‹
 
 #elif CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
-	HARDWARE_SPI_DISCONNECT_MOSI();	// выход данных в "1" - для нормальной работы SD CARD
+	HARDWARE_SPI_DISCONNECT_MOSI();	// РІС‹С…РѕРґ РґР°РЅРЅС‹С… РІ "1" - РґР»СЏ РЅРѕСЂРјР°Р»СЊРЅРѕР№ СЂР°Р±РѕС‚С‹ SD CARD
 
 	SPI->SPI_TPR = (unsigned long) buffer;
 	SPI->SPI_RPR = (unsigned long) buffer;
-	SPI->SPI_RCR = size;	// разрешить работу приёмника
-	SPI->SPI_TCR = size;	// запуск передатчика (выдача синхронизации)
+	SPI->SPI_RCR = size;	// СЂР°Р·СЂРµС€РёС‚СЊ СЂР°Р±РѕС‚Сѓ РїСЂРёС‘РјРЅРёРєР°
+	SPI->SPI_TCR = size;	// Р·Р°РїСѓСЃРє РїРµСЂРµРґР°С‚С‡РёРєР° (РІС‹РґР°С‡Р° СЃРёРЅС…СЂРѕРЅРёР·Р°С†РёРё)
 
-	while ((SPI->SPI_SR & SPI_SR_ENDRX) == 0)	// было TX
+	while ((SPI->SPI_SR & SPI_SR_ENDRX) == 0)	// Р±С‹Р»Рѕ TX
 		;
-	// дождаться, пока последний байт выйдет из передатчика
+	// РґРѕР¶РґР°С‚СЊСЃСЏ, РїРѕРєР° РїРѕСЃР»РµРґРЅРёР№ Р±Р°Р№С‚ РІС‹Р№РґРµС‚ РёР· РїРµСЂРµРґР°С‚С‡РёРєР°
 	while ((SPI->SPI_SR & SPI_SR_TXEMPTY) == 0)
 		;
 
-	HARDWARE_SPI_CONNECT_MOSI();	// Возвращаем в обычный режим работы
+	HARDWARE_SPI_CONNECT_MOSI();	// Р’РѕР·РІСЂР°С‰Р°РµРј РІ РѕР±С‹С‡РЅС‹Р№ СЂРµР¶РёРј СЂР°Р±РѕС‚С‹
 
 #elif CPUSTYLE_AT91SAM7S
 
-	HARDWARE_SPI_DISCONNECT_MOSI();	// выход данных в "1" - для нормальной работы SD CARD
+	HARDWARE_SPI_DISCONNECT_MOSI();	// РІС‹С…РѕРґ РґР°РЅРЅС‹С… РІ "1" - РґР»СЏ РЅРѕСЂРјР°Р»СЊРЅРѕР№ СЂР°Р±РѕС‚С‹ SD CARD
 
 	AT91C_BASE_SPI->SPI_TPR = (unsigned long) buffer;
 	AT91C_BASE_SPI->SPI_RPR = (unsigned long) buffer;
-	AT91C_BASE_SPI->SPI_RCR = size;	// разрешить работу приёмника
-	AT91C_BASE_SPI->SPI_TCR = size;	// запуск передатчика (выдача синхронизации)
+	AT91C_BASE_SPI->SPI_RCR = size;	// СЂР°Р·СЂРµС€РёС‚СЊ СЂР°Р±РѕС‚Сѓ РїСЂРёС‘РјРЅРёРєР°
+	AT91C_BASE_SPI->SPI_TCR = size;	// Р·Р°РїСѓСЃРє РїРµСЂРµРґР°С‚С‡РёРєР° (РІС‹РґР°С‡Р° СЃРёРЅС…СЂРѕРЅРёР·Р°С†РёРё)
 
-	while ((AT91C_BASE_SPI->SPI_SR & AT91C_SPI_ENDRX) == 0)	// было TX
+	while ((AT91C_BASE_SPI->SPI_SR & AT91C_SPI_ENDRX) == 0)	// Р±С‹Р»Рѕ TX
 		;
-	// дождаться, пока последний байт выйдет из передатчика
+	// РґРѕР¶РґР°С‚СЊСЃСЏ, РїРѕРєР° РїРѕСЃР»РµРґРЅРёР№ Р±Р°Р№С‚ РІС‹Р№РґРµС‚ РёР· РїРµСЂРµРґР°С‚С‡РёРєР°
 	while ((AT91C_BASE_SPI->SPI_SR & AT91C_SPI_TXEMPTY) == 0)
 		;
 
-	HARDWARE_SPI_CONNECT_MOSI();	// Возвращаем в обычный режим работы
+	HARDWARE_SPI_CONNECT_MOSI();	// Р’РѕР·РІСЂР°С‰Р°РµРј РІ РѕР±С‹С‡РЅС‹Р№ СЂРµР¶РёРј СЂР°Р±РѕС‚С‹
 
 #elif CPUSTYLE_STM32F4XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
 	
@@ -5123,59 +5123,59 @@ hardware_spi_master_read_frame_16bpartial(
 	}
 	*/
 
-	HARDWARE_SPI_DISCONNECT_MOSI();	// выход данных в "1" - для нормальной работы SD CARD
+	HARDWARE_SPI_DISCONNECT_MOSI();	// РІС‹С…РѕРґ РґР°РЅРЅС‹С… РІ "1" - РґР»СЏ РЅРѕСЂРјР°Р»СЊРЅРѕР№ СЂР°Р±РѕС‚С‹ SD CARD
 
 	// DMA2: SPI1_RX: Stream 0: Channel 3
 	#if CPUSTYLE_STM32H7XX
-		SPI1->CFG1 |= SPI_CFG1_RXDMAEN; // DMA по приему (master)
+		SPI1->CFG1 |= SPI_CFG1_RXDMAEN; // DMA РїРѕ РїСЂРёРµРјСѓ (master)
 	#else /* CPUSTYLE_STM32H7XX */
-		SPI1->CR2 |= SPI_CR2_RXDMAEN; // DMA по приему (master)
+		SPI1->CR2 |= SPI_CR2_RXDMAEN; // DMA РїРѕ РїСЂРёРµРјСѓ (master)
 	#endif /* CPUSTYLE_STM32H7XX */
 
 	DMA2_Stream0->M0AR = (uintptr_t) buffer;
 	DMA2_Stream0->NDTR = (DMA2_Stream0->NDTR & ~ DMA_SxNDT) |
 		(size * DMA_SxNDT_0) |
 		0;
-	DMA2_Stream0->CR |= DMA_SxCR_EN;		// перезапуск DMA
+	DMA2_Stream0->CR |= DMA_SxCR_EN;		// РїРµСЂРµР·Р°РїСѓСЃРє DMA
 
 	// DMA2: SPI1_TX: Stream 3: Channel 3
 	#if CPUSTYLE_STM32H7XX
-		SPI1->CFG1 |= SPI_CFG1_TXDMAEN; // DMA по передаче
+		SPI1->CFG1 |= SPI_CFG1_TXDMAEN; // DMA РїРѕ РїРµСЂРµРґР°С‡Рµ
 	#else /* CPUSTYLE_STM32H7XX */
-		SPI1->CR2 |= SPI_CR2_TXDMAEN; // DMA по передаче
+		SPI1->CR2 |= SPI_CR2_TXDMAEN; // DMA РїРѕ РїРµСЂРµРґР°С‡Рµ
 	#endif /* CPUSTYLE_STM32H7XX */
 
 	DMA2_Stream3->M0AR = (uintptr_t) buffer;
 	DMA2_Stream3->NDTR = (DMA2_Stream3->NDTR & ~ DMA_SxNDT) |
 		(size * DMA_SxNDT_0) |
 		0;
-	DMA2_Stream3->CR |= DMA_SxCR_EN;		// запуск DMA передатчика (выдача синхронизации)
+	DMA2_Stream3->CR |= DMA_SxCR_EN;		// Р·Р°РїСѓСЃРє DMA РїРµСЂРµРґР°С‚С‡РёРєР° (РІС‹РґР°С‡Р° СЃРёРЅС…СЂРѕРЅРёР·Р°С†РёРё)
 
-	// Дожидаемся завершения обмена передающего канала DMA
-	while ((DMA2->LISR & DMA_LISR_TCIF3) == 0)	// ожидаем завершения обмена по соответствушему stream
+	// Р”РѕР¶РёРґР°РµРјСЃСЏ Р·Р°РІРµСЂС€РµРЅРёСЏ РѕР±РјРµРЅР° РїРµСЂРµРґР°СЋС‰РµРіРѕ РєР°РЅР°Р»Р° DMA
+	while ((DMA2->LISR & DMA_LISR_TCIF3) == 0)	// РѕР¶РёРґР°РµРј Р·Р°РІРµСЂС€РµРЅРёСЏ РѕР±РјРµРЅР° РїРѕ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓС€РµРјСѓ stream
 		;
-	DMA2->LIFCR = DMA_LIFCR_CTCIF3;		// сбросил флаг соответствующий stream
-	//DMA2_waitTC(3);	// ожидаем завершения обмена по соответствушему stream
+	DMA2->LIFCR = DMA_LIFCR_CTCIF3;		// СЃР±СЂРѕСЃРёР» С„Р»Р°Рі СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РёР№ stream
+	//DMA2_waitTC(3);	// РѕР¶РёРґР°РµРј Р·Р°РІРµСЂС€РµРЅРёСЏ РѕР±РјРµРЅР° РїРѕ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓС€РµРјСѓ stream
 
-	// Дожидаемся завершения обмена принимающего канала DMA
-	while ((DMA2->LISR & DMA_LISR_TCIF0) == 0)	// ожидаем завершения обмена по соответствушему stream
+	// Р”РѕР¶РёРґР°РµРјСЃСЏ Р·Р°РІРµСЂС€РµРЅРёСЏ РѕР±РјРµРЅР° РїСЂРёРЅРёРјР°СЋС‰РµРіРѕ РєР°РЅР°Р»Р° DMA
+	while ((DMA2->LISR & DMA_LISR_TCIF0) == 0)	// РѕР¶РёРґР°РµРј Р·Р°РІРµСЂС€РµРЅРёСЏ РѕР±РјРµРЅР° РїРѕ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓС€РµРјСѓ stream
 		;
-	DMA2->LIFCR = DMA_LIFCR_CTCIF0;		// сбросил флаг соответствующий stream
-	//DMA2_waitTC(0);	// ожидаем завершения обмена по соответствушему stream
+	DMA2->LIFCR = DMA_LIFCR_CTCIF0;		// СЃР±СЂРѕСЃРёР» С„Р»Р°Рі СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РёР№ stream
+	//DMA2_waitTC(0);	// РѕР¶РёРґР°РµРј Р·Р°РІРµСЂС€РµРЅРёСЏ РѕР±РјРµРЅР° РїРѕ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓС€РµРјСѓ stream
 
 	#if CPUSTYLE_STM32H7XX
 
-		SPI1->CFG1 &= ~ SPI_CFG1_TXDMAEN; // DMA по передаче (master)
-		SPI1->CFG1 &= ~ SPI_CFG1_RXDMAEN; // DMA по приему (master)
+		SPI1->CFG1 &= ~ SPI_CFG1_TXDMAEN; // DMA РїРѕ РїРµСЂРµРґР°С‡Рµ (master)
+		SPI1->CFG1 &= ~ SPI_CFG1_RXDMAEN; // DMA РїРѕ РїСЂРёРµРјСѓ (master)
 
 	#else /* CPUSTYLE_STM32H7XX */
 
-		SPI1->CR2 &= ~ SPI_CR2_TXDMAEN; // DMA по передаче (master)
-		SPI1->CR2 &= ~ SPI_CR2_RXDMAEN; // DMA по приему (master)
+		SPI1->CR2 &= ~ SPI_CR2_TXDMAEN; // DMA РїРѕ РїРµСЂРµРґР°С‡Рµ (master)
+		SPI1->CR2 &= ~ SPI_CR2_RXDMAEN; // DMA РїРѕ РїСЂРёРµРјСѓ (master)
 
 	#endif /* CPUSTYLE_STM32H7XX */
 
-	HARDWARE_SPI_CONNECT_MOSI();	// Возвращаем в обычный режим работы
+	HARDWARE_SPI_CONNECT_MOSI();	// Р’РѕР·РІСЂР°С‰Р°РµРј РІ РѕР±С‹С‡РЅС‹Р№ СЂРµР¶РёРј СЂР°Р±РѕС‚С‹
 
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX
 	#warning TODO: implement SPI over DMA
@@ -5195,9 +5195,9 @@ hardware_spi_master_read_frame_16bpartial(
 #elif CPUSTYLE_R7S721
 	#warning TODO: Add code for R7S721 SPI DMA support to hardware_spi_master_read_frame_16bpartial
 
-	HARDWARE_SPI_DISCONNECT_MOSI();	// выход данных в "1" - для нормальной работы SD CARD
+	HARDWARE_SPI_DISCONNECT_MOSI();	// РІС‹С…РѕРґ РґР°РЅРЅС‹С… РІ "1" - РґР»СЏ РЅРѕСЂРјР°Р»СЊРЅРѕР№ СЂР°Р±РѕС‚С‹ SD CARD
 
-	HARDWARE_SPI_CONNECT_MOSI();	// Возвращаем в обычный режим работы
+	HARDWARE_SPI_CONNECT_MOSI();	// Р’РѕР·РІСЂР°С‰Р°РµРј РІ РѕР±С‹С‡РЅС‹Р№ СЂРµР¶РёРј СЂР°Р±РѕС‚С‹
 
 #else
 	#error Undefined CPUSTYLE_xxxx
@@ -5208,64 +5208,64 @@ hardware_spi_master_read_frame_16bpartial(
 #endif /* WITHSPI16BIT */
 
 // Read a frame of bytes via SPI
-// На сигнале MOSI при это должно обеспачиваться состояние логической "1" для корректной работы SD CARD
+// РќР° СЃРёРіРЅР°Р»Рµ MOSI РїСЂРё СЌС‚Рѕ РґРѕР»Р¶РЅРѕ РѕР±РµСЃРїР°С‡РёРІР°С‚СЊСЃСЏ СЃРѕСЃС‚РѕСЏРЅРёРµ Р»РѕРіРёС‡РµСЃРєРѕР№ "1" РґР»СЏ РєРѕСЂСЂРµРєС‚РЅРѕР№ СЂР°Р±РѕС‚С‹ SD CARD
 static void 
 hardware_spi_master_read_frame_8bpartial(
 	//spitarget_t target,	/* addressing to chip */
 	uint8_t * buffer, 
-	uint_fast32_t size		/* количество пересылаемых 8-ти битных элементов */
+	uint_fast32_t size		/* РєРѕР»РёС‡РµСЃС‚РІРѕ РїРµСЂРµСЃС‹Р»Р°РµРјС‹С… 8-С‚Рё Р±РёС‚РЅС‹С… СЌР»РµРјРµРЅС‚РѕРІ */
 	)
 {
 #if CPUSTYLE_SAM9XE
 
-	HARDWARE_SPI_DISCONNECT_MOSI();	// выход данных в "1" - для нормальной работы SD CARD
+	HARDWARE_SPI_DISCONNECT_MOSI();	// РІС‹С…РѕРґ РґР°РЅРЅС‹С… РІ "1" - РґР»СЏ РЅРѕСЂРјР°Р»СЊРЅРѕР№ СЂР°Р±РѕС‚С‹ SD CARD
 
 	AT91C_BASE_SPI1->SPI_TPR = (unsigned long) buffer;
 	AT91C_BASE_SPI1->SPI_RPR = (unsigned long) buffer;
-	AT91C_BASE_SPI1->SPI_RCR = size;	// разрешить работу приёмника
-	AT91C_BASE_SPI1->SPI_TCR = size;	// запуск передатчика (выдача синхронизации)
+	AT91C_BASE_SPI1->SPI_RCR = size;	// СЂР°Р·СЂРµС€РёС‚СЊ СЂР°Р±РѕС‚Сѓ РїСЂРёС‘РјРЅРёРєР°
+	AT91C_BASE_SPI1->SPI_TCR = size;	// Р·Р°РїСѓСЃРє РїРµСЂРµРґР°С‚С‡РёРєР° (РІС‹РґР°С‡Р° СЃРёРЅС…СЂРѕРЅРёР·Р°С†РёРё)
 
-	while ((AT91C_BASE_SPI1->SPI_SR & AT91C_SPI_ENDRX) == 0)	// было TX
+	while ((AT91C_BASE_SPI1->SPI_SR & AT91C_SPI_ENDRX) == 0)	// Р±С‹Р»Рѕ TX
 		;
-	// дождаться, пока последний байт выйдет из передатчика
+	// РґРѕР¶РґР°С‚СЊСЃСЏ, РїРѕРєР° РїРѕСЃР»РµРґРЅРёР№ Р±Р°Р№С‚ РІС‹Р№РґРµС‚ РёР· РїРµСЂРµРґР°С‚С‡РёРєР°
 	while ((AT91C_BASE_SPI1->SPI_SR & AT91C_SPI_TXEMPTY) == 0)
 		;
 
-	HARDWARE_SPI_CONNECT_MOSI();	// Возвращаем в обычный режим работы
+	HARDWARE_SPI_CONNECT_MOSI();	// Р’РѕР·РІСЂР°С‰Р°РµРј РІ РѕР±С‹С‡РЅС‹Р№ СЂРµР¶РёРј СЂР°Р±РѕС‚С‹
 
 #elif CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
-	HARDWARE_SPI_DISCONNECT_MOSI();	// выход данных в "1" - для нормальной работы SD CARD
+	HARDWARE_SPI_DISCONNECT_MOSI();	// РІС‹С…РѕРґ РґР°РЅРЅС‹С… РІ "1" - РґР»СЏ РЅРѕСЂРјР°Р»СЊРЅРѕР№ СЂР°Р±РѕС‚С‹ SD CARD
 
 	SPI->SPI_TPR = (unsigned long) buffer;
 	SPI->SPI_RPR = (unsigned long) buffer;
-	SPI->SPI_RCR = size;	// разрешить работу приёмника
-	SPI->SPI_TCR = size;	// запуск передатчика (выдача синхронизации)
+	SPI->SPI_RCR = size;	// СЂР°Р·СЂРµС€РёС‚СЊ СЂР°Р±РѕС‚Сѓ РїСЂРёС‘РјРЅРёРєР°
+	SPI->SPI_TCR = size;	// Р·Р°РїСѓСЃРє РїРµСЂРµРґР°С‚С‡РёРєР° (РІС‹РґР°С‡Р° СЃРёРЅС…СЂРѕРЅРёР·Р°С†РёРё)
 
-	while ((SPI->SPI_SR & SPI_SR_ENDRX) == 0)	// было TX
+	while ((SPI->SPI_SR & SPI_SR_ENDRX) == 0)	// Р±С‹Р»Рѕ TX
 		;
-	// дождаться, пока последний байт выйдет из передатчика
+	// РґРѕР¶РґР°С‚СЊСЃСЏ, РїРѕРєР° РїРѕСЃР»РµРґРЅРёР№ Р±Р°Р№С‚ РІС‹Р№РґРµС‚ РёР· РїРµСЂРµРґР°С‚С‡РёРєР°
 	while ((SPI->SPI_SR & SPI_SR_TXEMPTY) == 0)
 		;
 
-	HARDWARE_SPI_CONNECT_MOSI();	// Возвращаем в обычный режим работы
+	HARDWARE_SPI_CONNECT_MOSI();	// Р’РѕР·РІСЂР°С‰Р°РµРј РІ РѕР±С‹С‡РЅС‹Р№ СЂРµР¶РёРј СЂР°Р±РѕС‚С‹
 
 #elif CPUSTYLE_AT91SAM7S
 
-	HARDWARE_SPI_DISCONNECT_MOSI();	// выход данных в "1" - для нормальной работы SD CARD
+	HARDWARE_SPI_DISCONNECT_MOSI();	// РІС‹С…РѕРґ РґР°РЅРЅС‹С… РІ "1" - РґР»СЏ РЅРѕСЂРјР°Р»СЊРЅРѕР№ СЂР°Р±РѕС‚С‹ SD CARD
 
 	AT91C_BASE_SPI->SPI_TPR = (unsigned long) buffer;
 	AT91C_BASE_SPI->SPI_RPR = (unsigned long) buffer;
-	AT91C_BASE_SPI->SPI_RCR = size;	// разрешить работу приёмника
-	AT91C_BASE_SPI->SPI_TCR = size;	// запуск передатчика (выдача синхронизации)
+	AT91C_BASE_SPI->SPI_RCR = size;	// СЂР°Р·СЂРµС€РёС‚СЊ СЂР°Р±РѕС‚Сѓ РїСЂРёС‘РјРЅРёРєР°
+	AT91C_BASE_SPI->SPI_TCR = size;	// Р·Р°РїСѓСЃРє РїРµСЂРµРґР°С‚С‡РёРєР° (РІС‹РґР°С‡Р° СЃРёРЅС…СЂРѕРЅРёР·Р°С†РёРё)
 
-	while ((AT91C_BASE_SPI->SPI_SR & AT91C_SPI_ENDRX) == 0)	// было TX
+	while ((AT91C_BASE_SPI->SPI_SR & AT91C_SPI_ENDRX) == 0)	// Р±С‹Р»Рѕ TX
 		;
-	// дождаться, пока последний байт выйдет из передатчика
+	// РґРѕР¶РґР°С‚СЊСЃСЏ, РїРѕРєР° РїРѕСЃР»РµРґРЅРёР№ Р±Р°Р№С‚ РІС‹Р№РґРµС‚ РёР· РїРµСЂРµРґР°С‚С‡РёРєР°
 	while ((AT91C_BASE_SPI->SPI_SR & AT91C_SPI_TXEMPTY) == 0)
 		;
 
-	HARDWARE_SPI_CONNECT_MOSI();	// Возвращаем в обычный режим работы
+	HARDWARE_SPI_CONNECT_MOSI();	// Р’РѕР·РІСЂР°С‰Р°РµРј РІ РѕР±С‹С‡РЅС‹Р№ СЂРµР¶РёРј СЂР°Р±РѕС‚С‹
 
 #elif CPUSTYLE_STM32F4XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
 	
@@ -5279,59 +5279,59 @@ hardware_spi_master_read_frame_8bpartial(
 	}
 	*/
 
-	HARDWARE_SPI_DISCONNECT_MOSI();	// выход данных в "1" - для нормальной работы SD CARD
+	HARDWARE_SPI_DISCONNECT_MOSI();	// РІС‹С…РѕРґ РґР°РЅРЅС‹С… РІ "1" - РґР»СЏ РЅРѕСЂРјР°Р»СЊРЅРѕР№ СЂР°Р±РѕС‚С‹ SD CARD
 
 	// DMA2: SPI1_RX: Stream 0: Channel 3
 	#if CPUSTYLE_STM32H7XX
-		SPI1->CFG1 |= SPI_CFG1_RXDMAEN; // DMA по приему (master)
+		SPI1->CFG1 |= SPI_CFG1_RXDMAEN; // DMA РїРѕ РїСЂРёРµРјСѓ (master)
 	#else /* CPUSTYLE_STM32H7XX */
-		SPI1->CR2 |= SPI_CR2_RXDMAEN; // DMA по приему (master)
+		SPI1->CR2 |= SPI_CR2_RXDMAEN; // DMA РїРѕ РїСЂРёРµРјСѓ (master)
 	#endif /* CPUSTYLE_STM32H7XX */
 
 	DMA2_Stream0->M0AR = (uintptr_t) buffer;
 	DMA2_Stream0->NDTR = (DMA2_Stream0->NDTR & ~ DMA_SxNDT) |
 		(size * DMA_SxNDT_0) |
 		0;
-	DMA2_Stream0->CR |= DMA_SxCR_EN;		// перезапуск DMA
+	DMA2_Stream0->CR |= DMA_SxCR_EN;		// РїРµСЂРµР·Р°РїСѓСЃРє DMA
 
 	// DMA2: SPI1_TX: Stream 3: Channel 3
 	#if CPUSTYLE_STM32H7XX
-		SPI1->CFG1 |= SPI_CFG1_TXDMAEN; // DMA по передаче
+		SPI1->CFG1 |= SPI_CFG1_TXDMAEN; // DMA РїРѕ РїРµСЂРµРґР°С‡Рµ
 	#else /* CPUSTYLE_STM32H7XX */
-		SPI1->CR2 |= SPI_CR2_TXDMAEN; // DMA по передаче
+		SPI1->CR2 |= SPI_CR2_TXDMAEN; // DMA РїРѕ РїРµСЂРµРґР°С‡Рµ
 	#endif /* CPUSTYLE_STM32H7XX */
 
 	DMA2_Stream3->M0AR = (uintptr_t) buffer;
 	DMA2_Stream3->NDTR = (DMA2_Stream3->NDTR & ~ DMA_SxNDT) |
 		(size * DMA_SxNDT_0) |
 		0;
-	DMA2_Stream3->CR |= DMA_SxCR_EN;		// запуск DMA передатчика (выдача синхронизации)
+	DMA2_Stream3->CR |= DMA_SxCR_EN;		// Р·Р°РїСѓСЃРє DMA РїРµСЂРµРґР°С‚С‡РёРєР° (РІС‹РґР°С‡Р° СЃРёРЅС…СЂРѕРЅРёР·Р°С†РёРё)
 
-	// Дожидаемся завершения обмена передающего канала DMA
-	while ((DMA2->LISR & DMA_LISR_TCIF3) == 0)	// ожидаем завершения обмена по соответствушему stream
+	// Р”РѕР¶РёРґР°РµРјСЃСЏ Р·Р°РІРµСЂС€РµРЅРёСЏ РѕР±РјРµРЅР° РїРµСЂРµРґР°СЋС‰РµРіРѕ РєР°РЅР°Р»Р° DMA
+	while ((DMA2->LISR & DMA_LISR_TCIF3) == 0)	// РѕР¶РёРґР°РµРј Р·Р°РІРµСЂС€РµРЅРёСЏ РѕР±РјРµРЅР° РїРѕ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓС€РµРјСѓ stream
 		;
-	DMA2->LIFCR = DMA_LIFCR_CTCIF3;		// сбросил флаг соответствующий stream
-	//DMA2_waitTC(3);	// ожидаем завершения обмена по соответствушему stream
+	DMA2->LIFCR = DMA_LIFCR_CTCIF3;		// СЃР±СЂРѕСЃРёР» С„Р»Р°Рі СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РёР№ stream
+	//DMA2_waitTC(3);	// РѕР¶РёРґР°РµРј Р·Р°РІРµСЂС€РµРЅРёСЏ РѕР±РјРµРЅР° РїРѕ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓС€РµРјСѓ stream
 
-	// Дожидаемся завершения обмена принимающего канала DMA
-	while ((DMA2->LISR & DMA_LISR_TCIF0) == 0)	// ожидаем завершения обмена по соответствушему stream
+	// Р”РѕР¶РёРґР°РµРјСЃСЏ Р·Р°РІРµСЂС€РµРЅРёСЏ РѕР±РјРµРЅР° РїСЂРёРЅРёРјР°СЋС‰РµРіРѕ РєР°РЅР°Р»Р° DMA
+	while ((DMA2->LISR & DMA_LISR_TCIF0) == 0)	// РѕР¶РёРґР°РµРј Р·Р°РІРµСЂС€РµРЅРёСЏ РѕР±РјРµРЅР° РїРѕ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓС€РµРјСѓ stream
 		;
-	DMA2->LIFCR = DMA_LIFCR_CTCIF0;		// сбросил флаг соответствующий stream
-	//DMA2_waitTC(0);	// ожидаем завершения обмена по соответствушему stream
+	DMA2->LIFCR = DMA_LIFCR_CTCIF0;		// СЃР±СЂРѕСЃРёР» С„Р»Р°Рі СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РёР№ stream
+	//DMA2_waitTC(0);	// РѕР¶РёРґР°РµРј Р·Р°РІРµСЂС€РµРЅРёСЏ РѕР±РјРµРЅР° РїРѕ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓС€РµРјСѓ stream
 
 	#if CPUSTYLE_STM32H7XX
 
-		SPI1->CFG1 &= ~ SPI_CFG1_TXDMAEN; // DMA по передаче (master)
-		SPI1->CFG1 &= ~ SPI_CFG1_RXDMAEN; // DMA по приему (master)
+		SPI1->CFG1 &= ~ SPI_CFG1_TXDMAEN; // DMA РїРѕ РїРµСЂРµРґР°С‡Рµ (master)
+		SPI1->CFG1 &= ~ SPI_CFG1_RXDMAEN; // DMA РїРѕ РїСЂРёРµРјСѓ (master)
 
 	#else /* CPUSTYLE_STM32H7XX */
 
-		SPI1->CR2 &= ~ SPI_CR2_TXDMAEN; // DMA по передаче (master)
-		SPI1->CR2 &= ~ SPI_CR2_RXDMAEN; // DMA по приему (master)
+		SPI1->CR2 &= ~ SPI_CR2_TXDMAEN; // DMA РїРѕ РїРµСЂРµРґР°С‡Рµ (master)
+		SPI1->CR2 &= ~ SPI_CR2_RXDMAEN; // DMA РїРѕ РїСЂРёРµРјСѓ (master)
 
 	#endif /* CPUSTYLE_STM32H7XX */
 
-	HARDWARE_SPI_CONNECT_MOSI();	// Возвращаем в обычный режим работы
+	HARDWARE_SPI_CONNECT_MOSI();	// Р’РѕР·РІСЂР°С‰Р°РµРј РІ РѕР±С‹С‡РЅС‹Р№ СЂРµР¶РёРј СЂР°Р±РѕС‚С‹
 
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX
 	#warning TODO: implement SPI over DMA
@@ -5351,9 +5351,9 @@ hardware_spi_master_read_frame_8bpartial(
 #elif CPUSTYLE_R7S721
 	#warning TODO: Add code for R7S721 SPI DMA support to hardware_spi_master_read_frame_8bpartial
 
-	HARDWARE_SPI_DISCONNECT_MOSI();	// выход данных в "1" - для нормальной работы SD CARD
+	HARDWARE_SPI_DISCONNECT_MOSI();	// РІС‹С…РѕРґ РґР°РЅРЅС‹С… РІ "1" - РґР»СЏ РЅРѕСЂРјР°Р»СЊРЅРѕР№ СЂР°Р±РѕС‚С‹ SD CARD
 
-	HARDWARE_SPI_CONNECT_MOSI();	// Возвращаем в обычный режим работы
+	HARDWARE_SPI_CONNECT_MOSI();	// Р’РѕР·РІСЂР°С‰Р°РµРј РІ РѕР±С‹С‡РЅС‹Р№ СЂРµР¶РёРј СЂР°Р±РѕС‚С‹
 
 #else
 	#error Undefined CPUSTYLE_xxxx
@@ -5366,12 +5366,12 @@ hardware_spi_master_read_frame_8bpartial(
 void hardware_spi_master_send_frame_16b(
 	//spitarget_t target,	/* addressing to chip */
 	const uint16_t * buffer, 
-	uint_fast32_t size		/* количество пересылаемых 16-ти битных элементов */
+	uint_fast32_t size		/* РєРѕР»РёС‡РµСЃС‚РІРѕ РїРµСЂРµСЃС‹Р»Р°РµРјС‹С… 16-С‚Рё Р±РёС‚РЅС‹С… СЌР»РµРјРµРЅС‚РѕРІ */
 	)
 {
 	hardware_spi_master_setdma16bit_tx();
 #if CPUSTYLE_R7S721
-	// в этом процессоре счетчик байтов 32-х разрядный
+	// РІ СЌС‚РѕРј РїСЂРѕС†РµСЃСЃРѕСЂРµ СЃС‡РµС‚С‡РёРє Р±Р°Р№С‚РѕРІ 32-С… СЂР°Р·СЂСЏРґРЅС‹Р№
 	uint_fast32_t score;
 	for (score = 0; score < size; )
 	{
@@ -5393,12 +5393,12 @@ void hardware_spi_master_send_frame_16b(
 void hardware_spi_master_read_frame_16b(
 	//spitarget_t target,	/* addressing to chip */
 	uint16_t * buffer, 
-	uint_fast32_t size		/* количество пересылаемых 16-ти битных элементов */
+	uint_fast32_t size		/* РєРѕР»РёС‡РµСЃС‚РІРѕ РїРµСЂРµСЃС‹Р»Р°РµРјС‹С… 16-С‚Рё Р±РёС‚РЅС‹С… СЌР»РµРјРµРЅС‚РѕРІ */
 	)
 {
 	hardware_spi_master_setdma16bit_rx();
 #if CPUSTYLE_R7S721
-	// в этом процессоре счетчик байтов 32-х разрядный
+	// РІ СЌС‚РѕРј РїСЂРѕС†РµСЃСЃРѕСЂРµ СЃС‡РµС‚С‡РёРє Р±Р°Р№С‚РѕРІ 32-С… СЂР°Р·СЂСЏРґРЅС‹Р№
 	uint_fast32_t score;
 	for (score = 0; score < size; )
 	{
@@ -5422,7 +5422,7 @@ void hardware_spi_master_read_frame_16b(
 void hardware_spi_master_send_frame(
 	//spitarget_t target,	/* addressing to chip */
 	const uint8_t * buffer, 
-	uint_fast32_t size		/* количество пересылаемых 8-ти битных элементов */
+	uint_fast32_t size		/* РєРѕР»РёС‡РµСЃС‚РІРѕ РїРµСЂРµСЃС‹Р»Р°РµРјС‹С… 8-С‚Рё Р±РёС‚РЅС‹С… СЌР»РµРјРµРЅС‚РѕРІ */
 	)
 {
 	hardware_spi_master_setdma8bit_tx();
@@ -5443,7 +5443,7 @@ void hardware_spi_master_send_frame(
 void hardware_spi_master_read_frame(
 	//spitarget_t target,	/* addressing to chip */
 	uint8_t * buffer, 
-	uint_fast32_t size		/* количество пересылаемых 8-ти битных элементов */
+	uint_fast32_t size		/* РєРѕР»РёС‡РµСЃС‚РІРѕ РїРµСЂРµСЃС‹Р»Р°РµРјС‹С… 8-С‚Рё Р±РёС‚РЅС‹С… СЌР»РµРјРµРЅС‚РѕРІ */
 	)
 {
 	hardware_spi_master_setdma8bit_rx();
@@ -5464,15 +5464,15 @@ void hardware_spi_master_read_frame(
 
 #if WITHSPI16BIT
 
-/* управление состоянием "подключено - работа в режиме 16-ти битных слов.*/
+/* СѓРїСЂР°РІР»РµРЅРёРµ СЃРѕСЃС‚РѕСЏРЅРёРµРј "РїРѕРґРєР»СЋС‡РµРЅРѕ - СЂР°Р±РѕС‚Р° РІ СЂРµР¶РёРјРµ 16-С‚Рё Р±РёС‚РЅС‹С… СЃР»РѕРІ.*/
 void hardware_spi_connect_b16(uint_fast8_t spispeedindex, uint_fast8_t spimode)
 {
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
-	// инициализация контроллера SPI
-	enum { OUTMASK = PIO_PA13A_MOSI | PIO_PA14A_SPCK };		// битовая маска, определяет каким выводом шевелить
-	enum { INPMASK = PIO_PA12A_MISO };		// битовая маска, определяет откуда ввод
-	enum { WORKMASK = OUTMASK | INPMASK };		// битовая маска, включает и ввод и вывод
+	// РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РєРѕРЅС‚СЂРѕР»Р»РµСЂР° SPI
+	enum { OUTMASK = PIO_PA13A_MOSI | PIO_PA14A_SPCK };		// Р±РёС‚РѕРІР°СЏ РјР°СЃРєР°, РѕРїСЂРµРґРµР»СЏРµС‚ РєР°РєРёРј РІС‹РІРѕРґРѕРј С€РµРІРµР»РёС‚СЊ
+	enum { INPMASK = PIO_PA12A_MISO };		// Р±РёС‚РѕРІР°СЏ РјР°СЃРєР°, РѕРїСЂРµРґРµР»СЏРµС‚ РѕС‚РєСѓРґР° РІРІРѕРґ
+	enum { WORKMASK = OUTMASK | INPMASK };		// Р±РёС‚РѕРІР°СЏ РјР°СЃРєР°, РІРєР»СЋС‡Р°РµС‚ Рё РІРІРѕРґ Рё РІС‹РІРѕРґ
 
 	SPI->SPI_CSR [0] = spi_csr_val16w [spispeedindex][spimode];
 
@@ -5481,9 +5481,9 @@ void hardware_spi_connect_b16(uint_fast8_t spispeedindex, uint_fast8_t spimode)
 
 #elif CPUSTYLE_AT91SAM7S
 
-	enum { OUTMASK = AT91C_PA13_MOSI | AT91C_PA14_SPCK };		// битовая маска, определяет каким выводом шевелить
-	enum { INPMASK = AT91C_PA12_MISO };		// битовая маска, определяет откуда ввод
-	enum { WORKMASK = OUTMASK | INPMASK };		// битовая маска, включает и ввод и вывод
+	enum { OUTMASK = AT91C_PA13_MOSI | AT91C_PA14_SPCK };		// Р±РёС‚РѕРІР°СЏ РјР°СЃРєР°, РѕРїСЂРµРґРµР»СЏРµС‚ РєР°РєРёРј РІС‹РІРѕРґРѕРј С€РµРІРµР»РёС‚СЊ
+	enum { INPMASK = AT91C_PA12_MISO };		// Р±РёС‚РѕРІР°СЏ РјР°СЃРєР°, РѕРїСЂРµРґРµР»СЏРµС‚ РѕС‚РєСѓРґР° РІРІРѕРґ
+	enum { WORKMASK = OUTMASK | INPMASK };		// Р±РёС‚РѕРІР°СЏ РјР°СЃРєР°, РІРєР»СЋС‡Р°РµС‚ Рё РІРІРѕРґ Рё РІС‹РІРѕРґ
 
 	AT91C_BASE_SPI->SPI_CSR [0] = spi_csr_val16w [spispeedindex][spimode];
 
@@ -5499,13 +5499,13 @@ void hardware_spi_connect_b16(uint_fast8_t spispeedindex, uint_fast8_t spimode)
 		// 2.6.7 I2C1 with SPI1 remapped and used in master mode
 		// Workaround:
 		// When using SPI1 remapped, the I2C1 clock must be disabled.
-		RCC->APB1ENR &= ~ (RCC_APB1ENR_I2C1EN); // выкл тактирование контроллера I2C
+		RCC->APB1ENR &= ~ (RCC_APB1ENR_I2C1EN); // РІС‹РєР» С‚Р°РєС‚РёСЂРѕРІР°РЅРёРµ РєРѕРЅС‚СЂРѕР»Р»РµСЂР° I2C
 		__DSB();
 	#endif
 
 #elif CPUSTYLE_STM32F4XX || CPUSTYLE_STM32L0XX
 
-	// В этих процессорах и входы и выходы перекдючаются на ALT FN
+	// Р’ СЌС‚РёС… РїСЂРѕС†РµСЃСЃРѕСЂР°С… Рё РІС…РѕРґС‹ Рё РІС‹С…РѕРґС‹ РїРµСЂРµРєРґСЋС‡Р°СЋС‚СЃСЏ РЅР° ALT FN
 	HARDWARE_SPI_CONNECT();
 
 	SPI1->CR1 = spi_cr1_val16w [spispeedindex][spimode];
@@ -5514,13 +5514,13 @@ void hardware_spi_connect_b16(uint_fast8_t spispeedindex, uint_fast8_t spimode)
 		// 2.6.7 I2C1 with SPI1 remapped and used in master mode
 		// Workaround:
 		// When using SPI1 remapped, the I2C1 clock must be disabled.
-		RCC->APB1ENR &= ~ (RCC_APB1ENR_I2C1EN); // выкл тактирование контроллера I2C
+		RCC->APB1ENR &= ~ (RCC_APB1ENR_I2C1EN); // РІС‹РєР» С‚Р°РєС‚РёСЂРѕРІР°РЅРёРµ РєРѕРЅС‚СЂРѕР»Р»РµСЂР° I2C
 		__DSB();
 	#endif
 
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX
 
-	// В этих процессорах и входы и выходы перекдючаются на ALT FN
+	// Р’ СЌС‚РёС… РїСЂРѕС†РµСЃСЃРѕСЂР°С… Рё РІС…РѕРґС‹ Рё РІС‹С…РѕРґС‹ РїРµСЂРµРєРґСЋС‡Р°СЋС‚СЃСЏ РЅР° ALT FN
 	HARDWARE_SPI_CONNECT();
 
 	SPI1->CR1 = spi_cr1_val8w [spispeedindex][spimode];
@@ -5533,7 +5533,7 @@ void hardware_spi_connect_b16(uint_fast8_t spispeedindex, uint_fast8_t spimode)
 		// 2.6.7 I2C1 with SPI1 remapped and used in master mode
 		// Workaround:
 		// When using SPI1 remapped, the I2C1 clock must be disabled.
-		RCC->APB1ENR &= ~ (RCC_APB1ENR_I2C1EN); // выкл тактирование контроллера I2C
+		RCC->APB1ENR &= ~ (RCC_APB1ENR_I2C1EN); // РІС‹РєР» С‚Р°РєС‚РёСЂРѕРІР°РЅРёРµ РєРѕРЅС‚СЂРѕР»Р»РµСЂР° I2C
 		__DSB();
 	#endif
 
@@ -5565,18 +5565,18 @@ void hardware_spi_connect_b16(uint_fast8_t spispeedindex, uint_fast8_t spimode)
 
 }
 
-portholder_t hardware_spi_complete_b16(void)	/* дождаться готовности */
+portholder_t hardware_spi_complete_b16(void)	/* РґРѕР¶РґР°С‚СЊСЃСЏ РіРѕС‚РѕРІРЅРѕСЃС‚Рё */
 {
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
-	/* дождаться завершения приёма/передачи */
+	/* РґРѕР¶РґР°С‚СЊСЃСЏ Р·Р°РІРµСЂС€РµРЅРёСЏ РїСЂРёС‘РјР°/РїРµСЂРµРґР°С‡Рё */
 	while ((SPI->SPI_SR & SPI_SR_RDRF) == 0)
 		;
 	return (SPI->SPI_RDR & SPI_TDR_TD_Msk);
 
 #elif CPUSTYLE_AT91SAM7S
 
-	/* дождаться завершения приёма/передачи */
+	/* РґРѕР¶РґР°С‚СЊСЃСЏ Р·Р°РІРµСЂС€РµРЅРёСЏ РїСЂРёС‘РјР°/РїРµСЂРµРґР°С‡Рё */
 	while ((AT91C_BASE_SPI->SPI_SR & AT91C_SPI_RDRF) == 0)
 		;
 	return (AT91C_BASE_SPI->SPI_RDR & AT91C_SPI_TD);
@@ -5610,18 +5610,18 @@ portholder_t hardware_spi_complete_b16(void)	/* дождаться готовности */
 #endif
 }
 
-static void hardware_spi_ready_b16_void(void)	/* дождаться готовности */
+static void hardware_spi_ready_b16_void(void)	/* РґРѕР¶РґР°С‚СЊСЃСЏ РіРѕС‚РѕРІРЅРѕСЃС‚Рё */
 {
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
-	/* дождаться завершения приёма/передачи */
+	/* РґРѕР¶РґР°С‚СЊСЃСЏ Р·Р°РІРµСЂС€РµРЅРёСЏ РїСЂРёС‘РјР°/РїРµСЂРµРґР°С‡Рё */
 	while ((SPI->SPI_SR & SPI_SR_RDRF) == 0)
 		;
 	(void) SPI->SPI_RDR;
 
 #elif CPUSTYLE_AT91SAM7S
 
-	/* дождаться завершения приёма/передачи */
+	/* РґРѕР¶РґР°С‚СЊСЃСЏ Р·Р°РІРµСЂС€РµРЅРёСЏ РїСЂРёС‘РјР°/РїРµСЂРµРґР°С‡Рё */
 	while ((AT91C_BASE_SPI->SPI_SR & AT91C_SPI_RDRF) == 0)
 		;
 	(void) AT91C_BASE_SPI->SPI_RDR;
@@ -5653,12 +5653,12 @@ static void hardware_spi_ready_b16_void(void)	/* дождаться готовности */
 }
 
 
-/* группа функций для использования в групповых передачах по SPI */
-/* передача первого байта в последовательности - Не проверяем готовность перед передачей, 
-   завершение передачи будут проверять другие.
+/* РіСЂСѓРїРїР° С„СѓРЅРєС†РёР№ РґР»СЏ РёСЃРїРѕР»СЊР·РѕРІР°РЅРёСЏ РІ РіСЂСѓРїРїРѕРІС‹С… РїРµСЂРµРґР°С‡Р°С… РїРѕ SPI */
+/* РїРµСЂРµРґР°С‡Р° РїРµСЂРІРѕРіРѕ Р±Р°Р№С‚Р° РІ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕСЃС‚Рё - РќРµ РїСЂРѕРІРµСЂСЏРµРј РіРѕС‚РѕРІРЅРѕСЃС‚СЊ РїРµСЂРµРґ РїРµСЂРµРґР°С‡РµР№, 
+   Р·Р°РІРµСЂС€РµРЅРёРµ РїРµСЂРµРґР°С‡Рё Р±СѓРґСѓС‚ РїСЂРѕРІРµСЂСЏС‚СЊ РґСЂСѓРіРёРµ.
 */
 void hardware_spi_b16_p1(
-	portholder_t v		/* значениеслова для передачи */
+	portholder_t v		/* Р·РЅР°С‡РµРЅРёРµСЃР»РѕРІР° РґР»СЏ РїРµСЂРµРґР°С‡Рё */
 	)
 {
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
@@ -5690,29 +5690,29 @@ void hardware_spi_b16_p1(
 #endif
 }
 
-/* передача одного из средних байтов/слов в последовательности */
-/* дождаться готовности, передача байта */
+/* РїРµСЂРµРґР°С‡Р° РѕРґРЅРѕРіРѕ РёР· СЃСЂРµРґРЅРёС… Р±Р°Р№С‚РѕРІ/СЃР»РѕРІ РІ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕСЃС‚Рё */
+/* РґРѕР¶РґР°С‚СЊСЃСЏ РіРѕС‚РѕРІРЅРѕСЃС‚Рё, РїРµСЂРµРґР°С‡Р° Р±Р°Р№С‚Р° */
 void hardware_spi_b16_p2(
-	portholder_t v		/* значение байта для передачи */
+	portholder_t v		/* Р·РЅР°С‡РµРЅРёРµ Р±Р°Р№С‚Р° РґР»СЏ РїРµСЂРµРґР°С‡Рё */
 	)
 {
-	hardware_spi_ready_b16_void();	/* дождаться завершения передачи */
-	hardware_spi_b16_p1(v);	/* передать символ */
+	hardware_spi_ready_b16_void();	/* РґРѕР¶РґР°С‚СЊСЃСЏ Р·Р°РІРµСЂС€РµРЅРёСЏ РїРµСЂРµРґР°С‡Рё */
+	hardware_spi_b16_p1(v);	/* РїРµСЂРµРґР°С‚СЊ СЃРёРјРІРѕР» */
 }
 
-/* передача байта/слова, возврат считанного */
+/* РїРµСЂРµРґР°С‡Р° Р±Р°Р№С‚Р°/СЃР»РѕРІР°, РІРѕР·РІСЂР°С‚ СЃС‡РёС‚Р°РЅРЅРѕРіРѕ */
 portholder_t hardware_spi_b16(
-	portholder_t v		/* значение байта для передачи */
+	portholder_t v		/* Р·РЅР°С‡РµРЅРёРµ Р±Р°Р№С‚Р° РґР»СЏ РїРµСЂРµРґР°С‡Рё */
 	)
 {
-	hardware_spi_b16_p1(v);	/* передать символ */
-	return hardware_spi_complete_b16();	/* дождаться завершения передачи */
+	hardware_spi_b16_p1(v);	/* РїРµСЂРµРґР°С‚СЊ СЃРёРјРІРѕР» */
+	return hardware_spi_complete_b16();	/* РґРѕР¶РґР°С‚СЊСЃСЏ Р·Р°РІРµСЂС€РµРЅРёСЏ РїРµСЂРµРґР°С‡Рё */
 }
 
 #endif /* WITHSPI16BIT */
 
 void hardware_spi_b8_p1(
-	portholder_t v		/* значение байта/слова для передачи */
+	portholder_t v		/* Р·РЅР°С‡РµРЅРёРµ Р±Р°Р№С‚Р°/СЃР»РѕРІР° РґР»СЏ РїРµСЂРµРґР°С‡Рё */
 	)
 {
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
@@ -5725,11 +5725,11 @@ void hardware_spi_b8_p1(
 
 #elif CPUSTYLE_ATMEGA
 
-	SPDR = v; // запуск передачи
+	SPDR = v; // Р·Р°РїСѓСЃРє РїРµСЂРµРґР°С‡Рё
 
 #elif CPUSTYLE_ATXMEGA
 
-	TARGETHARD_SPI.DATA = v; // запуск передачи
+	TARGETHARD_SPI.DATA = v; // Р·Р°РїСѓСЃРє РїРµСЂРµРґР°С‡Рё
 
 #elif CPUSTYLE_STM32H7XX
 
@@ -5752,27 +5752,27 @@ void hardware_spi_b8_p1(
 #endif
 }
 
-/* передача одного из средних байтов/слов в последовательности */
-/* дождаться готовности, передача байта */
+/* РїРµСЂРµРґР°С‡Р° РѕРґРЅРѕРіРѕ РёР· СЃСЂРµРґРЅРёС… Р±Р°Р№С‚РѕРІ/СЃР»РѕРІ РІ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕСЃС‚Рё */
+/* РґРѕР¶РґР°С‚СЊСЃСЏ РіРѕС‚РѕРІРЅРѕСЃС‚Рё, РїРµСЂРµРґР°С‡Р° Р±Р°Р№С‚Р° */
 void hardware_spi_b8_p2(
-	portholder_t v		/* значение байта для передачи */
+	portholder_t v		/* Р·РЅР°С‡РµРЅРёРµ Р±Р°Р№С‚Р° РґР»СЏ РїРµСЂРµРґР°С‡Рё */
 	)
 {
-	hardware_spi_ready_b8_void();	/* дождаться завершения передачи (на atmega оптимизированно по скорости - без чиения регистра данных). */
-	hardware_spi_b8_p1(v);	/* передать символ */
+	hardware_spi_ready_b8_void();	/* РґРѕР¶РґР°С‚СЊСЃСЏ Р·Р°РІРµСЂС€РµРЅРёСЏ РїРµСЂРµРґР°С‡Рё (РЅР° atmega РѕРїС‚РёРјРёР·РёСЂРѕРІР°РЅРЅРѕ РїРѕ СЃРєРѕСЂРѕСЃС‚Рё - Р±РµР· С‡РёРµРЅРёСЏ СЂРµРіРёСЃС‚СЂР° РґР°РЅРЅС‹С…). */
+	hardware_spi_b8_p1(v);	/* РїРµСЂРµРґР°С‚СЊ СЃРёРјРІРѕР» */
 }
-/* передача байта/слова, возврат считанного */
+/* РїРµСЂРµРґР°С‡Р° Р±Р°Р№С‚Р°/СЃР»РѕРІР°, РІРѕР·РІСЂР°С‚ СЃС‡РёС‚Р°РЅРЅРѕРіРѕ */
 portholder_t hardware_spi_b8(
-	portholder_t v		/* значение байта для передачи */
+	portholder_t v		/* Р·РЅР°С‡РµРЅРёРµ Р±Р°Р№С‚Р° РґР»СЏ РїРµСЂРµРґР°С‡Рё */
 	)
 {
-	hardware_spi_b8_p1(v);	/* передать символ */
-	return hardware_spi_complete_b8();	/* дождаться завершения передачи */
+	hardware_spi_b8_p1(v);	/* РїРµСЂРµРґР°С‚СЊ СЃРёРјРІРѕР» */
+	return hardware_spi_complete_b8();	/* РґРѕР¶РґР°С‚СЊСЃСЏ Р·Р°РІРµСЂС€РµРЅРёСЏ РїРµСЂРµРґР°С‡Рё */
 }
 
 #else  /* WITHSPIHW */
 
-// При отсутствующем аппаратном контроллере ничего не делает.
+// РџСЂРё РѕС‚СЃСѓС‚СЃС‚РІСѓСЋС‰РµРј Р°РїРїР°СЂР°С‚РЅРѕРј РєРѕРЅС‚СЂРѕР»Р»РµСЂРµ РЅРёС‡РµРіРѕ РЅРµ РґРµР»Р°РµС‚.
 
 void hardware_spi_master_setfreq(uint_fast8_t spispeedindex, int_fast32_t spispeed)
 {
@@ -5808,7 +5808,7 @@ hardware_elkey_timer_initialize(void)
 	// TC2 used for electronic key synchronisation with 1/20 of dot length
 	// TC2 used for generate 1/20 of morse dot length intervals
 	//
-	PMC->PMC_PCER0 = (1UL << ID_TC2);	// разрешить тактированние этого блока (ID_TC0..ID_TC5 avaliable)
+	PMC->PMC_PCER0 = (1UL << ID_TC2);	// СЂР°Р·СЂРµС€РёС‚СЊ С‚Р°РєС‚РёСЂРѕРІР°РЅРЅРёРµ СЌС‚РѕРіРѕ Р±Р»РѕРєР° (ID_TC0..ID_TC5 avaliable)
 
 	TC0->TC_CHANNEL [2].TC_CMR = 
 	                (TC_CMR_CLKI * 0) |
@@ -5831,7 +5831,7 @@ hardware_elkey_timer_initialize(void)
 	// TC2 used for electronic key synchronisation with 1/20 of dot length
 	// TC2 used for generate 1/20 of morse dot length intervals
 	//
-	AT91C_BASE_PMC->PMC_PCER = (1UL << AT91C_ID_TC2); // разрешить тактированние этого блока (AT91C_ID_TC0..AT91C_ID_TC2 avaliable)
+	AT91C_BASE_PMC->PMC_PCER = (1UL << AT91C_ID_TC2); // СЂР°Р·СЂРµС€РёС‚СЊ С‚Р°РєС‚РёСЂРѕРІР°РЅРЅРёРµ СЌС‚РѕРіРѕ Р±Р»РѕРєР° (AT91C_ID_TC0..AT91C_ID_TC2 avaliable)
 
 	AT91C_BASE_TCB->TCB_TC2.TC_CMR = 
 	                (AT91C_TC_CLKI * 0) |
@@ -5861,22 +5861,22 @@ hardware_elkey_timer_initialize(void)
 
 #elif CPUSTYLE_ATXMEGA
 
-	TCC1.INTCTRLB = 0;		// останавливаем таймер - будет запущен в функции установке частоты
+	TCC1.INTCTRLB = 0;		// РѕСЃС‚Р°РЅР°РІР»РёРІР°РµРј С‚Р°Р№РјРµСЂ - Р±СѓРґРµС‚ Р·Р°РїСѓС‰РµРЅ РІ С„СѓРЅРєС†РёРё СѓСЃС‚Р°РЅРѕРІРєРµ С‡Р°СЃС‚РѕС‚С‹
 
 #elif CPUSTYLE_STM32H7XX
 
-	RCC->APB1LENR |= RCC_APB1LENR_TIM3EN;   // подаем тактирование на TIM3
+	RCC->APB1LENR |= RCC_APB1LENR_TIM3EN;   // РїРѕРґР°РµРј С‚Р°РєС‚РёСЂРѕРІР°РЅРёРµ РЅР° TIM3
 	__DSB();
-	TIM3->DIER = TIM_DIER_UIE;        	 // разрешить событие от таймера
+	TIM3->DIER = TIM_DIER_UIE;        	 // СЂР°Р·СЂРµС€РёС‚СЊ СЃРѕР±С‹С‚РёРµ РѕС‚ С‚Р°Р№РјРµСЂР°
 
 	NVIC_SetPriority(TIM3_IRQn, ARM_SYSTEM_PRIORITY);
 	NVIC_EnableIRQ(TIM3_IRQn);		// enable TIM3_IRQHandler();
 
 #elif CPUSTYLE_STM32F
 
-	RCC->APB1ENR |= RCC_APB1ENR_TIM3EN;   // подаем тактирование на TIM3
+	RCC->APB1ENR |= RCC_APB1ENR_TIM3EN;   // РїРѕРґР°РµРј С‚Р°РєС‚РёСЂРѕРІР°РЅРёРµ РЅР° TIM3
 	__DSB();
-	TIM3->DIER = TIM_DIER_UIE;        	 // разрешить событие от таймера
+	TIM3->DIER = TIM_DIER_UIE;        	 // СЂР°Р·СЂРµС€РёС‚СЊ СЃРѕР±С‹С‚РёРµ РѕС‚ С‚Р°Р№РјРµСЂР°
 
 	NVIC_SetPriority(TIM3_IRQn, ARM_SYSTEM_PRIORITY);
 	NVIC_EnableIRQ(TIM3_IRQn);		// enable TIM3_IRQHandler();
@@ -5910,44 +5910,44 @@ void hardware_elkey_set_speed(uint_fast32_t ticksfreq)
 {
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
-	// Использование автоматического расчёта предделителя
+	// РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРіРѕ СЂР°СЃС‡С‘С‚Р° РїСЂРµРґРґРµР»РёС‚РµР»СЏ
 	unsigned value;
 	const uint_fast8_t prei = calcdivider(calcdivround(ticksfreq), ATSAM3S_TIMER_WIDTH, ATSAM3S_TIMER_TAPS, & value, 1);
 	TC0->TC_CHANNEL [2].TC_CMR =
 		(TC0->TC_CHANNEL [2].TC_CMR & ~ TC_CMR_TCCLKS_Msk) | tc_cmr_tcclks [prei];
-	TC0->TC_CHANNEL [2].TC_RC = value;	// программирование полного периода
+	TC0->TC_CHANNEL [2].TC_RC = value;	// РїСЂРѕРіСЂР°РјРјРёСЂРѕРІР°РЅРёРµ РїРѕР»РЅРѕРіРѕ РїРµСЂРёРѕРґР°
 
 #elif CPUSTYLE_AT91SAM7S
 
-	// Использование автоматического расчёта предделителя
+	// РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРіРѕ СЂР°СЃС‡С‘С‚Р° РїСЂРµРґРґРµР»РёС‚РµР»СЏ
 	unsigned value;
 	const uint_fast8_t prei = calcdivider(calcdivround(ticksfreq), AT91SAM7_TIMER_WIDTH, AT91SAM7_TIMER_TAPS, & value, 1);
 	AT91C_BASE_TCB->TCB_TC2.TC_CMR =
 		(AT91C_BASE_TCB->TCB_TC2.TC_CMR & ~ AT91C_TC_CLKS) | tc_cmr_clks [prei];
-	AT91C_BASE_TCB->TCB_TC2.TC_RC = value;	// программирование полного периода
+	AT91C_BASE_TCB->TCB_TC2.TC_RC = value;	// РїСЂРѕРіСЂР°РјРјРёСЂРѕРІР°РЅРёРµ РїРѕР»РЅРѕРіРѕ РїРµСЂРёРѕРґР°
 
 #elif CPUSTYLE_ATMEGA
 
-	// Использование автоматического расчёта предделителя
+	// РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРіРѕ СЂР°СЃС‡С‘С‚Р° РїСЂРµРґРґРµР»РёС‚РµР»СЏ
 	unsigned value;
 	const uint_fast8_t prei = calcdivider(calcdivround(ticksfreq), ATMEGA_TIMER1_WIDTH, ATMEGA_TIMER1_TAPS, & value, 1);
 	// WGM12 = WGMn2 bit in timer 1
 	// (1U << WGM12) - mode4: CTC
-	TCCR1B = (1U << WGM12) | (prei + 1);	// прескалер
-	OCR1A = value;	// делитель - программирование полного периода
+	TCCR1B = (1U << WGM12) | (prei + 1);	// РїСЂРµСЃРєР°Р»РµСЂ
+	OCR1A = value;	// РґРµР»РёС‚РµР»СЊ - РїСЂРѕРіСЂР°РјРјРёСЂРѕРІР°РЅРёРµ РїРѕР»РЅРѕРіРѕ РїРµСЂРёРѕРґР°
 
 #elif CPUSTYLE_ATXMEGA
 
-	// Использование автоматического расчёта предделителя
+	// РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРіРѕ СЂР°СЃС‡С‘С‚Р° РїСЂРµРґРґРµР»РёС‚РµР»СЏ
 	unsigned value;
 	const uint_fast8_t prei = calcdivider(calcdivround(ticksfreq), ATXMEGA_TIMER_WIDTH, ATXMEGA_TIMER_TAPS, & value, 1);
 
-	// программирование таймера
+	// РїСЂРѕРіСЂР°РјРјРёСЂРѕРІР°РЅРёРµ С‚Р°Р№РјРµСЂР°
 	TCC1.CCA = value;	// timer/counter C1, compare register A, see TCC1_CCA_vect
 	TCC1.CTRLA = (prei + 1);
 	TCC1.CTRLB = (TC_WGMODE_FRQ_gc);
 	TCC1.INTCTRLB = (TC_CCAINTLVL_MED_gc);
-	// разрешение прерываний на входе в PMIC
+	// СЂР°Р·СЂРµС€РµРЅРёРµ РїСЂРµСЂС‹РІР°РЅРёР№ РЅР° РІС…РѕРґРµ РІ PMIC
 	PMIC.CTRL |= (PMIC_HILVLEN_bm | PMIC_MEDLVLEN_bm | PMIC_LOLVLEN_bm);
 	
 #elif CPUSTYLE_STM32H7XX
@@ -5960,7 +5960,7 @@ void hardware_elkey_set_speed(uint_fast32_t ticksfreq)
 
 	TIM3->PSC = ((1UL << prei) - 1) & TIM_PSC_PSC;
 	TIM3->ARR = value;
-	TIM3->CR1 = TIM_CR1_CEN | TIM_CR1_ARPE; /* разрешить перезагрузку и включить таймер = перенесено в установку скорости - если счётчик успевал превысить значение ARR - считал до конца */
+	TIM3->CR1 = TIM_CR1_CEN | TIM_CR1_ARPE; /* СЂР°Р·СЂРµС€РёС‚СЊ РїРµСЂРµР·Р°РіСЂСѓР·РєСѓ Рё РІРєР»СЋС‡РёС‚СЊ С‚Р°Р№РјРµСЂ = РїРµСЂРµРЅРµСЃРµРЅРѕ РІ СѓСЃС‚Р°РЅРѕРІРєСѓ СЃРєРѕСЂРѕСЃС‚Рё - РµСЃР»Рё СЃС‡С‘С‚С‡РёРє СѓСЃРїРµРІР°Р» РїСЂРµРІС‹СЃРёС‚СЊ Р·РЅР°С‡РµРЅРёРµ ARR - СЃС‡РёС‚Р°Р» РґРѕ РєРѕРЅС†Р° */
 
 #elif CPUSTYLE_STM32F
 	// TIM2 & TIM5 on CPUSTYLE_STM32F4XX have 32-bit CNT and ARR registers
@@ -5972,7 +5972,7 @@ void hardware_elkey_set_speed(uint_fast32_t ticksfreq)
 
 	TIM3->PSC = ((1UL << prei) - 1) & TIM_PSC_PSC;
 	TIM3->ARR = value;
-	TIM3->CR1 = TIM_CR1_CEN | TIM_CR1_ARPE; /* разрешить перезагрузку и включить таймер = перенесено в установку скорости - если счётчик успевал превысить значение ARR - считал до конца */
+	TIM3->CR1 = TIM_CR1_CEN | TIM_CR1_ARPE; /* СЂР°Р·СЂРµС€РёС‚СЊ РїРµСЂРµР·Р°РіСЂСѓР·РєСѓ Рё РІРєР»СЋС‡РёС‚СЊ С‚Р°Р№РјРµСЂ = РїРµСЂРµРЅРµСЃРµРЅРѕ РІ СѓСЃС‚Р°РЅРѕРІРєСѓ СЃРєРѕСЂРѕСЃС‚Рё - РµСЃР»Рё СЃС‡С‘С‚С‡РёРє СѓСЃРїРµРІР°Р» РїСЂРµРІС‹СЃРёС‚СЊ Р·РЅР°С‡РµРЅРёРµ ARR - СЃС‡РёС‚Р°Р» РґРѕ РєРѕРЅС†Р° */
 
 #elif CPUSTYLE_R7S721
 
@@ -5994,44 +5994,44 @@ void hardware_elkey_set_speed128(uint_fast32_t ticksfreq, int scale)
 {
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
-	// Использование автоматического расчёта предделителя
+	// РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРіРѕ СЂР°СЃС‡С‘С‚Р° РїСЂРµРґРґРµР»РёС‚РµР»СЏ
 	unsigned value;
 	const uint_fast8_t prei = calcdivider(scale * calcdivround(ticksfreq), ATSAM3S_TIMER_WIDTH, ATSAM3S_TIMER_TAPS, & value, 1);
 	TC0->TC_CHANNEL [2].TC_CMR =
 		(TC0->TC_CHANNEL [2].TC_CMR & ~ TC_CMR_TCCLKS_Msk) | tc_cmr_tcclks [prei];
-	TC0->TC_CHANNEL [2].TC_RC = value;	// программирование полного периода
+	TC0->TC_CHANNEL [2].TC_RC = value;	// РїСЂРѕРіСЂР°РјРјРёСЂРѕРІР°РЅРёРµ РїРѕР»РЅРѕРіРѕ РїРµСЂРёРѕРґР°
 
 #elif CPUSTYLE_AT91SAM7S
 
-	// Использование автоматического расчёта предделителя
+	// РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРіРѕ СЂР°СЃС‡С‘С‚Р° РїСЂРµРґРґРµР»РёС‚РµР»СЏ
 	unsigned value;
 	const uint_fast8_t prei = calcdivider(scale * calcdivround(ticksfreq), AT91SAM7_TIMER_WIDTH, AT91SAM7_TIMER_TAPS, & value, 1);
 	AT91C_BASE_TCB->TCB_TC2.TC_CMR =
 		(AT91C_BASE_TCB->TCB_TC2.TC_CMR & ~ AT91C_TC_CLKS) | tc_cmr_clks [prei];
-	AT91C_BASE_TCB->TCB_TC2.TC_RC = value;	// программирование полного периода
+	AT91C_BASE_TCB->TCB_TC2.TC_RC = value;	// РїСЂРѕРіСЂР°РјРјРёСЂРѕРІР°РЅРёРµ РїРѕР»РЅРѕРіРѕ РїРµСЂРёРѕРґР°
 
 #elif CPUSTYLE_ATMEGA
 
-	// Использование автоматического расчёта предделителя
+	// РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРіРѕ СЂР°СЃС‡С‘С‚Р° РїСЂРµРґРґРµР»РёС‚РµР»СЏ
 	unsigned value;
 	const uint_fast8_t prei = calcdivider(scale * calcdivround(ticksfreq), ATMEGA_TIMER1_WIDTH, ATMEGA_TIMER1_TAPS, & value, 1);
 	// WGM12 = WGMn2 bit in timer 1
 	// (1U << WGM12) - mode4: CTC
-	TCCR1B = (1U << WGM12) | (prei + 1);	// прескалер
-	OCR1A = value;	// делитель - программирование полного периода
+	TCCR1B = (1U << WGM12) | (prei + 1);	// РїСЂРµСЃРєР°Р»РµСЂ
+	OCR1A = value;	// РґРµР»РёС‚РµР»СЊ - РїСЂРѕРіСЂР°РјРјРёСЂРѕРІР°РЅРёРµ РїРѕР»РЅРѕРіРѕ РїРµСЂРёРѕРґР°
 
 #elif CPUSTYLE_ATXMEGA
 
-	// Использование автоматического расчёта предделителя
+	// РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРіРѕ СЂР°СЃС‡С‘С‚Р° РїСЂРµРґРґРµР»РёС‚РµР»СЏ
 	unsigned value;
 	const uint_fast8_t prei = calcdivider(scale * calcdivround(ticksfreq), ATXMEGA_TIMER_WIDTH, ATXMEGA_TIMER_TAPS, & value, 1);
 
-	// программирование таймера
+	// РїСЂРѕРіСЂР°РјРјРёСЂРѕРІР°РЅРёРµ С‚Р°Р№РјРµСЂР°
 	TCC1.CCA = value;	// timer/counter C1, compare register A, see TCC1_CCA_vect
 	TCC1.CTRLA = (prei + 1);
 	TCC1.CTRLB = (TC_WGMODE_FRQ_gc);
 	TCC1.INTCTRLB = (TC_CCAINTLVL_MED_gc);
-	// разрешение прерываний на входе в PMIC
+	// СЂР°Р·СЂРµС€РµРЅРёРµ РїСЂРµСЂС‹РІР°РЅРёР№ РЅР° РІС…РѕРґРµ РІ PMIC
 	PMIC.CTRL |= (PMIC_HILVLEN_bm | PMIC_MEDLVLEN_bm | PMIC_LOLVLEN_bm);
 	
 #elif CPUSTYLE_STM32H7XX
@@ -6044,7 +6044,7 @@ void hardware_elkey_set_speed128(uint_fast32_t ticksfreq, int scale)
 
 	TIM3->PSC = ((1UL << prei) - 1) & TIM_PSC_PSC;
 	TIM3->ARR = value;
-	TIM3->CR1 = TIM_CR1_CEN | TIM_CR1_ARPE; /* разрешить перезагрузку и включить таймер = перенесено в установку скорости - если счётчик успевал превысить значение ARR - считал до конца */
+	TIM3->CR1 = TIM_CR1_CEN | TIM_CR1_ARPE; /* СЂР°Р·СЂРµС€РёС‚СЊ РїРµСЂРµР·Р°РіСЂСѓР·РєСѓ Рё РІРєР»СЋС‡РёС‚СЊ С‚Р°Р№РјРµСЂ = РїРµСЂРµРЅРµСЃРµРЅРѕ РІ СѓСЃС‚Р°РЅРѕРІРєСѓ СЃРєРѕСЂРѕСЃС‚Рё - РµСЃР»Рё СЃС‡С‘С‚С‡РёРє СѓСЃРїРµРІР°Р» РїСЂРµРІС‹СЃРёС‚СЊ Р·РЅР°С‡РµРЅРёРµ ARR - СЃС‡РёС‚Р°Р» РґРѕ РєРѕРЅС†Р° */
 
 #elif CPUSTYLE_STM32F
 	// TIM2 & TIM5 on CPUSTYLE_STM32F4XX have 32-bit CNT and ARR registers
@@ -6056,7 +6056,7 @@ void hardware_elkey_set_speed128(uint_fast32_t ticksfreq, int scale)
 
 	TIM3->PSC = ((1UL << prei) - 1) & TIM_PSC_PSC;
 	TIM3->ARR = value;
-	TIM3->CR1 = TIM_CR1_CEN | TIM_CR1_ARPE; /* разрешить перезагрузку и включить таймер = перенесено в установку скорости - если счётчик успевал превысить значение ARR - считал до конца */
+	TIM3->CR1 = TIM_CR1_CEN | TIM_CR1_ARPE; /* СЂР°Р·СЂРµС€РёС‚СЊ РїРµСЂРµР·Р°РіСЂСѓР·РєСѓ Рё РІРєР»СЋС‡РёС‚СЊ С‚Р°Р№РјРµСЂ = РїРµСЂРµРЅРµСЃРµРЅРѕ РІ СѓСЃС‚Р°РЅРѕРІРєСѓ СЃРєРѕСЂРѕСЃС‚Рё - РµСЃР»Рё СЃС‡С‘С‚С‡РёРє СѓСЃРїРµРІР°Р» РїСЂРµРІС‹СЃРёС‚СЊ Р·РЅР°С‡РµРЅРёРµ ARR - СЃС‡РёС‚Р°Р» РґРѕ РєРѕРЅС†Р° */
 
 #elif CPUSTYLE_R7S721
 
@@ -6130,7 +6130,7 @@ void hardware_lfm_timer_initialize(void)
 	// TC2 used for generate 1/20 of morse dot length intervals
 	// TC0 used as LFM periodic timer
 	//
-	PMC->PMC_PCER0 = (1UL << ID_TC0);	// разрешить тактированние этого блока (ID_TC0..ID_TC5 avaliable)
+	PMC->PMC_PCER0 = (1UL << ID_TC0);	// СЂР°Р·СЂРµС€РёС‚СЊ С‚Р°РєС‚РёСЂРѕРІР°РЅРЅРёРµ СЌС‚РѕРіРѕ Р±Р»РѕРєР° (ID_TC0..ID_TC5 avaliable)
 
 	TC0->TC_CHANNEL [0].TC_CMR = 
 	                (TC_CMR_CLKI * 0)
@@ -6152,7 +6152,7 @@ void hardware_lfm_timer_initialize(void)
 	// TC2 used for electronic key synchronisation with 1/20 of dot length
 	// TC2 used for generate 1/20 of morse dot length intervals
 	//
-	AT91C_BASE_PMC->PMC_PCER = (1UL << AT91C_ID_TC0); // разрешить тактированние этого блока (AT91C_ID_TC0..AT91C_ID_TC2 avaliable)
+	AT91C_BASE_PMC->PMC_PCER = (1UL << AT91C_ID_TC0); // СЂР°Р·СЂРµС€РёС‚СЊ С‚Р°РєС‚РёСЂРѕРІР°РЅРЅРёРµ СЌС‚РѕРіРѕ Р±Р»РѕРєР° (AT91C_ID_TC0..AT91C_ID_TC2 avaliable)
 
 	AT91C_BASE_TCB->TCB_TC0.TC_CMR = 
 	                (AT91C_TC_CLKI * 0)
@@ -6186,21 +6186,21 @@ void hardware_lfm_setupdatefreq(unsigned ticksfreq)
 {
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
-	// Использование автоматического расчёта предделителя
+	// РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРіРѕ СЂР°СЃС‡С‘С‚Р° РїСЂРµРґРґРµР»РёС‚РµР»СЏ
 	unsigned value;
 	const uint_fast8_t prei = calcdivider(calcdivround(ticksfreq), ATSAM3S_TIMER_WIDTH, ATSAM3S_TIMER_TAPS, & value, 1);
 	TC0->TC_CHANNEL [0].TC_CMR =
 		(TC0->TC_CHANNEL [0].TC_CMR & ~ TC_CMR_TCCLKS_Msk) | tc_cmr_tcclks [prei];
-	TC0->TC_CHANNEL [0].TC_RC = value;	// программирование полного периода
+	TC0->TC_CHANNEL [0].TC_RC = value;	// РїСЂРѕРіСЂР°РјРјРёСЂРѕРІР°РЅРёРµ РїРѕР»РЅРѕРіРѕ РїРµСЂРёРѕРґР°
 
 #elif CPUSTYLE_AT91SAM7S
 
-	// Использование автоматического расчёта предделителя
+	// РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРіРѕ СЂР°СЃС‡С‘С‚Р° РїСЂРµРґРґРµР»РёС‚РµР»СЏ
 	unsigned value;
 	const uint_fast8_t prei = calcdivider(calcdivround(ticksfreq), AT91SAM7_TIMER_WIDTH, AT91SAM7_TIMER_TAPS, & value, 1);
 	AT91C_BASE_TCB->TCB_TC0.TC_CMR =
 		(AT91C_BASE_TCB->TCB_TC0.TC_CMR & ~ AT91C_TC_CLKS) | tc_cmr_clks [prei];
-	AT91C_BASE_TCB->TCB_TC0.TC_RC = value;	// программирование полного периода
+	AT91C_BASE_TCB->TCB_TC0.TC_RC = value;	// РїСЂРѕРіСЂР°РјРјРёСЂРѕРІР°РЅРёРµ РїРѕР»РЅРѕРіРѕ РїРµСЂРёРѕРґР°
 
 #endif
 }
@@ -6242,7 +6242,7 @@ void hardware_sdhost_setbuswidth(uint_fast8_t use4bit)
 void hardware_sdhost_setspeed(unsigned long ticksfreq)
 {
 #if CPUSTYLE_R7S721
-	// Использование автоматического расчёта предделителя
+	// РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРіРѕ СЂР°СЃС‡С‘С‚Р° РїСЂРµРґРґРµР»РёС‚РµР»СЏ
 	//unsigned long ticksfreq = 400000uL;	// 400 kHz -> 260 kHz
 	//unsigned long ticksfreq = 24000000uL;	// 24 MHz -> 16.666 MHz
 	unsigned value;
@@ -6269,7 +6269,7 @@ void hardware_sdhost_setspeed(unsigned long ticksfreq)
 #elif CPUSTYLE_STM32F4XX 
 
 	#if defined (RCC_DCKCFGR2_SDIOSEL)
-		// stm32f446xx и некоторые другие
+		// stm32f446xx Рё РЅРµРєРѕС‚РѕСЂС‹Рµ РґСЂСѓРіРёРµ
 
 		RCC->DCKCFGR2 = (RCC->DCKCFGR2 & ~ (RCC_DCKCFGR2_SDIOSEL)) |
 			0 * RCC_DCKCFGR2_SDIOSEL |	// 0: 48 MHz clock is selected as SDMMC clock
@@ -6282,11 +6282,11 @@ void hardware_sdhost_setspeed(unsigned long ticksfreq)
 			0 * RCC_DCKCFGR_SDIOSEL |	// 0: 48 MHz clock is selected as SDMMC clock
 			0;
 	#else
-		// Остальные
+		// РћСЃС‚Р°Р»СЊРЅС‹Рµ
 	#endif
 
-	const uint_fast32_t stm32f4xx_pllq = arm_hardware_stm32f7xx_pllq_initialize();	// Настроить выход PLLQ на 48 МГц
-	// Использование автоматического расчёта делителя
+	const uint_fast32_t stm32f4xx_pllq = arm_hardware_stm32f7xx_pllq_initialize();	// РќР°СЃС‚СЂРѕРёС‚СЊ РІС‹С…РѕРґ PLLQ РЅР° 48 РњР“С†
+	// РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРіРѕ СЂР°СЃС‡С‘С‚Р° РґРµР»РёС‚РµР»СЏ
 	// PLLQ: Main PLL (PLL) division factor for USB OTG FS, SDIO and random number generator clocks
 	// Should be 48 MHz or less for SDIO and 48 MHz with small tolerance.
 	// See RCC_PLLCFGR_PLLQ usage
@@ -6303,14 +6303,14 @@ void hardware_sdhost_setspeed(unsigned long ticksfreq)
 		0 * RCC_DCKCFGR2_SDMMC1SEL |	// 0: 48 MHz clock is selected as SDMMC clock
 		0;
 
-	const uint_fast32_t stm32f7xx_pllq = arm_hardware_stm32f7xx_pllq_initialize();	// Настроить выход PLLQ на 48 МГц
-	// Использование автоматического расчёта делителя
+	const uint_fast32_t stm32f7xx_pllq = arm_hardware_stm32f7xx_pllq_initialize();	// РќР°СЃС‚СЂРѕРёС‚СЊ РІС‹С…РѕРґ PLLQ РЅР° 48 РњР“С†
+	// РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРіРѕ СЂР°СЃС‡С‘С‚Р° РґРµР»РёС‚РµР»СЏ
 	// PLLQ: Main PLL (PLL) division factor for USB OTG FS, SDIO and random number generator clocks
 	// Should be 48 MHz or less for SDIO and 48 MHz with small tolerance.
 	// See RCC_PLLCFGR_PLLQ usage
 	const uint32_t SDMMCCLK = PLL_FREQ / stm32f7xx_pllq;
-	// Использование автоматического расчёта делителя
-	// Источником тактирования SDMMC сейчас установлен внутренний генератор 48 МГц
+	// РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРіРѕ СЂР°СЃС‡С‘С‚Р° РґРµР»РёС‚РµР»СЏ
+	// РСЃС‚РѕС‡РЅРёРєРѕРј С‚Р°РєС‚РёСЂРѕРІР°РЅРёСЏ SDMMC СЃРµР№С‡Р°СЃ СѓСЃС‚Р°РЅРѕРІР»РµРЅ РІРЅСѓС‚СЂРµРЅРЅРёР№ РіРµРЅРµСЂР°С‚РѕСЂ 48 РњР“С†
 	//const uint32_t stm32f4xx_48mhz = PLL_FREQ / stm32f7xx_pllq;
 	const unsigned value = ulmin(calcdivround2(SDMMCCLK, ticksfreq) - 2, 255);
 
@@ -6326,14 +6326,14 @@ void hardware_sdhost_setspeed(unsigned long ticksfreq)
 	//	0 * RCC_DCKCFGR2_SDMMC1SEL |	// 0: 48 MHz clock is selected as SDMMC clock
 	//	0;
 
-	const uint_fast32_t stm32h7xx_pllq = arm_hardware_stm32f7xx_pllq_initialize();	// Настроить выход PLLQ на 48 МГц
-	// Использование автоматического расчёта делителя
+	const uint_fast32_t stm32h7xx_pllq = arm_hardware_stm32f7xx_pllq_initialize();	// РќР°СЃС‚СЂРѕРёС‚СЊ РІС‹С…РѕРґ PLLQ РЅР° 48 РњР“С†
+	// РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРіРѕ СЂР°СЃС‡С‘С‚Р° РґРµР»РёС‚РµР»СЏ
 	// PLLQ: Main PLL (PLL) division factor for USB OTG FS, SDIO and random number generator clocks
 	// Should be 48 MHz or less for SDIO and 48 MHz with small tolerance.
 	// See RCC_PLLCFGR_PLLQ usage
 	const uint32_t SDMMCCLK = PLL_FREQ / stm32h7xx_pllq;
-	// Использование автоматического расчёта делителя
-	// Источником тактирования SDMMC сейчас установлен внутренний генератор 48 МГц
+	// РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРіРѕ СЂР°СЃС‡С‘С‚Р° РґРµР»РёС‚РµР»СЏ
+	// РСЃС‚РѕС‡РЅРёРєРѕРј С‚Р°РєС‚РёСЂРѕРІР°РЅРёСЏ SDMMC СЃРµР№С‡Р°СЃ СѓСЃС‚Р°РЅРѕРІР»РµРЅ РІРЅСѓС‚СЂРµРЅРЅРёР№ РіРµРЅРµСЂР°С‚РѕСЂ 48 РњР“С†
 	//const uint32_t stm32f4xx_48mhz = PLL_FREQ / stm32h7xx_pllq;
 	const unsigned value = ulmin(calcdivround2(SDMMCCLK / 2, ticksfreq), 0x03FF);
 
@@ -6359,7 +6359,7 @@ void r7s721_sdhi0_dma_handler(void)
 }
 
 #elif CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX
-// TODO: убрать в sdcard.c
+// TODO: СѓР±СЂР°С‚СЊ РІ sdcard.c
 /*
 void DMA2_Stream6_IRQHandler(void)
 {
@@ -6372,7 +6372,7 @@ void hardware_sdhost_initialize(void)
 {
 #if CPUSTYLE_R7S721
 
-	// Инициализация SD CARD интерфейса на R7S721
+	// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ SD CARD РёРЅС‚РµСЂС„РµР№СЃР° РЅР° R7S721
 	/* ---- Supply clock to the SDHI(channel 0) ---- */
 	CPG.STBCR12 &= ~ ((1U << 3) | (1U << 2));	// Module Stop 123, 122  00: The SD host interface 00 runs.
 	(void) CPG.STBCR12;			/* Dummy read */
@@ -6390,19 +6390,19 @@ void hardware_sdhost_initialize(void)
 		GIC_EnableIRQ(int_id);
 	}
 
-	HARDWARE_SDIO_INITIALIZE();	// Подсоединить контроллер к выводам процессора
+	HARDWARE_SDIO_INITIALIZE();	// РџРѕРґСЃРѕРµРґРёРЅРёС‚СЊ РєРѕРЅС‚СЂРѕР»Р»РµСЂ Рє РІС‹РІРѕРґР°Рј РїСЂРѕС†РµСЃСЃРѕСЂР°
 
 #elif CPUSTYLE_STM32F4XX 
 
-	RCC->APB2ENR |= RCC_APB2ENR_SDIOEN;   // подаем тактирование на SDIO
+	RCC->APB2ENR |= RCC_APB2ENR_SDIOEN;   // РїРѕРґР°РµРј С‚Р°РєС‚РёСЂРѕРІР°РЅРёРµ РЅР° SDIO
 	__DSB();
 
-	// hwrdware flow control отключен - от этого зависит проверка состояния txfifo & rxfifo
+	// hwrdware flow control РѕС‚РєР»СЋС‡РµРЅ - РѕС‚ СЌС‚РѕРіРѕ Р·Р°РІРёСЃРёС‚ РїСЂРѕРІРµСЂРєР° СЃРѕСЃС‚РѕСЏРЅРёСЏ txfifo & rxfifo
 	SDIO->CLKCR =
 		1 * SDIO_CLKCR_CLKEN |
 		(255 & SDIO_CLKCR_CLKDIV_Msk) |
 		1 * SDIO_CLKCR_HWFC_EN |
-		1 * SDIO_CLKCR_PWRSAV |		// выключается clock без обращений
+		1 * SDIO_CLKCR_PWRSAV |		// РІС‹РєР»СЋС‡Р°РµС‚СЃСЏ clock Р±РµР· РѕР±СЂР°С‰РµРЅРёР№
 		0;
 
 	hardware_sdhost_setbuswidth(0);
@@ -6413,21 +6413,21 @@ void hardware_sdhost_initialize(void)
 	NVIC_SetPriority(DMA2_Stream6_IRQn, ARM_SYSTEM_PRIORITY);
 	NVIC_EnableIRQ(DMA2_Stream6_IRQn);	// DMA2_Stream6_IRQHandler() enable
 
-	HARDWARE_SDIO_INITIALIZE();	// Подсоединить контроллер к выводам процессора
-	// разрешить тактирование карты памяти
+	HARDWARE_SDIO_INITIALIZE();	// РџРѕРґСЃРѕРµРґРёРЅРёС‚СЊ РєРѕРЅС‚СЂРѕР»Р»РµСЂ Рє РІС‹РІРѕРґР°Рј РїСЂРѕС†РµСЃСЃРѕСЂР°
+	// СЂР°Р·СЂРµС€РёС‚СЊ С‚Р°РєС‚РёСЂРѕРІР°РЅРёРµ РєР°СЂС‚С‹ РїР°РјСЏС‚Рё
 	SDIO->POWER = 3 * SDIO_POWER_PWRCTRL_0;
 
 #elif CPUSTYLE_STM32F7XX
 
-	RCC->APB2ENR |= RCC_APB2ENR_SDMMC1EN;   // подаем тактирование на SDMMC1
+	RCC->APB2ENR |= RCC_APB2ENR_SDMMC1EN;   // РїРѕРґР°РµРј С‚Р°РєС‚РёСЂРѕРІР°РЅРёРµ РЅР° SDMMC1
 	__DSB();
 	
-	// hwrdware flow control отключен - от этого зависит проверка состояния txfifo & rxfifo
+	// hwrdware flow control РѕС‚РєР»СЋС‡РµРЅ - РѕС‚ СЌС‚РѕРіРѕ Р·Р°РІРёСЃРёС‚ РїСЂРѕРІРµСЂРєР° СЃРѕСЃС‚РѕСЏРЅРёСЏ txfifo & rxfifo
 	SDMMC1->CLKCR =
 		1 * SDMMC_CLKCR_CLKEN |
 		(255 & SDMMC_CLKCR_CLKDIV) |
 		1 * SDMMC_CLKCR_HWFC_EN |
-		1 * SDMMC_CLKCR_PWRSAV |		// выключается clock без обращений
+		1 * SDMMC_CLKCR_PWRSAV |		// РІС‹РєР»СЋС‡Р°РµС‚СЃСЏ clock Р±РµР· РѕР±СЂР°С‰РµРЅРёР№
 		0;
 
 	hardware_sdhost_setbuswidth(0);
@@ -6438,23 +6438,23 @@ void hardware_sdhost_initialize(void)
 	NVIC_SetPriority(DMA2_Stream6_IRQn, ARM_SYSTEM_PRIORITY);
 	NVIC_EnableIRQ(DMA2_Stream6_IRQn);	// DMA2_Stream6_IRQHandler() enable
 
-	HARDWARE_SDIO_INITIALIZE();	// Подсоединить контроллер к выводам процессора
-	// разрешить тактирование карты памяти
+	HARDWARE_SDIO_INITIALIZE();	// РџРѕРґСЃРѕРµРґРёРЅРёС‚СЊ РєРѕРЅС‚СЂРѕР»Р»РµСЂ Рє РІС‹РІРѕРґР°Рј РїСЂРѕС†РµСЃСЃРѕСЂР°
+	// СЂР°Р·СЂРµС€РёС‚СЊ С‚Р°РєС‚РёСЂРѕРІР°РЅРёРµ РєР°СЂС‚С‹ РїР°РјСЏС‚Рё
 	SDMMC1->POWER = 3 * SDMMC_POWER_PWRCTRL_0;
 
 #elif CPUSTYLE_STM32H7XX
 
-	RCC->AHB3ENR |= RCC_AHB3ENR_SDMMC1EN;   // подаем тактирование на SDMMC1
+	RCC->AHB3ENR |= RCC_AHB3ENR_SDMMC1EN;   // РїРѕРґР°РµРј С‚Р°РєС‚РёСЂРѕРІР°РЅРёРµ РЅР° SDMMC1
 	(void) RCC->AHB3ENR;
 	__DSB();
 
-	HARDWARE_SDIO_INITIALIZE();	// Подсоединить контроллер к выводам процессора
+	HARDWARE_SDIO_INITIALIZE();	// РџРѕРґСЃРѕРµРґРёРЅРёС‚СЊ РєРѕРЅС‚СЂРѕР»Р»РµСЂ Рє РІС‹РІРѕРґР°Рј РїСЂРѕС†РµСЃСЃРѕСЂР°
 	
-	// hwrdware flow control отключен - от этого зависит проверка состояния txfifo & rxfifo
+	// hwrdware flow control РѕС‚РєР»СЋС‡РµРЅ - РѕС‚ СЌС‚РѕРіРѕ Р·Р°РІРёСЃРёС‚ РїСЂРѕРІРµСЂРєР° СЃРѕСЃС‚РѕСЏРЅРёСЏ txfifo & rxfifo
 	SDMMC1->CLKCR =
 		SDMMC_CLKCR_CLKDIV |
 		1 * SDMMC_CLKCR_HWFC_EN |
-		1 * SDMMC_CLKCR_PWRSAV |		// выключается clock без обращений
+		1 * SDMMC_CLKCR_PWRSAV |		// РІС‹РєР»СЋС‡Р°РµС‚СЃСЏ clock Р±РµР· РѕР±СЂР°С‰РµРЅРёР№
 		0;
 
 	hardware_sdhost_setbuswidth(0);
@@ -6463,7 +6463,7 @@ void hardware_sdhost_initialize(void)
 	NVIC_SetPriority(SDMMC1_IRQn, ARM_SYSTEM_PRIORITY);
 	NVIC_EnableIRQ(SDMMC1_IRQn);	// SDIO_IRQHandler() enable
 
-	// разрешить тактирование карты памяти
+	// СЂР°Р·СЂРµС€РёС‚СЊ С‚Р°РєС‚РёСЂРѕРІР°РЅРёРµ РєР°СЂС‚С‹ РїР°РјСЏС‚Рё
 	SDMMC1->POWER = 3 * SDMMC_POWER_PWRCTRL_0;
 
 #else
@@ -6543,8 +6543,8 @@ static void RAMFUNC_NONILINE AT91F_FIQHandler(void)
 	}
 }
 
-// это прерывание происходит при чтении IVR (interrupt vector register)
-// без причины - при отсутствии запомненного запроса.
+// СЌС‚Рѕ РїСЂРµСЂС‹РІР°РЅРёРµ РїСЂРѕРёСЃС…РѕРґРёС‚ РїСЂРё С‡С‚РµРЅРёРё IVR (interrupt vector register)
+// Р±РµР· РїСЂРёС‡РёРЅС‹ - РїСЂРё РѕС‚СЃСѓС‚СЃС‚РІРёРё Р·Р°РїРѕРјРЅРµРЅРЅРѕРіРѕ Р·Р°РїСЂРѕСЃР°.
 static void RAMFUNC_NONILINE AT91F_Spurious_handler(void)
 {
 	//for (;;)
@@ -6581,22 +6581,22 @@ static void lowlevel_init_direct_clock(void)
 }
 #endif
 /* 
-  инициализация внутреннего умножителя частоты.
-  Вход - 18.432 МГц, кварцевый резонатор
-  внутренняя тактовая - 48 МГц,
-  частота генератора - 96 МГц
-  Частота сравнения PLL = 1.316571 МГц
+  РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РІРЅСѓС‚СЂРµРЅРЅРµРіРѕ СѓРјРЅРѕР¶РёС‚РµР»СЏ С‡Р°СЃС‚РѕС‚С‹.
+  Р’С…РѕРґ - 18.432 РњР“С†, РєРІР°СЂС†РµРІС‹Р№ СЂРµР·РѕРЅР°С‚РѕСЂ
+  РІРЅСѓС‚СЂРµРЅРЅСЏСЏ С‚Р°РєС‚РѕРІР°СЏ - 48 РњР“С†,
+  С‡Р°СЃС‚РѕС‚Р° РіРµРЅРµСЂР°С‚РѕСЂР° - 96 РњР“С†
+  Р§Р°СЃС‚РѕС‚Р° СЃСЂР°РІРЅРµРЅРёСЏ PLL = 1.316571 РњР“С†
 */
 /* 
-  инициализация внутреннего умножителя частоты.
-  Вход - 12 МГц, кварцевый резонатор
-  внутренняя тактовая - 48 МГц,
-  частота генератора - 96 МГц
-  Частота сравнения PLL = 12 МГц
+  РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РІРЅСѓС‚СЂРµРЅРЅРµРіРѕ СѓРјРЅРѕР¶РёС‚РµР»СЏ С‡Р°СЃС‚РѕС‚С‹.
+  Р’С…РѕРґ - 12 РњР“С†, РєРІР°СЂС†РµРІС‹Р№ СЂРµР·РѕРЅР°С‚РѕСЂ
+  РІРЅСѓС‚СЂРµРЅРЅСЏСЏ С‚Р°РєС‚РѕРІР°СЏ - 48 РњР“С†,
+  С‡Р°СЃС‚РѕС‚Р° РіРµРЅРµСЂР°С‚РѕСЂР° - 96 РњР“С†
+  Р§Р°СЃС‚РѕС‚Р° СЃСЂР°РІРЅРµРЅРёСЏ PLL = 12 РњР“С†
 */
 static void lowlevel_init_pll_clock_xtal(
-	unsigned osc_mul,	// Умножитель петли ФАПЧ
-	unsigned osc_div	// Делитель опорного сигнала петли ФАПЧ
+	unsigned osc_mul,	// РЈРјРЅРѕР¶РёС‚РµР»СЊ РїРµС‚Р»Рё Р¤РђРџР§
+	unsigned osc_div	// Р”РµР»РёС‚РµР»СЊ РѕРїРѕСЂРЅРѕРіРѕ СЃРёРіРЅР°Р»Р° РїРµС‚Р»Рё Р¤РђРџР§
 	)
 {
 	// before reprogramming - set safe waitstates
@@ -6658,9 +6658,9 @@ static void lowlevel_init_pll_clock_xtal(
 }
 
 /* 
-  инициализация внутреннего тактового генератора без умножителя
-  Вход - кварцевый резонатор
-  внутренняя тактовая - частота резонатора,
+  РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РІРЅСѓС‚СЂРµРЅРЅРµРіРѕ С‚Р°РєС‚РѕРІРѕРіРѕ РіРµРЅРµСЂР°С‚РѕСЂР° Р±РµР· СѓРјРЅРѕР¶РёС‚РµР»СЏ
+  Р’С…РѕРґ - РєРІР°СЂС†РµРІС‹Р№ СЂРµР·РѕРЅР°С‚РѕСЂ
+  РІРЅСѓС‚СЂРµРЅРЅСЏСЏ С‚Р°РєС‚РѕРІР°СЏ - С‡Р°СЃС‚РѕС‚Р° СЂРµР·РѕРЅР°С‚РѕСЂР°,
 */
 static void lowlevel_init_pll_clock_from_xtal(void)
 {
@@ -6711,8 +6711,8 @@ static void lowlevel_init_pll_clock_from_xtal(void)
 /// Performs the low-level initialization of the chip.
 //------------------------------------------------------------------------------
 void at91sam9x_clocks(	
-	unsigned osc_mul,	// Умножитель петли ФАПЧ (96)
-	unsigned osc_div	// Делитель опорного сигнала петли ФАПЧ (9)
+	unsigned osc_mul,	// РЈРјРЅРѕР¶РёС‚РµР»СЊ РїРµС‚Р»Рё Р¤РђРџР§ (96)
+	unsigned osc_div	// Р”РµР»РёС‚РµР»СЊ РѕРїРѕСЂРЅРѕРіРѕ СЃРёРіРЅР°Р»Р° РїРµС‚Р»Рё Р¤РђРџР§ (9)
 	)
 {
 	/// Main oscillator startup time (in number of slow clock ticks). 
@@ -6868,24 +6868,24 @@ static void lowlevwl_interrupts_init(void)
 	
 }
 /*
-Тактирование все же надо включать до подключения, причем аж в двух местах:
-Код
+РўР°РєС‚РёСЂРѕРІР°РЅРёРµ РІСЃРµ Р¶Рµ РЅР°РґРѕ РІРєР»СЋС‡Р°С‚СЊ РґРѕ РїРѕРґРєР»СЋС‡РµРЅРёСЏ, РїСЂРёС‡РµРј Р°Р¶ РІ РґРІСѓС… РјРµСЃС‚Р°С…:
+РљРѕРґ
     AT91C_BASE_PMC->PMC_SCER = AT91C_PMC_UDP;
     AT91C_BASE_PMC->PMC_PCER = 1UL << AT91C_ID_UDP;
 
 
 */
 
-// отключение неиспользуемого USB порта.
+// РѕС‚РєР»СЋС‡РµРЅРёРµ РЅРµРёСЃРїРѕР»СЊР·СѓРµРјРѕРіРѕ USB РїРѕСЂС‚Р°.
 static void usb_disable(void)
 {
 #if defined(AT91C_ID_UDP)
     AT91C_BASE_PMC->PMC_SCER = AT91C_PMC_UDP;
-	AT91C_BASE_PMC->PMC_PCER = 1UL << AT91C_ID_UDP; // разрешить тактированние этого блока
+	AT91C_BASE_PMC->PMC_PCER = 1UL << AT91C_ID_UDP; // СЂР°Р·СЂРµС€РёС‚СЊ С‚Р°РєС‚РёСЂРѕРІР°РЅРЅРёРµ СЌС‚РѕРіРѕ Р±Р»РѕРєР°
 
-	AT91C_BASE_UDP->UDP_TXVC = AT91C_UDP_TXVDIS;	// запрет usb приемо-передатчика
+	AT91C_BASE_UDP->UDP_TXVC = AT91C_UDP_TXVDIS;	// Р·Р°РїСЂРµС‚ usb РїСЂРёРµРјРѕ-РїРµСЂРµРґР°С‚С‡РёРєР°
 
-	AT91C_BASE_PMC->PMC_PCDR = 1UL << AT91C_ID_UDP; // запретить тактированние этого блока
+	AT91C_BASE_PMC->PMC_PCDR = 1UL << AT91C_ID_UDP; // Р·Р°РїСЂРµС‚РёС‚СЊ С‚Р°РєС‚РёСЂРѕРІР°РЅРЅРёРµ СЌС‚РѕРіРѕ Р±Р»РѕРєР°
 	AT91C_BASE_PMC->PMC_SCDR = AT91C_PMC_UDP;
 #endif // AT91C_ID_UDP
 }
@@ -6931,20 +6931,20 @@ static void program_mckr_switchtomain(void)
 }
 
 static void program_use_xtal(
-	int useXtalFlag	/* 0 - использование RC генератора, не-0 - использование кварцевого генератора */
+	int useXtalFlag	/* 0 - РёСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ RC РіРµРЅРµСЂР°С‚РѕСЂР°, РЅРµ-0 - РёСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ РєРІР°СЂС†РµРІРѕРіРѕ РіРµРЅРµСЂР°С‚РѕСЂР° */
 	)
 {
-	// бит CKGR_MOR_MOSCSEL - источник MAINCK это кварцевый генератор
+	// Р±РёС‚ CKGR_MOR_MOSCSEL - РёСЃС‚РѕС‡РЅРёРє MAINCK СЌС‚Рѕ РєРІР°СЂС†РµРІС‹Р№ РіРµРЅРµСЂР°С‚РѕСЂ
 	const unsigned long mor = PMC->CKGR_MOR & ~ CKGR_MOR_KEY_Msk;
 	if (((mor & CKGR_MOR_MOSCSEL) != 0) == (useXtalFlag != 0))
-		return;		// переключение не требуется
+		return;		// РїРµСЂРµРєР»СЋС‡РµРЅРёРµ РЅРµ С‚СЂРµР±СѓРµС‚СЃСЏ
 
 	if (useXtalFlag != 0)
 		PMC->CKGR_MOR = CKGR_MOR_KEY(0x37) | (mor | CKGR_MOR_MOSCSEL);
 	else
 		PMC->CKGR_MOR = CKGR_MOR_KEY(0x37) | (mor & ~ CKGR_MOR_MOSCSEL);
 
-	// ожидание переключения кварцевого генератора
+	// РѕР¶РёРґР°РЅРёРµ РїРµСЂРµРєР»СЋС‡РµРЅРёСЏ РєРІР°СЂС†РµРІРѕРіРѕ РіРµРЅРµСЂР°С‚РѕСЂР°
 	while ((PMC->PMC_SR & PMC_SR_MOSCSELS) == 0)
 		;
 }
@@ -6953,13 +6953,13 @@ static void program_use_xtal(
 static void program_enable_RC_12MHz(void)
 {
 #ifdef CKGR_MOR_MOSCRCF_12_MHz
-    PMC->CKGR_MOR = (PMC->CKGR_MOR & ~ (CKGR_MOR_MOSCRCF_Msk | CKGR_MOR_KEY_Msk)) | // остальные биты не трогаем
+    PMC->CKGR_MOR = (PMC->CKGR_MOR & ~ (CKGR_MOR_MOSCRCF_Msk | CKGR_MOR_KEY_Msk)) | // РѕСЃС‚Р°Р»СЊРЅС‹Рµ Р±РёС‚С‹ РЅРµ С‚СЂРѕРіР°РµРј
 		CKGR_MOR_KEY(0x37) | CKGR_MOR_MOSCRCEN | CKGR_MOR_MOSCRCF_12_MHz;
 #else
-    PMC->CKGR_MOR = (PMC->CKGR_MOR & ~ (CKGR_MOR_MOSCRCF_Msk | CKGR_MOR_KEY_Msk)) | // остальные биты не трогаем
+    PMC->CKGR_MOR = (PMC->CKGR_MOR & ~ (CKGR_MOR_MOSCRCF_Msk | CKGR_MOR_KEY_Msk)) | // РѕСЃС‚Р°Р»СЊРЅС‹Рµ Р±РёС‚С‹ РЅРµ С‚СЂРѕРіР°РµРј
 		CKGR_MOR_KEY(0x37) | CKGR_MOR_MOSCRCEN | CKGR_MOR_MOSCRCF_12MHZ;
 #endif
-	// ожидание запуска RC генератора
+	// РѕР¶РёРґР°РЅРёРµ Р·Р°РїСѓСЃРєР° RC РіРµРЅРµСЂР°С‚РѕСЂР°
     while ((PMC->PMC_SR & PMC_SR_MOSCRCS) == 0)	
 		;
 }
@@ -6981,14 +6981,14 @@ static void program_enable_xtal(void)
 {
 	const unsigned long mor = PMC->CKGR_MOR & ~ (CKGR_MOR_KEY_Msk | CKGR_MOR_MOSCXTST_Msk);
 	if ((mor & CKGR_MOR_MOSCXTEN) != 0)
-		return;		// кварцевый генератор уже запущен
+		return;		// РєРІР°СЂС†РµРІС‹Р№ РіРµРЅРµСЂР°С‚РѕСЂ СѓР¶Рµ Р·Р°РїСѓС‰РµРЅ
 
     PMC->CKGR_MOR = 
-		mor |	// стврые значения битов
+		mor |	// СЃС‚РІСЂС‹Рµ Р·РЅР°С‡РµРЅРёСЏ Р±РёС‚РѕРІ
 		CKGR_MOR_KEY(0x37) | 
 		CKGR_MOR_MOSCXTST(128) | 
 		CKGR_MOR_MOSCXTEN;
-	// ожидание запуска кварцевого генератора
+	// РѕР¶РёРґР°РЅРёРµ Р·Р°РїСѓСЃРєР° РєРІР°СЂС†РµРІРѕРіРѕ РіРµРЅРµСЂР°С‚РѕСЂР°
     while ((PMC->PMC_SR & PMC_SR_MOSCXTS) == 0)
 		;
 }
@@ -6998,19 +6998,19 @@ static void program_enable_plla(unsigned pllmul, unsigned plldiv)
 #ifdef CKGR_PLLAR_ONE
     /* Initialize PLLA */
     PMC->CKGR_PLLAR = 
-		(CKGR_PLLAR_ONE |	// всегда должен быть установлен
+		(CKGR_PLLAR_ONE |	// РІСЃРµРіРґР° РґРѕР»Р¶РµРЅ Р±С‹С‚СЊ СѓСЃС‚Р°РЅРѕРІР»РµРЅ
 		((pllmul - 1) << CKGR_PLLAR_MULA_Pos) | 
 		(0x4 << CKGR_PLLAR_PLLACOUNT_Pos) | 
 		(plldiv << CKGR_PLLAR_DIVA_Pos));
 #else
     /* Initialize PLLA */
     PMC->CKGR_PLLAR = 
-		(CKGR_PLLAR_STUCKTO1 |	// всегда должен быть установлен
+		(CKGR_PLLAR_STUCKTO1 |	// РІСЃРµРіРґР° РґРѕР»Р¶РµРЅ Р±С‹С‚СЊ СѓСЃС‚Р°РЅРѕРІР»РµРЅ
 		((pllmul - 1) << CKGR_PLLAR_MULA_Pos) | 
 		(0x4 << CKGR_PLLAR_PLLACOUNT_Pos) | 
 		(plldiv << CKGR_PLLAR_DIVA_Pos));
 #endif
-	// Ожидание запуска PLL A
+	// РћР¶РёРґР°РЅРёРµ Р·Р°РїСѓСЃРєР° PLL A
     while (!(PMC->PMC_SR & PMC_SR_LOCKA))
 		;
 }
@@ -7026,7 +7026,7 @@ static void program_enable_pllb(void)
 
     /* Initialize PLLA */
     PMC->CKGR_PLLBR = 
-		//CKGR_PLLBR_STUCKTO1 |	// всегда должен быть установлен
+		//CKGR_PLLBR_STUCKTO1 |	// РІСЃРµРіРґР° РґРѕР»Р¶РµРЅ Р±С‹С‚СЊ СѓСЃС‚Р°РЅРѕРІР»РµРЅ
 		((osc_mul - 1) << CKGR_PLLBR_MULB_Pos) | 
 		(0x1 << CKGR_PLLBR_PLLBCOUNT_Pos) | 
 		(osc_div << CKGR_PLLBR_DIVB_Pos);
@@ -7049,15 +7049,15 @@ static void program_mckr_switchtoslow(void)
 #endif
 }
 
-// В описании процессора упоминается о том, что модификацию EEFC_FMR
-// нельзя выполняить кодом из FLASH ROM. Данная пфункция копируется в SRAM
-// и работает оттуда
+// Р’ РѕРїРёСЃР°РЅРёРё РїСЂРѕС†РµСЃСЃРѕСЂР° СѓРїРѕРјРёРЅР°РµС‚СЃСЏ Рѕ С‚РѕРј, С‡С‚Рѕ РјРѕРґРёС„РёРєР°С†РёСЋ EEFC_FMR
+// РЅРµР»СЊР·СЏ РІС‹РїРѕР»РЅСЏРёС‚СЊ РєРѕРґРѕРј РёР· FLASH ROM. Р”Р°РЅРЅР°СЏ РїС„СѓРЅРєС†РёСЏ РєРѕРїРёСЂСѓРµС‚СЃСЏ РІ SRAM
+// Рё СЂР°Р±РѕС‚Р°РµС‚ РѕС‚С‚СѓРґР°
 static void RAMFUNC_NONILINE lowlevel_sam3s_setws(unsigned fws)
 {
 	EFC->EEFC_FMR = EEFC_FMR_FWS(fws);	// Flash Wait State 
 }
 
-// Перенастройка на работу с внутренним RC генератором 12 МГц	
+// РџРµСЂРµРЅР°СЃС‚СЂРѕР№РєР° РЅР° СЂР°Р±РѕС‚Сѓ СЃ РІРЅСѓС‚СЂРµРЅРЅРёРј RC РіРµРЅРµСЂР°С‚РѕСЂРѕРј 12 РњР“С†	
 static void lowlevel_sam3s_init_clock_12_RC12(void)
 {
 	program_enable_RC_12MHz();
@@ -7068,7 +7068,7 @@ static void lowlevel_sam3s_init_clock_12_RC12(void)
 
 	
 /* 
-  инициализация внутреннего умножителя частоты.
+  РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РІРЅСѓС‚СЂРµРЅРЅРµРіРѕ СѓРјРЅРѕР¶РёС‚РµР»СЏ С‡Р°СЃС‚РѕС‚С‹.
 */
 static void lowlevel_sam3s_init_pll_clock_RC12(unsigned pllmul, unsigned plldiv, unsigned fws)
 {
@@ -7078,8 +7078,8 @@ static void lowlevel_sam3s_init_pll_clock_RC12(unsigned pllmul, unsigned plldiv,
 	// FWS field = 2: up to 64 MHz
 	lowlevel_sam3s_setws(3);	// Flash Wait State 
 
-	//program_mckr_switchtoslow();	// переключаем на внутренний генератор 32 кГц
-	program_mckr_switchtomain();	// выключить ФАПЧ, если была включена
+	//program_mckr_switchtoslow();	// РїРµСЂРµРєР»СЋС‡Р°РµРј РЅР° РІРЅСѓС‚СЂРµРЅРЅРёР№ РіРµРЅРµСЂР°С‚РѕСЂ 32 РєР“С†
+	program_mckr_switchtomain();	// РІС‹РєР»СЋС‡РёС‚СЊ Р¤РђРџР§, РµСЃР»Рё Р±С‹Р»Р° РІРєР»СЋС‡РµРЅР°
 	program_enable_RC_12MHz();
 	program_use_xtal(0);
 	program_disable_xtal();
@@ -7091,11 +7091,11 @@ static void lowlevel_sam3s_init_pll_clock_RC12(unsigned pllmul, unsigned plldiv,
 }
 
 /* 
-  инициализация внутреннего умножителя частоты.
-  Вход - 12 МГц, кварцевый резонатор
-  внутренняя тактовая - 64 МГц,
-  частота генератора - 12 МГц
-  Частота сравнения PLL = 4 МГц
+  РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РІРЅСѓС‚СЂРµРЅРЅРµРіРѕ СѓРјРЅРѕР¶РёС‚РµР»СЏ С‡Р°СЃС‚РѕС‚С‹.
+  Р’С…РѕРґ - 12 РњР“С†, РєРІР°СЂС†РµРІС‹Р№ СЂРµР·РѕРЅР°С‚РѕСЂ
+  РІРЅСѓС‚СЂРµРЅРЅСЏСЏ С‚Р°РєС‚РѕРІР°СЏ - 64 РњР“С†,
+  С‡Р°СЃС‚РѕС‚Р° РіРµРЅРµСЂР°С‚РѕСЂР° - 12 РњР“С†
+  Р§Р°СЃС‚РѕС‚Р° СЃСЂР°РІРЅРµРЅРёСЏ PLL = 4 РњР“С†
 */
 static void 
 lowlevel_sam3s_init_pll_clock_xtal(unsigned pllmul, unsigned plldiv, unsigned ws)
@@ -7106,8 +7106,8 @@ lowlevel_sam3s_init_pll_clock_xtal(unsigned pllmul, unsigned plldiv, unsigned ws
 	// FWS field = 2: up to 64 MHz
 	lowlevel_sam3s_setws(3);	// Flash Wait State 
 
-	//program_mckr_switchtoslow();	// переключаем на внутренний генератор 32 кГц
-	program_mckr_switchtomain();	// выключить ФАПЧ, если была включена
+	//program_mckr_switchtoslow();	// РїРµСЂРµРєР»СЋС‡Р°РµРј РЅР° РІРЅСѓС‚СЂРµРЅРЅРёР№ РіРµРЅРµСЂР°С‚РѕСЂ 32 РєР“С†
+	program_mckr_switchtomain();	// РІС‹РєР»СЋС‡РёС‚СЊ Р¤РђРџР§, РµСЃР»Рё Р±С‹Р»Р° РІРєР»СЋС‡РµРЅР°
 	program_enable_xtal();
 	program_use_xtal(1);
 	program_disable_rc();
@@ -7123,10 +7123,10 @@ lowlevel_sam3s_init_pll_clock_xtal(unsigned pllmul, unsigned plldiv, unsigned ws
 
 
 #if CPUSTYLE_STM32F7XX || CPUSTYLE_STM32F4XX
-// Настроить выход PLLQ на 48 МГц
+// РќР°СЃС‚СЂРѕРёС‚СЊ РІС‹С…РѕРґ PLLQ РЅР° 48 РњР“С†
 static uint_fast32_t arm_hardware_stm32f7xx_pllq_initialize(void)
 {
-	const uint32_t stm32f4xx_pllq = calcdivround2(PLL_FREQ, 48000000uL);	// Как было сделано при инициализации PLL
+	const uint32_t stm32f4xx_pllq = calcdivround2(PLL_FREQ, 48000000uL);	// РљР°Рє Р±С‹Р»Рѕ СЃРґРµР»Р°РЅРѕ РїСЂРё РёРЅРёС†РёР°Р»РёР·Р°С†РёРё PLL
 	// PLLQ: Main PLL (PLL) division factor for USB OTG FS, SDIO and random number generator clocks
 	// Should be 48 MHz or less for SDIO and 48 MHz with small tolerance.
 	RCC->PLLCFGR = (RCC->PLLCFGR & ~ RCC_PLLCFGR_PLLQ) | 
@@ -7154,18 +7154,18 @@ static uint_fast32_t arm_hardware_stm32f7xx_pllq_initialize(void)
 static void 
 lowlevel_stm32f4xx_pll_initialize(void)
 {
-	//const unsigned PLL1M = REF1_MUL;		// N умножитель в PLL1
-	//const unsigned PLL1P = PLL1_P;			//  делитель перед SYSTEM CLOCK MUX в PLL1
-	//const unsigned PLL1Q = PLL1_Q;			// делитель на выход 48 МГц
+	//const unsigned PLL1M = REF1_MUL;		// N СѓРјРЅРѕР¶РёС‚РµР»СЊ РІ PLL1
+	//const unsigned PLL1P = PLL1_P;			//  РґРµР»РёС‚РµР»СЊ РїРµСЂРµРґ SYSTEM CLOCK MUX РІ PLL1
+	//const unsigned PLL1Q = PLL1_Q;			// РґРµР»РёС‚РµР»СЊ РЅР° РІС‹С…РѕРґ 48 РњР“С†
 
-	RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN;     // включить тактирование альтернативных функций
+	RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN;     // РІРєР»СЋС‡РёС‚СЊ С‚Р°РєС‚РёСЂРѕРІР°РЅРёРµ Р°Р»СЊС‚РµСЂРЅР°С‚РёРІРЅС‹С… С„СѓРЅРєС†РёР№
 	__DSB();
 	SYSCFG->CMPCR |= SYSCFG_CMPCR_CMP_PD;	// enable i/o compensaion cell
 	while ((SYSCFG->CMPCR & SYSCFG_CMPCR_READY) == 0)
 		;
 
-	RCC->CR |= RCC_CR_HSION;		//включаю внутренний генератор
-	while ((RCC->CR & RCC_CR_HSIRDY) == 0)//жду пока не заработает
+	RCC->CR |= RCC_CR_HSION;		//РІРєР»СЋС‡Р°СЋ РІРЅСѓС‚СЂРµРЅРЅРёР№ РіРµРЅРµСЂР°С‚РѕСЂ
+	while ((RCC->CR & RCC_CR_HSIRDY) == 0)//Р¶РґСѓ РїРѕРєР° РЅРµ Р·Р°СЂР°Р±РѕС‚Р°РµС‚
 		;
 
     // switch CPU clock to HSI before PLL programming
@@ -7174,19 +7174,19 @@ lowlevel_stm32f4xx_pll_initialize(void)
         0;
 	while ((RCC->CFGR & RCC_CFGR_SWS) != (RCC_CFGR_SWS_0 * 0))
 		;
-	RCC->CR &= ~ RCC_CR_PLLON;				// Выключил PLL
+	RCC->CR &= ~ RCC_CR_PLLON;				// Р’С‹РєР»СЋС‡РёР» PLL
 
 	#if WITHCPUXTAL
-		// Внешний кварцевый резонатор
-		RCC->CR = (RCC->CR & ~ RCC_CR_HSEBYP) | RCC_CR_HSEON;	// включаю внешний генератор
-		while ((RCC->CR & RCC_CR_HSERDY) == 0)	// жду пока не заработает
+		// Р’РЅРµС€РЅРёР№ РєРІР°СЂС†РµРІС‹Р№ СЂРµР·РѕРЅР°С‚РѕСЂ
+		RCC->CR = (RCC->CR & ~ RCC_CR_HSEBYP) | RCC_CR_HSEON;	// РІРєР»СЋС‡Р°СЋ РІРЅРµС€РЅРёР№ РіРµРЅРµСЂР°С‚РѕСЂ
+		while ((RCC->CR & RCC_CR_HSERDY) == 0)	// Р¶РґСѓ РїРѕРєР° РЅРµ Р·Р°СЂР°Р±РѕС‚Р°РµС‚
 			;
 
-		RCC->PLLCFGR = (RCC->PLLCFGR & ~ RCC_PLLCFGR_PLLSRC) | RCC_PLLCFGR_PLLSRC_HSE;//HSE - исчтоник для PLL
+		RCC->PLLCFGR = (RCC->PLLCFGR & ~ RCC_PLLCFGR_PLLSRC) | RCC_PLLCFGR_PLLSRC_HSE;//HSE - РёСЃС‡С‚РѕРЅРёРє РґР»СЏ PLL
 
 	#else /* WITHCPUXTAL */
-		// внутренний RC генератор 16 МГц
-		RCC->PLLCFGR = (RCC->PLLCFGR & ~ RCC_PLLCFGR_PLLSRC) | RCC_PLLCFGR_PLLSRC_HSI;//HSI - исчтоник для PLL
+		// РІРЅСѓС‚СЂРµРЅРЅРёР№ RC РіРµРЅРµСЂР°С‚РѕСЂ 16 РњР“С†
+		RCC->PLLCFGR = (RCC->PLLCFGR & ~ RCC_PLLCFGR_PLLSRC) | RCC_PLLCFGR_PLLSRC_HSI;//HSI - РёСЃС‡С‚РѕРЅРёРє РґР»СЏ PLL
 
 	#endif /* WITHCPUXTAL */
 
@@ -7202,12 +7202,12 @@ lowlevel_stm32f4xx_pll_initialize(void)
 #endif
 		0;
 
-	RCC->CR |= RCC_CR_PLLON;				// Включил PLL
+	RCC->CR |= RCC_CR_PLLON;				// Р’РєР»СЋС‡РёР» PLL
 
 #if defined (PWR_CR_VOS_0)
 
 	// Use overdrive
-	RCC->APB1ENR |= RCC_APB1ENR_PWREN;	// включить тактирование power management
+	RCC->APB1ENR |= RCC_APB1ENR_PWREN;	// РІРєР»СЋС‡РёС‚СЊ С‚Р°РєС‚РёСЂРѕРІР°РЅРёРµ power management
 	__DSB();
 
 	PWR->CR = (PWR->CR & ~ (PWR_CR_VOS)) |
@@ -7229,19 +7229,19 @@ lowlevel_stm32f4xx_pll_initialize(void)
 
 #endif /* (PWR_CR_VOS_0) */
 
-	while ((RCC->CR & RCC_CR_PLLRDY) == 0)	// пока заработает PLL
+	while ((RCC->CR & RCC_CR_PLLRDY) == 0)	// РїРѕРєР° Р·Р°СЂР°Р±РѕС‚Р°РµС‚ PLL
 		;
 
-	const portholder_t flash_acr_latency = HARDWARE_FLASH_LATENCY; // Задержка для работы с памятью 5 WS for 168 MHz at 3.3 volt
-	/* Блок настройки ФЛЭШ */
+	const portholder_t flash_acr_latency = HARDWARE_FLASH_LATENCY; // Р—Р°РґРµСЂР¶РєР° РґР»СЏ СЂР°Р±РѕС‚С‹ СЃ РїР°РјСЏС‚СЊСЋ 5 WS for 168 MHz at 3.3 volt
+	/* Р‘Р»РѕРє РЅР°СЃС‚СЂРѕР№РєРё Р¤Р›Р­РЁ */
 	/* Reserved bits must be kept cleared. */
-    //static const uint32_t REVISION_Z = 0x10010000;	// У STM32F407/STM32F417 prefetch включать только в "Z"
+    //static const uint32_t REVISION_Z = 0x10010000;	// РЈ STM32F407/STM32F417 prefetch РІРєР»СЋС‡Р°С‚СЊ С‚РѕР»СЊРєРѕ РІ "Z"
 	FLASH->ACR = 
-		FLASH_ACR_DCEN |		// Включил КЭШ данных
-		FLASH_ACR_ICEN |		// Включил КЭШ команд
-		//((DBGMCU->IDCODE & DBGMCU_IDCODE_REV_ID) == REVISION_Z ? FLASH_ACR_PRFTEN : 0) |		// Включил Pefetch для ускорения
+		FLASH_ACR_DCEN |		// Р’РєР»СЋС‡РёР» РљР­РЁ РґР°РЅРЅС‹С…
+		FLASH_ACR_ICEN |		// Р’РєР»СЋС‡РёР» РљР­РЁ РєРѕРјР°РЅРґ
+		//((DBGMCU->IDCODE & DBGMCU_IDCODE_REV_ID) == REVISION_Z ? FLASH_ACR_PRFTEN : 0) |		// Р’РєР»СЋС‡РёР» Pefetch РґР»СЏ СѓСЃРєРѕСЂРµРЅРёСЏ
 		FLASH_ACR_PRFTEN |
-		flash_acr_latency |		//Задержка для работы с памятью
+		flash_acr_latency |		//Р—Р°РґРµСЂР¶РєР° РґР»СЏ СЂР°Р±РѕС‚С‹ СЃ РїР°РјСЏС‚СЊСЋ
 		0;
 
 	while ((FLASH->ACR & FLASH_ACR_LATENCY) != flash_acr_latency)
@@ -7250,11 +7250,11 @@ lowlevel_stm32f4xx_pll_initialize(void)
 	RCC->CFGR = (RCC->CFGR & ~ (RCC_CFGR_PPRE1 | RCC_CFGR_PPRE2 | RCC_CFGR_SW)) |
 #if defined(STM32F401xC)
 		(RCC_CFGR_HPRE_0 * 8) |		// AHB clock division factor. 0x08: system clock divided by 2s
-		(RCC_CFGR_PPRE1_0 * 4) |	// APB1 prescaler 0x05: AHB clock divided by 2: понизил частоту APB1 до 42МГц
+		(RCC_CFGR_PPRE1_0 * 4) |	// APB1 prescaler 0x05: AHB clock divided by 2: РїРѕРЅРёР·РёР» С‡Р°СЃС‚РѕС‚Сѓ APB1 РґРѕ 42РњР“С†
 		(RCC_CFGR_PPRE2_0 * 0) |	// APB2 prescaler 0x04: AHB clock divided by 1: 84MHz
 #else
 		(RCC_CFGR_HPRE_0 * 0) |		// AHB clock division factor. 0x00: system clock divided by 1
-		(RCC_CFGR_PPRE1_0 * 5) |	// APB1 prescaler 0x05: AHB clock divided by 4: понизил частоту APB1 до 42МГц
+		(RCC_CFGR_PPRE1_0 * 5) |	// APB1 prescaler 0x05: AHB clock divided by 4: РїРѕРЅРёР·РёР» С‡Р°СЃС‚РѕС‚Сѓ APB1 РґРѕ 42РњР“С†
 		(RCC_CFGR_PPRE2_0 * 4) |	// APB2 prescaler 0x04: AHB clock divided by 2: 84MHz
 #endif
 		RCC_CFGR_SW_PLL | // PLL as system clock
@@ -7284,10 +7284,10 @@ static void
 lowlevel_stm32f4xx_pllsai_initialize(void)
 {
 	//#error TODO: write code to imitialize SAI PLL and LTDC output divider
-	/* для устройств на шине APB2 (up to 72 MHz) */
+	/* РґР»СЏ СѓСЃС‚СЂРѕР№СЃС‚РІ РЅР° С€РёРЅРµ APB2 (up to 72 MHz) */
 	auto uint_fast32_t 
 	calcdivround_saifreq(
-		uint_fast32_t freq		/* требуемая частота на выходе делителя, в герцах. */
+		uint_fast32_t freq		/* С‚СЂРµР±СѓРµРјР°СЏ С‡Р°СЃС‚РѕС‚Р° РЅР° РІС‹С…РѕРґРµ РґРµР»РёС‚РµР»СЏ, РІ РіРµСЂС†Р°С…. */
 		)
 	{
 		//#error TODO: check freq at outputs vsync/hsync
@@ -7298,9 +7298,9 @@ lowlevel_stm32f4xx_pllsai_initialize(void)
 	const uint_fast8_t prei = calcdivider(calcdivround_saifreq(LTDC_DOTCLK), STM32F_LTDC_DIV_WIDTH, STM32F_LTDC_DIV_TAPS, & value, 0);
 	ASSERT(value >= 2);
 	debug_printf_P(PSTR("lowlevel_stm32f4xx_pllsai_initialize: value=%u, prei=%u\n"), value, prei);
-	// Настройка PLLSAI
-	// Частота сравнения та же самая, что и в основной PLL
-	// RCC_PLLSAICFGR_PLLSAIQ используется, если для SAI используется отдельная PLL - эта.
+	// РќР°СЃС‚СЂРѕР№РєР° PLLSAI
+	// Р§Р°СЃС‚РѕС‚Р° СЃСЂР°РІРЅРµРЅРёСЏ С‚Р° Р¶Рµ СЃР°РјР°СЏ, С‡С‚Рѕ Рё РІ РѕСЃРЅРѕРІРЅРѕР№ PLL
+	// RCC_PLLSAICFGR_PLLSAIQ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ, РµСЃР»Рё РґР»СЏ SAI РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РѕС‚РґРµР»СЊРЅР°СЏ PLL - СЌС‚Р°.
 	RCC->PLLSAICFGR = (RCC->PLLSAICFGR & ~ (RCC_PLLSAICFGR_PLLSAIN | /*RCC_PLLSAICFGR_PLLSAIQ | */ RCC_PLLSAICFGR_PLLSAIR)) |
 		((SAIREF1_MUL << RCC_PLLSAICFGR_PLLSAIN_Pos) & RCC_PLLSAICFGR_PLLSAIN) |	// PLLI2SN bits = multiplier, freq=192..432 MHz, vale = 2..432
 		((value * RCC_PLLSAICFGR_PLLSAIR_0) & RCC_PLLSAICFGR_PLLSAIR) |	// PLLI2SR bits - output divider, 2..7
@@ -7310,8 +7310,8 @@ lowlevel_stm32f4xx_pllsai_initialize(void)
 		((prei << RCC_DCKCFGR_PLLSAIDIVR_Pos) & RCC_DCKCFGR_PLLSAIDIVR) |	// division factor for LCD_CLK. 2: PLLSAIDIVR = /8  3: PLLSAIDIVR = /16
 		0;
 
-	RCC->CR |= RCC_CR_PLLSAION;				// Включил PLL
-	while ((RCC->CR & RCC_CR_PLLSAIRDY) == 0)	// пока заработает PLL
+	RCC->CR |= RCC_CR_PLLSAION;				// Р’РєР»СЋС‡РёР» PLL
+	while ((RCC->CR & RCC_CR_PLLSAIRDY) == 0)	// РїРѕРєР° Р·Р°СЂР°Р±РѕС‚Р°РµС‚ PLL
 		;
 }
 
@@ -7322,9 +7322,9 @@ lowlevel_stm32f4xx_MCOx_test(void)
 {
 	if (0)
 	{
-		// Тестирование тактовой частоты - подача на сигнал MCO1
+		// РўРµСЃС‚РёСЂРѕРІР°РЅРёРµ С‚Р°РєС‚РѕРІРѕР№ С‡Р°СЃС‚РѕС‚С‹ - РїРѕРґР°С‡Р° РЅР° СЃРёРіРЅР°Р» MCO1
 		RCC->CFGR = (RCC->CFGR & ~ (RCC_CFGR_MCO1 | RCC_CFGR_MCO1PRE)) |
-			6 * RCC_CFGR_MCO1PRE_0 |	// Смотрим sysclk / 4
+			6 * RCC_CFGR_MCO1PRE_0 |	// РЎРјРѕС‚СЂРёРј sysclk / 4
 			0 * RCC_CFGR_MCO1_0 |	// 0: sysclk
 			0;
 		arm_hardware_pioa_altfn50(1U << 8, AF_SYSTEM);	// PA8, AF=0: MCO1
@@ -7333,9 +7333,9 @@ lowlevel_stm32f4xx_MCOx_test(void)
 	}
 	if (0)
 	{
-		// Тестирование тактовой частоты - подача на сигнал MCO2
+		// РўРµСЃС‚РёСЂРѕРІР°РЅРёРµ С‚Р°РєС‚РѕРІРѕР№ С‡Р°СЃС‚РѕС‚С‹ - РїРѕРґР°С‡Р° РЅР° СЃРёРіРЅР°Р» MCO2
 		RCC->CFGR = (RCC->CFGR & ~ (RCC_CFGR_MCO2 | RCC_CFGR_MCO2PRE)) |
-			6 * RCC_CFGR_MCO2PRE_0 |	// Смотрим sysclk / 4
+			6 * RCC_CFGR_MCO2PRE_0 |	// РЎРјРѕС‚СЂРёРј sysclk / 4
 			0 * RCC_CFGR_MCO2_0 |	// 0: sysclk
 			0;
 		arm_hardware_pioc_altfn50(1U << 9, AF_SYSTEM);	// PC9, AF=0: MCO2
@@ -7349,18 +7349,18 @@ lowlevel_stm32f4xx_MCOx_test(void)
 #if CPUSTYLE_STM32F7XX
 
 
-// Программируем на 216 МГц
+// РџСЂРѕРіСЂР°РјРјРёСЂСѓРµРј РЅР° 216 РњР“С†
 static void 
 lowlevel_stm32f7xx_pll_initialize(void)
 {
-	RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN;     // включить тактирование альтернативных функций
+	RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN;     // РІРєР»СЋС‡РёС‚СЊ С‚Р°РєС‚РёСЂРѕРІР°РЅРёРµ Р°Р»СЊС‚РµСЂРЅР°С‚РёРІРЅС‹С… С„СѓРЅРєС†РёР№
 	__DSB();
 	SYSCFG->CMPCR |= SYSCFG_CMPCR_CMP_PD;	// enable i/o compensaion cell
 	while ((SYSCFG->CMPCR & SYSCFG_CMPCR_READY) == 0)
 		;
 
-	RCC->CR |= RCC_CR_HSION;		//включаю внутренний генератор
-	while ((RCC->CR & RCC_CR_HSIRDY) == 0)//жду пока не заработает
+	RCC->CR |= RCC_CR_HSION;		//РІРєР»СЋС‡Р°СЋ РІРЅСѓС‚СЂРµРЅРЅРёР№ РіРµРЅРµСЂР°С‚РѕСЂ
+	while ((RCC->CR & RCC_CR_HSIRDY) == 0)//Р¶РґСѓ РїРѕРєР° РЅРµ Р·Р°СЂР°Р±РѕС‚Р°РµС‚
 		;
 
     // switch CPU clock to HSI before PLL programming
@@ -7369,33 +7369,33 @@ lowlevel_stm32f7xx_pll_initialize(void)
         0;
 	while ((RCC->CFGR & RCC_CFGR_SWS) != (RCC_CFGR_SWS_0 * 0))
 		;
-	RCC->CR &= ~ RCC_CR_PLLON;				// Выключил PLL
+	RCC->CR &= ~ RCC_CR_PLLON;				// Р’С‹РєР»СЋС‡РёР» PLL
 
 	#if WITHCPUXOSC
-		// Внешний кварцевый генератор
+		// Р’РЅРµС€РЅРёР№ РєРІР°СЂС†РµРІС‹Р№ РіРµРЅРµСЂР°С‚РѕСЂ
 		RCC->CR = (RCC->CR & ~ RCC_CR_HSEBYP) | 
-			RCC_CR_HSEBYP |	// приходит внешний тактовый сигнал
-			RCC_CR_HSEON |	// включаю внешний генератор
+			RCC_CR_HSEBYP |	// РїСЂРёС…РѕРґРёС‚ РІРЅРµС€РЅРёР№ С‚Р°РєС‚РѕРІС‹Р№ СЃРёРіРЅР°Р»
+			RCC_CR_HSEON |	// РІРєР»СЋС‡Р°СЋ РІРЅРµС€РЅРёР№ РіРµРЅРµСЂР°С‚РѕСЂ
 			0;
-		while ((RCC->CR & RCC_CR_HSERDY) == 0)	// жду пока не заработает
+		while ((RCC->CR & RCC_CR_HSERDY) == 0)	// Р¶РґСѓ РїРѕРєР° РЅРµ Р·Р°СЂР°Р±РѕС‚Р°РµС‚
 			;
 
-		RCC->PLLCFGR = (RCC->PLLCFGR & ~ RCC_PLLCFGR_PLLSRC) | RCC_PLLCFGR_PLLSRC_HSE;//HSE - исчтоник для PLL
+		RCC->PLLCFGR = (RCC->PLLCFGR & ~ RCC_PLLCFGR_PLLSRC) | RCC_PLLCFGR_PLLSRC_HSE;//HSE - РёСЃС‡С‚РѕРЅРёРє РґР»СЏ PLL
 
 	#elif WITHCPUXTAL
-		// Внешний кварцевый резонатор
+		// Р’РЅРµС€РЅРёР№ РєРІР°СЂС†РµРІС‹Р№ СЂРµР·РѕРЅР°С‚РѕСЂ
 		RCC->CR = (RCC->CR & ~ RCC_CR_HSEBYP) | 
-			//RCC_CR_HSEBYP |	// приходит внешний тактовый сигнал
-			RCC_CR_HSEON |	// включаю внешний генератор
+			//RCC_CR_HSEBYP |	// РїСЂРёС…РѕРґРёС‚ РІРЅРµС€РЅРёР№ С‚Р°РєС‚РѕРІС‹Р№ СЃРёРіРЅР°Р»
+			RCC_CR_HSEON |	// РІРєР»СЋС‡Р°СЋ РІРЅРµС€РЅРёР№ РіРµРЅРµСЂР°С‚РѕСЂ
 			0;
-		while ((RCC->CR & RCC_CR_HSERDY) == 0)	// жду пока не заработает
+		while ((RCC->CR & RCC_CR_HSERDY) == 0)	// Р¶РґСѓ РїРѕРєР° РЅРµ Р·Р°СЂР°Р±РѕС‚Р°РµС‚
 			;
 
-		RCC->PLLCFGR = (RCC->PLLCFGR & ~ RCC_PLLCFGR_PLLSRC) | RCC_PLLCFGR_PLLSRC_HSE;//HSE - исчтоник для PLL
+		RCC->PLLCFGR = (RCC->PLLCFGR & ~ RCC_PLLCFGR_PLLSRC) | RCC_PLLCFGR_PLLSRC_HSE;//HSE - РёСЃС‡С‚РѕРЅРёРє РґР»СЏ PLL
 
 	#else /* WITHCPUXTAL */
-		// внутренний RC генератор 16 МГц
-		RCC->PLLCFGR = (RCC->PLLCFGR & ~ RCC_PLLCFGR_PLLSRC) | RCC_PLLCFGR_PLLSRC_HSI;//HSI - исчтоник для PLL
+		// РІРЅСѓС‚СЂРµРЅРЅРёР№ RC РіРµРЅРµСЂР°С‚РѕСЂ 16 РњР“С†
+		RCC->PLLCFGR = (RCC->PLLCFGR & ~ RCC_PLLCFGR_PLLSRC) | RCC_PLLCFGR_PLLSRC_HSI;//HSI - РёСЃС‡С‚РѕРЅРёРє РґР»СЏ PLL
 
 	#endif /* WITHCPUXTAL */
 
@@ -7405,12 +7405,12 @@ lowlevel_stm32f7xx_pll_initialize(void)
 		((0 * RCC_PLLCFGR_PLLP_0) & RCC_PLLCFGR_PLLP) |	// 0: VCO / 2, 1: VCO / 4
 		0;
 
-	RCC->CR |= RCC_CR_PLLON;				// Включил PLL
+	RCC->CR |= RCC_CR_PLLON;				// Р’РєР»СЋС‡РёР» PLL
 
 #if 1
 
 	// Use overdrive
-	RCC->APB1ENR |= RCC_APB1ENR_PWREN;	// включить тактирование power management
+	RCC->APB1ENR |= RCC_APB1ENR_PWREN;	// РІРєР»СЋС‡РёС‚СЊ С‚Р°РєС‚РёСЂРѕРІР°РЅРёРµ power management
 	__DSB();
 
 	PWR->CR1 = (PWR->CR1 & ~ (PWR_CR1_VOS)) |
@@ -7428,23 +7428,23 @@ lowlevel_stm32f7xx_pll_initialize(void)
 		;
 #endif
 
-	while ((RCC->CR & RCC_CR_PLLRDY) == 0)	// пока заработает PLL
+	while ((RCC->CR & RCC_CR_PLLRDY) == 0)	// РїРѕРєР° Р·Р°СЂР°Р±РѕС‚Р°РµС‚ PLL
 		;
 
-	const portholder_t flash_acr_latency = HARDWARE_FLASH_LATENCY; // Задержка для работы с памятью 5 WS for 168 MHz at 3.3 volt
-	/* Блок настройки ФЛЭШ */
+	const portholder_t flash_acr_latency = HARDWARE_FLASH_LATENCY; // Р—Р°РґРµСЂР¶РєР° РґР»СЏ СЂР°Р±РѕС‚С‹ СЃ РїР°РјСЏС‚СЊСЋ 5 WS for 168 MHz at 3.3 volt
+	/* Р‘Р»РѕРє РЅР°СЃС‚СЂРѕР№РєРё Р¤Р›Р­РЁ */
 	/* Reserved bits must be kept cleared. */
 	FLASH->ACR = 
-		FLASH_ACR_PRFTEN |		//Включил Pefetch для ускорения
-		FLASH_ACR_ARTEN |		// работает только при обращенияя через FLASHITCM
-		flash_acr_latency |		//Задержка для работы с памятью
+		FLASH_ACR_PRFTEN |		//Р’РєР»СЋС‡РёР» Pefetch РґР»СЏ СѓСЃРєРѕСЂРµРЅРёСЏ
+		FLASH_ACR_ARTEN |		// СЂР°Р±РѕС‚Р°РµС‚ С‚РѕР»СЊРєРѕ РїСЂРё РѕР±СЂР°С‰РµРЅРёСЏСЏ С‡РµСЂРµР· FLASHITCM
+		flash_acr_latency |		//Р—Р°РґРµСЂР¶РєР° РґР»СЏ СЂР°Р±РѕС‚С‹ СЃ РїР°РјСЏС‚СЊСЋ
 		0;
 	while ((FLASH->ACR & FLASH_ACR_LATENCY) != flash_acr_latency)
 		;
 
 	RCC->CFGR = (RCC->CFGR & ~ (RCC_CFGR_PPRE1 | RCC_CFGR_PPRE2)) |
 		(RCC_CFGR_HPRE_0 * 0) |		// AHB clock division factor. 0x00: system clock divided by 1
-		(RCC_CFGR_PPRE1_0 * 5) |	// APB1 prescaler 0x05: AHB clock divided by 4: понизил частоту APB1 до 42МГц
+		(RCC_CFGR_PPRE1_0 * 5) |	// APB1 prescaler 0x05: AHB clock divided by 4: РїРѕРЅРёР·РёР» С‡Р°СЃС‚РѕС‚Сѓ APB1 РґРѕ 42РњР“С†
 		(RCC_CFGR_PPRE2_0 * 4) |	// APB2 prescaler 0x04: AHB clock divided by 2: 84MHz
 		RCC_CFGR_SW_PLL; // PLL as system clock
 
@@ -7465,10 +7465,10 @@ static void
 lowlevel_stm32f7xx_pllsai_initialize(void)
 {
 
-	/* для устройств на шине APB2 (up to 72 MHz) */
+	/* РґР»СЏ СѓСЃС‚СЂРѕР№СЃС‚РІ РЅР° С€РёРЅРµ APB2 (up to 72 MHz) */
 	auto uint_fast32_t 
 	calcdivround_saifreq(
-		uint_fast32_t freq		/* требуемая частота на выходе делителя, в герцах. */
+		uint_fast32_t freq		/* С‚СЂРµР±СѓРµРјР°СЏ С‡Р°СЃС‚РѕС‚Р° РЅР° РІС‹С…РѕРґРµ РґРµР»РёС‚РµР»СЏ, РІ РіРµСЂС†Р°С…. */
 		)
 	{
 		//#error TODO: check freq at outputs vsync/hsync
@@ -7483,9 +7483,9 @@ lowlevel_stm32f7xx_pllsai_initialize(void)
 	debug_printf_P(PSTR("lowlevel_stm32f7xx_pllsai_initialize: value=%u, prei=%u\n"), value, prei);
 
 
-	// Настройка PLLSAI
-	// Частота сравнения та же самая, что и в основной PLL
-	// RCC_PLLSAICFGR_PLLSAIQ используется, если для SAI используется отдельная PLL - эта.
+	// РќР°СЃС‚СЂРѕР№РєР° PLLSAI
+	// Р§Р°СЃС‚РѕС‚Р° СЃСЂР°РІРЅРµРЅРёСЏ С‚Р° Р¶Рµ СЃР°РјР°СЏ, С‡С‚Рѕ Рё РІ РѕСЃРЅРѕРІРЅРѕР№ PLL
+	// RCC_PLLSAICFGR_PLLSAIQ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ, РµСЃР»Рё РґР»СЏ SAI РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РѕС‚РґРµР»СЊРЅР°СЏ PLL - СЌС‚Р°.
 	RCC->PLLSAICFGR = (RCC->PLLSAICFGR & ~ (RCC_PLLSAICFGR_PLLSAIN | /*RCC_PLLSAICFGR_PLLSAIQ | */ RCC_PLLSAICFGR_PLLSAIR)) |
 		((SAIREF1_MUL << RCC_PLLSAICFGR_PLLSAIN_Pos) & RCC_PLLSAICFGR_PLLSAIN) |	// PLLI2SN bits = multiplier, freq=192..432 MHz, vale = 2..432
 		((value << RCC_PLLSAICFGR_PLLSAIR_Pos) & RCC_PLLSAICFGR_PLLSAIR) |	// PLLI2SR bits - output divider, 2..7
@@ -7495,17 +7495,17 @@ lowlevel_stm32f7xx_pllsai_initialize(void)
 		((prei << RCC_DCKCFGR1_PLLSAIDIVR_Pos) & RCC_DCKCFGR1_PLLSAIDIVR) |	// division factor for LCD_CLK. 2: PLLSAIDIVR = /8  3: PLLSAIDIVR = /16
 		0;
 #else
-	// Настройка PLLSAI
-	// Частота сравнения та же самая, что и в основной PLL
-	// RCC_PLLSAICFGR_PLLSAIQ используется, если для SAI используется отдельная PLL - эта.
+	// РќР°СЃС‚СЂРѕР№РєР° PLLSAI
+	// Р§Р°СЃС‚РѕС‚Р° СЃСЂР°РІРЅРµРЅРёСЏ С‚Р° Р¶Рµ СЃР°РјР°СЏ, С‡С‚Рѕ Рё РІ РѕСЃРЅРѕРІРЅРѕР№ PLL
+	// RCC_PLLSAICFGR_PLLSAIQ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ, РµСЃР»Рё РґР»СЏ SAI РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РѕС‚РґРµР»СЊРЅР°СЏ PLL - СЌС‚Р°.
 	RCC->PLLSAICFGR = (RCC->PLLSAICFGR & ~ (RCC_PLLSAICFGR_PLLSAIN)) |
 		((SAIREF1_MUL << RCC_PLLSAICFGR_PLLSAIN_Pos) & RCC_PLLSAICFGR_PLLSAIN) |	// PLLI2SN bits = multiplier, freq=192..432 MHz, vale = 2..432
 		0;
 
 #endif
 
-	RCC->CR |= RCC_CR_PLLSAION;				// Включил PLL
-	while ((RCC->CR & RCC_CR_PLLSAIRDY) == 0)	// пока заработает PLL
+	RCC->CR |= RCC_CR_PLLSAION;				// Р’РєР»СЋС‡РёР» PLL
+	while ((RCC->CR & RCC_CR_PLLSAIRDY) == 0)	// РїРѕРєР° Р·Р°СЂР°Р±РѕС‚Р°РµС‚ PLL
 		;
 }
 #endif /* WITHUSESAIPLL */
@@ -7514,20 +7514,20 @@ lowlevel_stm32f7xx_pllsai_initialize(void)
 
 #if CPUSTYLE_STM32H7XX
 
-// Программируем на 384 МГц
+// РџСЂРѕРіСЂР°РјРјРёСЂСѓРµРј РЅР° 384 РњР“С†
 static void 
 lowlevel_stm32h7xx_pll_initialize(void)
 {
-	RCC->APB4ENR |= RCC_APB4ENR_SYSCFGEN;     // включить тактирование альтернативных функций
+	RCC->APB4ENR |= RCC_APB4ENR_SYSCFGEN;     // РІРєР»СЋС‡РёС‚СЊ С‚Р°РєС‚РёСЂРѕРІР°РЅРёРµ Р°Р»СЊС‚РµСЂРЅР°С‚РёРІРЅС‹С… С„СѓРЅРєС†РёР№
 	__DSB();
 	//SYSCFG->CMPCR |= SYSCFG_CMPCR_CMP_PD;	// enable i/o compensaion cell
 	//while ((SYSCFG->CMPCR & SYSCFG_CMPCR_READY) == 0)
 	//	;
 
-	RCC->CR |= RCC_CR_HSION;		// 64 MHz включаю внутренний генератор
-	while ((RCC->CR & RCC_CR_HSIRDY) == 0) //жду пока не заработает
+	RCC->CR |= RCC_CR_HSION;		// 64 MHz РІРєР»СЋС‡Р°СЋ РІРЅСѓС‚СЂРµРЅРЅРёР№ РіРµРЅРµСЂР°С‚РѕСЂ
+	while ((RCC->CR & RCC_CR_HSIRDY) == 0) //Р¶РґСѓ РїРѕРєР° РЅРµ Р·Р°СЂР°Р±РѕС‚Р°РµС‚
 		;
-	RCC->CR &= ~ RCC_CR_PLLON;				// Выключил PLL
+	RCC->CR &= ~ RCC_CR_PLLON;				// Р’С‹РєР»СЋС‡РёР» PLL
 
     // switch CPU clock to HSI before PLL programming
 	RCC->CFGR = (RCC->CFGR & ~ (RCC_CFGR_SW)) |
@@ -7536,8 +7536,8 @@ lowlevel_stm32h7xx_pll_initialize(void)
 	while ((RCC->CFGR & RCC_CFGR_SWS) != (RCC_CFGR_SWS_0 * 0))
 		;
 
-	RCC->CR |= RCC_CR_HSI48ON;		// 48 MHz включаю внутренний генератор
-	while ((RCC->CR & RCC_CR_HSI48RDY) == 0) //жду пока не заработает
+	RCC->CR |= RCC_CR_HSI48ON;		// 48 MHz РІРєР»СЋС‡Р°СЋ РІРЅСѓС‚СЂРµРЅРЅРёР№ РіРµРЅРµСЂР°С‚РѕСЂ
+	while ((RCC->CR & RCC_CR_HSI48RDY) == 0) //Р¶РґСѓ РїРѕРєР° РЅРµ Р·Р°СЂР°Р±РѕС‚Р°РµС‚
 		;
 
 	// VOS0 (revidion V) - up to 480 MHz
@@ -7555,33 +7555,33 @@ lowlevel_stm32h7xx_pll_initialize(void)
 		;
 
 	#if WITHCPUXOSC
-		// Внешний кварцевый генератор
+		// Р’РЅРµС€РЅРёР№ РєРІР°СЂС†РµРІС‹Р№ РіРµРЅРµСЂР°С‚РѕСЂ
 		RCC->CR = (RCC->CR & ~ RCC_CR_HSEBYP) | 
-			RCC_CR_HSEBYP |	// приходит внешний тактовый сигнал
-			RCC_CR_HSEON |	// включаю внешний генератор
+			RCC_CR_HSEBYP |	// РїСЂРёС…РѕРґРёС‚ РІРЅРµС€РЅРёР№ С‚Р°РєС‚РѕРІС‹Р№ СЃРёРіРЅР°Р»
+			RCC_CR_HSEON |	// РІРєР»СЋС‡Р°СЋ РІРЅРµС€РЅРёР№ РіРµРЅРµСЂР°С‚РѕСЂ
 			0;
-		while ((RCC->CR & RCC_CR_HSERDY) == 0)	// жду пока не заработает
+		while ((RCC->CR & RCC_CR_HSERDY) == 0)	// Р¶РґСѓ РїРѕРєР° РЅРµ Р·Р°СЂР°Р±РѕС‚Р°РµС‚
 			;
 
-		RCC->PLLCFGR = (RCC->PLLCFGR & ~ RCC_PLLCFGR_PLLSRC) | RCC_PLLCFGR_PLLSRC_HSE;//HSE - исчтоник для PLL
+		RCC->PLLCFGR = (RCC->PLLCFGR & ~ RCC_PLLCFGR_PLLSRC) | RCC_PLLCFGR_PLLSRC_HSE;//HSE - РёСЃС‡С‚РѕРЅРёРє РґР»СЏ PLL
 
 	#elif WITHCPUXTAL
-		// Внешний кварцевый резонатор
+		// Р’РЅРµС€РЅРёР№ РєРІР°СЂС†РµРІС‹Р№ СЂРµР·РѕРЅР°С‚РѕСЂ
 		RCC->CR = (RCC->CR & ~ RCC_CR_HSEBYP) | 
-			//RCC_CR_HSEBYP |	// приходит внешний тактовый сигнал
-			RCC_CR_HSEON |	// включаю внешний генератор
+			//RCC_CR_HSEBYP |	// РїСЂРёС…РѕРґРёС‚ РІРЅРµС€РЅРёР№ С‚Р°РєС‚РѕРІС‹Р№ СЃРёРіРЅР°Р»
+			RCC_CR_HSEON |	// РІРєР»СЋС‡Р°СЋ РІРЅРµС€РЅРёР№ РіРµРЅРµСЂР°С‚РѕСЂ
 			0;
-		while ((RCC->CR & RCC_CR_HSERDY) == 0)	// жду пока не заработает
+		while ((RCC->CR & RCC_CR_HSERDY) == 0)	// Р¶РґСѓ РїРѕРєР° РЅРµ Р·Р°СЂР°Р±РѕС‚Р°РµС‚
 			;
 
 		RCC->PLLCKSELR = (RCC->PLLCKSELR & ~ RCC_PLLCKSELR_PLLSRC) | 
-			RCC_PLLCKSELR_PLLSRC_HSE |	// HSE - исчтоник для PLL
+			RCC_PLLCKSELR_PLLSRC_HSE |	// HSE - РёСЃС‡С‚РѕРЅРёРє РґР»СЏ PLL
 			0;
 
 	#else /* WITHCPUXTAL */
-		// внутренний RC генератор 64 МГц
+		// РІРЅСѓС‚СЂРµРЅРЅРёР№ RC РіРµРЅРµСЂР°С‚РѕСЂ 64 РњР“С†
 		RCC->PLLCKSELR = (RCC->PLLCKSELR & ~ RCC_PLLCKSELR_PLLSRC) | 
-			RCC_PLLCKSELR_PLLSRC_HSI |	// HSI - исчтоник для PLL
+			RCC_PLLCKSELR_PLLSRC_HSI |	// HSI - РёСЃС‡С‚РѕРЅРёРє РґР»СЏ PLL
 			0;
 
 	#endif /* WITHCPUXTAL */
@@ -7625,18 +7625,18 @@ lowlevel_stm32h7xx_pll_initialize(void)
 
 	// PLL1 setup
 	RCC->PLLCKSELR = (RCC->PLLCKSELR & ~ RCC_PLLCKSELR_DIVM1) | 
-		((REF1_DIV << RCC_PLLCKSELR_DIVM1_Pos) & RCC_PLLCKSELR_DIVM1) |	// Reference divider - не требуется корректировань число
+		((REF1_DIV << RCC_PLLCKSELR_DIVM1_Pos) & RCC_PLLCKSELR_DIVM1) |	// Reference divider - РЅРµ С‚СЂРµР±СѓРµС‚СЃСЏ РєРѕСЂСЂРµРєС‚РёСЂРѕРІР°РЅСЊ С‡РёСЃР»Рѕ
 		0;
 	// 
-	const uint32_t stm32h7xx_pllq = calcdivround2(PLL_FREQ, 48000000uL);	// Как было сделано при инициализации PLL
+	const uint32_t stm32h7xx_pllq = calcdivround2(PLL_FREQ, 48000000uL);	// РљР°Рє Р±С‹Р»Рѕ СЃРґРµР»Р°РЅРѕ РїСЂРё РёРЅРёС†РёР°Р»РёР·Р°С†РёРё PLL
 	RCC->PLL1DIVR = (RCC->PLL1DIVR & ~ (RCC_PLL1DIVR_N1 | RCC_PLL1DIVR_P1 | RCC_PLL1DIVR_Q1)) |
 		(((REF1_MUL - 1) << RCC_PLL1DIVR_N1_Pos) & RCC_PLL1DIVR_N1) |
 		(((2 - 1) << RCC_PLL1DIVR_P1_Pos) & RCC_PLL1DIVR_P1) |	// divede to 2, 3 is not allowed
-		(((stm32h7xx_pllq - 1) << RCC_PLL1DIVR_Q1_Pos) & RCC_PLL1DIVR_Q1) |	// нужно для нормального переключения SPI clock USB clock
+		(((stm32h7xx_pllq - 1) << RCC_PLL1DIVR_Q1_Pos) & RCC_PLL1DIVR_Q1) |	// РЅСѓР¶РЅРѕ РґР»СЏ РЅРѕСЂРјР°Р»СЊРЅРѕРіРѕ РїРµСЂРµРєР»СЋС‡РµРЅРёСЏ SPI clock USB clock
 		0;
 	RCC->PLLCFGR = (RCC->PLLCFGR & ~ (RCC_PLLCFGR_DIVP1EN | RCC_PLLCFGR_DIVQ1EN | RCC_PLLCFGR_PLL1VCOSEL | RCC_PLLCFGR_PLL1RGE)) |
-		RCC_PLLCFGR_DIVP1EN |	// This bit can be written only when the PLL1 is disabled (PLL1ON = ‘0’ and PLL1RDY = ‘0’).
-		RCC_PLLCFGR_DIVQ1EN |	// This bit can be written only when the PLL1 is disabled (PLL1ON = ‘0’ and PLL1RDY = ‘0’).
+		RCC_PLLCFGR_DIVP1EN |	// This bit can be written only when the PLL1 is disabled (PLL1ON = вЂ0вЂ™ and PLL1RDY = вЂ0вЂ™).
+		RCC_PLLCFGR_DIVQ1EN |	// This bit can be written only when the PLL1 is disabled (PLL1ON = вЂ0вЂ™ and PLL1RDY = вЂ0вЂ™).
 #if PLL_FREQ >= 150000000uL && PLL_FREQ <= 420000000uL
 		1 * RCC_PLLCFGR_PLL1VCOSEL |	// 1: Medium VCO range: 150 to 420 MHz
 #else
@@ -7645,10 +7645,10 @@ lowlevel_stm32h7xx_pll_initialize(void)
 		0 * RCC_PLLCFGR_PLL1RGE_0 |	// 00: The PLL1 input (ref1_ck) clock range frequency is between 1 and 2 MHz
 		0;
 
-	RCC->CR |= RCC_CR_PLL1ON;				// Включил PLL
+	RCC->CR |= RCC_CR_PLL1ON;				// Р’РєР»СЋС‡РёР» PLL
 
 
-	while ((RCC->CR & RCC_CR_PLL1RDY) == 0)	// пока заработает PLL
+	while ((RCC->CR & RCC_CR_PLL1RDY) == 0)	// РїРѕРєР° Р·Р°СЂР°Р±РѕС‚Р°РµС‚ PLL
 		;
 
 #if LCDMODE_LTDC && ! WITHUSEPLL3
@@ -7658,16 +7658,16 @@ lowlevel_stm32h7xx_pll_initialize(void)
 #if WITHUSEPLL3 && defined (LTDC_DOTCLK)
 
 	RCC->PLLCKSELR = (RCC->PLLCKSELR & ~ RCC_PLLCKSELR_DIVM3) | 
-		((REF3_DIV << RCC_PLLCKSELR_DIVM3_Pos) & RCC_PLLCKSELR_DIVM3) |	// Reference divider - не требуется корректировань число
+		((REF3_DIV << RCC_PLLCKSELR_DIVM3_Pos) & RCC_PLLCKSELR_DIVM3) |	// Reference divider - РЅРµ С‚СЂРµР±СѓРµС‚СЃСЏ РєРѕСЂСЂРµРєС‚РёСЂРѕРІР°РЅСЊ С‡РёСЃР»Рѕ
 		0;
 	// 
 	const uint32_t ltdc_divr = calcdivround2(PLL3_FREQ, LTDC_DOTCLK);
 	RCC->PLL3DIVR = (RCC->PLL3DIVR & ~ (RCC_PLL3DIVR_N3 | RCC_PLL3DIVR_R3)) |
 		(((REF3_MUL - 1) << RCC_PLL3DIVR_N3_Pos) & RCC_PLL3DIVR_N3) |
-		(((ltdc_divr - 1) << RCC_PLL3DIVR_R3_Pos) & RCC_PLL3DIVR_R3) |	// нужно для нормального переключения SPI clock USB clock
+		(((ltdc_divr - 1) << RCC_PLL3DIVR_R3_Pos) & RCC_PLL3DIVR_R3) |	// РЅСѓР¶РЅРѕ РґР»СЏ РЅРѕСЂРјР°Р»СЊРЅРѕРіРѕ РїРµСЂРµРєР»СЋС‡РµРЅРёСЏ SPI clock USB clock
 		0;
 	RCC->PLLCFGR = (RCC->PLLCFGR & ~ (RCC_PLLCFGR_DIVR3EN | RCC_PLLCFGR_PLL3RGE | RCC_PLLCFGR_PLL3VCOSEL)) |
-		RCC_PLLCFGR_DIVR3EN |	// This bit can be written only when the PLL3 is disabled (PLL3ON = ‘0’ and PLL3RDY = ‘0’).
+		RCC_PLLCFGR_DIVR3EN |	// This bit can be written only when the PLL3 is disabled (PLL3ON = вЂ0вЂ™ and PLL3RDY = вЂ0вЂ™).
 #if PLL3_FREQ >= 150000000uL && PLL3_FREQ <= 420000000uL
 		1 * RCC_PLLCFGR_PLL3VCOSEL |	// 1: Medium VCO range: 150 to 420 MHz
 #else
@@ -7676,20 +7676,20 @@ lowlevel_stm32h7xx_pll_initialize(void)
 		0 * RCC_PLLCFGR_PLL3RGE_0 |	// 00: The PLL3 input (ref3_ck) clock range frequency is between 1 and 2 MHz
 		0;
 
-	RCC->CR |= RCC_CR_PLL3ON;				// Включил PLL3
+	RCC->CR |= RCC_CR_PLL3ON;				// Р’РєР»СЋС‡РёР» PLL3
 
 
-	while ((RCC->CR & RCC_CR_PLL3RDY) == 0)	// пока заработает PLL
+	while ((RCC->CR & RCC_CR_PLL3RDY) == 0)	// РїРѕРєР° Р·Р°СЂР°Р±РѕС‚Р°РµС‚ PLL
 		;
 
 #endif /* WITHUSEPLL3 && defined (LTDC_DOTCLK) */
 
-	const portholder_t flash_acr_latency = HARDWARE_FLASH_LATENCY; // Задержка для работы с памятью 5 WS for 168 MHz at 3.3 volt
-	/* Блок настройки ФЛЭШ */
+	const portholder_t flash_acr_latency = HARDWARE_FLASH_LATENCY; // Р—Р°РґРµСЂР¶РєР° РґР»СЏ СЂР°Р±РѕС‚С‹ СЃ РїР°РјСЏС‚СЊСЋ 5 WS for 168 MHz at 3.3 volt
+	/* Р‘Р»РѕРє РЅР°СЃС‚СЂРѕР№РєРё Р¤Р›Р­РЁ */
 	/* Reserved bits must be kept cleared. */
 	FLASH->ACR = (FLASH->ACR & ~ (FLASH_ACR_LATENCY | FLASH_ACR_WRHIGHFREQ)) |
 		FLASH_ACR_WRHIGHFREQ_3 |
-		flash_acr_latency |		//Задержка для работы с памятью
+		flash_acr_latency |		//Р—Р°РґРµСЂР¶РєР° РґР»СЏ СЂР°Р±РѕС‚С‹ СЃ РїР°РјСЏС‚СЊСЋ
 		0;
 
 	while ((FLASH->ACR & FLASH_ACR_LATENCY) != flash_acr_latency)
@@ -7733,7 +7733,7 @@ lowlevel_stm32h7xx_pll_initialize(void)
 		0 * RCC_D2CCIP2R_I2C123SEL_0 |		// rcc_pclk1
 		0;
 
-	// Выбор источника тактирования блока USB
+	// Р’С‹Р±РѕСЂ РёСЃС‚РѕС‡РЅРёРєР° С‚Р°РєС‚РёСЂРѕРІР°РЅРёСЏ Р±Р»РѕРєР° USB
 	// RCC Domain 2 Kernel Clock Configuration Register
 	// USBOTG 1 and 2 kernel clock source selection
 	RCC->D2CCIP2R = (RCC->D2CCIP2R & ~ (RCC_D2CCIP2R_USBSEL)) |
@@ -7750,7 +7750,7 @@ lowlevel_stm32h7xx_pll_initialize(void)
 
 	if (0)
 	{
-		// Тестирование тактовой частоты - подача на сигнал MCO1
+		// РўРµСЃС‚РёСЂРѕРІР°РЅРёРµ С‚Р°РєС‚РѕРІРѕР№ С‡Р°СЃС‚РѕС‚С‹ - РїРѕРґР°С‡Р° РЅР° СЃРёРіРЅР°Р» MCO1
 		arm_hardware_pioa_altfn50(1U << 8, AF_SYSTEM);			/* PA0 MCO1 */
 		RCC->CFGR = (RCC->CFGR & ~ (RCC_CFGR_MCO1 | RCC_CFGR_MCO1PRE)) |
 			1 * RCC_CFGR_MCO1PRE_0 |	// divide to 1: bypass
@@ -7763,9 +7763,9 @@ lowlevel_stm32h7xx_pll_initialize(void)
 	}
 }
 
-// Настроить выход PLLQ на 48 МГц, подключить SDMMC и USB к нему.
-// Настройка делителя делается при инициализации PLL, здесь измениь делитель не получается.
-// Версия для STM32H7 возвращает текушее значение делитедя.
+// РќР°СЃС‚СЂРѕРёС‚СЊ РІС‹С…РѕРґ PLLQ РЅР° 48 РњР“С†, РїРѕРґРєР»СЋС‡РёС‚СЊ SDMMC Рё USB Рє РЅРµРјСѓ.
+// РќР°СЃС‚СЂРѕР№РєР° РґРµР»РёС‚РµР»СЏ РґРµР»Р°РµС‚СЃСЏ РїСЂРё РёРЅРёС†РёР°Р»РёР·Р°С†РёРё PLL, Р·РґРµСЃСЊ РёР·РјРµРЅРёСЊ РґРµР»РёС‚РµР»СЊ РЅРµ РїРѕР»СѓС‡Р°РµС‚СЃСЏ.
+// Р’РµСЂСЃРёСЏ РґР»СЏ STM32H7 РІРѕР·РІСЂР°С‰Р°РµС‚ С‚РµРєСѓС€РµРµ Р·РЅР°С‡РµРЅРёРµ РґРµР»РёС‚РµРґСЏ.
 static uint_fast32_t arm_hardware_stm32f7xx_pllq_initialize(void)
 {
 	const uint32_t stm32h7xx_pllq = ((RCC->PLL1DIVR & RCC_PLL1DIVR_Q1) >> RCC_PLL1DIVR_Q1_Pos) + 1;
@@ -7777,10 +7777,10 @@ static uint_fast32_t arm_hardware_stm32f7xx_pllq_initialize(void)
 static void lowlevel_stm32h7xx_pllsai_initialize(void)
 {
 
-	/* для устройств на шине APB2 (up to 72 MHz) */
+	/* РґР»СЏ СѓСЃС‚СЂРѕР№СЃС‚РІ РЅР° С€РёРЅРµ APB2 (up to 72 MHz) */
 	auto uint_fast32_t 
 	calcdivround_saifreq(
-		uint_fast32_t freq		/* требуемая частота на выходе делителя, в герцах. */
+		uint_fast32_t freq		/* С‚СЂРµР±СѓРµРјР°СЏ С‡Р°СЃС‚РѕС‚Р° РЅР° РІС‹С…РѕРґРµ РґРµР»РёС‚РµР»СЏ, РІ РіРµСЂС†Р°С…. */
 		)
 	{
 		//#error TODO: check freq at outputs vsync/hsync
@@ -7792,9 +7792,9 @@ static void lowlevel_stm32h7xx_pllsai_initialize(void)
 	ASSERT(value >= 2);
 	debug_printf_P(PSTR("lowlevel_stm32h7xx_pllsai_initialize: value=%u, prei=%u\n"), value, prei);
 
-	// Настройка PLLSAI
-	// Частота сравнения та же самая, что и в основной PLL
-	// RCC_PLLSAICFGR_PLLSAIQ используется, если для SAI используется отдельная PLL - эта.
+	// РќР°СЃС‚СЂРѕР№РєР° PLLSAI
+	// Р§Р°СЃС‚РѕС‚Р° СЃСЂР°РІРЅРµРЅРёСЏ С‚Р° Р¶Рµ СЃР°РјР°СЏ, С‡С‚Рѕ Рё РІ РѕСЃРЅРѕРІРЅРѕР№ PLL
+	// RCC_PLLSAICFGR_PLLSAIQ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ, РµСЃР»Рё РґР»СЏ SAI РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РѕС‚РґРµР»СЊРЅР°СЏ PLL - СЌС‚Р°.
 	RCC->PLLSAICFGR = (RCC->PLLSAICFGR & ~ (RCC_PLLSAICFGR_PLLSAIN | /*RCC_PLLSAICFGR_PLLSAIQ | */ RCC_PLLSAICFGR_PLLSAIR)) |
 		((SAIREF1_MUL << RCC_PLLSAICFGR_PLLSAIN_Pos) & RCC_PLLSAICFGR_PLLSAIN) |	// PLLI2SN bits = multiplier, freq=192..432 MHz, vale = 2..432
 		((value << RCC_PLLSAICFGR_PLLSAIR_Pos) & RCC_PLLSAICFGR_PLLSAIR) |	// PLLI2SR bits - output divider, 2..7
@@ -7804,8 +7804,8 @@ static void lowlevel_stm32h7xx_pllsai_initialize(void)
 		((prei << RCC_DCKCFGR_PLLSAIDIVR_Pos) & RCC_DCKCFGR_PLLSAIDIVR) |	// division factor for LCD_CLK. 2: PLLSAIDIVR = /8  3: PLLSAIDIVR = /16
 		0;
 
-	RCC->CR |= RCC_CR_PLLSAION;				// Включил PLL
-	while ((RCC->CR & RCC_CR_PLLSAIRDY) == 0)	// пока заработает PLL
+	RCC->CR |= RCC_CR_PLLSAION;				// Р’РєР»СЋС‡РёР» PLL
+	while ((RCC->CR & RCC_CR_PLLSAIRDY) == 0)	// РїРѕРєР° Р·Р°СЂР°Р±РѕС‚Р°РµС‚ PLL
 		;
 }
 
@@ -7911,7 +7911,7 @@ static void
 lowlevel_stm32f10x_pll_clock(void)
 {
 	#if WITHCPUXOSC
-		// Внешний генератор
+		// Р’РЅРµС€РЅРёР№ РіРµРЅРµСЂР°С‚РѕСЂ
 		// Enable HSI
 		RCC->CR = (RCC->CR & ~ (RCC_CR_HSEON | RCC_CR_HSION | RCC_CR_HSEBYP)) | 
 			RCC_CR_HSEON |
@@ -7920,13 +7920,13 @@ lowlevel_stm32f10x_pll_clock(void)
 		while (!(RCC->CR & RCC_CR_HSERDY)) 
 			;
 	#elif WITHCPUXTAL
-		// внешний кварцевый резонатор
+		// РІРЅРµС€РЅРёР№ РєРІР°СЂС†РµРІС‹Р№ СЂРµР·РѕРЅР°С‚РѕСЂ
 		// Enable HSI
 		RCC->CR = (RCC->CR & ~ (RCC_CR_HSEON | RCC_CR_HSION | RCC_CR_HSEBYP)) | RCC_CR_HSEON;
 		while (!(RCC->CR & RCC_CR_HSERDY)) 
 			;
 	#else /* WITHCPUXTAL */
-		// внутренний генератор
+		// РІРЅСѓС‚СЂРµРЅРЅРёР№ РіРµРЅРµСЂР°С‚РѕСЂ
 		// Enable HSI
 		RCC->CR = (RCC->CR & ~ (RCC_CR_HSEON | RCC_CR_HSION | RCC_CR_HSEBYP)) | RCC_CR_HSION;
 		while (!(RCC->CR & RCC_CR_HSIRDY)) 
@@ -8008,9 +8008,9 @@ lowlevel_stm32f10x_pll_clock(void)
 #endif
 
 #if 0
-	// Тестирование тактовой частоты - подача на сигнал MCO
+	// РўРµСЃС‚РёСЂРѕРІР°РЅРёРµ С‚Р°РєС‚РѕРІРѕР№ С‡Р°СЃС‚РѕС‚С‹ - РїРѕРґР°С‡Р° РЅР° СЃРёРіРЅР°Р» MCO
 	//RCC->CFGR = (RCC->CFGR & ~ RCC_CFGR_MCO) | RCC_CFGR_MCO_SYSCLK; 
-	RCC->CFGR = (RCC->CFGR & ~ RCC_CFGR_MCO) | RCC_CFGR_MCO_PLL;	// Смотрим PLL / 2
+	RCC->CFGR = (RCC->CFGR & ~ RCC_CFGR_MCO) | RCC_CFGR_MCO_PLL;	// РЎРјРѕС‚СЂРёРј PLL / 2
 	//RCC->CFGR = (RCC->CFGR & ~ RCC_CFGR_MCO) | RCC_CFGR_MCO_HSI; 
 	while ((RCC->CFGR & RCC_CFGR_MCOF) == 0) 
 		;
@@ -8027,13 +8027,13 @@ static void
 lowlevel_stm32f30x_pll_clock(void)
 {
 	#if WITHCPUXTAL
-		// внешний кварцевый резонатор
+		// РІРЅРµС€РЅРёР№ РєРІР°СЂС†РµРІС‹Р№ СЂРµР·РѕРЅР°С‚РѕСЂ
 		// Enable HSI
 		RCC->CR = (RCC->CR & ~ (RCC_CR_HSEON | RCC_CR_HSION | RCC_CR_HSEBYP)) | RCC_CR_HSEON;
 		while (!(RCC->CR & RCC_CR_HSERDY)) 
 			;
 	#else /* WITHCPUXTAL */
-		// внутренний генератор
+		// РІРЅСѓС‚СЂРµРЅРЅРёР№ РіРµРЅРµСЂР°С‚РѕСЂ
 		// Enable HSI
 		RCC->CR = (RCC->CR & ~ (RCC_CR_HSEON | RCC_CR_HSION | RCC_CR_HSEBYP)) | RCC_CR_HSION;
 		while (!(RCC->CR & RCC_CR_HSIRDY)) 
@@ -8115,9 +8115,9 @@ lowlevel_stm32f30x_pll_clock(void)
 #endif
 
 #if 0
-	// Тестирование тактовой частоты - подача на сигнал MCO
+	// РўРµСЃС‚РёСЂРѕРІР°РЅРёРµ С‚Р°РєС‚РѕРІРѕР№ С‡Р°СЃС‚РѕС‚С‹ - РїРѕРґР°С‡Р° РЅР° СЃРёРіРЅР°Р» MCO
 	//RCC->CFGR = (RCC->CFGR & ~ RCC_CFGR_MCO) | RCC_CFGR_MCO_SYSCLK; 
-	RCC->CFGR = (RCC->CFGR & ~ RCC_CFGR_MCO) | RCC_CFGR_MCO_PLL;	// Смотрим PLL / 2
+	RCC->CFGR = (RCC->CFGR & ~ RCC_CFGR_MCO) | RCC_CFGR_MCO_PLL;	// РЎРјРѕС‚СЂРёРј PLL / 2
 	//RCC->CFGR = (RCC->CFGR & ~ RCC_CFGR_MCO) | RCC_CFGR_MCO_HSI; 
 	while ((RCC->CFGR & RCC_CFGR_MCOF) == 0) 
 		;
@@ -8166,20 +8166,20 @@ static void program_mckr_switchtomain(void)
 }
 
 static void program_use_xtal(
-	int useXtalFlag	/* 0 - использование RC генератора, не-0 - использование кварцевого генератора */
+	int useXtalFlag	/* 0 - РёСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ RC РіРµРЅРµСЂР°С‚РѕСЂР°, РЅРµ-0 - РёСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ РєРІР°СЂС†РµРІРѕРіРѕ РіРµРЅРµСЂР°С‚РѕСЂР° */
 	)
 {
-	// бит CKGR_MOR_MOSCSEL - источник MAINCK это кварцевый генератор
+	// Р±РёС‚ CKGR_MOR_MOSCSEL - РёСЃС‚РѕС‡РЅРёРє MAINCK СЌС‚Рѕ РєРІР°СЂС†РµРІС‹Р№ РіРµРЅРµСЂР°С‚РѕСЂ
 	const unsigned long mor = PMC->CKGR_MOR & ~ CKGR_MOR_KEY_Msk;
 	if (((mor & CKGR_MOR_MOSCSEL) != 0) == (useXtalFlag != 0))
-		return;		// переключение не требуется
+		return;		// РїРµСЂРµРєР»СЋС‡РµРЅРёРµ РЅРµ С‚СЂРµР±СѓРµС‚СЃСЏ
 
 	if (useXtalFlag != 0)
 		PMC->CKGR_MOR = CKGR_MOR_KEY_PASSWD | (mor | CKGR_MOR_MOSCSEL);
 	else
 		PMC->CKGR_MOR = CKGR_MOR_KEY_PASSWD | (mor & ~ CKGR_MOR_MOSCSEL);
 
-	// ожидание переключения кварцевого генератора
+	// РѕР¶РёРґР°РЅРёРµ РїРµСЂРµРєР»СЋС‡РµРЅРёСЏ РєРІР°СЂС†РµРІРѕРіРѕ РіРµРЅРµСЂР°С‚РѕСЂР°
 	while ((PMC->PMC_SR & PMC_SR_MOSCSELS) == 0)
 		;
 }
@@ -8188,13 +8188,13 @@ static void program_use_xtal(
 static void program_enable_RC_12MHz(void)
 {
 #ifdef CKGR_MOR_MOSCRCF_12_MHz
-    PMC->CKGR_MOR = (PMC->CKGR_MOR & ~ (CKGR_MOR_MOSCRCF_Msk | CKGR_MOR_KEY_Msk)) | // остальные биты не трогаем
+    PMC->CKGR_MOR = (PMC->CKGR_MOR & ~ (CKGR_MOR_MOSCRCF_Msk | CKGR_MOR_KEY_Msk)) | // РѕСЃС‚Р°Р»СЊРЅС‹Рµ Р±РёС‚С‹ РЅРµ С‚СЂРѕРіР°РµРј
 		CKGR_MOR_KEY_PASSWD | CKGR_MOR_MOSCRCEN | CKGR_MOR_MOSCRCF_12_MHz;
 #else
-    PMC->CKGR_MOR = (PMC->CKGR_MOR & ~ (CKGR_MOR_MOSCRCF_Msk | CKGR_MOR_KEY_Msk)) | // остальные биты не трогаем
+    PMC->CKGR_MOR = (PMC->CKGR_MOR & ~ (CKGR_MOR_MOSCRCF_Msk | CKGR_MOR_KEY_Msk)) | // РѕСЃС‚Р°Р»СЊРЅС‹Рµ Р±РёС‚С‹ РЅРµ С‚СЂРѕРіР°РµРј
 		CKGR_MOR_KEY_PASSWD | CKGR_MOR_MOSCRCEN | CKGR_MOR_MOSCRCF_12MHZ;
 #endif
-	// ожидание запуска RC генератора
+	// РѕР¶РёРґР°РЅРёРµ Р·Р°РїСѓСЃРєР° RC РіРµРЅРµСЂР°С‚РѕСЂР°
     while ((PMC->PMC_SR & PMC_SR_MOSCRCS) == 0)	
 		;
 }
@@ -8216,14 +8216,14 @@ static void program_enable_xtal(void)
 {
 	const unsigned long mor = PMC->CKGR_MOR & ~ (CKGR_MOR_KEY_Msk | CKGR_MOR_MOSCXTST_Msk);
 	if ((mor & CKGR_MOR_MOSCXTEN) != 0)
-		return;		// кварцевый генератор уже запущен
+		return;		// РєРІР°СЂС†РµРІС‹Р№ РіРµРЅРµСЂР°С‚РѕСЂ СѓР¶Рµ Р·Р°РїСѓС‰РµРЅ
 
     PMC->CKGR_MOR = 
-		mor |	// стврые значения битов
+		mor |	// СЃС‚РІСЂС‹Рµ Р·РЅР°С‡РµРЅРёСЏ Р±РёС‚РѕРІ
 		CKGR_MOR_KEY_PASSWD | 
 		CKGR_MOR_MOSCXTST(128) | 
 		CKGR_MOR_MOSCXTEN;
-	// ожидание запуска кварцевого генератора
+	// РѕР¶РёРґР°РЅРёРµ Р·Р°РїСѓСЃРєР° РєРІР°СЂС†РµРІРѕРіРѕ РіРµРЅРµСЂР°С‚РѕСЂР°
     while ((PMC->PMC_SR & PMC_SR_MOSCXTS) == 0)
 		;
 }
@@ -8233,19 +8233,19 @@ static void program_enable_plla(unsigned pllmul, unsigned plldiv)
 #ifdef CKGR_PLLAR_ONE
     /* Initialize PLLA */
     PMC->CKGR_PLLAR = 
-		(CKGR_PLLAR_ONE |	// всегда должен быть установлен
+		(CKGR_PLLAR_ONE |	// РІСЃРµРіРґР° РґРѕР»Р¶РµРЅ Р±С‹С‚СЊ СѓСЃС‚Р°РЅРѕРІР»РµРЅ
 		((pllmul - 1) << CKGR_PLLAR_MULA_Pos) | 
 		(0x4 << CKGR_PLLAR_PLLACOUNT_Pos) | 
 		(plldiv << CKGR_PLLAR_DIVA_Pos));
 #else
     /* Initialize PLLA */
     PMC->CKGR_PLLAR = 
-		(CKGR_PLLAR_STUCKTO1 |	// всегда должен быть установлен
+		(CKGR_PLLAR_STUCKTO1 |	// РІСЃРµРіРґР° РґРѕР»Р¶РµРЅ Р±С‹С‚СЊ СѓСЃС‚Р°РЅРѕРІР»РµРЅ
 		((pllmul - 1) << CKGR_PLLAR_MULA_Pos) | 
 		(0x4 << CKGR_PLLAR_PLLACOUNT_Pos) | 
 		(plldiv << CKGR_PLLAR_DIVA_Pos));
 #endif
-	// Ожидание запуска PLL A
+	// РћР¶РёРґР°РЅРёРµ Р·Р°РїСѓСЃРєР° PLL A
     while (!(PMC->PMC_SR & PMC_SR_LOCKA))
 		;
 }
@@ -8261,7 +8261,7 @@ static void program_enable_pllb(void)
 
     /* Initialize PLLA */
     PMC->CKGR_PLLBR = 
-		//CKGR_PLLBR_STUCKTO1 |	// всегда должен быть установлен
+		//CKGR_PLLBR_STUCKTO1 |	// РІСЃРµРіРґР° РґРѕР»Р¶РµРЅ Р±С‹С‚СЊ СѓСЃС‚Р°РЅРѕРІР»РµРЅ
 		((osc_mul - 1) << CKGR_PLLBR_MULB_Pos) | 
 		(0x1 << CKGR_PLLBR_PLLBCOUNT_Pos) | 
 		(osc_div << CKGR_PLLBR_DIVB_Pos);
@@ -8284,16 +8284,16 @@ static void program_mckr_switchtoslow(void)
 #endif
 }
 
-// В описании процессора упоминается о том, что модификацию EEFC_FMR
-// нельзя выполняить кодом из FLASH ROM. Данная пфункция копируется в SRAM
-// и работает оттуда
+// Р’ РѕРїРёСЃР°РЅРёРё РїСЂРѕС†РµСЃСЃРѕСЂР° СѓРїРѕРјРёРЅР°РµС‚СЃСЏ Рѕ С‚РѕРј, С‡С‚Рѕ РјРѕРґРёС„РёРєР°С†РёСЋ EEFC_FMR
+// РЅРµР»СЊР·СЏ РІС‹РїРѕР»РЅСЏРёС‚СЊ РєРѕРґРѕРј РёР· FLASH ROM. Р”Р°РЅРЅР°СЏ РїС„СѓРЅРєС†РёСЏ РєРѕРїРёСЂСѓРµС‚СЃСЏ РІ SRAM
+// Рё СЂР°Р±РѕС‚Р°РµС‚ РѕС‚С‚СѓРґР°
 static void RAMFUNC_NONILINE lowlevel_sam4s_setws(unsigned fws)
 {
 	EFC0->EEFC_FMR = EEFC_FMR_FWS(fws);	// Flash Wait State 
 	//EFC1->EEFC_FMR = EEFC_FMR_FWS(fws);	// Flash Wait State 
 }
 
-// Перенастройка на работу с внутренним RC генератором 12 МГц	
+// РџРµСЂРµРЅР°СЃС‚СЂРѕР№РєР° РЅР° СЂР°Р±РѕС‚Сѓ СЃ РІРЅСѓС‚СЂРµРЅРЅРёРј RC РіРµРЅРµСЂР°С‚РѕСЂРѕРј 12 РњР“С†	
 static void lowlevel_sam4s_init_clock_12_RC12(void)
 {
 	program_enable_RC_12MHz();
@@ -8304,7 +8304,7 @@ static void lowlevel_sam4s_init_clock_12_RC12(void)
 
 	
 /* 
-  инициализация внутреннего умножителя частоты.
+  РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РІРЅСѓС‚СЂРµРЅРЅРµРіРѕ СѓРјРЅРѕР¶РёС‚РµР»СЏ С‡Р°СЃС‚РѕС‚С‹.
 */
 static void lowlevel_sam4s_init_pll_clock_RC12(unsigned pllmul, unsigned plldiv, unsigned fws)
 {
@@ -8314,8 +8314,8 @@ static void lowlevel_sam4s_init_pll_clock_RC12(unsigned pllmul, unsigned plldiv,
 	// FWS field = 2: up to 64 MHz
 	lowlevel_sam4s_setws(3);	// Flash Wait State 
 
-	//program_mckr_switchtoslow();	// переключаем на внутренний генератор 32 кГц
-	program_mckr_switchtomain();	// выключить ФАПЧ, если была включена
+	//program_mckr_switchtoslow();	// РїРµСЂРµРєР»СЋС‡Р°РµРј РЅР° РІРЅСѓС‚СЂРµРЅРЅРёР№ РіРµРЅРµСЂР°С‚РѕСЂ 32 РєР“С†
+	program_mckr_switchtomain();	// РІС‹РєР»СЋС‡РёС‚СЊ Р¤РђРџР§, РµСЃР»Рё Р±С‹Р»Р° РІРєР»СЋС‡РµРЅР°
 	program_enable_RC_12MHz();
 	program_use_xtal(0);
 	program_disable_xtal();
@@ -8327,11 +8327,11 @@ static void lowlevel_sam4s_init_pll_clock_RC12(unsigned pllmul, unsigned plldiv,
 }
 
 /* 
-  инициализация внутреннего умножителя частоты.
-  Вход - 12 МГц, кварцевый резонатор
-  внутренняя тактовая - 64 МГц,
-  частота генератора - 12 МГц
-  Частота сравнения PLL = 4 МГц
+  РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РІРЅСѓС‚СЂРµРЅРЅРµРіРѕ СѓРјРЅРѕР¶РёС‚РµР»СЏ С‡Р°СЃС‚РѕС‚С‹.
+  Р’С…РѕРґ - 12 РњР“С†, РєРІР°СЂС†РµРІС‹Р№ СЂРµР·РѕРЅР°С‚РѕСЂ
+  РІРЅСѓС‚СЂРµРЅРЅСЏСЏ С‚Р°РєС‚РѕРІР°СЏ - 64 РњР“С†,
+  С‡Р°СЃС‚РѕС‚Р° РіРµРЅРµСЂР°С‚РѕСЂР° - 12 РњР“С†
+  Р§Р°СЃС‚РѕС‚Р° СЃСЂР°РІРЅРµРЅРёСЏ PLL = 4 РњР“С†
 */
 static void 
 lowlevel_sam4s_init_pll_clock_xtal(unsigned pllmul, unsigned plldiv, unsigned ws)
@@ -8342,8 +8342,8 @@ lowlevel_sam4s_init_pll_clock_xtal(unsigned pllmul, unsigned plldiv, unsigned ws
 	// FWS field = 2: up to 64 MHz
 	lowlevel_sam4s_setws(3);	// Flash Wait State 
 
-	//program_mckr_switchtoslow();	// переключаем на внутренний генератор 32 кГц
-	program_mckr_switchtomain();	// выключить ФАПЧ, если была включена
+	//program_mckr_switchtoslow();	// РїРµСЂРµРєР»СЋС‡Р°РµРј РЅР° РІРЅСѓС‚СЂРµРЅРЅРёР№ РіРµРЅРµСЂР°С‚РѕСЂ 32 РєР“С†
+	program_mckr_switchtomain();	// РІС‹РєР»СЋС‡РёС‚СЊ Р¤РђРџР§, РµСЃР»Рё Р±С‹Р»Р° РІРєР»СЋС‡РµРЅР°
 	program_enable_xtal();
 	program_use_xtal(1);
 	program_disable_rc();
@@ -8363,7 +8363,7 @@ lowlevel_sam4s_init_pll_clock_xtal(unsigned pllmul, unsigned plldiv, unsigned ws
 static void 
 lowlevel_stm32f0xx_hsi_clock(void)
 {
-	// внутренний генератор
+	// РІРЅСѓС‚СЂРµРЅРЅРёР№ РіРµРЅРµСЂР°С‚РѕСЂ
 	// Enable HSI
 	RCC->CR = (RCC->CR & ~ (RCC_CR_HSEON | RCC_CR_HSION | RCC_CR_HSEBYP)) | RCC_CR_HSION;
 	while (!(RCC->CR & RCC_CR_HSIRDY)) 
@@ -8386,13 +8386,13 @@ static void
 lowlevel_stm32f0xx_pll_clock(void)
 {
 	#if WITHCPUXTAL
-		// внешний кварцевый резонатор
+		// РІРЅРµС€РЅРёР№ РєРІР°СЂС†РµРІС‹Р№ СЂРµР·РѕРЅР°С‚РѕСЂ
 		// Enable HSI
 		RCC->CR = (RCC->CR & ~ (RCC_CR_HSEON | RCC_CR_HSION | RCC_CR_HSEBYP)) | RCC_CR_HSEON;
 		while (!(RCC->CR & RCC_CR_HSERDY)) 
 			;
 	#else /* WITHCPUXTAL */
-		// внутренний генератор
+		// РІРЅСѓС‚СЂРµРЅРЅРёР№ РіРµРЅРµСЂР°С‚РѕСЂ
 		// Enable HSI
 		RCC->CR = (RCC->CR & ~ (RCC_CR_HSEON | RCC_CR_HSION | RCC_CR_HSEBYP)) | RCC_CR_HSION;
 		while (!(RCC->CR & RCC_CR_HSIRDY)) 
@@ -8466,9 +8466,9 @@ lowlevel_stm32f0xx_pll_clock(void)
 #endif
 
 #if 0
-	// Тестирование тактовой частоты - подача на сигнал MCO
+	// РўРµСЃС‚РёСЂРѕРІР°РЅРёРµ С‚Р°РєС‚РѕРІРѕР№ С‡Р°СЃС‚РѕС‚С‹ - РїРѕРґР°С‡Р° РЅР° СЃРёРіРЅР°Р» MCO
 	//RCC->CFGR = (RCC->CFGR & ~ RCC_CFGR_MCO) | RCC_CFGR_MCO_SYSCLK; 
-	RCC->CFGR = (RCC->CFGR & ~ RCC_CFGR_MCO) | RCC_CFGR_MCO_PLL;	// Смотрим PLL / 2
+	RCC->CFGR = (RCC->CFGR & ~ RCC_CFGR_MCO) | RCC_CFGR_MCO_PLL;	// РЎРјРѕС‚СЂРёРј PLL / 2
 	//RCC->CFGR = (RCC->CFGR & ~ RCC_CFGR_MCO) | RCC_CFGR_MCO_HSI; 
 	while ((RCC->CFGR & RCC_CFGR_MCOF) == 0) 
 		;
@@ -8485,7 +8485,7 @@ lowlevel_stm32f0xx_pll_clock(void)
 static void 
 lowlevel_stm32l0xx_hsi_clock(void)
 {
-	// внутренний генератор
+	// РІРЅСѓС‚СЂРµРЅРЅРёР№ РіРµРЅРµСЂР°С‚РѕСЂ
 	// Enable HSI
 	RCC->CR = (RCC->CR & ~ (RCC_CR_HSEON | RCC_CR_HSION | RCC_CR_HSEBYP)) | RCC_CR_HSION;
 	while ((RCC->CR & RCC_CR_HSIRDY) == 0) 
@@ -8531,19 +8531,19 @@ void hardware_tim21_initialize(void)
 	const uint_fast8_t prei = calcdivider(calcdivround_pclk2(1000), STM32F_TIM3_TIMER_WIDTH, STM32F_TIM3_TIMER_TAPS, & value, 1);
 
 	// test: initialize TIM21, PA3 - output
-	// TIM5 включён на выход TIM2
-	RCC->APB2ENR |= RCC_APB2ENR_TIM21EN;   // подаем тактирование на TIM2 & TIM5
+	// TIM5 РІРєР»СЋС‡С‘РЅ РЅР° РІС‹С…РѕРґ TIM2
+	RCC->APB2ENR |= RCC_APB2ENR_TIM21EN;   // РїРѕРґР°РµРј С‚Р°РєС‚РёСЂРѕРІР°РЅРёРµ РЅР° TIM2 & TIM5
 	__DSB();
 
 	TIM21->CCMR1 = TIM_CCMR1_OC2M_0 | TIM_CCMR1_OC2M_1 | TIM_CCMR1_OC2M_2;	// Output Compare 3 Mode
 	TIM21->CCER = TIM_CCER_CC2E;
 	HARDWARE_ALTERNATE_INITIALIZE();	 /* PA3 - TIM21_CH2 output  */
 
-	//TIM3->DIER = TIM_DIER_UIE;        	 // разрешить событие от таймера
+	//TIM3->DIER = TIM_DIER_UIE;        	 // СЂР°Р·СЂРµС€РёС‚СЊ СЃРѕР±С‹С‚РёРµ РѕС‚ С‚Р°Р№РјРµСЂР°
 	TIM21->PSC = 1;
 	TIM21->CCR2 = (value / 2) & TIM_CCR2_CCR2;	// TIM4_CH3 - sound output
 	TIM21->ARR = value - 1;
-	TIM21->CR1 = TIM_CR1_CEN | TIM_CR1_ARPE; /* разрешить перезагрузку и включить таймер = перенесено в установку скорости */
+	TIM21->CR1 = TIM_CR1_CEN | TIM_CR1_ARPE; /* СЂР°Р·СЂРµС€РёС‚СЊ РїРµСЂРµР·Р°РіСЂСѓР·РєСѓ Рё РІРєР»СЋС‡РёС‚СЊ С‚Р°Р№РјРµСЂ = РїРµСЂРµРЅРµСЃРµРЅРѕ РІ СѓСЃС‚Р°РЅРѕРІРєСѓ СЃРєРѕСЂРѕСЃС‚Рё */
 }
 
 
@@ -8567,13 +8567,13 @@ lowlevel_stm32l0xx_pll_clock(void)
 		;
 
 	#if WITHCPUXTAL
-		// внешний кварцевый резонатор
+		// РІРЅРµС€РЅРёР№ РєРІР°СЂС†РµРІС‹Р№ СЂРµР·РѕРЅР°С‚РѕСЂ
 		// Enable HSE
 		RCC->CR |= RCC_CR_HSEON;
 		while (!(RCC->CR & RCC_CR_HSERDY)) 
 			;
 	#else /* WITHCPUXTAL */
-		// внутренний генератор
+		// РІРЅСѓС‚СЂРµРЅРЅРёР№ РіРµРЅРµСЂР°С‚РѕСЂ
 		// Enable HSI
 		RCC->CR = (RCC->CR & ~ (RCC_CR_HSEON | RCC_CR_HSION | RCC_CR_HSEBYP)) | RCC_CR_HSION;
 		while (!(RCC->CR & RCC_CR_HSIRDY)) 
@@ -8650,9 +8650,9 @@ lowlevel_stm32l0xx_pll_clock(void)
 #endif
 
 #if 0
-	// Тестирование тактовой частоты - подача на сигнал MCO
+	// РўРµСЃС‚РёСЂРѕРІР°РЅРёРµ С‚Р°РєС‚РѕРІРѕР№ С‡Р°СЃС‚РѕС‚С‹ - РїРѕРґР°С‡Р° РЅР° СЃРёРіРЅР°Р» MCO
 	//RCC->CFGR = (RCC->CFGR & ~ RCC_CFGR_MCO) | RCC_CFGR_MCO_SYSCLK; 
-	RCC->CFGR = (RCC->CFGR & ~ RCC_CFGR_MCO) | RCC_CFGR_MCO_PLL;	// Смотрим PLL / 2
+	RCC->CFGR = (RCC->CFGR & ~ RCC_CFGR_MCO) | RCC_CFGR_MCO_PLL;	// РЎРјРѕС‚СЂРёРј PLL / 2
 	//RCC->CFGR = (RCC->CFGR & ~ RCC_CFGR_MCO) | RCC_CFGR_MCO_HSI; 
 	while ((RCC->CFGR & RCC_CFGR_MCOF) == 0) 
 		;
@@ -8840,36 +8840,36 @@ void CPG_Init(void)
 
 #if CPUSTYLE_ARM_CM7
 
-// Сейчас в эту память будем читать по DMA
-// Убрать копию этой области из кэша
-// Используется только в startup
+// РЎРµР№С‡Р°СЃ РІ СЌС‚Сѓ РїР°РјСЏС‚СЊ Р±СѓРґРµРј С‡РёС‚Р°С‚СЊ РїРѕ DMA
+// РЈР±СЂР°С‚СЊ РєРѕРїРёСЋ СЌС‚РѕР№ РѕР±Р»Р°СЃС‚Рё РёР· РєСЌС€Р°
+// РСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ С‚РѕР»СЊРєРѕ РІ startup
 void arm_hardware_invalidate(uintptr_t base, size_t size)
 {
-	//ASSERT((base % 32) == 0);		// при работе с BACKUP SRAM невыровненно
+	//ASSERT((base % 32) == 0);		// РїСЂРё СЂР°Р±РѕС‚Рµ СЃ BACKUP SRAM РЅРµРІС‹СЂРѕРІРЅРµРЅРЅРѕ
 	SCB_InvalidateDCache_by_Addr((void *) base, size);	// DCIMVAC register used.
 }
 
-// Сейчас эта память будет записываться по DMA куда-то
-// Записать содержимое кэша данных в память
+// РЎРµР№С‡Р°СЃ СЌС‚Р° РїР°РјСЏС‚СЊ Р±СѓРґРµС‚ Р·Р°РїРёСЃС‹РІР°С‚СЊСЃСЏ РїРѕ DMA РєСѓРґР°-С‚Рѕ
+// Р—Р°РїРёСЃР°С‚СЊ СЃРѕРґРµСЂР¶РёРјРѕРµ РєСЌС€Р° РґР°РЅРЅС‹С… РІ РїР°РјСЏС‚СЊ
 void arm_hardware_flush(uintptr_t base, size_t size)
 {
-	//ASSERT((base % 32) == 0);		// при работе с BACKUP SRAM невыровненно
+	//ASSERT((base % 32) == 0);		// РїСЂРё СЂР°Р±РѕС‚Рµ СЃ BACKUP SRAM РЅРµРІС‹СЂРѕРІРЅРµРЅРЅРѕ
 	SCB_CleanDCache_by_Addr((void *) base, size);	// DCCMVAC register used.
 }
 
-// Записать содержимое кэша данных в память
-// применяетмся после начальной инициализации среды выполнния
+// Р—Р°РїРёСЃР°С‚СЊ СЃРѕРґРµСЂР¶РёРјРѕРµ РєСЌС€Р° РґР°РЅРЅС‹С… РІ РїР°РјСЏС‚СЊ
+// РїСЂРёРјРµРЅСЏРµС‚РјСЃСЏ РїРѕСЃР»Рµ РЅР°С‡Р°Р»СЊРЅРѕР№ РёРЅРёС†РёР°Р»РёР·Р°С†РёРё СЃСЂРµРґС‹ РІС‹РїРѕР»РЅРЅРёСЏ
 void arm_hardware_flush_all(void)
 {
 	SCB_CleanDCache();	// DCCMVAC register used.
 }
 
-// Сейчас эта память будет записываться по DMA куда-то. Потом содержимое не требуется
-// Записать содержимое кэша данных в память
-// Убрать копию этой области из кэша
+// РЎРµР№С‡Р°СЃ СЌС‚Р° РїР°РјСЏС‚СЊ Р±СѓРґРµС‚ Р·Р°РїРёСЃС‹РІР°С‚СЊСЃСЏ РїРѕ DMA РєСѓРґР°-С‚Рѕ. РџРѕС‚РѕРј СЃРѕРґРµСЂР¶РёРјРѕРµ РЅРµ С‚СЂРµР±СѓРµС‚СЃСЏ
+// Р—Р°РїРёСЃР°С‚СЊ СЃРѕРґРµСЂР¶РёРјРѕРµ РєСЌС€Р° РґР°РЅРЅС‹С… РІ РїР°РјСЏС‚СЊ
+// РЈР±СЂР°С‚СЊ РєРѕРїРёСЋ СЌС‚РѕР№ РѕР±Р»Р°СЃС‚Рё РёР· РєСЌС€Р°
 void arm_hardware_flush_invalidate(uintptr_t base, size_t size)
 {
-	//ASSERT((base % 32) == 0);		// при работе с BACKUP SRAM невыровненно
+	//ASSERT((base % 32) == 0);		// РїСЂРё СЂР°Р±РѕС‚Рµ СЃ BACKUP SRAM РЅРµРІС‹СЂРѕРІРЅРµРЅРЅРѕ
 	SCB_CleanInvalidateDCache_by_Addr((void *) base, size);	// DCCIMVAC register used.
 }
 
@@ -8880,21 +8880,21 @@ static unsigned long ICACHEROWSIZE; // 32
 
 #define MK_MVA(addr) ((uintptr_t) (addr) & ~ (uintptr_t) (DCACHEROWSIZE - 1))
 
-// Сейчас в эту память будем читать по DMA
-// Используется только в startup
+// РЎРµР№С‡Р°СЃ РІ СЌС‚Сѓ РїР°РјСЏС‚СЊ Р±СѓРґРµРј С‡РёС‚Р°С‚СЊ РїРѕ DMA
+// РСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ С‚РѕР»СЊРєРѕ РІ startup
 void arm_hardware_invalidate(uintptr_t base, size_t size)
 {
 	unsigned long len = (size + (DCACHEROWSIZE - 1)) / DCACHEROWSIZE + (((unsigned long) base & (DCACHEROWSIZE - 1)) != 0);
 	while (len --)
 	{
 		uintptr_t mva = MK_MVA(base);
-		L1C_InvalidateDCacheMVA((void *) mva);	// очистить кэш
+		L1C_InvalidateDCacheMVA((void *) mva);	// РѕС‡РёСЃС‚РёС‚СЊ РєСЌС€
 		base += DCACHEROWSIZE;
 	}
 }
 
 
-/* считать конфигурационные параметры data cache */
+/* СЃС‡РёС‚Р°С‚СЊ РєРѕРЅС„РёРіСѓСЂР°С†РёРѕРЅРЅС‹Рµ РїР°СЂР°РјРµС‚СЂС‹ data cache */
 static void ca9_cache_setup(void)
 {
 	uint32_t ccsidr0 [8];	// data cache parameters
@@ -8918,12 +8918,12 @@ static void ca9_cache_setup(void)
 		//const uint32_t maxsets1 = (ccsidr1 >> 13) & 0x7FFF;
 	}
 
-	// Установка размера строки кэша
+	// РЈСЃС‚Р°РЅРѕРІРєР° СЂР°Р·РјРµСЂР° СЃС‚СЂРѕРєРё РєСЌС€Р°
 	DCACHEROWSIZE = 4uL << (((ccsidr0 [0] >> 0) & 0x07) + 2);
 	ICACHEROWSIZE = 4uL << (((ccsidr1 [0] >> 0) & 0x07) + 2);
 }
 
-// используется в startup
+// РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РІ startup
 static void 
 arm_hardware_invalidate_all(void)
 {
@@ -8932,59 +8932,59 @@ arm_hardware_invalidate_all(void)
 	L1C_InvalidateBTAC();
 }
 
-// Сейчас эта память будет записываться по DMA куда-то
+// РЎРµР№С‡Р°СЃ СЌС‚Р° РїР°РјСЏС‚СЊ Р±СѓРґРµС‚ Р·Р°РїРёСЃС‹РІР°С‚СЊСЃСЏ РїРѕ DMA РєСѓРґР°-С‚Рѕ
 void arm_hardware_flush(uintptr_t base, size_t size)
 {
 	unsigned long len = (size + (DCACHEROWSIZE - 1)) / DCACHEROWSIZE + (((unsigned long) base & (DCACHEROWSIZE - 1)) != 0);
 	while (len --)
 	{
 		uintptr_t mva = MK_MVA(base);
-		L1C_CleanDCacheMVA((void *) mva);		// записать буфер, кэш продолжает хранить
+		L1C_CleanDCacheMVA((void *) mva);		// Р·Р°РїРёСЃР°С‚СЊ Р±СѓС„РµСЂ, РєСЌС€ РїСЂРѕРґРѕР»Р¶Р°РµС‚ С…СЂР°РЅРёС‚СЊ
 		base += DCACHEROWSIZE;
 	}
 }
 
 
-// Записать содержимое кэша данных в память
-// применяетмся после начальной инициализации среды выполнния
+// Р—Р°РїРёСЃР°С‚СЊ СЃРѕРґРµСЂР¶РёРјРѕРµ РєСЌС€Р° РґР°РЅРЅС‹С… РІ РїР°РјСЏС‚СЊ
+// РїСЂРёРјРµРЅСЏРµС‚РјСЃСЏ РїРѕСЃР»Рµ РЅР°С‡Р°Р»СЊРЅРѕР№ РёРЅРёС†РёР°Р»РёР·Р°С†РёРё СЃСЂРµРґС‹ РІС‹РїРѕР»РЅРЅРёСЏ
 void arm_hardware_flush_all(void)
 {
 	L1C_CleanDCacheAll();
 }
 
-// Сейчас эта память будет записываться по DMA куда-то. Потом содержимое не требуется
+// РЎРµР№С‡Р°СЃ СЌС‚Р° РїР°РјСЏС‚СЊ Р±СѓРґРµС‚ Р·Р°РїРёСЃС‹РІР°С‚СЊСЃСЏ РїРѕ DMA РєСѓРґР°-С‚Рѕ. РџРѕС‚РѕРј СЃРѕРґРµСЂР¶РёРјРѕРµ РЅРµ С‚СЂРµР±СѓРµС‚СЃСЏ
 void arm_hardware_flush_invalidate(uintptr_t base, size_t size)
 {
 	unsigned long len = (size + (DCACHEROWSIZE - 1)) / DCACHEROWSIZE + (((unsigned long) base & (DCACHEROWSIZE - 1)) != 0);
 	while (len --)
 	{
 		uintptr_t mva = MK_MVA(base);
-		L1C_CleanInvalidateDCacheMVA((void *) mva);	// записать буфер, очистить кэш
+		L1C_CleanInvalidateDCacheMVA((void *) mva);	// Р·Р°РїРёСЃР°С‚СЊ Р±СѓС„РµСЂ, РѕС‡РёСЃС‚РёС‚СЊ РєСЌС€
 		base += DCACHEROWSIZE;
 	}
 }
 
 #else
 
-// Заглушки
-// Сейчас в эту память будем читать по DMA
-// Используется только в startup
+// Р—Р°РіР»СѓС€РєРё
+// РЎРµР№С‡Р°СЃ РІ СЌС‚Сѓ РїР°РјСЏС‚СЊ Р±СѓРґРµРј С‡РёС‚Р°С‚СЊ РїРѕ DMA
+// РСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ С‚РѕР»СЊРєРѕ РІ startup
 void arm_hardware_invalidate(uintptr_t base, size_t size)
 {
 }
 
-// Сейчас эта память будет записываться по DMA куда-то
+// РЎРµР№С‡Р°СЃ СЌС‚Р° РїР°РјСЏС‚СЊ Р±СѓРґРµС‚ Р·Р°РїРёСЃС‹РІР°С‚СЊСЃСЏ РїРѕ DMA РєСѓРґР°-С‚Рѕ
 void arm_hardware_flush(uintptr_t base, size_t size)
 {
 }
 
-// Записать содержимое кэша данных в память
-// применяетмся после начальной инициализации среды выполнния
+// Р—Р°РїРёСЃР°С‚СЊ СЃРѕРґРµСЂР¶РёРјРѕРµ РєСЌС€Р° РґР°РЅРЅС‹С… РІ РїР°РјСЏС‚СЊ
+// РїСЂРёРјРµРЅСЏРµС‚РјСЃСЏ РїРѕСЃР»Рµ РЅР°С‡Р°Р»СЊРЅРѕР№ РёРЅРёС†РёР°Р»РёР·Р°С†РёРё СЃСЂРµРґС‹ РІС‹РїРѕР»РЅРЅРёСЏ
 void arm_hardware_flush_all(void)
 {
 }
 
-// Сейчас эта память будет записываться по DMA куда-то. Потом содержимое не требуется
+// РЎРµР№С‡Р°СЃ СЌС‚Р° РїР°РјСЏС‚СЊ Р±СѓРґРµС‚ Р·Р°РїРёСЃС‹РІР°С‚СЊСЃСЏ РїРѕ DMA РєСѓРґР°-С‚Рѕ. РџРѕС‚РѕРј СЃРѕРґРµСЂР¶РёРјРѕРµ РЅРµ С‚СЂРµР±СѓРµС‚СЃСЏ
 void arm_hardware_flush_invalidate(uintptr_t base, size_t size)
 {
 }
@@ -8992,7 +8992,7 @@ void arm_hardware_flush_invalidate(uintptr_t base, size_t size)
 #endif /* CPUSTYLE_ARM_CM7 */
 
 
-// получение из аппаратного счетчика монотонно увеличивающегося кода
+// РїРѕР»СѓС‡РµРЅРёРµ РёР· Р°РїРїР°СЂР°С‚РЅРѕРіРѕ СЃС‡РµС‚С‡РёРєР° РјРѕРЅРѕС‚РѕРЅРЅРѕ СѓРІРµР»РёС‡РёРІР°СЋС‰РµРіРѕСЃСЏ РєРѕРґР°
 // see arm_cpu_initialize() in hardware.c
 uint_fast32_t cpu_getdebugticks(void)
 {
@@ -9019,7 +9019,7 @@ _init(void)
 }
 
 
-/* функция вызывается из start-up до копирования в SRAM всех "быстрых" функций и до инициализации переменных
+/* С„СѓРЅРєС†РёСЏ РІС‹Р·С‹РІР°РµС‚СЃСЏ РёР· start-up РґРѕ РєРѕРїРёСЂРѕРІР°РЅРёСЏ РІ SRAM РІСЃРµС… "Р±С‹СЃС‚СЂС‹С…" С„СѓРЅРєС†РёР№ Рё РґРѕ РёРЅРёС†РёР°Р»РёР·Р°С†РёРё РїРµСЂРµРјРµРЅРЅС‹С…
 */
 // watchdog disable, clock initialize, cache enable
 void 
@@ -9029,7 +9029,7 @@ arm_cpu_initialize(void)
 #if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7
 
 	#if WITHDEBUG && WITHINTEGRATEDDSP && CPUSTYLE_ARM_CM7
-		// Поддержка для функций диагностики быстродействия BEGINx_STAMP/ENDx_STAMP - audio.c
+		// РџРѕРґРґРµСЂР¶РєР° РґР»СЏ С„СѓРЅРєС†РёР№ РґРёР°РіРЅРѕСЃС‚РёРєРё Р±С‹СЃС‚СЂРѕРґРµР№СЃС‚РІРёСЏ BEGINx_STAMP/ENDx_STAMP - audio.c
 		CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
 		DWT->LAR = 0xC5ACCE55;	// Key value for unlock
 		DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
@@ -9059,7 +9059,7 @@ arm_cpu_initialize(void)
 #if CPUSTYLE_ARM_CA9
 	#if WITHDEBUG
 	{
-		// Поддержка для функций диагностики быстродействия BEGINx_STAMP/ENDx_STAMP - audio.c
+		// РџРѕРґРґРµСЂР¶РєР° РґР»СЏ С„СѓРЅРєС†РёР№ РґРёР°РіРЅРѕСЃС‚РёРєРё Р±С‹СЃС‚СЂРѕРґРµР№СЃС‚РІРёСЏ BEGINx_STAMP/ENDx_STAMP - audio.c
 		// From https://stackoverflow.com/questions/3247373/how-to-measure-program-execution-time-in-arm-cortex-a8-processor
 
 		enum { do_reset = 0, enable_divider = 0 };
@@ -9099,7 +9099,7 @@ arm_cpu_initialize(void)
 	if (1)
 	{
 		// PC13, PC14 and PC15 as the common IO:
-		RCC->APB1ENR |=  RCC_APB1ENR_BKPEN;     // включить тактирование Backup interface
+		RCC->APB1ENR |=  RCC_APB1ENR_BKPEN;     // РІРєР»СЋС‡РёС‚СЊ С‚Р°РєС‚РёСЂРѕРІР°РЅРёРµ Backup interface
 		__DSB();
 
 		PWR->CR |= PWR_CR_DBP; // cancel the backup area write protection  
@@ -9107,7 +9107,7 @@ arm_cpu_initialize(void)
 		BKP->CR &= ~ BKP_CR_TPE; // TAMPER pin; intrusion detection (PC13) used as a universal IO port  
 		PWR->CR &= ~ PWR_CR_DBP; // backup area write protection </span> 
 
-		RCC->APB1ENR &=  ~ RCC_APB1ENR_BKPEN;     // выключить тактирование Backup interface
+		RCC->APB1ENR &=  ~ RCC_APB1ENR_BKPEN;     // РІС‹РєР»СЋС‡РёС‚СЊ С‚Р°РєС‚РёСЂРѕРІР°РЅРёРµ Backup interface
 		__DSB();
 	}
 
@@ -9115,12 +9115,12 @@ arm_cpu_initialize(void)
 
 	lowlevel_stm32f4xx_pll_initialize();
 	lowlevel_stm32f4xx_MCOx_test();
-	arm_hardware_stm32f7xx_pllq_initialize();	// Настроить выход PLLQ на 48 МГц
+	arm_hardware_stm32f7xx_pllq_initialize();	// РќР°СЃС‚СЂРѕРёС‚СЊ РІС‹С…РѕРґ PLLQ РЅР° 48 РњР“С†
 
 #elif CPUSTYLE_STM32H7XX
 
 	lowlevel_stm32h7xx_pll_initialize();
-	arm_hardware_stm32f7xx_pllq_initialize();	// Настроить выход PLLQ на 48 МГц
+	arm_hardware_stm32f7xx_pllq_initialize();	// РќР°СЃС‚СЂРѕРёС‚СЊ РІС‹С…РѕРґ PLLQ РЅР° 48 РњР“С†
 	//lowlevel_stm32h7xx_mpu_initialize();
 
 	/* AXI SRAM Slave */
@@ -9148,7 +9148,7 @@ arm_cpu_initialize(void)
 #elif CPUSTYLE_STM32F7XX
 
 	lowlevel_stm32f7xx_pll_initialize();
-	arm_hardware_stm32f7xx_pllq_initialize();	// Настроить выход PLLQ на 48 МГц
+	arm_hardware_stm32f7xx_pllq_initialize();	// РќР°СЃС‚СЂРѕРёС‚СЊ РІС‹С…РѕРґ PLLQ РЅР° 48 РњР“С†
 
 	SCB_InvalidateICache();
 	SCB_EnableICache();
@@ -9159,7 +9159,7 @@ arm_cpu_initialize(void)
 #elif CPUSTYLE_STM32F30X
 
 	lowlevel_stm32f30x_pll_clock();
-	arm_hardware_stm32f7xx_pllq_initialize();	// Настроить выход PLLQ на 48 МГц
+	arm_hardware_stm32f7xx_pllq_initialize();	// РќР°СЃС‚СЂРѕРёС‚СЊ РІС‹С…РѕРґ PLLQ РЅР° 48 РњР“С†
 
 #elif CPUSTYLE_STM32F0XX
 
@@ -9168,7 +9168,7 @@ arm_cpu_initialize(void)
 
 #elif CPUSTYLE_STM32L0XX
 
-// Плата с процессором STM32L051K6T (TQFP-32)
+// РџР»Р°С‚Р° СЃ РїСЂРѕС†РµСЃСЃРѕСЂРѕРј STM32L051K6T (TQFP-32)
 
 #if ARM_STM32L051_TQFP32_CPUSTYLE_V1_H_INCLUDED
 	// power on bit
@@ -9185,22 +9185,22 @@ arm_cpu_initialize(void)
 
 	// Disable Watchdog
 	WDT->WDT_MR = WDT_MR_WDDIS;
-	lowlevel_sam3s_init_clock_12_RC12();	// программирует на работу от 12 МГц RC - для ускорения работы.
-	// инициализация PLL и программирование wait states (только из SRAM) делается позже.
+	lowlevel_sam3s_init_clock_12_RC12();	// РїСЂРѕРіСЂР°РјРјРёСЂСѓРµС‚ РЅР° СЂР°Р±РѕС‚Сѓ РѕС‚ 12 РњР“С† RC - РґР»СЏ СѓСЃРєРѕСЂРµРЅРёСЏ СЂР°Р±РѕС‚С‹.
+	// РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ PLL Рё РїСЂРѕРіСЂР°РјРјРёСЂРѕРІР°РЅРёРµ wait states (С‚РѕР»СЊРєРѕ РёР· SRAM) РґРµР»Р°РµС‚СЃСЏ РїРѕР·Р¶Рµ.
 
 #elif CPUSTYLE_ATSAM4S
 
 	// Disable Watchdog
 	WDT->WDT_MR = WDT_MR_WDDIS;
-	lowlevel_sam4s_init_clock_12_RC12();	// программирует на работу от 12 МГц RC - для ускорения работы.
-	// инициализация PLL и программирование wait states (только из SRAM) делается позже.
+	lowlevel_sam4s_init_clock_12_RC12();	// РїСЂРѕРіСЂР°РјРјРёСЂСѓРµС‚ РЅР° СЂР°Р±РѕС‚Сѓ РѕС‚ 12 РњР“С† RC - РґР»СЏ СѓСЃРєРѕСЂРµРЅРёСЏ СЂР°Р±РѕС‚С‹.
+	// РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ PLL Рё РїСЂРѕРіСЂР°РјРјРёСЂРѕРІР°РЅРёРµ wait states (С‚РѕР»СЊРєРѕ РёР· SRAM) РґРµР»Р°РµС‚СЃСЏ РїРѕР·Р¶Рµ.
 
 #elif CPUSTYLE_AT91SAM7S
 
 	// Disable Watchdog
 	AT91C_BASE_WDTC->WDTC_WDMR = AT91C_WDTC_WDDIS;
 
-	// Enable NRST input. Требуется для удобства при отладке.
+	// Enable NRST input. РўСЂРµР±СѓРµС‚СЃСЏ РґР»СЏ СѓРґРѕР±СЃС‚РІР° РїСЂРё РѕС‚Р»Р°РґРєРµ.
 	AT91C_BASE_RSTC->RSTC_RMR = AT91C_RSTC_URSTEN | (AT91C_RSTC_KEY & (0xA5UL << 24));
 
 	// init clock sources and memory timings
@@ -9222,7 +9222,7 @@ arm_cpu_initialize(void)
 	// Disable Watchdog
 	AT91C_BASE_WDTC->WDTC_WDMR = AT91C_WDTC_WDDIS;
 
-	// Enable NRST input. Требуется для удобства при отладке.
+	// Enable NRST input. РўСЂРµР±СѓРµС‚СЃСЏ РґР»СЏ СѓРґРѕР±СЃС‚РІР° РїСЂРё РѕС‚Р»Р°РґРєРµ.
 	AT91C_BASE_RSTC->RSTC_RMR = AT91C_RSTC_URSTEN | (AT91C_RSTC_KEY & (0xA5UL << 24));
 
 	at91sam9x_clocks(96, 9);
@@ -9232,7 +9232,7 @@ arm_cpu_initialize(void)
 
 #elif CPUSTYLE_R7S721
 
-	// Программа исполняется из SERIAL FLASH - переключать режимы пока нельзя.
+	// РџСЂРѕРіСЂР°РјРјР° РёСЃРїРѕР»РЅСЏРµС‚СЃСЏ РёР· SERIAL FLASH - РїРµСЂРµРєР»СЋС‡Р°С‚СЊ СЂРµР¶РёРјС‹ РїРѕРєР° РЅРµР»СЊР·СЏ.
 	//while ((SPIBSC0.CMNSR & (1u << 0)) == 0)	// TEND bit
 	//	;
 	//SPIBSC0.SSLDR = 0x00;
@@ -9245,7 +9245,7 @@ arm_cpu_initialize(void)
     /* ----  Writing to On-Chip Data-Retention RAM is enabled. ---- */
 	if (1)
 	{
-		// Нельзя отключить - т.к. r7s721_ttb_map работает со страницами по 1 мегабайту
+		// РќРµР»СЊР·СЏ РѕС‚РєР»СЋС‡РёС‚СЊ - С‚.Рє. r7s721_ttb_map СЂР°Р±РѕС‚Р°РµС‚ СЃРѕ СЃС‚СЂР°РЅРёС†Р°РјРё РїРѕ 1 РјРµРіР°Р±Р°Р№С‚Сѓ
 		CPG.SYSCR3 = (CPG_SYSCR3_RRAMWE3 | CPG_SYSCR3_RRAMWE2 | CPG_SYSCR3_RRAMWE1 | CPG_SYSCR3_RRAMWE0);
 		(void) CPG.SYSCR3;
 	}
@@ -9266,9 +9266,9 @@ arm_cpu_initialize(void)
 	__set_ACTLR(__get_ACTLR() | ACTLR_L1PE_Msk);	// Enable Dside prefetch
 
 
-	/* далее будет выполняться копирование data и инициализация bss - для нормальной работы RESET требуется без DATA CACHE */
+	/* РґР°Р»РµРµ Р±СѓРґРµС‚ РІС‹РїРѕР»РЅСЏС‚СЊСЃСЏ РєРѕРїРёСЂРѕРІР°РЅРёРµ data Рё РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ bss - РґР»СЏ РЅРѕСЂРјР°Р»СЊРЅРѕР№ СЂР°Р±РѕС‚С‹ RESET С‚СЂРµР±СѓРµС‚СЃСЏ Р±РµР· DATA CACHE */
 
-	/* Установить скорость обмена с SERIAL FLASH повыше */
+	/* РЈСЃС‚Р°РЅРѕРІРёС‚СЊ СЃРєРѕСЂРѕСЃС‚СЊ РѕР±РјРµРЅР° СЃ SERIAL FLASH РїРѕРІС‹С€Рµ */
 	if ((CPG.STBCR9 & CPG_STBCR9_BIT_MSTP93) == 0)
 	{
 		SPIBSC0.SPBCR = (SPIBSC0.SPBCR & ~ (SPIBSC_SPBCR_BRDV | SPIBSC_SPBCR_SPBR)) |
@@ -9303,7 +9303,7 @@ arm_cpu_CMx_initialize_NVIC(void)
 	//NVIC_SetPriorityGrouping(3);	// 4 bit preemption, 0 bit of subprio
 	//NVIC_SetPriorityGrouping(0);
 
-	// Вычисление значений приоритета для данной конфигурации
+	// Р’С‹С‡РёСЃР»РµРЅРёРµ Р·РЅР°С‡РµРЅРёР№ РїСЂРёРѕСЂРёС‚РµС‚Р° РґР»СЏ РґР°РЅРЅРѕР№ РєРѕРЅС„РёРіСѓСЂР°С†РёРё
 	gARM_OVERREALTIME_PRIORITY = NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 0, 0);
 	gARM_REALTIME_PRIORITY = NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 1, 0);
 	gARM_SYSTEM_PRIORITY = NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 2, 0);
@@ -9311,7 +9311,7 @@ arm_cpu_CMx_initialize_NVIC(void)
 	gARM_BASEPRI_ONLY_REALTIME = ((gARM_SYSTEM_PRIORITY << (8 - __NVIC_PRIO_BITS)) & 0xff);
 	gARM_BASEPRI_ALL_ENABLED = 0;
 
-	// Назначить таймеру приоритет, равный всем остальным прерываниям
+	// РќР°Р·РЅР°С‡РёС‚СЊ С‚Р°Р№РјРµСЂСѓ РїСЂРёРѕСЂРёС‚РµС‚, СЂР°РІРЅС‹Р№ РІСЃРµРј РѕСЃС‚Р°Р»СЊРЅС‹Рј РїСЂРµСЂС‹РІР°РЅРёСЏРј
 	NVIC_SetPriority(SysTick_IRQn, ARM_SYSTEM_PRIORITY);
 
 	//__set_BASEPRI(gARM_BASEPRI_ALL_ENABLED);
@@ -9342,7 +9342,7 @@ static void Userdef_INTC_Dummy_Interrupt(void)
 /* Interrupt handler table */
 static void (* intc_func_table [IRQ_GIC_LINE_COUNT])(void);
 
-/* Вызывается из crt_r7s721.s со сброшенным флагом прерываний */
+/* Р’С‹Р·С‹РІР°РµС‚СЃСЏ РёР· crt_r7s721.s СЃРѕ СЃР±СЂРѕС€РµРЅРЅС‹Рј С„Р»Р°РіРѕРј РїСЂРµСЂС‹РІР°РЅРёР№ */
 void IRQHandlerSafe(void)
 {
 	/* const uint32_t icchpir = */ (void) GICC_HPPIR;	/* GICC_HPPIR */
@@ -9399,7 +9399,7 @@ static void r7s721_intc_initialize(void)
 
 	/* Initial value table of Interrupt Configuration Registers */
 	// Table 4-19 GICD_ICFGR Int_config[0] encoding in some early GIC implementations
-	// каждая пара бит кодирует:
+	// РєР°Р¶РґР°СЏ РїР°СЂР° Р±РёС‚ РєРѕРґРёСЂСѓРµС‚:
 
 	// [0] == 0: Corresponding interrupt is handled using the N-N model.
 	// [0] == 1: Corresponding interrupt is handled using the 1-N model.
@@ -9449,7 +9449,7 @@ static void r7s721_intc_initialize(void)
     uint16_t offset;
     volatile uint32_t * addr;
 
-	//GIC_Enable();	// инициализирует не совсем так как надо для работы
+	//GIC_Enable();	// РёРЅРёС†РёР°Р»РёР·РёСЂСѓРµС‚ РЅРµ СЃРѕРІСЃРµРј С‚Р°Рє РєР°Рє РЅР°РґРѕ РґР»СЏ СЂР°Р±РѕС‚С‹
 
 	/* default interrut handlers setup */
     for (offset = 0; offset < IRQ_GIC_LINE_COUNT; ++ offset)
@@ -9501,10 +9501,10 @@ static void r7s721_intc_initialize(void)
     	* (addr + offset) = 0xFFFFFFFFuL;
     }
 
-	//GIC_Enable();	// инициализирует не совсем так как надо для работы
+	//GIC_Enable();	// РёРЅРёС†РёР°Р»РёР·РёСЂСѓРµС‚ РЅРµ СЃРѕРІСЃРµРј С‚Р°Рє РєР°Рє РЅР°РґРѕ РґР»СЏ СЂР°Р±РѕС‚С‹
 if (0)
 {
-	// а так работает...
+	// Р° С‚Р°Рє СЂР°Р±РѕС‚Р°РµС‚...
   uint32_t i;
   uint32_t priority_field;
 
@@ -9682,7 +9682,7 @@ r7s721_accessbits(uintptr_t a)
 
 static void r7s721_ttb_initialize(void)
 {
-	extern volatile uint32_t __ttb_start__;		// получено из скрипта линкера
+	extern volatile uint32_t __ttb_start__;		// РїРѕР»СѓС‡РµРЅРѕ РёР· СЃРєСЂРёРїС‚Р° Р»РёРЅРєРµСЂР°
 	volatile uint32_t * const tlbbase = & __ttb_start__;
 	unsigned i;
 
@@ -9701,13 +9701,13 @@ static void r7s721_ttb_initialize(void)
 	__set_DACR(0xFFFFFFFF); // domain 15: access are not checked
 }
 
-// с точностью до 1 мегабайта
+// СЃ С‚РѕС‡РЅРѕСЃС‚СЊСЋ РґРѕ 1 РјРµРіР°Р±Р°Р№С‚Р°
 static void r7s721_ttb_map(
 	uintptr_t va,	/* virtual address */
 	uintptr_t la	/* linear (physical) address */
 	)
 {
-	volatile extern uint32_t __ttb_start__;		// получено из скрипта линкера
+	volatile extern uint32_t __ttb_start__;		// РїРѕР»СѓС‡РµРЅРѕ РёР· СЃРєСЂРёРїС‚Р° Р»РёРЅРєРµСЂР°
 	volatile uint32_t * const tlbbase = & __ttb_start__;
 	unsigned i = va >> 20;
 	tlbbase [i] =  r7s721_accessbits(la);
@@ -9787,12 +9787,12 @@ arm_cpu_atsam3s_pll_initialize(void)
 	}
 	else if (1)
 	{
-		// умножение кварцевого генератора
+		// СѓРјРЅРѕР¶РµРЅРёРµ РєРІР°СЂС†РµРІРѕРіРѕ РіРµРЅРµСЂР°С‚РѕСЂР°
 		lowlevel_sam3s_init_pll_clock_xtal(OSC_MUL, OSC_DIV, FWS);
 	}
 	else if (0)
 	{
-		// умножение от внутреннего RC генератора
+		// СѓРјРЅРѕР¶РµРЅРёРµ РѕС‚ РІРЅСѓС‚СЂРµРЅРЅРµРіРѕ RC РіРµРЅРµСЂР°С‚РѕСЂР°
 		lowlevel_sam3s_init_pll_clock_RC12(OSC_MUL, OSC_DIV, FWS);	
 	}
 }
@@ -9842,12 +9842,12 @@ arm_cpu_atsam4s_pll_initialize(void)
 	}
 	else if (1)
 	{
-		// умножение кварцевого генератора
+		// СѓРјРЅРѕР¶РµРЅРёРµ РєРІР°СЂС†РµРІРѕРіРѕ РіРµРЅРµСЂР°С‚РѕСЂР°
 		lowlevel_sam4s_init_pll_clock_xtal(OSC_MUL, OSC_DIV, FWS);
 	}
 	else if (0)
 	{
-		// умножение от внутреннего RC генератора
+		// СѓРјРЅРѕР¶РµРЅРёРµ РѕС‚ РІРЅСѓС‚СЂРµРЅРЅРµРіРѕ RC РіРµРЅРµСЂР°С‚РѕСЂР°
 		lowlevel_sam4s_init_pll_clock_RC12(OSC_MUL, OSC_DIV, FWS);	
 	}
 }
@@ -9879,7 +9879,7 @@ static uint8_t CLKSYS_Main_ClockSource_Select( CLK_SCLKSEL_t clockSource )
 
 	const uint8_t clkCtrl = (CLK.CTRL & ~CLK_SCLKSEL_gm) | clockSource;
 #if 0
-	// Так нельзя, работоспособность кода зависит от оптимизаций.
+	// РўР°Рє РЅРµР»СЊР·СЏ, СЂР°Р±РѕС‚РѕСЃРїРѕСЃРѕР±РЅРѕСЃС‚СЊ РєРѕРґР° Р·Р°РІРёСЃРёС‚ РѕС‚ РѕРїС‚РёРјРёР·Р°С†РёР№.
 	CCP = CCP_IOREG_gc;   	
 	CLK.CTRL = clkCtrl;
 #else
@@ -9986,20 +9986,20 @@ cpu_tms320f2833x_flash_waitstates(uint_fast8_t flashws, uint_fast8_t otpws)
 }
 #endif /* CPUSTYPE_TMS320F2833X */
 
-// Вызывается из main
+// Р’С‹Р·С‹РІР°РµС‚СЃСЏ РёР· main
 void cpu_initialize(void)
 {
 #if CPUSTYLE_STM32F1XX
 
-	cpu_stm32f1xx_setmapr(0);	/* переключить отладочный интерфейс в SWD */
-	// Разрешить работу компаратора напряжения питания (нужно для разряда емкостей преобразователя питания дисплея)
-	RCC->APB1ENR |= RCC_APB1ENR_PWREN;     //включить тактирование power management
+	cpu_stm32f1xx_setmapr(0);	/* РїРµСЂРµРєР»СЋС‡РёС‚СЊ РѕС‚Р»Р°РґРѕС‡РЅС‹Р№ РёРЅС‚РµСЂС„РµР№СЃ РІ SWD */
+	// Р Р°Р·СЂРµС€РёС‚СЊ СЂР°Р±РѕС‚Сѓ РєРѕРјРїР°СЂР°С‚РѕСЂР° РЅР°РїСЂСЏР¶РµРЅРёСЏ РїРёС‚Р°РЅРёСЏ (РЅСѓР¶РЅРѕ РґР»СЏ СЂР°Р·СЂСЏРґР° РµРјРєРѕСЃС‚РµР№ РїСЂРµРѕР±СЂР°Р·РѕРІР°С‚РµР»СЏ РїРёС‚Р°РЅРёСЏ РґРёСЃРїР»РµСЏ)
+	RCC->APB1ENR |= RCC_APB1ENR_PWREN;     //РІРєР»СЋС‡РёС‚СЊ С‚Р°РєС‚РёСЂРѕРІР°РЅРёРµ power management
 	__DSB();
 	PWR->CR = (PWR->CR & ~ PWR_CR_PLS) | PWR_CR_PLS_2V8 | PWR_CR_PVDE;
 
 #elif CPUSTYLE_STM32F4XX
 
-	RCC->APB1ENR |= RCC_APB1ENR_PWREN;	// включить тактирование power management
+	RCC->APB1ENR |= RCC_APB1ENR_PWREN;	// РІРєР»СЋС‡РёС‚СЊ С‚Р°РєС‚РёСЂРѕРІР°РЅРёРµ power management
 	__DSB();
 
 	#if WITHUSESAIPLL
@@ -10008,7 +10008,7 @@ void cpu_initialize(void)
 
 #elif CPUSTYLE_STM32H7XX
 
-	//RCC->APB1ENR |= RCC_APB1ENR_PWREN;	// включить тактирование power management
+	//RCC->APB1ENR |= RCC_APB1ENR_PWREN;	// РІРєР»СЋС‡РёС‚СЊ С‚Р°РєС‚РёСЂРѕРІР°РЅРёРµ power management
 	//__DSB();
 
 	#if WITHUSESAIPLL
@@ -10017,7 +10017,7 @@ void cpu_initialize(void)
 
 #elif CPUSTYLE_STM32F7XX
 
-	RCC->APB1ENR |= RCC_APB1ENR_PWREN;	// включить тактирование power management
+	RCC->APB1ENR |= RCC_APB1ENR_PWREN;	// РІРєР»СЋС‡РёС‚СЊ С‚Р°РєС‚РёСЂРѕРІР°РЅРёРµ power management
 	__DSB();
 
 	arm_hardware_flush_all();
@@ -10027,22 +10027,22 @@ void cpu_initialize(void)
 
 #elif CPUSTYLE_STM32F0XX
  
-	// Разрешить работу компаратора напряжения питания (нужно для разряда емкостей преобразователя питания дисплея)
-	RCC->APB1ENR |= RCC_APB1ENR_PWREN;     // включить тактирование power management
+	// Р Р°Р·СЂРµС€РёС‚СЊ СЂР°Р±РѕС‚Сѓ РєРѕРјРїР°СЂР°С‚РѕСЂР° РЅР°РїСЂСЏР¶РµРЅРёСЏ РїРёС‚Р°РЅРёСЏ (РЅСѓР¶РЅРѕ РґР»СЏ СЂР°Р·СЂСЏРґР° РµРјРєРѕСЃС‚РµР№ РїСЂРµРѕР±СЂР°Р·РѕРІР°С‚РµР»СЏ РїРёС‚Р°РЅРёСЏ РґРёСЃРїР»РµСЏ)
+	RCC->APB1ENR |= RCC_APB1ENR_PWREN;     // РІРєР»СЋС‡РёС‚СЊ С‚Р°РєС‚РёСЂРѕРІР°РЅРёРµ power management
 	__DSB();
 	PWR->CR = (PWR->CR & ~ PWR_CR_PLS) | PWR_CR_PLS_LEV3 | PWR_CR_PVDE;
 
 #elif CPUSTYLE_STM32L0XX
  
-	// Разрешить работу компаратора напряжения питания (нужно для разряда емкостей преобразователя питания дисплея)
-	RCC->APB1ENR |= RCC_APB1ENR_PWREN;     // включить тактирование power management
+	// Р Р°Р·СЂРµС€РёС‚СЊ СЂР°Р±РѕС‚Сѓ РєРѕРјРїР°СЂР°С‚РѕСЂР° РЅР°РїСЂСЏР¶РµРЅРёСЏ РїРёС‚Р°РЅРёСЏ (РЅСѓР¶РЅРѕ РґР»СЏ СЂР°Р·СЂСЏРґР° РµРјРєРѕСЃС‚РµР№ РїСЂРµРѕР±СЂР°Р·РѕРІР°С‚РµР»СЏ РїРёС‚Р°РЅРёСЏ РґРёСЃРїР»РµСЏ)
+	RCC->APB1ENR |= RCC_APB1ENR_PWREN;     // РІРєР»СЋС‡РёС‚СЊ С‚Р°РєС‚РёСЂРѕРІР°РЅРёРµ power management
 	__DSB();
 	PWR->CR = (PWR->CR & ~ PWR_CR_PLS) | PWR_CR_PLS_LEV3 | PWR_CR_PVDE;
 
 #elif CPUSTYLE_STM32F30X
 
-	// Разрешить работу компаратора напряжения питания (нужно для разряда емкостей преобразователя питания дисплея)
-	RCC->APB1ENR |= RCC_APB1ENR_PWREN;     // включить тактирование power management
+	// Р Р°Р·СЂРµС€РёС‚СЊ СЂР°Р±РѕС‚Сѓ РєРѕРјРїР°СЂР°С‚РѕСЂР° РЅР°РїСЂСЏР¶РµРЅРёСЏ РїРёС‚Р°РЅРёСЏ (РЅСѓР¶РЅРѕ РґР»СЏ СЂР°Р·СЂСЏРґР° РµРјРєРѕСЃС‚РµР№ РїСЂРµРѕР±СЂР°Р·РѕРІР°С‚РµР»СЏ РїРёС‚Р°РЅРёСЏ РґРёСЃРїР»РµСЏ)
+	RCC->APB1ENR |= RCC_APB1ENR_PWREN;     // РІРєР»СЋС‡РёС‚СЊ С‚Р°РєС‚РёСЂРѕРІР°РЅРёРµ power management
 	__DSB();
 	PWR->CR = (PWR->CR & ~ PWR_CR_PLS) | PWR_CR_PLS_LEV3 | PWR_CR_PVDE;
 
@@ -10061,7 +10061,7 @@ void cpu_initialize(void)
 	usb_disable();
 
 #elif CPUSTYLE_ATMEGA328
-	// управления JTAG нету
+	// СѓРїСЂР°РІР»РµРЅРёСЏ JTAG РЅРµС‚Сѓ
 
 #elif CPUSTYLE_ATMEGA128
 
@@ -10069,7 +10069,7 @@ void cpu_initialize(void)
 
 	#if CPUSTYLE_ATMEGA_XXX4
 
-		// Для забывших выключить JTAG
+		// Р”Р»СЏ Р·Р°Р±С‹РІС€РёС… РІС‹РєР»СЋС‡РёС‚СЊ JTAG
 		MCUCR = (1u << JTD);	// must write this bit to the desired value twice within four cycles to change its value.
 		MCUCR = (1u << JTD);
 
@@ -10079,7 +10079,7 @@ void cpu_initialize(void)
 
 	#else
 
-		// Для забывших выключить JTAG
+		// Р”Р»СЏ Р·Р°Р±С‹РІС€РёС… РІС‹РєР»СЋС‡РёС‚СЊ JTAG
 		MCUCSR = (1u << JTD);	// must write this bit to the desired value twice within four cycles to change its value.
 		MCUCSR = (1u << JTD);
 
@@ -10137,21 +10137,21 @@ void cpu_initialize(void)
 	//MMU_Disable();
 	// MMU setup
 	r7s721_ttb_initialize();
-	// Отображение 10 мегабайт с 0x20000000 в 0x00000000
-	// Хотя, достаточно и одной страницы c с переходами на обработчики прерываний - код выполняется на 0x20000000
-	r7s721_ttb_map(0x00000000uL, (uint32_t) & __data_start__);	// с точностью до 1 мегабайта
+	// РћС‚РѕР±СЂР°Р¶РµРЅРёРµ 10 РјРµРіР°Р±Р°Р№С‚ СЃ 0x20000000 РІ 0x00000000
+	// РҐРѕС‚СЏ, РґРѕСЃС‚Р°С‚РѕС‡РЅРѕ Рё РѕРґРЅРѕР№ СЃС‚СЂР°РЅРёС†С‹ c СЃ РїРµСЂРµС…РѕРґР°РјРё РЅР° РѕР±СЂР°Р±РѕС‚С‡РёРєРё РїСЂРµСЂС‹РІР°РЅРёР№ - РєРѕРґ РІС‹РїРѕР»РЅСЏРµС‚СЃСЏ РЅР° 0x20000000
+	r7s721_ttb_map(0x00000000uL, (uint32_t) & __data_start__);	// СЃ С‚РѕС‡РЅРѕСЃС‚СЊСЋ РґРѕ 1 РјРµРіР°Р±Р°Р№С‚Р°
 	//unsigned long offset;
 	//for (offset = 0; offset < 10uL * 1024 * 1024; offset += 1uL * 1024 * 1024)
-	//	r7s721_ttb_map(0x00000000uL + offset, __data_start__ + offset); // с точностью до 1 мегабайта
+	//	r7s721_ttb_map(0x00000000uL + offset, __data_start__ + offset); // СЃ С‚РѕС‡РЅРѕСЃС‚СЊСЋ РґРѕ 1 РјРµРіР°Р±Р°Р№С‚Р°
 	//CP15_writeTLBIALLIS(0);	// Invalidate TLB
 	MMU_InvalidateTLB();
 	
-	// диагностическая печать параметров CACHE
+	// РґРёР°РіРЅРѕСЃС‚РёС‡РµСЃРєР°СЏ РїРµС‡Р°С‚СЊ РїР°СЂР°РјРµС‚СЂРѕРІ CACHE
 	//const uint32_t clidr = __get_CLIDR();
 	//debug_printf_P(PSTR("cpu_initialize1: clidr=%08lX\n"), clidr);
 	//ASSERT((clidr & 0x03) != 0 && ARM_CA9_CACHELEVELMAX == 1);
 
-	// Обеспечиваем нормальную обработку RESEТ
+	// РћР±РµСЃРїРµС‡РёРІР°РµРј РЅРѕСЂРјР°Р»СЊРЅСѓСЋ РѕР±СЂР°Р±РѕС‚РєСѓ RESEРў
 	arm_hardware_invalidate_all();
 
 	//CP15_enableMMU();
@@ -10230,7 +10230,7 @@ void cpu_initialize(void)
 	#error Undefined CPUSTYLE_XXX
 #endif
 
-	// Инициализация контроллера прерываний
+	// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РєРѕРЅС‚СЂРѕР»Р»РµСЂР° РїСЂРµСЂС‹РІР°РЅРёР№
 
 #if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7 || CPUSTYLE_ARM_CM0
 
@@ -10248,7 +10248,7 @@ void cpu_initialize(void)
 #endif /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7 */
 }
 
-// секция init больше не нужна
+// СЃРµРєС†РёСЏ init Р±РѕР»СЊС€Рµ РЅРµ РЅСѓР¶РЅР°
 void cpu_initdone(void)
 {
 #if WITHISBOOTLOADER
@@ -10264,7 +10264,7 @@ void cpu_initdone(void)
 	if ((CPG.STBCR9 & CPG_STBCR9_BIT_MSTP93) == 0)
 	{
 #if 0
-		// Когда загрузочный образ FPGA будт оставаться в SERIAL FLASH, запретить отключение.
+		// РљРѕРіРґР° Р·Р°РіСЂСѓР·РѕС‡РЅС‹Р№ РѕР±СЂР°Р· FPGA Р±СѓРґС‚ РѕСЃС‚Р°РІР°С‚СЊСЃСЏ РІ SERIAL FLASH, Р·Р°РїСЂРµС‚РёС‚СЊ РѕС‚РєР»СЋС‡РµРЅРёРµ.
 		while ((SPIBSC0.CMNSR & (1u << 0)) == 0)	// TEND bit
 			;
 
@@ -10287,7 +10287,7 @@ void cpu_initdone(void)
 		//CPG.STBCR9 |= CPG_STBCR9_BIT_MSTP93;	// Module Stop 93	- 1: Clock supply to channel 0 of the SPI multi I/O bus controller is halted.
 		//(void) CPG.STBCR9;			/* Dummy read */
 	}
-	arm_hardware_pio4_inputs(0xFC);		// Отключить процессор от SERIAL FLASH
+	arm_hardware_pio4_inputs(0xFC);		// РћС‚РєР»СЋС‡РёС‚СЊ РїСЂРѕС†РµСЃСЃРѕСЂ РѕС‚ SERIAL FLASH
 
 #endif /* CPUSTYLE_R7S721 */
 #endif /* WITHISBOOTLOADER */
@@ -10324,22 +10324,22 @@ void Default_Handler(void)
 
 #if WITHDEBUG && (CPUSTYLE_ARM_CM7 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM3)
 
-//Эта функция извлекает из стека регистры сохраненные при возникновении исключения.
+//Р­С‚Р° С„СѓРЅРєС†РёСЏ РёР·РІР»РµРєР°РµС‚ РёР· СЃС‚РµРєР° СЂРµРіРёСЃС‚СЂС‹ СЃРѕС…СЂР°РЅРµРЅРЅС‹Рµ РїСЂРё РІРѕР·РЅРёРєРЅРѕРІРµРЅРёРё РёСЃРєР»СЋС‡РµРЅРёСЏ.
 static void 
 __attribute__((used))
 prvGetRegistersFromStack( uint32_t *pulFaultStackAddress )
 {
-// Эти переменные объявлены как volatile для предотвращения оптимизации компилятором/линкером, так как компилятор
-//предположит, что пременные никогда не используются и может устранить их из кода. Если отладчик не показывает
-//значения этих переменных, тогда нужно сделать их глобальными, выснеся их определения за пределы этой фукнкции.
+// Р­С‚Рё РїРµСЂРµРјРµРЅРЅС‹Рµ РѕР±СЉСЏРІР»РµРЅС‹ РєР°Рє volatile РґР»СЏ РїСЂРµРґРѕС‚РІСЂР°С‰РµРЅРёСЏ РѕРїС‚РёРјРёР·Р°С†РёРё РєРѕРјРїРёР»СЏС‚РѕСЂРѕРј/Р»РёРЅРєРµСЂРѕРј, С‚Р°Рє РєР°Рє РєРѕРјРїРёР»СЏС‚РѕСЂ
+//РїСЂРµРґРїРѕР»РѕР¶РёС‚, С‡С‚Рѕ РїСЂРµРјРµРЅРЅС‹Рµ РЅРёРєРѕРіРґР° РЅРµ РёСЃРїРѕР»СЊР·СѓСЋС‚СЃСЏ Рё РјРѕР¶РµС‚ СѓСЃС‚СЂР°РЅРёС‚СЊ РёС… РёР· РєРѕРґР°. Р•СЃР»Рё РѕС‚Р»Р°РґС‡РёРє РЅРµ РїРѕРєР°Р·С‹РІР°РµС‚
+//Р·РЅР°С‡РµРЅРёСЏ СЌС‚РёС… РїРµСЂРµРјРµРЅРЅС‹С…, С‚РѕРіРґР° РЅСѓР¶РЅРѕ СЃРґРµР»Р°С‚СЊ РёС… РіР»РѕР±Р°Р»СЊРЅС‹РјРё, РІС‹СЃРЅРµСЃСЏ РёС… РѕРїСЂРµРґРµР»РµРЅРёСЏ Р·Р° РїСЂРµРґРµР»С‹ СЌС‚РѕР№ С„СѓРєРЅРєС†РёРё.
 volatile uint32_t r0;
 volatile uint32_t r1;
 volatile uint32_t r2;
 volatile uint32_t r3;
 volatile uint32_t r12;
-volatile uint32_t lr; // Регистры связи.
-volatile uint32_t pc; // Программный счетчик.
-volatile uint32_t psr;// Регистр статуса программы.
+volatile uint32_t lr; // Р РµРіРёСЃС‚СЂС‹ СЃРІСЏР·Рё.
+volatile uint32_t pc; // РџСЂРѕРіСЂР°РјРјРЅС‹Р№ СЃС‡РµС‚С‡РёРє.
+volatile uint32_t psr;// Р РµРіРёСЃС‚СЂ СЃС‚Р°С‚СѓСЃР° РїСЂРѕРіСЂР°РјРјС‹.
 
     r0 = pulFaultStackAddress [0];
     r1 = pulFaultStackAddress [1];
@@ -10368,7 +10368,7 @@ volatile uint32_t psr;// Регистр статуса программы.
 	debug_printf_P(PSTR(" PC=%08lx\n"), pc);
 	debug_printf_P(PSTR(" PSR=%08lx\n"), psr);
 
-    // Когда мы добрались до этой строки, то в переменных содержатся значения регистров.
+    // РљРѕРіРґР° РјС‹ РґРѕР±СЂР°Р»РёСЃСЊ РґРѕ СЌС‚РѕР№ СЃС‚СЂРѕРєРё, С‚Рѕ РІ РїРµСЂРµРјРµРЅРЅС‹С… СЃРѕРґРµСЂР¶Р°С‚СЃСЏ Р·РЅР°С‡РµРЅРёСЏ СЂРµРіРёСЃС‚СЂРѕРІ.
     for( ;; )
 		;
 }
@@ -10380,9 +10380,9 @@ volatile uint32_t psr;// Регистр статуса программы.
 // taken from: http://forum.easyelectronics.ru/viewtopic.php?p=396176#p396176
 
 /*=================================================================================================================================
-*  Обработчик HardFault исключений. В нем вызывается функция prvGetRegistersFromStack(), которая сохраняет в переменных, значения
-* регистров программы, в момент возникновения исключения и входит в бесконечный цикл. Таким образом, можно по значениям переменных
-* узнать причину возникновения исключения.
+*  РћР±СЂР°Р±РѕС‚С‡РёРє HardFault РёСЃРєР»СЋС‡РµРЅРёР№. Р’ РЅРµРј РІС‹Р·С‹РІР°РµС‚СЃСЏ С„СѓРЅРєС†РёСЏ prvGetRegistersFromStack(), РєРѕС‚РѕСЂР°СЏ СЃРѕС…СЂР°РЅСЏРµС‚ РІ РїРµСЂРµРјРµРЅРЅС‹С…, Р·РЅР°С‡РµРЅРёСЏ
+* СЂРµРіРёСЃС‚СЂРѕРІ РїСЂРѕРіСЂР°РјРјС‹, РІ РјРѕРјРµРЅС‚ РІРѕР·РЅРёРєРЅРѕРІРµРЅРёСЏ РёСЃРєР»СЋС‡РµРЅРёСЏ Рё РІС…РѕРґРёС‚ РІ Р±РµСЃРєРѕРЅРµС‡РЅС‹Р№ С†РёРєР». РўР°РєРёРј РѕР±СЂР°Р·РѕРј, РјРѕР¶РЅРѕ РїРѕ Р·РЅР°С‡РµРЅРёСЏРј РїРµСЂРµРјРµРЅРЅС‹С…
+* СѓР·РЅР°С‚СЊ РїСЂРёС‡РёРЅСѓ РІРѕР·РЅРёРєРЅРѕРІРµРЅРёСЏ РёСЃРєР»СЋС‡РµРЅРёСЏ.
 =================================================================================================================================*/
 
 
@@ -11362,7 +11362,7 @@ void ATTRWEAK TIM7_IRQHandler(void)
 
 typedef void (* IntFunc)(void);
 
-extern unsigned long __etext;	// где во FLASH лежит образ инициализирующих data данных
+extern unsigned long __etext;	// РіРґРµ РІРѕ FLASH Р»РµР¶РёС‚ РѕР±СЂР°Р· РёРЅРёС†РёР°Р»РёР·РёСЂСѓСЋС‰РёС… data РґР°РЅРЅС‹С…
 extern unsigned long __bss_start__, __bss_end__, __data_end__, __data_start__, __stack;
 
 #if CPUSTYLE_ARM_CM4
@@ -11388,7 +11388,7 @@ void Reset_Handler(void)
 {
 #if 0
 	{
-		// Формирование импульсов на выводе процессора
+		// Р¤РѕСЂРјРёСЂРѕРІР°РЅРёРµ РёРјРїСѓР»СЊСЃРѕРІ РЅР° РІС‹РІРѕРґРµ РїСЂРѕС†РµСЃСЃРѕСЂР°
 		for (;;)
 		{
 			const uint32_t WORKMASK = 1UL << 31;	// PA31
@@ -11419,7 +11419,7 @@ void Reset_Handler(void)
 	arm_cpu_initialize();		// watchdog disable, clock initialize, cache enable
 #if 0
 	{
-		// Формирование импульсов на выводе процессора
+		// Р¤РѕСЂРјРёСЂРѕРІР°РЅРёРµ РёРјРїСѓР»СЊСЃРѕРІ РЅР° РІС‹РІРѕРґРµ РїСЂРѕС†РµСЃСЃРѕСЂР°
 		for (;;)
 		{
 			const uint32_t WORKMASK = 1UL << 31;	// PA31
@@ -11457,9 +11457,9 @@ void Reset_Handler(void)
 		local_delay_ms(400);
 	}
 #endif
-	// Хотя возвращатся из данной функции не предполагается - память и адрес возврата могли бы затираются,
-	// но вместе с ними будут стёрты и автоматические переменые, используемые в данной функции. Поэтому,
-	// стирать ВСЮ память по её размеру нельзя.
+	// РҐРѕС‚СЏ РІРѕР·РІСЂР°С‰Р°С‚СЃСЏ РёР· РґР°РЅРЅРѕР№ С„СѓРЅРєС†РёРё РЅРµ РїСЂРµРґРїРѕР»Р°РіР°РµС‚СЃСЏ - РїР°РјСЏС‚СЊ Рё Р°РґСЂРµСЃ РІРѕР·РІСЂР°С‚Р° РјРѕРіР»Рё Р±С‹ Р·Р°С‚РёСЂР°СЋС‚СЃСЏ,
+	// РЅРѕ РІРјРµСЃС‚Рµ СЃ РЅРёРјРё Р±СѓРґСѓС‚ СЃС‚С‘СЂС‚С‹ Рё Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРёРµ РїРµСЂРµРјРµРЅС‹Рµ, РёСЃРїРѕР»СЊР·СѓРµРјС‹Рµ РІ РґР°РЅРЅРѕР№ С„СѓРЅРєС†РёРё. РџРѕСЌС‚РѕРјСѓ,
+	// СЃС‚РёСЂР°С‚СЊ Р’РЎР® РїР°РјСЏС‚СЊ РїРѕ РµС‘ СЂР°Р·РјРµСЂСѓ РЅРµР»СЊР·СЏ.
 
 	#if CPUSTYLE_ARM_CM4
 		/* zero-init variables */
@@ -11495,7 +11495,7 @@ void Reset_Handler(void)
 
 #if 0
 	{
-		// Формирование импульсов на выводе процессора
+		// Р¤РѕСЂРјРёСЂРѕРІР°РЅРёРµ РёРјРїСѓР»СЊСЃРѕРІ РЅР° РІС‹РІРѕРґРµ РїСЂРѕС†РµСЃСЃРѕСЂР°
 		for (;;)
 		{
 			const uint32_t WORKMASK = 1UL << 31;	// PA31

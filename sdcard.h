@@ -41,11 +41,11 @@ extern const struct drvfunc USBH_drvfunc;
 #define MMC_SECTORSIZE 512
 
 void sdcardhw_initialize(void);
-void sdcardinitialize(void);	// перевод state machine в начальное состояние
+void sdcardinitialize(void);	// РїРµСЂРµРІРѕРґ state machine РІ РЅР°С‡Р°Р»СЊРЅРѕРµ СЃРѕСЃС‚РѕСЏРЅРёРµ
 void sdcardbgprocess(void);
-void sdcardtoggle(void);	// комбинированная функция для переключения запись/стоп
-void sdcardrecord(void);	// функция "начать запись"
-void sdcardstop(void);	// функция "остановить запись"
+void sdcardtoggle(void);	// РєРѕРјР±РёРЅРёСЂРѕРІР°РЅРЅР°СЏ С„СѓРЅРєС†РёСЏ РґР»СЏ РїРµСЂРµРєР»СЋС‡РµРЅРёСЏ Р·Р°РїРёСЃСЊ/СЃС‚РѕРї
+void sdcardrecord(void);	// С„СѓРЅРєС†РёСЏ "РЅР°С‡Р°С‚СЊ Р·Р°РїРёСЃСЊ"
+void sdcardstop(void);	// С„СѓРЅРєС†РёСЏ "РѕСЃС‚Р°РЅРѕРІРёС‚СЊ Р·Р°РїРёСЃСЊ"
 void sdcardformat(void);
 
 #endif /* SDCARD_H_INCLUDED */

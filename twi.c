@@ -1,19 +1,19 @@
 /* $Id$ */
 //
-// Проект HF Dream Receiver (КВ приёмник мечты)
-// автор Гена Завидовский mgs2001@mail.ru
+// РџСЂРѕРµРєС‚ HF Dream Receiver (РљР’ РїСЂРёС‘РјРЅРёРє РјРµС‡С‚С‹)
+// Р°РІС‚РѕСЂ Р“РµРЅР° Р—Р°РІРёРґРѕРІСЃРєРёР№ mgs2001@mail.ru
 // UA1ARN
 
 /* TWI (I2C) interface */
 //
-#include "hardware.h"	/* зависящие от процессора функции работы с портами */
+#include "hardware.h"	/* Р·Р°РІРёСЃСЏС‰РёРµ РѕС‚ РїСЂРѕС†РµСЃСЃРѕСЂР° С„СѓРЅРєС†РёРё СЂР°Р±РѕС‚С‹ СЃ РїРѕСЂС‚Р°РјРё */
 #include "pio.h"
 #include "formats.h"	// for debug prints
 
 #if WITHTWIHW || WITHTWISW
 
-// Обслуживание I2C без использования аппаратных средств процессора
-// программное "ногодрыгание" выводами.
+// РћР±СЃР»СѓР¶РёРІР°РЅРёРµ I2C Р±РµР· РёСЃРїРѕР»СЊР·РѕРІР°РЅРёСЏ Р°РїРїР°СЂР°С‚РЅС‹С… СЃСЂРµРґСЃС‚РІ РїСЂРѕС†РµСЃСЃРѕСЂР°
+// РїСЂРѕРіСЂР°РјРјРЅРѕРµ "РЅРѕРіРѕРґСЂС‹РіР°РЅРёРµ" РІС‹РІРѕРґР°РјРё.
 
 #if CPUSTYLE_ATMEGA
 	#define SET_TWCK() do { TARGET_TWI_TWCK_DDR &= ~ TARGET_TWI_TWCK; hardware_spi_io_delay(); } while (0)	// SCL = 1
@@ -157,7 +157,7 @@ i2c_quit:
 	return; // r_val; 
 } 
 
-// Вызвать после последнего i2c_write()
+// Р’С‹Р·РІР°С‚СЊ РїРѕСЃР»Рµ РїРѕСЃР»РµРґРЅРµРіРѕ i2c_write()
 void i2c_waitsend(void)
 {
 
@@ -191,7 +191,7 @@ i2c_quit:
 	return; // r_val; 
 } 
 
-// запись, после чего restart
+// Р·Р°РїРёСЃСЊ, РїРѕСЃР»Рµ С‡РµРіРѕ restart
 /* char */ void i2c_write_withrestart(uint_fast8_t data)	
 {
 	i2c_write(data);
@@ -219,7 +219,7 @@ void i2c_read(uint_fast8_t *data, uint_fast8_t ack_type)
 		* data = TWDR; 
 		//r_val=0; 
 	} else if (ack_type == I2C_READ_ACK_NACK) { 
-		// чтение первого и единственного байта по I2C
+		// С‡С‚РµРЅРёРµ РїРµСЂРІРѕРіРѕ Рё РµРґРёРЅСЃС‚РІРµРЅРЅРѕРіРѕ Р±Р°Р№С‚Р° РїРѕ I2C
 		// Read I2C Data and Send No Acknowledge 
 		twi_status = i2c_transmit(I2C_DATA); 
 		// Get the Data 
@@ -269,7 +269,7 @@ i2c_quit:
 	}
 }
 
-// Вызвать после последнего i2c_write()
+// Р’С‹Р·РІР°С‚СЊ РїРѕСЃР»Рµ РїРѕСЃР»РµРґРЅРµРіРѕ i2c_write()
 void i2c_waitsend(void)
 {
 
@@ -297,7 +297,7 @@ void i2c_stop(void)
 	//return 0;
 }
 	
-// запись, после чего restart
+// Р·Р°РїРёСЃСЊ, РїРѕСЃР»Рµ С‡РµРіРѕ restart
 /* char */ void i2c_write_withrestart(uint_fast8_t data)
 {
 	i2c_write(data);
@@ -309,11 +309,11 @@ void i2c_read(uint_fast8_t *data, uint_fast8_t ack_type)
 {
 	switch (ack_type)
 	{
-	case I2C_READ_ACK_NACK:	/* чтение первого и единственного байта ответа */
+	case I2C_READ_ACK_NACK:	/* С‡С‚РµРЅРёРµ РїРµСЂРІРѕРіРѕ Рё РµРґРёРЅСЃС‚РІРµРЅРЅРѕРіРѕ Р±Р°Р№С‚Р° РѕС‚РІРµС‚Р° */
 		{
-			// Чтение единственного (первого и последнего) байта.
+			// Р§С‚РµРЅРёРµ РµРґРёРЅСЃС‚РІРµРЅРЅРѕРіРѕ (РїРµСЂРІРѕРіРѕ Рё РїРѕСЃР»РµРґРЅРµРіРѕ) Р±Р°Р№С‚Р°.
 			AT91C_BASE_TWI->TWI_CR = AT91C_TWI_START | AT91C_TWI_STOP;
-			// Дождаться окончания перехода в состояние STOP
+			// Р”РѕР¶РґР°С‚СЊСЃСЏ РѕРєРѕРЅС‡Р°РЅРёСЏ РїРµСЂРµС…РѕРґР° РІ СЃРѕСЃС‚РѕСЏРЅРёРµ STOP
 			unsigned w = 255;
 			while (w -- && (AT91C_BASE_TWI->TWI_SR & AT91C_TWI_TXCOMP) == 0)	
 				local_delay_us(1);
@@ -323,8 +323,8 @@ void i2c_read(uint_fast8_t *data, uint_fast8_t ack_type)
 
 	case I2C_READ_NACK:
 		{
-			// Чтение последнего байта.
-			// Дождаться окончания перехода в состояние STOP
+			// Р§С‚РµРЅРёРµ РїРѕСЃР»РµРґРЅРµРіРѕ Р±Р°Р№С‚Р°.
+			// Р”РѕР¶РґР°С‚СЊСЃСЏ РѕРєРѕРЅС‡Р°РЅРёСЏ РїРµСЂРµС…РѕРґР° РІ СЃРѕСЃС‚РѕСЏРЅРёРµ STOP
 			AT91C_BASE_TWI->TWI_CR = AT91C_TWI_STOP;
 			unsigned w = 255;
 			while ( w -- && (AT91C_BASE_TWI->TWI_SR & AT91C_TWI_TXCOMP) == 0)
@@ -337,7 +337,7 @@ void i2c_read(uint_fast8_t *data, uint_fast8_t ack_type)
 			AT91C_BASE_TWI->TWI_CR = AT91C_TWI_START;
 	case I2C_READ_ACK:
 		{
-			// первый и последующие байты в последовательном чтении.
+			// РїРµСЂРІС‹Р№ Рё РїРѕСЃР»РµРґСѓСЋС‰РёРµ Р±Р°Р№С‚С‹ РІ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕРј С‡С‚РµРЅРёРё.
 			unsigned w = 255;
 			while (w -- && (AT91C_BASE_TWI->TWI_SR & AT91C_TWI_RXRDY) == 0)
 				local_delay_us(1);
@@ -482,11 +482,11 @@ static uint_fast8_t i2c_waitforevent(uint_fast32_t event)
 	w = WDELAYCONST;
 	while (w --)
 	{
-		// порядок чтения регистров важен.
+		// РїРѕСЂСЏРґРѕРє С‡С‚РµРЅРёСЏ СЂРµРіРёСЃС‚СЂРѕРІ РІР°Р¶РµРЅ.
 		const uint_fast32_t sr1 = I2C1->SR1;
 		const uint_fast32_t sr2 = I2C1->SR2;
 
-		if ((((sr2 << 16) | sr1) & event) == event)	// Все биты должны появиться
+		if ((((sr2 << 16) | sr1) & event) == event)	// Р’СЃРµ Р±РёС‚С‹ РґРѕР»Р¶РЅС‹ РїРѕСЏРІРёС‚СЊСЃСЏ
 			return 0;
 		if ((sr2 & (I2C_SR1_BERR | I2C_SR1_ARLO | I2C_SR1_AF | I2C_SR1_OVR | I2C_SR1_PECERR | I2C_SR1_TIMEOUT)) != 0)
 			break;
@@ -575,14 +575,14 @@ void i2c_read(uint_fast8_t *data, uint_fast8_t ack_type)
 	//TP();
 	switch (ack_type)
 	{
-	case I2C_READ_ACK_NACK:	/* чтение первого и единственного байта ответа */
+	case I2C_READ_ACK_NACK:	/* С‡С‚РµРЅРёРµ РїРµСЂРІРѕРіРѕ Рё РµРґРёРЅСЃС‚РІРµРЅРЅРѕРіРѕ Р±Р°Р№С‚Р° РѕС‚РІРµС‚Р° */
 		{
 			i2c_acknowledgeconfig(0);
 
 			//TP();
-			// Чтение единственного (первого и последнего) байта.
+			// Р§С‚РµРЅРёРµ РµРґРёРЅСЃС‚РІРµРЅРЅРѕРіРѕ (РїРµСЂРІРѕРіРѕ Рё РїРѕСЃР»РµРґРЅРµРіРѕ) Р±Р°Р№С‚Р°.
 			i2c_waitforevent(I2C_EVENT_MASTER_BYTE_RECEIVED);	// I2C_SR1_RXNE
-			* data = I2C1->DR & 0xFF; // cчитываем
+			* data = I2C1->DR & 0xFF; // cС‡РёС‚С‹РІР°РµРј
 			//TP();
 			i2c_set_stop();
 		}
@@ -590,28 +590,28 @@ void i2c_read(uint_fast8_t *data, uint_fast8_t ack_type)
 
 	case I2C_READ_NACK:
 		{
-			// Чтение последнего байта.
-			// Дождаться окончания перехода в состояние STOP
+			// Р§С‚РµРЅРёРµ РїРѕСЃР»РµРґРЅРµРіРѕ Р±Р°Р№С‚Р°.
+			// Р”РѕР¶РґР°С‚СЊСЃСЏ РѕРєРѕРЅС‡Р°РЅРёСЏ РїРµСЂРµС…РѕРґР° РІ СЃРѕСЃС‚РѕСЏРЅРёРµ STOP
 
 			i2c_acknowledgeconfig(0);
 			//TP();
 			i2c_waitforevent(I2C_EVENT_MASTER_BYTE_RECEIVED);	// I2C_SR1_RXNE
-			* data = I2C1->DR & 0xFF; // cчитываем
+			* data = I2C1->DR & 0xFF; // cС‡РёС‚С‹РІР°РµРј
 			//TP();
 			i2c_set_stop();
 		}
 		break;
 
-	case I2C_READ_ACK_1:	// первый байт в последующем чтении
-			I2C1->CR1 |= I2C_CR1_ACK; // после приема байта, ведомый посылает подтверждение приема, и устанавливает бит ACK. Очищаем бит ACK и ,если нужно, ждем приема следующего символа
+	case I2C_READ_ACK_1:	// РїРµСЂРІС‹Р№ Р±Р°Р№С‚ РІ РїРѕСЃР»РµРґСѓСЋС‰РµРј С‡С‚РµРЅРёРё
+			I2C1->CR1 |= I2C_CR1_ACK; // РїРѕСЃР»Рµ РїСЂРёРµРјР° Р±Р°Р№С‚Р°, РІРµРґРѕРјС‹Р№ РїРѕСЃС‹Р»Р°РµС‚ РїРѕРґС‚РІРµСЂР¶РґРµРЅРёРµ РїСЂРёРµРјР°, Рё СѓСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ Р±РёС‚ ACK. РћС‡РёС‰Р°РµРј Р±РёС‚ ACK Рё ,РµСЃР»Рё РЅСѓР¶РЅРѕ, Р¶РґРµРј РїСЂРёРµРјР° СЃР»РµРґСѓСЋС‰РµРіРѕ СЃРёРјРІРѕР»Р°
 	case I2C_READ_ACK:
 		{
-			// первый и последующие байты в последовательном чтении.
+			// РїРµСЂРІС‹Р№ Рё РїРѕСЃР»РµРґСѓСЋС‰РёРµ Р±Р°Р№С‚С‹ РІ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕРј С‡С‚РµРЅРёРё.
 			//TP();
 			i2c_waitforevent(I2C_EVENT_MASTER_BYTE_RECEIVED);	// I2C_SR1_RXNE
 			//TP();
-			* data = I2C1->DR & 0xFF; // cчитываем
-			//I2C1->CR1 |= I2C_CR1_ACK; // после приема байта, ведомый посылает подтверждение приема, и устанавливает бит ACK. Очищаем бит ACK и ,если нужно, ждем приема следующего символа
+			* data = I2C1->DR & 0xFF; // cС‡РёС‚С‹РІР°РµРј
+			//I2C1->CR1 |= I2C_CR1_ACK; // РїРѕСЃР»Рµ РїСЂРёРµРјР° Р±Р°Р№С‚Р°, РІРµРґРѕРјС‹Р№ РїРѕСЃС‹Р»Р°РµС‚ РїРѕРґС‚РІРµСЂР¶РґРµРЅРёРµ РїСЂРёРµРјР°, Рё СѓСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ Р±РёС‚ ACK. РћС‡РёС‰Р°РµРј Р±РёС‚ ACK Рё ,РµСЃР»Рё РЅСѓР¶РЅРѕ, Р¶РґРµРј РїСЂРёРµРјР° СЃР»РµРґСѓСЋС‰РµРіРѕ СЃРёРјРІРѕР»Р°
 		}
 		break;
 
@@ -628,7 +628,7 @@ void i2c_read(uint_fast8_t *data, uint_fast8_t ack_type)
 	I2C1->DR = databyte;
 }
 
-// запись, после чего restart
+// Р·Р°РїРёСЃСЊ, РїРѕСЃР»Рµ С‡РµРіРѕ restart
 /* char */ void i2c_write_withrestart(uint_fast8_t data)
 {
 	i2c_write(data);
@@ -636,7 +636,7 @@ void i2c_read(uint_fast8_t *data, uint_fast8_t ack_type)
 }
 
 
-// Вызвать после последнего i2c_write()
+// Р’С‹Р·РІР°С‚СЊ РїРѕСЃР»Рµ РїРѕСЃР»РµРґРЅРµРіРѕ i2c_write()
 void i2c_waitsend(void)
 {
 
@@ -651,7 +651,7 @@ void i2c_stop(void)
 void i2c_initialize(void)
 {
 	hardware_twi_master_configure();
-	TWIHARD_INITIALIZE();		// соединение периферии с выводами
+	TWIHARD_INITIALIZE();		// СЃРѕРµРґРёРЅРµРЅРёРµ РїРµСЂРёС„РµСЂРёРё СЃ РІС‹РІРѕРґР°РјРё
 }
 
 #elif CPUSTYLE_STM32F7XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F0XX
@@ -867,7 +867,7 @@ static uint_fast8_t i2c_waitrxready(void)
 	return 0;
 }
 
-static uint_fast8_t i2c_sended = 0;	// Признак того, что предавали данные
+static uint_fast8_t i2c_sended = 0;	// РџСЂРёР·РЅР°Рє С‚РѕРіРѕ, С‡С‚Рѕ РїСЂРµРґР°РІР°Р»Рё РґР°РЅРЅС‹Рµ
 // start write
 void i2c_start(
 	uint_fast8_t address
@@ -905,7 +905,7 @@ void i2c_start(
 		I2C1->CR2 = tmpreg;
 	}
 
-	// Ожидание окончания формирования START CONDITION и передачи адреса
+	// РћР¶РёРґР°РЅРёРµ РѕРєРѕРЅС‡Р°РЅРёСЏ С„РѕСЂРјРёСЂРѕРІР°РЅРёСЏ START CONDITION Рё РїРµСЂРµРґР°С‡Рё Р°РґСЂРµСЃР°
 	while ((I2C1->CR2 & I2C_CR2_START) != 0)
 		; //debug_printf_P(PSTR("i2c_start: waiting, address=%02x\n"), address);
 
@@ -919,7 +919,7 @@ void i2c_start(
 
 static void i2cmakestop(void)
 {
-	// Формируем STOP
+	// Р¤РѕСЂРјРёСЂСѓРµРј STOP
 	I2C1->CR2 = (I2C1->CR2 & ~ (I2C_CR2_NBYTES | I2C_CR2_RELOAD)) |
 		//(((uint32_t) 1 << 16) & I2C_CR2_NBYTES) | 
 		I2C_CR2_STOP |
@@ -936,7 +936,7 @@ void i2c_read(uint_fast8_t *data, uint_fast8_t ack_type)
 	//debug_printf_P(PSTR("i2c_read: ack_type=%08lX\n"), ack_type);
 	switch (ack_type)
 	{
-	case I2C_READ_ACK_NACK:	/* чтение первого и единственного байта ответа */
+	case I2C_READ_ACK_NACK:	/* С‡С‚РµРЅРёРµ РїРµСЂРІРѕРіРѕ Рё РµРґРёРЅСЃС‚РІРµРЅРЅРѕРіРѕ Р±Р°Р№С‚Р° РѕС‚РІРµС‚Р° */
 		{
 			if (i2c_waitrxready() != 0)
 				return;
@@ -950,7 +950,7 @@ void i2c_read(uint_fast8_t *data, uint_fast8_t ack_type)
 		}
 		break;
 
-	case I2C_READ_NACK:	// Чтение последнего байта.
+	case I2C_READ_NACK:	// Р§С‚РµРЅРёРµ РїРѕСЃР»РµРґРЅРµРіРѕ Р±Р°Р№С‚Р°.
 		{
 			if (i2c_waitrxready() != 0)
 				return;
@@ -964,7 +964,7 @@ void i2c_read(uint_fast8_t *data, uint_fast8_t ack_type)
 		}
 		break;
 
-	case I2C_READ_ACK_1:	// первый байт в последующем чтении
+	case I2C_READ_ACK_1:	// РїРµСЂРІС‹Р№ Р±Р°Р№С‚ РІ РїРѕСЃР»РµРґСѓСЋС‰РµРј С‡С‚РµРЅРёРё
 		{
 			if (i2c_waitrxready() != 0)
 				return;
@@ -974,7 +974,7 @@ void i2c_read(uint_fast8_t *data, uint_fast8_t ack_type)
 		break;
 
 			
-	case I2C_READ_ACK:		// последующие байты в последовательном чтении.
+	case I2C_READ_ACK:		// РїРѕСЃР»РµРґСѓСЋС‰РёРµ Р±Р°Р№С‚С‹ РІ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕРј С‡С‚РµРЅРёРё.
 		{
 			if (i2c_waitrxready() != 0)
 				return;
@@ -1006,7 +1006,7 @@ void i2c_write(
 	i2c_sended = 1;
 }
 
-// запись, после чего restart
+// Р·Р°РїРёСЃСЊ, РїРѕСЃР»Рµ С‡РµРіРѕ restart
 /* char */ void i2c_write_withrestart(uint_fast8_t data)	
 {
 	i2c_write(data);
@@ -1014,7 +1014,7 @@ void i2c_write(
 	
 }
 
-// Вызвать после последнего i2c_write()
+// Р’С‹Р·РІР°С‚СЊ РїРѕСЃР»Рµ РїРѕСЃР»РµРґРЅРµРіРѕ i2c_write()
 void i2c_waitsend(void)
 {
 	if (i2c_sended != 0)
@@ -1025,7 +1025,7 @@ void i2c_waitsend(void)
 
 }
 
-// Вызовом этой функции завершается цепочка записей. При чтении используется другой способ.
+// Р’С‹Р·РѕРІРѕРј СЌС‚РѕР№ С„СѓРЅРєС†РёРё Р·Р°РІРµСЂС€Р°РµС‚СЃСЏ С†РµРїРѕС‡РєР° Р·Р°РїРёСЃРµР№. РџСЂРё С‡С‚РµРЅРёРё РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РґСЂСѓРіРѕР№ СЃРїРѕСЃРѕР±.
 void i2c_stop(void)
 {
 	i2cmakestop();
@@ -1044,14 +1044,14 @@ void i2c_stop(void)
 	uint_fast8_t address
 	) 
 {
-	I2C1->CR1 = I2C_CR1_PE; // генерирую старт
+	I2C1->CR1 = I2C_CR1_PE; // РіРµРЅРµСЂРёСЂСѓСЋ СЃС‚Р°СЂС‚
 	I2C1->CR2 = I2C_CR2_START;
-	while ((I2C1->ISR & I2C_ISR_SB) == 0) // жду окончания генерации старт И ТУТ ИНОГДА ЗАВИСОН !!!!! 
+	while ((I2C1->ISR & I2C_ISR_SB) == 0) // Р¶РґСѓ РѕРєРѕРЅС‡Р°РЅРёСЏ РіРµРЅРµСЂР°С†РёРё СЃС‚Р°СЂС‚ Р РўРЈРў РРќРћР“Р”Рђ Р—РђР’РРЎРћРќ !!!!! 
 		local_delay_us(1);
-	I2C1->TXDR = (I2C1->TXDR & ~ I2C_TXDR_TXDATA) | (address & I2C_TXDR_TXDATA); // передаю адрес ведомого
+	I2C1->TXDR = (I2C1->TXDR & ~ I2C_TXDR_TXDATA) | (address & I2C_TXDR_TXDATA); // РїРµСЂРµРґР°СЋ Р°РґСЂРµСЃ РІРµРґРѕРјРѕРіРѕ
 	unsigned w;
 	w = WDELAYCONST;
-	while(w -- && (I2C1->SR1 & I2C_SR1_ADDR) == 0)	 // жду окончания передачи адреса
+	while(w -- && (I2C1->SR1 & I2C_SR1_ADDR) == 0)	 // Р¶РґСѓ РѕРєРѕРЅС‡Р°РЅРёСЏ РїРµСЂРµРґР°С‡Рё Р°РґСЂРµСЃР°
 		local_delay_us(1);
 	(void) I2C1->SR2;	// reset I2C_SR1_ADDR flag
 
@@ -1064,16 +1064,16 @@ void i2c_read(uint_fast8_t *data, uint_fast8_t ack_type)
 {
 	switch (ack_type)
 	{
-	case I2C_READ_ACK_NACK:	/* чтение первого и единственного байта ответа */
+	case I2C_READ_ACK_NACK:	/* С‡С‚РµРЅРёРµ РїРµСЂРІРѕРіРѕ Рё РµРґРёРЅСЃС‚РІРµРЅРЅРѕРіРѕ Р±Р°Р№С‚Р° РѕС‚РІРµС‚Р° */
 		{
-			I2C1->CR1 = I2C_CR1_PE; // после приема байта, ведомый посылает подтверждение приема, и устанавливает бит ACK. Очищаем бит ACK и ,если нужно, ждем приема следующего символа
+			I2C1->CR1 = I2C_CR1_PE; // РїРѕСЃР»Рµ РїСЂРёРµРјР° Р±Р°Р№С‚Р°, РІРµРґРѕРјС‹Р№ РїРѕСЃС‹Р»Р°РµС‚ РїРѕРґС‚РІРµСЂР¶РґРµРЅРёРµ РїСЂРёРµРјР°, Рё СѓСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ Р±РёС‚ ACK. РћС‡РёС‰Р°РµРј Р±РёС‚ ACK Рё ,РµСЃР»Рё РЅСѓР¶РЅРѕ, Р¶РґРµРј РїСЂРёРµРјР° СЃР»РµРґСѓСЋС‰РµРіРѕ СЃРёРјРІРѕР»Р°
 			I2C1->CR2 = I2C_CR2_STOP;
-			// Чтение единственного (первого и последнего) байта.
+			// Р§С‚РµРЅРёРµ РµРґРёРЅСЃС‚РІРµРЅРЅРѕРіРѕ (РїРµСЂРІРѕРіРѕ Рё РїРѕСЃР»РµРґРЅРµРіРѕ) Р±Р°Р№С‚Р°.
 			unsigned w;
 			w = WDELAYCONST;
-			while (w -- && (I2C1->ISR & I2C_ISR_RXNE) == 0) // ожидаем окончания приема данных
+			while (w -- && (I2C1->ISR & I2C_ISR_RXNE) == 0) // РѕР¶РёРґР°РµРј РѕРєРѕРЅС‡Р°РЅРёСЏ РїСЂРёРµРјР° РґР°РЅРЅС‹С…
 				local_delay_us(1);
-			* data = I2C1->RXDR & I2C_RXDR_RXDATA; // cчитываем
+			* data = I2C1->RXDR & I2C_RXDR_RXDATA; // cС‡РёС‚С‹РІР°РµРј
 			w = WDELAYCONST;
 			while (w -- && (I2C1->CR2 & I2C_CR2_STOP) != 0)
 				local_delay_us(1);
@@ -1082,32 +1082,32 @@ void i2c_read(uint_fast8_t *data, uint_fast8_t ack_type)
 
 	case I2C_READ_NACK:
 		{
-			// Чтение последнего байта.
-			// Дождаться окончания перехода в состояние STOP
-			I2C1->CR1 = I2C_CR1_PE; // после приема байта, ведомый посылает подтверждение приема, и устанавливает бит ACK. Очищаем бит ACK и ,если нужно, ждем приема следующего символа
+			// Р§С‚РµРЅРёРµ РїРѕСЃР»РµРґРЅРµРіРѕ Р±Р°Р№С‚Р°.
+			// Р”РѕР¶РґР°С‚СЊСЃСЏ РѕРєРѕРЅС‡Р°РЅРёСЏ РїРµСЂРµС…РѕРґР° РІ СЃРѕСЃС‚РѕСЏРЅРёРµ STOP
+			I2C1->CR1 = I2C_CR1_PE; // РїРѕСЃР»Рµ РїСЂРёРµРјР° Р±Р°Р№С‚Р°, РІРµРґРѕРјС‹Р№ РїРѕСЃС‹Р»Р°РµС‚ РїРѕРґС‚РІРµСЂР¶РґРµРЅРёРµ РїСЂРёРµРјР°, Рё СѓСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ Р±РёС‚ ACK. РћС‡РёС‰Р°РµРј Р±РёС‚ ACK Рё ,РµСЃР»Рё РЅСѓР¶РЅРѕ, Р¶РґРµРј РїСЂРёРµРјР° СЃР»РµРґСѓСЋС‰РµРіРѕ СЃРёРјРІРѕР»Р°
 			I2C1->CR2 = I2C_CR2_STOP;
 			unsigned w;
 			w = WDELAYCONST;
-			while (w -- && (I2C1->ISR & I2C_ISR_RXNE) == 0) // ожидаем окончания приема данных
+			while (w -- && (I2C1->ISR & I2C_ISR_RXNE) == 0) // РѕР¶РёРґР°РµРј РѕРєРѕРЅС‡Р°РЅРёСЏ РїСЂРёРµРјР° РґР°РЅРЅС‹С…
 				local_delay_us(1);
-			* data = I2C1->RXDR & I2C_RXDR_RXDATA; // cчитываем
+			* data = I2C1->RXDR & I2C_RXDR_RXDATA; // cС‡РёС‚С‹РІР°РµРј
 			w = WDELAYCONST;
 			while (w -- && (I2C1->CR2 & I2C_CR2_STOP) != 0)
 				local_delay_us(1);
 		}
 		break;
 
-	case I2C_READ_ACK_1:	// первый байт в последующем чтении
-			I2C1->CR1 |= I2C_CR1_ACK; // после приема байта, ведомый посылает подтверждение приема, и устанавливает бит ACK. Очищаем бит ACK и ,если нужно, ждем приема следующего символа
+	case I2C_READ_ACK_1:	// РїРµСЂРІС‹Р№ Р±Р°Р№С‚ РІ РїРѕСЃР»РµРґСѓСЋС‰РµРј С‡С‚РµРЅРёРё
+			I2C1->CR1 |= I2C_CR1_ACK; // РїРѕСЃР»Рµ РїСЂРёРµРјР° Р±Р°Р№С‚Р°, РІРµРґРѕРјС‹Р№ РїРѕСЃС‹Р»Р°РµС‚ РїРѕРґС‚РІРµСЂР¶РґРµРЅРёРµ РїСЂРёРµРјР°, Рё СѓСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ Р±РёС‚ ACK. РћС‡РёС‰Р°РµРј Р±РёС‚ ACK Рё ,РµСЃР»Рё РЅСѓР¶РЅРѕ, Р¶РґРµРј РїСЂРёРµРјР° СЃР»РµРґСѓСЋС‰РµРіРѕ СЃРёРјРІРѕР»Р°
 	case I2C_READ_ACK:
 		{
-			// первый и последующие байты в последовательном чтении.
+			// РїРµСЂРІС‹Р№ Рё РїРѕСЃР»РµРґСѓСЋС‰РёРµ Р±Р°Р№С‚С‹ РІ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕРј С‡С‚РµРЅРёРё.
 			unsigned w;
 			w = WDELAYCONST;
-			while (w -- && (I2C1->ISR & I2C_ISR_RXNE) == 0) // ожидаем окончания приема данных
+			while (w -- && (I2C1->ISR & I2C_ISR_RXNE) == 0) // РѕР¶РёРґР°РµРј РѕРєРѕРЅС‡Р°РЅРёСЏ РїСЂРёРµРјР° РґР°РЅРЅС‹С…
 				local_delay_us(1);
-			* data = I2C1->RXDR & I2C_RXDR_RXDATA; // cчитываем
-			//I2C1->CR1 |= I2C_CR1_ACK; // после приема байта, ведомый посылает подтверждение приема, и устанавливает бит ACK. Очищаем бит ACK и ,если нужно, ждем приема следующего символа
+			* data = I2C1->RXDR & I2C_RXDR_RXDATA; // cС‡РёС‚С‹РІР°РµРј
+			//I2C1->CR1 |= I2C_CR1_ACK; // РїРѕСЃР»Рµ РїСЂРёРµРјР° Р±Р°Р№С‚Р°, РІРµРґРѕРјС‹Р№ РїРѕСЃС‹Р»Р°РµС‚ РїРѕРґС‚РІРµСЂР¶РґРµРЅРёРµ РїСЂРёРµРјР°, Рё СѓСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ Р±РёС‚ ACK. РћС‡РёС‰Р°РµРј Р±РёС‚ ACK Рё ,РµСЃР»Рё РЅСѓР¶РЅРѕ, Р¶РґРµРј РїСЂРёРµРјР° СЃР»РµРґСѓСЋС‰РµРіРѕ СЃРёРјРІРѕР»Р°
 		}
 		break;
 
@@ -1121,12 +1121,12 @@ void i2c_read(uint_fast8_t *data, uint_fast8_t ack_type)
 {
 	unsigned w;
 	w = WDELAYCONST;
-	while (w -- && (I2C1->ISR & I2C_ISR_TXE) == 0) // жду окончания передачи байта
+	while (w -- && (I2C1->ISR & I2C_ISR_TXE) == 0) // Р¶РґСѓ РѕРєРѕРЅС‡Р°РЅРёСЏ РїРµСЂРµРґР°С‡Рё Р±Р°Р№С‚Р°
 		local_delay_us(1);
-	I2C1->TXDR = (I2C1->TXDR & ~ I2C_TXDR_TXDATA) | (databyte & I2C_TXDR_TXDATA); // передаю данные
+	I2C1->TXDR = (I2C1->TXDR & ~ I2C_TXDR_TXDATA) | (databyte & I2C_TXDR_TXDATA); // РїРµСЂРµРґР°СЋ РґР°РЅРЅС‹Рµ
 }
 
-// запись, после чего restart
+// Р·Р°РїРёСЃСЊ, РїРѕСЃР»Рµ С‡РµРіРѕ restart
 /* char */ void i2c_write_withrestart(uint_fast8_t data)
 {
 	i2c_write(data);
@@ -1138,9 +1138,9 @@ void i2c_stop(void)
 {
 	unsigned w;
 	w = WDELAYCONST;
-	while (w -- && (I2C1->SR1 & I2C_SR1_BTF) == 0) // жду окончания передачи байта
+	while (w -- && (I2C1->SR1 & I2C_SR1_BTF) == 0) // Р¶РґСѓ РѕРєРѕРЅС‡Р°РЅРёСЏ РїРµСЂРµРґР°С‡Рё Р±Р°Р№С‚Р°
 		local_delay_us(1);
-	I2C1->CR1 = I2C_CR1_PE; // формирование сигнала "Стоп", заканчиваем прием
+	I2C1->CR1 = I2C_CR1_PE; // С„РѕСЂРјРёСЂРѕРІР°РЅРёРµ СЃРёРіРЅР°Р»Р° "РЎС‚РѕРї", Р·Р°РєР°РЅС‡РёРІР°РµРј РїСЂРёРµРј
 	I2C1->CR2 = I2C_CR2_STOP;
 }
 
@@ -1179,7 +1179,7 @@ void i2c_initialize(void)
 }
 
 
-// Вызвать после последнего i2c_write()
+// Р’С‹Р·РІР°С‚СЊ РїРѕСЃР»Рµ РїРѕСЃР»РµРґРЅРµРіРѕ i2c_write()
 void i2c_waitsend(void)
 {
 
@@ -1204,7 +1204,7 @@ void i2c_stop(void)
     TWI0->TWI_THR = byte;
 }
 
-// запись, после чего restart
+// Р·Р°РїРёСЃСЊ, РїРѕСЃР»Рµ С‡РµРіРѕ restart
 /* char */ void i2c_write_withrestart(uint_fast8_t data)
 {
 	i2c_write(data);
@@ -1215,11 +1215,11 @@ void i2c_read(uint_fast8_t *data, uint_fast8_t ack_type)
 {
 	switch (ack_type)
 	{
-	case I2C_READ_ACK_NACK:	/* чтение первого и единственного байта ответа */
+	case I2C_READ_ACK_NACK:	/* С‡С‚РµРЅРёРµ РїРµСЂРІРѕРіРѕ Рё РµРґРёРЅСЃС‚РІРµРЅРЅРѕРіРѕ Р±Р°Р№С‚Р° РѕС‚РІРµС‚Р° */
 		{
-			// Чтение единственного (первого и последнего) байта.
+			// Р§С‚РµРЅРёРµ РµРґРёРЅСЃС‚РІРµРЅРЅРѕРіРѕ (РїРµСЂРІРѕРіРѕ Рё РїРѕСЃР»РµРґРЅРµРіРѕ) Р±Р°Р№С‚Р°.
 			TWI0->TWI_CR = TWI_CR_START | TWI_CR_STOP;
-			// Дождаться окончания перехода в состояние STOP
+			// Р”РѕР¶РґР°С‚СЊСЃСЏ РѕРєРѕРЅС‡Р°РЅРёСЏ РїРµСЂРµС…РѕРґР° РІ СЃРѕСЃС‚РѕСЏРЅРёРµ STOP
 			unsigned w = 255;
 			while (w -- && (TWI0->TWI_SR & TWI_SR_TXCOMP) == 0)	
 				local_delay_us(1);
@@ -1229,8 +1229,8 @@ void i2c_read(uint_fast8_t *data, uint_fast8_t ack_type)
 
 	case I2C_READ_NACK:
 		{
-			// Чтение последнего байта.
-			// Дождаться окончания перехода в состояние STOP
+			// Р§С‚РµРЅРёРµ РїРѕСЃР»РµРґРЅРµРіРѕ Р±Р°Р№С‚Р°.
+			// Р”РѕР¶РґР°С‚СЊСЃСЏ РѕРєРѕРЅС‡Р°РЅРёСЏ РїРµСЂРµС…РѕРґР° РІ СЃРѕСЃС‚РѕСЏРЅРёРµ STOP
 			TWI0->TWI_CR = TWI_CR_STOP;
 			unsigned w = 255;
 			while ( w -- && (TWI0->TWI_SR & TWI_SR_TXCOMP) == 0)
@@ -1243,7 +1243,7 @@ void i2c_read(uint_fast8_t *data, uint_fast8_t ack_type)
 			TWI0->TWI_CR = TWI_CR_START;
 	case I2C_READ_ACK:
 		{
-			// первый и последующие байты в последовательном чтении.
+			// РїРµСЂРІС‹Р№ Рё РїРѕСЃР»РµРґСѓСЋС‰РёРµ Р±Р°Р№С‚С‹ РІ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕРј С‡С‚РµРЅРёРё.
 			unsigned w = 255;
 			while (w -- && (TWI0->TWI_SR & TWI_SR_RXRDY) == 0)
 				local_delay_us(1);
@@ -1320,7 +1320,7 @@ void i2c_initialize(void)
 	TARGET_TWI.MASTER.ADDR = address;
 }
 
-// Вызвать после последнего i2c_write()
+// Р’С‹Р·РІР°С‚СЊ РїРѕСЃР»Рµ РїРѕСЃР»РµРґРЅРµРіРѕ i2c_write()
 void i2c_waitsend(void)
 {
 
@@ -1343,7 +1343,7 @@ void i2c_stop(void)
 	TARGET_TWI.MASTER.DATA = data;
 }
 
-// запись, после чего restart
+// Р·Р°РїРёСЃСЊ, РїРѕСЃР»Рµ С‡РµРіРѕ restart
 /* char */ void i2c_write_withrestart(uint_fast8_t data)
 {
 	unsigned w = 255;
@@ -1371,7 +1371,7 @@ void i2c_read(uint_fast8_t *data, uint_fast8_t ack_type)
 	case I2C_READ_NACK:
 		TARGET_TWI.MASTER.CTRLC = TWI_MASTER_CMD_STOP_gc; 
 		break;
-	case I2C_READ_ACK_NACK:	/* чтение первого и единственного байта ответа */
+	case I2C_READ_ACK_NACK:	/* С‡С‚РµРЅРёРµ РїРµСЂРІРѕРіРѕ Рё РµРґРёРЅСЃС‚РІРµРЅРЅРѕРіРѕ Р±Р°Р№С‚Р° РѕС‚РІРµС‚Р° */
 		TARGET_TWI.MASTER.CTRLC = TWI_MASTER_ACKACT_bm | TWI_MASTER_CMD_STOP_gc; 
 		* data = TARGET_TWI.MASTER.DATA;
 		break;
@@ -1385,7 +1385,7 @@ void i2c_read(uint_fast8_t *data, uint_fast8_t ack_type)
 
 #elif WITHTWISW
 
-// программно-реализованный I2C интерфейс
+// РїСЂРѕРіСЂР°РјРјРЅРѕ-СЂРµР°Р»РёР·РѕРІР°РЅРЅС‹Р№ I2C РёРЅС‚РµСЂС„РµР№СЃ
 
 //you'll need to change for a different processor.
 
@@ -1410,7 +1410,7 @@ static void i2c_dly(void)
 //SCL_IN = SDA_IN = 0;
 void i2c_initialize(void)
 {
-	// программирование выводов, управляющих I2C
+	// РїСЂРѕРіСЂР°РјРјРёСЂРѕРІР°РЅРёРµ РІС‹РІРѕРґРѕРІ, СѓРїСЂР°РІР»СЏСЋС‰РёС… I2C
 	TWISOFT_INITIALIZE();
 
 #if 0
@@ -1459,7 +1459,7 @@ void i2c_start(uint_fast8_t address)
 	//return 0;
 }
 
-// Вызвать после последнего i2c_write()
+// Р’С‹Р·РІР°С‚СЊ РїРѕСЃР»Рµ РїРѕСЃР»РµРґРЅРµРіРѕ i2c_write()
 void i2c_waitsend(void)
 {
 
@@ -1508,7 +1508,7 @@ void i2c_read(uint_fast8_t *data, uint_fast8_t ack_type)
 		i2c_dly();
 		break;
 	case I2C_READ_NACK:
-	case I2C_READ_ACK_NACK:	/* чтение первого и единственного байта ответа */
+	case I2C_READ_ACK_NACK:	/* С‡С‚РµРЅРёРµ РїРµСЂРІРѕРіРѕ Рё РµРґРёРЅСЃС‚РІРµРЅРЅРѕРіРѕ Р±Р°Р№С‚Р° РѕС‚РІРµС‚Р° */
 		SET_TWD();
 		i2c_dly();
 		break;
@@ -1539,7 +1539,7 @@ void i2c_write(uint_fast8_t d)
 			//SDA = 0;
 			CLR_TWD();
 		}
-		/* Формирование импульса на SCL */
+		/* Р¤РѕСЂРјРёСЂРѕРІР°РЅРёРµ РёРјРїСѓР»СЊСЃР° РЅР° SCL */
 		i2c_dly();
 		//SCL = 1;
 		SET_TWCK();
@@ -1564,7 +1564,7 @@ void i2c_write(uint_fast8_t d)
 	//return b;
 }
 
-// запись, после чего restart
+// Р·Р°РїРёСЃСЊ, РїРѕСЃР»Рµ С‡РµРіРѕ restart
 /* char */ void i2c_write_withrestart(uint_fast8_t data)
 {
 	i2c_write(data);

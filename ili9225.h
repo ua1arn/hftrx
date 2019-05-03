@@ -2,15 +2,15 @@
 #ifndef ILI9225_H_INCLUDED
 #define ILI9225_H_INCLUDED
 
-#include "hardware.h"	/* зависящие от процессора функции работы с портами */
+#include "hardware.h"	/* Р·Р°РІРёСЃСЏС‰РёРµ РѕС‚ РїСЂРѕС†РµСЃСЃРѕСЂР° С„СѓРЅРєС†РёРё СЂР°Р±РѕС‚С‹ СЃ РїРѕСЂС‚Р°РјРё */
 
 // SF-TC220H-9223A-N_IC_ILI9225C_2011-01-15
 
 #if LCDMODE_ILI9225 || LCDMODE_ST7781
 
-#define DISPLAYMODES_FPS 5	/* количество обновлений отображения режимов работы */
-#define DISPLAY_FPS	10	/* обновление показаний частоты за секунду */
-#define DISPLAYSWR_FPS 5	/* количество обновлений SWR за секунду */
+#define DISPLAYMODES_FPS 5	/* РєРѕР»РёС‡РµСЃС‚РІРѕ РѕР±РЅРѕРІР»РµРЅРёР№ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ СЂРµР¶РёРјРѕРІ СЂР°Р±РѕС‚С‹ */
+#define DISPLAY_FPS	10	/* РѕР±РЅРѕРІР»РµРЅРёРµ РїРѕРєР°Р·Р°РЅРёР№ С‡Р°СЃС‚РѕС‚С‹ Р·Р° СЃРµРєСѓРЅРґСѓ */
+#define DISPLAYSWR_FPS 5	/* РєРѕР»РёС‡РµСЃС‚РІРѕ РѕР±РЅРѕРІР»РµРЅРёР№ SWR Р·Р° СЃРµРєСѓРЅРґСѓ */
 
 typedef uint_fast16_t COLOR_T;
 typedef uint16_t PACKEDCOLOR_T;

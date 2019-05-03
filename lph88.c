@@ -1,12 +1,12 @@
 /* $Id$ */
 //
-// Проект HF Dream Receiver (КВ приёмник мечты)
-// автор Гена Завидовский mgs2001@mail.ru
+// РџСЂРѕРµРєС‚ HF Dream Receiver (РљР’ РїСЂРёС‘РјРЅРёРє РјРµС‡С‚С‹)
+// Р°РІС‚РѕСЂ Р“РµРЅР° Р—Р°РІРёРґРѕРІСЃРєРёР№ mgs2001@mail.ru
 // UA1ARN
 //
 // Siemens S65 Display Control
-// Индикатор 176*132 LPH8836-2 с контроллером Hitachi HD66773
-// проверено с LPH8836-1, LPH8836-2 и LPH8836-4, 
+// РРЅРґРёРєР°С‚РѕСЂ 176*132 LPH8836-2 СЃ РєРѕРЅС‚СЂРѕР»Р»РµСЂРѕРј Hitachi HD66773
+// РїСЂРѕРІРµСЂРµРЅРѕ СЃ LPH8836-1, LPH8836-2 Рё LPH8836-4, 
 
 #include "hardware.h"
 #include "board.h"
@@ -81,7 +81,7 @@ static void lph88_cmd(uint_fast8_t cmd, uint_fast16_t dat)
 	lph88_comdat16(dat);
 }
 
-// в режим передачи данных переводим сразу по окончании команд.
+// РІ СЂРµР¶РёРј РїРµСЂРµРґР°С‡Рё РґР°РЅРЅС‹С… РїРµСЂРµРІРѕРґРёРј СЃСЂР°Р·Сѓ РїРѕ РѕРєРѕРЅС‡Р°РЅРёРё РєРѕРјР°РЅРґ.
 static void lph88_put_char_begin(void)
 {
 	lph88_comtype(0x22);	// Write Data to GRAM (R22h)
@@ -113,17 +113,17 @@ static void lph88_pixel_p2(
 {
 	if (fg)
 	{
-		spi_progval8_p2(targetlcd, fgcolor.first);	// смотреть бит TRI а регистре 03
-		spi_progval8_p2(targetlcd, fgcolor.second);	// смотреть бит TRI а регистре 03
+		spi_progval8_p2(targetlcd, fgcolor.first);	// СЃРјРѕС‚СЂРµС‚СЊ Р±РёС‚ TRI Р° СЂРµРіРёСЃС‚СЂРµ 03
+		spi_progval8_p2(targetlcd, fgcolor.second);	// СЃРјРѕС‚СЂРµС‚СЊ Р±РёС‚ TRI Р° СЂРµРіРёСЃС‚СЂРµ 03
 	}
 	else
 	{
-		spi_progval8_p2(targetlcd, bkcolor.first);	// смотреть бит TRI а регистре 03
-		spi_progval8_p2(targetlcd, bkcolor.second);	// смотреть бит TRI а регистре 03
+		spi_progval8_p2(targetlcd, bkcolor.first);	// СЃРјРѕС‚СЂРµС‚СЊ Р±РёС‚ TRI Р° СЂРµРіРёСЃС‚СЂРµ 03
+		spi_progval8_p2(targetlcd, bkcolor.second);	// СЃРјРѕС‚СЂРµС‚СЊ Р±РёС‚ TRI Р° СЂРµРіРёСЃС‚СЂРµ 03
 	}
 }
 
-// Выдать восемь цветных пикселей
+// Р’С‹РґР°С‚СЊ РІРѕСЃРµРјСЊ С†РІРµС‚РЅС‹С… РїРёРєСЃРµР»РµР№
 static void 
 lph88_pix8(
 	uint_fast8_t v
@@ -142,14 +142,14 @@ lph88_pix8(
 static uint_fast8_t
 bigfont_decode(uint_fast8_t c)
 {
-	// '#' - узкий пробел
+	// '#' - СѓР·РєРёР№ РїСЂРѕР±РµР»
 	if (c == ' ' || c == '#')
 		return 11;
 	if (c == '_')
-		return 10;		// курсор - позиция редактирвания частоты
+		return 10;		// РєСѓСЂСЃРѕСЂ - РїРѕР·РёС†РёСЏ СЂРµРґР°РєС‚РёСЂРІР°РЅРёСЏ С‡Р°СЃС‚РѕС‚С‹
 	if (c == '.')
-		return 12;		// точка
-	return c - '0';		// остальные - цифры 0..9
+		return 12;		// С‚РѕС‡РєР°
+	return c - '0';		// РѕСЃС‚Р°Р»СЊРЅС‹Рµ - С†РёС„СЂС‹ 0..9
 }
 
 
@@ -160,7 +160,7 @@ smallfont_decode(uint_fast8_t c)
 }
 
 
-// Вызов этой функции только внутри display_wrdata_begin() и 	display_wrdata_end();
+// Р’С‹Р·РѕРІ СЌС‚РѕР№ С„СѓРЅРєС†РёРё С‚РѕР»СЊРєРѕ РІРЅСѓС‚СЂРё display_wrdata_begin() Рё 	display_wrdata_end();
 static void lph88_put_char_fast(char cc)
 {
 	uint_fast8_t i = 0;
@@ -170,29 +170,29 @@ static void lph88_put_char_fast(char cc)
 
 	for (; i < NBYTES; ++ i)
 	{
-		lph88_pix8(p [i]);	// Выдать восемь цветных пикселей
+		lph88_pix8(p [i]);	// Р’С‹РґР°С‚СЊ РІРѕСЃРµРјСЊ С†РІРµС‚РЅС‹С… РїРёРєСЃРµР»РµР№
 	}
 }
 
 
-// Вызов этой функции только внутри display_wrdatabig_begin() и 	display_wrdatabig_end();
+// Р’С‹Р·РѕРІ СЌС‚РѕР№ С„СѓРЅРєС†РёРё С‚РѕР»СЊРєРѕ РІРЅСѓС‚СЂРё display_wrdatabig_begin() Рё 	display_wrdatabig_end();
 
 static void lph88_put_char_big(char cc)
 {
-	// '#' - узкий пробел
-	enum { NBV = (BIGCHARH / 8) }; // сколько байтов в одной вертикали
-	uint_fast8_t i = NBV * ((cc == '.' || cc == '#') ? 12 : 0);	// начальная колонка знакогенератора, откуда начинать.
+	// '#' - СѓР·РєРёР№ РїСЂРѕР±РµР»
+	enum { NBV = (BIGCHARH / 8) }; // СЃРєРѕР»СЊРєРѕ Р±Р°Р№С‚РѕРІ РІ РѕРґРЅРѕР№ РІРµСЂС‚РёРєР°Р»Рё
+	uint_fast8_t i = NBV * ((cc == '.' || cc == '#') ? 12 : 0);	// РЅР°С‡Р°Р»СЊРЅР°СЏ РєРѕР»РѕРЅРєР° Р·РЅР°РєРѕРіРµРЅРµСЂР°С‚РѕСЂР°, РѕС‚РєСѓРґР° РЅР°С‡РёРЅР°С‚СЊ.
     const uint_fast8_t c = bigfont_decode((unsigned char) cc);
 	enum { NBYTES = (sizeof ls020_bigfont [0] / sizeof ls020_bigfont [0][0]) };
 	const FLASHMEM uint8_t * const p  = & ls020_bigfont [c][0];
 
 	for (; i < NBYTES; ++ i)
 	{
-		lph88_pix8(p [i]);	// Выдать восемь цветных пикселей
+		lph88_pix8(p [i]);	// Р’С‹РґР°С‚СЊ РІРѕСЃРµРјСЊ С†РІРµС‚РЅС‹С… РїРёРєСЃРµР»РµР№
 	}
 }
 
-// Вызов этой функции только внутри display_wrdata_begin() и 	display_wrdata_end();
+// Р’С‹Р·РѕРІ СЌС‚РѕР№ С„СѓРЅРєС†РёРё С‚РѕР»СЊРєРѕ РІРЅСѓС‚СЂРё display_wrdata_begin() Рё 	display_wrdata_end();
 
 static void lph88_put_char_half(char cc)
 {
@@ -203,14 +203,14 @@ static void lph88_put_char_half(char cc)
 
 	for (; i < NBYTES; ++ i)
 	{
-		lph88_pix8(p [i]);	// Выдать восемь цветных пикселей
+		lph88_pix8(p [i]);	// Р’С‹РґР°С‚СЊ РІРѕСЃРµРјСЊ С†РІРµС‚РЅС‹С… РїРёРєСЃРµР»РµР№
 	}
 }
 
-/* вызывается между вызовами display_wrdatabar_begin() и display_wrdatabar_end() */
+/* РІС‹Р·С‹РІР°РµС‚СЃСЏ РјРµР¶РґСѓ РІС‹Р·РѕРІР°РјРё display_wrdatabar_begin() Рё display_wrdatabar_end() */
 static void lph88_bar_column(uint_fast8_t v)
 {
-	lph88_pix8(v);	// Выдать восемь цветных пикселей
+	lph88_pix8(v);	// Р’С‹РґР°С‚СЊ РІРѕСЃРµРјСЊ С†РІРµС‚РЅС‹С… РїРёРєСЃРµР»РµР№
 }
 
 static uint_fast8_t lph88_windowy;
@@ -218,14 +218,14 @@ static uint_fast8_t lph88_windowx;
 
 
 /*
- * установить высоту окна перед выводом текста
+ * СѓСЃС‚Р°РЅРѕРІРёС‚СЊ РІС‹СЃРѕС‚Сѓ РѕРєРЅР° РїРµСЂРµРґ РІС‹РІРѕРґРѕРј С‚РµРєСЃС‚Р°
  */
 static void lph88_set_windowh(uint_fast8_t height)
 {
 #if	LCDMODE_LPH88_TOPDOWN 
 	uint_fast8_t y = lph88_windowy;
 	uint_fast8_t x = lph88_windowx;
-	// "коридор" до правого края дисплея
+	// "РєРѕСЂРёРґРѕСЂ" РґРѕ РїСЂР°РІРѕРіРѕ РєСЂР°СЏ РґРёСЃРїР»РµСЏ
 	lph88_comtype(0x17);		// Vertical RAM Address Position (R17h)
 	lph88_comdat(DIM_X - 1, x);	// vea7..vea0, vsa7..vsa0
 
@@ -239,7 +239,7 @@ static void lph88_set_windowh(uint_fast8_t height)
 	uint_fast8_t y = lph88_windowy;
 	uint_fast8_t x = lph88_windowx;
 
-	// "коридор" до правого края дисплея
+	// "РєРѕСЂРёРґРѕСЂ" РґРѕ РїСЂР°РІРѕРіРѕ РєСЂР°СЏ РґРёСЃРїР»РµСЏ
 	lph88_comtype(0x17);		// Vertical RAM Address Position (R17h)
 	lph88_comdat(x, 0);	// vea7..vea0, vsa7..vsa0
 
@@ -272,7 +272,7 @@ static void lph88_clear(COLOR_T bg)
 	lph88_put_char_end();
 }
 
-/* вызывается при разрешённых прерываниях. */
+/* РІС‹Р·С‹РІР°РµС‚СЃСЏ РїСЂРё СЂР°Р·СЂРµС€С‘РЅРЅС‹С… РїСЂРµСЂС‹РІР°РЅРёСЏС…. */
 void display_initialize(void)
 {
 	local_delay_ms(50);
@@ -367,9 +367,9 @@ display_wrdatabig_end(void)
 	lph88_put_char_end();
 }
 
-/* отображение одной вертикальной полосы на графическом индикаторе */
-/* старшие биты соответствуют верхним пикселям изображения */
-/* вызывается между вызовами display_wrdatabar_begin() и display_wrdatabar_end() */
+/* РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ РѕРґРЅРѕР№ РІРµСЂС‚РёРєР°Р»СЊРЅРѕР№ РїРѕР»РѕСЃС‹ РЅР° РіСЂР°С„РёС‡РµСЃРєРѕРј РёРЅРґРёРєР°С‚РѕСЂРµ */
+/* СЃС‚Р°СЂС€РёРµ Р±РёС‚С‹ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‚ РІРµСЂС…РЅРёРј РїРёРєСЃРµР»СЏРј РёР·РѕР±СЂР°Р¶РµРЅРёСЏ */
+/* РІС‹Р·С‹РІР°РµС‚СЃСЏ РјРµР¶РґСѓ РІС‹Р·РѕРІР°РјРё display_wrdatabar_begin() Рё display_wrdatabar_end() */
 
 
 void
@@ -404,8 +404,8 @@ display_put_char_half(uint_fast8_t c, uint_fast8_t lowhalf)
 }
 
 
-// Вызов этой функции только внутри display_wrdata_begin() и display_wrdata_end();
-// Используется при выводе на графический ндикатор, если ТРЕБУЕТСЯ переключать полосы отображения
+// Р’С‹Р·РѕРІ СЌС‚РѕР№ С„СѓРЅРєС†РёРё С‚РѕР»СЊРєРѕ РІРЅСѓС‚СЂРё display_wrdata_begin() Рё display_wrdata_end();
+// РСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РїСЂРё РІС‹РІРѕРґРµ РЅР° РіСЂР°С„РёС‡РµСЃРєРёР№ РЅРґРёРєР°С‚РѕСЂ, РµСЃР»Рё РўР Р•Р‘РЈР•РўРЎРЇ РїРµСЂРµРєР»СЋС‡Р°С‚СЊ РїРѕР»РѕСЃС‹ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ
 void
 display_put_char_small(uint_fast8_t c, uint_fast8_t lowhalf)
 {
@@ -420,32 +420,32 @@ void
 display_gotoxy(uint_fast8_t x, uint_fast8_t y)
 {
 #if	LCDMODE_LPH88_TOPDOWN
-	// нормально смотрим - выводы дисплея справа
+	// РЅРѕСЂРјР°Р»СЊРЅРѕ СЃРјРѕС‚СЂРёРј - РІС‹РІРѕРґС‹ РґРёСЃРїР»РµСЏ СЃРїСЂР°РІР°
 	lph88_windowy = (DIM_Y - 1) - CHAR_H * y;
 	lph88_windowx = (x * CHAR_W);
 #else /* LCDMODE_LPH88_TOPDOWN */
-	// нормально смотрим - выводы дисплея слева
+	// РЅРѕСЂРјР°Р»СЊРЅРѕ СЃРјРѕС‚СЂРёРј - РІС‹РІРѕРґС‹ РґРёСЃРїР»РµСЏ СЃР»РµРІР°
 	lph88_windowy = (y * CHAR_H);
 	lph88_windowx = (DIM_X - 1 - x * CHAR_W);
 #endif /* LCDMODE_LPH88_TOPDOWN */
 }
 
-// Координаты в пикселях
+// РљРѕРѕСЂРґРёРЅР°С‚С‹ РІ РїРёРєСЃРµР»СЏС…
 void display_plotfrom(uint_fast16_t x, uint_fast16_t y)
 {
 #if	LCDMODE_LPH88_TOPDOWN
-	// нормально смотрим - выводы дисплея справа
+	// РЅРѕСЂРјР°Р»СЊРЅРѕ СЃРјРѕС‚СЂРёРј - РІС‹РІРѕРґС‹ РґРёСЃРїР»РµСЏ СЃРїСЂР°РІР°
 	lph88_windowy = (DIM_Y - 1) - y;
 	lph88_windowx = (x);
 #else /* LCDMODE_LPH88_TOPDOWN */
-	// нормально смотрим - выводы дисплея слева
+	// РЅРѕСЂРјР°Р»СЊРЅРѕ СЃРјРѕС‚СЂРёРј - РІС‹РІРѕРґС‹ РґРёСЃРїР»РµСЏ СЃР»РµРІР°
 	lph88_windowy = (y);
 	lph88_windowx = (DIM_X - 1 - x);
 #endif /* LCDMODE_LPH88_TOPDOWN */
 }
 
 void display_plotstart(
-	uint_fast16_t height	// Высота окна в пикселях
+	uint_fast16_t height	// Р’С‹СЃРѕС‚Р° РѕРєРЅР° РІ РїРёРєСЃРµР»СЏС…
 	)
 {
 	lph88_set_windowh(height);
@@ -459,7 +459,7 @@ void display_plotstop(void)
 
 void display_plot(
 	const PACKEDCOLOR_T * buffer, 
-	uint_fast16_t dx,	// Размеры окна в пикселях
+	uint_fast16_t dx,	// Р Р°Р·РјРµСЂС‹ РѕРєРЅР° РІ РїРёРєСЃРµР»СЏС…
 	uint_fast16_t dy
 	)
 {
@@ -467,8 +467,8 @@ void display_plot(
 }
 
 
-/* аппаратный сброс дисплея - перед инициализаций */
-/* вызывается при разрешённых прерываниях. */
+/* Р°РїРїР°СЂР°С‚РЅС‹Р№ СЃР±СЂРѕСЃ РґРёСЃРїР»РµСЏ - РїРµСЂРµРґ РёРЅРёС†РёР°Р»РёР·Р°С†РёР№ */
+/* РІС‹Р·С‹РІР°РµС‚СЃСЏ РїСЂРё СЂР°Р·СЂРµС€С‘РЅРЅС‹С… РїСЂРµСЂС‹РІР°РЅРёСЏС…. */
 void
 display_reset(void)
 {
@@ -476,7 +476,7 @@ display_reset(void)
 }
 
 
-/* Разряжаем конденсаторы питания */
+/* Р Р°Р·СЂСЏР¶Р°РµРј РєРѕРЅРґРµРЅСЃР°С‚РѕСЂС‹ РїРёС‚Р°РЅРёСЏ */
 void display_discharge(void)
 {
 }
