@@ -3,8 +3,8 @@
 #define SDCARD_H_INCLUDED
 
 #include <stdint.h>
-#include "ff.h"
-#include "diskio.h"
+#include "fatfs/ff.h"
+#include "fatfs/diskio.h"
 
 
 struct drvfunc
