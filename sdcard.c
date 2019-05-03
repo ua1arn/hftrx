@@ -15,8 +15,8 @@
 #include "board.h"
 #include "sdcard.h"
 #include "spifuncs.h"
-#include "ff.h"	
-#include "diskio.h"		/* FatFs lower layer API */
+#include "fatfs/ff.h"	
+#include "fatfs/diskio.h"		/* FatFs lower layer API */
 
 #include "display.h"	/* используем функцию получения рабочей частоты */
 #include "keyboard.h"	
