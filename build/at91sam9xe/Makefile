@@ -82,7 +82,8 @@ ASRC = \
 
 # List all user directories here
 INC_EXCLUDES += 
-UINCDIR += $(filter-out $(INC_EXCLUDES), $(filter %/, $(wildcard $(SRCDIR)/*/)))
+UINCDIR += $(SRCDIR) \
+	$(filter-out $(INC_EXCLUDES), $(filter %/, $(wildcard $(SRCDIR)/*/)))
 
 # List the user directory to look for the libraries here
 ULIBDIR =

@@ -43,7 +43,8 @@ SRCDIR = ../..
 SRC +=
 ASRC +=
 INC_EXCLUDES += 
-UINCDIR += $(filter-out $(INC_EXCLUDES), $(filter %/, $(wildcard $(SRCDIR)/*/)))
+UINCDIR += $(SRCDIR) \
+	$(filter-out $(INC_EXCLUDES), $(filter %/, $(wildcard $(SRCDIR)/*/)))
 ULIBDIR +=
 ULIBS += 
 
