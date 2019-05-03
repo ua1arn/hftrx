@@ -84,8 +84,7 @@ ASRC += \
  crt_r7s721.s
 
 # List all user directories here
-INC_EXCLUDES += ../../build/%
-UINCDIR += $(SRCDIR) $(filter-out $(INC_EXCLUDES), $(filter %/, $(wildcard $(SRCDIR)/*/ $(SRCDIR)/*/*/ $(SRCDIR)/*/*/*/)))
+UINCDIR += ../.. ../../inc ../../rza1x_inc/
 
 # List the user directory to look for the libraries here
 ULIBDIR +=

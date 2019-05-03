@@ -81,8 +81,7 @@ ASRC = \
  crt_sam7s.s
 
 # List all user directories here
-INC_EXCLUDES += ../../build/%
-UINCDIR += $(SRCDIR) $(filter-out $(INC_EXCLUDES), $(filter %/, $(wildcard $(SRCDIR)/*/ $(SRCDIR)/*/*/ $(SRCDIR)/*/*/*/)))
+UINCDIR += ../.. ../../inc
 
 # List the user directory to look for the libraries here
 ULIBDIR =
