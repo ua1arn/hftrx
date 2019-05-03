@@ -16,7 +16,7 @@ COMMON = -mmcu=$(MCU)
 ## Compile options common for all C compilation units.
 CFLAGS = $(COMMON)
 CFLAGS += -Wall -gdwarf-2 -std=gnu99 -flto -DF_CPU=8000000UL -Os -fsigned-char $(MAKE_DEFINES)
-CFLAGS += -MD -MP -MT $(*F).o -MF ./$(@F).d 
+CFLAGS += -MD -MP -MT $(*F).o -MF ./$(@D)/$(@F).d
 
 ## Assembly specific flags
 ASMFLAGS = $(COMMON)
@@ -40,11 +40,16 @@ HEX_EEPROM_FLAGS += --change-section-lma .eeprom=0 --no-change-warnings
 SRCDIR = ../..
 SRC +=
 ASRC +=
-UINCDIR +=
+UINCDIR += ../.. ../../inc
 ULIBDIR +=
 ULIBS += 
-include $(SRCDIR)/sources_atmega.mak
-OBJECTS = $(ASRC:.s=.o) $(SRC:.c=.o)
+
+SRC_EXCLUDES += ../../tools/rbf2c.c
+SRC += $(filter-out $(SRC_EXCLUDES), $(wildcard $(SRCDIR)/*.c))
+SRC += $(filter-out $(SRC_EXCLUDES), $(wildcard $(SRCDIR)/*/*.c))
+VPATH = $(SRCDIR)
+
+OBJECTS = $(ASRC:.s=.o) $(patsubst $(SRCDIR)/%.c,%.o,$(SRC))
 INCDIR  = $(patsubst %,-I%,$(DINCDIR) $(UINCDIR))
 LIBDIR  = $(patsubst %,-L%,$(DLIBDIR) $(ULIBDIR))
 
@@ -54,11 +59,12 @@ LINKONLYOBJECTS =
 ## Build
 all: $(OBJECTS) $(TARGET) tc1_atmega644_8.hex tc1_atmega644_8.eep size
 
-%o: $(addprefix $(SRCDIR)/, %c)
-	$(CC) -c $(CFLAGS) $(INCDIR) $< -o $@
+%.o: %.c
+	@mkdir -p $(@D)
+	$(CC) -c $(CFLAGS) $(INCDIR) $(patsubst %.o,%.c,$(addprefix $(SRCDIR)/, $@)) -o $@
 
-%o: $(addprefix $(SRCDIR)/, %s)
-	$(AS) -c $(ASMFLAGS) $< -o $@
+%.o: $(addprefix $(SRCDIR)/, %.s)
+	$(AS) -c $(ASMFLAGS) $< -o $@	
 
 $(TARGET): $(OBJECTS)
 	 $(CC) $(LDFLAGS) $(OBJECTS) $(LINKONLYOBJECTS) $(LIBDIR) $(LIBS) -o $(TARGET)
@@ -80,7 +86,18 @@ size: ${TARGET}
 .PHONY: clean
 clean:
 	-rm -rf $(OBJECTS) tc1_atmega644_8.elf ./*.d tc1_atmega644_8.hex tc1_atmega644_8.eep
-
+	-rm -fR ./*/*.o
+	-rm -fR ./*.o
+	-rm -f $(PROJECT)_rom.elf $(PROJECT)_rom.map $(PROJECT)_rom.hex $(PROJECT)_rom.bin
+	-rm -f $(PROJECT)_boot.elf $(PROJECT)_boot.map $(PROJECT)_boot.hex $(PROJECT)_boot.bin
+	-rm -f $(PROJECT)_app.elf $(PROJECT)_app.map $(PROJECT)_app.hex $(PROJECT)_app.bin
+	-rm -f $(SRC:.c=.c.bak)
+	-rm -f $(SRC:.c=.lst)
+	-rm -f $(ASRC:.s=.s.bak)
+	-rm -f $(ASRC:.s=.lst)
+	-rm -fR ./*/*.d	
+	-rm -fR ./*.d
+	
 ## Other dependencies
--include $(wildcard ./*.d)
+-include $(wildcard ./*/*.d)
 

@@ -73,54 +73,25 @@ UDEFS = -DNDEBUG=1 -DCPUSTYLE_ATSAM4S=1
 UADEFS = 
 
 # List C source files here
-SRC = \
- bandfilters.c \
- board.c \
- usbd.c usbd_desc.c \
- sequen.c \
- elkey.c \
- encoder.c \
- serial.c \
- hardware.c \
- hd44780.c \
- display.c display2.c \
- keyboard.c\
- keymaps.c\
- nvram.c \
- spifuncs.c \
- formats.c \
- synthcalcs.c filters.c \
- pcf8535.c \
- uc1608.c \
- uc1601s.c \
- lph88.c \
- ls020.c \
- l2f50.c \
- s1d13781.c \
- ili9320.c \
- ili9225.c \
- st7735.c \
- st7565s.c \
- graphltdc.c \
- twi.c \
- pio.c \
- tlv320aic23.c cs4272.c nau8822.c wm8994.c \
- hardwarecodecs.c buffers.c audio.c spislave.c modems.c \
- sdcard.c ff.c ccsbcs.c \
- tc1.c tests.c
+SRC = 
 
 # List ASM source files here
 #ASRC = crt_sam7s.s
 ASRC =
 
 # List all user directories here
-UINCDIR +=
+UINCDIR += ../.. ../../inc
 
 # List the user directory to look for the libraries here
 ULIBDIR =
 
 # List all user libraries here
 ULIBS = 
+
+SRC_EXCLUDES += ../../tools/rbf2c.c
+SRC += $(filter-out $(SRC_EXCLUDES), $(wildcard $(SRCDIR)/*.c))
+SRC += $(filter-out $(SRC_EXCLUDES), $(wildcard $(SRCDIR)/*/*.c))
+VPATH = $(SRCDIR)
 
 #
 # End of user defines
@@ -131,8 +102,7 @@ INCDIR  = $(patsubst %,-I%,$(DINCDIR) $(UINCDIR))
 LIBDIR  = $(patsubst %,-L%,$(DLIBDIR) $(ULIBDIR))
 DEFS    = $(DDEFS) $(UDEFS)
 ADEFS   = $(DADEFS) $(UADEFS)
-#OBJS    = $(addprefix ../, $(ASRC:.s=.o) $(SRC:.c=.o))
-OBJS    = $(ASRC:.s=.o) $(SRC:.c=.o)
+OBJS    = $(ASRC:.s=.o) $(patsubst $(SRCDIR)/%.c,%.o,$(SRC))
 LIBS    = $(DLIBS) $(ULIBS)
 
 #MCFLAGS = -mcpu=$(MCU) $(CORE) -funroll-loops -fgraphite-identity -ffunction-sections -fdata-sections -ffat-lto-objects
@@ -149,7 +119,7 @@ LDFLAGS_RAM = $(MCFLAGS) $(LTO) $(OPT) -nostartfiles -T$(LDSCRIPT_RAM) -Wl,-Map=
 LDFLAGS_ROM = $(MCFLAGS) $(LTO) $(OPT) -nostartfiles -T$(LDSCRIPT_ROM) -Wl,-Map=$(PROJECT)_rom.map,--cref $(LIBDIR)
 
 # Generate dependency information
-CPFLAGS += -MD -MP -MF ./$(@F).d
+CPFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
 
 # Experemental optimisation flags
 #CPFLAGS += -fno-inline-small-functions 
@@ -169,10 +139,11 @@ RAM: $(OBJS) $(PROJECT)_ram.elf $(PROJECT)_ram.hex
 ROM: $(OBJS) $(PROJECT)_rom.elf $(PROJECT)_rom.hex
 #ROM: $(OBJS) $(PROJECT)_rom.elf $(PROJECT)_rom.bin
 
-%o: $(addprefix $(SRCDIR), %c)
-	$(CC) -c $(CPFLAGS) $(INCDIR) $< -o $@
+%.o: %.c
+	@mkdir -p $(@D)
+	$(CC) -c $(CPFLAGS) $(INCDIR) $(patsubst %.o,%.c,$(addprefix $(SRCDIR)/, $@)) -o $@
 
-%o: $(addprefix $(SRCDIR), %s)
+%.o: $(addprefix $(SRCDIR)/, %.s)
 	$(AS) -c $(ASFLAGS) $< -o $@
 
 %ram.elf: $(OBJS)
@@ -190,22 +161,22 @@ ROM: $(OBJS) $(PROJECT)_rom.elf $(PROJECT)_rom.hex
 	$(BIN) $< $@
 
 clean:
-	-rm -f $(OBJS)
-	-rm -f $(PROJECT)_ram.elf
-	-rm -f $(PROJECT)_ram.map
-	-rm -f $(PROJECT)_ram.hex
-	-rm -f $(PROJECT)_rom.elf
-	-rm -f $(PROJECT)_rom.map
-	-rm -f $(PROJECT)_rom.hex
+	-rm -fR ./*/*.o
+	-rm -fR ./*.o
+	-rm -f $(PROJECT)_rom.elf $(PROJECT)_rom.map $(PROJECT)_rom.hex $(PROJECT)_rom.bin
+	-rm -f $(PROJECT)_ram.elf $(PROJECT)_ram.map $(PROJECT)_ram.hex $(PROJECT)_ram.bin
+	-rm -f $(PROJECT)_boot.elf $(PROJECT)_boot.map $(PROJECT)_boot.hex $(PROJECT)_boot.bin
+	-rm -f $(PROJECT)_app.elf $(PROJECT)_app.map $(PROJECT)_app.hex $(PROJECT)_app.bin
 	-rm -f $(SRC:.c=.c.bak)
 	-rm -f $(SRC:.c=.lst)
 	-rm -f $(ASRC:.s=.s.bak)
 	-rm -f $(ASRC:.s=.lst)
+	-rm -fR ./*/*.d	
 	-rm -fR ./*.d
 
 # 
 # Include the dependency files, should be the last of the makefile
 #
--include $(wildcard ./*.d)
+-include $(wildcard ./*/*.d)
 
 # *** EOF ***
