@@ -8,7 +8,7 @@
 #include "hardware.h"	/* зависящие от процессора функции работы с портами */
 #include "board.h"
 #include "audio.h"
-#include "fftwrap.h"
+#include "speex/fftwrap.h"
 #include "spifuncs.h"
 #include "formats.h"	// for debug prints
 #include "display.h"	// for debug prints

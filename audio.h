@@ -410,7 +410,7 @@ void savesampleout192stereo(int_fast32_t ch0, int_fast32_t ch1);
 
 #if WITHINTEGRATEDDSP
 
-	#include "arch.h"
+	#include "speex\arch.h"
 	#include "speex\speex_preprocess.h"
 
 #endif /* WITHINTEGRATEDDSP */
