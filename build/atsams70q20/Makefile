@@ -68,7 +68,8 @@ PROJECT = tc1_atsam3s4b
 #LDSCRIPT_ROM = ./STM32F103ZG_rom.ld
 #LDSCRIPT_ROM = ./STM32F107VC_rom.ld
 #LDSCRIPT_ROM = ./STM32F101RB_rom.ld
-LDSCRIPT_ROM = ./ATSAM3S4B_rom.ld
+#LDSCRIPT_ROM = ./ATSAM3S4B_rom.ld
+LDSCRIPT_ROM = ./ATSAMS70Q20_rom.ld
 #LDSCRIPT_ROM = ./sam9x512_rom.ld
 
 # List all user C define here, like -D_DEBUG=1
@@ -112,7 +113,7 @@ SRC = \
  pio.c \
  tlv320aic23.c cs4272.c nau8822.c wm8994.c \
  hardwarecodecs.c buffers.c audio.c spislave.c modems.c \
- sdcard.c ff.c ccsbcs.c \
+ sdcard.c ff.c \
  tc1.c tests.c
 
 # List ASM source files here
@@ -120,7 +121,7 @@ SRC = \
 ASRC =
 
 # List all user directories here
-UINCDIR +=
+UINCDIR +=  ../.. ../../inc
 
 # List the user directory to look for the libraries here
 ULIBDIR =
@@ -149,7 +150,7 @@ MCFLAGS = -mcpu=$(MCU) $(CORE) \
 ASFLAGS = $(MCFLAGS) $(OPT) $(LTO) -g -gdwarf-2 $(ADEFS)
 #CPFLAGS = $(MCFLAGS) $(OPT) $(LTO) -gdwarf-2 -mthumb-interwork -fomit-frame-pointer -Wall -Wstrict-prototypes -fverbose-asm -Wa,-ahlms=$(<:.c=.lst) $(DEFS)
 #CPFLAGS = $(MCFLAGS) $(OPT) $(LTO) -gdwarf-2 -mlong-calls -fomit-frame-pointer -Wall -Wstrict-prototypes $(DEFS)
-CPFLAGS = $(MCFLAGS) $(OPT) $(LTO) -gdwarf-2 -fomit-frame-pointer -Wall -Wstrict-prototypes $(DEFS)
+CPFLAGS = $(MCFLAGS) $(OPT) $(LTO) -gdwarf-2 -fomit-frame-pointer -Wall -Wstrict-prototypes $(DEFS) $(MAKE_DEFINES)
 
 LDFLAGS_RAM = $(MCFLAGS) $(LTO) $(OPT) -nostartfiles -T$(LDSCRIPT_RAM) -Wl,-Map=$(PROJECT)_ram.map,--cref $(LIBDIR)
 LDFLAGS_ROM = $(MCFLAGS) $(LTO) $(OPT) -nostartfiles -T$(LDSCRIPT_ROM) -Wl,-Map=$(PROJECT)_rom.map,--cref $(LIBDIR)

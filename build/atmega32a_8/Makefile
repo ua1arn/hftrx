@@ -15,7 +15,7 @@ COMMON = -mmcu=$(MCU)
 
 ## Compile options common for all C compilation units.
 CFLAGS = $(COMMON)
-CFLAGS += -Wall -gdwarf-2 -flto -ffunction-sections -fdata-sections -fno-math-errno -Wno-unused-function -Wno-unused-variable -DF_CPU=8000000UL -Os -fsigned-char
+CFLAGS += -Wall -gdwarf-2 -flto -ffunction-sections -fdata-sections -fno-math-errno -Wno-unused-function -Wno-unused-variable -DF_CPU=8000000UL -Os -fsigned-char $(MAKE_DEFINES)
 CFLAGS += -MD -MP -MT $(*F).o -MF ./$(@F).d 
 
 ## Assembly specific flags
@@ -42,10 +42,48 @@ LINKONLYOBJECTS =
 SRCDIR = ../..
 SRC +=
 ASRC +=
-UINCDIR +=
+UINCDIR +=  ../.. ../../inc
 ULIBDIR +=
 ULIBS += 
-include $(SRCDIR)/sources_atmega.mak
+
+# List C source files here
+SRC += \
+ bandfilters.c \
+ display.c \
+ encoder.c \
+ hardware.c \
+ keyboard.c \
+ nvram.c \
+ spifuncs.c \
+ tc1.c \
+ formats.c \
+ sequen.c \
+ keymaps.c \
+ uc1601s.c \
+ twi.c \
+ ls020.c \
+ s1d13781.c \
+ hd44780.c \
+ board.c \
+ lph88.c \
+ pcf8535.c \
+ ili9225.c \
+ l2f50.c \
+ uc1608.c \
+ st7735.c \
+ st7565s.c \
+ ili9320.c \
+ pio.c \
+ elkey.c \
+ tests.c \
+ filters.c \
+ display2.c \
+ modems.c \
+ audio.c \
+ buffers.c \
+ serial.c \
+ synthcalcs.c
+
 OBJECTS = $(ASRC:.s=.o) $(SRC:.c=.o)
 INCDIR  = $(patsubst %,-I%,$(DINCDIR) $(UINCDIR))
 LIBDIR  = $(patsubst %,-L%,$(DLIBDIR) $(ULIBDIR))

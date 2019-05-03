@@ -84,7 +84,7 @@ ASRC += \
  crt_r7s721.s
 
 # List all user directories here
-UINCDIR += ../../rza1x_inc
+UINCDIR += ../../rza1x_inc ../.. ../../inc
 
 # List the user directory to look for the libraries here
 ULIBDIR +=
@@ -92,8 +92,45 @@ ULIBDIR +=
 # List all user libraries here
 ULIBS += 
 
-
-include $(SRCDIR)/sources.mak
+# List C source files here
+SRC += \
+ preprocess.c fftwrap.c smallft.c mdf.c filterbank.c kiss_fft.c kiss_fftr.c \
+ bandfilters.c \
+ board.c \
+ usbd.c usbd_desc.c \
+ sequen.c \
+ elkey.c \
+ encoder.c \
+ serial.c \
+ hardware.c \
+ hd44780.c \
+ display.c display2.c \
+ keyboard.c\
+ keymaps.c\
+ nvram.c \
+ spifuncs.c \
+ formats.c \
+ synthcalcs.c filters.c \
+ pcf8535.c \
+ uc1608.c \
+ uc1601s.c \
+ lph88.c \
+ ls020.c \
+ l2f50.c \
+ s1d13781.c \
+ ili9320.c \
+ ili9225.c \
+ st7735.c \
+ st7565s.c \
+ graphltdc.c sdram.c ili8961.c \
+ twi.c \
+ pio.c \
+ tlv320aic23.c cs4272.c nau8822.c wm8994.c \
+ hardwarecodecs.c buffers.c spislave.c modems.c \
+ audio.c \
+ sdcard.c \
+ diskio.c ff.c ffsystem.c ffunicode.c \
+ tc1.c tests.c
 
 #
 # End of user defines
@@ -115,7 +152,7 @@ MCFLAGS = $(CORE) -fno-math-errno -funroll-loops -fgraphite-identity -ffunction-
 ASFLAGS = $(MCFLAGS) $(OPT) $(LTO) -g -gdwarf-2 $(ADEFS)
 #CPFLAGS = $(MCFLAGS) $(OPT) $(LTO) -gdwarf-2 -mthumb-interwork -fomit-frame-pointer -Wall -Wstrict-prototypes -fverbose-asm -Wa,-ahlms=$(<:.c=.lst) $(DEFS)
 #CPFLAGS = $(MCFLAGS) $(OPT) $(LTO) -gdwarf-2 -mlong-calls -fomit-frame-pointer -Wall -Wstrict-prototypes $(DEFS)
-CPFLAGS = $(MCFLAGS) $(OPT) $(LTO) -gdwarf-2 -fomit-frame-pointer -Wall -Wstrict-prototypes $(DEFS)
+CPFLAGS = $(MCFLAGS) $(OPT) $(LTO) -gdwarf-2 -fomit-frame-pointer -Wall -Wstrict-prototypes $(DEFS) $(MAKE_DEFINES)
 
 LDFLAGS_BOOT = $(MCFLAGS) $(LTO) $(OPT) -nostartfiles -T$(LDSCRIPT_BOOT) -Wl,-Map=$(PROJECT)_boot.map,--cref $(LIBDIR)
 LDFLAGS_APP = $(MCFLAGS) $(LTO) $(OPT) -nostartfiles -T$(LDSCRIPT_APP) -Wl,-Map=$(PROJECT)_app.map,--cref $(LIBDIR)
