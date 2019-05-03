@@ -42,7 +42,8 @@ LINKONLYOBJECTS =
 SRCDIR = ../..
 SRC +=
 ASRC +=
-UINCDIR += ../.. ../../inc
+INC_EXCLUDES += 
+UINCDIR += $(filter-out $(INC_EXCLUDES), $(filter %/, $(wildcard $(SRCDIR)/*/)))
 ULIBDIR +=
 ULIBS += 
 

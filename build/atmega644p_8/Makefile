@@ -40,7 +40,8 @@ HEX_EEPROM_FLAGS += --change-section-lma .eeprom=0 --no-change-warnings
 SRCDIR = ../..
 SRC +=
 ASRC +=
-UINCDIR += ../.. ../../inc
+INC_EXCLUDES += 
+UINCDIR += $(filter-out $(INC_EXCLUDES), $(filter %/, $(wildcard $(SRCDIR)/*/)))
 ULIBDIR +=
 ULIBS += 
 
