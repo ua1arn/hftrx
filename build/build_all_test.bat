@@ -1,8 +1,3 @@
-cd ..
-rename product.h product.h.tmp
-copy product.h.prototype product.h
-cd build
-
 cd at91sam7s
 make MAKE_DEFINES=-DCTLSTYLE_V7=1
 cd ..
@@ -78,11 +73,6 @@ cd ..
 cd stm32l051k6t
 make MAKE_DEFINES=-DCTLSTYLE_V1G=1
 cd ..
-
-cd ..
-del product.h 
-rename product.h.tmp product.h
-cd build
 
 @echo off
 ECHO Checking build results...
