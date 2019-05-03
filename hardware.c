@@ -7540,6 +7540,9 @@ lowlevel_stm32h7xx_pll_initialize(void)
 	while ((RCC->CR & RCC_CR_HSI48RDY) == 0) //жду пока не заработает
 		;
 
+	// VOS0 (revidion V) - up to 480 MHz
+	// VOS1 (revidion Y and other) - up to 400 MHz
+
 	/* Configure voltage regulator */
 	//Set the highest core voltage (Scale 1)
 	PWR->CR3 = PWR_CR3_LDOEN | PWR_CR3_SCUEN;
