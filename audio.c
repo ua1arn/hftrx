@@ -118,8 +118,6 @@ static int_fast16_t		glob_fullbw6 [2] = { 1000, 1000 };		/* Частота ср�
 static int_fast32_t		glob_lo6 [2] = { 0, 0 };
 //static uint_fast8_t		glob_fltsofter [2] = { WITHFILTSOFTMIN, WITHFILTSOFTMIN }; /* WITHFILTSOFTMIN..WITHFILTSOFTMAX Код управления сглаживанием скатов фильтра основной селекции на приёме */
 
-static uint_fast8_t 	glob_nfm_sql_lelel = 127;
-static uint_fast8_t 	glob_nfm_sql_off = 0;
 static uint_fast8_t 	glob_squelch;
 
 static uint_fast8_t 	glob_swapiq = 0;	// поменять местами I и Q сэмплы в потоке RTS96
@@ -159,8 +157,8 @@ static int_fast16_t		glob_fsadcpower10 = 0;	// мощность, соответ�
 static uint_fast8_t		glob_modem_mode;		// применяемая модуляция
 static uint_fast32_t	glob_modem_speed100 = 3125;	// скорость передачи с точностью 1/100 бод
 
-static int_fast8_t		glob_afresponcerx;	// изменение тембра звука в канале приемника - на Samplerate/2 АЧХ становится на столько децибел 
-static int_fast8_t		glob_afresponcetx;	// изменение тембра звука в канале передатчика - на Samplerate/2 АЧХ становится на столько децибел 
+static int_fast8_t		glob_afresponcerx;	// изменение тембра звука в канале приемника - на Samplerate/2 АЧХ становится на столько децибел
+static int_fast8_t		glob_afresponcetx;	// изменение тембра звука в канале передатчика - на Samplerate/2 АЧХ становится на столько децибел
 
 static int_fast8_t		glob_swaprts;		// управление боковой выхода спектроанализатора
 
@@ -434,7 +432,6 @@ static FLOAT_t phonefence = INT16_MAX;	// Разрядность поступа�
 
 static FLOAT_t rxoutdenom = 1 / (FLOAT_t) RXOUTDENOM;
 
-static volatile FLOAT_t nbfence;
 static volatile FLOAT_t nfmoutscale;	// масштабирование (INT32_MAX + 1) к phonefence
 
 static uint_fast8_t gwprof = 0;	// work profile - индекс конфигурационной информации, испольуемый для работы */
@@ -1162,7 +1159,7 @@ static void scalecoeffs(FLOAT_t *dCoeff, int iCoefNum, FLOAT_t scale)
 static void fir_design_applaywindow(FLOAT_t *dCoeff, const FLOAT_t *dWindow, int iCoefNum);
 static void fir_design_applaywindowL(double *dCoeff, const double *dWindow, int iCoefNum);
 
-// slope: изменение тембра звука - на Samplerate/2 АЧХ становится на столько децибел 
+// slope: изменение тембра звука - на Samplerate/2 АЧХ становится на столько децибел
 // scale: общий масштаб изменения АЧХ
 static void correctspectrumcomplex(int_fast8_t targetdb)
 {
@@ -1436,7 +1433,7 @@ static void comp_parameters_update(volatile agcparams_t * const agcp, FLOAT_t ga
 	agcp->levelfence = txlevelfenceSSB;
 }
 
-// детектор АРУ - поддерживает выходное значение пропорционально сигналу 
+// детектор АРУ - поддерживает выходное значение пропорционально сигналу
 // со всеми положенными задержками на срабатывание/отпускание
 
 static void
@@ -2790,7 +2787,7 @@ static int freq2index(unsigned freq)
 	return (uint_fast64_t) freq * SPEEXNN * 2 / ARMI2SRATE;
 }
 
-// slope: изменение тембра звука - на Samplerate/2 АЧХ становится на столько децибел 
+// slope: изменение тембра звука - на Samplerate/2 АЧХ становится на столько децибел
 // scale: общий масштаб изменения АЧХ
 static void correctspectrum(float * resp, int_fast8_t targetdb)
 {
@@ -3169,7 +3166,7 @@ static void agc_state_initialize(volatile agcstate_t * st, const volatile agcpar
 	st->agcslowcap = caplevel;
 }
 
-// Для работы функции performagc требуется siglevel, больште значения которого 
+// Для работы функции performagc требуется siglevel, больште значения которого
 // соответствуют большим уровням сигнала. может быть отрицательным
 static RAMFUNC FLOAT_t agccalcstrength(const volatile agcparams_t * const agcp, FLOAT_t siglevel)
 {
@@ -3188,7 +3185,7 @@ static RAMFUNC FLOAT_t agccalcgain(const volatile agcparams_t * const agcp, FLOA
 {
 	const FLOAT_t gain0 = POWF((FLOAT_t) M_E, streingth * agcp->agcfactor);
 	// реализация "спортивной" АРУ
-	// Увеличению сигнала на glob_agcrate децибел должно соответствовать 
+	// Увеличению сигнала на glob_agcrate децибел должно соответствовать
 	// увеличение выхода приёмника на 1 децтибел
 	const FLOAT_t gain = FMINF(agcp->gainlimit, gain0);
 	return gain;
@@ -3798,7 +3795,7 @@ static RAMFUNC void processafadcsample(
 	{
 		vi = filter_fir_tx_MIKE(vi, 0);
 		const FLOAT32P_t vfb = baseband_modulator(vi, dspmode, shape);
-		// Здесь, имея квадратурные сигналы vfb.IV и vfb.QV, 
+		// Здесь, имея квадратурные сигналы vfb.IV и vfb.QV,
 		// производим Digital Up Conversion
 		const FLOAT32P_t v_if = get_float4_iflo();	// частота 12 кГц - 1/4 частоты выборок АЦП - можно воспользоваться целыми значениями.
 		const FLOAT32P_t e1 = filter_fir4_tx_SSB_IQ(vfb, v_if.IV != 0);		// 1.85 kHz - фильтр имеет усиление 2.0
@@ -4189,13 +4186,6 @@ static RAMFUNC_NONILINE FLOAT_t baseband_demodulator(
 			// 0.707 == M_SQRT1_2
 			const FLOAT_t sample = saved_delta_fi [pathi]; //(FLOAT_t) M_SQRT1_2;
 			r = sample * nfmoutscale; //* rxoutdenom;	// масштабирование к разрядности аудио-кодека 1_31 -> 1_15
-			if (glob_nfm_sql_off == 0)
-			{
-				// "шумодав"
-				testholdmax3(iir_nfmnbbpf(sample));
-				const int nbopen = getholdmax3() < nbfence;
-				r = (nbopen != 0) ? r : (r / 16);
-			}
 			r *= agc_squelchopen(fltstrengthslow, pathi);
 		}
 		else
@@ -4790,7 +4780,7 @@ int dsp_mag2y(
 	return y;
 }
 
-// Копрование информации о спектре с текущую строку буфера 
+// Копрование информации о спектре с текущую строку буфера
 // wfarray (преобразование к пикселям растра */
 void dsp_getspectrumrow(
 	FLOAT_t * const hbase,
@@ -5054,7 +5044,7 @@ void RAMFUNC dsp_extbuffer32wfm(const uint32_t * buff)
 static RAMFUNC void recordsampleUAC(int left, int right)
 {
 #if WITHUSBUAC
-	savesamplerecord16uacin(left, right);	// Запись демодулированного сигнала без озвучки клавиш в USB 
+	savesamplerecord16uacin(left, right);	// Запись демодулированного сигнала без озвучки клавиш в USB
 #endif /* WITHUSBUAC */
 }
 
@@ -5568,13 +5558,9 @@ rxparam_update(uint_fast8_t profile, uint_fast8_t pathi)
 		manualsquelch [pathi] = (int) glob_squelch * (upper - lower) / SQUELCHMAX + lower;
 	}
 
-	// шумодав NFM
-	nbfence = POWF(2, WITHIFADCWIDTH - 8) * (int) glob_nfm_sql_lelel;	// glob_nfm_sql_lelel: 0..255
-
 	// Уровень сигнала самоконтроля
 #if WITHUSBHEADSET
 	sidetonevolume = 0;
-	mainvolumerx = 1 - sidetonevolume;
 #else /* WITHUSBHEADSET */
 	sidetonevolume = (glob_sidetonelevel / (FLOAT_t) 100);
 #endif /* WITHUSBHEADSET */
@@ -5612,7 +5598,7 @@ txparam_update(uint_fast8_t profile)
 
 #if WITHCPUDACHW && WITHPOWERTRIM
 	// ALC
-	// регулировка напряжения на REFERENCE INPUT TXDAC AD9744 
+	// регулировка напряжения на REFERENCE INPUT TXDAC AD9744
 	HARDWARE_DAC_ALC((glob_opowerlevel - WITHPOWERTRIMMIN) * dac_dacfs_coderange / (WITHPOWERTRIMMAX - WITHPOWERTRIMMIN) + dac_dacfs_lowcode);
 #endif /* WITHCPUDACHW && WITHPOWERTRIM */
 }
@@ -5805,8 +5791,6 @@ prog_dsplreg(void)
 	buff [DSPCTL_OFFSET_AGC_THUNG] = glob_agc_thung;
 	buff [DSPCTL_OFFSET_AGCRATE] = glob_agcrate; // may be UINT8_MAX
 
-	buff [DSPCTL_OFFSET_NFMSQLLEVEL] = glob_nfm_sql_lelel;
-	buff [DSPCTL_OFFSET_NFMSQLOFF] = glob_nfm_sql_off;
 	buff [DSPCTL_OFFSET_CWEDGETIME] = glob_cwedgetime;
 	buff [DSPCTL_OFFSET_SIDETONELVL] = glob_sidetonelevel;
 
@@ -6053,33 +6037,11 @@ board_set_agc_thung(uint_fast8_t n)	/* подстройка параметра �
 }
 
 void 
-board_set_nfm_sql_lelel(uint_fast8_t n)	/* уровень открывания шумоподавителя NFM */
-{
-	if (glob_nfm_sql_lelel != n)
-	{
-		glob_nfm_sql_lelel = n;
-		board_dsp1regchanged();
-	}
-}
-
-void 
 board_set_squelch(uint_fast8_t n)	/* уровень открывания шумоподавителя */
 {
 	if (glob_squelch != n)
 	{
-		glob_squelch = n;
-		board_dsp1regchanged();
-	}
-}
-
-void 
-board_set_nfm_sql_off(uint_fast8_t v)	/* отключение шумоподавителя NFM */
-{
-	const uint_fast8_t n = v != 0;
-	if (glob_nfm_sql_off != n)
-	{
-		glob_nfm_sql_off = n;
-		board_dsp1regchanged();
+		glob_squelch = n;		board_dsp1regchanged();
 	}
 }
 
@@ -6505,8 +6467,6 @@ void hardware_spi_slave_callback(uint8_t * buff, uint_fast8_t len)
 		board_set_agcrate(buff [DSPCTL_OFFSET_AGCRATE]);	// на n децибел изменения входного сигнала 1 дБ выходного. UINT8_MAX - "плоская" АРУ
 	
 		board_set_mik1level(buff [DSPCTL_OFFSET_MICLEVEL_HI] * 256 + buff [DSPCTL_OFFSET_MICLEVEL_LO]);
-		board_set_nfm_sql_lelel(buff [DSPCTL_OFFSET_NFMSQLLEVEL]);
-		board_set_nfm_sql_off(buff [DSPCTL_OFFSET_NFMSQLOFF]);
 
 		board_set_afhighcutrx(buff [DSPCTL_OFFSET_HIGHCUTRX_HI] * 256 + buff [DSPCTL_OFFSET_HIGHCUTRX_LO]);
 		board_set_aflowcutrx(buff [DSPCTL_OFFSET_LOWCUTRX_HI] * 256 + buff [DSPCTL_OFFSET_LOWCUTRX_LO]);

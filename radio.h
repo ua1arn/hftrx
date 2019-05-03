@@ -171,8 +171,6 @@ enum
 
 	DSPCTL_OFFSET_MICLEVEL_HI,
 	DSPCTL_OFFSET_MICLEVEL_LO,
-	DSPCTL_OFFSET_NFMSQLOFF,
-	DSPCTL_OFFSET_NFMSQLLEVEL,
 
 	DSPCTL_OFFSET_CWEDGETIME,
 	DSPCTL_OFFSET_SIDETONELVL,			// уровень самоконтроля/озвучки клавиш
@@ -1743,7 +1741,7 @@ void spool_0p128(void);	// OPERA support
 		#define LO3_SIDE	LOCODE_LOWER	/* При преобразовании на этом гетеродине нет инверсии спектра */
 		#define LO4_SIDE	LOCODE_TARGETED	/* Этот гетеродин управляется для получения требуемой боковой */
 	#else
-		// WITHDUALBFO или классический вариант с AD9834 в BFO 
+		// WITHDUALBFO или классический вариант с AD9834 в BFO
 		/* Описание структуры преобразований частоты в тракте */
 		#define LO1_SIDE	LOCODE_UPPER	/* При преобразовании на этом гетеродине происходит инверсия спектра */
 		#define LO2_SIDE	LOCODE_INVALID	/* при отсутствующем гетеродине - на нём нет инверсии спектра */
@@ -1784,7 +1782,7 @@ void spool_0p128(void);	// OPERA support
 		#define	LO4_POWER2	0		/* 0 - нет делителя после генератора LO4 перед подачей на смеситель */
 	#endif
 
-	// WITHDUALBFO или классический вариант с AD9834 в BFO 
+	// WITHDUALBFO или классический вариант с AD9834 в BFO
 	/* Описание структуры преобразований частоты в тракте */
 	#define LO0_SIDE	LOCODE_INVALID	/* при отсутствующем конверторе - на нём нет инверсии спектра */
 	#define LO1_SIDE	LOCODE_UPPER	/* При преобразовании на этом гетеродине происходит инверсия спектра */
@@ -1856,7 +1854,7 @@ void spool_0p128(void);	// OPERA support
 		#define LO3_SIDE	LOCODE_INVALID	/* при отсутствующем гетеродине - на нём нет инверсии спектра */
 		#define LO4_SIDE	LOCODE_TARGETED	/* Этот гетеродин управляется для получения требуемой боковой */
 	#else
-		// WITHDUALBFO или классический вариант с AD9834 в BFO 
+		// WITHDUALBFO или классический вариант с AD9834 в BFO
 		/* Описание структуры преобразований частоты в тракте */
 		#define LO1_SIDE	LOCODE_UPPER	/* При преобразовании на этом гетеродине происходит инверсия спектра */
 		#define LO2_SIDE	LOCODE_INVALID	/* при отсутствующем гетеродине - на нём нет инверсии спектра */
@@ -1884,7 +1882,7 @@ void spool_0p128(void);	// OPERA support
 		#define TUNE_TOP 56000000L
 	#elif BANDSELSTYLERE_RA4YBO_AM0
 		#define TUNE_BOTTOM 150000L			/* 150 kHz нижняя частота настройки */
-		#define TUNE_TOP 4000000L			/* 4 MHz - верх */	
+		#define TUNE_TOP 4000000L			/* 4 MHz - верх */
 		#define BANDMIDDLE	2200000L
 		#define UPPER_DEF	2200000L
 	#else
@@ -2278,7 +2276,7 @@ void spool_0p128(void);	// OPERA support
 		#define TUNE_BOTTOM 30000L			/* нижняя частота настройки */
 		#define TUNE_TOP 470000000L		/* верхняя частота настройки */
 
-	#else				// только HF 
+	#else				// только HF
 
 		/* Описание структуры преобразований частоты в тракте */
 		#define LO2_SIDE	LOCODE_LOWER	/* При преобразовании на этом гетеродине нет инверсии спектра */

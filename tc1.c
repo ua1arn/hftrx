@@ -623,7 +623,7 @@ static const FLASHMEM struct {
 	{ BOARD_RXMAINSUB_B_A, "B/A", },
 	{ BOARD_RXMAINSUB_B_B, "B/B", },	
 	{ BOARD_RXMAINSUB_A_A, "A/A", },		
-	{ BOARD_RXMAINSUB_TWO, "A&B", },	// в оба аудиоканала поступает сумма выходов приемников.		
+	{ BOARD_RXMAINSUB_TWO, "A&B", },	// в оба аудиоканала поступает сумма выходов приемников.
 };
 
 #endif /* WITHUSEDUALWATCH */
@@ -1266,7 +1266,7 @@ struct modetempl
 	uint_fast8_t sdtnva [TXGFI_SZIE];	// признаки включения самоконтроля для разных режимов
 #endif /* WITHTX */
 #if WITHIF4DSP
-	uint_fast8_t dspmode [2];		// Управление для DSP в режиме приёма и передачи 
+	uint_fast8_t dspmode [2];		// Управление для DSP в режиме приёма и передачи
 	uint_fast8_t bwseti;			// индекс банка полос пропускания для данного режима
 	int_fast16_t bw6s [2];			// фиксированная полоса пропускания в DSP (if6) для данного режима (если не ноль).
 	uint_fast8_t txaudio;			// источник звукового сигнала для данного режима
@@ -1477,7 +1477,7 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 #endif /* WITHIF4DSP */
 		"DRM",
 	},
-	/* MODE_CWZ - этот режим при передаче используется во время TUNE. */	
+	/* MODE_CWZ - этот режим при передаче используется во время TUNE. */
 	{
 		{ STEP_CWZ / 10, STEP_CWZ / 10, },	// step for MODE_CWZ
 		0,					/*  смещение в килогерцах для включения режима autosplit */
@@ -1900,11 +1900,11 @@ static FLASHMEM struct bandrange  const bandsmap [] =
 	{ BMF(3900000L), 			BMF(4000000L), 			BMF(3900000L), 	BANDMAPSUBMODE_AM | BANDSETF_BCAST, BANDGROUP_COUNT, },		/*  */
 	{ BMF(4750000L), 			BMF(5060000L), 			BMF(4750000L), 	BANDMAPSUBMODE_AM | BANDSETF_BCAST, BANDGROUP_COUNT, },		/*  */
 	/*
-		Частотный план диапазона 5 MHZ ( 60m ) 
-		Диапазон: 5351.5-5.366.5 khz 
-		1. 5.351.5- CW -полоса 200 hz . 
-		2. 5.354.0, 5.357.0, 5.360.0, 5.363.0 - ALL MODE полоса 2700 hz. 
-		3. 5366.0 - weak signal полоса 20 hz. 
+		Частотный план диапазона 5 MHZ ( 60m )
+		Диапазон: 5351.5-5.366.5 khz
+		1. 5.351.5- CW -полоса 200 hz .
+		2. 5.354.0, 5.357.0, 5.360.0, 5.363.0 - ALL MODE полоса 2700 hz.
+		3. 5366.0 - weak signal полоса 20 hz.
 		На самом деле "цифра" около 5,357,0, CW 5.351.5 и выше SSB около 5.360.0
 	*/
 	{ BMF(5298000L), 			BMF(5408000L), 			BMF(5351500L), 	BANDMAPSUBMODE_CW | BANDSETF_HAMWARC, BANDGROUP_COUNT, },		/* 60-meters band */
@@ -2426,7 +2426,6 @@ struct nvmap
 	uint8_t stayfreq;	/* при изменении режимов кнопками - не меняем частоту */
 
 #if WITHIF4DSP
-	uint8_t ggrpnfm; // последний посещённый пункт группы NFM
 	uint8_t	ggrpagc; // последний посещённый пункт группы
 	uint8_t	ggrpagcssb; // последний посещённый пункт группы
 	uint8_t	ggrpagccw; // последний посещённый пункт группы
@@ -2447,8 +2446,6 @@ struct nvmap
 	uint8_t gagcoff;
 	uint8_t gamdepth;		/* Глубина модуляции в АМ - 0..100% */
 	uint8_t gdacscale;		/* Использование амплитуды сигнала с ЦАП передатчика - 0..100% */
-	uint8_t tdsp_nfm_sql_off;	// отключить шумодав
-	uint8_t tdsp_nfm_sql_level;
 	uint8_t	gcwedgetime;			/* Время нарастания/спада огибающей телеграфа при передаче - в 1 мс */
 	uint8_t	gsidetonelevel;	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
 	uint8_t	gsubtonelevel;	/* Уровень сигнала CTCSS в процентах - 0%..100% */
@@ -3426,7 +3423,7 @@ static uint_fast8_t dctxmodecw;	/* при передаче предполага�
 	#if WITHINTEGRATEDDSP
 		enum { S9FENCE = - 73 };	// -73.01dBm == 50 uV rms == S9
 		static uint_fast8_t s9level = UINT8_MAX + S9FENCE;					/* уровни калибровки S-метра */
-		static uint_fast8_t s9delta = (6 * 8);		// 9 баллов - 8 интервалов - по 6 децибел каждый		
+		static uint_fast8_t s9delta = (6 * 8);		// 9 баллов - 8 интервалов - по 6 децибел каждый
 		static uint_fast8_t s9_60_delta = 60;		// 60 dB
 	#elif (CTLSTYLE_SW2016MINI)
 		static uint_fast8_t s9level = 110;			/* уровни калибровки S-метра */
@@ -3579,8 +3576,6 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 		return - FSADCPOWEROFFSET10;
 	}
 
-	static uint_fast8_t tdsp_nfm_sql_level = 127;	// NFM NB level
-	static uint_fast8_t tdsp_nfm_sql_off = 1;	// отключить шумодав
 	static uint_fast8_t gcwedgetime = 5;			/* Время нарастания/спада огибающей телеграфа при передаче - в 1 мс */
 	static uint_fast8_t gsidetonelevel = 15;	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
 	static uint_fast8_t gsubtonelevel = 10;	/* Уровень сигнала CTCSS в процентах - 0%..100% */
@@ -4306,7 +4301,7 @@ static uint_fast8_t sleepflagch;	/* не-0: изменилось состоян�
 #endif /* WITHSLEEPTIMER */
 
 
-/* Произошла какая-то активность со стороны пользователя, зажигаем подсветку. 
+/* Произошла какая-то активность со стороны пользователя, зажигаем подсветку.
 	если было состояние "сна" - возвращаем 1 */
 static uint_fast8_t
 board_wakeup(void)
@@ -5004,7 +4999,7 @@ const FLASHMEM char * hamradio_get_mode_b_value_P(void)
 	return submodes [getsubmode(getbankindex_ab_fordisplay(1))].qlabel;
 }
 
-// Частота VFO B для отображения на дисплее	
+// Частота VFO B для отображения на дисплее
 uint_fast32_t hamradio_get_freq_b(void)
 {
 	return gfreqs [getbankindex_ab_fordisplay(1)];
@@ -7462,8 +7457,6 @@ updateboard(
 				board_set_agc_t2(gagc_release10 [agcseti]);		// время разряда медленной цепи АРУ
 				board_set_agc_t4(gagc_t4 [agcseti]);			// время разряда быстрой цепи АРУ
 				board_set_agc_thung(gagc_thung10 [agcseti]);	// hold time (hung time) in 0.1 sec
-				board_set_nfm_sql_lelel(tdsp_nfm_sql_level);
-				board_set_nfm_sql_off(tdsp_nfm_sql_off);
 				board_set_squelch(gsquelch);
 			#endif /* WITHIF4DSP */
 			} /* tx == 0 */
@@ -7478,7 +7471,7 @@ updateboard(
 
 			board_set_lo6(freqlo6);	/* иначе, в случае WITHIF4DSP - управление знаком частоты */
 			board_set_fullbw6(getif6bw(amode, gtx, wide));	/* Установка частоты среза фильтров ПЧ в алгоритме Уивера - параметр полная полоса пропускания */
-			//board_set_fltsofter(gtx ? WITHFILTSOFTMIN : bwseti_getfltsofter(bwseti));	/* Код управления сглаживанием скатов фильтра основной селекции на приёме */ 
+			//board_set_fltsofter(gtx ? WITHFILTSOFTMIN : bwseti_getfltsofter(bwseti));	/* Код управления сглаживанием скатов фильтра основной селекции на приёме */
 			board_set_dspmode(pamodetempl->dspmode [gtx]);
 			#if WITHDSPEXTDDC	/* "Воронёнок" с DSP и FPGA */
 				board_set_dactest(gdactest);		/* вместо выхода интерполятора к ЦАП передатчика подключается выход NCO */
@@ -7501,7 +7494,7 @@ updateboard(
 			board_set_txcw(pamodetempl->txcw);	// при передаче будет режим без SSB модулятора
 			board_set_vox(gvoxenable && getmodetempl(txsubmode)->vox);	// включение внешних схем VOX
 			#if WITHSUBTONES
-				// Установка параметров  Continuous Tone-Coded Squelch System or CTCSS 
+				// Установка параметров  Continuous Tone-Coded Squelch System or CTCSS
 				board_subtone_setfreq(gsubtones [gsubtonei]);	// частота subtone (до десятых долей герца).
 				board_subtone_enable(gsbtonenable && gtx && getmodetempl(txsubmode)->subtone);
 			#endif /* WITHSUBTONES */
@@ -13475,7 +13468,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	#endif /* WITHAFCODEC1HAVELINEINLEVEL */
 	{
 		"MIKE SSB", 7, 0, RJ_TXAUDIO,	ISTEP1,	
-		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */		
+		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, BOARD_TXAUDIO_count - 1, 					// при SSB/AM/FM передача с тестовых источников
 		RMT_TXAUDIO_BASE(MODE_SSB),
 		NULL,
@@ -13649,35 +13642,6 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	#endif /* WITHRTS96 || WITHRTS192 || WITHTRANSPARENTIQ */
 #endif /* WITHUSBUAC */
 #if WITHIF4DSP
-#if ! WITHFLATMENU
-	{
-		"NFM     ", 0, 0, 0, 0,	
-		ITEM_GROUP, 
-		0, 0, 
-		offsetof(struct nvmap, ggrpnfm),
-		NULL,
-		NULL,
-		NULL,
-	},
-#endif /* ! WITHFLATMENU */
-	{
-		"SQL OFF ", 7, 0, RJ_YES,	ISTEP1,		/* NFM - noise blanker off */
-		ITEM_VALUE,
-		0, 1, 
-		offsetof(struct nvmap, tdsp_nfm_sql_off),	/* отключить шумодав */
-		NULL,
-		& tdsp_nfm_sql_off,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		"SQL LVL ", 7, 0, 0,	ISTEP1,		/* NFM - noise blanker level */
-		ITEM_VALUE,
-		0, 255, 
-		offsetof(struct nvmap, tdsp_nfm_sql_level),	/* время разряда медленной цепи АРУ */
-		NULL,
-		& tdsp_nfm_sql_level,
-		getzerobase, /* складывается со смещением и отображается */
-	},
 #if ! WITHFLATMENU
 	{
 		"AGC     ", 0, 0, 0, 0,	
