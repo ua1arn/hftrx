@@ -84,9 +84,8 @@ SRC +=
 ASRC +=
 
 # List all user directories here
-INC_EXCLUDES += 
-UINCDIR += $(SRCDIR) \
-	$(filter-out $(INC_EXCLUDES), $(filter %/, $(wildcard $(SRCDIR)/*/)))
+INC_EXCLUDES += ../../build/%
+UINCDIR += $(SRCDIR) $(filter-out $(INC_EXCLUDES), $(filter %/, $(wildcard $(SRCDIR)/*/ $(SRCDIR)/*/*/ $(SRCDIR)/*/*/*/)))
 
 # List the user directory to look for the libraries here
 ULIBDIR +=
@@ -95,8 +94,7 @@ ULIBDIR +=
 ULIBS += 
 
 SRC_EXCLUDES += ../../tools/rbf2c.c
-SRC += $(filter-out $(SRC_EXCLUDES), $(wildcard $(SRCDIR)/*.c))
-SRC += $(filter-out $(SRC_EXCLUDES), $(wildcard $(SRCDIR)/*/*.c))
+SRC += $(filter-out $(SRC_EXCLUDES), $(wildcard $(SRCDIR)/*.c $(SRCDIR)/*/*.c $(SRCDIR)/*/*/*.c $(SRCDIR)/*/*/*/*.c))
 VPATH = $(SRCDIR)
 
 #
