@@ -1514,23 +1514,6 @@ static void voxmeter_initialize(void)
 	VOXDISCHARGE = MAKETAUAF((FLOAT_t) 0.02);	// Пиковый детектор со временем разряда 0.02 секунды
 }
 
-// Шумоподавитель NFM
-
-static FLOAT_t NBTAU;
-static FLOAT_t holdmaxv3;
-static void testholdmax3(FLOAT_t v)
-{
-	FLOAT_t x = holdmaxv3;
-	FLOAT_t t = FABSF(v);
-	x = (x < t) ? t : x * NBTAU;
-	holdmaxv3 = x;
-}
-long getholdmax3(void)
-{
-	return holdmaxv3;
-}
-
-
 /////////////////////////////
 // Формирование аудиопотока к оператору
 //
@@ -5625,8 +5608,6 @@ void dsp_initialize(void)
 	fir_design_windowbuff(FIRCwnd_tx_MIKE, Ntap_tx_MIKE);
 	fir_design_windowbuff(FIRCwnd_rx_AUDIO, Ntap_rx_AUDIO);
 	//fft_lookup = spx_fft_init(2*SPEEXNN);
-
-	NBTAU = 1 - MAKETAUIF((FLOAT_t) 0.1);
 
 #if WITHDSPEXTFIR
 	#if WITHDOUBLEFIRCOEFS && (__ARM_FP & 0x08)
