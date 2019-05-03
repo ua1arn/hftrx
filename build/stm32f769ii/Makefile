@@ -60,7 +60,7 @@ DLIBS = -lm -larm_cortexM7lfdp_math
 # Start of user section
 #
 
-SRCDIR = ../../
+SRCDIR = ../..
 
 # Define project name here
 PROJECT = tc1_stm32f769ii

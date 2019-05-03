@@ -60,7 +60,7 @@ DLIBS = -lm -larm_cortexM4l_math
 # Start of user section
 #
 
-SRCDIR = ../../
+SRCDIR = ../..
 
 # Define project name here
 PROJECT = tc1_mk20dx256vlh7
