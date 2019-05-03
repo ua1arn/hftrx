@@ -26,6 +26,7 @@
 //#define WITHISBOOTLOADER	1	/* Сейчас компилируем и собирем bootloader (Renesas R7S721020VCFP) */
 //#undef WITHDEBUG
 
+#ifndef NIGHTBUILD
 // Современные конфигурации:
 //#define CTLSTYLE_RAVENDSP_V1	1	// Трансивер Вороненок с 12 кГц IF DSP трактом
 //#define CTLSTYLE_RAVENDSP_V3	1	// Трансивер Вороненок с DSP STM32F429ZIT6, кодеком TLV320AIC23B и FPGA EP4CE22E22I7N
@@ -122,6 +123,7 @@
 //#define CTLSTYLE_V7A 	1	// ARM: Модификация V7 с установленным USB мостом FT232RL. Atmel ARM CPU
 //#define CTLSTYLE_V7 1		// ARM или ATMega: большая плата с шестью ГУН, двумя аттенюаторами, УВЧ, совмещённая с синтезатором (6 ГУН). Без FM
 //#define CTLSTYLE_V5 1		// ATMega: (UA1ZH) Маленькая плата на ATMEGA, с двумя AD9834 и четырьмя ГУН (atmega_ctlstyle_v5.h)
+#endif
 
 #if CPUSTYLE_STM32F && CTLSTYLE_RAVENDSP_V1	// Трансивер Вороненок с IF DSP трактом
 	#include "boards/arm_stm32f4xx_tqfp100_ctlstyle_raven_v1.h"	// ravendsp_v1
