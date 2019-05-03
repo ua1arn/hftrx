@@ -398,7 +398,7 @@ static uint_fast32_t arm_hardware_stm32f7xx_pllq_initialize(void);	// Настр
 		ATXMEGA_TIMER_WIDTH = 16,	ATXMEGA_TIMER_TAPS = (1024 | 256 | 64 | 8 | 4 | 2 | 1),
 		ATXMEGA_SPIBR_WIDTH = 0,	ATXMEGA_SPIBR_TAPS = (128 | 64 | 32 | 16 | 8 | 4 | 2), 
 		ATXMEGA_UBR_WIDTH = 12,
-			ATXMEGA_UBR_GRADE = 3, // Допустимы значения 0 (без дробного делителя), 1, 2 и 3 (с периодом 8)	
+			ATXMEGA_UBR_GRADE = 3, // Допустимы значения 0 (без дробного делителя), 1, 2 и 3 (с периодом 8)
 			ATXMEGA_UBR_TAPS = (16 | 8) >> ATXMEGA_UBR_GRADE, ATXMEGA_UBR_BSEL = (0 - ATXMEGA_UBR_GRADE),
 		//
 		ATXMEGA_fillPAD
@@ -602,7 +602,7 @@ hardware_uart1_set_speed(uint_fast32_t baudrate)
 		USARTE0.CTRLB |= USART_CLK2X_bm;
 	else
 		USARTE0.CTRLB &= ~USART_CLK2X_bm;
-	// todo: проверить требование к порядку обращения к портам 
+	// todo: проверить требование к порядку обращения к портам
 	USARTE0.BAUDCTRLA = (value & 0xff);	/* Значение получено уже уменьшенное на 1 */
 	USARTE0.BAUDCTRLB = (ATXMEGA_UBR_BSEL << 4) | ((value >> 8) & 0x0f);
 
@@ -763,7 +763,7 @@ hardware_uart2_set_speed(uint_fast32_t baudrate)
 		USARTE1.CTRLB |= USART_CLK2X_bm;
 	else
 		USARTE1.CTRLB &= ~USART_CLK2X_bm;
-	// todo: проверить требование к порядку обращения к портам 
+	// todo: проверить требование к порядку обращения к портам
 	USARTE1.BAUDCTRLA = (value & 0xff);	/* Значение получено уже уменьшенное на 1 */
 	USARTE1.BAUDCTRLB = (ATXMEGA_UBR_BSEL << 4) | ((value >> 8) & 0x0f);
 
@@ -1006,8 +1006,8 @@ static void hardware_adc_startonescan(void);		// хотя бы один вход
 #endif /* WITHCPUADCHW */
 
 /* 
-	Машинно-независимый обработчик прерываний. 
-	Вызывается с периодом 1/ELKEY_DISCRETE от длительности точки 
+	Машинно-независимый обработчик прерываний.
+	Вызывается с периодом 1/ELKEY_DISCRETE от длительности точки
 */
 static RAMFUNC void spool_elkeybundle(void)
 {
@@ -1019,9 +1019,9 @@ static RAMFUNC void spool_elkeybundle(void)
 }
 
 /* 
-	Машинно-независимый обработчик прерываний. 
+	Машинно-независимый обработчик прерываний.
 	Вызывается при изменении состояния входов электронного ключа,
-    входа манипуляции от CAT (CAT_DTR). 
+    входа манипуляции от CAT (CAT_DTR).
 */
 static RAMFUNC void spool_elkeyinputsbundle(void)
 {
@@ -1060,7 +1060,7 @@ static void tickers_spool(void)
 }
 
 /* Машинно-независимый обработчик прерываний. */
-// Функции с побочным эффектом - отсчитывание времени. 
+// Функции с побочным эффектом - отсчитывание времени.
 // При возможности вызываются столько раз, сколько произошло таймерных прерываний.
 static RAMFUNC void spool_systimerbundle1(void)
 {
@@ -1091,7 +1091,7 @@ static RAMFUNC void spool_systimerbundle1(void)
 }
 
 /* Машинно-независимый обработчик прерываний. */
-// Функции с побочным эффектом редиспетчеризайии. 
+// Функции с побочным эффектом редиспетчеризайии.
 // Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
 static RAMFUNC void spool_systimerbundle2(void)
 {
@@ -1107,8 +1107,8 @@ static RAMFUNC void spool_systimerbundle2(void)
 
 #if WITHCPUADCHW
 /* 
-	Машинно-независимый обработчик прерываний. 
-	Вызывается с периодом 1/TIMETICKS по окончании получения данных всех каналов АЦП, 
+	Машинно-независимый обработчик прерываний.
+	Вызывается с периодом 1/TIMETICKS по окончании получения данных всех каналов АЦП,
 	перечисленных в таблице adcinputs.
 */
 static RAMFUNC void spool_adcdonebundle(void)
@@ -2439,9 +2439,9 @@ void hardware_adc_initialize(void)
 
 	uint16_t get_adc()
 	{	
-		ADCA.REFCTRL |= (1U << 5); // подаем смещение с пина AREFA	
-		ADCA.CH1.MUXCTRL =	0x20; // выбираем ножку 	
-		ADCA.CH1.CTRL =	(ADC_CH_START_bm | ADC_CH_INPUTMODE_SINGLEENDED_gc); //0x81;	//запускаем преобразавние	
+		ADCA.REFCTRL |= (1U << 5); // подаем смещение с пина AREFA
+		ADCA.CH1.MUXCTRL =	0x20; // выбираем ножку
+		ADCA.CH1.CTRL =	(ADC_CH_START_bm | ADC_CH_INPUTMODE_SINGLEENDED_gc); //0x81;	//запускаем преобразавние
 		_delay_us(30);	
 		return ADCA.CH1.RES;
 	}
@@ -2457,23 +2457,23 @@ void hardware_adc_initialize(void)
 
 	#if defined (ADC2)
 
-		RCC->APB2ENR |= (RCC_APB2ENR_ADC1EN | RCC_APB2ENR_ADC2EN);    // Затактировали АЦП  
+		RCC->APB2ENR |= (RCC_APB2ENR_ADC1EN | RCC_APB2ENR_ADC2EN);    // Затактировали АЦП
 		__DSB();
 		NVIC_SetPriority(ADC1_2_IRQn, ARM_SYSTEM_PRIORITY);
-		NVIC_EnableIRQ(ADC1_2_IRQn);    //Включаем прерывания с АЦП. Обрабатывает ADC1_2_IRQHandler() 
+		NVIC_EnableIRQ(ADC1_2_IRQn);    //Включаем прерывания с АЦП. Обрабатывает ADC1_2_IRQHandler()
 
 	#else /* defined (ADC2) */
 
-		RCC->APB2ENR |= (RCC_APB2ENR_ADC1EN);    // Затактировали АЦП  
+		RCC->APB2ENR |= (RCC_APB2ENR_ADC1EN);    // Затактировали АЦП
 		__DSB();
 		NVIC_SetPriority(ADC1_IRQn, ARM_SYSTEM_PRIORITY);
-		NVIC_EnableIRQ(ADC1_IRQn);    //Включаем прерывания с АЦП. Обрабатывает ADC1_2_IRQHandler() 
+		NVIC_EnableIRQ(ADC1_IRQn);    //Включаем прерывания с АЦП. Обрабатывает ADC1_2_IRQHandler()
 
 	#endif /* defined (ADC2) */
 
 
-	ADC1->CR2 &= ~ ADC_CR2_CONT;     //Сбрасываем бит. Включение одиночных преобразований.  
-	ADC1->SQR1 &= ~ ADC_SQR1_L;     //Выбираем преобразование с одного канала. Сканирования нет.  
+	ADC1->CR2 &= ~ ADC_CR2_CONT;     //Сбрасываем бит. Включение одиночных преобразований.
+	ADC1->SQR1 &= ~ ADC_SQR1_L;     //Выбираем преобразование с одного канала. Сканирования нет.
 
 	#if WITHREFSENSOR || WITHTEMPSENSOR
 		ADC1->CR2 |= ADC_CR2_TSVREFE;
@@ -2484,7 +2484,7 @@ void hardware_adc_initialize(void)
 	// установка врмени выборки для данного канала
 	//const uint_fast32_t cycles = NTICKSADC01(adcmap->thold_uS01);	// в десятых долях микросекунды
 	const uint_fast8_t t = 4;	// 0..7
-	/* Устанавливаем sample time одинаковое на всех каналах 
+	/* Устанавливаем sample time одинаковое на всех каналах
 		Значения и время выборки
 		0: 1.5 cycles
 		1: 7.5 cycles
@@ -2519,7 +2519,7 @@ void hardware_adc_initialize(void)
 			ADC_SMPR1_SMP11_0 | ADC_SMPR1_SMP10_0) |
 		0;
 
-	ADC1->CR1 |= ADC_CR1_EOCIE;    //Включили прерываия при окончании преобразования.  
+	ADC1->CR1 |= ADC_CR1_EOCIE;    //Включили прерываия при окончании преобразования.
 
 	//	ADC1->CR2 |= ADC_CR2_TSVREFE;	// для тестов
 
@@ -2538,12 +2538,12 @@ void hardware_adc_initialize(void)
 	const uint_fast32_t ainmask = build_adc_mask();
 	HARDWARE_ADC_INITIALIZE(ainmask);
 
-	RCC->AHB1ENR |= RCC_AHB1ENR_ADC12EN;	// Затактировали АЦП  
+	RCC->AHB1ENR |= RCC_AHB1ENR_ADC12EN;	// Затактировали АЦП
 	__DSB();
-	RCC->AHB4ENR |= RCC_AHB4ENR_ADC3EN;		// Затактировали АЦП  
+	RCC->AHB4ENR |= RCC_AHB4ENR_ADC3EN;		// Затактировали АЦП
 	__DSB();
 	#if WITHREFSENSOR
-		RCC->APB4ENR |= RCC_APB4ENR_VREFEN;		// Затактировали источник опорного напрядения (для нормирования значений с АЦП)  
+		RCC->APB4ENR |= RCC_APB4ENR_VREFEN;		// Затактировали источник опорного напрядения (для нормирования значений с АЦП)
 	__DSB();
 	#endif /* WITHREFSENSOR */
 
@@ -2678,9 +2678,9 @@ void hardware_adc_initialize(void)
 	}
 
 	NVIC_SetPriority(ADC_IRQn, ARM_SYSTEM_PRIORITY);
-	NVIC_EnableIRQ(ADC_IRQn);    // Включаем прерывания с АЦП. Обрабатывает ADC_IRQHandler() 
+	NVIC_EnableIRQ(ADC_IRQn);    // Включаем прерывания с АЦП. Обрабатывает ADC_IRQHandler()
 	NVIC_SetPriority(ADC3_IRQn, ARM_SYSTEM_PRIORITY);
-	NVIC_EnableIRQ(ADC3_IRQn);    // Включаем прерывания с АЦП. Обрабатывает ADC3_IRQHandler() 
+	NVIC_EnableIRQ(ADC3_IRQn);    // Включаем прерывания с АЦП. Обрабатывает ADC3_IRQHandler()
 
 	// первый запуск производится в hardware_adc_startonescan().
 	// А здесь всё...
@@ -2692,9 +2692,9 @@ void hardware_adc_initialize(void)
 	// Initialization ADC
 
 #if defined (RCC_APB2ENR_ADC2EN)
-	RCC->APB2ENR |= (RCC_APB2ENR_ADC1EN | RCC_APB2ENR_ADC2EN /* | RCC_APB2ENR_ADC3EN */);    //Затактировали АЦП  
+	RCC->APB2ENR |= (RCC_APB2ENR_ADC1EN | RCC_APB2ENR_ADC2EN /* | RCC_APB2ENR_ADC3EN */);    //Затактировали АЦП
 #else
-	RCC->APB2ENR |= (RCC_APB2ENR_ADC1EN /* | RCC_APB2ENR_ADC2EN | RCC_APB2ENR_ADC3EN */);    //Затактировали АЦП  
+	RCC->APB2ENR |= (RCC_APB2ENR_ADC1EN /* | RCC_APB2ENR_ADC2EN | RCC_APB2ENR_ADC3EN */);    //Затактировали АЦП
 #endif
 	__DSB();
 
@@ -2720,13 +2720,13 @@ void hardware_adc_initialize(void)
 	
 
 	NVIC_SetPriority(ADC_IRQn, ARM_SYSTEM_PRIORITY);
-	NVIC_EnableIRQ(ADC_IRQn);    //Включаем прерывания с АЦП. Обрабатывает ADC_IRQHandler() 
+	NVIC_EnableIRQ(ADC_IRQn);    //Включаем прерывания с АЦП. Обрабатывает ADC_IRQHandler()
 
-	ADC1->CR2 &= ~ ADC_CR2_CONT;     //Сбрасываем бит. Включение одиночных преобразований.  
-	ADC1->SQR1 &= ~ ADC_SQR1_L;     //Выбираем преобразование с одного канала. Сканирования нет.  
+	ADC1->CR2 &= ~ ADC_CR2_CONT;     //Сбрасываем бит. Включение одиночных преобразований.
+	ADC1->SQR1 &= ~ ADC_SQR1_L;     //Выбираем преобразование с одного канала. Сканирования нет.
 
 
-	/* Устанавливаем sample time одинаковое на всех каналах 
+	/* Устанавливаем sample time одинаковое на всех каналах
 		Значения и время выборки
 		0: 1.5 cycles
 		1: 7.5 cycles
@@ -2792,7 +2792,7 @@ void hardware_adc_initialize(void)
 		0;
 
 	ADC1->CR1 = (ADC1->CR1 & ~ (ADC_CR1_RES | ADC_CR1_EOCIE)) |
-		ADC_CR1_EOCIE |   //Включили прерываия при окончании преобразования.  
+		ADC_CR1_EOCIE |   //Включили прерываия при окончании преобразования.
 	#if HARDWARE_ADCBITS == 6
 		(3 << ADC_CR1_RES_Pos) |	// ADC 6-bit resolution
 	#elif HARDWARE_ADCBITS == 8
@@ -2821,17 +2821,17 @@ void hardware_adc_initialize(void)
 
 	// Initialization ADC. 
 	RCC->CFGR2 = (RCC->CFGR2 & ~ (RCC_CFGR2_ADCPRE12)) | RCC_CFGR2_ADCPRE12_DIV4; // RCC_CFGR_ADCPRE12_DIV2;    //  
-	//RCC->APB2ENR |= (RCC_APB2ENR_ADC1EN | RCC_APB2ENR_ADC2EN);    //Затактировали АЦП  
+	//RCC->APB2ENR |= (RCC_APB2ENR_ADC1EN | RCC_APB2ENR_ADC2EN);    //Затактировали АЦП
 
 
 	NVIC_SetPriority(ADC1_2_IRQn, ARM_SYSTEM_PRIORITY);
-	NVIC_EnableIRQ(ADC1_2_IRQn);    //Включаем прерывания с АЦП. Обрабатывает ADC1_2_IRQHandler() 
+	NVIC_EnableIRQ(ADC1_2_IRQn);    //Включаем прерывания с АЦП. Обрабатывает ADC1_2_IRQHandler()
 
-	ADC1->CFGR &= ~ ADC_CFGR_CONT;     //Сбрасываем бит. Включение одиночных преобразований.  
-	ADC1->SQR1 &= ~ ADC_SQR1_L;     //Выбираем преобразование с одного канала. Сканирования нет.  
+	ADC1->CFGR &= ~ ADC_CFGR_CONT;     //Сбрасываем бит. Включение одиночных преобразований.
+	ADC1->SQR1 &= ~ ADC_SQR1_L;     //Выбираем преобразование с одного канала. Сканирования нет.
 
 
-	/* Устанавливаем sample time одинаковое на всех каналах 
+	/* Устанавливаем sample time одинаковое на всех каналах
 		Значения и время выборки
 		0: 1.5 cycles
 		1: 7.5 cycles
@@ -2868,7 +2868,7 @@ void hardware_adc_initialize(void)
 			ADC_SMPR1_SMP1_0 | ADC_SMPR1_SMP0_0) |
 		0;
 
-	ADC1->IER |= ADC_IER_EOS;    //Включили прерываия при окончании преобразования.  
+	ADC1->IER |= ADC_IER_EOS;    //Включили прерываия при окончании преобразования.
 
 	//	ADC1->CR2 |= ADC_CR2_TSVREFE;	// для тестов
 
@@ -2905,7 +2905,7 @@ void hardware_adc_initialize(void)
 
 	//Initialization ADC. PortC.0 ADC 10  
 	RCC->CFGR = (RCC->CFGR & ~ (RCC_CFGR_ADCPRE)) | RCC_CFGR_ADCPRE_DIV4; // RCC_CFGR_ADCPRE12_DIV2;    //  
-	RCC->APB2ENR |= RCC_APB2ENR_ADC1EN;    //Затактировали АЦП  
+	RCC->APB2ENR |= RCC_APB2ENR_ADC1EN;    //Затактировали АЦП
 	__DSB();
 
 	ADC1->CFGR1 =
@@ -2928,10 +2928,10 @@ void hardware_adc_initialize(void)
 
 	#if STM32F0XX_MD
 		NVIC_SetPriority(ADC1_COMP_IRQn, ARM_SYSTEM_PRIORITY);
-		NVIC_EnableIRQ(ADC1_COMP_IRQn);    //Включаем прерывания с АЦП. Обрабатывает ADC1_COMP_IRQHandler() 
+		NVIC_EnableIRQ(ADC1_COMP_IRQn);    //Включаем прерывания с АЦП. Обрабатывает ADC1_COMP_IRQHandler()
 	#else /* STM32F0XX_MD */
 		NVIC_SetPriority(ADC1_IRQn, ARM_SYSTEM_PRIORITY);
-		NVIC_EnableIRQ(ADC1_IRQn);    //Включаем прерывания с АЦП. Обрабатывает ADC1_IRQHandler() 
+		NVIC_EnableIRQ(ADC1_IRQn);    //Включаем прерывания с АЦП. Обрабатывает ADC1_IRQHandler()
 	#endif /* STM32F0XX_MD */
 
 	// первый запуск производится в hardware_adc_startonescan().
@@ -2973,7 +2973,7 @@ void hardware_adc_initialize(void)
 
 	//Initialization ADC. PortC.0 ADC 10  
 	RCC->CFGR = (RCC->CFGR & ~ (RCC_CFGR_ADCPRE)) | RCC_CFGR_ADCPRE_DIV4; // RCC_CFGR_ADCPRE12_DIV2;    //  
-	RCC->APB2ENR |= RCC_APB2ENR_ADC1EN;    //Затактировали АЦП  
+	RCC->APB2ENR |= RCC_APB2ENR_ADC1EN;    //Затактировали АЦП
 	__DSB();
 
 	ADC1->CFGR1 =
@@ -2995,7 +2995,7 @@ void hardware_adc_initialize(void)
 	ADC1->CR = ADC_CR_ADEN;
 
 	NVIC_SetPriority(ADC1_COMP_IRQn, ARM_SYSTEM_PRIORITY);
-	NVIC_EnableIRQ(ADC1_COMP_IRQn);    //Включаем прерывания с АЦП. Обрабатывает ADC1_COMP_IRQHandler() 
+	NVIC_EnableIRQ(ADC1_COMP_IRQn);    //Включаем прерывания с АЦП. Обрабатывает ADC1_COMP_IRQHandler()
 	#endif
 
 	// первый запуск производится в hardware_adc_startonescan().
@@ -3138,8 +3138,8 @@ hardware_adc_startonescan(void)
 	//static uint_fast16_t dcdcrefdiv = 62;	/* делится частота внутреннего генератора 48 МГц */
 
 	/* 
-		получение делителя частоты для синхронизации DC-DC конверторов 
-		для исключения попадания в полосу обзора панорамы гармоник этой частоты. 
+		получение делителя частоты для синхронизации DC-DC конверторов
+		для исключения попадания в полосу обзора панорамы гармоник этой частоты.
 	*/
 	uint_fast16_t
 	getbldivider(
@@ -3688,7 +3688,7 @@ hardware_beep_initialize(void)
 static void DMA2_SPI1_RX_initialize(void)
 {
 	/* SPI1_RX - Stream0, Channel3 */ 
-	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;//включил DMA2 
+	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;//включил DMA2
 	__DSB();
 
 	#if CPUSTYLE_STM32H7XX
@@ -3725,7 +3725,7 @@ static void DMA2_SPI1_TX_initialize(void)
 {
 	// DMA2: SPI1_TX: Stream 3: Channel 3
 	/* DMA для передачи по SPI1 */
-	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;	// включил DMA2 
+	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;	// включил DMA2
 	__DSB();
 
 	#if CPUSTYLE_STM32H7XX
@@ -3920,7 +3920,7 @@ void hardware_spi_master_initialize(void)
 	cpu_stm32f1xx_setmapr(AFIO_MAPR_SPI1_REMAP);
 
 	// Теперь настроим модуль SPI.
-	RCC->APB2ENR |= RCC_APB2ENR_SPI1EN; //подать тактирование                                 
+	RCC->APB2ENR |= RCC_APB2ENR_SPI1EN; //подать тактирование
 	__DSB();
 	SPI1->CR1 = 0x0000;             //очистить первый управляющий регистр
 	SPI1->CR2 = 0x0000;	// SPI_CR2_SSOE;             //очистить второй управляющий регистр
@@ -3940,7 +3940,7 @@ void hardware_spi_master_initialize(void)
 	//cpu_stm32f1xx_setmapr(AFIO_MAPR_SPI1_REMAP);
 
 	// Теперь настроим модуль SPI.
-	RCC->APB2ENR |= RCC_APB2ENR_SPI1EN; //подать тактирование                                 
+	RCC->APB2ENR |= RCC_APB2ENR_SPI1EN; //подать тактирование
 	__DSB();
 	SPI1->CR1 = 0x0000;             //очистить первый управляющий регистр
 	SPI1->CR2 = 0x0000;	// SPI_CR2_SSOE;             //очистить второй управляющий регистр
@@ -3956,7 +3956,7 @@ void hardware_spi_master_initialize(void)
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
 
 	// Настроим модуль SPI.
-	RCC->APB2ENR |= RCC_APB2ENR_SPI1EN; //подать тактирование                                 
+	RCC->APB2ENR |= RCC_APB2ENR_SPI1EN; //подать тактирование
 	__DSB();
 	//SPI1->CR1 = 0x0000;             //очистить первый управляющий регистр
 	//SPI1->CR2 = 0x0000;
@@ -5654,7 +5654,7 @@ static void hardware_spi_ready_b16_void(void)	/* дождаться готовн
 
 
 /* группа функций для использования в групповых передачах по SPI */
-/* передача первого байта в последовательности - Не проверяем готовность перед передачей, 
+/* передача первого байта в последовательности - Не проверяем готовность перед передачей,
    завершение передачи будут проверять другие.
 */
 void hardware_spi_b16_p1(
@@ -7057,7 +7057,7 @@ static void RAMFUNC_NONILINE lowlevel_sam3s_setws(unsigned fws)
 	EFC->EEFC_FMR = EEFC_FMR_FWS(fws);	// Flash Wait State 
 }
 
-// Перенастройка на работу с внутренним RC генератором 12 МГц	
+// Перенастройка на работу с внутренним RC генератором 12 МГц
 static void lowlevel_sam3s_init_clock_12_RC12(void)
 {
 	program_enable_RC_12MHz();
@@ -8293,7 +8293,7 @@ static void RAMFUNC_NONILINE lowlevel_sam4s_setws(unsigned fws)
 	//EFC1->EEFC_FMR = EEFC_FMR_FWS(fws);	// Flash Wait State 
 }
 
-// Перенастройка на работу с внутренним RC генератором 12 МГц	
+// Перенастройка на работу с внутренним RC генератором 12 МГц
 static void lowlevel_sam4s_init_clock_12_RC12(void)
 {
 	program_enable_RC_12MHz();
@@ -11310,14 +11310,14 @@ void ATTRWEAK SDMMC1_IRQHandler(void)
 	for (;;)
 		;
 }
-
+/*
 void ATTRWEAK TIM6_IRQHandler(void)
 {
 	debug_printf_P(PSTR("TIM6_IRQHandler trapped\n"));
 	for (;;)
 		;
 }
-
+*/
 void ATTRWEAK TIM7_IRQHandler(void)
 {
 	debug_printf_P(PSTR("TIM7_IRQHandler trapped\n"));
