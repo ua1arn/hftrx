@@ -10,7 +10,6 @@
 #include "audio.h"
 #include "spifuncs.h"
 #include "formats.h"	// for debug prints
-#include "display.h"	// for debug prints
 
 #include "codecs/tlv320aic23.h"	// константы управления усилением кодека
 #include "codecs/nau8822.h"

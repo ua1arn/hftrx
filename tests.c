@@ -15,7 +15,7 @@
 #include <math.h>
 #include <stdio.h>
 
-#include "display.h"
+#include "display/display.h"
 #include "formats.h"
 
 #include "spifuncs.h"

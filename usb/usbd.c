@@ -11,7 +11,7 @@
 #include "audio.h"
 #include "spifuncs.h"
 
-#include "display.h"
+#include "display/display.h"
 #include "formats.h"
 #include <string.h>
 
@@ -835,7 +835,7 @@ typedef struct
   // нигде не используется
   uint8_t   data_pid_start; /*!< Initial data PID
                                 This parameter must be a number between Min_Data = 0 and Max_Data = 1     */
-  // нигде не используется                              
+  // нигде не используется
   uint8_t   even_odd_frame; /*!< IFrame parity
                                  This parameter must be a number between Min_Data = 0 and Max_Data = 1    */
 #endif
@@ -4349,7 +4349,7 @@ static HAL_StatusTypeDef USB_DevInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_
 
 	#if CPUSTYLE_STM32H7XX
 		  const int TXTHRLEN = 256;		// in DWORDS: The threshold length has to be at least eight DWORDS.
-		  const int RXTHRLEN = 8;	// in DWORDS: 128 - енумерация проходтит, 256 - нет. 
+		  const int RXTHRLEN = 8;	// in DWORDS: 128 - енумерация проходтит, 256 - нет.
 	#else /* CPUSTYLE_STM32H7XX */
 		  const int TXTHRLEN = 64;		// in DWORDS: The threshold length has to be at least eight DWORDS.
 		  const int RXTHRLEN = 2;	// in DWORDS: 
@@ -6669,12 +6669,12 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 	// DocID028270 Rev 2 (RM0410): 41.16.6 Device programming model
 
 /*
-3. Set up the Data FIFO RAM for each of the FIFOs – 
+3. Set up the Data FIFO RAM for each of the FIFOs –
 	Program the OTG_GRXFSIZ register, to be able to receive control OUT data and setup data. 
 	If thresholding is not enabled, at a minimum, this must be equal to 
 	1 max packet size of control endpoint 0 + 
 	2 Words (for the status of the control OUT data packet) + 
-	10 Words (for setup packets). – 
+	10 Words (for setup packets). –
 	Program the OTG_DIEPTXF0 register (depending on the FIFO number chosen) 
 	to be able to transmit control IN data. 
 	At a minimum, this must be equal to 1 max packet size of control endpoint 0. 
@@ -19622,7 +19622,7 @@ static void DFU_GetStatus(USBD_HandleTypeDef *pdev)
       hdfu->dev_status[2] = 0;
       hdfu->dev_status[3] = 0;
       hdfu->dev_status[4] = hdfu->dev_state;     
-		// здесь строка предотвращет зависания звука при программировании на стирании страницы	
+		// здесь строка предотвращет зависания звука при программировании на стирании страницы
 	  USBD_DFU_fops_HS.GetStatus(hdfu->data_ptr, DFU_MEDIA_ERASE, hdfu->dev_status);
     }
     break;

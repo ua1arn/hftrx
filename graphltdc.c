@@ -11,7 +11,7 @@
 
 #include "hardware.h"
 
-#include "display.h"
+#include "display/display.h"
 #include <stdint.h>
 #include <string.h>
 
@@ -1464,7 +1464,7 @@ typedef struct
 #if LCDMODE_LTDC_L24
 
 
-// Создаём палитру выполняющую просто трансляцию значения 
+// Создаём палитру выполняющую просто трансляцию значения
 static void
 fillLUT_L24(
 	LTDC_Layer_TypeDef* LTDC_Layerx
@@ -1676,7 +1676,7 @@ static void LCD_LayerInit(
 	/* Alpha constant (255 totally opaque = непрозрачный) */
 	LTDC_Layer_InitStruct.LTDC_ConstantAlpha = 255; 
 	/* Default Color configuration (configure A,R,G,B component values) */          
-	LTDC_Layer_InitStruct.LTDC_DefaultColor = 0; // transparent=прозрачный black color. outside active layer area        
+	LTDC_Layer_InitStruct.LTDC_DefaultColor = 0; // transparent=прозрачный black color. outside active layer area
 	/* Configure blending factors */       
 	LTDC_Layer_InitStruct.LTDC_BlendingFactor_1 = LTDC_BlendingFactor1_CA; // умножитель для пикселя из текущего слоя
 	LTDC_Layer_InitStruct.LTDC_BlendingFactor_2 = LTDC_BlendingFactor2_CA; // умножитель для пикселя из расположенного ниже слоя
@@ -1898,7 +1898,7 @@ arm_hardware_ltdc_initialize(void)
 	/* LTDC reload configuration */  
 	LTDC->SRCR = LTDC_SRCR_IMR;	/* Immediately Reload. */
 
-	// LQ043T3DX02K rules: While “VSYNC” is “Low”, don’t change “DISP” signal “Low” to “High”. 
+	// LQ043T3DX02K rules: While “VSYNC” is “Low”, don’t change “DISP” signal “Low” to “High”.
 #if defined (BOARD_DEVALUE)
 	HARDWARE_LTDC_SET_DISP(BOARD_DEMODE, BOARD_DEVALUE);
 #else

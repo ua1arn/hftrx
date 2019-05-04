@@ -10,9 +10,6 @@
 #include "board.h"
 #include "spifuncs.h"
 
-#include "display.h"
-#include "formats.h"
-
 //#define WITHSI5351AREPLACE 1
 
 // LO1MODE_DIRECT
@@ -146,7 +143,7 @@ scanfreq(ftw_t ftw0, ftw_t ftw_last, long int lfm_nsteps)
     {         
 		// Подготавливаем параметры для программирования DDS
 		const ftw_t lfm_value = ((lfm_y1_scaled += lfm_dy) + lfm_SCALEDIV2) / lfm_SCALE;
-		// Выдаём FTW в микросхему синтезатора частоты, ждём прохода 
+		// Выдаём FTW в микросхему синтезатора частоты, ждём прохода
 		// очередного синхронизирующего импульса.
 		board_waitextsync();
 		disableIRQ();
@@ -247,7 +244,7 @@ static void synth_integer1_setfreq(
 
 #elif LO1MODE_FIXSCALE
 
-/* 	DDS выдает частоту сравнения для фазового детектора, 
+/* 	DDS выдает частоту сравнения для фазового детектора,
  *	от ГУН постоянный делитель с коэф. деления SYNTH_N1
  *	от DDS постоянный делитель с коэф. деления SYNTH_R1
  */
@@ -405,8 +402,8 @@ static void synth_loop1_setfreq(
 #endif
 
 
-/* Возврат умножителя для первого гетеродина - 
-   во сколько умножается частота после синтезатора перед подачей на смеситель 
+/* Возврат умножителя для первого гетеродина -
+   во сколько умножается частота после синтезатора перед подачей на смеситель
  */
 static uint_fast8_t
 board_getscalelo1(

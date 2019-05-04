@@ -5,8 +5,6 @@
 #include "board.h"
 #include "audio.h"
 #include "spifuncs.h"
-#include "formats.h"	// for debug prints
-#include "display.h"	// for debug prints
 
 #include <string.h>
 #include <math.h>
@@ -441,7 +439,7 @@ static void modem_cancelsending(uint_fast8_t page)
 
 //++++++++++++++++
 
-// Очереди символов для обмена с host 
+// Очереди символов для обмена с host
 enum { qSZ = MODEMBUFFERSIZE8 * 4 };
 static uint8_t queue [qSZ];
 static volatile unsigned qp, qg;

@@ -8,7 +8,6 @@
 // ILI9341 display driver chip
 #include "hardware.h"
 
-#include "display.h"
 #include <stdint.h>
 #include <string.h>
 

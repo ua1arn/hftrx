@@ -17,7 +17,7 @@
 #include "ff.h"	
 #include "diskio.h"		/* FatFs lower layer API */
 
-#include "display.h"	/* используем функцию получения рабочей частоты */
+#include "display/display.h"	/* используем функцию получения рабочей частоты */
 #include "audio.h"	
 
 static const struct drvfunc * const drvfuncs [] =

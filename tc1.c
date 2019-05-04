@@ -12,7 +12,7 @@
 #include "encoder.h"
 #include "list.h"
 
-#include "display.h"
+#include "display/display.h"
 #include "formats.h"
 
 #include "spifuncs.h"

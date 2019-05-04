@@ -10,7 +10,7 @@
 #include "board.h"
 #include "audio.h"
 
-#include "display.h"
+//#include "display/display.h"
 #include "formats.h"
 #include <string.h>
 #include <wchar.h>
@@ -584,7 +584,7 @@ static unsigned UAC_AudioFeatureUnit(
 	)
 {
 	// Параметр определяет, ккие управляющие элементы появляются на страничке управления "Custom"
-	// Причем, на этой страничке собраны все управляющие элементы со всех Feature Unit Descriptor 
+	// Причем, на этой страничке собраны все управляющие элементы со всех Feature Unit Descriptor
 	// в пути сигнала данного источника звука.
 	// Не может быть нулём.
 	const uint_fast32_t bmaControls = 
@@ -1680,7 +1680,7 @@ static unsigned fill_CDCEEM_function(uint_fast8_t fill, uint8_t * p, unsigned ma
 	unsigned n = 0;
 
 	// iadclasscode_r10.pdf
-	// InterfaceAssociationDescriptor требуется только для многоинтерфейсных 
+	// InterfaceAssociationDescriptor требуется только для многоинтерфейсных
 	// Провда, там написано что iadclasscode_r10.pdf
 	n += CDCEEM_InterfaceAssociationDescriptor(fill, p + n, maxsize - n);	/* CDC EEM: Interface Association Descriptor Abstract Control Model */
 	n += CDCEEM_r9fill_24(fill, p + n, maxsize - n, INTERFACE_CDCEEM_DATA_6, 0x00, 2);	/* INTERFACE_CDCEEM_DATA_6 Data class interface descriptor */

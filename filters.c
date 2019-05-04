@@ -8,10 +8,6 @@
 #include "hardware.h"
 #include "board.h"
 
-
-#include "display.h"
-#include "formats.h"
-
 // Названия фильтров для отображения на дисплее
 
 static const char FLASHMEM 
@@ -1586,7 +1582,7 @@ filter_t fi_15p0 =
 	strFlash15p0,	/* название фильтра для отображения */
 };
 
-	#if WITHDEDICATEDNFM /* Для NFM отдельный тракт со своим фильтром */ 
+	#if WITHDEDICATEDNFM /* Для NFM отдельный тракт со своим фильтром */
 
 	// passtrough filter
 	filter_t fi_15p0_nfm =
@@ -2071,7 +2067,7 @@ getrxfilter(
 	if (GFA_SIZE == 0)
 	{
 		void wrong_GFA_SIZE(void);
-		debug_printf_P(PSTR("getfilter: wrong configuration GFA_SIZE=%d\n"), GFA_SIZE);
+		//debug_printf_P(PSTR("getfilter: wrong configuration GFA_SIZE=%d\n"), GFA_SIZE);
 		wrong_GFA_SIZE();
 		return gfa [0];
 	}
@@ -2098,7 +2094,7 @@ gettxfilter(
 	if (GFA_SIZE == 0)
 	{
 		void wrong_GFA_SIZE(void);
-		debug_printf_P(PSTR("getfilter: wrong configuration GFA_SIZE=%d\n"), GFA_SIZE);
+		//debug_printf_P(PSTR("getfilter: wrong configuration GFA_SIZE=%d\n"), GFA_SIZE);
 		wrong_GFA_SIZE();
 		return gfa [0];
 	}
