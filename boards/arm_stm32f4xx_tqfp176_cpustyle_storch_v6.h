@@ -6,7 +6,7 @@
 // UA1ARN
 //
 
-// Трансивер с DSP обработкой "Аист" на процессоре 
+// Трансивер с DSP обработкой "Аист" на процессоре
 // Rmainunit_v5la.pcb STM32H743IIT6, TFT 4.3", 2xmini-USB, mini SD-CARD, NAU8822L и FPGA EP4CE22E22I7N
 
 #ifndef ARM_STM32F4XX_TQFP176_CPUSTYLE_STORCH_V6_H_INCLUDED
@@ -162,6 +162,24 @@
 
 #endif
 
+#if WITHDIRECTBANDOUT
+	// данные управления перекючеием диапазонов
+	#define TARGET_BANDF3_DATAS_BIT_POS 0		// какой бит данных младший в слове считанном с порта
+	#define TARGET_BANDF3_DATAS_BITS (0x0f << TARGET_BANDF3_DATAS_BIT_POS)
+
+	#define TARGET_BANDF3_DATA_SET(v) do { \
+		arm_hardware_piof_outputs2m(TARGET_BANDF3_DATAS_BITS, (v) << TARGET_BANDF3_DATAS_BIT_POS);	/* открыть выходы порта */ \
+		} while (0)
+
+	#define TARGET_BANDF3_DATA_INITIALIZE() do { \
+		arm_hardware_piof_outputs2m(TARGET_BANDF3_DATAS_BITS, (0) << TARGET_BANDF3_DATAS_BIT_POS);	/* открыть выходы порта */ \
+		} while (0)
+
+#else /* WITHDIRECTBANDOUT */
+	#define TARGET_BANDF3_DATA_INITIALIZE() do { \
+		} while (0)
+#endif /* WITHDIRECTBANDOUT */
+
 #if WITHENCODER
 
 	// Выводы подключения енкодера #2
@@ -215,7 +233,7 @@
 #if WITHSAI2HW
 	/* 
 	Поскольку блок SAI2 инициализируется как SLAVE с синхронизацией от SAI1,
-	из внешних сигналов требуется только SAI2_SD_A 
+	из внешних сигналов требуется только SAI2_SD_A
 	*/
 	#define SAI2HW_INITIALIZE()	do { \
 		/* arm_hardware_pioe_altfn20(1uL << 0, AF_SAI2); */	/* PE0 - SAI2_MCK_A - 12.288 MHz	*/ \
@@ -733,15 +751,15 @@
 #endif /* LCDMODE_LTDC */
 
 #if LCDMODE_LQ043T3DX02K
-	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея 
+	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея
 	#define WITHLCDBACKLIGHTMIN	0	// Нижний предел регулировки (показываетый на дисплее)
 	#define WITHLCDBACKLIGHTMAX	4	// Верхний предел регулировки (показываетый на дисплее)
-	#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры 
+	#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры
 #else
-	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея 
+	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея
 	#define WITHLCDBACKLIGHTMIN	0	// Нижний предел регулировки (показываетый на дисплее)
 	#define WITHLCDBACKLIGHTMAX	3	// Верхний предел регулировки (показываетый на дисплее)
-	#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры 
+	#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры
 #endif
 
 #if WITHKEYBOARD
@@ -769,6 +787,7 @@
 		HARDWARE_DCDC_INITIALIZE(); \
 		HARDWARE_KBD_INITIALIZE(); \
 		TXDISABLE_INITIALIZE(); \
+		TARGET_BANDF3_DATA_INITIALIZE(); \
 		} while (0)
 
 #endif /* ARM_STM32F4XX_TQFP176_CPUSTYLE_STORCH_V6_H_INCLUDED */

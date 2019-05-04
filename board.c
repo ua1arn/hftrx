@@ -321,6 +321,11 @@ prog_gpioreg(void)
 		TARGET_BAND_DATA_SET(glob_bandf);
 	#endif /* defined (TARGET_BAND_DATA_SET) */
 
+	#if defined (TARGET_BANDF3_DATA_SET)
+		// Band select
+		TARGET_BANDF3_DATA_SET(glob_bandf3);
+	#endif /* defined (TARGET_BANDF3_DATA_SET) */
+
 	#if defined (HARDWARE_SDIOPOWER_SET)
 		// SD CARD POWER ENABLE BIT
 		HARDWARE_SDIOPOWER_SET(glob_sdcardpoweron);
@@ -1468,7 +1473,7 @@ prog_ctrlreg(uint_fast8_t plane)
 #define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 // 24-bit control register for down-conversion UA3DKC
 /*
-Если все это удастся реализовать, то на вых. 595 мы будем иметь 
+Если все это удастся реализовать, то на вых. 595 мы будем иметь
  {а их у нас будет 24, если отказаться от сигнала DDS-RESET, который в данном проекте не используется}:
  1. 10 вых сигналов переключения диапазонов.
  2. 4 вых сигнала переключения КВФ ПРМ - 0.7, 1.8, 2.7, 3.1 кгц.
@@ -1478,10 +1483,10 @@ prog_ctrlreg(uint_fast8_t plane)
  6. 2 вых сигнала включения АТТ - 10 дб, 20 дб.
  7 1 вых сигнал включения режима CW/CWR.
  8. 1 вых сигнал включения TX в режиме CW/AM.
- { 7 и 8 пункты включаются также при режиме TUNE}  Здесь отказываемся от 
-	вых сигнала включения AM/DRM - не будет использоваться и для экономии выходов от сигнала 
-	включения TX, так как этот сигнал мы имеем на выходе контроллера. 
-	Итого 24 выхода будут полностью задействованы. 
+ { 7 и 8 пункты включаются также при режиме TUNE}  Здесь отказываемся от
+	вых сигнала включения AM/DRM - не будет использоваться и для экономии выходов от сигнала
+	включения TX, так как этот сигнал мы имеем на выходе контроллера.
+	Итого 24 выхода будут полностью задействованы.
 	Что и на каких выходах 595-ых будет присутствовать ни какой разницы нет.
 */
 
@@ -1591,7 +1596,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	RBBIT(007, glob_lcdreset);		// D7 LCD_RESET_PIO
 	RBBIT(006, 0x00);				/* D6 in control register - spare bit */
 	RBBIT(005, 0x00);				/* D5 in control register - spare bit */
-	RBBIT(004, glob_loudspeaker_off);		// d4 выход LSCTL0 (вывод 15 на 34-выводном разъёме) - Отключение динамика 
+	RBBIT(004, glob_loudspeaker_off);		// d4 выход LSCTL0 (вывод 15 на 34-выводном разъёме) - Отключение динамика
 	RBBIT(003, glob_kblight && (glob_bglight != WITHLCDBACKLIGHTMIN));	/* d3 keyboard backlight */
 	RBVAL(001, glob_bglight, 2);	/* d1..d2 LCD backlight */
 	RBBIT(000, ! glob_reset_n);		/* d0 in control register - ad9951 RESET */
@@ -2223,7 +2228,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	04 - A0 дешифратора диапазонов
 	05 - A1 дешифратора диапазонов
 	06 - A2 дешифратора диапазонов
-	07 - A3 дешифратора диапазонов 
+	07 - A3 дешифратора диапазонов
 
 */
 
@@ -2282,7 +2287,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	04 - A0 дешифратора диапазонов
 	05 - A1 дешифратора диапазонов
 	06 - A2 дешифратора диапазонов
-	07 - A3 дешифратора диапазонов 
+	07 - A3 дешифратора диапазонов
 
 */
 
@@ -2332,7 +2337,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	04 - a0 дешифратора диапазонов
 	05 - a1 дешифратора диапазонов
 	06 - a2 дешифратора диапазонов
-	07 - a3 дешифратора диапазонов 
+	07 - a3 дешифратора диапазонов
 
 */
 
@@ -2418,7 +2423,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	04 - a0 дешифратора диапазонов
 	05 - a1 дешифратора диапазонов
 	06 - a2 дешифратора диапазонов
-	07 - a3 дешифратора диапазонов 
+	07 - a3 дешифратора диапазонов
 
 */
 
@@ -4313,10 +4318,10 @@ static void board_update_initial(void)
 {
 	prog_gpioreg();
 #if CTLREGMODE_RAVENDSP_V3 || CTLREGMODE_RAVENDSP_V4 || CTLREGMODE_RAVENDSP_V5
-	prog_ctldacreg();	/* регистр выбора ГУН, сброс DDS и ЦАП подстройки опорника */ 
+	prog_ctldacreg();	/* регистр выбора ГУН, сброс DDS и ЦАП подстройки опорника */
 	board_update_rxctrlreg();
 #elif (ATMEGA_CTLSTYLE_V7_H_INCLUDED || ARM_CTLSTYLE_V7_H_INCLUDED || ARM_CTLSTYLE_V7A_H_INCLUDED)
-	prog_ctldacreg();	/* регистр выбора ГУН, сброс DDS и ЦАП подстройки опорника */ 
+	prog_ctldacreg();	/* регистр выбора ГУН, сброс DDS и ЦАП подстройки опорника */
 	board_update_rxctrlreg();
 #else
 	board_update_ctrlreg();
@@ -4361,7 +4366,7 @@ board_update(void)
 	if (flag_ctldacreg != 0)
 	{
 		flag_ctldacreg = 0;
-		prog_ctldacreg();	/* регистр выбора ГУН, сброс DDS и ЦАП подстройки опорника */ 
+		prog_ctldacreg();	/* регистр выбора ГУН, сброс DDS и ЦАП подстройки опорника */
 	}
 	if (flag_ctrlreg != 0)
 	{
@@ -4376,7 +4381,7 @@ board_update(void)
 	if (flag_ctldacreg != 0)
 	{
 		flag_ctldacreg = 0;
-		prog_ctldacreg();	/* регистр выбора ГУН, сброс DDS и ЦАП подстройки опорника */ 
+		prog_ctldacreg();	/* регистр выбора ГУН, сброс DDS и ЦАП подстройки опорника */
 	}
 	if (flag_rxctrlreg != 0)
 	{
@@ -4404,7 +4409,7 @@ static void
 board_ctlreg1changed(void)
 {
 #if CTLREGMODE_RAVENDSP_V3 || CTLREGMODE_RAVENDSP_V4 || CTLREGMODE_RAVENDSP_V5
-		flag_ctrlreg = 1;	/* управление синтезатором  */	
+		flag_ctrlreg = 1;	/* управление синтезатором  */
 #elif ATMEGA_CTLSTYLE_V7_H_INCLUDED || ARM_CTLSTYLE_V7_H_INCLUDED || ARM_CTLSTYLE_V7A_H_INCLUDED
 		flag_rxctrlreg = 1;	/* управление приемником */
 #else
@@ -4417,9 +4422,9 @@ static void
 board_ctlreg2changed(void)
 {
 #if CTLREGMODE_RAVENDSP_V3 || CTLREGMODE_RAVENDSP_V4 || CTLREGMODE_RAVENDSP_V5
-	flag_ctldacreg = 1;	/* управление ЦАП */	
+	flag_ctldacreg = 1;	/* управление ЦАП */
 #elif ATMEGA_CTLSTYLE_V7_H_INCLUDED || ARM_CTLSTYLE_V7_H_INCLUDED || ARM_CTLSTYLE_V7A_H_INCLUDED
-	flag_ctldacreg = 1;	/* управление синтезатором и ЦАП */	
+	flag_ctldacreg = 1;	/* управление синтезатором и ЦАП */
 #else
 	flag_ctrlreg = 1; 
 #endif
@@ -8069,7 +8074,7 @@ static void hardware_set_adc_filterLPF(uint_fast8_t adci, uint_fast8_t k)
 	adc_data_k [adci] = k;	/* 1.0..0.0, умноженное на BOARD_ADCFILTER_LPF_DENOM */
 }
 
-// Функция вызывается из обработчика прерывания завершения преобразования 
+// Функция вызывается из обработчика прерывания завершения преобразования
 // канала АЦП для запиоминания преобразованного занчения.
 void board_adc_store_data(uint_fast8_t adci, adcvalholder_t v)
 {
@@ -8116,7 +8121,7 @@ board_get_forward_filtered(adcvalholder_t f)
 // комплементарный фильтр ???
 
 // pot = (1-K)*pot + K*pot_raw
-// где pot - отфильтрованный сигнал, pot_raw - значение на аналоговом входе, 
+// где pot - отфильтрованный сигнал, pot_raw - значение на аналоговом входе,
 // и наконец K - коэффициент фильтра, который варьируется от 0.0 до 1.0.
 
 //k - коэффицент фильтра 0.0 - 1.0
@@ -8526,7 +8531,7 @@ void hardware_cw_diagnostics(
 #if WITHDEBUG && WITHUSBCDC && WITHDEBUG_CDC
 
 
-// Очереди символов для обмена с host 
+// Очереди символов для обмена с host
 enum { qSZdevice = 8192 };
 
 static uint8_t debugusb_queue [qSZdevice];
@@ -8642,7 +8647,7 @@ void debugusb_sendchar(void * ctx)							/* вызывается из обраб
 	}
 }
 
-// Вызывается из user-mode программы при запрещённых прерываниях. 
+// Вызывается из user-mode программы при запрещённых прерываниях.
 void debugusb_initialize(void)
 {
 }
@@ -8659,7 +8664,7 @@ mcp3208_read(
 	)
 {
 	uint_fast8_t v0, v1, v2, v3;
-	// сдвинуто, чтобы позиция временной диаграммы, 
+	// сдвинуто, чтобы позиция временной диаграммы,
 	// где формируется время выборки, не попадала на паузу между байтами.
 	const uint_fast8_t cmd1 = (0x10 | (diff ? 0x00 : 0x08) | (adci & 0x07)) << 2;
 	uint_fast16_t rv;
