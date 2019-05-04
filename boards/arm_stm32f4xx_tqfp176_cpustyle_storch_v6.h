@@ -164,15 +164,22 @@
 
 #if WITHDIRECTBANDOUT
 	// данные управления перекючеием диапазонов
-	#define TARGET_BANDF3_DATAS_BIT_POS 0		// какой бит данных младший в слове считанном с порта
+	// IDC16 pin 04 - PTT (open drain)
+	// IDC16 pin 14 13 12 11 - band data D C B A
+	#define TARGET_BANDF3_DATAS_BIT_POS 0		// PF3..PF0 какой бит данных младший в слове считанном с порта
 	#define TARGET_BANDF3_DATAS_BITS (0x0f << TARGET_BANDF3_DATAS_BIT_POS)
 
-	#define TARGET_BANDF3_DATA_SET(v) do { \
+	#define TARGET_BANDF3_TX_BIT_POS 4	// PF4
+	#define TARGET_BANDF3_TX_BIT (1u << TARGET_BANDF3_TX_BIT_POS)
+
+	#define TARGET_BANDF3_DATA_TX_SET(v, tx) do { \
 		arm_hardware_piof_outputs2m(TARGET_BANDF3_DATAS_BITS, (v) << TARGET_BANDF3_DATAS_BIT_POS);	/* открыть выходы порта */ \
+		arm_hardware_piof_opendrain(TARGET_BANDF3_TX_BIT, !(tx) << TARGET_BANDF3_TX_BIT_POS);	/* открыть выходы порта */ \
 		} while (0)
 
 	#define TARGET_BANDF3_DATA_INITIALIZE() do { \
 		arm_hardware_piof_outputs2m(TARGET_BANDF3_DATAS_BITS, (0) << TARGET_BANDF3_DATAS_BIT_POS);	/* открыть выходы порта */ \
+		arm_hardware_piof_opendrain(TARGET_BANDF3_TX_BIT, !(0) << TARGET_BANDF3_TX_BIT_POS);	/* открыть выходы порта */ \
 		} while (0)
 
 #else /* WITHDIRECTBANDOUT */

@@ -321,10 +321,10 @@ prog_gpioreg(void)
 		TARGET_BAND_DATA_SET(glob_bandf);
 	#endif /* defined (TARGET_BAND_DATA_SET) */
 
-	#if defined (TARGET_BANDF3_DATA_SET)
+	#if defined (TARGET_BANDF3_DATA_TX_SET)
 		// Band select
-		TARGET_BANDF3_DATA_SET(glob_bandf3);
-	#endif /* defined (TARGET_BANDF3_DATA_SET) */
+		TARGET_BANDF3_DATA_TX_SET(glob_bandf3, glob_tx);
+	#endif /* defined (TARGET_BANDF3_DATA_TX_SET) */
 
 	#if defined (HARDWARE_SDIOPOWER_SET)
 		// SD CARD POWER ENABLE BIT
