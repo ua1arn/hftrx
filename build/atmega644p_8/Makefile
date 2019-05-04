@@ -7,6 +7,7 @@ PROJECT = tc1
 MCU = atmega644pa
 TARGET = tc1_atmega644_8.elf
 CC = avr-gcc
+SIZE = avr-size
 
 CPP = avr-g++
 
@@ -52,6 +53,8 @@ OBJS 	= $(patsubst %.s,./obj/%.o,$(ASRC)) $(patsubst $(SRCDIR)/%.c,./obj/%.o,$(S
 INCDIR  = $(patsubst %,-I%,$(DINCDIR) $(UINCDIR))
 LIBDIR  = $(patsubst %,-L%,$(DLIBDIR) $(ULIBDIR))
 
+CPFLAGS = $(CFLAGS) $(LDFLAGS)
+
 ## Objects explicitly added by the user
 LINKONLYOBJECTS = 
 
@@ -79,8 +82,8 @@ $(TARGET): $(OBJS)
 	avr-objdump -h -S $< > $@
 
 size: ${TARGET}
-	@echo
-	@avr-size -C --mcu=${MCU} ${TARGET}
+	$(SIZE) --format=sysv --radix=16 ${TARGET}
+	#$(SIZE) -C --mcu=${MCU} ${TARGET}
 
 ## Clean target
 .PHONY: clean

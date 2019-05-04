@@ -9,13 +9,14 @@
 #include "pio.h"
 #include "board.h"
 #include "audio.h"
+#include "formats.h"
+
+#if WITHUSBHW
 
 //#include "display/display.h"
-#include "formats.h"
 #include <string.h>
 #include <wchar.h>
 
-#if WITHUSBHW
 
 #include "usb200.h"
 #include "usbch9.h"
