@@ -104,7 +104,7 @@ INCDIR  = $(patsubst %,-I%,$(DINCDIR) $(UINCDIR))
 LIBDIR  = $(patsubst %,-L%,$(DLIBDIR) $(ULIBDIR))
 DEFS    = $(DDEFS) $(UDEFS)
 ADEFS   = $(DADEFS) $(UADEFS)
-OBJS    = $(ASRC:.s=.o) $(patsubst $(SRCDIR)/%.c,%.o,$(SRC))
+OBJS 	= $(patsubst %.s,./obj/%.o,$(ASRC)) $(patsubst $(SRCDIR)/%.c,./obj/%.o,$(SRC))
 LIBS    = $(DLIBS) $(ULIBS)
 
 MCFLAGS = -mcpu=$(MCU) $(CORE) -fno-math-errno -funroll-loops -fgraphite-identity -ffunction-sections -fdata-sections -ffat-lto-objects
@@ -143,12 +143,13 @@ RAM: $(OBJS) $(PROJECT)_ram.elf $(PROJECT)_ram.hex
 ROM: $(OBJS) $(PROJECT)_rom.elf $(PROJECT)_rom.hex
 #ROM: $(OBJS) $(PROJECT)_rom.elf $(PROJECT)_rom.bin
 
-%.o: %.c
+obj/%.o: %.c
 	@mkdir -p $(@D)
-	$(CC) -c $(CPFLAGS) $(INCDIR) $(patsubst %.o,%.c,$(addprefix $(SRCDIR)/, $@)) -o $@
+	$(CC) -c $(CPFLAGS) $(INCDIR) $(addprefix $(SRCDIR)/, $(patsubst obj/%, %, $(patsubst %.o, %.c, $@))) -o $@
 
-%.o: $(addprefix $(SRCDIR)/, %.s)
-	$(AS) -c $(ASFLAGS) $< -o $@
+obj/%.o: %.s
+	@mkdir -p $(@D)
+	$(AS) -c $(ASFLAGS) $(addprefix $(SRCDIR)/, $(patsubst obj/%, %, $(patsubst %.o, %.s, $@))) -o $@
 
 %ram.elf: $(OBJS)
 	$(CC) $(OBJS) $(LDFLAGS_RAM) $(LIBS) -o $@
@@ -165,8 +166,7 @@ ROM: $(OBJS) $(PROJECT)_rom.elf $(PROJECT)_rom.hex
 	$(BIN) $< $@
 
 clean:
-	-rm -fR ./*/*.o
-	-rm -fR ./*.o
+	-rm -fR ./obj
 	-rm -f $(PROJECT)_rom.elf $(PROJECT)_rom.map $(PROJECT)_rom.hex $(PROJECT)_rom.bin
 	-rm -f $(PROJECT)_ram.elf $(PROJECT)_ram.map $(PROJECT)_ram.hex $(PROJECT)_ram.bin
 	-rm -f $(PROJECT)_boot.elf $(PROJECT)_boot.map $(PROJECT)_boot.hex $(PROJECT)_boot.bin
@@ -175,8 +175,6 @@ clean:
 	-rm -f $(SRC:.c=.lst)
 	-rm -f $(ASRC:.s=.s.bak)
 	-rm -f $(ASRC:.s=.lst)
-	-rm -fR ./*/*.d	
-	-rm -fR ./*.d
 
 # 
 # Include the dependency files, should be the last of the makefile

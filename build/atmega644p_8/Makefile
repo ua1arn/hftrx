@@ -48,7 +48,7 @@ SRC_EXCLUDES += ../../tools/rbf2c.c
 SRC += $(filter-out $(SRC_EXCLUDES), $(wildcard $(SRCDIR)/*.c $(SRCDIR)/*/*.c $(SRCDIR)/*/*/*.c $(SRCDIR)/*/*/*/*.c))
 VPATH = $(SRCDIR)
 
-OBJECTS = $(ASRC:.s=.o) $(patsubst $(SRCDIR)/%.c,%.o,$(SRC))
+OBJS 	= $(patsubst %.s,./obj/%.o,$(ASRC)) $(patsubst $(SRCDIR)/%.c,./obj/%.o,$(SRC))
 INCDIR  = $(patsubst %,-I%,$(DINCDIR) $(UINCDIR))
 LIBDIR  = $(patsubst %,-L%,$(DLIBDIR) $(ULIBDIR))
 
@@ -56,17 +56,18 @@ LIBDIR  = $(patsubst %,-L%,$(DLIBDIR) $(ULIBDIR))
 LINKONLYOBJECTS = 
 
 ## Build
-all: $(OBJECTS) $(TARGET) tc1_atmega644_8.hex tc1_atmega644_8.eep size
+all: $(OBJS) $(TARGET) tc1_atmega644_8.hex tc1_atmega644_8.eep size
 
-%.o: %.c
+obj/%.o: %.c
 	@mkdir -p $(@D)
-	$(CC) -c $(CFLAGS) $(INCDIR) $(patsubst %.o,%.c,$(addprefix $(SRCDIR)/, $@)) -o $@
+	$(CC) -c $(CPFLAGS) $(INCDIR) $(addprefix $(SRCDIR)/, $(patsubst obj/%, %, $(patsubst %.o, %.c, $@))) -o $@
 
-%.o: $(addprefix $(SRCDIR)/, %.s)
-	$(AS) -c $(ASMFLAGS) $< -o $@	
+obj/%.o: %.s
+	@mkdir -p $(@D)
+	$(AS) -c $(ASFLAGS) $(addprefix $(SRCDIR)/, $(patsubst obj/%, %, $(patsubst %.o, %.s, $@))) -o $@
 
-$(TARGET): $(OBJECTS)
-	 $(CC) $(LDFLAGS) $(OBJECTS) $(LINKONLYOBJECTS) $(LIBDIR) $(LIBS) -o $(TARGET)
+$(TARGET): $(OBJS)
+	 $(CC) $(LDFLAGS) $(OBJS) $(LINKONLYOBJECTS) $(LIBDIR) $(LIBS) -o $(TARGET)
 
 %.hex: $(TARGET)
 	avr-objcopy -O ihex $(HEX_FLASH_FLAGS)  $< $@
@@ -84,9 +85,8 @@ size: ${TARGET}
 ## Clean target
 .PHONY: clean
 clean:
-	-rm -rf $(OBJECTS) tc1_atmega644_8.elf ./*.d tc1_atmega644_8.hex tc1_atmega644_8.eep
-	-rm -fR ./*/*.o
-	-rm -fR ./*.o
+	-rm -rf $(OBJS) tc1_atmega644_8.elf ./*.d tc1_atmega644_8.hex tc1_atmega644_8.eep
+	-rm -fR ./obj
 	-rm -f $(PROJECT)_rom.elf $(PROJECT)_rom.map $(PROJECT)_rom.hex $(PROJECT)_rom.bin
 	-rm -f $(PROJECT)_boot.elf $(PROJECT)_boot.map $(PROJECT)_boot.hex $(PROJECT)_boot.bin
 	-rm -f $(PROJECT)_app.elf $(PROJECT)_app.map $(PROJECT)_app.hex $(PROJECT)_app.bin
@@ -94,8 +94,6 @@ clean:
 	-rm -f $(SRC:.c=.lst)
 	-rm -f $(ASRC:.s=.s.bak)
 	-rm -f $(ASRC:.s=.lst)
-	-rm -fR ./*/*.d	
-	-rm -fR ./*.d
 	
 ## Other dependencies
 -include $(wildcard ./*/*.d)
