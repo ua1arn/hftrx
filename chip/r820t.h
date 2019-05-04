@@ -1,6 +1,6 @@
 /* $Id$ */
-// Проект HF Dream Receiver (КВ приёмник мечты)
-// автор Гена Завидовский mgs2001@mail.ru
+// РџСЂРѕРµРєС‚ HF Dream Receiver (РљР’ РїСЂРёС‘РјРЅРёРє РјРµС‡С‚С‹)
+// Р°РІС‚РѕСЂ Р“РµРЅР° Р—Р°РІРёРґРѕРІСЃРєРёР№ mgs2001@mail.ru
 // UA1ARN
 //
 
@@ -9,7 +9,7 @@
 #ifndef R820T_H_INCLUDED
 #define R820T_H_INCLUDED
 
-// взято с 
+// РІР·СЏС‚Рѕ СЃ 
 // https://github.com/airspy/airspyone_firmware/blob/master/common/r820t.c
 //
 /*
@@ -450,19 +450,19 @@ void airspy_r820t_read(r820t_priv_t *priv, uint8_t* const data, const uint8_t da
     {
       for(i = 0; i < (data_count-1); i++)
       {
-		i2c_read(& val, i == 0 ? I2C_READ_ACK_1 : I2C_READ_ACK);	/* чтение промежуточного байта ответа */
+		i2c_read(& val, i == 0 ? I2C_READ_ACK_1 : I2C_READ_ACK);	/* С‡С‚РµРЅРёРµ РїСЂРѕРјРµР¶СѓС‚РѕС‡РЅРѕРіРѕ Р±Р°Р№С‚Р° РѕС‚РІРµС‚Р° */
 		//val = i2c1_rx_byte(1); /* ACK each byte */
 		data[i] = r82xx_bitrev(val); /* Swap data bits as they are received LSB to MSB */
       }
 
- 		i2c_read(& val, I2C_READ_NACK);	/* чтение последнего байта ответа */
+ 		i2c_read(& val, I2C_READ_NACK);	/* С‡С‚РµРЅРёРµ РїРѕСЃР»РµРґРЅРµРіРѕ Р±Р°Р№С‚Р° РѕС‚РІРµС‚Р° */
      //val = i2c1_rx_byte(0); /* NACK last byte */
       data[i] = r82xx_bitrev(val); /* Swap data bits as they are received LSB to MSB */
 
     }
 	else
     {
-		i2c_read(& val, I2C_READ_ACK_NACK);	/* чтение первого и единственного байта ответа */
+		i2c_read(& val, I2C_READ_ACK_NACK);	/* С‡С‚РµРЅРёРµ РїРµСЂРІРѕРіРѕ Рё РµРґРёРЅСЃС‚РІРµРЅРЅРѕРіРѕ Р±Р°Р№С‚Р° РѕС‚РІРµС‚Р° */
       //val = i2c1_rx_byte(0); /* NACK last byte */
       data[0] = r82xx_bitrev(val); /* Swap data bits as they are received LSB to MSB */
     }
@@ -1069,13 +1069,13 @@ r820t_initialize(void)
 	uint_fast8_t val;
 
     i2c_start(R820T_I2C_ADDR | I2C_READ);
-	i2c_read(& val, I2C_READ_ACK_NACK);	/* чтение первого и единственного байта ответа */
+	i2c_read(& val, I2C_READ_ACK_NACK);	/* С‡С‚РµРЅРёРµ РїРµСЂРІРѕРіРѕ Рё РµРґРёРЅСЃС‚РІРµРЅРЅРѕРіРѕ Р±Р°Р№С‚Р° РѕС‚РІРµС‚Р° */
 	i2c_stop();
 
 	debug_printf_P(PSTR("r820t_initialize: signature=0x%02X (0x96 expected)\n"), r82xx_bitrev(val));
 
     //i2c_start(R820T_I2C_ADDR | I2C_READ);
-	//i2c_read(& val, I2C_READ_ACK_NACK);	/* чтение первого и единственного байта ответа */
+	//i2c_read(& val, I2C_READ_ACK_NACK);	/* С‡С‚РµРЅРёРµ РїРµСЂРІРѕРіРѕ Рё РµРґРёРЅСЃС‚РІРµРЅРЅРѕРіРѕ Р±Р°Р№С‚Р° РѕС‚РІРµС‚Р° */
 	//i2c_stop();
 	//debug_printf_P(PSTR("r820t_initialize2: signature=0x%02X (0x96 expected)\n"), r82xx_bitrev(val));
 }

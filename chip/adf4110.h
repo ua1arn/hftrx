@@ -1,6 +1,6 @@
 /* $Id$ */
-// Проект HF Dream Receiver (КВ приёмник мечты)
-// автор Гена Завидовский mgs2001@mail.ru
+// РџСЂРѕРµРєС‚ HF Dream Receiver (РљР’ РїСЂРёС‘РјРЅРёРє РјРµС‡С‚С‹)
+// Р°РІС‚РѕСЂ Р“РµРЅР° Р—Р°РІРёРґРѕРІСЃРєРёР№ mgs2001@mail.ru
 // UA1ARN
 //
 #ifndef ADF4110_H_INCLUDED
@@ -125,7 +125,7 @@ static void prog_adf4110_n(
 	prog_select(target);	/* start sending data to target chip */
 
 	prog_val(target, 0x00, 2);	/* DB23:DB22: reserved - zeroes */
-							/* N19=LOW ICPo = 250 µA, N19=HIGH ICPo = 1 mA. */
+							/* N19=LOW ICPo = 250 ВµA, N19=HIGH ICPo = 1 mA. */
 	prog_bit(target, go);	/* GO bit - for fast changing frequency w/o lost synch */
 	prog_phbits(target, n, 13 + W, 13);	/* B bits */
 	

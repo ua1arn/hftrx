@@ -1,25 +1,25 @@
 /* $Id$ */
 /* board-specific CPU DIP40/TQFP44 attached signals */
 //
-// ������ HF Dream Receiver (�� ������� �����)
-// ����� ���� ����������� mgs2001@mail.ru
+// РџСЂРѕРµРєС‚ HF Dream Receiver (РљР’ РїСЂРёС‘РјРЅРёРє РјРµС‡С‚С‹)
+// Р°РІС‚РѕСЂ Р“РµРЅР° Р—Р°РІРёРґРѕРІСЃРєРёР№ mgs2001@mail.ru
 // UA1ARN
 //
 
 #ifndef ATMEGA64_CPUSTYLE_V1M_H_INCLUDED
 #define ATMEGA64_CPUSTYLE_V1M_H_INCLUDED 1
 
-#define WITHSPIHW 	1	/* ������������� ����������� ����������� SPI */
-//#define WITHSPISW 	1	/* ������������� ������������ ����������� SPI */
+#define WITHSPIHW 	1	/* РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ Р°РїРїР°СЂР°С‚РЅРѕРіРѕ РєРѕРЅС‚СЂРѕР»Р»РµСЂР° SPI */
+//#define WITHSPISW 	1	/* РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ РїСЂРѕРіСЂР°РјРјРЅРѕРіРѕ РєРѕРЅС‚СЂРѕР»Р»РµСЂР° SPI */
 
-#define WITHTWIHW 	1	/* ������������� ����������� ����������� TWI (I2C) */
-//#define WITHTWISW 	1	/* ������������� ������������ ����������� TWI (I2C) */
-#define WITHCPUADCHW 	1	/* ������������� ADC */
+#define WITHTWIHW 	1	/* РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ Р°РїРїР°СЂР°С‚РЅРѕРіРѕ РєРѕРЅС‚СЂРѕР»Р»РµСЂР° TWI (I2C) */
+//#define WITHTWISW 	1	/* РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ РїСЂРѕРіСЂР°РјРјРЅРѕРіРѕ РєРѕРЅС‚СЂРѕР»Р»РµСЂР° TWI (I2C) */
+#define WITHCPUADCHW 	1	/* РёСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ ADC */
 
-// ���������� ����������� � ������� DIP40/TQFP44 � ������ �������� ��� HD44780 � I2C (������ ������������ ������������)
-// ����� ���������� Explorer-�
-// ������� "���������"
-// ���������� "�������"
+// РђРїРїР°СЂР°С‚СѓСЂР° РєРѕРЅС‚СЂРѕР»Р»РµСЂР° РІ РєРѕСЂРїСѓСЃРµ DIP40/TQFP44 СЃ РѕР±С‰РёРјРё РІС‹РІРѕРґР°РјРё РґР»СЏ HD44780 Рё I2C (РЅРµР»СЊР·СЏ РѕРґРЅРѕРІСЂРµРјРµРЅРЅРѕ РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊ)
+// РќРѕРІС‹Р№ РєРѕРЅС‚СЂРѕР»Р»РµСЂ Explorer-Р°
+// РџСЂРёС‘РјРЅРёРє "Р’РѕСЂРѕРЅС‘РЅРѕРє"
+// РЎРёРЅС‚РµР·Р°С‚РѕСЂ "Р’РѕСЂРѕР±РµР№"
 
 #if LCDMODE_SPI_NA
 	#define LS020_RS_PORT PORTC
@@ -41,37 +41,37 @@
 	#define LS020_RST	(1U << PC2)			// Pin 21 - D6 signal in HD44780 socket
 
 #elif LCDMODE_HD44780 && (LCDMODE_SPI == 0)
-	// HD44780 �����������
+	// HD44780 РєРѕРЅС‚СЂРѕР»Р»РµСЂС‹
 
 	#if WITHTWIHW
 		//#error WITHTWIHW not supported with HD44780 LCD interface
 	#endif
 	#undef WITHTWIHW
 
-	// ������ LCD
+	// РґР°РЅРЅС‹Рµ LCD
 	#define LCD_DATA_PORT PORTC
 	#define LCD_DATA_DIRECTION DDRC
 	#define LCD_DATA_INPUT PINC
-	#define LCD_DATAS_BIT_LOW PC0		// ����� ��� ������ ������� � ����� ��������� � �����
+	#define LCD_DATAS_BIT_LOW PC0		// РєР°РєРѕР№ Р±РёС‚ РґР°РЅРЅС‹С… РјР»Р°РґС€РёР№ РІ СЃР»РѕРІРµ СЃС‡РёС‚Р°РЅРЅРѕРј СЃ РїРѕСЂС‚Р°
 	#define LCD_DATAS_BITS (0x0f << LCD_DATAS_BIT_LOW)
 
-	#define DISPLAY_BUS_DATA_GET() ((LCD_DATA_INPUT & LCD_DATAS_BITS) >> LCD_DATAS_BIT_LOW) /* �������� ������ � ���� LCD */
+	#define DISPLAY_BUS_DATA_GET() ((LCD_DATA_INPUT & LCD_DATAS_BITS) >> LCD_DATAS_BIT_LOW) /* РїРѕР»СѓС‡РёС‚СЊ РґР°РЅРЅС‹Рµ СЃ С€РёРЅС‹ LCD */
 	#define DISPLAY_BUS_DATA_SET(v) do { \
 		LCD_DATA_PORT = \
 			(LCD_DATA_PORT & ~ LCD_DATAS_BITS) | \
 			(((v) << LCD_DATAS_BIT_LOW) & LCD_DATAS_BITS); \
 		} while (0)
 
-	// ����� E LCD
+	// СЃС‚СЂРѕР± E LCD
 	#define LCD_STROBE_PORT PORTC
 	#define LCD_STROBE_DIRECTION DDRC
 	#define LCD_STROBE_BIT (1U << PC4)
 
-	// ������� RS � WE LCD
+	// СЃРёРіРЅР°Р»С‹ RS Рё WE LCD
 	#define LCD_RS_WE_PORT PORTB
 	#define LCD_RS_WE_DIRECTION DDRB
 	#define WRITEE_BIT (1U << PB1)
-	//#define WRITEE_BIT_ZERO (1U << PB1)		// ��� ������������ ������ � HD44780 ������ �� ������
+	//#define WRITEE_BIT_ZERO (1U << PB1)		// РґР»СЏ С‚РµСЃС‚РёСЂРѕРІР°РЅРёСЏ РѕР±РјРµРЅР° СЃ HD44780 РІСЃРµРіРґР° РЅР° Р·Р°РїРёСЃРё
 	#define ADDRES_BIT (1U << PB0)
 
 #endif
@@ -80,7 +80,7 @@
 	#define UC1608_CSP_PORT PORTC
 	#define UC1608_CSP_DDR DDRC
 	#define UC1608_CSP 	(1U << PC4)			// Pin 23 - E signal on HD44780 socket - positive chipselect
-	#define SPI_CSEL255	255					// �� ����� ���������� �������� ������������� ��������
+	#define SPI_CSEL255	255					// РїРѕ СЌС‚РѕРјСѓ С‡РёРїСЃРµР»РµРєС‚Сѓ РІС‹Р±РёСЂР°РµРј РїРѕР»РѕР¶РёС‚РµР»СЊРЅС‹Рј СЃРёРіРЅР°Р»РѕРј
 #endif
 
 #if WITHENCODER
@@ -93,7 +93,7 @@
 	#define ENCODER_BITS ((1U << PIND3) | (1U << PIND2))
 #endif
 
-#define SIDETONE_TARGET_PORT	PORTD	/* ���� ����������, �� ������� ��������� ����� ���� ������������ */
+#define SIDETONE_TARGET_PORT	PORTD	/* РџРѕСЂС‚ РїСЂРѕС†РµСЃСЃРѕСЂР°, РЅР° РєРѕС‚РѕСЂРѕРј РЅР°С…РѕРґРёС‚СЃСЏ РІС‹РІРѕРґ С‚РѕРЅР° СЃР°РјРѕРєРѕРЅС‚СЂРѕР»СЏ */
 #define SIDETONE_TARGET_DDR		DDRD
 #define SIDETONE_TARGET_BIT		(1U << PD7)
 
@@ -111,43 +111,43 @@
 	#define SPI_TARGET_SCLK_DDR DDRB
 	#define SPI_TARGET_SCLK_PIN PINB
 
-	#define	SPI_SCLK_BIT (1U << PB1)	// ���, ����� ������� ���� ������������� SPI
+	#define	SPI_SCLK_BIT (1U << PB1)	// Р±РёС‚, С‡РµСЂРµР· РєРѕС‚РѕСЂС‹Р№ РёРґРµС‚ СЃРёРЅС…СЂРѕРЅРёР·Р°С†РёСЏ SPI
 
 	#define SPI_TARGET_MOSI_PORT PORTB
 	#define SPI_TARGET_MOSI_DDR DDRB
 	#define SPI_TARGET_MOSI_PIN PINB
 
-	#define	SPI_MOSI_BIT (1U << PB2)	// ���, ����� ������� ���� ����� (��� ���� � ������ ���������������� SPI).
+	#define	SPI_MOSI_BIT (1U << PB2)	// Р±РёС‚, С‡РµСЂРµР· РєРѕС‚РѕСЂС‹Р№ РёРґРµС‚ РІС‹РІРѕРґ (РёР»Рё РІРІРѕРґ РІ СЃР»СѓС‡Р°Рµ РґРІСѓРЅР°РїСЂР°РІР»РµРЅРЅРѕРіРѕ SPI).
 
 	#define SPI_TARGET_MISO_PIN PINB
 	#define SPI_TARGET_MISO_PORT PORTB
 	#define SPI_TARGET_MISO_DDR DDRB
 
-	#define	SPI_MISO_BIT (1U << PB3)	// ���, ����� ������� ���� ���� � SPI.
+	#define	SPI_MISO_BIT (1U << PB3)	// Р±РёС‚, С‡РµСЂРµР· РєРѕС‚РѕСЂС‹Р№ РёРґРµС‚ РІРІРѕРґ СЃ SPI.
 
-	// � ���� ������ ����� ��� ���������� IORESET, IOUPDATE ��� � ������ ����������� CS ���������� SPI
-	//#define SPI_IOUPDATE_BIT (1U << PB3)	// ������������ ����� SPI
+	// РІ СЌС‚РѕР№ РІРµСЂСЃРёРё РїР»Р°С‚С‹ РЅРµС‚ СѓРїСЂР°РІР»РµРЅРёСЏ IORESET, IOUPDATE РёРґС‘С‚ СЃ РІС‹С…РѕРґР° РґРµС€РёС„СЂР°С‚РѕСЂР° CS РёРЅС‚РµСЂС„РµР№СЃР° SPI
+	//#define SPI_IOUPDATE_BIT (1U << PB3)	// РёСЃРїРѕР»СЊР·СѓСЋС‚СЃСЏ РїРѕСЂС‚С‹ SPI
 #if 0
 	#define SPI_NAEN_PORT PORTB
 	#define SPI_NAEN_DDR DDRB
 	#define SPI_NAEN_PIN PINB
 
-	#define SPI_NAEN_BIT (1U << PB0)	// "0" - ���������� ������ CS
-	#define SPI_ALLCS_BITS	0		// ��������� ��� �������� ����, ��� ������ � ������ ������� CS (��� �����������) �� ���������
-	#define SPI_ALLCS_BITSNEG 0		// ������, �������� ��� "1"
+	#define SPI_NAEN_BIT (1U << PB0)	// "0" - СЂР°Р·СЂРµС€РµРЅРёРµ РІС‹С…РѕРґР° CS
+	#define SPI_ALLCS_BITS	0		// С‚СЂРµР±СѓРµС‚СЃСЏ РґР»СЏ СѓРєР°Р·Р°РЅРёСЏ С‚РѕРіРѕ, С‡С‚Рѕ СЂР°Р±РѕС‚Р° СЃ РїСЂСЏРјС‹Рј РІС‹Р±РѕСЂРѕРј CS (Р±РµР· РґРµС€РёС„СЂР°С‚РѕСЂР°) РЅРµ С‚СЂРµР±СѓРµС‚СЃСЏ
+	#define SPI_ALLCS_BITSNEG 0		// Р’С‹С…РѕРґС‹, Р°РєС‚РёРІРЅС‹Рµ РїСЂРё "1"
 
-	// ���� ������� ���������� �� ���� ������ SPI 
+	// Р•СЃС‚СЊ РІРЅРµС€РЅРёР№ РґРµС€РёС„СЂР°С‚РѕСЂ РЅР° С€РёРЅРµ Р°РґСЂРµСЃР° SPI 
 	#define SPI_ADDRESS_PORT PORTB
 	#define SPI_ADDRESS_DDR DDRB
 	//#define SPI_ADDRESS_PIN PINB
 
-	#define SPI_A0 (1U << PB0)			// ���� ������ ��� ����������� SPI
+	#define SPI_A0 (1U << PB0)			// Р±РёС‚С‹ Р°РґСЂРµСЃР° РґР»СЏ РґРµС€РёС„СЂР°С‚РѕСЂР° SPI
 	#define SPI_A1 (1U << PB1)
 	#define SPI_A2 (1U << PB2)
 #else
-	// ����� ����������� ��� ������ ��� �������� �����������
-	// ��������������, ��� ��� ���������� ��������� �� ����� ����� �����-������
-	// � �� ����������� �������� ����� �������������� ���������.
+	// РќР°Р±РѕСЂ РѕРїСЂРµРґРµР»РµРЅРёР№ РґР»СЏ СЂР°Р±РѕС‚С‹ Р±РµР· РІРЅРµС€РЅРµРіРѕ РґРµС€РёС„СЂР°С‚РѕСЂР°
+	// РџСЂРµРґРїРѕР»Р°РіР°РµС‚СЃСЏ, С‡С‚Рѕ РІСЃРµ С‡РёРїСЃРµР»РµРєС‚С‹ РЅР°С…РѕРґСЏС‚СЃСЏ РЅР° РѕРґРЅРѕРј РїРѕСЂС‚Сѓ РІРІРѕРґР°-РІС‹РІРѕРґР°
+	// Рё РёС… РјРѕРґРёС„РёРєР°С†РёСЏ РІРѕР·РјРѕР¶РЅР° РѕРґРЅРѕР№ Р°СЂРёС„РјРµС‚РёС‡РµСЃРєРѕР№ РѕРїРµСЂР°С†РёРµР№.
 	#define SPI_ALLCS_PORT PORTB
 	#define SPI_ALLCS_DDR DDRB
 
@@ -155,9 +155,9 @@
 	#define SPI_CSEL1 (1U << PB1)	// NVRAM
 	#define SPI_CSEL0 (1U << PB2)	// NC or DDS1 (DDS2 on CTLSTYLE_YUBOARD_V1)
 	#define SPI_CSEL6 (1U << PB4)	// CTL REGISTER
-	// � ������ ����� ������ ���� �������� ��� ������ �����������.
+	// РІ РґР°РЅРЅСѓСЋ РјР°СЃРєСѓ РґРѕР»Р¶РЅС‹ Р±С‹С‚СЊ РІРєР»СЋС‡РµРЅС‹ РІСЃРµ РІС‹РІРѕРґС‹ С‡РёРїСЃРµР»РµРєС‚РѕРІ.
 	#define SPI_ALLCS_BITS (SPI_CSEL0 | SPI_CSEL1 | SPI_CSEL4 | SPI_CSEL6)
-	#define SPI_ALLCS_BITSNEG 0		// ������, �������� ��� "1"
+	#define SPI_ALLCS_BITSNEG 0		// Р’С‹С…РѕРґС‹, Р°РєС‚РёРІРЅС‹Рµ РїСЂРё "1"
 
 #endif
 	// Variations of SPI_ALLCS_INITIALIZE
@@ -181,8 +181,8 @@
 	// Separated MOSI and MISO signals, only supported if WITHSPIHW used
 	#define SPIIO_INITIALIZE() do { \
 			SPI_TARGET_MISO_PORT |= SPI_MISO_BIT;	/* enable pull-up on MISO */ \
-			SPI_TARGET_MISO_DDR &= ~ SPI_MISO_BIT;	/* MISO ��� ���� */ \
-			/* PB4(~SS) ������ ���� �������. SPI_NAEN_BIT - ���������� �����������. */ \
+			SPI_TARGET_MISO_DDR &= ~ SPI_MISO_BIT;	/* MISO СЌС‚Рѕ РІС…РѕРґ */ \
+			/* PB4(~SS) РґРѕР»Р¶РµРЅ Р±С‹С‚СЊ РІС‹С…РѕРґРѕРј. SPI_NAEN_BIT - СЂР°Р·СЂРµС€РµРЅРёРµ РґРµС€РёС„СЂР°С‚РѕСЂР°. */ \
 			SPI_TARGET_SCLK_PORT |= SPI_SCLK_BIT; \
 			SPI_TARGET_SCLK_DDR |= SPI_SCLK_BIT; \
 			SPI_TARGET_MOSI_PORT |= SPI_MOSI_BIT; \
@@ -194,18 +194,18 @@
 	#define KBD_TARGET_DDR DDRA
 	#define KBD_TARGET_PIN PINA
 
-	#define KBD_MASK 0xfe	// ��� ������������ ����
+	#define KBD_MASK 0xfe	// РІСЃРµ РёСЃРїРѕР»СЊР·СѓРµРјС‹Рµ Р±РёС‚С‹
 #endif
 
-	/* ���������������� �������, ����������� I2C */
+	/* РїСЂРѕРіСЂР°РјРјРёСЂРѕРІР°РЅРёРµ РІС‹РІРѕРґРѕРІ, СѓРїСЂР°РІР»СЏСЋС‰РёС… I2C */
 	#define TWISOFT_INITIALIZE() do { \
 		HARDWARE_INPUT_INITIALIZE(TARGET_TWI_TWCK_PORT, TARGET_TWI_TWCK_DDR, TARGET_TWI_TWCK, TARGET_TWI_TWCK); \
 		HARDWARE_INPUT_INITIALIZE(TARGET_TWI_TWD_PORT, TARGET_TWI_TWD_DDR, TARGET_TWI_TWD, TARGET_TWI_TWD); \
 		} while (0)
 
-	// ������������� ����� ������ �����-������ ��� ���������� ���������� I2S
-	// ������������� ������� � ������������� ����������
-	// �� ATMEGA �� ���������
+	// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ Р±РёС‚РѕРІ РїРѕСЂС‚РѕРІ РІРІРѕРґР°-РІС‹РІРѕРґР° РґР»СЏ Р°РїРїР°СЂР°С‚РЅРѕР№ СЂРµР°Р»РёР·Р°С†РёРё I2S
+	// РїСЂРёСЃРѕРµРґРёРЅРµРЅРёРµ РІС‹РІРѕРґРѕРІ Рє РїРµСЂРёС„РµСЂРёР№РЅРѕРјСѓ СѓСЃС‚СЂРѕР№СЃС‚РІСѓ
+	// РќР° ATMEGA РЅРµ С‚СЂРµР±СѓРµС‚СЃСЏ
 		#define	TWIHARD_INITIALIZE() do { \
 		} while (0) 
 
@@ -239,10 +239,10 @@
 #if SPI_BIDIRECTIONAL && CPUSTYLE_ATMEGA
 
 	#define SPIIO_MOSI_TO_INPUT() do { \
-		SPI_TARGET_MOSI_DDR &= ~ SPI_MOSI_BIT;	/* ����������� ���� �� ������ � ������� */ \
+		SPI_TARGET_MOSI_DDR &= ~ SPI_MOSI_BIT;	/* РїРµСЂРµРєР»СЋС‡РёС‚СЊ РїРѕСЂС‚ РЅР° С‡С‚РµРЅРёРµ СЃ РІС‹РІРѕРґРѕРІ */ \
 		} while (0)
 	#define SPIIO_MOSI_TO_OUTPUT() do { \
-		SPI_TARGET_MOSI_DDR |= SPI_MOSI_BIT;	/* ������� ������ ����� */ \
+		SPI_TARGET_MOSI_DDR |= SPI_MOSI_BIT;	/* РѕС‚РєСЂС‹С‚СЊ РІС‹С…РѕРґС‹ РїРѕСЂС‚Р° */ \
 		} while (0)
 
 #endif /* SPI_BIDIRECTIONAL && CPUSTYLE_ATMEGA */
@@ -252,38 +252,38 @@
 
 	#define HARDWARE_GET_PTT() ((PTT_TARGET_PIN & PTT_BIT_PTT) == 0)
 	#define PTT_INITIALIZE() do { \
-		PTT_TARGET_PORT |= PTT_BIT_PTT;	/* ������� pull-up �� ���� ����. */ \
-		PTT_TARGET_DDR &= ~ PTT_BIT_PTT;	/* ��� ����� PTT */ \
+		PTT_TARGET_PORT |= PTT_BIT_PTT;	/* РІРєР»СЋС‡С‚СЊ pull-up РЅР° СЌС‚РѕС‚ РІС…РѕРґ. */ \
+		PTT_TARGET_DDR &= ~ PTT_BIT_PTT;	/* Р±РёС‚ РІС…РѕРґР° PTT */ \
 	} while (0)
 
 	#define ELKEY_INITIALIZE() do { \
-		ELKEY_TARGET_DDR &= ~ ELKEY_BIT_LEFT;	/* ��� ����� ������ �������� ������������ */ \
+		ELKEY_TARGET_DDR &= ~ ELKEY_BIT_LEFT;	/* Р±РёС‚ РІС…РѕРґР° Р»РµРІРѕРіРѕ РєРѕРЅС‚Р°РєС‚Р° РјР°РЅРёРїСѓР»СЏС‚РѕСЂР° */ \
 		ELKEY_TARGET_PORT |= ELKEY_BIT_LEFT; \
-		ELKEY_TARGET_DDR &= ~ ELKEY_BIT_RIGHT;	/* ��� ����� ������� �������� ������������ */ \
+		ELKEY_TARGET_DDR &= ~ ELKEY_BIT_RIGHT;	/* Р±РёС‚ РІС…РѕРґР° РїСЂР°РІРѕРіРѕ РєРѕРЅС‚Р°РєС‚Р° РјР°РЅРёРїСѓР»СЏС‚РѕСЂР° */ \
 		ELKEY_TARGET_PORT |= ELKEY_BIT_RIGHT; \
-		/* PCMSK_PORT |= (ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT); */ /* ���������� ���������� �� �������� �� �������� ����� */ \
+		/* PCMSK_PORT |= (ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT); */ /* СЂР°Р·СЂРµС€РµРЅРёРµ РїСЂРµСЂС‹РІР°РЅРёР№ РїРѕ РЅР°Р¶Р°С‚РёСЏРј РЅР° РєРѕРЅС‚Р°РєС‚С‹ РєР»СЋС‡Р° */ \
 		/* PCICR |= (PCICR_BIT); */ \
 	} while (0)
 
 	#define NMEA_INITIALIZE() do { \
 		FROMCAT_TARGET_PORT_DTR |= FROMCAT_BIT_DTR;		/* enable pull-up */ \
-		FROMCAT_TARGET_DDR_DTR &= ~ FROMCAT_BIT_DTR;	/* ��� ����� DTR */ \
-		/* DTRPCMSK_PORT |= (FROMCAT_BIT_DTR); */ /* ���������� ���������� �� ��������� ��������� DTR */ \
-		/* PCICR |= (DTRPCICR_BIT); */ /* ���������� ���������� �� ��������� ��������� DTR */ \
+		FROMCAT_TARGET_DDR_DTR &= ~ FROMCAT_BIT_DTR;	/* Р±РёС‚ РІС…РѕРґР° DTR */ \
+		/* DTRPCMSK_PORT |= (FROMCAT_BIT_DTR); */ /* СЂР°Р·СЂРµС€РµРЅРёРµ РїСЂРµСЂС‹РІР°РЅРёР№ РїРѕ РёР·РјРµРЅРµРЅРёСЋ СЃРѕСЃС‚РѕСЏРЅРёСЏ DTR */ \
+		/* PCICR |= (DTRPCICR_BIT); */ /* СЂР°Р·СЂРµС€РµРЅРёРµ РїСЂРµСЂС‹РІР°РЅРёР№ РїРѕ РёР·РјРµРЅРµРЅРёСЋ СЃРѕСЃС‚РѕСЏРЅРёСЏ DTR */ \
 	} while (0)
 
 	#define FROMCAT_DTR_INITIALIZE() do { \
 		FROMCAT_TARGET_PORT_DTR |= FROMCAT_BIT_DTR;		/* enable pull-up */ \
-		FROMCAT_TARGET_DDR_DTR &= ~ FROMCAT_BIT_DTR;	/* ��� ����� DTR */ \
-		/* DTRPCMSK_PORT |= (FROMCAT_BIT_DTR); */ /* ���������� ���������� �� ��������� ��������� DTR */ \
-		/* PCICR |= (DTRPCICR_BIT); */ /* ���������� ���������� �� ��������� ��������� DTR */ \
+		FROMCAT_TARGET_DDR_DTR &= ~ FROMCAT_BIT_DTR;	/* Р±РёС‚ РІС…РѕРґР° DTR */ \
+		/* DTRPCMSK_PORT |= (FROMCAT_BIT_DTR); */ /* СЂР°Р·СЂРµС€РµРЅРёРµ РїСЂРµСЂС‹РІР°РЅРёР№ РїРѕ РёР·РјРµРЅРµРЅРёСЋ СЃРѕСЃС‚РѕСЏРЅРёСЏ DTR */ \
+		/* PCICR |= (DTRPCICR_BIT); */ /* СЂР°Р·СЂРµС€РµРЅРёРµ РїСЂРµСЂС‹РІР°РЅРёР№ РїРѕ РёР·РјРµРЅРµРЅРёСЋ СЃРѕСЃС‚РѕСЏРЅРёСЏ DTR */ \
 	} while (0)
 
 	// FROMCAT_RTS_INITIALIZE variations
 	#if FROMCAT_BIT_RTS != 0
 		#define FROMCAT_RTS_INITIALIZE() do { \
 			FROMCAT_TARGET_PORT_RTS |= FROMCAT_BIT_RTS;		/* enable pull-up */ \
-			FROMCAT_TARGET_DDR_RTS &= ~ FROMCAT_BIT_RTS;	/* ��� ����� RTS */ \
+			FROMCAT_TARGET_DDR_RTS &= ~ FROMCAT_BIT_RTS;	/* Р±РёС‚ РІС…РѕРґР° RTS */ \
 		} while (0)
 	#else /* FROMCAT_BIT_RTS != 0 */
 		#define FROMCAT_RTS_INITIALIZE() do { \
@@ -302,38 +302,38 @@
 
 	#define HARDWARE_GET_PTT() ((PTT_TARGET_PIN & PTT_BIT_PTT) == 0)
 	#define PTT_INITIALIZE() do { \
-		PTT_TARGET_PORT |= PTT_BIT_PTT;	/* ������� pull-up �� ���� ����. */ \
-		PTT_TARGET_DDR &= ~ PTT_BIT_PTT;	/* ��� ����� PTT */ \
+		PTT_TARGET_PORT |= PTT_BIT_PTT;	/* РІРєР»СЋС‡С‚СЊ pull-up РЅР° СЌС‚РѕС‚ РІС…РѕРґ. */ \
+		PTT_TARGET_DDR &= ~ PTT_BIT_PTT;	/* Р±РёС‚ РІС…РѕРґР° PTT */ \
 	} while (0)
 
 	#define ELKEY_INITIALIZE() do { \
-		ELKEY_TARGET_DDR &= ~ ELKEY_BIT_LEFT;	/* ��� ����� ������ �������� ������������ */ \
+		ELKEY_TARGET_DDR &= ~ ELKEY_BIT_LEFT;	/* Р±РёС‚ РІС…РѕРґР° Р»РµРІРѕРіРѕ РєРѕРЅС‚Р°РєС‚Р° РјР°РЅРёРїСѓР»СЏС‚РѕСЂР° */ \
 		ELKEY_TARGET_PORT |= ELKEY_BIT_LEFT; \
-		ELKEY_TARGET_DDR &= ~ ELKEY_BIT_RIGHT;	/* ��� ����� ������� �������� ������������ */ \
+		ELKEY_TARGET_DDR &= ~ ELKEY_BIT_RIGHT;	/* Р±РёС‚ РІС…РѕРґР° РїСЂР°РІРѕРіРѕ РєРѕРЅС‚Р°РєС‚Р° РјР°РЅРёРїСѓР»СЏС‚РѕСЂР° */ \
 		ELKEY_TARGET_PORT |= ELKEY_BIT_RIGHT; \
-		/* PCMSK_PORT |= (ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT); */ /* ���������� ���������� �� �������� �� �������� ����� */ \
+		/* PCMSK_PORT |= (ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT); */ /* СЂР°Р·СЂРµС€РµРЅРёРµ РїСЂРµСЂС‹РІР°РЅРёР№ РїРѕ РЅР°Р¶Р°С‚РёСЏРј РЅР° РєРѕРЅС‚Р°РєС‚С‹ РєР»СЋС‡Р° */ \
 		/* PCICR |= (PCICR_BIT); */ \
 	} while (0)
 
 	#define NMEA_INITIALIZE() do { \
 		FROMCAT_TARGET_PORT_DTR |= FROMCAT_BIT_DTR;		/* enable pull-up */ \
-		FROMCAT_TARGET_DDR_DTR &= ~ FROMCAT_BIT_DTR;	/* ��� ����� DTR */ \
-		/* DTRPCMSK_PORT |= (FROMCAT_BIT_DTR); */ /* ���������� ���������� �� ��������� ��������� DTR */ \
-		/* PCICR |= (DTRPCICR_BIT); */ /* ���������� ���������� �� ��������� ��������� DTR */ \
+		FROMCAT_TARGET_DDR_DTR &= ~ FROMCAT_BIT_DTR;	/* Р±РёС‚ РІС…РѕРґР° DTR */ \
+		/* DTRPCMSK_PORT |= (FROMCAT_BIT_DTR); */ /* СЂР°Р·СЂРµС€РµРЅРёРµ РїСЂРµСЂС‹РІР°РЅРёР№ РїРѕ РёР·РјРµРЅРµРЅРёСЋ СЃРѕСЃС‚РѕСЏРЅРёСЏ DTR */ \
+		/* PCICR |= (DTRPCICR_BIT); */ /* СЂР°Р·СЂРµС€РµРЅРёРµ РїСЂРµСЂС‹РІР°РЅРёР№ РїРѕ РёР·РјРµРЅРµРЅРёСЋ СЃРѕСЃС‚РѕСЏРЅРёСЏ DTR */ \
 	} while (0)
 
 	#define FROMCAT_DTR_INITIALIZE() do { \
 		FROMCAT_TARGET_PORT_DTR |= FROMCAT_BIT_DTR;		/* enable pull-up */ \
-		FROMCAT_TARGET_DDR_DTR &= ~ FROMCAT_BIT_DTR;	/* ��� ����� DTR */ \
-		/* DTRPCMSK_PORT |= (FROMCAT_BIT_DTR); */ /* ���������� ���������� �� ��������� ��������� DTR */ \
-		/* PCICR |= (DTRPCICR_BIT); */ /* ���������� ���������� �� ��������� ��������� DTR */ \
+		FROMCAT_TARGET_DDR_DTR &= ~ FROMCAT_BIT_DTR;	/* Р±РёС‚ РІС…РѕРґР° DTR */ \
+		/* DTRPCMSK_PORT |= (FROMCAT_BIT_DTR); */ /* СЂР°Р·СЂРµС€РµРЅРёРµ РїСЂРµСЂС‹РІР°РЅРёР№ РїРѕ РёР·РјРµРЅРµРЅРёСЋ СЃРѕСЃС‚РѕСЏРЅРёСЏ DTR */ \
+		/* PCICR |= (DTRPCICR_BIT); */ /* СЂР°Р·СЂРµС€РµРЅРёРµ РїСЂРµСЂС‹РІР°РЅРёР№ РїРѕ РёР·РјРµРЅРµРЅРёСЋ СЃРѕСЃС‚РѕСЏРЅРёСЏ DTR */ \
 	} while (0)
 
 	// FROMCAT_RTS_INITIALIZE variations
 	#if FROMCAT_BIT_RTS != 0
 		#define FROMCAT_RTS_INITIALIZE() do { \
 			FROMCAT_TARGET_PORT_RTS |= FROMCAT_BIT_RTS;		/* enable pull-up */ \
-			FROMCAT_TARGET_DDR_RTS &= ~ FROMCAT_BIT_RTS;	/* ��� ����� RTS */ \
+			FROMCAT_TARGET_DDR_RTS &= ~ FROMCAT_BIT_RTS;	/* Р±РёС‚ РІС…РѕРґР° RTS */ \
 		} while (0)
 	#else /* FROMCAT_BIT_RTS != 0 */
 		#define FROMCAT_RTS_INITIALIZE() do { \
@@ -352,36 +352,36 @@
 
 	#define HARDWARE_GET_PTT() ((PTT_TARGET_PIN & PTT_BIT_PTT) == 0)
 	#define PTT_INITIALIZE() do { \
-		PTT_TARGET_PORT |= PTT_BIT_PTT;	/* ������� pull-up �� ���� ����. */ \
-		PTT_TARGET_DDR &= ~ PTT_BIT_PTT;	/* ��� ����� PTT */ \
+		PTT_TARGET_PORT |= PTT_BIT_PTT;	/* РІРєР»СЋС‡С‚СЊ pull-up РЅР° СЌС‚РѕС‚ РІС…РѕРґ. */ \
+		PTT_TARGET_DDR &= ~ PTT_BIT_PTT;	/* Р±РёС‚ РІС…РѕРґР° PTT */ \
 	} while (0)
 
 	#define ELKEY_INITIALIZE() do { \
-		ELKEY_TARGET_DDR &= ~ ELKEY_BIT_LEFT;	/* ��� ����� ������ �������� ������������ */ \
+		ELKEY_TARGET_DDR &= ~ ELKEY_BIT_LEFT;	/* Р±РёС‚ РІС…РѕРґР° Р»РµРІРѕРіРѕ РєРѕРЅС‚Р°РєС‚Р° РјР°РЅРёРїСѓР»СЏС‚РѕСЂР° */ \
 		ELKEY_TARGET_PORT |= ELKEY_BIT_LEFT; \
-		ELKEY_TARGET_DDR &= ~ ELKEY_BIT_RIGHT;	/* ��� ����� ������� �������� ������������ */ \
+		ELKEY_TARGET_DDR &= ~ ELKEY_BIT_RIGHT;	/* Р±РёС‚ РІС…РѕРґР° РїСЂР°РІРѕРіРѕ РєРѕРЅС‚Р°РєС‚Р° РјР°РЅРёРїСѓР»СЏС‚РѕСЂР° */ \
 		ELKEY_TARGET_PORT |= ELKEY_BIT_RIGHT; \
 	} while (0)
 
 	#define NMEA_INITIALIZE() do { \
 		FROMCAT_TARGET_PORT_DTR |= FROMCAT_BIT_DTR;		/* enable pull-up */ \
-		FROMCAT_TARGET_DDR_DTR &= ~ FROMCAT_BIT_DTR;	/* ��� ����� DTR */ \
-		/* DTRPCMSK_PORT |= (FROMCAT_BIT_DTR); */ /* ���������� ���������� �� ��������� ��������� DTR */ \
-		/* PCICR |= (DTRPCICR_BIT); */ /* ���������� ���������� �� ��������� ��������� DTR */ \
+		FROMCAT_TARGET_DDR_DTR &= ~ FROMCAT_BIT_DTR;	/* Р±РёС‚ РІС…РѕРґР° DTR */ \
+		/* DTRPCMSK_PORT |= (FROMCAT_BIT_DTR); */ /* СЂР°Р·СЂРµС€РµРЅРёРµ РїСЂРµСЂС‹РІР°РЅРёР№ РїРѕ РёР·РјРµРЅРµРЅРёСЋ СЃРѕСЃС‚РѕСЏРЅРёСЏ DTR */ \
+		/* PCICR |= (DTRPCICR_BIT); */ /* СЂР°Р·СЂРµС€РµРЅРёРµ РїСЂРµСЂС‹РІР°РЅРёР№ РїРѕ РёР·РјРµРЅРµРЅРёСЋ СЃРѕСЃС‚РѕСЏРЅРёСЏ DTR */ \
 	} while (0)
 
 	#define FROMCAT_DTR_INITIALIZE() do { \
 		FROMCAT_TARGET_PORT_DTR |= FROMCAT_BIT_DTR;		/* enable pull-up */ \
-		FROMCAT_TARGET_DDR_DTR &= ~ FROMCAT_BIT_DTR;	/* ��� ����� DTR */ \
-		/* DTRPCMSK_PORT |= (FROMCAT_BIT_DTR); */ /* ���������� ���������� �� ��������� ��������� DTR */ \
-		/* PCICR |= (DTRPCICR_BIT); */ /* ���������� ���������� �� ��������� ��������� DTR */ \
+		FROMCAT_TARGET_DDR_DTR &= ~ FROMCAT_BIT_DTR;	/* Р±РёС‚ РІС…РѕРґР° DTR */ \
+		/* DTRPCMSK_PORT |= (FROMCAT_BIT_DTR); */ /* СЂР°Р·СЂРµС€РµРЅРёРµ РїСЂРµСЂС‹РІР°РЅРёР№ РїРѕ РёР·РјРµРЅРµРЅРёСЋ СЃРѕСЃС‚РѕСЏРЅРёСЏ DTR */ \
+		/* PCICR |= (DTRPCICR_BIT); */ /* СЂР°Р·СЂРµС€РµРЅРёРµ РїСЂРµСЂС‹РІР°РЅРёР№ РїРѕ РёР·РјРµРЅРµРЅРёСЋ СЃРѕСЃС‚РѕСЏРЅРёСЏ DTR */ \
 	} while (0)
 
 	// FROMCAT_RTS_INITIALIZE variations
 	#if FROMCAT_BIT_RTS != 0
 		#define FROMCAT_RTS_INITIALIZE() do { \
 			FROMCAT_TARGET_PORT_RTS |= FROMCAT_BIT_RTS;		/* enable pull-up */ \
-			FROMCAT_TARGET_DDR_RTS &= ~ FROMCAT_BIT_RTS;	/* ��� ����� RTS */ \
+			FROMCAT_TARGET_DDR_RTS &= ~ FROMCAT_BIT_RTS;	/* Р±РёС‚ РІС…РѕРґР° RTS */ \
 		} while (0)
 	#else /* FROMCAT_BIT_RTS != 0 */
 		#define FROMCAT_RTS_INITIALIZE() do { \
@@ -406,9 +406,9 @@
 	#if SPI_AEN_BIT != 0
 
 		#define SPI_ADDRESS_AEN_INITIALIZE() do { \
-			/* ���������������� �������� ������ SPI */ \
+			/* РїСЂРѕРіСЂР°РјРјРёСЂРѕРІР°РЅРёРµ СЃРёРіРЅР°Р»РѕРІ Р°РґСЂРµСЃР° SPI */ \
 			SPI_ADDRESS_DDR |= SPI_ADDRESS_BITS; \
-			/* ���������������� SS SPI */ \
+			/* РїСЂРѕРіСЂР°РјРјРёСЂРѕРІР°РЅРёРµ SS SPI */ \
 			SPI_AEN_PORT &= ~ (SPI_AEN_BIT); \
 			SPI_AEN_DDR |= (SPI_AEN_BIT); \
 			} while (0)
@@ -419,9 +419,9 @@
 	#elif SPI_NAEN_BIT != 0
 
 		#define SPI_ADDRESS_NAEN_INITIALIZE() do { \
-			/* ���������������� �������� ������ SPI */ \
+			/* РїСЂРѕРіСЂР°РјРјРёСЂРѕРІР°РЅРёРµ СЃРёРіРЅР°Р»РѕРІ Р°РґСЂРµСЃР° SPI */ \
 			SPI_ADDRESS_DDR |= SPI_ADDRESS_BITS; \
-			/* ���������������� SS SPI */ \
+			/* РїСЂРѕРіСЂР°РјРјРёСЂРѕРІР°РЅРёРµ SS SPI */ \
 			SPI_NAEN_PORT &= ~ (SPI_NAEN_BIT); \
 			SPI_NAEN_DDR |= (SPI_NAEN_BIT); \
 			} while (0)
@@ -443,7 +443,7 @@
 	#if SPI_IOUPDATE_BIT != 0
 
 		#define SPI_IOUPDATE_INITIALIZE() do { \
-			SPI_IOUPDATE_PORT |= SPI_IOUPDATE_BIT;	/* ���������� ��������� - "1" */ \
+			SPI_IOUPDATE_PORT |= SPI_IOUPDATE_BIT;	/* РќРµР°РєС‚РёРІРЅРѕРµ СЃРѕСЃС‚РѕСЏРЅРёРµ - "1" */ \
 			SPI_IOUPDATE_DDR |= SPI_IOUPDATE_BIT; \
 			} while (0)
 
@@ -457,8 +457,8 @@
 	// Variations of SPI_IORESET_INITIALIZE
 	#if SPI_IORESET_BIT != 0
 
-		// ������ ����������. ���������� ����� ���� ����� �� ���.
-		// � ����� ������ ����� ���� ���.
+		// РїСЂРѕСЃС‚Рѕ СЃР±СЂР°СЃС‹РІР°РµРј. РЈРїСЂР°РІР»РµРЅРёСЏ С‡РµСЂРµР· СЌС‚РѕС‚ РІС‹РІРѕРґ РЅРµ РёРґС‘С‚.
+		// Р’ РЅРѕРІС‹С… РїР»Р°С‚Р°С… СЌС‚РѕРіРѕ Р±РёС‚Р° РЅРµС‚.
 
 		#define SPI_IORESET_INITIALIZE() do { \
 			SPI_IORESET_PORT &= ~ SPI_IORESET_BIT; \

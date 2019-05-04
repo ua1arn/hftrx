@@ -1,10 +1,10 @@
 /* $Id$ */
-// Проект HF Dream Receiver (КВ приёмник мечты)
-// автор Гена Завидовский mgs2001@mail.ru
+// РџСЂРѕРµРєС‚ HF Dream Receiver (РљР’ РїСЂРёС‘РјРЅРёРє РјРµС‡С‚С‹)
+// Р°РІС‚РѕСЂ Р“РµРЅР° Р—Р°РІРёРґРѕРІСЃРєРёР№ mgs2001@mail.ru
 // UA1ARN
 
 //
-// Поддержка stm32f4xx internal real time clock
+// РџРѕРґРґРµСЂР¶РєР° stm32f4xx internal real time clock
 //
 #ifndef RTCSTM32F4XX1_H_INCLUDED
 #define RTCSTM32F4XX1_H_INCLUDED
@@ -25,7 +25,7 @@ stm32f4xx_bin2bcd(uint_fast8_t v)
 	return d.quot * 16 + d.rem;
 }
 
-// Разрешить запись в Backup domain
+// Р Р°Р·СЂРµС€РёС‚СЊ Р·Р°РїРёСЃСЊ РІ Backup domain
 static void
 stm32f4xx_rtc_bdenable(void)
 {
@@ -44,7 +44,7 @@ stm32f4xx_rtc_bdenable(void)
 #endif /* CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX */
 }
 
-// Запретить запись в Backup domain
+// Р—Р°РїСЂРµС‚РёС‚СЊ Р·Р°РїРёСЃСЊ РІ Backup domain
 static void
 stm32f4xx_rtc_bddisable(void)
 {
@@ -63,14 +63,14 @@ stm32f4xx_rtc_bddisable(void)
 #endif /* CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX */
 }
 
-// Запретить запись в RTC
+// Р—Р°РїСЂРµС‚РёС‚СЊ Р·Р°РїРёСЃСЊ РІ RTC
 static void
 stm32f4xx_rtc_wrdisable(void)	
 {
 	RTC->WPR = 0xFF;
 }
 
-// Разрешить запись в RTC
+// Р Р°Р·СЂРµС€РёС‚СЊ Р·Р°РїРёСЃСЊ РІ RTC
 static void
 stm32f4xx_rtc_wrenable(void)	
 {
@@ -178,7 +178,7 @@ void board_rtc_settime(
 	uint_fast8_t secounds
 	)
 {
-	stm32f4xx_rtc_bdenable();	// Разрешить запись в Backup domain
+	stm32f4xx_rtc_bdenable();	// Р Р°Р·СЂРµС€РёС‚СЊ Р·Р°РїРёСЃСЊ РІ Backup domain
 	stm32f4xx_rtc_wrenable();	/* Disable the write protection for RTC registers */
 	/* INIT mode ON */
 	RTC->ISR |= RTC_ISR_INIT;	
@@ -193,7 +193,7 @@ void board_rtc_settime(
 	
 	stm32f4xx_rtc_wrdisable();	/* Enable the write protection for RTC registers */
 	RTC->ISR &= ~ RTC_ISR_INIT;	// INIT mode OFF
-	stm32f4xx_rtc_bddisable();	// Запретить запись в Backup domain
+	stm32f4xx_rtc_bddisable();	// Р—Р°РїСЂРµС‚РёС‚СЊ Р·Р°РїРёСЃСЊ РІ Backup domain
 }
 
 void board_rtc_setdate(
@@ -202,7 +202,7 @@ void board_rtc_setdate(
 	uint_fast8_t dayofmonth
 	)
 {
-	stm32f4xx_rtc_bdenable();	// Разрешить запись в Backup domain
+	stm32f4xx_rtc_bdenable();	// Р Р°Р·СЂРµС€РёС‚СЊ Р·Р°РїРёСЃСЊ РІ Backup domain
 	stm32f4xx_rtc_wrenable();	/* Disable the write protection for RTC registers */
 	/* INIT mode ON */
 	RTC->ISR |= RTC_ISR_INIT;	
@@ -216,7 +216,7 @@ void board_rtc_setdate(
 		0;
 	stm32f4xx_rtc_wrdisable();	/* Enable the write protection for RTC registers */
 	RTC->ISR &= ~ RTC_ISR_INIT;	// INIT mode OFF
-	stm32f4xx_rtc_bddisable();	// Запретить запись в Backup domain
+	stm32f4xx_rtc_bddisable();	// Р—Р°РїСЂРµС‚РёС‚СЊ Р·Р°РїРёСЃСЊ РІ Backup domain
 }
 
 void board_rtc_setdatetime(
@@ -228,7 +228,7 @@ void board_rtc_setdatetime(
 	uint_fast8_t secounds
 	)
 {
-	stm32f4xx_rtc_bdenable();	// Разрешить запись в Backup domain
+	stm32f4xx_rtc_bdenable();	// Р Р°Р·СЂРµС€РёС‚СЊ Р·Р°РїРёСЃСЊ РІ Backup domain
 	/* Disable the write protection for RTC registers */
 	stm32f4xx_rtc_wrenable();
 	/* INIT mode ON */
@@ -248,7 +248,7 @@ void board_rtc_setdatetime(
 		0;
 	stm32f4xx_rtc_wrdisable();	/* Enable the write protection for RTC registers */
 	RTC->ISR &= ~ RTC_ISR_INIT;	// INIT mode OFF
-	stm32f4xx_rtc_bddisable();	// Запретить запись в Backup domain
+	stm32f4xx_rtc_bddisable();	// Р—Р°РїСЂРµС‚РёС‚СЊ Р·Р°РїРёСЃСЊ РІ Backup domain
 }
 
 void board_rtc_getdate(
@@ -307,26 +307,26 @@ void board_rtc_getdatetime(
 	* secounds = stm32f4xx_bcd2bin((tr & (RTC_TR_ST | RTC_TR_SU)) / RTC_TR_SU_0);
 }
 
-/* возврат не-0 если требуется начальная загрузка значений */
+/* РІРѕР·РІСЂР°С‚ РЅРµ-0 РµСЃР»Рё С‚СЂРµР±СѓРµС‚СЃСЏ РЅР°С‡Р°Р»СЊРЅР°СЏ Р·Р°РіСЂСѓР·РєР° Р·РЅР°С‡РµРЅРёР№ */
 uint_fast8_t board_rtc_chip_initialize(void)
 {
 	debug_printf_P(PSTR("rtc_stm32f4xx_initialize\n"));
 
 	// RCC_APB1ENR_RTCAPBEN ???
 #if defined(RCC_APB1ENR_RTCEN)
-	RCC->APB1ENR |= RCC_APB1ENR_PWREN | RCC_APB1ENR_RTCEN;  // Включить тактирование 
+	RCC->APB1ENR |= RCC_APB1ENR_PWREN | RCC_APB1ENR_RTCEN;  // Р’РєР»СЋС‡РёС‚СЊ С‚Р°РєС‚РёСЂРѕРІР°РЅРёРµ 
 	__DSB();
 #elif defined(RCC_APB1ENR_PWREN)
-	RCC->APB1ENR |= RCC_APB1ENR_PWREN;  // Включить тактирование 
+	RCC->APB1ENR |= RCC_APB1ENR_PWREN;  // Р’РєР»СЋС‡РёС‚СЊ С‚Р°РєС‚РёСЂРѕРІР°РЅРёРµ 
 	__DSB();
 #else
 
 #endif /* defined(RCC_APB1ENR_RTCEN) */
 
-	//RCC->APB1ENR |= RCC_APB1ENR_PWREN | RCC_APB1ENR_BKPEN;  // STM32F1xx: Включить тактирование 
+	//RCC->APB1ENR |= RCC_APB1ENR_PWREN | RCC_APB1ENR_BKPEN;  // STM32F1xx: Р’РєР»СЋС‡РёС‚СЊ С‚Р°РєС‚РёСЂРѕРІР°РЅРёРµ 
 	//__DSB();
 
-	stm32f4xx_rtc_bdenable();	// Разрешить запись в Backup domain
+	stm32f4xx_rtc_bdenable();	// Р Р°Р·СЂРµС€РёС‚СЊ Р·Р°РїРёСЃСЊ РІ Backup domain
 
 #if 0
 
@@ -339,7 +339,7 @@ uint_fast8_t board_rtc_chip_initialize(void)
 		PWR_CSR_BRE * 1 |		// Backup regulator enable
 		0;
 
-	/* Теперь можно включить НЧ генератор */
+	/* РўРµРїРµСЂСЊ РјРѕР¶РЅРѕ РІРєР»СЋС‡РёС‚СЊ РќР§ РіРµРЅРµСЂР°С‚РѕСЂ */
 	RCC->BDCR =
 		RCC_BDCR_LSEON * 1 |    // External low-speed oscillator enable
 		// RCC_BDCR_LSERDY * 0 |
@@ -364,14 +364,14 @@ uint_fast8_t board_rtc_chip_initialize(void)
 		0;
 
 	stm32f4xx_rtc_wrdisable();	/* Enable the write protection for RTC registers */
-	stm32f4xx_rtc_bddisable();	// Запретить запись в Backup domain
+	stm32f4xx_rtc_bddisable();	// Р—Р°РїСЂРµС‚РёС‚СЊ Р·Р°РїРёСЃСЊ РІ Backup domain
 
-	/* Установка начальных значений времени и даты */
+	/* РЈСЃС‚Р°РЅРѕРІРєР° РЅР°С‡Р°Р»СЊРЅС‹С… Р·РЅР°С‡РµРЅРёР№ РІСЂРµРјРµРЅРё Рё РґР°С‚С‹ */
 	const uint_fast8_t inits = (RTC->ISR & RTC_ISR_INITS) == 0;	// if year is zero
 	debug_printf_P(PSTR("rtc_stm32f4xx_initialize: INITS=%d\n"), inits);
 	debug_printf_P(PSTR("rtc_stm32f4xx_initialize: done\n"));
 
-	return inits;	/* возврат не-0 если требуется начальная загрузка значений */
+	return inits;	/* РІРѕР·РІСЂР°С‚ РЅРµ-0 РµСЃР»Рё С‚СЂРµР±СѓРµС‚СЃСЏ РЅР°С‡Р°Р»СЊРЅР°СЏ Р·Р°РіСЂСѓР·РєР° Р·РЅР°С‡РµРЅРёР№ */
 }
 
 #endif /* RTCSTM32F4XX1_H_INCLUDED */

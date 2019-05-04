@@ -3,7 +3,7 @@
 
 #include <stdio.h>
 
-// Функция разворота младших восьми бит
+// Р¤СѓРЅРєС†РёСЏ СЂР°Р·РІРѕСЂРѕС‚Р° РјР»Р°РґС€РёС… РІРѕСЃСЊРјРё Р±РёС‚
 static unsigned revbits8(unsigned v)
 {
 	unsigned b = v & 0xff;

@@ -1,12 +1,12 @@
 /* $Id$ */
 /* board-specific CPU attached signals */
 //
-// ������ HF Dream Receiver (�� ������� �����)
-// ����� ���� ����������� mgs2001@mail.ru
+// РџСЂРѕРµРєС‚ HF Dream Receiver (РљР’ РїСЂРёС‘РјРЅРёРє РјРµС‡С‚С‹)
+// Р°РІС‚РѕСЂ Р“РµРЅР° Р—Р°РІРёРґРѕРІСЃРєРёР№ mgs2001@mail.ru
 // UA1ARN
 //
 
-/* ����� STM32F746G-DISCO � ����������� STM32F746NGH6	*/
+/* РџР»Р°С‚Р° STM32F746G-DISCO СЃ РїСЂРѕС†РµСЃСЃРѕСЂРѕРј STM32F746NGH6	*/
 
 #ifndef ARM_STM32F4XX_TQFP144_CPUSTYLE_32F746G_H_INCLUDED
 #define ARM_STM32F4XX_TQFP144_CPUSTYLE_32F746G_H_INCLUDED 1
@@ -14,63 +14,63 @@
 //#define HARDWARE_ARM_USEUSART0 1		// US0:
 //#define HARDWARE_ARM_USEUSART1 1		// US1: PA9/PA10 pins
 
-//#define WITHSPI16BIT	1		/* �������� ������������� 16-�� ������ ���� ��� ������ �� SPI */
-//#define WITHSPIHW 		1	/* ������������� ����������� ����������� SPI */
-//#define WITHSPIHWDMA 	1	/* ������������� DMA ��� ������ �� SPI */
-#define WITHSPISW 	1	/* ������������� ������������ ���������� SPI. ������ ������� ��� ������ - ��������� ����� ���������� ��-�� ��������� � I2C */
+//#define WITHSPI16BIT	1		/* РІРѕР·РјРѕР¶РЅРѕ РёСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ 16-С‚Рё Р±РёС‚РЅС‹С… СЃР»РѕРІ РїСЂРё РѕР±РјРµРЅРµ РїРѕ SPI */
+//#define WITHSPIHW 		1	/* РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ Р°РїРїР°СЂР°С‚РЅРѕРіРѕ РєРѕРЅС‚СЂРѕР»Р»РµСЂР° SPI */
+//#define WITHSPIHWDMA 	1	/* РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ DMA РїСЂРё РѕР±РјРµРЅРµ РїРѕ SPI */
+#define WITHSPISW 	1	/* РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ РїСЂРѕРіСЂР°РјРјРЅРѕРіРѕ СѓРїСЂР°РІР»РµРЅРёСЏ SPI. РќРµР»СЊР·СЏ СѓР±РёСЂР°С‚СЊ СЌС‚Сѓ СЃС‚СЂРѕРєСѓ - С‚СЂРµР±СѓРµС‚СЃСЏ СЏРІРЅРѕРµ РѕС‚РєР»СЋС‡РµРЅРёРµ РёР·-Р·Р° РєРѕРЅС„Р»РёРєС‚Р° СЃ I2C */
 
-//#define WITHTWIHW 	1	/* ������������� ����������� ����������� TWI (I2C) */
-#define WITHTWISW 	1	/* ������������� ������������ ����������� TWI (I2C) */
+//#define WITHTWIHW 	1	/* РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ Р°РїРїР°СЂР°С‚РЅРѕРіРѕ РєРѕРЅС‚СЂРѕР»Р»РµСЂР° TWI (I2C) */
+#define WITHTWISW 	1	/* РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ РїСЂРѕРіСЂР°РјРјРЅРѕРіРѕ РєРѕРЅС‚СЂРѕР»Р»РµСЂР° TWI (I2C) */
 
-//#define WITHI2SHW	1	/* ������������� I2S - ����������	*/
+//#define WITHI2SHW	1	/* РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ I2S - Р°СѓРґРёРѕРєРѕРґРµРє	*/
 
-//#define WITHSAI1HW	1	/* ������������� SAI1 - FPGA ��� IF codec	*/
-#define WITHSAI2HW	1	/* ������������� SAI2 - ����������	*/
+//#define WITHSAI1HW	1	/* РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ SAI1 - FPGA РёР»Рё IF codec	*/
+#define WITHSAI2HW	1	/* РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ SAI2 - Р°СѓРґРёРѕРєРѕРґРµРє	*/
 
-//#define WITHCPUDACHW	1	/* ������������� ����������� � ��������� DAC */
-#define WITHCPUADCHW 	1	/* ������������� ����������� � ��������� ADC */
+//#define WITHCPUDACHW	1	/* РёСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ РІСЃС‚СЂРѕРµРЅРЅРѕРіРѕ РІ РїСЂРѕС†РµСЃСЃРѕСЂ DAC */
+#define WITHCPUADCHW 	1	/* РёСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ РІСЃС‚СЂРѕРµРЅРЅРѕРіРѕ РІ РїСЂРѕС†РµСЃСЃРѕСЂ ADC */
 
 //#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
-//#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER � 4-bit bus width */
+//#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER РІ 4-bit bus width */
 
-#define WITHUSBHW	1	/* ������������ ���������� � ��������� ��������� USB */
+#define WITHUSBHW	1	/* РСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РІСЃС‚СЂРѕРµРЅРЅР°СЏ РІ РїСЂРѕС†РµСЃСЃРѕСЂ РїРѕРґРґРµСЂР¶РєР° USB */
 #if 1
 	// use FS
-	//#define WITHUSBHWHIGHSPEED	1	/* ������������ ���������� � ��������� ��������� USB HS */
-	//#define WITHUSBHWHIGHSPEEDDESC	1	/* ��������� ����������� ����������� ��� ��� HIGH SPEED */
-	//#define WITHUSBHWVBUSSENSE	1	/* ������������ ���������������� ����� VBUS_SENSE */
-	#define WITHUSBHW_DEVICE	USB_OTG_FS	/* �� ���� ���������� �������������� ���������������� DEVUCE	*/
+	//#define WITHUSBHWHIGHSPEED	1	/* РСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РІСЃС‚СЂРѕРµРЅРЅР°СЏ РІ РїСЂРѕС†РµСЃСЃРѕСЂ РїРѕРґРґРµСЂР¶РєР° USB HS */
+	//#define WITHUSBHWHIGHSPEEDDESC	1	/* РўСЂРµР±СѓРµС‚СЃСЏ С„РѕСЂРјРёСЂРѕРІР°С‚СЊ РґРµСЃРєСЂРёРїС‚РѕСЂС‹ РєР°Рє РґР»СЏ HIGH SPEED */
+	//#define WITHUSBHWVBUSSENSE	1	/* РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РїСЂРµРґРѕРїСЂРµРґРµР»РµРЅРЅС‹Р№ РІС‹РІРѕРґ VBUS_SENSE */
+	#define WITHUSBHW_DEVICE	USB_OTG_FS	/* РЅР° СЌС‚РѕРј СѓСЃС‚СЂРѕР№СЃС‚РІРµ РїРѕРґРґРµСЂР¶РёРІР°РµС‚СЃСЏ С„СѓРЅРєС†РёР»РЅР°Р»СЊРЅРѕСЃС‚СЊ DEVUCE	*/
 #else
 	// USE HS with ULPI
-	#define WITHUSBHWHIGHSPEED	1	/* ������������ ���������� � ��������� ��������� USB HS */
-	//#define WITHUSBHWHIGHSPEEDDESC	1	/* ��������� ����������� ����������� ��� ��� HIGH SPEED */
-	#define WITHUSBHWVBUSSENSE	1	/* ������������ ���������������� ����� VBUS_SENSE */
+	#define WITHUSBHWHIGHSPEED	1	/* РСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РІСЃС‚СЂРѕРµРЅРЅР°СЏ РІ РїСЂРѕС†РµСЃСЃРѕСЂ РїРѕРґРґРµСЂР¶РєР° USB HS */
+	//#define WITHUSBHWHIGHSPEEDDESC	1	/* РўСЂРµР±СѓРµС‚СЃСЏ С„РѕСЂРјРёСЂРѕРІР°С‚СЊ РґРµСЃРєСЂРёРїС‚РѕСЂС‹ РєР°Рє РґР»СЏ HIGH SPEED */
+	#define WITHUSBHWVBUSSENSE	1	/* РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РїСЂРµРґРѕРїСЂРµРґРµР»РµРЅРЅС‹Р№ РІС‹РІРѕРґ VBUS_SENSE */
 	#define WITHUSBHWHIGHSPEEDULPI	1
 	//#define WITHUSBHWHIGHSPEEDPHYC	1
-	#define WITHUSBHW_DEVICE	USB_OTG_HS	/* �� ���� ���������� �������������� ���������������� DEVUCE	*/
+	#define WITHUSBHW_DEVICE	USB_OTG_HS	/* РЅР° СЌС‚РѕРј СѓСЃС‚СЂРѕР№СЃС‚РІРµ РїРѕРґРґРµСЂР¶РёРІР°РµС‚СЃСЏ С„СѓРЅРєС†РёР»РЅР°Р»СЊРЅРѕСЃС‚СЊ DEVUCE	*/
 #endif
 
-#define WITHUART1HW	1	/* PA9, PB7 ������������ ������������ ���������� ����������������� ����� #1 */
-//#define WITHUART2HW	1	/* PD5, PD6 ������������ ������������ ���������� ����������������� ����� #2 */
+#define WITHUART1HW	1	/* PA9, PB7 РСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РїРµСЂРёС„РµСЂРёР№РЅС‹Р№ РєРѕРЅС‚СЂРѕР»Р»РµСЂ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕРіРѕ РїРѕСЂС‚Р° #1 */
+//#define WITHUART2HW	1	/* PD5, PD6 РСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РїРµСЂРёС„РµСЂРёР№РЅС‹Р№ РєРѕРЅС‚СЂРѕР»Р»РµСЂ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕРіРѕ РїРѕСЂС‚Р° #2 */
 
-#define WITHCAT_CDC		1	/* ������������ ����������� ���������������� ���� �� USB ���������� */
+#define WITHCAT_CDC		1	/* РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊ РІРёСЂС‚СѓР°Р»СЊРЅС‹Р№ РІРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅС‹Р№ РїРѕСЂС‚ РЅР° USB СЃРѕРµРґРёРЅРµРЅРёРё */
 #define WITHMODEM_CDC	1
 //#define WITHCAT_USART2		1
 //#define WITHDEBUG_CDC	1
 #define WITHDEBUG_USART1	1
-//#define WITHNMEA_USART1		1	/* ���� ����������� GPS/GLONASS */
+//#define WITHNMEA_USART1		1	/* РїРѕСЂС‚ РїРѕРґРєР»СЋС‡РµРЅРёСЏ GPS/GLONASS */
 
-#define WITHUSBUAC		1	/* ������������ ����������� �������� ����� �� USB ���������� */
-//#define WITHUSBUAC3		1	/* ����������� ��� ������ �������� ����� */
+#define WITHUSBUAC		1	/* РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊ РІРёСЂС‚СѓР°Р»СЊРЅСѓСЋ Р·РІСѓРєРѕРІСѓСЋ РїР»Р°С‚Сѓ РЅР° USB СЃРѕРµРґРёРЅРµРЅРёРё */
+//#define WITHUSBUAC3		1	/* С„РѕСЂРјРёСЂСѓСЋС‚СЃСЏ С‚СЂРё РєР°РЅР°Р»Р° РїРµСЂРµРґР°С‡Рё Р·РІСѓРєР° */
 
-#define WITHUSBCDC		1	/* ������������ ����������� ���������������� ���� �� USB ���������� */
-//#define WITHUSBCDCEEM	1	/* EEM ������������ Ethernet Emulation Model �� USB ���������� */
-//#define WITHUSBCDCECM	1	/* ECM ������������ Ethernet Control Model �� USB ���������� */
-//#define WITHUSBHID	1	/* HID ������������ Human Interface Device �� USB ���������� */
+#define WITHUSBCDC		1	/* РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊ РІРёСЂС‚СѓР°Р»СЊРЅС‹Р№ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅС‹Р№ РїРѕСЂС‚ РЅР° USB СЃРѕРµРґРёРЅРµРЅРёРё */
+//#define WITHUSBCDCEEM	1	/* EEM РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊ Ethernet Emulation Model РЅР° USB СЃРѕРµРґРёРЅРµРЅРёРё */
+//#define WITHUSBCDCECM	1	/* ECM РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊ Ethernet Control Model РЅР° USB СЃРѕРµРґРёРЅРµРЅРёРё */
+//#define WITHUSBHID	1	/* HID РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊ Human Interface Device РЅР° USB СЃРѕРµРґРёРЅРµРЅРёРё */
 
 
-//#define BSRR_S(v) ((v) * GPIO_BSRR_BS_0)	/* �������������� �������� ��� ��������� ���� � �������� */
-//#define BSRR_C(v) ((v) * GPIO_BSRR_BR_0)	/* �������������� �������� ��� ������ ���� � �������� */
+//#define BSRR_S(v) ((v) * GPIO_BSRR_BS_0)	/* РџСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёРµ Р·РЅР°С‡РµРЅРёСЏ РґР»СЏ СѓСЃС‚Р°РЅРѕРІРєРё Р±РёС‚Р° РІ СЂРµРіРёСЃС‚СЂРµ */
+//#define BSRR_C(v) ((v) * GPIO_BSRR_BR_0)	/* РџСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёРµ Р·РЅР°С‡РµРЅРёСЏ РґР»СЏ СЃР±СЂРѕСЃР° Р±РёС‚Р° РІ СЂРµРіРёСЃС‚СЂРµ */
 
 #define LS020_RS_INITIALIZE() \
 	do { \
@@ -83,21 +83,21 @@
 	} while (0)
 
 #if LCDMODE_SPI_NA
-	// ��� ����������� ������� ������ RS
+	// СЌС‚Рё РєРѕРЅС‚СЂРѕР»Р»РµСЂС‹ С‚СЂРµР±СѓСЋС‚ С‚РѕР»СЊРєРѕ RS
 
 	#define LS020_RS_PORT_S(v)		do { GPIOF->BSRR = BSRR_S(v); __DSB(); } while (0)
 	#define LS020_RS_PORT_C(v)		do { GPIOF->BSRR = BSRR_C(v); __DSB(); } while (0)
 	#define LS020_RS			0//(1u << 3)			// PF3
 
 #elif LCDMODE_SPI_RN
-	// ��� ����������� ������� ������ RESET
+	// СЌС‚Рё РєРѕРЅС‚СЂРѕР»Р»РµСЂС‹ С‚СЂРµР±СѓСЋС‚ С‚РѕР»СЊРєРѕ RESET
 
 	#define LS020_RESET_PORT_S(v)		do { GPIOF->BSRR = BSRR_S(v); __DSB(); } while (0)
 	#define LS020_RESET_PORT_C(v)		do { GPIOF->BSRR = BSRR_C(v); __DSB(); } while (0)
 	#define LS020_RST			0//(1u << 2)			// PF2 D6 signal in HD44780 socket
 
 #elif LCDMODE_SPI_RA
-	// ��� ����������� ������� RESET � RS
+	// Р­С‚Рё РєРѕРЅС‚СЂРѕР»Р»РµСЂС‹ С‚СЂРµР±СѓСЋС‚ RESET Рё RS
 
 	#define LS020_RS_PORT_S(v)		do { GPIOF->BSRR = BSRR_S(v); __DSB(); } while (0)
 	#define LS020_RS_PORT_C(v)		do { GPIOF->BSRR = BSRR_C(v); __DSB(); } while (0)
@@ -109,7 +109,7 @@
 
 #elif LCDMODE_HD44780 && (LCDMODE_SPI == 0)
 
-	// ������ ����������� ��� ���������� WH2002 ��� ������������ HD44780.
+	// Р’С‹РІРѕРґС‹ РїРѕРґРєР»СЋС‡РµРЅРёСЏ Р–РљР РёРЅРґРёРєР°С‚РѕСЂР° WH2002 РёР»Рё Р°РЅР°Р»РѕРіРёС‡РЅРѕРіРѕ HD44780.
 	#define LCD_DATA_INPUT			(GPIOF->IDR)
 
 	// E (enable) bit
@@ -128,27 +128,27 @@
 	#define ADDRES_BIT				(1u << 4)	// PF4
 
 	#define LCD_DATAS_BITS			((1u << 3) | (1u << 2) | (1u << 1) | (1u << 0))	// PF3..PF0
-	#define LCD_DATAS_BIT_LOW		0		// ����� ��� ������ ������� � ����� ��������� � �����
+	#define LCD_DATAS_BIT_LOW		0		// РєР°РєРѕР№ Р±РёС‚ РґР°РЅРЅС‹С… РјР»Р°РґС€РёР№ РІ СЃР»РѕРІРµ СЃС‡РёС‚Р°РЅРЅРѕРј СЃ РїРѕСЂС‚Р°
 
-	#define DISPLAY_BUS_DATA_GET() ((LCD_DATA_INPUT & LCD_DATAS_BITS) >> LCD_DATAS_BIT_LOW) /* �������� ������ � ���� LCD */
-	#define DISPLAY_BUS_DATA_SET(v) do { /* ������ ������ (�� ���������) */ \
+	#define DISPLAY_BUS_DATA_GET() ((LCD_DATA_INPUT & LCD_DATAS_BITS) >> LCD_DATAS_BIT_LOW) /* РїРѕР»СѓС‡РёС‚СЊ РґР°РЅРЅС‹Рµ СЃ С€РёРЅС‹ LCD */
+	#define DISPLAY_BUS_DATA_SET(v) do { /* РІС‹РґР°С‡Р° РґР°РЅРЅС‹С… (РЅРµ СЃРґРІРёРЅСѓСЊС‹С…) */ \
 			const portholder_t t = (portholder_t) (v) << LCD_DATAS_BIT_LOW; \
 			GPIOF->BSRR = BSRR_S(t & LCD_DATAS_BITS) | BSRR_C(~ t & LCD_DATAS_BITS); \
 			__DSB(); \
 		} while (0)
 
 
-	/* ������������� ����������� ������� ���������� ��� ���������� HD44780 - ������ ����� ������� */
+	/* РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ СѓРїСЂР°РІР»СЏСЋС‰РёС… РІС‹С…РѕРґРѕРІ РїСЂРѕС†РµСЃСЃРѕСЂР° РґР»СЏ СѓРїСЂР°РІР»РµРЅРёСЏ HD44780 - РїРѕР»РЅС‹Р№ РЅР°Р±РѕСЂ РІС‹С…РѕРґРѕРІ */
 	#define LCD_CONTROL_INITIALIZE() \
 		do { \
 			arm_hardware_piof_outputs2m(LCD_STROBE_BIT | WRITEE_BIT | ADDRES_BIT, 0); \
 		} while (0)
-	/* ������������� ����������� ������� ���������� ��� ���������� HD44780 - WE=0 */
+	/* РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ СѓРїСЂР°РІР»СЏСЋС‰РёС… РІС‹С…РѕРґРѕРІ РїСЂРѕС†РµСЃСЃРѕСЂР° РґР»СЏ СѓРїСЂР°РІР»РµРЅРёСЏ HD44780 - WE=0 */
 	#define LCD_CONTROL_INITIALIZE_WEEZERO() \
 		do { \
 			arm_hardware_piof_outputs2m(LCD_STROBE_BIT | WRITEE_BIT_ZERO | ADDRES_BIT, 0); \
 		} while (0)
-	/* ������������� ����������� ������� ���������� ��� ���������� HD44780 - WE ����������� - ������ � ���������� ������� */
+	/* РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ СѓРїСЂР°РІР»СЏСЋС‰РёС… РІС‹С…РѕРґРѕРІ РїСЂРѕС†РµСЃСЃРѕСЂР° РґР»СЏ СѓРїСЂР°РІР»РµРЅРёСЏ HD44780 - WE РѕС‚СЃСѓС‚СЃС‚РІСѓРµС‚ - СЃРёРіРЅР°Р» Рє РёРЅРґРёРєР°С‚РѕСЂСѓ Р·Р°Р·РµРјР»С‘РЅ */
 	#define LCD_CONTROL_INITIALIZE_WEENONE() \
 		do { \
 			arm_hardware_piof_outputs2m(LCD_STROBE_BIT | ADDRES_BIT, 0); \
@@ -156,25 +156,25 @@
 
 	#define LCD_DATA_INITIALIZE_READ() \
 		do { \
-			arm_hardware_piof_inputs(LCD_DATAS_BITS);	/* ����������� ���� �� ������ � ������� */ \
+			arm_hardware_piof_inputs(LCD_DATAS_BITS);	/* РїРµСЂРµРєР»СЋС‡РёС‚СЊ РїРѕСЂС‚ РЅР° С‡С‚РµРЅРёРµ СЃ РІС‹РІРѕРґРѕРІ */ \
 		} while (0)
 
 	#define LCD_DATA_INITIALIZE_WRITE(v) \
 		do { \
-			arm_hardware_piof_outputs2m(LCD_DATAS_BITS, (v) << LCD_DATAS_BIT_LOW);	/* ������� ������ ����� */ \
+			arm_hardware_piof_outputs2m(LCD_DATAS_BITS, (v) << LCD_DATAS_BIT_LOW);	/* РѕС‚РєСЂС‹С‚СЊ РІС‹С…РѕРґС‹ РїРѕСЂС‚Р° */ \
 		} while (0)
 
 #endif
 
 #if WITHENCODER
-	// ������ ����������� ��������
+	// Р’С‹РІРѕРґС‹ РїРѕРґРєР»СЋС‡РµРЅРёСЏ РµРЅРєРѕРґРµСЂР°
 	// Encoder inputs: PF8 - PHASE A, PF7 = PHASE B
-	// ����������� ����� (����� ���������� �������������).
+	// РћР±СЏР·Р°С‚РµР»СЊРЅРѕ Р±СѓС„РµСЂ (РІС…РѕРґС‹ РїСЂРѕС†РµСЃСЃРѕСЂР° РЅРёР·РєРѕРІРѕР»СЊС‚РЅС‹Рµ).
 
 	#define ENCODER_INPUT_PORT			(GPIOF->IDR) 
 	#define ENCODER_BITS ((1u << 8) | (1u << 7))		// PF8 & PF7
 	#define ENCODER_SHIFT 7
-	// ����������� ����� (����� ���������� �������������).
+	// РћР±СЏР·Р°С‚РµР»СЊРЅРѕ Р±СѓС„РµСЂ (РІС…РѕРґС‹ РїСЂРѕС†РµСЃСЃРѕСЂР° РЅРёР·РєРѕРІРѕР»СЊС‚РЅС‹Рµ).
 
 	#define ENCODER2_INPUT_PORT			(GPIOF->IDR) 
 	#define ENCODER2_BITS ((1u << 10) | (1u << 9))		// PF10 & PF9
@@ -200,14 +200,14 @@
 		#define PB5_I2S3_AF AF_SPI3
 	#endif /* defined(STM32H743xx) */
 
-	// ���������������� I2S2 � I2S3
+	// РРЅРёС†РёР°Р»РёР·РёСЂСѓСЋС‚СЃСЏ I2S2 Рё I2S3
 	#define I2S2HW_INITIALIZE() do { \
 		arm_hardware_piob_altfn2(1U << 12, AF_SPI2); /* PB12	*/ \
 		arm_hardware_piob_altfn2(1U << 13, AF_SPI2); /* PB13	*/ \
-		arm_hardware_piob_altfn2(1U << 15, AF_SPI2); /* PB15 - �������� */ \
+		arm_hardware_piob_altfn2(1U << 15, AF_SPI2); /* PB15 - РїРµСЂРµРґР°С‡Р° */ \
 		arm_hardware_pioa_altfn2(1U << 15, AF_SPI3); /* PA15	*/ \
 		arm_hardware_piob_altfn2(1U << 3, AF_SPI3); /* PB3	*/ \
-		arm_hardware_piob_altfn2(1U << 5, PB5_I2S3_AF); /* PB5 - ���� */ \
+		arm_hardware_piob_altfn2(1U << 5, PB5_I2S3_AF); /* PB5 - РїСЂРёС‘Рј */ \
 	} while (0)
 #endif /* WITHSAI1HW */
 
@@ -233,7 +233,7 @@
 	} while (0)
 #endif /* WITHSAI1HW */
 
-/* ������������� ����� � ARM ������������ */
+/* Р Р°СЃРїСЂРµРґРµР»РµРЅРёРµ Р±РёС‚РѕРІ РІ ARM РєРѕРЅС‚СЂРѕР»Р»РµСЂР°С… */
 
 #if (WITHCAT && WITHCAT_USART1)
 	// CAT data lites
@@ -241,20 +241,20 @@
 
 	// CAT control lines
 	#define FROMCAT_TARGET_PIN_RTS		(GPIOA->IDR) 
-	#define FROMCAT_BIT_RTS				0//(1u << 11)	/* PA11 ������ RTS �� FT232RL	*/
+	#define FROMCAT_BIT_RTS				0//(1u << 11)	/* PA11 СЃРёРіРЅР°Р» RTS РѕС‚ FT232RL	*/
 
-	/* ����������� �� ����� RS-232, ������ PPS �� GPS/GLONASS/GALILEO ������ */
+	/* РјР°РЅРёРїСѓР»СЏС†РёСЏ РѕС‚ РїРѕСЂС‚Р° RS-232, СЃРёРіРЅР°Р» PPS РѕС‚ GPS/GLONASS/GALILEO РјРѕРґСѓР»СЏ */
 	#define FROMCAT_TARGET_PIN_DTR		(GPIOA->IDR)
-	#define FROMCAT_BIT_DTR				0//(1u << 12)	/* PA12 ������ DTR �� FT232RL	*/
+	#define FROMCAT_BIT_DTR				0//(1u << 12)	/* PA12 СЃРёРіРЅР°Р» DTR РѕС‚ FT232RL	*/
 
-	/* ����������� �� ����� RS-232 */
+	/* РјР°РЅРёРїСѓР»СЏС†РёСЏ РѕС‚ РїРѕСЂС‚Р° RS-232 */
 	#define FROMCAT_DTR_INITIALIZE() \
 		do { \
 			arm_hardware_pioa_inputs(FROMCAT_BIT_DTR); \
 			arm_hardware_pioa_updown(FROMCAT_BIT_DTR, 0); \
 		} while (0)
 
-	/* ������� �� �������� �� ����� RS-232 */
+	/* РїРµСЂРµС…РѕРґ РЅР° РїРµСЂРµРґР°С‡Сѓ РѕС‚ РїРѕСЂС‚Р° RS-232 */
 	#define FROMCAT_RTS_INITIALIZE() \
 		do { \
 			arm_hardware_pioa_inputs(FROMCAT_BIT_RTS); \
@@ -269,18 +269,18 @@
 
 	// CAT control lines
 	//#define FROMCAT_TARGET_PIN_RTS		(GPIOA->IDR) 
-	//#define FROMCAT_BIT_RTS				(1u << 11)	/* PA11 ������ RTS �� FT232RL	*/
+	//#define FROMCAT_BIT_RTS				(1u << 11)	/* PA11 СЃРёРіРЅР°Р» RTS РѕС‚ FT232RL	*/
 
-	/* ����������� �� ����� RS-232, ������ PPS �� GPS/GLONASS/GALILEO ������ */
+	/* РјР°РЅРёРїСѓР»СЏС†РёСЏ РѕС‚ РїРѕСЂС‚Р° RS-232, СЃРёРіРЅР°Р» PPS РѕС‚ GPS/GLONASS/GALILEO РјРѕРґСѓР»СЏ */
 	//#define FROMCAT_TARGET_PIN_DTR		(GPIOA->IDR)
-	//#define FROMCAT_BIT_DTR				(1u << 12)	/* PA12 ������ DTR �� FT232RL	*/
+	//#define FROMCAT_BIT_DTR				(1u << 12)	/* PA12 СЃРёРіРЅР°Р» DTR РѕС‚ FT232RL	*/
 
-	/* ����������� �� ����� RS-232 */
+	/* РјР°РЅРёРїСѓР»СЏС†РёСЏ РѕС‚ РїРѕСЂС‚Р° RS-232 */
 	#define FROMCAT_DTR_INITIALIZE() \
 		do { \
 		} while (0)
 
-	/* ������� �� �������� �� ����� RS-232 */
+	/* РїРµСЂРµС…РѕРґ РЅР° РїРµСЂРµРґР°С‡Сѓ РѕС‚ РїРѕСЂС‚Р° RS-232 */
 	#define FROMCAT_RTS_INITIALIZE() \
 		do { \
 		} while (0)
@@ -290,11 +290,11 @@
 #if (WITHNMEA && WITHNMEA_USART1)
 	// CAT data lites
 	// RXD at PB7, TXD at PA9
-	/* ����������� �� ����� RS-232, ������ PPS �� GPS/GLONASS/GALILEO ������ */
+	/* РјР°РЅРёРїСѓР»СЏС†РёСЏ РѕС‚ РїРѕСЂС‚Р° RS-232, СЃРёРіРЅР°Р» PPS РѕС‚ GPS/GLONASS/GALILEO РјРѕРґСѓР»СЏ */
 	#define FROMCAT_TARGET_PIN_DTR		(GPIOA->IDR) 
-	#define FROMCAT_BIT_DTR				(1u << 12)	/* PA12 ������ DTR �� FT232RL	*/
+	#define FROMCAT_BIT_DTR				(1u << 12)	/* PA12 СЃРёРіРЅР°Р» DTR РѕС‚ FT232RL	*/
 
-	/* ������ PPS �� GPS/GLONASS/GALILEO ������ */
+	/* СЃРёРіРЅР°Р» PPS РѕС‚ GPS/GLONASS/GALILEO РјРѕРґСѓР»СЏ */
 	#define NMEA_INITIALIZE() \
 		do { \
 			arm_hardware_pioa_inputs(FROMCAT_BIT_DTR); \
@@ -310,18 +310,18 @@
 
 	// CAT control lines
 	//#define FROMCAT_TARGET_PIN_RTS		(GPIOA->IDR) // was PINA 
-	//#define FROMCAT_BIT_RTS				(1u << 11)	/* ������ RTS �� FT232RL	*/
+	//#define FROMCAT_BIT_RTS				(1u << 11)	/* СЃРёРіРЅР°Р» RTS РѕС‚ FT232RL	*/
 
-	/* ����������� �� ����� RS-232, ������ PPS �� GPS/GLONASS/GALILEO ������ */
+	/* РјР°РЅРёРїСѓР»СЏС†РёСЏ РѕС‚ РїРѕСЂС‚Р° RS-232, СЃРёРіРЅР°Р» PPS РѕС‚ GPS/GLONASS/GALILEO РјРѕРґСѓР»СЏ */
 	//#define FROMCAT_TARGET_PIN_DTR		(GPIOA->IDR) // was PINA 
-	//#define FROMCAT_BIT_DTR				(1u << 12)	/* ������ DTR �� FT232RL	*/
+	//#define FROMCAT_BIT_DTR				(1u << 12)	/* СЃРёРіРЅР°Р» DTR РѕС‚ FT232RL	*/
 
-	/* ����������� �� ������������ CDC ����� */
+	/* РјР°РЅРёРїСѓР»СЏС†РёСЏ РѕС‚ РІРёСЂС‚СѓР°Р»СЊРЅРѕРіРѕ CDC РїРѕСЂС‚Р° */
 	#define FROMCAT_DTR_INITIALIZE() \
 		do { \
 		} while (0)
 
-	/* ������� �� �������� �� ������������ CDC �����*/
+	/* РїРµСЂРµС…РѕРґ РЅР° РїРµСЂРµРґР°С‡Сѓ РѕС‚ РІРёСЂС‚СѓР°Р»СЊРЅРѕРіРѕ CDC РїРѕСЂС‚Р°*/
 	#define FROMCAT_RTS_INITIALIZE() \
 		do { \
 		} while (0)
@@ -354,12 +354,12 @@
 			arm_hardware_pioc_updown(HARDWARE_SDIO_CD_BIT, 0); \
 	} while (0)
 
-	#define HARDWARE_SDIOSENSE_CD() ((GPIOC->IDR & HARDWARE_SDIO_CD_BIT) == 0)	/* �������� ��������� ������� CARD PRESENT */
-	#define HARDWARE_SDIOSENSE_WP() (0)	/* �������� ��������� ������� CARD WRITE PROTECT */
+	#define HARDWARE_SDIOSENSE_CD() ((GPIOC->IDR & HARDWARE_SDIO_CD_BIT) == 0)	/* РїРѕР»СѓС‡РёС‚СЊ СЃРѕСЃС‚РѕСЏРЅРёРµ РґР°С‚С‡РёРєР° CARD PRESENT */
+	#define HARDWARE_SDIOSENSE_WP() (0)	/* РїРѕР»СѓС‡РёС‚СЊ СЃРѕСЃС‚РѕСЏРЅРёРµ РґР°С‚С‡РёРєР° CARD WRITE PROTECT */
 
-	/* ���� ������� SD CARD ����������� ����� � ���������� */
+	/* РµСЃР»Рё РїРёС‚Р°РЅРёРµ SD CARD СѓРїСЂР°РІР»СЏРµС‚СЃСЏ РїСЂСЏРјРѕ СЃ РїСЂРѕС†РµСЃСЃРѕСЂР° */
 	#define HARDWARE_SDIOPOWER_INITIALIZE()	do { \
-		/* arm_hardware_pio3_outputs(HARDWARE_SDIO_POWER_BIT, HARDWARE_SDIO_POWER_BIT); */ /* ������� ��������� */ \
+		/* arm_hardware_pio3_outputs(HARDWARE_SDIO_POWER_BIT, HARDWARE_SDIO_POWER_BIT); */ /* РїРёС‚Р°РЅРёРµ РІС‹РєР»СЋС‡РµРЅРѕ */ \
 		} while (0)
 
 #endif /* WITHSDHCHW */
@@ -371,7 +371,7 @@
 	////#define TXPATH_TARGET_PORT_C(v)		do { GPIOD->BSRR = BSRR_C(v); __DSB(); } while (0)
 	// 
 	#define TXGFV_RX		(1u << 4)
-	#define TXGFV_TRANS		0			// ������� ����� �������� ����� � ��������
+	#define TXGFV_TRANS		0			// РїРµСЂРµС…РѕРґ РјРµР¶РґСѓ СЂРµР¶РёРјР°РјРё РїСЂРёС‘РјР° Рё РїРµСЂРµРґР°С‡Рё
 	#define TXGFV_TX_SSB	(1u << 0)
 	#define TXGFV_TX_CW		(1u << 1)
 	#define TXGFV_TX_AM		(1u << 2)
@@ -412,7 +412,7 @@
 //#define SPI_IOUPDATE_PORT_S(v)	do { GPIOA->BSRR = BSRR_S(v); __DSB(); } while (0)
 //#define SPI_IOUPDATE_BIT		(1U << 15)	// * PA15
 
-// ����� ����������� ��� ������ ��� �������� �����������
+// РќР°Р±РѕСЂ РѕРїСЂРµРґРµР»РµРЅРёР№ РґР»СЏ СЂР°Р±РѕС‚С‹ Р±РµР· РІРЅРµС€РЅРµРіРѕ РґРµС€РёС„СЂР°С‚РѕСЂР°
 #define SPI_ALLCS_PORT_S(v)	do { GPIOG->BSRR = BSRR_S(v); __DSB(); } while (0)
 #define SPI_ALLCS_PORT_C(v)	do { GPIOG->BSRR = BSRR_C(v); __DSB(); } while (0)
 
@@ -424,32 +424,32 @@
 #define SPI_CSEL_PG1	0//(1U << 1)	// PG0 FPGA control registers CS
 #define SPI_CSEL_PG0	0//(1U << 0)	// PG1 FPGA NCO1 registers CS
 
-// ����� ������ ���� ����������� ��� ���� ������������ CS � ����������.
+// Р—РґРµСЃСЊ РґРѕР»Р¶РЅС‹ Р±С‹С‚СЊ РїРµСЂРµС‡РёСЃР»РµРЅС‹ РІСЃРµ Р±РёС‚С‹ С„РѕСЂРјРёСЂРѕРІР°РЅРёСЏ CS РІ СѓСЃС‚СЂРѕР№СЃС‚РІРµ.
 #define SPI_ALLCS_BITS ( 0)
 
-#define SPI_ALLCS_BITSNEG 0		// ������, �������� ��� "1"
+#define SPI_ALLCS_BITSNEG 0		// Р’С‹С…РѕРґС‹, Р°РєС‚РёРІРЅС‹Рµ РїСЂРё "1"
 
 //#define SPI_NAEN_PORT_S(v)	do { GPIOE->BSRR = BSRR_S(v); __DSB(); } while (0)
 //#define SPI_NAEN_PORT_C(v)	do { GPIOE->BSRR = BSRR_C(v); __DSB(); } while (0)
 
 //#define SPI_NAEN_BIT (1u << 7)		// * PE7 used
 
-/* ������������� ���� ������ ������������ ��������� */
+/* РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ Р»РёРёР№ РІС‹Р±РѕСЂР° РїРµСЂРёС„РµСЂРёР№РЅС‹С… РјРёРєСЂРѕСЃС…РµРј */
 #define SPI_ALLCS_INITIALIZE() \
 	do { \
 		arm_hardware_piog_outputs(SPI_ALLCS_BITS, SPI_ALLCS_BITS ^ SPI_ALLCS_BITSNEG); \
 	} while (0)
 
-/* ������������� �������� ����������� ������������ CS */
+/* РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ СЃРёРіРЅР°Р»РѕРІ СѓРїСЂР°РІР»РґРµРЅРёСЏ РґРµС€РёС„СЂР°С‚РѕСЂРѕРј CS */
 #define SPI_ADDRESS_NAEN_INITIALIZE() \
 	do { \
 	} while (0)
-/* ������������� �������� ����������� ������������ CS */
+/* РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ СЃРёРіРЅР°Р»РѕРІ СѓРїСЂР°РІР»РґРµРЅРёСЏ РґРµС€РёС„СЂР°С‚РѕСЂРѕРј CS */
 #define SPI_ADDRESS_AEN_INITIALIZE() \
 	do { \
 	} while (0)
-/* ������������� ������� IOUPDATE �� DDS */
-/* ��������� ��������� = 1 */
+/* РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ СЃРёРіРЅР°Р»Р° IOUPDATE РЅР° DDS */
+/* РЅР°С‡Р°Р»СЊРЅРѕРµ СЃРѕСЃС‚РѕСЏРЅРёРµ = 1 */
 #define SPI_IOUPDATE_INITIALIZE() \
 	do { \
 	} while (0)
@@ -460,14 +460,14 @@
 // MOSI & SCK port
 #define SPI_TARGET_SCLK_PORT_C(v)	do { GPIOA->BSRR = BSRR_C(v); __DSB(); } while (0)
 #define SPI_TARGET_SCLK_PORT_S(v)	do { GPIOA->BSRR = BSRR_S(v); __DSB(); } while (0)
-#define	SPI_SCLK_BIT			0//(1U << 5)	// * PA5 ���, ����� ������� ���� ������������� SPI
+#define	SPI_SCLK_BIT			0//(1U << 5)	// * PA5 Р±РёС‚, С‡РµСЂРµР· РєРѕС‚РѕСЂС‹Р№ РёРґРµС‚ СЃРёРЅС…СЂРѕРЅРёР·Р°С†РёСЏ SPI
 
 #define SPI_TARGET_MOSI_PORT_C(v)	do { GPIOA->BSRR = BSRR_C(v); __DSB(); } while (0)
 #define SPI_TARGET_MOSI_PORT_S(v)	do { GPIOA->BSRR = BSRR_S(v); __DSB(); } while (0)
-#define	SPI_MOSI_BIT			0//(1U << 7)	// * PA7 ���, ����� ������� ���� ����� (��� ���� � ������ ���������������� SPI).
+#define	SPI_MOSI_BIT			0//(1U << 7)	// * PA7 Р±РёС‚, С‡РµСЂРµР· РєРѕС‚РѕСЂС‹Р№ РёРґРµС‚ РІС‹РІРѕРґ (РёР»Рё РІРІРѕРґ РІ СЃР»СѓС‡Р°Рµ РґРІСѓРЅР°РїСЂР°РІР»РµРЅРЅРѕРіРѕ SPI).
 
 #define SPI_TARGET_MISO_PIN		(GPIOB->IDR)		// was PINA 
-#define	SPI_MISO_BIT			0//(1U << 4)	// * PB4 ���, ����� ������� ���� ���� � SPI.
+#define	SPI_MISO_BIT			0//(1U << 4)	// * PB4 Р±РёС‚, С‡РµСЂРµР· РєРѕС‚РѕСЂС‹Р№ РёРґРµС‚ РІРІРѕРґ СЃ SPI.
 
 #define SPIIO_INITIALIZE() do { \
 		arm_hardware_pioa_outputs(SPI_MOSI_BIT | SPI_SCLK_BIT, SPI_MOSI_BIT | SPI_SCLK_BIT); \
@@ -476,8 +476,8 @@
 
 
 #define HARDWARE_SPI_CONNECT() do { \
-		arm_hardware_piob_altfn50(SPI_MISO_BIT, AF_SPI1); /* � ���� ����������� � ����� � ������ ������������� �� ALT FN */ \
-		arm_hardware_pioa_altfn50(SPI_MOSI_BIT | SPI_SCLK_BIT, AF_SPI1); /* � ���� ����������� � ����� � ������ ������������� �� ALT FN */ \
+		arm_hardware_piob_altfn50(SPI_MISO_BIT, AF_SPI1); /* Р’ СЌС‚РёС… РїСЂРѕС†РµСЃСЃРѕСЂР°С… Рё РІС…РѕРґС‹ Рё РІС‹С…РѕРґС‹ РїРµСЂРµРєРґСЋС‡Р°СЋС‚СЃСЏ РЅР° ALT FN */ \
+		arm_hardware_pioa_altfn50(SPI_MOSI_BIT | SPI_SCLK_BIT, AF_SPI1); /* Р’ СЌС‚РёС… РїСЂРѕС†РµСЃСЃРѕСЂР°С… Рё РІС…РѕРґС‹ Рё РІС‹С…РѕРґС‹ РїРµСЂРµРєРґСЋС‡Р°СЋС‚СЃСЏ РЅР° ALT FN */ \
 	} while (0)
 #define HARDWARE_SPI_DISCONNECT() do { \
 		arm_hardware_pioa_outputs(SPI_MOSI_BIT | SPI_SCLK_BIT, SPI_MOSI_BIT | SPI_SCLK_BIT); \
@@ -490,7 +490,7 @@
 		arm_hardware_pioa_outputs(SPI_MOSI_BIT, SPI_MOSI_BIT);	/* PIO enable for MOSI bit (SD CARD read support)  */ \
 	} while (0)
 
-/* PA9, PB7 ������������ ������������ ���������� ����������������� ����� #1 */
+/* PA9, PB7 РСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РїРµСЂРёС„РµСЂРёР№РЅС‹Р№ РєРѕРЅС‚СЂРѕР»Р»РµСЂ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕРіРѕ РїРѕСЂС‚Р° #1 */
 #define HARDWARE_USART1_INITIALIZE() do { \
 		arm_hardware_pioa_altfn2((1U << 9), AF_USART1); /* PA9: TX DATA line (2 MHz) */ \
 		arm_hardware_piob_altfn2((1U << 7), AF_USART1); /* PB7: RX DATA line (2 MHz) */ \
@@ -523,12 +523,12 @@
 	#define TARGET_TWI_TWCK		(1u << 7)		// PH7 I2C3_SCL
 	#define TARGET_TWI_TWD		(1u << 8)		// PH8 I2C3_SDA
 
-	// ������������� ����� ������ �����-������ ��� ����������� ���������� I2C
+	// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ Р±РёС‚РѕРІ РїРѕСЂС‚РѕРІ РІРІРѕРґР°-РІС‹РІРѕРґР° РґР»СЏ РїСЂРѕРіСЂР°РјРјРЅРѕР№ СЂРµР°Р»РёР·Р°С†РёРё I2C
 	#define	TWISOFT_INITIALIZE() do { \
 			arm_hardware_pioh_opendrain(TARGET_TWI_TWCK | TARGET_TWI_TWD, TARGET_TWI_TWCK | TARGET_TWI_TWD); \
 		} while (0) 
-	// ������������� ����� ������ �����-������ ��� ���������� ���������� I2C
-	// ������������� ������� � ������������� ����������
+	// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ Р±РёС‚РѕРІ РїРѕСЂС‚РѕРІ РІРІРѕРґР°-РІС‹РІРѕРґР° РґР»СЏ Р°РїРїР°СЂР°С‚РЅРѕР№ СЂРµР°Р»РёР·Р°С†РёРё I2C
+	// РїСЂРёСЃРѕРµРґРёРЅРµРЅРёРµ РІС‹РІРѕРґРѕРІ Рє РїРµСЂРёС„РµСЂРёР№РЅРѕРјСѓ СѓСЃС‚СЂРѕР№СЃС‚РІСѓ
 	#define	TWIHARD_INITIALIZE() do { \
 			arm_hardware_pioh_periphopendrain_altfn2(TARGET_TWI_TWCK | TARGET_TWI_TWD, AF_I2C3);	/* AF=4 */ \
 		} while (0) 
@@ -550,19 +550,19 @@
 	#define FPGA_NSTATUS_INPUT		(GPIOE->IDR)
 	#define FPGA_NSTATUS_BIT		(1UL << 15)	/* PE15 bit conneced to NSTATUS pin ALTERA FPGA */
 
-	/* ������������� ������� GPIO ���������� ��� ��������� ��������� � ����������� ��������� FPGA */
+	/* РРЅРёС†РёР°РґРёР·Р°С†РёСЏ РІС‹РІРѕРґРѕРІ GPIO РїСЂРѕС†РµСЃСЃРѕСЂР° РґР»СЏ РїРѕР»СѓС‡РµРЅРёСЏ СЃРѕСЃС‚РѕСЏРЅРёСЏ Рё СѓРїСЂР°РІР»РµРЅРёРµРј Р·Р°РіСЂСѓР·РєРѕР№ FPGA */
 	#define HARDWARE_FPGA_LOADER_INITIALIZE() do { \
 			arm_hardware_pioe_outputs(FPGA_NCONFIG_BIT, FPGA_NCONFIG_BIT); \
 			arm_hardware_pioe_inputs(FPGA_CONF_DONE_BIT | FPGA_NSTATUS_BIT); \
 		} while (0)
 
-	/* �� ��������� ��������� ���������, ��������������������� �� FPGA (����� � user mode). */
+	/* РїРѕ РєРѕСЃРІРµРЅРЅС‹Рј РїСЂРёР·РЅР°РєР°Рј РїСЂРѕРІРµСЂСЏРµРј, РїСЂРѕРёРЅРёС†РёР°Р»РёР·РёСЂРѕРІР°Р»Р°СЃСЊ Р»Рё FPGA (РІРѕС€Р»Р° РІ user mode). */
 	#define HARDWARE_FPGA_IS_USER_MODE() (local_delay_ms(400), 1)
 
 #endif /* WITHFPGAWAIT_AS || WITHFPGALOAD_PS */
 
 #if WITHDSPEXTFIR
-	// ���� ������� � ������� ������������� FIR ������� � FPGA
+	// Р‘РёС‚С‹ РґРѕСЃС‚СѓРїР° Рє РјР°СЃСЃРёРІСѓ РєРѕСЌС„С„РёС†РёРµРЅС‚РѕРІ FIR С„РёР»СЊС‚СЂР° РІ FPGA
 	#define TARGET_FPGA_FIR_CS_PORT_C(v)	do { GPIOE->BSRR = BSRR_C(v); __DSB(); } while (0)
 	#define TARGET_FPGA_FIR_CS_PORT_S(v)	do { GPIOE->BSRR = BSRR_S(v); __DSB(); } while (0)
 	#define TARGET_FPGA_FIR_CS_BIT (1U << 7)	/* PE7 - fir CLK */
@@ -582,7 +582,7 @@
 		} while (0)
 #endif /* WITHDSPEXTFIR */
 
-/* ��������� ��������� ������������ ��� */
+/* РїРѕР»СѓС‡РµРЅРёРµ СЃРѕСЃС‚РѕСЏРЅРёСЏ РїРµСЂРµРїРѕР»РЅРµРЅРёСЏ РђР¦Рџ */
 #define TARGET_FPGA_OVF_PIN		(GPIOG->IDR)
 #define TARGET_FPGA_OVF_BIT		(1u << 5)	// PG5
 #define TARGET_FPGA_OVF_GET		((TARGET_FPGA_OVF_PIN & TARGET_FPGA_OVF_BIT) == 0)	// 1 - overflow active
@@ -591,11 +591,11 @@
 		} while (0)
 
 #if WITHCPUDACHW
-	/* �������� ������ ������ */
+	/* РІРєР»СЋС‡РёС‚СЊ РЅСѓР¶РЅС‹Рµ РєР°РЅР°Р»С‹ */
 	#define HARDWARE_DAC_INITIALIZE() do { \
 			DAC1->CR = DAC_CR_EN1; /* DAC1 enable */ \
 		} while (0)
-	#define HARDWARE_DAC_ALC(v) do { /* ����� 12-������� �������� �� ��� - ����� 1 */ \
+	#define HARDWARE_DAC_ALC(v) do { /* РІС‹РІРѕРґ 12-Р±РёС‚РЅРѕРіРѕ Р·РЅР°С‡РµРЅРёСЏ РЅР° Р¦РђРџ - РєР°РЅР°Р» 1 */ \
 			DAC1->DHR12R1 = (v); /* DAC1 set value */ \
 		} while (0)
 #endif /* WITHCPUDACHW */
@@ -696,14 +696,14 @@
 		arm_hardware_piok_altfn20((1U << 5), GPIO_AF_LTDC);		/* B6 */ \
 		arm_hardware_piok_altfn20((1U << 6), GPIO_AF_LTDC);		/* B7 */ \
 		} while (0)
-	/* ���������� ���������� ������� DISP ������ */
+	/* СѓРїСЂР°РІР»РµРЅРёРµ СЃРѕСЃС‚РѕСЏРЅРёРµРј СЃРёРіРЅР°Р»Р° DISP РїР°РЅРµР»Рё */
 	/* demode values: 0: static signal, 1: DE controlled */
 	#define HARDWARE_LTDC_SET_DISP(demode, state) do { \
 		const uint32_t VSYNC = (1U << 9); \
 		const uint32_t mask = (1U << 12); \
-		while ((GPIOI->IDR & VSYNC) != 0) ; /* ��������� 0 */ \
-		while ((GPIOI->IDR & VSYNC) == 0) ; /* ��������� 1 */ \
-		arm_hardware_pioi_outputs(mask, ((state) != 0) * mask);	/* DE=DISP, pin 31 - ����� ������ ������ ��� VSYNC=1 */ \
+		while ((GPIOI->IDR & VSYNC) != 0) ; /* РґРѕР¶РґР°С‚СЊСЃСЏ 0 */ \
+		while ((GPIOI->IDR & VSYNC) == 0) ; /* РґРѕР¶РґР°С‚СЊСЃСЏ 1 */ \
+		arm_hardware_pioi_outputs(mask, ((state) != 0) * mask);	/* DE=DISP, pin 31 - РјРѕР¶РЅРѕ РјРµРЅСЏС‚СЊ С‚РѕР»СЊРєРѕ РїСЂРё VSYNC=1 */ \
 	} while (0)
 #endif /* LCDMODE_LTDC */
 

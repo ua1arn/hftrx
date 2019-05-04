@@ -1,6 +1,6 @@
 /* $Id$ */
-// Проект HF Dream Receiver (КВ приёмник мечты)
-// автор Гена Завидовский mgs2001@mail.ru
+// РџСЂРѕРµРєС‚ HF Dream Receiver (РљР’ РїСЂРёС‘РјРЅРёРє РјРµС‡С‚С‹)
+// Р°РІС‚РѕСЂ Р“РµРЅР° Р—Р°РІРёРґРѕРІСЃРєРёР№ mgs2001@mail.ru
 // UA1ARN
 //
 #ifndef FPGA_V1_C_INCLUDED
@@ -97,23 +97,23 @@ prog_fpga_ctrlreg(
 
 	RBVAL8(040, FPGA_DECODE_CTLREG);
 
-	RBVAL(16, glob_adcoffset, 9);			/* b24..b16: adcoffset - смещение для выходного сигнала с АЦП */
-	RBBIT(15, glob_mode_wfm);				/* b15: mode_wfm - разрешение передачи в DSP квадратур 192 кГц */
-	RBBIT(14, glob_tx_bpsk_enable);			/* b14: tx_bpsk_enable - разрешение прямого формирования модуляции в FPGA */
-	RBBIT(13, glob_tx_inh_enable);			/* b13: tx_inh_enable - разрешение реакции на вход tx_inh */
+	RBVAL(16, glob_adcoffset, 9);			/* b24..b16: adcoffset - СЃРјРµС‰РµРЅРёРµ РґР»СЏ РІС‹С…РѕРґРЅРѕРіРѕ СЃРёРіРЅР°Р»Р° СЃ РђР¦Рџ */
+	RBBIT(15, glob_mode_wfm);				/* b15: mode_wfm - СЂР°Р·СЂРµС€РµРЅРёРµ РїРµСЂРµРґР°С‡Рё РІ DSP РєРІР°РґСЂР°С‚СѓСЂ 192 РєР“С† */
+	RBBIT(14, glob_tx_bpsk_enable);			/* b14: tx_bpsk_enable - СЂР°Р·СЂРµС€РµРЅРёРµ РїСЂСЏРјРѕРіРѕ С„РѕСЂРјРёСЂРѕРІР°РЅРёСЏ РјРѕРґСѓР»СЏС†РёРё РІ FPGA */
+	RBBIT(13, glob_tx_inh_enable);			/* b13: tx_inh_enable - СЂР°Р·СЂРµС€РµРЅРёРµ СЂРµР°РєС†РёРё РЅР° РІС…РѕРґ tx_inh */
 	RBBIT(12, glob_dactest);				/* b12: dactest */
 	RBBIT(11, ! glob_sleep && glob_xvrtr);	/* b11: xvrtr_enable */
-	RBBIT(10, glob_dacstraight);			/* b10: dacstraight - Требуется формирование кода для ЦАП в режиме беззнакового кода*/
+	RBBIT(10, glob_dacstraight);			/* b10: dacstraight - РўСЂРµР±СѓРµС‚СЃСЏ С„РѕСЂРјРёСЂРѕРІР°РЅРёРµ РєРѕРґР° РґР»СЏ Р¦РђРџ РІ СЂРµР¶РёРјРµ Р±РµР·Р·РЅР°РєРѕРІРѕРіРѕ РєРѕРґР°*/
 	RBBIT(9, glob_i2s_enable);				/* b9: i2s_enable */
-	RBBIT(8, glob_firprofile [1]);			/* b8: fir2_profile - что используется для фильтрации FIR2 */
-	RBBIT(7, glob_firprofile [0]);			/* b7: fir_profile - что используется для фильтрации FIR1 */
+	RBBIT(8, glob_firprofile [1]);			/* b8: fir2_profile - С‡С‚Рѕ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РґР»СЏ С„РёР»СЊС‚СЂР°С†РёРё FIR2 */
+	RBBIT(7, glob_firprofile [0]);			/* b7: fir_profile - С‡С‚Рѕ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РґР»СЏ С„РёР»СЊС‚СЂР°С†РёРё FIR1 */
 	RBBIT(6, glob_flt_reset_n);				/* b6: flt_reset_n net */
 	RBBIT(5, glob_dither);					/* b5: adc_dith net */
 	RBBIT(4, glob_adcrand);					/* b4: adc_rand net  */
 	RBBIT(3, ! glob_sleep && glob_preamp);	/* b3: adc_pga net */
 	RBBIT(2, ! glob_sleep && glob_tx);		/* b2: mode_tx net  */
 	RBBIT(1, ! glob_sleep && ! glob_tx);	/* b1: mode_rx net  */
-	RBBIT(0, glob_reset_n);					/* b0: ! reset_n net - FIR filter требует перехода из "1" в "0" на reset_n для нормальной работы */
+	RBBIT(0, glob_reset_n);					/* b0: ! reset_n net - FIR filter С‚СЂРµР±СѓРµС‚ РїРµСЂРµС…РѕРґР° РёР· "1" РІ "0" РЅР° reset_n РґР»СЏ РЅРѕСЂРјР°Р»СЊРЅРѕР№ СЂР°Р±РѕС‚С‹ */
 
 	spi_select2(target, CTLREG_SPIMODE, SPIC_SPEEDUFAST);
 	prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
@@ -130,13 +130,13 @@ static uint_fast32_t prog_fpga_getfqmeter(
 	uint_fast8_t v0, v1, v2, v3;
 	uint_fast8_t pps;
 
-	spi_select2(target, CTLREG_SPIMODE, SPIC_SPEEDUFAST);	// В FPGA регистр тактируется не в прямую
+	spi_select2(target, CTLREG_SPIMODE, SPIC_SPEEDUFAST);	// Р’ FPGA СЂРµРіРёСЃС‚СЂ С‚Р°РєС‚РёСЂСѓРµС‚СЃСЏ РЅРµ РІ РїСЂСЏРјСѓСЋ
 
 	v0 = spi_read_byte(target, 0x00);
 	v1 = spi_read_byte(target, 0x00);
 	v2 = spi_read_byte(target, 0x00);
 	v3 = spi_read_byte(target, 0x00);
-	pps = spi_read_byte(target, FPGA_DECODE_FQMETER);		// состояние входа PPS
+	pps = spi_read_byte(target, FPGA_DECODE_FQMETER);		// СЃРѕСЃС‚РѕСЏРЅРёРµ РІС…РѕРґР° PPS
 
 	spi_unselect(target);
 

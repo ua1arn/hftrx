@@ -1,10 +1,10 @@
 /* $Id$ */
-// Проект HF Dream Receiver (КВ приёмник мечты)
-// автор Гена Завидовский mgs2001@mail.ru
+// РџСЂРѕРµРєС‚ HF Dream Receiver (РљР’ РїСЂРёС‘РјРЅРёРє РјРµС‡С‚С‹)
+// Р°РІС‚РѕСЂ Р“РµРЅР° Р—Р°РІРёРґРѕРІСЃРєРёР№ mgs2001@mail.ru
 // UA1ARN
 //
 
-/* Проверенно с AD9834, работает с AD9833 и AD9838 */
+/* РџСЂРѕРІРµСЂРµРЅРЅРѕ СЃ AD9834, СЂР°Р±РѕС‚Р°РµС‚ СЃ AD9833 Рё AD9838 */
 
 #ifndef AD9834_C_INCLUDED
 #define AD9834_C_INCLUDED
@@ -49,18 +49,18 @@ prog_ad9834_control(
 	enum { hlb = 0 };
 	const uint_fast8_t fselmask = fsel ? 0x08 : 0x00;
 
-	// биты 15..8
+	// Р±РёС‚С‹ 15..8
 	if (reset)
 		spi_progval8_p1(target, 0x01);	// RESET = 1
 	else
 		spi_progval8_p1(target, 0x20 | fselmask);	// B28=1, FSEL=0 or FSEL=1, PSEL=0
-	// Биты 7..0
+	// Р‘РёС‚С‹ 7..0
 #if 0
-	// Выход наружу старшего бита SIN DAC
+	// Р’С‹С…РѕРґ РЅР°СЂСѓР¶Сѓ СЃС‚Р°СЂС€РµРіРѕ Р±РёС‚Р° SIN DAC
 	// 0x40 - SLEEP12 = 1 powers down the on-chip DAC
-	spi_progval8_p2(target, 0x68);	/* 0x68 - частота, на которую запрограммирован DDS, 0x60 - делённая пополам */
+	spi_progval8_p2(target, 0x68);	/* 0x68 - С‡Р°СЃС‚РѕС‚Р°, РЅР° РєРѕС‚РѕСЂСѓСЋ Р·Р°РїСЂРѕРіСЂР°РјРјРёСЂРѕРІР°РЅ DDS, 0x60 - РґРµР»С‘РЅРЅР°СЏ РїРѕРїРѕР»Р°Рј */
 #else
-	// нормальная работа, синусоидальный 
+	// РЅРѕСЂРјР°Р»СЊРЅР°СЏ СЂР°Р±РѕС‚Р°, СЃРёРЅСѓСЃРѕРёРґР°Р»СЊРЅС‹Р№ 
 	spi_progval8_p2(target, comparator ? 0x38 : 0x00);
 #endif
 	spi_complete(target);
@@ -72,7 +72,7 @@ static void
 prog_ad9834_freq(
 	spitarget_t target,		/* addressing to chip */
 	const phase_t * val,
-	uint_fast8_t * profile,	/* место для хранения информации о последнем использованном профиле */
+	uint_fast8_t * profile,	/* РјРµСЃС‚Рѕ РґР»СЏ С…СЂР°РЅРµРЅРёСЏ РёРЅС„РѕСЂРјР°С†РёРё Рѕ РїРѕСЃР»РµРґРЅРµРј РёСЃРїРѕР»СЊР·РѕРІР°РЅРЅРѕРј РїСЂРѕС„РёР»Рµ */
 	uint_fast8_t comparator
 	)
 {
@@ -110,8 +110,8 @@ static void
 //NOINLINEAT
 prog_ad9834_init(
 	spitarget_t target,		/* addressing to chip */
-	uint_fast8_t * profile,	/* место для хранения информации о последнем использованном профиле */
-	uint_fast8_t comparator	/* разрешение работы компаратора */
+	uint_fast8_t * profile,	/* РјРµСЃС‚Рѕ РґР»СЏ С…СЂР°РЅРµРЅРёСЏ РёРЅС„РѕСЂРјР°С†РёРё Рѕ РїРѕСЃР»РµРґРЅРµРј РёСЃРїРѕР»СЊР·РѕРІР°РЅРЅРѕРј РїСЂРѕС„РёР»Рµ */
+	uint_fast8_t comparator	/* СЂР°Р·СЂРµС€РµРЅРёРµ СЂР°Р±РѕС‚С‹ РєРѕРјРїР°СЂР°С‚РѕСЂР° */
 			 )
 {
 	enum { fsel = 0 };

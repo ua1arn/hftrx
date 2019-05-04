@@ -1,9 +1,9 @@
 /* $Id$ */
-// Проект HF Dream Receiver (КВ приёмник мечты)
-// автор Гена Завидовский mgs2001@mail.ru
+// РџСЂРѕРµРєС‚ HF Dream Receiver (РљР’ РїСЂРёС‘РјРЅРёРє РјРµС‡С‚С‹)
+// Р°РІС‚РѕСЂ Р“РµРЅР° Р—Р°РІРёРґРѕРІСЃРєРёР№ mgs2001@mail.ru
 // UA1ARN
 //
-// Поддержка MAXIM DS1305EN RTC clock chip with SPI interface
+// РџРѕРґРґРµСЂР¶РєР° MAXIM DS1305EN RTC clock chip with SPI interface
 // SERMODE pin tied high.
 //
 #ifndef DS1305_H_INCLUDED
@@ -66,8 +66,8 @@ static void ds1305_writebuff(
 
 static void ds1305_setclearbit(
 	uint_fast8_t r,		// Addr
-	uint_fast8_t mask,	// биты, которые требуется модифицировать
-	uint_fast8_t value)	// состояние битов, которое требуется установить.
+	uint_fast8_t mask,	// Р±РёС‚С‹, РєРѕС‚РѕСЂС‹Рµ С‚СЂРµР±СѓРµС‚СЃСЏ РјРѕРґРёС„РёС†РёСЂРѕРІР°С‚СЊ
+	uint_fast8_t value)	// СЃРѕСЃС‚РѕСЏРЅРёРµ Р±РёС‚РѕРІ, РєРѕС‚РѕСЂРѕРµ С‚СЂРµР±СѓРµС‚СЃСЏ СѓСЃС‚Р°РЅРѕРІРёС‚СЊ.
 {
 	uint8_t b [1];
 
@@ -79,8 +79,8 @@ static void ds1305_setclearbit(
 }
 
 static uint_fast8_t ds1305_testbit(
-	uint_fast8_t r,			// регистр RTC
-	uint_fast8_t mask	// состояние битов, которое требуется проверить.
+	uint_fast8_t r,			// СЂРµРіРёСЃС‚СЂ RTC
+	uint_fast8_t mask	// СЃРѕСЃС‚РѕСЏРЅРёРµ Р±РёС‚РѕРІ, РєРѕС‚РѕСЂРѕРµ С‚СЂРµР±СѓРµС‚СЃСЏ РїСЂРѕРІРµСЂРёС‚СЊ.
 	)	
 {
 	uint_fast8_t b [1];
@@ -262,7 +262,7 @@ void board_rtc_getdatetime(
 	* year = 2000 + ds1305_bcd2bin(b [6], 0, 88);		// r=6
 }
 
-/* возврат не-0 если требуется начальная загрузка значений */
+/* РІРѕР·РІСЂР°С‚ РЅРµ-0 РµСЃР»Рё С‚СЂРµР±СѓРµС‚СЃСЏ РЅР°С‡Р°Р»СЊРЅР°СЏ Р·Р°РіСЂСѓР·РєР° Р·РЅР°С‡РµРЅРёР№ */
 uint_fast8_t board_rtc_chip_initialize(void)
 {
 	uint_fast8_t eosc;

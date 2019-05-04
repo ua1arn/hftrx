@@ -1,7 +1,7 @@
 /* $Id$ */
 //
-// Проект HF Dream Receiver (КВ приёмник мечты)
-// автор Гена Завидовский mgs2001@mail.ru
+// РџСЂРѕРµРєС‚ HF Dream Receiver (РљР’ РїСЂРёС‘РјРЅРёРє РјРµС‡С‚С‹)
+// Р°РІС‚РѕСЂ Р“РµРЅР° Р—Р°РІРёРґРѕРІСЃРєРёР№ mgs2001@mail.ru
 // UA1ARN
 //
 /* programming LM7001 */
@@ -49,7 +49,7 @@ prog_lm7001_divider(
 	const uint_fast8_t arg_S = 1; 		/* 1=FM IN, 0 - AM IN */
 	const uint_fast8_t arg_TB = 0;		/* 1: BO1 provide time base */
 	const uint_fast8_t arg_T1T0 = 0;	/* LSI test bits should be = "0" */
-	const uint_fast16_t v = * val;		/* делитель */
+	const uint_fast16_t v = * val;		/* РґРµР»РёС‚РµР»СЊ */
 	rbtype_t rbbuff [3] = { 0 };
 	
 	RBBIT(007, arg_S);			/* S	*/
@@ -59,20 +59,20 @@ prog_lm7001_divider(
 	RBVAL(016, arg_T1T0, 2);	/* T1.T0	*/
 	if (arg_S != 0)
 	{
-		// в редиме FM до 16383
+		// РІ СЂРµРґРёРјРµ FM РґРѕ 16383
 		RBVAL(010, v >> 8, 6);		/* D8..D13 - divider */
 		RBVAL(020, v >> 0, 8);		/* D0..D7 - divider */
 	}
 	else
 	{
-		// в режиме АМ до 1023
+		// РІ СЂРµР¶РёРјРµ РђРњ РґРѕ 1023
 		RBVAL(010, v >> 4, 6);		/* D8..D13 - divider */
 		RBVAL(024, v >> 0, 4);		/* D4..D7 - divider */
 	}
 
 
-	/* Выдача байта МЛАДШИМ битом вперёд */
-	spi_select2(target, LM7001_SPIMODE, SPIC_SPEED400k);			// передаём начиная с младшего бита
+	/* Р’С‹РґР°С‡Р° Р±Р°Р№С‚Р° РњР›РђР”РЁРРњ Р±РёС‚РѕРј РІРїРµСЂС‘Рґ */
+	spi_select2(target, LM7001_SPIMODE, SPIC_SPEED400k);			// РїРµСЂРµРґР°С‘Рј РЅР°С‡РёРЅР°СЏ СЃ РјР»Р°РґС€РµРіРѕ Р±РёС‚Р°
 
 	spi_progval8_p1(target, revbits8(rbbuff [0]));		// D0..D7
 	spi_progval8_p2(target, revbits8(rbbuff [1]));		// D8..D13, T0..T1 = 0

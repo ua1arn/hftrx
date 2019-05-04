@@ -1,7 +1,7 @@
 /* $Id$ */
 //
-// Проект HF Dream Receiver (КВ приёмник мечты)
-// автор Гена Завидовский mgs2001@mail.ru
+// РџСЂРѕРµРєС‚ HF Dream Receiver (РљР’ РїСЂРёС‘РјРЅРёРє РјРµС‡С‚С‹)
+// Р°РІС‚РѕСЂ Р“РµРЅР° Р—Р°РІРёРґРѕРІСЃРєРёР№ mgs2001@mail.ru
 // UA1ARN
 //
 // RFMD (Qorvo) RFFC5071
@@ -72,11 +72,11 @@ extern void rffc5071_regs_commit(void);
  *   next 7 bits are register address,
  *   next 16 bits are register value.
  */
-// запись регистра
+// Р·Р°РїРёСЃСЊ СЂРµРіРёСЃС‚СЂР°
 static void rffc5071_spi_write(
 	spitarget_t target,
-	uint_fast8_t addr,		// адрес регитра
-	uint_fast16_t v			// данные
+	uint_fast8_t addr,		// Р°РґСЂРµСЃ СЂРµРіРёС‚СЂР°
+	uint_fast16_t v			// РґР°РЅРЅС‹Рµ
 	)
 {
 	SCLK_NPULSE();
@@ -104,13 +104,13 @@ static void rffc5071_spi_write(
  *   next 7 bits are register address.
  * Then receive 16 bits (register value).
  */
-// чтение регистра
+// С‡С‚РµРЅРёРµ СЂРµРіРёСЃС‚СЂР°
 static uint_fast16_t rffc5071_spi_read(
 	spitarget_t target,
-	uint_fast8_t addr		// адрес регитра
+	uint_fast8_t addr		// Р°РґСЂРµСЃ СЂРµРіРёС‚СЂР°
 	)
 {
-	uint_fast16_t v;			// данные
+	uint_fast16_t v;			// РґР°РЅРЅС‹Рµ
 
 	//gpio_set(PORT_MIXER_ENX, PIN_MIXER_ENX);
 	//gpio_set(PORT_MIXER_SCLK, PIN_MIXER_SCLK);
@@ -337,7 +337,7 @@ void rffc5071_rxtx(void) {
 }
 
 
-#define FREQ_ONE_MHZ (1000UL*100UL)	// параметр отладочной печати
+#define FREQ_ONE_MHZ (1000UL*100UL)	// РїР°СЂР°РјРµС‚СЂ РѕС‚Р»Р°РґРѕС‡РЅРѕР№ РїРµС‡Р°С‚Рё
 
 /* Calculate n_lo (lo in 100 kHz step) */
 static uint_fast8_t rffc5071_calc_n_lo(uint_fast16_t lo)

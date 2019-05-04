@@ -1,6 +1,6 @@
 /* $Id$ */
-// Проект HF Dream Receiver (КВ приёмник мечты)
-// автор Гена Завидовский mgs2001@mail.ru
+// РџСЂРѕРµРєС‚ HF Dream Receiver (РљР’ РїСЂРёС‘РјРЅРёРє РјРµС‡С‚С‹)
+// Р°РІС‚РѕСЂ Р“РµРЅР° Р—Р°РІРёРґРѕРІСЃРєРёР№ mgs2001@mail.ru
 // UA1ARN
 //
 #ifndef ADF4360_C_INCLUDED
@@ -30,10 +30,10 @@ enum
 
 // R 1..16383
 // This function should be called first.
-// Эту функцию вызвать при инициализации первой. Частота на входе REF должны присутствовать.
+// Р­С‚Сѓ С„СѓРЅРєС†РёСЋ РІС‹Р·РІР°С‚СЊ РїСЂРё РёРЅРёС†РёР°Р»РёР·Р°С†РёРё РїРµСЂРІРѕР№. Р§Р°СЃС‚РѕС‚Р° РЅР° РІС…РѕРґРµ REF РґРѕР»Р¶РЅС‹ РїСЂРёСЃСѓС‚СЃС‚РІРѕРІР°С‚СЊ.
 static void prog_adf4360_r(
 	spitarget_t target,		/* addressing to chip */
-	const phase_t * r		// ДЕЛИТЕЛЬ ОПОРНОЙ ЧАСТОТУ
+	const phase_t * r		// Р”Р•Р›РРўР•Р›Р¬ РћРџРћР РќРћР™ Р§РђРЎРўРћРўРЈ
 	)
 {
 	// R
@@ -53,7 +53,7 @@ static void prog_adf4360_r(
 // N. minimum value = (prescaler * prescaler) - prescaler = 56 bf presccaler = 8
 static void prog_adf4360_n(
 	spitarget_t target,		/* addressing to chip */
-	const phase_t * n		// ДЕЛИТЕЛЬ ОПОРНОЙ ЧАСТОТУ
+	const phase_t * n		// Р”Р•Р›РРўР•Р›Р¬ РћРџРћР РќРћР™ Р§РђРЎРўРћРўРЈ
 	)
 {
 	const div_t v = div(* n, ADF4360_PRESCALER_VALUE);

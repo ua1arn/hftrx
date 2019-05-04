@@ -44,6 +44,6 @@
 /* User Select macro */
 //#define TARGET_RZA1             (TARGET_RZA1LU)
 //#define TARGET_BOARD            (TARGET_BOARD_STREAM_IT2)
-//#define TARGET_RZA1             (TARGET_RZA1L)	// οεπενερενξ β Makefile
+//#define TARGET_RZA1             (TARGET_RZA1L)	// ΠΏΠµΡ€ΠµΠ½ΠµΡΠµΠ½ΠΎ Π² Makefile
 
 #endif /* MCU_SEL_H */

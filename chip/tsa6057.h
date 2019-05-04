@@ -1,7 +1,7 @@
 /* $Id$ */
 //
-// Проект HF Dream Receiver (КВ приёмник мечты)
-// автор Гена Завидовский mgs2001@mail.ru
+// РџСЂРѕРµРєС‚ HF Dream Receiver (РљР’ РїСЂРёС‘РјРЅРёРє РјРµС‡С‚С‹)
+// Р°РІС‚РѕСЂ Р“РµРЅР° Р—Р°РІРёРґРѕРІСЃРєРёР№ mgs2001@mail.ru
 // UA1ARN
 //
 // (c) Ingo Gerlach 11/2000
@@ -64,7 +64,7 @@ enum
 static void 
 prog_tsa6057_n(
 	spitarget_t target,		/* addressing to chip */
-	const phase_t * n,		/* делитель N  */
+	const phase_t * n,		/* РґРµР»РёС‚РµР»СЊ N  */
 	uint_fast8_t rcode,		/* TSA6057_R25_160/TSA6057_R10_400/TSA6057_R01_4000 */
 	uint_fast8_t bs		/* TSA6057_R25_160/TSA6057_R10_400/TSA6057_R01_4000 */
 	)

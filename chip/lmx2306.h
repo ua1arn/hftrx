@@ -1,7 +1,7 @@
 /* $Id$ */
 //
-// Проект HF Dream Receiver (КВ приёмник мечты)
-// автор Гена Завидовский mgs2001@mail.ru
+// РџСЂРѕРµРєС‚ HF Dream Receiver (РљР’ РїСЂРёС‘РјРЅРёРє РјРµС‡С‚С‹)
+// Р°РІС‚РѕСЂ Р“РµРЅР° Р—Р°РІРёРґРѕРІСЃРєРёР№ mgs2001@mail.ru
 // UA1ARN
 //
 #ifndef LMX2306_H_INCLUDED
@@ -9,7 +9,7 @@
 
 #define LMX2306_SPIMODE SPIC_MODE3	// MODE3 only supported
 
-#define LMX2306_GO_STATE 0	/* prog_lmx2306_n parameter: N19=LOW ICPo = 250 µA, N19=HIGH ICPo = 1 mA. */
+#define LMX2306_GO_STATE 0	/* prog_lmx2306_n parameter: N19=LOW ICPo = 250 ВµA, N19=HIGH ICPo = 1 mA. */
 
 enum
 {
@@ -117,7 +117,7 @@ static void prog_lmx2306_n(
 	uint_fast8_t go
 	)
 {
-	const ldiv_t d = ldiv(* n, 8);		/* 8 - прескалер работает в режиме 8/9 */
+	const ldiv_t d = ldiv(* n, 8);		/* 8 - РїСЂРµСЃРєР°Р»РµСЂ СЂР°Р±РѕС‚Р°РµС‚ РІ СЂРµР¶РёРјРµ 8/9 */
 	const uint_fast16_t a = d.rem;					// 5 bit used
 	const uint_fast16_t b = d.quot & 0x1fff;		// 13 bit used
 
@@ -131,7 +131,7 @@ static void prog_lmx2306_n(
 	spi_unselect(target);
 
 	//prog_select(target);	/* start sending data to target chip */
-							/* N19=LOW ICPo = 250 µA, N19=HIGH ICPo = 1 mA. */
+							/* N19=LOW ICPo = 250 ВµA, N19=HIGH ICPo = 1 mA. */
 	//prog_bit(target, go);	/* GO bit - for fast changing frequency w/o lost synch */
 	//prog_phbits(target, n, 16, 13);	/* B bits */
 	//prog_phbits(target, n, 5, 5);		/* A bits -  only 3 lower used */

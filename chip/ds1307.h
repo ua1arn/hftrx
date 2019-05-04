@@ -1,9 +1,9 @@
 /* $Id$ */
-// Проект HF Dream Receiver (КВ приёмник мечты)
-// автор Гена Завидовский mgs2001@mail.ru
+// РџСЂРѕРµРєС‚ HF Dream Receiver (РљР’ РїСЂРёС‘РјРЅРёРє РјРµС‡С‚С‹)
+// Р°РІС‚РѕСЂ Р“РµРЅР° Р—Р°РІРёРґРѕРІСЃРєРёР№ mgs2001@mail.ru
 // UA1ARN
 //
-// Поддержка DS1307/DS3231 real time clock - tnx for UR3QTD
+// РџРѕРґРґРµСЂР¶РєР° DS1307/DS3231 real time clock - tnx for UR3QTD
 //
 #ifndef M41T81_H_INCLUDED
 #define M41T81_H_INCLUDED
@@ -170,7 +170,7 @@ void board_rtc_getdatetime(
 	* secounds = ds1307_bcd2bin(b [0]);	// r=0
 }
 
-/* возврат не-0 если требуется начальная загрузка значений */
+/* РІРѕР·РІСЂР°С‚ РЅРµ-0 РµСЃР»Рё С‚СЂРµР±СѓРµС‚СЃСЏ РЅР°С‡Р°Р»СЊРЅР°СЏ Р·Р°РіСЂСѓР·РєР° Р·РЅР°С‡РµРЅРёР№ */
 uint_fast8_t board_rtc_chip_initialize(void)
 {
 	//uint_fast8_t isec;

@@ -1,7 +1,7 @@
 /* $Id$ */
 //
-// Проект HF Dream Receiver (КВ приёмник мечты)
-// автор Гена Завидовский mgs2001@mail.ru
+// РџСЂРѕРµРєС‚ HF Dream Receiver (РљР’ РїСЂРёС‘РјРЅРёРє РјРµС‡С‚С‹)
+// Р°РІС‚РѕСЂ Р“РµРЅР° Р—Р°РІРёРґРѕРІСЃРєРёР№ mgs2001@mail.ru
 // UA1ARN
 //
 #ifndef LMX1601_H_INCLUDED
@@ -12,11 +12,11 @@
 	LMX1602 1.1 GHz/1.1 GHz
 
 	Dual modulus prescaler:
-	— 2 GHz/500 MHz option: (Main) 32/33 (Aux) 8/9
-	— 1.1 GHz/500 MHz option: (Main) 16/17 (Aux) 8/9
-	— 1.1 GHz/1.1 GHz option: (Main) 16/17 (Aux) 16/17
+	вЂ” 2 GHz/500 MHz option: (Main) 32/33 (Aux) 8/9
+	вЂ” 1.1 GHz/500 MHz option: (Main) 16/17 (Aux) 8/9
+	вЂ” 1.1 GHz/1.1 GHz option: (Main) 16/17 (Aux) 16/17
 
-	В этом проекте используется AUX канал LMX1601
+	Р’ СЌС‚РѕРј РїСЂРѕРµРєС‚Рµ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ AUX РєР°РЅР°Р» LMX1601
 
 */
 
@@ -49,14 +49,14 @@ static void prog_lmx1601_init(
 
 }
 
-// В этом проекте используется AUX канал LMX1601
+// Р’ СЌС‚РѕРј РїСЂРѕРµРєС‚Рµ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ AUX РєР°РЅР°Р» LMX1601
 
 static void prog_lmx1601_func(
 	spitarget_t target,		/* addressing to chip */
 	uint_fast8_t polarity
 	)
 {
-	const uint_fast16_t mainR = 100;	/* значение по умолчанию для канала  MAIN */
+	const uint_fast16_t mainR = 100;	/* Р·РЅР°С‡РµРЅРёРµ РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ РґР»СЏ РєР°РЅР°Р»Р°  MAIN */
 
 	prog_select(target);	/* start sending data to target chip */
 
@@ -71,7 +71,7 @@ static void prog_lmx1601_func(
 	prog_unselect(target);
 }
 
-// В этом проекте используется AUX канал LMX1601
+// Р’ СЌС‚РѕРј РїСЂРѕРµРєС‚Рµ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ AUX РєР°РЅР°Р» LMX1601
 
 /* Set divider F osc R - 3...16383 */
 void prog_lmx1601_r(
@@ -89,7 +89,7 @@ void prog_lmx1601_r(
 	prog_unselect(target);
 }
 
-// В этом проекте используется AUX канал LMX1601
+// Р’ СЌС‚РѕРј РїСЂРѕРµРєС‚Рµ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ AUX РєР°РЅР°Р» LMX1601
 
 /* Set divider F in  N - 56..65535 */
 static void prog_lmx1601_n(

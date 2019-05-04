@@ -1,9 +1,9 @@
 /* $Id$ */
-// Проект HF Dream Receiver (КВ приёмник мечты)
-// автор Гена Завидовский mgs2001@mail.ru
+// РџСЂРѕРµРєС‚ HF Dream Receiver (РљР’ РїСЂРёС‘РјРЅРёРє РјРµС‡С‚С‹)
+// Р°РІС‚РѕСЂ Р“РµРЅР° Р—Р°РІРёРґРѕРІСЃРєРёР№ mgs2001@mail.ru
 // UA1ARN
 //
-// Поддержка ST M41T81 real time clock
+// РџРѕРґРґРµСЂР¶РєР° ST M41T81 real time clock
 // M41T81M6,M41T81M6F
 // M41T81SM6,M41T81SM6F
 //
@@ -53,8 +53,8 @@ static void m41t81_writebuff(
 
 static void m41t81_setclearbit(
 	uint_fast8_t r,		// Addr
-	uint_fast8_t mask,	// биты, которые требуется модифицировать
-	uint_fast8_t value)	// состояние битов, которое требуется установить.
+	uint_fast8_t mask,	// Р±РёС‚С‹, РєРѕС‚РѕСЂС‹Рµ С‚СЂРµР±СѓРµС‚СЃСЏ РјРѕРґРёС„РёС†РёСЂРѕРІР°С‚СЊ
+	uint_fast8_t value)	// СЃРѕСЃС‚РѕСЏРЅРёРµ Р±РёС‚РѕРІ, РєРѕС‚РѕСЂРѕРµ С‚СЂРµР±СѓРµС‚СЃСЏ СѓСЃС‚Р°РЅРѕРІРёС‚СЊ.
 {
 	uint_fast8_t b [1];
 
@@ -67,8 +67,8 @@ static void m41t81_setclearbit(
 
 /*
 static uint_fast8_t m41t81_testbit(
-	uint_fast8_t r,			// регистр RTC
-	uint_fast8_t mask	// состояние битов, которое требуется проверить.
+	uint_fast8_t r,			// СЂРµРіРёСЃС‚СЂ RTC
+	uint_fast8_t mask	// СЃРѕСЃС‚РѕСЏРЅРёРµ Р±РёС‚РѕРІ, РєРѕС‚РѕСЂРѕРµ С‚СЂРµР±СѓРµС‚СЃСЏ РїСЂРѕРІРµСЂРёС‚СЊ.
 	)	
 {
 	uint_fast8_t b [1];
@@ -219,7 +219,7 @@ void board_rtc_getdatetime(
 	* secounds = m41t81_bcd2bin(b [0] & 0x7f);	// r=1
 }
 
-/* возврат не-0 если требуется начальная загрузка значений */
+/* РІРѕР·РІСЂР°С‚ РЅРµ-0 РµСЃР»Рё С‚СЂРµР±СѓРµС‚СЃСЏ РЅР°С‡Р°Р»СЊРЅР°СЏ Р·Р°РіСЂСѓР·РєР° Р·РЅР°С‡РµРЅРёР№ */
 uint_fast8_t board_rtc_chip_initialize(void)
 {
 	// Write RTC calibration value (0x00..0x1f)

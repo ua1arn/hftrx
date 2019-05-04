@@ -1,7 +1,7 @@
 /* $Id$ */
 //
-// Проект HF Dream Receiver (КВ приёмник мечты)
-// автор Гена Завидовский mgs2001@mail.ru
+// РџСЂРѕРµРєС‚ HF Dream Receiver (РљР’ РїСЂРёС‘РјРЅРёРє РјРµС‡С‚С‹)
+// Р°РІС‚РѕСЂ Р“РµРЅР° Р—Р°РІРёРґРѕРІСЃРєРёР№ mgs2001@mail.ru
 // UA1ARN
 //
 
@@ -107,7 +107,7 @@ static void si535x_ReadRegister(uint_fast8_t reg, uint_fast8_t * data)
 	i2c_start(SI53xx_I2C_WRITE);
 	i2c_write_withrestart(reg);
 	i2c_start(SI53xx_I2C_READ);
-	i2c_read(data, I2C_READ_ACK_NACK);	/* чтение первого и единственного байта ответа */
+	i2c_read(data, I2C_READ_ACK_NACK);	/* С‡С‚РµРЅРёРµ РїРµСЂРІРѕРіРѕ Рё РµРґРёРЅСЃС‚РІРµРЅРЅРѕРіРѕ Р±Р°Р№С‚Р° РѕС‚РІРµС‚Р° */
 }
 
 
@@ -193,9 +193,9 @@ si5351aOutputOff(uint_fast8_t clk)
 }
 */
 struct FREQ {
-  uint8_t plldiv;	// должно быть чётное число Valid Multisynth divider ratios are 4, 6, 8,
+  uint8_t plldiv;	// РґРѕР»Р¶РЅРѕ Р±С‹С‚СЊ С‡С‘С‚РЅРѕРµ С‡РёСЃР»Рѕ Valid Multisynth divider ratios are 4, 6, 8,
   uint8_t outdiv;	// Rx Output Divider code (SI5351a_R_DIV_1..SI5351a_R_DIV_128)
-  uint16_t divider;	// общий делитель
+  uint16_t divider;	// РѕР±С‰РёР№ РґРµР»РёС‚РµР»СЊ
   uint32_t fmin;
   uint32_t fmax;
 };
@@ -212,21 +212,21 @@ static const FLASHMEM struct FREQ freqs [] = {
 };
 
 static pllhint_t si5351a_get_hint(
-	const uint_fast32_t freq	// требуемая частота
+	const uint_fast32_t freq	// С‚СЂРµР±СѓРµРјР°СЏ С‡Р°СЃС‚РѕС‚Р°
 	)
 {
 	uint_fast8_t high = (sizeof freqs / sizeof freqs [0]);
 	uint_fast8_t low = 0;
-	uint_fast8_t middle;	// результат поиска
+	uint_fast8_t middle;	// СЂРµР·СѓР»СЊС‚Р°С‚ РїРѕРёСЃРєР°
 
-	// Двоичный поиск
+	// Р”РІРѕРёС‡РЅС‹Р№ РїРѕРёСЃРє
 	while (low < high)
 	{
 		middle = (high - low) / 2 + low;
-		if (freq < freqs [middle].fmin)	// нижняя граница не включается - для обеспечения формального попадания частоты DCO в рабочий диапазон
+		if (freq < freqs [middle].fmin)	// РЅРёР¶РЅСЏСЏ РіСЂР°РЅРёС†Р° РЅРµ РІРєР»СЋС‡Р°РµС‚СЃСЏ - РґР»СЏ РѕР±РµСЃРїРµС‡РµРЅРёСЏ С„РѕСЂРјР°Р»СЊРЅРѕРіРѕ РїРѕРїР°РґР°РЅРёСЏ С‡Р°СЃС‚РѕС‚С‹ DCO РІ СЂР°Р±РѕС‡РёР№ РґРёР°РїР°Р·РѕРЅ
 			low = middle + 1;
 		else if (freq >= freqs [middle].fmax)
-			high = middle;		// переходим к поиску в меньших индексах
+			high = middle;		// РїРµСЂРµС…РѕРґРёРј Рє РїРѕРёСЃРєСѓ РІ РјРµРЅСЊС€РёС… РёРЅРґРµРєСЃР°С…
 		else
 			goto found;
 	}
@@ -237,17 +237,17 @@ static pllhint_t si5351a_get_hint(
 	{
 		display_gotoxy(0, 0 + lowhalf);
 		display_string_P(PSTR("[si5351a Err]"), lowhalf);
-		return 0;		/* требуемую частоту невозожно получить */
+		return 0;		/* С‚СЂРµР±СѓРµРјСѓСЋ С‡Р°СЃС‚РѕС‚Сѓ РЅРµРІРѕР·РѕР¶РЅРѕ РїРѕР»СѓС‡РёС‚СЊ */
 	} while (lowhalf --);
 #endif
 
 found: 
-	// нужная комбинация делителей найдена. Программирование Si570/Si571
+	// РЅСѓР¶РЅР°СЏ РєРѕРјР±РёРЅР°С†РёСЏ РґРµР»РёС‚РµР»РµР№ РЅР°Р№РґРµРЅР°. РџСЂРѕРіСЂР°РјРјРёСЂРѕРІР°РЅРёРµ Si570/Si571
 	;
 	return (pllhint_t) middle;
 }
 
-/* получить делитель по коду hint */
+/* РїРѕР»СѓС‡РёС‚СЊ РґРµР»РёС‚РµР»СЊ РїРѕ РєРѕРґСѓ hint */
 static uint_fast16_t 
 si5351a_get_divider(pllhint_t hint)
 {
@@ -354,7 +354,7 @@ static void si5351aSetFrequencyB(uint_fast32_t frequency)
 	if (0 == frequency)
 	{
 		si535x_SendRegister(SI5351a_CLK1_CONTROL, 0x80 | 0x4F | SI5351a_CLK_SRC_PLL_B);
-		skipreset = 0;	// запрос на переинициализацию выхода
+		skipreset = 0;	// Р·Р°РїСЂРѕСЃ РЅР° РїРµСЂРµРёРЅРёС†РёР°Р»РёР·Р°С†РёСЋ РІС‹С…РѕРґР°
 		return;
 	}
 
@@ -386,7 +386,7 @@ static void si5351aQuadrature(void)
 
 static void si5351aInitialize(void)
 {
-	// с этими строками частокол пораженок
+	// СЃ СЌС‚РёРјРё СЃС‚СЂРѕРєР°РјРё С‡Р°СЃС‚РѕРєРѕР» РїРѕСЂР°Р¶РµРЅРѕРє
 	//si535x_SendRegister(SI5351a_CLK6_CONTROL, 0x40);	// D6=FBA_INT
 	//si535x_SendRegister(SI5351a_CLK7_CONTROL, 0x40);	// D6=FBB_INT
 

@@ -38,11 +38,11 @@ void prog_cmx992_reset(
 	spitarget_t target		/* addressing to chip */
 	)
 {
-	prog_select(target);			// CS активен
+	prog_select(target);			// CS Р°РєС‚РёРІРµРЅ
 	
 	prog_val(target, CMX992_W_GEN_RESET, 8);	// address
 	
-	prog_unselect(target);		// CS неактивен
+	prog_unselect(target);		// CS РЅРµР°РєС‚РёРІРµРЅ
 
 
 }
@@ -55,19 +55,19 @@ void prog_cmx992_general_control(
 	)
 {
 
-	prog_select(target);			// CS активен
+	prog_select(target);			// CS Р°РєС‚РёРІРµРЅ
 	
 	prog_val(target, CMX992_W_GEN_CTRL, 8);	// address
 	
 	prog_bit(target, 0x01);		// D7: enable bias
-	prog_bit(target, 0x00);		// D6: for IF > 75MHz then set IFH = ‘1’, for IF < 75MHz use IFH = ‘0’.
+	prog_bit(target, 0x00);		// D6: for IF > 75MHz then set IFH = вЂ1вЂ™, for IF < 75MHz use IFH = вЂ0вЂ™.
 	prog_val(target, 0x00, 2);		// D5..D4: Output Mode Control: 0 - IQ mode, 1 - IF:I, 3: IF:Q output
 	prog_val(target, 0x03, 2);		// D3..D2: VCO negative resistance, 0x00 - NR maximum
 	prog_bit(target, 0x01);		// D1: VCO_Buff Enable
 	prog_bit(target, 0x01);		// D0: VCO_NR Enable
 
 
-	prog_unselect(target);		// CS неактивен
+	prog_unselect(target);		// CS РЅРµР°РєС‚РёРІРµРЅ
 
 
 }
@@ -89,7 +89,7 @@ void prog_cmx992_rx_control(
 		RXLO1DIV4,
 	};
 
-	prog_select(target);			// CS активен
+	prog_select(target);			// CS Р°РєС‚РёРІРµРЅ
 	
 	prog_val(target, CMX992_W_RX_CTRL, 8);	// address
 	
@@ -105,7 +105,7 @@ void prog_cmx992_rx_control(
 									// 0x03: do not use
 	prog_bit(target, 0x01);		// D0: vbias output
 
-	prog_unselect(target);		// CS неактивен
+	prog_unselect(target);		// CS РЅРµР°РєС‚РёРІРµРЅ
 
 
 }
@@ -119,18 +119,18 @@ void prog_cmx992_rx_mode(
 {
 	enum { if1path = 0 };
 
-	prog_select(target);			// CS активен
+	prog_select(target);			// CS Р°РєС‚РёРІРµРЅ
 	
 	prog_val(target, CMX992_W_RX_MODE, 8);	// address
 	
-	prog_bit(target, if1path);		// D7: IF in: b7 selects the IF input, b7 = ‘0’ selects IFIP1 and b7 = ‘1’ selects IFIP2
-	prog_bit(target, if1path);		// D6: mix out: b6 selects the IF output of the Rx 1st Mixer, b6 = ‘0’ selects MIXOUT1 and b6 = ‘1’ selects MIXOUT2.
-	prog_bit(target, 0x01);		// D5: I/Q filter : Writing b5 = ’1’ I/Q Filter BW = 1MHz; Writing b5 = ’0’ I/Q Filter BW = 100kHz.
+	prog_bit(target, if1path);		// D7: IF in: b7 selects the IF input, b7 = вЂ0вЂ™ selects IFIP1 and b7 = вЂ1вЂ™ selects IFIP2
+	prog_bit(target, if1path);		// D6: mix out: b6 selects the IF output of the Rx 1st Mixer, b6 = вЂ0вЂ™ selects MIXOUT1 and b6 = вЂ1вЂ™ selects MIXOUT2.
+	prog_bit(target, 0x01);		// D5: I/Q filter : Writing b5 = вЂ™1вЂ™ I/Q Filter BW = 1MHz; Writing b5 = вЂ™0вЂ™ I/Q Filter BW = 100kHz.
 	prog_bit(target, 0x00);		// D4: Cal enable
 	prog_val(target, 0x00, 4);		// D3..D0: VGA attenuation level = N * 6 dB, N = 0..8
 
 
-	prog_unselect(target);		// CS неактивен
+	prog_unselect(target);		// CS РЅРµР°РєС‚РёРІРµРЅ
 
 
 }
@@ -142,21 +142,21 @@ void prog_cmx992_tx_control(
 	spitarget_t target		/* addressing to chip */
 	)
 {
-	prog_select(target);			// CS активен
+	prog_select(target);			// CS Р°РєС‚РёРІРµРЅ
 	
 	prog_val(target, CMX992_W_TX_CTRL, 8);	// address
 	
-	prog_bit(target, 0x00);		// D7: Reserved set to ‘0’
+	prog_bit(target, 0x00);		// D7: Reserved set to вЂ0вЂ™
 	prog_bit(target, 0x01);		// D6: TxMix power
-	prog_bit(target, 0x00);		// D5: Reserved set to ‘0’
+	prog_bit(target, 0x00);		// D5: Reserved set to вЂ0вЂ™
 	prog_bit(target, 0x01);		// D4: I/Q Mod power
-	prog_bit(target, 0x00);		// D3: Reserved set to ‘0’
-	prog_bit(target, 0x00);		// D2: 0Reserved set to ‘0’
-	prog_bit(target, 0x00);		// D1: TX freq LO range: ’0’ for frequency below 600MHz;
+	prog_bit(target, 0x00);		// D3: Reserved set to вЂ0вЂ™
+	prog_bit(target, 0x00);		// D2: 0Reserved set to вЂ0вЂ™
+	prog_bit(target, 0x00);		// D1: TX freq LO range: вЂ™0вЂ™ for frequency below 600MHz;
 	prog_bit(target, 0x00);		// D0: TX I/Q out selection
 
 
-	prog_unselect(target);		// CS неактивен
+	prog_unselect(target);		// CS РЅРµР°РєС‚РёРІРµРЅ
 
 
 }
@@ -168,7 +168,7 @@ void prog_cmx992_tx_mode(
 	spitarget_t target		/* addressing to chip */
 	)
 {
-	prog_select(target);			// CS активен
+	prog_select(target);			// CS Р°РєС‚РёРІРµРЅ
 	
 	prog_val(target, CMX992_W_TX_MODE, 8);	// address
 	
@@ -181,7 +181,7 @@ void prog_cmx992_tx_mode(
 	prog_bit(target, 0x00);		// D0: TX IF LO divider selection: 0: /4, 1: /2
 
 
-	prog_unselect(target);		// CS неактивен
+	prog_unselect(target);		// CS РЅРµР°РєС‚РёРІРµРЅ
 
 
 }
@@ -193,7 +193,7 @@ void prog_cmx992_tx_gain(
 	spitarget_t target		/* addressing to chip */
 	)
 {
-	prog_select(target);			// CS активен
+	prog_select(target);			// CS Р°РєС‚РёРІРµРЅ
 	
 	prog_val(target, CMX992_W_TX_GAIN, 8);	// address
 	
@@ -206,7 +206,7 @@ void prog_cmx992_tx_gain(
 	prog_bit(target, 0x00);		// D0: reserved, 0
 
 
-	prog_unselect(target);		// CS неактивен
+	prog_unselect(target);		// CS РЅРµР°РєС‚РёРІРµРЅ
 
 
 }
@@ -220,15 +220,15 @@ void prog_cmx992_ifpll_m(
 	spitarget_t target,		/* addressing to chip */
 	const phase_t * m)
 {
-	prog_select(target);			// CS активен
+	prog_select(target);			// CS Р°РєС‚РёРІРµРЅ
 	
 	prog_val(target, CMX992_W_IFPLL_M + 0, 8);	// address
 	prog_phbits(target, m, 8, 8);				// D7..D0: low byte of M divider
 	//prog_val(target, (m >> 0) & 0xff, 8);		// D7..D0: low byte of M divider
 
-	prog_unselect(target);		// CS неактивен
+	prog_unselect(target);		// CS РЅРµР°РєС‚РёРІРµРЅ
 
-	prog_select(target);			// CS активен
+	prog_select(target);			// CS Р°РєС‚РёРІРµРЅ
 
 	prog_val(target, CMX992_W_IFPLL_M + 1, 8);	// address
 	
@@ -238,7 +238,7 @@ void prog_cmx992_ifpll_m(
 	prog_phbits(target, m, 13, 5);				// D4..D0: High bits of M divider
 	//prog_val(target, (m >> 8), 5);		// D4..D0: High bits of M divider
 
-	prog_unselect(target);		// CS неактивен
+	prog_unselect(target);		// CS РЅРµР°РєС‚РёРІРµРЅ
 }
 
 // 6.9 PLL N Divider (CMX991/CMX992)
@@ -251,22 +251,22 @@ void prog_cmx992_ifpll_n(
 	const phase_t * n
 	)
 {
-	prog_select(target);			// CS активен
+	prog_select(target);			// CS Р°РєС‚РёРІРµРЅ
 	
 	prog_val(target, CMX992_W_IFPLL_N + 0, 8);	// address
 	prog_phbits(target, n, 8, 8);				// D7..D0: low byte of N divider
 	//prog_val(target, (n >> 0) & 0xff, 8);		// D7..D0: low byte of N divider
 
-	prog_unselect(target);		// CS неактивен
+	prog_unselect(target);		// CS РЅРµР°РєС‚РёРІРµРЅ
 
-	prog_select(target);			// CS активен
+	prog_select(target);			// CS Р°РєС‚РёРІРµРЅ
 	
 	prog_val(target, CMX992_W_IFPLL_N + 1, 8);	// address
 	prog_bit(target, 0x00);		// D7: reserved
 	prog_phbits(target, n, 15, 7);				// D6..D0: High bits of N divider
 	//prog_val(target, (n >> 8), 7);		// D6..D0: High bits of N divider
 
-	prog_unselect(target);		// CS неактивен
+	prog_unselect(target);		// CS РЅРµР°РєС‚РёРІРµРЅ
 
 }
 
@@ -277,14 +277,14 @@ static unsigned char prog_cmx992_read_reg(
 {
 	unsigned char v;
 
-	prog_select(target);			// CS активен
+	prog_select(target);			// CS Р°РєС‚РёРІРµРЅ
 
 	prog_val(target, addr, 8);	// address
 	prog_spi_to_read(target);
 	v = prog_read_byte(target);
 	prog_spi_to_write(target);
 
-	prog_unselect(target);		// CS неактивен
+	prog_unselect(target);		// CS РЅРµР°РєС‚РёРІРµРЅ
 	return v;
 }
 
