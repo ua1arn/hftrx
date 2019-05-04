@@ -8,14 +8,13 @@
 #include "hardware.h"	/* зависящие от процессора функции работы с портами */
 #include "board.h"
 #include "audio.h"
-#include "speex/fftwrap.h"
 #include "spifuncs.h"
 #include "formats.h"	// for debug prints
 #include "display.h"	// for debug prints
 
-#include "tlv320aic23.h"	// константы управления усилением кодека
-#include "nau8822.h"
-#include "wm8994.h"
+#include "codecs/tlv320aic23.h"	// константы управления усилением кодека
+#include "codecs/nau8822.h"
+#include "codecs/wm8994.h"
 
 #include <limits.h>
 #include <string.h>

@@ -20,8 +20,8 @@
 
 #include "spifuncs.h"
 
-#include "tlv320aic23.h"	// константы управления усилением кодека
-#include "nau8822.h"
+#include "codecs/tlv320aic23.h"	// константы управления усилением кодека
+#include "codecs/nau8822.h"
 
 #if WITHUSEAUDIOREC
 	#include "fatfs/ff.h"
@@ -317,7 +317,7 @@ ascii_decode(uint_fast8_t c)
 	return c - ' ';
 }
 
-// Выборка значений из буфера изображения 
+// Выборка значений из буфера изображения
 // значения:
 // 3 - black
 // 2 - while
@@ -356,7 +356,7 @@ static uint_fast8_t getbufferbit(uint_fast8_t col, uint_fast8_t row, uint_fast8_
 #endif
 }
 
-// формирование байтов для передачи в дисплей 
+// формирование байтов для передачи в дисплей
 	// col code 198, 196..0
 static uint_fast8_t getrow4byteseven(uint_fast8_t col, uint_fast8_t row, uint_fast8_t stage)
 {
@@ -369,7 +369,7 @@ static uint_fast8_t getrow4byteseven(uint_fast8_t col, uint_fast8_t row, uint_fa
 	return r;
 }
 
-// формирование байтов для передачи в дисплей 
+// формирование байтов для передачи в дисплей
 // col code 1, 3..199
 static uint_fast8_t getrow4bytesodd(uint_fast8_t col, uint_fast8_t row, uint_fast8_t stage)
 {
@@ -6872,7 +6872,7 @@ void midtests(void)
 #endif
 	//hardware_cw_diagnostics(0, 0, 1);	// 'U'
 #if 0
-	// тестирование управляемого по SPI регистра 
+	// тестирование управляемого по SPI регистра
 	{
 		for (;;)
 		{
@@ -6997,7 +6997,7 @@ void midtests(void)
 #if STM32F0XX_MD
 void hardware_f051_dac_initialize(void)		/* инициализация DAC на STM32F4xx */
 {
-	RCC->APB1ENR |= RCC_APB1ENR_DACEN; //подать тактирование 
+	RCC->APB1ENR |= RCC_APB1ENR_DACEN; //подать тактирование
 	__DSB();
 
 	DAC1->CR = DAC_CR_EN1;

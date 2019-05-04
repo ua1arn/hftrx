@@ -13,8 +13,8 @@
 #if WITHINTEGRATEDDSP
 
 #include "audio.h"
-#include "usb200.h"
-#include "usbch9.h"
+#include "usb/usb200.h"
+#include "usb/usbch9.h"
 
 #include <string.h>		// for memset
 
@@ -806,7 +806,7 @@ size_t takemsgbufferfree_low(uint8_t * * dest)
 	return 0;
 }
 
-// поместить сообщение в очередь к исполнению 
+// поместить сообщение в очередь к исполнению
 void placesemsgbuffer_low(uint_fast8_t type, uint8_t * dest)
 {
 	ASSERT_IRQL_SYSTEM();
