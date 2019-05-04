@@ -771,6 +771,7 @@
 
 #if WITHKEYBOARD
 	/* PF5: pull-up second encoder button */
+	// IDC16 pin 05 - LCD's WR
 	#define KBD_MASK (1U << 5)	// PF5
 	#define KBD_TARGET_PIN (GPIOF->IDR)
 

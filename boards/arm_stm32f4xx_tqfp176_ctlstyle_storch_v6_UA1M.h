@@ -213,8 +213,6 @@
 	//#define ENCRES_DEFAULT ENCRES_24
 	#define WITHDIRECTFREQENER	1 //(! CTLSTYLE_SW2011ALL && ! CTLSTYLE_UA3DKC)
 	#define	WITHENCODER	1		/* для изменения частоты имеется енкодер */
-	#define WITHENCODER2 1		/* есть второй валкодер */
-	#define BOARD_ENCODER2_DIVIDE 4		/* значение для валкодера PEC16-4220F-n0024 (с трещёткой") */
 	//#define ENCODER_REVERSE	1	/* разводка на плате с перепутаными фазами от валкодера */
 	//#define ENCODER2_REVERSE	1	/* разводка на плате с перепутаными фазами от валкодера */
 
@@ -327,8 +325,8 @@
 		//#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
 		//#define WITHTHERMOLEVEL	1	/* отображение температуры */
 
-		//#define WITHENCODER2	1		/* есть второй валкодер */
-		//#define BOARD_ENCODER2_DIVIDE 4		/* значение для валкодера PEC16-4220F-n0024 (с трещёткой") */
+		#define WITHENCODER2	1		/* есть второй валкодер */
+		#define BOARD_ENCODER2_DIVIDE 4		/* значение для валкодера PEC16-4220F-n0024 (с трещёткой") */
 	#endif
 	#define WITHIFSHIFT	1	/* используется IF SHIFT */
 	//#define WITHIFSHIFTOFFSET	(-250)	/* Начальное занчение IF SHIFT */
