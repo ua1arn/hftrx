@@ -28,6 +28,7 @@ HEX  = $(CP) -O ihex -R .noinit -R .bss
 BIN  = $(CP) -O binary -R .noinit -R .bss
 
 CMSISDIR = ../../../CMSIS_5/CMSIS
+OBJDIR = ./obj
 
 # Define optimisation level here
 OPT = -Ofast
@@ -102,7 +103,7 @@ INCDIR  = $(patsubst %,-I%,$(DINCDIR) $(UINCDIR))
 LIBDIR  = $(patsubst %,-L%,$(DLIBDIR) $(ULIBDIR))
 DEFS    = $(DDEFS) $(UDEFS)
 ADEFS   = $(DADEFS) $(UADEFS)
-OBJS 	= $(patsubst %.s,./obj/%.o,$(ASRC)) $(patsubst $(SRCDIR)/%.c,./obj/%.o,$(SRC))
+OBJS 	= $(patsubst %.s,$(OBJDIR)/%.o,$(ASRC)) $(patsubst $(SRCDIR)/%.c,$(OBJDIR)/%.o,$(SRC))
 LIBS    = $(DLIBS) $(ULIBS)
 
 
@@ -139,11 +140,11 @@ RAM: $(OBJS) $(PROJECT)_ram.elf $(PROJECT)_ram.hex
 ROM: $(OBJS) $(PROJECT)_rom.elf $(PROJECT)_rom.hex
 #ROM: $(OBJS) $(PROJECT)_rom.elf $(PROJECT)_rom.bin
 
-obj/%.o: %.c
+$(OBJDIR)/%.o: %.c
 	@mkdir -p $(@D)
 	$(CC) -c $(CPFLAGS) $(INCDIR) $(addprefix $(SRCDIR)/, $(patsubst obj/%, %, $(patsubst %.o, %.c, $@))) -o $@
 
-obj/%.o: %.s
+$(OBJDIR)/%.o: %.s
 	@mkdir -p $(@D)
 	$(AS) -c $(ASFLAGS) $(addprefix $(SRCDIR)/, $(patsubst obj/%, %, $(patsubst %.o, %.s, $@))) -o $@
 
@@ -162,7 +163,7 @@ obj/%.o: %.s
 	$(BIN) $< $@
 
 clean:
-	-rm -fR ./obj
+	-rm -fR $(OBJDIR)
 	-rm -f $(PROJECT)_rom.elf $(PROJECT)_rom.map $(PROJECT)_rom.hex $(PROJECT)_rom.bin
 	-rm -f $(PROJECT)_ram.elf $(PROJECT)_ram.map $(PROJECT)_ram.hex $(PROJECT)_ram.bin
 	-rm -f $(PROJECT)_boot.elf $(PROJECT)_boot.map $(PROJECT)_boot.hex $(PROJECT)_boot.bin

@@ -29,6 +29,7 @@ BIN  = $(CP) -O binary -R .noinit -R .bss
 
 CMSISDIR = ../../../CMSIS_5/CMSIS
 OBJDIR = ./obj
+
 # Define optimisation level here
 OPT = -Ofast
 LTO = -flto

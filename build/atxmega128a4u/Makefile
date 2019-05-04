@@ -7,6 +7,7 @@ PROJECT = tc1
 MCU = atxmega128a4u
 TARGET = tc1_atxmega128a4u_32.elf
 CC = avr-gcc
+OBJDIR = ./obj
 
 CPP = avr-g++
 
@@ -48,7 +49,7 @@ SRC_EXCLUDES += ../../tools/rbf2c.c
 SRC += $(filter-out $(SRC_EXCLUDES), $(wildcard $(SRCDIR)/*.c $(SRCDIR)/*/*.c $(SRCDIR)/*/*/*.c $(SRCDIR)/*/*/*/*.c))
 VPATH = $(SRCDIR)
 
-OBJS 	= $(patsubst %.s,./obj/%.o,$(ASRC)) $(patsubst $(SRCDIR)/%.c,./obj/%.o,$(SRC))
+OBJS 	= $(patsubst %.s,$(OBJDIR)/%.o,$(ASRC)) $(patsubst $(SRCDIR)/%.c,$(OBJDIR)/%.o,$(SRC))
 
 ## Objects explicitly added by the user
 LINKONLYOBJECTS = 
@@ -56,11 +57,11 @@ LINKONLYOBJECTS =
 ## Build
 all: $(OBJS) $(TARGET) tc1_atxmega128a4u_32.hex tc1_atxmega128a4u_32.eep size
 
-obj/%.o: %.c
+$(OBJDIR)/%.o: %.c
 	@mkdir -p $(@D)
 	$(CC) -c $(CPFLAGS) $(INCDIR) $(addprefix $(SRCDIR)/, $(patsubst obj/%, %, $(patsubst %.o, %.c, $@))) -o $@
 
-obj/%.o: %.s
+$(OBJDIR)/%.o: %.s
 	@mkdir -p $(@D)
 	$(AS) -c $(ASFLAGS) $(addprefix $(SRCDIR)/, $(patsubst obj/%, %, $(patsubst %.o, %.s, $@))) -o $@
 	
@@ -85,7 +86,7 @@ size: ${TARGET}
 .PHONY: clean
 clean:
 	-rm -rf $(OBJS) tc1_atxmega128a4u_32.elf ./*.d tc1_atxmega128a4u_32.hex tc1_atxmega128a4u_32.eep
-	-rm -fR ./obj
+	-rm -fR $(OBJDIR)
 	-rm -f $(PROJECT)_rom.elf $(PROJECT)_rom.map $(PROJECT)_rom.hex $(PROJECT)_rom.bin
 	-rm -f $(PROJECT)_boot.elf $(PROJECT)_boot.map $(PROJECT)_boot.hex $(PROJECT)_boot.bin
 	-rm -f $(PROJECT)_app.elf $(PROJECT)_app.map $(PROJECT)_app.hex $(PROJECT)_app.bin
