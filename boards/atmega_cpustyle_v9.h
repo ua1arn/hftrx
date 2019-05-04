@@ -2,26 +2,26 @@
 /* SW2011RDX	*/
 /* board-specific CPU DIP40/TQFP44 attached signals */
 //
-// РџСЂРѕРµРєС‚ HF Dream Receiver (РљР’ РїСЂРёС‘РјРЅРёРє РјРµС‡С‚С‹)
-// Р°РІС‚РѕСЂ Р“РµРЅР° Р—Р°РІРёРґРѕРІСЃРєРёР№ mgs2001@mail.ru
+// Проект HF Dream Receiver (КВ приёмник мечты)
+// автор Гена Завидовский mgs2001@mail.ru
 // UA1ARN
 //
-// РђРїРїР°СЂР°С‚СѓСЂР° РєРѕРЅС‚СЂРѕР»Р»РµСЂР° РІ РєРѕСЂРїСѓСЃРµ TQFP44 SW2011
+// Аппаратура контроллера в корпусе TQFP44 SW2011
 
 #ifndef ATMEGA_CPUSTYLE_V9_H_INCLUDED
 #define ATMEGA_CPUSTYLE_V9_H_INCLUDED 1
 
-#define WITHTWIHW 	1	/* РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ Р°РїРїР°СЂР°С‚РЅРѕРіРѕ РєРѕРЅС‚СЂРѕР»Р»РµСЂР° TWI (I2C) */
-//#define WITHTWISW 	1	/* РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ РїСЂРѕРіСЂР°РјРјРЅРѕРіРѕ РєРѕРЅС‚СЂРѕР»Р»РµСЂР° TWI (I2C) */
+#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
+//#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 
-#define WITHSPIHW 	1	/* РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ Р°РїРїР°СЂР°С‚РЅРѕРіРѕ РєРѕРЅС‚СЂРѕР»Р»РµСЂР° SPI */
-//#define WITHSPISW 	1	/* РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ РїСЂРѕРіСЂР°РјРјРЅРѕРіРѕ РєРѕРЅС‚СЂРѕР»Р»РµСЂР° SPI */
-#define WITHCPUADCHW 	1	/* РёСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ ADC */
+#define WITHSPIHW 	1	/* Использование аппаратного контроллера SPI */
+//#define WITHSPISW 	1	/* Использование программного контроллера SPI */
+#define WITHCPUADCHW 	1	/* использование ADC */
 
-#define WITHUART1HW	1	/* РСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РїРµСЂРёС„РµСЂРёР№РЅС‹Р№ РєРѕРЅС‚СЂРѕР»Р»РµСЂ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕРіРѕ РїРѕСЂС‚Р° #1 */
-//#define WITHUART2HW	1	/* РСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РїРµСЂРёС„РµСЂРёР№РЅС‹Р№ РєРѕРЅС‚СЂРѕР»Р»РµСЂ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕРіРѕ РїРѕСЂС‚Р° #2 */
+#define WITHUART1HW	1	/* Используется периферийный контроллер последовательного порта #1 */
+//#define WITHUART2HW	1	/* Используется периферийный контроллер последовательного порта #2 */
 
-//#define WITHCAT_CDC		1	/* РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊ РІРёСЂС‚СѓР°Р»СЊРЅС‹Р№ РІРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅС‹Р№ РїРѕСЂС‚ РЅР° USB СЃРѕРµРґРёРЅРµРЅРёРё */
+//#define WITHCAT_CDC		1	/* использовать виртуальный воследовательный порт на USB соединении */
 #define WITHCAT_USART1		1
 #define WITHDEBUG_USART1	1
 #define WITHMODEM_USART1	1
@@ -31,7 +31,7 @@
 //	#error ATMEGA644P configuration (Project->Configuration Options) should be selected
 //#endif
 
-// РђРїРїР°СЂР°С‚СѓСЂР° РєРѕРЅС‚СЂРѕР»Р»РµСЂР° SW2011
+// Аппаратура контроллера SW2011
 
 //#if ! defined(LCDMODE_LS020)	
 //	#error LCDMODE_LS020 swould be defined
@@ -42,36 +42,36 @@
 #endif
 
 
-	/* РїРµСЂРµРєР»СЋС‡РµРЅРёРµ Р±РёС‚Р° СѓРїСЂР°РІР»РµРЅРёСЏ РЅРµСЃСѓС‰РµР№ РІС‹Р·С‹РІР°РµС‚СЃСЏ РёР· РїСЂРµСЂС‹РІР°РЅРёР№ -
-	 РІСЃРµРј РѕСЃС‚Р°Р»СЊРЅС‹Рј, РјРѕРґРёС„РёС†РёСЂСѓСЋС‰РёРј Р±РёС‚С‹ РЅР° СЌС‚РѕРј РїРѕСЂС‚Сѓ, РІС‹РїРѕР»РЅСЏС‚СЊ РїРѕРґ Р·Р°РїСЂРµС‚РѕРј РїСЂРµСЂС‹РІР°РЅРёР№.
+	/* переключение бита управления несущей вызывается из прерываний -
+	 всем остальным, модифицирующим биты на этом порту, выполнять под запретом прерываний.
 		*/
 
 #if WITHTX
 	// port D
-	#define TXPATH_TARGET_PORT PORTD	// РІС‹С…РѕРґС‹ РїСЂРѕС†РµСЃСЃРѕСЂР° - СѓРїСЂР°РІР»РµРЅРёРµ С‚СЂР°РєС‚РѕРј РїРїРµСЂРµРґР°С‡Рё Рё РјР°РЅРёРїСѓР»СЏС†РёРµР№
-	#define TXPATH_TARGET_DDR DDRD		// РїРµСЂРµРєР»СЋС‡РµРЅРёРµ РЅР° РІС‹РІРѕРґ - СѓРїСЂР°РІР»РµРЅРёРµ С‚СЂР°РєС‚РѕРј РїРµСЂРµРґР°С‡Рё Рё РјР°РЅРёРїСѓР»СЏС†РёРµР№
+	#define TXPATH_TARGET_PORT PORTD	// выходы процессора - управление трактом ппередачи и манипуляцией
+	#define TXPATH_TARGET_DDR DDRD		// переключение на вывод - управление трактом передачи и манипуляцией
 
 	#if 0
-		// РЈРїСЂР°РІР»РµРЅРёРµ РїРµСЂРµРґР°С‚С‡РёРєРѕРј - СЃРёРіРЅР°Р»С‹ TXPATH_ENABLE (PA11) Рё TXPATH_ENABLE_CW (PA10) - Р°РєС‚РёРІРЅС‹ РїСЂРё РЅСѓР»Рµ РЅР° РІС‹С…РѕРґРµ.
-		#define TXPATH_BIT_ENABLE_SSB		(1U << PD5)	// РЅРµ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ
-		#define TXPATH_BIT_ENABLE_CW	(1U << PD6)		// СЃРёРіРЅР°Р» tx2 РїСЂРё РїРµСЂРµРґР°С‡Рµ
+		// Управление передатчиком - сигналы TXPATH_ENABLE (PA11) и TXPATH_ENABLE_CW (PA10) - активны при нуле на выходе.
+		#define TXPATH_BIT_ENABLE_SSB		(1U << PD5)	// не используется
+		#define TXPATH_BIT_ENABLE_CW	(1U << PD6)		// сигнал tx2 при передаче
 		#define TXPATH_BITS_ENABLE	(TXPATH_BIT_ENABLE_SSB | TXPATH_BIT_ENABLE_CW)
-		// РџСЂРё РїСЂРёС‘РјРµ - Р°РєС‚РёРІРµРЅ
-		// РџРѕРґРіРѕС‚РѕРІР»РµРЅРЅС‹Рµ СѓРїСЂР°РІР»СЏСЋС‰РёРµ СЃР»РѕРІР°
+		// При приёме - активен
+		// Подготовленные управляющие слова
 		#define TXGFV_RX		0
-		#define TXGFV_TRANS		0			// РїРµСЂРµС…РѕРґ РјРµР¶РґСѓ СЂРµР¶РёРјР°РјРё РїСЂРёС‘РјР° Рё РїРµСЂРµРґР°С‡Рё
+		#define TXGFV_TRANS		0			// переход между режимами приёма и передачи
 		#define TXGFV_TX_SSB	TXPATH_BIT_ENABLE_SSB
 		#define TXGFV_TX_CW		TXPATH_BIT_ENABLE_CW
 		#define TXGFV_TX_AM		TXPATH_BIT_ENABLE_CW
 		#define TXGFV_TX_NFM	TXPATH_BIT_ENABLE_CW
 	#else
-		// Р’СЃРµ SW2011 Рё РґР°Р»РµРµ - РѕР±С‰РёР№ С‚СЂР°РєС‚
-		#define TXPATH_BIT_GATE (1U << PD6)	// СЃРёРіРЅР°Р» tx2 - СѓРїСЂР°РІР»РµРЅРёРµ РїРµСЂРµРґР°С‚С‡РёРєРѕРј.
-		#define TXPATH_BIT_GATE_RX TXPATH_BIT_GATE	// СЃРёРіРЅР°Р» tx2 - СѓРїСЂР°РІР»РµРЅРёРµ РїРµСЂРµРґР°С‚С‡РёРєРѕРј. РџСЂРё РїСЂРёС‘РјРµ Р°РєС‚РёРІРµРЅ
-		//#define TXPATH_BIT_GATE_RX 0	// СЃРёРіРЅР°Р» tx2 - СѓРїСЂР°РІР»РµРЅРёРµ РїРµСЂРµРґР°С‚С‡РёРєРѕРј. РџСЂРё РїСЂРёС‘РјРµ РЅРµ Р°РєС‚РёРІРµРЅ
-		// РџРѕРґРіРѕС‚РѕРІР»РµРЅРЅС‹Рµ СѓРїСЂР°РІР»СЏСЋС‰РёРµ СЃР»РѕРІР°
+		// Все SW2011 и далее - общий тракт
+		#define TXPATH_BIT_GATE (1U << PD6)	// сигнал tx2 - управление передатчиком.
+		#define TXPATH_BIT_GATE_RX TXPATH_BIT_GATE	// сигнал tx2 - управление передатчиком. При приёме активен
+		//#define TXPATH_BIT_GATE_RX 0	// сигнал tx2 - управление передатчиком. При приёме не активен
+		// Подготовленные управляющие слова
 		#define TXGFV_RX		TXPATH_BIT_GATE_RX
-		#define TXGFV_TRANS		0			// РїРµСЂРµС…РѕРґ РјРµР¶РґСѓ СЂРµР¶РёРјР°РјРё РїСЂРёС‘РјР° Рё РїРµСЂРµРґР°С‡Рё
+		#define TXGFV_TRANS		0			// переход между режимами приёма и передачи
 		#define TXGFV_TX_SSB	TXPATH_BIT_GATE
 		#define TXGFV_TX_CW		TXPATH_BIT_GATE
 		#define TXGFV_TX_AM		TXPATH_BIT_GATE
@@ -79,22 +79,22 @@
 	#endif
 
 	#if WITHELKEY
-		#define ELKEY_TARGET_PORT PORTB		// РІС…РѕРґС‹ РїСЂРѕС†РµСЃСЃРѕСЂР° - СЃРёРіРЅР°Р»С‹ СЌР»РµРєС‚СЂРѕРЅРЅРѕРіРѕ РєР»СЋС‡Р°
-		#define ELKEY_TARGET_DDR DDRB		// РїРµСЂРµРєР»СЋС‡РµРЅРёРµ РЅР° РІРІРѕРґ - СЃРёРіРЅР°Р»С‹ СЌР»РµРєС‚СЂРѕРЅРЅРѕРіРѕ РєР»СЋС‡Р°
-		#define ELKEY_TARGET_PIN PINB		// РІРІРѕРґ - СЃРёРіРЅР°Р»С‹ СЌР»РµРєС‚СЂРѕРЅРЅРѕРіРѕ РєР»СЋС‡Р°
+		#define ELKEY_TARGET_PORT PORTB		// входы процессора - сигналы электронного ключа
+		#define ELKEY_TARGET_DDR DDRB		// переключение на ввод - сигналы электронного ключа
+		#define ELKEY_TARGET_PIN PINB		// ввод - сигналы электронного ключа
 
 		#define ELKEY_BIT_LEFT (1U << PB1)
 		#define ELKEY_BIT_RIGHT (1U << PB0)
 
-		// СЂР°Р·СЂРµС€РµРЅРёРµ РїСЂРµСЂС‹РІР°РЅРёР№ РїРѕ РЅР°Р¶Р°С‚РёСЏРј РЅР° РєРѕРЅС‚Р°РєС‚С‹ РєР»СЋС‡Р°
-		// РњРёРєСЂРѕРїСЂРѕС†РµСЃСЃРѕСЂР°С… РЅР°РїРѕРґРѕР±РёРё ATMega644
+		// разрешение прерываний по нажатиям на контакты ключа
+		// Микропроцессорах наподобии ATMega644
 		#define PCMSK_PORT	PCMSK1			// PCMSK0 - PA, PCMSK1 - PB, PCMSK2 - PC, PCMSK3 - PD
 		#define PCICR_BIT	(1U << PCIE1)	// PCIE0 - PA, PCIE1 - PB, PCIE2 - PC, PCIE3 - PD
-		#define PCIVECT PCINT1_vect			// РІРµРєС‚РѕСЂ РѕР±СЂР°Р±РѕС‚С‡РёРєР°
+		#define PCIVECT PCINT1_vect			// вектор обработчика
 	#endif
 
-	// РїСЂРѕС†РµСЃСЃРѕСЂ С„РѕСЂРјРёСЂСѓРµС‚ Р·РІСѓРє СЃР°РјРѕРєРѕРЅС‚СЂРѕР»СЏ РїСЂРё РїРµСЂРµРґР°С‡Рµ С‚РµР»РµРіСЂР°С„РѕРј
-	// РіРµРЅРµСЂР°С†РёСЏ СЃРёРіРЅР°Р»Р° СЃР°РјРѕРєРѕРЅС‚СЂРѕР»СЏ РЅР° PD7(OC2)
+	// процессор формирует звук самоконтроля при передаче телеграфом
+	// генерация сигнала самоконтроля на PD7(OC2)
 
 	#define PTT_TARGET_PORT PORTB
 	#define PTT_TARGET_DDR DDRB
@@ -103,31 +103,31 @@
 
 	#if WITHCAT || WITHNMEA
 
-		// РЎРёРіРЅР°Р»С‹ РїРµСЂРµРєР»СЋС‡РµРЅРёСЏ РЅР° РїРµСЂРµРґР°С‡Сѓ Рё РјР°РЅРёРїСѓР»СЏС†РёРё С‡РµСЂРµР· CAT РёРЅС‚РµСЂС„РµР№СЃ.
+		// Сигналы переключения на передачу и манипуляции через CAT интерфейс.
 		#define FROMCAT_TARGET_PORT_RTS		PORTD
 		#define FROMCAT_TARGET_PIN_RTS		PIND
 		#define FROMCAT_TARGET_DDR_RTS		DDRD
-		#define FROMCAT_BIT_RTS			(1U << PD4)	/* pin 13 TQFP 44 - СЃРёРіРЅР°Р» RTS РѕС‚ FT232RL	*/
+		#define FROMCAT_BIT_RTS			(1U << PD4)	/* pin 13 TQFP 44 - сигнал RTS от FT232RL	*/
 
 		// port B
 		#define FROMCAT_TARGET_PORT_DTR		PORTB
 		#define FROMCAT_TARGET_PIN_DTR		PINB
 		#define FROMCAT_TARGET_DDR_DTR		DDRB
-		#define FROMCAT_BIT_DTR			(1U << PB3)	/* pin 43 TQFP 44 - СЃРёРіРЅР°Р» DTR РѕС‚ FT232RL	*/
-		/* РјР°РЅРёРїСѓР»СЏС†РёСЏ РѕС‚ РїРѕСЂС‚Р° RS-232, СЃРёРіРЅР°Р» PPS РѕС‚ GPS/GLONASS/GALILEO РјРѕРґСѓР»СЏ */
-		// СЂР°Р·СЂРµС€РµРЅРёРµ РїСЂРµСЂС‹РІР°РЅРёР№ РїРѕ РёР·РјРµРЅРµРЅРёСЋ СЃРѕСЃС‚РѕСЏРЅРёСЏ РЅР° РІС…РѕРґРµ РјР°РЅРёРїСѓР»СЏС†РёРё РїРѕ CAT
-		// РІ РјРёРєСЂРѕРїСЂРѕС†РµСЃСЃРѕСЂР°С… РЅР°РїРѕРґРѕР±РёРё ATMega644, ATMega328
+		#define FROMCAT_BIT_DTR			(1U << PB3)	/* pin 43 TQFP 44 - сигнал DTR от FT232RL	*/
+		/* манипуляция от порта RS-232, сигнал PPS от GPS/GLONASS/GALILEO модуля */
+		// разрешение прерываний по изменению состояния на входе манипуляции по CAT
+		// в микропроцессорах наподобии ATMega644, ATMega328
 		#define DTRPCMSK_PORT	PCMSK1			// PCMSK0 - PA, PCMSK1 - PB, PCMSK2 - PC, PCMSK3 - PD
 		#define DTRPCICR_BIT	(1U << PCIE1)	// PCIE0 - PA, PCIE1 - PB, PCIE2 - PC, PCIE3 - PD
-		#define DTRPCIVECT PCINT1_vect			// РІРµРєС‚РѕСЂ РѕР±СЂР°Р±РѕС‚С‡РёРєР°
+		#define DTRPCIVECT PCINT1_vect			// вектор обработчика
 
 
 	#endif /* WITHCAT */
 
 #endif /* WITHTX */
 
-/* СЃР°РјРѕРєРѕРЅС‚СЂРѕР»СЊ РїРµСЂРµРґР°С‡Рё С‚РµР»РµРіСЂР°С„Р° Рё РѕР·РІСѓС‡РєР° РЅР°Р¶Р°С‚РёР№ */
-#define SIDETONE_TARGET_PORT	PORTD	/* РџРѕСЂС‚ РїСЂРѕС†РµСЃСЃРѕСЂР°, РЅР° РєРѕС‚РѕСЂРѕРј РЅР°С…РѕРґРёС‚СЃСЏ РІС‹РІРѕРґ С‚РѕРЅР° СЃР°РјРѕРєРѕРЅС‚СЂРѕР»СЏ */
+/* самоконтроль передачи телеграфа и озвучка нажатий */
+#define SIDETONE_TARGET_PORT	PORTD	/* Порт процессора, на котором находится вывод тона самоконтроля */
 #define SIDETONE_TARGET_DDR		DDRD
 #define SIDETONE_TARGET_BIT		(1U << PD7)
 
@@ -143,17 +143,17 @@
 #define SPI_TARGET_SCLK_PORT PORTB
 #define SPI_TARGET_SCLK_DDR DDRB
 #define SPI_TARGET_SCLK_PIN PINB
-#define	SPI_SCLK_BIT (1U << PB7)	// Р±РёС‚, С‡РµСЂРµР· РєРѕС‚РѕСЂС‹Р№ РёРґРµС‚ СЃРёРЅС…СЂРѕРЅРёР·Р°С†РёСЏ SPI
+#define	SPI_SCLK_BIT (1U << PB7)	// бит, через который идет синхронизация SPI
 
 #define SPI_TARGET_MOSI_PORT PORTB
 #define SPI_TARGET_MOSI_DDR DDRB
 #define SPI_TARGET_MOSI_PIN PINB
-#define	SPI_MOSI_BIT (1U << PB5)	// Р±РёС‚, С‡РµСЂРµР· РєРѕС‚РѕСЂС‹Р№ РёРґРµС‚ РІС‹РІРѕРґ (РёР»Рё РІРІРѕРґ РІ СЃР»СѓС‡Р°Рµ РґРІСѓРЅР°РїСЂР°РІР»РµРЅРЅРѕРіРѕ SPI).
+#define	SPI_MOSI_BIT (1U << PB5)	// бит, через который идет вывод (или ввод в случае двунаправленного SPI).
 
 #define SPI_TARGET_MISO_PIN PINB
 #define SPI_TARGET_MISO_PORT PORTB
 #define SPI_TARGET_MISO_DDR DDRB
-#define	SPI_MISO_BIT (1U << PB6)	// Р±РёС‚, С‡РµСЂРµР· РєРѕС‚РѕСЂС‹Р№ РёРґРµС‚ РІРІРѕРґ СЃ SPI.
+#define	SPI_MISO_BIT (1U << PB6)	// бит, через который идет ввод с SPI.
 
 #define SPI_IOUPDATE_PORT PORTB
 #define SPI_IOUPDATE_DDR DDRB
@@ -164,21 +164,21 @@
 #if LCDMODE_HARD_SPI
 	#if (defined (PLL1_TYPE) && (PLL1_TYPE == PLL_TYPE_SI570)) || WITHSI5351AREPLACE
 
-		// С‚СЂРµР±СѓРµС‚СЃСЏ РѕСЃС‚Р°РІРёС‚СЊ СЃРІРѕР±РѕРґРЅС‹РјРё РґР»СЏ РёСЃРїРѕР»СЊР·РѕРІР°РЅРёСЏ РІС‹РІРѕРґС‹
-		// Р°РїРїР°СЂР°С‚РЅРѕРіРѕ TWI / I2C РёРЅС‚РµСЂС„РµР№СЃР°.
+		// требуется оставить свободными для использования выводы
+		// аппаратного TWI / I2C интерфейса.
 
-		// РїРѕРґРєР»СЋС‡РµРЅРёРµ РїРѕ РІРµСЂСЃРёРё "С‹" - LS020 Рё Si570 - РІРјРµСЃС‚Рѕ AD9951.
+		// подключение по версии "ы" - LS020 и Si570 - вместо AD9951.
 		#define LS020_RESET_PORT 	PORTC
 		#define LS020_RESET_DDR 	DDRC
-		#define LS020_RST			(1U << PC2)		// Pin 21 of TQFP44  RESET LS020 РїСЂРё Si570 - Р±С‹Р» CS AD9951
+		#define LS020_RST			(1U << PC2)		// Pin 21 of TQFP44  RESET LS020 при Si570 - был CS AD9951
 
 		#define LS020_RS_PORT 		PORTC
 		#define LS020_RS_DDR 		DDRC
-		#define LS020_RS			(1U << PC5)		// Pin 24 of TQFP44  RS РёРЅРґРёРєР°С‚РѕСЂР° LS020 РїСЂРё Si570
+		#define LS020_RS			(1U << PC5)		// Pin 24 of TQFP44  RS индикатора LS020 при Si570
 
-		//#define SPI_CSEL0 (1U << PC2)	/* Pin 21 of TQFP44  DDS1 - LO1 generator AD9951 РёР»Рё RESET LS020 РїСЂРё Si570 - Pin 21 of TQFP44 */
+		//#define SPI_CSEL0 (1U << PC2)	/* Pin 21 of TQFP44  DDS1 - LO1 generator AD9951 или RESET LS020 при Si570 - Pin 21 of TQFP44 */
 		#define SPI_CSEL1 (1U << PC3)	/* Pin 22 of TQFP44  DDS2 - LO3 generator AD9834 */
-		#define SPI_CSEL2 (1U << PC4)	/* Pin 23 of TQFP44  Р§РёРїСЃРµР»РµРєС‚ РёРЅРґРёРєР°С‚РѕСЂР° LS020 - Pin 23 of TQFP44 */
+		#define SPI_CSEL2 (1U << PC4)	/* Pin 23 of TQFP44  Чипселект индикатора LS020 - Pin 23 of TQFP44 */
 		//#define SPI_CSEL3 (1U << PC5)	/* Pin 24 of TQFP44  unused */ 
 		#define SPI_CSEL4 (1U << PC6)	/* Pin 25 of TQFP44  control register */
 		#define SPI_CSEL5 (1U << PC7)	/* Pin 26 of TQFP44  serial nvram */
@@ -189,15 +189,15 @@
 			#define UC1608_CSP_PORT PORTC
 			#define UC1608_CSP_DDR DDRC
 			#define UC1608_CSP 	(1U << PC4)			// Pin 23 of TQFP44
-			#define SPI_CSEL255	255					// РїРѕ СЌС‚РѕРјСѓ С‡РёРїСЃРµР»РµРєС‚Сѓ РІС‹Р±РёСЂР°РµРј РїРѕР»РѕР¶РёС‚РµР»СЊРЅС‹Рј СЃРёРіРЅР°Р»РѕРј
+			#define SPI_CSEL255	255					// по этому чипселекту выбираем положительным сигналом
 
 			#define SPI_ALLCS_BITS (SPI_CSEL1 | SPI_CSEL4 |             SPI_CSEL5)
-			#define SPI_ALLCS_BITSNEG 0		// Р’С‹С…РѕРґС‹, Р°РєС‚РёРІРЅС‹Рµ РїСЂРё "1"
+			#define SPI_ALLCS_BITSNEG 0		// Выходы, активные при "1"
 
 		#else
 
 			#define SPI_ALLCS_BITS (SPI_CSEL1 | SPI_CSEL2 | SPI_CSEL4 | SPI_CSEL5)
-			#define SPI_ALLCS_BITSNEG 0		// Р’С‹С…РѕРґС‹, Р°РєС‚РёРІРЅС‹Рµ РїСЂРё "1"
+			#define SPI_ALLCS_BITSNEG 0		// Выходы, активные при "1"
 
 		#endif
 
@@ -208,7 +208,7 @@
 
 	#else
 
-		// РџРѕРґРєР»СЋС‡РµРЅРёРµ LS020 РїРѕ СЃС…РµРјРµ Р’Р°СЃРёР»РёСЏ Р›РёРІРЅРёР№ - РЅР° РІС‹РІРѕРґС‹ TWI
+		// Подключение LS020 по схеме Василия Ливний - на выводы TWI
 		#undef WITHTWIHW
 		#undef WITHTWISW
 
@@ -220,10 +220,10 @@
 		#define LS020_RS_DDR 		DDRC
 		#define LS020_RS			(1U << PC0)		// Pin 19 of TQFP44  
 
-		// РєР»Р°СЃСЃРёС‡РµСЃРєР°СЏ РєРѕРЅС„РёРіСѓСЂР°С†РёСЏ
-		#define SPI_CSEL0 (1U << PC2)	/* Pin 21 of TQFP44  DDS1 - LO1 generator AD9951 РёР»Рё RESET LS020 РїСЂРё Si570 - Pin 21 of TQFP44 */
+		// классическая конфигурация
+		#define SPI_CSEL0 (1U << PC2)	/* Pin 21 of TQFP44  DDS1 - LO1 generator AD9951 или RESET LS020 при Si570 - Pin 21 of TQFP44 */
 		#define SPI_CSEL1 (1U << PC3)	/* Pin 22 of TQFP44  DDS2 - LO3 generator AD9834 - Pin 22 of TQFP44 */
-		#define SPI_CSEL2 (1U << PC4)	/* Pin 23 of TQFP44  Р§РёРїСЃРµР»РµРєС‚ РёРЅРґРёРєР°С‚РѕСЂР° LS020 - Pin 23 of TQFP44 */
+		#define SPI_CSEL2 (1U << PC4)	/* Pin 23 of TQFP44  Чипселект индикатора LS020 - Pin 23 of TQFP44 */
 		#define SPI_CSEL3 (1U << PC5)	/* Pin 24 of TQFP44  unused */ 
 		#define SPI_CSEL4 (1U << PC6)	/* Pin 25 of TQFP44  control register */
 		#define SPI_CSEL5 (1U << PC7)	/* Pin 26 of TQFP44  serial nvram */
@@ -234,14 +234,14 @@
 			#define UC1608_CSP_PORT PORTC
 			#define UC1608_CSP_DDR DDRC
 			#define UC1608_CSP 	(1U << PC4)			// Pin 23 of TQFP44
-			#define SPI_CSEL255	255					// РїРѕ СЌС‚РѕРјСѓ С‡РёРїСЃРµР»РµРєС‚Сѓ РІС‹Р±РёСЂР°РµРј РїРѕР»РѕР¶РёС‚РµР»СЊРЅС‹Рј СЃРёРіРЅР°Р»РѕРј
+			#define SPI_CSEL255	255					// по этому чипселекту выбираем положительным сигналом
 
 			#define SPI_ALLCS_BITS (SPI_CSEL0 | SPI_CSEL1 |             SPI_CSEL3 | SPI_CSEL4 | SPI_CSEL5)
-			#define SPI_ALLCS_BITSNEG 0		// Р’С‹С…РѕРґС‹, Р°РєС‚РёРІРЅС‹Рµ РїСЂРё "1"
+			#define SPI_ALLCS_BITSNEG 0		// Выходы, активные при "1"
 
 		#else
 			#define SPI_ALLCS_BITS (SPI_CSEL0 | SPI_CSEL1 | SPI_CSEL2 | SPI_CSEL3 | SPI_CSEL4 | SPI_CSEL5)
-			#define SPI_ALLCS_BITSNEG 0		// Р’С‹С…РѕРґС‹, Р°РєС‚РёРІРЅС‹Рµ РїСЂРё "1"
+			#define SPI_ALLCS_BITSNEG 0		// Выходы, активные при "1"
 		#endif
 		// port C
 		#define SPI_ALLCS_PORT PORTC
@@ -252,20 +252,20 @@
 
 #elif LCDMODE_HARD_I2C
 
-	// РєР»Р°СЃСЃРёС‡РµСЃРєР°СЏ РєРѕРЅС„РёРіСѓСЂР°С†РёСЏ
+	// классическая конфигурация
 
-	// С‚СЂРµР±СѓРµС‚СЃСЏ РѕСЃС‚Р°РІРёС‚СЊ СЃРІРѕР±РѕРґРЅС‹РјРё РґР»СЏ РёСЃРїРѕР»СЊР·РѕРІР°РЅРёСЏ РІС‹РІРѕРґС‹
-	// Р°РїРїР°СЂР°С‚РЅРѕРіРѕ TWI / I2C РёРЅС‚РµСЂС„РµР№СЃР°.
+	// требуется оставить свободными для использования выводы
+	// аппаратного TWI / I2C интерфейса.
 	// 
 	#define SPI_CSEL0 (1U << PC2)	/* Pin 21 of TQFP44  DDS1 - LO1 generator AD9951 */
 	#define SPI_CSEL1 (1U << PC3)	/* Pin 22 of TQFP44  DDS2 - LO3 generator AD9834 */
-	#define SPI_CSEL2 (1U << PC4)	/* Pin 23 of TQFP44  Р§РёРїСЃРµР»РµРєС‚ РёРЅРґРёРєР°С‚РѕСЂР° LS020 - Pin 23 of TQFP44 */
+	#define SPI_CSEL2 (1U << PC4)	/* Pin 23 of TQFP44  Чипселект индикатора LS020 - Pin 23 of TQFP44 */
 	//#define SPI_CSEL3 (1U << PC5)	/* Pin 24 of TQFP44  unused */ 
 	#define SPI_CSEL4 (1U << PC6)	/* Pin 25 of TQFP44  control register */
 	#define SPI_CSEL5 (1U << PC7)	/* Pin 26 of TQFP44  serial nvram */
 
 	#define SPI_ALLCS_BITS (SPI_CSEL0 | SPI_CSEL1 | SPI_CSEL2 | /* SPI_CSEL3 | */ SPI_CSEL4 | SPI_CSEL5)
-	#define SPI_ALLCS_BITSNEG 0		// Р’С‹С…РѕРґС‹, Р°РєС‚РёРІРЅС‹Рµ РїСЂРё "1"
+	#define SPI_ALLCS_BITSNEG 0		// Выходы, активные при "1"
 
 	// port C
 	#define SPI_ALLCS_PORT PORTC
@@ -278,7 +278,7 @@
 		} while (0)
 
 	#define HARDWARE_SPI_CONNECT() do { \
-			/* PB4(~SS) РґРѕР»Р¶РµРЅ Р±С‹С‚СЊ РІС‹С…РѕРґРѕРј. SPI_NAEN_BIT - СЂР°Р·СЂРµС€РµРЅРёРµ РґРµС€РёС„СЂР°С‚РѕСЂР°. */ \
+			/* PB4(~SS) должен быть выходом. SPI_NAEN_BIT - разрешение дешифратора. */ \
 			HARDWARE_OUTPUT_INITIALIZE(PORTB, DDRB, (1U << PB4), (1U << PB4)); \
 		} while (0)
 
@@ -289,10 +289,10 @@
 	// Separated MOSI and MISO signals, only supported if WITHSPIHW used
 	#define SPIIO_INITIALIZE() do { \
 			HARDWARE_INPUT_INITIALIZE(SPI_TARGET_MISO_PORT, SPI_TARGET_MISO_DDR, SPI_MISO_BIT, SPI_MISO_BIT); /* enable pull-up on MISO */ \
-			/* PB4(~SS) РґРѕР»Р¶РµРЅ Р±С‹С‚СЊ РІС‹С…РѕРґРѕРј. SPI_NAEN_BIT - СЂР°Р·СЂРµС€РµРЅРёРµ РґРµС€РёС„СЂР°С‚РѕСЂР°. */ \
+			/* PB4(~SS) должен быть выходом. SPI_NAEN_BIT - разрешение дешифратора. */ \
 			HARDWARE_OUTPUT_INITIALIZE(SPI_TARGET_SCLK_PORT, SPI_TARGET_SCLK_DDR, SPI_SCLK_BIT, SPI_SCLK_BIT); \
 			HARDWARE_OUTPUT_INITIALIZE(SPI_TARGET_MOSI_PORT, SPI_TARGET_MOSI_DDR, SPI_MOSI_BIT, SPI_MOSI_BIT); \
-			/* PB4(~SS) РґРѕР»Р¶РµРЅ Р±С‹С‚СЊ РІС‹С…РѕРґРѕРј. SPI_NAEN_BIT - СЂР°Р·СЂРµС€РµРЅРёРµ РґРµС€РёС„СЂР°С‚РѕСЂР°. */ \
+			/* PB4(~SS) должен быть выходом. SPI_NAEN_BIT - разрешение дешифратора. */ \
 			HARDWARE_OUTPUT_INITIALIZE(PORTB, DDRB, (1U << PB4), (1U << PB4)); \
 		} while (0)
 
@@ -306,15 +306,15 @@
 	#define TARGET_TWI_TWD_PIN PINC
 	#define TARGET_TWI_TWD	(1U << PC1)	// DIP40 pin 23
 
-	/* РїСЂРѕРіСЂР°РјРјРёСЂРѕРІР°РЅРёРµ РІС‹РІРѕРґРѕРІ, СѓРїСЂР°РІР»СЏСЋС‰РёС… I2C */
+	/* программирование выводов, управляющих I2C */
 	#define TWISOFT_INITIALIZE() do { \
 		HARDWARE_INPUT_INITIALIZE(TARGET_TWI_TWCK_PORT, TARGET_TWI_TWCK_DDR, TARGET_TWI_TWCK, TARGET_TWI_TWCK); \
 		HARDWARE_INPUT_INITIALIZE(TARGET_TWI_TWD_PORT, TARGET_TWI_TWD_DDR, TARGET_TWI_TWD, TARGET_TWI_TWD); \
 		} while (0)
 
-	// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ Р±РёС‚РѕРІ РїРѕСЂС‚РѕРІ РІРІРѕРґР°-РІС‹РІРѕРґР° РґР»СЏ Р°РїРїР°СЂР°С‚РЅРѕР№ СЂРµР°Р»РёР·Р°С†РёРё I2S
-	// РїСЂРёСЃРѕРµРґРёРЅРµРЅРёРµ РІС‹РІРѕРґРѕРІ Рє РїРµСЂРёС„РµСЂРёР№РЅРѕРјСѓ СѓСЃС‚СЂРѕР№СЃС‚РІСѓ
-	// РќР° ATMEGA РЅРµ С‚СЂРµР±СѓРµС‚СЃСЏ
+	// Инициализация битов портов ввода-вывода для аппаратной реализации I2S
+	// присоединение выводов к периферийному устройству
+	// На ATMEGA не требуется
 	#define	TWIHARD_INITIALIZE() do { \
 		} while (0) 
 
@@ -347,10 +347,10 @@
 #if SPI_BIDIRECTIONAL && CPUSTYLE_ATMEGA
 
 	#define SPIIO_MOSI_TO_INPUT() do { \
-		SPI_TARGET_MOSI_DDR &= ~ SPI_MOSI_BIT;	/* РїРµСЂРµРєР»СЋС‡РёС‚СЊ РїРѕСЂС‚ РЅР° С‡С‚РµРЅРёРµ СЃ РІС‹РІРѕРґРѕРІ */ \
+		SPI_TARGET_MOSI_DDR &= ~ SPI_MOSI_BIT;	/* переключить порт на чтение с выводов */ \
 		} while (0)
 	#define SPIIO_MOSI_TO_OUTPUT() do { \
-		SPI_TARGET_MOSI_DDR |= SPI_MOSI_BIT;	/* РѕС‚РєСЂС‹С‚СЊ РІС‹С…РѕРґС‹ РїРѕСЂС‚Р° */ \
+		SPI_TARGET_MOSI_DDR |= SPI_MOSI_BIT;	/* открыть выходы порта */ \
 		} while (0)
 
 #endif /* SPI_BIDIRECTIONAL && CPUSTYLE_ATMEGA */
@@ -360,38 +360,38 @@
 
 	#define HARDWARE_GET_PTT() ((PTT_TARGET_PIN & PTT_BIT_PTT) == 0)
 	#define PTT_INITIALIZE() do { \
-		PTT_TARGET_PORT |= PTT_BIT_PTT;	/* РІРєР»СЋС‡С‚СЊ pull-up РЅР° СЌС‚РѕС‚ РІС…РѕРґ. */ \
-		PTT_TARGET_DDR &= ~ PTT_BIT_PTT;	/* Р±РёС‚ РІС…РѕРґР° PTT */ \
+		PTT_TARGET_PORT |= PTT_BIT_PTT;	/* включть pull-up на этот вход. */ \
+		PTT_TARGET_DDR &= ~ PTT_BIT_PTT;	/* бит входа PTT */ \
 	} while (0)
 
 	#define ELKEY_INITIALIZE() do { \
-		ELKEY_TARGET_DDR &= ~ ELKEY_BIT_LEFT;	/* Р±РёС‚ РІС…РѕРґР° Р»РµРІРѕРіРѕ РєРѕРЅС‚Р°РєС‚Р° РјР°РЅРёРїСѓР»СЏС‚РѕСЂР° */ \
+		ELKEY_TARGET_DDR &= ~ ELKEY_BIT_LEFT;	/* бит входа левого контакта манипулятора */ \
 		ELKEY_TARGET_PORT |= ELKEY_BIT_LEFT; \
-		ELKEY_TARGET_DDR &= ~ ELKEY_BIT_RIGHT;	/* Р±РёС‚ РІС…РѕРґР° РїСЂР°РІРѕРіРѕ РєРѕРЅС‚Р°РєС‚Р° РјР°РЅРёРїСѓР»СЏС‚РѕСЂР° */ \
+		ELKEY_TARGET_DDR &= ~ ELKEY_BIT_RIGHT;	/* бит входа правого контакта манипулятора */ \
 		ELKEY_TARGET_PORT |= ELKEY_BIT_RIGHT; \
-		/* PCMSK_PORT |= (ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT); */ /* СЂР°Р·СЂРµС€РµРЅРёРµ РїСЂРµСЂС‹РІР°РЅРёР№ РїРѕ РЅР°Р¶Р°С‚РёСЏРј РЅР° РєРѕРЅС‚Р°РєС‚С‹ РєР»СЋС‡Р° */ \
+		/* PCMSK_PORT |= (ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT); */ /* разрешение прерываний по нажатиям на контакты ключа */ \
 		/* PCICR |= (PCICR_BIT); */ \
 	} while (0)
 
 	#define NMEA_INITIALIZE() do { \
 		FROMCAT_TARGET_PORT_DTR |= FROMCAT_BIT_DTR;		/* enable pull-up */ \
-		FROMCAT_TARGET_DDR_DTR &= ~ FROMCAT_BIT_DTR;	/* Р±РёС‚ РІС…РѕРґР° DTR */ \
-		/* DTRPCMSK_PORT |= (FROMCAT_BIT_DTR); */ /* СЂР°Р·СЂРµС€РµРЅРёРµ РїСЂРµСЂС‹РІР°РЅРёР№ РїРѕ РёР·РјРµРЅРµРЅРёСЋ СЃРѕСЃС‚РѕСЏРЅРёСЏ DTR */ \
-		/* PCICR |= (DTRPCICR_BIT); */ /* СЂР°Р·СЂРµС€РµРЅРёРµ РїСЂРµСЂС‹РІР°РЅРёР№ РїРѕ РёР·РјРµРЅРµРЅРёСЋ СЃРѕСЃС‚РѕСЏРЅРёСЏ DTR */ \
+		FROMCAT_TARGET_DDR_DTR &= ~ FROMCAT_BIT_DTR;	/* бит входа DTR */ \
+		/* DTRPCMSK_PORT |= (FROMCAT_BIT_DTR); */ /* разрешение прерываний по изменению состояния DTR */ \
+		/* PCICR |= (DTRPCICR_BIT); */ /* разрешение прерываний по изменению состояния DTR */ \
 	} while (0)
 
 	#define FROMCAT_DTR_INITIALIZE() do { \
 		FROMCAT_TARGET_PORT_DTR |= FROMCAT_BIT_DTR;		/* enable pull-up */ \
-		FROMCAT_TARGET_DDR_DTR &= ~ FROMCAT_BIT_DTR;	/* Р±РёС‚ РІС…РѕРґР° DTR */ \
-		/* DTRPCMSK_PORT |= (FROMCAT_BIT_DTR); */ /* СЂР°Р·СЂРµС€РµРЅРёРµ РїСЂРµСЂС‹РІР°РЅРёР№ РїРѕ РёР·РјРµРЅРµРЅРёСЋ СЃРѕСЃС‚РѕСЏРЅРёСЏ DTR */ \
-		/* PCICR |= (DTRPCICR_BIT); */ /* СЂР°Р·СЂРµС€РµРЅРёРµ РїСЂРµСЂС‹РІР°РЅРёР№ РїРѕ РёР·РјРµРЅРµРЅРёСЋ СЃРѕСЃС‚РѕСЏРЅРёСЏ DTR */ \
+		FROMCAT_TARGET_DDR_DTR &= ~ FROMCAT_BIT_DTR;	/* бит входа DTR */ \
+		/* DTRPCMSK_PORT |= (FROMCAT_BIT_DTR); */ /* разрешение прерываний по изменению состояния DTR */ \
+		/* PCICR |= (DTRPCICR_BIT); */ /* разрешение прерываний по изменению состояния DTR */ \
 	} while (0)
 
 	// FROMCAT_RTS_INITIALIZE variations
 	#if FROMCAT_BIT_RTS != 0
 		#define FROMCAT_RTS_INITIALIZE() do { \
 			FROMCAT_TARGET_PORT_RTS |= FROMCAT_BIT_RTS;		/* enable pull-up */ \
-			FROMCAT_TARGET_DDR_RTS &= ~ FROMCAT_BIT_RTS;	/* Р±РёС‚ РІС…РѕРґР° RTS */ \
+			FROMCAT_TARGET_DDR_RTS &= ~ FROMCAT_BIT_RTS;	/* бит входа RTS */ \
 		} while (0)
 	#else /* FROMCAT_BIT_RTS != 0 */
 		#define FROMCAT_RTS_INITIALIZE() do { \
@@ -410,38 +410,38 @@
 
 	#define HARDWARE_GET_PTT() ((PTT_TARGET_PIN & PTT_BIT_PTT) == 0)
 	#define PTT_INITIALIZE() do { \
-		PTT_TARGET_PORT |= PTT_BIT_PTT;	/* РІРєР»СЋС‡С‚СЊ pull-up РЅР° СЌС‚РѕС‚ РІС…РѕРґ. */ \
-		PTT_TARGET_DDR &= ~ PTT_BIT_PTT;	/* Р±РёС‚ РІС…РѕРґР° PTT */ \
+		PTT_TARGET_PORT |= PTT_BIT_PTT;	/* включть pull-up на этот вход. */ \
+		PTT_TARGET_DDR &= ~ PTT_BIT_PTT;	/* бит входа PTT */ \
 	} while (0)
 
 	#define ELKEY_INITIALIZE() do { \
-		ELKEY_TARGET_DDR &= ~ ELKEY_BIT_LEFT;	/* Р±РёС‚ РІС…РѕРґР° Р»РµРІРѕРіРѕ РєРѕРЅС‚Р°РєС‚Р° РјР°РЅРёРїСѓР»СЏС‚РѕСЂР° */ \
+		ELKEY_TARGET_DDR &= ~ ELKEY_BIT_LEFT;	/* бит входа левого контакта манипулятора */ \
 		ELKEY_TARGET_PORT |= ELKEY_BIT_LEFT; \
-		ELKEY_TARGET_DDR &= ~ ELKEY_BIT_RIGHT;	/* Р±РёС‚ РІС…РѕРґР° РїСЂР°РІРѕРіРѕ РєРѕРЅС‚Р°РєС‚Р° РјР°РЅРёРїСѓР»СЏС‚РѕСЂР° */ \
+		ELKEY_TARGET_DDR &= ~ ELKEY_BIT_RIGHT;	/* бит входа правого контакта манипулятора */ \
 		ELKEY_TARGET_PORT |= ELKEY_BIT_RIGHT; \
-		/* PCMSK_PORT |= (ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT); */ /* СЂР°Р·СЂРµС€РµРЅРёРµ РїСЂРµСЂС‹РІР°РЅРёР№ РїРѕ РЅР°Р¶Р°С‚РёСЏРј РЅР° РєРѕРЅС‚Р°РєС‚С‹ РєР»СЋС‡Р° */ \
+		/* PCMSK_PORT |= (ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT); */ /* разрешение прерываний по нажатиям на контакты ключа */ \
 		/* PCICR |= (PCICR_BIT); */ \
 	} while (0)
 
 	#define NMEA_INITIALIZE() do { \
 		FROMCAT_TARGET_PORT_DTR |= FROMCAT_BIT_DTR;		/* enable pull-up */ \
-		FROMCAT_TARGET_DDR_DTR &= ~ FROMCAT_BIT_DTR;	/* Р±РёС‚ РІС…РѕРґР° DTR */ \
-		/* DTRPCMSK_PORT |= (FROMCAT_BIT_DTR); */ /* СЂР°Р·СЂРµС€РµРЅРёРµ РїСЂРµСЂС‹РІР°РЅРёР№ РїРѕ РёР·РјРµРЅРµРЅРёСЋ СЃРѕСЃС‚РѕСЏРЅРёСЏ DTR */ \
-		/* PCICR |= (DTRPCICR_BIT); */ /* СЂР°Р·СЂРµС€РµРЅРёРµ РїСЂРµСЂС‹РІР°РЅРёР№ РїРѕ РёР·РјРµРЅРµРЅРёСЋ СЃРѕСЃС‚РѕСЏРЅРёСЏ DTR */ \
+		FROMCAT_TARGET_DDR_DTR &= ~ FROMCAT_BIT_DTR;	/* бит входа DTR */ \
+		/* DTRPCMSK_PORT |= (FROMCAT_BIT_DTR); */ /* разрешение прерываний по изменению состояния DTR */ \
+		/* PCICR |= (DTRPCICR_BIT); */ /* разрешение прерываний по изменению состояния DTR */ \
 	} while (0)
 
 	#define FROMCAT_DTR_INITIALIZE() do { \
 		FROMCAT_TARGET_PORT_DTR |= FROMCAT_BIT_DTR;		/* enable pull-up */ \
-		FROMCAT_TARGET_DDR_DTR &= ~ FROMCAT_BIT_DTR;	/* Р±РёС‚ РІС…РѕРґР° DTR */ \
-		/* DTRPCMSK_PORT |= (FROMCAT_BIT_DTR); */ /* СЂР°Р·СЂРµС€РµРЅРёРµ РїСЂРµСЂС‹РІР°РЅРёР№ РїРѕ РёР·РјРµРЅРµРЅРёСЋ СЃРѕСЃС‚РѕСЏРЅРёСЏ DTR */ \
-		/* PCICR |= (DTRPCICR_BIT); */ /* СЂР°Р·СЂРµС€РµРЅРёРµ РїСЂРµСЂС‹РІР°РЅРёР№ РїРѕ РёР·РјРµРЅРµРЅРёСЋ СЃРѕСЃС‚РѕСЏРЅРёСЏ DTR */ \
+		FROMCAT_TARGET_DDR_DTR &= ~ FROMCAT_BIT_DTR;	/* бит входа DTR */ \
+		/* DTRPCMSK_PORT |= (FROMCAT_BIT_DTR); */ /* разрешение прерываний по изменению состояния DTR */ \
+		/* PCICR |= (DTRPCICR_BIT); */ /* разрешение прерываний по изменению состояния DTR */ \
 	} while (0)
 
 	// FROMCAT_RTS_INITIALIZE variations
 	#if FROMCAT_BIT_RTS != 0
 		#define FROMCAT_RTS_INITIALIZE() do { \
 			FROMCAT_TARGET_PORT_RTS |= FROMCAT_BIT_RTS;		/* enable pull-up */ \
-			FROMCAT_TARGET_DDR_RTS &= ~ FROMCAT_BIT_RTS;	/* Р±РёС‚ РІС…РѕРґР° RTS */ \
+			FROMCAT_TARGET_DDR_RTS &= ~ FROMCAT_BIT_RTS;	/* бит входа RTS */ \
 		} while (0)
 	#else /* FROMCAT_BIT_RTS != 0 */
 		#define FROMCAT_RTS_INITIALIZE() do { \
@@ -460,36 +460,36 @@
 
 	#define HARDWARE_GET_PTT() ((PTT_TARGET_PIN & PTT_BIT_PTT) == 0)
 	#define PTT_INITIALIZE() do { \
-		PTT_TARGET_PORT |= PTT_BIT_PTT;	/* РІРєР»СЋС‡С‚СЊ pull-up РЅР° СЌС‚РѕС‚ РІС…РѕРґ. */ \
-		PTT_TARGET_DDR &= ~ PTT_BIT_PTT;	/* Р±РёС‚ РІС…РѕРґР° PTT */ \
+		PTT_TARGET_PORT |= PTT_BIT_PTT;	/* включть pull-up на этот вход. */ \
+		PTT_TARGET_DDR &= ~ PTT_BIT_PTT;	/* бит входа PTT */ \
 	} while (0)
 
 	#define ELKEY_INITIALIZE() do { \
-		ELKEY_TARGET_DDR &= ~ ELKEY_BIT_LEFT;	/* Р±РёС‚ РІС…РѕРґР° Р»РµРІРѕРіРѕ РєРѕРЅС‚Р°РєС‚Р° РјР°РЅРёРїСѓР»СЏС‚РѕСЂР° */ \
+		ELKEY_TARGET_DDR &= ~ ELKEY_BIT_LEFT;	/* бит входа левого контакта манипулятора */ \
 		ELKEY_TARGET_PORT |= ELKEY_BIT_LEFT; \
-		ELKEY_TARGET_DDR &= ~ ELKEY_BIT_RIGHT;	/* Р±РёС‚ РІС…РѕРґР° РїСЂР°РІРѕРіРѕ РєРѕРЅС‚Р°РєС‚Р° РјР°РЅРёРїСѓР»СЏС‚РѕСЂР° */ \
+		ELKEY_TARGET_DDR &= ~ ELKEY_BIT_RIGHT;	/* бит входа правого контакта манипулятора */ \
 		ELKEY_TARGET_PORT |= ELKEY_BIT_RIGHT; \
 	} while (0)
 
 	#define NMEA_INITIALIZE() do { \
 		FROMCAT_TARGET_PORT_DTR |= FROMCAT_BIT_DTR;		/* enable pull-up */ \
-		FROMCAT_TARGET_DDR_DTR &= ~ FROMCAT_BIT_DTR;	/* Р±РёС‚ РІС…РѕРґР° DTR */ \
-		/* DTRPCMSK_PORT |= (FROMCAT_BIT_DTR); */ /* СЂР°Р·СЂРµС€РµРЅРёРµ РїСЂРµСЂС‹РІР°РЅРёР№ РїРѕ РёР·РјРµРЅРµРЅРёСЋ СЃРѕСЃС‚РѕСЏРЅРёСЏ DTR */ \
-		/* PCICR |= (DTRPCICR_BIT); */ /* СЂР°Р·СЂРµС€РµРЅРёРµ РїСЂРµСЂС‹РІР°РЅРёР№ РїРѕ РёР·РјРµРЅРµРЅРёСЋ СЃРѕСЃС‚РѕСЏРЅРёСЏ DTR */ \
+		FROMCAT_TARGET_DDR_DTR &= ~ FROMCAT_BIT_DTR;	/* бит входа DTR */ \
+		/* DTRPCMSK_PORT |= (FROMCAT_BIT_DTR); */ /* разрешение прерываний по изменению состояния DTR */ \
+		/* PCICR |= (DTRPCICR_BIT); */ /* разрешение прерываний по изменению состояния DTR */ \
 	} while (0)
 
 	#define FROMCAT_DTR_INITIALIZE() do { \
 		FROMCAT_TARGET_PORT_DTR |= FROMCAT_BIT_DTR;		/* enable pull-up */ \
-		FROMCAT_TARGET_DDR_DTR &= ~ FROMCAT_BIT_DTR;	/* Р±РёС‚ РІС…РѕРґР° DTR */ \
-		/* DTRPCMSK_PORT |= (FROMCAT_BIT_DTR); */ /* СЂР°Р·СЂРµС€РµРЅРёРµ РїСЂРµСЂС‹РІР°РЅРёР№ РїРѕ РёР·РјРµРЅРµРЅРёСЋ СЃРѕСЃС‚РѕСЏРЅРёСЏ DTR */ \
-		/* PCICR |= (DTRPCICR_BIT); */ /* СЂР°Р·СЂРµС€РµРЅРёРµ РїСЂРµСЂС‹РІР°РЅРёР№ РїРѕ РёР·РјРµРЅРµРЅРёСЋ СЃРѕСЃС‚РѕСЏРЅРёСЏ DTR */ \
+		FROMCAT_TARGET_DDR_DTR &= ~ FROMCAT_BIT_DTR;	/* бит входа DTR */ \
+		/* DTRPCMSK_PORT |= (FROMCAT_BIT_DTR); */ /* разрешение прерываний по изменению состояния DTR */ \
+		/* PCICR |= (DTRPCICR_BIT); */ /* разрешение прерываний по изменению состояния DTR */ \
 	} while (0)
 
 	// FROMCAT_RTS_INITIALIZE variations
 	#if FROMCAT_BIT_RTS != 0
 		#define FROMCAT_RTS_INITIALIZE() do { \
 			FROMCAT_TARGET_PORT_RTS |= FROMCAT_BIT_RTS;		/* enable pull-up */ \
-			FROMCAT_TARGET_DDR_RTS &= ~ FROMCAT_BIT_RTS;	/* Р±РёС‚ РІС…РѕРґР° RTS */ \
+			FROMCAT_TARGET_DDR_RTS &= ~ FROMCAT_BIT_RTS;	/* бит входа RTS */ \
 		} while (0)
 	#else /* FROMCAT_BIT_RTS != 0 */
 		#define FROMCAT_RTS_INITIALIZE() do { \
@@ -514,9 +514,9 @@
 	#if SPI_AEN_BIT != 0
 
 		#define SPI_ADDRESS_AEN_INITIALIZE() do { \
-			/* РїСЂРѕРіСЂР°РјРјРёСЂРѕРІР°РЅРёРµ СЃРёРіРЅР°Р»РѕРІ Р°РґСЂРµСЃР° SPI */ \
+			/* программирование сигналов адреса SPI */ \
 			SPI_ADDRESS_DDR |= SPI_ADDRESS_BITS; \
-			/* РїСЂРѕРіСЂР°РјРјРёСЂРѕРІР°РЅРёРµ SS SPI */ \
+			/* программирование SS SPI */ \
 			SPI_AEN_PORT &= ~ (SPI_AEN_BIT); \
 			SPI_AEN_DDR |= (SPI_AEN_BIT); \
 			} while (0)
@@ -527,9 +527,9 @@
 	#elif SPI_NAEN_BIT != 0
 
 		#define SPI_ADDRESS_NAEN_INITIALIZE() do { \
-			/* РїСЂРѕРіСЂР°РјРјРёСЂРѕРІР°РЅРёРµ СЃРёРіРЅР°Р»РѕРІ Р°РґСЂРµСЃР° SPI */ \
+			/* программирование сигналов адреса SPI */ \
 			SPI_ADDRESS_DDR |= SPI_ADDRESS_BITS; \
-			/* РїСЂРѕРіСЂР°РјРјРёСЂРѕРІР°РЅРёРµ SS SPI */ \
+			/* программирование SS SPI */ \
 			SPI_NAEN_PORT &= ~ (SPI_NAEN_BIT); \
 			SPI_NAEN_DDR |= (SPI_NAEN_BIT); \
 			} while (0)
@@ -551,7 +551,7 @@
 	#if SPI_IOUPDATE_BIT != 0
 
 		#define SPI_IOUPDATE_INITIALIZE() do { \
-			SPI_IOUPDATE_PORT |= SPI_IOUPDATE_BIT;	/* РќРµР°РєС‚РёРІРЅРѕРµ СЃРѕСЃС‚РѕСЏРЅРёРµ - "1" */ \
+			SPI_IOUPDATE_PORT |= SPI_IOUPDATE_BIT;	/* Неактивное состояние - "1" */ \
 			SPI_IOUPDATE_DDR |= SPI_IOUPDATE_BIT; \
 			} while (0)
 
@@ -565,8 +565,8 @@
 	// Variations of SPI_IORESET_INITIALIZE
 	#if SPI_IORESET_BIT != 0
 
-		// РїСЂРѕСЃС‚Рѕ СЃР±СЂР°СЃС‹РІР°РµРј. РЈРїСЂР°РІР»РµРЅРёСЏ С‡РµСЂРµР· СЌС‚РѕС‚ РІС‹РІРѕРґ РЅРµ РёРґС‘С‚.
-		// Р’ РЅРѕРІС‹С… РїР»Р°С‚Р°С… СЌС‚РѕРіРѕ Р±РёС‚Р° РЅРµС‚.
+		// просто сбрасываем. Управления через этот вывод не идёт.
+		// В новых платах этого бита нет.
 
 		#define SPI_IORESET_INITIALIZE() do { \
 			SPI_IORESET_PORT &= ~ SPI_IORESET_BIT; \

@@ -1,12 +1,12 @@
 /* $Id$ */
 /* board-specific CPU attached signals */
 //
-// РџСЂРѕРµРєС‚ HF Dream Receiver (РљР’ РїСЂРёС‘РјРЅРёРє РјРµС‡С‚С‹)
-// Р°РІС‚РѕСЂ Р“РµРЅР° Р—Р°РІРёРґРѕРІСЃРєРёР№ mgs2001@mail.ru
+// Проект HF Dream Receiver (КВ приёмник мечты)
+// автор Гена Завидовский mgs2001@mail.ru
 // UA1ARN
 //
 
-// РџР»Р°С‚Р° DSP РѕР±СЂР°Р±РѕС‚РєРё "Р”СЏС‚РµР»-2" РЅР° РїСЂРѕС†РµСЃСЃРѕСЂРµ STM32F429 СЃ РєРѕРґРµРєР°РјРё TLV320AIC23B Рё CS4272
+// Плата DSP обработки "Дятел-2" на процессоре STM32F429 с кодеками TLV320AIC23B и CS4272
 
 #ifndef ARM_STM32F4XX_TQFP100_CPUSTYLE_WDKP_V1B_H_INCLUDED
 #define ARM_STM32F4XX_TQFP100_CPUSTYLE_WDKP_V1B_H_INCLUDED 1
@@ -14,37 +14,37 @@
 //#define HARDWARE_ARM_USEUSART0 1		// US0:
 //#define HARDWARE_ARM_USEUSART1 1		// US1: PA9/PA10 pins
 
-#define WITHSPI16BIT	1		/* РІРѕР·РјРѕР¶РЅРѕ РёСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ 16-С‚Рё Р±РёС‚РЅС‹С… СЃР»РѕРІ РїСЂРё РѕР±РјРµРЅРµ РїРѕ SPI */
-#define WITHSPIHW 		1	/* РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ Р°РїРїР°СЂР°С‚РЅРѕРіРѕ РєРѕРЅС‚СЂРѕР»Р»РµСЂР° SPI */
-#define WITHSPIHWDMA 	1	/* РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ DMA РїСЂРё РѕР±РјРµРЅРµ РїРѕ SPI */
-#define WITHSPISW 	1	/* РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ РїСЂРѕРіСЂР°РјРјРЅРѕРіРѕ СѓРїСЂР°РІР»РµРЅРёСЏ SPI. РќРµР»СЊР·СЏ СѓР±РёСЂР°С‚СЊ СЌС‚Сѓ СЃС‚СЂРѕРєСѓ - С‚СЂРµР±СѓРµС‚СЃСЏ СЏРІРЅРѕРµ РѕС‚РєР»СЋС‡РµРЅРёРµ РёР·-Р·Р° РєРѕРЅС„Р»РёРєС‚Р° СЃ I2C */
+#define WITHSPI16BIT	1		/* возможно использование 16-ти битных слов при обмене по SPI */
+#define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
+#define WITHSPIHWDMA 	1	/* Использование DMA при обмене по SPI */
+#define WITHSPISW 	1	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */
 
-#define WITHTWIHW 	1	/* РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ Р°РїРїР°СЂР°С‚РЅРѕРіРѕ РєРѕРЅС‚СЂРѕР»Р»РµСЂР° TWI (I2C) */
-//#define WITHTWISW 	1	/* РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ РїСЂРѕРіСЂР°РјРјРЅРѕРіРѕ РєРѕРЅС‚СЂРѕР»Р»РµСЂР° TWI (I2C) */
+#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
+//#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 
-#define WITHI2SHW	1	/* РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ I2S - Р°СѓРґРёРѕРєРѕРґРµРє	*/
-#define WITHSAI1HW	1	/* РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ SAI1 - FPGA РёР»Рё IF codec	*/
+#define WITHI2SHW	1	/* Использование I2S - аудиокодек	*/
+#define WITHSAI1HW	1	/* Использование SAI1 - FPGA или IF codec	*/
 
-#define WITHCPUDACHW	1	/* РёСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ DAC */
-#define WITHCPUADCHW 	1	/* РёСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ ADC */
+#define WITHCPUDACHW	1	/* использование DAC */
+#define WITHCPUADCHW 	1	/* использование ADC */
 
-#define WITHUART1HW	1	/* РСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РїРµСЂРёС„РµСЂРёР№РЅС‹Р№ РєРѕРЅС‚СЂРѕР»Р»РµСЂ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕРіРѕ РїРѕСЂС‚Р° #1 */
-//#define WITHUART2HW	1	/* РСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РїРµСЂРёС„РµСЂРёР№РЅС‹Р№ РєРѕРЅС‚СЂРѕР»Р»РµСЂ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕРіРѕ РїРѕСЂС‚Р° #2 */
+#define WITHUART1HW	1	/* Используется периферийный контроллер последовательного порта #1 */
+//#define WITHUART2HW	1	/* Используется периферийный контроллер последовательного порта #2 */
 
-//#define WITHCAT_CDC		1	/* РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊ РІРёСЂС‚СѓР°Р»СЊРЅС‹Р№ РІРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅС‹Р№ РїРѕСЂС‚ РЅР° USB СЃРѕРµРґРёРЅРµРЅРёРё */
+//#define WITHCAT_CDC		1	/* использовать виртуальный воследовательный порт на USB соединении */
 #define WITHCAT_USART1		1
 #define WITHDEBUG_USART1	1
 #define WITHMODEM_USART1	1
 #define WITHNMEA_USART1	1
 
-//#define WITHUSBHW	1	/* РСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РІСЃС‚СЂРѕРµРЅРЅР°СЏ РІ РїСЂРѕС†РµСЃСЃРѕСЂ РїРѕРґРґРµСЂР¶РєР° USB */
-//#define WITHUSBHWVBUSSENSE	1	/* РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РїСЂРµРґРѕРїСЂРµРґРµР»РµРЅРЅС‹Р№ РІС‹РІРѕРґ VBUS_SENSE */
-//#define WITHUSBHWHIGHSPEED	1	/* РСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РІСЃС‚СЂРѕРµРЅРЅР°СЏ РІ РїСЂРѕС†РµСЃСЃРѕСЂ РїРѕРґРґРµСЂР¶РєР° USB HS */
-//#define WITHUSBHWHIGHSPEEDDESC	1	/* РўСЂРµР±СѓРµС‚СЃСЏ С„РѕСЂРјРёСЂРѕРІР°С‚СЊ РґРµСЃРєСЂРёРїС‚РѕСЂС‹ РєР°Рє РґР»СЏ HIGH SPEED */
-//#define WITHUSBHW_DEVICE	USB_OTG_FS	/* РЅР° СЌС‚РѕРј СѓСЃС‚СЂРѕР№СЃС‚РІРµ РїРѕРґРґРµСЂР¶РёРІР°РµС‚СЃСЏ С„СѓРЅРєС†РёР»РЅР°Р»СЊРЅРѕСЃС‚СЊ DEVUCE	*/
+//#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
+//#define WITHUSBHWVBUSSENSE	1	/* используется предопределенный вывод VBUS_SENSE */
+//#define WITHUSBHWHIGHSPEED	1	/* Используется встроенная в процессор поддержка USB HS */
+//#define WITHUSBHWHIGHSPEEDDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
+//#define WITHUSBHW_DEVICE	USB_OTG_FS	/* на этом устройстве поддерживается функцилнальность DEVUCE	*/
 
-//#define BSRR_S(v) ((v) * GPIO_BSRR_BS_0)	/* РџСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёРµ Р·РЅР°С‡РµРЅРёСЏ РґР»СЏ СѓСЃС‚Р°РЅРѕРІРєРё Р±РёС‚Р° РІ СЂРµРіРёСЃС‚СЂРµ */
-//#define BSRR_C(v) ((v) * GPIO_BSRR_BR_0)	/* РџСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёРµ Р·РЅР°С‡РµРЅРёСЏ РґР»СЏ СЃР±СЂРѕСЃР° Р±РёС‚Р° РІ СЂРµРіРёСЃС‚СЂРµ */
+//#define BSRR_S(v) ((v) * GPIO_BSRR_BS_0)	/* Преобразование значения для установки бита в регистре */
+//#define BSRR_C(v) ((v) * GPIO_BSRR_BR_0)	/* Преобразование значения для сброса бита в регистре */
 
 #define LS020_RS_INITIALIZE() \
 	do { \
@@ -58,8 +58,8 @@
 
 
 #if LCDMODE_SPI_NA || LCDMODE_SPI_RA
-	// СЌС‚Рё РєРѕРЅС‚СЂРѕР»Р»РµСЂС‹ С‚СЂРµР±СѓСЋС‚ С‚РѕР»СЊРєРѕ RS
-	// Р­С‚Рё РєРѕРЅС‚СЂРѕР»Р»РµСЂС‹ С‚СЂРµР±СѓСЋС‚ RESET Рё RS
+	// эти контроллеры требуют только RS
+	// Эти контроллеры требуют RESET и RS
 
 	#define LS020_RS_PORT_S(v)		do { GPIOD->BSRR = BSRR_S(v); __DSB(); } while (0)
 	#define LS020_RS_PORT_C(v)		do { GPIOD->BSRR = BSRR_C(v); __DSB(); } while (0)
@@ -73,7 +73,7 @@
 	#define UC1608_CSP_PORT_S(v)		do { GPIOD->BSRR = BSRR_S(v); __DSB(); } while (0)
 	#define UC1608_CSP_PORT_C(v)		do { GPIOD->BSRR = BSRR_C(v); __DSB(); } while (0)
 	#define UC1608_CSP			0//(1u << 13)			// PC13
-	#define SPI_CSEL255			255				// РїРѕ СЌС‚РѕРјСѓ С‡РёРїСЃРµР»РµРєС‚Сѓ РІС‹Р±РёСЂР°РµРј РїРѕР»РѕР¶РёС‚РµР»СЊРЅС‹Рј СЃРёРіРЅР°Р»РѕРј
+	#define SPI_CSEL255			255				// по этому чипселекту выбираем положительным сигналом
 
 	#define UC1608_CSP_INITIALIZE() do { \
 			arm_hardware_piod_outputs(UC1608_CSP, 0); \
@@ -82,9 +82,9 @@
 
 
 #if WITHENCODER
-	// Р’С‹РІРѕРґС‹ РїРѕРґРєР»СЋС‡РµРЅРёСЏ РµРЅРєРѕРґРµСЂР°
+	// Выводы подключения енкодера
 	// Encoder inputs: PC15 - PHASE A, PC14 = PHASE B
-	// РћР±СЏР·Р°С‚РµР»СЊРЅРѕ Р±СѓС„РµСЂ (РІС…РѕРґС‹ РїСЂРѕС†РµСЃСЃРѕСЂР° РЅРёР·РєРѕРІРѕР»СЊС‚РЅС‹Рµ).
+	// Обязательно буфер (входы процессора низковольтные).
 
 	#define ENCODER_INPUT_PORT			(GPIOC->IDR) 
 	#define ENCODER_BITS ((1u << 15) | (1u << 14))
@@ -104,7 +104,7 @@
 		do { \
 			enum { \
 				I2S2_MCK = (1U << 6),		/* PC6	*/ \
-				I2S2ext_SD = (1U << 14),	/* PB14	- РїСЂРёС‘Рј */ \
+				I2S2ext_SD = (1U << 14),	/* PB14	- приём */ \
 				I2S2_WS = (1U << 12),		/* PB12	*/ \
 				I2S2_CK = (1U << 13),		/* PB13	*/ \
 				I2S2_SD = (1U << 15)		/* PB15	*/ \
@@ -126,12 +126,12 @@
 			arm_hardware_pioe_altfn20(1U << 5, AF_SAI);		/* PE5 - SAI1_SCK_A	*/ \
 			arm_hardware_pioe_altfn20(1U << 6, AF_SAI);		/* PE6 - SAI1_SD_A	(i2s data to codec)	*/ \
 		/* #if CODEC_TYPE_CS4272_STANDALONE	*/ \
-			arm_hardware_pioe_updown(0, 1U << 6);	/* pull-down РЅР° РІС‹С…РѕРґРµ РґР°РЅРЅС‹С… РѕС‚ РєРѕРґРµРєР°: РїРѕСЃР»Рµ RESET РІС…РѕРґ РІ stand-alone mode */ \
+			arm_hardware_pioe_updown(0, 1U << 6);	/* pull-down на выходе данных от кодека: после RESET вход в stand-alone mode */ \
 		/* #endif */ \
 		} while (0)
 #endif /* WITHSAI1HW */
 
-/* Р Р°СЃРїСЂРµРґРµР»РµРЅРёРµ Р±РёС‚РѕРІ РІ ARM РєРѕРЅС‚СЂРѕР»Р»РµСЂР°С… */
+/* Распределение битов в ARM контроллерах */
 
 #if WITHCAT || WITHNMEA
 	// CAT data lites
@@ -139,11 +139,11 @@
 
 	// CAT control lines
 	#define FROMCAT_TARGET_PIN_RTS		(GPIOA->IDR) // was PINA 
-	#define FROMCAT_BIT_RTS				(1u << 11)	/* СЃРёРіРЅР°Р» RTS РѕС‚ FT232RL	*/
+	#define FROMCAT_BIT_RTS				(1u << 11)	/* сигнал RTS от FT232RL	*/
 
-	/* РјР°РЅРёРїСѓР»СЏС†РёСЏ РѕС‚ РїРѕСЂС‚Р° RS-232, СЃРёРіРЅР°Р» PPS РѕС‚ GPS/GLONASS/GALILEO РјРѕРґСѓР»СЏ */
+	/* манипуляция от порта RS-232, сигнал PPS от GPS/GLONASS/GALILEO модуля */
 	#define FROMCAT_TARGET_PIN_DTR		(GPIOA->IDR) // was PINA 
-	#define FROMCAT_BIT_DTR				(1u << 12)	/* СЃРёРіРЅР°Р» DTR РѕС‚ FT232RL	*/
+	#define FROMCAT_BIT_DTR				(1u << 12)	/* сигнал DTR от FT232RL	*/
 #endif
 
 #if WITHTX
@@ -152,36 +152,36 @@
 	#define TXPATH_TARGET_PORT_S(v)		do { GPIOD->BSRR = BSRR_S(v); __DSB(); } while (0)
 	#define TXPATH_TARGET_PORT_C(v)		do { GPIOD->BSRR = BSRR_C(v); __DSB(); } while (0)
 	#if 1
-		// РЈРїСЂР°РІР»РµРЅРёРµ РїРµСЂРµРґР°С‚С‡РёРєРѕРј - СЃРёРіРЅР°Р»С‹ TXPATH_ENABLE_SSB (PC7) Рё TXPATH_ENABLE_CW (PC8) - Р°РєС‚РёРІРЅС‹ РїСЂРё РЅСѓР»Рµ РЅР° РІС‹С…РѕРґРµ.
+		// Управление передатчиком - сигналы TXPATH_ENABLE_SSB (PC7) и TXPATH_ENABLE_CW (PC8) - активны при нуле на выходе.
 		#define TXPATH_BIT_ENABLE_SSB		(1u << 9)		// PD9
 		#define TXPATH_BIT_ENABLE_CW		(1u << 10)		// PD10
 
-		// РџРѕРґРіРѕС‚РѕРІР»РµРЅРЅС‹Рµ СѓРїСЂР°РІР»СЏСЋС‰РёРµ СЃР»РѕРІР°
+		// Подготовленные управляющие слова
 		#define TXGFV_RX		0
-		#define TXGFV_TRANS		0			// РїРµСЂРµС…РѕРґ РјРµР¶РґСѓ СЂРµР¶РёРјР°РјРё РїСЂРёС‘РјР° Рё РїРµСЂРµРґР°С‡Рё
+		#define TXGFV_TRANS		0			// переход между режимами приёма и передачи
 		#define TXGFV_TX_SSB	TXPATH_BIT_ENABLE_SSB
 		#define TXGFV_TX_CW		TXPATH_BIT_ENABLE_CW
 		#define TXGFV_TX_AM		TXPATH_BIT_ENABLE_CW
 		#define TXGFV_TX_NFM	TXPATH_BIT_ENABLE_CW
-		// РЈРїСЂР°РІР»РµРЅРёРµ РїРµСЂРµРґР°С‚С‡РёРєРѕРј - СЃРёРіРЅР°Р»С‹ TXPATH_ENABLE (PA11) Рё TXPATH_ENABLE_CW (PA10) - Р°РєС‚РёРІРЅС‹ РїСЂРё РЅСѓР»Рµ РЅР° РІС‹С…РѕРґРµ.
-		// РЈСЃС‚Р°РЅРѕРІРєР° РЅР°С‡Р°Р»СЊРЅРѕРіРѕ СЃС‚СЃС‚РѕСЏРЅРёСЏ РІС‹С…РѕРґРѕРІ
+		// Управление передатчиком - сигналы TXPATH_ENABLE (PA11) и TXPATH_ENABLE_CW (PA10) - активны при нуле на выходе.
+		// Установка начального стстояния выходов
 		#define TXPATH_INITIALIZE() \
 			do { \
 				arm_hardware_piod_opendrain(TXPATH_BITS_ENABLE, TXPATH_BITS_ENABLE); \
 			} while (0)
 	#else
-		// РЈРїСЂР°РІР»РµРЅРёРµ РїРµСЂРµРґР°С‚С‡РёРєРѕРј - РµРґРёРЅСЃС‚РІРµРЅРЅС‹Р№ СЃРёРіРЅР°Р» СЂР°Р·СЂРµС€РµРЅРёСЏ С‚СЂР°РєС‚Р°
-		#define TXPATH_BIT_GATE (1u << 9)	// PD9 - РІС‹С…РѕРґРЅРѕР№ СЃРёРіРЅР°Р» РёР· РїСЂРѕС†РµСЃСЃРѕСЂР° - СѓРїСЂР°РІР»РµРЅРёРµ РїРµСЂРµРґР°С‚С‡РёРєРѕРј.
-		//#define TXPATH_BIT_GATE_RX TXPATH_BIT_GATE	// СЃРёРіРЅР°Р» tx2 - СѓРїСЂР°РІР»РµРЅРёРµ РїРµСЂРµРґР°С‚С‡РёРєРѕРј. РџСЂРё РїСЂРёС‘РјРµ Р°РєС‚РёРІРµРЅ
-		#define TXPATH_BIT_GATE_RX 0	// СЃРёРіРЅР°Р» tx2 - СѓРїСЂР°РІР»РµРЅРёРµ РїРµСЂРµРґР°С‚С‡РёРєРѕРј. РџСЂРё РїСЂРёС‘РјРµ РЅРµ Р°РєС‚РёРІРµРЅ
+		// Управление передатчиком - единственный сигнал разрешения тракта
+		#define TXPATH_BIT_GATE (1u << 9)	// PD9 - выходной сигнал из процессора - управление передатчиком.
+		//#define TXPATH_BIT_GATE_RX TXPATH_BIT_GATE	// сигнал tx2 - управление передатчиком. При приёме активен
+		#define TXPATH_BIT_GATE_RX 0	// сигнал tx2 - управление передатчиком. При приёме не активен
 
-		// РџРѕРґРіРѕС‚РѕРІР»РµРЅРЅС‹Рµ СѓРїСЂР°РІР»СЏСЋС‰РёРµ СЃР»РѕРІР°
+		// Подготовленные управляющие слова
 		#define TXGFV_RX		TXPATH_BIT_GATE_RX
-		#define TXGFV_TRANS		0			// РїРµСЂРµС…РѕРґ РјРµР¶РґСѓ СЂРµР¶РёРјР°РјРё РїСЂРёС‘РјР° Рё РїРµСЂРµРґР°С‡Рё
+		#define TXGFV_TRANS		0			// переход между режимами приёма и передачи
 		#define TXGFV_TX_SSB	TXPATH_BIT_GATE
 		#define TXGFV_TX_CW		TXPATH_BIT_GATE
-		// РЈРїСЂР°РІР»РµРЅРёРµ РїРµСЂРµРґР°С‚С‡РёРєРѕРј - СЃРёРіРЅР°Р» TXPATH_BIT_GATE
-		// РЈСЃС‚Р°РЅРѕРІРєР° РЅР°С‡Р°Р»СЊРЅРѕРіРѕ СЃС‚СЃС‚РѕСЏРЅРёСЏ РІС‹С…РѕРґРѕРІ
+		// Управление передатчиком - сигнал TXPATH_BIT_GATE
+		// Установка начального стстояния выходов
 		#define TXPATH_INITIALIZE() \
 			do { \
 				arm_hardware_piod_outputs2m(TXPATH_BIT_GATE, 0); \
@@ -216,13 +216,13 @@
 #endif /* WITHELKEY */
 
 
-// IOUPDATE = PРЎ13
+// IOUPDATE = PС13
 #define SPI_IOUPDATE_PORT_S(v)	do { GPIOC->BSRR = BSRR_S(v); __DSB(); } while (0)
 #define SPI_IOUPDATE_PORT_C(v)	do { GPIOC->BSRR = BSRR_C(v); __DSB(); } while (0)
-#define SPI_IOUPDATE_BIT		(1U << 13)	// PC13 - С‚РѕР»СЊРєРѕ РєР°Рє РІС‹С…РѕРґ, СЃР»Р°Р±РѕС‚РѕС‡РЅС‹Р№, 3.3 РІРѕР»СЊС‚Р°
+#define SPI_IOUPDATE_BIT		(1U << 13)	// PC13 - только как выход, слаботочный, 3.3 вольта
 
-/* РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ СЃРёРіРЅР°Р»Р° IOUPDATE РЅР° DDS */
-/* РЅР°С‡Р°Р»СЊРЅРѕРµ СЃРѕСЃС‚РѕСЏРЅРёРµ = 1 */
+/* инициализация сигнала IOUPDATE на DDS */
+/* начальное состояние = 1 */
 #define SPI_IOUPDATE_INITIALIZE() \
 	do { \
 		arm_hardware_pioc_outputs2m(SPI_IOUPDATE_BIT, SPI_IOUPDATE_BIT); \
@@ -237,14 +237,14 @@
 		arm_hardware_piod_outputs2m(TARGET_CS4272_RESET_BIT, TARGET_CS4272_RESET_BIT); \
 	} while (0)
 
-// РќР°Р±РѕСЂ РѕРїСЂРµРґРµР»РµРЅРёР№ РґР»СЏ СЂР°Р±РѕС‚С‹ Р±РµР· РІРЅРµС€РЅРµРіРѕ РґРµС€РёС„СЂР°С‚РѕСЂР°
+// Набор определений для работы без внешнего дешифратора
 #define SPI_ALLCS_PORT_S(v)	do { GPIOD->BSRR = BSRR_S(v); __DSB(); } while (0)
 #define SPI_ALLCS_PORT_C(v)	do { GPIOD->BSRR = BSRR_C(v); __DSB(); } while (0)
 
 //	#define targetdds1 SPI_CSEL0 	/* DDS1 */
 //	#define targetdds2 SPI_CSEL1 	/* DDS2 - LO3 output */
 //	#define targetdds3 SPI_CSEL2 	/* DDS3 - PBT output */
-//	//#define targetpll1 SPI_CSEL2 	/* ADF4001 after DDS1 - divide by r1 and scale to n1. Р”Р»СЏ РґРІРѕР№РЅРѕР№ DDS РїРµСЂРІРѕРіРѕ РіРµС‚РµСЂРѕРґРёРЅР° - РІС‚РѕСЂР°СЏ DDS */
+//	//#define targetpll1 SPI_CSEL2 	/* ADF4001 after DDS1 - divide by r1 and scale to n1. Для двойной DDS первого гетеродина - вторая DDS */
 //	//#define targetpll2 SPI_CSEL3 	/* ADF4001 - fixed 2-nd LO generate or LO1 divider */ 
 //	#define targetext1 SPI_CSEL4 	/* external devices control */
 //#ifndef SPI_IOUPDATE_BIT 
@@ -261,10 +261,10 @@
 #define SPI_CSEL4	(1U << 6)	// PD6 ext
 #define SPI_CSEL5	(1U << 7)	// PD7 ext
 #define SPI_CSEL6	(1U << 8)	// PD8 ext
-// Р—РґРµСЃСЊ РґРѕР»Р¶РЅС‹ Р±С‹С‚СЊ РїРµСЂРµС‡РёСЃР»РµРЅС‹ РІСЃРµ Р±РёС‚С‹ С„РѕСЂРјРёСЂРѕРІР°РЅРёСЏ CS  СѓСЃС‚СЂРѕР№СЃС‚РІРµ.
+// Здесь должны быть перечислены все биты формирования CS  устройстве.
 #define SPI_ALLCS_BITS (SPI_CSEL0 | SPI_CSEL1 | SPI_CSEL2 | SPI_CSEL3 | SPI_CSEL4 | SPI_CSEL5 | SPI_CSEL6 | SPI_CSEL7)
 
-/* РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ Р»РёРёР№ РІС‹Р±РѕСЂР° РїРµСЂРёС„РµСЂРёР№РЅС‹С… РјРёРєСЂРѕСЃС…РµРј */
+/* инициализация лиий выбора периферийных микросхем */
 #define SPI_ALLCS_INITIALIZE() \
 	do { \
 		arm_hardware_piod_outputs2m(SPI_ALLCS_BITS, SPI_ALLCS_BITS); \
@@ -276,11 +276,11 @@
 #define SPI_TARGET_MOSI_PORT_C(v)	do { GPIOB->BSRR = BSRR_C(v); __DSB(); } while (0)
 #define SPI_TARGET_MOSI_PORT_S(v)	do { GPIOB->BSRR = BSRR_S(v); __DSB(); } while (0)
 
-#define	SPI_SCLK_BIT			(1U << 3)	// PB3 Р±РёС‚, С‡РµСЂРµР· РєРѕС‚РѕСЂС‹Р№ РёРґРµС‚ СЃРёРЅС…СЂРѕРЅРёР·Р°С†РёСЏ SPI
-#define	SPI_MOSI_BIT			(1U << 5)	// PB5 Р±РёС‚, С‡РµСЂРµР· РєРѕС‚РѕСЂС‹Р№ РёРґРµС‚ РІС‹РІРѕРґ (РёР»Рё РІРІРѕРґ РІ СЃР»СѓС‡Р°Рµ РґРІСѓРЅР°РїСЂР°РІР»РµРЅРЅРѕРіРѕ SPI).
+#define	SPI_SCLK_BIT			(1U << 3)	// PB3 бит, через который идет синхронизация SPI
+#define	SPI_MOSI_BIT			(1U << 5)	// PB5 бит, через который идет вывод (или ввод в случае двунаправленного SPI).
 
 #define SPI_TARGET_MISO_PIN		(GPIOB->IDR)		// was PINA 
-#define	SPI_MISO_BIT			(1U << 4)	// PB4 Р±РёС‚, С‡РµСЂРµР· РєРѕС‚РѕСЂС‹Р№ РёРґРµС‚ РІРІРѕРґ СЃ SPI.
+#define	SPI_MISO_BIT			(1U << 4)	// PB4 бит, через который идет ввод с SPI.
 
 	#define SPIIO_INITIALIZE() do { \
 			arm_hardware_piob_outputs(SPI_MOSI_BIT | SPI_SCLK_BIT, SPI_MOSI_BIT | SPI_SCLK_BIT); \
@@ -288,7 +288,7 @@
 		} while (0)
 
 #if WITHSPISLAVE
-	// SPI SLAVE РЅР° dspboard_v1
+	// SPI SLAVE на dspboard_v1
 	// SPI control pins
 	// SPI3 hardware used.
 
@@ -296,14 +296,14 @@
 	// STM32F303: SPI1_NSS can be placed on PA4 or PA15
 
 	//#define SPI_TARGET_PIN			GPIOB->IDR // was PINA 
-	#define	SPI_SLAVE_SCLK_BIT			(1U << 10)	// PC10 Р±РёС‚, С‡РµСЂРµР· РєРѕС‚РѕСЂС‹Р№ РёРґРµС‚ СЃРёРЅС…СЂРѕРЅРёР·Р°С†РёСЏ SPI
-	#define	SPI_SLAVE_MISO_BIT			(1U << 11)	// PC11 Р±РёС‚, С‡РµСЂРµР· РєРѕС‚РѕСЂС‹Р№ РёРґРµС‚ РІРІРѕРґ СЃ SPI.
-	#define	SPI_SLAVE_MOSI_BIT			(1U << 12)	// PC12 Р±РёС‚, С‡РµСЂРµР· РєРѕС‚РѕСЂС‹Р№ РёРґРµС‚ РІС‹РІРѕРґ (РёР»Рё РІРІРѕРґ РІ СЃР»СѓС‡Р°Рµ РґРІСѓРЅР°РїСЂР°РІР»РµРЅРЅРѕРіРѕ SPI).
+	#define	SPI_SLAVE_SCLK_BIT			(1U << 10)	// PC10 бит, через который идет синхронизация SPI
+	#define	SPI_SLAVE_MISO_BIT			(1U << 11)	// PC11 бит, через который идет ввод с SPI.
+	#define	SPI_SLAVE_MOSI_BIT			(1U << 12)	// PC12 бит, через который идет вывод (или ввод в случае двунаправленного SPI).
 
 	#define SPI_SLAVE_NSS				(1U << 15)	// PA15 used
 
-	// Р’ СЌС‚РёС… РїСЂРѕС†РµСЃСЃРѕСЂР°С… Рё РІС…РѕРґС‹ Рё РІС‹С…РѕРґС‹ РїРµСЂРµРєРґСЋС‡Р°СЋС‚СЃСЏ РЅР° ALT FN
-	// Р’С‹С…РѕРґ РІ СЃС‚РѕСЂРѕРЅСѓ master РЅРµ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ - РЅРµ РїРѕРґРєР»СЋС‡Р°РµРј
+	// В этих процессорах и входы и выходы перекдючаются на ALT FN
+	// Выход в сторону master не используется - не подключаем
 
 	#define HARDWARE_SPISLAVE_INITIALIZE() do { \
 		arm_hardware_pioc_altfn50(SPI_SLAVE_MOSI_BIT | SPI_SLAVE_SCLK_BIT /*| SPI_SLAVE_MISO_BIT*/, AF_SPI3); \
@@ -325,12 +325,12 @@
 	#define TARGET_TWI_TWCK		(1u << 6)		// * PB6
 	#define TARGET_TWI_TWD		(1u << 7)		// * PB6
 
-	// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ Р±РёС‚РѕРІ РїРѕСЂС‚РѕРІ РІРІРѕРґР°-РІС‹РІРѕРґР° РґР»СЏ РїСЂРѕРіСЂР°РјРјРЅРѕР№ СЂРµР°Р»РёР·Р°С†РёРё I2C
+	// Инициализация битов портов ввода-вывода для программной реализации I2C
 	#define	TWISOFT_INITIALIZE() do { \
 			arm_hardware_piob_opendrain(TARGET_TWI_TWCK | TARGET_TWI_TWD, TARGET_TWI_TWCK | TARGET_TWI_TWD); \
 		} while (0) 
-	// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ Р±РёС‚РѕРІ РїРѕСЂС‚РѕРІ РІРІРѕРґР°-РІС‹РІРѕРґР° РґР»СЏ Р°РїРїР°СЂР°С‚РЅРѕР№ СЂРµР°Р»РёР·Р°С†РёРё I2C
-	// РїСЂРёСЃРѕРµРґРёРЅРµРЅРёРµ РІС‹РІРѕРґРѕРІ Рє РїРµСЂРёС„РµСЂРёР№РЅРѕРјСѓ СѓСЃС‚СЂРѕР№СЃС‚РІСѓ
+	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
+	// присоединение выводов к периферийному устройству
 	#if CPUSTYLE_STM32F1XX
 
 		#define	TWIHARD_INITIALIZE() do { \
@@ -349,7 +349,7 @@
 
 
 #if WITHCPUDACHW
-	/* РІРєР»СЋС‡РёС‚СЊ РЅСѓР¶РЅС‹Рµ РєР°РЅР°Р»С‹ */
+	/* включить нужные каналы */
 	#define HARDWARE_DAC_INITIALIZE() do { \
 			DAC1->CR = DAC_CR_EN2 | DAC_CR_EN1; /* DAC2 and DAC1 enable */ \
 		} while (0)
@@ -378,7 +378,7 @@
 
 
 	#define HARDWARE_SPI_CONNECT() do { \
-			arm_hardware_piob_altfn50(SPI_MOSI_BIT | SPI_SCLK_BIT | SPI_MISO_BIT, AF_SPI1); /* Р’ СЌС‚РёС… РїСЂРѕС†РµСЃСЃРѕСЂР°С… Рё РІС…РѕРґС‹ Рё РІС‹С…РѕРґС‹ РїРµСЂРµРєРґСЋС‡Р°СЋС‚СЃСЏ РЅР° ALT FN */ \
+			arm_hardware_piob_altfn50(SPI_MOSI_BIT | SPI_SCLK_BIT | SPI_MISO_BIT, AF_SPI1); /* В этих процессорах и входы и выходы перекдючаются на ALT FN */ \
 		} while (0)
 	#define HARDWARE_SPI_DISCONNECT() do { \
 			arm_hardware_piob_outputs(SPI_SCLK_BIT | SPI_MOSI_BIT, SPI_SCLK_BIT | SPI_MOSI_BIT); /* connect back to GPIO */ \

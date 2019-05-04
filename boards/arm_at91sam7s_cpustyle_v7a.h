@@ -1,40 +1,40 @@
 /* $Id$ */
 /* board-specific CPU attached signals */
 //
-// РџСЂРѕРµРєС‚ HF Dream Receiver (РљР’ РїСЂРёС‘РјРЅРёРє РјРµС‡С‚С‹)
-// Р°РІС‚РѕСЂ Р“РµРЅР° Р—Р°РІРёРґРѕРІСЃРєРёР№ mgs2001@mail.ru
+// Проект HF Dream Receiver (КВ приёмник мечты)
+// автор Гена Завидовский mgs2001@mail.ru
 // UA1ARN
 //
 
 #ifndef ARM_AT91SAM7S_CPUSTYLE_V7A_H_INCLUDED
 #define ARM_AT91SAM7S_CPUSTYLE_V7A_H_INCLUDED 1
 
-//#define WITHSPI16BIT	1		/* РІРѕР·РјРѕР¶РЅРѕ РёСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ 16-С‚Рё Р±РёС‚РЅС‹С… СЃР»РѕРІ РїСЂРё РѕР±РјРµРЅРµ РїРѕ SPI */
-//#define WITHSPIHW 	1	/* РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ Р°РїРїР°СЂР°С‚РЅРѕРіРѕ РєРѕРЅС‚СЂРѕР»Р»РµСЂР° SPI */
-//#define WITHTWIHW 	1	/* РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ Р°РїРїР°СЂР°С‚РЅРѕРіРѕ РєРѕРЅС‚СЂРѕР»Р»РµСЂР° TWI (I2C) */
-#define WITHSPISW 	1	/* РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ РїСЂРѕРіСЂР°РјРјРЅРѕРіРѕ СѓРїСЂР°РІР»РµРЅРёСЏ SPI. */
-#define WITHCPUADCHW 	1	/* РёСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ ADC */
+//#define WITHSPI16BIT	1		/* возможно использование 16-ти битных слов при обмене по SPI */
+//#define WITHSPIHW 	1	/* Использование аппаратного контроллера SPI */
+//#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
+#define WITHSPISW 	1	/* Использование программного управления SPI. */
+#define WITHCPUADCHW 	1	/* использование ADC */
 
 //#define HARDWARE_ARM_USEUSART0 1		// US0: PA5/PA6 pins - WITHUART1HW
 #define HARDWARE_ARM_USEUSART1 1		// US1: PA21/PA22 pins - WITHUART2HW
 //#define HARDWARE_ARM_USEUART0 1		// UART0: PA9/PA10 pins - WITHUART1HW
 //#define HARDWARE_ARM_USEUART1 1		// UART1: PB2/PB3 pins  WITHUART2HW
 
-//#define WITHUART1HW	1	/* РСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РїРµСЂРёС„РµСЂРёР№РЅС‹Р№ РєРѕРЅС‚СЂРѕР»Р»РµСЂ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕРіРѕ РїРѕСЂС‚Р° #1 */
-#define WITHUART2HW	1	/* РСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РїРµСЂРёС„РµСЂРёР№РЅС‹Р№ РєРѕРЅС‚СЂРѕР»Р»РµСЂ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕРіРѕ РїРѕСЂС‚Р° #2 */
+//#define WITHUART1HW	1	/* Используется периферийный контроллер последовательного порта #1 */
+#define WITHUART2HW	1	/* Используется периферийный контроллер последовательного порта #2 */
 
-//#define WITHUSBHW	1	/* РСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РІСЃС‚СЂРѕРµРЅРЅР°СЏ РІ РїСЂРѕС†РµСЃСЃРѕСЂ РїРѕРґРґРµСЂР¶РєР° USB */
-//#define WITHUSBHWVBUSSENSE	1	/* РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РїСЂРµРґРѕРїСЂРµРґРµР»РµРЅРЅС‹Р№ РІС‹РІРѕРґ VBUS_SENSE */
-//#define WITHUSBHWHIGHSPEED	1	/* РСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РІСЃС‚СЂРѕРµРЅРЅР°СЏ РІ РїСЂРѕС†РµСЃСЃРѕСЂ РїРѕРґРґРµСЂР¶РєР° USB HS */
-//#define WITHUSBHWHIGHSPEEDDESC	1	/* РўСЂРµР±СѓРµС‚СЃСЏ С„РѕСЂРјРёСЂРѕРІР°С‚СЊ РґРµСЃРєСЂРёРїС‚РѕСЂС‹ РєР°Рє РґР»СЏ HIGH SPEED */
+//#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
+//#define WITHUSBHWVBUSSENSE	1	/* используется предопределенный вывод VBUS_SENSE */
+//#define WITHUSBHWHIGHSPEED	1	/* Используется встроенная в процессор поддержка USB HS */
+//#define WITHUSBHWHIGHSPEEDDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
 
-//#define WITHCAT_CDC		1	/* РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊ РІРёСЂС‚СѓР°Р»СЊРЅС‹Р№ РІРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅС‹Р№ РїРѕСЂС‚ РЅР° USB СЃРѕРµРґРёРЅРµРЅРёРё */
+//#define WITHCAT_CDC		1	/* использовать виртуальный воследовательный порт на USB соединении */
 #define WITHCAT_USART2		1
 #define WITHDEBUG_USART2	1
 #define WITHMODEM_USART2	1
 #define WITHNMEA_USART2		1
 
-// Р’С‹РІРѕРґС‹ РїРѕРґРєР»СЋС‡РµРЅРёСЏ Р–РљР РёРЅРґРёРєР°С‚РѕСЂР° WH2002 РёР»Рё Р°РЅР°Р»РѕРіРёС‡РЅРѕРіРѕ HD44780.
+// Выводы подключения ЖКИ индикатора WH2002 или аналогичного HD44780.
 //#define LCD_DATA_PORT			AT91C_BASE_PIOA->PIO_ODSR		// enabled by PIO_OWSR bits can be written was PORTA
 #define LCD_DATA_PORT_S(v)		do { AT91C_BASE_PIOA->PIO_SODR = (v); } while (0)
 #define LCD_DATA_PORT_C(v)		do { AT91C_BASE_PIOA->PIO_CODR = (v); } while (0)
@@ -65,26 +65,26 @@
 #define WRITEE_BIT AT91C_PIO_PA1
 #define ADDRES_BIT AT91C_PIO_PA0
 #define LCD_DATAS_BITS (AT91C_PIO_PA26 | AT91C_PIO_PA25 | AT91C_PIO_PA24 | AT91C_PIO_PA23)
-#define LCD_DATAS_BIT_LOW 23		// РєР°РєРѕР№ Р±РёС‚ РґР°РЅРЅС‹С… РјР»Р°РґС€РёР№ РІ СЃР»РѕРІРµ СЃС‡РёС‚Р°РЅРЅРѕРј СЃ РїРѕСЂС‚Р°
+#define LCD_DATAS_BIT_LOW 23		// какой бит данных младший в слове считанном с порта
 
-#define DISPLAY_BUS_DATA_GET() ((LCD_DATA_INPUT & LCD_DATAS_BITS) >> LCD_DATAS_BIT_LOW) /* РїРѕР»СѓС‡РёС‚СЊ РґР°РЅРЅС‹Рµ СЃ С€РёРЅС‹ LCD */
-#define DISPLAY_BUS_DATA_SET(v) do { /* РІС‹РґР°С‡Р° РґР°РЅРЅС‹С… (РЅРµ СЃРґРІРёРЅСѓСЊС‹С…) */ \
+#define DISPLAY_BUS_DATA_GET() ((LCD_DATA_INPUT & LCD_DATAS_BITS) >> LCD_DATAS_BIT_LOW) /* получить данные с шины LCD */
+#define DISPLAY_BUS_DATA_SET(v) do { /* выдача данных (не сдвинуьых) */ \
 		const portholder_t t = (portholder_t) (v) << LCD_DATAS_BIT_LOW; \
 		LCD_DATA_PORT_S(LCD_DATAS_BITS & t); \
 		LCD_DATA_PORT_C(LCD_DATAS_BITS & ~ t); \
 	} while (0)
 
-/* РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ СѓРїСЂР°РІР»СЏСЋС‰РёС… РІС‹С…РѕРґРѕРІ РїСЂРѕС†РµСЃСЃРѕСЂР° РґР»СЏ СѓРїСЂР°РІР»РµРЅРёСЏ HD44780 - РїРѕР»РЅС‹Р№ РЅР°Р±РѕСЂ РІС‹С…РѕРґРѕРІ */
+/* инициализация управляющих выходов процессора для управления HD44780 - полный набор выходов */
 #define LCD_CONTROL_INITIALIZE() \
 	do { \
 		arm_hardware_pioa_outputs(LCD_STROBE_BIT | WRITEE_BIT | ADDRES_BIT, 0); \
 	} while (0)
-/* РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ СѓРїСЂР°РІР»СЏСЋС‰РёС… РІС‹С…РѕРґРѕРІ РїСЂРѕС†РµСЃСЃРѕСЂР° РґР»СЏ СѓРїСЂР°РІР»РµРЅРёСЏ HD44780 - WE=0 */
+/* инициализация управляющих выходов процессора для управления HD44780 - WE=0 */
 #define LCD_CONTROL_INITIALIZE_WEEZERO() \
 	do { \
 		arm_hardware_pioa_outputs(LCD_STROBE_BIT | WRITEE_BIT_ZERO | ADDRES_BIT, 0); \
 	} while (0)
-/* РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ СѓРїСЂР°РІР»СЏСЋС‰РёС… РІС‹С…РѕРґРѕРІ РїСЂРѕС†РµСЃСЃРѕСЂР° РґР»СЏ СѓРїСЂР°РІР»РµРЅРёСЏ HD44780 - WE РѕС‚СЃСѓС‚СЃС‚РІСѓРµС‚ - СЃРёРіРЅР°Р» Рє РёРЅРґРёРєР°С‚РѕСЂСѓ Р·Р°Р·РµРјР»С‘РЅ */
+/* инициализация управляющих выходов процессора для управления HD44780 - WE отсутствует - сигнал к индикатору заземлён */
 #define LCD_CONTROL_INITIALIZE_WEENONE() \
 	do { \
 		arm_hardware_pioa_outputs(LCD_STROBE_BIT | ADDRES_BIT, 0); \
@@ -92,16 +92,16 @@
 
 #define LCD_DATA_INITIALIZE_READ() \
 	do { \
-		arm_hardware_pioa_inputs(LCD_DATAS_BITS);	/* РїРµСЂРµРєР»СЋС‡РёС‚СЊ РїРѕСЂС‚ РЅР° С‡С‚РµРЅРёРµ СЃ РІС‹РІРѕРґРѕРІ */ \
+		arm_hardware_pioa_inputs(LCD_DATAS_BITS);	/* переключить порт на чтение с выводов */ \
 	} while (0)
 
 #define LCD_DATA_INITIALIZE_WRITE(v) \
 	do { \
-		arm_hardware_pioa_outputs(LCD_DATAS_BITS, (v) << LCD_DATAS_BIT_LOW);	/* РѕС‚РєСЂС‹С‚СЊ РІС‹С…РѕРґС‹ РїРѕСЂС‚Р° */ \
+		arm_hardware_pioa_outputs(LCD_DATAS_BITS, (v) << LCD_DATAS_BIT_LOW);	/* открыть выходы порта */ \
 	} while (0)
 
 #if WITHENCODER
-// Р’С‹РІРѕРґС‹ РїРѕРґРєР»СЋС‡РµРЅРёСЏ РµРЅРєРѕРґРµСЂР°
+// Выводы подключения енкодера
 
 #define ENCODER_DIRECTION_PORT_S			(AT91C_BASE_PIOA->PIO_OER)	// was DDRA
 #define ENCODER_DIRECTION_PORT_C			(AT91C_BASE_PIOA->PIO_ODR)	// was DDRA
@@ -120,7 +120,7 @@
 		} while (0)
 #endif /* WITHENCODER */
 
-/* Р Р°СЃРїСЂРµРґРµР»РµРЅРёРµ Р±РёС‚РѕРІ РІ ARM РєРѕРЅС‚СЂРѕР»Р»РµСЂР°С… */
+/* Распределение битов в ARM контроллерах */
 #if WITHTX
 	// txpath outputs
 
@@ -129,21 +129,21 @@
 	#define TXPATH_TARGET_PORT_S(v)		do { AT91C_BASE_PIOA->PIO_SODR = (v); } while (0)
 	#define TXPATH_TARGET_PORT_C(v)		do { AT91C_BASE_PIOA->PIO_CODR = (v); } while (0)
 
-	// РЈРїСЂР°РІР»РµРЅРёРµ РїРµСЂРµРґР°С‚С‡РёРєРѕРј - СЃРёРіРЅР°Р»С‹ TXPATH_ENABLE (PA11) Рё TXPATH_ENABLE_CW (PA10) - Р°РєС‚РёРІРЅС‹ РїСЂРё РЅСѓР»Рµ РЅР° РІС‹С…РѕРґРµ.
+	// Управление передатчиком - сигналы TXPATH_ENABLE (PA11) и TXPATH_ENABLE_CW (PA10) - активны при нуле на выходе.
 	#define TXPATH_BIT_ENABLE_SSB		AT91C_PIO_PA11
 	#define TXPATH_BIT_ENABLE_CW	AT91C_PIO_PA10
 	#define TXPATH_BITS_ENABLE	(TXPATH_BIT_ENABLE_SSB | TXPATH_BIT_ENABLE_CW)
 
-	// РџРѕРґРіРѕС‚РѕРІР»РµРЅРЅС‹Рµ СѓРїСЂР°РІР»СЏСЋС‰РёРµ СЃР»РѕРІР°
+	// Подготовленные управляющие слова
 	#define TXGFV_RX		0
-	#define TXGFV_TRANS		0			// РїРµСЂРµС…РѕРґ РјРµР¶РґСѓ СЂРµР¶РёРјР°РјРё РїСЂРёС‘РјР° Рё РїРµСЂРµРґР°С‡Рё
+	#define TXGFV_TRANS		0			// переход между режимами приёма и передачи
 	#define TXGFV_TX_SSB	TXPATH_BIT_ENABLE_SSB
 	#define TXGFV_TX_CW		TXPATH_BIT_ENABLE_CW
 	#define TXGFV_TX_AM		TXPATH_BIT_ENABLE_CW
 	#define TXGFV_TX_NFM	TXPATH_BIT_ENABLE_CW
 
-	// РЈРїСЂР°РІР»РµРЅРёРµ РїРµСЂРµРґР°С‚С‡РёРєРѕРј - СЃРёРіРЅР°Р»С‹ TXPATH_ENABLE (PA11) Рё TXPATH_ENABLE_CW (PA10) - Р°РєС‚РёРІРЅС‹ РїСЂРё РЅСѓР»Рµ РЅР° РІС‹С…РѕРґРµ.
-	// РЈСЃС‚Р°РЅРѕРІРєР° РЅР°С‡Р°Р»СЊРЅРѕРіРѕ СЃС‚СЃС‚РѕСЏРЅРёСЏ РІС‹С…РѕРґРѕРІ
+	// Управление передатчиком - сигналы TXPATH_ENABLE (PA11) и TXPATH_ENABLE_CW (PA10) - активны при нуле на выходе.
+	// Установка начального стстояния выходов
 	#define TXPATH_INITIALIZE() \
 	do { \
 		arm_hardware_pioa_opendrain(TXPATH_BITS_ENABLE, TXPATH_BITS_ENABLE); \
@@ -176,25 +176,25 @@
 	#define FROMCAT_TARGET_PIN_DTR		(AT91C_BASE_PIOA->PIO_PDSR) // was PINA 
 	#define FROMCAT_TARGET_DDR_RTS_C	(AT91C_BASE_PIOA->PIO_ODR)	// was DDRA
 	#define FROMCAT_TARGET_DDR_DTR_C	(AT91C_BASE_PIOA->PIO_ODR)	// was DDRA
-	#define FROMCAT_BIT_RTS			AT91C_PIO_PA16	/* СЃРёРіРЅР°Р» RTS РѕС‚ FT232RL	*/
-	/* РјР°РЅРёРїСѓР»СЏС†РёСЏ РѕС‚ РїРѕСЂС‚Р° RS-232, СЃРёРіРЅР°Р» PPS РѕС‚ GPS/GLONASS/GALILEO РјРѕРґСѓР»СЏ */
-	#define FROMCAT_BIT_DTR			AT91C_PIO_PA12	/* СЃРёРіРЅР°Р» DTR РѕС‚ FT232RL	*/
+	#define FROMCAT_BIT_RTS			AT91C_PIO_PA16	/* сигнал RTS от FT232RL	*/
+	/* манипуляция от порта RS-232, сигнал PPS от GPS/GLONASS/GALILEO модуля */
+	#define FROMCAT_BIT_DTR			AT91C_PIO_PA12	/* сигнал DTR от FT232RL	*/
 
-	/* РјР°РЅРёРїСѓР»СЏС†РёСЏ РѕС‚ РїРѕСЂС‚Р° RS-232 */
+	/* манипуляция от порта RS-232 */
 	#define FROMCAT_RTS_INITIALIZE() \
 		do { \
 			arm_hardware_pioa_inputs(FROMCAT_BIT_RTS); \
 			arm_hardware_pioa_updown(FROMCAT_BIT_RTS, 0); \
 		} while (0)
 
-	/* РїРµСЂРµС…РѕРґ РЅР° РїРµСЂРµРґР°С‡Сѓ РѕС‚ РїРѕСЂС‚Р° RS-232 */
+	/* переход на передачу от порта RS-232 */
 	#define FROMCAT_DTR_INITIALIZE() \
 		do { \
 			arm_hardware_pioa_inputs(FROMCAT_BIT_DTR); \
 			arm_hardware_pioa_updown(FROMCAT_BIT_DTR, 0); \
 		} while (0)
 
-	/* СЃРёРіРЅР°Р» PPS РѕС‚ GPS/GLONASS/GALILEO РјРѕРґСѓР»СЏ */
+	/* сигнал PPS от GPS/GLONASS/GALILEO модуля */
 	#define NMEA_INITIALIZE() \
 		do { \
 			arm_hardware_pioa_inputs(FROMCAT_BIT_DTR); \
@@ -221,7 +221,7 @@
 		} while (0)
 #endif
 
-#define SPI_BIDIRECTIONAL 1	// РІРІРѕРґ РґР°РЅРЅС‹С… РїРѕ SPI РёРґРµС‚ С‡РµСЂРµР· С‚РѕС‚ Р¶Рµ СЃР°РјС‹Р№ pin, С‡С‚Рѕ Рё РІС‹РІРѕРґ
+#define SPI_BIDIRECTIONAL 1	// ввод данных по SPI идет через тот же самый pin, что и вывод
 // SPI control pins
 
 #define SPI_TARGET_MOSI_PORT_S(v)	do { AT91C_BASE_PIOA->PIO_SODR = (v); } while (0)
@@ -238,7 +238,7 @@
 #define SPI_TARGET_SCLK_DDR_S			(AT91C_BASE_PIOA->PIO_OER)
 #define SPI_TARGET_SCLK_DDR_C			(AT91C_BASE_PIOA->PIO_ODR)
 
-// Р±РёС‚С‹ РІС‹РІРѕРґР° Р°РґСЂРµСЃР° С‡РёРїСЃРµР»РµРєС‚ РґРµС€РёС„СЂР°С‚РѕСЂР°
+// биты вывода адреса чипселект дешифратора
 #define SPI_ADDRESS_PORT_S(v)		do { AT91C_BASE_PIOA->PIO_SODR = (v); } while (0)
 #define SPI_ADDRESS_PORT_C(v)		do { AT91C_BASE_PIOA->PIO_CODR = (v); } while (0)
 #define SPI_ADDRESS_DDR_S			(AT91C_BASE_PIOA->PIO_OER)	// was DDRA
@@ -251,51 +251,51 @@
 #define SPI_NAEN_DDR_C			(AT91C_BASE_PIOA->PIO_ODR)	// was DDRA
 
 #define SPI_NAEN_BIT AT91C_PIO_PA28
-#define SPI_ALLCS_BITS	0		// С‚СЂРµР±СѓРµС‚СЃСЏ РґР»СЏ СѓРєР°Р·Р°РЅРёСЏ С‚РѕРіРѕ, С‡С‚Рѕ СЂР°Р±РѕС‚Р° СЃ РїСЂСЏРјС‹Рј РІС‹Р±РѕСЂРѕРј CS (Р±РµР· РґРµС€РёС„СЂР°С‚РѕСЂР°) РЅРµ С‚СЂРµР±СѓРµС‚СЃСЏ
+#define SPI_ALLCS_BITS	0		// требуется для указания того, что работа с прямым выбором CS (без дешифратора) не требуется
 
 #define SPI_IOUPDATE_PORT_S(v)	do { AT91C_BASE_PIOA->PIO_SODR = (v); } while (0)
 #define SPI_IOUPDATE_PORT_C(v)	do { AT91C_BASE_PIOA->PIO_CODR = (v); } while (0)
-#define SPI_IORESET_BIT AT91C_PIO_PA2		// РїСЂРѕСЃС‚Рѕ СЃР±СЂР°СЃС‹РІР°РµРј. РЈРїСЂР°РІР»РµРЅРёСЏ С‡РµСЂРµР· СЌС‚РѕС‚ РІС‹РІР»Р¶Рґ РЅРµ РёРґС‘С‚.
+#define SPI_IORESET_BIT AT91C_PIO_PA2		// просто сбрасываем. Управления через этот вывлжд не идёт.
 #define SPI_IOUPDATE_BIT AT91C_PIO_PA3
 
-#define SPI_A0 (AT91C_PIO_PA4)			// Р±РёС‚С‹ Р°РґСЂРµСЃР° РґР»СЏ РґРµС€РёС„СЂР°С‚РѕСЂР° SPI
+#define SPI_A0 (AT91C_PIO_PA4)			// биты адреса для дешифратора SPI
 #define SPI_A1 (AT91C_PIO_PA5)
 #define SPI_A2 (AT91C_PIO_PA6)
 
 
-/* РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ Р»РёРёР№ РІС‹Р±РѕСЂР° РїРµСЂРёС„РµСЂРёР№РЅС‹С… РјРёРєСЂРѕСЃС…РµРј */
+/* инициализация лиий выбора периферийных микросхем */
 #define SPI_ALLCS_INITIALIZE() \
 	do { \
 		/* arm_hardware_pioa_outputs(SPI_ALLCS_BITS, SPI_ALLCS_BITS); */ \
 	} while (0)
-/* РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ СЃРёРіРЅР°Р»РѕРІ СѓРїСЂР°РІР»РґРµРЅРёСЏ РґРµС€РёС„СЂР°С‚РѕСЂРѕРј CS */
+/* инициализация сигналов управлдения дешифратором CS */
 #define SPI_ADDRESS_AEN_INITIALIZE() \
 	do { \
 		/* arm_hardware_pioa_outputs(SPI_AEN_BIT | SPI_ADDRESS_BITS, 0);  */\
 	} while (0)
-/* РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ СЃРёРіРЅР°Р»РѕРІ СѓРїСЂР°РІР»РґРµРЅРёСЏ РґРµС€РёС„СЂР°С‚РѕСЂРѕРј CS */
+/* инициализация сигналов управлдения дешифратором CS */
 #define SPI_ADDRESS_NAEN_INITIALIZE() \
 	do { \
 		arm_hardware_pioa_outputs(SPI_NAEN_BIT | SPI_ADDRESS_BITS, SPI_NAEN_BIT); \
 	} while (0)
-/* РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ СЃРёРіРЅР°Р»Р° IOUPDATE РЅР° DDS */
-/* РЅР°С‡Р°Р»СЊРЅРѕРµ СЃРѕСЃС‚РѕСЏРЅРёРµ = 1 */
+/* инициализация сигнала IOUPDATE на DDS */
+/* начальное состояние = 1 */
 #define SPI_IOUPDATE_INITIALIZE() \
 	do { \
 		arm_hardware_pioa_outputs(SPI_IOUPDATE_BIT, SPI_IOUPDATE_BIT); \
 	} while (0)
-/* РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ СЃРёРіРЅР°Р»Р° IOUPDATE РЅР° DDS */
-/* РЅР°С‡Р°Р»СЊРЅРѕРµ СЃРѕСЃС‚РѕСЏРЅРёРµ = 0 */
+/* инициализация сигнала IOUPDATE на DDS */
+/* начальное состояние = 0 */
 #define SPI_IORESET_INITIALIZE() \
 	do { \
 		arm_hardware_pioa_outputs(SPI_IORESET_BIT, 0); \
 	} while (0)
 
 
-#define	SPI_SCLK_BIT			AT91C_PIO_PA30	// Р±РёС‚, С‡РµСЂРµР· РєРѕС‚РѕСЂС‹Р№ РёРґРµС‚ СЃРёРЅС…СЂРѕРЅРёР·Р°С†РёСЏ SPI
-#define	SPI_MOSI_BIT			AT91C_PIO_PA27	// Р±РёС‚, С‡РµСЂРµР· РєРѕС‚РѕСЂС‹Р№ РёРґРµС‚ РІС‹РІРѕРґ (РёР»Рё РІРІРѕРґ РІ СЃР»СѓС‡Р°Рµ РґРІСѓРЅР°РїСЂР°РІР»РµРЅРЅРѕРіРѕ SPI).
+#define	SPI_SCLK_BIT			AT91C_PIO_PA30	// бит, через который идет синхронизация SPI
+#define	SPI_MOSI_BIT			AT91C_PIO_PA27	// бит, через который идет вывод (или ввод в случае двунаправленного SPI).
 #define SPI_TARGET_MOSI_PIN		(AT91C_BASE_PIOA->PIO_PDSR) // was PINA 
-//#define	SPI_MISO_BIT	AT91C_PIO_PA27	// Р±РёС‚, С‡РµСЂРµР· РєРѕС‚РѕСЂС‹Р№ РёРґРµС‚ РІРІРѕРґ СЃ SPI.
+//#define	SPI_MISO_BIT	AT91C_PIO_PA27	// бит, через который идет ввод с SPI.
 
 #if SPI_BIDIRECTIONAL
 	// 
@@ -304,10 +304,10 @@
 		arm_hardware_pioa_only(SPI_MOSI_BIT | SPI_SCLK_BIT); /* disconnect from peripherials */ \
 		} while (0)
 	#define SPIIO_MOSI_TO_INPUT() do { \
-		SPI_TARGET_MOSI_DDR_C = SPI_MOSI_BIT;	/* РїРµСЂРµРєР»СЋС‡РёС‚СЊ РїРѕСЂС‚ РЅР° С‡С‚РµРЅРёРµ СЃ РІС‹РІРѕРґРѕРІ */ \
+		SPI_TARGET_MOSI_DDR_C = SPI_MOSI_BIT;	/* переключить порт на чтение с выводов */ \
 		} while (0)
 	#define SPIIO_MOSI_TO_OUTPUT() do { \
-		SPI_TARGET_MOSI_DDR_S = SPI_MOSI_BIT;	/* РѕС‚РєСЂС‹С‚СЊ РІС‹С…РѕРґС‹ РїРѕСЂС‚Р° */ \
+		SPI_TARGET_MOSI_DDR_S = SPI_MOSI_BIT;	/* открыть выходы порта */ \
 		} while (0)
 #else /* SPI_BIDIRECTIONAL */
 	#define SPIIO_INITIALIZE() do { \
@@ -339,8 +339,8 @@
 
 #endif /* WITHSPIHW */
 
-#define SIDETONE_TARGET_PORT_S	AT91C_BASE_PIOA->PIO_SODR)	/* РџРѕСЂС‚ РїСЂРѕС†РµСЃСЃРѕСЂР°, РЅР° РєРѕС‚РѕСЂРѕРј РЅР°С…РѕРґРёС‚СЃСЏ РІС‹РІРѕРґ С‚РѕРЅР° СЃР°РјРѕРєРѕРЅС‚СЂРѕР»СЏ */
-#define SIDETONE_TARGET_PORT_C	AT91C_BASE_PIOA->PIO_CODR)	/* РџРѕСЂС‚ РїСЂРѕС†РµСЃСЃРѕСЂР°, РЅР° РєРѕС‚РѕСЂРѕРј РЅР°С…РѕРґРёС‚СЃСЏ РІС‹РІРѕРґ С‚РѕРЅР° СЃР°РјРѕРєРѕРЅС‚СЂРѕР»СЏ */
+#define SIDETONE_TARGET_PORT_S	AT91C_BASE_PIOA->PIO_SODR)	/* Порт процессора, на котором находится вывод тона самоконтроля */
+#define SIDETONE_TARGET_PORT_C	AT91C_BASE_PIOA->PIO_CODR)	/* Порт процессора, на котором находится вывод тона самоконтроля */
 #define SIDETONE_TARGET_DDR_S	(AT91C_BASE_PIOA->PIO_OER)
 #define SIDETONE_TARGET_DDR_C	(AT91C_BASE_PIOA->PIO_ODR)
 #define SIDETONE_TARGET_BIT		AT91C_PA15_TIOA1
@@ -369,19 +369,19 @@
 	#define TARGET_TWI_TWD_PORT_C(v)	do { AT91C_BASE_PIOA->PIO_CODR = (v); } while (0)
 	#define TARGET_TWI_TWD_PORT_S(v)	do { AT91C_BASE_PIOA->PIO_SODR = (v); } while (0)
 	#define TARGET_TWI_PIN		(AT91C_BASE_PIOA->PIO_PDSR)
-	#define TARGET_TWI_TWCK	AT91C_PIO_PA23		// РЅР° СЌС‚РѕР№ РїР»Р°С‚Рµ РїРѕРґРєР»СЋС‡Р°РµРј Рє С‚РµРј Р¶Рµ Р±РёС‚Р°Рј, РєСѓРґР° РјРѕРіР»Рё Р±С‹ РїСЂРёРїР°РёРІР°С‚СЊСЃСЏ РґР°РЅРЅС‹Рµ РёРЅРґРёРєР°С‚РѕСЂР°
+	#define TARGET_TWI_TWCK	AT91C_PIO_PA23		// на этой плате подключаем к тем же битам, куда могли бы припаиваться данные индикатора
 	#define TARGET_TWI_TWD	AT91C_PIO_PA24
 //#endif
 
-	// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ Р±РёС‚РѕРІ РїРѕСЂС‚РѕРІ РІРІРѕРґР°-РІС‹РІРѕРґР° РґР»СЏ РїСЂРѕРіСЂР°РјРјРЅРѕР№ СЂРµР°Р»РёР·Р°С†РёРё I2C
+	// Инициализация битов портов ввода-вывода для программной реализации I2C
 	#define	TWISOFT_INITIALIZE() do { \
-			enum { WORKMASK = TARGET_TWI_TWCK | TARGET_TWI_TWD };		/* Р±РёС‚РѕРІР°СЏ РјР°СЃРєР°, РѕРїСЂРµРґРµР»СЏРµС‚ РєР°РєРёРј РІС‹РІРѕРґРѕРј С€РµРІРµР»РёС‚СЊ */ \
+			enum { WORKMASK = TARGET_TWI_TWCK | TARGET_TWI_TWD };		/* битовая маска, определяет каким выводом шевелить */ \
 			arm_hardware_pioa_opendrain(WORKMASK, WORKMASK);	/* The user must not program TWD and TWCK as open-drain. It is already done by the hardware. */ \
 			arm_hardware_pioa_only(WORKMASK); /* disconnect from peripherials */ \
 		} while (0) 
 
-	// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ Р±РёС‚РѕРІ РїРѕСЂС‚РѕРІ РІРІРѕРґР°-РІС‹РІРѕРґР° РґР»СЏ Р°РїРїР°СЂР°С‚РЅРѕР№ СЂРµР°Р»РёР·Р°С†РёРё I2C
-	// РїСЂРёСЃРѕРµРґРёРЅРµРЅРёРµ РІС‹РІРѕРґРѕРІ Рє РїРµСЂРёС„РµСЂРёР№РЅРѕРјСѓ СѓСЃС‚СЂРѕР№СЃС‚РІСѓ
+	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
+	// присоединение выводов к периферийному устройству
 	#define	TWIHARD_INITIALIZE() do { \
 		} while (0) 
 #endif
