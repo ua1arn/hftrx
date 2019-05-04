@@ -24,7 +24,7 @@
 #include "nau8822.h"
 
 #if WITHUSEAUDIOREC
-	#include "ff.h"
+	#include "fatfs/ff.h"
 	#include "sdcard.h"
 #endif /* WITHUSEAUDIOREC */
 

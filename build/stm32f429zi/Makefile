@@ -59,7 +59,7 @@ DLIBS = -lm -larm_cortexM4lf_math
 # Start of user section
 #
 
-SRCDIR = ../../
+SRCDIR = ../..
 
 # Define project name here
 PROJECT = tc1_stm32f429zi
@@ -80,7 +80,7 @@ SRC +=
 ASRC +=
 
 # List all user directories here
-UINCDIR +=
+UINCDIR += ../.. ../../inc
 
 # List the user directory to look for the libraries here
 ULIBDIR +=
@@ -88,7 +88,9 @@ ULIBDIR +=
 # List all user libraries here
 ULIBS += 
 
-include $(SRCDIR)/sources.mak
+SRC_EXCLUDES += ../../tools/rbf2c.c
+SRC += $(filter-out $(SRC_EXCLUDES), $(wildcard $(SRCDIR)/*.c $(SRCDIR)/*/*.c $(SRCDIR)/*/*/*.c $(SRCDIR)/*/*/*/*.c))
+VPATH = $(SRCDIR)
 
 #
 # End of user defines
@@ -99,8 +101,7 @@ INCDIR  = $(patsubst %,-I%,$(DINCDIR) $(UINCDIR))
 LIBDIR  = $(patsubst %,-L%,$(DLIBDIR) $(ULIBDIR))
 DEFS    = $(DDEFS) $(UDEFS)
 ADEFS   = $(DADEFS) $(UADEFS)
-#OBJS    = $(addprefix ../, $(ASRC:.s=.o) $(SRC:.c=.o))
-OBJS    = $(ASRC:.s=.o) $(SRC:.c=.o)
+OBJS    = $(ASRC:.s=.o) $(patsubst $(SRCDIR)/%.c,%.o,$(SRC))
 LIBS    = $(DLIBS) $(ULIBS)
 
 
@@ -117,7 +118,7 @@ LDFLAGS_RAM = $(MCFLAGS) $(LTO) $(OPT) -nostartfiles -T$(LDSCRIPT_RAM) -Wl,-Map=
 LDFLAGS_ROM = $(MCFLAGS) $(LTO) $(OPT) -nostartfiles -T$(LDSCRIPT_ROM) -Wl,-Map=$(PROJECT)_rom.map,--cref $(LIBDIR)
 
 # Generate dependency information
-CPFLAGS += -MD -MP -MF ./$(@F).d
+CPFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
 
 # Experemental optimisation flags
 #CPFLAGS += -fno-inline-small-functions 
@@ -140,10 +141,11 @@ RAM: $(OBJS) $(PROJECT)_ram.elf $(PROJECT)_ram.hex
 ROM: $(OBJS) $(PROJECT)_rom.elf $(PROJECT)_rom.hex
 #ROM: $(OBJS) $(PROJECT)_rom.elf $(PROJECT)_rom.bin
 
-%o: $(addprefix $(SRCDIR), %c)
-	$(CC) -c $(CPFLAGS) $(INCDIR) $< -o $@
+%.o: %.c
+	@mkdir -p $(@D)
+	$(CC) -c $(CPFLAGS) $(INCDIR) $(patsubst %.o,%.c,$(addprefix $(SRCDIR)/, $@)) -o $@
 
-%o: $(addprefix $(SRCDIR), %s)
+%.o: $(addprefix $(SRCDIR)/, %.s)
 	$(AS) -c $(ASFLAGS) $< -o $@
 
 %ram.elf: $(OBJS)
@@ -161,22 +163,22 @@ ROM: $(OBJS) $(PROJECT)_rom.elf $(PROJECT)_rom.hex
 	$(BIN) $< $@
 
 clean:
-	-rm -f $(OBJS)
-	-rm -f $(PROJECT)_ram.elf
-	-rm -f $(PROJECT)_ram.map
-	-rm -f $(PROJECT)_ram.hex
-	-rm -f $(PROJECT)_rom.elf
-	-rm -f $(PROJECT)_rom.map
-	-rm -f $(PROJECT)_rom.hex
+	-rm -fR ./*/*.o
+	-rm -fR ./*.o
+	-rm -f $(PROJECT)_rom.elf $(PROJECT)_rom.map $(PROJECT)_rom.hex $(PROJECT)_rom.bin
+	-rm -f $(PROJECT)_ram.elf $(PROJECT)_ram.map $(PROJECT)_ram.hex $(PROJECT)_ram.bin
+	-rm -f $(PROJECT)_boot.elf $(PROJECT)_boot.map $(PROJECT)_boot.hex $(PROJECT)_boot.bin
+	-rm -f $(PROJECT)_app.elf $(PROJECT)_app.map $(PROJECT)_app.hex $(PROJECT)_app.bin
 	-rm -f $(SRC:.c=.c.bak)
 	-rm -f $(SRC:.c=.lst)
 	-rm -f $(ASRC:.s=.s.bak)
 	-rm -f $(ASRC:.s=.lst)
+	-rm -fR ./*/*.d	
 	-rm -fR ./*.d
 
 # 
 # Include the dependency files, should be the last of the makefile
 #
--include $(wildcard ./*.d)
+-include $(wildcard ./*/*.d)
 
 # *** EOF ***

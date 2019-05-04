@@ -6,14 +6,14 @@
 ## Микроконтроллер:
 
 1. Настраиваем окружение (компилятор и утилиты для сборки проекта) <br>
-1.1 **ARM** GNU ARM Toolchain https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm/downloads (последняя проверенная сборка 7-2018-q2-update) <br>
-1.2 **ATMEGA/ATXMEGA** AVR 8-bit Toolchain https://www.microchip.com/mplab/avr-support/avr-and-arm-toolchains-c-compilers (распаковываем, прописываем путь к папке BIN в переменную окружения PATH)<br>
-1.3 Утилиты для сборки (напр. make) отсюда: http://www.yagarto.org/ или отсюда: http://www.cygwin.com/ (проверяем что в командной строке работает команда make, иначе обновляем переменную PATH в системе) <br>
+1.1 **ARM:** GNU ARM Toolchain https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm/downloads (последняя проверенная сборка 7-2018-q2-update) <br>
+1.2 **ATMEGA/ATXMEGA:** AVR 8-bit Toolchain https://www.microchip.com/mplab/avr-support/avr-and-arm-toolchains-c-compilers (распаковываем, прописываем путь к папке BIN в переменную окружения PATH)<br>
+1.3 Утилиты для сборки отсюда: http://www.cygwin.com/ (устанавливаем пакет make, обновляем переменную PATH в системе, указав путь к подпапке bin, например C:\cygwin64\bin) <br>
 1.4 Утилиты для работы с GIT репозиториями https://git-scm.com/downloads
 
 2. Скачиваем дополнительные библиотеки, распаковываем их на уровень выше, чем папка проекта. <br>
-2.1 **ARM** CMSIS, используем оптимизированный форк, для этого в папке выше проекта вводим команду "git clone https://github.com/XGudron/CMSIS_5" <br>
-2.2 **ATMEL ARM** В случае использования Atmel ARM (SAM) процессоров, скачать и распаковать в папку "xdk-asf" пакет Advanced Software Framework (ASF) https://www.microchip.com/mplab/avr-support/advanced-software-framework
+2.1 **ARM:** CMSIS, используем оптимизированный форк, для этого в папке выше проекта вводим команду "git clone https://github.com/XGudron/CMSIS_5" <br>
+2.2 **ATMEL ARM:** В случае использования Atmel ARM (SAM) процессоров, скачать и распаковать в папку "xdk-asf" пакет Advanced Software Framework (ASF) https://www.microchip.com/mplab/avr-support/advanced-software-framework
 
 3. Устанавливаем IDE для разработки <br>
 3.1 Скачиваем и устанавливаем Eclipse https://www.eclipse.org/downloads/ <br>

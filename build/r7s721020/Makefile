@@ -84,7 +84,7 @@ ASRC += \
  crt_r7s721.s
 
 # List all user directories here
-UINCDIR += ../../rza1x_inc
+UINCDIR += ../.. ../../inc ../../rza1x_inc/
 
 # List the user directory to look for the libraries here
 ULIBDIR +=
@@ -92,8 +92,9 @@ ULIBDIR +=
 # List all user libraries here
 ULIBS += 
 
-
-include $(SRCDIR)/sources.mak
+SRC_EXCLUDES += ../../tools/rbf2c.c
+SRC += $(filter-out $(SRC_EXCLUDES), $(wildcard $(SRCDIR)/*.c $(SRCDIR)/*/*.c $(SRCDIR)/*/*/*.c $(SRCDIR)/*/*/*/*.c))
+VPATH = $(SRCDIR)
 
 #
 # End of user defines
@@ -104,8 +105,7 @@ INCDIR  = $(patsubst %,-I%,$(DINCDIR) $(UINCDIR))
 LIBDIR  = $(patsubst %,-L%,$(DLIBDIR) $(ULIBDIR))
 DEFS    = $(DDEFS) $(UDEFS)
 ADEFS   = $(DADEFS) $(UADEFS)
-#OBJS    = $(addprefix ../, $(ASRC:.s=.o) $(SRC:.c=.o))
-OBJS    = $(ASRC:.s=.o) $(SRC:.c=.o)
+OBJS    = $(ASRC:.s=.o) $(patsubst $(SRCDIR)/%.c,%.o,$(SRC))
 LIBS    = $(DLIBS) $(ULIBS)
 
 MCFLAGS = $(CORE) -fno-math-errno -funroll-loops -fgraphite-identity -ffunction-sections -fdata-sections -ffat-lto-objects
@@ -121,7 +121,7 @@ LDFLAGS_BOOT = $(MCFLAGS) $(LTO) $(OPT) -nostartfiles -T$(LDSCRIPT_BOOT) -Wl,-Ma
 LDFLAGS_APP = $(MCFLAGS) $(LTO) $(OPT) -nostartfiles -T$(LDSCRIPT_APP) -Wl,-Map=$(PROJECT)_app.map,--cref $(LIBDIR)
 
 # Generate dependency information
-CPFLAGS += -MD -MP -MF ./$(@F).d
+CPFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
 
 # Experemental optimisation flags
 #CPFLAGS += -fno-inline-small-functions 
@@ -141,10 +141,11 @@ BOOT: $(OBJS) $(PROJECT)_boot.elf $(PROJECT)_boot.hex
 BOOT2: $(OBJS) $(PROJECT)_boot.elf $(PROJECT)_boot.bin
 APP: $(OBJS) $(PROJECT)_app.elf $(PROJECT)_app.bin
 
-%o: $(addprefix $(SRCDIR)/, %c)
-	$(CC) -c $(CPFLAGS) $(INCDIR) $< -o $@
+%.o: %.c
+	@mkdir -p $(@D)
+	$(CC) -c $(CPFLAGS) $(INCDIR) $(patsubst %.o,%.c,$(addprefix $(SRCDIR)/, $@)) -o $@
 
-%o: $(addprefix $(SRCDIR)/, %s)
+%.o: $(addprefix $(SRCDIR)/, %.s)
 	$(AS) -c $(ASFLAGS) $< -o $@
 
 %_boot.elf: $(OBJS)
@@ -162,7 +163,8 @@ APP: $(OBJS) $(PROJECT)_app.elf $(PROJECT)_app.bin
 	$(BIN) $< $@
 
 clean:
-	-rm -f $(OBJS)
+	-rm -fR ./*/*.o
+	-rm -fR ./*.o
 	-rm -f $(PROJECT)_rom.elf $(PROJECT)_rom.map $(PROJECT)_rom.hex $(PROJECT)_rom.bin
 	-rm -f $(PROJECT)_boot.elf $(PROJECT)_boot.map $(PROJECT)_boot.hex $(PROJECT)_boot.bin
 	-rm -f $(PROJECT)_app.elf $(PROJECT)_app.map $(PROJECT)_app.hex $(PROJECT)_app.bin
@@ -170,11 +172,12 @@ clean:
 	-rm -f $(SRC:.c=.lst)
 	-rm -f $(ASRC:.s=.s.bak)
 	-rm -f $(ASRC:.s=.lst)
+	-rm -fR ./*/*.d
 	-rm -fR ./*.d
 
 # 
 # Include the dependency files, should be the last of the makefile
 #
--include $(wildcard ./*.d)
+-include $(wildcard ./*/*.d)
 
 # *** EOF ***
