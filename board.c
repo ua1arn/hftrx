@@ -3451,7 +3451,8 @@ prog_ctrlreg(uint_fast8_t plane)
 
 #elif CTLREGMODE_STORCH_V7
 /* TFT 4.3" "Аист" с DSP и FPGA STM32H743IIT6 */
-/* TFT 4.3" "Аист" с DSP и FPGA R7S721020VCFP */
+/* TFT 4.3", 7" "Аист" с DSP и FPGA R7S721020VCFP */
+/* TFT 4.3", 7" "Аист" с DSP и FPGA R7S721020VCFP, LVDS */
 
 #define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 
@@ -3516,23 +3517,26 @@ prog_ctrlreg(uint_fast8_t plane)
 		// DD19 SN74HC595PW в управлении диапазонными фильтрами приёмника
 		RBVAL(0026, glob_att, 2);			/* D7:D6: 12 dB and 6 dB attenuator control */
 		RBVAL(0024, ~ (txgated ? powerxlat [glob_stage1level] : HARDWARE_OPA2674I_SHUTDOWN), 2);	// A1..A0 of OPA2674I-14D in stage 1
-		RBBIT(0023, glob_fanflag);			/* D3: PA FAN */
+		RBBIT(0023, glob_fanflag);			/* D3: PA FAN - removed in LVDS version */
 		RBBIT(0022, glob_bandf == 0);		// D2: средневолновый ФНЧ - управление реле на выходе фильтров
 		RBBIT(0021, glob_tx);				// D1: TX ANT relay
 		RBBIT(0020, glob_bandf == 0);		// D0: средневолновый ФНЧ - управление реле на входе
 
 		// DD18 SN74HC595PW рядом с DIN8
-		RBNULL(0014, 4);
-		RBVAL(0010, glob_bandf3, 4);			/* D3:D0: DIN8 EXT PA band select */
+		RBBIT(0017, 0);
+		RBBIT(0016, glob_fanflag);			// FAN_CTL added in LVDS version
+		RBBIT(0015, glob_tx);				// EXT_PTT2 added in LVDS version
+		RBBIT(0014, glob_tx);				// EXT_PTT added in LVDS version
+		RBVAL(0010, glob_bandf3, 4);		/* D3:D0: DIN8 EXT PA band select */
 
 		// DD14 STP08CP05TTR рядом с DIN8
 		RBBIT(0007, ! glob_reset_n);		// D7: NMEA reset
-		RBBIT(0006, glob_tx);				// D6: DIN8 EXT PTT signal
+		RBBIT(0006, glob_tx);				// D6: DIN8 EXT PTT signal - removed in LVDS version
 		RBBIT(0005, 0);						// D5: not used
 		RBBIT(0004, 0);						/* D4: not used */
-		RBBIT(0003, lcdblcode & 0x02);		/* D3	- LCD backlight */
-		RBBIT(0002, lcdblcode & 0x02);		/* D2	- LCD backlight */
-		RBBIT(0001, lcdblcode & 0x01);		/* D2:D1 - LCD backlight */
+		RBBIT(0003, lcdblcode & 0x02);		/* D3	- LCD backlight  - removed in LVDS version*/
+		RBBIT(0002, lcdblcode & 0x02);		/* D2	- LCD backlight  - removed in LVDS version*/
+		RBBIT(0001, lcdblcode & 0x01);		/* D2:D1 - LCD backlight  - removed in LVDS version*/
 		RBBIT(0000, glob_kblight);			/* D0: keyboard backlight */
 
 		spi_select(target, CTLREG_SPIMODE);

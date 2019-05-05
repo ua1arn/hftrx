@@ -87,7 +87,7 @@
 
 //#define WRITEE_BIT				(1u << 12)	// RD/~WR  P3_12 - должен быть в "0" - как при записи - для управления буферами на шине данных LCD
 
-/* В данной версии платы ошибка в схеме - для работы преобразователей уровня "наружу" WRITEE_BIT долже быть в "1". 
+/* В данной версии платы ошибка в схеме - для работы преобразователей уровня "наружу" WRITEE_BIT долже быть в "1".
 */
 #define LS020_RS_INITIALIZE() \
 	do { \
@@ -715,6 +715,12 @@
 		const uint32_t mask = (1U << 0); /* P7_0 */ \
 		arm_hardware_pio7_outputs(mask, (state != 0) * mask);	/* P7_0 MODE=state */ \
 	} while (0)
+
+	// SN75LVDS83B FlatLink™ Transmitter shutdown control
+	#define HARDWARE_LVDSTX_INITIALIZE() do { \
+		const uint32_t mask = (1U << 9); /* P3_9 */ \
+		arm_hardware_pio3_outputs(mask, 1 * mask); /* 0 - Transmitter off, 1 - Transmitter work */ \
+	} while (0)
 #endif /* LCDMODE_LTDC */
 
 #define HARDWARE_USB0_INITIALIZE() do { \
@@ -734,6 +740,7 @@
 		TUNE_INITIALIZE(); \
 		HARDWARE_USB0_INITIALIZE(); \
 		HARDWARE_USB1_INITIALIZE(); \
+		HARDWARE_LVDSTX_INITIALIZE(); \
 		} while (0)
 
 #endif /* ARM_R7S72_TQFP176_CPUSTYLE_STORCH_V8_H_INCLUDED */
