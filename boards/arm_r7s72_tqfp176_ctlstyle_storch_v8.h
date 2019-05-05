@@ -115,7 +115,7 @@
 
 	//#define LCDMODE_LTDC_L24	1	/* 32-bit на пиксель в памяти (3 байта) */
 
-#elif 0
+#elif 1
 
 	#define LCDMODE_AT070TNA2 1	/* AT070TNA2 panel (1024*600) - 7" display */
 
@@ -350,7 +350,7 @@
 	//#define WITHPOTIFSHIFT	1	/* регулировка IF SHIFT	*/
 	//#define WITHPOTWPM		1	/* используется регулировка скорости передачи в телеграфе потенциометром */
 	#define WITHPOTIFGAIN		1	/* регуляторы усиления ПЧ на потенциометрах */
-	//#define WITHPOTAFGAIN		1	/* регуляторы усиления НЧ на потенциометрах */
+	#define WITHPOTAFGAIN		1	/* регуляторы усиления НЧ на потенциометрах */
 
 	#define WITHMENU 	1	/* функциональность меню может быть отключена - если настраивать нечего */
 
