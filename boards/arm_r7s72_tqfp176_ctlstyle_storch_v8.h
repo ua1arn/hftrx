@@ -104,6 +104,7 @@
 	#define LCDMODE_LTDC_PIP16	1	/* используется PIP с форматом 16 бит - RGB565 */
 
 	//#define LCDMODE_LTDC_L24	1	/* 32-bit на пиксель в памяти (3 байта) */
+	//#define WITHFLATLINK 1	/* Работа с TFT панелью через SN75LVDS83B	*/
 
 #elif 1
 
@@ -114,6 +115,7 @@
 	#define LCDMODE_LTDC_PIP16	1	/* используется PIP с форматом 16 бит - RGB565 */
 
 	//#define LCDMODE_LTDC_L24	1	/* 32-bit на пиксель в памяти (3 байта) */
+	//#define WITHFLATLINK 1	/* Работа с TFT панелью через SN75LVDS83B	*/
 
 #elif 1
 
