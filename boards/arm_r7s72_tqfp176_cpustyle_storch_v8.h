@@ -716,12 +716,24 @@
 		arm_hardware_pio7_outputs(mask, (state != 0) * mask);	/* P7_0 MODE=state */ \
 	} while (0)
 
+#endif /* LCDMODE_LTDC */
+
+// Signal P3_9 control
+#if WITHFLATLINK && LCDMODE_LTDC
 	// SN75LVDS83B FlatLink™ Transmitter shutdown control
+	// #SHTDN is a CMOS IN with pull down resistor approx. 100..200 kOhm
 	#define HARDWARE_LVDSTX_INITIALIZE() do { \
 		const uint32_t mask = (1U << 9); /* P3_9 */ \
 		arm_hardware_pio3_outputs(mask, 1 * mask); /* 0 - Transmitter off, 1 - Transmitter work */ \
 	} while (0)
-#endif /* LCDMODE_LTDC */
+#else /* WITHFLATLINK && LCDMODE_LTDC */
+	// SN75LVDS83B FlatLink™ Transmitter shutdown control
+	// #SHTDN is a CMOS IN with pull down resistor approx. 100..200 kOhm
+	#define HARDWARE_LVDSTX_INITIALIZE() do { \
+		const uint32_t mask = (1U << 9); /* P3_9 */ \
+		arm_hardware_pio3_outputs(mask, 0 * mask); /* 0 - Transmitter off, 1 - Transmitter work */ \
+	} while (0)
+#endif /* WITHFLATLINK && LCDMODE_LTDC */
 
 #define HARDWARE_USB0_INITIALIZE() do { \
 		arm_hardware_pio5_outputs((1U << 2), (1U << 2));	/* P5_2 ~VBUS_ON */ \
