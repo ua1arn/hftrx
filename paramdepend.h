@@ -978,7 +978,7 @@
 	#define LCDMODE_COLORED	1
 	#define LCDMODE_HORFILL	1
 	#define LTDC_DOTCLK	60000000uL	// частота пикселей при работе с интерфейсом RGB 40.8..67.2
-#endif /* LCDMODE_AT070TN90 */
+#endif /* LCDMODE_AT070TNA2 */
 
 #if LCDMODE_S1D13781		/* PSP-1000 with S1D113780 */
 	#define LCDMODE_HARD_SPI	1	/* SPI interface */
@@ -1426,7 +1426,7 @@
 	#define WITHPOWERTRIMMAX	1	// Верхний предел регулировки
 	#define	WITHMUTEALL			1	// Отключение микрофона во всех режимах
 	#define WITHONEATTONEAMP	1	/* только одно положение аттенюатора и УВЧ */
-	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея 
+	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея
 	#define WITHLCDBACKLIGHTMIN	1	// Нижний предел регулировки (показываетый на дисплее)
 	#define WITHLCDBACKLIGHTMAX	3	// Верхний предел регулировки (показываетый на дисплее)
 
@@ -1449,7 +1449,7 @@
 
 #elif CTLREGSTYLE_SW2013RDX
 
-	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея 
+	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея
 	#define WITHLCDBACKLIGHTMIN	1	// Нижний предел регулировки (показываетый на дисплее)
 	#define WITHLCDBACKLIGHTMAX	4	// Верхний предел регулировки (показываетый на дисплее)
 	#define WITHPOWERLPHP		1	// Имеется переключение и отображение HP / LP
@@ -1478,7 +1478,7 @@
 
 #elif CTLREGSTYLE_SW2013RDX_UY5UM_WO240
 
-	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея 
+	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея
 	#define WITHLCDBACKLIGHTMIN	1	// Нижний предел регулировки (показываетый на дисплее)
 	#define WITHLCDBACKLIGHTMAX	4	// Верхний предел регулировки (показываетый на дисплее)
 	#define WITHPOWERLPHP		1	// Имеется переключение и отображение HP / LP
@@ -1568,7 +1568,7 @@
 	#define WITHPOWERTRIMMIN	1	// Нижний предел регулировки (показываетый на дисплее)
 	#define WITHPOWERTRIMMAX	16	// Верхний предел регулировки (показываетый на дисплее)
 
-	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея 
+	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея
 	#define WITHLCDBACKLIGHTMIN	1	// Нижний предел регулировки (показываетый на дисплее)
 	#define WITHLCDBACKLIGHTMAX	4	// Верхний предел регулировки (показываетый на дисплее)
 	#define	WITHMUTEALL			1	// Отключение микрофона во всех режимах
@@ -1593,7 +1593,7 @@
 
 #elif CTLREGSTYLE_SW2013RDX_LTIYUR	// SW2013SF с индикатором RDX154
 
-	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея 
+	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея
 	#define WITHLCDBACKLIGHTMIN	1	// Нижний предел регулировки (показываетый на дисплее)
 	#define WITHLCDBACKLIGHTMAX	4	// Верхний предел регулировки (показываетый на дисплее)
 	#define WITHPOWERLPHP		1	// Имеется переключение и отображение HP / LP
@@ -1721,7 +1721,7 @@
 
 #elif CTLREGSTYLE_SW2011
 
-	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея 
+	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея
 	#define WITHLCDBACKLIGHTMIN	1	// Нижний предел регулировки (показываетый на дисплее)
 	#define WITHLCDBACKLIGHTMAX	3	// Верхний предел регулировки (показываетый на дисплее)
 	#define	WITHMUTEALL			1	// Отключение микрофона во всех режимах
@@ -1747,7 +1747,7 @@
 
 #elif CTLREGSTYLE_SW2011N
 
-	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея 
+	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея
 	#define WITHLCDBACKLIGHTMIN	1	// Нижний предел регулировки (показываетый на дисплее)
 	#define WITHLCDBACKLIGHTMAX	3	// Верхний предел регулировки (показываетый на дисплее)
 	#define	WITHMUTEALL			1	// Отключение микрофона во всех режимах
@@ -1774,10 +1774,10 @@
 
 #elif CTLREGMODE32_V1	/* управляющий регистр - "Воробей-3" с 3*ULN2003 */
 
-	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея 
+	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея
 	#define WITHLCDBACKLIGHTMIN	0	// Нижний предел регулировки (показываетый на дисплее)
 	#define WITHLCDBACKLIGHTMAX	3	// Верхний предел регулировки (показываетый на дисплее)
-	#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры 
+	#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры
 
 	/* коды входов коммутатора источников сигнала для УНЧ приёмника (2 бита) */
 	#define BOARD_DETECTOR_FM 	0x01
@@ -1798,10 +1798,10 @@
 
 #elif CTLREGMODE24_V1	/* управляющий регистр - "Воробей" и "Колибри" */
 
-	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея 
+	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея
 	#define WITHLCDBACKLIGHTMIN	0	// Нижний предел регулировки (показываетый на дисплее)
 	#define WITHLCDBACKLIGHTMAX	3	// Верхний предел регулировки (показываетый на дисплее)
-	#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры 
+	#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры
 
 	/* коды входов коммутатора источников сигнала для УНЧ приёмника */
 	#define BOARD_DETECTOR_MUTE 	(0x02)
@@ -1871,7 +1871,7 @@
 		#define	BOARD_AGCCODE_MED	BOARD_AGCCODE_1
 		#define	BOARD_AGCCODE_SLOW	BOARD_AGCCODE_2
 		#define	BOARD_AGCCODE_LONG	BOARD_AGCCODE_3
-		#define WITHAGCMODE5STAGES	1	// 4 скорости и выключенно 
+		#define WITHAGCMODE5STAGES	1	// 4 скорости и выключенно
 	#endif /* WITHIF4DSP */
 
 #elif CTLSTYLE_V5
@@ -1892,7 +1892,7 @@
 #elif (ATMEGA_CTLSTYLE_V7_H_INCLUDED || ARM_CTLSTYLE_V7_H_INCLUDED || ARM_CTLSTYLE_V7A_H_INCLUDED)
 
 	#define WITHPREAMPATT2_10DB		1	// Управление УВЧ и двухкаскадным аттенюатором
-	#define WITHAGCMODE5STAGES	1	// 4 скорости и выключенно 
+	#define WITHAGCMODE5STAGES	1	// 4 скорости и выключенно
 
 	#define	BOARD_AGCCODE_0		0x00
 	#define	BOARD_AGCCODE_1		0x01
