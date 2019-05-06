@@ -18414,6 +18414,7 @@ void spidf_initialize(void)
 	(void) CPG.STBCR9;			/* Dummy read */
 #endif
 
+#if 0
 	SPIBSC0.CMNCR |= SPIBSC_CMNCR_MD;	// SPI mode.
 	(void) SPIBSC0.CMNCR;
 	ASSERT(SPIBSC0.CMNCR & SPIBSC_CMNCR_MD);
@@ -18467,7 +18468,7 @@ void spidf_initialize(void)
 		;
 	debug_printf_P(PSTR("SMRDR0=%08lX\n"), SPIBSC0.SMRDR0.UINT32);
 
-
+#endif
 
 #if 0
 	SPIBSC0.SPBCR = 0x200;	// baud rate
