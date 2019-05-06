@@ -306,7 +306,7 @@ static uint_fast8_t getscan4bytes(uint_fast8_t row, uint_fast8_t line, uint_fast
 	return r;
 }
 
-#include "./fonts/ls020_font_small.c"
+#include "./display/fonts/ls020_font_small.h"
 
 static const char eitext [] = "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890";
 //static const char eitext [] = "#######################################################################################-------------------------------------";
