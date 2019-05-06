@@ -18,7 +18,7 @@
 #include "fatfs/ff.h"	
 #include "fatfs/diskio.h"		/* FatFs lower layer API */
 
-#include "display.h"	/* используем функцию получения рабочей частоты */
+#include "display/display.h"	/* используем функцию получения рабочей частоты */
 #include "keyboard.h"	
 #include "audio.h"	
 
@@ -569,7 +569,7 @@ static void DMA_SDIO_setparams(
 	/* DMA2	Stream6	Channel 4 */ 
 	const uint_fast8_t ch = 4;
 
-	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;	// включил DMA2 
+	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;	// включил DMA2
 	__DSB();
 
 #if CPUSTYLE_STM32F7XX
