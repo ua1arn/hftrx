@@ -879,7 +879,7 @@ void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority,
 			else if ((ipins & (EXTI_IMR_IM4 | EXTI_IMR_IM5 | EXTI_IMR_IM6 | EXTI_IMR_IM7 | EXTI_IMR_IM8 | 
 							EXTI_IMR_IM9 | EXTI_IMR_IM10 | EXTI_IMR_IM11 | EXTI_IMR_IM12 | EXTI_IMR_IM13 | 
 							EXTI_IMR_IM14 | EXTI_IMR_IM15)) != 0)
-			
+			{
 				NVIC_SetPriority(EXTI4_15_IRQn, priority);
 				NVIC_EnableIRQ(EXTI4_15_IRQn);		// enable EXTI4_15_IRQHandler();
 			}
@@ -1584,7 +1584,7 @@ arm_hardware_pioa_outputs10m(unsigned long opins, unsigned long initialstate)
 	__DSB();
 	// Установка начального состояния битов
 	arm_stm32f4xx_hardware_pio_setstate(GPIOA, opins, initialstate);
-	// Установка режима выводов speed: 00: 2 MHz Low speed, 01: 25 MHz Medium speed, 10: 50 MHz Fast speed, 11: 100 MHz High speed on 30 pF (80 MHz Output max speed on 15 pF) 
+	// Установка режима выводов speed: 00: 2 MHz Low speed, 01: 25 MHz Medium speed, 10: 50 MHz Fast speed, 11: 100 MHz High speed on 30 pF (80 MHz Output max speed on 15 pF)
 	arm_stm32f30x_hardware_pio_prog(GPIOA, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
 
 #elif CPUSTYLE_STM32H7XX
@@ -1593,7 +1593,7 @@ arm_hardware_pioa_outputs10m(unsigned long opins, unsigned long initialstate)
 	__DSB();
 	// Установка начального состояния битов
 	arm_stm32f4xx_hardware_pio_setstate(GPIOA, opins, initialstate);
-	// Установка режима выводов speed: 00: 2 MHz Low speed, 01: 25 MHz Medium speed, 10: 50 MHz Fast speed, 11: 100 MHz High speed on 30 pF (80 MHz Output max speed on 15 pF) 
+	// Установка режима выводов speed: 00: 2 MHz Low speed, 01: 25 MHz Medium speed, 10: 50 MHz Fast speed, 11: 100 MHz High speed on 30 pF (80 MHz Output max speed on 15 pF)
 	arm_stm32f30x_hardware_pio_prog(GPIOA, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
 
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX
@@ -1660,7 +1660,7 @@ arm_hardware_pioa_outputs50m(unsigned long opins, unsigned long initialstate)
 	__DSB();
 	// Установка начального состояния битов
 	arm_stm32f4xx_hardware_pio_setstate(GPIOA, opins, initialstate);
-	// Установка режима выводов speed: 00: 2 MHz Low speed, 01: 25 MHz Medium speed, 10: 50 MHz Fast speed, 11: 100 MHz High speed on 30 pF (80 MHz Output max speed on 15 pF) 
+	// Установка режима выводов speed: 00: 2 MHz Low speed, 01: 25 MHz Medium speed, 10: 50 MHz Fast speed, 11: 100 MHz High speed on 30 pF (80 MHz Output max speed on 15 pF)
 	arm_stm32f30x_hardware_pio_prog(GPIOA, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
 
 #elif CPUSTYLE_STM32H7XX
@@ -1669,7 +1669,7 @@ arm_hardware_pioa_outputs50m(unsigned long opins, unsigned long initialstate)
 	__DSB();
 	// Установка начального состояния битов
 	arm_stm32f4xx_hardware_pio_setstate(GPIOA, opins, initialstate);
-	// Установка режима выводов speed: 00: 2 MHz Low speed, 01: 25 MHz Medium speed, 10: 50 MHz Fast speed, 11: 100 MHz High speed on 30 pF (80 MHz Output max speed on 15 pF) 
+	// Установка режима выводов speed: 00: 2 MHz Low speed, 01: 25 MHz Medium speed, 10: 50 MHz Fast speed, 11: 100 MHz High speed on 30 pF (80 MHz Output max speed on 15 pF)
 	arm_stm32f30x_hardware_pio_prog(GPIOA, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
 
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX
@@ -1727,7 +1727,7 @@ arm_hardware_piob_outputs(unsigned long opins, unsigned long initialstate)
 	__DSB();
 	// Установка начального состояния битов
 	arm_stm32f4xx_hardware_pio_setstate(GPIOB, opins, initialstate);
-	// Установка режима выводов speed: 00: 2 MHz Low speed, 01: 25 MHz Medium speed, 10: 50 MHz Fast speed, 11: 100 MHz High speed on 30 pF (80 MHz Output max speed on 15 pF) 
+	// Установка режима выводов speed: 00: 2 MHz Low speed, 01: 25 MHz Medium speed, 10: 50 MHz Fast speed, 11: 100 MHz High speed on 30 pF (80 MHz Output max speed on 15 pF)
 	arm_stm32f30x_hardware_pio_prog(GPIOB, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
 
 #elif CPUSTYLE_STM32H7XX
@@ -1736,7 +1736,7 @@ arm_hardware_piob_outputs(unsigned long opins, unsigned long initialstate)
 	__DSB();
 	// Установка начального состояния битов
 	arm_stm32f4xx_hardware_pio_setstate(GPIOB, opins, initialstate);
-	// Установка режима выводов speed: 00: 2 MHz Low speed, 01: 25 MHz Medium speed, 10: 50 MHz Fast speed, 11: 100 MHz High speed on 30 pF (80 MHz Output max speed on 15 pF) 
+	// Установка режима выводов speed: 00: 2 MHz Low speed, 01: 25 MHz Medium speed, 10: 50 MHz Fast speed, 11: 100 MHz High speed on 30 pF (80 MHz Output max speed on 15 pF)
 	arm_stm32f30x_hardware_pio_prog(GPIOB, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
 
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX
@@ -1804,7 +1804,7 @@ arm_hardware_piob_outputs50m(unsigned long opins, unsigned long initialstate)
 	__DSB();
 	// Установка начального состояния битов
 	arm_stm32f4xx_hardware_pio_setstate(GPIOB, opins, initialstate);
-	// Установка режима выводов speed: 00: 2 MHz Low speed, 01: 25 MHz Medium speed, 10: 50 MHz Fast speed, 11: 100 MHz High speed on 30 pF (80 MHz Output max speed on 15 pF) 
+	// Установка режима выводов speed: 00: 2 MHz Low speed, 01: 25 MHz Medium speed, 10: 50 MHz Fast speed, 11: 100 MHz High speed on 30 pF (80 MHz Output max speed on 15 pF)
 	arm_stm32f30x_hardware_pio_prog(GPIOB, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
 
 #elif CPUSTYLE_STM32H7XX
@@ -1813,7 +1813,7 @@ arm_hardware_piob_outputs50m(unsigned long opins, unsigned long initialstate)
 	__DSB();
 	// Установка начального состояния битов
 	arm_stm32f4xx_hardware_pio_setstate(GPIOB, opins, initialstate);
-	// Установка режима выводов speed: 00: 2 MHz Low speed, 01: 25 MHz Medium speed, 10: 50 MHz Fast speed, 11: 100 MHz High speed on 30 pF (80 MHz Output max speed on 15 pF) 
+	// Установка режима выводов speed: 00: 2 MHz Low speed, 01: 25 MHz Medium speed, 10: 50 MHz Fast speed, 11: 100 MHz High speed on 30 pF (80 MHz Output max speed on 15 pF)
 	arm_stm32f30x_hardware_pio_prog(GPIOB, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
 
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX
@@ -1882,7 +1882,7 @@ arm_hardware_pioc_outputs50m(unsigned long opins, unsigned long initialstate)
 	__DSB();
 	// Установка начального состояния битов
 	arm_stm32f4xx_hardware_pio_setstate(GPIOC, opins, initialstate);
-	// Установка режима выводов speed: 00: 2 MHz Low speed, 01: 25 MHz Medium speed, 10: 50 MHz Fast speed, 11: 100 MHz High speed on 30 pF (80 MHz Output max speed on 15 pF) 
+	// Установка режима выводов speed: 00: 2 MHz Low speed, 01: 25 MHz Medium speed, 10: 50 MHz Fast speed, 11: 100 MHz High speed on 30 pF (80 MHz Output max speed on 15 pF)
 	arm_stm32f30x_hardware_pio_prog(GPIOC, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
 
 #elif CPUSTYLE_STM32H7XX
@@ -1891,7 +1891,7 @@ arm_hardware_pioc_outputs50m(unsigned long opins, unsigned long initialstate)
 	__DSB();
 	// Установка начального состояния битов
 	arm_stm32f4xx_hardware_pio_setstate(GPIOC, opins, initialstate);
-	// Установка режима выводов speed: 00: 2 MHz Low speed, 01: 25 MHz Medium speed, 10: 50 MHz Fast speed, 11: 100 MHz High speed on 30 pF (80 MHz Output max speed on 15 pF) 
+	// Установка режима выводов speed: 00: 2 MHz Low speed, 01: 25 MHz Medium speed, 10: 50 MHz Fast speed, 11: 100 MHz High speed on 30 pF (80 MHz Output max speed on 15 pF)
 	arm_stm32f30x_hardware_pio_prog(GPIOC, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
 
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX
@@ -3449,7 +3449,7 @@ arm_hardware_piob_altfn50(unsigned long opins, unsigned af)
 	RCC->AHB1ENR |= RCC_AHB1ENR_GPIOBEN;	/* I/O port B clock enable */
 	__DSB();
 	arm_stm32f30x_hardware_pio_altfn(GPIOB, opins, af);
-	// Установка режима выводов speed: 00: 2 MHz Low speed, 01: 25 MHz Medium speed, 10: 50 MHz Fast speed, 11: 100 MHz High speed on 30 pF (80 MHz Output max speed on 15 pF) 
+	// Установка режима выводов speed: 00: 2 MHz Low speed, 01: 25 MHz Medium speed, 10: 50 MHz Fast speed, 11: 100 MHz High speed on 30 pF (80 MHz Output max speed on 15 pF)
 	arm_stm32f30x_hardware_pio_prog(GPIOB, opins, STM32F_GPIO_MODE_ALT, STM32F_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
 
 #elif (CPUSTYLE_STM32H7XX)
@@ -3457,7 +3457,7 @@ arm_hardware_piob_altfn50(unsigned long opins, unsigned af)
 	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOBEN;	/* I/O port B clock enable */
 	__DSB();
 	arm_stm32f30x_hardware_pio_altfn(GPIOB, opins, af);
-	// Установка режима выводов speed: 00: 2 MHz Low speed, 01: 25 MHz Medium speed, 10: 50 MHz Fast speed, 11: 100 MHz High speed on 30 pF (80 MHz Output max speed on 15 pF) 
+	// Установка режима выводов speed: 00: 2 MHz Low speed, 01: 25 MHz Medium speed, 10: 50 MHz Fast speed, 11: 100 MHz High speed on 30 pF (80 MHz Output max speed on 15 pF)
 	arm_stm32f30x_hardware_pio_prog(GPIOB, opins, STM32F_GPIO_MODE_ALT, STM32F_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
 
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX
