@@ -7048,6 +7048,13 @@ audioproc_spool_user(void)
 			speex_preprocess_run(st_handles [1], p + SPEEXNN);	// right channel
 	#endif /* WITHUSEDUALWATCH */
 		}
+		else
+		{
+			speex_preprocess_estimate_update(st_handles [0], p + 0);	// left channel
+	#if WITHUSEDUALWATCH
+			speex_preprocess_estimate_update(st_handles [1], p + SPEEXNN);	// right channel
+	#endif /* WITHUSEDUALWATCH */
+		}
 		unsigned i;
 		for (i = 0; i < SPEEXNN; ++ i)
 		{
