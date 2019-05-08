@@ -4747,12 +4747,12 @@ static int mapfft2raster(
 int dsp_mag2y(
 	FLOAT_t mag, 
 	int ymax, 
-	int_fast16_t topdb,		/* сколько не показывать сверху (positive number of decibels) */
-	int_fast16_t fulldb		/* высота спектроанализатора (positive number of decibels) */
+	int_fast16_t topdb,		/* верхний предел спектроанализатора (positive number of decibels) */
+	int_fast16_t bottomdb		/* нижний предел спектроанализатора (positive number of decibels) */
 	)
 {
 	const FLOAT_t r = ratio2db(mag / rxlevelfence);
-	const int y = ymax - (int) ((r + topdb) * ymax / - fulldb);
+	const int y = ymax - (int) ((r + topdb) * ymax / - (bottomdb-topdb));
 
 	if (y > ymax) 
 		return ymax;
@@ -4835,7 +4835,7 @@ void dsp_getspectrumrow(
 // Нормирование уровня сигнала к шкале
 // возвращает значения от 0 до dy включительно
 // 0 - минимальный сигнал, ymax - максимальный
-int dsp_mag2y(FLOAT_t mag, int ymax, int_fast16_t topdb, int_fast16_t fulldb)
+int dsp_mag2y(FLOAT_t mag, int ymax, int_fast16_t topdb, int_fast16_t bottomdb)
 {
 	return 0;
 }
