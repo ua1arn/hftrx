@@ -2395,8 +2395,8 @@ struct nvmap
 	uint8_t displaybarsfps;	/* скорость обновления S-метра */
 #if WITHSPECTRUMWF
 	uint8_t gfillspect;
-	uint8_t gtopdb;
-	uint8_t gfulldb;	/* диапазон отображаемых значений */
+	uint8_t gtopdb;		/* нижний предел FFT */
+	uint8_t gbottomdb;	/* верхний предел FFT */
 	uint8_t gzoomxpow2;
 #endif /* WITHSPECTRUMWF */
 #if WITHBCBANDS
@@ -3011,8 +3011,8 @@ static uint_fast8_t displayfreqsfps = DISPLAY_FPS;
 static uint_fast8_t displaybarsfps = DISPLAYSWR_FPS;
 #if WITHSPECTRUMWF
 	static uint_fast8_t gfillspect = 1;
-	static uint_fast8_t gtopdb = 30;	/* сколько не показывать сверху */
-	static uint_fast8_t gfulldb = 100;	/* диапазон отображаемых значений */
+	static uint_fast8_t gtopdb = 30;	/* верхний предел FFT */
+	static uint_fast8_t gbottomdb = 100;	/* нижний предел FFT */
 	static uint_fast8_t gzoomxpow2;		/* степень двойки - состояние растягиваия спектра (уменьшение наблюдаемой полосы частот) */
 #endif /* WITHSPECTRUMWF */
 #if WITHLCDBACKLIGHT
@@ -5535,13 +5535,13 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 	},
 #if WITHSPECTRUMWF
 	{
-		"FULL DB  ", 
+		"BOTTOM DB",
 		0,		// rj
 		ISTEP1,		/* spectrum range */
 		40, 160, 
-		offsetof(struct nvmap, gfulldb),	/* диапазон отображаемых значений */
+		offsetof(struct nvmap, gbottomdb),	/* диапазон отображаемых значений */
 		NULL,
-		& gfulldb,
+		& gbottomdb,
 		getzerobase, /* складывается со смещением и отображается */
 		enc2menu_adjust,	/* функция для изменения значения параметра */
 	},
@@ -7704,8 +7704,13 @@ updateboard(
 		board_set_sidetonelevel(gsidetonelevel);	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
 		#if WITHSPECTRUMWF
 			board_set_fillspect(gfillspect);	/* заливать заполнением площадь под графиком спектра */
-			board_set_topdb(gtopdb);		/* сколько не показывать сверху */
-			board_set_fulldb(gfulldb);		/* высота спектроанализатора */
+			if(gtopdb < 1) gtopdb = 1;
+			if(gtopdb > 40) gtopdb = 40;
+			if(gbottomdb < 40) gbottomdb = 40;
+			if(gbottomdb > 160) gbottomdb = 160;
+			if((gbottomdb - gtopdb) < 40) gbottomdb = gtopdb + 40;
+			board_set_topdb(gtopdb);		/* верхний предел FFT */
+			board_set_bottomdb(gbottomdb);		/* нижний предел FFT */
 			board_set_zoomx(1u << gzoomxpow2);	/* уменьшение отображаемого участка спектра */
 		#endif /* WITHSPECTRUMWF */
 	#endif /* WITHIF4DSP */
@@ -12069,12 +12074,12 @@ static const FLASHMEM struct menudef menutable [] =
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"FULL DB ", 7, 0, 0,	ISTEP1,	
+		"BOTTM DB", 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		40, 160,							/* диапазон отображаемых значений */
-		offsetof(struct nvmap, gfulldb),
+		offsetof(struct nvmap, gbottomdb),
 		NULL,
-		& gfulldb,
+		& gbottomdb,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
