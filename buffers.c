@@ -69,8 +69,7 @@ enum
 		return t;
 	}
 
-	__STATIC_INLINE uint_fast8_t
-	GetCountList2(const LIST_ENTRY2 * ListHead)
+	__STATIC_INLINE uint_fast8_t GetCountList2(const LIST_ENTRY2 * ListHead)
 	{
 		return (ListHead)->Count;
 	}
@@ -123,14 +122,12 @@ enum
 		return t;
 	}
 
-	__STATIC_INLINE uint_fast8_t
-	GetCountList3(const LIST_ENTRY3 * ListHead)
+	__STATIC_INLINE uint_fast8_t GetCountList3(const LIST_ENTRY3 * ListHead)
 	{
 		return GetCountList2(& (ListHead)->item2);
 	}
 
-	__STATIC_INLINE uint_fast8_t
-	GetReadyList3(const LIST_ENTRY3 * ListHead)
+	__STATIC_INLINE uint_fast8_t GetReadyList3(const LIST_ENTRY3 * ListHead)
 	{
 		return (ListHead)->Rdy;
 	}
