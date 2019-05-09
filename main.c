@@ -15038,8 +15038,8 @@ modifysettings(
 				encoder_clear();	// сбросить информацию о повороте
 				return;
 
-			case KBD_CODE_MENU:
 #if ! WITHFLATMENU
+			case KBD_CODE_MENU:
 				if (ismenukind(mp, ITEM_GROUP))
 				{
 					/* вход в подменю */
