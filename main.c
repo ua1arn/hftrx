@@ -15051,6 +15051,7 @@ modifysettings(
 					#if defined (RTC1_TYPE)
 						getstamprtc();
 					#endif /* defined (RTC1_TYPE) */
+						display2_bgreset();		/* возможно уже с новой цветовой схемой */
 						modifysettings(first, last, ITEM_VALUE, mp->qnvram, exitkey, byname);
 
 						display2_bgreset();		/* возможно уже с новой цветовой схемой */
