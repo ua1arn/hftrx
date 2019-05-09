@@ -14484,7 +14484,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 
 /* входит ли данный пункт меню в группу разрешенных для показа */
 static uint_fast8_t
-ismenusuitable(
+ismenukind(
 	const FLASHMEM struct menudef * mp,
 	uint_fast8_t itemmask
 	)
@@ -14498,7 +14498,7 @@ ismenufilterusb(
 	const FLASHMEM struct menudef * mp
 	)
 {
-	return ismenusuitable(mp, ITEM_FILTERU);
+	return ismenukind(mp, ITEM_FILTERU);
 }
 
 /* пункт меню для подстройки частот фильтра ПЧ (низкочастотный скат) */
@@ -14507,7 +14507,7 @@ ismenufilterlsb(
 	const FLASHMEM struct menudef * mp
 	)
 {
-	return ismenusuitable(mp, ITEM_FILTERL);
+	return ismenukind(mp, ITEM_FILTERL);
 }
 
 #define MENUROW_COUNT (sizeof menutable / sizeof menutable [0])
@@ -14526,7 +14526,7 @@ loadsettings(void)
 	for (i = 0; i < MENUROW_COUNT; ++ i)
 	{
 		const FLASHMEM struct menudef * const mp = & menutable [i];
-		if (ismenusuitable(mp, ITEM_VALUE) && ! ismenusuitable(mp, ITEM_NOINITNVRAM))
+		if (ismenukind(mp, ITEM_VALUE) && ! ismenukind(mp, ITEM_NOINITNVRAM))
 		{
 			const nvramaddress_t nvram = mp->qnvram;
 			const uint_fast16_t bottom = mp->qbottom;
@@ -14555,7 +14555,7 @@ savemenuvalue(
 	const FLASHMEM struct menudef * mp
 	)
 {
-	if (ismenusuitable(mp, ITEM_VALUE))
+	if (ismenukind(mp, ITEM_VALUE))
 	{
 		const nvramaddress_t nvram = mp->qnvram;
 		const uint_fast16_t * const pv16 = mp->qpval16;
@@ -14588,7 +14588,7 @@ defaultsettings(void)
 	for (i = 0; i < MENUROW_COUNT; ++ i)
 	{
 		const FLASHMEM struct menudef * const mp = & menutable [i];
-		if (! ismenusuitable(mp, ITEM_NOINITNVRAM))
+		if (! ismenukind(mp, ITEM_NOINITNVRAM))
 		{
 			savemenuvalue(mp);
 		}
@@ -14608,19 +14608,19 @@ void display_multilinemenu_block(uint_fast8_t x, uint_fast8_t y, void * pv)
 	uint_fast16_t y_position_params = y;
 	uint_fast16_t index_groups = 0;
 	uint_fast16_t index_params = 0;
-	uint_fast16_t selected_group_left_margin = 0; // первый элемент группы
-	uint_fast16_t selected_group_right_margin = 0; // последний элемент группы
+	uint_fast16_t selected_group_left_margin; // первый элемент группы
+	uint_fast16_t selected_group_right_margin; // последний элемент группы
 	uint_fast16_t el;
 
 	display2_getmultimenu(& window);
 
 	//ищем границы текущей группы параметров
 	uint_fast16_t selected_group_finder = index;
-	while (selected_group_finder > 0 && !ismenusuitable(& menutable[selected_group_finder], ITEM_GROUP))
+	while (selected_group_finder > 0 && ! ismenukind(& menutable[selected_group_finder], ITEM_GROUP))
 		selected_group_finder --;
 	selected_group_left_margin = selected_group_finder;
 	selected_group_finder ++;
-	while (selected_group_finder < MENUROW_COUNT && ! ismenusuitable(& menutable [selected_group_finder], ITEM_GROUP))
+	while (selected_group_finder < MENUROW_COUNT && ! ismenukind(& menutable [selected_group_finder], ITEM_GROUP))
 		selected_group_finder ++;
 	selected_group_right_margin = selected_group_finder - 1;
 
@@ -14629,13 +14629,13 @@ void display_multilinemenu_block(uint_fast8_t x, uint_fast8_t y, void * pv)
 	uint_fast16_t selected_params_index = 0;
 	for (el = 0; el < MENUROW_COUNT; el ++)
 	{
-		if (ismenusuitable(& menutable [el], ITEM_GROUP))
+		if (ismenukind(& menutable [el], ITEM_GROUP))
 		{
 			index_groups ++;
 			if (el == selected_group_left_margin)
 				selected_group_index = index_groups - 1;
 		}
-		if (ismenusuitable(& menutable [el], ITEM_VALUE))
+		if (ismenukind(& menutable [el], ITEM_VALUE))
 		{
 			if (el < selected_group_left_margin || el > selected_group_right_margin)
 				continue;
@@ -14646,13 +14646,13 @@ void display_multilinemenu_block(uint_fast8_t x, uint_fast8_t y, void * pv)
 	}
 	index_groups = 0;
 	index_params = 0;
-	uint_fast16_t menu_block_scroll_offset_groups = window.multilinemenu_max_rows * (selected_group_index / window.multilinemenu_max_rows);
-	uint_fast16_t menu_block_scroll_offset_params = window.multilinemenu_max_rows * (selected_params_index / window.multilinemenu_max_rows);
+	const uint_fast16_t menu_block_scroll_offset_groups = window.multilinemenu_max_rows * (selected_group_index / window.multilinemenu_max_rows);
+	const uint_fast16_t menu_block_scroll_offset_params = window.multilinemenu_max_rows * (selected_params_index / window.multilinemenu_max_rows);
 
-	//выводим на экран блок с параметрами
+	// выводим на экран блок с параметрами
 	for (el = 0; el < MENUROW_COUNT; el ++)
 	{
-		if (ismenusuitable( & menutable [el], ITEM_GROUP))
+		if (ismenukind( & menutable [el], ITEM_GROUP))
 		{
 			index_groups ++;
 			if (index_groups <= menu_block_scroll_offset_groups)
@@ -14668,7 +14668,7 @@ void display_multilinemenu_block(uint_fast8_t x, uint_fast8_t y, void * pv)
 			display_menu_group(x + 1, y_position_groups, (void *) & menutable [el]); // название группы
 			y_position_groups += 4;
 		}
-		if (ismenusuitable(& menutable [el], ITEM_VALUE))
+		if (ismenukind(& menutable [el], ITEM_VALUE))
 		{
 			if (el < selected_group_left_margin || el > selected_group_right_margin)
 				continue;
@@ -14705,7 +14705,7 @@ void display_menu_lblc3(
 #endif /* LCDMODE_LTDC_PIP16 */
 	char buff [4];
 	const uint_fast8_t index = (int) (mp - menutable);
-	if (ismenusuitable(mp, ITEM_GROUP))
+	if (ismenukind(mp, ITEM_GROUP))
 	{
 		display_setcolors(MENUCOLOR, BGCOLOR);
 		display_at_P(x, y, PSTR("---"));
@@ -14731,7 +14731,7 @@ void display_menu_lblng(
 #if LCDMODE_LTDC_PIP16
 	arm_hardware_ltdc_pip_off();
 #endif /* LCDMODE_LTDC_PIP16 */
-	if (ismenusuitable(mp, ITEM_VALUE) == 0)
+	if (ismenukind(mp, ITEM_VALUE) == 0)
 		return;
 	display_setcolors(MENUCOLOR, BGCOLOR);
 	display_at_P(x, y, mp->qlabel);
@@ -14765,7 +14765,7 @@ void display_menu_group(
 #if LCDMODE_LTDC_PIP16
 	arm_hardware_ltdc_pip_off();
 #endif /* LCDMODE_LTDC_PIP16 */
-	while (ismenusuitable(mp, ITEM_GROUP) == 0)
+	while (ismenukind(mp, ITEM_GROUP) == 0)
 		-- mp;
 	display_setcolors(MENUGROUPCOLOR, BGCOLOR);
 	display_at_P(x, y, mp->qlabel);
@@ -14791,7 +14791,7 @@ void display_menu_valxx(
 #if LCDMODE_LTDC_PIP16
 	arm_hardware_ltdc_pip_off();
 #endif /* LCDMODE_LTDC_PIP16 */
-	if (ismenusuitable(mp, ITEM_VALUE) == 0)
+	if (ismenukind(mp, ITEM_VALUE) == 0)
 		return;
 	// получение значения для отображения
 	if (ismenufilterlsb(mp))
@@ -14979,7 +14979,7 @@ modifysettings(
 	uint_fast8_t menupos = loadvfy8up(posnvram, firstitem, lastitem, firstitem);	/* начальное значение позиции */
 	const FLASHMEM struct menudef * mp = & menutable [menupos];
 	/* функция для сохранения работы варианта без групп */
-	while (! ismenusuitable(mp, itemmask))
+	while (! ismenukind(mp, itemmask))
 	{
 		/* проход по определённомк типу элементов (itemmask) */
 		menupos = calc_next(menupos, firstitem, lastitem);
@@ -15022,13 +15022,13 @@ modifysettings(
 
 			case KBD_CODE_MENU:
 #if ! WITHFLATMENU
-				if (ismenusuitable(mp, ITEM_GROUP))
+				if (ismenukind(mp, ITEM_GROUP))
 				{
 					/* вход в подменю */
 					const uint_fast8_t first = menupos + 1;	/* следующий за текущим пунктом */
 					const uint_fast8_t last = menulooklast(first);
 
-					if (ismenusuitable(& menutable [first], ITEM_VALUE))
+					if (ismenukind(& menutable [first], ITEM_VALUE))
 					{
 					#if defined (RTC1_TYPE)
 						getstamprtc();
@@ -15060,7 +15060,7 @@ modifysettings(
 					menupos = calc_prev(menupos, firstitem, lastitem);
 					mp = & menutable [menupos];
 				}
-				while (! ismenusuitable(mp, itemmask));
+				while (! ismenukind(mp, itemmask));
 				goto menuswitch;
 
 			case KBD_CODE_BAND_UP:
@@ -15072,7 +15072,7 @@ modifysettings(
 					menupos = calc_next(menupos, firstitem, lastitem);
 					mp = & menutable [menupos];
 				}
-				while (! ismenusuitable(mp, itemmask));
+				while (! ismenukind(mp, itemmask));
 
 			menuswitch:
 #if (NVRAM_TYPE != NVRAM_TYPE_CPUEEPROM)
@@ -15098,7 +15098,7 @@ modifysettings(
 		if (lockmode != 0)
 			nrotate = 0;	// ignore encoder
 
-		if (nrotate != 0 && ismenusuitable(mp, ITEM_VALUE))
+		if (nrotate != 0 && ismenukind(mp, ITEM_VALUE))
 		{
 			/* редактирование паратметра */
 			const uint_fast16_t step = mp->qistep;
