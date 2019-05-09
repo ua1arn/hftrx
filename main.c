@@ -14666,8 +14666,7 @@ void display_multilinemenu_block(uint_fast8_t x, uint_fast8_t y, void * pv)
 			index_groups ++;
 			if (index_groups <= menu_block_scroll_offset_groups)
 				continue; //пропускаем пункты для скролла
-			if ((index_groups - menu_block_scroll_offset_groups)
-					> window.multilinemenu_max_rows)
+			if ((index_groups - menu_block_scroll_offset_groups) > window.multilinemenu_max_rows)
 				continue;
 			if (el == selected_group_left_margin) //подсвечиваем выбранный элемент
 			{
@@ -14985,6 +14984,9 @@ modifysettings(
 {
 	uint_fast8_t menupos = loadvfy8up(posnvram, firstitem, lastitem, firstitem);	/* начальное значение позиции */
 	const FLASHMEM struct menudef * mp = & menutable [menupos];
+	multimenuwnd_t window;
+
+	display2_getmultimenu(& window);
 	/* функция для сохранения работы варианта без групп */
 	while (! ismenukind(mp, itemmask))
 	{
@@ -15014,9 +15016,6 @@ modifysettings(
 
 		if (kbready != 0)
 		{
-			multimenuwnd_t window;
-			display2_getmultimenu(& window);
-
 			switch (kbch)
 			{
 			default:
