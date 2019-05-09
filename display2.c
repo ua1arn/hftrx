@@ -3901,6 +3901,7 @@ enum
 		{	20, 24,	display_voltlevelV5, REDRM_VOLT, PGSLP, },	// voltmeter with "V"
 
 	#if WITHMENU
+		//{	2,	25,	display_multilinemenu_block,	REDRM_MVAL, REDRSUBSET_MENU, } //Блок с пунктами меню
 		{	4,	25,	display_menu_group,	REDRM_MLBL, REDRSUBSET_MENU, },	// название группы
 		{	0,	30,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
 		{	4,	30,	display_menu_lblng,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
@@ -3908,6 +3909,14 @@ enum
 		{	0,	40,	display_samfreqdelta8, REDRM_BARS, REDRSUBSET_MENU, },	/* Получить информацию об ошибке настройки в режиме SAM */
 	#endif /* WITHMENU */
 	};
+
+#if WITHMENU
+	void
+	display2_getmultimenu(multimenuwnd_t * p)
+	{
+		p->multilinemenu_max_rows = 3;
+	}
+#endif /* WITHMENU */
 
 	/* получить координаты окна с панорамой и/или водопадом. */
 	void display2_getpipparams(pipparams_t * p)
@@ -4044,6 +4053,7 @@ enum
 		{	20, 24,	display_voltlevelV5, REDRM_VOLT, PGSLP, },	// voltmeter with "V"
 
 	#if WITHMENU
+		//{	2,	25,	display_multilinemenu_block,	REDRM_MVAL, REDRSUBSET_MENU, } //Блок с пунктами меню
 		{	4,	25,	display_menu_group,	REDRM_MLBL, REDRSUBSET_MENU, },	// название группы
 		{	0,	30,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
 		{	4,	30,	display_menu_lblng,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
@@ -4051,6 +4061,14 @@ enum
 		{	0,	35,	display_samfreqdelta8, REDRM_BARS, REDRSUBSET_MENU, },	/* Получить информацию об ошибке настройки в режиме SAM */
 	#endif /* WITHMENU */
 	};
+
+#if WITHMENU
+	void
+	display2_getmultimenu(multimenuwnd_t * p)
+	{
+		p->multilinemenu_max_rows = 3;
+	}
+#endif /* WITHMENU */
 
 	/* получить координаты окна с панорамой и/или водопадом. */
 	void display2_getpipparams(pipparams_t * p)
@@ -4262,6 +4280,14 @@ enum
 		{	2,	29,	display_multilinemenu_block,	REDRM_MVAL, REDRSUBSET_MENU, } //Блок с пунктами меню
 	#endif /* WITHMENU */
 	};
+
+#if WITHMENU
+	void
+	display2_getmultimenu(multimenuwnd_t * p)
+	{
+		p->multilinemenu_max_rows = 16;
+	}
+#endif /* WITHMENU */
 
 	/* получить координаты окна с панорамой и/или водопадом. */
 	void display2_getpipparams(pipparams_t * p)

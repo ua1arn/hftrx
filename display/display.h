@@ -375,12 +375,6 @@ typedef uint16_t PACKEDCOLOR565_T;
 #define MENUCOLOR COLOR_WHITE
 #define MNUVALCOLOR COLOR_WHITE
 
-#if DSTYLE_G_X800_Y480
-	#define MULTILINEMENU_MAX_ROWS 16
-#else
-	#define MULTILINEMENU_MAX_ROWS 3
-#endif
-
 uint_fast8_t display_getpagesmax(void);	// количество разных вариантов отображения (menuset)
 uint_fast8_t display_getpagesleep(void);	// номер варианта отображения для "сна"
 uint_fast8_t display_getfreqformat(uint_fast8_t * prjv);	// получить параметры отображения частоты (для функции прямого ввода)
@@ -476,6 +470,15 @@ display2_bars_amv0(
 	uint_fast8_t y, 
 	void * pv
 	);
+
+// Параметры отображения многострочного меню для больших экранов
+typedef struct multimenuwnd_tag
+{
+	uint_fast8_t multilinemenu_max_rows;
+	uint_fast8_t menurow_count;
+} multimenuwnd_t;
+
+void display2_getmultimenu(multimenuwnd_t * p); /* получение параметров окна для меню */
 
 // Вызывается из display2.c
 //Отображение многострочного меню для больших экранов

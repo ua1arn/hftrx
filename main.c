@@ -14595,8 +14595,6 @@ defaultsettings(void)
 	}
 }
 
-
-
 //+++ menu support
 
 // Вызывается из display2.c
@@ -14607,6 +14605,7 @@ void display_multilinemenu_block(
 	void * pv
 	)
 {
+	multimenuwnd_t window;
 	const FLASHMEM struct menudef * const mp = (const FLASHMEM struct menudef *) pv;
 	const uint_fast16_t index = (int) (mp - menutable);
 	uint_fast16_t y_position_groups=y;
@@ -14615,6 +14614,7 @@ void display_multilinemenu_block(
 	uint_fast16_t index_params=0;
 	uint_fast16_t selected_group_left_margin=0; //первый элемент группы
 	uint_fast16_t selected_group_right_margin=0; //последний элемент группы
+	display2_getmultimenu(& window);
 
 	//ищем границы текущей группы параметров
 	uint_fast16_t selected_group_finder=index;
@@ -14647,8 +14647,8 @@ void display_multilinemenu_block(
 	}
 	index_groups=0;
 	index_params=0;
-	uint_fast16_t menu_block_scroll_offset_groups=MULTILINEMENU_MAX_ROWS * (selected_group_index / MULTILINEMENU_MAX_ROWS);
-	uint_fast16_t menu_block_scroll_offset_params=MULTILINEMENU_MAX_ROWS * (selected_params_index / MULTILINEMENU_MAX_ROWS);
+	uint_fast16_t menu_block_scroll_offset_groups=window.multilinemenu_max_rows * (selected_group_index / window.multilinemenu_max_rows);
+	uint_fast16_t menu_block_scroll_offset_params=window.multilinemenu_max_rows * (selected_params_index / window.multilinemenu_max_rows);
 
 	//выводим на экран блок с параметрами
 	for(uint_fast16_t menu_element_id=0;menu_element_id<MENUROW_COUNT;menu_element_id++)
@@ -14657,7 +14657,7 @@ void display_multilinemenu_block(
 		{
 			index_groups++;
 			if(index_groups <= menu_block_scroll_offset_groups) continue; //пропускаем пункты для скролла
-			if((index_groups-menu_block_scroll_offset_groups) > MULTILINEMENU_MAX_ROWS) continue;
+			if((index_groups-menu_block_scroll_offset_groups) > window.multilinemenu_max_rows) continue;
 			if(menu_element_id==selected_group_left_margin) //подсвечиваем выбранный элемент
 			{
 				display_setcolors(MENU_SELECTOR_COLOR, BGCOLOR);
@@ -14671,7 +14671,7 @@ void display_multilinemenu_block(
 			if(menu_element_id<selected_group_left_margin || menu_element_id>selected_group_right_margin) continue;
 			index_params++;
 			if(index_params <= menu_block_scroll_offset_params) continue; //пропускаем пункты для скролла
-			if((index_params-menu_block_scroll_offset_params) > MULTILINEMENU_MAX_ROWS) continue;
+			if((index_params-menu_block_scroll_offset_params) > window.multilinemenu_max_rows) continue;
 			if(menu_element_id==index) //подсвечиваем выбранный элемент
 			{
 				display_setcolors(MENU_SELECTOR_COLOR, BGCOLOR);
