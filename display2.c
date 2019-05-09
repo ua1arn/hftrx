@@ -4259,11 +4259,7 @@ enum
 		{	20, 25,	display_voltlevelV5, REDRM_VOLT, PGSLP, },	// voltmeter with "V"
 
 	#if WITHMENU
-		{	4,	30,	display_menu_group,	REDRM_MLBL, REDRSUBSET_MENU, },	// название группы
-		{	0,	35,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
-		{	4,	35,	display_menu_lblng,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
-		{	0,	40,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
-		{	0,	45,	display_samfreqdelta8, REDRM_BARS, REDRSUBSET_MENU, },	/* Получить информацию об ошибке настройки в режиме SAM */
+		{	2,	29,	display_multilinemenu_block,	REDRM_MVAL, REDRSUBSET_MENU, } //Блок с пунктами меню
 	#endif /* WITHMENU */
 	};
 

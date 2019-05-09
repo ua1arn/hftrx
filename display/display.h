@@ -364,6 +364,7 @@ typedef uint16_t PACKEDCOLOR565_T;
 #define MODECOLORBG_RX	COLOR_GREEN
 #define TIMECOLOR	COLOR_GREEN
 #define VOLTCOLOR	COLOR_GREEN
+#define MENU_SELECTOR_COLOR	COLOR_GREEN
 
 #define BIGCOLOR COLOR_YELLOW // GOLD
 #define BIGCOLORHALF TFTRGB(192, 192, 0) //COLOR_OLIVE // DARK GOLD
@@ -373,6 +374,12 @@ typedef uint16_t PACKEDCOLOR565_T;
 #define MENUGROUPCOLOR COLOR_YELLOW
 #define MENUCOLOR COLOR_WHITE
 #define MNUVALCOLOR COLOR_WHITE
+
+#if DSTYLE_G_X800_Y480
+	#define MULTILINEMENU_MAX_ROWS 16
+#else
+	#define MULTILINEMENU_MAX_ROWS 3
+#endif
 
 uint_fast8_t display_getpagesmax(void);	// количество разных вариантов отображения (menuset)
 uint_fast8_t display_getpagesleep(void);	// номер варианта отображения для "сна"
@@ -467,6 +474,14 @@ void
 display2_bars_amv0(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
+	void * pv
+	);
+
+// Вызывается из display2.c
+//Отображение многострочного меню для больших экранов
+void display_multilinemenu_block(
+	uint_fast8_t x,
+	uint_fast8_t y,
 	void * pv
 	);
 

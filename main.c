@@ -14600,6 +14600,93 @@ defaultsettings(void)
 //+++ menu support
 
 // Вызывается из display2.c
+//Отображение многострочного меню для больших экранов
+void display_multilinemenu_block(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	void * pv
+	)
+{
+	const FLASHMEM struct menudef * const mp = (const FLASHMEM struct menudef *) pv;
+	const uint_fast16_t index = (int) (mp - menutable);
+	uint_fast16_t y_position_groups=y;
+	uint_fast16_t y_position_params=y;
+	uint_fast16_t index_groups=0;
+	uint_fast16_t index_params=0;
+	uint_fast16_t selected_group_left_margin=0; //первый элемент группы
+	uint_fast16_t selected_group_right_margin=0; //последний элемент группы
+
+	//ищем границы текущей группы параметров
+	uint_fast16_t selected_group_finder=index;
+	while(selected_group_finder>0 && !ismenusuitable((const FLASHMEM struct menudef *)&menutable[selected_group_finder], ITEM_GROUP))
+		selected_group_finder--;
+	selected_group_left_margin=selected_group_finder;
+	selected_group_finder++;
+	while(selected_group_finder<MENUROW_COUNT && !ismenusuitable((const FLASHMEM struct menudef *)&menutable[selected_group_finder], ITEM_GROUP))
+		selected_group_finder++;
+	selected_group_right_margin=selected_group_finder-1;
+
+	//предварительно расчитываем скролл
+	uint_fast16_t selected_group_index=0;
+	uint_fast16_t selected_params_index=0;
+	for(uint_fast16_t menu_element_id=0;menu_element_id<MENUROW_COUNT;menu_element_id++)
+	{
+		if (ismenusuitable((const FLASHMEM struct menudef *)&menutable[menu_element_id], ITEM_GROUP))
+		{
+			index_groups++;
+			if(menu_element_id==selected_group_left_margin)
+				selected_group_index=index_groups-1;
+		}
+		if (ismenusuitable((const FLASHMEM struct menudef *)&menutable[menu_element_id], ITEM_VALUE))
+		{
+			if(menu_element_id<selected_group_left_margin || menu_element_id>selected_group_right_margin) continue;
+			index_params++;
+			if(menu_element_id==index)
+				selected_params_index=index_params-1;
+		}
+	}
+	index_groups=0;
+	index_params=0;
+	uint_fast16_t menu_block_scroll_offset_groups=MULTILINEMENU_MAX_ROWS * (selected_group_index / MULTILINEMENU_MAX_ROWS);
+	uint_fast16_t menu_block_scroll_offset_params=MULTILINEMENU_MAX_ROWS * (selected_params_index / MULTILINEMENU_MAX_ROWS);
+
+	//выводим на экран блок с параметрами
+	for(uint_fast16_t menu_element_id=0;menu_element_id<MENUROW_COUNT;menu_element_id++)
+	{
+		if (ismenusuitable((const FLASHMEM struct menudef *)&menutable[menu_element_id], ITEM_GROUP))
+		{
+			index_groups++;
+			if(index_groups <= menu_block_scroll_offset_groups) continue; //пропускаем пункты для скролла
+			if((index_groups-menu_block_scroll_offset_groups) > MULTILINEMENU_MAX_ROWS) continue;
+			if(menu_element_id==selected_group_left_margin) //подсвечиваем выбранный элемент
+			{
+				display_setcolors(MENU_SELECTOR_COLOR, BGCOLOR);
+				display_at_P(x, y_position_groups, PSTR(">"));
+			}
+			display_menu_group(x+1,y_position_groups,(void *)&menutable[menu_element_id]); // название группы
+			y_position_groups+=4;
+		}
+		if (ismenusuitable((const FLASHMEM struct menudef *)&menutable[menu_element_id], ITEM_VALUE))
+		{
+			if(menu_element_id<selected_group_left_margin || menu_element_id>selected_group_right_margin) continue;
+			index_params++;
+			if(index_params <= menu_block_scroll_offset_params) continue; //пропускаем пункты для скролла
+			if((index_params-menu_block_scroll_offset_params) > MULTILINEMENU_MAX_ROWS) continue;
+			if(menu_element_id==index) //подсвечиваем выбранный элемент
+			{
+				display_setcolors(MENU_SELECTOR_COLOR, BGCOLOR);
+				display_at_P(x+10, y_position_params, PSTR(">"));
+				display_at_P(x+25, y_position_params, PSTR(">"));
+			}
+			display_menu_lblc3(x+11,y_position_params,(void *)&menutable[menu_element_id]); // код редактируемого параметра
+			display_menu_lblng(x+15,y_position_params,(void *)&menutable[menu_element_id]); // название редактируемого параметра
+			display_menu_valxx(x+26,y_position_params,(void *)&menutable[menu_element_id]); // значение параметра
+			y_position_params+=4;
+		}
+	}
+}
+
+// Вызывается из display2.c
 // код редактируемого параметра
 void display_menu_lblc3(
 	uint_fast8_t x, 
