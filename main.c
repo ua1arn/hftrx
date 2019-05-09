@@ -3901,6 +3901,16 @@ calc_prev(uint_fast8_t v, uint_fast8_t low, uint_fast8_t high)
 	return (v <= low || v > high) ? high : (v - 1);
 }
 
+
+/* получение предыдущего или следующего числа в диапазоне low..high с "заворотом" */
+/* используется при переборе режимов кнопками */
+static uint_fast8_t
+//NOINLINEAT
+calc_dir(uint_fast8_t reverse, uint_fast8_t v, uint_fast8_t low, uint_fast8_t high)
+{
+	return reverse ? calc_prev(v, low, high) : calc_next(v, low, high);
+}
+
 /* выравнивание после перехода на следующую частоту, кратную указаному шагу */
 /* freq - новая частота, step - шаг */
 static uint_fast32_t 
@@ -11864,9 +11874,10 @@ display_menu_string_P(
 
 #define ITEM_NOINITNVRAM	0x10	/* значение этого пункта не используется при начальной инициализации NVRAM */
 
+#define LABELW 8
 struct menudef
 {
-	char qlabel [9];		/* текст - название пункта меню */
+	char qlabel [LABELW + 1];		/* текст - название пункта меню */
 	uint8_t qwidth, qcomma, qrj;
 	uint8_t qistep;
 	uint8_t qspecial;	/* признак к какому меню относится */
@@ -11986,7 +11997,7 @@ static const FLASHMEM struct menudef menutable [] =
 #endif /* WITHLCDBACKLIGHT */
 #if WITHKBDBACKLIGHT
 	{
-		"KBD LIGH", 7, 0, RJ_ON,	ISTEP1,	
+		"KBD LIGH", 7, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, kblight),
@@ -12020,7 +12031,7 @@ static const FLASHMEM struct menudef menutable [] =
 #if LCDMODE_COLORED
 	// Для цветных дисплеев можно менять цвет фона
 	{
-		"BLUE BG ", 7, 0, RJ_ON,	ISTEP1,	
+		"BLUE BG ", 7, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, gbluebgnd),
@@ -12051,7 +12062,7 @@ static const FLASHMEM struct menudef menutable [] =
 #endif /* WITHBARS */
 #if WITHSPECTRUMWF
 	{
-		"FILL SPE", 7, 0, RJ_YES,	ISTEP1,	
+		"FILL SPE", 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1,							/* отказ от заполнения */
 		offsetof(struct nvmap, gfillspect),
@@ -12109,7 +12120,7 @@ static const FLASHMEM struct menudef menutable [] =
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"TM MONTH", 7, 0, RJ_MONTH,	ISTEP1,	
+		"TM MONTH", 7, 3, RJ_MONTH,	ISTEP1,
 		ITEM_VALUE, 
 		1, 12, 
 		MENUNONVRAM, //offsetof(struct nvmap, tunerind),
@@ -12145,7 +12156,7 @@ static const FLASHMEM struct menudef menutable [] =
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"TM SET  ", 7, 0, RJ_YES,	ISTEP1,	
+		"TM SET  ", 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE, 
 		0, 1, 
 		MENUNONVRAM, //offsetof(struct nvmap, tunerind),
@@ -12537,7 +12548,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getlo4base, /* складывается со смещением и отображается */
 	},
 	{
-		"LAST LSB", 7, 0, RJ_YES,	ISTEP1,	
+		"LAST LSB", 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, glo4lsb),
@@ -12552,7 +12563,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #if ! CTLSTYLE_SW2011ALL
 #if WITHTX
 	{
-		"DC TX CW", 7, 0, RJ_YES,	ISTEP1,	
+		"DC TX CW", 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, /* 0 - off, 1 - on */
 		offsetof(struct nvmap, dctxmodecw),
@@ -12667,7 +12678,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	
 	#if (IF3_FMASK & IF3_FMASK_0P3)
 	{
-		"HAVE 0.3", 7, 0, RJ_YES,	ISTEP1,	
+		"HAVE 0.3", 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, hascw0p3),
@@ -12688,7 +12699,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 
 	#if (IF3_FMASK & IF3_FMASK_0P5)
 	{
-		"HAVE 0.5", 7, 0, RJ_YES,	ISTEP1,	
+		"HAVE 0.5", 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, hascw0p5),
@@ -12709,7 +12720,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 
 	#if (IF3_FMASK & IF3_FMASK_1P8)
 	{
-		"HAVE 1.8", 7, 0, RJ_YES,	ISTEP1,	
+		"HAVE 1.8", 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, hascw1p8),
@@ -12739,7 +12750,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 
 	#if (IF3_FMASK & IF3_FMASK_2P4)
 	{
-		"HAVE 2.4", 7, 0, RJ_YES,	ISTEP1,	
+		"HAVE 2.4", 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, hascw2p4),
@@ -12751,7 +12762,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 
 	#if WITHTX && WITHSAMEBFO == 0 && (IF3_FMASKTX & IF3_FMASK_2P4)
 	{
-		"HAVE T24", 7, 0, RJ_YES,	ISTEP1,	
+		"HAVE T24", 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, hascw2p4_tx),
@@ -12763,7 +12774,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 
 	#if WITHTX && WITHSAMEBFO == 0 && (IF3_FMASKTX & IF3_FMASK_2P7)
 	{
-		"HAVE T27", 7, 0, RJ_YES,	ISTEP1,	
+		"HAVE T27", 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, hascw2p7_tx),
@@ -12775,7 +12786,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 
 	#if 0 && WITHTX && WITHSAMEBFO == 0 && (IF3_FMASKTX & IF3_FMASK_3P1)
 	{
-		"HAVE T31", 7, 0, RJ_YES,	ISTEP1,	
+		"HAVE T31", 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, hascw3p1_tx),
@@ -12787,7 +12798,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 
 	#if (IF3_FMASK & IF3_FMASK_6P0)
 	{
-		"HAVE 6.0", 7, 0, RJ_YES,	ISTEP1,	
+		"HAVE 6.0", 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, hascw6p0),
@@ -12897,7 +12908,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 #endif /* ! WITHFLATMENU */
 	{
-		"NOTCH   ", 7, 2, RJ_ON,	ISTEP1,		/* управление режимом NOTCH */
+		"NOTCH   ", 7, 3, RJ_ON,	ISTEP1,		/* управление режимом NOTCH */
 		ITEM_VALUE,
 		0, NOTCHMODE_COUNT - 1,
 		RMT_NOTCH_BASE,							/* управление режимом NOTCH */
@@ -12938,7 +12949,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 #endif /* ! WITHFLATMENU */
 	{
-		"NOTCH   ", 7, 2, RJ_ON,	ISTEP1,		/* управление режимом NOTCH */
+		"NOTCH   ", 7, 3, RJ_ON,	ISTEP1,		/* управление режимом NOTCH */
 		ITEM_VALUE,
 		0, NOTCHMODE_COUNT - 1,
 		RMT_NOTCH_BASE,							/* управление режимом NOTCH */
@@ -13008,7 +13019,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
     #if ELKEY328
 	{
-		"VIBROENB", 7, 0, RJ_ON,	ISTEP1,		/* разрешение работы в режиме виброплекса */
+		"VIBROENB", 7, 3, RJ_ON,	ISTEP1,		/* разрешение работы в режиме виброплекса */
 		ITEM_VALUE,
 		0, 1,		// minimal 0 - без эффекта Виброплекса
 		offsetof(struct nvmap, elkeyslopeenable),
@@ -13028,7 +13039,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, 
 	},
 	{
-		"CWKEYREV", 7, 0, RJ_YES,	ISTEP1,	
+		"CWKEYREV", 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1,	/* режим электронного ключа - поменять местами точки с тире или нет. */
 		offsetof(struct nvmap, elkeyreverse),
@@ -13056,7 +13067,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 #if WITHTX
 	{
-		"BREAK-IN", 7, 0, RJ_ON,	ISTEP1,	
+		"BREAK-IN", 7, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, bkinenable),
@@ -13099,7 +13110,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 #endif /* ! WITHFLATMENU */
 	{
-		"ADC RAND", 7, 0, RJ_ON,	ISTEP1,	/* управление интерфейсом в LTC2208 */
+		"ADC RAND", 7, 3, RJ_ON,	ISTEP1,	/* управление интерфейсом в LTC2208 */
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, gadcrand),
@@ -13108,7 +13119,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, 
 	},
 	{
-		"ADC DITH", 7, 0, RJ_ON,	ISTEP1,	/* управление зашумлением в LTC2208 */
+		"ADC DITH", 7, 3, RJ_ON,	ISTEP1,	/* управление зашумлением в LTC2208 */
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, gdither),
@@ -13117,7 +13128,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, 
 	},
 	{
-		"ADC FIFO", 7, 0, RJ_ON,	ISTEP1,	/*  */
+		"ADC FIFO", 7, 3, RJ_ON,	ISTEP1,	/*  */
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, gadcfifo),
@@ -13135,7 +13146,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getadcoffsbase,	/* складывается со смещением и отображается */
 	},
 	{
-		"DAC TEST", 7, 0, RJ_ON,	ISTEP1,	/*  */
+		"DAC TEST", 7, 3, RJ_ON,	ISTEP1,	/*  */
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, gdactest),
@@ -13220,7 +13231,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #endif /* WITHPOWERTRIM */
 #if ! CTLSTYLE_SW2011ALL
 	{
-		"TX GATE ", 7, 0, RJ_ON,	ISTEP1,	
+		"TX GATE ", 7, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1,
 		offsetof(struct nvmap, gtxgate),
@@ -13242,7 +13253,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 #endif /* ! WITHFLATMENU */
 	{
-		"VOX EN  ", 7, 0, RJ_ON,	ISTEP1,	
+		"VOX EN  ", 7, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, gvoxenable),
@@ -13292,7 +13303,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 #endif /* ! WITHFLATMENU */
 	{
-		"CAT ENAB", 7, 0, RJ_ON,	ISTEP1,	
+		"CAT ENAB", 7, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, catenable),
@@ -13312,7 +13323,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 	#endif /* WITHUSBCDC == 0 */
 	{
-		"CAT DTR ", 7, 0, RJ_YES,	ISTEP1,	
+		"CAT DTR ", 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, catdtrenable),
@@ -13322,7 +13333,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 	#if WITHTX
 	{
-		"CAT RTS ", 7, 0, RJ_YES,	ISTEP1,	
+		"CAT RTS ", 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, catrtsenable),
@@ -13331,7 +13342,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, 
 	},
 	{
-		"CATTXDTR", 7, 0, RJ_YES,	ISTEP1,	/* Передача управляется по DTR, а не по RTS */
+		"CATTXDTR", 7, 3, RJ_YES,	ISTEP1,	/* Передача управляется по DTR, а не по RTS */
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, catdtrptt),	
@@ -13355,7 +13366,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 #endif /* ! WITHFLATMENU */
 	{
-		"CTCSS   ", 7, 0, RJ_ON,	ISTEP1,	//  Continuous Tone-Coded Squelch System or CTCSS control
+		"CTCSS   ", 7, 3, RJ_ON,	ISTEP1,	//  Continuous Tone-Coded Squelch System or CTCSS control
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, gsbtonenable),
@@ -13432,7 +13443,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #endif
 #if WITHMUTEALL && WITHTX
 	{
-		"MUTE ALL", 7, 0, RJ_YES,	ISTEP1,	
+		"MUTE ALL", 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, gmuteall),
@@ -13474,7 +13485,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 	#endif /* WITHAFCODEC1HAVELINEINLEVEL */
 	{
-		"MIKE SSB", 7, 0, RJ_TXAUDIO,	ISTEP1,	
+		"MIKE SSB", 7, 5, RJ_TXAUDIO,	ISTEP1,
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, BOARD_TXAUDIO_count - 1, 					// при SSB/AM/FM передача с тестовых источников
 		RMT_TXAUDIO_BASE(MODE_SSB),
@@ -13483,7 +13494,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"MIKE DIG", 7, 0, RJ_TXAUDIO,	ISTEP1,	
+		"MIKE DIG", 7, 5, RJ_TXAUDIO,	ISTEP1,
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, BOARD_TXAUDIO_count - 1, 					// при SSB/AM/FM передача с тестовых источников
 		RMT_TXAUDIO_BASE(MODE_DIGI),
@@ -13492,7 +13503,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"MIKE AM ", 7, 0, RJ_TXAUDIO,	ISTEP1,	
+		"MIKE AM ", 7, 5, RJ_TXAUDIO,	ISTEP1,
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, BOARD_TXAUDIO_count - 1, 					// при SSB/AM/FM передача с тестовых источников
 		RMT_TXAUDIO_BASE(MODE_AM),
@@ -13501,7 +13512,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"MIKE FM ", 7, 0, RJ_TXAUDIO,	ISTEP1,	
+		"MIKE FM ", 7, 5, RJ_TXAUDIO,	ISTEP1,
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, BOARD_TXAUDIO_count - 1, 					// при SSB/AM/FM передача с тестовых источников
 		RMT_TXAUDIO_BASE(MODE_NFM),
@@ -13510,7 +13521,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"MIKE AGC", 7, 0, RJ_ON,	ISTEP1,	
+		"MIKE AGC", 7, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,	
 		0, 1, 					/* Включение программной АРУ перед модулятором */
 		offsetof(struct nvmap, gmikeagc),
@@ -13537,7 +13548,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"MIK BUST", 7, 0, RJ_ON,	ISTEP1,	
+		"MIK BUST", 7, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,	
 		0, 1, 					// предусилитель сигнала с микрофона
 		offsetof(struct nvmap, gmikebust20db),
@@ -13547,7 +13558,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 	#if WITHAFCODEC1HAVEPROC	/* кодек имеет управление обработкой микрофонного сигнала (эффекты, эквалайзер, ...) */
 	{
-		"MIK EQUA", 7, 0, RJ_ON,	ISTEP1,	
+		"MIK EQUA", 7, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1,
 		offsetof(struct nvmap, gmikeequalizer),
@@ -13617,7 +13628,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #endif /* ITHMIC1LEVEL && WITHTX */
 #if WITHUSEAUDIOREC
 	{
-		"SD RECRD", 7, 0, RJ_ON,	ISTEP1,		/* автоматически начинаем запись на SD CARD при включении */
+		"SD RECRD", 7, 3, RJ_ON,	ISTEP1,		/* автоматически начинаем запись на SD CARD при включении */
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, recmode),
@@ -13628,7 +13639,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #endif /* WITHUSEAUDIOREC */
 #if WITHUSBUAC
 	{
-		"PLAY USB", 7, 0, RJ_YES,	ISTEP1,	
+		"PLAY USB", 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,	
 		0, 1, 					/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
 		offsetof(struct nvmap, guacplayer),
@@ -13638,7 +13649,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 	#if WITHRTS96 || WITHRTS192 || WITHTRANSPARENTIQ
 	{
-		"I/Q SWAP", 7, 0, RJ_YES,	ISTEP1,	
+		"I/Q SWAP", 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,	
 		0, 1, 					/* Поменять местами I и Q сэмплы в потоке RTS96 */
 		offsetof(struct nvmap, gswapiq),
@@ -13679,7 +13690,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getfsasdcbase10, /* складывается со смещением и отображается */
 	},
 	{
-		"AGC OFF ", 7, 0, RJ_YES,	ISTEP1,	
+		"AGC OFF ", 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,	
 		0, 1, 					// предусилитель сигнала с микрофона
 		offsetof(struct nvmap, gagcoff),
@@ -13920,7 +13931,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 #endif /* ! WITHFLATMENU */
 	{
-		"LFM MODE", 7, 0, RJ_ON, 	ISTEP1, 
+		"LFM MODE", 7, 3, RJ_ON, 	ISTEP1,
 		ITEM_VALUE,
 		0, 1,			/* LFM mode enable */
 		offsetof(struct nvmap, lfmmode),
@@ -13989,7 +14000,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #endif /* ! WITHFLATMENU */
 #if WITHRFSG
 	{
-		"RFSG MOD", 7, 0, RJ_ON,	ISTEP1,	
+		"RFSG MOD", 7, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, userfsg),
@@ -14009,7 +14020,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"ENC DYNA", 7, 0, RJ_ON,	ISTEP1,	
+		"ENC DYNA", 7, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, ghiresdyn),
@@ -14027,7 +14038,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, 
 	},
 	{
-		"BIG STEP", 7, 0, RJ_YES,	ISTEP1,	
+		"BIG STEP", 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, gbigstep),
@@ -14113,7 +14124,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #endif /* defined(PLL1_TYPE) && (PLL1_TYPE == PLL_TYPE_SI570) */
 #if WITHONLYBANDS
 	{
-		"BANDONLY", 7, 0, RJ_YES,	ISTEP1,	
+		"BANDONLY", 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, withonlybands),
@@ -14123,7 +14134,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 #endif /* WITHONLYBANDS */
 	{
-		"STAYFREQ", 7, 0, RJ_ON,	ISTEP1,	
+		"STAYFREQ", 7, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, stayfreq),
@@ -14145,7 +14156,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #if WITHTX
 #if WITHSWRMTR && ! WITHSHOWSWRPWR
 	{
-		"SWR SHOW", 7, 0, RJ_ON,	ISTEP1,	
+		"SWR SHOW", 7, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, swrmode),
@@ -14251,7 +14262,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 
 #if LO1MODE_HYBRID
 	{
-		"ALIGN MD", 7, 0, RJ_YES,	ISTEP1,	
+		"ALIGN MD", 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, alignmode),
@@ -14333,7 +14344,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #endif /* WITHBARS */
 
 	{
-		"BAND 27 ", 7, 0, RJ_YES,	ISTEP1,	
+		"BAND 27 ", 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, bandset11m),
@@ -14343,7 +14354,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 #if WITHBCBANDS
 	{
-		"BAND BC ", 7, 0, RJ_YES,	ISTEP1,	
+		"BAND BC ", 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, bandsetbcast),
@@ -14356,7 +14367,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #if CTLSTYLE_SW2011ALL
 #if TUNE_6MBAND
 	{
-		"BAND 50 ", 7, 0, RJ_ON,	ISTEP1,	
+		"BAND 50 ", 7, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, bandset6m),
@@ -14367,7 +14378,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #endif /* TUNE_6MBAND */
 #if TUNE_4MBAND
 	{
-		"BAND 70 ", 7, 0, RJ_ON,	ISTEP1,	
+		"BAND 70 ", 7, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, bandset4m),
@@ -14378,7 +14389,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #endif /* TUNE_6MBAND */
 #if TUNE_2MBAND
 	{
-		"BAND 144", 7, 0, RJ_ON,	ISTEP1,	
+		"BAND 144", 7, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, bandset2m),
@@ -14596,7 +14607,6 @@ defaultsettings(void)
 // Отображение многострочного меню для больших экранов
 void display_multilinemenu_block(uint_fast8_t x, uint_fast8_t y, void * pv)
 {
-	multimenuwnd_t window;
 	const FLASHMEM struct menudef * const mp = (const FLASHMEM struct menudef *) pv;
 	const uint_fast16_t index = (int) (mp - menutable);
 	uint_fast16_t y_position_groups = y;
@@ -14606,12 +14616,13 @@ void display_multilinemenu_block(uint_fast8_t x, uint_fast8_t y, void * pv)
 	uint_fast16_t selected_group_left_margin; // первый элемент группы
 	uint_fast16_t selected_group_right_margin; // последний элемент группы
 	uint_fast16_t el;
+	multimenuwnd_t window;
 
 	display2_getmultimenu(& window);
 
 	//ищем границы текущей группы параметров
 	uint_fast16_t selected_group_finder = index;
-	while (selected_group_finder > 0 && ! ismenukind(& menutable[selected_group_finder], ITEM_GROUP))
+	while (selected_group_finder > 0 && ! ismenukind(& menutable [selected_group_finder], ITEM_GROUP))
 		selected_group_finder --;
 	selected_group_left_margin = selected_group_finder;
 	selected_group_finder ++;
@@ -14647,6 +14658,9 @@ void display_multilinemenu_block(uint_fast8_t x, uint_fast8_t y, void * pv)
 	// выводим на экран блок с параметрами
 	for (el = 0; el < MENUROW_COUNT; el ++)
 	{
+		const uint_fast8_t LABELPOS = x + 1;
+		const uint_fast8_t PARAMPOS = LABELPOS + LABELW + 2;
+		const uint_fast8_t VALUEPOS = PARAMPOS + LABELW + 2;
 		if (ismenukind( & menutable [el], ITEM_GROUP))
 		{
 			index_groups ++;
@@ -14658,10 +14672,10 @@ void display_multilinemenu_block(uint_fast8_t x, uint_fast8_t y, void * pv)
 			if (el == selected_group_left_margin) //подсвечиваем выбранный элемент
 			{
 				display_setcolors(MENU_SELECTOR_COLOR, BGCOLOR);
-				display_at_P(x, y_position_groups, PSTR(">"));
+				display_at_P(LABELPOS - 1, y_position_groups, PSTR(">"));
 			}
-			display_menu_group(x + 1, y_position_groups, (void *) & menutable [el]); // название группы
-			y_position_groups += 4;
+			display_menu_group(LABELPOS, y_position_groups, (void *) & menutable [el]); // название группы
+			y_position_groups += window.ystep;
 		}
 		if (ismenukind(& menutable [el], ITEM_VALUE))
 		{
@@ -14675,13 +14689,11 @@ void display_multilinemenu_block(uint_fast8_t x, uint_fast8_t y, void * pv)
 			if (el == index) //подсвечиваем выбранный элемент
 			{
 				display_setcolors(MENU_SELECTOR_COLOR, BGCOLOR);
-				display_at_P(x + 10, y_position_params, PSTR(">"));
-				display_at_P(x + 25, y_position_params, PSTR(">"));
+				display_at_P(PARAMPOS - 1, y_position_params, PSTR(">"));
 			}
-			display_menu_lblc3(x + 11, y_position_params, (void *) & menutable [el]); // код редактируемого параметра
-			display_menu_lblng(x + 15, y_position_params, (void *) & menutable [el]); // название редактируемого параметра
-			display_menu_valxx(x + 26, y_position_params, (void *) & menutable [el]); // значение параметра
-			y_position_params += 4;
+			display_menu_lblng(PARAMPOS, y_position_params, (void *) & menutable [el]); // название редактируемого параметра
+			display_menu_valxx(VALUEPOS, y_position_params, (void *) & menutable [el]); // значение параметра
+			y_position_params += window.ystep;
 		}
 	}
 }
@@ -15002,6 +15014,9 @@ modifysettings(
 
 		if (kbready != 0)
 		{
+			multimenuwnd_t window;
+			display2_getmultimenu(& window);
+
 			switch (kbch)
 			{
 			default:
@@ -15052,7 +15067,7 @@ modifysettings(
 				do
 				{
 					/* проход по определённомк типу элементов (itemmask) */
-					menupos = calc_prev(menupos, firstitem, lastitem);
+					menupos = calc_dir(! window.reverse, menupos, firstitem, lastitem);
 					mp = & menutable [menupos];
 				}
 				while (! ismenukind(mp, itemmask));
@@ -15064,7 +15079,7 @@ modifysettings(
 				do
 				{
 					/* если спецпункты запрещены - ищем обычный */
-					menupos = calc_next(menupos, firstitem, lastitem);
+					menupos = calc_dir(window.reverse, menupos, firstitem, lastitem);
 					mp = & menutable [menupos];
 				}
 				while (! ismenukind(mp, itemmask));

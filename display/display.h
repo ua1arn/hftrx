@@ -476,6 +476,8 @@ typedef struct multimenuwnd_tag
 {
 	uint_fast8_t multilinemenu_max_rows;
 	uint_fast8_t menurow_count;
+	uint_fast8_t ystep;
+	uint_fast8_t reverse;	// 0/1
 } multimenuwnd_t;
 
 void display2_getmultimenu(multimenuwnd_t * p); /* получение параметров окна для меню */
