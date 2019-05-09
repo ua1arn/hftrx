@@ -3012,7 +3012,7 @@ static uint_fast8_t displaybarsfps = DISPLAYSWR_FPS;
 #if WITHSPECTRUMWF
 	static uint_fast8_t gfillspect = 1;
 	static uint_fast8_t gtopdb = 30;	/* верхний предел FFT */
-	static uint_fast8_t gbottomdb = 100;	/* нижний предел FFT */
+	static uint_fast8_t gbottomdb = 130;	/* нижний предел FFT */
 	static uint_fast8_t gzoomxpow2;		/* степень двойки - состояние растягиваия спектра (уменьшение наблюдаемой полосы частот) */
 #endif /* WITHSPECTRUMWF */
 #if WITHLCDBACKLIGHT
@@ -5538,7 +5538,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		"BOTTOM DB",
 		0,		// rj
 		ISTEP1,		/* spectrum range */
-		40, 160, 
+		80, 160,
 		offsetof(struct nvmap, gbottomdb),	/* диапазон отображаемых значений */
 		NULL,
 		& gbottomdb,
@@ -7704,11 +7704,6 @@ updateboard(
 		board_set_sidetonelevel(gsidetonelevel);	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
 		#if WITHSPECTRUMWF
 			board_set_fillspect(gfillspect);	/* заливать заполнением площадь под графиком спектра */
-			if(gtopdb < 1) gtopdb = 1;
-			if(gtopdb > 40) gtopdb = 40;
-			if(gbottomdb < 40) gbottomdb = 40;
-			if(gbottomdb > 160) gbottomdb = 160;
-			if((gbottomdb - gtopdb) < 40) gbottomdb = gtopdb + 40;
 			board_set_topdb(gtopdb);		/* верхний предел FFT */
 			board_set_bottomdb(gbottomdb);		/* нижний предел FFT */
 			board_set_zoomx(1u << gzoomxpow2);	/* уменьшение отображаемого участка спектра */
@@ -12067,7 +12062,7 @@ static const FLASHMEM struct menudef menutable [] =
 	{
 		"TOP DB  ", 7, 0, 0,	ISTEP1,	
 		ITEM_VALUE,
-		0, 80,							/* сколько не показывать сверху */
+		0, 60,							/* сколько не показывать сверху */
 		offsetof(struct nvmap, gtopdb),
 		NULL,
 		& gtopdb,
@@ -12076,7 +12071,7 @@ static const FLASHMEM struct menudef menutable [] =
 	{
 		"BOTTM DB", 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
-		40, 160,							/* диапазон отображаемых значений */
+		80, 160,							/* диапазон отображаемых значений */
 		offsetof(struct nvmap, gbottomdb),
 		NULL,
 		& gbottomdb,
