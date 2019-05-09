@@ -14603,10 +14603,14 @@ defaultsettings(void)
 
 //+++ menu support
 
+#if ! WITHFLATMENU
 // Вызывается из display2.c
 // Отображение многострочного меню для больших экранов
 void display_multilinemenu_block(uint_fast8_t x, uint_fast8_t y, void * pv)
 {
+	const uint_fast8_t GRNAMEPOS = x + 1;	// Гопрзонтальная позиция названия группы
+	const uint_fast8_t PARAMPOS = GRNAMEPOS + LABELW + 2;	// Гопрзонтальная позиция названия параметра
+	const uint_fast8_t VALUEPOS = PARAMPOS + LABELW + 2;	// Гопрзонтальная позиция значения параметра
 	const FLASHMEM struct menudef * const mp = (const FLASHMEM struct menudef *) pv;
 	const uint_fast16_t index = (int) (mp - menutable);
 	uint_fast16_t y_position_groups = y;
@@ -14618,6 +14622,9 @@ void display_multilinemenu_block(uint_fast8_t x, uint_fast8_t y, void * pv)
 	uint_fast16_t el;
 	multimenuwnd_t window;
 
+#if LCDMODE_LTDC_PIP16
+	arm_hardware_ltdc_pip_off();
+#endif /* LCDMODE_LTDC_PIP16 */
 	display2_getmultimenu(& window);
 
 	//ищем границы текущей группы параметров
@@ -14628,20 +14635,21 @@ void display_multilinemenu_block(uint_fast8_t x, uint_fast8_t y, void * pv)
 	selected_group_finder ++;
 	while (selected_group_finder < MENUROW_COUNT && ! ismenukind(& menutable [selected_group_finder], ITEM_GROUP))
 		selected_group_finder ++;
-	selected_group_right_margin = selected_group_finder - 1;
+	selected_group_right_margin = selected_group_finder - 1;	// последний элмент в списке параметров данной группы
 
 	// предварительно расчитываем скролл
 	uint_fast16_t selected_group_index = 0;
 	uint_fast16_t selected_params_index = 0;
 	for (el = 0; el < MENUROW_COUNT; el ++)
 	{
-		if (ismenukind(& menutable [el], ITEM_GROUP))
+		const FLASHMEM struct menudef * const mv = & menutable [el];
+		if (ismenukind(mv, ITEM_GROUP))
 		{
 			index_groups ++;
 			if (el == selected_group_left_margin)
 				selected_group_index = index_groups - 1;
 		}
-		if (ismenukind(& menutable [el], ITEM_VALUE))
+		if (ismenukind(mv, ITEM_VALUE))
 		{
 			if (el < selected_group_left_margin || el > selected_group_right_margin)
 				continue;
@@ -14658,10 +14666,8 @@ void display_multilinemenu_block(uint_fast8_t x, uint_fast8_t y, void * pv)
 	// выводим на экран блок с параметрами
 	for (el = 0; el < MENUROW_COUNT; el ++)
 	{
-		const uint_fast8_t LABELPOS = x + 1;
-		const uint_fast8_t PARAMPOS = LABELPOS + LABELW + 2;
-		const uint_fast8_t VALUEPOS = PARAMPOS + LABELW + 2;
-		if (ismenukind( & menutable [el], ITEM_GROUP))
+		const FLASHMEM struct menudef * const mv = & menutable [el];
+		if (ismenukind(mv, ITEM_GROUP))
 		{
 			index_groups ++;
 			if (index_groups <= menu_block_scroll_offset_groups)
@@ -14670,15 +14676,17 @@ void display_multilinemenu_block(uint_fast8_t x, uint_fast8_t y, void * pv)
 				continue;
 			if (el == selected_group_left_margin) //подсвечиваем выбранный элемент
 			{
-				display_setcolors(MENU_SELECTOR_COLOR, BGCOLOR);
-				display_at_P(LABELPOS - 1, y_position_groups, PSTR(">"));
+				display_setcolors(MENUSELCOLOR, BGCOLOR);
+				display_at_P(GRNAMEPOS - 1, y_position_groups, PSTR(">"));
 			}
-			display_menu_group(LABELPOS, y_position_groups, (void *) & menutable [el]); // название группы
+			display_menu_group(GRNAMEPOS, y_position_groups, (void *) mv); // название группы
 			y_position_groups += window.ystep;
 		}
-		if (ismenukind(& menutable [el], ITEM_VALUE))
+		if (ismenukind(mv, ITEM_VALUE))
 		{
-			if (el < selected_group_left_margin || el > selected_group_right_margin)
+			if (el < selected_group_left_margin)
+				continue;
+			if (el > selected_group_right_margin)
 				continue;
 			index_params ++;
 			if (index_params <= menu_block_scroll_offset_params)
@@ -14687,15 +14695,16 @@ void display_multilinemenu_block(uint_fast8_t x, uint_fast8_t y, void * pv)
 				continue;
 			if (el == index) //подсвечиваем выбранный элемент
 			{
-				display_setcolors(MENU_SELECTOR_COLOR, BGCOLOR);
+				display_setcolors(MENUSELCOLOR, BGCOLOR);
 				display_at_P(PARAMPOS - 1, y_position_params, PSTR(">"));
 			}
-			display_menu_lblng(PARAMPOS, y_position_params, (void *) & menutable [el]); // название редактируемого параметра
-			display_menu_valxx(VALUEPOS, y_position_params, (void *) & menutable [el]); // значение параметра
+			display_menu_lblng(PARAMPOS, y_position_params, (void *) mv); // название редактируемого параметра
+			display_menu_valxx(VALUEPOS, y_position_params, (void *) mv); // значение параметра
 			y_position_params += window.ystep;
 		}
 	}
 }
+#endif /* ! WITHFLATMENU */
 
 // Вызывается из display2.c
 // код редактируемого параметра

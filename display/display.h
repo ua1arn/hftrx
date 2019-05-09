@@ -364,16 +364,16 @@ typedef uint16_t PACKEDCOLOR565_T;
 #define MODECOLORBG_RX	COLOR_GREEN
 #define TIMECOLOR	COLOR_GREEN
 #define VOLTCOLOR	COLOR_GREEN
-#define MENU_SELECTOR_COLOR	COLOR_GREEN
 
 #define BIGCOLOR COLOR_YELLOW // GOLD
 #define BIGCOLORHALF TFTRGB(192, 192, 0) //COLOR_OLIVE // DARK GOLD
 //#define FRQCOLOR GRAY
 #define FRQCOLOR COLOR_YELLOW // GOLD
 
-#define MENUGROUPCOLOR COLOR_YELLOW
+#define MENUGROUPCOLOR COLOR_WHITE
 #define MENUCOLOR COLOR_WHITE
 #define MNUVALCOLOR COLOR_WHITE
+#define MENUSELCOLOR	COLOR_YELLOW
 
 uint_fast8_t display_getpagesmax(void);	// количество разных вариантов отображения (menuset)
 uint_fast8_t display_getpagesleep(void);	// номер варианта отображения для "сна"
