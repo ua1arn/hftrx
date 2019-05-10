@@ -1046,7 +1046,7 @@ void i2c_stop(void)
 {
 	I2C1->CR1 = I2C_CR1_PE; // генерирую старт
 	I2C1->CR2 = I2C_CR2_START;
-	while ((I2C1->ISR & I2C_ISR_SB) == 0) // жду окончания генерации старт И ТУТ ИНОГДА ЗАВИСОН !!!!! 
+	while ((I2C1->ISR & I2C_ISR_SB) == 0) // жду окончания генерации старт И ТУТ ИНОГДА ЗАВИСОН !!!!!
 		local_delay_us(1);
 	I2C1->TXDR = (I2C1->TXDR & ~ I2C_TXDR_TXDATA) | (address & I2C_TXDR_TXDATA); // передаю адрес ведомого
 	unsigned w;

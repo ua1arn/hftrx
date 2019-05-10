@@ -59,7 +59,7 @@
 
 #define WRITEE_BIT				(1u << 12)	// RD/~WR  P3_12 - должен быть в "0" - как при записи - для управления буферами на шине данных LCD
 
-/* В данной версии платы ошибка в схеме - для работы преобразователей уровня "наружу" WRITEE_BIT долже быть в "1". 
+/* В данной версии платы ошибка в схеме - для работы преобразователей уровня "наружу" WRITEE_BIT долже быть в "1".
 */
 #define LS020_RS_INITIALIZE() \
 	do { \
@@ -549,13 +549,13 @@
 	// открытый сток P1 by design
 	// P1_6 - SCL3
 	// P1_7 - SDA3
-	#define TARGET_TWI_TWCK_PORT_C(v) do {	R7S721_TARGET_PORT_S(1, v); } while (0)
-	#define TARGET_TWI_TWCK_PORT_S(v) do {	R7S721_TARGET_PORT_C(1, v); } while (0)
+	#define TARGET_TWI_TWCK_PORT_C(v) do {	R7S721_TARGET_PORT_C(1, v); } while (0)
+	#define TARGET_TWI_TWCK_PORT_S(v) do {	R7S721_TARGET_PORT_S(1, v); } while (0)
 	#define TARGET_TWI_TWCK_PIN		(R7S721_INPUT_PORT(1))
 	#define TARGET_TWI_TWCK		(1u << 6)		// P1_6 - SCL3
 
-	#define TARGET_TWI_TWD_PORT_C(v) do {	R7S721_TARGET_PORT_S(1, v); } while (0)
-	#define TARGET_TWI_TWD_PORT_S(v) do {	R7S721_TARGET_PORT_C(1, v); } while (0)
+	#define TARGET_TWI_TWD_PORT_C(v) do {	R7S721_TARGET_PORT_C(1, v); } while (0)
+	#define TARGET_TWI_TWD_PORT_S(v) do {	R7S721_TARGET_PORT_S(1, v); } while (0)
 	#define TARGET_TWI_TWD_PIN		(R7S721_INPUT_PORT(1))
 	#define TARGET_TWI_TWD		(1u << 7)		// P1_7 - SDA3
 

@@ -7033,11 +7033,12 @@ uint_fast8_t display_ts_getxy(uint_fast16_t * x, uint_fast16_t * y)
 void stmpe811_initialize(void)
 {
 	unsigned char ver [2];
-	stmpe811_TS_Start(BOARD_I2C_STMPE811);
 
 	ver [0] = IOE_Read(BOARD_I2C_STMPE811, STMPE811_REG_CHP_ID_LSB);
 	ver [1] = IOE_Read(BOARD_I2C_STMPE811, STMPE811_REG_CHP_ID_MSB);
-	debug_printf_P(PSTR("stmpe811_initialize: ver=%02X%02X\r\n"), ver [0], ver [1]);
+	debug_printf_P(PSTR("stmpe811_initialize: ver=%02X%02X, expected %04X\r\n"), ver [1], ver [0], STMPE811_ID);
+
+	stmpe811_TS_Start(BOARD_I2C_STMPE811);
 }
 
 #endif /* defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_STMPE811) */
