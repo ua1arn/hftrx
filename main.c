@@ -15872,12 +15872,14 @@ processkeyboard(uint_fast8_t kbch)
 			return 1;
 	#endif /* WITHAUTOTUNER */
 		display2_bgreset();
+	#if defined (RTC1_TYPE)
+		getstamprtc();
+	#endif /* defined (RTC1_TYPE) */
 	#if WITHFLATMENU
 		modifysettings(0, MENUROW_COUNT - 1, ITEM_VALUE, RMT_GROUP_BASE, exitkey, 0);	/* выбор группы параметров для редактирования */
 	#else /* WITHFLATMENU */
 		modifysettings(0, MENUROW_COUNT - 1, ITEM_GROUP, RMT_GROUP_BASE, exitkey, 0);	/* выбор группы параметров для редактирования */
 	#endif /* WITHFLATMENU */
-		
 		updateboard(1, 0);
 		updateboard2();			/* настройки валкодера и цветовой схемы дисплея. */
 		display2_bgreset();		/* возможно уже с новой цветовой схемой */
