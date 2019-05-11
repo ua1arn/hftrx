@@ -80,10 +80,10 @@ static int_fast16_t glob_gridstep = 10000;	// 10 kHz - шаг сетки
 static uint_fast8_t glob_fillspect;	/* заливать заполнением площадь под графиком спектра */
 static uint_fast8_t glob_fftcolored; /* градиентная раскраска FFT */
 static uint_fast8_t glob_fftautocal; // автокалибровка пределов FFT
-static int_fast16_t glob_topdb = 0;	/* верхний предел FFT */
-static int_fast16_t glob_bottomdb = 80;	/* нижний предел FFT */
-static int_fast16_t calibrated_topdb = 0; // верхний предел FFT с учётом автокалибровка
-static int_fast16_t calibrated_bottomdb = 80; // нижний предел FFT с учётом автокалибровка
+static int_fast16_t glob_topdb = 30;	/* верхний предел FFT */
+static int_fast16_t glob_bottomdb = 130;	/* нижний предел FFT */
+static int_fast16_t calibrated_topdb = 30; // верхний предел FFT с учётом автокалибровка
+static int_fast16_t calibrated_bottomdb = 130; // нижний предел FFT с учётом автокалибровка
 static uint_fast8_t glob_zoomx = 1;	/* уменьшение отображаемого участка спектра */
 
 //#define WIDEFREQ (TUNE_TOP > 100000000L)
@@ -4825,8 +4825,8 @@ static PACKEDCOLOR565_T * getscratchpip(void)
 static const FLOAT_t spectrum_beta = 0.25;					// incoming value coefficient
 static const FLOAT_t spectrum_alpha = 1 - (FLOAT_t) 0.25;	// old value coefficient
 
-static const FLOAT_t waterfall_beta = 0.75;					// incoming value coefficient
-static const FLOAT_t waterfall_alpha = 1 - (FLOAT_t) 0.75;	// old value coefficient
+static const FLOAT_t waterfall_beta = 0.5;					// incoming value coefficient
+static const FLOAT_t waterfall_alpha = 1 - (FLOAT_t) 0.5;	// old value coefficient
 
 static FLOAT_t spavgarray [ALLDX] = { 1 };	// массив входных данных для отображения (через фильтры).
 
