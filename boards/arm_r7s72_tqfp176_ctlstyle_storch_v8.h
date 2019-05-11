@@ -406,6 +406,7 @@
 	//#define RTC1_TYPE RTC_TYPE_M41T81	/* ST M41T81M6 RTC clock chip with I2C interface */
 	//#define TSC1_TYPE TSC_TYPE_TSC2046	/* Resistive touch screen controller TI TSC2046 */
 	//#define TSC1_TYPE TSC_TYPE_STMPE811	/* touch screen controller */
+	//#define TSC_TYPE_STMPE811_USE_SPI	1
 	//#define DAC1_TYPE	99999		/* наличие ЦАП для подстройки тактовой частоты */
 
 #endif /* WITHISBOOTLOADER */
