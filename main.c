@@ -11874,7 +11874,6 @@ display_menu_string_P(
 
 #define ITEM_NOINITNVRAM	0x10	/* значение этого пункта не используется при начальной инициализации NVRAM */
 
-#define LABELW 8
 struct menudef
 {
 	char qlabel [LABELW + 1];		/* текст - название пункта меню */
@@ -14605,17 +14604,71 @@ defaultsettings(void)
 
 #if ! WITHFLATMENU
 // Вызывается из display2.c
-// Отображение многострочного меню для больших экранов
-void display_multilinemenu_block(uint_fast8_t x, uint_fast8_t y, void * pv)
+// Отображение многострочного меню для больших экранов (группы)
+void display_multilinemenu_block_groups(uint_fast8_t x, uint_fast8_t y, void * pv)
 {
-	const uint_fast8_t GRNAMEPOS = x + 1;	// Гопрзонтальная позиция названия группы
-	const uint_fast8_t PARAMPOS = GRNAMEPOS + LABELW + 2;	// Гопрзонтальная позиция названия параметра
-	const uint_fast8_t VALUEPOS = PARAMPOS + LABELW + 2;	// Гопрзонтальная позиция значения параметра
 	const FLASHMEM struct menudef * const mp = (const FLASHMEM struct menudef *) pv;
 	const uint_fast16_t index = (int) (mp - menutable);
 	uint_fast16_t y_position_groups = y;
-	uint_fast16_t y_position_params = y;
 	uint_fast16_t index_groups = 0;
+	uint_fast16_t selected_group_left_margin; // первый элемент группы
+	uint_fast16_t el;
+	multimenuwnd_t window;
+
+#if LCDMODE_LTDC_PIP16
+	arm_hardware_ltdc_pip_off();
+#endif /* LCDMODE_LTDC_PIP16 */
+	display2_getmultimenu(& window);
+
+	//ищем границы текущей группы параметров
+	uint_fast16_t selected_group_finder = index;
+	while (selected_group_finder > 0 && ! ismenukind(& menutable [selected_group_finder], ITEM_GROUP))
+		selected_group_finder --;
+	selected_group_left_margin = selected_group_finder;
+
+	// предварительно расчитываем скролл
+	uint_fast16_t selected_group_index = 0;
+	uint_fast16_t selected_params_index = 0;
+	for (el = 0; el < MENUROW_COUNT; el ++)
+	{
+		const FLASHMEM struct menudef * const mv = & menutable [el];
+		if (ismenukind(mv, ITEM_GROUP))
+		{
+			index_groups ++;
+			if (el == selected_group_left_margin)
+				selected_group_index = index_groups - 1;
+		}
+	}
+	index_groups = 0;
+	const uint_fast16_t menu_block_scroll_offset_groups = window.multilinemenu_max_rows * (selected_group_index / window.multilinemenu_max_rows);
+
+	// выводим на экран блок с параметрами
+	for (el = 0; el < MENUROW_COUNT; el ++)
+	{
+		const FLASHMEM struct menudef * const mv = & menutable [el];
+		if (ismenukind(mv, ITEM_GROUP))
+		{
+			index_groups ++;
+			if (index_groups <= menu_block_scroll_offset_groups)
+				continue; //пропускаем пункты для скролла
+			if ((index_groups - menu_block_scroll_offset_groups) > window.multilinemenu_max_rows)
+				continue;
+			if (el == selected_group_left_margin) //подсвечиваем выбранный элемент
+			{
+				display_setcolors(MENUSELCOLOR, BGCOLOR);
+				display_at_P(x - 1, y_position_groups, PSTR(">"));
+			}
+			display_menu_group(x, y_position_groups, (void *) mv); // название группы
+			y_position_groups += window.ystep;
+		}
+	}
+}
+// Отображение многострочного меню для больших экранов (параметры)
+void display_multilinemenu_block_params(uint_fast8_t x, uint_fast8_t y, void * pv)
+{
+	const FLASHMEM struct menudef * const mp = (const FLASHMEM struct menudef *) pv;
+	const uint_fast16_t index = (int) (mp - menutable);
+	uint_fast16_t y_position_params = y;
 	uint_fast16_t index_params = 0;
 	uint_fast16_t selected_group_left_margin; // первый элемент группы
 	uint_fast16_t selected_group_right_margin; // последний элемент группы
@@ -14638,17 +14691,10 @@ void display_multilinemenu_block(uint_fast8_t x, uint_fast8_t y, void * pv)
 	selected_group_right_margin = selected_group_finder - 1;	// последний элмент в списке параметров данной группы
 
 	// предварительно расчитываем скролл
-	uint_fast16_t selected_group_index = 0;
 	uint_fast16_t selected_params_index = 0;
 	for (el = 0; el < MENUROW_COUNT; el ++)
 	{
 		const FLASHMEM struct menudef * const mv = & menutable [el];
-		if (ismenukind(mv, ITEM_GROUP))
-		{
-			index_groups ++;
-			if (el == selected_group_left_margin)
-				selected_group_index = index_groups - 1;
-		}
 		if (ismenukind(mv, ITEM_VALUE))
 		{
 			if (el < selected_group_left_margin || el > selected_group_right_margin)
@@ -14658,30 +14704,13 @@ void display_multilinemenu_block(uint_fast8_t x, uint_fast8_t y, void * pv)
 				selected_params_index = index_params - 1;
 		}
 	}
-	index_groups = 0;
 	index_params = 0;
-	const uint_fast16_t menu_block_scroll_offset_groups = window.multilinemenu_max_rows * (selected_group_index / window.multilinemenu_max_rows);
 	const uint_fast16_t menu_block_scroll_offset_params = window.multilinemenu_max_rows * (selected_params_index / window.multilinemenu_max_rows);
 
 	// выводим на экран блок с параметрами
 	for (el = 0; el < MENUROW_COUNT; el ++)
 	{
 		const FLASHMEM struct menudef * const mv = & menutable [el];
-		if (ismenukind(mv, ITEM_GROUP))
-		{
-			index_groups ++;
-			if (index_groups <= menu_block_scroll_offset_groups)
-				continue; //пропускаем пункты для скролла
-			if ((index_groups - menu_block_scroll_offset_groups) > window.multilinemenu_max_rows)
-				continue;
-			if (el == selected_group_left_margin) //подсвечиваем выбранный элемент
-			{
-				display_setcolors(MENUSELCOLOR, BGCOLOR);
-				display_at_P(GRNAMEPOS - 1, y_position_groups, PSTR(">"));
-			}
-			display_menu_group(GRNAMEPOS, y_position_groups, (void *) mv); // название группы
-			y_position_groups += window.ystep;
-		}
 		if (ismenukind(mv, ITEM_VALUE))
 		{
 			if (el < selected_group_left_margin)
@@ -14696,10 +14725,73 @@ void display_multilinemenu_block(uint_fast8_t x, uint_fast8_t y, void * pv)
 			if (el == index) //подсвечиваем выбранный элемент
 			{
 				display_setcolors(MENUSELCOLOR, BGCOLOR);
-				display_at_P(PARAMPOS - 1, y_position_params, PSTR(">"));
+				display_at_P(x - 1, y_position_params, PSTR(">"));
 			}
-			display_menu_lblng(PARAMPOS, y_position_params, (void *) mv); // название редактируемого параметра
-			display_menu_valxx(VALUEPOS, y_position_params, (void *) mv); // значение параметра
+			display_menu_lblng(x, y_position_params, (void *) mv); // название редактируемого параметра
+			y_position_params += window.ystep;
+		}
+	}
+}
+// Отображение многострочного меню для больших экранов (значения)
+void display_multilinemenu_block_vals(uint_fast8_t x, uint_fast8_t y, void * pv)
+{
+	const FLASHMEM struct menudef * const mp = (const FLASHMEM struct menudef *) pv;
+	const uint_fast16_t index = (int) (mp - menutable);
+	uint_fast16_t y_position_params = y;
+	uint_fast16_t index_params = 0;
+	uint_fast16_t selected_group_left_margin; // первый элемент группы
+	uint_fast16_t selected_group_right_margin; // последний элемент группы
+	uint_fast16_t el;
+	multimenuwnd_t window;
+
+#if LCDMODE_LTDC_PIP16
+	arm_hardware_ltdc_pip_off();
+#endif /* LCDMODE_LTDC_PIP16 */
+	display2_getmultimenu(& window);
+
+	//ищем границы текущей группы параметров
+	uint_fast16_t selected_group_finder = index;
+	while (selected_group_finder > 0 && ! ismenukind(& menutable [selected_group_finder], ITEM_GROUP))
+		selected_group_finder --;
+	selected_group_left_margin = selected_group_finder;
+	selected_group_finder ++;
+	while (selected_group_finder < MENUROW_COUNT && ! ismenukind(& menutable [selected_group_finder], ITEM_GROUP))
+		selected_group_finder ++;
+	selected_group_right_margin = selected_group_finder - 1;	// последний элмент в списке параметров данной группы
+
+	// предварительно расчитываем скролл
+	uint_fast16_t selected_params_index = 0;
+	for (el = 0; el < MENUROW_COUNT; el ++)
+	{
+		const FLASHMEM struct menudef * const mv = & menutable [el];
+		if (ismenukind(mv, ITEM_VALUE))
+		{
+			if (el < selected_group_left_margin || el > selected_group_right_margin)
+				continue;
+			index_params ++;
+			if (el == index)
+				selected_params_index = index_params - 1;
+		}
+	}
+	index_params = 0;
+	const uint_fast16_t menu_block_scroll_offset_params = window.multilinemenu_max_rows * (selected_params_index / window.multilinemenu_max_rows);
+
+	// выводим на экран блок с параметрами
+	for (el = 0; el < MENUROW_COUNT; el ++)
+	{
+		const FLASHMEM struct menudef * const mv = & menutable [el];
+		if (ismenukind(mv, ITEM_VALUE))
+		{
+			if (el < selected_group_left_margin)
+				continue;
+			if (el > selected_group_right_margin)
+				continue;
+			index_params ++;
+			if (index_params <= menu_block_scroll_offset_params)
+				continue; //пропускаем пункты для скролла
+			if ((index_params - menu_block_scroll_offset_params) > window.multilinemenu_max_rows)
+				continue;
+			display_menu_valxx(x, y_position_params, (void *) mv); // значение параметра
 			y_position_params += window.ystep;
 		}
 	}

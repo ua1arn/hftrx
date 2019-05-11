@@ -375,6 +375,8 @@ typedef uint16_t PACKEDCOLOR565_T;
 #define MNUVALCOLOR COLOR_WHITE
 #define MENUSELCOLOR	COLOR_YELLOW
 
+#define LABELW 8
+
 uint_fast8_t display_getpagesmax(void);	// количество разных вариантов отображения (menuset)
 uint_fast8_t display_getpagesleep(void);	// номер варианта отображения для "сна"
 uint_fast8_t display_getfreqformat(uint_fast8_t * prjv);	// получить параметры отображения частоты (для функции прямого ввода)
@@ -483,13 +485,24 @@ typedef struct multimenuwnd_tag
 void display2_getmultimenu(multimenuwnd_t * p); /* получение параметров окна для меню */
 
 // Вызывается из display2.c
-//Отображение многострочного меню для больших экранов
-void display_multilinemenu_block(
+//Отображение многострочного меню для больших экранов (группы)
+void display_multilinemenu_block_groups(
 	uint_fast8_t x,
 	uint_fast8_t y,
 	void * pv
 	);
-
+//Отображение многострочного меню для больших экранов (параметры)
+void display_multilinemenu_block_params(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	void * pv
+	);
+//Отображение многострочного меню для больших экранов (значения)
+void display_multilinemenu_block_vals(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	void * pv
+	);
 // Вызывается из display2.c
 // группа, в которой находится редактируемый параметр
 void display_menu_group(
