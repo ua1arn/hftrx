@@ -4965,7 +4965,7 @@ static void dsp_latchwaterfall(
 		//debug_printf_P(PSTR("AUTOCALIBRATE TOP_ERRORS=%d BOT_ERRORS=%d TOPDB=%d BOTDB=%d\n"), autocalibrate_top_errors, autocalibrate_bottom_errors, calibrated_topdb, calibrated_bottomdb);
 		if(autocalibrate_top_errors > FFT_AUTOCALIB_MAX_RED)
 			calibrated_topdb--;
-		if(autocalibrate_top_errors < FFT_AUTOCALIB_MIN_RED && calibrated_topdb < (calibrated_bottomdb-20))
+		if((autocalibrate_top_errors < FFT_AUTOCALIB_MIN_RED) && (calibrated_topdb < (calibrated_bottomdb-40)))
 			calibrated_topdb++;
 		if((autocalibrate_bottom_errors * 100 / PALETTESIZE) > FFT_AUTOCALIB_MAX_BLACK_PERC && calibrated_bottomdb < 160)
 			calibrated_bottomdb++;
