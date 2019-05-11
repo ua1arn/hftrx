@@ -79,21 +79,34 @@ static uint_fast8_t m41t81_testbit(
 }
 */
 
+static uint_fast8_t
+m41t81_min(uint_fast8_t a, uint_fast8_t b)
+{
+	return a < b ? a : b;
+}
+
+static uint_fast8_t
+m41t81_max(uint_fast8_t a, uint_fast8_t b)
+{
+	return a > b ? a : b;
+}
+
 // input value 0x00..0x99, return value 0..99
 static uint_fast8_t 
-m41t81_bcd2bin(uint_fast8_t v)
+m41t81_bcd2bin(uint_fast8_t v, uint_fast8_t low, uint_fast8_t high)
 {
 	const div_t d = div(v, 16);
-	return d.quot * 10 + d.rem;
+	return m41t81_max(m41t81_min(d.quot * 10 + d.rem, high), low);
 }
 
 // input value: 0..99, return value 0x00..0x99
 static uint_fast8_t 
-m41t81_bin2bcd(uint_fast8_t v)
+m41t81_bin2bcd(uint_fast8_t v, uint_fast8_t low, uint_fast8_t high)
 {
-	const div_t d = div(v, 10);
+	const div_t d = div(m41t81_max(m41t81_min(v, high), low), 10);
 	return d.quot * 16 + d.rem;
 }
+
 
 void board_rtc_settime(
 	uint_fast8_t hours,
@@ -106,9 +119,9 @@ void board_rtc_settime(
 
 	m41t81_readbuff(bt, sizeof bt / sizeof bt [0], rt);
 
-	bt [0] = (bt [0] & ~ 0x7f) | (0x7f & m41t81_bin2bcd(secounds));	// r=1
-	bt [1] = (bt [1] & ~ 0x7f) | (0x7f & m41t81_bin2bcd(minutes));	// r=2
-	bt [2] = (bt [2] & ~ 0x3f) | (0x3f & m41t81_bin2bcd(hours));	// r=3
+	bt [0] = (bt [0] & ~ 0x7f) | (0x7f & m41t81_bin2bcd(secounds, 0, 59));	// r=1
+	bt [1] = (bt [1] & ~ 0x7f) | (0x7f & m41t81_bin2bcd(minutes, 0, 59));	// r=2
+	bt [2] = (bt [2] & ~ 0x3f) | (0x3f & m41t81_bin2bcd(hours, 0, 23));	// r=3
 
 	m41t81_writebuff(bt, sizeof bt / sizeof bt [0], rt);
 }
@@ -127,9 +140,9 @@ void board_rtc_setdatetime(
 
 	m41t81_readbuff(bd, sizeof bd / sizeof bd [0], rd);
 
-	bd [2] = m41t81_bin2bcd(year % 100);							// r=7
-	bd [1] = (bd [1] & ~ 0x01f) | (0x01f & m41t81_bin2bcd(month));	// r=6 01-12
-	bd [0] = (bd [0] & ~ 0x3f) | (0x3f & m41t81_bin2bcd(dayofmonth));		// r=5
+	bd [2] = m41t81_bin2bcd(year % 100, 0, 99);							// r=7
+	bd [1] = (bd [1] & ~ 0x01f) | (0x01f & m41t81_bin2bcd(month, 1, 12));	// r=6 01-12
+	bd [0] = (bd [0] & ~ 0x3f) | (0x3f & m41t81_bin2bcd(dayofmonth, 1, 31));		// r=5
 
 	m41t81_writebuff(bd, sizeof bd / sizeof bd [0], rd);
 
@@ -138,9 +151,9 @@ void board_rtc_setdatetime(
 
 	m41t81_readbuff(bt, sizeof bt / sizeof bt [0], rt);
 
-	bt [0] = (bt [0] & ~ 0x7f) | (0x7f & m41t81_bin2bcd(secounds));	// r=1
-	bt [1] = (bt [1] & ~ 0x7f) | (0x7f & m41t81_bin2bcd(minutes));	// r=2
-	bt [2] = (bt [2] & ~ 0x3f) | (0x3f & m41t81_bin2bcd(hours));		// r=3
+	bt [0] = (bt [0] & ~ 0x7f) | (0x7f & m41t81_bin2bcd(secounds, 0, 59));	// r=1
+	bt [1] = (bt [1] & ~ 0x7f) | (0x7f & m41t81_bin2bcd(minutes, 0, 59));	// r=2
+	bt [2] = (bt [2] & ~ 0x3f) | (0x3f & m41t81_bin2bcd(hours, 0, 23));		// r=3
 
 	m41t81_writebuff(bt, sizeof bt / sizeof bt [0], rt);
 
@@ -158,9 +171,9 @@ void board_rtc_setdate(
 
 	m41t81_readbuff(b, sizeof b / sizeof b[0], r);
 
-	b [2] = m41t81_bin2bcd(year % 100);							// r=7
-	b [1] = (b [1] & ~ 0x01f) | (0x01f & m41t81_bin2bcd(month));	// r=6 01-12
-	b [0] = (b [0] & ~ 0x3f) | (0x3f & m41t81_bin2bcd(dayofmonth));		// r=5
+	b [2] = m41t81_bin2bcd(year % 100, 0, 99);							// r=7
+	b [1] = (b [1] & ~ 0x01f) | (0x01f & m41t81_bin2bcd(month, 1, 12));	// r=6 01-12
+	b [0] = (b [0] & ~ 0x3f) | (0x3f & m41t81_bin2bcd(dayofmonth, 1, 31));		// r=5
 
 	m41t81_writebuff(b, sizeof b / sizeof b[0], r);
 }
@@ -176,9 +189,9 @@ void board_rtc_getdate(
 
 	m41t81_readbuff(b, sizeof b / sizeof b[0], r);
 
-	* year = 2000 + m41t81_bcd2bin(b [2]);		// r=7
-	* month = m41t81_bcd2bin(b [1] & 0x1f);	// r=6 01-12
-	* dayofmonth = m41t81_bcd2bin(b [0] & 0x3f);		// r=5
+	* year = 2000 + m41t81_bcd2bin(b [2], 0, 99);		// r=7
+	* month = m41t81_bcd2bin(b [1] & 0x1f, 1, 12);	// r=6 01-12
+	* dayofmonth = m41t81_bcd2bin(b [0] & 0x3f, 1, 31);		// r=5
 }
 
 void board_rtc_gettime(
@@ -192,9 +205,9 @@ void board_rtc_gettime(
 
 	m41t81_readbuff(b, sizeof b / sizeof b[0], r);
 
-	* hour = m41t81_bcd2bin(b [2] & 0x3f);		// r=3
-	* minute = m41t81_bcd2bin(b [1] & 0x7f);	// r=2
-	* secounds = m41t81_bcd2bin(b [0] & 0x7f);	// r=1
+	* hour = m41t81_bcd2bin(b [2] & 0x3f, 0, 23);		// r=3
+	* minute = m41t81_bcd2bin(b [1] & 0x7f, 0, 59);	// r=2
+	* secounds = m41t81_bcd2bin(b [0] & 0x7f, 0, 59);	// r=1
 }
 
 void board_rtc_getdatetime(
@@ -211,12 +224,12 @@ void board_rtc_getdatetime(
 
 	m41t81_readbuff(b, sizeof b / sizeof b[0], r);
 
-	* year = 2000 + m41t81_bcd2bin(b [6]);		// r=7
-	* month = m41t81_bcd2bin(b [5] & 0x1f);		// r=6
-	* dayofmonth = m41t81_bcd2bin(b [4] & 0x3f);		// r=5
-	* hour = m41t81_bcd2bin(b [2] & 0x3f);		// r=3
-	* minute = m41t81_bcd2bin(b [1] & 0x7f);	// r=2
-	* secounds = m41t81_bcd2bin(b [0] & 0x7f);	// r=1
+	* year = 2000 + m41t81_bcd2bin(b [6], 0, 99);		// r=7
+	* month = m41t81_bcd2bin(b [5] & 0x1f, 1, 12);		// r=6
+	* dayofmonth = m41t81_bcd2bin(b [4] & 0x3f, 1, 31);		// r=5
+	* hour = m41t81_bcd2bin(b [2] & 0x3f, 0, 23);		// r=3
+	* minute = m41t81_bcd2bin(b [1] & 0x7f, 0, 59);	// r=2
+	* secounds = m41t81_bcd2bin(b [0] & 0x7f, 0, 59);	// r=1
 }
 
 /* возврат не-0 если требуется начальная загрузка значений */
