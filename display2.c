@@ -4982,17 +4982,41 @@ static void dsp_latchwaterfall(
 }
 
 // получить горизонтальную позицию для заданного отклонения в герцах
+// Использовать для "статической" разметки дисплея - полоса пропускания, маркер частоты приема.
 static uint_fast16_t
 deltafreq2x(
-	int_fast32_t f0,	// центральная частота
+	int_fast32_t fc,	// центральная частота
 	int_fast16_t delta,	// отклонение от центральной частоты в герцах
 	int_fast32_t bw,	// полоса обзора
 	uint_fast16_t width	// ширина экрана
 	)
 {
-	//const int_fast32_t dp = (delta + bw / 2) * width / bw;
 	const int_fast32_t dp = (delta + bw / 2) * (width - 1) / bw;
 	return dp;
+}
+
+// получить горизонтальную позицию для заданного отклонения в герцах
+// Использовать для "динамической" разметки дисплея - риски, кратные 10 кГц.
+// Возврат UINT16_MAX при невозможности отобразить запрошщенную частоту в указанном окне
+static uint_fast16_t
+deltafreq2x_abs(
+	int_fast32_t fc,	// центральная частота
+	int_fast16_t delta,	// отклонение от центральной частоты в герцах
+	int_fast32_t bw,	// полоса обзора
+	uint_fast16_t width	// ширина экрана
+	)
+{
+	const int_fast32_t f0 = fc - bw / 2;	// частота левого края окна
+	const int_fast32_t p0 = ((int_fast64_t) f0 * width) / bw;	// абсолютный пиксель левого края окна
+
+	const int_fast32_t fm = fc + delta;	// частота маркера
+	const int_fast32_t pm = ((int_fast64_t) fm * width) / bw;	// абсолютный пиксель маркера
+
+	if (pm < p0)
+		return UINT16_MAX;	// Левее девого края окна
+	if (pm - p0 >= width)
+		return UINT16_MAX;	// Правее правого края окна
+	return pm - p0;
 }
 
 // Поставить цветную полосу
@@ -5051,9 +5075,10 @@ display_colorgrid(
 
 		if (df > - halfbw)
 		{
-			// маркер центральной частоты обзора - XOR линию
-			xmarker = deltafreq2x(f0, df, bw, ALLDX);
-			display_colorbuffer_xor_vline(buffer, ALLDX, ALLDY, xmarker, row0, h, color);
+			// маркер частоты кратной glob_gridstep - XOR линию
+			xmarker = deltafreq2x_abs(f0, df, bw, ALLDX);
+			if (xmarker != UINT16_MAX)
+				display_colorbuffer_xor_vline(buffer, ALLDX, ALLDY, xmarker, row0, h, color);
 		}
 	}
 }
