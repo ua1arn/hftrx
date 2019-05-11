@@ -377,6 +377,11 @@ typedef uint16_t PACKEDCOLOR565_T;
 
 #define LABELW 8
 
+#define FFT_AUTOCALIB_MAX_RED 3 // максимум пиков в красной зоне FFT при автокалибровке
+#define FFT_AUTOCALIB_MIN_RED 1 // минимум пиков в красной зоне FFT при автокалибровке
+#define FFT_AUTOCALIB_MAX_BLACK_PERC 35 // максимум процентов спектра в черной зоне FFT при автокалибровке
+#define FFT_AUTOCALIB_MIN_BLACK_PERC 30 // минимум процентов спектра в черной зоне FFT при автокалибровке
+
 uint_fast8_t display_getpagesmax(void);	// количество разных вариантов отображения (menuset)
 uint_fast8_t display_getpagesleep(void);	// номер варианта отображения для "сна"
 uint_fast8_t display_getfreqformat(uint_fast8_t * prjv);	// получить параметры отображения частоты (для функции прямого ввода)
@@ -934,5 +939,6 @@ void board_set_bottomdb(int_fast16_t v);	/* нижний предел FFT */
 void board_set_zoomx(uint_fast8_t v);	/* уменьшение отображаемого участка спектра */
 void board_set_fillspect(uint_fast8_t v); /* заливать заполнением площадь под графиком спектра */
 void board_set_fftcolored(uint_fast8_t v); /* градиентная раскраска FFT */
+void board_set_fftautocal(uint_fast8_t v); /* автокалибровка пределов FFT */
 
 #endif /* DISPLAY_H_INCLUDED */
