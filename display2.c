@@ -4975,6 +4975,11 @@ static void dsp_latchwaterfall(
 		autocalibrate_top_errors=0;
 		autocalibrate_bottom_errors=0;
 	}
+	else
+	{
+		calibrated_topdb=glob_topdb;
+		calibrated_bottomdb=glob_bottomdb;
+	}
 }
 
 // получить горизонтальную позицию для заданного отклонения в герцах
@@ -5755,7 +5760,6 @@ void
 board_set_topdb(int_fast16_t v)
 {
 	glob_topdb = v;
-	calibrated_topdb = v;
 }
 
 /* нижний предел FFT */
@@ -5763,7 +5767,6 @@ void
 board_set_bottomdb(int_fast16_t v)
 {
 	glob_bottomdb = v;
-	calibrated_bottomdb = v;
 }
 
 /* уменьшение отображаемого участка спектра */
