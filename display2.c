@@ -4889,13 +4889,13 @@ PACKEDCOLOR565_T getFFTColor(uint_fast16_t height, uint_fast16_t max)
 	uint_fast8_t green = 0;
 	uint_fast8_t blue = 0;
 
-	if (height < max / 3)
+	if (height < max / 4)
 	{
-		blue = (height * 255 / (max / 3));
+		blue = (height * 255 / (max / 4));
 	}
-	else if (height < 2 * max / 3)
+	else if (height < max / 2)
 	{
-		green = ((height - max / 3) * 255 / (max / 3));
+		green = ((height - max / 4) * 255 / (max / 4));
 		red = green;
 		blue = 255 - green;
 	}
@@ -4903,7 +4903,7 @@ PACKEDCOLOR565_T getFFTColor(uint_fast16_t height, uint_fast16_t max)
 	{
 		red = 255;
 		blue = 0;
-		green = 255 - ((height - 2 * max / 3) * 255 / (max / 3));
+		green = 255 - ((height - max / 2) * 255 / (max / 2));
 	}
 	return TFTRGB565(red, green, blue);
 }
@@ -4911,10 +4911,11 @@ PACKEDCOLOR565_T getFFTColor(uint_fast16_t height, uint_fast16_t max)
 //Заполнение цветовой палитры водопада
 static void wfpalette_initialize(void)
 {
-	for(uint_fast16_t i=0;i<PALETTESIZE;i++)
-		wfpalette[i]=getFFTColor(i,PALETTESIZE);
-	for(uint_fast16_t i=0;i<SPDY;i++)
-			fftpalette[i]=getFFTColor(i,SPDY);
+	uint_fast16_t i;
+	for (i = 0; i < PALETTESIZE; i ++)
+		wfpalette [i] = getFFTColor(i, PALETTESIZE);
+	for (i = 0; i < SPDY; i ++)
+		fftpalette [i] = getFFTColor(i, SPDY);
 }
 
 // формирование данных спектра для последующего отображения
@@ -4929,8 +4930,8 @@ static void dsp_latchwaterfall(
 	(void) x0;
 	(void) y0;
 	(void) pv;
-	uint_fast16_t autocalibrate_top_errors=0;
-	uint_fast16_t autocalibrate_bottom_errors=0;
+	uint_fast16_t autocalibrate_top_errors = 0;
+	uint_fast16_t autocalibrate_bottom_errors = 0;
 
 	// запоминание информации спектра для спектрограммы
 	dsp_getspectrumrow(spavgarray, ALLDX, glob_zoomx);
