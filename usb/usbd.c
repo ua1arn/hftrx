@@ -18698,7 +18698,34 @@ static int testchipDATAFLASH(void)
 
 	debug_printf_P(PSTR("Read: ID = 0x%02X devId = 0x%02X%02X, mf_dlen=0x%02X\n"), mf_id, mf_devid1, mf_devid2, mf_dlen);
 	//debug_printf_P(PSTR("Need: ID = 0x%02X devId = 0x%02X%02X, mf_dlen=0x%02X\n"), 0x1f, 0x45, 0x01, 0x00);
-	return mf_id != 0x1f || mf_devid1 != 0x45 || mf_devid2 != 0x01 || mf_dlen != 0;
+
+
+	// Read SFDP
+	spidf_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
+	spidf_progval8_p1(target, 0x5A);		/* The Read SFDP instruction code is 0x5A */
+
+	const uint_fast32_t flashoffset = 0x000000uL;
+	spidf_progval8_p2(target, flashoffset >> 16);
+	spidf_progval8_p2(target, flashoffset >> 8);
+	spidf_progval8_p2(target, flashoffset >> 0);
+	spidf_progval8_p2(target, 0x00);	// dummy byte
+	spidf_complete(target);	/* done sending data to target chip */
+
+	spidf_to_read(target);
+
+	uint_fast32_t signature = 0;
+	signature = signature * 256 | spidf_read_byte(target, 0xff);
+	signature = signature * 256 | spidf_read_byte(target, 0xff);
+	signature = signature * 256 | spidf_read_byte(target, 0xff);
+	signature = signature * 256 | spidf_read_byte(target, 0xff);
+
+	spidf_to_write(target);
+
+	spidf_unselect(target);	/* done sending data to target chip */
+
+	debug_printf_P(PSTR("SFDP: signature=%08lX\n"), signature);
+
+	return 0;
 }
 #if 0
 static int eraseDATAFLASH(void)
