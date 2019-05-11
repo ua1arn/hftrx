@@ -5722,7 +5722,7 @@ void hightests(void)
 		for (;;)
 		{
 			uint_fast16_t x, y;
-			if (display_ts_getxy(& x, & y))
+			if (board_tsc_getxy(& x, & y))
 			{
 				debug_printf_P(PSTR("STMPE811 x=%5d, y=%5d\r\n"), x, y);
 			}

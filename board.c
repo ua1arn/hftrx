@@ -6886,7 +6886,7 @@ int32_t R_RIIC_rza1h_rsk_read(uint32_t channel, uint8_t d_adr, uint16_t r_adr, u
 	}
 }
 
-void IOE_Write(uint16_t DeviceAddr, uint8_t reg, uint8_t val)
+void i2cperiph_write8(uint16_t DeviceAddr, uint8_t reg, uint8_t val)
 {
 	//R_RIIC_rza1h_rsk_write(DEVDRV_CH_0, DeviceAddr, reg, 1, & val);
 	i2c_start(DeviceAddr);
@@ -6896,7 +6896,7 @@ void IOE_Write(uint16_t DeviceAddr, uint8_t reg, uint8_t val)
 	i2c_stop();
 }
 
-uint8_t IOE_Read(uint16_t DeviceAddr, uint8_t reg)
+uint8_t i2cperiph_read8(uint16_t DeviceAddr, uint8_t reg)
 {
 	uint_fast8_t v [2];
 
@@ -6921,13 +6921,13 @@ void stmpe811_IO_DisableAF(uint16_t DeviceAddr, uint16_t IO_Pin)
   uint8_t tmp = 0;
 
   /* Get the current register value */
-  tmp = IOE_Read(DeviceAddr, STMPE811_REG_IO_AF);
+  tmp = i2cperiph_read8(DeviceAddr, STMPE811_REG_IO_AF);
 
   /* Disable the selected pins alternate function */
   tmp &= ~(uint8_t)IO_Pin;
 
   /* Write back the new register value */
-  IOE_Write(DeviceAddr, STMPE811_REG_IO_AF, tmp);
+  i2cperiph_write8(DeviceAddr, STMPE811_REG_IO_AF, tmp);
 
 }
 
@@ -6936,7 +6936,7 @@ uint8_t stmpe811_TS_GetXY(uint16_t DeviceAddr, uint_fast16_t *X, uint_fast16_t *
 {
   uint8_t  dataXYZ [4];
   uint32_t uldataXYZ;
-  uint8_t sta = IOE_Read(DeviceAddr, STMPE811_REG_FIFO_STA);
+  uint8_t sta = i2cperiph_read8(DeviceAddr, STMPE811_REG_FIFO_STA);
   if ((sta & 0x10) == 0)
 	  return 0;
   R_RIIC_rza1h_rsk_read(DEVDRV_CH_0, DeviceAddr, STMPE811_REG_TSC_DATA_NON_INC, sizeof(dataXYZ), dataXYZ);
@@ -6947,9 +6947,9 @@ uint8_t stmpe811_TS_GetXY(uint16_t DeviceAddr, uint_fast16_t *X, uint_fast16_t *
   *Y = (uldataXYZ >>  8) & 0x00000FFF;
 
   /* Reset FIFO */
-  IOE_Write(DeviceAddr, STMPE811_REG_FIFO_STA, 0x01);
+  i2cperiph_write8(DeviceAddr, STMPE811_REG_FIFO_STA, 0x01);
   /* Enable the FIFO again */
-  IOE_Write(DeviceAddr, STMPE811_REG_FIFO_STA, 0x00);
+  i2cperiph_write8(DeviceAddr, STMPE811_REG_FIFO_STA, 0x00);
   return 1;
 }
 
@@ -6963,23 +6963,23 @@ void stmpe811_TS_Start(uint16_t DeviceAddr)
   uint8_t mode;
 
   /* Get the current register value */
-  mode = IOE_Read(DeviceAddr, STMPE811_REG_SYS_CTRL2);
+  mode = i2cperiph_read8(DeviceAddr, STMPE811_REG_SYS_CTRL2);
 
    /* Set the Functionalities to be Enabled */
   mode &= ~(STMPE811_TS_FCT | STMPE811_ADC_FCT);
 
   /* Set the new register value */
-  IOE_Write(DeviceAddr, STMPE811_REG_SYS_CTRL2, mode);
+  i2cperiph_write8(DeviceAddr, STMPE811_REG_SYS_CTRL2, mode);
 
 
   /* Select Sample Time, bit number and ADC Reference */
-  IOE_Write(DeviceAddr, STMPE811_REG_ADC_CTRL1, 0x49);
+  i2cperiph_write8(DeviceAddr, STMPE811_REG_ADC_CTRL1, 0x49);
 
   /* Wait for 2 ms */
   local_delay_ms(2);
 
   /* Select the ADC clock speed: 3.25 MHz */
-  IOE_Write(DeviceAddr, STMPE811_REG_ADC_CTRL2, 0x01);
+  i2cperiph_write8(DeviceAddr, STMPE811_REG_ADC_CTRL2, 0x01);
 
   /* Select TSC pins in non default mode */
   stmpe811_IO_DisableAF(DeviceAddr, STMPE811_TOUCH_IO_ALL);
@@ -6990,40 +6990,40 @@ void stmpe811_TS_Start(uint16_t DeviceAddr)
      - Touch delay time         : 500 uS
      - Panel driver setting time: 500 uS
   */
-  IOE_Write(DeviceAddr, STMPE811_REG_TSC_CFG, 0x9A);
+  i2cperiph_write8(DeviceAddr, STMPE811_REG_TSC_CFG, 0x9A);
 
   /* Configure the Touch FIFO threshold: single point reading */
-  IOE_Write(DeviceAddr, STMPE811_REG_FIFO_TH, 0x01);
+  i2cperiph_write8(DeviceAddr, STMPE811_REG_FIFO_TH, 0x01);
 
   /* Clear the FIFO memory content. */
-  IOE_Write(DeviceAddr, STMPE811_REG_FIFO_STA, 0x01);
+  i2cperiph_write8(DeviceAddr, STMPE811_REG_FIFO_STA, 0x01);
 
   /* Put the FIFO back into operation mode  */
-  IOE_Write(DeviceAddr, STMPE811_REG_FIFO_STA, 0x00);
+  i2cperiph_write8(DeviceAddr, STMPE811_REG_FIFO_STA, 0x00);
 
   /* Set the range and accuracy pf the pressure measurement (Z) :
      - Fractional part :7
      - Whole part      :1
   */
-  IOE_Write(DeviceAddr, STMPE811_REG_TSC_FRACT_XYZ, 0x01);
+  i2cperiph_write8(DeviceAddr, STMPE811_REG_TSC_FRACT_XYZ, 0x01);
 
   /* Set the driving capability (limit) of the device for TSC pins: 50mA */
-  IOE_Write(DeviceAddr, STMPE811_REG_TSC_I_DRIVE, 0x01);
+  i2cperiph_write8(DeviceAddr, STMPE811_REG_TSC_I_DRIVE, 0x01);
 
   /* Touch screen control configuration (enable TSC):
      - No window tracking index
      - XYZ acquisition mode
    */
-  IOE_Write(DeviceAddr, STMPE811_REG_TSC_CTRL, 0x01);
+  i2cperiph_write8(DeviceAddr, STMPE811_REG_TSC_CTRL, 0x01);
 
   /*  Clear all the status pending bits if any */
-  IOE_Write(DeviceAddr, STMPE811_REG_INT_STA, 0xFF);
+  i2cperiph_write8(DeviceAddr, STMPE811_REG_INT_STA, 0xFF);
 
   /* Wait for 2 ms delay */
   local_delay_ms(2);
 }
 
-uint_fast8_t display_ts_getxy(uint_fast16_t * x, uint_fast16_t * y)
+uint_fast8_t board_tsc_getxy(uint_fast16_t * x, uint_fast16_t * y)
 {
 	if (stmpe811_TS_GetXY(BOARD_I2C_STMPE811, x, y))
 	{
@@ -7034,11 +7034,13 @@ uint_fast8_t display_ts_getxy(uint_fast16_t * x, uint_fast16_t * y)
 
 void stmpe811_initialize(void)
 {
-	unsigned char ver [2];
+	unsigned char chip_id [2];
+	unsigned char ver;
 
-	ver [0] = IOE_Read(BOARD_I2C_STMPE811, STMPE811_REG_CHP_ID_LSB);
-	ver [1] = IOE_Read(BOARD_I2C_STMPE811, STMPE811_REG_CHP_ID_MSB);
-	debug_printf_P(PSTR("stmpe811_initialize: ver=%02X%02X, expected %04X\r\n"), ver [1], ver [0], STMPE811_ID);
+	chip_id [0] = i2cperiph_read8(BOARD_I2C_STMPE811, STMPE811_REG_CHP_ID_LSB);
+	chip_id [1] = i2cperiph_read8(BOARD_I2C_STMPE811, STMPE811_REG_CHP_ID_MSB);
+	ver = i2cperiph_read8(BOARD_I2C_STMPE811, STMPE811_REG_ID_VER);
+	debug_printf_P(PSTR("stmpe811_initialize: chip_id=%02X%02X, expected %04X, ver=%02x\r\n"), chip_id [0], chip_id [1], STMPE811_ID, ver);
 
 	stmpe811_TS_Start(BOARD_I2C_STMPE811);
 }
