@@ -4871,90 +4871,43 @@ static PACKEDCOLOR565_T wfpalette [PALETTESIZE];
 #define COLOR565_SPECTRUMFENCE	TFTRGB565(255, 255, 255)	//COLOR_WHITE
 #define COLOR565_SPECTRUMLINE	TFTRGB565(0, 255, 0)	//COLOR_GREEN
 
-// Код взят из проекта Malamute
-static void wfpalette_initialize(void)
+//получение теплоты цвета FFT (от синего к красному)
+PACKEDCOLOR565_T getFFTColor(uint8_t height)
 {
-	int type = 0;
+	//r g b
+	//0 0 0
+	//0 0 255
+	//255 255 0
+	//255 0 0
 
-	if (type)
+	uint_fast8_t red = 0;
+	uint_fast8_t green = 0;
+	uint_fast8_t blue = 0;
+
+	if (height <= PALETTESIZE / 3)
 	{
-		int a = 0;
-		int i;
-		for (i = 0; i < 42; ++ i)
-		{
-			wfpalette [a + i] = TFTRGB565(0, 0, (int) (powf((float) 0.095 * i, 4)));
-		}
-		a += i;
-		for (i = 0; i < 42; ++ i)
-		{
-			wfpalette [a + i] = TFTRGB565(0, i * 6, 255);
-		}
-		a += i;
-		for (i = 0; i < 42; ++ i)
-		{
-			wfpalette [a + i] = TFTRGB565(0, 255, (int)(((float) 0.39 * (41 - i )) * ((float) 0.39 * (41 - i))) );
-		}
-		a += i;
-		for (i = 0; i < 42; ++ i)
-		{
-			wfpalette [a + i] = TFTRGB565(i * 6, 255, 0);
-		}
-		a += i;
-		for (i = 0; i < 42; ++ i)
-		{
-			wfpalette [a + i] = TFTRGB565(255, (41 - i) * 6, 0);
-		}
-		a += i;
-		for (i = 0; i < 42; ++ i)
-		{
-			wfpalette [a + i] = TFTRGB565(255, 0, i * 6);
-		}
-		a += i;
-		// a = 252
+		blue = (height * 255 / (PALETTESIZE / 3));
+	}
+	else if (height <= 2 * PALETTESIZE / 3)
+	{
+		green = ((height - PALETTESIZE / 3) * 255 / (PALETTESIZE / 3));
+		red = green;
+		blue = 255 - green;
 	}
 	else
 	{
-		int a = 0;
-		int i;
-		// a = 0
-		for (i = 0; i < 64; ++ i)
-		{
-			// для i = 0..15 результат формулы = ноль
-			wfpalette [a + i] = TFTRGB565(0, 0, (int) (powf((float) 0.0625 * i, 4)));	// проверить результат перед попыткой применить целочисленные вычисления!
-		}
-		a += i;
-		// a = 64
-		for (i = 0; i < 32; ++ i)
-		{
-			wfpalette [a + i] = TFTRGB565(0, i * 8, 255);
-		}
-		a += i;
-		// a = 96
-		for (i = 0; i < 32; ++ i)
-		{
-			wfpalette [a + i] = TFTRGB565(0, 255, 255 - i * 8);
-		}
-		a += i;
-		// a = 128
-		for (i = 0; i < 32; ++ i)
-		{
-			wfpalette [a + i] = TFTRGB565(i * 8, 255, 0);
-		}
-		a += i;
-		// a = 160
-		for (i = 0; i<64; ++ i)
-		{
-			wfpalette [a + i] = TFTRGB565(255, 255 - i * 4, 0);
-		}
-		a += i;
-		// a = 224
-		for (i = 0; i < 32; ++ i)
-		{
-			wfpalette [a + i] = TFTRGB565(255, 0, i * 8);
-		}
-		a += i;
-		// a = 256
+		red = 255;
+		blue = 0;
+		green = 255 - ((height - 2 * PALETTESIZE / 3) * 255 / (PALETTESIZE / 3));
 	}
+	return TFTRGB565(red, green, blue);
+}
+
+//Заполнение цветовой палитры водопада
+static void wfpalette_initialize(void)
+{
+	for(uint_fast16_t i=0;i<PALETTESIZE;i++)
+		wfpalette[i]=getFFTColor(i);
 }
 
 // формирование данных спектра для последующего отображения
