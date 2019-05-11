@@ -2320,7 +2320,6 @@ struct nvmap
 	/* группы */
 	uint8_t ggroup;			/* последняя группа в менюю, с которой работали */
 	uint8_t	ggrpdisplay;	// последний посещённый пункт группы
-	uint8_t	ggrpothers;		// последний посещённый пункт группы
 	uint8_t	ggrpsecial;		// последний посещённый пункт группы
 	uint8_t	ggrpaudio;		// последний посещённый пункт группы
 #if WITHSUBTONES && WITHTX
@@ -13127,7 +13126,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #if WITHDSPEXTDDC	/* "Воронёнок" с DSP и FPGA */
 #if ! WITHFLATMENU
 	{
-		"RF ADC  ", 0, 0, 0, 0,	
+		"RF ADC  ", 0, 0, 0, 0,
 		ITEM_GROUP, 
 		0, 0, 
 		offsetof(struct nvmap, ggrprfadc),
@@ -13139,7 +13138,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	{
 		"ADC RAND", 7, 3, RJ_ON,	ISTEP1,	/* управление интерфейсом в LTC2208 */
 		ITEM_VALUE,
-		0, 1, 
+		0, 1,
 		offsetof(struct nvmap, gadcrand),
 		NULL,
 		& gadcrand,
@@ -13148,7 +13147,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	{
 		"ADC DITH", 7, 3, RJ_ON,	ISTEP1,	/* управление зашумлением в LTC2208 */
 		ITEM_VALUE,
-		0, 1, 
+		0, 1,
 		offsetof(struct nvmap, gdither),
 		NULL,
 		& gdither,
@@ -13157,7 +13156,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	{
 		"ADC FIFO", 7, 3, RJ_ON,	ISTEP1,	/*  */
 		ITEM_VALUE,
-		0, 1, 
+		0, 1,
 		offsetof(struct nvmap, gadcfifo),
 		NULL,
 		& gadcfifo,
@@ -13166,7 +13165,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	{
 		"ADC OFFS", 5 + WSIGNFLAG, 0, 0,	ISTEP1,	/* смещение для выходного сигнала с АЦП */
 		ITEM_VALUE,
-		ADCOFFSETMID - 200, ADCOFFSETMID + 200, 
+		ADCOFFSETMID - 200, ADCOFFSETMID + 200,
 		offsetof(struct nvmap, gadcoffset),
 		& gadcoffset,
 		NULL,
@@ -13175,98 +13174,13 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	{
 		"DAC TEST", 7, 3, RJ_ON,	ISTEP1,	/*  */
 		ITEM_VALUE,
-		0, 1, 
+		0, 1,
 		offsetof(struct nvmap, gdactest),
 		NULL,
 		& gdactest,
 		getzerobase, 
 	},
 #endif /* WITHDSPEXTDDC */
-#if ! WITHFLATMENU
-	{
-		"OTHERS  ", 0, 0, 0, 0,	
-		ITEM_GROUP, 
-		0, 0, 
-		offsetof(struct nvmap, ggrpothers),
-		NULL,
-		NULL,
-		NULL,
-	},
-#endif /* ! WITHFLATMENU */
-#if WITHTX
-#if WITHFANTIMER
-	{
-		"FAN TIME", 7, 0, 0,	ISTEP5,	
-		ITEM_VALUE,
-		0, FANPATIMEMAX, 
-		offsetof(struct nvmap, fanpatime),
-		NULL,
-		& fanpatime,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-#endif /* WITHFANTIMER */
-#endif /* WITHTX */
-#if WITHTX
-#if WITHPOWERTRIM
-  #if ! WITHPOTPOWER
-	{
-		"TX POWER", 7, 0, 0,	ISTEP1,		/* мощность при обычной работе на передачу */
-		ITEM_VALUE,
-		WITHPOWERTRIMMIN, WITHPOWERTRIMMAX,
-		offsetof(struct nvmap, gnormalpower),
-		NULL,
-		& gnormalpower,
-		getzerobase, 
-	},
-  #endif /* ! WITHPOTPOWER */
-  #if WITHAUTOTUNER || defined (HARDWARE_GET_TUNE)
-	{
-		"ATU PWR ", 7, 0, 0,	ISTEP1,		/* мощность при работе автоматического согласующего устройства */
-		ITEM_VALUE,
-		WITHPOWERTRIMMIN, WITHPOWERTRIMMAX,
-		offsetof(struct nvmap, gotunerpower),
-		NULL,
-		& gotunerpower,
-		getzerobase, 
-	},
-  #endif /* WITHAUTOTUNER || defined (HARDWARE_GET_TUNE) */
-#elif WITHPOWERLPHP
-  #if ! WITHPOTPOWER
-	#if ! CTLSTYLE_SW2011ALL
-	{
-		"TX POWER", 7, 0, RJ_POWER,	ISTEP1,		/* мощность при обычной работе на передачу */
-		ITEM_VALUE,
-		WITHPOWERTRIMMIN, WITHPOWERTRIMMAX,
-		offsetof(struct nvmap, gnormalpower),
-		NULL,
-		& gnormalpower,
-		getzerobase, 
-	},
-	#endif /* ! CTLSTYLE_SW2011ALL */
-  #endif /* ! WITHPOTPOWER */
-#if WITHAUTOTUNER || defined (HARDWARE_GET_TUNE)
-	{
-		"ATU PWR ", 7, 0, RJ_POWER,	ISTEP1,		/* мощность при работе автоматического согласующего устройства */
-		ITEM_VALUE,
-		WITHPOWERTRIMMIN, WITHPOWERTRIMMAX,
-		offsetof(struct nvmap, gotunerpower),
-		NULL,
-		& gotunerpower,
-		getzerobase, 
-	},
-#endif /* WITHAUTOTUNER || defined (HARDWARE_GET_TUNE) */
-#endif /* WITHPOWERTRIM */
-#if ! CTLSTYLE_SW2011ALL
-	{
-		"TX GATE ", 7, 3, RJ_ON,	ISTEP1,
-		ITEM_VALUE,
-		0, 1,
-		offsetof(struct nvmap, gtxgate),
-		NULL,
-		& gtxgate,
-		getzerobase, 
-	},
-#endif /* ! CTLSTYLE_SW2011ALL */
 #if WITHVOX
 #if ! WITHFLATMENU
 	{
@@ -14038,9 +13952,9 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #endif /* WITHRFSG */
 #if WITHENCODER
 	{
-		"ENC RES ", 7, 0, RJ_ENCRES,	ISTEP1,	
+		"ENC RES ", 7, 0, RJ_ENCRES,	ISTEP1,
 		ITEM_VALUE,
-		0, (sizeof encresols / sizeof encresols [0]) - 1, 
+		0, (sizeof encresols / sizeof encresols [0]) - 1,
 		offsetof(struct nvmap, ghiresres),
 		NULL,
 		& ghiresres,
@@ -14049,31 +13963,105 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	{
 		"ENC DYNA", 7, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
-		0, 1, 
+		0, 1,
 		offsetof(struct nvmap, ghiresdyn),
 		NULL,
 		& ghiresdyn,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"ENC DIVS", 7, 0, 0,	ISTEP1,	
+		"ENC DIVS", 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		1, 128, 	/* /1 ... /128 */
 		offsetof(struct nvmap, ghiresdiv),
 		NULL,
 		& ghiresdiv,
-		getzerobase, 
+		getzerobase,
 	},
 	{
 		"BIG STEP", 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
-		0, 1, 
+		0, 1,
 		offsetof(struct nvmap, gbigstep),
 		NULL,
 		& gbigstep,
-		getzerobase, 
+		getzerobase,
 	},
 #endif /* WITHENCODER */
+#if WITHTX
+#if WITHFANTIMER
+	{
+		"FAN TIME", 7, 0, 0,	ISTEP5,
+		ITEM_VALUE,
+		0, FANPATIMEMAX,
+		offsetof(struct nvmap, fanpatime),
+		NULL,
+		& fanpatime,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+#endif /* WITHFANTIMER */
+#endif /* WITHTX */
+#if WITHTX
+#if WITHPOWERTRIM
+  #if ! WITHPOTPOWER
+	{
+		"TX POWER", 7, 0, 0,	ISTEP1,		/* мощность при обычной работе на передачу */
+		ITEM_VALUE,
+		WITHPOWERTRIMMIN, WITHPOWERTRIMMAX,
+		offsetof(struct nvmap, gnormalpower),
+		NULL,
+		& gnormalpower,
+		getzerobase,
+	},
+  #endif /* ! WITHPOTPOWER */
+  #if WITHAUTOTUNER || defined (HARDWARE_GET_TUNE)
+	{
+		"ATU PWR ", 7, 0, 0,	ISTEP1,		/* мощность при работе автоматического согласующего устройства */
+		ITEM_VALUE,
+		WITHPOWERTRIMMIN, WITHPOWERTRIMMAX,
+		offsetof(struct nvmap, gotunerpower),
+		NULL,
+		& gotunerpower,
+		getzerobase,
+	},
+  #endif /* WITHAUTOTUNER || defined (HARDWARE_GET_TUNE) */
+#elif WITHPOWERLPHP
+  #if ! WITHPOTPOWER
+	#if ! CTLSTYLE_SW2011ALL
+	{
+		"TX POWER", 7, 0, RJ_POWER,	ISTEP1,		/* мощность при обычной работе на передачу */
+		ITEM_VALUE,
+		WITHPOWERTRIMMIN, WITHPOWERTRIMMAX,
+		offsetof(struct nvmap, gnormalpower),
+		NULL,
+		& gnormalpower,
+		getzerobase,
+	},
+	#endif /* ! CTLSTYLE_SW2011ALL */
+  #endif /* ! WITHPOTPOWER */
+#if WITHAUTOTUNER || defined (HARDWARE_GET_TUNE)
+	{
+		"ATU PWR ", 7, 0, RJ_POWER,	ISTEP1,		/* мощность при работе автоматического согласующего устройства */
+		ITEM_VALUE,
+		WITHPOWERTRIMMIN, WITHPOWERTRIMMAX,
+		offsetof(struct nvmap, gotunerpower),
+		NULL,
+		& gotunerpower,
+		getzerobase, 
+	},
+#endif /* WITHAUTOTUNER || defined (HARDWARE_GET_TUNE) */
+#endif /* WITHPOWERTRIM */
+#if ! CTLSTYLE_SW2011ALL
+	{
+		"TX GATE ", 7, 3, RJ_ON,	ISTEP1,
+		ITEM_VALUE,
+		0, 1,
+		offsetof(struct nvmap, gtxgate),
+		NULL,
+		& gtxgate,
+		getzerobase, 
+	},
+#endif /* ! CTLSTYLE_SW2011ALL */
 #if WITHPABIASTRIM && WITHTX
 	{
 		"PA BIAS ", 7, 0, 0,	ISTEP1,		/* Подстройка тока оконечного каскада передатчика */
