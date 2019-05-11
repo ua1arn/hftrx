@@ -78,6 +78,7 @@ static int_fast16_t glob_gridstep = 10000;	// 10 kHz - шаг сетки
 
 // waterfall/spectrum parameters
 static uint_fast8_t glob_fillspect;	/* заливать заполнением площадь под графиком спектра */
+static uint_fast8_t glob_fftcolored; /* градиентная раскраска FFT */
 static int_fast16_t glob_topdb = 0;	/* верхний предел FFT */
 static int_fast16_t glob_bottomdb = 80;	/* нижний предел FFT */
 static uint_fast8_t glob_zoomx = 1;	/* уменьшение отображаемого участка спектра */
@@ -4861,6 +4862,7 @@ static uint_fast8_t wfzoom;				// масштаб, с которым выводи
 
 enum { PALETTESIZE = 256 };
 static PACKEDCOLOR565_T wfpalette [PALETTESIZE];
+static PACKEDCOLOR565_T fftpalette [SPDY];
 
 #define COLOR565_GRIDCOLOR		TFTRGB565(128, 128, 0)		//COLOR_GRAY - center marker
 #define COLOR565_GRIDCOLOR2		TFTRGB565(128, 0, 0x00)		//COLOR_DARKRED - other markers
@@ -4872,7 +4874,7 @@ static PACKEDCOLOR565_T wfpalette [PALETTESIZE];
 #define COLOR565_SPECTRUMLINE	TFTRGB565(0, 255, 0)	//COLOR_GREEN
 
 //получение теплоты цвета FFT (от синего к красному)
-PACKEDCOLOR565_T getFFTColor(uint8_t height)
+PACKEDCOLOR565_T getFFTColor(uint_fast16_t height, uint_fast16_t max)
 {
 	//r g b
 	//0 0 0
@@ -4884,13 +4886,13 @@ PACKEDCOLOR565_T getFFTColor(uint8_t height)
 	uint_fast8_t green = 0;
 	uint_fast8_t blue = 0;
 
-	if (height <= PALETTESIZE / 3)
+	if (height <= max / 3)
 	{
-		blue = (height * 255 / (PALETTESIZE / 3));
+		blue = (height * 255 / (max / 3));
 	}
-	else if (height <= 2 * PALETTESIZE / 3)
+	else if (height <= 2 * max / 3)
 	{
-		green = ((height - PALETTESIZE / 3) * 255 / (PALETTESIZE / 3));
+		green = ((height - max / 3) * 255 / (max / 3));
 		red = green;
 		blue = 255 - green;
 	}
@@ -4898,7 +4900,7 @@ PACKEDCOLOR565_T getFFTColor(uint8_t height)
 	{
 		red = 255;
 		blue = 0;
-		green = 255 - ((height - 2 * PALETTESIZE / 3) * 255 / (PALETTESIZE / 3));
+		green = 255 - ((height - 2 * max / 3) * 255 / (max / 3));
 	}
 	return TFTRGB565(red, green, blue);
 }
@@ -4907,7 +4909,9 @@ PACKEDCOLOR565_T getFFTColor(uint8_t height)
 static void wfpalette_initialize(void)
 {
 	for(uint_fast16_t i=0;i<PALETTESIZE;i++)
-		wfpalette[i]=getFFTColor(i);
+		wfpalette[i]=getFFTColor(i,PALETTESIZE);
+	for(uint_fast16_t i=0;i<SPDY;i++)
+			fftpalette[i]=getFFTColor(i,SPDY);
 }
 
 // формирование данных спектра для последующего отображения
@@ -4956,7 +4960,7 @@ deltafreq2x(
 	return dp;
 }
 
-// Поставить цветную точку.
+// Поставить цветную полосу
 // Формат RGB565
 void display_colorbuffer_xor_vline(
 	PACKEDCOLOR565_T * buffer,
@@ -4972,7 +4976,7 @@ void display_colorbuffer_xor_vline(
 		display_colorbuffer_xor(buffer, dx, dy, col, row0 ++, color);
 }
 
-// Поставить цветную точку.
+// Нарисовать цветную полосу
 // Формат RGB565
 static void 
 display_colorbuffer_set_vline(
@@ -5169,7 +5173,15 @@ static void display2_spectrum(
 					if (yb < SPDY)
 					{
 						// формирование занятой области растра
-						display_colorbuffer_set_vline(colorpip, ALLDX, ALLDY, x, yb + SPY0, SPDY - yb, COLOR565_SPECTRUMFG);
+						if(glob_fftcolored==1)
+						{
+							for(uint_fast8_t i = 0 ; i < (SPDY - yb) ; i++)
+								display_colorbuffer_set(colorpip, ALLDX, ALLDY, x, yb + i, fftpalette[(SPDY - yb - i)]);
+						}
+						else
+						{
+							display_colorbuffer_set_vline(colorpip, ALLDX, ALLDY, x, yb + SPY0, SPDY - yb, COLOR565_SPECTRUMFG);
+						}
 					}
 				}
 			}
@@ -5691,6 +5703,13 @@ void
 board_set_fillspect(uint_fast8_t v)
 {
 	glob_fillspect = v != 0;
+}
+
+/* градиентная раскраска FFT */
+void
+board_set_fftcolored(uint_fast8_t v)
+{
+	glob_fftcolored = v != 0;
 }
 
 /* верхний предел FFT */

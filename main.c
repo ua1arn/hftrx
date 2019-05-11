@@ -2395,6 +2395,7 @@ struct nvmap
 	uint8_t displaybarsfps;	/* скорость обновления S-метра */
 #if WITHSPECTRUMWF
 	uint8_t gfillspect;
+	uint8_t gfftcolored; // градиентная раскраска FFT
 	uint8_t gtopdb;		/* нижний предел FFT */
 	uint8_t gbottomdb;	/* верхний предел FFT */
 	uint8_t gzoomxpow2;
@@ -3011,6 +3012,7 @@ static uint_fast8_t displayfreqsfps = DISPLAY_FPS;
 static uint_fast8_t displaybarsfps = DISPLAYSWR_FPS;
 #if WITHSPECTRUMWF
 	static uint_fast8_t gfillspect = 1;
+	static uint_fast8_t gfftcolored = 1; //градиентная раскраска FFT
 	static uint_fast8_t gtopdb = 30;	/* верхний предел FFT */
 	static uint_fast8_t gbottomdb = 130;	/* нижний предел FFT */
 	static uint_fast8_t gzoomxpow2;		/* степень двойки - состояние растягиваия спектра (уменьшение наблюдаемой полосы частот) */
@@ -7714,6 +7716,7 @@ updateboard(
 		board_set_sidetonelevel(gsidetonelevel);	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
 		#if WITHSPECTRUMWF
 			board_set_fillspect(gfillspect);	/* заливать заполнением площадь под графиком спектра */
+			board_set_fftcolored(gfftcolored); // градиентная раскраска FFT
 			board_set_topdb(gtopdb);		/* верхний предел FFT */
 			board_set_bottomdb(gbottomdb);		/* нижний предел FFT */
 			board_set_zoomx(1u << gzoomxpow2);	/* уменьшение отображаемого участка спектра */
@@ -12094,6 +12097,15 @@ static const FLASHMEM struct menudef menutable [] =
 		offsetof(struct nvmap, gzoomxpow2),
 		NULL,
 		& gzoomxpow2,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	{
+		"FFT COLR", 7, 3, RJ_YES,	ISTEP1,
+		ITEM_VALUE,
+		0, 1,							/* уменьшение отображаемого участка спектра */
+		offsetof(struct nvmap, gfftcolored),
+		NULL,
+		& gfftcolored,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 #endif /* WITHSPECTRUMWF */
