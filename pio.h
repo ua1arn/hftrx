@@ -282,6 +282,7 @@ void arm_hardware_pioc_analoginput(unsigned long ipins);
 
 
 // R7S721 ports
+void arm_hardware_jpio0_inputs(unsigned long ipins);	// JTAG inputs access
 void arm_hardware_pio0_inputs(unsigned long ipins);
 void arm_hardware_pio1_inputs(unsigned long ipins);
 void arm_hardware_pio2_inputs(unsigned long ipins);
@@ -296,7 +297,7 @@ void arm_hardware_pio10_inputs(unsigned long ipins);
 void arm_hardware_pio11_inputs(unsigned long ipins);
 
 // R7S721 ports
-void arm_hardware_pio0_outputs(unsigned long opins, unsigned long initialstate);
+// PIOJ and PIO0 input-only ports
 void arm_hardware_pio1_outputs(unsigned long opins, unsigned long initialstate);
 void arm_hardware_pio2_outputs(unsigned long opins, unsigned long initialstate);
 void arm_hardware_pio3_outputs(unsigned long opins, unsigned long initialstate);
