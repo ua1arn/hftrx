@@ -5773,4 +5773,5 @@ void
 board_set_zoomx(uint_fast8_t v)
 {
 	glob_zoomx = v;
+	dsp_zoomfft_init(glob_zoomx);
 }

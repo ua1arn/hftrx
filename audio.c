@@ -464,6 +464,147 @@ typedef int32_t ncoftwi_t;
 static FLOAT_t omega2ftw_k1; // = POWF(2, NCOFTWBITS);
 #define OMEGA2FTWI(angle) ((ncoftwi_t) ((FLOAT_t) (angle) * omega2ftw_k1 / (FLOAT_t) M_TWOPI))	// angle in radians -pi..+pi to signed version of ftw_t
 
+
+float32_t FFTBuffer_ZOOMFFT[FFTSizeSpectrum*2] = {0}; //совмещённый буфер FFT I и Q для хранения выборок ZoomFFT
+
+//Дециматор для Zoom FFT
+static arm_fir_decimate_instance_f32	DECIMATE_ZOOM_FFT_I;
+static arm_fir_decimate_instance_f32	DECIMATE_ZOOM_FFT_Q;
+float32_t decimZoomFFTIState[FFTSizeSpectrum + 16];
+float32_t decimZoomFFTQState[FFTSizeSpectrum + 16];
+uint16_t fft_zoomed_width = 0;
+
+//Коэффициенты для ZoomFFT lowpass filtering / дециматора
+static arm_biquad_casd_df1_inst_f32 IIR_biquad_Zoom_FFT_I =
+{
+	.numStages = 4,
+	.pCoeffs = (float32_t *)(float32_t [])
+	{
+		1,0,0,0,0,  1,0,0,0,0
+  },
+  .pState = (float32_t *)(float32_t [])
+	{
+		0,0,0,0,   0,0,0,0,    0,0,0,0,   0,0,0,0
+	}
+};
+static arm_biquad_casd_df1_inst_f32 IIR_biquad_Zoom_FFT_Q =
+{
+	.numStages = 4,
+	.pCoeffs = (float32_t *)(float32_t [])
+	{
+		1,0,0,0,0,  1,0,0,0,0
+  },
+  .pState = (float32_t *)(float32_t [])
+	{
+		0,0,0,0,   0,0,0,0,    0,0,0,0,   0,0,0,0
+	}
+};
+
+static float32_t* zoomfft_mag_coeffs[17] =
+{
+	NULL, // 0
+	NULL, // 1
+	(float32_t*)(const float32_t[]) {
+		// 2x magnify
+		// 60dB stopband, elliptic
+		// a1 and coeffs[A2] negated! order: coeffs[B0], coeffs[B1], coeffs[B2], a1, coeffs[A2]
+		// Iowa Hills IIR Filter Designer
+		0.228454526413293696,0.077639329099949764,0.228454526413293696,0.635534925142242080,-0.170083307068779194,
+		0.436788292542003964,0.232307972937606161,0.436788292542003964,0.365885230717786780,-0.471769788739400842,
+		0.535974654742658707,0.557035600464780845,0.535974654742658707,0.125740787233286133,-0.754725697183384336,
+		0.501116342273565607,0.914877831284765408,0.501116342273565607,0.013862536615004284,-0.930973052446900984
+	},
+	NULL, // 3
+	(float32_t*)(const float32_t[])
+	{
+		// 4x magnify
+		// 60dB stopband, elliptic
+		// a1 and coeffs[A2] negated! order: coeffs[B0], coeffs[B1], coeffs[B2], a1, coeffs[A2]
+		// Iowa Hills IIR Filter Designer
+		0.182208761527446556,-0.222492493114674145,0.182208761527446556,1.326111070880959810,-0.468036100821178802,
+		0.337123762652097259,-0.366352718812586853,0.337123762652097259,1.337053579516321200,-0.644948386007929031,
+		0.336163175380826074,-0.199246162162897811,0.336163175380826074,1.354952684569386670,-0.828032873168141115,
+		0.178588201750411041,0.207271695028067304,0.178588201750411041,1.386486967455699220,-0.950935065984588657
+	},
+	NULL, // 5
+	NULL, // 6
+	NULL, // 7
+	(float32_t*)(const float32_t[])
+	{
+		// 8x magnify
+		// 60dB stopband, elliptic
+		// a1 and coeffs[A2] negated! order: coeffs[B0], coeffs[B1], coeffs[B2], a1, coeffs[A2]
+		// Iowa Hills IIR Filter Designer
+		0.185643392652478922,-0.332064345389014803,0.185643392652478922,1.654637402827731090,-0.693859842743674182,
+		0.327519300813245984,-0.571358085216950418,0.327519300813245984,1.715375037176782860,-0.799055553586324407,
+		0.283656142708241688,-0.441088976843048652,0.283656142708241688,1.778230635987093860,-0.904453944560528522,
+		0.079685368654848945,-0.011231810140649204,0.079685368654848945,1.825046003243238070,-0.973184930412286708
+	},
+	NULL, // 9
+	NULL, // 10
+	NULL, // 11
+	NULL, // 12
+	NULL, // 13
+	NULL, // 14
+	NULL, // 15
+	(float32_t*)(const float32_t[])
+	{
+		// 16x magnify
+		// 60dB stopband, elliptic
+		// a1 and coeffs[A2] negated! order: coeffs[B0], coeffs[B1], coeffs[B2], a1, coeffs[A2]
+		// Iowa Hills IIR Filter Designer
+		0.194769868656866380,-0.379098413160710079,0.194769868656866380,1.824436402073870810,-0.834877726226893380,
+		0.333973874901496770,-0.646106479315673776,0.333973874901496770,1.871892825636887640,-0.893734096124207178,
+		0.272903880596429671,-0.513507745397738469,0.272903880596429671,1.918161772571113750,-0.950461788366234739,
+		0.053535383722369843,-0.069683422367188122,0.053535383722369843,1.948900719896301760,-0.986288064973853129
+	},
+};
+
+const arm_fir_decimate_instance_f32 FirZoomFFTDecimate[17] =
+{
+	{}, // 0
+	{}, // 1
+	// x2 zoom lowpass
+	{
+		.numTaps = 4,
+		.pCoeffs = (float*) (const float[])
+		{475.1179397144384210E-6,0.503905202786044337,0.503905202786044337,475.1179397144384210E-6},
+		.pState = NULL
+	},
+	{}, // 3
+	// x4 zoom lowpass
+	{
+		.numTaps = 4,
+		.pCoeffs = (float*) (const float[])
+		{0.198273254218889416,0.298085149879260325,0.298085149879260325,0.198273254218889416},
+		.pState = NULL
+	},
+	{}, // 5
+	{}, // 6
+	{}, // 7
+	// x8 zoom lowpass
+	{
+		.numTaps = 4,
+		.pCoeffs = (float*) (const float[])
+		{0.199820836596682871,0.272777397353925699,0.272777397353925699,0.199820836596682871},
+		.pState = NULL
+	},
+	{}, // 9
+	{}, // 10
+	{}, // 11
+	{}, // 12
+	{}, // 13
+	{}, // 14
+	{}, // 15
+	// x16 zoom lowpass
+	{
+		.numTaps = 4,
+		.pCoeffs = (float*) (const float[])
+		{0.199820836596682871,0.272777397353925699,0.272777397353925699,0.199820836596682871},
+		.pState = NULL
+	},
+};
+
 static RAMFUNC FLOAT_t peekvalf(uint32_t a)
 {
 	const ncoftw_t mask = (1UL << (TABLELOG2 - 2)) - 1;
@@ -4761,6 +4902,30 @@ int dsp_mag2y(
 	return y;
 }
 
+void dsp_zoomfft_init(uint_fast8_t zoom)
+{
+	if(zoom>1)
+	{
+		IIR_biquad_Zoom_FFT_I.pCoeffs = zoomfft_mag_coeffs[zoom];
+		IIR_biquad_Zoom_FFT_Q.pCoeffs = zoomfft_mag_coeffs[zoom];
+
+		arm_fir_decimate_init_f32(&DECIMATE_ZOOM_FFT_I,
+							FirZoomFFTDecimate[zoom].numTaps,
+							zoom,          // Decimation factor
+							FirZoomFFTDecimate[zoom].pCoeffs,
+							decimZoomFFTIState,            // Filter state variables
+							FFTSizeSpectrum);
+		arm_fir_decimate_init_f32(&DECIMATE_ZOOM_FFT_Q,
+							FirZoomFFTDecimate[zoom].numTaps,
+							zoom,          // Decimation factor
+							FirZoomFFTDecimate[zoom].pCoeffs,
+							decimZoomFFTQState,            // Filter state variables
+							FFTSizeSpectrum);
+
+		fft_zoomed_width=FFTSizeSpectrum/zoom;
+	}
+}
+
 // Копрование информации о спектре с текущую строку буфера
 // wfarray (преобразование к пикселям растра */
 void dsp_getspectrumrow(
@@ -4774,37 +4939,57 @@ void dsp_getspectrumrow(
 	uint_fast16_t x;
 	rendering = 1;
 	float32_t * const sig = & x256 [fft_head * 2];	// первый элемент массива комплексных чисел
+
+	//ZoomFFT
+	if(zoom > 1)
+	{
+		float32_t FFTInput_I[FFTSizeSpectrum] = { 0 }; //входящий буфер FFT I
+		float32_t FFTInput_Q[FFTSizeSpectrum] = { 0 }; //входящий буфер FFT Q
+		//Получаем данные в буффер
+		for(uint_fast16_t i=0;i<FFTSizeSpectrum;i++)
+		{
+			FFTInput_I[i]= sig[i*2];
+			FFTInput_Q[i]= sig[i*2+1];
+		}
+		//Biquad LPF фильтр
+		arm_biquad_cascade_df1_f32 (&IIR_biquad_Zoom_FFT_I, FFTInput_I, FFTInput_I, FFTSizeSpectrum);
+		arm_biquad_cascade_df1_f32 (&IIR_biquad_Zoom_FFT_Q, FFTInput_Q, FFTInput_Q, FFTSizeSpectrum);
+		//Дециматор
+		//debug_printf_P(PSTR("zoom=%d\n"), zoom);
+		if(DECIMATE_ZOOM_FFT_Q.pState!=NULL)
+		{
+			arm_fir_decimate_f32(&DECIMATE_ZOOM_FFT_I, FFTInput_I, FFTInput_I, FFTSizeSpectrum);
+			arm_fir_decimate_f32(&DECIMATE_ZOOM_FFT_Q, FFTInput_Q, FFTInput_Q, FFTSizeSpectrum);
+		}
+		//Смещаем старые данные в  буфере, т.к. будем их использовать (иначе скорость FFT упадёт, ведь для получения большего разрешения необходимо накапливать больше данных)
+		for (uint_fast16_t i = 0; i < FFTSizeSpectrum; i++)
+		{
+			if(i<(FFTSizeSpectrum-fft_zoomed_width))
+			{
+				FFTBuffer_ZOOMFFT[i*2]=FFTBuffer_ZOOMFFT[(i+fft_zoomed_width)*2];
+				FFTBuffer_ZOOMFFT[i*2 + 1]=FFTBuffer_ZOOMFFT[(i+fft_zoomed_width)*2 + 1];
+			}
+			else //Добавляем новые данные в буфер FFT для расчёта
+			{
+				FFTBuffer_ZOOMFFT[i*2] = FFTInput_I[i-(FFTSizeSpectrum-fft_zoomed_width)];
+				FFTBuffer_ZOOMFFT[i*2 + 1] = FFTInput_Q[i-(FFTSizeSpectrum-fft_zoomed_width)];
+			}
+			sig[i*2]=FFTBuffer_ZOOMFFT[i*2];
+			sig[i*2 + 1]=FFTBuffer_ZOOMFFT[i*2 + 1];
+		}
+	}
+
 	adjustwmwp(sig);
+
 	/* Process the data through the CFFT/CIFFT module */
 	arm_cfft_f32(FFTCONFIGSpectrum, sig, 0, 1);	// forward transform
 
-
-#if 1
-
 	for (x = 0; x < dx; ++ x)
 	{
-		int fftpos = raster2fft(x, dx, zoom);
+		//int fftpos = raster2fft(x, dx, zoom);
+		int fftpos = raster2fft(x, dx, 1);
 		hbase [x] = getmag2(& sig [fftpos * 2]) * fftcoeff;
 	}
-
-#else
-
-	// очистка строки буфера истории отображения
-	for (x = 0; x < dx; ++ x)
-	{
-		FLOAT_t * const p1 = & hbase [x];
-		* p1 = 0;
-	}
-
-	// копирование в буфер истории отображения
-	for (i = 0; i < FFTSizeSpectrum; ++ i)
-	{
-		const int x = mapfft2raster(i, dx, zoom);
-		const FLOAT_t v = getmag2(& sig [i * 2]) * fftcoeff;
-		FLOAT_t * const p1 = & hbase [x];
-		* p1 = FMAXF(* p1, v);
-	}
-#endif
 	rendering = 0;
 
 }

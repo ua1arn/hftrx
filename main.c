@@ -5563,7 +5563,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		"ZOOM PAN ", 
 		RJ_POW2,		// rj
 		ISTEP1,		/* spectrum range */
-		0, 3, 
+		0, 4,
 		offsetof(struct nvmap, gzoomxpow2),	/* диапазон отображаемых значений */
 		NULL,
 		& gzoomxpow2,
@@ -12096,7 +12096,7 @@ static const FLASHMEM struct menudef menutable [] =
 	{
 		"ZOOM PAN", 7, 0, RJ_POW2,	ISTEP1,	
 		ITEM_VALUE,
-		0, 3,							/* уменьшение отображаемого участка спектра */
+		0, 4,							/* уменьшение отображаемого участка спектра */
 		offsetof(struct nvmap, gzoomxpow2),
 		NULL,
 		& gzoomxpow2,
