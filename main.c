@@ -12056,7 +12056,7 @@ static const FLASHMEM struct menudef menutable [] =
 	},
 #if WITHBARS
 	{
-		"SMTR FPS", 7, 0, 0,	ISTEP1,	
+		"BARS FPS", 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		4, 25,							/* частота обновления барграфов от 5 до 25 раз в секунду */
 		offsetof(struct nvmap, displaybarsfps),

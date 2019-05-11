@@ -209,7 +209,7 @@ typedef uint16_t PACKEDCOLOR565_T;
 
 	#define DISPLAYMODES_FPS 5	/* количество обновлений отображения режимов работы */
 	#define DISPLAY_FPS	20	/* обновление показаний частоты десять раз в секунду */
-	#define DISPLAYSWR_FPS 10	/* количество обновлений SWR и панорамы за секунду */
+	#define DISPLAYSWR_FPS 20	/* количество обновлений SWR и панорамы за секунду */
 
 	#if LCDMODE_LTDC_L24
 
@@ -379,8 +379,8 @@ typedef uint16_t PACKEDCOLOR565_T;
 
 #define FFT_AUTOCALIB_MAX_RED 3 // максимум пиков в красной зоне FFT при автокалибровке
 #define FFT_AUTOCALIB_MIN_RED 1 // минимум пиков в красной зоне FFT при автокалибровке
-#define FFT_AUTOCALIB_MAX_BLACK_PERC 35 // максимум процентов спектра в черной зоне FFT при автокалибровке
-#define FFT_AUTOCALIB_MIN_BLACK_PERC 30 // минимум процентов спектра в черной зоне FFT при автокалибровке
+#define FFT_AUTOCALIB_MAX_BLACK_PERC 30 // максимум процентов спектра в черной зоне FFT при автокалибровке
+#define FFT_AUTOCALIB_MIN_BLACK_PERC 25 // минимум процентов спектра в черной зоне FFT при автокалибровке
 
 uint_fast8_t display_getpagesmax(void);	// количество разных вариантов отображения (menuset)
 uint_fast8_t display_getpagesleep(void);	// номер варианта отображения для "сна"

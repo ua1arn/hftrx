@@ -4932,7 +4932,6 @@ static void dsp_latchwaterfall(
 	uint_fast16_t autocalibrate_top_errors=0;
 	uint_fast16_t autocalibrate_bottom_errors=0;
 
-
 	// запоминание информации спектра для спектрограммы
 	dsp_getspectrumrow(spavgarray, ALLDX, glob_zoomx);
 
