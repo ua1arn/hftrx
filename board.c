@@ -6635,6 +6635,8 @@ static void board_rtc_initialize(void)
 		uint_fast8_t hour, minute, secounds;
 		board_rtc_getdatetime(& year, & month, & day, & hour, & minute, & secounds);
 		
+		debug_printf_P(PSTR("board_rtc_initialize: %4d-%02d-%02d %02d:%02d:%02d\n"), year, month, day, hour, minute, secounds);
+
 		if (month < 1 || month > 12 ||
 			day < 1 || day > 31 ||
 			hour > 23 || minute > 59 || secounds > 59)
