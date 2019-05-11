@@ -464,7 +464,7 @@ typedef int32_t ncoftwi_t;
 static FLOAT_t omega2ftw_k1; // = POWF(2, NCOFTWBITS);
 #define OMEGA2FTWI(angle) ((ncoftwi_t) ((FLOAT_t) (angle) * omega2ftw_k1 / (FLOAT_t) M_TWOPI))	// angle in radians -pi..+pi to signed version of ftw_t
 
-
+//ZoomFFT
 float32_t FFTBuffer_ZOOMFFT[FFTSizeSpectrum*2] = {0}; //совмещённый буфер FFT I и Q для хранения выборок ZoomFFT
 
 //Дециматор для Zoom FFT
@@ -4943,23 +4943,22 @@ void dsp_getspectrumrow(
 	//ZoomFFT
 	if(zoom > 1)
 	{
-		float32_t FFTInput_I[FFTSizeSpectrum] = { 0 }; //входящий буфер FFT I
-		float32_t FFTInput_Q[FFTSizeSpectrum] = { 0 }; //входящий буфер FFT Q
+		static float32_t ZoomFFTInput_I[FFTSizeSpectrum] = { 0 }; //входящий буфер ZoomFFT I
+		static float32_t ZoomFFTInput_Q[FFTSizeSpectrum] = { 0 }; //входящий буфер ZoomFFT Q
 		//Получаем данные в буффер
 		for(uint_fast16_t i=0;i<FFTSizeSpectrum;i++)
 		{
-			FFTInput_I[i]= sig[i*2];
-			FFTInput_Q[i]= sig[i*2+1];
+			ZoomFFTInput_I[i]= sig[i*2];
+			ZoomFFTInput_Q[i]= sig[i*2+1];
 		}
 		//Biquad LPF фильтр
-		arm_biquad_cascade_df1_f32 (&IIR_biquad_Zoom_FFT_I, FFTInput_I, FFTInput_I, FFTSizeSpectrum);
-		arm_biquad_cascade_df1_f32 (&IIR_biquad_Zoom_FFT_Q, FFTInput_Q, FFTInput_Q, FFTSizeSpectrum);
+		arm_biquad_cascade_df1_f32 (&IIR_biquad_Zoom_FFT_I, ZoomFFTInput_I, ZoomFFTInput_I, FFTSizeSpectrum);
+		arm_biquad_cascade_df1_f32 (&IIR_biquad_Zoom_FFT_Q, ZoomFFTInput_Q, ZoomFFTInput_Q, FFTSizeSpectrum);
 		//Дециматор
-		//debug_printf_P(PSTR("zoom=%d\n"), zoom);
 		if(DECIMATE_ZOOM_FFT_Q.pState!=NULL)
 		{
-			arm_fir_decimate_f32(&DECIMATE_ZOOM_FFT_I, FFTInput_I, FFTInput_I, FFTSizeSpectrum);
-			arm_fir_decimate_f32(&DECIMATE_ZOOM_FFT_Q, FFTInput_Q, FFTInput_Q, FFTSizeSpectrum);
+			arm_fir_decimate_f32(&DECIMATE_ZOOM_FFT_I, ZoomFFTInput_I, ZoomFFTInput_I, FFTSizeSpectrum);
+			arm_fir_decimate_f32(&DECIMATE_ZOOM_FFT_Q, ZoomFFTInput_Q, ZoomFFTInput_Q, FFTSizeSpectrum);
 		}
 		//Смещаем старые данные в  буфере, т.к. будем их использовать (иначе скорость FFT упадёт, ведь для получения большего разрешения необходимо накапливать больше данных)
 		for (uint_fast16_t i = 0; i < FFTSizeSpectrum; i++)
@@ -4971,8 +4970,8 @@ void dsp_getspectrumrow(
 			}
 			else //Добавляем новые данные в буфер FFT для расчёта
 			{
-				FFTBuffer_ZOOMFFT[i*2] = FFTInput_I[i-(FFTSizeSpectrum-fft_zoomed_width)];
-				FFTBuffer_ZOOMFFT[i*2 + 1] = FFTInput_Q[i-(FFTSizeSpectrum-fft_zoomed_width)];
+				FFTBuffer_ZOOMFFT[i*2] = ZoomFFTInput_I[i-(FFTSizeSpectrum-fft_zoomed_width)];
+				FFTBuffer_ZOOMFFT[i*2 + 1] = ZoomFFTInput_Q[i-(FFTSizeSpectrum-fft_zoomed_width)];
 			}
 			sig[i*2]=FFTBuffer_ZOOMFFT[i*2];
 			sig[i*2 + 1]=FFTBuffer_ZOOMFFT[i*2 + 1];

@@ -5158,9 +5158,11 @@ static void display2_spectrum(
 	{
 		const uint_fast32_t f0 = hamradio_get_freq_a();	/* frequecy at middle of spectrum */
 		const int_fast32_t bw = display_zoomedbw();
-		uint_fast16_t xleft = deltafreq2x(f0, hamradio_getleft_bp(0), bw, ALLDX);	// левый край шторуи
+		uint_fast16_t xleft = deltafreq2x(f0, hamradio_getleft_bp(0), bw, ALLDX);	// левый край шторки
 		uint_fast16_t xright = deltafreq2x(f0, hamradio_getright_bp(0), bw, ALLDX);	// правый край шторки
 
+		if (xleft > xright)
+			xleft = 0;
 		if (xright == xleft)
 			xright = xleft + 1;
 
@@ -5195,7 +5197,8 @@ static void display2_spectrum(
 				const int yv = SPDY - 1 - dsp_mag2y(filter_spectrum(x), SPDY - 1, calibrated_topdb, calibrated_bottomdb);	// возвращает значения от 0 до SPDY включительно
 				// Формирование графика
 
-				// формирование фона растра - верхняя часть графика
+				// формирование фона растра - верхняя часть графика (Шторка)
+				//debug_printf_P(PSTR("xl=%d xr=%d\n"), xleft, xright);
 				display_colorbuffer_set_vline(colorpip, ALLDX, ALLDY, x, SPY0, yv, inband ? COLOR565_SPECTRUMBG2 : COLOR565_SPECTRUMBG);
 
 				// точку на границе

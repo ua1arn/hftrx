@@ -440,6 +440,8 @@ void display_menuitemvalue(
 	void * pv
 	);
 
+// инициализация ZoomFFT
+void dsp_zoomfft_init(uint_fast8_t zoom);
 
 // Вызывается из display2.c
 void 
