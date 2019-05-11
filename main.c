@@ -3901,6 +3901,16 @@ calc_prev(uint_fast8_t v, uint_fast8_t low, uint_fast8_t high)
 	return (v <= low || v > high) ? high : (v - 1);
 }
 
+
+/* получение предыдущего или следующего числа в диапазоне low..high с "заворотом" */
+/* используется при переборе режимов кнопками */
+static uint_fast8_t
+//NOINLINEAT
+calc_dir(uint_fast8_t reverse, uint_fast8_t v, uint_fast8_t low, uint_fast8_t high)
+{
+	return reverse ? calc_prev(v, low, high) : calc_next(v, low, high);
+}
+
 /* выравнивание после перехода на следующую частоту, кратную указаному шагу */
 /* freq - новая частота, step - шаг */
 static uint_fast32_t 
@@ -11866,7 +11876,7 @@ display_menu_string_P(
 
 struct menudef
 {
-	char qlabel [9];		/* текст - название пункта меню */
+	char qlabel [LABELW + 1];		/* текст - название пункта меню */
 	uint8_t qwidth, qcomma, qrj;
 	uint8_t qistep;
 	uint8_t qspecial;	/* признак к какому меню относится */
@@ -11986,7 +11996,7 @@ static const FLASHMEM struct menudef menutable [] =
 #endif /* WITHLCDBACKLIGHT */
 #if WITHKBDBACKLIGHT
 	{
-		"KBD LIGH", 7, 0, RJ_ON,	ISTEP1,	
+		"KBD LIGH", 7, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, kblight),
@@ -12020,7 +12030,7 @@ static const FLASHMEM struct menudef menutable [] =
 #if LCDMODE_COLORED
 	// Для цветных дисплеев можно менять цвет фона
 	{
-		"BLUE BG ", 7, 0, RJ_ON,	ISTEP1,	
+		"BLUE BG ", 7, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, gbluebgnd),
@@ -12051,7 +12061,7 @@ static const FLASHMEM struct menudef menutable [] =
 #endif /* WITHBARS */
 #if WITHSPECTRUMWF
 	{
-		"FILL SPE", 7, 0, RJ_YES,	ISTEP1,	
+		"FILL SPE", 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1,							/* отказ от заполнения */
 		offsetof(struct nvmap, gfillspect),
@@ -12109,7 +12119,7 @@ static const FLASHMEM struct menudef menutable [] =
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"TM MONTH", 7, 0, RJ_MONTH,	ISTEP1,	
+		"TM MONTH", 7, 3, RJ_MONTH,	ISTEP1,
 		ITEM_VALUE, 
 		1, 12, 
 		MENUNONVRAM, //offsetof(struct nvmap, tunerind),
@@ -12145,7 +12155,7 @@ static const FLASHMEM struct menudef menutable [] =
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"TM SET  ", 7, 0, RJ_YES,	ISTEP1,	
+		"TM SET  ", 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE, 
 		0, 1, 
 		MENUNONVRAM, //offsetof(struct nvmap, tunerind),
@@ -12537,7 +12547,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getlo4base, /* складывается со смещением и отображается */
 	},
 	{
-		"LAST LSB", 7, 0, RJ_YES,	ISTEP1,	
+		"LAST LSB", 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, glo4lsb),
@@ -12552,7 +12562,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #if ! CTLSTYLE_SW2011ALL
 #if WITHTX
 	{
-		"DC TX CW", 7, 0, RJ_YES,	ISTEP1,	
+		"DC TX CW", 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, /* 0 - off, 1 - on */
 		offsetof(struct nvmap, dctxmodecw),
@@ -12667,7 +12677,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	
 	#if (IF3_FMASK & IF3_FMASK_0P3)
 	{
-		"HAVE 0.3", 7, 0, RJ_YES,	ISTEP1,	
+		"HAVE 0.3", 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, hascw0p3),
@@ -12688,7 +12698,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 
 	#if (IF3_FMASK & IF3_FMASK_0P5)
 	{
-		"HAVE 0.5", 7, 0, RJ_YES,	ISTEP1,	
+		"HAVE 0.5", 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, hascw0p5),
@@ -12709,7 +12719,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 
 	#if (IF3_FMASK & IF3_FMASK_1P8)
 	{
-		"HAVE 1.8", 7, 0, RJ_YES,	ISTEP1,	
+		"HAVE 1.8", 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, hascw1p8),
@@ -12739,7 +12749,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 
 	#if (IF3_FMASK & IF3_FMASK_2P4)
 	{
-		"HAVE 2.4", 7, 0, RJ_YES,	ISTEP1,	
+		"HAVE 2.4", 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, hascw2p4),
@@ -12751,7 +12761,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 
 	#if WITHTX && WITHSAMEBFO == 0 && (IF3_FMASKTX & IF3_FMASK_2P4)
 	{
-		"HAVE T24", 7, 0, RJ_YES,	ISTEP1,	
+		"HAVE T24", 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, hascw2p4_tx),
@@ -12763,7 +12773,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 
 	#if WITHTX && WITHSAMEBFO == 0 && (IF3_FMASKTX & IF3_FMASK_2P7)
 	{
-		"HAVE T27", 7, 0, RJ_YES,	ISTEP1,	
+		"HAVE T27", 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, hascw2p7_tx),
@@ -12775,7 +12785,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 
 	#if 0 && WITHTX && WITHSAMEBFO == 0 && (IF3_FMASKTX & IF3_FMASK_3P1)
 	{
-		"HAVE T31", 7, 0, RJ_YES,	ISTEP1,	
+		"HAVE T31", 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, hascw3p1_tx),
@@ -12787,7 +12797,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 
 	#if (IF3_FMASK & IF3_FMASK_6P0)
 	{
-		"HAVE 6.0", 7, 0, RJ_YES,	ISTEP1,	
+		"HAVE 6.0", 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, hascw6p0),
@@ -12897,7 +12907,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 #endif /* ! WITHFLATMENU */
 	{
-		"NOTCH   ", 7, 2, RJ_ON,	ISTEP1,		/* управление режимом NOTCH */
+		"NOTCH   ", 7, 3, RJ_ON,	ISTEP1,		/* управление режимом NOTCH */
 		ITEM_VALUE,
 		0, NOTCHMODE_COUNT - 1,
 		RMT_NOTCH_BASE,							/* управление режимом NOTCH */
@@ -12938,7 +12948,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 #endif /* ! WITHFLATMENU */
 	{
-		"NOTCH   ", 7, 2, RJ_ON,	ISTEP1,		/* управление режимом NOTCH */
+		"NOTCH   ", 7, 3, RJ_ON,	ISTEP1,		/* управление режимом NOTCH */
 		ITEM_VALUE,
 		0, NOTCHMODE_COUNT - 1,
 		RMT_NOTCH_BASE,							/* управление режимом NOTCH */
@@ -13008,7 +13018,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
     #if ELKEY328
 	{
-		"VIBROENB", 7, 0, RJ_ON,	ISTEP1,		/* разрешение работы в режиме виброплекса */
+		"VIBROENB", 7, 3, RJ_ON,	ISTEP1,		/* разрешение работы в режиме виброплекса */
 		ITEM_VALUE,
 		0, 1,		// minimal 0 - без эффекта Виброплекса
 		offsetof(struct nvmap, elkeyslopeenable),
@@ -13028,7 +13038,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, 
 	},
 	{
-		"CWKEYREV", 7, 0, RJ_YES,	ISTEP1,	
+		"CWKEYREV", 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1,	/* режим электронного ключа - поменять местами точки с тире или нет. */
 		offsetof(struct nvmap, elkeyreverse),
@@ -13056,7 +13066,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 #if WITHTX
 	{
-		"BREAK-IN", 7, 0, RJ_ON,	ISTEP1,	
+		"BREAK-IN", 7, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, bkinenable),
@@ -13099,7 +13109,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 #endif /* ! WITHFLATMENU */
 	{
-		"ADC RAND", 7, 0, RJ_ON,	ISTEP1,	/* управление интерфейсом в LTC2208 */
+		"ADC RAND", 7, 3, RJ_ON,	ISTEP1,	/* управление интерфейсом в LTC2208 */
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, gadcrand),
@@ -13108,7 +13118,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, 
 	},
 	{
-		"ADC DITH", 7, 0, RJ_ON,	ISTEP1,	/* управление зашумлением в LTC2208 */
+		"ADC DITH", 7, 3, RJ_ON,	ISTEP1,	/* управление зашумлением в LTC2208 */
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, gdither),
@@ -13117,7 +13127,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, 
 	},
 	{
-		"ADC FIFO", 7, 0, RJ_ON,	ISTEP1,	/*  */
+		"ADC FIFO", 7, 3, RJ_ON,	ISTEP1,	/*  */
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, gadcfifo),
@@ -13135,7 +13145,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getadcoffsbase,	/* складывается со смещением и отображается */
 	},
 	{
-		"DAC TEST", 7, 0, RJ_ON,	ISTEP1,	/*  */
+		"DAC TEST", 7, 3, RJ_ON,	ISTEP1,	/*  */
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, gdactest),
@@ -13220,7 +13230,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #endif /* WITHPOWERTRIM */
 #if ! CTLSTYLE_SW2011ALL
 	{
-		"TX GATE ", 7, 0, RJ_ON,	ISTEP1,	
+		"TX GATE ", 7, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1,
 		offsetof(struct nvmap, gtxgate),
@@ -13242,7 +13252,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 #endif /* ! WITHFLATMENU */
 	{
-		"VOX EN  ", 7, 0, RJ_ON,	ISTEP1,	
+		"VOX EN  ", 7, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, gvoxenable),
@@ -13292,7 +13302,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 #endif /* ! WITHFLATMENU */
 	{
-		"CAT ENAB", 7, 0, RJ_ON,	ISTEP1,	
+		"CAT ENAB", 7, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, catenable),
@@ -13312,7 +13322,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 	#endif /* WITHUSBCDC == 0 */
 	{
-		"CAT DTR ", 7, 0, RJ_YES,	ISTEP1,	
+		"CAT DTR ", 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, catdtrenable),
@@ -13322,7 +13332,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 	#if WITHTX
 	{
-		"CAT RTS ", 7, 0, RJ_YES,	ISTEP1,	
+		"CAT RTS ", 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, catrtsenable),
@@ -13331,7 +13341,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, 
 	},
 	{
-		"CATTXDTR", 7, 0, RJ_YES,	ISTEP1,	/* Передача управляется по DTR, а не по RTS */
+		"CATTXDTR", 7, 3, RJ_YES,	ISTEP1,	/* Передача управляется по DTR, а не по RTS */
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, catdtrptt),	
@@ -13355,7 +13365,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 #endif /* ! WITHFLATMENU */
 	{
-		"CTCSS   ", 7, 0, RJ_ON,	ISTEP1,	//  Continuous Tone-Coded Squelch System or CTCSS control
+		"CTCSS   ", 7, 3, RJ_ON,	ISTEP1,	//  Continuous Tone-Coded Squelch System or CTCSS control
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, gsbtonenable),
@@ -13432,7 +13442,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #endif
 #if WITHMUTEALL && WITHTX
 	{
-		"MUTE ALL", 7, 0, RJ_YES,	ISTEP1,	
+		"MUTE ALL", 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, gmuteall),
@@ -13474,7 +13484,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 	#endif /* WITHAFCODEC1HAVELINEINLEVEL */
 	{
-		"MIKE SSB", 7, 0, RJ_TXAUDIO,	ISTEP1,	
+		"MIKE SSB", 7, 5, RJ_TXAUDIO,	ISTEP1,
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, BOARD_TXAUDIO_count - 1, 					// при SSB/AM/FM передача с тестовых источников
 		RMT_TXAUDIO_BASE(MODE_SSB),
@@ -13483,7 +13493,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"MIKE DIG", 7, 0, RJ_TXAUDIO,	ISTEP1,	
+		"MIKE DIG", 7, 5, RJ_TXAUDIO,	ISTEP1,
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, BOARD_TXAUDIO_count - 1, 					// при SSB/AM/FM передача с тестовых источников
 		RMT_TXAUDIO_BASE(MODE_DIGI),
@@ -13492,7 +13502,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"MIKE AM ", 7, 0, RJ_TXAUDIO,	ISTEP1,	
+		"MIKE AM ", 7, 5, RJ_TXAUDIO,	ISTEP1,
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, BOARD_TXAUDIO_count - 1, 					// при SSB/AM/FM передача с тестовых источников
 		RMT_TXAUDIO_BASE(MODE_AM),
@@ -13501,7 +13511,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"MIKE FM ", 7, 0, RJ_TXAUDIO,	ISTEP1,	
+		"MIKE FM ", 7, 5, RJ_TXAUDIO,	ISTEP1,
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, BOARD_TXAUDIO_count - 1, 					// при SSB/AM/FM передача с тестовых источников
 		RMT_TXAUDIO_BASE(MODE_NFM),
@@ -13510,7 +13520,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"MIKE AGC", 7, 0, RJ_ON,	ISTEP1,	
+		"MIKE AGC", 7, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,	
 		0, 1, 					/* Включение программной АРУ перед модулятором */
 		offsetof(struct nvmap, gmikeagc),
@@ -13537,7 +13547,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"MIK BUST", 7, 0, RJ_ON,	ISTEP1,	
+		"MIK BUST", 7, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,	
 		0, 1, 					// предусилитель сигнала с микрофона
 		offsetof(struct nvmap, gmikebust20db),
@@ -13547,7 +13557,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 	#if WITHAFCODEC1HAVEPROC	/* кодек имеет управление обработкой микрофонного сигнала (эффекты, эквалайзер, ...) */
 	{
-		"MIK EQUA", 7, 0, RJ_ON,	ISTEP1,	
+		"MIK EQUA", 7, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1,
 		offsetof(struct nvmap, gmikeequalizer),
@@ -13617,7 +13627,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #endif /* ITHMIC1LEVEL && WITHTX */
 #if WITHUSEAUDIOREC
 	{
-		"SD RECRD", 7, 0, RJ_ON,	ISTEP1,		/* автоматически начинаем запись на SD CARD при включении */
+		"SD RECRD", 7, 3, RJ_ON,	ISTEP1,		/* автоматически начинаем запись на SD CARD при включении */
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, recmode),
@@ -13628,7 +13638,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #endif /* WITHUSEAUDIOREC */
 #if WITHUSBUAC
 	{
-		"PLAY USB", 7, 0, RJ_YES,	ISTEP1,	
+		"PLAY USB", 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,	
 		0, 1, 					/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
 		offsetof(struct nvmap, guacplayer),
@@ -13638,7 +13648,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 	#if WITHRTS96 || WITHRTS192 || WITHTRANSPARENTIQ
 	{
-		"I/Q SWAP", 7, 0, RJ_YES,	ISTEP1,	
+		"I/Q SWAP", 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,	
 		0, 1, 					/* Поменять местами I и Q сэмплы в потоке RTS96 */
 		offsetof(struct nvmap, gswapiq),
@@ -13679,7 +13689,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getfsasdcbase10, /* складывается со смещением и отображается */
 	},
 	{
-		"AGC OFF ", 7, 0, RJ_YES,	ISTEP1,	
+		"AGC OFF ", 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,	
 		0, 1, 					// предусилитель сигнала с микрофона
 		offsetof(struct nvmap, gagcoff),
@@ -13920,7 +13930,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 #endif /* ! WITHFLATMENU */
 	{
-		"LFM MODE", 7, 0, RJ_ON, 	ISTEP1, 
+		"LFM MODE", 7, 3, RJ_ON, 	ISTEP1,
 		ITEM_VALUE,
 		0, 1,			/* LFM mode enable */
 		offsetof(struct nvmap, lfmmode),
@@ -13989,7 +13999,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #endif /* ! WITHFLATMENU */
 #if WITHRFSG
 	{
-		"RFSG MOD", 7, 0, RJ_ON,	ISTEP1,	
+		"RFSG MOD", 7, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, userfsg),
@@ -14009,7 +14019,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"ENC DYNA", 7, 0, RJ_ON,	ISTEP1,	
+		"ENC DYNA", 7, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, ghiresdyn),
@@ -14027,7 +14037,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, 
 	},
 	{
-		"BIG STEP", 7, 0, RJ_YES,	ISTEP1,	
+		"BIG STEP", 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, gbigstep),
@@ -14113,7 +14123,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #endif /* defined(PLL1_TYPE) && (PLL1_TYPE == PLL_TYPE_SI570) */
 #if WITHONLYBANDS
 	{
-		"BANDONLY", 7, 0, RJ_YES,	ISTEP1,	
+		"BANDONLY", 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, withonlybands),
@@ -14123,7 +14133,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 #endif /* WITHONLYBANDS */
 	{
-		"STAYFREQ", 7, 0, RJ_ON,	ISTEP1,	
+		"STAYFREQ", 7, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, stayfreq),
@@ -14145,7 +14155,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #if WITHTX
 #if WITHSWRMTR && ! WITHSHOWSWRPWR
 	{
-		"SWR SHOW", 7, 0, RJ_ON,	ISTEP1,	
+		"SWR SHOW", 7, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, swrmode),
@@ -14251,7 +14261,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 
 #if LO1MODE_HYBRID
 	{
-		"ALIGN MD", 7, 0, RJ_YES,	ISTEP1,	
+		"ALIGN MD", 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, alignmode),
@@ -14333,7 +14343,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #endif /* WITHBARS */
 
 	{
-		"BAND 27 ", 7, 0, RJ_YES,	ISTEP1,	
+		"BAND 27 ", 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, bandset11m),
@@ -14343,7 +14353,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 #if WITHBCBANDS
 	{
-		"BAND BC ", 7, 0, RJ_YES,	ISTEP1,	
+		"BAND BC ", 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, bandsetbcast),
@@ -14356,7 +14366,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #if CTLSTYLE_SW2011ALL
 #if TUNE_6MBAND
 	{
-		"BAND 50 ", 7, 0, RJ_ON,	ISTEP1,	
+		"BAND 50 ", 7, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, bandset6m),
@@ -14367,7 +14377,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #endif /* TUNE_6MBAND */
 #if TUNE_4MBAND
 	{
-		"BAND 70 ", 7, 0, RJ_ON,	ISTEP1,	
+		"BAND 70 ", 7, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, bandset4m),
@@ -14378,7 +14388,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #endif /* TUNE_6MBAND */
 #if TUNE_2MBAND
 	{
-		"BAND 144", 7, 0, RJ_ON,	ISTEP1,	
+		"BAND 144", 7, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, bandset2m),
@@ -14479,7 +14489,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 
 /* входит ли данный пункт меню в группу разрешенных для показа */
 static uint_fast8_t
-ismenusuitable(
+ismenukind(
 	const FLASHMEM struct menudef * mp,
 	uint_fast8_t itemmask
 	)
@@ -14493,7 +14503,7 @@ ismenufilterusb(
 	const FLASHMEM struct menudef * mp
 	)
 {
-	return ismenusuitable(mp, ITEM_FILTERU);
+	return ismenukind(mp, ITEM_FILTERU);
 }
 
 /* пункт меню для подстройки частот фильтра ПЧ (низкочастотный скат) */
@@ -14502,7 +14512,7 @@ ismenufilterlsb(
 	const FLASHMEM struct menudef * mp
 	)
 {
-	return ismenusuitable(mp, ITEM_FILTERL);
+	return ismenukind(mp, ITEM_FILTERL);
 }
 
 #define MENUROW_COUNT (sizeof menutable / sizeof menutable [0])
@@ -14521,7 +14531,7 @@ loadsettings(void)
 	for (i = 0; i < MENUROW_COUNT; ++ i)
 	{
 		const FLASHMEM struct menudef * const mp = & menutable [i];
-		if (ismenusuitable(mp, ITEM_VALUE) && ! ismenusuitable(mp, ITEM_NOINITNVRAM))
+		if (ismenukind(mp, ITEM_VALUE) && ! ismenukind(mp, ITEM_NOINITNVRAM))
 		{
 			const nvramaddress_t nvram = mp->qnvram;
 			const uint_fast16_t bottom = mp->qbottom;
@@ -14550,7 +14560,7 @@ savemenuvalue(
 	const FLASHMEM struct menudef * mp
 	)
 {
-	if (ismenusuitable(mp, ITEM_VALUE))
+	if (ismenukind(mp, ITEM_VALUE))
 	{
 		const nvramaddress_t nvram = mp->qnvram;
 		const uint_fast16_t * const pv16 = mp->qpval16;
@@ -14583,16 +14593,210 @@ defaultsettings(void)
 	for (i = 0; i < MENUROW_COUNT; ++ i)
 	{
 		const FLASHMEM struct menudef * const mp = & menutable [i];
-		if (! ismenusuitable(mp, ITEM_NOINITNVRAM))
+		if (! ismenukind(mp, ITEM_NOINITNVRAM))
 		{
 			savemenuvalue(mp);
 		}
 	}
 }
 
-
-
 //+++ menu support
+
+#if ! WITHFLATMENU
+// Вызывается из display2.c
+// Отображение многострочного меню для больших экранов (группы)
+void display_multilinemenu_block_groups(uint_fast8_t x, uint_fast8_t y, void * pv)
+{
+	const FLASHMEM struct menudef * const mp = (const FLASHMEM struct menudef *) pv;
+	const uint_fast16_t index = (int) (mp - menutable);
+	uint_fast16_t y_position_groups = y;
+	uint_fast16_t index_groups = 0;
+	uint_fast16_t selected_group_left_margin; // первый элемент группы
+	uint_fast16_t el;
+	multimenuwnd_t window;
+
+#if LCDMODE_LTDC_PIP16
+	arm_hardware_ltdc_pip_off();
+#endif /* LCDMODE_LTDC_PIP16 */
+	display2_getmultimenu(& window);
+
+	//ищем границы текущей группы параметров
+	uint_fast16_t selected_group_finder = index;
+	while (selected_group_finder > 0 && ! ismenukind(& menutable [selected_group_finder], ITEM_GROUP))
+		selected_group_finder --;
+	selected_group_left_margin = selected_group_finder;
+
+	// предварительно расчитываем скролл
+	uint_fast16_t selected_group_index = 0;
+	uint_fast16_t selected_params_index = 0;
+	for (el = 0; el < MENUROW_COUNT; el ++)
+	{
+		const FLASHMEM struct menudef * const mv = & menutable [el];
+		if (ismenukind(mv, ITEM_GROUP))
+		{
+			index_groups ++;
+			if (el == selected_group_left_margin)
+				selected_group_index = index_groups - 1;
+		}
+	}
+	index_groups = 0;
+	const uint_fast16_t menu_block_scroll_offset_groups = window.multilinemenu_max_rows * (selected_group_index / window.multilinemenu_max_rows);
+
+	// выводим на экран блок с параметрами
+	for (el = 0; el < MENUROW_COUNT; el ++)
+	{
+		const FLASHMEM struct menudef * const mv = & menutable [el];
+		if (ismenukind(mv, ITEM_GROUP))
+		{
+			index_groups ++;
+			if (index_groups <= menu_block_scroll_offset_groups)
+				continue; //пропускаем пункты для скролла
+			if ((index_groups - menu_block_scroll_offset_groups) > window.multilinemenu_max_rows)
+				continue;
+			if (el == selected_group_left_margin) //подсвечиваем выбранный элемент
+			{
+				display_setcolors(MENUSELCOLOR, BGCOLOR);
+				display_at_P(x - 1, y_position_groups, PSTR(">"));
+			}
+			display_menu_group(x, y_position_groups, (void *) mv); // название группы
+			y_position_groups += window.ystep;
+		}
+	}
+}
+// Отображение многострочного меню для больших экранов (параметры)
+void display_multilinemenu_block_params(uint_fast8_t x, uint_fast8_t y, void * pv)
+{
+	const FLASHMEM struct menudef * const mp = (const FLASHMEM struct menudef *) pv;
+	const uint_fast16_t index = (int) (mp - menutable);
+	uint_fast16_t y_position_params = y;
+	uint_fast16_t index_params = 0;
+	uint_fast16_t selected_group_left_margin; // первый элемент группы
+	uint_fast16_t selected_group_right_margin; // последний элемент группы
+	uint_fast16_t el;
+	multimenuwnd_t window;
+
+#if LCDMODE_LTDC_PIP16
+	arm_hardware_ltdc_pip_off();
+#endif /* LCDMODE_LTDC_PIP16 */
+	display2_getmultimenu(& window);
+
+	//ищем границы текущей группы параметров
+	uint_fast16_t selected_group_finder = index;
+	while (selected_group_finder > 0 && ! ismenukind(& menutable [selected_group_finder], ITEM_GROUP))
+		selected_group_finder --;
+	selected_group_left_margin = selected_group_finder;
+	selected_group_finder ++;
+	while (selected_group_finder < MENUROW_COUNT && ! ismenukind(& menutable [selected_group_finder], ITEM_GROUP))
+		selected_group_finder ++;
+	selected_group_right_margin = selected_group_finder - 1;	// последний элмент в списке параметров данной группы
+
+	// предварительно расчитываем скролл
+	uint_fast16_t selected_params_index = 0;
+	for (el = 0; el < MENUROW_COUNT; el ++)
+	{
+		const FLASHMEM struct menudef * const mv = & menutable [el];
+		if (ismenukind(mv, ITEM_VALUE))
+		{
+			if (el < selected_group_left_margin || el > selected_group_right_margin)
+				continue;
+			index_params ++;
+			if (el == index)
+				selected_params_index = index_params - 1;
+		}
+	}
+	index_params = 0;
+	const uint_fast16_t menu_block_scroll_offset_params = window.multilinemenu_max_rows * (selected_params_index / window.multilinemenu_max_rows);
+
+	// выводим на экран блок с параметрами
+	for (el = 0; el < MENUROW_COUNT; el ++)
+	{
+		const FLASHMEM struct menudef * const mv = & menutable [el];
+		if (ismenukind(mv, ITEM_VALUE))
+		{
+			if (el < selected_group_left_margin)
+				continue;
+			if (el > selected_group_right_margin)
+				continue;
+			index_params ++;
+			if (index_params <= menu_block_scroll_offset_params)
+				continue; //пропускаем пункты для скролла
+			if ((index_params - menu_block_scroll_offset_params) > window.multilinemenu_max_rows)
+				continue;
+			if (el == index) //подсвечиваем выбранный элемент
+			{
+				display_setcolors(MENUSELCOLOR, BGCOLOR);
+				display_at_P(x - 1, y_position_params, PSTR(">"));
+			}
+			display_menu_lblng(x, y_position_params, (void *) mv); // название редактируемого параметра
+			y_position_params += window.ystep;
+		}
+	}
+}
+// Отображение многострочного меню для больших экранов (значения)
+void display_multilinemenu_block_vals(uint_fast8_t x, uint_fast8_t y, void * pv)
+{
+	const FLASHMEM struct menudef * const mp = (const FLASHMEM struct menudef *) pv;
+	const uint_fast16_t index = (int) (mp - menutable);
+	uint_fast16_t y_position_params = y;
+	uint_fast16_t index_params = 0;
+	uint_fast16_t selected_group_left_margin; // первый элемент группы
+	uint_fast16_t selected_group_right_margin; // последний элемент группы
+	uint_fast16_t el;
+	multimenuwnd_t window;
+
+#if LCDMODE_LTDC_PIP16
+	arm_hardware_ltdc_pip_off();
+#endif /* LCDMODE_LTDC_PIP16 */
+	display2_getmultimenu(& window);
+
+	//ищем границы текущей группы параметров
+	uint_fast16_t selected_group_finder = index;
+	while (selected_group_finder > 0 && ! ismenukind(& menutable [selected_group_finder], ITEM_GROUP))
+		selected_group_finder --;
+	selected_group_left_margin = selected_group_finder;
+	selected_group_finder ++;
+	while (selected_group_finder < MENUROW_COUNT && ! ismenukind(& menutable [selected_group_finder], ITEM_GROUP))
+		selected_group_finder ++;
+	selected_group_right_margin = selected_group_finder - 1;	// последний элмент в списке параметров данной группы
+
+	// предварительно расчитываем скролл
+	uint_fast16_t selected_params_index = 0;
+	for (el = 0; el < MENUROW_COUNT; el ++)
+	{
+		const FLASHMEM struct menudef * const mv = & menutable [el];
+		if (ismenukind(mv, ITEM_VALUE))
+		{
+			if (el < selected_group_left_margin || el > selected_group_right_margin)
+				continue;
+			index_params ++;
+			if (el == index)
+				selected_params_index = index_params - 1;
+		}
+	}
+	index_params = 0;
+	const uint_fast16_t menu_block_scroll_offset_params = window.multilinemenu_max_rows * (selected_params_index / window.multilinemenu_max_rows);
+
+	// выводим на экран блок с параметрами
+	for (el = 0; el < MENUROW_COUNT; el ++)
+	{
+		const FLASHMEM struct menudef * const mv = & menutable [el];
+		if (ismenukind(mv, ITEM_VALUE))
+		{
+			if (el < selected_group_left_margin)
+				continue;
+			if (el > selected_group_right_margin)
+				continue;
+			index_params ++;
+			if (index_params <= menu_block_scroll_offset_params)
+				continue; //пропускаем пункты для скролла
+			if ((index_params - menu_block_scroll_offset_params) > window.multilinemenu_max_rows)
+				continue;
+			display_menu_valxx(x, y_position_params, (void *) mv); // значение параметра
+			y_position_params += window.ystep;
+		}
+	}
+}
+#endif /* ! WITHFLATMENU */
 
 // Вызывается из display2.c
 // код редактируемого параметра
@@ -14608,7 +14812,7 @@ void display_menu_lblc3(
 #endif /* LCDMODE_LTDC_PIP16 */
 	char buff [4];
 	const uint_fast8_t index = (int) (mp - menutable);
-	if (ismenusuitable(mp, ITEM_GROUP))
+	if (ismenukind(mp, ITEM_GROUP))
 	{
 		display_setcolors(MENUCOLOR, BGCOLOR);
 		display_at_P(x, y, PSTR("---"));
@@ -14634,7 +14838,7 @@ void display_menu_lblng(
 #if LCDMODE_LTDC_PIP16
 	arm_hardware_ltdc_pip_off();
 #endif /* LCDMODE_LTDC_PIP16 */
-	if (ismenusuitable(mp, ITEM_VALUE) == 0)
+	if (ismenukind(mp, ITEM_VALUE) == 0)
 		return;
 	display_setcolors(MENUCOLOR, BGCOLOR);
 	display_at_P(x, y, mp->qlabel);
@@ -14668,7 +14872,7 @@ void display_menu_group(
 #if LCDMODE_LTDC_PIP16
 	arm_hardware_ltdc_pip_off();
 #endif /* LCDMODE_LTDC_PIP16 */
-	while (ismenusuitable(mp, ITEM_GROUP) == 0)
+	while (ismenukind(mp, ITEM_GROUP) == 0)
 		-- mp;
 	display_setcolors(MENUGROUPCOLOR, BGCOLOR);
 	display_at_P(x, y, mp->qlabel);
@@ -14694,7 +14898,7 @@ void display_menu_valxx(
 #if LCDMODE_LTDC_PIP16
 	arm_hardware_ltdc_pip_off();
 #endif /* LCDMODE_LTDC_PIP16 */
-	if (ismenusuitable(mp, ITEM_VALUE) == 0)
+	if (ismenukind(mp, ITEM_VALUE) == 0)
 		return;
 	// получение значения для отображения
 	if (ismenufilterlsb(mp))
@@ -14881,8 +15085,11 @@ modifysettings(
 {
 	uint_fast8_t menupos = loadvfy8up(posnvram, firstitem, lastitem, firstitem);	/* начальное значение позиции */
 	const FLASHMEM struct menudef * mp = & menutable [menupos];
+	multimenuwnd_t window;
+
+	display2_getmultimenu(& window);
 	/* функция для сохранения работы варианта без групп */
-	while (! ismenusuitable(mp, itemmask))
+	while (! ismenukind(mp, itemmask))
 	{
 		/* проход по определённомк типу элементов (itemmask) */
 		menupos = calc_next(menupos, firstitem, lastitem);
@@ -14923,19 +15130,20 @@ modifysettings(
 				encoder_clear();	// сбросить информацию о повороте
 				return;
 
-			case KBD_CODE_MENU:
 #if ! WITHFLATMENU
-				if (ismenusuitable(mp, ITEM_GROUP))
+			case KBD_CODE_MENU:
+				if (ismenukind(mp, ITEM_GROUP))
 				{
 					/* вход в подменю */
 					const uint_fast8_t first = menupos + 1;	/* следующий за текущим пунктом */
 					const uint_fast8_t last = menulooklast(first);
 
-					if (ismenusuitable(& menutable [first], ITEM_VALUE))
+					if (ismenukind(& menutable [first], ITEM_VALUE))
 					{
 					#if defined (RTC1_TYPE)
 						getstamprtc();
 					#endif /* defined (RTC1_TYPE) */
+						display2_bgreset();		/* возможно уже с новой цветовой схемой */
 						modifysettings(first, last, ITEM_VALUE, mp->qnvram, exitkey, byname);
 
 						display2_bgreset();		/* возможно уже с новой цветовой схемой */
@@ -14960,10 +15168,10 @@ modifysettings(
 				do
 				{
 					/* проход по определённомк типу элементов (itemmask) */
-					menupos = calc_prev(menupos, firstitem, lastitem);
+					menupos = calc_dir(! window.reverse, menupos, firstitem, lastitem);
 					mp = & menutable [menupos];
 				}
-				while (! ismenusuitable(mp, itemmask));
+				while (! ismenukind(mp, itemmask));
 				goto menuswitch;
 
 			case KBD_CODE_BAND_UP:
@@ -14972,10 +15180,10 @@ modifysettings(
 				do
 				{
 					/* если спецпункты запрещены - ищем обычный */
-					menupos = calc_next(menupos, firstitem, lastitem);
+					menupos = calc_dir(window.reverse, menupos, firstitem, lastitem);
 					mp = & menutable [menupos];
 				}
-				while (! ismenusuitable(mp, itemmask));
+				while (! ismenukind(mp, itemmask));
 
 			menuswitch:
 #if (NVRAM_TYPE != NVRAM_TYPE_CPUEEPROM)
@@ -15001,7 +15209,7 @@ modifysettings(
 		if (lockmode != 0)
 			nrotate = 0;	// ignore encoder
 
-		if (nrotate != 0 && ismenusuitable(mp, ITEM_VALUE))
+		if (nrotate != 0 && ismenukind(mp, ITEM_VALUE))
 		{
 			/* редактирование паратметра */
 			const uint_fast16_t step = mp->qistep;
@@ -15756,12 +15964,14 @@ processkeyboard(uint_fast8_t kbch)
 			return 1;
 	#endif /* WITHAUTOTUNER */
 		display2_bgreset();
+	#if defined (RTC1_TYPE)
+		getstamprtc();
+	#endif /* defined (RTC1_TYPE) */
 	#if WITHFLATMENU
 		modifysettings(0, MENUROW_COUNT - 1, ITEM_VALUE, RMT_GROUP_BASE, exitkey, 0);	/* выбор группы параметров для редактирования */
 	#else /* WITHFLATMENU */
 		modifysettings(0, MENUROW_COUNT - 1, ITEM_GROUP, RMT_GROUP_BASE, exitkey, 0);	/* выбор группы параметров для редактирования */
 	#endif /* WITHFLATMENU */
-		
 		updateboard(1, 0);
 		updateboard2();			/* настройки валкодера и цветовой схемы дисплея. */
 		display2_bgreset();		/* возможно уже с новой цветовой схемой */

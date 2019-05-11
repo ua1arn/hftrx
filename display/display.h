@@ -370,9 +370,12 @@ typedef uint16_t PACKEDCOLOR565_T;
 //#define FRQCOLOR GRAY
 #define FRQCOLOR COLOR_YELLOW // GOLD
 
-#define MENUGROUPCOLOR COLOR_YELLOW
+#define MENUGROUPCOLOR COLOR_WHITE
 #define MENUCOLOR COLOR_WHITE
 #define MNUVALCOLOR COLOR_WHITE
+#define MENUSELCOLOR	COLOR_YELLOW
+
+#define LABELW 8
 
 uint_fast8_t display_getpagesmax(void);	// количество разных вариантов отображения (menuset)
 uint_fast8_t display_getpagesleep(void);	// номер варианта отображения для "сна"
@@ -470,6 +473,36 @@ display2_bars_amv0(
 	void * pv
 	);
 
+// Параметры отображения многострочного меню для больших экранов
+typedef struct multimenuwnd_tag
+{
+	uint_fast8_t multilinemenu_max_rows;
+	uint_fast8_t menurow_count;
+	uint_fast8_t ystep;
+	uint_fast8_t reverse;	// 0/1
+} multimenuwnd_t;
+
+void display2_getmultimenu(multimenuwnd_t * p); /* получение параметров окна для меню */
+
+// Вызывается из display2.c
+//Отображение многострочного меню для больших экранов (группы)
+void display_multilinemenu_block_groups(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	void * pv
+	);
+//Отображение многострочного меню для больших экранов (параметры)
+void display_multilinemenu_block_params(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	void * pv
+	);
+//Отображение многострочного меню для больших экранов (значения)
+void display_multilinemenu_block_vals(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	void * pv
+	);
 // Вызывается из display2.c
 // группа, в которой находится редактируемый параметр
 void display_menu_group(

@@ -3813,6 +3813,7 @@ enum
 		{
 			PG0 = REDRSUBSET(DPAGE0),
 			PG1 = REDRSUBSET(DPAGE1),
+			PGNOMEMU = PG0 | PG1,
 			PGALL = PG0 | PG1 | REDRSUBSET_MENU,
 			PGWFL = PG0,	// страница отображения водопада
 			PGSPE = PG0,	// страница отображения панорамы
@@ -3847,13 +3848,13 @@ enum
 		{	25,	4,	display_notchfreq5,	REDRM_BARS, PGALL, },	// FUNC item value
 	#endif /* WITHENCODER2 */
 
-		{	26, 20,	display_nr3,		REDRM_MODE, PGALL, },	// NR
-//		{	26, 20,	display_agc3,		REDRM_MODE, PGALL, },	// AGC mode
-		{	26, 25,	display_voxtune3,	REDRM_MODE, PGALL, },	// VOX
-		{	26, 30,	display_datamode3,	REDRM_MODE, PGALL, },	// DATA mode indicator
-		{	26, 35,	display_atu3,		REDRM_MODE, PGALL, },	// TUNER state (optional)
-		{	26, 40,	display_byp3,		REDRM_MODE, PGALL, },	// TUNER BYPASS state (optional)
-		{	26, 45,	display_rec3,		REDRM_BARS, PGALL, },	// Отображение режима записи аудио фрагмента
+		{	26, 20,	display_nr3,		REDRM_MODE, PGNOMEMU, },	// NR
+//		{	26, 20,	display_agc3,		REDRM_MODE, PGNOMEMU, },	// AGC mode
+		{	26, 25,	display_voxtune3,	REDRM_MODE, PGNOMEMU, },	// VOX
+		{	26, 30,	display_datamode3,	REDRM_MODE, PGNOMEMU, },	// DATA mode indicator
+		{	26, 35,	display_atu3,		REDRM_MODE, PGNOMEMU, },	// TUNER state (optional)
+		{	26, 40,	display_byp3,		REDRM_MODE, PGNOMEMU, },	// TUNER BYPASS state (optional)
+		{	26, 45,	display_rec3,		REDRM_BARS, PGNOMEMU, },	// Отображение режима записи аудио фрагмента
 		
 		{	0,	7,	display_freqX_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Частота (большие цифры)
 		{	21, 10,	display_mode3_a,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
@@ -3901,13 +3902,20 @@ enum
 		{	20, 24,	display_voltlevelV5, REDRM_VOLT, PGSLP, },	// voltmeter with "V"
 
 	#if WITHMENU
-		{	4,	25,	display_menu_group,	REDRM_MLBL, REDRSUBSET_MENU, },	// название группы
-		{	0,	30,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
-		{	4,	30,	display_menu_lblng,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
-		{	0,	35,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
-		{	0,	40,	display_samfreqdelta8, REDRM_BARS, REDRSUBSET_MENU, },	/* Получить информацию об ошибке настройки в режиме SAM */
+		{	1,	25,	display_multilinemenu_block_groups,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
+		{	LABELW + 3,	25,	display_multilinemenu_block_params,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
+		{	LABELW*2 + 3,	25,	display_multilinemenu_block_vals,	REDRM_MVAL, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
 	#endif /* WITHMENU */
 	};
+
+#if WITHMENU
+	void display2_getmultimenu(multimenuwnd_t * p)
+	{
+		p->multilinemenu_max_rows = 6;
+		p->ystep = 4;	// количество ячеек разметки на одну строку меню
+		p->reverse = 1;
+	}
+#endif /* WITHMENU */
 
 	/* получить координаты окна с панорамой и/или водопадом. */
 	void display2_getpipparams(pipparams_t * p)
@@ -3977,6 +3985,7 @@ enum
 		enum
 		{
 			PG0 = REDRSUBSET(DPAGE0),
+			PGNOMEMU = PG0,
 			PGSWR = PG0,	// страница отоюражения S-meter и SWR-meter
 			PGALL = PG0 | REDRSUBSET_MENU,
 			PGSLP = REDRSUBSET_SLEEP,
@@ -4007,12 +4016,12 @@ enum
 		{	25,	4,	display_notchfreq5,	REDRM_BARS, PGALL, },	// FUNC item value
 	#endif /* WITHENCODER2 */
 
-		{	26, 20,	display_agc3,		REDRM_MODE, PGALL, },	// AGC mode
-		{	26, 22,	display_voxtune3,	REDRM_MODE, PGALL, },	// VOX
-		{	25, 30,	display_lockstate4, REDRM_MODE, PGALL, },	// LOCK
-		{	26, 35,	display_atu3,		REDRM_MODE, PGALL, },	// TUNER state (optional)
-		{	26, 40,	display_byp3,		REDRM_MODE, PGALL, },	// TUNER BYPASS state (optional)
-		{	26, 45,	display_rec3,		REDRM_BARS, PGALL, },	// Отображение режима записи аудио фрагмента
+		{	26, 20,	display_agc3,		REDRM_MODE, PGNOMEMU, },	// AGC mode
+		{	26, 22,	display_voxtune3,	REDRM_MODE, PGNOMEMU, },	// VOX
+		{	25, 30,	display_lockstate4, REDRM_MODE, PGNOMEMU, },	// LOCK
+		{	26, 35,	display_atu3,		REDRM_MODE, PGNOMEMU, },	// TUNER state (optional)
+		{	26, 40,	display_byp3,		REDRM_MODE, PGNOMEMU, },	// TUNER BYPASS state (optional)
+		{	26, 45,	display_rec3,		REDRM_BARS, PGNOMEMU, },	// Отображение режима записи аудио фрагмента
 		
 		{	0,	7,	display_freqX_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Частота (большие цифры)
 		{	21, 10,	display_mode3_a,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
@@ -4044,13 +4053,21 @@ enum
 		{	20, 24,	display_voltlevelV5, REDRM_VOLT, PGSLP, },	// voltmeter with "V"
 
 	#if WITHMENU
-		{	4,	25,	display_menu_group,	REDRM_MLBL, REDRSUBSET_MENU, },	// название группы
-		{	0,	30,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
-		{	4,	30,	display_menu_lblng,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
-		{	14,	30,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
-		{	0,	35,	display_samfreqdelta8, REDRM_BARS, REDRSUBSET_MENU, },	/* Получить информацию об ошибке настройки в режиме SAM */
+		{	0,	25,	display_multilinemenu_block,	REDRM_MVAL, REDRSUBSET_MENU, } //Блок с пунктами меню
+		{	1,	29,	display_multilinemenu_block_groups,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
+		{	LABELW + 3,	29,	display_multilinemenu_block_params,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
+		{	LABELW*2 + 3,	29,	display_multilinemenu_block_vals,	REDRM_MVAL, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
 	#endif /* WITHMENU */
 	};
+
+#if WITHMENU
+	void display2_getmultimenu(multimenuwnd_t * p)
+	{
+		p->multilinemenu_max_rows = 6;
+		p->ystep = 4;	// количество ячеек разметки на одну строку меню
+		p->reverse = 1;
+	}
+#endif /* WITHMENU */
 
 	/* получить координаты окна с панорамой и/или водопадом. */
 	void display2_getpipparams(pipparams_t * p)
@@ -4259,13 +4276,20 @@ enum
 		{	20, 25,	display_voltlevelV5, REDRM_VOLT, PGSLP, },	// voltmeter with "V"
 
 	#if WITHMENU
-		{	4,	30,	display_menu_group,	REDRM_MLBL, REDRSUBSET_MENU, },	// название группы
-		{	0,	35,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
-		{	4,	35,	display_menu_lblng,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
-		{	0,	40,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
-		{	0,	45,	display_samfreqdelta8, REDRM_BARS, REDRSUBSET_MENU, },	/* Получить информацию об ошибке настройки в режиме SAM */
+		{	3,	29,	display_multilinemenu_block_groups,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
+		{	LABELW + 5,	29,	display_multilinemenu_block_params,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
+		{	LABELW*2 + 6,	29,	display_multilinemenu_block_vals,	REDRM_MVAL, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
 	#endif /* WITHMENU */
 	};
+
+#if WITHMENU
+	void display2_getmultimenu(multimenuwnd_t * p)
+	{
+		p->multilinemenu_max_rows = 16;
+		p->ystep = 4;	// количество ячеек разметки на одну строку меню
+		p->reverse = 1;
+	}
+#endif /* WITHMENU */
 
 	/* получить координаты окна с панорамой и/или водопадом. */
 	void display2_getpipparams(pipparams_t * p)
