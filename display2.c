@@ -4829,15 +4829,16 @@ static const FLOAT_t waterfall_beta = 0.5;					// incoming value coefficient
 static const FLOAT_t waterfall_alpha = 1 - (FLOAT_t) 0.5;	// old value coefficient
 
 static FLOAT_t spavgarray [ALLDX] = { 1 };	// массив входных данных для отображения (через фильтры).
+static FLOAT_t Yold_wtf [ALLDX];
+static FLOAT_t Yold_fft [ALLDX];
 
 static FLOAT_t filter_waterfall(
 	uint_fast16_t x
 	)
 {
 	const FLOAT_t val = spavgarray [x];
-	static FLOAT_t Yold [ALLDX];
-	const FLOAT_t Y = Yold [x] * waterfall_alpha + waterfall_beta * val;
-	Yold [x] = Y;
+	const FLOAT_t Y = Yold_wtf [x] * waterfall_alpha + waterfall_beta * val;
+	Yold_wtf [x] = Y;
 	return Y;
 }
 
@@ -4846,9 +4847,8 @@ static FLOAT_t filter_spectrum(
 	)
 {
 	const FLOAT_t val = spavgarray [x];
-	static FLOAT_t Yold [ALLDX];
-	const FLOAT_t Y = Yold [x] * spectrum_alpha + spectrum_beta * val;
-	Yold [x] = Y;
+	const FLOAT_t Y = Yold_fft [x] * spectrum_alpha + spectrum_beta * val;
+	Yold_fft [x] = Y;
 	return Y;
 }
 
@@ -5258,7 +5258,14 @@ static void wflshiftleft(uint_fast16_t pixels)
 	for (y = 0; y < sizeof wfarray / sizeof wfarray [0]; ++ y)
 	{
 		if (y == wfrow)
+		{
+			//двигаем буффер усреднения значений WTF и FFT
+			memmove(&Yold_fft[0], &Yold_fft[pixels], rowsize*4 - pixels*4);
+			memset(&Yold_fft[rowsize - pixels], 0x00, pixels*4);
+			memmove(&Yold_wtf[0], &Yold_wtf[pixels], rowsize*4 - pixels*4);
+			memset(&Yold_wtf[rowsize - pixels], 0x00, pixels*4);
 			continue;
+		}
 		memmove(wfarray [y] + 0, wfarray [y] + pixels, rowsize - pixels);
 		memset(wfarray [y] + rowsize - pixels, 0x00, pixels);
 	}
@@ -5277,7 +5284,14 @@ static void wflshiftright(uint_fast16_t pixels)
 	for (y = 0; y < sizeof wfarray / sizeof wfarray [0]; ++ y)
 	{
 		if (y == wfrow)
+		{
+			//двигаем буффер усреднения значений WTF и FFT
+			memmove(&Yold_fft[pixels], &Yold_fft[0], rowsize*4 - pixels*4);
+			memset(&Yold_fft[0], 0x00, pixels*4);
+			memmove(&Yold_wtf[pixels], &Yold_wtf[0], rowsize*4 - pixels*4);
+			memset(&Yold_wtf[0], 0x00, pixels*4);
 			continue;
+		}
 		memmove(wfarray [y] + pixels, wfarray [y] + 0, rowsize - pixels);
 		memset(wfarray [y] + 0, 0x00, pixels);
 	}
