@@ -1301,7 +1301,7 @@ display_getreadystate(void)
 	return bitblt_getbusyflag() == 0;
 }
 
-static void display_putpixel(
+void display_putpixel(
 	uint_fast16_t x,
 	uint_fast16_t y,
 	COLOR_T color
