@@ -78,8 +78,12 @@ static int_fast16_t glob_gridstep = 10000;	// 10 kHz - шаг сетки
 
 // waterfall/spectrum parameters
 static uint_fast8_t glob_fillspect;	/* заливать заполнением площадь под графиком спектра */
-static int_fast16_t glob_topdb = 0;	/* верхний предел FFT */
-static int_fast16_t glob_bottomdb = 80;	/* нижний предел FFT */
+static uint_fast8_t glob_fftcolored; /* градиентная раскраска FFT */
+static uint_fast8_t glob_fftautocal; // автокалибровка пределов FFT
+static int_fast16_t glob_topdb = 30;	/* верхний предел FFT */
+static int_fast16_t glob_bottomdb = 130;	/* нижний предел FFT */
+static int_fast16_t calibrated_topdb = 30; // верхний предел FFT с учётом автокалибровка
+static int_fast16_t calibrated_bottomdb = 130; // нижний предел FFT с учётом автокалибровка
 static uint_fast8_t glob_zoomx = 1;	/* уменьшение отображаемого участка спектра */
 
 //#define WIDEFREQ (TUNE_TOP > 100000000L)
@@ -4821,19 +4825,20 @@ static PACKEDCOLOR565_T * getscratchpip(void)
 static const FLOAT_t spectrum_beta = 0.25;					// incoming value coefficient
 static const FLOAT_t spectrum_alpha = 1 - (FLOAT_t) 0.25;	// old value coefficient
 
-static const FLOAT_t waterfall_beta = 0.75;					// incoming value coefficient
-static const FLOAT_t waterfall_alpha = 1 - (FLOAT_t) 0.75;	// old value coefficient
+static const FLOAT_t waterfall_beta = 0.5;					// incoming value coefficient
+static const FLOAT_t waterfall_alpha = 1 - (FLOAT_t) 0.5;	// old value coefficient
 
 static FLOAT_t spavgarray [ALLDX] = { 1 };	// массив входных данных для отображения (через фильтры).
+static FLOAT_t Yold_wtf [ALLDX];
+static FLOAT_t Yold_fft [ALLDX];
 
 static FLOAT_t filter_waterfall(
 	uint_fast16_t x
 	)
 {
 	const FLOAT_t val = spavgarray [x];
-	static FLOAT_t Yold [ALLDX];
-	const FLOAT_t Y = Yold [x] * waterfall_alpha + waterfall_beta * val;
-	Yold [x] = Y;
+	const FLOAT_t Y = Yold_wtf [x] * waterfall_alpha + waterfall_beta * val;
+	Yold_wtf [x] = Y;
 	return Y;
 }
 
@@ -4842,9 +4847,8 @@ static FLOAT_t filter_spectrum(
 	)
 {
 	const FLOAT_t val = spavgarray [x];
-	static FLOAT_t Yold [ALLDX];
-	const FLOAT_t Y = Yold [x] * spectrum_alpha + spectrum_beta * val;
-	Yold [x] = Y;
+	const FLOAT_t Y = Yold_fft [x] * spectrum_alpha + spectrum_beta * val;
+	Yold_fft [x] = Y;
 	return Y;
 }
 
@@ -4861,6 +4865,7 @@ static uint_fast8_t wfzoom;				// масштаб, с которым выводи
 
 enum { PALETTESIZE = 256 };
 static PACKEDCOLOR565_T wfpalette [PALETTESIZE];
+static PACKEDCOLOR565_T fftpalette [SPDY];
 
 #define COLOR565_GRIDCOLOR		TFTRGB565(128, 128, 0)		//COLOR_GRAY - center marker
 #define COLOR565_GRIDCOLOR2		TFTRGB565(128, 0, 0x00)		//COLOR_DARKRED - other markers
@@ -4871,90 +4876,46 @@ static PACKEDCOLOR565_T wfpalette [PALETTESIZE];
 #define COLOR565_SPECTRUMFENCE	TFTRGB565(255, 255, 255)	//COLOR_WHITE
 #define COLOR565_SPECTRUMLINE	TFTRGB565(0, 255, 0)	//COLOR_GREEN
 
-// Код взят из проекта Malamute
-static void wfpalette_initialize(void)
+//получение теплоты цвета FFT (от синего к красному)
+PACKEDCOLOR565_T getFFTColor(uint_fast16_t height, uint_fast16_t max)
 {
-	int type = 0;
+	//r g b
+	//0 0 0
+	//0 0 255
+	//255 255 0
+	//255 0 0
 
-	if (type)
+	uint_fast8_t red = 0;
+	uint_fast8_t green = 0;
+	uint_fast8_t blue = 0;
+
+	if (height < max / 4)
 	{
-		int a = 0;
-		int i;
-		for (i = 0; i < 42; ++ i)
-		{
-			wfpalette [a + i] = TFTRGB565(0, 0, (int) (powf((float) 0.095 * i, 4)));
-		}
-		a += i;
-		for (i = 0; i < 42; ++ i)
-		{
-			wfpalette [a + i] = TFTRGB565(0, i * 6, 255);
-		}
-		a += i;
-		for (i = 0; i < 42; ++ i)
-		{
-			wfpalette [a + i] = TFTRGB565(0, 255, (int)(((float) 0.39 * (41 - i )) * ((float) 0.39 * (41 - i))) );
-		}
-		a += i;
-		for (i = 0; i < 42; ++ i)
-		{
-			wfpalette [a + i] = TFTRGB565(i * 6, 255, 0);
-		}
-		a += i;
-		for (i = 0; i < 42; ++ i)
-		{
-			wfpalette [a + i] = TFTRGB565(255, (41 - i) * 6, 0);
-		}
-		a += i;
-		for (i = 0; i < 42; ++ i)
-		{
-			wfpalette [a + i] = TFTRGB565(255, 0, i * 6);
-		}
-		a += i;
-		// a = 252
+		blue = (height * 255 / (max / 4));
+	}
+	else if (height < max / 2)
+	{
+		green = ((height - max / 4) * 255 / (max / 4));
+		red = green;
+		blue = 255 - green;
 	}
 	else
 	{
-		int a = 0;
-		int i;
-		// a = 0
-		for (i = 0; i < 64; ++ i)
-		{
-			// для i = 0..15 результат формулы = ноль
-			wfpalette [a + i] = TFTRGB565(0, 0, (int) (powf((float) 0.0625 * i, 4)));	// проверить результат перед попыткой применить целочисленные вычисления!
-		}
-		a += i;
-		// a = 64
-		for (i = 0; i < 32; ++ i)
-		{
-			wfpalette [a + i] = TFTRGB565(0, i * 8, 255);
-		}
-		a += i;
-		// a = 96
-		for (i = 0; i < 32; ++ i)
-		{
-			wfpalette [a + i] = TFTRGB565(0, 255, 255 - i * 8);
-		}
-		a += i;
-		// a = 128
-		for (i = 0; i < 32; ++ i)
-		{
-			wfpalette [a + i] = TFTRGB565(i * 8, 255, 0);
-		}
-		a += i;
-		// a = 160
-		for (i = 0; i<64; ++ i)
-		{
-			wfpalette [a + i] = TFTRGB565(255, 255 - i * 4, 0);
-		}
-		a += i;
-		// a = 224
-		for (i = 0; i < 32; ++ i)
-		{
-			wfpalette [a + i] = TFTRGB565(255, 0, i * 8);
-		}
-		a += i;
-		// a = 256
+		red = 255;
+		blue = 0;
+		green = 255 - ((height - max / 2) * 255 / (max / 2));
 	}
+	return TFTRGB565(red, green, blue);
+}
+
+//Заполнение цветовой палитры водопада
+static void wfpalette_initialize(void)
+{
+	uint_fast16_t i;
+	for (i = 0; i < PALETTESIZE; i ++)
+		wfpalette [i] = getFFTColor(i, PALETTESIZE);
+	for (i = 0; i < SPDY; i ++)
+		fftpalette [i] = getFFTColor(i, SPDY);
 }
 
 // формирование данных спектра для последующего отображения
@@ -4969,7 +4930,8 @@ static void dsp_latchwaterfall(
 	(void) x0;
 	(void) y0;
 	(void) pv;
-
+	uint_fast16_t autocalibrate_top_errors = 0;
+	uint_fast16_t autocalibrate_bottom_errors = 0;
 
 	// запоминание информации спектра для спектрограммы
 	dsp_getspectrumrow(spavgarray, ALLDX, glob_zoomx);
@@ -4983,27 +4945,82 @@ static void dsp_latchwaterfall(
 	for (x = 0; x < ALLDX; ++ x)
 	{
 		// без усреднения для водопада
-		const int val = dsp_mag2y(filter_waterfall(x), PALETTESIZE - 1, glob_topdb, glob_bottomdb); // возвращает значения от 0 до dy включительно
+		const int val = dsp_mag2y(filter_waterfall(x), PALETTESIZE - 1, calibrated_topdb, calibrated_bottomdb); // возвращает значения от 0 до dy включительно
+
+		//автокалибровка FFT
+		if(glob_fftautocal==1)
+		{
+			if(val > ((PALETTESIZE/10)*8)) //выход в красную зону
+				autocalibrate_top_errors++;
+			if(val < ((PALETTESIZE/10)*1)) //сигналов в черной зоне
+				autocalibrate_bottom_errors++;
+		}
+
 		// запись в буфер водопада
 		wfarray [wfrow] [x] = val;
+	}
+
+	//автокалибровка FFT
+	if(glob_fftautocal==1)
+	{
+		//debug_printf_P(PSTR("AUTOCALIBRATE TOP_ERRORS=%d BOT_ERRORS=%d TOPDB=%d BOTDB=%d\n"), autocalibrate_top_errors, autocalibrate_bottom_errors, calibrated_topdb, calibrated_bottomdb);
+		if(autocalibrate_top_errors > FFT_AUTOCALIB_MAX_RED)
+			calibrated_topdb--;
+		if((autocalibrate_top_errors < FFT_AUTOCALIB_MIN_RED) && (calibrated_topdb < (calibrated_bottomdb-40)))
+			calibrated_topdb++;
+		if((autocalibrate_bottom_errors * 100 / PALETTESIZE) > FFT_AUTOCALIB_MAX_BLACK_PERC && calibrated_bottomdb < 160)
+			calibrated_bottomdb++;
+		if((autocalibrate_bottom_errors * 100 / PALETTESIZE) < FFT_AUTOCALIB_MIN_BLACK_PERC)
+			calibrated_bottomdb--;
+		autocalibrate_top_errors=0;
+		autocalibrate_bottom_errors=0;
+	}
+	else
+	{
+		calibrated_topdb=glob_topdb;
+		calibrated_bottomdb=glob_bottomdb;
 	}
 }
 
 // получить горизонтальную позицию для заданного отклонения в герцах
+// Использовать для "статической" разметки дисплея - полоса пропускания, маркер частоты приема.
 static uint_fast16_t
 deltafreq2x(
-	int_fast32_t f0,	// центральная частота
+	int_fast32_t fc,	// центральная частота
 	int_fast16_t delta,	// отклонение от центральной частоты в герцах
 	int_fast32_t bw,	// полоса обзора
 	uint_fast16_t width	// ширина экрана
 	)
 {
-	//const int_fast32_t dp = (delta + bw / 2) * width / bw;
 	const int_fast32_t dp = (delta + bw / 2) * (width - 1) / bw;
 	return dp;
 }
 
-// Поставить цветную точку.
+// получить горизонтальную позицию для заданного отклонения в герцах
+// Использовать для "динамической" разметки дисплея - риски, кратные 10 кГц.
+// Возврат UINT16_MAX при невозможности отобразить запрошщенную частоту в указанном окне
+static uint_fast16_t
+deltafreq2x_abs(
+	int_fast32_t fc,	// центральная частота
+	int_fast16_t delta,	// отклонение от центральной частоты в герцах
+	int_fast32_t bw,	// полоса обзора
+	uint_fast16_t width	// ширина экрана
+	)
+{
+	const int_fast32_t f0 = fc - bw / 2;	// частота левого края окна
+	const int_fast32_t p0 = ((int_fast64_t) f0 * width) / bw;	// абсолютный пиксель левого края окна
+
+	const int_fast32_t fm = fc + delta;	// частота маркера
+	const int_fast32_t pm = ((int_fast64_t) fm * width) / bw;	// абсолютный пиксель маркера
+
+	if (pm < p0)
+		return UINT16_MAX;	// Левее девого края окна
+	if (pm - p0 >= width)
+		return UINT16_MAX;	// Правее правого края окна
+	return pm - p0;
+}
+
+// Поставить цветную полосу
 // Формат RGB565
 void display_colorbuffer_xor_vline(
 	PACKEDCOLOR565_T * buffer,
@@ -5019,7 +5036,7 @@ void display_colorbuffer_xor_vline(
 		display_colorbuffer_xor(buffer, dx, dy, col, row0 ++, color);
 }
 
-// Поставить цветную точку.
+// Нарисовать цветную полосу
 // Формат RGB565
 static void 
 display_colorbuffer_set_vline(
@@ -5059,9 +5076,10 @@ display_colorgrid(
 
 		if (df > - halfbw)
 		{
-			// маркер центральной частоты обзора - XOR линию
-			xmarker = deltafreq2x(f0, df, bw, ALLDX);
-			display_colorbuffer_xor_vline(buffer, ALLDX, ALLDY, xmarker, row0, h, color);
+			// маркер частоты кратной glob_gridstep - XOR линию
+			xmarker = deltafreq2x_abs(f0, df, bw, ALLDX);
+			if (xmarker != UINT16_MAX)
+				display_colorbuffer_xor_vline(buffer, ALLDX, ALLDY, xmarker, row0, h, color);
 		}
 	}
 }
@@ -5108,7 +5126,7 @@ static void display2_spectrum(
 			// отображение спектра
 			for (x = 0; x < ALLDX; ++ x)
 			{
-				uint_fast16_t ynew = SPDY - 1 - dsp_mag2y(filter_spectrum(x), SPDY - 1, glob_topdb, glob_bottomdb);
+				uint_fast16_t ynew = SPDY - 1 - dsp_mag2y(filter_spectrum(x), SPDY - 1, calibrated_topdb, calibrated_bottomdb);
 				if (x != 0)
 					display_pixelbuffer_line(spectmonoscr, ALLDX, SPDY, x - 1, ylast, x, ynew);
 				ylast = ynew;
@@ -5143,7 +5161,7 @@ static void display2_spectrum(
 				}
 				// Формирование графика
 				// логарифм - в вертикальную координату
-				const int yv = SPDY - 1 - dsp_mag2y(filter_spectrum(x), SPDY - 1, glob_topdb, glob_bottomdb);	//отображаемый уровень, yv = 0..SPDY
+				const int yv = SPDY - 1 - dsp_mag2y(filter_spectrum(x), SPDY - 1, calibrated_topdb, calibrated_bottomdb);	//отображаемый уровень, yv = 0..SPDY
 				for (y = yv; y < SPDY; ++ y)
 					display_pixelbuffer_xor(spectmonoscr, ALLDX, SPDY, x, SPY0 + y);	// xor точку
 			}
@@ -5166,9 +5184,11 @@ static void display2_spectrum(
 	{
 		const uint_fast32_t f0 = hamradio_get_freq_a();	/* frequecy at middle of spectrum */
 		const int_fast32_t bw = display_zoomedbw();
-		uint_fast16_t xleft = deltafreq2x(f0, hamradio_getleft_bp(0), bw, ALLDX);	// левый край шторуи
+		uint_fast16_t xleft = deltafreq2x(f0, hamradio_getleft_bp(0), bw, ALLDX);	// левый край шторки
 		uint_fast16_t xright = deltafreq2x(f0, hamradio_getright_bp(0), bw, ALLDX);	// правый край шторки
 
+		if (xleft > xright)
+			xleft = 0;
 		if (xright == xleft)
 			xright = xleft + 1;
 
@@ -5184,7 +5204,7 @@ static void display2_spectrum(
 				// формирование фона растра
 				display_colorbuffer_set_vline(colorpip, ALLDX, ALLDY, x, SPY0, SPDY, inband ? COLOR565_SPECTRUMBG2 : COLOR565_SPECTRUMBG);
 
-				uint_fast16_t ynew = SPDY - 1 - dsp_mag2y(filter_spectrum(x), SPDY - 1, glob_topdb, glob_bottomdb);
+				uint_fast16_t ynew = SPDY - 1 - dsp_mag2y(filter_spectrum(x), SPDY - 1, calibrated_topdb, calibrated_bottomdb);
 				if (x != 0)
 					display_colorbuffer_line_set(colorpip, ALLDX, ALLDY, x - 1, ylast, x, ynew, COLOR565_SPECTRUMLINE);
 				ylast = ynew;
@@ -5200,10 +5220,11 @@ static void display2_spectrum(
 			{
 				const uint_fast8_t inband = (x >= xleft && x <= xright);	// в полосе пропускания приемника = "шторка"
 				// логарифм - в вертикальную координату
-				const int yv = SPDY - 1 - dsp_mag2y(filter_spectrum(x), SPDY - 1, glob_topdb, glob_bottomdb);	// возвращает значения от 0 до SPDY включительно
+				const int yv = SPDY - 1 - dsp_mag2y(filter_spectrum(x), SPDY - 1, calibrated_topdb, calibrated_bottomdb);	// возвращает значения от 0 до SPDY включительно
 				// Формирование графика
 
-				// формирование фона растра - верхняя часть графика
+				// формирование фона растра - верхняя часть графика (Шторка)
+				//debug_printf_P(PSTR("xl=%d xr=%d\n"), xleft, xright);
 				display_colorbuffer_set_vline(colorpip, ALLDX, ALLDY, x, SPY0, yv, inband ? COLOR565_SPECTRUMBG2 : COLOR565_SPECTRUMBG);
 
 				// точку на границе
@@ -5216,7 +5237,15 @@ static void display2_spectrum(
 					if (yb < SPDY)
 					{
 						// формирование занятой области растра
-						display_colorbuffer_set_vline(colorpip, ALLDX, ALLDY, x, yb + SPY0, SPDY - yb, COLOR565_SPECTRUMFG);
+						if(glob_fftcolored==1)
+						{
+							for(uint_fast8_t i = 0 ; i < (SPDY - yb) ; i++)
+								display_colorbuffer_set(colorpip, ALLDX, ALLDY, x, yb + i, fftpalette[(SPDY - yb - i)]);
+						}
+						else
+						{
+							display_colorbuffer_set_vline(colorpip, ALLDX, ALLDY, x, yb + SPY0, SPDY - yb, COLOR565_SPECTRUMFG);
+						}
 					}
 				}
 			}
@@ -5255,7 +5284,14 @@ static void wflshiftleft(uint_fast16_t pixels)
 	for (y = 0; y < sizeof wfarray / sizeof wfarray [0]; ++ y)
 	{
 		if (y == wfrow)
+		{
+			//двигаем буффер усреднения значений WTF и FFT
+			memmove(&Yold_fft[0], &Yold_fft[pixels], rowsize*4 - pixels*4);
+			memset(&Yold_fft[rowsize - pixels], 0x00, pixels*4);
+			memmove(&Yold_wtf[0], &Yold_wtf[pixels], rowsize*4 - pixels*4);
+			memset(&Yold_wtf[rowsize - pixels], 0x00, pixels*4);
 			continue;
+		}
 		memmove(wfarray [y] + 0, wfarray [y] + pixels, rowsize - pixels);
 		memset(wfarray [y] + rowsize - pixels, 0x00, pixels);
 	}
@@ -5274,7 +5310,14 @@ static void wflshiftright(uint_fast16_t pixels)
 	for (y = 0; y < sizeof wfarray / sizeof wfarray [0]; ++ y)
 	{
 		if (y == wfrow)
+		{
+			//двигаем буффер усреднения значений WTF и FFT
+			memmove(&Yold_fft[pixels], &Yold_fft[0], rowsize*4 - pixels*4);
+			memset(&Yold_fft[0], 0x00, pixels*4);
+			memmove(&Yold_wtf[pixels], &Yold_wtf[0], rowsize*4 - pixels*4);
+			memset(&Yold_wtf[0], 0x00, pixels*4);
 			continue;
+		}
 		memmove(wfarray [y] + pixels, wfarray [y] + 0, rowsize - pixels);
 		memset(wfarray [y] + 0, 0x00, pixels);
 	}
@@ -5740,6 +5783,20 @@ board_set_fillspect(uint_fast8_t v)
 	glob_fillspect = v != 0;
 }
 
+/* градиентная раскраска FFT */
+void
+board_set_fftcolored(uint_fast8_t v)
+{
+	glob_fftcolored = v != 0;
+}
+
+/* автокалибровка пределов FFT */
+void
+board_set_fftautocal(uint_fast8_t v)
+{
+	glob_fftautocal = v != 0;
+}
+
 /* верхний предел FFT */
 void
 board_set_topdb(int_fast16_t v)
@@ -5759,4 +5816,5 @@ void
 board_set_zoomx(uint_fast8_t v)
 {
 	glob_zoomx = v;
+	dsp_zoomfft_init(glob_zoomx);
 }

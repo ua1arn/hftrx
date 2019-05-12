@@ -274,13 +274,15 @@
 	#define WITHRTS96		1		/* вместо выходного аудиосигнала передача квадратур по USB */
 
 	#define ENCRES_DEFAULT ENCRES_600
-	#define ENCDIV_DEFAULT	32
+	#define ENCDIV_DEFAULT	4
 	#define WITHDIRECTFREQENER	1 //(! CTLSTYLE_SW2011ALL && ! CTLSTYLE_UA3DKC)
 	#define	WITHENCODER	1	/* для изменения частоты имеется енкодер */
 	#define WITHENCODER2	1		/* есть второй валкодер */
 
 	#define WITHUSEDUALWATCH	1	// Второй приемник
 	#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
+
+	#define AUTOSCALE_DEFAULT	1 //автокалибровка FFT по умолчанию включена
 
 	// FPGA section
 	//#define	WITHFPGAWAIT_AS	1	/* FPGA загружается из собственной микросхемы загрузчика - дождаться окончания загрузки перед инициализацией SPI в процессоре */

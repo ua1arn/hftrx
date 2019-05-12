@@ -209,7 +209,7 @@ typedef uint16_t PACKEDCOLOR565_T;
 
 	#define DISPLAYMODES_FPS 5	/* количество обновлений отображения режимов работы */
 	#define DISPLAY_FPS	20	/* обновление показаний частоты десять раз в секунду */
-	#define DISPLAYSWR_FPS 10	/* количество обновлений SWR и панорамы за секунду */
+	#define DISPLAYSWR_FPS 20	/* количество обновлений SWR и панорамы за секунду */
 
 	#if LCDMODE_LTDC_L24
 
@@ -377,6 +377,11 @@ typedef uint16_t PACKEDCOLOR565_T;
 
 #define LABELW 8
 
+#define FFT_AUTOCALIB_MAX_RED 3 // максимум пиков в красной зоне FFT при автокалибровке
+#define FFT_AUTOCALIB_MIN_RED 1 // минимум пиков в красной зоне FFT при автокалибровке
+#define FFT_AUTOCALIB_MAX_BLACK_PERC 30 // максимум процентов спектра в черной зоне FFT при автокалибровке
+#define FFT_AUTOCALIB_MIN_BLACK_PERC 25 // минимум процентов спектра в черной зоне FFT при автокалибровке
+
 uint_fast8_t display_getpagesmax(void);	// количество разных вариантов отображения (menuset)
 uint_fast8_t display_getpagesleep(void);	// номер варианта отображения для "сна"
 uint_fast8_t display_getfreqformat(uint_fast8_t * prjv);	// получить параметры отображения частоты (для функции прямого ввода)
@@ -435,6 +440,8 @@ void display_menuitemvalue(
 	void * pv
 	);
 
+// инициализация ZoomFFT
+void dsp_zoomfft_init(uint_fast8_t zoom);
 
 // Вызывается из display2.c
 void 
@@ -938,5 +945,7 @@ void board_set_topdb(int_fast16_t v);	/* верхний предел FFT */
 void board_set_bottomdb(int_fast16_t v);	/* нижний предел FFT */
 void board_set_zoomx(uint_fast8_t v);	/* уменьшение отображаемого участка спектра */
 void board_set_fillspect(uint_fast8_t v); /* заливать заполнением площадь под графиком спектра */
+void board_set_fftcolored(uint_fast8_t v); /* градиентная раскраска FFT */
+void board_set_fftautocal(uint_fast8_t v); /* автокалибровка пределов FFT */
 
 #endif /* DISPLAY_H_INCLUDED */
