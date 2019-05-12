@@ -475,36 +475,36 @@ float32_t decimZoomFFTQState[FFTSizeSpectrum + 16];
 uint16_t fft_zoomed_width = 0;
 
 //Коэффициенты для ZoomFFT lowpass filtering / дециматора
-static arm_biquad_casd_df1_inst_f32 IIR_biquad_Zoom_FFT_I =
+arm_biquad_casd_df1_inst_f32 IIR_biquad_Zoom_FFT_I =
 {
 	.numStages = 4,
-	.pCoeffs = (float32_t *)(float32_t [])
+	.pCoeffs = (float32_t [])
 	{
 		1,0,0,0,0,  1,0,0,0,0
   },
-  .pState = (float32_t *)(float32_t [])
+  .pState = (float32_t [])
 	{
 		0,0,0,0,   0,0,0,0,    0,0,0,0,   0,0,0,0
 	}
 };
-static arm_biquad_casd_df1_inst_f32 IIR_biquad_Zoom_FFT_Q =
+arm_biquad_casd_df1_inst_f32 IIR_biquad_Zoom_FFT_Q =
 {
 	.numStages = 4,
-	.pCoeffs = (float32_t *)(float32_t [])
+	.pCoeffs = (float32_t [])
 	{
 		1,0,0,0,0,  1,0,0,0,0
   },
-  .pState = (float32_t *)(float32_t [])
+  .pState = (float32_t [])
 	{
 		0,0,0,0,   0,0,0,0,    0,0,0,0,   0,0,0,0
 	}
 };
 
-static float32_t* zoomfft_mag_coeffs[17] =
+static const float32_t* const zoomfft_mag_coeffs[17] =
 {
 	NULL, // 0
 	NULL, // 1
-	(float32_t*)(const float32_t[]) {
+	(const float32_t[]) {
 		// 2x magnify
 		// 60dB stopband, elliptic
 		// a1 and coeffs[A2] negated! order: coeffs[B0], coeffs[B1], coeffs[B2], a1, coeffs[A2]
@@ -515,7 +515,7 @@ static float32_t* zoomfft_mag_coeffs[17] =
 		0.501116342273565607,0.914877831284765408,0.501116342273565607,0.013862536615004284,-0.930973052446900984
 	},
 	NULL, // 3
-	(float32_t*)(const float32_t[])
+	(const float32_t[])
 	{
 		// 4x magnify
 		// 60dB stopband, elliptic
@@ -529,7 +529,7 @@ static float32_t* zoomfft_mag_coeffs[17] =
 	NULL, // 5
 	NULL, // 6
 	NULL, // 7
-	(float32_t*)(const float32_t[])
+	(const float32_t[])
 	{
 		// 8x magnify
 		// 60dB stopband, elliptic
@@ -547,7 +547,7 @@ static float32_t* zoomfft_mag_coeffs[17] =
 	NULL, // 13
 	NULL, // 14
 	NULL, // 15
-	(float32_t*)(const float32_t[])
+	(const float32_t[])
 	{
 		// 16x magnify
 		// 60dB stopband, elliptic
@@ -585,7 +585,7 @@ const arm_fir_decimate_instance_f32 FirZoomFFTDecimate[17] =
 	// x8 zoom lowpass
 	{
 		.numTaps = 4,
-		.pCoeffs = (float*) (const float[])
+		.pCoeffs = (const float[])
 		{0.199820836596682871,0.272777397353925699,0.272777397353925699,0.199820836596682871},
 		.pState = NULL
 	},
@@ -599,7 +599,7 @@ const arm_fir_decimate_instance_f32 FirZoomFFTDecimate[17] =
 	// x16 zoom lowpass
 	{
 		.numTaps = 4,
-		.pCoeffs = (float*) (const float[])
+		.pCoeffs = (const float[])
 		{0.199820836596682871,0.272777397353925699,0.272777397353925699,0.199820836596682871},
 		.pState = NULL
 	},
