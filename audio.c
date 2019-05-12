@@ -5824,7 +5824,7 @@ void dsp_initialize(void)
 	const FLOAT_t txlevelfence = dacFS /* * db2ratio(- (FLOAT_t) 1.75) */ * (FLOAT_t) M_SQRT1_2;	// контролировать по отсутствию индикации переполнения DUC при передаче
 	txlevelfenceHALF = txlevelfence / 2;	// Для режимов с lo6=0 - у которых нет подавления нерабочей боковой
 
-	txlevelfenceSSB = txlevelfence * (FLOAT_t) M_SQRT1_2;
+	txlevelfenceSSB = txlevelfence;// * (FLOAT_t) M_SQRT1_2;
 	txlevelfenceSSB_INTEGER = txlevelfenceSSB;	// Для источника шума
 	txlevelfenceBPSK = txlevelfence / (FLOAT_t) 1.5;
 	txlevelfenceNFM = txlevelfence / 2;
