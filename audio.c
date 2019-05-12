@@ -358,27 +358,27 @@ static uint_fast8_t		glob_mainsubrxmode = BOARD_RXMAINSUB_A_A;	// Левый/п�
 	#endif
 
 	// Фильтр для квадратурных каналов приёмника (floating point).
-	static FLOAT_t FIRCoef_rx_SSB_IQ [NPROF] [NtapCoeffs(Ntap_rx_SSB_IQ)] = { { 0 }, { 0 } };
+	static RAMDTCM FLOAT_t FIRCoef_rx_SSB_IQ [NPROF] [NtapCoeffs(Ntap_rx_SSB_IQ)];
 	static FLOAT_t FIRCwnd_rx_SSB_IQ [NtapCoeffs(Ntap_rx_SSB_IQ)];			// подготовленные значения функции окна
 
 	// Фильтр для квадратурных каналов передатчика (floating point)
-	static FLOAT_t FIRCoef_tx_SSB_IQ [NPROF] [NtapCoeffs(Ntap_tx_SSB_IQ)] = { { 0 }, { 0 } };
+	static RAMDTCM FLOAT_t FIRCoef_tx_SSB_IQ [NPROF] [NtapCoeffs(Ntap_tx_SSB_IQ)];
 	static FLOAT_t FIRCwnd_tx_SSB_IQ [NtapCoeffs(Ntap_tx_SSB_IQ)];			// подготовленные значения функции окна
 
 #endif /* WITHDSPLOCALFIR */
 
 // Фильтр для передатчика (floating point)
 // Обрабатывается как несимметричный
-static FLOAT_t FIRCoef_tx_MIKE [NPROF] [NtapCoeffs(Ntap_tx_MIKE)] = { { 1 }, { 1 } };
-static FLOAT_t FIRCwnd_tx_MIKE [NtapCoeffs(Ntap_tx_MIKE)] = { 1 };			// подготовленные значения функции окна
+static RAMDTCM FLOAT_t FIRCoef_tx_MIKE [NPROF] [NtapCoeffs(Ntap_tx_MIKE)];
+static RAMDTCM FLOAT_t FIRCwnd_tx_MIKE [NtapCoeffs(Ntap_tx_MIKE)];			// подготовленные значения функции окна
 
 #define	Ntap_rx_AUDIO	NtapValidate(SPEEXNN * 2 - 7)
-static FLOAT_t FIRCoef_rx_AUDIO [NtapCoeffs(Ntap_rx_AUDIO)] = { 1 };
-static FLOAT_t FIRCwnd_rx_AUDIO [NtapCoeffs(Ntap_rx_AUDIO)] = { 1 };			// подготовленные значения функции окна
+static RAMDTCM FLOAT_t FIRCoef_rx_AUDIO [NtapCoeffs(Ntap_rx_AUDIO)];
+static RAMDTCM FLOAT_t FIRCwnd_rx_AUDIO [NtapCoeffs(Ntap_rx_AUDIO)];			// подготовленные значения функции окна
 
 //static void * fft_lookup;
 
-static struct Complex Sig [FFTSizeFilters] = { { 1 }, { 1 } };
+static RAMDTCM struct Complex Sig [FFTSizeFilters];
 
 #define fftixreal(i) ((i * 2) + 0)
 #define fftiximag(i) ((i * 2) + 1)
@@ -465,13 +465,13 @@ static FLOAT_t omega2ftw_k1; // = POWF(2, NCOFTWBITS);
 #define OMEGA2FTWI(angle) ((ncoftwi_t) ((FLOAT_t) (angle) * omega2ftw_k1 / (FLOAT_t) M_TWOPI))	// angle in radians -pi..+pi to signed version of ftw_t
 
 //ZoomFFT
-float32_t FFTBuffer_ZOOMFFT[FFTSizeSpectrum*2] = {0}; //совмещённый буфер FFT I и Q для хранения выборок ZoomFFT
+static RAMDTCM float32_t FFTBuffer_ZOOMFFT[FFTSizeSpectrum*2]; //совмещённый буфер FFT I и Q для хранения выборок ZoomFFT
 
 //Дециматор для Zoom FFT
-static arm_fir_decimate_instance_f32	DECIMATE_ZOOM_FFT_I;
-static arm_fir_decimate_instance_f32	DECIMATE_ZOOM_FFT_Q;
-static float32_t decimZoomFFTIState[FFTSizeSpectrum + 16];
-static float32_t decimZoomFFTQState[FFTSizeSpectrum + 16];
+static RAMDTCM arm_fir_decimate_instance_f32	DECIMATE_ZOOM_FFT_I;
+static RAMDTCM arm_fir_decimate_instance_f32	DECIMATE_ZOOM_FFT_Q;
+static RAMDTCM float32_t decimZoomFFTIState [FFTSizeSpectrum + 16];
+static RAMDTCM float32_t decimZoomFFTQState [FFTSizeSpectrum + 16];
 static uint16_t fft_zoomed_width = 0;
 
 //Коэффициенты для ZoomFFT lowpass filtering / дециматора
@@ -761,10 +761,10 @@ static INT32P_t get_int32_aflosim(void)
 }
 */
 
-static unsigned delaysetlo6 [NTRX] = { 0, };	// задержка переключения частоты lo6 на аремя прохода сигнала через FPGA FIR
-static ncoftw_t anglestep_aflo [NTRX] = { 0, };
-static ncoftw_t anglestep_aflo_shadow [NTRX] = { 0, };
-static ncoftw_t angle_aflo [NTRX] = { 0, };
+static RAMDTCM unsigned delaysetlo6 [NTRX];	// задержка переключения частоты lo6 на аремя прохода сигнала через FPGA FIR
+static RAMDTCM ncoftw_t anglestep_aflo [NTRX];
+static RAMDTCM ncoftw_t anglestep_aflo_shadow [NTRX];
+static RAMDTCM ncoftw_t angle_aflo [NTRX];
 const ncoftw_t gnfmdeviationftw = FTWAF(2500);	// 2.5 kHz (-2.5..+2.5) deviation
 
 // установить частоту
@@ -2260,7 +2260,7 @@ static RAMFUNC_NONILINE FLOAT32P_t filter_firp_rx_SSB_IQ(FLOAT32P_t NewSample)
 	const FLOAT_t * const k = FIRCoef_rx_SSB_IQ [gwprof];
 	enum { Ntap = Ntap_rx_SSB_IQ, NtapHalf = Ntap / 2 };
 	// буфер с сохраненными значениями сэмплов
-	static FLOAT32P_t x [Ntap * 2] = { { { 0, 0 }, }, };
+	static RAMDTCM FLOAT32P_t x [Ntap * 2];
 	static uint_fast16_t fir_head = 0;
 
 	// shift the old samples
@@ -2299,7 +2299,7 @@ static RAMFUNC_NONILINE FLOAT32P_t filter_firp_tx_SSB_IQ(FLOAT32P_t NewSample)
 	const FLOAT_t * const k = FIRCoef_tx_SSB_IQ [gwprof];
 	enum { Ntap = Ntap_tx_SSB_IQ, NtapHalf = Ntap / 2 };
 	// буфер с сохраненными значениями сэмплов
-	static FLOAT32P_t x [Ntap * 2] = { { { 0, 0 }, }, };
+	static RAMDTCM FLOAT32P_t x [Ntap * 2];
 	static uint_fast16_t fir_head = 0;
 
 	// shift the old samples
@@ -2344,7 +2344,7 @@ static RAMFUNC_NONILINE FLOAT32P_t filter_fir4_rx_SSB_IQ(FLOAT32P_t NewSample, u
 	FLOAT32P_t rv;
 
 	// буфер с сохраненными значениями сэмплов
-	static FLOAT32P_t x [Ntap * 2] = { { { 0, 0, }, }, }; // input samples (force CCM allocation)
+	static RAMDTCM FLOAT32P_t x [Ntap * 2]; // input samples (force CCM allocation)
 	static uint_fast16_t fir_head = 0;		// позиция записи в буфер в последний раз
 
 	// shift the old samples
@@ -2453,7 +2453,7 @@ static RAMFUNC_NONILINE FLOAT32P_t filter_fir4_tx_SSB_IQ(FLOAT32P_t NewSample, u
 	const FLOAT_t * const k = FIRCoef_tx_SSB_IQ [gwprof];
 	enum { Ntap = Ntap_tx_SSB_IQ, NtapHalf = Ntap / 2 };
 	// буфер с сохраненными значениями сэмплов
-	static FLOAT32P_t x [Ntap * 2] = { { { 0, 0, }, }, }; // input samples (force CCM allocation)
+	static RAMDTCM FLOAT32P_t x [Ntap * 2]; // input samples (force CCM allocation)
 	static uint_fast16_t fir_head = 0;
 
 	// shift the old samples
@@ -2550,7 +2550,7 @@ static RAMFUNC_NONILINE FLOAT_t filter_fir_tx_MIKE(FLOAT_t NewSample, uint_fast8
 {
 	enum { Ntap = Ntap_tx_MIKE, NtapHalf = Ntap / 2 };
 	// буфер с сохраненными значениями сэмплов
-	static FLOAT_t xshift [Ntap * 2] = { 0, };
+	static RAMDTCM FLOAT_t xshift [Ntap * 2];
 	static uint_fast16_t fir_head = 0;
 
 	// shift the old samples
@@ -3278,13 +3278,13 @@ static RAMFUNC FLOAT_t agc_getsiglevel(
 // Инициализация сделана для того, чтобы поместить эти переменные в обюласть CCM памяти
 // Присвоение осмысленных значений производится в соответствующих функциях инициализации.
 
-static volatile agcstate_t rxsmeterstate [NTRX] = { { 0, } };	// На каждый приёмник
-static volatile agcstate_t rxagcstate [NTRX] = { { 0, } };	// На каждый приёмник
-static volatile agcstate_t txagcstate = { 0, };
+static RAMDTCM volatile agcstate_t rxsmeterstate [NTRX];	// На каждый приёмник
+static RAMDTCM volatile agcstate_t rxagcstate [NTRX];	// На каждый приёмник
+static RAMDTCM volatile agcstate_t txagcstate;
 
 static volatile agcparams_t rxsmeterparams = { 0, };
-static volatile agcparams_t rxagcparams [NPROF] [NTRX] = { { { 0, } } };
-static volatile agcparams_t txagcparams [NPROF] = { { 0, } };
+static RAMDTCM volatile agcparams_t rxagcparams [NPROF] [NTRX];
+static RAMDTCM volatile agcparams_t txagcparams [NPROF];
 static volatile uint_fast8_t gwagcprofrx = 0;	// work profile - индекс конфигурационной информации, испольуемый для работы */
 static volatile uint_fast8_t gwagcproftx = 0;	// work profile - индекс конфигурационной информации, испольуемый для работы */
 //	
@@ -3333,8 +3333,8 @@ agc_delaysignal(
 
 	enum { DLY = NSAITICKS(5) };	// данные задерживаются на указанное количество mS
 
-	static FLOAT32P_t data [NTRX] [DLY] = { { { 0, 0 }, } };
-	static unsigned pos [NTRX] = { 0, };
+	static RAMDTCM FLOAT32P_t data [NTRX] [DLY];
+	static RAMDTCM unsigned pos [NTRX];
 
 	unsigned * const pp = & pos [pathi];
 	unsigned posv = * pp;
@@ -3398,7 +3398,7 @@ static RAMFUNC FLOAT_t agc_getgain_float(
 	return gain;
 }
 
-static FLOAT_t manualsquelch [NTRX] = { 0, };
+static RAMDTCM FLOAT_t manualsquelch [NTRX];
 
 static RAMFUNC int agc_squelchopen(
 	FLOAT_t fltstrengthslow,
@@ -3577,8 +3577,8 @@ static RAMFUNC float iir_nfmnbbpf(FLOAT_t NewSample) {
     };
 
 	static uint_fast8_t iir_stage = 0;
-    static FLOAT_t y[2 * (NCoef+1)] = { 0 }; //output samples
-    static FLOAT_t x[2 * (NCoef+1)] = { 0 }; //input samples
+    static RAMDTCM FLOAT_t y[2 * (NCoef+1)]; //output samples
+    static RAMDTCM FLOAT_t x[2 * (NCoef+1)]; //input samples
     int n;
 
 	// shift the old samples
@@ -3919,7 +3919,7 @@ static RAMFUNC ncoftwi_t demodulator_FM(
 	// tnx Vladimir Vassilevsky
 	// http://www.dsprelated.com/showmessage/71491/2.php
 	//
-	static ncoftwi_t prev_fi [NTRX] = { 0, };
+	static RAMDTCM ncoftwi_t prev_fi [NTRX];
 
 	if (vp1.IV == 0 && vp1.QV == 0)
 		vp1.QV = 1;
@@ -3969,7 +3969,7 @@ struct amd
 	//int levelfade;					// Fade Leveler switch
 };
 
-static struct amd amds [NTRX] = { { 0 }, };	// force CCM allocation
+static RAMDTCM struct amd amds [NTRX];
 
 /* Получить информацию об ошибке настройки в режиме SAM */
 /* Получить значение отклонения частоты с точностью 0.1 герца */
@@ -3981,7 +3981,7 @@ uint_fast8_t hamradio_get_samdelta10(int_fast32_t * p, uint_fast8_t pathi)
 	return glob_dspmodes [pathi] == DSPCTL_MODE_RX_SAM;
 }
 
-static volatile int32_t saved_delta_fi [NTRX] = { 0, };	// force CCM allocation
+static RAMDTCM volatile int32_t saved_delta_fi [NTRX];	// force CCM allocation
 
 /* Получить значение отклонения частоты с точностью 0.1 герца */
 uint_fast8_t dsp_getfreqdelta10(int_fast32_t * p, uint_fast8_t pathi)
@@ -4717,8 +4717,8 @@ uint_fast8_t hamradio_get_notchvalueXXX(int_fast32_t * p)
 	return 0;
 }
 */
-static float32_t x256 [NTap256 * 4] = { 1, };
-static uint_fast16_t fft_head = 0;
+static RAMDTCM float32_t x256 [NTap256 * 4];
+static RAMDTCM uint_fast16_t fft_head;
 
 // формирование отображения спектра
 void saveIQRTSxx(FLOAT_t iv, FLOAT_t qv)
@@ -4927,7 +4927,7 @@ void dsp_zoomfft_init(uint_fast8_t zoom)
 							FFTSizeSpectrum);
 
 		fft_zoomed_width=FFTSizeSpectrum/zoom;
-		memset(FFTBuffer_ZOOMFFT, 0x00, FFTSizeSpectrum * 2 * 4); //очищаем накопительный буффер ZoomFFT (2 канала по 32 бита)
+		memset(FFTBuffer_ZOOMFFT, 0x00, sizeof FFTSizeSpectrum); //очищаем накопительный буффер ZoomFFT (2 канала по 32 бита)
 	}
 }
 
@@ -4948,8 +4948,8 @@ void dsp_getspectrumrow(
 	//ZoomFFT
 	if(zoom > 1)
 	{
-		static float32_t ZoomFFTInput_I[FFTSizeSpectrum] = { 0 }; //входящий буфер ZoomFFT I
-		static float32_t ZoomFFTInput_Q[FFTSizeSpectrum] = { 0 }; //входящий буфер ZoomFFT Q
+		static RAMDTCM float32_t ZoomFFTInput_I[FFTSizeSpectrum]; //входящий буфер ZoomFFT I
+		static RAMDTCM float32_t ZoomFFTInput_Q[FFTSizeSpectrum]; //входящий буфер ZoomFFT Q
 		//Получаем данные в буффер
 		for(uint_fast16_t i=0;i<FFTSizeSpectrum;i++)
 		{

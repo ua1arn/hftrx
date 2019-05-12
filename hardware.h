@@ -401,13 +401,15 @@ void hardware_adc_initialize(void);
 		#define RAMFUNC			 // __attribute__((__section__(".ramfunc")))  
 		#define RAMNOINIT_D1	__attribute__((section(".noinit"))) /* размещение в памяти SRAM_D1 */
 		#define RAMFRAMEBUFF	__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
+		#define RAMDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
 	#elif (CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX)
 		#define FLASHMEMINIT	__attribute__((section(".init"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
 		#define FLASHMEMINITFUNC	__attribute__((section(".init"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
-		#define RAMFUNC_NONILINE __attribute__((__section__(".ramfunc")))  // удаление управления noinline добавило 2-3 процента быстродействия __attribute__((__section__(".ramfunc"), noinline))  
+		#define RAMFUNC_NONILINE __attribute__((__section__(".ramfunc")))  // удаление управления noinline добавило 2-3 процента быстродействия __attribute__((__section__(".ramfunc"), noinline))
 		#define RAMFUNC			 __attribute__((__section__(".ramfunc")))  
 		#define RAMNOINIT_D1	__attribute__((section(".noinit"))) /* размещение в памяти SRAM_D1 */
 		#define RAMFRAMEBUFF	__attribute__((section(".noinit"))) /* размещение в памяти SRAM_D1 */
+		#define RAMDTCM			__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
 	#elif CPUSTYLE_STM32F4XX
 		#define FLASHMEMINIT	__attribute__((section(".init"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
 		#define FLASHMEMINITFUNC	__attribute__((section(".init"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
@@ -415,6 +417,7 @@ void hardware_adc_initialize(void);
 		#define RAMFUNC			 // __attribute__((__section__(".ramfunc")))  
 		#define RAMNOINIT_D1	//__attribute__((section(".noinit"))) /* размещение в памяти SRAM_D1 */
 		#define RAMFRAMEBUFF	//__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
+		#define RAMDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
 	#else
 		#define FLASHMEMINIT	__attribute__((section(".init"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
 		#define FLASHMEMINITFUNC	__attribute__((section(".init"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
@@ -422,6 +425,7 @@ void hardware_adc_initialize(void);
 		#define RAMFUNC			 __attribute__((__section__(".ramfunc")))  
 		#define RAMNOINIT_D1	//__attribute__((section(".noinit"))) /* размещение в памяти SRAM_D1 */
 		#define RAMFRAMEBUFF	//__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
+		#define RAMDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
 	#endif
 
 	#define ATTRWEAK __attribute__ ((weak))
@@ -502,12 +506,12 @@ void spool_secound(void);		// вызывается раз в секунду из
 
 void spool_nmeapps(void);	// Обработчик вызывается при приходе очередного импульса PPS
 
-// получить прескалер и значение для программирования таймера 
+// получить прескалер и значение для программирования таймера
 uint_fast8_t
 hardware_calc_sound_params(
 	uint_least16_t tonefreq,	/* tonefreq - частота в десятых долях герца. Минимум - 400 герц (определено набором команд CAT). */
 	unsigned * pvalue);
-// установить прескалер и значение для программирования таймера 
+// установить прескалер и значение для программирования таймера
 // called from interrupt or with disabled interrupts
 void hardware_sounds_setfreq(
 	uint_fast8_t prei,
@@ -728,7 +732,7 @@ enum messagetypes
 uint_fast8_t takemsgready_user(uint8_t * * dest);	// Буферы с принятымти от обработчиков прерываний сообщениями
 void releasemsgbuffer_user(uint8_t * dest);	// Освобождение обработанного буфера сообщения
 size_t takemsgbufferfree_low(uint8_t * * dest);	// Буфер для формирования сообщения
-void placesemsgbuffer_low(uint_fast8_t type, uint8_t * dest);	// поместить сообщение в очередь к исполнению 
+void placesemsgbuffer_low(uint_fast8_t type, uint8_t * dest);	// поместить сообщение в очередь к исполнению
 
 #include "list.h"
 
