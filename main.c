@@ -799,6 +799,7 @@ enum
 {
 	BWSETI_CW,
 	BWSETI_SSB,
+	BWSETI_SSBTX,
 	BWSETI_DIGI,
 	BWSETI_AM,
 	BWSETI_NFM,
@@ -822,10 +823,6 @@ static const char FLASHMEM
 	strFlashNarrow [] = "NAR",
 	strFlashNormal [] = "NOR";
 
-
-/* НЧ фильтр пеердатчика пока не связан с переключением режимов */
-static uint_fast8_t	gssbtxhighcut100 = 3400 / BWGRANHIGH;	/* Верхняя частота среза фильтра НЧ по передаче */
-static uint_fast8_t	gssbtxlowcut10 = 300 / BWGRANLOW;		/* Нижняя частота среза фильтра НЧ по передаче */
 
 // Частоты перестройки границ полосы пропускания
 typedef struct
@@ -866,6 +863,7 @@ enum
 	BWPROPI_CWWIDE,	
 	BWPROPI_SSBWIDE,	
 	BWPROPI_SSBNARROW,	
+	BWPROPI_SSBTX,
 	BWPROPI_AMWIDE,	
 	BWPROPI_AMNARROW,	
 	BWPROPI_DIGIWIDE,	
@@ -882,6 +880,7 @@ static bwprop_t bwprop_cwnarrow = { & bwlimits_cw, BWPROPI_CWNARROW, BWSET_NARRO
 static bwprop_t bwprop_cwwide = { & bwlimits_cw, BWPROPI_CWWIDE, BWSET_NARROW, 500 / BWGRANLOW, 0, - 0 + AFRESPONCESHIFT, };
 static bwprop_t bwprop_ssbwide = { & bwlimits_ssb, BWPROPI_SSBWIDE, BWSET_WIDE, 300 / BWGRANLOW, 3400 / BWGRANHIGH, - 36 + AFRESPONCESHIFT,	};
 static bwprop_t bwprop_ssbnarrow = { & bwlimits_ssb, BWPROPI_SSBNARROW, BWSET_WIDE, 400 / BWGRANLOW, 2900 / BWGRANHIGH, - 36 + AFRESPONCESHIFT,	};
+static bwprop_t bwprop_ssbtx = { & bwlimits_ssb, BWPROPI_SSBTX, BWSET_WIDE, 100 / BWGRANLOW, 3400 / BWGRANHIGH, - 0 + AFRESPONCESHIFT,	};
 static bwprop_t bwprop_amwide = { & bwlimits_am, BWPROPI_AMWIDE, BWSET_WIDE, 100 / BWGRANLOW, 4500 / BWGRANHIGH, - 36 + AFRESPONCESHIFT,	};
 static bwprop_t bwprop_amnarrow = { & bwlimits_am, BWPROPI_AMNARROW, BWSET_WIDE, 100 / BWGRANLOW, 3400 / BWGRANHIGH, - 36 + AFRESPONCESHIFT,	};
 static bwprop_t bwprop_digiwide = { & bwlimits_ssb, BWPROPI_DIGIWIDE, BWSET_WIDE, 50 / BWGRANLOW, 3400 / BWGRANHIGH, - 0 + AFRESPONCESHIFT,	};
@@ -895,7 +894,8 @@ static const FLASHMEM bwsetsc_t bwsetsc [BWSETI_count] =
 {
 	{ 2, { & bwprop_cwwide, & bwprop_cwnarrow, & bwprop_ssbwide, }, { strFlashWide, strFlashNarrow, strFlashNormal, }, },	// BWSETI_CW
 	{ 1, { & bwprop_ssbwide, & bwprop_ssbnarrow, }, { strFlashWide, strFlashNarrow, }, },	// BWSETI_SSB
-	{ 0, { & bwprop_digiwide, }, { strFlashNormal, }, },	// BWSETI_SSB
+	{ 0, { & bwprop_ssbtx, }, { strFlashNormal, }, },	// BWSETI_SSBTX
+	{ 0, { & bwprop_digiwide, }, { strFlashNormal, }, },	// BWSETI_DIGI
 	{ 1, { & bwprop_amwide, & bwprop_amnarrow, }, { strFlashWide, strFlashNarrow, }, },	// BWSETI_AM
 	{ 1, { & bwprop_nfmwide, & bwprop_nfmnarrow, }, { strFlashWide, strFlashNarrow, }, },	// BWSETI_NFM
 	{ 0, { & bwprop_amwide, }, { strFlashNormal, }, },	// BWSETI_DRM
@@ -913,6 +913,7 @@ static bwprop_t * const FLASHMEM bwprops [BWPROPI_count] =
 	& bwprop_cwwide,	// BWPROPI_CWWIDE,	
 	& bwprop_ssbwide,	// BWPROPI_SSBWIDE,	
 	& bwprop_ssbnarrow,	// BWPROPI_SSBNARROW
+	& bwprop_ssbtx,		// BWPROPI_SSBTX
 	& bwprop_amwide,	// BWPROPI_AMWIDE,	
 	& bwprop_amnarrow,	// BWPROPI_AMNARROW,
 	& bwprop_digiwide,	// BWPROPI_DIGIWIDE,
@@ -987,6 +988,7 @@ bwseti_getlow(
 	uint_fast8_t bwseti
 	)
 {
+	// gssbtxlowcut10 * BWGRANLOW
 	const uint_fast8_t pos = bwsetpos [bwseti];
 	const bwprop_t * const p = bwsetsc [bwseti].prop [pos];
 	switch (p->type)
@@ -1011,6 +1013,7 @@ bwseti_gethigh(
 	uint_fast8_t bwseti
 	)
 {
+	// gssbtxhighcut100 * BWGRANHIGH
 	const uint_fast8_t pos = bwsetpos [bwseti];
 	const bwprop_t * const p = bwsetsc [bwseti].prop [pos];
 	switch (p->type)
@@ -1267,7 +1270,7 @@ struct modetempl
 #endif /* WITHTX */
 #if WITHIF4DSP
 	uint_fast8_t dspmode [2];		// Управление для DSP в режиме приёма и передачи
-	uint_fast8_t bwseti;			// индекс банка полос пропускания для данного режима
+	uint_fast8_t bwsetis [2];			// индекс банка полос пропускания для данного режима в режиме приёма и передачи
 	int_fast16_t bw6s [2];			// фиксированная полоса пропускания в DSP (if6) для данного режима (если не ноль).
 	uint_fast8_t txaudio;			// источник звукового сигнала для данного режима
 	uint_fast8_t txaprofgp;		// группа профилей обработки звука
@@ -1305,7 +1308,7 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 #endif /* WITHTX */
 #if WITHIF4DSP
 		{ DSPCTL_MODE_RX_NARROW, DSPCTL_MODE_TX_CW, },	// Управление для DSP в режиме приёма и передачи - режим узкого фильтра
-		BWSETI_CW,				// индекс банка полос пропускания для данного режима
+		{ BWSETI_CW, BWSETI_CW },				// индекс банка полос пропускания для данного режима
 		{ 0, INT16_MAX, },	// фиксированная полоса пропускания в DSP (if6) для данного режима (если не ноль).
 		BOARD_TXAUDIO_MIKE,		// источник звукового сигнала для данного режима
 		TXAPROFIG_CW,				// группа профилей обработки звука
@@ -1337,7 +1340,7 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 #endif /* WITHTX */
 #if WITHIF4DSP
 		{ DSPCTL_MODE_RX_WIDE, DSPCTL_MODE_TX_SSB, },	// Управление для DSP в режиме приёма и передачи - режим широкого фильтра
-		BWSETI_SSB,				// индекс банка полос пропускания для данного режима
+		{ BWSETI_SSB, BWSETI_SSBTX, },				// индекс банка полос пропускания для данного режима
 		{ 0, 0, },	// фиксированная полоса пропускания в DSP (if6) для данного режима (если не ноль).
 		BOARD_TXAUDIO_MIKE,		// источник звукового сигнала для данного режима
 		TXAPROFIG_SSB,				// группа профилей обработки звука
@@ -1369,7 +1372,7 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 #endif /* WITHTX */
 #if WITHIF4DSP
 		{ DSPCTL_MODE_RX_AM, DSPCTL_MODE_TX_AM, },	// Управление для DSP в режиме приёма и передачи - режим широкого фильтра
-		BWSETI_AM,				// индекс банка полос пропускания для данного режима
+		{ BWSETI_AM, BWSETI_SSBTX, },				// индекс банка полос пропускания для данного режима
 		{ 0, INT16_MAX, },	// фиксированная полоса пропускания в DSP (if6) для данного режима (если не ноль).
 		BOARD_TXAUDIO_MIKE,		// источник звукового сигнала для данного режима
 		TXAPROFIG_AM,				// группа профилей обработки звука
@@ -1402,7 +1405,7 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 #endif /* WITHTX */
 #if WITHIF4DSP
 		{ DSPCTL_MODE_RX_SAM, DSPCTL_MODE_TX_AM, },	// Управление для DSP в режиме приёма и передачи - режим широкого фильтра
-		BWSETI_AM,				// индекс банка полос пропускания для данного режима
+		{ BWSETI_AM, BWSETI_SSBTX, },				// индекс банка полос пропускания для данного режима
 		{ 0, INT16_MAX, },	// фиксированная полоса пропускания в DSP (if6) для данного режима (если не ноль).
 		BOARD_TXAUDIO_MIKE,		// источник звукового сигнала для данного режима
 		TXAPROFIG_AM,				// группа профилей обработки звука
@@ -1435,7 +1438,7 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 #endif /* WITHTX */
 #if WITHIF4DSP
 		{ DSPCTL_MODE_RX_NFM, DSPCTL_MODE_TX_NFM, },	// Управление для DSP в режиме приёма и передачи - режим широкого фильтра
-		BWSETI_NFM,				// индекс банка полос пропускания для данного режима
+		{ BWSETI_NFM, BWSETI_SSBTX, },				// индекс банка полос пропускания для данного режима
 		{ 9000, INT16_MAX, },	// фиксированная полоса пропускания в DSP (if6) для данного режима (если не ноль).
 		BOARD_TXAUDIO_MIKE,		// источник звукового сигнала для данного режима
 		TXAPROFIG_NFM,				// группа профилей обработки звука
@@ -1467,7 +1470,7 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 #endif /* WITHTX */
 #if WITHIF4DSP
 		{ DSPCTL_MODE_RX_DRM, DSPCTL_MODE_TX_SSB, },	// Управление для DSP в режиме приёма и передачи - режим узкого фильтра
-		BWSETI_DRM,				// индекс банка полос пропускания для данного режима
+		{ BWSETI_DRM, BWSETI_DRM, },				// индекс банка полос пропускания для данного режима
 		{ 12000, INT16_MAX, },	// фиксированная полоса пропускания в DSP (if6) для данного режима (если не ноль).
 		BOARD_TXAUDIO_MUTE,		// источник звукового сигнала для данного режима
 		TXAPROFIG_AM,				// группа профилей обработки звука
@@ -1499,7 +1502,7 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 #endif /* WITHTX */
 #if WITHIF4DSP
 		{ DSPCTL_MODE_RX_DSB, DSPCTL_MODE_TX_CW, },	// Управление для DSP в режиме приёма и передачи - режим узкого фильтра
-		BWSETI_SSB,				// индекс банка полос пропускания для данного режима
+		{ BWSETI_SSB, BWSETI_SSBTX, },				// индекс банка полос пропускания для данного режима
 		{ 0, INT16_MAX, },	// фиксированная полоса пропускания в DSP (if6) для данного режима (если не ноль).
 		BOARD_TXAUDIO_MUTE,		// источник звукового сигнала для данного режима
 		TXAPROFIG_SSB,				// группа профилей обработки звука
@@ -1533,7 +1536,7 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 #endif /* WITHTX */
 #if WITHIF4DSP
 		{ DSPCTL_MODE_RX_WFM, DSPCTL_MODE_TX_SSB, },	// Управление для DSP в режиме приёма и передачи - режим широкого фильтра
-		BWSETI_WFM,				// индекс банка полос пропускания для данного режима
+		{ BWSETI_WFM, BWSETI_WFM, },				// индекс банка полос пропускания для данного режима
 		{ INT16_MAX, INT16_MAX, },	// bypass, фиксированная полоса пропускания в DSP (if6) для данного режима (если не ноль).
 		BOARD_TXAUDIO_MUTE,		// источник звукового сигнала для данного режима
 		TXAPROFIG_SSB,				// группа профилей обработки звука
@@ -1566,7 +1569,7 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 #endif /* WITHTX */
 #if WITHIF4DSP
 		{ DSPCTL_MODE_RX_WIDE, DSPCTL_MODE_TX_SSB, },	// Управление для DSP в режиме приёма и передачи - режим широкого фильтра
-		BWSETI_DIGI,			// индекс банка полос пропускания для данного режима
+		{ BWSETI_DIGI, BWSETI_DIGI, },				// индекс банка полос пропускания для данного режима
 		{ 0, 0, },	// фиксированная полоса пропускания в DSP (if6) для данного режима (если не ноль).
 	#if WITHUSBUAC
 		BOARD_TXAUDIO_USB,		// источник звукового сигнала для данного режима
@@ -1602,7 +1605,7 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 #endif /* WITHTX */
 #if WITHIF4DSP
 		{ DSPCTL_MODE_RX_WIDE, DSPCTL_MODE_TX_SSB, },	// Управление для DSP в режиме приёма и передачи - режим широкого фильтра
-		BWSETI_DIGI,			// индекс банка полос пропускания для данного режима
+		{ BWSETI_DIGI, BWSETI_DIGI, },				// индекс банка полос пропускания для данного режима
 		{ 0, INT16_MAX, },	// фиксированная полоса пропускания в DSP (if6) для данного режима (если не ноль).
 	#if WITHUSBUAC
 		BOARD_TXAUDIO_USB,		// источник звукового сигнала для данного режима
@@ -1639,7 +1642,7 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 #endif /* WITHTX */
 #if WITHIF4DSP
 		{ DSPCTL_MODE_RX_BPSK, DSPCTL_MODE_TX_BPSK, },	// Управление для DSP в режиме приёма и передачи - режим широкого фильтра
-		BWSETI_SSB,		// индекс банка полос пропускания для данного режима
+		{ BWSETI_DIGI, BWSETI_DIGI, },				// индекс банка полос пропускания для данного режима
 		{ 0, INT16_MAX, },	// фиксированная полоса пропускания в DSP (if6) для данного режима (если не ноль).
 		BOARD_TXAUDIO_MUTE,		// источник звукового сигнала для данного режима
 		TXAPROFIG_SSB,				// группа профилей обработки звука
@@ -1672,7 +1675,7 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 #endif /* WITHTX */
 #if WITHIF4DSP
 		{ DSPCTL_MODE_RX_ISB, DSPCTL_MODE_TX_ISB, },	// Управление для DSP в режиме приёма и передачи - режим широкого фильтра
-		BWSETI_SSB,		// индекс банка полос пропускания для данного режима
+		{ BWSETI_SSB, BWSETI_SSBTX, },				// индекс банка полос пропускания для данного режима
 		{ 0, 0, },	// фиксированная полоса пропускания в DSP (if6) для данного режима (если не ноль).
 	#if WITHUSBUAC
 		BOARD_TXAUDIO_USB,		// источник звукового сигнала для данного режима
@@ -1709,7 +1712,7 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 #endif /* WITHTX */
 #if WITHIF4DSP
 		{ DSPCTL_MODE_RX_FREEDV, DSPCTL_MODE_TX_FREEDV, },	// Управление для DSP в режиме приёма и передачи - режим широкого фильтра
-		BWSETI_SSB,		// индекс банка полос пропускания для данного режима
+		{ BWSETI_SSB, BWSETI_SSBTX, },				// индекс банка полос пропускания для данного режима
 		{ 0, 0, },	// фиксированная полоса пропускания в DSP (if6) для данного режима (если не ноль).
 		BOARD_TXAUDIO_MIKE,		// источник звукового сигнала для данного режима
 		TXAPROFIG_SSB,				// группа профилей обработки звука
@@ -2439,8 +2442,6 @@ struct nvmap
 	uint8_t bwpropsright [BWPROPI_count];	/* значения границ полосы пропускания */
 	//uint8_t bwpropsfltsofter [BWPROPI_count];	/* Код управления сглаживанием скатов фильтра основной селекции на приёме */
 	uint8_t bwpropsafresponce [BWPROPI_count];	/* Наклон АЧХ */
-	uint8_t gssbtxlowcut10;		/* Нижняя частота среза фильтра НЧ при передаче */
-	uint8_t gssbtxhighcut100;	/* Верхняя частота среза фильтра НЧ при передаче */
 
 	struct agcseti afsets [AGCSETI_COUNT];	/* режимы приема */
 
@@ -6596,7 +6597,7 @@ getif6bw(
 	uint_fast8_t wide		/* способ расчета полосы пропускания */
 	)
 {
-	const uint_fast8_t bwseti = mdt [mode].bwseti;	// индекс банка полос пропускания для данного режима
+	const uint_fast8_t bwseti = mdt [mode].bwsetis [tx];	// индекс банка полос пропускания для данного режима
 	const int_fast16_t bw6 = mdt [mode].bw6s [tx];
 	if (bw6 != 0)
 		return bw6;
@@ -6616,8 +6617,6 @@ getif6bw(
 	case MODE_CW:
 	case MODE_SSB:
 	case MODE_RTTY:
-		if (tx)
-			return (gssbtxhighcut100 * BWGRANHIGH - gssbtxlowcut10 * BWGRANLOW);	// ширина филттра SSB на передачу
 	case MODE_DIGI:
 		if (! wide)
 		{
@@ -6655,7 +6654,7 @@ hamradio_getleft_bp(uint_fast8_t pathi)
 	const uint_fast8_t forcelsb = getforcelsb(freq);
 	const uint_fast8_t alsbmode = getsubmodelsb(gsubmode, forcelsb);	// Принимаемая модуляция на нижней боковой
 	const FLASHMEM struct modetempl * const pmodet = getmodetempl(gsubmode);
-	const uint_fast8_t bwseti = pmodet->bwseti;
+	const uint_fast8_t bwseti = pmodet->bwsetis [gtx];
 	const uint_fast8_t mode = submodes [gsubmode].mode;
 	const int_fast16_t cwpitch = gcwpitch10 * CWPITCHSCALE;
 
@@ -6682,7 +6681,7 @@ hamradio_getright_bp(uint_fast8_t pathi)
 	const uint_fast8_t forcelsb = getforcelsb(freq);
 	const uint_fast8_t alsbmode = getsubmodelsb(gsubmode, forcelsb);	// Принимаемая модуляция на нижней боковой
 	const FLASHMEM struct modetempl * const pmodet = getmodetempl(gsubmode);
-	const uint_fast8_t bwseti = pmodet->bwseti;
+	const uint_fast8_t bwseti = pmodet->bwsetis [gtx];
 	const uint_fast8_t mode = submodes [gsubmode].mode;
 	const int_fast16_t cwpitch = gcwpitch10 * CWPITCHSCALE;
 
@@ -6712,20 +6711,13 @@ getlo6(
 	)
 {
 #if WITHIF4DSP
-	const uint_fast8_t bwseti = mdt [mode].bwseti;	// индекс банка полос пропускания для данного режима
+	const uint_fast8_t bwseti = mdt [mode].bwsetis [tx];	// индекс банка полос пропускания для данного режима
 	switch (mode)
 	{
 	case MODE_ISB:
 		return 0;
 
 	case MODE_SSB:
-		if (tx)
-		{
-			const int_fast16_t lowcut = gssbtxlowcut10 * BWGRANLOW; //bwseti_getlow(bwseti);
-			const int_fast16_t highcut = gssbtxhighcut100 * BWGRANHIGH; //bwseti_gethigh(bwseti);
-			return (highcut - lowcut) / 2 + lowcut; 	// частота центра полосы пропускания
-		}
-
 	case MODE_DIGI:
 	case MODE_CW:
 		if (wide)
@@ -7356,7 +7348,7 @@ updateboard(
 	#if WITHIF4DSP
 			// Так же, здесь можно решать, какой фильтр ПЧ требуется для данного фильтра dsp.
 			// В случае DUC/DDC, используется "заглушка" - IF3_TYPE_BYPASS.
-			const uint_fast8_t bwseti = mdt [amode].bwseti;
+			const uint_fast8_t bwseti = mdt [amode].bwsetis [gtx];
 			const uint_fast8_t wide = bwseti_getwide(bwseti);
 	#else /* WITHIF4DSP */
 			const uint_fast8_t wide = workfilter->widefilter;
@@ -7736,9 +7728,14 @@ updateboard(
 			board_set_mikeequalparams(gmikeequalizerparams);	// Эквалайзер 80Hz 230Hz 650Hz 	1.8kHz 5.3kHz
 		#endif /* defined (CODEC1_TYPE) && WITHAFCODEC1HAVEPROC */
 	#if WITHIF4DSP
-		board_set_aflowcuttx(gssbtxlowcut10 * BWGRANLOW);	/* Нижняя частота среза фильтра НЧ по передаче */
-		board_set_afhighcuttx(gssbtxhighcut100 * BWGRANHIGH);	/* Верхняя частота среза фильтра НЧ по передаче */
-		board_set_afresponcetx(txmode == MODE_NFM ? + 24 : 0);	/* коррекция АЧХ НЧ тракта передатчика */
+		{
+			const uint_fast8_t asubmode = getasubmode(0);	// SUBMODE_CWZ/SUBMODE_CWZSMART for tune
+			const uint_fast8_t amode = submodes [asubmode].mode;
+			const uint_fast8_t bwseti = mdt [amode].bwsetis [1];
+			board_set_aflowcuttx(bwseti_getlow(bwseti));	/* Нижняя частота среза фильтра НЧ по передаче */
+			board_set_afhighcuttx(bwseti_gethigh(bwseti));	/* Верхняя частота среза фильтра НЧ по передаче */
+			board_set_afresponcetx(txmode == MODE_NFM ? + 24 : 0);	/* коррекция АЧХ НЧ тракта передатчика */
+		}
 	#endif /* WITHIF4DSP */
 		seq_set_rxtxdelay(rxtxdelay, txrxdelay, pretxdelay ? txrxdelay : 0);	/* установить задержку пре переходе на передачу и обратно. */
 		board_sidetone_setfreq(gcwpitch10 * CWPITCHSCALE);	// Минимум - 400 герц (определено набором команд CAT Kenwood).
@@ -8469,7 +8466,7 @@ uif_key_affilter(void)
 static void 
 uif_key_changebw(void)
 {
-	const uint_fast8_t bwseti = mdt [gmode].bwseti;	// индекс банка полос пропускания для данного режима
+	const uint_fast8_t bwseti = mdt [gmode].bwsetis [0];	// индекс банка полос пропускания для данного режима
 
 	bwsetpos [bwseti] = calc_next(bwsetpos [bwseti], 0, bwsetsc [bwseti].last);
 	save_i8(RMT_BWSETPOS_BASE(bwseti), bwsetpos [bwseti]);	/* только здесь сохраняем новый фильтр для режима */
@@ -8772,7 +8769,7 @@ uint_fast8_t hamradio_get_tx(void)
 
 const FLASHMEM char * hamradio_get_rxbw_value_P(void)
 {
-	const uint_fast8_t bwseti = mdt [gmode].bwseti;	// индекс банка полос пропускания для данного режима
+	const uint_fast8_t bwseti = mdt [gmode].bwsetis [gtx];	// индекс банка полос пропускания для данного режима
 	return bwsetsc [bwseti].labels [bwsetpos[bwseti]];
 }
 
@@ -10140,7 +10137,7 @@ static void zzanswer(uint_fast8_t arg)
 
 	const uint_fast8_t submode = findkenwoodsubmode(arg, SUBMODE_USB);	/* поиск по кенвудовскому номеру */
 	const FLASHMEM struct modetempl * const pmodet = getmodetempl(submode);
-	const uint_fast8_t bwseti = pmodet->bwseti;
+	const uint_fast8_t bwseti = pmodet->bwsetis [0];
 	const uint_fast8_t pos = bwsetpos [bwseti];
 	const bwprop_t * const p = bwsetsc [bwseti].prop [pos];
 
@@ -11468,7 +11465,7 @@ processcatmsg(
 				{
 					const FLASHMEM struct modetempl * const pmodet = getmodetempl(submode);
 					//ZZmLLLLUUUUSSSS
-					const uint_fast8_t bwseti = pmodet->bwseti;
+					const uint_fast8_t bwseti = pmodet->bwsetis [0];
 					const uint_fast8_t pos = bwsetpos [bwseti];
 					bwprop_t * const p = bwsetsc [bwseti].prop [pos];
 					p->left10_width10 = vfy32up(catscanint(catp + 1, 4), p->limits->left10_width10_low,p->limits->left10_width10_high, p->left10_width10);
@@ -12421,18 +12418,18 @@ static const FLASHMEM struct menudef menutable [] =
 		"SSBTX HI", 6, 1, 0,	ISTEP1,		/* Подстройка полосы пропускания - TX SSB */
 		ITEM_VALUE,
 		8, 58, 		// 0.8 kHz-5.8 kHz
-		offsetof(struct nvmap, gssbtxhighcut100),
+		RMT_BWPROPSRIGHT_BASE(BWPROPI_SSBTX),
 		NULL,
-		& gssbtxhighcut100,
+		& bwprop_ssbtx.right100,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
 		"SSBTX LO", 7, 2, 0,	ISTEP1,		/* подстройка полосы пропускания - TX SSB */
 		ITEM_VALUE,
 		5, 70,		// 50 Hz..700 Hz
-		offsetof(struct nvmap, gssbtxlowcut10),
+		RMT_BWPROPSLEFT_BASE(BWPROPI_SSBTX),
 		NULL,
-		& gssbtxlowcut10,
+		& bwprop_ssbtx.left10_width10,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 #endif /* WITHIF4DSP */
