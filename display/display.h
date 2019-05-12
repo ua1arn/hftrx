@@ -928,6 +928,11 @@ void display_1state(
 #endif /* LCDMODE_LTDC */
 
 void display_solidbar(uint_fast16_t x, uint_fast16_t y, uint_fast16_t x2, uint_fast16_t y2, COLOR_T color);
+void display_putpixel(
+	uint_fast16_t x,
+	uint_fast16_t y,
+	COLOR_T color
+	);
 
 void board_set_topdb(int_fast16_t v);	/* верхний предел FFT */
 void board_set_bottomdb(int_fast16_t v);	/* нижний предел FFT */
