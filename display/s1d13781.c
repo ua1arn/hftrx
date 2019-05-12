@@ -1437,295 +1437,6 @@ static void display_putpixel_complete(void)
 
 
 
-
-/*-----------------------------------------------------  V_Bre
- * void V_Bre (int xn, int yn, int xk, int yk)
- *
- * Подпрограмма иллюстрирующая построение вектора из точки
- * (xn,yn) в точку (xk, yk) методом Брезенхема.
- *
- * Построение ведется от точки с меньшими  координатами
- * к точке с большими координатами с единичным шагом по
- * координате с большим приращением.
- *
- * В общем случае исходный вектор проходит не через вершины
- * растровой сетки, а пересекает ее стороны.
- * Пусть приращение по X больше приращения по Y и оба они > 0.
- * Для очередного значения X нужно выбрать одну двух ближайших
- * координат сетки по Y.
- * Для этого проверяется как проходит  исходный  вектор - выше
- * или ниже середины расстояния между ближайшими значениями Y.
- * Если выше середины,  то Y-координату  надо  увеличить на 1,
- * иначе оставить прежней.
- * Для этой проверки анализируется знак переменной s,
- * соответствующей разности между истинным положением и
- * серединой расстояния между ближайшими Y-узлами сетки.
- */
-
-static void display_line(int xn, int yn, int xk, int yk, COLOR_T color)
-{  
-	int  dx, dy, s, sx, sy, kl, incr1, incr2;
-	char swap;
-
-	/* Вычисление приращений и шагов */
-	sx = 0;
-	if ((dx= xk-xn) < 0) 
-	{
-		dx = - dx;
-		-- sx;
-	} 
-	else if (dx > 0) 
-		++ sx;
-	sy = 0;
-
-	if ((dy= yk-yn) < 0) 
-	{
-		dy = - dy; 
-		-- sy;
-	} 
-	else if (dy>0) 
-		++ sy;
-	/* Учет наклона */
-	swap = 0;
-	if ((kl= dx) < (s= dy)) 
-	{
-		dx= s;  dy= kl;  kl= s; ++swap;
-	}
-	s = (incr1= 2 * dy) - dx; /* incr1 - констан. перевычисления */
-	/* разности если текущее s < 0  и  */
-	/* s - начальное значение разности */
-	incr2 = 2 * dx;         /* Константа для перевычисления    */
-	/* разности если текущее s >= 0    */
-	display_putpixel(xn, yn, color); /* Первый  пиксел вектора       */
-
-	while (--kl >= 0) 
-	{
-		if (s >= 0) 
-		{
-			if (swap) xn+= sx; 
-			else yn+= sy;
-			s-= incr2;
-		}
-		if (swap) 
-			yn+= sy; 
-		else 
-			xn+= sx;
-		s += incr1;
-		display_putpixel(xn, yn, color); /* Текущая  точка  вектора   */
-	}
-}  /* V_Bre */
-
-
-static const int sin90 [91] =
-{          
-	0, 175, 349, 523, 698, 872,1045,1219,1392,   /*  0..8        */
-	1564,1736,1908,2079,2250,2419,2588,2756,2924,   /*  9..17       */
-	3090,3256,3420,3584,3746,3907,4067,4226,4384,   /* 18..26       */
-	4540,4695,4848,5000,5150,5299,5446,5592,5736,
-	5878,6018,6157,6293,6428,6561,6691,6820,6947,
-	7071,7193,7314,7431,7547,7660,7771,7880,7986,
-	8090,8192,8290,8387,8480,8572,8660,8746,8829,
-	8910,8988,9063,9135,9205,9272,9336,9397,9455,
-	9511,9563,9613,9659,9703,9744,9781,9816,9848,
-	9877,9903,9925,9945,9962,9976,9986,9994,9998,   /* 81..89       */
-	10000                                           /* 90           */
-};
-
-
-static int muldiv(int a, int b, unsigned c)
-{       
-	return  (unsigned) ((a * (long) b + 5000) / c);
-}
-
-static  int isin(unsigned alpha, unsigned r)
-{       
-	while (alpha >= 360)
-		alpha -= 360;
-
-	if (alpha < 90)         /* 0..3 hours   */
-		return muldiv(sin90 [ alpha ], r, 10000);
-	if (alpha < 180)        /* 9..0 hours   */
-		return muldiv(sin90 [ 180 - alpha ], r, 10000);
-	if (alpha < 270)        /* 6..9 hours   */
-		return - muldiv(sin90 [ alpha - 180], r, 10000);
-				/* 3..6 hours   */
-	return - muldiv(sin90 [ 360 - alpha ], r, 10000);
-}
-
-static  int icos(unsigned alpha, unsigned r)
-{
-	return isin(alpha + 90, r * 20 / 10);
-}
-
-
-// Рисование радиусов
-static void
-display_radius(int xc, int yc, unsigned gs, unsigned r1, unsigned r2, COLOR_T color)
-{
-	int     x, y;
-	int     x2, y2;
-
-	x = xc + icos(gs, r1);
-	y = yc + isin(gs, r1);
-	x2 = xc + icos(gs, r2);
-	y2 = yc + isin(gs, r2);
-
-	display_line(x, y, x2, y2, color);
-
-}
-
-// круговой интерполятор
-// нач.-x, нач.-y, градус начала, градус конуа, радиус, шаг приращения угла
-static void
-display_segm(int xc, int yc, unsigned gs, unsigned ge, unsigned r, int step, COLOR_T color)
-{
-	int     x, y;
-	int     xo, yo;
-	char     first;
-	int     vcos, vsin;
-
-	if (gs == ge)   return;
-	first = 1;
-	while (gs != ge)
-	{
-		vsin = isin(gs, r);
-		vcos = icos(gs, r);
-		x = xc + vcos;
-		y = yc + vsin;
-
-		if (first != 0) // 1-я точка
-		{
-			// переместить к началу рисования
-			xo = x, yo = y;
-			first = 0;
-		}
-		else
-		{  // рисовать элемент окружности
-			display_line(xo, yo, x, y, color);
-			xo = x, yo = y;
-		}
-		if (ge == 360)  
-			ge = 0;
-		if (step < 0)
-		{
-			gs += step;
-			if (gs >= 360)
-				gs += 360;
-		}
-		else
-		{
-			gs += step;
-			if (gs >= 360)
-				gs -= 360;
-		}
-	}
-
-	if (first == 0)
-	{
-		// завершение окружности
-		vsin = isin(ge, r);
-		vcos = icos(ge, r);
-		x = xc + vcos;
-		y = yc + vsin;
-
-		display_line(xo, yo, x, y, color); // рисовать линию
-	}
-
-}
-
-
-
-static void
-display_limb(void)
-{
-	enum { ADDRCELLHEIGHT = 15 };
-	int i;
-	enum { halfsect = 30 };
-	enum { gm = 270 };
-	enum { gs = gm - halfsect };
-	int ge = gm + halfsect;
-	int stripewidth = 12; //16;
-	int r1 = 7 * ADDRCELLHEIGHT - 8;	//350;
-	int r2 = r1 - stripewidth;
-	int yc = 9 * ADDRCELLHEIGHT;	//560;
-	int xc = 9 * ADDRCELLHEIGHT;	//120;
-	
-	int gv = 270 - 20;		// угол поворота стрелки
-	int rv1 = 8 * ADDRCELLHEIGHT;	//350;
-	int rv2 = rv1 - 5 * ADDRCELLHEIGHT;
-	enum { step1 = 3 };		// шаг для оцифровки S
-	enum { step2 = 4 };		// шаг для оцифровки плюсов
-	static const int markers [] =
-	{
-		//gs + 0 * step1,
-		gs + 2 * step1,		// S1
-		gs + 4 * step1,		// S3
-		gs + 6 * step1,		// S5
-		gs + 8 * step1,		// S7
-		gs + 10 * step1,	// S9
-	};
-	static const int markersR [] =
-	{
-		gm + 2 * step2,	// 
-		gm + 4 * step2,
-		gm + 6 * step2,
-	};
-	static const int markers2 [] =
-	{
-		//gs + 1 * step1,		
-		gs + 3 * step1,		// S2	
-		gs + 5 * step1,		// S4
-		gs + 7 * step1,		// S6
-		gs + 9 * step1,		// S8
-	};
-	static const int markers2R [] =
-	{
-		gm + 1 * step2,
-		gm + 3 * step2,
-		gm + 5 * step2,
-	};
-
-	const COLOR_T smeter = COLOR_WHITE;
-	const COLOR_T smeterplus = COLOR_GRAY;
-
-	if (bitblt_waitbusy())	// перед рисованием прямым доступом к видеопамяти дождаться конца работы BitBlt
-	{
-		//s1d13781_wrcmd8(REG80_BLT_CTRL_0, 0x80);	// BitBlt reset
-
-		display_segm(xc, yc, gs, gm, r1, 1, smeter);
-		display_segm(xc, yc, gm, ge, r1, 1, smeterplus);
-
-		display_segm(xc, yc, gs, ge, r2, 1, COLOR_WHITE);		// POWER
-		//display_radius(xc, yc, gs, r1, r2, COLOR_RED);
-		//display_radius(xc, yc, ge, r1, r2, COLOR_RED);
-		for (i = 0; i < sizeof markers / sizeof markers [0]; ++ i)
-		{
-			display_radius(xc, yc, markers [i], r1, r1 + 8, smeter);
-		}
-		for (i = 0; i < sizeof markers2 / sizeof markers2 [0]; ++ i)
-		{
-			display_radius(xc, yc, markers2 [i], r1, r1 + 4, smeter);
-		}
-		for (i = 0; i < sizeof markersR / sizeof markersR [0]; ++ i)
-		{
-			display_radius(xc, yc, markersR [i], r1, r1 + 8, smeterplus);
-		}
-		for (i = 0; i < sizeof markers2R / sizeof markers2R [0]; ++ i)
-		{
-			display_radius(xc, yc, markers2R [i], r1, r1 + 4, smeterplus);
-		}
-
-		//display_segm(xc, yc, gs, ge, rv1, 1, BLUE);	// показывает зоны перемещения стрелки
-		//display_segm(xc, yc, gs, ge, rv2, 1, BLUE);	// показывает зоны перемещения стрелки
-		display_radius(xc - 2, yc, gv, rv1, rv2, COLOR_RED);
-		display_radius(xc - 1, yc, gv, rv1, rv2, COLOR_RED);
-		display_radius(xc, yc, gv, rv1, rv2, COLOR_RED);
-		display_radius(xc + 1, yc, gv, rv1, rv2, COLOR_RED);
-		display_radius(xc + 2, yc, gv, rv1, rv2, COLOR_RED);
-	}
-}
-
-
 static void s1d13781_clear(COLOR_T bg)
 {
 	bitblt_fill(0, 0, S1D_DISPLAY_WIDTH, S1D_DISPLAY_HEIGHT, bg);
@@ -1912,68 +1623,6 @@ void display_solidbar(uint_fast16_t x, uint_fast16_t y, uint_fast16_t x2, uint_f
 }
 
 
-static  void
-GrideTest(void)
-{
-	int     xm, ym, xm4, ym4;
-	int xm1, ym1;
-	unsigned long col1, col20, col21, col22, col23, col3;
-	int     n, k;
-
-	col1 = TFTRGB(192,192,192);
-
-	col20 = TFTRGB(64,128,128);
-	col21 = TFTRGB(128,64,128);
-	col22 = TFTRGB(128,128,64);
-	col23 = TFTRGB(64,64,64);
-
-	col3 = TFTRGB(0,192,192);
-
-
-	xm = DIM_X - 1;
-	ym = DIM_Y - 1;
-	xm4 = xm / 4;
-	ym4 = ym / 4;
-	xm1 = xm / 40;
-	ym1 = ym / 40;
-
-	/* Filled rectangle - all screen. */
-	display_solidbar(0, 0, xm, ym, col1);
-
-	/* Filled rectangle at right-down corner. */
-	display_solidbar(xm4 * 3 + xm1, ym4 * 3 + ym1, xm4 * 4 - xm1, ym4 * 4 - ym1, col20);
-	/* Filled rectangle at right-upper corner. */
-	display_solidbar(xm4 * 3 + xm1, ym1, xm4 * 4 - xm1, ym4 - ym1, col21);
-	/* Filled rectangle at left - down corner. */
-	display_solidbar(xm1, ym4 * 3 + ym1, xm4 - xm1, ym4 * 4 - ym1, col22);
-	/* Filled rectangle at center. */
-	display_solidbar(xm4 + xm1, ym4 + ym1, xm4 * 3 - xm1, ym4 * 3 - ym1, col23);
-
-	for (k = 0; k < 16; ++ k)
-		for (n = 0; n < 16; ++ n)
-			display_solidbar(n * 18 + 1,
-				 k * 10 + 3,
-				 n * 18 + 16,
-				 k * 10 + 9,
-				 TFTRGB(n * 16, k * 16, 255 - (n * 8 + k * 8) )
-				 );
-
-	/* Interlase test.	*/
-	display_line(0,  0,  xm, 1,  col3);
-	display_line(0,  0,  xm, 3,  col3);
-	display_line(0,  0,  xm, 5,  col3);
-
-	/* diagonales test.	*/
-	display_line(xm, 0,  xm, ym, col3);
-	display_line(xm, ym, 0,  ym, col3);
-	display_line(0,  ym, 0,  0,  col3);
-	display_line(0,  0,  xm, ym, col3);
-	display_line(0,  ym, xm, 0,  col3);
-
-	//getch();
-
-}
-
 #if ! LCDMODE_LTDC
 
 void 
@@ -1982,21 +1631,6 @@ display_clear(void)
 	const COLOR_T bg = display_getbgcolor();
 
 	s1d13781_clear(bg);
-
-	//display_limb();
-#if 0
-	GrideTest();
-	display_string2_P(PSTR("test done"), 0);
-	for (;;)
-		;
-#elif 0
-	display_barstest();
-	display_gotoxy(0, 0);
-	display_setcolors(COLOR_WHITE, COLOR_BLACK);
-	display_string2_P(PSTR("test done"), 0);
-	for (;;)
-		;
-#endif
 }
 
 void
@@ -2100,7 +1734,7 @@ void s1d13781_showbuffer(
 
 		#if 0//WITHSPIEXT16 && WITHSPIHWDMA
 			// Обратить внимание, передается растр, где младшицй бит левее.
-			// Передача в индикатор по DMA	
+			// Передача в индикатор по DMA
 			const uint_fast32_t len = MGSIZE(dx, dy);
 			arm_hardware_flush((uintptr_t) buffer, len * sizeof (* buffer));	// количество байтов
 			hardware_spi_master_send_frame_16b(buffer, len);
@@ -2220,7 +1854,7 @@ void display_plot(
 	)
 {
 #if 0//WITHSPIEXT16 && WITHSPIHWDMA
-	// Передача в индикатор по DMA	
+	// Передача в индикатор по DMA
 	arm_hardware_flush((uintptr_t) buffer, GXSIZE(dx, dy) * sizeof (* buffer));	// количество байтов
 #endif /* WITHSPIEXT16 && WITHSPIHWDMA */
 
@@ -2249,7 +1883,7 @@ void display_plot(
 		{
 			uint_fast32_t len = dx;	// количество элементов
 		#if 0//WITHSPIEXT16 && WITHSPIHWDMA
-			// Передача в индикатор по DMA	
+			// Передача в индикатор по DMA
 			hardware_spi_master_send_frame_16b(buffer, len);
 			buffer += len;
 		#else /* WITHSPIEXT16 && WITHSPIHWDMA */
