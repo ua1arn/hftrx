@@ -1271,6 +1271,10 @@ arm_hardware_ltdc_initialize(void)
 	HARDWARE_LTDC_SET_MODE(BOARD_MODEVALUE);
 #endif
 
+#if LCDMODE_LTDC_PIP16
+	arm_hardware_ltdc_pip_off();
+#endif /* LCDMODE_LTDC_PIP16 */
+
 	debug_printf_P(PSTR("arm_hardware_ltdc_initialize done\n"));
 }
 
@@ -1910,6 +1914,9 @@ arm_hardware_ltdc_initialize(void)
 	HARDWARE_LTDC_SET_MODE(BOARD_MODEVALUE);
 #endif
 
+#if LCDMODE_LTDC_PIP16
+	arm_hardware_ltdc_pip_off();
+#endif /* LCDMODE_LTDC_PIP16 */
 	debug_printf_P(PSTR("arm_hardware_ltdc_initialize done\n"));
 }
 

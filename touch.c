@@ -322,7 +322,7 @@ void stmpe811_TS_Start(uint16_t DeviceAddr)
      - XYZ acquisition mode
    */
   i2cperiph_write8(DeviceAddr, STMPE811_REG_TSC_CTRL,
-		  (0x00 << 4)	 | /* Tracking index */
+		  (0x05 << 4)	 | /* Tracking index */
 		  (0x01 << 1)	 | /* TTSC operating mode: 001: X, Y only */
 		  0x01			 | /* EN: Enable TSC */
 		  0

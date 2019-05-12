@@ -66,13 +66,19 @@ static uint_fast8_t 	glob_preamp;		// включение предусилите�
 static uint_fast8_t 	glob_mikemute;		// отключить аудиовход балансного модулятора
 static uint_fast8_t 	glob_vox;
 #if WITHLCDBACKLIGHT
-static uint_fast8_t 	glob_bglight = WITHLCDBACKLIGHTMIN;
-static uint_fast32_t 	glob_blfreq = UINT32_MAX;
+	#if WITHISBOOTLOADER
+		static uint_fast8_t 	glob_bglight = WITHLCDBACKLIGHTMIN;	// включаем дисплей для работы в тествх в hightests()
+	#else /* WITHISBOOTLOADER */
+		static uint_fast8_t 	glob_bglight = WITHLCDBACKLIGHTMAX;	// включаем дисплей для работы в тествх в hightests()
+	#endif /* WITHISBOOTLOADER */
 #endif /* WITHLCDBACKLIGHT */
 #if WITHKBDBACKLIGHT
 static uint_fast8_t 	glob_kblight = 1;
 #endif /* WITHKBDBACKLIGHT */
 static uint_fast8_t		glob_fanflag;	/* включение вентилятора */
+#if WITHDCDCFREQCTL
+	static uint_fast32_t 	glob_blfreq = UINT32_MAX;	/* DC-DC frequency divider */
+#endif /* WITHDCDCFREQCTL */
 
 /* Следующие два параметра совместно выбирают фильтры в случае использования отдельных фильтров для LSB и USB */
 static uint_fast16_t 	glob_filter;		// код фильтра ПЧ. 16 бит из-за использования пары ADG714 в одной из конфигураций
@@ -4688,7 +4694,9 @@ board_set_bglight(uint_fast8_t n)
 		board_ctlreg1changed();
 	}
 }
+#endif /* WITHLCDBACKLIGHT */
 
+#if WITHDCDCFREQCTL
 /* установка делителя для формирования рабочей частоты преобразователя подсветки */
 void 
 board_set_blfreq(uint_fast32_t n)	
@@ -4702,7 +4710,7 @@ board_set_blfreq(uint_fast32_t n)
 	}
 }
 
-#endif /* WITHLCDBACKLIGHT */
+#endif /* WITHDCDCFREQCTL */
 
 #if WITHKBDBACKLIGHT
 /* включение подсветки клавиатуры */
