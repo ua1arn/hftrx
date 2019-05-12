@@ -5214,7 +5214,7 @@ display_limb(void)
 	const COLOR_T smeter = COLOR_WHITE;
 	const COLOR_T smeterplus = COLOR_GRAY;
 
-	if (bitblt_waitbusy())	// перед рисованием прямым доступом к видеопамяти дождаться конца работы BitBlt
+	//if (bitblt_waitbusy())	// перед рисованием прямым доступом к видеопамяти дождаться конца работы BitBlt
 	{
 		//s1d13781_wrcmd8(REG80_BLT_CTRL_0, 0x80);	// BitBlt reset
 
@@ -6117,6 +6117,7 @@ void hightests(void)
 #endif
 #if 0 && LCDMODE_COLORED
 	{
+		display2_bgreset();
 		//GrideTest();
 		BarTest();
 	}
@@ -6127,6 +6128,8 @@ void hightests(void)
 		uint_fast16_t gridy = 16;
 		uint_fast16_t markerx = 0;
 		uint_fast16_t markery = 0;
+
+		display2_bgreset();
 		display_solidbar(markerx, markery, markerx + gridx, markery + gridy, COLOR_WHITE);
 
 		// touch screen test
