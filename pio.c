@@ -124,7 +124,6 @@ power2(uint_fast16_t v)
 		GPIO.PMC ## n &= ~ (ipins);	/* Port Mode Control Register: 0 - port, 1 - alternative */ \
 		GPIO.PM ## n |= (ipins);	/* Port Mode Register (PMn): 0 - output, 1 - input */ \
 		GPIO.PIBC ## n |= (ipins);	/* Port Input Buffer Control Register (PIBCn): 0 - hiZ, 1 - input */ \
-		/*GPIO.PBDC ## n |= (ipins);	*/ /* Port Bidirection Control Register (PBDCn): 1: Bidirectional mode enabled */ \
 	} while (0)
 
 #define r7s721_pio_outputs(n, opins, initialstate) do { \
@@ -133,6 +132,7 @@ power2(uint_fast16_t v)
 		GPIO.PMC ## n &= ~ (opins);	/* Port Mode Control Register: 0 - port, 1 - alternative */ \
 		GPIO.PM ## n &= ~ (opins);	/* Port Mode Register (PMn): 0 - output, 1 - input */ \
 		GPIO.PIBC ## n &= ~ (opins);	/* Port Input Buffer Control Register (PIBCn): 0 - hiZ, 1 - input */ \
+		GPIO.PBDC ## n |= (opins);	 /* Port Bidirection Control Register (PBDCn): 1: Bidirectional mode enabled */ \
 	} while (0)
 
 #define r7s721_pio_alternative(n, iopins, alt) do { \
