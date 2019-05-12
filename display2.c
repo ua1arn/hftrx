@@ -5271,6 +5271,18 @@ static void wflclear(void)
 	}
 }
 
+// стираем буффер усреднения FFT
+static void fft_avg_clear(void)
+{
+	memset(Yold_wtf, 0x00, ALLDX * 4);
+}
+
+// стираем буффер усреднения водопада
+static void wfl_avg_clear(void)
+{
+	memset(Yold_wtf, 0x00, ALLDX * 4);
+}
+
 // частота увеличилась - надо сдвигать картинку влево
 // нужно сохрянять часть старого изображения
 // в строке wfrow - новое
@@ -5410,6 +5422,9 @@ static void display2_waterfall(
 			// стираем целиком старое изображение водопада
 			// в строке wfrow - новое
 			wflclear();
+			dsp_zoomfft_init(glob_zoomx); //инициализируем и очищаем ZoomFFT
+			fft_avg_clear(); // очищаем буфер усреднения FFT
+			wfl_avg_clear(); // очищаем буфер усреднения водопада
 		}
 		else if (wffreq == f0)
 		{
@@ -5430,6 +5445,9 @@ static void display2_waterfall(
 				// стараем целиком старое изображение водопада
 				// в строке wfrow - новое
 				wflclear();
+				dsp_zoomfft_init(glob_zoomx); //инициализируем и очищаем ZoomFFT
+				fft_avg_clear(); // очищаем буфер усреднения FFT
+				wfl_avg_clear(); // очищаем буфер усреднения водопада
 			}
 		}
 		else
@@ -5447,6 +5465,9 @@ static void display2_waterfall(
 				// стираем целиком старое изображение водопада
 				// в строке 0 - новое
 				wflclear();
+				dsp_zoomfft_init(glob_zoomx); //инициализируем и очищаем ZoomFFT
+				fft_avg_clear(); // очищаем буфер усреднения FFT
+				wfl_avg_clear(); // очищаем буфер усреднения водопада
 			}
 		}
 #endif /* ! WITHSEPARATEWFL */

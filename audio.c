@@ -4902,6 +4902,7 @@ int dsp_mag2y(
 	return y;
 }
 
+//инициализация ZoomFFT
 void dsp_zoomfft_init(uint_fast8_t zoom)
 {
 	if(zoom>1)
@@ -4923,6 +4924,7 @@ void dsp_zoomfft_init(uint_fast8_t zoom)
 							FFTSizeSpectrum);
 
 		fft_zoomed_width=FFTSizeSpectrum/zoom;
+		memset(FFTBuffer_ZOOMFFT, 0x00, FFTSizeSpectrum * 2 * 4); //очищаем накопительный буффер ZoomFFT (2 канала по 32 бита)
 	}
 }
 
