@@ -96,7 +96,7 @@ display_fillrect(
 
 
 #else /* defined (DMA2D)*/
-
+	//debug_printf_P(PSTR("display_fillrect: dx=%u, dy=%u, col=%u, row=%u, w=%u, h=%u\n"), dx, dy, col, row, w, h);
 	const unsigned t = dx - w;
 	buffer += (dx * row) + col;
 	while (h --)
@@ -109,7 +109,6 @@ display_fillrect(
 		buffer += t;
 		arm_hardware_flush((uintptr_t) startmem, sizeof (* startmem) * w);
 	}
-
 #endif /* defined (DMA2D) */
 #endif /* LCDMODE_LTDC */
 }
@@ -452,6 +451,7 @@ void display_colorbuffer_set(
 	ASSERT(col < dx);
 	ASSERT(row < dy);
 #if LCDMODE_HORFILL
+	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
 	// индекс младшей размерности перебирает горизонтальную координату дисплея
 	buffer [dx * row + col] = color;
 #else /* LCDMODE_HORFILL */
@@ -779,6 +779,21 @@ void display_pixelbuffer_line(
 
 #if LCDMODE_LTDC
 
+void display_putpixel(
+	uint_fast16_t x,
+	uint_fast16_t y,
+	COLOR_T color
+	)
+{
+#if LCDMODE_HORFILL
+	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
+	// индекс младшей размерности перебирает горизонтальную координату дисплея
+	framebuff [y] [x] = color;
+#else /* LCDMODE_HORFILL */
+	framebuff [x] [y] = color;
+#endif /* LCDMODE_HORFILL */
+}
+
 static void 
 bitblt_fill(
 	uint_fast16_t x, uint_fast16_t y, 	// координаты в пикселях
@@ -810,49 +825,6 @@ void display_solidbar(uint_fast16_t x, uint_fast16_t y, uint_fast16_t x2, uint_f
 		y = y2, y2 = t;
 	}
 	bitblt_fill(x, y, x2 - x, y2 - y, color);
-}
-
-
-
-static int local_randomgr( int num )
-{
-
-	static unsigned long rand_val = 123456UL;
-
-	if (rand_val & 0x80000000UL)
-		rand_val = (rand_val << 1);
-	else	rand_val = (rand_val << 1) ^0x201051UL;
-
-	return (rand_val % num);
-
-}
-
-
-/*                                                                      */
-/*      RANDOMBARS: Display local_randomgr bars                                 */
-/*                                                                      */
-
-void display_barstest(void)
-{
-	unsigned n = 20000;
-	for (;n --;)
-	{                    /* Until user enters a key...   */
-		int r = local_randomgr(255);
-		int g = local_randomgr(255);
-		int b = local_randomgr(255);
-
-		const COLOR_T color = TFTRGB(r, g, b);
-
-		int x = local_randomgr(DIM_X - 1);
-		int y = local_randomgr(DIM_Y - 1);
-		int x2 = local_randomgr(DIM_X - 1);
-		int y2 = local_randomgr(DIM_Y - 1);
-
-		display_solidbar(x, y, x2, y2, color);
-		//_delay_ms(10);
-	}
-
-	//getch();             /* Pause for user's response    */
 }
 
 #endif /* LCDMODE_LTDC */
@@ -1193,7 +1165,7 @@ display_scroll_down(
 #if defined (DMA2D) && LCDMODE_LTDC
 
 #if LCDMODE_HORFILL
-
+	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
 	/* TODO: В DMA2D нет средств управления направлением пересылки, потому данный код копирует сам на себя данные (размножает) */
 	/* исходный растр */
 	DMA2D->FGMAR = (uintptr_t) & framebuff [y0 + 0] [x0];
@@ -1260,6 +1232,7 @@ display_scroll_up(
 {
 #if defined (DMA2D) && LCDMODE_LTDC
 #if LCDMODE_HORFILL
+	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
 
 	/* исходный растр */
 	DMA2D->FGMAR = (uintptr_t) & framebuff [y0 + n] [x0];
@@ -1352,6 +1325,7 @@ void display_clear(void)
 void display_gotoxy(uint_fast8_t x, uint_fast8_t y)
 {
 #if LCDMODE_HORFILL
+	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
 	ltdc_second = GRID2X(x);
 	ltdc_first = GRID2Y(y);
 #else /* LCDMODE_HORFILL */
@@ -1393,6 +1367,7 @@ void display_plot(
 	)
 {
 #if LCDMODE_HORFILL
+	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
 	const size_t len = dx * sizeof * buffer;
 	while (dy --)
 	{
@@ -1436,6 +1411,7 @@ void display_wrdata2_end(void)
 void display_put_char_small2(uint_fast8_t c, uint_fast8_t lowhalf)
 {
 #if LCDMODE_HORFILL
+	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
 	ltdc_horizontal_put_char_small(c);
 #else /* LCDMODE_HORFILL */
 	ltdc_vertical_put_char_small(c);
@@ -1469,6 +1445,7 @@ void display_wrdatabig_begin(void)
 void display_put_char_big(uint_fast8_t c, uint_fast8_t lowhalf)
 {
 #if LCDMODE_HORFILL
+	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
 	ltdc_horizontal_put_char_big(c);
 #else /* LCDMODE_HORFILL */
 	ltdc_vertical_put_char_big(c);
@@ -1478,6 +1455,7 @@ void display_put_char_big(uint_fast8_t c, uint_fast8_t lowhalf)
 void display_put_char_half(uint_fast8_t c, uint_fast8_t lowhalf)
 {
 #if LCDMODE_HORFILL
+	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
 	ltdc_horizontal_put_char_half(c);
 #else /* LCDMODE_HORFILL */
 	ltdc_vertical_put_char_half(c);
@@ -1498,6 +1476,7 @@ void display_wrdata_begin(void)
 void display_put_char_small(uint_fast8_t c, uint_fast8_t lowhalf)
 {
 #if LCDMODE_HORFILL
+	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
 	ltdc_horizontal_put_char_small(c);
 #else /* LCDMODE_HORFILL */
 	ltdc_vertical_put_char_small(c);

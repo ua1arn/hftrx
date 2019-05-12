@@ -66,13 +66,19 @@ static uint_fast8_t 	glob_preamp;		// включение предусилите�
 static uint_fast8_t 	glob_mikemute;		// отключить аудиовход балансного модулятора
 static uint_fast8_t 	glob_vox;
 #if WITHLCDBACKLIGHT
-static uint_fast8_t 	glob_bglight = WITHLCDBACKLIGHTMIN;
-static uint_fast32_t 	glob_blfreq = UINT32_MAX;
+	#if WITHISBOOTLOADER
+		static uint_fast8_t 	glob_bglight = WITHLCDBACKLIGHTMIN;	// включаем дисплей для работы в тествх в hightests()
+	#else /* WITHISBOOTLOADER */
+		static uint_fast8_t 	glob_bglight = WITHLCDBACKLIGHTMAX;	// включаем дисплей для работы в тествх в hightests()
+	#endif /* WITHISBOOTLOADER */
 #endif /* WITHLCDBACKLIGHT */
 #if WITHKBDBACKLIGHT
 static uint_fast8_t 	glob_kblight = 1;
 #endif /* WITHKBDBACKLIGHT */
 static uint_fast8_t		glob_fanflag;	/* включение вентилятора */
+#if WITHDCDCFREQCTL
+	static uint_fast32_t 	glob_blfreq = UINT32_MAX;	/* DC-DC frequency divider */
+#endif /* WITHDCDCFREQCTL */
 
 /* Следующие два параметра совместно выбирают фильтры в случае использования отдельных фильтров для LSB и USB */
 static uint_fast16_t 	glob_filter;		// код фильтра ПЧ. 16 бит из-за использования пары ADG714 в одной из конфигураций
@@ -4688,7 +4694,9 @@ board_set_bglight(uint_fast8_t n)
 		board_ctlreg1changed();
 	}
 }
+#endif /* WITHLCDBACKLIGHT */
 
+#if WITHDCDCFREQCTL
 /* установка делителя для формирования рабочей частоты преобразователя подсветки */
 void 
 board_set_blfreq(uint_fast32_t n)	
@@ -4702,7 +4710,7 @@ board_set_blfreq(uint_fast32_t n)
 	}
 }
 
-#endif /* WITHLCDBACKLIGHT */
+#endif /* WITHDCDCFREQCTL */
 
 #if WITHKBDBACKLIGHT
 /* включение подсветки клавиатуры */
@@ -6635,6 +6643,8 @@ static void board_rtc_initialize(void)
 		uint_fast8_t hour, minute, secounds;
 		board_rtc_getdatetime(& year, & month, & day, & hour, & minute, & secounds);
 		
+		debug_printf_P(PSTR("board_rtc_initialize: %4d-%02d-%02d %02d:%02d:%02d\n"), year, month, day, hour, minute, secounds);
+
 		if (month < 1 || month > 12 ||
 			day < 1 || day > 31 ||
 			hour > 23 || minute > 59 || secounds > 59)
@@ -6717,341 +6727,6 @@ void board_rtc_getdatetime(
 
 #endif /* defined (RTC1_TYPE) */
 
-#if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_STMPE811)
-
-#define BOARD_I2C_STMPE811	(0x82)           /* STMPE811 Controller A0=0: 0x82, A0=1: 0x88 */
-/* chip IDs */
-#define STMPE811_ID                     0x0811
-
-/* Identification registers & System Control */
-#define STMPE811_REG_CHP_ID_LSB         0x00
-#define STMPE811_REG_CHP_ID_MSB         0x01
-#define STMPE811_REG_ID_VER             0x02
-
-/* Global interrupt Enable bit */
-#define STMPE811_GIT_EN                 0x01
-
-/* IO expander functionalities */
-#define STMPE811_ADC_FCT                0x01
-#define STMPE811_TS_FCT                 0x02
-#define STMPE811_IO_FCT                 0x04
-#define STMPE811_TEMPSENS_FCT           0x08
-
-/* Global Interrupts definitions */
-#define STMPE811_GIT_IO                 0x80  /* IO interrupt                   */
-#define STMPE811_GIT_ADC                0x40  /* ADC interrupt                  */
-#define STMPE811_GIT_TEMP               0x20  /* Not implemented                */
-#define STMPE811_GIT_FE                 0x10  /* FIFO empty interrupt           */
-#define STMPE811_GIT_FF                 0x08  /* FIFO full interrupt            */
-#define STMPE811_GIT_FOV                0x04  /* FIFO overflowed interrupt      */
-#define STMPE811_GIT_FTH                0x02  /* FIFO above threshold interrupt */
-#define STMPE811_GIT_TOUCH              0x01  /* Touch is detected interrupt    */
-#define STMPE811_ALL_GIT                0x1F  /* All global interrupts          */
-#define STMPE811_TS_IT                  (STMPE811_GIT_TOUCH | STMPE811_GIT_FTH |  STMPE811_GIT_FOV | STMPE811_GIT_FF | STMPE811_GIT_FE) /* Touch screen interrupts */
-
-/* General Control Registers */
-#define STMPE811_REG_SYS_CTRL1          0x03
-#define STMPE811_REG_SYS_CTRL2          0x04
-#define STMPE811_REG_SPI_CFG            0x08
-
-/* Interrupt system registers */
-#define STMPE811_REG_INT_CTRL           0x09
-#define STMPE811_REG_INT_EN             0x0A
-#define STMPE811_REG_INT_STA            0x0B
-#define STMPE811_REG_IO_INT_EN          0x0C
-#define STMPE811_REG_IO_INT_STA         0x0D
-
-/* IO Registers */
-#define STMPE811_REG_IO_SET_PIN         0x10
-#define STMPE811_REG_IO_CLR_PIN         0x11
-#define STMPE811_REG_IO_MP_STA          0x12
-#define STMPE811_REG_IO_DIR             0x13
-#define STMPE811_REG_IO_ED              0x14
-#define STMPE811_REG_IO_RE              0x15
-#define STMPE811_REG_IO_FE              0x16
-#define STMPE811_REG_IO_AF              0x17
-
-/* ADC Registers */
-#define STMPE811_REG_ADC_INT_EN         0x0E
-#define STMPE811_REG_ADC_INT_STA        0x0F
-#define STMPE811_REG_ADC_CTRL1          0x20
-#define STMPE811_REG_ADC_CTRL2          0x21
-#define STMPE811_REG_ADC_CAPT           0x22
-#define STMPE811_REG_ADC_DATA_CH0       0x30
-#define STMPE811_REG_ADC_DATA_CH1       0x32
-#define STMPE811_REG_ADC_DATA_CH2       0x34
-#define STMPE811_REG_ADC_DATA_CH3       0x36
-#define STMPE811_REG_ADC_DATA_CH4       0x38
-#define STMPE811_REG_ADC_DATA_CH5       0x3A
-#define STMPE811_REG_ADC_DATA_CH6       0x3B
-#define STMPE811_REG_ADC_DATA_CH7       0x3C
-
-/* Touch Screen Registers */
-#define STMPE811_REG_TSC_CTRL           0x40
-#define STMPE811_REG_TSC_CFG            0x41
-#define STMPE811_REG_WDM_TR_X           0x42
-#define STMPE811_REG_WDM_TR_Y           0x44
-#define STMPE811_REG_WDM_BL_X           0x46
-#define STMPE811_REG_WDM_BL_Y           0x48
-#define STMPE811_REG_FIFO_TH            0x4A
-#define STMPE811_REG_FIFO_STA           0x4B
-#define STMPE811_REG_FIFO_SIZE          0x4C
-#define STMPE811_REG_TSC_DATA_X         0x4D
-#define STMPE811_REG_TSC_DATA_Y         0x4F
-#define STMPE811_REG_TSC_DATA_Z         0x51
-#define STMPE811_REG_TSC_DATA_XYZ       0x52
-#define STMPE811_REG_TSC_FRACT_XYZ      0x56
-#define STMPE811_REG_TSC_DATA_INC       0x57
-#define STMPE811_REG_TSC_DATA_NON_INC   0xD7
-#define STMPE811_REG_TSC_I_DRIVE        0x58
-#define STMPE811_REG_TSC_SHIELD         0x59
-
-/* Touch Screen Pins definition */
-#define STMPE811_TOUCH_YD               IO_PIN_1
-#define STMPE811_TOUCH_XD               IO_PIN_2
-#define STMPE811_TOUCH_YU               IO_PIN_3
-#define STMPE811_TOUCH_XU               IO_PIN_4
-#define STMPE811_TOUCH_IO_ALL           (uint32_t)(STMPE811_PIN_1 | STMPE811_PIN_2 | STMPE811_PIN_3 | STMPE811_PIN_4)
-
-/* IO Pins definition */
-#define STMPE811_PIN_0                  0x01
-#define STMPE811_PIN_1                  0x02
-#define STMPE811_PIN_2                  0x04
-#define STMPE811_PIN_3                  0x08
-#define STMPE811_PIN_4                  0x10
-#define STMPE811_PIN_5                  0x20
-#define STMPE811_PIN_6                  0x40
-#define STMPE811_PIN_7                  0x80
-#define STMPE811_PIN_ALL                0xFF
-
-/* IO Pins directions */
-#define STMPE811_DIRECTION_IN           0x00
-#define STMPE811_DIRECTION_OUT          0x01
-
-/* IO IT types */
-#define STMPE811_TYPE_LEVEL             0x00
-#define STMPE811_TYPE_EDGE              0x02
-
-/* IO IT polarity */
-#define STMPE811_POLARITY_LOW           0x00
-#define STMPE811_POLARITY_HIGH          0x04
-
-/* IO Pin IT edge modes */
-#define STMPE811_EDGE_FALLING           0x01
-#define STMPE811_EDGE_RISING            0x02
-
-/* TS registers masks */
-#define STMPE811_TS_CTRL_ENABLE         0x01
-#define STMPE811_TS_CTRL_STATUS         0x80
-
-#define DEVDRV_CH_0 0
-
-
-int32_t R_RIIC_rza1h_rsk_read(uint32_t channel, uint8_t d_adr, uint16_t r_adr, uint32_t r_byte, uint8_t * r_buffer)
-{
-	i2c_start(d_adr);
-	i2c_write_withrestart(r_adr);		// Register 135
-	i2c_start(d_adr | 1);
-	if (r_byte == 1)
-	{
-		uint_fast8_t v;
-		i2c_read(& v, I2C_READ_ACK_NACK);	/* чтение первого и единственного байта ответа */
-		* r_buffer = v;
-		return 0;
-	}
-	else if (r_byte == 2)
-	{
-		uint_fast8_t v;
-		i2c_read(& v, I2C_READ_ACK_1);	/* чтение первого байта ответа */
-		* r_buffer ++ = v;
-		i2c_read(& v, I2C_READ_NACK);	/* чтение последнего байта ответа */
-		* r_buffer ++ = v;
-		return 0;
-	}
-	else
-	{
-		uint_fast8_t v;
-		i2c_read(& v, I2C_READ_ACK_1);	/* чтение первого байта ответа */
-		* r_buffer ++ = v;
-		while (r_byte -- > 2)
-		{
-			i2c_read(& v, I2C_READ_ACK);	/* чтение промежуточного байта ответа */
-			* r_buffer ++ = v;
-		}
-		i2c_read(& v, I2C_READ_NACK);	/* чтение последнего байта ответа */
-		* r_buffer ++ = v;
-		return 0;
-	}
-}
-
-void IOE_Write(uint16_t DeviceAddr, uint8_t reg, uint8_t val)
-{
-	//R_RIIC_rza1h_rsk_write(DEVDRV_CH_0, DeviceAddr, reg, 1, & val);
-	i2c_start(DeviceAddr);
-	i2c_write(reg);		// Register 135
-	i2c_write(val);
-	i2c_waitsend();
-	i2c_stop();
-}
-
-uint8_t IOE_Read(uint16_t DeviceAddr, uint8_t reg)
-{
-	uint_fast8_t v [2];
-
-	//R_RIIC_rza1h_rsk_read(DEVDRV_CH_0, DeviceAddr, reg, 2, v);
-	i2c_start(DeviceAddr);
-	i2c_write_withrestart(reg);		// Register 135
-	i2c_start(DeviceAddr | 1);
-	i2c_read(& v [0], I2C_READ_ACK_NACK);	/* чтение первого и единственного байта ответа */
-	return v [0];
-}
-
-/**
-  * @brief  Disable the AF for the selected IO pin(s).
-  * @param  DeviceAddr: Device address on communication Bus.
-  * @param  IO_Pin: The IO pin to be configured. This parameter could be any
-  *         combination of the following values:
-  *   @arg  STMPE811_PIN_x: Where x can be from 0 to 7.
-  * @retval None
-  */
-void stmpe811_IO_DisableAF(uint16_t DeviceAddr, uint16_t IO_Pin)
-{
-  uint8_t tmp = 0;
-
-  /* Get the current register value */
-  tmp = IOE_Read(DeviceAddr, STMPE811_REG_IO_AF);
-
-  /* Disable the selected pins alternate function */
-  tmp &= ~(uint8_t)IO_Pin;
-
-  /* Write back the new register value */
-  IOE_Write(DeviceAddr, STMPE811_REG_IO_AF, tmp);
-
-}
-
-
-uint8_t stmpe811_TS_GetXY(uint16_t DeviceAddr, uint_fast16_t *X, uint_fast16_t *Y)
-{
-  uint8_t  dataXYZ [4];
-  uint32_t uldataXYZ;
-  uint8_t sta = IOE_Read(DeviceAddr, STMPE811_REG_FIFO_STA);
-  if ((sta & 0x10) == 0)
-	  return 0;
-  R_RIIC_rza1h_rsk_read(DEVDRV_CH_0, DeviceAddr, STMPE811_REG_TSC_DATA_NON_INC, sizeof(dataXYZ), dataXYZ);
-
-  /* Calculate positions values */
-  uldataXYZ = (dataXYZ[0] << 24)|(dataXYZ[1] << 16)|(dataXYZ[2] << 8)|(dataXYZ[3] << 0);
-  *X = (uldataXYZ >> 20) & 0x00000FFF;
-  *Y = (uldataXYZ >>  8) & 0x00000FFF;
-
-  /* Reset FIFO */
-  IOE_Write(DeviceAddr, STMPE811_REG_FIFO_STA, 0x01);
-  /* Enable the FIFO again */
-  IOE_Write(DeviceAddr, STMPE811_REG_FIFO_STA, 0x00);
-  return 1;
-}
-
-/**
-  * @brief  Configures the touch Screen Controller (Single point detection)
-  * @param  DeviceAddr: Device address on communication Bus.
-  * @retval None.
-  */
-void stmpe811_TS_Start(uint16_t DeviceAddr)
-{
-  uint8_t mode;
-
-  /* Get the current register value */
-  mode = IOE_Read(DeviceAddr, STMPE811_REG_SYS_CTRL2);
-
-   /* Set the Functionalities to be Enabled */
-  mode &= ~(STMPE811_TS_FCT | STMPE811_ADC_FCT);
-
-  /* Set the new register value */
-  IOE_Write(DeviceAddr, STMPE811_REG_SYS_CTRL2, mode);
-
-
-  /* Select Sample Time, bit number and ADC Reference */
-  IOE_Write(DeviceAddr, STMPE811_REG_ADC_CTRL1, 0x49);
-
-  /* Wait for 2 ms */
-  local_delay_ms(2);
-
-  /* Select the ADC clock speed: 3.25 MHz */
-  IOE_Write(DeviceAddr, STMPE811_REG_ADC_CTRL2, 0x01);
-
-  /* Select TSC pins in non default mode */
-  stmpe811_IO_DisableAF(DeviceAddr, STMPE811_TOUCH_IO_ALL);
-
-  /* Select 2 nF filter capacitor */
-  /* Configuration:
-     - Touch average control    : 4 samples
-     - Touch delay time         : 500 uS
-     - Panel driver setting time: 500 uS
-  */
-  IOE_Write(DeviceAddr, STMPE811_REG_TSC_CFG, 0x9A);
-
-  /* Configure the Touch FIFO threshold: single point reading */
-  IOE_Write(DeviceAddr, STMPE811_REG_FIFO_TH, 0x01);
-
-  /* Clear the FIFO memory content. */
-  IOE_Write(DeviceAddr, STMPE811_REG_FIFO_STA, 0x01);
-
-  /* Put the FIFO back into operation mode  */
-  IOE_Write(DeviceAddr, STMPE811_REG_FIFO_STA, 0x00);
-
-  /* Set the range and accuracy pf the pressure measurement (Z) :
-     - Fractional part :7
-     - Whole part      :1
-  */
-  IOE_Write(DeviceAddr, STMPE811_REG_TSC_FRACT_XYZ, 0x01);
-
-  /* Set the driving capability (limit) of the device for TSC pins: 50mA */
-  IOE_Write(DeviceAddr, STMPE811_REG_TSC_I_DRIVE, 0x01);
-
-  /* Touch screen control configuration (enable TSC):
-     - No window tracking index
-     - XYZ acquisition mode
-   */
-  IOE_Write(DeviceAddr, STMPE811_REG_TSC_CTRL, 0x01);
-
-  /*  Clear all the status pending bits if any */
-  IOE_Write(DeviceAddr, STMPE811_REG_INT_STA, 0xFF);
-
-  /* Wait for 2 ms delay */
-  local_delay_ms(2);
-}
-
-uint_fast8_t display_ts_getxy(uint_fast16_t * x, uint_fast16_t * y)
-{
-	if (stmpe811_TS_GetXY(BOARD_I2C_STMPE811, x, y))
-	{
-		return 1;
-	}
-	return 0;
-}
-
-void stmpe811_initialize(void)
-{
-	unsigned char ver [2];
-
-	ver [0] = IOE_Read(BOARD_I2C_STMPE811, STMPE811_REG_CHP_ID_LSB);
-	ver [1] = IOE_Read(BOARD_I2C_STMPE811, STMPE811_REG_CHP_ID_MSB);
-	debug_printf_P(PSTR("stmpe811_initialize: ver=%02X%02X, expected %04X\r\n"), ver [1], ver [0], STMPE811_ID);
-
-	stmpe811_TS_Start(BOARD_I2C_STMPE811);
-}
-
-#endif /* defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_STMPE811) */
-
-#if defined (TSC1_TYPE)
-
-static void prog_tsc_initialize(void)
-{
-#if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_STMPE811)
-	stmpe811_initialize();
-#endif /* defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_STMPE811) */
-}
-#endif /* defined (TSC1_TYPE) */
 
 #if ADC1_TYPE == ADC_TYPE_AD9246
 
@@ -7185,7 +6860,7 @@ void board_init_chips(void)
 #endif /* defined (RTC1_TYPE) */
 
 #if defined (TSC1_TYPE)
-	prog_tsc_initialize();
+	board_tsc_initialize();
 #endif /* defined (TSC1_TYPE) */
 }
 
@@ -7381,7 +7056,6 @@ void hardware_txpath_set(
 	#error Undefined CPUSTYLE_XXX
 #endif
 }
-
 
 // Инициализация управления трактом передатчика
 void 

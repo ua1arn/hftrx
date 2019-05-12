@@ -17290,6 +17290,8 @@ void bootloader_detach(void)
 
 static void bootloader_mainloop(void)
 {
+	board_set_bglight(WITHLCDBACKLIGHTMIN);
+	board_update();
 	//local_delay_ms(1000);
 	//printhex(BOOTLOADER_APPAREA, (void *) BOOTLOADER_APPAREA, 512);
 	debug_printf_P(PSTR("Ready jump to application at %p. Press 'r'\n"), (void *) BOOTLOADER_APPAREA);
