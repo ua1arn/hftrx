@@ -884,7 +884,7 @@ static bwprop_t bwprop_ssbwide = { & bwlimits_ssb, BWPROPI_SSBWIDE, BWSET_WIDE, 
 static bwprop_t bwprop_ssbnarrow = { & bwlimits_ssb, BWPROPI_SSBNARROW, BWSET_WIDE, 400 / BWGRANLOW, 2900 / BWGRANHIGH, - 36 + AFRESPONCESHIFT,	};
 static bwprop_t bwprop_amwide = { & bwlimits_am, BWPROPI_AMWIDE, BWSET_WIDE, 100 / BWGRANLOW, 4500 / BWGRANHIGH, - 36 + AFRESPONCESHIFT,	};
 static bwprop_t bwprop_amnarrow = { & bwlimits_am, BWPROPI_AMNARROW, BWSET_WIDE, 100 / BWGRANLOW, 3400 / BWGRANHIGH, - 36 + AFRESPONCESHIFT,	};
-static bwprop_t bwprop_digiwide = { & bwlimits_ssb, BWPROPI_DIGIWIDE, BWSET_WIDE, 300 / BWGRANLOW, 3400 / BWGRANHIGH, - 0 + AFRESPONCESHIFT,	};
+static bwprop_t bwprop_digiwide = { & bwlimits_ssb, BWPROPI_DIGIWIDE, BWSET_WIDE, 50 / BWGRANLOW, 3400 / BWGRANHIGH, - 0 + AFRESPONCESHIFT,	};
 static bwprop_t bwprop_nfmnarrow = { & bwlimits_am, BWPROPI_NFMNARROW, BWSET_WIDE, 300 / BWGRANLOW, 3400 / BWGRANHIGH, - 36 + AFRESPONCESHIFT,	};
 static bwprop_t bwprop_nfmwide = { & bwlimits_am, BWPROPI_NFMWIDE, BWSET_WIDE, 300 / BWGRANLOW, 4000 / BWGRANHIGH, - 36 + AFRESPONCESHIFT,	};
 static bwprop_t bwprop_wfm = { & bwlimits_wfm, BWPROPI_WFM, BWSET_WIDE, 100 / BWGRANLOW, 12000 / BWGRANHIGH, + 18 + AFRESPONCESHIFT,	};
@@ -6615,10 +6615,10 @@ getif6bw(
 #endif /* WITHFREEDV */
 	case MODE_CW:
 	case MODE_SSB:
-	case MODE_DIGI:
 	case MODE_RTTY:
 		if (tx)
 			return (gssbtxhighcut100 * BWGRANHIGH - gssbtxlowcut10 * BWGRANLOW);	// ширина филттра SSB на передачу
+	case MODE_DIGI:
 		if (! wide)
 		{
 			return bwseti_getwidth(bwseti);
@@ -6718,7 +6718,6 @@ getlo6(
 	case MODE_ISB:
 		return 0;
 
-	case MODE_DIGI:
 	case MODE_SSB:
 		if (tx)
 		{
@@ -6726,6 +6725,8 @@ getlo6(
 			const int_fast16_t highcut = gssbtxhighcut100 * BWGRANHIGH; //bwseti_gethigh(bwseti);
 			return (highcut - lowcut) / 2 + lowcut; 	// частота центра полосы пропускания
 		}
+
+	case MODE_DIGI:
 	case MODE_CW:
 		if (wide)
 		{
