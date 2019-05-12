@@ -5274,13 +5274,13 @@ static void wflclear(void)
 // стираем буффер усреднения FFT
 static void fft_avg_clear(void)
 {
-	memset(Yold_wtf, 0x00, ALLDX * 4);
+	memset(Yold_wtf, 0x00, sizeof Yold_wtf);
 }
 
 // стираем буффер усреднения водопада
 static void wfl_avg_clear(void)
 {
-	memset(Yold_wtf, 0x00, ALLDX * 4);
+	memset(Yold_wtf, 0x00, sizeof Yold_wtf);
 }
 
 // частота увеличилась - надо сдвигать картинку влево
