@@ -97,9 +97,12 @@ SECTIONS
 
     .data : AT (__etext)
     {
-        __data_start__ = .;
-        *(vtable)
-        *(.data*)
+		__data_start__ = .;
+		*(vtable)
+		. = ALIGN(4);
+		*(.data*)
+		. = ALIGN(4);
+		*(.dtcm*)
 
         . = ALIGN(4);
         /* preinit data */
