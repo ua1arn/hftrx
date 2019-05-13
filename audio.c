@@ -369,16 +369,16 @@ static uint_fast8_t		glob_mainsubrxmode = BOARD_RXMAINSUB_A_A;	// Левый/п�
 
 // Фильтр для передатчика (floating point)
 // Обрабатывается как несимметричный
-static RAMDTCM FLOAT_t FIRCoef_tx_MIKE [NPROF] [NtapCoeffs(Ntap_tx_MIKE)];
-static RAMDTCM FLOAT_t FIRCwnd_tx_MIKE [NtapCoeffs(Ntap_tx_MIKE)];			// подготовленные значения функции окна
+static RAMBIGDTCM FLOAT_t FIRCoef_tx_MIKE [NPROF] [NtapCoeffs(Ntap_tx_MIKE)];
+static RAMBIGDTCM FLOAT_t FIRCwnd_tx_MIKE [NtapCoeffs(Ntap_tx_MIKE)];			// подготовленные значения функции окна
 
 #define	Ntap_rx_AUDIO	NtapValidate(SPEEXNN * 2 - 7)
-static RAMDTCM FLOAT_t FIRCoef_rx_AUDIO [NtapCoeffs(Ntap_rx_AUDIO)];
-static RAMDTCM FLOAT_t FIRCwnd_rx_AUDIO [NtapCoeffs(Ntap_rx_AUDIO)];			// подготовленные значения функции окна
+static FLOAT_t FIRCoef_rx_AUDIO [NtapCoeffs(Ntap_rx_AUDIO)];
+static FLOAT_t FIRCwnd_rx_AUDIO [NtapCoeffs(Ntap_rx_AUDIO)];			// подготовленные значения функции окна
 
 //static void * fft_lookup;
 
-static RAMDTCM struct Complex Sig [FFTSizeFilters];
+static RAMBIGDTCM struct Complex Sig [FFTSizeFilters];
 
 #define fftixreal(i) ((i * 2) + 0)
 #define fftiximag(i) ((i * 2) + 1)
@@ -465,13 +465,13 @@ static FLOAT_t omega2ftw_k1; // = POWF(2, NCOFTWBITS);
 #define OMEGA2FTWI(angle) ((ncoftwi_t) ((FLOAT_t) (angle) * omega2ftw_k1 / (FLOAT_t) M_TWOPI))	// angle in radians -pi..+pi to signed version of ftw_t
 
 //ZoomFFT
-static RAMDTCM float32_t FFTBuffer_ZOOMFFT[FFTSizeSpectrum*2]; //совмещённый буфер FFT I и Q для хранения выборок ZoomFFT
+static float32_t FFTBuffer_ZOOMFFT[FFTSizeSpectrum*2]; //совмещённый буфер FFT I и Q для хранения выборок ZoomFFT
 
 //Дециматор для Zoom FFT
-static RAMDTCM arm_fir_decimate_instance_f32	DECIMATE_ZOOM_FFT_I;
-static RAMDTCM arm_fir_decimate_instance_f32	DECIMATE_ZOOM_FFT_Q;
-static RAMDTCM float32_t decimZoomFFTIState [FFTSizeSpectrum + 16];
-static RAMDTCM float32_t decimZoomFFTQState [FFTSizeSpectrum + 16];
+static arm_fir_decimate_instance_f32	DECIMATE_ZOOM_FFT_I;
+static arm_fir_decimate_instance_f32	DECIMATE_ZOOM_FFT_Q;
+static float32_t decimZoomFFTIState [FFTSizeSpectrum + 16];
+static float32_t decimZoomFFTQState [FFTSizeSpectrum + 16];
 static uint16_t fft_zoomed_width = 0;
 
 //Коэффициенты для ZoomFFT lowpass filtering / дециматора
@@ -4717,7 +4717,7 @@ uint_fast8_t hamradio_get_notchvalueXXX(int_fast32_t * p)
 	return 0;
 }
 */
-static RAMDTCM float32_t x256 [NTap256 * 4];
+static RAMBIGDTCM float32_t x256 [NTap256 * 4];
 static RAMDTCM uint_fast16_t fft_head;
 
 // формирование отображения спектра
