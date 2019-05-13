@@ -371,7 +371,7 @@
 
 	#define WITHMODESETFULLNFM 1
 
-
+	#define WITHNEWZOOMFFT 1
 	#define WITHCATEXT	1	/* Расширенный набор команд CAT */
 	#define WITHELKEY	1
 	//#define WITHKBDENCODER 1	// перестройка частоты кнопками
