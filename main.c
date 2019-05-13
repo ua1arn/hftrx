@@ -4459,7 +4459,7 @@ static void
 uif_key_click_amfmbandpassup(void)
 {
 	const FLASHMEM struct modetempl * const pmodet = getmodetempl(gsubmode);
-	const uint_fast8_t bwseti = pmodet->bwseti;
+	const uint_fast8_t bwseti = pmodet->bwsetis [0];	// индекс банка полос пропускания для данного режима на приеме
 	const uint_fast8_t pos = bwsetpos [bwseti];
 	bwprop_t * const p = bwsetsc [bwseti].prop [pos];
 	//if (p->type != BWSET_WIDE)
@@ -4488,7 +4488,7 @@ static void
 uif_key_click_amfmbandpassdown(void)
 {
 	const FLASHMEM struct modetempl * const pmodet = getmodetempl(gsubmode);
-	const uint_fast8_t bwseti = pmodet->bwseti;
+	const uint_fast8_t bwseti = pmodet->bwsetis [0];	// индекс банка полос пропускания для данного режима на приеме
 	const uint_fast8_t pos = bwsetpos [bwseti];
 	bwprop_t * const p = bwsetsc [bwseti].prop [pos];
 	//if (p->type != BWSET_WIDE)
@@ -4516,7 +4516,7 @@ uif_key_click_amfmbandpassdown(void)
 uint_fast8_t hamradio_get_amfm_highcut10_value(uint_fast8_t * flag)
 {
 	const FLASHMEM struct modetempl * const pmodet = getmodetempl(gsubmode);
-	const uint_fast8_t bwseti = pmodet->bwseti;
+	const uint_fast8_t bwseti = pmodet->bwsetis [0];	// индекс банка полос пропускания для данного режима на приеме
 	const uint_fast8_t pos = bwsetpos [bwseti];
 	bwprop_t * const p = bwsetsc [bwseti].prop [pos];
 
@@ -7731,7 +7731,7 @@ updateboard(
 		{
 			const uint_fast8_t asubmode = getasubmode(0);	// SUBMODE_CWZ/SUBMODE_CWZSMART for tune
 			const uint_fast8_t amode = submodes [asubmode].mode;
-			const uint_fast8_t bwseti = mdt [amode].bwsetis [1];
+			const uint_fast8_t bwseti = mdt [amode].bwsetis [1];	// индекс банка полос пропускания для данного режима на передаче
 			board_set_aflowcuttx(bwseti_getlow(bwseti));	/* Нижняя частота среза фильтра НЧ по передаче */
 			board_set_afhighcuttx(bwseti_gethigh(bwseti));	/* Верхняя частота среза фильтра НЧ по передаче */
 			board_set_afresponcetx(txmode == MODE_NFM ? + 24 : 0);	/* коррекция АЧХ НЧ тракта передатчика */
@@ -8466,7 +8466,7 @@ uif_key_affilter(void)
 static void 
 uif_key_changebw(void)
 {
-	const uint_fast8_t bwseti = mdt [gmode].bwsetis [0];	// индекс банка полос пропускания для данного режима
+	const uint_fast8_t bwseti = mdt [gmode].bwsetis [0];	// индекс банка полос пропускания для данного режима на приеме
 
 	bwsetpos [bwseti] = calc_next(bwsetpos [bwseti], 0, bwsetsc [bwseti].last);
 	save_i8(RMT_BWSETPOS_BASE(bwseti), bwsetpos [bwseti]);	/* только здесь сохраняем новый фильтр для режима */
@@ -10137,7 +10137,7 @@ static void zzanswer(uint_fast8_t arg)
 
 	const uint_fast8_t submode = findkenwoodsubmode(arg, SUBMODE_USB);	/* поиск по кенвудовскому номеру */
 	const FLASHMEM struct modetempl * const pmodet = getmodetempl(submode);
-	const uint_fast8_t bwseti = pmodet->bwsetis [0];
+	const uint_fast8_t bwseti = pmodet->bwsetis [0];	// индекс банка полос пропускания для данного режима на приеме
 	const uint_fast8_t pos = bwsetpos [bwseti];
 	const bwprop_t * const p = bwsetsc [bwseti].prop [pos];
 
@@ -11465,7 +11465,7 @@ processcatmsg(
 				{
 					const FLASHMEM struct modetempl * const pmodet = getmodetempl(submode);
 					//ZZmLLLLUUUUSSSS
-					const uint_fast8_t bwseti = pmodet->bwsetis [0];
+					const uint_fast8_t bwseti = pmodet->bwsetis [0];	// индекс банка полос пропускания для данного режима на приеме
 					const uint_fast8_t pos = bwsetpos [bwseti];
 					bwprop_t * const p = bwsetsc [bwseti].prop [pos];
 					p->left10_width10 = vfy32up(catscanint(catp + 1, 4), p->limits->left10_width10_low,p->limits->left10_width10_high, p->left10_width10);
