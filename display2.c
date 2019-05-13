@@ -5523,18 +5523,23 @@ static void display2_colorbuff(
 
 	if (hamradio_get_tx() == 0)
 	{
+#if LCDMODE_LTDC_PIP16
+		display_colorbuffer_pip(colorpip, ALLDX, ALLDY);
+		nextpip();
+#else /* LCDMODE_LTDC_PIP16 */
+		display_colorbuffer_show(colorpip, ALLDX, ALLDY, GRID2X(x0), GRID2Y(y0));
+#endif /* LCDMODE_LTDC_PIP16 */
 	}
 	else
 	{
-		display_colorbuffer_fill(colorpip, ALLDX, ALLDY, COLOR_GRAY);
+		//display_colorbuffer_fill(colorpip, ALLDX, ALLDY, COLOR_GRAY);
+#if LCDMODE_LTDC_PIP16
+		display_colorbuffer_pip(colorpip, ALLDX, ALLDY);
+#else /* LCDMODE_LTDC_PIP16 */
+		display_colorbuffer_show(colorpip, ALLDX, ALLDY, GRID2X(x0), GRID2Y(y0));
+#endif /* LCDMODE_LTDC_PIP16 */
 	}
 
-#if LCDMODE_LTDC_PIP16
-	display_colorbuffer_pip(colorpip, ALLDX, ALLDY);
-	nextpip();
-#else /* LCDMODE_LTDC_PIP16 */
-	display_colorbuffer_show(colorpip, ALLDX, ALLDY, GRID2X(x0), GRID2Y(y0));
-#endif /* LCDMODE_LTDC_PIP16 */
 #endif /* LCDMODE_S1D13781 */
 }
 
