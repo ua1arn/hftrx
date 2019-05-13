@@ -4948,7 +4948,7 @@ static void dsp_latchwaterfall(
 		const int val = dsp_mag2y(filter_waterfall(x), PALETTESIZE - 1, calibrated_topdb, calibrated_bottomdb); // возвращает значения от 0 до dy включительно
 
 		//автокалибровка FFT
-		if(glob_fftautocal==1)
+		if(glob_fftautocal==1 && hamradio_get_tx() == 0)
 		{
 			if(val > ((PALETTESIZE/10)*8)) //выход в красную зону
 				autocalibrate_top_errors++;
@@ -4961,7 +4961,7 @@ static void dsp_latchwaterfall(
 	}
 
 	//автокалибровка FFT
-	if(glob_fftautocal==1)
+	if(glob_fftautocal==1 && hamradio_get_tx() == 0)
 	{
 		//debug_printf_P(PSTR("AUTOCALIBRATE TOP_ERRORS=%d BOT_ERRORS=%d TOPDB=%d BOTDB=%d\n"), autocalibrate_top_errors, autocalibrate_bottom_errors, calibrated_topdb, calibrated_bottomdb);
 		if(autocalibrate_top_errors > FFT_AUTOCALIB_MAX_RED)
