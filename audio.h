@@ -499,7 +499,7 @@ void dsp_initialize(void);
 	// 0 - минимальный сигнал, ymax - максимальный
 	int dsp_mag2y(FLOAT_t mag, int ymax, int_fast16_t topdb, int_fast16_t bottomdb);
 
-	void saveIQRTSxx(FLOAT_t iv, FLOAT_t qv);	// формирование отображения спектра
+	void saveIQRTSxx(FLOAT_t iv, FLOAT_t qv, uint_fast8_t rxgate);	// формирование отображения спектра
 
 #endif /* WITHINTEGRATEDDSP */
 
