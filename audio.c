@@ -4721,8 +4721,9 @@ static RAMBIGDTCM float32_t x256 [NTap256 * 4];
 static RAMDTCM uint_fast16_t fft_head;
 
 // формирование отображения спектра
-void saveIQRTSxx(FLOAT_t iv, FLOAT_t qv, uint_fast8_t rxgate)
+void saveIQRTSxx(FLOAT_t iv, FLOAT_t qv)
 {
+	const uint_fast8_t rxgate = getRxGate();
 	if (rendering == 0)
 	{
 		//const struct Complex NewSample = { iv, qv };
@@ -5034,7 +5035,7 @@ int dsp_mag2y(FLOAT_t mag, int ymax, int_fast16_t topdb, int_fast16_t bottomdb)
 #if WITHDSPEXTDDC
 // использование данных о спектре, передаваемых в общем фрейме
 static void RAMFUNC 
-saverts96(const uint32_t * buff, uint_fast8_t rxgate)
+saverts96(const uint32_t * buff)
 {
 #if WITHRTS96 && ! WITHTRANSPARENTIQ
 #if WITHUSBHW && WITHUSBUAC
@@ -5069,26 +5070,22 @@ saverts96(const uint32_t * buff, uint_fast8_t rxgate)
 	{
 			saveIQRTSxx(
 			(int32_t) buff [DMABUF32RTS0Q],	// previous
-			(int32_t) buff [DMABUF32RTS0I],
-			rxgate
+			(int32_t) buff [DMABUF32RTS0I]
 			);	
 		saveIQRTSxx(
 			(int32_t) buff [DMABUF32RTS1Q],	// current
-			(int32_t) buff [DMABUF32RTS1I],
-			rxgate
+			(int32_t) buff [DMABUF32RTS1I]
 			);	
 	}
 	else
 	{
 		saveIQRTSxx(
 			(int32_t) buff [DMABUF32RTS0I],	// previous
-			(int32_t) buff [DMABUF32RTS0Q],
-			rxgate
+			(int32_t) buff [DMABUF32RTS0Q]
 			);	
 		saveIQRTSxx(
 			(int32_t) buff [DMABUF32RTS1I],	// current
-			(int32_t) buff [DMABUF32RTS1Q],
-			rxgate
+			(int32_t) buff [DMABUF32RTS1Q]
 			);	
 	}
 
@@ -5413,7 +5410,7 @@ void RAMFUNC dsp_extbuffer32rx(const uint32_t * buff)
 
 #endif
 
-	saverts96(buff + i, rxgate);	// использование данных о спектре, передаваемых в общем фрейме
+	saverts96(buff + i);	// использование данных о спектре, передаваемых в общем фрейме
 
 	#if WITHLOOPBACKTEST
 

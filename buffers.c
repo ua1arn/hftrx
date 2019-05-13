@@ -1703,7 +1703,7 @@ void RAMFUNC processing_dmabuffer32rts(uintptr_t addr)
 	for (i = 0; i < DMABUFFSIZE192RTS; i += DMABUFSTEP192RTS)
 	{
 		const int32_t * const b = (const int32_t *) & p->buff [i];
-		saveIQRTSxx(b [0], b [1], 1);
+		saveIQRTSxx(b [0], b [1]);
 	}
 #endif /* ! WITHTRANSPARENTIQ */
 
