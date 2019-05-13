@@ -78,7 +78,6 @@ static int_fast16_t glob_gridstep = 10000;	// 10 kHz - шаг сетки
 
 // waterfall/spectrum parameters
 static uint_fast8_t glob_fillspect;	/* заливать заполнением площадь под графиком спектра */
-static uint_fast8_t glob_fftcolored; /* градиентная раскраска FFT */
 static uint_fast8_t glob_fftautocal; // автокалибровка пределов FFT
 static int_fast16_t glob_topdb = 30;	/* верхний предел FFT */
 static int_fast16_t glob_bottomdb = 130;	/* нижний предел FFT */
@@ -4876,46 +4875,90 @@ static PACKEDCOLOR565_T fftpalette [SPDY];
 #define COLOR565_SPECTRUMFENCE	TFTRGB565(255, 255, 255)	//COLOR_WHITE
 #define COLOR565_SPECTRUMLINE	TFTRGB565(0, 255, 0)	//COLOR_GREEN
 
-//получение теплоты цвета FFT (от синего к красному)
-PACKEDCOLOR565_T getFFTColor(uint_fast16_t height, uint_fast16_t max)
+// Код взят из проекта Malamute
+static void wfpalette_initialize(void)
 {
-	//r g b
-	//0 0 0
-	//0 0 255
-	//255 255 0
-	//255 0 0
+	int type = 0;
 
-	uint_fast8_t red = 0;
-	uint_fast8_t green = 0;
-	uint_fast8_t blue = 0;
-
-	if (height < max / 4)
+	if (type)
 	{
-		blue = (height * 255 / (max / 4));
-	}
-	else if (height < max / 2)
-	{
-		green = ((height - max / 4) * 255 / (max / 4));
-		red = green;
-		blue = 255 - green;
+		int a = 0;
+		int i;
+		for (i = 0; i < 42; ++ i)
+		{
+			wfpalette [a + i] = TFTRGB565(0, 0, (int) (powf((float) 0.095 * i, 4)));
+		}
+		a += i;
+		for (i = 0; i < 42; ++ i)
+		{
+			wfpalette [a + i] = TFTRGB565(0, i * 6, 255);
+		}
+		a += i;
+		for (i = 0; i < 42; ++ i)
+		{
+			wfpalette [a + i] = TFTRGB565(0, 255, (int)(((float) 0.39 * (41 - i )) * ((float) 0.39 * (41 - i))) );
+		}
+		a += i;
+		for (i = 0; i < 42; ++ i)
+		{
+			wfpalette [a + i] = TFTRGB565(i * 6, 255, 0);
+		}
+		a += i;
+		for (i = 0; i < 42; ++ i)
+		{
+			wfpalette [a + i] = TFTRGB565(255, (41 - i) * 6, 0);
+		}
+		a += i;
+		for (i = 0; i < 42; ++ i)
+		{
+			wfpalette [a + i] = TFTRGB565(255, 0, i * 6);
+		}
+		a += i;
+		// a = 252
 	}
 	else
 	{
-		red = 255;
-		blue = 0;
-		green = 255 - ((height - max / 2) * 255 / (max / 2));
+		int a = 0;
+		int i;
+		// a = 0
+		for (i = 0; i < 64; ++ i)
+		{
+			// для i = 0..15 результат формулы = ноль
+			wfpalette [a + i] = TFTRGB565(0, 0, (int) (powf((float) 0.0625 * i, 4)));	// проверить результат перед попыткой применить целочисленные вычисления!
+		}
+		a += i;
+		// a = 64
+		for (i = 0; i < 32; ++ i)
+		{
+			wfpalette [a + i] = TFTRGB565(0, i * 8, 255);
+		}
+		a += i;
+		// a = 96
+		for (i = 0; i < 32; ++ i)
+		{
+			wfpalette [a + i] = TFTRGB565(0, 255, 255 - i * 8);
+		}
+		a += i;
+		// a = 128
+		for (i = 0; i < 32; ++ i)
+		{
+			wfpalette [a + i] = TFTRGB565(i * 8, 255, 0);
+		}
+		a += i;
+		// a = 160
+		for (i = 0; i<64; ++ i)
+		{
+			wfpalette [a + i] = TFTRGB565(255, 255 - i * 4, 0);
+		}
+		a += i;
+		// a = 224
+		for (i = 0; i < 32; ++ i)
+		{
+			wfpalette [a + i] = TFTRGB565(255, 0, i * 8);
+		}
+		a += i;
+		// a = 256
 	}
-	return TFTRGB565(red, green, blue);
-}
-
-//Заполнение цветовой палитры водопада
-static void wfpalette_initialize(void)
-{
-	uint_fast16_t i;
-	for (i = 0; i < PALETTESIZE; i ++)
-		wfpalette [i] = getFFTColor(i, PALETTESIZE);
-	for (i = 0; i < SPDY; i ++)
-		fftpalette [i] = getFFTColor(i, SPDY);
 }
 
 // формирование данных спектра для последующего отображения
@@ -5236,16 +5279,7 @@ static void display2_spectrum(
 					const int yb = yv + 1;
 					if (yb < SPDY)
 					{
-						// формирование занятой области растра
-						if(glob_fftcolored==1)
-						{
-							for(uint_fast8_t i = 0 ; i < (SPDY - yb) ; i++)
-								display_colorbuffer_set(colorpip, ALLDX, ALLDY, x, yb + i, fftpalette[(SPDY - yb - i)]);
-						}
-						else
-						{
-							display_colorbuffer_set_vline(colorpip, ALLDX, ALLDY, x, yb + SPY0, SPDY - yb, COLOR565_SPECTRUMFG);
-						}
+						display_colorbuffer_set_vline(colorpip, ALLDX, ALLDY, x, yb + SPY0, SPDY - yb, COLOR565_SPECTRUMFG);
 					}
 				}
 			}
@@ -5807,13 +5841,6 @@ void
 board_set_fillspect(uint_fast8_t v)
 {
 	glob_fillspect = v != 0;
-}
-
-/* градиентная раскраска FFT */
-void
-board_set_fftcolored(uint_fast8_t v)
-{
-	glob_fftcolored = v != 0;
 }
 
 /* автокалибровка пределов FFT */

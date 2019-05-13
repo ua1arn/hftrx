@@ -945,7 +945,6 @@ void board_set_topdb(int_fast16_t v);	/* верхний предел FFT */
 void board_set_bottomdb(int_fast16_t v);	/* нижний предел FFT */
 void board_set_zoomx(uint_fast8_t v);	/* уменьшение отображаемого участка спектра */
 void board_set_fillspect(uint_fast8_t v); /* заливать заполнением площадь под графиком спектра */
-void board_set_fftcolored(uint_fast8_t v); /* градиентная раскраска FFT */
 void board_set_fftautocal(uint_fast8_t v); /* автокалибровка пределов FFT */
 
 #endif /* DISPLAY_H_INCLUDED */
