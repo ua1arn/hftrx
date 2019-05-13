@@ -464,6 +464,7 @@ typedef int32_t ncoftwi_t;
 static FLOAT_t omega2ftw_k1; // = POWF(2, NCOFTWBITS);
 #define OMEGA2FTWI(angle) ((ncoftwi_t) ((FLOAT_t) (angle) * omega2ftw_k1 / (FLOAT_t) M_TWOPI))	// angle in radians -pi..+pi to signed version of ftw_t
 
+#ifdef NEWZOOMFFT
 //ZoomFFT
 static float32_t FFTBuffer_ZOOMFFT[FFTSizeSpectrum*2]; //совмещённый буфер FFT I и Q для хранения выборок ZoomFFT
 
@@ -545,6 +546,7 @@ const arm_fir_decimate_instance_f32 FirZoomFFTDecimate[17] =
 		.pState = NULL
 	},
 };
+#endif
 
 static RAMFUNC FLOAT_t peekvalf(uint32_t a)
 {
@@ -4847,6 +4849,7 @@ int dsp_mag2y(
 //инициализация ZoomFFT
 void dsp_zoomfft_init(uint_fast8_t zoom)
 {
+#ifdef NEWZOOMFFT
 	if(zoom>1)
 	{
 		static const float32_t coeffs_x2 [] = {
@@ -4930,6 +4933,7 @@ void dsp_zoomfft_init(uint_fast8_t zoom)
 		fft_zoomed_width=FFTSizeSpectrum/zoom;
 		memset(FFTBuffer_ZOOMFFT, 0x00, sizeof FFTSizeSpectrum); //очищаем накопительный буффер ZoomFFT (2 канала по 32 бита)
 	}
+#endif
 }
 
 // Копрование информации о спектре с текущую строку буфера
@@ -4947,6 +4951,7 @@ void dsp_getspectrumrow(
 	float32_t * const sig = & x256 [fft_head * 2];	// первый элемент массива комплексных чисел
 
 	//ZoomFFT
+#ifdef NEWZOOMFFT
 	if(zoom > 1)
 	{
 		static RAMDTCM float32_t ZoomFFTInput_I[FFTSizeSpectrum]; //входящий буфер ZoomFFT I
@@ -4983,7 +4988,7 @@ void dsp_getspectrumrow(
 			sig[i*2 + 1]=FFTBuffer_ZOOMFFT[i*2 + 1];
 		}
 	}
-
+#endif
 	adjustwmwp(sig);
 
 	/* Process the data through the CFFT/CIFFT module */
@@ -4991,8 +4996,11 @@ void dsp_getspectrumrow(
 
 	for (x = 0; x < dx; ++ x)
 	{
-		//int fftpos = raster2fft(x, dx, zoom);
+#ifdef NEWZOOMFFT
 		int fftpos = raster2fft(x, dx, 1);
+#else
+		int fftpos = raster2fft(x, dx, zoom);
+#endif
 		hbase [x] = getmag2(& sig [fftpos * 2]) * fftcoeff;
 	}
 	rendering = 0;
