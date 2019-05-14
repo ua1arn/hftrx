@@ -883,7 +883,7 @@ static bwprop_t bwprop_ssbnarrow = { & bwlimits_ssb, BWPROPI_SSBNARROW, BWSET_WI
 static bwprop_t bwprop_ssbtx = { & bwlimits_ssb, BWPROPI_SSBTX, BWSET_WIDE, 100 / BWGRANLOW, 3400 / BWGRANHIGH, - 0 + AFRESPONCESHIFT,	};
 static bwprop_t bwprop_amwide = { & bwlimits_am, BWPROPI_AMWIDE, BWSET_WIDE, 100 / BWGRANLOW, 4500 / BWGRANHIGH, - 36 + AFRESPONCESHIFT,	};
 static bwprop_t bwprop_amnarrow = { & bwlimits_am, BWPROPI_AMNARROW, BWSET_WIDE, 100 / BWGRANLOW, 3400 / BWGRANHIGH, - 36 + AFRESPONCESHIFT,	};
-static bwprop_t bwprop_digiwide = { & bwlimits_ssb, BWPROPI_DIGIWIDE, BWSET_WIDE, 50 / BWGRANLOW, 3400 / BWGRANHIGH, - 0 + AFRESPONCESHIFT,	};
+static bwprop_t bwprop_digiwide = { & bwlimits_ssb, BWPROPI_DIGIWIDE, BWSET_WIDE, 50 / BWGRANLOW, 5500 / BWGRANHIGH, - 0 + AFRESPONCESHIFT,	};
 static bwprop_t bwprop_nfmnarrow = { & bwlimits_am, BWPROPI_NFMNARROW, BWSET_WIDE, 300 / BWGRANLOW, 3400 / BWGRANHIGH, - 36 + AFRESPONCESHIFT,	};
 static bwprop_t bwprop_nfmwide = { & bwlimits_am, BWPROPI_NFMWIDE, BWSET_WIDE, 300 / BWGRANLOW, 4000 / BWGRANHIGH, - 36 + AFRESPONCESHIFT,	};
 static bwprop_t bwprop_wfm = { & bwlimits_wfm, BWPROPI_WFM, BWSET_WIDE, 100 / BWGRANLOW, 12000 / BWGRANHIGH, + 18 + AFRESPONCESHIFT,	};
@@ -12402,6 +12402,24 @@ static const FLASHMEM struct menudef menutable [] =
 		RMT_BWPROPSLEFT_BASE(BWPROPI_SSBTX),
 		NULL,
 		& bwprop_ssbtx.left10_width10,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	{
+		"DIGI HI ", 6, 1, 0,	ISTEP1,		/* Подстройка полосы пропускания - TX SSB */
+		ITEM_VALUE,
+		8, 58, 		// 0.8 kHz-5.8 kHz
+		RMT_BWPROPSRIGHT_BASE(BWPROPI_DIGIWIDE),
+		NULL,
+		& bwprop_digiwide.right100,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	{
+		"DIGI LO ", 7, 2, 0,	ISTEP1,		/* подстройка полосы пропускания - TX SSB */
+		ITEM_VALUE,
+		5, 70,		// 50 Hz..700 Hz
+		RMT_BWPROPSLEFT_BASE(BWPROPI_DIGIWIDE),
+		NULL,
+		& bwprop_digiwide.left10_width10,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 #endif /* WITHIF4DSP */
