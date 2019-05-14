@@ -78,11 +78,8 @@ static int_fast16_t glob_gridstep = 10000;	// 10 kHz - шаг сетки
 
 // waterfall/spectrum parameters
 static uint_fast8_t glob_fillspect;	/* заливать заполнением площадь под графиком спектра */
-static uint_fast8_t glob_fftautocal; // автокалибровка пределов FFT
 static int_fast16_t glob_topdb = 30;	/* верхний предел FFT */
 static int_fast16_t glob_bottomdb = 130;	/* нижний предел FFT */
-static int_fast16_t calibrated_topdb = 30; // верхний предел FFT с учётом автокалибровка
-static int_fast16_t calibrated_bottomdb = 130; // нижний предел FFT с учётом автокалибровка
 static uint_fast8_t glob_zoomx = 1;	/* уменьшение отображаемого участка спектра */
 
 //#define WIDEFREQ (TUNE_TOP > 100000000L)
@@ -4973,8 +4970,6 @@ static void dsp_latchwaterfall(
 	(void) x0;
 	(void) y0;
 	(void) pv;
-	uint_fast16_t autocalibrate_top_errors = 0;
-	uint_fast16_t autocalibrate_bottom_errors = 0;
 
 	// запоминание информации спектра для спектрограммы
 	dsp_getspectrumrow(spavgarray, ALLDX, glob_zoomx);
@@ -4988,40 +4983,10 @@ static void dsp_latchwaterfall(
 	for (x = 0; x < ALLDX; ++ x)
 	{
 		// без усреднения для водопада
-		const int val = dsp_mag2y(filter_waterfall(x), PALETTESIZE - 1, calibrated_topdb, calibrated_bottomdb); // возвращает значения от 0 до dy включительно
-
-		//автокалибровка FFT
-		if(glob_fftautocal==1 && hamradio_get_tx() == 0)
-		{
-			if(val > ((PALETTESIZE/10)*8)) //выход в красную зону
-				autocalibrate_top_errors++;
-			if(val < ((PALETTESIZE/10)*1)) //сигналов в черной зоне
-				autocalibrate_bottom_errors++;
-		}
+		const int val = dsp_mag2y(filter_waterfall(x), PALETTESIZE - 1, glob_topdb, glob_bottomdb); // возвращает значения от 0 до dy включительно
 
 		// запись в буфер водопада
 		wfarray [wfrow] [x] = val;
-	}
-
-	//автокалибровка FFT
-	if(glob_fftautocal==1 && hamradio_get_tx() == 0)
-	{
-		//debug_printf_P(PSTR("AUTOCALIBRATE TOP_ERRORS=%d BOT_ERRORS=%d TOPDB=%d BOTDB=%d\n"), autocalibrate_top_errors, autocalibrate_bottom_errors, calibrated_topdb, calibrated_bottomdb);
-		if(autocalibrate_top_errors > FFT_AUTOCALIB_MAX_RED)
-			calibrated_topdb--;
-		if((autocalibrate_top_errors < FFT_AUTOCALIB_MIN_RED) && (calibrated_topdb < (calibrated_bottomdb-40)))
-			calibrated_topdb++;
-		if((autocalibrate_bottom_errors * 100 / PALETTESIZE) > FFT_AUTOCALIB_MAX_BLACK_PERC && calibrated_bottomdb < 160)
-			calibrated_bottomdb++;
-		if((autocalibrate_bottom_errors * 100 / PALETTESIZE) < FFT_AUTOCALIB_MIN_BLACK_PERC)
-			calibrated_bottomdb--;
-		autocalibrate_top_errors=0;
-		autocalibrate_bottom_errors=0;
-	}
-	else
-	{
-		calibrated_topdb=glob_topdb;
-		calibrated_bottomdb=glob_bottomdb;
 	}
 }
 
@@ -5169,7 +5134,7 @@ static void display2_spectrum(
 			// отображение спектра
 			for (x = 0; x < ALLDX; ++ x)
 			{
-				uint_fast16_t ynew = SPDY - 1 - dsp_mag2y(filter_spectrum(x), SPDY - 1, calibrated_topdb, calibrated_bottomdb);
+				uint_fast16_t ynew = SPDY - 1 - dsp_mag2y(filter_spectrum(x), SPDY - 1, glob_topdb, glob_bottomdb);
 				if (x != 0)
 					display_pixelbuffer_line(spectmonoscr, ALLDX, SPDY, x - 1, ylast, x, ynew);
 				ylast = ynew;
@@ -5204,7 +5169,7 @@ static void display2_spectrum(
 				}
 				// Формирование графика
 				// логарифм - в вертикальную координату
-				const int yv = SPDY - 1 - dsp_mag2y(filter_spectrum(x), SPDY - 1, calibrated_topdb, calibrated_bottomdb);	//отображаемый уровень, yv = 0..SPDY
+				const int yv = SPDY - 1 - dsp_mag2y(filter_spectrum(x), SPDY - 1, glob_topdb, glob_bottomdb);	//отображаемый уровень, yv = 0..SPDY
 				for (y = yv; y < SPDY; ++ y)
 					display_pixelbuffer_xor(spectmonoscr, ALLDX, SPDY, x, SPY0 + y);	// xor точку
 			}
@@ -5247,7 +5212,7 @@ static void display2_spectrum(
 				// формирование фона растра
 				display_colorbuffer_set_vline(colorpip, ALLDX, ALLDY, x, SPY0, SPDY, inband ? COLOR565_SPECTRUMBG2 : COLOR565_SPECTRUMBG);
 
-				uint_fast16_t ynew = SPDY - 1 - dsp_mag2y(filter_spectrum(x), SPDY - 1, calibrated_topdb, calibrated_bottomdb);
+				uint_fast16_t ynew = SPDY - 1 - dsp_mag2y(filter_spectrum(x), SPDY - 1, glob_topdb, glob_bottomdb);
 				if (x != 0)
 					display_colorbuffer_line_set(colorpip, ALLDX, ALLDY, x - 1, ylast, x, ynew, COLOR565_SPECTRUMLINE);
 				ylast = ynew;
@@ -5263,7 +5228,7 @@ static void display2_spectrum(
 			{
 				const uint_fast8_t inband = (x >= xleft && x <= xright);	// в полосе пропускания приемника = "шторка"
 				// логарифм - в вертикальную координату
-				const int yv = SPDY - 1 - dsp_mag2y(filter_spectrum(x), SPDY - 1, calibrated_topdb, calibrated_bottomdb);	// возвращает значения от 0 до SPDY включительно
+				const int yv = SPDY - 1 - dsp_mag2y(filter_spectrum(x), SPDY - 1, glob_topdb, glob_bottomdb);	// возвращает значения от 0 до SPDY включительно
 				// Формирование графика
 
 				// формирование фона растра - верхняя часть графика (Шторка)
@@ -5841,13 +5806,6 @@ void
 board_set_fillspect(uint_fast8_t v)
 {
 	glob_fillspect = v != 0;
-}
-
-/* автокалибровка пределов FFT */
-void
-board_set_fftautocal(uint_fast8_t v)
-{
-	glob_fftautocal = v != 0;
 }
 
 /* верхний предел FFT */

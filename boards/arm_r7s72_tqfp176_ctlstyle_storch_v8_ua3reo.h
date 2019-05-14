@@ -282,8 +282,6 @@
 	#define WITHUSEDUALWATCH	1	// Второй приемник
 	#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
 
-	#define AUTOSCALE_DEFAULT	1 //автокалибровка FFT по умолчанию включена
-
 	// FPGA section
 	//#define	WITHFPGAWAIT_AS	1	/* FPGA загружается из собственной микросхемы загрузчика - дождаться окончания загрузки перед инициализацией SPI в процессоре */
 	#define	WITHFPGALOAD_PS	1	/* FPGA загружается процессором с помощью SPI */
