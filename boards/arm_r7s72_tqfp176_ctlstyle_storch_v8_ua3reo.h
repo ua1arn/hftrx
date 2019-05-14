@@ -372,7 +372,7 @@
 	// --- Эти строки можно отключать, уменьшая функциональность готового изделия
 
 	#define WITHMODESETFULLNFM 1
-	#define NEWZOOMFFT 1
+	#define WITHNEWZOOMFFT 1
 
 	#define WITHCATEXT	1	/* Расширенный набор команд CAT */
 	#define WITHELKEY	1
