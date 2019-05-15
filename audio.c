@@ -2802,6 +2802,7 @@ static void correctspectrum(float * resp, int_fast8_t targetdb)
 	}
 }
 
+// calculate 1/2 of coefficients
 void dsp_recalceq_coeffs(uint_fast8_t pathi, float * dCoeff, int iCoefNum)
 {
 	const int cutfreqlow = glob_aflowcutrx [pathi];
@@ -2894,11 +2895,11 @@ void dsp_recalceq_coeffs(uint_fast8_t pathi, float * dCoeff, int iCoefNum)
 }
 
 
-static void copytospeex(float * frame, unsigned bufsize)
+static void copytospeex(float * frame)
 {
 	ASSERT((FFTSizeFilters / 2) == SPEEXNN);
 	unsigned i;
-	for (i = 0; i < SPEEXNN && i < bufsize; ++ i)
+	for (i = 0; i < SPEEXNN; ++ i)
 	{
 		struct Complex * const sig = & Sig [i];
 		frame [i] = SQRTF(sig->real * sig->real + sig->imag * sig->imag);
@@ -2916,13 +2917,11 @@ static void copytospeex(float * frame, unsigned bufsize)
 }
 
 
-void dsp_recalceq(uint_fast8_t pathi, float * frame, unsigned buffsize)
+void dsp_recalceq(uint_fast8_t pathi, float * frame)
 {
-	enum { iCoefNum = Ntap_rx_AUDIO };
-
-	dsp_recalceq_coeffs(pathi, FIRCoef_rx_AUDIO, iCoefNum);
-	imp_response(FIRCoef_rx_AUDIO, iCoefNum);	// Получение АЧХ из коэффициентов симмметричного FIR
-	copytospeex(frame, buffsize);
+	dsp_recalceq_coeffs(pathi, FIRCoef_rx_AUDIO, Ntap_rx_AUDIO);	// calculate 1/2 of coefficients
+	imp_response(FIRCoef_rx_AUDIO, Ntap_rx_AUDIO);	// Получение АЧХ из коэффициентов симмметричного FIR
+	copytospeex(frame);
 }
 
 #if WITHMODEM

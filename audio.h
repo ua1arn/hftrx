@@ -599,8 +599,8 @@ uint_fast8_t dsp_getmikeadcoverflow(void); /* получения признак�
 void dsp_speed_diagnostics(void);	/* DSP speed test */
 void buffers_diagnostics(void);
 void dtmftest(void);
-void dsp_recalceq(uint_fast8_t pathi, float * frame, unsigned buffsize);
-void dsp_recalceq_coeffs(uint_fast8_t pathi, float * dCoeff, int iCoefNum);
+void dsp_recalceq(uint_fast8_t pathi, float * frame);	// for SPEEX
+void dsp_recalceq_coeffs(uint_fast8_t pathi, float * dCoeff, int iCoefNum);	// calculate 1/2 of coefficients
 
 void modem_initialze(void);
 uint_fast8_t modem_get_ptt(void);

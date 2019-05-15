@@ -6992,7 +6992,7 @@ static uint_fast8_t getlo4div(
 
 
 #if WITHNOSPEEX
-static float32_t speexEQ [NTRX] [NtapCoeffs(Ntap_rx_AUDIO)];
+static float32_t speexEQcoeffs [NTRX] [Ntap_rx_AUDIO];
 
 static arm_fir_instance_f32 arm_fir_instances [NTRX];
 
@@ -7044,13 +7044,19 @@ static void speex_update_rx(void)
 	{
 		// Получение параметров эквалайзера
 #if WITHNOSPEEX
-		dsp_recalceq_coeffs(pathi, speexEQ [pathi], ARRAY_SIZE(speexEQ [pathi]));
+		unsigned i;
+		dsp_recalceq_coeffs(pathi, speexEQcoeffs [pathi], Ntap_rx_AUDIO);	// calculate 1/2 of coefficients
+		// Duplicate simmetrical part of coeffs.
+		for (i = 0; i < Ntap_rx_AUDIO / 2; ++ i)
+		{
+			speexEQcoeffs [pathi] [Ntap_rx_AUDIO - 1 - i] = speexEQcoeffs [pathi] [i];
+		}
 		//arm_fir_init_f32(& arm_fir_instances [pathi], Ntap_rx_AUDIO, speexEQ [pathi], arm_fir_states [pathi], SPEEXNN);
 #else /* WITHNOSPEEX */
 		SpeexPreprocessState * const st = st_handles [pathi];
 		ASSERT(st != NULL);
 
-		dsp_recalceq(pathi, speexEQ [pathi], ARRAY_SIZE(speexEQ [pathi]));
+		dsp_recalceq(pathi, speexEQ [pathi]);
 
 		speex_preprocess_ctl(st, SPEEX_PREPROCESS_SET_DENOISE, & denoise);
 		speex_preprocess_ctl(st, SPEEX_PREPROCESS_SET_NOISE_SUPPRESS, & supress);
@@ -7122,7 +7128,7 @@ static void speex_initialize(void)
 		// Declare State buffer of size (numTaps + blockSize - 1)
 		static float32_t arm_fir_states [NTRX] [SPEEXNN + Ntap_rx_AUDIO - 1];
 #if WITHNOSPEEX
-		arm_fir_init_f32(& arm_fir_instances [pathi], Ntap_rx_AUDIO, speexEQ [pathi], arm_fir_states [pathi], SPEEXNN);
+		arm_fir_init_f32(& arm_fir_instances [pathi], Ntap_rx_AUDIO, speexEQcoeffs [pathi], arm_fir_states [pathi], SPEEXNN);
 #else /* WITHNOSPEEX */
 		st_handles [pathi] = speex_preprocess_state_init(SPEEXNN, ARMI2SRATE);
 #endif /* WITHNOSPEEX */
