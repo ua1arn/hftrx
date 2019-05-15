@@ -98,37 +98,8 @@ enum
 
 #if WITHIF4DSP
 
-
-	#define BWGRANLOW	10		// низкочастотный скат фильтров подстраивается с шагом 10 герц
-	#define BWGRANHIGH	100		// высокочастотный скат фильтров подстраивается с шагом 100 герц
-
 	#define	BOARD_AGCCODE_ON	0x00
 	#define	BOARD_AGCCODE_OFF	0x01
-
-	// Параметры НЧ фильтра в режиме AM
-	#define WITHAMLOW10MIN	(50 / BWGRANLOW)		// минимальная частота низкочастотного среза в десятках герц
-	#define WITHAMLOW10MAX	(700 / BWGRANLOW)		// минимальная частота низкочастотного среза в десятках герц
-	//#define WITHAMLOW10DEF	(100 / BWGRANLOW)		// Начальное значение в десятках герц
-	#define WITHAMHIGH100MAX	(6000 / BWGRANHIGH)	// максимальная частота высокочастотного среза в десятках герц
-	#define WITHAMHIGH100MIN	(800 / BWGRANHIGH)		// минимальная частота высокочастотного среза в сотнях герц
-	//#define WITHAMHIGH100DEF	(4400 / BWGRANHIGH)	// Начальное значение в сотнях герц
-
-	// Параметры НЧ фильтра в режиме SSB
-	#define WITHSSBLOW10MIN	(50 / BWGRANLOW)		// минимальная частота низкочастотного среза в десятках герц
-	#define WITHSSBLOW10MAX	(700 / BWGRANLOW)		// минимальная частота низкочастотного среза в десятках герц
-	//#define WITHSSBLOW10DEF	(300 / BWGRANLOW)		// Начальное значение в десятках герц
-	#define WITHSSBHIGH100MAX	(6000 / BWGRANHIGH)	// максимальная частота высокочастотного среза в десятках герц
-	#define WITHSSBHIGH100MIN	(800 / BWGRANHIGH)		// минимальная частота высокочастотного среза в сотнях герц
-	//#define WITHSSBHIGH100DEF	(4400 / BWGRANHIGH)	// Начальное значение в сотнях герц
-
-	// Параметры НЧ фильтра в режиме WFM
-	#define WITHWFMLOW10MIN	(50 / BWGRANLOW)		// минимальная частота низкочастотного среза в десятках герц
-	#define WITHWFMLOW10MAX	(700 / BWGRANLOW)		// минимальная частота низкочастотного среза в десятках герц
-	//#define WITHWFMLOW10DEF	(100 / BWGRANLOW)	// Начальное значение в десятках герц
-
-	#define WITHWFMHIGH100MAX	(18000 / BWGRANHIGH)	// максимальная частота высокочастотного среза в десятках герц
-	#define WITHWFMHIGH100MIN	(4000 / BWGRANHIGH)		// минимальная частота высокочастотного среза в сотнях герц
-	//#define WITHWFMHIGH100DEF	(12000 / BWGRANHIGH)	// Начальное значение в сотнях герц
 
 	#define	WITHNOTCHFREQ		1	/* NOTCH фильтр с устанавливаемой через меню или потенциометром частотой */
 	//#define	WITHLMSAUTONOTCH	1	/* Использование AUTONOTCH	*/

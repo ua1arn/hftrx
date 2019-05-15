@@ -809,14 +809,6 @@ enum
 	BWSETI_count
 };
 
-/*
-	не забыть:
-	#define WITHAMHIGH100MIN	(800 / 100)		// минимальная частота высокочастотного среза в сотнях герц
-	#define WITHAMHIGH100MAX	(6000 / 100)	// максимальная частота высокочастотного среза в сотнях герц
-	#define WITHAMHIGH100DEF	(3800 / 100)	// Начальное значение в сотнях герц
-*/
-
-
 static const char FLASHMEM 
 	strFlashWFM [] = "WFM",
 	strFlashWide [] = "WID",
@@ -827,8 +819,8 @@ static const char FLASHMEM
 // Частоты перестройки границ полосы пропускания
 typedef struct
 {
-	uint_fast16_t granulationleft;
-	uint_fast16_t granulationright;
+	uint_fast16_t granulationleft;	// дискретность изменения параметра через CAT или меню
+	uint_fast16_t granulationright;	// дискретность изменения параметра через CAT или меню
 	uint_fast8_t left10_width10_low, left10_width10_high;	// пределы изменения параметров
 	uint_fast8_t right100_low, right100_high;	// пределы изменения параметров
 } bwlimits_t;
@@ -851,10 +843,24 @@ typedef struct
 	const char FLASHMEM * labels [BWSET_WIDTHS];	// названия фильтров
 } bwsetsc_t;
 
-static const bwlimits_t bwlimits_cw = { 10, 1, 10, 180, 0, 0,  };
-static const bwlimits_t bwlimits_am = { 5, 1, WITHAMLOW10MIN, WITHAMLOW10MAX, WITHAMHIGH100MIN, WITHAMHIGH100MAX,  };
-static const bwlimits_t bwlimits_ssb = { 5, 1, WITHSSBLOW10MIN, WITHSSBLOW10MAX, WITHSSBHIGH100MIN, WITHSSBHIGH100MAX, };
-static const bwlimits_t bwlimits_wfm = { 5, 1, WITHWFMLOW10MIN, WITHWFMLOW10MAX, WITHWFMHIGH100MIN, WITHWFMHIGH100MAX, };
+// Пределы изменения полосы пропускания для меню
+
+#define BWGRANLOW	10		// низкочастотный скат фильтров подстраивается и меню с шагом 10 герц
+#define BWGRANHIGH	100		// высокочастотный скат фильтров подстраивается с шагом 100 герц
+
+#define BWCWLEFTMIN (100 / BWGRANLOW)	// 100 Hz..1800 Hz
+#define BWCWLEFTMAX (1800 / BWGRANLOW)
+
+#define BWLEFTMIN (50 / BWGRANLOW)	// 50 Hz..700 Hz
+#define BWLEFTMAX (700 / BWGRANLOW)
+
+#define BWRIGHTMIN (800 / BWGRANHIGH)	// 0.8 kHz-18 kHz
+#define BWRIGHTMAX (18000 / BWGRANHIGH)
+
+static const bwlimits_t bwlimits_cw = { 100 / BWGRANLOW, 100 / BWGRANHIGH, BWCWLEFTMIN, BWCWLEFTMAX, 0, 0,  };
+static const bwlimits_t bwlimits_am = { 50 / BWGRANLOW, 100 / BWGRANHIGH, BWLEFTMIN, BWLEFTMAX, BWRIGHTMIN, BWRIGHTMAX,  };
+static const bwlimits_t bwlimits_ssb = { 50 / BWGRANLOW, 100 / BWGRANHIGH, BWLEFTMIN, BWLEFTMAX, BWRIGHTMIN, BWRIGHTMAX, };
+static const bwlimits_t bwlimits_wfm = { 50 / BWGRANLOW, 100 / BWGRANHIGH, BWLEFTMIN, BWLEFTMAX, BWRIGHTMIN, BWRIGHTMAX, };
 
 // индекс банка полос пропускания для данного режима
 enum
@@ -12237,7 +12243,7 @@ static const FLASHMEM struct menudef menutable [] =
 	{
 		"SSB HI W", 6, 1, 0,	ISTEP1,		/* Подстройка полосы пропускания - SSB WIDE */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		WITHSSBHIGH100MIN, WITHSSBHIGH100MAX, 		// 0.8 kHz-5.8 kHz
+		BWRIGHTMIN, BWRIGHTMAX, 		// 0.8 kHz-18 kHz
 		RMT_BWPROPSRIGHT_BASE(BWPROPI_SSBWIDE),
 		NULL,
 		& bwprop_ssbwide.right100,
@@ -12246,7 +12252,7 @@ static const FLASHMEM struct menudef menutable [] =
 	{
 		"SSB LO W", 7, 2, 0,	ISTEP5,		/* Подстройка полосы пропускания - SSB WIDE */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		WITHSSBLOW10MIN, WITHSSBLOW10MAX, 		// 50 Hz-700 Hz
+		BWLEFTMIN, BWLEFTMAX, 		// 50 Hz-700 Hz
 		RMT_BWPROPSLEFT_BASE(BWPROPI_SSBWIDE),
 		NULL,
 		& bwprop_ssbwide.left10_width10,
@@ -12275,7 +12281,7 @@ static const FLASHMEM struct menudef menutable [] =
 	{
 		"SSB HI N", 6, 1, 0,	ISTEP1,		/* Подстройка полосы пропускания - SSB NARROW */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		WITHSSBHIGH100MIN, WITHSSBHIGH100MAX, 		// 0.8 kHz-5.8 kHz
+		BWRIGHTMIN, BWRIGHTMAX, 		// 0.8 kHz-18 kHz
 		RMT_BWPROPSRIGHT_BASE(BWPROPI_SSBNARROW),
 		NULL,
 		& bwprop_ssbnarrow.right100,
@@ -12284,7 +12290,7 @@ static const FLASHMEM struct menudef menutable [] =
 	{
 		"SSB LO N", 7, 2, 0,	ISTEP5,		/* Подстройка полосы пропускания - SSB NARROW */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		WITHSSBLOW10MIN, WITHSSBLOW10MAX, 		// 50 Hz-700 Hz
+		BWLEFTMIN, BWLEFTMAX, 		// 50 Hz-700 Hz
 		RMT_BWPROPSLEFT_BASE(BWPROPI_SSBNARROW),
 		NULL,
 		& bwprop_ssbnarrow.left10_width10,
@@ -12313,7 +12319,7 @@ static const FLASHMEM struct menudef menutable [] =
 	{
 		"AM HI W ", 6, 1, 0,	ISTEP2,		/* Подстройка полосы пропускания - AM WIDE */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		WITHAMHIGH100MIN, WITHAMHIGH100MAX, 		// 0.8 kHz-6.0 kHz
+		BWRIGHTMIN, BWRIGHTMAX, 		// 0.8 kHz-18 kHz
 		RMT_BWPROPSRIGHT_BASE(BWPROPI_AMWIDE),
 		NULL,
 		& bwprop_amwide.right100,
@@ -12322,7 +12328,7 @@ static const FLASHMEM struct menudef menutable [] =
 	{
 		"AM LO W ", 7, 2, 0,	ISTEP5,		/* подстройка полосы пропускания - AM WIDE */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		WITHAMLOW10MIN, WITHAMLOW10MAX,
+		BWLEFTMIN, BWLEFTMAX,		// 50 Hz..700 Hz
 		RMT_BWPROPSLEFT_BASE(BWPROPI_AMWIDE),
 		NULL,
 		& bwprop_amwide.left10_width10,
@@ -12351,7 +12357,7 @@ static const FLASHMEM struct menudef menutable [] =
 	{
 		"AM HI N ", 6, 1, 0,	ISTEP2,		/* Подстройка полосы пропускания - AM NARROW */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		WITHAMHIGH100MIN, WITHAMHIGH100MAX, 		// 0.8 kHz-6.0 kHz
+		BWRIGHTMIN, BWRIGHTMAX, 		// 0.8 kHz-18 kHz
 		RMT_BWPROPSRIGHT_BASE(BWPROPI_AMNARROW),
 		NULL,
 		& bwprop_amnarrow.right100,
@@ -12360,7 +12366,7 @@ static const FLASHMEM struct menudef menutable [] =
 	{
 		"AM LO N ", 7, 2, 0,	ISTEP5,		/* подстройка полосы пропускания - AM NARROW */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		WITHAMLOW10MIN, WITHAMLOW10MAX,
+		BWLEFTMIN, BWLEFTMAX,		// 50 Hz..700 Hz
 		RMT_BWPROPSLEFT_BASE(BWPROPI_AMNARROW),
 		NULL,
 		& bwprop_amnarrow.left10_width10,
@@ -12389,7 +12395,7 @@ static const FLASHMEM struct menudef menutable [] =
 	{
 		"SSBTX HI", 6, 1, 0,	ISTEP1,		/* Подстройка полосы пропускания - TX SSB */
 		ITEM_VALUE,
-		8, 58, 		// 0.8 kHz-5.8 kHz
+		BWRIGHTMIN, BWRIGHTMAX, 		// 0.8 kHz-18 kHz
 		RMT_BWPROPSRIGHT_BASE(BWPROPI_SSBTX),
 		NULL,
 		& bwprop_ssbtx.right100,
@@ -12398,7 +12404,7 @@ static const FLASHMEM struct menudef menutable [] =
 	{
 		"SSBTX LO", 7, 2, 0,	ISTEP1,		/* подстройка полосы пропускания - TX SSB */
 		ITEM_VALUE,
-		5, 70,		// 50 Hz..700 Hz
+		BWLEFTMIN, BWLEFTMAX,		// 50 Hz..700 Hz
 		RMT_BWPROPSLEFT_BASE(BWPROPI_SSBTX),
 		NULL,
 		& bwprop_ssbtx.left10_width10,
@@ -12407,7 +12413,7 @@ static const FLASHMEM struct menudef menutable [] =
 	{
 		"DIGI HI ", 6, 1, 0,	ISTEP1,		/* Подстройка полосы пропускания - TX SSB */
 		ITEM_VALUE,
-		8, 58, 		// 0.8 kHz-5.8 kHz
+		BWRIGHTMIN, BWRIGHTMAX, 		// 0.8 kHz-18 kHz
 		RMT_BWPROPSRIGHT_BASE(BWPROPI_DIGIWIDE),
 		NULL,
 		& bwprop_digiwide.right100,
@@ -12416,7 +12422,7 @@ static const FLASHMEM struct menudef menutable [] =
 	{
 		"DIGI LO ", 7, 2, 0,	ISTEP1,		/* подстройка полосы пропускания - TX SSB */
 		ITEM_VALUE,
-		5, 70,		// 50 Hz..700 Hz
+		BWLEFTMIN, BWLEFTMAX,		// 50 Hz..700 Hz
 		RMT_BWPROPSLEFT_BASE(BWPROPI_DIGIWIDE),
 		NULL,
 		& bwprop_digiwide.left10_width10,
