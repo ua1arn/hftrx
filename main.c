@@ -7043,12 +7043,14 @@ static void speex_update_rx(void)
 	for (pathi = 0; pathi < NTRX; ++ pathi)
 	{
 		// Получение параметров эквалайзера
-		dsp_recalceq(pathi, speexEQ [pathi], ARRAY_SIZE(speexEQ [pathi]));
 #if WITHNOSPEEX
+		dsp_recalceq_coeffs(pathi, speexEQ [pathi], ARRAY_SIZE(speexEQ [pathi]));
 		//arm_fir_init_f32(& arm_fir_instances [pathi], Ntap_rx_AUDIO, speexEQ [pathi], arm_fir_states [pathi], SPEEXNN);
 #else /* WITHNOSPEEX */
 		SpeexPreprocessState * const st = st_handles [pathi];
 		ASSERT(st != NULL);
+
+		dsp_recalceq(pathi, speexEQ [pathi], ARRAY_SIZE(speexEQ [pathi]));
 
 		speex_preprocess_ctl(st, SPEEX_PREPROCESS_SET_DENOISE, & denoise);
 		speex_preprocess_ctl(st, SPEEX_PREPROCESS_SET_NOISE_SUPPRESS, & supress);

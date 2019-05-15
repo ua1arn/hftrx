@@ -2802,35 +2802,11 @@ static void correctspectrum(float * resp, int_fast8_t targetdb)
 	}
 }
 
-
-static void copytospeex(float * frame, unsigned bufsize)
-{
-	ASSERT((FFTSizeFilters / 2) == SPEEXNN);
-	unsigned i;
-	for (i = 0; i < SPEEXNN && i < bufsize; ++ i)
-	{
-		struct Complex * const sig = & Sig [i];
-		frame [i] = SQRTF(sig->real * sig->real + sig->imag * sig->imag);
-	}
-#if 0
-	const FLOAT_t r1 = db2ratio(- 100);
-	const FLOAT_t r2 = db2ratio(- 80);
-	const FLOAT_t r3 = db2ratio(- 60);
-
-	/* Удаление постоянной составляющей по возможности */
-	frame [0] *= r1;
-	frame [1] *= r2;
-	frame [2] *= r3;
-#endif
-}
-
-void dsp_recalceq(uint_fast8_t pathi, float * frame, unsigned buffsize)
+void dsp_recalceq_coeffs(uint_fast8_t pathi, float * dCoeff, int iCoefNum)
 {
 	const int cutfreqlow = glob_aflowcutrx [pathi];
 	const int cutfreqhigh = glob_afhighcutrx [pathi];
-	FLOAT_t * const dCoeff = FIRCoef_rx_AUDIO;
 	const FLOAT_t * const dWindow = FIRCwnd_rx_AUDIO;
-	enum { iCoefNum = Ntap_rx_AUDIO };
 
 	switch (glob_dspmodes [pathi])
 	{
@@ -2840,8 +2816,6 @@ void dsp_recalceq(uint_fast8_t pathi, float * frame, unsigned buffsize)
 		// ФНЧ
 		fir_design_lowpass_freq(dCoeff, iCoefNum, cutfreqhigh);
 		fir_design_adjust_rx(dCoeff, dWindow, iCoefNum, 1);	// Формирование наклона АЧХ
-		imp_response(dCoeff, iCoefNum);	// Получение АЧХ из коэффициентов симмметричного FIR
-		copytospeex(frame, buffsize);
 		break;
 
 	case DSPCTL_MODE_RX_SAM:
@@ -2849,8 +2823,6 @@ void dsp_recalceq(uint_fast8_t pathi, float * frame, unsigned buffsize)
 		//fir_design_lowpass_freq(dCoeff, iCoefNum, cutfreqhigh);
 		fir_design_bandpass_freq(dCoeff, iCoefNum, cutfreqlow, cutfreqhigh);
 		fir_design_adjust_rx(dCoeff, dWindow, iCoefNum, 1);	// Формирование наклона АЧХ
-		imp_response(dCoeff, iCoefNum);	// Получение АЧХ из коэффициентов симмметричного FIR
-		copytospeex(frame, buffsize);
 		break;
 
 	case DSPCTL_MODE_RX_WFM:
@@ -2873,8 +2845,6 @@ void dsp_recalceq(uint_fast8_t pathi, float * frame, unsigned buffsize)
 				fir_design_bandstop(dCoeff, iCoefNum, fir_design_normfreq(fcutL), fir_design_normfreq(fcutH));
 				fir_design_scale(dCoeff, iCoefNum, 1 / testgain_float_DC(dCoeff, iCoefNum));	// Масштабирование для несимметричного фильтра
 				fir_design_adjust_rx(dCoeff, dWindow, iCoefNum, 0);	// Формирование наклона АЧХ, без применения оконной функции
-				imp_response(dCoeff, iCoefNum);	// Получение АЧХ из коэффициентов симмметричного FIR
-				copytospeex(frame, buffsize);
 			}
 			else
 			{
@@ -2887,16 +2857,12 @@ void dsp_recalceq(uint_fast8_t pathi, float * frame, unsigned buffsize)
 				for (i = 0; i < NtapCoeffs(iCoefNum); ++ i)
 					dCoeff [i] += dC2 [i];
 				fir_design_adjust_rx(dCoeff, dWindow, iCoefNum, 0);	// Формирование наклона АЧХ, без применения оконной функции
-				imp_response(dCoeff, iCoefNum);	// Получение АЧХ из коэффициентов симмметричного FIR
-				copytospeex(frame, buffsize);
 			}
 		}
 		else
 		{
 			fir_design_bandpass_freq(dCoeff, iCoefNum, cutfreqlow, cutfreqhigh);
 			fir_design_adjust_rx(dCoeff, dWindow, iCoefNum, 1);	// Формирование наклона АЧХ
-			imp_response(dCoeff, iCoefNum);	// Получение АЧХ из коэффициентов симмметричного FIR
-			copytospeex(frame, buffsize);
 		}
 		break;
 
@@ -2905,16 +2871,12 @@ void dsp_recalceq(uint_fast8_t pathi, float * frame, unsigned buffsize)
 		// audio
 		fir_design_bandpass_freq(dCoeff, iCoefNum, cutfreqlow, cutfreqhigh);
 		fir_design_adjust_rx(dCoeff, dWindow, iCoefNum, 1);	// Формирование наклона АЧХ
-		imp_response(dCoeff, iCoefNum);	// Получение АЧХ из коэффициентов симмметричного FIR
-		copytospeex(frame, buffsize);
 		break;
 
 	case DSPCTL_MODE_RX_DRM:
 		// audio
 		// В этом режиме фильтр не используется
 		fir_design_passtrough(dCoeff, iCoefNum, 1);		// сигнал через НЧ фильтр не проходит
-		imp_response(dCoeff, iCoefNum);	// Получение АЧХ из коэффициентов симмметричного FIR
-		copytospeex(frame, buffsize);
 		break;
 
 
@@ -2922,17 +2884,45 @@ void dsp_recalceq(uint_fast8_t pathi, float * frame, unsigned buffsize)
 		// audio
 		fir_design_bandpass_freq(dCoeff, iCoefNum, cutfreqlow, cutfreqhigh);
 		fir_design_adjust_rx(dCoeff, dWindow, iCoefNum, 1);	// Формирование наклона АЧХ
-		imp_response(dCoeff, iCoefNum);	// Получение АЧХ из коэффициентов симмметричного FIR
-		copytospeex(frame, buffsize);
 		break;
 
 	// в режиме передачи
 	default:
 		fir_design_passtrough(dCoeff, iCoefNum, 1);		// сигнал через НЧ фильтр не проходит
-		imp_response(dCoeff, iCoefNum);	// Получение АЧХ из коэффициентов симмметричного FIR
-		copytospeex(frame, buffsize);
 		break;
 	}
+}
+
+
+static void copytospeex(float * frame, unsigned bufsize)
+{
+	ASSERT((FFTSizeFilters / 2) == SPEEXNN);
+	unsigned i;
+	for (i = 0; i < SPEEXNN && i < bufsize; ++ i)
+	{
+		struct Complex * const sig = & Sig [i];
+		frame [i] = SQRTF(sig->real * sig->real + sig->imag * sig->imag);
+	}
+#if 0
+	const FLOAT_t r1 = db2ratio(- 100);
+	const FLOAT_t r2 = db2ratio(- 80);
+	const FLOAT_t r3 = db2ratio(- 60);
+
+	/* Удаление постоянной составляющей по возможности */
+	frame [0] *= r1;
+	frame [1] *= r2;
+	frame [2] *= r3;
+#endif
+}
+
+
+void dsp_recalceq(uint_fast8_t pathi, float * frame, unsigned buffsize)
+{
+	enum { iCoefNum = Ntap_rx_AUDIO };
+
+	dsp_recalceq_coeffs(pathi, FIRCoef_rx_AUDIO, iCoefNum);
+	imp_response(FIRCoef_rx_AUDIO, iCoefNum);	// Получение АЧХ из коэффициентов симмметричного FIR
+	copytospeex(frame, buffsize);
 }
 
 #if WITHMODEM
