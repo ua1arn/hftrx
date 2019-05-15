@@ -9690,17 +9690,39 @@ static void r7s721_ttb_initialize(void)
 	{
 		const uintptr_t address = (uint32_t) i << 20;
 		tlbbase [i] =  r7s721_accessbits(address);
-	}	
+	}
 
+#if 0
+	/* Set location of level 1 page table
+	; 31:14 - Translation table base addr (31:14-TTBCR.N, TTBCR.N is 0 out of reset)
+	; 13:7  - 0x0
+	; 6     - IRGN[0] 0x1  (Inner WB WA)
+	; 5     - NOS     0x0  (Non-shared)
+	; 4:3   - RGN     0x01 (Outer WB WA)
+	; 2     - IMP     0x0  (Implementation Defined)
+	; 1     - S       0x0  (Non-shared)
+	; 0     - IRGN[1] 0x0  (Inner WB WA) */
+	__set_TTBR0(((uint32_t)&Image$$TTB$$ZI$$Base) | 0x48);
+	__ISB();
+
+	/* Set up domain access control register
+	; We set domain 0 to Client and all other domains to No Access.
+	; All translation table entries specify domain 0 */
+	__set_DACR(1);
+	__ISB();
+#else
 	//CP15_writeTTBCR(0);
 	__set_TTBR0((unsigned int) tlbbase | 0x48);	// TTBR0
 	//CP15_writeTTB1((unsigned int) tlbbase | 0x48);	// TTBR1
+	  __ISB();
 
 	// Program the domain access register
 	//__set_DACR(0x55555555); // domain 15: access are not checked
 	__set_DACR(0xFFFFFFFF); // domain 15: access are not checked
+#endif
 }
 
+// TODO: use MMU_TTSection. See also MMU_TTPage4k MMU_TTPage64k and MMU_CreateTranslationTable
 // с точностью до 1 мегабайта
 static void r7s721_ttb_map(
 	uintptr_t va,	/* virtual address */
@@ -10133,6 +10155,7 @@ void cpu_initialize(void)
 
     /* ==== Vector base address setting ==== */
     //VbarInit();
+	// TODO: see MMU_CreateTranslationTable
 
 	//MMU_Disable();
 	// MMU setup
