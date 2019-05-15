@@ -9682,8 +9682,8 @@ r7s721_accessbits(uintptr_t a)
 
 static void r7s721_ttb_initialize(void)
 {
-	extern volatile uint32_t __ttb_start__;		// получено из скрипта линкера
-	volatile uint32_t * const tlbbase = & __ttb_start__;
+	extern volatile uint32_t __TTB_BASE;		// получено из скрипта линкера
+	volatile uint32_t * const tlbbase = & __TTB_BASE;
 	unsigned i;
 
 	for (i = 0; i < 4096; ++ i)
@@ -9707,8 +9707,8 @@ static void r7s721_ttb_map(
 	uintptr_t la	/* linear (physical) address */
 	)
 {
-	volatile extern uint32_t __ttb_start__;		// получено из скрипта линкера
-	volatile uint32_t * const tlbbase = & __ttb_start__;
+	volatile extern uint32_t __TTB_BASE;		// получено из скрипта линкера
+	volatile uint32_t * const tlbbase = & __TTB_BASE;
 	unsigned i = va >> 20;
 	tlbbase [i] =  r7s721_accessbits(la);
 }
