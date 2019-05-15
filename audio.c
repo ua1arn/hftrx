@@ -411,7 +411,7 @@ static float32_t decimZoomFFTQState [FFTSizeSpectrum + 16];
 static uint16_t fft_zoomed_width = 0;
 
 //Коэффициенты для ZoomFFT lowpass filtering / дециматора
-arm_biquad_casd_df1_inst_f32 IIR_biquad_Zoom_FFT_I =
+static arm_biquad_casd_df1_inst_f32 IIR_biquad_Zoom_FFT_I =
 {
 	.numStages = 4,
 	.pCoeffs = (const float32_t [])
@@ -423,7 +423,8 @@ arm_biquad_casd_df1_inst_f32 IIR_biquad_Zoom_FFT_I =
 		0,0,0,0,   0,0,0,0,    0,0,0,0,   0,0,0,0
 	}
 };
-arm_biquad_casd_df1_inst_f32 IIR_biquad_Zoom_FFT_Q =
+
+static arm_biquad_casd_df1_inst_f32 IIR_biquad_Zoom_FFT_Q =
 {
 	.numStages = 4,
 	.pCoeffs = (const float32_t [])
@@ -437,7 +438,7 @@ arm_biquad_casd_df1_inst_f32 IIR_biquad_Zoom_FFT_Q =
 };
 
 
-const arm_fir_decimate_instance_f32 FirZoomFFTDecimate[17] =
+static const arm_fir_decimate_instance_f32 FirZoomFFTDecimate[17] =
 {
 	{}, // 0
 	{}, // 1
@@ -5115,6 +5116,15 @@ getmonitx(
 	}
 }
 
+// Сохранение сэмплов с выхода демодулятора
+static void save16demod(FLOAT_t ch0, FLOAT_t ch1)
+{
+#if WITHSKIPUSERMODE
+	savesampleout16stereo(ch0, ch1);
+#else /* WITHSKIPUSERMODE */
+	savesampleout16tospeex(ch0, ch1);	// через user-level обработчик
+#endif /* WITHSKIPUSERMODE */
+}
 #if WITHDSPEXTDDC
 // Обработка полученного от DMA буфера с выборками или квадратурами (или двухканальный приём).
 // Вызывается на ARM_REALTIME_PRIORITY уровне.
@@ -5138,7 +5148,7 @@ void RAMFUNC dsp_extbuffer32wfm(const uint32_t * buff)
 
 			const FLOAT_t left = (a0 + a1 + a2 + a3) / 4;
 
-			savesampleout16denoise(left, left);
+			save16demod(left, left);
 		}
 	}
 }
@@ -5320,7 +5330,7 @@ void RAMFUNC dsp_extbuffer32rx(const uint32_t * buff)
 			inp_samples [dtmfbi] = vi.IV;
 			++ dtmfbi;
 		}
-		savesampleout16denoise(dual.IV, dual.QV);
+		save16demod(dual.IV, dual.QV);
 
 #elif WITHDSPEXTDDC
 	// Режимы трансиверов с внешним DDC
@@ -5352,12 +5362,12 @@ void RAMFUNC dsp_extbuffer32rx(const uint32_t * buff)
 		processafadcsampleiq(dual, dspmodeA, shape, ctcss);	// Передатчик - формирование одного сэмпда (пары I/Q).
 		//
 		// Тестирование источников и потребителей звука
-		savesampleout16denoise(dual.IV, dual.QV);
+		save16demod(dual.IV, dual.QV);
 
 	#elif WITHUSBHEADSET
 		/* трансивер работает USB гарнитурой для компютера - режим тестирования */
 
-		savesampleout16denoise(0, 0);	// Посе фильтрации будет проигнорированно
+		save16demod(0, 0);	// Посе фильтрации будет проигнорированно
 		savesampleout32stereo(iq2tx(0), iq2tx(0));
 
 	#elif WITHUSEDUALWATCH
@@ -5374,7 +5384,7 @@ void RAMFUNC dsp_extbuffer32rx(const uint32_t * buff)
 				(int_fast32_t) buff [i + DMABUF32RX0I] * rxgate,	// Расширяем 24-х битные числа до 32 бит
 				(int_fast32_t) buff [i + DMABUF32RX0Q] * rxgate	// Расширяем 24-х битные числа до 32 бит
 				);	
-			savesampleout16denoise(pair.IV, pair.QV);	/* к line output подключен модем - озвучку запрещаем */
+			save16demod(pair.IV, pair.QV);	/* к line output подключен модем - озвучку запрещаем */
 		}
 		else
 		{
@@ -5392,7 +5402,7 @@ void RAMFUNC dsp_extbuffer32rx(const uint32_t * buff)
 				dspmodeB,
 				1	// SUB RX
 				);	
-			savesampleout16denoise(rxA, rxB);
+			save16demod(rxA, rxB);
 		}
 
 	#else /* WITHUSEDUALWATCH */
@@ -5406,7 +5416,7 @@ void RAMFUNC dsp_extbuffer32rx(const uint32_t * buff)
 			BEGIN_STAMP2();
 			const FLOAT_t leftFiltered = 0;
 			END_STAMP2();
-			savesampleout16denoise(leftFiltered, leftFiltered);	
+			save16demod(leftFiltered, leftFiltered);
 #endif /* ! WITHSAI2HW */
 		}
 		else if (dspmodeA == DSPCTL_MODE_RX_ISB)
@@ -5417,7 +5427,7 @@ void RAMFUNC dsp_extbuffer32rx(const uint32_t * buff)
 				(int_fast32_t) buff [i + DMABUF32RX0I] * rxgate,	// Расширяем 24-х битные числа до 32 бит
 				(int_fast32_t) buff [i + DMABUF32RX0Q] * rxgate	// Расширяем 24-х битные числа до 32 бит
 				);	
-			savesampleout16denoise(rv.IV, rv.QV);	/* к line output подключен модем - озвучку запрещаем */
+			save16demod(rv.IV, rv.QV);	/* к line output подключен модем - озвучку запрещаем */
 		}
 		else
 		{
@@ -5428,7 +5438,7 @@ void RAMFUNC dsp_extbuffer32rx(const uint32_t * buff)
 				dspmodeA,
 				0		// MAIN RX
 				);	
-			savesampleout16denoise(left, left);
+			save16demod(left, left);
 		}
 
 	#endif /*  DMABUFSTEP32 == 4 */
@@ -5442,13 +5452,13 @@ void RAMFUNC dsp_extbuffer32rx(const uint32_t * buff)
 		processafadcsample(dual, dspmodeA, shape, ctcss);	// обработка одного сэмпла с микрофона
 		//
 		// Тестирование источников и потребителей звука
-		savesampleout16denoise(dual.IV, dual.QV);
+		save16demod(dual.IV, dual.QV);
 
 	#else /* WITHLOOPBACKTEST */
 
 		processafadcsample(vi, dspmodeA, shape, ctcss);	// Передатчик - использование принятого с AF ADC буфера
 		const FLOAT_t left = processifadcsamplei(buff [i + DMABUF32RX] * rxgate, dspmodeA);	// Расширяем 24-х битные числа до 32 бит
-		savesampleout16denoise(left, left);
+		save16demod(left, left);
 
 	#endif /* WITHLOOPBACKTEST */
 #endif /* WITHDSPEXTDDC */

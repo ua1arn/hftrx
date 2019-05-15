@@ -7003,7 +7003,9 @@ static SpeexPreprocessState * st_handles [NTRX];
 
 static int speexallocated = 0;
 
-#if SPEEXNN == 256
+#if SPEEXNN == 128
+	#define SPEEXALLOCSIZE (NTRX * 22584)
+#elif SPEEXNN == 256
 	#define SPEEXALLOCSIZE (NTRX * 38584)
 #elif SPEEXNN == 512
 	#define SPEEXALLOCSIZE (NTRX * 75448)
@@ -7044,14 +7046,14 @@ static void speex_update_rx(void)
 	{
 		// Получение параметров эквалайзера
 #if WITHNOSPEEX
+		float32_t * const dCoefs = speexEQcoeffs [pathi];
 		unsigned i;
-		dsp_recalceq_coeffs(pathi, speexEQcoeffs [pathi], Ntap_rx_AUDIO);	// calculate 1/2 of coefficients
+		dsp_recalceq_coeffs(pathi, dCoefs, Ntap_rx_AUDIO);	// calculate 1/2 of coefficients
 		// Duplicate simmetrical part of coeffs.
-		for (i = 0; i < Ntap_rx_AUDIO / 2; ++ i)
+		for (i = 1; i <= Ntap_rx_AUDIO / 2; ++ i)
 		{
-			speexEQcoeffs [pathi] [Ntap_rx_AUDIO - 1 - i] = speexEQcoeffs [pathi] [i];
+			dCoefs [Ntap_rx_AUDIO / 2 + i] = dCoefs [Ntap_rx_AUDIO / 2 - i];
 		}
-		//arm_fir_init_f32(& arm_fir_instances [pathi], Ntap_rx_AUDIO, speexEQ [pathi], arm_fir_states [pathi], SPEEXNN);
 #else /* WITHNOSPEEX */
 		SpeexPreprocessState * const st = st_handles [pathi];
 		ASSERT(st != NULL);
@@ -7070,24 +7072,24 @@ static void
 audioproc_spool_user(void)
 {
 	speexel_t * p;
-	const uint_fast8_t mode = submodes [gsubmode].mode;
-	const uint_fast8_t nospeex = mode == MODE_DIGI || gdatamode;
 	while (takespeexready_user(& p))
 	{
+		const uint_fast8_t mode = submodes [gsubmode].mode;
+		const uint_fast8_t nospeex = mode == MODE_DIGI || gdatamode;
+		//////////////////////////////////////////////
+		// Filtering
 	#if WITHNOSPEEX
 		// Use CMSIS DSP interface
 		if (! nospeex)
 		{
 			static speexel_t wire2 [SPEEXNN];
-		    /* Execute the FIR processing function.  Input wire1 and output wire2 */
-			arm_fir_f32(& arm_fir_instances [0], p + 0, wire2, SPEEXNN);
-			arm_copy_f32(wire2, p + 0, SPEEXNN);
-		#if WITHUSEDUALWATCH
-			wire1 = p + SPEEXNN;
-		    /* Execute the FIR processing function.  Input wire1 and output wire2 */
-			arm_fir_f32(& arm_fir_instances [1], p + SPEEXNN, wire2, SPEEXNN);
-			arm_copy_f32(wire2, p + SPEEXNN, SPEEXNN);
-		#endif /* WITHUSEDUALWATCH */
+			uint_fast8_t pathi;
+			for (pathi = 0; pathi < NTRX; ++ pathi)
+			{
+			    /* Execute the FIR processing function.  Input wire1 and output wire2 */
+				arm_fir_f32(& arm_fir_instances [pathi], p + SPEEXNN * pathi, wire2, SPEEXNN);
+				arm_copy_f32(wire2, p + SPEEXNN * pathi, SPEEXNN);
+			}
 		}
 	#else /* WITHNOSPEEX */
 		if (! nospeex)
@@ -7105,6 +7107,8 @@ audioproc_spool_user(void)
 		#endif /* WITHUSEDUALWATCH */
 		}
 	#endif /* WITHNOSPEEX */
+
+		//////////////////////////////////////////////
 		// Save results
 		unsigned i;
 		for (i = 0; i < SPEEXNN; ++ i)

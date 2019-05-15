@@ -555,7 +555,7 @@ denoise16_t * allocate_dmabuffer16denoise(void)
 	return 0;
 }
 
-void savesampleout16denoise(FLOAT_t ch0, FLOAT_t ch1)
+void savesampleout16tospeex(speexel_t ch0, speexel_t ch1)
 {
 	static denoise16_t * p = NULL;
 	static unsigned n;
@@ -1830,6 +1830,32 @@ void savesampleout16stereo_user(int_fast32_t ch0, int_fast32_t ch1)
 		global_disableIRQ();
 		buffers_savefromrxout(p);
 		global_enableIRQ();
+		p = NULL;
+	}
+}
+
+void savesampleout16stereo(int_fast32_t ch0, int_fast32_t ch1)
+{
+	// если есть инициализированный канал для выдачи звука
+	static voice16_t * p = NULL;
+	static unsigned n;
+
+	if (p == NULL)
+	{
+		uintptr_t addr = allocate_dmabuffer16();
+		p = CONTAINING_RECORD(addr, voice16_t, buff);
+		n = 0;
+	}
+
+	p->buff [n + 0] = ch0;		// sample value
+#if DMABUFSTEP16 > 1
+	p->buff [n + 1] = ch1;	// sample value
+#endif
+	n += DMABUFSTEP16;
+
+	if (n >= DMABUFFSIZE16)
+	{
+		buffers_savefromrxout(p);
 		p = NULL;
 	}
 }
