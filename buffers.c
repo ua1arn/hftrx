@@ -494,11 +494,11 @@ void buffers_diagnostics(void)
 typedef ALIGNX_BEGIN struct denoise16
 {
 	LIST_ENTRY item;
-	ALIGNX_BEGIN int16_t buff [NTRX * SPEEXNN] ALIGNX_END;
+	ALIGNX_BEGIN speexel_t buff [NTRX * SPEEXNN] ALIGNX_END;
 } ALIGNX_END denoise16_t;
 
 // Буферы с принятымти от обработчиков прерываний сообщениями
-uint_fast8_t takespeexready_user(int16_t * * dest)
+uint_fast8_t takespeexready_user(speexel_t * * dest)
 {
 	ASSERT_IRQL_USER();
 	global_disableIRQ();
@@ -520,7 +520,7 @@ uint_fast8_t takespeexready_user(int16_t * * dest)
 }
 
 // Освобождение обработанного буфера сообщения
-void releasespeexbuffer_user(int16_t * t)
+void releasespeexbuffer_user(speexel_t * t)
 {
 	ASSERT_IRQL_USER();
 	denoise16_t * const p = CONTAINING_RECORD(t, denoise16_t, buff);

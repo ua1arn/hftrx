@@ -322,20 +322,90 @@ struct Complex
 	FLOAT_t imag;
 };
 
-	/* для возможности работы с функциями сопроцессора NEON - vld1_f32 например */
-	#define IV ivqv [0]
-	#define QV ivqv [1]
+/* для возможности работы с функциями сопроцессора NEON - vld1_f32 например */
+#define IV ivqv [0]
+#define QV ivqv [1]
 
-	typedef struct
-	{
-		FLOAT_t ivqv [2];
-	} FLOAT32P_t;
+typedef struct
+{
+	FLOAT_t ivqv [2];
+} FLOAT32P_t;
 
-	typedef struct
-	{
-		int_fast32_t ivqv [2];
-	} INT32P_t;
+typedef struct
+{
+	int_fast32_t ivqv [2];
+} INT32P_t;
 
+
+// Ограничение алгоритма генератции параметров фильтра - нечётное значение Ntap.
+// Кроме того, для функций фильтрации с использованием симметрии коэффициентов, требуется кратность 2 половины Ntap
+
+#define NtapValidate(n)	((unsigned) (n) / 8 * 8 + 1)
+#define NtapCoeffs(n)	((unsigned) (n) / 2 + 1)
+
+#define	Ntap_rx_AUDIO	NtapValidate(SPEEXNN * 2 - 7)
+
+#if WITHDSPEXTFIR || WITHDSPEXTDDC
+
+
+	// Параметры фильтров в случае использования FPGA с фильтром на квадратурных каналах
+	#define Ntap_trxi_IQ		1535	// Фильтр в FPGA
+	#define HARDWARE_COEFWIDTH	24		// Разрядность коэффициентов. format is S0.22
+
+#endif /* WITHDSPEXTFIR || WITHDSPEXTDDC */
+
+#if WITHDSPEXTFIR
+
+
+	#if CPUSTYLE_R7S721 && ! WITHUSEDUALWATCH
+		// Без WITHUSEDUALWATCH
+		#define Ntap_tx_MIKE	NtapValidate(481)
+	#elif CPUSTYLE_R7S721
+		// есть режим WITHUSEDUALWATCH
+		#define Ntap_tx_MIKE	NtapValidate(481)
+	#elif (defined (STM32F767xx) || defined (STM32F769xx)) && ! WITHUSEDUALWATCH
+		// Без WITHUSEDUALWATCH
+		#define Ntap_tx_MIKE	NtapValidate(241)
+	#elif (defined (STM32F767xx) || defined (STM32F769xx))
+		// есть режим WITHUSEDUALWATCH
+		#define Ntap_tx_MIKE	NtapValidate(241)
+	#elif CPUSTYLE_STM32H7XX && ! WITHUSEDUALWATCH
+		// Без WITHUSEDUALWATCH
+		#define Ntap_tx_MIKE	NtapValidate(241)
+	#elif CPUSTYLE_STM32H7XX
+		// есть режим WITHUSEDUALWATCH
+		#define Ntap_tx_MIKE	NtapValidate(241)
+	#elif CPUSTYLE_STM32F7XX && ! WITHUSEDUALWATCH
+		// Без WITHUSEDUALWATCH
+		#define Ntap_tx_MIKE	NtapValidate(241)
+	#elif CPUSTYLE_STM32F7XX
+		// есть режим WITHUSEDUALWATCH
+		#define Ntap_tx_MIKE	NtapValidate(241)
+	#elif CPUSTYLE_STM32F4XX && ! WITHUSEDUALWATCH
+		// Без WITHUSEDUALWATCH (только)
+		#define Ntap_tx_MIKE	NtapValidate(129)
+	#else
+		#error Not suitable CPUSTYLE_xxx and WITHUSEDUALWATCH combination
+	#endif
+
+#endif /* WITHDSPEXTFIR */
+
+#if WITHDSPLOCALFIR
+	/* Фильтрация квадратур осуществляется процессором */
+	#if CPUSTYLE_R7S721
+		#define Ntap_rx_SSB_IQ	NtapValidate(241)	// SSB/CW filters: complex numbers, floating-point implementation
+		#define Ntap_tx_SSB_IQ	NtapValidate(241)	// SSB/CW TX filter: complex numbers, floating-point implementation
+		#define Ntap_tx_MIKE	NtapValidate(105)	// single samples, floating point implementation
+	#elif CPUSTYLE_STM32F7XX
+		#define Ntap_rx_SSB_IQ	NtapValidate(241)	// SSB/CW filters: complex numbers, floating-point implementation
+		#define Ntap_tx_SSB_IQ	NtapValidate(241)	// SSB/CW TX filter: complex numbers, floating-point implementation
+		#define Ntap_tx_MIKE	NtapValidate(105)	// single samples, floating point implementation
+	#else
+		#define Ntap_rx_SSB_IQ	NtapValidate(181)	// SSB/CW filters: complex numbers, floating-point implementation
+		#define Ntap_tx_SSB_IQ	NtapValidate(181)	// SSB/CW TX filter: complex numbers, floating-point implementation
+		#define Ntap_tx_MIKE	NtapValidate(105)	// single samples, floating point implementation
+	#endif
+#endif /* WITHDSPLOCALFIR */
 
 uint_fast8_t modem_getnextbit(
 	uint_fast8_t suspend	// передавать модему ещё рано - не полностью завершено формирование огибающей
@@ -415,8 +485,13 @@ void savesampleout192stereo(int_fast32_t ch0, int_fast32_t ch1);
 
 #endif /* WITHINTEGRATEDDSP */
 
-uint_fast8_t takespeexready_user(int16_t * * dest);
-void releasespeexbuffer_user(int16_t * t);
+#if WITHNOSPEEX
+	typedef float32_t speexel_t;
+#else /* WITHNOSPEEX */
+	typedef int16_t speexel_t;
+#endif /* WITHNOSPEEX */
+uint_fast8_t takespeexready_user(speexel_t * * dest);
+void releasespeexbuffer_user(speexel_t * t);
 
 void savesampleout16denoise(FLOAT_t ch0, FLOAT_t ch1);
 

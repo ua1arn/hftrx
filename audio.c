@@ -280,21 +280,7 @@ static uint_fast8_t		glob_mainsubrxmode = BOARD_RXMAINSUB_A_A;	// Левый/п�
 
 #endif /* WITHDEBUG */
 
-
-
-// Ограничение алгоритма генератции параметров фильтра - нечётное значение Ntap.
-// Кроме того, для функций фильтрации с использованием симметрии коэффициентов, требуется кратность 2 половины Ntap
-
-#define NtapValidate(n)	((unsigned) (n) / 8 * 8 + 1)
-#define NtapCoeffs(n)	((unsigned) (n) / 2 + 1)
-
 #if WITHDSPEXTFIR || WITHDSPEXTDDC
-
-
-	// Параметры фильтров в случае использования FPGA с фильтром на квадратурных каналах
-	#define Ntap_trxi_IQ		1535	// Фильтр в FPGA
-	#define HARDWARE_COEFWIDTH	24		// Разрядность коэффициентов. format is S0.22
-
 	// Фильтр для квадратурных каналов приёмника и передатчика в FPGA (целочисленный).
 	// Параметры для передачи в FPGA
 	#if WITHDOUBLEFIRCOEFS && (__ARM_FP & 0x08)
@@ -305,57 +291,7 @@ static uint_fast8_t		glob_mainsubrxmode = BOARD_RXMAINSUB_A_A;	// Левый/п�
 
 #endif /* WITHDSPEXTFIR || WITHDSPEXTDDC */
 
-#if WITHDSPEXTFIR
-
-
-	#if CPUSTYLE_R7S721 && ! WITHUSEDUALWATCH
-		// Без WITHUSEDUALWATCH
-		#define Ntap_tx_MIKE	NtapValidate(481)
-	#elif CPUSTYLE_R7S721
-		// есть режим WITHUSEDUALWATCH
-		#define Ntap_tx_MIKE	NtapValidate(481)
-	#elif (defined (STM32F767xx) || defined (STM32F769xx)) && ! WITHUSEDUALWATCH
-		// Без WITHUSEDUALWATCH
-		#define Ntap_tx_MIKE	NtapValidate(241)
-	#elif (defined (STM32F767xx) || defined (STM32F769xx))
-		// есть режим WITHUSEDUALWATCH
-		#define Ntap_tx_MIKE	NtapValidate(241)
-	#elif CPUSTYLE_STM32H7XX && ! WITHUSEDUALWATCH
-		// Без WITHUSEDUALWATCH
-		#define Ntap_tx_MIKE	NtapValidate(241)
-	#elif CPUSTYLE_STM32H7XX
-		// есть режим WITHUSEDUALWATCH
-		#define Ntap_tx_MIKE	NtapValidate(241)
-	#elif CPUSTYLE_STM32F7XX && ! WITHUSEDUALWATCH
-		// Без WITHUSEDUALWATCH
-		#define Ntap_tx_MIKE	NtapValidate(241)
-	#elif CPUSTYLE_STM32F7XX
-		// есть режим WITHUSEDUALWATCH
-		#define Ntap_tx_MIKE	NtapValidate(241)
-	#elif CPUSTYLE_STM32F4XX && ! WITHUSEDUALWATCH
-		// Без WITHUSEDUALWATCH (только)
-		#define Ntap_tx_MIKE	NtapValidate(129)
-	#else
-		#error Not suitable CPUSTYLE_xxx and WITHUSEDUALWATCH combination
-	#endif
-
-#endif /* WITHDSPEXTFIR */
-
 #if WITHDSPLOCALFIR	
-	/* Фильтрация квадратур осуществляется процессором */
-	#if CPUSTYLE_R7S721
-		#define Ntap_rx_SSB_IQ	NtapValidate(241)	// SSB/CW filters: complex numbers, floating-point implementation
-		#define Ntap_tx_SSB_IQ	NtapValidate(241)	// SSB/CW TX filter: complex numbers, floating-point implementation
-		#define Ntap_tx_MIKE	NtapValidate(105)	// single samples, floating point implementation
-	#elif CPUSTYLE_STM32F7XX
-		#define Ntap_rx_SSB_IQ	NtapValidate(241)	// SSB/CW filters: complex numbers, floating-point implementation
-		#define Ntap_tx_SSB_IQ	NtapValidate(241)	// SSB/CW TX filter: complex numbers, floating-point implementation
-		#define Ntap_tx_MIKE	NtapValidate(105)	// single samples, floating point implementation
-	#else
-		#define Ntap_rx_SSB_IQ	NtapValidate(181)	// SSB/CW filters: complex numbers, floating-point implementation
-		#define Ntap_tx_SSB_IQ	NtapValidate(181)	// SSB/CW TX filter: complex numbers, floating-point implementation
-		#define Ntap_tx_MIKE	NtapValidate(105)	// single samples, floating point implementation
-	#endif
 
 	// Фильтр для квадратурных каналов приёмника (floating point).
 	static RAMDTCM FLOAT_t FIRCoef_rx_SSB_IQ [NPROF] [NtapCoeffs(Ntap_rx_SSB_IQ)];
@@ -372,7 +308,6 @@ static uint_fast8_t		glob_mainsubrxmode = BOARD_RXMAINSUB_A_A;	// Левый/п�
 static RAMBIGDTCM FLOAT_t FIRCoef_tx_MIKE [NPROF] [NtapCoeffs(Ntap_tx_MIKE)];
 static RAMBIGDTCM FLOAT_t FIRCwnd_tx_MIKE [NtapCoeffs(Ntap_tx_MIKE)];			// подготовленные значения функции окна
 
-#define	Ntap_rx_AUDIO	NtapValidate(SPEEXNN * 2 - 7)
 static FLOAT_t FIRCoef_rx_AUDIO [NtapCoeffs(Ntap_rx_AUDIO)];
 static FLOAT_t FIRCwnd_rx_AUDIO [NtapCoeffs(Ntap_rx_AUDIO)];			// подготовленные значения функции окна
 
@@ -5835,7 +5770,7 @@ void dsp_initialize(void)
 	const FLOAT_t txlevelfence = dacFS /* * db2ratio(- (FLOAT_t) 1.75) */ * (FLOAT_t) M_SQRT1_2;	// контролировать по отсутствию индикации переполнения DUC при передаче
 	txlevelfenceHALF = txlevelfence / 2;	// Для режимов с lo6=0 - у которых нет подавления нерабочей боковой
 
-	txlevelfenceSSB = txlevelfence;// * (FLOAT_t) M_SQRT1_2;
+	txlevelfenceSSB = txlevelfence * (FLOAT_t) M_SQRT1_2;
 	txlevelfenceSSB_INTEGER = txlevelfenceSSB;	// Для источника шума
 	txlevelfenceBPSK = txlevelfence / (FLOAT_t) 1.5;
 	txlevelfenceNFM = txlevelfence / 2;
