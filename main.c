@@ -6988,9 +6988,18 @@ static uint_fast8_t getlo4div(
 
 #if WITHIF4DSP
 
+static float32_t speexEQ [SPEEXNN];
+
+#if WITHNOSPEEX
+
+static arm_fir_instance_f32 arm_fir_instances [NTRX];
+static float32_t arm_fir_states [NTRX] [Ntap_rx_AUDIO];
+
+#else /* WITHNOSPEEX */
+
 static SpeexPreprocessState * st_handles [NTRX];
 
-static int speecallocated = 0;
+static int speexallocated = 0;
 
 #if SPEEXNN == 256
 	#define SPEEXALLOCSIZE (NTRX * 38584)
@@ -7005,20 +7014,22 @@ static uint8_t sipexbuff [SPEEXALLOCSIZE];
 void *speex_alloc (int size)
 {
 	size = (size + 0x03) & ~ 0x03;
-	ASSERT((speecallocated + size) <= sizeof sipexbuff / sizeof sipexbuff [0]);
-	if (! ((speecallocated + size) <= sizeof sipexbuff / sizeof sipexbuff [0]))
+	ASSERT((speexallocated + size) <= sizeof sipexbuff / sizeof sipexbuff [0]);
+	if (! ((speexallocated + size) <= sizeof sipexbuff / sizeof sipexbuff [0]))
 	{
 		for (;;)
 			;
 	}
-	void * p = (void *) (sipexbuff + speecallocated);
-	speecallocated += size;
+	void * p = (void *) (sipexbuff + speexallocated);
+	speexallocated += size;
 	return p;
 }
 
 void speex_free (void *ptr)
 {
 }
+
+#endif /* WITHNOSPEEX */
 
 static void speex_update_rx(void)
 {
@@ -7029,14 +7040,18 @@ static void speex_update_rx(void)
 
 	for (pathi = 0; pathi < NTRX; ++ pathi)
 	{
-		static spx_word16_t speexEQ [SPEEXNN];
+		// Получение параметров эквалайзера
+		dsp_recalceq(pathi, speexEQ);
+#if WITHNOSPEEX
+		//VERIFY(ARM_MATH_SUCCESS == arm_fir_init_f32(& arm_fir_instances [pathi], SPEEXNN, speexEQ, arm_fir_states [pathi], SPEEXNN));
+#else /* WITHNOSPEEX */
 		SpeexPreprocessState * const st = st_handles [pathi];
 		ASSERT(st != NULL);
 
-		dsp_recalceq(pathi, speexEQ);
 		speex_preprocess_ctl(st, SPEEX_PREPROCESS_SET_DENOISE, & denoise);
 		speex_preprocess_ctl(st, SPEEX_PREPROCESS_SET_NOISE_SUPPRESS, & supress);
 		speex_preprocess_ctl(st, SPEEX_PREPROCESS_SET_EQUALIZER, speexEQ);
+#endif /* WITHNOSPEEX */
 	}
 }
 
@@ -7044,25 +7059,47 @@ static void speex_update_rx(void)
 static void 
 audioproc_spool_user(void)
 {
-	int16_t * p;
+	speexel_t * p;
 	const uint_fast8_t mode = submodes [gsubmode].mode;
-	const uint_fast8_t nospeex = mode == MODE_DIGI || gdatamode; 
+	const uint_fast8_t nospeex = mode == MODE_DIGI || gdatamode;
 	while (takespeexready_user(& p))
 	{
+	#if WITHNOSPEEX
+		// Use CMSIS DSP interface
+	    /* Execute the FIR processing function.  Input wire1 and output wire2 */
+		if (! nospeex)
+		{
+			speexel_t wire2 [SPEEXNN];
+			speexel_t * wire1;
+			wire1 = p + 0;
+			//speex_preprocess_run(st_handles [0], p + 0);	// left channel
+		    /* Execute the FIR processing function.  Input wire1 and output wire2 */
+			VERIFY(ARM_MATH_SUCCESS == arm_fir_f32(& arm_fir_instances [0], wire1, wire2, SPEEXNN));
+			VERIFY(ARM_MATH_SUCCESS == arm_copy_f32(wire2, wire1, SPEEXNN));
+		#if WITHUSEDUALWATCH
+			//speex_preprocess_run(st_handles [1], p + SPEEXNN);	// right channel
+			wire1 = p + SPEEXNN;
+		    /* Execute the FIR processing function.  Input wire1 and output wire2 */
+			arm_fir_f32(& arm_fir_instances [1], wire1, wire2, SPEEXNN);
+			arm_copy_f32(wire2, wire1, SPEEXNN);
+		#endif /* WITHUSEDUALWATCH */
+		}
+	#else /* WITHNOSPEEX */
 		if (! nospeex)
 		{
 			speex_preprocess_run(st_handles [0], p + 0);	// left channel
-	#if WITHUSEDUALWATCH
+		#if WITHUSEDUALWATCH
 			speex_preprocess_run(st_handles [1], p + SPEEXNN);	// right channel
-	#endif /* WITHUSEDUALWATCH */
+		#endif /* WITHUSEDUALWATCH */
 		}
 		else
 		{
 			speex_preprocess_estimate_update(st_handles [0], p + 0);	// left channel
-	#if WITHUSEDUALWATCH
+		#if WITHUSEDUALWATCH
 			speex_preprocess_estimate_update(st_handles [1], p + SPEEXNN);	// right channel
-	#endif /* WITHUSEDUALWATCH */
+		#endif /* WITHUSEDUALWATCH */
 		}
+	#endif /* WITHNOSPEEX */
 		unsigned i;
 		for (i = 0; i < SPEEXNN; ++ i)
 		{
@@ -7076,14 +7113,21 @@ audioproc_spool_user(void)
 	}
 }
 
+
 static void speex_initialize(void)
 {
 	uint_fast8_t pathi;
 	for (pathi = 0; pathi < NTRX; ++ pathi)
 	{
+#if WITHNOSPEEX
+		VERIFY(ARM_MATH_SUCCESS == arm_fir_init_f32(& arm_fir_instances [pathi], Ntap_rx_AUDIO, speexEQ, arm_fir_states [pathi], SPEEXNN));
+#else /* WITHNOSPEEX */
 		st_handles [pathi] = speex_preprocess_state_init(SPEEXNN, ARMI2SRATE);
+#endif /* WITHNOSPEEX */
 	}
-	debug_printf_P(PSTR("speex: final speecallocated=%d\n"), speecallocated);
+#if ! WITHNOSPEEX
+	debug_printf_P(PSTR("speex: final speexallocated=%d\n"), speexallocated);
+#endif /* WITHNOSPEEX */
 }
 
 #endif /* WITHIF4DSP */
