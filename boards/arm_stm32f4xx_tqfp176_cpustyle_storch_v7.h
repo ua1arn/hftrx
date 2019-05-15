@@ -6,7 +6,7 @@
 // UA1ARN
 //
 
-// Трансивер с DSP обработкой "Аист" на процессоре 
+// Трансивер с DSP обработкой "Аист" на процессоре
 // rmainunit_v5km0.pcb STM32H743IIT6, TFT 4.3", 2xUSB, SD-CARD, NAU8822L и FPGA EP4CE22E22I7N
 
 #ifndef ARM_STM32F4XX_TQFP176_CPUSTYLE_STORCH_V6_H_INCLUDED
@@ -162,7 +162,7 @@
 #if WITHSAI2HW
 	/* 
 	Поскольку блок SAI2 инициализируется как SLAVE с синхронизацией от SAI1,
-	из внешних сигналов требуется только SAI2_SD_A 
+	из внешних сигналов требуется только SAI2_SD_A
 	*/
 	#define SAI2HW_INITIALIZE()	do { \
 		/* arm_hardware_pioe_altfn20(1uL << 0, AF_SAI2); */	/* PE0 - SAI2_MCK_A - 12.288 MHz	*/ \
@@ -712,18 +712,23 @@
 		/* while ((GPIOI->IDR & VSYNC) == 0) ; */ /* дождаться 1 */ \
 		arm_hardware_pioe_outputs(DEmask, ((state) != 0) * DEmask);	/* DE=DISP, pin 31 - можно менять только при VSYNC=1 */ \
 	} while (0)
+	/* управление состоянием сигнала MODE 7" панели */
+	#define HARDWARE_LTDC_SET_MODE(state) do { \
+		const uint32_t mask = (1U << 4); /* PF4 */ \
+		arm_hardware_piof_outputs(mask, (state != 0) * mask);	/* PF4 MODE=state */ \
+	} while (0)
 #endif /* LCDMODE_LTDC */
 
 #if LCDMODE_LQ043T3DX02K
-	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея 
+	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея
 	#define WITHLCDBACKLIGHTMIN	0	// Нижний предел регулировки (показываетый на дисплее)
 	#define WITHLCDBACKLIGHTMAX	4	// Верхний предел регулировки (показываетый на дисплее)
-	#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры 
+	#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры
 #else
-	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея 
+	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея
 	#define WITHLCDBACKLIGHTMIN	0	// Нижний предел регулировки (показываетый на дисплее)
 	#define WITHLCDBACKLIGHTMAX	3	// Верхний предел регулировки (показываетый на дисплее)
-	#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры 
+	#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры
 #endif
 
 	/* макроопределение, которое должно включить в себя все инициализации */

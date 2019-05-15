@@ -755,6 +755,11 @@
 		while ((GPIOI->IDR & VSYNC) == 0) ; /* дождаться 1 */ \
 		arm_hardware_pioe_outputs(mask, ((state) != 0) * mask);	/* DE=DISP, pin 31 - можно менять только при VSYNC=1 */ \
 	} while (0)
+	/* управление состоянием сигнала MODE 7" панели */
+	#define HARDWARE_LTDC_SET_MODE(state) do { \
+		const uint32_t mask = (1U << 4); /* PF4 */ \
+		arm_hardware_piof_outputs(mask, (state != 0) * mask);	/* PF4 MODE=state */ \
+	} while (0)
 #endif /* LCDMODE_LTDC */
 
 #if LCDMODE_LQ043T3DX02K
