@@ -7003,7 +7003,9 @@ static SpeexPreprocessState * st_handles [NTRX];
 
 static int speexallocated = 0;
 
-#if SPEEXNN == 128
+#if SPEEXNN == 64
+	#define SPEEXALLOCSIZE (NTRX * 15584)
+#elif SPEEXNN == 128
 	#define SPEEXALLOCSIZE (NTRX * 22584)
 #elif SPEEXNN == 256
 	#define SPEEXALLOCSIZE (NTRX * 38584)
@@ -7079,16 +7081,16 @@ audioproc_spool_user(void)
 		//////////////////////////////////////////////
 		// Filtering
 	#if WITHNOSPEEX
+		static speexel_t wire2 [NTRX] [SPEEXNN];
 		// Use CMSIS DSP interface
-		if (! nospeex)
+		if (1)
 		{
-			static speexel_t wire2 [SPEEXNN];
 			uint_fast8_t pathi;
 			for (pathi = 0; pathi < NTRX; ++ pathi)
 			{
 			    /* Execute the FIR processing function.  Input wire1 and output wire2 */
-				arm_fir_f32(& arm_fir_instances [pathi], p + SPEEXNN * pathi, wire2, SPEEXNN);
-				arm_copy_f32(wire2, p + SPEEXNN * pathi, SPEEXNN);
+				arm_fir_f32(& arm_fir_instances [pathi], p + SPEEXNN * pathi, wire2 [pathi], SPEEXNN);
+				//arm_copy_f32(wire2 [pathi], p + SPEEXNN * pathi, SPEEXNN);
 			}
 		}
 	#else /* WITHNOSPEEX */
@@ -7113,11 +7115,19 @@ audioproc_spool_user(void)
 		unsigned i;
 		for (i = 0; i < SPEEXNN; ++ i)
 		{
+#if WITHNOSPEEX
+#if WITHUSEDUALWATCH
+			savesampleout16stereo_user(wire2 [0] [i], wire2 [1] [i]);	// to AUDIO codec
+#else /* WITHUSEDUALWATCH */
+			savesampleout16stereo_user(wire2 [0] [i], wire2 [0] [i]);	// to AUDIO codec
+#endif /* WITHUSEDUALWATCH */
+#else /* WITHNOSPEEX */
 #if WITHUSEDUALWATCH
 			savesampleout16stereo_user(p [i], p [i + SPEEXNN]);	// to AUDIO codec
 #else /* WITHUSEDUALWATCH */
 			savesampleout16stereo_user(p [i], p [i]);	// to AUDIO codec
 #endif /* WITHUSEDUALWATCH */
+#endif /* WITHNOSPEEX */
 		}
 		releasespeexbuffer_user(p);
 	}
