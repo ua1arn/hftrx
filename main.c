@@ -6988,12 +6988,12 @@ static uint_fast8_t getlo4div(
 
 #if WITHIF4DSP
 
-static float32_t speexEQ [SPEEXNN];
+static float32_t speexEQ [NTRX] [SPEEXNN];
 
 #if WITHNOSPEEX
 
 static arm_fir_instance_f32 arm_fir_instances [NTRX];
-static float32_t arm_fir_states [NTRX] [Ntap_rx_AUDIO];
+static float32_t arm_fir_states [NTRX] [SPEEXNN + Ntap_rx_AUDIO - 1];
 
 #else /* WITHNOSPEEX */
 
@@ -7041,16 +7041,16 @@ static void speex_update_rx(void)
 	for (pathi = 0; pathi < NTRX; ++ pathi)
 	{
 		// Получение параметров эквалайзера
-		dsp_recalceq(pathi, speexEQ);
+		dsp_recalceq(pathi, speexEQ [pathi]);
 #if WITHNOSPEEX
-		//VERIFY(ARM_MATH_SUCCESS == arm_fir_init_f32(& arm_fir_instances [pathi], SPEEXNN, speexEQ, arm_fir_states [pathi], SPEEXNN));
+		//arm_fir_init_f32(& arm_fir_instances [pathi], Ntap_rx_AUDIO, speexEQ [pathi], arm_fir_states [pathi], SPEEXNN);
 #else /* WITHNOSPEEX */
 		SpeexPreprocessState * const st = st_handles [pathi];
 		ASSERT(st != NULL);
 
 		speex_preprocess_ctl(st, SPEEX_PREPROCESS_SET_DENOISE, & denoise);
 		speex_preprocess_ctl(st, SPEEX_PREPROCESS_SET_NOISE_SUPPRESS, & supress);
-		speex_preprocess_ctl(st, SPEEX_PREPROCESS_SET_EQUALIZER, speexEQ);
+		speex_preprocess_ctl(st, SPEEX_PREPROCESS_SET_EQUALIZER, speexEQ [pathi]);
 #endif /* WITHNOSPEEX */
 	}
 }
@@ -7069,13 +7069,13 @@ audioproc_spool_user(void)
 	    /* Execute the FIR processing function.  Input wire1 and output wire2 */
 		if (! nospeex)
 		{
-			speexel_t wire2 [SPEEXNN];
+			static speexel_t wire2 [SPEEXNN];
 			speexel_t * wire1;
 			wire1 = p + 0;
 			//speex_preprocess_run(st_handles [0], p + 0);	// left channel
 		    /* Execute the FIR processing function.  Input wire1 and output wire2 */
-			VERIFY(ARM_MATH_SUCCESS == arm_fir_f32(& arm_fir_instances [0], wire1, wire2, SPEEXNN));
-			VERIFY(ARM_MATH_SUCCESS == arm_copy_f32(wire2, wire1, SPEEXNN));
+			arm_fir_f32(& arm_fir_instances [0], wire1, wire2, SPEEXNN);
+			//arm_copy_f32(wire2, wire1, SPEEXNN);
 		#if WITHUSEDUALWATCH
 			//speex_preprocess_run(st_handles [1], p + SPEEXNN);	// right channel
 			wire1 = p + SPEEXNN;
@@ -7100,6 +7100,7 @@ audioproc_spool_user(void)
 		#endif /* WITHUSEDUALWATCH */
 		}
 	#endif /* WITHNOSPEEX */
+		// Save results
 		unsigned i;
 		for (i = 0; i < SPEEXNN; ++ i)
 		{
@@ -7120,7 +7121,7 @@ static void speex_initialize(void)
 	for (pathi = 0; pathi < NTRX; ++ pathi)
 	{
 #if WITHNOSPEEX
-		VERIFY(ARM_MATH_SUCCESS == arm_fir_init_f32(& arm_fir_instances [pathi], Ntap_rx_AUDIO, speexEQ, arm_fir_states [pathi], SPEEXNN));
+		arm_fir_init_f32(& arm_fir_instances [pathi], Ntap_rx_AUDIO, speexEQ [pathi], arm_fir_states [pathi], SPEEXNN);
 #else /* WITHNOSPEEX */
 		st_handles [pathi] = speex_preprocess_state_init(SPEEXNN, ARMI2SRATE);
 #endif /* WITHNOSPEEX */
