@@ -20,10 +20,11 @@
 
 //#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 //#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
-
-#define WITHI2SHW	1	/* Использование I2S - аудиокодек на I2S2 и I2S2_alt	*/
-#define WITHSAI1HW	1	/* Использование SAI1 - FPGA или IF codec	*/
-//#define WITHSAI2HW	1	/* Использование SAI2 - FPGA или IF codec	*/
+#if WITHINTEGRATEDDSP
+	#define WITHI2SHW	1	/* Использование I2S - аудиокодек на I2S2 и I2S2_alt	*/
+	#define WITHSAI1HW	1	/* Использование SAI1 - FPGA или IF codec	*/
+	//#define WITHSAI2HW	1	/* Использование SAI2 - FPGA или IF codec	*/
+#endif /* WITHINTEGRATEDDSP */
 
 #define WITHCPUDACHW	1	/* использование встроенного в процессор DAC */
 #define WITHCPUADCHW 	1	/* использование встроенного в процессор ADC */
@@ -55,9 +56,12 @@
 #define WITHDEBUG_USART2	1
 #define WITHNMEA_USART2		1	/* порт подключения GPS/GLONASS */
 
-#define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
-#define WITHUSBUAC3		1	/* формируются три канала передачи звука */
-//#define WITHUABUACOUTAUDIO48MONO	1	/* для уменьшения размера буферов в endpoints */
+#if WITHINTEGRATEDDSP
+
+	#define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
+	#define WITHUSBUAC3		1	/* формируются три канала передачи звука */
+	//#define WITHUABUACOUTAUDIO48MONO	1	/* для уменьшения размера буферов в endpoints */
+#endif /* WITHINTEGRATEDDSP */
 
 #define WITHUSBCDC		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
 //#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */

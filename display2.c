@@ -4079,7 +4079,7 @@ enum
 		p->frame = (uintptr_t) getscratchpip();
 	}
 
-#elif DSTYLE_G_X800_Y480 && WITHSPECTRUMWF
+#elif DSTYLE_G_X800_Y480 //&& WITHSPECTRUMWF
 
 	// TFT панель AT070TN90
 	// 480/5 = 96, 800/16=50

@@ -1817,10 +1817,12 @@ arm_hardware_ltdc_initialize(void)
 	LTDC_InitTypeDef LTDC_InitStruct;
 
 	pipparams_t mainwnd = { 0, 0, DIM_SECOND, DIM_FIRST, (uintptr_t) & framebuff };
+#if LCDMODE_LTDC_PIP16
 	pipparams_t pipwnd;
 	display2_getpipparams(& pipwnd);
 
 	debug_printf_P(PSTR("arm_hardware_ltdc_initialize: pip: x/y=%u/%u, w/h=%u/%u\n"), pipwnd.x, pipwnd.y, pipwnd.w, pipwnd.h);
+#endif /* LCDMODE_LTDC_PIP16 */
 
 	LTDC_InitStruct.LTDC_HSPolarity = HSYNCNEG ? LTDC_HSPolarity_AL : LTDC_HSPolarity_AH;     
 	//LTDC_InitStruct.LTDC_HSPolarity = LTDC_HSPolarity_AH;     
