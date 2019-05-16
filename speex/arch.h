@@ -61,8 +61,8 @@
 
 #elif CPUSTYLE_STM32F4XX
 
-	#define FFTSizeFiltersM 9
-	#define FFTCONFIGFilters	(& arm_cfft_sR_f32_len512)
+	#define FFTSizeFiltersM 8
+	#define FFTCONFIGFilters	(& arm_cfft_sR_f32_len256)
 
 	#define FFTSizeSpectrumM 10
 	#define FFTCONFIGSpectrum	(& arm_cfft_sR_f32_len1024)
@@ -83,6 +83,12 @@
 #define FFTSizeFilters (1 << (FFTSizeFiltersM))
 
 #define SPEEXNN (FFTSizeFilters / 2)
+
+#if WITHNOSPEEX
+	#define FIRBUFSIZE 1024
+#else /* WITHNOSPEEX */
+	#define FIRBUFSIZE SPEEXNN
+#endif /* WITHNOSPEEX */
 
 //#define FIXED_POINT
 #define FLOATING_POINT

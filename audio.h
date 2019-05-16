@@ -603,7 +603,6 @@ void dtmftest(void);
 void dsp_recalceq(uint_fast8_t pathi, float * frame);	// for SPEEX
 void dsp_recalceq_coeffs(uint_fast8_t pathi, float * dCoeff, int iCoefNum);	// calculate 1/2 of coefficients
 void fir_expand_symmetric(FLOAT_t * dCoeff, int Ntap);			// Duplicate symmetrical part of coeffs.
-void sysproc(float32_t * p0, float32_t * p1);
 
 void modem_initialze(void);
 uint_fast8_t modem_get_ptt(void);

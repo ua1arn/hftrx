@@ -7064,22 +7064,104 @@ static void speex_update_rx(void)
 	}
 }
 
-#if WITHSKIPUSERMODE
-// system-mode processing
-void sysproc(float32_t * p0, float32_t * p1)
+#if WITHNOSPEEX
+
+#define NOISE_REDUCTION_BLOCK_SIZE FIRBUFSIZE
+#define NOISE_REDUCTION_TAPS 16
+#define NOISE_REDUCTION_REFERENCE_SIZE (NOISE_REDUCTION_BLOCK_SIZE*2)
+#define NOISE_REDUCTION_STEP 0.000001f
+
+static arm_lms_norm_instance_f32	lms2_Norm_instance;
+static float32_t	                lms2_stateF32[NOISE_REDUCTION_TAPS+NOISE_REDUCTION_BLOCK_SIZE];
+static float32_t	                lms2_normCoeff_f32[NOISE_REDUCTION_TAPS];
+static float32_t	                lms2_reference[NOISE_REDUCTION_REFERENCE_SIZE];
+static float32_t   					lms2_errsig2[NOISE_REDUCTION_BLOCK_SIZE];
+
+static void InitNoiseReduction(void)
 {
-	static speexel_t wire2 [2] [SPEEXNN];
-    /* Execute the FIR processing function.  Input wire1 and output wire2 */
-	arm_fir_f32(& arm_fir_instances [0], p0, wire2 [0], SPEEXNN);
-	arm_fir_f32(& arm_fir_instances [1], p1, wire2 [1], SPEEXNN);
+	arm_lms_norm_init_f32(&lms2_Norm_instance, NOISE_REDUCTION_TAPS, lms2_normCoeff_f32, lms2_stateF32, NOISE_REDUCTION_STEP, NOISE_REDUCTION_BLOCK_SIZE);
+	arm_fill_f32(0,lms2_reference,NOISE_REDUCTION_REFERENCE_SIZE);
+	arm_fill_f32(0,lms2_normCoeff_f32,NOISE_REDUCTION_TAPS);
+}
+
+// TODO: use pathi for separate state of receievers A and B
+static void processNoiseReduction(uint_fast8_t pathi, const float* bufferIn, float* bufferOut)
+{
+	static uint16_t reference_index_old=0;
+	static uint16_t reference_index_new=0;
+	arm_copy_f32(bufferIn, &lms2_reference[reference_index_new], NOISE_REDUCTION_BLOCK_SIZE);
+	arm_lms_norm_f32(&lms2_Norm_instance, bufferIn, &lms2_reference[reference_index_old], bufferOut, lms2_errsig2, NOISE_REDUCTION_BLOCK_SIZE);
+	reference_index_old+=NOISE_REDUCTION_BLOCK_SIZE;
+	if(reference_index_old>=NOISE_REDUCTION_REFERENCE_SIZE) reference_index_old=0;
+	reference_index_new=reference_index_old+NOISE_REDUCTION_BLOCK_SIZE;
+	if(reference_index_new>=NOISE_REDUCTION_REFERENCE_SIZE) reference_index_new=0;
+}
+#endif /* WITHNOSPEEX */
+
+// обработка и сохранение в savesampleout16stereo_user()
+static void processingonebuff(speexel_t * p)
+{
+	const uint_fast8_t mode = submodes [gsubmode].mode;
+	spx_int32_t denoise = gnoisereducts [gmode];
+	const uint_fast8_t nospeex = mode == MODE_DIGI || gdatamode;
+	//////////////////////////////////////////////
+	// Filtering
+#if WITHNOSPEEX
+	static speexel_t wire1 [NTRX] [FIRBUFSIZE];
+	static speexel_t wire2 [NTRX] [FIRBUFSIZE];
+	// Use CMSIS DSP interface
+	uint_fast8_t pathi;
+	for (pathi = 0; pathi < NTRX; ++ pathi)
+	{
+		if (0 && denoise)
+		{
+			// Filtering and denoise.
+			arm_fir_f32(& arm_fir_instances [pathi], p + FIRBUFSIZE * pathi, wire1 [pathi], FIRBUFSIZE);
+			processNoiseReduction(pathi, wire1 [pathi], wire2 [pathi]);
+		}
+		else
+		{
+			// Filtering only.
+			arm_fir_f32(& arm_fir_instances [pathi], p + FIRBUFSIZE * pathi, wire2 [pathi], FIRBUFSIZE);
+		}
+	}
+#else /* WITHNOSPEEX */
+	if (! nospeex)
+	{
+		speex_preprocess_run(st_handles [0], p + 0);	// left channel
+	#if WITHUSEDUALWATCH
+		speex_preprocess_run(st_handles [1], p + FIRBUFSIZE);	// right channel
+	#endif /* WITHUSEDUALWATCH */
+	}
+	else
+	{
+		speex_preprocess_estimate_update(st_handles [0], p + 0);	// left channel
+	#if WITHUSEDUALWATCH
+		speex_preprocess_estimate_update(st_handles [1], p + FIRBUFSIZE);	// right channel
+	#endif /* WITHUSEDUALWATCH */
+	}
+#endif /* WITHNOSPEEX */
+
+	//////////////////////////////////////////////
 	// Save results
 	unsigned i;
-	for (i = 0; i < SPEEXNN; ++ i)
+	for (i = 0; i < FIRBUFSIZE; ++ i)
 	{
-		savesampleout16stereo(wire2 [0] [i], wire2 [1] [i]);	// to AUDIO codec
+#if WITHNOSPEEX
+#if WITHUSEDUALWATCH
+		savesampleout16stereo_user(wire2 [0] [i], wire2 [1] [i]);	// to AUDIO codec
+#else /* WITHUSEDUALWATCH */
+		savesampleout16stereo_user(wire2 [0] [i], wire2 [0] [i]);	// to AUDIO codec
+#endif /* WITHUSEDUALWATCH */
+#else /* WITHNOSPEEX */
+#if WITHUSEDUALWATCH
+		savesampleout16stereo_user(p [i], p [i + FIRBUFSIZE]);	// to AUDIO codec
+#else /* WITHUSEDUALWATCH */
+		savesampleout16stereo_user(p [i], p [i]);	// to AUDIO codec
+#endif /* WITHUSEDUALWATCH */
+#endif /* WITHNOSPEEX */
 	}
 }
-#endif /* WITHSKIPUSERMODE */
 
 // user-mode processing
 static void 
@@ -7088,59 +7170,10 @@ audioproc_spool_user(void)
 	speexel_t * p;
 	while (takespeexready_user(& p))
 	{
-		const uint_fast8_t mode = submodes [gsubmode].mode;
-		const uint_fast8_t nospeex = mode == MODE_DIGI || gdatamode;
-		//////////////////////////////////////////////
-		// Filtering
-	#if WITHNOSPEEX
-		static speexel_t wire2 [NTRX] [SPEEXNN];
-		// Use CMSIS DSP interface
-		if (1)
-		{
-			uint_fast8_t pathi;
-			for (pathi = 0; pathi < NTRX; ++ pathi)
-			{
-			    /* Execute the FIR processing function.  Input wire1 and output wire2 */
-				arm_fir_f32(& arm_fir_instances [pathi], p + SPEEXNN * pathi, wire2 [pathi], SPEEXNN);
-				//arm_copy_f32(wire2 [pathi], p + SPEEXNN * pathi, SPEEXNN);
-			}
-		}
-	#else /* WITHNOSPEEX */
-		if (! nospeex)
-		{
-			speex_preprocess_run(st_handles [0], p + 0);	// left channel
-		#if WITHUSEDUALWATCH
-			speex_preprocess_run(st_handles [1], p + SPEEXNN);	// right channel
-		#endif /* WITHUSEDUALWATCH */
-		}
-		else
-		{
-			speex_preprocess_estimate_update(st_handles [0], p + 0);	// left channel
-		#if WITHUSEDUALWATCH
-			speex_preprocess_estimate_update(st_handles [1], p + SPEEXNN);	// right channel
-		#endif /* WITHUSEDUALWATCH */
-		}
-	#endif /* WITHNOSPEEX */
+		// обработка и сохранение в savesampleout16stereo_user()
+		processingonebuff(p);	// CMSIS DSP or SPEEX
 
-		//////////////////////////////////////////////
-		// Save results
-		unsigned i;
-		for (i = 0; i < SPEEXNN; ++ i)
-		{
-#if WITHNOSPEEX
-#if WITHUSEDUALWATCH
-			savesampleout16stereo_user(wire2 [0] [i], wire2 [1] [i]);	// to AUDIO codec
-#else /* WITHUSEDUALWATCH */
-			savesampleout16stereo_user(wire2 [0] [i], wire2 [0] [i]);	// to AUDIO codec
-#endif /* WITHUSEDUALWATCH */
-#else /* WITHNOSPEEX */
-#if WITHUSEDUALWATCH
-			savesampleout16stereo_user(p [i], p [i + SPEEXNN]);	// to AUDIO codec
-#else /* WITHUSEDUALWATCH */
-			savesampleout16stereo_user(p [i], p [i]);	// to AUDIO codec
-#endif /* WITHUSEDUALWATCH */
-#endif /* WITHNOSPEEX */
-		}
+		// Освобождаем буфер
 		releasespeexbuffer_user(p);
 	}
 }
@@ -7151,15 +7184,19 @@ static void speex_initialize(void)
 	for (pathi = 0; pathi < NTRX; ++ pathi)
 	{
 		// Declare State buffer of size (numTaps + blockSize - 1)
-		static float32_t arm_fir_states [NTRX] [SPEEXNN + Ntap_rx_AUDIO - 1];
+		static float32_t arm_fir_states [NTRX] [FIRBUFSIZE + Ntap_rx_AUDIO - 1];
 #if WITHNOSPEEX
-		arm_fir_init_f32(& arm_fir_instances [pathi], Ntap_rx_AUDIO, speexEQcoeffs [pathi], arm_fir_states [pathi], SPEEXNN);
+		arm_fir_init_f32(& arm_fir_instances [pathi], Ntap_rx_AUDIO, speexEQcoeffs [pathi], arm_fir_states [pathi], FIRBUFSIZE);
 #else /* WITHNOSPEEX */
 		st_handles [pathi] = speex_preprocess_state_init(SPEEXNN, ARMI2SRATE);
 #endif /* WITHNOSPEEX */
 	}
 #if ! WITHNOSPEEX
 	debug_printf_P(PSTR("speex: final speexallocated=%d\n"), speexallocated);
+#endif /* ! WITHNOSPEEX */
+
+#if WITHNOSPEEX
+	InitNoiseReduction();
 #endif /* WITHNOSPEEX */
 }
 

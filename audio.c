@@ -5235,25 +5235,13 @@ getmonitx(
 static void save16demod(FLOAT_t ch0, FLOAT_t ch1)
 {
 #if WITHSKIPUSERMODE
-	#if 0
-		static float32_t b [2] [SPEEXNN];
-		static int level;
-		b [0] [level] = ch0;
-		b [1] [level] = ch1;
-		if (++ level >= SPEEXNN)
-		{
-			level = 0;
-			sysproc(b [0], b [1]);
-		}
+	#if WITHDUALWATCH
+		const FLOAT32P_t i = { { ch0, ch1, }, };
+		const FLOAT32P_t o = filter_fir_rx_AUDIO_Pair2(i);
+		savesampleout16stereo(o.IV, o.QV);
 	#else
-		#if WITHDUALWATCH
-			const FLOAT32P_t i = { { ch0, ch1, }, };
-			const FLOAT32P_t o = filter_fir_rx_AUDIO_Pair2(i);
-			savesampleout16stereo(o.IV, o.QV);
-		#else
-			const FLOAT_t o = filter_fir_rx_AUDIO_A(ch0);
-			savesampleout16stereo(o, o);
-		#endif
+		const FLOAT_t o = filter_fir_rx_AUDIO_A(ch0);
+		savesampleout16stereo(o, o);
 	#endif
 #else /* WITHSKIPUSERMODE */
 	savesampleout16tospeex(ch0, ch1);	// через user-level обработчик

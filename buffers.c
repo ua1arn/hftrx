@@ -494,7 +494,7 @@ void buffers_diagnostics(void)
 typedef ALIGNX_BEGIN struct denoise16
 {
 	LIST_ENTRY item;
-	ALIGNX_BEGIN speexel_t buff [NTRX * SPEEXNN] ALIGNX_END;
+	ALIGNX_BEGIN speexel_t buff [NTRX * FIRBUFSIZE] ALIGNX_END;
 } ALIGNX_END denoise16_t;
 
 // Буферы с принятымти от обработчиков прерываний сообщениями
@@ -568,12 +568,12 @@ void savesampleout16tospeex(speexel_t ch0, speexel_t ch1)
 
 	p->buff [n] = ch0;		// sample value
 #if WITHUSEDUALWATCH
-	p->buff [n + SPEEXNN] = ch1;	// sample value
+	p->buff [n + FIRBUFSIZE] = ch1;	// sample value
 #endif /* WITHUSEDUALWATCH */
 
 	n += 1;
 
-	if (n >= SPEEXNN)
+	if (n >= FIRBUFSIZE)
 	{
 		InsertHeadList2(& speexready16, & p->item);
 		p = NULL;
