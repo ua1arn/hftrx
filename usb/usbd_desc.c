@@ -1305,7 +1305,7 @@ static unsigned fill_UAC_function(uint_fast8_t fill, uint8_t * p, unsigned maxsi
 		#if WITHRTS96 || WITHRTS192
 			n += fill_UACINRTS_function(fill, p + n, maxsize - n, highspeed, 1);
 		#else /* WITHRTS96 || WITHRTS192 */
-			//#error WITHRTS96 or WITHRTS192 required for WITHUSBUAC3
+			#error WITHRTS96 or WITHRTS192 required for WITHUSBUAC3
 		#endif /* WITHRTS96 || WITHRTS192 */
 
 	#else /* WITHUSBUAC3 */
