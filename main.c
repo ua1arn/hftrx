@@ -7107,8 +7107,8 @@ static void processNoiseReduction(uint_fast8_t pathi, const float* bufferIn, flo
 static void processingonebuff(speexel_t * p)
 {
 	const uint_fast8_t mode = submodes [gsubmode].mode;
-	spx_int32_t denoise = gnoisereducts [gmode];
 	const uint_fast8_t nospeex = mode == MODE_DIGI || gdatamode;
+	spx_int32_t denoise = ! nospeex && gnoisereducts [gmode];
 	//////////////////////////////////////////////
 	// Filtering
 #if WITHNOSPEEX
@@ -7122,7 +7122,10 @@ static void processingonebuff(speexel_t * p)
 		{
 			// Filtering and denoise.
 			arm_fir_f32(& arm_fir_instances [pathi], p + FIRBUFSIZE * pathi, wire1 [pathi], FIRBUFSIZE);
-			processNoiseReduction(pathi, wire1 [pathi], wire2 [pathi]);
+			if (pathi == 0)
+				processNoiseReduction(pathi, wire1 [pathi], wire2 [pathi]);
+			else
+				arm_copy_f32(wire1 [pathi], wire2 [pathi], FIRBUFSIZE);
 		}
 		else
 		{
