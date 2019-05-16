@@ -7064,6 +7064,7 @@ static void speex_update_rx(void)
 	}
 }
 
+#if WITHSKIPUSERMODE
 // system-mode processing
 void sysproc(float32_t * p0, float32_t * p1)
 {
@@ -7078,6 +7079,7 @@ void sysproc(float32_t * p0, float32_t * p1)
 		savesampleout16stereo(wire2 [0] [i], wire2 [1] [i]);	// to AUDIO codec
 	}
 }
+#endif /* WITHSKIPUSERMODE */
 
 // user-mode processing
 static void 
