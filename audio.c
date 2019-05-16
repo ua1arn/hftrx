@@ -308,7 +308,7 @@ static uint_fast8_t		glob_mainsubrxmode = BOARD_RXMAINSUB_A_A;	// Левый/п�
 static RAMBIGDTCM FLOAT_t FIRCoef_tx_MIKE [NPROF] [NtapCoeffs(Ntap_tx_MIKE)];
 static RAMBIGDTCM FLOAT_t FIRCwnd_tx_MIKE [NtapCoeffs(Ntap_tx_MIKE)];			// подготовленные значения функции окна
 
-static FLOAT_t FIRCoef_rx_AUDIO [NPROF] [2 /* эта размерность номер тракта */] [NtapCoeffs(Ntap_rx_AUDIO)];
+static FLOAT_t FIRCoef_rx_AUDIO [NPROF] [2 /* эта размерность номер тракта */] [Ntap_rx_AUDIO];
 static FLOAT_t FIRCwnd_rx_AUDIO [NtapCoeffs(Ntap_rx_AUDIO)];			// подготовленные значения функции окна
 
 //static void * fft_lookup;
@@ -2841,6 +2841,18 @@ static void setlevelindicator(long code)	// в кодах ЦАП
 
 #endif /* WITHDACOUTDSPAGC */
 
+// Duplicate symmetrical part of coeffs.
+void fir_expand_symmetric(FLOAT_t * dCoeff, int Ntap)
+{
+	const int half = Ntap / 2;
+	int i;
+	for (i = 1; i <= half; ++ i)
+	{
+		dCoeff [half + i] = dCoeff [half - i];
+	}
+
+}
+
 // Установка параметров тракта приёмника
 static void audio_setup_rx(const uint_fast8_t spf, const uint_fast8_t pathi)
 {
@@ -2849,6 +2861,7 @@ static void audio_setup_rx(const uint_fast8_t spf, const uint_fast8_t pathi)
 	//enum { iCoefNum = Ntap_rx_AUDIO };
 
 	dsp_recalceq_coeffs(pathi, dCoeff, Ntap_rx_AUDIO);	// calculate 1/2 of coefficients
+	fir_expand_symmetric(dCoeff, Ntap_rx_AUDIO);	// Duplicate symmetrical part of coeffs.
 }
 // установить частоты среза тракта ПЧ
 // Вызывается из пользовательской программы, но может быть вызвана и до инициализации DSP - вызывается из updateboard.
@@ -5222,13 +5235,25 @@ getmonitx(
 static void save16demod(FLOAT_t ch0, FLOAT_t ch1)
 {
 #if WITHSKIPUSERMODE
-	#if WITHDUALWATCH
-		const FLOAT32P_t i = { { ch0, ch1, }, };
-		const FLOAT32P_t o = filter_fir_rx_AUDIO_Pair2(i);
-		savesampleout16stereo(o.IV, o.QV);
+	#if 0
+		static float32_t b [2] [SPEEXNN];
+		static int level;
+		b [0] [level] = ch0;
+		b [1] [level] = ch1;
+		if (++ level >= SPEEXNN)
+		{
+			level = 0;
+			sysproc(b [0], b [1]);
+		}
 	#else
-		const FLOAT_t o = filter_fir_rx_AUDIO_A(ch0);
-		savesampleout16stereo(o, o);
+		#if WITHDUALWATCH
+			const FLOAT32P_t i = { { ch0, ch1, }, };
+			const FLOAT32P_t o = filter_fir_rx_AUDIO_Pair2(i);
+			savesampleout16stereo(o.IV, o.QV);
+		#else
+			const FLOAT_t o = filter_fir_rx_AUDIO_A(ch0);
+			savesampleout16stereo(o, o);
+		#endif
 	#endif
 #else /* WITHSKIPUSERMODE */
 	savesampleout16tospeex(ch0, ch1);	// через user-level обработчик

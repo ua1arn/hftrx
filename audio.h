@@ -344,6 +344,7 @@ typedef struct
 #define NtapCoeffs(n)	((unsigned) (n) / 2 + 1)
 
 #define	Ntap_rx_AUDIO	NtapValidate(SPEEXNN * 2 - 7)
+#define Ntap_tx_MIKE	Ntap_rx_AUDIO
 
 #if WITHDSPEXTFIR || WITHDSPEXTDDC
 
@@ -354,7 +355,7 @@ typedef struct
 
 #endif /* WITHDSPEXTFIR || WITHDSPEXTDDC */
 
-#if WITHDSPEXTFIR
+#if 0//WITHDSPEXTFIR
 
 
 	#if CPUSTYLE_R7S721 && ! WITHUSEDUALWATCH
@@ -601,6 +602,8 @@ void buffers_diagnostics(void);
 void dtmftest(void);
 void dsp_recalceq(uint_fast8_t pathi, float * frame);	// for SPEEX
 void dsp_recalceq_coeffs(uint_fast8_t pathi, float * dCoeff, int iCoefNum);	// calculate 1/2 of coefficients
+void fir_expand_symmetric(FLOAT_t * dCoeff, int Ntap);			// Duplicate symmetrical part of coeffs.
+void sysproc(float32_t * p0, float32_t * p1);
 
 void modem_initialze(void);
 uint_fast8_t modem_get_ptt(void);

@@ -7049,13 +7049,8 @@ static void speex_update_rx(void)
 		// Получение параметров эквалайзера
 #if WITHNOSPEEX
 		float32_t * const dCoefs = speexEQcoeffs [pathi];
-		unsigned i;
 		dsp_recalceq_coeffs(pathi, dCoefs, Ntap_rx_AUDIO);	// calculate 1/2 of coefficients
-		// Duplicate simmetrical part of coeffs.
-		for (i = 1; i <= Ntap_rx_AUDIO / 2; ++ i)
-		{
-			dCoefs [Ntap_rx_AUDIO / 2 + i] = dCoefs [Ntap_rx_AUDIO / 2 - i];
-		}
+		fir_expand_symmetric(dCoefs, Ntap_rx_AUDIO);	// Duplicate symmetrical part of coeffs.
 #else /* WITHNOSPEEX */
 		SpeexPreprocessState * const st = st_handles [pathi];
 		ASSERT(st != NULL);
@@ -7066,6 +7061,21 @@ static void speex_update_rx(void)
 		speex_preprocess_ctl(st, SPEEX_PREPROCESS_SET_NOISE_SUPPRESS, & supress);
 		speex_preprocess_ctl(st, SPEEX_PREPROCESS_SET_EQUALIZER, speexEQ [pathi]);
 #endif /* WITHNOSPEEX */
+	}
+}
+
+// system-mode processing
+void sysproc(float32_t * p0, float32_t * p1)
+{
+	static speexel_t wire2 [2] [SPEEXNN];
+    /* Execute the FIR processing function.  Input wire1 and output wire2 */
+	arm_fir_f32(& arm_fir_instances [0], p0, wire2 [0], SPEEXNN);
+	arm_fir_f32(& arm_fir_instances [1], p1, wire2 [1], SPEEXNN);
+	// Save results
+	unsigned i;
+	for (i = 0; i < SPEEXNN; ++ i)
+	{
+		savesampleout16stereo(wire2 [0] [i], wire2 [1] [i]);	// to AUDIO codec
 	}
 }
 
@@ -7132,7 +7142,6 @@ audioproc_spool_user(void)
 		releasespeexbuffer_user(p);
 	}
 }
-
 
 static void speex_initialize(void)
 {
