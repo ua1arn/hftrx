@@ -1576,7 +1576,7 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 		{ 0, 0, 0, 0 },	// признаки включения самоконтроля для SSB
 #endif /* WITHTX */
 #if WITHIF4DSP
-		{ DSPCTL_MODE_RX_WIDE, DSPCTL_MODE_TX_SSB, },	// Управление для DSP в режиме приёма и передачи - режим широкого фильтра
+		{ DSPCTL_MODE_RX_WIDE, DSPCTL_MODE_TX_DIGI, },	// Управление для DSP в режиме приёма и передачи - режим широкого фильтра
 		{ BWSETI_DIGI, BWSETI_DIGI, },				// индекс банка полос пропускания для данного режима
 		{ 0, 0, },	// фиксированная полоса пропускания в DSP (if6) для данного режима (если не ноль).
 	#if WITHUSBUAC
@@ -7064,44 +7064,55 @@ static void speex_update_rx(void)
 	}
 }
 
-#if WITHNOSPEEX
-
 #define NOISE_REDUCTION_BLOCK_SIZE FIRBUFSIZE
 #define NOISE_REDUCTION_TAPS 16
 #define NOISE_REDUCTION_REFERENCE_SIZE (NOISE_REDUCTION_BLOCK_SIZE*2)
 #define NOISE_REDUCTION_STEP 0.000001f
 
-static arm_lms_norm_instance_f32	lms2_Norm_instance;
-static float32_t	                lms2_stateF32 [NOISE_REDUCTION_TAPS+NOISE_REDUCTION_BLOCK_SIZE];
-static float32_t	                lms2_normCoeff_f32 [NOISE_REDUCTION_TAPS];
-static float32_t	                lms2_reference [NOISE_REDUCTION_REFERENCE_SIZE];
-static float32_t   					lms2_errsig2 [NOISE_REDUCTION_BLOCK_SIZE];
+typedef struct lmsnrstate_tag
+{
+
+	arm_lms_norm_instance_f32	lms2_Norm_instance;
+	float32_t	                lms2_stateF32 [NOISE_REDUCTION_TAPS+NOISE_REDUCTION_BLOCK_SIZE];
+	float32_t	                lms2_normCoeff_f32 [NOISE_REDUCTION_TAPS];
+	float32_t	                lms2_reference [NOISE_REDUCTION_REFERENCE_SIZE];
+	float32_t   				lms2_errsig2 [NOISE_REDUCTION_BLOCK_SIZE];
+
+	uint16_t reference_index_old; //=0;
+	uint16_t reference_index_new; //=0;
+
+} lmsnrstate_t;
+
+static lmsnrstate_t lmsnrstates [NTRX];
 
 static void InitNoiseReduction(void)
 {
-	arm_lms_norm_init_f32(&lms2_Norm_instance, NOISE_REDUCTION_TAPS, lms2_normCoeff_f32, lms2_stateF32, NOISE_REDUCTION_STEP, NOISE_REDUCTION_BLOCK_SIZE);
-	arm_fill_f32(0,lms2_reference,NOISE_REDUCTION_REFERENCE_SIZE);
-	arm_fill_f32(0,lms2_normCoeff_f32,NOISE_REDUCTION_TAPS);
+	uint_fast8_t pathi;
+	for (pathi = 0; pathi < NTRX; ++ pathi)
+	{
+		lmsnrstate_t * const p = & lmsnrstates [pathi];
+
+		arm_lms_norm_init_f32(&p->lms2_Norm_instance, NOISE_REDUCTION_TAPS, p->lms2_normCoeff_f32, p->lms2_stateF32, NOISE_REDUCTION_STEP, NOISE_REDUCTION_BLOCK_SIZE);
+		arm_fill_f32(0, p->lms2_reference, NOISE_REDUCTION_REFERENCE_SIZE);
+		arm_fill_f32(0, p->lms2_normCoeff_f32, NOISE_REDUCTION_TAPS);
+
+		p->reference_index_old = 0;
+		p->reference_index_new = 0;
+	}
 }
 
-// TODO: use pathi for separate state of receievers A and B
-static void processNoiseReduction(uint_fast8_t pathi, const float* bufferIn, float* bufferOut)
+static void processNoiseReduction(lmsnrstate_t * p, const float* bufferIn, float* bufferOut)
 {
-	static uint16_t reference_index_old=0;
-	static uint16_t reference_index_new=0;
+	arm_copy_f32(bufferIn, &p->lms2_reference[p->reference_index_new], NOISE_REDUCTION_BLOCK_SIZE);
+	arm_lms_norm_f32(&p->lms2_Norm_instance, bufferIn, &p->lms2_reference[p->reference_index_old], bufferOut, p->lms2_errsig2, NOISE_REDUCTION_BLOCK_SIZE);
 
-	ASSERT(pathi < 1);
-
-	arm_copy_f32(bufferIn, &lms2_reference[reference_index_new], NOISE_REDUCTION_BLOCK_SIZE);
-	arm_lms_norm_f32(&lms2_Norm_instance, bufferIn, &lms2_reference[reference_index_old], bufferOut, lms2_errsig2, NOISE_REDUCTION_BLOCK_SIZE);
-
-	reference_index_old+=NOISE_REDUCTION_BLOCK_SIZE;
-	if(reference_index_old>=NOISE_REDUCTION_REFERENCE_SIZE) reference_index_old=0;
-	reference_index_new=reference_index_old+NOISE_REDUCTION_BLOCK_SIZE;
-	if(reference_index_new>=NOISE_REDUCTION_REFERENCE_SIZE) reference_index_new=0;
+	p->reference_index_old += NOISE_REDUCTION_BLOCK_SIZE;
+	if (p->reference_index_old>=NOISE_REDUCTION_REFERENCE_SIZE)
+		p->reference_index_old = 0;
+	p->reference_index_new = p->reference_index_old + NOISE_REDUCTION_BLOCK_SIZE;
+	if (p->reference_index_new>=NOISE_REDUCTION_REFERENCE_SIZE)
+		p->reference_index_new = 0;
 }
-
-#endif /* WITHNOSPEEX */
 
 // обработка и сохранение в savesampleout16stereo_user()
 static void processingonebuff(speexel_t * p)
@@ -7111,44 +7122,32 @@ static void processingonebuff(speexel_t * p)
 	spx_int32_t denoise = ! nospeex && gnoisereducts [gmode];
 	//////////////////////////////////////////////
 	// Filtering
-#if WITHNOSPEEX
 	static speexel_t wire1 [NTRX] [FIRBUFSIZE];
 	static speexel_t wire2 [NTRX] [FIRBUFSIZE];
 	// Use CMSIS DSP interface
 	uint_fast8_t pathi;
 	for (pathi = 0; pathi < NTRX; ++ pathi)
 	{
+		lmsnrstate_t * const nrp = & lmsnrstates [pathi];
+#if WITHNOSPEEX
 		if (denoise)
 		{
 			// Filtering and denoise.
-			arm_fir_f32(& arm_fir_instances [pathi], p + FIRBUFSIZE * pathi, wire1 [pathi], FIRBUFSIZE);
-			if (pathi == 0)
-				processNoiseReduction(pathi, wire1 [pathi], wire2 [pathi]);
-			else
-				arm_copy_f32(wire1 [pathi], wire2 [pathi], FIRBUFSIZE);
+			arm_fir_f32(& arm_fir_instances [pathi], p + pathi * FIRBUFSIZE, wire1 [pathi], FIRBUFSIZE);
+			processNoiseReduction(nrp, wire1 [pathi], wire2 [pathi]);
 		}
 		else
 		{
 			// Filtering only.
-			arm_fir_f32(& arm_fir_instances [pathi], p + FIRBUFSIZE * pathi, wire2 [pathi], FIRBUFSIZE);
+			arm_fir_f32(& arm_fir_instances [pathi], p + pathi * FIRBUFSIZE, wire2 [pathi], FIRBUFSIZE);
 		}
-	}
 #else /* WITHNOSPEEX */
-	if (! nospeex)
-	{
-		speex_preprocess_run(st_handles [0], p + 0);	// left channel
-	#if WITHUSEDUALWATCH
-		speex_preprocess_run(st_handles [1], p + FIRBUFSIZE);	// right channel
-	#endif /* WITHUSEDUALWATCH */
-	}
-	else
-	{
-		speex_preprocess_estimate_update(st_handles [0], p + 0);	// left channel
-	#if WITHUSEDUALWATCH
-		speex_preprocess_estimate_update(st_handles [1], p + FIRBUFSIZE);	// right channel
-	#endif /* WITHUSEDUALWATCH */
-	}
+		if (! nospeex)
+			speex_preprocess_run(st_handles [pathi], p + pathi * FIRBUFSIZE);
+		else
+			speex_preprocess_estimate_update(st_handles [pathi], p + pathi * FIRBUFSIZE);
 #endif /* WITHNOSPEEX */
+	}
 
 	//////////////////////////////////////////////
 	// Save results
@@ -7202,10 +7201,6 @@ static void speex_initialize(void)
 #if ! WITHNOSPEEX
 	debug_printf_P(PSTR("speex: final speexallocated=%d\n"), speexallocated);
 #endif /* ! WITHNOSPEEX */
-
-#if WITHNOSPEEX
-	InitNoiseReduction();
-#endif /* WITHNOSPEEX */
 }
 
 #endif /* WITHIF4DSP */
@@ -16604,6 +16599,7 @@ hamradio_initialize(void)
 #if WITHINTEGRATEDDSP	/* в программу включена инициализация и запуск DSP части. */
 	dsp_initialize();		// цифровая обработка подготавливается
 	speex_initialize();
+	InitNoiseReduction();
 #endif /* WITHINTEGRATEDDSP */
 
 #if WITHI2SHW

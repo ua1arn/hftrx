@@ -350,8 +350,9 @@ static RAMBIGDTCM struct Complex Sig [FFTSizeFilters];
 
 static FLOAT_t txlevelfenceHALF = INT32_MAX / 2;
 
-static int_fast32_t txlevelfenceSSB_INTEGER = INT32_MAX - 1;
+//static int_fast32_t txlevelfenceSSB_INTEGER = INT32_MAX - 1;
 static FLOAT_t txlevelfenceSSB = INT32_MAX / 2;
+static FLOAT_t txlevelfenceDIGI = INT32_MAX / 2;
 
 static FLOAT_t txlevelfenceNFM = INT32_MAX / 2;
 static FLOAT_t txlevelfenceBPSK = INT32_MAX / 2;
@@ -2750,6 +2751,7 @@ static void audio_setup_mike(const uint_fast8_t spf)
 
 	// Голосовые режимиы
 	case DSPCTL_MODE_TX_NFM:
+	case DSPCTL_MODE_TX_DIGI:
 	case DSPCTL_MODE_TX_SSB:
 	case DSPCTL_MODE_TX_AM:
 	case DSPCTL_MODE_TX_FREEDV:
@@ -3700,6 +3702,8 @@ static RAMFUNC FLOAT_t preparevi(
 	)
 {
 	FLOAT_t vi0f = vi0;
+	const FLOAT_t txlevelXXX = (dspmode == DSPCTL_MODE_TX_DIGI) ? txlevelfenceDIGI : txlevelfenceSSB;
+	const int_fast32_t txlevelfenceXXX_INTEGER = (dspmode == DSPCTL_MODE_TX_DIGI) ? txlevelfenceDIGI : txlevelfenceSSB;
 
 	switch (dspmode)
 	{
@@ -3709,11 +3713,12 @@ static RAMFUNC FLOAT_t preparevi(
 	case DSPCTL_MODE_TX_CW:
 		return txlevelfenceHALF;	// постоянная составляющая с максимальным уровнем
 
+	case DSPCTL_MODE_TX_DIGI:
 	case DSPCTL_MODE_TX_SSB:
 	case DSPCTL_MODE_TX_AM:
 	case DSPCTL_MODE_TX_NFM:
 	case DSPCTL_MODE_TX_FREEDV:
-		// Источник нормируется к txlevelfenceSSB
+		// Источник нормируется к txlevelfenceSSB или txlevelfenceDIGI
 		switch (glob_txaudio)
 		{
 		case BOARD_TXAUDIO_MIKE:
@@ -3721,7 +3726,7 @@ static RAMFUNC FLOAT_t preparevi(
 			// источник - микрофон
 			// дополнительно работает ограничитель.
 			// see glob_mik1level (0..100)
-			return injectsubtone(txmikeagc(vi0f * txlevelfenceSSB / mikefenceIN), ctcss); //* TXINSCALE; // источник сигнала - микрофон
+			return injectsubtone(txmikeagc(vi0f * txlevelXXX / mikefenceIN), ctcss); //* TXINSCALE; // источник сигнала - микрофон
 
 #if WITHUSBUAC
 		case BOARD_TXAUDIO_USB:
@@ -3729,23 +3734,23 @@ static RAMFUNC FLOAT_t preparevi(
 		default:
 			// источник - LINE IN или USB
 			// see glob_mik1level (0..100)
-			return injectsubtone(vi0f * txlevelfenceSSB / mikefenceIN, ctcss); //* TXINSCALE; // источник сигнала - микрофон
+			return injectsubtone(vi0f * txlevelXXX / mikefenceIN, ctcss); //* TXINSCALE; // источник сигнала - микрофон
 
 		case BOARD_TXAUDIO_NOISE:
 			// источник - шум
 			//vf = filter_fir_tx_MIKE((local_random(2UL * IFDACMAXVAL) - IFDACMAXVAL), 0);	// шум
 			// return audio sample in range [- txlevelfence.. + txlevelfence]
-			return injectsubtone((int) (local_random(2 * txlevelfenceSSB_INTEGER - 1) - txlevelfenceSSB_INTEGER), ctcss);	// шум
+			return injectsubtone((int) (local_random(2 * txlevelfenceXXX_INTEGER - 1) - txlevelfenceXXX_INTEGER), ctcss);	// шум
 
 		case BOARD_TXAUDIO_2TONE:
 			// источник - двухтоновый сигнал
 			// return audio sample in range [- txlevelfence.. + txlevelfence]
-			return injectsubtone(get_dualtonefloat() * txlevelfenceSSB, ctcss);		// источник сигнала - двухтональный генератор для настройки
+			return injectsubtone(get_dualtonefloat() * txlevelXXX, ctcss);		// источник сигнала - двухтональный генератор для настройки
 
 		case BOARD_TXAUDIO_1TONE:
 			// источник - синусоидальный сигнал
 			// return audio sample in range [- txlevelfence.. + txlevelfence]
-			return injectsubtone(get_singletonefloat() * txlevelfenceSSB, ctcss);
+			return injectsubtone(get_singletonefloat() * txlevelXXX, ctcss);
 
 		case BOARD_TXAUDIO_MUTE:
 			return injectsubtone(0, ctcss);
@@ -3791,6 +3796,7 @@ static RAMFUNC FLOAT32P_t baseband_modulator(
 			return vfb;
 		}
 
+	case DSPCTL_MODE_TX_DIGI:
 	case DSPCTL_MODE_TX_SSB:
 	case DSPCTL_MODE_TX_FREEDV:
 		{
@@ -5223,10 +5229,11 @@ getmonitx(
 	default:
 		return sdtn;
 
-	case DSPCTL_MODE_TX_SSB:
+	case DSPCTL_MODE_TX_DIGI:
 	case DSPCTL_MODE_TX_FREEDV:
 	case DSPCTL_MODE_TX_AM:
 	case DSPCTL_MODE_TX_NFM:
+	case DSPCTL_MODE_TX_SSB:
 		return mike;
 	}
 }
@@ -5891,8 +5898,9 @@ void dsp_initialize(void)
 	const FLOAT_t txlevelfence = dacFS /* * db2ratio(- (FLOAT_t) 1.75) */ * (FLOAT_t) M_SQRT1_2;	// контролировать по отсутствию индикации переполнения DUC при передаче
 	txlevelfenceHALF = txlevelfence / 2;	// Для режимов с lo6=0 - у которых нет подавления нерабочей боковой
 
+	txlevelfenceDIGI = txlevelfence;
 	txlevelfenceSSB = txlevelfence * (FLOAT_t) M_SQRT1_2;
-	txlevelfenceSSB_INTEGER = txlevelfenceSSB;	// Для источника шума
+	//txlevelfenceSSB_INTEGER = txlevelfenceSSB;	// Для источника шума
 	txlevelfenceBPSK = txlevelfence / (FLOAT_t) 1.5;
 	txlevelfenceNFM = txlevelfence / 2;
 	txlevelfenceCW = txlevelfence / 2;
