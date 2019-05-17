@@ -56,8 +56,8 @@
 	#define FFTSizeFiltersM 8
 	#define FFTCONFIGFilters	(& arm_cfft_sR_f32_len256)
 
-	#define FFTSizeSpectrumM 10
-	#define FFTCONFIGSpectrum	(& arm_cfft_sR_f32_len1024)
+	#define FFTSizeSpectrumM 9
+	#define FFTCONFIGSpectrum	(& arm_cfft_sR_f32_len512)
 
 #elif CPUSTYLE_STM32F4XX
 
