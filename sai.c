@@ -37,6 +37,8 @@ static void hardware_dummy_enable(void)
 
 #if WITHINTEGRATEDDSP
 
+#define ADDPAD 32	// TODO: должно быть без этого
+
 #if WITHRTS192 && ! WITHSAI2HW
 	#error WITHRTS192 require WITHSAI2HW
 #endif /* WITHRTS192 && ! WITHSAI2HW */
@@ -46,7 +48,7 @@ static uintptr_t
 dma_invalidate16rx(uintptr_t addr)
 {
 	//arm_hardware_invalidate(addr, DMABUFFSIZE16 * sizeof (int16_t));
-	arm_hardware_flush_invalidate(addr, DMABUFFSIZE16 * sizeof (int16_t));
+	arm_hardware_flush_invalidate(addr, DMABUFFSIZE16 * sizeof (int16_t) + ADDPAD);
 	return addr;
 }
 
@@ -55,7 +57,7 @@ dma_invalidate16rx(uintptr_t addr)
 static uintptr_t 
 dma_flush16tx(uintptr_t addr)
 {
-	arm_hardware_flush_invalidate(addr, DMABUFFSIZE16 * sizeof (int16_t));
+	arm_hardware_flush_invalidate(addr, DMABUFFSIZE16 * sizeof (int16_t) + ADDPAD);
 	return addr;
 }
 
@@ -64,7 +66,7 @@ static uintptr_t
 dma_invalidate192rts(uintptr_t addr)
 {
 	//arm_hardware_invalidate(addr, DMABUFFSIZE192RTS * sizeof (uint8_t));
-	arm_hardware_flush_invalidate(addr, DMABUFFSIZE192RTS * sizeof (uint8_t));
+	arm_hardware_flush_invalidate(addr, DMABUFFSIZE192RTS * sizeof (uint8_t) + ADDPAD);
 	return addr;
 }
 
@@ -74,7 +76,7 @@ static uintptr_t
 dma_flushxrtstx(uintptr_t addr, unsigned long size)
 {
 	//arm_hardware_invalidate(addr, size);
-	arm_hardware_flush_invalidate(addr, size);
+	arm_hardware_flush_invalidate(addr, size + ADDPAD);
 	return addr;
 }
 // Сейчас в эту память будем читать по DMA
@@ -82,7 +84,7 @@ static uintptr_t
 dma_invalidate32rx(uintptr_t addr)
 {
 	//arm_hardware_invalidate(addr, DMABUFFSIZE32RX * sizeof (uint32_t));
-	arm_hardware_flush_invalidate(addr, DMABUFFSIZE32RX * sizeof (uint32_t));
+	arm_hardware_flush_invalidate(addr, DMABUFFSIZE32RX * sizeof (uint32_t) + ADDPAD);
 	return addr;
 }
 
@@ -90,7 +92,7 @@ dma_invalidate32rx(uintptr_t addr)
 // Потом содержимое не требуется
 static uintptr_t dma_flush32tx(uintptr_t addr)
 {
-	arm_hardware_flush_invalidate(addr, DMABUFFSIZE32TX * sizeof (uint32_t));
+	arm_hardware_flush_invalidate(addr, DMABUFFSIZE32TX * sizeof (uint32_t) + ADDPAD);
 	return addr;
 }
 
@@ -249,7 +251,7 @@ DMA_I2S2_TX_initialize(void)
 {
 	/* SPI2_TX - Stream4, Channel0 */ 
 	/* DMA для передачи по I2S2*/
-	RCC->AHB1ENR |= RCC_AHB1ENR_DMA1EN;//включил DMA1 
+	RCC->AHB1ENR |= RCC_AHB1ENR_DMA1EN;//включил DMA1
 	__DSB();
 
 #if CPUSTYLE_STM32H7XX
@@ -298,7 +300,7 @@ DMA_I2S2ext_rx_init(void)
 {
 	const uint_fast8_t ch = 3;
 	/* I2S2_EXT_RX - Stream3, Channel3 */ 
-	RCC->AHB1ENR |= RCC_AHB1ENR_DMA1EN;//включил DMA1 
+	RCC->AHB1ENR |= RCC_AHB1ENR_DMA1EN;//включил DMA1
 	__DSB();
 
 	DMA1_Stream3->PAR = (uint32_t) & I2S2ext->DR;
@@ -338,7 +340,7 @@ static void
 DMA_I2S3_RX_initialize(void)
 {
 	/* I2S3_RX - DMA1, Stream0, Channel0 */ 
-	RCC->AHB1ENR |= RCC_AHB1ENR_DMA1EN;	//включил DMA1 
+	RCC->AHB1ENR |= RCC_AHB1ENR_DMA1EN;	//включил DMA1
 	__DSB();
 
 #if CPUSTYLE_STM32H7XX
@@ -430,10 +432,10 @@ hardware_i2s2_master_fullduplex_initialize(void)		/* инициализация 
 
 	// Теперь настроим модуль SPI.
 #if CPUSTYLE_STM32H7XX
-	RCC->APB1LENR |= RCC_APB1LENR_SPI2EN; // Подать тактирование   
+	RCC->APB1LENR |= RCC_APB1LENR_SPI2EN; // Подать тактирование
 	__DSB();
 #else /* CPUSTYLE_STM32H7XX */
-	RCC->APB1ENR |= RCC_APB1ENR_SPI2EN; // Подать тактирование   
+	RCC->APB1ENR |= RCC_APB1ENR_SPI2EN; // Подать тактирование
 	__DSB();
 #endif /* CPUSTYLE_STM32H7XX */
 	        
@@ -486,10 +488,10 @@ static void
 hardware_i2s2_slave_tx_initialize(void)		/* инициализация I2S2, STM32F4xx */
 {
 #if CPUSTYLE_STM32H7XX
-	RCC->APB1LENR |= RCC_APB1LENR_SPI2EN; // Подать тактирование   
+	RCC->APB1LENR |= RCC_APB1LENR_SPI2EN; // Подать тактирование
 	__DSB();
 #else /* CPUSTYLE_STM32H7XX */
-	RCC->APB1ENR |= RCC_APB1ENR_SPI2EN; // Подать тактирование   
+	RCC->APB1ENR |= RCC_APB1ENR_SPI2EN; // Подать тактирование
 	__DSB();
 #endif /* CPUSTYLE_STM32H7XX */
 	        
@@ -576,10 +578,10 @@ hardware_i2s2_master_tx_initialize(void)		/* инициализация I2S2, ST
 
 	// Теперь настроим модуль SPI.
 #if CPUSTYLE_STM32H7XX
-	RCC->APB1LENR |= RCC_APB1LENR_SPI2EN; // Подать тактирование   
+	RCC->APB1LENR |= RCC_APB1LENR_SPI2EN; // Подать тактирование
 	__DSB();
 #else /* CPUSTYLE_STM32H7XX */
-	RCC->APB1ENR |= RCC_APB1ENR_SPI2EN; // Подать тактирование   
+	RCC->APB1ENR |= RCC_APB1ENR_SPI2EN; // Подать тактирование
 	__DSB();
 #endif /* CPUSTYLE_STM32H7XX */
 	        
@@ -631,10 +633,10 @@ hardware_i2s3_slave_rx_initialize(void)		/* инициализация I2S3 STM3
 {
 	debug_printf_P(PSTR("hardware_i2s3_slave_rx_initialize\n"));
 #if CPUSTYLE_STM32H7XX
-	RCC->APB1LENR |= RCC_APB1LENR_SPI3EN; // Подать тактирование   
+	RCC->APB1LENR |= RCC_APB1LENR_SPI3EN; // Подать тактирование
 	__DSB();
 #else /* CPUSTYLE_STM32H7XX */
-	RCC->APB1ENR |= RCC_APB1ENR_SPI3EN; // Подать тактирование   
+	RCC->APB1ENR |= RCC_APB1ENR_SPI3EN; // Подать тактирование
 	__DSB();
 #endif /* CPUSTYLE_STM32H7XX */
 	        
@@ -823,7 +825,7 @@ static void hardware_sai1_sai2_clock_selection(void)
 
 #if WITHSAICLOCKFROMPIN
 	
-	// Тактовая частота на SAI1 подается с внешнего генератора, в процессор вводится 
+	// Тактовая частота на SAI1 подается с внешнего генератора, в процессор вводится
 	// через MCK сигнал интерфейса.
 	// SAI2 синхронизируется от SAI1
 
@@ -1068,7 +1070,7 @@ static void DMA_SAI1_A_TX_initialize(void)
 {
 	/* SAI1_A - Stream1, Channel0 */ 
 	/* DMA для передачи по I2S2*/
-	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;//включил DMA2 
+	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;//включил DMA2
 	__DSB();
 
 #if CPUSTYLE_STM32H7XX
@@ -1116,7 +1118,7 @@ static void DMA_SAI1_A_TX_initialize(void)
 static void DMA_SAI1_B_RX_initialize(void)
 {
 	/* SAI1_B - Stream5, Channel0 */ 
-	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;//включил DMA2 
+	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;//включил DMA2
 	__DSB();
 
 #if CPUSTYLE_STM32H7XX
@@ -1166,7 +1168,7 @@ static void hardware_sai1_master_fullduplex_initialize(void)		/* инициал�
 	hardware_sai1_sai2_clock_selection();
 
 	// Теперь настроим модуль SAI.
-	RCC->APB2ENR |= RCC_APB2ENR_SAI1EN; //подать тактирование 
+	RCC->APB2ENR |= RCC_APB2ENR_SAI1EN; //подать тактирование
 	__DSB();
 	
 
@@ -1283,7 +1285,7 @@ static void hardware_sai1_slave_fullduplex_initialize(void)		/* инициали
 	hardware_sai1_sai2_clock_selection();
 
 	// Теперь настроим модуль SAI.
-	RCC->APB2ENR |= RCC_APB2ENR_SAI1EN; //подать тактирование 
+	RCC->APB2ENR |= RCC_APB2ENR_SAI1EN; //подать тактирование
 	__DSB();
 	
 	SAI1_Block_A->CR1 &= ~ SAI_xCR1_SAIEN;
@@ -1504,7 +1506,7 @@ void DMA2_Stream4_IRQHandler(void)
 static void DMA_SAI2_A_TX_initializeXXX(void)
 {
 
-	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;//включил DMA2 
+	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;//включил DMA2
 	__DSB();
 
 	#if CPUSTYLE_STM32H7XX
@@ -1549,7 +1551,7 @@ static void DMA_SAI2_A_TX_initializeXXX(void)
 // Use arm_hardware_flush
 static void DMA_SAI2_A_TX_initializeAUDIO48(void)
 {
-	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;//включил DMA2 
+	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;//включил DMA2
 	__DSB();
 
 	#if CPUSTYLE_STM32H7XX
@@ -1595,7 +1597,7 @@ static void DMA_SAI2_A_TX_initializeAUDIO48(void)
 // Use arm_hardware_invalidate
 static void DMA_SAI2_B_RX_initializeRTS96(void)
 {
-	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;//включил DMA2 
+	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;//включил DMA2
 	__DSB();
 
 	#if CPUSTYLE_STM32H7XX
@@ -1642,7 +1644,7 @@ static void DMA_SAI2_B_RX_initializeRTS96(void)
 // Use arm_hardware_invalidate
 static void DMA_SAI2_B_RX_initializeAUDIO48(void)
 {
-	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;//включил DMA2 
+	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;//включил DMA2
 	__DSB();
 
 	#if CPUSTYLE_STM32H7XX
@@ -1693,7 +1695,7 @@ static void hardware_sai2_slave_fullduplex_initialize(void)
 	hardware_sai1_sai2_clock_selection();
 
 	// Теперь настроим модуль SAI.
-	RCC->APB2ENR |= RCC_APB2ENR_SAI2EN; //подать тактирование 
+	RCC->APB2ENR |= RCC_APB2ENR_SAI2EN; //подать тактирование
 	__DSB();
 	
 
@@ -1804,7 +1806,7 @@ static void hardware_sai2_master_fullduplex_initialize(void)		/* инициал�
 	hardware_sai1_sai2_clock_selection();
 
 	// Теперь настроим модуль SAI.
-	RCC->APB2ENR |= RCC_APB2ENR_SAI2EN; //подать тактирование 
+	RCC->APB2ENR |= RCC_APB2ENR_SAI2EN; //подать тактирование
 	__DSB();
 	
 
@@ -1937,7 +1939,7 @@ static void DMA_SAI2_B_RX_initializeWFM(void)
 {
 	debug_printf_P(PSTR("DMA_SAI2_B_RX_initializeWFM start.\n"));
 
-	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;//включил DMA2 
+	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;//включил DMA2
 	__DSB();
 
 	#if CPUSTYLE_STM32H7XX
@@ -2887,12 +2889,12 @@ void hardware_dac_initialize(void)		/* инициализация DAC на STM32
 	debug_printf_P(PSTR("hardware_dac_initialize start\n"));
 #if CPUSTYLE_STM32H7XX
 
-	RCC->APB1LENR |= RCC_APB1LENR_DAC12EN; //подать тактирование 
+	RCC->APB1LENR |= RCC_APB1LENR_DAC12EN; //подать тактирование
 	__DSB();
 
 #elif CPUSTYLE_STM32F
 
-	RCC->APB1ENR |= RCC_APB1ENR_DACEN; //подать тактирование 
+	RCC->APB1ENR |= RCC_APB1ENR_DACEN; //подать тактирование
 	__DSB();
 
 #endif
@@ -3103,7 +3105,7 @@ static RAMFUNC_NONILINE void r7s721_usbX_dma0_dmarx_handler(void)
 	// 0: Next0 Register Set
 	// 1: Next1 Register Set
 	const uint_fast8_t b = (DMAC13.CHSTAT_n & DMAC13_CHSTAT_n_SR) != 0;	// SR
-	// Фаза в данном случае отличается от проверенной на передаче в кодек (функция r7s721_ssif0_txdma). 
+	// Фаза в данном случае отличается от проверенной на передаче в кодек (функция r7s721_ssif0_txdma).
 	// Прием с автопереключением больше нигде не подтвержден.
 	if (b == 0)
 	{
