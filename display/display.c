@@ -51,7 +51,7 @@ display_fillrect(
 	)
 {
 #if LCDMODE_LTDC
-#if defined (DMA2D)
+#if defined (DMA2D) && ! LCDMODE_LTDC_L8
 
 	// just writes the color defined in the DMA2D_OCOLR register 
 	// to the area located at the address pointed by the DMA2D_OMAR 
@@ -75,7 +75,7 @@ display_fillrect(
 		0;
 
 	DMA2D->OPFCCR = (DMA2D->OPFCCR & ~ (DMA2D_OPFCCR_CM)) |
-		(2 * DMA2D_FGPFCCR_CM_VALUE) |	/* framebuffer pixel format */
+		(DMA2D_OPFCCR_CM_VALUE) |	/* framebuffer pixel format */
 		0;
 
 	/* set AXI master timer */
