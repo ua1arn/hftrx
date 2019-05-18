@@ -20,19 +20,25 @@
 	RAMFRAMEBUFF ALIGNX_BEGIN FRAMEBUFF_T framebuff0 ALIGNX_END;	//L8 (8-bit Luminance or CLUT)
 #endif /* LCDMODE_LTDC */
 
-#define DMA2D_AMTCR_DT_VALUE 2
+/*
+	Dead time value in the AXI clock cycle inserted between two consecutive accesses on
+	the AXI master port. These bits represent the minimum guaranteed number of cycles
+	between two consecutive AXI accesses
+ */
+#define DMA2D_AMTCR_DT_VALUE 255	/* 0..255 */
+#define DMA2D_AMTCR_DT_ENABLE 1	/* 0..1 */
 
 #if LCDMODE_LTDC
 
 	#if LCDMODE_LTDC_L24
 		#define DMA2D_FGPFCCR_CM_VALUE	(1 * DMA2D_FGPFCCR_CM_0)	/* 0001: RGB888 */
-		#define DMA2D_OPFCCR_CM_VALUE	(1 * DMA2D_FGPFCCR_CM_0)	/* 001: RGB888 */
+		#define DMA2D_OPFCCR_CM_VALUE	(1 * DMA2D_OPFCCR_CM_0)	/* 001: RGB888 */
 	#elif LCDMODE_LTDC_L8
 		#define DMA2D_FGPFCCR_CM_VALUE	(5 * DMA2D_FGPFCCR_CM_0)	/* 0101: L8 */
-		//#define DMA2D_OPFCCR_CM_VALUE	(x * DMA2D_FGPFCCR_CM_0)	/* not supported */
+		//#define DMA2D_OPFCCR_CM_VALUE	(x * DMA2D_OPFCCR_CM_0)	/* not supported */
 	#else /* LCDMODE_LTDC_L8 */
 		#define DMA2D_FGPFCCR_CM_VALUE	(2 * DMA2D_FGPFCCR_CM_0)	/* 0010: RGB565 */
-		#define DMA2D_OPFCCR_CM_VALUE	(2 * DMA2D_FGPFCCR_CM_0)	/* 010: RGB565 */
+		#define DMA2D_OPFCCR_CM_VALUE	(2 * DMA2D_OPFCCR_CM_0)	/* 010: RGB565 */
 	#endif /* LCDMODE_LTDC_L8 */
 
 #endif /* LCDMODE_LTDC */
@@ -81,7 +87,7 @@ display_fillrect(
 	/* set AXI master timer */
 	DMA2D->AMTCR = (DMA2D->AMTCR & ~ (DMA2D_AMTCR_DT | DMA2D_AMTCR_EN)) |
 		(DMA2D_AMTCR_DT_VALUE << DMA2D_AMTCR_DT_Pos) |
-		1 * DMA2D_AMTCR_EN |
+		DMA2D_AMTCR_DT_ENABLE * DMA2D_AMTCR_EN |
 		0;
 
 	/* запустить операцию */
@@ -157,7 +163,7 @@ dma2d_fillrect2_RGB565(
 	/* set AXI master timer */
 	DMA2D->AMTCR = (DMA2D->AMTCR & ~ (DMA2D_AMTCR_DT | DMA2D_AMTCR_EN)) |
 		(DMA2D_AMTCR_DT_VALUE << DMA2D_AMTCR_DT_Pos) |
-		1 * DMA2D_AMTCR_EN |
+		DMA2D_AMTCR_DT_ENABLE * DMA2D_AMTCR_EN |
 		0;
 
 	/* запустить операцию */
@@ -545,7 +551,7 @@ void display_colorbuffer_show(
 	/* set AXI master timer */
 	DMA2D->AMTCR = (DMA2D->AMTCR & ~ (DMA2D_AMTCR_DT | DMA2D_AMTCR_EN)) |
 		(DMA2D_AMTCR_DT_VALUE << DMA2D_AMTCR_DT_Pos) |
-		1 * DMA2D_AMTCR_EN |
+		DMA2D_AMTCR_DT_ENABLE * DMA2D_AMTCR_EN |
 		0;
 
 	/* запустить операцию */
@@ -1190,7 +1196,7 @@ display_scroll_down(
 	/* set AXI master timer */
 	DMA2D->AMTCR = (DMA2D->AMTCR & ~ (DMA2D_AMTCR_DT | DMA2D_AMTCR_EN)) |
 		(DMA2D_AMTCR_DT_VALUE << DMA2D_AMTCR_DT_Pos) |
-		1 * DMA2D_AMTCR_EN |
+		DMA2D_AMTCR_DT_ENABLE * DMA2D_AMTCR_EN |
 		0;
 
 	/* запустить операцию */
@@ -1257,7 +1263,7 @@ display_scroll_up(
 	/* set AXI master timer */
 	DMA2D->AMTCR = (DMA2D->AMTCR & ~ (DMA2D_AMTCR_DT | DMA2D_AMTCR_EN)) |
 		(DMA2D_AMTCR_DT_VALUE << DMA2D_AMTCR_DT_Pos) |
-		1 * DMA2D_AMTCR_EN |
+		DMA2D_AMTCR_DT_ENABLE * DMA2D_AMTCR_EN |
 		0;
 
 	/* запустить операцию */
