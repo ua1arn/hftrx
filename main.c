@@ -7066,8 +7066,10 @@ static void speex_update_rx(void)
 {
 	uint_fast8_t pathi;
 
+#if ! WITHNOSPEEX
 	spx_int32_t denoise = gnoisereducts [gmode];
 	spx_int32_t supress = - (int) gnoisereductvl;
+#endif /* ! WITHNOSPEEX */
 
 	for (pathi = 0; pathi < NTRX; ++ pathi)
 	{
@@ -7139,7 +7141,7 @@ static void processingonebuff(lmsnrstate_t * const nrp, speexel_t * p)
 {
 	const uint_fast8_t mode = submodes [gsubmode].mode;
 	const uint_fast8_t nospeex = mode == MODE_DIGI || gdatamode;
-	spx_int32_t denoise = ! nospeex && gnoisereducts [gmode];
+	const uint_fast8_t denoise = ! nospeex && gnoisereducts [gmode];
 	//////////////////////////////////////////////
 	// Filtering
 	// Use CMSIS DSP interface
