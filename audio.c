@@ -2905,21 +2905,6 @@ static int freq2index(unsigned freq)
 	return (uint_fast64_t) freq * SPEEXNN * 2 / ARMI2SRATE;
 }
 
-// slope: изменение тембра звука - на Samplerate/2 АЧХ становится на столько децибел
-// scale: общий масштаб изменения АЧХ
-static void correctspectrum(float * resp, int_fast8_t targetdb)
-{
-	const FLOAT_t slope = db2ratio(targetdb);
-	spx_word16_t scale = Q15_ONE;
-	const FLOAT_t step = POWF(slope, (FLOAT_t) 1 / SPEEXNN);
-	const int n = SPEEXNN;
-	int i;
-	for (i = 0; i < n; ++ i, scale *= step)
-	{
-		resp [i] *= scale;
-	}
-}
-
 // calculate 1/2 of coefficients
 void dsp_recalceq_coeffs(uint_fast8_t pathi, float * dCoeff, int iCoefNum)
 {
