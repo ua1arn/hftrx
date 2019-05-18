@@ -6,7 +6,7 @@
 // UA1ARN
 //
 // Трансивер с DSP обработкой "Аист" на процессоре
-// rmainunit_v5km0.pcb STM32H743IIT6, TFT 4.3", 2xUSB, SD-CARD, NAU8822L и FPGA EP4CE22E22I7N
+// rmainunit_v5km0.pcb, rmainunit_v5km1.pcb STM32H743IIT6, TFT 4.3", 2xUSB, SD-CARD, NAU8822L и FPGA EP4CE22E22I7N
 
 #ifndef ARM_STM32F4XX_TQFP176_CTLSTYLE_STORCH_V7_H_INCLUDED
 #define ARM_STM32F4XX_TQFP176_CTLSTYLE_STORCH_V7_H_INCLUDED 1
@@ -261,7 +261,9 @@
 	//#define	WITHFPGAWAIT_AS	1	/* FPGA загружается из собственной микросхемы загрузчика - дождаться окончания загрузки перед инициализацией SPI в процессоре */
 	#define	WITHFPGALOAD_PS	1	/* FPGA загружается процессором с помощью SPI */
 
-	//#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX
+	#define WITHSKIPUSERMODE 1	// debug option: не отдавать в USER MODE блоки для фильтрации аудиосигнала
+	#define WITHNEWZOOMFFT 1
+	#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX
 	#define WITHUSEDUALWATCH	1	// Второй приемник
 	//#define WITHLOOPBACKTEST	1	/* прослушивание микрофонного входа, генераторов */
 	//#define WITHMODEMIQLOOPBACK	1	/* модем получает собственные передаваемые квадратуры */
