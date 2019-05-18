@@ -3585,6 +3585,15 @@ enum
 		#endif /* WITHMENU */
 		};
 
+	#if WITHMENU
+		void display2_getmultimenu(multimenuwnd_t * p)
+		{
+			p->multilinemenu_max_rows = 4;
+			p->ystep = 2;	// количество ячеек разметки на одну строку меню
+			p->reverse = 0;
+		}
+	#endif /* WITHMENU */
+
 	#else /* DSTYLE_UR3LMZMOD && WITHONEATTONEAMP */
 		// TFT панель 320 * 240
 		// для Аиста
@@ -3713,6 +3722,15 @@ enum
 			p->h = GRID2Y(BDCV_ALLRX);				// размер по вертикали в пикселях
 			p->frame = (uintptr_t) getscratchpip();
 		}
+
+	#if WITHMENU
+		void display2_getmultimenu(multimenuwnd_t * p)
+		{
+			p->multilinemenu_max_rows = 4;
+			p->ystep = 2;	// количество ячеек разметки на одну строку меню
+			p->reverse = 0;
+		}
+	#endif /* WITHMENU */
 
 	#endif /* DSTYLE_UR3LMZMOD && WITHONEATTONEAMP */
 
