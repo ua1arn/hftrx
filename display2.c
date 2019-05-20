@@ -5070,7 +5070,7 @@ display_colorgrid(
 
 		if (df > - halfbw)
 		{
-			// маркер частоты кратной glob_gridstep - XOR линию
+			// Маркер частоты кратной glob_gridstep - XOR линию
 			xmarker = deltafreq2x_abs(f0, df, bw, ALLDX);
 			if (xmarker != UINT16_MAX)
 				display_colorbuffer_xor_vline(buffer, ALLDX, ALLDY, xmarker, row0, h, color);
@@ -5112,7 +5112,7 @@ static void dsp_latchwaterfall(
 }
 
 // Спектр на монохромных дисплеях
-// или на цветных,где есть возможность раскаски растровой картинки.
+// или на цветных, где есть возможность раскаски растровой картинки.
 
 #define HHWMG ((! LCDMODE_S1D13781_NHWACCEL && LCDMODE_S1D13781) || LCDMODE_UC1608 || LCDMODE_UC1601)
 
@@ -5128,7 +5128,7 @@ static void display2_spectrum(
 {
 #if HHWMG
 	// Спектр на монохромных дисплеях
-	// или на цветных,где есть возможность раскаски растровой картинки.
+	// или на цветных, где есть возможность раскаски растровой картинки.
 
 	if (hamradio_get_tx() == 0)
 	{
@@ -5180,7 +5180,7 @@ static void display2_spectrum(
 		{
 			uint_fast16_t x;
 			uint_fast16_t y;
-			// маркер центральной частоты обзора
+			// Маркер центральной частоты обзора
 			for (y = 0; y < SPDY; ++ y)
 			{
 				display_pixelbuffer(spectmonoscr, ALLDX, SPDY, xmarker, SPY0 + y);	// погасить точку
@@ -5385,13 +5385,13 @@ static void display_wfputrow(uint_fast16_t x, uint_fast16_t y, const uint8_t * p
 	for (xp = 0; xp < dx; ++ xp)
 		display_colorbuffer_set(b, dx, dy, xp, 0, wfpalette [p [xp]]);
 
-	// маркер центральной частоты обзора
+	// Маркер центральной частоты обзора
 	//display_colorbuffer_xor(b, dx, dy, dx / 2, 0, COLOR565_GRIDCOLOR);
 
 	display_colorbuffer_show(b, dx, dy, x, y);
 }
 
-// подготовка изображения водопада
+// Подготовка изображения водопада
 static void display2_waterfall(
 	uint_fast8_t x0, 
 	uint_fast8_t y0, 
@@ -5437,7 +5437,7 @@ static void display2_waterfall(
 
 #elif HHWMG
 	// Спектр на монохромных дисплеях
-	// или на цветных,где есть возможность раскаски растровой картинки.
+	// или на цветных, где есть возможность раскаски растровой картинки.
 
 	// следы спектра ("водопад") на монохромных дисплеях
 
@@ -5523,7 +5523,7 @@ static void display2_colorbuff(
 {
 #if HHWMG
 	// Спектр на монохромных дисплеях
-	// или на цветных,где есть возможность раскаски растровой картинки.
+	// или на цветных, где есть возможность раскаски растровой картинки.
 	display_showbuffer(spectmonoscr, ALLDX, SPDY, x0, y0);
 
 #else /* */
@@ -5544,6 +5544,7 @@ static void display2_colorbuff(
 		//display_colorbuffer_fill(colorpip, ALLDX, ALLDY, COLOR_GRAY);
 #if LCDMODE_LTDC_PIP16
 		display_colorbuffer_pip(colorpip, ALLDX, ALLDY);
+		nextpip();
 #else /* LCDMODE_LTDC_PIP16 */
 		display_colorbuffer_show(colorpip, ALLDX, ALLDY, GRID2X(x0), GRID2Y(y0));
 #endif /* LCDMODE_LTDC_PIP16 */
