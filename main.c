@@ -5005,6 +5005,11 @@ uint_fast32_t hamradio_get_freq_a(void)
 {
 	return gfreqs [getbankindex_ab_fordisplay(0)];
 }
+// Частота VFO A для отображения на дисплее
+uint_fast32_t hamradio_get_freq_pathi(uint_fast8_t pathi)
+{
+	return gfreqs [getbankindex_pathi(pathi)];
+}
 // SSB/CW/AM/FM/..
 const FLASHMEM char * hamradio_get_mode_a_value_P(void)
 {

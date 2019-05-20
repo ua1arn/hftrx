@@ -5133,7 +5133,7 @@ static void display2_spectrum(
 	if (hamradio_get_tx() == 0)
 	{
 		const uint_fast8_t pathi = 0;	// RX A
-		const uint_fast32_t f0 = hamradio_get_freq_a();	/* frequecy at middle of spectrum */
+		const uint_fast32_t f0 = hamradio_get_freq_pathi(pathi);	/* frequecy at middle of spectrum */
 		const int_fast32_t bw = display_zoomedbw();
 		uint_fast16_t xleft = deltafreq2x(f0, hamradio_getleft_bp(pathi), bw, ALLDX);	// левый край шторуи
 		uint_fast16_t xright = deltafreq2x(f0, hamradio_getright_bp(pathi), bw, ALLDX);	// правый край шторки
@@ -5213,7 +5213,7 @@ static void display2_spectrum(
 	if (hamradio_get_tx() == 0)
 	{
 		const uint_fast8_t pathi = 0;	// RX A
-		const uint_fast32_t f0 = hamradio_get_freq_a();	/* frequecy at middle of spectrum */
+		const uint_fast32_t f0 = hamradio_get_freq_pathi(pathi);	/* frequecy at middle of spectrum */
 		const int_fast32_t bw = display_zoomedbw();
 		uint_fast16_t xleft = deltafreq2x(f0, hamradio_getleft_bp(pathi), bw, ALLDX);	// левый край шторки
 		uint_fast16_t xright = deltafreq2x(f0, hamradio_getright_bp(pathi), bw, ALLDX);	// правый край шторки

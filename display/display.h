@@ -836,6 +836,7 @@ uint_fast8_t hamradio_get_lockvalue(void);	// текущее состояние 
 uint_fast8_t hamradio_get_usefastvalue(void);	// текущее состояние FAST
 uint_fast8_t hamradio_get_voxvalue(void);	// текущее состояние VOX
 uint_fast8_t hamradio_get_tunemodevalue(void);	// текущее состояние TUNE
+uint_fast32_t hamradio_get_freq_pathi(uint_fast8_t pathi);		// Частота VFO A/B для отображения на дисплее
 uint_fast32_t hamradio_get_freq_a(void);		// Частота VFO A для отображения на дисплее
 uint_fast32_t hamradio_get_freq_b(void);		// Частота VFO B для отображения на дисплее
 uint_fast32_t hamradio_get_freq_rx(void);		// Частота VFO A для маркировки файлов
