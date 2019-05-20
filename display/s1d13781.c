@@ -718,7 +718,7 @@ display_scroll_down(
 	if ((hshift < 0 && - hshift >= w) || (hshift > 0 && hshift >= w) || (n >= h))
 	{
 		// очистка используемой зоны экрана
-		bitblt_fill(x, y, w, h, fillnewcolor);
+		bitblt_fill(x, y + n, w, h - n, fillnewcolor);
 		return;
 	}
 
@@ -790,7 +790,7 @@ display_scroll_up(
 	if ((hshift < 0 && - hshift >= w) || (hshift > 0 && hshift >= w) || (n >= h))
 	{
 		// очистка используемой зоны экрана
-		bitblt_fill(x, y, w, h, fillnewcolor);
+		bitblt_fill(x, y, w, h - n, fillnewcolor);
 		return;
 	}
 

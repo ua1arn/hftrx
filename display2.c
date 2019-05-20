@@ -4878,6 +4878,7 @@ static uint_fast32_t wffreq;			// частота центра спектра, д
 static uint_fast8_t wfzoom;				// масштаб, с которым выводили спектр
 static int_fast16_t wfhorshift;			// сдвиг по шоризонтали (отрицаельный - влево) для водопада.
 static uint_fast16_t wfscroll;			// сдвиг по вертикали (в раьочем направлении) для водопада.
+static uint_fast8_t wfclear;			// стирание всей областии отображение водопада.
 
 enum { PALETTESIZE = 256 };
 static PACKEDCOLOR565_T wfpalette [PALETTESIZE];
@@ -5395,11 +5396,13 @@ static void dsp_latchwaterfall(
 	const int_fast32_t bw = display_zoomedbw();
 	const uint_fast16_t xm = deltafreq2x(f0, 0, bw, ALLDX);
 
-	int_fast16_t hshift = 0;
+	int_fast16_t hscroll = 0;
+	uint_fast8_t hclear = 0;
 
 	if (wffreq == 0 || wfzoom != glob_zoomx)
 	{
 		wfsetupnew(); // стираем целиком старое изображение водопада. в строке 0 - новое
+		hclear = 1;
 	}
 	else if (wffreq == f0)
 	{
@@ -5411,14 +5414,15 @@ static void dsp_latchwaterfall(
 		const uint_fast32_t delta = wffreq - f0;
 		if (delta < bw / 2)
 		{
-			hshift = xm - deltafreq2x(f0, 0 - delta, bw, ALLDX);
+			hscroll = xm - deltafreq2x(f0, 0 - delta, bw, ALLDX);
 			// нужно сохрянять часть старого изображения
 			// в строке wfrow - новое
-			wflshiftright(hshift);
+			wflshiftright(hscroll);
 		}
 		else
 		{
 			wfsetupnew(); // стираем целиком старое изображение водопада. в строке 0 - новое
+			hclear = 1;
 		}
 	}
 	else
@@ -5427,20 +5431,22 @@ static void dsp_latchwaterfall(
 		const uint_fast32_t delta = f0 - wffreq;
 		if (delta < bw / 2)
 		{
-			hshift = xm - deltafreq2x(f0, delta, bw, ALLDX);
+			hscroll = xm - deltafreq2x(f0, delta, bw, ALLDX);
 			// нужно сохрянять часть старого изображения
 			// в строке wfrow - новое
-			wflshiftleft(- hshift);
+			wflshiftleft(- hscroll);
 		}
 		else
 		{
 			wfsetupnew(); // стираем целиком старое изображение водопада. в строке 0 - новое
+			hclear = 1;
 		}
 	}
 	wffreq = f0;
 	wfzoom = glob_zoomx;
-	wfhorshift += hshift;
+	wfhorshift += hscroll;
 	wfscroll += 1;
+	wfclear = hclear;
 }
 
 // Подготовка изображения водопада
@@ -5457,18 +5463,18 @@ static void display2_waterfall(
 		const int_fast32_t bw = display_zoomedbw();
 		uint_fast16_t x, y;
 		const uint_fast16_t xm = deltafreq2x(f0, 0, bw, ALLDX);
-		int_fast16_t hshift = 0;
+		int_fast16_t hscroll = wfclear ? ALLDX : wfhorshift;
 
 	#if 1
 		// следы спектра ("водопад")
 		// сдвигаем вниз, отрисовываем только верхнюю строку
-		display_scroll_down(GRID2X(x0), GRID2Y(y0) + WFY0, ALLDX, WFDY, wfscroll, wfhorshift);
+		display_scroll_down(GRID2X(x0), GRID2Y(y0) + WFY0, ALLDX, WFDY, wfscroll, hscroll);
 		x = 0;
 		display_wfputrow(GRID2X(x0) + x, GRID2Y(y0) + 0 + WFY0, & wfarray [wfrow] [0]);	// display_plot inside for one row
 	#elif 1
 		// следы спектра ("фонтан")
 		// сдвигаем вверх, отрисовываем только нижнюю строку
-		display_scroll_up(GRID2X(x0), GRID2Y(y0) + WFY0, ALLDX, WFDY, wfscroll, wfhorshift);
+		display_scroll_up(GRID2X(x0), GRID2Y(y0) + WFY0, ALLDX, WFDY, wfscroll, hscroll);
 		x = 0;
 		display_wfputrow(GRID2X(x0) + x, GRID2Y(y0) + WFDY - 1 + WFY0, & wfarray [wfrow] [0]);	// display_plot inside for one row
 	#else
@@ -5484,6 +5490,7 @@ static void display2_waterfall(
 		// Запрос на сдвиг исполнен
 		wfhorshift = 0;
 		wfscroll = 0;
+		wfclear = 0;
 
 #elif HHWMG
 	// Спектр на монохромных дисплеях
