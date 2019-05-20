@@ -4842,7 +4842,7 @@ static const FLOAT_t spectrum_alpha = 1 - (FLOAT_t) 0.25;	// old value coefficie
 static const FLOAT_t waterfall_beta = 0.5;					// incoming value coefficient
 static const FLOAT_t waterfall_alpha = 1 - (FLOAT_t) 0.5;	// old value coefficient
 
-static FLOAT_t spavgarray [ALLDX] = { 1 };	// массив входных данных для отображения (через фильтры).
+static FLOAT_t spavgarray [ALLDX];	// массив входных данных для отображения (через фильтры).
 static FLOAT_t Yold_wtf [ALLDX];
 static FLOAT_t Yold_fft [ALLDX];
 
@@ -4976,38 +4976,6 @@ static void wfpalette_initialize(void)
 	}
 }
 
-// формирование данных спектра для последующего отображения
-// спектра или водопада
-static void dsp_latchwaterfall(
-	uint_fast8_t x0, 
-	uint_fast8_t y0, 
-	void * pv
-	)
-{
-	uint_fast16_t x;
-	(void) x0;
-	(void) y0;
-	(void) pv;
-
-	// запоминание информации спектра для спектрограммы
-	dsp_getspectrumrow(spavgarray, ALLDX, glob_zoomx);
-
-#if (! LCDMODE_S1D13781_NHWACCEL && LCDMODE_S1D13781)
-#else
-	wfrow = (wfrow == 0) ? (WFDY - 1) : (wfrow - 1);
-#endif
-
-	// запоминание информации спектра для водопада
-	for (x = 0; x < ALLDX; ++ x)
-	{
-		// без усреднения для водопада
-		const int val = dsp_mag2y(filter_waterfall(x), PALETTESIZE - 1, glob_topdb, glob_bottomdb); // возвращает значения от 0 до dy включительно
-
-		// запись в буфер водопада
-		wfarray [wfrow] [x] = val;
-	}
-}
-
 // получить горизонтальную позицию для заданного отклонения в герцах
 // Использовать для "статической" разметки дисплея - полоса пропускания, маркер частоты приема.
 static uint_fast16_t
@@ -5024,7 +4992,7 @@ deltafreq2x(
 
 // получить горизонтальную позицию для заданного отклонения в герцах
 // Использовать для "динамической" разметки дисплея - риски, кратные 10 кГц.
-// Возврат UINT16_MAX при невозможности отобразить запрошщенную частоту в указанном окне
+// Возврат UINT16_MAX при невозможности отобразить запрошенную частоту в указанном окне
 static uint_fast16_t
 deltafreq2x_abs(
 	int_fast32_t fc,	// центральная частота
@@ -5110,6 +5078,39 @@ display_colorgrid(
 	}
 }
 
+
+// формирование данных спектра для последующего отображения
+// спектра или водопада
+static void dsp_latchwaterfall(
+	uint_fast8_t x0,
+	uint_fast8_t y0,
+	void * pv
+	)
+{
+	uint_fast16_t x;
+	(void) x0;
+	(void) y0;
+	(void) pv;
+
+	// запоминание информации спектра для спектрограммы
+	dsp_getspectrumrow(spavgarray, ALLDX, glob_zoomx);
+
+#if (! LCDMODE_S1D13781_NHWACCEL && LCDMODE_S1D13781)
+#else
+	wfrow = (wfrow == 0) ? (WFDY - 1) : (wfrow - 1);
+#endif
+
+	// запоминание информации спектра для водопада
+	for (x = 0; x < ALLDX; ++ x)
+	{
+		// без усреднения для водопада
+		const int val = dsp_mag2y(filter_waterfall(x), PALETTESIZE - 1, glob_topdb, glob_bottomdb); // возвращает значения от 0 до dy включительно
+
+		// запись в буфер водопада
+		wfarray [wfrow] [x] = val;
+	}
+}
+
 // Спектр на монохромных дисплеях
 // или на цвентых,где есть возможность раскаски растровой картинки.
 
@@ -5131,11 +5132,14 @@ static void display2_spectrum(
 
 	if (hamradio_get_tx() == 0)
 	{
+		const uint_fast8_t pathi = 0;	// RX A
 		const uint_fast32_t f0 = hamradio_get_freq_a();	/* frequecy at middle of spectrum */
 		const int_fast32_t bw = display_zoomedbw();
-		uint_fast16_t xleft = deltafreq2x(f0, hamradio_getleft_bp(0), bw, ALLDX);	// левый край шторуи
-		uint_fast16_t xright = deltafreq2x(f0, hamradio_getright_bp(0), bw, ALLDX);	// правый край шторки
+		uint_fast16_t xleft = deltafreq2x(f0, hamradio_getleft_bp(pathi), bw, ALLDX);	// левый край шторуи
+		uint_fast16_t xright = deltafreq2x(f0, hamradio_getright_bp(pathi), bw, ALLDX);	// правый край шторки
 
+		if (xleft > xright)
+			xleft = 0;
 		if (xright == xleft)
 			xright = xleft + 1;
 
@@ -5208,10 +5212,11 @@ static void display2_spectrum(
 	// построения изображения по bitmap с раскрашиванием
 	if (hamradio_get_tx() == 0)
 	{
+		const uint_fast8_t pathi = 0;	// RX A
 		const uint_fast32_t f0 = hamradio_get_freq_a();	/* frequecy at middle of spectrum */
 		const int_fast32_t bw = display_zoomedbw();
-		uint_fast16_t xleft = deltafreq2x(f0, hamradio_getleft_bp(0), bw, ALLDX);	// левый край шторки
-		uint_fast16_t xright = deltafreq2x(f0, hamradio_getright_bp(0), bw, ALLDX);	// правый край шторки
+		uint_fast16_t xleft = deltafreq2x(f0, hamradio_getleft_bp(pathi), bw, ALLDX);	// левый край шторки
+		uint_fast16_t xright = deltafreq2x(f0, hamradio_getright_bp(pathi), bw, ALLDX);	// правый край шторки
 
 		if (xleft > xright)
 			xleft = 0;
@@ -5284,17 +5289,17 @@ static void wflclear(void)
 	{
 		if (y == wfrow)
 			continue;
-		memset(wfarray [y], 0x00, rowsize);
+		memset(wfarray [y], 0x00, rowsize * sizeof wfarray [y][0]);
 	}
 }
 
-// стираем буффер усреднения FFT
+// стираем буфер усреднения FFT
 static void fft_avg_clear(void)
 {
 	memset(Yold_wtf, 0x00, sizeof Yold_wtf);
 }
 
-// стираем буффер усреднения водопада
+// стираем буфер усреднения водопада
 static void wfl_avg_clear(void)
 {
 	memset(Yold_wtf, 0x00, sizeof Yold_wtf);
@@ -5314,15 +5319,16 @@ static void wflshiftleft(uint_fast16_t pixels)
 	{
 		if (y == wfrow)
 		{
-			//двигаем буффер усреднения значений WTF и FFT
-			memmove(&Yold_fft[0], &Yold_fft[pixels], rowsize*4 - pixels*4);
-			memset(&Yold_fft[rowsize - pixels], 0x00, pixels*4);
-			memmove(&Yold_wtf[0], &Yold_wtf[pixels], rowsize*4 - pixels*4);
-			memset(&Yold_wtf[rowsize - pixels], 0x00, pixels*4);
+			// двигаем буфер усреднения значений WTF и FFT
+			memmove(&Yold_fft[0], &Yold_fft[pixels], (rowsize - pixels)*sizeof Yold_fft[0]);
+			memset(&Yold_fft[rowsize - pixels], 0x00, pixels * sizeof Yold_fft[0]);
+
+			memmove(&Yold_wtf[0], &Yold_wtf[pixels], (rowsize - pixels)  *sizeof Yold_wtf[0]);
+			memset(&Yold_wtf[rowsize - pixels], 0x00, pixels*sizeof Yold_wtf[0]);
 			continue;
 		}
-		memmove(wfarray [y] + 0, wfarray [y] + pixels, rowsize - pixels);
-		memset(wfarray [y] + rowsize - pixels, 0x00, pixels);
+		memmove(wfarray [y] + 0, wfarray [y] + pixels, (rowsize - pixels));
+		memset(wfarray [y] + rowsize - pixels, 0x00, pixels * sizeof wfarray [y][0]);
 	}
 }
 
@@ -5340,19 +5346,28 @@ static void wflshiftright(uint_fast16_t pixels)
 	{
 		if (y == wfrow)
 		{
-			//двигаем буффер усреднения значений WTF и FFT
-			memmove(&Yold_fft[pixels], &Yold_fft[0], rowsize*4 - pixels*4);
-			memset(&Yold_fft[0], 0x00, pixels*4);
-			memmove(&Yold_wtf[pixels], &Yold_wtf[0], rowsize*4 - pixels*4);
-			memset(&Yold_wtf[0], 0x00, pixels*4);
+			// двигаем буфер усреднения значений WTF и FFT
+			memmove(& Yold_fft[pixels], & Yold_fft[0], (rowsize - pixels) * sizeof Yold_fft [0]);
+			memset(& Yold_fft[0], 0x00, pixels*sizeof Yold_fft[0]);
+
+			memmove(& Yold_wtf[pixels], &Yold_wtf[0], (rowsize - pixels) * sizeof Yold_wtf[0]);
+			memset(& Yold_wtf[0], 0x00, pixels * sizeof Yold_wtf[0]);
 			continue;
 		}
-		memmove(wfarray [y] + pixels, wfarray [y] + 0, rowsize - pixels);
-		memset(wfarray [y] + 0, 0x00, pixels);
+		memmove(wfarray [y] + pixels, wfarray [y] + 0, (rowsize - pixels) * sizeof wfarray [y][0]);
+		memset(wfarray [y] + 0, 0x00, pixels * sizeof wfarray [y][0]);
 	}
 }
 
-
+// стираем целиком старое изображение водопада
+// в строке 0 - новое
+static void wfsetupnew(void)
+{
+	wflclear();
+	dsp_zoomfft_init(glob_zoomx); //инициализируем и очищаем ZoomFFT
+	fft_avg_clear(); // очищаем буфер усреднения FFT
+	wfl_avg_clear(); // очищаем буфер усреднения водопада
+}
 
 // отрисовка вновь появившихся данных на водопаде (в случае использования аппаратного scroll видеопамяти).
 static void display_wfputrow(uint_fast16_t x, uint_fast16_t y, const uint8_t * p)
@@ -5433,15 +5448,9 @@ static void display2_waterfall(
 		uint_fast16_t x, y;
 		const uint_fast16_t xm = deltafreq2x(f0, 0, bw, ALLDX);
 
-#if ! WITHSEPARATEWFL
 		if (wffreq == 0 || wfzoom != glob_zoomx)
 		{
-			// стираем целиком старое изображение водопада
-			// в строке wfrow - новое
-			wflclear();
-			dsp_zoomfft_init(glob_zoomx); //инициализируем и очищаем ZoomFFT
-			fft_avg_clear(); // очищаем буфер усреднения FFT
-			wfl_avg_clear(); // очищаем буфер усреднения водопада
+			wfsetupnew(); // стираем целиком старое изображение водопада. в строке 0 - новое
 		}
 		else if (wffreq == f0)
 		{
@@ -5459,12 +5468,7 @@ static void display2_waterfall(
 			}
 			else
 			{
-				// стараем целиком старое изображение водопада
-				// в строке wfrow - новое
-				wflclear();
-				dsp_zoomfft_init(glob_zoomx); //инициализируем и очищаем ZoomFFT
-				fft_avg_clear(); // очищаем буфер усреднения FFT
-				wfl_avg_clear(); // очищаем буфер усреднения водопада
+				wfsetupnew(); // стираем целиком старое изображение водопада. в строке 0 - новое
 			}
 		}
 		else
@@ -5479,15 +5483,11 @@ static void display2_waterfall(
 			}
 			else
 			{
-				// стираем целиком старое изображение водопада
-				// в строке 0 - новое
-				wflclear();
-				dsp_zoomfft_init(glob_zoomx); //инициализируем и очищаем ZoomFFT
-				fft_avg_clear(); // очищаем буфер усреднения FFT
-				wfl_avg_clear(); // очищаем буфер усреднения водопада
+				wfsetupnew(); // стираем целиком старое изображение водопада. в строке 0 - новое
 			}
 		}
-#endif /* ! WITHSEPARATEWFL */
+		wffreq = f0;
+		wfzoom = glob_zoomx;
 
 		// формирование растра
 		// следы спектра ("водопад")
@@ -5498,21 +5498,6 @@ static void display2_waterfall(
 				display_colorbuffer_set(colorpip, ALLDX, ALLDY, x, y + WFY0, wfpalette [wfarray [(wfrow + y) % WFDY] [x]]);
 			}
 		}
-#if 0
-		if (1)
-		{
-			// маркер центральной частоты обзора
-			// XOR линию
-			uint_fast16_t xmarker = xm;
-			display_colorbuffer_xor_vline(colorpip, ALLDX, ALLDY, xmarker, WFY0, WFDY, COLOR565_GRIDCOLOR);
-		}
-		else
-		{
-			display_colorgrid(colorpip, WFY0, WFDY, freq, bw);	// отрисовка маркеров частот
-		}
-#endif
-		wffreq = f0;
-		wfzoom = glob_zoomx;
 	}
 	else
 	{
