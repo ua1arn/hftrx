@@ -4876,6 +4876,8 @@ static FLOAT_t filter_spectrum(
 
 static uint_fast32_t wffreq;			// частота центра спектра, для которой в последной раз отрисовали.
 static uint_fast8_t wfzoom;				// масштаб, с которым выводили спектр
+static int_fast16_t wfhorshift;			// сдвиг по шоризонтали (отрицаельный - влево) для водопада.
+static uint_fast16_t wfscroll;			// сдвиг по вертикали (в раьочем направлении) для водопада.
 
 enum { PALETTESIZE = 256 };
 static PACKEDCOLOR565_T wfpalette [PALETTESIZE];
@@ -5075,39 +5077,6 @@ display_colorgrid(
 			if (xmarker != UINT16_MAX)
 				display_colorbuffer_xor_vline(buffer, ALLDX, ALLDY, xmarker, row0, h, color);
 		}
-	}
-}
-
-
-// формирование данных спектра для последующего отображения
-// спектра или водопада
-static void dsp_latchwaterfall(
-	uint_fast8_t x0,
-	uint_fast8_t y0,
-	void * pv
-	)
-{
-	uint_fast16_t x;
-	(void) x0;
-	(void) y0;
-	(void) pv;
-
-	// запоминание информации спектра для спектрограммы
-	dsp_getspectrumrow(spavgarray, ALLDX, glob_zoomx);
-
-#if (! LCDMODE_S1D13781_NHWACCEL && LCDMODE_S1D13781)
-#else
-	wfrow = (wfrow == 0) ? (WFDY - 1) : (wfrow - 1);
-#endif
-
-	// запоминание информации спектра для водопада
-	for (x = 0; x < ALLDX; ++ x)
-	{
-		// без усреднения для водопада
-		const int val = dsp_mag2y(filter_waterfall(x), PALETTESIZE - 1, glob_topdb, glob_bottomdb); // возвращает значения от 0 до dy включительно
-
-		// запись в буфер водопада
-		wfarray [wfrow] [x] = val;
 	}
 }
 
@@ -5389,6 +5358,91 @@ static void display_wfputrow(uint_fast16_t x, uint_fast16_t y, const uint8_t * p
 	display_colorbuffer_show(b, dx, dy, x, y);
 }
 
+// формирование данных спектра для последующего отображения
+// спектра или водопада
+static void dsp_latchwaterfall(
+	uint_fast8_t x0,
+	uint_fast8_t y0,
+	void * pv
+	)
+{
+	uint_fast16_t x, y;
+	(void) x0;
+	(void) y0;
+	(void) pv;
+
+	// запоминание информации спектра для спектрограммы
+	dsp_getspectrumrow(spavgarray, ALLDX, glob_zoomx);
+
+#if (! LCDMODE_S1D13781_NHWACCEL && LCDMODE_S1D13781)
+#else
+	wfrow = (wfrow == 0) ? (WFDY - 1) : (wfrow - 1);
+#endif
+
+	// запоминание информации спектра для водопада
+	for (x = 0; x < ALLDX; ++ x)
+	{
+		// без усреднения для водопада
+		const int val = dsp_mag2y(filter_waterfall(x), PALETTESIZE - 1, glob_topdb, glob_bottomdb); // возвращает значения от 0 до dy включительно
+
+		// запись в буфер водопада
+		wfarray [wfrow] [x] = val;
+	}
+
+	// Сдвиг изображения при необходимости (перестройка/переклбчение диапащонов или масштаба).
+	const uint_fast8_t pathi = 0;	// RX A
+	const uint_fast32_t f0 = hamradio_get_freq_pathi(pathi);	/* frequecy at middle of spectrum */
+	const int_fast32_t bw = display_zoomedbw();
+	const uint_fast16_t xm = deltafreq2x(f0, 0, bw, ALLDX);
+
+	int_fast16_t hshift = 0;
+
+	if (wffreq == 0 || wfzoom != glob_zoomx)
+	{
+		wfsetupnew(); // стираем целиком старое изображение водопада. в строке 0 - новое
+	}
+	else if (wffreq == f0)
+	{
+		// не менялась частота
+	}
+	else if (wffreq > f0)
+	{
+		// частота уменьшилась - надо сдвигать картинку вправо
+		const uint_fast32_t delta = wffreq - f0;
+		if (delta < bw / 2)
+		{
+			hshift = xm - deltafreq2x(f0, 0 - delta, bw, ALLDX);
+			// нужно сохрянять часть старого изображения
+			// в строке wfrow - новое
+			wflshiftright(hshift);
+		}
+		else
+		{
+			wfsetupnew(); // стираем целиком старое изображение водопада. в строке 0 - новое
+		}
+	}
+	else
+	{
+		// частота увеличилась - надо сдвигать картинку влево
+		const uint_fast32_t delta = f0 - wffreq;
+		if (delta < bw / 2)
+		{
+			hshift = xm - deltafreq2x(f0, delta, bw, ALLDX);
+			// нужно сохрянять часть старого изображения
+			// в строке wfrow - новое
+			wflshiftleft(- hshift);
+		}
+		else
+		{
+			wfsetupnew(); // стираем целиком старое изображение водопада. в строке 0 - новое
+		}
+	}
+	wffreq = f0;
+	wfzoom = glob_zoomx;
+	wfhorshift += hshift;
+	wfscroll += 1;
+}
+
 // Подготовка изображения водопада
 static void display2_waterfall(
 	uint_fast8_t x0, 
@@ -5408,7 +5462,7 @@ static void display2_waterfall(
 	#if 1
 		// следы спектра ("водопад")
 		// сдвигаем вниз, отрисовываем только верхнюю строку
-		display_scroll_down(GRID2X(x0), GRID2Y(y0) + WFY0, ALLDX, WFDY, 1, hshift);
+		display_scroll_down(GRID2X(x0), GRID2Y(y0) + WFY0, ALLDX, WFDY, wfscroll, wfhorshift);
 		while (display_getreadystate() == 0)
 			;
 		x = 0;
@@ -5416,7 +5470,7 @@ static void display2_waterfall(
 	#elif 0
 		// следы спектра ("фонтан")
 		// сдвигаем вверх, отрисовываем только нижнюю строку
-		display_scroll_up(GRID2X(x0), GRID2Y(y0) + WFY0, ALLDX, WFDY, 1, hshift);
+		display_scroll_up(GRID2X(x0), GRID2Y(y0) + WFY0, ALLDX, WFDY, wfscroll, wfhorshift);
 		while (display_getreadystate() == 0)
 			;
 		x = 0;
@@ -5433,6 +5487,9 @@ static void display2_waterfall(
 			display_wfputrow(GRID2X(x0) + x, GRID2Y(y0) + y + WFY0, & wfarray [(wfrow + y) % WFDY] [0]);	// display_plot inside for one row
 		}
 	#endif
+		// Запрос на сдвиг исполнен
+		wfhorshift = 0;
+		wfscroll = 0;
 
 #elif HHWMG
 	// Спектр на монохромных дисплеях
@@ -5449,52 +5506,6 @@ static void display2_waterfall(
 	if (hamradio_get_tx() == 0)
 	{
 		PACKEDCOLOR565_T * const colorpip = getscratchpip();
-		const uint_fast8_t pathi = 0;	// RX A
-		const uint_fast32_t f0 = hamradio_get_freq_pathi(pathi);	/* frequecy at middle of spectrum */
-		const int_fast32_t bw = display_zoomedbw();
-		uint_fast16_t x, y;
-		const uint_fast16_t xm = deltafreq2x(f0, 0, bw, ALLDX);
-
-		if (wffreq == 0 || wfzoom != glob_zoomx)
-		{
-			wfsetupnew(); // стираем целиком старое изображение водопада. в строке 0 - новое
-		}
-		else if (wffreq == f0)
-		{
-			// не менялась частота
-		}
-		else if (wffreq > f0)
-		{
-			// частота уменьшилась - надо сдвигать картинку вправо
-			const uint_fast32_t delta = wffreq - f0;
-			if (delta < bw / 2)
-			{
-				// нужно сохрянять часть старого изображения
-				// в строке wfrow - новое
-				wflshiftright(xm - deltafreq2x(f0, 0 - delta, bw, ALLDX));
-			}
-			else
-			{
-				wfsetupnew(); // стираем целиком старое изображение водопада. в строке 0 - новое
-			}
-		}
-		else
-		{
-			// частота увеличилась - надо сдвигать картинку влево
-			const uint_fast32_t delta = f0 - wffreq;
-			if (delta < bw / 2)
-			{
-				// нужно сохрянять часть старого изображения
-				// в строке wfrow - новое
-				wflshiftleft(deltafreq2x(f0, delta, bw, ALLDX) - xm);
-			}
-			else
-			{
-				wfsetupnew(); // стираем целиком старое изображение водопада. в строке 0 - новое
-			}
-		}
-		wffreq = f0;
-		wfzoom = glob_zoomx;
 
 		// формирование растра
 		// следы спектра ("водопад")

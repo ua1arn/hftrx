@@ -705,21 +705,31 @@ display_scroll_down(
 	int_fast16_t hshift	// количество пиксеелей для сдвига влево (отрицательное число) или вправо (положительное).
 	)
 {
-	enum { WC = (S1D_DISPLAY_BPP / 8) };	// количество байтов на пиксель
+	const COLOR_T fillnewcolor = COLOR_BLACK;	// цвет, которым заполняется свободное место при сдвиге старого изобажения
+	enum { WC = (S1D_DISPLAY_BPP / 8) };		// количество байтов на пиксель
+	const int_fast16_t adjw = hshift < 0 ?
+				w + hshift 	// сдвиг окна влево
+				:
+				w - hshift	// сдвиг окна вправо
+				;
+	const int_fast16_t onlypos = hshift < 0 ? 0 : hshift;
+	const int_fast16_t onlyneg = hshift < 0 ? hshift : 0;
 
 	// вычисление начального адреса в видеопамяти
 	const uint_fast32_t srcaddr = 
 			S1D_PHYSICAL_VMEM_ADDR + 
-			(uint_fast32_t) (x + w) * WC + 
+			(uint_fast32_t) (x + w - onlypos) * WC +
 			(uint_fast32_t) (y + h - 1 - n) * S1D_DISPLAY_SCANLINE_BYTES;
 
 	// вычисление конечного адреса в видеопамяти
+	// Здесь используется информация о горизонтальном сдвиге растра
 	const uint_fast32_t dstaddr = 
 			S1D_PHYSICAL_VMEM_ADDR + 
-			(uint_fast32_t) (x + w) * WC + 
+			(uint_fast32_t) (x + w + onlyneg) * WC +
 			(uint_fast32_t) (y + h - 1) * S1D_DISPLAY_SCANLINE_BYTES;
 
 	// дождаться выполнения предидущей команды BitBlt engine.
+	// копирование
 	if (bitblt_waitbusy() != 0)
 	{
 		//s1d13781_wrcmdcolor(REG96_BLT_BGCOLOR_0, stored_bgcolor);
@@ -730,10 +740,22 @@ display_scroll_down(
 		s1d13781_wrcmd32(REG88_BLT_SSADDR_0, srcaddr - 1);		// last byte-alligned address
 		s1d13781_wrcmd32(REG8C_BLT_DSADDR_0, dstaddr - 1);		// last byte-alligned address
 		// set bitblt rectangle width and height (pixels) registers.
-		s1d13781_wrcmd32_pair(REG92_BLT_WIDTH, h - n, w);
+		s1d13781_wrcmd32_pair(REG92_BLT_WIDTH, h - n, adjw);
 		s1d13781_wrcmd8(REG86_BLT_CMD, 0x01);	// 0x01 - move negative
 		s1d13781_wrcmd8(REG80_BLT_CTRL_0, 0x01);	// BitBlt start
 		bitblt_waitbusy2();
+
+		// очистка края экрана
+		if (hshift < 0)
+		{
+			// очистка правого края экрана
+			bitblt_fill(x + w + hshift, y + n, - hshift, h - n, fillnewcolor);
+		}
+		else if (hshift > 0)
+		{
+			// очистка левого края экрана
+			bitblt_fill(x, y + n, hshift, h - n, fillnewcolor);
+		}
 	}
 }
 	
