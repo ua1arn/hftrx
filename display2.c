@@ -5112,7 +5112,7 @@ static void dsp_latchwaterfall(
 }
 
 // Спектр на монохромных дисплеях
-// или на цвентых,где есть возможность раскаски растровой картинки.
+// или на цветных,где есть возможность раскаски растровой картинки.
 
 #define HHWMG ((! LCDMODE_S1D13781_NHWACCEL && LCDMODE_S1D13781) || LCDMODE_UC1608 || LCDMODE_UC1601)
 
@@ -5128,7 +5128,7 @@ static void display2_spectrum(
 {
 #if HHWMG
 	// Спектр на монохромных дисплеях
-	// или на цвентых,где есть возможность раскаски растровой картинки.
+	// или на цветных,где есть возможность раскаски растровой картинки.
 
 	if (hamradio_get_tx() == 0)
 	{
@@ -5137,6 +5137,7 @@ static void display2_spectrum(
 		const int_fast32_t bw = display_zoomedbw();
 		uint_fast16_t xleft = deltafreq2x(f0, hamradio_getleft_bp(pathi), bw, ALLDX);	// левый край шторуи
 		uint_fast16_t xright = deltafreq2x(f0, hamradio_getright_bp(pathi), bw, ALLDX);	// правый край шторки
+		uint_fast16_t xc = ALLDX / 2;	// Ценгтр экрана
 
 		if (xleft > xright)
 			xleft = 0;
@@ -5152,6 +5153,7 @@ static void display2_spectrum(
 		{
 			/* рисуем спектр ломанной линией */
 			uint_fast16_t x;
+			uint_fast16_t y;
 			uint_fast16_t ylast = 0;
 			// отображение спектра
 			for (x = 0; x < ALLDX; ++ x)
@@ -5160,13 +5162,18 @@ static void display2_spectrum(
 				if (x != 0)
 					display_pixelbuffer_line(spectmonoscr, ALLDX, SPDY, x - 1, ylast, x, ynew);
 				ylast = ynew;
-				// формирование изображения шторки.(XOR)
-				if (x >= xleft && x <= xright)
-				{
-					uint_fast16_t y;
-					for (y = 0; y < SPDY; ++ y)
-						display_pixelbuffer_xor(spectmonoscr, ALLDX, SPDY, x, SPY0 + y);	// xor точку
-				}
+			}
+			// формирование изображения шторки (XOR).
+			for (x = xleft; x <= xright; ++ x)
+			{
+				for (y = 0; y < SPDY; ++ y)
+					display_pixelbuffer_xor(spectmonoscr, ALLDX, SPDY, x, SPY0 + y);	// xor точку
+			}
+			// формирование маркера центральной частоты (XOR).
+			if (xc > xleft && xc < xright)
+			{
+				for (y = 0; y < SPDY; ++ y)
+					display_pixelbuffer_xor(spectmonoscr, ALLDX, SPDY, xc, SPY0 + y);	// xor точку
 			}
 		}
 		else
@@ -5430,7 +5437,7 @@ static void display2_waterfall(
 
 #elif HHWMG
 	// Спектр на монохромных дисплеях
-	// или на цвентых,где есть возможность раскаски растровой картинки.
+	// или на цветных,где есть возможность раскаски растровой картинки.
 
 	// следы спектра ("водопад") на монохромных дисплеях
 
@@ -5516,7 +5523,7 @@ static void display2_colorbuff(
 {
 #if HHWMG
 	// Спектр на монохромных дисплеях
-	// или на цвентых,где есть возможность раскаски растровой картинки.
+	// или на цветных,где есть возможность раскаски растровой картинки.
 	display_showbuffer(spectmonoscr, ALLDX, SPDY, x0, y0);
 
 #else /* */
