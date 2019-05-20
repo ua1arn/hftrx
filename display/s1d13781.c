@@ -715,12 +715,12 @@ display_scroll_down(
 	const int_fast16_t onlypos = hshift < 0 ? 0 : hshift;
 	const int_fast16_t onlyneg = hshift < 0 ? hshift : 0;
 	// Parameters validation
-	if (hshift < 0 && - hshift >= w)
+	if ((hshift < 0 && - hshift >= w) || (hshift > 0 && hshift >= w) || (n >= h))
+	{
+		// очистка используемой зоны экрана
+		bitblt_fill(x, y, w, h, fillnewcolor);
 		return;
-	if (hshift > 0 && hshift >= w)
-		return;
-	if (n >= h)
-		return;
+	}
 
 	// вычисление начального адреса в видеопамяти
 	const uint_fast32_t srcaddr = 
@@ -787,12 +787,12 @@ display_scroll_up(
 	const int_fast16_t onlypos = hshift < 0 ? 0 : hshift;
 	const int_fast16_t onlyneg = hshift < 0 ? hshift : 0;
 	// Parameters validation
-	if (hshift < 0 && - hshift >= w)
+	if ((hshift < 0 && - hshift >= w) || (hshift > 0 && hshift >= w) || (n >= h))
+	{
+		// очистка используемой зоны экрана
+		bitblt_fill(x, y, w, h, fillnewcolor);
 		return;
-	if (hshift > 0 && hshift >= w)
-		return;
-	if (n >= h)
-		return;
+	}
 
 	// вычисление начального адреса в видеопамяти
 	const uint_fast32_t srcaddr = 
@@ -1344,17 +1344,6 @@ static void rectangle3d(
 		bitblt_fill(x2, y1, thickness, h - thickness, color2);			// vertical right line
 		//bitblt_fill(x1, y1, wi, hi, color1);							// central panel
 	}
-}
-
-uint_fast8_t
-display_getreadystate(void)
-{
-	return 1;
-	if (s1d13781_missing != 0)
-		return 1;
-	bitblt_getbusyflag();
-	bitblt_getbusyflag();
-	return bitblt_getbusyflag() == 0;
 }
 
 void display_putpixel(

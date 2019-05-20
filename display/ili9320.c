@@ -722,16 +722,9 @@ void display_reset(void)
 	local_delay_ms(50); // Delay 50 ms
 }
 
-
 /* Разряжаем конденсаторы питания */
 void display_discharge(void)
 {
-}
-
-uint_fast8_t
-display_getreadystate(void)
-{
-	return 1;
 }
 
 #endif /* LCDMODE_ILI9320 */

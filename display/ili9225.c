@@ -878,7 +878,7 @@ void display_plot(
 {
 	uint_fast32_t len = GXSIZE(dx, dy);	// количество элементов
 #if WITHSPIEXT16 && WITHSPIHWDMA
-	// Передача в индикатор по DMA	
+	// Передача в индикатор по DMA
 	arm_hardware_flush((uintptr_t) buffer, len * sizeof (* buffer));	// количество байтов
 	hardware_spi_master_send_frame_16b(buffer, len);
 #else /* WITHSPIEXT16 */
@@ -913,17 +913,9 @@ void display_reset(void)
 	local_delay_ms(50); // Delay 50 ms
 }
 
-
-
 /* Разряжаем конденсаторы питания */
 void display_discharge(void)
 {
-}
-
-uint_fast8_t
-display_getreadystate(void)
-{
-	return 1;
 }
 
 #endif /* LCDMODE_ILI9225 */

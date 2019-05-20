@@ -206,17 +206,9 @@ void display_reset(void)
 {
 }
 
-
-
 /* Разряжаем конденсаторы питания */
 void display_discharge(void)
 {
-}
-
-uint_fast8_t
-display_getreadystate(void)
-{
-	return 1;
 }
 
 #endif /* LCDMODE_ILI8961 */

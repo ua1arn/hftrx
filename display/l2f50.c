@@ -85,7 +85,7 @@ l2f50_writeData(uint_fast8_t b)
 static void 
 l2f50_writeCmd(uint_fast8_t b)
 {
-	L2F50_CMND();		// Индикатор в режим приема команд 
+	L2F50_CMND();		// Индикатор в режим приема команд
 
 	spi_progval8_p1(targetlcd, b);
 	spi_progval8_p2(targetlcd, 0x00);
@@ -169,7 +169,7 @@ static void l2f50_put_char_begin(void)
 
 	hardware_spi_connect_b16(SPIC_SPEEDFAST, L2F50_SPIMODE);	/* Enable SPI */
 	prog_select(targetlcd);	/* start sending data to target chip */
-	L2F50_CMND();		// Индикатор в режим приема команд 
+	L2F50_CMND();		// Индикатор в режим приема команд
 	hardware_spi_b16_p1(RAMWR << 8);
 	hardware_spi_complete_b16();
 	L2F50_DATA(); //HIGH   // RS is set to high
@@ -666,16 +666,9 @@ display_reset(void)
 	l2f50_reset();
 }
 
-
 /* Разряжаем конденсаторы питания */
 void display_discharge(void)
 {
-}
-
-uint_fast8_t
-display_getreadystate(void)
-{
-	return 1;
 }
 
 #endif /* LCDMODE_LPH88 */

@@ -5463,23 +5463,17 @@ static void display2_waterfall(
 		// следы спектра ("водопад")
 		// сдвигаем вниз, отрисовываем только верхнюю строку
 		display_scroll_down(GRID2X(x0), GRID2Y(y0) + WFY0, ALLDX, WFDY, wfscroll, wfhorshift);
-		while (display_getreadystate() == 0)
-			;
 		x = 0;
 		display_wfputrow(GRID2X(x0) + x, GRID2Y(y0) + 0 + WFY0, & wfarray [wfrow] [0]);	// display_plot inside for one row
 	#elif 1
 		// следы спектра ("фонтан")
 		// сдвигаем вверх, отрисовываем только нижнюю строку
 		display_scroll_up(GRID2X(x0), GRID2Y(y0) + WFY0, ALLDX, WFDY, wfscroll, wfhorshift);
-		while (display_getreadystate() == 0)
-			;
 		x = 0;
 		display_wfputrow(GRID2X(x0) + x, GRID2Y(y0) + WFDY - 1 + WFY0, & wfarray [wfrow] [0]);	// display_plot inside for one row
 	#else
 		// следы спектра ("водопад")
 		// отрисовываем весь экран
-		while (display_getreadystate() == 0)
-			;
 		for (y = 0; y < WFDY; ++ y)
 		{
 			// отрисовка горизонтальными линиями

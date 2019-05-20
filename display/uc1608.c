@@ -454,10 +454,4 @@ void display_initialize(void)
 	uc1608_write_cmd(0xaf);	// Set Display Enable
 }
 
-uint_fast8_t
-display_getreadystate(void)
-{
-	return 1;
-}
-
 #endif /* LCDMODE_UC1608 */

@@ -53,7 +53,7 @@ static void
 //NOINLINEAT
 ls020_wrcmd16(uint_fast8_t hi, uint_fast8_t lo)
 {
-	LS020_CMND();		// Индикатор в режим приема команд 
+	LS020_CMND();		// Индикатор в режим приема команд
 
 	spi_select(targetlcd, LS020_SPIMODE);
 	spi_progval8_p1(targetlcd, hi);
@@ -66,7 +66,7 @@ ls020_wrcmd16(uint_fast8_t hi, uint_fast8_t lo)
 // в режим передачи данных переводим сразу по окончании команд.
 static void ls020_put_char_begin(void)
 {
-	LS020_DATA();		// Индикатор в режим приема данных 
+	LS020_DATA();		// Индикатор в режим приема данных
 	spi_select(targetlcd, LS020_SPIMODE);
 }
 
@@ -580,7 +580,6 @@ void display_plot(
 
 }
 
-
 /* аппаратный сброс дисплея - перед инициализаций */
 /* вызывается при разрешённых прерываниях. */
 void
@@ -594,12 +593,6 @@ display_reset(void)
 void display_discharge(void)
 {
 	ls020_poweroff();
-}
-
-uint_fast8_t
-display_getreadystate(void)
-{
-	return 1;
 }
 
 #endif /* LCDMODE_LS020 */

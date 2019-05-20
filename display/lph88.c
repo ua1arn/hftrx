@@ -6,7 +6,7 @@
 //
 // Siemens S65 Display Control
 // Индикатор 176*132 LPH8836-2 с контроллером Hitachi HD66773
-// проверено с LPH8836-1, LPH8836-2 и LPH8836-4, 
+// проверено с LPH8836-1, LPH8836-2 и LPH8836-4,
 
 #include "hardware.h"
 #include "board.h"
@@ -475,16 +475,9 @@ display_reset(void)
 	lph88_reset();
 }
 
-
 /* Разряжаем конденсаторы питания */
 void display_discharge(void)
 {
-}
-
-uint_fast8_t
-display_getreadystate(void)
-{
-	return 1;
 }
 
 #endif /* LCDMODE_LPH88 */

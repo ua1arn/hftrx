@@ -443,7 +443,7 @@ testdisplay(void)
 {
 	const uint_fast8_t signature = 0x56; //0x36;
 
-	hd44780_wrcmd(0x80 | signature);	/* переключение на работу с DDRAM */  
+	hd44780_wrcmd(0x80 | signature);	/* переключение на работу с DDRAM */
 
 	return (hd44780_read_status() & ~ HD44780_BUSYFLAG) == signature;
 }
@@ -518,7 +518,7 @@ hd44780_progbar(
 {
 	uint_fast8_t i;
 
-	hd44780_wrcmd(0x40 | (code & 0x07) * 8);	/* переключение на работу с SGRAM */  
+	hd44780_wrcmd(0x40 | (code & 0x07) * 8);	/* переключение на работу с SGRAM */
 
 	// hd44780_put_char_begin и hd44780_wrdata_fast на OLED здесь не работают.
 	// придётся медленным способом...
@@ -536,7 +536,7 @@ hd44780_progbar(
 	hd44780_wrdata_slow(allbits);	/* пследняя строка всегда с разметкой */
 	hd44780_wrdata_slow(0x00);	/* нижняя часть без точек */
 
-	hd44780_wrcmd(0x80);	/* переключение на работу с DDRAM */  
+	hd44780_wrcmd(0x80);	/* переключение на работу с DDRAM */
 }
 
 
@@ -836,12 +836,6 @@ void display_initialize(void)
 /* Разряжаем конденсаторы питания */
 void display_discharge(void)
 {
-}
-
-uint_fast8_t
-display_getreadystate(void)
-{
-	return 1;
 }
 
 #endif /* LCDMODE_HD44780 */

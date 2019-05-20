@@ -169,7 +169,7 @@ st7565s_pix8(
 
 /*
  Функция установки курсора в позицию x,y
- X - координата по горизонтали в пределах 9..127 .0-132, 
+ X - координата по горизонтали в пределах 9..127 .0-132,
  Y - координата по вертикали (строка, Page) в пределах 0-7
 */ 
 static void st7565s_set_addr_column(uint_fast8_t x, uint_fast8_t y)		// 
@@ -575,17 +575,10 @@ display_reset(void)
 	st7565s_reset();
 }
 
-
 /* Разряжаем конденсаторы питания */
 void display_discharge(void)
 {
 	st7565s_write_cmd(CMD_DISPLAY_OFF);
-}
-
-uint_fast8_t
-display_getreadystate(void)
-{
-	return 1;
 }
 
 #endif /* LCDMODE_ST7565S || LCDMODE_PTE1206 */

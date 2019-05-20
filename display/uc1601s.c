@@ -78,7 +78,7 @@ uc1601s_put_char_end(void)
 
 /*
  Функция установки курсора в позицию x,y
- X - координата по горизонтали в пределах 9..127 .0-132, 
+ X - координата по горизонтали в пределах 9..127 .0-132,
  Y - координата по вертикали (строка, Page) в пределах 0-7
 */ 
 static void 
@@ -581,12 +581,6 @@ void display_discharge(void)
 	i2c_write(0xe2);		// system reset
 	i2c_waitsend();
 	i2c_stop();
-}
-
-uint_fast8_t
-display_getreadystate(void)
-{
-	return 1;
 }
 
 #endif /* LCDMODE_UC1601 */

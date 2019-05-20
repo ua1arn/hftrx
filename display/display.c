@@ -1215,16 +1215,6 @@ display_scroll_down(
 #endif /* defined (DMA2D) && LCDMODE_LTDC */
 }
 
-uint_fast8_t
-display_getreadystate(void)
-{
-#if defined (DMA2D) && LCDMODE_LTDC
-	return (DMA2D->CR & DMA2D_CR_START) == 0;
-#else /*defined (DMA2D) && LCDMODE_LTDC */
-	return 1;
-#endif /* defined (DMA2D) && LCDMODE_LTDC */
-}
-
 /* копирование содержимого окна с перекрытием для водопада */
 void
 display_scroll_up(
