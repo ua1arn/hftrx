@@ -5112,7 +5112,7 @@ static void dsp_latchwaterfall(
 }
 
 // Спектр на монохромных дисплеях
-// или на цветных, где есть возможность раскаски растровой картинки.
+// или на цветных, где есть возможность раскраски растровой картинки.
 
 #define HHWMG ((! LCDMODE_S1D13781_NHWACCEL && LCDMODE_S1D13781) || LCDMODE_UC1608 || LCDMODE_UC1601)
 
@@ -5128,7 +5128,7 @@ static void display2_spectrum(
 {
 #if HHWMG
 	// Спектр на монохромных дисплеях
-	// или на цветных, где есть возможность раскаски растровой картинки.
+	// или на цветных, где есть возможность раскраски растровой картинки.
 
 	if (hamradio_get_tx() == 0)
 	{
@@ -5137,7 +5137,7 @@ static void display2_spectrum(
 		const int_fast32_t bw = display_zoomedbw();
 		uint_fast16_t xleft = deltafreq2x(f0, hamradio_getleft_bp(pathi), bw, ALLDX);	// левый край шторуи
 		uint_fast16_t xright = deltafreq2x(f0, hamradio_getright_bp(pathi), bw, ALLDX);	// правый край шторки
-		uint_fast16_t xc = ALLDX / 2;	// Ценгтр экрана
+		uint_fast16_t xmarker = deltafreq2x(f0, 0, bw, ALLDX);	// центральная частота
 
 		if (xleft > xright)
 			xleft = 0;
@@ -5146,8 +5146,6 @@ static void display2_spectrum(
 
 		// формирование растра
 		display_pixelbuffer_clear(spectmonoscr, ALLDX, SPDY);
-		// центральная частота
-		const uint_fast16_t xmarker = deltafreq2x(f0, 0, bw, ALLDX);
 
 		if (glob_fillspect == 0)
 		{
@@ -5170,10 +5168,10 @@ static void display2_spectrum(
 					display_pixelbuffer_xor(spectmonoscr, ALLDX, SPDY, x, SPY0 + y);	// xor точку
 			}
 			// формирование маркера центральной частоты (XOR).
-			if (xc > xleft && xc < xright)
+			if (xmarker > xleft && xmarker < xright)
 			{
 				for (y = 0; y < SPDY; ++ y)
-					display_pixelbuffer_xor(spectmonoscr, ALLDX, SPDY, xc, SPY0 + y);	// xor точку
+					display_pixelbuffer_xor(spectmonoscr, ALLDX, SPDY, xmarker, SPY0 + y);	// xor точку
 			}
 		}
 		else
@@ -5400,7 +5398,8 @@ static void display2_waterfall(
 {
 #if (! LCDMODE_S1D13781_NHWACCEL && LCDMODE_S1D13781)
 
-		const uint_fast32_t f0 = hamradio_get_freq_a();	/* frequecy at middle of spectrum */
+		const uint_fast8_t pathi = 0;	// RX A
+		const uint_fast32_t f0 = hamradio_get_freq_pathi(pathi);	/* frequecy at middle of spectrum */
 		const int_fast32_t bw = display_zoomedbw();
 		uint_fast16_t x, y;
 		const uint_fast16_t xm = deltafreq2x(f0, 0, bw, ALLDX);
@@ -5437,7 +5436,7 @@ static void display2_waterfall(
 
 #elif HHWMG
 	// Спектр на монохромных дисплеях
-	// или на цветных, где есть возможность раскаски растровой картинки.
+	// или на цветных, где есть возможность раскраски растровой картинки.
 
 	// следы спектра ("водопад") на монохромных дисплеях
 
@@ -5450,7 +5449,8 @@ static void display2_waterfall(
 	if (hamradio_get_tx() == 0)
 	{
 		PACKEDCOLOR565_T * const colorpip = getscratchpip();
-		const uint_fast32_t f0 = hamradio_get_freq_a();	/* frequecy at middle of spectrum */
+		const uint_fast8_t pathi = 0;	// RX A
+		const uint_fast32_t f0 = hamradio_get_freq_pathi(pathi);	/* frequecy at middle of spectrum */
 		const int_fast32_t bw = display_zoomedbw();
 		uint_fast16_t x, y;
 		const uint_fast16_t xm = deltafreq2x(f0, 0, bw, ALLDX);
@@ -5523,7 +5523,7 @@ static void display2_colorbuff(
 {
 #if HHWMG
 	// Спектр на монохромных дисплеях
-	// или на цветных, где есть возможность раскаски растровой картинки.
+	// или на цветных, где есть возможность раскраски растровой картинки.
 	display_showbuffer(spectmonoscr, ALLDX, SPDY, x0, y0);
 
 #else /* */
