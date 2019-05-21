@@ -5280,11 +5280,11 @@ static void wflshiftleft(uint_fast16_t pixels)
 		if (y == wfrow)
 		{
 			// двигаем буфер усреднения значений WTF и FFT
-			memmove(&Yold_fft[0], &Yold_fft[pixels], (rowsize - pixels)*sizeof Yold_fft[0]);
-			memset(&Yold_fft[rowsize - pixels], 0x00, pixels * sizeof Yold_fft[0]);
+			memmove(& Yold_fft [0], & Yold_fft [pixels], (rowsize - pixels) * sizeof Yold_fft [0]);
+			memset(& Yold_fft [rowsize - pixels], 0x00, pixels * sizeof Yold_fft[0]);
 
-			memmove(&Yold_wtf[0], &Yold_wtf[pixels], (rowsize - pixels)  *sizeof Yold_wtf[0]);
-			memset(&Yold_wtf[rowsize - pixels], 0x00, pixels*sizeof Yold_wtf[0]);
+			memmove(& Yold_wtf [0], & Yold_wtf [pixels], (rowsize - pixels) * sizeof Yold_wtf [0]);
+			memset(& Yold_wtf [rowsize - pixels], 0x00, pixels * sizeof Yold_wtf[0]);
 			continue;
 		}
 		memmove(wfarray [y] + 0, wfarray [y] + pixels, (rowsize - pixels));
@@ -5307,11 +5307,11 @@ static void wflshiftright(uint_fast16_t pixels)
 		if (y == wfrow)
 		{
 			// двигаем буфер усреднения значений WTF и FFT
-			memmove(& Yold_fft[pixels], & Yold_fft[0], (rowsize - pixels) * sizeof Yold_fft [0]);
-			memset(& Yold_fft[0], 0x00, pixels*sizeof Yold_fft[0]);
+			memmove(& Yold_fft [pixels], & Yold_fft [0], (rowsize - pixels) * sizeof Yold_fft [0]);
+			memset(& Yold_fft [0], 0x00, pixels*sizeof Yold_fft [0]);
 
-			memmove(& Yold_wtf[pixels], &Yold_wtf[0], (rowsize - pixels) * sizeof Yold_wtf[0]);
-			memset(& Yold_wtf[0], 0x00, pixels * sizeof Yold_wtf[0]);
+			memmove(& Yold_wtf [pixels], &Yold_wtf [0], (rowsize - pixels) * sizeof Yold_wtf [0]);
+			memset(& Yold_wtf [0], 0x00, pixels * sizeof Yold_wtf [0]);
 			continue;
 		}
 		memmove(wfarray [y] + pixels, wfarray [y] + 0, (rowsize - pixels) * sizeof wfarray [y][0]);
