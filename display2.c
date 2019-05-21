@@ -5138,7 +5138,7 @@ static void display2_spectrum(
 					display_pixelbuffer_xor(spectmonoscr, ALLDX, SPDY, x, SPY0 + y);	// xor точку
 			}
 			// формирование маркера центральной частоты (XOR).
-			if (xmarker > xleft && xmarker < xright)
+			if (xmarker < ALLDX && (xmarker < xleft || xmarker > xright))
 			{
 				for (y = 0; y < SPDY; ++ y)
 					display_pixelbuffer_xor(spectmonoscr, ALLDX, SPDY, xmarker, SPY0 + y);	// xor точку
