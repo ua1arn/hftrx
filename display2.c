@@ -5102,6 +5102,8 @@ static void display2_spectrum(
 
 	if (hamradio_get_tx() == 0)
 	{
+		uint_fast16_t x;
+		uint_fast16_t y;
 		const uint_fast8_t pathi = 0;	// RX A
 		const uint_fast32_t f0 = hamradio_get_freq_pathi(pathi);	/* frequecy at middle of spectrum */
 		const int_fast32_t bw = display_zoomedbw();
@@ -5120,56 +5122,39 @@ static void display2_spectrum(
 		if (glob_fillspect == 0)
 		{
 			/* рисуем спектр ломанной линией */
-			uint_fast16_t x;
-			uint_fast16_t y;
 			uint_fast16_t ylast = 0;
 			// отображение спектра
 			for (x = 0; x < ALLDX; ++ x)
 			{
+				// логарифм - в вертикальную координату
 				uint_fast16_t ynew = SPDY - 1 - dsp_mag2y(filter_spectrum(x), SPDY - 1, glob_topdb, glob_bottomdb);
 				if (x != 0)
 					display_pixelbuffer_line(spectmonoscr, ALLDX, SPDY, x - 1, ylast, x, ynew);
 				ylast = ynew;
 			}
-			// формирование изображения шторки (XOR).
-			for (x = xleft; x <= xright; ++ x)
-			{
-				for (y = 0; y < SPDY; ++ y)
-					display_pixelbuffer_xor(spectmonoscr, ALLDX, SPDY, x, SPY0 + y);	// xor точку
-			}
-			// формирование маркера центральной частоты (XOR).
-			if (xmarker < ALLDX && (xmarker < xleft || xmarker > xright))
-			{
-				for (y = 0; y < SPDY; ++ y)
-					display_pixelbuffer_xor(spectmonoscr, ALLDX, SPDY, xmarker, SPY0 + y);	// xor точку
-			}
 		}
 		else
 		{
-			uint_fast16_t x;
-			uint_fast16_t y;
-			// Маркер центральной частоты обзора
-			for (y = 0; y < SPDY; ++ y)
-			{
-				display_pixelbuffer(spectmonoscr, ALLDX, SPDY, xmarker, SPY0 + y);	// погасить точку
-			}
-
-			// отображение спектра
+			// отображение спектра заполненной зоной
 			for (x = 0; x < ALLDX; ++ x)
 			{
-				uint_fast16_t y;
-				// формирование изображения шторки.
-				if (x >= xleft && x <= xright)
-				{
-					for (y = 0; y < SPDY; ++ y)
-						display_pixelbuffer_xor(spectmonoscr, ALLDX, SPDY, x, SPY0 + y);	// xor точку
-				}
-				// Формирование графика
 				// логарифм - в вертикальную координату
 				const int yv = SPDY - 1 - dsp_mag2y(filter_spectrum(x), SPDY - 1, glob_topdb, glob_bottomdb);	//отображаемый уровень, yv = 0..SPDY
 				for (y = yv; y < SPDY; ++ y)
-					display_pixelbuffer_xor(spectmonoscr, ALLDX, SPDY, x, SPY0 + y);	// xor точку
+					display_pixelbuffer(spectmonoscr, ALLDX, SPDY, x, SPY0 + y);	// set точку
 			}
+		}
+		// формирование изображения шторки (XOR).
+		for (x = xleft; x <= xright; ++ x)
+		{
+			for (y = 0; y < SPDY; ++ y)
+				display_pixelbuffer_xor(spectmonoscr, ALLDX, SPDY, x, SPY0 + y);	// xor точку
+		}
+		// формирование маркера центральной частоты (XOR).
+		if (xmarker < ALLDX && xmarker != xleft && xmarker != xright)
+		{
+			for (y = 0; y < SPDY; ++ y)
+				display_pixelbuffer_xor(spectmonoscr, ALLDX, SPDY, xmarker, SPY0 + y);	// xor точку
 		}
 	}
 	else
