@@ -400,6 +400,8 @@ typedef int32_t ncoftwi_t;
 static FLOAT_t omega2ftw_k1; // = POWF(2, NCOFTWBITS);
 #define OMEGA2FTWI(angle) ((ncoftwi_t) ((FLOAT_t) (angle) * omega2ftw_k1 / (FLOAT_t) M_TWOPI))	// angle in radians -pi..+pi to signed version of ftw_t
 
+#define WITHNEWZOOMFFT 1
+
 #if WITHNEWZOOMFFT
 //ZoomFFT
 static float32_t FFTBuffer_ZOOMFFT[FFTSizeSpectrum*2]; //совмещённый буфер FFT I и Q для хранения выборок ZoomFFT
