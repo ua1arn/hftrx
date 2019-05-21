@@ -5445,7 +5445,7 @@ static void dsp_latchwaterfall(
 	wffreq = f0;
 	wfzoom = glob_zoomx;
 	wfhorshift += hscroll;
-	wfscroll += 1;
+	wfscroll = wfscroll < WFDY ? wfscroll + 1 : WFDY;
 	wfclear = hclear;
 }
 
