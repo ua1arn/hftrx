@@ -403,17 +403,18 @@ static FLOAT_t omega2ftw_k1; // = POWF(2, NCOFTWBITS);
 #define WITHNEWZOOMFFT 1
 
 #if WITHNEWZOOMFFT
-//ZoomFFT
-static float32_t FFTBuffer_ZOOMFFT[FFTSizeSpectrum*2]; //совмещённый буфер FFT I и Q для хранения выборок ZoomFFT
+// ZoomFFT
+static float32_t FFTBuffer_ZOOMFFT [FFTSizeSpectrum * 2]; //совмещённый буфер FFT I и Q для хранения выборок ZoomFFT
 
-//Дециматор для Zoom FFT
+// Дециматор для Zoom FFT
+#define decimZoomFFTnumTaps 4
 static arm_fir_decimate_instance_f32	DECIMATE_ZOOM_FFT_I;
 static arm_fir_decimate_instance_f32	DECIMATE_ZOOM_FFT_Q;
-static float32_t decimZoomFFTIState [FFTSizeSpectrum + 16];
-static float32_t decimZoomFFTQState [FFTSizeSpectrum + 16];
-static uint16_t fft_zoomed_width = 0;
+static float32_t decimZoomFFTIState [FFTSizeSpectrum + decimZoomFFTnumTaps - 1];
+static float32_t decimZoomFFTQState [FFTSizeSpectrum + decimZoomFFTnumTaps - 1];
+static uint16_t fft_zoomed_width;
 
-//Коэффициенты для ZoomFFT lowpass filtering / дециматора
+// Коэффициенты для ZoomFFT lowpass filtering / дециматора
 static arm_biquad_casd_df1_inst_f32 IIR_biquad_Zoom_FFT_I =
 {
 	.numStages = 4,
@@ -441,13 +442,13 @@ static arm_biquad_casd_df1_inst_f32 IIR_biquad_Zoom_FFT_Q =
 };
 
 
-static const arm_fir_decimate_instance_f32 FirZoomFFTDecimate[17] =
+static const arm_fir_decimate_instance_f32 FirZoomFFTDecimate [17] =
 {
 	{}, // 0
 	{}, // 1
 	// x2 zoom lowpass
 	{
-		.numTaps = 4,
+		.numTaps = decimZoomFFTnumTaps,
 		.pCoeffs = (const float32_t[])
 		{475.1179397144384210E-6,0.503905202786044337,0.503905202786044337,475.1179397144384210E-6},
 		.pState = NULL
@@ -455,7 +456,7 @@ static const arm_fir_decimate_instance_f32 FirZoomFFTDecimate[17] =
 	{}, // 3
 	// x4 zoom lowpass
 	{
-		.numTaps = 4,
+		.numTaps = decimZoomFFTnumTaps,
 		.pCoeffs = (const float32_t[])
 		{0.198273254218889416,0.298085149879260325,0.298085149879260325,0.198273254218889416},
 		.pState = NULL
@@ -465,7 +466,7 @@ static const arm_fir_decimate_instance_f32 FirZoomFFTDecimate[17] =
 	{}, // 7
 	// x8 zoom lowpass
 	{
-		.numTaps = 4,
+		.numTaps = decimZoomFFTnumTaps,
 		.pCoeffs = (const float32_t[])
 		{0.199820836596682871,0.272777397353925699,0.272777397353925699,0.199820836596682871},
 		.pState = NULL
@@ -479,7 +480,7 @@ static const arm_fir_decimate_instance_f32 FirZoomFFTDecimate[17] =
 	{}, // 15
 	// x16 zoom lowpass
 	{
-		.numTaps = 4,
+		.numTaps = decimZoomFFTnumTaps,
 		.pCoeffs = (const float32_t[])
 		{0.199820836596682871,0.272777397353925699,0.272777397353925699,0.199820836596682871},
 		.pState = NULL
@@ -4951,20 +4952,20 @@ void dsp_zoomfft_init(uint_fast8_t zoom)
 		IIR_biquad_Zoom_FFT_I.pCoeffs = zoomfft_mag_coeffs [zoom];
 		IIR_biquad_Zoom_FFT_Q.pCoeffs = zoomfft_mag_coeffs [zoom];
 
-		arm_fir_decimate_init_f32(& DECIMATE_ZOOM_FFT_I,
-							FirZoomFFTDecimate[zoom].numTaps,
+		VERIFY(ARM_MATH_SUCCESS == arm_fir_decimate_init_f32(& DECIMATE_ZOOM_FFT_I,
+							FirZoomFFTDecimate [zoom].numTaps,
 							zoom,          // Decimation factor
-							FirZoomFFTDecimate[zoom].pCoeffs,
+							FirZoomFFTDecimate [zoom].pCoeffs,
 							decimZoomFFTIState,            // Filter state variables
-							FFTSizeSpectrum);
-		arm_fir_decimate_init_f32(& DECIMATE_ZOOM_FFT_Q,
-							FirZoomFFTDecimate[zoom].numTaps,
+							FFTSizeSpectrum));
+		VERIFY(ARM_MATH_SUCCESS == arm_fir_decimate_init_f32(& DECIMATE_ZOOM_FFT_Q,
+							FirZoomFFTDecimate [zoom].numTaps,
 							zoom,          // Decimation factor
-							FirZoomFFTDecimate[zoom].pCoeffs,
+							FirZoomFFTDecimate [zoom].pCoeffs,
 							decimZoomFFTQState,            // Filter state variables
-							FFTSizeSpectrum);
+							FFTSizeSpectrum));
 
-		fft_zoomed_width=FFTSizeSpectrum/zoom;
+		fft_zoomed_width = FFTSizeSpectrum / zoom;
 		memset(FFTBuffer_ZOOMFFT, 0x00, sizeof FFTSizeSpectrum); //очищаем накопительный буффер ZoomFFT (2 канала по 32 бита)
 	}
 #endif /* WITHNEWZOOMFFT */
@@ -4988,25 +4989,26 @@ void dsp_getspectrumrow(
 #if WITHNEWZOOMFFT
 	if(zoom > 1)
 	{
+		uint_fast16_t i;
 		static RAMDTCM float32_t ZoomFFTInput_I[FFTSizeSpectrum]; //входящий буфер ZoomFFT I
 		static RAMDTCM float32_t ZoomFFTInput_Q[FFTSizeSpectrum]; //входящий буфер ZoomFFT Q
 		//Получаем данные в буффер
-		for(uint_fast16_t i=0;i<FFTSizeSpectrum;i++)
+		for (i=0;i<FFTSizeSpectrum;i++)
 		{
 			ZoomFFTInput_I[i]= sig[i*2];
 			ZoomFFTInput_Q[i]= sig[i*2+1];
 		}
-		//Biquad LPF фильтр
+		// Biquad LPF фильтр
 		arm_biquad_cascade_df1_f32 (&IIR_biquad_Zoom_FFT_I, ZoomFFTInput_I, ZoomFFTInput_I, FFTSizeSpectrum);
 		arm_biquad_cascade_df1_f32 (&IIR_biquad_Zoom_FFT_Q, ZoomFFTInput_Q, ZoomFFTInput_Q, FFTSizeSpectrum);
-		//Дециматор
-		if(DECIMATE_ZOOM_FFT_Q.pState!=NULL)
+		// Дециматор
+		if (DECIMATE_ZOOM_FFT_Q.pState!=NULL)
 		{
 			arm_fir_decimate_f32(&DECIMATE_ZOOM_FFT_I, ZoomFFTInput_I, ZoomFFTInput_I, FFTSizeSpectrum);
 			arm_fir_decimate_f32(&DECIMATE_ZOOM_FFT_Q, ZoomFFTInput_Q, ZoomFFTInput_Q, FFTSizeSpectrum);
 		}
-		//Смещаем старые данные в  буфере, т.к. будем их использовать (иначе скорость FFT упадёт, ведь для получения большего разрешения необходимо накапливать больше данных)
-		for (uint_fast16_t i = 0; i < FFTSizeSpectrum; i++)
+		// Смещаем старые данные в  буфере, т.к. будем их использовать (иначе скорость FFT упадёт, ведь для получения большего разрешения необходимо накапливать больше данных)
+		for (i = 0; i < FFTSizeSpectrum; i++)
 		{
 			if(i<(FFTSizeSpectrum-fft_zoomed_width))
 			{
@@ -5018,8 +5020,8 @@ void dsp_getspectrumrow(
 				FFTBuffer_ZOOMFFT[i*2] = ZoomFFTInput_I[i-(FFTSizeSpectrum-fft_zoomed_width)];
 				FFTBuffer_ZOOMFFT[i*2 + 1] = ZoomFFTInput_Q[i-(FFTSizeSpectrum-fft_zoomed_width)];
 			}
-			sig[i*2]=FFTBuffer_ZOOMFFT[i*2];
-			sig[i*2 + 1]=FFTBuffer_ZOOMFFT[i*2 + 1];
+			sig [i*2]=FFTBuffer_ZOOMFFT[i*2];
+			sig [i*2 + 1]=FFTBuffer_ZOOMFFT[i*2 + 1];
 		}
 	}
 #endif /* WITHNEWZOOMFFT */
