@@ -5517,6 +5517,7 @@ static void display2_waterfall(
 	if (hamradio_get_tx() == 0)
 	{
 		PACKEDCOLOR565_T * const colorpip = getscratchpip();
+		uint_fast16_t x, y;
 
 		// формирование растра
 		// следы спектра ("водопад")
