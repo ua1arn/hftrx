@@ -3237,6 +3237,14 @@ enum
 		#endif /* WITHVOLTLEVEL && WITHCURRLEVEL */
 	#endif /* WITHMENU */
 		};
+	#if WITHMENU
+		void display2_getmultimenu(multimenuwnd_t * p)
+		{
+			p->multilinemenu_max_rows = 1;
+			p->ystep = 2;	// количество ячеек разметки на одну строку меню
+			p->reverse = 0;
+		}
+	#endif /* WITHMENU */
 
 	#elif DSTYLE_UR3LMZMOD
 		// Versopn with specreum display
@@ -3362,6 +3370,14 @@ enum
 		#endif /* WITHVOLTLEVEL && WITHCURRLEVEL */
 	#endif /* WITHMENU */
 		};
+	#if WITHMENU
+		void display2_getmultimenu(multimenuwnd_t * p)
+		{
+			p->multilinemenu_max_rows = 1;
+			p->ystep = 2;	// количество ячеек разметки на одну строку меню
+			p->reverse = 0;
+		}
+	#endif /* WITHMENU */
 
 	#else /* DSTYLE_UR3LMZMOD && WITHONEATTONEAMP */
 		// RA1AGO version
@@ -3505,6 +3521,15 @@ enum
 		#endif /* WITHVOLTLEVEL && WITHCURRLEVEL */
 	#endif /* WITHMENU */
 		};
+
+	#if WITHMENU
+		void display2_getmultimenu(multimenuwnd_t * p)
+		{
+			p->multilinemenu_max_rows = 1;
+			p->ystep = 2;	// количество ячеек разметки на одну строку меню
+			p->reverse = 0;
+		}
+	#endif /* WITHMENU */
 
 	#endif /* DSTYLE_UR3LMZMOD && WITHONEATTONEAMP */
 
