@@ -805,6 +805,84 @@ void spool_0p128(void);	// OPERA support
 
 #endif /* FQMODEL_70455 */
 
+/* Первая ПЧ - 70451.5 кГц, вторая - 9011 кГц */
+#if FQMODEL_70451_9011k
+
+	/* Описание структуры преобразований частоты в тракте */
+	#define LO0_SIDE	LOCODE_INVALID	/* при отсутствующем конверторе - на нём нет инверсии спектра */
+	//#define LO1_SIDE	LOCODE_UPPER	/* При преобразовании на этом гетеродине происходит инверсия спектра */
+	#define LO1_SIDE_F(freq) (((freq) < 70455000L) ? LOCODE_UPPER : LOCODE_LOWER)	/* сторона зависит от рабочей частоты */
+	#define LO2_SIDE	LOCODE_LOWER	/* При преобразовании на этом гетеродине нет инверсии спектра */
+	#define LO3_SIDE	LOCODE_INVALID	/* при отсутствующем гетеродине - на нём нет инверсии спектра */
+	#if WITHIF4DSP
+		// архитектура для DSP на последней ПЧ
+		#define LO4_SIDE	LOCODE_LOWER	/* параметр проверен по отсутствию помехи при приёме для FQMODEL_80455. При преобразовании на этом гетеродине нет инверсии спектра */
+		#define LO5_SIDE	LOCODE_LOWER	/* При преобразовании на этом гетеродине нет инверсии спектра */
+	#else /* WITHIF4DSP */
+		// обычная архитектура для слухового приёмв
+		#define LO4_SIDE	LOCODE_TARGETED	/* Этот гетеродин управляется для получения требуемой боковой */
+		//#define LO5_SIDE	LOCODE_INVALID	/* 12->baseband: при отсутствующем гетеродине - на нём нет инверсии спектра */
+	#endif /* WITHIF4DSP */
+
+	#if MODEL_DIRECT
+		#define DIRECT_61440_X6	1	/* DDS LO1, LO2 = 61440 kHz */
+	#else
+		#define HYBRID_61440_10M7	1	/* Hybrid LO1, LO2 = 70000 kHz - for 70455 kHz filter from FT-1000 */
+	#endif
+
+	// Выбор ПЧ
+	#define IF3_CUSTOM_CW_CENTER	(9011000L)
+	#define IF3_CUSTOM_SSB_LOWER	(9011000L - 1500)
+	#define IF3_CUSTOM_SSB_UPPER	(9011000L + 1500)
+	#define IF3_CUSTOM_WIDE_CENTER	((IF3_CUSTOM_SSB_UPPER + IF3_CUSTOM_SSB_LOWER) / 2)
+
+	#define IF3_MODEL	IF3_TYPE_CUSTOM
+
+	#define LO2_PLL_R	1		/* опорный сигнал прямо используется как LO2 */
+	#define LO2_PLL_N	1		/* опорный сигнал прямо используется как LO2  */
+
+	//#define	LO3_FREQADJ	1	/* подстройка частоты гетеродина через меню. */
+
+	#define	LO2_POWER2	0		/* 0 - нет делителя после генератора LO2 перед подачей на смеситель */
+
+	#define LO1_POWER2	0		/* если 0 - делителей в тракте первого гетеродина перед смесителем нет. */
+	#define LO4_POWER2 0
+
+	#if BANDSELSTYLERE_UPCONV56M
+		#define TUNE_BOTTOM 30000L		/* 30 kHz нижняя частота настройки */
+		#define TUNE_TOP 56000000L		/* верхняя частота настройки */
+	#elif BANDSELSTYLERE_UPCONV56M_45M	/* версия до 45 МГц */
+		#define TUNE_BOTTOM 30000L		/* 30 kHz нижняя частота настройки */
+		#define TUNE_TOP 45000000L		/* верхняя частота настройки */
+	#elif BANDSELSTYLERE_UPCONV56M_36M	/* версия до 36 МГц */
+		#define TUNE_BOTTOM 30000L		/* 30 kHz нижняя частота настройки */
+		#define TUNE_TOP 36000000L		/* верхняя частота настройки */
+	#else
+		#error Wrong BANDSELSTYLERE_xxx used
+	#endif /* BANDSELSTYLERE_UPCONV56M */
+
+	#if (MODEL_DIRECT == 0)
+
+		#define SYNTHLOWFREQ 	(70455000L + TUNE_BOTTOM)	/* Lowest frequency of 1-st LO */
+		#define SYNTHTOPFREQ 	(70455000L + TUNE_TOP)		/* Highest frequency of 1-st LO */
+
+		#if (HYBRID_NVFOS == 6)
+			/* 6 VCOs, IF=70.455000, tune: 0.030000..56.000000 */
+			#define FREQ_SCALE 1102317      /* Full VCO range 70.485000..126.455000 */
+			#define FREQ_DENOM 1000000      /* 6 VCOs */
+		#elif (HYBRID_NVFOS == 4)
+			/* 4 VCOs, IF=70.455000, tune: 0.030000..56.000000 */
+			#define FREQ_SCALE 1157336      /* Full VCO range 70.485000..126.455000 */
+			#define FREQ_DENOM 1000000      /* 4 VCOs */
+		#else
+			#error HYBRID_NVFOS not defined
+
+		#endif
+	#endif
+
+
+#endif /* FQMODEL_70451_9011k */
+
 /* RU6BK: 1-st if=10.7 MHz, 2-nd if=500k, fixed BFO */
 #if FQMODEL_10M7_500K
 	/* Описание структуры преобразований частоты в тракте */
@@ -2928,11 +3006,19 @@ void spool_0p128(void);	// OPERA support
 // FQMODEL_70455 jr FQMODEL_70200 use this definitions
 #if DIRECT_70M000_X5
 	#define LO1MODE_DIRECT	1
-	#define REFERENCE_FREQ	70000000L	/* LO2 = 70000 kHz - for 70455 kHz filter from Kenwood with 455 kHz IF2 */
+	#define REFERENCE_FREQ	70000000L	/* LO2 = 70000 kHz - for 70455 kHz filter from FT1000D with 455 kHz IF2 */
 	#define DDS1_CLK_MUL	5 		/* Умножитель в DDS1 */
 	#define DDS2_CLK_MUL	1		/* Умножитель в DDS2 */
 	#define DDS3_CLK_MUL	1		/* Умножитель в DDS3 */
 #endif	/* DIRECT_70M000_X5 */
+
+#if DIRECT_61440_X6
+	#define LO1MODE_DIRECT	1
+	#define REFERENCE_FREQ	61440000L	/* LO2 = 61440 kHz - for 70455.5 kHz filter */
+	#define DDS1_CLK_MUL	6 		/* Умножитель в DDS1 */
+	#define DDS2_CLK_MUL	1		/* Умножитель в DDS2 */
+	#define DDS3_CLK_MUL	1		/* Умножитель в DDS3 */
+#endif	/* DIRECT_61440_X6 */
 
 // FQMODEL_70455 should be defined
 #if HYBRID_70M000_10M7
