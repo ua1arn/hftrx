@@ -38,13 +38,13 @@
 //#define CTLSTYLE_RAVENDSP_V2	1	// Fixed trx:  Renesas R7S721020VCFP, SD-CARD, DUAL WATCH, NAU8822L и FPGA EP4CE22E22I7N
 //#define CTLSTYLE_STORCH_V1	1	// STM32F746ZET6, USB, SD-CARD, DUAL WATCH, NAU8822L и FPGA EP4CE22E22I7N
 //#define CTLSTYLE_STORCH_V2	1	// wide LCD interface, STM32F746ZET6, 2xUSB, SD-CARD, DUAL WATCH, NAU8822L и FPGA EP4CE22E22I7N,
-//#define CTLSTYLE_STORCH_V3	1	// Rmainunit_v5fm.pcb, Rmasinunit_v5jm.pcb, Rmainunit_v5km.pcb STM32F767ZET6, 2xUSB, SD-CARD, 8-bit display imnterface, NAU8822L и FPGA EP4CE22E22I7N
+#define CTLSTYLE_STORCH_V3	1	// Rmainunit_v5fm.pcb, Rmasinunit_v5jm.pcb, Rmainunit_v5km.pcb STM32F767ZET6, 2xUSB, SD-CARD, 8-bit display imnterface, NAU8822L и FPGA EP4CE22E22I7N
 
 // Дисплей с фреймбуфером
 //#define CTLSTYLE_STORCH_V5	1	// Rmainunit_v5l.pcb STM32F767ZET6, 2xmini-USB, mini SD-CARD, 8-bit display imnterface, NAU8822L и FPGA EP4CE22E22I7N
 //#define CTLSTYLE_STORCH_V6	1	// Rmainunit_v5la.pcb STM32H743IIT6, TFT 4.3", 2xmini-USB, mini SD-CARD, 8-bit display imnterface, NAU8822L и FPGA EP4CE22E22I7N
 //#define CTLSTYLE_STORCH_V7	1	// rmainunit_v5km0.pcb, rmainunit_v5km1.pcb STM32H743IIT6, TFT 4.3", 2xUSB, SD-CARD, NAU8822L и FPGA EP4CE22E22I7N
-#define CTLSTYLE_STORCH_V8	1	// rmainunit_v5km2.pcb rmainunit_v5km3.pcb rmainunit_v5km4.pcb R7S721020VCFP, TFT 4.3" или 7", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N, AD9246BCPZ-125
+//#define CTLSTYLE_STORCH_V8	1	// rmainunit_v5km2.pcb rmainunit_v5km3.pcb rmainunit_v5km4.pcb R7S721020VCFP, TFT 4.3" или 7", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N, AD9246BCPZ-125
 
 //
 //#define CTLSTYLE_DSPV1A	1	// Плата "Дятел" с кодеками для DSPIF4 с 12 кГц IF DSP трактом
@@ -163,10 +163,10 @@
 	#include "boards/arm_stm32f4xx_tqfp144_cpustyle_raven_v7.h"	// Rmainunit_v5bm.pcb
 #elif CPUSTYLE_STM32F && CTLSTYLE_STORCH_V1	// SD-CARD. DUAL WATCH, STM32F446ZET6, TLV320AIC23B и FPGA EP4CE22E22I7N
 	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v1.h"	// Rmainunit_v5cm.pcb, Rmainunit_v5dm.pcb (USB)
-	#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v1_penkevich.h"	// penkevich, Rmainunit_v5cm.pcb, Rmainunit_v5dm.pcb (USB)
+	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v1_penkevich.h"	// penkevich, Rmainunit_v5cm.pcb, Rmainunit_v5dm.pcb (USB)
 	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v1_RA9OH.h"	// Rmainunit_v5dm.pcb (USB)
 	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v1_R4DR.h"	// Rmainunit_v5dm.pcb (thermo stab) (USB)
-	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v1_RD1AD.h"	// Rmainunit_v5cm.pcb (USB)
+	#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v1_RD1AD.h"	// Rmainunit_v5cm.pcb (USB)
 	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v1_OUSSOV.h"	// Rmainunit_v5cm.pcb (USB)
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32f4xx_tqfp144_cpustyle_storch_v1.h"	// Rmainunit_v5cm.pcb, Rmainunit_v5dm.pcb
@@ -176,11 +176,10 @@
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32f4xx_tqfp144_cpustyle_storch_v2.h"	// Rmainunit_v5em.pcb (USBx2)
 #elif CPUSTYLE_STM32F && CTLSTYLE_STORCH_V3	// SD-CARD. 2xUSB, DUAL WATCH, STM32F446ZET6, TLV320AIC23B и FPGA EP4CE22E22I7N
-	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v3.h"	// Rmainunit_v5fm.pcb (USBx2, wide display interface)
+	#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v3.h"	// Rmainunit_v5fm.pcb (USBx2, wide display interface)
 	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v3_R0CC.h"	// Rmainunit_v5fm.pcb (USBx2, wide display interface)
 	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v3_UT3NZ.h"	// stm32h743ziT6, EPSON 50 MHz Rmainunit_v5km.pcb (USBx2, wide display interface)
 	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v3_hansolo.h"	// Дачь Rmainunit_v5jm.pcb (USBx2, wide display interface)
-	#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v3_RA1AHL.h"	// Rmainunit_v5fm.pcb (USBx2, wide display interface)
 	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v3_UA9WF.h"	// Rmainunit_v5fm.pcb LTC2217 (USBx2, wide display interface)
 	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v3_RA9W.h"	// Rmainunit_v5fm.pcb (USBx2, wide display interface)
 	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v3_headset.h"	// Rmainunit_v5fm.pcb (USBx2, wide display interface)
