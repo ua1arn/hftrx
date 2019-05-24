@@ -53,8 +53,8 @@
 
 #elif CPUSTYLE_STM32F7XX
 
-	#define FFTSizeFiltersM 8
-	#define FFTCONFIGFilters	(& arm_cfft_sR_f32_len256)
+	#define FFTSizeFiltersM 9
+	#define FFTCONFIGFilters	(& arm_cfft_sR_f32_len512)
 
 	#define FFTSizeSpectrumM 9
 	#define FFTCONFIGSpectrum	(& arm_cfft_sR_f32_len512)
