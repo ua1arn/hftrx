@@ -5085,8 +5085,8 @@ display_colorgrid(
 	int_fast32_t bw		// span
 	)
 {
-	COLOR565_T color0 = COLOR565_GRIDCOLOR;	// макркр на центре
-	COLOR565_T color = COLOR565_GRIDCOLOR2;
+	const COLOR565_T color0 = COLOR565_GRIDCOLOR;	// макркр на центре
+	const COLOR565_T color = COLOR565_GRIDCOLOR2;
 	// 
 	const int_fast32_t go = f0 % (int) glob_gridstep;	// шаг сетки
 	const int_fast32_t gs = (int) glob_gridstep;	// шаг сетки
@@ -5095,7 +5095,6 @@ display_colorgrid(
 	for (df = - halfbw / gs * gs - go; df < halfbw; df += gs)
 	{
 		uint_fast16_t xmarker;
-
 		if (df > - halfbw)
 		{
 			// Маркер частоты кратной glob_gridstep - XOR линию
@@ -5104,6 +5103,7 @@ display_colorgrid(
 				display_colorbuffer_xor_vline(buffer, ALLDX, ALLDY, xmarker, row0, h, color);
 		}
 	}
+	display_colorbuffer_xor_vline(buffer, ALLDX, ALLDY, ALLDX / 2, row0, h, color0);	// center frequency marker
 }
 
 // Спектр на монохромных дисплеях
@@ -5225,7 +5225,6 @@ static void display2_spectrum(
 					display_colorbuffer_line_set(colorpip, ALLDX, ALLDY, x - 1, ylast, x, ynew, COLOR565_SPECTRUMLINE);
 				ylast = ynew;
 			}
-			display_colorgrid(colorpip, SPY0, SPDY, f0, bw);	// отрисовка маркеров частот
 		}
 		else
 		{
@@ -5256,8 +5255,8 @@ static void display2_spectrum(
 					}
 				}
 			}
-			display_colorgrid(colorpip, SPY0, SPDY, f0, bw);	// отрисовка маркеров частот
 		}
+		display_colorgrid(colorpip, SPY0, SPDY, f0, bw);	// отрисовка маркеров частот
 	}
 
 #endif
