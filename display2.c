@@ -2037,6 +2037,14 @@ enum
 		{	15, 0,	display_lockstate1,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
 	#endif /* WITHMENU */
 	};
+#if WITHMENU
+	void display2_getmultimenu(multimenuwnd_t * p)
+	{
+		p->multilinemenu_max_rows = 1;
+		p->ystep = 1;	// количество ячеек разметки на одну строку меню
+		p->reverse = 0;
+	}
+#endif /* WITHMENU */
 
 #elif DSTYLE_T_X16_Y4
 
@@ -2100,6 +2108,14 @@ enum
 		{	15, 0,	display_lockstate1,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
 	#endif /* WITHMENU */
 	};
+#if WITHMENU
+	void display2_getmultimenu(multimenuwnd_t * p)
+	{
+		p->multilinemenu_max_rows = 1;
+		p->ystep = 1;	// количество ячеек разметки на одну строку меню
+		p->reverse = 0;
+	}
+#endif /* WITHMENU */
 
 #elif DSTYLE_G_X64_Y32
 	// RDX0120
@@ -2156,6 +2172,14 @@ enum
 		{	9, 3,	display_lockstate1,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
 	#endif /* WITHMENU */
 	};
+#if WITHMENU
+	void display2_getmultimenu(multimenuwnd_t * p)
+	{
+		p->multilinemenu_max_rows = 1;
+		p->ystep = 1;	// количество ячеек разметки на одну строку меню
+		p->reverse = 0;
+	}
+#endif /* WITHMENU */
 
 #elif DSTYLE_G_X128_Y64
 	// RDX0077
@@ -2246,6 +2270,14 @@ enum
 			{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
 		#endif /* WITHMENU */
 		};
+	#if WITHMENU
+		void display2_getmultimenu(multimenuwnd_t * p)
+		{
+			p->multilinemenu_max_rows = 1;
+			p->ystep = 1;	// количество ячеек разметки на одну строку меню
+			p->reverse = 0;
+		}
+	#endif /* WITHMENU */
 
 	#else /* DSTYLE_UR3LMZMOD && WITHONEATTONEAMP */
 
@@ -2307,6 +2339,14 @@ enum
 			{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
 		#endif /* WITHMENU */
 		};
+	#if WITHMENU
+		void display2_getmultimenu(multimenuwnd_t * p)
+		{
+			p->multilinemenu_max_rows = 1;
+			p->ystep = 1;	// количество ячеек разметки на одну строку меню
+			p->reverse = 0;
+		}
+	#endif /* WITHMENU */
 
 	#endif /* DSTYLE_UR3LMZMOD && WITHONEATTONEAMP */
 
@@ -2407,6 +2447,14 @@ enum
 			{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
 		#endif /* WITHMENU */
 		};
+	#if WITHMENU
+		void display2_getmultimenu(multimenuwnd_t * p)
+		{
+			p->multilinemenu_max_rows = 1;
+			p->ystep = 1;	// количество ячеек разметки на одну строку меню
+			p->reverse = 0;
+		}
+	#endif /* WITHMENU */
 
 	#else /* DSTYLE_UR3LMZMOD && WITHONEATTONEAMP */
 
@@ -2485,6 +2533,14 @@ enum
 			{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
 		#endif /* WITHMENU */
 		};
+	#if WITHMENU
+		void display2_getmultimenu(multimenuwnd_t * p)
+		{
+			p->multilinemenu_max_rows = 1;
+			p->ystep = 1;	// количество ячеек разметки на одну строку меню
+			p->reverse = 0;
+		}
+	#endif /* WITHMENU */
 
 	#endif /* DSTYLE_UR3LMZMOD */
 
@@ -2585,6 +2641,14 @@ enum
 		#endif /* WITHMENU */
 
 		};
+#if WITHMENU
+	void display2_getmultimenu(multimenuwnd_t * p)
+	{
+		p->multilinemenu_max_rows = 1;
+		p->ystep = 1;	// количество ячеек разметки на одну строку меню
+		p->reverse = 0;
+	}
+#endif /* WITHMENU */
 
 	#else /* DSTYLE_UR3LMZMOD && WITHONEATTONEAMP */
 
@@ -2657,6 +2721,14 @@ enum
 			{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
 		#endif /* WITHMENU */
 		};
+#if WITHMENU
+	void display2_getmultimenu(multimenuwnd_t * p)
+	{
+		p->multilinemenu_max_rows = 1;
+		p->ystep = 1;	// количество ячеек разметки на одну строку меню
+		p->reverse = 0;
+	}
+#endif /* WITHMENU */
 
 	#endif /* DSTYLE_UR3LMZMOD && WITHONEATTONEAMP */
 
@@ -2740,6 +2812,14 @@ enum
 			{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
 		#endif /* WITHMENU */
 		};
+#if WITHMENU
+	void display2_getmultimenu(multimenuwnd_t * p)
+	{
+		p->multilinemenu_max_rows = 1;
+		p->ystep = 1;	// количество ячеек разметки на одну строку меню
+		p->reverse = 0;
+	}
+#endif /* WITHMENU */
 
 	#elif DSTYLE_UR3LMZMOD
 		// Управление УВЧ и двухкаскадным аттенюатором
@@ -2821,7 +2901,14 @@ enum
 			{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
 		#endif /* WITHMENU */
 		};
-
+	#if WITHMENU
+		void display2_getmultimenu(multimenuwnd_t * p)
+		{
+			p->multilinemenu_max_rows = 1;
+			p->ystep = 1;	// количество ячеек разметки на одну строку меню
+			p->reverse = 0;
+		}
+	#endif /* WITHMENU */
 
 	#else /* DSTYLE_UR3LMZMOD */
 
@@ -2889,6 +2976,14 @@ enum
 			{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
 		#endif /* WITHMENU */
 		};
+	#if WITHMENU
+		void display2_getmultimenu(multimenuwnd_t * p)
+		{
+			p->multilinemenu_max_rows = 1;
+			p->ystep = 1;	// количество ячеек разметки на одну строку меню
+			p->reverse = 0;
+		}
+	#endif /* WITHMENU */
 
 	#endif /* DSTYLE_UR3LMZMOD */
 
@@ -2979,6 +3074,14 @@ enum
 			{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
 		#endif /* WITHMENU */
 		};
+	#if WITHMENU
+		void display2_getmultimenu(multimenuwnd_t * p)
+		{
+			p->multilinemenu_max_rows = 1;
+			p->ystep = 1;	// количество ячеек разметки на одну строку меню
+			p->reverse = 0;
+		}
+	#endif /* WITHMENU */
 
 	#elif DSTYLE_UR3LMZMOD
 		// KEYBSTYLE_SW2013SF_US2IT
@@ -3061,6 +3164,14 @@ enum
 			{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
 		#endif /* WITHMENU */
 		};
+	#if WITHMENU
+		void display2_getmultimenu(multimenuwnd_t * p)
+		{
+			p->multilinemenu_max_rows = 1;
+			p->ystep = 1;	// количество ячеек разметки на одну строку меню
+			p->reverse = 0;
+		}
+	#endif /* WITHMENU */
 
 	#else /* DSTYLE_UR3LMZMOD */
 
@@ -3128,6 +3239,14 @@ enum
 			{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
 		#endif /* WITHMENU */
 		};
+	#if WITHMENU
+		void display2_getmultimenu(multimenuwnd_t * p)
+		{
+			p->multilinemenu_max_rows = 1;
+			p->ystep = 1;	// количество ячеек разметки на одну строку меню
+			p->reverse = 0;
+		}
+	#endif /* WITHMENU */
 
 	#endif /* DSTYLE_UR3LMZMOD */
 
@@ -3799,7 +3918,7 @@ enum
 	#if WITHSEPARATEWFL
 		/* без совмещения на одном экрание водопада и панорамы */
 		BDCO_SPMRX = ROWS2GRID(0),	// смещение спектра по вертикали в ячейках от начала общего поля
-		BDCO_WFLRX = ROWS2GRID(0)	// смещение водопада по вертикали в ячейках от начала общего поля
+		BDCO_WFLRX = ROWS2GRID(0),	// смещение водопада по вертикали в ячейках от начала общего поля
 		BDCV_SPMRX = BDCV_ALLRX,	// вертикальный размер спектра в ячейках		};
 		BDCV_WFLRX = BDCV_ALLRX,	// вертикальный размер водопада в ячейках		};
 	#else /* WITHSEPARATEWFL */
@@ -3837,6 +3956,7 @@ enum
 			PG2 = REDRSUBSET(DPAGE2),
 			PGSLP = REDRSUBSET_SLEEP,
 			PGALL = PG0 | PG1 | PG2 | REDRSUBSET_MENU,
+			PGNOMEMU = PG0 | PG1 | PG2,
 			PGLATCH = PGALL,	// страницы, на которых возможно отображение водопада или панорамы.
 			PGSWR = PG0,	// страница отоюражения S-meter и SWR-meter
 			PGWFL = PG2,
