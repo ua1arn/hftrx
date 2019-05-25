@@ -84,16 +84,13 @@ $(TARGET): $(OBJS)
 
 size: ${TARGET}
 	$(SIZE) --format=sysv --radix=16 ${TARGET}
-	#$(SIZE) -C --mcu=${MCU} ${TARGET}
+#	$(SIZE) -C --mcu=${MCU} ${TARGET}
 
 ## Clean target
 .PHONY: clean
 clean:
 	-rm -rf $(OBJS) tc1_atmega32_8.elf ./*.d tc1_atmega32_8.hex tc1_atmega32_8.eep
 	-rm -fR $(OBJDIR)
-	-rm -f $(PROJECT)_rom.elf $(PROJECT)_rom.map $(PROJECT)_rom.hex $(PROJECT)_rom.bin
-	-rm -f $(PROJECT)_boot.elf $(PROJECT)_boot.map $(PROJECT)_boot.hex $(PROJECT)_boot.bin
-	-rm -f $(PROJECT)_app.elf $(PROJECT)_app.map $(PROJECT)_app.hex $(PROJECT)_app.bin
 	-rm -f $(SRC:.c=.c.bak)
 	-rm -f $(SRC:.c=.lst)
 	-rm -f $(ASRC:.s=.s.bak)
