@@ -825,7 +825,7 @@ void spool_0p128(void);	// OPERA support
 	#endif /* WITHIF4DSP */
 
 	#if MODEL_DIRECT
-		#define DIRECT_61440_X6	1	/* DDS LO1, LO2 = 61440 kHz */
+		#define DIRECT_61M440_X5	1	/* DDS LO1, LO2 = 61440 kHz */
 	#else
 		#define HYBRID_61440_10M7	1	/* Hybrid LO1, LO2 = 70000 kHz - for 70455 kHz filter from FT-1000 */
 	#endif
@@ -3012,13 +3012,13 @@ void spool_0p128(void);	// OPERA support
 	#define DDS3_CLK_MUL	1		/* Умножитель в DDS3 */
 #endif	/* DIRECT_70M000_X5 */
 
-#if DIRECT_61440_X6
+#if DIRECT_61M440_X5
 	#define LO1MODE_DIRECT	1
 	#define REFERENCE_FREQ	61440000L	/* LO2 = 61440 kHz - for 70455.5 kHz filter */
-	#define DDS1_CLK_MUL	6 		/* Умножитель в DDS1 */
+	#define DDS1_CLK_MUL	5 		/* Умножитель в DDS1 */
 	#define DDS2_CLK_MUL	1		/* Умножитель в DDS2 */
 	#define DDS3_CLK_MUL	1		/* Умножитель в DDS3 */
-#endif	/* DIRECT_61440_X6 */
+#endif	/* DIRECT_61M440_X5 */
 
 // FQMODEL_70455 should be defined
 #if HYBRID_70M000_10M7
