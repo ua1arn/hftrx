@@ -4,12 +4,10 @@
 // автор Гена Завидовский mgs2001@mail.ru
 // UA1ARN
 //
-// Плата UA3DKC Сергей (ATMega32 @ 8 MHz, FM25040, Si570+AD9834+WH2002) - ref 40 MHz
-// Плата UA3DKC Сергей (ATMega644PA @ 8 MHz, AT25160B, Si570+AD9834+WH2002) - ref 40 MHz
-//
+// Плата UA3RNB ATMega32: Si570+AD9834, WH1602 FM25L04B ref 50 MHz
 
-#ifndef ATMEGA_CTL_UA3DKC_H_INCLUDED
-#define ATMEGA_CTL_UA3DKC_H_INCLUDED 1
+#ifndef ATMEGA_CTL_UA3RNB_H_INCLUDED
+#define ATMEGA_CTL_UA3RNB_H_INCLUDED 1
 
 #if F_CPU != 8000000
 	//#error Set F_CPU right value in project file
@@ -96,7 +94,7 @@
 
 	#define WITHMENU 	1	/* функциональность меню может быть отключена - если настраивать нечего */
 	//#define WITHVIBROPLEX	1	/* возможность эмуляции передачи виброплексом */
-	#define WITHSLEEPTIMER	1	/* выключить индикатор и вывод звука по истечениии указанного времени */
+	//#define WITHSLEEPTIMER	1	/* выключить индикатор и вывод звука по истечениии указанного времени */
 	// --- Эти строки можно отключать, уменьшая функциональность готового изделия
 
 	//#define LO1PHASES	1		/* Прямой синтез первого гетеродина двумя DDS с програмимруемым сдвигом фазы */
@@ -175,8 +173,9 @@ enum
 	FWD = 4, REF = 3,	// SWR-meter
 	KI0 = 5, KI1 = 6, KI2 = 7	// клавиатура
 };
+
 #define KI_COUNT 3	// количество используемых под клавиатуру входов АЦП
 #define KI_LIST	KI2, KI1, KI0,	// инициализаторы для функции перекодировки
 
 
-#endif /* ATMEGA_CTL_UA3DKC_H_INCLUDED */
+#endif /* ATMEGA_CTL_UA3RNB_H_INCLUDED */
