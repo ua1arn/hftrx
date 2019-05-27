@@ -264,7 +264,7 @@
 
 	#define WITHSKIPUSERMODE 1	// debug option: не отдавать в USER MODE блоки для фильтрации аудиосигнала
 	#define WITHNEWZOOMFFT 1
-	//#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX
+	#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX
 	//#define WITHUSEDUALWATCH	1	// Второй приемник
 	#define WITHDACSTRAIGHT 1	/* Требуется формирование кода для ЦАП в режиме беззнакового кода */
 	#define WITHRTS96 1		/* вместо выходного аудиосигнала передача квадратур по USB */
