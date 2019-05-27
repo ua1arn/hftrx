@@ -13292,6 +13292,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, 
 	},
 #endif /* WITHDSPEXTDDC */
+#if WITHTX
 #if WITHVOX
 #if ! WITHFLATMENU
 	{
@@ -14099,6 +14100,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase,
 	},
 #endif /* WITHENCODER */
+
 #if WITHTX
 #if WITHFANTIMER
 	{
@@ -14112,6 +14114,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 #endif /* WITHFANTIMER */
 #endif /* WITHTX */
+
 #if WITHTX
 #if WITHPOWERTRIM
   #if ! WITHPOTPOWER
@@ -14150,7 +14153,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 	#endif /* ! CTLSTYLE_SW2011ALL */
   #endif /* ! WITHPOTPOWER */
-#if WITHAUTOTUNER || defined (HARDWARE_GET_TUNE)
+  #if WITHAUTOTUNER || defined (HARDWARE_GET_TUNE)
 	{
 		"ATU PWR ", 7, 0, RJ_POWER,	ISTEP1,		/* мощность при работе автоматического согласующего устройства */
 		ITEM_VALUE,
@@ -14160,8 +14163,11 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		& gotunerpower,
 		getzerobase, 
 	},
-#endif /* WITHAUTOTUNER || defined (HARDWARE_GET_TUNE) */
+  #endif /* WITHAUTOTUNER || defined (HARDWARE_GET_TUNE) */
 #endif /* WITHPOWERTRIM */
+#endif /* WITHTX */
+
+#if WITHTX
 #if ! CTLSTYLE_SW2011ALL
 	{
 		"TX GATE ", 7, 3, RJ_ON,	ISTEP1,
@@ -14173,6 +14179,8 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, 
 	},
 #endif /* ! CTLSTYLE_SW2011ALL */
+#endif /* WITHTX */
+#if WITHTX
 #if WITHPABIASTRIM && WITHTX
 	{
 		"PA BIAS ", 7, 0, 0,	ISTEP1,		/* Подстройка тока оконечного каскада передатчика */
@@ -14184,6 +14192,8 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, 
 	},
 #endif /* WITHPABIASTRIM && WITHTX */
+#endif /* WITHTX */
+#if WITHTX
 #if WITHIF4DSP && WITHTX
 	{
 		"AM DEPTH", 7, 0, 0,	ISTEP1,		/* Подстройка глубины модуляции в АМ */
@@ -14204,6 +14214,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 #endif /* WITHIF4DSP && WITHTX */
+#endif /* WITHTX */
 #if defined(REFERENCE_FREQ)
 #if defined (DAC1_TYPE)
 	{
