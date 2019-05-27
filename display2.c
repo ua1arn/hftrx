@@ -3721,20 +3721,18 @@ enum
 		#endif /* defined (RTC1_TYPE) */
 			{	18, 28,	display_agc3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 		#if WITHMENU
-			{	4, 0,	display_menu_group,	REDRM_MLBL, REDRSUBSET_MENU, },	// название группы
-			{	0, 2,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
-			{	4, 2,	display_menu_lblng,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
-			{	0, 4,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
-			{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
+			{	1 + LABELW * 0 + 0,	18,	display_multilinemenu_block_groups,	REDRM_MLBL, 	REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
+			{	1 + LABELW * 1 + 1,	18,	display_multilinemenu_block_params,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
+			{	1 + LABELW * 2 + 2,	18,	display_multilinemenu_block_vals,	REDRM_MVAL, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
 		#endif /* WITHMENU */
 		};
 
 	#if WITHMENU
 		void display2_getmultimenu(multimenuwnd_t * p)
 		{
-			p->multilinemenu_max_rows = 4;
-			p->ystep = 2;	// количество ячеек разметки на одну строку меню
-			p->reverse = 0;
+			p->multilinemenu_max_rows = 5;
+			p->ystep = 3;	// количество ячеек разметки на одну строку меню
+			p->reverse = 1;
 		}
 	#endif /* WITHMENU */
 
@@ -3790,8 +3788,10 @@ enum
 		#if WITHIF4DSP
 			PG1 = REDRSUBSET(DPAGE1),
 			PGALL = PG0 | PG1 | REDRSUBSET_MENU,
+			PGNOMEMU = PG0 | PG1,
 		#else /* WITHIF4DSP */
 			PGALL = PG0 | REDRSUBSET_MENU,
+			PGNOMEMU = PG0,
 		#endif /* WITHIF4DSP */
 			PGLATCH = PGALL,	// страницы, на которых возможно отображение водопада или панорамы.
 			PGunused
@@ -3818,7 +3818,7 @@ enum
 			{	0,	15,	display_vfomode5,	REDRM_MODE, PGALL, },	// SPLIT
 			{	6,	15,	display_freqX_b,	REDRM_FRQB, PGALL, },
 		#if WITHUSEDUALWATCH
-			{	25, 15,	display_mainsub3,	REDRM_MODE, PGALL, },	// main/sub RX
+			{	25, 15,	display_mainsub3,	REDRM_MODE, PGNOMEMU, },	// main/sub RX
 		#endif /* WITHUSEDUALWATCH */
 			{	29, 15,	display_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
 			//---
@@ -3829,7 +3829,7 @@ enum
 			{	0,	18,	display2_waterfall,	REDRM_BARS, PG1, },// подготовка изображения водопада
 			{	0,	18,	display2_colorbuff,	REDRM_BARS,	PG1, },// Отображение водопада и/или спектра
 
-			{	27, 18,	display_siglevel5,	REDRM_BARS, PGALL, },	// signal level
+			{	27, 18,	display_siglevel5,	REDRM_BARS, PGNOMEMU, },	// signal level
 		#endif /* WITHIF4DSP */
 			//---
 			//{	22, 25,	display_samfreqdelta8, REDRM_BARS, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
@@ -3847,12 +3847,9 @@ enum
 			{	25, 28,	display_rec3,		REDRM_BARS, PGALL, },	// Отображение режима записи аудио фрагмента
 		#endif /* WITHUSEAUDIOREC */
 		#if WITHMENU
-			{	4, 19,	display_menu_group,	REDRM_MLBL, REDRSUBSET_MENU, },	// название группы
-			{	0, 21,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
-			{	0, 24,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
-			{	4, 24,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
-			//{	9,	27,	display_freqmeter10,	REDRM_VOLT, REDRSUBSET_MENU, },	// отладочная функция измерителя опорной частоты
-			{	9, 27,	display_samfreqdelta8, REDRM_BARS, REDRSUBSET_MENU, },	/* Получить информацию об ошибке настройки в режиме SAM */
+			{	1 + LABELW * 0 + 0,	18,	display_multilinemenu_block_groups,	REDRM_MLBL, 	REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
+			{	1 + LABELW * 1 + 1,	18,	display_multilinemenu_block_params,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
+			{	1 + LABELW * 2 + 2,	18,	display_multilinemenu_block_vals,	REDRM_MVAL, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
 		#endif /* WITHMENU */
 #endif /* ! WITHISBOOTLOADER */
 		};
@@ -3870,9 +3867,9 @@ enum
 	#if WITHMENU
 		void display2_getmultimenu(multimenuwnd_t * p)
 		{
-			p->multilinemenu_max_rows = 4;
+			p->multilinemenu_max_rows = 5;
 			p->ystep = 2;	// количество ячеек разметки на одну строку меню
-			p->reverse = 0;
+			p->reverse = 1;
 		}
 	#endif /* WITHMENU */
 
