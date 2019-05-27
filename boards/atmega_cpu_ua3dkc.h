@@ -51,9 +51,6 @@
 
 #elif LCDMODE_HD44780 && (LCDMODE_SPI == 0)
 
-	//#undef WITHTWIHW
-	#undef WITHTWISW
-
 	// данные LCD
 	#define LCD_DATA_PORT PORTC
 	#define LCD_DATA_DIRECTION DDRC
