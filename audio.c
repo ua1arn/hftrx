@@ -2568,8 +2568,8 @@ static RAMFUNC_NONILINE FLOAT32P_t filter_fir_rx_AUDIO_Pair2(FLOAT32P_t NewSampl
 {
 	enum { Ntap = Ntap_rx_AUDIO, NtapHalf = Ntap / 2 };
 	// буфер с сохраненными значениями сэмплов
-	static FLOAT32P_t xshift [Ntap * 2] = { 0, };
-	static uint_fast16_t fir_head = 0;
+	static RAMDTCM FLOAT32P_t xshift [Ntap * 2];
+	static RAMDTCM uint_fast16_t fir_head;
 
 	// shift the old samples
 	fir_head = (fir_head == 0) ? (Ntap - 1) : (fir_head - 1);
@@ -2583,8 +2583,8 @@ static RAMFUNC_NONILINE FLOAT_t filter_fir_rx_AUDIO_A(FLOAT_t NewSample)
 {
 	enum { Ntap = Ntap_rx_AUDIO, NtapHalf = Ntap / 2 };
 	// буфер с сохраненными значениями сэмплов
-	static FLOAT_t xshift [Ntap * 2] = { 0, };
-	static uint_fast16_t fir_head = 0;
+	static RAMDTCM FLOAT_t xshift [Ntap * 2];
+	static RAMDTCM uint_fast16_t fir_head;
 
 	// shift the old samples
 	fir_head = (fir_head == 0) ? (Ntap - 1) : (fir_head - 1);
@@ -5231,14 +5231,14 @@ getmonitx(
 static void save16demod(FLOAT_t ch0, FLOAT_t ch1)
 {
 #if WITHSKIPUSERMODE
-	#if WITHDUALWATCH
+	#if WITHUSEDUALWATCH
 		const FLOAT32P_t i = { { ch0, ch1, }, };
 		const FLOAT32P_t o = filter_fir_rx_AUDIO_Pair2(i);
 		savesampleout16stereo(o.IV, o.QV);
-	#else
+	#else /* WITHUSEDUALWATCH */
 		const FLOAT_t o = filter_fir_rx_AUDIO_A(ch0);
 		savesampleout16stereo(o, o);
-	#endif
+	#endif /* WITHUSEDUALWATCH */
 #else /* WITHSKIPUSERMODE */
 	savesampleout16tospeex(ch0, ch1);	// через user-level обработчик
 #endif /* WITHSKIPUSERMODE */
