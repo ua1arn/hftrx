@@ -3342,14 +3342,13 @@ enum
 			{	18,	14,	display_datetime12,	REDRM_BARS, REDRSUBSET(DPAGE0), },	// DATE&TIME Jan 01 13:40
 	#endif /* defined (RTC1_TYPE) */
 		#if WITHNOTCHONOFF || WITHNOTCHFREQ
-			{	27, 14,	display_notch3, REDRM_MODE, PG0, },	// 3.7
+			{	27, 14,	display_notch3, REDRM_MODE, REDRSUBSET(DPAGE0), },	// 3.7
 		#endif /* WITHNOTCHONOFF || WITHNOTCHFREQ */
 		/* ---------------------------------- */
 	#if WITHMENU
-			{	0,	0,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
-			{	0,	2,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
-			{	4,	2,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
-			{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
+			{	1,	0,	display_multilinemenu_block_groups,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
+			{	LABELW + 2,	0,	display_multilinemenu_block_params,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
+			{	LABELW*2 + 3,	0,	display_multilinemenu_block_vals,	REDRM_MVAL, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
 		#if WITHVOLTLEVEL && WITHCURRLEVEL
 			{	0,	9,	display_voltlevelV5, REDRM_VOLT, REDRSUBSET_MENU, },	// voltmeter with "V"
 			{	6,	9,	display_currlevelA6, REDRM_VOLT, REDRSUBSET_MENU, },	// amphermeter with "A"
@@ -3359,14 +3358,14 @@ enum
 	#if WITHMENU
 		void display2_getmultimenu(multimenuwnd_t * p)
 		{
-			p->multilinemenu_max_rows = 1;
+			p->multilinemenu_max_rows = 8;
 			p->ystep = 2;	// количество ячеек разметки на одну строку меню
-			p->reverse = 0;
+			p->reverse = 1;
 		}
 	#endif /* WITHMENU */
 
 	#elif DSTYLE_UR3LMZMOD
-		// Versopn with specreum display
+		// Version with specreum display
 		// x=30, y=16
 		enum
 		{
@@ -3465,24 +3464,23 @@ enum
 			{	0,	14,	display_time5,		REDRM_BARS, PG0, },	// TIME
 		#endif /* defined (RTC1_TYPE) */
 		#if WITHVOLTLEVEL
-			{	6,	14,	display_voltlevelV5, REDRM_VOLT, PG0 | REDRSUBSET_MENU, },	// voltmeter with "V"
+			{	6,	14,	display_voltlevelV5, REDRM_VOLT, PG0, },	// voltmeter with "V"
 		#endif /* WITHVOLTLEVEL  */
 		#if WITHCURRLEVEL
-			{	11, 14,	display_currlevelA6, REDRM_VOLT, PG0 | REDRSUBSET_MENU, },	// amphermeter with "A"
+			{	11, 14,	display_currlevelA6, REDRM_VOLT, PG0, },	// amphermeter with "A"
 		#endif /*  WITHCURRLEVEL */
 		#if WITHAMHIGHKBDADJ
 			{	6, 14,	display_amfmhighcut4,REDRM_MODE, PG0, },	// 3.70
 		#endif /* WITHAMHIGHKBDADJ */
-			{	18, 14,	display_samfreqdelta8, REDRM_BARS, PG0 | REDRSUBSET_MENU, },	/* Получить информацию об ошибке настройки в режиме SAM */
+			{	18, 14,	display_samfreqdelta8, REDRM_BARS, PG0, },	/* Получить информацию об ошибке настройки в режиме SAM */
 		#if WITHNOTCHONOFF || WITHNOTCHFREQ
 			{	27, 14,	display_notch3, REDRM_MODE, PG0, },	// 3.7
 		#endif /* WITHNOTCHONOFF || WITHNOTCHFREQ */
 		/* ---------------------------------- */
 	#if WITHMENU
-			{	0,	9,	display_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
-			{	0,	11,	display_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
-			{	4,	11,	display_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
-			//{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
+			{	1,	9,	display_multilinemenu_block_groups,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
+			{	LABELW + 2,	9,	display_multilinemenu_block_params,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
+			{	LABELW*2 + 3,	9,	display_multilinemenu_block_vals,	REDRM_MVAL, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
 		#if WITHVOLTLEVEL && WITHCURRLEVEL
 			//{	0,	9,	display_voltlevelV5, REDRM_VOLT, REDRSUBSET_MENU, },	// voltmeter with "V"
 			//{	6,	9,	display_currlevelA6, REDRM_VOLT, REDRSUBSET_MENU, },	// amphermeter with "A"
@@ -3492,9 +3490,9 @@ enum
 	#if WITHMENU
 		void display2_getmultimenu(multimenuwnd_t * p)
 		{
-			p->multilinemenu_max_rows = 1;
+			p->multilinemenu_max_rows = 3;
 			p->ystep = 2;	// количество ячеек разметки на одну строку меню
-			p->reverse = 0;
+			p->reverse = 1;
 		}
 	#endif /* WITHMENU */
 
