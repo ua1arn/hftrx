@@ -264,9 +264,9 @@
 	//#define	WITHFPGAWAIT_AS	1	/* FPGA загружается из собственной микросхемы загрузчика - дождаться окончания загрузки перед инициализацией SPI в процессоре */
 	#define	WITHFPGALOAD_PS	1	/* FPGA загружается процессором с помощью SPI */
 
-	//#define WITHSKIPUSERMODE 1	// debug option: не отдавать в USER MODE блоки для фильтрации аудиосигнала
+	#define WITHSKIPUSERMODE 1	// debug option: не отдавать в USER MODE блоки для фильтрации аудиосигнала
 	#define WITHNEWZOOMFFT 1
-	//#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX
+	#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX
 	//#define WITHUSEDUALWATCH	1	// Второй приемник
 	//#define WITHLOOPBACKTEST	1	/* прослушивание микрофонного входа, генераторов */
 	//#define WITHMODEMIQLOOPBACK	1	/* модем получает собственные передаваемые квадратуры */
