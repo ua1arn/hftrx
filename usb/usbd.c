@@ -1018,7 +1018,7 @@ USBD_StatusTypeDef  USBD_LL_Start(USBD_HandleTypeDef *pdev);
   * @{
   */ 
 static USBD_StatusTypeDef USBD_DeInit(USBD_HandleTypeDef *pdev);
-static USBD_StatusTypeDef USBD_Start  (USBD_HandleTypeDef *pdev);
+static USBD_StatusTypeDef USBD_Start(USBD_HandleTypeDef *pdev);
 static USBD_StatusTypeDef USBD_AddClass(USBD_HandleTypeDef *pdev, const USBD_ClassTypeDef *pclass);
 
 static USBD_StatusTypeDef USBD_RunTestMode (USBD_HandleTypeDef  *pdev); 
@@ -1043,18 +1043,18 @@ USBD_StatusTypeDef USBD_LL_DevDisconnected(USBD_HandleTypeDef  *pdev);
 
 /* USBD Low Level Driver */
 
-USBD_StatusTypeDef  USBD_LL_FlushEP (USBD_HandleTypeDef *pdev, uint8_t ep_addr);   
-static USBD_StatusTypeDef  USBD_LL_StallEP (USBD_HandleTypeDef *pdev, uint8_t ep_addr);   
-USBD_StatusTypeDef  USBD_LL_ClearStallEP (USBD_HandleTypeDef *pdev, uint8_t ep_addr);   
-uint8_t             USBD_LL_IsStallEP (USBD_HandleTypeDef *pdev, uint8_t ep_addr);   
-USBD_StatusTypeDef  USBD_LL_SetUSBAddress (USBD_HandleTypeDef *pdev, uint8_t dev_addr);   
+USBD_StatusTypeDef  USBD_LL_FlushEP(USBD_HandleTypeDef *pdev, uint8_t ep_addr);
+static USBD_StatusTypeDef  USBD_LL_StallEP(USBD_HandleTypeDef *pdev, uint8_t ep_addr);
+USBD_StatusTypeDef  USBD_LL_ClearStallEP(USBD_HandleTypeDef *pdev, uint8_t ep_addr);
+uint8_t             USBD_LL_IsStallEP(USBD_HandleTypeDef *pdev, uint8_t ep_addr);
+USBD_StatusTypeDef  USBD_LL_SetUSBAddress(USBD_HandleTypeDef *pdev, uint8_t dev_addr);
 USBD_StatusTypeDef  USBD_LL_Transmit(USBD_HandleTypeDef *pdev, 
                                       uint_fast8_t  ep_addr,                                      
                                       const uint8_t  *pbuf,
                                       uint_fast32_t  size);
 
-uint32_t USBD_LL_GetRxDataSize  (USBD_HandleTypeDef *pdev, uint8_t  ep_addr);  
-static USBD_StatusTypeDef  USBD_LL_CloseEP (USBD_HandleTypeDef *pdev, uint8_t ep_addr);   
+uint32_t USBD_LL_GetRxDataSize(USBD_HandleTypeDef *pdev, uint8_t  ep_addr);
+static USBD_StatusTypeDef  USBD_LL_CloseEP(USBD_HandleTypeDef *pdev, uint8_t ep_addr);
 
 
 static HAL_StatusTypeDef USB_CoreReset(USB_OTG_GlobalTypeDef *USBx);
@@ -1164,53 +1164,53 @@ static HAL_StatusTypeDef USB_CoreReset(USB_OTG_GlobalTypeDef *USBx);
 #define USB_OTG_HS_WAKEUP_EXTI_LINE                       ((uint32_t)0x00100000U)  /*!< External interrupt line 20 Connected to the USB HS EXTI Line */
 #define USB_OTG_FS_WAKEUP_EXTI_LINE                       ((uint32_t)0x00040000U)  /*!< External interrupt line 18 Connected to the USB FS EXTI Line */
 
-#define __HAL_USB_OTG_HS_WAKEUP_EXTI_ENABLE_IT()    do { EXTI->IMR |= (USB_OTG_HS_WAKEUP_EXTI_LINE); } while ()
-#define __HAL_USB_OTG_HS_WAKEUP_EXTI_DISABLE_IT()   do { EXTI->IMR &= ~(USB_OTG_HS_WAKEUP_EXTI_LINE); } while ()
-#define __HAL_USB_OTG_HS_WAKEUP_EXTI_GET_FLAG()     do { EXTI->PR & (USB_OTG_HS_WAKEUP_EXTI_LINE); } while ()
-#define __HAL_USB_OTG_HS_WAKEUP_EXTI_CLEAR_FLAG()   do { EXTI->PR = (USB_OTG_HS_WAKEUP_EXTI_LINE); } while ()
+#define __HAL_USB_OTG_HS_WAKEUP_EXTI_ENABLE_IT()    do { EXTI->IMR |= (USB_OTG_HS_WAKEUP_EXTI_LINE); } while (0)
+#define __HAL_USB_OTG_HS_WAKEUP_EXTI_DISABLE_IT()   do { EXTI->IMR &= ~(USB_OTG_HS_WAKEUP_EXTI_LINE); } while (0)
+#define __HAL_USB_OTG_HS_WAKEUP_EXTI_GET_FLAG()     do { EXTI->PR & (USB_OTG_HS_WAKEUP_EXTI_LINE); } while (0)
+#define __HAL_USB_OTG_HS_WAKEUP_EXTI_CLEAR_FLAG()   do { EXTI->PR = (USB_OTG_HS_WAKEUP_EXTI_LINE); } while (0)
 
 #define __HAL_USB_OTG_HS_WAKEUP_EXTI_ENABLE_RISING_EDGE() do { \
 		EXTI->FTSR &= ~(USB_OTG_HS_WAKEUP_EXTI_LINE);\
 		EXTI->RTSR |= USB_OTG_HS_WAKEUP_EXTI_LINE; \
-		} while ()
+		} while (0)
                                                       
 #define __HAL_USB_OTG_HS_WAKEUP_EXTI_ENABLE_FALLING_EDGE()  do { EXTI->FTSR |= (USB_OTG_HS_WAKEUP_EXTI_LINE);\
-                                                            EXTI->RTSR &= ~(USB_OTG_HS_WAKEUP_EXTI_LINE); } while ()
+                                                            EXTI->RTSR &= ~(USB_OTG_HS_WAKEUP_EXTI_LINE); } while (0)
 
 #define __HAL_USB_OTG_HS_WAKEUP_EXTI_ENABLE_RISING_FALLING_EDGE()   do { EXTI->RTSR &= ~(USB_OTG_HS_WAKEUP_EXTI_LINE);\
                                                                     do { EXTI->FTSR &= ~(USB_OTG_HS_WAKEUP_EXTI_LINE;)\
                                                                     do { EXTI->RTSR |= USB_OTG_HS_WAKEUP_EXTI_LINE;\
                                                                     do { EXTI->FTSR |= USB_OTG_HS_WAKEUP_EXTI_LINE
 
-#define __HAL_USB_OTG_HS_WAKEUP_EXTI_GENERATE_SWIT()   do { (EXTI->SWIER |= USB_OTG_FS_WAKEUP_EXTI_LINE) ; } while ()
+#define __HAL_USB_OTG_HS_WAKEUP_EXTI_GENERATE_SWIT()   do { (EXTI->SWIER |= USB_OTG_FS_WAKEUP_EXTI_LINE) ; } while (0)
                                                                                                                     
-#define __HAL_USB_OTG_FS_WAKEUP_EXTI_ENABLE_IT()    do { EXTI->IMR |= USB_OTG_FS_WAKEUP_EXTI_LINE; } while ()
-#define __HAL_USB_OTG_FS_WAKEUP_EXTI_DISABLE_IT()   do { EXTI->IMR &= ~(USB_OTG_FS_WAKEUP_EXTI_LINE); } while ()
-#define __HAL_USB_OTG_FS_WAKEUP_EXTI_GET_FLAG()     do { EXTI->PR & (USB_OTG_FS_WAKEUP_EXTI_LINE); } while ()
-#define __HAL_USB_OTG_FS_WAKEUP_EXTI_CLEAR_FLAG()   do { EXTI->PR = USB_OTG_FS_WAKEUP_EXTI_LINE; } while ()
+#define __HAL_USB_OTG_FS_WAKEUP_EXTI_ENABLE_IT()    do { EXTI->IMR |= USB_OTG_FS_WAKEUP_EXTI_LINE; } while (0)
+#define __HAL_USB_OTG_FS_WAKEUP_EXTI_DISABLE_IT()   do { EXTI->IMR &= ~(USB_OTG_FS_WAKEUP_EXTI_LINE); } while (0)
+#define __HAL_USB_OTG_FS_WAKEUP_EXTI_GET_FLAG()     do { EXTI->PR & (USB_OTG_FS_WAKEUP_EXTI_LINE); } while (0)
+#define __HAL_USB_OTG_FS_WAKEUP_EXTI_CLEAR_FLAG()   do { EXTI->PR = USB_OTG_FS_WAKEUP_EXTI_LINE; } while (0)
 
 #define __HAL_USB_OTG_FS_WAKEUP_EXTI_ENABLE_RISING_EDGE() do { EXTI->FTSR &= ~(USB_OTG_FS_WAKEUP_EXTI_LINE);\
-                                                          EXTI->RTSR |= USB_OTG_FS_WAKEUP_EXTI_LINE; } while ()
+                                                          EXTI->RTSR |= USB_OTG_FS_WAKEUP_EXTI_LINE; } while (0)
 
                                                       
 #define __HAL_USB_OTG_FS_WAKEUP_EXTI_ENABLE_FALLING_EDGE()  do { EXTI->FTSR |= (USB_OTG_FS_WAKEUP_EXTI_LINE);\
-                                                            EXTI->RTSR &= ~(USB_OTG_FS_WAKEUP_EXTI_LINE); } while ()
+                                                            EXTI->RTSR &= ~(USB_OTG_FS_WAKEUP_EXTI_LINE); } while (0)
 
 #define __HAL_USB_OTG_FS_WAKEUP_EXTI_ENABLE_RISING_FALLING_EDGE()  do { EXTI->RTSR &= ~(USB_OTG_FS_WAKEUP_EXTI_LINE);\
                                                                    EXTI->FTSR &= ~(USB_OTG_FS_WAKEUP_EXTI_LINE);\
                                                                    EXTI->RTSR |= USB_OTG_FS_WAKEUP_EXTI_LINE;\
-                                                                   EXTI->FTSR |= USB_OTG_FS_WAKEUP_EXTI_LINE ; } while ()
+                                                                   EXTI->FTSR |= USB_OTG_FS_WAKEUP_EXTI_LINE ; } while (0)
                                                          
-#define __HAL_USB_OTG_FS_WAKEUP_EXTI_GENERATE_SWIT()  do { (EXTI->SWIER |= USB_OTG_FS_WAKEUP_EXTI_LINE); } while ()                                                  
+#define __HAL_USB_OTG_FS_WAKEUP_EXTI_GENERATE_SWIT()  do { (EXTI->SWIER |= USB_OTG_FS_WAKEUP_EXTI_LINE); } while (0)
 
 /* Exported functions --------------------------------------------------------*/
 HAL_StatusTypeDef USB_EnableGlobalInt(USB_OTG_GlobalTypeDef *USBx);
 HAL_StatusTypeDef USB_DisableGlobalInt(USB_OTG_GlobalTypeDef *USBx);
 HAL_StatusTypeDef USB_SetCurrentMode(USB_OTG_GlobalTypeDef *USBx, USB_OTG_ModeTypeDef mode);
 static HAL_StatusTypeDef USB_SetDevSpeed(USB_OTG_GlobalTypeDef *USBx, uint8_t speed);
-HAL_StatusTypeDef USB_FlushRxFifo (USB_OTG_GlobalTypeDef *USBx);
-HAL_StatusTypeDef USB_FlushTxFifo (USB_OTG_GlobalTypeDef *USBx, uint_fast8_t num);
-HAL_StatusTypeDef USB_FlushTxFifoAll (USB_OTG_GlobalTypeDef *USBx);
+HAL_StatusTypeDef USB_FlushRxFifo(USB_OTG_GlobalTypeDef *USBx);
+HAL_StatusTypeDef USB_FlushTxFifo(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t num);
+HAL_StatusTypeDef USB_FlushTxFifoAll(USB_OTG_GlobalTypeDef *USBx);
 static HAL_StatusTypeDef USB_ActivateEndpoint(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDef *ep);
 static HAL_StatusTypeDef USB_DeactivateEndpoint(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDef *ep);
 static HAL_StatusTypeDef USB_ActivateDedicatedEndpoint(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDef *ep);
@@ -1227,19 +1227,19 @@ HAL_StatusTypeDef USB_DevDisconnect (USB_OTG_GlobalTypeDef *USBx);
 HAL_StatusTypeDef USB_StopDevice(USB_OTG_GlobalTypeDef *USBx);
 HAL_StatusTypeDef USB_ActivateSetup (USB_OTG_GlobalTypeDef *USBx);
 HAL_StatusTypeDef USB_EP0_OutStart(USB_OTG_GlobalTypeDef *USBx, uint8_t dma, uint8_t *psetup);
-static uint8_t           USB_GetDevSpeed(USB_OTG_GlobalTypeDef *USBx);
-uint32_t          USB_GetMode(USB_OTG_GlobalTypeDef *USBx);
-uint32_t          USB_ReadInterrupts (USB_OTG_GlobalTypeDef *USBx);
-uint32_t          USB_ReadDevAllOutEpInterrupt (USB_OTG_GlobalTypeDef *USBx);
-uint32_t          USB_ReadDevOutEPInterrupt (USB_OTG_GlobalTypeDef *USBx, uint8_t epnum);
-uint32_t          USB_ReadDevAllInEpInterrupt (USB_OTG_GlobalTypeDef *USBx);
-uint32_t          USB_ReadDevInEPInterrupt (USB_OTG_GlobalTypeDef *USBx, uint8_t epnum);
-void              USB_ClearInterrupts (USB_OTG_GlobalTypeDef *USBx, uint32_t interrupt);
+static uint8_t USB_GetDevSpeed(USB_OTG_GlobalTypeDef *USBx);
+uint32_t USB_GetMode(USB_OTG_GlobalTypeDef *USBx);
+uint32_t USB_ReadInterrupts (USB_OTG_GlobalTypeDef *USBx);
+uint32_t USB_ReadDevAllOutEpInterrupt (USB_OTG_GlobalTypeDef *USBx);
+uint32_t USB_ReadDevOutEPInterrupt (USB_OTG_GlobalTypeDef *USBx, uint8_t epnum);
+uint32_t USB_ReadDevAllInEpInterrupt (USB_OTG_GlobalTypeDef *USBx);
+uint32_t USB_ReadDevInEPInterrupt (USB_OTG_GlobalTypeDef *USBx, uint8_t epnum);
+void USB_ClearInterrupts(USB_OTG_GlobalTypeDef *USBx, uint32_t interrupt);
 
 static HAL_StatusTypeDef USB_InitFSLSPClkSel(USB_OTG_GlobalTypeDef *USBx, uint8_t freq);
 static HAL_StatusTypeDef USB_ResetPort(USB_OTG_GlobalTypeDef *USBx);
-static HAL_StatusTypeDef USB_DriveVbus (USB_OTG_GlobalTypeDef *USBx, uint8_t state);
-static uint32_t          USB_GetHostSpeed (USB_OTG_GlobalTypeDef *USBx);
+static HAL_StatusTypeDef USB_DriveVbus(USB_OTG_GlobalTypeDef *USBx, uint8_t state);
+static uint32_t  USB_GetHostSpeed(USB_OTG_GlobalTypeDef *USBx);
 
 #define  USB_DISABLE   0
 #define  USB_ENABLE    1
@@ -1247,32 +1247,12 @@ static uint32_t          USB_GetHostSpeed (USB_OTG_GlobalTypeDef *USBx);
 	
 #if WITHUSBDFU
 
-
-/* USER CODE BEGIN EXPORTED_VARIABLES */
-
-/* USER CODE END EXPORTED_VARIABLES */
-
-/**
-  * @}
-  */
-
-
-
-/** @defgroup USBD_DFU_Private_Macros
-  * @{
-  */ 
-#define DFU_SAMPLE_FREQ(frq)      (uint8_t)(frq), (uint8_t)((frq >> 8)), (uint8_t)((frq >> 16))
-
-#define DFU_PACKET_SZE(frq)          (uint8_t)(((frq * 2 * 2)/1000) & 0xFF), \
-                                       (uint8_t)((((frq * 2 * 2)/1000) >> 8) & 0xFF)
-                                         
-
 typedef USBALIGN_BEGIN struct
 {
   USBALIGN_BEGIN union
   {
-    uint32_t d32[USBD_DFU_XFER_SIZE/4];
-    uint8_t  d8[USBD_DFU_XFER_SIZE];
+    uint32_t d32 [USBD_DFU_XFER_SIZE / sizeof (uint32_t)];
+    uint8_t  d8 [USBD_DFU_XFER_SIZE];
   } USBALIGN_END buffer;
   
   uint8_t              USBALIGN_BEGIN dev_state USBALIGN_END; 
@@ -1282,11 +1262,9 @@ typedef USBALIGN_BEGIN struct
   uint32_t             wblock_num;
   uint32_t             wlength;
   uint32_t             data_ptr; 
-  volatile uint32_t        alt_setting;
+  volatile uint32_t    alt_setting;
   
-} USBALIGN_END
-
-USBD_DFU_HandleTypeDef; 
+} USBALIGN_END USBD_DFU_HandleTypeDef;
 
 
 static USBD_DFU_HandleTypeDef gdfu;
@@ -1295,42 +1273,25 @@ static USBD_DFU_HandleTypeDef gdfu;
 
 static USBD_StatusTypeDef  USBD_DFU_Init (USBD_HandleTypeDef *pdev, 
                                uint_fast8_t cfgidx);
-
 static USBD_StatusTypeDef  USBD_DFU_DeInit (USBD_HandleTypeDef *pdev, 
                                  uint_fast8_t cfgidx);
-
 static USBD_StatusTypeDef  USBD_DFU_Setup (USBD_HandleTypeDef *pdev, 
                                 const USBD_SetupReqTypedef *req);
-
-static USBD_StatusTypeDef  USBD_DFU_DataIn (USBD_HandleTypeDef *pdev, uint_fast8_t epnum);
-
-static USBD_StatusTypeDef  USBD_DFU_DataOut (USBD_HandleTypeDef *pdev, uint_fast8_t epnum);
-
-static USBD_StatusTypeDef  USBD_DFU_EP0_RxReady (USBD_HandleTypeDef *pdev);
-
-static USBD_StatusTypeDef  USBD_DFU_EP0_TxSent (USBD_HandleTypeDef *pdev);
-
-static USBD_StatusTypeDef  USBD_DFU_SOF (USBD_HandleTypeDef *pdev);
-
-static USBD_StatusTypeDef  USBD_DFU_IsoINIncomplete (USBD_HandleTypeDef *pdev, uint_fast8_t epnum);
-
-static USBD_StatusTypeDef  USBD_DFU_IsoOutIncomplete (USBD_HandleTypeDef *pdev, uint_fast8_t epnum);
-
-static void DFU_Detach    (USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req);
-
-static void DFU_Download  (USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req);
-
-static void DFU_Upload    (USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req);
-
-static void DFU_GetStatus (USBD_HandleTypeDef *pdev);
-
-static void DFU_ClearStatus (USBD_HandleTypeDef *pdev);
-
-static void DFU_GetState  (USBD_HandleTypeDef *pdev);
-
-static void DFU_Abort     (USBD_HandleTypeDef *pdev);
-
-static void DFU_Leave  (USBD_HandleTypeDef *pdev); 
+static USBD_StatusTypeDef  USBD_DFU_DataIn(USBD_HandleTypeDef *pdev, uint_fast8_t epnum);
+static USBD_StatusTypeDef  USBD_DFU_DataOut(USBD_HandleTypeDef *pdev, uint_fast8_t epnum);
+static USBD_StatusTypeDef  USBD_DFU_EP0_RxReady(USBD_HandleTypeDef *pdev);
+static USBD_StatusTypeDef  USBD_DFU_EP0_TxSent(USBD_HandleTypeDef *pdev);
+static USBD_StatusTypeDef  USBD_DFU_SOF(USBD_HandleTypeDef *pdev);
+static USBD_StatusTypeDef  USBD_DFU_IsoINIncomplete(USBD_HandleTypeDef *pdev, uint_fast8_t epnum);
+static USBD_StatusTypeDef  USBD_DFU_IsoOutIncomplete(USBD_HandleTypeDef *pdev, uint_fast8_t epnum);
+static void DFU_Detach(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req);
+static void DFU_Download(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req);
+static void DFU_Upload(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req);
+static void DFU_GetStatus(USBD_HandleTypeDef *pdev);
+static void DFU_ClearStatus(USBD_HandleTypeDef *pdev);
+static void DFU_GetState(USBD_HandleTypeDef *pdev);
+static void DFU_Abort(USBD_HandleTypeDef *pdev);
+static void DFU_Leave(USBD_HandleTypeDef *pdev);
 
 #endif /* WITHUSBDFU */
 
@@ -2326,7 +2287,7 @@ static void usbdFunctionReq_seq1(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef 
 	// (ReqType & USB_RECIPIENT_MASK) == 0xA2: RANGE wIndex = endpoint (low byte)
 	
 	// В этой функции формируется ответ на запрос Get Line Coding
-	static USBALIGN_BEGIN uint8_t buff [64] USBALIGN_END;
+	static USBALIGN_BEGIN uint8_t buff [USB_OTG_MAX_EP0_SIZE] USBALIGN_END;
 	switch (interfacev)
 	{
 #if WITHUSBCDC
@@ -11335,17 +11296,6 @@ void                 USBH_LL_IncTimer     (USBH_HandleTypeDef *phost);
 #define  USB_DESC_TYPE_HID                                 0x21
 #define  USB_DESC_TYPE_HID_REPORT                          0x22
 
-
-#define USB_DEVICE_DESC_SIZE                               18
-#define USB_CONFIGURATION_DESC_SIZE                        9
-#define USB_HID_DESC_SIZE                                  9
-#define USB_INTERFACE_DESC_SIZE                            9
-#define USB_ENDPOINT_DESC_SIZE                             7
-
-
-
-
-extern uint8_t USBH_CfgDesc [512];
 /**
   * @}
   */ 
