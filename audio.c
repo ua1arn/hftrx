@@ -503,7 +503,7 @@ static RAMFUNC FLOAT_t peekvalf(uint32_t a)
 	return 0;
 }
 #endif
-#if 0//WITHLOOPBACKTEST || WITHSUSBSPKONLY || WITHUSBHEADSET
+#if 1//WITHLOOPBACKTEST || WITHSUSBSPKONLY || WITHUSBHEADSET
 
 static RAMFUNC int peekvali16(uint32_t a)
 {
@@ -572,8 +572,8 @@ static ncoftw_t angle_monofreq2;
 int get_rout16(void)
 {
 	// Формирование значения для ROUT
-	const int v = arm_sin_q31(angle_rout / 2) / 65536;
-	//const int v = peekvali16(FTW2ANGLEI(angle_rout));
+	//const int v = arm_sin_q31(angle_rout / 2) / 65536;
+	const int v = peekvali16(FTW2ANGLEI(angle_rout));
 	angle_rout = FTWROUND(angle_rout + anglestep_rout);
 	return v;
 }
@@ -581,8 +581,8 @@ int get_rout16(void)
 int get_lout16(void)
 {
 	// Формирование значения для LOUT
-	const int v = arm_sin_q31(angle_lout / 2) / 65536;
-	//const int v = peekvali16(FTW2ANGLEI(angle_lout));
+	//const int v = arm_sin_q31(angle_lout / 2) / 65536;
+	const int v = peekvali16(FTW2ANGLEI(angle_lout));
 	angle_lout = FTWROUND(angle_lout + anglestep_lout);
 	return v;
 }
@@ -590,8 +590,8 @@ int get_lout16(void)
 static int get_rout24(void)
 {
 	// Формирование значения для ROUT
-	const int v = arm_sin_q31(angle_rout2 / 2) / 256;
-	//const int v = peekvali24(FTW2ANGLEI(angle_rout2));
+	//const int v = arm_sin_q31(angle_rout2 / 2) / 256;
+	const int v = peekvali24(FTW2ANGLEI(angle_rout2));
 	angle_rout2 = FTWROUND(angle_rout2 + anglestep_rout2);
 	return v;
 }
@@ -599,8 +599,8 @@ static int get_rout24(void)
 static int get_lout24(void)
 {
 	// Формирование значения для LOUT
-	const int v = arm_sin_q31(angle_lout2 / 2) / 256;
-	//const int v = peekvali24(FTW2ANGLEI(angle_lout2));
+	//const int v = arm_sin_q31(angle_lout2 / 2) / 256;
+	const int v = peekvali24(FTW2ANGLEI(angle_lout2));
 	angle_lout2 = FTWROUND(angle_lout2 + anglestep_lout2);
 	return v;
 }
@@ -634,8 +634,8 @@ static ncoftw_t angle_sidetone;
 
 static RAMFUNC FLOAT_t get_float_sidetone(void)
 {
-	const FLOAT_t v = arm_sin_q31(angle_sidetone / 2) / (FLOAT_t) 2147483648;
-	//const FLOAT_t v = peekvalf(FTW2ANGLEI(angle_sidetone));
+	//const FLOAT_t v = arm_sin_q31(angle_sidetone / 2) / (FLOAT_t) 2147483648;
+	const FLOAT_t v = peekvalf(FTW2ANGLEI(angle_sidetone));
 	angle_sidetone = FTWROUND(angle_sidetone + anglestep_sidetone);
 	return v;
 }
@@ -646,8 +646,8 @@ static ncoftw_t angle_subtone;
 
 static RAMFUNC FLOAT_t get_float_subtone(void)
 {
-	const FLOAT_t v = arm_sin_q31(angle_subtone / 2) / (FLOAT_t) 2147483648;
-	//const FLOAT_t v = peekvalf(FTW2ANGLEI(angle_subtone));
+	//const FLOAT_t v = arm_sin_q31(angle_subtone / 2) / (FLOAT_t) 2147483648;
+	const FLOAT_t v = peekvalf(FTW2ANGLEI(angle_subtone));
 	angle_subtone = FTWROUND(angle_subtone + anglestep_subtone);
 	return v;
 }
@@ -659,8 +659,8 @@ static ncoftw_t angle_toneout;
 static RAMFUNC FLOAT_t get_singletonefloat(void)
 {
 	// Формирование значения для LOUT
-	const FLOAT_t v = arm_sin_q31(angle_toneout / 2) / (FLOAT_t) 2147483648;
-	//const FLOAT_t v = peekvalf(FTW2ANGLEI(angle_toneout));
+	//const FLOAT_t v = arm_sin_q31(angle_toneout / 2) / (FLOAT_t) 2147483648;
+	const FLOAT_t v = peekvalf(FTW2ANGLEI(angle_toneout));
 	angle_toneout = FTWROUND(angle_toneout + anglestep_toneout);
 	return v;
 }
@@ -685,10 +685,10 @@ static ncoftw_t angle_af2;
 static RAMFUNC FLOAT_t get_dualtonefloat(void)
 {
 	// Формирование значения выборки
-	const FLOAT_t v1 = arm_sin_q31(angle_af1 / 2) / (FLOAT_t) 2147483648;
-	const FLOAT_t v2 = arm_sin_q31(angle_af2 / 2) / (FLOAT_t) 2147483648;
-	//const FLOAT_t v1 = peekvalf(FTW2ANGLEI(angle_af1));
-	//const FLOAT_t v2 = peekvalf(FTW2ANGLEI(angle_af2));
+	//const FLOAT_t v1 = arm_sin_q31(angle_af1 / 2) / (FLOAT_t) 2147483648;
+	//const FLOAT_t v2 = arm_sin_q31(angle_af2 / 2) / (FLOAT_t) 2147483648;
+	const FLOAT_t v1 = peekvalf(FTW2ANGLEI(angle_af1));
+	const FLOAT_t v2 = peekvalf(FTW2ANGLEI(angle_af2));
 	angle_af1 = FTWROUND(angle_af1 + anglestep_af1);
 	angle_af2 = FTWROUND(angle_af2 + anglestep_af2);
 	return (v1 + v2) / 2;
@@ -764,7 +764,7 @@ static RAMFUNC void nco_setlo_delay(uint_fast8_t pathi, uint_fast8_t tx)
 static RAMFUNC FLOAT32P_t get_float_aflo_delta(long int deltaftw, uint_fast8_t pathi)
 {
 	FLOAT32P_t v;
-#if 1
+#if 0
 	q31_t sinv;
 	q31_t cosv;
 	arm_sin_cos_q31(angle_aflo [pathi], & sinv, & cosv);
@@ -4143,14 +4143,16 @@ demodulator_SAM(
 
 	struct amd * const a = & amds [pathi];
 
-	//vco.QV = peekvalf(FTW2ANGLEI(a->phsi));	// COSF(a->phs);
-	//vco.IV = peekvalf(FTW2ANGLEQ(a->phsi));	// SINF(a->phs);
+#if 1
+	vco.QV = peekvalf(FTW2ANGLEI(a->phsi));	// COSF(a->phs);
+	vco.IV = peekvalf(FTW2ANGLEQ(a->phsi));	// SINF(a->phs);
+#else
 	q31_t sinv;
 	q31_t cosv;
 	arm_sin_cos_q31(a->phsi, & sinv, & cosv);
 	vco.QV = sinv / (FLOAT_t) 2147483648;
 	vco.IV = cosv / (FLOAT_t) 2147483648;
-
+#endif
 	ai = vp1.IV * vco.IV;
 	bi = vp1.IV * vco.QV;
 	aq = vp1.QV * vco.IV;
