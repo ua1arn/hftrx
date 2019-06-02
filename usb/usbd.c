@@ -1313,9 +1313,9 @@ static uint_fast8_t usbd_count = 0;
 
 #define USBD_FRDY_COUNT 50
 
-static uint_fast8_t usbd_wait_fifo(PCD_TypeDef * const Instance, uint_fast8_t pipe, unsigned waitcnt)
+static uint_fast8_t usbd_wait_fifo(PCD_TypeDef * const USBx, uint_fast8_t pipe, unsigned waitcnt)
 {
-	while ((Instance->CFIFOSEL & USB_CFIFOSEL_CURPIPE) != (pipe << USB_CFIFOSEL_CURPIPE_SHIFT) || (Instance->CFIFOCTR & USB_CFIFOCTR_FRDY) == 0)	// FRDY
+	while ((USBx->CFIFOSEL & USB_CFIFOSEL_CURPIPE) != (pipe << USB_CFIFOSEL_CURPIPE_SHIFT) || (USBx->CFIFOCTR & USB_CFIFOCTR_FRDY) == 0)	// FRDY
 	{
 		if (-- waitcnt == 0)
 		{
@@ -1323,7 +1323,7 @@ static uint_fast8_t usbd_wait_fifo(PCD_TypeDef * const Instance, uint_fast8_t pi
 			// From USB HOST
 			if (pipe == 0)
 			{
-				pid = (Instance->DCPCTR & USB_DCPCTR_PID) >> USB_DCPCTR_PID_SHIFT;
+				pid = (USBx->DCPCTR & USB_DCPCTR_PID) >> USB_DCPCTR_PID_SHIFT;
 			}
 			else
 			{
@@ -1331,7 +1331,7 @@ static uint_fast8_t usbd_wait_fifo(PCD_TypeDef * const Instance, uint_fast8_t pi
 			}
             /* Clear the pipe */
             USB_PIPECTR(pUSB, iPipeNumber)->BIT.PID = 0;
-			Instance->CFIFOCTR = USB_CFIFOCTR_BCLR;	// BCLR
+			Instance->CFIFOCTR = USB_CFIFOCTR_BCLR;	// BCLR (wrong: могди не переключиться на FIFO)
             USB_PIPECTR(pUSB, iPipeNumber)->BIT.ACLRM = 1;
             USB_PIPECTR(pUSB, iPipeNumber)->BIT.ACLRM = 0;
             USB_PIPECTR(pUSB, iPipeNumber)->BIT.ACLRM = 1;
@@ -1346,45 +1346,44 @@ static uint_fast8_t usbd_wait_fifo(PCD_TypeDef * const Instance, uint_fast8_t pi
 static uint_fast16_t /* volatile */ g_usb0_function_PipeIgnore [16];
 
 // Эта функция не должна общаться с DCPCTR - она универсальная
-static uint_fast8_t usbd_read_data(PCD_TypeDef * const Instance, uint_fast8_t pipe, uint8_t * data, unsigned size, unsigned * readcnt)
+static uint_fast8_t usbd_read_data(PCD_TypeDef * const USBx, uint_fast8_t pipe, uint8_t * data, unsigned size, unsigned * readcnt)
 {
-	ASSERT(Instance == WITHUSBHW_DEVICE);
-	g_usb0_function_PipeIgnore [pipe] = 0;
+	ASSERT(USBx == WITHUSBHW_DEVICE);
 
 	//PRINTF(PSTR("selected read from c_fifo%u 0, CFIFOCTR=%04X, CFIFOSEL=%04X\n"), pipe, Instance->CFIFOCTR, Instance->CFIFOSEL);
 
-	Instance->CFIFOSEL = 
+	USBx->CFIFOSEL =
 		//1 * (1uL << USB_CFIFOSEL_RCNT_SHIFT) |		// RCNT
 		(pipe << USB_CFIFOSEL_CURPIPE_SHIFT) |	// CURPIPE 0000: DCP
 		0 * USB_CFIFOSEL_MBW |	// MBW 00: 8-bit width
 		0;
 
-	if (usbd_wait_fifo(Instance, pipe, USBD_FRDY_COUNT))
+	if (usbd_wait_fifo(USBx, pipe, USBD_FRDY_COUNT))
 		return 1;	// Error
 
 	g_usb0_function_PipeIgnore [pipe] = 0;
 	unsigned count = 0;
-	unsigned size8 = (Instance->CFIFOCTR & USB_CFIFOCTR_DTLN) >> USB_CFIFOCTR_DTLN_SHIFT;
+	unsigned size8 = (USBx->CFIFOCTR & USB_CFIFOCTR_DTLN) >> USB_CFIFOCTR_DTLN_SHIFT;
 	size = ulmin16(size, size8);
 	//PRINTF(PSTR("selected read from c_fifo%u 3, CFIFOCTR=%04X, CFIFOSEL=%04X\n"), pipe, Instance->CFIFOCTR, Instance->CFIFOSEL);
 	count = size;
 	while (size --)
 	{
-		* data ++ = Instance->CFIFO.UINT8 [R_IO_HH]; // HH=3
+		* data ++ = USBx->CFIFO.UINT8 [R_IO_HH]; // HH=3
 	}
 	//PRINTF(PSTR("selected read from c_fifo%u 4, CFIFOCTR=%04X, CFIFOSEL=%04X\n"), pipe, Instance->CFIFOCTR, Instance->CFIFOSEL);
 
-	Instance->CFIFOCTR = USB_CFIFOCTR_BCLR;	// BCLR
+	USBx->CFIFOCTR = USB_CFIFOCTR_BCLR;	// BCLR
 	* readcnt = count;
 	//PRINTF(PSTR("selected read from c_fifo%u 5, CFIFOCTR=%04X, CFIFOSEL=%04X\n"), pipe, Instance->CFIFOCTR, Instance->CFIFOSEL);
 	return 0;	// OK
 }
 
 static uint_fast8_t
-usbd_write_data(PCD_TypeDef * const Instance, uint_fast8_t pipe, const uint8_t * data, unsigned size)
+usbd_write_data(PCD_TypeDef * const USBx, uint_fast8_t pipe, const uint8_t * data, unsigned size)
 {
-	ASSERT(Instance == WITHUSBHW_DEVICE);
-	g_usb0_function_PipeIgnore [pipe] = 0;
+	ASSERT(USBx == WITHUSBHW_DEVICE);
+
 #if 0
 	if (data != NULL && size != 0)
 		PRINTF(PSTR("usbd_write_data, pipe=%d, size=%d, data[]={%02x,%02x,%02x,%02x,%02x,..}\n"), pipe, size, data [0], data [1], data [2], data [3], data [4]);
@@ -1393,36 +1392,46 @@ usbd_write_data(PCD_TypeDef * const Instance, uint_fast8_t pipe, const uint8_t *
 #endif
 
 
-	Instance->CFIFOSEL = 
+	USBx->CFIFOSEL =
 		//1 * (1uL << USB_CFIFOSEL_RCNT_SHIFT) |		// RCNT
 		(pipe << USB_CFIFOSEL_CURPIPE_SHIFT) |	// CURPIPE 0000: DCP
 		0 * USB_CFIFOSEL_MBW |	// MBW 00: 8-bit width
 		1 * USB_CFIFOSEL_ISEL_ * (pipe == 0) |	// ISEL 1: Writing to the buffer memory is selected (for DCP)
 		0;
 
-	if (usbd_wait_fifo(Instance, pipe, USBD_FRDY_COUNT))
-		return 0;
+	if (usbd_wait_fifo(USBx, pipe, USBD_FRDY_COUNT))
+		return 1;
 
 	g_usb0_function_PipeIgnore [pipe] = 0;
     while (size --)
 	{
-        Instance->CFIFO.UINT8 [R_IO_HH] = * data ++; // HH=3
+    	USBx->CFIFO.UINT8 [R_IO_HH] = * data ++; // HH=3
 	}
-	Instance->CFIFOCTR = USB_CFIFOCTR_BVAL;	// BVAL
+    USBx->CFIFOCTR = USB_CFIFOCTR_BVAL;	// BVAL
 	return 0;	// OK
 }
 
 static uint_fast8_t control_read_data(USBD_HandleTypeDef *pdev, uint8_t * data, unsigned size, unsigned * readcnt)
 {
-	USB_OTG_GlobalTypeDef * const Instance = ((PCD_HandleTypeDef *) pdev->pData)->Instance;
-	return usbd_read_data(Instance, 0, data, size, readcnt);	// pipe=0: DCP
+	USB_OTG_GlobalTypeDef * const USBx = ((PCD_HandleTypeDef *) pdev->pData)->Instance;
+	return usbd_read_data(USBx, 0, data, size, readcnt);	// pipe=0: DCP
+}
+
+static void control_stall(USBD_HandleTypeDef *pdev)
+{
+	USB_OTG_GlobalTypeDef * const USBx = ((PCD_HandleTypeDef *) pdev->pData)->Instance;
+	USBx->DCPCTR = (USBx->DCPCTR & ~ (0x03)) |
+		//0 * (1uL << 0) |	// PID 00: NAK
+		//1 * (1uL << 0) |	// PID 01: BUF response (depending on the buffer state)
+		0x02 * (1uL << USB_DCPCTR_PID_SHIFT) |	// PID 02: STALL response
+		0;
 }
 
 static uint_fast8_t
 control_transmit0single(USBD_HandleTypeDef *pdev, const uint8_t * data, unsigned size)
 {
-	USB_OTG_GlobalTypeDef * const Instance = ((PCD_HandleTypeDef *) pdev->pData)->Instance;
-	return usbd_write_data(Instance, 0, data, size);	// pipe=0: DCP
+	USB_OTG_GlobalTypeDef * const USBx = ((PCD_HandleTypeDef *) pdev->pData)->Instance;
+	return usbd_write_data(USBx, 0, data, size);	// pipe=0: DCP
 }
 
 static const uint8_t * ep0data = NULL;
@@ -1515,11 +1524,11 @@ static void nak_ep0(USBD_HandleTypeDef *pdev)
 {
 	//PRINTF(PSTR("nak_ep0\n"));
 
-	USB_OTG_GlobalTypeDef * const Instance = ((PCD_HandleTypeDef *) pdev->pData)->Instance;
+	USB_OTG_GlobalTypeDef * const USBx = ((PCD_HandleTypeDef *) pdev->pData)->Instance;
 
-	if (((Instance->DCPCTR & USB_DCPCTR_PID) >> USB_DCPCTR_PID_SHIFT) == 0x03)
+	if (((USBx->DCPCTR & USB_DCPCTR_PID) >> USB_DCPCTR_PID_SHIFT) == 0x03)
 	{
-		Instance->DCPCTR = (Instance->DCPCTR & ~ USB_DCPCTR_PID) |
+		USBx->DCPCTR = (USBx->DCPCTR & ~ USB_DCPCTR_PID) |
 			//1 * (1uL << USB_DCPCTR_CCPL_SHIFT) |	// CCPL - Не имеет значения в моих тестах
 			0x00 * MASK2LSB(USB_DCPCTR_PID) |	// PID 00: NAK response
 			0;
@@ -1527,17 +1536,17 @@ static void nak_ep0(USBD_HandleTypeDef *pdev)
 
 	const uint_fast8_t pipe = 0;	// DCP
 
-	Instance->CFIFOSEL = 
+	USBx->CFIFOSEL =
 		//1 * (1uL << USB_CFIFOSEL_RCNT_SHIFT) |		// RCNT
 		(pipe << USB_CFIFOSEL_CURPIPE_SHIFT) |	// CURPIPE 0000: DCP
 		1 * (1uL << USB_CFIFOSEL_ISEL_SHIFT_) * (pipe == 0) |	// ISEL 1: Writing to the buffer memory is selected (for DCP)
 		0;
-	if (usbd_wait_fifo(Instance, pipe, USBD_FRDY_COUNT))
+	if (usbd_wait_fifo(USBx, pipe, USBD_FRDY_COUNT))
 		return;
 	
-	Instance->CFIFOCTR = (1uL << USB_CFIFOCTR_BCLR_SHIFT);	// BCLR
+	USBx->CFIFOCTR = (1uL << USB_CFIFOCTR_BCLR_SHIFT);	// BCLR
 
-	Instance->DCPCTR = (Instance->DCPCTR & ~ (0x03)) |
+	USBx->DCPCTR = (USBx->DCPCTR & ~ (0x03)) |
 		0 * (1uL << 0) |	// PID 00: NAK
 		//1 * (1uL << 0) |	// PID 01: BUF response (depending on the buffer state)
 		//2 * (1uL << 0) |	// PID 02: STALL response
@@ -1549,20 +1558,20 @@ static void stall_ep0(USBD_HandleTypeDef *pdev)
 {
 	//PRINTF(PSTR("stall_ep0\n"));
 
-	USB_OTG_GlobalTypeDef * const Instance = ((PCD_HandleTypeDef *) pdev->pData)->Instance;
+	USB_OTG_GlobalTypeDef * const USBx = ((PCD_HandleTypeDef *) pdev->pData)->Instance;
 	const uint_fast8_t pipe = 0;	// DCP
 
-	Instance->CFIFOSEL = 
+	USBx->CFIFOSEL =
 		//1 * (1uL << USB_CFIFOSEL_RCNT_SHIFT) |		// RCNT
 		(pipe << USB_CFIFOSEL_CURPIPE_SHIFT) |	// CURPIPE 0000: DCP
 		1 * (1uL << USB_CFIFOSEL_ISEL_SHIFT_) * (pipe == 0) |	// ISEL 1: Writing to the buffer memory is selected (for DCP)
 		0;
-	if (usbd_wait_fifo(Instance, pipe, USBD_FRDY_COUNT))
+	if (usbd_wait_fifo(USBx, pipe, USBD_FRDY_COUNT))
 		return;
 	
-	Instance->CFIFOCTR = USB_CFIFOCTR_BCLR;	// BCLR
+	USBx->CFIFOCTR = USB_CFIFOCTR_BCLR;	// BCLR
 
-	Instance->DCPCTR = (Instance->DCPCTR & ~ (0x03)) |
+	USBx->DCPCTR = (USBx->DCPCTR & ~ (0x03)) |
 		//0 * (1uL << 0) |	// PID 00: NAK
 		//1 * (1uL << 0) |	// PID 01: BUF response (depending on the buffer state)
 		0x02 * (1uL << USB_DCPCTR_PID_SHIFT) |	// PID 02: STALL response
@@ -1587,7 +1596,7 @@ static void USBD_CtlErrorNec( USBD_HandleTypeDef *pdev,
 static void
 usbd_handler_brdy_bulk_in8(USBD_HandleTypeDef *pdev, uint_fast8_t pipe, uint_fast8_t epnum)
 {
-	USB_OTG_GlobalTypeDef * const Instance = ((PCD_HandleTypeDef *) pdev->pData)->Instance;
+	USB_OTG_GlobalTypeDef * const USBx = ((PCD_HandleTypeDef *) pdev->pData)->Instance;
 	//PRINTF(PSTR("usbd_handler_brdy_bulk_in8: pipe=%u\n"), pipe);
 
 	switch (epnum & 0x7F)
@@ -1598,7 +1607,7 @@ usbd_handler_brdy_bulk_in8(USBD_HandleTypeDef *pdev, uint_fast8_t pipe, uint_fas
 		{
 			HARDWARE_CDC_ONTXCHAR(pdev);	// при отсутствии данных usbd_cdc_txenabled устанавливается в 0
 		}
-		if (usbd_write_data(Instance, pipe, cdc1buffin, cdc1buffinlevel) == 0)	// pipe=0: DCP
+		if (usbd_write_data(USBx, pipe, cdc1buffin, cdc1buffinlevel) == 0)	// pipe=0: DCP
 		{
 			cdc1buffinlevel = 0;
 		}
@@ -1610,7 +1619,7 @@ usbd_handler_brdy_bulk_in8(USBD_HandleTypeDef *pdev, uint_fast8_t pipe, uint_fas
 			//while (usbd_cdc_txenabled != 0 && n --)	// при отсутствии данных usbd_cdc_txenabled устанавливается в 0
 			//	HARDWARE_CDC_ONTXCHAR((void *) Instance);		// отсюда вызовется usbd_cdc_tx() с требуемым для передачи символом.
 		}
-		if (usbd_write_data(Instance, pipe, cdc2buffin, cdc2buffinlevel) == 0)	// pipe=0: DCP
+		if (usbd_write_data(USBx, pipe, cdc2buffin, cdc2buffinlevel) == 0)	// pipe=0: DCP
 		{
 			cdc2buffinlevel = 0;
 		}
@@ -1631,7 +1640,7 @@ usbd_handler_brdy_bulk_in8(USBD_HandleTypeDef *pdev, uint_fast8_t pipe, uint_fas
 static void
 usbd_handler_brdy_bulk_out8(USBD_HandleTypeDef *pdev, uint_fast8_t pipe, uint_fast8_t epnum)
 {
-	USB_OTG_GlobalTypeDef * const Instance = ((PCD_HandleTypeDef *) pdev->pData)->Instance;
+	USB_OTG_GlobalTypeDef * const USBx = ((PCD_HandleTypeDef *) pdev->pData)->Instance;
 
 	switch (epnum & 0x7F)
 	{
@@ -1639,7 +1648,7 @@ usbd_handler_brdy_bulk_out8(USBD_HandleTypeDef *pdev, uint_fast8_t pipe, uint_fa
 	case USBD_EP_CDC_OUT & 0x7F:
 		{
 			unsigned count;
-			if (usbd_read_data(Instance, pipe, cdc1buffout, VIRTUAL_COM_PORT_OUT_DATA_SIZE, & count) == 0)
+			if (usbd_read_data(USBx, pipe, cdc1buffout, VIRTUAL_COM_PORT_OUT_DATA_SIZE, & count) == 0)
 			{
 				cdc1out_buffer_save(cdc1buffout, count);	/* использование буфера принятых данных */
 			}
@@ -1649,7 +1658,7 @@ usbd_handler_brdy_bulk_out8(USBD_HandleTypeDef *pdev, uint_fast8_t pipe, uint_fa
 	case USBD_EP_CDC_OUTb & 0x7F:
 		{
 			unsigned count;
-			if (usbd_read_data(Instance, pipe, cdc2buffout, VIRTUAL_COM_PORT_OUT_DATA_SIZE, & count) == 0)
+			if (usbd_read_data(USBx, pipe, cdc2buffout, VIRTUAL_COM_PORT_OUT_DATA_SIZE, & count) == 0)
 			{
 				cdc2out_buffer_save(cdc2buffout, count);	/* использование буфера принятых данных */
 			}
@@ -1662,7 +1671,7 @@ usbd_handler_brdy_bulk_out8(USBD_HandleTypeDef *pdev, uint_fast8_t pipe, uint_fa
 		break;
 	}
 
-	Instance->CFIFOCTR = USB_CFIFOCTR_BCLR;	// BCLR - употребили данные
+	//USBx->CFIFOCTR = USB_CFIFOCTR_BCLR;	// BCLR - употребили данные (wrong: могли не переклбчитсья на нужное FIFO)
 }
 
 #define DEVDRV_USBF_PIPE_IDLE                       (0x00)
@@ -1758,12 +1767,16 @@ static uint8_t * dcp_out_ptr;	// Clear in usbdFunctionReq_seq3
 static void
 usbd_handler_brdy8_dcp_out(USBD_HandleTypeDef *pdev, uint_fast8_t pipe)
 {
-	USB_OTG_GlobalTypeDef * const Instance = ((PCD_HandleTypeDef *) pdev->pData)->Instance;
+	USB_OTG_GlobalTypeDef * const USBx = ((PCD_HandleTypeDef *) pdev->pData)->Instance;
 	unsigned count;
-	if (usbd_read_data(Instance, pipe, dcp_out_ptr + dcp_out_offset, dcp_out_fullsize - dcp_out_offset, & count) == 0)
+	if (usbd_read_data(USBx, pipe, dcp_out_ptr + dcp_out_offset, dcp_out_fullsize - dcp_out_offset, & count) == 0)
 	{
 		//PRINTF(PSTR("usbd_handler_brdy8_dcp_out: dcp_out_fullsize=%u, dcp_out_offset=%u, count=%u\n"), dcp_out_fullsize, dcp_out_offset, count);
 		dcp_out_offset += count;
+	}
+	else
+	{
+		control_stall(pdev);
 	}
 }
 
@@ -2160,7 +2173,10 @@ static void usb0_function_SetDescriptor(USBD_HandleTypeDef *pdev, USBD_SetupReqT
 	//PRINTF(PSTR("usb0_function_SetDescriptor: ReqTypeRecip=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
 	unsigned count;
 	static USBALIGN_BEGIN uint8_t buff [255] USBALIGN_END;
-	control_read_data(pdev, buff, ulmin16(ARRAY_SIZE(buff), req->wLength), & count);
+	if (control_read_data(pdev, buff, ulmin16(ARRAY_SIZE(buff), req->wLength), & count) != 0)
+	{
+		control_stall(pdev);
+	}
 	//
 	// The wIndex field specifies the Language ID for string descriptors or is 
 	// reset to zero for other descriptors. 
