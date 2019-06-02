@@ -1566,10 +1566,11 @@ static void stall_ep0(USBD_HandleTypeDef *pdev)
 		(pipe << USB_CFIFOSEL_CURPIPE_SHIFT) |	// CURPIPE 0000: DCP
 		1 * (1uL << USB_CFIFOSEL_ISEL_SHIFT_) * (pipe == 0) |	// ISEL 1: Writing to the buffer memory is selected (for DCP)
 		0;
-	if (usbd_wait_fifo(USBx, pipe, USBD_FRDY_COUNT))
-		return;
 	
-	USBx->CFIFOCTR = USB_CFIFOCTR_BCLR;	// BCLR
+	if (usbd_wait_fifo(USBx, pipe, USBD_FRDY_COUNT) == 0)
+	{
+		USBx->CFIFOCTR = USB_CFIFOCTR_BCLR;	// BCLR
+	}
 
 	USBx->DCPCTR = (USBx->DCPCTR & ~ (0x03)) |
 		//0 * (1uL << 0) |	// PID 00: NAK
