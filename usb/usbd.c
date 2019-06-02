@@ -1346,10 +1346,9 @@ static uint_fast8_t usbd_wait_fifo(PCD_TypeDef * const Instance, uint_fast8_t pi
 static uint_fast16_t /* volatile */ g_usb0_function_PipeIgnore [16];
 
 // Эта функция не должна общаться с DCPCTR - она универсальная
-static unsigned usbd_read_data(PCD_TypeDef * const Instance, uint_fast8_t pipe, uint8_t * data, unsigned size)
+static uint_fast8_t usbd_read_data(PCD_TypeDef * const Instance, uint_fast8_t pipe, uint8_t * data, unsigned size, unsigned * readcnt)
 {
 	ASSERT(Instance == WITHUSBHW_DEVICE);
-
 	g_usb0_function_PipeIgnore [pipe] = 0;
 
 	//PRINTF(PSTR("selected read from c_fifo%u 0, CFIFOCTR=%04X, CFIFOSEL=%04X\n"), pipe, Instance->CFIFOCTR, Instance->CFIFOSEL);
@@ -1361,8 +1360,9 @@ static unsigned usbd_read_data(PCD_TypeDef * const Instance, uint_fast8_t pipe, 
 		0;
 
 	if (usbd_wait_fifo(Instance, pipe, USBD_FRDY_COUNT))
-		return 0;
+		return 1;	// Error
 
+	g_usb0_function_PipeIgnore [pipe] = 0;
 	unsigned count = 0;
 	unsigned size8 = (Instance->CFIFOCTR & USB_CFIFOCTR_DTLN) >> USB_CFIFOCTR_DTLN_SHIFT;
 	size = ulmin16(size, size8);
@@ -1375,15 +1375,16 @@ static unsigned usbd_read_data(PCD_TypeDef * const Instance, uint_fast8_t pipe, 
 	//PRINTF(PSTR("selected read from c_fifo%u 4, CFIFOCTR=%04X, CFIFOSEL=%04X\n"), pipe, Instance->CFIFOCTR, Instance->CFIFOSEL);
 
 	Instance->CFIFOCTR = USB_CFIFOCTR_BCLR;	// BCLR
-
+	* readcnt = count;
 	//PRINTF(PSTR("selected read from c_fifo%u 5, CFIFOCTR=%04X, CFIFOSEL=%04X\n"), pipe, Instance->CFIFOCTR, Instance->CFIFOSEL);
-	return count;
+	return 0;	// OK
 }
 
-static void 
+static uint_fast8_t
 usbd_write_data(PCD_TypeDef * const Instance, uint_fast8_t pipe, const uint8_t * data, unsigned size)
 {
 	ASSERT(Instance == WITHUSBHW_DEVICE);
+	g_usb0_function_PipeIgnore [pipe] = 0;
 #if 0
 	if (data != NULL && size != 0)
 		PRINTF(PSTR("usbd_write_data, pipe=%d, size=%d, data[]={%02x,%02x,%02x,%02x,%02x,..}\n"), pipe, size, data [0], data [1], data [2], data [3], data [4]);
@@ -1391,7 +1392,6 @@ usbd_write_data(PCD_TypeDef * const Instance, uint_fast8_t pipe, const uint8_t *
 		PRINTF(PSTR("usbd_write_data, pipe=%d, size=%d, data[]={}\n"), pipe, size);
 #endif
 
-	g_usb0_function_PipeIgnore [pipe] = 0;
 
 	Instance->CFIFOSEL = 
 		//1 * (1uL << USB_CFIFOSEL_RCNT_SHIFT) |		// RCNT
@@ -1401,28 +1401,28 @@ usbd_write_data(PCD_TypeDef * const Instance, uint_fast8_t pipe, const uint8_t *
 		0;
 
 	if (usbd_wait_fifo(Instance, pipe, USBD_FRDY_COUNT))
-		return;
+		return 0;
 
+	g_usb0_function_PipeIgnore [pipe] = 0;
     while (size --)
 	{
         Instance->CFIFO.UINT8 [R_IO_HH] = * data ++; // HH=3
 	}
 	Instance->CFIFOCTR = USB_CFIFOCTR_BVAL;	// BVAL
+	return 0;	// OK
 }
 
-static unsigned control_read_data(USBD_HandleTypeDef *pdev, uint8_t * data, unsigned size)
+static uint_fast8_t control_read_data(USBD_HandleTypeDef *pdev, uint8_t * data, unsigned size, unsigned * readcnt)
 {
 	USB_OTG_GlobalTypeDef * const Instance = ((PCD_HandleTypeDef *) pdev->pData)->Instance;
-	return usbd_read_data(Instance, 0, data, size);	// pipe=0: DCP
+	return usbd_read_data(Instance, 0, data, size, readcnt);	// pipe=0: DCP
 }
 
-static void 
+static uint_fast8_t
 control_transmit0single(USBD_HandleTypeDef *pdev, const uint8_t * data, unsigned size)
 {
-
 	USB_OTG_GlobalTypeDef * const Instance = ((PCD_HandleTypeDef *) pdev->pData)->Instance;
-	usbd_write_data(Instance, 0, data, size);	// pipe=0: DCP
-
+	return usbd_write_data(Instance, 0, data, size);	// pipe=0: DCP
 }
 
 static const uint8_t * ep0data = NULL;
@@ -1436,7 +1436,8 @@ static void control_transmit2(USBD_HandleTypeDef *pdev)
 	if (ep0size != 0)
 	{
 		uint_fast16_t chunk = ulmin16(ep0size, USB_OTG_MAX_EP0_SIZE);
-		control_transmit0single(pdev, ep0data, chunk);
+		if (control_transmit0single(pdev, ep0data, chunk))
+			return;
 		ep0data += chunk;
 		ep0size -= chunk;
 		if (ep0size == 0 && chunk < USB_OTG_MAX_EP0_SIZE)
@@ -1445,7 +1446,8 @@ static void control_transmit2(USBD_HandleTypeDef *pdev)
 	else if (ep0data != NULL)
 	{
 		// если последний пакет был кратет USB_OTG_MAX_EP0_SIZE, то передаем пакет нулевого размера
-		control_transmit0single(pdev, ep0data, 0);
+		if (control_transmit0single(pdev, ep0data, 0))
+			return;
 		ep0data = NULL;
 	}
 
@@ -1466,14 +1468,16 @@ static USBD_StatusTypeDef USBD_CtlSendDataNec(USBD_HandleTypeDef *pdev, const ui
 
 	if (size <= USB_OTG_MAX_EP0_SIZE)
 	{
-		control_transmit0single(pdev, data, size);
+		if (control_transmit0single(pdev, data, size))
+			return USBD_FAIL;
 		ep0data = NULL;
 		ep0size = 0;
 	}
 	else
 	{
 		uint_fast16_t chunk = ulmin16(size, USB_OTG_MAX_EP0_SIZE);
-		control_transmit0single(pdev, data, chunk);
+		if (control_transmit0single(pdev, data, chunk))
+			return USBD_FAIL;
 		ep0data = data + chunk;
 		ep0size = size - chunk;
 	}
@@ -1482,7 +1486,7 @@ static USBD_StatusTypeDef USBD_CtlSendDataNec(USBD_HandleTypeDef *pdev, const ui
 		0x01 * MASK2LSB(USB_DCPCTR_PID) |	// PID 01: BUF response (depending on the buffer state)
 		0;
 
-	return 0;
+	return USBD_OK;
 }
 
 // ACK
@@ -1594,8 +1598,10 @@ usbd_handler_brdy_bulk_in8(USBD_HandleTypeDef *pdev, uint_fast8_t pipe, uint_fas
 		{
 			HARDWARE_CDC_ONTXCHAR(pdev);	// при отсутствии данных usbd_cdc_txenabled устанавливается в 0
 		}
-		usbd_write_data(Instance, pipe, cdc1buffin, cdc1buffinlevel);	// pipe=0: DCP
-		cdc1buffinlevel = 0;
+		if (usbd_write_data(Instance, pipe, cdc1buffin, cdc1buffinlevel) == 0)	// pipe=0: DCP
+		{
+			cdc1buffinlevel = 0;
+		}
 		break;
 
 	case USBD_EP_CDC_INb & 0x7F:
@@ -1604,8 +1610,10 @@ usbd_handler_brdy_bulk_in8(USBD_HandleTypeDef *pdev, uint_fast8_t pipe, uint_fas
 			//while (usbd_cdc_txenabled != 0 && n --)	// при отсутствии данных usbd_cdc_txenabled устанавливается в 0
 			//	HARDWARE_CDC_ONTXCHAR((void *) Instance);		// отсюда вызовется usbd_cdc_tx() с требуемым для передачи символом.
 		}
-		usbd_write_data(Instance, pipe, cdc2buffin, cdc2buffinlevel);	// pipe=0: DCP
-		cdc2buffinlevel = 0;
+		if (usbd_write_data(Instance, pipe, cdc2buffin, cdc2buffinlevel) == 0)	// pipe=0: DCP
+		{
+			cdc2buffinlevel = 0;
+		}
 		break;
 #endif /* WITHUSBCDC */
 
@@ -1630,15 +1638,21 @@ usbd_handler_brdy_bulk_out8(USBD_HandleTypeDef *pdev, uint_fast8_t pipe, uint_fa
 #if WITHUSBCDC
 	case USBD_EP_CDC_OUT & 0x7F:
 		{
-			unsigned count = usbd_read_data(Instance, pipe, cdc1buffout, VIRTUAL_COM_PORT_OUT_DATA_SIZE);
-			cdc1out_buffer_save(cdc1buffout, count);	/* использование буфера принятых данных */
+			unsigned count;
+			if (usbd_read_data(Instance, pipe, cdc1buffout, VIRTUAL_COM_PORT_OUT_DATA_SIZE, & count) == 0)
+			{
+				cdc1out_buffer_save(cdc1buffout, count);	/* использование буфера принятых данных */
+			}
 		}
 		break;
 
 	case USBD_EP_CDC_OUTb & 0x7F:
 		{
-			unsigned count = usbd_read_data(Instance, pipe, cdc2buffout, VIRTUAL_COM_PORT_OUT_DATA_SIZE);
-			cdc2out_buffer_save(cdc2buffout, count);	/* использование буфера принятых данных */
+			unsigned count;
+			if (usbd_read_data(Instance, pipe, cdc2buffout, VIRTUAL_COM_PORT_OUT_DATA_SIZE, & count) == 0)
+			{
+				cdc2out_buffer_save(cdc2buffout, count);	/* использование буфера принятых данных */
+			}
 		}
 		break;
 #endif /* WITHUSBCDC */
@@ -1745,9 +1759,12 @@ static void
 usbd_handler_brdy8_dcp_out(USBD_HandleTypeDef *pdev, uint_fast8_t pipe)
 {
 	USB_OTG_GlobalTypeDef * const Instance = ((PCD_HandleTypeDef *) pdev->pData)->Instance;
-	const unsigned count = usbd_read_data(Instance, pipe, dcp_out_ptr + dcp_out_offset, dcp_out_fullsize - dcp_out_offset);
-	//PRINTF(PSTR("usbd_handler_brdy8_dcp_out: dcp_out_fullsize=%u, dcp_out_offset=%u, count=%u\n"), dcp_out_fullsize, dcp_out_offset, count);
-	dcp_out_offset += count;
+	unsigned count;
+	if (usbd_read_data(Instance, pipe, dcp_out_ptr + dcp_out_offset, dcp_out_fullsize - dcp_out_offset, & count) == 0)
+	{
+		//PRINTF(PSTR("usbd_handler_brdy8_dcp_out: dcp_out_fullsize=%u, dcp_out_offset=%u, count=%u\n"), dcp_out_fullsize, dcp_out_offset, count);
+		dcp_out_offset += count;
+	}
 }
 
 // end of machine-dependent stuff
@@ -2141,9 +2158,9 @@ static void usb0_function_SynchFrame(USBD_HandleTypeDef *pdev, USBD_SetupReqType
 static void usb0_function_SetDescriptor(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef *req)
 {
 	//PRINTF(PSTR("usb0_function_SetDescriptor: ReqTypeRecip=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
-
+	unsigned count;
 	static USBALIGN_BEGIN uint8_t buff [255] USBALIGN_END;
-	control_read_data(pdev, buff, ulmin16(ARRAY_SIZE(buff), req->wLength));
+	control_read_data(pdev, buff, ulmin16(ARRAY_SIZE(buff), req->wLength), & count);
 	//
 	// The wIndex field specifies the Language ID for string descriptors or is 
 	// reset to zero for other descriptors. 
@@ -18947,6 +18964,7 @@ uint16_t MEM_If_DeInit_HS(void)
 {
 	PRINTF(PSTR("MEM_If_DeInit_HS\n"));
 	spidf_uninitialize();
+	PRINTF(PSTR("MEM_If_DeInit_HS 1\n"));
 	return (USBD_OK);
 }
 
