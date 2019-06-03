@@ -111,6 +111,7 @@
 //#define CTLSTYLE_V1D	1	// Плата STM32F429I-DISCO с процессором STM32F429ZIT6
 //#define CTLSTYLE_V2D	1	// Плата STM32F4DISCOVERY с процессором STM32F407VGT6
 //#define CTLSTYLE_V3D	1	// Плата STM32F746G-DISCO с процессором STM32F746NGH6
+//#define CTLSTYLE_NUCLEO_V1	1	// Плята NUCLEO-F767ZI  процессором STM32F767ZIT6  mb1137.pdf
 //#define CTLSTYLE_V9	1	// Плата satmod
 //#define CTLSTYLE_V1E	1	// Плата с процессором STM32F030F4P (TSSOP-20)
 //#define CTLSTYLE_V1F	1	// Плата с процессором STM32F051C6T (TQFP-48)
@@ -124,7 +125,7 @@
 //#define CTLSTYLE_V7A 	1	// ARM: Модификация V7 с установленным USB мостом FT232RL. Atmel ARM CPU
 //#define CTLSTYLE_V7 1		// ARM или ATMega: большая плата с шестью ГУН, двумя аттенюаторами, УВЧ, совмещённая с синтезатором (6 ГУН). Без FM
 //#define CTLSTYLE_V5 1		// ATMega: (UA1ZH) Маленькая плата на ATMEGA, с двумя AD9834 и четырьмя ГУН (atmega_ctlstyle_v5.h)
-#endif
+#endif /* NIGHTBUILD */
 
 #if CPUSTYLE_STM32F && CTLSTYLE_RAVENDSP_V1	// Трансивер Вороненок с IF DSP трактом
 	#include "boards/arm_stm32f4xx_tqfp100_ctlstyle_raven_v1.h"	// ravendsp_v1
@@ -140,9 +141,9 @@
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32f4xx_tqfp144_cpustyle_raven_v4.h"	// Rmainunit_v2bm.pcb
 #elif CPUSTYLE_STM32F && CTLSTYLE_RAVENDSP_V5	// SD-CARD. DUAL WATCH, STM32F446ZET6, TLV320AIC23B и FPGA EP4CE22E22I7N
-	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_raven_v5.h"	// Rmainunit_v3bm.pcb
+	#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_raven_v5.h"	// Rmainunit_v3bm.pcb
 	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_raven_v5_RU7L.h"	// RU7L Rmainunit_v3bm.pcb
-	#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_raven_v5_vlad_vwws.h"	// Rmainunit_v3bm.pcb
+	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_raven_v5_vlad_vwws.h"	// Rmainunit_v3bm.pcb
 	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_raven_v5_YANTONOV.h"	// Rmainunit_v3bm.pcb
 	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_raven_v5_polyar.h"	// Rmainunit_v3bm.pcb
 	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_raven_v5_August.h"	// Rmainunit_v3bm.pcb
@@ -166,8 +167,8 @@
 	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v1.h"	// Rmainunit_v5cm.pcb, Rmainunit_v5dm.pcb (USB)
 	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v1_penkevich.h"	// penkevich, Rmainunit_v5cm.pcb, Rmainunit_v5dm.pcb (USB)
 	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v1_RA9OH.h"	// Rmainunit_v5dm.pcb (USB)
-	#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v1_R4DR.h"	// Rmainunit_v5dm.pcb (thermo stab) (USB)
-	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v1_RD1AD.h"	// Rmainunit_v5cm.pcb (USB)
+	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v1_R4DR.h"	// Rmainunit_v5dm.pcb (thermo stab) (USB)
+	#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v1_RD1AD.h"	// Rmainunit_v5cm.pcb (USB)
 	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v1_OUSSOV.h"	// Rmainunit_v5cm.pcb (USB)
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32f4xx_tqfp144_cpustyle_storch_v1.h"	// Rmainunit_v5cm.pcb, Rmainunit_v5dm.pcb
@@ -206,9 +207,9 @@
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32f4xx_tqfp176_cpustyle_storch_v7.h"	// Rmainunit_v5l.pcb (mimi USBx2, wide display interface) - mini RX
 #elif CPUSTYLE_R7S721 && CTLSTYLE_STORCH_V8	// rmainunit_v5km2.pcb R7S721020VCFP, TFT 4.3" or 7", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N, AD9246BCPZ-125
-	//#include "boards/arm_r7s72_tqfp176_ctlstyle_storch_v8.h"	// rmainunit_v5km2.pcb R7S721020VCFP, TFT 4.3", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
+	#include "boards/arm_r7s72_tqfp176_ctlstyle_storch_v8.h"	// rmainunit_v5km2.pcb R7S721020VCFP, TFT 4.3", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
 	//#include "boards/arm_r7s72_tqfp176_ctlstyle_storch_v8_r4dz.h"	// rmainunit_v5km2.pcb R7S721020VCFP, TFT 4.3", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
-	#include "boards/arm_r7s72_tqfp176_ctlstyle_storch_v8_ua3reo.h"	// rmainunit_v5km2.pcb R7S721020VCFP, TFT 7", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
+	//#include "boards/arm_r7s72_tqfp176_ctlstyle_storch_v8_ua3reo.h"	// rmainunit_v5km2.pcb R7S721020VCFP, TFT 7", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_r7s72_tqfp176_cpustyle_storch_v8.h"	// Rmainunit_v5l.pcb (mimi USBx2, wide display interface) - mini RX
 #elif CPUSTYLE_STM32F && CTLSTYLE_OLEG4Z_V1	// SD-CARD. 2xUSB, DUAL WATCH, STM32F446ZET6, TLV320AIC23B и FPGA EP4CE22E22I7N
@@ -340,6 +341,10 @@
 	#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_32F746G.h"	/* Плата STM32F746G-DISCO с процессором STM32F746NGH6	*/
 	#include "paramdepend.h"				/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32f4xx_tqfp144_cpustyle_32F746G.h"	/* Плата STM32F746G-DISCO с процессором STM32F746NGH6	*/
+#elif CPUSTYLE_STM32F && CTLSTYLE_NUCLEO_V1	// SD-CARD. DUAL WATCH, STM32F446ZET6, TLV320AIC23B и FPGA EP4CE22E22I7N
+	#include "boards/arm_stm32f767_tqfp144_ctlstyle_nucleo.h"
+	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
+	#include "boards/arm_stm32f767_tqfp144_cpustyle_nucleo.h"
 #elif CPUSTYLE_ATXMEGAXXXA4 && CTLSTYLE_V1X
 	#include "boards/atxmega32a4_ctlstyle_v1.h"
 	#include "paramdepend.h"				/* проверка зависимостей параметров конфигурации */
@@ -386,7 +391,7 @@
 	#include "paramdepend.h"				/* проверка зависимостей параметров конфигурации */
 	#include "boards/atmega_cpu_ua3dkc.h"	// новая плата Explorer, плата в единственном числе - эксперементальная плата Explorer
 #elif CPUSTYLE_ATMEGA32 && CTLSTYLE_UA3RNB
-	#include "boards/atmega_ctl_ua3rnb.h"	// // Плата UA3RNB ATMega32: Si570+AD9834, WH1602 FM25L04B ref 50 MHz
+	#include "boards/atmega_ctl_ua3rnb.h"	// Плата UA3RNB ATMega32: Si570+AD9834, WH1602 FM25L04B ref 50 MHz
 	#include "paramdepend.h"				/* проверка зависимостей параметров конфигурации */
 	#include "boards/atmega_cpu_ua3dkc.h"	// новая плата Explorer, плата в единственном числе - эксперементальная плата Explorer
 #elif CPUSTYLE_ATMEGA32 && CTLSTYLE_EW2DZ

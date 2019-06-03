@@ -2830,6 +2830,7 @@ static void audio_setup_mike(const uint_fast8_t spf)
 		CTLSTYLE_STORCH_V6 || \
 		CTLSTYLE_STORCH_V7 || \
 		CTLSTYLE_OLEG4Z_V1 || \
+		CTLSTYLE_NUCLEO_V1 || \
 		0
 
 		dacXagchighvotage = 3300,	// 0.1..1.25 volt - AD9744 REFERENCE INPUT range (after 18k/10k chain).

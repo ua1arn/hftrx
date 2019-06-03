@@ -349,8 +349,13 @@ typedef struct
 #define NtapValidate(n)	((unsigned) (n) / 8 * 8 + 1)
 #define NtapCoeffs(n)	((unsigned) (n) / 2 + 1)
 
-#define	Ntap_rx_AUDIO	NtapValidate(SPEEXNN * 2 - 7)
-#define Ntap_tx_MIKE	Ntap_rx_AUDIO
+#if ! WITHDSPLOCALFIR
+	#define	Ntap_rx_AUDIO	NtapValidate(SPEEXNN * 2 - 7)
+	#define Ntap_tx_MIKE	Ntap_rx_AUDIO
+#else /* ! WITHDSPLOCALFIR */
+	#define	Ntap_rx_AUDIO	NtapValidate(241)
+	//#define Ntap_tx_MIKE	Ntap_rx_AUDIO
+#endif /* ! WITHDSPLOCALFIR */
 
 #if WITHDSPEXTFIR || WITHDSPEXTDDC
 
