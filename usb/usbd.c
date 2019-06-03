@@ -1311,6 +1311,17 @@ static uint_fast8_t usbd_count = 0;
 
 #if CPUSTYLE_R7S721
 
+#define DEVDRV_USBF_PIPE_IDLE                       (0x00)
+#define DEVDRV_USBF_PIPE_WAIT                       (0x01)
+#define DEVDRV_USBF_PIPE_DONE                       (0x02)
+#define DEVDRV_USBF_PIPE_NORES                      (0x03)
+#define DEVDRV_USBF_PIPE_STALL                      (0x04)
+
+#define DEVDRV_USBF_PID_NAK                         (0x0000u)
+#define DEVDRV_USBF_PID_BUF                         (0x0001u)
+#define DEVDRV_USBF_PID_STALL                       (0x0002u)
+#define DEVDRV_USBF_PID_STALL2                      (0x0003u)
+
 #define USBD_FRDY_COUNT 50
 
 static uint_fast8_t usbd_wait_fifo(PCD_TypeDef * const USBx, uint_fast8_t pipe, unsigned waitcnt)
@@ -1419,11 +1430,12 @@ static uint_fast8_t control_read_data(USBD_HandleTypeDef *pdev, uint8_t * data, 
 
 static void control_stall(USBD_HandleTypeDef *pdev)
 {
+	TP();
 	USB_OTG_GlobalTypeDef * const USBx = ((PCD_HandleTypeDef *) pdev->pData)->Instance;
-	USBx->DCPCTR = (USBx->DCPCTR & ~ (0x03)) |
-		//0 * (1uL << 0) |	// PID 00: NAK
-		//1 * (1uL << 0) |	// PID 01: BUF response (depending on the buffer state)
-		0x02 * (1uL << USB_DCPCTR_PID_SHIFT) |	// PID 02: STALL response
+	USBx->DCPCTR = (USBx->DCPCTR & ~ (USB_DCPCTR_PID)) |
+		//0 * (1uL << USB_DCPCTR_PID_SHIFT) |	// PID 00: NAK
+		//1 * (1uL << USB_DCPCTR_PID_SHIFT) |	// PID 01: BUF response (depending on the buffer state)
+		DEVDRV_USBF_PID_STALL * (1uL << USB_DCPCTR_PID_SHIFT) |	// PID 02: STALL response
 		0;
 }
 
@@ -1438,7 +1450,8 @@ static const uint8_t * ep0data = NULL;
 static unsigned ep0size = 0;
 
 // Обработчик прерывания по пустому FIFO EP0 IN
-static void control_transmit2(USBD_HandleTypeDef *pdev)
+static uint_fast8_t
+control_transmit2(USBD_HandleTypeDef *pdev)
 {
 	USB_OTG_GlobalTypeDef * const Instance = ((PCD_HandleTypeDef *) pdev->pData)->Instance;
 
@@ -1446,7 +1459,7 @@ static void control_transmit2(USBD_HandleTypeDef *pdev)
 	{
 		uint_fast16_t chunk = ulmin16(ep0size, USB_OTG_MAX_EP0_SIZE);
 		if (control_transmit0single(pdev, ep0data, chunk))
-			return;
+			return 1;
 		ep0data += chunk;
 		ep0size -= chunk;
 		if (ep0size == 0 && chunk < USB_OTG_MAX_EP0_SIZE)
@@ -1456,7 +1469,7 @@ static void control_transmit2(USBD_HandleTypeDef *pdev)
 	{
 		// если последний пакет был кратет USB_OTG_MAX_EP0_SIZE, то передаем пакет нулевого размера
 		if (control_transmit0single(pdev, ep0data, 0))
-			return;
+			return 1;
 		ep0data = NULL;
 	}
 
@@ -1464,6 +1477,7 @@ static void control_transmit2(USBD_HandleTypeDef *pdev)
 	{
 		//PRINTF(PSTR("control_transmit2 done send\n"));
 	}
+	return 0;
 }
 
 static USBD_StatusTypeDef USBD_CtlSendDataNec(USBD_HandleTypeDef *pdev, const uint8_t * data, uint16_t size)
@@ -1530,7 +1544,7 @@ static void nak_ep0(USBD_HandleTypeDef *pdev)
 	{
 		USBx->DCPCTR = (USBx->DCPCTR & ~ USB_DCPCTR_PID) |
 			//1 * (1uL << USB_DCPCTR_CCPL_SHIFT) |	// CCPL - Не имеет значения в моих тестах
-			0x00 * MASK2LSB(USB_DCPCTR_PID) |	// PID 00: NAK response
+			0x00 * (1uL << USB_DCPCTR_PID_SHIFT) |	// PID 00: NAK response
 			0;
 	}
 
@@ -1572,10 +1586,10 @@ static void stall_ep0(USBD_HandleTypeDef *pdev)
 		USBx->CFIFOCTR = USB_CFIFOCTR_BCLR;	// BCLR
 	}
 
-	USBx->DCPCTR = (USBx->DCPCTR & ~ (0x03)) |
+	USBx->DCPCTR = (USBx->DCPCTR & ~ (USB_DCPCTR_PID)) |
 		//0 * (1uL << 0) |	// PID 00: NAK
 		//1 * (1uL << 0) |	// PID 01: BUF response (depending on the buffer state)
-		0x02 * (1uL << USB_DCPCTR_PID_SHIFT) |	// PID 02: STALL response
+		DEVDRV_USBF_PID_STALL * (1uL << USB_DCPCTR_PID_SHIFT) |	// PID 02: STALL response
 		0;
 
 }
@@ -1675,17 +1689,6 @@ usbd_handler_brdy_bulk_out8(USBD_HandleTypeDef *pdev, uint_fast8_t pipe, uint_fa
 	//USBx->CFIFOCTR = USB_CFIFOCTR_BCLR;	// BCLR - употребили данные (wrong: могли не переклбчитсья на нужное FIFO)
 }
 
-#define DEVDRV_USBF_PIPE_IDLE                       (0x00)
-#define DEVDRV_USBF_PIPE_WAIT                       (0x01)
-#define DEVDRV_USBF_PIPE_DONE                       (0x02)
-#define DEVDRV_USBF_PIPE_NORES                      (0x03)
-#define DEVDRV_USBF_PIPE_STALL                      (0x04)
-
-#define DEVDRV_USBF_PID_NAK                         (0x0000u)
-#define DEVDRV_USBF_PID_BUF                         (0x0001u)
-#define DEVDRV_USBF_PID_STALL                       (0x0002u)
-#define DEVDRV_USBF_PID_STALL2                      (0x0003u)
-
 // NRDY pipe Interrupt handler
 static void
 usbd_handler_nrdy(USBD_HandleTypeDef *pdev, uint_fast8_t pipe)
@@ -1719,7 +1722,7 @@ usbd_handler_nrdy(USBD_HandleTypeDef *pdev, uint_fast8_t pipe)
 		pid = (* PIPEnCTR & USB_PIPEnCTR_1_5_PID) >> USB_PIPEnCTR_1_5_PID_SHIFT;
 	}
 
-	if (pipe == DEVDRV_USBF_PID_STALL || pipe == DEVDRV_USBF_PID_STALL2)
+	if (pid == DEVDRV_USBF_PID_STALL || pid == DEVDRV_USBF_PID_STALL2)
 	{
 		//g_usb0_function_pipe_status [pipe] = DEVDRV_USBF_PIPE_STALL;
 	}
@@ -1732,10 +1735,10 @@ usbd_handler_nrdy(USBD_HandleTypeDef *pdev, uint_fast8_t pipe)
 		if (pipe == 0)
 		{
 			Instance->DCPCTR = (Instance->DCPCTR & ~ USB_DCPCTR_PID) |
-				0x00 * (1uL << USB_DCPCTR_PID_SHIFT) |	// PID 00: NAK
+				DEVDRV_USBF_PID_NAK * (1uL << USB_DCPCTR_PID_SHIFT) |	// PID 00: NAK
 				0;
 			Instance->DCPCTR = (Instance->DCPCTR & ~ USB_DCPCTR_PID) |
-				0x01 * (1uL << USB_DCPCTR_PID_SHIFT) |	// PID 01: BUF response (depending on the buffer state)
+				DEVDRV_USBF_PID_BUF * (1uL << USB_DCPCTR_PID_SHIFT) |	// PID 01: BUF response (depending on the buffer state)
 				0;
 		}
 		else
@@ -1743,10 +1746,10 @@ usbd_handler_nrdy(USBD_HandleTypeDef *pdev, uint_fast8_t pipe)
 			volatile uint16_t * const PIPEnCTR = (& Instance->PIPE1CTR) + (pipe - 1);
 
 			* PIPEnCTR = (* PIPEnCTR & ~ USB_PIPEnCTR_1_5_PID) |
-				0x00 * (1uL << USB_PIPEnCTR_1_5_PID_SHIFT) |	// PID 00: NAK
+				DEVDRV_USBF_PID_NAK * (1uL << USB_PIPEnCTR_1_5_PID_SHIFT) |	// PID 00: NAK
 				0;
 			* PIPEnCTR = (* PIPEnCTR & ~ USB_PIPEnCTR_1_5_PID) |
-				0x01 * (1uL << USB_PIPEnCTR_1_5_PID_SHIFT) |	// PID 01: BUF response (depending on the buffer state)
+				DEVDRV_USBF_PID_BUF * (1uL << USB_PIPEnCTR_1_5_PID_SHIFT) |	// PID 01: BUF response (depending on the buffer state)
 				0;
 		}
 	}
@@ -3483,7 +3486,10 @@ static void r7s721_usbdevice_handler(USBD_HandleTypeDef *pdev)
 		Instance->BEMPSTS = ~ bempsts;
 
 		if ((bempsts & (1U << 0)) != 0)	// PIPE0, DCP
-			control_transmit2(pdev);
+		{
+			if (control_transmit2(pdev) != 0)
+				control_stall(pdev);
+		}
 	}
 	if ((intsts0 & USB_INTSTS0_NRDY) != 0)	// NRDY
 	{
@@ -19060,7 +19066,7 @@ uint16_t MEM_If_GetStatus_HS(uint32_t Add, uint8_t Cmd, uint8_t *buffer)
 	uint_fast8_t st = dataflash_read_status(target);
 
 	const unsigned FLASH_PROGRAM_TIME = (st & 0x01) ? 5 : 0;
-	const unsigned FLASH_ERASE_TIME = (st & 0x01) ? 1000 : 0;
+	const unsigned FLASH_ERASE_TIME = (st & 0x01) ? 5 : 0;
 	switch(Cmd)
 	{
 	case DFU_MEDIA_PROGRAM:
