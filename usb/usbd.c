@@ -1433,7 +1433,7 @@ static void control_stall(USBD_HandleTypeDef *pdev)
 	TP();
 	USB_OTG_GlobalTypeDef * const USBx = ((PCD_HandleTypeDef *) pdev->pData)->Instance;
 	USBx->DCPCTR = (USBx->DCPCTR & ~ (USB_DCPCTR_PID)) |
-		//0 * (1uL << USB_DCPCTR_PID_SHIFT) |	// PID 00: NAK
+		//DEVDRV_USBF_PID_NAK * (1uL << USB_DCPCTR_PID_SHIFT) |	// PID 00: NAK
 		//1 * (1uL << USB_DCPCTR_PID_SHIFT) |	// PID 01: BUF response (depending on the buffer state)
 		DEVDRV_USBF_PID_STALL * (1uL << USB_DCPCTR_PID_SHIFT) |	// PID 02: STALL response
 		0;
@@ -1453,7 +1453,7 @@ static unsigned ep0size = 0;
 static uint_fast8_t
 control_transmit2(USBD_HandleTypeDef *pdev)
 {
-	USB_OTG_GlobalTypeDef * const Instance = ((PCD_HandleTypeDef *) pdev->pData)->Instance;
+	//USB_OTG_GlobalTypeDef * const USBx = ((PCD_HandleTypeDef *) pdev->pData)->Instance;
 
 	if (ep0size != 0)
 	{
@@ -1483,16 +1483,20 @@ control_transmit2(USBD_HandleTypeDef *pdev)
 static USBD_StatusTypeDef USBD_CtlSendDataNec(USBD_HandleTypeDef *pdev, const uint8_t * data, uint16_t size)
 {
 
-	USB_OTG_GlobalTypeDef * const Instance = ((PCD_HandleTypeDef *) pdev->pData)->Instance;
+	USB_OTG_GlobalTypeDef * const USBx = ((PCD_HandleTypeDef *) pdev->pData)->Instance;
 
-	Instance->DCPCTR = (Instance->DCPCTR & ~ USB_DCPCTR_PID) |
-		0 * (1uL << USB_DCPCTR_PID_SHIFT) |	// PID 00: NAK
+	USBx->DCPCTR = (USBx->DCPCTR & ~ USB_DCPCTR_PID) |
+		DEVDRV_USBF_PID_NAK * (1uL << USB_DCPCTR_PID_SHIFT) |	// PID 00: NAK
 		0;
 
 	if (size <= USB_OTG_MAX_EP0_SIZE)
 	{
 		if (control_transmit0single(pdev, data, size))
+		{
+			control_stall(pdev);
+			TP();
 			return USBD_FAIL;
+		}
 		ep0data = NULL;
 		ep0size = 0;
 	}
@@ -1500,13 +1504,17 @@ static USBD_StatusTypeDef USBD_CtlSendDataNec(USBD_HandleTypeDef *pdev, const ui
 	{
 		uint_fast16_t chunk = ulmin16(size, USB_OTG_MAX_EP0_SIZE);
 		if (control_transmit0single(pdev, data, chunk))
+		{
+			control_stall(pdev);
+			TP();
 			return USBD_FAIL;
+		}
 		ep0data = data + chunk;
 		ep0size = size - chunk;
 	}
 
-	Instance->DCPCTR = (Instance->DCPCTR & ~ USB_DCPCTR_PID) |
-		0x01 * MASK2LSB(USB_DCPCTR_PID) |	// PID 01: BUF response (depending on the buffer state)
+	USBx->DCPCTR = (USBx->DCPCTR & ~ USB_DCPCTR_PID) |
+		DEVDRV_USBF_PID_BUF * (1uL << USB_DCPCTR_PID_SHIFT) |	// PID 01: BUF response (depending on the buffer state)
 		0;
 
 	return USBD_OK;
@@ -1522,7 +1530,7 @@ static void dcp_acksend(USBD_HandleTypeDef *pdev)
 	if (((Instance->DCPCTR & USB_DCPCTR_PID) >> USB_DCPCTR_PID_SHIFT) == 0x03)
 	{
 		Instance->DCPCTR = (Instance->DCPCTR & ~ USB_DCPCTR_PID) |
-			0 * (1uL << USB_DCPCTR_PID_SHIFT) |	// PID 00: NAK response
+			DEVDRV_USBF_PID_NAK * (1uL << USB_DCPCTR_PID_SHIFT) |	// PID 00: NAK response
 			0;
 	}
 	//control_transmit0single(pdev, NULL, 0);
@@ -1544,7 +1552,7 @@ static void nak_ep0(USBD_HandleTypeDef *pdev)
 	{
 		USBx->DCPCTR = (USBx->DCPCTR & ~ USB_DCPCTR_PID) |
 			//1 * (1uL << USB_DCPCTR_CCPL_SHIFT) |	// CCPL - Не имеет значения в моих тестах
-			0x00 * (1uL << USB_DCPCTR_PID_SHIFT) |	// PID 00: NAK response
+			DEVDRV_USBF_PID_NAK * (1uL << USB_DCPCTR_PID_SHIFT) |	// PID 00: NAK response
 			0;
 	}
 
@@ -1587,7 +1595,7 @@ static void stall_ep0(USBD_HandleTypeDef *pdev)
 	}
 
 	USBx->DCPCTR = (USBx->DCPCTR & ~ (USB_DCPCTR_PID)) |
-		//0 * (1uL << 0) |	// PID 00: NAK
+		//DEVDRV_USBF_PID_NAK * (1uL << 0) |	// PID 00: NAK
 		//1 * (1uL << 0) |	// PID 01: BUF response (depending on the buffer state)
 		DEVDRV_USBF_PID_STALL * (1uL << USB_DCPCTR_PID_SHIFT) |	// PID 02: STALL response
 		0;
@@ -1626,6 +1634,10 @@ usbd_handler_brdy_bulk_in8(USBD_HandleTypeDef *pdev, uint_fast8_t pipe, uint_fas
 		{
 			cdc1buffinlevel = 0;
 		}
+		else
+		{
+			TP();
+		}
 		break;
 
 	case USBD_EP_CDC_INb & 0x7F:
@@ -1637,6 +1649,10 @@ usbd_handler_brdy_bulk_in8(USBD_HandleTypeDef *pdev, uint_fast8_t pipe, uint_fas
 		if (usbd_write_data(USBx, pipe, cdc2buffin, cdc2buffinlevel) == 0)	// pipe=0: DCP
 		{
 			cdc2buffinlevel = 0;
+		}
+		else
+		{
+			TP();
 		}
 		break;
 #endif /* WITHUSBCDC */
@@ -3663,7 +3679,7 @@ HAL_StatusTypeDef USB_EP0StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDe
 	if (ep->is_in == 1)
 	{
 		USBx->DCPCTR = (USBx->DCPCTR & ~ USB_DCPCTR_PID) |
-			0 * (1uL << USB_DCPCTR_PID_SHIFT) |	// PID 00: NAK
+			DEVDRV_USBF_PID_NAK * (1uL << USB_DCPCTR_PID_SHIFT) |	// PID 00: NAK
 			0;
 
 		/* IN endpoint */
