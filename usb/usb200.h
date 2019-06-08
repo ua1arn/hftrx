@@ -166,7 +166,7 @@
 #define USB_FEATURE_REMOTE_WAKEUP                          1
 #define USB_FEATURE_TEST_MODE                              2
 
-#define USB_OTG_HS_MAX_PACKET_SIZE           64U
+#define USB_OTG_HS_MAX_PACKET_SIZE           512U
 #define USB_OTG_FS_MAX_PACKET_SIZE           64U
 
 #if CPUSTYLE_R7S721
