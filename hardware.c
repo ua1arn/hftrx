@@ -6115,7 +6115,7 @@ uint32_t hardware_get_random(void)
 
 #else
 
-	#warning RNG not exist - hardware_get_random not work
+	//#warning RNG not exist - hardware_get_random not work
 	return 0;
 
 #endif
@@ -9007,7 +9007,7 @@ uint_fast32_t cpu_getdebugticks(void)
 		return(result);
 	}
 #else
-	#warning Wromg CPUSTYLE_xxx - cpu_getdebugticks not work
+	//#warning Wromg CPUSTYLE_xxx - cpu_getdebugticks not work
 	return 0;
 #endif
 }
