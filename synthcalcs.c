@@ -9,6 +9,7 @@
 #include "synthcalcs.h"
 #include "board.h"
 #include "spifuncs.h"
+#include "formats.h"	/* sprintf() replacement */
 
 //#define WITHSI5351AREPLACE 1
 
