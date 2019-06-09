@@ -60,7 +60,7 @@ CPFLAGS = $(CFLAGS) $(LDFLAGS)
 LINKONLYOBJECTS = 
 
 ## Build
-all: $(OBJS) $(TARGET) tc1_atmega644_8.hex tc1_atmega644_8.eep size
+all: $(OBJS) $(TARGET) tc1_atmega644_10.hex tc1_atmega644_10.eep size
 
 $(OBJDIR)/%.o: %.c
 	@mkdir -p $(@D)
@@ -89,7 +89,7 @@ size: ${TARGET}
 ## Clean target
 .PHONY: clean
 clean:
-	-rm -rf $(OBJS) tc1_atmega644_8.elf ./*.d tc1_atmega644_8.hex tc1_atmega644_8.eep
+	-rm -rf $(OBJS) tc1_atmega644_10.elf ./*.d tc1_atmega644_10.hex tc1_atmega644_10.eep
 	-rm -fR $(OBJDIR)
 	-rm -f $(PROJECT)_rom.elf $(PROJECT)_rom.map $(PROJECT)_rom.hex $(PROJECT)_rom.bin
 	-rm -f $(PROJECT)_boot.elf $(PROJECT)_boot.map $(PROJECT)_boot.hex $(PROJECT)_boot.bin
