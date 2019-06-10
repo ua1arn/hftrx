@@ -75,6 +75,10 @@ static uint_fast8_t 	glob_vox;
 #if WITHKBDBACKLIGHT
 static uint_fast8_t 	glob_kblight = 1;
 #endif /* WITHKBDBACKLIGHT */
+//#if WITHKBDBACKLIGHT
+static uint_fast8_t 	glob_poweron = 1;
+//#endif /* WITHKBDBACKLIGHT */
+
 static uint_fast8_t		glob_fanflag;	/* включение вентилятора */
 #if WITHDCDCFREQCTL
 	static uint_fast32_t 	glob_blfreq = UINT32_MAX;	/* DC-DC frequency divider */
@@ -3529,7 +3533,7 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBBIT(0020, glob_bandf == 0);		// D0: средневолновый ФНЧ - управление реле на входе
 
 		// DD18 SN74HC595PW рядом с DIN8
-		RBBIT(0017, 0);
+		RBBIT(0017, glob_poweron);			// POWER_HOLD_ON added in next version
 		RBBIT(0016, glob_fanflag);			// FAN_CTL added in LVDS version
 		RBBIT(0015, glob_tx);				// EXT_PTT2 added in LVDS version
 		RBBIT(0014, glob_tx);				// EXT_PTT added in LVDS version
@@ -4725,6 +4729,20 @@ board_set_kblight(uint_fast8_t v)
 	}
 }
 #endif /* WITHKBDBACKLIGHT */
+
+#if WITHPWBUTTON	/* Наличие схемы электронного включения питания */
+/* Включение удерхания схемы питания */
+void
+board_set_poweron(uint_fast8_t v)
+{
+	const uint_fast8_t n = v != 0;
+	if (glob_poweron != n)
+	{
+		glob_poweron = n;
+		board_ctlreg1changed();
+	}
+}
+#endif /* WITHPWBUTTON */
 
 /* включение УВЧ */
 void
@@ -8015,6 +8033,20 @@ kbd_adc6v1_decode(
 }
 #endif /* KEYBOARD_USE_ADC6_V1 */
 
+/* проверка нажатия кнопки второго валкодера - возврат 1 */
+static uint_fast8_t
+bnchk_encoder2(void)
+{
+	return (TARGET_ENC2BTN_PIN & TARGET_ENC2BTN_BIT) == 0;
+}
+
+/* проверка нажатия кнопки питания - возврат 1 */
+static uint_fast8_t
+bnchk_poweroff(void)
+{
+	return (TARGET_POWER_PIN & TARGET_POWER_BIT) == 0;
+}
+
 //#define KI_LIST	KI5, KI4, KI3, KI2, KI1, KI0,	// инициализаторы для функции перекодировки
 //#define KI_LIST	KI4, KI3, KI2, KI1, KI0,	// инициализаторы для функции перекодировки
 //#define KI_LIST	KI2, KI1, KI0,	// инициализаторы для функции перекодировки
@@ -8095,7 +8127,11 @@ board_get_pressed_key(void)
 
 	uint_fast8_t i;
 	uint_fast8_t bitpos;
-
+	static const uint_fast8_t (*buttons [])(void) =
+	{
+		bnchk_encoder2,
+		bnchk_poweroff,
+	};
 	const portholder_t v = ~ KBD_TARGET_PIN;
 	portholder_t srcmask = KBD_MASK;
 	

@@ -3039,6 +3039,10 @@ static uint_fast8_t displaybarsfps = DISPLAYSWR_FPS;
 	enum { kblight = 0 };
 #endif /* WITHKBDBACKLIGHT */
 
+#if WITHPWBUTTON	/* Наличие схемы электронного включения питания */
+	static uint_fast8_t gpoweronhold = 1;	/* выдать "1" на выход удержания питания включенным */
+#endif /* WITHPWBUTTON */
+
 #if LCDMODE_COLORED
 	static uint_fast8_t gbluebgnd;
 #else
@@ -7890,6 +7894,9 @@ updateboard(
 	#if WITHKBDBACKLIGHT
 		board_set_kblight((dimmflag || sleepflag || dimmmode) ? 0 : kblight);			/* подсвтка клавиатуры */
 	#endif /* WITHKBDBACKLIGHT */
+	#if WITHPWBUTTON
+		board_set_poweron(gpoweronhold);
+	#endif /* WITHPWBUTTON */
 	#if WITHNBONOFF
 		board_set_nfmnbon(lockmode);	/* Включние noise blanker на SW2014FM */
 	#endif /* WITHNBONOFF */
@@ -15656,6 +15663,15 @@ freqvalid(
 
 #endif /* WITHDIRECTFREQENER */
 
+#if WITHPWBUTTON
+static void
+uif_pwbutton_press(void)
+{
+	gpoweronhold = 0;
+	updateboard(1, 0);
+}
+#endif /* WITHPWBUTTON */
+
 #if WITHKEYBOARD
 
 /* возврат ненуля - было какое-либо нажатие, клавиша уже обработана
@@ -15712,6 +15728,12 @@ process_key_menuset_common(uint_fast8_t kbch)
 		sdcardformat();
 		return 1;	/* клавиша уже обработана */
 #endif /* WITHUSEAUDIOREC */
+
+#if WITHPWBUTTON
+	case KBD_CODE_POWEROFF:
+		uif_pwbutton_press();
+		return 1;
+#endif /* WITHPWBUTTON */
 
 #if WITHENCODER2
 	case KBD_ENC2_PRESS:

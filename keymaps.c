@@ -10,16 +10,16 @@
 #if WITHKEYBOARD
 
 #if KEYBOARD_USE_ADC
-	// добавочная единица - последний элемент для кнопки валколера
+	// добавочная двойка - последне элементы для кнопок валколера и выключения питания
 	#if KEYBOARD_USE_ADC6_V1
-		#define NQMKEYS (KI_COUNT * 6 + 1)		// сейчас обслуживается до 18-ти кнопок.
+		#define NQMKEYS (KI_COUNT * 6 + 2)
 	#elif KEYBOARD_USE_ADC6
-		#define NQMKEYS (KI_COUNT * 6 + 1)		// сейчас обслуживается до 18-ти кнопок.
+		#define NQMKEYS (KI_COUNT * 6 + 2)
 	#else /* KEYBOARD_USE_ADC6 */
-		#define NQMKEYS (KI_COUNT * 4 + 1)		// сейчас обслуживается до 12-ти кнопок.
+		#define NQMKEYS (KI_COUNT * 4 + 2)
 	#endif /* KEYBOARD_USE_ADC6 */
 #else
-	#define NQMKEYS (12 + 1)		// сейчас обслуживается до 12-ти кнопок.
+	#define NQMKEYS (12 + 2)		// сейчас обслуживается до 12-ти кнопок.
 #endif
 
 
@@ -516,6 +516,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 
 	/* кнопка дополнительного валкодера */
 	{ KIF_NONE,		KBD_ENC2_PRESS,		KBD_ENC2_HOLD, 			' ', },
+	/* кнопка выключения питания (включение аппаратно) */
+	{ KIF_NONE,		KBD_CODE_POWEROFF,	KBD_CODE_MAX, 			' ', },
 };
 
 uint_fast8_t getexitkey(void)
@@ -858,6 +860,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 
 	/* кнопка дополнительного валкодера */
 	{ KIF_NONE,		KBD_ENC2_PRESS,		KBD_ENC2_HOLD, 		' ', },
+	/* кнопка выключения питания (включение аппаратно) */
+	{ KIF_NONE,		KBD_CODE_POWEROFF,	KBD_CODE_MAX, 			' ', },
 };
 
 uint_fast8_t getexitkey(void)
@@ -903,6 +907,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 
 	/* кнопка дополнительного валкодера */
 	{ KIF_NONE,		KBD_ENC2_PRESS,		KBD_ENC2_HOLD, 		' ', },
+	/* кнопка выключения питания (включение аппаратно) */
+	{ KIF_NONE,		KBD_CODE_POWEROFF,	KBD_CODE_MAX, 			' ', },
 };
 
 uint_fast8_t getexitkey(void)
@@ -947,6 +953,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 
 	/* кнопка дополнительного валкодера */
 	{ KIF_NONE,		KBD_ENC2_PRESS,		KBD_ENC2_HOLD, 		' ', },
+	/* кнопка выключения питания (включение аппаратно) */
+	{ KIF_NONE,		KBD_CODE_POWEROFF,	KBD_CODE_MAX, 			' ', },
 };
 
 uint_fast8_t getexitkey(void)
@@ -1001,6 +1009,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 
 	/* кнопка дополнительного валкодера */
 	{ KIF_NONE,		KBD_ENC2_PRESS,		KBD_ENC2_HOLD, 		' ', },
+	/* кнопка выключения питания (включение аппаратно) */
+	{ KIF_NONE,		KBD_CODE_POWEROFF,	KBD_CODE_MAX, 			' ', },
 };
 
 uint_fast8_t getexitkey(void)
@@ -1055,6 +1065,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 
 	/* кнопка дополнительного валкодера */
 	{ KIF_NONE,		KBD_ENC2_PRESS,		KBD_ENC2_HOLD, 		' ', },
+	/* кнопка выключения питания (включение аппаратно) */
+	{ KIF_NONE,		KBD_CODE_POWEROFF,	KBD_CODE_MAX, 			' ', },
 };
 
 uint_fast8_t getexitkey(void)
@@ -1107,6 +1119,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 
 	/* кнопка дополнительного валкодера */
 	{ KIF_NONE,		KBD_ENC2_PRESS,		KBD_ENC2_HOLD, 		' ', },
+	/* кнопка выключения питания (включение аппаратно) */
+	{ KIF_NONE,		KBD_CODE_POWEROFF,	KBD_CODE_MAX, 			' ', },
 };
 
 uint_fast8_t getexitkey(void)
@@ -1152,6 +1166,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 
 	/* кнопка дополнительного валкодера */
 	{ KIF_NONE,		KBD_ENC2_PRESS,		KBD_ENC2_HOLD, 		' ', },
+	/* кнопка выключения питания (включение аппаратно) */
+	{ KIF_NONE,		KBD_CODE_POWEROFF,	KBD_CODE_MAX, 			' ', },
 };
 
 uint_fast8_t getexitkey(void)
@@ -1182,6 +1198,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 
 	/* кнопка дополнительного валкодера */
 	{ KIF_NONE,		KBD_ENC2_PRESS,		KBD_ENC2_HOLD, 		' ', },
+	/* кнопка выключения питания (включение аппаратно) */
+	{ KIF_NONE,		KBD_CODE_POWEROFF,	KBD_CODE_MAX, 			' ', },
 };
 
 uint_fast8_t getexitkey(void)
@@ -1212,6 +1230,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 
 	/* кнопка дополнительного валкодера */
 	{ KIF_NONE,		KBD_ENC2_PRESS,		KBD_ENC2_HOLD, 		' ', },
+	/* кнопка выключения питания (включение аппаратно) */
+	{ KIF_NONE,		KBD_CODE_POWEROFF,	KBD_CODE_MAX, 			' ', },
 };
 
 uint_fast8_t getexitkey(void)
@@ -1241,6 +1261,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 
 	/* кнопка дополнительного валкодера */
 	{ KIF_NONE,		KBD_ENC2_PRESS,		KBD_ENC2_HOLD, 		' ', },
+	/* кнопка выключения питания (включение аппаратно) */
+	{ KIF_NONE,		KBD_CODE_POWEROFF,	KBD_CODE_MAX, 			' ', },
 };
 
 uint_fast8_t getexitkey(void)
@@ -1271,6 +1293,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 
 	/* кнопка дополнительного валкодера */
 	{ KIF_NONE,		KBD_ENC2_PRESS,		KBD_ENC2_HOLD, 		' ', },
+	/* кнопка выключения питания (включение аппаратно) */
+	{ KIF_NONE,		KBD_CODE_POWEROFF,	KBD_CODE_MAX, 			' ', },
 };
 
 uint_fast8_t getexitkey(void)

@@ -617,6 +617,17 @@
 	#define KBD_MASK (1U << 8)	// P7_8
 	#define KBD_TARGET_PIN (R7S721_INPUT_PORT(7))
 
+
+#if WITHENCODER2
+	#define TARGET_ENC2BTN_PIN	(R7S721_INPUT_PORT(7))
+	#define TARGET_ENC2BTN_BIT (1U << 3)	// P7_8
+#endif /* WITHENCODER2 */
+
+#if WITHPWBUTTON
+	#define TARGET_POWER_PIN	(R7S721_INPUT_PORT(5))
+	#define TARGET_POWER_BIT (1U << 3)	// P5_3 - ~CPU_POWER_SW signal
+#endif /* WITHPWBUTTON */
+
 	#define HARDWARE_KBD_INITIALIZE() do { \
 			arm_hardware_pio7_inputs(KBD_MASK); \
 		} while (0)
