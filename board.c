@@ -8037,14 +8037,22 @@ kbd_adc6v1_decode(
 static uint_fast8_t
 bnchk_encoder2(void)
 {
-	return (TARGET_ENC2BTN_PIN & TARGET_ENC2BTN_BIT) == 0;
+#if defined (TARGET_ENC2BTN_GET)
+	return TARGET_ENC2BTN_GET;
+#else /* defined (TARGET_ENC2BTN_GET) */
+	return 0;
+#endif /* defined (TARGET_ENC2BTN_GET) */
 }
 
 /* проверка нажатия кнопки питания - возврат 1 */
 static uint_fast8_t
 bnchk_poweroff(void)
 {
-	return (TARGET_POWER_PIN & TARGET_POWER_BIT) == 0;
+#if defined (TARGET_POWER_GET)
+	return TARGET_POWER_GET;
+#else /* defined (TARGET_POWER_GET) */
+	return 0;
+#endif /* defined (TARGET_POWER_GET) */
 }
 
 //#define KI_LIST	KI5, KI4, KI3, KI2, KI1, KI0,	// инициализаторы для функции перекодировки
