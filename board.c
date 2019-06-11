@@ -8048,11 +8048,11 @@ bnchk_encoder2(void)
 static uint_fast8_t
 bnchk_poweroff(void)
 {
-#if defined (TARGET_POWER_GET)
-	return TARGET_POWER_GET;
-#else /* defined (TARGET_POWER_GET) */
+#if defined (TARGET_POWERBTN_GET)
+	return TARGET_POWERBTN_GET;
+#else /* defined (TARGET_POWERBTN_GET) */
 	return 0;
-#endif /* defined (TARGET_POWER_GET) */
+#endif /* defined (TARGET_POWERBTN_GET) */
 }
 
 //#define KI_LIST	KI5, KI4, KI3, KI2, KI1, KI0,	// инициализаторы для функции перекодировки
