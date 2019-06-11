@@ -142,12 +142,13 @@ enum
 {
 	KIF_SLOW = 0x01, 
 	KIF_FAST = 0x02, 
-	KIF_ERASE = 0x04, 
-	KIF_EXTMENU = 0x08,
-	KIF_SLOW4 = 0x10,
+	KIF_POWER = 0x04,	/* кнопка выклбчения питания - срабаьывание по отпусканию после длинного нажатия */
+	KIF_ERASE = 0x08,
+	KIF_EXTMENU = 0x10,
+	KIF_SLOW4 = 0x20,
 	//
-	KIF_USER2 = 0x20,	// rec
-	KIF_USER3 = 0x40,	// play
+	KIF_USER2 = 0x40,	// rec
+	KIF_USER3 = 0x80,	// play
 
 	KIF_NONE = 0x00
 };
