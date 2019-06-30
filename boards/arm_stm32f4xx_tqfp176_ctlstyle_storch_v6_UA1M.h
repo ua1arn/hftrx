@@ -434,7 +434,7 @@
 	#define VOLTLEVEL_LOWER		10	// 1 kOhm - нижний резистор
 
 	#define THERMOSENSOR_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика температуры
-	#define THERMOSENSOR_LOWER		100	// 10 kOhm - нижний резистор
+	#define THERMOSENSOR_LOWER		10	// 1 kOhm - нижний резистор
 
 	//#define WITHDCDCFREQCTL	1		// Имеется управление частотой преобразователей блока питания и/или подсветки дисплея
 	#define WITHDIRECTBANDOUT 1	// Выдача кода диапазона и TX для управления оконечником на выводы процессора
