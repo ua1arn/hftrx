@@ -2425,6 +2425,8 @@ uintptr_t getfilled_dmabufferx(uint_fast16_t * sizep)
 	}
 }
 
+#if WITHUSBUAC3
+
 /* получить буфер одного из типов, которые могут использоваться для передаяи аудиоданных в компьютер по USB */
 uintptr_t getfilled_dmabufferxrts(uint_fast16_t * sizep)
 {
@@ -2458,6 +2460,13 @@ uintptr_t getfilled_dmabufferxrts(uint_fast16_t * sizep)
 		return 0;
 	}
 }
+
+void release_dmabufferxrts(uintptr_t addr)	/* освободить буфер одного из типов, которые могут использоваться для передаяи аудиоданных в компьютер по USB */
+{
+	release_dmabufferx(addr);
+}
+
+#endif /* WITHUSBUAC3 */
 
 #endif /* WITHUSBUAC */
 

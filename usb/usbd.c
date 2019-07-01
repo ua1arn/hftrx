@@ -7599,7 +7599,7 @@ static USBD_StatusTypeDef USBD_XXX_DeInit(USBD_HandleTypeDef *pdev, uint_fast8_t
 		if (uacinrtsaddr != 0)
 		{
 			global_disableIRQ();
-			release_dmabufferx(uacinrtsaddr);
+			release_dmabufferxrts(uacinrtsaddr);
 			global_enableIRQ();
 			uacinrtsaddr = 0;
 		}
@@ -8233,7 +8233,7 @@ static USBD_StatusTypeDef USBD_XXX_DataIn (USBD_HandleTypeDef *pdev, uint_fast8_
 		if (uacinrtsaddr != 0)
 		{
 			global_disableIRQ();
-			release_dmabufferx(uacinrtsaddr);
+			release_dmabufferxrts(uacinrtsaddr);
 			global_enableIRQ();
 		}
 
