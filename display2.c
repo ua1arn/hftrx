@@ -5240,7 +5240,7 @@ static void display2_spectrum(
 	// Спектр на монохромных дисплеях
 	// или на цветных, где есть возможность раскраски растровой картинки.
 
-	if (hamradio_get_tx() == 0)
+	if (1 || hamradio_get_tx() == 0)
 	{
 		uint_fast16_t x;
 		uint_fast16_t y;
@@ -5310,7 +5310,7 @@ static void display2_spectrum(
 	(void) pv;
 	// Спектр на цветных дисплеях, не поддерживающих ускоренного
 	// построения изображения по bitmap с раскрашиванием
-	if (hamradio_get_tx() == 0)
+	if (1 || hamradio_get_tx() == 0)
 	{
 		const uint_fast8_t pathi = 0;	// RX A
 		const uint_fast32_t f0 = hamradio_get_freq_pathi(pathi);	/* frequecy at middle of spectrum */
@@ -5628,23 +5628,17 @@ static void display2_waterfall(
 	(void) y0;
 	(void) pv;
 
-	if (hamradio_get_tx() == 0)
-	{
-		PACKEDCOLOR565_T * const colorpip = getscratchpip();
-		uint_fast16_t x, y;
+	PACKEDCOLOR565_T * const colorpip = getscratchpip();
+	uint_fast16_t x, y;
 
-		// формирование растра
-		// следы спектра ("водопад")
-		for (x = 0; x < ALLDX; ++ x)
-		{
-			for (y = 0; y < WFDY; ++ y)
-			{
-				display_colorbuffer_set(colorpip, ALLDX, ALLDY, x, y + WFY0, wfpalette [wfarray [(wfrow + y) % WFDY] [x]]);
-			}
-		}
-	}
-	else
+	// формирование растра
+	// следы спектра ("водопад")
+	for (x = 0; x < ALLDX; ++ x)
 	{
+		for (y = 0; y < WFDY; ++ y)
+		{
+			display_colorbuffer_set(colorpip, ALLDX, ALLDY, x, y + WFY0, wfpalette [wfarray [(wfrow + y) % WFDY] [x]]);
+		}
 	}
 
 #endif /* LCDMODE_S1D13781 */
