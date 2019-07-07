@@ -4270,32 +4270,17 @@ enum
 		BDTH_LEFTRX = 12,	// ширина индикатора баллов
 		BDTH_RIGHTRX = BDTH_ALLRX - BDTH_LEFTRX,	// ширина индикатора плюсов
 		BDTH_SPACERX = 0,
-	#if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
 		BDTH_ALLSWR = 13,
 		BDTH_SPACESWR = 2,
 		BDTH_ALLPWR = 9,
 		BDTH_SPACEPWR = 0,
-	#else /* WITHSHOWSWRPWR */
-		BDTH_ALLSWR = BDTH_ALLRX,
-		BDTH_SPACESWR = BDTH_SPACERX,
-		BDTH_ALLPWR = BDTH_ALLRX,
-		BDTH_SPACEPWR = BDTH_SPACERX,
-	#endif /* WITHSHOWSWRPWR */
 
 		BDCV_ALLRX = ROWS2GRID(60),	// количество ячееек, отведенное под S-метр, панораму, иные отображения
-	#if WITHSEPARATEWFL
-		/* без совмещения на одном экрание водопада и панорамы */
-		BDCO_SPMRX = ROWS2GRID(0),	// смещение спектра по вертикали в ячейках от начала общего поля
-		BDCO_WFLRX = ROWS2GRID(0)	// смещение водопада по вертикали в ячейках от начала общего поля
-		BDCV_SPMRX = BDCV_ALLRX,	// вертикальный размер спектра в ячейках		};
-		BDCV_WFLRX = BDCV_ALLRX,	// вертикальный размер водопада в ячейках		};
-	#else /* WITHSEPARATEWFL */
 		/* совмещение на одном экрание водопада и панорамы */
 		BDCO_SPMRX = ROWS2GRID(0),	// смещение спектра по вертикали в ячейках от начала общего поля
 		BDCV_SPMRX = ROWS2GRID(22),	// вертикальный размер спектра в ячейках		};
 		BDCO_WFLRX = BDCV_SPMRX,	// смещение водопада по вертикали в ячейках от начала общего поля
 		BDCV_WFLRX = BDCV_ALLRX - BDCV_SPMRX	// вертикальный размер водопада в ячейках		};
-	#endif /* WITHSEPARATEWFL */
 	};
 
 	enum
