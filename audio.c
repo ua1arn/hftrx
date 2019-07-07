@@ -4909,7 +4909,7 @@ void dsp_zoomfft_init(uint_fast8_t zoom)
 {
 #if WITHNEWZOOMFFT
 
-	if(zoom>1)
+	if(zoom > 1)
 	{
 		static const float32_t coeffs_x2 [] = {
 			// 2x magnify
@@ -4975,6 +4975,10 @@ void dsp_zoomfft_init(uint_fast8_t zoom)
 
 		IIR_biquad_Zoom_FFT_I.pCoeffs = zoomfft_mag_coeffs [zoom];
 		IIR_biquad_Zoom_FFT_Q.pCoeffs = zoomfft_mag_coeffs [zoom];
+		//memset(IIR_biquad_Zoom_FFT_I.pState, 0, zzz);
+		//memset(IIR_biquad_Zoom_FFT_Q.pState, 0, zzz);
+		memset(decimZoomFFTIState, 0, sizeof decimZoomFFTIState);
+		memset(decimZoomFFTQState, 0, sizeof decimZoomFFTQState);
 
 		VERIFY(ARM_MATH_SUCCESS == arm_fir_decimate_init_f32(& DECIMATE_ZOOM_FFT_I,
 							FirZoomFFTDecimate [zoom].numTaps,
