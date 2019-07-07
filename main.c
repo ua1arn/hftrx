@@ -7145,12 +7145,12 @@ static void processNoiseReduction(lmsnrstate_t * nrp, const float* bufferIn, flo
 static void processingonebuff(lmsnrstate_t * const nrp, speexel_t * p)
 {
 	const uint_fast8_t mode = submodes [gsubmode].mode;
-	const uint_fast8_t nospeex = mode == MODE_DIGI || gdatamode;
-	const uint_fast8_t denoise = ! nospeex && gnoisereducts [gmode];
+	const uint_fast8_t nospeex = gtx || mode == MODE_DIGI || gdatamode;	// не делать жаже коррекцию АЧХ
 	//////////////////////////////////////////////
 	// Filtering
 	// Use CMSIS DSP interface
 #if WITHNOSPEEX
+	const uint_fast8_t denoise = ! nospeex && gnoisereducts [mode];
 	if (denoise)
 	{
 		// Filtering and denoise.
