@@ -4396,9 +4396,9 @@ enum
 		//{	XX,	DLE1,	display_samfreqdelta8, REDRM_BARS, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
 
 	#if WITHMENU
-		{	3,	25,	display_multilinemenu_block_groups,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
-		{	LABELW + 5,	25,	display_multilinemenu_block_params,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
-		{	LABELW*2 + 6,	25,	display_multilinemenu_block_vals,	REDRM_MVAL, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
+		{	3,				30,	display_multilinemenu_block_groups,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
+		{	LABELW + 5,		30,	display_multilinemenu_block_params,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
+		{	LABELW*2 + 6,	30,	display_multilinemenu_block_vals,	REDRM_MVAL, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
 	#endif /* WITHMENU */
 
 		// sleep mode display
@@ -4409,7 +4409,7 @@ enum
 #if WITHMENU
 	void display2_getmultimenu(multimenuwnd_t * p)
 	{
-		p->multilinemenu_max_rows = 16;
+		p->multilinemenu_max_rows = 15;
 		p->ystep = 4;	// количество ячеек разметки на одну строку меню
 		p->reverse = 1;
 	}
