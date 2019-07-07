@@ -7149,12 +7149,12 @@ static void processNoiseReduction(lmsnrstate_t * nrp, const float* bufferIn, flo
 static void processingonebuff(lmsnrstate_t * const nrp, speexel_t * p)
 {
 	const uint_fast8_t mode = submodes [gsubmode].mode;
-	const uint_fast8_t nospeex = mode == MODE_DIGI || gdatamode;
-	const uint_fast8_t denoise = ! nospeex && gnoisereducts [gmode];
+	const uint_fast8_t nospeex = gtx || mode == MODE_DIGI || gdatamode;	// не делать жаже коррекцию АЧХ
 	//////////////////////////////////////////////
 	// Filtering
 	// Use CMSIS DSP interface
 #if WITHNOSPEEX
+	const uint_fast8_t denoise = ! nospeex && gnoisereducts [mode];
 	if (denoise)
 	{
 		// Filtering and denoise.
@@ -9463,12 +9463,9 @@ display2_adctest(
 		display_2states(x + (5), y + GRID2Y(row), valid, b, b);
 	}
 
-#if LCDMODE_LTDC_PIP16
-	arm_hardware_ltdc_pip_off();
-#endif /* LCDMODE_LTDC_PIP16 */
-
 #endif
 }
+
 // S-METER
 /* отображение S-метра на приёме или передаче */
 // Функция вызывается из display2.c
@@ -9483,10 +9480,6 @@ display2_bars_rx(
 	uint_fast8_t tracemax;
 	uint_fast8_t v = board_getsmeter(& tracemax, 0, UINT8_MAX, 0);
 	display_smeter(x, y, v, tracemax, s9level, s9delta, s9_60_delta);
-
-#if LCDMODE_LTDC_PIP16
-	arm_hardware_ltdc_pip_off();
-#endif /* LCDMODE_LTDC_PIP16 */
 #endif /* WITHBARS */
 }
 
@@ -9521,10 +9514,6 @@ display2_bars_tx(
 		const uint_fast8_t pwr = board_getpwrmeter(& pwrtrace);
 		display_pwrmeter(x, y, pwr, pwrtrace, maxpwrcali);
 	#endif
-
-#if LCDMODE_LTDC_PIP16
-	arm_hardware_ltdc_pip_off();
-#endif /* LCDMODE_LTDC_PIP16 */
 
 #endif /* WITHTX */
 #endif /* WITHBARS */
@@ -14760,9 +14749,6 @@ void display_multilinemenu_block_groups(uint_fast8_t x, uint_fast8_t y, void * p
 	uint_fast16_t el;
 	multimenuwnd_t window;
 
-#if LCDMODE_LTDC_PIP16
-	arm_hardware_ltdc_pip_off();
-#endif /* LCDMODE_LTDC_PIP16 */
 	display2_getmultimenu(& window);
 
 	//ищем границы текущей группы параметров
@@ -14820,9 +14806,6 @@ void display_multilinemenu_block_params(uint_fast8_t x, uint_fast8_t y, void * p
 	uint_fast16_t el;
 	multimenuwnd_t window;
 
-#if LCDMODE_LTDC_PIP16
-	arm_hardware_ltdc_pip_off();
-#endif /* LCDMODE_LTDC_PIP16 */
 	display2_getmultimenu(& window);
 
 	//ищем границы текущей группы параметров
@@ -14889,9 +14872,6 @@ void display_multilinemenu_block_vals(uint_fast8_t x, uint_fast8_t y, void * pv)
 	uint_fast16_t el;
 	multimenuwnd_t window;
 
-#if LCDMODE_LTDC_PIP16
-	arm_hardware_ltdc_pip_off();
-#endif /* LCDMODE_LTDC_PIP16 */
 	display2_getmultimenu(& window);
 
 	//ищем границы текущей группы параметров
@@ -14952,9 +14932,6 @@ void display_menu_lblc3(
 	)
 {
 	const FLASHMEM struct menudef * const mp = (const FLASHMEM struct menudef *) pv;
-#if LCDMODE_LTDC_PIP16
-	arm_hardware_ltdc_pip_off();
-#endif /* LCDMODE_LTDC_PIP16 */
 	char buff [4];
 	const uint_fast8_t index = (int) (mp - menutable);
 	if (ismenukind(mp, ITEM_GROUP))
@@ -14980,9 +14957,6 @@ void display_menu_lblng(
 	)
 {
 	const FLASHMEM struct menudef * const mp = (const FLASHMEM struct menudef *) pv;
-#if LCDMODE_LTDC_PIP16
-	arm_hardware_ltdc_pip_off();
-#endif /* LCDMODE_LTDC_PIP16 */
 	if (ismenukind(mp, ITEM_VALUE) == 0)
 		return;
 	display_setcolors(MENUCOLOR, BGCOLOR);
@@ -14998,9 +14972,6 @@ void display_menu_lblst(
 	)
 {
 	const FLASHMEM struct menudef * const mp = (const FLASHMEM struct menudef *) pv;
-#if LCDMODE_LTDC_PIP16
-	arm_hardware_ltdc_pip_off();
-#endif /* LCDMODE_LTDC_PIP16 */
 	display_setcolors(MENUCOLOR, BGCOLOR);
 	display_at_P(x, y, mp->qlabel);
 }
@@ -15014,9 +14985,7 @@ void display_menu_group(
 	)
 {
 	const FLASHMEM struct menudef * mp = (const FLASHMEM struct menudef *) pv;
-#if LCDMODE_LTDC_PIP16
-	arm_hardware_ltdc_pip_off();
-#endif /* LCDMODE_LTDC_PIP16 */
+
 	while (ismenukind(mp, ITEM_GROUP) == 0)
 		-- mp;
 	display_setcolors(MENUGROUPCOLOR, BGCOLOR);
@@ -15040,9 +15009,6 @@ void display_menu_valxx(
 	const uint_fast16_t * const pv16 = mp->qpval16;
 	const uint_fast8_t * const pv8 = mp->qpval8;
 
-#if LCDMODE_LTDC_PIP16
-	arm_hardware_ltdc_pip_off();
-#endif /* LCDMODE_LTDC_PIP16 */
 	if (ismenukind(mp, ITEM_VALUE) == 0)
 		return;
 	// получение значения для отображения

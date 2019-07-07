@@ -1083,7 +1083,7 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE,		KBD_CODE_MODE,			KBD_CODE_MODEMOD, 		' ', },		// MODE/SUBMODE
 	{ KIF_SLOW,		KBD_CODE_BAND_UP,		KBD_CODE_BAND_UP, 		' ', },		// BAND UP
 	{ KIF_SLOW,		KBD_CODE_BAND_DOWN,		KBD_CODE_BAND_DOWN, 	' ', },		// BAND DOWN
-	{ KIF_NONE,		KBD_CODE_LOCK,			KBD_CODE_LOCK_HOLDED, 	' ', },		// LOCK
+	{ KIF_EXTMENU,	KBD_CODE_DISPMODE,		KBD_CODE_MENU, 			' ', },		// DISPLAY/MENU
 
 	/* ! матрица справа от индикатора - ряд 1 4 по счету справа - сверху вниз */
 	{ KIF_NONE,		KBD_CODE_DWATCHTOGGLE,	KBD_CODE_DWATCHHOLD,	'3', },		// DUAL
@@ -1095,7 +1095,7 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_ERASE,	KBD_CODE_SPLIT,			KBD_CODE_SPLIT_HOLDED,	' ', },		// SPLIT/SPLIT OFF
 	{ KIF_NONE,		KBD_CODE_ATUBYPASS,		KBD_CODE_ATUSTART,		' ', },		// TUNER BYP/ATU START
 	{ KIF_NONE,		KBD_CODE_MOX,			KBD_CODE_TXTUNE,		' ', },		// MOX/TUNE
-	{ KIF_EXTMENU,	KBD_CODE_DISPMODE,		KBD_CODE_MENU, 			' ', },		// DISPLAY/MENU
+	{ KIF_NONE,		KBD_CODE_LOCK,			KBD_CODE_LOCK_HOLDED, 	' ', },		// LOCK
 
 	/* матрица справа от индикатора - ряд 3 2 по счету справа - сверху вниз */
 #if WITHAMHIGHKBDADJ

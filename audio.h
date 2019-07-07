@@ -371,10 +371,10 @@ typedef struct
 
 	#if CPUSTYLE_R7S721 && ! WITHUSEDUALWATCH
 		// Без WITHUSEDUALWATCH
-		#define Ntap_tx_MIKE	NtapValidate(481)
+		#define Ntap_tx_MIKE	NtapValidate(129)
 	#elif CPUSTYLE_R7S721
 		// есть режим WITHUSEDUALWATCH
-		#define Ntap_tx_MIKE	NtapValidate(481)
+		#define Ntap_tx_MIKE	NtapValidate(129)
 	#elif (defined (STM32F767xx) || defined (STM32F769xx)) && ! WITHUSEDUALWATCH
 		// Без WITHUSEDUALWATCH
 		#define Ntap_tx_MIKE	NtapValidate(241)
@@ -448,8 +448,10 @@ uintptr_t allocate_dmabuffer16(void);
 void release_dmabuffer16(uintptr_t addr);
 
 uintptr_t getfilled_dmabufferx(uint_fast16_t * sizep);	/* получить буфер одного из типов, которые могут использоваться для передаяи аудиоданных в компьютер по USB */
-uintptr_t getfilled_dmabufferxrts(uint_fast16_t * sizep);	/* получить буфер одного из типов, которые могут использоваться для передаяи аудиоданных в компьютер по USB */
 void release_dmabufferx(uintptr_t addr);	/* освободить буфер одного из типов, которые могут использоваться для передаяи аудиоданных в компьютер по USB */
+// WITHUSBUAC3 specific
+uintptr_t getfilled_dmabufferxrts(uint_fast16_t * sizep);	/* получить буфер одного из типов, которые могут использоваться для передаяи аудиоданных в компьютер по USB */
+void release_dmabufferxrts(uintptr_t addr);	/* освободить буфер одного из типов, которые могут использоваться для передаяи аудиоданных в компьютер по USB */
 
 void refreshDMA_uacin(void); // Канал DMA ещё занят - оставляем в очереди, иначе получить данные через getfilled_dmabufferx
 

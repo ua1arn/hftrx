@@ -259,7 +259,7 @@ void board_rtc_getdatetime(
 	* hour = ds1305_bcd2bin(b [2] & 0x3f, 0, 23);		// r=2
 	* dayofmonth = ds1305_bcd2bin(b [4] & 0x3f, 1, 31);		// r=4
 	* month = ds1305_bcd2bin(b [5] & 0x1f, 1, 12);		// r=5
-	* year = 2000 + ds1305_bcd2bin(b [6], 0, 88);		// r=6
+	* year = 2000 + ds1305_bcd2bin(b [6], 0, 99);		// r=6
 }
 
 /* возврат не-0 если требуется начальная загрузка значений */
