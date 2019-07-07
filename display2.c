@@ -4292,51 +4292,25 @@ enum
 		PATTERN_BAR_EMPTYHALF = 0x00	//0x00
 	};
 
-	#if WITHSEPARATEWFL
-		/* без совмещения на одном экрание водопада и панорамы */
-		enum 
-		{
-			DPAGE0,					// Страница, в которой отображаются основные (или все)
-			DPAGE1,					// Страница, в которой отображается спектр
-			DPAGE2,					// Страница, в которой отображается водопад
-			DISPLC_MODCOUNT
-		};
+	enum
+	{
+		DPAGE0,					// Страница, в которой отображаются основные (или все)
+		DPAGE1,					// Страница, в которой отображается спектр и водопад
+		DISPLC_MODCOUNT
+	};
 
-		enum
-		{
-			PG0 = REDRSUBSET(DPAGE0),
-			PG1 = REDRSUBSET(DPAGE1),
-			PG2 = REDRSUBSET(DPAGE2),
-			PGSLP = REDRSUBSET_SLEEP,
-			PGALL = PG0 | PG1 | PG2 | REDRSUBSET_MENU,
-			PGLATCH = PGALL,	// страницы, на которых возможно отображение водопада или панорамы.
-			PGSWR = PG0,	// страница отоюражения S-meter и SWR-meter
-			PGWFL = PG2,
-			PGSPE = PG1,
-			PGunused
-		};
-	#else /* WITHSEPARATEWFL */
-		/* совмещение на одном экрание водопада и панорамы */
-		enum 
-		{
-			DPAGE0,					// Страница, в которой отображаются основные (или все)
-			DPAGE1,					// Страница, в которой отображается спектр и водопад
-			DISPLC_MODCOUNT
-		};
-
-		enum
-		{
-			PG0 = REDRSUBSET(DPAGE0),
-			PG1 = REDRSUBSET(DPAGE1),
-			PGALL = PG0 | PG1 | REDRSUBSET_MENU,
-			PGWFL = PG0,	// страница отображения водопада
-			PGSPE = PG0,	// страница отображения панорамы
-			PGSWR = PG1,	// страница отоюражения S-meter и SWR-meter
-			PGLATCH = PGALL,	// страницы, на которых возможно отображение водопада или панорамы.
-			PGSLP = REDRSUBSET_SLEEP,
-			PGunused
-		};
-	#endif /* WITHSEPARATEWFL */
+	enum
+	{
+		PG0 = REDRSUBSET(DPAGE0),
+		PG1 = REDRSUBSET(DPAGE1),
+		PGALL = PG0 | PG1 | REDRSUBSET_MENU,
+		PGWFL = PG0,	// страница отображения водопада
+		PGSPE = PG0,	// страница отображения панорамы
+		PGSWR = PG1,	// страница отоюражения S-meter и SWR-meter
+		PGLATCH = PGALL,	// страницы, на которых возможно отображение водопада или панорамы.
+		PGSLP = REDRSUBSET_SLEEP,
+		PGunused
+	};
 
 		enum {
 		DLES = 30,	// spectrum window upper line
