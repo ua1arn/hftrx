@@ -4265,23 +4265,29 @@ enum
 	#define SMETERMAP		"1  3  5  7  9 +20 +40 60"
 	enum
 	{
+		BDTH_ALLRXBARS = 24,	// ширина зоны для отображение полосы на индикаторе
 		BDTH_ALLRX = 40,	// ширина зоны для отображение полосы на индикаторе
 
-		BDTH_LEFTRX = 12,	// ширина индикатора баллов
-		BDTH_RIGHTRX = BDTH_ALLRX - BDTH_LEFTRX,	// ширина индикатора плюсов
+		BDTH_LEFTRX = 12,	// ширина индикатора баллов (без плюслв)
+		BDTH_RIGHTRX = BDTH_ALLRXBARS - BDTH_LEFTRX,	// ширина индикатора плюсов
 		BDTH_SPACERX = 0,
 		BDTH_ALLSWR = 13,
 		BDTH_SPACESWR = 2,
 		BDTH_ALLPWR = 9,
 		BDTH_SPACEPWR = 0,
 
-		BDCV_ALLRX = ROWS2GRID(60),	// количество ячееек, отведенное под S-метр, панораму, иные отображения
+		BDCV_ALLRX = ROWS2GRID(55),	// количество ячееек, отведенное под S-метр, панораму, иные отображения
 		/* совмещение на одном экрание водопада и панорамы */
 		BDCO_SPMRX = ROWS2GRID(0),	// смещение спектра по вертикали в ячейках от начала общего поля
-		BDCV_SPMRX = ROWS2GRID(22),	// вертикальный размер спектра в ячейках		};
+		BDCV_SPMRX = ROWS2GRID(20),	// вертикальный размер спектра в ячейках		};
 		BDCO_WFLRX = BDCV_SPMRX,	// смещение водопада по вертикали в ячейках от начала общего поля
 		BDCV_WFLRX = BDCV_ALLRX - BDCV_SPMRX	// вертикальный размер водопада в ячейках		};
 	};
+	enum {
+		DLES = 35,	// spectrum window upper line
+		DLE1 = 93
+	};
+
 
 	enum
 	{
@@ -4295,28 +4301,20 @@ enum
 	enum
 	{
 		DPAGE0,					// Страница, в которой отображаются основные (или все)
-		DPAGE1,					// Страница, в которой отображается спектр и водопад
 		DISPLC_MODCOUNT
 	};
 
 	enum
 	{
 		PG0 = REDRSUBSET(DPAGE0),
-		PG1 = REDRSUBSET(DPAGE1),
-		PGALL = PG0 | PG1 | REDRSUBSET_MENU,
+		PGALL = PG0 | REDRSUBSET_MENU,
 		PGWFL = PG0,	// страница отображения водопада
 		PGSPE = PG0,	// страница отображения панорамы
-		PGSWR = PG1,	// страница отоюражения S-meter и SWR-meter
+		PGSWR = PG0,	// страница отоюражения S-meter и SWR-meter
 		PGLATCH = PGALL,	// страницы, на которых возможно отображение водопада или панорамы.
 		PGSLP = REDRSUBSET_SLEEP,
 		PGunused
 	};
-
-		enum {
-		DLES = 30,	// spectrum window upper line
-		//DLE0 = 88,
-		DLE1 = 93
-		};
 
 	#if 1//TUNE_TOP > 100000000uL
 		#define DISPLC_WIDTH	9	// количество цифр в отображении частоты
@@ -4333,7 +4331,7 @@ enum
 	//#define SMALLCHARW 16 /* Font width */
 	static const FLASHMEM struct dzone dzones [] =
 	{
-		{	0,	0,	display2_pip_off,	REDRM_MODE,	PGSLP | PG1 | REDRSUBSET_MENU },	// Выключить PIP если на данной странице не требуется
+		{	0,	0,	display2_pip_off,	REDRM_MODE,	PGSLP | REDRSUBSET_MENU },	// Выключить PIP если на данной странице не требуется
 		{	0,	0,	display_txrxstate2, REDRM_MODE, PGALL, },
 		{	3,	0,	display_ant5,		REDRM_MODE, PGALL, },
 		{	9,	0,	display_att4,		REDRM_MODE, PGALL, },
@@ -4368,16 +4366,14 @@ enum
 		{	9,	20,	display_freqX_b,	REDRM_FRQB, PGALL, },	// SUB FREQ
 		{	21, 20,	display_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
 
-		{	0,	25,	display_siglevel5,	REDRM_BARS, PGALL, },	// signal level in S points
-		{	6,	25,	display_samfreqdelta8, REDRM_BARS, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
 
 	#if 1
-		{	0,	DLES,	display2_legend_rx,	REDRM_MODE, PGSWR, },	// Отображение оцифровки шкалы S-метра
-		{	0,	35,	display2_bars_rx,	REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
-		{	0,	40,	display2_legend_tx,	REDRM_MODE, PGSWR, },	// Отображение оцифровки шкалы PWR & SWR-метра
-		{	0,	45,	display2_bars_tx,	REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
+		{	0,	25,	display2_legend,	REDRM_MODE, PGSWR, },	// Отображение оцифровки шкалы S-метра
+		{	0,	30,	display2_bars,	REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
+		//{	0,	35,	display2_legend_tx,	REDRM_MODE, PGSWR, },	// Отображение оцифровки шкалы PWR & SWR-метра
+		//{	0,	40,	display2_bars_tx,	REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
 	#else
-		{	0,	DLES,	display2_adctest,	REDRM_BARS, PGSWR, },	// ADC raw data print
+		{	0,	25,	display2_adctest,	REDRM_BARS, PGSWR, },	// ADC raw data print
 	#endif
 
 	#if WITHSPECTRUMWF
@@ -4395,18 +4391,19 @@ enum
 		{	39, DLE1,	display_currlevel5, REDRM_VOLT, PGALL, },	// PA drain current d.dd without "A"
 		{	45, DLE1,	display_voltlevelV5, REDRM_VOLT, PGALL, },	// voltmeter with "V"
 	#if WITHAMHIGHKBDADJ
-		{	45, DLE1,	display_amfmhighcut4,REDRM_MODE, PGALL, },	// 3.70
+		//{	XX, DLE1,	display_amfmhighcut4,REDRM_MODE, PGALL, },	// 3.70
 	#endif /* WITHAMHIGHKBDADJ */
+		//{	XX,	DLE1,	display_samfreqdelta8, REDRM_BARS, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
+
+	#if WITHMENU
+		{	3,	25,	display_multilinemenu_block_groups,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
+		{	LABELW + 5,	25,	display_multilinemenu_block_params,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
+		{	LABELW*2 + 6,	25,	display_multilinemenu_block_vals,	REDRM_MVAL, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
+	#endif /* WITHMENU */
 
 		// sleep mode display
 		{	5,	25,	display_datetime12,	REDRM_BARS, PGSLP, },	// DATE & TIME // DATE&TIME Jan-01 13:40
 		{	20, 25,	display_voltlevelV5, REDRM_VOLT, PGSLP, },	// voltmeter with "V"
-
-	#if WITHMENU
-		{	3,	29,	display_multilinemenu_block_groups,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
-		{	LABELW + 5,	29,	display_multilinemenu_block_params,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
-		{	LABELW*2 + 6,	29,	display_multilinemenu_block_vals,	REDRM_MVAL, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
-	#endif /* WITHMENU */
 	};
 
 #if WITHMENU
