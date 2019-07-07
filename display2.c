@@ -50,6 +50,12 @@ static void display2_colorbuff(
 	uint_fast8_t y, 
 	void * pv
 	);
+// Вызывается если страница не требует отображения графических элементов
+static void display2_pip_off(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	void * pv
+	);
 // Отображение шкалы S-метра и других измерителей
 static void display2_legend(
 	uint_fast8_t x, 
@@ -3699,6 +3705,7 @@ enum
 		#define DISPLC_RJ		1	// количество скрытых справа цифр в отображении частоты
 		static const FLASHMEM struct dzone dzones [] =
 		{
+			{	0, 0,	display2_pip_off,	REDRM_MODE,	REDRSUBSET(DPAGE0) | REDRSUBSET_MENU },	// Выключить PIP если на данной странице не требуется
 			{	0, 0,	display_txrxstate2, REDRM_MODE, REDRSUBSET(DPAGE0), },
 			{	3, 0,	display_voxtune3,	REDRM_MODE, REDRSUBSET(DPAGE0), },
 			{	7, 0,	display_att4,		REDRM_MODE, REDRSUBSET(DPAGE0), },
@@ -3719,7 +3726,7 @@ enum
 		#endif /* defined (RTC1_TYPE) */
 			{	18, 28,	display_agc3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 		#if WITHMENU
-			{	1 + LABELW * 0 + 0,	18,	display_multilinemenu_block_groups,	REDRM_MLBL, 	REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
+			{	1 + LABELW * 0 + 0,	18,	display_multilinemenu_block_groups,	REDRM_MLBL, sREDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
 			{	1 + LABELW * 1 + 1,	18,	display_multilinemenu_block_params,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
 			{	1 + LABELW * 2 + 2,	18,	display_multilinemenu_block_vals,	REDRM_MVAL, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
 		#endif /* WITHMENU */
@@ -3799,6 +3806,7 @@ enum
 		static const FLASHMEM struct dzone dzones [] =
 		{
 #if ! WITHISBOOTLOADER
+			{	0,	0,	display2_pip_off,	REDRM_MODE,	PGSWR | REDRSUBSET_MENU },	// Выключить PIP если на данной странице не требуется
 			{	0,	0,	display_txrxstate2, REDRM_MODE, PGALL, },
 			{	3,	0,	display_voxtune3,	REDRM_MODE, PGALL, },
 			{	7,	0,	display_att4,		REDRM_MODE, PGALL, },
@@ -3991,6 +3999,7 @@ enum
 
 	static const FLASHMEM struct dzone dzones [] =
 	{
+		{	0,	0,	display2_pip_off,	REDRM_MODE,	PGSLP | PGSWR | REDRSUBSET_MENU },	// Выключить PIP если на данной странице не требуется
 		{	0,	0,	display_txrxstate2, REDRM_MODE, PGALL, },
 		{	3,	0,	display_ant5,		REDRM_MODE, PGALL, },
 		{	9,	0,	display_att4,		REDRM_MODE, PGALL, },
@@ -4365,6 +4374,7 @@ enum
 	//#define SMALLCHARW 16 /* Font width */
 	static const FLASHMEM struct dzone dzones [] =
 	{
+		{	0,	0,	display2_pip_off,	REDRM_MODE,	PGSLP | PG1 | REDRSUBSET_MENU },	// Выключить PIP если на данной странице не требуется
 		{	0,	0,	display_txrxstate2, REDRM_MODE, PGALL, },
 		{	3,	0,	display_ant5,		REDRM_MODE, PGALL, },
 		{	9,	0,	display_att4,		REDRM_MODE, PGALL, },
@@ -4881,9 +4891,6 @@ static void display2_legend_rx(
 
 	} while (lowhalf --);
 #endif /* defined(SMETERMAP) */
-#if LCDMODE_LTDC_PIP16
-	arm_hardware_ltdc_pip_off();
-#endif /* LCDMODE_LTDC_PIP16 */
 }
 
 // Отображение шкалы SWR-метра и других измерителей
@@ -4914,10 +4921,6 @@ static void display2_legend_tx(
 			#warning No TX indication
 		#endif
 	} while (lowhalf --);
-
-	#if LCDMODE_LTDC_PIP16
-		arm_hardware_ltdc_pip_off();
-	#endif /* LCDMODE_LTDC_PIP16 */
 
 #endif /* defined(SWRPWRMAP) && WITHTX && (WITHSWRMTR || WITHSHOWSWRPWR) */
 }
@@ -5684,6 +5687,19 @@ static void display2_colorbuff(
 #endif /* LCDMODE_S1D13781 */
 }
 
+// если страница не требует отображения графических элементов
+static void
+display2_pip_off(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	void * pv
+	)
+{
+#if LCDMODE_LTDC_PIP16
+	arm_hardware_ltdc_pip_off();
+#endif /* LCDMODE_LTDC_PIP16 */
+}
+
 #else /* WITHSPECTRUMWF */
 
 static void dsp_latchwaterfall(
@@ -5714,6 +5730,16 @@ static void display2_waterfall(
 static void display2_colorbuff(
 	uint_fast8_t x0, 
 	uint_fast8_t y0, 
+	void * pv
+	)
+{
+}
+
+// если страница не требует отображения графических элементов
+static void
+display2_pip_off(
+	uint_fast8_t x,
+	uint_fast8_t y,
 	void * pv
 	)
 {
