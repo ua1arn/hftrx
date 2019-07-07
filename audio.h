@@ -371,10 +371,10 @@ typedef struct
 
 	#if CPUSTYLE_R7S721 && ! WITHUSEDUALWATCH
 		// Без WITHUSEDUALWATCH
-		#define Ntap_tx_MIKE	NtapValidate(481)
+		#define Ntap_tx_MIKE	NtapValidate(129)
 	#elif CPUSTYLE_R7S721
 		// есть режим WITHUSEDUALWATCH
-		#define Ntap_tx_MIKE	NtapValidate(481)
+		#define Ntap_tx_MIKE	NtapValidate(129)
 	#elif (defined (STM32F767xx) || defined (STM32F769xx)) && ! WITHUSEDUALWATCH
 		// Без WITHUSEDUALWATCH
 		#define Ntap_tx_MIKE	NtapValidate(241)
