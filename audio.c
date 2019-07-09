@@ -4838,11 +4838,11 @@ static void printsigwnd(void)
 }
 #endif
 
-static void adjustwmwp(float32_t *w)
+// Применить оконную функцию к IQ буферу
+static void adjustwmwp_IQ(float32_t * w)
 {
-	//return;
 	int i;
-	for (i = 0; i < FFTSizeSpectrum; i++)
+	for (i = 0; i < FFTSizeSpectrum; i ++)
 	{
 		const FLOAT_t r = wnd256 [i]; //fir_design_window(i, n);
 		w [i * 2 + 0] *= r; // real
@@ -4909,7 +4909,9 @@ void dsp_zoomfft_init(uint_fast8_t zoom)
 {
 #if WITHNEWZOOMFFT
 
-	if(zoom > 1)
+	if (zoom > 17)
+		return;
+	if (zoom > 1)
 	{
 		static const float32_t coeffs_x2 [] = {
 			// 2x magnify
@@ -5021,7 +5023,7 @@ void dsp_getspectrumrow(
 		static RAMDTCM float32_t ZoomFFTInput_I [FFTSizeSpectrum]; //входящий буфер ZoomFFT I
 		static RAMDTCM float32_t ZoomFFTInput_Q [FFTSizeSpectrum]; //входящий буфер ZoomFFT Q
 		//Получаем данные в буффер
-		for (i=0; i < FFTSizeSpectrum; i ++)
+		for (i = 0; i < FFTSizeSpectrum; i ++)
 		{
 			ZoomFFTInput_I [i] = sig [i * 2 + 0];
 			ZoomFFTInput_Q [i] = sig [i * 2 + 1];
@@ -5055,7 +5057,7 @@ void dsp_getspectrumrow(
 	}
 #endif /* WITHNEWZOOMFFT */
 
-	adjustwmwp(sig);
+	adjustwmwp_IQ(sig);	// Оконная функция
 
 	/* Process the data through the CFFT/CIFFT module */
 	arm_cfft_f32(FFTCONFIGSpectrum, sig, 0, 1);	// forward transform
@@ -5063,14 +5065,13 @@ void dsp_getspectrumrow(
 	for (x = 0; x < dx; ++ x)
 	{
 #if WITHNEWZOOMFFT
-		int fftpos = raster2fft(x, dx, 1);
+		const int fftpos = raster2fft(x, dx, 1);
 #else /* WITHNEWZOOMFFT */
-		int fftpos = raster2fft(x, dx, zoom);
+		const int fftpos = raster2fft(x, dx, zoom);
 #endif /* WITHNEWZOOMFFT */
 		hbase [x] = getmag2(& sig [fftpos * 2]) * fftcoeff;
 	}
 	rendering = 0;
-
 }
 
 static void
