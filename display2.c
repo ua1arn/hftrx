@@ -3806,7 +3806,7 @@ enum
 		static const FLASHMEM struct dzone dzones [] =
 		{
 #if ! WITHISBOOTLOADER
-			{	0,	0,	display2_pip_off,	REDRM_MODE,	PGSWR | REDRSUBSET_MENU },	// Выключить PIP если на данной странице не требуется
+			{	0,	0,	display2_pip_off,	REDRM_MODE,	PG0 | REDRSUBSET_MENU },	// Выключить PIP если на данной странице не требуется
 			{	0,	0,	display_txrxstate2, REDRM_MODE, PGALL, },
 			{	3,	0,	display_voxtune3,	REDRM_MODE, PGALL, },
 			{	7,	0,	display_att4,		REDRM_MODE, PGALL, },
