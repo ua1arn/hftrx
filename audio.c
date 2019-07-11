@@ -1667,7 +1667,7 @@ static double testgain_float_DCL(const double * dCoeff, int iCoefNum)
 	*/
 
 // Calculate window function (blackman-harris, hamming, rectangular)
-static FLOAT_t fir_design_window(int iCnt, int iCoefNum)
+static FLOAT_t fir_design_window(int iCnt, int iCoefNum, int wtype)
 {
 	const int n = iCoefNum - 1;
 	const FLOAT_t a = (FLOAT_t) M_TWOPI * iCnt / n;
@@ -1677,7 +1677,7 @@ static FLOAT_t fir_design_window(int iCnt, int iCoefNum)
 	const FLOAT_t a5 = 5 * (FLOAT_t) M_TWOPI * iCnt / n;	// для повышения точности умножение перенесено до деления
 	const FLOAT_t a6 = 6 * (FLOAT_t) M_TWOPI * iCnt / n;	// для повышения точности умножение перенесено до деления
 	
-	switch (BOARD_WTYPE_BLACKMAN_HARRIS_MOD)
+	switch (wtype)
 	{
 	default:
 	case BOARD_WTYPE_BLACKMAN_HARRIS:
@@ -1780,7 +1780,7 @@ static FLOAT_t fir_design_window(int iCnt, int iCoefNum)
 
 
 // Calculate window function (blackman-harris, hamming, rectangular)
-static double fir_design_windowL(int iCnt, int iCoefNum)
+static double fir_design_windowL(int iCnt, int iCoefNum, int wtype)
 {
 	const int n = iCoefNum - 1;
 	const double a = (double) M_TWOPI * iCnt / n;
@@ -1790,7 +1790,7 @@ static double fir_design_windowL(int iCnt, int iCoefNum)
 	const double a5 = 5 * (double) M_TWOPI * iCnt / n;	// для повышения точности умножение перенесено до деления
 	const double a6 = 6 * (double) M_TWOPI * iCnt / n;	// для повышения точности умножение перенесено до деления
 	
-	switch (BOARD_WTYPE_BLACKMAN_HARRIS_MOD)
+	switch (wtype)
 	{
 	default:
 	case BOARD_WTYPE_BLACKMAN_HARRIS:
@@ -2020,7 +2020,7 @@ static void fir_design_windowbuff(FLOAT_t *dWindow, int iCoefNum)
 	int iCnt;
 	for (iCnt = 0; iCnt < j; iCnt ++)
 	{
-		dWindow [iCnt] = fir_design_window(iCnt, iCoefNum);
+		dWindow [iCnt] = fir_design_window(iCnt, iCoefNum, BOARD_WTYPE_FILTERS);
 	}
 }
 
@@ -2031,7 +2031,7 @@ static void fir_design_windowbuffL(double *dWindow, int iCoefNum)
 	int iCnt;
 	for (iCnt = 0; iCnt < j; iCnt ++)
 	{
-		dWindow [iCnt] = fir_design_windowL(iCnt, iCoefNum);
+		dWindow [iCnt] = fir_design_windowL(iCnt, iCoefNum, BOARD_WTYPE_FILTERS);
 	}
 }
 
@@ -4816,7 +4816,7 @@ static void buildsigwnd(void)
 	int i;
 	for (i = 0; i < FFTSizeSpectrum; ++ i)
 	{
-		wnd256 [i] = fir_design_window(i, FFTSizeSpectrum);
+		wnd256 [i] = fir_design_window(i, FFTSizeSpectrum, BOARD_WTYPE_SPECTRUM);
 	}
 }
 
@@ -4828,7 +4828,7 @@ static void printsigwnd(void)
 	int i;
 	for (i = 0; i < FFTSizeSpectrum; ++ i)
 	{
-		wnd256 [i] = fir_design_window(i, FFTSizeSpectrum);
+		wnd256 [i] = fir_design_window(i, FFTSizeSpectrum, BOARD_WTYPE_SPECTRUM);
 		int el = ((i + 1) % 4) == 0;
 		debug_printf_P(PSTR("\t" "%+1.20f%s"), wnd256 [i], el ? ",\n" : ", ");
 	}
@@ -4893,7 +4893,7 @@ int dsp_mag2y(
 	)
 {
 	const FLOAT_t r = ratio2db(mag / rxlevelfence);
-	const int y = ymax - (int) ((r + topdb) * ymax / - (bottomdb-topdb));
+	const int y = ymax - (int) ((r + topdb) * ymax / - (bottomdb - topdb));
 
 	if (y > ymax) 
 		return ymax;
@@ -5059,6 +5059,8 @@ void dsp_getspectrumrow(
 
 	/* Process the data through the CFFT/CIFFT module */
 	arm_cfft_f32(FFTCONFIGSpectrum, sig, 0, 1);	// forward transform
+	/* Calculate magnitudes */
+	arm_cmplx_mag_f32(sig, sig, FFTSizeSpectrum);
 
 	for (x = 0; x < dx; ++ x)
 	{
@@ -5067,7 +5069,7 @@ void dsp_getspectrumrow(
 #else /* WITHNEWZOOMFFT */
 		const int fftpos = raster2fft(x, dx, zoom);
 #endif /* WITHNEWZOOMFFT */
-		hbase [x] = getmag2(& sig [fftpos * 2]) * fftcoeff;
+		hbase [x] = sig [fftpos] * fftcoeff;
 	}
 	rendering = 0;
 }
