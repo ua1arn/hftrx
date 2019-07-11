@@ -4836,18 +4836,6 @@ static void printsigwnd(void)
 }
 #endif
 
-// Применить оконную функцию к IQ буферу
-static void adjustwmwp_IQ(float32_t * w)
-{
-	int i;
-	for (i = 0; i < FFTSizeSpectrum; i ++)
-	{
-		const FLOAT_t r = wnd256 [i]; //fir_design_window(i, n);
-		w [i * 2 + 0] *= r; // real
-		w [i * 2 + 1] *= r; // imag
-	}
-}
-
 static FLOAT_t getmag2(const float32_t * sig)
 {
 	const FLOAT_t mag = SQRTF(sig [0] * sig [0] + sig [1] * sig [1]);
@@ -5007,7 +4995,6 @@ void dsp_getspectrumrow(
 	uint_fast8_t zoom	// horisontal magnification
 	)
 {
-	static const FLOAT_t fftcoeff = (FLOAT_t) 1 / (int32_t) (FFTSizeSpectrum / 2);
 	uint_fast16_t i;
 	uint_fast16_t x;
 	rendering = 1;
@@ -5055,15 +5042,13 @@ void dsp_getspectrumrow(
 	}
 #endif /* WITHNEWZOOMFFT */
 
-	adjustwmwp_IQ(sig);	// Оконная функция
-
-	/* Process the data through the CFFT/CIFFT module */
+	arm_cmplx_mult_real_f32(sig, sig, wnd256, FFTSizeSpectrum);	// Применить оконную функцию к IQ буферу
 	arm_cfft_f32(FFTCONFIGSpectrum, sig, 0, 1);	// forward transform
-	/* Calculate magnitudes */
-	arm_cmplx_mag_f32(sig, sig, FFTSizeSpectrum);
+	arm_cmplx_mag_f32(sig, sig, FFTSizeSpectrum);	/* Calculate magnitudes */
 
 	for (x = 0; x < dx; ++ x)
 	{
+		static const FLOAT_t fftcoeff = (FLOAT_t) 1 / (int32_t) (FFTSizeSpectrum / 2);
 #if WITHNEWZOOMFFT
 		const int fftpos = raster2fft(x, dx, 1);
 #else /* WITHNEWZOOMFFT */
