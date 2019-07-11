@@ -4767,8 +4767,6 @@ static RAMFUNC uint_fast8_t isneedmute(uint_fast8_t dspmode)
 
 // Поддержка панорпамы и водопада
 
-enum { NTap256 = FFTSizeSpectrum };
-
 static volatile uint_fast8_t rendering;
 /*
 uint_fast8_t hamradio_get_notchvalueXXX(int_fast32_t * p)
@@ -4777,7 +4775,7 @@ uint_fast8_t hamradio_get_notchvalueXXX(int_fast32_t * p)
 	return 0;
 }
 */
-static RAMBIGDTCM float32_t x256 [NTap256 * 4];
+static RAMBIGDTCM float32_t FFT_fullbuff [FFTSizeSpectrum * 4];
 static RAMDTCM uint_fast16_t fft_head;
 
 // формирование отображения спектра
@@ -4790,10 +4788,10 @@ void saveIQRTSxx(FLOAT_t iv, FLOAT_t qv)
 
 		// shift the old samples
 		// fft_head -  Начало обрабатываемой части буфера
-		// fft_head + NTap256 -  Позиция за концом обрабатываемого буфер
-		fft_head = (fft_head == 0) ? (NTap256 - 1) : (fft_head - 1);
-		x256 [fft_head * 2 + 0] = x256 [(fft_head + NTap256) * 2 + 0] = qv;
-		x256 [fft_head * 2 + 1] = x256 [(fft_head + NTap256) * 2 + 1] = iv;
+		// fft_head + FFTSizeSpectrum -  Позиция за концом обрабатываемого буфер
+		fft_head = (fft_head == 0) ? (FFTSizeSpectrum - 1) : (fft_head - 1);
+		FFT_fullbuff [fft_head * 2 + 0] = FFT_fullbuff [(fft_head + FFTSizeSpectrum) * 2 + 0] = qv;
+		FFT_fullbuff [fft_head * 2 + 1] = FFT_fullbuff [(fft_head + FFTSizeSpectrum) * 2 + 1] = iv;
 
 	}
 	else
@@ -4904,12 +4902,12 @@ int dsp_mag2y(
 	return y;
 }
 
-//инициализация ZoomFFT
+// инициализация ZoomFFT
 void dsp_zoomfft_init(uint_fast8_t zoom)
 {
 #if WITHNEWZOOMFFT
 
-	if (zoom > 17)
+	if (zoom > 16)
 		return;
 	if (zoom > 1)
 	{
@@ -5013,7 +5011,7 @@ void dsp_getspectrumrow(
 	uint_fast16_t i;
 	uint_fast16_t x;
 	rendering = 1;
-	float32_t * const sig = & x256 [fft_head * 2];	// первый элемент массива комплексных чисел
+	float32_t * const sig = & FFT_fullbuff [fft_head * 2];	// первый элемент массива комплексных чисел
 
 	//ZoomFFT
 #if WITHNEWZOOMFFT
@@ -5105,7 +5103,7 @@ int dsp_mag2y(FLOAT_t mag, int ymax, int_fast16_t topdb, int_fast16_t bottomdb)
 	return 0;
 }
 
-//инициализация ZoomFFT
+// инициализация ZoomFFT
 void dsp_zoomfft_init(uint_fast8_t zoom)
 {
 }
