@@ -5105,6 +5105,11 @@ int dsp_mag2y(FLOAT_t mag, int ymax, int_fast16_t topdb, int_fast16_t bottomdb)
 	return 0;
 }
 
+//инициализация ZoomFFT
+void dsp_zoomfft_init(uint_fast8_t zoom)
+{
+}
+
 #endif /* (WITHRTS96 || WITHRTS192) && ! WITHTRANSPARENTIQ */
 
 #if WITHDSPEXTDDC
