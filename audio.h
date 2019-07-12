@@ -581,7 +581,7 @@ void dsp_initialize(void);
 	void dsp_getspectrumrow(
 		FLOAT_t * const hbase,
 		uint_fast16_t dx,	// pixel X width of display window
-		uint_fast8_t zoom	// horisontal magnification
+		uint_fast8_t zoompow2	// horisontal magnification
 		);
 	// Нормирование уровня сигнала к шкале
 	// возвращает значения от 0 до ymax включительно

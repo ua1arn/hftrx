@@ -43,6 +43,16 @@ enum
 	BOARD_WTYPE_count
 };
 
+// параметры масштабирования спектра
+enum
+{
+	BOARD_FFTZOOM_POW2MAX = 4,
+	BOARD_FFTZOOM_MAX = (1 << BOARD_FFTZOOM_POW2MAX)
+};
+
+#define BOARD_WTYPE_FILTERS BOARD_WTYPE_BLACKMAN_HARRIS_MOD
+#define BOARD_WTYPE_SPECTRUM BOARD_WTYPE_HAMMING
+
 
 
 #if defined (IF3_MODEL) && (IF3_MODEL == IF3_TYPE_DCRX) 

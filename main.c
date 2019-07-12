@@ -3018,7 +3018,7 @@ static const uint_fast8_t displaymodesfps = DISPLAYMODES_FPS;
 static uint_fast8_t displayfreqsfps = DISPLAY_FPS;
 static uint_fast8_t displaybarsfps = DISPLAYSWR_FPS;
 #if WITHSPECTRUMWF
-	static uint_fast8_t gfillspect = 1;
+	static uint_fast8_t gfillspect;
 	static uint_fast8_t gtopdb = 30;	/* верхний предел FFT */
 	static uint_fast8_t gbottomdb = 130;	/* нижний предел FFT */
 	static uint_fast8_t gzoomxpow2;		/* степень двойки - состояние растягиваия спектра (уменьшение наблюдаемой полосы частот) */
@@ -5576,7 +5576,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		"ZOOM PAN ", 
 		RJ_POW2,		// rj
 		ISTEP1,		/* spectrum range */
-		0, 4,
+		0, BOARD_FFTZOOM_POW2MAX,
 		offsetof(struct nvmap, gzoomxpow2),	/* диапазон отображаемых значений */
 		NULL,
 		& gzoomxpow2,
@@ -7835,7 +7835,7 @@ updateboard(
 			board_set_fillspect(gfillspect);	/* заливать заполнением площадь под графиком спектра */
 			board_set_topdb(gtopdb);		/* верхний предел FFT */
 			board_set_bottomdb(gbottomdb);		/* нижний предел FFT */
-			board_set_zoomx(1u << gzoomxpow2);	/* уменьшение отображаемого участка спектра */
+			board_set_zoomxpow2(gzoomxpow2);	/* уменьшение отображаемого участка спектра */
 		#endif /* WITHSPECTRUMWF */
 	#endif /* WITHIF4DSP */
 
