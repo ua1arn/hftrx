@@ -86,7 +86,7 @@ static int_fast16_t glob_gridstep = 10000;	// 10 kHz - шаг сетки
 static uint_fast8_t glob_fillspect;	/* заливать заполнением площадь под графиком спектра */
 static int_fast16_t glob_topdb = 30;	/* верхний предел FFT */
 static int_fast16_t glob_bottomdb = 130;	/* нижний предел FFT */
-static uint_fast8_t glob_zoomx = UINT8_MAX;	/* уменьшение отображаемого участка спектра */
+static uint_fast8_t glob_zoomxpow2 = BOARD_FFTZOOM_POW2MAX + 1;	/* уменьшение отображаемого участка спектра */
 
 //#define WIDEFREQ (TUNE_TOP > 100000000L)
 
@@ -1377,7 +1377,7 @@ static void display_siglevel7(
 #if WITHIF4DSP
 int_fast32_t display_zoomedbw(void)
 {
-	return dsp_get_samplerateuacin_rts() / glob_zoomx;
+	return dsp_get_samplerateuacin_rts() >> glob_zoomxpow2;
 }
 #endif /* WITHIF4DSP */
 
@@ -4974,7 +4974,7 @@ static FLOAT_t filter_spectrum(
 #endif
 
 static uint_fast32_t wffreq;			// частота центра спектра, для которой в последной раз отрисовали.
-static uint_fast8_t wfzoom;				// масштаб, с которым выводили спектр
+static uint_fast8_t wfzoompow2;				// масштаб, с которым выводили спектр
 static int_fast16_t wfhorshift;			// сдвиг по шоризонтали (отрицаельный - влево) для водопада.
 static uint_fast16_t wfscroll;			// сдвиг по вертикали (в раьочем направлении) для водопада.
 static uint_fast8_t wfclear;			// стирание всей областии отображение водопада.
@@ -5422,7 +5422,7 @@ static void wflshiftright(uint_fast16_t pixels)
 static void wfsetupnew(void)
 {
 	wflclear();
-	dsp_zoomfft_init(glob_zoomx); //инициализируем и очищаем ZoomFFT
+	dsp_zoomfft_init(glob_zoomxpow2); //инициализируем и очищаем ZoomFFT
 	fft_avg_clear(); // очищаем буфер усреднения FFT
 	wfl_avg_clear(); // очищаем буфер усреднения водопада
 }
@@ -5456,7 +5456,7 @@ static void dsp_latchwaterfall(
 	(void) pv;
 
 	// запоминание информации спектра для спектрограммы
-	dsp_getspectrumrow(spavgarray, ALLDX, glob_zoomx);
+	dsp_getspectrumrow(spavgarray, ALLDX, glob_zoomxpow2);
 
 #if (! LCDMODE_S1D13781_NHWACCEL && LCDMODE_S1D13781)
 #else
@@ -5482,7 +5482,7 @@ static void dsp_latchwaterfall(
 	int_fast16_t hscroll = 0;
 	uint_fast8_t hclear = 0;
 
-	if (wffreq == 0 || wfzoom != glob_zoomx)
+	if (wffreq == 0 || wfzoompow2 != glob_zoomxpow2)
 	{
 		wfsetupnew(); // стираем целиком старое изображение водопада. в строке 0 - новое
 		hclear = 1;
@@ -5526,7 +5526,7 @@ static void dsp_latchwaterfall(
 		}
 	}
 	wffreq = f0;
-	wfzoom = glob_zoomx;
+	wfzoompow2 = glob_zoomxpow2;
 	wfhorshift += hscroll;
 	wfscroll = wfscroll < WFDY ? wfscroll + 1 : WFDY;
 	wfclear = hclear;
@@ -5948,11 +5948,11 @@ board_set_bottomdb(int_fast16_t v)
 
 /* уменьшение отображаемого участка спектра */
 void
-board_set_zoomx(uint_fast8_t v)
+board_set_zoomxpow2(uint_fast8_t v)
 {
-	if (glob_zoomx != v)
+	if (glob_zoomxpow2 != v)
 	{
-		glob_zoomx = v;
-		dsp_zoomfft_init(glob_zoomx);
+		glob_zoomxpow2 = v;
+		dsp_zoomfft_init(glob_zoomxpow2);
 	}
 }
