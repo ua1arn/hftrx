@@ -3916,7 +3916,7 @@ enum
 		BDTH_SPACEPWR = BDTH_SPACERX,
 	#endif /* WITHSHOWSWRPWR */
 
-		BDCV_ALLRX = ROWS2GRID(23),	// количество ячееек, отведенное под S-метр, панораму, иные отображения
+		BDCV_ALLRX = ROWS2GRID(22),	// количество строк (ячееек), отведенное под S-метр, панораму, иные отображения
 
 	#if WITHSEPARATEWFL
 		/* без совмещения на одном экрание водопада и панорамы */
@@ -3927,7 +3927,7 @@ enum
 	#else /* WITHSEPARATEWFL */
 		/* совмещение на одном экрание водопада и панорамы */
 		BDCO_SPMRX = ROWS2GRID(0),	// смещение спектра по вертикали в ячейках от начала общего поля
-		BDCV_SPMRX = ROWS2GRID(12),	// вертикальный размер спектра в ячейках		};
+		BDCV_SPMRX = ROWS2GRID(9),	// вертикальный размер спектра в ячейках		};
 		BDCO_WFLRX = BDCV_SPMRX,	// смещение водопада по вертикали в ячейках от начала общего поля
 		BDCV_WFLRX = BDCV_ALLRX - BDCO_WFLRX	// вертикальный размер водопада в ячейках		};
 	#endif /* WITHSEPARATEWFL */
@@ -3956,13 +3956,12 @@ enum
 		{
 			PG0 = REDRSUBSET(DPAGE0),
 			PG1 = REDRSUBSET(DPAGE1),
-			PG2 = REDRSUBSET(DPAGE2),
 			PGSLP = REDRSUBSET_SLEEP,
-			PGALL = PG0 | PG1 | PG2 | REDRSUBSET_MENU,
-			PGNOMEMU = PG0 | PG1 | PG2,
+			PGALL = PG0 | PG1 | REDRSUBSET_MENU,
+			PGNOMEMU = PG0 | PG1,
 			PGLATCH = PGALL,	// страницы, на которых возможно отображение водопада или панорамы.
-			PGSWR = PG0,	// страница отоюражения S-meter и SWR-meter
-			PGWFL = PG2,
+			PGSWR = PG0 | PG1,	// страница отоюражения S-meter и SWR-meter
+			PGWFL = PG0,
 			PGSPE = PG1,
 			PGunused
 		};
@@ -3978,12 +3977,11 @@ enum
 		enum
 		{
 			PG0 = REDRSUBSET(DPAGE0),
-			PG1 = REDRSUBSET(DPAGE1),
-			PGNOMEMU = PG0 | PG1,
-			PGALL = PG0 | PG1 | REDRSUBSET_MENU,
+			PGNOMEMU = PG0,
+			PGALL = PG0 | REDRSUBSET_MENU,
 			PGWFL = PG0,	// страница отображения водопада
 			PGSPE = PG0,	// страница отображения панорамы
-			PGSWR = PG1,	// страница отоюражения S-meter и SWR-meter
+			PGSWR = PG0,	// страница отоюражения S-meter и SWR-meter
 			PGLATCH = PGALL,	// страницы, на которых возможно отображение водопада или панорамы.
 			PGSLP = REDRSUBSET_SLEEP,
 			PGunused
@@ -3997,9 +3995,11 @@ enum
 	#endif
 	#define DISPLC_RJ		0	// количество скрытых справа цифр в отображении частоты
 
+	// 272/5 = 54, 480/16=30
+	// Main frequency indicator 56 lines height = 12 cells
 	static const FLASHMEM struct dzone dzones [] =
 	{
-		{	0,	0,	display2_pip_off,	REDRM_MODE,	PGSLP | PGSWR | REDRSUBSET_MENU },	// Выключить PIP если на данной странице не требуется
+		{	0,	0,	display2_pip_off,	REDRM_MODE,	PGSLP | REDRSUBSET_MENU },	// Выключить PIP если на данной странице не требуется
 		{	0,	0,	display_txrxstate2, REDRM_MODE, PGALL, },
 		{	3,	0,	display_ant5,		REDRM_MODE, PGALL, },
 		{	9,	0,	display_att4,		REDRM_MODE, PGALL, },
@@ -4009,44 +4009,42 @@ enum
 	#if WITHENCODER2
 		{	21, 0,	display_fnlabel9,	REDRM_MODE, PGALL, },	// FUNC item label
 		{	21,	4,	display_fnvalue9,	REDRM_MODE, PGALL, },	// FUNC item value
-		{	25, 15,	display_notch5,		REDRM_MODE, PGALL, },	// NOTCH on/off
+		{	25, 12,	display_notch5,		REDRM_MODE, PGALL, },	// NOTCH on/off
 	#else /* WITHENCODER2 */
 		{	25, 0,	display_notch5,		REDRM_MODE, PGALL, },	// FUNC item label
 		{	25,	4,	display_notchfreq5,	REDRM_BARS, PGALL, },	// FUNC item value
 	#endif /* WITHENCODER2 */
 
-		{	26, 20,	display_nr3,		REDRM_MODE, PGNOMEMU, },	// NR
-//		{	26, 20,	display_agc3,		REDRM_MODE, PGNOMEMU, },	// AGC mode
-		{	26, 25,	display_voxtune3,	REDRM_MODE, PGNOMEMU, },	// VOX
-		{	26, 30,	display_datamode3,	REDRM_MODE, PGNOMEMU, },	// DATA mode indicator
-		{	26, 35,	display_atu3,		REDRM_MODE, PGNOMEMU, },	// TUNER state (optional)
-		{	26, 40,	display_byp3,		REDRM_MODE, PGNOMEMU, },	// TUNER BYPASS state (optional)
-		{	26, 45,	display_rec3,		REDRM_BARS, PGNOMEMU, },	// Отображение режима записи аудио фрагмента
+		{	26, 16,	display_nr3,		REDRM_MODE, PGNOMEMU, },	// NR
+//		{	26, 16,	display_agc3,		REDRM_MODE, PGNOMEMU, },	// AGC mode
+		{	26, 20,	display_voxtune3,	REDRM_MODE, PGNOMEMU, },	// VOX
+		{	26, 24,	display_datamode3,	REDRM_MODE, PGNOMEMU, },	// DATA mode indicator
+		{	26, 28,	display_atu3,		REDRM_MODE, PGNOMEMU, },	// TUNER state (optional)
+		{	26, 32,	display_byp3,		REDRM_MODE, PGNOMEMU, },	// TUNER BYPASS state (optional)
+		{	26, 36,	display_rec3,		REDRM_BARS, PGNOMEMU, },	// Отображение режима записи аудио фрагмента
 		
-		{	0,	7,	display_freqX_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Частота (большие цифры)
-		{	21, 10,	display_mode3_a,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
-		{	26, 10,	display_rxbw3,		REDRM_MODE, PGALL, },	// 3.1 / 0,5 / WID / NAR
-		{	21, 15,	display_mainsub3,	REDRM_MODE, PGALL, },	// main/sub RX: A/A, A/B, B/A, etc
+		{	0,	4,	display_freqX_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Частота (большие цифры)
+		{	21, 8,	display_mode3_a,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
+		{	26, 8,	display_rxbw3,		REDRM_MODE, PGALL, },	// 3.1 / 0,5 / WID / NAR
+		{	21, 12,	display_mainsub3,	REDRM_MODE, PGALL, },	// main/sub RX: A/A, A/B, B/A, etc
 
-		{	0,	20,	display_lockstate4, REDRM_MODE, PGALL, },	// LOCK
-		{	5,	20,	display_vfomode3,	REDRM_MODE, PGALL, },	// SPLIT
-		{	9,	20,	display_freqX_b,	REDRM_FRQB, PGALL, },	// SUB FREQ
-		{	21, 20,	display_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
+		{	0,	16,	display_lockstate4, REDRM_MODE, PGALL, },	// LOCK
+		{	5,	16,	display_vfomode3,	REDRM_MODE, PGALL, },	// SPLIT
+		{	9,	16,	display_freqX_b,	REDRM_FRQB, PGALL, },	// SUB FREQ
+		{	21, 16,	display_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
 
 #if 1
-		{	0,	25,	display2_legend_rx,	REDRM_MODE, PGSWR, },	// Отображение оцифровки шкалы S-метра
-		{	0,	30,	display2_bars_rx,	REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
-		{	0,	35,	display2_legend_tx,	REDRM_MODE, PGSWR, },	// Отображение оцифровки шкалы PWR & SWR-метра
-		{	0,	40,	display2_bars_tx,	REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
+		{	0,	20,	display2_legend,	REDRM_MODE, PGSWR, },	// Отображение оцифровки шкалы S-метра, PWR & SWR-метра
+		{	0,	24,	display2_bars,	REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
 #else
-		{	0,	25,	display2_adctest,	REDRM_BARS, PGSWR, },	// ADC raw data print
+		{	0,	20,	display2_adctest,	REDRM_BARS, PGSWR, },	// ADC raw data print
 #endif
 
 	#if WITHSPECTRUMWF
-		{	0,	25,	dsp_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
-		{	0,	25,	display2_spectrum,	REDRM_BARS, PGSPE, },// подготовка изображения спектра
-		{	0,	25,	display2_waterfall,	REDRM_BARS, PGWFL, },// подготовка изображения водопада
-		{	0,	25,	display2_colorbuff,	REDRM_BARS,	PGWFL | PGSPE, },// Отображение водопада и/или спектра
+		{	0,	28,	dsp_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
+		{	0,	28,	display2_spectrum,	REDRM_BARS, PGSPE, },// подготовка изображения спектра
+		{	0,	28,	display2_waterfall,	REDRM_BARS, PGWFL, },// подготовка изображения водопада
+		{	0,	28,	display2_colorbuff,	REDRM_BARS,	PGWFL | PGSPE, },// Отображение водопада и/или спектра
 	#endif /* WITHSPECTRUMWF */
 
 	
@@ -4088,7 +4086,7 @@ enum
 	void display2_getpipparams(pipparams_t * p)
 	{
 		p->x = GRID2X(0);	// позиция верхнего левого угла в пикселях
-		p->y = GRID2Y(25);	// позиция верхнего левого угла в пикселях
+		p->y = GRID2Y(28);	// позиция верхнего левого угла в пикселях
 		p->w = GRID2X(CHARS2GRID(BDTH_ALLRX));	// размер по горизонтали в пикселях
 		p->h = GRID2Y(BDCV_ALLRX);				// размер по вертикали в пикселях
 		p->frame = (uintptr_t) getscratchpip();
