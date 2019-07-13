@@ -4896,37 +4896,35 @@ int dsp_mag2y(
 	return y;
 }
 
-static void fftzoom_filer(
-	const struct zoom_param * const prm,
-	const float32_t * bufferIN,
-	float32_t * bufferOUT
-	)
-{
-	float32_t iir_state [FFTZOOM_IIR_STAGES * 4];
-	arm_biquad_casd_df1_inst_f32 iir_config;
-
-	// Biquad LPF фильтр
-	// Initialize floating-point Biquad cascade filter.
-	arm_biquad_cascade_df1_init_f32(& iir_config, FFTZOOM_IIR_STAGES, prm->pIIRCoeffs, iir_state);
-	arm_biquad_cascade_df1_f32(& iir_config, bufferIN, bufferOUT, LARGEFFT);
-}
-
-static void fftzoom_decimate(
+static void fftzoom_filer_decimate(
 	const struct zoom_param * const prm,
 	float32_t * buffer
 	)
 {
-	static float32_t fir_state [FFTZOOM_FIR_TAPS + LARGEFFT - 1];
-	arm_fir_decimate_instance_f32 fir_config;
+	static union states
+	{
+		float32_t iir_state [FFTZOOM_IIR_STAGES * 4];
+		float32_t fir_state [FFTZOOM_FIR_TAPS + LARGEFFT - 1];
+	} s;
+	union configs
+	{
+		arm_biquad_casd_df1_inst_f32 iir_config;
+		arm_fir_decimate_instance_f32 fir_config;
+	} c;
+
+	// Biquad LPF фильтр
+	// Initialize floating-point Biquad cascade filter.
+	arm_biquad_cascade_df1_init_f32(& c.iir_config, FFTZOOM_IIR_STAGES, prm->pIIRCoeffs, s.iir_state);
+	arm_biquad_cascade_df1_f32(& c.iir_config, buffer, buffer, LARGEFFT);
 
 	// Дециматор
-	VERIFY(ARM_MATH_SUCCESS == arm_fir_decimate_init_f32(& fir_config,
+	VERIFY(ARM_MATH_SUCCESS == arm_fir_decimate_init_f32(& c.fir_config,
 						prm->numTaps,
 						prm->zoom,          // Decimation factor
 						prm->pCoeffs,
-						fir_state,            // Filter state variables
+						s.fir_state,            // Filter state variables
 						LARGEFFT));
-	arm_fir_decimate_f32(& fir_config, buffer, buffer, LARGEFFT);
+	arm_fir_decimate_f32(& c.fir_config, buffer, buffer, LARGEFFT);
 }
 
 // Копрование информации о спектре с текущую строку буфера
@@ -4950,11 +4948,8 @@ void dsp_getspectrumrow(
 	{
 		const struct zoom_param * const prm = & zoom_params [zoompow2 - 1];
 
-		fftzoom_filer(prm, largesigI, largesigI);
-		fftzoom_decimate(prm, largesigI);
-
-		fftzoom_filer(prm, largesigQ, largesigQ);
-		fftzoom_decimate(prm, largesigQ);
+		fftzoom_filer_decimate(prm, largesigI);
+		fftzoom_filer_decimate(prm, largesigQ);
 	}
 
 	// Подготовить массив комплексных чисел для преобразования в частотную область
