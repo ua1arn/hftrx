@@ -4035,7 +4035,7 @@ enum
 
 #if 1
 		{	0,	20,	display2_legend,	REDRM_MODE, PGSWR, },	// Отображение оцифровки шкалы S-метра, PWR & SWR-метра
-		{	0,	24,	display2_bars,	REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
+		{	0,	24,	display2_bars,		REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
 #else
 		{	0,	20,	display2_adctest,	REDRM_BARS, PGSWR, },	// ADC raw data print
 #endif
