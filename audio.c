@@ -78,7 +78,7 @@
 	#endif
 
 	#if __ARM_ARCH_7A__
-			#warning Avaliable __ARM_ARCH_7A__
+		#warning Avaliable __ARM_ARCH_7A__
 	#endif /* __ARM_ARCH_7A__ */
 #endif
 
@@ -4866,13 +4866,12 @@ static void printsigwnd(void)
 
 static int raster2fft(
 	int x,	// window pos
-	int dx,	// width
-	uint_fast8_t zoompow2	/* horisontal magnification */
+	int dx	// width
 	)
 {
 	const int xm = dx / 2;	// middle
 	const int delta = x - xm;	// delta in pixels
-	const int fftoffset = delta * ((int) FFTSizeSpectrum / 2 - 1) / (xm << zoompow2);
+	const int fftoffset = delta * ((int) FFTSizeSpectrum / 2 - 1) / xm;
 	return fftoffset < 0 ? (FFTSizeSpectrum + fftoffset) : fftoffset;
 	
 }
@@ -4899,16 +4898,17 @@ int dsp_mag2y(
 
 static void fftzoom_filer(
 	const struct zoom_param * const prm,
-	float32_t * buffer
+	const float32_t * bufferIN,
+	float32_t * bufferOUT
 	)
 {
-	static float32_t iir_state [FFTZOOM_IIR_STAGES * 4];
-	static arm_biquad_casd_df1_inst_f32 iir_config;
+	float32_t iir_state [FFTZOOM_IIR_STAGES * 4];
+	arm_biquad_casd_df1_inst_f32 iir_config;
 
 	// Biquad LPF фильтр
 	// Initialize floating-point Biquad cascade filter.
 	arm_biquad_cascade_df1_init_f32(& iir_config, FFTZOOM_IIR_STAGES, prm->pIIRCoeffs, iir_state);
-	arm_biquad_cascade_df1_f32(& iir_config, buffer, buffer, LARGEFFT);
+	arm_biquad_cascade_df1_f32(& iir_config, bufferIN, bufferOUT, LARGEFFT);
 }
 
 static void fftzoom_decimate(
@@ -4916,8 +4916,8 @@ static void fftzoom_decimate(
 	float32_t * buffer
 	)
 {
-	static float32_t fir_state [LARGEFFT + FFTZOOM_FIR_TAPS - 1];
-	static arm_fir_decimate_instance_f32 fir_config;
+	static float32_t fir_state [FFTZOOM_FIR_TAPS * 2 + LARGEFFT - 1];
+	arm_fir_decimate_instance_f32 fir_config;
 
 	// Дециматор
 	VERIFY(ARM_MATH_SUCCESS == arm_fir_decimate_init_f32(& fir_config,
@@ -4939,7 +4939,7 @@ void dsp_getspectrumrow(
 {
 	uint_fast16_t i;
 	uint_fast16_t x;
-	static RAMBIGDTCM float32_t sig [NORMALFFT * 2];
+	static RAMBIGDTCM float32_t cmplx_sig [NORMALFFT * 2];
 
 	rendering = 1;
 
@@ -4949,29 +4949,32 @@ void dsp_getspectrumrow(
 	if (zoompow2 > 0)
 	{
 		const struct zoom_param * const prm = & zoom_params [zoompow2 - 1];
-		fftzoom_filer(prm, largesigI);
+
+		fftzoom_filer(prm, largesigI, largesigI);
+		fftzoom_filer(prm, largesigQ, largesigQ);
 		fftzoom_decimate(prm, largesigI);
-		fftzoom_filer(prm, largesigQ);
 		fftzoom_decimate(prm, largesigQ);
 	}
 
+	// Подготовить массив комплексных чисел для преобразования в частотную область
 	for (i = 0; i < NORMALFFT; i ++)
 	{
-		sig [i * 2 + 0] = largesigI [i];
-		sig [i * 2 + 1] = largesigQ [i];
+		cmplx_sig [i * 2 + 0] = largesigI [i] * wnd256 [i];
+		cmplx_sig [i * 2 + 1] = largesigQ [i] * wnd256 [i];
 	}
 
-	arm_cmplx_mult_real_f32(sig, sig, wnd256, NORMALFFT);	// Применить оконную функцию к IQ буферу
-	arm_cfft_f32(FFTCONFIGSpectrum, sig, 0, 1);	// forward transform
-	arm_cmplx_mag_f32(sig, sig, NORMALFFT);	/* Calculate magnitudes */
+	rendering = 0;
+
+	//arm_cmplx_mult_real_f32(cmplx_sig, cmplx_sig, wnd256, NORMALFFT);	// Применить оконную функцию к IQ буферу
+	arm_cfft_f32(FFTCONFIGSpectrum, cmplx_sig, 0, 1);	// forward transform
+	arm_cmplx_mag_f32(cmplx_sig, cmplx_sig, NORMALFFT);	/* Calculate magnitudes */
 
 	for (x = 0; x < dx; ++ x)
 	{
 		static const FLOAT_t fftcoeff = (FLOAT_t) 1 / (int32_t) (NORMALFFT / 2);
-		const int fftpos = raster2fft(x, dx, 0);
-		hbase [x] = sig [fftpos] * fftcoeff;
+		const int fftpos = raster2fft(x, dx);
+		hbase [x] = cmplx_sig [fftpos] * fftcoeff;
 	}
-	rendering = 0;
 }
 
 static void
