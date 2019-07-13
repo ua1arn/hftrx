@@ -4897,7 +4897,7 @@ int dsp_mag2y(
 	return y;
 }
 
-static void filterdecimate(
+static void fftzoom_filer(
 	const struct zoom_param * const prm,
 	float32_t * buffer
 	)
@@ -4905,13 +4905,19 @@ static void filterdecimate(
 	static float32_t iir_state [FFTZOOM_IIR_STAGES * 4];
 	static arm_biquad_casd_df1_inst_f32 iir_config;
 
-	static float32_t fir_state [LARGEFFT + FFTZOOM_FIR_TAPS - 1];
-	static arm_fir_decimate_instance_f32 fir_config;
-
 	// Biquad LPF фильтр
 	// Initialize floating-point Biquad cascade filter.
 	arm_biquad_cascade_df1_init_f32(& iir_config, FFTZOOM_IIR_STAGES, prm->pIIRCoeffs, iir_state);
 	arm_biquad_cascade_df1_f32(& iir_config, buffer, buffer, LARGEFFT);
+}
+
+static void fftzoom_decimate(
+	const struct zoom_param * const prm,
+	float32_t * buffer
+	)
+{
+	static float32_t fir_state [LARGEFFT + FFTZOOM_FIR_TAPS - 1];
+	static arm_fir_decimate_instance_f32 fir_config;
 
 	// Дециматор
 	VERIFY(ARM_MATH_SUCCESS == arm_fir_decimate_init_f32(& fir_config,
@@ -4943,8 +4949,10 @@ void dsp_getspectrumrow(
 	if (zoompow2 > 0)
 	{
 		const struct zoom_param * const prm = & zoom_params [zoompow2 - 1];
-		filterdecimate(prm, largesigI);
-		filterdecimate(prm, largesigQ);
+		fftzoom_filer(prm, largesigI);
+		fftzoom_decimate(prm, largesigI);
+		fftzoom_filer(prm, largesigQ);
+		fftzoom_decimate(prm, largesigQ);
 	}
 
 	for (i = 0; i < NORMALFFT; i ++)
