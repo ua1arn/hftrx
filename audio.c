@@ -4916,7 +4916,7 @@ static void fftzoom_decimate(
 	float32_t * buffer
 	)
 {
-	static float32_t fir_state [FFTZOOM_FIR_TAPS * 2 + LARGEFFT - 1];
+	static float32_t fir_state [FFTZOOM_FIR_TAPS + LARGEFFT - 1];
 	arm_fir_decimate_instance_f32 fir_config;
 
 	// Дециматор
@@ -4951,8 +4951,9 @@ void dsp_getspectrumrow(
 		const struct zoom_param * const prm = & zoom_params [zoompow2 - 1];
 
 		fftzoom_filer(prm, largesigI, largesigI);
-		fftzoom_filer(prm, largesigQ, largesigQ);
 		fftzoom_decimate(prm, largesigI);
+
+		fftzoom_filer(prm, largesigQ, largesigQ);
 		fftzoom_decimate(prm, largesigQ);
 	}
 
