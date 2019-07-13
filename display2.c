@@ -86,7 +86,7 @@ static int_fast16_t glob_gridstep = 10000;	// 10 kHz - шаг сетки
 static uint_fast8_t glob_fillspect;	/* заливать заполнением площадь под графиком спектра */
 static int_fast16_t glob_topdb = 30;	/* верхний предел FFT */
 static int_fast16_t glob_bottomdb = 130;	/* нижний предел FFT */
-static uint_fast8_t glob_zoomxpow2 = BOARD_FFTZOOM_POW2MAX + 1;	/* уменьшение отображаемого участка спектра */
+static uint_fast8_t glob_zoomxpow2;	/* уменьшение отображаемого участка спектра */
 
 //#define WIDEFREQ (TUNE_TOP > 100000000L)
 
@@ -5422,7 +5422,6 @@ static void wflshiftright(uint_fast16_t pixels)
 static void wfsetupnew(void)
 {
 	wflclear();
-	dsp_zoomfft_init(glob_zoomxpow2); //инициализируем и очищаем ZoomFFT
 	fft_avg_clear(); // очищаем буфер усреднения FFT
 	wfl_avg_clear(); // очищаем буфер усреднения водопада
 }
@@ -5950,9 +5949,5 @@ board_set_bottomdb(int_fast16_t v)
 void
 board_set_zoomxpow2(uint_fast8_t v)
 {
-	if (glob_zoomxpow2 != v)
-	{
-		glob_zoomxpow2 = v;
-		dsp_zoomfft_init(glob_zoomxpow2);
-	}
+	glob_zoomxpow2 = v;
 }

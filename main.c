@@ -12199,7 +12199,7 @@ static const FLASHMEM struct menudef menutable [] =
 	{
 		"ZOOM PAN", 7, 0, RJ_POW2,	ISTEP1,	
 		ITEM_VALUE,
-		0, 4,							/* уменьшение отображаемого участка спектра */
+		0, BOARD_FFTZOOM_POW2MAX,							/* уменьшение отображаемого участка спектра */
 		offsetof(struct nvmap, gzoomxpow2),
 		NULL,
 		& gzoomxpow2,

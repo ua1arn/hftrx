@@ -263,7 +263,9 @@
 	#define	WITHFPGALOAD_PS	1	/* FPGA загружается процессором с помощью SPI */
 
 	//#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX
-	#define WITHNEWZOOMFFT 1
+	#define BOARD_FFTZOOM_POW2MAX 1	// Возможные масштабы FFT x1, x2
+	//#define BOARD_FFTZOOM_POW2MAX 2	// Возможные масштабы FFT x1, x2, x4
+	//#define BOARD_FFTZOOM_POW2MAX 4	// Возможные масштабы FFT x1, x2, x4, x8, x16
 	//#define WITHUSEDUALWATCH	1	// Второй приемник
 	//#define WITHLOOPBACKTEST	1	/* прослушивание микрофонного входа, генераторов */
 	//#define WITHMODEMIQLOOPBACK	1	/* модем получает собственные передаваемые квадратуры */
