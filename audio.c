@@ -400,19 +400,17 @@ typedef int32_t ncoftwi_t;
 static FLOAT_t omega2ftw_k1; // = POWF(2, NCOFTWBITS);
 #define OMEGA2FTWI(angle) ((ncoftwi_t) ((FLOAT_t) (angle) * omega2ftw_k1 / (FLOAT_t) M_TWOPI))	// angle in radians -pi..+pi to signed version of ftw_t
 
-#define WITHNEWZOOMFFT 1
+enum
+{
 
-#if WITHNEWZOOMFFT
+	BOARD_FFTZOOM_MAX = (1 << BOARD_FFTZOOM_POW2MAX),
+	LARGEFFT = FFTSizeSpectrum * BOARD_FFTZOOM_MAX,	// размер буфера для децимации
+
+	NORMALFFT = FFTSizeSpectrum			// размер буфера для отображения
+};
 
 // параметры масштабирования спектра
 
-// размер буфера для децимации
-enum
-{
-	BOARD_FFTZOOM_MAX = (1 << BOARD_FFTZOOM_POW2MAX),
-	NORMALFFT = FFTSizeSpectrum,
-	LARGEFFT = FFTSizeSpectrum * BOARD_FFTZOOM_MAX
-};
 
 // IIR filter before decimation
 #define FFTZOOM_IIR_STAGES 4
@@ -517,8 +515,6 @@ static const struct zoom_param zoom_params [BOARD_FFTZOOM_POW2MAX] =
 	},
 #endif
 };
-
-#endif /* WITHNEWZOOMFFT */
 
 
 #if 1
@@ -4902,11 +4898,10 @@ int dsp_mag2y(
 }
 
 static void filterdecimate(
-	float32_t * buffer,
-	uint_fast8_t zoompow2	// horisontal magnification
+	const struct zoom_param * const prm,
+	float32_t * buffer
 	)
 {
-	const struct zoom_param * const prm = & zoom_params [zoompow2 - 1];
 	static float32_t iir_state [FFTZOOM_IIR_STAGES * 4];
 	static arm_biquad_casd_df1_inst_f32 iir_config;
 
@@ -4945,14 +4940,13 @@ void dsp_getspectrumrow(
 	float32_t * const largesigI = & FFT_largebuffI [fft_largehead];
 	float32_t * const largesigQ = & FFT_largebuffQ [fft_largehead];
 
-	//ZoomFFT
-#if WITHNEWZOOMFFT
 	if (zoompow2 > 0)
 	{
-		filterdecimate(largesigI, zoompow2);
-		filterdecimate(largesigQ, zoompow2);
+		const struct zoom_param * const prm = & zoom_params [zoompow2 - 1];
+		filterdecimate(prm, largesigI);
+		filterdecimate(prm, largesigQ);
 	}
-#endif /* WITHNEWZOOMFFT */
+
 	for (i = 0; i < NORMALFFT; i ++)
 	{
 		sig [i * 2 + 0] = largesigI [i];
@@ -4966,11 +4960,7 @@ void dsp_getspectrumrow(
 	for (x = 0; x < dx; ++ x)
 	{
 		static const FLOAT_t fftcoeff = (FLOAT_t) 1 / (int32_t) (NORMALFFT / 2);
-#if WITHNEWZOOMFFT
 		const int fftpos = raster2fft(x, dx, 0);
-#else /* WITHNEWZOOMFFT */
-		const int fftpos = raster2fft(x, dx, zoompow2);
-#endif /* WITHNEWZOOMFFT */
 		hbase [x] = sig [fftpos] * fftcoeff;
 	}
 	rendering = 0;
