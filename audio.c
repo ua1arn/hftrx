@@ -4911,11 +4911,12 @@ static void fftzoom_filer_decimate(
 		arm_biquad_casd_df1_inst_f32 iir_config;
 		arm_fir_decimate_instance_f32 fir_config;
 	} c;
+	const unsigned usedSize = NORMALFFT * prm->zoom;
 
 	// Biquad LPF фильтр
 	// Initialize floating-point Biquad cascade filter.
 	arm_biquad_cascade_df1_init_f32(& c.iir_config, FFTZOOM_IIR_STAGES, prm->pIIRCoeffs, s.iir_state);
-	arm_biquad_cascade_df1_f32(& c.iir_config, buffer, buffer, LARGEFFT);
+	arm_biquad_cascade_df1_f32(& c.iir_config, buffer, buffer, usedSize);
 
 	// Дециматор
 	VERIFY(ARM_MATH_SUCCESS == arm_fir_decimate_init_f32(& c.fir_config,
@@ -4923,8 +4924,8 @@ static void fftzoom_filer_decimate(
 						prm->zoom,          // Decimation factor
 						prm->pCoeffs,
 						s.fir_state,            // Filter state variables
-						LARGEFFT));
-	arm_fir_decimate_f32(& c.fir_config, buffer, buffer, LARGEFFT);
+						usedSize));
+	arm_fir_decimate_f32(& c.fir_config, buffer, buffer, usedSize);
 }
 
 // Копрование информации о спектре с текущую строку буфера
