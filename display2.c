@@ -3900,9 +3900,10 @@ enum
 	#define SMETERMAP		"1  3  5  7  9 +20 +40 60"
 	enum
 	{
-		BDTH_ALLRX = 24,	// ширина зоны для отображение полосы на индикаторе
+		BDTH_ALLRX = 30,	// ширина зоны для отображение полосы на индикаторе
+		BDTH_ALLRXBARS = 24,	// ширина зоны для отображение полосы на индикаторе
 		BDTH_LEFTRX = 12,	// ширина индикатора баллов
-		BDTH_RIGHTRX = BDTH_ALLRX - BDTH_LEFTRX,	// ширина индикатора плюсов
+		BDTH_RIGHTRX = BDTH_ALLRXBARS - BDTH_LEFTRX,	// ширина индикатора плюсов
 		BDTH_SPACERX = 0,
 	#if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
 		BDTH_ALLSWR = 13,
@@ -3910,9 +3911,9 @@ enum
 		BDTH_ALLPWR = 9,
 		BDTH_SPACEPWR = 0,
 	#else /* WITHSHOWSWRPWR */
-		BDTH_ALLSWR = BDTH_ALLRX,
+		BDTH_ALLSWR = BDTH_ALLRXBARS,
 		BDTH_SPACESWR = BDTH_SPACERX,
-		BDTH_ALLPWR = BDTH_ALLRX,
+		BDTH_ALLPWR = BDTH_ALLRXBARS,
 		BDTH_SPACEPWR = BDTH_SPACERX,
 	#endif /* WITHSHOWSWRPWR */
 
