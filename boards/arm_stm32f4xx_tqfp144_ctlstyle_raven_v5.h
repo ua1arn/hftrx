@@ -288,7 +288,7 @@
 	//#define WITHOPERA4BEACON	1	/* работа маяком в OPERA */
 
 	#if 0
-		#define WITHUSBHEADSET 1	/* трансивер работает USB гарнитурой для компютера - режим тестирования */
+		#define WITHUSBHEADSET 1	/* трансивер работает USB гарнитурой для компьютера - режим тестирования */
 		#define WITHBBOX	1	// Black Box mode - устройство без органов управления
 		#define	WITHBBOXMIKESRC	BOARD_TXAUDIO_USB
 	#elif 0

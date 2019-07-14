@@ -78,7 +78,7 @@
 	#endif
 
 	#if __ARM_ARCH_7A__
-			#warning Avaliable __ARM_ARCH_7A__
+		#warning Avaliable __ARM_ARCH_7A__
 	#endif /* __ARM_ARCH_7A__ */
 #endif
 
@@ -400,80 +400,123 @@ typedef int32_t ncoftwi_t;
 static FLOAT_t omega2ftw_k1; // = POWF(2, NCOFTWBITS);
 #define OMEGA2FTWI(angle) ((ncoftwi_t) ((FLOAT_t) (angle) * omega2ftw_k1 / (FLOAT_t) M_TWOPI))	// angle in radians -pi..+pi to signed version of ftw_t
 
-#define WITHNEWZOOMFFT 1
+enum
+{
 
-#if WITHNEWZOOMFFT
-// ZoomFFT
-static float32_t FFTBuffer_ZOOMFFT [FFTSizeSpectrum * 2]; //совмещённый буфер FFT I и Q для хранения выборок ZoomFFT
+	BOARD_FFTZOOM_MAX = (1 << BOARD_FFTZOOM_POW2MAX),
+	LARGEFFT = FFTSizeSpectrum * BOARD_FFTZOOM_MAX,	// размер буфера для децимации
+
+	NORMALFFT = FFTSizeSpectrum			// размер буфера для отображения
+};
+
+// параметры масштабирования спектра
+
+
+// IIR filter before decimation
+#define FFTZOOM_IIR_STAGES 4
 
 // Дециматор для Zoom FFT
-#define decimZoomFFTnumTaps 4
-static arm_fir_decimate_instance_f32	DECIMATE_ZOOM_FFT_I;
-static arm_fir_decimate_instance_f32	DECIMATE_ZOOM_FFT_Q;
-static float32_t decimZoomFFTIState [FFTSizeSpectrum + decimZoomFFTnumTaps - 1];
-static float32_t decimZoomFFTQState [FFTSizeSpectrum + decimZoomFFTnumTaps - 1];
-static uint16_t fft_zoomed_width;
+#define FFTZOOM_FIR_TAPS 4	// Maximum taps from all zooms
 
-// Коэффициенты для ZoomFFT lowpass filtering / дециматора
-static arm_biquad_casd_df1_inst_f32 IIR_biquad_Zoom_FFT_I =
+struct zoom_param
 {
-	.numStages = 4,
-	.pCoeffs = (const float32_t [])
-	{
-		1,0,0,0,0,  1,0,0,0,0
-    },
-    .pState = (float32_t [])
-	{
-		0,0,0,0,   0,0,0,0,    0,0,0,0,   0,0,0,0
-	}
+	unsigned zoom;
+	unsigned numTaps;
+	const float32_t * pCoeffs;
+	const float32_t * pIIRCoeffs;
 };
 
-static arm_biquad_casd_df1_inst_f32 IIR_biquad_Zoom_FFT_Q =
-{
-	.numStages = 4,
-	.pCoeffs = (const float32_t [])
-	{
-		1,0,0,0,0,  1,0,0,0,0
-    },
-    .pState = (float32_t [])
-	{
-		0,0,0,0,   0,0,0,0,    0,0,0,0,   0,0,0,0
-	}
-};
-
-
-static const arm_fir_decimate_instance_f32 FirZoomFFTDecimate [BOARD_FFTZOOM_POW2MAX] =
+static const struct zoom_param zoom_params [BOARD_FFTZOOM_POW2MAX] =
 {
 	// x2 zoom lowpass
 	{
-		.numTaps = decimZoomFFTnumTaps,
+		.zoom = 2,
+		.numTaps = FFTZOOM_FIR_TAPS,
 		.pCoeffs = (const float32_t[])
-		{475.1179397144384210E-6,0.503905202786044337,0.503905202786044337,475.1179397144384210E-6},
-		.pState = NULL
+		{
+			475.1179397144384210E-6,0.503905202786044337,0.503905202786044337,475.1179397144384210E-6
+		},
+		.pIIRCoeffs = (const float32_t[])
+		{
+			// 2x magnify
+			// 60dB stopband, elliptic
+			// a1 and coeffs[A2] negated! order: coeffs[B0], coeffs[B1], coeffs[B2], a1, coeffs[A2]
+			// Iowa Hills IIR Filter Designer
+			0.228454526413293696,0.077639329099949764,0.228454526413293696,0.635534925142242080,-0.170083307068779194,
+			0.436788292542003964,0.232307972937606161,0.436788292542003964,0.365885230717786780,-0.471769788739400842,
+			0.535974654742658707,0.557035600464780845,0.535974654742658707,0.125740787233286133,-0.754725697183384336,
+			0.501116342273565607,0.914877831284765408,0.501116342273565607,0.013862536615004284,-0.930973052446900984,
+		},
 	},
+#if BOARD_FFTZOOM_POW2MAX > 1
 	// x4 zoom lowpass
 	{
-		.numTaps = decimZoomFFTnumTaps,
+		.zoom = 4,
+		.numTaps = FFTZOOM_FIR_TAPS,
 		.pCoeffs = (const float32_t[])
-		{0.198273254218889416,0.298085149879260325,0.298085149879260325,0.198273254218889416},
-		.pState = NULL
+		{
+			0.198273254218889416,0.298085149879260325,0.298085149879260325,0.198273254218889416
+		},
+		.pIIRCoeffs = (const float32_t[])
+		{
+			// 4x magnify
+			// 60dB stopband, elliptic
+			// a1 and coeffs[A2] negated! order: coeffs[B0], coeffs[B1], coeffs[B2], a1, coeffs[A2]
+			// Iowa Hills IIR Filter Designer
+			0.182208761527446556,-0.222492493114674145,0.182208761527446556,1.326111070880959810,-0.468036100821178802,
+			0.337123762652097259,-0.366352718812586853,0.337123762652097259,1.337053579516321200,-0.644948386007929031,
+			0.336163175380826074,-0.199246162162897811,0.336163175380826074,1.354952684569386670,-0.828032873168141115,
+			0.178588201750411041,0.207271695028067304,0.178588201750411041,1.386486967455699220,-0.950935065984588657,
+		},
 	},
+#endif
+#if BOARD_FFTZOOM_POW2MAX > 2
 	// x8 zoom lowpass
 	{
-		.numTaps = decimZoomFFTnumTaps,
+		.zoom = 8,
+		.numTaps = FFTZOOM_FIR_TAPS,
 		.pCoeffs = (const float32_t[])
-		{0.199820836596682871,0.272777397353925699,0.272777397353925699,0.199820836596682871},
-		.pState = NULL
+		{
+			0.199820836596682871,0.272777397353925699,0.272777397353925699,0.199820836596682871
+		},
+		.pIIRCoeffs = (const float32_t[])
+		{
+			// 8x magnify
+			// 60dB stopband, elliptic
+			// a1 and coeffs[A2] negated! order: coeffs[B0], coeffs[B1], coeffs[B2], a1, coeffs[A2]
+			// Iowa Hills IIR Filter Designer
+			0.185643392652478922,-0.332064345389014803,0.185643392652478922,1.654637402827731090,-0.693859842743674182,
+			0.327519300813245984,-0.571358085216950418,0.327519300813245984,1.715375037176782860,-0.799055553586324407,
+			0.283656142708241688,-0.441088976843048652,0.283656142708241688,1.778230635987093860,-0.904453944560528522,
+			0.079685368654848945,-0.011231810140649204,0.079685368654848945,1.825046003243238070,-0.973184930412286708,
+		},
 	},
+#endif
+#if BOARD_FFTZOOM_POW2MAX > 3
 	// x16 zoom lowpass
 	{
-		.numTaps = decimZoomFFTnumTaps,
+		.zoom = 16,
+		.numTaps = FFTZOOM_FIR_TAPS,
 		.pCoeffs = (const float32_t[])
-		{0.199820836596682871,0.272777397353925699,0.272777397353925699,0.199820836596682871},
-		.pState = NULL
+		{
+			0.199820836596682871,0.272777397353925699,0.272777397353925699,0.199820836596682871
+		},
+		.pIIRCoeffs = (const float32_t[])
+		{
+			// 16x magnify
+			// 60dB stopband, elliptic
+			// a1 and coeffs[A2] negated! order: coeffs[B0], coeffs[B1], coeffs[B2], a1, coeffs[A2]
+			// Iowa Hills IIR Filter Designer
+			0.194769868656866380,-0.379098413160710079,0.194769868656866380,1.824436402073870810,-0.834877726226893380,
+			0.333973874901496770,-0.646106479315673776,0.333973874901496770,1.871892825636887640,-0.893734096124207178,
+			0.272903880596429671,-0.513507745397738469,0.272903880596429671,1.918161772571113750,-0.950461788366234739,
+			0.053535383722369843,-0.069683422367188122,0.053535383722369843,1.948900719896301760,-0.986288064973853129,
+		},
 	},
+#endif
 };
-#endif /* WITHNEWZOOMFFT */
+
+
 #if 1
 static RAMFUNC FLOAT_t peekvalf(uint32_t a)
 {
@@ -4762,8 +4805,11 @@ uint_fast8_t hamradio_get_notchvalueXXX(int_fast32_t * p)
 	return 0;
 }
 */
-static RAMBIGDTCM float32_t FFT_fullbuff [FFTSizeSpectrum * 4];
-static RAMDTCM uint_fast16_t fft_head;
+
+// Сэмплы для децимации
+static RAMBIGDTCM float32_t FFT_largebuffI [LARGEFFT * 2];
+static RAMBIGDTCM float32_t FFT_largebuffQ [LARGEFFT * 2];
+static RAMDTCM uint_fast16_t fft_largehead;
 
 // формирование отображения спектра
 void saveIQRTSxx(FLOAT_t iv, FLOAT_t qv)
@@ -4771,14 +4817,9 @@ void saveIQRTSxx(FLOAT_t iv, FLOAT_t qv)
 	const uint_fast8_t rxgate = getRxGate();
 	if (rendering == 0)
 	{
-		//const struct Complex NewSample = { iv, qv };
-
-		// shift the old samples
-		// fft_head -  Начало обрабатываемой части буфера
-		// fft_head + FFTSizeSpectrum -  Позиция за концом обрабатываемого буфер
-		fft_head = (fft_head == 0) ? (FFTSizeSpectrum - 1) : (fft_head - 1);
-		FFT_fullbuff [fft_head * 2 + 0] = FFT_fullbuff [(fft_head + FFTSizeSpectrum) * 2 + 0] = qv;
-		FFT_fullbuff [fft_head * 2 + 1] = FFT_fullbuff [(fft_head + FFTSizeSpectrum) * 2 + 1] = iv;
+		fft_largehead = (fft_largehead == 0) ? (LARGEFFT - 1) : (fft_largehead - 1);
+		FFT_largebuffI [fft_largehead] = FFT_largebuffI [fft_largehead + LARGEFFT] = qv;
+		FFT_largebuffQ [fft_largehead] = FFT_largebuffQ [fft_largehead + LARGEFFT] = iv;
 
 	}
 	else
@@ -4796,7 +4837,7 @@ static void buildsigwnd(void)
 
 #else
 
-static FLOAT_t wnd256 [FFTSizeSpectrum];
+static FLOAT_t wnd256 [NORMALFFT];
 
 static void buildsigwnd(void)
 {
@@ -4825,13 +4866,12 @@ static void printsigwnd(void)
 
 static int raster2fft(
 	int x,	// window pos
-	int dx,	// width
-	uint_fast8_t zoompow2	/* horisontal magnification */
+	int dx	// width
 	)
 {
 	const int xm = dx / 2;	// middle
 	const int delta = x - xm;	// delta in pixels
-	const int fftoffset = delta * ((int) FFTSizeSpectrum / 2 - 1) / (xm << zoompow2);
+	const int fftoffset = delta * ((int) FFTSizeSpectrum / 2 - 1) / xm;
 	return fftoffset < 0 ? (FFTSizeSpectrum + fftoffset) : fftoffset;
 	
 }
@@ -4856,89 +4896,36 @@ int dsp_mag2y(
 	return y;
 }
 
-// инициализация ZoomFFT
-void dsp_zoomfft_init(uint_fast8_t zoompow2)
+static void fftzoom_filer_decimate(
+	const struct zoom_param * const prm,
+	float32_t * buffer
+	)
 {
-#if WITHNEWZOOMFFT
-
-	if (zoompow2 > BOARD_FFTZOOM_POW2MAX)
-		return;
-	if (zoompow2 > 0)
+	static union states
 	{
-		const uint_fast8_t zoom = 1 << zoompow2;
-		static const float32_t coeffs_x2 [] = {
-			// 2x magnify
-			// 60dB stopband, elliptic
-			// a1 and coeffs[A2] negated! order: coeffs[B0], coeffs[B1], coeffs[B2], a1, coeffs[A2]
-			// Iowa Hills IIR Filter Designer
-			0.228454526413293696,0.077639329099949764,0.228454526413293696,0.635534925142242080,-0.170083307068779194,
-			0.436788292542003964,0.232307972937606161,0.436788292542003964,0.365885230717786780,-0.471769788739400842,
-			0.535974654742658707,0.557035600464780845,0.535974654742658707,0.125740787233286133,-0.754725697183384336,
-			0.501116342273565607,0.914877831284765408,0.501116342273565607,0.013862536615004284,-0.930973052446900984,
-		};
-		static const float32_t coeffs_x4 [] = {
-			// 4x magnify
-			// 60dB stopband, elliptic
-			// a1 and coeffs[A2] negated! order: coeffs[B0], coeffs[B1], coeffs[B2], a1, coeffs[A2]
-			// Iowa Hills IIR Filter Designer
-			0.182208761527446556,-0.222492493114674145,0.182208761527446556,1.326111070880959810,-0.468036100821178802,
-			0.337123762652097259,-0.366352718812586853,0.337123762652097259,1.337053579516321200,-0.644948386007929031,
-			0.336163175380826074,-0.199246162162897811,0.336163175380826074,1.354952684569386670,-0.828032873168141115,
-			0.178588201750411041,0.207271695028067304,0.178588201750411041,1.386486967455699220,-0.950935065984588657,
-		};
-		static const float32_t coeffs_x8 [] = {
-			// 8x magnify
-			// 60dB stopband, elliptic
-			// a1 and coeffs[A2] negated! order: coeffs[B0], coeffs[B1], coeffs[B2], a1, coeffs[A2]
-			// Iowa Hills IIR Filter Designer
-			0.185643392652478922,-0.332064345389014803,0.185643392652478922,1.654637402827731090,-0.693859842743674182,
-			0.327519300813245984,-0.571358085216950418,0.327519300813245984,1.715375037176782860,-0.799055553586324407,
-			0.283656142708241688,-0.441088976843048652,0.283656142708241688,1.778230635987093860,-0.904453944560528522,
-			0.079685368654848945,-0.011231810140649204,0.079685368654848945,1.825046003243238070,-0.973184930412286708,
-		};
-		static const float32_t coeffs_x16 [] = {
-			// 16x magnify
-			// 60dB stopband, elliptic
-			// a1 and coeffs[A2] negated! order: coeffs[B0], coeffs[B1], coeffs[B2], a1, coeffs[A2]
-			// Iowa Hills IIR Filter Designer
-			0.194769868656866380,-0.379098413160710079,0.194769868656866380,1.824436402073870810,-0.834877726226893380,
-			0.333973874901496770,-0.646106479315673776,0.333973874901496770,1.871892825636887640,-0.893734096124207178,
-			0.272903880596429671,-0.513507745397738469,0.272903880596429671,1.918161772571113750,-0.950461788366234739,
-			0.053535383722369843,-0.069683422367188122,0.053535383722369843,1.948900719896301760,-0.986288064973853129,
-		};
+		float32_t iir_state [FFTZOOM_IIR_STAGES * 4];
+		float32_t fir_state [FFTZOOM_FIR_TAPS + LARGEFFT - 1];
+	} s;
+	union configs
+	{
+		arm_biquad_casd_df1_inst_f32 iir_config;
+		arm_fir_decimate_instance_f32 fir_config;
+	} c;
+	const unsigned usedSize = NORMALFFT * prm->zoom;
 
-		static const float32_t * const zoomfft_mag_coeffs [BOARD_FFTZOOM_POW2MAX] =
-		{
-			coeffs_x2, // 2
-			coeffs_x4, // 4
-			coeffs_x8, // 8
-			coeffs_x16, // 16
-		};
+	// Biquad LPF фильтр
+	// Initialize floating-point Biquad cascade filter.
+	arm_biquad_cascade_df1_init_f32(& c.iir_config, FFTZOOM_IIR_STAGES, prm->pIIRCoeffs, s.iir_state);
+	arm_biquad_cascade_df1_f32(& c.iir_config, buffer, buffer, usedSize);
 
-		IIR_biquad_Zoom_FFT_I.pCoeffs = zoomfft_mag_coeffs [zoompow2 - 1];
-		IIR_biquad_Zoom_FFT_Q.pCoeffs = zoomfft_mag_coeffs [zoompow2 - 1];
-		//arm_fill_f32(0, IIR_biquad_Zoom_FFT_I.pState, xxx);
-		//arm_fill_f32(0, IIR_biquad_Zoom_FFT_Q.pState, xxx);
-		arm_fill_f32(0, decimZoomFFTIState, sizeof decimZoomFFTIState / sizeof decimZoomFFTIState [0]);
-		arm_fill_f32(0, decimZoomFFTQState, sizeof decimZoomFFTQState / sizeof decimZoomFFTQState [0]);
-
-		VERIFY(ARM_MATH_SUCCESS == arm_fir_decimate_init_f32(& DECIMATE_ZOOM_FFT_I,
-							FirZoomFFTDecimate [zoompow2 - 1].numTaps,
-							zoom,          // Decimation factor
-							FirZoomFFTDecimate [zoompow2 - 1].pCoeffs,
-							decimZoomFFTIState,            // Filter state variables
-							FFTSizeSpectrum));
-		VERIFY(ARM_MATH_SUCCESS == arm_fir_decimate_init_f32(& DECIMATE_ZOOM_FFT_Q,
-							FirZoomFFTDecimate [zoompow2 - 1].numTaps,
-							zoom,          // Decimation factor
-							FirZoomFFTDecimate [zoompow2 - 1].pCoeffs,
-							decimZoomFFTQState,            // Filter state variables
-							FFTSizeSpectrum));
-
-		fft_zoomed_width = FFTSizeSpectrum / zoom;
-		arm_fill_f32(0, FFTBuffer_ZOOMFFT, sizeof FFTBuffer_ZOOMFFT / sizeof FFTBuffer_ZOOMFFT [0]); //очищаем накопительный буффер ZoomFFT (2 канала по 32 бита)
-	}
-#endif /* WITHNEWZOOMFFT */
+	// Дециматор
+	VERIFY(ARM_MATH_SUCCESS == arm_fir_decimate_init_f32(& c.fir_config,
+						prm->numTaps,
+						prm->zoom,          // Decimation factor
+						prm->pCoeffs,
+						s.fir_state,            // Filter state variables
+						usedSize));
+	arm_fir_decimate_f32(& c.fir_config, buffer, buffer, usedSize);
 }
 
 // Копрование информации о спектре с текущую строку буфера
@@ -4951,67 +4938,40 @@ void dsp_getspectrumrow(
 {
 	uint_fast16_t i;
 	uint_fast16_t x;
+	static RAMBIGDTCM float32_t cmplx_sig [NORMALFFT * 2];
+
 	rendering = 1;
-	float32_t * const sig = & FFT_fullbuff [fft_head * 2];	// первый элемент массива комплексных чисел
 
-	//ZoomFFT
-#if WITHNEWZOOMFFT
-	if(zoompow2 > 0)
+	float32_t * const largesigI = & FFT_largebuffI [fft_largehead];
+	float32_t * const largesigQ = & FFT_largebuffQ [fft_largehead];
+
+	if (zoompow2 > 0)
 	{
-		uint_fast16_t i;
-		static RAMDTCM float32_t ZoomFFTInput_I [FFTSizeSpectrum]; //входящий буфер ZoomFFT I
-		static RAMDTCM float32_t ZoomFFTInput_Q [FFTSizeSpectrum]; //входящий буфер ZoomFFT Q
-		//Получаем данные в буффер
-		for (i = 0; i < FFTSizeSpectrum; i ++)
-		{
-			ZoomFFTInput_I [i] = sig [i * 2 + 0];
-			ZoomFFTInput_Q [i] = sig [i * 2 + 1];
-		}
-		// Biquad LPF фильтр
-		arm_biquad_cascade_df1_f32(& IIR_biquad_Zoom_FFT_I, ZoomFFTInput_I, ZoomFFTInput_I, FFTSizeSpectrum);
-		arm_biquad_cascade_df1_f32(& IIR_biquad_Zoom_FFT_Q, ZoomFFTInput_Q, ZoomFFTInput_Q, FFTSizeSpectrum);
-		// Дециматор
-		if (DECIMATE_ZOOM_FFT_Q.pState != NULL)
-		{
-			arm_fir_decimate_f32(& DECIMATE_ZOOM_FFT_I, ZoomFFTInput_I, ZoomFFTInput_I, FFTSizeSpectrum);
-			arm_fir_decimate_f32(& DECIMATE_ZOOM_FFT_Q, ZoomFFTInput_Q, ZoomFFTInput_Q, FFTSizeSpectrum);
-		}
-		// Смещаем старые данные в  буфере, т.к. будем их использовать (иначе скорость FFT упадёт, ведь для получения большего разрешения необходимо накапливать больше данных)
-		// todo: use arm_copy_f32(src, dst, n);
-		for (i = 0; i < FFTSizeSpectrum; i ++)
-		{
-			if (i < (FFTSizeSpectrum - fft_zoomed_width))
-			{
-				FFTBuffer_ZOOMFFT [i * 2 + 0] = FFTBuffer_ZOOMFFT [(i + fft_zoomed_width) * 2 + 0];
-				FFTBuffer_ZOOMFFT [i * 2 + 1] = FFTBuffer_ZOOMFFT [(i + fft_zoomed_width) * 2 + 1];
-			}
-			else
-			{
-				// Добавляем новые данные в буфер FFT для расчёта
-				FFTBuffer_ZOOMFFT [i * 2 + 0] = ZoomFFTInput_I [i - (FFTSizeSpectrum - fft_zoomed_width)];
-				FFTBuffer_ZOOMFFT [i * 2 + 1] = ZoomFFTInput_Q [i - (FFTSizeSpectrum - fft_zoomed_width)];
-			}
-			sig [i * 2 + 0] = FFTBuffer_ZOOMFFT [i * 2 + 0];
-			sig [i * 2 + 1] = FFTBuffer_ZOOMFFT [i * 2 + 1];
-		}
-	}
-#endif /* WITHNEWZOOMFFT */
+		const struct zoom_param * const prm = & zoom_params [zoompow2 - 1];
 
-	arm_cmplx_mult_real_f32(sig, sig, wnd256, FFTSizeSpectrum);	// Применить оконную функцию к IQ буферу
-	arm_cfft_f32(FFTCONFIGSpectrum, sig, 0, 1);	// forward transform
-	arm_cmplx_mag_f32(sig, sig, FFTSizeSpectrum);	/* Calculate magnitudes */
+		fftzoom_filer_decimate(prm, largesigI);
+		fftzoom_filer_decimate(prm, largesigQ);
+	}
+
+	// Подготовить массив комплексных чисел для преобразования в частотную область
+	for (i = 0; i < NORMALFFT; i ++)
+	{
+		cmplx_sig [i * 2 + 0] = largesigI [i] * wnd256 [i];
+		cmplx_sig [i * 2 + 1] = largesigQ [i] * wnd256 [i];
+	}
+
+	rendering = 0;
+
+	//arm_cmplx_mult_real_f32(cmplx_sig, cmplx_sig, wnd256, NORMALFFT);	// Применить оконную функцию к IQ буферу
+	arm_cfft_f32(FFTCONFIGSpectrum, cmplx_sig, 0, 1);	// forward transform
+	arm_cmplx_mag_f32(cmplx_sig, cmplx_sig, NORMALFFT);	/* Calculate magnitudes */
 
 	for (x = 0; x < dx; ++ x)
 	{
-		static const FLOAT_t fftcoeff = (FLOAT_t) 1 / (int32_t) (FFTSizeSpectrum / 2);
-#if WITHNEWZOOMFFT
-		const int fftpos = raster2fft(x, dx, 0);
-#else /* WITHNEWZOOMFFT */
-		const int fftpos = raster2fft(x, dx, zoompow2);
-#endif /* WITHNEWZOOMFFT */
-		hbase [x] = sig [fftpos] * fftcoeff;
+		static const FLOAT_t fftcoeff = (FLOAT_t) 1 / (int32_t) (NORMALFFT / 2);
+		const int fftpos = raster2fft(x, dx);
+		hbase [x] = cmplx_sig [fftpos] * fftcoeff;
 	}
-	rendering = 0;
 }
 
 static void
@@ -5043,11 +5003,6 @@ void dsp_getspectrumrow(
 int dsp_mag2y(FLOAT_t mag, int ymax, int_fast16_t topdb, int_fast16_t bottomdb)
 {
 	return 0;
-}
-
-// инициализация ZoomFFT
-void dsp_zoomfft_init(uint_fast8_t zoom)
-{
 }
 
 #endif /* (WITHRTS96 || WITHRTS192) && ! WITHTRANSPARENTIQ */
@@ -5458,7 +5413,7 @@ void RAMFUNC dsp_extbuffer32rx(const uint32_t * buff)
 		save16demod(dual.IV, dual.QV);
 
 	#elif WITHUSBHEADSET
-		/* трансивер работает USB гарнитурой для компютера - режим тестирования */
+		/* трансивер работает USB гарнитурой для компьютера - режим тестирования */
 
 		save16demod(0, 0);	// Посе фильтрации будет проигнорированно
 		savesampleout32stereo(iq2tx(0), iq2tx(0));

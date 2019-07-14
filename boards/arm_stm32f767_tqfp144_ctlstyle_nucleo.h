@@ -281,7 +281,10 @@
 	#define WITHDSPLOCALFIR 1		/* test: Фильтрация квадратур осуществляется процессором */
 
 	#define WITHSKIPUSERMODE 1	// debug option: не отдавать в USER MODE блоки для фильтрации аудиосигнала
-	//#define WITHNEWZOOMFFT 1
+	//#define BOARD_FFTZOOM_POW2MAX 1	// Возможные масштабы FFT x1, x2
+	//#define BOARD_FFTZOOM_POW2MAX 2	// Возможные масштабы FFT x1, x2, x4
+	#define BOARD_FFTZOOM_POW2MAX 3	// Возможные масштабы FFT x1, x2, x4, x8
+	//#define BOARD_FFTZOOM_POW2MAX 4	// Возможные масштабы FFT x1, x2, x4, x8, x16
 	//#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX
 	//#define WITHUSEDUALWATCH	1	// Второй приемник
 	//#define WITHLOOPBACKTEST	1	/* прослушивание микрофонного входа, генераторов */
@@ -294,7 +297,7 @@
 	//#define WITHOPERA4BEACON	1	/* работа маяком в OPERA */
 
 	#if 0
-		#define WITHUSBHEADSET 1	/* трансивер работает USB гарнитурой для компютера - режим тестирования */
+		#define WITHUSBHEADSET 1	/* трансивер работает USB гарнитурой для компьютера - режим тестирования */
 		#define WITHBBOX	1	// Black Box mode - устройство без органов управления
 		#define	WITHBBOXMIKESRC	BOARD_TXAUDIO_USB
 	#elif 0

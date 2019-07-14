@@ -281,6 +281,10 @@
 
 	//#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX
 	#define WITHUSEDUALWATCH	1	// Второй приемник
+	//#define BOARD_FFTZOOM_POW2MAX 1	// Возможные масштабы FFT x1, x2
+	//#define BOARD_FFTZOOM_POW2MAX 2	// Возможные масштабы FFT x1, x2, x4
+	//#define BOARD_FFTZOOM_POW2MAX 3	// Возможные масштабы FFT x1, x2, x4, x8
+	#define BOARD_FFTZOOM_POW2MAX 4	// Возможные масштабы FFT x1, x2, x4, x8, x16
 	#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
 
 	// FPGA section
@@ -371,7 +375,6 @@
 	// --- Эти строки можно отключать, уменьшая функциональность готового изделия
 
 	#define WITHMODESETFULLNFM 1
-	#define WITHNEWZOOMFFT 1
 
 	#define WITHCATEXT	1	/* Расширенный набор команд CAT */
 	#define WITHELKEY	1
@@ -411,7 +414,7 @@
 
 
 	#if 0
-		#define WITHUSBHEADSET 1	/* трансивер работает USB гарнитурой для компютера - режим тестирования */
+		#define WITHUSBHEADSET 1	/* трансивер работает USB гарнитурой для компьютера - режим тестирования */
 		#define WITHBBOX	1	// Black Box mode - устройство без органов управления
 		#define	WITHBBOXMIKESRC	BOARD_TXAUDIO_USB
 	#elif 0

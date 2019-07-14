@@ -335,6 +335,10 @@
 	#define ALIGNX_BEGIN __attribute__ ((aligned(32))) 
 	#define ALIGNX_END /* nothing */
 
+	#if __ARM_NEON
+		#define ARM_MATH_NEON 1
+	#endif /* __ARM_NEON */
+
 	#include "arm_math.h"
 	#include "arm_const_structs.h"
 

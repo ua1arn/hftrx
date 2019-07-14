@@ -208,8 +208,8 @@ typedef uint16_t PACKEDCOLOR565_T;
 #if LCDMODE_LTDC
 
 	#define DISPLAYMODES_FPS 5	/* количество обновлений отображения режимов работы */
-	#define DISPLAY_FPS	20	/* обновление показаний частоты десять раз в секунду */
-	#define DISPLAYSWR_FPS 20	/* количество обновлений SWR и панорамы за секунду */
+	#define DISPLAY_FPS	10	/* обновление показаний частоты десять раз в секунду */
+	#define DISPLAYSWR_FPS 10	/* количество обновлений SWR и панорамы за секунду */
 
 	#if LCDMODE_LTDC_L24
 
@@ -434,9 +434,6 @@ void display_menuitemlabel(
 void display_menuitemvalue(
 	void * pv
 	);
-
-// инициализация ZoomFFT
-void dsp_zoomfft_init(uint_fast8_t zoom);
 
 // Вызывается из display2.c
 void 

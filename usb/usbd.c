@@ -9731,7 +9731,7 @@ USBD_StatusTypeDef USBD_LL_IsoOUTIncomplete(USBD_HandleTypeDef  *pdev, uint_fast
 	USBD_EndpointTypeDef * const pep = & pdev->ep_out [epnum];
 	// epnum всегда 0
 	//notseq [epnum] = ! notseq  [epnum];
-	//TP(); // постоянно проходим тут, если нет передачи звука из компютера в трансивер
+	//TP(); // постоянно проходим тут, если нет передачи звука из компьютера в трансивер
 	return USBD_OK;
 }
 

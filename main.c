@@ -7265,7 +7265,7 @@ flagne_u32(uint_fast32_t * oldval, uint_fast32_t v)
 
 #if WITHCAT
 
-/* формирование запроса на информирование управляющего компютера при изменении параметра. */
+/* формирование запроса на информирование управляющего компьютера при изменении параметра. */
 static uint_fast8_t
 flagne_u8_cat(uint_fast8_t * oldval, uint_fast8_t v, uint_fast8_t catindex)
 {
@@ -7277,7 +7277,7 @@ flagne_u8_cat(uint_fast8_t * oldval, uint_fast8_t v, uint_fast8_t catindex)
 	return 0;
 }
 
-/* формирование запроса на информирование управляющего компютера при изменении параметра. */
+/* формирование запроса на информирование управляющего компьютера при изменении параметра. */
 static uint_fast8_t
 flagne_u16_cat(uint_fast16_t * oldval, uint_fast16_t v, uint_fast8_t catindex)
 {
@@ -7289,7 +7289,7 @@ flagne_u16_cat(uint_fast16_t * oldval, uint_fast16_t v, uint_fast8_t catindex)
 	return 0;
 }
 
-/* формирование запроса на информирование управляющего компютера при изменении параметра. */
+/* формирование запроса на информирование управляющего компьютера при изменении параметра. */
 static uint_fast8_t
 flagne_u32_cat(uint_fast32_t * oldval, uint_fast32_t v, uint_fast8_t catindex)
 {
@@ -12206,7 +12206,7 @@ static const FLASHMEM struct menudef menutable [] =
 	{
 		"ZOOM PAN", 7, 0, RJ_POW2,	ISTEP1,	
 		ITEM_VALUE,
-		0, 4,							/* уменьшение отображаемого участка спектра */
+		0, BOARD_FFTZOOM_POW2MAX,							/* уменьшение отображаемого участка спектра */
 		offsetof(struct nvmap, gzoomxpow2),
 		NULL,
 		& gzoomxpow2,
