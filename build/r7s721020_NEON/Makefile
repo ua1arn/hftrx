@@ -35,7 +35,8 @@ LTO = -flto
 
 # This product incorporates the ARM single-core Cortex-A9 MPCore, where the IP version is r3p0.
 MCU  = cortex-a9
-CORE = -march=armv7-a -mfloat-abi=hard -mfpu=neon
+CORE = -march=armv7-a -mfloat-abi=hard -mfpu=vfpv3-d16 -mfpu=neon -ftree-vectorize
+#CORE = -march=armv7-a -mfloat-abi=hard -mfpu=neon
 #CORE = -march=armv7-a -mfloat-abi=hard -mfpu=neon -ftree-vectorize
 
 # List all default C defines here, like -D_DEBUG=1
