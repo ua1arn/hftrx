@@ -5413,7 +5413,7 @@ void RAMFUNC dsp_extbuffer32rx(const uint32_t * buff)
 		save16demod(dual.IV, dual.QV);
 
 	#elif WITHUSBHEADSET
-		/* трансивер работает USB гарнитурой для компютера - режим тестирования */
+		/* трансивер работает USB гарнитурой для компьютера - режим тестирования */
 
 		save16demod(0, 0);	// Посе фильтрации будет проигнорированно
 		savesampleout32stereo(iq2tx(0), iq2tx(0));
