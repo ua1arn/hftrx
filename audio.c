@@ -4928,19 +4928,36 @@ static void fftzoom_filer_decimate(
 	arm_fir_decimate_f32(& c.fir_config, buffer, buffer, usedSize);
 }
 
+
+static void
+make_cmplx(
+	float32_t * dst,
+	uint_fast16_t size,
+	const float32_t * realv,
+	const float32_t * imgev
+	)
+{
+	while (size --)
+	{
+		dst [0] = * realv ++;
+		dst [1] = * imgev ++;
+		dst += 2;
+	}
+}
+
 // Копрование информации о спектре с текущую строку буфера
 // wfarray (преобразование к пикселям растра */
 void dsp_getspectrumrow(
 	FLOAT_t * const hbase,	// Буфер амплитуд
-	uint_fast16_t dx,	// pixel X width of display window
-	uint_fast8_t zoompow2	// horisontal magnification
+	uint_fast16_t dx,		// X width (pixels) of display window
+	uint_fast8_t zoompow2	// horisontal magnification power of two
 	)
 {
 	uint_fast16_t i;
 	uint_fast16_t x;
 	static RAMBIGDTCM float32_t cmplx_sig [NORMALFFT * 2];
 
-	rendering = 1;
+	rendering = 1;	// запрет обновления буфера с исходными данными
 
 	float32_t * const largesigI = & FFT_largebuffI [fft_largehead];
 	float32_t * const largesigQ = & FFT_largebuffQ [fft_largehead];
@@ -4954,15 +4971,11 @@ void dsp_getspectrumrow(
 	}
 
 	// Подготовить массив комплексных чисел для преобразования в частотную область
-	for (i = 0; i < NORMALFFT; i ++)
-	{
-		cmplx_sig [i * 2 + 0] = largesigI [i] * wnd256 [i];
-		cmplx_sig [i * 2 + 1] = largesigQ [i] * wnd256 [i];
-	}
+	make_cmplx(cmplx_sig, NORMALFFT, largesigI, largesigQ);
 
 	rendering = 0;
 
-	//arm_cmplx_mult_real_f32(cmplx_sig, cmplx_sig, wnd256, NORMALFFT);	// Применить оконную функцию к IQ буферу
+	arm_cmplx_mult_real_f32(cmplx_sig, cmplx_sig, wnd256, NORMALFFT);	// Применить оконную функцию к IQ буферу
 	arm_cfft_f32(FFTCONFIGSpectrum, cmplx_sig, 0, 1);	// forward transform
 	arm_cmplx_mag_f32(cmplx_sig, cmplx_sig, NORMALFFT);	/* Calculate magnitudes */
 
@@ -4987,7 +5000,7 @@ dsp_rasterinitialize(void)
 void dsp_getspectrumrow(
 	FLOAT_t * const hbase,
 	uint_fast16_t dx,	// pixel X width of display window
-	uint_fast8_t zoompow2	// horisontal magnification
+	uint_fast8_t zoompow2	// horisontal magnification power of two
 	)
 {
 	uint_fast16_t x;

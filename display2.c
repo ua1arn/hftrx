@@ -86,7 +86,7 @@ static int_fast16_t glob_gridstep = 10000;	// 10 kHz - шаг сетки
 static uint_fast8_t glob_fillspect;	/* заливать заполнением площадь под графиком спектра */
 static int_fast16_t glob_topdb = 30;	/* верхний предел FFT */
 static int_fast16_t glob_bottomdb = 130;	/* нижний предел FFT */
-static uint_fast8_t glob_zoomxpow2;	/* уменьшение отображаемого участка спектра */
+static uint_fast8_t glob_zoomxpow2;	/* уменьшение отображаемого участка спектра - horisontal magnification power of two */
 
 //#define WIDEFREQ (TUNE_TOP > 100000000L)
 
@@ -5928,6 +5928,7 @@ board_set_bottomdb(int_fast16_t v)
 }
 
 /* уменьшение отображаемого участка спектра */
+// horisontal magnification power of two
 void
 board_set_zoomxpow2(uint_fast8_t v)
 {
