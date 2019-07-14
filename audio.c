@@ -4818,8 +4818,8 @@ void saveIQRTSxx(FLOAT_t iv, FLOAT_t qv)
 	if (rendering == 0)
 	{
 		fft_largehead = (fft_largehead == 0) ? (LARGEFFT - 1) : (fft_largehead - 1);
-		FFT_largebuffI [fft_largehead] = FFT_largebuffI [fft_largehead + LARGEFFT] = qv;
-		FFT_largebuffQ [fft_largehead] = FFT_largebuffQ [fft_largehead + LARGEFFT] = iv;
+		FFT_largebuffI [fft_largehead] = FFT_largebuffI [fft_largehead + LARGEFFT] = iv;
+		FFT_largebuffQ [fft_largehead] = FFT_largebuffQ [fft_largehead + LARGEFFT] = qv;
 
 	}
 	else
@@ -4971,7 +4971,7 @@ void dsp_getspectrumrow(
 	}
 
 	// Подготовить массив комплексных чисел для преобразования в частотную область
-	make_cmplx(cmplx_sig, NORMALFFT, largesigI, largesigQ);
+	make_cmplx(cmplx_sig, NORMALFFT, largesigQ, largesigI);
 
 	rendering = 0;
 
