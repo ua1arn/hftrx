@@ -2436,9 +2436,7 @@ enum
 		#if WITHANTSELECT
 			{	9,	5,	display_ant5,		REDRM_MODE, REDRSUBSET(DPAGE0), },	// ANTENNA
 		#endif /* WITHANTSELECT */
-		#if defined (RTC1_TYPE)
 			{	9,	5,	display_time5,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// TIME
-		#endif /* defined (RTC1_TYPE) */
 		#if WITHTX && WITHAUTOTUNER
 			{	15, 5,	display_atu3,		REDRM_MODE, REDRSUBSET(DPAGE0), },	// ATU
 			{	19, 5,	display_byp3,		REDRM_MODE, REDRSUBSET(DPAGE0), },	// BYP
@@ -2627,10 +2625,8 @@ enum
 			{	7,	8,	display_freqX_b,	REDRM_FRQB, REDRSUBSET(DPAGE0), },
 			{	17, 8,	display_mode3_b,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
 
-		#if defined (RTC1_TYPE)
 			{	0,	11,	display_time5,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// TIME
 			//{	0,	11,	display_time8,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// TIME
-		#endif /* defined (RTC1_TYPE) */
 			{	0,	11,	display_atu3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 			{	4,	11,	display_byp3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 			{	15, 11,	display_voltlevelV5, REDRM_VOLT, REDRSUBSET(DPAGE0), },	// voltmeter with "V"
@@ -2708,10 +2704,8 @@ enum
 			{	7,	9,	display_freqX_b,	REDRM_FRQB, REDRSUBSET(DPAGE0), },
 			{	17, 9,	display_mode3_b,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
 
-		#if defined (RTC1_TYPE)
 			{	0,	12,	display_time5,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// TIME
 			//{	0,	12,	display_time8,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// TIME
-		#endif /* defined (RTC1_TYPE) */
 			{	0,	12,	display_atu3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 			{	4,	12,	display_byp3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 			{	8,	12,	display_voltlevelV5, REDRM_VOLT, REDRSUBSET(DPAGE0), },	// voltmeter with "V"
@@ -3067,9 +3061,7 @@ enum
 
 			{	0, 20,	display_lockstate4, REDRM_MODE, REDRSUBSET(DPAGE0), },
 			{	9, 20,	display_voxtune4,	REDRM_MODE, REDRSUBSET(DPAGE0), },
-		#if defined (RTC1_TYPE)
 			{	14, 20,	display_time5,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// TIME HH:MM
-		#endif /* defined (RTC1_TYPE) */
 			{	14, 20,	display_atu3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 			{	18, 20,	display_byp3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 			{	22, 20,	display_voltlevelV5, REDRM_VOLT, REDRSUBSET(DPAGE0), },	// voltmeter
@@ -3154,10 +3146,8 @@ enum
 			{	0, 14,	display2_bars,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// S-METER, SWR-METER, POWER-METER
 			{	0, 16,	display2_legend,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// Отображение оцифровки шкалы S-метра
 
-		#if defined (RTC1_TYPE)
 			{	0, 18,	display_datetime12,	REDRM_BARS, REDRSUBSET(DPAGE0), },	// DATE&TIME Jan-01 13:40
 			//{	0, 18,	display_time5,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// TIME HH:MM
-		#endif /* defined (RTC1_TYPE) */
 			{	0, 20,	display_lockstate4, REDRM_MODE, REDRSUBSET(DPAGE0), },
 			{	9, 20,	display_voxtune4,	REDRM_MODE, REDRSUBSET(DPAGE0), },
 			{	14, 20,	display_atu3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
@@ -3466,9 +3456,7 @@ enum
 			{	0,	9,	display2_spectrum,	REDRM_BARS, PG1, },// подготовка изображения спектра
 			{	0,	9,	display2_colorbuff,	REDRM_BARS,	PG1, },// Отображение водопада и/или спектра
 			/* ---------------------------------- */
-		#if defined (RTC1_TYPE)
 			{	0,	14,	display_time5,		REDRM_BARS, PG0, },	// TIME
-		#endif /* defined (RTC1_TYPE) */
 		#if WITHVOLTLEVEL
 			{	6,	14,	display_voltlevelV5, REDRM_VOLT, PG0, },	// voltmeter with "V"
 		#endif /* WITHVOLTLEVEL  */
@@ -3616,9 +3604,7 @@ enum
 			{	27, 14,	display_byp3,		REDRM_MODE, PGALL, },	// BYP
 		#endif /* WITHDSPEXTDDC */
 			/* ---------------------------------- */
-		#if defined (RTC1_TYPE)
 			{	0,	14,	display_time5,		REDRM_BARS, PG0, },	// TIME
-		#endif /* defined (RTC1_TYPE) */
 		#if WITHVOLTLEVEL
 			{	6,	14,	display_voltlevelV5, REDRM_VOLT, PG0, },	// voltmeter with "V"
 		#endif /* WITHVOLTLEVEL  */
@@ -3928,7 +3914,7 @@ enum
 	#else /* WITHSEPARATEWFL */
 		/* совмещение на одном экрание водопада и панорамы */
 		BDCO_SPMRX = ROWS2GRID(0),	// смещение спектра по вертикали в ячейках от начала общего поля
-		BDCV_SPMRX = ROWS2GRID(9),	// вертикальный размер спектра в ячейках		};
+		BDCV_SPMRX = ROWS2GRID(11),	// вертикальный размер спектра в ячейках		};
 		BDCO_WFLRX = BDCV_SPMRX,	// смещение водопада по вертикали в ячейках от начала общего поля
 		BDCV_WFLRX = BDCV_ALLRX - BDCO_WFLRX	// вертикальный размер водопада в ячейках		};
 	#endif /* WITHSEPARATEWFL */
@@ -4005,7 +3991,7 @@ enum
 		{	3,	0,	display_ant5,		REDRM_MODE, PGALL, },
 		{	9,	0,	display_att4,		REDRM_MODE, PGALL, },
 		{	14,	0,	display_preovf3,	REDRM_BARS, PGALL, },
-		{	18,	0,	display_genham1,	REDRM_BARS, PGALL, },	// Отображение режима General Coverage / HAM bands
+		{	18,	0,	display_lockstate1,	REDRM_BARS, PGALL, },	// LOCK (*)
 
 	#if WITHENCODER2
 		{	21, 0,	display_fnlabel9,	REDRM_MODE, PGALL, },	// FUNC item label
@@ -4017,22 +4003,19 @@ enum
 	#endif /* WITHENCODER2 */
 
 		{	26, 16,	display_nr3,		REDRM_MODE, PGNOMEMU, },	// NR
-//		{	26, 16,	display_agc3,		REDRM_MODE, PGNOMEMU, },	// AGC mode
-		{	26, 20,	display_voxtune3,	REDRM_MODE, PGNOMEMU, },	// VOX
-		{	26, 24,	display_datamode3,	REDRM_MODE, PGNOMEMU, },	// DATA mode indicator
-		{	26, 28,	display_atu3,		REDRM_MODE, PGNOMEMU, },	// TUNER state (optional)
-		{	26, 32,	display_byp3,		REDRM_MODE, PGNOMEMU, },	// TUNER BYPASS state (optional)
-		{	26, 36,	display_rec3,		REDRM_BARS, PGNOMEMU, },	// Отображение режима записи аудио фрагмента
+//		{	26,	16,	display_agc3,		REDRM_MODE, PGNOMEMU, },	// AGC mode
+		{	26,	20,	display_voxtune3,	REDRM_MODE, PGNOMEMU, },	// VOX
 		
 		{	0,	4,	display_freqX_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Частота (большие цифры)
-		{	21, 8,	display_mode3_a,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
-		{	26, 8,	display_rxbw3,		REDRM_MODE, PGALL, },	// 3.1 / 0,5 / WID / NAR
-		{	21, 12,	display_mainsub3,	REDRM_MODE, PGALL, },	// main/sub RX: A/A, A/B, B/A, etc
+		{	21,	8,	display_mode3_a,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
+		{	26,	8,	display_rxbw3,		REDRM_MODE, PGALL, },	// 3.1 / 0,5 / WID / NAR
+		{	21,	12,	display_datamode3,	REDRM_MODE, PGALL, },	// DATA mode indicator
 
-		{	0,	16,	display_lockstate4, REDRM_MODE, PGALL, },	// LOCK
+		{	0,	16,	display_mainsub3,	REDRM_MODE, PGALL, },	// main/sub RX: A/A, A/B, B/A, etc
+		//{	0,	16,	display_rec3,		REDRM_BARS, PGALL, },	// Отображение режима записи аудио фрагмента
 		{	5,	16,	display_vfomode3,	REDRM_MODE, PGALL, },	// SPLIT
 		{	9,	16,	display_freqX_b,	REDRM_FRQB, PGALL, },	// SUB FREQ
-		{	21, 16,	display_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
+		{	21,	16,	display_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
 
 #if 1
 		{	0,	20,	display2_legend,	REDRM_MODE, PGSWR, },	// Отображение оцифровки шкалы S-метра, PWR & SWR-метра
@@ -4050,9 +4033,10 @@ enum
 
 	
 		//{	0,	51,	display_samfreqdelta8, REDRM_BARS, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
-		{	0,	51,	display_time8,		REDRM_BARS, PGALL,	},	// TIME
-		//{	9,	51,	display_siglevel5,	REDRM_BARS, PGALL, },	// signal level in S points
-		{	15, 51,	display_thermo4,	REDRM_VOLT, PGALL, },	// thermo sensor
+		{	0,	51,	display_time5,		REDRM_BARS, PGALL,	},	// TIME
+		{	6, 	51,	display_atu3,		REDRM_MODE, PGALL, },	// TUNER state (optional)
+		{	10, 51,	display_byp3,		REDRM_MODE, PGALL, },	// TUNER BYPASS state (optional)
+		{	14, 51,	display_thermo4,	REDRM_VOLT, PGALL, },	// thermo sensor
 	#if CTLSTYLE_RA4YBO || CTLSTYLE_RA4YBO_V3
 		{	19, 51,	display_currlevel5alt, REDRM_VOLT, PGALL, },	// PA drain current dd.d without "A"
 	#else
