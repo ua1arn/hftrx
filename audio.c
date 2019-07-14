@@ -4809,17 +4809,17 @@ uint_fast8_t hamradio_get_notchvalueXXX(int_fast32_t * p)
 // Сэмплы для децимации
 static RAMBIGDTCM float32_t FFT_largebuffI [LARGEFFT * 2];
 static RAMBIGDTCM float32_t FFT_largebuffQ [LARGEFFT * 2];
-static RAMDTCM uint_fast16_t fft_largehead;
+static RAMDTCM uint_fast16_t fft_largelast;
 
 // формирование отображения спектра
 void saveIQRTSxx(FLOAT_t iv, FLOAT_t qv)
 {
-	const uint_fast8_t rxgate = getRxGate();
+	//const uint_fast8_t rxgate = getRxGate();
 	if (rendering == 0)
 	{
-		fft_largehead = (fft_largehead == 0) ? (LARGEFFT - 1) : (fft_largehead - 1);
-		FFT_largebuffI [fft_largehead] = FFT_largebuffI [fft_largehead + LARGEFFT] = iv;
-		FFT_largebuffQ [fft_largehead] = FFT_largebuffQ [fft_largehead + LARGEFFT] = qv;
+		fft_largelast = (fft_largelast == 0) ? (LARGEFFT - 1) : (fft_largelast - 1);
+		FFT_largebuffI [fft_largelast] = FFT_largebuffI [fft_largelast + LARGEFFT] = iv;
+		FFT_largebuffQ [fft_largelast] = FFT_largebuffQ [fft_largelast + LARGEFFT] = qv;
 
 	}
 	else
@@ -4871,8 +4871,8 @@ static int raster2fft(
 {
 	const int xm = dx / 2;	// middle
 	const int delta = x - xm;	// delta in pixels
-	const int fftoffset = delta * ((int) FFTSizeSpectrum / 2 - 1) / xm;
-	return fftoffset < 0 ? (FFTSizeSpectrum + fftoffset) : fftoffset;
+	const int fftoffset = delta * ((int) NORMALFFT / 2 - 1) / xm;
+	return fftoffset < 0 ? ((int) NORMALFFT + fftoffset) : fftoffset;
 	
 }
 
@@ -4959,8 +4959,8 @@ void dsp_getspectrumrow(
 
 	rendering = 1;	// запрет обновления буфера с исходными данными
 
-	float32_t * const largesigI = & FFT_largebuffI [fft_largehead];
-	float32_t * const largesigQ = & FFT_largebuffQ [fft_largehead];
+	float32_t * const largesigI = & FFT_largebuffI [fft_largelast];
+	float32_t * const largesigQ = & FFT_largebuffQ [fft_largelast];
 
 	if (zoompow2 > 0)
 	{
@@ -4975,7 +4975,7 @@ void dsp_getspectrumrow(
 
 	rendering = 0;
 
-	arm_cmplx_mult_real_f32(cmplx_sig, cmplx_sig, wnd256, NORMALFFT);	// Применить оконную функцию к IQ буферу
+	arm_cmplx_mult_real_f32(cmplx_sig, wnd256, cmplx_sig,  NORMALFFT);	// Применить оконную функцию к IQ буферу
 	arm_cfft_f32(FFTCONFIGSpectrum, cmplx_sig, 0, 1);	// forward transform
 	arm_cmplx_mag_f32(cmplx_sig, cmplx_sig, NORMALFFT);	/* Calculate magnitudes */
 
