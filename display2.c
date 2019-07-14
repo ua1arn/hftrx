@@ -4002,9 +4002,9 @@ enum
 		{	25,	4,	display_notchfreq5,	REDRM_BARS, PGALL, },	// FUNC item value
 	#endif /* WITHENCODER2 */
 
-		{	26, 16,	display_nr3,		REDRM_MODE, PGNOMEMU, },	// NR
-//		{	26,	16,	display_agc3,		REDRM_MODE, PGNOMEMU, },	// AGC mode
-		{	26,	20,	display_voxtune3,	REDRM_MODE, PGNOMEMU, },	// VOX
+		{	26, 16,	display_nr3,		REDRM_MODE, PGALL, },	// NR
+//		{	26,	16,	display_agc3,		REDRM_MODE, PGALL, },	// AGC mode
+		{	26,	20,	display_voxtune3,	REDRM_MODE, PGALL, },	// VOX
 		
 		{	0,	4,	display_freqX_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Частота (большие цифры)
 		{	21,	8,	display_mode3_a,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
