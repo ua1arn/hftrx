@@ -15,11 +15,12 @@
 	/* модели синтезаторов - схемы частотообразования */
 
 	/* Версии частотных схем - с преобразованием "вниз" */
-	#define FQMODEL_TRX8M		1	// Первая низкая ПЧ 8 МГц, 6 МГц, 5.5 МГц и другие
+	//#define FQMODEL_TRX8M		1	// Первая низкая ПЧ 8 МГц, 6 МГц, 5.5 МГц и другие
 	//#define FQMODEL_TRX500K		1	// Первая (и единственна) ПЧ 500 кГц
 	//#define FQMODEL_DCTRX		1	// прямое преобразование
 	#define BANDSELSTYLERE_LOCONV32M_NLB	1
 	//#define BANDSELSTYLERE_LOCONV15M	1
+
 
 	#define	MODEL_DIRECT	1	/* использовать прямой синтез, а не гибридный */
 	#define LO1MODE_DIRECT	1
@@ -36,7 +37,8 @@
 	#define LCDMODE_WH1602	1	/* тип применяемого индикатора 16*2 */
 	#define DIRECT_50M0_X1		1
 	#define IF3_MODEL IF3_TYPE_8868
-	#define CTLREGMODE24	1		/* управляющий регистр 24 бит - для синтезатора UA3DKC	*/
+	//#define CTLREGMODE24	1		/* управляющий регистр 24 бит - для синтезатора UA3DKC	*/
+	#define CTLREGMODE8_UA3RNB	1		/* управляющий регистр 8 бит - для синтезатора UA3RNB	*/
 
 	#define DDS1_CLK_MUL	1 		/* Умножитель в DDS1 */
 	#define DDS2_CLK_MUL	1		/* Умножитель в DDS2 */
@@ -161,6 +163,67 @@
 	#define IF3_FMASK	(IF3_FMASK_0P5 | IF3_FMASK_1P8 | IF3_FMASK_2P7 | IF3_FMASK_3P1)
 	#define IF3_FHAVE	(IF3_FMASK_0P5 | IF3_FMASK_1P8 | IF3_FMASK_2P7 | IF3_FMASK_3P1)
 	#define IF3_FMASKTX	(IF3_FMASK_3P1 | IF3_FMASK_2P7)
+
+	// Здесь  надо выбрать значение последней ПЧ обслуживаемого устройства
+
+	#if ! defined (IF3_MODEL)
+		#error Please define IF3_MODEL as IF3_TYPE_XXXX
+		//#define IF3_MODEL IF3_TYPE_10000
+		//#define IF3_MODEL IF3_TYPE_8000
+		//#define IF3_MODEL IF3_TYPE_5000
+		//#define IF3_MODEL IF3_TYPE_6000
+		//#define IF3_MODEL IF3_TYPE_9000
+		//#define IF3_MODEL IF3_TYPE_8868
+		//#define IF3_MODEL IF3_TYPE_5645	// Drake R-4C and Drake T-4XC (Drake Twins) - 5645 kHz
+		//#define IF3_MODEL IF3_TYPE_5500
+		//#define IF3_MODEL IF3_TYPE_9045
+		////#define IF3_MODEL IF3_TYPE_500 использовать FQMODEL_TRX500K
+		//#define IF3_MODEL IF3_TYPE_455
+	#endif /* ! defined (IF3_MODEL) */
+
+	// Первый DDS используется как генератор
+	#ifndef LO1FDIV_ADJ
+		#define LO1FDIV_ADJ	1		/* если определено - подстройка делителя в тракте первого гетеродина разрешена через меню */
+		//#define LO1_POWER2	1		/* 8 - Это общиее деление (4 - в смесителе ТПП, 2 - формирователь меандра на выходе управляемого делителя) */
+		#define LO1_POWER2	0		/* 0 - нет делителя после генератора LO1 перед подачей на смеситель */
+
+	#endif	/* LO1FDIV_ADJ */
+
+	//#define LO2_POWER2	0		/* 0 - нет делителя после генератора LO2 перед подачей на смеситель */
+
+	#if WITHLO4FREQPOWER2
+		#define LO4FDIV_ADJ	1		/* если определено - подстройка делителя в тракте последнего гетеродина разрешена через меню */
+		#define	LO4_POWER2	1		/* 1 - делитель на 2 после генератора LO4 перед подачей на смеситель */
+	#else
+		#define	LO4_POWER2	0		/* 0 - нет делителя после генератора LO4 перед подачей на смеситель */
+	#endif
+
+	#define LO0_SIDE	LOCODE_INVALID	/* при отсутствующем конверторе - на нём нет инверсии спектра */
+	#if WITHFIXEDBFO
+		/* Описание структуры преобразований частоты в тракте */
+		#define LO1_SIDE	LOCODE_TARGETED	/* Этот гетеродин управляется для получения требуемой боковой */
+		#define LO2_SIDE	LOCODE_INVALID	/* при отсутствующем гетеродине - на нём нет инверсии спектра */
+		#define LO3_SIDE	LOCODE_INVALID	/* при отсутствующем гетеродине - на нём нет инверсии спектра */
+		/* LO4_SIDE расчитывается в getsidelo4() и может быть LOCODE_UPPER или LOCODE_LOWER */
+	#elif WITHCLASSICSIDE
+		//#define LO1_SIDE	LOCODE_UPPER	/* При преобразовании на этом гетеродине происходит инверсия спектра */
+		#define LO1_SIDE_F(freq) (((freq) < 13950000L) ? LOCODE_UPPER : LOCODE_LOWER)	/* сторона зависит от рабочей частоты */
+		#define LO2_SIDE	LOCODE_INVALID	/* при отсутствующем гетеродине - на нём нет инверсии спектра */
+		#define LO3_SIDE	LOCODE_INVALID	/* при отсутствующем гетеродине - на нём нет инверсии спектра */
+		#define LO4_SIDE	LOCODE_TARGETED	/* Этот гетеродин управляется для получения требуемой боковой */
+	#else
+		// WITHDUALBFO или классический вариант с AD9834 в BFO
+		/* Описание структуры преобразований частоты в тракте */
+		#define LO1_SIDE	LOCODE_UPPER	/* При преобразовании на этом гетеродине происходит инверсия спектра */
+		#define LO2_SIDE	LOCODE_INVALID	/* при отсутствующем гетеродине - на нём нет инверсии спектра */
+		#define LO3_SIDE	LOCODE_INVALID	/* при отсутствующем гетеродине - на нём нет инверсии спектра */
+		#define LO4_SIDE	LOCODE_TARGETED	/* Этот гетеродин управляется для получения требуемой боковой */
+	#endif
+
+	#define TUNE_BOTTOM 1500000L
+	#define TUNE_TOP 54000000L
+
+
 
 	
 // Назначения входов АЦП процессора.
