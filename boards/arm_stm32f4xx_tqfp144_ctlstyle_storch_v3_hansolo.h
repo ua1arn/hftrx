@@ -5,7 +5,7 @@
 // автор Гена Завидовский mgs2001@mail.ru
 // UA1ARN
 //
-// Трансивер с DSP обработкой "Аист" на процессоре 
+// Трансивер с DSP обработкой "Аист" на процессоре
 // STM32H743ZIT6, STM32F746ZGT6 кодеком NAU8822L и FPGA EP4CE22E22I7N
 // с функцией DUAL WATCH
 // 2xUSB
@@ -106,16 +106,16 @@
 
 	// +++ вариации прошивки, специфические для разных частот опорного генератора
 	#if 0
-		//#define DIRECT_50M0_X1		1	/* Тактовый генератор на плате 50.0 МГц */	
-		#define DIRECT_80M0_X1		1	/* Тактовый генератор на плате 80.0 МГц */	
-		//#define DIRECT_72M595_X1	1	/* Тактовый генератор 75.595 МГц */	
+		//#define DIRECT_50M0_X1		1	/* Тактовый генератор на плате 50.0 МГц */
+		#define DIRECT_80M0_X1		1	/* Тактовый генератор на плате 80.0 МГц */
+		//#define DIRECT_72M595_X1	1	/* Тактовый генератор 75.595 МГц */
 		#define BANDSELSTYLERE_UPCONV56M_36M	1	/* Up-conversion with working band .030..36 MHz */
 	#elif 0
-		#define DIRECT_100M0_X1		1	/* Тактовый генератор на плате 100.0 МГц */	
+		#define DIRECT_100M0_X1		1	/* Тактовый генератор на плате 100.0 МГц */
 		#define BANDSELSTYLERE_UPCONV56M_45M	1	/* Up-conversion with working band .030..45 MHz */
 	#else
-		//#define DIRECT_125M0_X1		1	/* Тактовый генератор на плате 125.0 МГц */	
-		#define DIRECT_122M88_X1	1	/* Тактовый генератор 122.880 МГц */	
+		//#define DIRECT_125M0_X1		1	/* Тактовый генератор на плате 125.0 МГц */
+		#define DIRECT_122M88_X1	1	/* Тактовый генератор 122.880 МГц */
 		#define BANDSELSTYLERE_UPCONV56M	1	/* Up-conversion with working band .030..56 MHz */
 	#endif
 	#define FQMODEL_FPGA		1	// FPGA + IQ over I2S
@@ -128,10 +128,10 @@
 	#define WITHPOWERTRIMMIN	10	// Нижний предел регулировки (показываетый на дисплее)
 	#define WITHPOWERTRIMMAX	100	// Верхний предел регулировки (показываетый на дисплее)
 
-	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея 
+	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея
 	#define WITHLCDBACKLIGHTMIN	0	// Нижний предел регулировки (показываетый на дисплее)
 	#define WITHLCDBACKLIGHTMAX	3	// Верхний предел регулировки (показываетый на дисплее)
-	#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры 
+	#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры
 
 	//#define WITHPABIASTRIM		1	// имеется управление током оконечного каскада усидителя мощности передатчика
 	#define	WITHPABIASMIN		0
@@ -262,9 +262,12 @@
 	//#define	WITHFPGAWAIT_AS	1	/* FPGA загружается из собственной микросхемы загрузчика - дождаться окончания загрузки перед инициализацией SPI в процессоре */
 	#define	WITHFPGALOAD_PS	1	/* FPGA загружается процессором с помощью SPI */
 
-	//#define WITHUSEDUALWATCH	1	// Второй приемник
-	//#define WITHLOOPBACKTEST	1	/* прослушивание микрофонного входа, генераторов */
-	//#define WITHMODEMIQLOOPBACK	1	/* модем получает собственные передаваемые квадратуры */
+	#define WITHSKIPUSERMODE 1	// debug option: не отдавать в USER MODE блоки для фильтрации аудиосигнала
+	//#define BOARD_FFTZOOM_POW2MAX 1	// Возможные масштабы FFT x1, x2
+	//#define BOARD_FFTZOOM_POW2MAX 2	// Возможные масштабы FFT x1, x2, x4
+	#define BOARD_FFTZOOM_POW2MAX 3	// Возможные масштабы FFT x1, x2, x4, x8
+	//#define BOARD_FFTZOOM_POW2MAX 4	// Возможные масштабы FFT x1, x2, x4, x8, x16
+	#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX
 
 	//#define WITHUSESDCARD		1	// Включение поддержки SD CARD
 	//#define WITHUSEUSBFLASH		1	// Включение поддержки USB memory stick
@@ -274,45 +277,6 @@
 
 	#define WITHRTS96 1		/* вместо выходного аудиосигнала передача квадратур по USB */
 	#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
-
-	#if 0
-		#define WITHUSBHEADSET 1	/* трансивер работает USB гарнитурой для компьютера - режим тестирования */
-		#define WITHBBOX	1	// Black Box mode - устройство без органов управления
-		#define	WITHBBOXMIKESRC	BOARD_TXAUDIO_USB
-	#elif 0
-		#define WITHBBOX	1	// Black Box mode - устройство без органов управления
-		#define	WITHBBOXFREQ	26985000L		// частота после включения
-		//#define	WITHBBOXFREQ	(26985000L - 260)		// частота после включения - 135 коррекция частоты платы с  122.88 для попадания в приём платы с 100 МГц генератором без коррекции
-		//#define	WITHBBOXFREQ	(26985000L - 1600)		// частота после включения
-		//#define	WITHBBOXFREQ	(14070000L - 1000)		// прослушивание BPSK частот
-		//#define	WITHBBOXFREQ	(14065000L - 135)		// частота после включения - 135 коррекция частоты платы с  122.88 для попадания в приём платы с 100 МГц генератором без коррекции
-		//#define	WITHBBOXFREQ	14065000L		// частота после включения
-		//#define	WITHBBOXFREQ	(14065000L - 1000)		// частота после включения
-		//#define	WITHBBOXSUBMODE	SUBMODE_USB	// единственный режим работы
-		#define	WITHBBOXSUBMODE	SUBMODE_BPSK	// единственный режим работы
-		//#define	WITHBBOXFREQ	27100000L		// частота после включения
-		//#define	WITHBBOXSUBMODE	SUBMODE_CW	// единственный режим работы
-		//#define	WITHBBOXTX		1		// автоматический переход на передачу
-		//#define	WITHBBOXMIKESRC	BOARD_TXAUDIO_2TONE
-	#elif 0
-		#define WITHBBOX	1	// Black Box mode - устройство без органов управления
-		#define	WITHBBOXFREQ	136000L		// частота после включения
-		#define	WITHBBOXSUBMODE	SUBMODE_USB	// единственный режим работы
-		#define WITHBBOXREC	1		// автоматическое включение режима записи после подачи питания
-	#elif 0
-		#define WITHBBOX	1	// Black Box mode - устройство без органов управления
-		#define	WITHBBOXFREQ	7030000L		// частота после включения
-		#define	WITHBBOXSUBMODE	SUBMODE_LSB	// единственный режим работы
-		#define	WITHBBOXTX		1		// автоматический переход на передачу
-		#define	WITHBBOXMIKESRC	BOARD_TXAUDIO_2TONE
-	#elif 0
-		#define WITHBBOX	1	// Black Box mode - устройство без органов управления
-		#define	WITHBBOXFREQ	7030000L		// частота после включения
-		#define	WITHBBOXSUBMODE	SUBMODE_CWZ	// единственный режим работы
-		#define	WITHBBOXTX		1		// автоматический переход на передачу
-		//#define	WITHBBOXMIKESRC BOARD_TXAUDIO_2TONE
-	#endif
-
 
 	// +++ Эти строки можно отключать, уменьшая функциональность готового изделия
 	//#define WITHRFSG	1	/* включено управление ВЧ сигнал-генератором. */
@@ -327,7 +291,7 @@
 	#define WITHCAT		1	/* используется CAT */
 	//#define WITHDEBUG		1	/* Отладочная печать через COM-порт. Без CAT (WITHCAT) */
 	//#define WITHMODEM		1	/* Устройство работает как радиомодем с последовательным интерфейсом */
-	//#define WITHFREEDV	1	/* поддержка режима FreeDV - http://freedv.org/ */ 
+	//#define WITHFREEDV	1	/* поддержка режима FreeDV - http://freedv.org/ */
 	//#define WITHNMEA		1	/* используется NMEA parser */
 	//#define WITHBEACON	1	/* Используется режим маяка */
 	#define WITHVOX			1	/* используется VOX */

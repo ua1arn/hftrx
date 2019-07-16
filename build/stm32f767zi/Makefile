@@ -36,7 +36,7 @@ LTO = -flto
 
 # floating-point use hardware of STM32F767ZI CPU (64-bit and 32-bit float)
 MCU = cortex-m7
-CORE = -mthumb -mfloat-abi=hard -mfpu=fpv5-d16
+CORE = -mthumb -mfloat-abi=hard -mfpu=fpv5-d16 -ftree-vectorize
 
 #
 # List all default C defines here, like -D_DEBUG=1

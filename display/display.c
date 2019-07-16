@@ -17,7 +17,7 @@
 
 #if LCDMODE_LTDC && ! defined (SDRAM_BANK_ADDR)
 	// буфер экрана
-	RAMFRAMEBUFF ALIGNX_BEGIN FRAMEBUFF_T framebuff0 ALIGNX_END;	//L8 (8-bit Luminance or CLUT)
+	RAMFRAMEBUFF ALIGNX_BEGIN volatile FRAMEBUFF_T framebuff0 ALIGNX_END;	//L8 (8-bit Luminance or CLUT)
 #endif /* LCDMODE_LTDC */
 
 /*
@@ -46,7 +46,7 @@
 /* заполнение прямоугольной области буфера цветом */
 void 
 display_fillrect(
-	PACKEDCOLOR_T * buffer,
+	volatile PACKEDCOLOR_T * buffer,
 	uint_fast16_t dx,	// размеры буфера
 	uint_fast16_t dy,
 	uint_fast16_t col,	// позиция окна в буфере,
@@ -107,7 +107,7 @@ display_fillrect(
 	buffer += (dx * row) + col;
 	while (h --)
 	{
-		PACKEDCOLOR_T * startmem = buffer;
+		volatile PACKEDCOLOR_T * startmem = buffer;
 
 		unsigned n = w;
 		while (n --)
@@ -969,7 +969,7 @@ ltdc_pix1color(
 	PACKEDCOLOR_T color
 	)
 {
-	PACKEDCOLOR_T * const p = & framebuff [ltdc_first + cgrow] [ltdc_second + ltdc_secondoffs + cgcol];
+	volatile PACKEDCOLOR_T * const p = & framebuff [ltdc_first + cgrow] [ltdc_second + ltdc_secondoffs + cgcol];
 	// размещаем пиксели по горизонтали
 	//debug_printf_P(PSTR("framebuff=%p, ltdc_first=%d, cgrow=%d, ltdc_second=%d, ltdc_secondoffs=%d, cgcol=%d\n"), framebuff, ltdc_first, cgrow, ltdc_second, ltdc_secondoffs, cgcol);
 	* p = color;
@@ -1059,17 +1059,17 @@ ltdc_horizontal_pixels(
 {
 	uint_fast8_t col;
 	uint_fast8_t w = width;
-	PACKEDCOLOR_T * const t = & framebuff [ltdc_first + cgrow] [ltdc_second];
+	volatile PACKEDCOLOR_T * const t = & framebuff [ltdc_first + cgrow] [ltdc_second];
 
 	for (col = 0; w >= 8; col += 8, w -= 8)
 	{
 		const FLASHMEM PACKEDCOLOR_T * const pcl = (* byte2run) [* raster ++];
-		memcpy(t + col, pcl, sizeof (* t) * 8);
+		memcpy((void *) (t + col), pcl, sizeof (* t) * 8);
 	}
 	if (w != 0)
 	{
 		const FLASHMEM PACKEDCOLOR_T * const pcl = (* byte2run) [* raster ++];
-		memcpy(t + col, pcl, sizeof (* t) * w);
+		memcpy((void *) (t + col), pcl, sizeof (* t) * w);
 	}
 	arm_hardware_flush((uintptr_t) t, sizeof (* t) * width);
 }
@@ -1283,8 +1283,8 @@ void display_clear(void)
 
 #elif LCDMODE_LTDC_L8
 
-	memset(framebuff, bg, DIM_FIRST * DIM_SECOND);
-	//memset(framebuff, COLOR_WHITE, DIM_FIRST * DIM_SECOND);	// debug version
+	memset((void *) framebuff, bg, DIM_FIRST * DIM_SECOND);
+	//memset((void *) framebuff, COLOR_WHITE, DIM_FIRST * DIM_SECOND);	// debug version
 	arm_hardware_flush((uintptr_t) framebuff, sizeof framebuff);
 
 #elif LCDMODE_LTDC_L24
@@ -1367,8 +1367,8 @@ void display_plot(
 	const size_t len = dx * sizeof * buffer;
 	while (dy --)
 	{
-		PACKEDCOLOR_T * const p = & framebuff [ltdc_first] [ltdc_second];
-		memcpy(p, buffer, len);
+		volatile PACKEDCOLOR_T * const p = & framebuff [ltdc_first] [ltdc_second];
+		memcpy((void *) p, buffer, len);
 		arm_hardware_flush((uintptr_t) p, len);
 		buffer += dx;
 
@@ -1378,7 +1378,7 @@ void display_plot(
 	const size_t len = dy * sizeof * buffer;
 	while (dx --)
 	{
-		PACKEDCOLOR_T * const p = & framebuff [ltdc_first] [ltdc_second];
+		volatile PACKEDCOLOR_T * const p = & framebuff [ltdc_first] [ltdc_second];
 		memcpy(p, buffer, len);
 		arm_hardware_flush((uintptr_t) p, len);
 		buffer += dy;

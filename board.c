@@ -2352,7 +2352,7 @@ prog_ctrlreg(uint_fast8_t plane)
 */
 
 // 8-bit control register for down-conversion and direct-conversion RX
-static void 
+static void
 //NOINLINEAT
 prog_ctrlreg(uint_fast8_t plane)
 {
@@ -2363,6 +2363,45 @@ prog_ctrlreg(uint_fast8_t plane)
     RBVAL(004, glob_bandf, 4);              /* pin 4  - D4..D7: pin 4 5 6 7 band select код выбора диапазонного фильтра  */
     RBBIT(003, glob_tx && glob_txcw);       /* pin 3  - TX_CW */
     RBBIT(002, glob_att);                   /* pin 2  - ATT */
+    RBBIT(001, ! glob_tx && glob_preamp);   /* pin 1  - PRE */
+    RBBIT(000, glob_tx);                    /* pin 15 - TX_MODE */
+
+	spi_select(target, CTLREG_SPIMODE);
+	prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
+	spi_unselect(target);
+}
+
+#elif CTLREGMODE8_UA3RNB
+#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
+/*
+
+	Выходы 74HC595:
+
+15) TX
+1)  AMP
+2)  ATT 10db
+3)  ATT 20db
+4)  BANDSEL0
+5)  BANDSEL1
+6)  BANDSEL2
+7)  BANDSEL3
+
+Геннадий если можно сделать предыдущую мою просьбу.
+Вернуть плоское меню, добавить диапазон 50Мгц и управление для него на ДПФ.
+
+*/
+
+// 8-bit control register for down-conversion and direct-conversion RX
+static void 
+//NOINLINEAT
+prog_ctrlreg(uint_fast8_t plane)
+{
+	const spitarget_t target = targetctl1;
+	rbtype_t rbbuff [1] = { 0 };
+
+	/* регистр управления (74HC595) */
+    RBVAL(004, glob_bandf, 4);              /* pin 4  - D4..D7: pin 4 5 6 7 band select код выбора диапазонного фильтра  */
+    RBVAL(002, glob_att, 2);                /* pin 2 & 3 - ATT */
     RBBIT(001, ! glob_tx && glob_preamp);   /* pin 1  - PRE */
     RBBIT(000, glob_tx);                    /* pin 15 - TX_MODE */
 

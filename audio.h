@@ -580,8 +580,8 @@ void dsp_initialize(void);
 	// wfarray (преобразование к пикселям растра */
 	void dsp_getspectrumrow(
 		FLOAT_t * const hbase,
-		uint_fast16_t dx,	// pixel X width of display window
-		uint_fast8_t zoompow2	// horisontal magnification
+		uint_fast16_t dx,	// pixel X width (pixels) of display window
+		uint_fast8_t zoompow2	// horisontal magnification power of two
 		);
 	// Нормирование уровня сигнала к шкале
 	// возвращает значения от 0 до ymax включительно

@@ -35,7 +35,7 @@ LTO = -flto
 
 # floating-point use hardware of STM32F446ZE CPU (only 32-bit float)
 MCU = cortex-m4
-CORE = -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 
+CORE = -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -ftree-vectorize
 
 #
 # List all default C defines here, like -D_DEBUG=1

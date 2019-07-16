@@ -86,7 +86,7 @@ static int_fast16_t glob_gridstep = 10000;	// 10 kHz - шаг сетки
 static uint_fast8_t glob_fillspect;	/* заливать заполнением площадь под графиком спектра */
 static int_fast16_t glob_topdb = 30;	/* верхний предел FFT */
 static int_fast16_t glob_bottomdb = 130;	/* нижний предел FFT */
-static uint_fast8_t glob_zoomxpow2;	/* уменьшение отображаемого участка спектра */
+static uint_fast8_t glob_zoomxpow2;	/* уменьшение отображаемого участка спектра - horisontal magnification power of two */
 
 //#define WIDEFREQ (TUNE_TOP > 100000000L)
 
@@ -1742,6 +1742,14 @@ enum
 		{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
 	#endif /* WITHMENU */
 	};
+	#if WITHMENU
+		void display2_getmultimenu(multimenuwnd_t * p)
+		{
+			p->multilinemenu_max_rows = 1;
+			p->ystep = 1;	// количество ячеек разметки на одну строку меню
+			p->reverse = 0;
+		}
+	#endif /* WITHMENU */
 
 #elif DSTYLE_T_X20_Y2
 	/*
@@ -1858,6 +1866,14 @@ enum
 		{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
 	#endif /* WITHMENU */
 	};
+#if WITHMENU
+	void display2_getmultimenu(multimenuwnd_t * p)
+	{
+		p->multilinemenu_max_rows = 1;
+		p->ystep = 1;	// количество ячеек разметки на одну строку меню
+		p->reverse = 0;
+	}
+#endif /* WITHMENU */
 
 #elif DSTYLE_T_X16_Y2 && DSTYLE_SIMPLEFREQ
 
@@ -1892,6 +1908,14 @@ enum
 	{
 		{	0, 0,	display_freqchr_a,	REDRM_FREQ, REDRSUBSET_ALL, },	// частота для символьных дисплеев
 	};
+#if WITHMENU
+	void display2_getmultimenu(multimenuwnd_t * p)
+	{
+		p->multilinemenu_max_rows = 1;
+		p->ystep = 1;	// количество ячеек разметки на одну строку меню
+		p->reverse = 0;
+	}
+#endif /* WITHMENU */
 
 #elif DSTYLE_T_X16_Y2 && CTLSTYLE_RA4YBO_AM0
 
@@ -3957,7 +3981,6 @@ enum
 		enum 
 		{
 			DPAGE0,					// Страница, в которой отображаются основные (или все)
-			DPAGE1,					// Страница, в которой отображается спектр и водопад
 			DISPLC_MODCOUNT
 		};
 
@@ -4002,9 +4025,9 @@ enum
 		{	25,	4,	display_notchfreq5,	REDRM_BARS, PGALL, },	// FUNC item value
 	#endif /* WITHENCODER2 */
 
-		{	26, 16,	display_nr3,		REDRM_MODE, PGNOMEMU, },	// NR
-//		{	26,	16,	display_agc3,		REDRM_MODE, PGNOMEMU, },	// AGC mode
-		{	26,	20,	display_voxtune3,	REDRM_MODE, PGNOMEMU, },	// VOX
+		{	26, 16,	display_nr3,		REDRM_MODE, PGALL, },	// NR
+//		{	26,	16,	display_agc3,		REDRM_MODE, PGALL, },	// AGC mode
+		{	26,	20,	display_voxtune3,	REDRM_MODE, PGALL, },	// VOX
 		
 		{	0,	4,	display_freqX_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Частота (большие цифры)
 		{	21,	8,	display_mode3_a,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
@@ -5929,6 +5952,7 @@ board_set_bottomdb(int_fast16_t v)
 }
 
 /* уменьшение отображаемого участка спектра */
+// horisontal magnification power of two
 void
 board_set_zoomxpow2(uint_fast8_t v)
 {
