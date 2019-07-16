@@ -1742,6 +1742,14 @@ enum
 		{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
 	#endif /* WITHMENU */
 	};
+	#if WITHMENU
+		void display2_getmultimenu(multimenuwnd_t * p)
+		{
+			p->multilinemenu_max_rows = 1;
+			p->ystep = 1;	// количество ячеек разметки на одну строку меню
+			p->reverse = 0;
+		}
+	#endif /* WITHMENU */
 
 #elif DSTYLE_T_X20_Y2
 	/*
@@ -1858,6 +1866,14 @@ enum
 		{	16, 0,	display_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
 	#endif /* WITHMENU */
 	};
+#if WITHMENU
+	void display2_getmultimenu(multimenuwnd_t * p)
+	{
+		p->multilinemenu_max_rows = 1;
+		p->ystep = 1;	// количество ячеек разметки на одну строку меню
+		p->reverse = 0;
+	}
+#endif /* WITHMENU */
 
 #elif DSTYLE_T_X16_Y2 && DSTYLE_SIMPLEFREQ
 
@@ -1892,6 +1908,14 @@ enum
 	{
 		{	0, 0,	display_freqchr_a,	REDRM_FREQ, REDRSUBSET_ALL, },	// частота для символьных дисплеев
 	};
+#if WITHMENU
+	void display2_getmultimenu(multimenuwnd_t * p)
+	{
+		p->multilinemenu_max_rows = 1;
+		p->ystep = 1;	// количество ячеек разметки на одну строку меню
+		p->reverse = 0;
+	}
+#endif /* WITHMENU */
 
 #elif DSTYLE_T_X16_Y2 && CTLSTYLE_RA4YBO_AM0
 
