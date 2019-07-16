@@ -35,26 +35,50 @@
 #ifndef ARCH_H
 #define ARCH_H
 
-#if CPUSTYLE_R7S721
-
+#if CPUSTYLE_R7S721 && WITHNOSPEEX
+	// No speex
 	#define FFTSizeFiltersM 10
 	#define FFTCONFIGFilters	(& arm_cfft_sR_f32_len1024)
 
 	#define FFTSizeSpectrumM 10
 	#define FFTCONFIGSpectrum	(& arm_cfft_sR_f32_len1024)
 
-#elif CPUSTYLE_STM32H7XX
+#elif CPUSTYLE_R7S721 && ! WITHNOSPEEX
+	// With speex
+	#define FFTSizeFiltersM 10
+	#define FFTCONFIGFilters	(& arm_cfft_sR_f32_len1024)
 
+	#define FFTSizeSpectrumM 10
+	#define FFTCONFIGSpectrum	(& arm_cfft_sR_f32_len1024)
+
+#elif CPUSTYLE_STM32H7XX && WITHNOSPEEX
+	// No speex
+	#define FFTSizeFiltersM 8
+	#define FFTCONFIGFilters	(& arm_cfft_sR_f32_len256)
+
+	#define FFTSizeSpectrumM 9
+	#define FFTCONFIGSpectrum	(& arm_cfft_sR_f32_len512)
+
+#elif CPUSTYLE_STM32H7XX && ! WITHNOSPEEX
+	// With speex
 	#define FFTSizeFiltersM 10
 	#define FFTCONFIGFilters	(& arm_cfft_sR_f32_len1024)
 
 	#define FFTSizeSpectrumM 9
 	#define FFTCONFIGSpectrum	(& arm_cfft_sR_f32_len512)
 
-#elif CPUSTYLE_STM32F7XX
-
+#elif CPUSTYLE_STM32F7XX && WITHNOSPEEX
+	// No speex
 	#define FFTSizeFiltersM 8
 	#define FFTCONFIGFilters	(& arm_cfft_sR_f32_len256)
+
+	#define FFTSizeSpectrumM 8
+	#define FFTCONFIGSpectrum	(& arm_cfft_sR_f32_len256)
+
+#elif CPUSTYLE_STM32F7XX && ! WITHNOSPEEX
+	// With speex
+	#define FFTSizeFiltersM 10
+	#define FFTCONFIGFilters	(& arm_cfft_sR_f32_len1024)
 
 	#define FFTSizeSpectrumM 8
 	#define FFTCONFIGSpectrum	(& arm_cfft_sR_f32_len256)
