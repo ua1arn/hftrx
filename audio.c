@@ -4896,16 +4896,18 @@ int dsp_mag2y(
 	return y;
 }
 
+static RAMBIGDTCM union states
+{
+	float32_t iir_state [FFTZOOM_IIR_STAGES * 4];
+	float32_t fir_state [FFTZOOM_FIR_TAPS + LARGEFFT - 1];
+	float32_t cmplx_sig [NORMALFFT * 2];
+} zoomfft_st;
+
 static void fftzoom_filer_decimate(
 	const struct zoom_param * const prm,
 	float32_t * buffer
 	)
 {
-	static union states
-	{
-		float32_t iir_state [FFTZOOM_IIR_STAGES * 4];
-		float32_t fir_state [FFTZOOM_FIR_TAPS + LARGEFFT - 1];
-	} s;
 	union configs
 	{
 		arm_biquad_casd_df1_inst_f32 iir_config;
@@ -4915,7 +4917,7 @@ static void fftzoom_filer_decimate(
 
 	// Biquad LPF фильтр
 	// Initialize floating-point Biquad cascade filter.
-	arm_biquad_cascade_df1_init_f32(& c.iir_config, FFTZOOM_IIR_STAGES, prm->pIIRCoeffs, s.iir_state);
+	arm_biquad_cascade_df1_init_f32(& c.iir_config, FFTZOOM_IIR_STAGES, prm->pIIRCoeffs, zoomfft_st.iir_state);
 	arm_biquad_cascade_df1_f32(& c.iir_config, buffer, buffer, usedSize);
 
 	// Дециматор
@@ -4923,7 +4925,7 @@ static void fftzoom_filer_decimate(
 						prm->numTaps,
 						prm->zoom,          // Decimation factor
 						prm->pCoeffs,
-						s.fir_state,            // Filter state variables
+						zoomfft_st.fir_state,            // Filter state variables
 						usedSize));
 	arm_fir_decimate_f32(& c.fir_config, buffer, buffer, usedSize);
 }
@@ -4955,7 +4957,6 @@ void dsp_getspectrumrow(
 {
 	uint_fast16_t i;
 	uint_fast16_t x;
-	static RAMBIGDTCM float32_t cmplx_sig [NORMALFFT * 2];
 
 	rendering = 1;	// запрет обновления буфера с исходными данными
 
@@ -4971,19 +4972,19 @@ void dsp_getspectrumrow(
 	}
 
 	// Подготовить массив комплексных чисел для преобразования в частотную область
-	make_cmplx(cmplx_sig, NORMALFFT, largesigQ, largesigI);
+	make_cmplx(zoomfft_st.cmplx_sig, NORMALFFT, largesigQ, largesigI);
 
 	rendering = 0;
 
-	arm_cmplx_mult_real_f32(cmplx_sig, wnd256, cmplx_sig,  NORMALFFT);	// Применить оконную функцию к IQ буферу
-	arm_cfft_f32(FFTCONFIGSpectrum, cmplx_sig, 0, 1);	// forward transform
-	arm_cmplx_mag_f32(cmplx_sig, cmplx_sig, NORMALFFT);	/* Calculate magnitudes */
+	arm_cmplx_mult_real_f32(zoomfft_st.cmplx_sig, wnd256, zoomfft_st.cmplx_sig,  NORMALFFT);	// Применить оконную функцию к IQ буферу
+	arm_cfft_f32(FFTCONFIGSpectrum, zoomfft_st.cmplx_sig, 0, 1);	// forward transform
+	arm_cmplx_mag_f32(zoomfft_st.cmplx_sig, zoomfft_st.cmplx_sig, NORMALFFT);	/* Calculate magnitudes */
 
 	for (x = 0; x < dx; ++ x)
 	{
 		static const FLOAT_t fftcoeff = (FLOAT_t) 1 / (int32_t) (NORMALFFT / 2);
 		const int fftpos = raster2fft(x, dx);
-		hbase [x] = cmplx_sig [fftpos] * fftcoeff;
+		hbase [x] = zoomfft_st.cmplx_sig [fftpos] * fftcoeff;
 	}
 }
 
