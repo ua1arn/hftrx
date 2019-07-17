@@ -351,7 +351,7 @@ typedef struct
 
 #if ! WITHDSPLOCALFIR
 	#define	Ntap_rx_AUDIO	NtapValidate(SPEEXNN * 2 - 7)
-	#define Ntap_tx_MIKE	Ntap_rx_AUDIO
+	#define Ntap_tx_MIKE	NtapValidate(241) //Ntap_rx_AUDIO
 #else /* ! WITHDSPLOCALFIR */
 	#define	Ntap_rx_AUDIO	NtapValidate(241)
 	//#define Ntap_tx_MIKE	Ntap_rx_AUDIO
