@@ -366,42 +366,6 @@ typedef struct
 
 #endif /* WITHDSPEXTFIR || WITHDSPEXTDDC */
 
-#if 0//WITHDSPEXTFIR
-
-
-	#if CPUSTYLE_R7S721 && ! WITHUSEDUALWATCH
-		// Без WITHUSEDUALWATCH
-		#define Ntap_tx_MIKE	NtapValidate(129)
-	#elif CPUSTYLE_R7S721
-		// есть режим WITHUSEDUALWATCH
-		#define Ntap_tx_MIKE	NtapValidate(129)
-	#elif (defined (STM32F767xx) || defined (STM32F769xx)) && ! WITHUSEDUALWATCH
-		// Без WITHUSEDUALWATCH
-		#define Ntap_tx_MIKE	NtapValidate(241)
-	#elif (defined (STM32F767xx) || defined (STM32F769xx))
-		// есть режим WITHUSEDUALWATCH
-		#define Ntap_tx_MIKE	NtapValidate(241)
-	#elif CPUSTYLE_STM32H7XX && ! WITHUSEDUALWATCH
-		// Без WITHUSEDUALWATCH
-		#define Ntap_tx_MIKE	NtapValidate(241)
-	#elif CPUSTYLE_STM32H7XX
-		// есть режим WITHUSEDUALWATCH
-		#define Ntap_tx_MIKE	NtapValidate(241)
-	#elif CPUSTYLE_STM32F7XX && ! WITHUSEDUALWATCH
-		// Без WITHUSEDUALWATCH
-		#define Ntap_tx_MIKE	NtapValidate(241)
-	#elif CPUSTYLE_STM32F7XX
-		// есть режим WITHUSEDUALWATCH
-		#define Ntap_tx_MIKE	NtapValidate(241)
-	#elif CPUSTYLE_STM32F4XX && ! WITHUSEDUALWATCH
-		// Без WITHUSEDUALWATCH (только)
-		#define Ntap_tx_MIKE	NtapValidate(129)
-	#else
-		#error Not suitable CPUSTYLE_xxx and WITHUSEDUALWATCH combination
-	#endif
-
-#endif /* WITHDSPEXTFIR */
-
 #if WITHDSPLOCALFIR
 	/* Фильтрация квадратур осуществляется процессором */
 	#if CPUSTYLE_R7S721
