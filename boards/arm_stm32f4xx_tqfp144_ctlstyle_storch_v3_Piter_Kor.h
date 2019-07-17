@@ -14,12 +14,9 @@
 #ifndef ARM_STM32F4XX_TQFP144_CTLSTYLE_STORCH_V3_H_INCLUDED
 #define ARM_STM32F4XX_TQFP144_CTLSTYLE_STORCH_V3_H_INCLUDED 1
 
-	#if ! defined(STM32F767xx)
-		//#error Wrong CPU selected. STM32F767xx expected
+	#if ! defined(STM32H743xx)
+		#error Wrong CPU selected. STM32H743xx expected
 	#endif /* ! defined(STM32F767xx) */
-	#if ! defined(STM32F746xx)
-		//#error Wrong CPU selected. STM32F746xx expected
-	#endif /* ! defined(STM32F446xx) */
 
 	//#define WITHSAICLOCKFROMI2S 1	/* Блок SAI1 тактируется от PLL I2S */
 	#define WITHI2SCLOCKFROMPIN 1	// тактовая частота на SPI2 (I2S) подается с внешнего генератора, в процессор вводится через MCK сигнал интерфейса
@@ -264,12 +261,12 @@
 	//#define	WITHFPGAWAIT_AS	1	/* FPGA загружается из собственной микросхемы загрузчика - дождаться окончания загрузки перед инициализацией SPI в процессоре */
 	#define	WITHFPGALOAD_PS	1	/* FPGA загружается процессором с помощью SPI */
 
-	#define WITHSKIPUSERMODE 1	// debug option: не отдавать в USER MODE блоки для фильтрации аудиосигнала
+	//#define WITHSKIPUSERMODE 1	// debug option: не отдавать в USER MODE блоки для фильтрации аудиосигнала
 	//#define BOARD_FFTZOOM_POW2MAX 1	// Возможные масштабы FFT x1, x2
 	//#define BOARD_FFTZOOM_POW2MAX 2	// Возможные масштабы FFT x1, x2, x4
 	#define BOARD_FFTZOOM_POW2MAX 3	// Возможные масштабы FFT x1, x2, x4, x8
 	//#define BOARD_FFTZOOM_POW2MAX 4	// Возможные масштабы FFT x1, x2, x4, x8, x16
-	#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX
+	//#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX
 	//#define WITHUSEDUALWATCH	1	// Второй приемник
 	//#define WITHLOOPBACKTEST	1	/* прослушивание микрофонного входа, генераторов */
 	//#define WITHMODEMIQLOOPBACK	1	/* модем получает собственные передаваемые квадратуры */
