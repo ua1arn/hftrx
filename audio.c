@@ -400,6 +400,9 @@ typedef int32_t ncoftwi_t;
 static FLOAT_t omega2ftw_k1; // = POWF(2, NCOFTWBITS);
 #define OMEGA2FTWI(angle) ((ncoftwi_t) ((FLOAT_t) (angle) * omega2ftw_k1 / (FLOAT_t) M_TWOPI))	// angle in radians -pi..+pi to signed version of ftw_t
 
+#ifndef BOARD_FFTZOOM_POW2MAX
+	#define BOARD_FFTZOOM_POW2MAX 1
+#endif
 enum
 {
 
