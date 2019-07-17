@@ -7007,8 +7007,8 @@ typedef struct lmsnrstate_tag
 #if WITHNOSPEEX
 	// FIR audio filter
 	float32_t speexEQcoeff [Ntap_rx_AUDIO];
-	arm_fir_instance_f32 arm_fir_instance;
-	float32_t arm_fir_state [FIRBUFSIZE + Ntap_rx_AUDIO - 1];
+	arm_fir_instance_f32 fir_instance;
+	float32_t fir_state [FIRBUFSIZE + Ntap_rx_AUDIO - 1];
 	float32_t wire1 [FIRBUFSIZE];
 
 	// NLMS NR
@@ -7116,7 +7116,7 @@ static void InitNoiseReduction(void)
 		nrp->reference_index_new = 0;
 		// Declare State buffer of size (numTaps + blockSize - 1)
 
-		arm_fir_init_f32(& nrp->arm_fir_instance, Ntap_rx_AUDIO, nrp->speexEQcoeff, nrp->arm_fir_state, FIRBUFSIZE);
+		arm_fir_init_f32(& nrp->fir_instance, Ntap_rx_AUDIO, nrp->speexEQcoeff, nrp->fir_state, FIRBUFSIZE);
 #else /* WITHNOSPEEX */
 
 		nrp->st_handle = speex_preprocess_state_init(SPEEXNN, ARMI2SRATE);
@@ -7157,14 +7157,14 @@ static void processingonebuff(lmsnrstate_t * const nrp, speexel_t * p)
 	{
 		// Filtering and denoise.
 		nrp->outsp = p;
-		arm_fir_f32(& nrp->arm_fir_instance, p, nrp->wire1, FIRBUFSIZE);
+		arm_fir_f32(& nrp->fir_instance, p, nrp->wire1, FIRBUFSIZE);
 		processNoiseReduction(nrp, nrp->wire1, p);	// result copy back
 	}
 	else
 	{
 		// Filtering only.
 		nrp->outsp = nrp-> wire1;
-		arm_fir_f32(& nrp->arm_fir_instance, p, nrp->outsp, FIRBUFSIZE);
+		arm_fir_f32(& nrp->fir_instance, p, nrp->outsp, FIRBUFSIZE);
 	}
 #else /* WITHNOSPEEX */
 	nrp->outsp = p;
