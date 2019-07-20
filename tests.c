@@ -7665,6 +7665,16 @@ nestedirqtest(void)
 #endif /* CPUSTYLE_R7S721 */
 #endif /* WITHDEBUG */
 
+static unsigned RAMFUNC_NONILINE testramfunc(void)
+{
+	return 9;
+}
+
+static unsigned RAMFUNC_NONILINE testramfunc2(void)
+{
+	return 10;
+}
+
 void lowtests(void)
 {
 #if 0 && CPUSTYLE_R7S721
@@ -7672,6 +7682,30 @@ void lowtests(void)
 		nestedirqtest();
 	}
 #endif /* CPUSTYLE_R7S721 */
+#if 0
+	{
+		// Multi-regions initialize test
+		volatile static unsigned v1;
+		volatile static unsigned v2 = 2;
+		volatile static unsigned RAMDTCM v3;
+		volatile static unsigned RAMDTCM v4 = 4;
+		volatile static unsigned RAMBIGDTCM v5;
+		volatile static unsigned RAMBIGDTCM v6 = 6;
+		volatile static unsigned RAMFRAMEBUFF v7;
+		volatile static unsigned RAMFRAMEBUFF v8 = 7;
+
+		debug_printf_P(PSTR("Unititilalized SRAM=%08lX @%p\n"), v1, & v1);
+		debug_printf_P(PSTR("Ititilalized SRAM=%08lX @%p\n"), v2, & v2);
+		debug_printf_P(PSTR("Unititilalized RAMDTCM=%08lX @%p\n"), v3, & v3);
+		debug_printf_P(PSTR("Ititilalized RAMDTCM=%08lX @%p\n"), v4, & v4);
+		debug_printf_P(PSTR("Unititilalized RAMBIGDTCM=%08lX @%p\n"), v5, & v5);
+		debug_printf_P(PSTR("Ititilalized RAMBIGDTCM=%08lX @%p\n"), v6, & v6);
+		debug_printf_P(PSTR("Unititilalized RAMFRAMEBUFF=%08lX @%p\n"), v7, & v7);
+		debug_printf_P(PSTR("Ititilalized RAMFRAMEBUFF=%08lX @%p\n"), v8, & v8);
+		debug_printf_P(PSTR("RAMFUNC_NONILINE #1=%08lX @%p\n"), testramfunc(), testramfunc);
+		debug_printf_P(PSTR("RAMFUNC_NONILINE #2=%08lX @%p\n"), testramfunc2(), testramfunc2);
+	}
+#endif
 #if 0
 	{
 		// PD13 signal pulses
