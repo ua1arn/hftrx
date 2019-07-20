@@ -30,6 +30,8 @@
 
 5. Прошиваем <br>
 5.1 Скопилированные прошивки находятся в папке /build/<процессор>/
+5.2 Для обновления прошивки процессора RENESAS через bootloader в командных файлах используется уилилита из проекта https://sourceforge.net/projects/dfu-util/files/latest/download
+
 
 ## FPGA:
 
