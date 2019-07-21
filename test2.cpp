@@ -25,10 +25,12 @@ public:
 	}
 };
 
+#if 0
 static class test2 gltest;
-static /*__attribute__((section(".ram_d1"))  */ class test2  gltest2;
+static __attribute__((section(".dtcm")))  class test2  gltest2;
+static __attribute__((section(".ram_d1")))  class test2  gltest3;
 
-
+#endif
 extern "C" { void ttt(void); }
 
 void ttt()
