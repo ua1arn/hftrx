@@ -90,8 +90,10 @@ ULIBDIR +=
 # List all user libraries here
 ULIBS += 
 
-SRC_EXCLUDES += ../../tools/rbf2c.c
-SRC += $(filter-out $(SRC_EXCLUDES), $(wildcard $(SRCDIR)/*.c $(SRCDIR)/*/*.c $(SRCDIR)/*/*/*.c $(SRCDIR)/*/*/*/*.c))
+SRCC_EXCLUDES += ../../tools/rbf2c.c
+SRCCPP_EXCLUDES += 
+SRCC = $(filter-out $(SRCC_EXCLUDES), $(wildcard $(SRCDIR)/*.c $(SRCDIR)/*/*.c $(SRCDIR)/*/*/*.c $(SRCDIR)/*/*/*/*.c))
+SRCCPP = $(filter-out $(SRCCPP_EXCLUDES), $(wildcard $(SRCDIR)/*.cpp $(SRCDIR)/*/*.cpp $(SRCDIR)/*/*/*.cpp $(SRCDIR)/*/*/*/*.cpp))
 VPATH = $(SRCDIR)
 
 #
@@ -103,7 +105,9 @@ INCDIR  = $(patsubst %,-I%,$(DINCDIR) $(UINCDIR))
 LIBDIR  = $(patsubst %,-L%,$(DLIBDIR) $(ULIBDIR))
 DEFS    = $(DDEFS) $(UDEFS)
 ADEFS   = $(DADEFS) $(UADEFS)
-OBJS 	= $(patsubst %.s,$(OBJDIR)/%.o,$(ASRC)) $(patsubst $(SRCDIR)/%.c,$(OBJDIR)/%.o,$(SRC))
+OBJS 	+= $(patsubst %.s,$(OBJDIR)/%.o,$(ASRC))
+OBJS	+= $(patsubst $(SRCDIR)/%.c,$(OBJDIR)/%.o,$(SRCC))
+OBJS	+= $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(SRCCPP))
 LIBS    = $(DLIBS) $(ULIBS)
 
 
@@ -147,6 +151,10 @@ $(OBJDIR)/%.o: %.c
 	@mkdir -p $(@D)
 	$(CC) -c $(CPFLAGS) $(INCDIR) $(addprefix $(SRCDIR)/, $(patsubst obj/%, %, $(patsubst %.o, %.c, $@))) -o $@
 
+$(OBJDIR)/%.o: %.cpp
+	@mkdir -p $(@D)
+	$(CC) -c $(CPFLAGS) $(INCDIR) $(addprefix $(SRCDIR)/, $(patsubst obj/%, %, $(patsubst %.o, %.cpp, $@))) -o $@
+
 $(OBJDIR)/%.o: %.s
 	@mkdir -p $(@D)
 	$(AS) -c $(ASFLAGS) $(addprefix $(SRCDIR)/, $(patsubst obj/%, %, $(patsubst %.o, %.s, $@))) -o $@
@@ -173,6 +181,8 @@ clean:
 	-rm -f $(PROJECT)_app.elf $(PROJECT)_app.map $(PROJECT)_app.hex $(PROJECT)_app.bin
 	-rm -f $(SRC:.c=.c.bak)
 	-rm -f $(SRC:.c=.lst)
+	-rm -f $(SRCPP:.cpp=.c.bak)
+	-rm -f $(SRCPP:.cpp=.lst)
 	-rm -f $(ASRC:.s=.s.bak)
 	-rm -f $(ASRC:.s=.lst)
 
