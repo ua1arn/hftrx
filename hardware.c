@@ -10328,6 +10328,36 @@ uint8_t xxxxxpos(uint8_t num) // num = 0..8
 
 */
 
+
+
+#if CPUSTYLE_ARM
+
+// Используется в случае наличия ключа ld -nostartfiles
+// Так же смотреть вокруг software_init_hook
+
+extern int main(void);
+extern void __libc_init_array(void);
+
+void __NO_RETURN _start(void)
+{
+	__libc_init_array();	// invoke constructors
+    /* Branch to main function */
+    main();
+
+     /* Infinite loop */
+	for (;;)
+		;
+}
+
+// call after __preinit_array_xxx and before __init_array_xxx passing
+void
+_init(void)
+{
+}
+
+
+#endif
+
 #if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM0 || CPUSTYLE_ARM_CM7
 /*----------------------------------------------------------------------------
  *        Exported variables
@@ -10394,6 +10424,7 @@ volatile uint32_t psr;// Регистр статуса программы.
 }
 
 #endif /* WITHDEBUG && (CPUSTYLE_ARM_CM7 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM3) */
+
 
 ///////////////////////////
 //
@@ -11383,36 +11414,6 @@ void ATTRWEAK TIM7_IRQHandler(void)
 typedef void (* IntFunc)(void);
 
 extern unsigned long __stack;
-
-#if 1
-
-// Используется в случае наличия ключа ld -nostartfiles
-// Так же смотреть вокруг software_init_hook
-
-extern int main(void);
-extern void __libc_init_array(void);
-
-void __NO_RETURN _start(void)
-{
-	//arm_hardware_flush((uintptr_t) & __data_start__, (& __data_end__ - & __data_start__) * sizeof __data_end__);
-	//arm_hardware_flush((uintptr_t) & __bss_start__, (& __bss_end__ - & __bss_start__) * sizeof __bss_end__);
-	__libc_init_array();	// invoke constructors
-    /* Branch to main function */
-    main();
-
-     /* Infinite loop */
-	for (;;)
-		;
-}
-
-// call after __preinit_array_xxx and before __init_array_xxx passing
-void
-_init(void)
-{
-}
-
-
-#endif
 
 /**
  * \brief This is the code that gets called on processor reset.
