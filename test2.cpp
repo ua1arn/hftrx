@@ -1,3 +1,6 @@
+#include <stdio.h>
+#include "armcpu/stm32h7xx.h"
+
 extern "C" { void debug_printf_P(const char *format, ... ); }
 
 class test
@@ -22,8 +25,8 @@ public:
 	}
 };
 
-
-class test2 gltest;
+static class test2 gltest;
+static /*__attribute__((section(".ram_d1"))  */ class test2  gltest2;
 
 
 extern "C" { void ttt(void); }

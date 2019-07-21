@@ -7692,7 +7692,7 @@ void lowtests(void)
 		volatile static unsigned RAMBIGDTCM v5;
 		volatile static unsigned RAMBIGDTCM v6 = 6;
 		volatile static unsigned RAMFRAMEBUFF v7;
-		volatile static unsigned RAMFRAMEBUFF v8 = 7;
+		volatile static unsigned RAMBIG v8 = 7;
 
 		debug_printf_P(PSTR("Unititilalized SRAM=%08lX @%p\n"), v1, & v1);
 		debug_printf_P(PSTR("Ititilalized SRAM=%08lX @%p\n"), v2, & v2);
