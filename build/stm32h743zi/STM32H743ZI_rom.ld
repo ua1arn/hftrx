@@ -104,7 +104,10 @@ SECTIONS
 		__copy_table_start__ = .;
 		LONG (__etext)
 		LONG (__data_start__)
-		LONG (__data_end__ - __data_start__)
+		LONG ((__data_end__ - __data_start__) / 4)
+		LONG (__etext2)
+		LONG (__data2_start__)
+		LONG ((__data2_end__ - __data2_start__) / 4)
 		__copy_table_end__ = .;
 	} > FLASH
 
@@ -118,7 +121,7 @@ SECTIONS
 		. = ALIGN(4);
 		__zero_table_start__ = .;
 		LONG (__bss_start__)
-		LONG (__bss_end__ - __bss_start__)
+		LONG ((__bss_end__ - __bss_start__) / 4)
 		__zero_table_end__ = .;
 	} > FLASH
 
@@ -164,11 +167,11 @@ SECTIONS
 
 	. = __etext + __data_end__ - __data_start__;
 
-	__ramfunctext = .;
+	__etext2 = .;
 
-	.ramfn : AT (__ramfunctext)
+	.ramfn : AT (__etext2)
 	{
-		__itcmdata_start__ = .;
+		__data2_start__ = .;
 		*(.ramfunc)
 		*(.text.__ieee754_logf)
 		*(.text.__ieee754_powf)
@@ -177,10 +180,10 @@ SECTIONS
 		*(.text.__kernel_rem_pio2f)
 
 		. = ALIGN(4);
-		__itcmdata_end__ = .;
+		__data2_end__ = .;
 	} > ITCMRAM
 
-	. = __ramfunctext + __itcmdata_end__ - __itcmdata_start__;
+	. = __etext2 + __data2_end__ - __data2_start__;
 
 	.bss :
 	{

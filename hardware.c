@@ -11385,210 +11385,31 @@ void ATTRWEAK TIM7_IRQHandler(void)
 
 typedef void (* IntFunc)(void);
 
-extern unsigned long __etext;	// где во FLASH лежит образ инициализирующих data данных
-extern unsigned long __bss_start__, __bss_end__, __data_end__, __data_start__, __stack;
-
-#if CPUSTYLE_ARM_CM4
-
-	extern unsigned long __ccm_start__, __ccm_end__;	// Cortex-M4 specific
-
-#elif CPUSTYLE_ARM_CM7
-	extern unsigned long __dtcm_start__, __dtcm_end__;	// Cortex-M7 specific
-	extern unsigned long __itcm_start__, __itcm_end__;	// Cortex-M7 specific
-	extern unsigned long __itcmdata_start__, __itcmdata_end__;	// Cortex-M7 specific
-	extern unsigned long __ramfunctext;
-#endif
-
+extern unsigned long __stack;
 extern int main(void);
 extern void __libc_init_array(void);
 
-
 void __NO_RETURN _start(void)
 {
-	//SystemInit();
+	//arm_hardware_flush((uintptr_t) & __data_start__, (& __data_end__ - & __data_start__) * sizeof __data_end__);
+	//arm_hardware_flush((uintptr_t) & __bss_start__, (& __bss_end__ - & __bss_start__) * sizeof __bss_end__);
 	__libc_init_array();	// invoke constructors
     /* Branch to main function */
     main();
 
-    /* Infinite loop */
+     /* Infinite loop */
 	for (;;)
 		;
 }
 
-
-/**
- * \brief This is the code that gets called on processor reset.
- * To initialize the device, and call the main() routine.
- */
-void Reset_HandlerZZZ(void)
-{
-	  SystemInit();                             /* CMSIS System Initialization */
-	  __PROGRAM_START();                        /* Enter PreMain (C library entry point) */
-}
-
-/** \endcond */
 /**
  * \brief This is the code that gets called on processor reset.
  * To initialize the device, and call the main() routine.
  */
 void Reset_Handler(void)
 {
-#if 0
-	{
-		// Формирование импульсов на выводе процессора
-		for (;;)
-		{
-			const uint32_t WORKMASK = 1UL << 31;	// PA31
-
-			arm_hardware_pioa_outputs(WORKMASK, WORKMASK * 1);
-			hardware_spi_io_delay();
-			arm_hardware_pioa_outputs(WORKMASK, WORKMASK * 0);
-			hardware_spi_io_delay();
-		}
-	}
-#endif
-#if 0
-	// PD13 signal
-	enum { WORKMASK	 = 1ul << 13 };
-	arm_hardware_piod_outputs(WORKMASK, WORKMASK);
-
-	for (;;)
-	{
-		arm_hardware_piod_outputs(WORKMASK, 1 * WORKMASK);
-		hardware_spi_io_delay();
-		arm_hardware_piod_outputs(WORKMASK, 0 * WORKMASK);
-		hardware_spi_io_delay();
-	}
-#endif
-
-
-    /* Low level Initialize */
-	SystemInit();		// watchdog disable, clock initialize, cache enable
-#if 0
-	{
-		// Формирование импульсов на выводе процессора
-		for (;;)
-		{
-			const uint32_t WORKMASK = 1UL << 31;	// PA31
-
-			arm_hardware_pioa_outputs(WORKMASK, WORKMASK * 1);
-			hardware_spi_io_delay();
-			arm_hardware_pioa_outputs(WORKMASK, WORKMASK * 0);
-			hardware_spi_io_delay();
-		}
-	}
-#endif
-#if 0
-	// PD13 signal
-	enum { WORKMASK = 1ul << 13 };
-	arm_hardware_piod_outputs(WORKMASK, WORKMASK);
-
-	for (;;)
-	{
-		arm_hardware_piod_outputs(WORKMASK, 1 * WORKMASK);
-		hardware_spi_io_delay();
-		arm_hardware_piod_outputs(WORKMASK, 0 * WORKMASK);
-		hardware_spi_io_delay();
-	}
-#endif
-#if 0
-	// PG13 signal
-	enum { WORKMASK = 1ul << 13 };
-	arm_hardware_piog_outputs(WORKMASK, WORKMASK);
-
-	for (;;)
-	{
-		GPIOG->ODR ^= WORKMASK;	// Debug LEDs
-		hardware_spi_io_delay();
-		//local_delay_ms(300);
-		local_delay_ms(400);
-	}
-#endif
-	// Хотя возвращатся из данной функции не предполагается - память и адрес возврата могли бы затираются,
-	// но вместе с ними будут стёрты и автоматические переменые, используемые в данной функции. Поэтому,
-	// стирать ВСЮ память по её размеру нельзя.
-
-	#if CPUSTYLE_ARM_CM4
-		/* zero-init variables */
-		//memset(& __ccm_start__, 0, (& __ccm_end__ - & __ccm_start__) * sizeof __ccm_end__);
-	#elif CPUSTYLE_ARM_CM7
-		/* zero-init variables */
-		//memset(& __dtcm_start__, 0, (& __dtcm_end__ - & __dtcm_start__) * sizeof __dtcm_end__);
-		memcpy(& __itcm_start__, & __ramfunctext, (& __itcmdata_end__ - & __itcmdata_start__) * sizeof __itcmdata_end__);
-		arm_hardware_flush((uintptr_t) & __itcm_start__, (& __itcmdata_end__ - & __itcmdata_start__) * sizeof __itcmdata_end__);
-	#endif
-	 /* copy-init variables */
-    memcpy(& __data_start__, & __etext, (& __data_end__ - & __data_start__) * sizeof __data_end__);
-    /* zero-init variables */
-    memset(& __bss_start__, 0, (& __bss_end__ - & __bss_start__) * sizeof __bss_end__);
-
-	arm_hardware_flush((uintptr_t) & __data_start__, (& __data_end__ - & __data_start__) * sizeof __data_end__);
-	arm_hardware_flush((uintptr_t) & __bss_start__, (& __bss_end__ - & __bss_start__) * sizeof __bss_end__);
-
-#if 0
-
-    /* Set the vector table base address */
-    pSrc = (uint32_t *)&_sfixed;
-    SCB->VTOR = ( (uint32_t)pSrc & SCB_VTOR_TBLOFF_Msk ) ;
-    
-    if ( ((uint32_t)pSrc >= IRAM_ADDR) && ((uint32_t)pSrc < IRAM_ADDR+IRAM_SIZE) )
-    {
-	    SCB->VTOR |= 1 << SCB_VTOR_TBLBASE_Pos ;
-    }
-
-    /* Initialize the C library */
-    //__libc_init_array() ;
-#endif
-
-#if 0
-	{
-		// Формирование импульсов на выводе процессора
-		for (;;)
-		{
-			const uint32_t WORKMASK = 1UL << 31;	// PA31
-
-			arm_hardware_pioa_outputs(WORKMASK, WORKMASK * 1);
-			hardware_spi_io_delay();
-			arm_hardware_pioa_outputs(WORKMASK, WORKMASK * 0);
-			hardware_spi_io_delay();
-		}
-	}
-#endif
-#if 0
-	// PD13 signal
-	enum { WORKMASK	 = 1ul << 13 };
-	arm_hardware_piod_outputs(WORKMASK, WORKMASK);
-
-	for (;;)
-	{
-		arm_hardware_piod_outputs(WORKMASK, 1 * WORKMASK);
-		hardware_spi_io_delay();
-		local_delay_ms(300);
-		arm_hardware_piod_outputs(WORKMASK, 0 * WORKMASK);
-		hardware_spi_io_delay();
-		local_delay_ms(300);
-	}
-#endif
-#if 0
-	// PG13 signal
-	enum { WORKMASK = 1ul << 13 };
-	arm_hardware_piog_outputs(WORKMASK, WORKMASK);
-
-	for (;;)
-	{
-		GPIOG->ODR ^= WORKMASK;	// Debug LEDs
-		hardware_spi_io_delay();
-		local_delay_ms(300);
-	}
-#endif
-	//SystemInit();
-	__libc_init_array();	// invoke constructors
-    /* Branch to main function */
-    main();
-
-    /* Infinite loop */
-	for (;;)
-		;
+	  SystemInit();                             /* CMSIS System Initialization */
+	  __PROGRAM_START();                        /* Enter PreMain (C library entry point) */
 }
 
 /*------------------------------------------------------------------------------
