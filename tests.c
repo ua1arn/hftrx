@@ -7675,7 +7675,6 @@ static unsigned RAMFUNC_NONILINE testramfunc2(void)
 	return 10;
 }
 
-
 void lowtests(void)
 {
 #if 0 && CPUSTYLE_R7S721
