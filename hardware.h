@@ -686,7 +686,7 @@ void USART1_IRQHandler(void);
 void USART2_IRQHandler(void);
 void USART3_IRQHandler(void);
 
-
+void Reset_Handler(void);
 
 void cpu_stm32f1xx_setmapr(unsigned long bits);
 

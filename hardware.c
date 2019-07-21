@@ -9012,12 +9012,6 @@ uint_fast32_t cpu_getdebugticks(void)
 #endif
 }
 
-// call after __preinit_array_xxx and before __init_array_xxx passing
-void 
-_init(void) 
-{
-}
-
 
 /* функция вызывается из start-up до копирования в SRAM всех "быстрых" функций и до инициализации переменных
 */
@@ -11389,6 +11383,12 @@ void ATTRWEAK TIM7_IRQHandler(void)
 typedef void (* IntFunc)(void);
 
 extern unsigned long __stack;
+
+#if 1
+
+// Используется в случае наличия ключа ld -nostartfiles
+// Так же смотреть вокруг software_init_hook
+
 extern int main(void);
 extern void __libc_init_array(void);
 
@@ -11405,16 +11405,25 @@ void __NO_RETURN _start(void)
 		;
 }
 
+// call after __preinit_array_xxx and before __init_array_xxx passing
+void
+_init(void)
+{
+}
+
+
+#endif
+
 /**
  * \brief This is the code that gets called on processor reset.
  * To initialize the device, and call the main() routine.
  */
+
 void Reset_Handler(void)
 {
 	  SystemInit();                             /* CMSIS System Initialization */
 	  __PROGRAM_START();                        /* Enter PreMain (C library entry point) */
 }
-
 /*------------------------------------------------------------------------------
  *         Exception Table
  *------------------------------------------------------------------------------*/
