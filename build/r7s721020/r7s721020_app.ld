@@ -81,7 +81,7 @@ SECTIONS
 		LONG (__data2_end__ - __data2_start__)
 	*/
 		__copy_table_end__ = .;
-	} > FLASH
+	} > RAM
 
 	/* To clear multiple BSS sections,
 	 * uncomment .zero.table section and,
@@ -97,7 +97,7 @@ SECTIONS
 		LONG (__bss2_end__ - __bss2_start__)
 	*/
 		__zero_table_end__ = .;
-	} > FLASH
+	} > RAM
 
 	__etext = .;
 
