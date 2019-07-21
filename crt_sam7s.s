@@ -94,7 +94,7 @@ FIQAddr:       .word FIQHandler
    
    .global Reset_Handler7
    .extern main
-   .extern arm_cpu_initialize
+   .extern SystemInit
 /****************************************************************************/
 /*                           Reset handler                                  */
 /****************************************************************************/
@@ -120,7 +120,7 @@ Reset_Handler7:
 
 	/* low-level CPU peripherials init */
 	
-   ldr   r2, =arm_cpu_initialize
+   ldr   r2, =SystemInit
    mov   lr, pc
    bx    r2     /* And jump... */
 

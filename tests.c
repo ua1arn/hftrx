@@ -5453,7 +5453,7 @@ void hightests(void)
 		extern unsigned long __dtcm_start__, __dtcm_end__;	// Cortex-M7 specific - область памяти icm
 
 		debug_printf_P(PSTR("__etext=%p, __bss_start__=%p, __bss_end__=%p, __data_start__=%p, __data_end__=%p\n"), & __etext, & __bss_start__, & __bss_end__, & __data_start__, & __data_end__);
-		debug_printf_P(PSTR("__stack=%p, arm_cpu_initialize=%p\n"), & __stack, arm_cpu_initialize);
+		debug_printf_P(PSTR("__stack=%p, SystemInit=%p\n"), & __stack, SystemInit);
 		//debug_printf_P(PSTR("__ramfunctext=%p, __itcmdata_start__=%p, __itcmdata_end__=%p, __itcm_start__=%p, __itcm_end__=%p\n"), & __ramfunctext, & __itcmdata_start__, & __itcmdata_end__, & __itcm_start__, & __itcm_end__);
 		//debug_printf_P(PSTR("__dtcm_start__=%p, __dtcm_end__=%p\n"), & __dtcm_start__, & __dtcm_end__);
 	}
@@ -7674,6 +7674,7 @@ static unsigned RAMFUNC_NONILINE testramfunc2(void)
 {
 	return 10;
 }
+
 
 void lowtests(void)
 {

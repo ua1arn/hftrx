@@ -91,7 +91,7 @@ FIQAddr:       .word FIQHandler
    
    .extern main
    .extern __libc_init_array
-   .extern arm_cpu_initialize
+   .extern SystemInit
 /****************************************************************************/
 /*                           Reset handler                                  */
 /****************************************************************************/
@@ -134,7 +134,7 @@ line_loop:
 
 /* low-level CPU peripherials init */
 	
-   ldr   r2, =arm_cpu_initialize
+   ldr   r2, =SystemInit
    mov   lr, pc
    bx    r2     /* And jump... */
 

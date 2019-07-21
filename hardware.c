@@ -8993,7 +8993,7 @@ void arm_hardware_flush_invalidate(uintptr_t base, size_t size)
 
 
 // получение из аппаратного счетчика монотонно увеличивающегося кода
-// see arm_cpu_initialize() in hardware.c
+// see SystemInit() in hardware.c
 uint_fast32_t cpu_getdebugticks(void)
 {
 #if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7
@@ -9024,7 +9024,7 @@ _init(void)
 // watchdog disable, clock initialize, cache enable
 void 
 FLASHMEMINITFUNC
-arm_cpu_initialize(void)
+SystemInit(void)
 {
 #if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7
 
@@ -10148,7 +10148,7 @@ void cpu_initialize(void)
 
 	//debug_printf_P(PSTR("cpu_initialize1: CP15=%08lX, __data_start__=%p\n"), __get_SCTLR(), & __data_start__);
 	//debug_printf_P(PSTR("__etext=%p, __bss_start__=%p, __bss_end__=%p, __data_start__=%p, __data_end__=%p\n"), & __etext, & __bss_start__, & __bss_end__, & __data_start__, & __data_end__);
-	//debug_printf_P(PSTR("__stack=%p, arm_cpu_initialize=%p\n"), & __stack, arm_cpu_initialize);
+	//debug_printf_P(PSTR("__stack=%p, SystemInit=%p\n"), & __stack, SystemInit);
 
     /* ==== Writeback Cache ==== */
     //io_cache_writeback();
@@ -11402,6 +11402,30 @@ extern unsigned long __bss_start__, __bss_end__, __data_end__, __data_start__, _
 extern int main(void);
 extern void __libc_init_array(void);
 
+
+void __NO_RETURN _start(void)
+{
+	//SystemInit();
+	__libc_init_array();	// invoke constructors
+    /* Branch to main function */
+    main();
+
+    /* Infinite loop */
+	for (;;)
+		;
+}
+
+
+/**
+ * \brief This is the code that gets called on processor reset.
+ * To initialize the device, and call the main() routine.
+ */
+void Reset_HandlerZZZ(void)
+{
+	  SystemInit();                             /* CMSIS System Initialization */
+	  __PROGRAM_START();                        /* Enter PreMain (C library entry point) */
+}
+
 /** \endcond */
 /**
  * \brief This is the code that gets called on processor reset.
@@ -11439,7 +11463,7 @@ void Reset_Handler(void)
 
 
     /* Low level Initialize */
-	arm_cpu_initialize();		// watchdog disable, clock initialize, cache enable
+	SystemInit();		// watchdog disable, clock initialize, cache enable
 #if 0
 	{
 		// Формирование импульсов на выводе процессора
