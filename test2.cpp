@@ -16,19 +16,9 @@ public:
 	}
 };
 
-class test2
-{
-public:
-	test2()
-	{
-		debug_printf_P("*********** test2 @%p\n", this);
-	}
-};
-
-
-static class test2 gltest;
-static RAMDTCM  class test2  gltest2;
-static RAMBIG  class test2  gltest3;
+static class test gltest;
+static RAMDTCM  class test  gltest2;
+static RAMBIG  class test  gltest3;
 
 
 extern "C" { void ttt(void); }

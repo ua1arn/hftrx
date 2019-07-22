@@ -10359,6 +10359,13 @@ _init(void)
 {
 }
 
+int __dso_handle;
+
+void _fini(void)
+{
+	for (;;)
+		;
+}
 
 #endif
 
