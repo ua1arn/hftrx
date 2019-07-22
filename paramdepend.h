@@ -614,6 +614,10 @@
 		#define enableIRQ() do { __enable_irq(); } while (0)
 		#define disableIRQ() do { __disable_irq(); } while (0)
 
+		#define ASSERT_IRQL_ALL_ENABLED() ASSERT(1)
+		#define ASSERT_IRQL_SYSTEM() ASSERT(1)
+		#define ASSERT_IRQL_USER() ASSERT(1)
+
 	#endif /* WITHNESTEDINTERRUPTS */
 
 	#define global_enableIRQ() do { __enable_irq(); } while (0)

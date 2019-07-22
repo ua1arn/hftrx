@@ -8993,7 +8993,7 @@ void arm_hardware_flush_invalidate(uintptr_t base, size_t size)
 
 
 // получение из аппаратного счетчика монотонно увеличивающегося кода
-// see arm_cpu_initialize() in hardware.c
+// see SystemInit() in hardware.c
 uint_fast32_t cpu_getdebugticks(void)
 {
 #if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7
@@ -9012,19 +9012,13 @@ uint_fast32_t cpu_getdebugticks(void)
 #endif
 }
 
-// call after __preinit_array_xxx and before __init_array_xxx passing
-void 
-_init(void) 
-{
-}
-
 
 /* функция вызывается из start-up до копирования в SRAM всех "быстрых" функций и до инициализации переменных
 */
 // watchdog disable, clock initialize, cache enable
 void 
 FLASHMEMINITFUNC
-arm_cpu_initialize(void)
+SystemInit(void)
 {
 #if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7
 
@@ -9281,6 +9275,13 @@ arm_cpu_initialize(void)
 	//#error Undefined CPUSTYLE_XXX
 
 #endif
+
+#if WITHDEBUG
+
+	HARDWARE_DEBUG_INITIALIZE();
+	HARDWARE_DEBUG_SET_SPEED(DEBUGSPEED);
+
+#endif /* WITHDEBUG */
 }
 
 #if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7 || CPUSTYLE_ARM_CM0
@@ -10148,7 +10149,7 @@ void cpu_initialize(void)
 
 	//debug_printf_P(PSTR("cpu_initialize1: CP15=%08lX, __data_start__=%p\n"), __get_SCTLR(), & __data_start__);
 	//debug_printf_P(PSTR("__etext=%p, __bss_start__=%p, __bss_end__=%p, __data_start__=%p, __data_end__=%p\n"), & __etext, & __bss_start__, & __bss_end__, & __data_start__, & __data_end__);
-	//debug_printf_P(PSTR("__stack=%p, arm_cpu_initialize=%p\n"), & __stack, arm_cpu_initialize);
+	//debug_printf_P(PSTR("__stack=%p, SystemInit=%p\n"), & __stack, SystemInit);
 
     /* ==== Writeback Cache ==== */
     //io_cache_writeback();
@@ -10331,6 +10332,36 @@ uint8_t xxxxxpos(uint8_t num) // num = 0..8
 
 */
 
+
+
+#if CPUSTYLE_ARM
+
+// Используется в случае наличия ключа ld -nostartfiles
+// Так же смотреть вокруг software_init_hook
+
+extern int main(void);
+extern void __libc_init_array(void);
+
+void __NO_RETURN _start(void)
+{
+	__libc_init_array();	// invoke constructors
+    /* Branch to main function */
+    main();
+
+     /* Infinite loop */
+	for (;;)
+		;
+}
+
+// call after __preinit_array_xxx and before __init_array_xxx passing
+void
+_init(void)
+{
+}
+
+
+#endif
+
 #if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM0 || CPUSTYLE_ARM_CM7
 /*----------------------------------------------------------------------------
  *        Exported variables
@@ -10397,6 +10428,7 @@ volatile uint32_t psr;// Регистр статуса программы.
 }
 
 #endif /* WITHDEBUG && (CPUSTYLE_ARM_CM7 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM3) */
+
 
 ///////////////////////////
 //
@@ -11385,195 +11417,25 @@ void ATTRWEAK TIM7_IRQHandler(void)
 
 typedef void (* IntFunc)(void);
 
-extern unsigned long __etext;	// где во FLASH лежит образ инициализирующих data данных
-extern unsigned long __bss_start__, __bss_end__, __data_end__, __data_start__, __stack;
+extern unsigned long __stack;
 
-#if CPUSTYLE_ARM_CM4
-
-	extern unsigned long __ccm_start__, __ccm_end__;	// Cortex-M4 specific
-
-#elif CPUSTYLE_ARM_CM7
-	extern unsigned long __dtcm_start__, __dtcm_end__;	// Cortex-M7 specific
-	extern unsigned long __itcm_start__, __itcm_end__;	// Cortex-M7 specific
-	extern unsigned long __itcmdata_start__, __itcmdata_end__;	// Cortex-M7 specific
-	extern unsigned long __ramfunctext;
-#endif
-
-extern int main(void);
-extern void __libc_init_array(void);
-
-/** \endcond */
 /**
  * \brief This is the code that gets called on processor reset.
  * To initialize the device, and call the main() routine.
  */
+
 void Reset_Handler(void)
 {
-#if 0
-	{
-		// Формирование импульсов на выводе процессора
-		for (;;)
-		{
-			const uint32_t WORKMASK = 1UL << 31;	// PA31
-
-			arm_hardware_pioa_outputs(WORKMASK, WORKMASK * 1);
-			hardware_spi_io_delay();
-			arm_hardware_pioa_outputs(WORKMASK, WORKMASK * 0);
-			hardware_spi_io_delay();
-		}
-	}
-#endif
-#if 0
-	// PD13 signal
-	enum { WORKMASK	 = 1ul << 13 };
-	arm_hardware_piod_outputs(WORKMASK, WORKMASK);
-
-	for (;;)
-	{
-		arm_hardware_piod_outputs(WORKMASK, 1 * WORKMASK);
-		hardware_spi_io_delay();
-		arm_hardware_piod_outputs(WORKMASK, 0 * WORKMASK);
-		hardware_spi_io_delay();
-	}
-#endif
-
-
-    /* Low level Initialize */
-	arm_cpu_initialize();		// watchdog disable, clock initialize, cache enable
-#if 0
-	{
-		// Формирование импульсов на выводе процессора
-		for (;;)
-		{
-			const uint32_t WORKMASK = 1UL << 31;	// PA31
-
-			arm_hardware_pioa_outputs(WORKMASK, WORKMASK * 1);
-			hardware_spi_io_delay();
-			arm_hardware_pioa_outputs(WORKMASK, WORKMASK * 0);
-			hardware_spi_io_delay();
-		}
-	}
-#endif
-#if 0
-	// PD13 signal
-	enum { WORKMASK = 1ul << 13 };
-	arm_hardware_piod_outputs(WORKMASK, WORKMASK);
-
-	for (;;)
-	{
-		arm_hardware_piod_outputs(WORKMASK, 1 * WORKMASK);
-		hardware_spi_io_delay();
-		arm_hardware_piod_outputs(WORKMASK, 0 * WORKMASK);
-		hardware_spi_io_delay();
-	}
-#endif
-#if 0
-	// PG13 signal
-	enum { WORKMASK = 1ul << 13 };
-	arm_hardware_piog_outputs(WORKMASK, WORKMASK);
-
-	for (;;)
-	{
-		GPIOG->ODR ^= WORKMASK;	// Debug LEDs
-		hardware_spi_io_delay();
-		//local_delay_ms(300);
-		local_delay_ms(400);
-	}
-#endif
-	// Хотя возвращатся из данной функции не предполагается - память и адрес возврата могли бы затираются,
-	// но вместе с ними будут стёрты и автоматические переменые, используемые в данной функции. Поэтому,
-	// стирать ВСЮ память по её размеру нельзя.
-
-	#if CPUSTYLE_ARM_CM4
-		/* zero-init variables */
-		//memset(& __ccm_start__, 0, (& __ccm_end__ - & __ccm_start__) * sizeof __ccm_end__);
-	#elif CPUSTYLE_ARM_CM7
-		/* zero-init variables */
-		//memset(& __dtcm_start__, 0, (& __dtcm_end__ - & __dtcm_start__) * sizeof __dtcm_end__);
-		memcpy(& __itcm_start__, & __ramfunctext, (& __itcmdata_end__ - & __itcmdata_start__) * sizeof __itcmdata_end__);
-		arm_hardware_flush((uintptr_t) & __itcm_start__, (& __itcmdata_end__ - & __itcmdata_start__) * sizeof __itcmdata_end__);
-	#endif
-	 /* copy-init variables */
-    memcpy(& __data_start__, & __etext, (& __data_end__ - & __data_start__) * sizeof __data_end__);
-    /* zero-init variables */
-    memset(& __bss_start__, 0, (& __bss_end__ - & __bss_start__) * sizeof __bss_end__);
-
-	arm_hardware_flush((uintptr_t) & __data_start__, (& __data_end__ - & __data_start__) * sizeof __data_end__);
-	arm_hardware_flush((uintptr_t) & __bss_start__, (& __bss_end__ - & __bss_start__) * sizeof __bss_end__);
-
-#if 0
-
-    /* Set the vector table base address */
-    pSrc = (uint32_t *)&_sfixed;
-    SCB->VTOR = ( (uint32_t)pSrc & SCB_VTOR_TBLOFF_Msk ) ;
-    
-    if ( ((uint32_t)pSrc >= IRAM_ADDR) && ((uint32_t)pSrc < IRAM_ADDR+IRAM_SIZE) )
-    {
-	    SCB->VTOR |= 1 << SCB_VTOR_TBLBASE_Pos ;
-    }
-
-    /* Initialize the C library */
-    //__libc_init_array() ;
-#endif
-
-#if 0
-	{
-		// Формирование импульсов на выводе процессора
-		for (;;)
-		{
-			const uint32_t WORKMASK = 1UL << 31;	// PA31
-
-			arm_hardware_pioa_outputs(WORKMASK, WORKMASK * 1);
-			hardware_spi_io_delay();
-			arm_hardware_pioa_outputs(WORKMASK, WORKMASK * 0);
-			hardware_spi_io_delay();
-		}
-	}
-#endif
-#if 0
-	// PD13 signal
-	enum { WORKMASK	 = 1ul << 13 };
-	arm_hardware_piod_outputs(WORKMASK, WORKMASK);
-
-	for (;;)
-	{
-		arm_hardware_piod_outputs(WORKMASK, 1 * WORKMASK);
-		hardware_spi_io_delay();
-		local_delay_ms(300);
-		arm_hardware_piod_outputs(WORKMASK, 0 * WORKMASK);
-		hardware_spi_io_delay();
-		local_delay_ms(300);
-	}
-#endif
-#if 0
-	// PG13 signal
-	enum { WORKMASK = 1ul << 13 };
-	arm_hardware_piog_outputs(WORKMASK, WORKMASK);
-
-	for (;;)
-	{
-		GPIOG->ODR ^= WORKMASK;	// Debug LEDs
-		hardware_spi_io_delay();
-		local_delay_ms(300);
-	}
-#endif
-	//SystemInit();
-	__libc_init_array();	// invoke constructors
-    /* Branch to main function */
-    main();
-
-    /* Infinite loop */
-	for (;;)
-		;
+	  SystemInit();                             /* CMSIS System Initialization */
+	  __PROGRAM_START();                        /* Enter PreMain (C library entry point) */
 }
-
 /*------------------------------------------------------------------------------
  *         Exception Table
  *------------------------------------------------------------------------------*/
 
 
 const
-__attribute__((used, section(".vectors")))
+__VECTOR_TABLE_ATTRIBUTE
 IntFunc __Vectors [/*256*/] = {
 
     /* Configure Initial Stack Pointer, using linker-generated symbols */

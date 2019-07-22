@@ -97,36 +97,41 @@ SECTIONS
 	/* To copy multiple ROM to RAM sections,
 	 * uncomment .copy.table section and,
 	 * define __STARTUP_COPY_MULTIPLE in startup_ARMCMx.S */
-	/*
+
 	.copy.table :
 	{
 		. = ALIGN(4);
 		__copy_table_start__ = .;
+		
 		LONG (__etext)
 		LONG (__data_start__)
-		LONG (__data_end__ - __data_start__)
+		LONG ((__data_end__ - __data_start__) / 4)
+		
 		LONG (__etext2)
 		LONG (__data2_start__)
-		LONG (__data2_end__ - __data2_start__)
+		LONG ((__data2_end__ - __data2_start__) / 4)
+		
+		LONG (__etext3)
+		LONG (__data3_start__)
+		LONG ((__data3_end__ - __data3_start__) / 4)
+		
 		__copy_table_end__ = .;
 	} > FLASH
-	*/
+
 
 	/* To clear multiple BSS sections,
 	 * uncomment .zero.table section and,
 	 * define __STARTUP_CLEAR_BSS_MULTIPLE in startup_ARMCMx.S */
-	/*
+
 	.zero.table :
 	{
 		. = ALIGN(4);
 		__zero_table_start__ = .;
 		LONG (__bss_start__)
-		LONG (__bss_end__ - __bss_start__)
-		LONG (__bss2_start__)
-		LONG (__bss2_end__ - __bss2_start__)
+		LONG ((__bss_end__ - __bss_start__) / 4)
 		__zero_table_end__ = .;
 	} > FLASH
-	*/
+
 
 	__etext = .;
 
@@ -165,16 +170,17 @@ SECTIONS
 		/* All data end */
 		__data_end__ = .;
 
-	} > DTCMRAM /*RAM_D2*/
+	} > DTCMRAM
 
 	. = __etext + __data_end__ - __data_start__;
 
-	__ramfunctext = .;
+	__etext2 = .;
 
-	.ramfn : AT (__ramfunctext)
+	.itcm : AT (__etext2)
 	{
-		__itcmdata_start__ = .;
-		*(.ramfunc)
+		__data2_start__ = .;
+		*(.itcm)
+		*(.itcm.*)
 		*(.text.__ieee754_logf)
 		*(.text.__ieee754_powf)
 		*(.text.__ieee754_rem_pio2f)
@@ -182,10 +188,23 @@ SECTIONS
 		*(.text.__kernel_rem_pio2f)
 
 		. = ALIGN(4);
-		__itcmdata_end__ = .;
+		__data2_end__ = .;
 	} > ITCMRAM
 
-	. = __ramfunctext + __itcmdata_end__ - __itcmdata_start__;
+	. = __etext2 + __data2_end__ - __data2_start__;
+
+	__etext3 = .;
+
+	.ram_d1 : AT (__etext3)
+	{
+		__data3_start__ = .;
+		*(.ram_d1)
+		*(.ram_d1.*)
+		. = ALIGN(4);
+		__data3_end__ = .;
+	} > RAM_D1
+
+	. = __etext3 + __data3_end__ - __data3_start__;
 
 	.bss :
 	{
