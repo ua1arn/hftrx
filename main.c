@@ -13683,6 +13683,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 #endif /* WITHUSEAUDIOREC */
+#if WITHIF4DSP
 #if WITHUSBUAC
 	{
 		"PLAY USB", 7, 3, RJ_YES,	ISTEP1,
@@ -13705,6 +13706,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 	#endif /* WITHRTS96 || WITHRTS192 || WITHTRANSPARENTIQ */
 #endif /* WITHUSBUAC */
+#endif /* WITHIF4DSP */
 #if WITHIF4DSP
 #if ! WITHFLATMENU
 	{

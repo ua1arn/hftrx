@@ -36,7 +36,7 @@
 	//#define WITHUART2HW	1	/* Используется периферийный контроллер последовательного порта #2 */
 	#define WITHDEBUG_USART2	1
 	#define WITHNMEA_USART2		1	/* порт подключения GPS/GLONASS */
-	#define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
+	//#define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
 
 	#define WITHUSBCDC		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
 	//#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
@@ -314,7 +314,7 @@
 	#define SPI_ALLCS_BITSNEG 0		// Выходы, активные при "1"
 
 #else
-	// Есть внешний дешифратор на шине адреса SPI 
+	// Есть внешний дешифратор на шине адреса SPI
 
 	// биты вывода адреса чипселект дешифратора
 	#define SPI_ADDRESS_PORT_S(v)	do { GPIOC->BSRR = BSRR_S(v); __DSB(); } while (0)

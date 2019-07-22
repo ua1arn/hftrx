@@ -111,7 +111,7 @@
 	#define DIRECT_50M0_X8		1	/* Board hardware configuration */
 	#define BANDSELSTYLERE_LOCONV15M	1	/* Down-conversion with working band .030..15 MHz */
 	#define MODEL_DIRECT	1	/* использовать прямой синтез, а не гибридный */
-#elif 1
+#elif 0
 	/* Версии частотных схем - с прямым преобразованием  */
 	#define FQMODEL_DCTRX		1	// прямое преобразование
 	//#define DIRECT_50M0_X8		1	/* Board hardware configuration */
@@ -233,16 +233,17 @@
 	//#define WITHKEYBOARD 1	/* в данном устройстве есть клавиатура */
 	//#define KEYBOARD_USE_ADC	1	/* на одной линии установлено  четыре  клавиши. на vref - 6.8K, далее 2.2К, 4.7К и 13K. */
 	#define WITHENCODER	1	/* для изменения частоты имеется енкодер */
-	#define WITHNESTEDINTERRUPTS	1	/* используется при наличии real-time части. */
-	#define WITHINTEGRATEDDSP		1	/* в программу включена инициализация и запуск DSP части. */
-	#define WITHIF4DSP	1	// "Дятел"
+	//#define WITHNESTEDINTERRUPTS	1	/* используется при наличии real-time части. */
+	//#define WITHINTEGRATEDDSP		1	/* в программу включена инициализация и запуск DSP части. */
+	//#define WITHIF4DSP	1	// "Дятел"
 	//#define WITHEXTERNALDDSP		1	/* имеется управление внешней DSP платой. */
 	//#define WITHLOOPBACKTEST	1
 	//#define DEFAULT_DSP_IF	12000
 	//#define WITHDSPEXTDDC 1			/* Квадратуры получаются внешней аппаратурой */
 	//#define WITHDSPEXTFIR 1			/* Фильтрация квадратур осуществляется внешней аппаратурой */
-	#define WITHDSPLOCALFIR 1			/* Фильтрация квадратур осуществляется процессором */
-	#define WITHRTS96 1		/* вместо выходного аудиосигнала передача квадратур по USB */
+	//#define WITHDSPLOCALFIR 1			/* Фильтрация квадратур осуществляется процессором */
+	//#define WITHRTS96 1		/* вместо выходного аудиосигнала передача квадратур по USB */
+	//#define BOARD_FFTZOOM_POW2MAX 0	// Возможный масштабы FFT x1
 
 	#define WITHIFDACWIDTH	32		// 1 бит знак и 31 бит значащих
 	#define WITHIFADCWIDTH	32		// 1 бит знак и 31 бит значащих
