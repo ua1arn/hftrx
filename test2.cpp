@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "armcpu/stm32h7xx.h"
+#include "hardware.h"
 
 extern "C" { void debug_printf_P(const char *format, ... ); }
 
@@ -25,12 +25,12 @@ public:
 	}
 };
 
-#if 0
-static class test2 gltest;
-static __attribute__((section(".dtcm")))  class test2  gltest2;
-static __attribute__((section(".ram_d1")))  class test2  gltest3;
 
-#endif
+static class test2 gltest;
+static RAMDTCM  class test2  gltest2;
+static RAMBIG  class test2  gltest3;
+
+
 extern "C" { void ttt(void); }
 
 void ttt()

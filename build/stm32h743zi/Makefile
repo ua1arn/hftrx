@@ -76,7 +76,10 @@ UDEFS = -DNDEBUG=1 -DCPUSTYLE_STM32H7XX=1 -DSTM32H743xx=1
 UADEFS = 
 
 # List C source files here
-SRC +=
+CSRC +=
+
+# List C++ source files here
+CPPSRC +=
 
 # List ASM source files here
 ASRC +=
@@ -92,8 +95,9 @@ ULIBS +=
 
 SRCC_EXCLUDES += ../../tools/rbf2c.c
 SRCCPP_EXCLUDES += 
-SRCC = $(filter-out $(SRCC_EXCLUDES), $(wildcard $(SRCDIR)/*.c $(SRCDIR)/*/*.c $(SRCDIR)/*/*/*.c $(SRCDIR)/*/*/*/*.c))
-SRCCPP = $(filter-out $(SRCCPP_EXCLUDES), $(wildcard $(SRCDIR)/*.cpp $(SRCDIR)/*/*.cpp $(SRCDIR)/*/*/*.cpp $(SRCDIR)/*/*/*/*.cpp))
+
+CSRC = $(filter-out $(SRCC_EXCLUDES), $(wildcard $(SRCDIR)/*.c $(SRCDIR)/*/*.c $(SRCDIR)/*/*/*.c $(SRCDIR)/*/*/*/*.c))
+CPPSRC = $(filter-out $(SRCCPP_EXCLUDES), $(wildcard $(SRCDIR)/*.cpp $(SRCDIR)/*/*.cpp $(SRCDIR)/*/*/*.cpp $(SRCDIR)/*/*/*/*.cpp))
 VPATH = $(SRCDIR)
 
 #
@@ -101,13 +105,13 @@ VPATH = $(SRCDIR)
 ##############################################################################################
 
 
-INCDIR  = $(patsubst %,-I%,$(DINCDIR) $(UINCDIR))
-LIBDIR  = $(patsubst %,-L%,$(DLIBDIR) $(ULIBDIR))
+INCDIR  = $(patsubst %, -I%,$(DINCDIR) $(UINCDIR))
+LIBDIR  = $(patsubst %, -L%,$(DLIBDIR) $(ULIBDIR))
 DEFS    = $(DDEFS) $(UDEFS)
 ADEFS   = $(DADEFS) $(UADEFS)
-OBJS 	+= $(patsubst %.s,$(OBJDIR)/%.o,$(ASRC))
-OBJS	+= $(patsubst $(SRCDIR)/%.c,$(OBJDIR)/%.o,$(SRCC))
-OBJS	+= $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(SRCCPP))
+OBJS 	+= $(patsubst $(SRCDIR)/%.s, $(OBJDIR)/%.o, $(ASRC))
+OBJS	+= $(patsubst $(SRCDIR)/%.c, $(OBJDIR)/%.o, $(CSRC))
+OBJS	+= $(patsubst $(SRCDIR)/%.cpp, $(OBJDIR)/%.o, $(CPPSRC))
 LIBS    = $(DLIBS) $(ULIBS)
 
 
@@ -116,9 +120,9 @@ MCFLAGS = -mcpu=$(MCU) $(CORE) -fno-math-errno -funroll-loops -fgraphite-identit
 #
 #ASFLAGS = $(MCFLAGS) $(OPT) $(LTO) -g -gdwarf-2 -Wa,-amhls=$(<:.s=.lst) $(ADEFS)
 ASFLAGS = $(MCFLAGS) $(OPT) $(LTO) -g -gdwarf-2 $(ADEFS)
-#CPFLAGS = $(MCFLAGS) $(OPT) $(LTO) -gdwarf-2 -mthumb-interwork -fomit-frame-pointer -Wall -Wstrict-prototypes -fverbose-asm -Wa,-ahlms=$(<:.c=.lst) $(DEFS)
-#CPFLAGS = $(MCFLAGS) $(OPT) $(LTO) -gdwarf-2 -mlong-calls -fomit-frame-pointer -Wall -Wstrict-prototypes $(DEFS)
-CPFLAGS = $(MCFLAGS) $(OPT) $(LTO) -gdwarf-2 -fomit-frame-pointer -Wall -Wstrict-prototypes $(DEFS) $(MAKE_DEFINES)
+#CPFLAGS = $(MCFLAGS) $(OPT) $(LTO) -gdwarf-2 -mthumb-interwork -fomit-frame-pointer -Wall -fverbose-asm -Wa,-ahlms=$(<:.c=.lst) $(DEFS)
+#CPFLAGS = $(MCFLAGS) $(OPT) $(LTO) -gdwarf-2 -mlong-calls -fomit-frame-pointer -Wall $(DEFS)
+CPFLAGS = $(MCFLAGS) $(OPT) $(LTO) -gdwarf-2 -fomit-frame-pointer -Wall $(DEFS) $(MAKE_DEFINES)
 
 LDFLAGS_RAM = $(MCFLAGS) $(LTO) $(OPT) -nostartfiles -T$(LDSCRIPT_RAM) -Wl,-Map=$(PROJECT)_ram.map,--cref $(LIBDIR)
 LDFLAGS_ROM = $(MCFLAGS) $(LTO) $(OPT) -nostartfiles -T$(LDSCRIPT_ROM) -Wl,-Map=$(PROJECT)_rom.map,--cref $(LIBDIR)
@@ -149,7 +153,7 @@ ROM: $(OBJS) $(PROJECT)_rom.elf $(PROJECT)_rom.hex
 
 $(OBJDIR)/%.o: %.c
 	@mkdir -p $(@D)
-	$(CC) -c $(CPFLAGS) $(INCDIR) $(addprefix $(SRCDIR)/, $(patsubst obj/%, %, $(patsubst %.o, %.c, $@))) -o $@
+	$(CC) -Wstrict-prototypes -c $(CPFLAGS) $(INCDIR) $(addprefix $(SRCDIR)/, $(patsubst obj/%, %, $(patsubst %.o, %.c, $@))) -o $@
 
 $(OBJDIR)/%.o: %.cpp
 	@mkdir -p $(@D)

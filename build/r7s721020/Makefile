@@ -27,7 +27,8 @@ HEX  = $(CP) -O ihex -R .noinit -R .bss -R .vram
 BIN  = $(CP) -O binary -R .noinit -R .bss -R .vram
 
 CMSISDIR = ../../../CMSIS_5/CMSIS
-OBJDIR = ./obj
+OBJDIR2 = obj
+OBJDIR = ./$(OBJDIR2)
 
 # Define optimisation level here
 OPT = -Ofast
@@ -35,8 +36,8 @@ LTO = -flto
 
 # This product incorporates the ARM single-core Cortex-A9 MPCore, where the IP version is r3p0.
 MCU  = cortex-a9
+#CORE = -march=armv7-a -mfloat-abi=hard -mfpu=vfpv3-d16 -mfpu=neon -ftree-vectorize
 CORE = -march=armv7-a -mfloat-abi=hard -mfpu=vfpv3-d16 -ftree-vectorize
-#CORE = -march=armv7-a -mfloat-abi=hard -mfpu=neon -ftree-vectorize
 
 # List all default C defines here, like -D_DEBUG=1
 DDEFS = 
@@ -50,6 +51,7 @@ DINCDIR = $(CMSISDIR)/Core_A/Include $(CMSISDIR)/DSP/Include
 DLIBDIR = $(CMSISDIR)/DSP/Lib/GCC
 
 # List all default libraries here
+#DLIBS = -lm -larm_cortexA9lneon_math
 DLIBS = -lm -larm_cortexA9lfdp_math
 
 #
@@ -78,11 +80,14 @@ UDEFS = -DNDEBUG=1 -DCPUSTYLE_R7S721=1 -DCPUSTYLE_R7S721020=1 -DTARGET_RZA1=TARG
 UADEFS = 
 
 # List C source files here
-SRC +=
+CSRC +=
+
+# List C++ source files here
+CPPSRC +=
 
 # List ASM source files here
 ASRC += \
- crt_r7s721.s
+ $(SRCDIR)/crt_r7s721.s
 
 # List all user directories here
 UINCDIR += ../.. ../../inc ../../rza1x_inc/
@@ -94,7 +99,8 @@ ULIBDIR +=
 ULIBS += 
 
 SRC_EXCLUDES += ../../tools/rbf2c.c
-SRC += $(filter-out $(SRC_EXCLUDES), $(wildcard $(SRCDIR)/*.c $(SRCDIR)/*/*.c $(SRCDIR)/*/*/*.c $(SRCDIR)/*/*/*/*.c))
+CSRC += $(filter-out $(SRC_EXCLUDES), $(wildcard $(SRCDIR)/*.c $(SRCDIR)/*/*.c $(SRCDIR)/*/*/*.c $(SRCDIR)/*/*/*/*.c))
+CPPSRC += $(filter-out $(SRC_EXCLUDES), $(wildcard $(SRCDIR)/*.cpp $(SRCDIR)/*/*.cpp $(SRCDIR)/*/*/*.cpp $(SRCDIR)/*/*/*/*.cpp))
 VPATH = $(SRCDIR)
 
 #
@@ -106,7 +112,9 @@ INCDIR  = $(patsubst %,-I%,$(DINCDIR) $(UINCDIR))
 LIBDIR  = $(patsubst %,-L%,$(DLIBDIR) $(ULIBDIR))
 DEFS    = $(DDEFS) $(UDEFS)
 ADEFS   = $(DADEFS) $(UADEFS)
-OBJS 	= $(patsubst %.s,$(OBJDIR)/%.o,$(ASRC)) $(patsubst $(SRCDIR)/%.c,$(OBJDIR)/%.o,$(SRC))
+OBJS 	+= $(patsubst $(SRCDIR)/%.s,$(OBJDIR)/%.o,$(ASRC))
+OBJS 	+= $(patsubst $(SRCDIR)/%.c,$(OBJDIR)/%.o,$(CSRC))
+OBJS 	+= $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(CPPSRC))
 LIBS    = $(DLIBS) $(ULIBS)
 
 MCFLAGS = $(CORE) -fno-math-errno -funroll-loops -fgraphite-identity -ffunction-sections -fdata-sections -ffat-lto-objects
@@ -114,9 +122,9 @@ MCFLAGS = $(CORE) -fno-math-errno -funroll-loops -fgraphite-identity -ffunction-
 #
 #ASFLAGS = $(MCFLAGS) $(OPT) $(LTO) -g -gdwarf-2 -Wa,-amhls=$(<:.s=.lst) $(ADEFS)
 ASFLAGS = $(MCFLAGS) $(OPT) $(LTO) -g -gdwarf-2 $(ADEFS)
-#CPFLAGS = $(MCFLAGS) $(OPT) $(LTO) -gdwarf-2 -mthumb-interwork -fomit-frame-pointer -Wall -Wstrict-prototypes -fverbose-asm -Wa,-ahlms=$(<:.c=.lst) $(DEFS)
-#CPFLAGS = $(MCFLAGS) $(OPT) $(LTO) -gdwarf-2 -mlong-calls -fomit-frame-pointer -Wall -Wstrict-prototypes $(DEFS)
-CPFLAGS = $(MCFLAGS) $(OPT) $(LTO) -gdwarf-2 -fomit-frame-pointer -Wall -Wstrict-prototypes $(DEFS) $(MAKE_DEFINES)
+#CPFLAGS = $(MCFLAGS) $(OPT) $(LTO) -gdwarf-2 -mthumb-interwork -fomit-frame-pointer -Wall -fverbose-asm -Wa,-ahlms=$(<:.c=.lst) $(DEFS)
+#CPFLAGS = $(MCFLAGS) $(OPT) $(LTO) -gdwarf-2 -mlong-calls -fomit-frame-pointer -Wall $(DEFS)
+CPFLAGS = $(MCFLAGS) $(OPT) $(LTO) -gdwarf-2 -fomit-frame-pointer -Wall $(DEFS) $(MAKE_DEFINES)
 
 LDFLAGS_BOOT = $(MCFLAGS) $(LTO) $(OPT) -nostartfiles -T$(LDSCRIPT_BOOT) -Wl,-Map=$(PROJECT)_boot.map,--cref $(LIBDIR)
 LDFLAGS_APP = $(MCFLAGS) $(LTO) $(OPT) -nostartfiles -T$(LDSCRIPT_APP) -Wl,-Map=$(PROJECT)_app.map,--cref $(LIBDIR)
@@ -144,11 +152,15 @@ APP: $(OBJS) $(PROJECT)_app.elf $(PROJECT)_app.bin
 
 $(OBJDIR)/%.o: %.c
 	@mkdir -p $(@D)
-	$(CC) -c $(CPFLAGS) $(INCDIR) $(addprefix $(SRCDIR)/, $(patsubst obj/%, %, $(patsubst %.o, %.c, $@))) -o $@
+	$(CC) -Wstrict-prototypes -c $(CPFLAGS) $(INCDIR) $(addprefix $(SRCDIR)/, $(patsubst $(OBJDIR2)/%, %, $(patsubst %.o, %.c, $@))) -o $@
+
+$(OBJDIR)/%.o: %.cpp
+	@mkdir -p $(@D)
+	$(CC) -std=gnu++11 -fno-rtti -c $(CPFLAGS) $(INCDIR) $(addprefix $(SRCDIR)/, $(patsubst $(OBJDIR2)/%, %, $(patsubst %.o, %.cpp, $@))) -o $@
 
 $(OBJDIR)/%.o: %.s
 	@mkdir -p $(@D)
-	$(AS) -c $(ASFLAGS) $(addprefix $(SRCDIR)/, $(patsubst obj/%, %, $(patsubst %.o, %.s, $@))) -o $@
+	$(AS) -c $(ASFLAGS) $(addprefix $(SRCDIR)/, $(patsubst $(OBJDIR2)/%, %, $(patsubst %.o, %.s, $@))) -o $@
 
 %_boot.elf: $(OBJS)
 	$(CC) $(OBJS) $(LDFLAGS_BOOT) $(LIBS) -o $@
