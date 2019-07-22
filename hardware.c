@@ -9276,8 +9276,12 @@ SystemInit(void)
 
 #endif
 
+#if WITHDEBUG
+
 	HARDWARE_DEBUG_INITIALIZE();
 	HARDWARE_DEBUG_SET_SPEED(DEBUGSPEED);
+
+#endif /* WITHDEBUG */
 }
 
 #if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7 || CPUSTYLE_ARM_CM0
@@ -11431,7 +11435,7 @@ void Reset_Handler(void)
 
 
 const
-__attribute__((used, section(".vectors")))
+__VECTOR_TABLE_ATTRIBUTE
 IntFunc __Vectors [/*256*/] = {
 
     /* Configure Initial Stack Pointer, using linker-generated symbols */

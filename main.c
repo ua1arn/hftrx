@@ -17430,12 +17430,12 @@ int
 //__attribute__ ((used))
 main(void)
 {
-#if WITHDEBUG
+#if WITHDEBUG && CPUSTYLE_ARM
 
 	HARDWARE_DEBUG_INITIALIZE();
 	HARDWARE_DEBUG_SET_SPEED(DEBUGSPEED);
 
-#endif /* WITHDEBUG */
+#endif /* WITHDEBUG && CPUSTYLE_ARM */
 
 	lowtests();		/* функции тестирования, работающие до инициализации периферии */
 
