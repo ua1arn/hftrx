@@ -562,7 +562,7 @@ void hardware_beep_initialize(void);
    режимы SPI с "0" уровнем SCLK в неактивном состоянии.
    */
 
-enum
+typedef enum
 {
 	SPIC_MODE0,
 	SPIC_MODE1,
