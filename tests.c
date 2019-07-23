@@ -5443,21 +5443,6 @@ void hightests(void)
 		}
 	}
 #endif
-#if 0
-	{
-		// Печать адресов по результатам работы ld
-		extern unsigned long __etext, __bss_start__, __bss_end__, __data_end__, __data_start__, __stack;
-		extern unsigned long __itcmdata_start__, __itcmdata_end__;	// Cortex-M7 specific
-		extern unsigned long __itcm_start__, __itcm_end__;	// Cortex-M7 specific - область памяти icm
-		extern unsigned long __ramfunctext;
-		extern unsigned long __dtcm_start__, __dtcm_end__;	// Cortex-M7 specific - область памяти icm
-
-		debug_printf_P(PSTR("__etext=%p, __bss_start__=%p, __bss_end__=%p, __data_start__=%p, __data_end__=%p\n"), & __etext, & __bss_start__, & __bss_end__, & __data_start__, & __data_end__);
-		debug_printf_P(PSTR("__stack=%p, SystemInit=%p\n"), & __stack, SystemInit);
-		//debug_printf_P(PSTR("__ramfunctext=%p, __itcmdata_start__=%p, __itcmdata_end__=%p, __itcm_start__=%p, __itcm_end__=%p\n"), & __ramfunctext, & __itcmdata_start__, & __itcmdata_end__, & __itcm_start__, & __itcm_end__);
-		//debug_printf_P(PSTR("__dtcm_start__=%p, __dtcm_end__=%p\n"), & __dtcm_start__, & __dtcm_end__);
-	}
-#endif
 #if 0 && __MPU_PRESENT
 	{
 		// Cortex Memory Protection Unit (MPU)
@@ -7675,8 +7660,110 @@ static unsigned RAMFUNC_NONILINE testramfunc2(void)
 	return 10;
 }
 
+#if 0
+
+#include <sys/stat.h>
+#include <string.h>
+#include <errno.h>
+
+int SER_PutChar (int c) {
+
+  return (c);
+}
+
+int SER_GetChar (void) {
+
+  return (-1);
+}
+
+/*-- GCC - Newlib runtime support --------------------------------------------*/
+
+extern int  __HeapBase;
+extern int  __HeapLimit;
+
+int _open (const char * path, int flags, ...)
+{
+  return (-1);
+}
+
+int _close (int fd)
+{
+  return (-1);
+}
+
+int _lseek (int fd, int ptr, int dir)
+{
+  return (0);
+}
+
+int __attribute__((weak)) _fstat (int fd, struct stat * st)
+{
+  memset (st, 0, sizeof (* st));
+  st->st_mode = S_IFCHR;
+  return (0);
+}
+
+int _isatty (int fd)
+{
+  return (1);
+}
+
+int _read (int fd, char * ptr, int len)
+{
+  char c;
+  int  i;
+
+  for (i = 0; i < len; i++)
+  {
+	c = SER_GetChar();
+	if (c == 0x0D) break;
+	*ptr++ = c;
+	SER_PutChar(c);
+  }
+  return (len - i);
+}
+
+int _write (int fd, char * ptr, int len)
+{
+  int i;
+
+  for (i = 0; i < len; i++) SER_PutChar (*ptr++);
+  return (i);
+}
+
+caddr_t _sbrk (int incr)
+{
+  static char * heap;
+		 char * prev_heap;
+
+  if (heap == NULL)
+  {
+	heap = (char *)&__HeapBase;
+  }
+
+  prev_heap = heap;
+
+  if ((heap + incr) > (char *)&__HeapLimit)
+  {
+	errno = ENOMEM;
+	return (caddr_t) -1;
+  }
+
+  heap += incr;
+
+  return (caddr_t) prev_heap;
+}
+#endif
+
 void lowtests(void)
 {
+#if 0 && WITHDEBUG
+	{
+		// c++ execution test
+		extern void cpptest(void);
+		cpptest();
+	}
+#endif /* WITHDEBUG */
 #if 0 && CPUSTYLE_R7S721
 	{
 		nestedirqtest();
