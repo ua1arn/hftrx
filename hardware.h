@@ -408,6 +408,7 @@ void hardware_adc_initialize(void);
 		#define RAMDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
 		#define RAMBIGDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 		#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
+		#define RAMHEAP __attribute__((used, section(".heap"))) // memory used as heap zone
 	#elif (CPUSTYLE_STM32H7XX)
 		#define FLASHMEMINIT	__attribute__((section(".init"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
 		#define FLASHMEMINITFUNC	__attribute__((section(".init"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
@@ -418,6 +419,7 @@ void hardware_adc_initialize(void);
 		#define RAMDTCM			__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
 		#define RAMBIGDTCM		__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 		#define RAMBIG			__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
+		#define RAMHEAP __attribute__((used, section(".heap"))) // memory used as heap zone
 	#elif (CPUSTYLE_STM32F7XX)
 		#define FLASHMEMINIT	__attribute__((section(".init"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
 		#define FLASHMEMINITFUNC	__attribute__((section(".init"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
@@ -428,6 +430,7 @@ void hardware_adc_initialize(void);
 		#define RAMDTCM			__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
 		#define RAMBIGDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 		#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
+		#define RAMHEAP __attribute__((used, section(".heap"))) // memory used as heap zone
 	#elif CPUSTYLE_STM32F4XX && (defined (DSTM32F429xx) || defined(DSTM32F407xx))
 		#define FLASHMEMINIT	__attribute__((section(".init"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
 		#define FLASHMEMINITFUNC	__attribute__((section(".init"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
@@ -438,6 +441,7 @@ void hardware_adc_initialize(void);
 		#define RAMDTCM			__attribute__((section(".ccm"))) /* размещение в памяти DTCM */
 		#define RAMBIGDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 		#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
+		#define RAMHEAP __attribute__((used, section(".heap"))) // memory used as heap zone
 	#elif CPUSTYLE_STM32F4XX
 		#define FLASHMEMINIT	__attribute__((section(".init"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
 		#define FLASHMEMINITFUNC	__attribute__((section(".init"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
@@ -448,6 +452,7 @@ void hardware_adc_initialize(void);
 		#define RAMDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
 		#define RAMBIGDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 		#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
+		#define RAMHEAP __attribute__((used, section(".heap"))) // memory used as heap zone
 	#else
 		#define FLASHMEMINIT	__attribute__((section(".init"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
 		#define FLASHMEMINITFUNC	__attribute__((section(".init"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
@@ -458,6 +463,7 @@ void hardware_adc_initialize(void);
 		#define RAMDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
 		#define RAMBIGDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 		#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
+		#define RAMHEAP __attribute__((used, section(".heap"))) // memory used as heap zone
 	#endif
 
 	#define ATTRWEAK __attribute__ ((weak))
@@ -494,6 +500,7 @@ void hardware_adc_initialize(void);
 	#define RAMFUNC_NONILINE // __attribute__((__section__(".ramfunc"), noinline))  
 	#define RAMFUNC			 // __attribute__((__section__(".ramfunc")))  
 	#define RAMNOINIT_D1
+	#define RAMHEAP 		//__attribute__((used, section(".heap"))) // memory used as heap zone
 	#define ATTRWEAK __attribute__ ((weak))
 
 #elif CPUSTYPE_TMS320F2833X

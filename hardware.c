@@ -10354,12 +10354,11 @@ void __NO_RETURN _start(void)
 }
 
 // call after __preinit_array_xxx and before __init_array_xxx passing
-void
-_init(void)
+void _init(void)
 {
 }
 
-int __dso_handle;
+void * __dso_handle;
 
 void _fini(void)
 {
@@ -10367,7 +10366,140 @@ void _fini(void)
 		;
 }
 
+void __gxx_personality_v0(void)
+{
+
+}
+
 #endif
+
+/*
+ *
+ * ****************************
+ */
+#include <sys/stat.h>
+#include <string.h>
+#include <errno.h>
+
+
+static int SER_PutChar(int c)
+{
+	dbg_putchar(c);
+	return (c);
+}
+
+static int SER_GetChar(void)
+{
+
+	return (-1);
+}
+
+/*-- GCC - Newlib runtime support --------------------------------------------*/
+
+int __attribute__((used)) (_open)(const char * path, int flags, ...)
+{
+	return (-1);
+}
+
+int __attribute__((used)) (_close)(int fd) {
+	return (-1);
+}
+
+int __attribute__((used)) (_lseek)(int fd, int ptr, int dir)
+{
+	return (0);
+}
+
+int __attribute__((used)) (_fstat)(int fd, struct stat * st)
+{
+	memset(st, 0, sizeof(*st));
+	st->st_mode = S_IFCHR;
+	return (0);
+}
+
+int __attribute__((used)) (_isatty)(int fd)
+{
+	return (1);
+}
+
+int __attribute__((used)) (_read)(int fd, char * ptr, int len) {
+	char c;
+	int i;
+
+	for (i = 0; i < len; i++) {
+		c = SER_GetChar();
+		if (c == 0x0D)
+			break;
+		*ptr++ = c;
+		SER_PutChar(c);
+	}
+	return (len - i);
+}
+
+int __attribute__((used)) (_write)(int fd, char * ptr, int len)
+{
+	int i;
+
+	for (i = 0; i < len; i++)
+		SER_PutChar(*ptr++);
+	return (i);
+}
+
+#if 1//CPUSTYLE_ARM_CA9
+
+// Corte-A9 require
+
+char RAMHEAP heapplace [8 * 1024uL];
+
+extern int __HeapBase;
+extern int __HeapLimit;
+
+caddr_t __attribute__((used)) (_sbrk)(int incr)
+{
+	static char * heap;
+	char * prev_heap;
+
+	if (heap == NULL)
+	{
+		heap = (char *) &__HeapBase;
+	}
+
+	debug_printf_P("_sbrk: incr=%d, & __HeapBase=%p, & __HeapLimit=%p\n", incr, & __HeapBase, & __HeapLimit);
+
+	prev_heap = heap;
+
+	if ((heap + incr) > (char *) &__HeapLimit)
+	{
+		//errno = ENOMEM;
+		return (caddr_t) -1;
+	}
+
+	heap += incr;
+
+	return (caddr_t) prev_heap;
+}
+
+// Corte-A9 reauire
+
+
+void __attribute__((used)) (_exit)(int code)
+{
+	for (;;)
+		;
+}
+
+int __attribute__((used)) (_kill)(int id)
+{
+	return (-1);
+}
+
+int __attribute__((used)) (_getpid)(int id)
+{
+	return (-1);
+}
+
+#endif /* CPUSTYLE_ARM_CA9 */
+
 
 #if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM0 || CPUSTYLE_ARM_CM7
 /*----------------------------------------------------------------------------
