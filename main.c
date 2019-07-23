@@ -7035,38 +7035,21 @@ static lmsnrstate_t lmsnrstates [NTRX];
 
 #if ! WITHNOSPEEX
 
-static int speexallocated = 0;
-
-#if SPEEXNN == 64
-	#define SPEEXALLOCSIZE (NTRX * 15584)
-#elif SPEEXNN == 128
-	#define SPEEXALLOCSIZE (NTRX * 22584)
-#elif SPEEXNN == 256
-	#define SPEEXALLOCSIZE (NTRX * 38584)
-#elif SPEEXNN == 512
-	#define SPEEXALLOCSIZE (NTRX * 75448)
-#elif SPEEXNN == 1024
-	#define SPEEXALLOCSIZE (NTRX * 149176)
-#endif
-//static uint8_t sipexbuff [NTRX * 149176 /* + 24716 */];
-static uint8_t sipexbuff [SPEEXALLOCSIZE];
-
-void *speex_alloc (int size)
+void * speex_alloc(int size)
 {
-	size = (size + 0x03) & ~ 0x03;
-	ASSERT((speexallocated + size) <= sizeof sipexbuff / sizeof sipexbuff [0]);
-	if (! ((speexallocated + size) <= sizeof sipexbuff / sizeof sipexbuff [0]))
+	void * ptr = malloc(size);
+	if (ptr == NULL)
 	{
+		debug_printf_P(PSTR("speex_alloc faulure"));
 		for (;;)
 			;
 	}
-	void * p = (void *) (sipexbuff + speexallocated);
-	speexallocated += size;
-	return p;
+	return ptr;
 }
 
-void speex_free (void *ptr)
+void speex_free(void * ptr)
 {
+	free(ptr);
 }
 
 #endif /* WITHNOSPEEX */
@@ -7122,7 +7105,6 @@ static void InitNoiseReduction(void)
 #else /* WITHNOSPEEX */
 
 		nrp->st_handle = speex_preprocess_state_init(SPEEXNN, ARMI2SRATE);
-		debug_printf_P(PSTR("speex: final speexallocated=%d\n"), speexallocated);
 
 #endif /* WITHNOSPEEX */
 	}

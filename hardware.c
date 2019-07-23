@@ -10445,7 +10445,22 @@ int __attribute__((used)) (_write)(int fd, char * ptr, int len)
 
 // Corte-A9 require
 
-char RAMHEAP heapplace [8 * 1024uL];
+
+#if SPEEXNN == 64
+	#define SPEEXALLOCSIZE (NTRX * 15584)
+#elif SPEEXNN == 128
+	#define SPEEXALLOCSIZE (NTRX * 22584)
+#elif SPEEXNN == 256
+	#define SPEEXALLOCSIZE (NTRX * 38584)
+#elif SPEEXNN == 512
+	#define SPEEXALLOCSIZE (NTRX * 75448)
+#elif SPEEXNN == 1024
+	#define SPEEXALLOCSIZE (NTRX * 149176)
+#endif
+//static uint8_t sipexbuff [NTRX * 149176 /* + 24716 */];
+static RAMHEAP uint8_t sipexbuff [SPEEXALLOCSIZE];
+
+static char RAMHEAP heapplace [8 * 1024uL];
 
 extern int __HeapBase;
 extern int __HeapLimit;
@@ -10460,7 +10475,7 @@ caddr_t __attribute__((used)) (_sbrk)(int incr)
 		heap = (char *) &__HeapBase;
 	}
 
-	debug_printf_P("_sbrk: incr=%d, & __HeapBase=%p, & __HeapLimit=%p\n", incr, & __HeapBase, & __HeapLimit);
+	//debug_printf_P("_sbrk: incr=%d, & __HeapBase=%p, & __HeapLimit=%p\n", incr, & __HeapBase, & __HeapLimit);
 
 	prev_heap = heap;
 
