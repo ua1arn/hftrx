@@ -10371,8 +10371,6 @@ void __gxx_personality_v0(void)
 
 }
 
-#endif
-
 /*
  *
  * ****************************
@@ -10445,8 +10443,6 @@ int __attribute__((used)) (_write)(int fd, char * ptr, int len)
 	return (i);
 }
 
-#if 1//CPUSTYLE_ARM_CA9
-
 // Corte-A9 require
 
 char RAMHEAP heapplace [8 * 1024uL];
@@ -10498,7 +10494,8 @@ int __attribute__((used)) (_getpid)(int id)
 	return (-1);
 }
 
-#endif /* CPUSTYLE_ARM_CA9 */
+
+#endif /* CPUSTYLE_ARM */
 
 
 #if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM0 || CPUSTYLE_ARM_CM7
