@@ -722,12 +722,150 @@ void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority,
 
 	/* программирвоание битов в регистрах управления GPIO, указанных в iomask, в конфигурацию CNF И режим MODE */
 	#elif \
+		CPUSTYLE_STM32H7XX || \
+		0
+
+		/* программирование битов в регистрах управления GPIO, указанных в iomask, в конфигурацию MODER SPEED PUPDR TYPER */
+		// modev: 0:input, 1:output, 2:alternative function mode, 3:analog mode
+		// speed: 0:low speed, 1:maximum speed, 2:fast speed, 3:high speed
+		// pupdr: 0:no pulls, 1:pull-up, 2: pull-down, 3:reserved
+		// type: 0: Output push-pull, 1: output open-drain,
+		#define arm_stm32f30x_hardware_pio_prog(gpio, iomask0, moder, speed, pupdr, typer) \
+		  do { \
+			const portholder_t iomask = (iomask0);	\
+			const portholder_t mask3 = power2(iomask);	\
+			(gpio)->MODER = ((gpio)->MODER & ~ (mask3 * GPIO_MODER_MODE0)) | mask3 * (moder) * GPIO_MODER_MODE0_0; \
+			(gpio)->OSPEEDR = ((gpio)->OSPEEDR & ~ (mask3 * GPIO_OSPEEDR_OSPEED0)) | mask3 * (speed) * GPIO_OSPEEDR_OSPEED0_0; \
+			(gpio)->PUPDR = ((gpio)->PUPDR & ~ (mask3 * GPIO_PUPDR_PUPD0)) | mask3 * (pupdr) * GPIO_PUPDR_PUPD0_0; \
+			(gpio)->OTYPER = ((gpio)->OTYPER & ~ ((iomask) * GPIO_OTYPER_OT0)) | (iomask) * (typer); \
+		  } while (0)
+		// pupdr: 0:no pulls, 1:pull-up, 2: pull-down, 3:reserved
+		#define arm_stm32f30x_hardware_pio_pupdr(gpio, up, down) \
+		  do { \
+			const portholder_t up3 = power2(up); \
+			const portholder_t down3 = power2(down); \
+			(gpio)->PUPDR = ((gpio)->PUPDR & ~ ((up3 | down3) * GPIO_PUPDR_PUPD0)) | \
+				up3 * (1) * GPIO_PUPDR_PUPD0_0 | \
+				down3 * (2) * GPIO_PUPDR_PUPD0_0 | \
+				0; \
+		  } while (0)
+		// отключение встроенной подтяжки на входе (так как программирование на ввод в данной библиотеке всегда включает подтяжку
+		// pupdr: 0:no pulls, 1:pull-up, 2: pull-down, 3:reserved
+		#define arm_stm32f30x_hardware_pio_pupoff(gpio, ipins) \
+		  do { \
+			const portholder_t ipins3 = power2(ipins);	\
+			(gpio)->PUPDR = ((gpio)->PUPDR & ~ (ipins3 * GPIO_PUPDR_PUPD0)) | ipins3 * (0) * GPIO_PUPDR_PUPD0_0; \
+		  } while (0)
+
+		#define arm_stm32f30x_hardware_pio_altfn(gpio, opins, afn) \
+			{ \
+				const portholder_t op = (opins); \
+				const portholder_t lo = power4((op) >> 0); \
+				const portholder_t hi = power4((op) >> 8); \
+				(gpio)->AFR [0] = ((gpio)->AFR [0] & ~ (lo * 0x0f)) | (lo * (afn)); \
+				(gpio)->AFR [1] = ((gpio)->AFR [1] & ~ (hi * 0x0f)) | (hi * (afn)); \
+			} while (0)
+
+		/* разрешение прерывания по изменению состояния указанных групп выводов */
+		static void
+		arm_stm32f30x_hardware_pio_onchangeinterrupt(portholder_t ipins,
+				portholder_t raise, portholder_t fall,
+				portholder_t portcode, uint32_t priority)
+		{
+			#if CPUSTYLE_STM32H7XX
+				RCC->APB4ENR |= RCC_APB4ENR_SYSCFGEN;     // включить тактирование альтернативных функций
+				(void) RCC->APB4ENR;
+			#else /* CPUSTYLE_STM32H7XX */
+				RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN;     // включить тактирование альтернативных функций
+				(void) RCC->APB2ENR;
+			#endif /* CPUSTYLE_STM32H7XX */
+			//const portholder_t portcode = AFIO_EXTICR1_EXTI0_PB;	// PORT B
+			//RCC->APB2ENR |= RCC_APB2ENR_AFIOEN;     // включить тактирование альтернативных функций
+
+
+		#if 1
+			{
+				const portholder_t bitpos0 = power4((ipins >> 0) & 0x0f);
+				SYSCFG->EXTICR [0] = (SYSCFG->EXTICR [0] & ~ (SYSCFG_EXTICR1_EXTI0 * bitpos0)) | (portcode * bitpos0);
+			}
+			{
+				const portholder_t bitpos1 = power4((ipins >> 4) & 0x0f);
+				SYSCFG->EXTICR [1] = (SYSCFG->EXTICR [1] & ~ (SYSCFG_EXTICR1_EXTI0 * bitpos1)) | (portcode * bitpos1);
+			}
+			{
+				const portholder_t bitpos2 = power4((ipins >> 8) & 0x0f);
+				SYSCFG->EXTICR [2] = (SYSCFG->EXTICR [2] & ~ (SYSCFG_EXTICR1_EXTI0 * bitpos2)) | (portcode * bitpos2);
+			}
+			{
+				const portholder_t bitpos3 = power4((ipins >> 12) & 0x0f);
+				SYSCFG->EXTICR [3] = (SYSCFG->EXTICR [3] & ~ (SYSCFG_EXTICR1_EXTI0 * bitpos3)) | (portcode * bitpos3);
+			}
+		#else
+			uint_fast8_t i;
+			for (i = 0; i < 16; ++ i)
+			{
+				const portholder_t pinmask = (portholder_t) 1 << i;
+				if ((ipins & pinmask) == 0)
+					continue;	// Эти биты не трогаем
+
+				const div_t d = div(i, 4);
+				const portholder_t bitpos = (portholder_t) 1 << (d.rem * 4);
+				const portholder_t bitmask = SYSCFG_EXTICR1_EXTI0 * bitpos;
+				const portholder_t bitvalue = portcode * bitpos;
+				AFIO->EXTICR [d.quot] = (SYSCFG->EXTICR [d.quot] & ~ bitmask) | bitvalue;
+			}
+		#endif
+
+			EXTI->RTSR1 = (EXTI->RTSR1 & ~ ipins) | (ipins & raise);		// прерывание по нарастанию
+			EXTI->FTSR1 = (EXTI->FTSR1 & ~ ipins) | (ipins & fall);		// прерывание по спаду
+
+			EXTI_D1->IMR1 |= ipins;		// разрешить прерывание
+
+
+			if ((ipins & EXTI_IMR1_IM0) != 0)
+			{
+				NVIC_SetPriority(EXTI0_IRQn, priority);
+				NVIC_EnableIRQ(EXTI0_IRQn);		// enable EXTI0_IRQHandler();
+			}
+			if ((ipins & EXTI_IMR1_IM1) != 0)
+			{
+				NVIC_SetPriority(EXTI1_IRQn, priority);
+				NVIC_EnableIRQ(EXTI1_IRQn);		// enable EXTI1_IRQHandler();
+			}
+			if ((ipins & EXTI_IMR1_IM2) != 0)
+			{
+				NVIC_SetPriority(EXTI2_IRQn, priority);
+				NVIC_EnableIRQ(EXTI2_IRQn);		// enable EXTI2_IRQHandler();
+			}
+			if ((ipins & EXTI_IMR1_IM3) != 0)
+			{
+				NVIC_SetPriority(EXTI3_IRQn, priority);
+				NVIC_EnableIRQ(EXTI3_IRQn);		// enable EXTI3_IRQHandler();
+			}
+			if ((ipins & EXTI_IMR1_IM4) != 0)
+			{
+				NVIC_SetPriority(EXTI4_IRQn, priority);
+				NVIC_EnableIRQ(EXTI4_IRQn);		// enable EXTI4_IRQHandler();
+			}
+			if ((ipins & (EXTI_IMR1_IM9 | EXTI_IMR1_IM8 | EXTI_IMR1_IM7 | EXTI_IMR1_IM6 | EXTI_IMR1_IM5)) != 0)
+			{
+				NVIC_SetPriority(EXTI9_5_IRQn, priority);
+				NVIC_EnableIRQ(EXTI9_5_IRQn);	// enable EXTI9_5_IRQHandler();
+			}
+			if ((ipins & (EXTI_IMR1_IM15 | EXTI_IMR1_IM14 | EXTI_IMR1_IM13 | EXTI_IMR1_IM12 | EXTI_IMR1_IM11 | EXTI_IMR1_IM10)) != 0)
+			{
+				NVIC_SetPriority(EXTI15_10_IRQn, priority);
+				NVIC_EnableIRQ(EXTI15_10_IRQn);	// enable EXTI15_10_IRQHandler();
+			}
+		}
+
+	/* программирвоание битов в регистрах управления GPIO, указанных в iomask, в конфигурацию CNF И режим MODE */
+	#elif \
 		CPUSTYLE_STM32F30X || \
 		CPUSTYLE_STM32F4XX || \
 		CPUSTYLE_STM32F0XX || \
 		CPUSTYLE_STM32L0XX || \
 		CPUSTYLE_STM32F7XX || \
-		CPUSTYLE_STM32H7XX || \
 		0
 
 		/* программирование битов в регистрах управления GPIO, указанных в iomask, в конфигурацию MODER SPEED PUPDR TYPER */
@@ -762,29 +900,6 @@ void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority,
 			(gpio)->PUPDR = ((gpio)->PUPDR & ~ (ipins3 * GPIO_PUPDR_PUPDR0)) | ipins3 * (0) * GPIO_PUPDR_PUPDR0_0; \
 		  } while (0)
 
-
-		/*
-		* @param  GPIO_AF: selects the pin to be used as Alternate function.    
-		*   This parameter can be one of the following value:  
-		*     @arg GPIO_AF_0:  JTCK-SWCLK, JTDI, JTDO/TRACESW0, JTMS-SWDAT, MCO, NJTRST,   
-		*                      TRACED, TRACECK.  
-		*     @arg GPIO_AF_1:  OUT, TIM2, TIM15, TIM16, TIM17.  
-		*     @arg GPIO_AF_2:  COMP1_OUT, TIM1, TIM2, TIM3, TIM4, TIM8, TIM15.  
-		*     @arg GPIO_AF_3:  COMP7_OUT, TIM8, TIM15, Touch.  
-		*     @arg GPIO_AF_4:  I2C1, I2C2, TIM1, TIM8, TIM16, TIM17.  
-		*     @arg GPIO_AF_5:  IR_OUT, I2S2, I2S3, SPI1, SPI2, TIM8, USART4, USART5  
-		*     @arg GPIO_AF_6:  IR_OUT, I2S2, I2S3, SPI2, SPI3, TIM1, TIM8  
-		*     @arg GPIO_AF_7:  AOP2_OUT, CAN, COMP3_OUT, COMP5_OUT, COMP6_OUT, USART1,   
-		*                      USART2, USART3.  
-		*     @arg GPIO_AF_8:  COMP1_OUT, COMP2_OUT, COMP3_OUT, COMP4_OUT, COMP5_OUT,   
-		*                      COMP6_OUT.  
-		*     @arg GPIO_AF_9:  AOP4_OUT, CAN, TIM1, TIM8, TIM15.  
-		*     @arg GPIO_AF_10: AOP1_OUT, AOP3_OUT, TIM2, TIM3, TIM4, TIM8, TIM17.   
-		*     @arg GPIO_AF_11: TIM1, TIM8.  
-		*     @arg GPIO_AF_12: TIM1.  
-		*     @arg GPIO_AF_14: USBDM, USBDP.  
-		*     @arg GPIO_AF_15: OUT.             	
-		*/
 		#define arm_stm32f30x_hardware_pio_altfn(gpio, opins, afn) \
 			{ \
 				const portholder_t op = (opins); \
@@ -793,6 +908,7 @@ void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority,
 				(gpio)->AFR [0] = ((gpio)->AFR [0] & ~ (lo * 0x0f)) | (lo * (afn)); \
 				(gpio)->AFR [1] = ((gpio)->AFR [1] & ~ (hi * 0x0f)) | (hi * (afn)); \
 			} while (0)
+
 		/* разрешение прерывания по изменению состояния указанных групп выводов */
 		static void 
 		arm_stm32f30x_hardware_pio_onchangeinterrupt(portholder_t ipins, 

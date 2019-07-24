@@ -49,8 +49,6 @@
 		#define STM32F_GPIO_SPEED_20M	1
 		#define STM32F_GPIO_SPEED_2M	0
 	#elif CPUSTYLE_STM32H7XX	// 0: low speed, 1: medium speed, 2: fast speed, 3: high speed
-		#define GPIO_BSRR_BS0 GPIO_BSRR_BS_0
-		#define GPIO_BSRR_BR0 GPIO_BSRR_BR_0
 		#define STM32F_GPIO_MODE_GPIO	1
 		#define STM32F_GPIO_MODE_ALT	2
 		#define STM32F_GPIO_MODE_ANALOG	3

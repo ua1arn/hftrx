@@ -2657,7 +2657,7 @@ void hardware_adc_initialize(void)
 		#endif
 			0;
 
-		adc->IER = ADC_IER_EOS;		// EOS (end of regular sequence) flag
+		adc->IER = ADC_IER_EOSIE;		// EOS (end of regular sequence) flag
 	}
 
 	// Set ADC_CR_ADEN
@@ -2667,13 +2667,13 @@ void hardware_adc_initialize(void)
 		const adcinmap_t * const adcmap = getadcmap(ainp);
 		ADC_TypeDef * const adc = adcmap->adc;
 
-		if ((adc->ISR & ADC_ISR_ADRD) != 0)
+		if ((adc->ISR & ADC_ISR_ADRDY) != 0)
 			continue;	// already enabled
 
 		adc->CR |= ADC_CR_ADEN;
 
-		// Wait for  ADC_ISR_ADRD
-		while ((adc->ISR & ADC_ISR_ADRD) == 0)
+		// Wait for  ADC_ISR_ADRDY
+		while ((adc->ISR & ADC_ISR_ADRDY) == 0)
 			;
 	}
 
@@ -7688,7 +7688,7 @@ lowlevel_stm32h7xx_pll_initialize(void)
 	/* Блок настройки ФЛЭШ */
 	/* Reserved bits must be kept cleared. */
 	FLASH->ACR = (FLASH->ACR & ~ (FLASH_ACR_LATENCY | FLASH_ACR_WRHIGHFREQ)) |
-		FLASH_ACR_WRHIGHFREQ_3 |
+		(FLASH_ACR_WRHIGHFREQ_0 * 3) |
 		flash_acr_latency |		//Задержка для работы с памятью
 		0;
 

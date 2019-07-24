@@ -342,6 +342,36 @@
 	#include "arm_math.h"
 	#include "arm_const_structs.h"
 
+#elif CPUSTYLE_STM32MP15
+
+	// ST dual code A7 + M4
+
+	// CPUSTYLE_STM32MP157A
+	// STM32MP157Axx
+	// STM32MP157AAB3
+
+	#define STM32MP157Axx	1	// todo: mopve to Makefile
+	#define CORE_CA7	1
+	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
+	#define	CPUSTYLE_ARM_CA7	1
+
+	#include "armcpu/stm32mp1xx.h"
+
+	//#include "armcpu/iodefine.h"
+	//#include "rza_io_regrw.h"
+
+	//#include "hardware_r7s721.h"
+
+	#define ALIGNX_BEGIN __attribute__ ((aligned(32)))
+	#define ALIGNX_END /* nothing */
+
+	#if __ARM_NEON
+		#define ARM_MATH_NEON 1
+	#endif /* __ARM_NEON */
+
+	#include "arm_math.h"
+	#include "arm_const_structs.h"
+
 #elif \
 	defined (__TMS320C28X__) || \
 	0
