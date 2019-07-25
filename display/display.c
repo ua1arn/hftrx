@@ -1318,8 +1318,13 @@ void display_clear(void)
 #endif /* LCDMODE_LTDC_L8 */
 }
 
+static uint_fast8_t stored_xgrid, stored_ygrid;	// используется в display_dispbar
+
 void display_gotoxy(uint_fast8_t x, uint_fast8_t y)
 {
+	stored_xgrid = x;	// используется в display_dispbar
+	stored_ygrid = y;	// используется в display_dispbar
+
 #if LCDMODE_HORFILL
 	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
 	ltdc_second = GRID2X(x);
@@ -1393,12 +1398,10 @@ void display_plotstop(void)
 
 }
 
-static uint_fast8_t stored_xgrid, stored_ygrid;	// используется в display_dispbar
-
 
 // Вызовы этой функции (или группу вызовов) требуется "обрамить" парой вызовов
 // display_wrdatabar_begin() и display_wrdatabar_end().
-void display_dispbarXXX(
+void display_dispbar(
 	uint_fast8_t width,	/* количество знакомест, занимаемых индикатором */
 	uint_fast8_t value,		/* значение, которое надо отобразить */
 	uint_fast8_t tracevalue,		/* значение маркера, которое надо отобразить */
