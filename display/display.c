@@ -110,43 +110,34 @@ display_fillrect(
 
 
 #else /* defined (DMA2D)*/
-	if (hpattern != 0xFF)
+	const uint_fast16_t tail = dx - w;	// сколько надо прибавить к указателю буфера после заполнения, чтобы оказатся в начале области в следующей строке
+	buffer += (dx * row) + col;	// начальная позиция в буфере
+	if (0) //(hpattern != 0xFF)
 	{
 		// Dotted horizontal line
-		const size_t BUFLEN = (w) / 8;	// размер буфера с черно-белым растром
+		const size_t BUFLEN = (w + 7) / 8;	// размер буфера с черно-белым растром
 		uint8_t raster [BUFLEN];
 		memset(raster, ((hpattern << 8) | hpattern) >> (col % 8), BUFLEN);
-		// заполнение области экранна
-		const uint_fast16_t tail = dx - w;	// сколько надо прибавить к указателю буфера после заполнения, чтобы оказатся в начале области в следующей строке
-		for (buffer += (dx * row) + col; h --; buffer += tail)
+		// заполнение области экрана
+		while (h --)
 		{
-#if 1
-			volatile PACKEDCOLOR_T * startmem = buffer;
-	#if 0//LCDMODE_LTDC_L8
-			memset((void *) buffer, color, w);
-	#else /* LCDMODE_LTDC_L8 */
-			uint_fast16_t n = w;
-			while (n --)
-				* buffer ++ = color;
-	#endif /* LCDMODE_LTDC_L8 */
-			arm_hardware_flush((uintptr_t) startmem, sizeof (* startmem) * w);
-#else
-			ltdc_horizontal_pixels(buffer, raster, w);
-#endif
+			//ltdc_horizontal_pixels(buffer, raster, w);
+			buffer += dx;
 		}
 	}
 	else
 	{
-		const uint_fast16_t tail = dx - w;	// сколько надо прибавить к указателю буфера после заполнения, чтобы оказатся в начале области в следующей строке
-		for (buffer += (dx * row) + col; h --; buffer += tail)
+		while (h --)
 		{
 			volatile PACKEDCOLOR_T * const startmem = buffer;
-#if 0//LCDMODE_LTDC_L8
+#if LCDMODE_LTDC_L8
 			memset((void *) buffer, color, w);
+			buffer += dx;
 #else /* LCDMODE_LTDC_L8 */
 			uint_fast16_t n = w;
 			while (n --)
 				* buffer ++ = color;
+			buffer += tail;
 #endif /* LCDMODE_LTDC_L8 */
 			arm_hardware_flush((uintptr_t) startmem, sizeof (* startmem) * w);
 		}
