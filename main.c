@@ -7040,7 +7040,7 @@ void * speex_alloc(int size)
 	void * ptr = malloc(size);
 	if (ptr == NULL)
 	{
-		debug_printf_P(PSTR("speex_alloc faulure"));
+		debug_printf_P(PSTR("speex_alloc failure"));
 		for (;;)
 			;
 	}
