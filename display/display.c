@@ -103,7 +103,7 @@ display_fillrect(
 
 #else /* defined (DMA2D)*/
 	//debug_printf_P(PSTR("display_fillrect: dx=%u, dy=%u, col=%u, row=%u, w=%u, h=%u\n"), dx, dy, col, row, w, h);
-	const unsigned t = dx - w;
+	const unsigned t = dx - w;	// сколько надо прибавить к указателю буфера после заполнения, чтобы оказатся в начале области в следующей строке
 	buffer += (dx * row) + col;
 	while (h --)
 	{
@@ -1392,6 +1392,32 @@ void display_plotstop(void)
 {
 
 }
+
+static uint_fast8_t stored_xgrid, stored_ygrid;	// используется в display_dispbar
+
+
+// Вызовы этой функции (или группу вызовов) требуется "обрамить" парой вызовов
+// display_wrdatabar_begin() и display_wrdatabar_end().
+void display_dispbar(
+	uint_fast8_t width,	/* количество знакомест, занимаемых индикатором */
+	uint_fast8_t value,		/* значение, которое надо отобразить */
+	uint_fast8_t tracevalue,		/* значение маркера, которое надо отобразить */
+	uint_fast8_t topvalue,	/* значение, соответствующее полностью заполненному индикатору */
+	uint_fast8_t pattern,	/* DISPLAY_BAR_HALF или DISPLAY_BAR_FULL */
+	uint_fast8_t patternmax,	/* DISPLAY_BAR_HALF или DISPLAY_BAR_FULL - для отображения запомненного значения */
+	uint_fast8_t emptyp			/* паттерн для заполнения между штрихами */
+	)
+{
+	const uint_fast16_t h = GRID2Y(1);
+	const uint_fast16_t x = GRID2X(stored_xgrid);
+	const uint_fast16_t y = GRID2Y(stored_ygrid);
+	const uint_fast16_t w = GRID2X(width);
+	const uint_fast16_t t = value * w / topvalue;
+
+	bitblt_fill(x, y, t, h, ltdc_fg);
+	bitblt_fill(x + t, y, w - t, h, ltdc_bg);
+}
+
 
 // самый маленький шрифт
 void display_wrdata2_begin(void)

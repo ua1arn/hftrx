@@ -4472,7 +4472,9 @@ static uint_fast16_t display_getpwrfullwidth(void)
 	return GRID2X(CHARS2GRID(BDTH_ALLPWR));
 }
 
-#if LCDMODE_HD44780
+#if LCDMODE_LTDC
+	// Используеся frame buffer - свои оптимизированные функции рисования
+#elif LCDMODE_HD44780
 	// На HD44780 используется псевдографика
 
 #elif LCDMODE_S1D13781 && ! LCDMODE_LTDC
