@@ -4492,14 +4492,14 @@ display_dispbar(
 	uint_fast8_t value,		/* значение, которое надо отобразить */
 	uint_fast8_t tracevalue,		/* значение маркера, которое надо отобразить */
 	uint_fast8_t topvalue,	/* значение, соответствующее полностью заполненному индикатору */
-	uint_fast8_t pattern,	/* DISPLAY_BAR_HALF или DISPLAY_BAR_FULL */
-	uint_fast8_t patternmax,	/* DISPLAY_BAR_HALF или DISPLAY_BAR_FULL - для отображения запомненного значения */
-	uint_fast8_t emptyp			/* паттерн для заполнения между штрихами */
+	uint_fast8_t vpattern,	/* DISPLAY_BAR_HALF или DISPLAY_BAR_FULL */
+	uint_fast8_t vpatternmax,	/* DISPLAY_BAR_HALF или DISPLAY_BAR_FULL - для отображения запомненного значения */
+	uint_fast8_t vemptyp			/* паттерн для заполнения между штрихами */
 	)
 {
 	//enum { DISPLAY_BAR_LEVELS = 6 };	// количество градаций в одном знакоместе
 
-	value = value < 0 ? 0 : value;
+	//value = value < 0 ? 0 : value;
 	const uint_fast16_t wfull = GRID2X(width);
 	const uint_fast16_t wpart = (uint_fast32_t) wfull * value / topvalue;
 	const uint_fast16_t wmark = (uint_fast32_t) wfull * tracevalue / topvalue;
@@ -4509,15 +4509,15 @@ display_dispbar(
 	{
 		if (i == wmark)
 		{
-			display_barcolumn(patternmax);
+			display_barcolumn(vpatternmax);
 			continue;
 		}
 #if (DSTYLE_G_X132_Y64 || DSTYLE_G_X128_Y64) && DSTYLE_UR3LMZMOD
 		display_barcolumn(pattern);
 #elif DSTYLE_G_X64_Y32
-		display_barcolumn((i % 6) != 5 ? pattern : emptyp);
+		display_barcolumn((i % 6) != 5 ? vpattern : vemptyp);
 #else
-		display_barcolumn((i % 2) == 0 ? pattern : PATTERN_SPACE);
+		display_barcolumn((i % 2) == 0 ? vpattern : PATTERN_SPACE);
 #endif
 	}
 
@@ -4525,15 +4525,15 @@ display_dispbar(
 	{
 		if (i == wmark)
 		{
-			display_barcolumn(patternmax);
+			display_barcolumn(vpatternmax);
 			continue;
 		}
 #if (DSTYLE_G_X132_Y64 || DSTYLE_G_X128_Y64) && DSTYLE_UR3LMZMOD
-		display_barcolumn(emptyp);
+		display_barcolumn(vemptyp);
 #elif DSTYLE_G_X64_Y32
-		display_barcolumn((i % 6) == 5 ? pattern : emptyp);
+		display_barcolumn((i % 6) == 5 ? vpattern : vemptyp);
 #else
-		display_barcolumn((i % 2) == 0 ? emptyp : PATTERN_SPACE);
+		display_barcolumn((i % 2) == 0 ? vemptyp : PATTERN_SPACE);
 #endif
 	}
 }

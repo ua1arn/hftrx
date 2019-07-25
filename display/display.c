@@ -51,7 +51,7 @@ ltdc_horizontal_pixels(
 	);
 
 /* заполнение прямоугольной области буфера цветом */
-void 
+static void
 display_fillrect(
 	volatile PACKEDCOLOR_T * buffer,
 	uint_fast16_t dx,	// размеры буфера
@@ -1437,20 +1437,25 @@ void display_dispbar(
 	uint_fast8_t value,		/* значение, которое надо отобразить */
 	uint_fast8_t tracevalue,		/* значение маркера, которое надо отобразить */
 	uint_fast8_t topvalue,	/* значение, соответствующее полностью заполненному индикатору */
-	uint_fast8_t pattern,	/* DISPLAY_BAR_HALF или DISPLAY_BAR_FULL */
+	uint_fast8_t vpattern,	/* DISPLAY_BAR_HALF или DISPLAY_BAR_FULL */
 	uint_fast8_t patternmax,	/* DISPLAY_BAR_HALF или DISPLAY_BAR_FULL - для отображения запомненного значения */
 	uint_fast8_t emptyp			/* паттерн для заполнения между штрихами */
 	)
 {
+	//value = value < 0 ? 0 : value;
+	const uint_fast16_t wfull = GRID2X(width);
 	const uint_fast16_t h = GRID2Y(1);
 	const uint_fast16_t x = GRID2X(stored_xgrid);
 	const uint_fast16_t y = GRID2Y(stored_ygrid);
-	const uint_fast16_t w = GRID2X(width);
-	const uint_fast16_t t = value * w / topvalue;
+	const uint_fast16_t wpart = (uint_fast32_t) wfull * value / topvalue;
+	const uint_fast16_t wmark = (uint_fast32_t) wfull * tracevalue / topvalue;
 	const uint_fast8_t hpattern = 0x33;
+	const uint_fast8_t hpatternmark = 0xFF;
 
-	bitblt_fill(x, y, t, h, ltdc_fg, hpattern);
-	bitblt_fill(x + t, y, w - t, h, ltdc_bg, hpattern);
+	bitblt_fill(x, y, wpart, h, ltdc_fg, hpattern);
+	bitblt_fill(x + wpart, y, wfull - wpart, h, ltdc_bg, hpattern);
+	if (wmark < wfull && wmark >= wpart)
+		bitblt_fill(x + wmark, y, 1, h, ltdc_fg, hpatternmark);
 }
 
 
