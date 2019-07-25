@@ -3,6 +3,10 @@
 #ifndef PIO_H_INCLUDED
 #define PIO_H_INCLUDED
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 #if CPUSTYLE_STM32F
 
 	#define BSRR_S(v) ((v) * GPIO_BSRR_BS0)	/* Преобразование значения для установки бита в регистре */
@@ -337,5 +341,9 @@ void arm_hardware_pio10_onchangeinterrupt(unsigned long ipins, int edge, uint32_
 void arm_hardware_pio11_onchangeinterrupt(unsigned long ipins, int edge, uint32_t priority, void (* vector)(void));	// RZ/A1H
 
 void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority, void (* vector)(void));
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif /* PIO_H_INCLUDED */

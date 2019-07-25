@@ -12,6 +12,10 @@
 #include "hardware.h"
 #include "pio.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 void spi_initialize(void);	// отдельно инициализация SPI
 
 #if WITHSPISW
@@ -280,9 +284,9 @@ void prog_spi_read_frame(
 #if WITHSPIHW && ! WITHSPISW
 	/* только аппаратный SPI */
 	#define spi_select(target, spimode) \
-		do { hardware_spi_connect(SPIC_SPEEDFAST, (spimode)); prog_select(target); } while (0)	// начало выдачи информации по SPI 
+		do { hardware_spi_connect(SPIC_SPEEDFAST, (spimode)); prog_select(target); } while (0)	// начало выдачи информации по SPI
 	#define spi_select2(target, spimode, speedcode) \
-		do { hardware_spi_connect((speedcode), (spimode)); prog_select(target); } while (0)	// начало выдачи информации по SPI 
+		do { hardware_spi_connect((speedcode), (spimode)); prog_select(target); } while (0)	// начало выдачи информации по SPI
 	#define spi_unselect(target) \
 		do { prog_unselect(target); hardware_spi_disconnect(); } while (0)	// заверщение выдачи информации по SPI  - поднять чипселект
 	#define spi_complete(target) \
@@ -311,9 +315,9 @@ void prog_spi_read_frame(
 #elif WITHSPIHW
 	/* аппаратный и программный SPI - следующая передача может оказаться программной - потому отсоединяемся */
 	#define spi_select(target, spimode) \
-		do { hardware_spi_connect(SPIC_SPEEDFAST, (spimode)); prog_select(target); } while (0)	// начало выдачи информации по SPI 
+		do { hardware_spi_connect(SPIC_SPEEDFAST, (spimode)); prog_select(target); } while (0)	// начало выдачи информации по SPI
 	#define spi_select2(target, spimode, speedcode) \
-		do { hardware_spi_connect((speedcode), (spimode)); prog_select(target); } while (0)	// начало выдачи информации по SPI 
+		do { hardware_spi_connect((speedcode), (spimode)); prog_select(target); } while (0)	// начало выдачи информации по SPI
 	#define spi_unselect(target) \
 		do { prog_unselect(target); hardware_spi_disconnect(); } while (0)	// заверщение выдачи информации по SPI  - поднять чипселект
 	#define spi_complete(target) \
@@ -342,11 +346,11 @@ void prog_spi_read_frame(
 #elif WITHSPISW
 	/* только программный SPI */
 	#define spi_select(target, spimode) \
-		do { prog_select(target); } while (0)	// начало выдачи информации по SPI 
+		do { prog_select(target); } while (0)	// начало выдачи информации по SPI
 	#define spi_select2(target, spimode, speedcode) \
-		do { prog_select(target); } while (0)	// начало выдачи информации по SPI 
+		do { prog_select(target); } while (0)	// начало выдачи информации по SPI
 	#define spi_unselect(target) \
-		do { prog_unselect(target); } while (0)	// заверщение выдачи информации по SPI 
+		do { prog_unselect(target); } while (0)	// заверщение выдачи информации по SPI
 	#define spi_complete(target) \
 		do { (void) (target); } while (0)
 	#define spi_progval8(target, v) \
@@ -474,5 +478,9 @@ void spidf_progval8_p2(spitarget_t target, uint_fast8_t sendval);
 uint_fast8_t spidf_complete(spitarget_t target);
 uint_fast8_t spidf_progval8(spitarget_t target, uint_fast8_t sendval);
 uint_fast8_t spidf_read_byte(spitarget_t target, uint_fast8_t sendval);
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif // SPIFUNCS_H_INCLUDED

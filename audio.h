@@ -8,6 +8,10 @@
 #ifndef AUDIO_H_INCLUDED
 #define AUDIO_H_INCLUDED
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 #if WITHDSPEXTFIR && WITHI2SCLOCKFROMPIN
 	#define ARMI2SMCLKX(scale)	(DUCDDC_FREQ * (uint_fast64_t) (scale) / FPGADECIMATION)
 #else /* WITHDSPEXTFIR && WITHI2SCLOCKFROMPIN */
@@ -614,5 +618,10 @@ void uacout_buffer_save(const uint8_t * buff, uint_fast16_t size);
 
 #define USBALIGN_BEGIN __attribute__ ((aligned (32)))
 #define USBALIGN_END /* nothing */
+
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif /* AUDIO_H_INCLUDED */

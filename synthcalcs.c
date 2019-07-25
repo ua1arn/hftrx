@@ -560,8 +560,8 @@ void synth_rts1_setfreq(
 
 // установка частоты конвертора
 void synth_lo0_setfreq(
-	int_fast32_t f,	/* частота, которую хотим получить на выходе DDS */
-	uint_fast8_t enable		/* номер тракта - 0/1: main/sub */
+	int_fast32_t f,	/* частота, которую хотим получить на выходе синтезатора */
+	uint_fast8_t enable		/* включение конвертора */
 	)
 {
 	if (f < 0)

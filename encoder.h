@@ -11,6 +11,10 @@
 #include "hardware.h"	/* зависящие от процессора функции работы с портами */
 
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 #define ENCODER_SLOW_STEPS 48	/* шагов на один оборот валкодера на минимальной скорости вращения  */
 #define ENCODER_MENU_STEPS 24	/* количество изменений настраиваемого параметра на один оборот валкодера */
 
@@ -38,6 +42,11 @@ void encoder_set_resolution(uint_fast8_t resolution, uint_fast8_t dynamic);	// �
 
 
 #define ENC_DYNA_MAX 4
+
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif /* ENCODER_H_INCLUDED */
 

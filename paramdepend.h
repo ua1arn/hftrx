@@ -8,6 +8,10 @@
 #define PARAMDEPEND_H_INCLUDED 1
 
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 #if CPUSTYLE_AT91SAM7S
 
 	//#define CPU_FREQ ((18432000uL * 73) / 14 / 2)	// satmod9if_v0 ARM board
@@ -1951,5 +1955,9 @@
 #define HARDWARE_GETTICK_MS() ((uint32_t) 0) // HAL_GetTick()
 
 #define WITHSPECTRUMWF (WITHIF4DSP && (WITHRTS96 || WITHRTS192) && ! LCDMODE_HD44780)
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif /* PARAMDEPEND_H_INCLUDED */
