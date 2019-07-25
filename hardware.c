@@ -8873,7 +8873,7 @@ void arm_hardware_flush_invalidate(uintptr_t base, size_t size)
 	SCB_CleanInvalidateDCache_by_Addr((void *) base, size);	// DCCIMVAC register used.
 }
 
-#elif CPUSTYLE_ARM_CA9
+#elif (CPUSTYLE_ARM_CA9 || CPUSTYLE_ARM_CA7)
 
 static unsigned long DCACHEROWSIZE; // 32
 static unsigned long ICACHEROWSIZE; // 32
@@ -8998,7 +8998,7 @@ uint_fast32_t cpu_getdebugticks(void)
 {
 #if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7
 	return DWT->CYCCNT;
-#elif CPUSTYLE_ARM_CA9
+#elif (CPUSTYLE_ARM_CA9 || CPUSTYLE_ARM_CA7)
 	{
 		uint32_t result;
 		// Read CCNT Register
@@ -9050,7 +9050,7 @@ SystemInit(void)
 	#endif
 #endif /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7 */
 
-#if CPUSTYLE_ARM_CA9
+#if (CPUSTYLE_ARM_CA9 || CPUSTYLE_ARM_CA7)
 	#if WITHDEBUG
 	{
 		// Поддержка для функций диагностики быстродействия BEGINx_STAMP/ENDx_STAMP - audio.c
@@ -9085,7 +9085,7 @@ SystemInit(void)
 		__set_CP(15, 0, 0x8000000f, 9, 12, 3);
 	}
 	#endif /* WITHDEBUG */
-#endif /* CPUSTYLE_ARM_CA9 */
+#endif /* (CPUSTYLE_ARM_CA9 || CPUSTYLE_ARM_CA7) */
 
 #if CPUSTYLE_STM32F1XX
 
@@ -9754,7 +9754,7 @@ void arm_hardware_ltdc_initialize(void)
 
 #endif /* CPUSTYLE_R7S721 */
 
-#if CPUSTYLE_ARM_CA9
+#if (CPUSTYLE_ARM_CA9 || CPUSTYLE_ARM_CA7)
 /* 
 	ARM IHI 0048B.b (IHI0048B_b_gic_architecture_specification.pdf).
 	4.3.11 Interrupt Priority Registers, GICD_IPRIORITYRn says:
@@ -9773,7 +9773,7 @@ arm_gic_initialize(void)
 #endif /* WITHNESTEDINTERRUPTS */
 }
 
-#endif /* CPUSTYLE_ARM_CA9 */
+#endif /* (CPUSTYLE_ARM_CA9 || CPUSTYLE_ARM_CA7) */
 
 #if CPUSTYLE_ATSAM3S
 
@@ -10260,7 +10260,7 @@ void cpu_initialize(void)
 
 	arm_cpu_CMx_initialize_NVIC();
 
-#elif CPUSTYLE_ARM_CA9
+#elif (CPUSTYLE_ARM_CA9 || CPUSTYLE_ARM_CA7)
 
 	// FPU
 	vfp_access_enable();
