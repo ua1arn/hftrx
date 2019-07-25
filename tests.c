@@ -5287,7 +5287,7 @@ static void BarTest(void)
 		int y2 = local_randomgr(DIM_Y - 1);
 
 		display_solidbar(x, y, x2, y2, color);
-		//_delay_ms(10);
+		//local_delay_ms(50);
 	}
 
 	//getch();             /* Pause for user's response    */
