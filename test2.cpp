@@ -5,10 +5,7 @@
 #include <stddef.h>
 
 #include "hardware.h"
-
-extern "C" {
-void debug_printf_P(const char *format, ...);
-}
+#include "formats.h"
 
 class tcl0 {
 public:
