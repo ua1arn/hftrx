@@ -43,6 +43,13 @@
 
 #endif /* LCDMODE_LTDC */
 
+static void
+ltdc_horizontal_pixels(
+	volatile PACKEDCOLOR_T * tgr,		// target raster
+	const FLASHMEM uint8_t * raster,
+	uint_fast16_t width	// number of bits (start from LSB first byte in raster)
+	);
+
 /* заполнение прямоугольной области буфера цветом */
 void 
 display_fillrect(
@@ -53,7 +60,8 @@ display_fillrect(
 	uint_fast16_t row,
 	uint_fast16_t w,	// размер окна
 	uint_fast16_t h,
-	COLOR_T color
+	COLOR_T color,
+	uint_fast8_t hpattern	// horizontal pattern (LSB - left)
 	)
 {
 #if LCDMODE_LTDC
@@ -102,18 +110,46 @@ display_fillrect(
 
 
 #else /* defined (DMA2D)*/
-	//debug_printf_P(PSTR("display_fillrect: dx=%u, dy=%u, col=%u, row=%u, w=%u, h=%u\n"), dx, dy, col, row, w, h);
-	const unsigned t = dx - w;	// сколько надо прибавить к указателю буфера после заполнения, чтобы оказатся в начале области в следующей строке
-	buffer += (dx * row) + col;
-	while (h --)
+	if (hpattern != 0xFF)
 	{
-		volatile PACKEDCOLOR_T * startmem = buffer;
-
-		unsigned n = w;
-		while (n --)
-			* buffer ++ = color;
-		buffer += t;
-		arm_hardware_flush((uintptr_t) startmem, sizeof (* startmem) * w);
+		// Dotted horizontal line
+		const size_t BUFLEN = (w) / 8;	// размер буфера с черно-белым растром
+		uint8_t raster [BUFLEN];
+		memset(raster, ((hpattern << 8) | hpattern) >> (col % 8), BUFLEN);
+		// заполнение области экранна
+		const uint_fast16_t tail = dx - w;	// сколько надо прибавить к указателю буфера после заполнения, чтобы оказатся в начале области в следующей строке
+		for (buffer += (dx * row) + col; h --; buffer += tail)
+		{
+#if 1
+			volatile PACKEDCOLOR_T * startmem = buffer;
+	#if 0//LCDMODE_LTDC_L8
+			memset((void *) buffer, color, w);
+	#else /* LCDMODE_LTDC_L8 */
+			uint_fast16_t n = w;
+			while (n --)
+				* buffer ++ = color;
+	#endif /* LCDMODE_LTDC_L8 */
+			arm_hardware_flush((uintptr_t) startmem, sizeof (* startmem) * w);
+#else
+			ltdc_horizontal_pixels(buffer, raster, w);
+#endif
+		}
+	}
+	else
+	{
+		const uint_fast16_t tail = dx - w;	// сколько надо прибавить к указателю буфера после заполнения, чтобы оказатся в начале области в следующей строке
+		for (buffer += (dx * row) + col; h --; buffer += tail)
+		{
+			volatile PACKEDCOLOR_T * const startmem = buffer;
+#if 0//LCDMODE_LTDC_L8
+			memset((void *) buffer, color, w);
+#else /* LCDMODE_LTDC_L8 */
+			uint_fast16_t n = w;
+			while (n --)
+				* buffer ++ = color;
+#endif /* LCDMODE_LTDC_L8 */
+			arm_hardware_flush((uintptr_t) startmem, sizeof (* startmem) * w);
+		}
 	}
 #endif /* defined (DMA2D) */
 #endif /* LCDMODE_LTDC */
@@ -804,7 +840,9 @@ static void
 bitblt_fill(
 	uint_fast16_t x, uint_fast16_t y, 	// координаты в пикселях
 	uint_fast16_t w, uint_fast16_t h, 	// размеры в пикселях
-	COLOR_T color)
+	COLOR_T color,
+	uint_fast8_t hpattern	// horizontal pattern (LSB - left)
+	)
 {
 
 #if defined (DMA2D) && LCDMODE_LTDC && ! LCDMODE_LTDC_L8
@@ -813,7 +851,7 @@ bitblt_fill(
 
 #else /* defined (DMA2D) && LCDMODE_LTDC && ! LCDMODE_LTDC_L8 */
 
-	display_fillrect(& framebuff [0] [0], DIM_X, DIM_Y, x, y, w, h, color);
+	display_fillrect(& framebuff [0] [0], DIM_X, DIM_Y, x, y, w, h, color, hpattern);
 
 #endif /* defined (DMA2D) && LCDMODE_LTDC && ! LCDMODE_LTDC_L8 */
 }
@@ -830,7 +868,7 @@ void display_solidbar(uint_fast16_t x, uint_fast16_t y, uint_fast16_t x2, uint_f
 		uint_fast16_t t = y;
 		y = y2, y2 = t;
 	}
-	bitblt_fill(x, y, x2 - x, y2 - y, color);
+	bitblt_fill(x, y, x2 - x, y2 - y, color, 0xFF);
 }
 
 #endif /* LCDMODE_LTDC */
@@ -1052,26 +1090,25 @@ smallfont_decode(uint_fast8_t c)
 
 static void
 ltdc_horizontal_pixels(
-	uint_fast8_t cgrow,
+	volatile PACKEDCOLOR_T * tgr,		// target raster
 	const FLASHMEM uint8_t * raster,
-	uint_fast8_t width	// number of bits (start from LSB first byte in raster)
+	uint_fast16_t width	// number of bits (start from LSB first byte in raster)
 	)
 {
-	uint_fast8_t col;
-	uint_fast8_t w = width;
-	volatile PACKEDCOLOR_T * const t = & framebuff [ltdc_first + cgrow] [ltdc_second];
+	uint_fast16_t col;
+	uint_fast16_t w = width;
 
 	for (col = 0; w >= 8; col += 8, w -= 8)
 	{
 		const FLASHMEM PACKEDCOLOR_T * const pcl = (* byte2run) [* raster ++];
-		memcpy((void *) (t + col), pcl, sizeof (* t) * 8);
+		memcpy((void *) (tgr + col), pcl, sizeof (* tgr) * 8);
 	}
 	if (w != 0)
 	{
 		const FLASHMEM PACKEDCOLOR_T * const pcl = (* byte2run) [* raster ++];
-		memcpy((void *) (t + col), pcl, sizeof (* t) * w);
+		memcpy((void *) (tgr + col), pcl, sizeof (* tgr) * w);
 	}
-	arm_hardware_flush((uintptr_t) t, sizeof (* t) * width);
+	arm_hardware_flush((uintptr_t) tgr, sizeof (* tgr) * width);
 }
 
 // Вызов этой функции только внутри display_wrdata_begin() и 	display_wrdata_end();
@@ -1082,7 +1119,8 @@ static void ltdc_horizontal_put_char_small(char cc)
 	uint_fast8_t cgrow;
 	for (cgrow = 0; cgrow < SMALLCHARH; ++ cgrow)
 	{
-		ltdc_horizontal_pixels(cgrow, S1D13781_smallfont_LTDC [c] [cgrow], width);
+		volatile PACKEDCOLOR_T * const tgr = & framebuff [ltdc_first + cgrow] [ltdc_second];
+		ltdc_horizontal_pixels(tgr, S1D13781_smallfont_LTDC [c] [cgrow], width);
 	}
 	ltdc_second += width;
 }
@@ -1095,7 +1133,8 @@ static void ltdc_horizontal_put_char_big(char cc)
 	uint_fast8_t cgrow;
 	for (cgrow = 0; cgrow < BIGCHARH; ++ cgrow)
 	{
-		ltdc_horizontal_pixels(cgrow, S1D13781_bigfont_LTDC [c] [cgrow], width);
+		volatile PACKEDCOLOR_T * const tgr = & framebuff [ltdc_first + cgrow] [ltdc_second];
+		ltdc_horizontal_pixels(tgr, S1D13781_bigfont_LTDC [c] [cgrow], width);
 	}
 	ltdc_second += width;
 }
@@ -1108,7 +1147,8 @@ static void ltdc_horizontal_put_char_half(char cc)
 	uint_fast8_t cgrow;
 	for (cgrow = 0; cgrow < HALFCHARH; ++ cgrow)
 	{
-		ltdc_horizontal_pixels(cgrow, S1D13781_halffont_LTDC [c] [cgrow], width);
+		volatile PACKEDCOLOR_T * const tgr = & framebuff [ltdc_first + cgrow] [ltdc_second];
+		ltdc_horizontal_pixels(tgr, S1D13781_halffont_LTDC [c] [cgrow], width);
 	}
 	ltdc_second += width;
 }
@@ -1416,9 +1456,10 @@ void display_dispbar(
 	const uint_fast16_t y = GRID2Y(stored_ygrid);
 	const uint_fast16_t w = GRID2X(width);
 	const uint_fast16_t t = value * w / topvalue;
+	const uint_fast8_t hpattern = 0x33;
 
-	bitblt_fill(x, y, t, h, ltdc_fg);
-	bitblt_fill(x + t, y, w - t, h, ltdc_bg);
+	bitblt_fill(x, y, t, h, ltdc_fg, hpattern);
+	bitblt_fill(x + t, y, w - t, h, ltdc_bg, hpattern);
 }
 
 
