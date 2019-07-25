@@ -13,18 +13,18 @@ void debug_printf_P(const char *format, ...);
 class tcl0 {
 public:
 	tcl0() {
-		printf("*********** tcl0 @%p\n", this);
+		debug_printf_P("*********** tcl0 @%p\n", this);
 	}
 	~tcl0() {
-		printf("----------- tcl0 @%p\n", this);
+		debug_printf_P("----------- tcl0 @%p\n", this);
 	}
 };
 
-static class tcl0 gltest;
-static RAMDTCM class tcl0 gltest2;
-static RAMBIG class tcl0 gltest3;
+//static class tcl0 gltest;
+//static RAMDTCM class tcl0 gltest2;
+//static RAMBIG class tcl0 gltest3;
 
-static RAMDTCM char xxxx[32];
+static RAMDTCM char xxxx [32];
 
 extern "C" {
 	void cpptest(void);
