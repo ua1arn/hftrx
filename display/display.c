@@ -43,8 +43,15 @@
 
 #endif /* LCDMODE_LTDC */
 
+static void
+ltdc_horizontal_pixels(
+	volatile PACKEDCOLOR_T * tgr,		// target raster
+	const FLASHMEM uint8_t * raster,
+	uint_fast16_t width	// number of bits (start from LSB first byte in raster)
+	);
+
 /* заполнение прямоугольной области буфера цветом */
-void 
+static void
 display_fillrect(
 	volatile PACKEDCOLOR_T * buffer,
 	uint_fast16_t dx,	// размеры буфера
@@ -53,7 +60,9 @@ display_fillrect(
 	uint_fast16_t row,
 	uint_fast16_t w,	// размер окна
 	uint_fast16_t h,
-	COLOR_T color
+	COLOR_T fgcolor,
+	COLOR_T bgcolor,
+	uint_fast8_t hpattern	// horizontal pattern (LSB - left)
 	)
 {
 #if LCDMODE_LTDC
@@ -77,7 +86,7 @@ display_fillrect(
 		0;
 
 	DMA2D->OCOLR = 
-		color |
+		fgcolor |
 		0;
 
 	DMA2D->OPFCCR = (DMA2D->OPFCCR & ~ (DMA2D_OPFCCR_CM)) |
@@ -102,19 +111,59 @@ display_fillrect(
 
 
 #else /* defined (DMA2D)*/
-	//debug_printf_P(PSTR("display_fillrect: dx=%u, dy=%u, col=%u, row=%u, w=%u, h=%u\n"), dx, dy, col, row, w, h);
-	const unsigned t = dx - w;
-	buffer += (dx * row) + col;
-	while (h --)
-	{
-		volatile PACKEDCOLOR_T * startmem = buffer;
 
-		unsigned n = w;
-		while (n --)
-			* buffer ++ = color;
-		buffer += t;
-		arm_hardware_flush((uintptr_t) startmem, sizeof (* startmem) * w);
+	const uint_fast16_t tail = dx - w;	// сколько надо прибавить к указателю буфера после заполнения, чтобы оказатся в начале области в следующей строке
+	buffer += (dx * row) + col;	// начальная позиция в буфере
+	if (hpattern == 0xFF)
+	{
+		// foreground color fill
+		while (h --)
+		{
+			volatile PACKEDCOLOR_T * const startmem = buffer;
+#if LCDMODE_LTDC_L8
+			memset((void *) buffer, fgcolor, w);
+			buffer += dx;
+#else /* LCDMODE_LTDC_L8 */
+			uint_fast16_t n = w;
+			while (n --)
+				* buffer ++ = fgcolor;
+			buffer += tail;
+#endif /* LCDMODE_LTDC_L8 */
+			arm_hardware_flush((uintptr_t) startmem, sizeof (* startmem) * w);
+		}
 	}
+	else if (hpattern == 0x00)
+	{
+		// background color fill
+		while (h --)
+		{
+			volatile PACKEDCOLOR_T * const startmem = buffer;
+#if LCDMODE_LTDC_L8
+			memset((void *) buffer, bgcolor, w);
+			buffer += dx;
+#else /* LCDMODE_LTDC_L8 */
+			uint_fast16_t n = w;
+			while (n --)
+				* buffer ++ = bgcolor;
+			buffer += tail;
+#endif /* LCDMODE_LTDC_L8 */
+			arm_hardware_flush((uintptr_t) startmem, sizeof (* startmem) * w);
+		}
+	}
+	else
+	{
+		// Dotted horizontal line
+		const size_t BUFLEN = (w + 7) / 8;	// размер буфера с черно-белым растром
+		uint8_t raster [BUFLEN];
+		memset(raster, ((hpattern << 8) | hpattern) >> (col % 8), BUFLEN);
+		// заполнение области экрана
+		while (h --)
+		{
+			ltdc_horizontal_pixels(buffer, raster, w);
+			buffer += dx;
+		}
+	}
+
 #endif /* defined (DMA2D) */
 #endif /* LCDMODE_LTDC */
 }
@@ -454,8 +503,6 @@ void display_colorbuffer_set(
 	COLOR565_T color
 	)
 {
-	ASSERT(col < dx);
-	ASSERT(row < dy);
 #if LCDMODE_HORFILL
 	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
 	// индекс младшей размерности перебирает горизонтальную координату дисплея
@@ -476,8 +523,6 @@ void display_colorbuffer_xor(
 	COLOR565_T color
 	)
 {
-	ASSERT(col < dx);
-	ASSERT(row < dy);
 #if LCDMODE_HORFILL
 	// индекс младшей размерности перебирает горизонтальную координату дисплея
 	buffer [dx * row + col] ^= color;
@@ -804,16 +849,19 @@ static void
 bitblt_fill(
 	uint_fast16_t x, uint_fast16_t y, 	// координаты в пикселях
 	uint_fast16_t w, uint_fast16_t h, 	// размеры в пикселях
-	COLOR_T color)
+	COLOR_T fgcolor,
+	COLOR_T bgcolor,
+	uint_fast8_t hpattern	// horizontal pattern (LSB - left)
+	)
 {
 
 #if defined (DMA2D) && LCDMODE_LTDC && ! LCDMODE_LTDC_L8
 
-	dma2d_fillrect2_RGB565(& framebuff [0] [0], DIM_X, DIM_Y, x, y, w, h, color);
+	dma2d_fillrect2_RGB565(& framebuff [0] [0], DIM_X, DIM_Y, x, y, w, h, fgcolor);
 
 #else /* defined (DMA2D) && LCDMODE_LTDC && ! LCDMODE_LTDC_L8 */
 
-	display_fillrect(& framebuff [0] [0], DIM_X, DIM_Y, x, y, w, h, color);
+	display_fillrect(& framebuff [0] [0], DIM_X, DIM_Y, x, y, w, h, fgcolor, bgcolor, hpattern);
 
 #endif /* defined (DMA2D) && LCDMODE_LTDC && ! LCDMODE_LTDC_L8 */
 }
@@ -830,7 +878,7 @@ void display_solidbar(uint_fast16_t x, uint_fast16_t y, uint_fast16_t x2, uint_f
 		uint_fast16_t t = y;
 		y = y2, y2 = t;
 	}
-	bitblt_fill(x, y, x2 - x, y2 - y, color);
+	bitblt_fill(x, y, x2 - x, y2 - y, color, color, 0xFF);
 }
 
 #endif /* LCDMODE_LTDC */
@@ -1052,26 +1100,25 @@ smallfont_decode(uint_fast8_t c)
 
 static void
 ltdc_horizontal_pixels(
-	uint_fast8_t cgrow,
+	volatile PACKEDCOLOR_T * tgr,		// target raster
 	const FLASHMEM uint8_t * raster,
-	uint_fast8_t width	// number of bits (start from LSB first byte in raster)
+	uint_fast16_t width	// number of bits (start from LSB first byte in raster)
 	)
 {
-	uint_fast8_t col;
-	uint_fast8_t w = width;
-	volatile PACKEDCOLOR_T * const t = & framebuff [ltdc_first + cgrow] [ltdc_second];
+	uint_fast16_t col;
+	uint_fast16_t w = width;
 
 	for (col = 0; w >= 8; col += 8, w -= 8)
 	{
 		const FLASHMEM PACKEDCOLOR_T * const pcl = (* byte2run) [* raster ++];
-		memcpy((void *) (t + col), pcl, sizeof (* t) * 8);
+		memcpy((void *) (tgr + col), pcl, sizeof (* tgr) * 8);
 	}
 	if (w != 0)
 	{
 		const FLASHMEM PACKEDCOLOR_T * const pcl = (* byte2run) [* raster ++];
-		memcpy((void *) (t + col), pcl, sizeof (* t) * w);
+		memcpy((void *) (tgr + col), pcl, sizeof (* tgr) * w);
 	}
-	arm_hardware_flush((uintptr_t) t, sizeof (* t) * width);
+	arm_hardware_flush((uintptr_t) tgr, sizeof (* tgr) * width);
 }
 
 // Вызов этой функции только внутри display_wrdata_begin() и 	display_wrdata_end();
@@ -1082,7 +1129,8 @@ static void ltdc_horizontal_put_char_small(char cc)
 	uint_fast8_t cgrow;
 	for (cgrow = 0; cgrow < SMALLCHARH; ++ cgrow)
 	{
-		ltdc_horizontal_pixels(cgrow, S1D13781_smallfont_LTDC [c] [cgrow], width);
+		volatile PACKEDCOLOR_T * const tgr = & framebuff [ltdc_first + cgrow] [ltdc_second];
+		ltdc_horizontal_pixels(tgr, S1D13781_smallfont_LTDC [c] [cgrow], width);
 	}
 	ltdc_second += width;
 }
@@ -1095,7 +1143,8 @@ static void ltdc_horizontal_put_char_big(char cc)
 	uint_fast8_t cgrow;
 	for (cgrow = 0; cgrow < BIGCHARH; ++ cgrow)
 	{
-		ltdc_horizontal_pixels(cgrow, S1D13781_bigfont_LTDC [c] [cgrow], width);
+		volatile PACKEDCOLOR_T * const tgr = & framebuff [ltdc_first + cgrow] [ltdc_second];
+		ltdc_horizontal_pixels(tgr, S1D13781_bigfont_LTDC [c] [cgrow], width);
 	}
 	ltdc_second += width;
 }
@@ -1108,7 +1157,8 @@ static void ltdc_horizontal_put_char_half(char cc)
 	uint_fast8_t cgrow;
 	for (cgrow = 0; cgrow < HALFCHARH; ++ cgrow)
 	{
-		ltdc_horizontal_pixels(cgrow, S1D13781_halffont_LTDC [c] [cgrow], width);
+		volatile PACKEDCOLOR_T * const tgr = & framebuff [ltdc_first + cgrow] [ltdc_second];
+		ltdc_horizontal_pixels(tgr, S1D13781_halffont_LTDC [c] [cgrow], width);
 	}
 	ltdc_second += width;
 }
@@ -1318,8 +1368,13 @@ void display_clear(void)
 #endif /* LCDMODE_LTDC_L8 */
 }
 
+static uint_fast8_t stored_xgrid, stored_ygrid;	// используется в display_dispbar
+
 void display_gotoxy(uint_fast8_t x, uint_fast8_t y)
 {
+	stored_xgrid = x;	// используется в display_dispbar
+	stored_ygrid = y;	// используется в display_dispbar
+
 #if LCDMODE_HORFILL
 	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
 	ltdc_second = GRID2X(x);
@@ -1392,6 +1447,36 @@ void display_plotstop(void)
 {
 
 }
+
+
+// Вызовы этой функции (или группу вызовов) требуется "обрамить" парой вызовов
+// display_wrdatabar_begin() и display_wrdatabar_end().
+void display_dispbar(
+	uint_fast8_t width,	/* количество знакомест, занимаемых индикатором */
+	uint_fast8_t value,		/* значение, которое надо отобразить */
+	uint_fast8_t tracevalue,		/* значение маркера, которое надо отобразить */
+	uint_fast8_t topvalue,	/* значение, соответствующее полностью заполненному индикатору */
+	uint_fast8_t vpattern,	/* DISPLAY_BAR_HALF или DISPLAY_BAR_FULL */
+	uint_fast8_t patternmax,	/* DISPLAY_BAR_HALF или DISPLAY_BAR_FULL - для отображения запомненного значения */
+	uint_fast8_t emptyp			/* паттерн для заполнения между штрихами */
+	)
+{
+	ASSERT(value <= topvalue);
+	ASSERT(tracevalue <= topvalue);
+	const uint_fast16_t wfull = GRID2X(width);
+	const uint_fast16_t h = GRID2Y(1);
+	const uint_fast16_t x = GRID2X(stored_xgrid);
+	const uint_fast16_t y = GRID2Y(stored_ygrid);
+	const uint_fast16_t wpart = (uint_fast32_t) wfull * value / topvalue;
+	const uint_fast16_t wmark = (uint_fast32_t) wfull * tracevalue / topvalue;
+	const uint_fast8_t hpattern = 0x33;
+
+	bitblt_fill(x, y, wpart, h, ltdc_fg, ltdc_bg, hpattern);
+	bitblt_fill(x + wpart, y, wfull - wpart, h, ltdc_fg, ltdc_bg, 0x00);
+	if (wmark < wfull && wmark >= wpart)
+		bitblt_fill(x + wmark, y, 1, h, ltdc_fg, ltdc_bg, 0xFF);
+}
+
 
 // самый маленький шрифт
 void display_wrdata2_begin(void)

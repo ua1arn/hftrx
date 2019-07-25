@@ -10379,13 +10379,6 @@ void __gxx_personality_v0(void)
 #include <string.h>
 #include <errno.h>
 
-
-static int SER_PutChar(int c)
-{
-	dbg_putchar(c);
-	return (c);
-}
-
 static int SER_GetChar(void)
 {
 
@@ -10429,7 +10422,7 @@ int __attribute__((used)) (_read)(int fd, char * ptr, int len) {
 		if (c == 0x0D)
 			break;
 		*ptr++ = c;
-		SER_PutChar(c);
+		dbg_putchar(c);
 	}
 	return (len - i);
 }
@@ -10439,7 +10432,7 @@ int __attribute__((used)) (_write)(int fd, char * ptr, int len)
 	int i;
 
 	for (i = 0; i < len; i++)
-		SER_PutChar(*ptr++);
+		dbg_putchar(* ptr ++);
 	return (i);
 }
 
