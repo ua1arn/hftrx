@@ -151,10 +151,16 @@ static void RAMFUNC_NONILINE display_fillrect(
 	}
 	else
 	{
+		const uint_fast8_t pat = ((hpattern << 8) | hpattern) >> (col % 8);
 		// Dotted horizontal line
-		const size_t BUFLEN = (w + 7) / 8 + 1;	// размер буфера с черно-белым растром - единица добавляется для случая когда x отрисовки не кратно 8
-		uint8_t raster [BUFLEN];
-		memset(raster, ((hpattern << 8) | hpattern) >> (col % 8), BUFLEN);
+		enum { BUFLEN = (DIM_X + 7) / 8 + 1 };	// размер буфера с черно-белым растром - единица добавляется для случая когда x отрисовки не кратно 8
+		static uint_fast8_t lasthpattern;	// паттерн для которого выполняли заполнение буфера растра
+		static uint8_t raster [BUFLEN];
+		if (lasthpattern != pat)
+		{
+			lasthpattern = pat;
+			memset(raster, pat, BUFLEN);
+		}
 		// заполнение области экрана
 		while (h --)
 		{
