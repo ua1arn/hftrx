@@ -1430,7 +1430,6 @@ static uint_fast8_t control_read_data(USBD_HandleTypeDef *pdev, uint8_t * data, 
 
 static void control_stall(USBD_HandleTypeDef *pdev)
 {
-	TP();
 	USB_OTG_GlobalTypeDef * const USBx = ((PCD_HandleTypeDef *) pdev->pData)->Instance;
 	USBx->DCPCTR = (USBx->DCPCTR & ~ (USB_DCPCTR_PID)) |
 		//DEVDRV_USBF_PID_NAK * (1uL << USB_DCPCTR_PID_SHIFT) |	// PID 00: NAK
@@ -1494,7 +1493,7 @@ static USBD_StatusTypeDef USBD_CtlSendDataNec(USBD_HandleTypeDef *pdev, const ui
 		if (control_transmit0single(pdev, data, size))
 		{
 			control_stall(pdev);
-			TP();
+			//TP();
 			return USBD_FAIL;
 		}
 		ep0data = NULL;
@@ -1506,7 +1505,7 @@ static USBD_StatusTypeDef USBD_CtlSendDataNec(USBD_HandleTypeDef *pdev, const ui
 		if (control_transmit0single(pdev, data, chunk))
 		{
 			control_stall(pdev);
-			TP();
+			//TP();
 			return USBD_FAIL;
 		}
 		ep0data = data + chunk;
@@ -1797,6 +1796,7 @@ usbd_handler_brdy8_dcp_out(USBD_HandleTypeDef *pdev, uint_fast8_t pipe)
 	else
 	{
 		control_stall(pdev);
+		TP();
 	}
 }
 
@@ -2196,6 +2196,7 @@ static void usb0_function_SetDescriptor(USBD_HandleTypeDef *pdev, USBD_SetupReqT
 	if (control_read_data(pdev, buff, ulmin16(ARRAY_SIZE(buff), req->wLength), & count) != 0)
 	{
 		control_stall(pdev);
+		TP();
 	}
 	//
 	// The wIndex field specifies the Language ID for string descriptors or is 
@@ -3504,7 +3505,10 @@ static void r7s721_usbdevice_handler(USBD_HandleTypeDef *pdev)
 		if ((bempsts & (1U << 0)) != 0)	// PIPE0, DCP
 		{
 			if (control_transmit2(pdev) != 0)
+			{
 				control_stall(pdev);
+				TP();
+			}
 		}
 	}
 	if ((intsts0 & USB_INTSTS0_NRDY) != 0)	// NRDY
