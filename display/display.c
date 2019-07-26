@@ -51,8 +51,7 @@ ltdc_horizontal_pixels(
 	);
 
 /* заполнение прямоугольной области буфера цветом */
-static void
-display_fillrect(
+static void RAMFUNC_NONILINE display_fillrect(
 	volatile PACKEDCOLOR_T * buffer,
 	uint_fast16_t dx,	// размеры буфера
 	uint_fast16_t dy,
@@ -1098,8 +1097,7 @@ smallfont_decode(uint_fast8_t c)
 #if LCDMODE_HORFILL
 // для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
 
-static void
-ltdc_horizontal_pixels(
+static void RAMFUNC ltdc_horizontal_pixels(
 	volatile PACKEDCOLOR_T * tgr,		// target raster
 	const FLASHMEM uint8_t * raster,
 	uint_fast16_t width	// number of bits (start from LSB first byte in raster)
@@ -1122,7 +1120,7 @@ ltdc_horizontal_pixels(
 }
 
 // Вызов этой функции только внутри display_wrdata_begin() и 	display_wrdata_end();
-static void ltdc_horizontal_put_char_small(char cc)
+static void RAMFUNC_NONILINE ltdc_horizontal_put_char_small(char cc)
 {
 	const uint_fast8_t width = SMALLCHARW;
 	const uint_fast8_t c = smallfont_decode((unsigned char) cc);
@@ -1136,7 +1134,7 @@ static void ltdc_horizontal_put_char_small(char cc)
 }
 
 // Вызов этой функции только внутри display_wrdatabig_begin() и display_wrdatabig_end();
-static void ltdc_horizontal_put_char_big(char cc)
+static void RAMFUNC_NONILINE ltdc_horizontal_put_char_big(char cc)
 {
 	const uint_fast8_t width = ((cc == '.' || cc == '#') ? BIGCHARW_NARROW  : BIGCHARW);	// полнаяширина символа в пикселях
     const uint_fast8_t c = bigfont_decode((unsigned char) cc);
@@ -1150,7 +1148,7 @@ static void ltdc_horizontal_put_char_big(char cc)
 }
 
 // Вызов этой функции только внутри display_wrdatabig_begin() и display_wrdatabig_end();
-static void ltdc_horizontal_put_char_half(char cc)
+static void RAMFUNC_NONILINE ltdc_horizontal_put_char_half(char cc)
 {
 	const uint_fast8_t width = HALFCHARW;
     const uint_fast8_t c = bigfont_decode((unsigned char) cc);
@@ -1166,7 +1164,7 @@ static void ltdc_horizontal_put_char_half(char cc)
 #else /* LCDMODE_HORFILL */
 
 // Вызов этой функции только внутри display_wrdata_begin() и 	display_wrdata_end();
-static void ltdc_vertical_put_char_small(char cc)
+static void RAMFUNC_NONILINE ltdc_vertical_put_char_small(char cc)
 {
 	uint_fast8_t i = 0;
 	const uint_fast8_t c = smallfont_decode((unsigned char) cc);
@@ -1178,7 +1176,7 @@ static void ltdc_vertical_put_char_small(char cc)
 }
 
 // Вызов этой функции только внутри display_wrdatabig_begin() и display_wrdatabig_end();
-static void ltdc_vertical_put_char_big(char cc)
+static void RAMFUNC_NONILINE ltdc_vertical_put_char_big(char cc)
 {
 	// '#' - узкий пробел
 	enum { NBV = (BIGCHARH / 8) }; // сколько байтов в одной вертикали
@@ -1192,7 +1190,7 @@ static void ltdc_vertical_put_char_big(char cc)
 }
 
 // Вызов этой функции только внутри display_wrdatabig_begin() и display_wrdatabig_end();
-static void ltdc_vertical_put_char_half(char cc)
+static void RAMFUNC_NONILINE ltdc_vertical_put_char_half(char cc)
 {
 	uint_fast8_t i = 0;
     const uint_fast8_t c = bigfont_decode((unsigned char) cc);
@@ -1464,7 +1462,7 @@ void display_dispbar(
 	ASSERT(value <= topvalue);
 	ASSERT(tracevalue <= topvalue);
 	const uint_fast16_t wfull = GRID2X(width);
-	const uint_fast16_t h = GRID2Y(1);
+	const uint_fast16_t h = SMALLCHARH; //GRID2Y(1);
 	const uint_fast16_t x = GRID2X(stored_xgrid);
 	const uint_fast16_t y = GRID2Y(stored_ygrid);
 	const uint_fast16_t wpart = (uint_fast32_t) wfull * value / topvalue;

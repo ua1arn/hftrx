@@ -1969,14 +1969,17 @@ void display_dispbar(
 	uint_fast8_t emptyp			/* паттерн для заполнения между штрихами */
 	)
 {
-	const uint_fast16_t h = GRID2Y(1);
+	const uint_fast16_t h = SMALLCHARH; //GRID2Y(1);
 	const uint_fast16_t x = GRID2X(stored_xgrid);
 	const uint_fast16_t y = GRID2Y(stored_ygrid);
-	const uint_fast16_t w = GRID2X(width);
-	const uint_fast16_t t = value * w / topvalue;
+	const uint_fast16_t wfull = GRID2X(width);
+	const uint_fast16_t wpart = (uint_fast32_t) wfull * value / topvalue;
+	const uint_fast16_t wmark = (uint_fast32_t) wfull * tracevalue / topvalue;
 
-	bitblt_fill(x, y, t, h, stored_fgcolor);
-	bitblt_fill(x + t, y, w - t, h, stored_bgcolor);
+	bitblt_fill(x, y, wpart, h, stored_fgcolor);
+	bitblt_fill(x + wpart, y, wfull - wpart, h, stored_bgcolor);
+	if (wmark < wfull && wmark >= wpart)
+		bitblt_fill(x + wmark, y, 1, h, stored_fgcolor);
 }
 
 #endif /* ! LCDMODE_LTDC */
