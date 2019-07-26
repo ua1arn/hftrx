@@ -604,7 +604,7 @@ static const FLASHMEM struct {
 
 static const FLASHMEM struct {
 	uint_fast8_t code;
-	char label [5];
+	char label [6];
 }  notchmodes [] =
 {
 	{ 0, "     " },
@@ -3303,7 +3303,7 @@ enum
 #if TXPATH_BIT_GATE_RX && CTLSTYLE_SW2011ALL
 	static const uint_fast8_t pretxdelay = 1;	/* признак того, что требуется снятие питания со второго смесителя */
 #else
-	static const uint_fast8_t pretxdelay;
+	static const uint_fast8_t pretxdelay = 0;
 #endif
 
 
@@ -10660,7 +10660,7 @@ static void ifanswer(uint_fast8_t arg)
 
 static void badcommandanswer(uint_fast8_t arg)
 {
-	static const char badcommand [2] = "?;";	// ответ на команду с неправильным синтаксисом
+	static const char badcommand [] = "?;";	// ответ на команду с неправильным синтаксисом
 
 	cat_answervariable(badcommand, 2);	// после ответа - ждём новую.
 }
