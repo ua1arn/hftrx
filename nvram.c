@@ -120,7 +120,7 @@ static void
 eeprom_a1_write(
 	spitarget_t target,	/* addressing to chip */
 	uint_fast16_t addr, 	/* начальное смещение памяти для обмена */
-	const void * data, 
+	const uint8_t * data,
 	uint_fast8_t len)	/* количество байт */
 {
 	uint_fast8_t i;
@@ -144,7 +144,7 @@ static void
 eeprom_a1_read(
 	spitarget_t target,	/* addressing to chip */
 	uint_fast16_t addr, 
-	void * data, 
+	uint8_t * data,
 	uint_fast8_t len)
 {
 	spi_select(target, NVRAM_SPIMODE);	/* start sending data to target chip */
@@ -163,7 +163,7 @@ static void
 eeprom_a2_write(
 	spitarget_t target,	/* addressing to chip */
 	uint_fast16_t addr, 
-	const void * data, 
+	const uint8_t * data,
 	uint_fast8_t len)
 {
 	uint_fast8_t i;
@@ -186,7 +186,7 @@ static void
 eeprom_a2_read(
 	spitarget_t target,	/* addressing to chip */
 	uint_fast16_t addr, 
-	void * data, 
+	uint8_t * data,
 	uint_fast8_t len)
 {
 	spi_select(target, NVRAM_SPIMODE);	/* start sending data to target chip */
@@ -208,7 +208,7 @@ static void
 eeprom_a3_write(
 	spitarget_t target,	/* addressing to chip */
 	uint_fast32_t addr, 
-	const void * data, 
+	const uint8_t * data,
 	uint_fast8_t len)
 {
 	uint_fast8_t i;
@@ -231,7 +231,7 @@ static void
 eeprom_a3_read(
 	spitarget_t target,	/* addressing to chip */
 	uint_fast32_t addr, 
-	void * data, 
+	uint8_t * data,
 	uint_fast8_t len)
 {
 	spi_select(target, NVRAM_SPIMODE);	/* start sending data to target chip */
@@ -292,7 +292,7 @@ eeprom_initialize(
 
 static void  
 //NOINLINEAT
-nvram_write_withinpage(uint_least16_t addr, const void * data, uint_fast8_t len)
+nvram_write_withinpage(uint_least16_t addr, const uint8_t * data, uint_fast8_t len)
 {
 	/* Ожидание бита ~RDY в слове состояния. Для FRAM не имеет смысла.
 	Вставлено для возможности использования EEPROM */
@@ -374,7 +374,7 @@ void nvram_initialize(void)
 		__DSB();
 
 		stm32f4xx_bdenable();
-		RCC->AHB1ENR |= RCC_AHB1ENR_BKPSRAMEN;	// включил BKPSRAM 
+		RCC->AHB1ENR |= RCC_AHB1ENR_BKPSRAMEN;	// включил BKPSRAM
 		__DSB();
 
 		#if defined (PWR_CSR1_BRE)
@@ -406,7 +406,7 @@ void nvram_initialize(void)
 
 static void  
 //NOINLINEAT
-nvram_write(nvramaddress_t addr, const void * data, uint_fast8_t len)
+nvram_write(nvramaddress_t addr, const uint8_t * data, uint_fast8_t len)
 {
 	ASSERT((addr + len - 1) <= NVRAM_END);
 #if (NVRAM_TYPE == NVRAM_TYPE_BKPSRAM)
@@ -479,7 +479,7 @@ nvram_write(nvramaddress_t addr, const void * data, uint_fast8_t len)
 
 static void  
 //NOINLINEAT
-nvram_read(nvramaddress_t addr, void * data, uint_fast8_t len)
+nvram_read(nvramaddress_t addr, uint8_t * data, uint_fast8_t len)
 {
 	ASSERT((addr + len - 1) <= NVRAM_END);
 #if (NVRAM_TYPE == NVRAM_TYPE_BKPSRAM)
@@ -542,9 +542,9 @@ uint_fast8_t
 //NOINLINEAT
 restore_i8(nvramaddress_t addr)
 {
-	uint8_t v;
-	nvram_read(addr, & v, sizeof v);
-	return v;
+	uint8_t vb;
+	nvram_read(addr, & vb, sizeof vb);
+	return vb;
 }
 
 /* сохранение по указанному индексу в FRAM одного байта */
@@ -560,9 +560,9 @@ uint_fast16_t
 //NOINLINEAT
 restore_i16(nvramaddress_t addr)
 {
-	uint16_t v;
-	nvram_read(addr, & v, sizeof v);
-	return v;
+	uint8_t vb [2];
+	nvram_read(addr, & vb [0], sizeof vb);
+	return vb [1] * 256 + vb [0];
 }
 
 /* сохранение по указанному индексу в FRAM одного 16-битного слова */
@@ -570,7 +570,12 @@ void
 //NOINLINEAT
 save_i16(nvramaddress_t addr, uint16_t v)
 {
-	nvram_write(addr, & v, sizeof v);
+	uint8_t vb [2];
+
+	vb [0] = v;
+	vb [1] = v >> 8;
+
+	nvram_write(addr, & vb [0], sizeof vb);
 }
 
 /* выборка по указанному индексу из FRAM одного 32-битного слова */
@@ -578,9 +583,13 @@ uint_fast32_t
 //NOINLINEAT
 restore_i32(nvramaddress_t addr)
 {
-	uint32_t v;
-	nvram_read(addr, & v, sizeof v);
-	return v;
+	uint8_t vb [4];
+	nvram_read(addr, vb, sizeof vb);
+	return
+			((uint_fast32_t) vb [3] << 24) |
+			((uint_fast32_t) vb [3] << 16) |
+			((uint_fast32_t) vb [3] << 8) |
+			((uint_fast32_t) vb [3] << 0);
 }
 
 /* сохранение по указанному индексу в FRAM одного 32-битного слова */
@@ -588,7 +597,14 @@ void
 //NOINLINEAT
 save_i32(nvramaddress_t addr, uint32_t v)
 {
-	nvram_write(addr, & v, sizeof v);
+	uint8_t vb [4];
+
+	vb [0] = v >> 0;
+	vb [1] = v >> 8;
+	vb [2] = v >> 16;
+	vb [3] = v >> 24;
+
+	nvram_write(addr, & vb [0], sizeof vb);
 }
 
 #else /* defined (NVRAM_TYPE) && (NVRAM_TYPE != NVRAM_TYPE_NOTHING) */

@@ -11,6 +11,11 @@
 #ifndef RADIO_H_INCLUDED
 #define RADIO_H_INCLUDED
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 typedef uint_least64_t ftw_t;	/* тип, подходящий по размерам для хранения промежуточных результатов вычислений */
 typedef uint_least64_t phase_t;
 
@@ -3183,6 +3188,10 @@ void spool_0p128(void);	// OPERA support
 	#define DDS1_CLK_DIV	9		/* Делитель опорной частоты перед подачей в DDS1 (количество тактов на одну выборку выходного значения синусоилы) */
 
 #endif /* HYBRID_DDS_ATTINY2313 */
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif /* RADIO_H_INCLUDED */
 

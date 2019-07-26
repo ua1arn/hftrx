@@ -1735,7 +1735,7 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 	OSTM0.OSTMnCMP = calcdivround_p0clock(ticksfreq) - 1;
 
 	{
-		const uint16_t int_id = OSTMI0TINT_IRQn;
+		const IRQn_Type int_id = OSTMI0TINT_IRQn;
 		r7s721_intc_registintfunc(int_id, r7s721_ostm0_interrupt);	/* ==== Register OS timer interrupt handler ==== */
 		GIC_SetPriority(int_id, ARM_SYSTEM_PRIORITY);		/* ==== Set priority of OS timer interrupt to 5 ==== */
 		GIC_EnableIRQ(int_id);		/* ==== Validate OS timer interrupt ==== */
@@ -2955,7 +2955,7 @@ void hardware_adc_initialize(void)
 
 	// connect to interrupt
 	{
-		const uint16_t int_id = ADI_IRQn;	/* 12bit A/D converter                */
+		const IRQn_Type int_id = ADI_IRQn;	/* 12bit A/D converter                */
 		r7s721_intc_registintfunc(int_id, r7s721_adi_irq_handler);
 		GIC_SetPriority(int_id, ARM_SYSTEM_PRIORITY);
 		GIC_EnableIRQ(int_id);
@@ -4084,7 +4084,7 @@ void hardware_spi_master_initialize(void)
 			0;
 
 		{
-			//const uint16_t int_id = DMAINT15_IRQn;
+			//const IRQn_Type int_id = DMAINT15_IRQn;
 			//r7s721_intc_registintfunc(int_id, r7s721_usb0_dma1_dmatx_handler);
 			//GIC_SetPriority(int_id, ARM_REALTIME_PRIORITY);
 			//GIC_EnableIRQ(int_id);
@@ -5893,7 +5893,7 @@ hardware_elkey_timer_initialize(void)
     OSTM1.OSTMnTT = 0x01u;      /* Stop counting */
 
 	{
-		const uint16_t int_id = OSTMI1TINT_IRQn;
+		const IRQn_Type int_id = OSTMI1TINT_IRQn;
 		r7s721_intc_registintfunc(int_id, r7s721_ostm1_interrupt);	/* ==== Register OS timer interrupt handler ==== */
 		GIC_SetPriority(int_id, ARM_SYSTEM_PRIORITY);		/* ==== Set priority of OS timer interrupt to 5 ==== */
 		GIC_EnableIRQ(int_id);		/* ==== Validate OS timer interrupt ==== */
@@ -6384,7 +6384,7 @@ void hardware_sdhost_initialize(void)
 	hardware_sdhost_setspeed(400000uL);
 
 	{
-		const uint16_t int_id = DMAINT14_IRQn;
+		const IRQn_Type int_id = DMAINT14_IRQn;
 		r7s721_intc_registintfunc(int_id, r7s721_sdhi0_dma_handler);
 		GIC_SetPriority(int_id, ARM_SYSTEM_PRIORITY);
 		GIC_EnableIRQ(int_id);
@@ -8736,6 +8736,7 @@ void DAbortHandler(void)
 	for (;;)
 		;
 }
+
 void FIQHandler(void)
 {
 	debug_printf_P(PSTR("FIQHandler trapped.\n"));
@@ -10339,6 +10340,10 @@ uint8_t xxxxxpos(uint8_t num) // num = 0..8
 // Используется в случае наличия ключа ld -nostartfiles
 // Так же смотреть вокруг software_init_hook
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 extern int main(void);
 extern void __libc_init_array(void);
 
@@ -10371,6 +10376,10 @@ void __gxx_personality_v0(void)
 
 }
 
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
+
 /*
  *
  * ****************************
@@ -10378,6 +10387,11 @@ void __gxx_personality_v0(void)
 #include <sys/stat.h>
 #include <string.h>
 #include <errno.h>
+
+
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
 
 static int SER_GetChar(void)
 {
@@ -10502,6 +10516,10 @@ int __attribute__((used)) (_getpid)(int id)
 	return (-1);
 }
 
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif /* CPUSTYLE_ARM */
 

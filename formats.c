@@ -248,7 +248,7 @@ havelen:
 			}
 		{
 			int k;
-			for (k = 0; * cp != '\0' && k < maxwidth; ++ k)
+			for (k = 0; * cp != '\0' && k < (int) maxwidth; ++ k)
 			{	if ((* putsub)(param, (unsigned char)(* cp ++)) == EOF)
 					return -1;
 				++ len;
