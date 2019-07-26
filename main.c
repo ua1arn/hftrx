@@ -1318,7 +1318,7 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 		{ DSPCTL_MODE_RX_NARROW, DSPCTL_MODE_TX_CW, },	// Управление для DSP в режиме приёма и передачи - режим узкого фильтра
 		{ BWSETI_CW, BWSETI_CW },				// индекс банка полос пропускания для данного режима
 		{ 0, INT16_MAX, },	// фиксированная полоса пропускания в DSP (if6) для данного режима (если не ноль).
-		BOARD_TXAUDIO_MIKE,		// источник звукового сигнала для данного режима
+		BOARD_TXAUDIO_MUTE,		// источник звукового сигнала для данного режима
 		TXAPROFIG_CW,				// группа профилей обработки звука
 		AGCSETI_CW,
 #else /* WITHIF4DSP */
@@ -7834,6 +7834,7 @@ updateboard(
 			board_set_aflowcuttx(bwseti_getlow(bwseti));	/* Нижняя частота среза фильтра НЧ по передаче */
 			board_set_afhighcuttx(bwseti_gethigh(bwseti));	/* Верхняя частота среза фильтра НЧ по передаче */
 			board_set_afresponcetx(txmode == MODE_NFM ? + 24 : 0);	/* коррекция АЧХ НЧ тракта передатчика */
+			board_set_nfmdeviation100(75);
 		}
 	#endif /* WITHIF4DSP */
 		seq_set_rxtxdelay(rxtxdelay, txrxdelay, pretxdelay ? txrxdelay : 0);	/* установить задержку пре переходе на передачу и обратно. */

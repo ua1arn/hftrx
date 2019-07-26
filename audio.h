@@ -521,6 +521,7 @@ void board_set_aflowcutrx(int_fast16_t v);		/* Нижняя частота ср�
 void board_set_afhighcutrx(int_fast16_t v);	/* Верхняя частота среза фильтра НЧ */
 void board_set_aflowcuttx(int_fast16_t v);		/* Нижняя частота среза фильтра НЧ */
 void board_set_afhighcuttx(int_fast16_t v);	/* Верхняя частота среза фильтра НЧ */
+void board_set_nfmdeviation100(uint_fast8_t v);	/* Девиация в NFM (сотни герц) */
 
 void board_set_afgain(uint_fast16_t v);	// Параметр для регулировки уровня на выходе аудио-ЦАП
 void board_set_ifgain(uint_fast16_t v);	// Параметр для регулировки усиления ПЧ/ВЧ

@@ -123,7 +123,7 @@ static uint_fast8_t 	glob_swapiq = 0;	// поменять местами I и Q 
 // codec-related parameters
 static uint_fast16_t 	glob_afgain;
 static uint_fast8_t 	glob_afmute;	/* отключить звук в наушниках и динамиках */
-static uint_fast8_t 	glob_lineinput;	/* используется line input вместо микрофона */
+static uint_fast8_t		glob_lineinput;	/* используется line input вместо микрофона */
 static uint_fast8_t 	glob_mikebust20db;	/* Включение усилителя 20 дБ за микрофоном */
 static uint_fast8_t		glob_mikeagc = 1;	/* Включение программной АРУ перед модулятором */
 static uint_fast8_t		glob_mikeagcgain = 40;	/* предел усиления в АРУ */
@@ -161,6 +161,8 @@ static int_fast8_t		glob_afresponcetx;	// изменение тембра зву
 static int_fast8_t		glob_swaprts;		// управление боковой выхода спектроанализатора
 
 static uint_fast8_t		glob_mainsubrxmode = BOARD_RXMAINSUB_A_A;	// Левый/правый, A - main RX, B - sub RX
+
+static uint_fast8_t		glob_nfmdeviation100 = 75;	// 7.5 kHz максимальная девиация в NFM
 
 
 #if WITHINTEGRATEDDSP
@@ -747,7 +749,7 @@ static RAMDTCM unsigned delaysetlo6 [NTRX];	// задержка переключ
 static RAMDTCM ncoftw_t anglestep_aflo [NTRX];
 static RAMDTCM ncoftw_t anglestep_aflo_shadow [NTRX];
 static RAMDTCM ncoftw_t angle_aflo [NTRX];
-const ncoftw_t gnfmdeviationftw = FTWAF(2500);	// 2.5 kHz (-2.5..+2.5) deviation
+static ncoftw_t gnfmdeviationftw = FTWAF(7500);	// 2.5 kHz (-2.5..+2.5) deviation
 
 // установить частоту
 static void nco_setlo_ftw(ncoftw_t ftw, uint_fast8_t pathi)
@@ -797,17 +799,18 @@ static RAMFUNC void nco_setlo_delay(uint_fast8_t pathi, uint_fast8_t tx)
 static RAMFUNC FLOAT32P_t get_float_aflo_delta(long int deltaftw, uint_fast8_t pathi)
 {
 	FLOAT32P_t v;
+	const ncoftw_t angle = angle_aflo [pathi];
 #if 0
 	q31_t sinv;
 	q31_t cosv;
-	arm_sin_cos_q31(angle_aflo [pathi], & sinv, & cosv);
+	arm_sin_cos_q31(angle, & sinv, & cosv);
 	v.IV = sinv / (FLOAT_t) 2147483648;
 	v.QV = cosv / (FLOAT_t) 2147483648;
 #else
-	v.IV = peekvalf(FTW2ANGLEI(angle_aflo [pathi]));
-	v.QV = peekvalf(FTW2ANGLEQ(angle_aflo [pathi]));
+	v.IV = peekvalf(FTW2ANGLEI(angle));
+	v.QV = peekvalf(FTW2ANGLEQ(angle));
 #endif
-	angle_aflo [pathi] = FTWROUND(angle_aflo [pathi] + anglestep_aflo [pathi] + deltaftw);
+	angle_aflo [pathi] = FTWROUND(angle + anglestep_aflo [pathi] + deltaftw);
 	return v;
 }
 
@@ -5781,6 +5784,9 @@ txparam_update(uint_fast8_t profile)
 	// регулировка напряжения на REFERENCE INPUT TXDAC AD9744
 	HARDWARE_DAC_ALC((glob_opowerlevel - WITHPOWERTRIMMIN) * dac_dacfs_coderange / (WITHPOWERTRIMMAX - WITHPOWERTRIMMIN) + dac_dacfs_lowcode);
 #endif /* WITHCPUDACHW && WITHPOWERTRIM */
+	// Девиация в NFM
+	gnfmdeviationftw = FTWAF((int) glob_nfmdeviation100 * 100L);
+
 }
 
 // Передача параметров в DSP модуль
@@ -6582,6 +6588,18 @@ board_set_digigainmax(uint_fast8_t v)
 		board_dsp1regchanged();
 	}
 }
+
+/* Девиация в NFM (сотни герц) */
+void
+board_set_nfmdeviation100(uint_fast8_t v)
+{
+	if (glob_nfmdeviation100 != v)
+	{
+		glob_nfmdeviation100 = v;
+		board_dsp1regchanged();
+	}
+}
+
 
 /* напряжение на AD605 (управление усилением тракта ПЧ */
 void
