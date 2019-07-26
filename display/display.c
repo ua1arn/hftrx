@@ -1476,7 +1476,7 @@ void display_dispbar(
 	const uint_fast8_t hpattern = 0x33;
 
 	bitblt_fill(x, y, wpart, h, ltdc_fg, ltdc_bg, hpattern);
-	bitblt_fill(x + wpart, y, wfull - wpart, h, ltdc_fg, ltdc_bg, 0x00);
+	bitblt_fill(x + wpart, y, wfull - wpart, h, ltdc_bg, ltdc_bg, 0x00);
 	if (wmark < wfull && wmark >= wpart)
 		bitblt_fill(x + wmark, y, 1, h, ltdc_fg, ltdc_bg, 0xFF);
 }
