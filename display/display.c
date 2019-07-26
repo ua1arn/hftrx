@@ -152,7 +152,7 @@ static void RAMFUNC_NONILINE display_fillrect(
 	else
 	{
 		// Dotted horizontal line
-		const size_t BUFLEN = (w + 7) / 8;	// размер буфера с черно-белым растром
+		const size_t BUFLEN = (w + 7) / 8 + 1;	// размер буфера с черно-белым растром - единица добавляется для случая когда x отрисовки не кратно 8
 		uint8_t raster [BUFLEN];
 		memset(raster, ((hpattern << 8) | hpattern) >> (col % 8), BUFLEN);
 		// заполнение области экрана
