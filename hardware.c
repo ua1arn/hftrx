@@ -9047,6 +9047,8 @@ uint_fast32_t cpu_getdebugticks(void)
 #endif
 }
 
+static void vectors_relocate(void);
+
 
 /* функция вызывается из start-up до копирования в SRAM всех "быстрых" функций и до инициализации переменных
 */
@@ -9055,6 +9057,10 @@ void
 FLASHMEMINITFUNC
 SystemInit(void)
 {
+#if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM0 || CPUSTYLE_ARM_CM7
+	// выполнить до включения кэширования данных
+	vectors_relocate();
+#endif /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM0 || CPUSTYLE_ARM_CM7 */
 #if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7
 
 	#if WITHDEBUG && WITHINTEGRATEDDSP && CPUSTYLE_ARM_CM7
@@ -9154,7 +9160,13 @@ SystemInit(void)
 
 	/* AXI SRAM Slave */
 	//AXI_TARG7_FN_MOD |= READ_ISS_OVERRIDE;
-	*((__IO uint32_t*) 0x51008108) = 0x1; //Change  the switch matrix read issuing capability to 1 (Errata BUG fix)
+	  /* dual core CM7 or single core line */
+	  if((DBGMCU->IDCODE & 0xFFFF0000U) < 0x20000000U)
+	  {
+		/* if stm32h7 revY*/
+		/* Change  the switch matrix read issuing capability to 1 for the AXI SRAM target (Target 7) */
+		*((__IO uint32_t*) 0x51008108) = 0x1; //Change  the switch matrix read issuing capability to 1 (Errata BUG fix)
+	  }
 	/* Change  the switch matrix read issuing capability to 1 for the AXI SRAM target (Target 7) */
 	//*((__IO uint32_t*)0x51008108) = 0x000000001;
 
@@ -11634,7 +11646,7 @@ void Reset_Handler(void)
 
 const
 __VECTOR_TABLE_ATTRIBUTE
-IntFunc __Vectors [/*256*/] = {
+IntFunc __Vectors [256] = {
 
     /* Configure Initial Stack Pointer, using linker-generated symbols */
     (IntFunc)(& __stack),
@@ -12180,6 +12192,21 @@ IntFunc __Vectors [/*256*/] = {
 };
 
 
+#define VTRATTR2	__attribute__ ((section(".ramvectors"), used, aligned(256 * 4)))
+
+VTRATTR2 volatile IntFunc ramVectors [256];
+
+static void vectors_relocate(void)
+{
+	unsigned i;
+
+	for (i = NVIC_USER_IRQ_OFFSET; i < (sizeof ramVectors / sizeof ramVectors [0]); ++ i)
+	{
+		ramVectors [i] = Default_Handler;
+	}
+	memcpy((void *) ramVectors, __Vectors, 256 * 4);
+	//SCB->VTOR = (uint32_t) & ramVectors;
+}
 #endif /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM0 || CPUSTYLE_ARM_CM7 */
 
 
