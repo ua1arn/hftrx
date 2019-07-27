@@ -10568,7 +10568,7 @@ int __attribute__((used)) (_getpid)(int id)
 /* Initialize segments */
 void Default_Handler(void)
 {
-	debug_printf_P(PSTR("Default_Handler trapped.\n"));
+	debug_printf_P(PSTR("Default_Handler trapped, ICSR=%08lX (IRQn=%u).\n"), SCB->ICSR, (SCB->ICSR & 0xFF) - 16);
 	for (;;)
 		;
 }

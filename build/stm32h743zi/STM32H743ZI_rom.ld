@@ -208,6 +208,7 @@ SECTIONS
 
 	.bss :
 	{
+		KEEP(*(.ramvectors))
 		. = ALIGN(32);
 		__bss_start__ = .;
 		*(.bss*)
