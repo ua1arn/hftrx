@@ -24,8 +24,8 @@ TRGT = arm-none-eabi-
 CC   = $(TRGT)gcc
 CP   = $(TRGT)objcopy
 AS   = $(TRGT)gcc -x assembler-with-cpp
-HEX  = $(CP) -O ihex -R .noinit -R .bss
-BIN  = $(CP) -O binary -R .noinit -R .bss
+HEX  = $(CP) -O ihex -R .noinit -R .bss -R .heap
+BIN  = $(CP) -O binary -R .noinit -R .bss -R .heap
 
 CMSISDIR = ../../../CMSIS_5/CMSIS
 OBJDIR = ./obj
@@ -134,7 +134,7 @@ CPFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
 all: ROM
 
 flash: ROM
-	ST-LINK_CLI.exe -V -P $(PROJECT)_rom.hex -rst
+	ST-LINK_CLI.exe -Q -V -P $(PROJECT)_rom.hex -rst
 
 RAM: $(OBJS) $(PROJECT)_ram.elf $(PROJECT)_ram.hex
 

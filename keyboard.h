@@ -12,6 +12,10 @@
 
 #include <stdint.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 enum
 {
 	KBD_CODE_SPLIT = 0, 
@@ -183,5 +187,9 @@ uint_fast8_t getexitkey(void);
 #define KEYBOARD_NOKEY UINT8_MAX
 
 uint_fast8_t board_get_pressed_key(void);	// Если ничего - возвращаем KEYBOARD_NOKEY
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif /* KEYBOARD_H_INCLUDED */

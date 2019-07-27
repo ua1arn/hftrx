@@ -1178,21 +1178,21 @@ static RAMFUNC void spool_adcdonebundle(void)
 
 	#if CPUSTYLE_STM32L0XX
 
-	void ATTRWEAK EXTI0_1_IRQHandler(void)
+	void EXTI0_1_IRQHandler(void)
 	{
 		const portholder_t pr = EXTI->PR & (EXTI_IMR_IM0 | EXTI_IMR_IM1);
 		EXTI->PR = pr;		// reset all existing requests
 		//(void) EXTI->PR;
 		stm32fxxx_pinirq(pr);
 	}
-	void ATTRWEAK EXTI2_3_IRQHandler(void)
+	void EXTI2_3_IRQHandler(void)
 	{
 		const portholder_t pr = EXTI->PR & (EXTI_IMR_IM2 | EXTI_IMR_IM3);
 		EXTI->PR = pr;		// reset all existing requests
 		//(void) EXTI->PR;
 		stm32fxxx_pinirq(pr);
 	}
-	void ATTRWEAK EXTI4_15_IRQHandler(void)
+	void EXTI4_15_IRQHandler(void)
 	{
 		const portholder_t pr = EXTI->PR & (
 				EXTI_IMR_IM15 | EXTI_IMR_IM14 | EXTI_IMR_IM13 | EXTI_IMR_IM12 | 
@@ -1206,7 +1206,7 @@ static RAMFUNC void spool_adcdonebundle(void)
 
 	#elif CPUSTYLE_STM32H7XX
 
-	void ATTRWEAK EXTI0_IRQHandler(void)
+	void EXTI0_IRQHandler(void)
 	{
 		const portholder_t pr = EXTI_D1->PR1 & (EXTI_PR1_PR0);
 		EXTI_D1->PR1 = pr;		// reset all existing requests
@@ -1215,7 +1215,7 @@ static RAMFUNC void spool_adcdonebundle(void)
 	}
 
 	
-	void ATTRWEAK EXTI1_IRQHandler(void)
+	void EXTI1_IRQHandler(void)
 	{
 		const portholder_t pr = EXTI_D1->PR1 & (EXTI_PR1_PR1);
 		EXTI_D1->PR1 = pr;		// reset all existing requests
@@ -1223,7 +1223,7 @@ static RAMFUNC void spool_adcdonebundle(void)
 		stm32fxxx_pinirq(pr);
 	}
 
-	void ATTRWEAK EXTI2_IRQHandler(void)
+	void EXTI2_IRQHandler(void)
 	{
 		const portholder_t pr = EXTI_D1->PR1 & (EXTI_PR1_PR2);
 		EXTI_D1->PR1 = pr;		// reset all existing requests
@@ -1231,7 +1231,7 @@ static RAMFUNC void spool_adcdonebundle(void)
 		stm32fxxx_pinirq(pr);
 	}
 
-	void ATTRWEAK EXTI3_IRQHandler(void)
+	void EXTI3_IRQHandler(void)
 	{
 		const portholder_t pr = EXTI_D1->PR1 & (EXTI_PR1_PR3);
 		EXTI_D1->PR1 = pr;		// reset all existing requests
@@ -1239,7 +1239,7 @@ static RAMFUNC void spool_adcdonebundle(void)
 		stm32fxxx_pinirq(pr);
 	}
 
-	void ATTRWEAK EXTI4_IRQHandler(void)
+	void EXTI4_IRQHandler(void)
 	{
 		const portholder_t pr = EXTI_D1->PR1 & (EXTI_PR1_PR4);
 		EXTI_D1->PR1 = pr;		// reset all existing requests
@@ -1247,14 +1247,14 @@ static RAMFUNC void spool_adcdonebundle(void)
 		stm32fxxx_pinirq(pr);
 	}
 
-	void ATTRWEAK EXTI9_5_IRQHandler(void)
+	void EXTI9_5_IRQHandler(void)
 	{
 		const portholder_t pr = EXTI_D1->PR1 & (EXTI_PR1_PR9 | EXTI_PR1_PR8 | EXTI_PR1_PR7 | EXTI_PR1_PR6 | EXTI_PR1_PR5);
 		EXTI_D1->PR1 = pr;		// reset all existing requests
 		(void) EXTI_D1->PR1;
 		stm32fxxx_pinirq(pr);
 	}
-	void ATTRWEAK EXTI15_10_IRQHandler(void)
+	void EXTI15_10_IRQHandler(void)
 	{
 		const portholder_t pr = EXTI_D1->PR1 & (EXTI_PR1_PR15 | EXTI_PR1_PR14 | EXTI_PR1_PR13 | EXTI_PR1_PR12 | EXTI_PR1_PR11 | EXTI_PR1_PR10);
 		EXTI_D1->PR1 = pr;		// reset all existing requests
@@ -1264,7 +1264,7 @@ static RAMFUNC void spool_adcdonebundle(void)
 
 	#else
 
-	void ATTRWEAK EXTI0_IRQHandler(void)
+	void EXTI0_IRQHandler(void)
 	{
 		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR0);
 		EXTI->PR = pr;		// reset all existing requests
@@ -1272,7 +1272,7 @@ static RAMFUNC void spool_adcdonebundle(void)
 		stm32fxxx_pinirq(pr);
 	}
 
-	void ATTRWEAK EXTI0_1_IRQHandler(void)
+	void EXTI0_1_IRQHandler(void)
 	{
 		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR0 | EXTI_IMR_MR1);
 		EXTI->PR = pr;		// reset all existing requests
@@ -1280,7 +1280,7 @@ static RAMFUNC void spool_adcdonebundle(void)
 		stm32fxxx_pinirq(pr);
 	}
 
-	void ATTRWEAK EXTI1_IRQHandler(void)
+	void EXTI1_IRQHandler(void)
 	{
 		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR1);
 		EXTI->PR = pr;		// reset all existing requests
@@ -1288,7 +1288,7 @@ static RAMFUNC void spool_adcdonebundle(void)
 		stm32fxxx_pinirq(pr);
 	}
 
-	void ATTRWEAK EXTI2_IRQHandler(void)
+	void EXTI2_IRQHandler(void)
 	{
 		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR2);
 		EXTI->PR = pr;		// reset all existing requests
@@ -1296,7 +1296,7 @@ static RAMFUNC void spool_adcdonebundle(void)
 		stm32fxxx_pinirq(pr);
 	}
 
-	void ATTRWEAK EXTI2_3_IRQHandler(void)
+	void EXTI2_3_IRQHandler(void)
 	{
 		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR2 | EXTI_IMR_MR3);
 		EXTI->PR = pr;		// reset all existing requests
@@ -1304,7 +1304,7 @@ static RAMFUNC void spool_adcdonebundle(void)
 		stm32fxxx_pinirq(pr);
 	}
 
-	void ATTRWEAK EXTI4_15_IRQHandler(void)
+	void EXTI4_15_IRQHandler(void)
 	{
 		const portholder_t pr = EXTI->PR & (
 				EXTI_IMR_MR15 | EXTI_IMR_MR14 | EXTI_IMR_MR13 | EXTI_IMR_MR12 | 
@@ -1316,7 +1316,7 @@ static RAMFUNC void spool_adcdonebundle(void)
 		stm32fxxx_pinirq(pr);
 	}
 
-	void ATTRWEAK EXTI3_IRQHandler(void)
+	void EXTI3_IRQHandler(void)
 	{
 		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR3);
 		EXTI->PR = pr;		// reset all existing requests
@@ -1324,7 +1324,7 @@ static RAMFUNC void spool_adcdonebundle(void)
 		stm32fxxx_pinirq(pr);
 	}
 
-	void ATTRWEAK EXTI4_IRQHandler(void)
+	void EXTI4_IRQHandler(void)
 	{
 		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR4);
 		EXTI->PR = pr;		// reset all existing requests
@@ -1332,14 +1332,14 @@ static RAMFUNC void spool_adcdonebundle(void)
 		stm32fxxx_pinirq(pr);
 	}
 
-	void ATTRWEAK EXTI9_5_IRQHandler(void)
+	void EXTI9_5_IRQHandler(void)
 	{
 		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR9 | EXTI_IMR_MR8 | EXTI_IMR_MR7 | EXTI_IMR_MR6 | EXTI_IMR_MR5);
 		EXTI->PR = pr;		// reset all existing requests
 		//(void) EXTI->PR;
 		stm32fxxx_pinirq(pr);
 	}
-	void ATTRWEAK EXTI15_10_IRQHandler(void)
+	void EXTI15_10_IRQHandler(void)
 	{
 		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR15 | EXTI_IMR_MR14 | EXTI_IMR_MR13 | EXTI_IMR_MR12 | EXTI_IMR_MR11 | EXTI_IMR_MR10);
 		EXTI->PR = pr;		// reset all existing requests
@@ -1409,11 +1409,11 @@ static RAMFUNC void spool_adcdonebundle(void)
 		}
 	}
 
-	RAMFUNC_NONILINE void ATTRWEAK USART0_Handler(void) 
+	RAMFUNC_NONILINE void USART0_Handler(void)
 	{
 	}
 
-	RAMFUNC_NONILINE void ATTRWEAK USART1_Handler(void) 
+	RAMFUNC_NONILINE void USART1_Handler(void)
 	{
 	}
 
@@ -1735,7 +1735,7 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 	OSTM0.OSTMnCMP = calcdivround_p0clock(ticksfreq) - 1;
 
 	{
-		const uint16_t int_id = OSTMI0TINT_IRQn;
+		const IRQn_Type int_id = OSTMI0TINT_IRQn;
 		r7s721_intc_registintfunc(int_id, r7s721_ostm0_interrupt);	/* ==== Register OS timer interrupt handler ==== */
 		GIC_SetPriority(int_id, ARM_SYSTEM_PRIORITY);		/* ==== Set priority of OS timer interrupt to 5 ==== */
 		GIC_EnableIRQ(int_id);		/* ==== Validate OS timer interrupt ==== */
@@ -2059,8 +2059,8 @@ ADC3_IRQHandler(void)
 
 #elif CPUSTYLE_STM32F1XX || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX
 
-void 
-ADC1_2_IRQHandler(void)
+static void
+adcs_stm32f4xx_irq_handler(void)
 {
 	ASSERT(adc_input < board_get_adcinputs());
 	//const unsigned long sr = ADC1->SR;
@@ -2081,7 +2081,7 @@ ADC1_2_IRQHandler(void)
 			const uint_fast8_t adci = board_get_adcch(adc_input);
 			if (adci < BOARD_ADCXBASE)
 			{
-				ADC1->SQR3 = (ADC1->SQR3 & ~ ADC_SQR3_SQ1) | (ADC_SQR3_SQ1_0 * adci); 
+				ADC1->SQR3 = (ADC1->SQR3 & ~ ADC_SQR3_SQ1) | (ADC_SQR3_SQ1_0 * adci);
 				#if CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX
 				ADC1->CR2 |= ADC_CR2_SWSTART;	// !!!!
 				#endif
@@ -2090,6 +2090,20 @@ ADC1_2_IRQHandler(void)
 		}
 	}
 }
+
+void
+ADC_IRQHandler(void)
+{
+	adcs_stm32f4xx_irq_handler();
+}
+
+void
+ADC1_2_IRQHandler(void)
+{
+	adcs_stm32f4xx_irq_handler();
+}
+
+
 
 #elif CPUSTYLE_STM32F0XX
 	#if STM32F0XX_MD
@@ -2358,6 +2372,7 @@ void hardware_adc_initialize(void)
 	////while ((ADC->ADC_ISR & ADC_ISR_DRDY) == 0)
 	////	;
 
+	NVIC_SetVector(ADC_IRQn, (uintptr_t) & ADC_Handler);
 	NVIC_SetPriority(ADC_IRQn, ARM_SYSTEM_PRIORITY);
 	NVIC_EnableIRQ(ADC_IRQn);		// enable ADC_Handler();
 
@@ -2459,6 +2474,7 @@ void hardware_adc_initialize(void)
 
 		RCC->APB2ENR |= (RCC_APB2ENR_ADC1EN | RCC_APB2ENR_ADC2EN);    // Затактировали АЦП
 		__DSB();
+		NVIC_SetVector(ADC1_2_IRQn, (uintptr_t) & ADC1_2_IRQHandler);
 		NVIC_SetPriority(ADC1_2_IRQn, ARM_SYSTEM_PRIORITY);
 		NVIC_EnableIRQ(ADC1_2_IRQn);    //Включаем прерывания с АЦП. Обрабатывает ADC1_2_IRQHandler()
 
@@ -2466,8 +2482,9 @@ void hardware_adc_initialize(void)
 
 		RCC->APB2ENR |= (RCC_APB2ENR_ADC1EN);    // Затактировали АЦП
 		__DSB();
+		NVIC_SetVector(ADC1_IRQn, (uintptr_t) & ADC1_IRQHandler);
 		NVIC_SetPriority(ADC1_IRQn, ARM_SYSTEM_PRIORITY);
-		NVIC_EnableIRQ(ADC1_IRQn);    //Включаем прерывания с АЦП. Обрабатывает ADC1_2_IRQHandler()
+		NVIC_EnableIRQ(ADC1_IRQn);    //Включаем прерывания с АЦП. Обрабатывает ADC1_IRQHandler()
 
 	#endif /* defined (ADC2) */
 
@@ -2657,7 +2674,7 @@ void hardware_adc_initialize(void)
 		#endif
 			0;
 
-		adc->IER = ADC_IER_EOS;		// EOS (end of regular sequence) flag
+		adc->IER = ADC_IER_EOSIE;		// EOS (end of regular sequence) flag
 	}
 
 	// Set ADC_CR_ADEN
@@ -2667,18 +2684,21 @@ void hardware_adc_initialize(void)
 		const adcinmap_t * const adcmap = getadcmap(ainp);
 		ADC_TypeDef * const adc = adcmap->adc;
 
-		if ((adc->ISR & ADC_ISR_ADRD) != 0)
+		if ((adc->ISR & ADC_ISR_ADRDY) != 0)
 			continue;	// already enabled
 
 		adc->CR |= ADC_CR_ADEN;
 
-		// Wait for  ADC_ISR_ADRD
-		while ((adc->ISR & ADC_ISR_ADRD) == 0)
+		// Wait for  ADC_ISR_ADRDY
+		while ((adc->ISR & ADC_ISR_ADRDY) == 0)
 			;
 	}
 
+	NVIC_SetVector(ADC_IRQn, (uintptr_t) & ADC_IRQHandler);
 	NVIC_SetPriority(ADC_IRQn, ARM_SYSTEM_PRIORITY);
 	NVIC_EnableIRQ(ADC_IRQn);    // Включаем прерывания с АЦП. Обрабатывает ADC_IRQHandler()
+
+	NVIC_SetVector(ADC3_IRQn, (uintptr_t) & ADC3_IRQHandler);
 	NVIC_SetPriority(ADC3_IRQn, ARM_SYSTEM_PRIORITY);
 	NVIC_EnableIRQ(ADC3_IRQn);    // Включаем прерывания с АЦП. Обрабатывает ADC3_IRQHandler()
 
@@ -2718,7 +2738,7 @@ void hardware_adc_initialize(void)
 	#endif /* WITHREFSENSOR || WITHTEMPSENSOR */
 		0;
 	
-
+	NVIC_SetVector(ADC_IRQn, (uintptr_t) & ADC_IRQHandler);
 	NVIC_SetPriority(ADC_IRQn, ARM_SYSTEM_PRIORITY);
 	NVIC_EnableIRQ(ADC_IRQn);    //Включаем прерывания с АЦП. Обрабатывает ADC_IRQHandler()
 
@@ -2823,7 +2843,7 @@ void hardware_adc_initialize(void)
 	RCC->CFGR2 = (RCC->CFGR2 & ~ (RCC_CFGR2_ADCPRE12)) | RCC_CFGR2_ADCPRE12_DIV4; // RCC_CFGR_ADCPRE12_DIV2;    //  
 	//RCC->APB2ENR |= (RCC_APB2ENR_ADC1EN | RCC_APB2ENR_ADC2EN);    //Затактировали АЦП
 
-
+	NVIC_SetVector(ADC1_2_IRQn, (uintptr_t) & ADC1_2_IRQHandler);
 	NVIC_SetPriority(ADC1_2_IRQn, ARM_SYSTEM_PRIORITY);
 	NVIC_EnableIRQ(ADC1_2_IRQn);    //Включаем прерывания с АЦП. Обрабатывает ADC1_2_IRQHandler()
 
@@ -2927,9 +2947,11 @@ void hardware_adc_initialize(void)
 	ADC1->CR = ADC_CR_ADEN;
 
 	#if STM32F0XX_MD
+		NVIC_SetVector(ADC1_COMP_IRQn, (uintptr_t) & ADC1_COMP_IRQHandler);
 		NVIC_SetPriority(ADC1_COMP_IRQn, ARM_SYSTEM_PRIORITY);
 		NVIC_EnableIRQ(ADC1_COMP_IRQn);    //Включаем прерывания с АЦП. Обрабатывает ADC1_COMP_IRQHandler()
 	#else /* STM32F0XX_MD */
+		NVIC_SetVector(ADC1_IRQn, (uintptr_t) & ADC1_IRQHandler);
 		NVIC_SetPriority(ADC1_IRQn, ARM_SYSTEM_PRIORITY);
 		NVIC_EnableIRQ(ADC1_IRQn);    //Включаем прерывания с АЦП. Обрабатывает ADC1_IRQHandler()
 	#endif /* STM32F0XX_MD */
@@ -2955,7 +2977,7 @@ void hardware_adc_initialize(void)
 
 	// connect to interrupt
 	{
-		const uint16_t int_id = ADI_IRQn;	/* 12bit A/D converter                */
+		const IRQn_Type int_id = ADI_IRQn;	/* 12bit A/D converter                */
 		r7s721_intc_registintfunc(int_id, r7s721_adi_irq_handler);
 		GIC_SetPriority(int_id, ARM_SYSTEM_PRIORITY);
 		GIC_EnableIRQ(int_id);
@@ -2994,6 +3016,7 @@ void hardware_adc_initialize(void)
 
 	ADC1->CR = ADC_CR_ADEN;
 
+	NVIC_SetVector(ADC1_COMP_IRQn, (uintptr_t) & ADC1_COMP_IRQHandler);
 	NVIC_SetPriority(ADC1_COMP_IRQn, ARM_SYSTEM_PRIORITY);
 	NVIC_EnableIRQ(ADC1_COMP_IRQn);    //Включаем прерывания с АЦП. Обрабатывает ADC1_COMP_IRQHandler()
 	#endif
@@ -3105,39 +3128,13 @@ hardware_adc_startonescan(void)
 #endif
 }
 
-#else /* WITHCPUADCHW */
-
-	void ATTRWEAK
-	ADC1_2_IRQHandler(void)
-	{
-			debug_printf_P(PSTR("ADC1_2_IRQHandler trapped\n"));
-			for (;;)
-				;
-	}
-
-	void ATTRWEAK
-	ADC_IRQHandler(void)
-	{
-			debug_printf_P(PSTR("ADC1_2_IRQHandler trapped\n"));
-			for (;;)
-				;
-	}
-
-	void ATTRWEAK
-	ADC3_IRQHandler(void)
-	{
-			debug_printf_P(PSTR("ADC3_IRQHandler trapped\n"));
-			for (;;)
-				;
-	}
-
 #endif /* WITHCPUADCHW */
 
 
 #if WITHDCDCFREQCTL
 	//static uint_fast16_t dcdcrefdiv = 62;	/* делится частота внутреннего генератора 48 МГц */
 
-	/* 
+	/*
 		получение делителя частоты для синхронизации DC-DC конверторов
 		для исключения попадания в полосу обзора панорамы гармоник этой частоты.
 	*/
@@ -4084,7 +4081,7 @@ void hardware_spi_master_initialize(void)
 			0;
 
 		{
-			//const uint16_t int_id = DMAINT15_IRQn;
+			//const IRQn_Type int_id = DMAINT15_IRQn;
 			//r7s721_intc_registintfunc(int_id, r7s721_usb0_dma1_dmatx_handler);
 			//GIC_SetPriority(int_id, ARM_REALTIME_PRIORITY);
 			//GIC_EnableIRQ(int_id);
@@ -5824,6 +5821,7 @@ hardware_elkey_timer_initialize(void)
 	TC0->TC_CHANNEL [2].TC_IER = TC_IER_CPCS ; // Interrupt on RC compare
 
 	// enable interrupts from TC2
+	NVIC_SetVector(TC2_IRQn, (uintptr_t) & TC2_IRQHandler);
 	NVIC_SetPriority(TC2_IRQn, ARM_SYSTEM_PRIORITY);
 	NVIC_EnableIRQ(TC2_IRQn);		// enable TC2_Handler();
 
@@ -5869,6 +5867,7 @@ hardware_elkey_timer_initialize(void)
 	__DSB();
 	TIM3->DIER = TIM_DIER_UIE;        	 // разрешить событие от таймера
 
+	NVIC_SetVector(TIM3_IRQn, (uintptr_t) & TIM3_IRQHandler);
 	NVIC_SetPriority(TIM3_IRQn, ARM_SYSTEM_PRIORITY);
 	NVIC_EnableIRQ(TIM3_IRQn);		// enable TIM3_IRQHandler();
 
@@ -5878,6 +5877,7 @@ hardware_elkey_timer_initialize(void)
 	__DSB();
 	TIM3->DIER = TIM_DIER_UIE;        	 // разрешить событие от таймера
 
+	NVIC_SetVector(TIM3_IRQn, (uintptr_t) & TIM3_IRQHandler);
 	NVIC_SetPriority(TIM3_IRQn, ARM_SYSTEM_PRIORITY);
 	NVIC_EnableIRQ(TIM3_IRQn);		// enable TIM3_IRQHandler();
 
@@ -5893,7 +5893,7 @@ hardware_elkey_timer_initialize(void)
     OSTM1.OSTMnTT = 0x01u;      /* Stop counting */
 
 	{
-		const uint16_t int_id = OSTMI1TINT_IRQn;
+		const IRQn_Type int_id = OSTMI1TINT_IRQn;
 		r7s721_intc_registintfunc(int_id, r7s721_ostm1_interrupt);	/* ==== Register OS timer interrupt handler ==== */
 		GIC_SetPriority(int_id, ARM_SYSTEM_PRIORITY);		/* ==== Set priority of OS timer interrupt to 5 ==== */
 		GIC_EnableIRQ(int_id);		/* ==== Validate OS timer interrupt ==== */
@@ -6145,6 +6145,7 @@ void hardware_lfm_timer_initialize(void)
 	TC0->TC_CHANNEL [0].TC_IER = TC_IER_CPCS ; // Interrupt on RC compare
 
 	// enable interrupts from TC2
+	NVIC_SetVector(TC0_IRQn, (uintptr_t) & TC0_IRQHandler);
 	NVIC_SetPriority(TC0_IRQn, ARM_SYSTEM_PRIORITY);
 	NVIC_EnableIRQ(TC0_IRQn);		// enable TC0_IrqHandler();
 
@@ -6358,14 +6359,6 @@ void r7s721_sdhi0_dma_handler(void)
 		;
 }
 
-#elif CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX
-// TODO: убрать в sdcard.c
-/*
-void DMA2_Stream6_IRQHandler(void)
-{
-
-}
-*/
 #endif
 
 void hardware_sdhost_initialize(void)
@@ -6384,7 +6377,7 @@ void hardware_sdhost_initialize(void)
 	hardware_sdhost_setspeed(400000uL);
 
 	{
-		const uint16_t int_id = DMAINT14_IRQn;
+		const IRQn_Type int_id = DMAINT14_IRQn;
 		r7s721_intc_registintfunc(int_id, r7s721_sdhi0_dma_handler);
 		GIC_SetPriority(int_id, ARM_SYSTEM_PRIORITY);
 		GIC_EnableIRQ(int_id);
@@ -6408,8 +6401,11 @@ void hardware_sdhost_initialize(void)
 	hardware_sdhost_setbuswidth(0);
 	hardware_sdhost_setspeed(400000uL);
 
+	NVIC_SetVector(SDIO_IRQn, (uintptr_t) & SDIO_IRQHandler);
 	NVIC_SetPriority(SDIO_IRQn, ARM_SYSTEM_PRIORITY);
 	NVIC_EnableIRQ(SDIO_IRQn);	// SDIO_IRQHandler() enable
+
+	NVIC_SetVector(DMA2_Stream6_IRQn, (uintptr_t) & DMA2_Stream6_IRQHandler);
 	NVIC_SetPriority(DMA2_Stream6_IRQn, ARM_SYSTEM_PRIORITY);
 	NVIC_EnableIRQ(DMA2_Stream6_IRQn);	// DMA2_Stream6_IRQHandler() enable
 
@@ -6433,8 +6429,11 @@ void hardware_sdhost_initialize(void)
 	hardware_sdhost_setbuswidth(0);
 	hardware_sdhost_setspeed(400000uL);
 
+	NVIC_SetVector(SDMMC1_IRQn, (uintptr_t) & SDMMC1_IRQHandler);
 	NVIC_SetPriority(SDMMC1_IRQn, ARM_SYSTEM_PRIORITY);
 	NVIC_EnableIRQ(SDMMC1_IRQn);	// SDIO_IRQHandler() enable
+
+	NVIC_SetVector(DMA2_Stream6_IRQn, (uintptr_t) & DMA2_Stream6_IRQHandler);
 	NVIC_SetPriority(DMA2_Stream6_IRQn, ARM_SYSTEM_PRIORITY);
 	NVIC_EnableIRQ(DMA2_Stream6_IRQn);	// DMA2_Stream6_IRQHandler() enable
 
@@ -6460,6 +6459,7 @@ void hardware_sdhost_initialize(void)
 	hardware_sdhost_setbuswidth(0);
 	hardware_sdhost_setspeed(400000uL);
 
+	NVIC_SetVector(SDMMC1_IRQn, (uintptr_t) & SDMMC1_IRQHandler);
 	NVIC_SetPriority(SDMMC1_IRQn, ARM_SYSTEM_PRIORITY);
 	NVIC_EnableIRQ(SDMMC1_IRQn);	// SDIO_IRQHandler() enable
 
@@ -7688,7 +7688,7 @@ lowlevel_stm32h7xx_pll_initialize(void)
 	/* Блок настройки ФЛЭШ */
 	/* Reserved bits must be kept cleared. */
 	FLASH->ACR = (FLASH->ACR & ~ (FLASH_ACR_LATENCY | FLASH_ACR_WRHIGHFREQ)) |
-		FLASH_ACR_WRHIGHFREQ_3 |
+		(FLASH_ACR_WRHIGHFREQ_0 * 3) |
 		flash_acr_latency |		//Задержка для работы с памятью
 		0;
 
@@ -8736,6 +8736,7 @@ void DAbortHandler(void)
 	for (;;)
 		;
 }
+
 void FIQHandler(void)
 {
 	debug_printf_P(PSTR("FIQHandler trapped.\n"));
@@ -8873,7 +8874,7 @@ void arm_hardware_flush_invalidate(uintptr_t base, size_t size)
 	SCB_CleanInvalidateDCache_by_Addr((void *) base, size);	// DCCIMVAC register used.
 }
 
-#elif CPUSTYLE_ARM_CA9
+#elif (CPUSTYLE_ARM_CA9 || CPUSTYLE_ARM_CA7)
 
 static unsigned long DCACHEROWSIZE; // 32
 static unsigned long ICACHEROWSIZE; // 32
@@ -8998,7 +8999,7 @@ uint_fast32_t cpu_getdebugticks(void)
 {
 #if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7
 	return DWT->CYCCNT;
-#elif CPUSTYLE_ARM_CA9
+#elif (CPUSTYLE_ARM_CA9 || CPUSTYLE_ARM_CA7)
 	{
 		uint32_t result;
 		// Read CCNT Register
@@ -9012,6 +9013,8 @@ uint_fast32_t cpu_getdebugticks(void)
 #endif
 }
 
+static void vectors_relocate(void);
+
 
 /* функция вызывается из start-up до копирования в SRAM всех "быстрых" функций и до инициализации переменных
 */
@@ -9020,6 +9023,10 @@ void
 FLASHMEMINITFUNC
 SystemInit(void)
 {
+#if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM0 || CPUSTYLE_ARM_CM7
+	// Таблица находится в области вне Data Cache
+	vectors_relocate();
+#endif /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM0 || CPUSTYLE_ARM_CM7 */
 #if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7
 
 	#if WITHDEBUG && WITHINTEGRATEDDSP && CPUSTYLE_ARM_CM7
@@ -9050,7 +9057,7 @@ SystemInit(void)
 	#endif
 #endif /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7 */
 
-#if CPUSTYLE_ARM_CA9
+#if (CPUSTYLE_ARM_CA9 || CPUSTYLE_ARM_CA7)
 	#if WITHDEBUG
 	{
 		// Поддержка для функций диагностики быстродействия BEGINx_STAMP/ENDx_STAMP - audio.c
@@ -9085,7 +9092,7 @@ SystemInit(void)
 		__set_CP(15, 0, 0x8000000f, 9, 12, 3);
 	}
 	#endif /* WITHDEBUG */
-#endif /* CPUSTYLE_ARM_CA9 */
+#endif /* (CPUSTYLE_ARM_CA9 || CPUSTYLE_ARM_CA7) */
 
 #if CPUSTYLE_STM32F1XX
 
@@ -9119,7 +9126,13 @@ SystemInit(void)
 
 	/* AXI SRAM Slave */
 	//AXI_TARG7_FN_MOD |= READ_ISS_OVERRIDE;
-	*((__IO uint32_t*) 0x51008108) = 0x1; //Change  the switch matrix read issuing capability to 1 (Errata BUG fix)
+	  /* dual core CM7 or single core line */
+	  if((DBGMCU->IDCODE & 0xFFFF0000U) < 0x20000000U)
+	  {
+		/* if stm32h7 revY*/
+		/* Change  the switch matrix read issuing capability to 1 for the AXI SRAM target (Target 7) */
+		*((__IO uint32_t*) 0x51008108) = 0x1; //Change  the switch matrix read issuing capability to 1 (Errata BUG fix)
+	  }
 	/* Change  the switch matrix read issuing capability to 1 for the AXI SRAM target (Target 7) */
 	//*((__IO uint32_t*)0x51008108) = 0x000000001;
 
@@ -9312,7 +9325,8 @@ arm_cpu_CMx_initialize_NVIC(void)
 	gARM_BASEPRI_ONLY_REALTIME = ((gARM_SYSTEM_PRIORITY << (8 - __NVIC_PRIO_BITS)) & 0xff);
 	gARM_BASEPRI_ALL_ENABLED = 0;
 
-	// Назначить таймеру приоритет, равный всем остальным прерываниям
+	// Назначить таймеру приоритет, равный всем остальным прерываниям. Разрешать через NVIC не требуется
+	NVIC_SetVector(SysTick_IRQn, (uintptr_t) & SysTick_Handler);
 	NVIC_SetPriority(SysTick_IRQn, ARM_SYSTEM_PRIORITY);
 
 	//__set_BASEPRI(gARM_BASEPRI_ALL_ENABLED);
@@ -9754,7 +9768,7 @@ void arm_hardware_ltdc_initialize(void)
 
 #endif /* CPUSTYLE_R7S721 */
 
-#if CPUSTYLE_ARM_CA9
+#if (CPUSTYLE_ARM_CA9 || CPUSTYLE_ARM_CA7)
 /* 
 	ARM IHI 0048B.b (IHI0048B_b_gic_architecture_specification.pdf).
 	4.3.11 Interrupt Priority Registers, GICD_IPRIORITYRn says:
@@ -9773,7 +9787,7 @@ arm_gic_initialize(void)
 #endif /* WITHNESTEDINTERRUPTS */
 }
 
-#endif /* CPUSTYLE_ARM_CA9 */
+#endif /* (CPUSTYLE_ARM_CA9 || CPUSTYLE_ARM_CA7) */
 
 #if CPUSTYLE_ATSAM3S
 
@@ -10260,7 +10274,7 @@ void cpu_initialize(void)
 
 	arm_cpu_CMx_initialize_NVIC();
 
-#elif CPUSTYLE_ARM_CA9
+#elif (CPUSTYLE_ARM_CA9 || CPUSTYLE_ARM_CA7)
 
 	// FPU
 	vfp_access_enable();
@@ -10339,6 +10353,10 @@ uint8_t xxxxxpos(uint8_t num) // num = 0..8
 // Используется в случае наличия ключа ld -nostartfiles
 // Так же смотреть вокруг software_init_hook
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 extern int main(void);
 extern void __libc_init_array(void);
 
@@ -10354,13 +10372,170 @@ void __NO_RETURN _start(void)
 }
 
 // call after __preinit_array_xxx and before __init_array_xxx passing
-void
-_init(void)
+void _init(void)
 {
 }
 
+void * __dso_handle;
 
+void _fini(void)
+{
+	for (;;)
+		;
+}
+
+void __gxx_personality_v0(void)
+{
+
+}
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
+
+/*
+ *
+ * ****************************
+ */
+#include <sys/stat.h>
+#include <string.h>
+#include <errno.h>
+
+
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
+static int SER_GetChar(void)
+{
+
+	return (-1);
+}
+
+/*-- GCC - Newlib runtime support --------------------------------------------*/
+
+int __attribute__((used)) (_open)(const char * path, int flags, ...)
+{
+	return (-1);
+}
+
+int __attribute__((used)) (_close)(int fd) {
+	return (-1);
+}
+
+int __attribute__((used)) (_lseek)(int fd, int ptr, int dir)
+{
+	return (0);
+}
+
+int __attribute__((used)) (_fstat)(int fd, struct stat * st)
+{
+	memset(st, 0, sizeof(*st));
+	st->st_mode = S_IFCHR;
+	return (0);
+}
+
+int __attribute__((used)) (_isatty)(int fd)
+{
+	return (1);
+}
+
+int __attribute__((used)) (_read)(int fd, char * ptr, int len) {
+	char c;
+	int i;
+
+	for (i = 0; i < len; i++) {
+		c = SER_GetChar();
+		if (c == 0x0D)
+			break;
+		*ptr++ = c;
+		dbg_putchar(c);
+	}
+	return (len - i);
+}
+
+int __attribute__((used)) (_write)(int fd, char * ptr, int len)
+{
+	int i;
+
+	for (i = 0; i < len; i++)
+		dbg_putchar(* ptr ++);
+	return (i);
+}
+
+// Corte-A9 require
+
+
+#if SPEEXNN == 64
+	#define SPEEXALLOCSIZE (NTRX * 15584)
+#elif SPEEXNN == 128
+	#define SPEEXALLOCSIZE (NTRX * 22584)
+#elif SPEEXNN == 256
+	#define SPEEXALLOCSIZE (NTRX * 38584)
+#elif SPEEXNN == 512
+	#define SPEEXALLOCSIZE (NTRX * 75448)
+#elif SPEEXNN == 1024
+	#define SPEEXALLOCSIZE (NTRX * 149176)
 #endif
+//static uint8_t sipexbuff [NTRX * 149176 /* + 24716 */];
+static RAMHEAP uint8_t sipexbuff [SPEEXALLOCSIZE];
+
+static char RAMHEAP heapplace [8 * 1024uL];
+
+extern int __HeapBase;
+extern int __HeapLimit;
+
+caddr_t __attribute__((used)) (_sbrk)(int incr)
+{
+	static char * heap;
+	char * prev_heap;
+
+	if (heap == NULL)
+	{
+		heap = (char *) &__HeapBase;
+	}
+
+	//debug_printf_P("_sbrk: incr=%d, & __HeapBase=%p, & __HeapLimit=%p\n", incr, & __HeapBase, & __HeapLimit);
+
+	prev_heap = heap;
+
+	if ((heap + incr) > (char *) &__HeapLimit)
+	{
+		//errno = ENOMEM;
+		return (caddr_t) -1;
+	}
+
+	heap += incr;
+
+	return (caddr_t) prev_heap;
+}
+
+// Corte-A9 reauire
+
+
+void __attribute__((used)) (_exit)(int code)
+{
+	for (;;)
+		;
+}
+
+int __attribute__((used)) (_kill)(int id)
+{
+	return (-1);
+}
+
+int __attribute__((used)) (_getpid)(int id)
+{
+	return (-1);
+}
+
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
+
+#endif /* CPUSTYLE_ARM */
+
 
 #if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM0 || CPUSTYLE_ARM_CM7
 /*----------------------------------------------------------------------------
@@ -10370,7 +10545,7 @@ _init(void)
 /* Initialize segments */
 void Default_Handler(void)
 {
-	debug_printf_P(PSTR("Default_Handler trapped.\n"));
+	debug_printf_P(PSTR("Default_Handler trapped, ICSR=%08lX (IRQn=%u).\n"), SCB->ICSR, (SCB->ICSR & 0xFF) - 16);
 	for (;;)
 		;
 }
@@ -10441,7 +10616,7 @@ volatile uint32_t psr;// Регистр статуса программы.
 =================================================================================================================================*/
 
 
-void ATTRWEAK 
+void
 HardFault_Handler(void)
 {
 #if WITHDEBUG
@@ -10484,7 +10659,7 @@ HardFault_Handler(void)
 
 }
 
-void ATTRWEAK 
+void
 NMI_Handler(void)
 {
 	debug_printf_P(PSTR("NMI_Handler trapped\n"));
@@ -10492,7 +10667,7 @@ NMI_Handler(void)
 		; // WDT->WDT_CR = WDT_CR_WDRSTT | WDT_CR_KEY(0xA5);
 }
 
-void ATTRWEAK 
+void
 MemManage_Handler(void)
 {
 	debug_printf_P(PSTR("MemManage_Handler trapped\n"));
@@ -10500,7 +10675,7 @@ MemManage_Handler(void)
 		;
 }
 
-void ATTRWEAK 
+void
 BusFault_Handler(void)
 {
 	debug_printf_P(PSTR("BusFault_Handler trapped\n"));
@@ -10508,7 +10683,7 @@ BusFault_Handler(void)
 		;
 }
 
-void ATTRWEAK 
+void
 UsageFault_Handler(void)
 {
 	debug_printf_P(PSTR("UsageFault_Handler trapped\n"));
@@ -10516,7 +10691,7 @@ UsageFault_Handler(void)
 		;
 }
 
-void ATTRWEAK 
+void
 SVC_Handler(void)
 {
 	debug_printf_P(PSTR("SVC_Handler trapped\n"));
@@ -10524,7 +10699,7 @@ SVC_Handler(void)
 		;
 }
 
-void ATTRWEAK 
+void
 DebugMon_Handler(void)
 {
 	debug_printf_P(PSTR("DebugMon_Handler trapped\n"));
@@ -10532,888 +10707,13 @@ DebugMon_Handler(void)
 		;
 }
 
-void ATTRWEAK 
+void
 PendSV_Handler(void)
 {
 	debug_printf_P(PSTR("PendSV_Handler trapped\n"));
 	for (;;)
 		;
 }
-
-#if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
-
-void ATTRWEAK 
-SUPC_Handler(void)
-{
-	debug_printf_P(PSTR("SUPC_Handler trapped\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK 
-RSTC_Handler(void)
-{
-	debug_printf_P(PSTR("SUPC_Handler trapped\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK 
-RTC_Handler(void)
-{
-	debug_printf_P(PSTR("SUPC_Handler trapped\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK 
-RTT_Handler(void)
-{
-	debug_printf_P(PSTR("SUPC_Handler trapped\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK 
-WDT_Handler(void)
-{
-	debug_printf_P(PSTR("SUPC_Handler trapped\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK 
-PMC_Handler(void)
-{
-	debug_printf_P(PSTR("SUPC_Handler trapped\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK 
-EFC_Handler(void)
-{
-	debug_printf_P(PSTR("SUPC_Handler trapped\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK 
-UART0_Handler(void)
-{
-	debug_printf_P(PSTR("UART0_Handler trapped\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK 
-UART1_Handler(void)
-{
-	debug_printf_P(PSTR("UART1_Handler trapped\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK 
-SMC_Handler(void)
-{
-	debug_printf_P(PSTR("SMC_Handler trapped\n"));
-	for (;;)
-		;
-}
-void ATTRWEAK 
-PIOB_Handler(void)
-{
-	debug_printf_P(PSTR("SMC_Handler trapped\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK 
-PIOC_Handler(void)
-{
-	debug_printf_P(PSTR("SMC_Handler trapped\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK 
-HSMCI_Handler(void)
-{
-	debug_printf_P(PSTR("SMC_Handler trapped\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK 
-TWI0_Handler(void)
-{
-	debug_printf_P(PSTR("SMC_Handler trapped\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK 
-TWI1_Handler(void)
-{
-	debug_printf_P(PSTR("SMC_Handler trapped\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK 
-SPI_Handler(void)
-{
-	debug_printf_P(PSTR("SMC_Handler trapped\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK 
-SSC_Handler(void)
-{
-	debug_printf_P(PSTR("SMC_Handler trapped\n"));
-	for (;;)
-		;
-}
-
-
-void ATTRWEAK 
-TC1_Handler(void)
-{
-	debug_printf_P(PSTR("TC1_Handler trapped\n"));
-	for (;;)
-		;
-}
-
-/*
-void ATTRWEAK 
-TC2_Handler(void)
-{
-	debug_printf_P(PSTR("TC2_Handler trapped\n"));
-	for (;;)
-		;
-}
-*/
-void ATTRWEAK 
-TC3_Handler(void)
-{
-	debug_printf_P(PSTR("SMC_Handler trapped\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK 
-TC4_Handler(void)
-{
-	debug_printf_P(PSTR("SMC_Handler trapped\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK 
-TC5_Handler(void)
-{
-	debug_printf_P(PSTR("SMC_Handler trapped\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK 
-DACC_Handler(void)
-{
-	debug_printf_P(PSTR("SMC_Handler trapped\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK 
-PWM_Handler(void)
-{
-	debug_printf_P(PSTR("SMC_Handler trapped\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK 
-CRCCU_Handler(void)
-{
-	debug_printf_P(PSTR("SMC_Handler trapped\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK 
-ACC_Handler(void)
-{
-	debug_printf_P(PSTR("SMC_Handler trapped\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK 
-UDP_Handler(void)
-{
-	debug_printf_P(PSTR("SMC_Handler trapped\n"));
-	for (;;)
-		;
-}
-
-#elif CPUSTYLE_STM32F
-
-void ATTRWEAK USART1_IRQHandler(void)
-{
-	debug_printf_P(PSTR("USART1_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK USART2_IRQHandler(void)
-{
-	debug_printf_P(PSTR("USART2_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK USART3_IRQHandler(void)
-{
-	debug_printf_P(PSTR("USART3_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK WWDG_IRQHandler(void)
-{
-	debug_printf_P(PSTR("PendSV_Handler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK PVD_IRQHandler(void)
-{
-	//hardware_reqshutdown = 1;
-	debug_printf_P(PSTR("PendSV_Handler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK TAMPER_IRQHandler(void)
-{
-	debug_printf_P(PSTR("PendSV_Handler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK RTC_IRQHandler(void)
-{
-	debug_printf_P(PSTR("PendSV_Handler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK FLASH_IRQHandler(void)
-{
-	debug_printf_P(PSTR("PendSV_Handler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK RCC_IRQHandler(void)
-{
-	debug_printf_P(PSTR("PendSV_Handler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK DMA1_Stream0_IRQHandler(void)
-{
-	debug_printf_P(PSTR("DMA1_Stream0_IRQHandler() trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK DMA1_Stream1_IRQHandler(void)
-{
-	debug_printf_P(PSTR("DMA1_Stream1_IRQHandler() trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK DMA1_Stream2_IRQHandler(void)
-{
-	debug_printf_P(PSTR("DMA1_Stream2_IRQHandler() trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK DMA1_Stream3_IRQHandler(void)
-{
-	debug_printf_P(PSTR("DMA1_Stream3_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK DMA1_Stream4_IRQHandler(void)
-{
-	debug_printf_P(PSTR("DMA1_Stream4_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK DMA1_Stream5_IRQHandler(void)
-{
-	debug_printf_P(PSTR("DMA1_Stream5_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK DMA1_Stream6_IRQHandler(void)
-{
-	debug_printf_P(PSTR("DMA1_Stream6_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK DMA1_Stream7_IRQHandler(void)
-{
-	debug_printf_P(PSTR("DMA1_Stream7_IRQHandler() trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK DMA2_Stream0_IRQHandler(void)
-{
-	debug_printf_P(PSTR("DMA2_Stream0_IRQHandler() trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK DMA2_Stream1_IRQHandler(void)
-{
-	debug_printf_P(PSTR("DMA2_Stream1_IRQHandler() trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK DMA2_Stream2_IRQHandler(void)
-{
-	debug_printf_P(PSTR("DMA2_Stream2_IRQHandler() trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK DMA2_Stream3_IRQHandler(void)
-{
-	debug_printf_P(PSTR("DMA2_Stream3_IRQHandler() trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK DMA2_Stream4_IRQHandler(void)
-{
-	debug_printf_P(PSTR("DMA2_Stream4_IRQHandler() trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK DMA2_Stream5_IRQHandler(void)
-{
-	debug_printf_P(PSTR("DMA2_Stream5_IRQHandler() trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK DMA2_Stream6_IRQHandler(void)
-{
-	debug_printf_P(PSTR("DMA2_Stream6_IRQHandler() trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK DMA2_Stream7_IRQHandler(void)
-{
-	debug_printf_P(PSTR("DMA2_Stream7_IRQHandler() trapped.\n"));
-	for (;;)
-		;
-}
-
-
-void ATTRWEAK DMA1_Channel4_5_6_7_IRQHandler(void)
-{
-	debug_printf_P(PSTR("DMA1_Channel4_5_6_7_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-void ATTRWEAK DMA1_Channel2_3_IRQHandler(void)
-{
-	debug_printf_P(PSTR("DMA1_Channel2_3_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK DMA1_Channel4_5_IRQHandler(void)
-{
-	debug_printf_P(PSTR("DMA1_Channel4_5_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK DMA1_Channel1_IRQHandler(void)
-{
-	debug_printf_P(PSTR("DMA1_Channel1_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK DMA1_Channel2_IRQHandler(void)
-{
-	debug_printf_P(PSTR("DMA1_Channel2_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK DMA1_Channel3_IRQHandler(void)
-{
-	debug_printf_P(PSTR("DMA1_Channel3_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK DMA1_Channel4_IRQHandler(void)
-{
-	debug_printf_P(PSTR("DMA1_Channel4_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK DMA1_Channel5_IRQHandler(void)
-{
-	debug_printf_P(PSTR("DMA1_Channel5_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK DMA1_Channel6_IRQHandler(void)
-{
-	debug_printf_P(PSTR("DMA1_Channel6_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK DMA1_Channel7_IRQHandler(void)
-{
-	debug_printf_P(PSTR("DMA1_Channel7_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK TIM1_BRK_IRQHandler(void)
-{
-	debug_printf_P(PSTR("TIM1_BRK_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK TIM1_UP_IRQHandler(void)
-{
-	debug_printf_P(PSTR("TIM1_UP_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK TIM1_TRG_COM_IRQHandler(void)
-{
-	debug_printf_P(PSTR("TIM1_TRG_COM_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK TIM1_CC_IRQHandler(void)
-{
-	debug_printf_P(PSTR("TIM1_CC_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK TIM2_IRQHandler(void)
-{
-	debug_printf_P(PSTR("TIM2_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK TIM4_IRQHandler(void)
-{
-	debug_printf_P(PSTR("TIM4_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK TIM12_IRQHandler(void)
-{
-	debug_printf_P(PSTR("TIM12_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK TIM13_IRQHandler(void)
-{
-	debug_printf_P(PSTR("TIM13_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK TIM14_IRQHandler(void)
-{
-	debug_printf_P(PSTR("TIM14_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK TIM15_IRQHandler(void)
-{
-	debug_printf_P(PSTR("TIM15_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK TIM16_IRQHandler(void)
-{
-	debug_printf_P(PSTR("TIM16_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK TIM17_IRQHandler(void)
-{
-	debug_printf_P(PSTR("TIM17_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-
-void ATTRWEAK TIM1_BRK_UP_TRG_COM_IRQHandler(void)
-{
-	debug_printf_P(PSTR("TIM1_BRK_UP_TRG_COM_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK TIM6_DAC_IRQHandler(void)
-{
-	debug_printf_P(PSTR("TIM6_DAC_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK USBWakeUp_IRQHandler(void)
-{
-	debug_printf_P(PSTR("USBWakeUp_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK TS_IRQHandler(void)
-{
-	debug_printf_P(PSTR("TS_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-// CPUSTYLE_STM32F0XX
-void ATTRWEAK I2C1_IRQHandler(void)
-{
-	debug_printf_P(PSTR("I2C1_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK I2C1_EV_IRQHandler(void)
-{
-	debug_printf_P(PSTR("PendSV_Handler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK I2C1_ER_IRQHandler(void)
-{
-	debug_printf_P(PSTR("PendSV_Handler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK I2C2_IRQHandler(void)
-{
-	debug_printf_P(PSTR("I2C2_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK I2C2_EV_IRQHandler(void)
-{
-	debug_printf_P(PSTR("I2C2_EV_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK I2C2_ER_IRQHandler(void)
-{
-	debug_printf_P(PSTR("I2C2_ER_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK SPI1_IRQHandler(void)
-{
-	debug_printf_P(PSTR("SPI1_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK SPI2_IRQHandler(void)
-{
-	debug_printf_P(PSTR("SPI2_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-
-void ATTRWEAK SPI3_IRQHandler(void)
-{
-	debug_printf_P(PSTR("SPI3_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK RTCAlarm_IRQHandler(void)
-{
-	debug_printf_P(PSTR("RTCAlarm_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK USB_HP_CAN1_TX_IRQHandler(void)
-{
-	debug_printf_P(PSTR("USB_HP_CAN1_TX_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK CAN1_RX0_IRQHandler(void)
-{
-	debug_printf_P(PSTR("CAN1_RX0_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK CAN1_RX1_IRQHandler(void)
-{
-	debug_printf_P(PSTR("CAN1_RX1_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK CAN1_SCE_IRQHandler(void)
-{
-	debug_printf_P(PSTR("CAN1_SCE_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK OTG_FS_IRQHandler(void)
-{
-	debug_printf_P(PSTR("OTG_FS_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK OTG_HS_IRQHandler(void)
-{
-	debug_printf_P(PSTR("OTG_HS_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK OTG_HS_EP1_OUT_IRQHandler(void)
-{
-	debug_printf_P(PSTR("OTG_HS_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK OTG_HS_EP1_IN_IRQHandler(void)
-{
-	debug_printf_P(PSTR("OTG_HS_EP1_IN_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK OTG_HS_WKUP_IRQHandler(void)
-{
-	debug_printf_P(PSTR("OTG_HS_WKUP_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-#if ! WITHCPUADCHW
-void ATTRWEAK ADC1_COMP_IRQHandler(void)
-{
-	debug_printf_P(PSTR("ADC1_COMP_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-#endif /* ! WITHCPUADCHW */
-
-void ATTRWEAK LPTIM1_IRQHandler(void)
-{
-	debug_printf_P(PSTR("LPTIM1_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-void ATTRWEAK LPUART1_IRQHandler(void)
-{
-	debug_printf_P(PSTR("LPUART1_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-void ATTRWEAK TIM21_IRQHandler(void)
-{
-	debug_printf_P(PSTR("TIM21_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-void ATTRWEAK TIM22_IRQHandler(void)
-{
-	debug_printf_P(PSTR("TIM22_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK TIM8_BRK_IRQHandler(void)
-{
-	debug_printf_P(PSTR("TIM8_BRK_IRQHandler trapped\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK TIM8_UP_IRQHandler(void)
-{
-	debug_printf_P(PSTR("TIM8_UP_IRQHandler trapped\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK TIM8_TRG_COM_IRQHandler(void)
-{
-	debug_printf_P(PSTR("TIM8_TRG_COM_IRQHandler trapped\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK TIM8_CC_IRQHandler(void)
-{
-	debug_printf_P(PSTR("TIM8_CC_IRQHandler trapped\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK FSMC_IRQHandler(void)
-{
-	debug_printf_P(PSTR("FSMC_IRQHandler trapped\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK SDIO_IRQHandler(void)
-{
-	debug_printf_P(PSTR("SDIO_IRQHandler trapped\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK TIM5_IRQHandler(void)
-{
-	debug_printf_P(PSTR("TIM5_IRQHandler trapped\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK UART4_IRQHandler(void)
-{
-	debug_printf_P(PSTR("UART4_IRQHandler trapped\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK UART5_IRQHandler(void)
-{
-	debug_printf_P(PSTR("UART5_IRQHandler trapped\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK USART6_IRQHandler(void)
-{
-	debug_printf_P(PSTR("USART6_IRQHandler trapped\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK SDMMC1_IRQHandler(void)
-{
-	debug_printf_P(PSTR("SDMMC1_IRQHandler trapped\n"));
-	for (;;)
-		;
-}
-/*
-void ATTRWEAK TIM6_IRQHandler(void)
-{
-	debug_printf_P(PSTR("TIM6_IRQHandler trapped\n"));
-	for (;;)
-		;
-}
-*/
-void ATTRWEAK TIM7_IRQHandler(void)
-{
-	debug_printf_P(PSTR("TIM7_IRQHandler trapped\n"));
-	for (;;)
-		;
-}
-
-#if defined (STM32F429xx) || defined(STM32F446xx) || defined(STM32F746xx) || defined(STM32F767xx) || defined(STM32F723xx) || defined (STM32F769xx)
-
-	#else
-
-	void ATTRWEAK DMA2_Channel1_IRQHandler(void)
-	{
-		debug_printf_P(PSTR("DMA2_Channel1_IRQHandler trapped\n"));
-		for (;;)
-			;
-	}
-
-	void ATTRWEAK DMA2_Channel2_IRQHandler(void)
-	{
-		debug_printf_P(PSTR("DMA2_Channel2_IRQHandler trapped\n"));
-		for (;;)
-			;
-	}
-
-	void ATTRWEAK DMA2_Channel3_IRQHandler(void)
-	{
-		debug_printf_P(PSTR("DMA2_Channel3_IRQHandler trapped\n"));
-		for (;;)
-			;
-	}
-
-	void ATTRWEAK DMA2_Channel4_5_IRQHandler(void)
-	{
-		debug_printf_P(PSTR("DMA2_Channel4_5_IRQHandler trapped\n"));
-		for (;;)
-			;
-	}
-	#endif
-
-#endif /* CPUSTYLE_STM32F */
 
 typedef void (* IntFunc)(void);
 
@@ -11436,7 +10736,7 @@ void Reset_Handler(void)
 
 const
 __VECTOR_TABLE_ATTRIBUTE
-IntFunc __Vectors [/*256*/] = {
+IntFunc __Vectors [NVIC_USER_IRQ_OFFSET] = {
 
     /* Configure Initial Stack Pointer, using linker-generated symbols */
     (IntFunc)(& __stack),
@@ -11446,542 +10746,28 @@ IntFunc __Vectors [/*256*/] = {
     MemManage_Handler,
     BusFault_Handler,
     UsageFault_Handler,
-    0, 0, 0, 0,         /* Reserved */
+    NULL, NULL, NULL, NULL,         /* Reserved */
     SVC_Handler,
     DebugMon_Handler,
-    0,                  /* Reserved  */
+	NULL,                  /* Reserved  */
     PendSV_Handler,		/* -2 */
     SysTick_Handler,	/* -1 */
-
-#if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
-	/* Configurable interrupts  */
-	SUPC_Handler,   /* 0  Supply Controller */
-	RSTC_Handler,   /* 1  Reset Controller */
-	RTC_Handler,    /* 2  Real Time Clock */
-	RTT_Handler,    /* 3  Real Time Timer */
-	WDT_Handler,    /* 4  Watchdog Timer */
-	PMC_Handler,    /* 5  PMC */
-	EFC_Handler,    /* 6  EFC */
-	Default_Handler,  /* 7  Reserved */
-	UART0_Handler,  /* 8  UART0 */
-	UART1_Handler,  /* 9  UART1 */
-#ifdef ID_SMC
-	SMC_Handler,    /* 10 SMC */
-#else
-	Default_Handler,
-#endif
-	PIOA_Handler,   /* 11 Parallel IO Controller A */
-	PIOB_Handler,   /* 12 Parallel IO Controller B */
-#ifdef ID_PIOC
-	PIOC_Handler,   /* 13 Parallel IO Controller C */
-#else
-	Default_Handler,
-#endif
-	USART0_Handler, /* 14 USART 0 */
-#ifdef ID_USART1
-	USART1_Handler, /* 15 USART 1 */
-#else
-	Default_Handler,
-#endif
-	Default_Handler,  /* 16 Reserved */
-	Default_Handler,  /* 17 Reserved */
-#ifdef ID_HSMCI
-	HSMCI_Handler,  /* 18 HSMCI */
-#else
-	Default_Handler,
-#endif
-	TWI0_Handler,   /* 19 TWI 0 */
-	TWI1_Handler,   /* 20 TWI 1 */
-	SPI_Handler,    /* 21 SPI */
-	SSC_Handler,    /* 22 SSC */
-	TC0_Handler,    /* 23 Timer Counter 0 */
-	TC1_Handler,    /* 24 Timer Counter 1 */
-	TC2_Handler,    /* 25 Timer Counter 2 */
-#ifdef ID_TC3
-	TC3_Handler,    /* 26 Timer Counter 3 */
-#else
-	Default_Handler,
-#endif
-#ifdef ID_TC4
-	TC4_Handler,    /* 27 Timer Counter 4 */
-#else
-	Default_Handler,
-#endif
-#ifdef ID_TC5
-	TC5_Handler,    /* 28 Timer Counter 5 */
-#else
-	Default_Handler,
-#endif
-	ADC_Handler,    /* 29 ADC controller */
-#ifdef ID_DACC
-	DACC_Handler,   /* 30 DACC controller */
-#else
-	Default_Handler,
-#endif
-	PWM_Handler,    /* 31 PWM */
-	CRCCU_Handler,  /* 32 CRC Calculation Unit */
-	ACC_Handler,    /* 33 Analog Comparator */
-	UDP_Handler,    /* 34 USB Device Port */
-	Default_Handler   /* 35 not used */
-
-#elif CPUSTYLE_STM32F0XX
-
-	#if defined (STM32F0XX_MD) || defined (STM32F030X8)
-	/******  STM32F0XX_MD and STM32F030X8 specific Interrupt Numbers *************************************/
-	  WWDG_IRQHandler,				// = 0,      /*!< Window WatchDog Interrupt                               */
-	  PVD_IRQHandler,				// = 1,      /*!< PVD through EXTI Line detect Interrupt                  */
-	  RTC_IRQHandler,				// = 2,      /*!< RTC through EXTI Line Interrupt                         */
-	  FLASH_IRQHandler,				// = 3,      /*!< FLASH Interrupt                                         */
-	  RCC_IRQHandler,				// = 4,      /*!< RCC Interrupt                                           */
-	  EXTI0_1_IRQHandler,			// = 5,      /*!< EXTI Line 0 and 1 Interrupts                            */
-	  EXTI2_3_IRQHandler,			// = 6,      /*!< EXTI Line 2 and 3 Interrupts                            */
-	  EXTI4_15_IRQHandler,			// = 7,      /*!< EXTI Line 4 to 15 Interrupts                            */
-	  TS_IRQHandler,				// = 8,      /*!< TS Interrupt                                            */
-	  DMA1_Channel1_IRQHandler,		// = 9,      /*!< DMA1 Channel 1 Interrupt                                */
-	  DMA1_Channel2_3_IRQHandler,	// = 10,     /*!< DMA1 Channel 2 and Channel 3 Interrupts                 */
-	  DMA1_Channel4_5_IRQHandler,	// = 11,     /*!< DMA1 Channel 4 and Channel 5 Interrupts                 */
-	  ADC1_COMP_IRQHandler,			// = 12,     /*!< ADC1, COMP1 and COMP2 Interrupts                        */
-	  TIM1_BRK_UP_TRG_COM_IRQHandler,//= 13,     /*!< TIM1 Break, Update, Trigger and Commutation Interrupts  */
-	  TIM1_CC_IRQHandler,			// = 14,     /*!< TIM1 Capture Compare Interrupt                          */
-	  TIM2_IRQHandler,				// = 15,     /*!< TIM2 Interrupt                                          */
-	  TIM3_IRQHandler,				// = 16,     /*!< TIM3 Interrupt                                          */
-	  TIM6_DAC_IRQHandler,			// = 17,     /*!< TIM6 and DAC Interrupts                                 */
-	  Default_Handler,				// = 18      /*!< xxx Interrupt                                           */
-	  TIM14_IRQHandler,				// = 19,     /*!< TIM14 Interrupt                                         */
-	  TIM15_IRQHandler,				// = 20,     /*!< TIM15 Interrupt                                         */
-	  TIM16_IRQHandler,				// = 21,     /*!< TIM16 Interrupt                                         */
-	  TIM17_IRQHandler,				// = 22,     /*!< TIM17 Interrupt                                         */
-	  I2C1_IRQHandler,				// = 23,     /*!< I2C1 Interrupt                                          */
-	  I2C2_IRQHandler,				// = 24,     /*!< I2C2 Interrupt                                          */
-	  SPI1_IRQHandler,				// = 25,     /*!< SPI1 Interrupt                                          */
-	  SPI2_IRQHandler,				// = 26,     /*!< SPI2 Interrupt                                          */
-	  USART1_IRQHandler,			// = 27,     /*!< USART1 Interrupt                                        */
-	  USART2_IRQHandler,			// = 28,     /*!< USART2 Interrupt                                        */
-	  Default_Handler,				// = 29,     /*!< xxxxxx Interrupt                                        */
-	  CEC_IRQHandler,				// = 30      /*!< CEC Interrupt                                           */
-	#elif defined (STM32F0XX_LD) || defined (STM32F030X6)
-	/******  STM32F0XX_LD and STM32F030X6 specific Interrupt Numbers *************************************/
-	  WWDG_IRQHandler,				// = 0,      /*!< Window WatchDog Interrupt                               */
-	  PVD_IRQHandler,				// = 1,      /*!< PVD through EXTI Line detect Interrupt                  */
-	  RTC_IRQHandler,				// = 2,      /*!< RTC through EXTI Line Interrupt                         */
-	  FLASH_IRQHandler,				// = 3,      /*!< FLASH Interrupt                                         */
-	  RCC_IRQHandler,				// = 4,      /*!< RCC Interrupt                                           */
-	  EXTI0_1_IRQHandler,			// = 5,      /*!< EXTI Line 0 and 1 Interrupts                            */
-	  EXTI2_3_IRQHandler,			// = 6,      /*!< EXTI Line 2 and 3 Interrupts                            */
-	  EXTI4_15_IRQHandler,			// = 7,      /*!< EXTI Line 4 to 15 Interrupts                            */
-	  Default_Handler,				// = 8,      /*!< TS Interrupt                                            */
-	  DMA1_Channel1_IRQHandler,		// = 9,      /*!< DMA1 Channel 1 Interrupt                                */
-	  DMA1_Channel2_3_IRQHandler,	// = 10,     /*!< DMA1 Channel 2 and Channel 3 Interrupts                 */
-	  DMA1_Channel4_5_IRQHandler,	// = 11,     /*!< DMA1 Channel 4 and Channel 5 Interrupts                 */
-	  ADC1_IRQHandler,				// = 12,     /*!< ADC1 Interrupt                                          */
-	  TIM1_BRK_UP_TRG_COM_IRQHandler,//= 13,     /*!< TIM1 Break, Update, Trigger and Commutation Interrupts  */
-	  TIM1_CC_IRQHandler,			// = 14,     /*!< TIM1 Capture Compare Interrupt                          */
-	  TIM2_IRQHandler,				// = 15,     /*!< TIM2 Interrupt                                          */
-	  TIM3_IRQHandler,				// = 16,     /*!< TIM3 Interrupt                                          */
-	  Default_Handler,				// = 17      /*!< xxx Interrupt                                           */
-	  Default_Handler,				// = 18      /*!< xxx Interrupt                                           */
-	  TIM14_IRQHandler,				// = 19,     /*!< TIM14 Interrupt                                         */
-	  Default_Handler,				// = 20,     /*!< TIM15 Interrupt                                         */
-	  TIM16_IRQHandler,				// = 21,     /*!< TIM16 Interrupt                                         */
-	  TIM17_IRQHandler,				// = 22,     /*!< TIM17 Interrupt                                         */
-	  I2C1_IRQHandler,				// = 23,     /*!< I2C1 Interrupt                                          */
-	  Default_Handler,				// = 24,     /*!< I2C2 Interrupt                                          */
-	  SPI1_IRQHandler,				// = 25,     /*!< SPI1 Interrupt                                          */
-	  Default_Handler,				// = 26,     /*!< SPI2 Interrupt                                          */
-	  USART1_IRQHandler,			// = 27,     /*!< USART1 Interrupt                                        */
-	  Default_Handler,				// = 28,     /*!< USART2 Interrupt                                        */
-	  Default_Handler,				// = 29,     /*!< xxxxxx Interrupt                                        */
-	  Default_Handler,				// = 30      /*!< CEC Interrupt                                           */
-	#endif /* STM32F0XX_MD or STM32F030X8 */
-
-#elif CPUSTYLE_STM32L0XX
-	/******  STM32L-0 specific Interrupt Numbers *********************************************************/
-	WWDG_IRQHandler, //                   = 0,      /*!< Window WatchDog Interrupt                                     */
-	PVD_IRQHandler, //                    = 1,      /*!< PVD through EXTI Line detect Interrupt                        */
-	RTC_IRQHandler, //                    = 2,      /*!< RTC through EXTI Line Interrupt                               */
-	FLASH_IRQHandler, //                  = 3,      /*!< FLASH Interrupt                                               */
-	RCC_IRQHandler, //                    = 4,      /*!< RCC Interrupt                                                 */
-	EXTI0_1_IRQHandler, //                = 5,      /*!< EXTI Line 0 and 1 Interrupts                                  */
-	EXTI2_3_IRQHandler, //                = 6,      /*!< EXTI Line 2 and 3 Interrupts                                  */
-	EXTI4_15_IRQHandler, //               = 7,      /*!< EXTI Line 4 to 15 Interrupts                                  */
-	DMA1_Channel1_IRQHandler, //          = 9,      /*!< DMA1 Channel 1 Interrupt                                      */
-	DMA1_Channel2_3_IRQHandler, //        = 10,     /*!< DMA1 Channel 2 and Channel 3 Interrupts                       */
-	DMA1_Channel4_5_6_7_IRQHandler, //    = 11,     /*!< DMA1 Channel 4, Channel 5, Channel 6 and Channel 7 Interrupts */
-	ADC1_COMP_IRQHandler, //              = 12,     /*!< ADC1, COMP1 and COMP2 Interrupts                              */
-	LPTIM1_IRQHandler, //                 = 13,     /*!< LPTIM1 Interrupt                                              */
-	TIM2_IRQHandler, //                   = 15,     /*!< TIM2 Interrupt                                                */
-	TIM6_IRQHandler, //                   = 17,     /*!< TIM6  Interrupt                                               */
-	TIM21_IRQHandler, //                  = 20,     /*!< TIM21 Interrupt                                               */
-	TIM22_IRQHandler, //                  = 22,     /*!< TIM22 Interrupt                                               */
-	I2C1_IRQHandler, //                   = 23,     /*!< I2C1 Interrupt                                                */
-	I2C2_IRQHandler, //                   = 24,     /*!< I2C2 Interrupt                                                */
-	SPI1_IRQHandler, //                   = 25,     /*!< SPI1 Interrupt                                                */
-	SPI2_IRQHandler, //                   = 26,     /*!< SPI2 Interrupt                                                */
-	USART1_IRQHandler, //                 = 27,     /*!< USART1 Interrupt                                              */
-	USART2_IRQHandler, //                 = 28,     /*!< USART2 Interrupt                                              */
-	LPUART1_IRQHandler, //                = 29,     /*!< LPUART1 Interrupts                                            */
-
-#elif defined (STM32H743xx)
-
-	Default_Handler,	//WWDG_IRQHandler           , /* Window WatchDog              */                                        
-	Default_Handler,	//PVD_AVD_IRQHandler        , /* PVD/AVD through EXTI Line detection */                        
-	Default_Handler,	//TAMP_STAMP_IRQHandler     , /* Tamper and TimeStamps through the EXTI line */            
-	Default_Handler,	//RTC_WKUP_IRQHandler       , /* RTC Wakeup through the EXTI line */                      
-	Default_Handler,	//FLASH_IRQHandler          , /* FLASH                        */                                          
-	Default_Handler,	//RCC_IRQHandler            , /* RCC                          */                                            
-	EXTI0_IRQHandler          , /* EXTI Line0                   */                        
-	EXTI1_IRQHandler          , /* EXTI Line1                   */                          
-	EXTI2_IRQHandler          , /* EXTI Line2                   */                          
-	EXTI3_IRQHandler          , /* EXTI Line3                   */                          
-	EXTI4_IRQHandler          , /* EXTI Line4                   */                          
-	DMA1_Stream0_IRQHandler   , /* DMA1 Stream 0                */                  
-	DMA1_Stream1_IRQHandler   , /* DMA1 Stream 1                */                   
-	DMA1_Stream2_IRQHandler   , /* DMA1 Stream 2                */                   
-	DMA1_Stream3_IRQHandler   , /* DMA1 Stream 3                */                   
-	DMA1_Stream4_IRQHandler   , /* DMA1 Stream 4                */                   
-	DMA1_Stream5_IRQHandler   , /* DMA1 Stream 5                */                   
-	DMA1_Stream6_IRQHandler   , /* DMA1 Stream 6                */                   
-	ADC_IRQHandler            , /* ADC1, ADC2 and ADC3s         */                   
-	Default_Handler,	//FDCAN1_IT0_IRQHandler     , /* FDCAN1 interrupt line 0      */                    
-	Default_Handler,	//FDCAN2_IT0_IRQHandler     , /* FDCAN2 interrupt line 0      */                    
-	Default_Handler,	//FDCAN1_IT1_IRQHandler     , /* FDCAN1 interrupt line 1      */                    
-	Default_Handler,	//FDCAN2_IT1_IRQHandler     , /* FDCAN2 interrupt line 1      */                    
-	EXTI9_5_IRQHandler        , /* External Line[9:5]s          */                          
-	TIM1_BRK_IRQHandler       , /* TIM1 Break interrupt         */         
-	TIM1_UP_IRQHandler        , /* TIM1 Update interrupt        */         
-	TIM1_TRG_COM_IRQHandler   , /* TIM1 Trigger and Commutation interrupt */
-	TIM1_CC_IRQHandler        , /* TIM1 Capture Compare         */                          
-	TIM2_IRQHandler           , /* TIM2                         */                   
-	TIM3_IRQHandler           , /* TIM3                         */                   
-	TIM4_IRQHandler           , /* TIM4                         */                   
-	Default_Handler,	//I2C1_EV_IRQHandler        , /* I2C1 Event                   */                          
-	Default_Handler,	//I2C1_ER_IRQHandler        , /* I2C1 Error                   */                          
-	Default_Handler,	//I2C2_EV_IRQHandler        , /* I2C2 Event                   */                          
-	Default_Handler,	//I2C2_ER_IRQHandler        , /* I2C2 Error                   */                            
-	SPI1_IRQHandler           , /* SPI1                         */                   
-	SPI2_IRQHandler           , /* SPI2                         */                   
-	USART1_IRQHandler         , /* USART1                       */                   
-	USART2_IRQHandler         , /* USART2                       */                   
-	USART3_IRQHandler         , /* USART3                       */                   
-	EXTI15_10_IRQHandler      , /* External Line[15:10]s        */                          
-	Default_Handler,	//RTC_Alarm_IRQHandler      , /* RTC Alarm (A and B) through EXTI Line */                 
-	0                         , /* Reserved                     */                       
-	Default_Handler,	//TIM8_BRK_TIM12_IRQHandler , /* TIM8 Break and TIM12         */         
-	Default_Handler,	//TIM8_UP_TIM13_IRQHandler  , /* TIM8 Update and TIM13        */         
-	Default_Handler,	//TIM8_TRG_COM_TIM14_IRQHandler     /* TIM8 Trigger and Commutation and TIM14 */
-	Default_Handler,	//TIM8_CC_IRQHandler        , /* TIM8 Capture Compare         */                          
-	DMA1_Stream7_IRQHandler   , /* DMA1 Stream7                 */                          
-	Default_Handler,	//FMC_IRQHandler            , /* FMC                          */                   
-	SDMMC1_IRQHandler         , /* SDMMC1                       */                   
-	TIM5_IRQHandler           , /* TIM5                         */                   
-	SPI3_IRQHandler           , /* SPI3                         */                   
-	UART4_IRQHandler          , /* UART4                        */                   
-	UART5_IRQHandler          , /* UART5                        */                   
-	Default_Handler,	//TIM6_DAC_IRQHandler       , /* TIM6 and DAC1&2 underrun errors */                   
-	Default_Handler,	//TIM7_IRQHandler           , /* TIM7                         */
-	DMA2_Stream0_IRQHandler   , /* DMA2 Stream 0                */                   
-	DMA2_Stream1_IRQHandler   , /* DMA2 Stream 1                */                   
-	DMA2_Stream2_IRQHandler   , /* DMA2 Stream 2                */                   
-	DMA2_Stream3_IRQHandler   , /* DMA2 Stream 3                */                   
-	DMA2_Stream4_IRQHandler   , /* DMA2 Stream 4                */                   
-	Default_Handler,	//ETH_IRQHandler            , /* Ethernet                     */                   
-	Default_Handler,	//ETH_WKUP_IRQHandler       , /* Ethernet Wakeup through EXTI line */                     
-	Default_Handler,	//FDCAN_CAL_IRQHandler      , /* FDCAN calibration unit interrupt*/                                               
-	0                         , /* Reserved                     */                          
-	0                         , /* Reserved                     */                       
-	0                         , /* Reserved                     */                           
-	0                         , /* Reserved                     */                  
-	DMA2_Stream5_IRQHandler   , /* DMA2 Stream 5                */                   
-	DMA2_Stream6_IRQHandler   , /* DMA2 Stream 6                */                   
-	DMA2_Stream7_IRQHandler   , /* DMA2 Stream 7                */                   
-	USART6_IRQHandler         , /* USART6                       */                    
-	Default_Handler,	//I2C3_EV_IRQHandler        , /* I2C3 event                   */                          
-	Default_Handler,	//I2C3_ER_IRQHandler        , /* I2C3 error                   */                          
-	Default_Handler,	//OTG_HS_EP1_OUT_IRQHandler , /* USB OTG HS End Point 1 Out   */                   
-	Default_Handler,	//OTG_HS_EP1_IN_IRQHandler  , /* USB OTG HS End Point 1 In    */                   
-	Default_Handler,	//OTG_HS_WKUP_IRQHandler    , /* USB OTG HS Wakeup through EXTI */                         
-	OTG_HS_IRQHandler         , /* USB OTG HS                   */                   
-	Default_Handler,	//DCMI_IRQHandler           , /* DCMI                         */                   
-	0                         , /* Reserved                     */                   
-	Default_Handler,	//RNG_IRQHandler            , /* Rng                          */
-	Default_Handler,	//FPU_IRQHandler            , /* FPU                          */
-	Default_Handler,	//UART7_IRQHandler          , /* UART7                        */      
-	Default_Handler,	//UART8_IRQHandler          , /* UART8                        */
-	Default_Handler,	//SPI4_IRQHandler           , /* SPI4                         */
-	Default_Handler,	//SPI5_IRQHandler           , /* SPI5                         */
-	Default_Handler,	//SPI6_IRQHandler           , /* SPI6                         */
-	Default_Handler,	//SAI1_IRQHandler           , /* SAI1                         */
-	Default_Handler,	//LTDC_IRQHandler           , /* LTDC                         */
-	Default_Handler,	//LTDC_ER_IRQHandler        , /* LTDC error                   */
-	Default_Handler,	//DMA2D_IRQHandler          , /* DMA2D                        */
-	Default_Handler,	//SAI2_IRQHandler           , /* SAI2                         */
-	Default_Handler,	//QUADSPI_IRQHandler        , /* QUADSPI                      */
-	Default_Handler,	//LPTIM1_IRQHandler         , /* LPTIM1                       */
-	Default_Handler,	//CEC_IRQHandler            , /* HDMI_CEC                     */
-	Default_Handler,	//I2C4_EV_IRQHandler        , /* I2C4 Event                   */
-	Default_Handler,	//I2C4_ER_IRQHandler        , /* I2C4 Error                   */
-	Default_Handler,	//SPDIF_RX_IRQHandler       , /* SPDIF_RX                     */ 
-	Default_Handler,	//OTG_FS_EP1_OUT_IRQHandler , /* USB OTG FS End Point 1 Out   */   
-	Default_Handler,	//OTG_FS_EP1_IN_IRQHandler  , /* USB OTG FS End Point 1 In    */   
-	Default_Handler,	//OTG_FS_WKUP_IRQHandler    , /* USB OTG FS Wakeup through EXTI */  
-	OTG_FS_IRQHandler         , /* USB OTG FS                   */
-	Default_Handler,	//DMAMUX1_OVR_IRQHandler    , /* DMAMUX1 Overrun interrupt    */  
-	Default_Handler,	//HRTIM1_Master_IRQHandler  , /* HRTIM Master Timer global Interrupt */
-	Default_Handler,	//HRTIM1_TIMA_IRQHandler    , /* HRTIM Timer A global Interrupt */  
-	Default_Handler,	//HRTIM1_TIMB_IRQHandler    , /* HRTIM Timer B global Interrupt */  
-	Default_Handler,	//HRTIM1_TIMC_IRQHandler    , /* HRTIM Timer C global Interrupt */  
-	Default_Handler,	//HRTIM1_TIMD_IRQHandler    , /* HRTIM Timer D global Interrupt */  
-	Default_Handler,	//HRTIM1_TIME_IRQHandler    , /* HRTIM Timer E global Interrupt */  
-	Default_Handler,	//HRTIM1_FLT_IRQHandler     , /* HRTIM Fault global Interrupt   */ 
-	Default_Handler,	//DFSDM1_FLT0_IRQHandler    , /* DFSDM Filter0 Interrupt        */
-	Default_Handler,	//DFSDM1_FLT1_IRQHandler    , /* DFSDM Filter1 Interrupt        */     
-	Default_Handler,	//DFSDM1_FLT2_IRQHandler    , /* DFSDM Filter2 Interrupt        */    
-	Default_Handler,	//DFSDM1_FLT3_IRQHandler    , /* DFSDM Filter3 Interrupt        */   
-	Default_Handler,	//SAI3_IRQHandler           , /* SAI3 global Interrupt          */   
-	Default_Handler,	//SWPMI1_IRQHandler         , /* Serial Wire Interface 1 global interrupt */
-	Default_Handler,	//TIM15_IRQHandler          , /* TIM15 global Interrupt      */        
-	Default_Handler,	//TIM16_IRQHandler          , /* TIM16 global Interrupt      */      
-	Default_Handler,	//TIM17_IRQHandler          , /* TIM17 global Interrupt      */      
-	Default_Handler,	//MDIOS_WKUP_IRQHandler     , /* MDIOS Wakeup  Interrupt     */     
-	Default_Handler,	//MDIOS_IRQHandler          , /* MDIOS global Interrupt      */    
-	Default_Handler,	//JPEG_IRQHandler           , /* JPEG global Interrupt       */    
-	Default_Handler,	//MDMA_IRQHandler           , /* MDMA global Interrupt       */    
-	0                         , /* Reserved                    */    
-	Default_Handler,	//SDMMC2_IRQHandler         , /* SDMMC2 global Interrupt     */    
-	Default_Handler,	//HSEM1_IRQHandler          , /* HSEM1 global Interrupt      */    
-	0                         , /* Reserved                    */    
-	ADC3_IRQHandler           , /* ADC3 global Interrupt       */    
-	Default_Handler,	//DMAMUX2_OVR_IRQHandler    , /* DMAMUX Overrun interrupt    */    
-	Default_Handler,	//BDMA_Channel0_IRQHandler  , /* BDMA Channel 0 global Interrupt */
-	Default_Handler,	//BDMA_Channel1_IRQHandler  , /* BDMA Channel 1 global Interrupt */ 
-	Default_Handler,	//BDMA_Channel2_IRQHandler  , /* BDMA Channel 2 global Interrupt */ 
-	Default_Handler,	//BDMA_Channel3_IRQHandler  , /* BDMA Channel 3 global Interrupt */ 
-	Default_Handler,	//BDMA_Channel4_IRQHandler  , /* BDMA Channel 4 global Interrupt */ 
-	Default_Handler,	//BDMA_Channel5_IRQHandler  , /* BDMA Channel 5 global Interrupt */ 
-	Default_Handler,	//BDMA_Channel6_IRQHandler  , /* BDMA Channel 6 global Interrupt */ 
-	Default_Handler,	//BDMA_Channel7_IRQHandler  , /* BDMA Channel 7 global Interrupt */ 
-	Default_Handler,	//COMP1_IRQHandler          , /* COMP1 global Interrupt     */          
-	Default_Handler,	//LPTIM2_IRQHandler         , /* LP TIM2 global interrupt   */      
-	Default_Handler,	//LPTIM3_IRQHandler         , /* LP TIM3 global interrupt   */     
-	Default_Handler,	//LPTIM4_IRQHandler         , /* LP TIM4 global interrupt   */     
-	Default_Handler,	//LPTIM5_IRQHandler         , /* LP TIM5 global interrupt   */     
-	Default_Handler,	//LPUART1_IRQHandler        , /* LP UART1 interrupt         */     
-	0                         , /* Reserved                   */     
-	Default_Handler,	//CRS_IRQHandler            , /* Clock Recovery Global Interrupt */ 
-	0                         , /* Reserved                   */     
-	Default_Handler,	//SAI4_IRQHandler           , /* SAI4 global interrupt      */      
-	0                         , /* Reserved                   */      
-	0                         , /* Reserved                   */      
-	Default_Handler,	//WAKEUP_PIN_IRQHandler     , /* Interrupt for all 6 wake-up pins */
-
-#elif CPUSTYLE_STM32F
-	/* Device interrupt vectors */
-	/* 0x40 */
-	WWDG_IRQHandler,	// 0
-	PVD_IRQHandler,		// 1
-	TAMPER_IRQHandler,	// 2
-	RTC_IRQHandler,		// 3
-	FLASH_IRQHandler,	// 4
-	RCC_IRQHandler,		// 5
-	EXTI0_IRQHandler,	// 6
-	EXTI1_IRQHandler,
-	EXTI2_IRQHandler,
-	EXTI3_IRQHandler,
-	EXTI4_IRQHandler,	// 10
-#if defined (STM32F429xx) || defined(STM32F446xx) || defined(STM32F746xx) || defined(STM32F767xx) || defined(STM32F723xx) || defined (STM32F769xx)
-	DMA1_Stream0_IRQHandler,	//  = 11,     /*!< DMA1 Stream 0 global Interrupt                                    */
-	DMA1_Stream1_IRQHandler,	//  = 12,     /*!< DMA1 Stream 1 global Interrupt                                    */
-	DMA1_Stream2_IRQHandler,	//  = 13,     /*!< DMA1 Stream 2 global Interrupt                                    */
-	DMA1_Stream3_IRQHandler,	//  = 14,     /*!< DMA1 Stream 3 global Interrupt                                    */
-	DMA1_Stream4_IRQHandler,	//  = 15,     /*!< DMA1 Stream 4 global Interrupt                                    */
-	DMA1_Stream5_IRQHandler,	//  = 16,     /*!< DMA1 Stream 5 global Interrupt                                    */
-	DMA1_Stream6_IRQHandler,	//  = 17,     /*!< DMA1 Stream 6 global Interrupt                                    */
-#else /* defined (STM32F429xx) || defined(STM32F446xx) */
-	DMA1_Channel1_IRQHandler,	// 11
-	DMA1_Channel2_IRQHandler,
-	DMA1_Channel3_IRQHandler,
-	DMA1_Channel4_IRQHandler,	// 14
-	DMA1_Channel5_IRQHandler,
-	DMA1_Channel6_IRQHandler,
-	DMA1_Channel7_IRQHandler,	// 17
-#endif /* defined (STM32F429xx) || defined(STM32F446xx) */
-
-	ADC1_2_IRQHandler,			// 18
-
-	/* 0x8C */
-	USB_HP_CAN1_TX_IRQHandler,	// 19
-	CAN1_RX0_IRQHandler,
-	CAN1_RX1_IRQHandler,
-	CAN1_SCE_IRQHandler,	// 22
-	/* 0x9C */
-	EXTI9_5_IRQHandler,	// 23
-	TIM1_BRK_IRQHandler,	// 24
-	TIM1_UP_IRQHandler,		// 25
-	TIM1_TRG_COM_IRQHandler,	// 26
-	TIM1_CC_IRQHandler,			// 27
-	TIM2_IRQHandler,			// 28
-	TIM3_IRQHandler,			// 29
-
-	TIM4_IRQHandler,	// 30
-
-	/* 0xBC */
-	I2C1_EV_IRQHandler,		// 31
-	I2C1_ER_IRQHandler,		// 32
-
-	I2C2_EV_IRQHandler,		// 33
-	I2C2_ER_IRQHandler,		// 34
-	SPI1_IRQHandler,		// 35
-	SPI2_IRQHandler,		// 36
-
-	/* 0xD4 */
-	USART1_IRQHandler,		// 37
-	USART2_IRQHandler,		// 38
-	USART3_IRQHandler,		// 39
-
-	EXTI15_10_IRQHandler,	// 40
-	RTCAlarm_IRQHandler,	// 41
-	USBWakeUp_IRQHandler,
-
-	/* 0xEC */
-	NULL, 
-	/* 0xF0 */
-	NULL, 
-	/* 0xF4 */
-	NULL, 
-	/* 0xF8 */
-	NULL,
-
-	/* 0xFC */
-	NULL,
-
-#if defined (STM32F429xx) || defined(STM32F446xx) || defined(STM32F746xx) || defined(STM32F767xx) || defined(STM32F723xx) || defined (STM32F769xx)
-	NULL,
-	SDIO_IRQHandler,		// 49 - SDIO_IRQHandler or SDMMC1_IRQHandler
-#else
-	/* STM32F10X_LD_VL, STM32F10X_MD_VL, STM32F10X_LD, STM32F10X_MD, STM32F10X_CL */
-	NULL, NULL,			// 48, 49
-#endif
-
-	TIM5_IRQHandler,	// 50
-	SPI3_IRQHandler,	// 51
-	UART4_IRQHandler,	// 52
-	UART5_IRQHandler,	// 53
-
-	/* 0x118 */
-#if   defined(STM32F10X_LD_VL) || defined(STM32F10X_MD_VL) || defined(STM32F10X_HD_VL)
-	TIM6_IRQHandler,	// 54
-	TIM7_IRQHandler,	// 55
-#else
-	NULL,	// 54
-	NULL,	// 55
-#endif
-
-	/* 0x120 */
-#if defined (STM32F429xx) || defined(STM32F446xx) || defined(STM32F746xx) || defined(STM32F767xx) || defined(STM32F401xC) || defined(STM32F407xx) || defined(STM32F723xx) || defined (STM32F769xx)
-	DMA2_Stream0_IRQHandler,	// 56
-	DMA2_Stream1_IRQHandler,
-	DMA2_Stream2_IRQHandler,
-	DMA2_Stream3_IRQHandler,
-	DMA2_Stream4_IRQHandler,	// 60
-#elif   defined(STM32F10X_HD_VL)
-	DMA2_Channel1_IRQHandler,
-	DMA2_Channel2_IRQHandler,
-	DMA2_Channel3_IRQHandler,
-	DMA2_Channel4_5_IRQHandler,
-	DMA2_Channel5_IRQHandler,
-#elif defined(STM32F10X_CL)
-	DMA2_Channel1_IRQHandler,
-	DMA2_Channel2_IRQHandler,
-	DMA2_Channel3_IRQHandler,
-	DMA2_Channel4_IRQHandler,
-	DMA2_Channel5_IRQHandler,
-#elif defined(STM32F10X_HD) || defined(STM32F10X_XL)
-	DMA2_Channel1_IRQHandler,	// 56
-	DMA2_Channel2_IRQHandler,
-	DMA2_Channel3_IRQHandler,
-	DMA2_Channel4_5_IRQHandler,
-	NULL,						// 60
-#endif
-
-	/* 0x134 */
-#if defined (STM32F429xx) || defined(STM32F446xx) || defined(STM32F746xx) || defined(STM32F767xx) || defined(STM32F401xC) || defined(STM32F407xx) || defined(STM32F723xx) || defined (STM32F769xx)
-  Default_Handler,	//ETH_IRQHandler,		/*!< Ethernet global Interrupt   61                                      */
-  Default_Handler,	//ETH_WKUP_IRQHandler,		/*!< Ethernet Wakeup through EXTI line Interrupt                       */
-  Default_Handler,	//CAN2_TX_IRQHandler,		/*!< CAN2 TX Interrupt                                                 */
-  Default_Handler,	//CAN2_RX0_IRQHandler,		/*!< CAN2 RX0 Interrupt                                                */
-  Default_Handler,	//CAN2_RX1_IRQHandler,		/*!< CAN2 RX1 Interrupt                                                */
-  Default_Handler,	//CAN2_SCE_IRQHandler,		/*!< CAN2 SCE Interrupt                                                */
-  OTG_FS_IRQHandler,			/*!< USB OTG FS global Interrupt                                       */
-  DMA2_Stream5_IRQHandler,		/*!< DMA2 Stream 5 global interrupt                                    */
-  DMA2_Stream6_IRQHandler,		/*!< DMA2 Stream 6 global interrupt                                    */
-  DMA2_Stream7_IRQHandler,		/*!< DMA2 Stream 7 global interrupt                                    */
-  USART6_IRQHandler,		/*!< USART6 global interrupt                                           */
-  Default_Handler,	//I2C3_EV_IRQHandler,		/*!< I2C3 event interrupt                                              */
-  Default_Handler,	//I2C3_ER_IRQHandler,		/*!< I2C3 error interrupt                                              */
-  OTG_HS_EP1_OUT_IRQHandler,		/*!< USB OTG HS End Point 1 Out global interrupt                       */
-  OTG_HS_EP1_IN_IRQHandler,		/*!< USB OTG HS End Point 1 In global interrupt                        */
-  OTG_HS_WKUP_IRQHandler,		/*!< USB OTG HS Wakeup through EXTI interrupt                          */
-  OTG_HS_IRQHandler,		/*!< USB OTG HS global interrupt                                       */
-  Default_Handler,	//DCMI_IRQHandler,		/*!< DCMI global interrupt                                             */
-  Default_Handler,	//CRYP_IRQHandler,		/*!< CRYP crypto global interrupt                                      */
-  Default_Handler,	//HASH_RNG_IRQHandler,		/*!< Hash and Rng global interrupt                                     */
-  Default_Handler,	//FPU_IRQHandler,		/*!< FPU global interrupt                                              */
-  Default_Handler,	//UART7_IRQHandler,		/*!< UART7 global interrupt                                            */
-  Default_Handler,	//UART8_IRQHandler,		/*!< UART8 global interrupt                                            */
-  Default_Handler,	//SPI4_IRQHandler,		/*!< SPI4 global Interrupt                                             */
-  Default_Handler,	//Default_Handler,	//SPI5_IRQHandler,		/*!< SPI5 global Interrupt                                             */
-  Default_Handler,	//SPI6_IRQHandler,		/*!< SPI6 global Interrupt                                             */
-  Default_Handler,	//SAI1_IRQHandler,		/*!< SAI1 global Interrupt                                             */
-  Default_Handler,	//LTDC_IRQHandler,		/*!< LTDC global Interrupt                                             */
-  Default_Handler,	//LTDC_ER_IRQHandler,		/*!< LTDC Error global Interrupt                                       */
-  Default_Handler,	//DMA2D_IRQHandler,		/*!< DMA2D global Interrupt     90                                       */   
-
-#elif   defined(STM32F10X_CL)
-	ETH_IRQHandler,
-	ETH_WKUP_IRQHandler,
-	CAN2_TX_IRQHandler,
-	CAN2_RX0_IRQHandler,
-	CAN2_RX1_IRQHandler,
-	CAN2_SCE_IRQHandler,
-	OTG_FS_IRQHandler,
-	/* 0x150 */
-	0,0,0,0, 0,0,0,0,
-	0,0,0,0, 0,0,0,0,
-	0,0,0,0, 0,0,0,0,
-	0,0,0,0, 0,0,0,0,
-	0,0,0,0,
-	0, //(void (*)(void))0xF1E0F85F /* @0x1E0 */
-#elif defined(STM32F10X_LD_VL) || defined(STM32F10X_MD_VL)
-	0,0,0,0, 0,0,0,0,
-	0,0,0,0, 0,0,0,0,
-	0,0,0,0, 0,0,0,0,
-	0,0,0,0, 0,0,0,0,
-	0,0,0,0, 0,0,0,0,
-	0,0,0,
-	0, //(void (*)(void))0xF108F85F /* @0x01CC */
-#elif defined(STM32F10X_HD_VL)
-	0,0,0,0, 0,0,0,0,
-	0,0,0,0, 0,0,0,0,
-	0,0,0,0, 0,0,0,0,
-	0,0,0,0, 0,0,0,0,
-	0,0,0,0, 0,0,0,0,
-	0,0,0
-	0, //(void (*)(void))0xF108F85F /* @0x1E0 */
-#elif defined(STM32F10X_HD) || defined(STM32F10X_XL)
-	0,0,0,0, 0,0,0,0,
-	0,0,0,0, 0,0,0,0,
-	0,0,0,0, 0,0,0,0,
-	0,0,0,0, 0,0,0,0,
-	0,0,0,0, 0,0,0,0,
-	0,0,0,0,
-	0, //(void (*)(void))0xF1E0F85F  /* @0x1E0 */
-#endif
-
-
-#endif
 };
 
+// Таблица находится в области вне Data Cache
+static VTRATTR volatile IntFunc ramVectors [256];
 
+static void vectors_relocate(void)
+{
+	unsigned i;
+
+	memcpy((void *) ramVectors, __Vectors, NVIC_USER_IRQ_OFFSET * 4);
+	for (i = NVIC_USER_IRQ_OFFSET; i < (sizeof ramVectors / sizeof ramVectors [0]); ++ i)
+	{
+		ramVectors [i] = Default_Handler;
+	}
+	SCB->VTOR = (uint32_t) & ramVectors;
+}
 #endif /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM0 || CPUSTYLE_ARM_CM7 */
 
 

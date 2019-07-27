@@ -13,6 +13,10 @@
 
 #include <stdint.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 void board_reset(void);			// выдача сигнала reset_n
 void board_init_io(void);
 //void board_init_io2(void);	// debug
@@ -321,16 +325,21 @@ adcvalholder_t board_getadc_fsval(uint_fast8_t i);	/* получить макс�
 #define BOARD_ADCFILTER_LPF_DENOM	128		/* положение фиксированной точки при фильтрации BOARD_ADCFILTER_LPF */
 
 void board_tsc_initialize(void);
-uint_fast8_t board_tsc_getxy(uint_fast16_t * x, uint_fast16_t * y);	/* touchscreen interface */
+uint_fast8_t board_tsc_getxy(uint_fast16_t * x, uint_fast16_t * y);	/* touch screen interface */
 
 enum
 {
-	STTE_OK,		// можно переходить к следующем состоянию.
+	STTE_OK,		// можно переходить к следующему состоянию.
 	STTE_BYUSY,		// вложенная state machine еще выполняет свои фкнкции - требуется повторный вход.
 	//
 	STTE_count
 };
 
 typedef uint_fast8_t STTE_t;
+
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif /* BOARD_H_INCLUDED */

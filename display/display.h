@@ -12,6 +12,9 @@
 
 #include "hardware.h"	/* зависящие от процессора функции работы с портами */
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
 
 typedef uint_fast16_t COLOR565_T;
 typedef uint16_t PACKEDCOLOR565_T;
@@ -937,5 +940,9 @@ void board_set_topdb(int_fast16_t v);	/* верхний предел FFT */
 void board_set_bottomdb(int_fast16_t v);	/* нижний предел FFT */
 void board_set_zoomxpow2(uint_fast8_t v);	/* уменьшение отображаемого участка спектра */
 void board_set_fillspect(uint_fast8_t v); /* заливать заполнением площадь под графиком спектра */
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif /* DISPLAY_H_INCLUDED */

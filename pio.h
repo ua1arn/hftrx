@@ -3,6 +3,10 @@
 #ifndef PIO_H_INCLUDED
 #define PIO_H_INCLUDED
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 #if CPUSTYLE_STM32F
 
 	#define BSRR_S(v) ((v) * GPIO_BSRR_BS0)	/* Преобразование значения для установки бита в регистре */
@@ -49,8 +53,6 @@
 		#define STM32F_GPIO_SPEED_20M	1
 		#define STM32F_GPIO_SPEED_2M	0
 	#elif CPUSTYLE_STM32H7XX	// 0: low speed, 1: medium speed, 2: fast speed, 3: high speed
-		#define GPIO_BSRR_BS0 GPIO_BSRR_BS_0
-		#define GPIO_BSRR_BR0 GPIO_BSRR_BR_0
 		#define STM32F_GPIO_MODE_GPIO	1
 		#define STM32F_GPIO_MODE_ALT	2
 		#define STM32F_GPIO_MODE_ANALOG	3
@@ -339,5 +341,9 @@ void arm_hardware_pio10_onchangeinterrupt(unsigned long ipins, int edge, uint32_
 void arm_hardware_pio11_onchangeinterrupt(unsigned long ipins, int edge, uint32_t priority, void (* vector)(void));	// RZ/A1H
 
 void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority, void (* vector)(void));
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif /* PIO_H_INCLUDED */

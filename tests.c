@@ -5287,7 +5287,7 @@ static void BarTest(void)
 		int y2 = local_randomgr(DIM_Y - 1);
 
 		display_solidbar(x, y, x2, y2, color);
-		//_delay_ms(10);
+		//local_delay_ms(50);
 	}
 
 	//getch();             /* Pause for user's response    */
@@ -5441,21 +5441,6 @@ void hightests(void)
 			hardware_spi_io_delay();
 			local_delay_ms(500);
 		}
-	}
-#endif
-#if 0
-	{
-		// Печать адресов по результатам работы ld
-		extern unsigned long __etext, __bss_start__, __bss_end__, __data_end__, __data_start__, __stack;
-		extern unsigned long __itcmdata_start__, __itcmdata_end__;	// Cortex-M7 specific
-		extern unsigned long __itcm_start__, __itcm_end__;	// Cortex-M7 specific - область памяти icm
-		extern unsigned long __ramfunctext;
-		extern unsigned long __dtcm_start__, __dtcm_end__;	// Cortex-M7 specific - область памяти icm
-
-		debug_printf_P(PSTR("__etext=%p, __bss_start__=%p, __bss_end__=%p, __data_start__=%p, __data_end__=%p\n"), & __etext, & __bss_start__, & __bss_end__, & __data_start__, & __data_end__);
-		debug_printf_P(PSTR("__stack=%p, SystemInit=%p\n"), & __stack, SystemInit);
-		//debug_printf_P(PSTR("__ramfunctext=%p, __itcmdata_start__=%p, __itcmdata_end__=%p, __itcm_start__=%p, __itcm_end__=%p\n"), & __ramfunctext, & __itcmdata_start__, & __itcmdata_end__, & __itcm_start__, & __itcm_end__);
-		//debug_printf_P(PSTR("__dtcm_start__=%p, __dtcm_end__=%p\n"), & __dtcm_start__, & __dtcm_end__);
 	}
 #endif
 #if 0 && __MPU_PRESENT
@@ -7677,6 +7662,13 @@ static unsigned RAMFUNC_NONILINE testramfunc2(void)
 
 void lowtests(void)
 {
+#if 0 && WITHDEBUG
+	{
+		// c++ execution test
+		extern void cpptest(void);
+		cpptest();
+	}
+#endif /* WITHDEBUG */
 #if 0 && CPUSTYLE_R7S721
 	{
 		nestedirqtest();

@@ -12,6 +12,10 @@
 //#include <stdbool.h>
 #include <stdint.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 extern const phase_t r1_ph; // = SYNTH_R1;
 
 void synth_setreference(
@@ -56,8 +60,8 @@ void synth_rts1_setfreq(
 	);
 // установка частоты конвертора
 void synth_lo0_setfreq(
-	int_fast32_t f,	/* частота, которую хотим получить на выходе DDS */
-	uint_fast8_t enable		/* номер тракта - 0/1: main/sub */
+	int_fast32_t f,	/* частота, которую хотим получить на выходе синтезатора */
+	uint_fast8_t enable		/* включение конвертора */
 	);
 
 void synth_lfm_setparams(uint_fast32_t astart, uint_fast32_t astop, uint_fast32_t aspeed, uint_fast8_t od);
@@ -69,5 +73,9 @@ uint_fast32_t synth_freq2lo1(
 	);
 
 void testlfm(void);
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif /* SYNTHCACS_H_INCLUDED */

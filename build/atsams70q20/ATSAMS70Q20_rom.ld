@@ -204,12 +204,6 @@ SECTIONS
 	__StackLimit = __StackTop - SIZEOF(.stack_dummy);
 	PROVIDE(__stack = __StackTop);
 
-	PROVIDE(__itcm_start__ = ORIGIN(ITCM));
-	PROVIDE(__itcm_end__ = ORIGIN(ITCM) + LENGTH(ITCM));
-
-	PROVIDE(__dtcm_start__ = ORIGIN(DTCM));
-	PROVIDE(__dtcm_end__ = ORIGIN(DTCM) + LENGTH(DTCM));
-
 	/* Check if data + heap + stack exceeds RAM limit */
 	/*ASSERT(__StackLimit >= __HeapLimit, "region RAM overflowed with stack") */
 }

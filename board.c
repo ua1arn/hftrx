@@ -29,7 +29,7 @@ static pllhint_t last_hint1 = (pllhint_t) -1;
 
 // for programming PLL2
 
-const phase_t phase_0 /* = 0 */ ;
+const phase_t phase_0 = 0;
 
 #if \
 	defined(DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_AD9834) || \
@@ -6367,7 +6367,7 @@ static void sendbatch(uint_fast8_t ifir)
 // two banks, symmetrical 961:
 // coef_seq.exe fir_normalized_coeff961_lpf_1550.txt fir_normalized_coeff961_lpf_1550_reseq_b.txt MCV M4K MSYM 128 2 SGL 1 32
 //
-static void single_rate_out_write_mcv(const int_fast32_t * coef, unsigned coef_length, int coef_bit_width)
+static void single_rate_out_write_mcv(const int_fast32_t * coef, int coef_length, int coef_bit_width)
 {
 
 	enum coef_store_type { LC, M512, M4K, DUMMY, AUTO };

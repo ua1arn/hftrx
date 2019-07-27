@@ -604,7 +604,7 @@ static const FLASHMEM struct {
 
 static const FLASHMEM struct {
 	uint_fast8_t code;
-	char label [5];
+	char label [6];
 }  notchmodes [] =
 {
 	{ 0, "     " },
@@ -1318,7 +1318,7 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 		{ DSPCTL_MODE_RX_NARROW, DSPCTL_MODE_TX_CW, },	// Управление для DSP в режиме приёма и передачи - режим узкого фильтра
 		{ BWSETI_CW, BWSETI_CW },				// индекс банка полос пропускания для данного режима
 		{ 0, INT16_MAX, },	// фиксированная полоса пропускания в DSP (if6) для данного режима (если не ноль).
-		BOARD_TXAUDIO_MIKE,		// источник звукового сигнала для данного режима
+		BOARD_TXAUDIO_MUTE,		// источник звукового сигнала для данного режима
 		TXAPROFIG_CW,				// группа профилей обработки звука
 		AGCSETI_CW,
 #else /* WITHIF4DSP */
@@ -3307,7 +3307,7 @@ enum
 #if TXPATH_BIT_GATE_RX && CTLSTYLE_SW2011ALL
 	static const uint_fast8_t pretxdelay = 1;	/* признак того, что требуется снятие питания со второго смесителя */
 #else
-	static const uint_fast8_t pretxdelay;
+	static const uint_fast8_t pretxdelay = 0;
 #endif
 
 
@@ -7039,38 +7039,21 @@ static lmsnrstate_t lmsnrstates [NTRX];
 
 #if ! WITHNOSPEEX
 
-static int speexallocated = 0;
-
-#if SPEEXNN == 64
-	#define SPEEXALLOCSIZE (NTRX * 15584)
-#elif SPEEXNN == 128
-	#define SPEEXALLOCSIZE (NTRX * 22584)
-#elif SPEEXNN == 256
-	#define SPEEXALLOCSIZE (NTRX * 38584)
-#elif SPEEXNN == 512
-	#define SPEEXALLOCSIZE (NTRX * 75448)
-#elif SPEEXNN == 1024
-	#define SPEEXALLOCSIZE (NTRX * 149176)
-#endif
-//static uint8_t sipexbuff [NTRX * 149176 /* + 24716 */];
-static uint8_t sipexbuff [SPEEXALLOCSIZE];
-
-void *speex_alloc (int size)
+void * speex_alloc(int size)
 {
-	size = (size + 0x03) & ~ 0x03;
-	ASSERT((speexallocated + size) <= sizeof sipexbuff / sizeof sipexbuff [0]);
-	if (! ((speexallocated + size) <= sizeof sipexbuff / sizeof sipexbuff [0]))
+	void * const ptr = malloc(size);
+	if (ptr == NULL)
 	{
+		debug_printf_P(PSTR("speex_alloc failure\n"));
 		for (;;)
 			;
 	}
-	void * p = (void *) (sipexbuff + speexallocated);
-	speexallocated += size;
-	return p;
+	return ptr;
 }
 
-void speex_free (void *ptr)
+void speex_free(void * ptr)
 {
+	free(ptr);
 }
 
 #endif /* WITHNOSPEEX */
@@ -7126,7 +7109,6 @@ static void InitNoiseReduction(void)
 #else /* WITHNOSPEEX */
 
 		nrp->st_handle = speex_preprocess_state_init(SPEEXNN, ARMI2SRATE);
-		debug_printf_P(PSTR("speex: final speexallocated=%d\n"), speexallocated);
 
 #endif /* WITHNOSPEEX */
 	}
@@ -7856,6 +7838,7 @@ updateboard(
 			board_set_aflowcuttx(bwseti_getlow(bwseti));	/* Нижняя частота среза фильтра НЧ по передаче */
 			board_set_afhighcuttx(bwseti_gethigh(bwseti));	/* Верхняя частота среза фильтра НЧ по передаче */
 			board_set_afresponcetx(txmode == MODE_NFM ? + 24 : 0);	/* коррекция АЧХ НЧ тракта передатчика */
+			board_set_nfmdeviation100(75);
 		}
 	#endif /* WITHIF4DSP */
 		seq_set_rxtxdelay(rxtxdelay, txrxdelay, pretxdelay ? txrxdelay : 0);	/* установить задержку пре переходе на передачу и обратно. */
@@ -10684,7 +10667,7 @@ static void ifanswer(uint_fast8_t arg)
 
 static void badcommandanswer(uint_fast8_t arg)
 {
-	static const char badcommand [2] = "?;";	// ответ на команду с неправильным синтаксисом
+	static const char badcommand [] = "?;";	// ответ на команду с неправильным синтаксисом
 
 	cat_answervariable(badcommand, 2);	// после ответа - ждём новую.
 }
@@ -17454,12 +17437,12 @@ int
 //__attribute__ ((used))
 main(void)
 {
-#if WITHDEBUG && CPUSTYLE_ARM
+#if WITHDEBUG && ! CPUSTYLE_ARM
 
 	HARDWARE_DEBUG_INITIALIZE();
 	HARDWARE_DEBUG_SET_SPEED(DEBUGSPEED);
 
-#endif /* WITHDEBUG && CPUSTYLE_ARM */
+#endif /* WITHDEBUG && ! CPUSTYLE_ARM */
 
 	lowtests();		/* функции тестирования, работающие до инициализации периферии */
 

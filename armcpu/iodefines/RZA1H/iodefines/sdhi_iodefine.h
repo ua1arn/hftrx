@@ -8,7 +8,7 @@
 /* SD Host Interface */
 
 /* Table 50.2.. Register Configuration */
-struct st_sdhi
+typedef struct st_sdhi
 {		 
 	volatile uint16_t	SD_CMD;				/* 	Command type register					0xE804E000 0xE804E800  */
 	volatile uint8_t	dummy1 [2];

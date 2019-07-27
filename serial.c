@@ -701,6 +701,7 @@ void hardware_uart1_initialize(void)
 									
 		USART0->US_IDR = (US_IDR_RXRDY | US_IDR_TXRDY);
 
+		NVIC_SetVector(USART0_IRQn, (uintptr_t) & USART0_IRQHandler);
 		NVIC_SetPriority(USART0_IRQn, ARM_SYSTEM_PRIORITY);
 		NVIC_EnableIRQ(USART0_IRQn);		// enable USART0_Handler();
 
@@ -724,6 +725,7 @@ void hardware_uart1_initialize(void)
 									
 		USART1->US_IDR = (US_IDR_RXRDY | US_IDR_TXRDY);
 
+		NVIC_SetVector(USART1_IRQn, (uintptr_t) & USART1_IRQHandler);
 		NVIC_SetPriority(USART1_IRQn, ARM_SYSTEM_PRIORITY);
 		NVIC_EnableIRQ(USART1_IRQn);		// enable USART1_Handler();
 
@@ -748,10 +750,12 @@ void hardware_uart1_initialize(void)
 									
 		UART0->UART_IDR = (UART_IDR_RXRDY | UART_IDR_TXRDY);
 
+		NVIC_SetVector(UART0_IRQn, (uintptr_t) & UART0_IRQHandler);
 		NVIC_SetPriority(UART0_IRQn, ARM_SYSTEM_PRIORITY);
 		NVIC_EnableIRQ(UART0_IRQn);		// enable UART0_Handler();
 
 		UART0->UART_CR = UART_CR_RXEN | UART_CR_TXEN;	// разрешаем приёмник и передатчик.
+
 	#elif HARDWARE_ARM_USEUART1
 		// enable the clock of UART1
 		PMC->PMC_PCER0 = 1UL << ID_UART1;
@@ -771,6 +775,7 @@ void hardware_uart1_initialize(void)
 									
 		UART1->UART_IDR = (UART_IDR_RXRDY | UART_IDR_TXRDY);
 
+		NVIC_SetVector(UART1_IRQn, (uintptr_t) & UART1_IRQHandler);
 		NVIC_SetPriority(UART1_IRQn, ARM_SYSTEM_PRIORITY);
 		NVIC_EnableIRQ(UART1_IRQn);		// enable UART1_Handler();
 
@@ -794,6 +799,7 @@ void hardware_uart1_initialize(void)
 
 	HARDWARE_USART1_INITIALIZE();	/* Присоединить периферию к выводам */
 
+	NVIC_SetVector(USART1_IRQn, (uintptr_t) & USART1_IRQHandler);
 	NVIC_SetPriority(USART1_IRQn, ARM_SYSTEM_PRIORITY);
 	NVIC_EnableIRQ(USART1_IRQn);		// enable USART1_IRQHandler();
 
@@ -808,6 +814,7 @@ void hardware_uart1_initialize(void)
 
 	HARDWARE_USART1_INITIALIZE();	/* Присоединить периферию к выводам */
 
+	NVIC_SetVector(USART1_IRQn, (uintptr_t) & USART1_IRQHandler);
 	NVIC_SetPriority(USART1_IRQn, ARM_SYSTEM_PRIORITY);
 	NVIC_EnableIRQ(USART1_IRQn);		// enable USART1_IRQHandler();
 
@@ -1001,13 +1008,13 @@ void hardware_uart1_initialize(void)
 	//SCIF0.SCSPTR |= 0x0003;
 
 	{
-		const uint16_t int_id = SCIFRXI0_IRQn;
+		const IRQn_Type int_id = SCIFRXI0_IRQn;
 		r7s721_intc_registintfunc(int_id, r7s721_scifrxi0_interrupt);
 		GIC_SetPriority(int_id, ARM_SYSTEM_PRIORITY);
 		GIC_EnableIRQ(int_id);
 	}
 	{
-		const uint16_t int_id = SCIFTXI0_IRQn;
+		const IRQn_Type int_id = SCIFTXI0_IRQn;
 		r7s721_intc_registintfunc(int_id, r7s721_sciftxi0_interrupt);
 		GIC_SetPriority(int_id, ARM_SYSTEM_PRIORITY);
 		GIC_EnableIRQ(int_id);
@@ -1055,7 +1062,26 @@ void hardware_uart1_initialize(void)
 			HARDWARE_UART2_ONTXCHAR(USART2);
 	}
 
-#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32H7XX || CPUSTYLE_STM32F7XX
+#elif CPUSTYLE_STM32H7XX
+
+	void RAMFUNC_NONILINE USART2_IRQHandler(void)
+	{
+		const uint_fast32_t isr = USART2->ISR;
+
+		if (isr & USART_ISR_RXNE_RXFNE)
+			HARDWARE_UART2_ONRXCHAR(USART2->RDR);
+		if (isr & USART_ISR_ORE)
+		{
+			USART2->ICR = USART_ICR_ORECF;
+			HARDWARE_UART2_ONOVERFLOW();
+		}
+		if (isr & USART_ISR_FE)
+			USART2->ICR = USART_ICR_FECF;
+		if (isr & USART_ISR_TXE_TXFNF)
+			HARDWARE_UART2_ONTXCHAR(USART2);
+	}
+
+#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX
 
 	void RAMFUNC_NONILINE USART2_IRQHandler(void)
 	{
@@ -1559,7 +1585,19 @@ hardware_usart2_getchar(char * cp)
 		return 0;
 	* cp = USART2->DR;
 
-#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32H7XX || CPUSTYLE_STM32F7XX
+#elif CPUSTYLE_STM32H7XX
+
+	const uint_fast32_t isr = USART2->ISR;
+	if (isr & USART_ISR_ORE)
+		USART2->ICR = USART_ICR_ORECF;
+	if (isr & USART_ISR_FE)
+		USART2->ICR = USART_ICR_FECF;
+	if ((isr & USART_ISR_RXNE_RXFNE) == 0)
+		return 0;
+	* cp = USART2->RDR;
+
+#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX
+
 	const uint_fast32_t isr = USART2->ISR;
 	if (isr & USART_ISR_ORE)
 		USART2->ICR = USART_ICR_ORECF;
@@ -1660,7 +1698,13 @@ hardware_usart2_putchar(uint_fast8_t c)
 		return 0;
 	USART2->DR = c;
 
-#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32H7XX || CPUSTYLE_STM32F7XX
+#elif CPUSTYLE_STM32H7XX
+
+	if ((USART2->ISR & USART_ISR_TXE_TXFNF) == 0)
+		return 0;
+	USART2->TDR = c;
+
+#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX
 
 	if ((USART2->ISR & USART_ISR_TXE) == 0)
 		return 0;
@@ -1707,6 +1751,7 @@ void hardware_uart2_initialize(void)
 									
 		USART0->US_IDR = (US_IDR_RXRDY | US_IDR_TXRDY);
 
+		NVIC_SetVector(USART0_IRQn, (uintptr_t) & USART0_IRQHandler);
 		NVIC_SetPriority(USART0_IRQn, ARM_SYSTEM_PRIORITY);
 		NVIC_EnableIRQ(USART0_IRQn);		// enable USART0_Handler();
 
@@ -1730,6 +1775,7 @@ void hardware_uart2_initialize(void)
 									
 		USART1->US_IDR = (US_IDR_RXRDY | US_IDR_TXRDY);
 
+		NVIC_SetVector(USART1_IRQn, (uintptr_t) & USART1_IRQHandler);
 		NVIC_SetPriority(USART1_IRQn, ARM_SYSTEM_PRIORITY);
 		NVIC_EnableIRQ(USART1_IRQn);		// enable USART2_Handler();
 
@@ -1755,6 +1801,7 @@ void hardware_uart2_initialize(void)
 									
 		UART0->UART_IDR = (UART_IDR_RXRDY | UART_IDR_TXRDY);
 
+		NVIC_SetVector(UART0_IRQn, (uintptr_t) & UART0_IRQHandler);
 		NVIC_SetPriority(UART0_IRQn, ARM_SYSTEM_PRIORITY);
 		NVIC_EnableIRQ(UART0_IRQn);		// enable UART0_Handler();
 
@@ -1780,6 +1827,7 @@ void hardware_uart2_initialize(void)
 									
 		UART1->UART_IDR = (UART_IDR_RXRDY | UART_IDR_TXRDY);
 
+		NVIC_SetVector(UART1_IRQn, (uintptr_t) & UART1_IRQHandler);
 		NVIC_SetPriority(UART1_IRQn, ARM_SYSTEM_PRIORITY);
 		NVIC_EnableIRQ(UART1_IRQn);		// enable UART1_Handler();
 
@@ -1803,6 +1851,7 @@ void hardware_uart2_initialize(void)
 
 	HARDWARE_USART2_INITIALIZE();	/* Присоединить периферию к выводам */
 
+	NVIC_SetVector(USART2_IRQn, (uintptr_t) & USART2_IRQHandler);
 	NVIC_SetPriority(USART2_IRQn, ARM_SYSTEM_PRIORITY);
 	NVIC_EnableIRQ(USART2_IRQn);		// enable USART2_IRQHandler();
 
@@ -1817,6 +1866,7 @@ void hardware_uart2_initialize(void)
 
 	HARDWARE_USART2_INITIALIZE();	/* Присоединить периферию к выводам */
 
+	NVIC_SetVector(USART2_IRQn, (uintptr_t) & USART2_IRQHandler);
 	NVIC_SetPriority(USART2_IRQn, ARM_SYSTEM_PRIORITY);
 	NVIC_EnableIRQ(USART2_IRQn);		// enable USART2_IRQHandler();
 
@@ -1831,6 +1881,7 @@ void hardware_uart2_initialize(void)
 
 	HARDWARE_USART2_INITIALIZE();	/* Присоединить периферию к выводам */
 
+	NVIC_SetVector(USART2_IRQn, (uintptr_t) & USART2_IRQHandler);
 	NVIC_SetPriority(USART2_IRQn, ARM_SYSTEM_PRIORITY);
 	NVIC_EnableIRQ(USART2_IRQn);		// enable USART2_IRQHandler();
 
@@ -2013,13 +2064,13 @@ xxxx!;
 	//SCIF3.SCSPTR |= 0x0003;
 
 	{
-		const uint16_t int_id = SCIFRXI3_IRQn;
+		const IRQn_Type int_id = SCIFRXI3_IRQn;
 		r7s721_intc_registintfunc(int_id, r7s721_scifrxi3_interrupt);
 		GIC_SetPriority(int_id, ARM_SYSTEM_PRIORITY);
 		GIC_EnableIRQ(int_id);
 	}
 	{
-		const uint16_t int_id = SCIFTXI3_IRQn;
+		const IRQn_Type int_id = SCIFTXI3_IRQn;
 		r7s721_intc_registintfunc(int_id, r7s721_sciftxi3_interrupt);
 		GIC_SetPriority(int_id, ARM_SYSTEM_PRIORITY);
 		GIC_EnableIRQ(int_id);

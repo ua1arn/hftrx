@@ -12,6 +12,10 @@
 #include <stdint.h>
 //#include <assert.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 #if \
 	defined (__AVR_ATmega32__) || defined (__AVR_ATmega32A__) || \
 	defined (__AVR_ATmega16__) || defined (__AVR_ATmega16A__) || \
@@ -342,6 +346,36 @@
 	#include "arm_math.h"
 	#include "arm_const_structs.h"
 
+#elif CPUSTYLE_STM32MP15
+
+	// ST dual code A7 + M4
+
+	// CPUSTYLE_STM32MP157A
+	// STM32MP157Axx
+	// STM32MP157AAB3
+
+	#define STM32MP157Axx	1	// todo: move to Makefile as -DSTM32MP157Axx=1
+	#define CORE_CA7	1
+	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
+	#define	CPUSTYLE_ARM_CA7	1
+
+	#include "armcpu/stm32mp1xx.h"
+
+	//#include "armcpu/iodefine.h"
+	//#include "rza_io_regrw.h"
+
+	//#include "hardware_r7s721.h"
+
+	#define ALIGNX_BEGIN __attribute__ ((aligned(32)))
+	#define ALIGNX_END /* nothing */
+
+	#if __ARM_NEON
+		#define ARM_MATH_NEON 1
+	#endif /* __ARM_NEON */
+
+	#include "arm_math.h"
+	#include "arm_const_structs.h"
+
 #elif \
 	defined (__TMS320C28X__) || \
 	0
@@ -399,6 +433,7 @@ void hardware_adc_initialize(void);
 	#define NOINLINEAT // __attribute__((noinline))
 
 	#if CPUSTYLE_R7S721
+		#define VTRATTR	// __attribute__ ((section("vtable"), used, aligned(256 * 4)))
 		#define FLASHMEMINIT	__attribute__((section(".initdata"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
 		#define FLASHMEMINITFUNC	__attribute__((section(".initfunc"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
 		#define RAMFUNC_NONILINE // __attribute__((__section__(".ramfunc"), noinline))  
@@ -408,7 +443,9 @@ void hardware_adc_initialize(void);
 		#define RAMDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
 		#define RAMBIGDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 		#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
+		#define RAMHEAP __attribute__((used, section(".heap"))) // memory used as heap zone
 	#elif (CPUSTYLE_STM32H7XX)
+		#define VTRATTR	__attribute__ ((section("vtable"), used, aligned(256 * 4)))
 		#define FLASHMEMINIT	__attribute__((section(".init"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
 		#define FLASHMEMINITFUNC	__attribute__((section(".init"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
 		#define RAMFUNC_NONILINE __attribute__((noinline,__section__(".itcm")))  // удаление управления noinline добавило 2-3 процента быстродействия __attribute__((__section__(".ramfunc"), noinline))
@@ -418,7 +455,9 @@ void hardware_adc_initialize(void);
 		#define RAMDTCM			__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
 		#define RAMBIGDTCM		__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 		#define RAMBIG			__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
+		#define RAMHEAP __attribute__((used, section(".heap"))) // memory used as heap zone
 	#elif (CPUSTYLE_STM32F7XX)
+		#define VTRATTR	__attribute__ ((section("vtable"), used, aligned(256 * 4)))
 		#define FLASHMEMINIT	__attribute__((section(".init"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
 		#define FLASHMEMINITFUNC	__attribute__((section(".init"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
 		#define RAMFUNC_NONILINE __attribute__((noinline,__section__(".ramfunc")))  // удаление управления noinline добавило 2-3 процента быстродействия __attribute__((__section__(".ramfunc"), noinline))
@@ -428,7 +467,9 @@ void hardware_adc_initialize(void);
 		#define RAMDTCM			__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
 		#define RAMBIGDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 		#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
+		#define RAMHEAP __attribute__((used, section(".heap"))) // memory used as heap zone
 	#elif CPUSTYLE_STM32F4XX && (defined (DSTM32F429xx) || defined(DSTM32F407xx))
+		#define VTRATTR	__attribute__ ((section("vtable"), used, aligned(256 * 4)))
 		#define FLASHMEMINIT	__attribute__((section(".init"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
 		#define FLASHMEMINITFUNC	__attribute__((section(".init"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
 		#define RAMFUNC_NONILINE  __attribute__((__section__(".ramfunc"), noinline))
@@ -438,7 +479,9 @@ void hardware_adc_initialize(void);
 		#define RAMDTCM			__attribute__((section(".ccm"))) /* размещение в памяти DTCM */
 		#define RAMBIGDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 		#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
+		#define RAMHEAP __attribute__((used, section(".heap"))) // memory used as heap zone
 	#elif CPUSTYLE_STM32F4XX
+		#define VTRATTR	__attribute__ ((section("vtable"), used, aligned(256 * 4)))
 		#define FLASHMEMINIT	__attribute__((section(".init"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
 		#define FLASHMEMINITFUNC	__attribute__((section(".init"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
 		#define RAMFUNC_NONILINE // __attribute__((__section__(".ramfunc"), noinline))  
@@ -448,7 +491,9 @@ void hardware_adc_initialize(void);
 		#define RAMDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
 		#define RAMBIGDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 		#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
+		#define RAMHEAP __attribute__((used, section(".heap"))) // memory used as heap zone
 	#else
+		#define VTRATTR	__attribute__ ((section("vtable"), used, aligned(256 * 4)))
 		#define FLASHMEMINIT	__attribute__((section(".init"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
 		#define FLASHMEMINITFUNC	__attribute__((section(".init"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
 		#define RAMFUNC_NONILINE __attribute__((noinline,__section__(".ramfunc")))  // удаление управления noinline добавило 2-3 процента быстродействия __attribute__((__section__(".ramfunc"), noinline))
@@ -458,6 +503,7 @@ void hardware_adc_initialize(void);
 		#define RAMDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
 		#define RAMBIGDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 		#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
+		#define RAMHEAP __attribute__((used, section(".heap"))) // memory used as heap zone
 	#endif
 
 	#define ATTRWEAK __attribute__ ((weak))
@@ -494,6 +540,7 @@ void hardware_adc_initialize(void);
 	#define RAMFUNC_NONILINE // __attribute__((__section__(".ramfunc"), noinline))  
 	#define RAMFUNC			 // __attribute__((__section__(".ramfunc")))  
 	#define RAMNOINIT_D1
+	#define RAMHEAP 		//__attribute__((used, section(".heap"))) // memory used as heap zone
 	#define ATTRWEAK __attribute__ ((weak))
 
 #elif CPUSTYPE_TMS320F2833X
@@ -673,9 +720,8 @@ void arm_hardware_ltdc_pip_off(void);	// set PIP framebuffer address
 uint_fast8_t usbd_cdc_getrts(void);
 uint_fast8_t usbd_cdc_getdtr(void);
 
-RAMFUNC_NONILINE void AT91F_PIOA_IRQHandler(void);
+void AT91F_PIOA_IRQHandler(void);
 
-void SPI2_IRQHandler(void);
 void EXTI0_IRQHandler(void);
 void EXTI1_IRQHandler(void);
 void EXTI2_IRQHandler(void);
@@ -684,24 +730,9 @@ void EXTI4_IRQHandler(void);
 void EXTI9_5_IRQHandler(void);
 void EXTI15_10_IRQHandler(void);
 
-void DMA1_Stream0_IRQHandler(void);		// ch0: SPI3: audio codec (rx) - on stm32F446/all
-void DMA1_Stream3_IRQHandler(void);		// ch3: I2S2_EXT - audio codec (rx) on STM32F429
-void DMA1_Stream4_IRQHandler(void);		// ch0: I2S2 (tx) - audio codec
-
-void DMA2_Stream1_IRQHandler(void);		// ch0: SAI1_A (tx)
-void DMA2_Stream5_IRQHandler(void);		// ch0: SAI1_B (rx)
-void DMA2_Stream4_IRQHandler(void);		// ch3: SAI2_B (tx)
-void DMA2_Stream7_IRQHandler(void);		// ch0: SAI2_B (rx)
-void DMA2_Stream6_IRQHandler(void);		// ch4: SDIO
-
 void SDIO_IRQHandler(void);
 void SDMMC1_IRQHandler(void);
-
-void USART1_IRQHandler(void);
-void USART2_IRQHandler(void);
-void USART3_IRQHandler(void);
-
-void Reset_Handler(void);
+void DMA2_Stream6_IRQHandler(void);
 
 void cpu_stm32f1xx_setmapr(unsigned long bits);
 
@@ -782,6 +813,18 @@ void bootloader_detach(void);
 
 #define BOARD_ADCXBASE 24
 #define BOARD_ADCXIN(ch) (BOARD_ADCXBASE + (ch))
+
+// Cortex-A7/A9 handlers
+void UndefHandler(void);
+void SWIHandler(void);
+void PAbortHandler(void);
+void DAbortHandler(void);
+void FIQHandler(void);
+void IRQHandlerSafe(void);
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #include "product.h"
 #include "taildefs.h"
