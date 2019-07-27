@@ -701,6 +701,7 @@ void hardware_uart1_initialize(void)
 									
 		USART0->US_IDR = (US_IDR_RXRDY | US_IDR_TXRDY);
 
+		NVIC_SetVector(USART0_IRQn, (uintptr_t) & USART0_IRQHandler);
 		NVIC_SetPriority(USART0_IRQn, ARM_SYSTEM_PRIORITY);
 		NVIC_EnableIRQ(USART0_IRQn);		// enable USART0_Handler();
 
@@ -724,6 +725,7 @@ void hardware_uart1_initialize(void)
 									
 		USART1->US_IDR = (US_IDR_RXRDY | US_IDR_TXRDY);
 
+		NVIC_SetVector(USART1_IRQn, (uintptr_t) & USART1_IRQHandler);
 		NVIC_SetPriority(USART1_IRQn, ARM_SYSTEM_PRIORITY);
 		NVIC_EnableIRQ(USART1_IRQn);		// enable USART1_Handler();
 
@@ -748,6 +750,7 @@ void hardware_uart1_initialize(void)
 									
 		UART0->UART_IDR = (UART_IDR_RXRDY | UART_IDR_TXRDY);
 
+		NVIC_SetVector(UART0_IRQn, (uintptr_t) & UART0_IRQHandler);
 		NVIC_SetPriority(UART0_IRQn, ARM_SYSTEM_PRIORITY);
 		NVIC_EnableIRQ(UART0_IRQn);		// enable UART0_Handler();
 
@@ -771,6 +774,7 @@ void hardware_uart1_initialize(void)
 									
 		UART1->UART_IDR = (UART_IDR_RXRDY | UART_IDR_TXRDY);
 
+		NVIC_SetVector(UART1_IRQn, (uintptr_t) & UART1_IRQHandler);
 		NVIC_SetPriority(UART1_IRQn, ARM_SYSTEM_PRIORITY);
 		NVIC_EnableIRQ(UART1_IRQn);		// enable UART1_Handler();
 
@@ -794,6 +798,7 @@ void hardware_uart1_initialize(void)
 
 	HARDWARE_USART1_INITIALIZE();	/* Присоединить периферию к выводам */
 
+	NVIC_SetVector(USART1_IRQn, (uintptr_t) & USART1_IRQHandler);
 	NVIC_SetPriority(USART1_IRQn, ARM_SYSTEM_PRIORITY);
 	NVIC_EnableIRQ(USART1_IRQn);		// enable USART1_IRQHandler();
 
@@ -808,6 +813,7 @@ void hardware_uart1_initialize(void)
 
 	HARDWARE_USART1_INITIALIZE();	/* Присоединить периферию к выводам */
 
+	NVIC_SetVector(USART1_IRQn, (uintptr_t) & USART1_IRQHandler);
 	NVIC_SetPriority(USART1_IRQn, ARM_SYSTEM_PRIORITY);
 	NVIC_EnableIRQ(USART1_IRQn);		// enable USART1_IRQHandler();
 
@@ -1744,6 +1750,7 @@ void hardware_uart2_initialize(void)
 									
 		USART0->US_IDR = (US_IDR_RXRDY | US_IDR_TXRDY);
 
+		NVIC_SetVector(USART0_IRQn, (uintptr_t) & USART0_IRQHandler);
 		NVIC_SetPriority(USART0_IRQn, ARM_SYSTEM_PRIORITY);
 		NVIC_EnableIRQ(USART0_IRQn);		// enable USART0_Handler();
 
@@ -1767,6 +1774,7 @@ void hardware_uart2_initialize(void)
 									
 		USART1->US_IDR = (US_IDR_RXRDY | US_IDR_TXRDY);
 
+		NVIC_SetVector(USART1_IRQn, (uintptr_t) & USART1_IRQHandler);
 		NVIC_SetPriority(USART1_IRQn, ARM_SYSTEM_PRIORITY);
 		NVIC_EnableIRQ(USART1_IRQn);		// enable USART2_Handler();
 
@@ -1792,6 +1800,7 @@ void hardware_uart2_initialize(void)
 									
 		UART0->UART_IDR = (UART_IDR_RXRDY | UART_IDR_TXRDY);
 
+		NVIC_SetVector(UART0_IRQn, (uintptr_t) & UART0_IRQHandler);
 		NVIC_SetPriority(UART0_IRQn, ARM_SYSTEM_PRIORITY);
 		NVIC_EnableIRQ(UART0_IRQn);		// enable UART0_Handler();
 
@@ -1817,6 +1826,7 @@ void hardware_uart2_initialize(void)
 									
 		UART1->UART_IDR = (UART_IDR_RXRDY | UART_IDR_TXRDY);
 
+		NVIC_SetVector(UART1_IRQn, (uintptr_t) & UART1_IRQHandler);
 		NVIC_SetPriority(UART1_IRQn, ARM_SYSTEM_PRIORITY);
 		NVIC_EnableIRQ(UART1_IRQn);		// enable UART1_Handler();
 
@@ -1840,6 +1850,7 @@ void hardware_uart2_initialize(void)
 
 	HARDWARE_USART2_INITIALIZE();	/* Присоединить периферию к выводам */
 
+	NVIC_SetVector(USART2_IRQn, (uintptr_t) & USART2_IRQHandler);
 	NVIC_SetPriority(USART2_IRQn, ARM_SYSTEM_PRIORITY);
 	NVIC_EnableIRQ(USART2_IRQn);		// enable USART2_IRQHandler();
 
@@ -1854,6 +1865,7 @@ void hardware_uart2_initialize(void)
 
 	HARDWARE_USART2_INITIALIZE();	/* Присоединить периферию к выводам */
 
+	NVIC_SetVector(USART2_IRQn, (uintptr_t) & USART2_IRQHandler);
 	NVIC_SetPriority(USART2_IRQn, ARM_SYSTEM_PRIORITY);
 	NVIC_EnableIRQ(USART2_IRQn);		// enable USART2_IRQHandler();
 
@@ -1868,6 +1880,7 @@ void hardware_uart2_initialize(void)
 
 	HARDWARE_USART2_INITIALIZE();	/* Присоединить периферию к выводам */
 
+	NVIC_SetVector(USART2_IRQn, (uintptr_t) & USART2_IRQHandler);
 	NVIC_SetPriority(USART2_IRQn, ARM_SYSTEM_PRIORITY);
 	NVIC_EnableIRQ(USART2_IRQn);		// enable USART2_IRQHandler();
 

@@ -2059,8 +2059,8 @@ ADC3_IRQHandler(void)
 
 #elif CPUSTYLE_STM32F1XX || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX
 
-void 
-ADC1_2_IRQHandler(void)
+static void
+adcs_stm32f4xx_irq_handler(void)
 {
 	ASSERT(adc_input < board_get_adcinputs());
 	//const unsigned long sr = ADC1->SR;
@@ -2081,7 +2081,7 @@ ADC1_2_IRQHandler(void)
 			const uint_fast8_t adci = board_get_adcch(adc_input);
 			if (adci < BOARD_ADCXBASE)
 			{
-				ADC1->SQR3 = (ADC1->SQR3 & ~ ADC_SQR3_SQ1) | (ADC_SQR3_SQ1_0 * adci); 
+				ADC1->SQR3 = (ADC1->SQR3 & ~ ADC_SQR3_SQ1) | (ADC_SQR3_SQ1_0 * adci);
 				#if CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX
 				ADC1->CR2 |= ADC_CR2_SWSTART;	// !!!!
 				#endif
@@ -2090,6 +2090,20 @@ ADC1_2_IRQHandler(void)
 		}
 	}
 }
+
+void
+ADC_IRQHandler(void)
+{
+	adcs_stm32f4xx_irq_handler();
+}
+
+void
+ADC1_2_IRQHandler(void)
+{
+	adcs_stm32f4xx_irq_handler();
+}
+
+
 
 #elif CPUSTYLE_STM32F0XX
 	#if STM32F0XX_MD
@@ -2358,6 +2372,7 @@ void hardware_adc_initialize(void)
 	////while ((ADC->ADC_ISR & ADC_ISR_DRDY) == 0)
 	////	;
 
+	NVIC_SetVector(ADC_IRQn, (uintptr_t) & ADC_Handler);
 	NVIC_SetPriority(ADC_IRQn, ARM_SYSTEM_PRIORITY);
 	NVIC_EnableIRQ(ADC_IRQn);		// enable ADC_Handler();
 
@@ -2459,6 +2474,7 @@ void hardware_adc_initialize(void)
 
 		RCC->APB2ENR |= (RCC_APB2ENR_ADC1EN | RCC_APB2ENR_ADC2EN);    // Затактировали АЦП
 		__DSB();
+		NVIC_SetVector(ADC1_2_IRQn, (uintptr_t) & ADC1_2_IRQHandler);
 		NVIC_SetPriority(ADC1_2_IRQn, ARM_SYSTEM_PRIORITY);
 		NVIC_EnableIRQ(ADC1_2_IRQn);    //Включаем прерывания с АЦП. Обрабатывает ADC1_2_IRQHandler()
 
@@ -2466,8 +2482,9 @@ void hardware_adc_initialize(void)
 
 		RCC->APB2ENR |= (RCC_APB2ENR_ADC1EN);    // Затактировали АЦП
 		__DSB();
+		NVIC_SetVector(ADC1_IRQn, (uintptr_t) & ADC1_IRQHandler);
 		NVIC_SetPriority(ADC1_IRQn, ARM_SYSTEM_PRIORITY);
-		NVIC_EnableIRQ(ADC1_IRQn);    //Включаем прерывания с АЦП. Обрабатывает ADC1_2_IRQHandler()
+		NVIC_EnableIRQ(ADC1_IRQn);    //Включаем прерывания с АЦП. Обрабатывает ADC1_IRQHandler()
 
 	#endif /* defined (ADC2) */
 
@@ -2677,8 +2694,11 @@ void hardware_adc_initialize(void)
 			;
 	}
 
+	NVIC_SetVector(ADC_IRQn, (uintptr_t) & ADC_IRQHandler);
 	NVIC_SetPriority(ADC_IRQn, ARM_SYSTEM_PRIORITY);
 	NVIC_EnableIRQ(ADC_IRQn);    // Включаем прерывания с АЦП. Обрабатывает ADC_IRQHandler()
+
+	NVIC_SetVector(ADC3_IRQn, (uintptr_t) & ADC3_IRQHandler);
 	NVIC_SetPriority(ADC3_IRQn, ARM_SYSTEM_PRIORITY);
 	NVIC_EnableIRQ(ADC3_IRQn);    // Включаем прерывания с АЦП. Обрабатывает ADC3_IRQHandler()
 
@@ -2718,7 +2738,7 @@ void hardware_adc_initialize(void)
 	#endif /* WITHREFSENSOR || WITHTEMPSENSOR */
 		0;
 	
-
+	NVIC_SetVector(ADC_IRQn, (uintptr_t) & ADC_IRQHandler);
 	NVIC_SetPriority(ADC_IRQn, ARM_SYSTEM_PRIORITY);
 	NVIC_EnableIRQ(ADC_IRQn);    //Включаем прерывания с АЦП. Обрабатывает ADC_IRQHandler()
 
@@ -2823,7 +2843,7 @@ void hardware_adc_initialize(void)
 	RCC->CFGR2 = (RCC->CFGR2 & ~ (RCC_CFGR2_ADCPRE12)) | RCC_CFGR2_ADCPRE12_DIV4; // RCC_CFGR_ADCPRE12_DIV2;    //  
 	//RCC->APB2ENR |= (RCC_APB2ENR_ADC1EN | RCC_APB2ENR_ADC2EN);    //Затактировали АЦП
 
-
+	NVIC_SetVector(ADC1_2_IRQn, (uintptr_t) & ADC1_2_IRQHandler);
 	NVIC_SetPriority(ADC1_2_IRQn, ARM_SYSTEM_PRIORITY);
 	NVIC_EnableIRQ(ADC1_2_IRQn);    //Включаем прерывания с АЦП. Обрабатывает ADC1_2_IRQHandler()
 
@@ -2927,9 +2947,11 @@ void hardware_adc_initialize(void)
 	ADC1->CR = ADC_CR_ADEN;
 
 	#if STM32F0XX_MD
+		NVIC_SetVector(ADC1_COMP_IRQn, (uintptr_t) & ADC1_COMP_IRQHandler);
 		NVIC_SetPriority(ADC1_COMP_IRQn, ARM_SYSTEM_PRIORITY);
 		NVIC_EnableIRQ(ADC1_COMP_IRQn);    //Включаем прерывания с АЦП. Обрабатывает ADC1_COMP_IRQHandler()
 	#else /* STM32F0XX_MD */
+		NVIC_SetVector(ADC1_IRQn, (uintptr_t) & ADC1_IRQHandler);
 		NVIC_SetPriority(ADC1_IRQn, ARM_SYSTEM_PRIORITY);
 		NVIC_EnableIRQ(ADC1_IRQn);    //Включаем прерывания с АЦП. Обрабатывает ADC1_IRQHandler()
 	#endif /* STM32F0XX_MD */
@@ -2994,6 +3016,7 @@ void hardware_adc_initialize(void)
 
 	ADC1->CR = ADC_CR_ADEN;
 
+	NVIC_SetVector(ADC1_COMP_IRQn, (uintptr_t) & ADC1_COMP_IRQHandler);
 	NVIC_SetPriority(ADC1_COMP_IRQn, ARM_SYSTEM_PRIORITY);
 	NVIC_EnableIRQ(ADC1_COMP_IRQn);    //Включаем прерывания с АЦП. Обрабатывает ADC1_COMP_IRQHandler()
 	#endif
@@ -5824,6 +5847,7 @@ hardware_elkey_timer_initialize(void)
 	TC0->TC_CHANNEL [2].TC_IER = TC_IER_CPCS ; // Interrupt on RC compare
 
 	// enable interrupts from TC2
+	NVIC_SetVector(TC2_IRQn, (uintptr_t) & TC2_IRQHandler);
 	NVIC_SetPriority(TC2_IRQn, ARM_SYSTEM_PRIORITY);
 	NVIC_EnableIRQ(TC2_IRQn);		// enable TC2_Handler();
 
@@ -5869,6 +5893,7 @@ hardware_elkey_timer_initialize(void)
 	__DSB();
 	TIM3->DIER = TIM_DIER_UIE;        	 // разрешить событие от таймера
 
+	NVIC_SetVector(TIM3_IRQn, (uintptr_t) & TIM3_IRQHandler);
 	NVIC_SetPriority(TIM3_IRQn, ARM_SYSTEM_PRIORITY);
 	NVIC_EnableIRQ(TIM3_IRQn);		// enable TIM3_IRQHandler();
 
@@ -5878,6 +5903,7 @@ hardware_elkey_timer_initialize(void)
 	__DSB();
 	TIM3->DIER = TIM_DIER_UIE;        	 // разрешить событие от таймера
 
+	NVIC_SetVector(TIM3_IRQn, (uintptr_t) & TIM3_IRQHandler);
 	NVIC_SetPriority(TIM3_IRQn, ARM_SYSTEM_PRIORITY);
 	NVIC_EnableIRQ(TIM3_IRQn);		// enable TIM3_IRQHandler();
 
@@ -6145,6 +6171,7 @@ void hardware_lfm_timer_initialize(void)
 	TC0->TC_CHANNEL [0].TC_IER = TC_IER_CPCS ; // Interrupt on RC compare
 
 	// enable interrupts from TC2
+	NVIC_SetVector(TC0_IRQn, (uintptr_t) & TC0_IRQHandler);
 	NVIC_SetPriority(TC0_IRQn, ARM_SYSTEM_PRIORITY);
 	NVIC_EnableIRQ(TC0_IRQn);		// enable TC0_IrqHandler();
 
@@ -6408,8 +6435,11 @@ void hardware_sdhost_initialize(void)
 	hardware_sdhost_setbuswidth(0);
 	hardware_sdhost_setspeed(400000uL);
 
+	NVIC_SetVector(SDIO_IRQn, (uintptr_t) & SDIO_IRQHandler);
 	NVIC_SetPriority(SDIO_IRQn, ARM_SYSTEM_PRIORITY);
 	NVIC_EnableIRQ(SDIO_IRQn);	// SDIO_IRQHandler() enable
+
+	NVIC_SetVector(DMA2_Stream6_IRQn, (uintptr_t) & DMA2_Stream6_IRQHandler);
 	NVIC_SetPriority(DMA2_Stream6_IRQn, ARM_SYSTEM_PRIORITY);
 	NVIC_EnableIRQ(DMA2_Stream6_IRQn);	// DMA2_Stream6_IRQHandler() enable
 
@@ -6433,8 +6463,11 @@ void hardware_sdhost_initialize(void)
 	hardware_sdhost_setbuswidth(0);
 	hardware_sdhost_setspeed(400000uL);
 
+	NVIC_SetVector(SDMMC1_IRQn, (uintptr_t) & SDMMC1_IRQHandler);
 	NVIC_SetPriority(SDMMC1_IRQn, ARM_SYSTEM_PRIORITY);
 	NVIC_EnableIRQ(SDMMC1_IRQn);	// SDIO_IRQHandler() enable
+
+	NVIC_SetVector(DMA2_Stream6_IRQn, (uintptr_t) & DMA2_Stream6_IRQHandler);
 	NVIC_SetPriority(DMA2_Stream6_IRQn, ARM_SYSTEM_PRIORITY);
 	NVIC_EnableIRQ(DMA2_Stream6_IRQn);	// DMA2_Stream6_IRQHandler() enable
 
@@ -6460,6 +6493,7 @@ void hardware_sdhost_initialize(void)
 	hardware_sdhost_setbuswidth(0);
 	hardware_sdhost_setspeed(400000uL);
 
+	NVIC_SetVector(SDMMC1_IRQn, (uintptr_t) & SDMMC1_IRQHandler);
 	NVIC_SetPriority(SDMMC1_IRQn, ARM_SYSTEM_PRIORITY);
 	NVIC_EnableIRQ(SDMMC1_IRQn);	// SDIO_IRQHandler() enable
 
@@ -9314,7 +9348,9 @@ arm_cpu_CMx_initialize_NVIC(void)
 	gARM_BASEPRI_ALL_ENABLED = 0;
 
 	// Назначить таймеру приоритет, равный всем остальным прерываниям
+	NVIC_SetVector(SysTick_IRQn, (uintptr_t) & SysTick_Handler);
 	NVIC_SetPriority(SysTick_IRQn, ARM_SYSTEM_PRIORITY);
+	// небыло NVIC_EnableIRQ(SysTick_IRQn);	// SysTick_Handler() enable
 
 	//__set_BASEPRI(gARM_BASEPRI_ALL_ENABLED);
 }

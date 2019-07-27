@@ -288,6 +288,7 @@ DMA_I2S2_TX_initialize(void)
 	DMA1->HIFCR = DMA_HISR_TCIF4;	// Clear TC interrupt flag соответствующий stream
 	DMA1_Stream4->CR |= DMA_SxCR_TCIE;	// Разрешаем прерывания от DMA
 
+	NVIC_SetVector(DMA1_Stream4_IRQn, (uintptr_t) & DMA1_Stream4_IRQHandler);
 	NVIC_SetPriority(DMA1_Stream4_IRQn, ARM_REALTIME_PRIORITY);
 	NVIC_EnableIRQ(DMA1_Stream4_IRQn);	// DMA1_Stream4_IRQHandler() enable
 	DMA1_Stream4->CR |= DMA_SxCR_EN;
@@ -327,6 +328,7 @@ DMA_I2S2ext_rx_init(void)
 	DMA1->LIFCR = DMA_LISR_TCIF3;	// Clear TC interrupt flag
 	DMA1_Stream3->CR |= DMA_SxCR_TCIE;	// Разрешаем прерывания от DMA
 
+	NVIC_SetVector(DMA1_Stream3_IRQn, (uintptr_t) & DMA1_Stream3_IRQHandler);
 	NVIC_SetPriority(DMA1_Stream3_IRQn, ARM_REALTIME_PRIORITY);
 	NVIC_EnableIRQ(DMA1_Stream3_IRQn);	// DMA1_Stream3_IRQHandler() enable
 
@@ -377,6 +379,7 @@ DMA_I2S3_RX_initialize(void)
 	DMA1->LIFCR = DMA_LISR_TCIF0;	// Clear TC interrupt flag
 	DMA1_Stream0->CR |= DMA_SxCR_TCIE;	// Разрешаем прерывания от DMA
 
+	NVIC_SetVector(DMA1_Stream0_IRQn, (uintptr_t) & DMA1_Stream0_IRQHandler);
 	NVIC_SetPriority(DMA1_Stream0_IRQn, ARM_REALTIME_PRIORITY);
 	NVIC_EnableIRQ(DMA1_Stream0_IRQn);	// DMA1_Stream0_IRQHandler() enable
 
@@ -1106,6 +1109,7 @@ static void DMA_SAI1_A_TX_initialize(void)
 	DMA2->LIFCR = DMA_LISR_TCIF1;	// Clear TC interrupt flag
 	DMA2_Stream1->CR |= DMA_SxCR_TCIE;	// Разрешаем прерывания от DMA
 
+	NVIC_SetVector(DMA2_Stream1_IRQn, (uintptr_t) & DMA2_Stream1_IRQHandler);
 	NVIC_SetPriority(DMA2_Stream1_IRQn, ARM_REALTIME_PRIORITY);
 	NVIC_EnableIRQ(DMA2_Stream1_IRQn);	// DMA2_Stream1_IRQHandler() enable
 
@@ -1156,6 +1160,7 @@ static void DMA_SAI1_B_RX_initialize(void)
 	DMA2->HIFCR = (DMA_HIFCR_CTCIF5 /* | DMA_HIFCR_CTEIF5 */);	// Clear TC interrupt flag соответствующий stream
 	DMA2_Stream5->CR |= (DMA_SxCR_TCIE /* | DMA_SxCR_TEIE */);	// прерывания от DMA по TC и TE
 
+	NVIC_SetVector(DMA2_Stream5_IRQn, (uintptr_t) & DMA2_Stream5_IRQHandler);
 	NVIC_SetPriority(DMA2_Stream5_IRQn, ARM_REALTIME_PRIORITY);
 	NVIC_EnableIRQ(DMA2_Stream5_IRQn);	// DMA2_Stream5_IRQHandler() enable
 
@@ -1542,6 +1547,7 @@ static void DMA_SAI2_A_TX_initializeXXX(void)
 	DMA2->HIFCR = DMA_HIFCR_CTCIF4;	// Clear TC interrupt flag соответствующий stream
 	DMA2_Stream4->CR |= DMA_SxCR_TCIE;	// Разрешаем прерывания от DMA
 
+	NVIC_SetVector(DMA2_Stream4_IRQn, (uintptr_t) & DMA2_Stream4_IRQHandler);
 	NVIC_SetPriority(DMA2_Stream4_IRQn, ARM_REALTIME_PRIORITY);
 	NVIC_EnableIRQ(DMA2_Stream4_IRQn);	// DMA2_Stream4_IRQHandler() enable
 
@@ -1587,6 +1593,7 @@ static void DMA_SAI2_A_TX_initializeAUDIO48(void)
 	DMA2->HIFCR = DMA_HIFCR_CTCIF4;	// Clear TC interrupt flag соответствующий stream
 	DMA2_Stream4->CR |= DMA_SxCR_TCIE;	// Разрешаем прерывания от DMA
 
+	NVIC_SetVector(DMA2_Stream4_IRQn, (uintptr_t) & DMA2_Stream4_IRQHandler);
 	NVIC_SetPriority(DMA2_Stream4_IRQn, ARM_REALTIME_PRIORITY);
 	NVIC_EnableIRQ(DMA2_Stream4_IRQn);	// DMA2_Stream4_IRQHandler() enable
 
@@ -1634,6 +1641,7 @@ static void DMA_SAI2_B_RX_initializeRTS96(void)
 	DMA2->HIFCR = (DMA_HIFCR_CTCIF7 /*| DMA_HIFCR_CTEIF7 */);	// Clear TC interrupt flag соответствующий stream
 	DMA2_Stream7->CR |= (DMA_SxCR_TCIE /* | DMA_SxCR_TEIE */);	// прерывания от DMA по TC и TE
 
+	NVIC_SetVector(DMA2_Stream7_IRQn, (uintptr_t) & DMA2_Stream7_IRQHandler);
 	NVIC_SetPriority(DMA2_Stream7_IRQn, ARM_REALTIME_PRIORITY);
 	NVIC_EnableIRQ(DMA2_Stream7_IRQn);	// DMA2_Stream7_IRQHandler() enable
 
@@ -1681,6 +1689,7 @@ static void DMA_SAI2_B_RX_initializeAUDIO48(void)
 	DMA2->HIFCR = (DMA_HIFCR_CTCIF7 /*| DMA_HIFCR_CTEIF7 */);	// Clear TC interrupt flag соответствующий stream
 	DMA2_Stream7->CR |= (DMA_SxCR_TCIE /* | DMA_SxCR_TEIE */);	// прерывания от DMA по TC и TE
 
+	NVIC_SetVector(DMA2_Stream7_IRQn, (uintptr_t) & DMA2_Stream7_IRQHandler);
 	NVIC_SetPriority(DMA2_Stream7_IRQn, ARM_REALTIME_PRIORITY);
 	NVIC_EnableIRQ(DMA2_Stream7_IRQn);	// DMA2_Stream7_IRQHandler() enable
 
@@ -1976,6 +1985,7 @@ static void DMA_SAI2_B_RX_initializeWFM(void)
 	DMA2->HIFCR = (DMA_HIFCR_CTCIF7 /*| DMA_HIFCR_CTEIF7 */);	// Clear TC interrupt flag соответствующий stream
 	DMA2_Stream7->CR |= (DMA_SxCR_TCIE /* | DMA_SxCR_TEIE */);	// прерывания от DMA по TC и TE
 
+	NVIC_SetVector(DMA2_Stream7_IRQn, (uintptr_t) & DMA2_Stream7_IRQHandler);
 	NVIC_SetPriority(DMA2_Stream7_IRQn, ARM_REALTIME_PRIORITY);
 	NVIC_EnableIRQ(DMA2_Stream7_IRQn);	// DMA2_Stream7_IRQHandler() enable
 

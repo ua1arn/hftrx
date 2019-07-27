@@ -684,36 +684,43 @@ void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority,
 
 		if ((ipins & EXTI_IMR_MR0) != 0)
 		{
+			NVIC_SetVector(EXTI0_IRQn, (uintptr_t) & EXTI0_IRQHandler);
 			NVIC_SetPriority(EXTI0_IRQn, priority);
 			NVIC_EnableIRQ(EXTI0_IRQn);		// enable EXTI0_IRQHandler();
 		}
 		if ((ipins & EXTI_IMR_MR1) != 0)
 		{
+			NVIC_SetVector(EXTI1_IRQn, (uintptr_t) & EXTI1_IRQHandler);
 			NVIC_SetPriority(EXTI1_IRQn, priority);
 			NVIC_EnableIRQ(EXTI1_IRQn);		// enable EXTI1_IRQHandler();
 		}
 		if ((ipins & EXTI_IMR_MR2) != 0)
 		{
+			NVIC_SetVector(EXTI2_IRQn, (uintptr_t) & EXTI2_IRQHandler);
 			NVIC_SetPriority(EXTI2_IRQn, priority);
 			NVIC_EnableIRQ(EXTI2_IRQn);		// enable EXTI2_IRQHandler();
 		}
 		if ((ipins & EXTI_IMR_MR3) != 0)
 		{
+			NVIC_SetVector(EXTI3_IRQn, (uintptr_t) & EXTI3_IRQHandler);
 			NVIC_SetPriority(EXTI3_IRQn, priority);
 			NVIC_EnableIRQ(EXTI3_IRQn);		// enable EXTI3_IRQHandler();
 		}
 		if ((ipins & EXTI_IMR_MR4) != 0)
 		{
+			NVIC_SetVector(EXTI4_IRQn, (uintptr_t) & EXTI4_IRQHandler);
 			NVIC_SetPriority(EXTI4_IRQn, priority);
 			NVIC_EnableIRQ(EXTI4_IRQn);		// enable EXTI4_IRQHandler();
 		}
 		if ((ipins & (EXTI_IMR_MR9 | EXTI_IMR_MR8 | EXTI_IMR_MR7 | EXTI_IMR_MR6 | EXTI_IMR_MR5)) != 0)
 		{
+			NVIC_SetVector(EXTI9_5_IRQn, (uintptr_t) & EXTI9_5_IRQHandler);
 			NVIC_SetPriority(EXTI9_5_IRQn, priority);
 			NVIC_EnableIRQ(EXTI9_5_IRQn);	// enable EXTI9_5_IRQHandler();
 		}
 		if ((ipins & (EXTI_IMR_MR15 | EXTI_IMR_MR14 | EXTI_IMR_MR14 | EXTI_IMR_MR13 | EXTI_IMR_MR12 | EXTI_IMR_MR11 | EXTI_IMR_MR10)) != 0)
 		{
+			NVIC_SetVector(EXTI15_10_IRQn, (uintptr_t) & EXTI15_10_IRQHandler);
 			NVIC_SetPriority(EXTI15_10_IRQn, priority);
 			NVIC_EnableIRQ(EXTI15_10_IRQn);	// enable EXTI15_10_IRQHandler();
 		}
@@ -824,36 +831,43 @@ void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority,
 
 			if ((ipins & EXTI_IMR1_IM0) != 0)
 			{
+				NVIC_SetVector(EXTI0_IRQn, (uintptr_t) & EXTI0_IRQHandler);
 				NVIC_SetPriority(EXTI0_IRQn, priority);
 				NVIC_EnableIRQ(EXTI0_IRQn);		// enable EXTI0_IRQHandler();
 			}
 			if ((ipins & EXTI_IMR1_IM1) != 0)
 			{
+				NVIC_SetVector(EXTI1_IRQn, (uintptr_t) & EXTI1_IRQHandler);
 				NVIC_SetPriority(EXTI1_IRQn, priority);
 				NVIC_EnableIRQ(EXTI1_IRQn);		// enable EXTI1_IRQHandler();
 			}
 			if ((ipins & EXTI_IMR1_IM2) != 0)
 			{
+				NVIC_SetVector(EXTI2_IRQn, (uintptr_t) & EXTI2_IRQHandler);
 				NVIC_SetPriority(EXTI2_IRQn, priority);
 				NVIC_EnableIRQ(EXTI2_IRQn);		// enable EXTI2_IRQHandler();
 			}
 			if ((ipins & EXTI_IMR1_IM3) != 0)
 			{
+				NVIC_SetVector(EXTI3_IRQn, (uintptr_t) & EXTI3_IRQHandler);
 				NVIC_SetPriority(EXTI3_IRQn, priority);
 				NVIC_EnableIRQ(EXTI3_IRQn);		// enable EXTI3_IRQHandler();
 			}
 			if ((ipins & EXTI_IMR1_IM4) != 0)
 			{
+				NVIC_SetVector(EXTI4_IRQn, (uintptr_t) & EXTI4_IRQHandler);
 				NVIC_SetPriority(EXTI4_IRQn, priority);
 				NVIC_EnableIRQ(EXTI4_IRQn);		// enable EXTI4_IRQHandler();
 			}
 			if ((ipins & (EXTI_IMR1_IM9 | EXTI_IMR1_IM8 | EXTI_IMR1_IM7 | EXTI_IMR1_IM6 | EXTI_IMR1_IM5)) != 0)
 			{
+				NVIC_SetVector(EXTI9_5_IRQn, (uintptr_t) & EXTI9_5_IRQHandler);
 				NVIC_SetPriority(EXTI9_5_IRQn, priority);
 				NVIC_EnableIRQ(EXTI9_5_IRQn);	// enable EXTI9_5_IRQHandler();
 			}
 			if ((ipins & (EXTI_IMR1_IM15 | EXTI_IMR1_IM14 | EXTI_IMR1_IM13 | EXTI_IMR1_IM12 | EXTI_IMR1_IM11 | EXTI_IMR1_IM10)) != 0)
 			{
+				NVIC_SetVector(EXTI15_10_IRQn, (uintptr_t) & EXTI15_10_IRQHandler);
 				NVIC_SetPriority(EXTI15_10_IRQn, priority);
 				NVIC_EnableIRQ(EXTI15_10_IRQn);	// enable EXTI15_10_IRQHandler();
 			}
@@ -1011,11 +1025,13 @@ void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority,
 
 			if ((ipins & (EXTI_IMR_IM1 | EXTI_IMR_IM0)) != 0)
 			{
+				NVIC_SetVector(EXTI0_1_IRQn, (uintptr_t) & EXTI0_1_IRQHandler);
 				NVIC_SetPriority(EXTI0_1_IRQn, priority);
 				NVIC_EnableIRQ(EXTI0_1_IRQn);		// enable EXTI0_1_IRQHandler();
 			}
 			else if ((ipins & (EXTI_IMR_IM2 | EXTI_IMR_IM3)) != 0)
 			{
+				NVIC_SetVector(EXTI2_3_IRQn, (uintptr_t) & EXTI2_3_IRQHandler);
 				NVIC_SetPriority(EXTI2_3_IRQn, priority);
 				NVIC_EnableIRQ(EXTI2_3_IRQn);		// enable EXTI2_3_IRQHandler();
 			}
@@ -1023,6 +1039,7 @@ void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority,
 							EXTI_IMR_IM9 | EXTI_IMR_IM10 | EXTI_IMR_IM11 | EXTI_IMR_IM12 | EXTI_IMR_IM13 | 
 							EXTI_IMR_IM14 | EXTI_IMR_IM15)) != 0)
 			{
+				NVIC_SetVector(EXTI4_15_IRQn, (uintptr_t) & EXTI4_15_IRQHandler);
 				NVIC_SetPriority(EXTI4_15_IRQn, priority);
 				NVIC_EnableIRQ(EXTI4_15_IRQn);		// enable EXTI4_15_IRQHandler();
 			}
@@ -1031,11 +1048,13 @@ void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority,
 
 			if ((ipins & (EXTI_IMR_MR1 | EXTI_IMR_MR0)) != 0)
 			{
+				NVIC_SetVector(EXTI0_1_IRQn, (uintptr_t) & EXTI0_1_IRQHandler);
 				NVIC_SetPriority(EXTI0_1_IRQn, priority);
 				NVIC_EnableIRQ(EXTI0_1_IRQn);		// enable EXTI0_1_IRQHandler();
 			}
 			else if ((ipins & (EXTI_IMR_MR2 | EXTI_IMR_MR3)) != 0)
 			{
+				NVIC_SetVector(EXTI2_3_IRQn, (uintptr_t) & EXTI2_3_IRQHandler);
 				NVIC_SetPriority(EXTI2_3_IRQn, priority);
 				NVIC_EnableIRQ(EXTI2_3_IRQn);		// enable EXTI2_3_IRQHandler();
 			}
@@ -1043,6 +1062,7 @@ void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority,
 							EXTI_MRR_MR9 | EXTI_MRR_MR10 | EXTI_MRR_MR11 | EXTI_MRR_MR12 | EXTI_MRR_MR13 | 
 							EXTI_MRR_MR14 | EXTI_MRR_MR15)) != 0)
 			{
+				NVIC_SetVector(EXTI4_15_IRQn, (uintptr_t) & EXTI4_15_IRQHandler);
 				NVIC_SetPriority(EXTI4_15_IRQn, priority);
 				NVIC_EnableIRQ(EXTI4_15_IRQn);		// enable EXTI4_15_IRQHandler();
 			}
@@ -1051,124 +1071,143 @@ void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority,
 
 			if ((ipins & (EXTI_IMR_MR0)) != 0)
 			{
+				NVIC_SetVector(EXTI0_IRQn, (uintptr_t) & EXTI0_IRQHandler);
 				NVIC_SetPriority(EXTI0_IRQn, priority);
 				NVIC_EnableIRQ(EXTI0_IRQn);		// enable EXTI0_IRQHandler();
 			}
 			if ((ipins & (EXTI_IMR_MR1)) != 0)
 			{
+				NVIC_SetVector(EXTI1_IRQn, (uintptr_t) & EXTI1_IRQHandler);
 				NVIC_SetPriority(EXTI1_IRQn, priority);
 				NVIC_EnableIRQ(EXTI1_IRQn);		// enable EXTI1_IRQHandler();
 			}
 			if ((ipins & (EXTI_IMR_MR2)) != 0)
 			{
+				NVIC_SetVector(EXTI2_IRQn, (uintptr_t) & EXTI2_IRQHandler);
 				NVIC_SetPriority(EXTI2_IRQn, priority);
 				NVIC_EnableIRQ(EXTI2_IRQn);		// enable EXTI2_IRQHandler();
 			}
 			if ((ipins & (EXTI_IMR_MR3)) != 0)
 			{
+				NVIC_SetVector(EXTI3_IRQn, (uintptr_t) & EXTI3_IRQHandler);
 				NVIC_SetPriority(EXTI3_IRQn, priority);
 				NVIC_EnableIRQ(EXTI3_IRQn);		// enable EXTI3_IRQHandler();
 			}
 			if ((ipins & (EXTI_IMR_MR4)) != 0)
 			{
+				NVIC_SetVector(EXTI4_IRQn, (uintptr_t) & EXTI4_IRQHandler);
 				NVIC_SetPriority(EXTI4_IRQn, priority);
 				NVIC_EnableIRQ(EXTI4_IRQn);		// enable EXTI4_IRQHandler();
 			}
 			if ((ipins & (EXTI_IMR_MR9 | EXTI_IMR_MR8 | EXTI_IMR_MR7 | EXTI_IMR_MR6 | EXTI_IMR_MR5)) != 0)
 			{
+				NVIC_SetVector(EXTI9_5_IRQn, (uintptr_t) & EXTI9_5_IRQHandler);
 				NVIC_SetPriority(EXTI9_5_IRQn, priority);
 				NVIC_EnableIRQ(EXTI9_5_IRQn);	// enable EXTI9_5_IRQHandler();
 			}
 			if ((ipins & (EXTI_IMR_MR15 | EXTI_IMR_MR14 | EXTI_IMR_MR14 | EXTI_IMR_MR13 | EXTI_IMR_MR12 | EXTI_IMR_MR11 | EXTI_IMR_MR10)) != 0)
 			{
+				NVIC_SetVector(EXTI15_10_IRQn, (uintptr_t) & EXTI15_10_IRQHandler);
 				NVIC_SetPriority(EXTI15_10_IRQn, priority);
 				NVIC_EnableIRQ(EXTI15_10_IRQn);	// enable EXTI15_10_IRQHandler();
-			}
-			else
-			{
-				//NVIC_SetPriority(EXTI4_15_IRQn, priority);
-				//NVIC_EnableIRQ(EXTI4_15_IRQn);		// enable EXTI4_15_IRQHandler();
 			}
 
 		#elif CPUSTYLE_STM32H7XX
 
 			if ((ipins & EXTI_IMR1_IM0) != 0)
 			{
+				NVIC_SetVector(EXTI0_IRQn, (uintptr_t) & EXTI0_IRQHandler);
 				NVIC_SetPriority(EXTI0_IRQn, priority);
 				NVIC_EnableIRQ(EXTI0_IRQn);		// enable EXTI0_IRQHandler();
 			}
 			if ((ipins & EXTI_IMR1_IM1) != 0)
 			{
+				NVIC_SetVector(EXTI1_IRQn, (uintptr_t) & EXTI1_IRQHandler);
 				NVIC_SetPriority(EXTI1_IRQn, priority);
 				NVIC_EnableIRQ(EXTI1_IRQn);		// enable EXTI1_IRQHandler();
 			}
 			if ((ipins & EXTI_IMR1_IM2) != 0)
 			{
+				NVIC_SetVector(EXTI2_IRQn, (uintptr_t) & EXTI2_IRQHandler);
 				NVIC_SetPriority(EXTI2_IRQn, priority);
 				NVIC_EnableIRQ(EXTI2_IRQn);		// enable EXTI2_IRQHandler();
 			}
 			if ((ipins & EXTI_IMR1_IM3) != 0)
 			{
+				NVIC_SetVector(EXTI3_IRQn, (uintptr_t) & EXTI3_IRQHandler);
 				NVIC_SetPriority(EXTI3_IRQn, priority);
 				NVIC_EnableIRQ(EXTI3_IRQn);		// enable EXTI3_IRQHandler();
 			}
 			if ((ipins & EXTI_IMR1_IM4) != 0)
 			{
+				NVIC_SetVector(EXTI4_IRQn, (uintptr_t) & EXTI4_IRQHandler);
 				NVIC_SetPriority(EXTI4_IRQn, priority);
 				NVIC_EnableIRQ(EXTI4_IRQn);		// enable EXTI4_IRQHandler();
 			}
 			if ((ipins & (EXTI_IMR1_IM9 | EXTI_IMR1_IM8 | EXTI_IMR1_IM7 | EXTI_IMR1_IM6 | EXTI_IMR1_IM5)) != 0)
 			{
+				NVIC_SetVector(EXTI9_5_IRQn, (uintptr_t) & EXTI9_5_IRQHandler);
 				NVIC_SetPriority(EXTI9_5_IRQn, priority);
 				NVIC_EnableIRQ(EXTI9_5_IRQn);	// enable EXTI9_5_IRQHandler();
 			}
 			if ((ipins & (EXTI_IMR1_IM15 | EXTI_IMR1_IM14 | EXTI_IMR1_IM13 | EXTI_IMR1_IM12 | EXTI_IMR1_IM11 | EXTI_IMR1_IM10)) != 0)
 			{
+				NVIC_SetVector(EXTI15_10_IRQn, (uintptr_t) & EXTI15_10_IRQHandler);
 				NVIC_SetPriority(EXTI15_10_IRQn, priority);
 				NVIC_EnableIRQ(EXTI15_10_IRQn);	// enable EXTI15_10_IRQHandler();
 			}
 
 		#else /* CPUSTYLE_STM32F0XX */
+
 			if ((ipins & EXTI_IMR_MR0) != 0)
 			{
+				NVIC_SetVector(EXTI0_IRQn, (uintptr_t) & EXTI0_IRQHandler);
 				NVIC_SetPriority(EXTI0_IRQn, priority);
 				NVIC_EnableIRQ(EXTI0_IRQn);		// enable EXTI0_IRQHandler();
 			}
 			if ((ipins & EXTI_IMR_MR1) != 0)
 			{
+				NVIC_SetVector(EXTI1_IRQn, (uintptr_t) & EXTI1_IRQHandler);
 				NVIC_SetPriority(EXTI1_IRQn, priority);
 				NVIC_EnableIRQ(EXTI1_IRQn);		// enable EXTI1_IRQHandler();
 			}
 			if ((ipins & EXTI_IMR_MR2) != 0)
 			{
 				#if CPUSTYLE_STM32F4XX
+					NVIC_SetVector(EXTI2_IRQn, (uintptr_t) & EXTI2_IRQHandler);
 					NVIC_SetPriority(EXTI2_IRQn, priority);
 					NVIC_EnableIRQ(EXTI2_IRQn);		// enable EXTI2_IRQHandler();
 				#else
+					NVIC_SetVector(EXTI2_TS_IRQn, (uintptr_t) & EXTI2_TS_IRQHandler);
 					NVIC_SetPriority(EXTI2_TS_IRQn, priority);
 					NVIC_EnableIRQ(EXTI2_TS_IRQn);		// enable EXTI2_IRQHandler();
 				#endif
 			}
 			if ((ipins & EXTI_IMR_MR3) != 0)
 			{
+				NVIC_SetVector(EXTI3_IRQn, (uintptr_t) & EXTI3_IRQHandler);
 				NVIC_SetPriority(EXTI3_IRQn, priority);
 				NVIC_EnableIRQ(EXTI3_IRQn);		// enable EXTI3_IRQHandler();
 			}
 			if ((ipins & EXTI_IMR_MR4) != 0)
 			{
+				NVIC_SetVector(EXTI4_IRQn, (uintptr_t) & EXTI4_IRQHandler);
 				NVIC_SetPriority(EXTI4_IRQn, priority);
 				NVIC_EnableIRQ(EXTI4_IRQn);		// enable EXTI4_IRQHandler();
 			}
 			if ((ipins & (EXTI_IMR_MR9 | EXTI_IMR_MR8 | EXTI_IMR_MR7 | EXTI_IMR_MR6 | EXTI_IMR_MR5)) != 0)
 			{
+				NVIC_SetVector(EXTI9_5_IRQn, (uintptr_t) & EXTI9_5_IRQHandler);
 				NVIC_SetPriority(EXTI9_5_IRQn, priority);
 				NVIC_EnableIRQ(EXTI9_5_IRQn);	// enable EXTI9_5_IRQHandler();
 			}
 			if ((ipins & (EXTI_IMR_MR15 | EXTI_IMR_MR14 | EXTI_IMR_MR13 | EXTI_IMR_MR12 | EXTI_IMR_MR11 | EXTI_IMR_MR10)) != 0)
 			{
+				NVIC_SetVector(EXTI15_10_IRQn, (uintptr_t) & EXTI15_10_IRQHandler);
 				NVIC_SetPriority(EXTI15_10_IRQn, priority);
 				NVIC_EnableIRQ(EXTI15_10_IRQn);	// enable EXTI15_10_IRQHandler();
 			}
+
 		#endif /* CPUSTYLE_STM32F0XX */
 
 		}
@@ -5671,6 +5710,7 @@ arm_hardware_pioa_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 	(void) PIOA->PIO_ISR; // consume interrupt request
 	PIOA->PIO_IER = (ipins);	// interrupt on change pin enable
 
+	NVIC_SetVector(PIOA_IRQn, (uintptr_t) & PIOA_IRQHandler);
 	NVIC_SetPriority(PIOA_IRQn, priority);
 	NVIC_EnableIRQ(PIOA_IRQn);		// enable PIOA_Handler();
 
@@ -5704,6 +5744,7 @@ arm_hardware_piob_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 	(void) PIOB->PIO_ISR; // consume interrupt request
 	PIOB->PIO_IER = (ipins);	// interrupt on change pin enable
 
+	NVIC_SetVector(PIOB_IRQn, (uintptr_t) & PIOB_IRQHandler);
 	NVIC_SetPriority(PIOB_IRQn, priority);
 	NVIC_EnableIRQ(PIOB_IRQn);		// enable PIOB_Handler();
 
@@ -5732,6 +5773,7 @@ arm_hardware_pioc_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 	(void) PIOC->PIO_ISR; // consume interrupt request
 	PIOC->PIO_IER = (ipins);	// interrupt on change pin enable
 
+	NVIC_SetVector(PIOC_IRQn, (uintptr_t) & PIOC_IRQHandler);
 	NVIC_SetPriority(PIOC_IRQn, priority);
 	NVIC_EnableIRQ(PIOC_IRQn);		// enable PIOC_Handler();
 
@@ -5760,6 +5802,7 @@ arm_hardware_piod_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 	(void) PIOD->PIO_ISR; // consume interrupt request
 	PIOD->PIO_IER = (ipins);	// interrupt on change pin enable
 
+	NVIC_SetVector(PIOD_IRQn, (uintptr_t) & PIOD_IRQHandler);
 	NVIC_SetPriority(PIOD_IRQn, priority);
 	NVIC_EnableIRQ(PIOD_IRQn);		// enable PIOE_Handler();
 
@@ -5789,6 +5832,7 @@ arm_hardware_pioe_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 	(void) PIOE->PIO_ISR; // consume interrupt request
 	PIOE->PIO_IER = (ipins);	// interrupt on change pin enable
 
+	NVIC_SetVector(PIOE_IRQn, (uintptr_t) & PIOE_IRQHandler);
 	NVIC_SetPriority(PIOE_IRQn, priority);
 	NVIC_EnableIRQ(PIOE_IRQn);		// enable PIOE_Handler();
 
@@ -5818,6 +5862,7 @@ arm_hardware_piof_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 	(void) PIOF->PIO_ISR; // consume interrupt request
 	PIOF->PIO_IER = (ipins);	// interrupt on change pin enable
 
+	NVIC_SetVector(PIOF_IRQn, (uintptr_t) & PIOF_IRQHandler);
 	NVIC_SetPriority(PIOF_IRQn, priority);
 	NVIC_EnableIRQ(PIOF_IRQn);		// enable PIOF_Handler();
 
@@ -5846,6 +5891,7 @@ arm_hardware_piog_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 	(void) PIOG->PIO_ISR; // consume interrupt request
 	PIOG->PIO_IER = (ipins);	// interrupt on change pin enable
 
+	NVIC_SetVector(PIOG_IRQn, (uintptr_t) & PIOG_IRQHandler);
 	NVIC_SetPriority(PIOG_IRQn, priority);
 	NVIC_EnableIRQ(PIOG_IRQn);		// enable PIOG_Handler();
 

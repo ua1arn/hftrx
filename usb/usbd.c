@@ -10319,8 +10319,6 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 }
 
 
-#if WITHUSBHWHIGHSPEED
-
 void OTG_HS_IRQHandler(void)
 {
   HAL_PCD_IRQHandler(& hpcd_USB_OTG);
@@ -10342,7 +10340,6 @@ void OTG_HS_EP1_IN_IRQHandler(void)
   HAL_PCD_IRQHandler(& hpcd_USB_OTG);
 }
 
-#else /* WITHUSBHWHIGHSPEED */
 
 
 void OTG_FS_IRQHandler(void)
@@ -10351,7 +10348,6 @@ void OTG_FS_IRQHandler(void)
 }
 
 
-#endif /* WITHUSBHWHIGHSPEED */
 
 #elif CPUSTYLE_STM32F1XX
 
@@ -14272,11 +14268,15 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
 
 		if (hpcd->Init.use_dedicated_ep1 == USB_ENABLE)
 		{
+			NVIC_SetVector(OTG_HS_EP1_OUT_IRQn, (uintptr_t) & OTG_HS_EP1_OUT_IRQHandler);
 			NVIC_SetPriority(OTG_HS_EP1_OUT_IRQn, ARM_SYSTEM_PRIORITY);
 			NVIC_EnableIRQ(OTG_HS_EP1_OUT_IRQn);	// OTG_HS_EP1_OUT_IRQHandler() enable
+
+			NVIC_SetVector(OTG_HS_EP1_IN_IRQn, (uintptr_t) & OTG_HS_EP1_IN_IRQHandler);
 			NVIC_SetPriority(OTG_HS_EP1_IN_IRQn, ARM_SYSTEM_PRIORITY);
 			NVIC_EnableIRQ(OTG_HS_EP1_IN_IRQn);	// OTG_HS_EP1_IN_IRQHandler() enable
 		}
+		NVIC_SetVector(OTG_HS_IRQn, (uintptr_t) & OTG_HS_IRQHandler);
 		NVIC_SetPriority(OTG_HS_IRQn, ARM_SYSTEM_PRIORITY);
 		NVIC_EnableIRQ(OTG_HS_IRQn);	// OTG_HS_IRQHandler() enable
 
@@ -14304,6 +14304,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
 		RCC->AHB2ENR |= RCC_AHB2ENR_D2SRAM3EN;
 		(void) RCC->AHB2ENR;
 
+		NVIC_SetVector(OTG_FS_IRQn, (uintptr_t) & OTG_FS_IRQHandler);
 		NVIC_SetPriority(OTG_FS_IRQn, ARM_SYSTEM_PRIORITY);
 		NVIC_EnableIRQ(OTG_FS_IRQn);	// OTG_FS_IRQHandler() enable
 
@@ -14320,6 +14321,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
 	RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN;	/* USB/OTG FS companion - VBUS? */
 	(void) RCC->APB2ENR;
 
+	NVIC_SetVector(OTG_FS_IRQn, (uintptr_t) & OTG_FS_IRQHandler);
 	NVIC_SetPriority(OTG_FS_IRQn, ARM_SYSTEM_PRIORITY);
 	NVIC_EnableIRQ(OTG_FS_IRQn);	// OTG_FS_IRQHandler() enable
 
@@ -14362,11 +14364,15 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
 
 		if (hpcd->Init.use_dedicated_ep1 == USB_ENABLE)
 		{
+			NVIC_SetVector(OTG_HS_EP1_OUT_IRQn, (uintptr_t) & OTG_HS_EP1_OUT_IRQHandler);
 			NVIC_SetPriority(OTG_HS_EP1_OUT_IRQn, ARM_SYSTEM_PRIORITY);
 			NVIC_EnableIRQ(OTG_HS_EP1_OUT_IRQn);	// OTG_HS_EP1_OUT_IRQHandler() enable
+
+			NVIC_SetVector(OTG_HS_EP1_IN_IRQn, (uintptr_t) & OTG_HS_EP1_IN_IRQHandler);
 			NVIC_SetPriority(OTG_HS_EP1_IN_IRQn, ARM_SYSTEM_PRIORITY);
 			NVIC_EnableIRQ(OTG_HS_EP1_IN_IRQn);	// OTG_HS_EP1_IN_IRQHandler() enable
 		}
+		NVIC_SetVector(OTG_HS_IRQn, (uintptr_t) & OTG_HS_IRQHandler);
 		NVIC_SetPriority(OTG_HS_IRQn, ARM_SYSTEM_PRIORITY);
 		NVIC_EnableIRQ(OTG_HS_IRQn);	// OTG_HS_IRQHandler() enable
 
@@ -14382,6 +14388,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
 		RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN;	/* USB/OTG FS companion - VBUS? */
 		(void) RCC->APB2ENR;
 
+		NVIC_SetVector(OTG_FS_IRQn, (uintptr_t) & OTG_FS_IRQHandler);
 		NVIC_SetPriority(OTG_FS_IRQn, ARM_SYSTEM_PRIORITY);
 		NVIC_EnableIRQ(OTG_FS_IRQn);	// OTG_FS_IRQHandler() enable
 
@@ -15044,6 +15051,7 @@ void HAL_HCD_MspInit(HCD_HandleTypeDef* hcdHandle)
 			RCC->APB4ENR |= RCC_APB4ENR_SYSCFGEN;	/* USB/OTG HS companion - VBUS? */
 			(void) RCC->APB2ENR;
 
+			NVIC_SetVector(OTG_FS_IRQn, (uintptr_t) & OTG_FS_IRQHandler);
 			NVIC_SetPriority(OTG_FS_IRQn, ARM_SYSTEM_PRIORITY);
 			NVIC_EnableIRQ(OTG_FS_IRQn);	// OTG_FS_IRQHandler() enable
 
@@ -15058,6 +15066,7 @@ void HAL_HCD_MspInit(HCD_HandleTypeDef* hcdHandle)
 			RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN;	/* USB/OTG FS companion - VBUS? */
 			(void) RCC->APB2ENR;
 
+			NVIC_SetVector(OTG_FS_IRQn, (uintptr_t) & OTG_FS_IRQHandler);
 			NVIC_SetPriority(OTG_FS_IRQn, ARM_SYSTEM_PRIORITY);
 			NVIC_EnableIRQ(OTG_FS_IRQn);	// OTG_FS_IRQHandler() enable
 
