@@ -291,6 +291,7 @@ DMA_I2S2_TX_initialize(void)
 	NVIC_SetVector(DMA1_Stream4_IRQn, (uintptr_t) & DMA1_Stream4_IRQHandler);
 	NVIC_SetPriority(DMA1_Stream4_IRQn, ARM_REALTIME_PRIORITY);
 	NVIC_EnableIRQ(DMA1_Stream4_IRQn);	// DMA1_Stream4_IRQHandler() enable
+
 	DMA1_Stream4->CR |= DMA_SxCR_EN;
 }
 

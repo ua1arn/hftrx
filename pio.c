@@ -5804,7 +5804,7 @@ arm_hardware_piod_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 
 	NVIC_SetVector(PIOD_IRQn, (uintptr_t) & PIOD_IRQHandler);
 	NVIC_SetPriority(PIOD_IRQn, priority);
-	NVIC_EnableIRQ(PIOD_IRQn);		// enable PIOE_Handler();
+	NVIC_EnableIRQ(PIOD_IRQn);		// enable PIOD_Handler();
 
 
 #elif CPUSTYLE_STM32F1XX

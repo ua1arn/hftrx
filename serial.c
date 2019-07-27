@@ -755,6 +755,7 @@ void hardware_uart1_initialize(void)
 		NVIC_EnableIRQ(UART0_IRQn);		// enable UART0_Handler();
 
 		UART0->UART_CR = UART_CR_RXEN | UART_CR_TXEN;	// разрешаем приёмник и передатчик.
+
 	#elif HARDWARE_ARM_USEUART1
 		// enable the clock of UART1
 		PMC->PMC_PCER0 = 1UL << ID_UART1;

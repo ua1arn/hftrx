@@ -9359,10 +9359,9 @@ arm_cpu_CMx_initialize_NVIC(void)
 	gARM_BASEPRI_ONLY_REALTIME = ((gARM_SYSTEM_PRIORITY << (8 - __NVIC_PRIO_BITS)) & 0xff);
 	gARM_BASEPRI_ALL_ENABLED = 0;
 
-	// Назначить таймеру приоритет, равный всем остальным прерываниям
+	// Назначить таймеру приоритет, равный всем остальным прерываниям. Разрешать через NVIC не требуется
 	NVIC_SetVector(SysTick_IRQn, (uintptr_t) & SysTick_Handler);
 	NVIC_SetPriority(SysTick_IRQn, ARM_SYSTEM_PRIORITY);
-	// небыло NVIC_EnableIRQ(SysTick_IRQn);	// SysTick_Handler() enable
 
 	//__set_BASEPRI(gARM_BASEPRI_ALL_ENABLED);
 }
@@ -11646,7 +11645,7 @@ void Reset_Handler(void)
 
 const
 __VECTOR_TABLE_ATTRIBUTE
-IntFunc __Vectors [256] = {
+IntFunc __Vectors [NVIC_USER_IRQ_OFFSET] = {
 
     /* Configure Initial Stack Pointer, using linker-generated symbols */
     (IntFunc)(& __stack),
@@ -11656,13 +11655,13 @@ IntFunc __Vectors [256] = {
     MemManage_Handler,
     BusFault_Handler,
     UsageFault_Handler,
-    0, 0, 0, 0,         /* Reserved */
+    NULL, NULL, NULL, NULL,         /* Reserved */
     SVC_Handler,
     DebugMon_Handler,
-    0,                  /* Reserved  */
+	NULL,                  /* Reserved  */
     PendSV_Handler,		/* -2 */
     SysTick_Handler,	/* -1 */
-
+#if 0
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 	/* Configurable interrupts  */
 	SUPC_Handler,   /* 0  Supply Controller */
@@ -12189,10 +12188,12 @@ IntFunc __Vectors [256] = {
 
 
 #endif
+
+#endif
 };
 
 
-#define VTRATTR2	__attribute__ ((section(".ramvectors"), used, aligned(256 * 4)))
+#define VTRATTR2	__attribute__ ((section("vtable"), used, aligned(256 * 4)))
 
 VTRATTR2 volatile IntFunc ramVectors [256];
 
@@ -12200,12 +12201,12 @@ static void vectors_relocate(void)
 {
 	unsigned i;
 
+	memcpy((void *) ramVectors, __Vectors, NVIC_USER_IRQ_OFFSET * 4);
 	for (i = NVIC_USER_IRQ_OFFSET; i < (sizeof ramVectors / sizeof ramVectors [0]); ++ i)
 	{
 		ramVectors [i] = Default_Handler;
 	}
-	memcpy((void *) ramVectors, __Vectors, 256 * 4);
-	//SCB->VTOR = (uint32_t) & ramVectors;
+	SCB->VTOR = (uint32_t) & ramVectors;
 }
 #endif /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM0 || CPUSTYLE_ARM_CM7 */
 

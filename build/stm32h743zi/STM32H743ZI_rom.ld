@@ -131,8 +131,7 @@ SECTIONS
 		LONG ((__bss_end__ - __bss_start__) / 4)
 		__zero_table_end__ = .;
 	} > FLASH
-
-
+	
 	__etext = .;
 
 	.data : AT (__etext)
@@ -208,7 +207,6 @@ SECTIONS
 
 	.bss :
 	{
-		KEEP(*(.ramvectors))
 		. = ALIGN(32);
 		__bss_start__ = .;
 		*(.bss*)
