@@ -433,6 +433,7 @@ void hardware_adc_initialize(void);
 	#define NOINLINEAT // __attribute__((noinline))
 
 	#if CPUSTYLE_R7S721
+		#define VTRATTR	// __attribute__ ((section("vtable"), used, aligned(256 * 4)))
 		#define FLASHMEMINIT	__attribute__((section(".initdata"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
 		#define FLASHMEMINITFUNC	__attribute__((section(".initfunc"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
 		#define RAMFUNC_NONILINE // __attribute__((__section__(".ramfunc"), noinline))  
@@ -444,6 +445,7 @@ void hardware_adc_initialize(void);
 		#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
 		#define RAMHEAP __attribute__((used, section(".heap"))) // memory used as heap zone
 	#elif (CPUSTYLE_STM32H7XX)
+		#define VTRATTR	__attribute__ ((section("vtable"), used, aligned(256 * 4)))
 		#define FLASHMEMINIT	__attribute__((section(".init"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
 		#define FLASHMEMINITFUNC	__attribute__((section(".init"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
 		#define RAMFUNC_NONILINE __attribute__((noinline,__section__(".itcm")))  // удаление управления noinline добавило 2-3 процента быстродействия __attribute__((__section__(".ramfunc"), noinline))
@@ -455,6 +457,7 @@ void hardware_adc_initialize(void);
 		#define RAMBIG			__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
 		#define RAMHEAP __attribute__((used, section(".heap"))) // memory used as heap zone
 	#elif (CPUSTYLE_STM32F7XX)
+		#define VTRATTR	__attribute__ ((section("vtable"), used, aligned(256 * 4)))
 		#define FLASHMEMINIT	__attribute__((section(".init"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
 		#define FLASHMEMINITFUNC	__attribute__((section(".init"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
 		#define RAMFUNC_NONILINE __attribute__((noinline,__section__(".ramfunc")))  // удаление управления noinline добавило 2-3 процента быстродействия __attribute__((__section__(".ramfunc"), noinline))
@@ -466,6 +469,7 @@ void hardware_adc_initialize(void);
 		#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
 		#define RAMHEAP __attribute__((used, section(".heap"))) // memory used as heap zone
 	#elif CPUSTYLE_STM32F4XX && (defined (DSTM32F429xx) || defined(DSTM32F407xx))
+		#define VTRATTR	__attribute__ ((section("vtable"), used, aligned(256 * 4)))
 		#define FLASHMEMINIT	__attribute__((section(".init"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
 		#define FLASHMEMINITFUNC	__attribute__((section(".init"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
 		#define RAMFUNC_NONILINE  __attribute__((__section__(".ramfunc"), noinline))
@@ -477,6 +481,7 @@ void hardware_adc_initialize(void);
 		#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
 		#define RAMHEAP __attribute__((used, section(".heap"))) // memory used as heap zone
 	#elif CPUSTYLE_STM32F4XX
+		#define VTRATTR	__attribute__ ((section("vtable"), used, aligned(256 * 4)))
 		#define FLASHMEMINIT	__attribute__((section(".init"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
 		#define FLASHMEMINITFUNC	__attribute__((section(".init"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
 		#define RAMFUNC_NONILINE // __attribute__((__section__(".ramfunc"), noinline))  
@@ -488,6 +493,7 @@ void hardware_adc_initialize(void);
 		#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
 		#define RAMHEAP __attribute__((used, section(".heap"))) // memory used as heap zone
 	#else
+		#define VTRATTR	__attribute__ ((section("vtable"), used, aligned(256 * 4)))
 		#define FLASHMEMINIT	__attribute__((section(".init"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
 		#define FLASHMEMINITFUNC	__attribute__((section(".init"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
 		#define RAMFUNC_NONILINE __attribute__((noinline,__section__(".ramfunc")))  // удаление управления noinline добавило 2-3 процента быстродействия __attribute__((__section__(".ramfunc"), noinline))

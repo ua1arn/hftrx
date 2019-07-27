@@ -133,7 +133,7 @@ CPFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
 all: ROM
 
 flash: ROM
-	ST-LINK_CLI.exe -V -P $(PROJECT)_rom.hex -rst
+	ST-LINK_CLI.exe -Q -V -P $(PROJECT)_rom.hex -rst
 
 RAM: $(OBJS) $(PROJECT)_ram.elf $(PROJECT)_ram.hex
 
