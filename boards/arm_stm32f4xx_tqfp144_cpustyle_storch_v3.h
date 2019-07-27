@@ -6,7 +6,7 @@
 // UA1ARN
 //
 
-// Трансивер с DSP обработкой "Воронёнок-2" на процессоре 
+// Трансивер с DSP обработкой "Воронёнок-2" на процессоре
 // STM32H743ZIT6, STM32F746ZGT6 кодеком NAU8822L и FPGA EP4CE22E22I7N
 // с функцией DUAL WATCH
 // 2xUSB
@@ -31,8 +31,8 @@
 #define WITHCPUDACHW	1	/* использование встроенного в процессор DAC */
 #define WITHCPUADCHW 	1	/* использование встроенного в процессор ADC */
 
-#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
-#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
+//#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
+//#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
 
 #define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 #define WITHUSBHWVBUSSENSE	1	/* используется предопределенный вывод VBUS_SENSE */
@@ -216,7 +216,7 @@
 #if WITHSAI2HW
 	/* 
 	Поскольку блок SAI2 инициализируется как SLAVE с синхронизацией от SAI1,
-	из внешних сигналов требуется только SAI2_SD_A 
+	из внешних сигналов требуется только SAI2_SD_A
 	*/
 	#define SAI2HW_INITIALIZE()	do { \
 		/* arm_hardware_pioe_altfn20(1U << 0, AF_SAI2); */	/* PE0 - SAI2_MCK_A - 12.288 MHz	*/ \

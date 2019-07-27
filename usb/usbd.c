@@ -14402,7 +14402,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
   * @param  hpcd: PCD handle
   * @retval None
   */
-ATTRWEAK void HAL_PCD_MspDeInit(PCD_HandleTypeDef *hpcd)
+void HAL_PCD_MspDeInit(PCD_HandleTypeDef *hpcd)
 {
   /* Prevent unused argument(s) compilation warning */
   UNUSED(hpcd);

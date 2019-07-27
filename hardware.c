@@ -1178,21 +1178,21 @@ static RAMFUNC void spool_adcdonebundle(void)
 
 	#if CPUSTYLE_STM32L0XX
 
-	void ATTRWEAK EXTI0_1_IRQHandler(void)
+	void EXTI0_1_IRQHandler(void)
 	{
 		const portholder_t pr = EXTI->PR & (EXTI_IMR_IM0 | EXTI_IMR_IM1);
 		EXTI->PR = pr;		// reset all existing requests
 		//(void) EXTI->PR;
 		stm32fxxx_pinirq(pr);
 	}
-	void ATTRWEAK EXTI2_3_IRQHandler(void)
+	void EXTI2_3_IRQHandler(void)
 	{
 		const portholder_t pr = EXTI->PR & (EXTI_IMR_IM2 | EXTI_IMR_IM3);
 		EXTI->PR = pr;		// reset all existing requests
 		//(void) EXTI->PR;
 		stm32fxxx_pinirq(pr);
 	}
-	void ATTRWEAK EXTI4_15_IRQHandler(void)
+	void EXTI4_15_IRQHandler(void)
 	{
 		const portholder_t pr = EXTI->PR & (
 				EXTI_IMR_IM15 | EXTI_IMR_IM14 | EXTI_IMR_IM13 | EXTI_IMR_IM12 | 
@@ -1206,7 +1206,7 @@ static RAMFUNC void spool_adcdonebundle(void)
 
 	#elif CPUSTYLE_STM32H7XX
 
-	void ATTRWEAK EXTI0_IRQHandler(void)
+	void EXTI0_IRQHandler(void)
 	{
 		const portholder_t pr = EXTI_D1->PR1 & (EXTI_PR1_PR0);
 		EXTI_D1->PR1 = pr;		// reset all existing requests
@@ -1215,7 +1215,7 @@ static RAMFUNC void spool_adcdonebundle(void)
 	}
 
 	
-	void ATTRWEAK EXTI1_IRQHandler(void)
+	void EXTI1_IRQHandler(void)
 	{
 		const portholder_t pr = EXTI_D1->PR1 & (EXTI_PR1_PR1);
 		EXTI_D1->PR1 = pr;		// reset all existing requests
@@ -1223,7 +1223,7 @@ static RAMFUNC void spool_adcdonebundle(void)
 		stm32fxxx_pinirq(pr);
 	}
 
-	void ATTRWEAK EXTI2_IRQHandler(void)
+	void EXTI2_IRQHandler(void)
 	{
 		const portholder_t pr = EXTI_D1->PR1 & (EXTI_PR1_PR2);
 		EXTI_D1->PR1 = pr;		// reset all existing requests
@@ -1231,7 +1231,7 @@ static RAMFUNC void spool_adcdonebundle(void)
 		stm32fxxx_pinirq(pr);
 	}
 
-	void ATTRWEAK EXTI3_IRQHandler(void)
+	void EXTI3_IRQHandler(void)
 	{
 		const portholder_t pr = EXTI_D1->PR1 & (EXTI_PR1_PR3);
 		EXTI_D1->PR1 = pr;		// reset all existing requests
@@ -1239,7 +1239,7 @@ static RAMFUNC void spool_adcdonebundle(void)
 		stm32fxxx_pinirq(pr);
 	}
 
-	void ATTRWEAK EXTI4_IRQHandler(void)
+	void EXTI4_IRQHandler(void)
 	{
 		const portholder_t pr = EXTI_D1->PR1 & (EXTI_PR1_PR4);
 		EXTI_D1->PR1 = pr;		// reset all existing requests
@@ -1247,14 +1247,14 @@ static RAMFUNC void spool_adcdonebundle(void)
 		stm32fxxx_pinirq(pr);
 	}
 
-	void ATTRWEAK EXTI9_5_IRQHandler(void)
+	void EXTI9_5_IRQHandler(void)
 	{
 		const portholder_t pr = EXTI_D1->PR1 & (EXTI_PR1_PR9 | EXTI_PR1_PR8 | EXTI_PR1_PR7 | EXTI_PR1_PR6 | EXTI_PR1_PR5);
 		EXTI_D1->PR1 = pr;		// reset all existing requests
 		(void) EXTI_D1->PR1;
 		stm32fxxx_pinirq(pr);
 	}
-	void ATTRWEAK EXTI15_10_IRQHandler(void)
+	void EXTI15_10_IRQHandler(void)
 	{
 		const portholder_t pr = EXTI_D1->PR1 & (EXTI_PR1_PR15 | EXTI_PR1_PR14 | EXTI_PR1_PR13 | EXTI_PR1_PR12 | EXTI_PR1_PR11 | EXTI_PR1_PR10);
 		EXTI_D1->PR1 = pr;		// reset all existing requests
@@ -1264,7 +1264,7 @@ static RAMFUNC void spool_adcdonebundle(void)
 
 	#else
 
-	void ATTRWEAK EXTI0_IRQHandler(void)
+	void EXTI0_IRQHandler(void)
 	{
 		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR0);
 		EXTI->PR = pr;		// reset all existing requests
@@ -1272,7 +1272,7 @@ static RAMFUNC void spool_adcdonebundle(void)
 		stm32fxxx_pinirq(pr);
 	}
 
-	void ATTRWEAK EXTI0_1_IRQHandler(void)
+	void EXTI0_1_IRQHandler(void)
 	{
 		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR0 | EXTI_IMR_MR1);
 		EXTI->PR = pr;		// reset all existing requests
@@ -1280,7 +1280,7 @@ static RAMFUNC void spool_adcdonebundle(void)
 		stm32fxxx_pinirq(pr);
 	}
 
-	void ATTRWEAK EXTI1_IRQHandler(void)
+	void EXTI1_IRQHandler(void)
 	{
 		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR1);
 		EXTI->PR = pr;		// reset all existing requests
@@ -1288,7 +1288,7 @@ static RAMFUNC void spool_adcdonebundle(void)
 		stm32fxxx_pinirq(pr);
 	}
 
-	void ATTRWEAK EXTI2_IRQHandler(void)
+	void EXTI2_IRQHandler(void)
 	{
 		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR2);
 		EXTI->PR = pr;		// reset all existing requests
@@ -1296,7 +1296,7 @@ static RAMFUNC void spool_adcdonebundle(void)
 		stm32fxxx_pinirq(pr);
 	}
 
-	void ATTRWEAK EXTI2_3_IRQHandler(void)
+	void EXTI2_3_IRQHandler(void)
 	{
 		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR2 | EXTI_IMR_MR3);
 		EXTI->PR = pr;		// reset all existing requests
@@ -1304,7 +1304,7 @@ static RAMFUNC void spool_adcdonebundle(void)
 		stm32fxxx_pinirq(pr);
 	}
 
-	void ATTRWEAK EXTI4_15_IRQHandler(void)
+	void EXTI4_15_IRQHandler(void)
 	{
 		const portholder_t pr = EXTI->PR & (
 				EXTI_IMR_MR15 | EXTI_IMR_MR14 | EXTI_IMR_MR13 | EXTI_IMR_MR12 | 
@@ -1316,7 +1316,7 @@ static RAMFUNC void spool_adcdonebundle(void)
 		stm32fxxx_pinirq(pr);
 	}
 
-	void ATTRWEAK EXTI3_IRQHandler(void)
+	void EXTI3_IRQHandler(void)
 	{
 		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR3);
 		EXTI->PR = pr;		// reset all existing requests
@@ -1324,7 +1324,7 @@ static RAMFUNC void spool_adcdonebundle(void)
 		stm32fxxx_pinirq(pr);
 	}
 
-	void ATTRWEAK EXTI4_IRQHandler(void)
+	void EXTI4_IRQHandler(void)
 	{
 		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR4);
 		EXTI->PR = pr;		// reset all existing requests
@@ -1332,14 +1332,14 @@ static RAMFUNC void spool_adcdonebundle(void)
 		stm32fxxx_pinirq(pr);
 	}
 
-	void ATTRWEAK EXTI9_5_IRQHandler(void)
+	void EXTI9_5_IRQHandler(void)
 	{
 		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR9 | EXTI_IMR_MR8 | EXTI_IMR_MR7 | EXTI_IMR_MR6 | EXTI_IMR_MR5);
 		EXTI->PR = pr;		// reset all existing requests
 		//(void) EXTI->PR;
 		stm32fxxx_pinirq(pr);
 	}
-	void ATTRWEAK EXTI15_10_IRQHandler(void)
+	void EXTI15_10_IRQHandler(void)
 	{
 		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR15 | EXTI_IMR_MR14 | EXTI_IMR_MR13 | EXTI_IMR_MR12 | EXTI_IMR_MR11 | EXTI_IMR_MR10);
 		EXTI->PR = pr;		// reset all existing requests
@@ -1409,11 +1409,11 @@ static RAMFUNC void spool_adcdonebundle(void)
 		}
 	}
 
-	RAMFUNC_NONILINE void ATTRWEAK USART0_Handler(void) 
+	RAMFUNC_NONILINE void USART0_Handler(void)
 	{
 	}
 
-	RAMFUNC_NONILINE void ATTRWEAK USART1_Handler(void) 
+	RAMFUNC_NONILINE void USART1_Handler(void)
 	{
 	}
 
@@ -3128,39 +3128,13 @@ hardware_adc_startonescan(void)
 #endif
 }
 
-#else /* WITHCPUADCHW */
-
-	void ATTRWEAK
-	ADC1_2_IRQHandler(void)
-	{
-			debug_printf_P(PSTR("ADC1_2_IRQHandler trapped\n"));
-			for (;;)
-				;
-	}
-
-	void ATTRWEAK
-	ADC_IRQHandler(void)
-	{
-			debug_printf_P(PSTR("ADC1_2_IRQHandler trapped\n"));
-			for (;;)
-				;
-	}
-
-	void ATTRWEAK
-	ADC3_IRQHandler(void)
-	{
-			debug_printf_P(PSTR("ADC3_IRQHandler trapped\n"));
-			for (;;)
-				;
-	}
-
 #endif /* WITHCPUADCHW */
 
 
 #if WITHDCDCFREQCTL
 	//static uint_fast16_t dcdcrefdiv = 62;	/* делится частота внутреннего генератора 48 МГц */
 
-	/* 
+	/*
 		получение делителя частоты для синхронизации DC-DC конверторов
 		для исключения попадания в полосу обзора панорамы гармоник этой частоты.
 	*/
@@ -6385,14 +6359,6 @@ void r7s721_sdhi0_dma_handler(void)
 		;
 }
 
-#elif CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX
-// TODO: убрать в sdcard.c
-/*
-void DMA2_Stream6_IRQHandler(void)
-{
-
-}
-*/
 #endif
 
 void hardware_sdhost_initialize(void)
@@ -10650,7 +10616,7 @@ volatile uint32_t psr;// Регистр статуса программы.
 =================================================================================================================================*/
 
 
-void ATTRWEAK 
+void
 HardFault_Handler(void)
 {
 #if WITHDEBUG
@@ -10693,7 +10659,7 @@ HardFault_Handler(void)
 
 }
 
-void ATTRWEAK 
+void
 NMI_Handler(void)
 {
 	debug_printf_P(PSTR("NMI_Handler trapped\n"));
@@ -10701,7 +10667,7 @@ NMI_Handler(void)
 		; // WDT->WDT_CR = WDT_CR_WDRSTT | WDT_CR_KEY(0xA5);
 }
 
-void ATTRWEAK 
+void
 MemManage_Handler(void)
 {
 	debug_printf_P(PSTR("MemManage_Handler trapped\n"));
@@ -10709,7 +10675,7 @@ MemManage_Handler(void)
 		;
 }
 
-void ATTRWEAK 
+void
 BusFault_Handler(void)
 {
 	debug_printf_P(PSTR("BusFault_Handler trapped\n"));
@@ -10717,7 +10683,7 @@ BusFault_Handler(void)
 		;
 }
 
-void ATTRWEAK 
+void
 UsageFault_Handler(void)
 {
 	debug_printf_P(PSTR("UsageFault_Handler trapped\n"));
@@ -10725,7 +10691,7 @@ UsageFault_Handler(void)
 		;
 }
 
-void ATTRWEAK 
+void
 SVC_Handler(void)
 {
 	debug_printf_P(PSTR("SVC_Handler trapped\n"));
@@ -10733,7 +10699,7 @@ SVC_Handler(void)
 		;
 }
 
-void ATTRWEAK 
+void
 DebugMon_Handler(void)
 {
 	debug_printf_P(PSTR("DebugMon_Handler trapped\n"));
@@ -10741,888 +10707,13 @@ DebugMon_Handler(void)
 		;
 }
 
-void ATTRWEAK 
+void
 PendSV_Handler(void)
 {
 	debug_printf_P(PSTR("PendSV_Handler trapped\n"));
 	for (;;)
 		;
 }
-
-#if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
-
-void ATTRWEAK 
-SUPC_Handler(void)
-{
-	debug_printf_P(PSTR("SUPC_Handler trapped\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK 
-RSTC_Handler(void)
-{
-	debug_printf_P(PSTR("SUPC_Handler trapped\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK 
-RTC_Handler(void)
-{
-	debug_printf_P(PSTR("SUPC_Handler trapped\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK 
-RTT_Handler(void)
-{
-	debug_printf_P(PSTR("SUPC_Handler trapped\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK 
-WDT_Handler(void)
-{
-	debug_printf_P(PSTR("SUPC_Handler trapped\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK 
-PMC_Handler(void)
-{
-	debug_printf_P(PSTR("SUPC_Handler trapped\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK 
-EFC_Handler(void)
-{
-	debug_printf_P(PSTR("SUPC_Handler trapped\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK 
-UART0_Handler(void)
-{
-	debug_printf_P(PSTR("UART0_Handler trapped\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK 
-UART1_Handler(void)
-{
-	debug_printf_P(PSTR("UART1_Handler trapped\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK 
-SMC_Handler(void)
-{
-	debug_printf_P(PSTR("SMC_Handler trapped\n"));
-	for (;;)
-		;
-}
-void ATTRWEAK 
-PIOB_Handler(void)
-{
-	debug_printf_P(PSTR("SMC_Handler trapped\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK 
-PIOC_Handler(void)
-{
-	debug_printf_P(PSTR("SMC_Handler trapped\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK 
-HSMCI_Handler(void)
-{
-	debug_printf_P(PSTR("SMC_Handler trapped\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK 
-TWI0_Handler(void)
-{
-	debug_printf_P(PSTR("SMC_Handler trapped\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK 
-TWI1_Handler(void)
-{
-	debug_printf_P(PSTR("SMC_Handler trapped\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK 
-SPI_Handler(void)
-{
-	debug_printf_P(PSTR("SMC_Handler trapped\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK 
-SSC_Handler(void)
-{
-	debug_printf_P(PSTR("SMC_Handler trapped\n"));
-	for (;;)
-		;
-}
-
-
-void ATTRWEAK 
-TC1_Handler(void)
-{
-	debug_printf_P(PSTR("TC1_Handler trapped\n"));
-	for (;;)
-		;
-}
-
-/*
-void ATTRWEAK 
-TC2_Handler(void)
-{
-	debug_printf_P(PSTR("TC2_Handler trapped\n"));
-	for (;;)
-		;
-}
-*/
-void ATTRWEAK 
-TC3_Handler(void)
-{
-	debug_printf_P(PSTR("SMC_Handler trapped\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK 
-TC4_Handler(void)
-{
-	debug_printf_P(PSTR("SMC_Handler trapped\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK 
-TC5_Handler(void)
-{
-	debug_printf_P(PSTR("SMC_Handler trapped\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK 
-DACC_Handler(void)
-{
-	debug_printf_P(PSTR("SMC_Handler trapped\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK 
-PWM_Handler(void)
-{
-	debug_printf_P(PSTR("SMC_Handler trapped\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK 
-CRCCU_Handler(void)
-{
-	debug_printf_P(PSTR("SMC_Handler trapped\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK 
-ACC_Handler(void)
-{
-	debug_printf_P(PSTR("SMC_Handler trapped\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK 
-UDP_Handler(void)
-{
-	debug_printf_P(PSTR("SMC_Handler trapped\n"));
-	for (;;)
-		;
-}
-
-#elif CPUSTYLE_STM32F
-
-void ATTRWEAK USART1_IRQHandler(void)
-{
-	debug_printf_P(PSTR("USART1_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK USART2_IRQHandler(void)
-{
-	debug_printf_P(PSTR("USART2_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK USART3_IRQHandler(void)
-{
-	debug_printf_P(PSTR("USART3_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK WWDG_IRQHandler(void)
-{
-	debug_printf_P(PSTR("PendSV_Handler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK PVD_IRQHandler(void)
-{
-	//hardware_reqshutdown = 1;
-	debug_printf_P(PSTR("PendSV_Handler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK TAMPER_IRQHandler(void)
-{
-	debug_printf_P(PSTR("PendSV_Handler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK RTC_IRQHandler(void)
-{
-	debug_printf_P(PSTR("PendSV_Handler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK FLASH_IRQHandler(void)
-{
-	debug_printf_P(PSTR("PendSV_Handler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK RCC_IRQHandler(void)
-{
-	debug_printf_P(PSTR("PendSV_Handler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK DMA1_Stream0_IRQHandler(void)
-{
-	debug_printf_P(PSTR("DMA1_Stream0_IRQHandler() trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK DMA1_Stream1_IRQHandler(void)
-{
-	debug_printf_P(PSTR("DMA1_Stream1_IRQHandler() trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK DMA1_Stream2_IRQHandler(void)
-{
-	debug_printf_P(PSTR("DMA1_Stream2_IRQHandler() trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK DMA1_Stream3_IRQHandler(void)
-{
-	debug_printf_P(PSTR("DMA1_Stream3_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK DMA1_Stream4_IRQHandler(void)
-{
-	debug_printf_P(PSTR("DMA1_Stream4_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK DMA1_Stream5_IRQHandler(void)
-{
-	debug_printf_P(PSTR("DMA1_Stream5_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK DMA1_Stream6_IRQHandler(void)
-{
-	debug_printf_P(PSTR("DMA1_Stream6_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK DMA1_Stream7_IRQHandler(void)
-{
-	debug_printf_P(PSTR("DMA1_Stream7_IRQHandler() trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK DMA2_Stream0_IRQHandler(void)
-{
-	debug_printf_P(PSTR("DMA2_Stream0_IRQHandler() trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK DMA2_Stream1_IRQHandler(void)
-{
-	debug_printf_P(PSTR("DMA2_Stream1_IRQHandler() trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK DMA2_Stream2_IRQHandler(void)
-{
-	debug_printf_P(PSTR("DMA2_Stream2_IRQHandler() trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK DMA2_Stream3_IRQHandler(void)
-{
-	debug_printf_P(PSTR("DMA2_Stream3_IRQHandler() trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK DMA2_Stream4_IRQHandler(void)
-{
-	debug_printf_P(PSTR("DMA2_Stream4_IRQHandler() trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK DMA2_Stream5_IRQHandler(void)
-{
-	debug_printf_P(PSTR("DMA2_Stream5_IRQHandler() trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK DMA2_Stream6_IRQHandler(void)
-{
-	debug_printf_P(PSTR("DMA2_Stream6_IRQHandler() trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK DMA2_Stream7_IRQHandler(void)
-{
-	debug_printf_P(PSTR("DMA2_Stream7_IRQHandler() trapped.\n"));
-	for (;;)
-		;
-}
-
-
-void ATTRWEAK DMA1_Channel4_5_6_7_IRQHandler(void)
-{
-	debug_printf_P(PSTR("DMA1_Channel4_5_6_7_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-void ATTRWEAK DMA1_Channel2_3_IRQHandler(void)
-{
-	debug_printf_P(PSTR("DMA1_Channel2_3_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK DMA1_Channel4_5_IRQHandler(void)
-{
-	debug_printf_P(PSTR("DMA1_Channel4_5_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK DMA1_Channel1_IRQHandler(void)
-{
-	debug_printf_P(PSTR("DMA1_Channel1_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK DMA1_Channel2_IRQHandler(void)
-{
-	debug_printf_P(PSTR("DMA1_Channel2_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK DMA1_Channel3_IRQHandler(void)
-{
-	debug_printf_P(PSTR("DMA1_Channel3_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK DMA1_Channel4_IRQHandler(void)
-{
-	debug_printf_P(PSTR("DMA1_Channel4_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK DMA1_Channel5_IRQHandler(void)
-{
-	debug_printf_P(PSTR("DMA1_Channel5_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK DMA1_Channel6_IRQHandler(void)
-{
-	debug_printf_P(PSTR("DMA1_Channel6_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK DMA1_Channel7_IRQHandler(void)
-{
-	debug_printf_P(PSTR("DMA1_Channel7_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK TIM1_BRK_IRQHandler(void)
-{
-	debug_printf_P(PSTR("TIM1_BRK_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK TIM1_UP_IRQHandler(void)
-{
-	debug_printf_P(PSTR("TIM1_UP_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK TIM1_TRG_COM_IRQHandler(void)
-{
-	debug_printf_P(PSTR("TIM1_TRG_COM_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK TIM1_CC_IRQHandler(void)
-{
-	debug_printf_P(PSTR("TIM1_CC_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK TIM2_IRQHandler(void)
-{
-	debug_printf_P(PSTR("TIM2_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK TIM4_IRQHandler(void)
-{
-	debug_printf_P(PSTR("TIM4_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK TIM12_IRQHandler(void)
-{
-	debug_printf_P(PSTR("TIM12_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK TIM13_IRQHandler(void)
-{
-	debug_printf_P(PSTR("TIM13_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK TIM14_IRQHandler(void)
-{
-	debug_printf_P(PSTR("TIM14_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK TIM15_IRQHandler(void)
-{
-	debug_printf_P(PSTR("TIM15_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK TIM16_IRQHandler(void)
-{
-	debug_printf_P(PSTR("TIM16_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK TIM17_IRQHandler(void)
-{
-	debug_printf_P(PSTR("TIM17_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-
-void ATTRWEAK TIM1_BRK_UP_TRG_COM_IRQHandler(void)
-{
-	debug_printf_P(PSTR("TIM1_BRK_UP_TRG_COM_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK TIM6_DAC_IRQHandler(void)
-{
-	debug_printf_P(PSTR("TIM6_DAC_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK USBWakeUp_IRQHandler(void)
-{
-	debug_printf_P(PSTR("USBWakeUp_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK TS_IRQHandler(void)
-{
-	debug_printf_P(PSTR("TS_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-// CPUSTYLE_STM32F0XX
-void ATTRWEAK I2C1_IRQHandler(void)
-{
-	debug_printf_P(PSTR("I2C1_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK I2C1_EV_IRQHandler(void)
-{
-	debug_printf_P(PSTR("PendSV_Handler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK I2C1_ER_IRQHandler(void)
-{
-	debug_printf_P(PSTR("PendSV_Handler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK I2C2_IRQHandler(void)
-{
-	debug_printf_P(PSTR("I2C2_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK I2C2_EV_IRQHandler(void)
-{
-	debug_printf_P(PSTR("I2C2_EV_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK I2C2_ER_IRQHandler(void)
-{
-	debug_printf_P(PSTR("I2C2_ER_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK SPI1_IRQHandler(void)
-{
-	debug_printf_P(PSTR("SPI1_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK SPI2_IRQHandler(void)
-{
-	debug_printf_P(PSTR("SPI2_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-
-void ATTRWEAK SPI3_IRQHandler(void)
-{
-	debug_printf_P(PSTR("SPI3_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK RTCAlarm_IRQHandler(void)
-{
-	debug_printf_P(PSTR("RTCAlarm_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK USB_HP_CAN1_TX_IRQHandler(void)
-{
-	debug_printf_P(PSTR("USB_HP_CAN1_TX_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK CAN1_RX0_IRQHandler(void)
-{
-	debug_printf_P(PSTR("CAN1_RX0_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK CAN1_RX1_IRQHandler(void)
-{
-	debug_printf_P(PSTR("CAN1_RX1_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK CAN1_SCE_IRQHandler(void)
-{
-	debug_printf_P(PSTR("CAN1_SCE_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK OTG_FS_IRQHandler(void)
-{
-	debug_printf_P(PSTR("OTG_FS_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK OTG_HS_IRQHandler(void)
-{
-	debug_printf_P(PSTR("OTG_HS_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK OTG_HS_EP1_OUT_IRQHandler(void)
-{
-	debug_printf_P(PSTR("OTG_HS_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK OTG_HS_EP1_IN_IRQHandler(void)
-{
-	debug_printf_P(PSTR("OTG_HS_EP1_IN_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK OTG_HS_WKUP_IRQHandler(void)
-{
-	debug_printf_P(PSTR("OTG_HS_WKUP_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-#if ! WITHCPUADCHW
-void ATTRWEAK ADC1_COMP_IRQHandler(void)
-{
-	debug_printf_P(PSTR("ADC1_COMP_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-#endif /* ! WITHCPUADCHW */
-
-void ATTRWEAK LPTIM1_IRQHandler(void)
-{
-	debug_printf_P(PSTR("LPTIM1_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-void ATTRWEAK LPUART1_IRQHandler(void)
-{
-	debug_printf_P(PSTR("LPUART1_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-void ATTRWEAK TIM21_IRQHandler(void)
-{
-	debug_printf_P(PSTR("TIM21_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-void ATTRWEAK TIM22_IRQHandler(void)
-{
-	debug_printf_P(PSTR("TIM22_IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK TIM8_BRK_IRQHandler(void)
-{
-	debug_printf_P(PSTR("TIM8_BRK_IRQHandler trapped\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK TIM8_UP_IRQHandler(void)
-{
-	debug_printf_P(PSTR("TIM8_UP_IRQHandler trapped\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK TIM8_TRG_COM_IRQHandler(void)
-{
-	debug_printf_P(PSTR("TIM8_TRG_COM_IRQHandler trapped\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK TIM8_CC_IRQHandler(void)
-{
-	debug_printf_P(PSTR("TIM8_CC_IRQHandler trapped\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK FSMC_IRQHandler(void)
-{
-	debug_printf_P(PSTR("FSMC_IRQHandler trapped\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK SDIO_IRQHandler(void)
-{
-	debug_printf_P(PSTR("SDIO_IRQHandler trapped\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK TIM5_IRQHandler(void)
-{
-	debug_printf_P(PSTR("TIM5_IRQHandler trapped\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK UART4_IRQHandler(void)
-{
-	debug_printf_P(PSTR("UART4_IRQHandler trapped\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK UART5_IRQHandler(void)
-{
-	debug_printf_P(PSTR("UART5_IRQHandler trapped\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK USART6_IRQHandler(void)
-{
-	debug_printf_P(PSTR("USART6_IRQHandler trapped\n"));
-	for (;;)
-		;
-}
-
-void ATTRWEAK SDMMC1_IRQHandler(void)
-{
-	debug_printf_P(PSTR("SDMMC1_IRQHandler trapped\n"));
-	for (;;)
-		;
-}
-/*
-void ATTRWEAK TIM6_IRQHandler(void)
-{
-	debug_printf_P(PSTR("TIM6_IRQHandler trapped\n"));
-	for (;;)
-		;
-}
-*/
-void ATTRWEAK TIM7_IRQHandler(void)
-{
-	debug_printf_P(PSTR("TIM7_IRQHandler trapped\n"));
-	for (;;)
-		;
-}
-
-#if defined (STM32F429xx) || defined(STM32F446xx) || defined(STM32F746xx) || defined(STM32F767xx) || defined(STM32F723xx) || defined (STM32F769xx)
-
-	#else
-
-	void ATTRWEAK DMA2_Channel1_IRQHandler(void)
-	{
-		debug_printf_P(PSTR("DMA2_Channel1_IRQHandler trapped\n"));
-		for (;;)
-			;
-	}
-
-	void ATTRWEAK DMA2_Channel2_IRQHandler(void)
-	{
-		debug_printf_P(PSTR("DMA2_Channel2_IRQHandler trapped\n"));
-		for (;;)
-			;
-	}
-
-	void ATTRWEAK DMA2_Channel3_IRQHandler(void)
-	{
-		debug_printf_P(PSTR("DMA2_Channel3_IRQHandler trapped\n"));
-		for (;;)
-			;
-	}
-
-	void ATTRWEAK DMA2_Channel4_5_IRQHandler(void)
-	{
-		debug_printf_P(PSTR("DMA2_Channel4_5_IRQHandler trapped\n"));
-		for (;;)
-			;
-	}
-	#endif
-
-#endif /* CPUSTYLE_STM32F */
 
 typedef void (* IntFunc)(void);
 

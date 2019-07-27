@@ -720,9 +720,8 @@ void arm_hardware_ltdc_pip_off(void);	// set PIP framebuffer address
 uint_fast8_t usbd_cdc_getrts(void);
 uint_fast8_t usbd_cdc_getdtr(void);
 
-RAMFUNC_NONILINE void AT91F_PIOA_IRQHandler(void);
+void AT91F_PIOA_IRQHandler(void);
 
-void SPI2_IRQHandler(void);
 void EXTI0_IRQHandler(void);
 void EXTI1_IRQHandler(void);
 void EXTI2_IRQHandler(void);
@@ -731,24 +730,9 @@ void EXTI4_IRQHandler(void);
 void EXTI9_5_IRQHandler(void);
 void EXTI15_10_IRQHandler(void);
 
-void DMA1_Stream0_IRQHandler(void);		// ch0: SPI3: audio codec (rx) - on stm32F446/all
-void DMA1_Stream3_IRQHandler(void);		// ch3: I2S2_EXT - audio codec (rx) on STM32F429
-void DMA1_Stream4_IRQHandler(void);		// ch0: I2S2 (tx) - audio codec
-
-void DMA2_Stream1_IRQHandler(void);		// ch0: SAI1_A (tx)
-void DMA2_Stream5_IRQHandler(void);		// ch0: SAI1_B (rx)
-void DMA2_Stream4_IRQHandler(void);		// ch3: SAI2_B (tx)
-void DMA2_Stream7_IRQHandler(void);		// ch0: SAI2_B (rx)
-void DMA2_Stream6_IRQHandler(void);		// ch4: SDIO
-
 void SDIO_IRQHandler(void);
 void SDMMC1_IRQHandler(void);
-
-void USART1_IRQHandler(void);
-void USART2_IRQHandler(void);
-void USART3_IRQHandler(void);
-
-void Reset_Handler(void);
+void DMA2_Stream6_IRQHandler(void);
 
 void cpu_stm32f1xx_setmapr(unsigned long bits);
 
