@@ -745,7 +745,7 @@ static INT32P_t get_int32_aflosim(void)
 }
 */
 
-static RAMDTCM unsigned delaysetlo6 [NTRX];	// задержка переключения частоты lo6 на аремя прохода сигнала через FPGA FIR
+static RAMDTCM unsigned delaysetlo6 [NTRX];	// задержка переключения частоты lo6 на время прохода сигнала через FPGA FIR
 static RAMDTCM ncoftw_t anglestep_aflo [NTRX];
 static RAMDTCM ncoftw_t anglestep_aflo_shadow [NTRX];
 static RAMDTCM ncoftw_t angle_aflo [NTRX];
@@ -776,21 +776,28 @@ static RAMFUNC void nco_setlo_delay(uint_fast8_t pathi, uint_fast8_t tx)
 #if WITHDSPEXTFIR || WITHDSPEXTDDC || WITHDSPLOCALFIR
 	if (tx != 0)
 	{
-		delaysetlo6 [pathi] = 0;	// предотвращаем повторное срабатывание
-		if ((anglestep_aflo [pathi] = anglestep_aflo_shadow [pathi]) == 0)
+		if (delaysetlo6 [pathi] != 0)
 		{
-			/* Для обеспечения 0.7 от максимальной амплитуды после суммирования квадратурных составляющих в FPA */
-			angle_aflo [pathi] = 0;	// 0 Pi
+			delaysetlo6 [pathi] = 0;	// предотвращаем повторное срабатывание
+			if ((anglestep_aflo [pathi] = anglestep_aflo_shadow [pathi]) == 0)
+			{
+				/* Для обеспечения 0.7 от максимальной амплитуды после суммирования квадратурных составляющих в FPA */
+				angle_aflo [pathi] = 0;	// 0 Pi
+			}
 		}
 	}
-	else if (delaysetlo6 [pathi] != 0 && -- delaysetlo6 [pathi] == 0)
+	else
 	{
-		if ((anglestep_aflo [pathi] = anglestep_aflo_shadow [pathi]) == 0)
+		if (delaysetlo6 [pathi] != 0 && -- delaysetlo6 [pathi] == 0)
 		{
-			/* Для обеспечения 0.7 от максимальной амплитуды после суммирования квадратурных составляющих в FPA */
-			angle_aflo [pathi] = 0;	// 0 Pi
+			if ((anglestep_aflo [pathi] = anglestep_aflo_shadow [pathi]) == 0)
+			{
+				/* Для обеспечения 0.7 от максимальной амплитуды после суммирования квадратурных составляющих в FPA */
+				angle_aflo [pathi] = 0;	// 0 Pi
+			}
 		}
 	}
+
 #endif
 }
 

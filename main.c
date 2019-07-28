@@ -7048,6 +7048,7 @@ void * speex_alloc(int size)
 		for (;;)
 			;
 	}
+	memset(ptr, 0, size);
 	return ptr;
 }
 

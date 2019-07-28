@@ -101,10 +101,10 @@ SECTIONS
 		__copy_table_start__ = .;
 		LONG (__etext)
 		LONG (__data_start__)
-		LONG (__data_end__ - __data_start__)
+		LONG ((__data_end__ - __data_start__) / 4)
 		LONG (__etext2)
 		LONG (__data2_start__)
-		LONG (__data2_end__ - __data2_start__)
+		LONG ((__data2_end__ - __data2_start__) / 4)
 		__copy_table_end__ = .;
 	} > FLASH
 
@@ -117,7 +117,7 @@ SECTIONS
 		. = ALIGN(4);
 		__zero_table_start__ = .;
 		LONG (__bss_start__)
-		LONG (__bss_end__ - __bss_start__)
+		LONG ((__bss_end__ - __bss_start__) / 4)
 		__zero_table_end__ = .;
 	} > FLASH
 
