@@ -685,15 +685,15 @@ void buffers_initialize(void)
 	#if CPUSTYLE_R7S721
 		RAMNOINIT_D1 static records16_t recordsarray16 [16];
 	#elif defined (STM32F767xx)
-		RAMNOINIT_D1 static records16_t recordsarray16 [16];
+		RAMNOINIT_D1 static records16_t recordsarray16 [8];
 	#elif defined (STM32F746xx)
-		RAMNOINIT_D1 static records16_t recordsarray16 [16];
+		RAMNOINIT_D1 static records16_t recordsarray16 [8];
 	#elif defined (STM32F429xx)
-		RAMNOINIT_D1 static records16_t recordsarray16 [16];
+		RAMNOINIT_D1 static records16_t recordsarray16 [8];
 	#elif defined (STM32H743xx)
-		RAMNOINIT_D1 static records16_t recordsarray16 [28];
+		RAMNOINIT_D1 static records16_t recordsarray16 [8];
 	#else
-		RAMNOINIT_D1 static records16_t recordsarray16 [16];
+		RAMNOINIT_D1 static records16_t recordsarray16 [8];
 	#endif
 
 	/* Подготовка буферов для записи на SD CARD */
