@@ -591,7 +591,7 @@ void buffers_initialize(void)
 
 #if WITHINTEGRATEDDSP
 
-	static voice16_t voicesarray16 [48];
+	static voice16_t voicesarray16 [47];
 
 	InitializeListHead3(& resample16, VOICESMIKE16NORMAL);	// буферы от USB для синхронизации
 	InitializeListHead3(& voicesmike16, VOICESMIKE16NORMAL);	// список оцифрованных с АЦП

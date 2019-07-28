@@ -4226,10 +4226,9 @@ enum
 		{	20, 24,	display_voltlevelV5, REDRM_VOLT, PGSLP, },	// voltmeter with "V"
 
 	#if WITHMENU
-		{	0,	25,	display_multilinemenu_block,	REDRM_MVAL, REDRSUBSET_MENU, } //Блок с пунктами меню
-		{	1,	29,	display_multilinemenu_block_groups,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
-		{	LABELW + 3,	29,	display_multilinemenu_block_params,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
-		{	LABELW*2 + 3,	29,	display_multilinemenu_block_vals,	REDRM_MVAL, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
+		{	1,	25,	display_multilinemenu_block_groups,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
+		{	LABELW + 3,	25,	display_multilinemenu_block_params,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
+		{	LABELW*2 + 3,	25,	display_multilinemenu_block_vals,	REDRM_MVAL, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
 	#endif /* WITHMENU */
 	};
 
