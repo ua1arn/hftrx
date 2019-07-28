@@ -160,6 +160,8 @@ SECTIONS
 
 	} > CCM
 
+	. = __etext + __data_end__ - __data_start__;
+	
 	__etext2 = .;
 
 	.ramfn : AT (__etext2)

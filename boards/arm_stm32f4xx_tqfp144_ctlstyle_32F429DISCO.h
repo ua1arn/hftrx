@@ -8,8 +8,8 @@
 
 /* Плата STM32F429I-DISCO с процессором STM32F429ZIT6	*/
 
-#ifndef PION_DSP_CTLSTYLE_V1_H_INCLUDED
-#define PION_DSP_CTLSTYLE_V1_H_INCLUDED 1
+#ifndef ARM_STM32F4XX_TQFP144_CPUSTYLE_32F429DISCO_H_INCLUDED
+#define ARM_STM32F4XX_TQFP144_CPUSTYLE_32F429DISCO_H_INCLUDED 1
 
 	#if ! defined(STM32F429xx)
 		#error Wrong CPU selected. STM32F429xx expected
@@ -82,10 +82,10 @@
 
 #if 1
 	#define FQMODEL_FPGA		1	// FPGA + IQ over I2S
-	//#define DIRECT_80M0_X1		1	/* Тактовый генератор на плате 80.0 МГц */	
-	//#define DIRECT_100M0_X1		1	/* Тактовый генератор на плате 100.0 МГц */	
+	//#define DIRECT_80M0_X1		1	/* Тактовый генератор на плате 80.0 МГц */
+	//#define DIRECT_100M0_X1		1	/* Тактовый генератор на плате 100.0 МГц */
 	//#define WITHDAC1VALDEF	178
-	#define DIRECT_122M88_X1	1	/* Тактовый генератор 122.880 МГц */	
+	#define DIRECT_122M88_X1	1	/* Тактовый генератор 122.880 МГц */
 	#define BANDSELSTYLERE_UPCONV56M	1	/* Up-conversion with working band .030..56 MHz */
 #elif 0
 	/* Версии частотных схем - с преобразованием "наверх" */
@@ -321,6 +321,7 @@
 	//#define WITHLFM		1	/* LFM MODE */
 	//#define WITHTEMPSENSOR	1	/* отображение данных с датчика температуры */
 	//#define WITHSLEEPTIMER	1	/* выключить индикатор и вывод звука по истечениии указанного времени */
+	#define BOARD_FFTZOOM_POW2MAX 2	// Возможные масштабы FFT x1, x2, x4
 	// --- Эти строки можно отключать, уменьшая функциональность готового изделия
 
 	//#define LO1PHASES	1		/* Прямой синтез первого гетеродина двумя DDS с програмимруемым сдвигом фазы */
@@ -428,4 +429,4 @@
 		#define IF3_FHAVE (IF3_FMASK_2P7 | IF3_FMASK_0P5)
 	#endif
 
-#endif /* PION_DSP_CTLSTYLE_V1_H_INCLUDED */
+#endif /* ARM_STM32F4XX_TQFP144_CPUSTYLE_32F429DISCO_H_INCLUDED */

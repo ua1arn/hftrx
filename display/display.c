@@ -164,7 +164,11 @@ static void RAMFUNC_NONILINE display_fillrect(
 		// заполнение области экрана
 		while (h --)
 		{
+	#if LCDMODE_HORFILL
+		// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
 			ltdc_horizontal_pixels(buffer, raster, w);
+	#else /* LCDMODE_HORFILL */
+	#endif /* LCDMODE_HORFILL */
 			buffer += dx;
 		}
 	}
@@ -1068,7 +1072,7 @@ ltdc_vertical_pixN(
 	// размещаем пиксели по горизонтали
 	// TODO: для паттернов шире чем восемь бит, повторить нужное число раз.
 	const FLASHMEM PACKEDCOLOR_T * const pcl = (* byte2run) [v];
-	memcpy(& framebuff [ltdc_first] [ltdc_second + ltdc_secondoffs], pcl, sizeof (* pcl) * w);
+	memcpy((void *) & framebuff [ltdc_first] [ltdc_second + ltdc_secondoffs], pcl, sizeof (* pcl) * w);
 	arm_hardware_flush((uintptr_t) & framebuff [ltdc_first] [ltdc_second + ltdc_secondoffs], sizeof (PACKEDCOLOR_T) * w);
 	if ((ltdc_secondoffs += 8) >= ltdc_h)
 	{
@@ -1438,7 +1442,7 @@ void display_plot(
 	while (dx --)
 	{
 		volatile PACKEDCOLOR_T * const p = & framebuff [ltdc_first] [ltdc_second];
-		memcpy(p, buffer, len);
+		memcpy((void *) p, buffer, len);
 		arm_hardware_flush((uintptr_t) p, len);
 		buffer += dy;
 
