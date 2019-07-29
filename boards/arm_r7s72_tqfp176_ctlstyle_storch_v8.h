@@ -201,10 +201,11 @@
 	#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры
 #endif
 
+	#define CTLREGMODE_STORCH_V7	1	/* TFT 4.3" "Аист" с DSP и FPGA STM32H743IIT6 или R7S721020VCFP */
+
 #if WITHISBOOTLOADER
 
 
-	#define CTLREGMODE_STORCH_V7	1	/* TFT 4.3" "Аист" с DSP и FPGA STM32H743IIT6 или R7S721020VCFP */
 	//#define CTLREGSTYLE_NOCTLREG 1
 	/* коды входов коммутатора источников сигнала для УНЧ приёмника */
 	#define BOARD_DETECTOR_SSB 	0		// Заглушка
@@ -254,7 +255,6 @@
 #else /* WITHISBOOTLOADER */
 	// app
 
-	#define CTLREGMODE_STORCH_V7	1	/* TFT 4.3" "Аист" с DSP и FPGA STM32H743IIT6 или R7S721020VCFP */
 
 	/* коды входов коммутатора источников сигнала для УНЧ приёмника */
 	#define BOARD_DETECTOR_SSB 	0		// Заглушка
@@ -296,7 +296,6 @@
 	// +++ Эти строки можно отключать, уменьшая функциональность готового изделия
 	//#define WITHRFSG	1	/* включено управление ВЧ сигнал-генератором. */
 	#define WITHTX		1	/* включено управление передатчиком - сиквенсор, электронный ключ. */
-	//#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
 	#define WITHIFSHIFT	1	/* используется IF SHIFT */
 	//#define WITHIFSHIFTOFFSET	(-250)	/* Начальное занчение IF SHIFT */
 	//#define WITHPBT		1	/* используется PBT (если LO3 есть) */
@@ -312,6 +311,11 @@
 	//#define WITHPWRMTR	1	/* Индикатор выходной мощности или */
 	//#define WITHPWRLIN	1	/* Индикатор выходной мощности показывает напряжение а не мощность */
 
+	#if 0
+		/* TUNER & PA board 2*RD16 by avbelnn@yandex.ru */
+		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
+		#define SHORTSET8	1
+	#endif
 
 	/* Board hardware configuration */
 	#define CODEC1_TYPE CODEC_TYPE_NAU8822L
