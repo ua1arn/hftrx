@@ -20,11 +20,6 @@
 #include <math.h>
 #include <assert.h>
 
-// supress messages in normalized_atan()
-#if defined   (__GNUC__)        /* GNU Compiler */
-	#pragma GCC diagnostic ignored "-Wstrict-aliasing"
-#endif /* defined   (__GNUC__)  */
-
 //#define WITHLIMITEDAGCATTACK 1
 #define DUALFILTERSPROCESSING 1	// Фильтры НЧ для левого и правого каналов - вынсено в конфигурационный файл
 //#define WITHDOUBLEFIRCOEFS 1
@@ -5100,7 +5095,7 @@ saverts96(const uint32_t * buff)
 
 // Approximates atan(x) normalized to the [-1,1] range
 // with a maximum error of 0.1620 degrees.
-
+#if 0
 static float normalized_atan( float x )
 {
     static const uint32_t sign_mask = 0x80000000;
@@ -5118,30 +5113,44 @@ static float normalized_atan( float x )
     uint32_t atan_2q = ux_s | * (uint32_t *) & atan_1q;
     return * (float *) & atan_2q;
 }
-
+#endif
 // Approximates atan2(y, x) normalized to the [0,4] range
 // with a maximum error of 0.1620 degrees
 
-static float normalized_atan2( float y, float x )
+static float normalized_atan2( float ay, float ax )
 {
+	union u
+	{
+		uint32_t i;
+		float f;
+	};
+
+	union u ux, uy;
+	ux.f = ax;
+	uy.f = ay;
+
     static const uint32_t sign_mask = 0x80000000;
     static const float b = (float) 0.596227;
 
     // Extract the sign bits
-    uint32_t ux_s  = sign_mask & * (uint32_t *) & x;
-    uint32_t uy_s  = sign_mask & * (uint32_t *) & y;
+    uint32_t ux_s  = sign_mask & ux.i;
+    uint32_t uy_s  = sign_mask & uy.i;
 
     // Determine the quadrant offset
     float q = (float)( ( ~ux_s & uy_s ) >> 29 | ux_s >> 30 ); 
 
     // Calculate the arctangent in the first quadrant
-    float bxy_a = fabsf( b * x * y );
-    float num = bxy_a + y * y;
-    float atan_1q =  num / ( x * x + bxy_a + num );
+    float bxy_a = fabsf( b * ux.f * uy.f );
+    float num = bxy_a + uy.f * uy.f;
+    float atan_1q =  num / ( ux.f * ux.f + bxy_a + num );
+
+    union u atan_1qs;
+    atan_1qs.f = atan_1q;
 
     // Translate it to the proper quadrant
-    uint32_t uatan_2q = (ux_s ^ uy_s) | * (uint32_t *) & atan_1q;
-    return q + * (float *) & uatan_2q;
+    union u uatan_2qs;
+    uatan_2qs.i = (ux_s ^ uy_s) | atan_1qs.i;
+    return q + uatan_2qs.f;
 }
 
 static FLOAT_t
@@ -5212,10 +5221,12 @@ void RAMFUNC dsp_extbuffer32wfm(const uint32_t * buff)
 
 	//memcpy(dd, buff, sizeof dd);
 
-	for (i = 0; i < DMABUFFSIZE32RX; i += DMABUFSTEP32RX)
+	if (dspmodeA == DSPCTL_MODE_RX_WFM)
 	{
-		if (dspmodeA == DSPCTL_MODE_RX_WFM)
+		for (i = 0; i < DMABUFFSIZE32RX; i += DMABUFSTEP32RX)
 		{
+			//volatile const FLOAT_t left = get_lout16();
+
 			const FLOAT_t a0 = demod_WFM(buff [i + DMABUF32RXWFM0I], buff [i + DMABUF32RXWFM0Q]);
 			const FLOAT_t a1 = demod_WFM(buff [i + DMABUF32RXWFM1I], buff [i + DMABUF32RXWFM1Q]);
 			const FLOAT_t a2 = demod_WFM(buff [i + DMABUF32RXWFM2I], buff [i + DMABUF32RXWFM2Q]);
