@@ -9023,10 +9023,6 @@ void
 FLASHMEMINITFUNC
 SystemInit(void)
 {
-#if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM0 || CPUSTYLE_ARM_CM7
-	// Таблица находится в области вне Data Cache
-	vectors_relocate();
-#endif /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM0 || CPUSTYLE_ARM_CM7 */
 #if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7
 
 	#if WITHDEBUG && WITHINTEGRATEDDSP && CPUSTYLE_ARM_CM7
@@ -9295,6 +9291,10 @@ SystemInit(void)
 	HARDWARE_DEBUG_SET_SPEED(DEBUGSPEED);
 
 #endif /* WITHDEBUG */
+#if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM0 || CPUSTYLE_ARM_CM7
+	// Таблица находится в области вне Data Cache
+	vectors_relocate();
+#endif /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM0 || CPUSTYLE_ARM_CM7 */
 }
 
 #if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7 || CPUSTYLE_ARM_CM0
@@ -10746,7 +10746,10 @@ IntFunc __Vectors [NVIC_USER_IRQ_OFFSET] = {
     MemManage_Handler,
     BusFault_Handler,
     UsageFault_Handler,
-    NULL, NULL, NULL, NULL,         /* Reserved */
+    NULL,         /* Reserved */
+	NULL,         /* Reserved */
+	NULL,         /* Reserved */
+	NULL,         /* Reserved */
     SVC_Handler,
     DebugMon_Handler,
 	NULL,                  /* Reserved  */
@@ -10761,12 +10764,17 @@ static void vectors_relocate(void)
 {
 	unsigned i;
 
+	debug_printf_P(PSTR("SCB->VTOR=%08lX\n"), SCB->VTOR);
 	memcpy((void *) ramVectors, __Vectors, NVIC_USER_IRQ_OFFSET * 4);
 	for (i = NVIC_USER_IRQ_OFFSET; i < (sizeof ramVectors / sizeof ramVectors [0]); ++ i)
 	{
 		ramVectors [i] = Default_Handler;
 	}
 	SCB->VTOR = (uint32_t) & ramVectors;
+
+	debug_printf_P(PSTR("SCB->VTOR=%08lX\n"), SCB->VTOR);
+	ASSERT(memcmp((void *) ramVectors, __Vectors, NVIC_USER_IRQ_OFFSET * 4) == 0);
+	ASSERT(SCB->VTOR == (uint32_t) & ramVectors);
 }
 #endif /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM0 || CPUSTYLE_ARM_CM7 */
 
