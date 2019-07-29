@@ -242,8 +242,8 @@
 	#define WITHDSPEXTFIR 1			/* Фильтрация квадратур осуществляется внешней аппаратурой */
 	//#define WITHDSPLOCALFIR 1		/* test: Фильтрация квадратур осуществляется процессором */
 	#define WITHIF4DSP	1	// "Дятел"
-	#define WITHSKIPUSERMODE 1	// debug option: не отдавать в USER MODE блоки для фильтрации аудиосигнала
-	#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX
+	//#define WITHSKIPUSERMODE 1	// debug option: не отдавать в USER MODE блоки для фильтрации аудиосигнала
+	//#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX
 	//#define WITHUSESDCARD		1	// Включение поддержки SD CARD
 	//#define WITHUSEUSBFLASH		1	// Включение поддержки USB memory stick
 	//#define WITHUSEAUDIOREC		1	// Запись звука на SD CARD
