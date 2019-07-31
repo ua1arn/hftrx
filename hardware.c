@@ -9542,7 +9542,7 @@ if (0)
   {
     if(i > 15U) {
       //Set level-sensitive (and N-N model) for PPI
-      GIC_SetConfiguration((IRQn_Type)i, 0U);	// todo: use IRQ_SetMode
+      GIC_SetConfiguration((IRQn_Type)i, 0U);
     }
     //Disable SGI and PPI interrupts
     GIC_DisableIRQ((IRQn_Type)i);
