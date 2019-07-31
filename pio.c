@@ -173,11 +173,11 @@ static void r7s721_pio_onchangeinterrupt(
 		if ((ipins & mask) == 0)
 			continue;
 		const uint16_t int_id = irqbase + bitpos;
-		r7s721_intc_registintfunc(int_id, vector);	/* ==== Register interrupt handler ==== */
-		GIC_SetPriority(int_id, priority);
+		IRQ_SetHandler(int_id, vector);	/* ==== Register interrupt handler ==== */
+		IRQ_SetPriority(int_id, priority);
 		//r7s721_intc_setconfiguration(int_id, edge ? INTC_EDGE_TRIGGER : INTC_LEVEL_SENSITIVE);
-		GIC_SetConfiguration(int_id, edge ? 0x02 : 0x00);
-		GIC_EnableIRQ(int_id);		/* ==== Validate interrupt ==== */
+		GIC_SetConfiguration(int_id, edge ? 0x02 : 0x00);	// todo: use IRQ_SetMode
+		IRQ_Enable(int_id);		/* ==== Validate interrupt ==== */
 	}
 }
 
@@ -578,11 +578,11 @@ void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority,
 		0;
 	{
 		const uint16_t int_id = IRQ0_IRQn + irq;
-		r7s721_intc_registintfunc(int_id, r7s721_IRQn_IRQHandler);	/* ==== Register interrupt handler ==== */
-		GIC_SetPriority(int_id, priority);
+		IRQ_SetHandler(int_id, r7s721_IRQn_IRQHandler);	/* ==== Register interrupt handler ==== */
+		IRQ_SetPriority(int_id, priority);
 		//r7s721_intc_setconfiguration(int_id, INTC_LEVEL_SENSITIVE);
-		GIC_SetConfiguration(int_id, 0x00);	// level sensitice
-		GIC_EnableIRQ(int_id);		/* ==== Validate interrupt ==== */
+		GIC_SetConfiguration(int_id, 0x00);	// level sensitice 	// todo: use IRQ_SetMode
+		IRQ_Enable(int_id);		/* ==== Validate interrupt ==== */
 	}
 }
 

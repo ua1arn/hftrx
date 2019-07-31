@@ -329,6 +329,7 @@ extern "C" {
 	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
 	#define	CPUSTYLE_ARM_CA9	1
 
+	#include "irq_ctrl.h"
 	#include "armcpu/Renesas_RZ_A1.h"
 
 	#include "armcpu/iodefine.h"
@@ -758,7 +759,6 @@ void arm_hardware_flush_invalidate(uintptr_t base, size_t size);	// Сейчас
 void arm_hardware_flush_all(void);
 
 void r7s721_sdhi0_dma_handler(void);
-void r7s721_intc_registintfunc(uint_fast16_t int_id, void (* func)(void));
 
 uint_fast32_t 
 NOINLINEAT

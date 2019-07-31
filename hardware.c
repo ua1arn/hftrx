@@ -1736,9 +1736,9 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 
 	{
 		const IRQn_Type int_id = OSTMI0TINT_IRQn;
-		r7s721_intc_registintfunc(int_id, r7s721_ostm0_interrupt);	/* ==== Register OS timer interrupt handler ==== */
-		GIC_SetPriority(int_id, ARM_SYSTEM_PRIORITY);		/* ==== Set priority of OS timer interrupt to 5 ==== */
-		GIC_EnableIRQ(int_id);		/* ==== Validate OS timer interrupt ==== */
+		IRQ_SetHandler(int_id, r7s721_ostm0_interrupt);	/* ==== Register OS timer interrupt handler ==== */
+		IRQ_SetPriority(int_id, ARM_SYSTEM_PRIORITY);		/* ==== Set priority of OS timer interrupt to 5 ==== */
+		IRQ_Enable(int_id);		/* ==== Validate OS timer interrupt ==== */
 	}
 
 	OSTM0.OSTMnTS = 0x01u;      /* Start counting */
@@ -2978,9 +2978,9 @@ void hardware_adc_initialize(void)
 	// connect to interrupt
 	{
 		const IRQn_Type int_id = ADI_IRQn;	/* 12bit A/D converter                */
-		r7s721_intc_registintfunc(int_id, r7s721_adi_irq_handler);
-		GIC_SetPriority(int_id, ARM_SYSTEM_PRIORITY);
-		GIC_EnableIRQ(int_id);
+		IRQ_SetHandler(int_id, r7s721_adi_irq_handler);
+		IRQ_SetPriority(int_id, ARM_SYSTEM_PRIORITY);
+		IRQ_Enable(int_id);
 	}
 
 	// первый запуск производится в hardware_adc_startonescan().
@@ -4082,9 +4082,9 @@ void hardware_spi_master_initialize(void)
 
 		{
 			//const IRQn_Type int_id = DMAINT15_IRQn;
-			//r7s721_intc_registintfunc(int_id, r7s721_usb0_dma1_dmatx_handler);
-			//GIC_SetPriority(int_id, ARM_REALTIME_PRIORITY);
-			//GIC_EnableIRQ(int_id);
+			//IRQ_SetHandler(int_id, r7s721_usb0_dma1_dmatx_handler);
+			//IRQ_SetPriority(int_id, ARM_REALTIME_PRIORITY);
+			//IRQ_Enable(int_id);
 		}
 
 		DMAC15.CHCTRL_n = DMAC15_CHCTRL_n_SWRST;		// SWRST
@@ -5894,9 +5894,9 @@ hardware_elkey_timer_initialize(void)
 
 	{
 		const IRQn_Type int_id = OSTMI1TINT_IRQn;
-		r7s721_intc_registintfunc(int_id, r7s721_ostm1_interrupt);	/* ==== Register OS timer interrupt handler ==== */
-		GIC_SetPriority(int_id, ARM_SYSTEM_PRIORITY);		/* ==== Set priority of OS timer interrupt to 5 ==== */
-		GIC_EnableIRQ(int_id);		/* ==== Validate OS timer interrupt ==== */
+		IRQ_SetHandler(int_id, r7s721_ostm1_interrupt);	/* ==== Register OS timer interrupt handler ==== */
+		IRQ_SetPriority(int_id, ARM_SYSTEM_PRIORITY);		/* ==== Set priority of OS timer interrupt to 5 ==== */
+		IRQ_Enable(int_id);		/* ==== Validate OS timer interrupt ==== */
 	}
 
 	OSTM1.OSTMnTS = 0x01u;      /* Start counting */
@@ -6378,9 +6378,9 @@ void hardware_sdhost_initialize(void)
 
 	{
 		const IRQn_Type int_id = DMAINT14_IRQn;
-		r7s721_intc_registintfunc(int_id, r7s721_sdhi0_dma_handler);
-		GIC_SetPriority(int_id, ARM_SYSTEM_PRIORITY);
-		GIC_EnableIRQ(int_id);
+		IRQ_SetHandler(int_id, r7s721_sdhi0_dma_handler);
+		IRQ_SetPriority(int_id, ARM_SYSTEM_PRIORITY);
+		IRQ_Enable(int_id);
 	}
 
 	HARDWARE_SDIO_INITIALIZE();	// Подсоединить контроллер к выводам процессора
@@ -9355,7 +9355,7 @@ static void Userdef_INTC_Dummy_Interrupt(void)
 }
 
 /* Interrupt handler table */
-static void (* intc_func_table [IRQ_GIC_LINE_COUNT])(void);
+//static IRQHandler_t intc_func_table [IRQ_GIC_LINE_COUNT];
 
 /* Вызывается из crt_r7s721.s со сброшенным флагом прерываний */
 void IRQHandlerSafe(void)
@@ -9374,15 +9374,16 @@ void IRQHandlerSafe(void)
 	}
 	else if (int_id != 0 || (INTC.ICDABR0 & 0x0001) != 0)
 	{
+		const IRQHandler_t f = IRQ_GetHandler(int_id);
 	#if WITHNESTEDINTERRUPTS
 
 		__enable_irq();						/* modify I bit in CPSR */
-		(* intc_func_table [int_id])();	    /* Call interrupt handler */
+		(* f)();	    /* Call interrupt handler */
 		__disable_irq();					/* modify I bit in CPSR */
 
 	#else /* WITHNESTEDINTERRUPTS */
 
-		(* intc_func_table [int_id])();	    /* Call interrupt handler */
+		(* f)();	    /* Call interrupt handler */
 
 	#endif /* WITHNESTEDINTERRUPTS */
 		INTC.ICCEOIR = int_id;				/* GICC_EOIR */
@@ -9403,7 +9404,7 @@ void IRQHandlerSafe(void)
 ******************************************************************************/
 static void r7s721_intc_initialize(void)
 {
-
+	IRQ_Initialize();
 	/* ==== Total number of registers ==== */
 	enum { INTC_ICDISR_REG_TOTAL   = (IRQ_GIC_LINE_COUNT + 31) / 32 };	// 19 == INTC_ICDISR0_COUNT
 	enum { INTC_ICDICFR_REG_TOTAL  = (IRQ_GIC_LINE_COUNT + 15) / 16 };	// 37 == INTC_ICDICFR0_COUNT
@@ -9469,7 +9470,8 @@ static void r7s721_intc_initialize(void)
 	/* default interrut handlers setup */
     for (offset = 0; offset < IRQ_GIC_LINE_COUNT; ++ offset)
     {
-        intc_func_table [offset] = Userdef_INTC_Dummy_Interrupt;    /* Set all interrupts default handlers */
+    	IRQ_SetHandler(offset, Userdef_INTC_Dummy_Interrupt);
+        //intc_func_table [offset] = Userdef_INTC_Dummy_Interrupt;    /* Set all interrupts default handlers */
     }
 	
     /* ==== Initial setting 1 to receive GIC interrupt request ==== */
@@ -9540,7 +9542,7 @@ if (0)
   {
     if(i > 15U) {
       //Set level-sensitive (and N-N model) for PPI
-      GIC_SetConfiguration((IRQn_Type)i, 0U);
+      GIC_SetConfiguration((IRQn_Type)i, 0U);	// todo: use IRQ_SetMode
     }
     //Disable SGI and PPI interrupts
     GIC_DisableIRQ((IRQn_Type)i);
@@ -9575,24 +9577,6 @@ if (0)
 	GIC_EnableDistributor();	// check GICDistributor->CTLR a same for INTC.ICDDCR
 }
 
-/******************************************************************************
-* Function Name: R_INTC_RegistIntFunc
-* Description  : Registers the function specified by the func to the element 
-*              : specified by the int_id in the INTC interrupt handler function
-*              : table.
-* Arguments    : uint16_t int_id         : Interrupt ID
-*              : void (* func)(uint32_t) : Function to be registered to INTC
-*              :                         : interrupt hander table
-* Return Value : DEVDRV_SUCCESS          : Success of registration of INTC 
-*              :                         : interrupt handler function
-*              : DEVDRV_ERROR            : Failure of registration of INTC 
-*              :                         : interrupt handler function
-******************************************************************************/
-void r7s721_intc_registintfunc(uint_fast16_t int_id, void (* func)(void))
-{
-
-    intc_func_table [int_id] = func;     /* Register specified interrupt functions */
-}
 
 /******************************************************************************/
 

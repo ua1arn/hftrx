@@ -1009,15 +1009,15 @@ void hardware_uart1_initialize(void)
 
 	{
 		const IRQn_Type int_id = SCIFRXI0_IRQn;
-		r7s721_intc_registintfunc(int_id, r7s721_scifrxi0_interrupt);
-		GIC_SetPriority(int_id, ARM_SYSTEM_PRIORITY);
-		GIC_EnableIRQ(int_id);
+		IRQ_SetHandler(int_id, r7s721_scifrxi0_interrupt);
+		IRQ_SetPriority(int_id, ARM_SYSTEM_PRIORITY);
+		IRQ_Enable(int_id);
 	}
 	{
 		const IRQn_Type int_id = SCIFTXI0_IRQn;
-		r7s721_intc_registintfunc(int_id, r7s721_sciftxi0_interrupt);
-		GIC_SetPriority(int_id, ARM_SYSTEM_PRIORITY);
-		GIC_EnableIRQ(int_id);
+		IRQ_SetHandler(int_id, r7s721_sciftxi0_interrupt);
+		IRQ_SetPriority(int_id, ARM_SYSTEM_PRIORITY);
+		IRQ_Enable(int_id);
 	}
 
 	HARDWARE_USART1_INITIALIZE();	/* Присоединить периферию к выводам */
@@ -2065,15 +2065,15 @@ xxxx!;
 
 	{
 		const IRQn_Type int_id = SCIFRXI3_IRQn;
-		r7s721_intc_registintfunc(int_id, r7s721_scifrxi3_interrupt);
-		GIC_SetPriority(int_id, ARM_SYSTEM_PRIORITY);
-		GIC_EnableIRQ(int_id);
+		IRQ_SetHandler(int_id, r7s721_scifrxi3_interrupt);
+		IRQ_SetPriority(int_id, ARM_SYSTEM_PRIORITY);
+		IRQ_Enable(int_id);
 	}
 	{
 		const IRQn_Type int_id = SCIFTXI3_IRQn;
-		r7s721_intc_registintfunc(int_id, r7s721_sciftxi3_interrupt);
-		GIC_SetPriority(int_id, ARM_SYSTEM_PRIORITY);
-		GIC_EnableIRQ(int_id);
+		IRQ_SetHandler(int_id, r7s721_sciftxi3_interrupt);
+		IRQ_SetPriority(int_id, ARM_SYSTEM_PRIORITY);
+		IRQ_Enable(int_id);
 	}
 
 	HARDWARE_USART2_INITIALIZE();	/* Присоединить периферию к выводам */

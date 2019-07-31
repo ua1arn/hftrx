@@ -14152,9 +14152,9 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
 	if (hpcd->Instance == & USB200)
 	{
 		const uint16_t int_id = USBI0_IRQn;
-		r7s721_intc_registintfunc(int_id, r7s721_usbi0_device_handler);
-		GIC_SetPriority(int_id, ARM_SYSTEM_PRIORITY);
-		GIC_EnableIRQ(int_id);
+		IRQ_SetHandler(int_id, r7s721_usbi0_device_handler);
+		IRQ_SetPriority(int_id, ARM_SYSTEM_PRIORITY);
+		IRQ_Enable(int_id);
 
 		/* ---- Supply clock to the USB20(channel 0) ---- */
 		CPG.STBCR7 &= ~ CPG_STBCR7_MSTP71;	// Module Stop 71 0: Channel 0 of the USB 2.0 host/function module runs.
@@ -14166,9 +14166,9 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
 	else if (hpcd->Instance == & USB201)
 	{
 		const uint16_t int_id = USBI1_IRQn;
-		r7s721_intc_registintfunc(int_id, r7s721_usbi1_device_handler);
-		GIC_SetPriority(int_id, ARM_SYSTEM_PRIORITY);
-		GIC_EnableIRQ(int_id);
+		IRQ_SetHandler(int_id, r7s721_usbi1_device_handler);
+		IRQ_SetPriority(int_id, ARM_SYSTEM_PRIORITY);
+		IRQ_Enable(int_id);
 
 		/* ---- Supply clock to the USB20(channel 1) ---- */
 		CPG.STBCR7 &= ~ CPG_STBCR7_MSTP70;	// Module Stop 70 0: Channel 1 of the USB 2.0 host/function module runs.
