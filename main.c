@@ -10612,6 +10612,18 @@ static void rm3answer(uint_fast8_t arg)
 #endif /* WITHTX && (WITHSWRMTR || WITHSHOWSWRPWR) */
 #endif /* WITHCATEXT */
 
+static uint_fast8_t
+adjust8(uint_fast8_t v, uint_fast8_t minimal, uint_fast8_t maximal)
+{
+	if (v > maximal)
+		return maximal;
+	if (v < minimal)
+		return minimal;
+	return v;
+}
+
+// в трансивере допустимый диапазон изменения значений CW PITCH больше чем поддерживается протоколом CAT KENWOOD
+// поэтому перед отдачей приводится к допустимому.
 static void ptanswer(uint_fast8_t arg)
 {
 	static const FLASHMEM char fmt_1 [] =
@@ -10621,7 +10633,7 @@ static void ptanswer(uint_fast8_t arg)
 
 	// answer mode
 	const uint_fast8_t len = local_snprintf_P(cat_ask_buffer, CAT_ASKBUFF_SIZE, fmt_1,
-		(int) ((gcwpitch10 - 40) / 5)
+		(int) ((adjust8(gcwpitch10, 40, 190) - 40) / 5)
 		);
 
 	cat_answer(len);
@@ -12276,7 +12288,7 @@ static const FLASHMEM struct menudef menutable [] =
 	{
 		"CW PITCH", 7, 2, 0, 	ISTEP10, 
 		ITEM_VALUE,
-		40, 190,			/* 400 Hz..1900, Hz in 100 Hz steps */
+		CWPITCHMIN10, CWPITCHMAX10,	// 40, 190,			/* 400 Hz..1900, Hz in 100 Hz steps */
 		offsetof(struct nvmap, gcwpitch10),
 		NULL,
 		& gcwpitch10,
