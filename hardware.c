@@ -9377,13 +9377,19 @@ void IRQHandlerSafe(void)
 		const IRQHandler_t f = IRQ_GetHandler(int_id);
 	#if WITHNESTEDINTERRUPTS
 
-		__enable_irq();						/* modify I bit in CPSR */
-		(* f)();	    /* Call interrupt handler */
-		__disable_irq();					/* modify I bit in CPSR */
+		if (f != (IRQHandler_t) 0)
+		{
+			__enable_irq();						/* modify I bit in CPSR */
+			(* f)();	    /* Call interrupt handler */
+			__disable_irq();					/* modify I bit in CPSR */
+		}
 
 	#else /* WITHNESTEDINTERRUPTS */
 
-		(* f)();	    /* Call interrupt handler */
+		if (f != (IRQHandler_t) 0)
+		{
+			(* f)();	    /* Call interrupt handler */
+		}
 
 	#endif /* WITHNESTEDINTERRUPTS */
 		INTC.ICCEOIR = int_id;				/* GICC_EOIR */
@@ -9394,6 +9400,64 @@ void IRQHandlerSafe(void)
 	}
 }
 
+static const char * mode_trig(uint32_t mode)
+{
+	switch (mode & IRQ_MODE_TRIG_Msk)
+	{
+	case IRQ_MODE_TRIG_LEVEL: return "IRQ_MODE_TRIG_LEVEL";
+	case IRQ_MODE_TRIG_LEVEL_LOW: return "IRQ_MODE_TRIG_LEVEL_LOW";
+	case IRQ_MODE_TRIG_LEVEL_HIGH: return "IRQ_MODE_TRIG_LEVEL_HIGH";
+	case IRQ_MODE_TRIG_EDGE: return "IRQ_MODE_TRIG_EDGE";
+	case IRQ_MODE_TRIG_EDGE_RISING: return "IRQ_MODE_TRIG_EDGE_RISING";
+	case IRQ_MODE_TRIG_EDGE_FALLING: return "IRQ_MODE_TRIG_EDGE_FALLING";
+	case IRQ_MODE_TRIG_EDGE_BOTH: return "IRQ_MODE_TRIG_EDGE_BOTH";
+	default: return "error";
+	}
+}
+static const char * mode_type(uint32_t mode)
+{
+	switch (mode & IRQ_MODE_TYPE_Msk)
+	{
+	case IRQ_MODE_TYPE_IRQ: return "IRQ_MODE_TYPE_IRQ";
+	case IRQ_MODE_TYPE_FIQ: return "IRQ_MODE_TYPE_FIQ";
+	default: return "error";
+	}
+}
+static const char * mode_domain(uint32_t mode)
+{
+	switch (mode & IRQ_MODE_DOMAIN_Msk)
+	{
+	case IRQ_MODE_DOMAIN_NONSECURE: return "IRQ_MODE_DOMAIN_NONSECURE";
+	case IRQ_MODE_DOMAIN_SECURE: return "IRQ_MODE_DOMAIN_SECURE";
+	default: return "error";
+	}
+}
+static const char * mode_cpu(uint32_t mode)
+{
+	switch (mode & IRQ_MODE_CPU_Msk)
+	{
+	case IRQ_MODE_CPU_ALL: return "IRQ_MODE_CPU_ALL";
+	case IRQ_MODE_CPU_0: return "IRQ_MODE_CPU_0";
+	case IRQ_MODE_CPU_1: return "IRQ_MODE_CPU_1";
+	case IRQ_MODE_CPU_2: return "IRQ_MODE_CPU_2";
+	case IRQ_MODE_CPU_3: return "IRQ_MODE_CPU_3";
+	case IRQ_MODE_CPU_4: return "IRQ_MODE_CPU_4";
+	case IRQ_MODE_CPU_5: return "IRQ_MODE_CPU_5";
+	case IRQ_MODE_CPU_6: return "IRQ_MODE_CPU_6";
+	case IRQ_MODE_CPU_7: return "IRQ_MODE_CPU_7";
+	default: return "error";
+	}
+}
+static void irq_modes_print(void)
+{
+	IRQn_ID_t irqn;
+    for (irqn = 0; irqn < IRQ_GIC_LINE_COUNT; ++ irqn)
+    {
+    	const uint32_t mode = IRQ_GetMode(irqn);
+    	debug_printf_P(PSTR("/* %3d %08lX */" "\t" "(%s | %s | %s | %s)," "\n"), irqn, mode, mode_type(mode), mode_domain(mode), mode_cpu(mode), mode_trig(mode));
+    }
+
+}
 /******************************************************************************
 * Function Name: r7s721_intc_initialize
 * Description  : Executes initial setting for the INTC.
@@ -9575,6 +9639,9 @@ if (0)
     /* Distributor Control Register setting */
     //INTC.ICDDCR = 0x00000001uL;
 	GIC_EnableDistributor();	// check GICDistributor->CTLR a same for INTC.ICDDCR
+
+	//irq_modes_print(); 	// print state
+
 }
 
 
