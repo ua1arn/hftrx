@@ -7,6 +7,7 @@
 
 #include "hardware.h"	/* зависящие от процессора функции работы с портами */
 #include "pio.h"
+#include "formats.h"
 
 #include <string.h>
 #include <math.h>
@@ -175,7 +176,7 @@ static void r7s721_pio_onchangeinterrupt(
 		const uint16_t int_id = irqbase + bitpos;
 		IRQ_SetHandler(int_id, vector);	/* ==== Register interrupt handler ==== */
 		IRQ_SetPriority(int_id, priority);
-		IRQ_SetMode(int_id, edge ? IRQ_MODE_TRIG_EDGE : IRQ_MODE_TRIG_LEVEL);
+		VERIFY(0 == IRQ_SetMode(int_id, edge ? IRQ_MODE_TRIG_EDGE : IRQ_MODE_TRIG_LEVEL));
 		IRQ_Enable(int_id);		/* ==== Validate interrupt ==== */
 	}
 }
@@ -579,7 +580,7 @@ void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority,
 		const uint16_t int_id = IRQ0_IRQn + irq;
 		IRQ_SetHandler(int_id, r7s721_IRQn_IRQHandler);	/* ==== Register interrupt handler ==== */
 		IRQ_SetPriority(int_id, priority);
-		IRQ_SetMode(int_id, IRQ_MODE_TRIG_LEVEL);
+		VERIFY(0 == IRQ_SetMode(int_id, IRQ_MODE_TRIG_LEVEL));
 		IRQ_Enable(int_id);		/* ==== Validate interrupt ==== */
 	}
 }
