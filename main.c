@@ -3582,26 +3582,32 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 
 #if WITHIF4DSP
 
-	#define FSADCPOWEROFFSET10 500
+	#define FSADCPOWEROFFSET10 700
 	static int_fast32_t getfsasdcbase10(void)
 	{
 		return - FSADCPOWEROFFSET10;
 	}
 
 	static uint_fast8_t gcwedgetime = 5;			/* Время нарастания/спада огибающей телеграфа при передаче - в 1 мс */
-	static uint_fast8_t gsidetonelevel = 15;	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
 	static uint_fast8_t gsubtonelevel = 10;	/* Уровень сигнала CTCSS в процентах - 0%..100% */
 #if CTLSTYLE_OLEG4Z_V1
+	static uint_fast8_t gsidetonelevel = 0;	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
 	static uint_fast8_t gdigigainmax = 120; /* диапазон ручной регулировки цифрового усиления - максимальное значение */
+	static uint_fast16_t gfsadcpower10 [2] =
+	{
+		(+ 310) + FSADCPOWEROFFSET10,	// для соответствия HDSDR мощность, соответствующая full scale от IF ADC
+		(+ 260) + FSADCPOWEROFFSET10,	// с конвертором
+	};
 #else /* CTLSTYLE_OLEG4Z_V1 */
+	static uint_fast8_t gsidetonelevel = 15;	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
 	static uint_fast8_t gdigigainmax = 86;	/* диапазон ручной регулировки цифрового усиления - максимальное значение */
-#endif /* CTLSTYLE_OLEG4Z_V1 */
-	static uint_fast8_t gvad605 = 180; //UINT8_MAX;	/* напряжение на AD605 (управление усилением тракта ПЧ */
 	static uint_fast16_t gfsadcpower10 [2] = 
 	{
 		(- 130) + FSADCPOWEROFFSET10,	// для соответствия HDSDR мощность, соответствующая full scale от IF ADC
 		(- 330) + FSADCPOWEROFFSET10,	// с конвертором
 	};
+#endif /* CTLSTYLE_OLEG4Z_V1 */
+	static uint_fast8_t gvad605 = 180; //UINT8_MAX;	/* напряжение на AD605 (управление усилением тракта ПЧ */
 	#if WITHDSPEXTDDC	/* "Воронёнок" с DSP и FPGA */
 		static uint_fast8_t gdither;		/* управление зашумлением в LTC2208 */
 		#if ADC1_TYPE == ADC_TYPE_AD9246
