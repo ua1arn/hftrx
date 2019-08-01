@@ -7037,6 +7037,7 @@ static lmsnrstate_t lmsnrstates [NTRX];
 
 void * speex_alloc(int size)
 {
+	debug_printf_P(PSTR("speex_alloc(%d)\n"), size);
 	void * const ptr = malloc(size);
 	if (ptr == NULL)
 	{
