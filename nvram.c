@@ -623,7 +623,7 @@ restore_i8(nvramaddress_t addr)
 /* сохранение по указанному индексу в FRAM одного байта */
 void 
 //NOINLINEAT
-save_i8(nvramaddress_t addr, uint8_t v)
+save_i8(nvramaddress_t addr, uint_fast8_t v)
 {
 }
 
@@ -638,7 +638,7 @@ restore_i16(nvramaddress_t addr)
 /* сохранение по указанному индексу в FRAM одного 16-битного слова */
 void 
 //NOINLINEAT
-save_i16(nvramaddress_t addr, uint16_t v)
+save_i16(nvramaddress_t addr, uint_fast16_t v)
 {
 }
 
@@ -653,7 +653,7 @@ restore_i32(nvramaddress_t addr)
 /* сохранение по указанному индексу в FRAM одного 32-битного слова */
 void 
 //NOINLINEAT
-save_i32(nvramaddress_t addr, uint32_t v)
+save_i32(nvramaddress_t addr, uint_fast32_t v)
 {
 }
 

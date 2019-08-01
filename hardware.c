@@ -11028,8 +11028,11 @@ int __attribute__((used)) (_write)(int fd, char * ptr, int len)
 #elif SPEEXNN == 1024
 	#define SPEEXALLOCSIZE (NTRX * 149176)
 #endif
-//static uint8_t sipexbuff [NTRX * 149176 /* + 24716 */];
-static RAMHEAP uint8_t sipexbuff [SPEEXALLOCSIZE];
+
+#if SPEEXALLOCSIZE
+	//static uint8_t sipexbuff [NTRX * 149176 /* + 24716 */];
+	static RAMHEAP uint8_t sipexbuff [SPEEXALLOCSIZE];
+#endif /* SPEEXALLOCSIZE */
 
 #endif /* ! WITHNOSPEEX */
 
