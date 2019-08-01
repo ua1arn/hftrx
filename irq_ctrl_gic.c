@@ -26,11 +26,12 @@
 
 #include "RTE_Components.h"
 //#include CMSIS_device_header
-#include "armcpu/Renesas_RZ_A1.h"
-
-#include "irq_ctrl.h"
+#include "hardware.h"
 
 #if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
+
+
+#include "irq_ctrl.h"
 
 /// Number of implemented interrupt lines
 #ifndef IRQ_GIC_LINE_COUNT
