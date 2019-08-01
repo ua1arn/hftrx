@@ -815,12 +815,12 @@ void bootloader_detach(void);
 #define BOARD_ADCXIN(ch) (BOARD_ADCXBASE + (ch))
 
 // Cortex-A7/A9 handlers
-void UndefHandler(void);
-void SWIHandler(void);
-void PAbortHandler(void);
-void DAbortHandler(void);
-void FIQHandler(void);
-void IRQHandlerSafe(void);
+void Undef_Handler(void);
+void SWI_Handler(void);
+void PAbort_Handler(void);
+void DAbort_Handler(void);
+void FIQ_Handler(void);
+void IRQ_Handler(void);
 
 #ifdef __cplusplus
 }

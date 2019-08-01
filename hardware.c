@@ -8663,18 +8663,16 @@ lowlevel_stm32l0xx_pll_clock(void)
 
 #endif /* CPUSTYLE_STM32L0XX */
 
-#if CPUSTYLE_R7S721
+#if (CPUSTYLE_ARM_CA9 || CPUSTYLE_ARM_CA7)
 
-#if 1
-
-void UndefHandler(void)
+void Undef_Handler(void)
 {
 	debug_printf_P(PSTR("UndefHandler trapped.\n"));
 	for (;;)
 		;
 }
 
-void SWIHandler(void)
+void SWI_Handler(void)
 {
 	debug_printf_P(PSTR("SWIHandler trapped.\n"));
 	for (;;)
@@ -8682,7 +8680,7 @@ void SWIHandler(void)
 }
 
 // Prefetch Abort
-void PAbortHandler(void)
+void PAbort_Handler(void)
 {
 	debug_printf_P(PSTR("PAbortHandler trapped.\n"));
 	for (;;)
@@ -8690,7 +8688,7 @@ void PAbortHandler(void)
 }
 
 // Data Abort.
-void DAbortHandler(void)
+void DAbort_Handler(void)
 {
 	debug_printf_P(PSTR("DAbortHandler trapped.\n"));
 	debug_printf_P(PSTR("DFSR=%08lX\n"), __get_DFSR());
@@ -8737,21 +8735,12 @@ void DAbortHandler(void)
 		;
 }
 
-void FIQHandler(void)
+void FIQ_Handler(void)
 {
 	debug_printf_P(PSTR("FIQHandler trapped.\n"));
 	for (;;)
 		;
 }
-/*
-void IRQHandler(void)
-{
-	debug_printf_P(PSTR("IRQHandler trapped.\n"));
-	for (;;)
-		;
-}
-*/
-#endif
 
 static void arm_hardware_VFPEnable(void)
 {
@@ -8837,7 +8826,7 @@ void CPG_Init(void)
 #endif
 }
 
-#endif /* CPUSTYLE_R7S721 */
+#endif /* (CPUSTYLE_ARM_CA9 || CPUSTYLE_ARM_CA7) */
 
 #if CPUSTYLE_ARM_CM7
 
@@ -9354,11 +9343,29 @@ static void Userdef_INTC_Dummy_Interrupt(void)
 		;
 }
 
-/* Interrupt handler table */
-//static IRQHandler_t intc_func_table [IRQ_GIC_LINE_COUNT];
+void IRQ_Handler(void)
+{
+	const IRQn_ID_t irqn = IRQ_GetActiveIRQ();
+	IRQHandler_t const handler = IRQ_GetHandler(irqn);
+	if (handler != NULL)
+	{
+#if WITHNESTEDINTERRUPTS
+
+		__enable_irq();						/* modify I bit in CPSR */
+		(* handler)();	    /* Call interrupt handler */
+		__disable_irq();					/* modify I bit in CPSR */
+
+#else /* WITHNESTEDINTERRUPTS */
+
+		(* handler)();	    /* Call interrupt handler */
+
+#endif /* WITHNESTEDINTERRUPTS */
+	}
+	IRQ_EndOfInterrupt(irqn);
+}
 
 /* Вызывается из crt_r7s721.s со сброшенным флагом прерываний */
-void IRQHandlerSafe(void)
+void IRQ_HandlerXXXXX(void)
 {
 	/* const uint32_t icchpir = */ (void) GICC_HPPIR;	/* GICC_HPPIR */
 	const uint32_t icciar = GICC_IAR;				/* GICC_IAR */
@@ -9392,7 +9399,7 @@ void IRQHandlerSafe(void)
 		}
 
 	#endif /* WITHNESTEDINTERRUPTS */
-		INTC.ICCEOIR = int_id;				/* GICC_EOIR */
+		VERIFY(0 == IRQ_EndOfInterrupt(int_id));	/* GICC_EOIR, INTC.ICCEOIR*/
 	}
 	else
 	{
