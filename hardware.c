@@ -1735,7 +1735,7 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 	OSTM0.OSTMnCMP = calcdivround_p0clock(ticksfreq) - 1;
 
 	{
-		const IRQn_Type int_id = OSTMI0TINT_IRQn;
+		const IRQn_ID_t int_id = OSTMI0TINT_IRQn;
 		IRQ_SetHandler(int_id, r7s721_ostm0_interrupt);	/* ==== Register OS timer interrupt handler ==== */
 		IRQ_SetPriority(int_id, ARM_SYSTEM_PRIORITY);		/* ==== Set priority of OS timer interrupt to 5 ==== */
 		IRQ_Enable(int_id);		/* ==== Validate OS timer interrupt ==== */
@@ -2977,7 +2977,7 @@ void hardware_adc_initialize(void)
 
 	// connect to interrupt
 	{
-		const IRQn_Type int_id = ADI_IRQn;	/* 12bit A/D converter                */
+		const IRQn_ID_t int_id = ADI_IRQn;	/* 12bit A/D converter                */
 		IRQ_SetHandler(int_id, r7s721_adi_irq_handler);
 		IRQ_SetPriority(int_id, ARM_SYSTEM_PRIORITY);
 		IRQ_Enable(int_id);
@@ -4081,7 +4081,7 @@ void hardware_spi_master_initialize(void)
 			0;
 
 		{
-			//const IRQn_Type int_id = DMAINT15_IRQn;
+			//const IRQn_ID_t int_id = DMAINT15_IRQn;
 			//IRQ_SetHandler(int_id, r7s721_usb0_dma1_dmatx_handler);
 			//IRQ_SetPriority(int_id, ARM_REALTIME_PRIORITY);
 			//IRQ_Enable(int_id);
@@ -5893,7 +5893,7 @@ hardware_elkey_timer_initialize(void)
     OSTM1.OSTMnTT = 0x01u;      /* Stop counting */
 
 	{
-		const IRQn_Type int_id = OSTMI1TINT_IRQn;
+		const IRQn_ID_t int_id = OSTMI1TINT_IRQn;
 		IRQ_SetHandler(int_id, r7s721_ostm1_interrupt);	/* ==== Register OS timer interrupt handler ==== */
 		IRQ_SetPriority(int_id, ARM_SYSTEM_PRIORITY);		/* ==== Set priority of OS timer interrupt to 5 ==== */
 		IRQ_Enable(int_id);		/* ==== Validate OS timer interrupt ==== */
@@ -6377,7 +6377,7 @@ void hardware_sdhost_initialize(void)
 	hardware_sdhost_setspeed(400000uL);
 
 	{
-		const IRQn_Type int_id = DMAINT14_IRQn;
+		const IRQn_ID_t int_id = DMAINT14_IRQn;
 		IRQ_SetHandler(int_id, r7s721_sdhi0_dma_handler);
 		IRQ_SetPriority(int_id, ARM_SYSTEM_PRIORITY);
 		IRQ_Enable(int_id);
@@ -9362,7 +9362,7 @@ void IRQHandlerSafe(void)
 {
 	/* const uint32_t icchpir = */ (void) GICC_HPPIR;	/* GICC_HPPIR */
 	const uint32_t icciar = GICC_IAR;				/* GICC_IAR */
-	const uint16_t int_id = icciar & INTC_ICCIAR_ACKINTID;
+	const IRQn_ID_t int_id = icciar & INTC_ICCIAR_ACKINTID;
 
 	// See R01UH0437EJ0200 Rev.2.00 7.8.3 Reading Interrupt ID Values from Interrupt Acknowledge Register (ICCIAR)
 	// IHI0048B_b_gic_architecture_specification.pdf

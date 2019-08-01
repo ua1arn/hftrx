@@ -173,7 +173,7 @@ static void r7s721_pio_onchangeinterrupt(
 		unsigned long mask = 1uL << bitpos;
 		if ((ipins & mask) == 0)
 			continue;
-		const uint16_t int_id = irqbase + bitpos;
+		const IRQn_ID_t int_id = irqbase + bitpos;
 		IRQ_SetHandler(int_id, vector);	/* ==== Register interrupt handler ==== */
 		IRQ_SetPriority(int_id, priority);
 		VERIFY(0 == IRQ_SetMode(int_id, edge ? IRQ_MODE_TRIG_EDGE : IRQ_MODE_TRIG_LEVEL));
@@ -577,7 +577,7 @@ void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority,
 		edge * (1uL << (irq * 2)) |
 		0;
 	{
-		const uint16_t int_id = IRQ0_IRQn + irq;
+		const IRQn_ID_t int_id = IRQ0_IRQn + irq;
 		IRQ_SetHandler(int_id, r7s721_IRQn_IRQHandler);	/* ==== Register interrupt handler ==== */
 		IRQ_SetPriority(int_id, priority);
 		VERIFY(0 == IRQ_SetMode(int_id, IRQ_MODE_TRIG_LEVEL));

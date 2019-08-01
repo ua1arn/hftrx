@@ -2185,7 +2185,7 @@ static void r7s721_ssif0_dmarx_initialize(void)
 		0;
 
 	{
-		const IRQn_Type int_id = DMAINT0_IRQn;
+		const IRQn_ID_t int_id = DMAINT0_IRQn;
 		IRQ_SetHandler(int_id, r7s721_ssif0_rxdma);
 		IRQ_SetPriority(int_id, ARM_REALTIME_PRIORITY);
 		IRQ_Enable(int_id);
@@ -2256,7 +2256,7 @@ static void r7s721_ssif0_dmatx_initialize(void)
 		0;
 
 	{
-		const IRQn_Type int_id = DMAINT1_IRQn;
+		const IRQn_ID_t int_id = DMAINT1_IRQn;
 		IRQ_SetHandler(int_id, r7s721_ssif0_txdma);
 		IRQ_SetPriority(int_id, ARM_REALTIME_PRIORITY);
 		IRQ_Enable(int_id);
@@ -2449,7 +2449,7 @@ static void r7s721_ssif1_dmarx_initialize(void)
 		0;
 
 	{
-		const IRQn_Type int_id = DMAINT2_IRQn;
+		const IRQn_ID_t int_id = DMAINT2_IRQn;
 		IRQ_SetHandler(int_id, r7s721_ssif1_rxdma);
 		IRQ_SetPriority(int_id, ARM_REALTIME_PRIORITY);
 		IRQ_Enable(int_id);
@@ -2520,7 +2520,7 @@ static void r7s721_ssif1_dmatx_initialize(void)
 		0;
 
 	{
-		const IRQn_Type int_id = DMAINT3_IRQn;
+		const IRQn_ID_t int_id = DMAINT3_IRQn;
 		IRQ_SetHandler(int_id, r7s721_ssif1_txdma);
 		IRQ_SetPriority(int_id, ARM_REALTIME_PRIORITY);
 		IRQ_Enable(int_id);
@@ -2689,7 +2689,7 @@ static void r7s721_ssif2_dmarx_initialize(void)
 		0;
 
 	{
-		const IRQn_Type int_id = DMAINT4_IRQn;
+		const IRQn_ID_t int_id = DMAINT4_IRQn;
 		IRQ_SetHandler(int_id, r7s721_ssif2_rxdma_handler);
 		IRQ_SetPriority(int_id, ARM_REALTIME_PRIORITY);
 		IRQ_Enable(int_id);
@@ -3089,7 +3089,7 @@ static void r7s721_usb0_dma1_dmatx_initialize(void)
 		0;
 
 	{
-		const IRQn_Type int_id = DMAINT12_IRQn;
+		const IRQn_ID_t int_id = DMAINT12_IRQn;
 		IRQ_SetHandler(int_id, r7s721_usbX_dma1_dmatx_handler);
 		IRQ_SetPriority(int_id, ARM_REALTIME_PRIORITY);
 		IRQ_Enable(int_id);
@@ -3196,7 +3196,7 @@ static void r7s721_usb0_dma0_dmarx_initialize(void)
 		0;
 
 	{
-		const IRQn_Type int_id = DMAINT13_IRQn;
+		const IRQn_ID_t int_id = DMAINT13_IRQn;
 		IRQ_SetHandler(int_id, r7s721_usbX_dma0_dmarx_handler);
 		IRQ_SetPriority(int_id, ARM_SYSTEM_PRIORITY);
 		IRQ_Enable(int_id);
@@ -3278,7 +3278,7 @@ static void r7s721_usb1_dma1_dmatx_initialize(void)
 		0;
 
 	{
-		const IRQn_Type int_id = DMAINT12_IRQn;
+		const IRQn_ID_t int_id = DMAINT12_IRQn;
 		IRQ_SetHandler(int_id, r7s721_usbX_dma1_dmatx_handler);
 		IRQ_SetPriority(int_id, ARM_REALTIME_PRIORITY);
 		IRQ_Enable(int_id);
@@ -3353,7 +3353,7 @@ static void r7s721_usb1_dma0_dmarx_initialize(void)
 		0;
 
 	{
-		const IRQn_Type int_id = DMAINT13_IRQn;
+		const IRQn_ID_t int_id = DMAINT13_IRQn;
 		IRQ_SetHandler(int_id, r7s721_usbX_dma0_dmarx_handler);
 		IRQ_SetPriority(int_id, ARM_SYSTEM_PRIORITY);
 		IRQ_Enable(int_id);
