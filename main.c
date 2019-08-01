@@ -7043,9 +7043,9 @@ typedef struct lmsnrstate_tag
 
 static lmsnrstate_t lmsnrstates [NTRX];
 
-#if ! WITHNOSPEEX
+#if 0 && ! WITHNOSPEEX
 
-void * speex_alloc(int size)
+void * speex_allocXX(int size)
 {
 	debug_printf_P(PSTR("speex_alloc(%d)\n"), size);
 	void * const ptr = malloc(size);
@@ -7059,9 +7059,47 @@ void * speex_alloc(int size)
 	return ptr;
 }
 
-void speex_free(void * ptr)
+void speex_freeXX(void * ptr)
 {
 	free(ptr);
+}
+
+#endif /* WITHNOSPEEX */
+
+#if ! WITHNOSPEEX
+
+static int speexallocated = 0;
+
+#if SPEEXNN == 64
+	#define SPEEXALLOCSIZE (NTRX * 15584)
+#elif SPEEXNN == 128
+	#define SPEEXALLOCSIZE (NTRX * 22584)
+#elif SPEEXNN == 256
+	#define SPEEXALLOCSIZE (NTRX * 38584)
+#elif SPEEXNN == 512
+	#define SPEEXALLOCSIZE (NTRX * 75448)
+#elif SPEEXNN == 1024
+	#define SPEEXALLOCSIZE (NTRX * 149176)
+#endif
+//static uint8_t sipexbuff [NTRX * 149176 /* + 24716 */];
+static uint8_t sipexbuff [SPEEXALLOCSIZE];
+
+void *speex_alloc (int size)
+{
+	size = (size + 0x03) & ~ 0x03;
+	ASSERT((speexallocated + size) <= sizeof sipexbuff / sizeof sipexbuff [0]);
+	if (! ((speexallocated + size) <= sizeof sipexbuff / sizeof sipexbuff [0]))
+	{
+		for (;;)
+			;
+	}
+	void * p = (void *) (sipexbuff + speexallocated);
+	speexallocated += size;
+	return p;
+}
+
+void speex_free (void *ptr)
+{
 }
 
 #endif /* WITHNOSPEEX */

@@ -9343,7 +9343,7 @@ static void Userdef_INTC_Dummy_Interrupt(void)
 		;
 }
 
-void IRQ_Handler(void)
+void IRQ_HandlerNew(void)
 {
 	const IRQn_ID_t irqn = IRQ_GetActiveIRQ();
 	IRQHandler_t const handler = IRQ_GetHandler(irqn);
@@ -9482,7 +9482,7 @@ static void irq_modes_print(void)
 * Arguments    : none
 * Return Value : none
 ******************************************************************************/
-static void r7s721_intc_initialize(void)
+static void r7s721_intc_initializeNew(void)
 {
 	static const uint32_t modes [] =
 	{
@@ -10092,6 +10092,227 @@ static void r7s721_intc_initialize(void)
 
 	//irq_modes_print();
     //GIC_Enable();	// инициализирует не совсем так как надо для работы
+if (0)
+{
+	// а так работает...
+  uint32_t i;
+  uint32_t priority_field;
+
+  //A reset sets all bits in the IGROUPRs corresponding to the SPIs to 0,
+  //configuring all of the interrupts as Secure.
+
+  //Disable interrupt forwarding
+  GIC_DisableInterface();
+
+  /* Priority level is implementation defined.
+   To determine the number of priority bits implemented write 0xFF to an IPRIORITYR
+   priority field and read back the value stored.*/
+  GIC_SetPriority((IRQn_Type)0U, 0xFFU);
+  priority_field = GIC_GetPriority((IRQn_Type)0U);
+
+  //SGI and PPI
+  for (i = 0U; i < 32U; i++)
+  {
+    if(i > 15U) {
+      //Set level-sensitive (and N-N model) for PPI
+      GIC_SetConfiguration((IRQn_Type)i, 0U);
+    }
+    //Disable SGI and PPI interrupts
+    GIC_DisableIRQ((IRQn_Type)i);
+    //Set priority
+    GIC_SetPriority((IRQn_Type)i, priority_field/2U);
+  }
+  //Enable interface
+  GIC_EnableInterface();
+  //Set binary point to 0
+  GIC_SetBinaryPoint(0U);
+  //Set priority mask
+  GIC_SetInterfacePriorityMask(0xFFU);
+}
+
+
+    /* Interrupt Priority Mask Register setting */
+    /* Enable priorities for all interrupts */
+#if WITHNESTEDINTERRUPTS
+    GIC_SetInterfacePriorityMask(gARM_BASEPRI_ALL_ENABLED);	// GICC_PMR
+#endif /* WITHNESTEDINTERRUPTS */
+    /* Binary Point Register setting */
+    /* Group priority field [7:3], Subpriority field [2:0](Do not use) */
+    //INTC.ICCBPR = 0x00000002uL; // Binary Point Register, GICC_BPR, may be ARM_CA9_PRIORITYSHIFT - 1
+	GIC_SetBinaryPoint(2);
+    /* CPU Interface Control Register setting */
+    //INTC.ICCICR = 0x00000003uL;	// GICC_CTLR
+	GIC_EnableInterface();	// check GICInterface->CTLR a same for INTC.ICCICR
+
+    /* Initial setting 2 to receive GIC interrupt request */
+    /* Distributor Control Register setting */
+    //INTC.ICDDCR = 0x00000001uL;
+	GIC_EnableDistributor();	// check GICDistributor->CTLR a same for INTC.ICDDCR
+}
+
+
+/* Вызывается из crt_r7s721.s со сброшенным флагом прерываний */
+void IRQ_Handler(void)
+{
+	/* const uint32_t icchpir = */ (void) GICC_HPPIR;	/* GICC_HPPIR */
+	const uint32_t icciar = GICC_IAR;				/* GICC_IAR */
+	const IRQn_ID_t int_id = icciar & INTC_ICCIAR_ACKINTID;
+
+	// See R01UH0437EJ0200 Rev.2.00 7.8.3 Reading Interrupt ID Values from Interrupt Acknowledge Register (ICCIAR)
+	// IHI0048B_b_gic_architecture_specification.pdf
+	// See ARM IHI 0048B.b 3.4.2 Special interrupt numbers when a GIC supports interrupt grouping
+
+	if (int_id >= 1020)
+	{
+		GICD_IPRIORITYRn(0) = GICD_IPRIORITYRn(0);
+	}
+	else if (int_id != 0 || (INTC.ICDABR0 & 0x0001) != 0)
+	{
+		void (* f)(void) = IRQ_GetHandler(int_id);	    /* Call interrupt handler */
+
+	#if WITHNESTEDINTERRUPTS
+
+		__enable_irq();						/* modify I bit in CPSR */
+		(* f)();	    /* Call interrupt handler */
+		__disable_irq();					/* modify I bit in CPSR */
+
+	#else /* WITHNESTEDINTERRUPTS */
+
+		(* f)();	    /* Call interrupt handler */
+
+	#endif /* WITHNESTEDINTERRUPTS */
+		INTC.ICCEOIR = int_id;				/* GICC_EOIR */
+	}
+	else
+	{
+		GICD_IPRIORITYRn(0) = GICD_IPRIORITYRn(0);
+	}
+}
+
+/******************************************************************************
+* Function Name: r7s721_intc_initialize
+* Description  : Executes initial setting for the INTC.
+*              : The interrupt mask level is set to 31 to receive interrupts
+*              : with the interrupt priority level 0 to 30.
+* Arguments    : none
+* Return Value : none
+******************************************************************************/
+static void r7s721_intc_initialize(void)
+{
+
+	/* ==== Total number of registers ==== */
+	enum { INTC_ICDISR_REG_TOTAL   = (IRQ_GIC_LINE_COUNT + 31) / 32 };	// 19 == INTC_ICDISR0_COUNT
+	enum { INTC_ICDICFR_REG_TOTAL  = (IRQ_GIC_LINE_COUNT + 15) / 16 };	// 37 == INTC_ICDICFR0_COUNT
+	enum { INTC_ICDIPR_REG_TOTAL   = (IRQ_GIC_LINE_COUNT + 3) /  4 };	// 147 == INTC_ICDIPR0_COUNT
+	enum { INTC_ICDIPTR_REG_TOTAL  = (IRQ_GIC_LINE_COUNT + 3) /  4 };	// 147 == INTC_ICDIPTR0_COUNT
+	//enum { INTC_ICDISER_REG_TOTAL  = (IRQ_GIC_LINE_COUNT + 31) / 32 };	// 19 == INTC_ICDISER0_COUNT
+	enum { INTC_ICDICER_REG_TOTAL  = (IRQ_GIC_LINE_COUNT + 31) / 32 };	// 19 == INTC_ICDICER0_COUNT
+
+	/* Initial value table of Interrupt Configuration Registers */
+	// Table 4-19 GICD_ICFGR Int_config[0] encoding in some early GIC implementations
+	// каждая пара бит кодирует:
+
+	// [0] == 0: Corresponding interrupt is handled using the N-N model.
+	// [0] == 1: Corresponding interrupt is handled using the 1-N model.
+	// [1] == 0: Corresponding interrupt is level-sensitive.
+	// [1] == 1: Corresponding interrupt is edge-triggered.
+	static const uint32_t intc_icdicfrn_table [INTC_ICDICFR_REG_TOTAL] =
+	{                          /*           Interrupt ID */
+		0xAAAAAAAA,            /* ICDICFR0  :  15 to   0 */
+		0x00000055,            /* ICDICFR1  :  19 to  16 */
+		0xFFFD5555,            /* ICDICFR2  :  47 to  32 */
+		0x555FFFFF,            /* ICDICFR3  :  63 to  48 */
+		0x55555555,            /* ICDICFR4  :  79 to  64 */
+		0x55555555,            /* ICDICFR5  :  95 to  80 */
+		0x55555555,            /* ICDICFR6  : 111 to  96 */
+		0x55555555,            /* ICDICFR7  : 127 to 112 */
+		0x5555F555,            /* ICDICFR8  : 143 to 128 */
+		0x55555555,            /* ICDICFR9  : 159 to 144 */
+		0x55555555,            /* ICDICFR10 : 175 to 160 */
+		0xF5555555,            /* ICDICFR11 : 191 to 176 */
+		0xF555F555,            /* ICDICFR12 : 207 to 192 */
+		0x5555F555,            /* ICDICFR13 : 223 to 208 */
+		0x55555555,            /* ICDICFR14 : 239 to 224 */
+		0x55555555,            /* ICDICFR15 : 255 to 240 */
+		0x55555555,            /* ICDICFR16 : 271 to 256 */
+		0xFD555555,            /* ICDICFR17 : 287 to 272 */
+		0x55555557,            /* ICDICFR18 : 303 to 288 */
+		0x55555555,            /* ICDICFR19 : 319 to 304 */
+		0x55555555,            /* ICDICFR20 : 335 to 320 */
+		0x5F555555,            /* ICDICFR21 : 351 to 336 */
+		0xFD55555F,            /* ICDICFR22 : 367 to 352 */
+		0x55555557,            /* ICDICFR23 : 383 to 368 */
+		0x55555555,            /* ICDICFR24 : 399 to 384 */
+		0x55555555,            /* ICDICFR25 : 415 to 400 */
+		0x55555555,            /* ICDICFR26 : 431 to 416 */
+		0x55555555,            /* ICDICFR27 : 447 to 432 */
+		0x55555555,            /* ICDICFR28 : 463 to 448 */
+		0x55555555,            /* ICDICFR29 : 479 to 464 */
+		0x55555555,            /* ICDICFR30 : 495 to 480 */
+		0x55555555,            /* ICDICFR31 : 511 to 496 */
+		0x55555555,            /* ICDICFR32 : 527 to 512 */
+		0x55555555,            /* ICDICFR33 : 543 to 528 */
+		0x55555555,            /* ICDICFR34 : 559 to 544 */
+		0x55555555,            /* ICDICFR35 : 575 to 560 */
+		0x00155555             /* ICDICFR36 : 586 to 576 */
+	};
+
+    uint16_t offset;
+    volatile uint32_t * addr;
+
+	//GIC_Enable();	// инициализирует не совсем так как надо для работы
+
+	/* default interrut handlers setup */
+    for (offset = 0; offset < IRQ_GIC_LINE_COUNT; ++ offset)
+    {
+        //intc_func_table [offset] = Userdef_INTC_Dummy_Interrupt;    /* Set all interrupts default handlers */
+    }
+
+    /* ==== Initial setting 1 to receive GIC interrupt request ==== */
+    /* Interrupt Security Registers setting */
+    addr = (volatile uint32_t *) & INTC.ICDISR0;
+    for (offset = 0; offset < INTC_ICDISR_REG_TOTAL; ++ offset)
+    {
+        * (addr + offset) = 0x00000000uL;    /* Set all interrupts to be secured */
+    }
+
+    /* Interrupt Configuration Registers setting */
+    addr = (volatile uint32_t *) & INTC.ICDICFR0;
+    for (offset = 0; offset < INTC_ICDICFR_REG_TOTAL; ++ offset)
+    {
+        * (addr + offset) = intc_icdicfrn_table [offset];
+    }
+
+    /* Interrupt Priority Registers setting */
+    addr = (volatile uint32_t *) & GICD_IPRIORITYRn(0);
+    for (offset = 0; offset < INTC_ICDIPR_REG_TOTAL; ++ offset)
+    {
+        /* Set the priority for all interrupts to 31 */
+        * (addr + offset) = (31 << ARM_CA9_PRIORITYSHIFT) * 0x01010101uL;
+    }
+
+    /* Interrupt Processor Targets Registers setting */
+    /* Initialise ICDIPTR8 to ICDIPTRn                     */
+    /* (n = The number of interrupt sources / 4)           */
+    /*   - ICDIPTR0 to ICDIPTR4 are dedicated for main CPU */
+    /*   - ICDIPTR5 is dedicated for sub CPU               */
+    /*   - ICDIPTR6 to 7 are reserved                      */
+    addr = (volatile uint32_t *) & INTC.ICDIPTR0;
+    for (offset = 8; offset < INTC_ICDIPTR_REG_TOTAL; ++ offset)
+    {
+    	/* Set the target for all interrupts to main CPU */
+        * (addr + offset) = 0x01010101uL;
+    }
+
+    /* Interrupt Clear-Enable Registers setting */
+    addr = (volatile uint32_t *) & INTC.ICDICER0;
+    for (offset = 0; offset < INTC_ICDICER_REG_TOTAL; ++ offset)
+    {
+    	 /* Set all interrupts to be disabled */
+    	* (addr + offset) = 0xFFFFFFFFuL;
+    }
+
+	//GIC_Enable();	// инициализирует не совсем так как надо для работы
 if (0)
 {
 	// а так работает...
@@ -10950,6 +11171,8 @@ void __gxx_personality_v0(void)
 }
 #endif /* __cplusplus */
 
+#if 0
+
 /*
  *
  * ****************************
@@ -11019,6 +11242,7 @@ int __attribute__((used)) (_write)(int fd, char * ptr, int len)
 		dbg_putchar(* ptr ++);
 	return (i);
 }
+
 
 // Corte-A9 require
 
@@ -11096,6 +11320,8 @@ int __attribute__((used)) (_getpid)(int id)
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
+
+#endif
 
 #endif /* CPUSTYLE_ARM */
 
