@@ -10072,7 +10072,7 @@ static void r7s721_intc_initialize(void)
 
 	IRQ_Initialize();
 
-	if (1)
+	if (0)
     {
 		/* ==== Total number of registers ==== */
 		enum { INTC_ICDISR_REG_TOTAL   = (IRQ_GIC_LINE_COUNT + 31) / 32 };	// 19 == INTC_ICDISR0_COUNT
@@ -10153,7 +10153,7 @@ static void r7s721_intc_initialize(void)
 			* (addr + offset) = 0x00000000uL;    /* Set all interrupts to be secured */
 		}
 #endif
-#if 1
+#if 0
 		/* Interrupt Configuration Registers setting */
 		addr = (volatile uint32_t *) & INTC.ICDICFR0;
 		debug_printf_P(PSTR("INTC.ICDICFR0=%p\n"), & INTC.ICDICFR0);
@@ -11157,7 +11157,7 @@ int __attribute__((used)) (_write)(int fd, char * ptr, int len)
 //static uint8_t sipexbuff [NTRX * 149176 /* + 24716 */];
 static RAMHEAP uint8_t sipexbuff [SPEEXALLOCSIZE];
 
-static char RAMHEAP heapplace [8 * 1024uL];
+static RAMHEAP uint8_t heapplace [10 * 1024uL];
 
 extern int __HeapBase;
 extern int __HeapLimit;
@@ -11172,7 +11172,7 @@ caddr_t __attribute__((used)) (_sbrk)(int incr)
 		heap = (char *) &__HeapBase;
 	}
 
-	//debug_printf_P("_sbrk: incr=%d, & __HeapBase=%p, & __HeapLimit=%p\n", incr, & __HeapBase, & __HeapLimit);
+	debug_printf_P("_sbrk: incr=%d, & __HeapBase=%p, & __HeapLimit=%p\n", incr, & __HeapBase, & __HeapLimit);
 
 	prev_heap = heap;
 
