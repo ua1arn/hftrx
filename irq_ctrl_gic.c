@@ -150,7 +150,7 @@ __WEAK int32_t IRQ_SetMode (IRQn_ID_t irqn, uint32_t mode) {
       status = -1;
     }
 
-    valnn = (mode & IRQ_MODE_NN_Msk);
+    valnn = (mode & IRQ_MODE_MODEL_Msk);
     if (valnn != 0)
     	cfg |= 1;
 
@@ -222,8 +222,8 @@ __WEAK uint32_t IRQ_GetMode (IRQn_ID_t irqn) {
       mode |= IRQ_MODE_TRIG_LEVEL;
     }
 
-    if (val & 1)
-    	mode |= IRQ_MODE_NN_Msk;
+    if (val & 1U)
+    	mode |= IRQ_MODE_MODEL_Msk;
     // Get interrupt CPU targets
     mode |= GIC_GetTarget ((IRQn_Type)irqn) << IRQ_MODE_CPU_Pos;
 
