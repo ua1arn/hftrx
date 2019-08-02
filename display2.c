@@ -5392,7 +5392,7 @@ static void wflshiftleft(uint_fast16_t pixels)
 			memset(& Yold_wtf [rowsize - pixels], 0x00, pixels * sizeof Yold_wtf[0]);
 			continue;
 		}
-		memmove(wfarray [y] + 0, wfarray [y] + pixels, (rowsize - pixels));
+		memmove(wfarray [y] + 0, wfarray [y] + pixels, (rowsize - pixels) * sizeof wfarray [y][0]);
 		memset(wfarray [y] + rowsize - pixels, 0x00, pixels * sizeof wfarray [y][0]);
 	}
 }
