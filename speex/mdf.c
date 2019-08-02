@@ -709,7 +709,7 @@ EXPORT void speex_echo_cancellation(SpeexEchoState *st, const spx_int16_t *in, c
    ss=DIV32_16(11469,M);
    ss_1 = SUB16(32767,ss);
 #else
-   ss=.35/M;
+   ss=.35f/M;
    ss_1 = 1-ss;
 #endif
 
