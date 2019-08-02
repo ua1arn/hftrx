@@ -180,7 +180,7 @@ static void RAMFUNC_NONILINE display_fillrect(
 /* заполнение прямоугольной области буфера цветом */
 void 
 dma2d_fillrect2_RGB565(
-	PACKEDCOLOR565_T * buffer,
+	volatile PACKEDCOLOR565_T * buffer,
 	uint_fast16_t dx,	// размеры буфера
 	uint_fast16_t dy,
 	uint_fast16_t col,	// позиция окна в буфере,
@@ -240,7 +240,7 @@ dma2d_fillrect2_RGB565(
 	buffer += (dx * row) + col;
 	while (h --)
 	{
-		PACKEDCOLOR565_T * startmem = buffer;
+		volatile PACKEDCOLOR565_T * startmem = buffer;
 
 		unsigned n = w;
 		while (n --)
@@ -450,7 +450,7 @@ void display_showbuffer(
 
 // начальная инициализация буфера
 void display_colorbuffer_fill(
-	PACKEDCOLOR565_T * buffer,
+	volatile PACKEDCOLOR565_T * buffer,
 	uint_fast16_t dx,	
 	uint_fast16_t dy,
 	COLOR565_T color
@@ -465,7 +465,7 @@ void display_colorbuffer_fill(
 	uint_fast32_t len = (uint_fast32_t) dx * dy;
 	if (sizeof (* buffer) == 1)
 	{
-		memset(buffer, color, len);
+		memset((void *) buffer, color, len);
 	}
 	else if ((len & 0x07) == 0)
 	{
@@ -504,7 +504,7 @@ void display_colorbuffer_fill(
 
 // поставить цветную точку.
 void display_colorbuffer_set(
-	PACKEDCOLOR565_T * buffer,
+	volatile PACKEDCOLOR565_T * buffer,
 	uint_fast16_t dx,	
 	uint_fast16_t dy,
 	uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
@@ -512,9 +512,11 @@ void display_colorbuffer_set(
 	COLOR565_T color
 	)
 {
+	//ASSERT(row < dy);
+	//ASSERT(col < dx);
+	//ASSERT(((uintptr_t) buffer & 0x01) == 0);
 #if LCDMODE_HORFILL
 	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
-	// индекс младшей размерности перебирает горизонтальную координату дисплея
 	buffer [dx * row + col] = color;
 #else /* LCDMODE_HORFILL */
 	// индекс младшей размерности перебирает вертикальную координату дисплея
@@ -524,7 +526,7 @@ void display_colorbuffer_set(
 
 // поставить цветную точку.
 void display_colorbuffer_xor(
-	PACKEDCOLOR565_T * buffer,
+	volatile PACKEDCOLOR565_T * buffer,
 	uint_fast16_t dx,	
 	uint_fast16_t dy,
 	uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
@@ -532,6 +534,9 @@ void display_colorbuffer_xor(
 	COLOR565_T color
 	)
 {
+	ASSERT(((uintptr_t) buffer & 0x01) == 0);
+	//ASSERT(row < dy);
+	//ASSERT(col < dx);
 #if LCDMODE_HORFILL
 	// индекс младшей размерности перебирает горизонтальную координату дисплея
 	buffer [dx * row + col] ^= color;
@@ -545,7 +550,7 @@ void display_colorbuffer_xor(
 
 // Выдать буфер на дисплей
 void display_colorbuffer_show(
-	const PACKEDCOLOR565_T * buffer,
+	const volatile PACKEDCOLOR565_T * buffer,
 	uint_fast16_t dx,	
 	uint_fast16_t dy,
 	uint_fast16_t col,	// горизонтальная координата левого верхнего угла на экране (0..dx-1) слева направо
@@ -556,7 +561,7 @@ void display_colorbuffer_show(
 
 // установить данный буфер как область для PIP
 void display_colorbuffer_pip(
-	const PACKEDCOLOR565_T * buffer,
+	volatile const PACKEDCOLOR565_T * buffer,
 	uint_fast16_t dx,	
 	uint_fast16_t dy
 	)
@@ -640,7 +645,7 @@ void display_colorbuffer_show(
 #define SWAP(a, b)  do { (a) ^= (b); (b) ^= (a); (a) ^= (b); } while (0)
 // Нарисовать линию указанным цветом
 void display_colorbuffer_line_set(
-	PACKEDCOLOR565_T * buffer,
+	volatile PACKEDCOLOR565_T * buffer,
 	uint_fast16_t dx,	
 	uint_fast16_t dy,
 	uint_fast16_t x0,	

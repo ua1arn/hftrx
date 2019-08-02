@@ -75,7 +75,7 @@ static void display2_legend_tx(
 	void * pv
 	);
 
-static PACKEDCOLOR565_T * getscratchpip(void);
+static volatile PACKEDCOLOR565_T * getscratchpip(void);
 
 // Параметры отображения спектра и водопада
 
@@ -4919,7 +4919,7 @@ enum
 
 	// один буфер установлен для отображения, второй еше отображается. Третий заполняем новым изображением.
 	enum { NPIPS = 3 };
-	static RAMFRAMEBUFF ALIGNX_BEGIN PACKEDCOLOR565_T colorpips [NPIPS] [GXSIZE(ALLDX, ALLDY)] ALIGNX_END;
+	static RAMFRAMEBUFF ALIGNX_BEGIN volatile PACKEDCOLOR565_T colorpips [NPIPS] [GXSIZE(ALLDX, ALLDY)] ALIGNX_END;
 	static int pipphase;
 
 	static void nextpip(void)
@@ -4929,11 +4929,11 @@ enum
 
 #else /* LCDMODE_LTDC_PIP16 */
 
-	static ALIGNX_BEGIN PACKEDCOLOR565_T colorpip0 [GXSIZE(ALLDX, ALLDY)] ALIGNX_END = { 1 };
+	static ALIGNX_BEGIN volatile PACKEDCOLOR565_T colorpip0 [GXSIZE(ALLDX, ALLDY)] ALIGNX_END = { 1 };
 
 #endif /* LCDMODE_LTDC_PIP16 */
 
-static PACKEDCOLOR565_T * getscratchpip(void)
+static volatile PACKEDCOLOR565_T * getscratchpip(void)
 {
 #if LCDMODE_LTDC_PIP16
 	return colorpips [pipphase];
@@ -5126,7 +5126,7 @@ deltafreq2x_abs(
 // Поставить цветную полосу
 // Формат RGB565
 void display_colorbuffer_xor_vline(
-	PACKEDCOLOR565_T * buffer,
+	volatile PACKEDCOLOR565_T * buffer,
 	uint_fast16_t dx,	
 	uint_fast16_t dy,
 	uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
@@ -5143,7 +5143,7 @@ void display_colorbuffer_xor_vline(
 // Формат RGB565
 static void 
 display_colorbuffer_set_vline(
-	PACKEDCOLOR565_T * buffer,
+	volatile PACKEDCOLOR565_T * buffer,
 	uint_fast16_t dx,	
 	uint_fast16_t dy,
 	uint_fast16_t col,	// горизонтальная координата начального пикселя (0..dx-1) слева направо
@@ -5159,7 +5159,7 @@ display_colorbuffer_set_vline(
 // отрисовка маркеров частот
 static void 
 display_colorgrid(
-	PACKEDCOLOR565_T * buffer,
+	volatile PACKEDCOLOR565_T * buffer,
 	uint_fast16_t row0,	// вертикальная координата начала занимаемой области (0..dy-1) сверху вниз
 	uint_fast16_t h,	// высота
 	int_fast32_t f0,	// center frequency
@@ -5270,7 +5270,7 @@ static void display2_spectrum(
 	display_setcolors(COLOR565_SPECTRUMBG, COLOR565_SPECTRUMFG);
 
 #else /* */
-	PACKEDCOLOR565_T * const colorpip = getscratchpip();
+	volatile PACKEDCOLOR565_T * const colorpip = getscratchpip();
 	(void) x0;
 	(void) y0;
 	(void) pv;
@@ -5593,14 +5593,13 @@ static void display2_waterfall(
 	(void) y0;
 	(void) pv;
 
-	PACKEDCOLOR565_T * const colorpip = getscratchpip();
+	volatile PACKEDCOLOR565_T * const colorpip = getscratchpip();
 	uint_fast16_t x, y;
-
 	// формирование растра
 	// следы спектра ("водопад")
-	for (x = 0; x < ALLDX; ++ x)
+	for (y = 0; y < WFDY; ++ y)
 	{
-		for (y = 0; y < WFDY; ++ y)
+		for (x = 0; x < ALLDX; ++ x)
 		{
 			display_colorbuffer_set(colorpip, ALLDX, ALLDY, x, y + WFY0, wfpalette [wfarray [(wfrow + y) % WFDY] [x]]);
 		}
@@ -5624,27 +5623,14 @@ static void display2_colorbuff(
 
 #else /* */
 
-	PACKEDCOLOR565_T * const colorpip = getscratchpip();
+	volatile PACKEDCOLOR565_T * const colorpip = getscratchpip();
 
-	if (hamradio_get_tx() == 0)
-	{
-#if LCDMODE_LTDC_PIP16
+	#if LCDMODE_LTDC_PIP16
 		display_colorbuffer_pip(colorpip, ALLDX, ALLDY);
 		nextpip();
-#else /* LCDMODE_LTDC_PIP16 */
+	#else /* LCDMODE_LTDC_PIP16 */
 		display_colorbuffer_show(colorpip, ALLDX, ALLDY, GRID2X(x0), GRID2Y(y0));
-#endif /* LCDMODE_LTDC_PIP16 */
-	}
-	else
-	{
-		//display_colorbuffer_fill(colorpip, ALLDX, ALLDY, COLOR_GRAY);
-#if LCDMODE_LTDC_PIP16
-		display_colorbuffer_pip(colorpip, ALLDX, ALLDY);
-		nextpip();
-#else /* LCDMODE_LTDC_PIP16 */
-		display_colorbuffer_show(colorpip, ALLDX, ALLDY, GRID2X(x0), GRID2Y(y0));
-#endif /* LCDMODE_LTDC_PIP16 */
-	}
+	#endif /* LCDMODE_LTDC_PIP16 */
 
 #endif /* LCDMODE_S1D13781 */
 }

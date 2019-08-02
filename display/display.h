@@ -698,7 +698,7 @@ void display_pixelbuffer_clear(
 // начальная инициализация буфера
 // Формат RGB565
 void display_colorbuffer_fill(
-	PACKEDCOLOR565_T * buffer,
+	volatile PACKEDCOLOR565_T * buffer,
 	uint_fast16_t dx,	
 	uint_fast16_t dy,
 	COLOR565_T color
@@ -707,7 +707,7 @@ void display_colorbuffer_fill(
 // Формат RGB565
 void 
 dma2d_fillrect2_RGB565(
-	PACKEDCOLOR565_T * buffer,
+	volatile PACKEDCOLOR565_T * buffer,
 	uint_fast16_t dx,	// размеры буфера
 	uint_fast16_t dy,
 	uint_fast16_t x,	// позиция окна в буфере
@@ -720,7 +720,7 @@ dma2d_fillrect2_RGB565(
 // Выдать цветной буфер на дисплей
 // Формат RGB565
 void display_colorbuffer_show(
-	const PACKEDCOLOR565_T * buffer,
+	const volatile PACKEDCOLOR565_T * buffer,
 	uint_fast16_t dx,	
 	uint_fast16_t dy,
 	uint_fast16_t col,	// горизонтальная координата левого верхнего угла на экране (0..dx-1) слева направо
@@ -728,7 +728,7 @@ void display_colorbuffer_show(
 	);
 // Нарисовать линию указанным цветом
 void display_colorbuffer_line_set(
-	PACKEDCOLOR565_T * buffer,
+	volatile PACKEDCOLOR565_T * buffer,
 	uint_fast16_t dx,	
 	uint_fast16_t dy,
 	uint_fast16_t x0,	
@@ -741,7 +741,7 @@ void display_colorbuffer_line_set(
 // установить данный буфер как область для PIP
 // Формат RGB565
 void display_colorbuffer_pip(
-	const PACKEDCOLOR565_T * buffer,
+	volatile const PACKEDCOLOR565_T * buffer,
 	uint_fast16_t dx,	
 	uint_fast16_t dy
 	);
@@ -749,7 +749,7 @@ void display_colorbuffer_pip(
 // Поставить цветную точку.
 // Формат RGB565
 void display_colorbuffer_set(
-	PACKEDCOLOR565_T * buffer,
+	volatile PACKEDCOLOR565_T * buffer,
 	uint_fast16_t dx,	
 	uint_fast16_t dy,
 	uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
@@ -760,7 +760,7 @@ void display_colorbuffer_set(
 // Поставить цветную точку.
 // Формат RGB565
 void display_colorbuffer_xor(
-	PACKEDCOLOR565_T * buffer,
+	volatile PACKEDCOLOR565_T * buffer,
 	uint_fast16_t dx,	
 	uint_fast16_t dy,
 	uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
