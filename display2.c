@@ -5399,16 +5399,18 @@ static void wflshiftleft(uint_fast16_t pixels)
 
 	if (pixels == 0)
 		return;
+
+	// двигаем буфер усреднения значений WTF и FFT
+	memmove(& Yold_fft [0], & Yold_fft [pixels], (ALLDX - pixels) * sizeof Yold_fft [0]);
+	memset(& Yold_fft [ALLDX - pixels], 0x00, pixels * sizeof Yold_fft[0]);
+
+	memmove(& Yold_wtf [0], & Yold_wtf [pixels], (ALLDX - pixels) * sizeof Yold_wtf [0]);
+	memset(& Yold_wtf [ALLDX - pixels], 0x00, pixels * sizeof Yold_wtf[0]);
+
 	for (y = 0; y < WFDY; ++ y)
 	{
 		if (y == wfrow)
 		{
-			// двигаем буфер усреднения значений WTF и FFT
-			memmove(& Yold_fft [0], & Yold_fft [pixels], (ALLDX - pixels) * sizeof Yold_fft [0]);
-			memset(& Yold_fft [ALLDX - pixels], 0x00, pixels * sizeof Yold_fft[0]);
-
-			memmove(& Yold_wtf [0], & Yold_wtf [pixels], (ALLDX - pixels) * sizeof Yold_wtf [0]);
-			memset(& Yold_wtf [ALLDX - pixels], 0x00, pixels * sizeof Yold_wtf[0]);
 			continue;
 		}
 		memmove(wfarray [y] + 0, wfarray [y] + pixels, (ALLDX - pixels) * sizeof wfarray [y][0]);
@@ -5425,16 +5427,18 @@ static void wflshiftright(uint_fast16_t pixels)
 
 	if (pixels == 0)
 		return;
+
+	// двигаем буфер усреднения значений WTF и FFT
+	memmove(& Yold_fft [pixels], & Yold_fft [0], (ALLDX - pixels) * sizeof Yold_fft [0]);
+	memset(& Yold_fft [0], 0x00, pixels * sizeof Yold_fft [0]);
+
+	memmove(& Yold_wtf [pixels], &Yold_wtf [0], (ALLDX - pixels) * sizeof Yold_wtf [0]);
+	memset(& Yold_wtf [0], 0x00, pixels * sizeof Yold_wtf [0]);
+
 	for (y = 0; y < WFDY; ++ y)
 	{
 		if (y == wfrow)
 		{
-			// двигаем буфер усреднения значений WTF и FFT
-			memmove(& Yold_fft [pixels], & Yold_fft [0], (ALLDX - pixels) * sizeof Yold_fft [0]);
-			memset(& Yold_fft [0], 0x00, pixels * sizeof Yold_fft [0]);
-
-			memmove(& Yold_wtf [pixels], &Yold_wtf [0], (ALLDX - pixels) * sizeof Yold_wtf [0]);
-			memset(& Yold_wtf [0], 0x00, pixels * sizeof Yold_wtf [0]);
 			continue;
 		}
 		memmove(wfarray [y] + pixels, wfarray [y] + 0, (ALLDX - pixels) * sizeof wfarray [y][0]);
@@ -5481,7 +5485,7 @@ static void dsp_latchwaterfall(
 	// запоминание информации спектра для водопада
 	for (x = 0; x < ALLDX; ++ x)
 	{
-		// без усреднения для водопада
+		// для водопада
 		const int val = dsp_mag2y(filter_waterfall(x), PALETTESIZE - 1, glob_topdb, glob_bottomdb); // возвращает значения от 0 до dy включительно
 
 		wfarray [wfrow] [x] = wfpalette [val];	// запись в буфер водопада
