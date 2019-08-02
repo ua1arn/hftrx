@@ -9323,7 +9323,7 @@ arm_cpu_CMx_initialize_NVIC(void)
 
 #endif /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7 */
 
-#if CPUSTYLE_R7S721
+#if (CPUSTYLE_ARM_CA9 || CPUSTYLE_ARM_CA7)
 
 #include "hardware.h"
 #include "formats.h"
@@ -9343,7 +9343,7 @@ static void Userdef_INTC_Dummy_Interrupt(void)
 		;
 }
 
-void IRQ_HandlerNew(void)
+void IRQ_Handler(void)
 {
 	const IRQn_ID_t irqn = IRQ_GetActiveIRQ();
 	IRQHandler_t const handler = IRQ_GetHandler(irqn);
@@ -9482,7 +9482,7 @@ static void irq_modes_print(void)
 * Arguments    : none
 * Return Value : none
 ******************************************************************************/
-static void r7s721_intc_initializeNew(void)
+static void r7s721_intc_initialize(void)
 {
 	static const uint32_t modes [] =
 	{
@@ -10152,7 +10152,7 @@ if (0)
 
 
 /* Вызывается из crt_r7s721.s со сброшенным флагом прерываний */
-void IRQ_Handler(void)
+void IRQ_HandlerOld(void)
 {
 	/* const uint32_t icchpir = */ (void) GICC_HPPIR;	/* GICC_HPPIR */
 	const uint32_t icciar = GICC_IAR;				/* GICC_IAR */
@@ -10197,7 +10197,7 @@ void IRQ_Handler(void)
 * Arguments    : none
 * Return Value : none
 ******************************************************************************/
-static void r7s721_intc_initialize(void)
+static void r7s721_intc_initializeOld(void)
 {
 
 	/* ==== Total number of registers ==== */
