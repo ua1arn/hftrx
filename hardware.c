@@ -8690,7 +8690,7 @@ void PAbort_Handler(void)
 // Data Abort.
 void DAbort_Handler(void)
 {
-	debug_printf_P(PSTR("DAbortHandler trapped.\n"));
+	debug_printf_P(PSTR("DAbort_Handler trapped.\n"));
 	debug_printf_P(PSTR("DFSR=%08lX\n"), __get_DFSR());
 	const int WnR = (__get_DFSR() & (1uL << 11)) != 0;
 	const int Status = (__get_DFSR() & (0x0FuL << 0));
@@ -10371,7 +10371,7 @@ if (0)
 	GIC_EnableDistributor();	// check GICDistributor->CTLR a same for INTC.ICDDCR
 }
 
-
+uint8_t __attribute__ ((section(".stack"), used, aligned(32))) mystack [8192];
 /******************************************************************************/
 
 // TTB initialize

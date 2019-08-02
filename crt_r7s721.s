@@ -54,7 +54,10 @@
    I_BIT          = 0x80      /* disable IRQ when I bit is set */
    F_BIT          = 0x40      /* disable FIQ when I bit is set */
  
-	 STACKSIZE = 4096
+	 STACKSIZEUND = 1024
+	 STACKSIZEABT = 1024
+	 STACKSIZEFIQ = 8192
+	 STACKSIZEIRQ = 8192
   
 	.global __Vectors
 	.section .vectors,"ax"
@@ -363,13 +366,13 @@ IRQHandlerNested:
 
 	.bss
 	.align 8
-	.space	STACKSIZE
+	.space	STACKSIZEUND
 __stack_und_end = .
-	.space	STACKSIZE
+	.space	STACKSIZEABT
 __stack_abt_end = .
-	.space	STACKSIZE
+	.space	STACKSIZEFIQ
 __stack_fiq_end = .
-	.space	STACKSIZE
+	.space	STACKSIZEIRQ
 __stack_irq_end = .
 
    .ltorg
