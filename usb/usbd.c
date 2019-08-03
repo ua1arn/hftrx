@@ -6946,9 +6946,6 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 		base4 += size4;
 	}
 
-	USB_FlushRxFifo(instance);
-	USB_FlushTxFifoAll(instance);
-
 	if (base4 > last4 || last4 > full4)
 	{
 		char b [64];
@@ -6972,6 +6969,9 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 		HARDWARE_DELAY_MS(2000);
 #endif
 	}
+
+	USB_FlushRxFifo(instance);
+	USB_FlushTxFifoAll(instance);
 }
 #endif /* (CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX) */
 
