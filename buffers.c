@@ -137,9 +137,10 @@ enum
 		} while (0)
 
 #if 0
-	static int16_t vfyseq;
-	static int16_t lastseq;
-	static int lastseqvalid;
+	static RAMDTCM int16_t vfyseq;
+	static RAMDTCM int16_t lastseq;
+	static RAMDTCM int lastseqvalid;
+
 	int16_t vfydataget(void)
 	{
 		return ++ vfyseq;
@@ -216,11 +217,11 @@ enum
 	static RAMDTCM LIST_ENTRY2 speexready16;	// Буферы для обработки speex
 	//static int speexready16enable;
 
-	static volatile uint_fast8_t uacoutplayer = 0;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
-	static volatile uint_fast8_t uacoutmike = 0;	/* на вход трансивера берутся аудиоданные с USB виртуальной платы, а не с микрофона */
-	static volatile uint_fast8_t uacinalt = UACINALT_NONE;		/* выбор альтернативной конфигурации для UAC IN interface */
-	static volatile uint_fast8_t uacinrtsalt = UACINRTSALT_NONE;		/* выбор альтернативной конфигурации для RTS UAC IN interface */
-	static volatile uint_fast8_t uacoutalt;
+	static RAMDTCM volatile uint_fast8_t uacoutplayer = 0;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
+	static RAMDTCM volatile uint_fast8_t uacoutmike = 0;	/* на вход трансивера берутся аудиоданные с USB виртуальной платы, а не с микрофона */
+	static RAMDTCM volatile uint_fast8_t uacinalt = UACINALT_NONE;		/* выбор альтернативной конфигурации для UAC IN interface */
+	static RAMDTCM volatile uint_fast8_t uacinrtsalt = UACINRTSALT_NONE;		/* выбор альтернативной конфигурации для RTS UAC IN interface */
+	static RAMDTCM volatile uint_fast8_t uacoutalt;
 
 #if 1//WITHUSBUAC
 
@@ -722,7 +723,7 @@ void buffers_initialize(void)
 	}
 #endif /* WITHMODEM */
 
-	static denoise16_t speexarray16 [3];
+	static RAMDTCM denoise16_t speexarray16 [3];
 
 	InitializeListHead2(& speexfree16);	// Незаполненные
 	InitializeListHead2(& speexready16);	// Для обработки
@@ -889,8 +890,8 @@ static RAMFUNC void buffers_aftermodulators(voice16_t * p)
 RAMFUNC uint_fast8_t getsampmlemike(INT32P_t * v)
 {
 	enum { L, R };
-	static voice16_t * p = NULL;
-	static unsigned pos = 0;	// позиция по выходному количеству
+	static voice16_t * RAMDTCM p = NULL;
+	static RAMDTCM unsigned pos = 0;	// позиция по выходному количеству
 	const unsigned CNT = (DMABUFFSIZE16 / DMABUFSTEP16);	// фиксированное число сэмплов во входном буфере
 
 	LOCK(& locklist16);
@@ -1169,11 +1170,11 @@ static RAMFUNC unsigned getsamplemsuacout(
 	unsigned size		// количество оставшихся одиночных сэмплов
 	)
 {
-	static voice16_t * p = NULL;
+	static voice16_t * RAMDTCM p = NULL;
 	enum { NPARTS = 3 };
-	static uint_fast8_t part = 0;
-	static int16_t * datas [NPARTS] = { NULL, NULL };		// начальный адрес пары сэмплов во входном буфере
-	static unsigned sizes [NPARTS] = { 0, 0 };			// количество сэмплов во входном буфере
+	static RAMDTCM uint_fast8_t part = 0;
+	static int16_t * RAMDTCM datas [NPARTS] = { NULL, NULL };		// начальный адрес пары сэмплов во входном буфере
+	static RAMDTCM unsigned sizes [NPARTS] = { 0, 0 };			// количество сэмплов во входном буфере
 	// исправляемая погрешность = 0.02% - один сэмпл добавить/убрать на 5000 сэмплов
 	enum { SKIPPED = 5000 / (DMABUFFSIZE16 / DMABUFSTEP16) };
 
@@ -1777,8 +1778,8 @@ uintptr_t getfilled_dmabuffer16phones(void)
 void savesampleout32stereo(int_fast32_t ch0, int_fast32_t ch1)
 {
 	LOCK(& locklist32);
-	static voice32tx_t * prepareout32tx = NULL;
-	static unsigned level32tx;
+	static voice32tx_t * RAMDTCM prepareout32tx = NULL;
+	static RAMDTCM unsigned level32tx;
 
 	if (prepareout32tx == NULL)
 	{
@@ -1941,8 +1942,8 @@ void savesampleout16stereo(int_fast32_t ch0, int_fast32_t ch1)
 		void savesampleout96stereo(int_fast32_t ch0, int_fast32_t ch1)
 		{
 			// если есть инициализированный канал для выдачи звука
-			static voice96rts_t * p = NULL;
-			static unsigned n;
+			static voice96rts_t * RAMDTCM p = NULL;
+			static RAMDTCM unsigned n;
 
 			if (p == NULL)
 			{
@@ -2056,8 +2057,8 @@ void savesampleout16stereo(int_fast32_t ch0, int_fast32_t ch1)
 		void savesampleout192stereo(int_fast32_t ch0, int_fast32_t ch1)
 		{
 			// если есть инициализированный канал для выдачи звука
-			static voice192rts_t * p = NULL;
-			static unsigned n;
+			static voice192rts_t * RAMDTCM p = NULL;
+			static RAMDTCM unsigned n;
 
 			if (p == NULL)
 			{

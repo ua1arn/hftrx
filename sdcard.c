@@ -743,9 +743,13 @@ static void DMA_sdio_cancel(void)
 #endif
 
 
+#if CPUSTYLE_STM32F7XX
 
+void /*__attribute__((interrupt)) */ SDMMC1_IRQHandler(void)
+{
+}
 
-#if CPUSTYLE_STM32H7XX
+#elif CPUSTYLE_STM32H7XX
 
 static volatile int sd_event_xx;
 static volatile int sd_event_value;

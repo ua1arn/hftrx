@@ -5757,10 +5757,10 @@ display2_pip_off(
 #if STMD
 
 // параметры state machine отображения
-static uint_fast8_t reqs [REDRM_count];		// запросы на отображение
-static uint_fast8_t subsets [REDRM_count];	// параметр прохода по списку отображения.
-static uint_fast8_t walkis [REDRM_count];	// индекс в списке параметров отображения в данном проходе
-static uint_fast8_t keyi;					// запрос на отображение, выполняющийся сейчас.
+static RAMDTCM uint8_t reqs [REDRM_count];		// запросы на отображение
+static RAMDTCM uint8_t subsets [REDRM_count];	// параметр прохода по списку отображения.
+static RAMDTCM uint8_t walkis [REDRM_count];	// индекс в списке параметров отображения в данном проходе
+static RAMDTCM uint_fast8_t keyi;					// запрос на отображение, выполняющийся сейчас.
 
 #endif /* STMD */
 

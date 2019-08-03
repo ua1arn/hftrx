@@ -305,8 +305,8 @@ static uint_fast8_t		glob_nfmdeviation100 = 75;	// 7.5 kHz максимальн�
 static RAMBIGDTCM FLOAT_t FIRCoef_tx_MIKE [NPROF] [NtapCoeffs(Ntap_tx_MIKE)];
 static RAMBIGDTCM FLOAT_t FIRCwnd_tx_MIKE [NtapCoeffs(Ntap_tx_MIKE)];			// подготовленные значения функции окна
 
-static FLOAT_t FIRCoef_rx_AUDIO [NPROF] [2 /* эта размерность номер тракта */] [Ntap_rx_AUDIO];
-static FLOAT_t FIRCwnd_rx_AUDIO [NtapCoeffs(Ntap_rx_AUDIO)];			// подготовленные значения функции окна
+static RAMDTCM FLOAT_t FIRCoef_rx_AUDIO [NPROF] [2 /* эта размерность номер тракта */] [Ntap_rx_AUDIO];
+static RAMDTCM FLOAT_t FIRCwnd_rx_AUDIO [NtapCoeffs(Ntap_rx_AUDIO)];			// подготовленные значения функции окна
 
 //static void * fft_lookup;
 
