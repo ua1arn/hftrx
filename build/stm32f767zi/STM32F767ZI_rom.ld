@@ -105,8 +105,12 @@ SECTIONS
 		LONG (__etext2)
 		LONG (__data2_start__)
 		LONG ((__data2_end__ - __data2_start__) / 4)
+		LONG (__etext3)
+		LONG (__data3_start__)
+		LONG ((__data3_end__ - __data3_start__) / 4)
 		__copy_table_end__ = .;
 	} > FLASH
+
 
 	/* To clear multiple BSS sections,
 	 * uncomment .zero.table section and,
@@ -121,50 +125,26 @@ SECTIONS
 		__zero_table_end__ = .;
 	} > FLASH
 
+
 	__etext = .;
 
-	.data : AT (__etext)
+	.dtcm : AT (__etext)
 	{
 		__data_start__ = .;
 		*(vtable)
 		. = ALIGN(4);
-		*(.data*)
-		. = ALIGN(4);
 		*(.dtcm*)
-
-		. = ALIGN(4);
-		/* preinit data */
-		PROVIDE_HIDDEN (__preinit_array_start = .);
-		KEEP(*(.preinit_array))
-		PROVIDE_HIDDEN (__preinit_array_end = .);
-
-		. = ALIGN(4);
-		/* init data */
-		PROVIDE_HIDDEN (__init_array_start = .);
-		KEEP(*(SORT(.init_array.*)))
-		KEEP(*(.init_array))
-		PROVIDE_HIDDEN (__init_array_end = .);
-
-
-		. = ALIGN(4);
-		/* finit data */
-		PROVIDE_HIDDEN (__fini_array_start = .);
-		KEEP(*(SORT(.fini_array.*)))
-		KEEP(*(.fini_array))
-		PROVIDE_HIDDEN (__fini_array_end = .);
-
-		KEEP(*(.jcr*))
-		. = ALIGN(4);
+		. = ALIGN(4);	/* may be 32 */
 		/* All data end */
 		__data_end__ = .;
 
-	} > DTCM /*RAM*/
+	} > DTCM
 
 	. = __etext + __data_end__ - __data_start__;
 
 	__etext2 = .;
 
-	.ramfn : AT (__etext2)
+	.itcm : AT (__etext2)
 	{
 		__data2_start__ = .;
 		*(.ramfunc)
@@ -174,11 +154,45 @@ SECTIONS
 		*(.text.__ieee754_sqrtf)
 		*(.text.__kernel_rem_pio2f)
 
-		. = ALIGN(4);
+		. = ALIGN(4);	/* may be 32 */
 		__data2_end__ = .;
 	} > ITCM
 
 	. = __etext2 + __data2_end__ - __data2_start__;
+
+	__etext3 = .;
+
+	.data : AT (__etext3)
+	{
+		__data3_start__ = .;
+		*(.data*)
+		. = ALIGN(4);	/* may be 32 */
+		/* preinit data */
+		PROVIDE_HIDDEN (__preinit_array_start = .);
+		KEEP(*(.preinit_array))
+		PROVIDE_HIDDEN (__preinit_array_end = .);
+
+		. = ALIGN(4);	/* may be 32 */
+		/* init data */
+		PROVIDE_HIDDEN (__init_array_start = .);
+		KEEP(*(SORT(.init_array.*)))
+		KEEP(*(.init_array))
+		PROVIDE_HIDDEN (__init_array_end = .);
+
+
+		. = ALIGN(4);	/* may be 32 */
+		/* finit data */
+		PROVIDE_HIDDEN (__fini_array_start = .);
+		KEEP(*(SORT(.fini_array.*)))
+		KEEP(*(.fini_array))
+		PROVIDE_HIDDEN (__fini_array_end = .);
+
+		KEEP(*(.jcr*))
+		. = ALIGN(4);	/* may be 32 */
+		__data3_end__ = .;
+	} > RAM
+
+	. = __etext3 + __data3_end__ - __data3_start__;
 
 	.bss :
 	{
@@ -188,13 +202,6 @@ SECTIONS
 		*(COMMON)
 		. = ALIGN(32);
 		__bss_end__ = .;
-	} > RAM
-
-	.noinit :
-	{
-		. = ALIGN(32);
-		*(.noinit)
-		. = ALIGN(32);
 	} > RAM
 
 	.heap (COPY):
