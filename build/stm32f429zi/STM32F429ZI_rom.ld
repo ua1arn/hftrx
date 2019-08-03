@@ -4,8 +4,8 @@
 MEMORY
 {
   FLASH (rx) : ORIGIN = 0x08000000, LENGTH = 2048k	/* FLASH */
-  RAM (rwx)  : ORIGIN = 0x20000000, LENGTH = 192k	/* SRAM */
   CCM (rwx)  : ORIGIN = 0x10000000, LENGTH = 64k	/* CCM */
+  RAM (rwx)  : ORIGIN = 0x20000000, LENGTH = 192k	/* SRAM */
 }
 
 /* Library configurations */
@@ -101,11 +101,9 @@ SECTIONS
 		LONG (__etext)
 		LONG (__data_start__)
 		LONG ((__data_end__ - __data_start__) / 4)
-		LONG (__etext2)
-		LONG (__data2_start__)
-		LONG ((__data2_end__ - __data2_start__) / 4)
 		__copy_table_end__ = .;
 	} > FLASH
+
 
 	/* To clear multiple BSS sections,
 	 * uncomment .zero.table section and,
@@ -121,32 +119,30 @@ SECTIONS
 	} > FLASH
 
 	__etext = .;
-
 	.data : AT (__etext)
 	{
 		__data_start__ = .;
 		*(vtable)
 		. = ALIGN(4);
+		*(.itcm*)
+		. = ALIGN(4);
+		*(.dtcm*)
+		. = ALIGN(4);	/* may be 32 */
 		*(.data*)
-		. = ALIGN(4);
-		*(.ccm*)
-	   . = ALIGN(4);	/* two lines added by ua1arn */
-		*(.ramfunc)
-
-		. = ALIGN(4);
+		. = ALIGN(4);	/* may be 32 */
 		/* preinit data */
 		PROVIDE_HIDDEN (__preinit_array_start = .);
 		KEEP(*(.preinit_array))
 		PROVIDE_HIDDEN (__preinit_array_end = .);
 
-		. = ALIGN(4);
+		. = ALIGN(4);	/* may be 32 */
 		/* init data */
 		PROVIDE_HIDDEN (__init_array_start = .);
 		KEEP(*(SORT(.init_array.*)))
 		KEEP(*(.init_array))
 		PROVIDE_HIDDEN (__init_array_end = .);
 
-		. = ALIGN(4);
+		. = ALIGN(4);	/* may be 32 */
 		/* finit data */
 		PROVIDE_HIDDEN (__fini_array_start = .);
 		KEEP(*(SORT(.fini_array.*)))
@@ -154,47 +150,22 @@ SECTIONS
 		PROVIDE_HIDDEN (__fini_array_end = .);
 
 		KEEP(*(.jcr*))
-		. = ALIGN(4);
+		. = ALIGN(4);	/* may be 32 */
+
 		/* All data end */
 		__data_end__ = .;
 
 	} > CCM
-
 	. = __etext + __data_end__ - __data_start__;
-	
-	__etext2 = .;
-
-	.ramfn : AT (__etext2)
-	{
-		__data2_start__ = .;
-		*(.ramfunc)
-		*(.text.__ieee754_logf)
-		*(.text.__ieee754_powf)
-		*(.text.__ieee754_rem_pio2f)
-		*(.text.__ieee754_sqrtf)
-		*(.text.__kernel_rem_pio2f)
-
-		. = ALIGN(4);
-		__data2_end__ = .;
-	} > CCM
-
-	. = __etext2 + __data2_end__ - __data2_start__;
 
 	.bss :
 	{
-		. = ALIGN(4);
+		. = ALIGN(32);
 		__bss_start__ = .;
 		*(.bss*)
 		*(COMMON)
-		. = ALIGN(4);
+		. = ALIGN(32);
 		__bss_end__ = .;
-	} > RAM
-
-	.noinit :
-	{
-		. = ALIGN(32);
-		*(.noinit)
-		. = ALIGN(32);
 	} > RAM
 
 	.heap (COPY):
@@ -212,14 +183,14 @@ SECTIONS
 	.stack_dummy (COPY):
 	{
 		KEEP(*(.stack*))
-	} > CCM
+	} > CCM /*RAM*/
 
 	/* Set stack top to end of RAM, and stack limit move down by
 	 * size of stack_dummy section */
-	__StackTop = ORIGIN(CCM) + LENGTH(CCM);
+	__StackTop = ORIGIN(CCM) + LENGTH(CCM);	/* was: RAM */
 	__StackLimit = __StackTop - SIZEOF(.stack_dummy);
 	PROVIDE(__stack = __StackTop);
 
 	/* Check if data + heap + stack exceeds RAM limit */
-	/*ASSERT(__StackLimit >= __HeapLimit, "region RAM overflowed with stack")*/	
+	/*ASSERT(__StackLimit >= __HeapLimit, "region RAM overflowed with stack") */
 }
