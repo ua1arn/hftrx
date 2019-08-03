@@ -737,7 +737,7 @@ void buffers_initialize(void)
 #endif /* WITHINTEGRATEDDSP */
 
 	/* Cообщения от уровня обработчиков прерываний к user-level функциям. */
-	static RAMDTCM message_t messagesarray8 [12];
+	static message_t messagesarray8 [12];
 
 	/* Подготовка буферов для обмена с модемом */
 	InitializeListHead(& msgsready8);	// Заполненные - готовые к обработке

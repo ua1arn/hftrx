@@ -233,7 +233,7 @@ vox_initialize(void)
 enum { QUEUEUESIZE = 2 * (NTICKS(WITHMAXRXTXDELAY) +  NTICKS(WITHMAXTXRXDELAY) * 2 + 4) };
 
 // очередь организована как массив битов
-static RAMDTCM uint8_t keyqueuebuff [(QUEUEUESIZE + 7) / 8];
+static uint8_t keyqueuebuff [(QUEUEUESIZE + 7) / 8];
 static uint_fast8_t keyqueueput;
 static uint_fast8_t keyqueueget;
 //static uint_fast8_t keyqueuecnt;

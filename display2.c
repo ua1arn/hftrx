@@ -5001,7 +5001,7 @@ static uint_fast16_t wfscroll;			// сдвиг по вертикали (в ра�
 static uint_fast8_t wfclear;			// стирание всей областии отображение водопада.
 
 enum { PALETTESIZE = 256 };
-static RAMDTCM PACKEDCOLOR565_T wfpalette [PALETTESIZE];
+static PACKEDCOLOR565_T wfpalette [PALETTESIZE];
 
 #define COLOR565_GRIDCOLOR		TFTRGB565(128, 128, 0)		//COLOR_GRAY - center marker
 #define COLOR565_GRIDCOLOR2		TFTRGB565(128, 0, 0x00)		//COLOR_DARKRED - other markers

@@ -147,7 +147,7 @@ SECTIONS
 	.itcm : AT (__etext2)
 	{
 		__data2_start__ = .;
-		*(.ramfunc)
+		*(.itcm*)
 		*(.text.__ieee754_logf)
 		*(.text.__ieee754_powf)
 		*(.text.__ieee754_rem_pio2f)
