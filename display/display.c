@@ -259,7 +259,7 @@ dma2d_fillrect2_RGB565(
 /* заполнение прямоугольного буфера цветом */
 static void 
 dma2d_fillrect(
-	PACKEDCOLOR565_T * buffer,
+	volatile PACKEDCOLOR565_T * buffer,
 	uint_fast16_t dx,
 	uint_fast16_t dy,
 	COLOR565_T color
@@ -574,7 +574,7 @@ void display_colorbuffer_pip(
 
 // Выдать буфер на дисплей
 void display_colorbuffer_show(
-	const PACKEDCOLOR565_T * buffer,
+	volatile const PACKEDCOLOR565_T * buffer,
 	uint_fast16_t dx,	
 	uint_fast16_t dy,
 	uint_fast16_t col,	// горизонтальная координата левого верхнего угла на экране (0..dx-1) слева направо
@@ -631,7 +631,7 @@ void display_colorbuffer_show(
 	#if LCDMODE_COLORED
 		display_plotfrom(col, row);
 		display_plotstart(dy);
-		display_plot(buffer, dx, dy);
+		display_plot((const PACKEDCOLOR565_T *) buffer, dx, dy);
 		display_plotstop();
 	#endif
 #endif /* defined (DMA2D) && LCDMODE_LTDC */
