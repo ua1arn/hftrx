@@ -107,6 +107,9 @@ SECTIONS
 		LONG (__etext2)
 		LONG (__data2_start__)
 		LONG ((__data2_end__ - __data2_start__) / 4)
+		LONG (__etext3)
+		LONG (__data3_start__)
+		LONG ((__data3_end__ - __data3_start__) / 4)
 		__copy_table_end__ = .;
 	} > FLASH
 
@@ -131,8 +134,6 @@ SECTIONS
 	{
 		__data_start__ = .;
 		*(vtable)
-		. = ALIGN(4);
-		*(.data*)
 		. = ALIGN(4);
 		*(.dtcm*)
 
@@ -184,6 +185,18 @@ SECTIONS
 
 	. = __etext2 + __data2_end__ - __data2_start__;
 
+	__etext3 = .;
+
+	.databig : AT (__etext3)
+	{
+		__data3_start__ = .;
+		*(.data*)
+		. = ALIGN(4);	/* may be 32 */
+		__data3_end__ = .;
+	} > RAM
+
+	. = __etext3 + __data3_end__ - __data3_start__;
+
 	.bss :
 	{
 		. = ALIGN(32);
@@ -192,13 +205,6 @@ SECTIONS
 		*(COMMON)
 		. = ALIGN(32);
 		__bss_end__ = .;
-	} > RAM
-
-	.noinit :
-	{
-		. = ALIGN(32);
-		*(.noinit)
-		. = ALIGN(32);
 	} > RAM
 
 	.heap (COPY):
