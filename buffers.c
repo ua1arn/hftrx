@@ -201,19 +201,19 @@ enum
 		ALIGNX_BEGIN uint32_t buff [DMABUFFSIZE32RX] ALIGNX_END;
 	} ALIGNX_END voice32rx_t;
 
-	static const uint_fast8_t VOICESMIKE16NORMAL = 5;	// Нормальное количество буферов в очереди
-	static LIST_ENTRY3 voicesmike16;	// буферы с оцифрованными звуками с микрофона/Line in
-	static LIST_ENTRY3 resample16;		// буферы от USB для синхронизации
+	static RAMDTCM const uint_fast8_t VOICESMIKE16NORMAL = 5;	// Нормальное количество буферов в очереди
+	static RAMDTCM LIST_ENTRY3 voicesmike16;	// буферы с оцифрованными звуками с микрофона/Line in
+	static RAMDTCM LIST_ENTRY3 resample16;		// буферы от USB для синхронизации
 
-	static LIST_ENTRY2 voicesfree16;
-	static LIST_ENTRY2 voicesphones16;	// буферы, предназначенные для выдачи на наушники
+	static RAMDTCM LIST_ENTRY2 voicesfree16;
+	static RAMDTCM LIST_ENTRY2 voicesphones16;	// буферы, предназначенные для выдачи на наушники
 
-	static LIST_ENTRY2 voicesready32tx;	// буферы, предназначенные для выдачи на IF DAC
-	static LIST_ENTRY2 voicesfree32tx;
-	static LIST_ENTRY2 voicesfree32rx;
+	static RAMDTCM LIST_ENTRY2 voicesready32tx;	// буферы, предназначенные для выдачи на IF DAC
+	static RAMDTCM LIST_ENTRY2 voicesfree32tx;
+	static RAMDTCM LIST_ENTRY2 voicesfree32rx;
 
-	static LIST_ENTRY2 speexfree16;		// Свободные буферы
-	static LIST_ENTRY2 speexready16;	// Буферы для обработки speex
+	static RAMDTCM LIST_ENTRY2 speexfree16;		// Свободные буферы
+	static RAMDTCM LIST_ENTRY2 speexready16;	// Буферы для обработки speex
 	//static int speexready16enable;
 
 	static volatile uint_fast8_t uacoutplayer = 0;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
@@ -241,8 +241,8 @@ enum
 			ALIGNX_BEGIN uint8_t buff [DMABUFFSIZE192RTS] ALIGNX_END;		// спектр, 2*24*192 kS/S
 		} ALIGNX_END voice192rts_t;
 
-		static LIST_ENTRY2 voicesfree192rts;
-		static LIST_ENTRY2 uacin192rts;	// Буферы для записи в вудиоканал USB к компьютеру спектра, 2*32*192 kS/S
+		static RAMDTCM LIST_ENTRY2 voicesfree192rts;
+		static RAMDTCM LIST_ENTRY2 uacin192rts;	// Буферы для записи в вудиоканал USB к компьютеру спектра, 2*32*192 kS/S
 	
 	#endif /* WITHRTS192 */
 
@@ -255,13 +255,13 @@ enum
 			ALIGNX_BEGIN uint8_t buff [DMABUFFSIZE96RTS] ALIGNX_END;		// спектр, 2*24*192 kS/S
 		} ALIGNX_END voice96rts_t;
 
-		static LIST_ENTRY2 voicesfree96rts;
-		static LIST_ENTRY2 uacin96rts;	// Буферы для записи в вудиоканал USB к компьютер спектра, 2*32*192 kS/S
+		static RAMDTCM LIST_ENTRY2 voicesfree96rts;
+		static RAMDTCM LIST_ENTRY2 uacin96rts;	// Буферы для записи в вудиоканал USB к компьютер спектра, 2*32*192 kS/S
 	
 	#endif /* WITHRTS96 */
 
-	static LIST_ENTRY2 uacinfree16;
-	static LIST_ENTRY2 uacinready16;	// Буферы для записи в вудиоканал USB к компьютер 2*16*24 kS/S
+	static RAMDTCM LIST_ENTRY2 uacinfree16;
+	static RAMDTCM LIST_ENTRY2 uacinready16;	// Буферы для записи в вудиоканал USB к компьютер 2*16*24 kS/S
 	//static const uint_fast8_t VOICESMIKE16NORMAL = VOICESMIKE16NORMAL;	// Нормальное количество буферов в очереди
 
 #endif /* WITHUSBUAC */
@@ -278,11 +278,11 @@ enum
 		ALIGNX_BEGIN int16_t buff [SDCARDBUFFSIZE16] ALIGNX_END;
 	} ALIGNX_END records16_t;
 
-	static LIST_ENTRY2 recordsfree16;		// Свободные буферы
-	static LIST_ENTRY2 recordsready16;	// Буферы для записи на SD CARD
+	static RAMDTCM LIST_ENTRY2 recordsfree16;		// Свободные буферы
+	static RAMDTCM LIST_ENTRY2 recordsready16;	// Буферы для записи на SD CARD
 
-	static volatile unsigned recdropped;
-	static volatile unsigned recbuffered;
+	static RAMDTCM volatile unsigned recdropped;
+	static RAMDTCM volatile unsigned recbuffered;
 
 #endif /* WITHUSEAUDIOREC */
 
@@ -296,8 +296,8 @@ typedef struct modems8
 	uint8_t buff [MODEMBUFFERSIZE8];
 } modems8_t;
 
-static LIST_ENTRY2 modemsfree8;		// Свободные буферы
-static LIST_ENTRY2 modemsrx8;	// Буферы с принятымти через модем данными
+static RAMDTCM LIST_ENTRY2 modemsfree8;		// Свободные буферы
+static RAMDTCM LIST_ENTRY2 modemsrx8;	// Буферы с принятымти через модем данными
 //static LIST_ENTRY modemstx8;	// Буферы с данными для передачи через модем
 
 #endif /* WITHMODEM */
@@ -311,8 +311,8 @@ typedef struct message
 	uint8_t data [MSGBUFFERSIZE8];
 } message_t;
 
-static LIST_ENTRY msgsfree8;		// Свободные буферы
-static LIST_ENTRY msgsready8;		// Заполненные - готовые к обработке
+static RAMDTCM LIST_ENTRY msgsfree8;		// Свободные буферы
+static RAMDTCM LIST_ENTRY msgsready8;		// Заполненные - готовые к обработке
 
 #if WITHBUFFERSDEBUG
 	static volatile unsigned n1, n1wfm, n2, n3, n4, n5, n6;
@@ -432,10 +432,10 @@ void buffers_diagnostics(void)
 		const char * file;
 	} LOCK_T;
 
-	static volatile LOCK_T locklist16;
-	static volatile LOCK_T locklist16ststem;
-	static volatile LOCK_T locklist32;
-	static volatile LOCK_T locklist8;
+	static RAMDTCM volatile LOCK_T locklist16;
+	static RAMDTCM volatile LOCK_T locklist16ststem;
+	static RAMDTCM volatile LOCK_T locklist32;
+	static RAMDTCM volatile LOCK_T locklist8;
 
 	static void lock_impl(volatile LOCK_T * p, int line, const char * file, const char * variable)
 	{
@@ -736,7 +736,7 @@ void buffers_initialize(void)
 #endif /* WITHINTEGRATEDDSP */
 
 	/* Cообщения от уровня обработчиков прерываний к user-level функциям. */
-	static message_t messagesarray8 [12];
+	static RAMDTCM message_t messagesarray8 [12];
 
 	/* Подготовка буферов для обмена с модемом */
 	InitializeListHead(& msgsready8);	// Заполненные - готовые к обработке

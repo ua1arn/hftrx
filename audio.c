@@ -292,11 +292,11 @@ static uint_fast8_t		glob_nfmdeviation100 = 75;	// 7.5 kHz максимальн�
 
 	// Фильтр для квадратурных каналов приёмника (floating point).
 	static RAMDTCM FLOAT_t FIRCoef_rx_SSB_IQ [NPROF] [NtapCoeffs(Ntap_rx_SSB_IQ)];
-	static FLOAT_t FIRCwnd_rx_SSB_IQ [NtapCoeffs(Ntap_rx_SSB_IQ)];			// подготовленные значения функции окна
+	static RAMDTCM FLOAT_t FIRCwnd_rx_SSB_IQ [NtapCoeffs(Ntap_rx_SSB_IQ)];			// подготовленные значения функции окна
 
 	// Фильтр для квадратурных каналов передатчика (floating point)
 	static RAMDTCM FLOAT_t FIRCoef_tx_SSB_IQ [NPROF] [NtapCoeffs(Ntap_tx_SSB_IQ)];
-	static FLOAT_t FIRCwnd_tx_SSB_IQ [NtapCoeffs(Ntap_tx_SSB_IQ)];			// подготовленные значения функции окна
+	static RAMDTCM FLOAT_t FIRCwnd_tx_SSB_IQ [NtapCoeffs(Ntap_tx_SSB_IQ)];			// подготовленные значения функции окна
 
 #endif /* WITHDSPLOCALFIR */
 
@@ -310,7 +310,7 @@ static FLOAT_t FIRCwnd_rx_AUDIO [NtapCoeffs(Ntap_rx_AUDIO)];			// подгото
 
 //static void * fft_lookup;
 
-static RAMBIGDTCM struct Complex Sig [FFTSizeFilters];
+static RAMDTCM struct Complex Sig [FFTSizeFilters];
 
 #define fftixreal(i) ((i * 2) + 0)
 #define fftiximag(i) ((i * 2) + 1)
@@ -345,38 +345,38 @@ static RAMBIGDTCM struct Complex Sig [FFTSizeFilters];
 	#error Strange WITHIFADCWIDTH & WITHAFDACWIDTH relations
 #endif
 
-static FLOAT_t txlevelfenceHALF = INT32_MAX / 2;
+static RAMDTCM FLOAT_t txlevelfenceHALF = INT32_MAX / 2;
 
-//static int_fast32_t txlevelfenceSSB_INTEGER = INT32_MAX - 1;
-static FLOAT_t txlevelfenceSSB = INT32_MAX / 2;
-static FLOAT_t txlevelfenceDIGI = INT32_MAX / 2;
+//static RAMDTCM int_fast32_t txlevelfenceSSB_INTEGER = INT32_MAX - 1;
+static RAMDTCM FLOAT_t txlevelfenceSSB = INT32_MAX / 2;
+static RAMDTCM FLOAT_t txlevelfenceDIGI = INT32_MAX / 2;
 
-static FLOAT_t txlevelfenceNFM = INT32_MAX / 2;
-static FLOAT_t txlevelfenceBPSK = INT32_MAX / 2;
-static FLOAT_t txlevelfenceCW = INT32_MAX / 2;
+static RAMDTCM FLOAT_t txlevelfenceNFM = INT32_MAX / 2;
+static RAMDTCM FLOAT_t txlevelfenceBPSK = INT32_MAX / 2;
+static RAMDTCM FLOAT_t txlevelfenceCW = INT32_MAX / 2;
 
-static FLOAT_t rxlevelfence = INT32_MAX;
+static RAMDTCM FLOAT_t rxlevelfence = INT32_MAX;
 
-static FLOAT_t mikefenceIN = INT16_MAX;
-static FLOAT_t mikefenceOUT = INT16_MAX;
-static FLOAT_t phonefence = INT16_MAX;	// Разрядность поступающего на наушники сигнала
+static RAMDTCM FLOAT_t mikefenceIN = INT16_MAX;
+static RAMDTCM FLOAT_t mikefenceOUT = INT16_MAX;
+static RAMDTCM FLOAT_t phonefence = INT16_MAX;	// Разрядность поступающего на наушники сигнала
 
-static FLOAT_t rxoutdenom = 1 / (FLOAT_t) RXOUTDENOM;
+static RAMDTCM FLOAT_t rxoutdenom = 1 / (FLOAT_t) RXOUTDENOM;
 
-static volatile FLOAT_t nfmoutscale;	// масштабирование (INT32_MAX + 1) к phonefence
+static RAMDTCM volatile FLOAT_t nfmoutscale;	// масштабирование (INT32_MAX + 1) к phonefence
 
-static uint_fast8_t gwprof = 0;	// work profile - индекс конфигурационной информации, испольуемый для работы */
+static RAMDTCM uint_fast8_t gwprof = 0;	// work profile - индекс конфигурационной информации, испольуемый для работы */
 
-static uint_fast8_t globDSPMode [NPROF] [2] = { { DSPCTL_MODE_IDLE, DSPCTL_MODE_IDLE }, { DSPCTL_MODE_IDLE, DSPCTL_MODE_IDLE } };
+static RAMDTCM uint_fast8_t globDSPMode [NPROF] [2] = { { DSPCTL_MODE_IDLE, DSPCTL_MODE_IDLE }, { DSPCTL_MODE_IDLE, DSPCTL_MODE_IDLE } };
 
 /* Параметры АМ модулятора */
-static volatile FLOAT_t amshapesignalHALF;
-static volatile FLOAT_t amcarrierHALF;
-static volatile FLOAT_t scaleDAC = 1;
+static RAMDTCM volatile FLOAT_t amshapesignalHALF;
+static RAMDTCM volatile FLOAT_t amcarrierHALF;
+static RAMDTCM volatile FLOAT_t scaleDAC = 1;
 
-static FLOAT_t shapeSidetoneStep(void);		// 0..1
-static FLOAT_t shapeCWEnvelopStep(void);	// 0..1
-static uint_fast8_t getTxShapeNotComplete(void);
+static RAMDTCM FLOAT_t shapeSidetoneStep(void);		// 0..1
+static RAMDTCM FLOAT_t shapeCWEnvelopStep(void);	// 0..1
+static RAMDTCM uint_fast8_t getTxShapeNotComplete(void);
 
 static uint_fast8_t getRxGate(void);	/* разрешение работы тракта в режиме приёма */
 
@@ -585,19 +585,19 @@ static RAMFUNC int32_t peekvali32(uint32_t a)
 //////////////////////////////////////////
 #if 1//WITHLOOPBACKTEST || WITHSUSBSPKONLY || WITHUSBHEADSET
 
-static ncoftw_t anglestep_lout = FTWAF(700), anglestep_rout = FTWAF(500);
-static ncoftw_t angle_lout, angle_rout;
+static RAMDTCM ncoftw_t anglestep_lout = FTWAF(700), anglestep_rout = FTWAF(500);
+static RAMDTCM ncoftw_t angle_lout, angle_rout;
 
-static ncoftw_t anglestep_lout2 = FTWAF(5600), anglestep_rout2 = FTWAF(6300);
-static ncoftw_t angle_lout2, angle_rout2;
-
-// test IQ frequency
-static ncoftw_t anglestep_monofreq = FTWAF(200);
-static ncoftw_t angle_monofreq;
+static RAMDTCM ncoftw_t anglestep_lout2 = FTWAF(5600), anglestep_rout2 = FTWAF(6300);
+static RAMDTCM ncoftw_t angle_lout2, angle_rout2;
 
 // test IQ frequency
-static ncoftw_t anglestep_monofreq2 = FTWAF(5600);
-static ncoftw_t angle_monofreq2;
+static RAMDTCM ncoftw_t anglestep_monofreq = FTWAF(200);
+static RAMDTCM ncoftw_t angle_monofreq;
+
+// test IQ frequency
+static RAMDTCM ncoftw_t anglestep_monofreq2 = FTWAF(5600);
+static RAMDTCM ncoftw_t angle_monofreq2;
 
 int get_rout16(void)
 {
@@ -659,8 +659,8 @@ static RAMFUNC FLOAT32P_t get_float_monofreq2(void)
 #endif /* WITHLOOPBACKTEST */
 
 //////////////////////////////////////////
-static ncoftw_t anglestep_sidetone;
-static ncoftw_t angle_sidetone;
+static RAMDTCM ncoftw_t anglestep_sidetone;
+static RAMDTCM ncoftw_t angle_sidetone;
 
 static RAMFUNC FLOAT_t get_float_sidetone(void)
 {
@@ -671,8 +671,8 @@ static RAMFUNC FLOAT_t get_float_sidetone(void)
 }
 
 //////////////////////////////////////////
-static ncoftw_t anglestep_subtone;
-static ncoftw_t angle_subtone;
+static RAMDTCM ncoftw_t anglestep_subtone;
+static RAMDTCM ncoftw_t angle_subtone;
 
 static RAMFUNC FLOAT_t get_float_subtone(void)
 {
@@ -683,8 +683,8 @@ static RAMFUNC FLOAT_t get_float_subtone(void)
 }
 
 //////////////////////////////////////////
-static ncoftw_t anglestep_toneout = FTWAF(700);
-static ncoftw_t angle_toneout;
+static RAMDTCM ncoftw_t anglestep_toneout = FTWAF(700);
+static RAMDTCM ncoftw_t angle_toneout;
 
 static RAMFUNC FLOAT_t get_singletonefloat(void)
 {
@@ -705,11 +705,11 @@ static RAMFUNC FLOAT_t get_singletonefloat(void)
 
 // Dual tone signal generator for SSB TX IMD3 tests - 1200 Hz spacing
 // Document: Procedure Manual 2011 with page breaks.pdf, page 16
-static ncoftw_t anglestep_af1 = FTWAF(700);
-static ncoftw_t anglestep_af2 = FTWAF(1900);
+static RAMDTCM ncoftw_t anglestep_af1 = FTWAF(700);
+static RAMDTCM ncoftw_t anglestep_af2 = FTWAF(1900);
 
-static ncoftw_t angle_af1;
-static ncoftw_t angle_af2;
+static RAMDTCM ncoftw_t angle_af1;
+static RAMDTCM ncoftw_t angle_af2;
 
 // двухтональный генератор для настройки
 static RAMFUNC FLOAT_t get_dualtonefloat(void)
@@ -744,7 +744,7 @@ static RAMDTCM unsigned delaysetlo6 [NTRX];	// задержка переключ
 static RAMDTCM ncoftw_t anglestep_aflo [NTRX];
 static RAMDTCM ncoftw_t anglestep_aflo_shadow [NTRX];
 static RAMDTCM ncoftw_t angle_aflo [NTRX];
-static ncoftw_t gnfmdeviationftw = FTWAF(7500);	// 2.5 kHz (-2.5..+2.5) deviation
+static RAMDTCM ncoftw_t gnfmdeviationftw = FTWAF(7500);	// 2.5 kHz (-2.5..+2.5) deviation
 
 // установить частоту
 static void nco_setlo_ftw(ncoftw_t ftw, uint_fast8_t pathi)
@@ -834,8 +834,8 @@ static RAMFUNC INT32P_t get_int32_aflo_delta(long int deltaftw, uint_fast8_t pat
 
 #if ! WITHDSPEXTDDC
 
-static const ncoftw_t anglestep_iflo = (1U << (NCOFTWBITS - 2));	// установить частоту в 1/4 sample rate
-static ncoftw_t angle_iflo = 0;
+static RAMDTCM const ncoftw_t anglestep_iflo = (1U << (NCOFTWBITS - 2));	// установить частоту в 1/4 sample rate
+static RAMDTCM ncoftw_t angle_iflo = 0;
 
 
 // Получение квадратурных значений для данной частоты
@@ -1568,9 +1568,9 @@ static FLOAT_t performagcresultfast(const volatile agcstate_t * st)
 
 ///////////////////////////
 
-static FLOAT_t mikeinlevel;
-static FLOAT_t VOXDISCHARGE;
-static FLOAT_t VOXCHARGE = 0;
+static RAMDTCM FLOAT_t mikeinlevel;
+static RAMDTCM FLOAT_t VOXDISCHARGE;
+static RAMDTCM FLOAT_t VOXCHARGE = 0;
 
 // Возвращает значения 0..255
 uint_fast8_t dsp_getvox(uint_fast8_t fullscale)
@@ -2257,7 +2257,7 @@ static RAMFUNC_NONILINE FLOAT32P_t filter_firp_rx_SSB_IQ(FLOAT32P_t NewSample)
 	enum { Ntap = Ntap_rx_SSB_IQ, NtapHalf = Ntap / 2 };
 	// буфер с сохраненными значениями сэмплов
 	static RAMDTCM FLOAT32P_t x [Ntap * 2];
-	static uint_fast16_t fir_head = 0;
+	static RAMDTCM uint_fast16_t fir_head = 0;
 
 	// shift the old samples
 	// fir_head -  Начало обрабатываемой части буфера
@@ -2296,7 +2296,7 @@ static RAMFUNC_NONILINE FLOAT32P_t filter_firp_tx_SSB_IQ(FLOAT32P_t NewSample)
 	enum { Ntap = Ntap_tx_SSB_IQ, NtapHalf = Ntap / 2 };
 	// буфер с сохраненными значениями сэмплов
 	static RAMDTCM FLOAT32P_t x [Ntap * 2];
-	static uint_fast16_t fir_head = 0;
+	static RAMDTCM uint_fast16_t fir_head = 0;
 
 	// shift the old samples
 	// fir_head -  Начало обрабатываемой части буфера
@@ -2341,7 +2341,7 @@ static RAMFUNC_NONILINE FLOAT32P_t filter_fir4_rx_SSB_IQ(FLOAT32P_t NewSample, u
 
 	// буфер с сохраненными значениями сэмплов
 	static RAMDTCM FLOAT32P_t x [Ntap * 2]; // input samples (force CCM allocation)
-	static uint_fast16_t fir_head = 0;		// позиция записи в буфер в последний раз
+	static RAMDTCM uint_fast16_t fir_head = 0;		// позиция записи в буфер в последний раз
 
 	// shift the old samples
 	// fir_head -  Начало обрабатываемой части буфера
@@ -2450,7 +2450,7 @@ static RAMFUNC_NONILINE FLOAT32P_t filter_fir4_tx_SSB_IQ(FLOAT32P_t NewSample, u
 	enum { Ntap = Ntap_tx_SSB_IQ, NtapHalf = Ntap / 2 };
 	// буфер с сохраненными значениями сэмплов
 	static RAMDTCM FLOAT32P_t x [Ntap * 2]; // input samples (force CCM allocation)
-	static uint_fast16_t fir_head = 0;
+	static RAMDTCM uint_fast16_t fir_head = 0;
 
 	// shift the old samples
 	// fir_head -  Начало обрабатываемой части буфера
@@ -2607,7 +2607,7 @@ static RAMFUNC_NONILINE FLOAT_t filter_fir_tx_MIKE(FLOAT_t NewSample, uint_fast8
 	enum { Ntap = Ntap_tx_MIKE, NtapHalf = Ntap / 2 };
 	// буфер с сохраненными значениями сэмплов
 	static RAMDTCM FLOAT_t xshift [Ntap * 2];
-	static uint_fast16_t fir_head = 0;
+	static RAMDTCM uint_fast16_t fir_head = 0;
 
 	// shift the old samples
 	fir_head = (fir_head == 0) ? (Ntap - 1) : (fir_head - 1);
@@ -3148,7 +3148,7 @@ static void demod_bpsk(int_fast32_t RxSin, int_fast32_t RxCos)
 
 	typedef long SAMPLEHOLDER_T;
 		//saved values for bit synchronization filter taps
-	static SAMPLEHOLDER_T m_RxAmpFil [BITFILTERLENGTH];
+	static RAMDTCM SAMPLEHOLDER_T m_RxAmpFil [BITFILTERLENGTH];
 
 	{	
 		const SAMPLEHOLDER_T ISum = RxSin;
@@ -3299,7 +3299,7 @@ static void modem_update(void)
 }
 ///////////////////////
 
-static FLOAT_t agclogof10 = 1;
+static RAMDTCM FLOAT_t agclogof10 = 1;
 	
 static void agc_state_initialize(volatile agcstate_t * st, const volatile agcparams_t * agcp)
 {
@@ -3369,11 +3369,11 @@ static RAMDTCM volatile agcstate_t rxsmeterstate [NTRX];	// На каждый п
 static RAMDTCM volatile agcstate_t rxagcstate [NTRX];	// На каждый приёмник
 static RAMDTCM volatile agcstate_t txagcstate;
 
-static volatile agcparams_t rxsmeterparams = { 0, };
+static RAMDTCM volatile agcparams_t rxsmeterparams = { 0, };
 static RAMDTCM volatile agcparams_t rxagcparams [NPROF] [NTRX];
 static RAMDTCM volatile agcparams_t txagcparams [NPROF];
-static volatile uint_fast8_t gwagcprofrx = 0;	// work profile - индекс конфигурационной информации, испольуемый для работы */
-static volatile uint_fast8_t gwagcproftx = 0;	// work profile - индекс конфигурационной информации, испольуемый для работы */
+static RAMDTCM volatile uint_fast8_t gwagcprofrx = 0;	// work profile - индекс конфигурационной информации, испольуемый для работы */
+static RAMDTCM volatile uint_fast8_t gwagcproftx = 0;	// work profile - индекс конфигурационной информации, испольуемый для работы */
 //	
 static void agc_initialize(void)
 {

@@ -31,7 +31,7 @@ static int position_kbd;	/* накопитель от клавиатуры - з�
 
 // dimensions are:
 // old_bits new_bits
-static const int_fast8_t graydecoder [4][4] =
+static RAMDTCM int_fast8_t graydecoder [4][4] =
 {
 	{
 		+0,		/* 00 -> 00 stopped				*/
@@ -59,7 +59,7 @@ static const int_fast8_t graydecoder [4][4] =
 	},
 };
 
-static uint_fast8_t old_val;
+static RAMDTCM uint_fast8_t old_val;
 
 void spool_encinterrupt(void)
 {
@@ -73,7 +73,7 @@ void spool_encinterrupt(void)
 	old_val = new_val;
 }
 
-static uint_fast8_t old_val2;
+static RAMDTCM uint_fast8_t old_val2;
 
 void spool_encinterrupt2(void)
 {
@@ -150,26 +150,26 @@ void encoder_kbdctl(
 
 
 /* накопитель прерываний от валкодера - знаковое число */
-static int rotate1;
-static int rotate_kbd;
-static int backup_rotate;
+static RAMDTCM int rotate1;
+static RAMDTCM int rotate_kbd;
+static RAMDTCM int backup_rotate;
 
 /* накопитель прерываний от валкодера #2 - знаковое число */
-static int rotate2;
-static int backup_rotate2;
+static RAMDTCM int rotate2;
+static RAMDTCM int backup_rotate2;
 
 #define HISTLEN 4		// кое-где дальше есть код, в неявном виде использующий это значение
 #define TICKSMAX NTICKS(125)
 
-static unsigned enchist [HISTLEN];	
-static uint_fast8_t tichist;	// Должно поместиться число от 0 до TICKSMAX включительно
+static RAMDTCM unsigned enchist [HISTLEN];
+static RAMDTCM uint_fast8_t tichist;	// Должно поместиться число от 0 до TICKSMAX включительно
 
-static uint_fast8_t enchistindex;	
+static RAMDTCM uint_fast8_t enchistindex;
 
 /* значение используется вне прерываний - модификация без запрета прерываний */
 
-static unsigned encoder_actual_resolution = 128 * 4; //(encoder_resolution * 4 * ENCRESSCALE)	// Number of increments/decrements per revolution
-static uint_fast8_t encoder_dynamic = 1;
+static RAMDTCM unsigned encoder_actual_resolution = 128 * 4; //(encoder_resolution * 4 * ENCRESSCALE)	// Number of increments/decrements per revolution
+static RAMDTCM uint_fast8_t encoder_dynamic = 1;
 
 //#define ENCODER_ACTUAL_RESOLUTION (encoder_resolution * 4 * ENCRESSCALE)	// Number of increments/decrements per revolution
 //static uint_fast8_t encoder_resolution;
@@ -194,8 +194,8 @@ enc_spool(void)
 #endif
 
 	/* запоминание данных для расчёта скорости вращения валкодера */
-	/* при расчёте скорости игнорируется направление вращения - улучшается обработка синтуйии, когда при уже 
-	   включившемся ускорении пользователь меняет направление - движется назад к пропущенной частоте. при этом для 
+	/* при расчёте скорости игнорируется направление вращения - улучшается обработка синтуйии, когда при уже
+	   включившемся ускорении пользователь меняет направление - движется назад к пропущенной частоте. при этом для
 	   предсказуемости перестройки ускорение не должно изменяться.
 	*/
 	enchist [enchistindex] += abs(p1) + abs(p1kbd);

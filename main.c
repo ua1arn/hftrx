@@ -193,8 +193,8 @@ enum
 	CAT_MAX_INDEX
 };
 
-static uint_fast8_t cat_answer_map [CAT_MAX_INDEX];
-static uint_fast8_t cat_answerparam_map [CAT_MAX_INDEX];
+static RAMDTCM uint8_t cat_answer_map [CAT_MAX_INDEX];
+static RAMDTCM uint8_t cat_answerparam_map [CAT_MAX_INDEX];
 
 
 static uint_fast32_t savedbaudrate;	// Скорость, на которую в последний раз был запрограммирован порт.
@@ -9755,22 +9755,22 @@ directctlupdate(uint_fast8_t inmenu)
 
 #if WITHCAT
 
-static uint_fast8_t morsefill;	/* индекс буфера, заполняемого в данный момент. Противоположгый передаётся. */
+static RAMDTCM uint_fast8_t morsefill;	/* индекс буфера, заполняемого в данный момент. Противоположгый передаётся. */
 
-static uint_fast8_t inpmorselength [2];
-static uint_fast8_t sendmorsepos [2];
+static RAMDTCM uint_fast8_t inpmorselength [2];
+static RAMDTCM uint_fast8_t sendmorsepos [2];
 
 #if WITHCATEXT && WITHELKEY
 	static void cat_set_kyanswer(uint_fast8_t force);
-	static uint_fast8_t cathasparamerror;
-	static unsigned char morsestring [2][25];
+	static RAMDTCM uint_fast8_t cathasparamerror;
+	static RAMDTCM unsigned char morsestring [2][25];
 #endif /* WITHCATEXT && WITHELKEY */
 
-static uint_fast8_t catstatein = CATSTATE_HALTED;
+static RAMDTCM uint_fast8_t catstatein = CATSTATE_HALTED;
 
-static volatile uint_fast8_t catstateout = CATSTATEO_HALTED;
-static volatile const char * catsendptr;
-static volatile uint_fast8_t catsendcount;
+static RAMDTCM volatile uint_fast8_t catstateout = CATSTATEO_HALTED;
+static volatile const char * RAMDTCM catsendptr;
+static volatile RAMDTCM uint_fast8_t catsendcount;
 
 //A communication error occurred, such as an overrun or framing error during a serial data transmission.
 //static const char processingcmd [2] = "E;";	// ответ на команду которая ещё выполняется
@@ -9846,7 +9846,7 @@ static cat_answervariable(const char * p, uint_fast8_t len)
 //#define CAT_ASKBUFF_SIZE (43 + 28)
 #define CAT_ASKBUFF_SIZE (43)
 
-static char cat_ask_buffer [CAT_ASKBUFF_SIZE];
+static RAMDTCM char cat_ask_buffer [CAT_ASKBUFF_SIZE];
 
 static void 
 //NOINLINEAT
@@ -9952,11 +9952,11 @@ void cat2_disconnect(void)
 /* вызывается из обработчика прерываний */
 void cat2_parsechar(uint_fast8_t c)
 {
-	static uint_fast8_t catcommand1;
-	static uint_fast8_t catcommand2;
-	static uint_fast8_t cathasparam;
-	static uint_fast8_t catp [CATPCOUNTSIZE];
-	static uint_fast8_t catpcount;
+	static RAMDTCM uint_fast8_t catcommand1;
+	static RAMDTCM uint_fast8_t catcommand2;
+	static RAMDTCM uint_fast8_t cathasparam;
+	static RAMDTCM uint_fast8_t catp [CATPCOUNTSIZE];
+	static RAMDTCM uint_fast8_t catpcount;
 
    // debug_printf_P(PSTR("c=%02x, catstatein=%d, c1=%02X, c2=%02X\n"), c, catstatein, catcommand1, catcommand2);
 	switch (catstatein)
@@ -10837,7 +10837,7 @@ static void processcat_enable(uint_fast8_t enable)
 
 typedef void (* canapfn)(uint_fast8_t arg);
 
-static canapfn catanswers [CAT_MAX_INDEX] =
+static const canapfn catanswers [CAT_MAX_INDEX] =
 {
 #if WITHCATEXT
 #if WITHELKEY

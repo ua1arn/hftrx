@@ -4927,9 +4927,13 @@ enum
 		pipphase = (pipphase + 1) % NPIPS;
 	}
 
+#elif (! LCDMODE_S1D13781_NHWACCEL && LCDMODE_S1D13781)
+
+	static RAMDTCM ALIGNX_BEGIN volatile PACKEDCOLOR565_T colorpip0 [GXSIZE(ALLDX, 1)] ALIGNX_END;
+
 #else /* LCDMODE_LTDC_PIP16 */
 
-	static ALIGNX_BEGIN volatile PACKEDCOLOR565_T colorpip0 [GXSIZE(ALLDX, ALLDY)] ALIGNX_END = { 1 };
+	static ALIGNX_BEGIN volatile PACKEDCOLOR565_T colorpip0 [GXSIZE(ALLDX, ALLDY)] ALIGNX_END;
 
 #endif /* LCDMODE_LTDC_PIP16 */
 
