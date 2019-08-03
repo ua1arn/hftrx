@@ -373,7 +373,6 @@
 	///#define DDS1_TYPE DDS_TYPE_AD9834
 	///#define targetdds1 SPI_CSEL1 	/* DDS1 - LO1 output - работает AD9834 (Vasiliy, Ufa). */
 
-	#define TSC1_TYPE TSC_TYPE_STMPE811	/* touch screen controller */
 
 	/* Назначение адресов на SPI шине */
 	#define targetfpga1		SPI_CSEL2 	/* FPGA */

@@ -1461,6 +1461,7 @@ void display_plotstop(void)
 
 }
 
+#if LCDMODE_HORFILL
 
 // Вызовы этой функции (или группу вызовов) требуется "обрамить" парой вызовов
 // display_wrdatabar_begin() и display_wrdatabar_end().
@@ -1490,6 +1491,7 @@ void display_dispbar(
 		bitblt_fill(x + wmark, y, 1, h, ltdc_fg, ltdc_bg, 0xFF);
 }
 
+#endif /* LCDMODE_HORFILL */
 
 // самый маленький шрифт
 void display_wrdata2_begin(void)

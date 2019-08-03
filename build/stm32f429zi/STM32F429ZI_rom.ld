@@ -122,8 +122,6 @@ SECTIONS
 	.data : AT (__etext)
 	{
 		__data_start__ = .;
-		*(vtable)
-		. = ALIGN(4);
 		*(.itcm*)
 		. = ALIGN(4);
 		*(.dtcm*)
@@ -162,7 +160,10 @@ SECTIONS
 	{
 		. = ALIGN(32);
 		__bss_start__ = .;
+		*(vtable)
+		. = ALIGN(4);
 		*(.bss*)
+		. = ALIGN(4);
 		*(COMMON)
 		. = ALIGN(32);
 		__bss_end__ = .;

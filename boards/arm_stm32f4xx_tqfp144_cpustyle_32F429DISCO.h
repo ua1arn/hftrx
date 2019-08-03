@@ -72,7 +72,7 @@ Free:
 //#define SPI_BIDIRECTIONAL 1	// ввод данных по SPI идет через тот же самый pin, что и вывод
 
 //#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
-#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
+//#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 #define WITHCPUADCHW 	1	/* использование ADC */
 
 //#define WITHI2SHW	1	/* Использование I2S - аудиокодек	*/
