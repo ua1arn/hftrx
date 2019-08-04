@@ -145,11 +145,15 @@ extern "C" {
 	#define HARDWARE_RTSDMABYTES	1
 #endif /* CPUSTYLE_R7S721 */
 
-// количество потоков (кажжый из которых содержит один или более каналов)
-#define HARDWARE_USBD_AUDIO_OUT_STREAMLS_AUDIO48 		1
-#define HARDWARE_USBD_AUDIO_OUT_STREAMLS_RTS 			1
-#define HARDWARE_USBD_AUDIO_OUT_STREAMLS_AUDIO48_RTS 	1
-#define HARDWARE_USBD_AUDIO_OUT_STREAMLS_AUDIO48 		1
+#define WITHUSENOFU 0	// 1 - без использования Feature Unit, 0 - с использованием, игнорирование управления громкостью
+
+// Конфигурация потоков в Input Terminal Descriptor
+// bNrChannels в 4.3.2.1 Input Terminal Descriptor образуется подсчетом битов в данном поле
+// Может быть использовано AUDIO_CHANNEL_M
+#define HARDWARE_USBD_AUDIO_CONFIG_IN48 			(AUDIO_CHANNEL_L | AUDIO_CHANNEL_R)
+#define HARDWARE_USBD_AUDIO_CONFIG_INRTS 			(AUDIO_CHANNEL_L | AUDIO_CHANNEL_R)
+#define HARDWARE_USBD_AUDIO_CONFIG_IN48_INRTS 		(AUDIO_CHANNEL_L | AUDIO_CHANNEL_R)
+#define HARDWARE_USBD_AUDIO_CONFIG_OUT48 			(AUDIO_CHANNEL_L | AUDIO_CHANNEL_R)
 
 // количество каналов
 #define HARDWARE_USBD_AUDIO_IN_CHANNELS_AUDIO48			2
