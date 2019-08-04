@@ -7882,7 +7882,7 @@ updateboard(
 			const uint_fast8_t bwseti = mdt [amode].bwsetis [1];	// индекс банка полос пропускания для данного режима на передаче
 			board_set_aflowcuttx(bwseti_getlow(bwseti));	/* Нижняя частота среза фильтра НЧ по передаче */
 			board_set_afhighcuttx(bwseti_gethigh(bwseti));	/* Верхняя частота среза фильтра НЧ по передаче */
-			board_set_afresponcetx(txmode == MODE_NFM ? + 24 : 0);	/* коррекция АЧХ НЧ тракта передатчика */
+			board_set_afresponcetx(bwseti_getafresponce(bwseti));	/* коррекция АЧХ НЧ тракта передатчика */
 			board_set_nfmdeviation100(75);
 		}
 	#endif /* WITHIF4DSP */
