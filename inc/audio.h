@@ -145,8 +145,22 @@ extern "C" {
 	#define HARDWARE_RTSDMABYTES	1
 #endif /* CPUSTYLE_R7S721 */
 
-#define DMABUFSTEPUACIN16	2		// 2 - каждому сэмплу соответствует два числа в DMA буфере
-#define HARDWARE_USBD_AUDIO_IN_CHANNELS_RTS	2	/* для всех каналов в IN направлении */
+// количество потоков (кажжый из которых содержит один или более каналов)
+#define HARDWARE_USBD_AUDIO_OUT_STREAMLS_AUDIO48 		1
+#define HARDWARE_USBD_AUDIO_OUT_STREAMLS_RTS 			1
+#define HARDWARE_USBD_AUDIO_OUT_STREAMLS_AUDIO48_RTS 	1
+#define HARDWARE_USBD_AUDIO_OUT_STREAMLS_AUDIO48 		1
+
+// количество каналов
+#define HARDWARE_USBD_AUDIO_IN_CHANNELS_AUDIO48			2
+#define HARDWARE_USBD_AUDIO_IN_CHANNELS_RTS				2	// I/Q всегда стерео
+#define HARDWARE_USBD_AUDIO_IN_CHANNELS_AUDIO48_RTS		2	// при совмещении аудио и I/Q всегда стерео
+
+#if WITHUABUACOUTAUDIO48MONO
+	#define HARDWARE_USBD_AUDIO_OUT_CHANNELS_AUDIO48	1
+#else /* WITHUABUACOUTAUDIO48MONO */
+	#define HARDWARE_USBD_AUDIO_OUT_CHANNELS_AUDIO48	2
+#endif /* WITHUABUACOUTAUDIO48MONO */
 
 // коррекция размера с учетом требуемого выравнивания
 #define DMAHWEPADJUST(sz, granulation) (((sz) + ((granulation) - 1)) / (granulation) * (granulation))
@@ -157,6 +171,8 @@ extern "C" {
 #define MSOUTSAMPLES	48 /* количество сэмплов за милисекунду в UAC OUT */
 #define MSINSAMPLES		(MSOUTSAMPLES + 1) /* количество сэмплов за милисекунду в UAC IN */
 
+
+#define DMABUFSTEPUACIN16	2		// 2 - каждому сэмплу соответствует два числа в  буфере для выдачи по USB в host
 
 #define DMABUFFSIZEUACIN16 (MSINSAMPLES * DMABUFSTEPUACIN16)	/* размер под USB ENDPOINT PACKET SIZE В буфере помещаются пары значений - стерео кодек */
 
@@ -200,16 +216,13 @@ extern "C" {
 
 #endif /* WITHRTS192 */
 
-#define HARDWARE_USBD_AUDIO_IN_CHANNELS_RTS		2	// I/Q всегда стерео
 
 // stereo, 16 bit samples
 // По звуковому каналу передается стерео, 16 бит, 48 кГц - 288 байт размер данных в ендпонтт
 #define HARDWARE_USBD_AUDIO_IN_SAMPLEBITS_AUDIO48	16
-#define HARDWARE_USBD_AUDIO_IN_CHANNELS_AUDIO48		2
 #define VIRTUAL_AUDIO_PORT_DATA_SIZE_IN_AUDIO48		(DMABUFFSIZEUACIN16 * sizeof (uint16_t))
 
 
-#define HARDWARE_USBD_AUDIO_IN_CHANNELS_AUDIO48_RTS		2	// при совмещении аудио и I/Q всегда стерео
 
 /*
 	For full-/high-speed isochronous endpoints, this value
@@ -231,17 +244,12 @@ extern "C" {
 #define FSINTERVAL_255MS 255
 
 
-#define HARDWARE_USBD_AUDIO_OUT_SAMPLEBITS	16
-#if WITHUABUACOUTAUDIO48MONO
-	#define HARDWARE_USBD_AUDIO_OUT_CHANNELS	1
-#else /* WITHUABUACOUTAUDIO48MONO */
-	#define HARDWARE_USBD_AUDIO_OUT_CHANNELS	2
-#endif /* WITHUABUACOUTAUDIO48MONO */
+#define HARDWARE_USBD_AUDIO_OUT_SAMPLEBITS_AUDIO48	16
 
 // используются свои буферы
 #define VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT	( \
 	MSOUTSAMPLES * \
-	((HARDWARE_USBD_AUDIO_OUT_SAMPLEBITS * HARDWARE_USBD_AUDIO_OUT_CHANNELS + 7) / 8) \
+	((HARDWARE_USBD_AUDIO_OUT_SAMPLEBITS_AUDIO48 * HARDWARE_USBD_AUDIO_OUT_CHANNELS_AUDIO48 + 7) / 8) \
 	)
 
 
