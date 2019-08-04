@@ -408,7 +408,7 @@ static unsigned r9fill_3(uint_fast8_t fill, uint8_t * buff, unsigned maxsize,
 // audio10.pdf: Table 4-3: Input Terminal Descriptor
 // Sereo signal source
 // Audio или RTS
-static unsigned UAC_AudioControlIT_IN(uint_fast8_t fill, uint8_t * buff, unsigned maxsize, uint_fast8_t bTerminalID, uint_fast8_t offset)
+static unsigned UAC_AudioControlIT_IN48(uint_fast8_t fill, uint8_t * buff, unsigned maxsize, uint_fast8_t bTerminalID, uint_fast8_t offset)
 {
 	const uint_fast8_t length = 12;
 	ASSERT(maxsize >= length);
@@ -418,8 +418,46 @@ static unsigned UAC_AudioControlIT_IN(uint_fast8_t fill, uint8_t * buff, unsigne
 	{
 		// 4.3.2.1 Input Terminal Descriptor 
 		const uint_fast16_t wTerminalType = AUDIO_TERMINAL_RADIO_RECEIVER;
-		const uint_fast8_t bNrChannels = HARDWARE_USBD_AUDIO_IN_CHANNELS;
+		const uint_fast8_t bNrChannels = HARDWARE_USBD_AUDIO_IN_CHANNELS_AUDIO48;
 		const uint_fast16_t wChannelConfig = bNrChannels == 1 ? 
+			AUDIO_CHANNEL_M : // Mono
+			(AUDIO_CHANNEL_L | AUDIO_CHANNEL_R);	// Left Front & Right Front
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
+		* buff ++ = length;						  /* bLength */
+		* buff ++ = AUDIO_INTERFACE_DESCRIPTOR_TYPE; // CS_INTERFACE Descriptor Type
+		* buff ++ = AUDIO_CONTROL_INPUT_TERMINAL;    // INPUT_TERMINAL 0x02 descriptor subtype
+		* buff ++ = bTerminalID;                   // bTerminalID ID of this Terminal.
+		* buff ++ = LO_BYTE(wTerminalType);			/* wTerminalType */
+		* buff ++ = HI_BYTE(wTerminalType);
+		* buff ++ = TERMINAL_ID_UNDEFINED;        // bAssocTerminal No association
+		// The bNrChannels, wChannelConfig and iChannelNames fields together constitute the cluster descriptor
+		* buff ++ = bNrChannels;    /* bNrChannels */
+		* buff ++ = LO_BYTE(wChannelConfig);   /* bmChannelConfig size = 4 bytes Mono sets no position bits */
+		* buff ++ = HI_BYTE(wChannelConfig);
+		* buff ++ = STRING_ID_Left;							/* iChannelNames */
+		* buff ++ = 0;						// iTerminal - Index of a string descriptor, describing the Input Terminal. Receiver Output
+
+	}
+	return length;
+}
+
+
+// Audio Control Input Terminal Descriptor
+// audio10.pdf: Table 4-3: Input Terminal Descriptor
+// Sereo signal source
+// Audio или RTS
+static unsigned UAC_AudioControlIT_IN48_INRTS(uint_fast8_t fill, uint8_t * buff, unsigned maxsize, uint_fast8_t bTerminalID, uint_fast8_t offset)
+{
+	const uint_fast8_t length = 12;
+	ASSERT(maxsize >= length);
+	if (maxsize < length)
+		return 0;
+	if (fill != 0 && buff != NULL)
+	{
+		// 4.3.2.1 Input Terminal Descriptor
+		const uint_fast16_t wTerminalType = AUDIO_TERMINAL_RADIO_RECEIVER;
+		const uint_fast8_t bNrChannels = HARDWARE_USBD_AUDIO_IN_CHANNELS_AUDIO48_RTS;
+		const uint_fast16_t wChannelConfig = bNrChannels == 1 ?
 			AUDIO_CHANNEL_M : // Mono
 			(AUDIO_CHANNEL_L | AUDIO_CHANNEL_R);	// Left Front & Right Front
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
@@ -680,14 +718,43 @@ static unsigned UAC_AudioControlIfCircuitIN48(
 	{
 		// Только один источник для компьютера
 		n += UAC_AudioControlOT_IN(fill, p + n, maxsize - n,  bTerminalID, bTerminalID + 1, offset);	/* AUDIO_TERMINAL_USB_STREAMING Terminal Descriptor TERMINAL_ID_IT_2 -> TERMINAL_UACIN48_UACINRTS */
-		n += UAC_AudioControlIT_IN(fill, p + n, maxsize - n, bTerminalID + 1, offset);	/* AUDIO_TERMINAL_RADIO_RECEIVER */
+		n += UAC_AudioControlIT_IN48(fill, p + n, maxsize - n, bTerminalID + 1, offset);	/* AUDIO_TERMINAL_RADIO_RECEIVER */
 	}
 	else
 	{
 		// Только один источник для компьютера
 		n += UAC_AudioControlOT_IN(fill, p + n, maxsize - n,  bTerminalID, bTerminalID + 1, offset);	/* AUDIO_TERMINAL_USB_STREAMING Terminal Descriptor TERMINAL_ID_FU_AUDIO -> TERMINAL_UACIN48_UACINRTS */
 		n += UAC_AudioFeatureUnit(fill, p + n, maxsize - n, bTerminalID + 1, bTerminalID + 2);	/* USB microphone Audio Feature Unit Descriptor TERMINAL_UACOUT48 -> TERMINAL_ID_FU_AUDIO */
-		n += UAC_AudioControlIT_IN(fill, p + n, maxsize - n, bTerminalID + 2, offset);	/* AUDIO_TERMINAL_RADIO_RECEIVER */
+		n += UAC_AudioControlIT_IN48(fill, p + n, maxsize - n, bTerminalID + 2, offset);	/* AUDIO_TERMINAL_RADIO_RECEIVER */
+	}
+
+	return n;
+}
+
+// Заполнение схемы ввода звука
+// IN data flow
+// Элементы добавлояются в дескрипотор в порядке обратном порядку прохождения информационного потока
+//
+static unsigned UAC_AudioControlIfCircuitIN48_INRTS(
+	uint_fast8_t fill, uint8_t * p, unsigned maxsize,
+	uint_fast8_t bTerminalID,	// Завершающий поток обраьотки терминал
+	uint_fast8_t offset
+	)
+{
+	unsigned n = 0;
+
+	if (WITHUSENOFU)
+	{
+		// Только один источник для компьютера
+		n += UAC_AudioControlOT_IN(fill, p + n, maxsize - n,  bTerminalID, bTerminalID + 1, offset);	/* AUDIO_TERMINAL_USB_STREAMING Terminal Descriptor TERMINAL_ID_IT_2 -> TERMINAL_UACIN48_UACINRTS */
+		n += UAC_AudioControlIT_IN48_INRTS(fill, p + n, maxsize - n, bTerminalID + 1, offset);	/* AUDIO_TERMINAL_RADIO_RECEIVER */
+	}
+	else
+	{
+		// Только один источник для компьютера
+		n += UAC_AudioControlOT_IN(fill, p + n, maxsize - n,  bTerminalID, bTerminalID + 1, offset);	/* AUDIO_TERMINAL_USB_STREAMING Terminal Descriptor TERMINAL_ID_FU_AUDIO -> TERMINAL_UACIN48_UACINRTS */
+		n += UAC_AudioFeatureUnit(fill, p + n, maxsize - n, bTerminalID + 1, bTerminalID + 2);	/* USB microphone Audio Feature Unit Descriptor TERMINAL_UACOUT48 -> TERMINAL_ID_FU_AUDIO */
+		n += UAC_AudioControlIT_IN48_INRTS(fill, p + n, maxsize - n, bTerminalID + 2, offset);	/* AUDIO_TERMINAL_RADIO_RECEIVER */
 	}
 
 	return n;
@@ -1223,7 +1290,7 @@ static unsigned fill_UACIN48_INRTS_function(uint_fast8_t fill, uint8_t * p, unsi
 	const uint_fast8_t controlifv = INTERFACE_AUDIO_CONTROL_MIKE;
 	const uint_fast8_t mikeifv = INTERFACE_AUDIO_MIKE;
 	const uint_fast8_t epin = USB_ENDPOINT_IN(USBD_EP_AUDIO_IN);
-	const pathfn_t mikepath = UAC_AudioControlIfCircuitIN48;
+	const pathfn_t mikepath = UAC_AudioControlIfCircuitIN48_INRTS;
 	const uint_fast8_t terminalID = TERMINAL_UACIN48_UACINRTS + offset * MAX_TERMINALS_IN_INTERFACE;
 
 	n += UAC_InterfaceAssociationDescriptor(fill, p + n, maxsize - n, controlifv, 2, offset);	/* INTERFACE_AUDIO_CONTROL_SPK Interface Association Descriptor Audio */

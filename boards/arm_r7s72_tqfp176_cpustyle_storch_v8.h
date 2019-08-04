@@ -548,7 +548,7 @@
 
 #endif
 
-#if WITHFPGAWAIT_AS || WITHFPGALOAD_PS
+#if 1 || WITHFPGAWAIT_AS || WITHFPGALOAD_PS
 
 	/* outputs */
 	#define FPGA_NCONFIG_PORT_S(v)	do { R7S721_TARGET_PORT_S(1, v); } while (0)
@@ -580,6 +580,10 @@
 			arm_hardware_pio1_inputs(FPGA_CONF_DONE_BIT); \
 			arm_hardware_pio1_inputs(FPGA_NSTATUS_BIT); \
 			arm_hardware_pio1_inputs(FPGA_INIT_DONE_BIT); \
+		} while (0)
+
+	#define HARDWARE_FPGA_RESET() do { \
+			board_fpga_reset(); \
 		} while (0)
 
 #endif /* WITHFPGAWAIT_AS || WITHFPGALOAD_PS */
@@ -758,6 +762,8 @@
 
 	/* макроопределение, которое должно включить в себя все инициализации */
 	#define	HARDWARE_INITIALIZE() do { \
+		HARDWARE_FPGA_LOADER_INITIALIZE(); \
+		HARDWARE_FPGA_RESET(); \
 		HARDWARE_SIDETONE_INITIALIZE(); \
 		HARDWARE_KBD_INITIALIZE(); \
 		HARDWARE_DAC_INITIALIZE(); \

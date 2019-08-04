@@ -6047,9 +6047,6 @@ const codec2if_t * board_getfpgacodecif(void)
 
 #endif /* defined(CODEC2_TYPE) && (CODEC2_TYPE == CODEC_TYPE_FPGAV1) */
 
-#if WITHFPGAWAIT_AS || WITHFPGALOAD_PS
-
-
 /* получение сигнала завершения конфигурации FPGA. Возврат: 0 - конфигурация не завершена */
 static uint_fast8_t board_fpga_get_CONF_DONE(void)
 {
@@ -6062,6 +6059,10 @@ static uint_fast8_t board_fpga_get_NSTATUS(void)
 	return (FPGA_NSTATUS_INPUT & FPGA_NSTATUS_BIT) != 0;
 
 }
+
+
+#if WITHFPGAWAIT_AS || WITHFPGALOAD_PS
+
 
 #if 0 && FPGA_INIT_DONE_BIT != 0
 
@@ -6272,6 +6273,39 @@ static void board_fpga_loader_wait_AS(void)
 #endif
 
 #endif /* WITHFPGAWAIT_AS || WITHFPGALOAD_PS */
+
+void board_fpga_reset(void)
+{
+restart:
+	;
+	unsigned long w = 1000;
+	do {
+		/* After power up, the Cyclone IV device holds nSTATUS low during POR delay. */
+
+		FPGA_NCONFIG_PORT_S(FPGA_NCONFIG_BIT);
+		local_delay_ms(1);
+		/* 1) Выставить "1" на nCONFIG */
+		//debug_printf_P(PSTR("fpga: FPGA_NCONFIG_BIT=1\n"));
+		FPGA_NCONFIG_PORT_C(FPGA_NCONFIG_BIT);
+		/* x) Дождаться "0" на nSTATUS */
+		//debug_printf_P(PSTR("fpga: waiting for FPGA_NSTATUS_BIT==0\n"));
+		while (board_fpga_get_NSTATUS() != 0)
+		{
+			local_delay_ms(1);
+			if (-- w == 0)
+				goto restart;
+		}
+		FPGA_NCONFIG_PORT_S(FPGA_NCONFIG_BIT);
+		/* 2) Дождаться "1" на nSTATUS */
+		//debug_printf_P(PSTR("fpga: waiting for FPGA_NSTATUS_BIT==1\n"));
+		while (board_fpga_get_NSTATUS() == 0)
+		{
+			local_delay_ms(1);
+			if (-- w == 0)
+				goto restart;
+		}
+	} while (board_fpga_get_NSTATUS() == 0);	// если ошибка - повторяем
+}
 
 #if WITHDSPEXTFIR
 

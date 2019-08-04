@@ -146,7 +146,7 @@ extern "C" {
 #endif /* CPUSTYLE_R7S721 */
 
 #define DMABUFSTEPUACIN16	2		// 2 - каждому сэмплу соответствует два числа в DMA буфере
-#define HARDWARE_USBD_AUDIO_IN_CHANNELS	2	/* для всех каналов в IN направлении */
+#define HARDWARE_USBD_AUDIO_IN_CHANNELS_RTS	2	/* для всех каналов в IN направлении */
 
 // коррекция размера с учетом требуемого выравнивания
 #define DMAHWEPADJUST(sz, granulation) (((sz) + ((granulation) - 1)) / (granulation) * (granulation))
@@ -207,6 +207,9 @@ extern "C" {
 #define HARDWARE_USBD_AUDIO_IN_SAMPLEBITS_AUDIO48	16
 #define HARDWARE_USBD_AUDIO_IN_CHANNELS_AUDIO48		2
 #define VIRTUAL_AUDIO_PORT_DATA_SIZE_IN_AUDIO48		(DMABUFFSIZEUACIN16 * sizeof (uint16_t))
+
+
+#define HARDWARE_USBD_AUDIO_IN_CHANNELS_AUDIO48_RTS		2	// при совмещении аудио и I/Q всегда стерео
 
 /*
 	For full-/high-speed isochronous endpoints, this value
