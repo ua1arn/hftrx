@@ -24,8 +24,8 @@ TRGT = arm-none-eabi-
 CC   = $(TRGT)gcc
 CP   = $(TRGT)objcopy
 AS   = $(TRGT)gcc -x assembler-with-cpp
-HEX  = $(CP) -O ihex -R .noinit -R .bss -R .heap
-BIN  = $(CP) -O binary -R .noinit -R .bss -R .heap
+HEX  = $(CP) -O ihex -R .noinit -R .bss
+BIN  = $(CP) -O binary -R .noinit -R .bss
 
 CMSISDIR = ../../../CMSIS_5/CMSIS
 OBJDIR = ./obj
@@ -145,7 +145,11 @@ ROM: $(OBJS) $(PROJECT)_rom.elf $(PROJECT)_rom.hex
 
 $(OBJDIR)/%.o: %.c
 	@mkdir -p $(@D)
-	$(CC) -c $(CPFLAGS) $(INCDIR) $(addprefix $(SRCDIR)/, $(patsubst obj/%, %, $(patsubst %.o, %.c, $@))) -o $@
+	$(CC) -std=gnu11 -Wstrict-prototypes -c $(CPFLAGS) $(INCDIR) $(addprefix $(SRCDIR)/, $(patsubst obj/%, %, $(patsubst %.o, %.c, $@))) -o $@
+
+$(OBJDIR)/%.o: %.cpp
+	@mkdir -p $(@D)
+	$(CC) -std=gnu++11 -fno-rtti -c $(CPFLAGS) $(INCDIR) $(addprefix $(SRCDIR)/, $(patsubst obj/%, %, $(patsubst %.o, %.cpp, $@))) -o $@
 
 $(OBJDIR)/%.o: %.s
 	@mkdir -p $(@D)

@@ -103,7 +103,7 @@ static uint_fast8_t	seq_rgbeep;			/* разрешение формировани
 static uint_fast8_t rxtxticks;
 static uint_fast8_t txrxticks;
 static uint_fast8_t pretxticks;	// время выключения тракта RX в слуаче совмещённого тракта перед коммутацией на передачу.
-static uint_fast16_t rgbeepticks;	// время формирование roger beep 
+static uint_fast16_t rgbeepticks;	// время формирование roger beep
 
 static /* volatile */ uint_fast8_t exttunereq;	// запрос на tune от пользовательской программы
 static /* volatile */ uint_fast8_t ptt;	// запрос на передачу от пользовательской программы
@@ -137,7 +137,7 @@ uint_fast8_t seq_get_txstate(void)
 
 
 /* установить уровень срабатывания vox и anti-vox */
-/* TODO:	Скорее всего, увеличение чувствительности VOX должно снижать порог срабатывания, с которым сравнивает vox_probe(). 
+/* TODO:	Скорее всего, увеличение чувствительности VOX должно снижать порог срабатывания, с которым сравнивает vox_probe().
 */
 void vox_set_levels(uint_fast8_t vlevel, uint_fast8_t alevel)
 {
@@ -233,7 +233,7 @@ vox_initialize(void)
 enum { QUEUEUESIZE = 2 * (NTICKS(WITHMAXRXTXDELAY) +  NTICKS(WITHMAXTXRXDELAY) * 2 + 4) };
 
 // очередь организована как массив битов
-static uint_fast8_t keyqueuebuff [(QUEUEUESIZE + 7) / 8];
+static uint8_t keyqueuebuff [(QUEUEUESIZE + 7) / 8];
 static uint_fast8_t keyqueueput;
 static uint_fast8_t keyqueueget;
 //static uint_fast8_t keyqueuecnt;
@@ -366,7 +366,7 @@ seq_txpath_set(portholder_t txpathstate)
 // (через spi-управляемые компоненты). после переключения на передачу
 // отмеряется задержка до следующего тика (или больше) rxtxticks и выдаётся арраратный
 // сигнал на разрешение формирование телеграфного или ssb сигнала.
-// при переходе на приём сперва снимается аппаратный сигнал, 
+// при переходе на приём сперва снимается аппаратный сигнал,
 // затем после задержки rxtxticks выдаётся команда
 // в программно управляемые компоненты приёмопередатчика.
 //

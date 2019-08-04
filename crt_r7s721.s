@@ -54,7 +54,10 @@
    I_BIT          = 0x80      /* disable IRQ when I bit is set */
    F_BIT          = 0x40      /* disable FIQ when I bit is set */
  
-	 STACKSIZE = 4096
+	 STACKSIZEUND = 1024
+	 STACKSIZEABT = 1024
+	 STACKSIZEFIQ = 8192
+	 STACKSIZEIRQ = 8192
   
 	.global __Vectors
 	.section .vectors,"ax"
@@ -75,13 +78,13 @@ __Vectors:
 
 
 ResetAddr:     .word Reset_Handler7
-UndefAddr:     .word UndefHandler
-SWIAddr:       .word SWIHandler
-PAbortAddr:    .word PAbortHandler
-DAbortAddr:    .word DAbortHandler
+UndefAddr:     .word Undef_Handler
+SWIAddr:       .word SWI_Handler
+PAbortAddr:    .word PAbort_Handler
+DAbortAddr:    .word DAbort_Handler
 ReservedAddr:  .word 0
-IRQAddr:       .word IRQHandler
-FIQAddr:       .word FIQHandler
+IRQAddr:       .word IRQHandlerNested
+FIQAddr:       .word FIQ_Handler
 
    .ltorg
 
@@ -287,20 +290,20 @@ DummyResetHandler:
    b DummyResetHandler
 
 #if 0
-UndefHandler:
-   b UndefHandler
+Undef_Handler:
+   b Undef_Handler
    
-SWIHandler:
-   b SWIHandler
+SWI_Handler:
+   b SWI_Handler
 
-PAbortHandler:
-   b PAbortHandler
+PAbort_Handler:
+   b PAbort_Handler
 
-DAbortHandler:
-   b DAbortHandler
+DAbort_Handler:
+   b DAbort_Handler
    
-FIQHandler:
-   b FIQHandler
+FIQ_Handler:
+   b FIQ_Handler
 
 //IRQHandler:
 //   b IRQHandler
@@ -311,8 +314,8 @@ FIQHandler:
 /* Entry point for the IRQ handler */
 /* ================================================================== */
 
-    .func   IRQHandler
-IRQHandler:
+    .func   IRQHandlerNested
+IRQHandlerNested:
 
 		/* Save interrupt context on the stack to allow nesting */
 		sub		lr, lr, #4
@@ -336,7 +339,7 @@ IRQHandler:
 		FMRX	r2, FPEXC
 		PUSH	{r2}
 
-		ldr		r2, =IRQHandlerSafe
+		ldr		r2, =IRQ_Handler
 		mov		lr, pc
 		bx		r2     /* And jump... */
 
@@ -363,13 +366,13 @@ IRQHandler:
 
 	.bss
 	.align 8
-	.space	STACKSIZE
+	.space	STACKSIZEUND
 __stack_und_end = .
-	.space	STACKSIZE
+	.space	STACKSIZEABT
 __stack_abt_end = .
-	.space	STACKSIZE
+	.space	STACKSIZEFIQ
 __stack_fiq_end = .
-	.space	STACKSIZE
+	.space	STACKSIZEIRQ
 __stack_irq_end = .
 
    .ltorg

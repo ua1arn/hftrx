@@ -63,8 +63,7 @@ Free:
 #ifndef ARM_STM32FXXX_TQFP144_CPUSTYLE_V8C_H_INCLUDED
 #define ARM_STM32FXXX_TQFP144_CPUSTYLE_V8C_H_INCLUDED 1
 
-//#define HARDWARE_ARM_USEUSART0 1		// US0: PA5/PA6 pins
-//#define HARDWARE_ARM_USEUSART1 1		// US1: PA21/PA22 pins
+#define HARDWARE_ARM_USEUSART1 1		// US1: PA9/PA10 pins
 
 //#define WITHSPI16BIT	1		/* возможно использование 16-ти битных слов при обмене по SPI */
 //#define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
@@ -73,7 +72,7 @@ Free:
 //#define SPI_BIDIRECTIONAL 1	// ввод данных по SPI идет через тот же самый pin, что и вывод
 
 //#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
-#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
+//#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 #define WITHCPUADCHW 	1	/* использование ADC */
 
 //#define WITHI2SHW	1	/* Использование I2S - аудиокодек	*/
@@ -104,6 +103,8 @@ Free:
 	#define WITHNMEA_USART1		1
 #endif
 
+#define WITHUART1HW	1	/* Используется периферийный контроллер последовательного порта #1 */
+#define WITHDEBUG_USART1	1
 
 
 //#define BSRR_S(v) ((v) * GPIO_BSRR_BS_0)	/* Преобразование значения для установки бита в регистре */
@@ -331,7 +332,7 @@ Free:
 		} while (0)
 
 #else
-	// Есть внешний дешифратор на шине адреса SPI 
+	// Есть внешний дешифратор на шине адреса SPI
 
 	// биты вывода адреса чипселект дешифратора
 	#define SPI_ADDRESS_PORT_S(v)	do { GPIOC->BSRR = BSRR_S(v); __DSB(); } while (0)
@@ -572,5 +573,12 @@ enum
 			} while (0)
 
 	#endif /* LCDMODE_LTDC */
+
+	#if WITHUART1HW
+		#define HARDWARE_USART1_INITIALIZE() do { \
+				arm_hardware_pioa_altfn2((1U << 9) | (1U << 10), AF_USART1); /* PA9: TX DATA line (2 MHz), PA10: RX data line */ \
+				arm_hardware_pioa_updown((1U << 10), 0);	/* PA10: pull-up RX data */ \
+			} while (0)
+	#endif /* WITHUART1HW */
 
 #endif /* ARM_STM32FXXX_TQFP144_CPUSTYLE_V8C_H_INCLUDED */

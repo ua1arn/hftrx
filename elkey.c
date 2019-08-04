@@ -87,12 +87,12 @@ typedef struct elkey_tag
 } elkey_t;
 
 
-static uint_fast8_t elkey_reverse;
-static uint_fast8_t elkey_straight_flags;
+static RAMDTCM uint_fast8_t elkey_reverse;
+static RAMDTCM uint_fast8_t elkey_straight_flags;
 
-static elkey_t elkey0;	// ручной ключ
+static RAMDTCM elkey_t elkey0;	// ручной ключ
 #if WITHCAT && WITHCATEXT
-	static elkey_t elkey1;	// CAT (команды KY, KS, ...) ключ
+	static RAMDTCM elkey_t elkey1;	// CAT (команды KY, KS, ...) ключ
 #endif /* WITHCAT && WITHCATEXT */
 
 #define DASHFLAG 	0x01
@@ -107,8 +107,8 @@ static elkey_t elkey0;	// ручной ключ
 // В разных источниках упоминается и пять и семь точек как интервал между словами.
 // Семь кажется чересчур длинным. Пять - нормально (или слегка короче чем комфортно).
 enum { delay_dit = ELKEY_DISCRETE * 1, delay_words = ELKEY_DISCRETE * 6 };	// между элементами слов - семь интервалов
-static uint_fast8_t delay_space;	// 10
-static uint_fast8_t delay_dash;	// 30
+static RAMDTCM uint_fast8_t delay_space;	// 10
+static RAMDTCM uint_fast8_t delay_dash;	// 30
 
 
 	
@@ -594,7 +594,7 @@ getovf(elkey_t * const elkey)
 	return (elkey->ticks >= elkey->maxticks) || (++ elkey->ticks >= elkey->maxticks);
 }
 
-// вызывается из обработчика прерываний. 
+// вызывается из обработчика прерываний.
 // вызывается с периодом 1/ELKEY_DISCRETE от длительности точки.
 // 
 
@@ -832,7 +832,7 @@ void elkeyx_spool_dots(elkey_t * const elkey, uint_fast8_t paddle)
 	}
 }
 
-// Вызывается с периодом 1/ELKEY_DISCRETE от длительности точки 
+// Вызывается с периодом 1/ELKEY_DISCRETE от длительности точки
 void elkey_spool_dots(void)
 {
 	elkeyx_spool_dots(& elkey0, hardware_elkey_getpaddle(elkey_reverse));

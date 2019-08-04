@@ -119,6 +119,8 @@ enum
 	#define	SQUELCHMAX	255	/* Kenwood's value */
 #endif /* WITHIF4DSP */
 
+#define CWPITCHMIN10	(100 / 10) // (400 / 10) kenwood min value 400 Hz
+#define CWPITCHMAX10	(1900 / 10)
 
 #if LO3_SIDE == LOCODE_INVALID
 	//#error PBT can be used only with triple conversion schemes

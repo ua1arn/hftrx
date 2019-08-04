@@ -3499,6 +3499,7 @@ prog_ctrlreg(uint_fast8_t plane)
 }
 
 #elif CTLREGMODE_STORCH_V7
+
 /* TFT 4.3" "Аист" с DSP и FPGA STM32H743IIT6 */
 /* TFT 4.3", 7" "Аист" с DSP и FPGA R7S721020VCFP */
 /* TFT 4.3", 7" "Аист" с DSP и FPGA R7S721020VCFP, LVDS */
@@ -3538,23 +3539,30 @@ prog_ctrlreg(uint_fast8_t plane)
 		};
 		const spitarget_t target = targetctl1;
 
-		rbtype_t rbbuff [8] = { 0 };
+		rbtype_t rbbuff [9] = { 0 };
 		const uint_fast8_t txgated = glob_tx && glob_txgate;
 
-#if 0
-		/* +++ Управление согласующим устройством */
-		/* дополнительный регистр */
-		RBBIT(0073, glob_tx);				/* pin 03:индикатор передачи */
-		RBBIT(0072, glob_antenna);			// pin 02: выбор антенны (0 - ANT1, 1 - ANT2)
-		RBBIT(0071, ! glob_tuner_bypass);		// pin 01: обход СУ (1 - работа)
-		RBBIT(0070, glob_tuner_bypass ? 0 : glob_tuner_type);		/* pin 15: TYPE OF TUNER 	*/
-		/* регистр управления массивом конденсаторов */
-		RBVAL8(0060, glob_tuner_bypass ? 0 : glob_tuner_C);			/* Capacitors tuner bank 	*/
-		/* регистр управления наборной индуктивностью. */
-		RBVAL8(0050, glob_tuner_bypass ? 0 : glob_tuner_L);			/* Inductors tuner bank 	*/
-		/* --- Управление согласующим устройством */
+#if WITHAUTOTUNER
+		// Плата управления LPF и тюнером от avbelnn
 
-#endif
+		// Геннадий схему брал на краснодарском форуме Аист сообщение 545 от avbelnn.
+		// http://www.cqham.ru/forum/showthread.php?36525-QRP-SDR-трансивер-Аист-(Storch)&p=1541543&viewfull=1#post1541543
+
+		RBBIT(0107, 0);	// REZ4
+		RBBIT(0106, 0);	// REZ3
+		RBBIT(0105, 0);	// REZ2_OC
+		RBBIT(0104, 0);	// REZ1_OC
+		RBBIT(0103, ! (glob_tx && ! glob_autotune));	// HP/LP: 0: high power, 1: low power
+		RBBIT(0102, glob_tx);
+		RBBIT(0101, glob_fanflag);	// FAN
+
+		RBVAL(0072, 1U << glob_bandf2, 7);	// BPF7..BPF1 (fences: 2.4 MHz, 3.9 MHz, 7.4 MHz, 14.8 MHz, 22 MHz, 30 MHz, 50 MHz)
+		RBBIT(0071, glob_tuner_type);		// TY
+		RBBIT(0070, ! glob_tuner_bypass);	// в обесточенном состоянии - режим BYPASS
+		RBVAL8(0060, glob_tuner_C);
+		RBVAL8(0050, glob_tuner_L);
+#endif /* WITHAUTOTUNER */
+
 		// DD21 SN74HC595PW + ULN2003APW на разъём управления LPF
 		RBBIT(0047, txgated);		// D7 - XS18 PIN 16: PTT
 		RBVAL(0040, 1U << glob_bandf2, 7);		// D0..D6: band select бит выбора диапазонного фильтра передатчика

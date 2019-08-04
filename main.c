@@ -193,8 +193,8 @@ enum
 	CAT_MAX_INDEX
 };
 
-static uint_fast8_t cat_answer_map [CAT_MAX_INDEX];
-static uint_fast8_t cat_answerparam_map [CAT_MAX_INDEX];
+static RAMDTCM uint8_t cat_answer_map [CAT_MAX_INDEX];
+static RAMDTCM uint8_t cat_answerparam_map [CAT_MAX_INDEX];
 
 
 static uint_fast32_t savedbaudrate;	// Скорость, на которую в последний раз был запрограммирован порт.
@@ -741,7 +741,7 @@ struct micproc
 } ATTRPACKED;	// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
 
 
-static mikproc_t micprofiles [] =
+static RAMDTCM mikproc_t micprofiles [] =
 {
 	{
 		0,
@@ -770,7 +770,7 @@ enum
 };
 
 
-static uint_fast8_t gtxaprofiles [TXAPROFIG_count];	// индекс профиля для группы режимов передачи - значения 0..NMICPROFILES-1
+static RAMDTCM uint8_t gtxaprofiles [TXAPROFIG_count];	// индекс профиля для группы режимов передачи - значения 0..NMICPROFILES-1
 
 
 // параметры фильтра на приеме
@@ -884,17 +884,17 @@ enum
 
 // Частоты границ полосы пропускания
 // эти значения могут модифицироваться через меню
-static bwprop_t bwprop_cwnarrow = { & bwlimits_cw, BWPROPI_CWNARROW, BWSET_NARROW, 200 / BWGRANLOW, 0, - 0 + AFRESPONCESHIFT, };
-static bwprop_t bwprop_cwwide = { & bwlimits_cw, BWPROPI_CWWIDE, BWSET_NARROW, 500 / BWGRANLOW, 0, - 0 + AFRESPONCESHIFT, };
-static bwprop_t bwprop_ssbwide = { & bwlimits_ssb, BWPROPI_SSBWIDE, BWSET_WIDE, 300 / BWGRANLOW, 3400 / BWGRANHIGH, - 36 + AFRESPONCESHIFT,	};
-static bwprop_t bwprop_ssbnarrow = { & bwlimits_ssb, BWPROPI_SSBNARROW, BWSET_WIDE, 400 / BWGRANLOW, 2900 / BWGRANHIGH, - 36 + AFRESPONCESHIFT,	};
-static bwprop_t bwprop_ssbtx = { & bwlimits_ssb, BWPROPI_SSBTX, BWSET_WIDE, 100 / BWGRANLOW, 3400 / BWGRANHIGH, - 0 + AFRESPONCESHIFT,	};
-static bwprop_t bwprop_amwide = { & bwlimits_am, BWPROPI_AMWIDE, BWSET_WIDE, 100 / BWGRANLOW, 4500 / BWGRANHIGH, - 36 + AFRESPONCESHIFT,	};
-static bwprop_t bwprop_amnarrow = { & bwlimits_am, BWPROPI_AMNARROW, BWSET_WIDE, 100 / BWGRANLOW, 3400 / BWGRANHIGH, - 36 + AFRESPONCESHIFT,	};
-static bwprop_t bwprop_digiwide = { & bwlimits_ssb, BWPROPI_DIGIWIDE, BWSET_WIDE, 50 / BWGRANLOW, 5500 / BWGRANHIGH, - 0 + AFRESPONCESHIFT,	};
-static bwprop_t bwprop_nfmnarrow = { & bwlimits_am, BWPROPI_NFMNARROW, BWSET_WIDE, 300 / BWGRANLOW, 3400 / BWGRANHIGH, - 36 + AFRESPONCESHIFT,	};
-static bwprop_t bwprop_nfmwide = { & bwlimits_am, BWPROPI_NFMWIDE, BWSET_WIDE, 300 / BWGRANLOW, 4000 / BWGRANHIGH, - 36 + AFRESPONCESHIFT,	};
-static bwprop_t bwprop_wfm = { & bwlimits_wfm, BWPROPI_WFM, BWSET_WIDE, 100 / BWGRANLOW, 12000 / BWGRANHIGH, + 18 + AFRESPONCESHIFT,	};
+static RAMDTCM bwprop_t bwprop_cwnarrow = { & bwlimits_cw, BWPROPI_CWNARROW, BWSET_NARROW, 200 / BWGRANLOW, 0, - 0 + AFRESPONCESHIFT, };
+static RAMDTCM bwprop_t bwprop_cwwide = { & bwlimits_cw, BWPROPI_CWWIDE, BWSET_NARROW, 500 / BWGRANLOW, 0, - 0 + AFRESPONCESHIFT, };
+static RAMDTCM bwprop_t bwprop_ssbwide = { & bwlimits_ssb, BWPROPI_SSBWIDE, BWSET_WIDE, 300 / BWGRANLOW, 3400 / BWGRANHIGH, - 36 + AFRESPONCESHIFT,	};
+static RAMDTCM bwprop_t bwprop_ssbnarrow = { & bwlimits_ssb, BWPROPI_SSBNARROW, BWSET_WIDE, 400 / BWGRANLOW, 2900 / BWGRANHIGH, - 36 + AFRESPONCESHIFT,	};
+static RAMDTCM bwprop_t bwprop_ssbtx = { & bwlimits_ssb, BWPROPI_SSBTX, BWSET_WIDE, 100 / BWGRANLOW, 3400 / BWGRANHIGH, - 0 + AFRESPONCESHIFT,	};
+static RAMDTCM bwprop_t bwprop_amwide = { & bwlimits_am, BWPROPI_AMWIDE, BWSET_WIDE, 100 / BWGRANLOW, 4500 / BWGRANHIGH, - 36 + AFRESPONCESHIFT,	};
+static RAMDTCM bwprop_t bwprop_amnarrow = { & bwlimits_am, BWPROPI_AMNARROW, BWSET_WIDE, 100 / BWGRANLOW, 3400 / BWGRANHIGH, - 36 + AFRESPONCESHIFT,	};
+static RAMDTCM bwprop_t bwprop_digiwide = { & bwlimits_ssb, BWPROPI_DIGIWIDE, BWSET_WIDE, 50 / BWGRANLOW, 5500 / BWGRANHIGH, - 0 + AFRESPONCESHIFT,	};
+static RAMDTCM bwprop_t bwprop_nfmnarrow = { & bwlimits_am, BWPROPI_NFMNARROW, BWSET_WIDE, 300 / BWGRANLOW, 3400 / BWGRANHIGH, - 36 + AFRESPONCESHIFT,	};
+static RAMDTCM bwprop_t bwprop_nfmwide = { & bwlimits_am, BWPROPI_NFMWIDE, BWSET_WIDE, 300 / BWGRANLOW, 4000 / BWGRANHIGH, - 36 + AFRESPONCESHIFT,	};
+static RAMDTCM bwprop_t bwprop_wfm = { & bwlimits_wfm, BWPROPI_WFM, BWSET_WIDE, 100 / BWGRANLOW, 12000 / BWGRANHIGH, + 18 + AFRESPONCESHIFT,	};
 
 // Способ представления частот и количество профилей полосы пропускания,
 // а так же названия полос пропускания для отображения
@@ -911,8 +911,7 @@ static const FLASHMEM bwsetsc_t bwsetsc [BWSETI_count] =
 };
 
 // выбранная полоса пропускания в каждом режиме
-static uint_fast8_t bwsetpos [BWSETI_count];
-
+static RAMDTCM uint8_t bwsetpos [BWSETI_count];
 
 // Используется для обмена с NVRAN параметрами фильтров
 static bwprop_t * const FLASHMEM bwprops [BWPROPI_count] =
@@ -3586,26 +3585,32 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 
 #if WITHIF4DSP
 
-	#define FSADCPOWEROFFSET10 500
+	#define FSADCPOWEROFFSET10 700
 	static int_fast32_t getfsasdcbase10(void)
 	{
 		return - FSADCPOWEROFFSET10;
 	}
 
 	static uint_fast8_t gcwedgetime = 5;			/* Время нарастания/спада огибающей телеграфа при передаче - в 1 мс */
-	static uint_fast8_t gsidetonelevel = 15;	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
 	static uint_fast8_t gsubtonelevel = 10;	/* Уровень сигнала CTCSS в процентах - 0%..100% */
 #if CTLSTYLE_OLEG4Z_V1
+	static uint_fast8_t gsidetonelevel = 0;	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
 	static uint_fast8_t gdigigainmax = 120; /* диапазон ручной регулировки цифрового усиления - максимальное значение */
+	static uint_fast16_t gfsadcpower10 [2] =
+	{
+		(+ 180) + FSADCPOWEROFFSET10,	// для соответствия HDSDR мощность, соответствующая full scale от IF ADC
+		(+ 90) + FSADCPOWEROFFSET10,	// с конвертором
+	};
 #else /* CTLSTYLE_OLEG4Z_V1 */
+	static uint_fast8_t gsidetonelevel = 15;	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
 	static uint_fast8_t gdigigainmax = 86;	/* диапазон ручной регулировки цифрового усиления - максимальное значение */
-#endif /* CTLSTYLE_OLEG4Z_V1 */
-	static uint_fast8_t gvad605 = 180; //UINT8_MAX;	/* напряжение на AD605 (управление усилением тракта ПЧ */
 	static uint_fast16_t gfsadcpower10 [2] = 
 	{
 		(- 130) + FSADCPOWEROFFSET10,	// для соответствия HDSDR мощность, соответствующая full scale от IF ADC
 		(- 330) + FSADCPOWEROFFSET10,	// с конвертором
 	};
+#endif /* CTLSTYLE_OLEG4Z_V1 */
+	static uint_fast8_t gvad605 = 180; //UINT8_MAX;	/* напряжение на AD605 (управление усилением тракта ПЧ */
 	#if WITHDSPEXTDDC	/* "Воронёнок" с DSP и FPGA */
 		static uint_fast8_t gdither;		/* управление зашумлением в LTC2208 */
 		#if ADC1_TYPE == ADC_TYPE_AD9246
@@ -6521,7 +6526,11 @@ update_lo0(
 	const uint_fast8_t enable = lo0side != LOCODE_INVALID;
 	board_set_xvrtr(enable);
 	synth_lo0_setfreq(getlo0(lo0hint), enable);
+#if CTLSTYLE_OLEG4Z_V1
+	board_set_swaprts(enable);	/* При преобразовании на этом гетеродине происходит инверсия спектра */
+#else /* CTLSTYLE_OLEG4Z_V1 */
 	board_set_swaprts(lo0side == LOCODE_LOWER);	/* При преобразовании на этом гетеродине происходит инверсия спектра */
+#endif /* CTLSTYLE_OLEG4Z_V1 */
 }
 
 /* перенастройка формирования гетеродина для указанного режима. */
@@ -7037,10 +7046,11 @@ typedef struct lmsnrstate_tag
 
 static lmsnrstate_t lmsnrstates [NTRX];
 
-#if ! WITHNOSPEEX
+#if 0 && ! WITHNOSPEEX
 
-void * speex_alloc(int size)
+void * speex_allocXX(int size)
 {
+	debug_printf_P(PSTR("speex_alloc(%d)\n"), size);
 	void * const ptr = malloc(size);
 	if (ptr == NULL)
 	{
@@ -7052,9 +7062,47 @@ void * speex_alloc(int size)
 	return ptr;
 }
 
-void speex_free(void * ptr)
+void speex_freeXX(void * ptr)
 {
 	free(ptr);
+}
+
+#endif /* WITHNOSPEEX */
+
+#if ! WITHNOSPEEX
+
+static int speexallocated = 0;
+
+#if SPEEXNN == 64
+	#define SPEEXALLOCSIZE (NTRX * 15584)
+#elif SPEEXNN == 128
+	#define SPEEXALLOCSIZE (NTRX * 22584)
+#elif SPEEXNN == 256
+	#define SPEEXALLOCSIZE (NTRX * 38584)
+#elif SPEEXNN == 512
+	#define SPEEXALLOCSIZE (NTRX * 75448)
+#elif SPEEXNN == 1024
+	#define SPEEXALLOCSIZE (NTRX * 149176)
+#endif
+//static uint8_t sipexbuff [NTRX * 149176 /* + 24716 */];
+static uint8_t sipexbuff [SPEEXALLOCSIZE];
+
+void *speex_alloc (int size)
+{
+	size = (size + 0x03) & ~ 0x03;
+	ASSERT((speexallocated + size) <= sizeof sipexbuff / sizeof sipexbuff [0]);
+	if (! ((speexallocated + size) <= sizeof sipexbuff / sizeof sipexbuff [0]))
+	{
+		for (;;)
+			;
+	}
+	void * p = (void *) (sipexbuff + speexallocated);
+	speexallocated += size;
+	return p;
+}
+
+void speex_free (void *ptr)
+{
 }
 
 #endif /* WITHNOSPEEX */
@@ -9713,22 +9761,22 @@ directctlupdate(uint_fast8_t inmenu)
 
 #if WITHCAT
 
-static uint_fast8_t morsefill;	/* индекс буфера, заполняемого в данный момент. Противоположгый передаётся. */
+static RAMDTCM uint_fast8_t morsefill;	/* индекс буфера, заполняемого в данный момент. Противоположгый передаётся. */
 
-static uint_fast8_t inpmorselength [2];
-static uint_fast8_t sendmorsepos [2];
+static RAMDTCM uint_fast8_t inpmorselength [2];
+static RAMDTCM uint_fast8_t sendmorsepos [2];
 
 #if WITHCATEXT && WITHELKEY
 	static void cat_set_kyanswer(uint_fast8_t force);
-	static uint_fast8_t cathasparamerror;
-	static unsigned char morsestring [2][25];
+	static RAMDTCM uint_fast8_t cathasparamerror;
+	static RAMDTCM unsigned char morsestring [2][25];
 #endif /* WITHCATEXT && WITHELKEY */
 
-static uint_fast8_t catstatein = CATSTATE_HALTED;
+static RAMDTCM uint_fast8_t catstatein = CATSTATE_HALTED;
 
-static volatile uint_fast8_t catstateout = CATSTATEO_HALTED;
-static volatile const char * catsendptr;
-static volatile uint_fast8_t catsendcount;
+static RAMDTCM volatile uint_fast8_t catstateout = CATSTATEO_HALTED;
+static volatile const char * RAMDTCM catsendptr;
+static volatile RAMDTCM uint_fast8_t catsendcount;
 
 //A communication error occurred, such as an overrun or framing error during a serial data transmission.
 //static const char processingcmd [2] = "E;";	// ответ на команду которая ещё выполняется
@@ -9804,7 +9852,7 @@ static cat_answervariable(const char * p, uint_fast8_t len)
 //#define CAT_ASKBUFF_SIZE (43 + 28)
 #define CAT_ASKBUFF_SIZE (43)
 
-static char cat_ask_buffer [CAT_ASKBUFF_SIZE];
+static RAMDTCM char cat_ask_buffer [CAT_ASKBUFF_SIZE];
 
 static void 
 //NOINLINEAT
@@ -9910,11 +9958,11 @@ void cat2_disconnect(void)
 /* вызывается из обработчика прерываний */
 void cat2_parsechar(uint_fast8_t c)
 {
-	static uint_fast8_t catcommand1;
-	static uint_fast8_t catcommand2;
-	static uint_fast8_t cathasparam;
-	static uint_fast8_t catp [CATPCOUNTSIZE];
-	static uint_fast8_t catpcount;
+	static RAMDTCM uint_fast8_t catcommand1;
+	static RAMDTCM uint_fast8_t catcommand2;
+	static RAMDTCM uint_fast8_t cathasparam;
+	static RAMDTCM uint_fast8_t catp [CATPCOUNTSIZE];
+	static RAMDTCM uint_fast8_t catpcount;
 
    // debug_printf_P(PSTR("c=%02x, catstatein=%d, c1=%02X, c2=%02X\n"), c, catstatein, catcommand1, catcommand2);
 	switch (catstatein)
@@ -10619,6 +10667,18 @@ static void rm3answer(uint_fast8_t arg)
 #endif /* WITHTX && (WITHSWRMTR || WITHSHOWSWRPWR) */
 #endif /* WITHCATEXT */
 
+static uint_fast8_t
+adjust8(uint_fast8_t v, uint_fast8_t minimal, uint_fast8_t maximal)
+{
+	if (v > maximal)
+		return maximal;
+	if (v < minimal)
+		return minimal;
+	return v;
+}
+
+// в трансивере допустимый диапазон изменения значений CW PITCH больше чем поддерживается протоколом CAT KENWOOD
+// поэтому перед отдачей приводится к допустимому.
 static void ptanswer(uint_fast8_t arg)
 {
 	static const FLASHMEM char fmt_1 [] =
@@ -10628,7 +10688,7 @@ static void ptanswer(uint_fast8_t arg)
 
 	// answer mode
 	const uint_fast8_t len = local_snprintf_P(cat_ask_buffer, CAT_ASKBUFF_SIZE, fmt_1,
-		(int) ((gcwpitch10 - 40) / 5)
+		(int) ((adjust8(gcwpitch10, 40, 190) - 40) / 5)
 		);
 
 	cat_answer(len);
@@ -10783,7 +10843,7 @@ static void processcat_enable(uint_fast8_t enable)
 
 typedef void (* canapfn)(uint_fast8_t arg);
 
-static canapfn catanswers [CAT_MAX_INDEX] =
+static const canapfn catanswers [CAT_MAX_INDEX] =
 {
 #if WITHCATEXT
 #if WITHELKEY
@@ -12283,7 +12343,7 @@ static const FLASHMEM struct menudef menutable [] =
 	{
 		"CW PITCH", 7, 2, 0, 	ISTEP10, 
 		ITEM_VALUE,
-		40, 190,			/* 400 Hz..1900, Hz in 100 Hz steps */
+		CWPITCHMIN10, CWPITCHMAX10,	// 40, 190,			/* 400 Hz..1900, Hz in 100 Hz steps */
 		offsetof(struct nvmap, gcwpitch10),
 		NULL,
 		& gcwpitch10,
@@ -13469,7 +13529,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #endif /* WITHIF4DSP */
 #if (SIDETONE_TARGET_BIT != 0) || WITHINTEGRATEDDSP
 	{
-		"KEY BEEP", 7, 2, 0, 	ISTEP5,		/* регулировка тона озвучки клавиш */
+		"KEY BEEP", 6, 2, 0, 	ISTEP5,		/* регулировка тона озвучки клавиш */
 		ITEM_VALUE,
 		80, 250,			/* 800 Hz..2500, Hz in 50 Hz steps */
 		offsetof(struct nvmap, gkeybeep10),
@@ -13522,7 +13582,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 	#endif /* WITHAFCODEC1HAVELINEINLEVEL */
 	{
-		"MIKE SSB", 7, 5, RJ_TXAUDIO,	ISTEP1,
+		"MIKE SSB", 8, 5, RJ_TXAUDIO,	ISTEP1,
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, BOARD_TXAUDIO_count - 1, 					// при SSB/AM/FM передача с тестовых источников
 		RMT_TXAUDIO_BASE(MODE_SSB),
@@ -13531,7 +13591,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"MIKE DIG", 7, 5, RJ_TXAUDIO,	ISTEP1,
+		"MIKE DIG", 8, 5, RJ_TXAUDIO,	ISTEP1,
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, BOARD_TXAUDIO_count - 1, 					// при SSB/AM/FM передача с тестовых источников
 		RMT_TXAUDIO_BASE(MODE_DIGI),
@@ -13540,7 +13600,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"MIKE AM ", 7, 5, RJ_TXAUDIO,	ISTEP1,
+		"MIKE AM ", 8, 5, RJ_TXAUDIO,	ISTEP1,
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, BOARD_TXAUDIO_count - 1, 					// при SSB/AM/FM передача с тестовых источников
 		RMT_TXAUDIO_BASE(MODE_AM),
@@ -13549,7 +13609,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"MIKE FM ", 7, 5, RJ_TXAUDIO,	ISTEP1,
+		"MIKE FM ", 8, 5, RJ_TXAUDIO,	ISTEP1,
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, BOARD_TXAUDIO_count - 1, 					// при SSB/AM/FM передача с тестовых источников
 		RMT_TXAUDIO_BASE(MODE_NFM),
@@ -13558,7 +13618,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"MIKE AGC", 7, 3, RJ_ON,	ISTEP1,
+		"MIKE AGC", 8, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,	
 		0, 1, 					/* Включение программной АРУ перед модулятором */
 		offsetof(struct nvmap, gmikeagc),

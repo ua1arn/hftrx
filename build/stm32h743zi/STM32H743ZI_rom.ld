@@ -3,13 +3,12 @@
 /* Linker script to configure memory regions. */
 MEMORY
 {
+	ITCMRAM (rwx) : ORIGIN = 0x00000000, LENGTH = 64K	/* ITCMRAM-RAM */
+	FLASH (rx)    : ORIGIN = 0x08000000, LENGTH = 2048K	/* FLASH on AXIM interface */
 	DTCMRAM (rwx) : ORIGIN = 0x20000000, LENGTH = 128K	/* DTCMRAM Data DTCMRAM-RAM */
 	RAM_D1 (xrw)  : ORIGIN = 0x24000000, LENGTH = 512K	/* LTDC frame buffer */
 	RAM_D2 (xrw)  : ORIGIN = 0x30000000, LENGTH = 288K
 	RAM_D3 (xrw)  : ORIGIN = 0x38000000, LENGTH = 64K
-	ITCMRAM (rwx) : ORIGIN = 0x00000000, LENGTH = 64K	/* ITCMRAM-RAM */
-
-	FLASH (rx)    : ORIGIN = 0x08000000, LENGTH = 2048K	/* FLASH on AXIM interface */
 }
 
 /* Library configurations */
@@ -178,8 +177,7 @@ SECTIONS
 	.itcm : AT (__etext2)
 	{
 		__data2_start__ = .;
-		*(.itcm)
-		*(.itcm.*)
+		*(.itcm*)
 		*(.text.__ieee754_logf)
 		*(.text.__ieee754_powf)
 		*(.text.__ieee754_rem_pio2f)
@@ -237,11 +235,11 @@ SECTIONS
 	.stack_dummy (COPY):
 	{
 		KEEP(*(.stack*))
-	} > DTCMRAM
+	} > RAM_D3
 
 	/* Set stack top to end of RAM, and stack limit move down by
 	 * size of stack_dummy section */
-	__StackTop = ORIGIN(DTCMRAM) + LENGTH(DTCMRAM);	/* was: RAM_D2 */
+	__StackTop = ORIGIN(RAM_D3) + LENGTH(RAM_D3);
 	__StackLimit = __StackTop - SIZEOF(.stack_dummy);
 	PROVIDE(__stack = __StackTop);
 

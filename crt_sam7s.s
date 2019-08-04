@@ -75,13 +75,13 @@ __Vectors:
 
 
 ResetAddr:     .word Reset_Handler7
-UndefAddr:     .word UndefHandler
-SWIAddr:       .word SWIHandler
-PAbortAddr:    .word PAbortHandler
-DAbortAddr:    .word DAbortHandler
+UndefAddr:     .word Undef_Handler
+SWIAddr:       .word SWI_Handler
+PAbortAddr:    .word PAbort_Handler
+DAbortAddr:    .word DAbort_Handler
 ReservedAddr:  .word 0
-IRQAddr:       .word IRQHandler
-FIQAddr:       .word FIQHandler
+IRQAddr:       .word IRQ_Handler
+FIQAddr:       .word FIQ_Handler
 
 	.ascii " DREAM RX project " __DATE__ " " __TIME__ " "
 	.align 8
@@ -264,21 +264,21 @@ ExitFunction:
    .code 32
 
 	.align 4
-UndefHandler:
-   b UndefHandler
+Undef_Handler:
+   b Undef_Handler
    
-SWIHandler:
-   b SWIHandler
+SWI_Handler:
+   b SWI_Handler
 
-PAbortHandler:
-   b PAbortHandler
+PAbort_Handler:
+   b PAbort_Handler
 
-DAbortHandler:
-   b DAbortHandler
+DAbort_Handler:
+   b DAbort_Handler
    
   
-FIQHandler:
-   b FIQHandler
+FIQ_Handler:
+   b FIQ_Handler
 
 	.bss
 	.align 8
@@ -303,7 +303,7 @@ __stack_irq_end = .
 /// Handles incoming interrupt requests by branching to the corresponding
 /// handler, as defined in the AIC. Supports interrupt nesting.
 //------------------------------------------------------------------------------
-IRQHandler:
+IRQ_Handler:
 
 /* Save interrupt context on the stack to allow nesting */
         sub     lr, lr, #4

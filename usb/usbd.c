@@ -39,12 +39,12 @@ static void _Error_Handler(char * file, int line)
 
 #if WITHUSBUAC
 
-	static uint_fast8_t terminalsprops [256] [16];
+	static RAMDTCM uint8_t terminalsprops [256] [16];
 
-	static uintptr_t uacinaddr = 0;
-	static uint_fast16_t uacinsize = 0;
-	static uintptr_t uacinrtsaddr = 0;
-	static uint_fast16_t uacinrtssize = 0;
+	static RAMDTCM uintptr_t uacinaddr = 0;
+	static RAMDTCM uint_fast16_t uacinsize = 0;
+	static RAMDTCM uintptr_t uacinrtsaddr = 0;
+	static RAMDTCM uint_fast16_t uacinrtssize = 0;
 
 	static USBALIGN_BEGIN uint8_t uacoutbuff [VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT] USBALIGN_END;
 
@@ -53,21 +53,21 @@ static void _Error_Handler(char * file, int line)
 #endif /* WITHUSBUAC */
 
  
-static volatile uint_fast16_t usb_cdc_control_state [INTERFACE_count];	
+static RAMDTCM volatile uint_fast16_t usb_cdc_control_state [INTERFACE_count];
 
 #if WITHUSBCDC
 
 	static USBALIGN_BEGIN uint8_t cdc1buffout [VIRTUAL_COM_PORT_OUT_DATA_SIZE] USBALIGN_END;
 	static USBALIGN_BEGIN uint8_t cdc1buffin [VIRTUAL_COM_PORT_IN_DATA_SIZE] USBALIGN_END;
-	static uint_fast16_t cdc1buffinlevel;
+	static RAMDTCM uint_fast16_t cdc1buffinlevel;
 
 	static USBALIGN_BEGIN uint8_t cdc2buffout [VIRTUAL_COM_PORT_OUT_DATA_SIZE] USBALIGN_END;
 	static USBALIGN_BEGIN uint8_t cdc2buffin [VIRTUAL_COM_PORT_IN_DATA_SIZE] USBALIGN_END;
-	static uint_fast16_t cdc2buffinlevel;
+	static RAMDTCM uint_fast16_t cdc2buffinlevel;
 
 	static USBALIGN_BEGIN uint8_t cdc_ep0databuffout [USB_OTG_MAX_EP0_SIZE] USBALIGN_END;
 
-	static uint_fast32_t dwDTERate [INTERFACE_count];
+	static RAMDTCM uint_fast32_t dwDTERate [INTERFACE_count];
 
 	/* хранимое значение после получения CDC_SET_CONTROL_LINE_STATE */
 	/* Биты: RTS = 0x02, DTR = 0x01 */
@@ -90,7 +90,7 @@ static volatile uint_fast16_t usb_cdc_control_state [INTERFACE_count];
 			0;
 	}
 
-	static volatile uint_fast8_t usbd_cdc_txenabled = 0;	/* виртуальный флаг разрешения прерывания по готовности передатчика - HARDWARE_CDC_ONTXCHAR*/
+	static RAMDTCM volatile uint_fast8_t usbd_cdc_txenabled = 0;	/* виртуальный флаг разрешения прерывания по готовности передатчика - HARDWARE_CDC_ONTXCHAR*/
 
 	/* Разрешение/запрещение прерывания по передаче символа */
 	void usbd_cdc_enabletx(uint_fast8_t state)	/* вызывается из обработчика прерываний */
@@ -98,7 +98,7 @@ static volatile uint_fast16_t usb_cdc_control_state [INTERFACE_count];
 		usbd_cdc_txenabled = state;
 	}
 
-	static volatile uint_fast8_t usbd_cdc_rxenabled = 0;	/* виртуальный флаг разрешения прерывания по приёму символа - HARDWARE_CDC_ONRXCHAR */
+	static RAMDTCM volatile uint_fast8_t usbd_cdc_rxenabled = 0;	/* виртуальный флаг разрешения прерывания по приёму символа - HARDWARE_CDC_ONRXCHAR */
 
 	/* вызывается из обработчика прерываний или при запрещённых прерываниях. */
 	/* Разрешение/запрещение прерываний про приёму символа */
@@ -174,10 +174,10 @@ static volatile uint_fast16_t usb_cdc_control_state [INTERFACE_count];
 		ALIGNX_BEGIN uint8_t buff [RNDIS_RESP_SIZE] ALIGNX_END;
 	} ALIGNX_END rndis_resp_t;
 
-	static LIST_ENTRY rndis_resp_freelist;
-	static LIST_ENTRY rndis_resp_readylist;
+	static RAMDTCM LIST_ENTRY rndis_resp_freelist;
+	static RAMDTCM LIST_ENTRY rndis_resp_readylist;
 
-	static uint8_t * rndis_resp_ptr = NULL;
+	static uint8_t * RAMDTCM rndis_resp_ptr = NULL;
 
 	static void rndis_resp_initialize(void)
 	{
@@ -249,7 +249,7 @@ static volatile uint_fast16_t usb_cdc_control_state [INTERFACE_count];
 #endif /* WITHUSBRNDIS */
 
 // Состояние - выбранные альтернативные конфигурации по каждому интерфейсу USB configuration descriptor
-static uint8_t altinterfaces [INTERFACE_count];
+static RAMDTCM uint8_t altinterfaces [INTERFACE_count];
 
 static uint_fast32_t ulmin32(uint_fast32_t a, uint_fast32_t b)
 {
@@ -349,14 +349,14 @@ enum
 	CDCEEMOUT_nstates
 };
 
-static uint_fast8_t cdceemoutstate = CDCEEMOUT_COMMAND;
-static uint_fast32_t cdceemoutscore = 0;
-static uint_fast32_t cdceemoutacc;
-static uint_fast32_t cdceemlength;
-static uint_fast32_t cdceematcrc;
-static uint_fast32_t cdceemnpackets;
+static RAMDTCM uint_fast8_t cdceemoutstate = CDCEEMOUT_COMMAND;
+static RAMDTCM uint_fast32_t cdceemoutscore = 0;
+static RAMDTCM uint_fast32_t cdceemoutacc;
+static RAMDTCM uint_fast32_t cdceemlength;
+static RAMDTCM uint_fast32_t cdceematcrc;
+static RAMDTCM uint_fast32_t cdceemnpackets;
 
-static uint8_t cdceembuff [1514];
+static RAMDTCM uint8_t cdceembuff [1514];
 
 static void cdceemout_initialize(void)
 {
@@ -6946,9 +6946,6 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 		base4 += size4;
 	}
 
-	USB_FlushRxFifo(instance);
-	USB_FlushTxFifoAll(instance);
-
 	if (base4 > last4 || last4 > full4)
 	{
 		char b [64];
@@ -6972,6 +6969,9 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 		HARDWARE_DELAY_MS(2000);
 #endif
 	}
+
+	USB_FlushRxFifo(instance);
+	USB_FlushTxFifoAll(instance);
 }
 #endif /* (CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX) */
 
@@ -14151,10 +14151,10 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
 
 	if (hpcd->Instance == & USB200)
 	{
-		const uint16_t int_id = USBI0_IRQn;
-		r7s721_intc_registintfunc(int_id, r7s721_usbi0_device_handler);
-		GIC_SetPriority(int_id, ARM_SYSTEM_PRIORITY);
-		GIC_EnableIRQ(int_id);
+		const IRQn_ID_t int_id = USBI0_IRQn;
+		IRQ_SetHandler(int_id, r7s721_usbi0_device_handler);
+		IRQ_SetPriority(int_id, ARM_SYSTEM_PRIORITY);
+		IRQ_Enable(int_id);
 
 		/* ---- Supply clock to the USB20(channel 0) ---- */
 		CPG.STBCR7 &= ~ CPG_STBCR7_MSTP71;	// Module Stop 71 0: Channel 0 of the USB 2.0 host/function module runs.
@@ -14165,10 +14165,10 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
 	}
 	else if (hpcd->Instance == & USB201)
 	{
-		const uint16_t int_id = USBI1_IRQn;
-		r7s721_intc_registintfunc(int_id, r7s721_usbi1_device_handler);
-		GIC_SetPriority(int_id, ARM_SYSTEM_PRIORITY);
-		GIC_EnableIRQ(int_id);
+		const IRQn_ID_t int_id = USBI1_IRQn;
+		IRQ_SetHandler(int_id, r7s721_usbi1_device_handler);
+		IRQ_SetPriority(int_id, ARM_SYSTEM_PRIORITY);
+		IRQ_Enable(int_id);
 
 		/* ---- Supply clock to the USB20(channel 1) ---- */
 		CPG.STBCR7 &= ~ CPG_STBCR7_MSTP70;	// Module Stop 70 0: Channel 1 of the USB 2.0 host/function module runs.

@@ -5691,7 +5691,7 @@ void hightests(void)
 
 	#if 0//LCDMODE_COLORED
 
-		static ALIGNX_BEGIN PACKEDCOLOR565_T scr [GXSIZE(dx, dy)] ALIGNX_END;
+		static ALIGNX_BEGIN volatile PACKEDCOLOR565_T scr [GXSIZE(dx, dy)] ALIGNX_END;
 
 		display_colorbuffer_fill(scr, dx, dy, COLOR_WHITE);
 		display_colorbuffer_show(scr, dx, dy, 0, GRID2Y(topreserved));
@@ -7596,18 +7596,18 @@ nestedirqtest(void)
 	board_init_io();		/* инициализация чипселектов и SPI, I2C, загрузка FPGA */
 	hardware_timer_initialize(3);
 	{
-		const uint16_t int_id = OSTMI0TINT_IRQn;
-		r7s721_intc_registintfunc(int_id, r7s721_ostm0_interrupt_test);	/* ==== Register OS timer interrupt handler ==== */
-		GIC_SetPriority(int_id, ARM_SYSTEM_PRIORITY);		/* ==== Set priority of OS timer interrupt to 5 ==== */
-		GIC_EnableIRQ(int_id);		/* ==== Validate OS timer interrupt ==== */
+		const IRQn_ID_t int_id = OSTMI0TINT_IRQn;
+		IRQ_SetHandler(int_id, r7s721_ostm0_interrupt_test);	/* ==== Register OS timer interrupt handler ==== */
+		IRQ_SetPriority(int_id, ARM_SYSTEM_PRIORITY);		/* ==== Set priority of OS timer interrupt to 5 ==== */
+		IRQ_Enable(int_id);		/* ==== Validate OS timer interrupt ==== */
 	}
 	hardware_elkey_timer_initialize();
 	hardware_elkey_set_speed(4);
 	{
-		const uint16_t int_id = OSTMI1TINT_IRQn;
-		r7s721_intc_registintfunc(int_id, r7s721_ostm1_interrupt_test);	/* ==== Register OS timer interrupt handler ==== */
-		GIC_SetPriority(int_id, ARM_REALTIME_PRIORITY);		/* ==== Set priority of OS timer interrupt to 5 ==== */
-		GIC_EnableIRQ(int_id);		/* ==== Validate OS timer interrupt ==== */
+		const IRQn_ID_t int_id = OSTMI1TINT_IRQn;
+		IRQ_SetHandler(int_id, r7s721_ostm1_interrupt_test);	/* ==== Register OS timer interrupt handler ==== */
+		IRQ_SetPriority(int_id, ARM_REALTIME_PRIORITY);		/* ==== Set priority of OS timer interrupt to 5 ==== */
+		IRQ_Enable(int_id);		/* ==== Validate OS timer interrupt ==== */
 	}
 #if defined (ENCODER_BITS)
 	#if CTLSTYLE_RAVENDSP_V9

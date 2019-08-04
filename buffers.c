@@ -137,9 +137,10 @@ enum
 		} while (0)
 
 #if 0
-	static int16_t vfyseq;
-	static int16_t lastseq;
-	static int lastseqvalid;
+	static RAMDTCM int16_t vfyseq;
+	static RAMDTCM int16_t lastseq;
+	static RAMDTCM int lastseqvalid;
+
 	int16_t vfydataget(void)
 	{
 		return ++ vfyseq;
@@ -201,26 +202,26 @@ enum
 		ALIGNX_BEGIN uint32_t buff [DMABUFFSIZE32RX] ALIGNX_END;
 	} ALIGNX_END voice32rx_t;
 
-	static const uint_fast8_t VOICESMIKE16NORMAL = 5;	// Нормальное количество буферов в очереди
-	static LIST_ENTRY3 voicesmike16;	// буферы с оцифрованными звуками с микрофона/Line in
-	static LIST_ENTRY3 resample16;		// буферы от USB для синхронизации
+	static RAMDTCM const uint_fast8_t VOICESMIKE16NORMAL = 5;	// Нормальное количество буферов в очереди
+	static RAMDTCM LIST_ENTRY3 voicesmike16;	// буферы с оцифрованными звуками с микрофона/Line in
+	static RAMDTCM LIST_ENTRY3 resample16;		// буферы от USB для синхронизации
 
-	static LIST_ENTRY2 voicesfree16;
-	static LIST_ENTRY2 voicesphones16;	// буферы, предназначенные для выдачи на наушники
+	static RAMDTCM LIST_ENTRY2 voicesfree16;
+	static RAMDTCM LIST_ENTRY2 voicesphones16;	// буферы, предназначенные для выдачи на наушники
 
-	static LIST_ENTRY2 voicesready32tx;	// буферы, предназначенные для выдачи на IF DAC
-	static LIST_ENTRY2 voicesfree32tx;
-	static LIST_ENTRY2 voicesfree32rx;
+	static RAMDTCM LIST_ENTRY2 voicesready32tx;	// буферы, предназначенные для выдачи на IF DAC
+	static RAMDTCM LIST_ENTRY2 voicesfree32tx;
+	static RAMDTCM LIST_ENTRY2 voicesfree32rx;
 
-	static LIST_ENTRY2 speexfree16;		// Свободные буферы
-	static LIST_ENTRY2 speexready16;	// Буферы для обработки speex
+	static RAMDTCM LIST_ENTRY2 speexfree16;		// Свободные буферы
+	static RAMDTCM LIST_ENTRY2 speexready16;	// Буферы для обработки speex
 	//static int speexready16enable;
 
-	static volatile uint_fast8_t uacoutplayer = 0;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
-	static volatile uint_fast8_t uacoutmike = 0;	/* на вход трансивера берутся аудиоданные с USB виртуальной платы, а не с микрофона */
-	static volatile uint_fast8_t uacinalt = UACINALT_NONE;		/* выбор альтернативной конфигурации для UAC IN interface */
-	static volatile uint_fast8_t uacinrtsalt = UACINRTSALT_NONE;		/* выбор альтернативной конфигурации для RTS UAC IN interface */
-	static volatile uint_fast8_t uacoutalt;
+	static RAMDTCM volatile uint_fast8_t uacoutplayer = 0;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
+	static RAMDTCM volatile uint_fast8_t uacoutmike = 0;	/* на вход трансивера берутся аудиоданные с USB виртуальной платы, а не с микрофона */
+	static RAMDTCM volatile uint_fast8_t uacinalt = UACINALT_NONE;		/* выбор альтернативной конфигурации для UAC IN interface */
+	static RAMDTCM volatile uint_fast8_t uacinrtsalt = UACINRTSALT_NONE;		/* выбор альтернативной конфигурации для RTS UAC IN interface */
+	static RAMDTCM volatile uint_fast8_t uacoutalt;
 
 #if 1//WITHUSBUAC
 
@@ -241,8 +242,8 @@ enum
 			ALIGNX_BEGIN uint8_t buff [DMABUFFSIZE192RTS] ALIGNX_END;		// спектр, 2*24*192 kS/S
 		} ALIGNX_END voice192rts_t;
 
-		static LIST_ENTRY2 voicesfree192rts;
-		static LIST_ENTRY2 uacin192rts;	// Буферы для записи в вудиоканал USB к компьютеру спектра, 2*32*192 kS/S
+		static RAMDTCM LIST_ENTRY2 voicesfree192rts;
+		static RAMDTCM LIST_ENTRY2 uacin192rts;	// Буферы для записи в вудиоканал USB к компьютеру спектра, 2*32*192 kS/S
 	
 	#endif /* WITHRTS192 */
 
@@ -255,13 +256,13 @@ enum
 			ALIGNX_BEGIN uint8_t buff [DMABUFFSIZE96RTS] ALIGNX_END;		// спектр, 2*24*192 kS/S
 		} ALIGNX_END voice96rts_t;
 
-		static LIST_ENTRY2 voicesfree96rts;
-		static LIST_ENTRY2 uacin96rts;	// Буферы для записи в вудиоканал USB к компьютер спектра, 2*32*192 kS/S
+		static RAMDTCM LIST_ENTRY2 voicesfree96rts;
+		static RAMDTCM LIST_ENTRY2 uacin96rts;	// Буферы для записи в вудиоканал USB к компьютер спектра, 2*32*192 kS/S
 	
 	#endif /* WITHRTS96 */
 
-	static LIST_ENTRY2 uacinfree16;
-	static LIST_ENTRY2 uacinready16;	// Буферы для записи в вудиоканал USB к компьютер 2*16*24 kS/S
+	static RAMDTCM LIST_ENTRY2 uacinfree16;
+	static RAMDTCM LIST_ENTRY2 uacinready16;	// Буферы для записи в вудиоканал USB к компьютер 2*16*24 kS/S
 	//static const uint_fast8_t VOICESMIKE16NORMAL = VOICESMIKE16NORMAL;	// Нормальное количество буферов в очереди
 
 #endif /* WITHUSBUAC */
@@ -278,11 +279,11 @@ enum
 		ALIGNX_BEGIN int16_t buff [SDCARDBUFFSIZE16] ALIGNX_END;
 	} ALIGNX_END records16_t;
 
-	static LIST_ENTRY2 recordsfree16;		// Свободные буферы
-	static LIST_ENTRY2 recordsready16;	// Буферы для записи на SD CARD
+	static RAMDTCM LIST_ENTRY2 recordsfree16;		// Свободные буферы
+	static RAMDTCM LIST_ENTRY2 recordsready16;	// Буферы для записи на SD CARD
 
-	static volatile unsigned recdropped;
-	static volatile unsigned recbuffered;
+	static RAMDTCM volatile unsigned recdropped;
+	static RAMDTCM volatile unsigned recbuffered;
 
 #endif /* WITHUSEAUDIOREC */
 
@@ -296,8 +297,8 @@ typedef struct modems8
 	uint8_t buff [MODEMBUFFERSIZE8];
 } modems8_t;
 
-static LIST_ENTRY2 modemsfree8;		// Свободные буферы
-static LIST_ENTRY2 modemsrx8;	// Буферы с принятымти через модем данными
+static RAMDTCM LIST_ENTRY2 modemsfree8;		// Свободные буферы
+static RAMDTCM LIST_ENTRY2 modemsrx8;	// Буферы с принятымти через модем данными
 //static LIST_ENTRY modemstx8;	// Буферы с данными для передачи через модем
 
 #endif /* WITHMODEM */
@@ -311,8 +312,8 @@ typedef struct message
 	uint8_t data [MSGBUFFERSIZE8];
 } message_t;
 
-static LIST_ENTRY msgsfree8;		// Свободные буферы
-static LIST_ENTRY msgsready8;		// Заполненные - готовые к обработке
+static RAMDTCM LIST_ENTRY msgsfree8;		// Свободные буферы
+static RAMDTCM LIST_ENTRY msgsready8;		// Заполненные - готовые к обработке
 
 #if WITHBUFFERSDEBUG
 	static volatile unsigned n1, n1wfm, n2, n3, n4, n5, n6;
@@ -432,10 +433,10 @@ void buffers_diagnostics(void)
 		const char * file;
 	} LOCK_T;
 
-	static volatile LOCK_T locklist16;
-	static volatile LOCK_T locklist16ststem;
-	static volatile LOCK_T locklist32;
-	static volatile LOCK_T locklist8;
+	static RAMDTCM volatile LOCK_T locklist16;
+	static RAMDTCM volatile LOCK_T locklist16ststem;
+	static RAMDTCM volatile LOCK_T locklist32;
+	static RAMDTCM volatile LOCK_T locklist8;
 
 	static void lock_impl(volatile LOCK_T * p, int line, const char * file, const char * variable)
 	{
@@ -685,15 +686,15 @@ void buffers_initialize(void)
 	#if CPUSTYLE_R7S721
 		RAMNOINIT_D1 static records16_t recordsarray16 [16];
 	#elif defined (STM32F767xx)
-		RAMNOINIT_D1 static records16_t recordsarray16 [16];
+		RAMNOINIT_D1 static records16_t recordsarray16 [8];
 	#elif defined (STM32F746xx)
-		RAMNOINIT_D1 static records16_t recordsarray16 [16];
+		RAMNOINIT_D1 static records16_t recordsarray16 [8];
 	#elif defined (STM32F429xx)
-		RAMNOINIT_D1 static records16_t recordsarray16 [16];
+		RAMNOINIT_D1 static records16_t recordsarray16 [8];
 	#elif defined (STM32H743xx)
-		RAMNOINIT_D1 static records16_t recordsarray16 [28];
+		RAMNOINIT_D1 static records16_t recordsarray16 [8];
 	#else
-		RAMNOINIT_D1 static records16_t recordsarray16 [16];
+		RAMNOINIT_D1 static records16_t recordsarray16 [8];
 	#endif
 
 	/* Подготовка буферов для записи на SD CARD */
@@ -722,7 +723,7 @@ void buffers_initialize(void)
 	}
 #endif /* WITHMODEM */
 
-	static denoise16_t speexarray16 [3];
+	static RAMDTCM denoise16_t speexarray16 [3];
 
 	InitializeListHead2(& speexfree16);	// Незаполненные
 	InitializeListHead2(& speexready16);	// Для обработки
@@ -889,8 +890,8 @@ static RAMFUNC void buffers_aftermodulators(voice16_t * p)
 RAMFUNC uint_fast8_t getsampmlemike(INT32P_t * v)
 {
 	enum { L, R };
-	static voice16_t * p = NULL;
-	static unsigned pos = 0;	// позиция по выходному количеству
+	static voice16_t * RAMDTCM p = NULL;
+	static RAMDTCM unsigned pos = 0;	// позиция по выходному количеству
 	const unsigned CNT = (DMABUFFSIZE16 / DMABUFSTEP16);	// фиксированное число сэмплов во входном буфере
 
 	LOCK(& locklist16);
@@ -1169,11 +1170,11 @@ static RAMFUNC unsigned getsamplemsuacout(
 	unsigned size		// количество оставшихся одиночных сэмплов
 	)
 {
-	static voice16_t * p = NULL;
+	static voice16_t * RAMDTCM p = NULL;
 	enum { NPARTS = 3 };
-	static uint_fast8_t part = 0;
-	static int16_t * datas [NPARTS] = { NULL, NULL };		// начальный адрес пары сэмплов во входном буфере
-	static unsigned sizes [NPARTS] = { 0, 0 };			// количество сэмплов во входном буфере
+	static RAMDTCM uint_fast8_t part = 0;
+	static int16_t * RAMDTCM datas [NPARTS] = { NULL, NULL };		// начальный адрес пары сэмплов во входном буфере
+	static RAMDTCM unsigned sizes [NPARTS] = { 0, 0 };			// количество сэмплов во входном буфере
 	// исправляемая погрешность = 0.02% - один сэмпл добавить/убрать на 5000 сэмплов
 	enum { SKIPPED = 5000 / (DMABUFFSIZE16 / DMABUFSTEP16) };
 
@@ -1777,8 +1778,8 @@ uintptr_t getfilled_dmabuffer16phones(void)
 void savesampleout32stereo(int_fast32_t ch0, int_fast32_t ch1)
 {
 	LOCK(& locklist32);
-	static voice32tx_t * prepareout32tx = NULL;
-	static unsigned level32tx;
+	static voice32tx_t * RAMDTCM prepareout32tx = NULL;
+	static RAMDTCM unsigned level32tx;
 
 	if (prepareout32tx == NULL)
 	{
@@ -1941,8 +1942,8 @@ void savesampleout16stereo(int_fast32_t ch0, int_fast32_t ch1)
 		void savesampleout96stereo(int_fast32_t ch0, int_fast32_t ch1)
 		{
 			// если есть инициализированный канал для выдачи звука
-			static voice96rts_t * p = NULL;
-			static unsigned n;
+			static voice96rts_t * RAMDTCM p = NULL;
+			static RAMDTCM unsigned n;
 
 			if (p == NULL)
 			{
@@ -2056,8 +2057,8 @@ void savesampleout16stereo(int_fast32_t ch0, int_fast32_t ch1)
 		void savesampleout192stereo(int_fast32_t ch0, int_fast32_t ch1)
 		{
 			// если есть инициализированный канал для выдачи звука
-			static voice192rts_t * p = NULL;
-			static unsigned n;
+			static voice192rts_t * RAMDTCM p = NULL;
+			static RAMDTCM unsigned n;
 
 			if (p == NULL)
 			{
