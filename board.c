@@ -6256,7 +6256,6 @@ static void board_fpga_loader_wait_AS(void)
 
 #endif /* WITHFPGAWAIT_AS || WITHFPGALOAD_PS */
 
-
 void board_fpga_reset(void)
 {
 restart:
@@ -6289,6 +6288,7 @@ restart:
 		}
 	} while (board_fpga_get_NSTATUS() == 0);	// если ошибка - повторяем
 }
+
 #if WITHDSPEXTFIR
 
 void board_fpga_fir_initialize(void)
