@@ -13522,7 +13522,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #endif /* WITHIF4DSP */
 #if (SIDETONE_TARGET_BIT != 0) || WITHINTEGRATEDDSP
 	{
-		"KEY BEEP", 7, 2, 0, 	ISTEP5,		/* регулировка тона озвучки клавиш */
+		"KEY BEEP", 6, 2, 0, 	ISTEP5,		/* регулировка тона озвучки клавиш */
 		ITEM_VALUE,
 		80, 250,			/* 800 Hz..2500, Hz in 50 Hz steps */
 		offsetof(struct nvmap, gkeybeep10),
@@ -13575,7 +13575,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 	#endif /* WITHAFCODEC1HAVELINEINLEVEL */
 	{
-		"MIKE SSB", 7, 5, RJ_TXAUDIO,	ISTEP1,
+		"MIKE SSB", 8, 5, RJ_TXAUDIO,	ISTEP1,
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, BOARD_TXAUDIO_count - 1, 					// при SSB/AM/FM передача с тестовых источников
 		RMT_TXAUDIO_BASE(MODE_SSB),
@@ -13584,7 +13584,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"MIKE DIG", 7, 5, RJ_TXAUDIO,	ISTEP1,
+		"MIKE DIG", 8, 5, RJ_TXAUDIO,	ISTEP1,
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, BOARD_TXAUDIO_count - 1, 					// при SSB/AM/FM передача с тестовых источников
 		RMT_TXAUDIO_BASE(MODE_DIGI),
@@ -13593,7 +13593,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"MIKE AM ", 7, 5, RJ_TXAUDIO,	ISTEP1,
+		"MIKE AM ", 8, 5, RJ_TXAUDIO,	ISTEP1,
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, BOARD_TXAUDIO_count - 1, 					// при SSB/AM/FM передача с тестовых источников
 		RMT_TXAUDIO_BASE(MODE_AM),
@@ -13602,7 +13602,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"MIKE FM ", 7, 5, RJ_TXAUDIO,	ISTEP1,
+		"MIKE FM ", 8, 5, RJ_TXAUDIO,	ISTEP1,
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, BOARD_TXAUDIO_count - 1, 					// при SSB/AM/FM передача с тестовых источников
 		RMT_TXAUDIO_BASE(MODE_NFM),
@@ -13611,7 +13611,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"MIKE AGC", 7, 3, RJ_ON,	ISTEP1,
+		"MIKE AGC", 8, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,	
 		0, 1, 					/* Включение программной АРУ перед модулятором */
 		offsetof(struct nvmap, gmikeagc),
