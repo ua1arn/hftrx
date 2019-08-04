@@ -514,7 +514,7 @@ static unsigned UAC_AudioControlIT_INRTS(uint_fast8_t fill, uint8_t * buff, unsi
 		* buff ++ = bNrChannels;    /* bNrChannels */
 		* buff ++ = LO_BYTE(wChannelConfig);   /* bmChannelConfig size = 4 bytes Mono sets no position bits */
 		* buff ++ = HI_BYTE(wChannelConfig);
-		* buff ++ = 0;							/* iChannelNames */
+		* buff ++ = STRING_ID_Left;							/* iChannelNames */
 		* buff ++ = STRING_ID_IQSPECTRUM;		// iTerminal - Index of a string descriptor, describing the Input Terminal. Receiver Output
 
 	}
@@ -719,7 +719,7 @@ static unsigned UAC_AudioControlIfCircuitIN48(
 {
 	unsigned n = 0;
 
-	if (WITHUSENOFU)
+	if (WITHUSENOFU_IN48)
 	{
 		// Только один источник для компьютера
 		n += UAC_AudioControlOT_IN(fill, p + n, maxsize - n,  bTerminalID, bTerminalID + 1, offset);	/* AUDIO_TERMINAL_USB_STREAMING Terminal Descriptor TERMINAL_ID_IT_2 -> TERMINAL_UACIN48_UACINRTS */
@@ -748,7 +748,7 @@ static unsigned UAC_AudioControlIfCircuitIN48_INRTS(
 {
 	unsigned n = 0;
 
-	if (WITHUSENOFU)
+	if (WITHUSENOFU_IN48_INRTS)
 	{
 		// Только один источник для компьютера
 		n += UAC_AudioControlOT_IN(fill, p + n, maxsize - n,  bTerminalID, bTerminalID + 1, offset);	/* AUDIO_TERMINAL_USB_STREAMING Terminal Descriptor TERMINAL_ID_IT_2 -> TERMINAL_UACIN48_UACINRTS */
@@ -776,7 +776,7 @@ static unsigned UAC_AudioControlIfCircuitOUT48(
 {
 	unsigned n = 0;
 
-	if (WITHUSENOFU)
+	if (WITHUSENOFU_OUT48)
 	{
 		// без feature unit между IT и OT
 		n += UAC_AudioControlIT_OUT48(fill, p + n, maxsize - n, bTerminalID, offset);	/* AUDIO_TERMINAL_USB_STREAMING Input Terminal Descriptor TERMINAL_UACOUT48 + offset */
@@ -802,7 +802,7 @@ static unsigned UAC_AudioControlIfCircuitINRTS(
 {
 	unsigned n = 0;
 
-	if (WITHUSENOFU)
+	if (WITHUSENOFU_INRTS)
 	{
 		// Только один источник для компьютера
 		n += UAC_AudioControlOT_IN(fill, p + n, maxsize - n,  bTerminalID, bTerminalID + 1, offset);	/* AUDIO_TERMINAL_USB_STREAMING Terminal Descriptor TERMINAL_ID_IT_2 -> TERMINAL_UACIN48_UACINRTS */
