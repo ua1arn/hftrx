@@ -5229,7 +5229,7 @@ bwseti_load(void)
 		// Значения границ полос пропускания
 		bwprop_t * const p = bwprops [bwprop];
 
-		//p->fltsofter = loadvfy8up(RMT_BWPROPSFLTSOFTER_BASE(bwprop), WITHFILTSOFTMIN, WITHFILTSOFTMAX, p->fltsofter);
+		p->afresponce = loadvfy8up(RMT_BWPROPSAFRESPONCE_BASE(bwprop), AFRESPONCEMIN, AFRESPONCEMAX, p->afresponce);
 		switch (p->type)
 		{
 		case BWSET_NARROW:
@@ -12363,17 +12363,6 @@ static const FLASHMEM struct menudef menutable [] =
 		& bwprop_cwwide.left10_width10,
 		getzerobase, 
 	},
-#if 0
-	{
-		"CW W SFT", 7, 0, 0, 	ISTEP1,	// CW softer parameter for WIDE
-		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		WITHFILTSOFTMIN, WITHFILTSOFTMAX, 
-		RMT_BWPROPSFLTSOFTER_BASE(BWPROPI_CWWIDE),
-		NULL,
-		& bwprop_cwwide.fltsofter,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-#endif
 	{
 		"CW N WDT", 7, 2, 0, 	ISTEP10,	// CW bandwidth for NARROW
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
@@ -12383,17 +12372,6 @@ static const FLASHMEM struct menudef menutable [] =
 		& bwprop_cwnarrow.left10_width10,
 		getzerobase, 
 	},
-#if 0
-	{
-		"CW N SFT", 7, 0, 0, 	ISTEP1,	// CW softer parameter for NARROW
-		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		WITHFILTSOFTMIN, WITHFILTSOFTMAX, 
-		RMT_BWPROPSFLTSOFTER_BASE(BWPROPI_CWNARROW),
-		NULL,
-		& bwprop_cwnarrow.fltsofter,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-#endif
 	{
 		"SSB W HI", 6, 1, 0,	ISTEP1,		/* Подстройка полосы пропускания - SSB WIDE */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
@@ -12412,17 +12390,6 @@ static const FLASHMEM struct menudef menutable [] =
 		& bwprop_ssbwide.left10_width10,
 		getzerobase, /* складывается со смещением и отображается */
 	},
-#if 0
-	{
-		"SSBW SFT", 7, 0, 0, 	ISTEP1,	// SSB softer parameter for WIDE
-		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		WITHFILTSOFTMIN, WITHFILTSOFTMAX, 
-		RMT_BWPROPSFLTSOFTER_BASE(BWPROPI_SSBWIDE),
-		NULL,
-		& bwprop_ssbwide.fltsofter,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-#endif
 	{
 		"SSBW AFR", 3 + WSIGNFLAG, 0, 0,	ISTEP1,
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
@@ -12450,17 +12417,6 @@ static const FLASHMEM struct menudef menutable [] =
 		& bwprop_ssbnarrow.left10_width10,
 		getzerobase, /* складывается со смещением и отображается */
 	},
-#if 0
-	{
-		"SSBN SFT", 7, 0, 0, 	ISTEP1,	// SSB softer parameter for NARROW
-		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		WITHFILTSOFTMIN, WITHFILTSOFTMAX, 
-		RMT_BWPROPSFLTSOFTER_BASE(BWPROPI_SSBNARROW),
-		NULL,
-		& bwprop_ssbnarrow.fltsofter,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-#endif
 	{
 		"SSBN AFR", 3 + WSIGNFLAG, 0, 0,	ISTEP1,
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
@@ -12488,17 +12444,6 @@ static const FLASHMEM struct menudef menutable [] =
 		& bwprop_amwide.left10_width10,
 		getzerobase, /* складывается со смещением и отображается */
 	},
-#if 0
-	{
-		"AM W SFT", 7, 0, 0, 	ISTEP1,	// AM softer parameter for WIDE
-		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		WITHFILTSOFTMIN, WITHFILTSOFTMAX, 
-		RMT_BWPROPSFLTSOFTER_BASE(BWPROPI_AMWIDE),
-		NULL,
-		& bwprop_amwide.fltsofter,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-#endif
 	{
 		"AM W AFR", 3 + WSIGNFLAG, 0, 0,	ISTEP1,
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
@@ -12526,17 +12471,6 @@ static const FLASHMEM struct menudef menutable [] =
 		& bwprop_amnarrow.left10_width10,
 		getzerobase, /* складывается со смещением и отображается */
 	},
-#if 0
-	{
-		"AM N AFR", 7, 0, 0, 	ISTEP1,	// AM softer parameter for NARROW
-		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		WITHFILTSOFTMIN, WITHFILTSOFTMAX, 
-		RMT_BWPROPSFLTSOFTER_BASE(BWPROPI_AMNARROW),
-		NULL,
-		& bwprop_amnarrow.fltsofter,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-#endif
 	{
 		"AM N AFR", 3 + WSIGNFLAG, 0, 0,	ISTEP1,
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
@@ -12548,7 +12482,7 @@ static const FLASHMEM struct menudef menutable [] =
 	},
 	{
 		"SSBTX HI", 6, 1, 0,	ISTEP1,		/* Подстройка полосы пропускания - TX SSB */
-		ITEM_VALUE,
+		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		BWRIGHTMIN, BWRIGHTMAX, 		// 0.8 kHz-18 kHz
 		RMT_BWPROPSRIGHT_BASE(BWPROPI_SSBTX),
 		NULL,
@@ -12557,7 +12491,7 @@ static const FLASHMEM struct menudef menutable [] =
 	},
 	{
 		"SSBTX LO", 7, 2, 0,	ISTEP1,		/* подстройка полосы пропускания - TX SSB */
-		ITEM_VALUE,
+		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		BWLEFTMIN, BWLEFTMAX,		// 50 Hz..700 Hz
 		RMT_BWPROPSLEFT_BASE(BWPROPI_SSBTX),
 		NULL,
@@ -12565,8 +12499,17 @@ static const FLASHMEM struct menudef menutable [] =
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
+		"SSBTXAFR", 3 + WSIGNFLAG, 0, 0,	ISTEP1,
+		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+		AFRESPONCEMIN, AFRESPONCEMAX,			/* изменение тембра звука - на Samplerate/2 АЧХ изменяется на столько децибел  */
+		RMT_BWPROPSAFRESPONCE_BASE(BWPROPI_SSBTX),
+		NULL,
+		& bwprop_ssbtx.afresponce,
+		getafresponcebase, /* складывается со смещением и отображается */
+	},
+	{
 		"DIGI HI ", 6, 1, 0,	ISTEP1,		/* Подстройка полосы пропускания - TX SSB */
-		ITEM_VALUE,
+		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		BWRIGHTMIN, BWRIGHTMAX, 		// 0.8 kHz-18 kHz
 		RMT_BWPROPSRIGHT_BASE(BWPROPI_DIGIWIDE),
 		NULL,
@@ -12575,7 +12518,7 @@ static const FLASHMEM struct menudef menutable [] =
 	},
 	{
 		"DIGI LO ", 7, 2, 0,	ISTEP1,		/* подстройка полосы пропускания - TX SSB */
-		ITEM_VALUE,
+		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		BWLEFTMIN, BWLEFTMAX,		// 50 Hz..700 Hz
 		RMT_BWPROPSLEFT_BASE(BWPROPI_DIGIWIDE),
 		NULL,
