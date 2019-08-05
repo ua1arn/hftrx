@@ -2275,7 +2275,7 @@ r7s721_adi_irq_handler(void)
 		{
 			// Select next ADC input (only one)
 			const uint_fast8_t adci = board_get_adcch(adc_input);
-			if (adci < BOARD_ADCXBASE)
+			if (adci < BOARD_ADCX0BASE && adci < BOARD_ADCX1BASE)
 			{
 				ADC.ADCSR = (ADC.ADCSR & ~ (ADC_SR_ADF | ADC_SR_CH)) | 
 					(adci << ADC_SR_CH_SHIFT) |	// канал для преобразования
@@ -3040,7 +3040,8 @@ hardware_adc_startonescan(void)
 		return;	// не успели
 	for (adc_input = 0; adc_input < board_get_adcinputs(); ++ adc_input)
 	{
-		if (board_get_adcch(adc_input) < BOARD_ADCXBASE)
+		const uint_fast8_t adci = board_get_adcch(adc_input);
+		if (adci < BOARD_ADCX0BASE && adci < BOARD_ADCX1BASE)
 			break;
 	}
 	if (adc_input >= board_get_adcinputs())
@@ -9364,6 +9365,7 @@ void IRQ_Handler(void)
 	IRQ_EndOfInterrupt(irqn);
 }
 
+#if 0
 /* Вызывается из crt_r7s721.s со сброшенным флагом прерываний */
 void IRQ_HandlerXXXXX(void)
 {
@@ -9406,7 +9408,7 @@ void IRQ_HandlerXXXXX(void)
 		GICD_IPRIORITYRn(0) = GICD_IPRIORITYRn(0);
 	}
 }
-
+#endif
 static const char * mode_trig(uint32_t mode)
 {
 	switch (mode & IRQ_MODE_TRIG_Msk)
@@ -10150,7 +10152,7 @@ if (0)
 	GIC_EnableDistributor();	// check GICDistributor->CTLR a same for INTC.ICDDCR
 }
 
-
+#if 0
 /* Вызывается из crt_r7s721.s со сброшенным флагом прерываний */
 void IRQ_HandlerOld(void)
 {
@@ -10370,6 +10372,8 @@ if (0)
     //INTC.ICDDCR = 0x00000001uL;
 	GIC_EnableDistributor();	// check GICDistributor->CTLR a same for INTC.ICDDCR
 }
+
+#endif
 
 uint8_t __attribute__ ((section(".stack"), used, aligned(32))) mystack [8192];
 /******************************************************************************/

@@ -7709,7 +7709,7 @@ static uint_fast8_t adc_data_k [HARDWARE_ADCINPUTS];	/* параметр (час
 /* получить максимальное возможное значение от АЦП */
 adcvalholder_t board_getadc_fsval(uint_fast8_t adci)	
 {
-	if (adci >= BOARD_ADCXBASE)
+	if (adci >= BOARD_ADCX0BASE || adci >= BOARD_ADCX1BASE)
 	{
 		return 4095;	// MCP3208
 	}
@@ -7726,11 +7726,23 @@ adcvalholder_t board_getadc_filtered_truevalue(uint_fast8_t adci)
 /* получить значение от АЦП */
 adcvalholder_t board_getadc_unfiltered_truevalue(uint_fast8_t adci)	
 {
-	if (adci >= BOARD_ADCXBASE)
+	if (adci >= BOARD_ADCX1BASE)
 	{
+		// P2_0 external SPI device (PA BOARD ADC)
+#if defined (targetext2)
+		uint_fast8_t valid;
+		uint_fast8_t ch = adci - BOARD_ADCX1BASE;
+		return mcp3208_read(targetext2, 0, ch, & valid);
+#else /* defined (targetadc2) */
+		return 0;
+#endif /* defined (targetadc2) */
+	}
+	if (adci >= BOARD_ADCX0BASE)
+	{
+		/* P2_3 ADC MCP3208-BI/SL chip select */
 #if defined (targetadc2)
 		uint_fast8_t valid;
-		uint_fast8_t ch = adci - BOARD_ADCXBASE;
+		uint_fast8_t ch = adci - BOARD_ADCX0BASE;
 		return mcp3208_read(targetadc2, 0, ch, & valid);
 #else /* defined (targetadc2) */
 		return 0;
@@ -7759,7 +7771,7 @@ uint_fast16_t board_getadc_filtered_u16(uint_fast8_t adci, uint_fast16_t lower, 
 	return v;
 }
 
-static adcvalholder_t hysts [BOARD_ADCXBASE + 16];
+static adcvalholder_t hysts [BOARD_ADCX0BASE + 16];
 
 /* получить отфильтрованное значение от АЦП в диапазоне lower..upper (включая границы) */
 /* поскольку используется для получения позиции потенциометра, применяется фильтрация "гистерезис" */
