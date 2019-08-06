@@ -3437,13 +3437,11 @@ agc_delaysignal(
 // получение измеренного уровня сигнала
 static RAMFUNC FLOAT_t agc_measure_float(
 	const uint_fast8_t dspmode, 
-	FLOAT32P_t sampleiq, 
+	FLOAT_t siglevel0,
 	uint_fast8_t pathi
 	)
 {
 	BEGIN_STAMP3();
-
-	const FLOAT_t siglevel0 = agc_getsiglevel(sampleiq);
 
 	const volatile agcparams_t * const agcp = & rxagcparams [gwagcprofrx] [pathi];
 	volatile agcstate_t * const st = & rxagcstate [pathi];
@@ -4304,7 +4302,7 @@ static RAMFUNC_NONILINE FLOAT_t baseband_demodulator(
 	case DSPCTL_MODE_RX_FREEDV:
 		{
 			// use floating point
-			const FLOAT_t fltstrengthslow = agc_measure_float(dspmode, vp0f, pathi);
+			const FLOAT_t fltstrengthslow = agc_measure_float(dspmode, agc_getsiglevel(vp0f), pathi);
 			const FLOAT_t gain = agc_getgain_float(fltstrengthslow, pathi);
 			const FLOAT32P_t vp1 = scalepair(agc_delaysignal(vp0f, pathi), gain);
 			const FLOAT32P_t af = get_float_aflo_delta(0, pathi);	// средняя частота выходного спектра
@@ -4318,7 +4316,7 @@ static RAMFUNC_NONILINE FLOAT_t baseband_demodulator(
 	case DSPCTL_MODE_RX_BPSK:
 		if (pathi == 0)
 		{
-			/*const FLOAT_t fltstrengthslow = */ agc_measure_float(dspmode, vp0f, pathi);
+			/*const FLOAT_t fltstrengthslow = */ agc_measure_float(dspmode, agc_getsiglevel(vp0f), pathi);
 			//const FLOAT_t gain = agc_getgain_float(fltstrengthslow, pathi);
 			//INT32P_t vp0i32;
 			//saved_delta_fi [pathi] = demodulator_FM(vp0f, pathi);	// погрешность настройки - требуется фильтровать ФНЧ
@@ -4332,7 +4330,7 @@ static RAMFUNC_NONILINE FLOAT_t baseband_demodulator(
 		if (/*DUALRXFLT || */pathi == 0)
 		{
 			// Демодуляция NBFM
-			const FLOAT_t fltstrengthslow = agc_measure_float(dspmode, vp0f, pathi);
+			const FLOAT_t fltstrengthslow = agc_measure_float(dspmode, agc_getsiglevel(vp0f), pathi);
 			//const FLOAT_t gain = agc_getgain_float(fltstrengthslow, pathi);
 			saved_delta_fi [pathi] = demodulator_FM(vp0f, pathi);	// погрешность настройки - требуется фильтровать ФНЧ
 			//const int fdelta10 = ((int64_t) saved_delta_fi [pathi] * ARMSAIRATE * 10) >> 32;	// Отклнение частоты в 0.1 герц единицах
@@ -4351,7 +4349,7 @@ static RAMFUNC_NONILINE FLOAT_t baseband_demodulator(
 		{
 			/* AM demodulation */
 			// Здесь, имея квадратурные сигналы vp1.IV и vp1.QV, начинаем демодуляции
-			const FLOAT_t fltstrengthslow = agc_measure_float(dspmode, vp0f, pathi);
+			const FLOAT_t fltstrengthslow = agc_measure_float(dspmode, agc_getsiglevel(vp0f), pathi);
 			const FLOAT_t gain = agc_getgain_float(fltstrengthslow, pathi);
 			const FLOAT32P_t vp1 = scalepair(agc_delaysignal(vp0f, pathi), gain);
 			// Демодуляция АМ
@@ -4373,7 +4371,7 @@ static RAMFUNC_NONILINE FLOAT_t baseband_demodulator(
 		{
 			/* synchronous AM demodulation */
 			// Здесь, имея квадратурные сигналы vp1.IV и vp1.QV, начинаем демодуляции
-			const FLOAT_t fltstrengthslow = agc_measure_float(dspmode, vp0f, pathi);
+			const FLOAT_t fltstrengthslow = agc_measure_float(dspmode, agc_getsiglevel(vp0f), pathi);
 			const FLOAT_t gain = agc_getgain_float(fltstrengthslow, pathi);
 			const FLOAT32P_t vp1 = scalepair(agc_delaysignal(vp0f, pathi), gain);
 			//const FLOAT_t sample = SQRTF(vp1.IV * vp1.IV + vp1.QV * vp1.QV) * (FLOAT_t) 0.5; //M_SQRT1_2;
@@ -5025,7 +5023,7 @@ int dsp_mag2y(FLOAT_t mag, int ymax, int_fast16_t topdb, int_fast16_t bottomdb)
 #if WITHDSPEXTDDC
 // использование данных о спектре, передаваемых в общем фрейме
 static void RAMFUNC 
-saverts96(const uint32_t * buff)
+saverts96(const int32_t * buff)
 {
 #if WITHRTS96 && ! WITHTRANSPARENTIQ
 #if WITHUSBHW && WITHUSBUAC
@@ -5205,11 +5203,12 @@ static void save16demod(FLOAT_t ch0, FLOAT_t ch1)
 #if WITHDSPEXTDDC
 // Обработка полученного от DMA буфера с выборками или квадратурами (или двухканальный приём).
 // Вызывается на ARM_REALTIME_PRIORITY уровне.
-void RAMFUNC dsp_extbuffer32wfm(const uint32_t * buff)
+void RAMFUNC dsp_extbuffer32wfm(const int32_t * buff)
 {
+	const uint_fast8_t pathi = 0;
 	ASSERT(buff != NULL);
 	ASSERT(gwprof < NPROF);
-	const uint_fast8_t dspmodeA = globDSPMode [gwprof] [0];
+	const uint_fast8_t dspmodeA = globDSPMode [gwprof] [pathi];
 	unsigned i;
 
 	//memcpy(dd, buff, sizeof dd);
@@ -5218,16 +5217,27 @@ void RAMFUNC dsp_extbuffer32wfm(const uint32_t * buff)
 	{
 		for (i = 0; i < DMABUFFSIZE32RX; i += DMABUFSTEP32RX)
 		{
-			//volatile const FLOAT_t left = get_lout16();
-
+			// Детектор
 			const FLOAT_t a0 = demod_WFM(buff [i + DMABUF32RXWFM0I], buff [i + DMABUF32RXWFM0Q]);
 			const FLOAT_t a1 = demod_WFM(buff [i + DMABUF32RXWFM1I], buff [i + DMABUF32RXWFM1Q]);
 			const FLOAT_t a2 = demod_WFM(buff [i + DMABUF32RXWFM2I], buff [i + DMABUF32RXWFM2Q]);
 			const FLOAT_t a3 = demod_WFM(buff [i + DMABUF32RXWFM3I], buff [i + DMABUF32RXWFM3Q]);
 
+			//volatile const FLOAT_t left = get_lout16();
 			const FLOAT_t left = (a0 + a1 + a2 + a3) / 4;
-
 			save16demod(left, left);
+
+			// Измеритль уровня
+			const FLOAT32P_t p0 = { { buff [i + DMABUF32RXWFM0I], buff [i + DMABUF32RXWFM0Q] } };
+			const FLOAT_t l0 = agc_getsiglevel(p0);
+			const FLOAT32P_t p1 = { { buff [i + DMABUF32RXWFM1I], buff [i + DMABUF32RXWFM1Q] } };
+			const FLOAT_t l1 = agc_getsiglevel(p1);
+			const FLOAT32P_t p2 = { { buff [i + DMABUF32RXWFM2I], buff [i + DMABUF32RXWFM2Q] } };
+			const FLOAT_t l2 = agc_getsiglevel(p2);
+			const FLOAT32P_t p3 = { { buff [i + DMABUF32RXWFM3I], buff [i + DMABUF32RXWFM3Q] } };
+			const FLOAT_t l3 = agc_getsiglevel(p3);
+
+			agc_measure_float(DSPCTL_MODE_RX_WFM, FMAXF(FMAXF(l0, l1), FMAXF(l2, l3)) / 2, pathi);
 		}
 	}
 }
@@ -5324,7 +5334,7 @@ void dsp_addsidetone(int16_t * buff)
 
 // Обработка полученного от DMA буфера с выборками или квадратурами (или двухканальный приём).
 // Вызывается на ARM_REALTIME_PRIORITY уровне.
-void RAMFUNC dsp_extbuffer32rx(const uint32_t * buff)
+void RAMFUNC dsp_extbuffer32rx(const int32_t * buff)
 {
 	ASSERT(buff != NULL);
 	ASSERT(gwprof < NPROF);
