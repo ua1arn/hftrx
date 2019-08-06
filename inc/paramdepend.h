@@ -558,6 +558,12 @@ extern "C" {
 
 	#define ARM_CA9_CACHELEVELMAX	1	/* максимальный уровень cache в процессоре */
 
+#elif CPUSTYLE_STM32MP15
+
+	#define ARM_CA9_PRIORITYSHIFT 3	/* ICCPMR[7:3] is valid bit */
+	/* тип для хранения данных, считанных с АЦП */
+	typedef uint_fast16_t adcvalholder_t;
+
 #else
 
 	#error Undefined CPUSTYLE_XXX
