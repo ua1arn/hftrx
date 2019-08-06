@@ -3175,6 +3175,8 @@ enum
 	#if WITHRTS96 || WITHRTS192 || WITHTRANSPARENTIQ
 		static uint_fast8_t  gswapiq;		/* Поменять местами I и Q сэмплы в потоке RTS96 */
 	#endif /* WITHRTS96 || WITHRTS192 || WITHTRANSPARENTIQ */
+#else /* WITHUSBUAC */
+	enum { guacplayer = 0 };
 #endif /* WITHUSBUAC */
 #if WITHAFCODEC1HAVEPROC
 	static uint_fast8_t gmikeequalizer;	// включение обработки сигнала с микрофона (эффекты, эквалайзер, ...)

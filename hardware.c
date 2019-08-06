@@ -11553,7 +11553,7 @@ static void vectors_relocate(void)
 {
 	unsigned i;
 
-	debug_printf_P(PSTR("SCB->VTOR=%08lX\n"), SCB->VTOR);
+	//debug_printf_P(PSTR("SCB->VTOR=%08lX\n"), SCB->VTOR);
 	memcpy((void *) ramVectors, __Vectors, NVIC_USER_IRQ_OFFSET * 4);
 	for (i = NVIC_USER_IRQ_OFFSET; i < (sizeof ramVectors / sizeof ramVectors [0]); ++ i)
 	{
@@ -11561,9 +11561,9 @@ static void vectors_relocate(void)
 	}
 	SCB->VTOR = (uint32_t) & ramVectors;
 
-	debug_printf_P(PSTR("SCB->VTOR=%08lX\n"), SCB->VTOR);
-	ASSERT(memcmp((void *) ramVectors, __Vectors, NVIC_USER_IRQ_OFFSET * 4) == 0);
-	ASSERT(SCB->VTOR == (uint32_t) & ramVectors);
+	//debug_printf_P(PSTR("SCB->VTOR=%08lX\n"), SCB->VTOR);
+	//ASSERT(memcmp((void *) ramVectors, __Vectors, NVIC_USER_IRQ_OFFSET * 4) == 0);
+	//ASSERT(SCB->VTOR == (uint32_t) & ramVectors);
 }
 #endif /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM0 || CPUSTYLE_ARM_CM7 */
 

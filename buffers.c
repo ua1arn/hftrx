@@ -192,14 +192,14 @@ enum
 	typedef ALIGNX_BEGIN struct voices32tx_tag
 	{
 		LIST_ENTRY item;
-		ALIGNX_BEGIN uint32_t buff [DMABUFFSIZE32TX] ALIGNX_END;
+		ALIGNX_BEGIN int32_t buff [DMABUFFSIZE32TX] ALIGNX_END;
 	} ALIGNX_END voice32tx_t;
 
 	// I/Q data from FPGA or IF CODEC
 	typedef ALIGNX_BEGIN struct voices32rx_tag
 	{
 		LIST_ENTRY item;
-		ALIGNX_BEGIN uint32_t buff [DMABUFFSIZE32RX] ALIGNX_END;
+		ALIGNX_BEGIN int32_t buff [DMABUFFSIZE32RX] ALIGNX_END;
 	} ALIGNX_END voice32rx_t;
 
 	static RAMDTCM const uint_fast8_t VOICESMIKE16NORMAL = 5;	// Нормальное количество буферов в очереди

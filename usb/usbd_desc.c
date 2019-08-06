@@ -268,6 +268,21 @@ static uint_fast16_t encodeMaxPacketSize(uint_fast32_t size)
 		return (0x02 << 11) | ((size + 2) / 3);	// 683..1024
 }
 
+// See audio10.pdf - 3.7.2.3 Audio Channel Cluster Format
+static uint_fast8_t
+UAC_count_channels(
+	uint_fast16_t wChannelConfig
+	)
+{
+	uint_fast8_t bNrChannels;
+
+	wChannelConfig &= 0x0FFF;	// считаются только predefined поля;
+	for (bNrChannels = 0; wChannelConfig != 0; wChannelConfig >>= 1)
+	{
+		bNrChannels += (wChannelConfig & 0x01) != 0;
+	}
+	return bNrChannels;
+}
 
 /* Header Functional Descriptor */
 static unsigned r9fill_31(uint_fast8_t fill, uint8_t * buff, unsigned maxsize)
@@ -407,7 +422,7 @@ static unsigned r9fill_3(uint_fast8_t fill, uint8_t * buff, unsigned maxsize,
 // Audio Control Input Terminal Descriptor 
 // audio10.pdf: Table 4-3: Input Terminal Descriptor
 // Sereo signal source
-// Audio или RTS
+// Audio only
 static unsigned UAC_AudioControlIT_IN48(uint_fast8_t fill, uint8_t * buff, unsigned maxsize, uint_fast8_t bTerminalID, uint_fast8_t offset)
 {
 	const uint_fast8_t length = 12;
@@ -418,10 +433,8 @@ static unsigned UAC_AudioControlIT_IN48(uint_fast8_t fill, uint8_t * buff, unsig
 	{
 		// 4.3.2.1 Input Terminal Descriptor 
 		const uint_fast16_t wTerminalType = AUDIO_TERMINAL_RADIO_RECEIVER;
-		const uint_fast8_t bNrChannels = HARDWARE_USBD_AUDIO_IN_CHANNELS_AUDIO48;
-		const uint_fast16_t wChannelConfig = bNrChannels == 1 ? 
-			AUDIO_CHANNEL_M : // Mono
-			(AUDIO_CHANNEL_L | AUDIO_CHANNEL_R);	// Left Front & Right Front
+		const uint_fast16_t wChannelConfig = HARDWARE_USBD_AUDIO_CONFIG_IN48;
+		const uint_fast8_t bNrChannels = UAC_count_channels(wChannelConfig);
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = AUDIO_INTERFACE_DESCRIPTOR_TYPE; // CS_INTERFACE Descriptor Type
@@ -456,10 +469,8 @@ static unsigned UAC_AudioControlIT_IN48_INRTS(uint_fast8_t fill, uint8_t * buff,
 	{
 		// 4.3.2.1 Input Terminal Descriptor
 		const uint_fast16_t wTerminalType = AUDIO_TERMINAL_RADIO_RECEIVER;
-		const uint_fast8_t bNrChannels = HARDWARE_USBD_AUDIO_IN_CHANNELS_AUDIO48_RTS;
-		const uint_fast16_t wChannelConfig = bNrChannels == 1 ?
-			AUDIO_CHANNEL_M : // Mono
-			(AUDIO_CHANNEL_L | AUDIO_CHANNEL_R);	// Left Front & Right Front
+		const uint_fast16_t wChannelConfig = HARDWARE_USBD_AUDIO_CONFIG_IN48_INRTS;
+		const uint_fast8_t bNrChannels = UAC_count_channels(wChannelConfig);
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = AUDIO_INTERFACE_DESCRIPTOR_TYPE; // CS_INTERFACE Descriptor Type
@@ -489,10 +500,8 @@ static unsigned UAC_AudioControlIT_INRTS(uint_fast8_t fill, uint8_t * buff, unsi
 	{
 		// 4.3.2.1 Input Terminal Descriptor 
 		const uint_fast16_t wTerminalType = AUDIO_TERMINAL_RADIO_RECEIVER;
-		const uint_fast8_t bNrChannels = HARDWARE_USBD_AUDIO_IN_CHANNELS_RTS; // для канала со спектром всегда стерео. но это не тут указано
-		const uint_fast16_t wChannelConfig = bNrChannels == 1 ? 
-			AUDIO_CHANNEL_M : // Mono
-			(AUDIO_CHANNEL_L | AUDIO_CHANNEL_R);	// Left Front & Right Front
+		const uint_fast16_t wChannelConfig = HARDWARE_USBD_AUDIO_CONFIG_INRTS;
+		const uint_fast8_t bNrChannels = UAC_count_channels(wChannelConfig);
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = AUDIO_INTERFACE_DESCRIPTOR_TYPE; // CS_INTERFACE Descriptor Type
@@ -505,7 +514,7 @@ static unsigned UAC_AudioControlIT_INRTS(uint_fast8_t fill, uint8_t * buff, unsi
 		* buff ++ = bNrChannels;    /* bNrChannels */
 		* buff ++ = LO_BYTE(wChannelConfig);   /* bmChannelConfig size = 4 bytes Mono sets no position bits */
 		* buff ++ = HI_BYTE(wChannelConfig);
-		* buff ++ = 0;							/* iChannelNames */
+		* buff ++ = STRING_ID_Left;							/* iChannelNames */
 		* buff ++ = STRING_ID_IQSPECTRUM;		// iTerminal - Index of a string descriptor, describing the Input Terminal. Receiver Output
 
 	}
@@ -516,7 +525,7 @@ static unsigned UAC_AudioControlIT_INRTS(uint_fast8_t fill, uint8_t * buff, unsi
 // Audio Control Input Terminal Descriptor 
 // audio10.pdf: Table 4-3: Input Terminal Descriptor
 // audio48 only
-static unsigned UAC_AudioControlIT_OUT(
+static unsigned UAC_AudioControlIT_OUT48(
 	uint_fast8_t fill, uint8_t * buff, unsigned maxsize, 
 	uint_fast8_t bTerminalID,
 	uint_fast8_t offset
@@ -530,11 +539,9 @@ static unsigned UAC_AudioControlIT_OUT(
 	{
 		// 4.3.2.1 Input Terminal Descriptor 
 		const uint_fast16_t wTerminalType = AUDIO_TERMINAL_USB_STREAMING;
-		const uint_fast8_t bNrChannels = HARDWARE_USBD_AUDIO_OUT_CHANNELS;
-		const uint_fast16_t wChannelConfig = bNrChannels == 1 ? 
-			AUDIO_CHANNEL_M : // Mono
-			(AUDIO_CHANNEL_L | AUDIO_CHANNEL_R);	// Left Front & Right Front
-
+		const uint_fast16_t wChannelConfig = HARDWARE_USBD_AUDIO_CONFIG_OUT48;
+		const uint_fast8_t bNrChannels = UAC_count_channels(wChannelConfig);
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;									/* bLength */
 		* buff ++ = AUDIO_INTERFACE_DESCRIPTOR_TYPE;		/* bDescriptorType */
 		* buff ++ = AUDIO_CONTROL_INPUT_TERMINAL;			/* bDescriptorSubtype */
@@ -700,21 +707,19 @@ static unsigned UAC_AudioControlOT_OUT(
 	return length;
 }
 
-#define WITHUSENOFU 0	// 1 - без использования Feature Unit, 0 - с использованием, игнорирование управления громкостью
-
 // Заполнение схемы ввода звука
 // IN data flow
 // Элементы добавлояются в дескрипотор в порядке обратном порядку прохождения информационного потока
 // 
 static unsigned UAC_AudioControlIfCircuitIN48(
 	uint_fast8_t fill, uint8_t * p, unsigned maxsize, 
-	uint_fast8_t bTerminalID,	// Завершающий поток обраьотки терминал
+	uint_fast8_t bTerminalID,	// терминал, завершающий поток обработки
 	uint_fast8_t offset
 	)
 {
 	unsigned n = 0;
 
-	if (WITHUSENOFU)
+	if (WITHUSENOFU_IN48)
 	{
 		// Только один источник для компьютера
 		n += UAC_AudioControlOT_IN(fill, p + n, maxsize - n,  bTerminalID, bTerminalID + 1, offset);	/* AUDIO_TERMINAL_USB_STREAMING Terminal Descriptor TERMINAL_ID_IT_2 -> TERMINAL_UACIN48_UACINRTS */
@@ -737,13 +742,13 @@ static unsigned UAC_AudioControlIfCircuitIN48(
 //
 static unsigned UAC_AudioControlIfCircuitIN48_INRTS(
 	uint_fast8_t fill, uint8_t * p, unsigned maxsize,
-	uint_fast8_t bTerminalID,	// Завершающий поток обраьотки терминал
+	uint_fast8_t bTerminalID,	// терминал, завершающий поток обработки
 	uint_fast8_t offset
 	)
 {
 	unsigned n = 0;
 
-	if (WITHUSENOFU)
+	if (WITHUSENOFU_IN48_INRTS)
 	{
 		// Только один источник для компьютера
 		n += UAC_AudioControlOT_IN(fill, p + n, maxsize - n,  bTerminalID, bTerminalID + 1, offset);	/* AUDIO_TERMINAL_USB_STREAMING Terminal Descriptor TERMINAL_ID_IT_2 -> TERMINAL_UACIN48_UACINRTS */
@@ -765,21 +770,21 @@ static unsigned UAC_AudioControlIfCircuitIN48_INRTS(
 // audio48 only
 static unsigned UAC_AudioControlIfCircuitOUT48(
 	uint_fast8_t fill, uint8_t * p, unsigned maxsize, 
-	uint_fast8_t bTerminalID,	// Завершающий поток обраьотки терминал
+	uint_fast8_t bTerminalID,	// терминал, завершающий поток обработки
 	uint_fast8_t offset
 	)
 {
 	unsigned n = 0;
 
-	if (WITHUSENOFU)
+	if (WITHUSENOFU_OUT48)
 	{
 		// без feature unit между IT и OT
-		n += UAC_AudioControlIT_OUT(fill, p + n, maxsize - n, bTerminalID, offset);	/* AUDIO_TERMINAL_USB_STREAMING Input Terminal Descriptor TERMINAL_UACOUT48 + offset */
+		n += UAC_AudioControlIT_OUT48(fill, p + n, maxsize - n, bTerminalID, offset);	/* AUDIO_TERMINAL_USB_STREAMING Input Terminal Descriptor TERMINAL_UACOUT48 + offset */
 		n += UAC_AudioControlOT_OUT(fill, p + n, maxsize - n, bTerminalID + 1, bTerminalID);	/* AUDIO_TERMINAL_RADIO_TRANSMITTER Output Terminal Descriptor TERMINAL_UACOUT48 + offset -> TERMINAL_ID_OT_3 + offset */
 	}
 	else
 	{
-		n += UAC_AudioControlIT_OUT(fill, p + n, maxsize - n, bTerminalID, offset);	/* AUDIO_TERMINAL_USB_STREAMING Input Terminal Descriptor TERMINAL_UACOUT48 */
+		n += UAC_AudioControlIT_OUT48(fill, p + n, maxsize - n, bTerminalID, offset);	/* AUDIO_TERMINAL_USB_STREAMING Input Terminal Descriptor TERMINAL_UACOUT48 */
 		n += UAC_AudioFeatureUnit(fill, p + n, maxsize - n, bTerminalID + 1, bTerminalID);	/* USB Speaker Audio Feature Unit Descriptor TERMINAL_UACOUT48 -> TERMINAL_ID_FU_5 */
 		n += UAC_AudioControlOT_OUT(fill, p + n, maxsize - n, bTerminalID + 2, bTerminalID + 1);	/* AUDIO_TERMINAL_RADIO_TRANSMITTER Output Terminal Descriptor TERMINAL_ID_FU_5 -> TERMINAL_ID_OT_3 */
 	}
@@ -791,13 +796,13 @@ static unsigned UAC_AudioControlIfCircuitOUT48(
 // 
 static unsigned UAC_AudioControlIfCircuitINRTS(
 	uint_fast8_t fill, uint8_t * p, unsigned maxsize, 
-	uint_fast8_t bTerminalID,	// Завершающий поток обраьотки терминал
+	uint_fast8_t bTerminalID,	// терминал, завершающий поток обработки
 	uint_fast8_t offset
 	)
 {
 	unsigned n = 0;
 
-	if (WITHUSENOFU)
+	if (WITHUSENOFU_INRTS)
 	{
 		// Только один источник для компьютера
 		n += UAC_AudioControlOT_IN(fill, p + n, maxsize - n,  bTerminalID, bTerminalID + 1, offset);	/* AUDIO_TERMINAL_USB_STREAMING Terminal Descriptor TERMINAL_ID_IT_2 -> TERMINAL_UACIN48_UACINRTS */
@@ -894,7 +899,7 @@ static unsigned r9fill_10(
 
 /* USB Speaker Audio Type I Format Interface Descriptor */
 // USBLyzer: Audio Streaming Format Type Descriptor 
-static unsigned r9fill_13(uint_fast8_t fill, uint8_t * buff, unsigned maxsize)
+static unsigned UAC_format_desc_OUT48(uint_fast8_t fill, uint8_t * buff, unsigned maxsize)
 {
 	const uint_fast8_t length = 11;
 	ASSERT(maxsize >= length);
@@ -908,9 +913,9 @@ static unsigned r9fill_13(uint_fast8_t fill, uint8_t * buff, unsigned maxsize)
 		* buff ++ = AUDIO_INTERFACE_DESCRIPTOR_TYPE;		/* bDescriptorType */
 		* buff ++ = AUDIO_STREAMING_FORMAT_TYPE;			/* bDescriptorSubtype */
 		* buff ++ = AUDIO_FORMAT_TYPE_I;							/* bFormatType */
-		* buff ++ = HARDWARE_USBD_AUDIO_OUT_CHANNELS;		/* bNrChannels */
-		* buff ++ = (HARDWARE_USBD_AUDIO_OUT_SAMPLEBITS + 7) / 8; /* bSubFrameSize :  2 Bytes per frame (16bits) */
-		* buff ++ = HARDWARE_USBD_AUDIO_OUT_SAMPLEBITS;		/* bBitResolution (16-bits per sample) */
+		* buff ++ = HARDWARE_USBD_AUDIO_OUT_CHANNELS_AUDIO48;		/* bNrChannels */
+		* buff ++ = (HARDWARE_USBD_AUDIO_OUT_SAMPLEBITS_AUDIO48 + 7) / 8; /* bSubFrameSize :  2 Bytes per frame (16bits) */
+		* buff ++ = HARDWARE_USBD_AUDIO_OUT_SAMPLEBITS_AUDIO48;		/* bBitResolution (16-bits per sample) */
 		* buff ++ = 1;										/* bSamFreqType only one frequency supported */
 		* buff ++ = LO_BYTE(samplefreq1);	/* Audio sampling frequency coded on 3 bytes */
 		* buff ++ = HI_BYTE(samplefreq1);
@@ -922,7 +927,7 @@ static unsigned r9fill_13(uint_fast8_t fill, uint8_t * buff, unsigned maxsize)
 
 /* Endpoint 1 - Standard Descriptor */
 // out: from computer to our device
-static unsigned r9fill_14(uint_fast8_t fill, uint8_t * buff, unsigned maxsize, uint_fast8_t bEndpointAddress, int highspeed)
+static unsigned r9fill_14_OUT48(uint_fast8_t fill, uint8_t * buff, unsigned maxsize, uint_fast8_t bEndpointAddress, int highspeed)
 {
 	const uint_fast8_t length = 9;
 	ASSERT(maxsize >= length);
@@ -947,7 +952,7 @@ static unsigned r9fill_14(uint_fast8_t fill, uint8_t * buff, unsigned maxsize, u
 }
 
 /* Endpoint - Audio Streaming Descriptor*/
-static unsigned r9fill_15(uint_fast8_t fill, uint8_t * buff, unsigned maxsize)
+static unsigned r9fill_15_OUT48(uint_fast8_t fill, uint8_t * buff, unsigned maxsize)
 {
 	const uint_fast8_t length = 7;
 	ASSERT(maxsize >= length);
@@ -1000,7 +1005,7 @@ static unsigned r9fill_24(
 
 /* USB Microphone Type I Format Type Descriptor (CODE == 6)*/
 // Audio Streaming Format Type Descriptor 
-static unsigned UAC_r9fill_26_audio48(uint_fast8_t fill, uint8_t * buff, unsigned maxsize)
+static unsigned UAC_r9fill_26_IN48(uint_fast8_t fill, uint8_t * buff, unsigned maxsize)
 {
 	const uint_fast8_t length = 11;
 	ASSERT(maxsize >= length);
@@ -1027,7 +1032,7 @@ static unsigned UAC_r9fill_26_audio48(uint_fast8_t fill, uint8_t * buff, unsigne
 
 /* USB Microphone Standard Endpoint Descriptor (CODE == 8)*/ //Standard AS Isochronous Audio Data Endpoint Descriptor
 // Endpoint Descriptor 82 2 In, Isochronous, 125 us
-static unsigned UAC_r9fill_27_audio48(uint_fast8_t fill, uint8_t * buff, unsigned maxsize, int highspeed, uint_fast8_t bEndpointAddress, uint8_t offset)
+static unsigned UAC_r9fill_27_IN48(uint_fast8_t fill, uint8_t * buff, unsigned maxsize, int highspeed, uint_fast8_t bEndpointAddress, uint8_t offset)
 {
 	const uint_fast8_t length = 9;
 	ASSERT(maxsize >= length);
@@ -1235,8 +1240,8 @@ static unsigned fill_UACIN48_function(uint_fast8_t fill, uint8_t * p, unsigned m
 	// IN data flow: radio RX audio data
 	n += r9fill_24(fill, p + n, maxsize - n, mikeifv, ialt ++, 1, offset);	/* INTERFACE_AUDIO_MIKE Interface Descriptor 2/1 Audio, 1 Endpoint, bAlternateSetting=0x01 */
 	n += UAC_AudioStreamingIf(fill, p + n, maxsize - n, terminalID);	/* USB Microphone Class-specific AS General Interface Descriptor (for output TERMINAL_UACIN48_UACINRTS) (CODE == 5) */
-	n += UAC_r9fill_26_audio48(fill, p + n, maxsize - n);		/* USB Microphone Type I Format Type Descriptor (CODE == 6) 48000 */
-	n += UAC_r9fill_27_audio48(fill, p + n, maxsize - n, highspeed, epin, offset);	/* Endpoint Descriptor USBD_EP_AUDIO_IN In, Isochronous, 125 us */
+	n += UAC_r9fill_26_IN48(fill, p + n, maxsize - n);		/* USB Microphone Type I Format Type Descriptor (CODE == 6) 48000 */
+	n += UAC_r9fill_27_IN48(fill, p + n, maxsize - n, highspeed, epin, offset);	/* Endpoint Descriptor USBD_EP_AUDIO_IN In, Isochronous, 125 us */
 	n += r9fill_28(fill, p + n, maxsize - n);	/* USB Microphone Class-specific Isoc. Audio Data Endpoint Descriptor (CODE == 7) OK - ???????????? ?????????????*/
 
 	return n;
@@ -1305,8 +1310,8 @@ static unsigned fill_UACIN48_INRTS_function(uint_fast8_t fill, uint8_t * p, unsi
 	// IN data flow: radio RX audio data
 	n += r9fill_24(fill, p + n, maxsize - n, mikeifv, ialt ++, 1, offset);	/* INTERFACE_AUDIO_MIKE Interface Descriptor 2/1 Audio, 1 Endpoint, bAlternateSetting=0x01 */
 	n += UAC_AudioStreamingIf(fill, p + n, maxsize - n, terminalID);	/* USB Microphone Class-specific AS General Interface Descriptor (for output TERMINAL_UACIN48_UACINRTS) (CODE == 5) */
-	n += UAC_r9fill_26_audio48(fill, p + n, maxsize - n);		/* USB Microphone Type I Format Type Descriptor (CODE == 6) 48000 */
-	n += UAC_r9fill_27_audio48(fill, p + n, maxsize - n, highspeed, epin, offset);	/* Endpoint Descriptor USBD_EP_AUDIO_IN In, Isochronous, 125 us */
+	n += UAC_r9fill_26_IN48(fill, p + n, maxsize - n);		/* USB Microphone Type I Format Type Descriptor (CODE == 6) 48000 */
+	n += UAC_r9fill_27_IN48(fill, p + n, maxsize - n, highspeed, epin, offset);	/* Endpoint Descriptor USBD_EP_AUDIO_IN In, Isochronous, 125 us */
 	n += r9fill_28(fill, p + n, maxsize - n);	/* USB Microphone Class-specific Isoc. Audio Data Endpoint Descriptor (CODE == 7) OK - подтверждено документацией*/
 
 #if WITHRTS96
@@ -1354,9 +1359,9 @@ static unsigned fill_UACOUT48_function(uint_fast8_t fill, uint8_t * p, unsigned 
 
 	n += r9fill_10(fill, p + n, maxsize - n, modulatorifv, ialt ++, 1, offset);	/* INTERFACE_AUDIO_SPK -  Interface 1, Alternate Setting 1 */
 	n += UAC_AudioStreamingIf(fill, p + n, maxsize - n, terminalID);	/* USB Speaker Audio Streaming Interface Descriptor (for output TERMINAL_UACOUT48 + offset) */
-	n += r9fill_13(fill, p + n, maxsize - n);	/* USB Speaker Audio Type I Format Interface Descriptor (one sample rate) 48000 */
-	n += r9fill_14(fill, p + n, maxsize - n, epout, highspeed);	/* Endpoint USBD_EP_AUDIO_OUT - Standard Descriptor */
-	n += r9fill_15(fill, p + n, maxsize - n);	/* Endpoint - Audio Streaming Descriptor */
+	n += UAC_format_desc_OUT48(fill, p + n, maxsize - n);	/* USB Speaker Audio Type I Format Interface Descriptor (one sample rate) 48000 */
+	n += r9fill_14_OUT48(fill, p + n, maxsize - n, epout, highspeed);	/* Endpoint USBD_EP_AUDIO_OUT - Standard Descriptor */
+	n += r9fill_15_OUT48(fill, p + n, maxsize - n);	/* Endpoint - Audio Streaming Descriptor */
 
 	return n;
 }
