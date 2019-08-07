@@ -335,8 +335,6 @@ extern "C" {
 	#include "armcpu/iodefine.h"
 	#include "rza_io_regrw.h"
 
-	//#include "hardware_r7s721.h"
-
 	#define ALIGNX_BEGIN __attribute__ ((aligned(32))) 
 	#define ALIGNX_END /* nothing */
 
@@ -349,7 +347,7 @@ extern "C" {
 
 #elif CPUSTYLE_STM32MP1
 
-	// ST dual code A7 + M4
+	// ST dual core A7 + M4
 
 	// CPUSTYLE_STM32MP157A
 	// STM32MP157Axx
@@ -376,11 +374,6 @@ extern "C" {
 
 	#include "irq_ctrl.h"
 	#include "armcpu/stm32mp1xx.h"
-
-	//#include "armcpu/iodefine.h"
-	//#include "rza_io_regrw.h"
-
-	//#include "hardware_r7s721.h"
 
 	#define ALIGNX_BEGIN __attribute__ ((aligned(32)))
 	#define ALIGNX_END /* nothing */
