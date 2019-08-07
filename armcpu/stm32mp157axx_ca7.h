@@ -74,7 +74,7 @@
  typedef enum IRQn
  {
 	 /******  SGI Interrupts Numbers                 ****************************************/
-	   SGI0_IRQn            =  0,
+	   SGI0_IRQn            =  0,	// software generated interrupt 0 (recommended non-secure)
 	   SGI1_IRQn            =  1,
 	   SGI2_IRQn            =  2,
 	   SGI3_IRQn            =  3,
@@ -82,7 +82,7 @@
 	   SGI5_IRQn            =  5,
 	   SGI6_IRQn            =  6,
 	   SGI7_IRQn            =  7,
-	   SGI8_IRQn            =  8,
+	   SGI8_IRQn            =  8,	// software generated interrupt 8 (recommended secure)
 	   SGI9_IRQn            =  9,
 	   SGI10_IRQn           = 10,
 	   SGI11_IRQn           = 11,
@@ -90,6 +90,15 @@
 	   SGI13_IRQn           = 13,
 	   SGI14_IRQn           = 14,
 	   SGI15_IRQn           = 15,
+
+	   PPI6 = 25,	// Virtual maintenance interrupt.
+	   PPI5 = 26,	// Hypervisor timer event.
+	   PPI4 = 27,	// Virtual timer event.
+	   PPI0 = 28,	// Legacy nFIQ signal. Not used.
+	   PPI1 = 29,	// Secure physical timer event.
+	   PPI2 = 30,	// Non-secure physical timer event.
+	   PPI3 = 31,	// Legacy nIRQ signal. Not used.
+
 
 	   /******  Cortex-M Processor Exceptions Numbers *******************************************************************/
  /******  STM32 specific Interrupt Numbers ************************************************************************/
