@@ -247,7 +247,7 @@
   * @brief Configuration of the Cortex-A7 Processor and Core Peripherals
    */
  /* --------  Configuration of the Cortex-A7 Processor and Core Peripherals  ------- */
- #define __CA_REV        0x0000U    /* Core revision r0p0                            */
+ #define __CA_REV        0x0000U    /* Core revision r0p5                            */
  #define __CORTEX_A           7U    /* Cortex-A7 Core                                */
  #define __FPU_PRESENT        1U    /* FPU present                                   */
  #define __GIC_PRESENT        1U    /* GIC present                                   */
