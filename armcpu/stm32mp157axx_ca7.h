@@ -289,6 +289,11 @@
  #define __TIM_PRESENT        1U    /* TIM present                                   */
  #define __L2C_PRESENT        0U    /* L2C present                                   */
 
+
+#define GIC_DISTRIBUTOR_BASE	(0xA0021000uL)                        /*!< (GIC DIST  ) Base Address */
+#define GIC_INTERFACE_BASE		(0xA0022000uL)                        /*!< (GIC CPU IF) Base Address */
+//#define L2C_310_BASE			(0x3ffff000uL)                        /*!< (PL310     ) Base Address */
+
 #include "core_ca.h"
 #include "system_stm32mp1xx.h"
 

@@ -358,19 +358,6 @@ extern "C" {
 	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
 	#define	CPUSTYLE_ARM_CA7	1
 
-	//#define __CORTEX_A				7
-	//#define __FPU_PRESENT             1       /*!< FPU present                                   */
-	//#define __GIC_PRESENT				1U
-	//#define __L2C_PRESENT				0U
-
-	//GICV	0xA0026000	GIC virtual CPU interface (GICV)
-	//GICH	0xA0024000	GIC virtual interface control, common (GICH)
-	//GICC	0xA0022000	GIC CPU Interface (GICC)
-	//GICD	0xA0021000	GIC distributor (GICD)
-
-	#define GIC_DISTRIBUTOR_BASE	(0xA0021000uL)                        /*!< (GIC DIST  ) Base Address */
-	#define GIC_INTERFACE_BASE		(0xA0022000uL)                        /*!< (GIC CPU IF) Base Address */
-	//#define L2C_310_BASE			(0x3ffff000uL)                        /*!< (PL310     ) Base Address */
 
 	#include "irq_ctrl.h"
 	#include "armcpu/stm32mp1xx.h"
