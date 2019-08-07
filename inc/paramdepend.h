@@ -558,9 +558,31 @@ extern "C" {
 
 	#define ARM_CA9_CACHELEVELMAX	1	/* максимальный уровень cache в процессоре */
 
-#elif CPUSTYLE_STM32MP15
+#elif CPUSTYLE_STM32MP1
 
 	#define ARM_CA9_PRIORITYSHIFT 3	/* ICCPMR[7:3] is valid bit */
+	//#define WITHCPUXTAL 12000000uL			/* На процессоре установлен кварц 12.000 МГц */
+	#define CPU_FREQ	(30 * WITHCPUXTAL)		/* 12 MHz * 30 - clock mode 0, xtal 12 MHz */
+
+	#define BCLOCK_FREQ		(CPU_FREQ / 3)		// 120 MHz
+	#define P1CLOCK_FREQ	(CPU_FREQ / 6)		// 60 MHz
+	#define P0CLOCK_FREQ	(CPU_FREQ / 12)		// 30 MHz
+
+	#define TICKS_FREQUENCY		(200uL * 1) // at ARM - 400 Hz
+
+	// ADC clock frequency: 1..20 MHz
+	#define ADC_FREQ	2000000uL	/* тактовая частота SAR преобразователя АЦП. */
+	#define SCL_CLOCK	400000uL	/* 400 kHz I2C/TWI speed */
+
+	#define SPISPEED 8000000uL	/* 8 MHz (10.5) на SCLK - требуемая скорость передачи по SPI */
+	#define SPISPEEDUFAST (P1CLOCK_FREQ / 3)	// 20 MHz
+	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
+	#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
+
+	#define ADCVREF_CPU	33		// 3.3 volt
+	#define HARDWARE_ADCBITS 12	/* АЦП работает с 12-битными значениями */
+
+	#define HARDWARE_ADCINPUTS	8	/* до 8-ти входов АЦП */
 	/* тип для хранения данных, считанных с АЦП */
 	typedef uint_fast16_t adcvalholder_t;
 
