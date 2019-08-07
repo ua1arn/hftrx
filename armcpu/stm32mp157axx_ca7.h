@@ -73,7 +73,25 @@
  */
  typedef enum IRQn
  {
- /******  Cortex-M Processor Exceptions Numbers *******************************************************************/
+	 /******  SGI Interrupts Numbers                 ****************************************/
+	   SGI0_IRQn            =  0,
+	   SGI1_IRQn            =  1,
+	   SGI2_IRQn            =  2,
+	   SGI3_IRQn            =  3,
+	   SGI4_IRQn            =  4,
+	   SGI5_IRQn            =  5,
+	   SGI6_IRQn            =  6,
+	   SGI7_IRQn            =  7,
+	   SGI8_IRQn            =  8,
+	   SGI9_IRQn            =  9,
+	   SGI10_IRQn           = 10,
+	   SGI11_IRQn           = 11,
+	   SGI12_IRQn           = 12,
+	   SGI13_IRQn           = 13,
+	   SGI14_IRQn           = 14,
+	   SGI15_IRQn           = 15,
+
+	   /******  Cortex-M Processor Exceptions Numbers *******************************************************************/
    NonMaskableInt_IRQn         = -14,   /*!< 2 Non Maskable Interrupt                                             */
    HardFault_IRQn              = -13,   /*!< 4 Cortex-M Memory Management Interrupt                               */
    MemoryManagement_IRQn       = -12,   /*!< 4 Cortex-M Memory Management Interrupt                               */
