@@ -8449,17 +8449,18 @@ mcp3208_read(
 
 // todo: разобраться - при программной реализации SPI требуется сдвиг на один разряд больше.
 // возможно, на STM32H7xx что-то не так с приемом по SPI - но FRAM работает как и ожидается.
-#if 0
+#if 1
+	enum { LSBPOS = 10 };
 	hardware_spi_connect_b32(SPIC_SPEED400k, SPIC_MODE3);
 	prog_select(target);
-	hardware_spi_b32_p1(cmd1 << 24);
+	hardware_spi_b32_p1(cmd1 << (LSBPOS + 14));
 	rv = hardware_spi_complete_b32();
 
 	prog_unselect(target);
 	hardware_spi_disconnect();
-	//return rv;
-	* valid = ((rv >> 21) & 0x01) == 0;
-	return (rv >> 9) & 0xFFF; //((v0 * 65536uL + v1) >> 12) & 0xFFF;
+	//return rv >> LSBPOS;
+	* valid = ((rv >> (LSBPOS + 12)) & 0x01) == 0;
+	return (rv >> LSBPOS) & 0xFFF;
 
 #elif 1
 

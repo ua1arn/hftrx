@@ -4341,12 +4341,21 @@ void hardware_spi_master_setfreq(uint_fast8_t spispeedindex, int_fast32_t spispe
 
 	// подготовка управляющих слов для разных spi mode, используемых контроллером.
 	// 16-битная передача
-	const uint16_t spcmd16w = spcmd0 | 0x0F00;	// 0x0200 or 0x0300 - 32 bit
+	const uint16_t spcmd16w = spcmd0 | 0x0F00;	// 0x0F00 - 16 bit
 
 	spi_spcmd0_val16w [spispeedindex][SPIC_MODE0] = spcmd16w | SPCMD_MODE0;
 	spi_spcmd0_val16w [spispeedindex][SPIC_MODE1] = spcmd16w | SPCMD_MODE1;
 	spi_spcmd0_val16w [spispeedindex][SPIC_MODE2] = spcmd16w | SPCMD_MODE2;
 	spi_spcmd0_val16w [spispeedindex][SPIC_MODE3] = spcmd16w | SPCMD_MODE3;
+
+	// подготовка управляющих слов для разных spi mode, используемых контроллером.
+	// 16-битная передача
+	const uint16_t spcmd32w = spcmd0 | 0x0200;	// 0x0200 or 0x0300 - 32 bit
+
+	spi_spcmd0_val32w [spispeedindex][SPIC_MODE0] = spcmd32w | SPCMD_MODE0;
+	spi_spcmd0_val32w [spispeedindex][SPIC_MODE1] = spcmd32w | SPCMD_MODE1;
+	spi_spcmd0_val32w [spispeedindex][SPIC_MODE2] = spcmd32w | SPCMD_MODE2;
+	spi_spcmd0_val32w [spispeedindex][SPIC_MODE3] = spcmd32w | SPCMD_MODE3;
 
 #else
 	#error Wrong CPUSTYLE macro

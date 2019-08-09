@@ -472,6 +472,7 @@
 	#endif /* WITHTHERMOLEVEL */
 
 	#if 0
+		// main moard - 5W
 		#if WITHVOLTLEVEL
 			VOLTSOURCE = BOARD_ADCX1IN(7),		// MCP3208 CH7 Средняя точка делителя напряжения, для АКБ
 		#endif /* WITHVOLTLEVEL */
