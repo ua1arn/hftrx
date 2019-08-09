@@ -8449,46 +8449,53 @@ mcp3208_read(
 
 // todo: разобраться - при программной реализации SPI требуется сдвиг на один разряд больше.
 // возможно, на STM32H7xx что-то не так с приемом по SPI - но FRAM работает как и ожидается.
-#if 1
-	enum { LSBPOS = 10 };
+	enum { LSBPOS = 0 };
+
+#if WITHSPI32BIT
+
 	hardware_spi_connect_b32(SPIC_SPEED400k, SPIC_MODE3);
 	prog_select(target);
+
 	hardware_spi_b32_p1(cmd1 << (LSBPOS + 14));
 	rv = hardware_spi_complete_b32();
 
 	prog_unselect(target);
 	hardware_spi_disconnect();
-	//return rv >> LSBPOS;
-	* valid = ((rv >> (LSBPOS + 12)) & 0x01) == 0;
-	return (rv >> LSBPOS) & 0xFFF;
 
-#elif 1
+
+#elif WITHSPI16BIT
+
+	hardware_spi_connect_b16(SPIC_SPEED400k, SPIC_MODE3);
+	prog_select(target);
+
+	hardware_spi_b16_p1(cmd1 << (LSBPOS + 14) >> 16);
+	v0 = hardware_spi_complete_b16();
+	hardware_spi_b16_p1(0);
+	v1 = hardware_spi_complete_b16();
+
+	prog_unselect(target);
+	hardware_spi_disconnect();
+
+	rv = ((uint_fast32_t) v0 << 16) | v1;
+
+#else
 
 	spi_select2(target, SPIC_MODE3, SPIC_SPEED400k);	// for 50 kS/S and 24 bit words
 
-	v0 = spi_read_byte(target, cmd1 << 2);
-	v1 = spi_read_byte(target, 0x00);
-	v2 = spi_read_byte(target, 0x00);
-	//v3 = spi_read_byte(target, 0x00);
+	v0 = spi_read_byte(target, cmd1 << (LSBPOS + 14) >> 24);
+	v1 = spi_read_byte(target, cmd1 << (LSBPOS + 14) >> 16);
+	v2 = spi_read_byte(target, cmd1 << (LSBPOS + 14) >> 8);
+	v3 = spi_read_byte(target, 0x00);
 
 	spi_unselect(target);
 
 	//debug_printf_P(PSTR("mcp3208_read: %02X:%02X:%02X:%02X\n"), v0, v1, v2, v3);
 
-	rv = (v1 * 256 + v2) >> 4;
-
-#else
-
-	prog_select(target); 
-	v0 = prog_read_byte(target, cmd1);
-	v1 = prog_read_byte(target, 0x00);
-	v2 = prog_read_byte(target, 0x00);
-	prog_unselect(target);
-
-	rv = (v1 * 256 + v2) >> 1;
+	rv = ((uint_fast32_t) v0 << 24) | ((uint_fast32_t) v1 << 16) | ((uint_fast32_t) v2 << 8) | v3;
 
 #endif
-	* valid = (v0 & 0x01) == 0;
-	return rv & 0x0FFF;
+
+	* valid = ((rv >> (LSBPOS + 12)) & 0x01) == 0;
+	return (rv >> LSBPOS) & 0xFFF;
 }
 

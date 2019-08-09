@@ -9476,12 +9476,12 @@ display2_adctest(
 		//{	targetxad2,	"DRAIN",	1,	1,	10, },	// DRAIN (negative from midpoint at CH1: ch0=in-, ch1=in+)
 		//{	targetxad2,	"DRAIN",	0,	0,	10, },	// DRAIN (negative from midpoint at CH1)
 		{	targetxad2,	"REFER",	1,	0,	10, },	// reference (2.5 volt)
-		//{	targetxad2,	"FWD  ",	2,	0,	10, },	// FORWARD
-		//{	targetxad2,	"REFL ",	3,	0,	10, },	// REFLECTED
+		{	targetxad2,	"FWD  ",	2,	0,	10, },	// FORWARD
+		{	targetxad2,	"REFL ",	3,	0,	10, },	// REFLECTED
 		{	targetxad2,	"Vcc  ",	4,	0,	57,	},	// VDD 4.7k + 1k
-		{	targetadc2,	"BVcc ",	7,	0,	57,	},	// VDD 4.7k + 1k
-		{	targetadc2,	"ZERO ",	4,	0,	57,	},	// 4..6 channels all zero
-		{	targetadc2,	"ZERO ",	5,	0,	57,	},	// 4..6 channels all zero
+		//{	targetadc2,	"BVcc ",	7,	0,	57,	},	// VDD 4.7k + 1k
+		//{	targetadc2,	"ZERO ",	4,	0,	57,	},	// 4..6 channels all zero
+		//{	targetadc2,	"ZERO ",	5,	0,	57,	},	// 4..6 channels all zero
 	};
 
 	uint_fast8_t row;
