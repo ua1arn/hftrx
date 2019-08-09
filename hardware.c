@@ -1821,7 +1821,7 @@ void RAMFUNC_NONILINE ADC_Handler(void)
 		else
 		{
 			const uint_fast8_t adci = board_get_adcch(adc_input);
-			if (adci < BOARD_ADCXBASE)
+			if (adci < BOARD_ADCX0BASE)
 			{
 				// Select next ADC input (only one)
 				const portholder_t mask = ADC_CHER_CH0 << adci;
@@ -1855,7 +1855,7 @@ static RAMFUNC_NONILINE void AT91F_ADC_IRQHandler(void)
 		{
 			// Select next ADC input (only one)
 			const uint_fast8_t adci = board_get_adcch(adc_input);
-			if (adci < BOARD_ADCXBASE)
+			if (adci < BOARD_ADCX0BASE)
 			{
 				const portholder_t mask = AT91C_ADC_CH0 << adci;
 				AT91C_BASE_ADC->ADC_CHDR = ~ mask; /* disable ADC inputs */
@@ -1903,7 +1903,7 @@ static RAMFUNC_NONILINE void AT91F_ADC_IRQHandler(void)
 			{
 				// Select next ADC input (only one)
 				const uint_fast8_t adci = board_get_adcch(adc_input);
-				if (adci < BOARD_ADCXBASE)
+				if (adci < BOARD_ADCX0BASE)
 				{
 					ADMUX = hardware_atmega_admux(adci);
 					ADCSRA |= (1U << ADSC);			// Start the AD conversion
@@ -1943,7 +1943,7 @@ static RAMFUNC_NONILINE void AT91F_ADC_IRQHandler(void)
 			{
 				// Select next ADC input (only one)
 				const uint_fast8_t adci = board_get_adcch(adc_input);
-				if (adci < BOARD_ADCXBASE)
+				if (adci < BOARD_ADCX0BASE)
 				{
 					ADCA.CH0.MUXCTRL = adci;
 					ADCA.CH0.CTRL |= (1U << ADC_CH_START_bp);			// Start the AD conversion
@@ -2022,7 +2022,7 @@ ADCs_IRQHandler(ADC_TypeDef * p)
 			{
 				// Select next ADC input (only one)
 				const uint_fast8_t adci = board_get_adcch(adc_input);
-				if (adci < BOARD_ADCXBASE)
+				if (adci < BOARD_ADCX0BASE)
 				{
 					// Установить следующий вход (блок ADC может измениться)
 					const adcinmap_t * const adcmap = getadcmap(adci);
@@ -2079,7 +2079,7 @@ adcs_stm32f4xx_irq_handler(void)
 		{
 			// Select next ADC input (only one)
 			const uint_fast8_t adci = board_get_adcch(adc_input);
-			if (adci < BOARD_ADCXBASE)
+			if (adci < BOARD_ADCX0BASE)
 			{
 				ADC1->SQR3 = (ADC1->SQR3 & ~ ADC_SQR3_SQ1) | (ADC_SQR3_SQ1_0 * adci);
 				#if CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX
@@ -2127,7 +2127,7 @@ ADC1_2_IRQHandler(void)
 				{
 					// Select next ADC input (only one)
 					const uint_fast8_t adci = board_get_adcch(adc_input);
-					if (adci < BOARD_ADCXBASE)
+					if (adci < BOARD_ADCX0BASE)
 					{
 						ADC1->CHSELR = 1UL <<  board_get_adcch(adc_input);
 						ADC1->CR = ADC_CR_ADSTART;	// ADC Start of Regular conversion
@@ -2157,7 +2157,7 @@ ADC1_2_IRQHandler(void)
 				{
 					// Select next ADC input (only one)
 					const uint_fast8_t adci = board_get_adcch(adc_input);
-					if (adci < BOARD_ADCXBASE)
+					if (adci < BOARD_ADCX0BASE)
 					{
 						ADC1->CHSELR = 1UL << adci;
 						ADC1->CR = ADC_CR_ADSTART;	// ADC Start of Regular conversion
@@ -2190,7 +2190,7 @@ ADC1_2_IRQHandler(void)
 			{
 				// Select next ADC input (only one)
 				const uint_fast8_t adci = board_get_adcch(adc_input);
-				if (adci < BOARD_ADCXBASE)
+				if (adci < BOARD_ADCX0BASE)
 				{
 					ADC1->CHSELR |= 1UL << adci;
 					ADC1->CR = ADC_CR_ADSTART;	// ADC Start of Regular conversion
@@ -2222,7 +2222,7 @@ ADC1_2_IRQHandler(void)
 		{
 			// Select next ADC input (only one)
 			const uint_fast8_t adci = board_get_adcch(adc_input);
-			if (adci < BOARD_ADCXBASE)
+			if (adci < BOARD_ADCX0BASE)
 			{
 				ADC1->SQR1 = (ADC1->SQR1 & ~ ADC_SQR1_SQ1) | (ADC_SQR1_SQ1_0 * adci); 
 				ADC1->CR |= ADC_CR_ADSTART;	// ADC Start of Regular conversion
@@ -3656,6 +3656,7 @@ hardware_beep_initialize(void)
 	#elif CPUSTYLE_STM32H7XX
 		static portholder_t spi_cfg1_val8w;
 		static portholder_t spi_cfg1_val16w;
+		static portholder_t spi_cfg1_val32w;
 		static portholder_t spi_cfg2_val [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 */
 	#elif CPUSTYLE_STM32F1XX || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32L0XX
 		static portholder_t spi_cr1_val8w [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 */
@@ -3671,6 +3672,7 @@ hardware_beep_initialize(void)
 		static portholder_t spi_spbr_val [SPIC_SPEEDS_COUNT];
 		static portholder_t spi_spcmd0_val8w [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 */
 		static portholder_t spi_spcmd0_val16w [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 */
+		static portholder_t spi_spcmd0_val32w [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 */
 	#endif /* CPUSTYLE_STM32F1XX */
 
 #if WITHSPIHWDMA
@@ -4275,6 +4277,10 @@ void hardware_spi_master_setfreq(uint_fast8_t spispeedindex, int_fast32_t spispe
 
 	spi_cfg1_val16w = cfg1baudrate | 
 		15 * SPI_CFG1_DSIZE_0 |
+		0;
+
+	spi_cfg1_val32w = cfg1baudrate |
+		31 * SPI_CFG1_DSIZE_0 |
 		0;
 
 	const uint_fast32_t cfg2bits = SPI_CFG2_SSM | SPI_CFG2_MASTER /* | SPI_CFG2_AFCNTR */;
@@ -5191,7 +5197,7 @@ hardware_spi_master_read_frame_16bpartial(
 	//prog_spi_read_frame(target, buffer, size);
 
 #elif CPUSTYLE_R7S721
-	#warning TODO: Add code for R7S721 SPI DMA support to hardware_spi_master_read_frame_16bpartial
+	//#warning TODO: Add code for R7S721 SPI DMA support to hardware_spi_master_read_frame_16bpartial
 
 	HARDWARE_SPI_DISCONNECT_MOSI();	// выход данных в "1" - для нормальной работы SD CARD
 
@@ -5347,7 +5353,7 @@ hardware_spi_master_read_frame_8bpartial(
 	//prog_spi_read_frame(target, buffer, size);
 
 #elif CPUSTYLE_R7S721
-	#warning TODO: Add code for R7S721 SPI DMA support to hardware_spi_master_read_frame_8bpartial
+	//#warning TODO: Add code for R7S721 SPI DMA support to hardware_spi_master_read_frame_8bpartial
 
 	HARDWARE_SPI_DISCONNECT_MOSI();	// выход данных в "1" - для нормальной работы SD CARD
 
@@ -5419,7 +5425,7 @@ void hardware_spi_master_read_frame_16b(
 
 void hardware_spi_master_send_frame(
 	//spitarget_t target,	/* addressing to chip */
-	const uint8_t * buffer, 
+	const uint8_t * buffer,
 	uint_fast32_t size		/* количество пересылаемых 8-ти битных элементов */
 	)
 {
@@ -5440,7 +5446,7 @@ void hardware_spi_master_send_frame(
 
 void hardware_spi_master_read_frame(
 	//spitarget_t target,	/* addressing to chip */
-	uint8_t * buffer, 
+	uint8_t * buffer,
 	uint_fast32_t size		/* количество пересылаемых 8-ти битных элементов */
 	)
 {
@@ -5472,7 +5478,7 @@ void hardware_spi_connect_b16(uint_fast8_t spispeedindex, uint_fast8_t spimode)
 	enum { INPMASK = PIO_PA12A_MISO };		// битовая маска, определяет откуда ввод
 	enum { WORKMASK = OUTMASK | INPMASK };		// битовая маска, включает и ввод и вывод
 
-	SPI->SPI_CSR [0] = spi_csr_val16w [spispeedindex][spimode];
+	SPI->SPI_CSR [0] = spi_csr_val16w [spispeedindex] [spimode];
 
 	(void) SPI->SPI_RDR;		/* clear AT91C_SPI_RDRF in status register */
 	HARDWARE_SPI_CONNECT();
@@ -5483,7 +5489,7 @@ void hardware_spi_connect_b16(uint_fast8_t spispeedindex, uint_fast8_t spimode)
 	enum { INPMASK = AT91C_PA12_MISO };		// битовая маска, определяет откуда ввод
 	enum { WORKMASK = OUTMASK | INPMASK };		// битовая маска, включает и ввод и вывод
 
-	AT91C_BASE_SPI->SPI_CSR [0] = spi_csr_val16w [spispeedindex][spimode];
+	AT91C_BASE_SPI->SPI_CSR [0] = spi_csr_val16w [spispeedindex] [spimode];
 
 	(void) AT91C_BASE_SPI->SPI_RDR;		/* clear AT91C_SPI_RDRF in status register */
 	HARDWARE_SPI_CONNECT();
@@ -5491,9 +5497,9 @@ void hardware_spi_connect_b16(uint_fast8_t spispeedindex, uint_fast8_t spimode)
 #elif CPUSTYLE_STM32F1XX
 
 	HARDWARE_SPI_CONNECT();
-	SPI1->CR1 = spi_cr1_val16w [spispeedindex][spimode];
+	SPI1->CR1 = spi_cr1_val16w [spispeedindex] [spimode];
 	#if WITHTWIHW
-		// Silicon errata: 
+		// Silicon errata:
 		// 2.6.7 I2C1 with SPI1 remapped and used in master mode
 		// Workaround:
 		// When using SPI1 remapped, the I2C1 clock must be disabled.
@@ -5508,7 +5514,7 @@ void hardware_spi_connect_b16(uint_fast8_t spispeedindex, uint_fast8_t spimode)
 
 	SPI1->CR1 = spi_cr1_val16w [spispeedindex][spimode];
 	#if WITHTWIHW
-		// Silicon errata: 
+		// Silicon errata:
 		// 2.6.7 I2C1 with SPI1 remapped and used in master mode
 		// Workaround:
 		// When using SPI1 remapped, the I2C1 clock must be disabled.
@@ -5521,13 +5527,13 @@ void hardware_spi_connect_b16(uint_fast8_t spispeedindex, uint_fast8_t spimode)
 	// В этих процессорах и входы и выходы перекдючаются на ALT FN
 	HARDWARE_SPI_CONNECT();
 
-	SPI1->CR1 = spi_cr1_val8w [spispeedindex][spimode];
+	SPI1->CR1 = spi_cr1_val16w [spispeedindex] [spimode];
 	SPI1->CR2 = (SPI1->CR2 & ~ (SPI_CR2_DS)) |
 		15 * SPI_CR2_DS_0 |	// 16 bit word length
 		0 * SPI_CR2_FRXTH |			// RXFIFO threshold is set to 16 bits (FRXTH=0).
 		0;
 	#if WITHTWIHW
-		// Silicon errata: 
+		// Silicon errata:
 		// 2.6.7 I2C1 with SPI1 remapped and used in master mode
 		// Workaround:
 		// When using SPI1 remapped, the I2C1 clock must be disabled.
@@ -5542,7 +5548,7 @@ void hardware_spi_connect_b16(uint_fast8_t spispeedindex, uint_fast8_t spimode)
 	SPI1->CR1 = SPI_CR1_SSI;
 
 	SPI1->CFG1 = spi_cfg1_val16w;
-	SPI1->CFG2 = spi_cfg2_val [spispeedindex][spimode];
+	SPI1->CFG2 = spi_cfg2_val [spispeedindex] [spimode];
 
 	SPI1->CR1 |= SPI_CR1_SPE;
 	SPI1->CR1 |= SPI_CR1_CSTART;
@@ -5550,10 +5556,10 @@ void hardware_spi_connect_b16(uint_fast8_t spispeedindex, uint_fast8_t spimode)
 #elif CPUSTYLE_R7S721
 
 	HW_SPIUSED->SPDCR =		/* Data Control Register (SPDCR) */
-		(0x02 << 5) |	// 0x02: 16 bit. Specifies the width for accessing the data register (SPDR)
+		(0x02 << 5) |	// 10: SPDR is accessed in words (16 bits).
 		0;
 	HW_SPIUSED->SPBR = spi_spbr_val [spispeedindex];
-	HW_SPIUSED->SPCMD0 = spi_spcmd0_val16w [spispeedindex][spimode];
+	HW_SPIUSED->SPCMD0 = spi_spcmd0_val16w [spispeedindex] [spimode];
 
 	HARDWARE_SPI_CONNECT();
 
@@ -5581,19 +5587,19 @@ portholder_t hardware_spi_complete_b16(void)	/* дождаться готовн�
 
 #elif CPUSTYLE_STM32H7XX
 
-	//while ((SPI1->SR & SPI_SR_TXC) == 0)	
+	//while ((SPI1->SR & SPI_SR_TXC) == 0)
 	//	;
-	while ((SPI1->SR & SPI_SR_RXP) == 0)	
+	while ((SPI1->SR & SPI_SR_RXP) == 0)
 		;
 	const portholder_t t = * (volatile uint16_t *) & SPI1->RXDR;	/* SPI_RXDR_RXDR clear SPI_SR_RXNE in status register */
 	return t;
 
 #elif CPUSTYLE_STM32F
 
-	while ((SPI1->SR & SPI_SR_RXNE) == 0)	
+	while ((SPI1->SR & SPI_SR_RXNE) == 0)
 		;
 	const portholder_t t = SPI1->DR & SPI_DR_DR;	/* clear SPI_SR_RXNE in status register */
-	while ((SPI1->SR & SPI_SR_BSY) != 0)	
+	while ((SPI1->SR & SPI_SR_BSY) != 0)
 		;
 	return t;
 
@@ -5626,16 +5632,16 @@ static void hardware_spi_ready_b16_void(void)	/* дождаться готовн
 
 #elif CPUSTYLE_STM32H7XX
 
-	//while ((SPI1->SR & SPI_SR_TXC) == 0)	
+	//while ((SPI1->SR & SPI_SR_TXC) == 0)
 	//	;
-	while ((SPI1->SR & SPI_SR_RXP) == 0)	
+	while ((SPI1->SR & SPI_SR_RXP) == 0)
 		;
 	(void) * (volatile uint16_t *) & SPI1->RXDR;	/* clear SPI_SR_RXNE in status register */
 
 
 #elif CPUSTYLE_STM32F
 
-	while ((SPI1->SR & SPI_SR_RXNE) == 0)	
+	while ((SPI1->SR & SPI_SR_RXNE) == 0)
 		;
 	(void) SPI1->DR;	/* clear SPI_SR_RXNE in status register */
 
@@ -5668,7 +5674,7 @@ void hardware_spi_b16_p1(
 	AT91C_BASE_SPI->SPI_TDR = v & AT91C_SPI_TD;
 
 #elif CPUSTYLE_STM32H7XX
-	
+
 	* (volatile uint16_t *) & (SPI1)->TXDR = v;	// prevent data packing feature
 
 #elif CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F30X || CPUSTYLE_STM32F7XX
@@ -5708,6 +5714,125 @@ portholder_t hardware_spi_b16(
 }
 
 #endif /* WITHSPI16BIT */
+
+#if WITHSPI32BIT
+
+/* управление состоянием "подключено - работа в режиме 32-ти битных слов.*/
+void hardware_spi_connect_b32(uint_fast8_t spispeedindex, uint_fast8_t spimode)
+{
+#if CPUSTYLE_STM32H7XX
+
+	HARDWARE_SPI_CONNECT();
+
+	SPI1->CR1 = SPI_CR1_SSI;
+
+	SPI1->CFG1 = spi_cfg1_val32w;
+	SPI1->CFG2 = spi_cfg2_val [spispeedindex] [spimode];
+
+	SPI1->CR1 |= SPI_CR1_SPE;
+	SPI1->CR1 |= SPI_CR1_CSTART;
+
+#elif CPUSTYLE_R7S721
+
+	HW_SPIUSED->SPDCR =		/* Data Control Register (SPDCR) */
+		(0x03 << 5) |	// 11: SPDR is accessed in longwords (32 bits).
+		0;
+	HW_SPIUSED->SPBR = spi_spbr_val [spispeedindex];
+	HW_SPIUSED->SPCMD0 = spi_spcmd0_val32w [spispeedindex] [spimode];
+
+	HARDWARE_SPI_CONNECT();
+
+#else
+	#error Wrong CPUSTYLE macro
+#endif
+
+}
+
+portholder_t hardware_spi_complete_b32(void)	/* дождаться готовности */
+{
+#if CPUSTYLE_STM32H7XX
+
+	//while ((SPI1->SR & SPI_SR_TXC) == 0)	
+	//	;
+	while ((SPI1->SR & SPI_SR_RXP) == 0)	
+		;
+	const portholder_t t = * (volatile uint32_t *) & SPI1->RXDR;	/* SPI_RXDR_RXDR clear SPI_SR_RXNE in status register */
+	return t;
+
+#elif CPUSTYLE_R7S721
+
+	while ((HW_SPIUSED->SPSR & (1U << 7)) == 0)	// SPRF bit
+		;
+	return HW_SPIUSED->SPDR.UINT32;
+
+#else
+	#error Wrong CPUSTYLE macro
+#endif
+}
+
+static void hardware_spi_ready_b32_void(void)	/* дождаться готовности */
+{
+#if CPUSTYLE_STM32H7XX
+
+	//while ((SPI1->SR & SPI_SR_TXC) == 0)	
+	//	;
+	while ((SPI1->SR & SPI_SR_RXP) == 0)	
+		;
+	(void) * (volatile uint32_t *) & SPI1->RXDR;	/* clear SPI_SR_RXNE in status register */
+
+#elif CPUSTYLE_R7S721
+
+	while ((HW_SPIUSED->SPSR & (1U << 7)) == 0)	// SPRF bit
+		;
+	(void) HW_SPIUSED->SPDR.UINT32;
+
+#else
+	#error Wrong CPUSTYLE macro
+#endif
+}
+
+
+/* группа функций для использования в групповых передачах по SPI */
+/* передача первого байта в последовательности - Не проверяем готовность перед передачей,
+   завершение передачи будут проверять другие.
+*/
+void hardware_spi_b32_p1(
+	portholder_t v		/* значениеслова для передачи */
+	)
+{
+#if CPUSTYLE_STM32H7XX
+	
+	* (volatile uint32_t *) & (SPI1)->TXDR = v;	// prevent data packing feature
+
+#elif CPUSTYLE_R7S721
+
+	HW_SPIUSED->SPDR.UINT32 = v;
+
+#else
+	#error Wrong CPUSTYLE macro
+#endif
+}
+
+/* передача одного из средних байтов/слов в последовательности */
+/* дождаться готовности, передача байта */
+void hardware_spi_b32_p2(
+	portholder_t v		/* значение байта для передачи */
+	)
+{
+	hardware_spi_ready_b32_void();	/* дождаться завершения передачи */
+	hardware_spi_b32_p1(v);	/* передать символ */
+}
+
+/* передача байта/слова, возврат считанного */
+portholder_t hardware_spi_b32(
+	portholder_t v		/* значение байта для передачи */
+	)
+{
+	hardware_spi_b32_p1(v);	/* передать символ */
+	return hardware_spi_complete_b32();	/* дождаться завершения передачи */
+}
+
+#endif /* WITHSPI32BIT */
 
 void hardware_spi_b8_p1(
 	portholder_t v		/* значение байта/слова для передачи */

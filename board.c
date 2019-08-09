@@ -7728,14 +7728,14 @@ adcvalholder_t board_getadc_unfiltered_truevalue(uint_fast8_t adci)
 {
 	if (adci >= BOARD_ADCX1BASE)
 	{
-		// P2_0 external SPI device (PA BOARD ADC)
-#if defined (targetext2)
+		// external SPI device (PA BOARD ADC)
+#if defined (targetxad2)
 		uint_fast8_t valid;
 		uint_fast8_t ch = adci - BOARD_ADCX1BASE;
-		return mcp3208_read(targetext2, 0, ch, & valid);
-#else /* defined (targetadc2) */
+		return mcp3208_read(targetxad2, 0, ch, & valid);
+#else /* defined (targetxad2) */
 		return 0;
-#endif /* defined (targetadc2) */
+#endif /* defined (targetxad2) */
 	}
 	if (adci >= BOARD_ADCX0BASE)
 	{
@@ -8433,7 +8433,7 @@ void debugusb_initialize(void)
 #endif /* WITHDEBUG && WITHUSBCDC && WITHDEBUG_CDC */
 
 // Read ADC MCP3204/MCP3208
-uint_fast16_t 
+uint_fast32_t
 mcp3208_read(
 	spitarget_t target,
 	uint_fast8_t diff,
@@ -8441,20 +8441,31 @@ mcp3208_read(
 	uint_fast8_t * valid
 	)
 {
-	uint_fast8_t v0, v1, v2, v3;
+	uint_fast16_t v0, v1, v2, v3;
 	// сдвинуто, чтобы позиция временной диаграммы,
 	// где формируется время выборки, не попадала на паузу между байтами.
-	const uint_fast8_t cmd1 = (0x10 | (diff ? 0x00 : 0x08) | (adci & 0x07)) << 2;
-	uint_fast16_t rv;
+	const uint_fast8_t cmd1 = (0x10 | (diff ? 0x00 : 0x08) | (adci & 0x07));
+	uint_fast32_t rv;
 
 // todo: разобраться - при программной реализации SPI требуется сдвиг на один разряд больше.
 // возможно, на STM32H7xx что-то не так с приемом по SPI - но FRAM работает как и ожидается.
+#if 0
+	hardware_spi_connect_b32(SPIC_SPEED400k, SPIC_MODE3);
+	prog_select(target);
+	hardware_spi_b32_p1(cmd1 << 24);
+	rv = hardware_spi_complete_b32();
 
-#if 1
+	prog_unselect(target);
+	hardware_spi_disconnect();
+	//return rv;
+	* valid = ((rv >> 21) & 0x01) == 0;
+	return (rv >> 9) & 0xFFF; //((v0 * 65536uL + v1) >> 12) & 0xFFF;
+
+#elif 1
 
 	spi_select2(target, SPIC_MODE3, SPIC_SPEED400k);	// for 50 kS/S and 24 bit words
 
-	v0 = spi_read_byte(target, cmd1);
+	v0 = spi_read_byte(target, cmd1 << 2);
 	v1 = spi_read_byte(target, 0x00);
 	v2 = spi_read_byte(target, 0x00);
 	//v3 = spi_read_byte(target, 0x00);

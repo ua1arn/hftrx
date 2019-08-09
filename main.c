@@ -9459,12 +9459,12 @@ display2_adctest(
 	void * pv
 	)
 {
-#if defined (targetadc2)
-	enum { WDTH = 6 };	// ширина поля для отображения
-	const uint_fast16_t vref_mV = 3140;
+#if defined (targetxad2)
+	enum { WDTH = 16 };	// ширина поля для отображения
+	const uint_fast16_t vref_mV = 3300;
 	static FLASHMEM const struct
 	{
-		char label [6];
+		char label [64];
 		uint_fast8_t adci;
 		uint_fast8_t diff;
 		uint_fast16_t mul10;
@@ -9483,18 +9483,18 @@ display2_adctest(
 	uint_fast8_t row;
 	for (row = 0; row < (sizeof adcis / sizeof adcis [0]); ++ row)
 	{
-		uint_fast16_t value = 0;
+		uint_fast32_t value = 0;
 		char b [WDTH + 1];
 		uint_fast8_t valid;
 
-		value = mcp3208_read(targetadc2, adcis [row].diff, adcis [row].adci, & valid) * (uint64_t) adcis [row].mul10 * vref_mV / 4095 / 10;
+		value = mcp3208_read(targetxad2, adcis [row].diff, adcis [row].adci, & valid); // * (uint64_t) adcis [row].mul10 * vref_mV / 4095 / 10;
 
-		local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("%*u"), WDTH, (unsigned) value);
+		local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("%0*lX"), WDTH, (unsigned long) value);
 		display_2states_P(x + (0), y + GRID2Y(row), valid, adcis [row].label, adcis [row].label);
 		display_2states(x + (5), y + GRID2Y(row), valid, b, b);
 	}
 
-#endif
+#endif /* targetxad2 */
 }
 
 // S-METER

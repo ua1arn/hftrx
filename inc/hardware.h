@@ -811,8 +811,8 @@ typedef struct ticker
 void ticker_initialize(ticker_t * p, unsigned nticks, void (* cb)(void *), void * ctx);
 void bootloader_detach(void);
 
-#define BOARD_ADCX0BASE 24
-#define BOARD_ADCX1BASE 32
+#define BOARD_ADCX0BASE 24	// on-board ADC
+#define BOARD_ADCX1BASE 32	// PA board ADC
 #define BOARD_ADCXIN(ch) (BOARD_ADCX0BASE + (ch))
 #define BOARD_ADCX1IN(ch) (BOARD_ADCX0BASE + (ch))
 #define BOARD_ADCX2IN(ch) (BOARD_ADCX1BASE + (ch))
