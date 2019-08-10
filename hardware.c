@@ -3956,8 +3956,8 @@ void hardware_spi_master_initialize(void)
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
 
 	// Настроим модуль SPI.
-	RCC->APB2ENR |= RCC_APB2ENR_SPI1EN; //подать тактирование
-	__DSB();
+	RCC->APB2ENR |= RCC_APB2ENR_SPI1EN; // подать тактирование
+	(void) RCC->APB2ENR;
 	//SPI1->CR1 = 0x0000;             //очистить первый управляющий регистр
 	//SPI1->CR2 = 0x0000;
 
@@ -4284,7 +4284,7 @@ void hardware_spi_master_setfreq(uint_fast8_t spispeedindex, int_fast32_t spispe
 		31 * SPI_CFG1_DSIZE_0 |
 		0;
 
-	const uint_fast32_t cfg2bits = SPI_CFG2_SSM | SPI_CFG2_MASTER /* | SPI_CFG2_AFCNTR */;
+	const uint_fast32_t cfg2bits = SPI_CFG2_SSOM | SPI_CFG2_SSOE | SPI_CFG2_SSM | SPI_CFG2_MASTER /* | SPI_CFG2_AFCNTR */;
 	enum
 	{
 		CFG2_MODE0 = 0,				// TODO: not tested
@@ -4370,25 +4370,47 @@ void hardware_stm32h7xx_spi_master_connect(
 	uint_fast32_t cfg2
 	)
 {
-	debug_printf_P(PSTR("hardware_stm32h7xx_spi_master_connect: cfg1=%08lX, cfg2=%08lX\n"), cfg1, cfg2);
+	RCC->APB2ENR |= RCC_APB2ENR_SPI1EN; // подать тактирование
+	(void) RCC->APB2ENR;
+	RCC->APB2RSTR |= RCC_APB2RSTR_SPI1RST; // reset on
+	(void) RCC->APB2RSTR;
+	RCC->APB2RSTR &= ~ RCC_APB2RSTR_SPI1RST; // reset off
+	(void) RCC->APB2RSTR;
+	/*
 
-	debug_printf_P(PSTR("1 CR1=%08lX  CR2=%08lX CFG1=%08lX CFG2=%08lX\n"), SPI1->CR1, SPI1->CR2, SPI1->CFG1, SPI1->CFG2);
+	RCC->APB2ENR &= ~ RCC_APB2ENR_SPI1EN; // подать тактирование
+	(void) RCC->APB2ENR;
+	RCC->APB2RSTR |= RCC_APB2RSTR_SPI1RST; // reset on
+	(void) RCC->APB2RSTR;
+	RCC->APB2RSTR &= ~ RCC_APB2RSTR_SPI1RST; // reset off
+	(void) RCC->APB2RSTR;
+	RCC->APB2ENR |= RCC_APB2ENR_SPI1EN; // подать тактирование
+	(void) RCC->APB2ENR;
+	RCC->APB2RSTR |= RCC_APB2RSTR_SPI1RST; // reset on
+	(void) RCC->APB2RSTR;
+	RCC->APB2RSTR &= ~ RCC_APB2RSTR_SPI1RST; // reset off
+	(void) RCC->APB2RSTR;
+*/
+	//debug_printf_P(PSTR("hardware_stm32h7xx_spi_master_connect: cfg1=%08lX, cfg2=%08lX\n"), cfg1, cfg2);
+	// SSM=1, SSI=1 required.
+	//debug_printf_P(PSTR("SPI1->CFG1=%08lX CFG2=%08lX SPI1->CR1=%08lX CR2=%08lX \n"), SPI1->CFG1, SPI1->CFG2, SPI1->CR1, SPI1->CR2);
+
 	HARDWARE_SPI_CONNECT();
-	debug_printf_P(PSTR("2 CR1=%08lX  CR2=%08lX CFG1=%08lX CFG2=%08lX\n"), SPI1->CR1, SPI1->CR2, SPI1->CFG1, SPI1->CFG2);
 
-	if ((SPI1->CR1 & SPI_CR1_SPE) != 0)
-		SPI1->CR1 &= ~ SPI_CR1_SPE;
-	debug_printf_P(PSTR("3 CR1=%08lX  CR2=%08lX CFG1=%08lX CFG2=%08lX\n"), SPI1->CR1, SPI1->CR2, SPI1->CFG1, SPI1->CFG2);
-	SPI1->CR1 = SPI_CR1_SSI;
-	debug_printf_P(PSTR("4 CR1=%08lX  CR2=%08lX CFG1=%08lX CFG2=%08lX\n"), SPI1->CR1, SPI1->CR2, SPI1->CFG1, SPI1->CFG2);
-	SPI1->CFG1 = cfg1;
-	debug_printf_P(PSTR("5 CR1=%08lX  CR2=%08lX CFG1=%08lX CFG2=%08lX\n"), SPI1->CR1, SPI1->CR2, SPI1->CFG1, SPI1->CFG2);
-	SPI1->CFG2 = cfg2;
-	debug_printf_P(PSTR("6 CR1=%08lX  CR2=%08lX CFG1=%08lX CFG2=%08lX\n"), SPI1->CR1, SPI1->CR2, SPI1->CFG1, SPI1->CFG2);
+	SPI1->CR1 &= ~ SPI_CR1_SPE;
+
+	SPI1->CR1 |= SPI_CR1_SSI;
+	SPI1->CFG1 =
+			(SPI1->CFG1 & ~ (SPI_CFG1_MBR | SPI_CFG1_DSIZE)) |
+			cfg1;
+	SPI1->CFG2 =
+			(SPI1->CFG2 & ~ (SPI_CFG2_SSOM | SPI_CFG2_SSOE | SPI_CFG2_SSM |
+					SPI_CFG2_MASTER | SPI_CFG2_MSSI | SPI_CFG2_CPHA | SPI_CFG2_CPOL)) |
+			cfg2;
+
 	SPI1->CR1 |= SPI_CR1_SPE;
-	debug_printf_P(PSTR("7 CR1=%08lX  CR2=%08lX CFG1=%08lX CFG2=%08lX\n"), SPI1->CR1, SPI1->CR2, SPI1->CFG1, SPI1->CFG2);
 	SPI1->CR1 |= SPI_CR1_CSTART;
-	debug_printf_P(PSTR("8 CR1=%08lX  CR2=%08lX CFG1=%08lX CFG2=%08lX\n"), SPI1->CR1, SPI1->CR2, SPI1->CFG1, SPI1->CFG2);
+
 }
 
 #endif /* CPUSTYLE_STM32H7XX */
