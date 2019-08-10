@@ -3654,10 +3654,10 @@ hardware_beep_initialize(void)
 		static portholder_t spi_csr_val8w [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 */
 		static portholder_t spi_csr_val16w [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 в режиме 16-ти битных слов. */
 	#elif CPUSTYLE_STM32H7XX
-		static portholder_t spi_cfg1_val8w;
-		static portholder_t spi_cfg1_val16w;
-		static portholder_t spi_cfg1_val32w;
-		static portholder_t spi_cfg2_val [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 */
+		static portholder_t spi_cfg1_val8w [SPIC_SPEEDS_COUNT];
+		static portholder_t spi_cfg1_val16w [SPIC_SPEEDS_COUNT];
+		static portholder_t spi_cfg1_val32w [SPIC_SPEEDS_COUNT];
+		static portholder_t spi_cfg2_val [SPIC_MODES_COUNT];	/* для spi mode0..mode3 */
 	#elif CPUSTYLE_STM32F1XX || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32L0XX
 		static portholder_t spi_cr1_val8w [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 */
 		static portholder_t spi_cr1_val16w [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 в режиме 16-ти битных слов. */
@@ -4269,18 +4269,18 @@ void hardware_spi_master_setfreq(uint_fast8_t spispeedindex, int_fast32_t spispe
 	unsigned value;	/* делителя нет, есть только прескалер - значение делителя не используется */
 	const uint_fast8_t prei = calcdivider(calcdivround_per_ck(spispeed), STM32F_SPIBR_WIDTH, STM32F_SPIBR_TAPS, & value, 1);
 	const uint_fast32_t cfg1baudrate = (prei * SPI_CFG1_MBR_0) & SPI_CFG1_MBR_Msk;
-	const uint_fast32_t cfg1 = cfg1baudrate | (SPI_CFG1_CRCSIZE_0 * 7);
-	//debug_printf_P(PSTR("hardware_spi_master_setfreq: prei=%u, value=%u, spispeed=%u\n"), prei, value, spispeed);
+	const uint_fast32_t cfg1 = cfg1baudrate;// | (SPI_CFG1_CRCSIZE_0 * 7);
+	debug_printf_P(PSTR("hardware_spi_master_setfreq: prei=%u, value=%u, spispeed=%u\n"), prei, value, spispeed);
 
-	spi_cfg1_val8w = cfg1 |
+	spi_cfg1_val8w [spispeedindex] = cfg1 |
 		7 * SPI_CFG1_DSIZE_0 |
 		0;
 
-	spi_cfg1_val16w = cfg1 |
+	spi_cfg1_val16w [spispeedindex] = cfg1 |
 		15 * SPI_CFG1_DSIZE_0 |
 		0;
 
-	spi_cfg1_val32w = cfg1 |
+	spi_cfg1_val32w [spispeedindex] = cfg1 |
 		31 * SPI_CFG1_DSIZE_0 |
 		0;
 
@@ -4295,10 +4295,10 @@ void hardware_spi_master_setfreq(uint_fast8_t spispeedindex, int_fast32_t spispe
 
 	// подготовка управляющих слов для разных spi mode, используемых контроллером.
 	// 8-битная или 16-битная передача программируется в CR2
-	spi_cfg2_val [spispeedindex][SPIC_MODE0] = cfg2bits | CFG2_MODE0;
-	spi_cfg2_val [spispeedindex][SPIC_MODE1] = cfg2bits | CFG2_MODE1;
-	spi_cfg2_val [spispeedindex][SPIC_MODE2] = cfg2bits | CFG2_MODE2;	
-	spi_cfg2_val [spispeedindex][SPIC_MODE3] = cfg2bits | CFG2_MODE3; 
+	spi_cfg2_val [SPIC_MODE0] = cfg2bits | CFG2_MODE0;
+	spi_cfg2_val [SPIC_MODE1] = cfg2bits | CFG2_MODE1;
+	spi_cfg2_val [SPIC_MODE2] = cfg2bits | CFG2_MODE2;
+	spi_cfg2_val [SPIC_MODE3] = cfg2bits | CFG2_MODE3;
 
 #elif CPUSTYLE_R7S721
 
@@ -4370,47 +4370,16 @@ void hardware_stm32h7xx_spi_master_connect(
 	uint_fast32_t cfg2
 	)
 {
-	RCC->APB2ENR |= RCC_APB2ENR_SPI1EN; // подать тактирование
-	(void) RCC->APB2ENR;
-	RCC->APB2RSTR |= RCC_APB2RSTR_SPI1RST; // reset on
-	(void) RCC->APB2RSTR;
-	RCC->APB2RSTR &= ~ RCC_APB2RSTR_SPI1RST; // reset off
-	(void) RCC->APB2RSTR;
-	/*
-
-	RCC->APB2ENR &= ~ RCC_APB2ENR_SPI1EN; // подать тактирование
-	(void) RCC->APB2ENR;
-	RCC->APB2RSTR |= RCC_APB2RSTR_SPI1RST; // reset on
-	(void) RCC->APB2RSTR;
-	RCC->APB2RSTR &= ~ RCC_APB2RSTR_SPI1RST; // reset off
-	(void) RCC->APB2RSTR;
-	RCC->APB2ENR |= RCC_APB2ENR_SPI1EN; // подать тактирование
-	(void) RCC->APB2ENR;
-	RCC->APB2RSTR |= RCC_APB2RSTR_SPI1RST; // reset on
-	(void) RCC->APB2RSTR;
-	RCC->APB2RSTR &= ~ RCC_APB2RSTR_SPI1RST; // reset off
-	(void) RCC->APB2RSTR;
-*/
-	//debug_printf_P(PSTR("hardware_stm32h7xx_spi_master_connect: cfg1=%08lX, cfg2=%08lX\n"), cfg1, cfg2);
-	// SSM=1, SSI=1 required.
-	//debug_printf_P(PSTR("SPI1->CFG1=%08lX CFG2=%08lX SPI1->CR1=%08lX CR2=%08lX \n"), SPI1->CFG1, SPI1->CFG2, SPI1->CR1, SPI1->CR2);
-
 	HARDWARE_SPI_CONNECT();
 
-	SPI1->CR1 &= ~ SPI_CR1_SPE;
+	//SPI1->CR1 &= ~ SPI_CR1_SPE;
 
+	SPI1->CFG1 = cfg1;
+	SPI1->CFG2 = cfg2;
 	SPI1->CR1 |= SPI_CR1_SSI;
-	SPI1->CFG1 =
-			(SPI1->CFG1 & ~ (SPI_CFG1_MBR | SPI_CFG1_DSIZE)) |
-			cfg1;
-	SPI1->CFG2 =
-			(SPI1->CFG2 & ~ (SPI_CFG2_SSOM | SPI_CFG2_SSOE | SPI_CFG2_SSM |
-					SPI_CFG2_MASTER | SPI_CFG2_MSSI | SPI_CFG2_CPHA | SPI_CFG2_CPOL)) |
-			cfg2;
 
 	SPI1->CR1 |= SPI_CR1_SPE;
 	SPI1->CR1 |= SPI_CR1_CSTART;
-
 }
 
 #endif /* CPUSTYLE_STM32H7XX */
@@ -4513,7 +4482,7 @@ void hardware_spi_connect(uint_fast8_t spispeedindex, uint_fast8_t spimode)
 
 #elif CPUSTYLE_STM32H7XX
 
-	hardware_stm32h7xx_spi_master_connect(spi_cfg1_val8w, spi_cfg2_val [spispeedindex][spimode]);
+	hardware_stm32h7xx_spi_master_connect(spi_cfg1_val8w [spispeedindex], spi_cfg2_val [spimode]);
 
 #elif CPUSTYLE_R7S721
 
@@ -5607,7 +5576,7 @@ void hardware_spi_connect_b16(uint_fast8_t spispeedindex, uint_fast8_t spimode)
 
 #elif CPUSTYLE_STM32H7XX
 
-	hardware_stm32h7xx_spi_master_connect(spi_cfg1_val16w, spi_cfg2_val [spispeedindex] [spimode]);
+		hardware_stm32h7xx_spi_master_connect(spi_cfg1_val16w [spispeedindex], spi_cfg2_val [spimode]);
 
 #elif CPUSTYLE_R7S721
 
@@ -5778,7 +5747,7 @@ void hardware_spi_connect_b32(uint_fast8_t spispeedindex, uint_fast8_t spimode)
 {
 #if CPUSTYLE_STM32H7XX
 
-	hardware_stm32h7xx_spi_master_connect(spi_cfg1_val32w, spi_cfg2_val [spispeedindex][spimode]);
+	hardware_stm32h7xx_spi_master_connect(spi_cfg1_val32w [spispeedindex], spi_cfg2_val [spimode]);
 
 #elif CPUSTYLE_R7S721
 
