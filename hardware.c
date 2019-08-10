@@ -4370,9 +4370,9 @@ void hardware_stm32h7xx_spi_master_connect(
 	)
 {
 	HARDWARE_SPI_CONNECT();
+	SPI1->CR1 = SPI_CR1_SSI;
 	SPI1->CFG1 = cfg1;
 	SPI1->CFG2 = cfg2;
-	SPI1->CR1 = SPI_CR1_SSI;
 	SPI1->CR1 |= SPI_CR1_SPE;
 	SPI1->CR1 |= SPI_CR1_CSTART;
 }
