@@ -458,30 +458,50 @@
 	enum 
 	{ 
 	#if WITHPOTIFGAIN
-		POTIFGAIN = BOARD_ADCXIN(0),		// MCP3208 CH0 IF GAIN
+		POTIFGAIN = BOARD_ADCX1IN(0),		// MCP3208 CH0 IF GAIN
 	#endif /* WITHPOTIFGAIN */
 	#if WITHPOTAFGAIN
-		//POTAFGAIN = BOARD_ADCXIN(2),		// MCP3208 CH2 потенциометр управления скоростью передачи в телеграфе
-		POTAFGAIN = BOARD_ADCXIN(1),		// MCP3208 CH1 AF GAIN
+		//POTAFGAIN = BOARD_ADCX1IN(2),		// MCP3208 CH2 потенциометр управления скоростью передачи в телеграфе
+		POTAFGAIN = BOARD_ADCX1IN(1),		// MCP3208 CH1 AF GAIN
 	#endif /* WITHPOTAFGAIN */
 	#if WITHPOTWPM
-		POTWPM = BOARD_ADCXIN(2),			// MCP3208 CH2 потенциометр управления скоростью передачи в телеграфе
+		POTWPM = BOARD_ADCX1IN(2),			// MCP3208 CH2 потенциометр управления скоростью передачи в телеграфе
 	#endif /* WITHPOTWPM */
 	#if WITHTHERMOLEVEL
-		XTHERMOIX = BOARD_ADCXIN(6),		// MCP3208 CH6 Exernal thermo sensor ST LM235Z
+		XTHERMOIX = BOARD_ADCX1IN(6),		// MCP3208 CH6 Exernal thermo sensor ST LM235Z
 	#endif /* WITHTHERMOLEVEL */
-	#if WITHVOLTLEVEL 
-		VOLTSOURCE = BOARD_ADCXIN(7),		// MCP3208 CH7 Средняя точка делителя напряжения, для АКБ
-	#endif /* WITHVOLTLEVEL */
 
-	#if WITHSWRMTR
-		PWRI = 0,			// PB1
-		FWD = 0, REF = 1,	// PB0	SWR-meter
-	#endif /* WITHSWRMTR */
+	#if 0
+		// main moard - 5W
+		#if WITHVOLTLEVEL
+			VOLTSOURCE = BOARD_ADCX1IN(7),		// MCP3208 CH7 Средняя точка делителя напряжения, для АКБ
+		#endif /* WITHVOLTLEVEL */
 
-	#if WITHCURRLEVEL
-		PASENSEIX = 2,		// PA1 PA current sense - ACS712-05 chip
-	#endif /* WITHCURRLEVEL */
+		#if WITHSWRMTR
+			PWRI = 0,			// PB1
+			FWD = 0, REF = 1,	// PB0	SWR-meter
+		#endif /* WITHSWRMTR */
+
+		#if WITHCURRLEVEL
+			PASENSEIX = 2,		// PA1 PA current sense - ACS712-05 chip
+		#endif /* WITHCURRLEVEL */
+	#else
+		// UA1CEI PA board: MCP3208 at targetext2 - P2_0 external SPI device (PA BOARD ADC)
+		#if WITHVOLTLEVEL
+			VOLTSOURCE = BOARD_ADCX2IN(4),		// MCP3208 CH7 Средняя точка делителя напряжения, для АКБ
+		#endif /* WITHVOLTLEVEL */
+
+		#if WITHSWRMTR
+			PWRI = BOARD_ADCX2IN(2),
+			FWD = BOARD_ADCX2IN(2),
+			REF = BOARD_ADCX2IN(3),
+		#endif /* WITHSWRMTR */
+
+		#if WITHCURRLEVEL
+			PASENSEIX = 2,		// PA1 PA current sense - ACS712-05 chip
+			//PASENSEIX = BOARD_ADCX2IN(0),
+		#endif /* WITHCURRLEVEL */
+	#endif
 
 		KI0 = 3, KI1 = 4, KI2 = 5, KI3 = 6, KI4 = 7		// клавиатура
 	};

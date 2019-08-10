@@ -252,7 +252,7 @@ uint_fast8_t board_getpwrmeter(
 	uint_fast8_t * toptrace	// peak hold
 	); 
 
-uint_fast16_t 
+uint_fast32_t
 mcp3208_read(
 	spitarget_t target,
 	uint_fast8_t diff,

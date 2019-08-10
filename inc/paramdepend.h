@@ -529,7 +529,7 @@ extern "C" {
 	#define ADCVREF_CPU	33		// 3.3 volt
 	#define HARDWARE_ADCBITS 12	/* АЦП работает с 12-битными значениями */
 
-	#define HARDWARE_ADCINPUTS	8	/* до 8-ти входов АЦП */
+	#define HARDWARE_ADCINPUTS	40	/* до 8-ти входов АЦП */
 	/* тип для хранения данных, считанных с АЦП */
 	typedef uint_fast16_t adcvalholder_t;		
 
@@ -548,13 +548,13 @@ extern "C" {
 	/* видимые в контроллере прерывания регистры от ARM CORE */
 	#define ARM_CA9_PRIORITYSHIFT 3	/* ICCPMR[7:3] is valid bit */
 
-	#define GICC_PMR		(INTC.ICCPMR)	// 4.4.2 Interrupt Priority Mask Register, GICC_PMR
-	#define GICC_RPR		((uint32_t) INTC.ICCRPR)	// 4.4.6 Running Priority Register, GICC_RPR
-	#define GICC_HPPIR		(INTC.ICCHPIR)
-	#define GICC_IAR		(INTC.ICCIAR)
-	#define GICC_BPR		(INTC.ICCBPR)
-	#define GICC_CTLR		(INTC.ICCICR)
-	#define GICD_IPRIORITYRn(n) (((volatile uint8_t *) & INTC.ICDIPR0) [(n)])
+	//#define GICC_PMR		(INTC.ICCPMR)	// 4.4.2 Interrupt Priority Mask Register, GICC_PMR
+	//#define GICC_RPR		((uint32_t) INTC.ICCRPR)	// 4.4.6 Running Priority Register, GICC_RPR
+	//#define GICC_HPPIR		(INTC.ICCHPIR)
+	//#define GICC_IAR		(INTC.ICCIAR)
+	//#define GICC_BPR		(INTC.ICCBPR)
+	//#define GICC_CTLR		(INTC.ICCICR)
+	//#define GICD_IPRIORITYRn(n) (((volatile uint8_t *) & INTC.ICDIPR0) [(n)])
 
 	#define ARM_CA9_CACHELEVELMAX	1	/* максимальный уровень cache в процессоре */
 
@@ -711,8 +711,8 @@ extern "C" {
 		#define ARM_REALTIME_PRIORITY	((const uint32_t) gARM_REALTIME_PRIORITY)
 		#define ARM_SYSTEM_PRIORITY	((const uint32_t) gARM_SYSTEM_PRIORITY)
 
-		#define IS_RPR_SYSTEM() ((GICC_RPR & 0xFF) == ARM_SYSTEM_PRIORITY)
-		#define IS_RPR_USER() ((GICC_RPR & 0xFF) > ARM_SYSTEM_PRIORITY)
+		#define IS_RPR_SYSTEM() 1 //((GICC_RPR & 0xFF) == ARM_SYSTEM_PRIORITY)
+		#define IS_RPR_USER() 1 //((GICC_RPR & 0xFF) > ARM_SYSTEM_PRIORITY)
 
 		#define ASSERT_IRQL_SYSTEM() ASSERT(IS_RPR_SYSTEM())	/* executed from non-realtime interrupts */
 		#define ASSERT_IRQL_USER() ASSERT(IS_RPR_USER())	/* executed from user level */

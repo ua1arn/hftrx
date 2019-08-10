@@ -3929,19 +3929,11 @@ enum
 
 		BDCV_ALLRX = ROWS2GRID(22),	// количество строк (ячееек), отведенное под S-метр, панораму, иные отображения
 
-	#if WITHSEPARATEWFL
-		/* без совмещения на одном экрание водопада и панорамы */
-		BDCO_SPMRX = ROWS2GRID(0),	// смещение спектра по вертикали в ячейках от начала общего поля
-		BDCO_WFLRX = ROWS2GRID(0),	// смещение водопада по вертикали в ячейках от начала общего поля
-		BDCV_SPMRX = BDCV_ALLRX,	// вертикальный размер спектра в ячейках		};
-		BDCV_WFLRX = BDCV_ALLRX,	// вертикальный размер водопада в ячейках		};
-	#else /* WITHSEPARATEWFL */
 		/* совмещение на одном экрание водопада и панорамы */
 		BDCO_SPMRX = ROWS2GRID(0),	// смещение спектра по вертикали в ячейках от начала общего поля
 		BDCV_SPMRX = ROWS2GRID(11),	// вертикальный размер спектра в ячейках		};
 		BDCO_WFLRX = BDCV_SPMRX,	// смещение водопада по вертикали в ячейках от начала общего поля
 		BDCV_WFLRX = BDCV_ALLRX - BDCO_WFLRX	// вертикальный размер водопада в ячейках		};
-	#endif /* WITHSEPARATEWFL */
 	};
 
 	enum
@@ -3953,30 +3945,6 @@ enum
 		PATTERN_BAR_EMPTYHALF = 0x00	//0x00
 	};
 
-	#if WITHSEPARATEWFL
-		/* без совмещения на одном экрание водопада и панорамы */
-		enum 
-		{
-			DPAGE0,					// Страница, в которой отображаются основные (или все)
-			DPAGE1,					// Страница, в которой отображается спектр
-			DPAGE2,					// Страница, в которой отображается водопад
-			DISPLC_MODCOUNT
-		};
-
-		enum
-		{
-			PG0 = REDRSUBSET(DPAGE0),
-			PG1 = REDRSUBSET(DPAGE1),
-			PGSLP = REDRSUBSET_SLEEP,
-			PGALL = PG0 | PG1 | REDRSUBSET_MENU,
-			PGNOMEMU = PG0 | PG1,
-			PGLATCH = PGALL,	// страницы, на которых возможно отображение водопада или панорамы.
-			PGSWR = PG0 | PG1,	// страница отоюражения S-meter и SWR-meter
-			PGWFL = PG0,
-			PGSPE = PG1,
-			PGunused
-		};
-	#else /* WITHSEPARATEWFL */
 		/* совмещение на одном экрание водопада и панорамы */
 		enum 
 		{
@@ -3996,7 +3964,6 @@ enum
 			PGSLP = REDRSUBSET_SLEEP,
 			PGunused
 		};
-	#endif /* WITHSEPARATEWFL */
 
 	#if TUNE_TOP > 100000000uL
 		#define DISPLC_WIDTH	9	// количество цифр в отображении частоты
@@ -4043,17 +4010,15 @@ enum
 #if 1
 		{	0,	20,	display2_legend,	REDRM_MODE, PGSWR, },	// Отображение оцифровки шкалы S-метра, PWR & SWR-метра
 		{	0,	24,	display2_bars,		REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
-#else
-		{	0,	20,	display2_adctest,	REDRM_BARS, PGSWR, },	// ADC raw data print
-#endif
-
 	#if WITHSPECTRUMWF
 		{	0,	28,	dsp_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
 		{	0,	28,	display2_spectrum,	REDRM_BARS, PGSPE, },// подготовка изображения спектра
 		{	0,	28,	display2_waterfall,	REDRM_BARS, PGWFL, },// подготовка изображения водопада
 		{	0,	28,	display2_colorbuff,	REDRM_BARS,	PGWFL | PGSPE, },// Отображение водопада и/или спектра
 	#endif /* WITHSPECTRUMWF */
-
+#else
+		{	0,	20,	display2_adctest,	REDRM_BARS, PGSWR, },	// ADC raw data print
+#endif
 	
 		//{	0,	51,	display_samfreqdelta8, REDRM_BARS, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
 		{	0,	51,	display_time5,		REDRM_BARS, PGALL,	},	// TIME
@@ -4372,21 +4337,21 @@ enum
 		{	21, 20,	display_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
 
 
-	#if 1
+#if 1
 		{	0,	25,	display2_legend,	REDRM_MODE, PGSWR, },	// Отображение оцифровки шкалы S-метра
 		{	0,	30,	display2_bars,	REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
 		//{	0,	35,	display2_legend_tx,	REDRM_MODE, PGSWR, },	// Отображение оцифровки шкалы PWR & SWR-метра
 		//{	0,	40,	display2_bars_tx,	REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
-	#else
-		{	0,	25,	display2_adctest,	REDRM_BARS, PGSWR, },	// ADC raw data print
-	#endif
-
 	#if WITHSPECTRUMWF
 		{	0,	DLES,	dsp_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
 		{	0,	DLES,	display2_spectrum,	REDRM_BARS, PGSPE, },// подготовка изображения спектра
 		{	0,	DLES,	display2_waterfall,	REDRM_BARS, PGWFL, },// подготовка изображения водопада
 		{	0,	DLES,	display2_colorbuff,	REDRM_BARS,	PGWFL | PGSPE, },// Отображение водопада и/или спектра
 	#endif /* WITHSPECTRUMWF */
+#else
+		{	0,	25,	display2_adctest,	REDRM_BARS, PGSWR, },	// ADC raw data print
+#endif
+
 
 	
 		{	0,	DLE1,	display_datetime12,	REDRM_BARS, PGALL,	},	// DATE&TIME Jan-01 13:40
