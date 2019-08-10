@@ -6,7 +6,7 @@
 // UA1ARN
 //
 
-// Трансивер с DSP обработкой "Воронёнок-2" на процессоре 
+// Трансивер с DSP обработкой "Воронёнок-2" на процессоре
 // STM32F746ZGT6 кодеком NAU8822L и FPGA EP4CE22E22I7N
 // с функцией DUAL WATCH
 // 2xUSB
@@ -16,6 +16,9 @@
 #define ARM_STM32F4XX_TQFP144_CPUSTYLE_STORCH_V2_H_INCLUDED 1
 
 #define WITHSPI16BIT	1	/* возможно использование 16-ти битных слов при обмене по SPI */
+#if defined(STM32H743xx)
+	#define WITHSPI32BIT	1	/* возможно использование 32-ти битных слов при обмене по SPI */
+#endif /* defined(STM32F767xx) */
 #define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
 #define WITHSPIHWDMA 	1	/* Использование DMA при обмене по SPI */
 //#define WITHSPISW 	1	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */
@@ -213,7 +216,7 @@
 #if WITHSAI2HW
 	/* 
 	Поскольку блок SAI2 инициализируется как SLAVE с синхронизацией от SAI1,
-	из внешних сигналов требуется только SAI2_SD_A 
+	из внешних сигналов требуется только SAI2_SD_A
 	*/
 	#define SAI2HW_INITIALIZE()	do { \
 		/* arm_hardware_pioe_altfn20(1U << 0, AF_SAI2); */	/* PE0 - SAI2_MCK_A - 12.288 MHz	*/ \
