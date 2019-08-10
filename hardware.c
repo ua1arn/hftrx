@@ -4269,17 +4269,18 @@ void hardware_spi_master_setfreq(uint_fast8_t spispeedindex, int_fast32_t spispe
 	unsigned value;	/* делителя нет, есть только прескалер - значение делителя не используется */
 	const uint_fast8_t prei = calcdivider(calcdivround_per_ck(spispeed), STM32F_SPIBR_WIDTH, STM32F_SPIBR_TAPS, & value, 1);
 	const uint_fast32_t cfg1baudrate = (prei * SPI_CFG1_MBR_0) & SPI_CFG1_MBR_Msk;
+	const uint_fast32_t cfg1 = cfg1baudrate | (SPI_CFG1_CRCSIZE_0 * 7);
 	//debug_printf_P(PSTR("hardware_spi_master_setfreq: prei=%u, value=%u, spispeed=%u\n"), prei, value, spispeed);
 
-	spi_cfg1_val8w = cfg1baudrate | 
+	spi_cfg1_val8w = cfg1 |
 		7 * SPI_CFG1_DSIZE_0 |
 		0;
 
-	spi_cfg1_val16w = cfg1baudrate | 
+	spi_cfg1_val16w = cfg1 |
 		15 * SPI_CFG1_DSIZE_0 |
 		0;
 
-	spi_cfg1_val32w = cfg1baudrate |
+	spi_cfg1_val32w = cfg1 |
 		31 * SPI_CFG1_DSIZE_0 |
 		0;
 
@@ -4369,12 +4370,31 @@ void hardware_stm32h7xx_spi_master_connect(
 	uint_fast32_t cfg2
 	)
 {
+	debug_printf_P(PSTR("hardware_stm32h7xx_spi_master_connect: cfg1=%08lX, cfg2=%08lX\n"), cfg1, cfg2);
+
+	debug_printf_P(PSTR("1 CR1=%08lX  CR2=%08lX CFG1=%08lX CFG2=%08lX\n"), SPI1->CR1, SPI1->CR2, SPI1->CFG1, SPI1->CFG2);
 	HARDWARE_SPI_CONNECT();
+	debug_printf_P(PSTR("2 CR1=%08lX  CR2=%08lX CFG1=%08lX CFG2=%08lX\n"), SPI1->CR1, SPI1->CR2, SPI1->CFG1, SPI1->CFG2);
+
+	if ((SPI1->CR1 & SPI_CR1_SPE) != 0)
+		SPI1->CR1 &= ~ SPI_CR1_SPE;
+	debug_printf_P(PSTR("6 CR1=%08lX  CR2=%08lX CFG1=%08lX CFG2=%08lX\n"), SPI1->CR1, SPI1->CR2, SPI1->CFG1, SPI1->CFG2);
 	SPI1->CR1 = SPI_CR1_SSI;
+	debug_printf_P(PSTR("3 CR1=%08lX  CR2=%08lX CFG1=%08lX CFG2=%08lX\n"), SPI1->CR1, SPI1->CR2, SPI1->CFG1, SPI1->CFG2);
 	SPI1->CFG1 = cfg1;
+	debug_printf_P(PSTR("4 CR1=%08lX  CR2=%08lX CFG1=%08lX CFG2=%08lX\n"), SPI1->CR1, SPI1->CR2, SPI1->CFG1, SPI1->CFG2);
 	SPI1->CFG2 = cfg2;
+
+	debug_printf_P(PSTR("5 CR1=%08lX  CR2=%08lX CFG1=%08lX CFG2=%08lX\n"), SPI1->CR1, SPI1->CR2, SPI1->CFG1, SPI1->CFG2);
+	SPI1->CR2 = 0;
+
+	debug_printf_P(PSTR("6 CR1=%08lX  CR2=%08lX CFG1=%08lX CFG2=%08lX\n"), SPI1->CR1, SPI1->CR2, SPI1->CFG1, SPI1->CFG2);
+	SPI1->CR1 = SPI_CR1_SSI;
+	debug_printf_P(PSTR("7 CR1=%08lX  CR2=%08lX CFG1=%08lX CFG2=%08lX\n"), SPI1->CR1, SPI1->CR2, SPI1->CFG1, SPI1->CFG2);
 	SPI1->CR1 |= SPI_CR1_SPE;
+	debug_printf_P(PSTR("8 CR1=%08lX  CR2=%08lX CFG1=%08lX CFG2=%08lX\n"), SPI1->CR1, SPI1->CR2, SPI1->CFG1, SPI1->CFG2);
 	SPI1->CR1 |= SPI_CR1_CSTART;
+	debug_printf_P(PSTR("9 CR1=%08lX  CR2=%08lX CFG1=%08lX CFG2=%08lX\n"), SPI1->CR1, SPI1->CR2, SPI1->CFG1, SPI1->CFG2);
 }
 
 #endif /* CPUSTYLE_STM32H7XX */
