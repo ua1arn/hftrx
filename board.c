@@ -8447,9 +8447,7 @@ mcp3208_read(
 	const uint_fast8_t cmd1 = (0x10 | (diff ? 0x00 : 0x08) | (adci & 0x07));
 	uint_fast32_t rv;
 
-// todo: разобраться - при программной реализации SPI требуется сдвиг на один разряд больше.
-// возможно, на STM32H7xx что-то не так с приемом по SPI - но FRAM работает как и ожидается.
-	enum { LSBPOS = 0 };
+	enum { LSBPOS = 3 };
 
 #if WITHSPI32BIT
 
@@ -8488,8 +8486,6 @@ mcp3208_read(
 	v3 = spi_read_byte(target, 0x00);
 
 	spi_unselect(target);
-
-	//debug_printf_P(PSTR("mcp3208_read: %02X:%02X:%02X:%02X\n"), v0, v1, v2, v3);
 
 	rv = ((uint_fast32_t) v0 << 24) | ((uint_fast32_t) v1 << 16) | ((uint_fast32_t) v2 << 8) | v3;
 
