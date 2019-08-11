@@ -2585,8 +2585,10 @@ void hardware_adc_initialize(void)
 	// Power-on ADCs
 	for (i = 0; i < board_get_adcinputs(); ++ i)
 	{
-		const uint_fast8_t ainp = board_get_adcch(i);
-		const adcinmap_t * const adcmap = getadcmap(ainp);
+		const uint_fast8_t adci = board_get_adcch(i);
+		if (adci >= BOARD_ADCX0BASE)
+			continue;
+		const adcinmap_t * const adcmap = getadcmap(adci);
 		ADC_TypeDef * const adc = adcmap->adc;
 
 		if ((adc->CR & ADC_CR_ADVREGEN) != 0)
@@ -2601,8 +2603,10 @@ void hardware_adc_initialize(void)
 	// Initialize ADCs
 	for (i = 0; i < board_get_adcinputs(); ++ i)
 	{
-		const uint_fast8_t ainp = board_get_adcch(i);
-		const adcinmap_t * const adcmap = getadcmap(ainp);
+		const uint_fast8_t adci = board_get_adcch(i);
+		if (adci >= BOARD_ADCX0BASE)
+			continue;
+		const adcinmap_t * const adcmap = getadcmap(adci);
 		ADC_TypeDef * const adc = adcmap->adc;
 
 
@@ -2680,8 +2684,10 @@ void hardware_adc_initialize(void)
 	// Set ADC_CR_ADEN
 	for (i = 0; i < board_get_adcinputs(); ++ i)
 	{
-		const uint_fast8_t ainp = board_get_adcch(i);
-		const adcinmap_t * const adcmap = getadcmap(ainp);
+		const uint_fast8_t adci = board_get_adcch(i);
+		if (adci >= BOARD_ADCX0BASE)
+			continue;
+		const adcinmap_t * const adcmap = getadcmap(adci);
 		ADC_TypeDef * const adc = adcmap->adc;
 
 		if ((adc->ISR & ADC_ISR_ADRDY) != 0)

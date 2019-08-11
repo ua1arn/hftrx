@@ -35,7 +35,7 @@ extern "C" {
 	#define ADCVREF_CPU	33		// 3.3 volt
 	//#define HARDWARE_DACBITS 12	/* ЦАП работает с 12-битными значениями */
 	#define HARDWARE_ADCBITS 8	/* АЦП работает с 8-битными значениями */
-	#define HARDWARE_ADCINPUTS	8	/* до 8-ти входов АЦП */
+	#define HARDWARE_ADCINPUTS	40	/* до 8-ти входов АЦП */
 	/* тип для хранения данных, считанных с АЦП */
 	typedef uint_fast16_t adcvalholder_t;		
 
@@ -70,7 +70,7 @@ extern "C" {
 	#define DACVREF_CPU	33		// 3.3 volt
 	#define HARDWARE_DACBITS 12	/* ЦАП работает с 12-битными значениями */
 	#define HARDWARE_ADCBITS 12	/* АЦП работает с 12-битными значениями */
-	#define HARDWARE_ADCINPUTS	32	/* до 32-ти входов АЦП */
+	#define HARDWARE_ADCINPUTS	40	/* до 32-ти входов АЦП */
 	/* тип для хранения данных, считанных с АЦП */
 	typedef uint_fast16_t adcvalholder_t;		
 	#define WITHREFSENSORVAL	1210	/* Reference voltage: STM32F746, STM32F429, STM32F446 = 1.21V */
@@ -111,7 +111,7 @@ extern "C" {
 	#define DACVREF_CPU	33		// 3.3 volt
 	#define HARDWARE_DACBITS 12	/* ЦАП работает с 12-битными значениями */
 	#define HARDWARE_ADCBITS 12	/* АЦП работает с 12-битными значениями */
-	#define HARDWARE_ADCINPUTS	32	/* до 32-ти входов АЦП */
+	#define HARDWARE_ADCINPUTS	40	/* до 32-ти входов АЦП */
 	/* тип для хранения данных, считанных с АЦП */
 	typedef uint_fast16_t adcvalholder_t;		
 	#define WITHREFSENSORVAL	1224	/* Reference voltage: STM32L031xx = 1.224V */
@@ -148,7 +148,7 @@ extern "C" {
 	#define DACVREF_CPU	33		// 3.3 volt
 	#define HARDWARE_DACBITS 12	/* ЦАП работает с 12-битными значениями */
 	#define HARDWARE_ADCBITS 12	/* АЦП работает с 12-битными значениями */
-	#define HARDWARE_ADCINPUTS	32	/* до 32-ти входов АЦП */
+	#define HARDWARE_ADCINPUTS	40	/* до 32-ти входов АЦП */
 	/* тип для хранения данных, считанных с АЦП */
 	typedef uint_fast16_t adcvalholder_t;		
 	#define WITHREFSENSORVAL	1210	/* Reference voltage: STM32F746, STM32F429, STM32F446 = 1.21V */
@@ -311,7 +311,7 @@ extern "C" {
 	#define ADCVREF_CPU	33		// 3.3 volt
 	#define DACVREF_CPU	33		// 3.3 volt
 	#define HARDWARE_DACBITS 12	/* ЦАП работает с 12-битными значениями */
-	#define HARDWARE_ADCINPUTS	32	/* до 32-ти входов АЦП */
+	#define HARDWARE_ADCINPUTS	40	/* до 32-ти входов АЦП */
 	/* тип для хранения данных, считанных с АЦП */
 	typedef uint_fast16_t adcvalholder_t;	
 	#if CPUSTYLE_STM32H7XX
@@ -360,7 +360,7 @@ extern "C" {
 	#define ADCVREF_CPU	33		// 3.3 volt
 	//#define HARDWARE_DACBITS 12	/* ЦАП работает с 12-битными значениями */
 	#define HARDWARE_ADCBITS 10	/* АЦП работает с 10-битными значениями */
-	#define HARDWARE_ADCINPUTS	16	/* до 16-ти входов АЦП */
+	#define HARDWARE_ADCINPUTS	40	/* до 16-ти входов АЦП */
 	/* тип для хранения данных, считанных с АЦП */
 	typedef uint_fast16_t adcvalholder_t;		
 
@@ -389,7 +389,7 @@ extern "C" {
 	#define ADCVREF_CPU	33		// 3.3 volt
 	//#define HARDWARE_DACBITS 12	/* ЦАП работает с 12-битными значениями */
 	#define HARDWARE_ADCBITS 10	/* АЦП работает с 10-битными значениями */
-	#define HARDWARE_ADCINPUTS	16	/* до 16-ти входов АЦП */
+	#define HARDWARE_ADCINPUTS	40	/* до 16-ти входов АЦП */
 	/* тип для хранения данных, считанных с АЦП */
 	typedef uint_fast16_t adcvalholder_t;		
 
@@ -412,7 +412,7 @@ extern "C" {
 	#define ADCVREF_CPU	33		// 3.3 volt
 	//#define HARDWARE_DACBITS 12	/* ЦАП работает с 12-битными значениями */
 	#define HARDWARE_ADCBITS 12	/* АЦП работает с 12-битными значениями */
-	#define HARDWARE_ADCINPUTS	8	/* до 8-ти входов АЦП */
+	#define HARDWARE_ADCINPUTS	40	/* до 8-ти входов АЦП */
 	/* тип для хранения данных, считанных с АЦП */
 	typedef uint_fast16_t adcvalholder_t;		
 
@@ -430,7 +430,7 @@ extern "C" {
 	#define ADCVREF_CPU	33		// 3.3 volt
 	//#define HARDWARE_DACBITS 12	/* ЦАП работает с 12-битными значениями */
 	#define HARDWARE_ADCBITS 10	/* АЦП работает с 10-битными значениями */
-	#define HARDWARE_ADCINPUTS	16	/* до 16-ти входов АЦП */
+	#define HARDWARE_ADCINPUTS	40	/* до 16-ти входов АЦП */
 
 	/* тип для хранения данных, считанных с АЦП */
 	typedef uint_fast16_t adcvalholder_t;		
@@ -461,7 +461,7 @@ extern "C" {
 	//#define HARDWARE_ADCBITS 8	/* АЦП работает с 8-битными значениями */
 	#define HARDWARE_ADCBITS 10	/* АЦП работает с 10-битными значениями */
 
-	#define HARDWARE_ADCINPUTS	8	/* до 8-ти входов АЦП */
+	#define HARDWARE_ADCINPUTS	40	/* до 8-ти входов АЦП */
 
 	#if HARDWARE_ADCBITS == 8
 		/* тип для хранения данных, считанных с АЦП */
@@ -495,7 +495,7 @@ extern "C" {
 	#define ADCVREF_CPU	25		// 2.5 volt
 	#define HARDWARE_ADCBITS 8	/* АЦП работает с 8-битными значениями */
 
-	#define HARDWARE_ADCINPUTS	8	/* до 8-ти входов АЦП */
+	#define HARDWARE_ADCINPUTS	40	/* до 8-ти входов АЦП */
 	/* тип для хранения данных, считанных с АЦП */
 	typedef uint_fast8_t adcvalholder_t;		
 
@@ -582,7 +582,7 @@ extern "C" {
 	#define ADCVREF_CPU	33		// 3.3 volt
 	#define HARDWARE_ADCBITS 12	/* АЦП работает с 12-битными значениями */
 
-	#define HARDWARE_ADCINPUTS	8	/* до 8-ти входов АЦП */
+	#define HARDWARE_ADCINPUTS	40	/* до 8-ти входов АЦП */
 	/* тип для хранения данных, считанных с АЦП */
 	typedef uint_fast16_t adcvalholder_t;
 
