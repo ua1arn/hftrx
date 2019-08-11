@@ -3669,6 +3669,7 @@ hardware_beep_initialize(void)
 		static portholder_t spi_cr1_val16w [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 в режиме 16-ти битных слов. */
 	#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX
 		static portholder_t spi_cr1_val8w [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 */
+		static portholder_t spi_cr1_val16w [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 */
 	#elif CPUSTYLE_ATMEGA
 		static portholder_t spcr_val [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 */
 		static portholder_t spsr_val [SPIC_SPEEDS_COUNT];
@@ -4269,6 +4270,11 @@ void hardware_spi_master_setfreq(uint_fast8_t spispeedindex, int_fast32_t spispe
 	spi_cr1_val8w [spispeedindex][SPIC_MODE1] = cr1bits | CR1_MODE1;
 	spi_cr1_val8w [spispeedindex][SPIC_MODE2] = cr1bits | CR1_MODE2;
 	spi_cr1_val8w [spispeedindex][SPIC_MODE3] = cr1bits | CR1_MODE3; 
+
+	spi_cr1_val16w [spispeedindex][SPIC_MODE0] = cr1bits | CR1_MODE0;
+	spi_cr1_val16w [spispeedindex][SPIC_MODE1] = cr1bits | CR1_MODE1;
+	spi_cr1_val16w [spispeedindex][SPIC_MODE2] = cr1bits | CR1_MODE2;
+	spi_cr1_val16w [spispeedindex][SPIC_MODE3] = cr1bits | CR1_MODE3;
 
 #elif CPUSTYLE_STM32H7XX
 
