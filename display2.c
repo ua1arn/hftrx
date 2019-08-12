@@ -1318,7 +1318,19 @@ static void display_currlevel5(
 	void * pv
 	)
 {
-#if WITHCURRLEVEL && WITHCPUADCHW
+#if WITHCURRLEVEL2 && WITHCPUADCHW
+	int_fast16_t drain = hamradio_get_pacurrent2_value();	// Ток в сотнях милиампер (до 25.5 ампера), может быть отрицательным
+
+	display_setcolors(colorsfg_1state [0], colorsbg_1state [0]);
+	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
+	do
+	{
+		display_gotoxy(x + CHARS2GRID(0), y + lowhalf);
+		display_value_small(drain, 3 | WMINUSFLAG, 1, 255, 0, lowhalf);
+		//display_gotoxy(x + CHARS2GRID(4), y + lowhalf);
+		//display_string_P(PSTR("A"), lowhalf);
+	} while (lowhalf --);
+#elif WITHCURRLEVEL && WITHCPUADCHW
 	int_fast16_t drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (до 2.55 ампера), может быть отрицательным
 
 	display_setcolors(colorsfg_1state [0], colorsbg_1state [0]);
@@ -4010,12 +4022,10 @@ enum
 #if 1
 		{	0,	20,	display2_legend,	REDRM_MODE, PGSWR, },	// Отображение оцифровки шкалы S-метра, PWR & SWR-метра
 		{	0,	24,	display2_bars,		REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
-	#if WITHSPECTRUMWF
 		{	0,	28,	dsp_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
 		{	0,	28,	display2_spectrum,	REDRM_BARS, PGSPE, },// подготовка изображения спектра
 		{	0,	28,	display2_waterfall,	REDRM_BARS, PGWFL, },// подготовка изображения водопада
 		{	0,	28,	display2_colorbuff,	REDRM_BARS,	PGWFL | PGSPE, },// Отображение водопада и/или спектра
-	#endif /* WITHSPECTRUMWF */
 #else
 		{	0,	20,	display2_adctest,	REDRM_BARS, PGSWR, },	// ADC raw data print
 #endif

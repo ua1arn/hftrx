@@ -11,7 +11,7 @@
 #define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
 #define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
 
-enum
+typedef enum
 {
 #if (SPISPEED400k) || defined (SPISPEED100k)
 	SPIC_SPEED100k,
@@ -69,7 +69,7 @@ enum
 
 #if WITHDEBUG && WITHUART1HW && WITHDEBUG_USART1
 	// Отладочные функции работают через USART1
-	// Вызывается из user-mode программы при запрещённых прерываниях. 
+	// Вызывается из user-mode программы при запрещённых прерываниях.
 	#define HARDWARE_DEBUG_INITIALIZE() do { \
 			hardware_uart1_initialize(); \
 		} while (0)
@@ -101,7 +101,7 @@ enum
 // Для serial_irq_loopback_test
 #if 0 && WITHDEBUG && WITHUART1HW && WITHDEBUG_USART1
 	// Отладочные функции работают через USART1
-	// Вызывается из user-mode программы при запрещённых прерываниях. 
+	// Вызывается из user-mode программы при запрещённых прерываниях.
 	#define HARDWARE_DEBUGSIRQ_INITIALIZE() do { \
 			hardware_uart1_initialize(); \
 		} while (0)
@@ -147,7 +147,7 @@ enum
 
 #if WITHDEBUG && WITHUART2HW && WITHDEBUG_USART2
 	// Отладочные функции работают через USART2
-	// Вызывается из user-mode программы при запрещённых прерываниях. 
+	// Вызывается из user-mode программы при запрещённых прерываниях.
 	#define HARDWARE_DEBUG_INITIALIZE() do { \
 			hardware_uart2_initialize(); \
 		} while (0)
@@ -471,7 +471,7 @@ enum
 
 #if WITHDEBUG && WITHUSBCDC && WITHDEBUG_CDC
 	// Модемные функции работают через виртуальный USB последовательный порт
-	// Вызывается из user-mode программы при запрещённых прерываниях. 
+	// Вызывается из user-mode программы при запрещённых прерываниях.
 	#define HARDWARE_DEBUG_INITIALIZE() do { \
 		debugusb_initialize(); \
 		usbd_cdc_enablerx(1); \

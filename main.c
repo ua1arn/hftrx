@@ -8843,13 +8843,13 @@ int_fast16_t hamradio_get_pacurrent_value(void)
 
 	#if CTLSTYLE_RA4YBO_V3
 		// x30A - 0.066 V/A
-		enum { 
+		enum {
 			sens = 66,			// millivolts / ampher
 			scale = 100			// результат - в десятых долях ампера
 		};
 	#else /* CTLSTYLE_RA4YBO_V3 */
 		// x05B - 0.185 V/A
-		enum { 
+		enum {
 			sens = 185,			// millivolts / ampher
 			scale = 100			// результат - в сотых долях ампера
 		};
@@ -8865,13 +8865,13 @@ int_fast16_t hamradio_get_pacurrent_value(void)
 
 	#if 1
 		// x30A - 0.066 V/A
-		enum { 
+		enum {
 			sens = 66,			// millivolts / ampher
 			scale = 100			// результат - в десятых долях ампера
 		};
 	#else /*  */
 		// x05B - 0.185 V/A
-		enum { 
+		enum {
 			sens = 185,			// millivolts / ampher
 			scale = 100			// результат - в сотых долях ампера
 		};
@@ -8906,6 +8906,53 @@ int_fast16_t hamradio_get_pacurrent_value(void)
 	//debug_printf_P(PSTR("voltage vsense=%lu, midpoint=%lu, delta=%d mV, current=%d * 10 mA\n"), vsense, midpoint, v / scale, curr10);
 
 	return curr10;
+}
+
+// Ток в сонтях милиампер (может быть отрицательным)
+// PA current sense - ACS712ELCTR-30B-T chip
+int_fast16_t hamradio_get_pacurrent2_value(void)
+{
+	// Чувствительность датчиков:
+	// x05B - 0.185 V/A
+	// x20A - 0.100 V/A
+	// x30A - 0.066 V/A
+
+	// x30A - 0.066 V/A
+	enum {
+		sens = 660,			// millivolts / ampher
+		scale = 100			// результат - в десятых долях ампера
+	};
+
+
+#if WITHREFSENSOR
+	// Измерение опрного напряжения
+	const uint_fast8_t vrefi = VREFIX;
+	const adcvalholder_t ref = board_getadc_unfiltered_truevalue(vrefi);	// текущее значение данного АЦП
+	if (ref == 0)
+		return 0;
+	//const unsigned Vref_mV = ADCVREF_CPU * 100;
+	const unsigned Vref_mV = (uint_fast32_t) board_getadc_fsval(vrefi) * WITHREFSENSORVAL / ref;
+#else /* WITHREFSENSOR */
+	// опорное напряжение известно из конфигурации процессора.
+	const unsigned Vref_mV = ADCVREF_CPU * 100;
+#endif /* WITHREFSENSOR */
+
+#if 1
+	const adcvalholder_t midp = board_getadc_unfiltered_truevalue(PAREFERIX2);
+	const adcvalholder_t sense = board_getadc_unfiltered_truevalue(PASENSEIX2);
+
+	const long curr100 = ((long) midp - (long) sense) * (int_fast64_t) Vref_mV * scale / ((long) sens * board_getadc_fsval(PAREFERIX2));
+
+#else
+	const long midpoint = board_getadc_unfiltered_u32(PAREFERIX2, 0, (uint_fast32_t) Vref_mV * scale);
+	const long vsense = board_getadc_unfiltered_u32(PASENSEIX2, 0, (uint_fast32_t) Vref_mV * scale);
+
+	int curr100 = ((long) midpoint - (long) vsense + sens / 2) / sens;
+
+	//debug_printf_P(PSTR("voltage vsense=%lu, midpoint=%lu, delta=%d mV, current=%d * 10 mA\n"), vsense, midpoint, v / scale, curr10);
+#endif
+
+	return curr100;
 }
 
 #endif /* WITHCURRLEVEL && WITHCPUADCHW */
@@ -9473,29 +9520,39 @@ display2_adctest(
 	{
 		// UA1CEI 100W PA board 2xRD100HHF1 
 		// ADC inputs configuration
-		//{	targetxad2,	"DRAIN",	1,	1,	10, },	// DRAIN (negative from midpoint at CH1: ch0=in-, ch1=in+)
-		//{	targetxad2,	"DRAIN",	0,	0,	10, },	// DRAIN (negative from midpoint at CH1)
-		{	targetxad2,	"REFER",	1,	0,	10, },	// reference (2.5 volt)
-		{	targetxad2,	"FWD  ",	2,	0,	10, },	// FORWARD
-		{	targetxad2,	"REFL ",	3,	0,	10, },	// REFLECTED
-		{	targetxad2,	"Vcc  ",	4,	0,	57,	},	// VDD 4.7k + 1k
-		{	targetxad2,	"3.3  ",	5,	0,	10,	},	// VDD 4.7k + 1k
-		{	targetxad2,	"gnd  ",	7,	0,	10,	},	// VDD 4.7k + 1k
+		{	targetxad2,	"REFER",	1,	0,	10, },	// DRAIN (MCP3208, negative from midpoint at CH1: ch0=in-, ch1=in+)
+		{	targetxad2,	"DRAIN",	0,	0,	10, },	// DRAIN (MCP3208, negative from midpoint at CH1)
+		//{	targetxad2,	"DRAIN",	1,	1,	10, },	// DRAIN (MCP3208, negative from midpoint at CH1: ch0=in-, ch1=in+)
+		//{	targetxad2,	"DRAIN",	0,	1,	10, },	// DRAIN (MCP3208, negative from midpoint at CH1)
+		//{	targetxad2,	"REFER",	1,	0,	10, },	// reference (2.5 volt)
+		{	targetxad2,	"REFL ",	2,	0,	10, },	// REFLECTED
+		{	targetxad2,	"FWD  ",	3,	0,	10, },	// FORWARD
+		//{	targetxad2,	"Vcc  ",	4,	0,	57,	},	// VDD 4.7k + 1k
+		//{	targetxad2,	"3.3  ",	5,	0,	10,	},	// VDD 4.7k + 1k
+		//{	targetxad2,	"gnd  ",	7,	0,	10,	},	// VDD 4.7k + 1k
 		//{	targetadc2,	"BVcc ",	7,	0,	57,	},	// VDD 4.7k + 1k
 		//{	targetadc2,	"ZERO ",	4,	0,	57,	},	// 4..6 channels all zero
 		//{	targetadc2,	"ZERO ",	5,	0,	57,	},	// 4..6 channels all zero
+		//{	targetxad2,	"ch0  ",	0,	1,	57,	},	// ch0
+		//{	targetxad2,	"ch1  ",	1,	1,	57,	},	// ch1
+		//{	targetxad2,	"ch2  ",	2,	1,	57,	},	// ch2
+		//{	targetxad2,	"ch3  ",	3,	1,	57,	},	// ch3
+		//{	targetxad2,	"ch4  ",	4,	1,	57,	},	// ch4
+		//{	targetxad2,	"ch5  ",	5,	1,	57,	},	// ch5
+		//{	targetxad2,	"ch6  ",	6,	1,	57,	},	// ch6
+		//{	targetxad2,	"ch7  ",	7,	1,	57,	},	// ch7
 	};
 
 	uint_fast8_t row;
 	for (row = 0; row < (sizeof adcis / sizeof adcis [0]); ++ row)
 	{
-		uint_fast32_t value = 0;
+		uint_fast16_t value;
 		char b [WDTH + 1];
 		uint_fast8_t valid;
 
 		value = mcp3208_read(adcis [row].target, adcis [row].diff, adcis [row].adci, & valid) * (uint64_t) adcis [row].mul10 * vref_mV / 4095 / 10;
 
-		local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("%*lu"), WDTH, (unsigned long) value);
+		local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("%*u"), WDTH, (unsigned) value);
 		display_2states_P(x + (0), y + GRID2Y(row), valid, adcis [row].label, adcis [row].label);
 		display_2states(x + (5), y + GRID2Y(row), valid, b, b);
 	}
