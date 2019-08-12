@@ -3103,7 +3103,7 @@ prog_ctrlreg(uint_fast8_t plane)
 #endif
 		const uint_fast8_t txgated = glob_tx && glob_txgate;
 
-#if KEYB_FPAMEL20_V0A_UY5UM
+#if 0//KEYB_FPAMEL20_V0A_UY5UM
 		RBBIT(0047, glob_antenna);		// D7: antenns select бит выбора антенны (0 - ANT1, 1 - ANT2)
 		RBBIT(0046, glob_antenna);		// D6: antenns select бит выбора антенны (0 - ANT1, 1 - ANT2)
 		RBVAL(0040, 1U << glob_bandf2, 6);		// D0..D5: band select бит выбора диапазонного фильтра передатчика
