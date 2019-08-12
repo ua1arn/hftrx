@@ -4189,8 +4189,6 @@ void hardware_spi_master_setfreq(uint_fast8_t spispeedindex, int_fast32_t spispe
 
 #elif CPUSTYLE_ATMEGA
 
-	// SPI initialization
-
 	// Использование автоматического расчёта предделителя
 	unsigned value;	/* делителя нет, есть только прескалер - значение делителя не используется */
 	const uint_fast8_t prei = calcdivider(calcdivround(spispeed), ATMEGA_SPCR_WIDTH, ATMEGA_SPCR_TAPS, & value, 1);
