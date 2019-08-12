@@ -4345,7 +4345,7 @@ void hardware_spi_master_setfreq(uint_fast8_t spispeedindex, int_fast32_t spispe
 	spi_spbr_val [spispeedindex] = value;	// Bit Rate Register (SPBR)
 	// подготовка управляющих слов для разных spi mode, используемых контроллером.
 	// 8-битная передача
-	const uint16_t spcmd8bw = spcmd0 | 0x0700;	// 0x0700 - 8 bit
+	const uint_fast16_t spcmd8bw = spcmd0 | 0x0700;	// 0x0700 - 8 bit
 
 	spi_spcmd0_val8w [spispeedindex][SPIC_MODE0] = spcmd8bw | SPCMD_MODE0;
 	spi_spcmd0_val8w [spispeedindex][SPIC_MODE1] = spcmd8bw | SPCMD_MODE1;
@@ -4374,27 +4374,6 @@ void hardware_spi_master_setfreq(uint_fast8_t spispeedindex, int_fast32_t spispe
 	#error Wrong CPUSTYLE macro
 #endif
 }
-
-#if CPUSTYLE_STM32H7XX
-
-void hardware_stm32h7xx_spi_master_connect(
-	uint_fast32_t cfg1,
-	uint_fast32_t cfg2
-	)
-{
-	HARDWARE_SPI_CONNECT();
-
-	//SPI1->CR1 &= ~ SPI_CR1_SPE;
-
-	SPI1->CFG1 = cfg1;
-	SPI1->CFG2 = cfg2;
-	SPI1->CR1 |= SPI_CR1_SSI;
-
-	SPI1->CR1 |= SPI_CR1_SPE;
-	SPI1->CR1 |= SPI_CR1_CSTART;
-}
-
-#endif /* CPUSTYLE_STM32H7XX */
 
 /* управление состоянием "подключено */
 void hardware_spi_connect(uint_fast8_t spispeedindex, uint_fast8_t spimode)
@@ -4494,7 +4473,14 @@ void hardware_spi_connect(uint_fast8_t spispeedindex, uint_fast8_t spimode)
 
 #elif CPUSTYLE_STM32H7XX
 
-	hardware_stm32h7xx_spi_master_connect(spi_cfg1_val8w [spispeedindex], spi_cfg2_val [spimode]);
+	HARDWARE_SPI_CONNECT();
+
+	SPI1->CFG1 = spi_cfg1_val8w [spispeedindex];
+	SPI1->CFG2 = spi_cfg2_val [spimode];
+	SPI1->CR1 |= SPI_CR1_SSI;
+
+	SPI1->CR1 |= SPI_CR1_SPE;
+	SPI1->CR1 |= SPI_CR1_CSTART;
 
 #elif CPUSTYLE_R7S721
 
@@ -5588,7 +5574,14 @@ void hardware_spi_connect_b16(uint_fast8_t spispeedindex, uint_fast8_t spimode)
 
 #elif CPUSTYLE_STM32H7XX
 
-		hardware_stm32h7xx_spi_master_connect(spi_cfg1_val16w [spispeedindex], spi_cfg2_val [spimode]);
+		HARDWARE_SPI_CONNECT();
+
+		SPI1->CFG1 = spi_cfg1_val16w [spispeedindex];
+		SPI1->CFG2 = spi_cfg2_val [spimode];
+		SPI1->CR1 |= SPI_CR1_SSI;
+
+		SPI1->CR1 |= SPI_CR1_SPE;
+		SPI1->CR1 |= SPI_CR1_CSTART;
 
 #elif CPUSTYLE_R7S721
 
@@ -5759,7 +5752,14 @@ void hardware_spi_connect_b32(uint_fast8_t spispeedindex, uint_fast8_t spimode)
 {
 #if CPUSTYLE_STM32H7XX
 
-	hardware_stm32h7xx_spi_master_connect(spi_cfg1_val32w [spispeedindex], spi_cfg2_val [spimode]);
+	HARDWARE_SPI_CONNECT();
+
+	SPI1->CFG1 = spi_cfg1_val32w [spispeedindex];
+	SPI1->CFG2 = spi_cfg2_val [spimode];
+	SPI1->CR1 |= SPI_CR1_SSI;
+
+	SPI1->CR1 |= SPI_CR1_SPE;
+	SPI1->CR1 |= SPI_CR1_CSTART;
 
 #elif CPUSTYLE_R7S721
 
