@@ -85,7 +85,7 @@ static uintptr_t
 dma_invalidate32rx(uintptr_t addr)
 {
 	//arm_hardware_invalidate(addr, DMABUFFSIZE32RX * sizeof (uint32_t));
-	arm_hardware_flush_invalidate(addr, DMABUFFSIZE32RX * sizeof (uint32_t) + ADDPAD);
+	arm_hardware_flush_invalidate(addr, DMABUFFSIZE32RX * sizeof (int32_t) + ADDPAD);
 	return addr;
 }
 
@@ -93,7 +93,7 @@ dma_invalidate32rx(uintptr_t addr)
 // Потом содержимое не требуется
 static uintptr_t dma_flush32tx(uintptr_t addr)
 {
-	arm_hardware_flush_invalidate(addr, DMABUFFSIZE32TX * sizeof (uint32_t) + ADDPAD);
+	arm_hardware_flush_invalidate(addr, DMABUFFSIZE32TX * sizeof (int32_t) + ADDPAD);
 	return addr;
 }
 

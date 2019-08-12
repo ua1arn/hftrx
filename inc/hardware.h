@@ -335,8 +335,6 @@ extern "C" {
 	#include "armcpu/iodefine.h"
 	#include "rza_io_regrw.h"
 
-	//#include "hardware_r7s721.h"
-
 	#define ALIGNX_BEGIN __attribute__ ((aligned(32))) 
 	#define ALIGNX_END /* nothing */
 
@@ -347,9 +345,9 @@ extern "C" {
 	#include "arm_math.h"
 	#include "arm_const_structs.h"
 
-#elif CPUSTYLE_STM32MP15
+#elif CPUSTYLE_STM32MP1
 
-	// ST dual code A7 + M4
+	// ST dual core A7 + M4
 
 	// CPUSTYLE_STM32MP157A
 	// STM32MP157Axx
@@ -360,12 +358,9 @@ extern "C" {
 	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
 	#define	CPUSTYLE_ARM_CA7	1
 
+
+	#include "irq_ctrl.h"
 	#include "armcpu/stm32mp1xx.h"
-
-	//#include "armcpu/iodefine.h"
-	//#include "rza_io_regrw.h"
-
-	//#include "hardware_r7s721.h"
 
 	#define ALIGNX_BEGIN __attribute__ ((aligned(32)))
 	#define ALIGNX_END /* nothing */
@@ -811,8 +806,13 @@ typedef struct ticker
 void ticker_initialize(ticker_t * p, unsigned nticks, void (* cb)(void *), void * ctx);
 void bootloader_detach(void);
 
-#define BOARD_ADCXBASE 24
-#define BOARD_ADCXIN(ch) (BOARD_ADCXBASE + (ch))
+#define HARDWARE_ADCINPUTS	40	/* до 8-ти входов АЦП */
+
+#define BOARD_ADCX0BASE 24	// on-board ADC base index
+#define BOARD_ADCX1BASE 32	// PA board ADC base index
+#define BOARD_ADCXIN(ch) (BOARD_ADCX0BASE + (ch))
+#define BOARD_ADCX1IN(ch) (BOARD_ADCX0BASE + (ch))
+#define BOARD_ADCX2IN(ch) (BOARD_ADCX1BASE + (ch))
 
 // Cortex-A7/A9 handlers
 void Undef_Handler(void);

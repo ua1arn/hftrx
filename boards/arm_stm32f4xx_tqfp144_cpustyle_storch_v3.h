@@ -16,6 +16,9 @@
 #define ARM_STM32F4XX_TQFP144_CPUSTYLE_STORCH_V3_H_INCLUDED 1
 
 #define WITHSPI16BIT	1	/* возможно использование 16-ти битных слов при обмене по SPI */
+#if defined(STM32H743xx)
+	#define WITHSPI32BIT	1	/* возможно использование 32-ти битных слов при обмене по SPI */
+#endif /* defined(STM32F767xx) */
 #define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
 #define WITHSPIHWDMA 	1	/* Использование DMA при обмене по SPI */
 //#define WITHSPISW 	1	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */

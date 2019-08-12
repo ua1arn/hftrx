@@ -13,6 +13,7 @@
 #define ARM_R7S72_TQFP176_CPUSTYLE_STORCH_V8_H_INCLUDED 1
 
 #define WITHSPI16BIT	1		/* возможно использование 16-ти битных слов при обмене по SPI */
+#define WITHSPI32BIT	1		/* возможно использование 32-ти битных слов при обмене по SPI */
 #define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
 #define WITHSPIHWDMA 	1	/* Использование DMA при обмене по SPI */
 //#define WITHSPISW 	1	/* Использование программного управления SPI. */
@@ -426,7 +427,7 @@
 #define targetfpga1		(1U << 5)	// P2_5 FPGA control registers CS1
 #define targetrtc1		(1U << 2)	// P2_2 RTC DS1305EN
 #define targetext1		(1U << 1)	// P2_1 front panel SPI device (LCD)
-#define targetext2		(1U << 0)	// P2_0 external SPI device (PA BOARD ADC)
+#define targetxad2		(1U << 0)	// P2_0 external SPI device (PA BOARD ADC)
 #define targetnvram		(1U << 9)	// P2_9 nvmem FM25L16B
 #define targetctl1		(1U << 7)	// P2_7 board control registers chain
 #define targetcodec1	(1U << 6)	// P2_6 on-board codec1 NAU8822L
@@ -441,7 +442,7 @@
 	targetfpga1	| /*	(1U << 5)	P2_5  FPGA control registers CS1 */ \
 	targetrtc1	| /*	(1U << 2)	P2_2  RTC DS1305EN */ \
 	targetext1	| /*	(1U << 1)	P2_1  external spi device (LCD) */ \
-	targetext2	| /*	(1U << 0)	P2_0  external spi device (PA BOARD ADC) */ \
+	targetxad2	| /*	(1U << 0)	P2_0  external spi device (PA BOARD ADC) */ \
 	targetnvram	| /*	(1U << 9)	P2_9  nvmem FM25L16B */ \
 	targetctl1	| /*	(1U << 7)	P2_7 board control registers chain */ \
 	targetcodec1| /*	(1U << 6)	P2_6 on-board codec1 NAU8822L */ \

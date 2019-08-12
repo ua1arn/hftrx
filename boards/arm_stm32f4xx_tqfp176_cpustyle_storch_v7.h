@@ -13,6 +13,7 @@
 #define ARM_STM32F4XX_TQFP176_CPUSTYLE_STORCH_V6_H_INCLUDED 1
 
 #define WITHSPI16BIT	1	/* возможно использование 16-ти битных слов при обмене по SPI */
+#define WITHSPI32BIT	1	/* возможно использование 32-ти битных слов при обмене по SPI */
 #define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
 #define WITHSPIHWDMA 	1	/* Использование DMA при обмене по SPI */
 //#define WITHSPISW 	1	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */
@@ -396,7 +397,7 @@
 	#define SPI_ALLCS_PORT_C(v)	do { GPIOG->BSRR = BSRR_C(v); __DSB(); } while (0)
 
 	#define targetext1	(1uL << 15)	// PG15 ext1 on front panel
-	#define targetadc2	(1uL << 14)	// PG14 ext2(not connected now)
+	#define targetxad2	(1uL << 14)	// PG14 ext2(not connected now)
 	#define targetnvram	(1uL << 4)	// PG4 nvmem FM25L16B
 	#define targetctl1	(1uL << 3)	// PG7 board control registers chain
 	#define targetcodec1	(1uL << 2)	// PG6 on-board codec1 NAU8822L
@@ -406,7 +407,7 @@
 	// Здесь должны быть перечислены все биты формирования CS в устройстве.
 	#define SPI_ALLCS_BITS ( \
 		targetext1	| 	/* PG15 ext1 on front panel */ \
-		targetadc2	|	/* PA100W on-board ADC (not connected on this board) */ \
+		targetxad2	|	/* PA100W on-board ADC (not connected on this board) */ \
 		targetnvram	| 	/* PG4 nvmem FM25L16B */ \
 		targetctl1	| 	/* PG3 board control registers chain */ \
 		targetcodec1	| 	/* PG2 on-board codec1 NAU8822L */ \

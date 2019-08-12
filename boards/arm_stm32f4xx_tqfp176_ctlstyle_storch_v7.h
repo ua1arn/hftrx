@@ -162,7 +162,6 @@
 	// --- Особые варианты расположения кнопок на клавиатуре
 	#define WITHSPLIT	1	/* управление режимами расстройки одной кнопкой */
 	//#define WITHSPLITEX	1	/* Трехкнопочное управление режимами расстройки */
-	//#define WITHSEPARATEWFL	1	/* Без совмещения на одном экрание водопада и панорамы */
 
 	// +++ Одна из этих строк определяет тип дисплея, для которого компилируется прошивка
 	//#define LCDMODE_HARD_SPI	1	/* LCD over SPI line */
@@ -441,9 +440,6 @@
 	#if WITHTEMPSENSOR
 		TEMPIX = 16,
 	#endif /* WITHTEMPSENSOR */
-	#if WITHVOLTLEVEL 
-		VOLTSOURCE = 8,		// PB0 Средняя точка делителя напряжения, для АКБ
-	#endif /* WITHVOLTLEVEL */
 
 	#if WITHPOTIFGAIN
 		POTIFGAIN = 3,		// PA2 IF GAIN
@@ -463,16 +459,42 @@
 		XTHERMOIX = 9,		// PB1 Exernal thermo sensor ST LM235Z
 	#endif /* WITHTHERMOLEVEL */
 
-	#if WITHCURRLEVEL
-		//PASENSEIX = BOARD_ADCXIN(0),		// MCP3208 CH0 PA current sense - ACS712-30 chip
-		PASENSEIX = 2,		// PA2 PA current sense - ACS712-05 chip
-	#endif /* WITHCURRLEVEL */
+	#if 0
+		// UA1CEI PA board: MCP3208 at targetext2 - P2_0 external SPI device (PA BOARD ADC)
+		#if WITHVOLTLEVEL
+			VOLTSOURCE = BOARD_ADCX2IN(4),		// MCP3208 CH7 Средняя точка делителя напряжения, для АКБ
+		#endif /* WITHVOLTLEVEL */
 
-	#if WITHSWRMTR
-		//FWD = BOARD_ADCXIN(2), REF = BOARD_ADCXIN(3),		// MCP3208 CH2, CH3 Детектор прямой, отраженной волны
-		FWD = 14, REF = 15,	// PC5	SWR-meter
-		PWRI = FWD,			// PC4
-	#endif /* WITHSWRMTR */
+		#if WITHSWRMTR
+			PWRI = BOARD_ADCX2IN(2),
+			FWD = BOARD_ADCX2IN(2),
+			REF = BOARD_ADCX2IN(3),
+		#endif /* WITHSWRMTR */
+
+		#if WITHCURRLEVEL
+			//PASENSEIX = BOARD_ADCXIN(0),		// MCP3208 CH0 PA current sense - ACS712-30 chip
+			PASENSEIX = 2,		// PA2 PA current sense - ACS712-05 chip
+		#endif /* WITHCURRLEVEL */
+		#if WITHTHERMOLEVEL
+			XTHERMOIX = BOARD_ADCXIN(6),		// MCP3208 CH6 Exernal thermo sensor ST LM235Z
+		#endif /* WITHTHERMOLEVEL */
+	#else
+		// толькло основная плата - 5W усилитель
+
+		#if WITHCURRLEVEL
+			//PASENSEIX = BOARD_ADCXIN(0),		// MCP3208 CH0 PA current sense - ACS712-30 chip
+			PASENSEIX = 2,		// PA2 PA current sense - ACS712-05 chip
+		#endif /* WITHCURRLEVEL */
+		#if WITHVOLTLEVEL
+			VOLTSOURCE = 8,		// PB0 Средняя точка делителя напряжения, для АКБ
+		#endif /* WITHVOLTLEVEL */
+
+		#if WITHSWRMTR
+			//FWD = BOARD_ADCXIN(2), REF = BOARD_ADCXIN(3),		// MCP3208 CH2, CH3 Детектор прямой, отраженной волны
+			FWD = 14, REF = 15,	// PC5	SWR-meter
+			PWRI = FWD,			// PC4
+		#endif /* WITHSWRMTR */
+	#endif
 		KI0 = 10, KI1 = 11, KI2 = 12, KI3 = 0, KI4 = 1	// клавиатура
 	};
 

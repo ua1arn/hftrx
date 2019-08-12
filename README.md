@@ -29,7 +29,7 @@
 4.5 В меню Eclipse, Project -> Build configurations -> Set active выбираем необходимый процессор (или через выпадающее меню с молотком в ToolBox). Build target выбираем default.
 
 5. Прошиваем <br>
-5.1 Скопилированные прошивки находятся в папке /build/<процессор>/
+5.1 Скопилированные прошивки находятся в папке /build/<процессор>/ <br>
 5.2 Для обновления прошивки процессора RENESAS через bootloader в командных файлах используется уилилита из проекта https://sourceforge.net/projects/dfu-util/files/latest/download
 
 
