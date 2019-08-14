@@ -1454,20 +1454,18 @@ static void agc_parameters_update(volatile agcparams_t * const agcp, FLOAT_t gai
 
 // Установка параметров S-метра приёмника
 
-static void agc_smeter_parameters_update(volatile agcparams_t * const agcp, FLOAT_t gainlimit, uint_fast8_t pathi)
+static void agc_smeter_parameters_update(volatile agcparams_t * const agcp)
 {
-	const uint_fast8_t flatgain = glob_agcrate [pathi] == UINT8_MAX;
+	agcp->agcoff = 0;
 
-	agcp->agcoff = (glob_agc == BOARD_AGCCODE_OFF);
+	agcp->chargespeedfast = MAKETAUIF((FLOAT_t) 0.1);	// 100 mS
+	agcp->dischargespeedfast = MAKETAUIF((FLOAT_t) 0.1);	// 100 mS
+	agcp->chargespeedslow = MAKETAUIF((FLOAT_t) 0.1);	// 100 mS
+	agcp->dischargespeedslow = MAKETAUIF((FLOAT_t) 0.4);	// 400 mS
+	agcp->hungticks = NSAITICKS(1000);			// в сотнях милисекунд (1 секунда)
 
-	agcp->dischargespeedfast = MAKETAUIF((int) glob_agc_t4 [pathi] * (FLOAT_t) 0.001);	// в милисекундах
-
-	agcp->chargespeedslow = MAKETAUIF((FLOAT_t) 0.015);	// 15 mS
-	agcp->dischargespeedslow = MAKETAUIF((FLOAT_t) 0.3);	// 300 mS
-	agcp->hungticks = NSAITICKS(800);			// в сотнях милисекунд (0.8 секунды)
-
-	agcp->gainlimit = gainlimit;
-	agcp->agcfactor = flatgain ? (FLOAT_t) -1 : agc_calcagcfactor(glob_agcrate [pathi]);
+	agcp->gainlimit = db2ratio(60);
+	agcp->agcfactor = (FLOAT_t) -1;
 
 	//debug_printf_P(PSTR("agc_parameters_update: dischargespeedfast=%f, chargespeedfast=%f\n"), agcp->dischargespeedfast, agcp->chargespeedfast);
 }
@@ -5733,12 +5731,7 @@ rxparam_update(uint_fast8_t profile, uint_fast8_t pathi)
 
 	// Параметры S-метра приёмника
 	{
-		const int gainmax = glob_digigainmax;	// Верхний предел регулировки усиления
-		const int gainmin = 0;	// Нижний предел регулировки усиления
-		const int gaindb = ((gainmax - gainmin) * (int) (glob_ifgain - BOARD_IFGAIN_MIN) / (int) (BOARD_IFGAIN_MAX - BOARD_IFGAIN_MIN)) + gainmin;	// -20..+100 dB
-		const FLOAT_t manualrfgain = db2ratio(gaindb);
-		
-		agc_smeter_parameters_update(& rxsmeterparams, manualrfgain, 0);	// как у приемника #0
+		agc_smeter_parameters_update(& rxsmeterparams);
 	}
 
 
