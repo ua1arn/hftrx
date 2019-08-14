@@ -8912,6 +8912,7 @@ int_fast16_t hamradio_get_pacurrent_value(void)
 // PA current sense - ACS712ELCTR-30B-T chip
 int_fast16_t hamradio_get_pacurrent2_value(void)
 {
+#if WITHCURRLEVEL2
 	// Чувствительность датчиков:
 	// x05B - 0.185 V/A
 	// x20A - 0.100 V/A
@@ -8953,6 +8954,9 @@ int_fast16_t hamradio_get_pacurrent2_value(void)
 #endif
 
 	return curr100;
+#else /* WITHCURRLEVEL2 */
+	return  0;
+#endif /* WITHCURRLEVEL2 */
 }
 
 #endif /* WITHCURRLEVEL && WITHCPUADCHW */

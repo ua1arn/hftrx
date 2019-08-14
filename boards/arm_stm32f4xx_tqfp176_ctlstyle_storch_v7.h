@@ -339,8 +339,6 @@
 	//#define WITHNMEA		1	/* используется NMEA parser */
 	//#define WITHBEACON	1	/* Используется режим маяка */
 	#if WITHTX
-		//#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
-		#define WITHCURRLEVEL2	1	/* отображение тока оконечного каскада */
 		#define WITHVOX			1	/* используется VOX */
 		#define WITHSHOWSWRPWR 1	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
 		#define WITHSWRMTR	1		/* Измеритель КСВ */
@@ -459,7 +457,7 @@
 		XTHERMOIX = 9,		// PB1 Exernal thermo sensor ST LM235Z
 	#endif /* WITHTHERMOLEVEL */
 
-	#if 1
+	#if 0
 		// UA1CEI PA board: MCP3208 at targetext2 - P2_0 external SPI device (PA BOARD ADC)
 		VOLTSOURCE = BOARD_ADCX2IN(4),		// MCP3208 CH7 Средняя точка делителя напряжения, для АКБ
 
@@ -467,6 +465,7 @@
 		REF = BOARD_ADCX2IN(2),
 		PWRI = FWD,
 
+		#define WITHCURRLEVEL2	1	/* отображение тока оконечного каскада */
 		PASENSEIX2 = BOARD_ADCX2IN(0),	// DRAIN
 		PAREFERIX2 = BOARD_ADCX2IN(1),	// reference (1/2 питания ACS712ELCTR-30B-T).
 
@@ -475,6 +474,8 @@
 		#endif /* WITHTHERMOLEVEL */
 	#else
 		// толькло основная плата - 5W усилитель
+
+		#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
 
 		#if WITHCURRLEVEL
 			//PASENSEIX = BOARD_ADCXIN(0),		// MCP3208 CH0 PA current sense - ACS712-30 chip
