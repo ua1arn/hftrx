@@ -526,6 +526,7 @@ void hardware_adc_initialize(void);
 	#define FLASHMEM __flash
 	#define FLASHMEMINIT	__flash	/* не требуется быстрый доступ - например образ загружаемый в FPGA */
 	#define FLASHMEMINITFUNC	/* не требуется быстрый доступ - например образ загружаемый в FPGA */
+	#define RAMDTCM
 
 	#if (FLASHEND > 0x7FFF)	
 		// нет нужды экономить память FLASH
