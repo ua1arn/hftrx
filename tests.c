@@ -7489,7 +7489,7 @@ static void hw_swi(void)
 	__asm volatile (" SWI  0" : /* no outputs */ : /* no inputs */  );
 }
 
-#if WITHDEBUG
+#if WITHDEBUG && 0
 // ARM_SYSTEM_PRIORITY function
 static void r7s721_ostm0_interrupt_test(void)
 {
