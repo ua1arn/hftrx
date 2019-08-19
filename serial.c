@@ -679,7 +679,7 @@ hardware_usart1_putchar(uint_fast8_t c)
 	return 1;
 }
 
-void hardware_uart1_initialize(void)
+void hardware_uart1_initialize(uint_fast8_t debug)
 {
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
@@ -698,12 +698,15 @@ void hardware_uart1_initialize(void)
 			US_MR_CHRL_8_BIT |
 			US_MR_PAR_NO |
 			US_MR_NBSTOP_1_BIT;                   
-									
+
 		USART0->US_IDR = (US_IDR_RXRDY | US_IDR_TXRDY);
 
-		NVIC_SetVector(USART0_IRQn, (uintptr_t) & USART0_IRQHandler);
-		NVIC_SetPriority(USART0_IRQn, ARM_SYSTEM_PRIORITY);
-		NVIC_EnableIRQ(USART0_IRQn);		// enable USART0_Handler();
+		if (debug == 0)
+		{
+			NVIC_SetVector(USART0_IRQn, (uintptr_t) & USART0_IRQHandler);
+			NVIC_SetPriority(USART0_IRQn, ARM_SYSTEM_PRIORITY);
+			NVIC_EnableIRQ(USART0_IRQn);		// enable USART0_Handler();
+		}
 
 		USART0->US_CR = US_CR_RXEN | US_CR_TXEN;	// разрешаем приёмник и передатчик.
 
@@ -725,9 +728,12 @@ void hardware_uart1_initialize(void)
 									
 		USART1->US_IDR = (US_IDR_RXRDY | US_IDR_TXRDY);
 
-		NVIC_SetVector(USART1_IRQn, (uintptr_t) & USART1_IRQHandler);
-		NVIC_SetPriority(USART1_IRQn, ARM_SYSTEM_PRIORITY);
-		NVIC_EnableIRQ(USART1_IRQn);		// enable USART1_Handler();
+		if (debug == 0)
+		{
+			NVIC_SetVector(USART1_IRQn, (uintptr_t) & USART1_IRQHandler);
+			NVIC_SetPriority(USART1_IRQn, ARM_SYSTEM_PRIORITY);
+			NVIC_EnableIRQ(USART1_IRQn);		// enable USART1_Handler();
+		}
 
 		USART1->US_CR = US_CR_RXEN | US_CR_TXEN;	// разрешаем приёмник и передатчик.
 
@@ -750,9 +756,12 @@ void hardware_uart1_initialize(void)
 									
 		UART0->UART_IDR = (UART_IDR_RXRDY | UART_IDR_TXRDY);
 
-		NVIC_SetVector(UART0_IRQn, (uintptr_t) & UART0_IRQHandler);
-		NVIC_SetPriority(UART0_IRQn, ARM_SYSTEM_PRIORITY);
-		NVIC_EnableIRQ(UART0_IRQn);		// enable UART0_Handler();
+		if (debug == 0)
+		{
+			NVIC_SetVector(UART0_IRQn, (uintptr_t) & UART0_IRQHandler);
+			NVIC_SetPriority(UART0_IRQn, ARM_SYSTEM_PRIORITY);
+			NVIC_EnableIRQ(UART0_IRQn);		// enable UART0_Handler();
+		}
 
 		UART0->UART_CR = UART_CR_RXEN | UART_CR_TXEN;	// разрешаем приёмник и передатчик.
 
@@ -775,9 +784,12 @@ void hardware_uart1_initialize(void)
 									
 		UART1->UART_IDR = (UART_IDR_RXRDY | UART_IDR_TXRDY);
 
-		NVIC_SetVector(UART1_IRQn, (uintptr_t) & UART1_IRQHandler);
-		NVIC_SetPriority(UART1_IRQn, ARM_SYSTEM_PRIORITY);
-		NVIC_EnableIRQ(UART1_IRQn);		// enable UART1_Handler();
+		if (debug == 0)
+		{
+			NVIC_SetVector(UART1_IRQn, (uintptr_t) & UART1_IRQHandler);
+			NVIC_SetPriority(UART1_IRQn, ARM_SYSTEM_PRIORITY);
+			NVIC_EnableIRQ(UART1_IRQn);		// enable UART1_Handler();
+		}
 
 		UART1->UART_CR = UART_CR_RXEN | UART_CR_TXEN;	// разрешаем приёмник и передатчик.
 
@@ -799,9 +811,12 @@ void hardware_uart1_initialize(void)
 
 	HARDWARE_USART1_INITIALIZE();	/* Присоединить периферию к выводам */
 
-	NVIC_SetVector(USART1_IRQn, (uintptr_t) & USART1_IRQHandler);
-	NVIC_SetPriority(USART1_IRQn, ARM_SYSTEM_PRIORITY);
-	NVIC_EnableIRQ(USART1_IRQn);		// enable USART1_IRQHandler();
+	if (debug == 0)
+	{
+		NVIC_SetVector(USART1_IRQn, (uintptr_t) & USART1_IRQHandler);
+		NVIC_SetPriority(USART1_IRQn, ARM_SYSTEM_PRIORITY);
+		NVIC_EnableIRQ(USART1_IRQn);		// enable USART1_IRQHandler();
+	}
 
 	USART1->CR1 |= USART_CR1_UE; // Включение USART1.
 
@@ -814,9 +829,12 @@ void hardware_uart1_initialize(void)
 
 	HARDWARE_USART1_INITIALIZE();	/* Присоединить периферию к выводам */
 
-	NVIC_SetVector(USART1_IRQn, (uintptr_t) & USART1_IRQHandler);
-	NVIC_SetPriority(USART1_IRQn, ARM_SYSTEM_PRIORITY);
-	NVIC_EnableIRQ(USART1_IRQn);		// enable USART1_IRQHandler();
+	if (debug == 0)
+	{
+		NVIC_SetVector(USART1_IRQn, (uintptr_t) & USART1_IRQHandler);
+		NVIC_SetPriority(USART1_IRQn, ARM_SYSTEM_PRIORITY);
+		NVIC_EnableIRQ(USART1_IRQn);		// enable USART1_IRQHandler();
+	}
 
 	USART1->CR1 |= USART_CR1_UE; // Включение USART1.
 
@@ -1729,7 +1747,7 @@ hardware_usart2_putchar(uint_fast8_t c)
 	return 1;
 }
 
-void hardware_uart2_initialize(void)
+void hardware_uart2_initialize(uint_fast8_t debug)
 {
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
@@ -1751,9 +1769,12 @@ void hardware_uart2_initialize(void)
 									
 		USART0->US_IDR = (US_IDR_RXRDY | US_IDR_TXRDY);
 
-		NVIC_SetVector(USART0_IRQn, (uintptr_t) & USART0_IRQHandler);
-		NVIC_SetPriority(USART0_IRQn, ARM_SYSTEM_PRIORITY);
-		NVIC_EnableIRQ(USART0_IRQn);		// enable USART0_Handler();
+		if (debug == 0)
+		{
+			NVIC_SetVector(USART0_IRQn, (uintptr_t) & USART0_IRQHandler);
+			NVIC_SetPriority(USART0_IRQn, ARM_SYSTEM_PRIORITY);
+			NVIC_EnableIRQ(USART0_IRQn);		// enable USART0_Handler();
+		}
 
 		USART0->US_CR = US_CR_RXEN | US_CR_TXEN;	// разрешаем приёмник и передатчик.
 
@@ -1775,9 +1796,12 @@ void hardware_uart2_initialize(void)
 									
 		USART1->US_IDR = (US_IDR_RXRDY | US_IDR_TXRDY);
 
-		NVIC_SetVector(USART1_IRQn, (uintptr_t) & USART1_IRQHandler);
-		NVIC_SetPriority(USART1_IRQn, ARM_SYSTEM_PRIORITY);
-		NVIC_EnableIRQ(USART1_IRQn);		// enable USART2_Handler();
+		if (debug == 0)
+		{
+			NVIC_SetVector(USART1_IRQn, (uintptr_t) & USART1_IRQHandler);
+			NVIC_SetPriority(USART1_IRQn, ARM_SYSTEM_PRIORITY);
+			NVIC_EnableIRQ(USART1_IRQn);		// enable USART2_Handler();
+		}
 
 		USART1->US_CR = US_CR_RXEN | US_CR_TXEN;	// разрешаем приёмник и передатчик.
 
@@ -1801,9 +1825,12 @@ void hardware_uart2_initialize(void)
 									
 		UART0->UART_IDR = (UART_IDR_RXRDY | UART_IDR_TXRDY);
 
-		NVIC_SetVector(UART0_IRQn, (uintptr_t) & UART0_IRQHandler);
-		NVIC_SetPriority(UART0_IRQn, ARM_SYSTEM_PRIORITY);
-		NVIC_EnableIRQ(UART0_IRQn);		// enable UART0_Handler();
+		if (debug == 0)
+		{
+			NVIC_SetVector(UART0_IRQn, (uintptr_t) & UART0_IRQHandler);
+			NVIC_SetPriority(UART0_IRQn, ARM_SYSTEM_PRIORITY);
+			NVIC_EnableIRQ(UART0_IRQn);		// enable UART0_Handler();
+		}
 
 		UART0->UART_CR = UART_CR_RXEN | UART_CR_TXEN;	// разрешаем приёмник и передатчик.
 
@@ -1827,9 +1854,12 @@ void hardware_uart2_initialize(void)
 									
 		UART1->UART_IDR = (UART_IDR_RXRDY | UART_IDR_TXRDY);
 
-		NVIC_SetVector(UART1_IRQn, (uintptr_t) & UART1_IRQHandler);
-		NVIC_SetPriority(UART1_IRQn, ARM_SYSTEM_PRIORITY);
-		NVIC_EnableIRQ(UART1_IRQn);		// enable UART1_Handler();
+		if (debug == 0)
+		{
+			NVIC_SetVector(UART1_IRQn, (uintptr_t) & UART1_IRQHandler);
+			NVIC_SetPriority(UART1_IRQn, ARM_SYSTEM_PRIORITY);
+			NVIC_EnableIRQ(UART1_IRQn);		// enable UART1_Handler();
+		}
 
 		UART1->UART_CR = UART_CR_RXEN | UART_CR_TXEN;	// разрешаем приёмник и передатчик.
 
@@ -1851,9 +1881,12 @@ void hardware_uart2_initialize(void)
 
 	HARDWARE_USART2_INITIALIZE();	/* Присоединить периферию к выводам */
 
-	NVIC_SetVector(USART2_IRQn, (uintptr_t) & USART2_IRQHandler);
-	NVIC_SetPriority(USART2_IRQn, ARM_SYSTEM_PRIORITY);
-	NVIC_EnableIRQ(USART2_IRQn);		// enable USART2_IRQHandler();
+	if (debug == 0)
+	{
+		NVIC_SetVector(USART2_IRQn, (uintptr_t) & USART2_IRQHandler);
+		NVIC_SetPriority(USART2_IRQn, ARM_SYSTEM_PRIORITY);
+		NVIC_EnableIRQ(USART2_IRQn);		// enable USART2_IRQHandler();
+	}
 
 	USART2->CR1 |= USART_CR1_UE; // Включение USART2.
 
@@ -1866,9 +1899,12 @@ void hardware_uart2_initialize(void)
 
 	HARDWARE_USART2_INITIALIZE();	/* Присоединить периферию к выводам */
 
-	NVIC_SetVector(USART2_IRQn, (uintptr_t) & USART2_IRQHandler);
-	NVIC_SetPriority(USART2_IRQn, ARM_SYSTEM_PRIORITY);
-	NVIC_EnableIRQ(USART2_IRQn);		// enable USART2_IRQHandler();
+	if (debug == 0)
+	{
+		NVIC_SetVector(USART2_IRQn, (uintptr_t) & USART2_IRQHandler);
+		NVIC_SetPriority(USART2_IRQn, ARM_SYSTEM_PRIORITY);
+		NVIC_EnableIRQ(USART2_IRQn);		// enable USART2_IRQHandler();
+	}
 
 	USART2->CR1 |= USART_CR1_UE; // Включение USART2.
 
@@ -1881,9 +1917,12 @@ void hardware_uart2_initialize(void)
 
 	HARDWARE_USART2_INITIALIZE();	/* Присоединить периферию к выводам */
 
-	NVIC_SetVector(USART2_IRQn, (uintptr_t) & USART2_IRQHandler);
-	NVIC_SetPriority(USART2_IRQn, ARM_SYSTEM_PRIORITY);
-	NVIC_EnableIRQ(USART2_IRQn);		// enable USART2_IRQHandler();
+	if (debug == 0)
+	{
+		NVIC_SetVector(USART2_IRQn, (uintptr_t) & USART2_IRQHandler);
+		NVIC_SetPriority(USART2_IRQn, ARM_SYSTEM_PRIORITY);
+		NVIC_EnableIRQ(USART2_IRQn);		// enable USART2_IRQHandler();
+	}
 
 	USART2->CR1 |= USART_CR1_UE; // Включение USART2.
 

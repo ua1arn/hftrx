@@ -636,7 +636,7 @@ void nmea_parsechar(uint_fast8_t c);				/* вызывается из обраб�
 void nmea_rxoverflow(void);							/* вызывается из обработчика прерываний */
 void nmea_sendchar(void * ctx);							/* вызывается из обработчика прерываний */
 
-void hardware_uart1_initialize(void);
+void hardware_uart1_initialize(uint_fast8_t debug);
 void hardware_uart1_set_speed(uint_fast32_t baudrate);
 void hardware_uart1_tx(void * ctx, uint_fast8_t c);	/* передача символа после прерывания о готовности передатчика */
 void hardware_uart1_enabletx(uint_fast8_t state);	/* вызывается из обработчика прерываний */
@@ -644,7 +644,7 @@ void hardware_uart1_enablerx(uint_fast8_t state);	/* вызывается из �
 uint_fast8_t hardware_usart1_putchar(uint_fast8_t c);/* передача символа если готов порт */
 uint_fast8_t hardware_usart1_getchar(char * cp); /* приём символа, если готов порт */
 
-void hardware_uart2_initialize(void);
+void hardware_uart2_initialize(uint_fast8_t debug);
 void hardware_uart2_set_speed(uint_fast32_t baudrate);
 void hardware_uart2_tx(void * ctx, uint_fast8_t c);	/* передача символа после прерывания о готовности передатчика */
 void hardware_uart2_enabletx(uint_fast8_t state);	/* вызывается из обработчика прерываний */

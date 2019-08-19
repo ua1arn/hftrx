@@ -71,7 +71,7 @@ typedef enum
 	// Отладочные функции работают через USART1
 	// Вызывается из user-mode программы при запрещённых прерываниях.
 	#define HARDWARE_DEBUG_INITIALIZE() do { \
-			hardware_uart1_initialize(); \
+			hardware_uart1_initialize(1); \
 		} while (0)
 	#define HARDWARE_DEBUG_SET_SPEED(baudrate) do { \
 			hardware_uart1_set_speed(baudrate); \
@@ -103,7 +103,7 @@ typedef enum
 	// Отладочные функции работают через USART1
 	// Вызывается из user-mode программы при запрещённых прерываниях.
 	#define HARDWARE_DEBUGSIRQ_INITIALIZE() do { \
-			hardware_uart1_initialize(); \
+			hardware_uart1_initialize(0); \
 		} while (0)
 	#define HARDWARE_DEBUGSIRQ_SET_SPEED(baudrate) do { \
 			hardware_uart1_set_speed(baudrate); \
@@ -149,7 +149,7 @@ typedef enum
 	// Отладочные функции работают через USART2
 	// Вызывается из user-mode программы при запрещённых прерываниях.
 	#define HARDWARE_DEBUG_INITIALIZE() do { \
-			hardware_uart2_initialize(); \
+			hardware_uart2_initialize(1); \
 		} while (0)
 	#define HARDWARE_DEBUG_SET_SPEED(baudrate) do { \
 			hardware_uart2_set_speed(baudrate); \
@@ -180,7 +180,7 @@ typedef enum
 	// Модемные функции работают через USART1
 	// Вызывается из user-mode программы
 	#define HARDWARE_MODEM_INITIALIZE() do { \
-			hardware_uart1_initialize(); \
+			hardware_uart1_initialize(0); \
 		} while (0)
 	// Вызывается из user-mode программы
 	#define HARDWARE_MODEM_SET_SPEED(baudrate) do { \
@@ -223,7 +223,7 @@ typedef enum
 	// Модемные функции работают через USART2
 	// Вызывается из user-mode программы
 	#define HARDWARE_MODEM_INITIALIZE() do { \
-			hardware_uart2_initialize(); \
+			hardware_uart2_initialize(0); \
 		} while (0)
 	// Вызывается из user-mode программы
 	#define HARDWARE_MODEM_SET_SPEED(baudrate) do { \
@@ -266,7 +266,7 @@ typedef enum
 	// CAT функции работают через USART1
 	// Вызывается из user-mode программы
 	#define HARDWARE_CAT_INITIALIZE() do { \
-			hardware_uart1_initialize(); \
+			hardware_uart1_initialize(0); \
 		} while (0)
 	// Вызывается из user-mode программы
 	#define HARDWARE_CAT_SET_SPEED(baudrate) do { \
@@ -321,7 +321,7 @@ typedef enum
 	// CAT функции работают через USART2
 	// Вызывается из user-mode программы
 	#define HARDWARE_CAT_INITIALIZE() do { \
-			hardware_uart2_initialize(); \
+			hardware_uart2_initialize(0); \
 		} while (0)
 	// Вызывается из user-mode программы
 	#define HARDWARE_CAT_SET_SPEED(baudrate) do { \

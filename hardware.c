@@ -9427,16 +9427,17 @@ SystemInit(void)
 
 #endif
 
-#if WITHDEBUG
-
-	HARDWARE_DEBUG_INITIALIZE();
-	HARDWARE_DEBUG_SET_SPEED(DEBUGSPEED);
-
-#endif /* WITHDEBUG */
 #if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM0 || CPUSTYLE_ARM_CM7
 	// Таблица находится в области вне Data Cache
 	vectors_relocate();
 #endif /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM0 || CPUSTYLE_ARM_CM7 */
+#if WITHDEBUG
+	// В функции инициализации компорта есть NVIC_SetVector
+	// При вызове до перемещения таблиц прерывания получаем HardFault на STM32F7XXX
+	HARDWARE_DEBUG_INITIALIZE();
+	HARDWARE_DEBUG_SET_SPEED(DEBUGSPEED);
+
+#endif /* WITHDEBUG */
 }
 
 #if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7 || CPUSTYLE_ARM_CM0
@@ -10527,7 +10528,7 @@ if (0)
 
 #endif
 
-uint8_t __attribute__ ((section(".stack"), used, aligned(32))) mystack [8192];
+uint8_t __attribute__ ((section(".stack"), used, aligned(32))) mystack [1024];
 /******************************************************************************/
 
 // TTB initialize
@@ -11477,7 +11478,7 @@ int __attribute__((used)) (_getpid)(int id)
 }
 #endif /* __cplusplus */
 
-#endif
+#endif	// at all
 
 #endif /* CPUSTYLE_ARM */
 
@@ -11703,6 +11704,7 @@ IntFunc __Vectors [NVIC_USER_IRQ_OFFSET] = {
 };
 
 // Таблица находится в области вне Data Cache
+// Отладочная печать тут еще недопустима.
 static VTRATTR volatile IntFunc ramVectors [256];
 
 static void vectors_relocate(void)
@@ -11717,6 +11719,7 @@ static void vectors_relocate(void)
 	}
 	SCB->VTOR = (uint32_t) & ramVectors;
 
+	// Отладочная печать тут еще недопустима.
 	//debug_printf_P(PSTR("SCB->VTOR=%08lX\n"), SCB->VTOR);
 	//ASSERT(memcmp((void *) ramVectors, __Vectors, NVIC_USER_IRQ_OFFSET * 4) == 0);
 	//ASSERT(SCB->VTOR == (uint32_t) & ramVectors);
