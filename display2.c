@@ -75,7 +75,7 @@ static void display2_legend_tx(
 	void * pv
 	);
 
-static volatile PACKEDCOLOR565_T * getscratchpip(void);
+static PACKEDCOLOR565_T * getscratchpip(void);
 
 // Параметры отображения спектра и водопада
 
@@ -4894,7 +4894,7 @@ enum
 
 	// один буфер установлен для отображения, второй еше отображается. Третий заполняем новым изображением.
 	enum { NPIPS = 3 };
-	static RAMFRAMEBUFF ALIGNX_BEGIN volatile PACKEDCOLOR565_T colorpips [NPIPS] [GXSIZE(ALLDX, ALLDY)] ALIGNX_END;
+	static RAMFRAMEBUFF ALIGNX_BEGIN PACKEDCOLOR565_T colorpips [NPIPS] [GXSIZE(ALLDX, ALLDY)] ALIGNX_END;
 	static int pipphase;
 
 	static void nextpip(void)
@@ -4904,15 +4904,15 @@ enum
 
 #elif (! LCDMODE_S1D13781_NHWACCEL && LCDMODE_S1D13781)
 
-	static RAMDTCM ALIGNX_BEGIN volatile PACKEDCOLOR565_T colorpip0 [GXSIZE(ALLDX, 1)] ALIGNX_END;
+	static RAMDTCM ALIGNX_BEGIN PACKEDCOLOR565_T colorpip0 [GXSIZE(ALLDX, 1)] ALIGNX_END;
 
 #else /* LCDMODE_LTDC_PIP16 */
 
-	static ALIGNX_BEGIN volatile PACKEDCOLOR565_T colorpip0 [GXSIZE(ALLDX, ALLDY)] ALIGNX_END;
+	static ALIGNX_BEGIN PACKEDCOLOR565_T colorpip0 [GXSIZE(ALLDX, ALLDY)] ALIGNX_END;
 
 #endif /* LCDMODE_LTDC_PIP16 */
 
-static volatile PACKEDCOLOR565_T * getscratchpip(void)
+static PACKEDCOLOR565_T * getscratchpip(void)
 {
 #if LCDMODE_LTDC_PIP16
 	return colorpips [pipphase];
@@ -5279,7 +5279,7 @@ static void display2_spectrum(
 	display_setcolors(COLOR565_SPECTRUMBG, COLOR565_SPECTRUMFG);
 
 #else /* */
-	volatile PACKEDCOLOR565_T * const colorpip = getscratchpip();
+	PACKEDCOLOR565_T * const colorpip = getscratchpip();
 	(void) x0;
 	(void) y0;
 	(void) pv;
@@ -5608,7 +5608,7 @@ static void display2_waterfall(
 		#error LCDMODE_HORFILL must be defined
 	#endif /* ! LCDMODE_HORFILL */
 
-	volatile PACKEDCOLOR565_T * const colorpip = getscratchpip();
+	PACKEDCOLOR565_T * const colorpip = getscratchpip();
 	const uint_fast16_t p1h = WFDY - wfrow;	// высота верхней части в результируюшем изображении
 	const uint_fast16_t p2h = wfrow;		// высота нижней части в результируюшем изображении
 	const uint_fast16_t p1y = WFY0;
@@ -5626,7 +5626,7 @@ static void display2_waterfall(
 #else /* */
 
 	// следы спектра ("водопад") на цветных дисплеях
-	volatile PACKEDCOLOR565_T * const colorpip = getscratchpip();
+	PACKEDCOLOR565_T * const colorpip = getscratchpip();
 	uint_fast16_t x, y;
 	(void) x0;
 	(void) y0;
@@ -5660,7 +5660,7 @@ static void display2_colorbuff(
 
 #else /* */
 
-	volatile PACKEDCOLOR565_T * const colorpip = getscratchpip();
+	PACKEDCOLOR565_T * const colorpip = getscratchpip();
 
 	#if LCDMODE_LTDC_PIP16
 		display_colorbuffer_pip(colorpip, ALLDX, ALLDY);
