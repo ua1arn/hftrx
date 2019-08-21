@@ -43,7 +43,7 @@
 //#define USB_OTG_HS                   USB1_OTG_HS
 //#define USB_OTG_FS                   USB2_OTG_FS
 
-#define WITHUSBHW_DEVICE	USB_OTG_HS	/* на этом устройстве поддерживается функцилнальность DEVUCE	*/
+#define WITHUSBHW_DEVICE	USB_OTG_HS	/* на этом устройстве поддерживается функциональность DEVUCE	*/
 //#define WITHUSBHW_HOST		USB_OTG_FS
 //#define WITHUSBHOST	1	/* debug */
 //#define WITHUART1HW	1	/* PA9, PA10 Используется периферийный контроллер последовательного порта #1 */
