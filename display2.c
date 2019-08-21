@@ -5058,7 +5058,7 @@ static void wfpalette_initialize(void)
 		}
 		a += i;
 		// a = 160
-		for (i = 0; i<64; ++ i)
+		for (i = 0; i < 64; ++ i)
 		{
 			wfpalette [a + i] = TFTRGB565(255, 255 - i * 4, 0);
 		}
@@ -5356,9 +5356,10 @@ static void display2_spectrum(
 // в строке wfrow - новое
 static void wflclear(void)
 {
+	enum { WFROWS = sizeof wfarray / sizeof wfarray [0] };
 	uint_fast16_t y;
 
-	for (y = 0; y < WFDY; ++ y)
+	for (y = 0; y < WFROWS; ++ y)
 	{
 		if (y == wfrow)
 			continue;
@@ -5383,6 +5384,7 @@ static void wfl_avg_clear(void)
 // в строке wfrow - новое
 static void wflshiftleft(uint_fast16_t pixels)
 {
+	enum { WFROWS = sizeof wfarray / sizeof wfarray [0] };
 	uint_fast16_t y;
 
 	if (pixels == 0)
@@ -5395,7 +5397,7 @@ static void wflshiftleft(uint_fast16_t pixels)
 	memmove(& Yold_wtf [0], & Yold_wtf [pixels], (ALLDX - pixels) * sizeof Yold_wtf [0]);
 	memset(& Yold_wtf [ALLDX - pixels], 0x00, pixels * sizeof Yold_wtf[0]);
 
-	for (y = 0; y < WFDY; ++ y)
+	for (y = 0; y < WFROWS; ++ y)
 	{
 		if (y == wfrow)
 		{
@@ -5411,6 +5413,7 @@ static void wflshiftleft(uint_fast16_t pixels)
 // в строке wfrow - новое
 static void wflshiftright(uint_fast16_t pixels)
 {
+	enum { WFROWS = sizeof wfarray / sizeof wfarray [0] };
 	uint_fast16_t y;
 
 	if (pixels == 0)
@@ -5423,7 +5426,7 @@ static void wflshiftright(uint_fast16_t pixels)
 	memmove(& Yold_wtf [pixels], &Yold_wtf [0], (ALLDX - pixels) * sizeof Yold_wtf [0]);
 	memset(& Yold_wtf [0], 0x00, pixels * sizeof Yold_wtf [0]);
 
-	for (y = 0; y < WFDY; ++ y)
+	for (y = 0; y < WFROWS; ++ y)
 	{
 		if (y == wfrow)
 		{
@@ -5477,10 +5480,12 @@ static void dsp_latchwaterfall(
 		const int val = dsp_mag2y(filter_waterfall(x), PALETTESIZE - 1, glob_topdb, glob_bottomdb); // возвращает значения от 0 до dy включительно
 
 #if WITHFASTWATERFLOW
-		wfarray [wfrow] [x] = wfpalette [val];	// запись в буфер водопада
-#else /* WITHFASTWATERFLOW */
-		wfarray [wfrow] [x] = val;	// запись в буфер водопада
-#endif /* WITHFASTWATERFLOW */
+		wfarray [wfrow] [x] = wfpalette [val];	// запись в буфер водопада цветовой точки
+#elif (! LCDMODE_S1D13781_NHWACCEL && LCDMODE_S1D13781)
+		wfarray [wfrow] [x] = wfpalette [val];	// запись в буфер водопада цветовой точки
+#else /*  */
+		wfarray [wfrow] [x] = val;	// запись в буфер водопада индекса палитры
+#endif /*  */
 	}
 
 	// Сдвиг изображения при необходимости (перестройка/переклбчение диапащонов или масштаба).
