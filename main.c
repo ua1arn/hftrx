@@ -16612,6 +16612,8 @@ hamradio_initialize(void)
 
 	synthcalc_init();
 	bandf_calc_initialize();
+	bandf2_calc_initialize();
+	bandf3_calc_initialize();
 #if CTLSTYLE_SW2011ALL
 	board_set_bandfonhpf(bandf_calc(14000000L));	/* в SW20xx частота (диапазон), с которого включается ФВЧ на входе приёмника */
 	board_set_bandfonuhf(bandf_calc(85000000L));

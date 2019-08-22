@@ -277,19 +277,19 @@
 
 	static fseltype_t board_bandfs [] =
 	{
-		//(fseltype_t) (1600000 >> BANDDIVPOWER), // 2.645751 #0 1 выв. 
-		(fseltype_t) (2645751 >> BANDDIVPOWER), // 5.157518 #1 2 выв. 
-		(fseltype_t) (5157518 >> BANDDIVPOWER), // 8.527602 #2 3 выв. 
-		(fseltype_t) (8527602 >> BANDDIVPOWER), // 11.920570 #3 4 выв. 
-		(fseltype_t) (11920570 >> BANDDIVPOWER), // 16.102043 #4 5 выв. 
-		(fseltype_t) (16102043 >> BANDDIVPOWER), // 19.532741 #5 6 выв. 
-		(fseltype_t) (19532741 >> BANDDIVPOWER), // 23.106070 #6 7 выв. 
-		(fseltype_t) (23106070 >> BANDDIVPOWER), // 26.452221 #7 8 выв. 
-		(fseltype_t) (26452221 >> BANDDIVPOWER), // 27.980000 #8 9 выв. 
-		(fseltype_t) (27980000 >> BANDDIVPOWER), // 28.690000 #9 10 выв. 
-		(fseltype_t) (28690000 >> BANDDIVPOWER), // 35.000000 #10 11 выв. 
-		(fseltype_t) (35000000 >> BANDDIVPOWER), // 48.000000 #11 13 выв. 
-		(fseltype_t) (48000000 >> BANDDIVPOWER), // 100.000000 #12 14 выв. 
+		//(fseltype_t) (1600000 >> BANDDIVPOWER), // 2.645751 #0 1 выв.
+		(fseltype_t) (2645751 >> BANDDIVPOWER), // 5.157518 #1 2 выв.
+		(fseltype_t) (5157518 >> BANDDIVPOWER), // 8.527602 #2 3 выв.
+		(fseltype_t) (8527602 >> BANDDIVPOWER), // 11.920570 #3 4 выв.
+		(fseltype_t) (11920570 >> BANDDIVPOWER), // 16.102043 #4 5 выв.
+		(fseltype_t) (16102043 >> BANDDIVPOWER), // 19.532741 #5 6 выв.
+		(fseltype_t) (19532741 >> BANDDIVPOWER), // 23.106070 #6 7 выв.
+		(fseltype_t) (23106070 >> BANDDIVPOWER), // 26.452221 #7 8 выв.
+		(fseltype_t) (26452221 >> BANDDIVPOWER), // 27.980000 #8 9 выв.
+		(fseltype_t) (27980000 >> BANDDIVPOWER), // 28.690000 #9 10 выв.
+		(fseltype_t) (28690000 >> BANDDIVPOWER), // 35.000000 #10 11 выв.
+		(fseltype_t) (35000000 >> BANDDIVPOWER), // 48.000000 #11 13 выв.
+		(fseltype_t) (48000000 >> BANDDIVPOWER), // 100.000000 #12 14 выв.
 		(fseltype_t) (100000000 >> BANDDIVPOWER), // 250.000000 #13 15 выв.
 	};
 	#define BANDCALCS	(sizeof board_bandfs / sizeof board_bandfs [0])	/* Размерность массива границ диапазонов и необходимость функции поиска по нему. */
@@ -346,6 +346,10 @@ void bandf_calc_initialize(void)
 #endif /* BANDF_USE_BANDINIT */
 }
 
+void bandf2_calc_initialize(void)
+{
+}
+
 /* получить номер диапазонного фильтра передатчика по частоте */
 uint8_t bandf2_calc(
 	uint_fast32_t freq
@@ -394,6 +398,7 @@ uint8_t bandf2_calc(
 	CTLREGMODE_STORCH_V7 || \
 	0
 	/* плата усилителя 2*RD100 */
+	// 2.4 3.9 7.4 14.8 22 30
 	const unsigned long M0p1 = 1000uL * 100;
 	const fseltype_t f = (fseltype_t) (freq >> BANDDIVPOWER);
 
@@ -512,6 +517,11 @@ uint8_t bandf_calc(
 #else /* BANDCALCS */
 	return 0;
 #endif /* BANDCALCS */
+}
+
+
+void bandf3_calc_initialize(void)
+{
 }
 
 /* получить код для управления через разъем ACC */
