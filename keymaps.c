@@ -911,7 +911,7 @@ uint_fast8_t getexitkey(void)
 }
 #elif KEYB_FPAMEL20_V0A
 
-/* 20 кнопок на 5 линий - плата rfrontpanel_v0 + LCDMODE_UC1608 в нормальном расположении */
+/* 20 кнопок на 5 линий - плата Rfrontpanel_v7a, Rfrontpanel_v4b, Rfrontpanel_v0 + LCDMODE_UC1608 в нормальном расположении */
 /* Новый вариант под корпус с надписями от RK1AQ */
 const struct qmkey qmdefs [NQMKEYS] =
 {
