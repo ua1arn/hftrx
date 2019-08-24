@@ -6,11 +6,7 @@
 // UA1ARN
 //
 
-// Трансивер с DSP обработкой "Воронёнок-2" на процессоре
-// STM32F446ZET6,
-// с кодеком TLV320AIC23B и FPGA EP4CE22E22I7N
-// с функцией DUAL WATCH
-// Rmainunit_v3bm.pcb
+// Внешняя аудиоплата на базе NUCLEO-F767ZI с процессором STM32F767ZIT6  mb1137.pdf
 
 #ifndef ARM_STM32F767_TQFP144_CPUSTYLE_NUCLEO_H_INCLUDED
 #define ARM_STM32F767_TQFP144_CPUSTYLE_NUCLEO_H_INCLUDED 1
@@ -34,8 +30,8 @@
 #define WITHCPUDACHW	1	/* использование встроенного в процессор DAC */
 #define WITHCPUADCHW 	1	/* использование встроенного в процессор ADC */
 
-#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
-#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
+//#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
+//#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
 
 
 
@@ -75,9 +71,6 @@
 
 	//#define WITHUART2HW	1	/* Используется периферийный контроллер последовательного порта #2 */
 #endif
-
-//#define BSRR_S(v) ((v) * GPIO_BSRR_BS_0)	/* Преобразование значения для установки бита в регистре */
-//#define BSRR_C(v) ((v) * GPIO_BSRR_BR_0)	/* Преобразование значения для сброса бита в регистре */
 
 #define LS020_RS_INITIALIZE() \
 	do { \
@@ -216,11 +209,12 @@
 
 #if WITHSAI1HW
 	#define SAI1HW_INITIALIZE()	do { \
-		/*arm_hardware_pioe_altfn20(1U << 2, AF_SAI); */	/* PE2 - SAI1_MCK_A - 12.288 MHz	*/ \
-		arm_hardware_pioe_altfn20(1U << 4, AF_SAI);			/* PE4 - SAI1_FS_A	- 48 kHz	*/ \
-		arm_hardware_pioe_altfn20(1U << 5, AF_SAI);			/* PE5 - SAI1_SCK_A	*/ \
-		arm_hardware_pioe_altfn20(1U << 6, AF_SAI);			/* PE6 - SAI1_SD_A	(i2s data to codec)	*/ \
-		arm_hardware_pioe_altfn20(1U << 3, AF_SAI);			/* PE3 - SAI1_SD_B	(i2s data from codec)	*/ \
+		arm_hardware_pioc_altfn50(1U << 9, AF_SPI2);	/* PC9 - MCLK source - I2S_CKIN signal */ \
+		arm_hardware_pioe_altfn20(1U << 2, AF_SAI); 	/* PE2 - SAI1_MCK_A - 12.288 MHz	*/ \
+		arm_hardware_pioe_altfn20(1U << 3, AF_SAI);		/* PE3 - SAI1_SD_B	(i2s data from codec)	*/ \
+		arm_hardware_pioe_altfn20(1U << 4, AF_SAI);		/* PE4 - SAI1_FS_A	- 48 kHz - WS codec signal	*/ \
+		arm_hardware_pioe_altfn20(1U << 5, AF_SAI);		/* PE5 - SAI1_SCK_A	- BCLK codec signal */ \
+		arm_hardware_pioe_altfn20(1U << 6, AF_SAI);		/* PE6 - SAI1_SD_A	(i2s data to codec)	*/ \
 	} while (0)
 #endif /* WITHSAI1HW */
 

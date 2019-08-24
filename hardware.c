@@ -7608,6 +7608,19 @@ lowlevel_stm32f7xx_pll_initialize(void)
 		((0x00 << 24) & RCC_DCKCFGR1_TIMPRE)	|	// Timers clocks prescalers selection
 		0;
 
+	#if WITHSAICLOCKFROMPIN
+		RCC->CFGR = (RCC->CFGR & ~ (RCC_CFGR_I2SSRC)) |
+				1 * RCC_CFGR_I2SSRC |	// 1: External clock mapped on the I2S_CKIN pin used as I2S clock source
+				0;
+		// SAI part of DCKCFGR1
+		RCC->DCKCFGR1 = (RCC->DCKCFGR1 & ~ (RCC_DCKCFGR1_SAI1SEL | RCC_DCKCFGR1_SAI2SEL)) |
+			(2 * RCC_DCKCFGR1_SAI1SEL_0) |	// 10: SAI1 clock frequency = Alternate function input frequency
+			(2 * RCC_DCKCFGR1_SAI2SEL_0) |	// 10: SAI2 clock frequency = Alternate function input frequency
+			0;
+	#elif WITHSAICLOCKFROMI2S
+
+	#endif /* WITHSAICLOCKFROMPIN */
+
 	//RCC->CR &= ~ RCC_CR_HSION;		//HSI DISABLE
 
 }

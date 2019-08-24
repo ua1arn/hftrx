@@ -823,7 +823,6 @@ static const codechw_t audiocodechw =
 		return divider / 2;
 	}
 
-
 static void hardware_sai1_sai2_clock_selection(void)
 {
 	debug_printf_P(PSTR("hardware_sai1_sai2_clock_selection\n"));
@@ -852,10 +851,23 @@ static void hardware_sai1_sai2_clock_selection(void)
 			(3 * RCC_DCKCFGR_SAI1SRC_0) |	// I2S APB1 clock source selection
 			(3 * RCC_DCKCFGR_SAI2SRC_0) |	// I2S APB2 clock source selection
 			0;
+
 	#elif CPUSTYLE_STM32F7XX
-		//#warning TODO: implement for CPUSTYLE_STM32F7XX
+		// moved to lowlevel_stm32f7xx_pll_initialize
+		//
+		/*
+		RCC->CFGR = (RCC->CFGR & ~ (RCC_CFGR_I2SSRC)) |
+				1 * RCC_CFGR_I2SSRC |	// 1: External clock mapped on the I2S_CKIN pin used as I2S clock source
+				0;
+		// SAI part of DCKCFGR1
+		RCC->DCKCFGR1 = (RCC->DCKCFGR1 & ~ (RCC_DCKCFGR1_SAI1SEL | RCC_DCKCFGR1_SAI2SEL)) |
+			(2 * RCC_DCKCFGR1_SAI1SEL_0) |	// 10: SAI1 clock frequency = Alternate function input frequency
+			(2 * RCC_DCKCFGR1_SAI2SEL_0) |	// 10: SAI2 clock frequency = Alternate function input frequency
+			0;
+		*/
 	#elif CPUSTYLE_STM32H7XX
-		//#warning TODO: implement for CPUSTYLE_STM32H7XX
+		#warning TODO: implement for CPUSTYLE_STM32H7XX
+
 	#else /* defined (STM32F446xx) */
 		// clock sources:
 		// 0: SAI1-B clock frequency = f(PLLSAI_Q) / PLLSAIDIVQ
@@ -867,10 +879,11 @@ static void hardware_sai1_sai2_clock_selection(void)
 			(2 * RCC_DCKCFGR_SAI1ASRC_0) |	// SAI1-A clock source selection
 			(2 * RCC_DCKCFGR_SAI1BSRC_0) |	// SAI1-B clock source selection
 			0;
+
 	#endif /* defined (STM32F446xx) */
 
 #elif WITHSAICLOCKFROMI2S
-
+		// from I2S PLL
 	#if defined (STM32F446xx)
 		// clock sources:
 		// RCC_DCKCFGR_SAI1SRC:
