@@ -271,7 +271,7 @@
 	//#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX
 	//#define WITHLOOPBACKTEST	1	/* прослушивание микрофонного входа, генераторов */
 	//#define WITHMODEMIQLOOPBACK	1	/* модем получает собственные передаваемые квадратуры */
-	#define WITHFASTWATERFLOW	1	/* быстрое отображение вобопада (но требует больше памяти) */
+	#define WITHFASTWATERFLOW	1	/* быстрое отображение водопада (но требует больше памяти) */
 
 	//#define WITHUSESDCARD		1	// Включение поддержки SD CARD
 	//#define WITHUSEUSBFLASH		1	// Включение поддержки USB memory stick

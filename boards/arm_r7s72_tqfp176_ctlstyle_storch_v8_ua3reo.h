@@ -287,7 +287,7 @@
 	//#define BOARD_FFTZOOM_POW2MAX 3	// Возможные масштабы FFT x1, x2, x4, x8
 	#define BOARD_FFTZOOM_POW2MAX 4	// Возможные масштабы FFT x1, x2, x4, x8, x16
 	#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
-	#define WITHFASTWATERFLOW	1	/* быстрое отображение вобопада (но требует больше памяти) */
+	#define WITHFASTWATERFLOW	1	/* быстрое отображение водопада (но требует больше памяти) */
 
 	// FPGA section
 	//#define	WITHFPGAWAIT_AS	1	/* FPGA загружается из собственной микросхемы загрузчика - дождаться окончания загрузки перед инициализацией SPI в процессоре */
