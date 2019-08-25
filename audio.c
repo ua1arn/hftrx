@@ -5851,7 +5851,7 @@ void dsp_initialize(void)
 		const int_fast32_t dacFS = (((uint_fast64_t) 1 << (WITHIFDACWIDTH - 1)) - 1);
 	#endif /* WITHIFDACWIDTH > DSP_FLOAT_BITSMANTISSA */
 
-	const FLOAT_t txlevelfence = dacFS /* * db2ratio(- (FLOAT_t) 1.75) */ * (FLOAT_t) M_SQRT1_2;	// контролировать по отсутствию индикации переполнения DUC при передаче
+	const FLOAT_t txlevelfence = dacFS;	// контролировать по отсутствию индикации переполнения DUC при передаче
 	txlevelfenceHALF = txlevelfence / 2;	// Для режимов с lo6=0 - у которых нет подавления нерабочей боковой
 
 	txlevelfenceDIGI = txlevelfence;
