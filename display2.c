@@ -4953,7 +4953,7 @@ static FLOAT_t filter_spectrum(
 
 #if WITHFASTWATERFLOW
 
-	/* быстрое отображение вобопада (но требует больше памяти) */
+	/* быстрое отображение водопада (но требует больше памяти) */
 	static RAMBIG PACKEDCOLOR565_T wfarray [WFDY] [ALLDX];	// массив "водопада"
 	static uint_fast16_t wfrow;		// строка, в которую последней занесены данные
 
@@ -5602,7 +5602,7 @@ static void display2_waterfall(
 
 #elif WITHFASTWATERFLOW
 	// следы спектра ("водопад") на цветных дисплеях
-	/* быстрое отображение вобопада (но требует больше памяти) */
+	/* быстрое отображение водопада (но требует больше памяти) */
 
 	#if ! LCDMODE_HORFILL
 		#error LCDMODE_HORFILL must be defined
