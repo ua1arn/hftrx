@@ -373,11 +373,6 @@ static RAMDTCM uint_fast8_t getTxShapeNotComplete(void);
 
 static uint_fast8_t getRxGate(void);	/* разрешение работы тракта в режиме приёма */
 
-//#include "sinetable.h"
-//#include "sinetable_15.h"
-#include "sinetable_14.h"
-//#include "sinetable_13.h"
-//#include "sinetable_12.h"
 typedef uint32_t ncoftw_t;
 typedef int32_t ncoftwi_t;
 #define NCOFTWBITS 32	// количество битов в ncoftw_t
@@ -390,9 +385,13 @@ typedef int32_t ncoftwi_t;
 static FLOAT_t omega2ftw_k1; // = POWF(2, NCOFTWBITS);
 #define OMEGA2FTWI(angle) ((ncoftwi_t) ((FLOAT_t) (angle) * omega2ftw_k1 / (FLOAT_t) M_TWOPI))	// angle in radians -pi..+pi to signed version of ftw_t
 
-#define FTW2_SINCOS_Q31(angle) ((ncoftwi_t) (angle))	// Comvert ncoftw_t to q31 argument for arm_sin_cos_q31
-#define FTW2_SIN_Q31(angle) ((((ncoftw_t) angle) + 0x8000000uL) / 2)	// Comvert ncoftw_t to q31 argument for arm_sin_q31
-#define FAST_Q31_2_FLOAT(val) ((val) / (FLOAT_t) 2147483648)
+// Convert ncoftw_t to q31 argument for arm_sin_cos_q31
+// The Q31 input value is in the range [-1 0.999999] and is mapped to a degree value in the range [-180 179].
+#define FTW2_SINCOS_Q31(angle) ((ncoftwi_t) (angle))
+// Convert ncoftw_t to q31 argument for arm_sin_q31
+// The Q31 input value is in the range [0 +0.9999] and is mapped to a radian value in the range [0 2*PI).
+#define FTW2_COS_Q31(angle) ((q31_t) ((((ncoftw_t) angle) + 0x8000000uL) / 2))
+#define FAST_Q31_2_FLOAT(val) ((q31_t) (val) / (FLOAT_t) 2147483648)
 
 #ifndef BOARD_FFTZOOM_POW2MAX
 	#define BOARD_FFTZOOM_POW2MAX 1
@@ -514,7 +513,7 @@ static const struct zoom_param zoom_params [BOARD_FFTZOOM_POW2MAX] =
 };
 
 
-#if 1
+#if 0
 static RAMFUNC FLOAT_t peekvalf(uint32_t a)
 {
 	const ncoftw_t mask = (1UL << (TABLELOG2 - 2)) - 1;
@@ -531,7 +530,7 @@ static RAMFUNC FLOAT_t peekvalf(uint32_t a)
 }
 #endif
 
-#if 1//WITHLOOPBACKTEST || WITHSUSBSPKONLY || WITHUSBHEADSET
+#if 0//WITHLOOPBACKTEST || WITHSUSBSPKONLY || WITHUSBHEADSET
 
 static RAMFUNC int peekvali16(uint32_t a)
 {
@@ -580,33 +579,22 @@ static RAMFUNC int32_t peekvali32(uint32_t a)
 
 #endif /* WITHLOOPBACKTEST */
 
-#define WITHUSECMSISTRIG 1
-
 static RAMFUNC FLOAT32P_t getsincosf(ncoftw_t angle)
 {
 	FLOAT32P_t v;
-#if WITHUSECMSISTRIG
 	q31_t sinv;
 	q31_t cosv;
 	arm_sin_cos_q31(FTW2_SINCOS_Q31(angle), & sinv, & cosv);
 	v.IV = FAST_Q31_2_FLOAT(sinv);	// todo: use arm_q31_to_float
 	v.QV = FAST_Q31_2_FLOAT(cosv);
-#else /* WITHUSECMSISTRIG */
-	v.IV = peekvalf(FTW2ANGLEI(angle));
-	v.QV = peekvalf(FTW2ANGLEQ(angle));
-#endif /* WITHUSECMSISTRIG */
 	return v;
 }
 
-static RAMFUNC FLOAT_t getsinf(ncoftw_t angle)
+static RAMFUNC FLOAT_t getcosf(ncoftw_t angle)
 {
 	FLOAT_t v;
-#if WITHUSECMSISTRIG
-	const q31_t sinv = arm_sin_q31(FTW2_SIN_Q31(angle));
+	const q31_t sinv = arm_cos_q31(FTW2_COS_Q31(angle));
 	v = FAST_Q31_2_FLOAT(sinv);	// todo: use arm_q31_to_float
-#else /* WITHUSECMSISTRIG */
-	v = peekvalf(FTW2ANGLEI(angle));
-#endif /* WITHUSECMSISTRIG */
 	return v;
 }
 
@@ -630,7 +618,7 @@ static RAMDTCM ncoftw_t angle_monofreq2;
 int get_rout16(void)
 {
 	// Формирование значения для ROUT
-	const int v = getsinf(angle_rout) * INT16_MAX;
+	const int v = getcosf(angle_rout) * INT16_MAX;
 	angle_rout = FTWROUND(angle_rout + anglestep_rout);
 	return v;
 }
@@ -638,11 +626,12 @@ int get_rout16(void)
 int get_lout16(void)
 {
 	// Формирование значения для LOUT
-	const int v = getsinf(angle_lout) * INT16_MAX;
+	const int v = getcosf(angle_lout) * INT16_MAX;
 	angle_lout = FTWROUND(angle_lout + anglestep_lout);
 	return v;
 }
 
+#if 0
 static int get_rout24(void)
 {
 	// Формирование значения для ROUT
@@ -660,6 +649,7 @@ static int get_lout24(void)
 	angle_lout2 = FTWROUND(angle_lout2 + anglestep_lout2);
 	return v;
 }
+#endif
 
 #if 0
 // test IQ frequency
@@ -686,7 +676,7 @@ static RAMDTCM ncoftw_t angle_sidetone;
 
 static RAMFUNC FLOAT_t get_float_sidetone(void)
 {
-	const FLOAT_t v = getsinf(angle_sidetone);
+	const FLOAT_t v = getcosf(angle_sidetone);
 	angle_sidetone = FTWROUND(angle_sidetone + anglestep_sidetone);
 	return v;
 }
@@ -697,7 +687,7 @@ static RAMDTCM ncoftw_t angle_subtone;
 
 static RAMFUNC FLOAT_t get_float_subtone(void)
 {
-	const FLOAT_t v = getsinf(angle_subtone);
+	const FLOAT_t v = getcosf(angle_subtone);
 	angle_subtone = FTWROUND(angle_subtone + anglestep_subtone);
 	return v;
 }
@@ -709,7 +699,7 @@ static RAMDTCM ncoftw_t angle_toneout;
 static RAMFUNC FLOAT_t get_singletonefloat(void)
 {
 	// Формирование значения для LOUT
-	const FLOAT_t v = getsinf(angle_toneout);
+	const FLOAT_t v = getcosf(angle_toneout);
 	angle_toneout = FTWROUND(angle_toneout + anglestep_toneout);
 	return v;
 }
@@ -734,8 +724,8 @@ static RAMDTCM ncoftw_t angle_af2;
 static RAMFUNC FLOAT_t get_dualtonefloat(void)
 {
 	// Формирование значения выборки
-	const FLOAT_t v1 = getsinf(angle_af1);
-	const FLOAT_t v2 = getsinf(angle_af2);
+	const FLOAT_t v1 = getcosf(angle_af1);
+	const FLOAT_t v2 = getcosf(angle_af2);
 	angle_af1 = FTWROUND(angle_af1 + anglestep_af1);
 	angle_af2 = FTWROUND(angle_af2 + anglestep_af2);
 	return (v1 + v2) / 2;
@@ -806,20 +796,6 @@ static RAMFUNC FLOAT32P_t get_float_aflo_delta(long int deltaftw, uint_fast8_t p
 	angle_aflo [pathi] = FTWROUND(angle + anglestep_aflo [pathi] + deltaftw);
 	return v;
 }
-
-#if 0
-// Получение квадратурных значений для данной частоты со смещением (в герцах)
-// Returned is a full scale value
-static RAMFUNC INT32P_t get_int32_aflo_delta(long int deltaftw, uint_fast8_t pathi)
-{
-	INT32P_t v;
-	arm_sin_cos_q31(angle_aflo [pathi], & v.IV, & v.QV);
-	//v.IV = peekvali32(FTW2ANGLEI(angle_aflo [pathi]));
-	//v.QV = peekvali32(FTW2ANGLEQ(angle_aflo [pathi]));
-	angle_aflo [pathi] = FTWROUND(angle_aflo [pathi] + anglestep_aflo [pathi] + deltaftw);
-	return v;
-}
-#endif
 
 //////////////////////////////////////////
 
@@ -3821,7 +3797,6 @@ static RAMFUNC FLOAT32P_t baseband_modulator(
 	case DSPCTL_MODE_TX_CW:
 		{
 			// vi - audio sample in range [- txlevelfence.. + txlevelfence]
-			//const FLOAT32P_t vfb = scalepair_int32(get_int32_aflo_delta(0, pathi), vi * shape);
 			const FLOAT32P_t vfb = scalepair(get_float_aflo_delta(0, pathi), txlevelfenceCW * shape);
 			return vfb;
 		}
@@ -3831,7 +3806,6 @@ static RAMFUNC FLOAT32P_t baseband_modulator(
 	case DSPCTL_MODE_TX_FREEDV:
 		{
 			// vi - audio sample in range [- txlevelfence.. + txlevelfence]
-			//const FLOAT32P_t vfb = scalepair_int32(get_int32_aflo_delta(0, pathi), vi * shape);
 			const FLOAT32P_t vfb = scalepair(get_float_aflo_delta(0, pathi), vi * shape);
 			return vfb;
 		}
@@ -3841,7 +3815,6 @@ static RAMFUNC FLOAT32P_t baseband_modulator(
 			// vi - audio sample in range [- txlevelfenceSSB.. + txlevelfenceSSB]
 			// input range: of vi: (- IFDACMAXVAL) .. (+ IFDACMAXVAL)
 			const FLOAT_t peak = amcarrierHALF + vi * amshapesignalHALF;
-			//const FLOAT32P_t vfb = scalepair_int32(get_int32_aflo_delta(0, pathi), peak * shape);
 			const FLOAT32P_t vfb = scalepair(get_float_aflo_delta(0, pathi), peak * shape);
 			return vfb;
 		}
@@ -3850,7 +3823,6 @@ static RAMFUNC FLOAT32P_t baseband_modulator(
 		{
 			// vi - audio sample in range [- txlevelfence.. + txlevelfence]
 			const long int deltaftw = (int64_t) (long) gnfmdeviationftw * vi / txlevelfenceSSB;	// Учитывается нормирование источника звука
-			//const FLOAT32P_t vfb = scalepair_int32(get_int32_aflo_delta(deltaftw, pathi), txlevelfenceHALF * shape);
 			const FLOAT32P_t vfb = scalepair(get_float_aflo_delta(deltaftw, pathi), txlevelfenceNFM * shape);
 			return vfb;
 		}
@@ -5560,8 +5532,10 @@ static volatile uint_fast8_t rxgateflag = 0;
 // 0..1
 static RAMFUNC FLOAT_t peakshapef(unsigned shapePos)	/* shapePos: от 0 до enveloplen0 включительно. */
 {
-	const ftw_t halfcircle = (ftw_t) 1U << (NCOFTWBITS - 1);
-	const FLOAT_t v = (1 - peekvalf(FTW2ANGLEQ((uint_fast64_t) shapePos * halfcircle / enveloplen0))) * (FLOAT_t) 0.5;	// v = - cos(angle)
+	const q31_t halfcircle = INT32_MAX / 2;
+	// The Q31 input value is in the range [0 +0.9999] and is mapped to a radian value in the range [0 2*PI).
+	const q31_t cosv = arm_cos_q31((int_fast64_t) shapePos * halfcircle / enveloplen0);
+	const FLOAT_t v = ((FLOAT_t) 1 - FAST_Q31_2_FLOAT(cosv)) * (FLOAT_t) 0.5;	// todo: use arm_q31_to_float
 	return v;
 }
 
