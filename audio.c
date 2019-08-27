@@ -526,6 +526,7 @@ static RAMFUNC FLOAT_t peekvalf(uint32_t a)
 	return 0;
 }
 #endif
+
 #if 1//WITHLOOPBACKTEST || WITHSUSBSPKONLY || WITHUSBHEADSET
 
 static RAMFUNC int peekvali16(uint32_t a)
@@ -574,6 +575,40 @@ static RAMFUNC int32_t peekvali32(uint32_t a)
 }
 
 #endif /* WITHLOOPBACKTEST */
+
+#define WITHUSECMSISTRIG 0
+
+#define FTW2_SINCOS_Q31(angle) ((((uint32_t) angle) + 0x0000000uL) / 2)	// Comvert ncoftw_t to q31 argument for arm_sin_cos_q31
+#define FTW2_SIN_Q31(angle) ((((uint32_t) angle) + 0x0000000uL) / 1)	// Comvert ncoftw_t to q31 argument for arm_sin_q31
+#define FAST_Q31_2_FLOAT(val) ((val) / (FLOAT_t) 2147483648)
+
+static RAMFUNC FLOAT32P_t getsincosf(ncoftw_t angle)
+{
+	FLOAT32P_t v;
+#if WITHUSECMSISTRIG
+	q31_t sinv;
+	q31_t cosv;
+	arm_sin_cos_q31(FTW2_SINCOS_Q31(angle), & sinv, & cosv);
+	v.IV = FAST_Q31_2_FLOAT(sinv);	// todo: use arm_q31_to_float
+	v.QV = FAST_Q31_2_FLOAT(cosv);
+#else /* WITHUSECMSISTRIG */
+	v.IV = peekvalf(FTW2ANGLEI(angle));
+	v.QV = peekvalf(FTW2ANGLEQ(angle));
+#endif /* WITHUSECMSISTRIG */
+	return v;
+}
+
+static RAMFUNC FLOAT_t getsinf(ncoftw_t angle)
+{
+	FLOAT_t v;
+#if WITHUSECMSISTRIG
+	const q31_t sinv = arm_sin_q31(FTW2_SIN_Q31(angle));
+	v = FAST_Q31_2_FLOAT(sinv);	// todo: use arm_q31_to_float
+#else /* WITHUSECMSISTRIG */
+	v = peekvalf(FTW2ANGLEI(angle));
+#endif /* WITHUSECMSISTRIG */
+	return v;
+}
 
 //////////////////////////////////////////
 #if 1//WITHLOOPBACKTEST || WITHSUSBSPKONLY || WITHUSBHEADSET
@@ -632,9 +667,7 @@ static int get_lout24(void)
 // test IQ frequency
 static RAMFUNC FLOAT32P_t get_float_monofreq(void)
 {
-	FLOAT32P_t v;
-	v.IV = peekvalf(FTW2ANGLEI(angle_monofreq));
-	v.QV = peekvalf(FTW2ANGLEQ(angle_monofreq));
+	const FLOAT32P_t v = getsincosf(angle_monofreq);
 	angle_monofreq = FTWROUND(angle_monofreq + anglestep_monofreq);
 	return v;
 }
@@ -642,9 +675,7 @@ static RAMFUNC FLOAT32P_t get_float_monofreq(void)
 // test IQ frequency
 static RAMFUNC FLOAT32P_t get_float_monofreq2(void)
 {
-	FLOAT32P_t v;
-	v.IV = peekvalf(FTW2ANGLEI(angle_monofreq2));
-	v.QV = peekvalf(FTW2ANGLEQ(angle_monofreq2));
+	const FLOAT32P_t v = getsincosf(angle_monofreq2);
 	angle_monofreq2 = FTWROUND(angle_monofreq2 + anglestep_monofreq2);
 	return v;
 }
@@ -657,8 +688,7 @@ static RAMDTCM ncoftw_t angle_sidetone;
 
 static RAMFUNC FLOAT_t get_float_sidetone(void)
 {
-	//const FLOAT_t v = arm_sin_q31(angle_sidetone / 2) / (FLOAT_t) 2147483648;
-	const FLOAT_t v = peekvalf(FTW2ANGLEI(angle_sidetone));
+	const FLOAT_t v = getsinf(angle_sidetone);
 	angle_sidetone = FTWROUND(angle_sidetone + anglestep_sidetone);
 	return v;
 }
@@ -669,8 +699,7 @@ static RAMDTCM ncoftw_t angle_subtone;
 
 static RAMFUNC FLOAT_t get_float_subtone(void)
 {
-	//const FLOAT_t v = arm_sin_q31(angle_subtone / 2) / (FLOAT_t) 2147483648;
-	const FLOAT_t v = peekvalf(FTW2ANGLEI(angle_subtone));
+	const FLOAT_t v = getsinf(angle_subtone);
 	angle_subtone = FTWROUND(angle_subtone + anglestep_subtone);
 	return v;
 }
@@ -682,8 +711,7 @@ static RAMDTCM ncoftw_t angle_toneout;
 static RAMFUNC FLOAT_t get_singletonefloat(void)
 {
 	// Формирование значения для LOUT
-	//const FLOAT_t v = arm_sin_q31(angle_toneout / 2) / (FLOAT_t) 2147483648;
-	const FLOAT_t v = peekvalf(FTW2ANGLEI(angle_toneout));
+	const FLOAT_t v = getsinf(angle_toneout);
 	angle_toneout = FTWROUND(angle_toneout + anglestep_toneout);
 	return v;
 }
@@ -708,30 +736,12 @@ static RAMDTCM ncoftw_t angle_af2;
 static RAMFUNC FLOAT_t get_dualtonefloat(void)
 {
 	// Формирование значения выборки
-	//const FLOAT_t v1 = arm_sin_q31(angle_af1 / 2) / (FLOAT_t) 2147483648;
-	//const FLOAT_t v2 = arm_sin_q31(angle_af2 / 2) / (FLOAT_t) 2147483648;
-	const FLOAT_t v1 = peekvalf(FTW2ANGLEI(angle_af1));
-	const FLOAT_t v2 = peekvalf(FTW2ANGLEI(angle_af2));
+	const FLOAT_t v1 = getsinf(angle_af1);
+	const FLOAT_t v2 = getsinf(angle_af2);
 	angle_af1 = FTWROUND(angle_af1 + anglestep_af1);
 	angle_af2 = FTWROUND(angle_af2 + anglestep_af2);
 	return (v1 + v2) / 2;
 }
-
-
-//////////////////////////////////////////
-// Получение квадратурных значений для данной частоты
-/*
-static ncoftw_t anglestep_aflosim = FTWAF(700);
-static ncoftw_t angle_aflosim = 0;
-static INT32P_t get_int32_aflosim(void)
-{
-	INT32P_t v;
-	v.IV = peekvali32(FTW2ANGLEI(angle_aflosim));
-	v.QV = peekvali32(FTW2ANGLEQ(angle_aflosim));
-	angle_aflosim = FTWROUND(angle_aflosim + anglestep_aflosim);
-	return v;
-}
-*/
 
 static RAMDTCM unsigned delaysetlo6 [NTRX];	// задержка переключения частоты lo6 на время прохода сигнала через FPGA FIR
 static RAMDTCM ncoftw_t anglestep_aflo [NTRX];
@@ -793,18 +803,8 @@ static RAMFUNC void nco_setlo_delay(uint_fast8_t pathi, uint_fast8_t tx)
 // Returned is a full scale value
 static RAMFUNC FLOAT32P_t get_float_aflo_delta(long int deltaftw, uint_fast8_t pathi)
 {
-	FLOAT32P_t v;
 	const ncoftw_t angle = angle_aflo [pathi];
-#if 0
-	q31_t sinv;
-	q31_t cosv;
-	arm_sin_cos_q31(angle, & sinv, & cosv);
-	v.IV = sinv / (FLOAT_t) 2147483648;
-	v.QV = cosv / (FLOAT_t) 2147483648;
-#else
-	v.IV = peekvalf(FTW2ANGLEI(angle));
-	v.QV = peekvalf(FTW2ANGLEQ(angle));
-#endif
+	const FLOAT32P_t v = getsincosf(angle);
 	angle_aflo [pathi] = FTWROUND(angle + anglestep_aflo [pathi] + deltaftw);
 	return v;
 }
@@ -4161,8 +4161,7 @@ demodulator_SAM(
 	// taken from Warren PrattВґs WDSP, 2016
 	// http://svn.tapr.org/repos_sdr_hpsdr/trunk/W5WC/PowerSDR_HPSDR_mRX_PS/Source/wdsp/amd.c
 
-	FLOAT_t audio;	// выходной сэмпл (ненормированнгое значение).
-	FLOAT32P_t vco;
+	FLOAT_t audio;	// выходной сэмпл (ненормированное значение).
 	FLOAT_t corr [2];
 	ncoftwi_t deti;
 	ncoftwi_t del_outi;
@@ -4171,20 +4170,11 @@ demodulator_SAM(
 
 	struct amd * const a = & amds [pathi];
 
-#if 1
-	vco.QV = peekvalf(FTW2ANGLEI(a->phsi));	// COSF(a->phs);
-	vco.IV = peekvalf(FTW2ANGLEQ(a->phsi));	// SINF(a->phs);
-#else
-	q31_t sinv;
-	q31_t cosv;
-	arm_sin_cos_q31(a->phsi, & sinv, & cosv);
-	vco.QV = sinv / (FLOAT_t) 2147483648;
-	vco.IV = cosv / (FLOAT_t) 2147483648;
-#endif
-	ai = vp1.IV * vco.IV;
-	bi = vp1.IV * vco.QV;
-	aq = vp1.QV * vco.IV;
-	bq = vp1.QV * vco.QV;
+	const FLOAT32P_t vco0 = getsincosf(a->phsi);
+	ai = vp1.IV * vco0.QV;
+	bi = vp1.IV * vco0.IV;
+	aq = vp1.QV * vco0.QV;
+	bq = vp1.QV * vco0.IV;
 
 	if (a->sbmode != 0)
 	{
@@ -5278,6 +5268,8 @@ void dsp_addsidetone(int16_t * buff)
 		int_fast16_t left = b [L];
 		int_fast16_t right = b [R];
 		//
+#if WITHUSBHEADSET
+#else /* WITHUSBHEADSET */
 		switch (glob_mainsubrxmode)
 		{
 		case BOARD_RXMAINSUB_A_A:
@@ -5287,6 +5279,7 @@ void dsp_addsidetone(int16_t * buff)
 			left = right;
 			break;
 		}
+#endif /* WITHUSBHEADSET */
 		//
 		if (tx)
 		{
@@ -5305,7 +5298,7 @@ void dsp_addsidetone(int16_t * buff)
 		case BOARD_RXMAINSUB_A_A:
 			// left:A/right:A
 			b [L] = injectsidetone(left, sdtn);
-			b [R] = injectsidetone(left, sdtn);
+			b [R] = injectsidetone(right, sdtn);
 			break;
 		case BOARD_RXMAINSUB_A_B:
 			// left:A/right:B
@@ -5319,7 +5312,7 @@ void dsp_addsidetone(int16_t * buff)
 			break;
 		case BOARD_RXMAINSUB_B_B:
 			// left:B/right:B
-			b [L] = injectsidetone(right, sdtn);
+			b [L] = injectsidetone(left, sdtn);
 			b [R] = injectsidetone(right, sdtn);
 			break;
 		case BOARD_RXMAINSUB_TWO:
@@ -5454,7 +5447,7 @@ void RAMFUNC dsp_extbuffer32rx(const int32_t * buff)
 	#elif WITHUSBHEADSET
 		/* трансивер работает USB гарнитурой для компьютера - режим тестирования */
 
-		save16demod(0, 0);	// Посе фильтрации будет проигнорированно
+		save16demod(get_lout16(), get_rout16());
 		savesampleout32stereo(iq2tx(0), iq2tx(0));
 
 	#elif WITHUSEDUALWATCH
