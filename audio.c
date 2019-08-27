@@ -390,6 +390,10 @@ typedef int32_t ncoftwi_t;
 static FLOAT_t omega2ftw_k1; // = POWF(2, NCOFTWBITS);
 #define OMEGA2FTWI(angle) ((ncoftwi_t) ((FLOAT_t) (angle) * omega2ftw_k1 / (FLOAT_t) M_TWOPI))	// angle in radians -pi..+pi to signed version of ftw_t
 
+#define FTW2_SINCOS_Q31(angle) ((ncoftwi_t) (angle))	// Comvert ncoftw_t to q31 argument for arm_sin_cos_q31
+#define FTW2_SIN_Q31(angle) ((((ncoftw_t) angle) + 0x8000000uL) / 2)	// Comvert ncoftw_t to q31 argument for arm_sin_q31
+#define FAST_Q31_2_FLOAT(val) ((val) / (FLOAT_t) 2147483648)
+
 #ifndef BOARD_FFTZOOM_POW2MAX
 	#define BOARD_FFTZOOM_POW2MAX 1
 #endif
@@ -576,11 +580,7 @@ static RAMFUNC int32_t peekvali32(uint32_t a)
 
 #endif /* WITHLOOPBACKTEST */
 
-#define WITHUSECMSISTRIG 0
-
-#define FTW2_SINCOS_Q31(angle) ((((uint32_t) angle) + 0x0000000uL) / 2)	// Comvert ncoftw_t to q31 argument for arm_sin_cos_q31
-#define FTW2_SIN_Q31(angle) ((((uint32_t) angle) + 0x0000000uL) / 1)	// Comvert ncoftw_t to q31 argument for arm_sin_q31
-#define FAST_Q31_2_FLOAT(val) ((val) / (FLOAT_t) 2147483648)
+#define WITHUSECMSISTRIG 1
 
 static RAMFUNC FLOAT32P_t getsincosf(ncoftw_t angle)
 {
@@ -630,8 +630,7 @@ static RAMDTCM ncoftw_t angle_monofreq2;
 int get_rout16(void)
 {
 	// Формирование значения для ROUT
-	//const int v = arm_sin_q31(angle_rout / 2) / 65536;
-	const int v = peekvali16(FTW2ANGLEI(angle_rout));
+	const int v = getsinf(angle_rout) * INT16_MAX;
 	angle_rout = FTWROUND(angle_rout + anglestep_rout);
 	return v;
 }
@@ -639,8 +638,7 @@ int get_rout16(void)
 int get_lout16(void)
 {
 	// Формирование значения для LOUT
-	//const int v = arm_sin_q31(angle_lout / 2) / 65536;
-	const int v = peekvali16(FTW2ANGLEI(angle_lout));
+	const int v = getsinf(angle_lout) * INT16_MAX;
 	angle_lout = FTWROUND(angle_lout + anglestep_lout);
 	return v;
 }
@@ -5269,6 +5267,7 @@ void dsp_addsidetone(int16_t * buff)
 		int_fast16_t right = b [R];
 		//
 #if WITHUSBHEADSET
+		// Обеспечиваем прослушивание стерео
 #else /* WITHUSBHEADSET */
 		switch (glob_mainsubrxmode)
 		{
@@ -5445,11 +5444,12 @@ void RAMFUNC dsp_extbuffer32rx(const int32_t * buff)
 		save16demod(dual.IV, dual.QV);
 
 	#elif WITHUSBHEADSET
+		processafadcsampleiq(vi, dspmodeA, shape, ctcss);	// Передатчик - формирование одного сэмпда (пары I/Q).
 		/* трансивер работает USB гарнитурой для компьютера - режим тестирования */
 
-		recordsampleUAC(get_lout16(), get_rout16());	// Запись в UAC демодулированного сигнала без озвучки клавиш
-		//save16demod(get_lout16(), get_rout16());		// данные игнорируются
-		savesampleout32stereo(iq2tx(0), iq2tx(0));
+		//recordsampleUAC(get_lout16(), get_rout16());	// Запись в UAC демодулированного сигнала без озвучки клавиш
+		save16demod(get_lout16(), get_rout16());		// данные игнорируются
+		//savesampleout32stereo(iq2tx(0), iq2tx(0));
 
 	#elif WITHUSEDUALWATCH
 
@@ -5845,7 +5845,7 @@ void dsp_initialize(void)
 		const int_fast32_t dacFS = (((uint_fast64_t) 1 << (WITHIFDACWIDTH - 1)) - 1);
 	#endif /* WITHIFDACWIDTH > DSP_FLOAT_BITSMANTISSA */
 
-	const FLOAT_t txlevelfence = dacFS;	// контролировать по отсутствию индикации переполнения DUC при передаче
+	const FLOAT_t txlevelfence = dacFS * db2ratio(- 1);	// контролировать по отсутствию индикации переполнения DUC при передаче
 	txlevelfenceHALF = txlevelfence / 2;	// Для режимов с lo6=0 - у которых нет подавления нерабочей боковой
 
 	txlevelfenceDIGI = txlevelfence;
