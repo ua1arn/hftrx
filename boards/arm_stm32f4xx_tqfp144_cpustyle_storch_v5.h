@@ -62,7 +62,7 @@
 #define WITHNMEA_USART2		1	/* порт подключения GPS/GLONASS */
 
 #define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
-#define WITHUSBUAC3		1	/* формируются три канала передачи звука */
+#define WITHUSBUACIN2		1	/* формируются три канала передачи звука */
 //#define WITHUABUACOUTAUDIO48MONO	1	/* для уменьшения размера буферов в endpoints */
 
 #define WITHUSBCDC		1	/* ACM использовать виртуальный последовательный порт на USB соединении */

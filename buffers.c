@@ -1002,13 +1002,13 @@ int_fast32_t dsp_get_samplerateuacout(void)
 static uint_fast8_t isrts192(void)
 {
 #if WITHUSBHW && WITHUSBUAC
-	#if WITHUSBUAC3 && WITHRTS192
+	#if WITHUSBUACIN2 && WITHRTS192
 		return UACINRTSALT_RTS192 == uacinrtsalt;
 	#elif WITHRTS192
 		return UACINALT_RTS192 == uacinalt;
-	#else /* WITHUSBUAC3 */
+	#else /* WITHUSBUACIN2 */
 		return 0;
-	#endif /* WITHUSBUAC3 */
+	#endif /* WITHUSBUACIN2 */
 #else /* WITHUSBHW && WITHUSBUAC */
 	return 0;
 #endif /* WITHUSBHW && WITHUSBUAC */
@@ -1045,13 +1045,13 @@ static void buffers_savetonull192rts(voice192rts_t * p)
 static uint_fast8_t isrts96(void)
 {
 #if WITHUSBHW && WITHUSBUAC
-	#if WITHUSBUAC3 && WITHRTS96
+	#if WITHUSBUACIN2 && WITHRTS96
 		return uacinrtsalt == UACINRTSALT_RTS96;
 	#elif WITHRTS96
 		return uacinalt == UACINALT_RTS96;
-	#else /* WITHUSBUAC3 */
+	#else /* WITHUSBUACIN2 */
 		return 0;
-	#endif /* WITHUSBUAC3 */
+	#endif /* WITHUSBUACIN2 */
 #else /* WITHUSBHW && WITHUSBUAC */
 	return 0;
 #endif /* WITHUSBHW && WITHUSBUAC */
@@ -2154,7 +2154,7 @@ void savesampleout16stereo(int_fast32_t ch0, int_fast32_t ch1)
 
 	void savesamplerecord16uacin(int_fast16_t ch0, int_fast16_t ch1)
 	{
-	#if WITHUSBHW && WITHUSBUAC
+	#if WITHUSBHW && WITHUSBUACIN
 		// если есть инициализированный канал для выдачи звука
 		static uacin16_t * p = NULL;
 		static unsigned n = 0;
@@ -2185,7 +2185,7 @@ void savesampleout16stereo(int_fast32_t ch0, int_fast32_t ch1)
 			buffers_savetouacin(p);
 			p = NULL;
 		}
-	#endif /* WITHUSBHW && WITHUSBUAC */
+	#endif /* WITHUSBHW && WITHUSBUACIN */
 	}
 
 #else /* WITHUSBUAC */
@@ -2221,7 +2221,7 @@ buffers_set_uacinalt(uint_fast8_t v)	/* выбор альтернативной 
 	uacinalt = v;
 }
 
-#if WITHUSBUAC3
+#if WITHUSBUACIN2
 
 void 
 buffers_set_uacinrtsalt(uint_fast8_t v)	/* выбор альтернативной конфигурации для UAC IN interface */
@@ -2230,7 +2230,7 @@ buffers_set_uacinrtsalt(uint_fast8_t v)	/* выбор альтернативно
 	uacinrtsalt = v;
 }
 
-#endif /* WITHUSBUAC3 */
+#endif /* WITHUSBUACIN2 */
 
 void 
 buffers_set_uacoutalt(uint_fast8_t v)	/* выбор альтернативной конфигурации для UAC OUT interface */
@@ -2403,7 +2403,7 @@ uintptr_t getfilled_dmabufferx(uint_fast16_t * sizep)
 		* sizep = VIRTUAL_AUDIO_PORT_DATA_SIZE_IN_AUDIO48;
 		return getfilled_dmabuffer16uacin();
 
-#if ! WITHUSBUAC3
+#if ! WITHUSBUACIN2
 
 #if WITHRTS96
 	case UACINALT_RTS96:
@@ -2417,7 +2417,7 @@ uintptr_t getfilled_dmabufferx(uint_fast16_t * sizep)
 		return getfilled_dmabuffer192uacinrts();
 #endif /* WITHRTS192 */
 
-#endif /* ! WITHUSBUAC3 */
+#endif /* ! WITHUSBUACIN2 */
 
 	default:
 		debug_printf_P(PSTR("getfilled_dmabufferx: uacinalt=%u\n"), uacinalt);
@@ -2426,7 +2426,7 @@ uintptr_t getfilled_dmabufferx(uint_fast16_t * sizep)
 	}
 }
 
-#if WITHUSBUAC3
+#if WITHUSBUACIN2
 
 /* получить буфер одного из типов, которые могут использоваться для передаяи аудиоданных в компьютер по USB */
 uintptr_t getfilled_dmabufferxrts(uint_fast16_t * sizep)
@@ -2439,7 +2439,7 @@ uintptr_t getfilled_dmabufferxrts(uint_fast16_t * sizep)
 	case UACINRTSALT_NONE:
 		return 0;
 
-#if WITHUSBUAC3
+#if WITHUSBUACIN2
 
 #if WITHRTS96
 	case UACINRTSALT_RTS96:
@@ -2453,7 +2453,7 @@ uintptr_t getfilled_dmabufferxrts(uint_fast16_t * sizep)
 		return getfilled_dmabuffer192uacinrts();
 #endif /* WITHRTS192 */
 
-#endif /* WITHUSBUAC3 */
+#endif /* WITHUSBUACIN2 */
 
 	default:
 		debug_printf_P(PSTR("getfilled_dmabufferxrts: uacinrtsalt=%u\n"), uacinrtsalt);
@@ -2467,7 +2467,7 @@ void release_dmabufferxrts(uintptr_t addr)	/* освободить буфер о
 	release_dmabufferx(addr);
 }
 
-#endif /* WITHUSBUAC3 */
+#endif /* WITHUSBUACIN2 */
 
 #endif /* WITHUSBUAC */
 

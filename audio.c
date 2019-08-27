@@ -3760,9 +3760,9 @@ static RAMFUNC FLOAT_t preparevi(
 			// see glob_mik1level (0..100)
 			return injectsubtone(txmikeagc(vi0f * txlevelXXX / mikefenceIN), ctcss); //* TXINSCALE; // источник сигнала - микрофон
 
-#if WITHUSBUAC
+#if WITHUSBUACOUT
 		case BOARD_TXAUDIO_USB:
-#endif /* WITHUSBUAC */
+#endif /* WITHUSBUACOUT */
 		default:
 			// источник - LINE IN или USB
 			// see glob_mik1level (0..100)
@@ -5235,9 +5235,9 @@ void RAMFUNC dsp_extbuffer32wfm(const int32_t * buff)
 // Выдача в USB UAC
 static RAMFUNC void recordsampleUAC(int left, int right)
 {
-#if WITHUSBUAC
+#if WITHUSBUACIN
 	savesamplerecord16uacin(left, right);	// Запись демодулированного сигнала без озвучки клавиш в USB
-#endif /* WITHUSBUAC */
+#endif /* WITHUSBUACIN */
 }
 
 // Запись на SD CARD
@@ -5447,7 +5447,8 @@ void RAMFUNC dsp_extbuffer32rx(const int32_t * buff)
 	#elif WITHUSBHEADSET
 		/* трансивер работает USB гарнитурой для компьютера - режим тестирования */
 
-		save16demod(get_lout16(), get_rout16());
+		recordsampleUAC(get_lout16(), get_rout16());	// Запись в UAC демодулированного сигнала без озвучки клавиш
+		//save16demod(get_lout16(), get_rout16());		// данные игнорируются
 		savesampleout32stereo(iq2tx(0), iq2tx(0));
 
 	#elif WITHUSEDUALWATCH
