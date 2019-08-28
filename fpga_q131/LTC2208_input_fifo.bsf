@@ -21,7 +21,7 @@ applicable agreement for further details.
 (header "symbol" (version "1.2"))
 (symbol
 	(rect 16 16 224 176)
-	(text "LTC2208_input" (rect 5 0 89 14)(font "Arial" (font_size 8)))
+	(text "LTC2208_input_fifo" (rect 5 0 115 14)(font "Arial" (font_size 8)))
 	(text "inst" (rect 8 144 25 156)(font "Arial" ))
 	(port
 		(pt 0 32)
