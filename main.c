@@ -3172,6 +3172,7 @@ enum
 		static uint_fast8_t  gswapiq;		/* Поменять местами I и Q сэмплы в потоке RTS96 */
 	#endif /* WITHRTS96 || WITHRTS192 || WITHTRANSPARENTIQ */
 #else /* WITHUSBUAC */
+	enum { gdatamode = 0 };	/* передача звука с USB вместо обычного источника */
 	enum { guacplayer = 0 };
 #endif /* WITHUSBUAC */
 #if WITHAFCODEC1HAVEPROC
