@@ -755,6 +755,9 @@ calcdivround2(
 	#define HARDWARE_USBD_PIPE_CDC_INb	15	// CDC IN - без передачи данных
 	#define HARDWARE_USBD_PIPE_CDC_INT	6	//
 	#define HARDWARE_USBD_PIPE_CDC_INTb	7	//
+	#define HARDWARE_USBD_PIPE_RNDIS_OUT	12	// RNDIS OUT Данные RNDIS от компьютера в TRX
+	#define HARDWARE_USBD_PIPE_RNDIS_IN		13	// RNDIS IN Данные RNDIS в компьютер из TRX
+	#define HARDWARE_USBD_PIPE_RNDIS_INT	8	//
 #endif /* CPUSTYLE_R7S721 */
 
 #define CATPCOUNTSIZE (13)

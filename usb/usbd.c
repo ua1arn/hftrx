@@ -3138,7 +3138,7 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 		while ((Instance->PIPESEL & USB_PIPESEL_PIPESEL) != (pipe << USB_PIPESEL_PIPESEL_SHIFT))
 			;
 		ASSERT(pipe == 3);
-		Instance->PIPECFG = 
+		Instance->PIPECFG =
 			(0x0F & epnum) * (1u << USB_PIPECFG_EPNUM_SHIFT) |	// EPNUM endpoint
 			dir * (1u << USB_PIPECFG_DIR_SHIFT) |			// DIR 1: Transmitting direction 0: Receiving direction
 			1 * (1u << USB_PIPECFG_TYPE_SHIFT) |			// TYPE 1: Bulk transfer
@@ -3165,7 +3165,7 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 		while ((Instance->PIPESEL & USB_PIPESEL_PIPESEL) != (pipe << USB_PIPESEL_PIPESEL_SHIFT))
 			;
 		ASSERT(pipe == 4);
-		Instance->PIPECFG = 
+		Instance->PIPECFG =
 			(0x0F & epnum) * (1u << USB_PIPECFG_EPNUM_SHIFT) |		// EPNUM endpoint
 			dir * (1u << USB_PIPECFG_DIR_SHIFT) |		// DIR 1: Transmitting direction 0: Receiving direction
 			1 * (1u << USB_PIPECFG_TYPE_SHIFT) |		// TYPE 1: Bulk transfer
@@ -3192,7 +3192,7 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 		while ((Instance->PIPESEL & USB_PIPESEL_PIPESEL) != (pipe << USB_PIPESEL_PIPESEL_SHIFT))
 			;
 		ASSERT(pipe == 6);
-		Instance->PIPECFG = 
+		Instance->PIPECFG =
 			(0x0F & epnum) * (1u << USB_PIPECFG_EPNUM_SHIFT) |		// EPNUM endpoint
 			dir * (1u << USB_PIPECFG_DIR_SHIFT) |		// DIR 1: Transmitting direction 0: Receiving direction
 			2 * (1u << USB_PIPECFG_TYPE_SHIFT) |		// TYPE 2: Interrupt transfer
@@ -3288,6 +3288,92 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 
 #if WITHUSBCDCEEM
 #endif /* WITHUSBCDCEEM */
+
+#if WITHUSBRNDIS
+	if (1)
+	{
+		// Данные RNDIS из компьютера в трансивер
+		const uint_fast8_t pipe = HARDWARE_USBD_PIPE_RNDIS_OUT;	// PIPE3
+		const uint_fast8_t epnum = USBD_EP_RNDIS_OUT;
+		const uint_fast16_t bufsiz = USBD_RNDIS_OUT_BUFSIZE;
+		const uint_fast8_t dir = 0;
+		//PRINTF(PSTR("usbd_pipe_initialize: pipe=%u endpoint=%02X\n"), pipe, epnum);
+
+		Instance->PIPESEL = pipe << USB_PIPESEL_PIPESEL_SHIFT;
+		while ((Instance->PIPESEL & USB_PIPESEL_PIPESEL) != (pipe << USB_PIPESEL_PIPESEL_SHIFT))
+			;
+		ASSERT(pipe == 12);
+		Instance->PIPECFG = 
+			(0x0F & epnum) * (1u << USB_PIPECFG_EPNUM_SHIFT) |	// EPNUM endpoint
+			dir * (1u << USB_PIPECFG_DIR_SHIFT) |			// DIR 1: Transmitting direction 0: Receiving direction
+			1 * (1u << USB_PIPECFG_TYPE_SHIFT) |			// TYPE 1: Bulk transfer
+			1 * (1u << 9) |				// DBLB
+			0;
+		const unsigned bufsize64 = (bufsiz + 63) / 64;
+
+		Instance->PIPEBUF = ((bufsize64 - 1) << USB_PIPEBUF_BUFSIZE_SHIFT) | (bufnumb64 << USB_PIPEBUF_BUFNMB_SHIFT);
+		Instance->PIPEMAXP = bufsiz << USB_PIPEMAXP_MXPS_SHIFT;
+		bufnumb64 += bufsize64 * 2; // * 2 for DBLB
+		ASSERT(bufnumb64 <= 0x100);
+
+		Instance->PIPESEL = 0;
+	}
+	if (1)
+	{
+		// Данные RNDIS в компьютер из трансивера
+		const uint_fast8_t pipe = HARDWARE_USBD_PIPE_RNDIS_IN;	// PIPE4
+		const uint_fast8_t epnum = USBD_EP_RNDIS_IN;
+		const uint_fast16_t bufsiz = USBD_RNDIS_IN_BUFSIZE;
+		const uint_fast8_t dir = 1;
+		//PRINTF(PSTR("usbd_pipe_initialize: pipe=%u endpoint=%02X\n"), pipe, epnum);
+
+		Instance->PIPESEL = pipe << USB_PIPESEL_PIPESEL_SHIFT;
+		while ((Instance->PIPESEL & USB_PIPESEL_PIPESEL) != (pipe << USB_PIPESEL_PIPESEL_SHIFT))
+			;
+		ASSERT(pipe == 13);
+		Instance->PIPECFG = 
+			(0x0F & epnum) * (1u << USB_PIPECFG_EPNUM_SHIFT) |		// EPNUM endpoint
+			dir * (1u << USB_PIPECFG_DIR_SHIFT) |		// DIR 1: Transmitting direction 0: Receiving direction
+			1 * (1u << USB_PIPECFG_TYPE_SHIFT) |		// TYPE 1: Bulk transfer
+			1 * USB_PIPECFG_DBLB |		// DBLB
+			0;
+		const unsigned bufsize64 = (bufsiz + 63) / 64;
+
+		Instance->PIPEBUF = ((bufsize64 - 1) << USB_PIPEBUF_BUFSIZE_SHIFT) | (bufnumb64 << USB_PIPEBUF_BUFNMB_SHIFT);
+		Instance->PIPEMAXP = bufsiz << USB_PIPEMAXP_MXPS_SHIFT;
+		bufnumb64 += bufsize64 * 2; // * 2 for DBLB
+		ASSERT(bufnumb64 <= 0x100);
+
+		Instance->PIPESEL = 0;
+	}
+	if (1)
+	{
+		// Прерывание RNDIS в компьютер из трансивера
+		const uint_fast8_t pipe = HARDWARE_USBD_PIPE_RNDIS_INT;	// PIPE6
+		const uint_fast8_t epnum = USBD_EP_RNDIS_INT;
+		const uint_fast16_t bufsiz = USBD_RNDIS_INT_SIZE;
+		const uint_fast8_t dir = 1;
+		//PRINTF(PSTR("usbd_pipe_initialize: pipe=%u endpoint=%02X\n"), pipe, epnum);
+
+		Instance->PIPESEL = pipe << USB_PIPESEL_PIPESEL_SHIFT;
+		while ((Instance->PIPESEL & USB_PIPESEL_PIPESEL) != (pipe << USB_PIPESEL_PIPESEL_SHIFT))
+			;
+		ASSERT(pipe == 8);
+		Instance->PIPECFG = 
+			(0x0F & epnum) * (1u << USB_PIPECFG_EPNUM_SHIFT) |		// EPNUM endpoint
+			dir * (1u << USB_PIPECFG_DIR_SHIFT) |		// DIR 1: Transmitting direction 0: Receiving direction
+			2 * (1u << USB_PIPECFG_TYPE_SHIFT) |		// TYPE 2: Interrupt transfer
+			0 * USB_PIPECFG_DBLB |		// DBLB - для interrupt должен быть 0
+			0;
+		const unsigned bufsize64 = (bufsiz + 63) / 64;
+		Instance->PIPEBUF = ((bufsize64 - 1) << USB_PIPEBUF_BUFSIZE_SHIFT) | (bufnumb64 << USB_PIPEBUF_BUFNMB_SHIFT);
+		Instance->PIPEMAXP = bufsiz << USB_PIPEMAXP_MXPS_SHIFT;
+		bufnumb64 += bufsize64 * 1; // * 2 for DBLB
+		ASSERT(bufnumb64 <= 0x100);
+
+		Instance->PIPESEL = 0;
+	}
+#endif /* WITHUSBRNDIS */
 
 #if WITHUSBUAC
 	if (1)
@@ -8296,6 +8382,11 @@ static USBD_StatusTypeDef USBD_XXX_DataIn (USBD_HandleTypeDef *pdev, uint_fast8_
 	}
 	return USBD_OK;
 }
+
+static void rndisout_buffer_save(
+	const uint8_t * data,
+	uint_fast16_t length
+	);
 
 static USBD_StatusTypeDef USBD_XXX_DataOut (USBD_HandleTypeDef *pdev, uint_fast8_t epnum)
 {
