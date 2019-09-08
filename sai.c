@@ -97,7 +97,32 @@ static uintptr_t dma_flush32tx(uintptr_t addr)
 	return addr;
 }
 
-#if CPUSTYLE_STM32F
+#if CPUSTYLE_STM32MP1
+
+static const codechw_t fpgacodechw =
+{
+	NULL, // r7s721_ssif1_fullduplex_initialize,
+	NULL, // hardware_dummy_initialize,
+	NULL, // r7s721_ssif1_dmarx_initialize,
+	NULL, // r7s721_ssif1_dmatx_initialize,
+	NULL, // r7s721_ssif1_fullduplex_enable,
+	NULL, // hardware_dummy_enable,
+	"ssif1-audiocodechw"
+};
+
+static const codechw_t audiocodechw =
+{
+	NULL, // r7s721_ssif0_fullduplex_initialize,
+	NULL, // hardware_dummy_initialize,
+	NULL, // r7s721_ssif0_dmarx_initialize,
+	NULL, // r7s721_ssif0_dmatx_initialize,
+	NULL, // r7s721_ssif0_fullduplex_enable,
+	NULL, // hardware_dummy_enable,
+	"ssif0-audiocodechw"
+};
+
+
+#elif CPUSTYLE_STM32F
 
 enum
 {
@@ -3391,7 +3416,7 @@ static void r7s721_usb1_dma0_dmatx_enable(void)
 
 #endif /* WITHUSBUAC */
 
-#elif CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
+#elif CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP157A
 
 // Канал DMA ещё занят - оставляем в очереди, иначе получить данные через getfilled_dmabufferx и начать предавать в host
 void refreshDMA_uacin(void)
@@ -3419,7 +3444,8 @@ void hardware_usbd_dma_initialize(void)
 		r7s721_usb1_dma1_dmatx_initialize();
 	}
 #endif /* WITHUSBUAC */
-#elif CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
+
+#elif CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP157A
 
 #else
 	#error Unsupported USB hardware 
@@ -3434,7 +3460,7 @@ void hardware_usbd_dma_enable(void)
 	r7s721_usb0_dma0_dmarx_enable();
 	r7s721_usb0_dma0_dmatx_enable();
 #endif /* WITHUSBUAC */
-#elif CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
+#elif CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP157A
 
 #else
 	#error Unsupported USB hardware 

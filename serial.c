@@ -1222,6 +1222,7 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 		HARDWARE_UART2_ONTXCHAR(& SCIF3);
 	}
 
+#elif CPUSTYLE_STM32MP157A
 #else
 
 	#error Undefined CPUSTYLE_XXX
@@ -1358,6 +1359,8 @@ void hardware_uart2_enabletx(uint_fast8_t state)
 	else
 		SCIF3.SCSCR &= ~ (1U << 7);	// TIE Transmit Interrupt Enable
 
+#elif CPUSTYLE_STM32MP157A
+
 #else
 	#error Undefined CPUSTYLE_XXX
 #endif
@@ -1466,6 +1469,8 @@ void hardware_uart2_enablerx(uint_fast8_t state)
 	else
 		SCIF3.SCSCR &= ~ (1U << 6);	// RIE Receive Interrupt Enable
 
+#elif CPUSTYLE_STM32MP157A
+
 #else
 	#error Undefined CPUSTYLE_XXX
 
@@ -1527,6 +1532,8 @@ void hardware_uart2_tx(void * ctx, uint_fast8_t c)
 	(void) SCIF3.SCFSR;			// Перед сбросом бита TDFE должно произойти его чтение в ненулевом состоянии
 	SCIF3.SCFTDR = c;
 	SCIF3.SCFSR = (uint16_t) ~ (1U << SCIF3_SCFSR_TDFE_SHIFT);	// TDFE=0 читать незачем (в примерах странное)
+
+#elif CPUSTYLE_STM32MP157A
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -1638,6 +1645,8 @@ hardware_usart2_getchar(char * cp)
 	* cp = SCIF3.SCFRDR;
 	SCIF3.SCFSR = (uint16_t) ~ (1U << 1);	// RDF=0 читать незачем (в примерах странное)
 
+#elif CPUSTYLE_STM32MP157A
+
 #else
 	#error Undefined CPUSTYLE_XXX
 #endif
@@ -1740,6 +1749,8 @@ hardware_usart2_putchar(uint_fast8_t c)
 		return 0;
 	SCIF3.SCFTDR = c;
 	SCIF3.SCFSR = (uint16_t) ~ (1U << SCIF3_SCFSR_TDFE_SHIFT);	// TDFE=0 читать незачем (в примерах странное)
+
+#elif CPUSTYLE_STM32MP157A
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -2118,6 +2129,8 @@ xxxx!;
 	HARDWARE_USART2_INITIALIZE();	/* Присоединить периферию к выводам */
 
 	SCIF3.SCSCR |= 0x0030;	// TE RE - SCIF3 transmitting and receiving operations are enabled */
+
+#elif CPUSTYLE_STM32MP157A
 
 #else
 	#error Undefined CPUSTYLE_XXX

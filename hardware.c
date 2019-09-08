@@ -180,6 +180,69 @@ calcdivround2(
 	}
 
 
+	/*******************************************************************************
+	* Function Name: CPG_Init
+	* Description  : Executes initial setting for the CPG.
+	*              : In the sample code, the internal clock ratio is set to be
+	*              : I:G:B:P1:P0 = 30:20:10:5:5/2 in the state that the
+	*              : clock mode is 0. The frequency is set to be as below when the
+	*              : input clock is 13.33MHz.
+	*              : CPU clock (I clock)              : 400MHz
+	*              : Image processing clock (G clock) : 266.67MHz
+	*              : Internal bus clock (B clock)     : 133.33MHz
+	*              : Peripheral clock1 (P1 clock)     : 66.67MHz
+	*              : Peripheral clock0 (P0 clock)     : 33.33MHz
+	*              : Sets the data-retention RAM area (H'2000 0000 to H'2001 FFFF)
+	*              : to be enabled for writing.
+	* Arguments    : none
+	* Return Value : none
+	*******************************************************************************/
+	static
+	FLASHMEMINITFUNC
+	void CPG_Init(void)
+	{
+	    /* Cancel L2C standby status before clock change */
+	    L2CREG15_POWER_CTRL = 0x00000001;
+		(void) L2CREG15_POWER_CTRL;
+
+	    /* standby_mode_en bit of Power Control Register setting */
+	    //*(volatile uint32_t *)(0x3fffff80) = 0x00000001;
+	    //(void) *(volatile uint32_t *)(0x3fffff80);
+
+	    /* ==== CPG Settings ==== */
+
+	    /* PLL(x30), I:G:B:P1:P0 = 30:20:10:5:5/2 */
+	    //CPG.FRQCR  = 0x1035u;
+	    CPG.FRQCR  = 0x3035u;	// CKIO pin = hi-z
+		(void) CPG.FRQCR;
+
+	    /* CKIO:Output at time usually output     *
+	     * when bus right is opened output at     *
+	     * standby "L"                            *
+		 * Clockin  = 13.33MHz, CKIO = 66.67MHz,  *
+		 * I  Clock = 400.00MHz,                  *
+		 * G  Clock = 266.67MHz,                  *
+		 * B  Clock = 133.33MHz,                  *
+		 * P1 Clock =  66.67MHz,                  *
+		 * P0 Clock =  33.33MHz                   */
+
+	    /* CKIO:Output at time usually output     *
+	     * when bus right is opened output at     *
+	     * standby "L"                            *
+		 * Clockin  = 12.00MHz, CKIO = 60.0MHz,  *
+		 * I  Clock = 360.00MHz,                  *
+		 * G  Clock = 240.00MHz,                  *
+		 * B  Clock = 120.00MHz,                  *
+		 * P1 Clock =  60.00MHz,                  *
+		 * P0 Clock =  30.00MHz                   */
+
+	#if ((TARGET_RZA1 == TARGET_RZA1H) || (TARGET_RZA1 == TARGET_RZA1M))
+	    CPG.FRQCR2 = 0x0001u;
+	#endif
+	}
+
+
+
 #else
 	// other CPUs
 
@@ -8930,68 +8993,6 @@ static void vfp_access_enable(void)
 	 */
 	__set_CPACR(access | CPACC_FULL(10) | CPACC_FULL(11));
 }
-
-/*******************************************************************************
-* Function Name: CPG_Init
-* Description  : Executes initial setting for the CPG.
-*              : In the sample code, the internal clock ratio is set to be 
-*              : I:G:B:P1:P0 = 30:20:10:5:5/2 in the state that the 
-*              : clock mode is 0. The frequency is set to be as below when the
-*              : input clock is 13.33MHz.
-*              : CPU clock (I clock)              : 400MHz
-*              : Image processing clock (G clock) : 266.67MHz
-*              : Internal bus clock (B clock)     : 133.33MHz
-*              : Peripheral clock1 (P1 clock)     : 66.67MHz
-*              : Peripheral clock0 (P0 clock)     : 33.33MHz
-*              : Sets the data-retention RAM area (H'2000 0000 to H'2001 FFFF)
-*              : to be enabled for writing.
-* Arguments    : none
-* Return Value : none
-*******************************************************************************/
-static 
-FLASHMEMINITFUNC
-void CPG_Init(void)
-{
-    /* Cancel L2C standby status before clock change */
-    L2CREG15_POWER_CTRL = 0x00000001;
-	(void) L2CREG15_POWER_CTRL;
-	
-    /* standby_mode_en bit of Power Control Register setting */
-    //*(volatile uint32_t *)(0x3fffff80) = 0x00000001;
-    //(void) *(volatile uint32_t *)(0x3fffff80);
-
-    /* ==== CPG Settings ==== */
-
-    /* PLL(x30), I:G:B:P1:P0 = 30:20:10:5:5/2 */
-    //CPG.FRQCR  = 0x1035u;
-    CPG.FRQCR  = 0x3035u;	// CKIO pin = hi-z
-	(void) CPG.FRQCR;
-
-    /* CKIO:Output at time usually output     *
-     * when bus right is opened output at     *
-     * standby "L"                            *
-	 * Clockin  = 13.33MHz, CKIO = 66.67MHz,  *
-	 * I  Clock = 400.00MHz,                  *
-	 * G  Clock = 266.67MHz,                  *
-	 * B  Clock = 133.33MHz,                  *
-	 * P1 Clock =  66.67MHz,                  *
-	 * P0 Clock =  33.33MHz                   */
-
-    /* CKIO:Output at time usually output     *
-     * when bus right is opened output at     *
-     * standby "L"                            *
-	 * Clockin  = 12.00MHz, CKIO = 60.0MHz,  *
-	 * I  Clock = 360.00MHz,                  *
-	 * G  Clock = 240.00MHz,                  *
-	 * B  Clock = 120.00MHz,                  *
-	 * P1 Clock =  60.00MHz,                  *
-	 * P0 Clock =  30.00MHz                   */
-
-#if ((TARGET_RZA1 == TARGET_RZA1H) || (TARGET_RZA1 == TARGET_RZA1M))
-    CPG.FRQCR2 = 0x0001u;
-#endif
-}
-
 #endif /* (CPUSTYLE_ARM_CA9 || CPUSTYLE_ARM_CA7) */
 
 #if CPUSTYLE_ARM_CM7

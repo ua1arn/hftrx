@@ -111,7 +111,7 @@
 //#define CTLSTYLE_V1D	1	// Плата STM32F429I-DISCO с процессором STM32F429ZIT6
 //#define CTLSTYLE_V2D	1	// Плата STM32F4DISCOVERY с процессором STM32F407VGT6
 //#define CTLSTYLE_V3D	1	// Плата STM32F746G-DISCO с процессором STM32F746NGH6
-//#define CTLSTYLE_NUCLEO_V1	1	// Плята NUCLEO-F767ZI  процессором STM32F767ZIT6  mb1137.pdf
+//#define CTLSTYLE_NUCLEO_V1	1	// Внешняя аудиоплата на базе NUCLEO-F767ZI с процессором STM32F767ZIT6  mb1137.pdf
 //#define CTLSTYLE_V9	1	// Плата satmod
 //#define CTLSTYLE_V1E	1	// Плата с процессором STM32F030F4P (TSSOP-20)
 //#define CTLSTYLE_V1F	1	// Плата с процессором STM32F051C6T (TQFP-48)
@@ -215,12 +215,10 @@
 	//#include "boards/arm_r7s72_tqfp176_ctlstyle_storch_v8_ua3reo.h"	// rmainunit_v5km2.pcb R7S721020VCFP, TFT 7", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_r7s72_tqfp176_cpustyle_storch_v8.h"	// Rmainunit_v5l.pcb (mini USBx2, wide display interface) - mini RX
-#elif CPUSTYLE_STM32MP1 && CTLSTYLE_STORCH_V8	// rmainunit_v5km2.pcb R7S721020VCFP, TFT 4.3" or 7", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N, AD9246BCPZ-125
-	#include "boards/arm_r7s72_tqfp176_ctlstyle_storch_v8.h"	// rmainunit_v5km2.pcb R7S721020VCFP, TFT 4.3", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
-	//#include "boards/arm_r7s72_tqfp176_ctlstyle_storch_v8_r4dz.h"	// rmainunit_v5km2.pcb R7S721020VCFP, TFT 4.3", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
-	//#include "boards/arm_r7s72_tqfp176_ctlstyle_storch_v8_ua3reo.h"	// rmainunit_v5km2.pcb R7S721020VCFP, TFT 7", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
+#elif CPUSTYLE_STM32MP1 && CTLSTYLE_STORCH_V7	// rmainunit_v5km2.pcb R7S721020VCFP, TFT 4.3" or 7", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N, AD9246BCPZ-125
+	#include "boards/arm_stm32mp1xx_ctlstyle_storch_v9.h"	// rmainunit_v5km2.pcb R7S721020VCFP, TFT 4.3", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
-	#include "boards/arm_r7s72_tqfp176_cpustyle_storch_v8.h"	// Rmainunit_v5l.pcb (mini USBx2, wide display interface) - mini RX
+	#include "boards/arm_stm32mp1xx_cpustyle_storch_v9.h"	// Rmainunit_v5l.pcb (mini USBx2, wide display interface) - mini RX
 #elif CPUSTYLE_STM32F && CTLSTYLE_OLEG4Z_V1	// 2xUSB, STM32F767ZIT6, FPGA EP4CE22E22I7N & R820T2
 	#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_oleg4z_v1.h"	// Rmainunit_v5fm.pcb (USBx2, wide display interface)
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
@@ -350,7 +348,7 @@
 	#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_32F746G.h"	/* Плата STM32F746G-DISCO с процессором STM32F746NGH6	*/
 	#include "paramdepend.h"				/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32f4xx_tqfp144_cpustyle_32F746G.h"	/* Плата STM32F746G-DISCO с процессором STM32F746NGH6	*/
-#elif CPUSTYLE_STM32F && CTLSTYLE_NUCLEO_V1	// SD-CARD. DUAL WATCH, STM32F446ZET6, TLV320AIC23B и FPGA EP4CE22E22I7N
+#elif CPUSTYLE_STM32F && CTLSTYLE_NUCLEO_V1	// Внешняя аудиоплата на базе NUCLEO-F767ZI с процессором STM32F767ZIT6  mb1137.pdf
 	#include "boards/arm_stm32f767_tqfp144_ctlstyle_nucleo.h"
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32f767_tqfp144_cpustyle_nucleo.h"

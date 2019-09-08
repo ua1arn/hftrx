@@ -7,7 +7,12 @@
 extern "C" {
 #endif /* __cplusplus */
 
-#if CPUSTYLE_STM32F
+#if CPUSTYLE_STM32MP1
+
+	#define BSRR_S(v) ((v) * GPIO_BSRR_BS0)	/* Преобразование значения для установки бита в регистре */
+	#define BSRR_C(v) ((v) * GPIO_BSRR_BR0)	/* Преобразование значения для сброса бита в регистре */
+
+#elif CPUSTYLE_STM32F
 
 	#define BSRR_S(v) ((v) * GPIO_BSRR_BS0)	/* Преобразование значения для установки бита в регистре */
 	#define BSRR_C(v) ((v) * GPIO_BSRR_BR0)	/* Преобразование значения для сброса бита в регистре */
