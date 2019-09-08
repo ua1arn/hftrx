@@ -48,7 +48,7 @@ extern "C" {
  */
 #if WITHDSPEXTDDC
 
-	#if CPUSTYLE_R7S721 || CPUSTYLE_STM32MP1
+	#if CPUSTYLE_R7S721
 
 		// buff data layout: I main/I sub/Q main/Q sub
 		#define DMABUFSTEP32RX	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
@@ -84,7 +84,7 @@ extern "C" {
 
 		#define DMABUFSTEP16	2		// 2 - каждому сэмплу при обмене с AUDIO CODEC соответствует два числа в DMA буфере
 
-	#elif CPUSTYLE_STM32F
+	#elif CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
 
 		// buff data layout: I main/I sub/Q main/Q sub
 		#define DMABUFSTEP32RX	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
