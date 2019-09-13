@@ -1432,8 +1432,14 @@ static void agc_smeter_parameters_update(volatile agcparams_t * const agcp)
 {
 	agcp->agcoff = 0;
 
+#if CTLSTYLE_OLEG4Z_V1
+	agcp->chargespeedfast = MAKETAUAF0();
+	agcp->chargespeedfast = MAKETAUIF((FLOAT_t) 0.005);	// 5 mS
+	agcp->dischargespeedfast = MAKETAUIF((FLOAT_t) 0.005);	// 5 mS
+#else /* CTLSTYLE_OLEG4Z_V1 */
 	agcp->chargespeedfast = MAKETAUIF((FLOAT_t) 0.1);	// 100 mS
 	agcp->dischargespeedfast = MAKETAUIF((FLOAT_t) 0.1);	// 100 mS
+#endif /* CTLSTYLE_OLEG4Z_V1 */
 	agcp->chargespeedslow = MAKETAUIF((FLOAT_t) 0.1);	// 100 mS
 	agcp->dischargespeedslow = MAKETAUIF((FLOAT_t) 0.4);	// 400 mS
 	agcp->hungticks = NSAITICKS(1000);			// в сотнях милисекунд (1 секунда)

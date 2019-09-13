@@ -3598,7 +3598,7 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 	static uint_fast16_t gfsadcpower10 [2] =
 	{
 		(+ 180) + FSADCPOWEROFFSET10,	// для соответствия HDSDR мощность, соответствующая full scale от IF ADC
-		(+ 90) + FSADCPOWEROFFSET10,	// с конвертором
+		(+ 190) + FSADCPOWEROFFSET10,	// с конвертором
 	};
 #else /* CTLSTYLE_OLEG4Z_V1 */
 	static uint_fast8_t gsidetonelevel = 15;	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
