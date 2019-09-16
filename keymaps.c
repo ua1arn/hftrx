@@ -1047,7 +1047,7 @@ const struct qmkey qmdefs [NQMKEYS] =
 
 	/* LLL Cлева от индикатора - ряд 2 по счету слева - снизу вверх */
 	{ KIF_NONE,		KBD_CODE_BW,			KBD_CODE_NR, 			' ', },		// BW/NR
-	{ KIF_NONE,		KBD_CODE_BW,			KBD_CODE_NR, 			' ', },		// BW/NR
+	{ KIF_NONE,		KBD_CODE_LDSPTGL,		KBD_CODE_DATATOGGLE,	' ', },		// BW/NR
 	{ KIF_NONE,		KBD_CODE_MODE_3,		KBD_CODE_MODEMOD_3, 	' ', },		// MODE/SUBMODE
 	{ KIF_NONE,		KBD_CODE_MODE_2,		KBD_CODE_MODEMOD_2, 	' ', },		// MODE/SUBMODE
 	{ KIF_NONE,		KBD_CODE_MODE_1,		KBD_CODE_MODEMOD_1, 	' ', },		// MODE/SUBMODE
