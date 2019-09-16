@@ -95,7 +95,7 @@
 
 	#define LCDMODE_ILI9341	1	/* 320*240 SF-TC240T-9370-T с контроллером ILI9341 - STM32F4DISCO */
 
-#elif 1
+#elif 0
 
 	#define LCDMODE_LQ043T3DX02K 1	/* LQ043T3DX02K panel (272*480) - SONY PSP-1000 display */
 
@@ -278,7 +278,7 @@
 	#define WITHDIRECTFREQENER	1
 	#define	WITHENCODER	1	/* для изменения частоты имеется енкодер */
 	#define WITHENCODER2	1		/* есть второй валкодер */
-	#define BOARD_ENCODER2_DIVIDE 1
+	#define BOARD_ENCODER2_DIVIDE 4
 
 	//#define WITHSKIPUSERMODE 1	// debug option: не отдавать в USER MODE блоки для фильтрации аудиосигнала
 	//#define BOARD_FFTZOOM_POW2MAX 1	// Возможные масштабы FFT x1, x2
