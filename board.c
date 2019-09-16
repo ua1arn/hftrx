@@ -3107,7 +3107,7 @@ prog_ctrlreg(uint_fast8_t plane)
 #endif
 		const uint_fast8_t txgated = glob_tx && glob_txgate;
 
-#if KEYB_FPAMEL20_V0A_UY5UM
+#if 0//KEYB_FPAMEL20_V0A_UY5UM
 		RBBIT(0047, glob_antenna);		// D7: antenns select бит выбора антенны (0 - ANT1, 1 - ANT2)
 		RBBIT(0046, glob_antenna);		// D6: antenns select бит выбора антенны (0 - ANT1, 1 - ANT2)
 		RBVAL(0040, 1U << glob_bandf2, 6);		// D0..D5: band select бит выбора диапазонного фильтра передатчика
@@ -7289,7 +7289,7 @@ uint_fast8_t board_getpwrmeter(
 	uint_fast8_t * toptrace	// peak hold
 	)
 {
-	const uint_fast8_t f = board_getadc_filtered_u8(PWRI, 0, UINT8_MAX);
+	const uint_fast8_t f = board_getadc_unfiltered_u8(PWRI, 0, UINT8_MAX);
 	* toptrace = f;
 	return f;
 }
@@ -7300,7 +7300,7 @@ uint_fast8_t board_getpwrmeter(
 	uint_fast8_t * toptrace		// peak hold
 	)
 {
-	const uint_fast8_t f = board_getadc_filtered_u8(PWRI, 0, UINT8_MAX);
+	const uint_fast8_t f = board_getadc_unfiltered_u8(PWRI, 0, UINT8_MAX);
 	* toptrace = f;
 	return f;
 }
@@ -7648,6 +7648,7 @@ static const uint_fast8_t adcinputs [] =
 #endif /* WITHPOTAFGAIN */
 #if WITHCURRLEVEL2
 	PASENSEIX2,		// 100W PA current sense - ACS712-30 chip
+	PAREFERIX2,
 #elif WITHCURRLEVEL
 	PASENSEIX,		// PA or driver current sense - ACS712-05 chip
 #endif /* WITHCURRLEVEL */
@@ -7750,13 +7751,28 @@ adcvalholder_t board_getadc_filtered_truevalue(uint_fast8_t adci)
 /* получить значение от АЦП */
 adcvalholder_t board_getadc_unfiltered_truevalue(uint_fast8_t adci)	
 {
+	static const struct
+	{
+		uint8_t ch;
+		uint8_t diff;
+	} xad2xlt [8] =
+	{
+			{	0, 0, },	// DRAIN (negative from midpoint at CH1: ch0=in-, ch1=in+)
+			{	1, 0, },
+			{	2, 0, },
+			{	3, 0, },
+			{	4, 0, },
+			{	5, 0, },
+			{	6, 0, },
+			{	7, 0, },
+	};
 	if (adci >= BOARD_ADCX1BASE)
 	{
 		// external SPI device (PA BOARD ADC)
 #if defined (targetxad2)
 		uint_fast8_t valid;
 		uint_fast8_t ch = adci - BOARD_ADCX1BASE;
-		return mcp3208_read(targetxad2, 0, ch, & valid);
+		return mcp3208_read(targetxad2, xad2xlt [ch].diff, xad2xlt [ch].ch, & valid);
 #else /* defined (targetxad2) */
 		return 0;
 #endif /* defined (targetxad2) */
@@ -8483,7 +8499,7 @@ void debugusb_initialize(void)
 #endif /* WITHDEBUG && WITHUSBCDC && WITHDEBUG_CDC */
 
 // Read ADC MCP3204/MCP3208
-uint_fast32_t
+uint_fast16_t
 mcp3208_read(
 	spitarget_t target,
 	uint_fast8_t diff,
@@ -8494,17 +8510,19 @@ mcp3208_read(
 	uint_fast16_t v0, v1, v2, v3;
 	// сдвинуто, чтобы позиция временной диаграммы,
 	// где формируется время выборки, не попадала на паузу между байтами.
-	const uint_fast8_t cmd1 = (0x10 | (diff ? 0x00 : 0x08) | (adci & 0x07));
+	const uint_fast8_t cmd1 = 0x10 | (diff ? 0x00 : 0x08) | (adci & 0x07);
 	uint_fast32_t rv;
 
-	enum { LSBPOS = 3 };
+	enum { LSBPOS = 0 };
+	const spi_speeds_t adcspeed = SPIC_SPEED400k;
+	const spi_modes_t adcmode = SPIC_MODE3;
 
 #if WITHSPI32BIT
 
-	hardware_spi_connect_b32(SPIC_SPEED400k, SPIC_MODE3);
+	hardware_spi_connect_b32(adcspeed, adcmode);
 	prog_select(target);
 
-	hardware_spi_b32_p1(cmd1 << (LSBPOS + 14));
+	hardware_spi_b32_p1((uint_fast32_t) cmd1 << (LSBPOS + 14));
 	rv = hardware_spi_complete_b32();
 
 	prog_unselect(target);
@@ -8513,10 +8531,10 @@ mcp3208_read(
 
 #elif WITHSPI16BIT
 
-	hardware_spi_connect_b16(SPIC_SPEED400k, SPIC_MODE3);
+	hardware_spi_connect_b16(adcspeed, adcmode);
 	prog_select(target);
 
-	hardware_spi_b16_p1(cmd1 << (LSBPOS + 14) >> 16);
+	hardware_spi_b16_p1((uint_fast32_t) cmd1 << (LSBPOS + 14) >> 16);
 	v0 = hardware_spi_complete_b16();
 	hardware_spi_b16_p1(0);
 	v1 = hardware_spi_complete_b16();
@@ -8528,11 +8546,11 @@ mcp3208_read(
 
 #else
 
-	spi_select2(target, SPIC_MODE3, SPIC_SPEED400k);	// for 50 kS/S and 24 bit words
+	spi_select2(target, adcmode, adcspeed);	// for 50 kS/S and 24 bit words
 
-	v0 = spi_read_byte(target, cmd1 << (LSBPOS + 14) >> 24);
-	v1 = spi_read_byte(target, cmd1 << (LSBPOS + 14) >> 16);
-	v2 = spi_read_byte(target, cmd1 << (LSBPOS + 14) >> 8);
+	v0 = spi_read_byte(target, (uint_fast32_t) cmd1 << (LSBPOS + 14) >> 24);
+	v1 = spi_read_byte(target, (uint_fast32_t) cmd1 << (LSBPOS + 14) >> 16);
+	v2 = spi_read_byte(target, (uint_fast32_t) cmd1 << (LSBPOS + 14) >> 8);
 	v3 = spi_read_byte(target, 0x00);
 
 	spi_unselect(target);

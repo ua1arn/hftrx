@@ -526,6 +526,7 @@ void hardware_adc_initialize(void);
 	#define FLASHMEM __flash
 	#define FLASHMEMINIT	__flash	/* не требуется быстрый доступ - например образ загружаемый в FPGA */
 	#define FLASHMEMINITFUNC	/* не требуется быстрый доступ - например образ загружаемый в FPGA */
+	#define RAMDTCM
 
 	#if (FLASHEND > 0x7FFF)	
 		// нет нужды экономить память FLASH
@@ -597,24 +598,6 @@ void hardware_sounds_disable(void);
 /* вызывается при запрещённых прерываниях. */
 void hardware_beep_initialize(void);
 
-
-/* Управление SPI. Так как некоторые периферийные устройства не могут работать с 8-битовыми блоками
-   на шине, в таких случаях формирование делается программно - аппаратный SPI при этом отключается.
-   
-   Так как переключение в нужный режим SPI производится после активизации CS, для такого применения не годятся
-   режимы SPI с "0" уровнем SCLK в неактивном состоянии.
-   */
-
-typedef enum
-{
-	SPIC_MODE0,
-	SPIC_MODE1,
-	SPIC_MODE2, 
-	SPIC_MODE3, 
-	//
-	SPIC_MODES_COUNT
-} spi_modes_t;
-
 // +++ dsp
 // Интерфейс к НЧ кодеку
 void hardware_audiocodec_enable(void);		// Интерфейс к НЧ кодеку
@@ -653,7 +636,7 @@ void nmea_parsechar(uint_fast8_t c);				/* вызывается из обраб�
 void nmea_rxoverflow(void);							/* вызывается из обработчика прерываний */
 void nmea_sendchar(void * ctx);							/* вызывается из обработчика прерываний */
 
-void hardware_uart1_initialize(void);
+void hardware_uart1_initialize(uint_fast8_t debug);
 void hardware_uart1_set_speed(uint_fast32_t baudrate);
 void hardware_uart1_tx(void * ctx, uint_fast8_t c);	/* передача символа после прерывания о готовности передатчика */
 void hardware_uart1_enabletx(uint_fast8_t state);	/* вызывается из обработчика прерываний */
@@ -661,7 +644,7 @@ void hardware_uart1_enablerx(uint_fast8_t state);	/* вызывается из �
 uint_fast8_t hardware_usart1_putchar(uint_fast8_t c);/* передача символа если готов порт */
 uint_fast8_t hardware_usart1_getchar(char * cp); /* приём символа, если готов порт */
 
-void hardware_uart2_initialize(void);
+void hardware_uart2_initialize(uint_fast8_t debug);
 void hardware_uart2_set_speed(uint_fast32_t baudrate);
 void hardware_uart2_tx(void * ctx, uint_fast8_t c);	/* передача символа после прерывания о готовности передатчика */
 void hardware_uart2_enabletx(uint_fast8_t state);	/* вызывается из обработчика прерываний */
@@ -772,6 +755,9 @@ calcdivround2(
 	#define HARDWARE_USBD_PIPE_CDC_INb	15	// CDC IN - без передачи данных
 	#define HARDWARE_USBD_PIPE_CDC_INT	6	//
 	#define HARDWARE_USBD_PIPE_CDC_INTb	7	//
+	#define HARDWARE_USBD_PIPE_RNDIS_OUT	12	// RNDIS OUT Данные RNDIS от компьютера в TRX
+	#define HARDWARE_USBD_PIPE_RNDIS_IN		13	// RNDIS IN Данные RNDIS в компьютер из TRX
+	#define HARDWARE_USBD_PIPE_RNDIS_INT	8	//
 #endif /* CPUSTYLE_R7S721 */
 
 #define CATPCOUNTSIZE (13)

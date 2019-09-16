@@ -75,7 +75,7 @@ static void display2_legend_tx(
 	void * pv
 	);
 
-static volatile PACKEDCOLOR565_T * getscratchpip(void);
+static PACKEDCOLOR565_T * getscratchpip(void);
 
 // Параметры отображения спектра и водопада
 
@@ -1318,7 +1318,19 @@ static void display_currlevel5(
 	void * pv
 	)
 {
-#if WITHCURRLEVEL && WITHCPUADCHW
+#if WITHCURRLEVEL2 && WITHCPUADCHW
+	int_fast16_t drain = hamradio_get_pacurrent2_value();	// Ток в сотнях милиампер (до 25.5 ампера), может быть отрицательным
+
+	display_setcolors(colorsfg_1state [0], colorsbg_1state [0]);
+	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
+	do
+	{
+		display_gotoxy(x + CHARS2GRID(0), y + lowhalf);
+		display_value_small(drain, 3 | WMINUSFLAG, 1, 255, 0, lowhalf);
+		//display_gotoxy(x + CHARS2GRID(4), y + lowhalf);
+		//display_string_P(PSTR("A"), lowhalf);
+	} while (lowhalf --);
+#elif WITHCURRLEVEL && WITHCPUADCHW
 	int_fast16_t drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (до 2.55 ампера), может быть отрицательным
 
 	display_setcolors(colorsfg_1state [0], colorsbg_1state [0]);
@@ -3998,8 +4010,8 @@ enum
 		
 		{	0,	4,	display_freqX_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Частота (большие цифры)
 		{	21,	8,	display_mode3_a,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
-		{	26,	8,	display_rxbw3,		REDRM_MODE, PGALL, },	// 3.1 / 0,5 / WID / NAR
-		{	21,	12,	display_datamode3,	REDRM_MODE, PGALL, },	// DATA mode indicator
+		{	21,	12,	display_rxbw3,		REDRM_MODE, PGALL, },	// 3.1 / 0,5 / WID / NAR
+		{	26,	8,	display_datamode3,	REDRM_MODE, PGALL, },	// DATA mode indicator
 
 		{	0,	16,	display_mainsub3,	REDRM_MODE, PGALL, },	// main/sub RX: A/A, A/B, B/A, etc
 		//{	0,	16,	display_rec3,		REDRM_BARS, PGALL, },	// Отображение режима записи аудио фрагмента
@@ -4010,12 +4022,10 @@ enum
 #if 1
 		{	0,	20,	display2_legend,	REDRM_MODE, PGSWR, },	// Отображение оцифровки шкалы S-метра, PWR & SWR-метра
 		{	0,	24,	display2_bars,		REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
-	#if WITHSPECTRUMWF
 		{	0,	28,	dsp_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
 		{	0,	28,	display2_spectrum,	REDRM_BARS, PGSPE, },// подготовка изображения спектра
 		{	0,	28,	display2_waterfall,	REDRM_BARS, PGWFL, },// подготовка изображения водопада
 		{	0,	28,	display2_colorbuff,	REDRM_BARS,	PGWFL | PGSPE, },// Отображение водопада и/или спектра
-	#endif /* WITHSPECTRUMWF */
 #else
 		{	0,	20,	display2_adctest,	REDRM_BARS, PGSWR, },	// ADC raw data print
 #endif
@@ -4884,7 +4894,7 @@ enum
 
 	// один буфер установлен для отображения, второй еше отображается. Третий заполняем новым изображением.
 	enum { NPIPS = 3 };
-	static RAMFRAMEBUFF ALIGNX_BEGIN volatile PACKEDCOLOR565_T colorpips [NPIPS] [GXSIZE(ALLDX, ALLDY)] ALIGNX_END;
+	static RAMFRAMEBUFF ALIGNX_BEGIN PACKEDCOLOR565_T colorpips [NPIPS] [GXSIZE(ALLDX, ALLDY)] ALIGNX_END;
 	static int pipphase;
 
 	static void nextpip(void)
@@ -4894,15 +4904,15 @@ enum
 
 #elif (! LCDMODE_S1D13781_NHWACCEL && LCDMODE_S1D13781)
 
-	static RAMDTCM ALIGNX_BEGIN volatile PACKEDCOLOR565_T colorpip0 [GXSIZE(ALLDX, 1)] ALIGNX_END;
+	static RAMDTCM ALIGNX_BEGIN PACKEDCOLOR565_T colorpip0 [GXSIZE(ALLDX, 1)] ALIGNX_END;
 
 #else /* LCDMODE_LTDC_PIP16 */
 
-	static ALIGNX_BEGIN volatile PACKEDCOLOR565_T colorpip0 [GXSIZE(ALLDX, ALLDY)] ALIGNX_END;
+	static ALIGNX_BEGIN PACKEDCOLOR565_T colorpip0 [GXSIZE(ALLDX, ALLDY)] ALIGNX_END;
 
 #endif /* LCDMODE_LTDC_PIP16 */
 
-static volatile PACKEDCOLOR565_T * getscratchpip(void)
+static PACKEDCOLOR565_T * getscratchpip(void)
 {
 #if LCDMODE_LTDC_PIP16
 	return colorpips [pipphase];
@@ -4943,7 +4953,7 @@ static FLOAT_t filter_spectrum(
 
 #if WITHFASTWATERFLOW
 
-	/* быстрое отображение вобопада (но требует больше памяти) */
+	/* быстрое отображение водопада (но требует больше памяти) */
 	static RAMBIG PACKEDCOLOR565_T wfarray [WFDY] [ALLDX];	// массив "водопада"
 	static uint_fast16_t wfrow;		// строка, в которую последней занесены данные
 
@@ -5048,7 +5058,7 @@ static void wfpalette_initialize(void)
 		}
 		a += i;
 		// a = 160
-		for (i = 0; i<64; ++ i)
+		for (i = 0; i < 64; ++ i)
 		{
 			wfpalette [a + i] = TFTRGB565(255, 255 - i * 4, 0);
 		}
@@ -5269,7 +5279,7 @@ static void display2_spectrum(
 	display_setcolors(COLOR565_SPECTRUMBG, COLOR565_SPECTRUMFG);
 
 #else /* */
-	volatile PACKEDCOLOR565_T * const colorpip = getscratchpip();
+	PACKEDCOLOR565_T * const colorpip = getscratchpip();
 	(void) x0;
 	(void) y0;
 	(void) pv;
@@ -5346,9 +5356,10 @@ static void display2_spectrum(
 // в строке wfrow - новое
 static void wflclear(void)
 {
+	enum { WFROWS = sizeof wfarray / sizeof wfarray [0] };
 	uint_fast16_t y;
 
-	for (y = 0; y < WFDY; ++ y)
+	for (y = 0; y < WFROWS; ++ y)
 	{
 		if (y == wfrow)
 			continue;
@@ -5373,6 +5384,7 @@ static void wfl_avg_clear(void)
 // в строке wfrow - новое
 static void wflshiftleft(uint_fast16_t pixels)
 {
+	enum { WFROWS = sizeof wfarray / sizeof wfarray [0] };
 	uint_fast16_t y;
 
 	if (pixels == 0)
@@ -5385,7 +5397,7 @@ static void wflshiftleft(uint_fast16_t pixels)
 	memmove(& Yold_wtf [0], & Yold_wtf [pixels], (ALLDX - pixels) * sizeof Yold_wtf [0]);
 	memset(& Yold_wtf [ALLDX - pixels], 0x00, pixels * sizeof Yold_wtf[0]);
 
-	for (y = 0; y < WFDY; ++ y)
+	for (y = 0; y < WFROWS; ++ y)
 	{
 		if (y == wfrow)
 		{
@@ -5401,6 +5413,7 @@ static void wflshiftleft(uint_fast16_t pixels)
 // в строке wfrow - новое
 static void wflshiftright(uint_fast16_t pixels)
 {
+	enum { WFROWS = sizeof wfarray / sizeof wfarray [0] };
 	uint_fast16_t y;
 
 	if (pixels == 0)
@@ -5413,7 +5426,7 @@ static void wflshiftright(uint_fast16_t pixels)
 	memmove(& Yold_wtf [pixels], &Yold_wtf [0], (ALLDX - pixels) * sizeof Yold_wtf [0]);
 	memset(& Yold_wtf [0], 0x00, pixels * sizeof Yold_wtf [0]);
 
-	for (y = 0; y < WFDY; ++ y)
+	for (y = 0; y < WFROWS; ++ y)
 	{
 		if (y == wfrow)
 		{
@@ -5467,10 +5480,12 @@ static void dsp_latchwaterfall(
 		const int val = dsp_mag2y(filter_waterfall(x), PALETTESIZE - 1, glob_topdb, glob_bottomdb); // возвращает значения от 0 до dy включительно
 
 #if WITHFASTWATERFLOW
-		wfarray [wfrow] [x] = wfpalette [val];	// запись в буфер водопада
-#else /* WITHFASTWATERFLOW */
-		wfarray [wfrow] [x] = val;	// запись в буфер водопада
-#endif /* WITHFASTWATERFLOW */
+		wfarray [wfrow] [x] = wfpalette [val];	// запись в буфер водопада цветовой точки
+#elif (! LCDMODE_S1D13781_NHWACCEL && LCDMODE_S1D13781)
+		wfarray [wfrow] [x] = wfpalette [val];	// запись в буфер водопада цветовой точки
+#else /*  */
+		wfarray [wfrow] [x] = val;	// запись в буфер водопада индекса палитры
+#endif /*  */
 	}
 
 	// Сдвиг изображения при необходимости (перестройка/переклбчение диапащонов или масштаба).
@@ -5587,13 +5602,13 @@ static void display2_waterfall(
 
 #elif WITHFASTWATERFLOW
 	// следы спектра ("водопад") на цветных дисплеях
-	/* быстрое отображение вобопада (но требует больше памяти) */
+	/* быстрое отображение водопада (но требует больше памяти) */
 
 	#if ! LCDMODE_HORFILL
 		#error LCDMODE_HORFILL must be defined
 	#endif /* ! LCDMODE_HORFILL */
 
-	volatile PACKEDCOLOR565_T * const colorpip = getscratchpip();
+	PACKEDCOLOR565_T * const colorpip = getscratchpip();
 	const uint_fast16_t p1h = WFDY - wfrow;	// высота верхней части в результируюшем изображении
 	const uint_fast16_t p2h = wfrow;		// высота нижней части в результируюшем изображении
 	const uint_fast16_t p1y = WFY0;
@@ -5611,7 +5626,7 @@ static void display2_waterfall(
 #else /* */
 
 	// следы спектра ("водопад") на цветных дисплеях
-	volatile PACKEDCOLOR565_T * const colorpip = getscratchpip();
+	PACKEDCOLOR565_T * const colorpip = getscratchpip();
 	uint_fast16_t x, y;
 	(void) x0;
 	(void) y0;
@@ -5645,7 +5660,7 @@ static void display2_colorbuff(
 
 #else /* */
 
-	volatile PACKEDCOLOR565_T * const colorpip = getscratchpip();
+	PACKEDCOLOR565_T * const colorpip = getscratchpip();
 
 	#if LCDMODE_LTDC_PIP16
 		display_colorbuffer_pip(colorpip, ALLDX, ALLDY);

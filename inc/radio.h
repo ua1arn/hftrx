@@ -16,6 +16,17 @@
 extern "C" {
 #endif /* __cplusplus */
 
+#if defined (WITHUSBUACIN) && defined (WITHUSBUACOUT)
+	#edfine WITHUSBUAC 1
+#elif defined (WITHUSBUACIN)
+	#edfine WITHUSBUAC 1
+#elif defined (WITHUSBUACOUT)
+	#edfine WITHUSBUAC 1
+#elif WITHUSBUAC
+	#define WITHUSBUACIN	1
+	#define WITHUSBUACOUT	1
+#endif /* WITHUSBUAC */
+
 typedef uint_least64_t ftw_t;	/* тип, подходящий по размерам для хранения промежуточных результатов вычислений */
 typedef uint_least64_t phase_t;
 
@@ -438,9 +449,9 @@ enum
 {
 	BOARD_TXAUDIO_MIKE,	// "MIKE ",
 	BOARD_TXAUDIO_LINE,	// "LINE ",
-#if WITHUSBUAC
+#if WITHUSBUACOUT
 	BOARD_TXAUDIO_USB,	// "USB AUDIO",
-#endif /* WITHUSBUAC */
+#endif /* WITHUSBUACOUT */
 	BOARD_TXAUDIO_2TONE,	// "2TONE",
 	BOARD_TXAUDIO_NOISE,	// "NOISE",
 	BOARD_TXAUDIO_1TONE,	// "1TONE",

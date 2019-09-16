@@ -104,7 +104,7 @@ applicable agreement for further details.
 	(input)
 	(rect 152 -88 328 -72)
 	(text "INPUT" (rect 133 0 161 10)(font "Arial" (font_size 6)))
-	(text "adcoffset[15..0]" (rect 5 0 86 12)(font "Arial" ))
+	(text "adcoffset[15..0]" (rect 5 0 85 12)(font "Arial" ))
 	(pt 176 8)
 	(drawing
 		(line (pt 92 12)(pt 117 12))
@@ -984,7 +984,7 @@ applicable agreement for further details.
 	)
 )
 (symbol
-	(rect 1360 -208 1520 -96)
+	(rect 1448 -208 1608 -96)
 	(text "adcoffset16" (rect 48 0 125 16)(font "Arial" (font_size 10)))
 	(text "inst27" (rect 8 96 37 108)(font "Arial" ))
 	(port
@@ -1040,7 +1040,7 @@ applicable agreement for further details.
 	)
 )
 (symbol
-	(rect 1568 -376 1632 -328)
+	(rect 1632 -376 1696 -328)
 	(text "OR2" (rect 1 0 19 10)(font "Arial" (font_size 6)))
 	(text "inst28" (rect 3 37 32 49)(font "Arial" ))
 	(port
@@ -1125,56 +1125,6 @@ applicable agreement for further details.
 (connector
 	(pt 336 -520)
 	(pt 944 -520)
-)
-(connector
-	(text "y[15..0]" (rect 1290 -184 1328 -172)(font "Arial" ))
-	(pt 1360 -168)
-	(pt 1280 -168)
-	(bus)
-)
-(connector
-	(pt 1360 -152)
-	(pt 944 -152)
-)
-(connector
-	(pt 944 -520)
-	(pt 944 -296)
-)
-(connector
-	(pt 944 -296)
-	(pt 944 -152)
-)
-(connector
-	(pt 1632 -352)
-	(pt 1712 -352)
-)
-(connector
-	(text "y[16]" (rect 1506 -376 1531 -364)(font "Arial" ))
-	(pt 1496 -360)
-	(pt 1568 -360)
-)
-(connector
-	(pt 1520 -112)
-	(pt 1552 -112)
-)
-(connector
-	(pt 1568 -344)
-	(pt 1552 -344)
-)
-(connector
-	(pt 1552 -112)
-	(pt 1552 -344)
-)
-(connector
-	(pt 1520 -152)
-	(pt 1672 -152)
-	(bus)
-)
-(connector
-	(text "adcoffset[15..0]" (rect 1290 -152 1370 -140)(font "Arial" ))
-	(pt 1360 -136)
-	(pt 1280 -136)
-	(bus)
 )
 (connector
 	(pt 640 -104)
@@ -1675,6 +1625,56 @@ applicable agreement for further details.
 	(pt 768 -232)
 	(pt 768 -96)
 	(bus)
+)
+(connector
+	(text "y[15..0]" (rect 1378 -184 1416 -172)(font "Arial" ))
+	(pt 1448 -168)
+	(pt 1368 -168)
+	(bus)
+)
+(connector
+	(pt 1672 -152)
+	(pt 1608 -152)
+	(bus)
+)
+(connector
+	(text "adcoffset[15..0]" (rect 1378 -152 1458 -140)(font "Arial" ))
+	(pt 1448 -136)
+	(pt 1368 -136)
+	(bus)
+)
+(connector
+	(pt 944 -520)
+	(pt 944 -296)
+)
+(connector
+	(pt 944 -296)
+	(pt 944 -152)
+)
+(connector
+	(pt 944 -152)
+	(pt 1448 -152)
+)
+(connector
+	(pt 1712 -352)
+	(pt 1696 -352)
+)
+(connector
+	(text "y[16]" (rect 1570 -376 1595 -364)(font "Arial" ))
+	(pt 1560 -360)
+	(pt 1632 -360)
+)
+(connector
+	(pt 1608 -112)
+	(pt 1624 -112)
+)
+(connector
+	(pt 1632 -344)
+	(pt 1624 -344)
+)
+(connector
+	(pt 1624 -112)
+	(pt 1624 -344)
 )
 (junction (pt -72 -344))
 (junction (pt 944 -296))

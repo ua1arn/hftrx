@@ -83,10 +83,10 @@ Free:
 	#define WITHUSBHWVBUSSENSE	1	/* используется предопределенный вывод VBUS_SENSE */
 	#define WITHUSBHWHIGHSPEED	1	/* Используется встроенная в процессор поддержка USB HS */
 	//#define WITHUSBHWHIGHSPEEDDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
-	#define WITHUSBHW_DEVICE	USB_OTG_HS	/* на этом устройстве поддерживается функцилнальность DEVUCE	*/
+	#define WITHUSBHW_DEVICE	USB_OTG_HS	/* на этом устройстве поддерживается функциональность DEVUCE	*/
 
 	#define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
-	#define WITHUSBUAC3		1	/* формируются три канала передачи звука */
+	#define WITHUSBUACIN2		1	/* формируются три канала передачи звука */
 
 	#define WITHUSBCDC		1	/* использовать виртуальный последовательный порт на USB соединении */
 	//#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */

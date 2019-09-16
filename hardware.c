@@ -180,6 +180,69 @@ calcdivround2(
 	}
 
 
+	/*******************************************************************************
+	* Function Name: CPG_Init
+	* Description  : Executes initial setting for the CPG.
+	*              : In the sample code, the internal clock ratio is set to be
+	*              : I:G:B:P1:P0 = 30:20:10:5:5/2 in the state that the
+	*              : clock mode is 0. The frequency is set to be as below when the
+	*              : input clock is 13.33MHz.
+	*              : CPU clock (I clock)              : 400MHz
+	*              : Image processing clock (G clock) : 266.67MHz
+	*              : Internal bus clock (B clock)     : 133.33MHz
+	*              : Peripheral clock1 (P1 clock)     : 66.67MHz
+	*              : Peripheral clock0 (P0 clock)     : 33.33MHz
+	*              : Sets the data-retention RAM area (H'2000 0000 to H'2001 FFFF)
+	*              : to be enabled for writing.
+	* Arguments    : none
+	* Return Value : none
+	*******************************************************************************/
+	static
+	FLASHMEMINITFUNC
+	void CPG_Init(void)
+	{
+	    /* Cancel L2C standby status before clock change */
+	    L2CREG15_POWER_CTRL = 0x00000001;
+		(void) L2CREG15_POWER_CTRL;
+
+	    /* standby_mode_en bit of Power Control Register setting */
+	    //*(volatile uint32_t *)(0x3fffff80) = 0x00000001;
+	    //(void) *(volatile uint32_t *)(0x3fffff80);
+
+	    /* ==== CPG Settings ==== */
+
+	    /* PLL(x30), I:G:B:P1:P0 = 30:20:10:5:5/2 */
+	    //CPG.FRQCR  = 0x1035u;
+	    CPG.FRQCR  = 0x3035u;	// CKIO pin = hi-z
+		(void) CPG.FRQCR;
+
+	    /* CKIO:Output at time usually output     *
+	     * when bus right is opened output at     *
+	     * standby "L"                            *
+		 * Clockin  = 13.33MHz, CKIO = 66.67MHz,  *
+		 * I  Clock = 400.00MHz,                  *
+		 * G  Clock = 266.67MHz,                  *
+		 * B  Clock = 133.33MHz,                  *
+		 * P1 Clock =  66.67MHz,                  *
+		 * P0 Clock =  33.33MHz                   */
+
+	    /* CKIO:Output at time usually output     *
+	     * when bus right is opened output at     *
+	     * standby "L"                            *
+		 * Clockin  = 12.00MHz, CKIO = 60.0MHz,  *
+		 * I  Clock = 360.00MHz,                  *
+		 * G  Clock = 240.00MHz,                  *
+		 * B  Clock = 120.00MHz,                  *
+		 * P1 Clock =  60.00MHz,                  *
+		 * P0 Clock =  30.00MHz                   */
+
+	#if ((TARGET_RZA1 == TARGET_RZA1H) || (TARGET_RZA1 == TARGET_RZA1M))
+	    CPG.FRQCR2 = 0x0001u;
+	#endif
+	}
+
+
+
 #else
 	// other CPUs
 
@@ -4373,8 +4436,8 @@ void hardware_spi_master_setfreq(uint_fast8_t spispeedindex, int_fast32_t spispe
 #endif
 }
 
-/* управление состоянием "подключено */
-void hardware_spi_connect(uint_fast8_t spispeedindex, uint_fast8_t spimode)
+/* управление состоянием "подключено" */
+void hardware_spi_connect(uint_fast8_t spispeedindex, spi_modes_t spimode)
 {
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
@@ -5497,8 +5560,8 @@ void hardware_spi_master_read_frame(
 
 #if WITHSPI16BIT
 
-/* управление состоянием "подключено - работа в режиме 16-ти битных слов.*/
-void hardware_spi_connect_b16(uint_fast8_t spispeedindex, uint_fast8_t spimode)
+/* управление состоянием "подключено" - работа в режиме 16-ти битных слов.*/
+void hardware_spi_connect_b16(uint_fast8_t spispeedindex, spi_modes_t spimode)
 {
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
@@ -5745,8 +5808,8 @@ portholder_t hardware_spi_b16(
 
 #if WITHSPI32BIT
 
-/* управление состоянием "подключено - работа в режиме 32-ти битных слов.*/
-void hardware_spi_connect_b32(uint_fast8_t spispeedindex, uint_fast8_t spimode)
+/* управление состоянием "подключено" - работа в режиме 32-ти битных слов. */
+void hardware_spi_connect_b32(uint_fast8_t spispeedindex, spi_modes_t spimode)
 {
 #if CPUSTYLE_STM32H7XX
 
@@ -7608,6 +7671,19 @@ lowlevel_stm32f7xx_pll_initialize(void)
 		((0x00 << 24) & RCC_DCKCFGR1_TIMPRE)	|	// Timers clocks prescalers selection
 		0;
 
+	#if WITHSAICLOCKFROMPIN
+		RCC->CFGR = (RCC->CFGR & ~ (RCC_CFGR_I2SSRC)) |
+				1 * RCC_CFGR_I2SSRC |	// 1: External clock mapped on the I2S_CKIN pin used as I2S clock source
+				0;
+		// SAI part of DCKCFGR1
+		RCC->DCKCFGR1 = (RCC->DCKCFGR1 & ~ (RCC_DCKCFGR1_SAI1SEL | RCC_DCKCFGR1_SAI2SEL)) |
+			(2 * RCC_DCKCFGR1_SAI1SEL_0) |	// 10: SAI1 clock frequency = Alternate function input frequency
+			(2 * RCC_DCKCFGR1_SAI2SEL_0) |	// 10: SAI2 clock frequency = Alternate function input frequency
+			0;
+	#elif WITHSAICLOCKFROMI2S
+
+	#endif /* WITHSAICLOCKFROMPIN */
+
 	//RCC->CR &= ~ RCC_CR_HSION;		//HSI DISABLE
 
 }
@@ -8917,68 +8993,6 @@ static void vfp_access_enable(void)
 	 */
 	__set_CPACR(access | CPACC_FULL(10) | CPACC_FULL(11));
 }
-
-/*******************************************************************************
-* Function Name: CPG_Init
-* Description  : Executes initial setting for the CPG.
-*              : In the sample code, the internal clock ratio is set to be 
-*              : I:G:B:P1:P0 = 30:20:10:5:5/2 in the state that the 
-*              : clock mode is 0. The frequency is set to be as below when the
-*              : input clock is 13.33MHz.
-*              : CPU clock (I clock)              : 400MHz
-*              : Image processing clock (G clock) : 266.67MHz
-*              : Internal bus clock (B clock)     : 133.33MHz
-*              : Peripheral clock1 (P1 clock)     : 66.67MHz
-*              : Peripheral clock0 (P0 clock)     : 33.33MHz
-*              : Sets the data-retention RAM area (H'2000 0000 to H'2001 FFFF)
-*              : to be enabled for writing.
-* Arguments    : none
-* Return Value : none
-*******************************************************************************/
-static 
-FLASHMEMINITFUNC
-void CPG_Init(void)
-{
-    /* Cancel L2C standby status before clock change */
-    L2CREG15_POWER_CTRL = 0x00000001;
-	(void) L2CREG15_POWER_CTRL;
-	
-    /* standby_mode_en bit of Power Control Register setting */
-    //*(volatile uint32_t *)(0x3fffff80) = 0x00000001;
-    //(void) *(volatile uint32_t *)(0x3fffff80);
-
-    /* ==== CPG Settings ==== */
-
-    /* PLL(x30), I:G:B:P1:P0 = 30:20:10:5:5/2 */
-    //CPG.FRQCR  = 0x1035u;
-    CPG.FRQCR  = 0x3035u;	// CKIO pin = hi-z
-	(void) CPG.FRQCR;
-
-    /* CKIO:Output at time usually output     *
-     * when bus right is opened output at     *
-     * standby "L"                            *
-	 * Clockin  = 13.33MHz, CKIO = 66.67MHz,  *
-	 * I  Clock = 400.00MHz,                  *
-	 * G  Clock = 266.67MHz,                  *
-	 * B  Clock = 133.33MHz,                  *
-	 * P1 Clock =  66.67MHz,                  *
-	 * P0 Clock =  33.33MHz                   */
-
-    /* CKIO:Output at time usually output     *
-     * when bus right is opened output at     *
-     * standby "L"                            *
-	 * Clockin  = 12.00MHz, CKIO = 60.0MHz,  *
-	 * I  Clock = 360.00MHz,                  *
-	 * G  Clock = 240.00MHz,                  *
-	 * B  Clock = 120.00MHz,                  *
-	 * P1 Clock =  60.00MHz,                  *
-	 * P0 Clock =  30.00MHz                   */
-
-#if ((TARGET_RZA1 == TARGET_RZA1H) || (TARGET_RZA1 == TARGET_RZA1M))
-    CPG.FRQCR2 = 0x0001u;
-#endif
-}
-
 #endif /* (CPUSTYLE_ARM_CA9 || CPUSTYLE_ARM_CA7) */
 
 #if CPUSTYLE_ARM_CM7
@@ -9427,16 +9441,17 @@ SystemInit(void)
 
 #endif
 
-#if WITHDEBUG
-
-	HARDWARE_DEBUG_INITIALIZE();
-	HARDWARE_DEBUG_SET_SPEED(DEBUGSPEED);
-
-#endif /* WITHDEBUG */
 #if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM0 || CPUSTYLE_ARM_CM7
 	// Таблица находится в области вне Data Cache
 	vectors_relocate();
 #endif /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM0 || CPUSTYLE_ARM_CM7 */
+#if WITHDEBUG
+	// В функции инициализации компорта есть NVIC_SetVector
+	// При вызове до перемещения таблиц прерывания получаем HardFault на STM32F7XXX
+	HARDWARE_DEBUG_INITIALIZE();
+	HARDWARE_DEBUG_SET_SPEED(DEBUGSPEED);
+
+#endif /* WITHDEBUG */
 }
 
 #if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7 || CPUSTYLE_ARM_CM0
@@ -10527,7 +10542,7 @@ if (0)
 
 #endif
 
-uint8_t __attribute__ ((section(".stack"), used, aligned(32))) mystack [8192];
+uint8_t __attribute__ ((section(".stack"), used, aligned(32))) mystack [1024];
 /******************************************************************************/
 
 // TTB initialize
@@ -11477,7 +11492,7 @@ int __attribute__((used)) (_getpid)(int id)
 }
 #endif /* __cplusplus */
 
-#endif
+#endif	// at all
 
 #endif /* CPUSTYLE_ARM */
 
@@ -11703,6 +11718,7 @@ IntFunc __Vectors [NVIC_USER_IRQ_OFFSET] = {
 };
 
 // Таблица находится в области вне Data Cache
+// Отладочная печать тут еще недопустима.
 static VTRATTR volatile IntFunc ramVectors [256];
 
 static void vectors_relocate(void)
@@ -11717,6 +11733,7 @@ static void vectors_relocate(void)
 	}
 	SCB->VTOR = (uint32_t) & ramVectors;
 
+	// Отладочная печать тут еще недопустима.
 	//debug_printf_P(PSTR("SCB->VTOR=%08lX\n"), SCB->VTOR);
 	//ASSERT(memcmp((void *) ramVectors, __Vectors, NVIC_USER_IRQ_OFFSET * 4) == 0);
 	//ASSERT(SCB->VTOR == (uint32_t) & ramVectors);

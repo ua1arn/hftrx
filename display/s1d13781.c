@@ -91,7 +91,7 @@
 
 #define S1D13781_SPIMODE SPIC_MODE3		/* допустим только MODE3, MODE2 не работает с этим контроллером */
 #define S1D13781_SPIC_SPEEDSLOW		SPIC_SPEED10M
-#define S1D13781_SPIC_SPEED		SPIC_SPEED10M
+#define S1D13781_SPIC_SPEED		SPIC_SPEED25M
 
 // Условие использования оптимизированных функций обращения к SPI
 #define WITHSPIEXT16 (WITHSPIHW && WITHSPI16BIT)

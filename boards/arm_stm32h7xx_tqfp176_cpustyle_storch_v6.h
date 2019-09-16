@@ -9,8 +9,8 @@
 // Трансивер с DSP обработкой "Аист" на процессоре
 // Rmainunit_v5la.pcb STM32H743IIT6, TFT 4.3", 2xmini-USB, mini SD-CARD, NAU8822L и FPGA EP4CE22E22I7N
 
-#ifndef ARM_STM32F4XX_TQFP176_CPUSTYLE_STORCH_V6_H_INCLUDED
-#define ARM_STM32F4XX_TQFP176_CPUSTYLE_STORCH_V6_H_INCLUDED 1
+#ifndef ARM_STM32H7XX_TQFP176_CPUSTYLE_STORCH_V6_H_INCLUDED
+#define ARM_STM32H7XX_TQFP176_CPUSTYLE_STORCH_V6_H_INCLUDED 1
 
 #define WITHSPI16BIT	1	/* возможно использование 16-ти битных слов при обмене по SPI */
 #define WITHSPI32BIT	1	/* возможно использование 32-ти битных слов при обмене по SPI */
@@ -43,7 +43,7 @@
 //#define USB_OTG_HS                   USB1_OTG_HS
 //#define USB_OTG_FS                   USB2_OTG_FS
 
-#define WITHUSBHW_DEVICE	USB_OTG_HS	/* на этом устройстве поддерживается функцилнальность DEVUCE	*/
+#define WITHUSBHW_DEVICE	USB_OTG_HS	/* на этом устройстве поддерживается функциональность DEVUCE	*/
 //#define WITHUSBHW_HOST		USB_OTG_FS
 //#define WITHUSBHOST	1	/* debug */
 
@@ -57,7 +57,7 @@
 #define WITHNMEA_USART2		1	/* порт подключения GPS/GLONASS */
 
 #define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
-#define WITHUSBUAC3		1	/* формируются три канала передачи звука */
+#define WITHUSBUACIN2		1	/* формируются три канала передачи звука */
 //#define WITHUABUACOUTAUDIO48MONO	1	/* для уменьшения размера буферов в endpoints */
 
 #define WITHUSBCDC		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
@@ -804,4 +804,4 @@
 		TARGET_BANDF3_DATA_INITIALIZE(); \
 		} while (0)
 
-#endif /* ARM_STM32F4XX_TQFP176_CPUSTYLE_STORCH_V6_H_INCLUDED */
+#endif /* ARM_STM32H7XX_TQFP176_CPUSTYLE_STORCH_V6_H_INCLUDED */

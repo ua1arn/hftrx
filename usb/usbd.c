@@ -307,18 +307,18 @@ static uint_fast16_t usbd_getuacinmaxpacket(void)
 {
 	uint_fast16_t maxpacket = VIRTUAL_AUDIO_PORT_DATA_SIZE_IN_AUDIO48;
 
-#if ! WITHUSBUAC3
+#if ! WITHUSBUACIN2
 	#if WITHRTS96
 		maxpacket = ulmax16(maxpacket, VIRTUAL_AUDIO_PORT_DATA_SIZE_IN_RTS96);
 	#endif /* WITHRTS96 */
 	#if WITHRTS192
 		maxpacket = ulmax16(maxpacket, VIRTUAL_AUDIO_PORT_DATA_SIZE_IN_RTS192);
 	#endif /* WITHRTS192 */
-#endif /* ! WITHUSBUAC3 */
+#endif /* ! WITHUSBUACIN2 */
 	return maxpacket;
 }
 
-#if WITHUSBUAC3
+#if WITHUSBUACIN2
 
 static uint_fast16_t usbd_getuacinrtsmaxpacket(void)
 {
@@ -332,7 +332,7 @@ static uint_fast16_t usbd_getuacinrtsmaxpacket(void)
 	return maxpacket;
 }
 
-#endif /* WITHUSBUAC3 */
+#endif /* WITHUSBUACIN2 */
 
 #endif /* WITHUSBUAC */
 
@@ -1972,9 +1972,9 @@ static void usbdFunctionReq_seq4(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef 
 #endif /* WITHUSBCDC */
 
 #if WITHUSBUAC
-#if WITHUSBUAC3
+#if WITHUSBUACIN2
 	case INTERFACE_AUDIO_CONTROL_RTS:	/* AUDIO spectrum control interface */
-#endif /* WITHUSBUAC3 */
+#endif /* WITHUSBUACIN2 */
 	case INTERFACE_AUDIO_CONTROL_MIKE:	// AUDIO control interface
 	case INTERFACE_AUDIO_CONTROL_SPK:	// AUDIO control interface
 		{
@@ -2301,11 +2301,11 @@ static void usb0_function_SetInterface(USBD_HandleTypeDef *pdev, USBD_SetupReqTy
 		case INTERFACE_AUDIO_SPK: // Audio interfacei: playing device
 			buffers_set_uacoutalt(altinterfaces [interfacev]);
 			break;
-	#if WITHUSBUAC3
+	#if WITHUSBUACIN2
 		case INTERFACE_AUDIO_RTS:
 			buffers_set_uacinrtsalt(altinterfaces [interfacev]);
 			break;
-	#endif /* WITHUSBUAC3 */
+	#endif /* WITHUSBUACIN2 */
 #endif /* WITHUSBUAC */
 		}
 		dcp_acksend(pdev);	// убирание этой строки приводит к ошибке enumeration
@@ -2370,9 +2370,9 @@ static void usbdFunctionReq_seq1(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef 
 #endif /* WITHUSBCDC */
 
 #if WITHUSBUAC
-	#if WITHUSBUAC3
+	#if WITHUSBUACIN2
 		case INTERFACE_AUDIO_CONTROL_RTS:	/* AUDIO spectrum control interface */
-	#endif /* WITHUSBUAC3 */
+	#endif /* WITHUSBUACIN2 */
 		case INTERFACE_AUDIO_CONTROL_MIKE:	// AUDIO control interface
 		case INTERFACE_AUDIO_CONTROL_SPK:	// AUDIO control interface
 			{
@@ -2533,9 +2533,9 @@ static void usbdFunctionReq_seq3(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef 
 #endif /* WITHUSBCDC */
 
 #if WITHUSBUAC
-#if WITHUSBUAC3
+#if WITHUSBUACIN2
 	case INTERFACE_AUDIO_CONTROL_RTS:	/* AUDIO spectrum control interface */
-#endif /* WITHUSBUAC3 */
+#endif /* WITHUSBUACIN2 */
 	case INTERFACE_AUDIO_CONTROL_MIKE:	// AUDIO control interface
 	case INTERFACE_AUDIO_CONTROL_SPK:	// AUDIO control interface
 		dcp_out_ptr = uac_ep0databuffout;
@@ -3138,7 +3138,7 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 		while ((Instance->PIPESEL & USB_PIPESEL_PIPESEL) != (pipe << USB_PIPESEL_PIPESEL_SHIFT))
 			;
 		ASSERT(pipe == 3);
-		Instance->PIPECFG = 
+		Instance->PIPECFG =
 			(0x0F & epnum) * (1u << USB_PIPECFG_EPNUM_SHIFT) |	// EPNUM endpoint
 			dir * (1u << USB_PIPECFG_DIR_SHIFT) |			// DIR 1: Transmitting direction 0: Receiving direction
 			1 * (1u << USB_PIPECFG_TYPE_SHIFT) |			// TYPE 1: Bulk transfer
@@ -3165,7 +3165,7 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 		while ((Instance->PIPESEL & USB_PIPESEL_PIPESEL) != (pipe << USB_PIPESEL_PIPESEL_SHIFT))
 			;
 		ASSERT(pipe == 4);
-		Instance->PIPECFG = 
+		Instance->PIPECFG =
 			(0x0F & epnum) * (1u << USB_PIPECFG_EPNUM_SHIFT) |		// EPNUM endpoint
 			dir * (1u << USB_PIPECFG_DIR_SHIFT) |		// DIR 1: Transmitting direction 0: Receiving direction
 			1 * (1u << USB_PIPECFG_TYPE_SHIFT) |		// TYPE 1: Bulk transfer
@@ -3192,7 +3192,7 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 		while ((Instance->PIPESEL & USB_PIPESEL_PIPESEL) != (pipe << USB_PIPESEL_PIPESEL_SHIFT))
 			;
 		ASSERT(pipe == 6);
-		Instance->PIPECFG = 
+		Instance->PIPECFG =
 			(0x0F & epnum) * (1u << USB_PIPECFG_EPNUM_SHIFT) |		// EPNUM endpoint
 			dir * (1u << USB_PIPECFG_DIR_SHIFT) |		// DIR 1: Transmitting direction 0: Receiving direction
 			2 * (1u << USB_PIPECFG_TYPE_SHIFT) |		// TYPE 2: Interrupt transfer
@@ -3288,6 +3288,92 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 
 #if WITHUSBCDCEEM
 #endif /* WITHUSBCDCEEM */
+
+#if WITHUSBRNDIS
+	if (1)
+	{
+		// Данные RNDIS из компьютера в трансивер
+		const uint_fast8_t pipe = HARDWARE_USBD_PIPE_RNDIS_OUT;	// PIPE3
+		const uint_fast8_t epnum = USBD_EP_RNDIS_OUT;
+		const uint_fast16_t bufsiz = USBD_RNDIS_OUT_BUFSIZE;
+		const uint_fast8_t dir = 0;
+		//PRINTF(PSTR("usbd_pipe_initialize: pipe=%u endpoint=%02X\n"), pipe, epnum);
+
+		Instance->PIPESEL = pipe << USB_PIPESEL_PIPESEL_SHIFT;
+		while ((Instance->PIPESEL & USB_PIPESEL_PIPESEL) != (pipe << USB_PIPESEL_PIPESEL_SHIFT))
+			;
+		ASSERT(pipe == 12);
+		Instance->PIPECFG = 
+			(0x0F & epnum) * (1u << USB_PIPECFG_EPNUM_SHIFT) |	// EPNUM endpoint
+			dir * (1u << USB_PIPECFG_DIR_SHIFT) |			// DIR 1: Transmitting direction 0: Receiving direction
+			1 * (1u << USB_PIPECFG_TYPE_SHIFT) |			// TYPE 1: Bulk transfer
+			1 * (1u << 9) |				// DBLB
+			0;
+		const unsigned bufsize64 = (bufsiz + 63) / 64;
+
+		Instance->PIPEBUF = ((bufsize64 - 1) << USB_PIPEBUF_BUFSIZE_SHIFT) | (bufnumb64 << USB_PIPEBUF_BUFNMB_SHIFT);
+		Instance->PIPEMAXP = bufsiz << USB_PIPEMAXP_MXPS_SHIFT;
+		bufnumb64 += bufsize64 * 2; // * 2 for DBLB
+		ASSERT(bufnumb64 <= 0x100);
+
+		Instance->PIPESEL = 0;
+	}
+	if (1)
+	{
+		// Данные RNDIS в компьютер из трансивера
+		const uint_fast8_t pipe = HARDWARE_USBD_PIPE_RNDIS_IN;	// PIPE4
+		const uint_fast8_t epnum = USBD_EP_RNDIS_IN;
+		const uint_fast16_t bufsiz = USBD_RNDIS_IN_BUFSIZE;
+		const uint_fast8_t dir = 1;
+		//PRINTF(PSTR("usbd_pipe_initialize: pipe=%u endpoint=%02X\n"), pipe, epnum);
+
+		Instance->PIPESEL = pipe << USB_PIPESEL_PIPESEL_SHIFT;
+		while ((Instance->PIPESEL & USB_PIPESEL_PIPESEL) != (pipe << USB_PIPESEL_PIPESEL_SHIFT))
+			;
+		ASSERT(pipe == 13);
+		Instance->PIPECFG = 
+			(0x0F & epnum) * (1u << USB_PIPECFG_EPNUM_SHIFT) |		// EPNUM endpoint
+			dir * (1u << USB_PIPECFG_DIR_SHIFT) |		// DIR 1: Transmitting direction 0: Receiving direction
+			1 * (1u << USB_PIPECFG_TYPE_SHIFT) |		// TYPE 1: Bulk transfer
+			1 * USB_PIPECFG_DBLB |		// DBLB
+			0;
+		const unsigned bufsize64 = (bufsiz + 63) / 64;
+
+		Instance->PIPEBUF = ((bufsize64 - 1) << USB_PIPEBUF_BUFSIZE_SHIFT) | (bufnumb64 << USB_PIPEBUF_BUFNMB_SHIFT);
+		Instance->PIPEMAXP = bufsiz << USB_PIPEMAXP_MXPS_SHIFT;
+		bufnumb64 += bufsize64 * 2; // * 2 for DBLB
+		ASSERT(bufnumb64 <= 0x100);
+
+		Instance->PIPESEL = 0;
+	}
+	if (1)
+	{
+		// Прерывание RNDIS в компьютер из трансивера
+		const uint_fast8_t pipe = HARDWARE_USBD_PIPE_RNDIS_INT;	// PIPE6
+		const uint_fast8_t epnum = USBD_EP_RNDIS_INT;
+		const uint_fast16_t bufsiz = USBD_RNDIS_INT_SIZE;
+		const uint_fast8_t dir = 1;
+		//PRINTF(PSTR("usbd_pipe_initialize: pipe=%u endpoint=%02X\n"), pipe, epnum);
+
+		Instance->PIPESEL = pipe << USB_PIPESEL_PIPESEL_SHIFT;
+		while ((Instance->PIPESEL & USB_PIPESEL_PIPESEL) != (pipe << USB_PIPESEL_PIPESEL_SHIFT))
+			;
+		ASSERT(pipe == 8);
+		Instance->PIPECFG = 
+			(0x0F & epnum) * (1u << USB_PIPECFG_EPNUM_SHIFT) |		// EPNUM endpoint
+			dir * (1u << USB_PIPECFG_DIR_SHIFT) |		// DIR 1: Transmitting direction 0: Receiving direction
+			2 * (1u << USB_PIPECFG_TYPE_SHIFT) |		// TYPE 2: Interrupt transfer
+			0 * USB_PIPECFG_DBLB |		// DBLB - для interrupt должен быть 0
+			0;
+		const unsigned bufsize64 = (bufsiz + 63) / 64;
+		Instance->PIPEBUF = ((bufsize64 - 1) << USB_PIPEBUF_BUFSIZE_SHIFT) | (bufnumb64 << USB_PIPEBUF_BUFNMB_SHIFT);
+		Instance->PIPEMAXP = bufsiz << USB_PIPEMAXP_MXPS_SHIFT;
+		bufnumb64 += bufsize64 * 1; // * 2 for DBLB
+		ASSERT(bufnumb64 <= 0x100);
+
+		Instance->PIPESEL = 0;
+	}
+#endif /* WITHUSBRNDIS */
 
 #if WITHUSBUAC
 	if (1)
@@ -3416,9 +3502,9 @@ static void usbd_handle_resume(PCD_TypeDef * const Instance)
 	terminalsprops [TERMINAL_ID_SELECTOR_6] [AUDIO_CONTROL_UNDEFINED] = 1;
 	buffers_set_uacinalt(altinterfaces [INTERFACE_AUDIO_MIKE]);
 	buffers_set_uacoutalt(altinterfaces [INTERFACE_AUDIO_SPK]);
-	#if WITHUSBUAC3
+	#if WITHUSBUACIN2
 		buffers_set_uacinrtsalt(altinterfaces [INTERFACE_AUDIO_RTS]);
-	#endif /* WITHUSBUAC3 */
+	#endif /* WITHUSBUACIN2 */
 #endif /* WITHUSBUAC */
 #if WITHUSBCDCEEM
 	cdceemout_initialize();
@@ -3441,9 +3527,9 @@ static void usbd_handle_suspend(PCD_TypeDef * const Instance)
 	terminalsprops [TERMINAL_ID_SELECTOR_6] [AUDIO_CONTROL_UNDEFINED] = 1;
 	buffers_set_uacinalt(altinterfaces [INTERFACE_AUDIO_MIKE]);
 	buffers_set_uacoutalt(altinterfaces [INTERFACE_AUDIO_SPK]);
-	#if WITHUSBUAC3
+	#if WITHUSBUACIN2
 		buffers_set_uacinrtsalt(altinterfaces [INTERFACE_AUDIO_RTS]);
-	#endif /* WITHUSBUAC3 */
+	#endif /* WITHUSBUACIN2 */
 #endif /* WITHUSBUAC */
 #if WITHUSBCDCEEM
 	cdceemout_initialize();
@@ -6735,7 +6821,7 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 		const uint_fast8_t pipe = (USBD_EP_AUDIO_IN) & 0x7F;
 
 		numoutendpoints += 1;
-#if WITHUSBUAC3
+#if WITHUSBUACIN2
 		#if WITHRTS96
 			const int nuacinpackets = 1 * mul2, nuacoutpackets = 1 * mul2;
 		#elif WITHRTS192
@@ -6743,7 +6829,7 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 		#else /* WITHRTS96 || WITHRTS192 */
 			const int nuacinpackets = 1 * mul2, nuacoutpackets = 1 * mul2;
 		#endif /* WITHRTS96 || WITHRTS192 */
-#else /* WITHUSBUAC3 */
+#else /* WITHUSBUACIN2 */
 		#if WITHRTS96
 			const int nuacinpackets = 1 * mul2, nuacoutpackets = 1 * mul2;
 		#elif WITHRTS192
@@ -6751,7 +6837,7 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 		#else /* WITHRTS96 || WITHRTS192 */
 			const int nuacinpackets = 2 * mul2, nuacoutpackets = 1 * mul2;
 		#endif /* WITHRTS96 || WITHRTS192 */
-#endif /* WITHUSBUAC3 */
+#endif /* WITHUSBUACIN2 */
 		const uint_fast16_t uacinmaxpacket = usbd_getuacinmaxpacket();
 		maxoutpacketsize4 = ulmax16(maxoutpacketsize4, nuacoutpackets * size2buff4(VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT));
 
@@ -6761,7 +6847,7 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 		instance->DIEPTXF [pipe - 1] = usbd_makeTXFSIZ(last4, size4);
 		PRINTF(PSTR("usbd_fifo_initialize2 - UAC %u bytes: 4*(full4-last4)=%u\n"), 4 * size4, 4 * (full4 - last4));
 	}
-#if WITHUSBUAC3
+#if WITHUSBUACIN2
 	{
 		/* endpoint передачи звука (спектра) в компютер */
 		const uint_fast8_t pipe = (USBD_EP_RTS_IN) & 0x7F;
@@ -6775,7 +6861,7 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 		instance->DIEPTXF [pipe - 1] = usbd_makeTXFSIZ(last4, size4);
 		PRINTF(PSTR("usbd_fifo_initialize3 - UAC3 %u bytes: 4*(full4-last4)=%u\n"), 4 * size4, 4 * (full4 - last4));
 	}
-#endif /* WITHUSBUAC3 */
+#endif /* WITHUSBUACIN2 */
 #endif /* WITHUSBUAC */
 
 #if WITHUSBCDC
@@ -6795,7 +6881,7 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 		else
 		{
 			#if WITHUSBUAC
-				#if WITHUSBUAC3
+				#if WITHUSBUACIN2
 					const int ncdcindatapackets = 1 * mul2, ncdcoutdatapackets = 3;
 				#elif WITHRTS96 || WITHRTS192
 					const int ncdcindatapackets = 2 * mul2, ncdcoutdatapackets = 3;
@@ -7509,7 +7595,7 @@ static USBD_StatusTypeDef USBD_XXX_Init(USBD_HandleTypeDef *pdev, uint_fast8_t c
   		USBD_LL_Transmit(pdev, USBD_EP_AUDIO_IN, NULL, 0);
 	}
 
-#if WITHUSBUAC3
+#if WITHUSBUACIN2
 	{
 		buffers_set_uacinrtsalt(altinterfaces [INTERFACE_AUDIO_RTS]);
 
@@ -7518,7 +7604,7 @@ static USBD_StatusTypeDef USBD_XXX_Init(USBD_HandleTypeDef *pdev, uint_fast8_t c
   		USBD_LL_Transmit(pdev, USBD_EP_RTS_IN, NULL, 0);
 	}
  
-#endif /* WITHUSBUAC3 */
+#endif /* WITHUSBUACIN2 */
 
 	{
 		/* UAC Open EP OUT */
@@ -7598,7 +7684,7 @@ static USBD_StatusTypeDef USBD_XXX_DeInit(USBD_HandleTypeDef *pdev, uint_fast8_t
 		}
 		buffers_set_uacinalt(altinterfaces [INTERFACE_AUDIO_MIKE]);
 
-#if WITHUSBUAC3
+#if WITHUSBUACIN2
 		USBD_LL_CloseEP(pdev, USBD_EP_RTS_IN);
 		if (uacinrtsaddr != 0)
 		{
@@ -7608,7 +7694,7 @@ static USBD_StatusTypeDef USBD_XXX_DeInit(USBD_HandleTypeDef *pdev, uint_fast8_t
 			uacinrtsaddr = 0;
 		}
 		buffers_set_uacinrtsalt(altinterfaces [INTERFACE_AUDIO_RTS]);
-#endif /* WITHUSBUAC3 */
+#endif /* WITHUSBUACIN2 */
 
 		USBD_LL_CloseEP(pdev, USBD_EP_AUDIO_OUT);
 		terminalsprops [TERMINAL_ID_SELECTOR_6] [AUDIO_CONTROL_UNDEFINED] = 1;
@@ -7663,9 +7749,9 @@ static USBD_StatusTypeDef USBD_XXX_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 				break;
 	#endif /* WITHUSBCDC */
 	#if WITHUSBUAC
-		#if WITHUSBUAC3
+		#if WITHUSBUACIN2
 			case INTERFACE_AUDIO_CONTROL_RTS:	/* AUDIO spectrum control interface */
-		#endif /* WITHUSBUAC3 */
+		#endif /* WITHUSBUACIN2 */
 			case INTERFACE_AUDIO_CONTROL_MIKE:	// AUDIO control interface
 			case INTERFACE_AUDIO_CONTROL_SPK:	// AUDIO control interface
 				{
@@ -7941,9 +8027,9 @@ static USBD_StatusTypeDef USBD_XXX_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 	#endif /* WITHUSBCDC */
 	#if WITHUSBUAC
 
-		#if WITHUSBUAC3
+		#if WITHUSBUACIN2
 			case INTERFACE_AUDIO_CONTROL_RTS:	/* AUDIO spectrum control interface */
-		#endif /* WITHUSBUAC3 */
+		#endif /* WITHUSBUACIN2 */
 			case INTERFACE_AUDIO_CONTROL_MIKE:	// AUDIO control interface
 			case INTERFACE_AUDIO_CONTROL_SPK:	// AUDIO control interface
 				{
@@ -8121,11 +8207,11 @@ static USBD_StatusTypeDef USBD_XXX_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 			case INTERFACE_AUDIO_SPK:	// DATA OUT Audio interfacei: playback device
 				buffers_set_uacoutalt(altinterfaces [interfacev]);
 				break;
-		#if WITHUSBUAC3
+		#if WITHUSBUACIN2
 			case INTERFACE_AUDIO_RTS: // Audio interfacei: recording device
 				buffers_set_uacinrtsalt(altinterfaces [interfacev]);
 				break;
-		#endif /* WITHUSBUAC3 */
+		#endif /* WITHUSBUACIN2 */
 		#endif /* WITHUSBUAC */
 
 		#if WITHUSBCDCEEM
@@ -8232,7 +8318,7 @@ static USBD_StatusTypeDef USBD_XXX_DataIn (USBD_HandleTypeDef *pdev, uint_fast8_
 			USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), NULL, 0);
 		}
 		break;
-#if WITHUSBUAC3
+#if WITHUSBUACIN2
 	case ((USBD_EP_RTS_IN) & 0x7F):
 		if (uacinrtsaddr != 0)
 		{
@@ -8254,7 +8340,7 @@ static USBD_StatusTypeDef USBD_XXX_DataIn (USBD_HandleTypeDef *pdev, uint_fast8_
 			USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), NULL, 0);
 		}
 		break;
-#endif /* WITHUSBUAC3 */
+#endif /* WITHUSBUACIN2 */
 #endif /* WITHUSBUAC */
 
 #if WITHUSBCDCEEM
@@ -8296,6 +8382,11 @@ static USBD_StatusTypeDef USBD_XXX_DataIn (USBD_HandleTypeDef *pdev, uint_fast8_
 	}
 	return USBD_OK;
 }
+
+static void rndisout_buffer_save(
+	const uint8_t * data,
+	uint_fast16_t length
+	);
 
 static USBD_StatusTypeDef USBD_XXX_DataOut (USBD_HandleTypeDef *pdev, uint_fast8_t epnum)
 {

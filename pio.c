@@ -1272,6 +1272,8 @@ arm_hardware_pioa_inputs(unsigned long ipins)
 	// Установка режима выводов
 	arm_stm32f30x_hardware_pio_prog(GPIOA, ipins, 0, 1, 1, 0);	/* mode, speed, pupdr, typer */
 
+#elif CPUSTYLE_STM32MP157A
+
 #else
 	#error Undefined CPUSTYLE_XXX
 #endif
@@ -1719,6 +1721,8 @@ arm_hardware_pioa_outputs(unsigned long opins, unsigned long initialstate)
 	// Установка режима выводов
 	arm_stm32f30x_hardware_pio_prog(GPIOA, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
 
+#elif CPUSTYLE_STM32MP157A
+
 #else
 	#error Undefined CPUSTYLE_XXX
 #endif
@@ -1794,6 +1798,8 @@ arm_hardware_pioa_outputs10m(unsigned long opins, unsigned long initialstate)
 	arm_stm32f4xx_hardware_pio_setstate(GPIOA, opins, initialstate);
 	// Установка режима выводов speed x0: 2 MHz Low speed, 01: 10 MHz Medium speed, 11: 50 MHz High speed
 	arm_stm32f30x_hardware_pio_prog(GPIOA, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
+
+#elif CPUSTYLE_STM32MP157A
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -1872,6 +1878,8 @@ arm_hardware_pioa_outputs50m(unsigned long opins, unsigned long initialstate)
 	// Установка режима выводов speed x0: 2 MHz Low speed, 01: 10 MHz Medium speed, 11: 50 MHz High speed
 	arm_stm32f30x_hardware_pio_prog(GPIOA, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
 
+#elif CPUSTYLE_STM32MP157A
+
 #else
 	#error Undefined CPUSTYLE_XXX
 #endif
@@ -1937,6 +1945,8 @@ arm_hardware_piob_outputs(unsigned long opins, unsigned long initialstate)
 	arm_stm32f4xx_hardware_pio_setstate(GPIOB, opins, initialstate);
 	// Установка режима выводов speed x0: 2 MHz Low speed, 01: 10 MHz Medium speed, 11: 50 MHz High speed
 	arm_stm32f30x_hardware_pio_prog(GPIOB, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
+
+#elif CPUSTYLE_STM32MP157A
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -2015,6 +2025,8 @@ arm_hardware_piob_outputs50m(unsigned long opins, unsigned long initialstate)
 	// Установка режима выводов speed x0: 2 MHz Low speed, 01: 10 MHz Medium speed, 11: 50 MHz High speed
 	arm_stm32f30x_hardware_pio_prog(GPIOB, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
 
+#elif CPUSTYLE_STM32MP157A
+
 #else
 	#error Undefined CPUSTYLE_XXX
 #endif
@@ -2092,6 +2104,8 @@ arm_hardware_pioc_outputs50m(unsigned long opins, unsigned long initialstate)
 	arm_stm32f4xx_hardware_pio_setstate(GPIOC, opins, initialstate);
 	// Установка режима выводов speed x0: 2 MHz Low speed, 01: 10 MHz Medium speed, 11: 50 MHz High speed
 	arm_stm32f30x_hardware_pio_prog(GPIOC, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
+
+#elif CPUSTYLE_STM32MP157A
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -3075,6 +3089,8 @@ arm_hardware_pioa_opendrain(unsigned long opins, unsigned long initialstate)
 	arm_stm32f4xx_hardware_pio_setstate(GPIOA, opins, initialstate);
 	// Установка режима выводов
 	arm_stm32f30x_hardware_pio_prog(GPIOA, opins, STM32F_GPIO_MODE_GPIO, 0, 0, 1);	/* mode, speed, pupdr, typer */
+
+#elif CPUSTYLE_STM32MP157A
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -5725,6 +5741,8 @@ arm_hardware_pioa_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 #elif CPUSTYLE_STM32H7XX
 
 	arm_stm32f30x_hardware_pio_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PA, priority);	// PORT A
+
+#elif CPUSTYLE_STM32MP157A
 
 #else
 	#error Undefined CPUSTYLE_XXX

@@ -8,8 +8,8 @@
 // Трансивер с DSP обработкой "Аист" на процессоре
 // Rmainunit_v5la.pcb STM32H743IIT6, TFT 4.3", 2xmini-USB, mini SD-CARD, NAU8822L и FPGA EP4CE22E22I7N
 
-#ifndef ARM_STM32F4XX_TQFP176_CTLSTYLE_STORCH_V6_H_VALERY_INCLUDED
-#define ARM_STM32F4XX_TQFP176_CTLSTYLE_STORCH_V6_H_VALERY_INCLUDED 1
+#ifndef ARM_STM32H7XX_TQFP176_CTLSTYLE_STORCH_V6_H_VALERY_INCLUDED
+#define ARM_STM32H7XX_TQFP176_CTLSTYLE_STORCH_V6_H_VALERY_INCLUDED 1
 
 	#if ! defined(STM32H743xx)
 		#error Wrong CPU selected. STM32H743xx expected
@@ -269,7 +269,7 @@
 	//#define WITHUSEDUALWATCH	1	// Второй приемник
 	//#define WITHLOOPBACKTEST	1	/* прослушивание микрофонного входа, генераторов */
 	//#define WITHMODEMIQLOOPBACK	1	/* модем получает собственные передаваемые квадратуры */
-	#define WITHFASTWATERFLOW	1	/* быстрое отображение вобопада (но требует больше памяти) */
+	#define WITHFASTWATERFLOW	1	/* быстрое отображение водопада (но требует больше памяти) */
 
 	//#define WITHUSESDCARD		1	// Включение поддержки SD CARD
 	//#define WITHUSEUSBFLASH		1	// Включение поддержки USB memory stick
@@ -489,4 +489,4 @@
 	#define KI_COUNT 5	// количество используемых под клавиатуру входов АЦП
 	#define KI_LIST	KI4, KI3, KI2, KI1, KI0,	// инициализаторы для функции перекодировки
 
-#endif /* ARM_STM32F4XX_TQFP176_CTLSTYLE_STORCH_V6_H_VALERY_INCLUDED */
+#endif /* ARM_STM32H7XX_TQFP176_CTLSTYLE_STORCH_V6_H_VALERY_INCLUDED */

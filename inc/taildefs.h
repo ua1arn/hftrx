@@ -11,7 +11,7 @@
 #define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
 #define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
 
-enum
+typedef enum
 {
 #if (SPISPEED400k) || defined (SPISPEED100k)
 	SPIC_SPEED100k,
@@ -69,9 +69,9 @@ enum
 
 #if WITHDEBUG && WITHUART1HW && WITHDEBUG_USART1
 	// Отладочные функции работают через USART1
-	// Вызывается из user-mode программы при запрещённых прерываниях. 
+	// Вызывается из user-mode программы при запрещённых прерываниях.
 	#define HARDWARE_DEBUG_INITIALIZE() do { \
-			hardware_uart1_initialize(); \
+			hardware_uart1_initialize(1); \
 		} while (0)
 	#define HARDWARE_DEBUG_SET_SPEED(baudrate) do { \
 			hardware_uart1_set_speed(baudrate); \
@@ -101,9 +101,9 @@ enum
 // Для serial_irq_loopback_test
 #if 0 && WITHDEBUG && WITHUART1HW && WITHDEBUG_USART1
 	// Отладочные функции работают через USART1
-	// Вызывается из user-mode программы при запрещённых прерываниях. 
+	// Вызывается из user-mode программы при запрещённых прерываниях.
 	#define HARDWARE_DEBUGSIRQ_INITIALIZE() do { \
-			hardware_uart1_initialize(); \
+			hardware_uart1_initialize(0); \
 		} while (0)
 	#define HARDWARE_DEBUGSIRQ_SET_SPEED(baudrate) do { \
 			hardware_uart1_set_speed(baudrate); \
@@ -147,9 +147,9 @@ enum
 
 #if WITHDEBUG && WITHUART2HW && WITHDEBUG_USART2
 	// Отладочные функции работают через USART2
-	// Вызывается из user-mode программы при запрещённых прерываниях. 
+	// Вызывается из user-mode программы при запрещённых прерываниях.
 	#define HARDWARE_DEBUG_INITIALIZE() do { \
-			hardware_uart2_initialize(); \
+			hardware_uart2_initialize(1); \
 		} while (0)
 	#define HARDWARE_DEBUG_SET_SPEED(baudrate) do { \
 			hardware_uart2_set_speed(baudrate); \
@@ -180,7 +180,7 @@ enum
 	// Модемные функции работают через USART1
 	// Вызывается из user-mode программы
 	#define HARDWARE_MODEM_INITIALIZE() do { \
-			hardware_uart1_initialize(); \
+			hardware_uart1_initialize(0); \
 		} while (0)
 	// Вызывается из user-mode программы
 	#define HARDWARE_MODEM_SET_SPEED(baudrate) do { \
@@ -223,7 +223,7 @@ enum
 	// Модемные функции работают через USART2
 	// Вызывается из user-mode программы
 	#define HARDWARE_MODEM_INITIALIZE() do { \
-			hardware_uart2_initialize(); \
+			hardware_uart2_initialize(0); \
 		} while (0)
 	// Вызывается из user-mode программы
 	#define HARDWARE_MODEM_SET_SPEED(baudrate) do { \
@@ -266,7 +266,7 @@ enum
 	// CAT функции работают через USART1
 	// Вызывается из user-mode программы
 	#define HARDWARE_CAT_INITIALIZE() do { \
-			hardware_uart1_initialize(); \
+			hardware_uart1_initialize(0); \
 		} while (0)
 	// Вызывается из user-mode программы
 	#define HARDWARE_CAT_SET_SPEED(baudrate) do { \
@@ -321,7 +321,7 @@ enum
 	// CAT функции работают через USART2
 	// Вызывается из user-mode программы
 	#define HARDWARE_CAT_INITIALIZE() do { \
-			hardware_uart2_initialize(); \
+			hardware_uart2_initialize(0); \
 		} while (0)
 	// Вызывается из user-mode программы
 	#define HARDWARE_CAT_SET_SPEED(baudrate) do { \
@@ -471,7 +471,7 @@ enum
 
 #if WITHDEBUG && WITHUSBCDC && WITHDEBUG_CDC
 	// Модемные функции работают через виртуальный USB последовательный порт
-	// Вызывается из user-mode программы при запрещённых прерываниях. 
+	// Вызывается из user-mode программы при запрещённых прерываниях.
 	#define HARDWARE_DEBUG_INITIALIZE() do { \
 		debugusb_initialize(); \
 		usbd_cdc_enablerx(1); \

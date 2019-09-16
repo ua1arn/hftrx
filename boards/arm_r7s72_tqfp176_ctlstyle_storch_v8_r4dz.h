@@ -274,7 +274,7 @@
 	#define WITHUSEDUALWATCH	1	// Второй приемник
 	#define BOARD_FFTZOOM_POW2MAX 4	// Возможные масштабы FFT x1, x2, x4, x8, x16
 	#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
-	#define WITHFASTWATERFLOW	1	/* быстрое отображение вобопада (но требует больше памяти) */
+	#define WITHFASTWATERFLOW	1	/* быстрое отображение водопада (но требует больше памяти) */
 
 	// FPGA section
 	//#define	WITHFPGAWAIT_AS	1	/* FPGA загружается из собственной микросхемы загрузчика - дождаться окончания загрузки перед инициализацией SPI в процессоре */
@@ -336,7 +336,6 @@
 	#define WITHBARS		1	/* отображение S-метра и SWR-метра */
 
 	#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
-	#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
 	////#define WITHTHERMOLEVEL	1	/* отображение температуры */
 
 	//#define WITHSWLMODE	1	/* поддержка запоминания множества частот в swl-mode */
@@ -482,25 +481,21 @@
 			FWD = 0, REF = 1,	// PB0	SWR-meter
 		#endif /* WITHSWRMTR */
 
+		#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
 		#if WITHCURRLEVEL
 			PASENSEIX = 2,		// PA1 PA current sense - ACS712-05 chip
 		#endif /* WITHCURRLEVEL */
 	#else
 		// UA1CEI PA board: MCP3208 at targetext2 - P2_0 external SPI device (PA BOARD ADC)
-		#if WITHVOLTLEVEL
-			VOLTSOURCE = BOARD_ADCX2IN(4),		// MCP3208 CH7 Средняя точка делителя напряжения, для АКБ
-		#endif /* WITHVOLTLEVEL */
+		VOLTSOURCE = BOARD_ADCX2IN(4),		// MCP3208 CH7 Средняя точка делителя напряжения, для АКБ
 
-		#if WITHSWRMTR
-			PWRI = BOARD_ADCX2IN(2),
-			FWD = BOARD_ADCX2IN(2),
-			REF = BOARD_ADCX2IN(3),
-		#endif /* WITHSWRMTR */
+		FWD = BOARD_ADCX2IN(2),
+		REF = BOARD_ADCX2IN(3),
+		PWRI = FWD,
 
-		#if WITHCURRLEVEL
-			PASENSEIX = 2,		// PA1 PA current sense - ACS712-05 chip
-			//PASENSEIX = BOARD_ADCX2IN(0),
-		#endif /* WITHCURRLEVEL */
+		#define WITHCURRLEVEL2	1	/* отображение тока оконечного каскада */
+		PASENSEIX2 = BOARD_ADCX2IN(0),	// DRAIN
+		PAREFERIX2 = BOARD_ADCX2IN(1),	// reference (1/2 питания ACS712ELCTR-30B-T).
 	#endif
 
 		KI0 = 3, KI1 = 4, KI2 = 5, KI3 = 6, KI4 = 7		// клавиатура

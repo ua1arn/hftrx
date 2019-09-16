@@ -61,7 +61,7 @@
 	#define BUILD_ID 1	// модификатор serial sumber
 	#define USB_FUNCTION_RELEASE_NO	0x0000
 
-#elif WITHUSBUAC && WITHUSBUAC3
+#elif WITHUSBUAC && WITHUSBUACIN2
 	#define PRODUCTSTR "Storch TRX"
 	#define USB_FUNCTION_PRODUCT_ID	0x0737
 	#if WITHRTS96
@@ -74,7 +74,7 @@
 		#define BUILD_ID 4	// модификатор serial sumber
 		#define USB_FUNCTION_RELEASE_NO	0x0104
 	#endif
-#else /* WITHUSBUAC && WITHUSBUAC3 */
+#else /* WITHUSBUAC && WITHUSBUACIN2 */
 	#define PRODUCTSTR "Storch TRX"
 	#define USB_FUNCTION_PRODUCT_ID	0x0738
 	#if WITHRTS96
@@ -87,7 +87,7 @@
 		#define BUILD_ID 0	// модификатор serial sumber
 		#define USB_FUNCTION_RELEASE_NO	0x0100
 	#endif
-#endif /* WITHUSBUAC && WITHUSBUAC3 */
+#endif /* WITHUSBUAC && WITHUSBUACIN2 */
 
 enum
 {
@@ -1214,7 +1214,7 @@ static unsigned UAC_AudioStreamingIf(uint_fast8_t fill, uint8_t * buff, unsigned
 	return length;
 }
 
-#if WITHUSBUAC3
+#if WITHUSBUACIN2
 
 // AUDIO48 only IN (radio to host) audio function
 static unsigned fill_UACIN48_function(uint_fast8_t fill, uint8_t * p, unsigned maxsize, int highspeed, uint_fast8_t offset)
@@ -1286,7 +1286,7 @@ static unsigned fill_UACINRTS_function(uint_fast8_t fill, uint8_t * p, unsigned 
 	return n;
 }
 
-#else /* WITHUSBUAC3 */
+#else /* WITHUSBUACIN2 */
 
 static unsigned fill_UACIN48_INRTS_function(uint_fast8_t fill, uint8_t * p, unsigned maxsize, int highspeed, uint_fast8_t offset)
 {
@@ -1334,7 +1334,7 @@ static unsigned fill_UACIN48_INRTS_function(uint_fast8_t fill, uint8_t * p, unsi
 	return n;
 }
 
-#endif /* WITHUSBUAC3 */
+#endif /* WITHUSBUACIN2 */
 
 // AUDIO48 only OUT (host to radio) audio function
 static unsigned fill_UACOUT48_function(uint_fast8_t fill, uint8_t * p, unsigned maxsize, int highspeed, uint_fast8_t offset)
@@ -1371,20 +1371,20 @@ static unsigned fill_UAC_function(uint_fast8_t fill, uint8_t * p, unsigned maxsi
 	unsigned n = 0;
 
 
-	#if WITHUSBUAC3
+	#if WITHUSBUACIN2
 		/* отдельные функции для передачи в компютер спектра и звука */
 		n += fill_UACIN48_function(fill, p + n, maxsize - n, highspeed, 0);
 		#if WITHRTS96 || WITHRTS192
 			n += fill_UACINRTS_function(fill, p + n, maxsize - n, highspeed, 1);
 		#else /* WITHRTS96 || WITHRTS192 */
-			#error WITHRTS96 or WITHRTS192 required for WITHUSBUAC3
+			#error WITHRTS96 or WITHRTS192 required for WITHUSBUACIN2
 		#endif /* WITHRTS96 || WITHRTS192 */
 
-	#else /* WITHUSBUAC3 */
+	#else /* WITHUSBUACIN2 */
 		/* раздичные форматы для передачи в компютер для передачи спектра и звука */
 		n += fill_UACIN48_INRTS_function(fill, p + n, maxsize - n, highspeed, 0);
 
-	#endif /* WITHUSBUAC3 */
+	#endif /* WITHUSBUACIN2 */
 
 //#if WITHTX
 	n += fill_UACOUT48_function(fill, p + n, maxsize - n, highspeed, 2);

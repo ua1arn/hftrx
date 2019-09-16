@@ -175,6 +175,8 @@ void board_fpga_fir_initialize(void);
 void board_reload_fir(uint_fast8_t ifir, const int_fast32_t * const k, unsigned Ntap, unsigned CWidth); /* Выдача расчитанных параметров фильтра в FPGA (симметричные) */
 /* управление полосовыми фильтрами - bandpass.c */
 void bandf_calc_initialize(void);
+void bandf2_calc_initialize(void);
+void bandf3_calc_initialize(void);
 uint8_t bandf_calc(uint_fast32_t freq);	/* получить номер диапазонного фильтра по частоте */
 uint8_t bandf2_calc(uint_fast32_t freq);	/* получить номер диапазонного фильтра передатчика по частоте */
 uint8_t bandf3_calc(uint_fast32_t freq);	/* получить код для управления через разъем ACC */
@@ -253,7 +255,7 @@ uint_fast8_t board_getpwrmeter(
 	uint_fast8_t * toptrace	// peak hold
 	); 
 
-uint_fast32_t
+uint_fast16_t
 mcp3208_read(
 	spitarget_t target,
 	uint_fast8_t diff,

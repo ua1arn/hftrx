@@ -25,15 +25,15 @@
 
 
 #if WITHUSBUAC
-	#if WITHUSBUAC3
+	#if WITHUSBUACIN2
 
 		#define WITHUSBHWCDC_N	2	// количество виртуальных последовательных портов
 
-	#else /* WITHUSBUAC3 */
+	#else /* WITHUSBUACIN2 */
 
 		#define WITHUSBHWCDC_N	2	// количество виртуальных последовательных портов
 
-	#endif /* WITHUSBUAC3 */
+	#endif /* WITHUSBUACIN2 */
 #endif /* WITHUSBUAC */
 
 #if ! defined (WITHUSBHWCDC_N)
@@ -52,7 +52,7 @@ enum
 #endif /* WITHUSBRNDIS */
 
 #if WITHUSBUAC
-	#if WITHUSBUAC3
+	#if WITHUSBUACIN2
 		USBD_EP_AUDIO_IN,	// ISOC IN Аудиоданные в компьютер из TRX
 		USBD_EP_RTS_IN,	// ISOC IN Аудиоданные в компьютер из TRX
 	#else
@@ -100,7 +100,7 @@ enum
 #endif /* WITHUSBRNDIS */
 
 #if WITHUSBUAC
-	#if WITHUSBUAC3
+	#if WITHUSBUACIN2
 		USBD_EP_AUDIO_OUT,
 	#else
 		USBD_EP_AUDIO_OUT,	// ISOC OUT Аудиоданные от компьютера в TRX
@@ -214,11 +214,11 @@ enum
 #if WITHPLAINDESCROPTOR
 
 #if WITHUSBUAC
-	#if WITHUSBUAC3
+	#if WITHUSBUACIN2
 		//#define INTERFACE_UAC_count 2	/* количество интерфейсов в одном UAC */
-	#else /* WITHUSBUAC3 */
+	#else /* WITHUSBUACIN2 */
 		//#define INTERFACE_UAC_count 3	/* количество интерфейсов в одном UAC */
-	#endif /* WITHUSBUAC3 */
+	#endif /* WITHUSBUACIN2 */
 #endif /* WITHUSBUAC */
 
 /* Последовательность в данном enum должна соответствовать порядку использования в fill_Configuration_main_group */
@@ -240,17 +240,17 @@ enum
 #endif /* WITHUSBCDC */
 
 #if WITHUSBUAC
-	#if WITHUSBUAC3
+	#if WITHUSBUACIN2
 		INTERFACE_AUDIO_CONTROL_MIKE,		/* AUDIO receiever out control interface */
 		INTERFACE_AUDIO_MIKE,		/* USB receiver output  Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3)*/ //zero-bandwidth interface
 		INTERFACE_AUDIO_CONTROL_RTS,		/* AUDIO spectrum control interface */
 		INTERFACE_AUDIO_RTS,		/* USB spectrum Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3)*/ //zero-bandwidth interface
 		//INTERFACE_AUDIO_last = INTERFACE_AUDIO_CONTROL_SPK + 3,
-	#else /* WITHUSBUAC3 */
+	#else /* WITHUSBUACIN2 */
 		INTERFACE_AUDIO_CONTROL_MIKE,		/* AUDIO receiever out control interface */
 		INTERFACE_AUDIO_MIKE,		/* USB Microphone Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3)*/ //zero-bandwidth interface
 		//INTERFACE_AUDIO_last = INTERFACE_AUDIO_CONTROL_SPK + 2,
-	#endif /* WITHUSBUAC3 */
+	#endif /* WITHUSBUACIN2 */
 	//#if WITHTX
 		INTERFACE_AUDIO_CONTROL_SPK,		/* AUDIO transmitter input control interface */
 		INTERFACE_AUDIO_SPK,			/* USB Speaker Standard AS Interface Descriptor - Audio Streaming Zero Bandwith */
@@ -289,11 +289,11 @@ enum
 #else /* WITHPLAINDESCROPTOR */
 
 	#if WITHUSBUAC
-		#if WITHUSBUAC3
+		#if WITHUSBUACIN2
 			//#define INTERFACE_UAC_count 2	/* количество интерфейсов в одном UAC */
-		#else /* WITHUSBUAC3 */
+		#else /* WITHUSBUACIN2 */
 			//#define INTERFACE_UAC_count 3	/* количество интерфейсов в одном UAC */
-		#endif /* WITHUSBUAC3 */
+		#endif /* WITHUSBUACIN2 */
 	#endif /* WITHUSBUAC */
 
 	#if WITHUSBRNDIS
@@ -308,7 +308,7 @@ enum
 		enum
 		{
 
-			#if WITHUSBUAC3
+			#if WITHUSBUACIN2
 				INTERFACE_AUDIO_CONTROL_SPK,		/* AUDIO transmitter input control interface */
 				INTERFACE_AUDIO_SPK,			/* USB Speaker Standard AS Interface Descriptor - Audio Streaming Zero Bandwith */
 				INTERFACE_AUDIO_MIKE,		/* USB receiver output  Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3)*/ //zero-bandwidth interface
@@ -401,14 +401,14 @@ enum
 {
 	UACINALT_NONE = 0,
 	UACINALT_AUDIO48,
-#if ! WITHUSBUAC3
+#if ! WITHUSBUACIN2
 	#if WITHRTS96
 		UACINALT_RTS96,
 	#endif /* WITHRTS96 */
 	#if WITHRTS192
 		UACINALT_RTS192,
 	#endif /* WITHRTS192 */
-#endif /* ! WITHUSBUAC3 */
+#endif /* ! WITHUSBUACIN2 */
 	//
 	UACINALT_top
 };
@@ -416,14 +416,14 @@ enum
 enum
 {
 	UACINRTSALT_NONE = 0,
-#if WITHUSBUAC3
+#if WITHUSBUACIN2
 	#if WITHRTS96
 		UACINRTSALT_RTS96,
 	#endif /* WITHRTS96 */
 	#if WITHRTS192
 		UACINRTSALT_RTS192,
 	#endif /* WITHRTS192 */
-#endif /* WITHUSBUAC3 */
+#endif /* WITHUSBUACIN2 */
 	//
 	UACINRTSALT_top
 };

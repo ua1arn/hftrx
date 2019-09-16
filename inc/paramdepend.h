@@ -560,6 +560,8 @@ extern "C" {
 
 #elif CPUSTYLE_STM32MP1
 
+	// все параметры требуют уточнения, пока заглушки
+	#define ARM_CA9_CACHELEVELMAX	1	/* максимальный уровень cache в процессоре */
 	#define ARM_CA9_PRIORITYSHIFT 3	/* ICCPMR[7:3] is valid bit */
 	//#define WITHCPUXTAL 12000000uL			/* На процессоре установлен кварц 12.000 МГц */
 	#define CPU_FREQ	(30 * WITHCPUXTAL)		/* 12 MHz * 30 - clock mode 0, xtal 12 MHz */
@@ -585,6 +587,11 @@ extern "C" {
 	#define HARDWARE_ADCINPUTS	40	/* до 8-ти входов АЦП */
 	/* тип для хранения данных, считанных с АЦП */
 	typedef uint_fast16_t adcvalholder_t;
+	#define WITHREFSENSORVAL	1210	/* Reference voltage: x = 1.21V */
+
+	#define DACVREF_CPU	33		// 3.3 volt
+	#define HARDWARE_DACBITS 12	/* ЦАП работает с 12-битными значениями */
+
 
 #else
 
