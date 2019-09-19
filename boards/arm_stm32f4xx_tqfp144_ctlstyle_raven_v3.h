@@ -170,7 +170,7 @@
 	//#define KEYB_VERTICAL_REV_RU6BK	1	/* расположение кнопок для плат "Воробей" и "Колибри" */
 	//#define KEYBOARD_USE_ADC6	1	/* шесть кнопок на каждом входе ADCx */
 	//#define KEYB_M0SERG	1	/* расположение кнопок для Serge Moisseyev */
-	#define KEYB_FPAMEL20_V0A	1	/* 20 кнопок на 5 линий - плата rfrontpanel_v0 + LCDMODE_UC1608 в нормальном расположении с новым расположением */
+	#define KEYB_FPANEL20_V0A	1	/* 20 кнопок на 5 линий - плата rfrontpanel_v0 + LCDMODE_UC1608 в нормальном расположении с новым расположением */
 	#define WITHDATAMODE	1	/* управление с клавиатуры передачей с USB AUDIO канала */
 	#define DEFPREAMPSTATE 	0	/* УВЧ по умолчанию включён (1) или выключен (0) */
 	// --- Особые варианты расположения кнопок на клавиатуре
@@ -378,7 +378,7 @@
 	#define WITHKEYBOARD 1	/* в данном устройстве есть клавиатура */
 	#define KEYBOARD_USE_ADC	1	/* на одной линии установлено  четыре  клавиши. на vref - 6.8K, далее 2.2К, 4.7К и 13K. */
 
-#if KEYB_FPAMEL20_V0A
+#if KEYB_FPANEL20_V0A
 	#define KI_COUNT 5	// количество используемых под клавиатуру входов АЦП
 #else
 	#define KI_COUNT 6	// количество используемых под клавиатуру входов АЦП

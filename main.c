@@ -2133,7 +2133,7 @@ get_band_bandset(vindex_t b)	/* b: диапазон в таблице bandsmap *
 		{ 4, SUBMODE_NFM, SUBMODE_WFM, SUBMODE_DGU, SUBMODE_DGL, },
 	};
 #elif WITHMODESETFULLNFM
-	#if KEYB_FPAMEL30_V3
+	#if KEYB_FPANEL30_V3
 	static const uint_fast8_t modes [][4] =
 		{
 			{ 2, SUBMODE_LSB, SUBMODE_USB, },				// ROW 0

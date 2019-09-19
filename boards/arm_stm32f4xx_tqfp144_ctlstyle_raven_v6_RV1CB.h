@@ -175,7 +175,7 @@
 	//#define KEYB_VERTICAL_REV_RU6BK	1	/* расположение кнопок для плат "Воробей" и "Колибри" */
 	//#define KEYBOARD_USE_ADC6	1	/* шесть кнопок на каждом входе ADCx */
 	//#define KEYB_M0SERG	1	/* расположение кнопок для Serge Moisseyev */
-	#define KEYB_FPAMEL20_V0A	1	/* 20 кнопок на 5 линий - плата rfrontpanel_v0 + LCDMODE_UC1608 в нормальном расположении с новым расположением */
+	#define KEYB_FPANEL20_V0A	1	/* 20 кнопок на 5 линий - плата rfrontpanel_v0 + LCDMODE_UC1608 в нормальном расположении с новым расположением */
 	// --- Особые варианты расположения кнопок на клавиатуре
 	#define WITHSPLIT	1	/* управление режимами расстройки одной кнопкой */
 	//#define WITHSPLITEX	1	/* Трехкнопочное управление режимами расстройки */
@@ -261,7 +261,7 @@
 	//#define WITHUSEAUDIOREC		1	// Запись звука на SD CARD
 	//#define WITHUSEDUALWATCH	1	// Второй приемник
 	#define WITHRTS96 1		/* вместо выходного аудиосигнала передача квадратур по USB */
-	#define KEYB_FPAMEL20_V0A_AVB	1	/* перевернутый */
+	#define KEYB_FPANEL20_V0A_AVB	1	/* перевернутый */
 	//#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
 
 	#if 0

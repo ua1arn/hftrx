@@ -3103,15 +3103,15 @@ prog_ctrlreg(uint_fast8_t plane)
 #endif
 		const uint_fast8_t txgated = glob_tx && glob_txgate;
 
-#if 0//KEYB_FPAMEL20_V0A_UY5UM
+#if 0//KEYB_FPANEL20_V0A_UY5UM
 		RBBIT(0047, glob_antenna);		// D7: antenns select бит выбора антенны (0 - ANT1, 1 - ANT2)
 		RBBIT(0046, glob_antenna);		// D6: antenns select бит выбора антенны (0 - ANT1, 1 - ANT2)
 		RBVAL(0040, 1U << glob_bandf2, 6);		// D0..D5: band select бит выбора диапазонного фильтра передатчика
-#else /* KEYB_FPAMEL20_V0A_UY5UM */
+#else /* KEYB_FPANEL20_V0A_UY5UM */
 		// DD23 STP08CP05TTR на части передатчика
 		RBBIT(0047, glob_antenna);		// D7: antenns select бит выбора антенны (0 - ANT1, 1 - ANT2)
 		RBVAL(0040, 1U << glob_bandf2, 7);		// D0..D6: band select бит выбора диапазонного фильтра передатчика
-#endif /* KEYB_FPAMEL20_V0A_UY5UM */
+#endif /* KEYB_FPANEL20_V0A_UY5UM */
 
 		// DD1 STP08CP05TTR в управлении диапазонными фильтрами приёмника
 		RBVAL(0031, glob_tx ? 0 : (1U << glob_bandf) >> 1, 7);		// D1: 1, D7..D1: band select бит выбора диапазонного фильтра приёмника

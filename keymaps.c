@@ -821,7 +821,7 @@ uint_fast8_t getexitkey(void)
 	return KBD_CODE_DISPMODE;
 }
 
-#elif KEYB_FPAMEL20_V0
+#elif KEYB_FPANEL20_V0
 
 /* 20 кнопок на 5 линий - плата rfrontpanel_v0 + LCDMODE_UC1608 в нормальном расположении */
 const struct qmkey qmdefs [NQMKEYS] =
@@ -865,7 +865,7 @@ uint_fast8_t getexitkey(void)
 	return KBD_CODE_DISPMODE;
 }
 
-#elif KEYB_FPAMEL20_V0A_UY5UM
+#elif KEYB_FPANEL20_V0A_UY5UM
 
 /* 20 кнопок на 5 линий - плата rfrontpanel_v0 + LCDMODE_UC1608 в нормальном расположении */
 /* Новый вариант под корпус с надписями от RK1AQ */
@@ -909,7 +909,7 @@ uint_fast8_t getexitkey(void)
 {
 	return KBD_CODE_DISPMODE;
 }
-#elif KEYB_FPAMEL20_V0A
+#elif KEYB_FPANEL20_V0A
 
 /* 20 кнопок на 5 линий - плата Rfrontpanel_v7a, Rfrontpanel_v4b, Rfrontpanel_v0 + LCDMODE_UC1608 в нормальном расположении */
 /* Новый вариант под корпус с надписями от RK1AQ */
@@ -954,7 +954,7 @@ uint_fast8_t getexitkey(void)
 	return KBD_CODE_DISPMODE;
 }
 
-#elif KEYB_FPAMEL30_V3_BASE
+#elif KEYB_FPANEL30_V3_BASE
 
 /* 30 кнопок на 5 линий - плата rfrontpanel_v3 + LCDMODE_S1D13781 & LCDMODE_LQ043T3DX02K в нормальном расположении */
 const struct qmkey qmdefs [NQMKEYS] =
@@ -1008,7 +1008,7 @@ uint_fast8_t getexitkey(void)
 	return KBD_CODE_DISPMODE;
 }
 
-#elif KEYB_FPAMEL30_V3
+#elif KEYB_FPANEL30_V3
 
 /* 30 кнопок на 5 линий - плата rfrontpanel_v3 + LCDMODE_S1D13781 & LCDMODE_LQ043T3DX02K в нормальном расположении */
 const struct qmkey qmdefs [NQMKEYS] =
@@ -1062,7 +1062,7 @@ uint_fast8_t getexitkey(void)
 	return KBD_CODE_DISPMODE;
 }
 
-#elif KEYB_FPAMEL20_V0A_RA1AGO
+#elif KEYB_FPANEL20_V0A_RA1AGO
 
 /* 20 кнопок на 5 линий - перевернутые */
 const struct qmkey qmdefs [NQMKEYS] =
@@ -1114,7 +1114,7 @@ uint_fast8_t getexitkey(void)
 	return KBD_CODE_DISPMODE;
 }
 
-#elif KEYB_FPAMEL20_V0A_AVB
+#elif KEYB_FPANEL20_V0A_AVB
 
 /* 20 кнопок на 5 линий - перевернутые */
 const struct qmkey qmdefs [NQMKEYS] =
@@ -1166,7 +1166,7 @@ uint_fast8_t getexitkey(void)
 	return KBD_CODE_DISPMODE;
 }
 
-#elif KEYB_FPAMEL20_V0A_UA1CEI
+#elif KEYB_FPANEL20_V0A_UA1CEI
 
 /* 20 кнопок на 5 линий - плата rfrontpanel_v0 + LCDMODE_UC1608 в нормальном расположении */
 /* Новый вариант под корпус с надписями от RK1AQ */
