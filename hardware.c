@@ -7749,9 +7749,9 @@ lowlevel_stm32h7xx_pll_initialize(void)
 {
 	RCC->APB4ENR |= RCC_APB4ENR_SYSCFGEN;     // включить тактирование альтернативных функций
 	__DSB();
-	//SYSCFG->CMPCR |= SYSCFG_CMPCR_CMP_PD;	// enable i/o compensaion cell
-	//while ((SYSCFG->CMPCR & SYSCFG_CMPCR_READY) == 0)
-	//	;
+	SYSCFG->CCCSR |= SYSCFG_CCCSR_EN;	// enable i/o compensaion cell
+	while ((SYSCFG->CCCSR & SYSCFG_CCCSR_READY) == 0)
+		;
 
 	RCC->CR |= RCC_CR_HSION;		// 64 MHz включаю внутренний генератор
 	while ((RCC->CR & RCC_CR_HSIRDY) == 0) //жду пока не заработает
