@@ -7747,11 +7747,13 @@ lowlevel_stm32f7xx_pllsai_initialize(void)
 static void 
 lowlevel_stm32h7xx_pll_initialize(void)
 {
+#if 1
 	RCC->APB4ENR |= RCC_APB4ENR_SYSCFGEN;     // включить тактирование альтернативных функций
 	__DSB();
 	SYSCFG->CCCSR |= SYSCFG_CCCSR_EN;	// enable i/o compensaion cell
-	while ((SYSCFG->CCCSR & SYSCFG_CCCSR_READY) == 0)
-		;
+	//while ((SYSCFG->CCCSR & SYSCFG_CCCSR_READY) == 0)
+	//	;
+#endif
 
 	RCC->CR |= RCC_CR_HSION;		// 64 MHz включаю внутренний генератор
 	while ((RCC->CR & RCC_CR_HSIRDY) == 0) //жду пока не заработает
