@@ -6817,7 +6817,7 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 
 #if WITHUSBUAC
 	{
-		/* endpoint передачи звука в компютер */
+		/* endpoint передачи звука в компьютер */
 		const uint_fast8_t pipe = (USBD_EP_AUDIO_IN) & 0x7F;
 
 		numoutendpoints += 1;
@@ -6849,7 +6849,7 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 	}
 #if WITHUSBUACIN2
 	{
-		/* endpoint передачи звука (спектра) в компютер */
+		/* endpoint передачи звука (спектра) в компьютер */
 		const uint_fast8_t pipe = (USBD_EP_RTS_IN) & 0x7F;
 
 		const int nuacinpackets = 1 * mul2;
@@ -9810,7 +9810,7 @@ USBD_StatusTypeDef USBD_LL_IsoINIncomplete(USBD_HandleTypeDef  *pdev, uint_fast8
 	USBD_EndpointTypeDef * const pep = & pdev->ep_in [epnum];
 	// epnum всегда 0
 	//notseq  [epnum] = ! notseq  [epnum];
-	//TP(); // постоянно проходим тут, если нет передачи звука из трансивера в компютер
+	//TP(); // постоянно проходим тут, если нет передачи звука из трансивера в компьютер
 	return USBD_OK;
 }
 
