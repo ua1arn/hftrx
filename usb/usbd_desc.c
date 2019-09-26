@@ -362,7 +362,7 @@ static unsigned UAC1_InterfaceAssociationDescriptor(uint_fast8_t fill, uint8_t *
 
 /* USB Speaker Standard interface descriptor */
 // Interface Descriptor 0/0 Audio, 0 Endpoints
-static unsigned UAC1_fill_3(uint_fast8_t fill, uint8_t * buff, unsigned maxsize,
+static unsigned UAC1_AudioControlDesc(uint_fast8_t fill, uint8_t * buff, unsigned maxsize,
 	uint_fast8_t bInterfaceNumber,
 	uint_fast8_t bAlternateSetting,
 	uint_fast8_t offset
@@ -695,7 +695,7 @@ static unsigned UAC2_clock_source(uint_fast8_t fill, uint8_t * buff, unsigned ma
 		* buff ++ = 0x0A;       /* bDescriptorSubType(0x0A): CLOCK_SOURCE */
 		* buff ++ = bClockID;   /* bClockID(0x10): CLOCK_SOURCE_ID */
 		* buff ++ = 0x01;       /* bmAttributes(0x01): internal fixed clock */
-		* buff ++ = 0x01;       /* was 0x07: bmControls(0x07):
+		* buff ++ = 0x07;       /* was 0x07: bmControls(0x07):
 								clock frequency control: 0b11 - host programmable;
 								clock validity control: 0b01 - host read only */
 		* buff ++ = TERMINAL_ID_UNDEFINED;       /* bAssocTerminal(0x00) */
@@ -1651,7 +1651,7 @@ static unsigned fill_UAC1_IN48_function(uint_fast8_t fill, uint8_t * p, unsigned
 
 	n += UAC1_InterfaceAssociationDescriptor(fill, p + n, maxsize - n, controlifv, 2, offset);	/* INTERFACE_AUDIO_CONTROL_SPK Interface Association Descriptor Audio */
 	// INTERFACE_AUDIO_CONTROL_SPK - audio control interface
-	n += UAC1_fill_3(fill, p + n, maxsize - n, controlifv, 0x00, offset);	/* INTERFACE_AUDIO_CONTROL_SPK - Interface Descriptor 0/0 Audio, 0 Endpoints */
+	n += UAC1_AudioControlDesc(fill, p + n, maxsize - n, controlifv, 0x00, offset);	/* INTERFACE_AUDIO_CONTROL_SPK - Interface Descriptor 0/0 Audio, 0 Endpoints */
 	n += UAC1_AudioControlIfHeader(fill, p + n, maxsize - n, & mikeifv, & terminalID, & mikepath, 1, offset);	/* bcdADC Audio Control Interface Header Descriptor */
 
 	// IN data flow: USB Microphone
@@ -1683,7 +1683,7 @@ static unsigned fill_UAC1_INRTS_function(uint_fast8_t fill, uint8_t * p, unsigne
 
 	// IN data flow: USB Microphone
 	// INTERFACE_AUDIO_MIKE - audio streaming interface
-	n += UAC1_fill_3(fill, p + n, maxsize - n, rtscontrolifv, 0x00, offset);	/* INTERFACE_AUDIO_CONTROL_RTS - Interface Descriptor 0/0 Audio, 0 Endpoints */
+	n += UAC1_AudioControlDesc(fill, p + n, maxsize - n, rtscontrolifv, 0x00, offset);	/* INTERFACE_AUDIO_CONTROL_RTS - Interface Descriptor 0/0 Audio, 0 Endpoints */
 	n += UAC1_AudioControlIfHeader(fill, p + n, maxsize - n, & rtsifv, & terminalID, & rtspath, 1, offset);	/* bcdADC Audio Control Interface Header Descriptor */
 	n += UAC1_fill_24(fill, p + n, maxsize - n, rtsifv, ialt ++, 0, offset);	/* USB Microphone Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3) */ //zero-bandwidth interface
 
@@ -1722,7 +1722,7 @@ static unsigned fill_UAC1_IN48_INRTS_function(uint_fast8_t fill, uint8_t * p, un
 
 	n += UAC1_InterfaceAssociationDescriptor(fill, p + n, maxsize - n, controlifv, 2, offset);	/* INTERFACE_AUDIO_CONTROL_SPK Interface Association Descriptor Audio */
 	// INTERFACE_AUDIO_CONTROL_SPK - audio control interface
-	n += UAC1_fill_3(fill, p + n, maxsize - n, controlifv, 0x00, offset);	/* INTERFACE_AUDIO_CONTROL_SPK - Interface Descriptor 0/0 Audio, 0 Endpoints */
+	n += UAC1_AudioControlDesc(fill, p + n, maxsize - n, controlifv, 0x00, offset);	/* INTERFACE_AUDIO_CONTROL_SPK - Interface Descriptor 0/0 Audio, 0 Endpoints */
 	n += UAC1_AudioControlIfHeader(fill, p + n, maxsize - n, & mikeifv, & terminalID, & mikepath, 1, offset);	/* bcdADC Audio Control Interface Header Descriptor */
 
 	// IN data flow: demodulator
@@ -1772,7 +1772,7 @@ static unsigned fill_UAC1_OUT48_function(uint_fast8_t fill, uint8_t * p, unsigne
 
 	n += UAC1_InterfaceAssociationDescriptor(fill, p + n, maxsize - n, controlifv, 2, offset);	/* INTERFACE_AUDIO_CONTROL_SPK Interface Association Descriptor Audio */
 	// INTERFACE_AUDIO_CONTROL_SPK - modulator audio control interface
-	n += UAC1_fill_3(fill, p + n, maxsize - n, controlifv, 0x00, offset);	/* INTERFACE_AUDIO_CONTROL_SPK - Interface Descriptor 0/0 Audio, 0 Endpoints */
+	n += UAC1_AudioControlDesc(fill, p + n, maxsize - n, controlifv, 0x00, offset);	/* INTERFACE_AUDIO_CONTROL_SPK - Interface Descriptor 0/0 Audio, 0 Endpoints */
 	n += UAC1_AudioControlIfHeader(fill, p + n, maxsize - n, & modulatorifv, & terminalID, & modulatorpath, 1, offset);	/* bcdADC Audio Control Interface Header Descriptor */
 
 	// OUT data flow: modulator
@@ -1819,7 +1819,7 @@ static unsigned UAC2_InterfaceAssociationDescriptor(uint_fast8_t fill, uint8_t *
 
 /* USB Speaker Standard interface descriptor */
 // Interface Descriptor 0/0 Audio, 0 Endpoints
-static unsigned UAC2_fill_3(
+static unsigned UAC2_AudioControlDesc(
 	uint_fast8_t fill, uint8_t * buff, unsigned maxsize,
 	uint_fast8_t bInterfaceNumber,
 	uint_fast8_t bAlternateSetting,
@@ -1839,8 +1839,8 @@ static unsigned UAC2_fill_3(
 		* buff ++ = bAlternateSetting;					/* bAlternateSetting */
 		* buff ++ = 0x00;                               /* bNumEndpoints */
 		* buff ++ = USB_DEVICE_CLASS_AUDIO;             /* bInterfaceClass */
-		* buff ++ = AUDIO_SUBCLASS_AUDIOCONTROL;        /* bInterfaceSubClass */
 		* buff ++ = AUDIO_PROTOCOL_IP_VERSION_02_00;	/* bInterfaceProtocol */
+		* buff ++ = AUDIO_SUBCLASS_AUDIOCONTROL;        /* bInterfaceSubClass */
 		* buff ++ = STRING_ID_a0 + offset;               /* iInterface */
 		/* 09 byte*/
 	}
@@ -1987,7 +1987,7 @@ static unsigned fill_UAC2_IN48_function(
 
 	n += UAC2_InterfaceAssociationDescriptor(fill, p + n, maxsize - n, controlifv, 2, offset);	/* INTERFACE_AUDIO_CONTROL_SPK Interface Association Descriptor Audio */
 	// INTERFACE_AUDIO_CONTROL_SPK - audio control interface
-	n += UAC2_fill_3(fill, p + n, maxsize - n, controlifv, 0x00, offset);	/* INTERFACE_AUDIO_CONTROL_SPK - Interface Descriptor 0/0 Audio, 0 Endpoints */
+	n += UAC2_AudioControlDesc(fill, p + n, maxsize - n, controlifv, 0x00, offset);	/* INTERFACE_AUDIO_CONTROL_SPK - Interface Descriptor 0/0 Audio, 0 Endpoints */
 	n += UAC2_AudioControlIfHeader(fill, p + n, maxsize - n, & mikeifv, & terminalID, & mikepath, 1, offset);	/* bcdADC Audio Control Interface Header Descriptor */
 
 	// IN data flow: USB Microphone
@@ -2023,7 +2023,7 @@ static unsigned fill_UAC2_INRTS_function(
 
 	// IN data flow: USB Microphone
 	// INTERFACE_AUDIO_MIKE - audio streaming interface
-	n += UAC2_fill_3(fill, p + n, maxsize - n, rtscontrolifv, 0x00, offset);	/* INTERFACE_AUDIO_CONTROL_RTS - Interface Descriptor 0/0 Audio, 0 Endpoints */
+	n += UAC2_AudioControlDesc(fill, p + n, maxsize - n, rtscontrolifv, 0x00, offset);	/* INTERFACE_AUDIO_CONTROL_RTS - Interface Descriptor 0/0 Audio, 0 Endpoints */
 	n += UAC2_AudioControlIfHeader(fill, p + n, maxsize - n, & rtsifv, & terminalID, & rtspath, 1, offset);	/* bcdADC Audio Control Interface Header Descriptor */
 	n += UAC2_fill_24(fill, p + n, maxsize - n, rtsifv, ialt ++, 0, offset);	/* USB Microphone Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3) */ //zero-bandwidth interface
 
@@ -2066,7 +2066,7 @@ static unsigned fill_UAC2_IN48_INRTS_function(
 
 	n += UAC2_InterfaceAssociationDescriptor(fill, p + n, maxsize - n, controlifv, 2, offset);	/* INTERFACE_AUDIO_CONTROL_SPK Interface Association Descriptor Audio */
 	// INTERFACE_AUDIO_CONTROL_SPK - audio control interface
-	n += UAC2_fill_3(fill, p + n, maxsize - n, controlifv, 0x00, offset);	/* INTERFACE_AUDIO_CONTROL_SPK - Interface Descriptor 0/0 Audio, 0 Endpoints */
+	n += UAC2_AudioControlDesc(fill, p + n, maxsize - n, controlifv, 0x00, offset);	/* INTERFACE_AUDIO_CONTROL_SPK - Interface Descriptor 0/0 Audio, 0 Endpoints */
 	n += UAC2_AudioControlIfHeader(fill, p + n, maxsize - n, & mikeifv, & terminalID, & mikepath, 1, offset);	/* bcdADC Audio Control Interface Header Descriptor */
 
 	// IN data flow: demodulator
@@ -2120,7 +2120,7 @@ static unsigned fill_UAC2_OUT48_function(
 
 	n += UAC2_InterfaceAssociationDescriptor(fill, p + n, maxsize - n, controlifv, 2, offset);	/* INTERFACE_AUDIO_CONTROL_SPK Interface Association Descriptor Audio */
 	// INTERFACE_AUDIO_CONTROL_SPK - modulator audio control interface
-	n += UAC2_fill_3(fill, p + n, maxsize - n, controlifv, 0x00, offset);	/* INTERFACE_AUDIO_CONTROL_SPK - Interface Descriptor 0/0 Audio, 0 Endpoints */
+	n += UAC2_AudioControlDesc(fill, p + n, maxsize - n, controlifv, 0x00, offset);	/* INTERFACE_AUDIO_CONTROL_SPK - Interface Descriptor 0/0 Audio, 0 Endpoints */
 	n += UAC2_AudioControlIfHeader(fill, p + n, maxsize - n, & modulatorifv, & terminalID, & modulatorpath, 1, offset);	/* bcdADC Audio Control Interface Header Descriptor */
 
 	// OUT data flow: modulator
@@ -3532,8 +3532,8 @@ static unsigned fill_Configuration_compound(uint_fast8_t fill, uint8_t * p, unsi
 #endif /* WITHUSBCDC */
 
 #if WITHUSBUAC
-	n += fill_UAC1_function(fill, p + n, maxsize - n, highspeed);
-	//n += fill_UAC2_function(fill, p + n, maxsize - n, highspeed);
+	//n += fill_UAC1_function(fill, p + n, maxsize - n, highspeed);
+	n += fill_UAC2_function(fill, p + n, maxsize - n, highspeed);
 #endif /* WITHUSBUAC */
 
 #if WITHUSBCDCEEM
