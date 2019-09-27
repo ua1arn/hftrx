@@ -1544,6 +1544,7 @@ static unsigned UAC1_fill_27_IN48(uint_fast8_t fill, uint8_t * buff, unsigned ma
 	return length;
 }
 
+
 /* USB Microphone Standard Endpoint Descriptor (CODE == 8)*/ //Standard AS Isochronous Audio Data Endpoint Descriptor
 // Endpoint Descriptor 82 2 In, Isochronous, 125 us
 static unsigned UAC2_fill_27_IN48(uint_fast8_t fill, uint8_t * buff, unsigned maxsize, int highspeed, uint_fast8_t bEndpointAddress, uint8_t offset)
