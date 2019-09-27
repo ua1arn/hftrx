@@ -183,7 +183,7 @@
 
 /* Audio Interface Protocol Codes */
 #define AUDIO_PROTOCOL_UNDEFINED                0x00
-
+#define AUDIO_PROTOCOL_IP_VERSION_02_00			0x20
 
 /* Audio Descriptor Types */
 #define AUDIO_UNDEFINED_DESCRIPTOR_TYPE         0x20
