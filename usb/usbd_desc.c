@@ -335,6 +335,8 @@ static unsigned r9fill_31(uint_fast8_t fill, uint8_t * buff, unsigned maxsize)
 //which means that clock type is internal fixed clock.
 /* Clock Source Descriptor(4.7.2.1) */
 // AC Clock Source Descriptor
+// CS_SAM_FREQ_CONTROL = 1
+// CS_CLOCK_VALID_CONTROL = 2
 static unsigned UAC2_clock_source(uint_fast8_t fill, uint8_t * buff, unsigned maxsize, uint_fast8_t bClockID)
 {
 	const uint_fast8_t length = 8;
@@ -349,7 +351,7 @@ static unsigned UAC2_clock_source(uint_fast8_t fill, uint8_t * buff, unsigned ma
 		* buff ++ = 0x0A;       /* bDescriptorSubType(0x0A): CLOCK_SOURCE */ 
 		* buff ++ = bClockID;   /* bClockID(0x10): CLOCK_SOURCE_ID */
 		* buff ++ = 0x01;       /* bmAttributes(0x01): internal fixed clock */ 
-		* buff ++ = 0x01;       /* was 0x07: bmControls(0x07):
+		* buff ++ = 0x05;       /* was 0x07: bmControls(0x07):
 								clock frequency control: 0b11 - host programmable;                    
 								clock validity control: 0b01 - host read only */ 
 		* buff ++ = TERMINAL_ID_UNDEFINED;       /* bAssocTerminal(0x00) */ 

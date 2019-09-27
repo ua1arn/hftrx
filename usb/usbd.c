@@ -314,6 +314,60 @@ static void USBD_poke_u8(uint8_t * buff, uint_fast8_t v)
 	buff [0] = v;
 }
 
+// Fill Layout 1 Parameter Block
+static unsigned USBD_fill_range_lay1pb(uint8_t * b, uint_fast8_t v)
+{
+/*
+	If a subrange consists of only a single value,
+	the corresponding triplet must contain that value for
+	both its MIN and MAX subattribute
+	and the RES subattribute must be set to zero.
+*/
+
+	USBD_poke_u16(b + 0, 1);	// number of subranges
+	USBD_poke_u8(b + 2, v);	// MIN
+	USBD_poke_u8(b + 3, v);	// MAX
+	USBD_poke_u8(b + 4, 0);	// RES
+
+	return 5;
+}
+
+// Fill Layout 2 Parameter Block
+static unsigned USBD_fill_range_lay2pb(uint8_t * b, uint_fast16_t v)
+{
+/*
+	If a subrange consists of only a single value,
+	the corresponding triplet must contain that value for
+	both its MIN and MAX subattribute
+	and the RES subattribute must be set to zero.
+*/
+
+	USBD_poke_u16(b + 0, 1);	// number of subranges
+	USBD_poke_u16(b + 2, v);	// MIN
+	USBD_poke_u16(b + 3, v);	// MAX
+	USBD_poke_u16(b + 4, 0);	// RES
+
+	return 8;
+}
+
+// Fill Layout 3 Parameter Block
+static unsigned USBD_fill_range_lay3pb(uint8_t * b, uint_fast32_t sr)
+{
+/*
+	If a subrange consists of only a single value,
+	the corresponding triplet must contain that value for
+	both its MIN and MAX subattribute
+	and the RES subattribute must be set to zero.
+*/
+
+	USBD_poke_u16(b + 0, 1);	// number of subranges
+	USBD_poke_u32(b + 2, sr);	// MIN
+	USBD_poke_u32(b + 6, sr);	// MAX
+	USBD_poke_u32(b + 10, 0);	// RES
+
+	return 14;
+}
+
 #if WITHUSBUAC
 
 static uint_fast16_t usbd_getuacinmaxpacket(void)
@@ -2337,41 +2391,6 @@ static void usb0_function_SetInterface(USBD_HandleTypeDef *pdev, USBD_SetupReqTy
 	}
 }
 
-// Fill Layout 1 Parameter Block
-static unsigned USBD_fill_range_lay1pb(uint8_t * b, uint_fast8_t v)
-{
-/*
-	If a subrange consists of only a single value,
-	the corresponding triplet must contain that value for
-	both its MIN and MAX subattribute
-	and the RES subattribute must be set to zero.
-*/
-
-	USBD_poke_u16(b + 0, 1);	// number of subranges
-	USBD_poke_u8(b + 2, v);	// MIN
-	USBD_poke_u8(b + 3, v);	// MAX
-	USBD_poke_u8(b + 4, 0);	// RES
-
-	return 5;
-}
-
-// Fill Layout 3 Parameter Block
-static unsigned USBD_fill_range_lay3pb(uint8_t * b, uint_fast32_t sr)
-{
-/*
-	If a subrange consists of only a single value,
-	the corresponding triplet must contain that value for
-	both its MIN and MAX subattribute
-	and the RES subattribute must be set to zero.
-*/
-
-	USBD_poke_u16(b + 0, 1);	// number of subranges
-	USBD_poke_u32(b + 2, sr);	// MIN
-	USBD_poke_u32(b + 6, sr);	// MAX
-	USBD_poke_u32(b + 10, 0);	// RES
-
-	return 14;
-}
 // Control read data stage
 // IN direction
 static void usbdFunctionReq_seq1(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef *req)
@@ -2469,37 +2488,44 @@ static void usbdFunctionReq_seq1(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef 
 					{
 					default:
 					case TERMINAL_ID_CLKSOURCE_UACIN48_UACINRTS:
-						USBD_poke_u32(& buff [0], 0 * 48000000); // sample rate
+						USBD_poke_u32(& buff [0], 1 * 48000000); // sample rate
+						len = 4;
 						break;
 					case TERMINAL_ID_CLKSOURCE_UACINRTS:
-						USBD_poke_u32(& buff [0], 0 * dsp_get_samplerateuacin_rts()); // sample rate
+						USBD_poke_u32(& buff [0], 1 * dsp_get_samplerateuacin_rts()); // sample rate
+						len = 4;
 						break;
 					case TERMINAL_ID_CLKSOURCE_UACIN48:
-						USBD_poke_u32(& buff [0], 0 * dsp_get_samplerateuacin_audio48()); // sample rate
+						USBD_poke_u32(& buff [0], 1 * dsp_get_samplerateuacin_audio48()); // sample rate
+						len = 4;
 						break;
 					case TERMINAL_ID_CLKSOURCE_UACOUT48:
-						USBD_poke_u32(& buff [0], 0 * dsp_get_samplerateuacout()); // sample rate
+						USBD_poke_u32(& buff [0], 1 * dsp_get_samplerateuacout()); // sample rate
+						len = 4;
 						break;
 					}
-					USBD_CtlSendData(pdev, buff, ulmin16(4, req->wLength));
+					USBD_CtlSendData(pdev, buff, ulmin16(len, req->wLength));
 					return;
 
 				case 0x02:	// RANGE
+					// controlID:
+					// CS_SAM_FREQ_CONTROL = 1
+					// CS_CLOCK_VALID_CONTROL = 2
 					TP();
 					switch (terminalID)
 					{
 					default:
 					case TERMINAL_ID_CLKSOURCE_UACIN48_UACINRTS:
-						len = controlID != 0 ? USBD_fill_range_lay3pb(buff, 48000000) : USBD_fill_range_lay1pb(buff, 1); // sample rate
+						len = controlID == 1 ? USBD_fill_range_lay3pb(buff, 48000000) : USBD_fill_range_lay1pb(buff, 1); // Clock Frequency Control or Clock Validity Control
 						break;
 					case TERMINAL_ID_CLKSOURCE_UACINRTS:
-						len = controlID != 0 ? USBD_fill_range_lay3pb(buff, dsp_get_samplerateuacin_rts()) : USBD_fill_range_lay1pb(buff, 1); // sample rate
+						len = controlID == 1 ? USBD_fill_range_lay3pb(buff, dsp_get_samplerateuacin_rts()) : USBD_fill_range_lay1pb(buff, 1); // Clock Frequency Control or Clock Validity Control
 						break;
 					case TERMINAL_ID_CLKSOURCE_UACIN48:
-						len = controlID != 0 ? USBD_fill_range_lay3pb(buff, dsp_get_samplerateuacin_audio48()) : USBD_fill_range_lay1pb(buff, 1); // sample rate
+						len = controlID == 1 ? USBD_fill_range_lay3pb(buff, dsp_get_samplerateuacin_audio48()) : USBD_fill_range_lay1pb(buff, 1); // Clock Frequency Control or Clock Validity Control
 						break;
 					case TERMINAL_ID_CLKSOURCE_UACOUT48:
-						len = controlID != 0 ? USBD_fill_range_lay3pb(buff, dsp_get_samplerateuacout()) : USBD_fill_range_lay1pb(buff, 1); // sample rate
+						len = controlID == 1 ? USBD_fill_range_lay3pb(buff, dsp_get_samplerateuacout()) : USBD_fill_range_lay1pb(buff, 1); // Clock Frequency Control or Clock Validity Control
 						break;
 					}
 					USBD_CtlSendData(pdev, buff, ulmin16(len, req->wLength));
