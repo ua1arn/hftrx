@@ -7932,24 +7932,24 @@ static USBD_StatusTypeDef USBD_XXX_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 						break;
 
 					case 0x01:	// CURR
-						TP();
+						//TP();
 						switch (terminalID)
 						{
 						default:
 						case TERMINAL_ID_CLKSOURCE_UACIN48_UACINRTS:
-							USBD_poke_u32(& buff [0], 1 * 48000000); // sample rate
+							USBD_poke_u32(& buff [0], 48000000); // sample rate
 							len = 4;
 							break;
 						case TERMINAL_ID_CLKSOURCE_UACINRTS:
-							USBD_poke_u32(& buff [0], 1 * dsp_get_samplerateuacin_rts()); // sample rate
+							USBD_poke_u32(& buff [0], dsp_get_samplerateuacin_rts()); // sample rate
 							len = 4;
 							break;
 						case TERMINAL_ID_CLKSOURCE_UACIN48:
-							USBD_poke_u32(& buff [0], 1 * dsp_get_samplerateuacin_audio48()); // sample rate
+							USBD_poke_u32(& buff [0], dsp_get_samplerateuacin_audio48()); // sample rate
 							len = 4;
 							break;
 						case TERMINAL_ID_CLKSOURCE_UACOUT48:
-							USBD_poke_u32(& buff [0], 1 * dsp_get_samplerateuacout()); // sample rate
+							USBD_poke_u32(& buff [0], dsp_get_samplerateuacout()); // sample rate
 							len = 4;
 							break;
 						}
