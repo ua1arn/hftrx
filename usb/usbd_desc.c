@@ -356,7 +356,7 @@ static unsigned UAC2_clock_source(uint_fast8_t fill, uint8_t * buff, unsigned ma
 		* buff ++ = 0x0A;       /* bDescriptorSubType(0x0A): CLOCK_SOURCE */ 
 		* buff ++ = bClockID;   /* bClockID(0x10): CLOCK_SOURCE_ID */
 		* buff ++ = 0x01;       /* bmAttributes(0x01): internal fixed clock */ 
-		* buff ++ = 0x05;       /* was 0x07: bmControls(0x07):
+		* buff ++ = 0x01;       /* was 0x07: bmControls(0x07):
 								clock frequency control: 0b11 - host programmable;                    
 								clock validity control: 0b01 - host read only */ 
 		* buff ++ = TERMINAL_ID_UNDEFINED;       /* bAssocTerminal(0x00) */ 
@@ -1418,37 +1418,6 @@ static unsigned fill_UAC2_OUT48_function(uint_fast8_t fill, uint8_t * p, unsigne
 
 	return n;
 }
-
-
-#if 0
-
-//In the following code bmAttributes field is 0x01;
-//which means that clock type is internal fixed clock.
-/* Clock Source Descriptor(4.7.2.1) */
-static unsigned r9fill_clock_source(uint_fast8_t fill, uint8_t * buff, unsigned maxsize)
-{
-	const uint_fast8_t length = 8;
-	ASSERT(maxsize >= length);
-	if (maxsize < length)
-		return 0;
-	if (fill != 0 && buff != NULL)
-	{
-		// Вызов для заполнения; а не только для проверки занимаемого места в буфере
-		* buff ++ = length;						  /* bLength */
-		* buff ++ = CS_INTERFACE;       /* bDescriptorType(0x24): CS_INTERFACE */
-		* buff ++ = 0x0A;       /* bDescriptorSubType(0x0A): CLOCK_SOURCE */
-		* buff ++ = 0x10;       /* bClockID(0x10): CLOCK_SOURCE_ID */
-		* buff ++ = 0x01;       /* bmAttributes(0x01): internal fixed clock */
-		* buff ++ = 0x07;       /* bmControls(0x07):
-								clock frequency control: 0b11 - host programmable;
-								clock validity control: 0b01 - host read only */
-		* buff ++ = TERMINAL_ID_UNDEFINED;       /* bAssocTerminal(0x00) */
-		* buff ++ = 0x01;       /* iClockSource(0x01): Not requested */
-	}
-	return length;
-}
-
-#endif
 
 /* UAC IAD */
 // Interface Association Descriptor Audio
