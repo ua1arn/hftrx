@@ -1879,6 +1879,8 @@ static void usb0_function_Resrv_123(USBD_HandleTypeDef *pdev, USBD_SetupReqTyped
 	//PRINTF(PSTR("usb0_function_Resrv_123: ReqTypeRecip=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
 	//stall_ep0(pdev);	// В примерах от renesas стоит stall
 }
+
+// USB_STANDARD_REQUEST
 // seq=0
 static void usb0_function_Resrv_0(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef *req)
 {
@@ -1888,13 +1890,14 @@ static void usb0_function_Resrv_0(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef
 	// В примерах от renesas пусто
 }
 
+// USB_STANDARD_REQUEST
 // seq=2
 // End of sending data trough EP0
 // xxx_TxSent
-static void usb0_function_Resrv_4(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef *req)
+static void usb0_function_seq2_Resrv_4(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef *req)
 {
-	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
-	//PRINTF(PSTR("usb0_function_Resrv_4: interfacev=%u: bRequest=%u, wLength=%u\n"), interfacev, req->bRequest, req->wLength);
+	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);	// here not interface code
+	//PRINTF(PSTR("1 usb0_function_seq2_Resrv_4: interfacev=%u: bRequest=%u, wLength=%u\n"), interfacev, req->bRequest, req->wLength);
 	switch (interfacev)
 	{
 #if 0//WITHUSBDFU
@@ -1903,6 +1906,10 @@ static void usb0_function_Resrv_4(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef
 		USBD_DFU_EP0_TxSent(pdev);	// never called
 		break;
 #endif /* WITHUSBDFU */
+	default:
+		//TP();
+		//PRINTF(PSTR("2 usb0_function_seq2_Resrv_4: interfacev=%u: bRequest=%u, wLength=%u\n"), interfacev, req->bRequest, req->wLength);
+		break;
 	}
 }
 // seq=4
@@ -1913,12 +1920,14 @@ static void usb0_function_Resrv_5(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef
 	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
 	PRINTF(PSTR("usb0_function_Resrv_5: interfacev=%u: bRequest=%u, wLength=%u\n"), interfacev, req->bRequest, req->wLength);
 }
+
+// Class reauest
 // Control Read Status stage
 // End of sending data trough EP0
 // xxx_TxSent
 static void usbdFunctionReq_seq2(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef *req)
 {
-	//PRINTF(PSTR("usbdFunctionReq_seq2: interfacev=%u: bRequest=%u, wLength=%u\n"), interfacev, req->bRequest, req->wLength);
+	//PRINTF(PSTR("1 usbdFunctionReq_seq2: interfacev=%u: bRequest=%u, wLength=%u\n"), interfacev, req->bRequest, req->wLength);
 	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
 
 	switch (interfacev)
@@ -1928,6 +1937,10 @@ static void usbdFunctionReq_seq2(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef 
 		USBD_DFU_EP0_TxSent(pdev);	// called in download stage (write FLASH)
 		break;
 #endif /* WITHUSBDFU */
+	default:
+		//TP();
+		//PRINTF(PSTR("2 usbdFunctionReq_seq2: interfacev=%u: bRequest=%u, wLength=%u\n"), interfacev, req->bRequest, req->wLength);
+		break;
 	}
 }
 // Control Read Status stage
@@ -1956,9 +1969,14 @@ static void usbdFunctionReq_seq4(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef 
 {
 	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
 
-	//PRINTF(PSTR("usbdFunctionReq_seq4: interfacev=%u: bRequest=%u, wLength=%u\n"), interfacev, req->bRequest, req->wLength);
+	//PRINTF(PSTR("1 usbdFunctionReq_seq4: interfacev=%u: bRequest=%u, wLength=%u\n"), interfacev, req->bRequest, req->wLength);
 	switch (interfacev)
 	{
+	default:
+		TP();
+		PRINTF(PSTR("2 usbdFunctionReq_seq4: interfacev=%u: bRequest=%u, wLength=%u\n"), interfacev, req->bRequest, req->wLength);
+		break;
+
 #if WITHUSBDFU
 	case INTERFACE_DFU_CONTROL:
 		{
@@ -2511,7 +2529,7 @@ static void usbdFunctionReq_seq1(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef 
 					// controlID:
 					// CS_SAM_FREQ_CONTROL = 1
 					// CS_CLOCK_VALID_CONTROL = 2
-					TP();
+					//TP();
 					switch (terminalID)
 					{
 					default:
@@ -2805,6 +2823,7 @@ static void invoketable(
 		(* pbReq_seq [req->bRequest])(pdev, req);
 	else
 	{
+		TP();
 		USBD_CtlError(pdev, req);
 	}
 }
@@ -2956,11 +2975,11 @@ static void actions_seq2(
 	/* Control Read Status Stage seq=2 */
 	static const fnrquest_t pbReqFunction_seq2 [13] =
 	{
-		usb0_function_Resrv_4,          usb0_function_Resrv_4,          usb0_function_Resrv_4,
-		usb0_function_Resrv_4,          usb0_function_Resrv_4,          usb0_function_Resrv_4,
-		usb0_function_Resrv_4,          usb0_function_Resrv_4,          usb0_function_Resrv_4,
-		usb0_function_Resrv_4,          usb0_function_Resrv_4,          usb0_function_Resrv_4,
-		usb0_function_Resrv_4
+		usb0_function_seq2_Resrv_4,          usb0_function_seq2_Resrv_4,          usb0_function_seq2_Resrv_4,
+		usb0_function_seq2_Resrv_4,          usb0_function_seq2_Resrv_4,          usb0_function_seq2_Resrv_4,
+		usb0_function_seq2_Resrv_4,          usb0_function_seq2_Resrv_4,          usb0_function_seq2_Resrv_4,
+		usb0_function_seq2_Resrv_4,          usb0_function_seq2_Resrv_4,          usb0_function_seq2_Resrv_4,
+		usb0_function_seq2_Resrv_4
 	};
 
 	switch (req->bmRequest & USB_FUNCTION_bmRequestTypeType)
@@ -7842,7 +7861,7 @@ static USBD_StatusTypeDef USBD_XXX_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
 
 	//PRINTF(PSTR("USBD_ClassXXX_Setup: bRequest=%02X, wIndex=%04X, wLength=%04X, wValue=%04X (interfacev=%02X)\n"), req->bRequest, req->wIndex, req->wLength, req->wValue, interfacev);
-
+	unsigned len = 0;
 	if ((req->bmRequest & USB_REQ_TYPE_DIR) != 0)
 	{
 		// IN direction
@@ -7884,7 +7903,8 @@ static USBD_StatusTypeDef USBD_XXX_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 				{
 					const uint_fast8_t terminalID = HI_BYTE(req->wIndex);
 					const uint_fast8_t controlID = HI_BYTE(req->wValue);	// AUDIO_MUTE_CONTROL, AUDIO_VOLUME_CONTROL, ...
-					PRINTF(PSTR("2 req->bRequest=%u: interfacev=%u,  %u\n"), req->bRequest, interfacev, terminalID);
+					const uint_fast8_t channelNumber = LO_BYTE(req->wValue);
+					PRINTF(PSTR("2 req->bRequest=%u: interfacev=%u,  controlID=%u, channelNumber=%u, terminalID=%u\n"), req->bRequest, interfacev, controlID, channelNumber, terminalID);
 					switch (req->bRequest)
 					{
 					case AUDIO_REQUEST_GET_CUR:
@@ -7909,6 +7929,55 @@ static USBD_StatusTypeDef USBD_XXX_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 						//PRINTF(PSTR("USBD_ClassXXX_Setup IN: AUDIO_REQUEST_GET_RES: interfacev=%u, %u\n"), interfacev, terminalID);
 						buff [0] = 1;
 						USBD_CtlSendData(pdev, buff, ulmin16(ARRAY_SIZE(buff), req->wLength));
+						break;
+
+					case 0x01:	// CURR
+						TP();
+						switch (terminalID)
+						{
+						default:
+						case TERMINAL_ID_CLKSOURCE_UACIN48_UACINRTS:
+							USBD_poke_u32(& buff [0], 1 * 48000000); // sample rate
+							len = 4;
+							break;
+						case TERMINAL_ID_CLKSOURCE_UACINRTS:
+							USBD_poke_u32(& buff [0], 1 * dsp_get_samplerateuacin_rts()); // sample rate
+							len = 4;
+							break;
+						case TERMINAL_ID_CLKSOURCE_UACIN48:
+							USBD_poke_u32(& buff [0], 1 * dsp_get_samplerateuacin_audio48()); // sample rate
+							len = 4;
+							break;
+						case TERMINAL_ID_CLKSOURCE_UACOUT48:
+							USBD_poke_u32(& buff [0], 1 * dsp_get_samplerateuacout()); // sample rate
+							len = 4;
+							break;
+						}
+						USBD_CtlSendData(pdev, buff, ulmin16(len, req->wLength));
+						break;
+
+					case 0x02:	// RANGE
+						// controlID:
+						// CS_SAM_FREQ_CONTROL = 1
+						// CS_CLOCK_VALID_CONTROL = 2
+						//TP();
+						switch (terminalID)
+						{
+						default:
+						case TERMINAL_ID_CLKSOURCE_UACIN48_UACINRTS:
+							len = controlID == 1 ? USBD_fill_range_lay3pb(buff, 48000000) : USBD_fill_range_lay1pb(buff, 1); // Clock Frequency Control or Clock Validity Control
+							break;
+						case TERMINAL_ID_CLKSOURCE_UACINRTS:
+							len = controlID == 1 ? USBD_fill_range_lay3pb(buff, dsp_get_samplerateuacin_rts()) : USBD_fill_range_lay1pb(buff, 1); // Clock Frequency Control or Clock Validity Control
+							break;
+						case TERMINAL_ID_CLKSOURCE_UACIN48:
+							len = controlID == 1 ? USBD_fill_range_lay3pb(buff, dsp_get_samplerateuacin_audio48()) : USBD_fill_range_lay1pb(buff, 1); // Clock Frequency Control or Clock Validity Control
+							break;
+						case TERMINAL_ID_CLKSOURCE_UACOUT48:
+							len = controlID == 1 ? USBD_fill_range_lay3pb(buff, dsp_get_samplerateuacout()) : USBD_fill_range_lay1pb(buff, 1); // Clock Frequency Control or Clock Validity Control
+							break;
+						}
+						USBD_CtlSendData(pdev, buff, ulmin16(len, req->wLength));
 						break;
 
 					default:
