@@ -810,8 +810,8 @@ static FLOAT32P_t get_float4_iflo(void)
 {
 	static const FLOAT_t sintable4f [4] = { + 0, + 1, + 0, - 1 };
 	FLOAT32P_t v;
-	v.IV = (sintable4f [FTW2ANGLEI(angle_iflo) >> (TABLELOG2 - 2)]);
-	v.QV = (sintable4f [FTW2ANGLEQ(angle_iflo) >> (TABLELOG2 - 2)]);
+	v.IV = (sintable4f [(angle_iflo) >> 30]);
+	v.QV = (sintable4f [(angle_iflo + 0x40000000uL) >> 30]);
 	angle_iflo = FTWROUND(angle_iflo + anglestep_iflo);
 	return v;
 }

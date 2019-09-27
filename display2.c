@@ -4487,7 +4487,7 @@ display_dispbar(
 			continue;
 		}
 #if (DSTYLE_G_X132_Y64 || DSTYLE_G_X128_Y64) && DSTYLE_UR3LMZMOD
-		display_barcolumn(pattern);
+		display_barcolumn(vpattern);
 #elif DSTYLE_G_X64_Y32
 		display_barcolumn((i % 6) != 5 ? vpattern : vemptyp);
 #else
