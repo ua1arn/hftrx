@@ -106,9 +106,9 @@ enum
 	STRING_ID_MACADDRESS,	// iMacAddress
 
 	// USB UAC strings
-	STRING_ID_a0, /* modulator */
-	STRING_ID_a1, /* rx */
-	STRING_ID_a2, /* spctrum */
+	STRING_ID_a0, /* by offset RX demodulator */
+	STRING_ID_a1, /* by offset spectrum */
+	STRING_ID_a2, /* by offset TX modulator*/
 
 	STRING_ID_d0,
 	STRING_ID_d1,
@@ -118,13 +118,13 @@ enum
 	STRING_ID_e1,
 	STRING_ID_e2,
 
-	STRING_ID_x0, /*  */
-	STRING_ID_x1, /*  */
-	STRING_ID_x2, /*  */
+	STRING_ID_x0, /* by offset */
+	STRING_ID_x1, /* by offset */
+	STRING_ID_x2, /* by offset */
 
 	STRING_ID_y0, /*  */
-	STRING_ID_y1, /*  */
-	STRING_ID_y2, /*  */
+	STRING_ID_y1, /* by offset */
+	STRING_ID_y2, /* by offset */
 
 	//STRING_ID_b,	// tag for USB Speaker Audio Feature Unit Descriptor
 
@@ -172,15 +172,9 @@ static const struct stringtempl strtemplates [] =
 		//{ STRING_ID_DFU_1, strOptBytesDesc, },
 	#endif /* ! WITHISBOOTLOADER */
 
-	#if 0//CTLSTYLE_OLEG4Z_V1
-		{ STRING_ID_a0, PRODUCTSTR " Voice", },		// tag for Interface Descriptor 0/0 Audio
-		{ STRING_ID_a1, PRODUCTSTR " Spectre", },	// tag for Interface Descriptor 0/0 Audio
-		{ STRING_ID_a2, PRODUCTSTR " Modulator", },	// tag for Interface Descriptor 0/0 Audio
-	#else /* CTLSTYLE_OLEG4Z_V1 */
-		{ STRING_ID_a0, "Storch RX Voice", },		// tag for Interface Descriptor 0/0 Audio
-		{ STRING_ID_a1, "Storch RX Spectrum", },	// tag for Interface Descriptor 0/0 Audio
-		{ STRING_ID_a2, "Storch TX Voice", },		// tag for Interface Descriptor 0/0 Audio
-	#endif /* CTLSTYLE_OLEG4Z_V1 */
+	{ STRING_ID_a0, "Storch RX Voice", },		// tag for Interface Descriptor 0/0 Audio
+	{ STRING_ID_a1, "Storch RX Spectrum", },	// tag for Interface Descriptor 0/0 Audio
+	{ STRING_ID_a2, "Storch TX Voice", },		// tag for Interface Descriptor 0/0 Audio
 
 	//{ STRING_ID_b, "xxx_id11", },	// tag for USB Speaker Audio Feature Unit Descriptor
 
@@ -192,13 +186,13 @@ static const struct stringtempl strtemplates [] =
 	{ STRING_ID_e1, "wwww 2", },	// Audio Control Output Terminal Descriptor 
 	{ STRING_ID_e1, "wwww 3", },	// Audio Control Output Terminal Descriptor 
 
-	{ STRING_ID_x0, "xxxx 1", },	// Audio Control Output Terminal Descriptor 
-	{ STRING_ID_x1, "xxxx 2", },	// Audio Control Output Terminal Descriptor 
-	{ STRING_ID_x2, "xxxx 3", },	// Audio Control Output Terminal Descriptor 
+	{ STRING_ID_x0, "active 1", },	// Audio Control Output Terminal Descriptor
+	{ STRING_ID_x1, "active 2", },	// Audio Control Output Terminal Descriptor
+	{ STRING_ID_x2, "active 3", },	// Audio Control Output Terminal Descriptor
 
-	{ STRING_ID_y0, "yyyy 1", },	// Audio Control Output Terminal Descriptor 
-	{ STRING_ID_y1, "yyyy 2", },	// Audio Control Output Terminal Descriptor 
-	{ STRING_ID_y2, "yyyy 3", },	// Audio Control Output Terminal Descriptor 
+	{ STRING_ID_y0, "With streaming 1", },	// Audio Control Output Terminal Descriptor
+	{ STRING_ID_y1, "With streaming 2", },	// Audio Control Output Terminal Descriptor
+	{ STRING_ID_y2, "With streaming 3", },	// Audio Control Output Terminal Descriptor
 
 	{ STRING_ID_Left, "USB", },	// tag for USB Speaker Audio Feature Unit Descriptor
 	{ STRING_ID_Right, "LSB", },	// tag for USB Speaker Audio Feature Unit Descriptor
@@ -412,8 +406,8 @@ static unsigned UAC2_r9fill_3(
 		* buff ++ = 0x00;                               /* bNumEndpoints */
 		* buff ++ = USB_DEVICE_CLASS_AUDIO;             /* bInterfaceClass */
 		* buff ++ = AUDIO_SUBCLASS_AUDIOCONTROL;        /* bInterfaceSubClass */
-		* buff ++ = 0x20;           					/* bInterfaceProtocol */
-		* buff ++ = STRING_ID_a0 + offset;               /* iInterface */
+		* buff ++ = AUDIO_PROTOCOL_IP_VERSION_02_00;   	/* bInterfaceProtocol */
+		* buff ++ = STRING_ID_a0 + offset;              /* iInterface */
 		/* 09 byte*/
 	}
 	return length;
@@ -769,8 +763,8 @@ static unsigned UAC2_AudioControlIfCircuitIN48(
 	uint_fast8_t offset
 	)
 {
-	const uint_fast8_t bCSourceID = TERMINAL_ID_CLKSOURCE_UACIN48; //bTerminalID + 3;
 	unsigned n = 0;
+	const uint_fast8_t bCSourceID = TERMINAL_ID_CLKSOURCE_UACIN48; //bTerminalID + 3;
 
 	n+= UAC2_clock_source(fill, p + n, maxsize - n, bCSourceID);
 	if (WITHUSENOFU_IN48)
@@ -800,8 +794,8 @@ static unsigned UAC2_AudioControlIfCircuitIN48_INRTS(
 	uint_fast8_t offset
 	)
 {
-	const uint_fast8_t bCSourceID = TERMINAL_ID_CLKSOURCE_UACIN48_UACINRTS; //bTerminalID + 3;
 	unsigned n = 0;
+	const uint_fast8_t bCSourceID = TERMINAL_ID_CLKSOURCE_UACIN48_UACINRTS; //bTerminalID + 3;
 
 	n += UAC2_clock_source(fill, p + n, maxsize - n, bCSourceID);
 	if (WITHUSENOFU_IN48_INRTS)
@@ -830,8 +824,8 @@ static unsigned UAC2_AudioControlIfCircuitOUT48(
 	uint_fast8_t offset
 	)
 {
-	const uint_fast8_t bCSourceID = TERMINAL_ID_CLKSOURCE_UACOUT48; //bTerminalID + 3;
 	unsigned n = 0;
+	const uint_fast8_t bCSourceID = TERMINAL_ID_CLKSOURCE_UACOUT48; //bTerminalID + 3;
 
 	n += UAC2_clock_source(fill, p + n, maxsize - n, bCSourceID);
 	if (WITHUSENOFU_OUT48)
@@ -858,8 +852,8 @@ static unsigned UAC2_AudioControlIfCircuitINRTS(
 	uint_fast8_t offset
 	)
 {
-	const uint_fast8_t bCSourceID = TERMINAL_ID_CLKSOURCE_UACINRTS; //bTerminalID + 3;
 	unsigned n = 0;
+	const uint_fast8_t bCSourceID = TERMINAL_ID_CLKSOURCE_UACINRTS; //bTerminalID + 3;
 
 	n += UAC2_clock_source(fill, p + n, maxsize - n, bCSourceID);
 	if (WITHUSENOFU_INRTS)
@@ -950,7 +944,7 @@ static unsigned UAC2_r9fill_10(
 		* buff ++ = bNumEndpoints;                  /* bNumEndpoints */
 		* buff ++ = USB_DEVICE_CLASS_AUDIO;         /* bInterfaceClass */
 		* buff ++ = AUDIO_SUBCLASS_AUDIOSTREAMING;  /* bInterfaceSubClass */
-		* buff ++ = 0x20;       					/* bInterfaceProtocol */
+		* buff ++ = AUDIO_PROTOCOL_IP_VERSION_02_00;/* bInterfaceProtocol */
 		* buff ++ = STRING_ID_y0 + offset;          /* iInterface - unused */
 		/* 9 byte*/
 	}
@@ -1051,7 +1045,7 @@ static unsigned UAC2_r9fill_24(
 		* buff ++ = bNumEndpoints;					// bNumEndpoints
 		* buff ++ = USB_DEVICE_CLASS_AUDIO;			// AUDIO (bInterfaceClass)
 		* buff ++ = AUDIO_SUBCLASS_AUDIOSTREAMING;  // AUDIO_STREAMING (bInterfaceSubclass)
-		* buff ++ = 0x20;            			 /* bInterfaceProtocol */
+		* buff ++ = AUDIO_PROTOCOL_IP_VERSION_02_00;/* bInterfaceProtocol */
 		* buff ++ = STRING_ID_x0 + offset;					/* Unused iInterface */
 		/* 9 byte*/
 	}
