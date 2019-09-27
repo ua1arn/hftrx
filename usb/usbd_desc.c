@@ -701,7 +701,6 @@ static unsigned UAC2_AudioFeatureUnit(
 		* buff ++ = AUDIO_CONTROL_FEATURE_UNIT;     /* 2 bDescriptorSubtype */
 		* buff ++ = bUnitID;             			/* 3 bUnitID */
 		* buff ++ = bSourceID;						/* 4 bSourceID */
-		* buff ++ = bControlSize;                   /* 5 bControlSize - колтчество элементов в следующем элементе, повторяющемся для каждого канала */
 		for (i = 0; i < n; ++ i)
 		{
 			uint_fast32_t v = bmaControls;
@@ -712,8 +711,8 @@ static unsigned UAC2_AudioFeatureUnit(
 				v >>= 8;
 			}
 		}
-		* buff ++ = 0;//STRING_ID_b;                    /* iTerminal */
-		/* 10 byte*/
+		* buff ++ = 0;//STRING_ID_b;                    /* 5+(ch+1)*4 iTerminal */
+		/* 6 + bControlSize * n byte*/
 	}
 	return length;
 }
