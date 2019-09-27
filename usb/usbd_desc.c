@@ -766,7 +766,7 @@ static unsigned UAC2_AudioControlOT_OUT(
 
 // Заполнение схемы ввода звука
 // IN data flow
-// Элементы добавлояются в дескрипотор в порядке обратном порядку прохождения информационного потока
+// Элементы добавлояются в дескриптор в порядке обратном порядку прохождения информационного потока
 // 
 static unsigned UAC2_AudioControlIfCircuitIN48(
 	uint_fast8_t fill, uint8_t * p, unsigned maxsize, 
@@ -797,7 +797,7 @@ static unsigned UAC2_AudioControlIfCircuitIN48(
 
 // Заполнение схемы ввода звука
 // IN data flow
-// Элементы добавлояются в дескрипотор в порядке обратном порядку прохождения информационного потока
+// Элементы добавлояются в дескриптор в порядке обратном порядку прохождения информационного потока
 //
 static unsigned UAC2_AudioControlIfCircuitIN48_INRTS(
 	uint_fast8_t fill, uint8_t * p, unsigned maxsize,
@@ -855,7 +855,7 @@ static unsigned UAC2_AudioControlIfCircuitOUT48(
 	return n;
 }
 
-// Элементы добавлояются в дескрипотор в порядке обратном порядку прохождения информационного потока
+// Элементы добавлояются в дескриптор в порядке обратном порядку прохождения информационного потока
 // 
 static unsigned UAC2_AudioControlIfCircuitINRTS(
 	uint_fast8_t fill, uint8_t * p, unsigned maxsize, 
@@ -928,7 +928,7 @@ static unsigned UAC2_HeaderDescriptor(
 
 }
 
-/* USB Speaker Standard AS Interface Descriptor - Audio Streaming Zero Bandwith */
+/* USB Speaker Standard AS Interface Descriptor - Audio Streaming non-zero Bandwith */
 /* Interface 1, Alternate Setting 0                                             */
 // USBLyzer: Interface Descriptor 0/0 Audio, 0 Endpoints
 static unsigned UAC2_fill_10(
@@ -1032,7 +1032,7 @@ static unsigned UAC2_fill_15_OUT48(uint_fast8_t fill, uint8_t * buff, unsigned m
 	return length;
 }
 
-// Interface Descriptor 2/1 Audio, 1 Endpoint
+// Interface Descriptor 2/1 Audio, 0 or 1 Endpoint
 static unsigned UAC2_fill_24(
 	uint_fast8_t fill, uint8_t * buff, unsigned maxsize, 
 	uint_fast8_t bInterfaceNumber, 
@@ -1766,7 +1766,7 @@ static unsigned UAC1_AudioControlOT_OUT(
 
 // Заполнение схемы ввода звука
 // IN data flow
-// Элементы добавлояются в дескрипотор в порядке обратном порядку прохождения информационного потока
+// Элементы добавлояются в дескриптор в порядке обратном порядку прохождения информационного потока
 //
 static unsigned UAC1_AudioControlIfCircuitIN48(
 	uint_fast8_t fill, uint8_t * p, unsigned maxsize,
@@ -1795,7 +1795,7 @@ static unsigned UAC1_AudioControlIfCircuitIN48(
 
 // Заполнение схемы ввода звука
 // IN data flow
-// Элементы добавлояются в дескрипотор в порядке обратном порядку прохождения информационного потока
+// Элементы добавлояются в дескриптор в порядке обратном порядку прохождения информационного потока
 //
 static unsigned UAC1_AudioControlIfCircuitIN48_INRTS(
 	uint_fast8_t fill, uint8_t * p, unsigned maxsize,
@@ -1849,7 +1849,7 @@ static unsigned UAC1_AudioControlIfCircuitOUT48(
 	return n;
 }
 
-// Элементы добавлояются в дескрипотор в порядке обратном порядку прохождения информационного потока
+// Элементы добавлояются в дескриптор в порядке обратном порядку прохождения информационного потока
 //
 static unsigned UAC1_AudioControlIfCircuitINRTS(
 	uint_fast8_t fill, uint8_t * p, unsigned maxsize,
@@ -2453,6 +2453,7 @@ static unsigned fill_UAC2_function(uint_fast8_t fill, uint8_t * p, unsigned maxs
 	unsigned n = 0;
 
 #if WITHUSBUACIN
+	// Ввод звука в компьютер
 	#if WITHUSBUACIN2
 		/* отдельные функции для передачи в компьютер спектра и звука */
 		n += fill_UAC2_IN48_function(fill, p + n, maxsize - n, highspeed, 0);
@@ -2471,9 +2472,8 @@ static unsigned fill_UAC2_function(uint_fast8_t fill, uint8_t * p, unsigned maxs
 #endif /* WITHUSBUACIN */
 
 #if WITHUSBUACOUT
-//#if WITHTX
+	// Вывод звука из комьпютера
 	n += fill_UAC2_OUT48_function(fill, p + n, maxsize - n, highspeed, 2);
-//#endif /* WITHTX */
 #endif /* WITHUSBUACOUT */
 
 	return n;
