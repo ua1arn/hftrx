@@ -898,7 +898,7 @@ static unsigned UAC2_HeaderDescriptor(
 {
 	uint_fast8_t i;
 	unsigned terminalsLength = 0;
-	const uint_fast8_t length = 9 + bInCollection;
+	const uint_fast8_t length = 9;
 	for (i = 0; i < bInCollection; ++ i)
 		terminalsLength += (paths [i])(0, buff + length + terminalsLength, maxsize - length - terminalsLength, terminalID [i], offset);
 	const unsigned wTotalLength = terminalsLength + length;
@@ -910,18 +910,16 @@ static unsigned UAC2_HeaderDescriptor(
 		// 4.3.2 Class-Specific AC Interface Descriptor
 		const uint_fast16_t bcdADC = 0x0200;	// Revision of class specification - 2.0
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
-		* buff ++ = length;							/* bLength */
-		* buff ++ = AUDIO_INTERFACE_DESCRIPTOR_TYPE;/* bDescriptorType */
-		* buff ++ = AUDIO_CONTROL_HEADER;           /* bDescriptorSubtype */
-		* buff ++ = LO_BYTE(bcdADC);				/* bcdADC */
+		* buff ++ = length;							/* 0 bLength */
+		* buff ++ = AUDIO_INTERFACE_DESCRIPTOR_TYPE;/* 1 bDescriptorType */
+		* buff ++ = AUDIO_CONTROL_HEADER;           /* 2 bDescriptorSubtype */
+		* buff ++ = LO_BYTE(bcdADC);				/* 3 bcdADC */
 		* buff ++ = HI_BYTE(bcdADC);
-		* buff ++ = 0x08;							/* bCategory   (IO_BOX)*/
-		* buff ++ = LO_BYTE(wTotalLength);			/* wTotalLength */
+		* buff ++ = 0x08;							/* 4 bCategory   (IO_BOX)*/
+		* buff ++ = LO_BYTE(wTotalLength);			/* 6 wTotalLength */
 		* buff ++ = HI_BYTE(wTotalLength);
-		* buff ++ = bInCollection;					/* bInCollection=2:  1 - AudioStreaming Out; 2 - AudioStreaming In*/
-		for (i = 0; i < bInCollection; ++ i)
-			* buff ++ = coll [i];					/* baInterfaceNr(i) */
-		/* 10 bytes*/
+		* buff ++ = 0x00;					/* 8 bmControls*/
+		/* 9 bytes*/
 		terminalsLength = 0;
 		for (i = 0; i < bInCollection; ++ i)
 			terminalsLength += (paths [i])(fill, buff + terminalsLength, maxsize - length - terminalsLength, terminalID [i], offset);
