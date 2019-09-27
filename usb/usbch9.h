@@ -196,20 +196,21 @@ enum
 {
 	TERMINAL_ID_UNDEFINED = 0,
 
-	TERMINAL_UACOUT48 = 1,	// fill_UACOUT48_function
-	TERMINAL_UACIN48_UACINRTS = 35,	// fill_UACIN48_function or fill_UACIN48_INRTS_function
-	TERMINAL_UACINRTS = 75,	// fill_UACINRTS_function
+	TERMINAL_UACIN48 = 16,	// fill_UAC2_IN48_function, fill_UAC1_IN48_function
+	TERMINAL_UACOUT48 = 32,	// fill_UACOUT48_function
+	TERMINAL_UACIN48_UACINRTS = 48,	// fill_UACIN48_function or fill_UACIN48_INRTS_function
+	TERMINAL_UACINRTS = 64,	// fill_UACINRTS_function
 
-	TERMINAL_ID_SELECTOR_6 = 150,	// Input selector - вынесено из-за неудобства использования: значение проверяется
+	TERMINAL_ID_SELECTOR_6 = 240,	// Input selector - вынесено из-за неудобства использования: значение проверяется
 	TERMINAL_ID_CLKSOURCE_UACIN48_UACINRTS,
 	TERMINAL_ID_CLKSOURCE_UACINRTS,
 	TERMINAL_ID_CLKSOURCE_UACIN48,
 	TERMINAL_ID_CLKSOURCE_UACOUT48,
 
-	TERMINAL_ID_count
+	TERMINAL_ID_count_unused
 };
 
-#define MAX_TERMINALS_IN_INTERFACE 6
+#define MAX_TERMINALS_IN_INTERFACE 4
 
 #define TERMINAL_ID_SELECTOR_6_INPUTS 2
 
