@@ -689,18 +689,21 @@ static unsigned UAC2_AudioFeatureUnit(
 	// Параметр определяет, ккие управляющие элементы появляются на страничке управления "Custom"
 	// Причем, на этой страничке собраны все управляющие элементы со всех Feature Unit Descriptor
 	// в пути сигнала данного источника звука.
-	// Не может быть нулём.
+	// Each element:
+	// 0x00 - not present
+	// 0x01 - If a Control is present but read-only,
+	// 0x03 - If a Control is also Host programmable
 	const uint_fast32_t bmaControls = 
-		AUDIO_CONTROL_MUTE |
-		AUDIO_CONTROL_VOLUME |
-		//AUDIO_CONTROL_AUTOMATIC_GAIN |
-		//AUDIO_CONTROL_GRAPHIC_EQUALIZER |
-		//AUDIO_CONTROL_LOUDNESS |		// "Custom" property page added
+		1 * (0x01 << 0) |	// Mute Control
+		0 * (0x01 << 2) |	// Volume Control
+		0 * (0x01 << 4) |	// Bass Control
+		0 * (0x01 << 6) |	// Mid Control
+		0 * (0x01 << 8) |	// Treble Control
+		// and so on...
 		0;
 
-	const uint_fast8_t n = 1; // 1: Only master channel controls, 3: master, left and right
-	const uint_fast8_t bControlSize = 4;	/* Достаточно, чтобы вместить все определенные для bmaControls биты */
-	const uint_fast8_t length = 6 + bControlSize * n;
+	const uint_fast8_t n = 3; // 1: Only master channel controls, 3: master, left and right
+	const uint_fast8_t length = 6 + 4 * n;
 	ASSERT(maxsize >= length);
 	if (maxsize < length)
 		return 0;
@@ -716,7 +719,7 @@ static unsigned UAC2_AudioFeatureUnit(
 		for (i = 0; i < n; ++ i)
 		{
 			uint_fast32_t v = bmaControls;
-			uint_fast8_t cs = bControlSize;
+			uint_fast8_t cs = 4;
 			while (cs --)
 			{
 				* buff ++ = (uint8_t) v;
@@ -724,7 +727,7 @@ static unsigned UAC2_AudioFeatureUnit(
 			}
 		}
 		* buff ++ = 0;//STRING_ID_b;                    /* 5+(ch+1)*4 iTerminal */
-		/* 6 + bControlSize * n byte*/
+		/* 6 + 4 * n bytes */
 	}
 	return length;
 }
