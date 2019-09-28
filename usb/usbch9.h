@@ -200,7 +200,7 @@ enum
 	TERMINAL_UACOUT48 = 32,	// fill_UACOUT48_function
 	TERMINAL_UACIN48_UACINRTS = 48,	// fill_UACIN48_function or fill_UACIN48_INRTS_function
 	TERMINAL_UACINRTS = 64,	// fill_UACINRTS_function
-
+	TERMINAL_ID_FU = 96,
 	TERMINAL_ID_SELECTOR_6 = 240,	// Input selector - вынесено из-за неудобства использования: значение проверяется
 	TERMINAL_ID_CLKSOURCE_UACIN48_UACINRTS,
 	TERMINAL_ID_CLKSOURCE_UACINRTS,

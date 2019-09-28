@@ -2521,6 +2521,20 @@ static void usbdFunctionReq_seq1(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef 
 						USBD_poke_u32(& buff [0], dsp_get_samplerateuacout()); // sample rate
 						len = 4;
 						break;
+					case TERMINAL_ID_FU + 0 * MAX_TERMINALS_IN_INTERFACE:
+					case TERMINAL_ID_FU + 1 * MAX_TERMINALS_IN_INTERFACE:
+					case TERMINAL_ID_FU + 2 * MAX_TERMINALS_IN_INTERFACE:
+						if (controlID == 1)
+						{
+							USBD_poke_u8(buff, 0);
+							len = 1;
+						}
+						else
+						{
+							USBD_poke_u16(buff, 0);
+							len = 2;
+						}
+						break;
 					}
 					USBD_CtlSendData(pdev, buff, ulmin16(len, req->wLength));
 					return;
@@ -2544,6 +2558,11 @@ static void usbdFunctionReq_seq1(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef 
 						break;
 					case TERMINAL_ID_CLKSOURCE_UACOUT48:
 						len = controlID == 1 ? USBD_fill_range_lay3pb(buff, dsp_get_samplerateuacout()) : USBD_fill_range_lay1pb(buff, 1); // Clock Frequency Control or Clock Validity Control
+						break;
+					case TERMINAL_ID_FU + 0 * MAX_TERMINALS_IN_INTERFACE:
+					case TERMINAL_ID_FU + 1 * MAX_TERMINALS_IN_INTERFACE:
+					case TERMINAL_ID_FU + 2 * MAX_TERMINALS_IN_INTERFACE:
+						len = controlID == 1 ? USBD_fill_range_lay1pb(buff, 0) : USBD_fill_range_lay2pb(buff, 0);
 						break;
 					}
 					USBD_CtlSendData(pdev, buff, ulmin16(len, req->wLength));
