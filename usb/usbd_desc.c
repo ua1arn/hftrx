@@ -1208,6 +1208,7 @@ static unsigned UAC2_fill_27_RTS192(uint_fast8_t fill, uint8_t * buff, unsigned 
 #endif /* WITHRTS192 */
 
 /* USB Microphone Class-specific Isoc. Audio Data Endpoint Descriptor (CODE == 7) OK - подтверждено документацией*/
+// For IN direction endpoints
 static unsigned UAC2_fill_28(uint_fast8_t fill, uint8_t * buff, unsigned maxsize)
 {
 	const uint_fast8_t length = 8;
@@ -1221,9 +1222,9 @@ static unsigned UAC2_fill_28(uint_fast8_t fill, uint8_t * buff, unsigned maxsize
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = AUDIO_ENDPOINT_DESCRIPTOR_TYPE;    // CS_ENDPOINT Descriptor Type (bDescriptorType) 0x25
 		* buff ++ = AUDIO_ENDPOINT_GENERAL;            // GENERAL subtype. (bDescriptorSubtype) 0x01
-		* buff ++ = 0x00;                              // No sampling frequency control; no pitch control; no packet padding.(bmAttributes)
+		* buff ++ = 0x00;                           /* bmAttributes (D7=MaxPacketsOnly) */
 		* buff ++ = 0x00;                           /* bmControls */
-		* buff ++ = 0x02;                              // bLockDelayUnits
+		* buff ++ = 0x00;                           /* bLockDelayUnits */
 		* buff ++ = LO_BYTE(wLockDelay);			/* wLockDelay */
 		* buff ++ = HI_BYTE(wLockDelay);
 	}
@@ -2020,7 +2021,7 @@ static unsigned UAC1_fill_15_OUT48(uint_fast8_t fill, uint8_t * buff, unsigned m
 		* buff ++ = AUDIO_ENDPOINT_DESCRIPTOR_TYPE; /* 0x25 bDescriptorType */
 		* buff ++ = AUDIO_ENDPOINT_GENERAL;         /* 0x01 bDescriptor */
 		* buff ++ = 0x00;                           /* bmAttributes */
-		* buff ++ = 0x00;                           /* bLockDelayUnits */
+		* buff ++ = 0x02;                           /* bLockDelayUnits */
 		* buff ++ = LO_BYTE(wLockDelay);			/* wLockDelay */
 		* buff ++ = HI_BYTE(wLockDelay);
 		/* 07 byte*/
