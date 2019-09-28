@@ -2473,7 +2473,7 @@ static void usbdFunctionReq_seq1(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef 
 				const uint_fast8_t terminalID = HI_BYTE(req->wIndex);
 				const uint_fast8_t controlID = HI_BYTE(req->wValue);	// AUDIO_MUTE_CONTROL, AUDIO_VOLUME_CONTROL, ...
 				const uint_fast8_t channelNumber = LO_BYTE(req->wValue);
-				PRINTF(PSTR("1 req->bRequest=%u: interfacev=%u,  controlID=%u, channelNumber=%u, terminalID=%u\n"), req->bRequest, interfacev, controlID, channelNumber, terminalID);
+				//PRINTF(PSTR("1 req->bRequest=%u: interfacev=%u,  controlID=%u, channelNumber=%u, terminalID=%u\n"), req->bRequest, interfacev, controlID, channelNumber, terminalID);
 				switch (req->bRequest)
 				{
 				case AUDIO_REQUEST_GET_CUR:
@@ -2501,24 +2501,24 @@ static void usbdFunctionReq_seq1(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef 
 					return;
 
 				case 0x01:	// CURR
-					TP();
+					//TP();
 					switch (terminalID)
 					{
 					default:
 					case TERMINAL_ID_CLKSOURCE_UACIN48_UACINRTS:
-						USBD_poke_u32(& buff [0], 1 * 48000000); // sample rate
+						USBD_poke_u32(& buff [0], 48000000); // sample rate
 						len = 4;
 						break;
 					case TERMINAL_ID_CLKSOURCE_UACINRTS:
-						USBD_poke_u32(& buff [0], 1 * dsp_get_samplerateuacin_rts()); // sample rate
+						USBD_poke_u32(& buff [0], dsp_get_samplerateuacin_rts()); // sample rate
 						len = 4;
 						break;
 					case TERMINAL_ID_CLKSOURCE_UACIN48:
-						USBD_poke_u32(& buff [0], 1 * dsp_get_samplerateuacin_audio48()); // sample rate
+						USBD_poke_u32(& buff [0], dsp_get_samplerateuacin_audio48()); // sample rate
 						len = 4;
 						break;
 					case TERMINAL_ID_CLKSOURCE_UACOUT48:
-						USBD_poke_u32(& buff [0], 1 * dsp_get_samplerateuacout()); // sample rate
+						USBD_poke_u32(& buff [0], dsp_get_samplerateuacout()); // sample rate
 						len = 4;
 						break;
 					}
@@ -7904,7 +7904,7 @@ static USBD_StatusTypeDef USBD_XXX_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 					const uint_fast8_t terminalID = HI_BYTE(req->wIndex);
 					const uint_fast8_t controlID = HI_BYTE(req->wValue);	// AUDIO_MUTE_CONTROL, AUDIO_VOLUME_CONTROL, ...
 					const uint_fast8_t channelNumber = LO_BYTE(req->wValue);
-					PRINTF(PSTR("2 req->bRequest=%u: interfacev=%u,  controlID=%u, channelNumber=%u, terminalID=%u\n"), req->bRequest, interfacev, controlID, channelNumber, terminalID);
+					//PRINTF(PSTR("2 req->bRequest=%u: interfacev=%u,  controlID=%u, channelNumber=%u, terminalID=%u\n"), req->bRequest, interfacev, controlID, channelNumber, terminalID);
 					switch (req->bRequest)
 					{
 					case AUDIO_REQUEST_GET_CUR:
