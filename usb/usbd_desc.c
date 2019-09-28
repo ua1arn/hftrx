@@ -2483,8 +2483,8 @@ static unsigned fill_UAC2_function(uint_fast8_t fill, uint8_t * p, unsigned maxs
 
 	#else /* WITHUSBUACIN2 */
 		/* на одном устройстве различные форматы для передачи в компьютер для передачи спектра и звука */
-			//n += fill_UAC2_IN48_INRTS_function(fill, p + n, maxsize - n, highspeed, 0);
-			n += fill_UAC2_IN48_function(fill, p + n, maxsize - n, highspeed, 0);
+		//n += fill_UAC2_IN48_INRTS_function(fill, p + n, maxsize - n, highspeed, 0);
+		n += fill_UAC2_IN48_function(fill, p + n, maxsize - n, highspeed, 0);
 
 	#endif /* WITHUSBUACIN2 */
 #endif /* WITHUSBUACIN */
@@ -3839,7 +3839,11 @@ static unsigned fill_Configuration_compound(uint_fast8_t fill, uint8_t * p, unsi
 #endif /* WITHUSBCDC */
 
 #if WITHUSBUAC
-	n += fill_UAC1_function(fill, p + n, maxsize - n, highspeed);
+	#if WITHUAC2
+		n += fill_UAC2_function(fill, p + n, maxsize - n, highspeed);
+	#else /* WITHUAC2 */
+		n += fill_UAC1_function(fill, p + n, maxsize - n, highspeed);
+	#endif /* WITHUAC2 */
 #endif /* WITHUSBUAC */
 
 #if WITHUSBCDCEEM
