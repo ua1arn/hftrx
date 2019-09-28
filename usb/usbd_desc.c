@@ -3826,8 +3826,8 @@ static unsigned fill_Configuration_compound(uint_fast8_t fill, uint8_t * p, unsi
 #endif /* WITHUSBCDC */
 
 #if WITHUSBUAC
-	//n += fill_UAC1_function(fill, p + n, maxsize - n, highspeed);
-	n += fill_UAC2_function(fill, p + n, maxsize - n, highspeed);
+	n += fill_UAC1_function(fill, p + n, maxsize - n, highspeed);
+	//n += fill_UAC2_function(fill, p + n, maxsize - n, highspeed);
 #endif /* WITHUSBUAC */
 
 #if WITHUSBCDCEEM
