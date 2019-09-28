@@ -58,33 +58,33 @@
 
 	#define USB_FUNCTION_PRODUCT_ID	0x0750
 	#define PRODUCTSTR "Storch TRX Bootloader"
-	#define BUILD_ID 1	// модификатор serial sumber
+	#define BUILD_ID 1	// модификатор serial number
 	#define USB_FUNCTION_RELEASE_NO	0x0000
 
 #elif WITHUSBUAC && WITHUSBUACIN2
 	#define PRODUCTSTR "Storch TRX"
 	#define USB_FUNCTION_PRODUCT_ID	0x0737
 	#if WITHRTS96
-		#define BUILD_ID 6	// модификатор serial sumber
+		#define BUILD_ID 6	// модификатор serial number
 		#define USB_FUNCTION_RELEASE_NO	0x0106
 	#elif WITHRTS192
-		#define BUILD_ID 5	// модификатор serial sumber
+		#define BUILD_ID 5	// модификатор serial number
 		#define USB_FUNCTION_RELEASE_NO	0x0105
 	#else
-		#define BUILD_ID 4	// модификатор serial sumber
+		#define BUILD_ID 4	// модификатор serial number
 		#define USB_FUNCTION_RELEASE_NO	0x0104
 	#endif
 #else /* WITHUSBUAC && WITHUSBUACIN2 */
 	#define PRODUCTSTR "Storch TRX"
 	#define USB_FUNCTION_PRODUCT_ID	0x0738
 	#if WITHRTS96
-		#define BUILD_ID 2	// модификатор serial sumber
+		#define BUILD_ID 2	// модификатор serial number
 		#define USB_FUNCTION_RELEASE_NO	0x0102
 	#elif WITHRTS192
-		#define BUILD_ID 1	// модификатор serial sumber
+		#define BUILD_ID 1	// модификатор serial number
 		#define USB_FUNCTION_RELEASE_NO	0x0101
 	#else
-		#define BUILD_ID 0	// модификатор serial sumber
+		#define BUILD_ID 0	// модификатор serial number
 		#define USB_FUNCTION_RELEASE_NO	0x0100
 	#endif
 #endif /* WITHUSBUAC && WITHUSBUACIN2 */
@@ -319,6 +319,8 @@ static unsigned CDCACM_fill_31(uint_fast8_t fill, uint8_t * buff, unsigned maxsi
 		USB_ENDPOINT_SYNC_ASYNCHRONOUS |
 		USB_ENDPOINT_TYPE_ISOCHRONOUS;
 
+	// UAC2 Windows 10
+	// For the Adaptive IN case the driver does not support a feedforward endpoint.
 	static const uint_fast8_t USBD_UAC2_IN_EP_ATTRIBUTES =
 		USB_ENDPOINT_USAGE_IMPLICIT_FEEDBACK |
 		//USB_ENDPOINT_USAGE_DATA |
@@ -330,9 +332,12 @@ static unsigned CDCACM_fill_31(uint_fast8_t fill, uint8_t * buff, unsigned maxsi
 		USB_ENDPOINT_SYNC_ASYNCHRONOUS |
 		USB_ENDPOINT_TYPE_ISOCHRONOUS;
 
+	// UAC2 Windows 10
+	// For the asynchronous OUT case the driver supports explicit feedback only.
 	static const uint_fast8_t USBD_UAC2_OUT_EP_ATTRIBUTES =
-		USB_ENDPOINT_USAGE_DATA | 
-		USB_ENDPOINT_SYNC_ASYNCHRONOUS | 
+		USB_ENDPOINT_USAGE_IMPLICIT_FEEDBACK |
+		//USB_ENDPOINT_USAGE_DATA |
+		USB_ENDPOINT_SYNC_SYNCHRONOUS |
 		USB_ENDPOINT_TYPE_ISOCHRONOUS;
 #endif
 
@@ -355,7 +360,7 @@ static unsigned UAC2_clock_source(uint_fast8_t fill, uint8_t * buff, unsigned ma
 		* buff ++ = CS_INTERFACE;       /* bDescriptorType(0x24): CS_INTERFACE */ 
 		* buff ++ = 0x0A;       /* bDescriptorSubType(0x0A): CLOCK_SOURCE */ 
 		* buff ++ = bClockID;   /* bClockID(0x10): CLOCK_SOURCE_ID */
-		* buff ++ = 0x01;       /* bmAttributes(0x01): internal fixed clock */
+		* buff ++ = 0;//0x01;       /* bmAttributes(0x01): internal fixed clock */
 		* buff ++ = 0x01;       /* was 0x07: bmControls(0x07):
 								clock frequency control: 0b11 - host programmable;                    
 								clock validity control: 0b01 - host read only */ 
@@ -915,7 +920,7 @@ static unsigned UAC2_HeaderDescriptor(
 		* buff ++ = AUDIO_CONTROL_HEADER;           /* 2 bDescriptorSubtype */
 		* buff ++ = LO_BYTE(bcdADC);				/* 3 bcdADC */
 		* buff ++ = HI_BYTE(bcdADC);
-		* buff ++ = 0x08;							/* 4 bCategory   (IO_BOX)*/
+		* buff ++ = 0xFF; //0x08;							/* 4 bCategory   (8: IO_BOX)*/
 		* buff ++ = LO_BYTE(wTotalLength);			/* 6 wTotalLength */
 		* buff ++ = HI_BYTE(wTotalLength);
 		* buff ++ = 0x00;					/* 8 bmControls*/
