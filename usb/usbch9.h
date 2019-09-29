@@ -254,11 +254,11 @@ enum
 		INTERFACE_AUDIO_CONTROL_RTS,		/* AUDIO spectrum control interface */
 		INTERFACE_AUDIO_RTS,		/* USB spectrum Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3)*/ //zero-bandwidth interface
 		//INTERFACE_AUDIO_last = INTERFACE_AUDIO_CONTROL_SPK + 3,
-	#elif 1 /* WITHUSBUACIN2 */
-		// версия с совмещенным устройством IN/OUT
+	#elif 0 /* WITHUSBUACIN2 */
+		// версия с совмещённым устройством IN/OUT
 		INTERFACE_AUDIO_CONTROL_MIKE,		/* AUDIO receiever out control interface */
 		INTERFACE_AUDIO_MIKE,		/* USB Microphone Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3)*/ //zero-bandwidth interface
-#define INTERFACE_AUDIO_CONTROL_SPK 2222
+		#define INTERFACE_AUDIO_CONTROL_SPK 2222
 		INTERFACE_AUDIO_SPK,			/* USB Speaker Standard AS Interface Descriptor - Audio Streaming Zero Bandwith */
 	#else /* WITHUSBUACIN2 */
 		INTERFACE_AUDIO_CONTROL_MIKE,		/* AUDIO receiever out control interface */

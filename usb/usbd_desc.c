@@ -3900,7 +3900,7 @@ static unsigned fill_Configuration_compound(uint_fast8_t fill, uint8_t * p, unsi
 #endif /* WITHUSBCDC */
 
 #if WITHUSBUAC
-	#if 1
+	#if 0
 		n += fill_UAC2_IN48_OUT48_function(fill, p + n, maxsize - n, highspeed, 0);
 	#elif WITHUAC2
 		n += fill_UAC2_function(fill, p + n, maxsize - n, highspeed);
