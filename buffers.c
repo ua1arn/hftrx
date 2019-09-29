@@ -968,14 +968,14 @@ int_fast32_t dsp_get_samplerateuacin_audio48(void)
 }
 // UAC IN samplerate
 // todo: сделать нормальный расчёт для некруглых значений ARMI2SRATE
-int_fast32_t dsp_get_samplerateuacin_rts96(void)
+int_fast32_t dsp_get_samplerateuacin_RTS96(void)
 {
 	return dsp_get_sampleraterxscaled(2);
 }
 
 // UAC IN samplerate
 // todo: сделать нормальный расчёт для некруглых значений ARMI2SRATE
-int_fast32_t dsp_get_samplerateuacin_rts192(void)
+int_fast32_t dsp_get_samplerateuacin_RTS192(void)
 {
 	return dsp_get_sampleraterxscaled(4);
 }
@@ -983,9 +983,9 @@ int_fast32_t dsp_get_samplerateuacin_rts192(void)
 int_fast32_t dsp_get_samplerateuacin_rts(void)		// RTS samplerate
 {
 #if WITHRTS192
-	return dsp_get_samplerateuacin_rts192();
+	return dsp_get_samplerateuacin_RTS192();
 #elif WITHRTS96
-	return dsp_get_samplerateuacin_rts96();
+	return dsp_get_samplerateuacin_RTS96();
 #else
 	return dsp_get_samplerateuacin_audio48();
 #endif

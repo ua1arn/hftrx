@@ -80,8 +80,6 @@
 #define USB_ENDPOINT_USAGE_IMPLICIT_FEEDBACK   0x20
 #define USB_ENDPOINT_USAGE_RESERVED            0x30
 
-#define USB_DESCRIPTOR_MAKE_TYPE_AND_INDEX(d, i) ((uint16_t)((uint16_t)d<<8 | i))
-
 
 /* Endpoint direction bit, stored in address field, also wIndex of SET/CLEAR_FEATURE */
 #define USB_ENDPOINT_DIRECTION_MASK               0x80
