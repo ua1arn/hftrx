@@ -351,7 +351,7 @@ static unsigned USBD_fill_range_lay2pb(uint8_t * b, uint_fast16_t v)
 }
 
 // Fill Layout 3 Parameter Block
-static unsigned USBD_fill_range_lay3pb(uint8_t * b, uint_fast32_t sr)
+static unsigned USBD_fill_range_lay3pb(uint8_t * b, uint_fast32_t v)
 {
 /*
 	If a subrange consists of only a single value,
@@ -361,11 +361,32 @@ static unsigned USBD_fill_range_lay3pb(uint8_t * b, uint_fast32_t sr)
 */
 
 	USBD_poke_u16(b + 0, 1);	// number of subranges
-	USBD_poke_u32(b + 2, sr);	// MIN
-	USBD_poke_u32(b + 6, sr);	// MAX
+	USBD_poke_u32(b + 2, v);	// MIN
+	USBD_poke_u32(b + 6, v);	// MAX
 	USBD_poke_u32(b + 10, 0);	// RES
 
 	return 14;
+}
+
+// Fill Layout 3 Parameter Block
+static unsigned USBD_fill_range_lay3pb2opt(uint8_t * b, uint_fast32_t v1, uint_fast32_t v2)
+{
+/*
+	If a subrange consists of only a single value,
+	the corresponding triplet must contain that value for
+	both its MIN and MAX subattribute
+	and the RES subattribute must be set to zero.
+*/
+
+	USBD_poke_u16(b + 0, 2);	// number of subranges
+	USBD_poke_u32(b + 2, v1);	// MIN
+	USBD_poke_u32(b + 6, v1);	// MAX
+	USBD_poke_u32(b + 10, 0);	// RES
+	USBD_poke_u32(b + 14, v2);	// MIN
+	USBD_poke_u32(b + 18, v2);	// MAX
+	USBD_poke_u32(b + 22, 0);	// RES
+
+	return 26;
 }
 
 #if WITHUSBUAC
@@ -2548,7 +2569,7 @@ static void usbdFunctionReq_seq1(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef 
 					{
 					default:
 					case TERMINAL_ID_CLKSOURCE_UACIN48_UACINRTS:
-						len = controlID == 1 ? USBD_fill_range_lay3pb(buff, 48000000) : USBD_fill_range_lay1pb(buff, 1); // Clock Frequency Control or Clock Validity Control
+						len = controlID == 1 ? USBD_fill_range_lay3pb2opt(buff, dsp_get_samplerateuacin_audio48(), dsp_get_samplerateuacin_rts()) : USBD_fill_range_lay1pb(buff, 1); // Clock Frequency Control or Clock Validity Control
 						break;
 					case TERMINAL_ID_CLKSOURCE_UACINRTS:
 						len = controlID == 1 ? USBD_fill_range_lay3pb(buff, dsp_get_samplerateuacin_rts()) : USBD_fill_range_lay1pb(buff, 1); // Clock Frequency Control or Clock Validity Control

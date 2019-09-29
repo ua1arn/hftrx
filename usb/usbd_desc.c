@@ -2483,8 +2483,7 @@ static unsigned fill_UAC2_function(uint_fast8_t fill, uint8_t * p, unsigned maxs
 
 	#else /* WITHUSBUACIN2 */
 		/* на одном устройстве различные форматы для передачи в компьютер для передачи спектра и звука */
-		//n += fill_UAC2_IN48_INRTS_function(fill, p + n, maxsize - n, highspeed, 0);
-		n += fill_UAC2_IN48_function(fill, p + n, maxsize - n, highspeed, 0);
+		n += fill_UAC2_IN48_INRTS_function(fill, p + n, maxsize - n, highspeed, 0);
 
 	#endif /* WITHUSBUACIN2 */
 #endif /* WITHUSBUACIN */
