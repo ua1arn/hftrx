@@ -122,10 +122,6 @@ enum
 	STRING_ID_x1, /* by offset */
 	STRING_ID_x2, /* by offset */
 
-	STRING_ID_y0, /*  */
-	STRING_ID_y1, /* by offset */
-	STRING_ID_y2, /* by offset */
-
 	//STRING_ID_b,	// tag for USB Speaker Audio Feature Unit Descriptor
 
 	STRING_ID_Left, STRING_ID_Right,	// Идут подряд
@@ -189,10 +185,6 @@ static const struct stringtempl strtemplates [] =
 	{ STRING_ID_x0, "active 1", },	// Audio Control Output Terminal Descriptor
 	{ STRING_ID_x1, "active 2", },	// Audio Control Output Terminal Descriptor
 	{ STRING_ID_x2, "active 3", },	// Audio Control Output Terminal Descriptor
-
-	{ STRING_ID_y0, "With streaming 1", },	// Audio Control Output Terminal Descriptor
-	{ STRING_ID_y1, "With streaming 2", },	// Audio Control Output Terminal Descriptor
-	{ STRING_ID_y2, "With streaming 3", },	// Audio Control Output Terminal Descriptor
 
 	{ STRING_ID_Left, "USB", },	// tag for USB Speaker Audio Feature Unit Descriptor
 	{ STRING_ID_Right, "LSB", },	// tag for USB Speaker Audio Feature Unit Descriptor
@@ -943,16 +935,13 @@ static unsigned UAC2_HeaderDescriptor(
 
 }
 
-/* USB Speaker Standard AS Interface Descriptor - Audio Streaming non-zero Bandwith */
-/* Interface 1, Alternate Setting 0                                             */
-// USBLyzer: Interface Descriptor 0/0 Audio, 0 Endpoints
-static unsigned UAC2_fill_10(
+// Interface Descriptor 2/1 Audio, 0 or 1 Endpoint
+static unsigned UAC2_AS_InterfaceDesc(
 	uint_fast8_t fill, uint8_t * buff, unsigned maxsize,
 	uint_fast8_t bInterfaceNumber,
 	uint_fast8_t bAlternateSetting,
-	uint_fast8_t bNumEndpoints, 
-	uint_fast8_t offset
-	)
+	uint_fast8_t bNumEndpoints,
+	uint_fast8_t offset)
 {
 	const uint_fast8_t length = 9;
 	ASSERT(maxsize >= length);
@@ -962,14 +951,14 @@ static unsigned UAC2_fill_10(
 	{
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;							/* bLength */
-		* buff ++ = USB_INTERFACE_DESCRIPTOR_TYPE;  /* bDescriptorType */
-		* buff ++ = bInterfaceNumber; //;                 /* bInterfaceNumber */
-		* buff ++ = bAlternateSetting;								/* bAlternateSetting  - zero-based index */
-		* buff ++ = bNumEndpoints;                  /* bNumEndpoints */
-		* buff ++ = USB_DEVICE_CLASS_AUDIO;         /* bInterfaceClass */
-		* buff ++ = AUDIO_SUBCLASS_AUDIOSTREAMING;  /* bInterfaceSubClass */
+		* buff ++ = USB_INTERFACE_DESCRIPTOR_TYPE;  // INTERFACE descriptor type (bDescriptorType)
+		* buff ++ = bInterfaceNumber;			// Index of this interface. (bInterfaceNumber)
+		* buff ++ = bAlternateSetting;				// Index of this alternate setting. (bAlternateSetting) - zero-based index
+		* buff ++ = bNumEndpoints;					// bNumEndpoints
+		* buff ++ = USB_DEVICE_CLASS_AUDIO;			// AUDIO (bInterfaceClass)
+		* buff ++ = AUDIO_SUBCLASS_AUDIOSTREAMING;  // AUDIO_STREAMING (bInterfaceSubclass)
 		* buff ++ = AUDIO_PROTOCOL_IP_VERSION_02_00;/* bInterfaceProtocol */
-		* buff ++ = STRING_ID_y0 + offset;          /* iInterface - unused */
+		* buff ++ = STRING_ID_x0 + offset;					/* Unused iInterface */
 		/* 9 byte*/
 	}
 	return length;
@@ -978,7 +967,7 @@ static unsigned UAC2_fill_10(
 
 /* USB Speaker Audio Type I Format Interface Descriptor */
 // USBLyzer: Audio Streaming Format Type 1 Descriptor
-static unsigned UAC2_format_desc_OUT48(uint_fast8_t fill, uint8_t * buff, unsigned maxsize)
+static unsigned UAC2_FormatTypeDescroptor_OUT48(uint_fast8_t fill, uint8_t * buff, unsigned maxsize)
 {
 	const uint_fast8_t length = 6;
 	ASSERT(maxsize >= length);
@@ -1043,35 +1032,6 @@ static unsigned UAC2_fill_15_OUT48(uint_fast8_t fill, uint8_t * buff, unsigned m
 		* buff ++ = LO_BYTE(wLockDelay);			/* wLockDelay */
 		* buff ++ = HI_BYTE(wLockDelay);
 		/* 8 byte*/
-	}
-	return length;
-}
-
-// Interface Descriptor 2/1 Audio, 0 or 1 Endpoint
-static unsigned UAC2_fill_24(
-	uint_fast8_t fill, uint8_t * buff, unsigned maxsize, 
-	uint_fast8_t bInterfaceNumber, 
-	uint_fast8_t bAlternateSetting, 
-	uint_fast8_t bNumEndpoints, 
-	uint_fast8_t offset)
-{
-	const uint_fast8_t length = 9;
-	ASSERT(maxsize >= length);
-	if (maxsize < length)
-		return 0;
-	if (fill != 0 && buff != NULL)
-	{
-		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
-		* buff ++ = length;							/* bLength */
-		* buff ++ = USB_INTERFACE_DESCRIPTOR_TYPE;  // INTERFACE descriptor type (bDescriptorType)
-		* buff ++ = bInterfaceNumber;			// Index of this interface. (bInterfaceNumber)
-		* buff ++ = bAlternateSetting;				// Index of this alternate setting. (bAlternateSetting) - zero-based index 
-		* buff ++ = bNumEndpoints;					// bNumEndpoints
-		* buff ++ = USB_DEVICE_CLASS_AUDIO;			// AUDIO (bInterfaceClass)
-		* buff ++ = AUDIO_SUBCLASS_AUDIOSTREAMING;  // AUDIO_STREAMING (bInterfaceSubclass)
-		* buff ++ = AUDIO_PROTOCOL_IP_VERSION_02_00;/* bInterfaceProtocol */
-		* buff ++ = STRING_ID_x0 + offset;					/* Unused iInterface */
-		/* 9 byte*/
 	}
 	return length;
 }
@@ -1463,11 +1423,11 @@ static unsigned fill_UAC2_INRTS_function(uint_fast8_t fill, uint8_t * p, unsigne
 	// INTERFACE_AUDIO_MIKE - audio streaming interface
 	n += UAC2_AC_InterfaceDescriptor(fill, p + n, maxsize - n, rtscontrolifv, 0x00, offset);	/* INTERFACE_AUDIO_CONTROL_RTS - Interface Descriptor 0/0 Audio, 0 Endpoints */
 	n += UAC2_HeaderDescriptor(fill, p + n, maxsize - n, & rtsifv, & terminalID, & rtspath, 1, offset);	/* bcdADC Audio Control Interface Header Descriptor */
-	n += UAC2_fill_24(fill, p + n, maxsize - n, rtsifv, ialt ++, 0, offset);	/* USB Microphone Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3) */ //zero-bandwidth interface
+	n += UAC2_AS_InterfaceDesc(fill, p + n, maxsize - n, rtsifv, ialt ++, 0, offset);	/* USB Microphone Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3) */ //zero-bandwidth interface
 
 #if WITHRTS96
 	// IN data flow: radio RX spectrum data
-	n += UAC2_fill_24(fill, p + n, maxsize - n, rtsifv, ialt ++, 1, offset);	/* INTERFACE_AUDIO_RTS_2 Interface Descriptor 2/1 Audio, 1 Endpoint, bAlternateSetting=0x01 */
+	n += UAC2_AS_InterfaceDesc(fill, p + n, maxsize - n, rtsifv, ialt ++, 1, offset);	/* INTERFACE_AUDIO_RTS_2 Interface Descriptor 2/1 Audio, 1 Endpoint, bAlternateSetting=0x01 */
 	n += UAC2_AS_InterfaceDescriptor(fill, p + n, maxsize - n, terminalID);	/* USB Microphone Class-specific AS General Interface Descriptor (for output TERMINAL_UACIN48_UACINRTS) (CODE == 5) */
 	n += UAC2_FormatTypeDescroptor_RTS96(fill, p + n, maxsize - n);		/* USB Microphone Type I Format Type Descriptor (CODE == 6) 48000 */
 	n += UAC2_fill_27_RTS96(fill, p + n, maxsize - n, highspeed, epinrts, offset);	/* Endpoint Descriptor USBD_EP_AUDIO_IN In, Isochronous, 125 us */
@@ -1476,7 +1436,7 @@ static unsigned fill_UAC2_INRTS_function(uint_fast8_t fill, uint8_t * p, unsigne
 
 #if WITHRTS192
 	// IN data flow: radio RX spectrum data
-	n += UAC2_fill_24(fill, p + n, maxsize - n, rtsifv, ialt ++, 1, offset);	/* INTERFACE_AUDIO_RTS_2 Interface Descriptor 2/1 Audio, 1 Endpoint, bAlternateSetting=0x01 */
+	n += UAC2_AS_InterfaceDesc(fill, p + n, maxsize - n, rtsifv, ialt ++, 1, offset);	/* INTERFACE_AUDIO_RTS_2 Interface Descriptor 2/1 Audio, 1 Endpoint, bAlternateSetting=0x01 */
 	n += UAC2_AS_InterfaceDescriptor(fill, p + n, maxsize - n, terminalID);	/* USB Microphone Class-specific AS General Interface Descriptor (for output TERMINAL_UACIN48_UACINRTS) (CODE == 5) */
 	n += UAC2_FormatTypeDescroptor_RTS192(fill, p + n, maxsize - n);		/* USB Microphone Type I Format Type Descriptor (CODE == 6) 48000 */
 	n += UAC2_fill_27_RTS192(fill, p + n, maxsize - n, highspeed, epinrts, offset);	/* Endpoint Descriptor USBD_EP_AUDIO_IN In, Isochronous, 125 us */
@@ -1506,10 +1466,10 @@ static unsigned fill_UAC2_IN48_function(uint_fast8_t fill, uint8_t * p, unsigned
 
 	// IN data flow: off
 	// INTERFACE_AUDIO_MIKE - audio streaming interface
-	n += UAC2_fill_24(fill, p + n, maxsize - n, mikeifv, ialt ++, 0, offset);	/* USB Microphone Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3) */ //zero-bandwidth interface
+	n += UAC2_AS_InterfaceDesc(fill, p + n, maxsize - n, mikeifv, ialt ++, 0, offset);	/* USB Microphone Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3) */ //zero-bandwidth interface
 
 	// IN data flow: radio RX audio data
-	n += UAC2_fill_24(fill, p + n, maxsize - n, mikeifv, ialt ++, 1, offset);	/* INTERFACE_AUDIO_MIKE Interface Descriptor 2/1 Audio, 1 Endpoint, bAlternateSetting=0x01 */
+	n += UAC2_AS_InterfaceDesc(fill, p + n, maxsize - n, mikeifv, ialt ++, 1, offset);	/* INTERFACE_AUDIO_MIKE Interface Descriptor 2/1 Audio, 1 Endpoint, bAlternateSetting=0x01 */
 	n += UAC2_AS_InterfaceDescriptor(fill, p + n, maxsize - n, terminalID);	/* USB Microphone Class-specific AS General Interface Descriptor (for output TERMINAL_UACIN48_UACINRTS) (CODE == 5) */
 	n += UAC2_FormatTypeDescroptor_IN48(fill, p + n, maxsize - n);		/* USB Microphone Type I Format Type Descriptor (CODE == 6) 48000 */
 	n += UAC2_fill_27_IN48(fill, p + n, maxsize - n, highspeed, epin, offset);	/* Endpoint Descriptor USBD_EP_AUDIO_IN In, Isochronous, 125 us */
@@ -1537,10 +1497,10 @@ static unsigned fill_UAC2_IN48_INRTS_function(uint_fast8_t fill, uint8_t * p, un
 
 	// IN data flow: off
 	// INTERFACE_AUDIO_MIKE - audio streaming interface
-	n += UAC2_fill_24(fill, p + n, maxsize - n, mikeifv, ialt ++, 0, offset);	/* USB Microphone Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3) */ //zero-bandwidth interface
+	n += UAC2_AS_InterfaceDesc(fill, p + n, maxsize - n, mikeifv, ialt ++, 0, offset);	/* USB Microphone Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3) */ //zero-bandwidth interface
 
 	// IN data flow: demodulator
-	n += UAC2_fill_24(fill, p + n, maxsize - n, mikeifv, ialt ++, 1, offset);	/* INTERFACE_AUDIO_MIKE Interface Descriptor 2/1 Audio, 1 Endpoint, bAlternateSetting=0x01 */
+	n += UAC2_AS_InterfaceDesc(fill, p + n, maxsize - n, mikeifv, ialt ++, 1, offset);	/* INTERFACE_AUDIO_MIKE Interface Descriptor 2/1 Audio, 1 Endpoint, bAlternateSetting=0x01 */
 	n += UAC2_AS_InterfaceDescriptor(fill, p + n, maxsize - n, terminalID);	/* USB Microphone Class-specific AS General Interface Descriptor (for output TERMINAL_UACIN48_UACINRTS) (CODE == 5) */
 	n += UAC2_FormatTypeDescroptor_IN48(fill, p + n, maxsize - n);		/* USB Microphone Type I Format Type Descriptor (CODE == 6) 48000 */
 	n += UAC2_fill_27_IN48(fill, p + n, maxsize - n, highspeed, epin, offset);	/* Endpoint Descriptor USBD_EP_AUDIO_IN In, Isochronous, 125 us */
@@ -1548,7 +1508,7 @@ static unsigned fill_UAC2_IN48_INRTS_function(uint_fast8_t fill, uint8_t * p, un
 
 #if WITHRTS96
 	// IN data flow: radio RX spectrum data
-	n += UAC2_fill_24(fill, p + n, maxsize - n, mikeifv, ialt ++, 1, offset);	/* INTERFACE_AUDIO_MIKE Interface Descriptor 2/1 Audio, 1 Endpoint, bAlternateSetting=0x01 */
+	n += UAC2_AS_InterfaceDesc(fill, p + n, maxsize - n, mikeifv, ialt ++, 1, offset);	/* INTERFACE_AUDIO_MIKE Interface Descriptor 2/1 Audio, 1 Endpoint, bAlternateSetting=0x01 */
 	n += UAC2_AS_InterfaceDescriptor(fill, p + n, maxsize - n, terminalID);	/* USB Microphone Class-specific AS General Interface Descriptor (for output TERMINAL_UACIN48_UACINRTS) (CODE == 5) */
 	n += UAC2_FormatTypeDescroptor_RTS96(fill, p + n, maxsize - n);		/* USB Microphone Type I Format Type Descriptor (CODE == 6) 48000 */
 	n += UAC2_fill_27_RTS96(fill, p + n, maxsize - n, highspeed, epin, offset);	/* Endpoint Descriptor USBD_EP_AUDIO_IN In, Isochronous, 125 us */
@@ -1557,7 +1517,7 @@ static unsigned fill_UAC2_IN48_INRTS_function(uint_fast8_t fill, uint8_t * p, un
 
 #if WITHRTS192
 	// IN data flow: radio RX spectrum data
-	n += UAC2_fill_24(fill, p + n, maxsize - n, mikeifv, ialt ++, 1, offset);	/* INTERFACE_AUDIO_MIKE Interface Descriptor 2/1 Audio, 1 Endpoint, bAlternateSetting=0x01 */
+	n += UAC2_AS_InterfaceDesc(fill, p + n, maxsize - n, mikeifv, ialt ++, 1, offset);	/* INTERFACE_AUDIO_MIKE Interface Descriptor 2/1 Audio, 1 Endpoint, bAlternateSetting=0x01 */
 	n += UAC2_AS_InterfaceDescriptor(fill, p + n, maxsize - n, terminalID);	/* USB Microphone Class-specific AS General Interface Descriptor (for output TERMINAL_UACIN48_UACINRTS) (CODE == 5) */
 	n += UAC1_FormatTypeDescroptor_RTS192(fill, p + n, maxsize - n);		/* USB Microphone Type I Format Type Descriptor (CODE == 6) 48000 */
 	n += UAC2_fill_27_RTS192(fill, p + n, maxsize - n, highspeed, epin, offset);	/* Endpoint Descriptor USBD_EP_AUDIO_IN In, Isochronous, 125 us */
@@ -1584,12 +1544,12 @@ static unsigned fill_UAC2_OUT48_function(uint_fast8_t fill, uint8_t * p, unsigne
 
 	// OUT data flow: off
 	// INTERFACE_AUDIO_SPK - audio streaming interface
-	n += UAC2_fill_10(fill, p + n, maxsize - n, modulatorifv, ialt ++, 0, offset);	/* INTERFACE_AUDIO_SPK - Interface 1, Alternate Setting 0 */
+	n += UAC2_AS_InterfaceDesc(fill, p + n, maxsize - n, modulatorifv, ialt ++, 0, offset);	/* INTERFACE_AUDIO_SPK - Interface 1, Alternate Setting 0 */
 
 	// OUT data flow: modulator
-	n += UAC2_fill_10(fill, p + n, maxsize - n, modulatorifv, ialt ++, 1, offset);	/* INTERFACE_AUDIO_SPK -  Interface 1, Alternate Setting 1 */
+	n += UAC2_AS_InterfaceDesc(fill, p + n, maxsize - n, modulatorifv, ialt ++, 1, offset);	/* INTERFACE_AUDIO_SPK -  Interface 1, Alternate Setting 1 */
 	n += UAC2_AS_InterfaceDescriptor(fill, p + n, maxsize - n, terminalID);	/* USB Speaker Audio Streaming Interface Descriptor (for output TERMINAL_UACOUT48 + offset) */
-	n += UAC2_format_desc_OUT48(fill, p + n, maxsize - n);	/* USB Speaker Audio Type I Format Interface Descriptor (one sample rate) 48000 */
+	n += UAC2_FormatTypeDescroptor_OUT48(fill, p + n, maxsize - n);	/* USB Speaker Audio Type I Format Interface Descriptor (one sample rate) 48000 */
 	n += UAC2_fill_14_OUT48(fill, p + n, maxsize - n, epout, highspeed);	/* Endpoint USBD_EP_AUDIO_OUT - Standard Descriptor */
 	n += UAC2_fill_15_OUT48(fill, p + n, maxsize - n);	/* Endpoint - Audio Streaming Descriptor */
 
@@ -2103,42 +2063,9 @@ static unsigned UAC1_HeaderDescriptor(
 
 }
 
-/* USB Speaker Standard AS Interface Descriptor - Audio Streaming Zero Bandwith */
-/* Interface 1, Alternate Setting 0                                             */
-// USBLyzer: Interface Descriptor 0/0 Audio, 0 Endpoints
-static unsigned UAC1_fill_10(
-	uint_fast8_t fill, uint8_t * buff, unsigned maxsize,
-	uint_fast8_t bInterfaceNumber,
-	uint_fast8_t bAlternateSetting,
-	uint_fast8_t bNumEndpoints,
-	uint_fast8_t offset
-	)
-{
-	const uint_fast8_t length = 9;
-	ASSERT(maxsize >= length);
-	if (maxsize < length)
-		return 0;
-	if (fill != 0 && buff != NULL)
-	{
-		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
-		* buff ++ = length;							/* bLength */
-		* buff ++ = USB_INTERFACE_DESCRIPTOR_TYPE;  /* bDescriptorType */
-		* buff ++ = bInterfaceNumber; //;                 /* bInterfaceNumber */
-		* buff ++ = bAlternateSetting;								/* bAlternateSetting  - zero-based index */
-		* buff ++ = bNumEndpoints;                  /* bNumEndpoints */
-		* buff ++ = USB_DEVICE_CLASS_AUDIO;         /* bInterfaceClass */
-		* buff ++ = AUDIO_SUBCLASS_AUDIOSTREAMING;  /* bInterfaceSubClass */
-		* buff ++ = AUDIO_PROTOCOL_UNDEFINED;       /* bInterfaceProtocol - unused */
-		* buff ++ = STRING_ID_y0 + offset;          /* iInterface - unused */
-		/* 9 byte*/
-	}
-	return length;
-}
-
-
 /* USB Speaker Audio Type I Format Interface Descriptor */
 // USBLyzer: Audio Streaming Format Type Descriptor
-static unsigned UAC1_format_desc_OUT48(uint_fast8_t fill, uint8_t * buff, unsigned maxsize)
+static unsigned UAC1_FormatTypeDescroptor_OUT48(uint_fast8_t fill, uint8_t * buff, unsigned maxsize)
 {
 	const uint_fast8_t length = 11;
 	ASSERT(maxsize >= length);
@@ -2213,8 +2140,8 @@ static unsigned UAC1_fill_15_OUT48(uint_fast8_t fill, uint8_t * buff, unsigned m
 	return length;
 }
 
-// Interface Descriptor 2/1 Audio, 1 Endpoint
-static unsigned UAC1_fill_24(
+// Interface Descriptor
+static unsigned UAC1_AS_InterfaceDesc(
 	uint_fast8_t fill, uint8_t * buff, unsigned maxsize,
 	uint_fast8_t bInterfaceNumber,
 	uint_fast8_t bAlternateSetting,
@@ -2308,11 +2235,11 @@ static unsigned fill_UAC1_INRTS_function(uint_fast8_t fill, uint8_t * p, unsigne
 	// INTERFACE_AUDIO_MIKE - audio streaming interface
 	n += UAC1_AC_InterfaceDescriptor(fill, p + n, maxsize - n, rtscontrolifv, 0x00, offset);	/* INTERFACE_AUDIO_CONTROL_RTS - Interface Descriptor 0/0 Audio, 0 Endpoints */
 	n += UAC1_HeaderDescriptor(fill, p + n, maxsize - n, & rtsifv, & terminalID, & rtspath, 1, offset);	/* bcdADC Audio Control Interface Header Descriptor */
-	n += UAC1_fill_24(fill, p + n, maxsize - n, rtsifv, ialt ++, 0, offset);	/* USB Microphone Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3) */ //zero-bandwidth interface
+	n += UAC1_AS_InterfaceDesc(fill, p + n, maxsize - n, rtsifv, ialt ++, 0, offset);	/* USB Microphone Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3) */ //zero-bandwidth interface
 
 #if WITHRTS96
 	// IN data flow: radio RX spectrum data
-	n += UAC1_fill_24(fill, p + n, maxsize - n, rtsifv, ialt ++, 1, offset);	/* INTERFACE_AUDIO_RTS_2 Interface Descriptor 2/1 Audio, 1 Endpoint, bAlternateSetting=0x01 */
+	n += UAC1_AS_InterfaceDesc(fill, p + n, maxsize - n, rtsifv, ialt ++, 1, offset);	/* INTERFACE_AUDIO_RTS_2 Interface Descriptor 2/1 Audio, 1 Endpoint, bAlternateSetting=0x01 */
 	n += UAC1_AS_InterfaceDescriptor(fill, p + n, maxsize - n, terminalID);	/* USB Microphone Class-specific AS General Interface Descriptor (for output TERMINAL_UACIN48_UACINRTS) (CODE == 5) */
 	n += UAC1_FormatTypeDescroptor_RTS96(fill, p + n, maxsize - n);		/* USB Microphone Type I Format Type Descriptor (CODE == 6) 48000 */
 	n += UAC1_fill_27_RTS96(fill, p + n, maxsize - n, highspeed, epinrts, offset);	/* Endpoint Descriptor USBD_EP_AUDIO_IN In, Isochronous, 125 us */
@@ -2321,7 +2248,7 @@ static unsigned fill_UAC1_INRTS_function(uint_fast8_t fill, uint8_t * p, unsigne
 
 #if WITHRTS192
 	// IN data flow: radio RX spectrum data
-	n += UAC1_fill_24(fill, p + n, maxsize - n, rtsifv, ialt ++, 1, offset);	/* INTERFACE_AUDIO_RTS_2 Interface Descriptor 2/1 Audio, 1 Endpoint, bAlternateSetting=0x01 */
+	n += UAC1_AS_InterfaceDesc(fill, p + n, maxsize - n, rtsifv, ialt ++, 1, offset);	/* INTERFACE_AUDIO_RTS_2 Interface Descriptor 2/1 Audio, 1 Endpoint, bAlternateSetting=0x01 */
 	n += UAC1_AS_InterfaceDescriptor(fill, p + n, maxsize - n, terminalID);	/* USB Microphone Class-specific AS General Interface Descriptor (for output TERMINAL_UACIN48_UACINRTS) (CODE == 5) */
 	n += UAC1_FormatTypeDescroptor_RTS192(fill, p + n, maxsize - n);		/* USB Microphone Type I Format Type Descriptor (CODE == 6) 48000 */
 	n += UAC1_fill_27_RTS192(fill, p + n, maxsize - n, highspeed, epinrts, offset);	/* Endpoint Descriptor USBD_EP_AUDIO_IN In, Isochronous, 125 us */
@@ -2351,10 +2278,10 @@ static unsigned fill_UAC1_IN48_function(uint_fast8_t fill, uint8_t * p, unsigned
 
 	// IN data flow: USB Microphone
 	// INTERFACE_AUDIO_MIKE - audio streaming interface
-	n += UAC1_fill_24(fill, p + n, maxsize - n, mikeifv, ialt ++, 0, offset);	/* USB Microphone Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3) */ //zero-bandwidth interface
+	n += UAC1_AS_InterfaceDesc(fill, p + n, maxsize - n, mikeifv, ialt ++, 0, offset);	/* USB Microphone Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3) */ //zero-bandwidth interface
 
 	// IN data flow: radio RX audio data
-	n += UAC1_fill_24(fill, p + n, maxsize - n, mikeifv, ialt ++, 1, offset);	/* INTERFACE_AUDIO_MIKE Interface Descriptor 2/1 Audio, 1 Endpoint, bAlternateSetting=0x01 */
+	n += UAC1_AS_InterfaceDesc(fill, p + n, maxsize - n, mikeifv, ialt ++, 1, offset);	/* INTERFACE_AUDIO_MIKE Interface Descriptor 2/1 Audio, 1 Endpoint, bAlternateSetting=0x01 */
 	n += UAC1_AS_InterfaceDescriptor(fill, p + n, maxsize - n, terminalID);	/* USB Microphone Class-specific AS General Interface Descriptor (for output TERMINAL_UACIN48_UACINRTS) (CODE == 5) */
 	n += UAC1_FormatTypeDescroptor_IN48(fill, p + n, maxsize - n);		/* USB Microphone Type I Format Type Descriptor (CODE == 6) 48000 */
 	n += UAC1_fill_27_IN48(fill, p + n, maxsize - n, highspeed, epin, offset);	/* Endpoint Descriptor USBD_EP_AUDIO_IN In, Isochronous, 125 us */
@@ -2381,10 +2308,10 @@ static unsigned fill_UAC1_IN48_INRTS_function(uint_fast8_t fill, uint8_t * p, un
 
 	// IN data flow: demodulator
 	// INTERFACE_AUDIO_MIKE - audio streaming interface
-	n += UAC1_fill_24(fill, p + n, maxsize - n, mikeifv, ialt ++, 0, offset);	/* USB Microphone Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3) */ //zero-bandwidth interface
+	n += UAC1_AS_InterfaceDesc(fill, p + n, maxsize - n, mikeifv, ialt ++, 0, offset);	/* USB Microphone Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3) */ //zero-bandwidth interface
 
 	// IN data flow: demodulator
-	n += UAC1_fill_24(fill, p + n, maxsize - n, mikeifv, ialt ++, 1, offset);	/* INTERFACE_AUDIO_MIKE Interface Descriptor 2/1 Audio, 1 Endpoint, bAlternateSetting=0x01 */
+	n += UAC1_AS_InterfaceDesc(fill, p + n, maxsize - n, mikeifv, ialt ++, 1, offset);	/* INTERFACE_AUDIO_MIKE Interface Descriptor 2/1 Audio, 1 Endpoint, bAlternateSetting=0x01 */
 	n += UAC1_AS_InterfaceDescriptor(fill, p + n, maxsize - n, terminalID);	/* USB Microphone Class-specific AS General Interface Descriptor (for output TERMINAL_UACIN48_UACINRTS) (CODE == 5) */
 	n += UAC1_FormatTypeDescroptor_IN48(fill, p + n, maxsize - n);		/* USB Microphone Type I Format Type Descriptor (CODE == 6) 48000 */
 	n += UAC1_fill_27_IN48(fill, p + n, maxsize - n, highspeed, epin, offset);	/* Endpoint Descriptor USBD_EP_AUDIO_IN In, Isochronous, 125 us */
@@ -2392,7 +2319,7 @@ static unsigned fill_UAC1_IN48_INRTS_function(uint_fast8_t fill, uint8_t * p, un
 
 #if WITHRTS96
 	// IN data flow: radio RX spectrum data
-	n += UAC1_fill_24(fill, p + n, maxsize - n, mikeifv, ialt ++, 1, offset);	/* INTERFACE_AUDIO_MIKE Interface Descriptor 2/1 Audio, 1 Endpoint, bAlternateSetting=0x01 */
+	n += UAC1_AS_InterfaceDesc(fill, p + n, maxsize - n, mikeifv, ialt ++, 1, offset);	/* INTERFACE_AUDIO_MIKE Interface Descriptor 2/1 Audio, 1 Endpoint, bAlternateSetting=0x01 */
 	n += UAC1_AS_InterfaceDescriptor(fill, p + n, maxsize - n, terminalID);	/* USB Microphone Class-specific AS General Interface Descriptor (for output TERMINAL_UACIN48_UACINRTS) (CODE == 5) */
 	n += UAC1_FormatTypeDescroptor_RTS96(fill, p + n, maxsize - n);		/* USB Microphone Type I Format Type Descriptor (CODE == 6) 48000 */
 	n += UAC1_fill_27_RTS96(fill, p + n, maxsize - n, highspeed, epin, offset);	/* Endpoint Descriptor USBD_EP_AUDIO_IN In, Isochronous, 125 us */
@@ -2401,7 +2328,7 @@ static unsigned fill_UAC1_IN48_INRTS_function(uint_fast8_t fill, uint8_t * p, un
 
 #if WITHRTS192
 	// IN data flow: radio RX spectrum data
-	n += UAC1_fill_24(fill, p + n, maxsize - n, mikeifv, ialt ++, 1, offset);	/* INTERFACE_AUDIO_MIKE Interface Descriptor 2/1 Audio, 1 Endpoint, bAlternateSetting=0x01 */
+	n += UAC1_AS_InterfaceDesc(fill, p + n, maxsize - n, mikeifv, ialt ++, 1, offset);	/* INTERFACE_AUDIO_MIKE Interface Descriptor 2/1 Audio, 1 Endpoint, bAlternateSetting=0x01 */
 	n += UAC1_AS_InterfaceDescriptor(fill, p + n, maxsize - n, terminalID);	/* USB Microphone Class-specific AS General Interface Descriptor (for output TERMINAL_UACIN48_UACINRTS) (CODE == 5) */
 	n += UAC1_FormatTypeDescroptor_RTS192(fill, p + n, maxsize - n);		/* USB Microphone Type I Format Type Descriptor (CODE == 6) 48000 */
 	n += UAC1_fill_27_RTS192(fill, p + n, maxsize - n, highspeed, epin, offset);	/* Endpoint Descriptor USBD_EP_AUDIO_IN In, Isochronous, 125 us */
@@ -2429,13 +2356,67 @@ static unsigned fill_UAC1_OUT48_function(uint_fast8_t fill, uint8_t * p, unsigne
 
 	// OUT data flow: modulator
 	// INTERFACE_AUDIO_SPK - audio streaming interface
-	n += UAC1_fill_10(fill, p + n, maxsize - n, modulatorifv, ialt ++, 0, offset);	/* INTERFACE_AUDIO_SPK - Interface 1, Alternate Setting 0 */
+	n += UAC1_AS_InterfaceDesc(fill, p + n, maxsize - n, modulatorifv, ialt ++, 0, offset);	/* INTERFACE_AUDIO_SPK - Interface 1, Alternate Setting 0 */
 
-	n += UAC1_fill_10(fill, p + n, maxsize - n, modulatorifv, ialt ++, 1, offset);	/* INTERFACE_AUDIO_SPK -  Interface 1, Alternate Setting 1 */
+	n += UAC1_AS_InterfaceDesc(fill, p + n, maxsize - n, modulatorifv, ialt ++, 1, offset);	/* INTERFACE_AUDIO_SPK -  Interface 1, Alternate Setting 1 */
 	n += UAC1_AS_InterfaceDescriptor(fill, p + n, maxsize - n, terminalID);	/* USB Speaker Audio Streaming Interface Descriptor (for output TERMINAL_UACOUT48 + offset) */
-	n += UAC1_format_desc_OUT48(fill, p + n, maxsize - n);	/* USB Speaker Audio Type I Format Interface Descriptor (one sample rate) 48000 */
+	n += UAC1_FormatTypeDescroptor_OUT48(fill, p + n, maxsize - n);	/* USB Speaker Audio Type I Format Interface Descriptor (one sample rate) 48000 */
 	n += UAC1_fill_14_OUT48(fill, p + n, maxsize - n, epout, highspeed);	/* Endpoint USBD_EP_AUDIO_OUT - Standard Descriptor */
 	n += UAC1_fill_15_OUT48(fill, p + n, maxsize - n);	/* Endpoint - Audio Streaming Descriptor */
+
+	return n;
+}
+
+
+static unsigned fill_UAC1_IN48_OUT48_function(uint_fast8_t fill, uint8_t * p, unsigned maxsize, int highspeed, uint_fast8_t offset)
+{
+	unsigned n = 0;
+	const uint_fast8_t controlifv = INTERFACE_AUDIO_CONTROL_MIKE;	/* AUDIO receiver out control interface */
+	const uint_fast8_t mikeifv = INTERFACE_AUDIO_MIKE;
+	const uint_fast8_t modulatorifv = INTERFACE_AUDIO_SPK;
+	const uint_fast8_t coll [] =
+	{
+		modulatorifv,
+		mikeifv,
+	};
+	const uint_fast8_t terminalIDs [] =
+	{
+		TERMINAL_UACOUT48,
+		TERMINAL_UACIN48,
+	};
+	const uac_pathfn_t rtspath [] =
+	{
+			UAC1_TopologyIN48,
+			UAC1_TopologyOUT48,
+	};
+	const uint_fast8_t epin = USB_ENDPOINT_IN(USBD_EP_AUDIO_IN + offset);
+	const uint_fast8_t epout = USB_ENDPOINT_OUT(USBD_EP_AUDIO_OUT + offset);
+
+	n += UAC1_InterfaceAssociationDescriptor(fill, p + n, maxsize - n, controlifv, /*bInterfaceCount */3, offset);	/* INTERFACE_AUDIO_CONTROL_0 Interface Association Descriptor Audio */
+	// INTERFACE_AUDIO_CONTROL_0 - audio control interface
+	n += UAC1_AC_InterfaceDescriptor(fill, p + n, maxsize - n, controlifv, 0x00, offset);	/* INTERFACE_AUDIO_CONTROL_0 - Interface Descriptor 0/0 Audio, 0 Endpoints */
+	n += UAC1_HeaderDescriptor(fill, p + n, maxsize - n, coll, terminalIDs, rtspath, sizeof coll / sizeof coll [0], offset);	/* bcdADC Audio Control Interface Header Descriptor */
+
+	// OUT data flow: USB Speaker
+	// INTERFACE_AUDIO_SPK_1 - audio streaming interface
+	n += UAC1_AS_InterfaceDesc(fill, p + n, maxsize - n, modulatorifv, UACOUTALT_NONE, 0, offset);	/* INTERFACE_AUDIO_SPK - Interface 1, Alternate Setting 0 */
+
+	n += UAC1_AS_InterfaceDesc(fill, p + n, maxsize - n, modulatorifv, UACOUTALT_AUDIO48, 1, offset);	/* INTERFACE_AUDIO_SPK - Interface 1, Alternate Setting 0 */
+	n += UAC1_AS_InterfaceDescriptor(fill, p + n, maxsize - n, TERMINAL_UACOUT48);	/* USB Speaker Audio Streaming Interface Descriptor (for output TERMINAL_ID_IT_1 + offset) */
+	n += UAC1_FormatTypeDescroptor_OUT48(fill, p + n, maxsize - n);	/* USB Speaker Audio Type I Format Interface Descriptor (one sample rate) 48000 */
+	n += UAC1_fill_14_OUT48(fill, p + n, maxsize - n, epout, highspeed);	/* Endpoint USBD_EP_AUDIO_OUT - Standard Descriptor */
+	n += UAC1_fill_15_OUT48(fill, p + n, maxsize - n);	/* Endpoint - Audio Streaming Descriptor */
+	// IN data flow: USB Microphone
+	// INTERFACE_AUDIO_MIKE_2 - audio streaming interface
+	n += UAC1_AS_InterfaceDesc(fill, p + n, maxsize - n, mikeifv, UACINALT_NONE, 0, offset);	/* USB Microphone Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3) */ //zero-bandwidth interface
+
+	// IN data flow: radio RX audio data
+	n += UAC1_AS_InterfaceDesc(fill, p + n, maxsize - n, mikeifv, UACINALT_AUDIO48, 1, offset);	/* INTERFACE_AUDIO_MIKE_2 Interface Descriptor 2/1 Audio, 1 Endpoint, bAlternateSetting=0x01 */
+	n += UAC1_AS_InterfaceDescriptor(fill, p + n, maxsize - n, TERMINAL_UACIN48);	/* USB Microphone Class-specific AS General Interface Descriptor (for output TERMINAL_ID_OT_4) (CODE == 5) */
+	n += UAC1_FormatTypeDescroptor_IN48(fill, p + n, maxsize - n);		/* USB Microphone Type I Format Type Descriptor (CODE == 6) 48000 */
+	n += UAC1_fill_27_IN48(fill, p + n, maxsize - n, highspeed, epin, offset);	/* Endpoint Descriptor USBD_EP_AUDIO_IN In, Isochronous, 125 us */
+	n += UAC1_fill_28(fill, p + n, maxsize - n);	/* USB Microphone Class-specific Isoc. Audio Data Endpoint Descriptor (CODE == 7) OK - ???????????? ?????????????*/
+
 
 	return n;
 }
@@ -3840,7 +3821,10 @@ static unsigned fill_Configuration_compound(uint_fast8_t fill, uint8_t * p, unsi
 #endif /* WITHUSBCDC */
 
 #if WITHUSBUAC
-	#if WITHUAC2
+	#if 0
+		n += fill_UAC1_IN48_OUT48_function(fill, p + n, maxsize - n, highspeed, 0);
+		//n += fill_UACINOUT48_function(fill, p + n, maxsize - n, highspeed, 0);
+	#elif WITHUAC2
 		n += fill_UAC2_function(fill, p + n, maxsize - n, highspeed);
 	#else /* WITHUAC2 */
 		n += fill_UAC1_function(fill, p + n, maxsize - n, highspeed);

@@ -433,6 +433,13 @@ enum
 	UACINRTSALT_top
 };
 
+enum
+{
+	UACOUTALT_NONE = 0,
+	UACOUTALT_AUDIO48,
+
+	UACOUTALTALT_top
+};
 
 struct descholder
 {
