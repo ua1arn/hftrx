@@ -683,7 +683,8 @@ static unsigned UAC_AudioSelectorUnit_IN(
 static unsigned UAC2_AudioFeatureUnit(
 	uint_fast8_t fill, uint8_t * buff, unsigned maxsize,
 	uint_fast8_t bUnitID,
-	uint_fast8_t bSourceID
+	uint_fast8_t bSourceID,
+	uint_fast8_t offset
 	)
 {
 	// Параметр определяет, ккие управляющие элементы появляются на страничке управления "Custom"
@@ -799,8 +800,8 @@ static unsigned UAC2_TopologyIN48(
 	{
 		// Только один источник для компьютера
 		n += UAC2_AudioControlOT_IN(fill, p + n, maxsize - n,  bTerminalID, FU_ID, bCSourceID, offset);	/* AUDIO_TERMINAL_USB_STREAMING Terminal Descriptor TERMINAL_ID_FU_AUDIO -> TERMINAL_UACIN48_UACINRTS */
-		n += UAC2_AudioFeatureUnit(fill, p + n, maxsize - n, FU_ID, bTerminalID + 2);	/* USB microphone Audio Feature Unit Descriptor TERMINAL_UACOUT48 -> TERMINAL_ID_FU_AUDIO */
-		n += UAC2_AudioControlIT_IN48(fill, p + n, maxsize - n, bTerminalID + 2, bCSourceID, offset);	/* AUDIO_TERMINAL_RADIO_RECEIVER */
+		n += UAC2_AudioFeatureUnit(fill, p + n, maxsize - n, FU_ID, bTerminalID + 1, offset);	/* USB microphone Audio Feature Unit Descriptor TERMINAL_UACOUT48 -> TERMINAL_ID_FU_AUDIO */
+		n += UAC2_AudioControlIT_IN48(fill, p + n, maxsize - n, bTerminalID + 1, bCSourceID, offset);	/* AUDIO_TERMINAL_RADIO_RECEIVER */
 	}
 
 	return n;
@@ -831,8 +832,8 @@ static unsigned UAC2_TopologyIN48_INRTS(
 	{
 		// Только один источник для компьютера
 		n += UAC2_AudioControlOT_IN(fill, p + n, maxsize - n,  bTerminalID, FU_ID, bCSourceID, offset);	/* AUDIO_TERMINAL_USB_STREAMING Terminal Descriptor TERMINAL_ID_FU_AUDIO -> TERMINAL_UACIN48_UACINRTS */
-		n += UAC2_AudioFeatureUnit(fill, p + n, maxsize - n, FU_ID, bTerminalID + 2);	/* USB microphone Audio Feature Unit Descriptor TERMINAL_UACOUT48 -> TERMINAL_ID_FU_AUDIO */
-		n += UAC2_AudioControlIT_IN48_INRTS(fill, p + n, maxsize - n, bTerminalID + 2, bCSourceID, offset);	/* AUDIO_TERMINAL_RADIO_RECEIVER */
+		n += UAC2_AudioFeatureUnit(fill, p + n, maxsize - n, FU_ID, bTerminalID + 1, offset);	/* USB microphone Audio Feature Unit Descriptor TERMINAL_UACOUT48 -> TERMINAL_ID_FU_AUDIO */
+		n += UAC2_AudioControlIT_IN48_INRTS(fill, p + n, maxsize - n, bTerminalID + 1, bCSourceID, offset);	/* AUDIO_TERMINAL_RADIO_RECEIVER */
 	}
 
 	return n;
@@ -861,8 +862,8 @@ static unsigned UAC2_TopologyOUT48(
 	else
 	{
 		n += UAC2_AudioControlIT_OUT48(fill, p + n, maxsize - n, bTerminalID, bCSourceID, offset);	/* AUDIO_TERMINAL_USB_STREAMING Input Terminal Descriptor TERMINAL_UACOUT48 */
-		n += UAC2_AudioFeatureUnit(fill, p + n, maxsize - n, FU_ID, bTerminalID);	/* USB Speaker Audio Feature Unit Descriptor TERMINAL_UACOUT48 -> TERMINAL_ID_FU_5 */
-		n += UAC2_AudioControlOT_OUT(fill, p + n, maxsize - n, bTerminalID + 2, FU_ID, bCSourceID, offset);	/* AUDIO_TERMINAL_RADIO_TRANSMITTER Output Terminal Descriptor TERMINAL_ID_FU_5 -> TERMINAL_ID_OT_3 */
+		n += UAC2_AudioFeatureUnit(fill, p + n, maxsize - n, FU_ID, bTerminalID, offset);	/* USB Speaker Audio Feature Unit Descriptor TERMINAL_UACOUT48 -> TERMINAL_ID_FU_5 */
+		n += UAC2_AudioControlOT_OUT(fill, p + n, maxsize - n, bTerminalID + 1, FU_ID, bCSourceID, offset);	/* AUDIO_TERMINAL_RADIO_TRANSMITTER Output Terminal Descriptor TERMINAL_ID_FU_5 -> TERMINAL_ID_OT_3 */
 	}
 
 	return n;
@@ -890,8 +891,8 @@ static unsigned UAC2_TopologyINRTS(
 	else
 	{
 		n += UAC2_AudioControlOT_IN(fill, p + n, maxsize - n,  bTerminalID, FU_ID, bCSourceID, offset);	/* AUDIO_TERMINAL_USB_STREAMING Terminal Descriptor TERMINAL_ID_IT_2 -> TERMINAL_UACIN48_UACINRTS */
-		n += UAC2_AudioFeatureUnit(fill, p + n, maxsize - n, FU_ID, bTerminalID + 2);	/* USB microphone Audio Feature Unit Descriptor TERMINAL_UACOUT48 -> TERMINAL_ID_FU_RTS */
-		n += UAC2_AudioControlIT_INRTS(fill, p + n, maxsize - n, bTerminalID + 2, bCSourceID, offset);	/* AUDIO_TERMINAL_RADIO_RECEIVER */
+		n += UAC2_AudioFeatureUnit(fill, p + n, maxsize - n, FU_ID, bTerminalID + 1, offset);	/* USB microphone Audio Feature Unit Descriptor TERMINAL_UACOUT48 -> TERMINAL_ID_FU_RTS */
+		n += UAC2_AudioControlIT_INRTS(fill, p + n, maxsize - n, bTerminalID + 1, bCSourceID, offset);	/* AUDIO_TERMINAL_RADIO_RECEIVER */
 	}
 
 	return n;
@@ -1697,7 +1698,8 @@ static unsigned UAC1_AudioSelectorUnit_IN(
 static unsigned UAC1_AudioFeatureUnit(
 	uint_fast8_t fill, uint8_t * buff, unsigned maxsize,
 	uint_fast8_t bUnitID,
-	uint_fast8_t bSourceID
+	uint_fast8_t bSourceID,
+	uint_fast8_t offset
 	)
 {
 	// Параметр определяет, ккие управляющие элементы появляются на страничке управления "Custom"
@@ -1752,7 +1754,8 @@ static unsigned UAC1_AudioFeatureUnit(
 static unsigned UAC1_AudioControlOT_OUT(
 	uint_fast8_t fill, uint8_t * buff, unsigned maxsize,
 	uint_fast8_t bTerminalID,
-	uint_fast8_t bSourceID
+	uint_fast8_t bSourceID,
+	uint_fast8_t offset
 	)
 {
 	const uint_fast8_t length = 9;
@@ -1801,8 +1804,8 @@ static unsigned UAC1_TopologyIN48(
 	{
 		// Только один источник для компьютера
 		n += UAC1_AudioControlOT_IN(fill, p + n, maxsize - n,  bTerminalID, FU_ID, offset);	/* AUDIO_TERMINAL_USB_STREAMING Terminal Descriptor TERMINAL_ID_FU_AUDIO -> TERMINAL_UACIN48_UACINRTS */
-		n += UAC1_AudioFeatureUnit(fill, p + n, maxsize - n, FU_ID, bTerminalID + 2);	/* USB microphone Audio Feature Unit Descriptor TERMINAL_UACOUT48 -> TERMINAL_ID_FU_AUDIO */
-		n += UAC1_AudioControlIT_IN48(fill, p + n, maxsize - n, bTerminalID + 2, offset);	/* AUDIO_TERMINAL_RADIO_RECEIVER */
+		n += UAC1_AudioFeatureUnit(fill, p + n, maxsize - n, FU_ID, bTerminalID + 1, offset);	/* USB microphone Audio Feature Unit Descriptor TERMINAL_UACOUT48 -> TERMINAL_ID_FU_AUDIO */
+		n += UAC1_AudioControlIT_IN48(fill, p + n, maxsize - n, bTerminalID + 1, offset);	/* AUDIO_TERMINAL_RADIO_RECEIVER */
 	}
 
 	return n;
@@ -1831,8 +1834,8 @@ static unsigned UAC1_TopologyIN48_INRTS(
 	{
 		// Только один источник для компьютера
 		n += UAC1_AudioControlOT_IN(fill, p + n, maxsize - n,  bTerminalID, FU_ID, offset);	/* AUDIO_TERMINAL_USB_STREAMING Terminal Descriptor TERMINAL_ID_FU_AUDIO -> TERMINAL_UACIN48_UACINRTS */
-		n += UAC1_AudioFeatureUnit(fill, p + n, maxsize - n, FU_ID, bTerminalID + 2);	/* USB microphone Audio Feature Unit Descriptor TERMINAL_UACOUT48 -> TERMINAL_ID_FU_AUDIO */
-		n += UAC1_AudioControlIT_IN48_INRTS(fill, p + n, maxsize - n, bTerminalID + 2, offset);	/* AUDIO_TERMINAL_RADIO_RECEIVER */
+		n += UAC1_AudioFeatureUnit(fill, p + n, maxsize - n, FU_ID, bTerminalID + 1, offset);	/* USB microphone Audio Feature Unit Descriptor TERMINAL_UACOUT48 -> TERMINAL_ID_FU_AUDIO */
+		n += UAC1_AudioControlIT_IN48_INRTS(fill, p + n, maxsize - n, bTerminalID + 1, offset);	/* AUDIO_TERMINAL_RADIO_RECEIVER */
 	}
 
 	return n;
@@ -1854,13 +1857,13 @@ static unsigned UAC1_TopologyOUT48(
 	{
 		// без feature unit между IT и OT
 		n += UAC1_AudioControlIT_OUT48(fill, p + n, maxsize - n, bTerminalID, offset);	/* AUDIO_TERMINAL_USB_STREAMING Input Terminal Descriptor TERMINAL_UACOUT48 + offset */
-		n += UAC1_AudioControlOT_OUT(fill, p + n, maxsize - n, bTerminalID + 1, bTerminalID);	/* AUDIO_TERMINAL_RADIO_TRANSMITTER Output Terminal Descriptor TERMINAL_UACOUT48 + offset -> TERMINAL_ID_OT_3 + offset */
+		n += UAC1_AudioControlOT_OUT(fill, p + n, maxsize - n, bTerminalID + 1, bTerminalID, offset);	/* AUDIO_TERMINAL_RADIO_TRANSMITTER Output Terminal Descriptor TERMINAL_UACOUT48 + offset -> TERMINAL_ID_OT_3 + offset */
 	}
 	else
 	{
 		n += UAC1_AudioControlIT_OUT48(fill, p + n, maxsize - n, bTerminalID, offset);	/* AUDIO_TERMINAL_USB_STREAMING Input Terminal Descriptor TERMINAL_UACOUT48 */
-		n += UAC1_AudioFeatureUnit(fill, p + n, maxsize - n, FU_ID, bTerminalID);	/* USB Speaker Audio Feature Unit Descriptor TERMINAL_UACOUT48 -> TERMINAL_ID_FU_5 */
-		n += UAC1_AudioControlOT_OUT(fill, p + n, maxsize - n, bTerminalID + 2, FU_ID);	/* AUDIO_TERMINAL_RADIO_TRANSMITTER Output Terminal Descriptor TERMINAL_ID_FU_5 -> TERMINAL_ID_OT_3 */
+		n += UAC1_AudioFeatureUnit(fill, p + n, maxsize - n, FU_ID, bTerminalID, offset);	/* USB Speaker Audio Feature Unit Descriptor TERMINAL_UACOUT48 -> TERMINAL_ID_FU_5 */
+		n += UAC1_AudioControlOT_OUT(fill, p + n, maxsize - n, bTerminalID + 1, FU_ID, offset);	/* AUDIO_TERMINAL_RADIO_TRANSMITTER Output Terminal Descriptor TERMINAL_ID_FU_5 -> TERMINAL_ID_OT_3 */
 	}
 
 	return n;
@@ -1886,8 +1889,8 @@ static unsigned UAC1_TopologyINRTS(
 	else
 	{
 		n += UAC1_AudioControlOT_IN(fill, p + n, maxsize - n,  bTerminalID, FU_ID, offset);	/* AUDIO_TERMINAL_USB_STREAMING Terminal Descriptor TERMINAL_ID_IT_2 -> TERMINAL_UACIN48_UACINRTS */
-		n += UAC1_AudioFeatureUnit(fill, p + n, maxsize - n, FU_ID, bTerminalID + 2);	/* USB microphone Audio Feature Unit Descriptor TERMINAL_UACOUT48 -> TERMINAL_ID_FU_RTS */
-		n += UAC1_AudioControlIT_INRTS(fill, p + n, maxsize - n, bTerminalID + 2, offset);	/* AUDIO_TERMINAL_RADIO_RECEIVER */
+		n += UAC1_AudioFeatureUnit(fill, p + n, maxsize - n, FU_ID, bTerminalID + 1, offset);	/* USB microphone Audio Feature Unit Descriptor TERMINAL_UACOUT48 -> TERMINAL_ID_FU_RTS */
+		n += UAC1_AudioControlIT_INRTS(fill, p + n, maxsize - n, bTerminalID + 1, offset);	/* AUDIO_TERMINAL_RADIO_RECEIVER */
 	}
 
 	return n;
