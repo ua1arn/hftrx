@@ -639,12 +639,6 @@
 			arm_hardware_pio1_alternative((ainmask) << 8, R7S721_PIOALT_1);	/* P1_8..P1_15 - AN0..AN7 inputs */ \
 		} while (0)
 
-	#define HARDWARE_DAC_INITIALIZE() do { \
-		} while (0)
-
-	#define HARDWARE_SIDETONE_INITIALIZE() do { \
-		} while (0)
-
 	#define	HARDWARE_BL_INITIALIZE() do { \
 		const portholder_t enpins = (1U << 9); /* P7_9 */ \
 		const portholder_t blpins = (1U << 3) | (1U << 2); /* P7_3:P7_2 */ \
@@ -751,16 +745,14 @@
 
 	/* макроопределение, которое должно включить в себя все инициализации */
 	#define	HARDWARE_INITIALIZE() do { \
+		HARDWARE_DCDC_INITIALIZE(); \
+		HARDWARE_KBD_INITIALIZE(); \
 		HARDWARE_FPGA_LOADER_INITIALIZE(); \
 		HARDWARE_FPGA_RESET(); \
-		HARDWARE_SIDETONE_INITIALIZE(); \
-		HARDWARE_KBD_INITIALIZE(); \
-		HARDWARE_DAC_INITIALIZE(); \
-		HARDWARE_DCDC_INITIALIZE(); \
-		HARDWARE_BL_INITIALIZE(); \
 		TUNE_INITIALIZE(); \
 		HARDWARE_USB0_INITIALIZE(); \
 		HARDWARE_USB1_INITIALIZE(); \
+		HARDWARE_BL_INITIALIZE(); \
 		HARDWARE_LVDSTX_INITIALIZE(); \
 		} while (0)
 
