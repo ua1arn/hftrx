@@ -6146,9 +6146,15 @@ static void board_fpga_loader_PS(void)
 		#error Missing FPGA image file
 	#endif
 
+	unsigned r = 3;
 restart:
 	;
-	unsigned long w = 1000;
+	if (-- r == 0)
+	{
+		debug_printf_P(PSTR("fpga: board_fpga_loader_PS: FPGA not loaded\n"));
+		return;
+	}
+	unsigned w = 500;
 	do {
 		debug_printf_P(PSTR("fpga: board_fpga_loader_PS start\n"));
 		const size_t rbflength = sizeof rbfimage / sizeof rbfimage [0];
@@ -6269,7 +6275,7 @@ static void board_fpga_loader_wait_AS(void)
 
 void board_fpga_reset(void)
 {
-	unsigned long w = 1000;
+	unsigned w = 500;
 	/* After power up, the Cyclone IV device holds nSTATUS low during POR delay. */
 
 	FPGA_NCONFIG_PORT_S(FPGA_NCONFIG_BIT);
