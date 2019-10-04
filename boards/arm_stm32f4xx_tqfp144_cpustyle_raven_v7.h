@@ -55,7 +55,7 @@
 	//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
 	//#define WITHUSBHID		1	/* HID использовать Human Interface Device на USB соединении */
 
-	#define WITHCAT_CDC		1	/* использовать виртуальный воследовательный порт на USB соединении */
+	#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
 	//#define WITHCAT_USART2		1
 	#define WITHMODEM_CDC	1
 	#define WITHDEBUG_USART2	1
@@ -65,7 +65,7 @@
 	#define WITHUART1HW	1	/* PA9, PA10 Используется периферийный контроллер последовательного порта #1 */
 	#define WITHUART2HW	1	/* PD5, PD6 Используется периферийный контроллер последовательного порта #2 */
 
-	//#define WITHCAT_CDC		1	/* использовать виртуальный воследовательный порт на USB соединении */
+	//#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
 	#define WITHCAT_USART1		1
 	#define WITHDEBUG_USART1	1
 	#define WITHMODEM_USART1	1

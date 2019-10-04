@@ -571,7 +571,7 @@ static void display_rec3(
 }
 
 // отображение состояния USB HOST
-static void display_usb1(
+static void display_usb3(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
 	void * pv
@@ -581,9 +581,9 @@ static void display_usb1(
 	const uint_fast8_t active = hamradio_get_usbh_active();
 	#if LCDMODE_COLORED
 		display_setcolors(TXRXMODECOLOR, active ? MODECOLORBG_TX : MODECOLORBG_RX);
-		display_at_P(x, y, PSTR("U"));
+		display_at_P(x, y, PSTR("USB"));
 	#else /* LCDMODE_COLORED */
-		display_at_P(x, y, active ? PSTR("U") : PSTR("X"));
+		display_at_P(x, y, active ? PSTR("USB") : PSTR("   "));
 	#endif /* LCDMODE_COLORED */
 #endif /* defined (WITHUSBHW_HOST) */
 }
@@ -4245,7 +4245,7 @@ enum
 	#define SMETERMAP		"1  3  5  7  9 +20 +40 60"
 	enum
 	{
-		BDTH_ALLRXBARS = 24,	// ширина зоны для отображение баргшрафов на индикаторе
+		BDTH_ALLRXBARS = 24,	// ширина зоны для отображение барграфов на индикаторе
 		BDTH_ALLRX = 40,	// ширина зоны для отображение графического окна на индикаторе
 
 		BDTH_LEFTRX = 12,	// ширина индикатора баллов (без плюслв)
@@ -4256,7 +4256,7 @@ enum
 		BDTH_ALLPWR = 9,
 		BDTH_SPACEPWR = 0,
 
-		BDCV_ALLRX = ROWS2GRID(55),	// количество ячееек, отведенное под S-метр, панораму, иные отображения
+		BDCV_ALLRX = ROWS2GRID(55),	// количество строк, отведенное под S-метр, панораму, иные отображения
 		/* совмещение на одном экрание водопада и панорамы */
 		BDCO_SPMRX = ROWS2GRID(0),	// смещение спектра по вертикали в ячейках от начала общего поля
 		BDCV_SPMRX = ROWS2GRID(27),	// вертикальный размер спектра в ячейках
@@ -4367,6 +4367,7 @@ enum
 		{	0,	DLE1,	display_datetime12,	REDRM_BARS, PGALL,	},	// DATE&TIME Jan-01 13:40
 		{	13,	DLE1,	display_span9,		REDRM_MODE, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
 		{	23, DLE1,	display_thermo4,	REDRM_VOLT, PGALL, },	// thermo sensor
+		{	28, DLE1,	display_usb3,		REDRM_BARS, PGALL, },	// USB host status
 
 		{	39, DLE1,	display_currlevel5, REDRM_VOLT, PGALL, },	// PA drain current d.dd without "A"
 		{	45, DLE1,	display_voltlevelV5, REDRM_VOLT, PGALL, },	// voltmeter with "V"
@@ -4978,11 +4979,10 @@ static uint_fast8_t wfclear;			// стирание всей областии о�
 enum { PALETTESIZE = 256 };
 static PACKEDCOLOR565_T wfpalette [PALETTESIZE];
 
-#define COLOR565_GRIDCOLOR		TFTRGB565(128, 128, 0)		//COLOR_GRAY - center marker
-#define COLOR565_GRIDCOLOR2		TFTRGB565(128, 0, 0x00)		//COLOR_DARKRED - other markers
-#define COLOR565_SPECTRUMBG		TFTRGB565(0, 0, 0)			//COLOR_BLACK
-#define COLOR565_SPECTRUMBG2	TFTRGB565(0, 128, 128)		//COLOR_CYAN - полоса пропускания приемника
-//#define COLOR565_SPECTRUMBG2	TFTRGB565(0x80, 0x80, 0x00)	//COLOR_OLIVE - полоса пропускания приемника
+#define COLOR565_GRIDCOLOR		TFTRGB565(48, 48, 48)		//COLOR_GRAY - center marker
+#define COLOR565_GRIDCOLOR2		TFTRGB565(128, 128, 128)		//COLOR_DARKRED - other markers
+#define COLOR565_SPECTRUMBG		TFTRGB565(0, 96, 48)			//
+#define COLOR565_SPECTRUMBG2	TFTRGB565(0, 48, 32)		//COLOR_xxx - полоса пропускания приемника
 #define COLOR565_SPECTRUMFG		TFTRGB565(0, 255, 0)		//COLOR_GREEN
 #define COLOR565_SPECTRUMFENCE	TFTRGB565(255, 255, 255)	//COLOR_WHITE
 #define COLOR565_SPECTRUMLINE	TFTRGB565(0, 255, 0)	//COLOR_GREEN

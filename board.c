@@ -6164,9 +6164,15 @@ static void board_fpga_loader_PS(void)
 		#error Missing FPGA image file
 	#endif
 
+	unsigned r = 3;
 restart:
 	;
-	unsigned long w = 1000;
+	if (-- r == 0)
+	{
+		debug_printf_P(PSTR("fpga: board_fpga_loader_PS: FPGA not loaded\n"));
+		return;
+	}
+	unsigned w = 500;
 	do {
 		debug_printf_P(PSTR("fpga: board_fpga_loader_PS start\n"));
 		const size_t rbflength = sizeof rbfimage / sizeof rbfimage [0];
@@ -6287,35 +6293,33 @@ static void board_fpga_loader_wait_AS(void)
 
 void board_fpga_reset(void)
 {
+	unsigned w = 500;
+	/* After power up, the Cyclone IV device holds nSTATUS low during POR delay. */
+
+	FPGA_NCONFIG_PORT_S(FPGA_NCONFIG_BIT);
+	local_delay_ms(1);
+	/* 1) Выставить "1" на nCONFIG */
+	//debug_printf_P(PSTR("fpga: FPGA_NCONFIG_BIT=1\n"));
+	FPGA_NCONFIG_PORT_C(FPGA_NCONFIG_BIT);
+	/* x) Дождаться "0" на nSTATUS */
+	//debug_printf_P(PSTR("fpga: waiting for FPGA_NSTATUS_BIT==0\n"));
+	while (board_fpga_get_NSTATUS() != 0)
+	{
+		local_delay_ms(1);
+		if (-- w == 0)
+			goto restart;
+	}
+	FPGA_NCONFIG_PORT_S(FPGA_NCONFIG_BIT);
+	/* 2) Дождаться "1" на nSTATUS */
+	//debug_printf_P(PSTR("fpga: waiting for FPGA_NSTATUS_BIT==1\n"));
+	while (board_fpga_get_NSTATUS() == 0)
+	{
+		local_delay_ms(1);
+		if (-- w == 0)
+			goto restart;
+	}
 restart:
 	;
-	unsigned long w = 1000;
-	do {
-		/* After power up, the Cyclone IV device holds nSTATUS low during POR delay. */
-
-		FPGA_NCONFIG_PORT_S(FPGA_NCONFIG_BIT);
-		local_delay_ms(1);
-		/* 1) Выставить "1" на nCONFIG */
-		//debug_printf_P(PSTR("fpga: FPGA_NCONFIG_BIT=1\n"));
-		FPGA_NCONFIG_PORT_C(FPGA_NCONFIG_BIT);
-		/* x) Дождаться "0" на nSTATUS */
-		//debug_printf_P(PSTR("fpga: waiting for FPGA_NSTATUS_BIT==0\n"));
-		while (board_fpga_get_NSTATUS() != 0)
-		{
-			local_delay_ms(1);
-			if (-- w == 0)
-				goto restart;
-		}
-		FPGA_NCONFIG_PORT_S(FPGA_NCONFIG_BIT);
-		/* 2) Дождаться "1" на nSTATUS */
-		//debug_printf_P(PSTR("fpga: waiting for FPGA_NSTATUS_BIT==1\n"));
-		while (board_fpga_get_NSTATUS() == 0)
-		{
-			local_delay_ms(1);
-			if (-- w == 0)
-				goto restart;
-		}
-	} while (board_fpga_get_NSTATUS() == 0);	// если ошибка - повторяем
 }
 #endif
 

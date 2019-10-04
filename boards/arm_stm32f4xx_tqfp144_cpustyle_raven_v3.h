@@ -51,7 +51,7 @@
 
 	//#define WITHUART2HW	1	/* Используется периферийный контроллер последовательного порта #2 */
 
-	#define WITHCAT_CDC		1	/* использовать виртуальный воследовательный порт на USB соединении */
+	#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
 	#define WITHMODEM_CDC	1
 	//#define WITHDEBUG_CDC	1
 	//#define WITHNMEA_CDC		1	/* порт подключения GPS/GLONASS */

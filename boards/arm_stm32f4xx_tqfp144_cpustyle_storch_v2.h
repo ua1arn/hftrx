@@ -47,18 +47,19 @@
 
 #define WITHUSBHW_DEVICE	USB_OTG_HS	/* на этом устройстве поддерживается функциональность DEVUCE	*/
 //#define WITHUSBHW_HOST		USB_OTG_FS
-//#define WITHUSBHOST	1	/* debug */
 //#define WITHUABUACOUTAUDIO48MONO	1	/* для уменьшения размера буферов в endpoints */
 
 //#define WITHUART1HW	1	/* PA9, PA10 Используется периферийный контроллер последовательного порта #1 */
 #define WITHUART2HW	1	/* PD5, PD6 Используется периферийный контроллер последовательного порта #2 */
 
-#define WITHCAT_CDC		1	/* использовать виртуальный воследовательный порт на USB соединении */
+#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
 //#define WITHCAT_USART2		1
 #define WITHMODEM_CDC	1
 //#define WITHCAT_USART2		1
 #define WITHDEBUG_USART2	1
 #define WITHNMEA_USART2		1	/* порт подключения GPS/GLONASS */
+
+//#define WITHUAC2		1	/* UAC2 support */
 #define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
 #define WITHUSBUACIN2		1	/* формируются три канала передачи звука */
 

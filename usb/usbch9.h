@@ -200,8 +200,11 @@ enum
 	TERMINAL_UACOUT48 = 32,	// fill_UACOUT48_function
 	TERMINAL_UACIN48_UACINRTS = 48,	// fill_UACIN48_function or fill_UACIN48_INRTS_function
 	TERMINAL_UACINRTS = 64,	// fill_UACINRTS_function
+	TERMINAL_ID_FU_IN = 96,
+	TERMINAL_ID_FU_OUT = 122,
+	TERMINAL_ID_SELECTOR_6 = 220,	// Input selector - вынесено из-за неудобства использования: значение проверяется
 
-	TERMINAL_ID_SELECTOR_6 = 240,	// Input selector - вынесено из-за неудобства использования: значение проверяется
+	TERMINAL_ID_CLKSOURCE_UACINOUT = 240,	// shared in/our clock source
 	TERMINAL_ID_CLKSOURCE_UACIN48_UACINRTS,
 	TERMINAL_ID_CLKSOURCE_UACINRTS,
 	TERMINAL_ID_CLKSOURCE_UACIN48,
@@ -250,16 +253,25 @@ enum
 		INTERFACE_AUDIO_MIKE,		/* USB receiver output  Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3)*/ //zero-bandwidth interface
 		INTERFACE_AUDIO_CONTROL_RTS,		/* AUDIO spectrum control interface */
 		INTERFACE_AUDIO_RTS,		/* USB spectrum Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3)*/ //zero-bandwidth interface
-		//INTERFACE_AUDIO_last = INTERFACE_AUDIO_CONTROL_SPK + 3,
+		//#if WITHTX
+			INTERFACE_AUDIO_CONTROL_SPK,		/* AUDIO transmitter input control interface */
+			INTERFACE_AUDIO_SPK,			/* USB Speaker Standard AS Interface Descriptor - Audio Streaming Zero Bandwith */
+		//#endif /* WITHTX */
+	#elif 0 /* WITHUSBUACIN2 */
+		// версия с совмещённым устройством IN/OUT
+		INTERFACE_AUDIO_CONTROL_MIKE,		/* AUDIO receiever out control interface */
+		INTERFACE_AUDIO_MIKE,		/* USB Microphone Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3)*/ //zero-bandwidth interface
+		#define INTERFACE_AUDIO_CONTROL_SPK 2222
+		INTERFACE_AUDIO_SPK,			/* USB Speaker Standard AS Interface Descriptor - Audio Streaming Zero Bandwith */
 	#else /* WITHUSBUACIN2 */
 		INTERFACE_AUDIO_CONTROL_MIKE,		/* AUDIO receiever out control interface */
 		INTERFACE_AUDIO_MIKE,		/* USB Microphone Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3)*/ //zero-bandwidth interface
+		//#if WITHTX
+			INTERFACE_AUDIO_CONTROL_SPK,		/* AUDIO transmitter input control interface */
+			INTERFACE_AUDIO_SPK,			/* USB Speaker Standard AS Interface Descriptor - Audio Streaming Zero Bandwith */
+		//#endif /* WITHTX */
 		//INTERFACE_AUDIO_last = INTERFACE_AUDIO_CONTROL_SPK + 2,
 	#endif /* WITHUSBUACIN2 */
-	//#if WITHTX
-		INTERFACE_AUDIO_CONTROL_SPK,		/* AUDIO transmitter input control interface */
-		INTERFACE_AUDIO_SPK,			/* USB Speaker Standard AS Interface Descriptor - Audio Streaming Zero Bandwith */
-	//#endif /* WITHTX */
 #endif /* WITHUSBUAC */
 
 #if WITHUSBCDCEEM
@@ -433,6 +445,13 @@ enum
 	UACINRTSALT_top
 };
 
+enum
+{
+	UACOUTALT_NONE = 0,
+	UACOUTALT_AUDIO48,
+
+	UACOUTALTALT_top
+};
 
 struct descholder
 {

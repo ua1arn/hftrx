@@ -37,7 +37,7 @@
 	#define WITHUART2HW	1	/* Используется периферийный контроллер последовательного порта #2 SCIF3 */
 
 	//#define WITHCAT_USART2	1
-	//#define WITHCAT_CDC			1	/* использовать виртуальный воследовательный порт на USB соединении */
+	//#define WITHCAT_CDC			1	/* использовать виртуальный последовательный порт на USB соединении */
 	//#define WITHMODEM_CDC		1
 	#define WITHDEBUG_USART2	1
 	#define WITHMODEM_USART2	1
@@ -63,8 +63,8 @@
 
 	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 	#define WITHUSBHWVBUSSENSE	1	/* используется предопределенный вывод VBUS_SENSE */
-	//#define WITHUSBHWHIGHSPEED	1	/* Используется встроенная в процессор поддержка USB HS */
-	//#define WITHUSBHWHIGHSPEEDDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
+	#define WITHUSBHWHIGHSPEED	1	/* Используется встроенная в процессор поддержка USB HS */
+	#define WITHUSBHWHIGHSPEEDDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
 	#define WITHUSBHW_DEVICE	(& USB201)	/* на этом устройстве поддерживается функциональность DEVUCE	*/
 	//#define WITHUSBHW_HOST	(& USB200)	/* на этом устройстве поддерживается функциональность HOST	*/
 
@@ -72,12 +72,13 @@
 	#define WITHUART2HW	1	/* Используется периферийный контроллер последовательного порта #2 SCIF3 */
 
 	//#define WITHCAT_USART2	1
-	#define WITHCAT_CDC			1	/* использовать виртуальный воследовательный порт на USB соединении */
+	#define WITHCAT_CDC			1	/* использовать виртуальный последовательный порт на USB соединении */
 	//#define WITHMODEM_CDC		1
 	#define WITHDEBUG_USART2	1
 	#define WITHMODEM_USART2	1
 	#define WITHNMEA_USART2		1	/* порт подключения GPS/GLONASS */
 
+	//#define WITHUAC2		1	/* UAC2 support */
 	#define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
 	#define WITHUSBCDC		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
 	//#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
@@ -652,12 +653,6 @@
 			arm_hardware_pio1_alternative((ainmask) << 8, R7S721_PIOALT_1);	/* P1_8..P1_15 - AN0..AN7 inputs */ \
 		} while (0)
 
-	#define HARDWARE_DAC_INITIALIZE() do { \
-		} while (0)
-
-	#define HARDWARE_SIDETONE_INITIALIZE() do { \
-		} while (0)
-
 	#define	HARDWARE_BL_INITIALIZE() do { \
 		const portholder_t enpins = (1U << 9); /* P7_9 */ \
 		const portholder_t blpins = (1U << 3) | (1U << 2); /* P7_3:P7_2 */ \
@@ -764,16 +759,14 @@
 
 	/* макроопределение, которое должно включить в себя все инициализации */
 	#define	HARDWARE_INITIALIZE() do { \
+		HARDWARE_DCDC_INITIALIZE(); \
+		HARDWARE_KBD_INITIALIZE(); \
 		HARDWARE_FPGA_LOADER_INITIALIZE(); \
 		HARDWARE_FPGA_RESET(); \
-		HARDWARE_SIDETONE_INITIALIZE(); \
-		HARDWARE_KBD_INITIALIZE(); \
-		HARDWARE_DAC_INITIALIZE(); \
-		HARDWARE_DCDC_INITIALIZE(); \
-		HARDWARE_BL_INITIALIZE(); \
 		TUNE_INITIALIZE(); \
 		HARDWARE_USB0_INITIALIZE(); \
 		HARDWARE_USB1_INITIALIZE(); \
+		HARDWARE_BL_INITIALIZE(); \
 		HARDWARE_LVDSTX_INITIALIZE(); \
 		} while (0)
 

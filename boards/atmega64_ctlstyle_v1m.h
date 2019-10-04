@@ -145,7 +145,7 @@
 	//#define CTLREGMODE24	1		/* управляющий регистр 24 бита	*/
 	//#define CTLREGMODE16_GEN500	1
 
-	//#define WITHCAT_CDC		1	/* использовать виртуальный воследовательный порт на USB соединении */
+	//#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
 	#define WITHCAT_USART1		1
 	#define WITHDEBUG_USART1	1
 	#define WITHMODEM_USART1	1

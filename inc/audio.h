@@ -145,10 +145,17 @@ extern "C" {
 	#define HARDWARE_RTSDMABYTES	1
 #endif /* CPUSTYLE_R7S721 */
 
-#define WITHUSENOFU_IN48 			1	// 1 - без использования Feature Unit, 0 - с использованием, игнорирование управления громкостью
-#define WITHUSENOFU_INRTS 			1	// 1 - без использования Feature Unit, 0 - с использованием, игнорирование управления громкостью
-#define WITHUSENOFU_IN48_INRTS 		1	// 1 - без использования Feature Unit, 0 - с использованием, игнорирование управления громкостью
-#define WITHUSENOFU_OUT48 			1	// 1 - без использования Feature Unit, 0 - с использованием, игнорирование управления громкостью
+#if WITHUAC2
+	#define WITHUSENOFU_IN48 			1	// 1 - без использования Feature Unit, 0 - с использованием, игнорирование управления громкостью
+	#define WITHUSENOFU_INRTS 			1	// 1 - без использования Feature Unit, 0 - с использованием, игнорирование управления громкостью
+	#define WITHUSENOFU_IN48_INRTS 		1	// 1 - без использования Feature Unit, 0 - с использованием, игнорирование управления громкостью
+	#define WITHUSENOFU_OUT48 			1	// 1 - без использования Feature Unit, 0 - с использованием, игнорирование управления громкостью
+#else /* WITHUAC2 */
+	#define WITHUSENOFU_IN48 			0	// 1 - без использования Feature Unit, 0 - с использованием, игнорирование управления громкостью
+	#define WITHUSENOFU_INRTS 			0	// 1 - без использования Feature Unit, 0 - с использованием, игнорирование управления громкостью
+	#define WITHUSENOFU_IN48_INRTS 		0	// 1 - без использования Feature Unit, 0 - с использованием, игнорирование управления громкостью
+	#define WITHUSENOFU_OUT48 			0	// 1 - без использования Feature Unit, 0 - с использованием, игнорирование управления громкостью
+#endif /* WITHUAC2 */
 
 // Конфигурация потоков в Input Terminal Descriptor
 // bNrChannels в 4.3.2.1 Input Terminal Descriptor образуется подсчетом битов в данном поле
@@ -586,8 +593,8 @@ int_fast32_t dsp_get_sampleratetx(void);	/* Получить значение ч
 int_fast32_t dsp_get_samplerate100(void);	/* Получить значение частоты выборок выходного потока DSP */
 
 int_fast32_t dsp_get_samplerateuacin_audio48(void);		// UAC IN samplerate
-int_fast32_t dsp_get_samplerateuacin_rts96(void);		// UAC IN samplerate
-int_fast32_t dsp_get_samplerateuacin_rts192(void);		// UAC IN samplerate
+int_fast32_t dsp_get_samplerateuacin_RTS96(void);		// UAC IN samplerate
+int_fast32_t dsp_get_samplerateuacin_RTS192(void);		// UAC IN samplerate
 int_fast32_t dsp_get_samplerateuacin_rts(void);			// RTS samplerate
 int_fast32_t dsp_get_samplerateuacout(void);			// UAC OUT samplerate
 

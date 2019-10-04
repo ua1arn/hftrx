@@ -28,7 +28,7 @@
 //#define WITHUSBHWHIGHSPEED	1	/* Используется встроенная в процессор поддержка USB HS */
 //#define WITHUSBHWHIGHSPEEDDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
 
-//#define WITHCAT_CDC		1	/* использовать виртуальный воследовательный порт на USB соединении */
+//#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
 #define WITHCAT_USART2		1
 #define WITHDEBUG_USART2	1
 #define WITHMODEM_USART2	1
