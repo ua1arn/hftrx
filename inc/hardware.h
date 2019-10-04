@@ -575,7 +575,6 @@ void hardware_adc_initialize(void);
 // вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
 void kbd_spool(void);
 void display_spool(void);	// отсчёт времени по запрещению обновления дисплея при вращении валкодера
-void board_usb_spool(void);
 
 void spool_secound(void);		// вызывается раз в секунду из таймерного прерывания.
 
@@ -661,8 +660,6 @@ uint_fast8_t debugusb_putchar(uint_fast8_t c);/* передача символа
 uint_fast8_t debugusb_getchar(char * cp); /* приём символа, если готов порт */
 void debugusb_parsechar(uint_fast8_t c);	/* вызывается из обработчика прерываний */
 void debugusb_sendchar(void * ctx);			/* вызывается из обработчика прерываний */
-
-void modem_spool(void);		/* вызывается из обработчика таймерного прерывания */
 
 // spool-based functions for debug
 int dbg_puts_impl_P(const FLASHMEM char * s);

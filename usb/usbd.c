@@ -18776,6 +18776,16 @@ const struct drvfunc USBH_drvfunc =
 #endif /* WITHUSEUSBFLASH */
 
 
+// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
+static void board_usb_spool(void * ctx)
+{
+#if defined (WITHUSBHW_HOST)
+	USBH_Process(& hUsbHostFS);
+#endif /* defined (WITHUSBHW_HOST) */
+}
+
+static ticker_t usbticker;
+
 /* вызывается при запрещённых прерываниях. */
 void board_usb_initialize(void)
 {
@@ -18790,6 +18800,8 @@ void board_usb_initialize(void)
 #if defined (WITHUSBHW_HOST)
 	board_usbh_initialize();	// USB host support
 #endif /* defined (WITHUSBHW_HOST) */
+	ticker_initialize(& usbticker, 1, board_usb_spool, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
+
 	//PRINTF(PSTR("board_usb_initialize done.\n"));
 }
 
@@ -18819,14 +18831,6 @@ void board_usb_deactivate(void)
 	board_usbh_deactivate();
 #endif /* defined (WITHUSBHW_HOST) */
 	//PRINTF(PSTR("board_usb_activate done.\n"));
-}
-
-// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
-void board_usb_spool(void)
-{
-#if defined (WITHUSBHW_HOST)
-	USBH_Process(& hUsbHostFS);
-#endif /* defined (WITHUSBHW_HOST) */
 }
 
 uint_fast8_t hamradio_get_usbh_active(void)

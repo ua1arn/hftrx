@@ -75,7 +75,7 @@ void spool_encinterrupt(void)
 
 static RAMDTCM uint_fast8_t old_val2;
 
-void spool_encinterrupt2(void)
+static void spool_encinterrupt2_local(void * ctx)
 {
 	const uint_fast8_t new_val = hardware_get_encoder2_bits();	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
 
@@ -213,6 +213,7 @@ enc_spool(void * ctx)
 
 
 static ticker_t encticker;
+static ticker_t encticker2;
 
 /* Обработка данных от валколдера */
 
@@ -414,4 +415,8 @@ void encoder_initialize(void)
 #if WITHENCODER
 	ticker_initialize(& encticker, 1, enc_spool, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
 #endif /* WITHENCODER */
+#if WITHENCODER2
+	// второй енколе всегда по опросу
+	ticker_initialize(& encticker2, 1, spool_encinterrupt2_local, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
+#endif /* WITHENCODER2 */
 }

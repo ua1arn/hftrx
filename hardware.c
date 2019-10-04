@@ -1133,13 +1133,6 @@ static RAMFUNC void spool_systimerbundle1(void)
 	enum { TICKS1000MS = NTICKS(1000) };
 	//spool_lfm();
 	display_spool();	// отсчёт времени по запрещению обновления дисплея при вращении валкодера
-#if WITHMODEM 
-	modem_spool();
-#endif /* WITHMODEM */
-#if WITHUSBHW
-	board_usb_spool();
-#endif /* WITHUSBHW */
-	spool_encinterrupt2();	/* прерывание по изменению сигнала на входах от валкодера #2*/
 	// Формирование секундного прерывания
 	if (++ spool_1stickcount >= TICKS1000MS)
 	{
