@@ -183,8 +183,8 @@ void encoder_set_resolution(uint_fast8_t v, uint_fast8_t encdynamic)
 
 // вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
 // Расчёт средней скорости вращения валкодера (подготовка данных для расчёта вне прерываний).
-void	
-enc_spool(void)
+static void
+enc_spool(void * ctx)
 {
 	const int p1 = safegetposition1();	// Валкодер #1
 	const int p1kbd = safegetposition_kbd();
@@ -210,6 +210,9 @@ enc_spool(void)
 	const int p2 = safegetposition2();
 	rotate2 += p2;		/* учёт количества импульсов (для прямого отсчёта) */
 }
+
+
+static ticker_t encticker;
 
 /* Обработка данных от валколдера */
 
@@ -408,4 +411,7 @@ void encoder_initialize(void)
 
 	old_val = hardware_get_encoder_bits();	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
 	old_val2 = hardware_get_encoder2_bits();	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
+#if WITHENCODER
+	ticker_initialize(& encticker, 1, enc_spool, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
+#endif /* WITHENCODER */
 }

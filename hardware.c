@@ -1132,9 +1132,6 @@ static RAMFUNC void spool_systimerbundle1(void)
 
 	enum { TICKS1000MS = NTICKS(1000) };
 	//spool_lfm();
-#if WITHENCODER
-	enc_spool();	// таймер для динамического изменения шага перестройки
-#endif /* WITHENCODER */
 	display_spool();	// отсчёт времени по запрещению обновления дисплея при вращении валкодера
 #if WITHMODEM 
 	modem_spool();

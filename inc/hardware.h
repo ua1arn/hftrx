@@ -573,7 +573,6 @@ void hardware_adc_initialize(void);
 //#define IF3_FMASK	(IF3_FMASK_0P5 | IF3_FMASK_1P8 | IF3_FMASK_2P7 | IF3_FMASK_3P1)
 
 // вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
-void enc_spool(void);
 void kbd_spool(void);
 void display_spool(void);	// отсчёт времени по запрещению обновления дисплея при вращении валкодера
 void board_usb_spool(void);
