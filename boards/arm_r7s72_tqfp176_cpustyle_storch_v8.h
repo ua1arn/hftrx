@@ -37,7 +37,7 @@
 	#define WITHUART2HW	1	/* Используется периферийный контроллер последовательного порта #2 SCIF3 */
 
 	//#define WITHCAT_USART2	1
-	//#define WITHCAT_CDC			1	/* использовать виртуальный воследовательный порт на USB соединении */
+	//#define WITHCAT_CDC			1	/* использовать виртуальный последовательный порт на USB соединении */
 	//#define WITHMODEM_CDC		1
 	#define WITHDEBUG_USART2	1
 	#define WITHMODEM_USART2	1
@@ -63,8 +63,8 @@
 
 	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 	#define WITHUSBHWVBUSSENSE	1	/* используется предопределенный вывод VBUS_SENSE */
-	//#define WITHUSBHWHIGHSPEED	1	/* Используется встроенная в процессор поддержка USB HS */
-	//#define WITHUSBHWHIGHSPEEDDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
+	#define WITHUSBHWHIGHSPEED	1	/* Используется встроенная в процессор поддержка USB HS */
+	#define WITHUSBHWHIGHSPEEDDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
 	#define WITHUSBHW_DEVICE	(& USB201)	/* на этом устройстве поддерживается функциональность DEVUCE	*/
 	//#define WITHUSBHW_HOST	(& USB200)	/* на этом устройстве поддерживается функциональность HOST	*/
 
@@ -72,7 +72,7 @@
 	#define WITHUART2HW	1	/* Используется периферийный контроллер последовательного порта #2 SCIF3 */
 
 	//#define WITHCAT_USART2	1
-	#define WITHCAT_CDC			1	/* использовать виртуальный воследовательный порт на USB соединении */
+	#define WITHCAT_CDC			1	/* использовать виртуальный последовательный порт на USB соединении */
 	//#define WITHMODEM_CDC		1
 	#define WITHDEBUG_USART2	1
 	#define WITHMODEM_USART2	1

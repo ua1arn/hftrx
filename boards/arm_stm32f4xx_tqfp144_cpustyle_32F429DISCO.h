@@ -92,7 +92,7 @@ Free:
 	//#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
 	//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
 
-	#define WITHCAT_CDC		1	/* использовать виртуальный воследовательный порт на USB соединении */
+	#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
 	#define WITHMODEM_CDC	1
 #else
 	//#define WITHUART1HW	1	/* Используется периферийный контроллер последовательного порта #1 */

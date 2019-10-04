@@ -312,7 +312,7 @@
 
 	//#define WITHNMEA		1	/* используется NMEA parser */
 	//#define WITHFREEDV	1	/* поддержка режима FreeDV - http://freedv.org/ */ 
-	//#define WITHCAT_CDC		1	/* использовать виртуальный воследовательный порт на USB соединении */
+	//#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
 	//#define WITHBEACON	1	/* Используется режим маяка */
 	//#define WITHVOX			1	/* используется VOX */
 	#define WITHSHOWSWRPWR 1	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */

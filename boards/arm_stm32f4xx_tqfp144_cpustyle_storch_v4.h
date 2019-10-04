@@ -6,7 +6,7 @@
 // UA1ARN
 //
 
-// Трансивер с DSP обработкой "Аист" на процессоре 
+// Трансивер с DSP обработкой "Аист" на процессоре
 // STM32H743ZIT6, STM32F746ZGT6 и FPGA EP4CE22E22I7N
 // Rmainunit_v5im.pcb modem v2
 
@@ -45,13 +45,12 @@
 
 #define WITHUSBHW_DEVICE	USB_OTG_HS	/* на этом устройстве поддерживается функциональность DEVUCE	*/
 //#define WITHUSBHW_HOST		USB_OTG_FS
-//#define WITHUSBHOST	1	/* debug */
 //#define WITHUART1HW	1	/* PA9, PA10 Используется периферийный контроллер последовательного порта #1 */
 #define WITHUART2HW	1	/* PD5, PD6 Используется периферийный контроллер последовательного порта #2 */
 
 #if 0//WITHCAT
 
-	#define WITHCAT_CDC		1	/* использовать виртуальный воследовательный порт на USB соединении */
+	#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
 	//#define WITHMODEM_CDC	1
 	//#define WITHMODEM_USART2	1
 	//#define WITHCAT_USART2		1
@@ -62,15 +61,15 @@
 
 	//#define WITHMODEM_CDC	1
 	#define WITHMODEM_USART2	1
-	#define WITHCAT_CDC		1	/* использовать виртуальный воследовательный порт на USB соединении */
+	#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
 
-	//#define WITHCAT_CDC		1	/* использовать виртуальный воследовательный порт на USB соединении */
+	//#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
 	//#define WITHCAT_USART2		1
 	//#define WITHDEBUG_USART2	1
 	//#define WITHNMEA_USART2		1	/* порт подключения GPS/GLONASS */
 #else
 
-	#define WITHCAT_CDC		1	/* использовать виртуальный воследовательный порт на USB соединении */
+	#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
 	//#define WITHMODEM_CDC	1
 	#define WITHMODEM_USART2	1
 	//#define WITHCAT_USART2		1
@@ -234,7 +233,7 @@
 #if WITHSAI2HW
 	/* 
 	Поскольку блок SAI2 инициализируется как SLAVE с синхронизацией от SAI1,
-	из внешних сигналов требуется только SAI2_SD_A 
+	из внешних сигналов требуется только SAI2_SD_A
 	*/
 	#define SAI2HW_INITIALIZE()	do { \
 		/* arm_hardware_pioe_altfn20(1U << 0, AF_SAI2); */	/* PE0 - SAI2_MCK_A - 12.288 MHz	*/ \

@@ -135,7 +135,7 @@
 	#define WITHPREAMPATT2_6DB		1	// Управление УВЧ и двухкаскадным аттенюатором с затуханиями 0 - 6 - 12 - 18 dB */
 	//#define WITHATT1PRE1		1	// УВЧ и однокаскадный аттенюатор
 
-	//#define WITHCAT_CDC		1	/* использовать виртуальный воследовательный порт на USB соединении */
+	//#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
 	#define WITHCAT_USART1		1
 	#define WITHDEBUG_USART1	1
 	#define WITHMODEM_USART1	1

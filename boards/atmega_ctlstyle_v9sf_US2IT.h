@@ -25,7 +25,7 @@
 	#define	MODEL_DIRECT	1	/* использовать прямой синтез, а не гибридный */
 	#define CTLREGSTYLE_SW2013SF_V3	1	// 7-bit tuner for US2IT управляющие регистры c регулировкой подсветки (без управления диапазонами)
 
-	//#define WITHCAT_CDC		1	/* использовать виртуальный воследовательный порт на USB соединении */
+	//#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
 	#define WITHCAT_USART1		1
 	#define WITHDEBUG_USART1	1
 	#define WITHMODEM_USART1	1

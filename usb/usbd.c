@@ -1100,9 +1100,6 @@ USBD_StatusTypeDef  USBD_LL_Stop (USBD_HandleTypeDef *pdev);
 USBD_StatusTypeDef  USBD_LL_Start(USBD_HandleTypeDef *pdev);
 
 
-
-
-
 /** @defgroup USBD_CORE_Exported_FunctionsPrototype
   * @{
   */ 
@@ -1137,10 +1134,7 @@ static USBD_StatusTypeDef  USBD_LL_StallEP(USBD_HandleTypeDef *pdev, uint8_t ep_
 USBD_StatusTypeDef  USBD_LL_ClearStallEP(USBD_HandleTypeDef *pdev, uint8_t ep_addr);
 uint8_t             USBD_LL_IsStallEP(USBD_HandleTypeDef *pdev, uint8_t ep_addr);
 USBD_StatusTypeDef  USBD_LL_SetUSBAddress(USBD_HandleTypeDef *pdev, uint8_t dev_addr);
-USBD_StatusTypeDef  USBD_LL_Transmit(USBD_HandleTypeDef *pdev, 
-                                      uint_fast8_t  ep_addr,                                      
-                                      const uint8_t  *pbuf,
-                                      uint_fast32_t  size);
+USBD_StatusTypeDef  USBD_LL_Transmit(USBD_HandleTypeDef *pdev, uint_fast8_t  ep_addr, const uint8_t  *pbuf, uint_fast32_t  size);
 
 uint32_t USBD_LL_GetRxDataSize(USBD_HandleTypeDef *pdev, uint8_t  ep_addr);
 static USBD_StatusTypeDef  USBD_LL_CloseEP(USBD_HandleTypeDef *pdev, uint8_t ep_addr);
@@ -1296,7 +1290,7 @@ static HAL_StatusTypeDef USB_CoreReset(USB_OTG_GlobalTypeDef *USBx);
 HAL_StatusTypeDef USB_EnableGlobalInt(USB_OTG_GlobalTypeDef *USBx);
 HAL_StatusTypeDef USB_DisableGlobalInt(USB_OTG_GlobalTypeDef *USBx);
 HAL_StatusTypeDef USB_SetCurrentMode(USB_OTG_GlobalTypeDef *USBx, USB_OTG_ModeTypeDef mode);
-static HAL_StatusTypeDef USB_SetDevSpeed(USB_OTG_GlobalTypeDef *USBx, uint8_t speed);
+static HAL_StatusTypeDef USB_SetDevSpeed(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t speed);
 HAL_StatusTypeDef USB_FlushRxFifo(USB_OTG_GlobalTypeDef *USBx);
 HAL_StatusTypeDef USB_FlushTxFifo(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t num);
 HAL_StatusTypeDef USB_FlushTxFifoAll(USB_OTG_GlobalTypeDef *USBx);
@@ -1304,25 +1298,25 @@ static HAL_StatusTypeDef USB_ActivateEndpoint(USB_OTG_GlobalTypeDef *USBx, USB_O
 static HAL_StatusTypeDef USB_DeactivateEndpoint(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDef *ep);
 static HAL_StatusTypeDef USB_ActivateDedicatedEndpoint(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDef *ep);
 HAL_StatusTypeDef USB_DeactivateDedicatedEndpoint(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDef *ep);
-HAL_StatusTypeDef USB_EPStartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDef *ep, uint8_t dma);
-HAL_StatusTypeDef USB_EP0StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDef *ep, uint8_t dma);
+HAL_StatusTypeDef USB_EPStartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDef *ep, uint_fast8_t dma);
+HAL_StatusTypeDef USB_EP0StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDef *ep, uint_fast8_t dma);
 static void USB_WritePacket(USB_OTG_GlobalTypeDef *USBx, const uint8_t *src, uint_fast8_t tx_fifo_num, uint_fast16_t len, uint_fast8_t dma);
 static void USB_ReadPacket(USB_OTG_GlobalTypeDef *USBx, uint8_t *dest, uint_fast16_t len);
 HAL_StatusTypeDef USB_EPSetStall(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDef *ep);
 HAL_StatusTypeDef USB_EPClearStall(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDef *ep);
-HAL_StatusTypeDef USB_SetDevAddress (USB_OTG_GlobalTypeDef *USBx, uint8_t address);
-HAL_StatusTypeDef USB_DevConnect (USB_OTG_GlobalTypeDef *USBx);
+HAL_StatusTypeDef USB_SetDevAddress (USB_OTG_GlobalTypeDef *USBx, uint_fast8_t address);
+HAL_StatusTypeDef USB_DevConnect(USB_OTG_GlobalTypeDef *USBx);
 HAL_StatusTypeDef USB_DevDisconnect (USB_OTG_GlobalTypeDef *USBx);
 HAL_StatusTypeDef USB_StopDevice(USB_OTG_GlobalTypeDef *USBx);
 HAL_StatusTypeDef USB_ActivateSetup (USB_OTG_GlobalTypeDef *USBx);
-HAL_StatusTypeDef USB_EP0_OutStart(USB_OTG_GlobalTypeDef *USBx, uint8_t dma, uint8_t *psetup);
-static uint8_t USB_GetDevSpeed(USB_OTG_GlobalTypeDef *USBx);
+HAL_StatusTypeDef USB_EP0_OutStart(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t dma, uint8_t *psetup);
+static uint_fast8_t USB_GetDevSpeed(USB_OTG_GlobalTypeDef *USBx);
 uint32_t USB_GetMode(USB_OTG_GlobalTypeDef *USBx);
 uint32_t USB_ReadInterrupts (USB_OTG_GlobalTypeDef *USBx);
-uint32_t USB_ReadDevAllOutEpInterrupt (USB_OTG_GlobalTypeDef *USBx);
-uint32_t USB_ReadDevOutEPInterrupt (USB_OTG_GlobalTypeDef *USBx, uint8_t epnum);
-uint32_t USB_ReadDevAllInEpInterrupt (USB_OTG_GlobalTypeDef *USBx);
-uint32_t USB_ReadDevInEPInterrupt (USB_OTG_GlobalTypeDef *USBx, uint8_t epnum);
+uint32_t USB_ReadDevAllOutEpInterrupt(USB_OTG_GlobalTypeDef *USBx);
+uint32_t USB_ReadDevOutEPInterrupt(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t epnum);
+uint32_t USB_ReadDevAllInEpInterrupt(USB_OTG_GlobalTypeDef *USBx);
+uint32_t USB_ReadDevInEPInterrupt(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t epnum);
 void USB_ClearInterrupts(USB_OTG_GlobalTypeDef *USBx, uint32_t interrupt);
 
 static HAL_StatusTypeDef USB_InitFSLSPClkSel(USB_OTG_GlobalTypeDef *USBx, uint8_t freq);
@@ -4063,7 +4057,7 @@ HAL_StatusTypeDef  USB_DevConnect (USB_OTG_GlobalTypeDef *USBx)
   *           1 : DMA feature used  
   * @retval HAL status
   */
-HAL_StatusTypeDef USB_EP0StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDef *ep, uint8_t dma)
+HAL_StatusTypeDef USB_EP0StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDef *ep, uint_fast8_t dma)
 {
 	ASSERT(dma == 0);
 	if (ep->is_in == 1)
@@ -4126,7 +4120,7 @@ HAL_StatusTypeDef USB_EPClearStall(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDe
   * @param  psetup : pointer to setup packet
   * @retval HAL status
   */
-HAL_StatusTypeDef USB_EP0_OutStart(USB_OTG_GlobalTypeDef *USBx, uint8_t dma, uint8_t *psetup)
+HAL_StatusTypeDef USB_EP0_OutStart(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t dma, uint8_t *psetup)
 {
 	return HAL_OK;  
 }
@@ -4141,7 +4135,7 @@ HAL_StatusTypeDef USB_EP0_OutStart(USB_OTG_GlobalTypeDef *USBx, uint8_t dma, uin
   *           1 : DMA feature used  
   * @retval HAL status
   */
-HAL_StatusTypeDef USB_EPStartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDef *ep, uint8_t dma)
+HAL_StatusTypeDef USB_EPStartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDef *ep, uint_fast8_t dma)
 {
 	if (ep->is_in == 1)
 	{
@@ -4336,7 +4330,7 @@ static void Error_Handler(void)
   *          This parameter can be a value from 0 to 255
   * @retval HAL status
   */
-HAL_StatusTypeDef  USB_SetDevAddress (USB_OTG_GlobalTypeDef *USBx, uint8_t address)
+HAL_StatusTypeDef  USB_SetDevAddress (USB_OTG_GlobalTypeDef *USBx, uint_fast8_t address)
 {
 	return HAL_OK;  
 }
@@ -4907,7 +4901,7 @@ HAL_StatusTypeDef USB_FlushRxFifo(USB_OTG_GlobalTypeDef *USBx)
   *            @arg USB_OTG_SPEED_LOW: Low speed mode
   * @retval  Hal status
   */
-static HAL_StatusTypeDef USB_SetDevSpeed(USB_OTG_GlobalTypeDef *USBx, uint8_t speed)
+static HAL_StatusTypeDef USB_SetDevSpeed(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t speed)
 {
 	USBx_DEVICE->DCFG = (USBx_DEVICE->DCFG & ~ (USB_OTG_DCFG_DSPD)) |
 		(USB_OTG_DCFG_DSPD & speed * USB_OTG_DCFG_DSPD_0) |
@@ -4924,9 +4918,9 @@ static HAL_StatusTypeDef USB_SetDevSpeed(USB_OTG_GlobalTypeDef *USBx, uint8_t sp
   *            @arg USB_OTG_SPEED_FULL: Full speed mode
   *            @arg USB_OTG_SPEED_LOW: Low speed mode
   */
-static uint8_t USB_GetDevSpeed(USB_OTG_GlobalTypeDef *USBx)
+static uint_fast8_t USB_GetDevSpeed(USB_OTG_GlobalTypeDef *USBx)
 {
-	uint8_t speed = 0;
+	uint_fast8_t speed = 0;
 
 	if ((USBx_DEVICE->DSTS & USB_OTG_DSTS_ENUMSPD) == DSTS_ENUMSPD_HS_PHY_30MHZ_OR_60MHZ)
 	{
@@ -5091,7 +5085,7 @@ HAL_StatusTypeDef USB_DeactivateDedicatedEndpoint(USB_OTG_GlobalTypeDef *USBx, U
   *           1 : DMA feature used  
   * @retval HAL status
   */
-HAL_StatusTypeDef USB_EPStartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDef *ep, uint8_t dma)
+HAL_StatusTypeDef USB_EPStartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDef *ep, uint_fast8_t dma)
 {
 	if (ep->is_in == 1)
 	{
@@ -5277,7 +5271,7 @@ HAL_StatusTypeDef USB_EPStartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDef
   *           1 : DMA feature used  
   * @retval HAL status
   */
-HAL_StatusTypeDef USB_EP0StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDef *ep, uint8_t dma)
+HAL_StatusTypeDef USB_EP0StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDef *ep, uint_fast8_t dma)
 {
   /* IN endpoint */
   if (ep->is_in == 1)
@@ -5640,7 +5634,7 @@ HAL_StatusTypeDef USB_StopDevice(USB_OTG_GlobalTypeDef *USBx)
   *          This parameter can be a value from 0 to 255
   * @retval HAL status
   */
-HAL_StatusTypeDef  USB_SetDevAddress (USB_OTG_GlobalTypeDef *USBx, uint8_t address)
+HAL_StatusTypeDef  USB_SetDevAddress (USB_OTG_GlobalTypeDef *USBx, uint_fast8_t address)
 {
 	USBx_DEVICE->DCFG = (USBx_DEVICE->DCFG & ~ (USB_OTG_DCFG_DAD)) |
 		address * USB_OTG_DCFG_DAD_0 |
@@ -5728,7 +5722,7 @@ uint32_t USB_ReadDevAllInEpInterrupt (USB_OTG_GlobalTypeDef *USBx)
   *          This parameter can be a value from 0 to 15
   * @retval Device OUT EP Interrupt register
   */
-uint32_t USB_ReadDevOutEPInterrupt (USB_OTG_GlobalTypeDef *USBx, uint8_t epnum)
+uint32_t USB_ReadDevOutEPInterrupt (USB_OTG_GlobalTypeDef *USBx, uint_fast8_t epnum)
 {
   uint32_t v;
   v  = USBx_OUTEP(epnum)->DOEPINT;
@@ -5743,7 +5737,7 @@ uint32_t USB_ReadDevOutEPInterrupt (USB_OTG_GlobalTypeDef *USBx, uint8_t epnum)
   *          This parameter can be a value from 0 to 15
   * @retval Device IN EP Interrupt register
   */
-uint32_t USB_ReadDevInEPInterrupt (USB_OTG_GlobalTypeDef *USBx, uint8_t epnum)
+uint32_t USB_ReadDevInEPInterrupt (USB_OTG_GlobalTypeDef *USBx, uint_fast8_t epnum)
 {
   uint32_t v, msk, emp;
   
@@ -5809,7 +5803,7 @@ HAL_StatusTypeDef  USB_ActivateSetup (USB_OTG_GlobalTypeDef *USBx)
   * @param  psetup : pointer to setup packet
   * @retval HAL status
   */
-HAL_StatusTypeDef USB_EP0_OutStart(USB_OTG_GlobalTypeDef *USBx, uint8_t dma, uint8_t *psetup)
+HAL_StatusTypeDef USB_EP0_OutStart(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t dma, uint8_t *psetup)
 {
 	USBx_OUTEP(0)->DOEPTSIZ = 0;
 	USBx_OUTEP(0)->DOEPTSIZ |= USB_OTG_DOEPTSIZ_PKTCNT & (1 << USB_OTG_DOEPTSIZ_PKTCNT_Pos);
@@ -15134,7 +15128,7 @@ static void board_usbd_deactivate(void)
 }
 
 
-#if WITHUSBHOST//WITHUSEUSBFLASH
+#if defined (WITHUSBHW_HOST)
 //++++ сюда переносим используемые хостом функции
 
 
@@ -18567,7 +18561,7 @@ void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd)
   }
 }
 
-#if WITHUSBHOST
+#if defined (WITHUSBHW_HOST)
 /**
 * @brief This function handles USB On The Go FS global interrupt.
 */
@@ -18581,7 +18575,7 @@ void OTG_FS_IRQHandler(void)
 
   /* USER CODE END OTG_FS_IRQn 1 */
 }
-#endif /* WITHUSBHOST */
+#endif /* defined (WITHUSBHW_HOST) */
 
 //---- сюда переносим используемые хостом функции
 
@@ -18613,7 +18607,7 @@ static void board_usbh_activate(void)
 #endif
 }
 
-#endif //WITHUSBHOST /* WITHUSEUSBFLASH */
+#endif /* defined (WITHUSBHW_HOST) */
 
 #if 0//WITHUSEUSBFLASH
 

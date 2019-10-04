@@ -253,7 +253,10 @@ enum
 		INTERFACE_AUDIO_MIKE,		/* USB receiver output  Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3)*/ //zero-bandwidth interface
 		INTERFACE_AUDIO_CONTROL_RTS,		/* AUDIO spectrum control interface */
 		INTERFACE_AUDIO_RTS,		/* USB spectrum Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3)*/ //zero-bandwidth interface
-		//INTERFACE_AUDIO_last = INTERFACE_AUDIO_CONTROL_SPK + 3,
+		//#if WITHTX
+			INTERFACE_AUDIO_CONTROL_SPK,		/* AUDIO transmitter input control interface */
+			INTERFACE_AUDIO_SPK,			/* USB Speaker Standard AS Interface Descriptor - Audio Streaming Zero Bandwith */
+		//#endif /* WITHTX */
 	#elif 0 /* WITHUSBUACIN2 */
 		// версия с совмещённым устройством IN/OUT
 		INTERFACE_AUDIO_CONTROL_MIKE,		/* AUDIO receiever out control interface */

@@ -53,7 +53,7 @@
 #define WITHUART1HW	1	/* PA9, PB7 Используется периферийный контроллер последовательного порта #1 */
 //#define WITHUART2HW	1	/* PD5, PD6 Используется периферийный контроллер последовательного порта #2 */
 
-#define WITHCAT_CDC		1	/* использовать виртуальный воследовательный порт на USB соединении */
+#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
 #define WITHMODEM_CDC	1
 //#define WITHCAT_USART2		1
 //#define WITHDEBUG_CDC	1
