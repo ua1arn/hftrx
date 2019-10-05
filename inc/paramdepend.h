@@ -957,7 +957,7 @@ extern "C" {
 
 		#define NVRAM_END E2END
 
-	#elif defined (NVRAM_TYPE) && (NVRAM_TYPE == NVRAM_TYPE_BKPSRAM) && CPUSTYLE_STM32F
+	#elif defined (NVRAM_TYPE) && (NVRAM_TYPE == NVRAM_TYPE_BKPSRAM) && CPUSTYLE_STM32
 
 		#define NVRAM_END 4095U		/* 4K of RAM at BKPSRAM_BASE */
 

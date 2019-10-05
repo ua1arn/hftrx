@@ -12,7 +12,7 @@
 #include <string.h>
 #include <math.h>
 
-#if CPUSTYLE_STM32F
+#if CPUSTYLE_STM32
 // Перенос каждого бита в байте в позицию с увеличенным в 4 раза номером.
 static portholder_t
 power4(uint_fast8_t v)
@@ -69,9 +69,9 @@ power4(uint_fast8_t v)
 
 	return tablepow4 [v & 0xff];
 }
-#endif /* CPUSTYLE_STM32F */
+#endif /* CPUSTYLE_STM32 */
 
-#if CPUSTYLE_STM32F
+#if CPUSTYLE_STM32
 // Перенос каждого бита в байте в позицию с увеличенным в 2 раза номером.
 static portholder_t
 power2(uint_fast16_t v)
@@ -97,7 +97,7 @@ power2(uint_fast16_t v)
 
 	return r;
 }
-#endif /* CPUSTYLE_STM32F */
+#endif /* CPUSTYLE_STM32 */
 
 #if CPUSTYLE_R7S721
 
@@ -3292,7 +3292,7 @@ arm_hardware_pioe_opendrain(unsigned long opins, unsigned long initialstate)
 #endif
 }
 
-#if CPUSTYLE_STM32F && defined (GPIOF)
+#if CPUSTYLE_STM32 && defined (GPIOF)
 void 
 arm_hardware_piof_opendrain(unsigned long opins, unsigned long initialstate)
 {
@@ -3334,9 +3334,9 @@ arm_hardware_piof_opendrain(unsigned long opins, unsigned long initialstate)
 
 #endif
 }
-#endif /* CPUSTYLE_STM32F && defined (GPIOF) */
+#endif /* CPUSTYLE_STM32 && defined (GPIOF) */
 
-#if CPUSTYLE_STM32F && defined (GPIOG)
+#if CPUSTYLE_STM32 && defined (GPIOG)
 void 
 arm_hardware_piog_opendrain(unsigned long opins, unsigned long initialstate)
 {
@@ -3378,9 +3378,9 @@ arm_hardware_piog_opendrain(unsigned long opins, unsigned long initialstate)
 
 #endif
 }
-#endif /* CPUSTYLE_STM32F && defined (GPIOG) */
+#endif /* CPUSTYLE_STM32 && defined (GPIOG) */
 
-#if CPUSTYLE_STM32F && defined (GPIOH)
+#if CPUSTYLE_STM32 && defined (GPIOH)
 void 
 arm_hardware_pioh_opendrain(unsigned long opins, unsigned long initialstate)
 {
@@ -3422,7 +3422,7 @@ arm_hardware_pioh_opendrain(unsigned long opins, unsigned long initialstate)
 
 #endif
 }
-#endif /* CPUSTYLE_STM32F && defined (GPIOH) */
+#endif /* CPUSTYLE_STM32 && defined (GPIOH) */
 
 // выводы присоединены к periph A (Atmel specific)
 void arm_hardware_pioa_peripha(unsigned long pins)

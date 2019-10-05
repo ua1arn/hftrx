@@ -14,7 +14,7 @@
 #include "formats.h"	// for debug prints
 
 
-#if CPUSTYLE_STM32F && LCDMODE_LTDC && LCDMODE_LTDCSDRAMBUFF
+#if CPUSTYLE_STM32 && LCDMODE_LTDC && LCDMODE_LTDCSDRAMBUFF
 
 #define assert_param(expr) do { } while (0)
 /**
@@ -3032,4 +3032,4 @@ void arm_hardware_sdram_initialize(void)
   SDRAM_InitSequence(); 
   
 }
-#endif /* CPUSTYLE_STM32F && LCDMODE_LTDC && LCDMODE_LTDCSDRAMBUFF*/
+#endif /* CPUSTYLE_STM32 && LCDMODE_LTDC && LCDMODE_LTDCSDRAMBUFF*/

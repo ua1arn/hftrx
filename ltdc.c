@@ -1278,7 +1278,7 @@ arm_hardware_ltdc_initialize(void)
 	debug_printf_P(PSTR("arm_hardware_ltdc_initialize done\n"));
 }
 
-#elif CPUSTYLE_STM32F
+#elif CPUSTYLE_STM32
 
 /** @defgroup LTDC_Pixelformat 
   * @{
@@ -1940,6 +1940,6 @@ void arm_hardware_ltdc_pip_off(void)	// set PIP framebuffer address
 
 #endif /* LCDMODE_LTDC_PIP16 */
 
-#endif /* CPUSTYLE_STM32F */
+#endif /* CPUSTYLE_STM32 */
 
 #endif /* LCDMODE_LTDC */
