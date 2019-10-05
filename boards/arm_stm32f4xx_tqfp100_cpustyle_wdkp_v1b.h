@@ -39,8 +39,8 @@
 
 //#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 //#define WITHUSBHWVBUSSENSE	1	/* используется предопределенный вывод VBUS_SENSE */
-//#define WITHUSBHWHIGHSPEED	1	/* Используется встроенная в процессор поддержка USB HS */
-//#define WITHUSBHWHIGHSPEEDDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
+//#define WITHDEVONHIGHSPEED	1	/* Для DEVICE используется встроенная в процессор поддержка USB HS */
+//#define WITHHIGHSPEEDDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
 //#define WITHUSBHW_DEVICE	USB_OTG_FS	/* на этом устройстве поддерживается функциональность DEVUCE	*/
 
 //#define BSRR_S(v) ((v) * GPIO_BSRR_BS_0)	/* Преобразование значения для установки бита в регистре */

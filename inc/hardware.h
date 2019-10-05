@@ -156,7 +156,7 @@ extern "C" {
 	// STM32H743ZIT6 processors, up to 400 MHz
 
 	#define CPUSTYLE_ARM	1		/* архитектура процессора ARM */
-	#define CPUSTYLE_STM32F		1		/* архитектура процессора STM32F */
+	#define CPUSTYLE_STM32		1		/* архитектура процессора STM32F */
 	#define CPUSTYLE_ARM_CM7	1		/* архитектура процессора CORTEX M7 */
 
 	#include "armcpu/stm32h7xx.h"
@@ -171,7 +171,7 @@ extern "C" {
 	// STM32F745ZGT6 processors, up to 216 MHz 
 
 	#define CPUSTYLE_ARM	1		/* архитектура процессора ARM */
-	#define CPUSTYLE_STM32F		1		/* архитектура процессора STM32F */
+	#define CPUSTYLE_STM32		1		/* архитектура процессора STM32F */
 	#define CPUSTYLE_ARM_CM7	1		/* архитектура процессора CORTEX M7 */
 
 	#include "armcpu/stm32f7xx.h"
@@ -185,7 +185,7 @@ extern "C" {
 #elif CPUSTYLE_STM32F4XX
 
 	#define CPUSTYLE_ARM	1		/* архитектура процессора ARM */
-	#define CPUSTYLE_STM32F		1		/* архитектура процессора STM32F */
+	#define CPUSTYLE_STM32		1		/* архитектура процессора STM32F */
 	#define CPUSTYLE_ARM_CM4	1		/* архитектура процессора CORTEX M4 */
 
 	#include "armcpu/stm32f4xx.h"
@@ -199,7 +199,7 @@ extern "C" {
 #elif CPUSTYLE_STM32F30X
 
 	#define CPUSTYLE_ARM	1		/* архитектура процессора ARM */
-	#define CPUSTYLE_STM32F		1		/* архитектура процессора STM32F */
+	#define CPUSTYLE_STM32		1		/* архитектура процессора STM32F */
 	#define CPUSTYLE_ARM_CM4	1		/* архитектура процессора CORTEX M3 */
 
 	// STM32F303VC processors
@@ -214,7 +214,7 @@ extern "C" {
 #elif CPUSTYLE_STM32F1XX
 
 	#define CPUSTYLE_ARM	1		/* архитектура процессора ARM */
-	#define CPUSTYLE_STM32F		1		/* архитектура процессора STM32F */
+	#define CPUSTYLE_STM32		1		/* архитектура процессора STM32F */
 	#define CPUSTYLE_ARM_CM3	1		/* архитектура процессора CORTEX M3 */
 
 	#include "armcpu/stm32f1xx.h"
@@ -228,7 +228,7 @@ extern "C" {
 #elif CPUSTYLE_STM32F0XX
 
 	#define CPUSTYLE_ARM	1		/* архитектура процессора ARM */
-	#define CPUSTYLE_STM32F		1		/* архитектура процессора STM32F */
+	#define CPUSTYLE_STM32		1		/* архитектура процессора STM32F */
 	#define CPUSTYLE_ARM_CM0	1		/* архитектура процессора CORTEX M0 */
 	
 	#include "armcpu/stm32f0xx.h"
@@ -242,7 +242,7 @@ extern "C" {
 #elif CPUSTYLE_STM32L0XX
 
 	#define CPUSTYLE_ARM	1		/* архитектура процессора ARM */
-	#define CPUSTYLE_STM32F		1		/* архитектура процессора STM32F */
+	#define CPUSTYLE_STM32		1		/* архитектура процессора STM32F */
 	#define CPUSTYLE_ARM_CM0	1		/* архитектура процессора CORTEX M0 */
 	#include "armcpu/stm32l0xx.h"
 
@@ -573,10 +573,8 @@ void hardware_adc_initialize(void);
 //#define IF3_FMASK	(IF3_FMASK_0P5 | IF3_FMASK_1P8 | IF3_FMASK_2P7 | IF3_FMASK_3P1)
 
 // вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
-void enc_spool(void);
 void kbd_spool(void);
 void display_spool(void);	// отсчёт времени по запрещению обновления дисплея при вращении валкодера
-void board_usb_spool(void);
 
 void spool_secound(void);		// вызывается раз в секунду из таймерного прерывания.
 
@@ -662,8 +660,6 @@ uint_fast8_t debugusb_putchar(uint_fast8_t c);/* передача символа
 uint_fast8_t debugusb_getchar(char * cp); /* приём символа, если готов порт */
 void debugusb_parsechar(uint_fast8_t c);	/* вызывается из обработчика прерываний */
 void debugusb_sendchar(void * ctx);			/* вызывается из обработчика прерываний */
-
-void modem_spool(void);		/* вызывается из обработчика таймерного прерывания */
 
 // spool-based functions for debug
 int dbg_puts_impl_P(const FLASHMEM char * s);

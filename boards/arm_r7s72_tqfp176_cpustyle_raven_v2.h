@@ -37,8 +37,8 @@
 
 #define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 #define WITHUSBHWVBUSSENSE	1	/* используется предопределенный вывод VBUS_SENSE */
-#define WITHUSBHWHIGHSPEED	1	/* Используется встроенная в процессор поддержка USB HS */
-#define WITHUSBHWHIGHSPEEDDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
+#define WITHDEVONHIGHSPEED	1	/* Для DEVICE используется встроенная в процессор поддержка USB HS */
+#define WITHHIGHSPEEDDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
 #define WITHUSBHW_DEVICE	(& USB200)	/* на этом устройстве поддерживается функциональность DEVUCE	*/
 
 #define WITHUART1HW	1	/* Используется периферийный контроллер последовательного порта #1 SCIF0 */
@@ -210,8 +210,8 @@
 			arm_hardware_irqn_interrupt(5, 3, ARM_OVERREALTIME_PRIORITY, spool_encinterrupt); /* IRQ5, both edges */ \
 			arm_hardware_irqn_interrupt(6, 3, ARM_OVERREALTIME_PRIORITY, spool_encinterrupt); /* IRQ6, both edges */ \
 			arm_hardware_pio5_alternative(ENCODER2_BITS, R7S721_PIOALT_4); \
-			arm_hardware_irqn_interrupt(3, 3, ARM_OVERREALTIME_PRIORITY, spool_encinterrupt2); /* IRQ3, both edges */ \
-			arm_hardware_irqn_interrupt(4, 3, ARM_OVERREALTIME_PRIORITY, spool_encinterrupt2); /* IRQ4, both edges */ \
+			/*arm_hardware_irqn_interrupt(3, 3, ARM_OVERREALTIME_PRIORITY, spool_encinterrupt2); *//* IRQ3, both edges */ \
+			/*arm_hardware_irqn_interrupt(4, 3, ARM_OVERREALTIME_PRIORITY, spool_encinterrupt2); *//* IRQ4, both edges */ \
 		} while (0)
 
 #endif /* WITHENCODER */

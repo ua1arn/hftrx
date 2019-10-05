@@ -127,20 +127,20 @@
 //#define CTLSTYLE_V5 1		// ATMega: (UA1ZH) Маленькая плата на ATMEGA, с двумя AD9834 и четырьмя ГУН (atmega_ctlstyle_v5.h)
 #endif /* NIGHTBUILD */
 
-#if CPUSTYLE_STM32F && CTLSTYLE_RAVENDSP_V1	// Трансивер Вороненок с IF DSP трактом
+#if CPUSTYLE_STM32 && CTLSTYLE_RAVENDSP_V1	// Трансивер Вороненок с IF DSP трактом
 	#include "boards/arm_stm32f4xx_tqfp100_ctlstyle_raven_v1.h"	// ravendsp_v1
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32f4xx_tqfp100_cpustyle_raven_v1.h"	// ravendsp_v1
-#elif CPUSTYLE_STM32F && CTLSTYLE_RAVENDSP_V3	// STM32F429ZIT6 с кодеком TLV320AIC23B и FPGA EP4CE22E22I7N
+#elif CPUSTYLE_STM32 && CTLSTYLE_RAVENDSP_V3	// STM32F429ZIT6 с кодеком TLV320AIC23B и FPGA EP4CE22E22I7N
 	#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_raven_v3.h"	// Rmainunit_v2b.pcb
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32f4xx_tqfp144_cpustyle_raven_v3.h"	// Rmainunit_v2b.pcb
-#elif CPUSTYLE_STM32F && CTLSTYLE_RAVENDSP_V4	// SD-CARD. STM32F429ZIT6 or STM32F745ZGT6, TLV320AIC23B и FPGA EP4CE22E22I7N
+#elif CPUSTYLE_STM32 && CTLSTYLE_RAVENDSP_V4	// SD-CARD. STM32F429ZIT6 or STM32F745ZGT6, TLV320AIC23B и FPGA EP4CE22E22I7N
 	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_raven_v4.h"	// Rmainunit_v2bm.pcb
 	#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_raven_v4_RA1AGO.h"	// Rmainunit_v2bm.pcb
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32f4xx_tqfp144_cpustyle_raven_v4.h"	// Rmainunit_v2bm.pcb
-#elif CPUSTYLE_STM32F && CTLSTYLE_RAVENDSP_V5	// SD-CARD. DUAL WATCH, STM32F446ZET6, TLV320AIC23B и FPGA EP4CE22E22I7N
+#elif CPUSTYLE_STM32 && CTLSTYLE_RAVENDSP_V5	// SD-CARD. DUAL WATCH, STM32F446ZET6, TLV320AIC23B и FPGA EP4CE22E22I7N
 	#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_raven_v5.h"	// Rmainunit_v3bm.pcb
 	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_raven_v5_RU7L.h"	// RU7L Rmainunit_v3bm.pcb
 	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_raven_v5_vlad_vwws.h"	// Rmainunit_v3bm.pcb
@@ -150,20 +150,20 @@
 	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_raven_v5_RA0CGS.h"	// Rmainunit_v3bm.pcb
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32f4xx_tqfp144_cpustyle_raven_v5.h"	// Rmainunit_v3bm.pcb
-#elif CPUSTYLE_STM32F && CTLSTYLE_RAVENDSP_V6	// SD-CARD. DUAL WATCH, STM32F446ZET6, TLV320AIC23B и FPGA EP4CE22E22I7N
+#elif CPUSTYLE_STM32 && CTLSTYLE_RAVENDSP_V6	// SD-CARD. DUAL WATCH, STM32F446ZET6, TLV320AIC23B и FPGA EP4CE22E22I7N
 	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_raven_v6.h"	// Rmainunit_v4bm.pcb
 	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_raven_v6_mkryukov.h"	// Rmainunit_v4bm.pcb
 	#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_raven_v6_RV1CB.h"	// Rmainunit_v4bm.pcb
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32f4xx_tqfp144_cpustyle_raven_v6.h"	// Rmainunit_v3bm.pcb
-#elif CPUSTYLE_STM32F && CTLSTYLE_RAVENDSP_V7	// SD-CARD. DUAL WATCH, STM32F446ZET6, TLV320AIC23B и FPGA EP4CE22E22I7N
+#elif CPUSTYLE_STM32 && CTLSTYLE_RAVENDSP_V7	// SD-CARD. DUAL WATCH, STM32F446ZET6, TLV320AIC23B и FPGA EP4CE22E22I7N
 	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_raven_v7.h"	// Rmainunit_v5bm.pcb
 	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_raven_v7_yuri5555.h"	// Rmainunit_v5bm.pcb
 	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_raven_v7_RW1AM.h"	// Rmainunit_v5bm.pcb Пётр RW1AM
 	#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_raven_v7_UY5UM.h"	// Rmainunit_v5bm.pcb Игорь Романович UY5UM
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32f4xx_tqfp144_cpustyle_raven_v7.h"	// Rmainunit_v5bm.pcb
-#elif CPUSTYLE_STM32F && CTLSTYLE_STORCH_V1	// SD-CARD. DUAL WATCH, STM32F446ZET6, TLV320AIC23B и FPGA EP4CE22E22I7N
+#elif CPUSTYLE_STM32 && CTLSTYLE_STORCH_V1	// SD-CARD. DUAL WATCH, STM32F446ZET6, TLV320AIC23B и FPGA EP4CE22E22I7N
 	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v1.h"	// Rmainunit_v5cm.pcb, Rmainunit_v5dm.pcb (USB)
 	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v1_penkevich.h"	// penkevich, Rmainunit_v5cm.pcb, Rmainunit_v5dm.pcb (USB)
 	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v1_RA9OH.h"	// Rmainunit_v5dm.pcb (USB)
@@ -172,12 +172,12 @@
 	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v1_OUSSOV.h"	// Rmainunit_v5cm.pcb (USB)
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32f4xx_tqfp144_cpustyle_storch_v1.h"	// Rmainunit_v5cm.pcb, Rmainunit_v5dm.pcb
-#elif CPUSTYLE_STM32F && CTLSTYLE_STORCH_V2	// wide LCD, SD-CARD. 2xUSB, DUAL WATCH, STM32F446ZET6, TLV320AIC23B и FPGA EP4CE22E22I7N
+#elif CPUSTYLE_STM32 && CTLSTYLE_STORCH_V2	// wide LCD, SD-CARD. 2xUSB, DUAL WATCH, STM32F446ZET6, TLV320AIC23B и FPGA EP4CE22E22I7N
 	#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v2.h"	// UA0YAS (RA0CGS) Rmainunit_v5em.pcb (USBx2)
 	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v2_RX3M.h"	// RX3M Rmainunit_v5em.pcb (USBx2)
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32f4xx_tqfp144_cpustyle_storch_v2.h"	// Rmainunit_v5em.pcb (USBx2)
-#elif CPUSTYLE_STM32F && CTLSTYLE_STORCH_V3	// SD-CARD. 2xUSB, DUAL WATCH, STM32F446ZET6, TLV320AIC23B и FPGA EP4CE22E22I7N
+#elif CPUSTYLE_STM32 && CTLSTYLE_STORCH_V3	// SD-CARD. 2xUSB, DUAL WATCH, STM32F446ZET6, TLV320AIC23B и FPGA EP4CE22E22I7N
 	#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v3.h"	// Rmainunit_v5fm.pcb (USBx2, wide display interface)
 	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v3_Piter_Kor.h"	// Piter_Kor Rmainunit_v5fm.pcb (USBx2, wide display interface)
 	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v3_R0CC.h"	// Rmainunit_v5fm.pcb (USBx2, wide display interface)
@@ -188,11 +188,11 @@
 	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v3_headset.h"	// Rmainunit_v5fm.pcb (USBx2, wide display interface)
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32f4xx_tqfp144_cpustyle_storch_v3.h"	// Rmainunit_v5fm.pcb (USBx2, wide display interface)
-#elif CPUSTYLE_STM32F && CTLSTYLE_STORCH_V4	// модем v2
+#elif CPUSTYLE_STM32 && CTLSTYLE_STORCH_V4	// модем v2
 	#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v4.h"	// Rmainunit_v5fm.pcb (USBx2, wide display interface)
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32f4xx_tqfp144_cpustyle_storch_v4.h"	// Rmainunit_v5fm.pcb (USBx2, wide display interface)
-#elif CPUSTYLE_STM32F && CTLSTYLE_STORCH_V5	// SD-CARD. 2xUSB, DUAL WATCH, STM32F446ZET6, TLV320AIC23B и FPGA EP4CE22E22I7N
+#elif CPUSTYLE_STM32 && CTLSTYLE_STORCH_V5	// SD-CARD. 2xUSB, DUAL WATCH, STM32F446ZET6, TLV320AIC23B и FPGA EP4CE22E22I7N
 	#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v5.h"	// Rmainunit_v5l.pcb (mini USBx2, wide display interface) - mini RX
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32f4xx_tqfp144_cpustyle_storch_v5.h"	// Rmainunit_v5l.pcb (mini USBx2, wide display interface) - mini RX
@@ -219,11 +219,11 @@
 	#include "boards/arm_stm32mp1xx_ctlstyle_storch_v9.h"	// rmainunit_v5km2.pcb R7S721020VCFP, TFT 4.3", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32mp1xx_cpustyle_storch_v9.h"	// Rmainunit_v5l.pcb (mini USBx2, wide display interface) - mini RX
-#elif CPUSTYLE_STM32F && CTLSTYLE_OLEG4Z_V1	// 2xUSB, STM32F767ZIT6, FPGA EP4CE22E22I7N & R820T2
+#elif CPUSTYLE_STM32 && CTLSTYLE_OLEG4Z_V1	// 2xUSB, STM32F767ZIT6, FPGA EP4CE22E22I7N & R820T2
 	#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_oleg4z_v1.h"	// Rmainunit_v5fm.pcb (USBx2, wide display interface)
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32f4xx_tqfp144_cpustyle_oleg4z_v1.h"	// Rmainunit_v5fm.pcb (USBx2, wide display interface)
-#elif CPUSTYLE_STM32F && CTLSTYLE_RAVENDSP_V8		// modem-only и FPGA EP4CE22E22I7N
+#elif CPUSTYLE_STM32 && CTLSTYLE_RAVENDSP_V8		// modem-only и FPGA EP4CE22E22I7N
 	#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_raven_v8.h"	// Rmainunit_v6bm.pcb modem-only 
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32f4xx_tqfp144_cpustyle_raven_v8.h"	// Rmainunit_v6bm.pcb modem-only 
@@ -236,7 +236,7 @@
 	#include "boards/arm_r7s72_tqfp176_ctlstyle_raven_v2_valery.h"	// Rmainunit_v7cm.pcb
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_r7s72_tqfp176_cpustyle_raven_v2.h"	// Rmainunit_v7cm.pcb
-#elif CPUSTYLE_STM32F && CTLSTYLE_DSPV1A
+#elif CPUSTYLE_STM32 && CTLSTYLE_DSPV1A
 	#include "boards/arm_stm32f4xx_tqfp100_ctlstyle_wdkp_v1b.h"	// dspboard_v1
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32f4xx_tqfp100_cpustyle_wdkp_v1b.h"	// dspboard_v1
@@ -290,23 +290,23 @@
 	#include "boards/atmega644_ctlstyle_igor.h"	// Синтезатор "Воробей"
 	#include "paramdepend.h"				/* проверка зависимостей параметров конфигурации */
 	#include "boards/atmega_cpustyle_v8a.h"
-#elif CPUSTYLE_STM32F && CTLSTYLE_V1B
+#elif CPUSTYLE_STM32 && CTLSTYLE_V1B
 	#include "boards/atmega644_ctlstyle_v1.h"	// Синтезатор "Воробей"
 	#include "paramdepend.h"				/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32fxxx_tqfp64_cpustyle_v8a.h"	/* STM32F101RB	*/
-#elif CPUSTYLE_STM32F && CTLSTYLE_V1K
+#elif CPUSTYLE_STM32 && CTLSTYLE_V1K
 	#include "boards/arm_stm32fxxx_tqfp64_ctlstyle_v1k.h"	// Синтезатор "Воробей"
 	#include "paramdepend.h"				/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32fxxx_tqfp64_cpustyle_v1k.h"	/* STM32F401RB	*/
-#elif CPUSTYLE_STM32F && CTLSTYLE_V1E
+#elif CPUSTYLE_STM32 && CTLSTYLE_V1E
 	#include "boards/arm_stm32fxxx_tssop20_ctlstyle_v1.h"	// плата с процессором STM32F030F4P (TSSOP-20)
 	#include "paramdepend.h"				/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32fxxx_tssop20_cpustyle_v1.h"	/* STM32F101RB	*/
-#elif CPUSTYLE_STM32F && CTLSTYLE_V1F
+#elif CPUSTYLE_STM32 && CTLSTYLE_V1F
 	#include "boards/arm_stm32f051_tqfp48_ctlstyle_v1.h"	// Плата с процессором STM32F051C6T6 (TQFP-48)
 	#include "paramdepend.h"				/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32f051_tqfp48_cpustyle_v1.h"	/* STM32F101RB	*/
-#elif CPUSTYLE_STM32F && CTLSTYLE_V1G
+#elif CPUSTYLE_STM32 && CTLSTYLE_V1G
 	#include "boards/arm_stm32l051_tqfp32_ctlstyle_v1.h"	// Плата с процессором STM32L051K6T (TQFP-32)
 	#include "paramdepend.h"				/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32l051_tqfp32_cpustyle_v1.h"	/* STM32L051K6T	*/
@@ -332,23 +332,23 @@
 	#include "boards/atmega644_ctlstyle_rk4ci.h"	// Синтезатор "Воробей"
 	#include "paramdepend.h"				/* проверка зависимостей параметров конфигурации */
 	#include "boards/atmega_cpustyle_v8a.h"
-#elif CPUSTYLE_STM32F && CTLSTYLE_V1C
+#elif CPUSTYLE_STM32 && CTLSTYLE_V1C
 	#include "boards/arm_stm32fxxx_tqfp64_ctlstyle_v8b.h"	// "Воробей-2" с кодеком
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32fxxx_tqfp64_cpustyle_v8b.h"	// Синтезатор "Воробей-2" на процессоре STM32F105RC с кодеком TLV320AIC23B
-#elif CPUSTYLE_STM32F && CTLSTYLE_V1D
+#elif CPUSTYLE_STM32 && CTLSTYLE_V1D
 	#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_32F429DISCO.h"	/* Плата STM32F429I-DISCO с процессором STM32F429ZIT6	*/
 	#include "paramdepend.h"				/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32f4xx_tqfp144_cpustyle_32F429DISCO.h"	/* плата STM32F429I-DISCO с процессором STM32F429ZIT6	*/
-#elif CPUSTYLE_STM32F && CTLSTYLE_V2D
+#elif CPUSTYLE_STM32 && CTLSTYLE_V2D
 	#include "boards/arm_stm32fxxx_tqfp100_ctlstyle_v8c.h"	/* плата STM32F4DISCOVERY с процессором STM32F407VGT6	*/
 	#include "paramdepend.h"				/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32fxxx_tqfp100_cpustyle_v8c.h"	/* плата STM32F4DISCOVERY с процессором STM32F407VGT6	*/
-#elif CPUSTYLE_STM32F && CTLSTYLE_V3D
+#elif CPUSTYLE_STM32 && CTLSTYLE_V3D
 	#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_32F746G.h"	/* Плата STM32F746G-DISCO с процессором STM32F746NGH6	*/
 	#include "paramdepend.h"				/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32f4xx_tqfp144_cpustyle_32F746G.h"	/* Плата STM32F746G-DISCO с процессором STM32F746NGH6	*/
-#elif CPUSTYLE_STM32F && CTLSTYLE_NUCLEO_V1	// Внешняя аудиоплата на базе NUCLEO-F767ZI с процессором STM32F767ZIT6  mb1137.pdf
+#elif CPUSTYLE_STM32 && CTLSTYLE_NUCLEO_V1	// Внешняя аудиоплата на базе NUCLEO-F767ZI с процессором STM32F767ZIT6  mb1137.pdf
 	#include "boards/arm_stm32f767_tqfp144_ctlstyle_nucleo.h"
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32f767_tqfp144_cpustyle_nucleo.h"
@@ -369,7 +369,7 @@
 	#include "boards/atmega_ctlstyle_v7.h"	// up-conversion аппараты
 	#include "paramdepend.h"				/* проверка зависимостей параметров конфигурации */
 	#include "boards/atmega_cpustyle_v7.h"
-#elif CPUSTYLE_STM32F && STYLE_TS850_V1
+#elif CPUSTYLE_STM32 && STYLE_TS850_V1
 	#include "boards/arm_ctlstyle_ts850_v1.h"	// up-conversion аппараты с ПЧ 73.050 МГц, 24 бита в управляющем регистре
 	#include "paramdepend.h"				/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32fxxx_tqfp64_cpustyle_v8a.h"	/* STM32F101RB	*/
@@ -425,7 +425,7 @@
 	#include "boards/atmega_ctlstyle_ra4ybo_v2.h"	// ATMega644, up-conversion to 73050->0.5 MHz, Si570, LMX2306, AD9834
 	#include "paramdepend.h"				/* проверка зависимостей параметров конфигурации */
 	#include "boards/atmega_cpustyle_v8a.h"	// новая плата Explorer, текущая версия для 40/44 ногих процессоров ATMega
-#elif CPUSTYLE_STM32F && CTLSTYLE_RA4YBO_V3
+#elif CPUSTYLE_STM32 && CTLSTYLE_RA4YBO_V3
 	#include "boards/atmega_ctlstyle_ra4ybo_v3.h"	// "Стационарный с Павлином" STM32F103C8T6, 2*HMC830, up-conversion to 64455 для RA4YBO
 	#include "paramdepend.h"				/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32fxxx_tqfp48_cpustyle_ra4ybo_v3.h"	/* STM32F103C8T6	*/

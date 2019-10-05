@@ -508,6 +508,7 @@ uint_fast8_t modem_getnextbit(
 	return modem_frame_getnextbit(suspend);
 }
 
+static ticker_t modemticker;
 
 /* вызывается при разрешённых прерываниях. */
 void modem_initialze(void)
@@ -538,6 +539,8 @@ void modem_initialze(void)
 	ownaddressbuff [0x0A] = uidbase [2] >> 8;
 	ownaddressbuff [0x0B] = uidbase [2] >> 0;
 #endif
+
+	ticker_initialize(& modemticker, 1, modem_spool, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
 }
 
 
@@ -694,7 +697,7 @@ isownaddressmatch(
 #endif /* CTLREGMODE_STORCH_V4 */
 }
 
-void modem_spool(void)
+static void modem_spool(void * ctx)
 {
 	size_t len;
 	uint8_t * buff;

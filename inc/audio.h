@@ -84,7 +84,7 @@ extern "C" {
 
 		#define DMABUFSTEP16	2		// 2 - каждому сэмплу при обмене с AUDIO CODEC соответствует два числа в DMA буфере
 
-	#elif CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
+	#elif CPUSTYLE_STM32 || CPUSTYLE_STM32MP1
 
 		// buff data layout: I main/I sub/Q main/Q sub
 		#define DMABUFSTEP32RX	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере

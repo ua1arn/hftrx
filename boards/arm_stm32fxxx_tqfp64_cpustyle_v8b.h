@@ -29,8 +29,8 @@
 
 	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 	#define WITHUSBHWVBUSSENSE	1	/* используется предопределенный вывод VBUS_SENSE */
-	//#define WITHUSBHWHIGHSPEED	1	/* Используется встроенная в процессор поддержка USB HS */
-	//#define WITHUSBHWHIGHSPEEDDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
+	//#define WITHDEVONHIGHSPEED	1	/* Для DEVICE используется встроенная в процессор поддержка USB HS */
+	//#define WITHHIGHSPEEDDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
 	#define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
 	#define WITHUSBCDC		1	/* использовать виртуальный последовательный порт на USB соединении */
 

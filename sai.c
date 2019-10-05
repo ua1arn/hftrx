@@ -122,7 +122,7 @@ static const codechw_t audiocodechw =
 };
 
 
-#elif CPUSTYLE_STM32F
+#elif CPUSTYLE_STM32
 
 enum
 {
@@ -2824,7 +2824,7 @@ static const codechw_t fpgaspectrumhw =
 	"sai2-fpga spectrum for WFM"
 };
 
-#endif /* CPUSTYLE_STM32F */
+#endif /* CPUSTYLE_STM32 */
 
 
 #if WITHI2SHW
@@ -2942,7 +2942,7 @@ void hardware_dac_initialize(void)		/* инициализация DAC на STM32
 	RCC->APB1LENR |= RCC_APB1LENR_DAC12EN; //подать тактирование
 	__DSB();
 
-#elif CPUSTYLE_STM32F
+#elif CPUSTYLE_STM32
 
 	RCC->APB1ENR |= RCC_APB1ENR_DACEN; //подать тактирование
 	__DSB();

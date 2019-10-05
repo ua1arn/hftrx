@@ -3941,11 +3941,11 @@ static unsigned fill_Configuration_descriptor(
 		const fill_func_t fill_main_group	// fill functional descriptor(s)
 		)
 {
-#if WITHUSBHWHIGHSPEED && WITHUSBHWHIGHSPEEDDESC
+#if WITHDEVONHIGHSPEED && WITHHIGHSPEEDDESC
 	const int highspeedEPs = 1;
-#else /* WITHUSBHWHIGHSPEED && WITHUSBHWHIGHSPEEDDESC */
+#else /* WITHDEVONHIGHSPEED && WITHHIGHSPEEDDESC */
 	const int highspeedEPs = 0;
-#endif /* WITHUSBHWHIGHSPEED && WITHUSBHWHIGHSPEEDDESC */
+#endif /* WITHDEVONHIGHSPEED && WITHHIGHSPEEDDESC */
 	unsigned length = 9;
 	unsigned totalsize = length + fill_main_group(0, buff, maxsize - length, highspeedEPs);
 	ASSERT(maxsize >= length);
@@ -4520,7 +4520,7 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 		StringDescrTbl [id].data = alldescbuffer + score;
 		score += partlen;
 	}
-#elif 0 //CPUSTYLE_STM32F && defined(UID_BASE)
+#elif 0 //CPUSTYLE_STM32 && defined(UID_BASE)
 	{
 		unsigned partlen;
 		const uint_fast8_t id = STRING_ID_3;
@@ -4547,7 +4547,7 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 		StringDescrTbl [id].data = alldescbuffer + score;
 		score += partlen;
 	}
-#endif /* CPUSTYLE_STM32F && defined(UID_BASE) */
+#endif /* CPUSTYLE_STM32 && defined(UID_BASE) */
 
 	arm_hardware_flush_invalidate((uintptr_t) alldescbuffer, score);
 	debug_printf_P(PSTR("usbd_descriptors_initialize: total length=%u\n"), score);

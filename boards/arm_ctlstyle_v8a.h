@@ -208,7 +208,7 @@
 #define WITHKEYBOARD 1	/* в данном устройстве есть клавиатура */
 #define KEYBOARD_USE_ADC	1	/* на одной линии установлено  четыре  клавиши. на vref - 6.8K, далее 2.2К, 4.7К и 13K. */
 
-#if CPUSTYLE_STM32F
+#if CPUSTYLE_STM32
 		// Назначения входов АЦП процессора.
 		enum 
 		{ 
