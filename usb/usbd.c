@@ -1144,38 +1144,6 @@ typedef USBALIGN_BEGIN struct _USBD_HandleTypeDef
 /*----------   -----------*/
 #define USBH_USE_OS      0
 
-
-
-
-
-
-#if 1//(USBH_DEBUG_LEVEL > 0)
-#define  USBH_UsrLog(...)   PRINTF(__VA_ARGS__);\
-                            PRINTF("\n");
-#else
-#define USBH_UsrLog(...)
-#endif
-
-
-#if 1//(USBH_DEBUG_LEVEL > 1)
-
-#define  USBH_ErrLog(...)   PRINTF("ERROR: ") ;\
-                            PRINTF(__VA_ARGS__);\
-                            PRINTF("\n");
-#else
-#define USBH_ErrLog(...)
-#endif
-
-
-#if 1//(USBH_DEBUG_LEVEL > 2)
-#define  USBH_DbgLog(...)   PRINTF("DEBUG : ") ;\
-                            PRINTF(__VA_ARGS__);\
-                            PRINTF("\n");
-#else
-#define USBH_DbgLog(...)
-#endif
-
-
 typedef union
 {
   uint16_t w;
@@ -12624,7 +12592,6 @@ HAL_StatusTypeDef USB_HC_Init(USB_OTG_GlobalTypeDef *USBx,
 #endif /* CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX */
 
 //++++ HC
-#if WITHUSEUSBFLASH
 
 /**
   * @}
@@ -12984,24 +12951,26 @@ USBH_StatusTypeDef  USBH_LL_NotifyURBChange (USBH_HandleTypeDef *phost)
 }
 #endif  
 
-/**
-  * @}
-  */ 
 
-/** @defgroup USBH_MSC_BOT_Exported_Macros
-  * @{
-  */ 
-/**
-  * @}
-  */ 
+/* Memory management macros */
+//#define USBH_malloc               malloc
+//#define USBH_free                 free
+#define USBH_memset               memset
+#define USBH_memcpy               memcpy
 
-/** @defgroup USBH_MSC_BOT_Exported_Variables
-  * @{
-  */ 
 
-/**
-  * @}
-  */ 
+uint8_t USBH_AllocPipe  (USBH_HandleTypeDef *phost, uint8_t ep_addr);
+USBH_StatusTypeDef USBH_FreePipe  (USBH_HandleTypeDef *phost, uint8_t idx);
+USBH_StatusTypeDef USBH_OpenPipe  (USBH_HandleTypeDef *phost,
+                           uint8_t pipe_num,
+                           uint8_t epnum,
+                           uint8_t dev_address,
+                           uint8_t speed,
+                           uint8_t ep_type,
+                           uint16_t mps);
+
+
+#if WITHUSEUSBFLASH
 
 /** @defgroup USBH_MSC_BOT_Exported_FunctionsPrototype
   * @{
@@ -13103,9 +13072,6 @@ MSC_HandleTypeDef;
 /* Interface Descriptor field values for HID Boot Protocol */
 #define MSC_BOT                                        0x50 
 #define MSC_TRANSPARENT                                0x06     
-
-extern USBH_ClassTypeDef  USBH_msc;
-#define USBH_MSC_CLASS    &USBH_msc
 
 
 
@@ -13650,7 +13616,7 @@ static USBH_StatusTypeDef USBH_MSC_SOFProcess(USBH_HandleTypeDef *phost);
 
 static USBH_StatusTypeDef USBH_MSC_RdWrProcess(USBH_HandleTypeDef *phost, uint8_t lun);
 
-USBH_ClassTypeDef  USBH_msc = 
+static USBH_ClassTypeDef  USBH_msc =
 {
   "MSC",
   USB_MSC_CLASS,
@@ -13661,13 +13627,6 @@ USBH_ClassTypeDef  USBH_msc =
   USBH_MSC_SOFProcess,
   NULL,
 };
-
-
- /* Memory management macros */   
-//#define USBH_malloc               malloc
-//#define USBH_free                 free
-#define USBH_memset               memset
-#define USBH_memcpy               memcpy
 
 
 /**
@@ -13683,11 +13642,9 @@ USBH_ClassTypeDef  USBH_msc =
   * @}
   */ 
 
-
 /** @defgroup USBH_MSC_CORE_Private_Functions
   * @{
   */ 
-
 
 /**
   * @brief  USBH_MSC_InterfaceInit 
@@ -13701,18 +13658,20 @@ static USBH_StatusTypeDef USBH_MSC_InterfaceInit (USBH_HandleTypeDef *phost)
   USBH_StatusTypeDef status = USBH_FAIL ;
   MSC_HandleTypeDef *MSC_Handle;
   
+  static MSC_HandleTypeDef msc_handle;
   interfacei = USBH_FindInterface(phost, phost->pActiveClass->ClassCode, MSC_TRANSPARENT, MSC_BOT);
   
   if (interfacei == 0xFF) /* Not Valid Interface */
   {
-    USBH_DbgLog ("Cannot Find the interfacei for %s class.", phost->pActiveClass->Name);
+    PRINTF(PSTR("Cannot Find the interfacei for %s class.\n"), phost->pActiveClass->Name);
     status = USBH_FAIL;      
   }
   else
   {
     USBH_SelectInterface (phost, interfacei);
     
-    phost->pActiveClass->pData = (MSC_HandleTypeDef *)USBH_malloc (sizeof(MSC_HandleTypeDef));
+    //phost->pActiveClass->pData = (MSC_HandleTypeDef *)USBH_malloc (sizeof(MSC_HandleTypeDef));
+    phost->pActiveClass->pData = & msc_handle;
     MSC_Handle =  (MSC_HandleTypeDef *) phost->pActiveClass->pData;
     
     if (phost->device.CfgDesc.Itf_Desc[phost->device.current_interface].Ep_Desc[0].bEndpointAddress & 0x80)
@@ -13801,7 +13760,7 @@ USBH_StatusTypeDef USBH_MSC_InterfaceDeInit (USBH_HandleTypeDef *phost)
 
   if (phost->pActiveClass->pData)
   {
-    USBH_free (phost->pActiveClass->pData);
+    ////USBH_free (phost->pActiveClass->pData);
     phost->pActiveClass->pData = 0;
   }
   
@@ -13840,7 +13799,7 @@ static USBH_StatusTypeDef USBH_MSC_ClassRequest(USBH_HandleTypeDef *phost)
     if(status == USBH_OK)
     {
       MSC_Handle->max_lun = (uint8_t )(MSC_Handle->max_lun) + 1;
-      USBH_UsrLog ("Number of supported LUN: %lu", (int32_t)(MSC_Handle->max_lun));
+      PRINTF(PSTR("Number of supported LUN: %lu\n"), (int32_t)(MSC_Handle->max_lun));
       
       for(i = 0; i < MSC_Handle->max_lun; i++)
       {
@@ -14229,7 +14188,7 @@ static USBH_StatusTypeDef USBH_MSC_Process(USBH_HandleTypeDef *phost)
       switch (MSC_Handle->unit[MSC_Handle->current_lun].state)
       {
       case MSC_INIT:
-        USBH_UsrLog ("LUN #%d: ", MSC_Handle->current_lun);
+        PRINTF(PSTR("LUN #%d: \n"), MSC_Handle->current_lun);
         MSC_Handle->unit[MSC_Handle->current_lun].state = MSC_READ_INQUIRY;
         MSC_Handle->timer = phost->Timer;
         
@@ -14238,9 +14197,9 @@ static USBH_StatusTypeDef USBH_MSC_Process(USBH_HandleTypeDef *phost)
         
         if( scsi_status == USBH_OK)
         {
-          USBH_UsrLog ("Inquiry Vendor  : %s", MSC_Handle->unit[MSC_Handle->current_lun].inquiry.vendor_id);
-          USBH_UsrLog ("Inquiry Product : %s", MSC_Handle->unit[MSC_Handle->current_lun].inquiry.product_id);
-          USBH_UsrLog ("Inquiry Version : %s", MSC_Handle->unit[MSC_Handle->current_lun].inquiry.revision_id);
+          PRINTF(PSTR("Inquiry Vendor  : %s\n"), MSC_Handle->unit[MSC_Handle->current_lun].inquiry.vendor_id);
+          PRINTF(PSTR("Inquiry Product : %s\n"), MSC_Handle->unit[MSC_Handle->current_lun].inquiry.product_id);
+          PRINTF(PSTR("Inquiry Version : %s\n"), MSC_Handle->unit[MSC_Handle->current_lun].inquiry.revision_id);
           MSC_Handle->unit[MSC_Handle->current_lun].state = MSC_TEST_UNIT_READY;        
         }
         if( scsi_status == USBH_FAIL)
@@ -14262,7 +14221,7 @@ static USBH_StatusTypeDef USBH_MSC_Process(USBH_HandleTypeDef *phost)
           if( MSC_Handle->unit[MSC_Handle->current_lun].prev_ready_state != USBH_OK)
           {
             MSC_Handle->unit[MSC_Handle->current_lun].state_changed = 1;
-            USBH_UsrLog ("MSC Device ready");
+            PRINTF(PSTR("MSC Device ready\n"));
           }
           else
           {
@@ -14278,7 +14237,7 @@ static USBH_StatusTypeDef USBH_MSC_Process(USBH_HandleTypeDef *phost)
           if( MSC_Handle->unit[MSC_Handle->current_lun].prev_ready_state != USBH_FAIL)
           {
             MSC_Handle->unit[MSC_Handle->current_lun].state_changed = 1;
-            USBH_UsrLog ("MSC Device NOT ready");
+            PRINTF(PSTR("MSC Device NOT ready\n"));
           }
           else
           {
@@ -14302,10 +14261,10 @@ static USBH_StatusTypeDef USBH_MSC_Process(USBH_HandleTypeDef *phost)
         {
           if(MSC_Handle->unit[MSC_Handle->current_lun].state_changed == 1)
           {
-            USBH_UsrLog ("MSC Device capacity : %lu Bytes",
+            PRINTF(PSTR("MSC Device capacity : %lu Bytes\n"),
               (int32_t)(MSC_Handle->unit[MSC_Handle->current_lun].capacity.block_nbr * MSC_Handle->unit[MSC_Handle->current_lun].capacity.block_size));
-            USBH_UsrLog ("Block number : %lu", (int32_t)(MSC_Handle->unit[MSC_Handle->current_lun].capacity.block_nbr));
-            USBH_UsrLog ("Block Size   : %lu", (int32_t)(MSC_Handle->unit[MSC_Handle->current_lun].capacity.block_size));
+            PRINTF(PSTR("Block number : %lu\n"), (int32_t)(MSC_Handle->unit[MSC_Handle->current_lun].capacity.block_nbr));
+            PRINTF(PSTR("Block Size   : %lu\n"), (int32_t)(MSC_Handle->unit[MSC_Handle->current_lun].capacity.block_size));
           }
           MSC_Handle->unit[MSC_Handle->current_lun].state = MSC_IDLE;
           MSC_Handle->unit[MSC_Handle->current_lun].error = MSC_OK;
@@ -14338,15 +14297,15 @@ static USBH_StatusTypeDef USBH_MSC_Process(USBH_HandleTypeDef *phost)
             }        
           }
           
-          USBH_UsrLog ("Sense Key  : %x", MSC_Handle->unit[MSC_Handle->current_lun].sense.key);
-          USBH_UsrLog ("Additional Sense Code : %x", MSC_Handle->unit[MSC_Handle->current_lun].sense.asc);
-          USBH_UsrLog ("Additional Sense Code Qualifier: %x", MSC_Handle->unit[MSC_Handle->current_lun].sense.ascq);
+          PRINTF(PSTR("Sense Key  : %x\n"), MSC_Handle->unit[MSC_Handle->current_lun].sense.key);
+          PRINTF(PSTR("Additional Sense Code : %x\n"), MSC_Handle->unit[MSC_Handle->current_lun].sense.asc);
+          PRINTF(PSTR("Additional Sense Code Qualifier: %x\n"), MSC_Handle->unit[MSC_Handle->current_lun].sense.ascq);
           MSC_Handle->unit[MSC_Handle->current_lun].state = MSC_IDLE;
           MSC_Handle->current_lun++;
         }
         if( scsi_status == USBH_FAIL)
         {
-          USBH_UsrLog ("MSC Device NOT ready");
+          PRINTF(PSTR("MSC Device NOT ready\n"));
           MSC_Handle->unit[MSC_Handle->current_lun].state = MSC_UNRECOVERED_ERROR; 
         }
         else if(scsi_status == USBH_UNRECOVERED_ERROR)
@@ -14467,9 +14426,9 @@ static USBH_StatusTypeDef USBH_MSC_RdWrProcess(USBH_HandleTypeDef *phost, uint8_
     
     if( scsi_status == USBH_OK)
     {
-      USBH_UsrLog ("Sense Key  : %x", MSC_Handle->unit[lun].sense.key);
-      USBH_UsrLog ("Additional Sense Code : %x", MSC_Handle->unit[lun].sense.asc);
-      USBH_UsrLog ("Additional Sense Code Qualifier: %x", MSC_Handle->unit[lun].sense.ascq);
+      PRINTF(PSTR("Sense Key  : %x\n"), MSC_Handle->unit[lun].sense.key);
+      PRINTF(PSTR("Additional Sense Code : %x\n"), MSC_Handle->unit[lun].sense.asc);
+      PRINTF(PSTR("Additional Sense Code Qualifier: %x\n"), MSC_Handle->unit[lun].sense.ascq);
       MSC_Handle->unit[lun].state = MSC_IDLE;
       MSC_Handle->unit[lun].error = MSC_ERROR;
       
@@ -14477,7 +14436,7 @@ static USBH_StatusTypeDef USBH_MSC_RdWrProcess(USBH_HandleTypeDef *phost, uint8_
     }
     if( scsi_status == USBH_FAIL)
     {
-      USBH_UsrLog ("MSC Device NOT ready");
+      PRINTF(PSTR("MSC Device NOT ready\n"));
     }
     else if(scsi_status == USBH_UNRECOVERED_ERROR)
     {
@@ -16323,7 +16282,7 @@ USBH_StatusTypeDef  USBH_Init(USBH_HandleTypeDef *phost, void (*pUsrFunc)(USBH_H
   /* Check whether the USB Host handle is valid */
   if (phost == NULL)
   {
-    USBH_ErrLog("Invalid Host handle");
+    PRINTF(PSTR("Invalid Host handle\n"));
     return USBH_FAIL; 
   }
   
@@ -16477,7 +16436,7 @@ USBH_StatusTypeDef  USBH_LL_Disconnect(USBH_HandleTypeDef *phost)
 		phost->pUser(phost, HOST_USER_DISCONNECTION);
 	}
 
-	//USBH_UsrLog("USB Device disconnected"); 
+	//PRINTF(PSTR("USB Device disconnected\n"));
 
 	/* Start the low level driver  */
 	USBH_LL_Start(phost);
@@ -16903,14 +16862,14 @@ static void USBH_ParseCfgDesc (USBH_CfgDescTypeDef* cfg_desc,
 	  {
 		  iadmode = 1;
 		  USBH_IfAssocDescTypeDef * piad = (USBH_IfAssocDescTypeDef *) pdesc;
-		USBH_UsrLog("USBH_ParseCfgDesc: USB_INTERFACE_ASSOC_DESCRIPTOR_TYPE: 0x%02X/x%02X, nif=%d, firstIf=%d", piad->bFunctionClass, piad->bFunctionSubClass, piad->bInterfaceCount, piad->bFirstInterface);
+		PRINTF(PSTR("USBH_ParseCfgDesc: USB_INTERFACE_ASSOC_DESCRIPTOR_TYPE: 0x%02X/x%02X, nif=%d, firstIf=%d\n"), piad->bFunctionClass, piad->bFunctionSubClass, piad->bInterfaceCount, piad->bFirstInterface);
 	  }
       else if (/*iadmode == 0 && */ pdesc->bDescriptorType == USB_DESC_TYPE_INTERFACE) 
       {
         pif = &cfg_desc->Itf_Desc[if_ix];
         USBH_ParseInterfaceDesc (pif, (uint8_t *)pdesc); 
 		
-		USBH_UsrLog("USBH_ParseCfgDesc: ifix=%d, 0x%02X/0x%02X/0x%02X, nEP=%d", pif->bInterfaceNumber, pif->bInterfaceClass, pif->bInterfaceSubClass, pif->bInterfaceProtocol, pif->bNumEndpoints);
+		PRINTF(PSTR("USBH_ParseCfgDesc: ifix=%d, 0x%02X/0x%02X/0x%02X, nEP=%d\n"), pif->bInterfaceNumber, pif->bInterfaceClass, pif->bInterfaceSubClass, pif->bInterfaceProtocol, pif->bNumEndpoints);
 		// 0x08/0x06/0x50: USB flash
 		// 0xFF/0x00/0x00: CP2102
 		// 0x03/0x01/0x02: USB-PS/2 Optical Mouse
@@ -16943,7 +16902,7 @@ static void USBH_ParseCfgDesc (USBH_CfgDescTypeDef* cfg_desc,
       }
 	  else
 	  {
-		//USBH_UsrLog("USBH_ParseCfgDesc: bDescriptorType=0x%02X", pdesc->bDescriptorType);
+		//PRINTF(PSTR("USBH_ParseCfgDesc: bDescriptorType=0x%02X\n"), pdesc->bDescriptorType);
 	  }
     }
   }  
@@ -17323,7 +17282,7 @@ static USBH_StatusTypeDef USBH_HandleControl (USBH_HandleTypeDef *phost)
     {
       phost->pUser(phost, HOST_USER_UNRECOVERED_ERROR);
       phost->Control.errorcount = 0;
-      USBH_ErrLog("Control error");
+      PRINTF(PSTR("Control error\n"));
       status = USBH_FAIL;
     }
     break;
@@ -17637,13 +17596,13 @@ USBH_StatusTypeDef  USBH_RegisterClass(USBH_HandleTypeDef *phost, USBH_ClassType
     }
     else
     {
-      USBH_ErrLog("Max Class Number reached");
+      PRINTF(PSTR("Max Class Number reached\n"));
       status = USBH_FAIL; 
     }
   }
   else
   {
-    USBH_ErrLog("Invalid Class handle");
+    PRINTF(PSTR("Invalid Class handle\n"));
     status = USBH_FAIL; 
   }
   
@@ -17664,14 +17623,14 @@ USBH_StatusTypeDef USBH_SelectInterface(USBH_HandleTypeDef *phost, uint8_t inter
   if(interfacei < phost->device.CfgDesc.bNumInterfaces)
   {
     phost->device.current_interface = interfacei;
-    USBH_UsrLog ("Switching to Interface (#%d)", interfacei);
-    USBH_UsrLog ("Class    : %xh", phost->device.CfgDesc.Itf_Desc[interfacei].bInterfaceClass );
-    USBH_UsrLog ("SubClass : %xh", phost->device.CfgDesc.Itf_Desc[interfacei].bInterfaceSubClass );
-    USBH_UsrLog ("Protocol : %xh", phost->device.CfgDesc.Itf_Desc[interfacei].bInterfaceProtocol );                 
+    PRINTF(PSTR("Switching to Interface (#%d)\n"), interfacei);
+    PRINTF(PSTR("Class    : %xh\n"), phost->device.CfgDesc.Itf_Desc[interfacei].bInterfaceClass );
+    PRINTF(PSTR("SubClass : %xh\n"), phost->device.CfgDesc.Itf_Desc[interfacei].bInterfaceSubClass );
+    PRINTF(PSTR("Protocol : %xh\n"), phost->device.CfgDesc.Itf_Desc[interfacei].bInterfaceProtocol );
   }
   else
   {
-    USBH_ErrLog ("Cannot Select This Interface.");
+    PRINTF(PSTR("Cannot Select This Interface.\n"));
     status = USBH_FAIL; 
   }
   return status;  
@@ -17824,8 +17783,8 @@ static USBH_StatusTypeDef USBH_HandleEnum(USBH_HandleTypeDef *phost)
     /* Get FULL Device Desc  */
     if (USBH_Get_DevDesc(phost, USB_DEVICE_DESC_SIZE) == USBH_OK)
     {
-      USBH_UsrLog("PID: %04X", phost->device.DevDesc.idProduct );  
-      USBH_UsrLog("VID: %04X", phost->device.DevDesc.idVendor );  
+      PRINTF(PSTR("PID: %04X\n"), phost->device.DevDesc.idProduct );
+      PRINTF(PSTR("VID: %04X\n"), phost->device.DevDesc.idVendor );
       
       phost->EnumState = ENUM_SET_ADDR;
        
@@ -17846,7 +17805,7 @@ static USBH_StatusTypeDef USBH_HandleEnum(USBH_HandleTypeDef *phost)
       phost->device.address = USBH_DEVICE_ADDRESS;
       
       /* user callback for device address assigned */
-      USBH_UsrLog("Address (#%d) assigned.", phost->device.address);
+      PRINTF(PSTR("Address (#%d) assigned.\n"), phost->device.address);
       phost->EnumState = ENUM_GET_CFG_DESC;
       
       /* modify control channels to update device address */
@@ -17897,7 +17856,7 @@ static USBH_StatusTypeDef USBH_HandleEnum(USBH_HandleTypeDef *phost)
                                0xff) == USBH_OK)
       {
         /* User callback for Manufacturing string */
-        USBH_UsrLog("Manufacturer : %s",  (char *)phost->device.Data);
+        PRINTF(PSTR("Manufacturer : %s\n"),  (char *)phost->device.Data);
         phost->EnumState = ENUM_GET_PRODUCT_STRING_DESC;
         
 #if (USBH_USE_OS == 1)
@@ -17907,7 +17866,7 @@ static USBH_StatusTypeDef USBH_HandleEnum(USBH_HandleTypeDef *phost)
     }
     else
     {
-     USBH_UsrLog("Manufacturer : N/A");      
+     PRINTF(PSTR("Manufacturer : N/A\n"));
      phost->EnumState = ENUM_GET_PRODUCT_STRING_DESC; 
 #if (USBH_USE_OS == 1)
     osMessagePut ( phost->os_event, USBH_STATE_CHANGED_EVENT, 0);
@@ -17924,13 +17883,13 @@ static USBH_StatusTypeDef USBH_HandleEnum(USBH_HandleTypeDef *phost)
                                0xff) == USBH_OK)
       {
         /* User callback for Product string */
-        USBH_UsrLog("Product : %s",  (char *)phost->device.Data);
+        PRINTF(PSTR("Product : %s\n"),  (char *)phost->device.Data);
         phost->EnumState = ENUM_GET_SERIALNUM_STRING_DESC;        
       }
     }
     else
     {
-      USBH_UsrLog("Product : N/A");
+      PRINTF(PSTR("Product : N/A\n"));
       phost->EnumState = ENUM_GET_SERIALNUM_STRING_DESC; 
 #if (USBH_USE_OS == 1)
     osMessagePut ( phost->os_event, USBH_STATE_CHANGED_EVENT, 0);
@@ -17947,13 +17906,13 @@ static USBH_StatusTypeDef USBH_HandleEnum(USBH_HandleTypeDef *phost)
                                0xff) == USBH_OK)
       {
         /* User callback for Serial number string */
-         USBH_UsrLog("Serial Number : %s",  (char *)phost->device.Data);
+         PRINTF(PSTR("Serial Number : %s\n"),  (char *)phost->device.Data);
         Status = USBH_OK;
       }
     }
     else
     {
-      USBH_UsrLog("Serial Number : N/A"); 
+      PRINTF(PSTR("Serial Number : N/A\n"));
       Status = USBH_OK;
 #if (USBH_USE_OS == 1)
     osMessagePut ( phost->os_event, USBH_STATE_CHANGED_EVENT, 0);
@@ -18068,11 +18027,11 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
 		if (USBH_HandleEnum(phost) == USBH_OK)
 		{ 
 			/* The function shall return USBH_OK when full enumeration is complete */
-			USBH_UsrLog ("Enumeration done.");
+			PRINTF(PSTR("Enumeration done.\n"));
 			phost->device.current_interface = 0;
 			if (phost->device.DevDesc.bNumConfigurations == 1)
 			{
-				USBH_UsrLog ("This device has only 1 configuration.");
+				PRINTF(PSTR("This device has only 1 configuration.\n"));
 				phost->gState = HOST_SET_CONFIGURATION;        
 			}
 			else
@@ -18105,7 +18064,7 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
     if (USBH_SetCfg(phost, phost->device.CfgDesc.bConfigurationValue) == USBH_OK)
     {
       phost->gState  = HOST_CHECK_CLASS;
-      USBH_UsrLog ("Default configuration set.");
+      PRINTF(PSTR("Default configuration set.\n"));
       
     }      
     break;
@@ -18116,7 +18075,7 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
 		PRINTF(PSTR("USBH_Process: HOST_CHECK_CLASS (0x%02X)\n"), USBH_GetActiveClass(phost));
 		if (phost->ClassNumber == 0)
 		{
-			USBH_UsrLog ("No Class has been registered.");
+			PRINTF(PSTR("No Class has been registered.\n"));
 			phost->gState  = HOST_ABORT_STATE;
 		}
 		else
@@ -18138,7 +18097,7 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
 				if (phost->pActiveClass->Init(phost)== USBH_OK)
 				{
 					phost->gState  = HOST_CLASS_REQUEST; 
-					USBH_UsrLog ("%s class started.", phost->pActiveClass->Name);
+					PRINTF(PSTR("%s class started.\n"), phost->pActiveClass->Name);
 
 					/* Inform user that a class has been activated */
 					phost->pUser(phost, HOST_USER_CLASS_SELECTED);   
@@ -18146,13 +18105,13 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
 				else
 				{
 					phost->gState  = HOST_ABORT_STATE;
-					USBH_UsrLog ("Device not supporting %s class.", phost->pActiveClass->Name);
+					PRINTF(PSTR("Device not supporting %s class.\n"), phost->pActiveClass->Name);
 				}
 			}
 			else
 			{
 				phost->gState  = HOST_ABORT_STATE;
-				USBH_UsrLog ("No registered class for this device.");
+				PRINTF(PSTR("No registered class for this device.\n"));
 			}
 		}
 
@@ -18176,7 +18135,7 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
     else
     {
       phost->gState  = HOST_ABORT_STATE;
-      USBH_ErrLog ("Invalid Class Driver.");
+      PRINTF(PSTR("Invalid Class Driver.\n"));
     
 #if (USBH_USE_OS == 1)
     osMessagePut ( phost->os_event, USBH_STATE_CHANGED_EVENT, 0);
@@ -18795,7 +18754,9 @@ static void board_usbh_initialize(void)
 	/* Init Host Library,Add Supported Class and Start the library*/
 	USBH_Init(& hUsbHostFS, USBH_UserProcess, HOST_FS);
 
-	////USBH_RegisterClass(&hUsbHostFS, USBH_MSC_CLASS);
+#if WITHUSEUSBFLASH
+	USBH_RegisterClass(&hUsbHostFS, &USBH_msc);
+#endif /* WITHUSEUSBFLASH */
 }
 
 /* вызывается при разрешённых прерываниях. */
@@ -18817,10 +18778,10 @@ static void board_usbh_activate(void)
 
 #endif /* defined (WITHUSBHW_HOST) */
 
-#if 0//WITHUSEUSBFLASH
+#if 0 && WITHUSEUSBFLASH
 
 #include "sdcard.h"
-#include "ff.h"
+#include "fatfs/ff.h"
 
 static volatile DSTATUS USB_Stat = STA_NOINIT;	/* Disk status */
 extern TM_USB_MSCHOST_Result_t 	TM_USB_MSCHOST_INT_Result;
@@ -19824,7 +19785,7 @@ static USBD_StatusTypeDef  USBD_DFU_Init (USBD_HandleTypeDef *pdev,
 static USBD_StatusTypeDef  USBD_DFU_DeInit (USBD_HandleTypeDef *pdev, 
                                  uint_fast8_t cfgidx)
 {
-	//PRINTF("USBD_DFU_DeInit\n");
+	//PRINTF(PSTR("USBD_DFU_DeInit\n"));
   USBD_DFU_HandleTypeDef   *hdfu;
     //hdfu = (USBD_DFU_HandleTypeDef*) pdev->pClassData;
     hdfu = & gdfu;

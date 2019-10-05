@@ -452,10 +452,15 @@
 		#define	WITHBBOXTX		1		// автоматический переход на передачу
 		#define	WITHBBOXMIKESRC	BOARD_TXAUDIO_2TONE	// 2: 2tone, 1: noise 
 	#endif
-	//#define WITHUSESDCARD 1			// Включение поддержки SD CARD
-	//#define WITHUSEAUDIOREC	1	// Запись звука на SD CARD
+
+	// выбор накопителя
+	//#define WITHUSESDCARD		1	// Включение поддержки SD CARD
+	//#define WITHUSEUSBFLASH		1	// Включение поддержки USB memory stick
+
+	// выбор функциональности
+	#define WITHUSEAUDIOREC		1	// Запись звука
+	//#define WITHUSEAUDIOREC2CH	1	// Запись звука в стерео формате
 	//#define WITHUSEAUDIORECCLASSIC	1	// стандартный формат записи, без "дыр"
-	//#define WITHUSEAUDIOREC2CH	1	// Запись звука на SD CARD в стерео
 
 	#define FTW_RESOLUTION 32	/* разрядность FTW выбранного DDS */
 

@@ -144,8 +144,8 @@ static uint_fast64_t sdhost_sdcard_parse_CSD(const uint8_t * bv)
 	// Обработка информациолнного блока (Code length is 128 bits = 16 bytes)
 	//
 	const uint_fast8_t csdv = array_get_bits(bv, 128, 127, 2);	//  [127:126] - csd structure version
-	PRINTF("CSD version=0x%02x\n", csdv);
-	PRINTF("CSD TRAN_SPEED = %d (0x%02x)\n", array_get_bits(bv, 128, 103, 8), array_get_bits(bv, 128, 103, 8));	// [103:96] 
+	PRINTF(PSTR("CSD version=0x%02x\n"), csdv);
+	PRINTF(PSTR("CSD TRAN_SPEED = %d (0x%02x)\n"), array_get_bits(bv, 128, 103, 8), array_get_bits(bv, 128, 103, 8));	// [103:96]
 
 	switch (csdv)
 	{	
@@ -154,7 +154,7 @@ static uint_fast64_t sdhost_sdcard_parse_CSD(const uint8_t * bv)
 		// Расчёт объёма карты памяти по структуре версии 2
 		mmc_C_SIZE = array_get_bits(bv, 128, 69, 22);	// [69:48] This parameter is used to calculate the user data area capacity in the SD memory card (not include the protected area).
 
-		//PRINTF("mmc_C_SIZE = %lu\n", (unsigned long) mmc_C_SIZE);
+		//PRINTF(PSTR("mmc_C_SIZE = %lu\n"), (unsigned long) mmc_C_SIZE);
 		MMC_CardSize = (uint_fast64_t) (mmc_C_SIZE + 1) * 512 * 1024;
 		break;
 
@@ -2071,7 +2071,7 @@ static uint_fast8_t sdhost_short_acmd_resp_R3(uint_fast8_t cmd, uint_fast32_t ar
 
 static uint32_t SDSendCommand(uint32_t cmd, uint32_t arg, uint32_t rsp)
 {
-   PRINTF("\r\nCMD%d ARG=%08x  ", cmd, arg);
+   PRINTF(PSTR("\r\nCMD%d ARG=%08x  "), cmd, arg);
    SDMMC1->ARG = arg;
    //Clear interrupt flags, unmask interrupts according to cmd response
    SDMMC1->ICR = (SDMMC_ICR_CMDRENDC | SDMMC_ICR_CMDSENTC | SDMMC_ICR_CCRCFAILC | SDMMC_ICR_CTIMEOUTC);
@@ -2088,18 +2088,18 @@ static uint32_t SDSendCommand(uint32_t cmd, uint32_t arg, uint32_t rsp)
    SDMMC1->CMD = SDMMC_CMD_CPSMEN | rsp | cmd;
    if(WaitEvents(EV_SD_READY | EV_SD_ERROR, WAIT_ANY) != EV_SD_READY)
    { 
-      PRINTF("E1(cmd=%d arg=%x STA=%x)  ",cmd,arg,SDMMC1->STA);
+      PRINTF(PSTR("E1(cmd=%d arg=%x STA=%x)  "), cmd,arg,SDMMC1->STA);
       return SD_ERROR; 
    }
    //ASSERT(WaitEvents(EV_SD_READY | EV_SD_ERROR, WAIT_ANY) == EV_SD_READY);
    //Check for the correct response (long response and OCR response will result in 0x3F value in RESPCMD)
    if(rsp == SD_CMD_SHORT_RESP && SDMMC1->RESPCMD != (cmd & SDMMC_CMD_CMDINDEX))
    {
-      PRINTF("E2(cmd=%d arg=%x STA=%x)  ",cmd,arg,SDMMC1->STA);
+      PRINTF(PSTR("E2(cmd=%d arg=%x STA=%x)  "), cmd,arg,SDMMC1->STA);
       return SD_ERROR;
    }
    //ASSERT(!(rsp == SD_CMD_SHORT_RESP && SDMMC1->RESPCMD != cmd));
-   PRINTF("OK");
+   PRINTF(PSTR("OK"));
    return SD_OK;
 }
 
@@ -2119,7 +2119,7 @@ static uint32_t SDWriteBlock(uint32_t address, const void* buffer, uint32_t size
       local_delay_ms((1));
    }
 
-   PRINTF(" WR1:%x ", SDMMC1->RESP1);
+   PRINTF(PSTR(" WR1:%x "), SDMMC1->RESP1);
  	arm_hardware_flush_invalidate((uintptr_t) buffer, 512 * size);	// Сейчас эту память будем записывать по DMA, потом содержимое не требуется
   //SCB_CleanDCache_by_Addr(buffer, size*512);
 
@@ -2145,7 +2145,7 @@ static uint32_t SDWriteBlock(uint32_t address, const void* buffer, uint32_t size
    uint8_t cmd = (size == 1) ? 24 /*CMD24 single block write*/: 25 /*CMD25 multiple blocks write*/;
    if(SDSendCommand(cmd | SDMMC_CMD_CMDTRANS, address, SD_CMD_SHORT_RESP))
    {
-      PRINTF("CMD%d failed!", cmd);
+      PRINTF(PSTR("CMD%d failed!"), cmd);
       //turn off DMA
       return RES_ERROR;
    }
@@ -2160,7 +2160,7 @@ static uint32_t SDWriteBlock(uint32_t address, const void* buffer, uint32_t size
       if(SDSendCommand(12, 0, SD_CMD_SHORT_RESP))return RES_ERROR;
    }
    //Do we need to check FIFOCNT and wait until it is 0?
-   //PRINTF(" FIFO:%d WSTA:%x ", SDMMC1->FIFOCNT, SDMMC1->STA);
+   //PRINTF(PSTR(" FIFO:%d WSTA:%x "), SDMMC1->FIFOCNT, SDMMC1->STA);
    
    if((SDMMC1->STA & (SDMMC_STA_DATAEND | SDMMC_STA_DCRCFAIL | SDMMC_STA_DTIMEOUT)) == SDMMC_STA_DATAEND)
 	   return RES_OK;
@@ -3309,7 +3309,7 @@ static char mmcGoIdle(void)
 		mmcSendDummyByte();
 		mmcSendCmd(0x40 + 58, 0);	// CMD58
 		response = mmcGetResponseR3(& cmd58answer);
-		PRINTF("2: CMD58 has responce %02x, value = %08lx\n", response, cmd58answer); 
+		PRINTF(PSTR("2: CMD58 has responce %02x, value = %08lx\n"), response, cmd58answer);
 		if (response == 0x00 || response == 0x01)
 		{
 			if ((cmd58answer & (1UL << 21)) || (cmd58answer & (1UL << 20)))
@@ -3350,7 +3350,7 @@ static char mmcGoIdle(void)
 		mmcSendDummyByte();
 		mmcSendCmdCRC7(0x40 + 59, 0);	// shitch CRC check off
 		response = mmcGetResponseR1();
-		//PRINTF("CMD59 has responce %02x\n", response); 
+		//PRINTF(PSTR("CMD59 has responce %02x\n"), response);
 
 		// Check CCS bit (capacity) bit
 		mmcSendDummyByte();
@@ -3372,7 +3372,7 @@ static char mmcGoIdle(void)
 		}
 	}
 
-	//PRINTF("mmcGoIdle() done.\n");
+	//PRINTF(PSTR("mmcGoIdle() done.\n"));
 
 	spi_read_byte(targetsdcard, 0xff);
 	return (MMC_SUCCESS);
@@ -3447,14 +3447,14 @@ static char mmcInit(void)
 	{
 		if (mmcCardVersion2 != 0)
 		{
-			PRINTF("SPI clock set to 24 MHz\n");
+			PRINTF(PSTR("SPI clock set to 24 MHz\n"));
 			SDCARD_CS_HIGH();
 			sdcard_spi_setfreq(24000000);
 			SDCARD_CS_LOW();
 		}
 		else
 		{
-			PRINTF("SPI clock set to 12 MHz\n");
+			PRINTF(PSTR("SPI clock set to 12 MHz\n"));
 			SDCARD_CS_HIGH();
 			sdcard_spi_setfreq(12000000);
 			SDCARD_CS_LOW();
@@ -3462,7 +3462,7 @@ static char mmcInit(void)
 	}
 	else
 	{
-			PRINTF("mmcGoIdle return ec=%d\n", ec);
+			PRINTF(PSTR("mmcGoIdle return ec=%d\n"), ec);
 	}
 	
 	return ec;
@@ -3607,14 +3607,14 @@ static char mmcReadSectors(
 			else
 			{
 				// the data token was never received
-				//PRINTF("MMC_DATA_TOKEN_ERROR\n");
+				//PRINTF(PSTR("MMC_DATA_TOKEN_ERROR\n"));
 				rvalue = MMC_DATA_TOKEN_ERROR;      // 3
 			}
 		}
 		else
 		{
 			// the MMC never acknowledge the read command
-			//PRINTF("MMC_RESPONSE_ERROR\n");
+			//PRINTF(PSTR("MMC_RESPONSE_ERROR\n"));
 			rvalue = MMC_RESPONSE_ERROR;          // 2
 		}
 
@@ -3665,7 +3665,7 @@ static char mmcReadSectors(
 				else
 				{
 					// the data token was never received
-					PRINTF("mmcReadSectors: MMC_DATA_TOKEN_ERROR\n");
+					PRINTF(PSTR("mmcReadSectors: MMC_DATA_TOKEN_ERROR\n"));
 					rvalue = MMC_DATA_TOKEN_ERROR;      // 3
 					break;
 				}
@@ -3675,7 +3675,7 @@ static char mmcReadSectors(
 			mmcSendDummyByte();
 			if (mmcGetResponseR1b() != 0x00)
 			{
-				PRINTF("mmcReadSectors: MMC_STOP_TRANSMISSION error\n");
+				PRINTF(PSTR("mmcReadSectors: MMC_STOP_TRANSMISSION error\n"));
 				rvalue = MMC_RESPONSE_ERROR;    
 			}
 			mmcCheckBusy();
@@ -3683,7 +3683,7 @@ static char mmcReadSectors(
 		else
 		{
 			// the MMC never acknowledge the read command
-			PRINTF("mmcReadSectors: MMC_READ_MULTIPLE_BLOCK: MMC_RESPONSE_ERROR\n");
+			PRINTF(PSTR("mmcReadSectors: MMC_READ_MULTIPLE_BLOCK: MMC_RESPONSE_ERROR\n"));
 			rvalue = MMC_RESPONSE_ERROR;          // 2
 		}
 
@@ -3747,7 +3747,7 @@ static char mmcWriteSectors(
 		else
 		{
 			// the MMC never acknowledge the write command
-			//PRINTF("MMC_BLOCK_SET_ERROR\n");
+			//PRINTF(PSTR("MMC_BLOCK_SET_ERROR\n"));
 			rvalue = MMC_BLOCK_SET_ERROR;   // 2
 		}
 		// give the MMC the required clocks to finish up what ever it needs to do
@@ -3851,7 +3851,7 @@ static char mmcWriteSectors(
 		else
 		{
 			// the MMC never acknowledge the write command
-			//PRINTF("MMC_BLOCK_SET_ERROR\n");
+			//PRINTF(PSTR("MMC_BLOCK_SET_ERROR\n"));
 			rvalue = MMC_BLOCK_SET_ERROR;   // 2
 		}
 		// give the MMC the required clocks to finish up what ever it needs to do
