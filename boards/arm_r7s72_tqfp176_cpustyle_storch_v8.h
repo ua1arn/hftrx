@@ -739,12 +739,21 @@
 	} while (0)
 #endif /* WITHFLATLINK && LCDMODE_LTDC */
 
-#define HARDWARE_USB0_INITIALIZE() do { \
-		arm_hardware_pio5_outputs((1U << 2), (1U << 2));	/* P5_2 ~VBUS_ON */ \
+	#define HARDWARE_VBUS_ON_MASK (1U << 2)	/* P5_2 ~VBUS_ON */
+
+	#define TARGET_USBFS_VBUSON_SET(on)	do { \
+		if ((on) != 0) \
+			arm_hardware_pio5_outputs(HARDWARE_VBUS_ON_MASK, 0 * HARDWARE_VBUS_ON_MASK);	/* P5_2 ~VBUS_ON = 1*/ \
+		else \
+			arm_hardware_pio5_outputs(HARDWARE_VBUS_ON_MASK, 1 * HARDWARE_VBUS_ON_MASK);	/* P5_2 ~VBUS_ON = 0 */ \
 	} while (0)
 
-#define HARDWARE_USB1_INITIALIZE() do { \
-	} while (0)
+	#define HARDWARE_USB0_INITIALIZE() do { \
+			arm_hardware_pio5_outputs(HARDWARE_VBUS_ON_MASK, 1 * HARDWARE_VBUS_ON_MASK);	/* P5_2 ~VBUS_ON = 1*/ \
+		} while (0)
+
+	#define HARDWARE_USB1_INITIALIZE() do { \
+		} while (0)
 
 	/* макроопределение, которое должно включить в себя все инициализации */
 	#define	HARDWARE_INITIALIZE() do { \

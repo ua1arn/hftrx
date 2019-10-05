@@ -1716,7 +1716,7 @@ USBH_StatusTypeDef   USBH_LL_Disconnect   (USBH_HandleTypeDef *phost);
 USBH_SpeedTypeDef    USBH_LL_GetSpeed     (USBH_HandleTypeDef *phost);
 USBH_StatusTypeDef   USBH_LL_ResetPort    (USBH_HandleTypeDef *phost);
 uint32_t             USBH_LL_GetLastXferSize   (USBH_HandleTypeDef *phost, uint8_t );
-USBH_StatusTypeDef   USBH_LL_DriverVBUS   (USBH_HandleTypeDef *phost, uint8_t );
+USBH_StatusTypeDef   USBH_LL_DriverVBUS   (USBH_HandleTypeDef *phost, uint_fast8_t );
 
 USBH_StatusTypeDef   USBH_LL_OpenPipe     (USBH_HandleTypeDef *phost, uint8_t, uint8_t, uint8_t, uint8_t , uint8_t, uint16_t );
 USBH_StatusTypeDef   USBH_LL_ClosePipe    (USBH_HandleTypeDef *phost, uint8_t );
@@ -1733,11 +1733,25 @@ void                 USBH_LL_SetTimer     (USBH_HandleTypeDef *phost, uint32_t )
 void                 USBH_LL_IncTimer     (USBH_HandleTypeDef *phost);
 
 
+
+
+typedef enum {
+  APPLICATION_IDLE = 0,
+  APPLICATION_START,
+  APPLICATION_READY,
+  APPLICATION_DISCONNECT,
+} ApplicationTypeDef;
+
+
 /* PCD Handle Structure */
 static USBALIGN_BEGIN PCD_HandleTypeDef hpcd_USB_OTG USBALIGN_END;
+
 /* USB Device Core handle declaration */
 static USBALIGN_BEGIN USBD_HandleTypeDef hUsbDevice USBALIGN_END;
+/* USB Host Core handle declaration */
+static USBALIGN_BEGIN USBH_HandleTypeDef hUsbHost USBALIGN_END;
 
+static ApplicationTypeDef Appli_state = APPLICATION_IDLE;
 
 
 static HCD_HandleTypeDef hhcd_USB_OTG;
@@ -4519,12 +4533,12 @@ static void r7s721_usbdevice_handler(USBD_HandleTypeDef *pdev)
 	if ((intsts0 & USB_INTSTS0_SOFR) != 0)	// SOFR
 	{
 		Instance->INTSTS0 = (uint16_t) ~ (1uL << USB_INTSTS0_SOFR_SHIFT);	// Clear SOFR
-		//PRINTF(PSTR("r7s721_usbi0_handler trapped - SOFR\n"));
+		//PRINTF(PSTR("r7s721_usbdevice_handler trapped - SOFR\n"));
 	}
 #endif
 	if ((intsts0 & USB_INTSTS0_BEMP) != 0)	// BEMP
 	{
-		//PRINTF(PSTR("r7s721_usbi0_handler trapped - BEMP, BEMPSTS=0x%04X\n"), Instance->BEMPSTS);
+		//PRINTF(PSTR("r7s721_usbdevice_handler trapped - BEMP, BEMPSTS=0x%04X\n"), Instance->BEMPSTS);
 		const uint_fast16_t bempsts = Instance->BEMPSTS & Instance->BEMPENB;	// BEMP Interrupt Status Register
 		Instance->BEMPSTS = ~ bempsts;
 
@@ -4540,7 +4554,7 @@ static void r7s721_usbdevice_handler(USBD_HandleTypeDef *pdev)
 	if ((intsts0 & USB_INTSTS0_NRDY) != 0)	// NRDY
 	{
 		uint_fast8_t i;
-		//PRINTF(PSTR("r7s721_usbi0_handler trapped - NRDY, NRDYSTS=0x%04X\n"), Instance->NRDYSTS);
+		//PRINTF(PSTR("r7s721_usbdevice_handler trapped - NRDY, NRDYSTS=0x%04X\n"), Instance->NRDYSTS);
 		const uint_fast16_t nrdysts = Instance->NRDYSTS & Instance->NRDYENB;	// NRDY Interrupt Status Register
 		Instance->NRDYSTS = ~ nrdysts;
 		for (i = 0; i < sizeof usedpipes / sizeof usedpipes [0]; ++ i)
@@ -4553,7 +4567,7 @@ static void r7s721_usbdevice_handler(USBD_HandleTypeDef *pdev)
 	if ((intsts0 & USB_INTSTS0_BRDY) != 0)	// BRDY
 	{
 		uint_fast8_t i;
-		//PRINTF(PSTR("r7s721_usbi0_handler trapped - BRDY, BRDYSTS=0x%04X\n"), Instance->BRDYSTS);
+		//PRINTF(PSTR("r7s721_usbdevice_handler trapped - BRDY, BRDYSTS=0x%04X\n"), Instance->BRDYSTS);
 		const uint_fast16_t brdysts = Instance->BRDYSTS & Instance->BRDYENB;	// BRDY Interrupt Status Register
 		Instance->BRDYSTS = ~ brdysts;
 
@@ -4575,29 +4589,39 @@ static void r7s721_usbdevice_handler(USBD_HandleTypeDef *pdev)
 	}
 	if ((intsts0 & USB_INTSTS0_CTRT) != 0)	// CTRT
 	{
-		//PRINTF(PSTR("r7s721_usbi0_handler trapped - CTRT, CTSQ=%d\n"), (intsts0 >> 0) & 0x07);
+		//PRINTF(PSTR("r7s721_usbdevice_handler trapped - CTRT, CTSQ=%d\n"), (intsts0 >> 0) & 0x07);
 		Instance->INTSTS0 = (uint16_t) ~ (1uL << USB_INTSTS0_CTRT_SHIFT);	// Clear CTRT
 
 		usbd_handle_ctrt(pdev, intsts0 & USB_INTSTS0_CTSQ);
 	}
 	if ((intsts0 & (1uL << USB_INTSTS0_DVST_SHIFT)) != 0)	// DVSE
 	{
-		//PRINTF(PSTR("r7s721_usbi0_handler trapped - DVSE, DVSQ=%d\n"), (intsts0 >> 4) & 0x07);
+		//PRINTF(PSTR("r7s721_usbdevice_handler trapped - DVSE, DVSQ=%d\n"), (intsts0 >> 4) & 0x07);
 		Instance->INTSTS0 = (uint16_t) ~ (1uL << USB_INTSTS0_DVST_SHIFT);	// Clear DVSE
 		usbd_handle_dvst(pdev, (intsts0 & USB_INTSTS0_DVSQ) >> USB_INTSTS0_DVSQ_SHIFT);
 	}
 	if ((intsts0 & (1uL << USB_INTSTS0_RESM_SHIFT)) != 0)	// RESM
 	{
 		Instance->INTSTS0 = (uint16_t) ~ (1uL << USB_INTSTS0_RESM_SHIFT);	// Clear RESM
-		//PRINTF(PSTR("r7s721_usbi0_handler trapped - RESM\n"));
+		//PRINTF(PSTR("r7s721_usbdevice_handler trapped - RESM\n"));
 		usbd_handle_resume(Instance);
 	}
 	//if ((intsts0 & (1uL << USB_INTSTS0_VBINT_SHIFT)) != 0)	// VBINT
 	//{
 	//	Instance->INTSTS0 = (uint16_t) ~ (1uL << USB_INTSTS0_VBINT_SHIFT);	// Clear VBINT - enabled by VBSE
-	//	PRINTF(PSTR("r7s721_usbi0_handler trapped - VBINT, VBSTS=%d\n"), usbd_getvbus());
+	//	PRINTF(PSTR("r7s721_usbdevice_handler trapped - VBINT, VBSTS=%d\n"), usbd_getvbus());
 	//	usbd_handle_vbuse(usbd_getvbus());
 	//}
+}
+
+static void r7s721_usbhost_handler(USBH_HandleTypeDef *pdev)
+{
+	USB_OTG_GlobalTypeDef * const Instance = ((PCD_HandleTypeDef *) pdev->pData)->Instance;
+	ASSERT(Instance == WITHUSBHW_HOST);
+	const uint_fast16_t intsts0 = Instance->INTSTS0;
+	const uint_fast16_t intsts1 = Instance->INTSTS1;
+
+	PRINTF(PSTR("r7s721_usbhost_handler trapped, intsts0=%04X, intsts1=%04X\n"), intsts0, intsts1);
 }
 
 static void r7s721_usbi0_device_handler(void)
@@ -4608,6 +4632,16 @@ static void r7s721_usbi0_device_handler(void)
 static void r7s721_usbi1_device_handler(void)
 {
 	r7s721_usbdevice_handler(& hUsbDevice);
+}
+
+static void r7s721_usbi0_host_handler(void)
+{
+	r7s721_usbhost_handler(& hUsbHost);
+}
+
+static void r7s721_usbi1_host_handler(void)
+{
+	r7s721_usbhost_handler(& hUsbHost);
 }
 
 #define __HAL_PCD_ENABLE(h)                   do { /*USB_EnableGlobalInt((h)->Instance); */} while (0)
@@ -12133,21 +12167,6 @@ static void HCD_Port_IRQHandler(HCD_HandleTypeDef *hhcd);
 
 
 
-
-typedef enum {
-  APPLICATION_IDLE = 0,  
-  APPLICATION_START,   
-  APPLICATION_READY,
-  APPLICATION_DISCONNECT,
-}ApplicationTypeDef;
-		
-
-
-/* USB Host Core handle declaration */
-USBH_HandleTypeDef hUsbHostFS;
-ApplicationTypeDef Appli_state = APPLICATION_IDLE;
-
-
 typedef enum
 {
   MSC_INIT = 0,     
@@ -15505,13 +15524,13 @@ USBH_StatusTypeDef USBH_LL_ResetPort (USBH_HandleTypeDef *phost)
   * @param  phost: Host handle
   * @param  state : VBUS state
   *          This parameter can be one of the these values:
-  *           0 : VBUS Active 
-  *           1 : VBUS Inactive
+  *           1 : VBUS Active
+  *           0 : VBUS Inactive
   * @retval Status
   */
-USBH_StatusTypeDef  USBH_LL_DriverVBUS(USBH_HandleTypeDef *phost, uint8_t state)
+USBH_StatusTypeDef  USBH_LL_DriverVBUS(USBH_HandleTypeDef *phost, uint_fast8_t state)
 { 
-	//PRINTF(PSTR("USBH_LL_DriverVBUS(%d)\n"), state);
+	//PRINTF(PSTR("USBH_LL_DriverVBUS(%d), phost->id=%d, HOST_FS=%d\n"), (int) state, (int) phost->id, (int) HOST_FS);
 	/* USER CODE BEGIN 0 */
 	/* USER CODE END 0*/     
 	if (phost->id == HOST_FS) // compare to WITHUSBHW_HOST
@@ -15543,7 +15562,7 @@ USBH_StatusTypeDef  USBH_LL_DriverVBUS(USBH_HandleTypeDef *phost, uint8_t state)
 /* вызывается при разрешённых прерываниях. */
 static void board_usbh_deactivate(void)
 {
-	USBH_Stop(& hUsbHostFS);
+	USBH_Stop(& hUsbHost);
 }
 
 #if CPUSTYLE_STM32
@@ -15632,9 +15651,86 @@ uint32_t USB_GetCurrentFrame (USB_OTG_GlobalTypeDef *USBx)
 #elif CPUSTYLE_R7S721
 
 
-void HAL_HCD_MspInit(HCD_HandleTypeDef* hcdHandle)
+void HAL_HCD_MspInit(HCD_HandleTypeDef* hpcd)
 {
+	if (hpcd->Instance == & USB200)
+	{
+		PRINTF(PSTR("HAL_HCD_MspInit for usbi0\n"));
+		const IRQn_ID_t int_id = USBI0_IRQn;
+		IRQ_SetHandler(int_id, r7s721_usbi0_host_handler);
+		IRQ_SetPriority(int_id, ARM_SYSTEM_PRIORITY);
+		IRQ_Enable(int_id);
+
+		/* ---- Supply clock to the USB20(channel 0) ---- */
+		CPG.STBCR7 &= ~ CPG_STBCR7_MSTP71;	// Module Stop 71 0: Channel 0 of the USB 2.0 host/function module runs.
+		(void) CPG.STBCR7;			/* Dummy read */
+
+		HARDWARE_USB0_INITIALIZE();
+
+	}
+	else if (hpcd->Instance == & USB201)
+	{
+		PRINTF(PSTR("HAL_HCD_MspInit for usbi1\n"));
+		const IRQn_ID_t int_id = USBI1_IRQn;
+		IRQ_SetHandler(int_id, r7s721_usbi1_host_handler);
+		IRQ_SetPriority(int_id, ARM_SYSTEM_PRIORITY);
+		IRQ_Enable(int_id);
+
+		/* ---- Supply clock to the USB20(channel 1) ---- */
+		CPG.STBCR7 &= ~ CPG_STBCR7_MSTP70;	// Module Stop 70 0: Channel 1 of the USB 2.0 host/function module runs.
+		CPG.STBCR7 &= ~ CPG_STBCR7_MSTP71;	// Module Stop 71 0: Channel 0 of the USB 2.0 host/function module runs.
+		(void) CPG.STBCR7;			/* Dummy read */
+
+		HARDWARE_USB1_INITIALIZE();
+	}
+
+	hpcd->Instance->SUSPMODE &= ~ USB_SUSPMODE_SUSPM;	// SUSPM 0: The clock supplied to this module is stopped.
+
+
+	SYSCFG0_0 = 0;
+	SYSCFG0_0 =
+		1 * USB_SYSCFG_UPLLE |	// UPLLE 1: Enables operation of the internal PLL.
+		1 * USB_SYSCFG_UCKSEL |	// UCKSEL 1: The 12-MHz EXTAL clock is selected.
+		0;
+	HARDWARE_DELAY_MS(2);	// required 1 ms delay - see R01UH0437EJ0200 Rev.2.00 28.4.1 System Control and Oscillation Control
+
+	hpcd->Instance->SUSPMODE |= USB_SUSPMODE_SUSPM;	// SUSPM 1: The clock supplied to this module is enabled.
+
+
+	//hpcd->Instance->CFIFOSEL = 0;	// не помогает с первым чтением из DCP
+	//hpcd->Instance->CFIFOCTR = USB_CFIFOCTR_BCLR;	// BCLR
+
+	hpcd->Instance->SOFCFG =
+		//USB_SOFCFG_BRDYM |	// BRDYM
+		0;
+
+	hpcd->Instance->SYSCFG0 |= USB_SYSCFG_DCFM;	// DCFM 1: Host controller mode is selected
+
+
+	hpcd->Instance->SYSCFG0 |= USB_SYSCFG_USBE;	// USBE 1: USB module operation is enabled.
+
+	if (hpcd->Init.speed == USBD_SPEED_HIGH)
+	{
+		hpcd->Instance->SYSCFG0 |=
+			1 * USB_SYSCFG_HSE |	// HSE
+			0;
+	}
+
+	//usbd_pipes_initialize(& USB200);
+
+	hpcd->Instance->INTENB0 =
+		//1 * USB_INTENB0_SOFE |	// SOFE	1: Frame Number Update Interrupt Enable
+		1 * USB_INTENB0_DVSE |	// DVSE
+		//1 * USB_INTENB0_VBSE |	// VBSE
+		1 * USB_INTENB0_CTRE |	// CTRE
+		1 * USB_INTENB0_BEMPE |	// BEMPE
+		1 * USB_INTENB0_NRDYE |	// NRDYE
+		1 * USB_INTENB0_BRDYE |	// BRDYE
+		1 * USB_INTENB0_RSME |	// RSME
+		0;
+
 }
+
 void HAL_HCD_MspDeInit(HCD_HandleTypeDef* hcdHandle)
 {
 }
@@ -15666,19 +15762,6 @@ static uint32_t USB_GetHostSpeed (USB_OTG_GlobalTypeDef *USBx)
 
 
 /**
-  * @brief  USB_DisableGlobalInt
-  *         Disable the controller's Global Int in the AHB Config reg
-  * @param  USBx : Selected device
-  * @retval HAL status
-*/
-HAL_StatusTypeDef USB_DisableGlobalInt(USB_OTG_GlobalTypeDef *USBx)
-{
-  //USBx->GAHBCFG &= ~ USB_OTG_GAHBCFG_GINT;
-  return HAL_OK;
-}
-
-
-/**
   * @brief  USB_DriveVbus : activate or de-activate vbus
   * @param  state : VBUS state
   *          This parameter can be one of these values:
@@ -15703,6 +15786,32 @@ static HAL_StatusTypeDef USB_DriveVbus (USB_OTG_GlobalTypeDef *USBx, uint_fast8_
     USBx_HPRT0 = ((~USB_OTG_HPRT_PPWR) & hprt0);
   }
   */
+  return HAL_OK;
+}
+
+
+/**
+  * @brief  USB_EnableGlobalInt
+  *         Enables the controller's Global Int in the AHB Config reg
+  * @param  USBx : Selected device
+  * @retval HAL status
+  */
+HAL_StatusTypeDef USB_EnableGlobalInt(USB_OTG_GlobalTypeDef *USBx)
+{
+  ////USBx->GAHBCFG |= USB_OTG_GAHBCFG_GINT;
+  return HAL_OK;
+}
+
+
+/**
+  * @brief  USB_DisableGlobalInt
+  *         Disable the controller's Global Int in the AHB Config reg
+  * @param  USBx : Selected device
+  * @retval HAL status
+*/
+HAL_StatusTypeDef USB_DisableGlobalInt(USB_OTG_GlobalTypeDef *USBx)
+{
+  ////USBx->GAHBCFG &= ~ USB_OTG_GAHBCFG_GINT;
   return HAL_OK;
 }
 
@@ -16085,13 +16194,16 @@ void  USBH_LL_IncTimer  (USBH_HandleTypeDef *phost)
   * @param  phost: Host handle
   * @retval USBH Status
   */
-USBH_StatusTypeDef  USBH_LL_Init (USBH_HandleTypeDef *phost)
+USBH_StatusTypeDef  USBH_LL_Init(USBH_HandleTypeDef *phost)
 {
 	/* Init USB_IP */
-	if (phost->id == HOST_FS) {
+	if (phost->id == HOST_FS)
+	{
+		PRINTF(PSTR("USBH_LL_Init\n"));
+
 		/* Link The driver to the stack */
 		hhcd_USB_OTG.pData = phost;
-		phost->pData = &hhcd_USB_OTG;
+		phost->pData = & hhcd_USB_OTG;
 
 		hhcd_USB_OTG.Instance = WITHUSBHW_HOST;
 		hhcd_USB_OTG.Init.Host_channels = 16;
@@ -16099,7 +16211,7 @@ USBH_StatusTypeDef  USBH_LL_Init (USBH_HandleTypeDef *phost)
 		hhcd_USB_OTG.Init.dma_enable = USB_DISABLE;
 		hhcd_USB_OTG.Init.phy_itface = HCD_PHY_EMBEDDED;
 		hhcd_USB_OTG.Init.Sof_enable = USB_DISABLE;
-		if (HAL_HCD_Init(&hhcd_USB_OTG) != HAL_OK)
+		if (HAL_HCD_Init(& hhcd_USB_OTG) != HAL_OK)
 		{
 			_Error_Handler(__FILE__, __LINE__);
 		}
@@ -18752,10 +18864,10 @@ void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd)
 static void board_usbh_initialize(void)
 {
 	/* Init Host Library,Add Supported Class and Start the library*/
-	USBH_Init(& hUsbHostFS, USBH_UserProcess, HOST_FS);
+	USBH_Init(& hUsbHost, USBH_UserProcess, HOST_FS);
 
 #if WITHUSEUSBFLASH
-	USBH_RegisterClass(&hUsbHostFS, &USBH_msc);
+	USBH_RegisterClass(&hUsbHost, &USBH_msc);
 #endif /* WITHUSEUSBFLASH */
 }
 
@@ -18767,10 +18879,11 @@ static void board_usbh_activate(void)
 
 	//WITHUSBHW_HOST->SYSCFG0 |= (1uL << USB_SYSCFG_DPRPU_SHIFT);	// DPRPU 1: Pulling up the D+ line is enabled.
 	//(void) WITHUSBHW_HOST->SYSSTS0;
+	USBH_Start(& hUsbHost);
 
 #elif CPUSTYLE_STM32
 
-	USBH_Start(& hUsbHostFS);
+	USBH_Start(& hUsbHost);
 	//USBH_Start(& hUsbDevice);
 
 #endif
@@ -18949,7 +19062,7 @@ const struct drvfunc USBH_drvfunc =
 static void board_usb_spool(void * ctx)
 {
 #if defined (WITHUSBHW_HOST)
-	USBH_Process(& hUsbHostFS);
+	USBH_Process(& hUsbHost);
 #endif /* defined (WITHUSBHW_HOST) */
 }
 
@@ -19005,7 +19118,7 @@ void board_usb_deactivate(void)
 uint_fast8_t hamradio_get_usbh_active(void)
 {
 #if defined (WITHUSBHW_HOST)
-	return hUsbHostFS.device.is_connected != 0;
+	return hUsbHost.device.is_connected != 0;
 #else
 	return  0;
 #endif /* defined (WITHUSBHW_HOST) */
