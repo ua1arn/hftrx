@@ -142,13 +142,14 @@ CPFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
 # makefile rules
 #
 
-all: APP
+all: APP APP2
 
 bootloader: BOOT BOOT2
 
 BOOT: $(OBJS) $(PROJECT)_boot.elf $(PROJECT)_boot.hex
 BOOT2: $(OBJS) $(PROJECT)_boot.elf $(PROJECT)_boot.bin
 APP: $(OBJS) $(PROJECT)_app.elf $(PROJECT)_app.bin
+APP2: $(OBJS) $(PROJECT)_app.elf $(PROJECT)_app.hex
 
 $(OBJDIR)/%.o: %.c
 	@mkdir -p $(@D)
@@ -178,9 +179,14 @@ $(OBJDIR)/%.o: %.s
 
 clean:
 	-rm -fR $(OBJDIR)
-	-rm -f $(PROJECT)_rom.elf $(PROJECT)_rom.map $(PROJECT)_rom.hex $(PROJECT)_rom.bin
+	-rm -f $(PROJECT)_boot.elf $(PROJECT)_boot.map
+	-rm -f $(PROJECT)_app.elf $(PROJECT)_app.map
+	
+clean2:
+	-rm -fR $(OBJDIR)
 	-rm -f $(PROJECT)_boot.elf $(PROJECT)_boot.map $(PROJECT)_boot.hex $(PROJECT)_boot.bin
 	-rm -f $(PROJECT)_app.elf $(PROJECT)_app.map $(PROJECT)_app.hex $(PROJECT)_app.bin
+
 
 # 
 # Include the dependency files, should be the last of the makefile
