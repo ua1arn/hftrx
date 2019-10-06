@@ -16386,6 +16386,21 @@ lowinitialize(void)
 	//board_testsound_enable(0);	// Выключить 1 кГц на самоконтроле
 }
 
+static uint_fast8_t
+keyboard_test(void)
+{
+	uint_fast8_t n;
+
+	// 1 secound total
+	for (n = 0; n < 100; ++ n)
+	{
+		if (kbd_is_tready() != 0)
+			return 1;
+		local_delay_ms(10);
+	}
+	return 0;
+}
+
 /* вызывается при разрешённых прерываниях. */
 static void initialize2(void)
 {
@@ -16400,21 +16415,14 @@ static void initialize2(void)
 	display_initialize();
 	display2_bgreset();
 
-	if (kbd_is_tready() == 0)
+	if (keyboard_test() == 0)
 	{
-		local_delay_ms(20);
-		local_delay_ms(20);
-		local_delay_ms(20);
+		static const FLASHMEM char msg  [] = "KBD fault";
 
-		if (kbd_is_tready() == 0)
-		{
-			static const FLASHMEM char msg  [] = "KBD fault";
-
-			display_at_P(0, 0, msg);
-			debug_printf_P(PSTR("KBD fault\n"));
-			for (;;)
-				;
-		}
+		display_at_P(0, 0, msg);
+		debug_printf_P(PSTR("KBD fault\n"));
+		for (;;)
+			;
 	}
 	debug_printf_P(PSTR("KBD ok\n"));
 
@@ -17482,6 +17490,7 @@ ddd:
 		goto ddd;
 
 	board_usb_deactivate();
+	board_usb_deinitialize();
 	bootloader_detach();
 }
 
