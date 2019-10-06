@@ -3965,7 +3965,7 @@ static void usbd_handle_ctrt(USBD_HandleTypeDef *pdev, uint_fast8_t ctsq)
 	}
 }
 
-static const uint_fast8_t usedpipes [] =
+static const uint_fast8_t usbd_usedpipes [] =
 {
 #if WITHUSBUAC
 	HARDWARE_USBD_PIPE_ISOC_OUT,	// ISOC OUT Аудиоданные от компьютера в TRX - D0FIFOB0
@@ -4002,9 +4002,9 @@ static void usbd_pipes_enable(PCD_TypeDef * const Instance)
 {
 	uint_fast8_t i;
 
-	for (i = 0; i < sizeof usedpipes / sizeof usedpipes [0]; ++ i)
+	for (i = 0; i < sizeof usbd_usedpipes / sizeof usbd_usedpipes [0]; ++ i)
 	{
-		const uint_fast8_t pipe = usedpipes [i];
+		const uint_fast8_t pipe = usbd_usedpipes [i];
 		volatile uint16_t * const PIPEnCTR = (& Instance->PIPE1CTR) + (pipe - 1);
 
 		* PIPEnCTR = 0x0000;	// NAK
@@ -4050,9 +4050,9 @@ static void usbd_pipes_disable(PCD_TypeDef * const Instance)
 		const uint_fast8_t pipe = brdyenbpipes2 [i].pipe;
 		Instance->BRDYENB &= ~ (1uL << pipe);	// Прерывание по заполненности приёмного (OUT) или для заполнения передающего (IN) буфера
 	}
-	for (i = 0; i < sizeof usedpipes / sizeof usedpipes [0]; ++ i)
+	for (i = 0; i < sizeof usbd_usedpipes / sizeof usbd_usedpipes [0]; ++ i)
 	{
-		const uint_fast8_t pipe = usedpipes [i];
+		const uint_fast8_t pipe = usbd_usedpipes [i];
 		volatile uint16_t * const PIPEnCTR = (& Instance->PIPE1CTR) + (pipe - 1);
 
 		* PIPEnCTR = 0x0000;	// NAK
@@ -4523,6 +4523,16 @@ usbd_handle_dvst(USBD_HandleTypeDef *pdev, uint_fast8_t dvsq)
 	r7s721_usbi0_handler trapped
 	 BRDYSTS=0x00000000
 	 INTSTS0=0x0000F899
+
+	 		(hpcd->Init.Sof_enable != USB_FALSE) * USB_INTENB0_SOFE |	// SOFE	1: Frame Number Update Interrupt Enable
+		1 * USB_INTENB0_DVSE |	// DVSE
+		//1 * USB_INTENB0_VBSE |	// VBSE
+		1 * USB_INTENB0_CTRE |	// CTRE
+		1 * USB_INTENB0_BEMPE |	// BEMPE
+		1 * USB_INTENB0_NRDYE |	// NRDYE
+		1 * USB_INTENB0_BRDYE |	// BRDYE
+		1 * USB_INTENB0_RSME |	// RSME
+
 */
 static void r7s721_usbdevice_handler(USBD_HandleTypeDef *pdev)
 {
@@ -4530,15 +4540,15 @@ static void r7s721_usbdevice_handler(USBD_HandleTypeDef *pdev)
 	ASSERT(Instance == WITHUSBHW_DEVICE);
 	const uint_fast16_t intsts0 = Instance->INTSTS0;
 	const uint_fast16_t intsts1 = Instance->INTSTS1;
+	const uint_fast16_t intsts0msk = intsts0 & Instance->INTENB0;
+	const uint_fast16_t intsts1msk = intsts1 & Instance->INTENB1;
 
-#if 0
-	if ((intsts0 & USB_INTSTS0_SOFR) != 0)	// SOFR
+	if ((intsts0msk & USB_INTSTS0_SOFR) != 0)	// SOFR
 	{
-		Instance->INTSTS0 = (uint16_t) ~ (1uL << USB_INTSTS0_SOFR_SHIFT);	// Clear SOFR
-		//PRINTF(PSTR("r7s721_usbdevice_handler trapped - SOFR\n"));
+		Instance->INTSTS0 = (uint16_t) ~ USB_INTSTS0_SOFR;	// Clear SOFR
+		PRINTF(PSTR("r7s721_usbdevice_handler trapped - SOFR\n"));
 	}
-#endif
-	if ((intsts0 & USB_INTSTS0_BEMP) != 0)	// BEMP
+	if ((intsts0msk & USB_INTSTS0_BEMP) != 0)	// BEMP
 	{
 		//PRINTF(PSTR("r7s721_usbdevice_handler trapped - BEMP, BEMPSTS=0x%04X\n"), Instance->BEMPSTS);
 		const uint_fast16_t bempsts = Instance->BEMPSTS & Instance->BEMPENB;	// BEMP Interrupt Status Register
@@ -4553,20 +4563,20 @@ static void r7s721_usbdevice_handler(USBD_HandleTypeDef *pdev)
 			}
 		}
 	}
-	if ((intsts0 & USB_INTSTS0_NRDY) != 0)	// NRDY
+	if ((intsts0msk & USB_INTSTS0_NRDY) != 0)	// NRDY
 	{
 		uint_fast8_t i;
 		//PRINTF(PSTR("r7s721_usbdevice_handler trapped - NRDY, NRDYSTS=0x%04X\n"), Instance->NRDYSTS);
 		const uint_fast16_t nrdysts = Instance->NRDYSTS & Instance->NRDYENB;	// NRDY Interrupt Status Register
 		Instance->NRDYSTS = ~ nrdysts;
-		for (i = 0; i < sizeof usedpipes / sizeof usedpipes [0]; ++ i)
+		for (i = 0; i < sizeof usbd_usedpipes / sizeof usbd_usedpipes [0]; ++ i)
 		{
-			const uint_fast8_t pipe = usedpipes [i];
+			const uint_fast8_t pipe = usbd_usedpipes [i];
 			if ((nrdysts & (1U << pipe)) != 0)
 				usbd_handler_nrdy(pdev, pipe);
 		}
 	}
-	if ((intsts0 & USB_INTSTS0_BRDY) != 0)	// BRDY
+	if ((intsts0msk & USB_INTSTS0_BRDY) != 0)	// BRDY
 	{
 		uint_fast8_t i;
 		//PRINTF(PSTR("r7s721_usbdevice_handler trapped - BRDY, BRDYSTS=0x%04X\n"), Instance->BRDYSTS);
@@ -4589,31 +4599,31 @@ static void r7s721_usbdevice_handler(USBD_HandleTypeDef *pdev)
 			}
 		}
 	}
-	if ((intsts0 & USB_INTSTS0_CTRT) != 0)	// CTRT
+	if ((intsts0msk & USB_INTSTS0_CTRT) != 0)	// CTRT
 	{
 		//PRINTF(PSTR("r7s721_usbdevice_handler trapped - CTRT, CTSQ=%d\n"), (intsts0 >> 0) & 0x07);
 		Instance->INTSTS0 = (uint16_t) ~ (1uL << USB_INTSTS0_CTRT_SHIFT);	// Clear CTRT
 
 		usbd_handle_ctrt(pdev, intsts0 & USB_INTSTS0_CTSQ);
 	}
-	if ((intsts0 & (1uL << USB_INTSTS0_DVST_SHIFT)) != 0)	// DVSE
+	if ((intsts0msk & (1uL << USB_INTSTS0_DVST_SHIFT)) != 0)	// DVSE
 	{
 		//PRINTF(PSTR("r7s721_usbdevice_handler trapped - DVSE, DVSQ=%d\n"), (intsts0 >> 4) & 0x07);
 		Instance->INTSTS0 = (uint16_t) ~ (1uL << USB_INTSTS0_DVST_SHIFT);	// Clear DVSE
 		usbd_handle_dvst(pdev, (intsts0 & USB_INTSTS0_DVSQ) >> USB_INTSTS0_DVSQ_SHIFT);
 	}
-	if ((intsts0 & (1uL << USB_INTSTS0_RESM_SHIFT)) != 0)	// RESM
+	if ((intsts0msk & (1uL << USB_INTSTS0_RESM_SHIFT)) != 0)	// RESM
 	{
 		Instance->INTSTS0 = (uint16_t) ~ (1uL << USB_INTSTS0_RESM_SHIFT);	// Clear RESM
 		//PRINTF(PSTR("r7s721_usbdevice_handler trapped - RESM\n"));
 		usbd_handle_resume(Instance);
 	}
-	//if ((intsts0 & (1uL << USB_INTSTS0_VBINT_SHIFT)) != 0)	// VBINT
-	//{
-	//	Instance->INTSTS0 = (uint16_t) ~ USB_INTSTS0_VBINT;	// Clear VBINT - enabled by VBSE
-	//	PRINTF(PSTR("r7s721_usbdevice_handler trapped - VBINT, VBSTS=%d\n"), (intsts0 & USB_INTSTS0_VBSTS) != 0);
+	if ((intsts0msk & (1uL << USB_INTSTS0_VBINT_SHIFT)) != 0)	// VBINT
+	{
+		Instance->INTSTS0 = (uint16_t) ~ USB_INTSTS0_VBINT;	// Clear VBINT - enabled by VBSE
+		PRINTF(PSTR("r7s721_usbdevice_handler trapped - VBINT, VBSTS=%d\n"), (intsts0 & USB_INTSTS0_VBSTS) != 0);	// TODO: masked VBSTS
 	//	usbd_handle_vbuse(usbd_getvbus());
-	//}
+	}
 }
 
 static void r7s721_usbi0_device_handler(void)
@@ -5577,7 +5587,7 @@ static HAL_StatusTypeDef USB_DevInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_
 		USB_OTG_GINTMSK_MMISM |
 		0;
 
-	if(cfg->Sof_enable)
+	if (cfg->Sof_enable)
 	{
 		USBx->GINTMSK |= USB_OTG_GINTMSK_SOFM;
 	}
@@ -14656,22 +14666,30 @@ static void r7s721_usbhost_handler(USBH_HandleTypeDef *pdev)
 	ASSERT(Instance == WITHUSBHW_HOST);
 	const uint_fast16_t intsts0 = Instance->INTSTS0;
 	const uint_fast16_t intsts1 = Instance->INTSTS1;
+	const uint_fast16_t intsts0msk = intsts0 & Instance->INTENB0;
+	const uint_fast16_t intsts1msk = intsts1 & Instance->INTENB1;
 
 	PRINTF(PSTR("r7s721_usbhost_handler trapped, intsts0=%04X, intsts1=%04X\n"), intsts0, intsts1);
-	//if ((intsts0 & (1uL << USB_INTSTS0_VBINT_SHIFT)) != 0)	// VBINT
-	//{
-	//	Instance->INTSTS0 = (uint16_t) ~ USB_INTSTS0_VBINT;	// Clear VBINT - enabled by VBSE
-	//	PRINTF(PSTR("r7s721_usbhost_handler trapped - VBINT, VBSTS=%d\n"), (intsts0 & USB_INTSTS0_VBSTS) != 0);
-	//}
-	if ((intsts1 & USB_INTSTS1_DTCH) != 0)	// DTCH
+	if ((intsts0msk & USB_INTSTS0_SOFR) != 0)	// SOFR
+	{
+		Instance->INTSTS0 = (uint16_t) ~ USB_INTSTS0_SOFR;	// Clear SOFR
+		PRINTF(PSTR("r7s721_usbhost_handler trapped - SOFR\n"));
+	}
+	if ((intsts1msk & USB_INTSTS1_DTCH) != 0)	// DTCH
 	{
 		Instance->INTSTS1 = ~ USB_INTSTS1_DTCH;
 		PRINTF(PSTR("r7s721_usbhost_handler trapped - DTCH\n"));
 	}
-	if ((intsts1 & USB_INTSTS1_ATTCH) != 0)	// ATTCH
+	if ((intsts1msk & USB_INTSTS1_ATTCH) != 0)	// ATTCH
 	{
 		Instance->INTSTS1 = ~ USB_INTSTS1_ATTCH;
 		PRINTF(PSTR("r7s721_usbhost_handler trapped - ATTCH\n"));
+	}
+	if ((intsts0msk & (1uL << USB_INTSTS0_VBINT_SHIFT)) != 0)	// VBINT
+	{
+		Instance->INTSTS0 = (uint16_t) ~ USB_INTSTS0_VBINT;	// Clear VBINT - enabled by VBSE
+		PRINTF(PSTR("r7s721_usbhost_handler trapped - VBINT, VBSTS=%d\n"), (intsts0 & USB_INTSTS0_VBSTS) != 0);	// TODO: masked VBSTS
+	//	usbd_handle_vbuse(usbd_getvbus());
 	}
 }
 
@@ -14752,15 +14770,17 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
 
 	if (hpcd->Init.speed == USBD_SPEED_HIGH)
 	{
-		hpcd->Instance->SYSCFG0 |=
-			1 * USB_SYSCFG_HSE |	// HSE
-			0;
+		hpcd->Instance->SYSCFG0 |= USB_SYSCFG_HSE;	// HSE
+	}
+	else
+	{
+		hpcd->Instance->SYSCFG0 &= ~ USB_SYSCFG_HSE;	// HSE
 	}
 
 	//usbd_pipes_initialize(& USB200);
 
 	hpcd->Instance->INTENB0 = 
-		//(hpcd->Init.Sof_enable != USB_FALSE) * USB_INTENB0_SOFE |	// SOFE	1: Frame Number Update Interrupt Enable
+		(hpcd->Init.Sof_enable != USB_FALSE) * USB_INTENB0_SOFE |	// SOFE	1: Frame Number Update Interrupt Enable
 		1 * USB_INTENB0_DVSE |	// DVSE
 		//1 * USB_INTENB0_VBSE |	// VBSE
 		1 * USB_INTENB0_CTRE |	// CTRE
@@ -15716,14 +15736,15 @@ void HAL_HCD_MspInit(HCD_HandleTypeDef* hpcd)
 
 	hpcd->Instance->SYSCFG0 |= USB_SYSCFG_DCFM;	// DCFM 1: Host controller mode is selected
 
-
 	hpcd->Instance->SYSCFG0 |= USB_SYSCFG_USBE;	// USBE 1: USB module operation is enabled.
 
 	if (hpcd->Init.speed == USBD_SPEED_HIGH)
 	{
-		hpcd->Instance->SYSCFG0 |=
-			1 * USB_SYSCFG_HSE |	// HSE
-			0;
+		hpcd->Instance->SYSCFG0 |= USB_SYSCFG_HSE;	// HSE
+	}
+	else
+	{
+		hpcd->Instance->SYSCFG0 &= ~ USB_SYSCFG_HSE;	// HSE
 	}
 
 	//usbd_pipes_initialize(& USB200);
@@ -15732,7 +15753,7 @@ void HAL_HCD_MspInit(HCD_HandleTypeDef* hpcd)
 	to enable the corresponding interrupt output when the host controller mode is selected.
 	*/
 	hpcd->Instance->INTENB0 =
-		//(Init.Sof_enable != USB_FALSE) * USB_INTENB0_SOFE |	// SOFE	1: Frame Number Update Interrupt Enable
+		(Init.Sof_enable != USB_FALSE) * USB_INTENB0_SOFE |	// SOFE	1: Frame Number Update Interrupt Enable
 		//1 * USB_INTENB0_VBSE |	// VBSE
 		1 * USB_INTENB0_BEMPE |	// BEMPE
 		1 * USB_INTENB0_NRDYE |	// NRDYE
