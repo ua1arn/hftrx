@@ -3942,10 +3942,11 @@ static unsigned fill_Configuration_descriptor(
 		)
 {
 #if WITHDEVONHIGHSPEED && WITHHIGHSPEEDDESC
-	const int highspeedEPs = 1;
+	//const int highspeedEPs = 1;
 #else /* WITHDEVONHIGHSPEED && WITHHIGHSPEEDDESC */
-	const int highspeedEPs = 0;
+	//const int highspeedEPs = 0;
 #endif /* WITHDEVONHIGHSPEED && WITHHIGHSPEEDDESC */
+	const int highspeedEPs = highspeed;
 	unsigned length = 9;
 	unsigned totalsize = length + fill_main_group(0, buff, maxsize - length, highspeedEPs);
 	ASSERT(maxsize >= length);
@@ -3955,7 +3956,7 @@ static unsigned fill_Configuration_descriptor(
 	{
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;                                      /* bLength */ 
-		* buff ++ = highspeed ? USB_OTHER_SPEED_CONFIG_DESCRIPTOR_TYPE : USB_CONFIGURATION_DESCRIPTOR_TYPE;      /* descriptor type */ 
+		* buff ++ = /*highspeed ? USB_OTHER_SPEED_CONFIG_DESCRIPTOR_TYPE : */ USB_CONFIGURATION_DESCRIPTOR_TYPE;      /* descriptor type */
 		* buff ++ = LO_BYTE(totalsize);		/* length of packed config descr. (16 bit) */
 		* buff ++ = HI_BYTE(totalsize);		/* length of packed config descr. (16 bit) */
 		* buff ++ = bNumInterfaces;			/* bNumInterfaces  */
@@ -4327,7 +4328,7 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 	}
 #endif /* WITHUSBDFU */
 
-	if (HSdesc != 0)
+	if (0) //(HSdesc != 0)
 	{
 		unsigned partlen;
 		// Device Qualifier

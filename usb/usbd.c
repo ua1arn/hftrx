@@ -4517,6 +4517,8 @@ usbd_handle_dvst(USBD_HandleTypeDef *pdev, uint_fast8_t dvsq)
 	}
 
 }
+
+#if defined (WITHUSBHW_DEVICE)
 /*
 	r7s721_usbi0_handler trapped
 	 BRDYSTS=0x00000000
@@ -4614,31 +4616,6 @@ static void r7s721_usbdevice_handler(USBD_HandleTypeDef *pdev)
 	//}
 }
 
-static void r7s721_usbhost_handler(USBH_HandleTypeDef *pdev)
-{
-	USB_OTG_GlobalTypeDef * const Instance = ((PCD_HandleTypeDef *) pdev->pData)->Instance;
-	ASSERT(Instance == WITHUSBHW_HOST);
-	const uint_fast16_t intsts0 = Instance->INTSTS0;
-	const uint_fast16_t intsts1 = Instance->INTSTS1;
-
-	PRINTF(PSTR("r7s721_usbhost_handler trapped, intsts0=%04X, intsts1=%04X\n"), intsts0, intsts1);
-	//if ((intsts0 & (1uL << USB_INTSTS0_VBINT_SHIFT)) != 0)	// VBINT
-	//{
-	//	Instance->INTSTS0 = (uint16_t) ~ USB_INTSTS0_VBINT;	// Clear VBINT - enabled by VBSE
-	//	PRINTF(PSTR("r7s721_usbhost_handler trapped - VBINT, VBSTS=%d\n"), (intsts0 & USB_INTSTS0_VBSTS) != 0);
-	//}
-	if ((intsts1 & USB_INTSTS1_DTCH) != 0)	// DTCH
-	{
-		Instance->INTSTS1 = ~ USB_INTSTS1_DTCH;
-		PRINTF(PSTR("r7s721_usbhost_handler trapped - DTCH\n"));
-	}
-	if ((intsts1 & USB_INTSTS1_ATTCH) != 0)	// ATTCH
-	{
-		Instance->INTSTS1 = ~ USB_INTSTS1_ATTCH;
-		PRINTF(PSTR("r7s721_usbhost_handler trapped - ATTCH\n"));
-	}
-}
-
 static void r7s721_usbi0_device_handler(void)
 {
 	r7s721_usbdevice_handler(& hUsbDevice);
@@ -4649,15 +4626,7 @@ static void r7s721_usbi1_device_handler(void)
 	r7s721_usbdevice_handler(& hUsbDevice);
 }
 
-static void r7s721_usbi0_host_handler(void)
-{
-	r7s721_usbhost_handler(& hUsbHost);
-}
-
-static void r7s721_usbi1_host_handler(void)
-{
-	r7s721_usbhost_handler(& hUsbHost);
-}
+#endif /* defined (WITHUSBHW_DEVICE) */
 
 #define __HAL_PCD_ENABLE(h)                   do { /*USB_EnableGlobalInt((h)->Instance); */} while (0)
 #define __HAL_PCD_DISABLE(h)                  do { /*USB_DisableGlobalInt((h)->Instance); */} while (0)
@@ -14679,7 +14648,44 @@ static const USBD_ClassTypeDef USBD_CLASS_XXX =
 	NULL,	//USBD_XXX_IsoOUTIncomplete,	// IsoOUTIncomplete
 };
 
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
+#if defined (WITHUSBHW_HOST)
+
+static void r7s721_usbhost_handler(USBH_HandleTypeDef *pdev)
+{
+	USB_OTG_GlobalTypeDef * const Instance = ((PCD_HandleTypeDef *) pdev->pData)->Instance;
+	ASSERT(Instance == WITHUSBHW_HOST);
+	const uint_fast16_t intsts0 = Instance->INTSTS0;
+	const uint_fast16_t intsts1 = Instance->INTSTS1;
+
+	PRINTF(PSTR("r7s721_usbhost_handler trapped, intsts0=%04X, intsts1=%04X\n"), intsts0, intsts1);
+	//if ((intsts0 & (1uL << USB_INTSTS0_VBINT_SHIFT)) != 0)	// VBINT
+	//{
+	//	Instance->INTSTS0 = (uint16_t) ~ USB_INTSTS0_VBINT;	// Clear VBINT - enabled by VBSE
+	//	PRINTF(PSTR("r7s721_usbhost_handler trapped - VBINT, VBSTS=%d\n"), (intsts0 & USB_INTSTS0_VBSTS) != 0);
+	//}
+	if ((intsts1 & USB_INTSTS1_DTCH) != 0)	// DTCH
+	{
+		Instance->INTSTS1 = ~ USB_INTSTS1_DTCH;
+		PRINTF(PSTR("r7s721_usbhost_handler trapped - DTCH\n"));
+	}
+	if ((intsts1 & USB_INTSTS1_ATTCH) != 0)	// ATTCH
+	{
+		Instance->INTSTS1 = ~ USB_INTSTS1_ATTCH;
+		PRINTF(PSTR("r7s721_usbhost_handler trapped - ATTCH\n"));
+	}
+}
+
+static void r7s721_usbi0_host_handler(void)
+{
+	r7s721_usbhost_handler(& hUsbHost);
+}
+
+static void r7s721_usbi1_host_handler(void)
+{
+	r7s721_usbhost_handler(& hUsbHost);
+}
+
+#endif /* defined (WITHUSBHW_HOST) */
 
 /**
   * @brief  Initializes the PCD MSP.
@@ -15227,18 +15233,12 @@ static void hardware_usbd_initialize(void)
 static void board_usbd_initialize(void)
 {
 	#if WITHDEVONHIGHSPEED
-		const uint_fast8_t ifhs = 1;
+		const uint_fast8_t deschs = 1;
 	#else /* WITHDEVONHIGHSPEED */
-		const uint_fast8_t ifhs = 0;
+		const uint_fast8_t deschs = 0;
 	#endif /* WITHDEVONHIGHSPEED */
 
-	#if ITHUSBHWHIGHSPEED && WITHHIGHSPEEDDESC
-		const uint_fast8_t deschs = 1;
-	#else /* ITHUSBHWHIGHSPEED && WITHHIGHSPEEDDESC */
-		const uint_fast8_t deschs = 0;
-	#endif /* ITHUSBHWHIGHSPEED && WITHHIGHSPEEDDESC */
-
-	usbd_descriptors_initialize(deschs && ifhs);
+	usbd_descriptors_initialize(deschs);
 	hardware_usbd_initialize();
 	hardware_usbd_dma_initialize();
 	hardware_usbd_dma_enable();
