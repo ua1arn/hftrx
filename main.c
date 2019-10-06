@@ -17490,6 +17490,7 @@ ddd:
 		goto ddd;
 
 	board_usb_deactivate();
+	board_usb_deinitialize();
 	bootloader_detach();
 }
 

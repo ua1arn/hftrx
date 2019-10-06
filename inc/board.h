@@ -266,6 +266,7 @@ void board_adc_initialize(void);
 void board_usb_initialize(void);
 void board_usb_activate(void);
 void board_usb_deactivate(void);
+void board_usb_deinitialize(void);
 
 void usbd_descriptors_initialize(uint_fast8_t deschs);
 void hardware_usbd_dma_initialize(void);
