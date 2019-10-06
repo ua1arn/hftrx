@@ -9474,6 +9474,22 @@ arm_cpu_CMx_initialize_NVIC(void)
 	gARM_BASEPRI_ONLY_REALTIME = ((gARM_SYSTEM_PRIORITY << (8 - __NVIC_PRIO_BITS)) & 0xff);
 	gARM_BASEPRI_ALL_ENABLED = 0;
 
+	/* System interrupt init*/
+	/* MemoryManagement_IRQn interrupt configuration */
+	NVIC_SetPriority(MemoryManagement_IRQn, ARM_SYSTEM_PRIORITY);
+	/* BusFault_IRQn interrupt configuration */
+	NVIC_SetPriority(BusFault_IRQn, ARM_SYSTEM_PRIORITY);
+	/* UsageFault_IRQn interrupt configuration */
+	NVIC_SetPriority(UsageFault_IRQn, ARM_SYSTEM_PRIORITY);
+	/* SVCall_IRQn interrupt configuration */
+	NVIC_SetPriority(SVCall_IRQn, ARM_SYSTEM_PRIORITY);
+	/* DebugMonitor_IRQn interrupt configuration */
+	NVIC_SetPriority(DebugMonitor_IRQn, ARM_SYSTEM_PRIORITY);
+	/* PendSV_IRQn interrupt configuration */
+	NVIC_SetPriority(PendSV_IRQn, ARM_SYSTEM_PRIORITY);
+	/* SysTick_IRQn interrupt configuration */
+	NVIC_SetPriority(SysTick_IRQn, ARM_SYSTEM_PRIORITY);
+
 	// Назначить таймеру приоритет, равный всем остальным прерываниям. Разрешать через NVIC не требуется
 	NVIC_SetVector(SysTick_IRQn, (uintptr_t) & SysTick_Handler);
 	NVIC_SetPriority(SysTick_IRQn, ARM_SYSTEM_PRIORITY);
