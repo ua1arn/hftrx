@@ -1144,38 +1144,6 @@ typedef USBALIGN_BEGIN struct _USBD_HandleTypeDef
 /*----------   -----------*/
 #define USBH_USE_OS      0
 
-
-
-
-
-
-#if 1//(USBH_DEBUG_LEVEL > 0)
-#define  USBH_UsrLog(...)   PRINTF(__VA_ARGS__);\
-                            PRINTF("\n");
-#else
-#define USBH_UsrLog(...)
-#endif
-
-
-#if 1//(USBH_DEBUG_LEVEL > 1)
-
-#define  USBH_ErrLog(...)   PRINTF("ERROR: ") ;\
-                            PRINTF(__VA_ARGS__);\
-                            PRINTF("\n");
-#else
-#define USBH_ErrLog(...)
-#endif
-
-
-#if 1//(USBH_DEBUG_LEVEL > 2)
-#define  USBH_DbgLog(...)   PRINTF("DEBUG : ") ;\
-                            PRINTF(__VA_ARGS__);\
-                            PRINTF("\n");
-#else
-#define USBH_DbgLog(...)
-#endif
-
-
 typedef union
 {
   uint16_t w;
@@ -1748,7 +1716,7 @@ USBH_StatusTypeDef   USBH_LL_Disconnect   (USBH_HandleTypeDef *phost);
 USBH_SpeedTypeDef    USBH_LL_GetSpeed     (USBH_HandleTypeDef *phost);
 USBH_StatusTypeDef   USBH_LL_ResetPort    (USBH_HandleTypeDef *phost);
 uint32_t             USBH_LL_GetLastXferSize   (USBH_HandleTypeDef *phost, uint8_t );
-USBH_StatusTypeDef   USBH_LL_DriverVBUS   (USBH_HandleTypeDef *phost, uint8_t );
+USBH_StatusTypeDef   USBH_LL_DriverVBUS   (USBH_HandleTypeDef *phost, uint_fast8_t );
 
 USBH_StatusTypeDef   USBH_LL_OpenPipe     (USBH_HandleTypeDef *phost, uint8_t, uint8_t, uint8_t, uint8_t , uint8_t, uint16_t );
 USBH_StatusTypeDef   USBH_LL_ClosePipe    (USBH_HandleTypeDef *phost, uint8_t );
@@ -1765,11 +1733,25 @@ void                 USBH_LL_SetTimer     (USBH_HandleTypeDef *phost, uint32_t )
 void                 USBH_LL_IncTimer     (USBH_HandleTypeDef *phost);
 
 
+
+
+typedef enum {
+  APPLICATION_IDLE = 0,
+  APPLICATION_START,
+  APPLICATION_READY,
+  APPLICATION_DISCONNECT,
+} ApplicationTypeDef;
+
+
 /* PCD Handle Structure */
 static USBALIGN_BEGIN PCD_HandleTypeDef hpcd_USB_OTG USBALIGN_END;
+
 /* USB Device Core handle declaration */
 static USBALIGN_BEGIN USBD_HandleTypeDef hUsbDevice USBALIGN_END;
+/* USB Host Core handle declaration */
+static USBALIGN_BEGIN USBH_HandleTypeDef hUsbHost USBALIGN_END;
 
+static ApplicationTypeDef Appli_state = APPLICATION_IDLE;
 
 
 static HCD_HandleTypeDef hhcd_USB_OTG;
@@ -1871,16 +1853,16 @@ static HAL_StatusTypeDef USB_CoreReset(USB_OTG_GlobalTypeDef *USBx);
 #define GRXSTS_PKTSTS_DATA_TOGGLE_ERR          5U
 #define GRXSTS_PKTSTS_CH_HALTED                7U
 
-#define USBx_PCGCCTL    (*(__IO uint32_t *)((uint32_t)USBx + USB_OTG_PCGCCTL_BASE))
-#define USBx_HPRT0      (*(__IO uint32_t *)((uint32_t)USBx + USB_OTG_HOST_PORT_BASE))
+#define USBx_PCGCCTL    (*(__IO uint32_t *)((uint32_t)(USBx) + USB_OTG_PCGCCTL_BASE))
+#define USBx_HPRT0      (*(__IO uint32_t *)((uint32_t)(USBx) + USB_OTG_HOST_PORT_BASE))
 
-#define USBx_DEVICE     ((USB_OTG_DeviceTypeDef *)((uint32_t )USBx + USB_OTG_DEVICE_BASE))
-#define USBx_INEP(i)    ((USB_OTG_INEndpointTypeDef *)((uint32_t)USBx + USB_OTG_IN_ENDPOINT_BASE + (i)*USB_OTG_EP_REG_SIZE))
-#define USBx_OUTEP(i)   ((USB_OTG_OUTEndpointTypeDef *)((uint32_t)USBx + USB_OTG_OUT_ENDPOINT_BASE + (i)*USB_OTG_EP_REG_SIZE))
-#define USBx_DFIFO(i)   (*(__IO uint32_t *)((uint32_t)USBx + USB_OTG_FIFO_BASE + (i) * USB_OTG_FIFO_SIZE))
+#define USBx_DEVICE     ((USB_OTG_DeviceTypeDef *)((uint32_t )(USBx) + USB_OTG_DEVICE_BASE))
+#define USBx_INEP(i)    ((USB_OTG_INEndpointTypeDef *)((uint32_t)(USBx) + USB_OTG_IN_ENDPOINT_BASE + (i)*USB_OTG_EP_REG_SIZE))
+#define USBx_OUTEP(i)   ((USB_OTG_OUTEndpointTypeDef *)((uint32_t)(USBx) + USB_OTG_OUT_ENDPOINT_BASE + (i)*USB_OTG_EP_REG_SIZE))
+#define USBx_DFIFO(i)   (*(__IO uint32_t *)((uint32_t)(USBx) + USB_OTG_FIFO_BASE + (i) * USB_OTG_FIFO_SIZE))
 
-#define USBx_HOST       ((USB_OTG_HostTypeDef *)((uint32_t )USBx + USB_OTG_HOST_BASE))
-#define USBx_HC(i)      ((USB_OTG_HostChannelTypeDef *)((uint32_t)USBx + USB_OTG_HOST_CHANNEL_BASE + (i)*USB_OTG_HOST_CHANNEL_SIZE))
+#define USBx_HOST       ((USB_OTG_HostTypeDef *)((uint32_t )(USBx) + USB_OTG_HOST_BASE))
+#define USBx_HC(i)      ((USB_OTG_HostChannelTypeDef *)((uint32_t)(USBx) + USB_OTG_HOST_CHANNEL_BASE + (i)*USB_OTG_HOST_CHANNEL_SIZE))
 
 /* Exported macro ------------------------------------------------------------*/
 #define USB_MASK_INTERRUPT(i, m)     ((i)->GINTMSK &= ~(m))
@@ -3983,7 +3965,7 @@ static void usbd_handle_ctrt(USBD_HandleTypeDef *pdev, uint_fast8_t ctsq)
 	}
 }
 
-static const uint_fast8_t usedpipes [] =
+static const uint_fast8_t usbd_usedpipes [] =
 {
 #if WITHUSBUAC
 	HARDWARE_USBD_PIPE_ISOC_OUT,	// ISOC OUT Аудиоданные от компьютера в TRX - D0FIFOB0
@@ -4020,9 +4002,9 @@ static void usbd_pipes_enable(PCD_TypeDef * const Instance)
 {
 	uint_fast8_t i;
 
-	for (i = 0; i < sizeof usedpipes / sizeof usedpipes [0]; ++ i)
+	for (i = 0; i < sizeof usbd_usedpipes / sizeof usbd_usedpipes [0]; ++ i)
 	{
-		const uint_fast8_t pipe = usedpipes [i];
+		const uint_fast8_t pipe = usbd_usedpipes [i];
 		volatile uint16_t * const PIPEnCTR = (& Instance->PIPE1CTR) + (pipe - 1);
 
 		* PIPEnCTR = 0x0000;	// NAK
@@ -4068,9 +4050,9 @@ static void usbd_pipes_disable(PCD_TypeDef * const Instance)
 		const uint_fast8_t pipe = brdyenbpipes2 [i].pipe;
 		Instance->BRDYENB &= ~ (1uL << pipe);	// Прерывание по заполненности приёмного (OUT) или для заполнения передающего (IN) буфера
 	}
-	for (i = 0; i < sizeof usedpipes / sizeof usedpipes [0]; ++ i)
+	for (i = 0; i < sizeof usbd_usedpipes / sizeof usbd_usedpipes [0]; ++ i)
 	{
-		const uint_fast8_t pipe = usedpipes [i];
+		const uint_fast8_t pipe = usbd_usedpipes [i];
 		volatile uint16_t * const PIPEnCTR = (& Instance->PIPE1CTR) + (pipe - 1);
 
 		* PIPEnCTR = 0x0000;	// NAK
@@ -4535,10 +4517,22 @@ usbd_handle_dvst(USBD_HandleTypeDef *pdev, uint_fast8_t dvsq)
 	}
 
 }
+
+#if defined (WITHUSBHW_DEVICE)
 /*
 	r7s721_usbi0_handler trapped
 	 BRDYSTS=0x00000000
 	 INTSTS0=0x0000F899
+
+	 		(hpcd->Init.Sof_enable != USB_FALSE) * USB_INTENB0_SOFE |	// SOFE	1: Frame Number Update Interrupt Enable
+		1 * USB_INTENB0_DVSE |	// DVSE
+		//1 * USB_INTENB0_VBSE |	// VBSE
+		1 * USB_INTENB0_CTRE |	// CTRE
+		1 * USB_INTENB0_BEMPE |	// BEMPE
+		1 * USB_INTENB0_NRDYE |	// NRDYE
+		1 * USB_INTENB0_BRDYE |	// BRDYE
+		1 * USB_INTENB0_RSME |	// RSME
+
 */
 static void r7s721_usbdevice_handler(USBD_HandleTypeDef *pdev)
 {
@@ -4546,17 +4540,17 @@ static void r7s721_usbdevice_handler(USBD_HandleTypeDef *pdev)
 	ASSERT(Instance == WITHUSBHW_DEVICE);
 	const uint_fast16_t intsts0 = Instance->INTSTS0;
 	const uint_fast16_t intsts1 = Instance->INTSTS1;
+	const uint_fast16_t intsts0msk = intsts0 & Instance->INTENB0;
+	const uint_fast16_t intsts1msk = intsts1 & Instance->INTENB1;
 
-#if 0
-	if ((intsts0 & USB_INTSTS0_SOFR) != 0)	// SOFR
+	if ((intsts0msk & USB_INTSTS0_SOFR) != 0)	// SOFR
 	{
-		Instance->INTSTS0 = (uint16_t) ~ (1uL << USB_INTSTS0_SOFR_SHIFT);	// Clear SOFR
-		//PRINTF(PSTR("r7s721_usbi0_handler trapped - SOFR\n"));
+		Instance->INTSTS0 = (uint16_t) ~ USB_INTSTS0_SOFR;	// Clear SOFR
+		PRINTF(PSTR("r7s721_usbdevice_handler trapped - SOFR\n"));
 	}
-#endif
-	if ((intsts0 & USB_INTSTS0_BEMP) != 0)	// BEMP
+	if ((intsts0msk & USB_INTSTS0_BEMP) != 0)	// BEMP
 	{
-		//PRINTF(PSTR("r7s721_usbi0_handler trapped - BEMP, BEMPSTS=0x%04X\n"), Instance->BEMPSTS);
+		//PRINTF(PSTR("r7s721_usbdevice_handler trapped - BEMP, BEMPSTS=0x%04X\n"), Instance->BEMPSTS);
 		const uint_fast16_t bempsts = Instance->BEMPSTS & Instance->BEMPENB;	// BEMP Interrupt Status Register
 		Instance->BEMPSTS = ~ bempsts;
 
@@ -4569,23 +4563,25 @@ static void r7s721_usbdevice_handler(USBD_HandleTypeDef *pdev)
 			}
 		}
 	}
-	if ((intsts0 & USB_INTSTS0_NRDY) != 0)	// NRDY
+	if ((intsts0msk & USB_INTSTS0_NRDY) != 0)	// NRDY
 	{
 		uint_fast8_t i;
-		//PRINTF(PSTR("r7s721_usbi0_handler trapped - NRDY, NRDYSTS=0x%04X\n"), Instance->NRDYSTS);
+		//PRINTF(PSTR("r7s721_usbdevice_handler trapped - NRDY, NRDYSTS=0x%04X\n"), Instance->NRDYSTS);
 		const uint_fast16_t nrdysts = Instance->NRDYSTS & Instance->NRDYENB;	// NRDY Interrupt Status Register
-		Instance->NRDYSTS = ~ nrdysts;
-		for (i = 0; i < sizeof usedpipes / sizeof usedpipes [0]; ++ i)
+		for (i = 0; i < 16; ++ i)
 		{
-			const uint_fast8_t pipe = usedpipes [i];
-			if ((nrdysts & (1U << pipe)) != 0)
-				usbd_handler_nrdy(pdev, pipe);
+			const uint_fast16_t mask = (uint_fast16_t) 1 << i;
+			if ((nrdysts & mask) != 0)
+			{
+				Instance->NRDYSTS = ~ mask;
+				usbd_handler_nrdy(pdev, i);
+			}
 		}
 	}
-	if ((intsts0 & USB_INTSTS0_BRDY) != 0)	// BRDY
+	if ((intsts0msk & USB_INTSTS0_BRDY) != 0)	// BRDY
 	{
 		uint_fast8_t i;
-		//PRINTF(PSTR("r7s721_usbi0_handler trapped - BRDY, BRDYSTS=0x%04X\n"), Instance->BRDYSTS);
+		//PRINTF(PSTR("r7s721_usbdevice_handler trapped - BRDY, BRDYSTS=0x%04X\n"), Instance->BRDYSTS);
 		const uint_fast16_t brdysts = Instance->BRDYSTS & Instance->BRDYENB;	// BRDY Interrupt Status Register
 		Instance->BRDYSTS = ~ brdysts;
 
@@ -4605,31 +4601,31 @@ static void r7s721_usbdevice_handler(USBD_HandleTypeDef *pdev)
 			}
 		}
 	}
-	if ((intsts0 & USB_INTSTS0_CTRT) != 0)	// CTRT
+	if ((intsts0msk & USB_INTSTS0_CTRT) != 0)	// CTRT
 	{
-		//PRINTF(PSTR("r7s721_usbi0_handler trapped - CTRT, CTSQ=%d\n"), (intsts0 >> 0) & 0x07);
+		//PRINTF(PSTR("r7s721_usbdevice_handler trapped - CTRT, CTSQ=%d\n"), (intsts0 >> 0) & 0x07);
 		Instance->INTSTS0 = (uint16_t) ~ (1uL << USB_INTSTS0_CTRT_SHIFT);	// Clear CTRT
 
 		usbd_handle_ctrt(pdev, intsts0 & USB_INTSTS0_CTSQ);
 	}
-	if ((intsts0 & (1uL << USB_INTSTS0_DVST_SHIFT)) != 0)	// DVSE
+	if ((intsts0msk & (1uL << USB_INTSTS0_DVST_SHIFT)) != 0)	// DVSE
 	{
-		//PRINTF(PSTR("r7s721_usbi0_handler trapped - DVSE, DVSQ=%d\n"), (intsts0 >> 4) & 0x07);
+		//PRINTF(PSTR("r7s721_usbdevice_handler trapped - DVSE, DVSQ=%d\n"), (intsts0 >> 4) & 0x07);
 		Instance->INTSTS0 = (uint16_t) ~ (1uL << USB_INTSTS0_DVST_SHIFT);	// Clear DVSE
 		usbd_handle_dvst(pdev, (intsts0 & USB_INTSTS0_DVSQ) >> USB_INTSTS0_DVSQ_SHIFT);
 	}
-	if ((intsts0 & (1uL << USB_INTSTS0_RESM_SHIFT)) != 0)	// RESM
+	if ((intsts0msk & (1uL << USB_INTSTS0_RESM_SHIFT)) != 0)	// RESM
 	{
 		Instance->INTSTS0 = (uint16_t) ~ (1uL << USB_INTSTS0_RESM_SHIFT);	// Clear RESM
-		//PRINTF(PSTR("r7s721_usbi0_handler trapped - RESM\n"));
+		//PRINTF(PSTR("r7s721_usbdevice_handler trapped - RESM\n"));
 		usbd_handle_resume(Instance);
 	}
-	//if ((intsts0 & (1uL << USB_INTSTS0_VBINT_SHIFT)) != 0)	// VBINT
-	//{
-	//	Instance->INTSTS0 = (uint16_t) ~ (1uL << USB_INTSTS0_VBINT_SHIFT);	// Clear VBINT - enabled by VBSE
-	//	PRINTF(PSTR("r7s721_usbi0_handler trapped - VBINT, VBSTS=%d\n"), usbd_getvbus());
+	if ((intsts0msk & (1uL << USB_INTSTS0_VBINT_SHIFT)) != 0)	// VBINT
+	{
+		Instance->INTSTS0 = (uint16_t) ~ USB_INTSTS0_VBINT;	// Clear VBINT - enabled by VBSE
+		PRINTF(PSTR("r7s721_usbdevice_handler trapped - VBINT, VBSTS=%d\n"), (intsts0 & USB_INTSTS0_VBSTS) != 0);	// TODO: masked VBSTS
 	//	usbd_handle_vbuse(usbd_getvbus());
-	//}
+	}
 }
 
 static void r7s721_usbi0_device_handler(void)
@@ -4641,6 +4637,211 @@ static void r7s721_usbi1_device_handler(void)
 {
 	r7s721_usbdevice_handler(& hUsbDevice);
 }
+
+
+
+void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
+{
+
+	if (hpcd->Instance == & USB200)
+	{
+		const IRQn_ID_t int_id = USBI0_IRQn;
+		IRQ_SetHandler(int_id, r7s721_usbi0_device_handler);
+		IRQ_SetPriority(int_id, ARM_SYSTEM_PRIORITY);
+		IRQ_Enable(int_id);
+
+		/* ---- Supply clock to the USB20(channel 0) ---- */
+		CPG.STBCR7 &= ~ CPG_STBCR7_MSTP71;	// Module Stop 71 0: Channel 0 of the USB 2.0 host/function module runs.
+		(void) CPG.STBCR7;			/* Dummy read */
+
+		HARDWARE_USB0_INITIALIZE();
+
+	}
+	else if (hpcd->Instance == & USB201)
+	{
+		const IRQn_ID_t int_id = USBI1_IRQn;
+		IRQ_SetHandler(int_id, r7s721_usbi1_device_handler);
+		IRQ_SetPriority(int_id, ARM_SYSTEM_PRIORITY);
+		IRQ_Enable(int_id);
+
+		/* ---- Supply clock to the USB20(channel 1) ---- */
+		CPG.STBCR7 &= ~ CPG_STBCR7_MSTP70;	// Module Stop 70 0: Channel 1 of the USB 2.0 host/function module runs.
+		CPG.STBCR7 &= ~ CPG_STBCR7_MSTP71;	// Module Stop 71 0: Channel 0 of the USB 2.0 host/function module runs.
+		(void) CPG.STBCR7;			/* Dummy read */
+
+		HARDWARE_USB1_INITIALIZE();
+	}
+
+}
+
+static void r7s721_usbhost_handler(USBH_HandleTypeDef *pdev)
+{
+	USB_OTG_GlobalTypeDef * const Instance = ((PCD_HandleTypeDef *) pdev->pData)->Instance;
+	const uint_fast16_t intsts0 = Instance->INTSTS0;
+	const uint_fast16_t intsts1 = Instance->INTSTS1;
+	const uint_fast16_t intsts0msk = intsts0 & Instance->INTENB0;
+	const uint_fast16_t intsts1msk = intsts1 & Instance->INTENB1;
+
+	PRINTF(PSTR("r7s721_usbhost_handler trapped, intsts0=%04X, intsts1=%04X\n"), intsts0, intsts1);
+	if ((intsts0msk & USB_INTSTS0_SOFR) != 0)	// SOFR
+	{
+		Instance->INTSTS0 = (uint16_t) ~ USB_INTSTS0_SOFR;	// Clear SOFR
+		PRINTF(PSTR("r7s721_usbhost_handler trapped - SOFR\n"));
+	}
+	if ((intsts1msk & USB_INTSTS1_BCHG) != 0)	// BCHG
+	{
+		Instance->INTSTS1 = (uint16_t) ~ USB_INTSTS1_BCHG;
+		PRINTF(PSTR("r7s721_usbhost_handler trapped - BCHG\n"));
+	}
+	if ((intsts1msk & USB_INTSTS1_DTCH) != 0)	// DTCH
+	{
+		Instance->INTSTS1 = (uint16_t) ~ USB_INTSTS1_DTCH;
+		PRINTF(PSTR("r7s721_usbhost_handler trapped - DTCH\n"));
+	}
+	if ((intsts1msk & USB_INTSTS1_ATTCH) != 0)	// ATTCH
+	{
+		Instance->INTSTS1 = (uint16_t) ~ USB_INTSTS1_ATTCH;
+		PRINTF(PSTR("r7s721_usbhost_handler trapped - ATTCH\n"));
+	}
+	if ((intsts0msk & (1uL << USB_INTSTS0_VBINT_SHIFT)) != 0)	// VBINT
+	{
+		Instance->INTSTS0 = (uint16_t) ~ USB_INTSTS0_VBINT;	// Clear VBINT - enabled by VBSE
+		PRINTF(PSTR("r7s721_usbhost_handler trapped - VBINT, VBSTS=%d\n"), (intsts0 & USB_INTSTS0_VBSTS) != 0);	// TODO: masked VBSTS
+	//	usbd_handle_vbuse(usbd_getvbus());
+	}
+}
+
+static void r7s721_usbi0_host_handler(void)
+{
+	r7s721_usbhost_handler(& hUsbHost);
+}
+
+static void r7s721_usbi1_host_handler(void)
+{
+	r7s721_usbhost_handler(& hUsbHost);
+}
+
+void HAL_HCD_MspInit(HCD_HandleTypeDef* hpcd)
+{
+	if (hpcd->Instance == & USB200)
+	{
+		const IRQn_ID_t int_id = USBI0_IRQn;
+		IRQ_SetHandler(int_id, r7s721_usbi0_host_handler);
+		IRQ_SetPriority(int_id, ARM_SYSTEM_PRIORITY);
+		IRQ_Enable(int_id);
+
+		/* ---- Supply clock to the USB20(channel 0) ---- */
+		CPG.STBCR7 &= ~ CPG_STBCR7_MSTP71;	// Module Stop 71 0: Channel 0 of the USB 2.0 host/function module runs.
+		(void) CPG.STBCR7;			/* Dummy read */
+
+		HARDWARE_USB0_INITIALIZE();
+
+	}
+	else if (hpcd->Instance == & USB201)
+	{
+		const IRQn_ID_t int_id = USBI1_IRQn;
+		IRQ_SetHandler(int_id, r7s721_usbi1_host_handler);
+		IRQ_SetPriority(int_id, ARM_SYSTEM_PRIORITY);
+		IRQ_Enable(int_id);
+
+		/* ---- Supply clock to the USB20(channel 1) ---- */
+		CPG.STBCR7 &= ~ CPG_STBCR7_MSTP70;	// Module Stop 70 0: Channel 1 of the USB 2.0 host/function module runs.
+		CPG.STBCR7 &= ~ CPG_STBCR7_MSTP71;	// Module Stop 71 0: Channel 0 of the USB 2.0 host/function module runs.
+		(void) CPG.STBCR7;			/* Dummy read */
+
+		HARDWARE_USB1_INITIALIZE();
+	}
+}
+
+void HAL_HCD_MspDeInit(HCD_HandleTypeDef* hpcd)
+{
+	hpcd->Instance->SYSCFG0 &= ~ USB_SYSCFG_USBE;
+	hpcd->Instance->INTENB0 = 0;
+	hpcd->Instance->INTENB1 = 0;
+}
+
+/**
+  * @brief  Return Host Current Frame number
+  * @param  USBx : Selected device
+  * @retval current frame number
+*/
+uint32_t USB_GetCurrentFrame (USB_OTG_GlobalTypeDef *USBx)
+{
+	return 1;
+}
+
+
+/**
+  * @brief  Return Host Core speed
+  * @param  USBx : Selected device
+  * @retval speed : Host speed
+  *          This parameter can be one of these values:
+  *            @arg USB_OTG_SPEED_HIGH: High speed mode
+  *            @arg USB_OTG_SPEED_FULL: Full speed mode
+  *            @arg USB_OTG_SPEED_LOW: Low speed mode
+  */
+static uint32_t USB_GetHostSpeed (USB_OTG_GlobalTypeDef *USBx)
+{
+	return USB_OTG_SPEED_HIGH;
+}
+
+
+/**
+  * @brief  USB_DriveVbus : activate or de-activate vbus
+  * @param  state : VBUS state
+  *          This parameter can be one of these values:
+  *           0 : VBUS Active
+  *           1 : VBUS Inactive
+  * @retval HAL status
+*/
+static HAL_StatusTypeDef USB_DriveVbus (USB_OTG_GlobalTypeDef *USBx, uint_fast8_t state)
+{
+	// renesas version
+	/*
+  uint32_t hprt0 = USBx_HPRT0;
+  hprt0 &= ~(USB_OTG_HPRT_PENA    | USB_OTG_HPRT_PCDET |
+                         USB_OTG_HPRT_PENCHNG | USB_OTG_HPRT_POCCHNG );
+
+  if (((hprt0 & USB_OTG_HPRT_PPWR) == 0 ) && (state == 1 ))
+  {
+    USBx_HPRT0 = (USB_OTG_HPRT_PPWR | hprt0);
+  }
+  if (((hprt0 & USB_OTG_HPRT_PPWR) == USB_OTG_HPRT_PPWR) && (state == 0 ))
+  {
+    USBx_HPRT0 = ((~USB_OTG_HPRT_PPWR) & hprt0);
+  }
+  */
+  return HAL_OK;
+}
+
+
+/**
+  * @brief  USB_EnableGlobalInt
+  *         Enables the controller's Global Int in the AHB Config reg
+  * @param  USBx : Selected device
+  * @retval HAL status
+  */
+HAL_StatusTypeDef USB_EnableGlobalInt(USB_OTG_GlobalTypeDef *USBx)
+{
+  ////USBx->GAHBCFG |= USB_OTG_GAHBCFG_GINT;
+  return HAL_OK;
+}
+
+
+/**
+  * @brief  USB_DisableGlobalInt
+  *         Disable the controller's Global Int in the AHB Config reg
+  * @param  USBx : Selected device
+  * @retval HAL status
+*/
+HAL_StatusTypeDef USB_DisableGlobalInt(USB_OTG_GlobalTypeDef *USBx)
+{
+  ////USBx->GAHBCFG &= ~ USB_OTG_GAHBCFG_GINT;
+  return HAL_OK;
+}
+
+
+#endif /* defined (WITHUSBHW_DEVICE) */
 
 #define __HAL_PCD_ENABLE(h)                   do { /*USB_EnableGlobalInt((h)->Instance); */} while (0)
 #define __HAL_PCD_DISABLE(h)                  do { /*USB_DisableGlobalInt((h)->Instance); */} while (0)
@@ -4658,6 +4859,20 @@ static void r7s721_usbi1_device_handler(void)
   */
 HAL_StatusTypeDef USB_SetCurrentMode(USB_OTG_GlobalTypeDef *USBx, USB_OTG_ModeTypeDef mode)
 {
+	switch (mode)
+	{
+	case USB_OTG_DEVICE_MODE:
+		USBx->SYSCFG0 &= ~ USB_SYSCFG_DCFM;	// DCFM01: Devide controller mode is selected
+		break;
+	case USB_OTG_HOST_MODE:
+		USBx->SYSCFG0 |= USB_SYSCFG_DCFM;	// DCFM 1: Host controller mode is selected
+		break;
+	case USB_OTG_DRD_MODE:
+		ASSERT(0);
+		//USBx->SYSCFG0 |= USB_SYSCFG_DCFM;	// DCFM 1: Host controller mode is selected
+		break;
+	}
+
 	return HAL_OK;
 }
 /**
@@ -4668,7 +4883,7 @@ HAL_StatusTypeDef USB_SetCurrentMode(USB_OTG_GlobalTypeDef *USBx, USB_OTG_ModeTy
   */
 static HAL_StatusTypeDef USB_ActivateEndpoint(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDef *ep)
 {
-	return HAL_OK;  
+	return HAL_OK;
 }
 
 /**
@@ -4679,7 +4894,7 @@ static HAL_StatusTypeDef USB_ActivateEndpoint(USB_OTG_GlobalTypeDef *USBx, USB_O
   */
 static HAL_StatusTypeDef USB_ActivateDedicatedEndpoint(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDef *ep)
 {
-	return HAL_OK;  
+	return HAL_OK;
 }
 
 /**
@@ -4854,6 +5069,48 @@ HAL_StatusTypeDef USB_HC_Init(USB_OTG_GlobalTypeDef *USBx,
 
 static HAL_StatusTypeDef USB_HostInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_CfgTypeDef * cfg)
 {
+	//hpcd->Instance->CFIFOSEL = 0;	// не помогает с первым чтением из DCP
+	//hpcd->Instance->CFIFOCTR = USB_CFIFOCTR_BCLR;	// BCLR
+
+	USBx->SOFCFG =
+		//USB_SOFCFG_BRDYM |	// BRDYM
+		0;
+
+	USBx->SYSCFG0 |= USB_SYSCFG_DCFM;	// DCFM 1: Host controller mode is selected
+
+	USBx->SYSCFG0 |= USB_SYSCFG_USBE;	// USBE 1: USB module operation is enabled.
+
+	if (cfg->speed == USBD_SPEED_HIGH)
+	{
+		USBx->SYSCFG0 |= USB_SYSCFG_HSE;	// HSE
+	}
+	else
+	{
+		USBx->SYSCFG0 &= ~ USB_SYSCFG_HSE;	// HSE
+	}
+
+	/*
+	The RSME, DVSE, and CTRE bits can be set to 1 only when the function controller mode is selected; do not set these bits to 1
+	to enable the corresponding interrupt output when the host controller mode is selected.
+	*/
+	USBx->INTENB0 =
+		(cfg->Sof_enable != USB_FALSE) * USB_INTENB0_SOFE |	// SOFE	1: Frame Number Update Interrupt Enable
+		//1 * USB_INTENB0_VBSE |	// VBSE
+		1 * USB_INTENB0_BEMPE |	// BEMPE
+		1 * USB_INTENB0_NRDYE |	// NRDYE
+		1 * USB_INTENB0_BRDYE |	// BRDYE
+		//1 * USB_INTENB0_CTRE |	// CTRE
+		//1 * USB_INTENB0_DVSE |	// DVSE
+		//1 * USB_INTENB0_RSME |	// RSME
+		0;
+
+	USBx->INTENB1 =
+		1 * USB_INTENB1_BCHGE |	// BCHG
+		1 * USB_INTENB1_DTCHE |	// DTCH
+		1 * USB_INTENB1_ATTCHE |	// ATTCH
+		0;
+
+
 	return HAL_OK;
 }
 
@@ -5137,6 +5394,16 @@ HAL_StatusTypeDef  USB_SetDevAddress (USB_OTG_GlobalTypeDef *USBx, uint_fast8_t 
   */
 static HAL_StatusTypeDef USB_CoreInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_CfgTypeDef *cfg)
 {
+	USBx->SUSPMODE &= ~ USB_SUSPMODE_SUSPM;	// SUSPM 0: The clock supplied to this module is stopped.
+
+	SYSCFG0_0 = (SYSCFG0_0 & ~ (USB_SYSCFG_UPLLE | USB_SYSCFG_UCKSEL)) |
+		1 * USB_SYSCFG_UPLLE |	// UPLLE 1: Enables operation of the internal PLL.
+		1 * USB_SYSCFG_UCKSEL |	// UCKSEL 1: The 12-MHz EXTAL clock is selected.
+		0;
+	HARDWARE_DELAY_MS(2);	// required 1 ms delay - see R01UH0437EJ0200 Rev.2.00 28.4.1 System Control and Oscillation Control
+
+	USBx->SUSPMODE |= USB_SUSPMODE_SUSPM;	// SUSPM 1: The clock supplied to this module is enabled.
+
 	return HAL_OK;
 }
 
@@ -5150,6 +5417,38 @@ static HAL_StatusTypeDef USB_CoreInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG
   */
 static HAL_StatusTypeDef USB_DevInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_CfgTypeDef * cfg)
 {
+	//USBx->CFIFOSEL = 0;	// не помогает с первым чтением из DCP
+	//USBx->CFIFOCTR = USB_CFIFOCTR_BCLR;	// BCLR
+
+	USBx->SOFCFG =
+		//USB_SOFCFG_BRDYM |	// BRDYM
+		0;
+
+	USBx->SYSCFG0 &= ~ USB_SYSCFG_DCFM;	// DCFM 0: Device controller mode is selected
+
+	USBx->SYSCFG0 |= USB_SYSCFG_USBE;	// USBE 1: USB module operation is enabled.
+
+	if (cfg->speed == USBD_SPEED_HIGH)
+	{
+		USBx->SYSCFG0 |= USB_SYSCFG_HSE;	// HSE
+	}
+	else
+	{
+		USBx->SYSCFG0 &= ~ USB_SYSCFG_HSE;	// HSE
+	}
+
+	USBx->INTENB0 =
+		(cfg->Sof_enable != USB_FALSE) * USB_INTENB0_SOFE |	// SOFE	1: Frame Number Update Interrupt Enable
+		1 * USB_INTENB0_DVSE |	// DVSE
+		//1 * USB_INTENB0_VBSE |	// VBSE
+		1 * USB_INTENB0_CTRE |	// CTRE
+		1 * USB_INTENB0_BEMPE |	// BEMPE
+		1 * USB_INTENB0_NRDYE |	// NRDYE
+		1 * USB_INTENB0_BRDYE |	// BRDYE
+		1 * USB_INTENB0_RSME |	// RSME
+		0;
+	USBx->INTENB1 = 0;
+
 	return HAL_OK;
 }
 
@@ -5591,7 +5890,7 @@ static HAL_StatusTypeDef USB_DevInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_
 		USB_OTG_GINTMSK_MMISM |
 		0;
 
-	if(cfg->Sof_enable)
+	if (cfg->Sof_enable)
 	{
 		USBx->GINTMSK |= USB_OTG_GINTMSK_SOFM;
 	}
@@ -8489,7 +8788,7 @@ static USBD_StatusTypeDef  USBD_Start  (USBD_HandleTypeDef *pdev)
   * @param  pdev: Device Handle
   * @retval USBD Status
   */
-USBD_StatusTypeDef  USBD_Stop   (USBD_HandleTypeDef *pdev)
+USBD_StatusTypeDef  USBD_Stop(USBD_HandleTypeDef *pdev)
 {
 	/* Free Class Resources */
 	uint_fast8_t di;
@@ -12165,21 +12464,6 @@ static void HCD_Port_IRQHandler(HCD_HandleTypeDef *hhcd);
 
 
 
-
-typedef enum {
-  APPLICATION_IDLE = 0,  
-  APPLICATION_START,   
-  APPLICATION_READY,
-  APPLICATION_DISCONNECT,
-}ApplicationTypeDef;
-		
-
-
-/* USB Host Core handle declaration */
-USBH_HandleTypeDef hUsbHostFS;
-ApplicationTypeDef Appli_state = APPLICATION_IDLE;
-
-
 typedef enum
 {
   MSC_INIT = 0,     
@@ -12624,7 +12908,6 @@ HAL_StatusTypeDef USB_HC_Init(USB_OTG_GlobalTypeDef *USBx,
 #endif /* CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX */
 
 //++++ HC
-#if WITHUSEUSBFLASH
 
 /**
   * @}
@@ -12984,24 +13267,26 @@ USBH_StatusTypeDef  USBH_LL_NotifyURBChange (USBH_HandleTypeDef *phost)
 }
 #endif  
 
-/**
-  * @}
-  */ 
 
-/** @defgroup USBH_MSC_BOT_Exported_Macros
-  * @{
-  */ 
-/**
-  * @}
-  */ 
+/* Memory management macros */
+//#define USBH_malloc               malloc
+//#define USBH_free                 free
+#define USBH_memset               memset
+#define USBH_memcpy               memcpy
 
-/** @defgroup USBH_MSC_BOT_Exported_Variables
-  * @{
-  */ 
 
-/**
-  * @}
-  */ 
+uint8_t USBH_AllocPipe  (USBH_HandleTypeDef *phost, uint8_t ep_addr);
+USBH_StatusTypeDef USBH_FreePipe  (USBH_HandleTypeDef *phost, uint8_t idx);
+USBH_StatusTypeDef USBH_OpenPipe  (USBH_HandleTypeDef *phost,
+                           uint8_t pipe_num,
+                           uint8_t epnum,
+                           uint8_t dev_address,
+                           uint8_t speed,
+                           uint8_t ep_type,
+                           uint16_t mps);
+
+
+#if WITHUSEUSBFLASH
 
 /** @defgroup USBH_MSC_BOT_Exported_FunctionsPrototype
   * @{
@@ -13103,9 +13388,6 @@ MSC_HandleTypeDef;
 /* Interface Descriptor field values for HID Boot Protocol */
 #define MSC_BOT                                        0x50 
 #define MSC_TRANSPARENT                                0x06     
-
-extern USBH_ClassTypeDef  USBH_msc;
-#define USBH_MSC_CLASS    &USBH_msc
 
 
 
@@ -13650,7 +13932,7 @@ static USBH_StatusTypeDef USBH_MSC_SOFProcess(USBH_HandleTypeDef *phost);
 
 static USBH_StatusTypeDef USBH_MSC_RdWrProcess(USBH_HandleTypeDef *phost, uint8_t lun);
 
-USBH_ClassTypeDef  USBH_msc = 
+static USBH_ClassTypeDef  USBH_msc =
 {
   "MSC",
   USB_MSC_CLASS,
@@ -13661,13 +13943,6 @@ USBH_ClassTypeDef  USBH_msc =
   USBH_MSC_SOFProcess,
   NULL,
 };
-
-
- /* Memory management macros */   
-//#define USBH_malloc               malloc
-//#define USBH_free                 free
-#define USBH_memset               memset
-#define USBH_memcpy               memcpy
 
 
 /**
@@ -13683,11 +13958,9 @@ USBH_ClassTypeDef  USBH_msc =
   * @}
   */ 
 
-
 /** @defgroup USBH_MSC_CORE_Private_Functions
   * @{
   */ 
-
 
 /**
   * @brief  USBH_MSC_InterfaceInit 
@@ -13701,18 +13974,20 @@ static USBH_StatusTypeDef USBH_MSC_InterfaceInit (USBH_HandleTypeDef *phost)
   USBH_StatusTypeDef status = USBH_FAIL ;
   MSC_HandleTypeDef *MSC_Handle;
   
+  static MSC_HandleTypeDef msc_handle;
   interfacei = USBH_FindInterface(phost, phost->pActiveClass->ClassCode, MSC_TRANSPARENT, MSC_BOT);
   
   if (interfacei == 0xFF) /* Not Valid Interface */
   {
-    USBH_DbgLog ("Cannot Find the interfacei for %s class.", phost->pActiveClass->Name);
+    PRINTF(PSTR("Cannot Find the interfacei for %s class.\n"), phost->pActiveClass->Name);
     status = USBH_FAIL;      
   }
   else
   {
     USBH_SelectInterface (phost, interfacei);
     
-    phost->pActiveClass->pData = (MSC_HandleTypeDef *)USBH_malloc (sizeof(MSC_HandleTypeDef));
+    //phost->pActiveClass->pData = (MSC_HandleTypeDef *)USBH_malloc (sizeof(MSC_HandleTypeDef));
+    phost->pActiveClass->pData = & msc_handle;
     MSC_Handle =  (MSC_HandleTypeDef *) phost->pActiveClass->pData;
     
     if (phost->device.CfgDesc.Itf_Desc[phost->device.current_interface].Ep_Desc[0].bEndpointAddress & 0x80)
@@ -13801,7 +14076,7 @@ USBH_StatusTypeDef USBH_MSC_InterfaceDeInit (USBH_HandleTypeDef *phost)
 
   if (phost->pActiveClass->pData)
   {
-    USBH_free (phost->pActiveClass->pData);
+    ////USBH_free (phost->pActiveClass->pData);
     phost->pActiveClass->pData = 0;
   }
   
@@ -13840,7 +14115,7 @@ static USBH_StatusTypeDef USBH_MSC_ClassRequest(USBH_HandleTypeDef *phost)
     if(status == USBH_OK)
     {
       MSC_Handle->max_lun = (uint8_t )(MSC_Handle->max_lun) + 1;
-      USBH_UsrLog ("Number of supported LUN: %lu", (int32_t)(MSC_Handle->max_lun));
+      PRINTF(PSTR("Number of supported LUN: %lu\n"), (int32_t)(MSC_Handle->max_lun));
       
       for(i = 0; i < MSC_Handle->max_lun; i++)
       {
@@ -14229,7 +14504,7 @@ static USBH_StatusTypeDef USBH_MSC_Process(USBH_HandleTypeDef *phost)
       switch (MSC_Handle->unit[MSC_Handle->current_lun].state)
       {
       case MSC_INIT:
-        USBH_UsrLog ("LUN #%d: ", MSC_Handle->current_lun);
+        PRINTF(PSTR("LUN #%d: \n"), MSC_Handle->current_lun);
         MSC_Handle->unit[MSC_Handle->current_lun].state = MSC_READ_INQUIRY;
         MSC_Handle->timer = phost->Timer;
         
@@ -14238,9 +14513,9 @@ static USBH_StatusTypeDef USBH_MSC_Process(USBH_HandleTypeDef *phost)
         
         if( scsi_status == USBH_OK)
         {
-          USBH_UsrLog ("Inquiry Vendor  : %s", MSC_Handle->unit[MSC_Handle->current_lun].inquiry.vendor_id);
-          USBH_UsrLog ("Inquiry Product : %s", MSC_Handle->unit[MSC_Handle->current_lun].inquiry.product_id);
-          USBH_UsrLog ("Inquiry Version : %s", MSC_Handle->unit[MSC_Handle->current_lun].inquiry.revision_id);
+          PRINTF(PSTR("Inquiry Vendor  : %s\n"), MSC_Handle->unit[MSC_Handle->current_lun].inquiry.vendor_id);
+          PRINTF(PSTR("Inquiry Product : %s\n"), MSC_Handle->unit[MSC_Handle->current_lun].inquiry.product_id);
+          PRINTF(PSTR("Inquiry Version : %s\n"), MSC_Handle->unit[MSC_Handle->current_lun].inquiry.revision_id);
           MSC_Handle->unit[MSC_Handle->current_lun].state = MSC_TEST_UNIT_READY;        
         }
         if( scsi_status == USBH_FAIL)
@@ -14262,7 +14537,7 @@ static USBH_StatusTypeDef USBH_MSC_Process(USBH_HandleTypeDef *phost)
           if( MSC_Handle->unit[MSC_Handle->current_lun].prev_ready_state != USBH_OK)
           {
             MSC_Handle->unit[MSC_Handle->current_lun].state_changed = 1;
-            USBH_UsrLog ("MSC Device ready");
+            PRINTF(PSTR("MSC Device ready\n"));
           }
           else
           {
@@ -14278,7 +14553,7 @@ static USBH_StatusTypeDef USBH_MSC_Process(USBH_HandleTypeDef *phost)
           if( MSC_Handle->unit[MSC_Handle->current_lun].prev_ready_state != USBH_FAIL)
           {
             MSC_Handle->unit[MSC_Handle->current_lun].state_changed = 1;
-            USBH_UsrLog ("MSC Device NOT ready");
+            PRINTF(PSTR("MSC Device NOT ready\n"));
           }
           else
           {
@@ -14302,10 +14577,10 @@ static USBH_StatusTypeDef USBH_MSC_Process(USBH_HandleTypeDef *phost)
         {
           if(MSC_Handle->unit[MSC_Handle->current_lun].state_changed == 1)
           {
-            USBH_UsrLog ("MSC Device capacity : %lu Bytes",
+            PRINTF(PSTR("MSC Device capacity : %lu Bytes\n"),
               (int32_t)(MSC_Handle->unit[MSC_Handle->current_lun].capacity.block_nbr * MSC_Handle->unit[MSC_Handle->current_lun].capacity.block_size));
-            USBH_UsrLog ("Block number : %lu", (int32_t)(MSC_Handle->unit[MSC_Handle->current_lun].capacity.block_nbr));
-            USBH_UsrLog ("Block Size   : %lu", (int32_t)(MSC_Handle->unit[MSC_Handle->current_lun].capacity.block_size));
+            PRINTF(PSTR("Block number : %lu\n"), (int32_t)(MSC_Handle->unit[MSC_Handle->current_lun].capacity.block_nbr));
+            PRINTF(PSTR("Block Size   : %lu\n"), (int32_t)(MSC_Handle->unit[MSC_Handle->current_lun].capacity.block_size));
           }
           MSC_Handle->unit[MSC_Handle->current_lun].state = MSC_IDLE;
           MSC_Handle->unit[MSC_Handle->current_lun].error = MSC_OK;
@@ -14338,15 +14613,15 @@ static USBH_StatusTypeDef USBH_MSC_Process(USBH_HandleTypeDef *phost)
             }        
           }
           
-          USBH_UsrLog ("Sense Key  : %x", MSC_Handle->unit[MSC_Handle->current_lun].sense.key);
-          USBH_UsrLog ("Additional Sense Code : %x", MSC_Handle->unit[MSC_Handle->current_lun].sense.asc);
-          USBH_UsrLog ("Additional Sense Code Qualifier: %x", MSC_Handle->unit[MSC_Handle->current_lun].sense.ascq);
+          PRINTF(PSTR("Sense Key  : %x\n"), MSC_Handle->unit[MSC_Handle->current_lun].sense.key);
+          PRINTF(PSTR("Additional Sense Code : %x\n"), MSC_Handle->unit[MSC_Handle->current_lun].sense.asc);
+          PRINTF(PSTR("Additional Sense Code Qualifier: %x\n"), MSC_Handle->unit[MSC_Handle->current_lun].sense.ascq);
           MSC_Handle->unit[MSC_Handle->current_lun].state = MSC_IDLE;
           MSC_Handle->current_lun++;
         }
         if( scsi_status == USBH_FAIL)
         {
-          USBH_UsrLog ("MSC Device NOT ready");
+          PRINTF(PSTR("MSC Device NOT ready\n"));
           MSC_Handle->unit[MSC_Handle->current_lun].state = MSC_UNRECOVERED_ERROR; 
         }
         else if(scsi_status == USBH_UNRECOVERED_ERROR)
@@ -14467,9 +14742,9 @@ static USBH_StatusTypeDef USBH_MSC_RdWrProcess(USBH_HandleTypeDef *phost, uint8_
     
     if( scsi_status == USBH_OK)
     {
-      USBH_UsrLog ("Sense Key  : %x", MSC_Handle->unit[lun].sense.key);
-      USBH_UsrLog ("Additional Sense Code : %x", MSC_Handle->unit[lun].sense.asc);
-      USBH_UsrLog ("Additional Sense Code Qualifier: %x", MSC_Handle->unit[lun].sense.ascq);
+      PRINTF(PSTR("Sense Key  : %x\n"), MSC_Handle->unit[lun].sense.key);
+      PRINTF(PSTR("Additional Sense Code : %x\n"), MSC_Handle->unit[lun].sense.asc);
+      PRINTF(PSTR("Additional Sense Code Qualifier: %x\n"), MSC_Handle->unit[lun].sense.ascq);
       MSC_Handle->unit[lun].state = MSC_IDLE;
       MSC_Handle->unit[lun].error = MSC_ERROR;
       
@@ -14477,7 +14752,7 @@ static USBH_StatusTypeDef USBH_MSC_RdWrProcess(USBH_HandleTypeDef *phost, uint8_
     }
     if( scsi_status == USBH_FAIL)
     {
-      USBH_UsrLog ("MSC Device NOT ready");
+      PRINTF(PSTR("MSC Device NOT ready\n"));
     }
     else if(scsi_status == USBH_UNRECOVERED_ERROR)
     {
@@ -14686,99 +14961,633 @@ static const USBD_ClassTypeDef USBD_CLASS_XXX =
 	NULL,	//USBD_XXX_IsoOUTIncomplete,	// IsoOUTIncomplete
 };
 
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
+/**
+  * @brief  DeInitializes PCD MSP.
+  * @param  hpcd: PCD handle
+  * @retval None
+  */
+void HAL_PCD_MspDeInit(PCD_HandleTypeDef *hpcd)
+{
+#if CPUSTYLE_R7S721
+	hpcd->Instance->SYSCFG0 &= ~ USB_SYSCFG_USBE;
+	hpcd->Instance->INTENB0 = 0;
+	hpcd->Instance->INTENB1 = 0;
+#elif CPUSTYLE_STM32
+#else
+	#error HAL_PCD_MspDeInit should be implemented
+#endif
+}
+
+
+/**
+  * @brief  Initializes the Low Level portion of the Device driver.
+  * @param  pdev: Device handle
+  * @retval USBD Status
+  */
+static USBD_StatusTypeDef  USBD_LL_FS_Init (PCD_HandleTypeDef * hpcd, USBD_HandleTypeDef *pdev)
+{
+	/* Link The driver to the stack */
+	hpcd->pData = pdev;
+	pdev->pData = hpcd;
+
+	hpcd->Instance = WITHUSBHW_DEVICE;
+
+#if CPUSTYLE_R7S721
+	#if WITHHIGHSPEEDDESC && WITHDEVONHIGHSPEED
+		hpcd->Init.speed = PCD_SPEED_HIGH;
+	#else /* WITHHIGHSPEEDDESC && WITHDEVONHIGHSPEED */
+		hpcd->Init.speed = PCD_SPEED_FULL;
+	#endif /* WITHHIGHSPEEDDESC && WITHDEVONHIGHSPEED */
+#else /* CPUSTYLE_R7S721 */
+	hpcd->Init.speed = PCD_SPEED_FULL;
+#endif /* CPUSTYLE_R7S721 */
+
+	hpcd->Init.dev_endpoints = 6;
+	hpcd->Init.dma_enable = USB_DISABLE;
+	hpcd->Init.ep0_mps = DEP0CTL_MPS_64;
+	hpcd->Init.phy_itface = PCD_PHY_EMBEDDED;
+	hpcd->Init.Sof_enable = USB_DISABLE;
+	hpcd->Init.low_power_enable = USB_DISABLE;
+	hpcd->Init.lpm_enable = USB_DISABLE;
+	hpcd->Init.battery_charging_enable = USB_ENABLE;
+#if WITHUSBHWVBUSSENSE	/* используется предопределенный вывод VBUS_SENSE */
+	hpcd->Init.vbus_sensing_enable = USB_ENABLE;
+#else /* WITHUSBHWVBUSSENSE */
+	hpcd->Init.vbus_sensing_enable = USB_DISABLE;
+#endif /* WITHUSBHWVBUSSENSE */
+	hpcd->Init.use_dedicated_ep1 = USB_DISABLE;
+	hpcd->Init.use_external_vbus = USB_DISABLE;
+
+	if (HAL_PCD_Init(hpcd) != HAL_OK)
+	{
+		Error_Handler();
+	}
+
+#if CPUSTYLE_R7S721
+	usbd_pipes_initialize(hpcd);
+#elif CPUSTYLE_STM32H7XX
+	// У OTH_HS размер FIFO 4096 байт
+	usbd_fifo_initialize(hpcd, 4096, 1);
+#else /* CPUSTYLE_R7S721 */
+	// У OTH_FS размер FIFO 1280 байт
+	usbd_fifo_initialize(hpcd, 1280, 0);
+#endif /* CPUSTYLE_R7S721 */
+
+	return USBD_OK;
+}
+
+static USBD_StatusTypeDef  USBD_LL_HS_Init (PCD_HandleTypeDef * hpcd, USBD_HandleTypeDef *pdev)
+{
+	/* Link The driver to the stack */
+	hpcd->pData = pdev;
+	pdev->pData = hpcd;
+
+	hpcd->Instance = WITHUSBHW_DEVICE;
+
+#if CPUSTYLE_R7S721
+
+	#if WITHHIGHSPEEDDESC
+		hpcd->Init.speed = PCD_SPEED_HIGH;
+	#else /* WITHHIGHSPEEDDESC */
+		hpcd->Init.speed = PCD_SPEED_FULL;
+	#endif /* WITHHIGHSPEEDDESC */
+	hpcd->Init.phy_itface = USB_OTG_EMBEDDED_PHY;
+
+#else /* CPUSTYLE_R7S721 */
+
+	#if WITHHIGHSPEEDDESC
+		hpcd->Init.speed = PCD_SPEED_HIGH;
+	#else /* WITHUSBHWVBUSSENSE */
+		hpcd->Init.speed = PCD_SPEED_FULL;
+	#endif /* WITHHIGHSPEEDDESC */
+	#if WITHUSBHWHIGHSPEEDULPI
+		hpcd->Init.phy_itface = USB_OTG_ULPI_PHY;
+	#elif WITHUSBHWHIGHSPEEDPHYC
+		hpcd->Init.phy_itface = USB_OTG_HS_EMBEDDED_PHY;
+	#else /* WITHUSBHWHIGHSPEEDULPI */
+		hpcd->Init.phy_itface = USB_OTG_EMBEDDED_PHY;
+	#endif /* WITHUSBHWHIGHSPEEDULPI */
+
+#endif /* CPUSTYLE_R7S721 */
+
+	#if WITHUSBHWVBUSSENSE	/* используется предопределенный вывод VBUS_SENSE */
+		hpcd->Init.vbus_sensing_enable = USB_ENABLE;
+	#else /* WITHUSBHWVBUSSENSE */
+		hpcd->Init.vbus_sensing_enable = USB_DISABLE;
+	#endif /* WITHUSBHWVBUSSENSE */
+
+	hpcd->Init.dev_endpoints = 9;
+	hpcd->Init.dma_enable = ! USB_ENABLE; // xyz
+	hpcd->Init.ep0_mps = DEP0CTL_MPS_64;
+	hpcd->Init.Sof_enable = USB_DISABLE;
+	hpcd->Init.low_power_enable = USB_DISABLE;
+	hpcd->Init.lpm_enable = USB_DISABLE;
+	hpcd->Init.battery_charging_enable = USB_ENABLE;
+	hpcd->Init.use_dedicated_ep1 = ! USB_ENABLE; // xyz
+	hpcd->Init.use_external_vbus = USB_DISABLE;
+
+	if (HAL_PCD_Init(hpcd) != HAL_OK)
+	{
+		Error_Handler();
+	}
+
+#if CPUSTYLE_R7S721
+	usbd_pipes_initialize(hpcd);
+#else /* CPUSTYLE_R7S721 */
+	// У OTH_HS размер FIFO 4096 байт
+	usbd_fifo_initialize(hpcd, 4096, 1);
+#endif /* CPUSTYLE_R7S721 */
+
+	return USBD_OK;
+}
+
+/**
+  * @brief  De-Initializes the Low Level portion of the Device driver.
+  * @param  pdev: Device handle
+  * @retval USBD Status
+  */
+static USBD_StatusTypeDef  USBD_LL_DeInit (USBD_HandleTypeDef *pdev)
+{
+  HAL_PCD_DeInit((PCD_HandleTypeDef*)pdev->pData);
+  return USBD_OK;
+}
+
+/**
+* @brief  USBD_Init
+*         Initializes the device stack and load the class driver
+* @param  pdev: device instance
+* @param  pdesc: Descriptor structure address
+* @param  id: Low level core index
+* @retval None
+*/
+static USBD_StatusTypeDef USBD_HS_Init(PCD_HandleTypeDef * hpcd, USBD_HandleTypeDef *pdev)
+{
+	/* Check whether the USB Host handle is valid */
+	if(pdev == NULL)
+	{
+		//USBD_ErrLog("Invalid Device handle");
+		return USBD_FAIL;
+	}
+
+	pdev->nClasses = 0;
+	/* Set Device initial State */
+	pdev->dev_state  = USBD_STATE_DEFAULT;
+	/* Initialize low level driver */
+	USBD_LL_HS_Init(hpcd, pdev);
+
+	return USBD_OK;
+}
+
+static USBD_StatusTypeDef USBD_FS_Init(PCD_HandleTypeDef * hpcd, USBD_HandleTypeDef *pdev)
+{
+	/* Check whether the USB Host handle is valid */
+	if(pdev == NULL)
+	{
+	//USBD_ErrLog("Invalid Device handle");
+	return USBD_FAIL;
+	}
+
+	pdev->nClasses = 0;
+	/* Set Device initial State */
+	pdev->dev_state  = USBD_STATE_DEFAULT;
+	/* Initialize low level driver */
+	USBD_LL_FS_Init(hpcd, pdev);
+
+	return USBD_OK;
+}
+
+/**
+* @brief  USBD_Init
+*         Initializes the device stack and load the class driver
+* @param  pdev: device instance
+* @param  pdesc: Descriptor structure address
+* @param  id: Low level core index
+* @retval None
+*/
+static USBD_StatusTypeDef USBD_Init2(USBD_HandleTypeDef *pdev, uint_fast8_t ifhs)
+{
+  /* Check whether the USB Host handle is valid */
+  if(pdev == NULL)
+  {
+    //USBD_ErrLog("Invalid Device handle");
+    return USBD_FAIL;
+  }
+	pdev->nClasses = 0;
+
+
+  /* Set Device initial State */
+  pdev->dev_state  = USBD_STATE_DEFAULT;
+  //pdev->id = id;
+  /* Initialize low level driver */
+	/* Init Device Library,Add Supported Class and Start the library*/
+	if (ifhs != 0)
+	{
+		USBD_HS_Init(& hpcd_USB_OTG, pdev);
+	}
+	else
+	{
+		USBD_FS_Init(& hpcd_USB_OTG, pdev);
+	}
+
+  return USBD_OK;
+}
+
+/**
+* @brief  USBD_DeInit
+*         Re-Initialize th device library
+* @param  pdev: device instances
+* @retval status: status
+*/
+static USBD_StatusTypeDef USBD_DeInit(USBD_HandleTypeDef *pdev)
+{
+	uint_fast8_t di;
+	/* Set Default State */
+	pdev->dev_state  = USBD_STATE_DEFAULT;
+
+	/* Free Class Resources */
+	for (di = 0; di < pdev->nClasses; ++ di)
+	{
+		  /* for each device function */
+		  const USBD_ClassTypeDef * const pClass = pdev->pClasses [di];
+		  pClass->DeInit(pdev, pdev->dev_config [0]);
+	}
+
+	/* Stop the low level driver  */
+	USBD_LL_Stop(pdev);
+
+	/* Initialize low level driver */
+	USBD_LL_DeInit(pdev);
+
+	return USBD_OK;
+}
+
+/* вызывается при запрещённых прерываниях. */
+static void hardware_usbd_initialize(void)
+{
+	extern USBD_ClassTypeDef  USBD_CLASS_DFU;
+	#if WITHDEVONHIGHSPEED
+		const uint_fast8_t ifhs = 1;
+	#else /* WITHDEVONHIGHSPEED */
+		const uint_fast8_t ifhs = 0;
+	#endif /* WITHDEVONHIGHSPEED */
+
+#if WITHUSBUAC
+	uacout_buffer_initialize();
+#endif /* WITHUSBUAC */
+
+	USBD_Init2(& hUsbDevice, ifhs);
+	USBD_AddClass(& hUsbDevice, & USBD_CLASS_XXX);
+	//USBD_AddClass(& hUsbDevice, & USBD_CLASS_AUDIO);
+	//USBD_AddClass(& hUsbDevice, & USBD_CDC1);
+#if WITHUSBDFU
+	USBD_AddClass(& hUsbDevice, & USBD_CLASS_DFU);
+#endif /* WITHUSBDFU */
+}
+
+/* вызывается при запрещённых прерываниях. */
+static void board_usbd_initialize(void)
+{
+	#if WITHDEVONHIGHSPEED
+		const uint_fast8_t deschs = 1;
+	#else /* WITHDEVONHIGHSPEED */
+		const uint_fast8_t deschs = 0;
+	#endif /* WITHDEVONHIGHSPEED */
+
+	usbd_descriptors_initialize(deschs);
+	hardware_usbd_initialize();
+	hardware_usbd_dma_initialize();
+	hardware_usbd_dma_enable();
+}
+
+#if defined (WITHUSBHW_HOST)
+//++++ сюда переносим используемые хостом функции
+
+
+#if CPUSTYLE_STM32
+/**
+  * @brief  Initiate Do Ping protocol
+  * @param  USBx : Selected device
+  * @param  hc_num : Host Channel number
+  *         This parameter can be a value from 1 to 15
+  * @retval HAL state
+  */
+HAL_StatusTypeDef USB_DoPing(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t ch_num)
+{
+  uint8_t  num_packets = 1;
+  uint32_t tmpreg = 0;
+
+  USBx_HC(ch_num)->HCTSIZ = ((num_packets << USB_OTG_HCTSIZ_PKTCNT_Pos) & USB_OTG_HCTSIZ_PKTCNT) |
+                                USB_OTG_HCTSIZ_DOPING;
+
+  /* Set host channel enable */
+  tmpreg = USBx_HC(ch_num)->HCCHAR;
+  tmpreg &= ~USB_OTG_HCCHAR_CHDIS;
+  tmpreg |= USB_OTG_HCCHAR_CHENA;
+  USBx_HC(ch_num)->HCCHAR = tmpreg;
+
+  return HAL_OK;
+}
+
+/**
+  * @brief  Stop Host Core
+  * @param  USBx : Selected device
+  * @retval HAL state
+  */
+HAL_StatusTypeDef USB_StopHost(USB_OTG_GlobalTypeDef *USBx)
+{
+  uint8_t i;
+  uint32_t count = 0;
+  uint32_t value;
+
+  USB_DisableGlobalInt(USBx);
+
+    /* Flush FIFO */
+  USB_FlushTxFifoAll(USBx);
+  USB_FlushRxFifo(USBx);
+
+  /* Flush out any leftover queued requests. */
+  for (i = 0; i <= 15; i++)
+  {
+
+    value = USBx_HC(i)->HCCHAR ;
+    value |=  USB_OTG_HCCHAR_CHDIS;
+    value &= ~USB_OTG_HCCHAR_CHENA;
+    value &= ~USB_OTG_HCCHAR_EPDIR;
+    USBx_HC(i)->HCCHAR = value;
+  }
+
+  /* Halt all channels to put them into a known state. */
+  for (i = 0; i <= 15; i++)
+  {
+
+    value = USBx_HC(i)->HCCHAR ;
+
+    value |= USB_OTG_HCCHAR_CHDIS;
+    value |= USB_OTG_HCCHAR_CHENA;
+    value &= ~USB_OTG_HCCHAR_EPDIR;
+
+    USBx_HC(i)->HCCHAR = value;
+    do
+    {
+      if (++count > 1000)
+      {
+        break;
+      }
+    }
+    while ((USBx_HC(i)->HCCHAR & USB_OTG_HCCHAR_CHENA) == USB_OTG_HCCHAR_CHENA);
+  }
+
+  /* Clear any pending Host interrupts */
+  USBx_HOST->HAINT = 0xFFFFFFFF;
+  USBx->GINTSTS = 0xFFFFFFFF;
+
+  USB_EnableGlobalInt(USBx);
+  return HAL_OK;
+}
+
+#endif /* CPUSTYLE_STM32 */
+
+/**
+  * @brief  Start the host driver
+  * @param  hhcd: HCD handle
+  * @retval HAL status
+  */
+HAL_StatusTypeDef HAL_HCD_Start(HCD_HandleTypeDef *hhcd)
+{
+  __HAL_LOCK(hhcd);
+  __HAL_HCD_ENABLE(hhcd);
+  USB_DriveVbus(hhcd->Instance, 1);
+  __HAL_UNLOCK(hhcd);
+  return HAL_OK;
+}
+
+/**
+  * @brief  Stop the host driver
+  * @param  hhcd: HCD handle
+  * @retval HAL status
+  */
+
+HAL_StatusTypeDef HAL_HCD_Stop(HCD_HandleTypeDef *hhcd)
+{
+  __HAL_LOCK(hhcd);
+  USB_StopHost(hhcd->Instance);
+  __HAL_UNLOCK(hhcd);
+  return HAL_OK;
+}
+
+/**
+  * @brief  Reset the host port
+  * @param  hhcd: HCD handle
+  * @retval HAL status
+  */
+HAL_StatusTypeDef HAL_HCD_ResetPort(HCD_HandleTypeDef *hhcd)
+{
+  return (USB_ResetPort(hhcd->Instance));
+}
+
+/**
+  * @brief  Return the HCD state
+  * @param  hhcd: HCD handle
+  * @retval HAL state
+  */
+HCD_StateTypeDef HAL_HCD_GetState(HCD_HandleTypeDef *hhcd)
+{
+  return hhcd->State;
+}
+
+
+/**
+  * @brief  Return the Host enumeration speed
+  * @param  hhcd: HCD handle
+  * @retval Enumeration speed
+  */
+uint32_t HAL_HCD_GetCurrentSpeed(HCD_HandleTypeDef *hhcd)
+{
+  return (USB_GetHostSpeed(hhcd->Instance));
+}
+
+/**
+  * @brief  USBH_LL_Start
+  *         Start the Low Level portion of the Host driver.
+  * @param  phost: Host handle
+  * @retval USBH Status
+  */
+USBH_StatusTypeDef  USBH_LL_Start(USBH_HandleTypeDef *phost)
+{
+  HAL_StatusTypeDef hal_status = HAL_OK;
+  USBH_StatusTypeDef usb_status = USBH_OK;
+
+  hal_status = HAL_HCD_Start(phost->pData);
+
+  switch (hal_status) {
+    case HAL_OK :
+      usb_status = USBH_OK;
+    break;
+    case HAL_ERROR :
+      usb_status = USBH_FAIL;
+    break;
+    case HAL_BUSY :
+      usb_status = USBH_BUSY;
+    break;
+    case HAL_TIMEOUT :
+      usb_status = USBH_FAIL;
+    break;
+    default :
+      usb_status = USBH_FAIL;
+    break;
+  }
+  return usb_status;
+}
+
+/**
+  * @brief  USBH_LL_Stop
+  *         Stop the Low Level portion of the Host driver.
+  * @param  phost: Host handle
+  * @retval USBH Status
+  */
+USBH_StatusTypeDef  USBH_LL_Stop (USBH_HandleTypeDef *phost)
+{
+  HAL_StatusTypeDef hal_status = HAL_OK;
+  USBH_StatusTypeDef usb_status = USBH_OK;
+
+  hal_status = HAL_HCD_Stop(phost->pData);
+
+  switch (hal_status) {
+    case HAL_OK :
+      usb_status = USBH_OK;
+    break;
+    case HAL_ERROR :
+      usb_status = USBH_FAIL;
+    break;
+    case HAL_BUSY :
+      usb_status = USBH_BUSY;
+    break;
+    case HAL_TIMEOUT :
+      usb_status = USBH_FAIL;
+    break;
+    default :
+      usb_status = USBH_FAIL;
+    break;
+  }
+  return usb_status;
+}
+
+/**
+  * @brief  USBH_LL_GetSpeed
+  *         Return the USB Host Speed from the Low Level Driver.
+  * @param  phost: Host handle
+  * @retval USBH Speeds
+  */
+USBH_SpeedTypeDef USBH_LL_GetSpeed  (USBH_HandleTypeDef *phost)
+{
+  USBH_SpeedTypeDef speed = USBH_SPEED_FULL;
+
+  switch (HAL_HCD_GetCurrentSpeed(phost->pData))
+  {
+  case 0 :
+    speed = USBH_SPEED_HIGH;
+    break;
+
+  case 1 :
+    speed = USBH_SPEED_FULL;
+    break;
+
+  case 2 :
+    speed = USBH_SPEED_LOW;
+    break;
+
+  default:
+   speed = USBH_SPEED_FULL;
+    break;
+  }
+  return  speed;
+}
+
+/**
+  * @brief  USBH_LL_ResetPort
+  *         Reset the Host Port of the Low Level Driver.
+  * @param  phost: Host handle
+  * @retval USBH Status
+  */
+USBH_StatusTypeDef USBH_LL_ResetPort (USBH_HandleTypeDef *phost)
+{
+  HAL_StatusTypeDef hal_status = HAL_OK;
+  USBH_StatusTypeDef usb_status = USBH_OK;
+
+  hal_status = HAL_HCD_ResetPort(phost->pData);
+  switch (hal_status) {
+    case HAL_OK :
+      usb_status = USBH_OK;
+    break;
+    case HAL_ERROR :
+      usb_status = USBH_FAIL;
+    break;
+    case HAL_BUSY :
+      usb_status = USBH_BUSY;
+    break;
+    case HAL_TIMEOUT :
+      usb_status = USBH_FAIL;
+    break;
+    default :
+      usb_status = USBH_FAIL;
+    break;
+  }
+  return usb_status;
+}
+
+/**
+  * @brief  USBH_LL_DriverVBUS
+  *         Drive VBUS.
+  * @param  phost: Host handle
+  * @param  state : VBUS state
+  *          This parameter can be one of the these values:
+  *           1 : VBUS Active
+  *           0 : VBUS Inactive
+  * @retval Status
+  */
+USBH_StatusTypeDef  USBH_LL_DriverVBUS(USBH_HandleTypeDef *phost, uint_fast8_t state)
+{
+	//PRINTF(PSTR("USBH_LL_DriverVBUS(%d), phost->id=%d, HOST_FS=%d\n"), (int) state, (int) phost->id, (int) HOST_FS);
+	if (phost->id == HOST_FS) // compare to WITHUSBHW_HOST
+	{
+		if (state != USB_FALSE)
+		{
+			/* Drive high Charge pump */
+			/* ToDo: Add IOE driver control */
+			board_set_usbflashpoweron(1);
+			board_update();
+		}
+		else
+		{
+			/* Drive low Charge pump */
+			/* ToDo: Add IOE driver control */
+			board_set_usbflashpoweron(0);
+			board_update();
+		}
+	}
+	HAL_Delay(200);
+	return USBH_OK;
+}
+
+#if CPUSTYLE_STM32
 
 /**
   * @brief  Initializes the PCD MSP.
   * @param  hpcd: PCD handle
   * @retval None
   */
-// Сейчас все действия по подключению к выводам и прерываниям делаются в hardware_usbd_initialize.
 void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
 {
-#if CPUSTYLE_R7S721
+#if CPUSTYLE_STM32H7XX
 
-	if (hpcd->Instance == & USB200)
-	{
-		const IRQn_ID_t int_id = USBI0_IRQn;
-		IRQ_SetHandler(int_id, r7s721_usbi0_device_handler);
-		IRQ_SetPriority(int_id, ARM_SYSTEM_PRIORITY);
-		IRQ_Enable(int_id);
-
-		/* ---- Supply clock to the USB20(channel 0) ---- */
-		CPG.STBCR7 &= ~ CPG_STBCR7_MSTP71;	// Module Stop 71 0: Channel 0 of the USB 2.0 host/function module runs.
-		(void) CPG.STBCR7;			/* Dummy read */
-
-		HARDWARE_USB0_INITIALIZE();
-
-	}
-	else if (hpcd->Instance == & USB201)
-	{
-		const IRQn_ID_t int_id = USBI1_IRQn;
-		IRQ_SetHandler(int_id, r7s721_usbi1_device_handler);
-		IRQ_SetPriority(int_id, ARM_SYSTEM_PRIORITY);
-		IRQ_Enable(int_id);
-
-		/* ---- Supply clock to the USB20(channel 1) ---- */
-		CPG.STBCR7 &= ~ CPG_STBCR7_MSTP70;	// Module Stop 70 0: Channel 1 of the USB 2.0 host/function module runs.
-		CPG.STBCR7 &= ~ CPG_STBCR7_MSTP71;	// Module Stop 71 0: Channel 0 of the USB 2.0 host/function module runs.
-		(void) CPG.STBCR7;			/* Dummy read */
-
-		HARDWARE_USB1_INITIALIZE();
-	}
-
-	hpcd->Instance->SUSPMODE &= ~ USB_SUSPMODE_SUSPM;	// SUSPM 0: The clock supplied to this module is stopped.
-
-
-	SYSCFG0_0 = 0;
-	SYSCFG0_0 = 
-		1 * USB_SYSCFG_UPLLE |	// UPLLE 1: Enables operation of the internal PLL.
-		1 * USB_SYSCFG_UCKSEL |	// UCKSEL 1: The 12-MHz EXTAL clock is selected.
-		0;
-	HARDWARE_DELAY_MS(2);	// required 1 ms delay - see R01UH0437EJ0200 Rev.2.00 28.4.1 System Control and Oscillation Control
-
-	hpcd->Instance->SUSPMODE |= USB_SUSPMODE_SUSPM;	// SUSPM 1: The clock supplied to this module is enabled.
-
-
-	//hpcd->Instance->CFIFOSEL = 0;	// не помогает с первым чтением из DCP
-	//hpcd->Instance->CFIFOCTR = USB_CFIFOCTR_BCLR;	// BCLR
-
-	hpcd->Instance->SOFCFG = 
-		//USB_SOFCFG_BRDYM |	// BRDYM
-		0;
-
-	hpcd->Instance->SYSCFG0 |= USB_SYSCFG_USBE;	// USBE 1: USB module operation is enabled.
-
-	if (hpcd->Init.speed == USBD_SPEED_HIGH)
-	{
-		hpcd->Instance->SYSCFG0 |= 
-			1 * USB_SYSCFG_HSE |	// HSE
-			0;
-	}
-
-	//usbd_pipes_initialize(& USB200);
-
-	hpcd->Instance->INTENB0 = 
-		//1 * USB_INTENB0_SOFE |	// SOFE	1: Frame Number Update Interrupt Enable
-		1 * USB_INTENB0_DVSE |	// DVSE
-		//1 * USB_INTENB0_VBSE |	// VBSE
-		1 * USB_INTENB0_CTRE |	// CTRE
-		1 * USB_INTENB0_BEMPE |	// BEMPE
-		1 * USB_INTENB0_NRDYE |	// NRDYE
-		1 * USB_INTENB0_BRDYE |	// BRDYE
-		1 * USB_INTENB0_RSME |	// RSME
-		0;
-
-#elif CPUSTYLE_STM32H7XX
-
-	//PWR->CR3 |= PWR_CR3_USBREGEN;	
+	//PWR->CR3 |= PWR_CR3_USBREGEN;
 
 	//while ((PWR->CR3 & PWR_CR3_USB33RDY) == 0)
 	//	;
-	//PWR->CR3 |= PWR_CR3_USBREGEN;	
+	//PWR->CR3 |= PWR_CR3_USBREGEN;
 	//while ((PWR->CR3 & PWR_CR3_USB33RDY) == 0)
 	//	;
-	PWR->CR3 |= PWR_CR3_USB33DEN;	
+	PWR->CR3 |= PWR_CR3_USB33DEN;
 
 	if (hpcd->Instance == USB1_OTG_HS)	// legacy name is USB_OTG_HS
 	{
@@ -14813,7 +15622,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
 		(void) RCC->AHB2ENR;
 		RCC->AHB2ENR |= RCC_AHB2ENR_D2SRAM3EN;
 		(void) RCC->AHB2ENR;
-	
+
 
 		if (hpcd->Init.use_dedicated_ep1 == USB_ENABLE)
 		{
@@ -14946,649 +15755,6 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
 #endif
 }
 
-/**
-  * @brief  DeInitializes PCD MSP.
-  * @param  hpcd: PCD handle
-  * @retval None
-  */
-void HAL_PCD_MspDeInit(PCD_HandleTypeDef *hpcd)
-{
-  /* Prevent unused argument(s) compilation warning */
-  UNUSED(hpcd);
-  
-  /* NOTE : This function Should not be modified, when the callback is needed,
-            the HAL_PCD_MspDeInit could be implemented in the user file
-   */
-}
-
-
-/**
-  * @brief  Initializes the Low Level portion of the Device driver.
-  * @param  pdev: Device handle
-  * @retval USBD Status
-  */
-static USBD_StatusTypeDef  USBD_LL_FS_Init (PCD_HandleTypeDef * hpcd, USBD_HandleTypeDef *pdev)
-{ 
-	/* Link The driver to the stack */	
-	hpcd->pData = pdev;
-	pdev->pData = hpcd; 
-
-	hpcd->Instance = WITHUSBHW_DEVICE;
-
-#if CPUSTYLE_R7S721
-	#if WITHHIGHSPEEDDESC && WITHDEVONHIGHSPEED
-		hpcd->Init.speed = PCD_SPEED_HIGH;
-	#else /* WITHHIGHSPEEDDESC && WITHDEVONHIGHSPEED */
-		hpcd->Init.speed = PCD_SPEED_FULL;
-	#endif /* WITHHIGHSPEEDDESC && WITHDEVONHIGHSPEED */
-#else /* CPUSTYLE_R7S721 */
-	hpcd->Init.speed = PCD_SPEED_FULL;
-#endif /* CPUSTYLE_R7S721 */
-
-	hpcd->Init.dev_endpoints = 6;
-	hpcd->Init.dma_enable = USB_DISABLE;
-	hpcd->Init.ep0_mps = DEP0CTL_MPS_64;
-	hpcd->Init.phy_itface = PCD_PHY_EMBEDDED;
-	hpcd->Init.Sof_enable = USB_DISABLE;
-	hpcd->Init.low_power_enable = USB_DISABLE;
-	hpcd->Init.lpm_enable = USB_DISABLE;
-	hpcd->Init.battery_charging_enable = USB_ENABLE;
-#if WITHUSBHWVBUSSENSE	/* используется предопределенный вывод VBUS_SENSE */
-	hpcd->Init.vbus_sensing_enable = USB_ENABLE;
-#else /* WITHUSBHWVBUSSENSE */
-	hpcd->Init.vbus_sensing_enable = USB_DISABLE;
-#endif /* WITHUSBHWVBUSSENSE */
-	hpcd->Init.use_dedicated_ep1 = USB_DISABLE;
-	hpcd->Init.use_external_vbus = USB_DISABLE;
-
-	if (HAL_PCD_Init(hpcd) != HAL_OK)
-	{
-		Error_Handler();
-	}
-
-#if CPUSTYLE_R7S721
-	usbd_pipes_initialize(hpcd);
-#elif CPUSTYLE_STM32H7XX
-	// У OTH_HS размер FIFO 4096 байт
-	usbd_fifo_initialize(hpcd, 4096, 1);
-#else /* CPUSTYLE_R7S721 */
-	// У OTH_FS размер FIFO 1280 байт
-	usbd_fifo_initialize(hpcd, 1280, 0);
-#endif /* CPUSTYLE_R7S721 */
-
-	return USBD_OK;
-}
-
-static USBD_StatusTypeDef  USBD_LL_HS_Init (PCD_HandleTypeDef * hpcd, USBD_HandleTypeDef *pdev)
-{ 
-	/* Link The driver to the stack */
-	hpcd->pData = pdev;
-	pdev->pData = hpcd;
-
-	hpcd->Instance = WITHUSBHW_DEVICE;
-
-#if CPUSTYLE_R7S721
-
-	#if WITHHIGHSPEEDDESC
-		hpcd->Init.speed = PCD_SPEED_HIGH;
-	#else /* WITHHIGHSPEEDDESC */
-		hpcd->Init.speed = PCD_SPEED_FULL;
-	#endif /* WITHHIGHSPEEDDESC */
-	hpcd->Init.phy_itface = USB_OTG_EMBEDDED_PHY;
-
-#else /* CPUSTYLE_R7S721 */
-
-	#if WITHHIGHSPEEDDESC
-		hpcd->Init.speed = PCD_SPEED_HIGH;
-	#else /* WITHUSBHWVBUSSENSE */
-		hpcd->Init.speed = PCD_SPEED_FULL;
-	#endif /* WITHHIGHSPEEDDESC */
-	#if WITHUSBHWHIGHSPEEDULPI
-		hpcd->Init.phy_itface = USB_OTG_ULPI_PHY;
-	#elif WITHUSBHWHIGHSPEEDPHYC
-		hpcd->Init.phy_itface = USB_OTG_HS_EMBEDDED_PHY;
-	#else /* WITHUSBHWHIGHSPEEDULPI */
-		hpcd->Init.phy_itface = USB_OTG_EMBEDDED_PHY;
-	#endif /* WITHUSBHWHIGHSPEEDULPI */
-
-#endif /* CPUSTYLE_R7S721 */
-
-	#if WITHUSBHWVBUSSENSE	/* используется предопределенный вывод VBUS_SENSE */
-		hpcd->Init.vbus_sensing_enable = USB_ENABLE;
-	#else /* WITHUSBHWVBUSSENSE */
-		hpcd->Init.vbus_sensing_enable = USB_DISABLE;
-	#endif /* WITHUSBHWVBUSSENSE */
-
-	hpcd->Init.dev_endpoints = 9;
-	hpcd->Init.dma_enable = ! USB_ENABLE; // xyz
-	hpcd->Init.ep0_mps = DEP0CTL_MPS_64;
-	hpcd->Init.Sof_enable = USB_DISABLE;
-	hpcd->Init.low_power_enable = USB_DISABLE;
-	hpcd->Init.lpm_enable = USB_DISABLE;
-	hpcd->Init.battery_charging_enable = USB_ENABLE;
-	hpcd->Init.use_dedicated_ep1 = ! USB_ENABLE; // xyz
-	hpcd->Init.use_external_vbus = USB_DISABLE;
-
-	if (HAL_PCD_Init(hpcd) != HAL_OK)
-	{
-		Error_Handler();
-	}
-
-#if CPUSTYLE_R7S721
-	usbd_pipes_initialize(hpcd);
-#else /* CPUSTYLE_R7S721 */
-	// У OTH_HS размер FIFO 4096 байт
-	usbd_fifo_initialize(hpcd, 4096, 1);
-#endif /* CPUSTYLE_R7S721 */
-
-	return USBD_OK;
-}
-
-/**
-  * @brief  De-Initializes the Low Level portion of the Device driver.
-  * @param  pdev: Device handle
-  * @retval USBD Status
-  */
-static USBD_StatusTypeDef  USBD_LL_DeInit (USBD_HandleTypeDef *pdev)
-{
-  HAL_PCD_DeInit((PCD_HandleTypeDef*)pdev->pData);
-  return USBD_OK;
-}
-
-/**
-* @brief  USBD_Init
-*         Initializes the device stack and load the class driver
-* @param  pdev: device instance
-* @param  pdesc: Descriptor structure address
-* @param  id: Low level core index
-* @retval None
-*/
-static USBD_StatusTypeDef USBD_HS_Init(PCD_HandleTypeDef * hpcd, USBD_HandleTypeDef *pdev)
-{
-	/* Check whether the USB Host handle is valid */
-	if(pdev == NULL)
-	{
-		//USBD_ErrLog("Invalid Device handle");
-		return USBD_FAIL;
-	}
-
-	pdev->nClasses = 0;
-	/* Set Device initial State */
-	pdev->dev_state  = USBD_STATE_DEFAULT;
-	/* Initialize low level driver */
-	USBD_LL_HS_Init(hpcd, pdev);
-
-	return USBD_OK;
-}
-
-
-static USBD_StatusTypeDef USBD_FS_Init(PCD_HandleTypeDef * hpcd, USBD_HandleTypeDef *pdev)
-{
-	/* Check whether the USB Host handle is valid */
-	if(pdev == NULL)
-	{
-	//USBD_ErrLog("Invalid Device handle");
-	return USBD_FAIL;
-	}
-
-	pdev->nClasses = 0;
-	/* Set Device initial State */
-	pdev->dev_state  = USBD_STATE_DEFAULT;
-	/* Initialize low level driver */
-	USBD_LL_FS_Init(hpcd, pdev);
-
-	return USBD_OK;
-}
-
-/**
-* @brief  USBD_Init
-*         Initializes the device stack and load the class driver
-* @param  pdev: device instance
-* @param  pdesc: Descriptor structure address
-* @param  id: Low level core index
-* @retval None
-*/
-static USBD_StatusTypeDef USBD_Init2(USBD_HandleTypeDef *pdev, uint_fast8_t ifhs)
-{
-  /* Check whether the USB Host handle is valid */
-  if(pdev == NULL)
-  {
-    //USBD_ErrLog("Invalid Device handle");
-    return USBD_FAIL;
-  }
-	pdev->nClasses = 0;
-
-
-  /* Set Device initial State */
-  pdev->dev_state  = USBD_STATE_DEFAULT;
-  //pdev->id = id;
-  /* Initialize low level driver */
-	/* Init Device Library,Add Supported Class and Start the library*/
-	if (ifhs != 0)
-	{
-		USBD_HS_Init(& hpcd_USB_OTG, pdev);
-	}
-	else
-	{
-		USBD_FS_Init(& hpcd_USB_OTG, pdev);
-	}
-
-  return USBD_OK;
-}
-
-/**
-* @brief  USBD_DeInit 
-*         Re-Initialize th device library
-* @param  pdev: device instances
-* @retval status: status
-*/
-static USBD_StatusTypeDef USBD_DeInit(USBD_HandleTypeDef *pdev)
-{
-	uint_fast8_t di;
-	/* Set Default State */
-	pdev->dev_state  = USBD_STATE_DEFAULT;
-
-	/* Free Class Resources */
-	for (di = 0; di < pdev->nClasses; ++ di)
-	{
-		  /* for each device function */
-		  const USBD_ClassTypeDef * const pClass = pdev->pClasses [di];
-		  pClass->DeInit(pdev, pdev->dev_config [0]);
-	}
-
-	/* Stop the low level driver  */
-	USBD_LL_Stop(pdev); 
-
-	/* Initialize low level driver */
-	USBD_LL_DeInit(pdev);
-
-	return USBD_OK;
-}
-
-/* вызывается при запрещённых прерываниях. */
-static void hardware_usbd_initialize(void)
-{
-	extern USBD_ClassTypeDef  USBD_CLASS_DFU;
-	#if WITHDEVONHIGHSPEED
-		const uint_fast8_t ifhs = 1;
-	#else /* WITHDEVONHIGHSPEED */
-		const uint_fast8_t ifhs = 0;
-	#endif /* WITHDEVONHIGHSPEED */
-
-#if WITHUSBUAC
-	uacout_buffer_initialize();
-#endif /* WITHUSBUAC */
-
-	USBD_Init2(& hUsbDevice, ifhs);
-	USBD_AddClass(& hUsbDevice, & USBD_CLASS_XXX);
-	//USBD_AddClass(& hUsbDevice, & USBD_CLASS_AUDIO);
-	//USBD_AddClass(& hUsbDevice, & USBD_CDC1);
-#if WITHUSBDFU
-	USBD_AddClass(& hUsbDevice, & USBD_CLASS_DFU);
-#endif /* WITHUSBDFU */
-}
-
-/* вызывается при запрещённых прерываниях. */
-static void board_usbd_initialize(void)
-{
-	#if WITHDEVONHIGHSPEED
-		const uint_fast8_t ifhs = 1;
-	#else /* WITHDEVONHIGHSPEED */
-		const uint_fast8_t ifhs = 0;
-	#endif /* WITHDEVONHIGHSPEED */
-
-	#if ITHUSBHWHIGHSPEED && WITHHIGHSPEEDDESC
-		const uint_fast8_t deschs = 1;
-	#else /* ITHUSBHWHIGHSPEED && WITHHIGHSPEEDDESC */
-		const uint_fast8_t deschs = 0;
-	#endif /* ITHUSBHWHIGHSPEED && WITHHIGHSPEEDDESC */
-
-	usbd_descriptors_initialize(deschs && ifhs);
-	hardware_usbd_initialize();
-	hardware_usbd_dma_initialize();
-	hardware_usbd_dma_enable();
-}
-
-/* вызывается при разрешённых прерываниях. */
-static void board_usbd_activate(void)
-{
-	//PRINTF(PSTR("board_usbd_activate.\n"));
-
-	USBD_Start(& hUsbDevice);
-
-	//PRINTF(PSTR("board_usbd_activate done.\n"));
-}
-/* вызывается при разрешённых прерываниях. */
-static void board_usbd_deactivate(void)
-{
-  USBD_Stop(&hUsbDevice);
-}
-
-#if defined (WITHUSBHW_HOST)
-//++++ сюда переносим используемые хостом функции
-
-
-#if CPUSTYLE_STM32
-/**
-  * @brief  Initiate Do Ping protocol
-  * @param  USBx : Selected device
-  * @param  hc_num : Host Channel number
-  *         This parameter can be a value from 1 to 15
-  * @retval HAL state
-  */
-HAL_StatusTypeDef USB_DoPing(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t ch_num)
-{
-  uint8_t  num_packets = 1;
-  uint32_t tmpreg = 0;
-
-  USBx_HC(ch_num)->HCTSIZ = ((num_packets << USB_OTG_HCTSIZ_PKTCNT_Pos) & USB_OTG_HCTSIZ_PKTCNT) |
-                                USB_OTG_HCTSIZ_DOPING;
-  
-  /* Set host channel enable */
-  tmpreg = USBx_HC(ch_num)->HCCHAR;
-  tmpreg &= ~USB_OTG_HCCHAR_CHDIS;
-  tmpreg |= USB_OTG_HCCHAR_CHENA;
-  USBx_HC(ch_num)->HCCHAR = tmpreg;
-  
-  return HAL_OK;  
-}
-
-/**
-  * @brief  Stop Host Core
-  * @param  USBx : Selected device
-  * @retval HAL state
-  */
-HAL_StatusTypeDef USB_StopHost(USB_OTG_GlobalTypeDef *USBx)
-{
-  uint8_t i;
-  uint32_t count = 0;
-  uint32_t value;
-  
-  USB_DisableGlobalInt(USBx);
-  
-    /* Flush FIFO */
-  USB_FlushTxFifoAll(USBx);
-  USB_FlushRxFifo(USBx);
- 
-  /* Flush out any leftover queued requests. */
-  for (i = 0; i <= 15; i++)
-  {   
-
-    value = USBx_HC(i)->HCCHAR ;
-    value |=  USB_OTG_HCCHAR_CHDIS;
-    value &= ~USB_OTG_HCCHAR_CHENA;  
-    value &= ~USB_OTG_HCCHAR_EPDIR;
-    USBx_HC(i)->HCCHAR = value;
-  }
-  
-  /* Halt all channels to put them into a known state. */  
-  for (i = 0; i <= 15; i++)
-  {   
-
-    value = USBx_HC(i)->HCCHAR ;
-    
-    value |= USB_OTG_HCCHAR_CHDIS;
-    value |= USB_OTG_HCCHAR_CHENA;  
-    value &= ~USB_OTG_HCCHAR_EPDIR;
-    
-    USBx_HC(i)->HCCHAR = value;
-    do 
-    {
-      if (++count > 1000) 
-      {
-        break;
-      }
-    } 
-    while ((USBx_HC(i)->HCCHAR & USB_OTG_HCCHAR_CHENA) == USB_OTG_HCCHAR_CHENA);
-  }
-
-  /* Clear any pending Host interrupts */
-  USBx_HOST->HAINT = 0xFFFFFFFF;
-  USBx->GINTSTS = 0xFFFFFFFF;
-
-  USB_EnableGlobalInt(USBx);
-  return HAL_OK;  
-}
-
-#endif /* CPUSTYLE_STM32 */
-
-/**
-  * @brief  Start the host driver
-  * @param  hhcd: HCD handle
-  * @retval HAL status
-  */
-HAL_StatusTypeDef HAL_HCD_Start(HCD_HandleTypeDef *hhcd)
-{ 
-  __HAL_LOCK(hhcd); 
-  __HAL_HCD_ENABLE(hhcd);
-  USB_DriveVbus(hhcd->Instance, 1);  
-  __HAL_UNLOCK(hhcd); 
-  return HAL_OK;
-}
-
-/**
-  * @brief  Stop the host driver
-  * @param  hhcd: HCD handle
-  * @retval HAL status
-  */
-
-HAL_StatusTypeDef HAL_HCD_Stop(HCD_HandleTypeDef *hhcd)
-{ 
-  __HAL_LOCK(hhcd); 
-  USB_StopHost(hhcd->Instance);
-  __HAL_UNLOCK(hhcd); 
-  return HAL_OK;
-}
-
-/**
-  * @brief  Reset the host port
-  * @param  hhcd: HCD handle
-  * @retval HAL status
-  */
-HAL_StatusTypeDef HAL_HCD_ResetPort(HCD_HandleTypeDef *hhcd)
-{
-  return (USB_ResetPort(hhcd->Instance));
-}
-
-/**
-  * @brief  Return the HCD state
-  * @param  hhcd: HCD handle
-  * @retval HAL state
-  */
-HCD_StateTypeDef HAL_HCD_GetState(HCD_HandleTypeDef *hhcd)
-{
-  return hhcd->State;
-}
-
-
-/**
-  * @brief  Return the Host enumeration speed
-  * @param  hhcd: HCD handle
-  * @retval Enumeration speed
-  */
-uint32_t HAL_HCD_GetCurrentSpeed(HCD_HandleTypeDef *hhcd)
-{
-  return (USB_GetHostSpeed(hhcd->Instance));
-}
-
-/**
-  * @brief  USBH_LL_Start 
-  *         Start the Low Level portion of the Host driver.
-  * @param  phost: Host handle
-  * @retval USBH Status
-  */
-USBH_StatusTypeDef  USBH_LL_Start(USBH_HandleTypeDef *phost)
-{
-  HAL_StatusTypeDef hal_status = HAL_OK;
-  USBH_StatusTypeDef usb_status = USBH_OK;
- 
-  hal_status = HAL_HCD_Start(phost->pData);
-  
-  switch (hal_status) {
-    case HAL_OK :
-      usb_status = USBH_OK;
-    break;
-    case HAL_ERROR :
-      usb_status = USBH_FAIL;
-    break;
-    case HAL_BUSY :
-      usb_status = USBH_BUSY;
-    break;
-    case HAL_TIMEOUT :
-      usb_status = USBH_FAIL;
-    break;
-    default :
-      usb_status = USBH_FAIL;
-    break;
-  }
-  return usb_status; 
-}
-
-/**
-  * @brief  USBH_LL_Stop 
-  *         Stop the Low Level portion of the Host driver.
-  * @param  phost: Host handle
-  * @retval USBH Status
-  */
-USBH_StatusTypeDef  USBH_LL_Stop (USBH_HandleTypeDef *phost)
-{
-  HAL_StatusTypeDef hal_status = HAL_OK;
-  USBH_StatusTypeDef usb_status = USBH_OK;
- 
-  hal_status = HAL_HCD_Stop(phost->pData);
-  
-  switch (hal_status) {
-    case HAL_OK :
-      usb_status = USBH_OK;
-    break;
-    case HAL_ERROR :
-      usb_status = USBH_FAIL;
-    break;
-    case HAL_BUSY :
-      usb_status = USBH_BUSY;
-    break;
-    case HAL_TIMEOUT :
-      usb_status = USBH_FAIL;
-    break;
-    default :
-      usb_status = USBH_FAIL;
-    break;
-  }
-  return usb_status;  
-}
-
-/**
-  * @brief  USBH_LL_GetSpeed 
-  *         Return the USB Host Speed from the Low Level Driver.
-  * @param  phost: Host handle
-  * @retval USBH Speeds
-  */
-USBH_SpeedTypeDef USBH_LL_GetSpeed  (USBH_HandleTypeDef *phost)
-{
-  USBH_SpeedTypeDef speed = USBH_SPEED_FULL;
-    
-  switch (HAL_HCD_GetCurrentSpeed(phost->pData))
-  {
-  case 0 : 
-    speed = USBH_SPEED_HIGH;
-    break;
-    
-  case 1 : 
-    speed = USBH_SPEED_FULL;    
-    break;
-    
-  case 2 : 
-    speed = USBH_SPEED_LOW;    
-    break;
-	
-  default:  
-   speed = USBH_SPEED_FULL;    
-    break;  
-  }
-  return  speed;
-}
-
-/**
-  * @brief  USBH_LL_ResetPort 
-  *         Reset the Host Port of the Low Level Driver.
-  * @param  phost: Host handle
-  * @retval USBH Status
-  */
-USBH_StatusTypeDef USBH_LL_ResetPort (USBH_HandleTypeDef *phost) 
-{
-  HAL_StatusTypeDef hal_status = HAL_OK;
-  USBH_StatusTypeDef usb_status = USBH_OK;
- 
-  hal_status = HAL_HCD_ResetPort(phost->pData);
-  switch (hal_status) {
-    case HAL_OK :
-      usb_status = USBH_OK;
-    break;
-    case HAL_ERROR :
-      usb_status = USBH_FAIL;
-    break;
-    case HAL_BUSY :
-      usb_status = USBH_BUSY;
-    break;
-    case HAL_TIMEOUT :
-      usb_status = USBH_FAIL;
-    break;
-    default :
-      usb_status = USBH_FAIL;
-    break;
-  }
-  return usb_status;  
-}
-
-/**
-  * @brief  USBH_LL_DriverVBUS 
-  *         Drive VBUS.
-  * @param  phost: Host handle
-  * @param  state : VBUS state
-  *          This parameter can be one of the these values:
-  *           0 : VBUS Active 
-  *           1 : VBUS Inactive
-  * @retval Status
-  */
-USBH_StatusTypeDef  USBH_LL_DriverVBUS(USBH_HandleTypeDef *phost, uint8_t state)
-{ 
-	//PRINTF(PSTR("USBH_LL_DriverVBUS(%d)\n"), state);
-	/* USER CODE BEGIN 0 */
-	/* USER CODE END 0*/     
-	if (phost->id == HOST_FS) // compare to WITHUSBHW_HOST
-	{ 
-		if (state != 0)
-		{   
-			/* Drive high Charge pump */
-			/* ToDo: Add IOE driver control */	   
-			/* USER CODE BEGIN DRIVE_HIGH_CHARGE_FOR_FS */
-			board_set_usbflashpoweron(1);
-			board_update();
-
-			/* USER CODE END DRIVE_HIGH_CHARGE_FOR_FS */ 
-		} 
-		else
-		{
-			/* Drive low Charge pump */
-			/* ToDo: Add IOE driver control */	
-			/* USER CODE BEGIN DRIVE_LOW_CHARGE_FOR_FS */
-			board_set_usbflashpoweron(0);
-			board_update();
-			/* USER CODE END DRIVE_LOW_CHARGE_FOR_FS */ 
-		}
-	}	
-	HAL_Delay(200);
-	return USBH_OK;  
-}
-
-/* вызывается при разрешённых прерываниях. */
-static void board_usbh_deactivate(void)
-{
-	USBH_Stop(& hUsbHostFS);
-}
-
-#if CPUSTYLE_STM32
-
 /* MSP Init */
 
 void HAL_HCD_MspInit(HCD_HandleTypeDef* hcdHandle)
@@ -15634,20 +15800,20 @@ void HAL_HCD_MspInit(HCD_HandleTypeDef* hcdHandle)
 	}
 }
 
-void HAL_HCD_MspDeInit(HCD_HandleTypeDef* hcdHandle)
+void HAL_HCD_MspDeInit(HCD_HandleTypeDef* hpcd)
 {
-  if(hcdHandle->Instance==USB_OTG_FS)
+  if (hpcd->Instance == USB_OTG_FS)
   {
   /* USER CODE BEGIN USB_OTG_FS_MspDeInit 0 */
 
   /* USER CODE END USB_OTG_FS_MspDeInit 0 */
     /* Peripheral clock disable */
     //__HAL_RCC_USB_OTG_FS_CLK_DISABLE();
-  
-    /**USB_OTG_FS GPIO Configuration    
+
+    /**USB_OTG_FS GPIO Configuration
     PA9     ------> USB_OTG_FS_VBUS
     PA11     ------> USB_OTG_FS_DM
-    PA12     ------> USB_OTG_FS_DP 
+    PA12     ------> USB_OTG_FS_DP
     */
     //HAL_GPIO_DeInit(GPIOA, GPIO_PIN_9|GPIO_PIN_11|GPIO_PIN_12);
 
@@ -15670,83 +15836,8 @@ uint32_t USB_GetCurrentFrame (USB_OTG_GlobalTypeDef *USBx)
 	return (USBx_HOST->HFNUM & USB_OTG_HFNUM_FRNUM);
 }
 
+
 #elif CPUSTYLE_R7S721
-
-
-void HAL_HCD_MspInit(HCD_HandleTypeDef* hcdHandle)
-{
-}
-void HAL_HCD_MspDeInit(HCD_HandleTypeDef* hcdHandle)
-{
-}
-
-/**
-  * @brief  Return Host Current Frame number
-  * @param  USBx : Selected device
-  * @retval current frame number
-*/
-uint32_t USB_GetCurrentFrame (USB_OTG_GlobalTypeDef *USBx)
-{
-	return 1;
-}
-
-
-/**
-  * @brief  Return Host Core speed
-  * @param  USBx : Selected device
-  * @retval speed : Host speed
-  *          This parameter can be one of these values:
-  *            @arg USB_OTG_SPEED_HIGH: High speed mode
-  *            @arg USB_OTG_SPEED_FULL: Full speed mode
-  *            @arg USB_OTG_SPEED_LOW: Low speed mode
-  */
-static uint32_t USB_GetHostSpeed (USB_OTG_GlobalTypeDef *USBx)
-{
-	return USB_OTG_SPEED_HIGH;
-}
-
-
-/**
-  * @brief  USB_DisableGlobalInt
-  *         Disable the controller's Global Int in the AHB Config reg
-  * @param  USBx : Selected device
-  * @retval HAL status
-*/
-HAL_StatusTypeDef USB_DisableGlobalInt(USB_OTG_GlobalTypeDef *USBx)
-{
-  //USBx->GAHBCFG &= ~ USB_OTG_GAHBCFG_GINT;
-  return HAL_OK;
-}
-
-
-/**
-  * @brief  USB_DriveVbus : activate or de-activate vbus
-  * @param  state : VBUS state
-  *          This parameter can be one of these values:
-  *           0 : VBUS Active
-  *           1 : VBUS Inactive
-  * @retval HAL status
-*/
-static HAL_StatusTypeDef USB_DriveVbus (USB_OTG_GlobalTypeDef *USBx, uint_fast8_t state)
-{
-	// renesas version
-	/*
-  uint32_t hprt0 = USBx_HPRT0;
-  hprt0 &= ~(USB_OTG_HPRT_PENA    | USB_OTG_HPRT_PCDET |
-                         USB_OTG_HPRT_PENCHNG | USB_OTG_HPRT_POCCHNG );
-
-  if (((hprt0 & USB_OTG_HPRT_PPWR) == 0 ) && (state == 1 ))
-  {
-    USBx_HPRT0 = (USB_OTG_HPRT_PPWR | hprt0);
-  }
-  if (((hprt0 & USB_OTG_HPRT_PPWR) == USB_OTG_HPRT_PPWR) && (state == 0 ))
-  {
-    USBx_HPRT0 = ((~USB_OTG_HPRT_PPWR) & hprt0);
-  }
-  */
-  return HAL_OK;
-}
-
 #endif /* CPUSTYLE_STM32 */
 /**
   * @brief  USBH_LL_SetTimer 
@@ -16126,26 +16217,27 @@ void  USBH_LL_IncTimer  (USBH_HandleTypeDef *phost)
   * @param  phost: Host handle
   * @retval USBH Status
   */
-USBH_StatusTypeDef  USBH_LL_Init (USBH_HandleTypeDef *phost)
+USBH_StatusTypeDef  USBH_LL_Init(USBH_HandleTypeDef *phost)
 {
 	/* Init USB_IP */
-	if (phost->id == HOST_FS) {
+	if (phost->id == HOST_FS)
+	{
 		/* Link The driver to the stack */
 		hhcd_USB_OTG.pData = phost;
-		phost->pData = &hhcd_USB_OTG;
+		phost->pData = & hhcd_USB_OTG;
 
 		hhcd_USB_OTG.Instance = WITHUSBHW_HOST;
 		hhcd_USB_OTG.Init.Host_channels = 16;
-		hhcd_USB_OTG.Init.speed = HCD_SPEED_FULL;
+		hhcd_USB_OTG.Init.speed = USBD_SPEED_HIGH;
 		hhcd_USB_OTG.Init.dma_enable = USB_DISABLE;
 		hhcd_USB_OTG.Init.phy_itface = HCD_PHY_EMBEDDED;
 		hhcd_USB_OTG.Init.Sof_enable = USB_DISABLE;
-		if (HAL_HCD_Init(&hhcd_USB_OTG) != HAL_OK)
+		if (HAL_HCD_Init(& hhcd_USB_OTG) != HAL_OK)
 		{
 			_Error_Handler(__FILE__, __LINE__);
 		}
 
-		USBH_LL_SetTimer (phost, HAL_HCD_GetCurrentFrame(&hhcd_USB_OTG));
+		USBH_LL_SetTimer(phost, HAL_HCD_GetCurrentFrame(&hhcd_USB_OTG));
 	}
 	return USBH_OK;
 }
@@ -16323,7 +16415,7 @@ USBH_StatusTypeDef  USBH_Init(USBH_HandleTypeDef *phost, void (*pUsrFunc)(USBH_H
   /* Check whether the USB Host handle is valid */
   if (phost == NULL)
   {
-    USBH_ErrLog("Invalid Host handle");
+    PRINTF(PSTR("Invalid Host handle\n"));
     return USBH_FAIL; 
   }
   
@@ -16356,7 +16448,7 @@ USBH_StatusTypeDef  USBH_Init(USBH_HandleTypeDef *phost, void (*pUsrFunc)(USBH_H
   osThreadDef(USBH_Thread, USBH_Process_OS, USBH_PROCESS_PRIO, 0, 8 * configMINIMAL_STACK_SIZE);
 #endif  
   phost->thread = osThreadCreate (osThread(USBH_Thread), phost);
-#endif  
+#endif  /* (USBH_USE_OS == 1)  */
   
   /* Initialize low level driver */
   USBH_LL_Init(phost);
@@ -16477,7 +16569,7 @@ USBH_StatusTypeDef  USBH_LL_Disconnect(USBH_HandleTypeDef *phost)
 		phost->pUser(phost, HOST_USER_DISCONNECTION);
 	}
 
-	//USBH_UsrLog("USB Device disconnected"); 
+	//PRINTF(PSTR("USB Device disconnected\n"));
 
 	/* Start the low level driver  */
 	USBH_LL_Start(phost);
@@ -16903,14 +16995,14 @@ static void USBH_ParseCfgDesc (USBH_CfgDescTypeDef* cfg_desc,
 	  {
 		  iadmode = 1;
 		  USBH_IfAssocDescTypeDef * piad = (USBH_IfAssocDescTypeDef *) pdesc;
-		USBH_UsrLog("USBH_ParseCfgDesc: USB_INTERFACE_ASSOC_DESCRIPTOR_TYPE: 0x%02X/x%02X, nif=%d, firstIf=%d", piad->bFunctionClass, piad->bFunctionSubClass, piad->bInterfaceCount, piad->bFirstInterface);
+		PRINTF(PSTR("USBH_ParseCfgDesc: USB_INTERFACE_ASSOC_DESCRIPTOR_TYPE: 0x%02X/x%02X, nif=%d, firstIf=%d\n"), piad->bFunctionClass, piad->bFunctionSubClass, piad->bInterfaceCount, piad->bFirstInterface);
 	  }
       else if (/*iadmode == 0 && */ pdesc->bDescriptorType == USB_DESC_TYPE_INTERFACE) 
       {
         pif = &cfg_desc->Itf_Desc[if_ix];
         USBH_ParseInterfaceDesc (pif, (uint8_t *)pdesc); 
 		
-		USBH_UsrLog("USBH_ParseCfgDesc: ifix=%d, 0x%02X/0x%02X/0x%02X, nEP=%d", pif->bInterfaceNumber, pif->bInterfaceClass, pif->bInterfaceSubClass, pif->bInterfaceProtocol, pif->bNumEndpoints);
+		PRINTF(PSTR("USBH_ParseCfgDesc: ifix=%d, 0x%02X/0x%02X/0x%02X, nEP=%d\n"), pif->bInterfaceNumber, pif->bInterfaceClass, pif->bInterfaceSubClass, pif->bInterfaceProtocol, pif->bNumEndpoints);
 		// 0x08/0x06/0x50: USB flash
 		// 0xFF/0x00/0x00: CP2102
 		// 0x03/0x01/0x02: USB-PS/2 Optical Mouse
@@ -16943,10 +17035,11 @@ static void USBH_ParseCfgDesc (USBH_CfgDescTypeDef* cfg_desc,
       }
 	  else
 	  {
-		//USBH_UsrLog("USBH_ParseCfgDesc: bDescriptorType=0x%02X", pdesc->bDescriptorType);
+		//PRINTF(PSTR("USBH_ParseCfgDesc: bDescriptorType=0x%02X\n"), pdesc->bDescriptorType);
 	  }
     }
   }  
+	(void) iadmode;
 }
 
 
@@ -17323,7 +17416,7 @@ static USBH_StatusTypeDef USBH_HandleControl (USBH_HandleTypeDef *phost)
     {
       phost->pUser(phost, HOST_USER_UNRECOVERED_ERROR);
       phost->Control.errorcount = 0;
-      USBH_ErrLog("Control error");
+      PRINTF(PSTR("Control error\n"));
       status = USBH_FAIL;
     }
     break;
@@ -17637,13 +17730,13 @@ USBH_StatusTypeDef  USBH_RegisterClass(USBH_HandleTypeDef *phost, USBH_ClassType
     }
     else
     {
-      USBH_ErrLog("Max Class Number reached");
+      PRINTF(PSTR("Max Class Number reached\n"));
       status = USBH_FAIL; 
     }
   }
   else
   {
-    USBH_ErrLog("Invalid Class handle");
+    PRINTF(PSTR("Invalid Class handle\n"));
     status = USBH_FAIL; 
   }
   
@@ -17664,14 +17757,14 @@ USBH_StatusTypeDef USBH_SelectInterface(USBH_HandleTypeDef *phost, uint8_t inter
   if(interfacei < phost->device.CfgDesc.bNumInterfaces)
   {
     phost->device.current_interface = interfacei;
-    USBH_UsrLog ("Switching to Interface (#%d)", interfacei);
-    USBH_UsrLog ("Class    : %xh", phost->device.CfgDesc.Itf_Desc[interfacei].bInterfaceClass );
-    USBH_UsrLog ("SubClass : %xh", phost->device.CfgDesc.Itf_Desc[interfacei].bInterfaceSubClass );
-    USBH_UsrLog ("Protocol : %xh", phost->device.CfgDesc.Itf_Desc[interfacei].bInterfaceProtocol );                 
+    PRINTF(PSTR("Switching to Interface (#%d)\n"), interfacei);
+    PRINTF(PSTR("Class    : %xh\n"), phost->device.CfgDesc.Itf_Desc[interfacei].bInterfaceClass );
+    PRINTF(PSTR("SubClass : %xh\n"), phost->device.CfgDesc.Itf_Desc[interfacei].bInterfaceSubClass );
+    PRINTF(PSTR("Protocol : %xh\n"), phost->device.CfgDesc.Itf_Desc[interfacei].bInterfaceProtocol );
   }
   else
   {
-    USBH_ErrLog ("Cannot Select This Interface.");
+    PRINTF(PSTR("Cannot Select This Interface.\n"));
     status = USBH_FAIL; 
   }
   return status;  
@@ -17824,8 +17917,8 @@ static USBH_StatusTypeDef USBH_HandleEnum(USBH_HandleTypeDef *phost)
     /* Get FULL Device Desc  */
     if (USBH_Get_DevDesc(phost, USB_DEVICE_DESC_SIZE) == USBH_OK)
     {
-      USBH_UsrLog("PID: %04X", phost->device.DevDesc.idProduct );  
-      USBH_UsrLog("VID: %04X", phost->device.DevDesc.idVendor );  
+      PRINTF(PSTR("PID: %04X\n"), phost->device.DevDesc.idProduct );
+      PRINTF(PSTR("VID: %04X\n"), phost->device.DevDesc.idVendor );
       
       phost->EnumState = ENUM_SET_ADDR;
        
@@ -17846,7 +17939,7 @@ static USBH_StatusTypeDef USBH_HandleEnum(USBH_HandleTypeDef *phost)
       phost->device.address = USBH_DEVICE_ADDRESS;
       
       /* user callback for device address assigned */
-      USBH_UsrLog("Address (#%d) assigned.", phost->device.address);
+      PRINTF(PSTR("Address (#%d) assigned.\n"), phost->device.address);
       phost->EnumState = ENUM_GET_CFG_DESC;
       
       /* modify control channels to update device address */
@@ -17897,7 +17990,7 @@ static USBH_StatusTypeDef USBH_HandleEnum(USBH_HandleTypeDef *phost)
                                0xff) == USBH_OK)
       {
         /* User callback for Manufacturing string */
-        USBH_UsrLog("Manufacturer : %s",  (char *)phost->device.Data);
+        PRINTF(PSTR("Manufacturer : %s\n"),  (char *)phost->device.Data);
         phost->EnumState = ENUM_GET_PRODUCT_STRING_DESC;
         
 #if (USBH_USE_OS == 1)
@@ -17907,7 +18000,7 @@ static USBH_StatusTypeDef USBH_HandleEnum(USBH_HandleTypeDef *phost)
     }
     else
     {
-     USBH_UsrLog("Manufacturer : N/A");      
+     PRINTF(PSTR("Manufacturer : N/A\n"));
      phost->EnumState = ENUM_GET_PRODUCT_STRING_DESC; 
 #if (USBH_USE_OS == 1)
     osMessagePut ( phost->os_event, USBH_STATE_CHANGED_EVENT, 0);
@@ -17924,13 +18017,13 @@ static USBH_StatusTypeDef USBH_HandleEnum(USBH_HandleTypeDef *phost)
                                0xff) == USBH_OK)
       {
         /* User callback for Product string */
-        USBH_UsrLog("Product : %s",  (char *)phost->device.Data);
+        PRINTF(PSTR("Product : %s\n"),  (char *)phost->device.Data);
         phost->EnumState = ENUM_GET_SERIALNUM_STRING_DESC;        
       }
     }
     else
     {
-      USBH_UsrLog("Product : N/A");
+      PRINTF(PSTR("Product : N/A\n"));
       phost->EnumState = ENUM_GET_SERIALNUM_STRING_DESC; 
 #if (USBH_USE_OS == 1)
     osMessagePut ( phost->os_event, USBH_STATE_CHANGED_EVENT, 0);
@@ -17947,13 +18040,13 @@ static USBH_StatusTypeDef USBH_HandleEnum(USBH_HandleTypeDef *phost)
                                0xff) == USBH_OK)
       {
         /* User callback for Serial number string */
-         USBH_UsrLog("Serial Number : %s",  (char *)phost->device.Data);
+         PRINTF(PSTR("Serial Number : %s\n"),  (char *)phost->device.Data);
         Status = USBH_OK;
       }
     }
     else
     {
-      USBH_UsrLog("Serial Number : N/A"); 
+      PRINTF(PSTR("Serial Number : N/A\n"));
       Status = USBH_OK;
 #if (USBH_USE_OS == 1)
     osMessagePut ( phost->os_event, USBH_STATE_CHANGED_EVENT, 0);
@@ -18068,11 +18161,11 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
 		if (USBH_HandleEnum(phost) == USBH_OK)
 		{ 
 			/* The function shall return USBH_OK when full enumeration is complete */
-			USBH_UsrLog ("Enumeration done.");
+			PRINTF(PSTR("Enumeration done.\n"));
 			phost->device.current_interface = 0;
 			if (phost->device.DevDesc.bNumConfigurations == 1)
 			{
-				USBH_UsrLog ("This device has only 1 configuration.");
+				PRINTF(PSTR("This device has only 1 configuration.\n"));
 				phost->gState = HOST_SET_CONFIGURATION;        
 			}
 			else
@@ -18105,7 +18198,7 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
     if (USBH_SetCfg(phost, phost->device.CfgDesc.bConfigurationValue) == USBH_OK)
     {
       phost->gState  = HOST_CHECK_CLASS;
-      USBH_UsrLog ("Default configuration set.");
+      PRINTF(PSTR("Default configuration set.\n"));
       
     }      
     break;
@@ -18116,7 +18209,7 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
 		PRINTF(PSTR("USBH_Process: HOST_CHECK_CLASS (0x%02X)\n"), USBH_GetActiveClass(phost));
 		if (phost->ClassNumber == 0)
 		{
-			USBH_UsrLog ("No Class has been registered.");
+			PRINTF(PSTR("No Class has been registered.\n"));
 			phost->gState  = HOST_ABORT_STATE;
 		}
 		else
@@ -18138,7 +18231,7 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
 				if (phost->pActiveClass->Init(phost)== USBH_OK)
 				{
 					phost->gState  = HOST_CLASS_REQUEST; 
-					USBH_UsrLog ("%s class started.", phost->pActiveClass->Name);
+					PRINTF(PSTR("%s class started.\n"), phost->pActiveClass->Name);
 
 					/* Inform user that a class has been activated */
 					phost->pUser(phost, HOST_USER_CLASS_SELECTED);   
@@ -18146,13 +18239,13 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
 				else
 				{
 					phost->gState  = HOST_ABORT_STATE;
-					USBH_UsrLog ("Device not supporting %s class.", phost->pActiveClass->Name);
+					PRINTF(PSTR("Device not supporting %s class.\n"), phost->pActiveClass->Name);
 				}
 			}
 			else
 			{
 				phost->gState  = HOST_ABORT_STATE;
-				USBH_UsrLog ("No registered class for this device.");
+				PRINTF(PSTR("No registered class for this device.\n"));
 			}
 		}
 
@@ -18176,7 +18269,7 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
     else
     {
       phost->gState  = HOST_ABORT_STATE;
-      USBH_ErrLog ("Invalid Class Driver.");
+      PRINTF(PSTR("Invalid Class Driver.\n"));
     
 #if (USBH_USE_OS == 1)
     osMessagePut ( phost->os_event, USBH_STATE_CHANGED_EVENT, 0);
@@ -18785,42 +18878,14 @@ void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd)
 
 #endif /* CPUSTYLE_STM32 */
 
-//---- сюда переносим используемые хостом функции
 
-
-/* вызывается при запрещённых прерываниях. */
-// пока, для упрощения конфигурирования, поддерживается USB HOST на USB_OTG_FS
-static void board_usbh_initialize(void)
-{
-	/* Init Host Library,Add Supported Class and Start the library*/
-	USBH_Init(& hUsbHostFS, USBH_UserProcess, HOST_FS);
-
-	////USBH_RegisterClass(&hUsbHostFS, USBH_MSC_CLASS);
-}
-
-/* вызывается при разрешённых прерываниях. */
-// пока, для упрощения конфигурирования, поддерживается USB HOST на USB_OTG_FS
-static void board_usbh_activate(void)
-{
-#if CPUSTYLE_R7S721
-
-	//WITHUSBHW_HOST->SYSCFG0 |= (1uL << USB_SYSCFG_DPRPU_SHIFT);	// DPRPU 1: Pulling up the D+ line is enabled.
-	//(void) WITHUSBHW_HOST->SYSSTS0;
-
-#elif CPUSTYLE_STM32
-
-	USBH_Start(& hUsbHostFS);
-	//USBH_Start(& hUsbDevice);
-
-#endif
-}
 
 #endif /* defined (WITHUSBHW_HOST) */
 
-#if 0//WITHUSEUSBFLASH
+#if 0 && WITHUSEUSBFLASH
 
 #include "sdcard.h"
-#include "ff.h"
+#include "fatfs/ff.h"
 
 static volatile DSTATUS USB_Stat = STA_NOINIT;	/* Disk status */
 extern TM_USB_MSCHOST_Result_t 	TM_USB_MSCHOST_INT_Result;
@@ -18983,12 +19048,11 @@ const struct drvfunc USBH_drvfunc =
 
 #endif /* WITHUSEUSBFLASH */
 
-
 // вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
 static void board_usb_spool(void * ctx)
 {
 #if defined (WITHUSBHW_HOST)
-	USBH_Process(& hUsbHostFS);
+	USBH_Process(& hUsbHost);
 #endif /* defined (WITHUSBHW_HOST) */
 }
 
@@ -18997,18 +19061,26 @@ static ticker_t usbticker;
 /* вызывается при запрещённых прерываниях. */
 void board_usb_initialize(void)
 {
+	//PRINTF(PSTR("board_usb_initialize start.\n"));
+
 #if WITHUSBDFU
 	USBD_DFU_Init(& hUsbDevice, 1);
 #endif /* WITHUSBDFU */
-	//PRINTF(PSTR("board_usb_initialize start.\n"));
 #if defined (WITHUSBHW_DEVICE)
 	board_usbd_initialize();	// USB device support
 #endif /* defined (WITHUSBHW_DEVICE) */
 
 #if defined (WITHUSBHW_HOST)
-	board_usbh_initialize();	// USB host support
-#endif /* defined (WITHUSBHW_HOST) */
+	/* Init Host Library,Add Supported Class and Start the library*/
+	USBH_Init(& hUsbHost, USBH_UserProcess, HOST_FS);
+
+	#if WITHUSEUSBFLASH
+		USBH_RegisterClass(&hUsbHost, & USBH_msc);
+	#endif /* WITHUSEUSBFLASH */
+
 	ticker_initialize(& usbticker, 1, board_usb_spool, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
+
+#endif /* defined (WITHUSBHW_HOST) */
 
 	//PRINTF(PSTR("board_usb_initialize done.\n"));
 }
@@ -19017,12 +19089,13 @@ void board_usb_initialize(void)
 void board_usb_activate(void)
 {
 	//PRINTF(PSTR("board_usb_activate start.\n"));
+
 #if defined (WITHUSBHW_DEVICE)
-	board_usbd_activate();
+	USBD_Start(& hUsbDevice);
 #endif /* defined (WITHUSBHW_DEVICE) */
 
 #if defined (WITHUSBHW_HOST)
-	board_usbh_activate();
+	USBH_Start(& hUsbHost);
 #endif /* defined (WITHUSBHW_HOST) */
 	//PRINTF(PSTR("board_usb_activate done.\n"));
 }
@@ -19031,20 +19104,32 @@ void board_usb_activate(void)
 void board_usb_deactivate(void)
 {
 	//PRINTF(PSTR("board_usb_activate start.\n"));
-#if defined (WITHUSBHW_DEVICE)
-	board_usbd_deactivate();
-#endif /* defined (WITHUSBHW_DEVICE) */
-
 #if defined (WITHUSBHW_HOST)
-	board_usbh_deactivate();
+	USBH_Stop(& hUsbHost);
 #endif /* defined (WITHUSBHW_HOST) */
+
+#if defined (WITHUSBHW_DEVICE)
+	  USBD_Stop(&hUsbDevice);
+#endif /* defined (WITHUSBHW_DEVICE) */
 	//PRINTF(PSTR("board_usb_activate done.\n"));
+}
+
+/* вызывается при разрешенных прерываниях. */
+void board_usb_deinitialize(void)
+{
+#if defined (WITHUSBHW_HOST)
+	USBH_DeInit(& hUsbHost);
+#endif /* defined (WITHUSBHW_HOST) */
+
+#if defined (WITHUSBHW_DEVICE)
+	USBD_DeInit(& hUsbDevice);
+#endif /* defined (WITHUSBHW_DEVICE) */
 }
 
 uint_fast8_t hamradio_get_usbh_active(void)
 {
 #if defined (WITHUSBHW_HOST)
-	return hUsbHostFS.device.is_connected != 0;
+	return hUsbHost.device.is_connected != 0;
 #else
 	return  0;
 #endif /* defined (WITHUSBHW_HOST) */
@@ -19824,7 +19909,7 @@ static USBD_StatusTypeDef  USBD_DFU_Init (USBD_HandleTypeDef *pdev,
 static USBD_StatusTypeDef  USBD_DFU_DeInit (USBD_HandleTypeDef *pdev, 
                                  uint_fast8_t cfgidx)
 {
-	//PRINTF("USBD_DFU_DeInit\n");
+	//PRINTF(PSTR("USBD_DFU_DeInit\n"));
   USBD_DFU_HandleTypeDef   *hdfu;
     //hdfu = (USBD_DFU_HandleTypeDef*) pdev->pClassData;
     hdfu = & gdfu;

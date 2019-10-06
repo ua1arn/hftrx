@@ -64,9 +64,10 @@
 
 	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 	#define WITHUSBHWVBUSSENSE	1	/* используется предопределенный вывод VBUS_SENSE */
-	//#define WITHDEVONHIGHSPEED	1	/* Для DEVICE используется встроенная в процессор поддержка USB HS */
-	//#define WITHHIGHSPEEDDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
+	#define WITHDEVONHIGHSPEED	1	/* Для DEVICE используется встроенная в процессор поддержка USB HS */
+	#define WITHHIGHSPEEDDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
 	#define WITHUSBHW_DEVICE	(& USB201)	/* на этом устройстве поддерживается функциональность DEVUCE	*/
+
 	//#define WITHUSBHW_HOST	(& USB200)	/* на этом устройстве поддерживается функциональность HOST	*/
 	//#define WITHHOSTONHIGHSPEED	1	/* Для HOST используется встроенная в процессор поддержка USB HS */
 
@@ -752,12 +753,21 @@
 	} while (0)
 #endif /* WITHFLATLINK && LCDMODE_LTDC */
 
-#define HARDWARE_USB0_INITIALIZE() do { \
-		arm_hardware_pio5_outputs((1U << 2), (1U << 2));	/* P5_2 ~VBUS_ON */ \
+	#define HARDWARE_VBUS_ON_MASK (1U << 2)	/* P5_2 ~VBUS_ON */
+
+	#define TARGET_USBFS_VBUSON_SET(on)	do { \
+		if ((on) != 0) \
+			arm_hardware_pio5_outputs(HARDWARE_VBUS_ON_MASK, 0 * HARDWARE_VBUS_ON_MASK);	/* P5_2 ~VBUS_ON = 1*/ \
+		else \
+			arm_hardware_pio5_outputs(HARDWARE_VBUS_ON_MASK, 1 * HARDWARE_VBUS_ON_MASK);	/* P5_2 ~VBUS_ON = 0 */ \
 	} while (0)
 
-#define HARDWARE_USB1_INITIALIZE() do { \
-	} while (0)
+	#define HARDWARE_USB0_INITIALIZE() do { \
+			arm_hardware_pio5_outputs(HARDWARE_VBUS_ON_MASK, 1 * HARDWARE_VBUS_ON_MASK);	/* P5_2 ~VBUS_ON = 1*/ \
+		} while (0)
+
+	#define HARDWARE_USB1_INITIALIZE() do { \
+		} while (0)
 
 	/* макроопределение, которое должно включить в себя все инициализации */
 	#define	HARDWARE_INITIALIZE() do { \
