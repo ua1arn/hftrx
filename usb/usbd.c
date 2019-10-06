@@ -4608,8 +4608,8 @@ static void r7s721_usbdevice_handler(USBD_HandleTypeDef *pdev)
 	}
 	//if ((intsts0 & (1uL << USB_INTSTS0_VBINT_SHIFT)) != 0)	// VBINT
 	//{
-	//	Instance->INTSTS0 = (uint16_t) ~ (1uL << USB_INTSTS0_VBINT_SHIFT);	// Clear VBINT - enabled by VBSE
-	//	PRINTF(PSTR("r7s721_usbdevice_handler trapped - VBINT, VBSTS=%d\n"), usbd_getvbus());
+	//	Instance->INTSTS0 = (uint16_t) ~ USB_INTSTS0_VBINT;	// Clear VBINT - enabled by VBSE
+	//	PRINTF(PSTR("r7s721_usbdevice_handler trapped - VBINT, VBSTS=%d\n"), (intsts0 & USB_INTSTS0_VBSTS) != 0);
 	//	usbd_handle_vbuse(usbd_getvbus());
 	//}
 }
@@ -4622,6 +4622,21 @@ static void r7s721_usbhost_handler(USBH_HandleTypeDef *pdev)
 	const uint_fast16_t intsts1 = Instance->INTSTS1;
 
 	PRINTF(PSTR("r7s721_usbhost_handler trapped, intsts0=%04X, intsts1=%04X\n"), intsts0, intsts1);
+	//if ((intsts0 & (1uL << USB_INTSTS0_VBINT_SHIFT)) != 0)	// VBINT
+	//{
+	//	Instance->INTSTS0 = (uint16_t) ~ USB_INTSTS0_VBINT;	// Clear VBINT - enabled by VBSE
+	//	PRINTF(PSTR("r7s721_usbhost_handler trapped - VBINT, VBSTS=%d\n"), (intsts0 & USB_INTSTS0_VBSTS) != 0);
+	//}
+	if ((intsts1 & USB_INTSTS1_DTCH) != 0)	// DTCH
+	{
+		Instance->INTSTS1 = ~ USB_INTSTS1_DTCH;
+		PRINTF(PSTR("r7s721_usbhost_handler trapped - DTCH\n"));
+	}
+	if ((intsts1 & USB_INTSTS1_ATTCH) != 0)	// ATTCH
+	{
+		Instance->INTSTS1 = ~ USB_INTSTS1_ATTCH;
+		PRINTF(PSTR("r7s721_usbhost_handler trapped - ATTCH\n"));
+	}
 }
 
 static void r7s721_usbi0_device_handler(void)
@@ -14708,7 +14723,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
 	hpcd->Instance->SUSPMODE &= ~ USB_SUSPMODE_SUSPM;	// SUSPM 0: The clock supplied to this module is stopped.
 
 
-	SYSCFG0_0 = 0;
+	//SYSCFG0_0 = 0;
 	SYSCFG0_0 = 
 		1 * USB_SYSCFG_UPLLE |	// UPLLE 1: Enables operation of the internal PLL.
 		1 * USB_SYSCFG_UCKSEL |	// UCKSEL 1: The 12-MHz EXTAL clock is selected.
@@ -14725,11 +14740,13 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
 		//USB_SOFCFG_BRDYM |	// BRDYM
 		0;
 
+	hpcd->Instance->SYSCFG0 &= ~ USB_SYSCFG_DCFM;	// DCFM 0: Device controller mode is selected
+
 	hpcd->Instance->SYSCFG0 |= USB_SYSCFG_USBE;	// USBE 1: USB module operation is enabled.
 
 	if (hpcd->Init.speed == USBD_SPEED_HIGH)
 	{
-		hpcd->Instance->SYSCFG0 |= 
+		hpcd->Instance->SYSCFG0 |=
 			1 * USB_SYSCFG_HSE |	// HSE
 			0;
 	}
@@ -14737,7 +14754,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
 	//usbd_pipes_initialize(& USB200);
 
 	hpcd->Instance->INTENB0 = 
-		//1 * USB_INTENB0_SOFE |	// SOFE	1: Frame Number Update Interrupt Enable
+		//(hpcd->Init.Sof_enable != USB_FALSE) * USB_INTENB0_SOFE |	// SOFE	1: Frame Number Update Interrupt Enable
 		1 * USB_INTENB0_DVSE |	// DVSE
 		//1 * USB_INTENB0_VBSE |	// VBSE
 		1 * USB_INTENB0_CTRE |	// CTRE
@@ -15531,28 +15548,21 @@ USBH_StatusTypeDef USBH_LL_ResetPort (USBH_HandleTypeDef *phost)
 USBH_StatusTypeDef  USBH_LL_DriverVBUS(USBH_HandleTypeDef *phost, uint_fast8_t state)
 { 
 	//PRINTF(PSTR("USBH_LL_DriverVBUS(%d), phost->id=%d, HOST_FS=%d\n"), (int) state, (int) phost->id, (int) HOST_FS);
-	/* USER CODE BEGIN 0 */
-	/* USER CODE END 0*/     
 	if (phost->id == HOST_FS) // compare to WITHUSBHW_HOST
 	{ 
-		if (state != 0)
+		if (state != USB_FALSE)
 		{   
 			/* Drive high Charge pump */
 			/* ToDo: Add IOE driver control */	   
-			/* USER CODE BEGIN DRIVE_HIGH_CHARGE_FOR_FS */
 			board_set_usbflashpoweron(1);
 			board_update();
-
-			/* USER CODE END DRIVE_HIGH_CHARGE_FOR_FS */ 
 		} 
 		else
 		{
 			/* Drive low Charge pump */
 			/* ToDo: Add IOE driver control */	
-			/* USER CODE BEGIN DRIVE_LOW_CHARGE_FOR_FS */
 			board_set_usbflashpoweron(0);
 			board_update();
-			/* USER CODE END DRIVE_LOW_CHARGE_FOR_FS */ 
 		}
 	}	
 	HAL_Delay(200);
@@ -15687,7 +15697,7 @@ void HAL_HCD_MspInit(HCD_HandleTypeDef* hpcd)
 	hpcd->Instance->SUSPMODE &= ~ USB_SUSPMODE_SUSPM;	// SUSPM 0: The clock supplied to this module is stopped.
 
 
-	SYSCFG0_0 = 0;
+	//SYSCFG0_0 = 0;
 	SYSCFG0_0 =
 		1 * USB_SYSCFG_UPLLE |	// UPLLE 1: Enables operation of the internal PLL.
 		1 * USB_SYSCFG_UCKSEL |	// UCKSEL 1: The 12-MHz EXTAL clock is selected.
@@ -15717,16 +15727,24 @@ void HAL_HCD_MspInit(HCD_HandleTypeDef* hpcd)
 	}
 
 	//usbd_pipes_initialize(& USB200);
-
+	/*
+	The RSME, DVSE, and CTRE bits can be set to 1 only when the function controller mode is selected; do not set these bits to 1
+	to enable the corresponding interrupt output when the host controller mode is selected.
+	*/
 	hpcd->Instance->INTENB0 =
-		//1 * USB_INTENB0_SOFE |	// SOFE	1: Frame Number Update Interrupt Enable
-		1 * USB_INTENB0_DVSE |	// DVSE
+		//(Init.Sof_enable != USB_FALSE) * USB_INTENB0_SOFE |	// SOFE	1: Frame Number Update Interrupt Enable
 		//1 * USB_INTENB0_VBSE |	// VBSE
-		1 * USB_INTENB0_CTRE |	// CTRE
 		1 * USB_INTENB0_BEMPE |	// BEMPE
 		1 * USB_INTENB0_NRDYE |	// NRDYE
 		1 * USB_INTENB0_BRDYE |	// BRDYE
-		1 * USB_INTENB0_RSME |	// RSME
+		//1 * USB_INTENB0_CTRE |	// CTRE
+		//1 * USB_INTENB0_DVSE |	// DVSE
+		//1 * USB_INTENB0_RSME |	// RSME
+		0;
+
+	hpcd->Instance->INTENB1 =
+		1 * USB_INTENB1_DTCHE |	// DTCH
+		1 * USB_INTENB1_ATTCHE |	// ATTCH
 		0;
 
 }
@@ -16207,7 +16225,7 @@ USBH_StatusTypeDef  USBH_LL_Init(USBH_HandleTypeDef *phost)
 
 		hhcd_USB_OTG.Instance = WITHUSBHW_HOST;
 		hhcd_USB_OTG.Init.Host_channels = 16;
-		hhcd_USB_OTG.Init.speed = HCD_SPEED_FULL;
+		hhcd_USB_OTG.Init.speed = USBD_SPEED_HIGH;
 		hhcd_USB_OTG.Init.dma_enable = USB_DISABLE;
 		hhcd_USB_OTG.Init.phy_itface = HCD_PHY_EMBEDDED;
 		hhcd_USB_OTG.Init.Sof_enable = USB_DISABLE;
