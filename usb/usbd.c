@@ -4568,12 +4568,14 @@ static void r7s721_usbdevice_handler(USBD_HandleTypeDef *pdev)
 		uint_fast8_t i;
 		//PRINTF(PSTR("r7s721_usbdevice_handler trapped - NRDY, NRDYSTS=0x%04X\n"), Instance->NRDYSTS);
 		const uint_fast16_t nrdysts = Instance->NRDYSTS & Instance->NRDYENB;	// NRDY Interrupt Status Register
-		Instance->NRDYSTS = ~ nrdysts;
-		for (i = 0; i < sizeof usbd_usedpipes / sizeof usbd_usedpipes [0]; ++ i)
+		for (i = 0; i < 16; ++ i)
 		{
-			const uint_fast8_t pipe = usbd_usedpipes [i];
-			if ((nrdysts & (1U << pipe)) != 0)
-				usbd_handler_nrdy(pdev, pipe);
+			const uint_fast16_t mask = (uint_fast16_t) 1 << i;
+			if ((nrdysts & mask) != 0)
+			{
+				Instance->NRDYSTS = ~ mask;
+				usbd_handler_nrdy(pdev, i);
+			}
 		}
 	}
 	if ((intsts0msk & USB_INTSTS0_BRDY) != 0)	// BRDY
