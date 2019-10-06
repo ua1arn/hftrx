@@ -15755,7 +15755,7 @@ void HAL_HCD_MspInit(HCD_HandleTypeDef* hpcd)
 	to enable the corresponding interrupt output when the host controller mode is selected.
 	*/
 	hpcd->Instance->INTENB0 =
-		(Init.Sof_enable != USB_FALSE) * USB_INTENB0_SOFE |	// SOFE	1: Frame Number Update Interrupt Enable
+		(hpcd->Init.Sof_enable != USB_FALSE) * USB_INTENB0_SOFE |	// SOFE	1: Frame Number Update Interrupt Enable
 		//1 * USB_INTENB0_VBSE |	// VBSE
 		1 * USB_INTENB0_BEMPE |	// BEMPE
 		1 * USB_INTENB0_NRDYE |	// NRDYE
