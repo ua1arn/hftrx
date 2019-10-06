@@ -4656,6 +4656,19 @@ static void r7s721_usbi1_device_handler(void)
   */
 HAL_StatusTypeDef USB_SetCurrentMode(USB_OTG_GlobalTypeDef *USBx, USB_OTG_ModeTypeDef mode)
 {
+	switch (mode)
+	{
+	case USB_OTG_DEVICE_MODE:
+		USBx->SYSCFG0 &= ~ USB_SYSCFG_DCFM;	// DCFM01: Devide controller mode is selected
+		break;
+	case USB_OTG_HOST_MODE:
+		USBx->SYSCFG0 |= USB_SYSCFG_DCFM;	// DCFM 1: Host controller mode is selected
+		break;
+	case USB_OTG_DRD_MODE:
+		//USBx->SYSCFG0 |= USB_SYSCFG_DCFM;	// DCFM 1: Host controller mode is selected
+		break;
+	}
+
 	return HAL_OK;
 }
 /**
@@ -4852,6 +4865,48 @@ HAL_StatusTypeDef USB_HC_Init(USB_OTG_GlobalTypeDef *USBx,
 
 static HAL_StatusTypeDef USB_HostInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_CfgTypeDef * cfg)
 {
+	//hpcd->Instance->CFIFOSEL = 0;	// не помогает с первым чтением из DCP
+	//hpcd->Instance->CFIFOCTR = USB_CFIFOCTR_BCLR;	// BCLR
+
+	USBx->SOFCFG =
+		//USB_SOFCFG_BRDYM |	// BRDYM
+		0;
+
+	USBx->SYSCFG0 |= USB_SYSCFG_DCFM;	// DCFM 1: Host controller mode is selected
+
+	USBx->SYSCFG0 |= USB_SYSCFG_USBE;	// USBE 1: USB module operation is enabled.
+
+	if (cfg->speed == USBD_SPEED_HIGH)
+	{
+		USBx->SYSCFG0 |= USB_SYSCFG_HSE;	// HSE
+	}
+	else
+	{
+		USBx->SYSCFG0 &= ~ USB_SYSCFG_HSE;	// HSE
+	}
+
+	/*
+	The RSME, DVSE, and CTRE bits can be set to 1 only when the function controller mode is selected; do not set these bits to 1
+	to enable the corresponding interrupt output when the host controller mode is selected.
+	*/
+	USBx->INTENB0 =
+		(cfg->Sof_enable != USB_FALSE) * USB_INTENB0_SOFE |	// SOFE	1: Frame Number Update Interrupt Enable
+		//1 * USB_INTENB0_VBSE |	// VBSE
+		1 * USB_INTENB0_BEMPE |	// BEMPE
+		1 * USB_INTENB0_NRDYE |	// NRDYE
+		1 * USB_INTENB0_BRDYE |	// BRDYE
+		//1 * USB_INTENB0_CTRE |	// CTRE
+		//1 * USB_INTENB0_DVSE |	// DVSE
+		//1 * USB_INTENB0_RSME |	// RSME
+		0;
+
+	USBx->INTENB1 =
+		1 * USB_INTENB1_BCHGE |	// BCHG
+		1 * USB_INTENB1_DTCHE |	// DTCH
+		1 * USB_INTENB1_ATTCHE |	// ATTCH
+		0;
+
+
 	return HAL_OK;
 }
 
@@ -5135,6 +5190,18 @@ HAL_StatusTypeDef  USB_SetDevAddress (USB_OTG_GlobalTypeDef *USBx, uint_fast8_t 
   */
 static HAL_StatusTypeDef USB_CoreInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_CfgTypeDef *cfg)
 {
+	USBx->SUSPMODE &= ~ USB_SUSPMODE_SUSPM;	// SUSPM 0: The clock supplied to this module is stopped.
+
+
+	//SYSCFG0_0 = 0;
+	SYSCFG0_0 =
+		1 * USB_SYSCFG_UPLLE |	// UPLLE 1: Enables operation of the internal PLL.
+		1 * USB_SYSCFG_UCKSEL |	// UCKSEL 1: The 12-MHz EXTAL clock is selected.
+		0;
+	HARDWARE_DELAY_MS(2);	// required 1 ms delay - see R01UH0437EJ0200 Rev.2.00 28.4.1 System Control and Oscillation Control
+
+	USBx->SUSPMODE |= USB_SUSPMODE_SUSPM;	// SUSPM 1: The clock supplied to this module is enabled.
+
 	return HAL_OK;
 }
 
@@ -5148,6 +5215,38 @@ static HAL_StatusTypeDef USB_CoreInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG
   */
 static HAL_StatusTypeDef USB_DevInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_CfgTypeDef * cfg)
 {
+	//USBx->CFIFOSEL = 0;	// не помогает с первым чтением из DCP
+	//USBx->CFIFOCTR = USB_CFIFOCTR_BCLR;	// BCLR
+
+	USBx->SOFCFG =
+		//USB_SOFCFG_BRDYM |	// BRDYM
+		0;
+
+	USBx->SYSCFG0 &= ~ USB_SYSCFG_DCFM;	// DCFM 0: Device controller mode is selected
+
+	USBx->SYSCFG0 |= USB_SYSCFG_USBE;	// USBE 1: USB module operation is enabled.
+
+	if (cfg->speed == USBD_SPEED_HIGH)
+	{
+		USBx->SYSCFG0 |= USB_SYSCFG_HSE;	// HSE
+	}
+	else
+	{
+		USBx->SYSCFG0 &= ~ USB_SYSCFG_HSE;	// HSE
+	}
+
+	USBx->INTENB0 =
+		(cfg->Sof_enable != USB_FALSE) * USB_INTENB0_SOFE |	// SOFE	1: Frame Number Update Interrupt Enable
+		1 * USB_INTENB0_DVSE |	// DVSE
+		//1 * USB_INTENB0_VBSE |	// VBSE
+		1 * USB_INTENB0_CTRE |	// CTRE
+		1 * USB_INTENB0_BEMPE |	// BEMPE
+		1 * USB_INTENB0_NRDYE |	// NRDYE
+		1 * USB_INTENB0_BRDYE |	// BRDYE
+		1 * USB_INTENB0_RSME |	// RSME
+		0;
+	USBx->INTENB1 = 0;
+
 	return HAL_OK;
 }
 
@@ -8487,7 +8586,7 @@ static USBD_StatusTypeDef  USBD_Start  (USBD_HandleTypeDef *pdev)
   * @param  pdev: Device Handle
   * @retval USBD Status
   */
-USBD_StatusTypeDef  USBD_Stop   (USBD_HandleTypeDef *pdev)
+USBD_StatusTypeDef  USBD_Stop(USBD_HandleTypeDef *pdev)
 {
 	/* Free Class Resources */
 	uint_fast8_t di;
@@ -14677,6 +14776,11 @@ static void r7s721_usbhost_handler(USBH_HandleTypeDef *pdev)
 		Instance->INTSTS0 = (uint16_t) ~ USB_INTSTS0_SOFR;	// Clear SOFR
 		PRINTF(PSTR("r7s721_usbhost_handler trapped - SOFR\n"));
 	}
+	if ((intsts1msk & USB_INTSTS1_BCHG) != 0)	// BCHG
+	{
+		Instance->INTSTS1 = ~ USB_INTSTS1_BCHG;
+		PRINTF(PSTR("r7s721_usbhost_handler trapped - BCHG\n"));
+	}
 	if ((intsts1msk & USB_INTSTS1_DTCH) != 0)	// DTCH
 	{
 		Instance->INTSTS1 = ~ USB_INTSTS1_DTCH;
@@ -14745,52 +14849,6 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
 
 		HARDWARE_USB1_INITIALIZE();
 	}
-
-	hpcd->Instance->SUSPMODE &= ~ USB_SUSPMODE_SUSPM;	// SUSPM 0: The clock supplied to this module is stopped.
-
-
-	//SYSCFG0_0 = 0;
-	SYSCFG0_0 = 
-		1 * USB_SYSCFG_UPLLE |	// UPLLE 1: Enables operation of the internal PLL.
-		1 * USB_SYSCFG_UCKSEL |	// UCKSEL 1: The 12-MHz EXTAL clock is selected.
-		0;
-	HARDWARE_DELAY_MS(2);	// required 1 ms delay - see R01UH0437EJ0200 Rev.2.00 28.4.1 System Control and Oscillation Control
-
-	hpcd->Instance->SUSPMODE |= USB_SUSPMODE_SUSPM;	// SUSPM 1: The clock supplied to this module is enabled.
-
-
-	//hpcd->Instance->CFIFOSEL = 0;	// не помогает с первым чтением из DCP
-	//hpcd->Instance->CFIFOCTR = USB_CFIFOCTR_BCLR;	// BCLR
-
-	hpcd->Instance->SOFCFG = 
-		//USB_SOFCFG_BRDYM |	// BRDYM
-		0;
-
-	hpcd->Instance->SYSCFG0 &= ~ USB_SYSCFG_DCFM;	// DCFM 0: Device controller mode is selected
-
-	hpcd->Instance->SYSCFG0 |= USB_SYSCFG_USBE;	// USBE 1: USB module operation is enabled.
-
-	if (hpcd->Init.speed == USBD_SPEED_HIGH)
-	{
-		hpcd->Instance->SYSCFG0 |= USB_SYSCFG_HSE;	// HSE
-	}
-	else
-	{
-		hpcd->Instance->SYSCFG0 &= ~ USB_SYSCFG_HSE;	// HSE
-	}
-
-	//usbd_pipes_initialize(& USB200);
-
-	hpcd->Instance->INTENB0 = 
-		(hpcd->Init.Sof_enable != USB_FALSE) * USB_INTENB0_SOFE |	// SOFE	1: Frame Number Update Interrupt Enable
-		1 * USB_INTENB0_DVSE |	// DVSE
-		//1 * USB_INTENB0_VBSE |	// VBSE
-		1 * USB_INTENB0_CTRE |	// CTRE
-		1 * USB_INTENB0_BEMPE |	// BEMPE
-		1 * USB_INTENB0_NRDYE |	// NRDYE
-		1 * USB_INTENB0_BRDYE |	// BRDYE
-		1 * USB_INTENB0_RSME |	// RSME
-		0;
 
 #elif CPUSTYLE_STM32H7XX
 
@@ -14976,12 +15034,14 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
   */
 void HAL_PCD_MspDeInit(PCD_HandleTypeDef *hpcd)
 {
-  /* Prevent unused argument(s) compilation warning */
-  UNUSED(hpcd);
-  
-  /* NOTE : This function Should not be modified, when the callback is needed,
-            the HAL_PCD_MspDeInit could be implemented in the user file
-   */
+#if CPUSTYLE_R7S721
+	hpcd->Instance->SYSCFG0 = 0;
+	hpcd->Instance->INTENB0 = 0;
+	hpcd->Instance->INTENB1 = 0;
+#elif CPUSTYLE_STM32
+#else
+	#error HAL_PCD_MspDeInit should be implemented
+#endif
 }
 
 
@@ -15715,65 +15775,13 @@ void HAL_HCD_MspInit(HCD_HandleTypeDef* hpcd)
 
 		HARDWARE_USB1_INITIALIZE();
 	}
-
-	hpcd->Instance->SUSPMODE &= ~ USB_SUSPMODE_SUSPM;	// SUSPM 0: The clock supplied to this module is stopped.
-
-
-	//SYSCFG0_0 = 0;
-	SYSCFG0_0 =
-		1 * USB_SYSCFG_UPLLE |	// UPLLE 1: Enables operation of the internal PLL.
-		1 * USB_SYSCFG_UCKSEL |	// UCKSEL 1: The 12-MHz EXTAL clock is selected.
-		0;
-	HARDWARE_DELAY_MS(2);	// required 1 ms delay - see R01UH0437EJ0200 Rev.2.00 28.4.1 System Control and Oscillation Control
-
-	hpcd->Instance->SUSPMODE |= USB_SUSPMODE_SUSPM;	// SUSPM 1: The clock supplied to this module is enabled.
-
-
-	//hpcd->Instance->CFIFOSEL = 0;	// не помогает с первым чтением из DCP
-	//hpcd->Instance->CFIFOCTR = USB_CFIFOCTR_BCLR;	// BCLR
-
-	hpcd->Instance->SOFCFG =
-		//USB_SOFCFG_BRDYM |	// BRDYM
-		0;
-
-	hpcd->Instance->SYSCFG0 |= USB_SYSCFG_DCFM;	// DCFM 1: Host controller mode is selected
-
-	hpcd->Instance->SYSCFG0 |= USB_SYSCFG_USBE;	// USBE 1: USB module operation is enabled.
-
-	if (hpcd->Init.speed == USBD_SPEED_HIGH)
-	{
-		hpcd->Instance->SYSCFG0 |= USB_SYSCFG_HSE;	// HSE
-	}
-	else
-	{
-		hpcd->Instance->SYSCFG0 &= ~ USB_SYSCFG_HSE;	// HSE
-	}
-
-	//usbd_pipes_initialize(& USB200);
-	/*
-	The RSME, DVSE, and CTRE bits can be set to 1 only when the function controller mode is selected; do not set these bits to 1
-	to enable the corresponding interrupt output when the host controller mode is selected.
-	*/
-	hpcd->Instance->INTENB0 =
-		(hpcd->Init.Sof_enable != USB_FALSE) * USB_INTENB0_SOFE |	// SOFE	1: Frame Number Update Interrupt Enable
-		//1 * USB_INTENB0_VBSE |	// VBSE
-		1 * USB_INTENB0_BEMPE |	// BEMPE
-		1 * USB_INTENB0_NRDYE |	// NRDYE
-		1 * USB_INTENB0_BRDYE |	// BRDYE
-		//1 * USB_INTENB0_CTRE |	// CTRE
-		//1 * USB_INTENB0_DVSE |	// DVSE
-		//1 * USB_INTENB0_RSME |	// RSME
-		0;
-
-	hpcd->Instance->INTENB1 =
-		1 * USB_INTENB1_DTCHE |	// DTCH
-		1 * USB_INTENB1_ATTCHE |	// ATTCH
-		0;
-
 }
 
 void HAL_HCD_MspDeInit(HCD_HandleTypeDef* hcdHandle)
 {
+	hpcd->ISYSCFG0 = 0;
+	hpcd->Instance->INTENB0 = 0;
+	hpcd->Instance->INTENB1 = 0;
 }
 
 /**
@@ -16468,7 +16476,7 @@ USBH_StatusTypeDef  USBH_Init(USBH_HandleTypeDef *phost, void (*pUsrFunc)(USBH_H
   osThreadDef(USBH_Thread, USBH_Process_OS, USBH_PROCESS_PRIO, 0, 8 * configMINIMAL_STACK_SIZE);
 #endif  
   phost->thread = osThreadCreate (osThread(USBH_Thread), phost);
-#endif  
+#endif  /* (USBH_USE_OS == 1)  */
   
   /* Initialize low level driver */
   USBH_LL_Init(phost);
@@ -19103,7 +19111,7 @@ const struct drvfunc USBH_drvfunc =
 static void board_usb_spool(void * ctx)
 {
 #if defined (WITHUSBHW_HOST)
-	USBH_Process(& hUsbHost);
+	//USBH_Process(& hUsbHost);
 #endif /* defined (WITHUSBHW_HOST) */
 }
 
@@ -19122,8 +19130,8 @@ void board_usb_initialize(void)
 
 #if defined (WITHUSBHW_HOST)
 	board_usbh_initialize();	// USB host support
-#endif /* defined (WITHUSBHW_HOST) */
 	ticker_initialize(& usbticker, 1, board_usb_spool, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
+#endif /* defined (WITHUSBHW_HOST) */
 
 	//PRINTF(PSTR("board_usb_initialize done.\n"));
 }
@@ -19137,7 +19145,7 @@ void board_usb_activate(void)
 #endif /* defined (WITHUSBHW_DEVICE) */
 
 #if defined (WITHUSBHW_HOST)
-	board_usbh_activate();
+	//board_usbh_activate();
 #endif /* defined (WITHUSBHW_HOST) */
 	//PRINTF(PSTR("board_usb_activate done.\n"));
 }
