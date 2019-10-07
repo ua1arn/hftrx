@@ -16492,20 +16492,27 @@ void  USBH_HandleSof  (USBH_HandleTypeDef *phost)
   */
 USBH_StatusTypeDef  USBH_LL_Connect(USBH_HandleTypeDef *phost)
 {
-	PRINTF(PSTR("USBH_LL_Connect\n"));
-	if (phost->gState == HOST_IDLE )
+	switch (phost->gState)
 	{
+	case HOST_IDLE:
+		PRINTF(PSTR("USBH_LL_Connect at HOST_IDLE\n"));
 		phost->device.is_connected = 1;
 
 		if (phost->pUser != NULL)
 		{    
 			phost->pUser(phost, HOST_USER_CONNECTION);
 		}
-	} 
-	else if (phost->gState == HOST_DEV_WAIT_FOR_ATTACHMENT )
-	{
+		break;
+
+	case HOST_DEV_WAIT_FOR_ATTACHMENT:
+		PRINTF(PSTR("USBH_LL_Connect at HOST_DEV_WAIT_FOR_ATTACHMENT\n"));
 		phost->gState = HOST_DEV_ATTACHED ;
+		break;
+
+	default:
+		break;
 	}
+
 #if (USBH_USE_OS == 1)
 	osMessagePut ( phost->os_event, USBH_PORT_EVENT, 0);
 #endif 
@@ -18068,6 +18075,7 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
 		break;
 
 	case HOST_DEV_WAIT_FOR_ATTACHMENT0:
+		  PRINTF(PSTR("USBH_Process: HOST_DEV_WAIT_FOR_ATTACHMENT0\n"));
 		USBH_LL_ResetPort(phost);
 #if (USBH_USE_OS == 1)
 		osMessagePut ( phost->os_event, USBH_PORT_EVENT, 0);
@@ -18081,14 +18089,17 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
 		break;
 
 	case HOST_DEV_WAIT_FOR_ATTACHMENT:
+		  PRINTF(PSTR("USBH_Process: HOST_DEV_WAIT_FOR_ATTACHMENT\n"));
 		break;    
     
 	case HOST_DEV_ATTACHED :
+		  PRINTF(PSTR("USBH_Process: HOST_DEV_ATTACHED\n"));
 		/* Wait for 100 ms after Reset */
 		USBH_ProcessDelay(phost, HOST_DEV_ATTACHED2, 100);
 		break;    
 
 	case HOST_DEV_ATTACHED2:
+		  PRINTF(PSTR("USBH_Process: HOST_DEV_ATTACHED2\n"));
 		/* после таймаута */
 		phost->device.speed = USBH_LL_GetSpeed(phost);
 
