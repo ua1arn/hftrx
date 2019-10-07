@@ -18197,7 +18197,7 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
 		if (phost->ClassNumber == 0)
 		{
 			PRINTF(PSTR("No Class has been registered.\n"));
-			phost->gState  = HOST_ABORT_STATE;
+			phost->gState = HOST_ABORT_STATE;
 		}
 		else
 		{
@@ -18225,7 +18225,7 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
 				}
 				else
 				{
-					phost->gState  = HOST_ABORT_STATE;
+					phost->gState = HOST_ABORT_STATE;
 					PRINTF(PSTR("Device not supporting %s class.\n"), phost->pActiveClass->Name);
 				}
 			}
