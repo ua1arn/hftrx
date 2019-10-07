@@ -4787,7 +4787,17 @@ uint32_t USB_GetCurrentFrame (USB_OTG_GlobalTypeDef *USBx)
   */
 static uint32_t USB_GetHostSpeed (USB_OTG_GlobalTypeDef *USBx)
 {
-	return USB_OTG_SPEED_HIGH;
+	switch ((USBx->DVSTCTR0 & USB_DVSTCTR0_RHST) >> USB_DVSTCTR0_RHST_SHIFT)
+	{
+	case 0x01:
+		return USB_OTG_SPEED_LOW;
+	case 0x02:
+		return USB_OTG_SPEED_FULL;
+	case 0x03:
+		return USB_OTG_SPEED_HIGH;
+	default:
+		return USB_OTG_SPEED_LOW;
+	}
 }
 
 
@@ -4922,8 +4932,11 @@ HAL_StatusTypeDef  USB_DevDisconnect (USB_OTG_GlobalTypeDef *USBx)
 {
 	//PRINTF(PSTR("USB_DevDisconnect (USBx=%p)\n"), USBx);
 
-	USBx->SYSCFG0 &= ~ USB_SYSCFG_DPRPU;	// DPRPU 0: Pulling up the D+ line is disabled.
-	(void) USBx->SYSSTS0;
+	USBx->SYSCFG0 = (USBx->SYSCFG0 & ~ (USB_SYSCFG_DPRPU | USB_SYSCFG_DRPD)) |
+			0 * USB_SYSCFG_DPRPU |	// DPRPU 0: Pulling up the D+ line is disabled.
+			0 * USB_SYSCFG_DRPD |	// DRPD0: Pulling down the lines is disabled.
+			0;
+	(void) USBx->SYSCFG0;
 	//HAL_Delay(3);
 
 	return HAL_OK;
@@ -4938,8 +4951,11 @@ HAL_StatusTypeDef  USB_DevConnect (USB_OTG_GlobalTypeDef *USBx)
 {
 	//PRINTF(PSTR("USB_DevConnect (USBx=%p)\n"), USBx);
 
-	USBx->SYSCFG0 |= USB_SYSCFG_DPRPU;	// DPRPU 1: Pulling up the D+ line is enabled.
-	(void) USBx->SYSSTS0;
+	USBx->SYSCFG0 = (USBx->SYSCFG0 & ~ (USB_SYSCFG_DPRPU | USB_SYSCFG_DRPD)) |
+			1 * USB_SYSCFG_DPRPU |	// DPRPU 1: Pulling up the D+ line is enabled.
+			0 * USB_SYSCFG_DRPD |	// DRPD 0: Pulling down the lines is disabled.
+			0;
+	(void) USBx->SYSCFG0;
 	//HAL_Delay(3);
 
 	return HAL_OK;
@@ -5000,6 +5016,8 @@ HAL_StatusTypeDef USB_EP0StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDe
 
 HAL_StatusTypeDef USB_HC_StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_HCTypeDef *hc, uint_fast8_t dma)
 {
+	ASSERT(dma == 0);
+
 	return HAL_OK;
 }
 
@@ -5027,9 +5045,15 @@ HAL_StatusTypeDef USB_HC_Halt(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t hc_num)
 static HAL_StatusTypeDef USB_ResetPort(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t state)
 {
 	if (state)
+	{
 		USBx->DVSTCTR0 |= USB_DVSTCTR0_USBRST;
+		(void) USBx->DVSTCTR0;
+	}
 	else
+	{
 		USBx->DVSTCTR0 &= ~ USB_DVSTCTR0_USBRST;
+		(void) USBx->DVSTCTR0;
+	}
 
 	return HAL_OK;
 }
@@ -5083,32 +5107,29 @@ static HAL_StatusTypeDef USB_HostInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG
 	//hpcd->Instance->CFIFOSEL = 0;	// не помогает с первым чтением из DCP
 	//hpcd->Instance->CFIFOCTR = USB_CFIFOCTR_BCLR;	// BCLR
 
+	USBx->SYSCFG0 &= ~ USB_SYSCFG_USBE;	// USBE 0: USB module operation is disabled.
+	(void) USBx->SYSCFG0;
+
 	USBx->SOFCFG =
 		//USB_SOFCFG_BRDYM |	// BRDYM
 		0;
 
-	USBx->SYSCFG0 &= ~ USB_SYSCFG_DPRPU;	// DPRPU 0: Pulling up the D+ line is disabled.
-	(void) USBx->SYSSTS0;
-
-	USBx->SYSCFG0 |= USB_SYSCFG_DRPD;	// DRPD 1: Pulling down the lines is enabled.
-	(void) USBx->SYSSTS0;
+	USBx->SYSCFG0 = (USBx->SYSCFG0 & ~ (USB_SYSCFG_DPRPU | USB_SYSCFG_DRPD)) |
+			0 * USB_SYSCFG_DPRPU |	// DPRPU 0: Pulling up the D+ line is disabled.
+			1 * USB_SYSCFG_DRPD |	// DRPD 1: Pulling down the lines is enabled.
+			0;
+	(void) USBx->SYSCFG0;
 
 	USBx->SYSCFG0 |= USB_SYSCFG_DCFM;	// DCFM 1: Host controller mode is selected
-	(void) USBx->SYSSTS0;
+	(void) USBx->SYSCFG0;
 
 	USBx->SYSCFG0 |= USB_SYSCFG_USBE;	// USBE 1: USB module operation is enabled.
-	(void) USBx->SYSSTS0;
+	(void) USBx->SYSCFG0;
 
-	if (cfg->speed == USBD_SPEED_HIGH)
-	{
-		USBx->SYSCFG0 |= USB_SYSCFG_HSE;	// HSE
-		(void) USBx->SYSSTS0;
-	}
-	else
-	{
-		USBx->SYSCFG0 &= ~ USB_SYSCFG_HSE;	// HSE
-		(void) USBx->SYSSTS0;
-	}
+	USBx->SYSCFG0 = (USBx->SYSCFG0 & ~ (USB_SYSCFG_HSE)) |
+			(cfg->speed == USBD_SPEED_HIGH) * USB_SYSCFG_HSE |	// HSE
+			0;
+	(void) USBx->SYSCFG0;
 
 	/*
 	The RSME, DVSE, and CTRE bits can be set to 1 only when the function controller mode is selected; do not set these bits to 1
@@ -5438,27 +5459,30 @@ static HAL_StatusTypeDef USB_CoreInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG
   */
 static HAL_StatusTypeDef USB_DevInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_CfgTypeDef * cfg)
 {
+	USBx->SYSCFG0 &= ~ USB_SYSCFG_USBE;	// USBE 0: USB module operation is disabled.
+	(void) USBx->SYSCFG0;
+
 	USBx->SOFCFG =
 		//USB_SOFCFG_BRDYM |	// BRDYM
 		0;
-	(void) USBx->SYSSTS0;
+	(void) USBx->SOFCFG;
+
+	USBx->SYSCFG0 = (USBx->SYSCFG0 & ~ (USB_SYSCFG_DPRPU | USB_SYSCFG_DRPD)) |
+			0 * USB_SYSCFG_DPRPU |	// DPRPU 0: Pulling up the D+ line is disabled.
+			0 * USB_SYSCFG_DRPD |	// DRPD 0: Pulling down the lines is disabled.
+			0;
+	(void) USBx->SYSCFG0;
 
 	USBx->SYSCFG0 &= ~ USB_SYSCFG_DCFM;	// DCFM 0: Device controller mode is selected
-	(void) USBx->SYSSTS0;
+	(void) USBx->SYSCFG0;
 
 	USBx->SYSCFG0 |= USB_SYSCFG_USBE;	// USBE 1: USB module operation is enabled.
-	(void) USBx->SYSSTS0;
+	(void) USBx->SYSCFG0;
 
-	if (cfg->speed == USBD_SPEED_HIGH)
-	{
-		USBx->SYSCFG0 |= USB_SYSCFG_HSE;	// HSE
-		(void) USBx->SYSSTS0;
-	}
-	else
-	{
-		USBx->SYSCFG0 &= ~ USB_SYSCFG_HSE;	// HSE
-		(void) USBx->SYSSTS0;
-	}
+	USBx->SYSCFG0 = (USBx->SYSCFG0 & ~ (USB_SYSCFG_HSE)) |
+			(cfg->speed == USBD_SPEED_HIGH) * USB_SYSCFG_HSE |	// HSE
+			0;
+	(void) USBx->SYSCFG0;
 
 	USBx->INTENB0 =
 		(cfg->Sof_enable != USB_FALSE) * USB_INTENB0_SOFE |	// SOFE	1: Frame Number Update Interrupt Enable
@@ -15156,7 +15180,7 @@ static USBD_StatusTypeDef USBD_HS_Init(PCD_HandleTypeDef * hpcd, USBD_HandleType
 
 	pdev->nClasses = 0;
 	/* Set Device initial State */
-	pdev->dev_state  = USBD_STATE_DEFAULT;
+	pdev->dev_state = USBD_STATE_DEFAULT;
 	/* Initialize low level driver */
 	USBD_LL_HS_Init(hpcd, pdev);
 
@@ -15168,8 +15192,8 @@ static USBD_StatusTypeDef USBD_FS_Init(PCD_HandleTypeDef * hpcd, USBD_HandleType
 	/* Check whether the USB Host handle is valid */
 	if(pdev == NULL)
 	{
-	//USBD_ErrLog("Invalid Device handle");
-	return USBD_FAIL;
+		//USBD_ErrLog("Invalid Device handle");
+		return USBD_FAIL;
 	}
 
 	pdev->nClasses = 0;
@@ -15503,27 +15527,29 @@ USBH_StatusTypeDef  USBH_LL_Stop (USBH_HandleTypeDef *phost)
   */
 USBH_SpeedTypeDef USBH_LL_GetSpeed  (USBH_HandleTypeDef *phost)
 {
-  USBH_SpeedTypeDef speed = USBH_SPEED_FULL;
+	USBH_SpeedTypeDef speed;
 
-  switch (HAL_HCD_GetCurrentSpeed(phost->pData))
-  {
-  case 0 :
-    speed = USBH_SPEED_HIGH;
-    break;
+	switch (HAL_HCD_GetCurrentSpeed(phost->pData))
+	{
+	case USB_OTG_SPEED_HIGH:
+		speed = USBH_SPEED_HIGH;
+		break;
 
-  case 1 :
-    speed = USBH_SPEED_FULL;
-    break;
+	case USB_OTG_SPEED_HIGH_IN_FULL:
+		speed = USBH_SPEED_FULL;
+		break;
 
-  case 2 :
-    speed = USBH_SPEED_LOW;
-    break;
+	case USB_OTG_SPEED_LOW:
+		speed = USBH_SPEED_LOW;
+		break;
 
-  default:
-   speed = USBH_SPEED_FULL;
-    break;
-  }
-  return  speed;
+	default:
+	case USB_OTG_SPEED_FULL:
+		speed = USBH_SPEED_FULL;
+		break;
+	}
+	PRINTF(PSTR("USBH_LL_GetSpeed: (high=0, full=1, low=2) speed=%d\n"), (int) speed);
+	return speed;
 }
 
 /**
@@ -18112,7 +18138,7 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
 	case HOST_DEV_BUS_RESET_ON:
 		//PRINTF(PSTR("USBH_Process: HOST_DEV_BUS_RESET_ON\n"));
 		USBH_LL_ResetPort(phost, 1);
-		USBH_ProcessDelay(phost, HOST_DEV_BUS_RESET_OFF, 10);
+		USBH_ProcessDelay(phost, HOST_DEV_BUS_RESET_OFF, 50);
 		break;
 
 	case HOST_DEV_BUS_RESET_OFF:
