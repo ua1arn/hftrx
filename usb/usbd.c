@@ -1553,6 +1553,16 @@ typedef struct
   * @}
   */
 
+/* PCD Handle Structure */
+static USBALIGN_BEGIN PCD_HandleTypeDef hpcd_USB_OTG USBALIGN_END;
+/* USB Device Core handle declaration */
+static USBALIGN_BEGIN USBD_HandleTypeDef hUsbDevice USBALIGN_END;
+
+/* HCD Handle Structure */
+static USBALIGN_BEGIN HCD_HandleTypeDef hhcd_USB_OTG USBALIGN_END;
+/* USB Host Core handle declaration */
+static USBALIGN_BEGIN USBH_HandleTypeDef hUsbHost USBALIGN_END;
+
 /**
   * @}
   */
@@ -1743,18 +1753,8 @@ typedef enum {
 } ApplicationTypeDef;
 
 
-/* PCD Handle Structure */
-static USBALIGN_BEGIN PCD_HandleTypeDef hpcd_USB_OTG USBALIGN_END;
-
-/* USB Device Core handle declaration */
-static USBALIGN_BEGIN USBD_HandleTypeDef hUsbDevice USBALIGN_END;
-/* USB Host Core handle declaration */
-static USBALIGN_BEGIN USBH_HandleTypeDef hUsbHost USBALIGN_END;
-
 static ApplicationTypeDef Appli_state = APPLICATION_IDLE;
 
-
-static HCD_HandleTypeDef hhcd_USB_OTG;
 
 USBD_StatusTypeDef  USBD_LL_Stop (USBD_HandleTypeDef *pdev);
 USBD_StatusTypeDef  USBD_LL_Start(USBD_HandleTypeDef *pdev);
@@ -15259,9 +15259,6 @@ static void board_usbd_initialize(void)
 	hardware_usbd_dma_enable();
 }
 
-#if defined (WITHUSBHW_HOST)
-//++++ сюда переносим используемые хостом функции
-
 
 #if CPUSTYLE_STM32
 /**
@@ -16212,37 +16209,6 @@ void  USBH_LL_IncTimer  (USBH_HandleTypeDef *phost)
 }
 
 /**
-  * @brief  USBH_LL_Init 
-  *         Initialize the Low Level portion of the Host driver.
-  * @param  phost: Host handle
-  * @retval USBH Status
-  */
-USBH_StatusTypeDef  USBH_LL_Init(USBH_HandleTypeDef *phost)
-{
-	/* Init USB_IP */
-	if (phost->id == HOST_FS)
-	{
-		/* Link The driver to the stack */
-		hhcd_USB_OTG.pData = phost;
-		phost->pData = & hhcd_USB_OTG;
-
-		hhcd_USB_OTG.Instance = WITHUSBHW_HOST;
-		hhcd_USB_OTG.Init.Host_channels = 16;
-		hhcd_USB_OTG.Init.speed = USBD_SPEED_HIGH;
-		hhcd_USB_OTG.Init.dma_enable = USB_DISABLE;
-		hhcd_USB_OTG.Init.phy_itface = HCD_PHY_EMBEDDED;
-		hhcd_USB_OTG.Init.Sof_enable = USB_DISABLE;
-		if (HAL_HCD_Init(& hhcd_USB_OTG) != HAL_OK)
-		{
-			_Error_Handler(__FILE__, __LINE__);
-		}
-
-		USBH_LL_SetTimer(phost, HAL_HCD_GetCurrentFrame(&hhcd_USB_OTG));
-	}
-	return USBH_OK;
-}
-
-/**
   * @brief  USBH_LL_DeInit 
   *         De-Initialize the Low Level portion of the Host driver.
   * @param  phost: Host handle
@@ -16526,6 +16492,7 @@ void  USBH_HandleSof  (USBH_HandleTypeDef *phost)
   */
 USBH_StatusTypeDef  USBH_LL_Connect(USBH_HandleTypeDef *phost)
 {
+	PRINTF(PSTR("USBH_LL_Connect\n"));
 	if (phost->gState == HOST_IDLE )
 	{
 		phost->device.is_connected = 1;
@@ -16537,7 +16504,7 @@ USBH_StatusTypeDef  USBH_LL_Connect(USBH_HandleTypeDef *phost)
 	} 
 	else if (phost->gState == HOST_DEV_WAIT_FOR_ATTACHMENT )
 	{
-	phost->gState = HOST_DEV_ATTACHED ;
+		phost->gState = HOST_DEV_ATTACHED ;
 	}
 #if (USBH_USE_OS == 1)
 	osMessagePut ( phost->os_event, USBH_PORT_EVENT, 0);
@@ -16554,7 +16521,7 @@ USBH_StatusTypeDef  USBH_LL_Connect(USBH_HandleTypeDef *phost)
   */
 USBH_StatusTypeDef  USBH_LL_Disconnect(USBH_HandleTypeDef *phost)
 {
-	//PRINTF(PSTR("USBH_LL_Disconnect\n"));
+	PRINTF(PSTR("USBH_LL_Disconnect\n"));
 	/*Stop Host */ 
 	USBH_LL_Stop(phost);  
 
@@ -18096,7 +18063,7 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
 		if (phost->device.is_connected)  
 		{
 			/* Wait for 200 ms after connection */
-			USBH_ProcessDelay(phost, HOST_DEV_WAIT_FOR_ATTACHMENT0, 100);
+			USBH_ProcessDelay(phost, HOST_DEV_WAIT_FOR_ATTACHMENT0, 200);
 		}
 		break;
 
@@ -18817,7 +18784,7 @@ void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd)
     }     
     
     /* Handle Host Disconnect Interrupts */
-    if(__HAL_HCD_GET_FLAG(hhcd, USB_OTG_GINTSTS_DISCINT))
+    if (__HAL_HCD_GET_FLAG(hhcd, USB_OTG_GINTSTS_DISCINT))
     {
       
       /* Cleanup HPRT */
@@ -18879,6 +18846,44 @@ void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd)
 #endif /* CPUSTYLE_STM32 */
 
 
+#if defined (WITHUSBHW_DEVICE)
+//++++ сюда переносим используемые хостом функции
+
+#endif /* WITHUSBHW_DEVICE */
+
+#if defined (WITHUSBHW_HOST)
+//++++ сюда переносим используемые хостом функции
+
+/**
+  * @brief  USBH_LL_Init
+  *         Initialize the Low Level portion of the Host driver.
+  * @param  phost: Host handle
+  * @retval USBH Status
+  */
+USBH_StatusTypeDef  USBH_LL_Init(USBH_HandleTypeDef *phost)
+{
+	/* Init USB_IP */
+	if (phost->id == HOST_FS)
+	{
+		/* Link The driver to the stack */
+		hhcd_USB_OTG.pData = phost;
+		phost->pData = & hhcd_USB_OTG;
+
+		hhcd_USB_OTG.Instance = WITHUSBHW_HOST;
+		hhcd_USB_OTG.Init.Host_channels = 16;
+		hhcd_USB_OTG.Init.speed = USBD_SPEED_HIGH;
+		hhcd_USB_OTG.Init.dma_enable = USB_DISABLE;
+		hhcd_USB_OTG.Init.phy_itface = HCD_PHY_EMBEDDED;
+		hhcd_USB_OTG.Init.Sof_enable = USB_DISABLE;
+		if (HAL_HCD_Init(& hhcd_USB_OTG) != HAL_OK)
+		{
+			_Error_Handler(__FILE__, __LINE__);
+		}
+
+		USBH_LL_SetTimer(phost, HAL_HCD_GetCurrentFrame(&hhcd_USB_OTG));
+	}
+	return USBH_OK;
+}
 
 #endif /* defined (WITHUSBHW_HOST) */
 
@@ -19049,7 +19054,8 @@ const struct drvfunc USBH_drvfunc =
 #endif /* WITHUSEUSBFLASH */
 
 // вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
-static void board_usb_spool(void * ctx)
+static void
+board_usb_spool(void * ctx)
 {
 #if defined (WITHUSBHW_HOST)
 	USBH_Process(& hUsbHost);
@@ -19077,7 +19083,6 @@ void board_usb_initialize(void)
 	#if WITHUSEUSBFLASH
 		USBH_RegisterClass(&hUsbHost, & USBH_msc);
 	#endif /* WITHUSEUSBFLASH */
-
 	ticker_initialize(& usbticker, 1, board_usb_spool, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
 
 #endif /* defined (WITHUSBHW_HOST) */
@@ -19088,7 +19093,7 @@ void board_usb_initialize(void)
 /* вызывается при разрешённых прерываниях. */
 void board_usb_activate(void)
 {
-	//PRINTF(PSTR("board_usb_activate start.\n"));
+	PRINTF(PSTR("board_usb_activate start.\n"));
 
 #if defined (WITHUSBHW_DEVICE)
 	USBD_Start(& hUsbDevice);
@@ -19097,7 +19102,7 @@ void board_usb_activate(void)
 #if defined (WITHUSBHW_HOST)
 	USBH_Start(& hUsbHost);
 #endif /* defined (WITHUSBHW_HOST) */
-	//PRINTF(PSTR("board_usb_activate done.\n"));
+	PRINTF(PSTR("board_usb_activate done.\n"));
 }
 
 /* вызывается при разрешённых прерываниях. */
