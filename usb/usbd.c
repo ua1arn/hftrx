@@ -2366,7 +2366,7 @@ control_transmit2(USBD_HandleTypeDef *pdev)
 	}
 	else if (ep0data != NULL)
 	{
-		// если последний пакет был кратет USB_OTG_MAX_EP0_SIZE, то передаем пакет нулевого размера
+		// если последний пакет был кратен USB_OTG_MAX_EP0_SIZE, то передаем пакет нулевого размера
 		if (control_transmit0single(pdev, ep0data, 0))
 			return 1;
 		ep0data = NULL;
@@ -2973,7 +2973,7 @@ static void usb0_function_GetDescriptor(USBD_HandleTypeDef *pdev, const USBD_Set
 		{
 		case 0xF8:
 			// Запрос появляется при запуске MixW2
-			//USBD_CtlSendData(Instance, StringDescrTbl [STRING_ID_7].data, ulmin16(req->wLength, StringDescrTbl [STRING_ID_7].size));
+			//USBD_CtlSendData(pdev, StringDescrTbl [STRING_ID_7].data, ulmin16(req->wLength, StringDescrTbl [STRING_ID_7].size));
 			USBD_CtlError(pdev, req);
 			return;
 
