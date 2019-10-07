@@ -1284,7 +1284,8 @@ typedef enum
 typedef enum
 {
 	HOST_IDLE = 0,
-	HOST_DEV_WAIT_FOR_ATTACHMENT0,
+	HOST_DEV_BUS_RESET_ON,
+	HOST_DEV_BUS_RESET_OFF,
 	HOST_DEV_WAIT_FOR_ATTACHMENT,
 	HOST_DEV_BEFORE_ATTACHED,
 	HOST_DEV_ATTACHED,
@@ -1660,7 +1661,7 @@ void             HAL_HCD_HC_NotifyURBChange_Callback(HCD_HandleTypeDef *hhcd,
 /** @defgroup HCD_Exported_Functions_Group3 Peripheral Control functions
   * @{
   */
-HAL_StatusTypeDef       HAL_HCD_ResetPort(HCD_HandleTypeDef *hhcd);
+HAL_StatusTypeDef       HAL_HCD_ResetPort(HCD_HandleTypeDef *hhcd, uint_fast8_t status);
 HAL_StatusTypeDef       HAL_HCD_Start(HCD_HandleTypeDef *hhcd);
 HAL_StatusTypeDef       HAL_HCD_Stop(HCD_HandleTypeDef *hhcd);
 /**
@@ -1724,7 +1725,7 @@ USBH_StatusTypeDef   USBH_LL_Stop         (USBH_HandleTypeDef *phost);
 USBH_StatusTypeDef   USBH_LL_Connect      (USBH_HandleTypeDef *phost);
 USBH_StatusTypeDef   USBH_LL_Disconnect   (USBH_HandleTypeDef *phost);
 USBH_SpeedTypeDef    USBH_LL_GetSpeed     (USBH_HandleTypeDef *phost);
-USBH_StatusTypeDef   USBH_LL_ResetPort    (USBH_HandleTypeDef *phost);
+USBH_StatusTypeDef   USBH_LL_ResetPort    (USBH_HandleTypeDef *phost, uint_fast8_t status);
 uint32_t             USBH_LL_GetLastXferSize   (USBH_HandleTypeDef *phost, uint8_t );
 USBH_StatusTypeDef   USBH_LL_DriverVBUS   (USBH_HandleTypeDef *phost, uint_fast8_t );
 
@@ -1980,7 +1981,7 @@ uint32_t USB_ReadDevInEPInterrupt(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t epnu
 void USB_ClearInterrupts(USB_OTG_GlobalTypeDef *USBx, uint32_t interrupt);
 
 static HAL_StatusTypeDef USB_InitFSLSPClkSel(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t freq);
-static HAL_StatusTypeDef USB_ResetPort(USB_OTG_GlobalTypeDef *USBx);
+static HAL_StatusTypeDef USB_ResetPort(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t state);
 static HAL_StatusTypeDef USB_DriveVbus(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t state);
 static uint32_t  USB_GetHostSpeed(USB_OTG_GlobalTypeDef *USBx);
 
@@ -5018,16 +5019,17 @@ HAL_StatusTypeDef USB_HC_Halt(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t hc_num)
 /**
 * @brief  USB_OTG_ResetPort : Reset Host Port
   * @param  USBx : Selected device
+  * @param  state : activate reset
   * @retval HAL status
   * @note : (1)The application must wait at least 10 ms
   *   before clearing the reset bit.
   */
-static HAL_StatusTypeDef USB_ResetPort(USB_OTG_GlobalTypeDef *USBx)
+static HAL_StatusTypeDef USB_ResetPort(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t state)
 {
-	USBx->DVSTCTR0 |= USB_DVSTCTR0_USBRST;
-	local_delay_ms(10);
-	USBx->DVSTCTR0 &= ~ USB_DVSTCTR0_USBRST;
-	local_delay_ms(10);
+	if (state)
+		USBx->DVSTCTR0 |= USB_DVSTCTR0_USBRST;
+	else
+		USBx->DVSTCTR0 &= ~ USB_DVSTCTR0_USBRST;
 
 	return HAL_OK;
 }
@@ -7221,20 +7223,22 @@ static HAL_StatusTypeDef USB_InitFSLSPClkSel(USB_OTG_GlobalTypeDef *USBx, uint_f
 /**
 * @brief  USB_OTG_ResetPort : Reset Host Port
   * @param  USBx : Selected device
+  * @param  state : activate reset
   * @retval HAL status
   * @note : (1)The application must wait at least 10 ms
   *   before clearing the reset bit.
   */
-static HAL_StatusTypeDef USB_ResetPort(USB_OTG_GlobalTypeDef *USBx)
+static HAL_StatusTypeDef USB_ResetPort(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t state)
 {
   uint32_t hprt0 = USBx_HPRT0;
 
-  hprt0 &= ~(USB_OTG_HPRT_PENA    | USB_OTG_HPRT_PCDET |
-    USB_OTG_HPRT_PENCHNG | USB_OTG_HPRT_POCCHNG );
+  hprt0 &= ~ (USB_OTG_HPRT_PENA | USB_OTG_HPRT_PCDET | USB_OTG_HPRT_PENCHNG | USB_OTG_HPRT_POCCHNG);
 
-  USBx_HPRT0 = (USB_OTG_HPRT_PRST | hprt0);
-  HAL_Delay (10);                                /* See Note #1 */
-  USBx_HPRT0 = ((~USB_OTG_HPRT_PRST) & hprt0);
+  if (state)
+	  USBx_HPRT0 = (USB_OTG_HPRT_PRST | hprt0);
+  else
+	  USBx_HPRT0 = ((~ USB_OTG_HPRT_PRST) & hprt0);
+
   return HAL_OK;
 }
 
@@ -15398,9 +15402,10 @@ HAL_StatusTypeDef HAL_HCD_Stop(HCD_HandleTypeDef *hhcd)
   * @param  hhcd: HCD handle
   * @retval HAL status
   */
-HAL_StatusTypeDef HAL_HCD_ResetPort(HCD_HandleTypeDef *hhcd)
+HAL_StatusTypeDef HAL_HCD_ResetPort(HCD_HandleTypeDef *hhcd, uint_fast8_t status)
 {
-  return (USB_ResetPort(hhcd->Instance));
+	USB_ResetPort(hhcd->Instance, status);
+	return HAL_OK;
 }
 
 /**
@@ -15527,12 +15532,12 @@ USBH_SpeedTypeDef USBH_LL_GetSpeed  (USBH_HandleTypeDef *phost)
   * @param  phost: Host handle
   * @retval USBH Status
   */
-USBH_StatusTypeDef USBH_LL_ResetPort (USBH_HandleTypeDef *phost)
+USBH_StatusTypeDef USBH_LL_ResetPort (USBH_HandleTypeDef *phost, uint_fast8_t status)
 {
   HAL_StatusTypeDef hal_status = HAL_OK;
   USBH_StatusTypeDef usb_status = USBH_OK;
 
-  hal_status = HAL_HCD_ResetPort(phost->pData);
+  hal_status = HAL_HCD_ResetPort(phost->pData, status);
   switch (hal_status) {
     case HAL_OK :
       usb_status = USBH_OK;
@@ -18071,7 +18076,7 @@ static void USBH_ProcessDelay(
 	)
 {
 	const uint_fast16_t nticks = NTICKS(delayMS);
-	if (nticks > 2)
+	if (nticks > 1)
 	{
 		phost->gPushTicks = nticks;
 		phost->gPushState = state;
@@ -18100,17 +18105,24 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
 		if (phost->device.is_connected)  
 		{
 			/* Wait for 200 ms after connection */
-			USBH_ProcessDelay(phost, HOST_DEV_WAIT_FOR_ATTACHMENT0, 200);
+			USBH_ProcessDelay(phost, HOST_DEV_BUS_RESET_ON, 200);
 		}
 		break;
 
-	case HOST_DEV_WAIT_FOR_ATTACHMENT0:
-		PRINTF(PSTR("USBH_Process: HOST_DEV_WAIT_FOR_ATTACHMENT0\n"));
-		USBH_LL_ResetPort(phost);
-#if (USBH_USE_OS == 1)
-		osMessagePut ( phost->os_event, USBH_PORT_EVENT, 0);
-#endif
-		phost->gState = HOST_DEV_WAIT_FOR_ATTACHMENT; 
+	case HOST_DEV_BUS_RESET_ON:
+		//PRINTF(PSTR("USBH_Process: HOST_DEV_BUS_RESET_ON\n"));
+		USBH_LL_ResetPort(phost, 1);
+		USBH_ProcessDelay(phost, HOST_DEV_BUS_RESET_OFF, 10);
+		break;
+
+	case HOST_DEV_BUS_RESET_OFF:
+		//PRINTF(PSTR("USBH_Process: HOST_DEV_BUS_RESET_OFF\n"));
+		USBH_LL_ResetPort(phost, 0);
+
+	#if (USBH_USE_OS == 1)
+			osMessagePut ( phost->os_event, USBH_PORT_EVENT, 0);
+	#endif
+		phost->gState = HOST_DEV_WAIT_FOR_ATTACHMENT;
 		break;
 
 	case HOST_DELAY:
