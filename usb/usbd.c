@@ -5028,6 +5028,7 @@ static HAL_StatusTypeDef USB_ResetPort(USB_OTG_GlobalTypeDef *USBx)
 	local_delay_ms(10);
 	USBx->DVSTCTR0 &= ~ USB_DVSTCTR0_USBRST;
 	local_delay_ms(10);
+
 	return HAL_OK;
 }
 
