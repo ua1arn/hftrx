@@ -7608,7 +7608,7 @@ HAL_StatusTypeDef HAL_PCD_Init(PCD_HandleTypeDef *hpcd)
    hpcd->IN_ep[i].tx_fifo_num = i;
    /* Control until ep is activated */
    hpcd->IN_ep[i].type = USBD_EP_TYPE_CTRL;
-   hpcd->IN_ep[i].maxpacket =  0;
+   hpcd->IN_ep[i].maxpacket = 0;
    hpcd->IN_ep[i].xfer_buff = NULL;
    hpcd->IN_ep[i].xfer_len = 0;
  }
@@ -11301,7 +11301,7 @@ USBD_StatusTypeDef USBD_LL_SetSpeed(USBD_HandleTypeDef  *pdev, USBD_SpeedTypeDef
 
 USBD_StatusTypeDef USBD_LL_Suspend(USBD_HandleTypeDef  *pdev)
 {
-	pdev->dev_old_state =  pdev->dev_state;
+	pdev->dev_old_state = pdev->dev_state;
 	pdev->dev_state  = USBD_STATE_SUSPENDED;
 	return USBD_OK;
 }
@@ -13464,7 +13464,7 @@ USBH_StatusTypeDef USBH_MSC_BOT_REQ_GetMaxLUN(USBH_HandleTypeDef *phost, uint8_t
 USBH_StatusTypeDef USBH_MSC_BOT_Init(USBH_HandleTypeDef *phost)
 {
   
-  MSC_HandleTypeDef *MSC_Handle =  (MSC_HandleTypeDef *) phost->pActiveClass->pData;
+  MSC_HandleTypeDef *MSC_Handle = (MSC_HandleTypeDef *) phost->pActiveClass->pData;
   
   MSC_Handle->hbot.cbw.field.Signature = BOT_CBW_SIGNATURE;
   MSC_Handle->hbot.cbw.field.Tag = BOT_CBW_TAG;
@@ -13489,7 +13489,7 @@ USBH_StatusTypeDef USBH_MSC_BOT_Process (USBH_HandleTypeDef *phost, uint8_t lun)
   USBH_StatusTypeDef   error  = USBH_BUSY;  
   BOT_CSWStatusTypeDef CSW_Status = BOT_CSW_CMD_FAILED;
   USBH_URBStateTypeDef URB_Status = USBH_URB_IDLE;
-  MSC_HandleTypeDef *MSC_Handle =  (MSC_HandleTypeDef *) phost->pActiveClass->pData;
+  MSC_HandleTypeDef *MSC_Handle = (MSC_HandleTypeDef *) phost->pActiveClass->pData;
   uint8_t toggle = 0;
   
   switch (MSC_Handle->hbot.state)
@@ -13788,7 +13788,7 @@ USBH_StatusTypeDef USBH_MSC_BOT_Process (USBH_HandleTypeDef *phost, uint8_t lun)
 static USBH_StatusTypeDef USBH_MSC_BOT_Abort(USBH_HandleTypeDef *phost, uint8_t lun, uint8_t dir)
 {
   USBH_StatusTypeDef status = USBH_FAIL;
-  MSC_HandleTypeDef *MSC_Handle =  (MSC_HandleTypeDef *) phost->pActiveClass->pData;
+  MSC_HandleTypeDef *MSC_Handle = (MSC_HandleTypeDef *) phost->pActiveClass->pData;
   
   switch (dir)
   {
@@ -13826,7 +13826,7 @@ static USBH_StatusTypeDef USBH_MSC_BOT_Abort(USBH_HandleTypeDef *phost, uint8_t 
 
 static BOT_CSWStatusTypeDef USBH_MSC_DecodeCSW(USBH_HandleTypeDef *phost)
 {
-  MSC_HandleTypeDef *MSC_Handle =  (MSC_HandleTypeDef *) phost->pActiveClass->pData;
+  MSC_HandleTypeDef *MSC_Handle = (MSC_HandleTypeDef *) phost->pActiveClass->pData;
   BOT_CSWStatusTypeDef status = BOT_CSW_CMD_FAILED;
   
     /*Checking if the transfer length is different than 13*/    
@@ -13988,7 +13988,7 @@ static USBH_StatusTypeDef USBH_MSC_InterfaceInit (USBH_HandleTypeDef *phost)
     
     //phost->pActiveClass->pData = (MSC_HandleTypeDef *)USBH_malloc (sizeof(MSC_HandleTypeDef));
     phost->pActiveClass->pData = & msc_handle;
-    MSC_Handle =  (MSC_HandleTypeDef *) phost->pActiveClass->pData;
+    MSC_Handle = (MSC_HandleTypeDef *) phost->pActiveClass->pData;
     
     if (phost->device.CfgDesc.Itf_Desc[phost->device.current_interface].Ep_Desc[0].bEndpointAddress & 0x80)
     {
@@ -14058,7 +14058,7 @@ static USBH_StatusTypeDef USBH_MSC_InterfaceInit (USBH_HandleTypeDef *phost)
   */
 USBH_StatusTypeDef USBH_MSC_InterfaceDeInit (USBH_HandleTypeDef *phost)
 {
-  MSC_HandleTypeDef *MSC_Handle =  (MSC_HandleTypeDef *) phost->pActiveClass->pData;
+  MSC_HandleTypeDef *MSC_Handle = (MSC_HandleTypeDef *) phost->pActiveClass->pData;
 
   if (MSC_Handle->OutPipe)
   {
@@ -14092,7 +14092,7 @@ USBH_StatusTypeDef USBH_MSC_InterfaceDeInit (USBH_HandleTypeDef *phost)
   */
 static USBH_StatusTypeDef USBH_MSC_ClassRequest(USBH_HandleTypeDef *phost)
 {   
-  MSC_HandleTypeDef *MSC_Handle =  (MSC_HandleTypeDef *) phost->pActiveClass->pData;  
+  MSC_HandleTypeDef *MSC_Handle = (MSC_HandleTypeDef *) phost->pActiveClass->pData;
   USBH_StatusTypeDef status = USBH_BUSY;
   uint8_t i;
   
@@ -14152,7 +14152,7 @@ USBH_StatusTypeDef USBH_MSC_SCSI_TestUnitReady (USBH_HandleTypeDef *phost,
                                                 uint8_t lun)
 {
   USBH_StatusTypeDef    error = USBH_FAIL ;
-  MSC_HandleTypeDef *MSC_Handle =  (MSC_HandleTypeDef *) phost->pActiveClass->pData;
+  MSC_HandleTypeDef *MSC_Handle = (MSC_HandleTypeDef *) phost->pActiveClass->pData;
   
   switch(MSC_Handle->hbot.cmd_state)
   {
@@ -14195,7 +14195,7 @@ USBH_StatusTypeDef USBH_MSC_SCSI_ReadCapacity (USBH_HandleTypeDef *phost,
                                                SCSI_CapacityTypeDef *capacity)
 {
   USBH_StatusTypeDef    error = USBH_BUSY ;
-  MSC_HandleTypeDef *MSC_Handle =  (MSC_HandleTypeDef *) phost->pActiveClass->pData;
+  MSC_HandleTypeDef *MSC_Handle = (MSC_HandleTypeDef *) phost->pActiveClass->pData;
   
   switch(MSC_Handle->hbot.cmd_state)
   {
@@ -14251,7 +14251,7 @@ USBH_StatusTypeDef USBH_MSC_SCSI_Inquiry (USBH_HandleTypeDef *phost,
                                                SCSI_StdInquiryDataTypeDef *inquiry)
 {
   USBH_StatusTypeDef    error = USBH_FAIL ;
-  MSC_HandleTypeDef *MSC_Handle =  (MSC_HandleTypeDef *) phost->pActiveClass->pData;
+  MSC_HandleTypeDef *MSC_Handle = (MSC_HandleTypeDef *) phost->pActiveClass->pData;
   switch(MSC_Handle->hbot.cmd_state)
   {
   case BOT_CMD_SEND:  
@@ -14313,7 +14313,7 @@ USBH_StatusTypeDef USBH_MSC_SCSI_RequestSense (USBH_HandleTypeDef *phost,
                                                SCSI_SenseTypeDef *sense_data)
 {
   USBH_StatusTypeDef    error = USBH_FAIL ;
-  MSC_HandleTypeDef *MSC_Handle =  (MSC_HandleTypeDef *) phost->pActiveClass->pData;
+  MSC_HandleTypeDef *MSC_Handle = (MSC_HandleTypeDef *) phost->pActiveClass->pData;
   
   switch(MSC_Handle->hbot.cmd_state)
   {
@@ -14375,7 +14375,7 @@ USBH_StatusTypeDef USBH_MSC_SCSI_Write(USBH_HandleTypeDef *phost,
 {
   USBH_StatusTypeDef    error = USBH_FAIL ;
 
-  MSC_HandleTypeDef *MSC_Handle =  (MSC_HandleTypeDef *) phost->pActiveClass->pData;
+  MSC_HandleTypeDef *MSC_Handle = (MSC_HandleTypeDef *) phost->pActiveClass->pData;
   
   switch(MSC_Handle->hbot.cmd_state)
   {
@@ -14487,7 +14487,7 @@ USBH_StatusTypeDef USBH_MSC_SCSI_Read(USBH_HandleTypeDef *phost,
   */
 static USBH_StatusTypeDef USBH_MSC_Process(USBH_HandleTypeDef *phost)
 {
-  MSC_HandleTypeDef *MSC_Handle =  (MSC_HandleTypeDef *) phost->pActiveClass->pData;
+  MSC_HandleTypeDef *MSC_Handle = (MSC_HandleTypeDef *) phost->pActiveClass->pData;
   USBH_StatusTypeDef error = USBH_BUSY ;
   USBH_StatusTypeDef scsi_status = USBH_BUSY ;  
   USBH_StatusTypeDef ready_status = USBH_BUSY ;
@@ -14685,7 +14685,7 @@ static USBH_StatusTypeDef USBH_MSC_SOFProcess(USBH_HandleTypeDef *phost)
   */
 static USBH_StatusTypeDef USBH_MSC_RdWrProcess(USBH_HandleTypeDef *phost, uint8_t lun)
 {
-  MSC_HandleTypeDef *MSC_Handle =  (MSC_HandleTypeDef *) phost->pActiveClass->pData;
+  MSC_HandleTypeDef *MSC_Handle = (MSC_HandleTypeDef *) phost->pActiveClass->pData;
   USBH_StatusTypeDef error = USBH_BUSY ;
   USBH_StatusTypeDef scsi_status = USBH_BUSY ;  
   
@@ -14779,7 +14779,7 @@ static USBH_StatusTypeDef USBH_MSC_RdWrProcess(USBH_HandleTypeDef *phost, uint8_
   */
 uint8_t  USBH_MSC_IsReady (USBH_HandleTypeDef *phost)
 {
-    MSC_HandleTypeDef *MSC_Handle =  (MSC_HandleTypeDef *) phost->pActiveClass->pData;  
+    MSC_HandleTypeDef *MSC_Handle = (MSC_HandleTypeDef *) phost->pActiveClass->pData;
     
   if (phost->gState == HOST_CLASS)
   {
@@ -14799,7 +14799,7 @@ uint8_t  USBH_MSC_IsReady (USBH_HandleTypeDef *phost)
   */
 int8_t  USBH_MSC_GetMaxLUN (USBH_HandleTypeDef *phost)
 {
-  MSC_HandleTypeDef *MSC_Handle =  (MSC_HandleTypeDef *) phost->pActiveClass->pData;    
+  MSC_HandleTypeDef *MSC_Handle = (MSC_HandleTypeDef *) phost->pActiveClass->pData;
   
   if ((phost->gState == HOST_CLASS) && (MSC_Handle->state == MSC_IDLE))
   {
@@ -14817,7 +14817,7 @@ int8_t  USBH_MSC_GetMaxLUN (USBH_HandleTypeDef *phost)
   */
 uint8_t  USBH_MSC_UnitIsReady (USBH_HandleTypeDef *phost, uint8_t lun)
 {
-  MSC_HandleTypeDef *MSC_Handle =  (MSC_HandleTypeDef *) phost->pActiveClass->pData;  
+  MSC_HandleTypeDef *MSC_Handle = (MSC_HandleTypeDef *) phost->pActiveClass->pData;
   
   if (phost->gState == HOST_CLASS)
   {
@@ -14838,7 +14838,7 @@ uint8_t  USBH_MSC_UnitIsReady (USBH_HandleTypeDef *phost, uint8_t lun)
   */
 USBH_StatusTypeDef USBH_MSC_GetLUNInfo(USBH_HandleTypeDef *phost, uint8_t lun, MSC_LUNTypeDef *info)
 {
-  MSC_HandleTypeDef *MSC_Handle =  (MSC_HandleTypeDef *) phost->pActiveClass->pData;    
+  MSC_HandleTypeDef *MSC_Handle = (MSC_HandleTypeDef *) phost->pActiveClass->pData;
   if (phost->gState == HOST_CLASS)
   {
     USBH_memcpy(info,&MSC_Handle->unit[lun], sizeof(MSC_LUNTypeDef));
@@ -14867,7 +14867,7 @@ USBH_StatusTypeDef USBH_MSC_Read(USBH_HandleTypeDef *phost,
                                      uint32_t length)
 {
   uint32_t timeout;
-  MSC_HandleTypeDef *MSC_Handle =  (MSC_HandleTypeDef *) phost->pActiveClass->pData;   
+  MSC_HandleTypeDef *MSC_Handle = (MSC_HandleTypeDef *) phost->pActiveClass->pData;
   
   if ((phost->device.is_connected == 0) || 
       (phost->gState != HOST_CLASS) || 
@@ -14915,7 +14915,7 @@ USBH_StatusTypeDef USBH_MSC_Write(USBH_HandleTypeDef *phost,
                                      uint32_t length)
 {
   uint32_t timeout;
-  MSC_HandleTypeDef *MSC_Handle =  (MSC_HandleTypeDef *) phost->pActiveClass->pData;   
+  MSC_HandleTypeDef *MSC_Handle = (MSC_HandleTypeDef *) phost->pActiveClass->pData;
   
   if ((phost->device.is_connected == 0) || 
       (phost->gState != HOST_CLASS) || 
@@ -15941,7 +15941,7 @@ HAL_StatusTypeDef HAL_HCD_HC_Init(HCD_HandleTypeDef *hhcd,
   hhcd->hc[ch_num].ep_is_in = ((epnum & 0x80) == 0x80);
   hhcd->hc[ch_num].speed = speed;
 
-  status =  USB_HC_Init(hhcd->Instance, 
+  status = USB_HC_Init(hhcd->Instance,
                         ch_num,
                         epnum,
                         dev_address,
@@ -16273,7 +16273,7 @@ uint8_t USBH_AllocPipe  (USBH_HandleTypeDef *phost, uint8_t ep_addr)
 {
   uint16_t pipe;
   
-  pipe =  USBH_GetFreePipe(phost);
+  pipe = USBH_GetFreePipe(phost);
 
   if (pipe != 0xFFFF)
   {
@@ -17098,7 +17098,7 @@ static void USBH_ParseStringDesc (uint8_t* psrc,
     
     for (idx = 0; idx < strlength; idx+=2 )
     {/* Copy Only the string and ignore the UNICODE ID, hence add the src */
-      *pdest =  psrc[idx];
+      *pdest = psrc[idx];
       pdest++;
     }  
     *pdest = 0; /* mark end of string */  
@@ -20032,7 +20032,7 @@ static USBD_StatusTypeDef  USBD_DFU_EP0_TxSent (USBD_HandleTypeDef *pdev)
     hdfu->wblock_num = 0;
     
     /* Update the state machine */
-    hdfu->dev_state =  DFU_STATE_DNLOAD_SYNC;
+    hdfu->dev_state = DFU_STATE_DNLOAD_SYNC;
 
     hdfu->dev_status[1] = 0;
     hdfu->dev_status[2] = 0;
@@ -20336,7 +20336,7 @@ static void DFU_Upload(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req
         addr = ((hdfu->wblock_num - 2) * USBD_DFU_XFER_SIZE) + hdfu->data_ptr;  /* Change is Accelerated*/
         
         /* Return the physical address where data are stored */
-        phaddr =  USBD_DFU_fops_HS.Read(addr, hdfu->buffer.d8, hdfu->wlength);  
+        phaddr = USBD_DFU_fops_HS.Read(addr, hdfu->buffer.d8, hdfu->wlength);
         
         /* Send the status data over EP0 */
         USBD_CtlSendData (pdev,
