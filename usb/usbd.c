@@ -4534,25 +4534,27 @@ usbd_handle_dvst(USBD_HandleTypeDef *pdev, uint_fast8_t dvsq)
 		1 * USB_INTENB0_RSME |	// RSME
 
 */
-static void r7s721_usbdevice_handler(USBD_HandleTypeDef *pdev)
+static void r7s721_usbdevice_handler(PCD_HandleTypeDef *hhcd)
 {
-	USB_OTG_GlobalTypeDef * const Instance = ((PCD_HandleTypeDef *) pdev->pData)->Instance;
-	ASSERT(Instance == WITHUSBHW_DEVICE);
-	const uint_fast16_t intsts0 = Instance->INTSTS0;
-	const uint_fast16_t intsts1 = Instance->INTSTS1;
-	const uint_fast16_t intsts0msk = intsts0 & Instance->INTENB0;
-	const uint_fast16_t intsts1msk = intsts1 & Instance->INTENB1;
+	USB_OTG_GlobalTypeDef * const USBx = hhcd->Instance;
+	USBD_HandleTypeDef * const pdev = hhcd->pData;
+	//USB_OTG_GlobalTypeDef * const Instance = hhcd->Instance;
+	//ASSERT(Instance == WITHUSBHW_DEVICE);
+	const uint_fast16_t intsts0 = USBx->INTSTS0;
+	const uint_fast16_t intsts1 = USBx->INTSTS1;
+	const uint_fast16_t intsts0msk = intsts0 & USBx->INTENB0;
+	const uint_fast16_t intsts1msk = intsts1 & USBx->INTENB1;
 
 	if ((intsts0msk & USB_INTSTS0_SOFR) != 0)	// SOFR
 	{
-		Instance->INTSTS0 = (uint16_t) ~ USB_INTSTS0_SOFR;	// Clear SOFR
+		USBx->INTSTS0 = (uint16_t) ~ USB_INTSTS0_SOFR;	// Clear SOFR
 		PRINTF(PSTR("r7s721_usbdevice_handler trapped - SOFR\n"));
 	}
 	if ((intsts0msk & USB_INTSTS0_BEMP) != 0)	// BEMP
 	{
 		//PRINTF(PSTR("r7s721_usbdevice_handler trapped - BEMP, BEMPSTS=0x%04X\n"), Instance->BEMPSTS);
-		const uint_fast16_t bempsts = Instance->BEMPSTS & Instance->BEMPENB;	// BEMP Interrupt Status Register
-		Instance->BEMPSTS = ~ bempsts;
+		const uint_fast16_t bempsts = USBx->BEMPSTS & USBx->BEMPENB;	// BEMP Interrupt Status Register
+		USBx->BEMPSTS = ~ bempsts;
 
 		if ((bempsts & (1U << 0)) != 0)	// PIPE0, DCP
 		{
@@ -4567,13 +4569,13 @@ static void r7s721_usbdevice_handler(USBD_HandleTypeDef *pdev)
 	{
 		uint_fast8_t i;
 		//PRINTF(PSTR("r7s721_usbdevice_handler trapped - NRDY, NRDYSTS=0x%04X\n"), Instance->NRDYSTS);
-		const uint_fast16_t nrdysts = Instance->NRDYSTS & Instance->NRDYENB;	// NRDY Interrupt Status Register
+		const uint_fast16_t nrdysts = USBx->NRDYSTS & USBx->NRDYENB;	// NRDY Interrupt Status Register
 		for (i = 0; i < 16; ++ i)
 		{
 			const uint_fast16_t mask = (uint_fast16_t) 1 << i;
 			if ((nrdysts & mask) != 0)
 			{
-				Instance->NRDYSTS = ~ mask;
+				USBx->NRDYSTS = ~ mask;
 				usbd_handler_nrdy(pdev, i);
 			}
 		}
@@ -4582,8 +4584,8 @@ static void r7s721_usbdevice_handler(USBD_HandleTypeDef *pdev)
 	{
 		uint_fast8_t i;
 		//PRINTF(PSTR("r7s721_usbdevice_handler trapped - BRDY, BRDYSTS=0x%04X\n"), Instance->BRDYSTS);
-		const uint_fast16_t brdysts = Instance->BRDYSTS & Instance->BRDYENB;	// BRDY Interrupt Status Register
-		Instance->BRDYSTS = ~ brdysts;
+		const uint_fast16_t brdysts = USBx->BRDYSTS & USBx->BRDYENB;	// BRDY Interrupt Status Register
+		USBx->BRDYSTS = ~ brdysts;
 
 		if ((brdysts & (1U << 0)) != 0)		// PIPE0 - DCP
 			usbd_handler_brdy8_dcp_out(pdev, 0);
@@ -4604,25 +4606,25 @@ static void r7s721_usbdevice_handler(USBD_HandleTypeDef *pdev)
 	if ((intsts0msk & USB_INTSTS0_CTRT) != 0)	// CTRT
 	{
 		//PRINTF(PSTR("r7s721_usbdevice_handler trapped - CTRT, CTSQ=%d\n"), (intsts0 >> 0) & 0x07);
-		Instance->INTSTS0 = (uint16_t) ~ (1uL << USB_INTSTS0_CTRT_SHIFT);	// Clear CTRT
+		USBx->INTSTS0 = (uint16_t) ~ (1uL << USB_INTSTS0_CTRT_SHIFT);	// Clear CTRT
 
 		usbd_handle_ctrt(pdev, intsts0 & USB_INTSTS0_CTSQ);
 	}
 	if ((intsts0msk & (1uL << USB_INTSTS0_DVST_SHIFT)) != 0)	// DVSE
 	{
 		//PRINTF(PSTR("r7s721_usbdevice_handler trapped - DVSE, DVSQ=%d\n"), (intsts0 >> 4) & 0x07);
-		Instance->INTSTS0 = (uint16_t) ~ (1uL << USB_INTSTS0_DVST_SHIFT);	// Clear DVSE
+		USBx->INTSTS0 = (uint16_t) ~ (1uL << USB_INTSTS0_DVST_SHIFT);	// Clear DVSE
 		usbd_handle_dvst(pdev, (intsts0 & USB_INTSTS0_DVSQ) >> USB_INTSTS0_DVSQ_SHIFT);
 	}
 	if ((intsts0msk & (1uL << USB_INTSTS0_RESM_SHIFT)) != 0)	// RESM
 	{
-		Instance->INTSTS0 = (uint16_t) ~ (1uL << USB_INTSTS0_RESM_SHIFT);	// Clear RESM
+		USBx->INTSTS0 = (uint16_t) ~ (1uL << USB_INTSTS0_RESM_SHIFT);	// Clear RESM
 		//PRINTF(PSTR("r7s721_usbdevice_handler trapped - RESM\n"));
-		usbd_handle_resume(Instance);
+		usbd_handle_resume(USBx);
 	}
 	if ((intsts0msk & (1uL << USB_INTSTS0_VBINT_SHIFT)) != 0)	// VBINT
 	{
-		Instance->INTSTS0 = (uint16_t) ~ USB_INTSTS0_VBINT;	// Clear VBINT - enabled by VBSE
+		USBx->INTSTS0 = (uint16_t) ~ USB_INTSTS0_VBINT;	// Clear VBINT - enabled by VBSE
 		PRINTF(PSTR("r7s721_usbdevice_handler trapped - VBINT, VBSTS=%d\n"), (intsts0 & USB_INTSTS0_VBSTS) != 0);	// TODO: masked VBSTS
 	//	usbd_handle_vbuse(usbd_getvbus());
 	}
@@ -4630,12 +4632,12 @@ static void r7s721_usbdevice_handler(USBD_HandleTypeDef *pdev)
 
 static void r7s721_usbi0_device_handler(void)
 {
-	r7s721_usbdevice_handler(& hUsbDevice);
+	r7s721_usbdevice_handler(& hpcd_USB_OTG);
 }
 
 static void r7s721_usbi1_device_handler(void)
 {
-	r7s721_usbdevice_handler(& hUsbDevice);
+	r7s721_usbdevice_handler(& hpcd_USB_OTG);
 }
 
 
@@ -4674,51 +4676,53 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
 
 }
 
-static void r7s721_usbhost_handler(USBH_HandleTypeDef *pdev)
+static void r7s721_usbhost_handler(HCD_HandleTypeDef *hhcd)
 {
-	USB_OTG_GlobalTypeDef * const Instance = ((PCD_HandleTypeDef *) pdev->pData)->Instance;
-	const uint_fast16_t intsts0 = Instance->INTSTS0;
-	const uint_fast16_t intsts1 = Instance->INTSTS1;
-	const uint_fast16_t intsts0msk = intsts0 & Instance->INTENB0;
-	const uint_fast16_t intsts1msk = intsts1 & Instance->INTENB1;
+	USB_OTG_GlobalTypeDef * const USBx = hhcd->Instance;
+	const uint_fast16_t intsts0 = USBx->INTSTS0;
+	const uint_fast16_t intsts1 = USBx->INTSTS1;
+	const uint_fast16_t intsts0msk = intsts0 & USBx->INTENB0;
+	const uint_fast16_t intsts1msk = intsts1 & USBx->INTENB1;
 
-	PRINTF(PSTR("r7s721_usbhost_handler trapped, intsts0=%04X, intsts1=%04X\n"), intsts0, intsts1);
+	//PRINTF(PSTR("r7s721_usbhost_handler trapped, intsts0=%04X, intsts1=%04X\n"), intsts0, intsts1);
 	if ((intsts0msk & USB_INTSTS0_SOFR) != 0)	// SOFR
 	{
-		Instance->INTSTS0 = (uint16_t) ~ USB_INTSTS0_SOFR;	// Clear SOFR
-		PRINTF(PSTR("r7s721_usbhost_handler trapped - SOFR\n"));
+		USBx->INTSTS0 = (uint16_t) ~ USB_INTSTS0_SOFR;	// Clear SOFR
+		//PRINTF(PSTR("r7s721_usbhost_handler trapped - SOFR\n"));
 	}
 	if ((intsts1msk & USB_INTSTS1_BCHG) != 0)	// BCHG
 	{
-		Instance->INTSTS1 = (uint16_t) ~ USB_INTSTS1_BCHG;
-		PRINTF(PSTR("r7s721_usbhost_handler trapped - BCHG\n"));
+		USBx->INTSTS1 = (uint16_t) ~ USB_INTSTS1_BCHG;
+		//PRINTF(PSTR("r7s721_usbhost_handler trapped - BCHG\n"));
 	}
 	if ((intsts1msk & USB_INTSTS1_DTCH) != 0)	// DTCH
 	{
-		Instance->INTSTS1 = (uint16_t) ~ USB_INTSTS1_DTCH;
-		PRINTF(PSTR("r7s721_usbhost_handler trapped - DTCH\n"));
+		USBx->INTSTS1 = (uint16_t) ~ USB_INTSTS1_DTCH;
+		//PRINTF(PSTR("r7s721_usbhost_handler trapped - DTCH\n"));
+		HAL_HCD_Disconnect_Callback(hhcd);
 	}
 	if ((intsts1msk & USB_INTSTS1_ATTCH) != 0)	// ATTCH
 	{
-		Instance->INTSTS1 = (uint16_t) ~ USB_INTSTS1_ATTCH;
-		PRINTF(PSTR("r7s721_usbhost_handler trapped - ATTCH\n"));
+		USBx->INTSTS1 = (uint16_t) ~ USB_INTSTS1_ATTCH;
+		//PRINTF(PSTR("r7s721_usbhost_handler trapped - ATTCH\n"));
+		HAL_HCD_Connect_Callback(hhcd);
 	}
 	if ((intsts0msk & (1uL << USB_INTSTS0_VBINT_SHIFT)) != 0)	// VBINT
 	{
-		Instance->INTSTS0 = (uint16_t) ~ USB_INTSTS0_VBINT;	// Clear VBINT - enabled by VBSE
-		PRINTF(PSTR("r7s721_usbhost_handler trapped - VBINT, VBSTS=%d\n"), (intsts0 & USB_INTSTS0_VBSTS) != 0);	// TODO: masked VBSTS
+		USBx->INTSTS0 = (uint16_t) ~ USB_INTSTS0_VBINT;	// Clear VBINT - enabled by VBSE
+		//PRINTF(PSTR("r7s721_usbhost_handler trapped - VBINT, VBSTS=%d\n"), (intsts0 & USB_INTSTS0_VBSTS) != 0);	// TODO: masked VBSTS
 	//	usbd_handle_vbuse(usbd_getvbus());
 	}
 }
 
 static void r7s721_usbi0_host_handler(void)
 {
-	r7s721_usbhost_handler(& hUsbHost);
+	r7s721_usbhost_handler(& hhcd_USB_OTG);
 }
 
 static void r7s721_usbi1_host_handler(void)
 {
-	r7s721_usbhost_handler(& hUsbHost);
+	r7s721_usbhost_handler(& hhcd_USB_OTG);
 }
 
 void HAL_HCD_MspInit(HCD_HandleTypeDef* hpcd)
@@ -4917,7 +4921,7 @@ HAL_StatusTypeDef  USB_DevDisconnect (USB_OTG_GlobalTypeDef *USBx)
 {
 	//PRINTF(PSTR("USB_DevDisconnect (USBx=%p)\n"), USBx);
 
-	USBx->SYSCFG0 &= ~ (1uL << USB_SYSCFG_DPRPU_SHIFT);	// DPRPU 1: Pulling up the D+ line is enabled.
+	USBx->SYSCFG0 &= ~ USB_SYSCFG_DPRPU;	// DPRPU 0: Pulling up the D+ line is disabled.
 	(void) USBx->SYSSTS0;
 	//HAL_Delay(3);
 
@@ -4933,7 +4937,7 @@ HAL_StatusTypeDef  USB_DevConnect (USB_OTG_GlobalTypeDef *USBx)
 {
 	//PRINTF(PSTR("USB_DevConnect (USBx=%p)\n"), USBx);
 
-	USBx->SYSCFG0 |= (1uL << USB_SYSCFG_DPRPU_SHIFT);	// DPRPU 1: Pulling up the D+ line is enabled.
+	USBx->SYSCFG0 |= USB_SYSCFG_DPRPU;	// DPRPU 1: Pulling up the D+ line is enabled.
 	(void) USBx->SYSSTS0;
 	//HAL_Delay(3);
 
@@ -5020,6 +5024,11 @@ HAL_StatusTypeDef USB_HC_Halt(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t hc_num)
   */
 static HAL_StatusTypeDef USB_ResetPort(USB_OTG_GlobalTypeDef *USBx)
 {
+	USBx->DVSTCTR0 |= USB_DVSTCTR0_USBRST;
+	local_delay_ms(10);
+	USBx->DVSTCTR0 &= ~ USB_DVSTCTR0_USBRST;
+	local_delay_ms(10);
+
 	return HAL_OK;
 }
 
@@ -5076,17 +5085,27 @@ static HAL_StatusTypeDef USB_HostInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG
 		//USB_SOFCFG_BRDYM |	// BRDYM
 		0;
 
+	USBx->SYSCFG0 &= ~ USB_SYSCFG_DPRPU;	// DPRPU 0: Pulling up the D+ line is disabled.
+	(void) USBx->SYSSTS0;
+
+	USBx->SYSCFG0 |= USB_SYSCFG_DRPD;	// DRPD 1: Pulling down the lines is enabled.
+	(void) USBx->SYSSTS0;
+
 	USBx->SYSCFG0 |= USB_SYSCFG_DCFM;	// DCFM 1: Host controller mode is selected
+	(void) USBx->SYSSTS0;
 
 	USBx->SYSCFG0 |= USB_SYSCFG_USBE;	// USBE 1: USB module operation is enabled.
+	(void) USBx->SYSSTS0;
 
 	if (cfg->speed == USBD_SPEED_HIGH)
 	{
 		USBx->SYSCFG0 |= USB_SYSCFG_HSE;	// HSE
+		(void) USBx->SYSSTS0;
 	}
 	else
 	{
 		USBx->SYSCFG0 &= ~ USB_SYSCFG_HSE;	// HSE
+		(void) USBx->SYSSTS0;
 	}
 
 	/*
@@ -5105,7 +5124,7 @@ static HAL_StatusTypeDef USB_HostInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG
 		0;
 
 	USBx->INTENB1 =
-		1 * USB_INTENB1_BCHGE |	// BCHG
+		//1 * USB_INTENB1_BCHGE |	// BCHG
 		1 * USB_INTENB1_DTCHE |	// DTCH
 		1 * USB_INTENB1_ATTCHE |	// ATTCH
 		0;
@@ -5417,24 +5436,26 @@ static HAL_StatusTypeDef USB_CoreInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG
   */
 static HAL_StatusTypeDef USB_DevInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_CfgTypeDef * cfg)
 {
-	//USBx->CFIFOSEL = 0;	// не помогает с первым чтением из DCP
-	//USBx->CFIFOCTR = USB_CFIFOCTR_BCLR;	// BCLR
-
 	USBx->SOFCFG =
 		//USB_SOFCFG_BRDYM |	// BRDYM
 		0;
+	(void) USBx->SYSSTS0;
 
 	USBx->SYSCFG0 &= ~ USB_SYSCFG_DCFM;	// DCFM 0: Device controller mode is selected
+	(void) USBx->SYSSTS0;
 
 	USBx->SYSCFG0 |= USB_SYSCFG_USBE;	// USBE 1: USB module operation is enabled.
+	(void) USBx->SYSSTS0;
 
 	if (cfg->speed == USBD_SPEED_HIGH)
 	{
 		USBx->SYSCFG0 |= USB_SYSCFG_HSE;	// HSE
+		(void) USBx->SYSSTS0;
 	}
 	else
 	{
 		USBx->SYSCFG0 &= ~ USB_SYSCFG_HSE;	// HSE
+		(void) USBx->SYSSTS0;
 	}
 
 	USBx->INTENB0 =
@@ -7608,7 +7629,7 @@ HAL_StatusTypeDef HAL_PCD_Init(PCD_HandleTypeDef *hpcd)
    hpcd->IN_ep[i].tx_fifo_num = i;
    /* Control until ep is activated */
    hpcd->IN_ep[i].type = USBD_EP_TYPE_CTRL;
-   hpcd->IN_ep[i].maxpacket =  0;
+   hpcd->IN_ep[i].maxpacket = 0;
    hpcd->IN_ep[i].xfer_buff = NULL;
    hpcd->IN_ep[i].xfer_len = 0;
  }
@@ -11301,7 +11322,7 @@ USBD_StatusTypeDef USBD_LL_SetSpeed(USBD_HandleTypeDef  *pdev, USBD_SpeedTypeDef
 
 USBD_StatusTypeDef USBD_LL_Suspend(USBD_HandleTypeDef  *pdev)
 {
-	pdev->dev_old_state =  pdev->dev_state;
+	pdev->dev_old_state = pdev->dev_state;
 	pdev->dev_state  = USBD_STATE_SUSPENDED;
 	return USBD_OK;
 }
@@ -13464,7 +13485,7 @@ USBH_StatusTypeDef USBH_MSC_BOT_REQ_GetMaxLUN(USBH_HandleTypeDef *phost, uint8_t
 USBH_StatusTypeDef USBH_MSC_BOT_Init(USBH_HandleTypeDef *phost)
 {
   
-  MSC_HandleTypeDef *MSC_Handle =  (MSC_HandleTypeDef *) phost->pActiveClass->pData;
+  MSC_HandleTypeDef *MSC_Handle = (MSC_HandleTypeDef *) phost->pActiveClass->pData;
   
   MSC_Handle->hbot.cbw.field.Signature = BOT_CBW_SIGNATURE;
   MSC_Handle->hbot.cbw.field.Tag = BOT_CBW_TAG;
@@ -13489,7 +13510,7 @@ USBH_StatusTypeDef USBH_MSC_BOT_Process (USBH_HandleTypeDef *phost, uint8_t lun)
   USBH_StatusTypeDef   error  = USBH_BUSY;  
   BOT_CSWStatusTypeDef CSW_Status = BOT_CSW_CMD_FAILED;
   USBH_URBStateTypeDef URB_Status = USBH_URB_IDLE;
-  MSC_HandleTypeDef *MSC_Handle =  (MSC_HandleTypeDef *) phost->pActiveClass->pData;
+  MSC_HandleTypeDef *MSC_Handle = (MSC_HandleTypeDef *) phost->pActiveClass->pData;
   uint8_t toggle = 0;
   
   switch (MSC_Handle->hbot.state)
@@ -13788,7 +13809,7 @@ USBH_StatusTypeDef USBH_MSC_BOT_Process (USBH_HandleTypeDef *phost, uint8_t lun)
 static USBH_StatusTypeDef USBH_MSC_BOT_Abort(USBH_HandleTypeDef *phost, uint8_t lun, uint8_t dir)
 {
   USBH_StatusTypeDef status = USBH_FAIL;
-  MSC_HandleTypeDef *MSC_Handle =  (MSC_HandleTypeDef *) phost->pActiveClass->pData;
+  MSC_HandleTypeDef *MSC_Handle = (MSC_HandleTypeDef *) phost->pActiveClass->pData;
   
   switch (dir)
   {
@@ -13826,7 +13847,7 @@ static USBH_StatusTypeDef USBH_MSC_BOT_Abort(USBH_HandleTypeDef *phost, uint8_t 
 
 static BOT_CSWStatusTypeDef USBH_MSC_DecodeCSW(USBH_HandleTypeDef *phost)
 {
-  MSC_HandleTypeDef *MSC_Handle =  (MSC_HandleTypeDef *) phost->pActiveClass->pData;
+  MSC_HandleTypeDef *MSC_Handle = (MSC_HandleTypeDef *) phost->pActiveClass->pData;
   BOT_CSWStatusTypeDef status = BOT_CSW_CMD_FAILED;
   
     /*Checking if the transfer length is different than 13*/    
@@ -13988,7 +14009,7 @@ static USBH_StatusTypeDef USBH_MSC_InterfaceInit (USBH_HandleTypeDef *phost)
     
     //phost->pActiveClass->pData = (MSC_HandleTypeDef *)USBH_malloc (sizeof(MSC_HandleTypeDef));
     phost->pActiveClass->pData = & msc_handle;
-    MSC_Handle =  (MSC_HandleTypeDef *) phost->pActiveClass->pData;
+    MSC_Handle = (MSC_HandleTypeDef *) phost->pActiveClass->pData;
     
     if (phost->device.CfgDesc.Itf_Desc[phost->device.current_interface].Ep_Desc[0].bEndpointAddress & 0x80)
     {
@@ -14058,7 +14079,7 @@ static USBH_StatusTypeDef USBH_MSC_InterfaceInit (USBH_HandleTypeDef *phost)
   */
 USBH_StatusTypeDef USBH_MSC_InterfaceDeInit (USBH_HandleTypeDef *phost)
 {
-  MSC_HandleTypeDef *MSC_Handle =  (MSC_HandleTypeDef *) phost->pActiveClass->pData;
+  MSC_HandleTypeDef *MSC_Handle = (MSC_HandleTypeDef *) phost->pActiveClass->pData;
 
   if (MSC_Handle->OutPipe)
   {
@@ -14092,7 +14113,7 @@ USBH_StatusTypeDef USBH_MSC_InterfaceDeInit (USBH_HandleTypeDef *phost)
   */
 static USBH_StatusTypeDef USBH_MSC_ClassRequest(USBH_HandleTypeDef *phost)
 {   
-  MSC_HandleTypeDef *MSC_Handle =  (MSC_HandleTypeDef *) phost->pActiveClass->pData;  
+  MSC_HandleTypeDef *MSC_Handle = (MSC_HandleTypeDef *) phost->pActiveClass->pData;
   USBH_StatusTypeDef status = USBH_BUSY;
   uint8_t i;
   
@@ -14152,7 +14173,7 @@ USBH_StatusTypeDef USBH_MSC_SCSI_TestUnitReady (USBH_HandleTypeDef *phost,
                                                 uint8_t lun)
 {
   USBH_StatusTypeDef    error = USBH_FAIL ;
-  MSC_HandleTypeDef *MSC_Handle =  (MSC_HandleTypeDef *) phost->pActiveClass->pData;
+  MSC_HandleTypeDef *MSC_Handle = (MSC_HandleTypeDef *) phost->pActiveClass->pData;
   
   switch(MSC_Handle->hbot.cmd_state)
   {
@@ -14195,7 +14216,7 @@ USBH_StatusTypeDef USBH_MSC_SCSI_ReadCapacity (USBH_HandleTypeDef *phost,
                                                SCSI_CapacityTypeDef *capacity)
 {
   USBH_StatusTypeDef    error = USBH_BUSY ;
-  MSC_HandleTypeDef *MSC_Handle =  (MSC_HandleTypeDef *) phost->pActiveClass->pData;
+  MSC_HandleTypeDef *MSC_Handle = (MSC_HandleTypeDef *) phost->pActiveClass->pData;
   
   switch(MSC_Handle->hbot.cmd_state)
   {
@@ -14251,7 +14272,7 @@ USBH_StatusTypeDef USBH_MSC_SCSI_Inquiry (USBH_HandleTypeDef *phost,
                                                SCSI_StdInquiryDataTypeDef *inquiry)
 {
   USBH_StatusTypeDef    error = USBH_FAIL ;
-  MSC_HandleTypeDef *MSC_Handle =  (MSC_HandleTypeDef *) phost->pActiveClass->pData;
+  MSC_HandleTypeDef *MSC_Handle = (MSC_HandleTypeDef *) phost->pActiveClass->pData;
   switch(MSC_Handle->hbot.cmd_state)
   {
   case BOT_CMD_SEND:  
@@ -14313,7 +14334,7 @@ USBH_StatusTypeDef USBH_MSC_SCSI_RequestSense (USBH_HandleTypeDef *phost,
                                                SCSI_SenseTypeDef *sense_data)
 {
   USBH_StatusTypeDef    error = USBH_FAIL ;
-  MSC_HandleTypeDef *MSC_Handle =  (MSC_HandleTypeDef *) phost->pActiveClass->pData;
+  MSC_HandleTypeDef *MSC_Handle = (MSC_HandleTypeDef *) phost->pActiveClass->pData;
   
   switch(MSC_Handle->hbot.cmd_state)
   {
@@ -14375,7 +14396,7 @@ USBH_StatusTypeDef USBH_MSC_SCSI_Write(USBH_HandleTypeDef *phost,
 {
   USBH_StatusTypeDef    error = USBH_FAIL ;
 
-  MSC_HandleTypeDef *MSC_Handle =  (MSC_HandleTypeDef *) phost->pActiveClass->pData;
+  MSC_HandleTypeDef *MSC_Handle = (MSC_HandleTypeDef *) phost->pActiveClass->pData;
   
   switch(MSC_Handle->hbot.cmd_state)
   {
@@ -14487,7 +14508,7 @@ USBH_StatusTypeDef USBH_MSC_SCSI_Read(USBH_HandleTypeDef *phost,
   */
 static USBH_StatusTypeDef USBH_MSC_Process(USBH_HandleTypeDef *phost)
 {
-  MSC_HandleTypeDef *MSC_Handle =  (MSC_HandleTypeDef *) phost->pActiveClass->pData;
+  MSC_HandleTypeDef *MSC_Handle = (MSC_HandleTypeDef *) phost->pActiveClass->pData;
   USBH_StatusTypeDef error = USBH_BUSY ;
   USBH_StatusTypeDef scsi_status = USBH_BUSY ;  
   USBH_StatusTypeDef ready_status = USBH_BUSY ;
@@ -14685,7 +14706,7 @@ static USBH_StatusTypeDef USBH_MSC_SOFProcess(USBH_HandleTypeDef *phost)
   */
 static USBH_StatusTypeDef USBH_MSC_RdWrProcess(USBH_HandleTypeDef *phost, uint8_t lun)
 {
-  MSC_HandleTypeDef *MSC_Handle =  (MSC_HandleTypeDef *) phost->pActiveClass->pData;
+  MSC_HandleTypeDef *MSC_Handle = (MSC_HandleTypeDef *) phost->pActiveClass->pData;
   USBH_StatusTypeDef error = USBH_BUSY ;
   USBH_StatusTypeDef scsi_status = USBH_BUSY ;  
   
@@ -14779,7 +14800,7 @@ static USBH_StatusTypeDef USBH_MSC_RdWrProcess(USBH_HandleTypeDef *phost, uint8_
   */
 uint8_t  USBH_MSC_IsReady (USBH_HandleTypeDef *phost)
 {
-    MSC_HandleTypeDef *MSC_Handle =  (MSC_HandleTypeDef *) phost->pActiveClass->pData;  
+    MSC_HandleTypeDef *MSC_Handle = (MSC_HandleTypeDef *) phost->pActiveClass->pData;
     
   if (phost->gState == HOST_CLASS)
   {
@@ -14799,7 +14820,7 @@ uint8_t  USBH_MSC_IsReady (USBH_HandleTypeDef *phost)
   */
 int8_t  USBH_MSC_GetMaxLUN (USBH_HandleTypeDef *phost)
 {
-  MSC_HandleTypeDef *MSC_Handle =  (MSC_HandleTypeDef *) phost->pActiveClass->pData;    
+  MSC_HandleTypeDef *MSC_Handle = (MSC_HandleTypeDef *) phost->pActiveClass->pData;
   
   if ((phost->gState == HOST_CLASS) && (MSC_Handle->state == MSC_IDLE))
   {
@@ -14817,7 +14838,7 @@ int8_t  USBH_MSC_GetMaxLUN (USBH_HandleTypeDef *phost)
   */
 uint8_t  USBH_MSC_UnitIsReady (USBH_HandleTypeDef *phost, uint8_t lun)
 {
-  MSC_HandleTypeDef *MSC_Handle =  (MSC_HandleTypeDef *) phost->pActiveClass->pData;  
+  MSC_HandleTypeDef *MSC_Handle = (MSC_HandleTypeDef *) phost->pActiveClass->pData;
   
   if (phost->gState == HOST_CLASS)
   {
@@ -14838,7 +14859,7 @@ uint8_t  USBH_MSC_UnitIsReady (USBH_HandleTypeDef *phost, uint8_t lun)
   */
 USBH_StatusTypeDef USBH_MSC_GetLUNInfo(USBH_HandleTypeDef *phost, uint8_t lun, MSC_LUNTypeDef *info)
 {
-  MSC_HandleTypeDef *MSC_Handle =  (MSC_HandleTypeDef *) phost->pActiveClass->pData;    
+  MSC_HandleTypeDef *MSC_Handle = (MSC_HandleTypeDef *) phost->pActiveClass->pData;
   if (phost->gState == HOST_CLASS)
   {
     USBH_memcpy(info,&MSC_Handle->unit[lun], sizeof(MSC_LUNTypeDef));
@@ -14867,7 +14888,7 @@ USBH_StatusTypeDef USBH_MSC_Read(USBH_HandleTypeDef *phost,
                                      uint32_t length)
 {
   uint32_t timeout;
-  MSC_HandleTypeDef *MSC_Handle =  (MSC_HandleTypeDef *) phost->pActiveClass->pData;   
+  MSC_HandleTypeDef *MSC_Handle = (MSC_HandleTypeDef *) phost->pActiveClass->pData;
   
   if ((phost->device.is_connected == 0) || 
       (phost->gState != HOST_CLASS) || 
@@ -14915,7 +14936,7 @@ USBH_StatusTypeDef USBH_MSC_Write(USBH_HandleTypeDef *phost,
                                      uint32_t length)
 {
   uint32_t timeout;
-  MSC_HandleTypeDef *MSC_Handle =  (MSC_HandleTypeDef *) phost->pActiveClass->pData;   
+  MSC_HandleTypeDef *MSC_Handle = (MSC_HandleTypeDef *) phost->pActiveClass->pData;
   
   if ((phost->device.is_connected == 0) || 
       (phost->gState != HOST_CLASS) || 
@@ -15941,7 +15962,7 @@ HAL_StatusTypeDef HAL_HCD_HC_Init(HCD_HandleTypeDef *hhcd,
   hhcd->hc[ch_num].ep_is_in = ((epnum & 0x80) == 0x80);
   hhcd->hc[ch_num].speed = speed;
 
-  status =  USB_HC_Init(hhcd->Instance, 
+  status = USB_HC_Init(hhcd->Instance,
                         ch_num,
                         epnum,
                         dev_address,
@@ -16273,7 +16294,7 @@ uint8_t USBH_AllocPipe  (USBH_HandleTypeDef *phost, uint8_t ep_addr)
 {
   uint16_t pipe;
   
-  pipe =  USBH_GetFreePipe(phost);
+  pipe = USBH_GetFreePipe(phost);
 
   if (pipe != 0xFFFF)
   {
@@ -16495,7 +16516,7 @@ USBH_StatusTypeDef  USBH_LL_Connect(USBH_HandleTypeDef *phost)
 	switch (phost->gState)
 	{
 	case HOST_IDLE:
-		//PRINTF(PSTR("USBH_LL_Connect at HOST_IDLE\n"));
+		PRINTF(PSTR("USBH_LL_Connect at HOST_IDLE\n"));
 		phost->device.is_connected = 1;
 
 		if (phost->pUser != NULL)
@@ -16505,7 +16526,7 @@ USBH_StatusTypeDef  USBH_LL_Connect(USBH_HandleTypeDef *phost)
 		break;
 
 	case HOST_DEV_WAIT_FOR_ATTACHMENT:
-		//PRINTF(PSTR("USBH_LL_Connect at HOST_DEV_WAIT_FOR_ATTACHMENT\n"));
+		PRINTF(PSTR("USBH_LL_Connect at HOST_DEV_WAIT_FOR_ATTACHMENT\n"));
 		phost->gState = HOST_DEV_BEFORE_ATTACHED;
 		break;
 
@@ -16531,7 +16552,7 @@ USBH_StatusTypeDef  USBH_LL_Disconnect(USBH_HandleTypeDef *phost)
 	switch (phost->gState)
 	{
 	case HOST_DEV_BEFORE_ATTACHED:
-		//PRINTF(PSTR("USBH_LL_Disconnect at HOST_DEV_BEFORE_ATTACHED\n"));
+		PRINTF(PSTR("USBH_LL_Disconnect at HOST_DEV_BEFORE_ATTACHED\n"));
 		return USBH_OK;
 
 	default:
@@ -17098,7 +17119,7 @@ static void USBH_ParseStringDesc (uint8_t* psrc,
     
     for (idx = 0; idx < strlength; idx+=2 )
     {/* Copy Only the string and ignore the UNICODE ID, hence add the src */
-      *pdest =  psrc[idx];
+      *pdest = psrc[idx];
       pdest++;
     }  
     *pdest = 0; /* mark end of string */  
@@ -18084,7 +18105,7 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
 		break;
 
 	case HOST_DEV_WAIT_FOR_ATTACHMENT0:
-		  //PRINTF(PSTR("USBH_Process: HOST_DEV_WAIT_FOR_ATTACHMENT0\n"));
+		PRINTF(PSTR("USBH_Process: HOST_DEV_WAIT_FOR_ATTACHMENT0\n"));
 		USBH_LL_ResetPort(phost);
 #if (USBH_USE_OS == 1)
 		osMessagePut ( phost->os_event, USBH_PORT_EVENT, 0);
@@ -18098,7 +18119,7 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
 		break;
 
 	case HOST_DEV_WAIT_FOR_ATTACHMENT:
-		  //PRINTF(PSTR("USBH_Process: HOST_DEV_WAIT_FOR_ATTACHMENT\n"));
+		//PRINTF(PSTR("USBH_Process: HOST_DEV_WAIT_FOR_ATTACHMENT\n"));
 		break;    
     
 	case HOST_DEV_BEFORE_ATTACHED:
@@ -20032,7 +20053,7 @@ static USBD_StatusTypeDef  USBD_DFU_EP0_TxSent (USBD_HandleTypeDef *pdev)
     hdfu->wblock_num = 0;
     
     /* Update the state machine */
-    hdfu->dev_state =  DFU_STATE_DNLOAD_SYNC;
+    hdfu->dev_state = DFU_STATE_DNLOAD_SYNC;
 
     hdfu->dev_status[1] = 0;
     hdfu->dev_status[2] = 0;
@@ -20336,7 +20357,7 @@ static void DFU_Upload(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req
         addr = ((hdfu->wblock_num - 2) * USBD_DFU_XFER_SIZE) + hdfu->data_ptr;  /* Change is Accelerated*/
         
         /* Return the physical address where data are stored */
-        phaddr =  USBD_DFU_fops_HS.Read(addr, hdfu->buffer.d8, hdfu->wlength);  
+        phaddr = USBD_DFU_fops_HS.Read(addr, hdfu->buffer.d8, hdfu->wlength);
         
         /* Send the status data over EP0 */
         USBD_CtlSendData (pdev,
