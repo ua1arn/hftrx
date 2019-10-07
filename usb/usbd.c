@@ -16506,7 +16506,7 @@ USBH_StatusTypeDef  USBH_LL_Connect(USBH_HandleTypeDef *phost)
 
 	case HOST_DEV_WAIT_FOR_ATTACHMENT:
 		PRINTF(PSTR("USBH_LL_Connect at HOST_DEV_WAIT_FOR_ATTACHMENT\n"));
-		phost->gState = HOST_DEV_ATTACHED ;
+		phost->gState = HOST_DEV_ATTACHED;
 		break;
 
 	default:
@@ -18758,100 +18758,100 @@ void HAL_HCD_HC_NotifyURBChange_Callback(HCD_HandleTypeDef *hhcd, uint8_t chnum,
   */
 void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd)
 {
-  USB_OTG_GlobalTypeDef *USBx = hhcd->Instance;
-  uint32_t i = 0 , interrupt = 0;
-  
-  /* ensure that we are in device mode */
-  if (USB_GetMode(hhcd->Instance) == USB_OTG_MODE_HOST)
-  {
-    /* avoid spurious interrupt */
-    if(__HAL_HCD_IS_INVALID_INTERRUPT(hhcd)) 
-    {
-      return;
-    }
-    
-    if(__HAL_HCD_GET_FLAG(hhcd, USB_OTG_GINTSTS_PXFR_INCOMPISOOUT))
-    {
-     /* incorrect mode, acknowledge the interrupt */
-      __HAL_HCD_CLEAR_FLAG(hhcd, USB_OTG_GINTSTS_PXFR_INCOMPISOOUT);
-    }
-    
-    if(__HAL_HCD_GET_FLAG(hhcd, USB_OTG_GINTSTS_IISOIXFR))
-    {
-     /* incorrect mode, acknowledge the interrupt */
-      __HAL_HCD_CLEAR_FLAG(hhcd, USB_OTG_GINTSTS_IISOIXFR);
-    }
+	USB_OTG_GlobalTypeDef *USBx = hhcd->Instance;
 
-    if(__HAL_HCD_GET_FLAG(hhcd, USB_OTG_GINTSTS_PTXFE))
-    {
-     /* incorrect mode, acknowledge the interrupt */
-      __HAL_HCD_CLEAR_FLAG(hhcd, USB_OTG_GINTSTS_PTXFE);
-    }   
+	/* ensure that we are in device mode */
+	if (USB_GetMode(hhcd->Instance) == USB_OTG_MODE_HOST)
+	{
+		/* avoid spurious interrupt */
+		if(__HAL_HCD_IS_INVALID_INTERRUPT(hhcd))
+		{
+			return;
+		}
+
+		if(__HAL_HCD_GET_FLAG(hhcd, USB_OTG_GINTSTS_PXFR_INCOMPISOOUT))
+		{
+			/* incorrect mode, acknowledge the interrupt */
+			__HAL_HCD_CLEAR_FLAG(hhcd, USB_OTG_GINTSTS_PXFR_INCOMPISOOUT);
+		}
     
-    if(__HAL_HCD_GET_FLAG(hhcd, USB_OTG_GINTSTS_MMIS))
-    {
-     /* incorrect mode, acknowledge the interrupt */
-      __HAL_HCD_CLEAR_FLAG(hhcd, USB_OTG_GINTSTS_MMIS);
-    }     
-    
-    /* Handle Host Disconnect Interrupts */
-    if (__HAL_HCD_GET_FLAG(hhcd, USB_OTG_GINTSTS_DISCINT))
-    {
-      
-      /* Cleanup HPRT */
-      USBx_HPRT0 &= ~(USB_OTG_HPRT_PENA | USB_OTG_HPRT_PCDET |
-        USB_OTG_HPRT_PENCHNG | USB_OTG_HPRT_POCCHNG );
-       
-      /* Handle Host Port Interrupts */
-      HAL_HCD_Disconnect_Callback(hhcd);
-       USB_InitFSLSPClkSel(hhcd->Instance ,HCFG_48_MHZ );
-      __HAL_HCD_CLEAR_FLAG(hhcd, USB_OTG_GINTSTS_DISCINT);
-    }
-    
-    /* Handle Host Port Interrupts */
-    if(__HAL_HCD_GET_FLAG(hhcd, USB_OTG_GINTSTS_HPRTINT))
-    {
-      HCD_Port_IRQHandler (hhcd);
-    }
-    
-    /* Handle Host SOF Interrupts */
-    if(__HAL_HCD_GET_FLAG(hhcd, USB_OTG_GINTSTS_SOF))
-    {
-      HAL_HCD_SOF_Callback(hhcd);
-      __HAL_HCD_CLEAR_FLAG(hhcd, USB_OTG_GINTSTS_SOF);
-    }
-          
-    /* Handle Host channel Interrupts */
-    if(__HAL_HCD_GET_FLAG(hhcd, USB_OTG_GINTSTS_HCINT))
-    {
-      interrupt = USB_HC_ReadInterrupt(hhcd->Instance);
-      for (i = 0; i < hhcd->Init.Host_channels ; i++)
-      {
-        if (interrupt & (1 << i))
-        {
-          if ((USBx_HC(i)->HCCHAR) &  USB_OTG_HCCHAR_EPDIR)
-          {
-            HCD_HC_IN_IRQHandler (hhcd, i);
-          }
-          else
-          {
-            HCD_HC_OUT_IRQHandler (hhcd, i);
-          }
-        }
-      }
-      __HAL_HCD_CLEAR_FLAG(hhcd, USB_OTG_GINTSTS_HCINT);
-    } 
-    
-        /* Handle Rx Queue Level Interrupts */
-    if(__HAL_HCD_GET_FLAG(hhcd, USB_OTG_GINTSTS_RXFLVL))
-    {
-      USB_MASK_INTERRUPT(hhcd->Instance, USB_OTG_GINTSTS_RXFLVL);
-      
-      HCD_RXQLVL_IRQHandler (hhcd);
-      
-      USB_UNMASK_INTERRUPT(hhcd->Instance, USB_OTG_GINTSTS_RXFLVL);
-    }
-  }
+		if(__HAL_HCD_GET_FLAG(hhcd, USB_OTG_GINTSTS_IISOIXFR))
+		{
+			/* incorrect mode, acknowledge the interrupt */
+			__HAL_HCD_CLEAR_FLAG(hhcd, USB_OTG_GINTSTS_IISOIXFR);
+		}
+
+		if(__HAL_HCD_GET_FLAG(hhcd, USB_OTG_GINTSTS_PTXFE))
+		{
+			/* incorrect mode, acknowledge the interrupt */
+			__HAL_HCD_CLEAR_FLAG(hhcd, USB_OTG_GINTSTS_PTXFE);
+		}
+
+		if(__HAL_HCD_GET_FLAG(hhcd, USB_OTG_GINTSTS_MMIS))
+		{
+			/* incorrect mode, acknowledge the interrupt */
+			__HAL_HCD_CLEAR_FLAG(hhcd, USB_OTG_GINTSTS_MMIS);
+		}
+
+		/* Handle Host Disconnect Interrupts */
+		if (__HAL_HCD_GET_FLAG(hhcd, USB_OTG_GINTSTS_DISCINT))
+		{
+
+			/* Cleanup HPRT */
+			USBx_HPRT0 &= ~(USB_OTG_HPRT_PENA | USB_OTG_HPRT_PCDET |
+			USB_OTG_HPRT_PENCHNG | USB_OTG_HPRT_POCCHNG );
+
+			/* Handle Host Port Interrupts */
+			HAL_HCD_Disconnect_Callback(hhcd);
+			USB_InitFSLSPClkSel(hhcd->Instance, HCFG_48_MHZ );
+			__HAL_HCD_CLEAR_FLAG(hhcd, USB_OTG_GINTSTS_DISCINT);
+		}
+
+		/* Handle Host Port Interrupts */
+		if(__HAL_HCD_GET_FLAG(hhcd, USB_OTG_GINTSTS_HPRTINT))
+		{
+			HCD_Port_IRQHandler (hhcd);
+		}
+
+		/* Handle Host SOF Interrupts */
+		if(__HAL_HCD_GET_FLAG(hhcd, USB_OTG_GINTSTS_SOF))
+		{
+			HAL_HCD_SOF_Callback(hhcd);
+			__HAL_HCD_CLEAR_FLAG(hhcd, USB_OTG_GINTSTS_SOF);
+		}
+
+		/* Handle Host channel Interrupts */
+		if(__HAL_HCD_GET_FLAG(hhcd, USB_OTG_GINTSTS_HCINT))
+		{
+			uint32_t i;
+			const uint32_t interrupt = USB_HC_ReadInterrupt(hhcd->Instance);
+			for (i = 0; i < hhcd->Init.Host_channels ; i++)
+			{
+				if (interrupt & (1 << i))
+				{
+					if ((USBx_HC(i)->HCCHAR) &  USB_OTG_HCCHAR_EPDIR)
+					{
+						HCD_HC_IN_IRQHandler (hhcd, i);
+					}
+					else
+					{
+						HCD_HC_OUT_IRQHandler (hhcd, i);
+					}
+				}
+			}
+			__HAL_HCD_CLEAR_FLAG(hhcd, USB_OTG_GINTSTS_HCINT);
+		}
+
+		/* Handle Rx Queue Level Interrupts */
+		if(__HAL_HCD_GET_FLAG(hhcd, USB_OTG_GINTSTS_RXFLVL))
+		{
+			USB_MASK_INTERRUPT(hhcd->Instance, USB_OTG_GINTSTS_RXFLVL);
+
+			HCD_RXQLVL_IRQHandler (hhcd);
+
+			USB_UNMASK_INTERRUPT(hhcd->Instance, USB_OTG_GINTSTS_RXFLVL);
+		}
+	}
 }
 
 #endif /* CPUSTYLE_STM32 */
