@@ -1561,8 +1561,8 @@ HAL_StatusTypeDef HAL_PCD_Start(PCD_HandleTypeDef *hpcd);
 HAL_StatusTypeDef HAL_PCD_Stop(PCD_HandleTypeDef *hpcd);
 void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd);
 
-void HAL_PCD_DataOutStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum);
-void HAL_PCD_DataInStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum);
+void HAL_PCD_DataOutStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum, uint8_t pipe);
+void HAL_PCD_DataInStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum, uint8_t pipe);
 void HAL_PCD_SetupStageCallback(PCD_HandleTypeDef *hpcd);
 void HAL_PCD_SOFCallback(PCD_HandleTypeDef *hpcd);
 void HAL_PCD_ResetCallback(PCD_HandleTypeDef *hpcd);
@@ -1794,8 +1794,8 @@ static USBD_StatusTypeDef USBD_SetClassConfig(USBD_HandleTypeDef  *pdev, uint_fa
 static USBD_StatusTypeDef USBD_ClrClassConfig(USBD_HandleTypeDef  *pdev, uint_fast8_t cfgidx);
 
 USBD_StatusTypeDef USBD_LL_SetupStage(USBD_HandleTypeDef *pdev, const uint32_t *psetup);
-USBD_StatusTypeDef USBD_LL_DataOutStage(USBD_HandleTypeDef *pdev, uint_fast8_t epnum, uint8_t *pdata);
-USBD_StatusTypeDef USBD_LL_DataInStage(USBD_HandleTypeDef *pdev, uint_fast8_t epnum, uint8_t *pdata);
+USBD_StatusTypeDef USBD_LL_DataOutStage(USBD_HandleTypeDef *pdev, uint_fast8_t epnum, uint8_t *pdata, uint8_t pipe);
+USBD_StatusTypeDef USBD_LL_DataInStage(USBD_HandleTypeDef *pdev, uint_fast8_t epnum, uint8_t *pdata, uint8_t pipe);
 
 USBD_StatusTypeDef USBD_LL_Reset(USBD_HandleTypeDef  *pdev);
 USBD_StatusTypeDef USBD_LL_SetSpeed(USBD_HandleTypeDef  *pdev, USBD_SpeedTypeDef speed);
@@ -2314,7 +2314,7 @@ static uint_fast8_t usbd_read_data(PCD_TypeDef * const USBx, uint_fast8_t pipe, 
 static uint_fast8_t
 usbd_write_data(PCD_TypeDef * const USBx, uint_fast8_t pipe, const uint8_t * data, unsigned size)
 {
-#if 1
+#if 0
 	if (data != NULL && size != 0)
 		PRINTF(PSTR("usbd_write_data, pipe=%d, size=%d, data[]={%02x,%02x,%02x,%02x,%02x,..}\n"), pipe, size, data [0], data [1], data [2], data [3], data [4]);
 	else
@@ -3828,7 +3828,7 @@ static void usb0_function_save_request(USB_OTG_GlobalTypeDef * USBx, USBD_SetupR
 	req->wIndex        = USBx->USBINDX; //(pdata [1] >> 0) & 0xFFFF;
 	req->wLength       = USBx->USBLENG; //(pdata [1] >> 16) & 0xFFFF;
 
-#if 1
+#if 0
 	PRINTF(PSTR("usb0_function_save_request: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"),
 		req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
 #endif
@@ -3859,7 +3859,7 @@ static void usbd_handle_ctrt(PCD_HandleTypeDef *hpcd, uint_fast8_t ctsq)
 		break;
 
 	case 1:
-		PRINTF(PSTR("actions_seq1\n"));
+		//PRINTF(PSTR("actions_seq1\n"));
 		// 1: Control read data stage
 		// seq1 OUT token -> seq2 -> seq0
 		USBx->INTSTS0 = (uint16_t) ~ USB_INTSTS0_VALID;	// Clear VALID - in seq 1, 3 and 5
@@ -3871,7 +3871,7 @@ static void usbd_handle_ctrt(PCD_HandleTypeDef *hpcd, uint_fast8_t ctsq)
 		break;
 
 	case 2:
-		PRINTF(PSTR("actions_seq2\n"));
+		//PRINTF(PSTR("actions_seq2\n"));
 		// 2: Control read status stage
 		//actions_seq2(pdev, & pdev->request);
 		// после - usbdFunctionReq_seq1 - напимер после запроса GET_LINE_CODING
@@ -3881,7 +3881,7 @@ static void usbd_handle_ctrt(PCD_HandleTypeDef *hpcd, uint_fast8_t ctsq)
 		break;
 
 	case 3:
-		PRINTF(PSTR("actions_seq3\n"));
+		//PRINTF(PSTR("actions_seq3\n"));
 		// 3: Control write data stage
 		// seq3 IN token -> seq4 ->seq0
 		USBx->INTSTS0 = (uint16_t) ~ USB_INTSTS0_VALID;	// Clear VALID - in seq 1, 3 and 5
@@ -3892,7 +3892,7 @@ static void usbd_handle_ctrt(PCD_HandleTypeDef *hpcd, uint_fast8_t ctsq)
 		break;
 
 	case 4:
-		PRINTF(PSTR("actions_seq4\n"));
+		//PRINTF(PSTR("actions_seq4\n"));
 		// 4: Control write status stage
 		//actions_seq4(pdev, & pdev->request);
 		// после usbd_handler_brdy8_dcp_out
@@ -3901,7 +3901,7 @@ static void usbd_handle_ctrt(PCD_HandleTypeDef *hpcd, uint_fast8_t ctsq)
 		break;
 
 	case 5:
-		PRINTF(PSTR("actions_seq5\n"));
+		//PRINTF(PSTR("actions_seq5\n"));
 		// 5: Control write (no data) status stage
 		// seq5 -> seq0
 		USBx->INTSTS0 = (uint16_t) ~ (1uL << USB_INTSTS0_VALID_SHIFT);	// Clear VALID - in seq 1, 3 and 5
@@ -3914,7 +3914,7 @@ static void usbd_handle_ctrt(PCD_HandleTypeDef *hpcd, uint_fast8_t ctsq)
 		break;
 
 	case 6:
-		PRINTF(PSTR("actions_seq6\n"));
+		//PRINTF(PSTR("actions_seq6\n"));
 		// 6: Control transfer sequence error
 		USBD_CtlError(pdev, & pdev->request);
 		break;
@@ -4509,18 +4509,18 @@ static void r7s721_usbdevice_handler(PCD_HandleTypeDef *hpcd)
 	if ((intsts0msk & USB_INTSTS0_SOFR) != 0)	// SOFR
 	{
 		USBx->INTSTS0 = (uint16_t) ~ USB_INTSTS0_SOFR;	// Clear SOFR
-		PRINTF(PSTR("r7s721_usbdevice_handler trapped - SOFR\n"));
+		//PRINTF(PSTR("r7s721_usbdevice_handler trapped - SOFR\n"));
 		HAL_PCD_SOFCallback(hpcd);
 	}
 	if ((intsts0msk & USB_INTSTS0_BEMP) != 0)	// BEMP
 	{
-		PRINTF(PSTR("r7s721_usbdevice_handler trapped - BEMP, BEMPSTS=0x%04X\n"), USBx->BEMPSTS);
+		//PRINTF(PSTR("r7s721_usbdevice_handler trapped - BEMP, BEMPSTS=0x%04X\n"), USBx->BEMPSTS);
 		const uint_fast16_t bempsts = USBx->BEMPSTS & USBx->BEMPENB;	// BEMP Interrupt Status Register
 		USBx->BEMPSTS = ~ bempsts;
 
 		if ((bempsts & (1U << 0)) != 0)	// PIPE0, DCP
 		{
-			HAL_PCD_DataInStageCallback(hpcd, 0);
+			HAL_PCD_DataInStageCallback(hpcd, 0, 0);
 
 			//if (control_transmit2(pdev) != 0)
 			//{
@@ -4532,7 +4532,7 @@ static void r7s721_usbdevice_handler(PCD_HandleTypeDef *hpcd)
 	if ((intsts0msk & USB_INTSTS0_NRDY) != 0)	// NRDY
 	{
 		uint_fast8_t i;
-		PRINTF(PSTR("r7s721_usbdevice_handler trapped - NRDY, NRDYSTS=0x%04X\n"), USBx->NRDYSTS);
+		//PRINTF(PSTR("r7s721_usbdevice_handler trapped - NRDY, NRDYSTS=0x%04X\n"), USBx->NRDYSTS);
 		const uint_fast16_t nrdysts = USBx->NRDYSTS & USBx->NRDYENB;	// NRDY Interrupt Status Register
 		for (i = 0; i < 16; ++ i)
 		{
@@ -4547,14 +4547,14 @@ static void r7s721_usbdevice_handler(PCD_HandleTypeDef *hpcd)
 	if ((intsts0msk & USB_INTSTS0_BRDY) != 0)	// BRDY
 	{
 		uint_fast8_t i;
-		PRINTF(PSTR("r7s721_usbdevice_handler trapped - BRDY, BRDYSTS=0x%04X\n"), USBx->BRDYSTS);
+		//PRINTF(PSTR("r7s721_usbdevice_handler trapped - BRDY, BRDYSTS=0x%04X\n"), USBx->BRDYSTS);
 		const uint_fast16_t brdysts = USBx->BRDYSTS & USBx->BRDYENB;	// BRDY Interrupt Status Register
 		USBx->BRDYSTS = ~ brdysts;
 
 		if ((brdysts & (1U << 0)) != 0)		// PIPE0 - DCP
 		{
 			//usbd_handler_brdy8_dcp_out(pdev, 0);
-			HAL_PCD_DataOutStageCallback(hpcd, 0);
+			HAL_PCD_DataOutStageCallback(hpcd, 0, 0);
 		}
 
 		for (i = 0; i < sizeof brdyenbpipes2 / sizeof brdyenbpipes2 [0]; ++ i)
@@ -4566,12 +4566,12 @@ static void r7s721_usbdevice_handler(PCD_HandleTypeDef *hpcd)
 				if ((ep & 0x80) != 0)
 				{
 					//usbd_handler_brdy_bulk_in8(pdev, pipe, ep);
-					HAL_PCD_DataInStageCallback(hpcd, 0x7f & ep);
+					HAL_PCD_DataInStageCallback(hpcd, 0x7f & ep, pipe);
 				}
 				else
 				{
 					//usbd_handler_brdy_bulk_out8(pdev, pipe, ep);
-					HAL_PCD_DataOutStageCallback(hpcd, ep);
+					HAL_PCD_DataOutStageCallback(hpcd, ep, pipe);
 				}
 			}
 		}
@@ -4583,11 +4583,33 @@ static void r7s721_usbdevice_handler(PCD_HandleTypeDef *hpcd)
 
 		usbd_handle_ctrt(hpcd, intsts0 & USB_INTSTS0_CTSQ);
 	}
-	if ((intsts0msk & (1uL << USB_INTSTS0_DVST_SHIFT)) != 0)	// DVSE
+	if ((intsts0msk & USB_INTSTS0_DVST) != 0)	// DVSE
 	{
-		PRINTF(PSTR("r7s721_usbdevice_handler trapped - DVSE, DVSQ=%d\n"), (intsts0 >> 4) & 0x07);
+		PRINTF(PSTR("r7s721_usbdevice_handler trapped - DVSE, DVSQ=%d\n"), (intsts0 & USB_INTSTS0_DVSQ) >> USB_INTSTS0_DVSQ_SHIFT);
 		USBx->INTSTS0 = (uint16_t) ~ (1uL << USB_INTSTS0_DVST_SHIFT);	// Clear DVSE
-		usbd_handle_dvst(pdev, (intsts0 & USB_INTSTS0_DVSQ) >> USB_INTSTS0_DVSQ_SHIFT);
+		switch ((intsts0 & USB_INTSTS0_DVSQ) >> USB_INTSTS0_DVSQ_SHIFT)
+		{
+		case 0x01:
+			HAL_PCD_ResetCallback(hpcd);
+			break;
+
+		case 0x04:
+		case 0x05:
+		case 0x06:
+		case 0x07:
+			//HAL_PCD_SuspendCallback(hpcd);
+			break;
+
+		case 0x02:
+			// address state
+			break;
+		//case xxx:
+		//	HAL_PCD_ResumeCallback(hpcd);
+		//	break;
+		default:
+			break;
+		}
+		//usbd_handle_dvst(pdev, (intsts0 & USB_INTSTS0_DVSQ) >> USB_INTSTS0_DVSQ_SHIFT);
 	}
 	if ((intsts0msk & (1uL << USB_INTSTS0_RESM_SHIFT)) != 0)	// RESM
 	{
@@ -4951,7 +4973,7 @@ HAL_StatusTypeDef USB_EP0StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDe
 	//PRINTF(PSTR("USB_EP0StartXfer\n"));
 	if (ep->is_in == 1)
 	{
-		PRINTF(PSTR("USB_EP0StartXfer: IN direction, ep->xfer_len=%d\n"), (int) ep->xfer_len);
+		//PRINTF(PSTR("USB_EP0StartXfer: IN direction, ep->xfer_len=%d, ep->maxpacket=%d\n"), (int) ep->xfer_len, (int) ep->maxpacket);
 
 		USBx->DCPCTR = (USBx->DCPCTR & ~ USB_DCPCTR_PID) |
 			DEVDRV_USBF_PID_NAK * (1uL << USB_DCPCTR_PID_SHIFT) |	// PID 00: NAK
@@ -8179,9 +8201,9 @@ void HAL_PCD_SetupStageCallback(PCD_HandleTypeDef *hpcd)
   * @param  epnum: Endpoint Number - without direction bit
   * @retval None
   */
-void HAL_PCD_DataOutStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum)
+void HAL_PCD_DataOutStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum, uint8_t pipe)
 {
-  USBD_LL_DataOutStage((USBD_HandleTypeDef*)hpcd->pData, epnum, hpcd->OUT_ep [epnum].xfer_buff);
+  USBD_LL_DataOutStage((USBD_HandleTypeDef*)hpcd->pData, epnum, hpcd->OUT_ep [epnum].xfer_buff, pipe);
 }
 
 /**
@@ -8190,9 +8212,9 @@ void HAL_PCD_DataOutStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum)
   * @param  epnum: Endpoint Number - without direction bit
   * @retval None
   */
-void HAL_PCD_DataInStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum)
+void HAL_PCD_DataInStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum, uint8_t pipe)
 {
-  USBD_LL_DataInStage((USBD_HandleTypeDef*)hpcd->pData, epnum, hpcd->IN_ep [epnum].xfer_buff);
+  USBD_LL_DataInStage((USBD_HandleTypeDef*)hpcd->pData, epnum, hpcd->IN_ep [epnum].xfer_buff, pipe);
 }
 
 /**
@@ -8212,26 +8234,27 @@ void HAL_PCD_SOFCallback(PCD_HandleTypeDef *hpcd)
   */
 void HAL_PCD_ResetCallback(PCD_HandleTypeDef *hpcd)
 {
-  USBD_SpeedTypeDef speed = USBD_SPEED_FULL;
+	USBD_SpeedTypeDef speed = USBD_SPEED_FULL;
 
-  /*Set USB Current Speed*/
-  switch (hpcd->Init.speed)
-  {
-  case PCD_SPEED_HIGH:
-    speed = USBD_SPEED_HIGH;
-    break;
-  case PCD_SPEED_FULL:
-    speed = USBD_SPEED_FULL;
-    break;
+	/*Set USB Current Speed*/
+	switch (hpcd->Init.speed)
+	{
+	case PCD_SPEED_HIGH:
+		speed = USBD_SPEED_HIGH;
+		break;
+	case PCD_SPEED_FULL:
+		speed = USBD_SPEED_FULL;
+		break;
 
-  default:
-    speed = USBD_SPEED_FULL;
-    break;
-  }
-  USBD_LL_SetSpeed((USBD_HandleTypeDef*)hpcd->pData, speed);
+	default:
+		speed = USBD_SPEED_FULL;
+		break;
+	}
+	PRINTF(PSTR("HAL_PCD_ResetCallback: speed=%d\n"), (int) speed);
+	USBD_LL_SetSpeed((USBD_HandleTypeDef*)hpcd->pData, speed);
 
-  /*Reset Device*/
-  USBD_LL_Reset((USBD_HandleTypeDef*)hpcd->pData);
+	/*Reset Device*/
+	USBD_LL_Reset((USBD_HandleTypeDef*)hpcd->pData);
 }
 
 #if (CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX)
@@ -10274,7 +10297,7 @@ static void USBD_GetDescriptor(USBD_HandleTypeDef *pdev,
 	const uint8_t *pbuf;
 	const uint_fast8_t index = LO_BYTE(req->wValue);
 
-	PRINTF(PSTR("USBD_GetDescriptor: %02X, wLength=%04X (%d dec), ix=%u\n"), HI_BYTE(req->wValue), req->wLength, req->wLength, LO_BYTE(req->wValue));
+	//PRINTF(PSTR("USBD_GetDescriptor: %02X, wLength=%04X (%d dec), ix=%u\n"), HI_BYTE(req->wValue), req->wLength, req->wLength, LO_BYTE(req->wValue));
 
 	switch (HI_BYTE(req->wValue))
 	{
@@ -10670,7 +10693,7 @@ USBD_StatusTypeDef  USBD_StdDevReq (USBD_HandleTypeDef *pdev, USBD_SetupReqTyped
 {
 	//PRINTF(PSTR("USBD_StdDevReq: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"),
 	//	req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
-	PRINTF(PSTR("USBD_StdDevReq: req->bRequest=%d\n"), (int) req->bRequest);
+	//PRINTF(PSTR("USBD_StdDevReq: req->bRequest=%d\n"), (int) req->bRequest);
 	USBD_StatusTypeDef ret = USBD_OK;
 
 	switch (req->bRequest)
@@ -11185,7 +11208,7 @@ static void usbd_rndis_ep0_recv(USBD_HandleTypeDef *pdev)
 * @param  epnum: endpoint index
 * @retval status
 */
-USBD_StatusTypeDef USBD_LL_DataOutStage(USBD_HandleTypeDef *pdev, uint_fast8_t epnum, uint8_t *pdata)
+USBD_StatusTypeDef USBD_LL_DataOutStage(USBD_HandleTypeDef *pdev, uint_fast8_t epnum, uint8_t *pdata, uint8_t pipe)
 {
 	//PRINTF(PSTR("USBD_LL_DataOutStage:\n"));
 
@@ -11243,7 +11266,7 @@ USBD_StatusTypeDef USBD_LL_DataOutStage(USBD_HandleTypeDef *pdev, uint_fast8_t e
 * @retval status
 */
 
-USBD_StatusTypeDef USBD_LL_DataInStage(USBD_HandleTypeDef *pdev, uint_fast8_t epnum, uint8_t * pdata)
+USBD_StatusTypeDef USBD_LL_DataInStage(USBD_HandleTypeDef *pdev, uint_fast8_t epnum, uint8_t * pdata, uint8_t pipe)
 {
 //	PRINTF(PSTR("USBD_LL_DataInStage:\n"));
 
@@ -11361,7 +11384,7 @@ USBD_StatusTypeDef USBD_LL_Reset(USBD_HandleTypeDef  *pdev)
 
 
 /**
-* @brief  USBD_LL_Reset
+* @brief  USBD_LL_SetSpeed
 *         Handle Reset event
 * @param  pdev: device instance
 * @retval status
