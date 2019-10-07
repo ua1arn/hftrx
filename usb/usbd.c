@@ -4534,25 +4534,27 @@ usbd_handle_dvst(USBD_HandleTypeDef *pdev, uint_fast8_t dvsq)
 		1 * USB_INTENB0_RSME |	// RSME
 
 */
-static void r7s721_usbdevice_handler(USBD_HandleTypeDef *pdev)
+static void r7s721_usbdevice_handler(PCD_HandleTypeDef *hhcd)
 {
-	USB_OTG_GlobalTypeDef * const Instance = ((PCD_HandleTypeDef *) pdev->pData)->Instance;
-	ASSERT(Instance == WITHUSBHW_DEVICE);
-	const uint_fast16_t intsts0 = Instance->INTSTS0;
-	const uint_fast16_t intsts1 = Instance->INTSTS1;
-	const uint_fast16_t intsts0msk = intsts0 & Instance->INTENB0;
-	const uint_fast16_t intsts1msk = intsts1 & Instance->INTENB1;
+	USB_OTG_GlobalTypeDef * const USBx = hhcd->Instance;
+	USBD_HandleTypeDef * const pdev = hhcd->pData;
+	//USB_OTG_GlobalTypeDef * const Instance = hhcd->Instance;
+	//ASSERT(Instance == WITHUSBHW_DEVICE);
+	const uint_fast16_t intsts0 = USBx->INTSTS0;
+	const uint_fast16_t intsts1 = USBx->INTSTS1;
+	const uint_fast16_t intsts0msk = intsts0 & USBx->INTENB0;
+	const uint_fast16_t intsts1msk = intsts1 & USBx->INTENB1;
 
 	if ((intsts0msk & USB_INTSTS0_SOFR) != 0)	// SOFR
 	{
-		Instance->INTSTS0 = (uint16_t) ~ USB_INTSTS0_SOFR;	// Clear SOFR
+		USBx->INTSTS0 = (uint16_t) ~ USB_INTSTS0_SOFR;	// Clear SOFR
 		PRINTF(PSTR("r7s721_usbdevice_handler trapped - SOFR\n"));
 	}
 	if ((intsts0msk & USB_INTSTS0_BEMP) != 0)	// BEMP
 	{
 		//PRINTF(PSTR("r7s721_usbdevice_handler trapped - BEMP, BEMPSTS=0x%04X\n"), Instance->BEMPSTS);
-		const uint_fast16_t bempsts = Instance->BEMPSTS & Instance->BEMPENB;	// BEMP Interrupt Status Register
-		Instance->BEMPSTS = ~ bempsts;
+		const uint_fast16_t bempsts = USBx->BEMPSTS & USBx->BEMPENB;	// BEMP Interrupt Status Register
+		USBx->BEMPSTS = ~ bempsts;
 
 		if ((bempsts & (1U << 0)) != 0)	// PIPE0, DCP
 		{
@@ -4567,13 +4569,13 @@ static void r7s721_usbdevice_handler(USBD_HandleTypeDef *pdev)
 	{
 		uint_fast8_t i;
 		//PRINTF(PSTR("r7s721_usbdevice_handler trapped - NRDY, NRDYSTS=0x%04X\n"), Instance->NRDYSTS);
-		const uint_fast16_t nrdysts = Instance->NRDYSTS & Instance->NRDYENB;	// NRDY Interrupt Status Register
+		const uint_fast16_t nrdysts = USBx->NRDYSTS & USBx->NRDYENB;	// NRDY Interrupt Status Register
 		for (i = 0; i < 16; ++ i)
 		{
 			const uint_fast16_t mask = (uint_fast16_t) 1 << i;
 			if ((nrdysts & mask) != 0)
 			{
-				Instance->NRDYSTS = ~ mask;
+				USBx->NRDYSTS = ~ mask;
 				usbd_handler_nrdy(pdev, i);
 			}
 		}
@@ -4582,8 +4584,8 @@ static void r7s721_usbdevice_handler(USBD_HandleTypeDef *pdev)
 	{
 		uint_fast8_t i;
 		//PRINTF(PSTR("r7s721_usbdevice_handler trapped - BRDY, BRDYSTS=0x%04X\n"), Instance->BRDYSTS);
-		const uint_fast16_t brdysts = Instance->BRDYSTS & Instance->BRDYENB;	// BRDY Interrupt Status Register
-		Instance->BRDYSTS = ~ brdysts;
+		const uint_fast16_t brdysts = USBx->BRDYSTS & USBx->BRDYENB;	// BRDY Interrupt Status Register
+		USBx->BRDYSTS = ~ brdysts;
 
 		if ((brdysts & (1U << 0)) != 0)		// PIPE0 - DCP
 			usbd_handler_brdy8_dcp_out(pdev, 0);
@@ -4604,25 +4606,25 @@ static void r7s721_usbdevice_handler(USBD_HandleTypeDef *pdev)
 	if ((intsts0msk & USB_INTSTS0_CTRT) != 0)	// CTRT
 	{
 		//PRINTF(PSTR("r7s721_usbdevice_handler trapped - CTRT, CTSQ=%d\n"), (intsts0 >> 0) & 0x07);
-		Instance->INTSTS0 = (uint16_t) ~ (1uL << USB_INTSTS0_CTRT_SHIFT);	// Clear CTRT
+		USBx->INTSTS0 = (uint16_t) ~ (1uL << USB_INTSTS0_CTRT_SHIFT);	// Clear CTRT
 
 		usbd_handle_ctrt(pdev, intsts0 & USB_INTSTS0_CTSQ);
 	}
 	if ((intsts0msk & (1uL << USB_INTSTS0_DVST_SHIFT)) != 0)	// DVSE
 	{
 		//PRINTF(PSTR("r7s721_usbdevice_handler trapped - DVSE, DVSQ=%d\n"), (intsts0 >> 4) & 0x07);
-		Instance->INTSTS0 = (uint16_t) ~ (1uL << USB_INTSTS0_DVST_SHIFT);	// Clear DVSE
+		USBx->INTSTS0 = (uint16_t) ~ (1uL << USB_INTSTS0_DVST_SHIFT);	// Clear DVSE
 		usbd_handle_dvst(pdev, (intsts0 & USB_INTSTS0_DVSQ) >> USB_INTSTS0_DVSQ_SHIFT);
 	}
 	if ((intsts0msk & (1uL << USB_INTSTS0_RESM_SHIFT)) != 0)	// RESM
 	{
-		Instance->INTSTS0 = (uint16_t) ~ (1uL << USB_INTSTS0_RESM_SHIFT);	// Clear RESM
+		USBx->INTSTS0 = (uint16_t) ~ (1uL << USB_INTSTS0_RESM_SHIFT);	// Clear RESM
 		//PRINTF(PSTR("r7s721_usbdevice_handler trapped - RESM\n"));
-		usbd_handle_resume(Instance);
+		usbd_handle_resume(USBx);
 	}
 	if ((intsts0msk & (1uL << USB_INTSTS0_VBINT_SHIFT)) != 0)	// VBINT
 	{
-		Instance->INTSTS0 = (uint16_t) ~ USB_INTSTS0_VBINT;	// Clear VBINT - enabled by VBSE
+		USBx->INTSTS0 = (uint16_t) ~ USB_INTSTS0_VBINT;	// Clear VBINT - enabled by VBSE
 		PRINTF(PSTR("r7s721_usbdevice_handler trapped - VBINT, VBSTS=%d\n"), (intsts0 & USB_INTSTS0_VBSTS) != 0);	// TODO: masked VBSTS
 	//	usbd_handle_vbuse(usbd_getvbus());
 	}
@@ -4630,12 +4632,12 @@ static void r7s721_usbdevice_handler(USBD_HandleTypeDef *pdev)
 
 static void r7s721_usbi0_device_handler(void)
 {
-	r7s721_usbdevice_handler(& hUsbDevice);
+	r7s721_usbdevice_handler(& hpcd_USB_OTG);
 }
 
 static void r7s721_usbi1_device_handler(void)
 {
-	r7s721_usbdevice_handler(& hUsbDevice);
+	r7s721_usbdevice_handler(& hpcd_USB_OTG);
 }
 
 
@@ -4674,51 +4676,53 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
 
 }
 
-static void r7s721_usbhost_handler(USBH_HandleTypeDef *pdev)
+static void r7s721_usbhost_handler(HCD_HandleTypeDef *hhcd)
 {
-	USB_OTG_GlobalTypeDef * const Instance = ((PCD_HandleTypeDef *) pdev->pData)->Instance;
-	const uint_fast16_t intsts0 = Instance->INTSTS0;
-	const uint_fast16_t intsts1 = Instance->INTSTS1;
-	const uint_fast16_t intsts0msk = intsts0 & Instance->INTENB0;
-	const uint_fast16_t intsts1msk = intsts1 & Instance->INTENB1;
+	USB_OTG_GlobalTypeDef * const USBx = hhcd->Instance;
+	const uint_fast16_t intsts0 = USBx->INTSTS0;
+	const uint_fast16_t intsts1 = USBx->INTSTS1;
+	const uint_fast16_t intsts0msk = intsts0 & USBx->INTENB0;
+	const uint_fast16_t intsts1msk = intsts1 & USBx->INTENB1;
 
-	PRINTF(PSTR("r7s721_usbhost_handler trapped, intsts0=%04X, intsts1=%04X\n"), intsts0, intsts1);
+	//PRINTF(PSTR("r7s721_usbhost_handler trapped, intsts0=%04X, intsts1=%04X\n"), intsts0, intsts1);
 	if ((intsts0msk & USB_INTSTS0_SOFR) != 0)	// SOFR
 	{
-		Instance->INTSTS0 = (uint16_t) ~ USB_INTSTS0_SOFR;	// Clear SOFR
-		PRINTF(PSTR("r7s721_usbhost_handler trapped - SOFR\n"));
+		USBx->INTSTS0 = (uint16_t) ~ USB_INTSTS0_SOFR;	// Clear SOFR
+		//PRINTF(PSTR("r7s721_usbhost_handler trapped - SOFR\n"));
 	}
 	if ((intsts1msk & USB_INTSTS1_BCHG) != 0)	// BCHG
 	{
-		Instance->INTSTS1 = (uint16_t) ~ USB_INTSTS1_BCHG;
-		PRINTF(PSTR("r7s721_usbhost_handler trapped - BCHG\n"));
+		USBx->INTSTS1 = (uint16_t) ~ USB_INTSTS1_BCHG;
+		//PRINTF(PSTR("r7s721_usbhost_handler trapped - BCHG\n"));
 	}
 	if ((intsts1msk & USB_INTSTS1_DTCH) != 0)	// DTCH
 	{
-		Instance->INTSTS1 = (uint16_t) ~ USB_INTSTS1_DTCH;
-		PRINTF(PSTR("r7s721_usbhost_handler trapped - DTCH\n"));
+		USBx->INTSTS1 = (uint16_t) ~ USB_INTSTS1_DTCH;
+		//PRINTF(PSTR("r7s721_usbhost_handler trapped - DTCH\n"));
+		HAL_HCD_Disconnect_Callback(hhcd);
 	}
 	if ((intsts1msk & USB_INTSTS1_ATTCH) != 0)	// ATTCH
 	{
-		Instance->INTSTS1 = (uint16_t) ~ USB_INTSTS1_ATTCH;
-		PRINTF(PSTR("r7s721_usbhost_handler trapped - ATTCH\n"));
+		USBx->INTSTS1 = (uint16_t) ~ USB_INTSTS1_ATTCH;
+		//PRINTF(PSTR("r7s721_usbhost_handler trapped - ATTCH\n"));
+		HAL_HCD_Connect_Callback(hhcd);
 	}
 	if ((intsts0msk & (1uL << USB_INTSTS0_VBINT_SHIFT)) != 0)	// VBINT
 	{
-		Instance->INTSTS0 = (uint16_t) ~ USB_INTSTS0_VBINT;	// Clear VBINT - enabled by VBSE
-		PRINTF(PSTR("r7s721_usbhost_handler trapped - VBINT, VBSTS=%d\n"), (intsts0 & USB_INTSTS0_VBSTS) != 0);	// TODO: masked VBSTS
+		USBx->INTSTS0 = (uint16_t) ~ USB_INTSTS0_VBINT;	// Clear VBINT - enabled by VBSE
+		//PRINTF(PSTR("r7s721_usbhost_handler trapped - VBINT, VBSTS=%d\n"), (intsts0 & USB_INTSTS0_VBSTS) != 0);	// TODO: masked VBSTS
 	//	usbd_handle_vbuse(usbd_getvbus());
 	}
 }
 
 static void r7s721_usbi0_host_handler(void)
 {
-	r7s721_usbhost_handler(& hUsbHost);
+	r7s721_usbhost_handler(& hhcd_USB_OTG);
 }
 
 static void r7s721_usbi1_host_handler(void)
 {
-	r7s721_usbhost_handler(& hUsbHost);
+	r7s721_usbhost_handler(& hhcd_USB_OTG);
 }
 
 void HAL_HCD_MspInit(HCD_HandleTypeDef* hpcd)
@@ -4917,7 +4921,7 @@ HAL_StatusTypeDef  USB_DevDisconnect (USB_OTG_GlobalTypeDef *USBx)
 {
 	//PRINTF(PSTR("USB_DevDisconnect (USBx=%p)\n"), USBx);
 
-	USBx->SYSCFG0 &= ~ (1uL << USB_SYSCFG_DPRPU_SHIFT);	// DPRPU 1: Pulling up the D+ line is enabled.
+	USBx->SYSCFG0 &= ~ USB_SYSCFG_DPRPU;	// DPRPU 0: Pulling up the D+ line is disabled.
 	(void) USBx->SYSSTS0;
 	//HAL_Delay(3);
 
@@ -4933,7 +4937,7 @@ HAL_StatusTypeDef  USB_DevConnect (USB_OTG_GlobalTypeDef *USBx)
 {
 	//PRINTF(PSTR("USB_DevConnect (USBx=%p)\n"), USBx);
 
-	USBx->SYSCFG0 |= (1uL << USB_SYSCFG_DPRPU_SHIFT);	// DPRPU 1: Pulling up the D+ line is enabled.
+	USBx->SYSCFG0 |= USB_SYSCFG_DPRPU;	// DPRPU 1: Pulling up the D+ line is enabled.
 	(void) USBx->SYSSTS0;
 	//HAL_Delay(3);
 
@@ -5020,6 +5024,10 @@ HAL_StatusTypeDef USB_HC_Halt(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t hc_num)
   */
 static HAL_StatusTypeDef USB_ResetPort(USB_OTG_GlobalTypeDef *USBx)
 {
+	USBx->DVSTCTR0 |= USB_DVSTCTR0_USBRST;
+	local_delay_ms(10);
+	USBx->DVSTCTR0 &= ~ USB_DVSTCTR0_USBRST;
+	local_delay_ms(10);
 	return HAL_OK;
 }
 
@@ -5076,17 +5084,27 @@ static HAL_StatusTypeDef USB_HostInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG
 		//USB_SOFCFG_BRDYM |	// BRDYM
 		0;
 
+	USBx->SYSCFG0 &= ~ USB_SYSCFG_DPRPU;	// DPRPU 0: Pulling up the D+ line is disabled.
+	(void) USBx->SYSSTS0;
+
+	USBx->SYSCFG0 |= USB_SYSCFG_DRPD;	// DRPD 1: Pulling down the lines is enabled.
+	(void) USBx->SYSSTS0;
+
 	USBx->SYSCFG0 |= USB_SYSCFG_DCFM;	// DCFM 1: Host controller mode is selected
+	(void) USBx->SYSSTS0;
 
 	USBx->SYSCFG0 |= USB_SYSCFG_USBE;	// USBE 1: USB module operation is enabled.
+	(void) USBx->SYSSTS0;
 
 	if (cfg->speed == USBD_SPEED_HIGH)
 	{
 		USBx->SYSCFG0 |= USB_SYSCFG_HSE;	// HSE
+		(void) USBx->SYSSTS0;
 	}
 	else
 	{
 		USBx->SYSCFG0 &= ~ USB_SYSCFG_HSE;	// HSE
+		(void) USBx->SYSSTS0;
 	}
 
 	/*
@@ -5105,7 +5123,7 @@ static HAL_StatusTypeDef USB_HostInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG
 		0;
 
 	USBx->INTENB1 =
-		1 * USB_INTENB1_BCHGE |	// BCHG
+		//1 * USB_INTENB1_BCHGE |	// BCHG
 		1 * USB_INTENB1_DTCHE |	// DTCH
 		1 * USB_INTENB1_ATTCHE |	// ATTCH
 		0;
@@ -5417,24 +5435,26 @@ static HAL_StatusTypeDef USB_CoreInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG
   */
 static HAL_StatusTypeDef USB_DevInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_CfgTypeDef * cfg)
 {
-	//USBx->CFIFOSEL = 0;	// не помогает с первым чтением из DCP
-	//USBx->CFIFOCTR = USB_CFIFOCTR_BCLR;	// BCLR
-
 	USBx->SOFCFG =
 		//USB_SOFCFG_BRDYM |	// BRDYM
 		0;
+	(void) USBx->SYSSTS0;
 
 	USBx->SYSCFG0 &= ~ USB_SYSCFG_DCFM;	// DCFM 0: Device controller mode is selected
+	(void) USBx->SYSSTS0;
 
 	USBx->SYSCFG0 |= USB_SYSCFG_USBE;	// USBE 1: USB module operation is enabled.
+	(void) USBx->SYSSTS0;
 
 	if (cfg->speed == USBD_SPEED_HIGH)
 	{
 		USBx->SYSCFG0 |= USB_SYSCFG_HSE;	// HSE
+		(void) USBx->SYSSTS0;
 	}
 	else
 	{
 		USBx->SYSCFG0 &= ~ USB_SYSCFG_HSE;	// HSE
+		(void) USBx->SYSSTS0;
 	}
 
 	USBx->INTENB0 =
@@ -16495,7 +16515,7 @@ USBH_StatusTypeDef  USBH_LL_Connect(USBH_HandleTypeDef *phost)
 	switch (phost->gState)
 	{
 	case HOST_IDLE:
-		//PRINTF(PSTR("USBH_LL_Connect at HOST_IDLE\n"));
+		PRINTF(PSTR("USBH_LL_Connect at HOST_IDLE\n"));
 		phost->device.is_connected = 1;
 
 		if (phost->pUser != NULL)
@@ -16505,7 +16525,7 @@ USBH_StatusTypeDef  USBH_LL_Connect(USBH_HandleTypeDef *phost)
 		break;
 
 	case HOST_DEV_WAIT_FOR_ATTACHMENT:
-		//PRINTF(PSTR("USBH_LL_Connect at HOST_DEV_WAIT_FOR_ATTACHMENT\n"));
+		PRINTF(PSTR("USBH_LL_Connect at HOST_DEV_WAIT_FOR_ATTACHMENT\n"));
 		phost->gState = HOST_DEV_BEFORE_ATTACHED;
 		break;
 
@@ -16531,11 +16551,11 @@ USBH_StatusTypeDef  USBH_LL_Disconnect(USBH_HandleTypeDef *phost)
 	switch (phost->gState)
 	{
 	case HOST_DEV_BEFORE_ATTACHED:
-		//PRINTF(PSTR("USBH_LL_Disconnect at HOST_DEV_BEFORE_ATTACHED\n"));
+		PRINTF(PSTR("USBH_LL_Disconnect at HOST_DEV_BEFORE_ATTACHED\n"));
 		return USBH_OK;
 
 	default:
-		//PRINTF(PSTR("USBH_LL_Disconnect at phost->gState=%d\n"), (int) phost->gState);
+		PRINTF(PSTR("USBH_LL_Disconnect at phost->gState=%d\n"), (int) phost->gState);
 		break;
 	}
 	/*Stop Host */ 
@@ -18084,7 +18104,7 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
 		break;
 
 	case HOST_DEV_WAIT_FOR_ATTACHMENT0:
-		  //PRINTF(PSTR("USBH_Process: HOST_DEV_WAIT_FOR_ATTACHMENT0\n"));
+		PRINTF(PSTR("USBH_Process: HOST_DEV_WAIT_FOR_ATTACHMENT0\n"));
 		USBH_LL_ResetPort(phost);
 #if (USBH_USE_OS == 1)
 		osMessagePut ( phost->os_event, USBH_PORT_EVENT, 0);
@@ -18098,7 +18118,7 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
 		break;
 
 	case HOST_DEV_WAIT_FOR_ATTACHMENT:
-		  //PRINTF(PSTR("USBH_Process: HOST_DEV_WAIT_FOR_ATTACHMENT\n"));
+		//PRINTF(PSTR("USBH_Process: HOST_DEV_WAIT_FOR_ATTACHMENT\n"));
 		break;    
     
 	case HOST_DEV_BEFORE_ATTACHED:
