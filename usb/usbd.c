@@ -10882,7 +10882,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
     {
 #if WITHUSBUAC
 	// device only: Incomplete isochronous IN transfer
-	  uint32_t epnum = USBD_EP_AUDIO_IN;	// TODO: use right value - now ignored
+    	uint8_t epnum = USBD_EP_AUDIO_IN;	// TODO: use right value - now ignored
       HAL_PCD_ISOINIncompleteCallback(hpcd, epnum);
 #endif /* WITHUSBUAC */
       __HAL_PCD_CLEAR_FLAG(hpcd, USB_OTG_GINTSTS_IISOIXFR);
@@ -10894,7 +10894,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 #if WITHUSBUAC
 	// device: INCOMPISOOUT: Incomplete isochronous OUT transfer
 	// host: IPXFR: Incomplete periodic transfer
-	  uint32_t epnum = USBD_EP_AUDIO_OUT;	// TODO: use right value - now ignored
+    	uint8_t epnum = USBD_EP_AUDIO_OUT;	// TODO: use right value - now ignored
       HAL_PCD_ISOOUTIncompleteCallback(hpcd, epnum);
 #endif /* WITHUSBUAC */
       __HAL_PCD_CLEAR_FLAG(hpcd, USB_OTG_GINTSTS_PXFR_INCOMPISOOUT);
