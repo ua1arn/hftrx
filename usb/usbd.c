@@ -1572,6 +1572,8 @@ void HAL_PCD_ISOOUTIncompleteCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum);
 void HAL_PCD_ISOINIncompleteCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum);
 void HAL_PCD_ConnectCallback(PCD_HandleTypeDef *hpcd);
 void HAL_PCD_DisconnectCallback(PCD_HandleTypeDef *hpcd);
+
+static void HAL_PCD_AdressedCallback(PCD_HandleTypeDef *hpcd);	// RENESAS specific
 /**
   * @}
   */
@@ -2314,7 +2316,7 @@ static uint_fast8_t usbd_read_data(PCD_TypeDef * const USBx, uint_fast8_t pipe, 
 static uint_fast8_t
 usbd_write_data(PCD_TypeDef * const USBx, uint_fast8_t pipe, const uint8_t * data, unsigned size)
 {
-#if 0
+#if 1
 	if (data != NULL && size != 0)
 		PRINTF(PSTR("usbd_write_data, pipe=%d, size=%d, data[]={%02x,%02x,%02x,%02x,%02x,..}\n"), pipe, size, data [0], data [1], data [2], data [3], data [4]);
 	else
@@ -4602,6 +4604,7 @@ static void r7s721_usbdevice_handler(PCD_HandleTypeDef *hpcd)
 
 		case 0x02:
 			// address state
+			HAL_PCD_AdressedCallback(hpcd);
 			break;
 		//case xxx:
 		//	HAL_PCD_ResumeCallback(hpcd);
@@ -4984,7 +4987,7 @@ HAL_StatusTypeDef USB_EP0StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDe
 		{
   		   /* Zero Length Packet */
 			int err = usbd_write_data(USBx, pipe, NULL, 0);	// pipe=0: DCP
-			ASSERT(err == 0);
+			////ASSERT(err == 0);
 		}
 		else
 		{
@@ -4993,7 +4996,10 @@ HAL_StatusTypeDef USB_EP0StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDe
 				ep->xfer_len = ep->maxpacket;
 			}
 			int err = usbd_write_data(USBx, pipe, ep->xfer_buff, ep->xfer_len);	// pipe=0: DCP
-			ASSERT(err == 0);
+			////ASSERT(err == 0);
+			// эти манипуляци пока не по оригиналу
+			ep->xfer_buff += ep->xfer_len;
+			ep->xfer_count += ep->xfer_len;
 		}
 
 		USBx->DCPCTR = (USBx->DCPCTR & ~ USB_DCPCTR_PID) |
@@ -5025,13 +5031,14 @@ HAL_StatusTypeDef USB_EP0StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDe
   */
 HAL_StatusTypeDef USB_EPStartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDef *ep, uint_fast8_t dma)
 {
-	PRINTF(PSTR("USB_EPStartXfer\n"));
 	if (ep->is_in == 1)
 	{
+		PRINTF(PSTR("USB_EPStartXfer IN, ep->num=%d, ep->tx_fifo_num=%d\n"), (int) ep->num, (int) ep->tx_fifo_num);
 		/* IN endpoint */
 	}
 	else
 	{
+		PRINTF(PSTR("USB_EPStartXfer OUT, ep->num=%d, ep->tx_fifo_num=%d\n"), (int) ep->num, (int) ep->tx_fifo_num);
 		/* OUT endpoint */
 	}
 	return HAL_OK;
@@ -8250,7 +8257,7 @@ void HAL_PCD_ResetCallback(PCD_HandleTypeDef *hpcd)
 		speed = USBD_SPEED_FULL;
 		break;
 	}
-	PRINTF(PSTR("HAL_PCD_ResetCallback: speed=%d\n"), (int) speed);
+	//PRINTF(PSTR("HAL_PCD_ResetCallback: speed=%d\n"), (int) speed);
 	USBD_LL_SetSpeed((USBD_HandleTypeDef*)hpcd->pData, speed);
 
 	/*Reset Device*/
@@ -10432,6 +10439,8 @@ static void USBD_GetDescriptor(USBD_HandleTypeDef *pdev,
 * @param  req: usb request
 * @retval status
 */
+// on renesas not exists
+// r7s721_usbdevice_handler trapped - DVSE, DVSQ
 static void USBD_SetAddress(USBD_HandleTypeDef *pdev,
                             const USBD_SetupReqTypedef *req)
 {
@@ -10468,6 +10477,47 @@ static void USBD_SetAddress(USBD_HandleTypeDef *pdev,
 		USBD_CtlError(pdev, req);
 	}
 }
+
+#if CPUSTYLE_R7S721
+
+// RENESAS specific function
+static uint_fast8_t USB_GetAdress(USB_OTG_GlobalTypeDef * USBx)
+{
+	return (USBx->USBADDR & USB_USBADDR_USBADDR) >> USB_USBADDR_USBADDR_SHIFT;
+}
+
+// RENESAS specific function
+static void HAL_PCD_AdressedCallback(PCD_HandleTypeDef *hpcd)
+{
+	USBD_HandleTypeDef * const pdev = hpcd->pData;
+	USB_OTG_GlobalTypeDef * const USBx = hpcd->Instance;
+	//PRINTF(PSTR("HAL_PCD_AdressedCallback\n"));
+
+	if (pdev->dev_state == USBD_STATE_CONFIGURED)
+	{
+		TP();
+		USBD_CtlError(pdev, & pdev->request);
+	}
+	else
+	{
+		const uint_fast8_t dev_addr = USB_GetAdress(USBx);
+		pdev->dev_address = dev_addr;
+		//USBD_LL_SetUSBAddress(pdev, dev_addr);
+		//USBD_CtlSendStatus(pdev);
+
+		if (dev_addr != 0)
+		{
+			pdev->dev_state = USBD_STATE_ADDRESSED;
+		}
+		else
+		{
+			pdev->dev_state = USBD_STATE_DEFAULT;
+		}
+	}
+
+}
+
+#endif /* CPUSTYLE_R7S721 */
 
 /**
 * @brief  USBD_SetConfig
