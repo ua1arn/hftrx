@@ -2320,7 +2320,7 @@ static uint_fast8_t usbd_read_data(PCD_TypeDef * const USBx, uint_fast8_t pipe, 
 static uint_fast8_t
 usbd_write_data(PCD_TypeDef * const USBx, uint_fast8_t pipe, const uint8_t * data, unsigned size)
 {
-#if 1
+#if 0
 	if (data != NULL && size != 0)
 		PRINTF(PSTR("usbd_write_data, pipe=%d, size=%d, data[]={%02x,%02x,%02x,%02x,%02x,..}\n"), pipe, size, data [0], data [1], data [2], data [3], data [4]);
 	else
@@ -2835,7 +2835,7 @@ static void usbdFunctionReq_seq4(USBD_HandleTypeDef *pdev, const USBD_SetupReqTy
 		{
 			switch (req->bRequest)
 			{
-			case CDC_SET_LINE_CODING:
+			case CDC_SET_LINE_CODING:	// renesas
 				{
 					const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
 					dwDTERate [interfacev] = USBD_peek_u32(& cdc_ep0databuffout [0]);
@@ -2849,7 +2849,7 @@ static void usbdFunctionReq_seq4(USBD_HandleTypeDef *pdev, const USBD_SetupReqTy
 		{
 			switch (req->bRequest)
 			{
-			case CDC_SET_LINE_CODING:
+			case CDC_SET_LINE_CODING:	// renesas
 				{
 					const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
 					dwDTERate [interfacev] = USBD_peek_u32(& cdc_ep0databuffout [0]);
@@ -3452,6 +3452,7 @@ static void usbdFunctionReq_seq3(USBD_HandleTypeDef *pdev, const USBD_SetupReqTy
 #endif /* WITHUSBDFU */
 
 #if WITHUSBCDC
+	// renesas
 	case INTERFACE_CDC_CONTROL_3a:	// CDC interface
 	case INTERFACE_CDC_CONTROL_3b:	// CDC interface
 		dcp_out_ptr = cdc_ep0databuffout;
@@ -3895,6 +3896,7 @@ static void usbd_handle_ctrt(PCD_HandleTypeDef *hpcd, uint_fast8_t ctsq)
 
 		//actions_seq3(pdev, & pdev->request);// USBD_XXX_Setup
         HAL_PCD_SetupStageCallback(hpcd);
+        dcp_acksend(pdev);	// ACK - читаем дальше
 		break;
 
 	case 4:
@@ -3902,6 +3904,9 @@ static void usbd_handle_ctrt(PCD_HandleTypeDef *hpcd, uint_fast8_t ctsq)
 		// 4: Control write status stage
 		//actions_seq4(pdev, & pdev->request);
 		// после usbd_handler_brdy8_dcp_out
+		// End of receieve data trough EP0
+		// Set Line Coding here
+        HAL_PCD_SetupStageCallback(hpcd);
 
 		USBx->DCPCTR |= USB_DCPCTR_CCPL;	// CCPL
 		break;
@@ -4559,8 +4564,18 @@ static void r7s721_usbdevice_handler(PCD_HandleTypeDef *hpcd)
 
 		if ((brdysts & (1U << 0)) != 0)		// PIPE0 - DCP
 		{
-			//usbd_handler_brdy8_dcp_out(pdev, 0);
-			HAL_PCD_DataOutStageCallback(hpcd, 0);
+			USB_OTG_EPTypeDef * const ep = & hpcd->OUT_ep [0];
+		  	unsigned count;
+		  	if (usbd_read_data(USBx, 0, ep->xfer_buff, ep->xfer_len - ep->xfer_count, & count) == 0)
+		  	{
+				//usbd_handler_brdy8_dcp_out(pdev, 0);	// usbd_read_data inside
+				ep->xfer_buff += count;
+				ep->xfer_count += count;
+		  	}
+		  	else
+		  	{
+		  		control_stall(pdev);
+		  	}
 		}
 
 		for (i = 0; i < sizeof brdyenbpipes2 / sizeof brdyenbpipes2 [0]; ++ i)
@@ -4571,12 +4586,12 @@ static void r7s721_usbdevice_handler(PCD_HandleTypeDef *hpcd)
 			{
 				if ((ep & 0x80) != 0)
 				{
-					//usbd_handler_brdy_bulk_in8(pdev, pipe, ep);
+					//usbd_handler_brdy_bulk_in8(pdev, pipe, ep);	// usbd_write_data inside
 					HAL_PCD_DataInStageCallback(hpcd, 0x7f & ep);
 				}
 				else
 				{
-					//usbd_handler_brdy_bulk_out8(pdev, pipe, ep);
+					//usbd_handler_brdy_bulk_out8(pdev, pipe, ep);	// usbd_read_data inside
 					HAL_PCD_DataOutStageCallback(hpcd, ep);
 				}
 			}
@@ -4591,7 +4606,7 @@ static void r7s721_usbdevice_handler(PCD_HandleTypeDef *hpcd)
 	}
 	if ((intsts0msk & USB_INTSTS0_DVST) != 0)	// DVSE
 	{
-		PRINTF(PSTR("r7s721_usbdevice_handler trapped - DVSE, DVSQ=%d\n"), (intsts0 & USB_INTSTS0_DVSQ) >> USB_INTSTS0_DVSQ_SHIFT);
+		//PRINTF(PSTR("r7s721_usbdevice_handler trapped - DVSE, DVSQ=%d\n"), (intsts0 & USB_INTSTS0_DVSQ) >> USB_INTSTS0_DVSQ_SHIFT);
 		USBx->INTSTS0 = (uint16_t) ~ (1uL << USB_INTSTS0_DVST_SHIFT);	// Clear DVSE
 		switch ((intsts0 & USB_INTSTS0_DVSQ) >> USB_INTSTS0_DVSQ_SHIFT)
 		{
@@ -5037,13 +5052,16 @@ HAL_StatusTypeDef USB_EPStartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDef
 {
 	if (ep->is_in == 1)
 	{
-		PRINTF(PSTR("USB_EPStartXfer IN, ep->num=%d, ep->pipe_num=%d\n"), (int) ep->num, (int) ep->pipe_num);
+		//PRINTF(PSTR("USB_EPStartXfer IN, ep->num=%d, ep->pipe_num=%d\n"), (int) ep->num, (int) ep->pipe_num);
 		/* IN endpoint */
 	}
 	else
 	{
-		PRINTF(PSTR("USB_EPStartXfer OUT, ep->num=%d, ep->pipe_num=%d\n"), (int) ep->num, (int) ep->pipe_num);
+		//PRINTF(PSTR("USB_EPStartXfer OUT, ep->num=%d, ep->pipe_num=%d\n"), (int) ep->num, (int) ep->pipe_num);
 		/* OUT endpoint */
+
+		/* EP enable */
+		//outep->DOEPCTL |= (USB_OTG_DOEPCTL_CNAK | USB_OTG_DOEPCTL_EPENA);
 	}
 	return HAL_OK;
 }
@@ -7736,17 +7754,19 @@ HAL_StatusTypeDef HAL_PCD_Init(PCD_HandleTypeDef *hpcd)
 	}
 
 #if CPUSTYLE_R7S721
+
+	// Заполнение полей специфичных для RENESAS
 	for (i = 0; i < sizeof usbd_usedpipes / sizeof usbd_usedpipes [0]; ++ i)
 	{
 		const uint_fast8_t pipe = usbd_usedpipes [i].pipe;
 		const uint_fast8_t ep = usbd_usedpipes [i].ep;
 		if (ep & 0x80)
 		{
-			   hpcd->IN_ep[ep & 0x7F].pipe_num = pipe;
+			hpcd->IN_ep[ep & 0x7F].pipe_num = pipe;
 		}
 		else
 		{
-			   hpcd->OUT_ep[ep & 0x7F].pipe_num = pipe;
+			hpcd->OUT_ep[ep & 0x7F].pipe_num = pipe;
 		}
 	}
 	hpcd->IN_ep[0].pipe_num = 0;
@@ -8028,6 +8048,7 @@ HAL_StatusTypeDef HAL_PCD_EP_Receive(PCD_HandleTypeDef *hpcd, uint_fast8_t ep_ad
 	{
 		USB_EPStartXfer(hpcd->Instance, ep, hpcd->Init.dma_enable);
 	}
+
 	__HAL_UNLOCK(hpcd);
 
 	return HAL_OK;
@@ -9691,7 +9712,7 @@ static USBD_StatusTypeDef USBD_XXX_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 					//TP();
 					break;
 				}
-
+				// stm32
 				if (req->wLength != 0)
 				{
 					USBD_CtlPrepareRx(pdev, cdc_ep0databuffout, ulmin16(ARRAY_SIZE(cdc_ep0databuffout), req->wLength));
