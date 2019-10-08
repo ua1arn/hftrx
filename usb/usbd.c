@@ -2718,14 +2718,6 @@ static void usb0_function_seq2_Resrv_4(USBD_HandleTypeDef *pdev, const USBD_Setu
 		break;
 	}
 }
-// seq=4
-// End of receieve data trough EP0
-static void usb0_function_Resrv_5(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req)
-{
-	// В примерах от renesas пусто
-	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
-	PRINTF(PSTR("usb0_function_Resrv_5: interfacev=%u: bRequest=%u, wLength=%u\n"), interfacev, req->bRequest, req->wLength);
-}
 
 // Class reauest
 // Control Read Status stage
@@ -2767,139 +2759,6 @@ static void usbdVendorReq_seq0(USBD_HandleTypeDef *pdev, const USBD_SetupReqType
 {
 	PRINTF(PSTR("usbdVendorReq_seq0\n"));
 	//PRINTF(PSTR("usbdVendorReq_seq0: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
-}
-// Control write status stage
-// End of receieve data trough EP0
-// xxx_EP0_RxReady
-static void usbdFunctionReq_seq4(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req)
-{
-	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
-
-	//PRINTF(PSTR("1 usbdFunctionReq_seq4: interfacev=%u: bRequest=%u, wLength=%u\n"), interfacev, req->bRequest, req->wLength);
-	switch (interfacev)
-	{
-	default:
-		TP();
-		PRINTF(PSTR("2 usbdFunctionReq_seq4: interfacev=%u: bRequest=%u, wLength=%u\n"), interfacev, req->bRequest, req->wLength);
-		break;
-
-#if WITHUSBDFU
-	case INTERFACE_DFU_CONTROL:
-		{
-			switch (req->bRequest)
-			{
-			case DFU_DNLOAD:
-				//TP();
-				DFU_Download(pdev, req);	// used then upload/download command issued
-				break;
-
-			case DFU_UPLOAD:
-				TP();
-				DFU_Upload(pdev, req);	// never called
-				break;
-
-			case DFU_GETSTATUS:
-				TP();
-				DFU_GetStatus(pdev);// never called
-				break;
-
-			case DFU_CLRSTATUS:
-				DFU_ClearStatus(pdev);
-				break;      
-
-			case DFU_GETSTATE:
-				TP();
-				DFU_GetState(pdev);
-				break;  
-
-			case DFU_ABORT:
-				TP();
-				DFU_Abort(pdev);	// not called
-				break;
-
-			case DFU_DETACH:
-				TP();
-				DFU_Detach(pdev, req);
-				break;
-			default:
-				USBD_CtlError (pdev, req);
-				//ret = USBD_FAIL; 
-				break;
-			}
-		}
-		return;
-#endif /* WITHUSBDFU */
-
-#if WITHUSBCDC
-	case INTERFACE_CDC_CONTROL_3a:	// CDC interface
-		{
-			switch (req->bRequest)
-			{
-			case CDC_SET_LINE_CODING:	// renesas
-				{
-					const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
-					dwDTERate [interfacev] = USBD_peek_u32(& cdc_ep0databuffout [0]);
-					//PRINTF(PSTR("CDC_SET_LINE_CODING: interfacev=%u, dwDTERate=%lu, bits=%u\n"), interfacev, dwDTERate [interfacev], cdc_ep0databuffout [6]);
-				}
-				break;
-			}
-		}
-		break;
-	case INTERFACE_CDC_CONTROL_3b:	// CDC interface
-		{
-			switch (req->bRequest)
-			{
-			case CDC_SET_LINE_CODING:	// renesas
-				{
-					const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
-					dwDTERate [interfacev] = USBD_peek_u32(& cdc_ep0databuffout [0]);
-					//PRINTF(PSTR("CDC_SET_LINE_CODING: interfacev=%u, dwDTERate=%lu, bits=%u\n"), interfacev, dwDTERate [interfacev], cdc_ep0databuffout [6]);
-				}
-				break;
-			}
-		}
-		break;
-
-#endif /* WITHUSBCDC */
-
-#if WITHUSBUAC
-#if WITHUSBUACIN2
-	case INTERFACE_AUDIO_CONTROL_RTS:	/* AUDIO spectrum control interface */
-#endif /* WITHUSBUACIN2 */
-	case INTERFACE_AUDIO_CONTROL_MIKE:	// AUDIO control interface
-	case INTERFACE_AUDIO_CONTROL_SPK:	// AUDIO control interface
-		{
-			switch (req->bRequest)
-			{
-			case AUDIO_REQUEST_SET_CUR:
-				{
-					const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
-					const uint_fast8_t terminalID = HI_BYTE(req->wIndex);
-					const uint_fast8_t controlID = HI_BYTE(req->wValue);	// AUDIO_MUTE_CONTROL, AUDIO_VOLUME_CONTROL, ...
-					terminalsprops [terminalID] [controlID] = uac_ep0databuffout [0];
-					//PRINTF(PSTR("AUDIO_REQUEST_SET_CUR: interfacev=%u, %u=%u\n"), interfacev, terminalID, uac_ep0databuffout [0]);
-				}
-				break;
-			default:
-				{
-					const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
-					const uint_fast8_t terminalID = HI_BYTE(req->wIndex);
-					const uint_fast8_t controlID = HI_BYTE(req->wValue);	// AUDIO_MUTE_CONTROL, AUDIO_VOLUME_CONTROL, ...
-					PRINTF(PSTR("request=%u: interfacev=%u, %u=%u\n"), req->bRequest, interfacev, terminalID, uac_ep0databuffout [0]);
-				}
-				break;
-			}
-		}
-		break;
-#endif /* WITHUSBUAC */
-	}
-}
-
-// Control write status stage
-static void usbdVendorReq_seq4(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req)
-{
-	PRINTF(PSTR("usbdVendorReq_seq4\n"));
-	//PRINTF(PSTR("usbdVendorReq_seq4: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
 }
 
 static void USBD_CtlError( USBD_HandleTypeDef *pdev,
@@ -3786,42 +3645,6 @@ static void actions_seq2(
 }
 #endif
 
-#if 1
-// Control write status stage
-// End of receieve data trough EP0
-static void actions_seq4(
-	USBD_HandleTypeDef *pdev,
-	const USBD_SetupReqTypedef *req
-	)
-{
-	/* Control Write Status Stage seq=4 */
-	static const fnrquest_t pbReqFunction_seq4 [13] =
-	{
-		usb0_function_Resrv_5,          usb0_function_Resrv_5,          usb0_function_Resrv_5,
-		usb0_function_Resrv_5,          usb0_function_Resrv_5,          usb0_function_Resrv_5,
-		usb0_function_Resrv_5,          usb0_function_Resrv_5,          usb0_function_Resrv_5,
-		usb0_function_Resrv_5,          usb0_function_Resrv_5,          usb0_function_Resrv_5,
-		usb0_function_Resrv_5
-	};
-
-	switch (req->bmRequest & USB_FUNCTION_bmRequestTypeType)
-	{
-	case USB_STANDARD_REQUEST: /* USB_FUNCTION_STANDARD_REQUEST */
-		invoketable(pdev, req, pbReqFunction_seq4, ARRAY_SIZE(pbReqFunction_seq4));
-		break;
-	case USB_CLASS_REQUEST: /* USB_FUNCTION_CLASS_REQUEST */
-		usbdFunctionReq_seq4(pdev, req);
-		break;
-	case USB_VENDOR_REQUEST: /* USB_FUNCTION_VENDOR_REQUEST */
-		usbdVendorReq_seq4(pdev, req);
-		break;
-	default:
-		USBD_CtlError(pdev, req);
-		break;
-	}
-}
-#endif
-
 void HAL_PCD_SetupStageCallback(PCD_HandleTypeDef *hpcd);
 
 static void usb0_function_save_request(USB_OTG_GlobalTypeDef * USBx, USBD_SetupReqTypedef *req)
@@ -3902,11 +3725,12 @@ static void usbd_handle_ctrt(PCD_HandleTypeDef *hpcd, uint_fast8_t ctsq)
 	case 4:
 		//PRINTF(PSTR("actions_seq4\n"));
 		// 4: Control write status stage
-		//actions_seq4(pdev, & pdev->request);
 		// после usbd_handler_brdy8_dcp_out
 		// End of receieve data trough EP0
 		// Set Line Coding here
-        HAL_PCD_SetupStageCallback(hpcd);
+		// xxx_EP0_RxReady
+        HAL_PCD_DataOutStageCallback(hpcd, 0);
+        //HAL_PCD_SetupStageCallback(hpcd);
 
 		USBx->DCPCTR |= USB_DCPCTR_CCPL;	// CCPL
 		break;
@@ -9379,7 +9203,6 @@ static USBD_StatusTypeDef USBD_XXX_DeInit(USBD_HandleTypeDef *pdev, uint_fast8_t
 	return USBD_OK;
 }
 
-
 static USBD_StatusTypeDef USBD_XXX_Setup(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req)
 {
 	static USBALIGN_BEGIN uint8_t buff [32] USBALIGN_END;	// was: 7
@@ -10086,7 +9909,134 @@ static void rndisout_buffer_save(
 	uint_fast16_t length
 	);
 
-static USBD_StatusTypeDef USBD_XXX_DataOut (USBD_HandleTypeDef *pdev, uint_fast8_t epnum)
+static USBD_StatusTypeDef USBD_XXX_EP0_RxReady(USBD_HandleTypeDef *pdev)
+{
+	const USBD_SetupReqTypedef * const req = & pdev->request;
+
+	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
+
+	//PRINTF(PSTR("1 USBD_XXX_EP0_RxReady: interfacev=%u: bRequest=%u, wLength=%u\n"), interfacev, req->bRequest, req->wLength);
+	switch (interfacev)
+	{
+	default:
+		TP();
+		PRINTF(PSTR("2 USBD_XXX_EP0_RxReady: interfacev=%u: bRequest=%u, wLength=%u\n"), interfacev, req->bRequest, req->wLength);
+		break;
+
+#if WITHUSBDFU
+	case INTERFACE_DFU_CONTROL:
+		{
+			switch (req->bRequest)
+			{
+			case DFU_DNLOAD:
+				//TP();
+				DFU_Download(pdev, req);	// used then upload/download command issued
+				break;
+
+			case DFU_UPLOAD:
+				TP();
+				DFU_Upload(pdev, req);	// never called
+				break;
+
+			case DFU_GETSTATUS:
+				TP();
+				DFU_GetStatus(pdev);// never called
+				break;
+
+			case DFU_CLRSTATUS:
+				DFU_ClearStatus(pdev);
+				break;
+
+			case DFU_GETSTATE:
+				TP();
+				DFU_GetState(pdev);
+				break;
+
+			case DFU_ABORT:
+				TP();
+				DFU_Abort(pdev);	// not called
+				break;
+
+			case DFU_DETACH:
+				TP();
+				DFU_Detach(pdev, req);
+				break;
+			default:
+				USBD_CtlError (pdev, req);
+				//ret = USBD_FAIL;
+				break;
+			}
+		}
+		break;
+#endif /* WITHUSBDFU */
+
+#if WITHUSBCDC
+	case INTERFACE_CDC_CONTROL_3a:	// CDC interface
+		{
+			switch (req->bRequest)
+			{
+			case CDC_SET_LINE_CODING:
+				{
+					const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
+					dwDTERate [interfacev] = USBD_peek_u32(& cdc_ep0databuffout [0]);
+					PRINTF(PSTR("CDC_SET_LINE_CODING: interfacev=%u, dwDTERate=%lu, bits=%u\n"), interfacev, dwDTERate [interfacev], cdc_ep0databuffout [6]);
+				}
+				break;
+			}
+		}
+		break;
+	case INTERFACE_CDC_CONTROL_3b:	// CDC interface
+		{
+			switch (req->bRequest)
+			{
+			case CDC_SET_LINE_CODING:
+				{
+					const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
+					dwDTERate [interfacev] = USBD_peek_u32(& cdc_ep0databuffout [0]);
+					PRINTF(PSTR("CDC_SET_LINE_CODING: interfacev=%u, dwDTERate=%lu, bits=%u\n"), interfacev, dwDTERate [interfacev], cdc_ep0databuffout [6]);
+				}
+				break;
+			}
+		}
+		break;
+
+#endif /* WITHUSBCDC */
+
+#if WITHUSBUAC
+#if WITHUSBUACIN2
+	case INTERFACE_AUDIO_CONTROL_RTS:	/* AUDIO spectrum control interface */
+#endif /* WITHUSBUACIN2 */
+	case INTERFACE_AUDIO_CONTROL_MIKE:	// AUDIO control interface
+	case INTERFACE_AUDIO_CONTROL_SPK:	// AUDIO control interface
+		{
+			switch (req->bRequest)
+			{
+			case AUDIO_REQUEST_SET_CUR:
+				{
+					const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
+					const uint_fast8_t terminalID = HI_BYTE(req->wIndex);
+					const uint_fast8_t controlID = HI_BYTE(req->wValue);	// AUDIO_MUTE_CONTROL, AUDIO_VOLUME_CONTROL, ...
+					terminalsprops [terminalID] [controlID] = uac_ep0databuffout [0];
+					PRINTF(PSTR("AUDIO_REQUEST_SET_CUR: interfacev=%u, %u=%u\n"), interfacev, terminalID, uac_ep0databuffout [0]);
+				}
+				break;
+			default:
+				{
+					const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
+					const uint_fast8_t terminalID = HI_BYTE(req->wIndex);
+					const uint_fast8_t controlID = HI_BYTE(req->wValue);	// AUDIO_MUTE_CONTROL, AUDIO_VOLUME_CONTROL, ...
+					PRINTF(PSTR("request=%u: interfacev=%u, %u=%u\n"), req->bRequest, interfacev, terminalID, uac_ep0databuffout [0]);
+				}
+				break;
+			}
+		}
+		break;
+#endif /* WITHUSBUAC */
+	}
+	return USBD_OK;
+}
+
+static USBD_StatusTypeDef USBD_XXX_DataOut(USBD_HandleTypeDef *pdev, uint_fast8_t epnum)
 {
 	switch (epnum)
 	{
@@ -10781,7 +10731,7 @@ static void USBD_ClrFeature(USBD_HandleTypeDef *pdev,
 * @param  req: usb request
 * @retval status
 */
-USBD_StatusTypeDef  USBD_StdDevReq (USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef  *req)
+USBD_StatusTypeDef  USBD_StdDevReq(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef  *req)
 {
 	//PRINTF(PSTR("USBD_StdDevReq: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"),
 	//	req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
@@ -10854,7 +10804,7 @@ USBD_StatusTypeDef  USBD_StdDevReq (USBD_HandleTypeDef *pdev, USBD_SetupReqTyped
 USBD_StatusTypeDef USBD_LL_SetupStage(USBD_HandleTypeDef *pdev, const uint32_t *psetup)
 {
 
-	USBD_ParseSetupRequest(&pdev->request, psetup);
+	USBD_ParseSetupRequest(& pdev->request, psetup);
 
 	pdev->ep0_state = USBD_EP0_SETUP;
 	pdev->ep0_data_len = pdev->request.wLength;
@@ -10862,15 +10812,15 @@ USBD_StatusTypeDef USBD_LL_SetupStage(USBD_HandleTypeDef *pdev, const uint32_t *
 	switch (pdev->request.bmRequest & 0x1F)
 	{
 	case USB_REQ_RECIPIENT_DEVICE:
-		USBD_StdDevReq(pdev, &pdev->request);
+		USBD_StdDevReq(pdev, & pdev->request);
 		break;
 
 	case USB_REQ_RECIPIENT_INTERFACE:
-		USBD_StdItfReq(pdev, &pdev->request);
+		USBD_StdItfReq(pdev, & pdev->request);
 		break;
 
 	case USB_REQ_RECIPIENT_ENDPOINT:
-		USBD_StdEPReq(pdev, &pdev->request);
+		USBD_StdEPReq(pdev, & pdev->request);
 		break;
 
 	default:
@@ -15148,7 +15098,7 @@ static const USBD_ClassTypeDef USBD_CLASS_XXX =
 	USBD_XXX_DeInit,	// DeInit
 	USBD_XXX_Setup,		// Setup
 	NULL,	//USBD_XXX_EP0_TxSent,	// EP0_TxSent
-	NULL,	//USBD_XXX_EP0_RxReady,	// RxReady
+	USBD_XXX_EP0_RxReady,	//USBD_XXX_EP0_RxReady,	// RxReady
 	USBD_XXX_DataIn,	// DataIn
 	USBD_XXX_DataOut,	// DataOut
 	NULL,	//USBD_XXX_SOF,	// SOF
