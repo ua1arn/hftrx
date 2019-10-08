@@ -138,108 +138,6 @@ static RAMDTCM volatile uint_fast16_t usb_cdc_control_state [INTERFACE_count];
 
 #endif /* WITHUSBCDC */
 
-#if WITHUSBCDCEEM
-
-	static USBALIGN_BEGIN uint8_t cdceembuffout [USBD_CDCEEM_BUFSIZE] USBALIGN_END;
-	static USBALIGN_BEGIN uint8_t cdceem_ep0databuffout [USB_OTG_MAX_EP0_SIZE] USBALIGN_END;
-
-#endif /* WITHUSBCDCEEM */
-
-#if WITHUSBCDCECM
-
-	static USBALIGN_BEGIN uint8_t cdcecmbuffout [USBD_CDCECM_OUT_BUFSIZE] USBALIGN_END;
-	static USBALIGN_BEGIN uint8_t cdcecm_ep0databuffout [USB_OTG_MAX_EP0_SIZE] USBALIGN_END;
-
-#endif /* WITHUSBCDCECM */
-
-#if WITHUSBRNDIS
-
-	#include "list.h"
-
-	static USBALIGN_BEGIN uint8_t rndisbuffout [USBD_RNDIS_OUT_BUFSIZE] USBALIGN_END;
-	static USBALIGN_BEGIN uint8_t rndis_ep0databuffout [USB_OTG_MAX_EP0_SIZE] USBALIGN_END;
-
-	#define RNDIS_RESP_SIZE 256
-	typedef ALIGNX_BEGIN struct rndis_resp
-	{
-		LIST_ENTRY item;
-		ALIGNX_BEGIN uint8_t buff [RNDIS_RESP_SIZE] ALIGNX_END;
-	} ALIGNX_END rndis_resp_t;
-
-	static RAMDTCM LIST_ENTRY rndis_resp_freelist;
-	static RAMDTCM LIST_ENTRY rndis_resp_readylist;
-
-	static uint8_t * RAMDTCM rndis_resp_ptr = NULL;
-
-	static void rndis_resp_initialize(void)
-	{
-		static RAMNOINIT_D1 rndis_resp_t buffs [2];
-		uint_fast8_t i;
-
-		InitializeListHead(& rndis_resp_readylist);		// список для выдачи в канал USB
-		InitializeListHead(& rndis_resp_freelist);	// Незаполненные
-		for (i = 0; i < (sizeof buffs / sizeof buffs [0]); ++ i)
-		{
-			rndis_resp_t * const p = & buffs [i];
-			InsertHeadList(& rndis_resp_freelist, & p->item);
-		}
-		rndis_resp_ptr = NULL;
-	}
-	// получить незаполненный буфер
-	static uint_fast8_t rndis_resp_allocate(uint8_t ** pv)
-	{
-		if (! IsListEmpty(& rndis_resp_freelist))
-		{
-			PLIST_ENTRY t = RemoveTailList(& rndis_resp_freelist);
-			rndis_resp_t * p = CONTAINING_RECORD(t, rndis_resp_t, item);
-			* pv = p->buff;
-			return 1;
-		}
-		* pv = NULL;
-		return 0;
-	}
-
-	// получиь готовый к передаче
-	static uint_fast8_t rndis_resp_ready(uint8_t ** pv)
-	{
-		if (! IsListEmpty(& rndis_resp_readylist))
-		{
-			PLIST_ENTRY t = RemoveTailList(& rndis_resp_readylist);
-			rndis_resp_t * p = CONTAINING_RECORD(t, rndis_resp_t, item);
-			* pv = p->buff;
-			return 1;
-		}
-		* pv = NULL;
-		return 0;
-	}
-
-	// освободить буфер
-	static void rndis_resp_release(uint8_t * addr)
-	{
-		rndis_resp_t * const p = CONTAINING_RECORD(addr, rndis_resp_t, buff);
-		InsertHeadList(& rndis_resp_freelist, & p->item);
-	}
-
-	// записть готовый к передаче
-	static void rndis_resp_tosensd(uint8_t * addr)
-	{
-		rndis_resp_t * const p = CONTAINING_RECORD(addr, rndis_resp_t, buff);
-		InsertHeadList(& rndis_resp_readylist, & p->item);
-	}
-
-
-	static void rndis_resp_cleanup(void)
-	{
-		if (rndis_resp_ptr != NULL)
-		{
-			rndis_resp_release(rndis_resp_ptr);
-			rndis_resp_ptr = NULL;
-		}
-	}
-
-
-#endif /* WITHUSBRNDIS */
-
 // Состояние - выбранные альтернативные конфигурации по каждому интерфейсу USB configuration descriptor
 static RAMDTCM uint8_t altinterfaces [INTERFACE_count];
 
@@ -418,186 +316,6 @@ static uint_fast16_t usbd_getuacinrtsmaxpacket(void)
 #endif /* WITHUSBUAC */
 
 
-#if WITHUSBCDCEEM
-/* Собираем поток из CDC EEM USB пакетов */
-// construct EEM packets
-enum
-{
-	CDCEEMOUT_COMMAND,
-	CDCEEMOUT_DATA,
-	CDCEEMOUT_CRC,
-	//
-	CDCEEMOUT_nstates
-};
-
-static RAMDTCM uint_fast8_t cdceemoutstate = CDCEEMOUT_COMMAND;
-static RAMDTCM uint_fast32_t cdceemoutscore = 0;
-static RAMDTCM uint_fast32_t cdceemoutacc;
-static RAMDTCM uint_fast32_t cdceemlength;
-static RAMDTCM uint_fast32_t cdceematcrc;
-static RAMDTCM uint_fast32_t cdceemnpackets;
-
-static RAMDTCM uint8_t cdceembuff [1514];
-
-static void cdceemout_initialize(void)
-{
-	cdceemoutstate = CDCEEMOUT_COMMAND;
-	cdceemoutscore = 0;
-}
-
-static void cdceemout_buffer_print(
-	const uint8_t * data, 
-	uint_fast16_t length
-	)
-{
-	// debug print
-	uint_fast16_t pos;
-	for (pos = 0; pos < length; ++ pos)
-	{
-		PRINTF(PSTR("%02X%s"), data [pos], ((pos + 1) % 16) == 0 ? ",\n" : ", ");
-	}
-	PRINTF(PSTR("\n"));
-}
-
-// Ethernet II frame print (64..1518 bytes)
-static void cdceemout_buffer_print2(
-	const uint8_t * data, 
-	uint_fast16_t length
-	)
-{
-	// +++ MAC header
-	PRINTF(PSTR("Dst MAC = %02X:%02X:%02X:%02X:%02X:%02X, "), data [0], data [1], data [2], data [3], data [4], data [5]);
-	PRINTF(PSTR("Src MAC = %02X:%02X:%02X:%02X:%02X:%02X, "), data [6], data [7], data [8], data [9], data [10], data [11]);
-	const uint_fast16_t EtherType = data [12] * 256 + data [13];	// 0x0800
-	PRINTF(PSTR("EtherType %04X\n"), EtherType);
-	// --- MAC header
-	data += 14;
-	length = length >= 14 ? length - 14 : 0;
-
-	switch (EtherType)
-	{
-	case 0x0800:
-		// IPv4 datagram
-		PRINTF(PSTR("IPv4 datagram: "));
-		PRINTF(PSTR("Protocol=%02X, "), data [9]);	// 0x11 == UDP, 
-		PRINTF(PSTR("Src IP=%d.%d.%d.%d, "), data [12], data [13], data [14], data [15]);
-		PRINTF(PSTR("Dst IP=%d.%d.%d.%d\n"), data [16], data [17], data [18], data [19]);
-		{
-		}
-		break;
-
-	case 0x86DD:
-		// IPv6 datagram
-		//PRINTF(PSTR("IPv6 datagram\n"));
-		break;
-
-	case 0x0806:
-		// ARP frame
-		//PRINTF(PSTR("ARP frame\n"));
-		break;
-
-	case 0x88CC:
-		// IEEE Std 802.1AB - Link Layer Discovery Protocol (LLDP)s
-		//PRINTF(PSTR("LLDP\n"));
-		break;
-
-	default:
-		{
-			// pyloaddebug print
-			uint_fast16_t pos;
-			for (pos = 0; pos < length; ++ pos)
-			{
-				PRINTF(PSTR("%02X%s"), data [pos], ((pos + 1) % 16) == 0 ? ",\n" : ", ");
-			}
-			PRINTF(PSTR("\n"));
-		}
-		break;
-	}
-
-
-}
-
-static USBALIGN_BEGIN uint8_t dbd [2] USBALIGN_END;
-
-static void cdceemout_buffer_save(
-	const uint8_t * data, 
-	uint_fast16_t length
-	)
-{
-	uint_fast16_t pos;
-
-	for (pos = 0; pos < length; )
-	{
-		switch (cdceemoutstate)
-		{
-		case CDCEEMOUT_COMMAND:
-			cdceemoutacc = cdceemoutacc * 256 + data [pos ++];
-			if (++ cdceemoutscore >= 2)
-			{
-				const uint_fast8_t w = (cdceemoutacc & 0xFFFF); 
-				cdceemoutscore = 0;
-				// разбор команды
-				const uint_fast8_t bmType = (w >> 15) & 0x0001;	// 0: EEM data payload 1: EEM Command
-				if (bmType == 0)
-				{
-					const uint_fast8_t bmCRC = (w >> 14) & 0x0001;	// 0: Ethernet Frame CRC is set to 0xdeadbeef 
-					cdceemlength = (w >> 0) & 0x3FFF;					// размер включая 4 байта СКС
-					if (cdceemlength > 0)
-					{
-						if (cdceemlength >= 4)
-						{
-							cdceematcrc = cdceemlength - 4;
-							cdceemoutstate = CDCEEMOUT_DATA;
-						}
-					}
-					//PRINTF(PSTR("Data: bmCRC=%02X, cdceemlength=%u, pyload=0x%04X\n"), bmCRC, cdceemlength, cdceematcrc);
-				}
-				else
-				{
-					const uint_fast8_t bmEEMCmd = (w >> 11) & 0x0007;	// 0: Ethernet Frame CRC is set to 0xdeadbeef 
-					const uint_fast16_t bmEEMCmdParam = (w >> 11) & 0x07FF;
-					PRINTF(PSTR("Command: bmEEMCmd=%02X, bmEEMCmdParam=%u\n"), bmEEMCmd, bmEEMCmdParam);
-				}
-			}
-			break;
-
-		case CDCEEMOUT_DATA:
-			{
-				const uint_fast16_t chunk = ulmin16(length - pos, cdceematcrc - cdceemoutscore);
-				memcpy(cdceembuff + cdceemoutscore, data + pos, ulmin16(sizeof cdceembuff - cdceemoutscore, chunk)); // use data bytes
-				pos += chunk;
-				if ((cdceemoutscore += chunk) >= cdceematcrc)
-				{
-					cdceemoutscore = 0;
-					cdceemoutstate = CDCEEMOUT_CRC;
-				}
-			}
-			break;
-
-		case CDCEEMOUT_CRC:
-			cdceemoutacc = cdceemoutacc * 256 + data [pos ++];
-			if (++ cdceemoutscore >= 4)
-			{
-				cdceemoutscore = 0;
-				cdceemoutstate = CDCEEMOUT_COMMAND;
-
-				++ cdceemnpackets;
-				//PRINTF(PSTR("CDCEEMOUT packets=%lu\n"), (unsigned long) cdceemnpackets);
-
-				//PRINTF(PSTR("crc=%08lX\n"), (cdceemoutacc & 0xFFFFFFFF));
-				// Тут полностью собран ethernet, используем его (или например печатаем содержимое).
-				PRINTF(PSTR("Data pyload length=0x%04X\n"), cdceematcrc);
-				//cdceemout_buffer_print(cdceembuff, cdceematcrc);
-				cdceemout_buffer_print2(cdceembuff, cdceematcrc);
-			}
-		}
-
-	}
-
-}
-#endif /* WITHUSBCDCEEM */
-
-
 #define USB_FUNCTION_bRequest                       (0xff00u)       /* b15-8:bRequest */
 #define USB_FUNCTION_bmRequestType                  (0x00ffu)       /* b7-0: bmRequestType */
 #define USB_FUNCTION_bmRequestTypeDir               (0x0080u)       /* b7  : Data transfer direction - IN if non-zero */
@@ -647,14 +365,14 @@ static void cdceemout_buffer_save(
 #define USBD_STATE_SUSPENDED                              4
 
 
-/*  EP0 State */    
+/*  EP0 State */
 #define USBD_EP0_IDLE                                     0
 #define USBD_EP0_SETUP                                    1
 #define USBD_EP0_DATA_IN                                  2
 #define USBD_EP0_DATA_OUT                                 3
 #define USBD_EP0_STATUS_IN                                4
 #define USBD_EP0_STATUS_OUT                               5
-#define USBD_EP0_STALL                                    6    
+#define USBD_EP0_STALL                                    6
 
 #define USBD_EP_TYPE_CTRL                                 0
 #define USBD_EP_TYPE_ISOC                                 1
@@ -673,24 +391,24 @@ static void cdceemout_buffer_save(
 
 /** @defgroup USB_Core_Speed_   USB Core Speed
   * @{
-  */  
+  */
 // Эти значения пишутся в регистр USB_OTG_DCFG после умножения на USB_OTG_DCFG_DSPD_0
 #define USB_OTG_SPEED_HIGH                     0U
 #define USB_OTG_SPEED_HIGH_IN_FULL             1U
-#define USB_OTG_SPEED_LOW                      2U  
+#define USB_OTG_SPEED_LOW                      2U
 #define USB_OTG_SPEED_FULL                     3U
 /**
   * @}
   */
-  
+
 /** @defgroup USB_Core_PHY_   USB Core PHY
   * @{
-  */   
+  */
 #define USB_OTG_ULPI_PHY                       1U
 #define USB_OTG_EMBEDDED_PHY                   2U
 #define USB_OTG_HS_EMBEDDED_PHY                3U
 
-//#if !defined  (USB_HS_PHYC_TUNE_VALUE) 
+//#if !defined  (USB_HS_PHYC_TUNE_VALUE)
   #define USB_HS_PHYC_TUNE_VALUE    0x00000F13U /*!< Value of USB HS PHY Tune */
 //#endif /* USB_HS_PHYC_TUNE_VALUE */
 
@@ -728,7 +446,7 @@ static void cdceemout_buffer_save(
 
 /**
   * @}
-  */ 
+  */
 
 #define USB_FALSE    0
 #define USB_TRUE     (!USB_FALSE)
@@ -738,25 +456,25 @@ static void cdceemout_buffer_save(
   * @{
   */
 
-typedef  struct  usb_setup_req 
+typedef  struct  usb_setup_req
 {
-    
-    uint_fast8_t   bmRequest;                      
-    uint_fast8_t   bRequest;                           
-    uint_fast16_t  wValue;                             
-    uint_fast16_t  wIndex;                             
-    uint_fast16_t  wLength;                            
+
+    uint_fast8_t   bmRequest;
+    uint_fast8_t   bRequest;
+    uint_fast16_t  wValue;
+    uint_fast16_t  wIndex;
+    uint_fast16_t  wLength;
 }USBD_SetupReqTypedef;
 
 struct _USBD_HandleTypeDef;
 
 
 /* Following USB Device Speed */
-typedef enum 
+typedef enum
 {
   USBD_SPEED_HIGH  = 0,
   USBD_SPEED_FULL  = 1,
-  USBD_SPEED_LOW   = 2,  
+  USBD_SPEED_LOW   = 2,
 }USBD_SpeedTypeDef;
 
 /* Following USB Device status */
@@ -784,10 +502,10 @@ typedef struct _Device_cb
 } USBD_ClassTypeDef;
 
 
-/** 
-  * @brief  HAL Status structures definition  
-  */  
-typedef enum 
+/**
+  * @brief  HAL Status structures definition
+  */
+typedef enum
 {
   HAL_OK       = 0x00U,
   HAL_ERROR    = 0x01U,
@@ -797,8 +515,8 @@ typedef enum
 
 /**
   * @brief  PCD State structure definition
-  */ 
-typedef enum 
+  */
+typedef enum
 {
   HAL_PCD_STATE_RESET   = 0x00U,
   HAL_PCD_STATE_READY   = 0x01U,
@@ -808,7 +526,7 @@ typedef enum
 } PCD_StateTypeDef;
 
 /* Device LPM suspend state */
-typedef enum  
+typedef enum
 {
   LPM_L0 = 0x00U, /* on */
   LPM_L1 = 0x01U, /* LPM L1 sleep */
@@ -817,21 +535,21 @@ typedef enum
 }PCD_LPM_StateTypeDef;
 
 
-/** 
-  * @brief  USB Mode definition  
-  */  
-typedef enum 
+/**
+  * @brief  USB Mode definition
+  */
+typedef enum
 {
    USB_OTG_DEVICE_MODE  = 0U,
    USB_OTG_HOST_MODE    = 1U,
    USB_OTG_DRD_MODE     = 2U
-   
+
 }USB_OTG_ModeTypeDef;
 
 
-/** 
-  * @brief  URB States definition  
-  */ 
+/**
+  * @brief  URB States definition
+  */
 typedef enum {
   URB_IDLE = 0,
   URB_DONE,
@@ -839,11 +557,11 @@ typedef enum {
   URB_NYET,
   URB_ERROR,
   URB_STALL
-    
+
 }USB_OTG_URBStateTypeDef;
 
-/** 
-  * @brief  Host channel States  definition  
+/**
+  * @brief  Host channel States  definition
   */ 
 typedef enum {
   HC_IDLE = 0,
@@ -852,56 +570,56 @@ typedef enum {
   HC_NAK,
   HC_NYET,
   HC_STALL,
-  HC_XACTERR,  
-  HC_BBLERR,   
+  HC_XACTERR,
+  HC_BBLERR,
   HC_DATATGLERR
-    
+
 }USB_OTG_HCStateTypeDef;
 
-/** 
-  * @brief  PCD Initialization Structure definition  
+/**
+  * @brief  PCD Initialization Structure definition
   */
 typedef struct
 {
   uint32_t dev_endpoints;        /*!< Device Endpoints number.
-                                      This parameter depends on the used USB core.   
-                                      This parameter must be a number between Min_Data = 1 and Max_Data = 15 */    
-  
+                                      This parameter depends on the used USB core.
+                                      This parameter must be a number between Min_Data = 1 and Max_Data = 15 */
+
   uint32_t Host_channels;        /*!< Host Channels number.
-                                      This parameter Depends on the used USB core.   
-                                      This parameter must be a number between Min_Data = 1 and Max_Data = 15 */       
+                                      This parameter Depends on the used USB core.
+                                      This parameter must be a number between Min_Data = 1 and Max_Data = 15 */
 
   uint32_t speed;                /*!< USB Core speed.
-                                      This parameter can be any value of @ref USB_Core_Speed_                */        
-                               
-  uint32_t dma_enable;           /*!< Enable or disable of the USB embedded DMA.                             */            
+                                      This parameter can be any value of @ref USB_Core_Speed_                */
 
-  uint32_t ep0_mps;              /*!< Set the Endpoint 0 Max Packet size. 
-                                      This parameter can be any value of @ref USB_EP0_MPS_                   */              
-                       
+  uint32_t dma_enable;           /*!< Enable or disable of the USB embedded DMA.                             */
+
+  uint32_t ep0_mps;              /*!< Set the Endpoint 0 Max Packet size.
+                                      This parameter can be any value of @ref USB_EP0_MPS_                   */
+
   uint32_t phy_itface;           /*!< Select the used PHY interface.
-                                      This parameter can be any value of @ref USB_Core_PHY_                  */ 
-                                
-  uint32_t Sof_enable;           /*!< Enable or disable the output of the SOF signal.                        */     
-                               
-  uint32_t low_power_enable;     /*!< Enable or disable the low power mode.                                  */
-  
-  uint32_t battery_charging_enable; /*!< Enable or disable Battery charging.                                 */   
-  
-  uint32_t lpm_enable;           /*!< Enable or disable Link Power Management.                               */
-                          
-  uint32_t vbus_sensing_enable;  /*!< Enable or disable the VBUS Sensing feature.                            */ 
+                                      This parameter can be any value of @ref USB_Core_PHY_                  */
 
-  uint32_t use_dedicated_ep1;    /*!< Enable or disable the use of the dedicated EP1 interrupt.              */      
-  
-  uint32_t use_external_vbus;    /*!< Enable or disable the use of the external VBUS.                        */   
+  uint32_t Sof_enable;           /*!< Enable or disable the output of the SOF signal.                        */
+
+  uint32_t low_power_enable;     /*!< Enable or disable the low power mode.                                  */
+
+  uint32_t battery_charging_enable; /*!< Enable or disable Battery charging.                                 */
+
+  uint32_t lpm_enable;           /*!< Enable or disable Link Power Management.                               */
+
+  uint32_t vbus_sensing_enable;  /*!< Enable or disable the VBUS Sensing feature.                            */
+
+  uint32_t use_dedicated_ep1;    /*!< Enable or disable the use of the dedicated EP1 interrupt.              */
+
+  uint32_t use_external_vbus;    /*!< Enable or disable the use of the external VBUS.                        */
 
 }USB_OTG_CfgTypeDef;
 
 typedef struct
 {
   uint_fast8_t   num;            /*!< Endpoint number
-                                This parameter must be a number between Min_Data = 1 and Max_Data = 15    */ 
+                                This parameter must be a number between Min_Data = 1 and Max_Data = 15    */
                                 
   uint_fast8_t   is_in;          /*!< Endpoint direction
                                 This parameter must be a number between Min_Data = 0 and Max_Data = 1     */ 
@@ -2529,9 +2247,6 @@ usbd_handler_brdy_bulk_in8(USBD_HandleTypeDef *pdev, uint_fast8_t pipe, uint_fas
 		break;
 #endif /* WITHUSBCDC */
 
-#if WITHUSBRNDIS
-#endif /* WITHUSBRNDIS */
-
 	default:
 		TP();
 		break;
@@ -3381,11 +3096,6 @@ static void usbdFunctionReq_seq5(USBD_HandleTypeDef *pdev, const USBD_SetupReqTy
 		break;
 #endif /* WITHUSBCDC */
 
-#if WITHUSBCDCEEM
-	// ReqType=21, ReqRequest=22, ReqValue=0001, ReqIndex=0003, ReqLength=0000
-	case INTERFACE_CDCEEM_DATA_6:	// CDC EEM data interfacei
-		break;
-#endif /* WITHUSBCDCEEM */
 #if WITHUSBDFU
 	// похоже сюда только Abort требуется
 	case INTERFACE_DFU_CONTROL:	// DFU
@@ -3472,41 +3182,6 @@ static void invoketable(
 		USBD_CtlError(pdev, req);
 	}
 }
-
-#if 0
-// Idle or setup stage
-static void actions_seq0(
-	USBD_HandleTypeDef *pdev,
-	USBD_SetupReqTypedef *req
-	)
-{
-	/* Idle/Setup Stage seq= 0 */
-	static const fnrquest_t pbReqFunction_seq0 [13] =
-	{
-		usb0_function_Resrv_0,          usb0_function_Resrv_0,          usb0_function_Resrv_0,
-		usb0_function_Resrv_0,          usb0_function_Resrv_0,          usb0_function_Resrv_0,
-		usb0_function_Resrv_0,          usb0_function_Resrv_0,          usb0_function_Resrv_0,
-		usb0_function_Resrv_0,          usb0_function_Resrv_0,          usb0_function_Resrv_0,
-		usb0_function_Resrv_0
-	};
-
-	switch (req->bmRequest & USB_FUNCTION_bmRequestTypeType)
-	{
-	case USB_STANDARD_REQUEST: /* USB_FUNCTION_STANDARD_REQUEST */
-		invoketable(pdev, req, pbReqFunction_seq0, ARRAY_SIZE(pbReqFunction_seq0));
-		break;
-	case USB_CLASS_REQUEST: /* USB_FUNCTION_CLASS_REQUEST */
-		usbdFunctionReq_seq0(pdev, req);
-		break;
-	case USB_VENDOR_REQUEST: /* USB_FUNCTION_VENDOR_REQUEST */
-		usbdVendorReq_seq0(pdev, req);
-		break;
-	default:
-		USBD_CtlError(pdev, req);
-		break;
-	}
-}
-#endif
 
 // Control read data stage
 static void actions_seq1(
@@ -3705,7 +3380,9 @@ static void usbd_handle_ctrt(PCD_HandleTypeDef *hpcd, uint_fast8_t ctsq)
 		//actions_seq2(pdev, & pdev->request);
 		// после - usbdFunctionReq_seq1 - напимер после запроса GET_LINE_CODING
 		// EP0_TxSent callback here
-
+		// End of sending data trough EP0
+		// xxx_TxSent
+		HAL_PCD_DataInStageCallback(hpcd, 0);
 		USBx->DCPCTR |= USB_DCPCTR_CCPL;	// CCPL
 		break;
 
@@ -3773,8 +3450,6 @@ static const struct { uint8_t pipe, ep; } usbd_usedpipes [] =
 	{	HARDWARE_USBD_PIPE_CDC_INb,		USBD_EP_CDC_INb, },		// CDC IN dummy interfacei
 	{	HARDWARE_USBD_PIPE_CDC_INTb,	USBD_EP_CDC_INTb, },
 #endif /* WITHUSBCDC */
-#if WITHUSBCDCEEM
-#endif /* WITHUSBCDCEEM */
 };
 
 
@@ -3787,8 +3462,6 @@ static const struct { uint8_t pipe, ep; } brdyenbpipes2 [] =
 	{ HARDWARE_USBD_PIPE_CDC_OUTb, USBD_EP_CDC_OUTb },	// CDC OUT dummy interfacei
 	{ HARDWARE_USBD_PIPE_CDC_INb, USBD_EP_CDC_INb },		// CDC IN dummy interfacei
 #endif /* WITHUSBCDC */
-#if WITHUSBCDCEEM
-#endif /* WITHUSBCDCEEM */
 };
 
 
@@ -4034,95 +3707,6 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 	}
 #endif /* WITHUSBCDC */
 
-#if WITHUSBCDCEEM
-#endif /* WITHUSBCDCEEM */
-
-#if WITHUSBRNDIS
-	if (1)
-	{
-		// Данные RNDIS из компьютера в трансивер
-		const uint_fast8_t pipe = HARDWARE_USBD_PIPE_RNDIS_OUT;	// PIPE3
-		const uint_fast8_t epnum = USBD_EP_RNDIS_OUT;
-		const uint_fast16_t bufsiz = USBD_RNDIS_OUT_BUFSIZE;
-		const uint_fast8_t dir = 0;
-		//PRINTF(PSTR("usbd_pipe_initialize: pipe=%u endpoint=%02X\n"), pipe, epnum);
-
-		Instance->PIPESEL = pipe << USB_PIPESEL_PIPESEL_SHIFT;
-		while ((Instance->PIPESEL & USB_PIPESEL_PIPESEL) != (pipe << USB_PIPESEL_PIPESEL_SHIFT))
-			;
-		ASSERT(pipe == 12);
-		Instance->PIPECFG =
-			(0x0F & epnum) * (1u << USB_PIPECFG_EPNUM_SHIFT) |	// EPNUM endpoint
-			dir * (1u << USB_PIPECFG_DIR_SHIFT) |			// DIR 1: Transmitting direction 0: Receiving direction
-			1 * (1u << USB_PIPECFG_TYPE_SHIFT) |			// TYPE 1: Bulk transfer
-			1 * (1u << 9) |				// DBLB
-			0;
-		const unsigned bufsize64 = (bufsiz + 63) / 64;
-
-		Instance->PIPEBUF = ((bufsize64 - 1) << USB_PIPEBUF_BUFSIZE_SHIFT) | (bufnumb64 << USB_PIPEBUF_BUFNMB_SHIFT);
-		Instance->PIPEMAXP = bufsiz << USB_PIPEMAXP_MXPS_SHIFT;
-		bufnumb64 += bufsize64 * 2; // * 2 for DBLB
-		ASSERT(bufnumb64 <= 0x100);
-
-		Instance->PIPESEL = 0;
-	}
-	if (1)
-	{
-		// Данные RNDIS в компьютер из трансивера
-		const uint_fast8_t pipe = HARDWARE_USBD_PIPE_RNDIS_IN;	// PIPE4
-		const uint_fast8_t epnum = USBD_EP_RNDIS_IN;
-		const uint_fast16_t bufsiz = USBD_RNDIS_IN_BUFSIZE;
-		const uint_fast8_t dir = 1;
-		//PRINTF(PSTR("usbd_pipe_initialize: pipe=%u endpoint=%02X\n"), pipe, epnum);
-
-		Instance->PIPESEL = pipe << USB_PIPESEL_PIPESEL_SHIFT;
-		while ((Instance->PIPESEL & USB_PIPESEL_PIPESEL) != (pipe << USB_PIPESEL_PIPESEL_SHIFT))
-			;
-		ASSERT(pipe == 13);
-		Instance->PIPECFG =
-			(0x0F & epnum) * (1u << USB_PIPECFG_EPNUM_SHIFT) |		// EPNUM endpoint
-			dir * (1u << USB_PIPECFG_DIR_SHIFT) |		// DIR 1: Transmitting direction 0: Receiving direction
-			1 * (1u << USB_PIPECFG_TYPE_SHIFT) |		// TYPE 1: Bulk transfer
-			1 * USB_PIPECFG_DBLB |		// DBLB
-			0;
-		const unsigned bufsize64 = (bufsiz + 63) / 64;
-
-		Instance->PIPEBUF = ((bufsize64 - 1) << USB_PIPEBUF_BUFSIZE_SHIFT) | (bufnumb64 << USB_PIPEBUF_BUFNMB_SHIFT);
-		Instance->PIPEMAXP = bufsiz << USB_PIPEMAXP_MXPS_SHIFT;
-		bufnumb64 += bufsize64 * 2; // * 2 for DBLB
-		ASSERT(bufnumb64 <= 0x100);
-
-		Instance->PIPESEL = 0;
-	}
-	if (1)
-	{
-		// Прерывание RNDIS в компьютер из трансивера
-		const uint_fast8_t pipe = HARDWARE_USBD_PIPE_RNDIS_INT;	// PIPE6
-		const uint_fast8_t epnum = USBD_EP_RNDIS_INT;
-		const uint_fast16_t bufsiz = USBD_RNDIS_INT_SIZE;
-		const uint_fast8_t dir = 1;
-		//PRINTF(PSTR("usbd_pipe_initialize: pipe=%u endpoint=%02X\n"), pipe, epnum);
-
-		Instance->PIPESEL = pipe << USB_PIPESEL_PIPESEL_SHIFT;
-		while ((Instance->PIPESEL & USB_PIPESEL_PIPESEL) != (pipe << USB_PIPESEL_PIPESEL_SHIFT))
-			;
-		ASSERT(pipe == 8);
-		Instance->PIPECFG =
-			(0x0F & epnum) * (1u << USB_PIPECFG_EPNUM_SHIFT) |		// EPNUM endpoint
-			dir * (1u << USB_PIPECFG_DIR_SHIFT) |		// DIR 1: Transmitting direction 0: Receiving direction
-			2 * (1u << USB_PIPECFG_TYPE_SHIFT) |		// TYPE 2: Interrupt transfer
-			0 * USB_PIPECFG_DBLB |		// DBLB - для interrupt должен быть 0
-			0;
-		const unsigned bufsize64 = (bufsiz + 63) / 64;
-		Instance->PIPEBUF = ((bufsize64 - 1) << USB_PIPEBUF_BUFSIZE_SHIFT) | (bufnumb64 << USB_PIPEBUF_BUFNMB_SHIFT);
-		Instance->PIPEMAXP = bufsiz << USB_PIPEMAXP_MXPS_SHIFT;
-		bufnumb64 += bufsize64 * 1; // * 2 for DBLB
-		ASSERT(bufnumb64 <= 0x100);
-
-		Instance->PIPESEL = 0;
-	}
-#endif /* WITHUSBRNDIS */
-
 #if WITHUSBUAC
 	if (1)
 	{
@@ -4254,9 +3838,6 @@ static void usbd_handle_resume(PCD_TypeDef * const Instance)
 		buffers_set_uacinrtsalt(altinterfaces [INTERFACE_AUDIO_RTS]);
 	#endif /* WITHUSBUACIN2 */
 #endif /* WITHUSBUAC */
-#if WITHUSBCDCEEM
-	cdceemout_initialize();
-#endif /* WITHUSBCDCEEM */
 }
 
 static void usbd_handle_suspend(PCD_TypeDef * const Instance)
@@ -4279,37 +3860,6 @@ static void usbd_handle_suspend(PCD_TypeDef * const Instance)
 		buffers_set_uacinrtsalt(altinterfaces [INTERFACE_AUDIO_RTS]);
 	#endif /* WITHUSBUACIN2 */
 #endif /* WITHUSBUAC */
-#if WITHUSBCDCEEM
-	cdceemout_initialize();
-#endif /* WITHUSBCDCEEM */
-}
-
-static void
-usbd_handle_dvst(USBD_HandleTypeDef *pdev, uint_fast8_t dvsq)
-{
-	USB_OTG_GlobalTypeDef * const Instance = ((PCD_HandleTypeDef *) pdev->pData)->Instance;
-
-	if (dvsq & 0x04)
-	{
-		usbd_handle_suspend(Instance);
-		return;
-	}
-	switch (dvsq)
-	{
-	case 3:
-		// Configured state
-		usbd_pipes_enable(Instance);
-		break;
-
-	case 1:
-		// Default state
-		break;
-
-	case 2:
-		// Address state
-		break;
-	}
-
 }
 
 #if defined (WITHUSBHW_DEVICE)
@@ -4403,18 +3953,37 @@ static void r7s721_usbdevice_handler(PCD_HandleTypeDef *hpcd)
 		for (i = 0; i < sizeof brdyenbpipes2 / sizeof brdyenbpipes2 [0]; ++ i)
 		{
 			const uint_fast8_t pipe = brdyenbpipes2 [i].pipe;
-			const uint_fast8_t ep = brdyenbpipes2 [i].ep;
+			const uint_fast8_t epnt = brdyenbpipes2 [i].ep;
 			if ((brdysts & (1U << pipe)) != 0)
 			{
-				if ((ep & 0x80) != 0)
+				if ((epnt & 0x80) != 0)
 				{
-					//usbd_handler_brdy_bulk_in8(pdev, pipe, ep);	// usbd_write_data inside
-					HAL_PCD_DataInStageCallback(hpcd, 0x7f & ep);
+					USB_OTG_EPTypeDef * const ep = & hpcd->IN_ep [epnt & 0x7F];
+				  	if (usbd_write_data(USBx, pipe, ep->xfer_buff, ep->xfer_len) == 0)
+				  	{
+						ep->xfer_buff += ep->xfer_len;
+						ep->xfer_count += ep->xfer_len;
+				  	}
+				  	else
+				  	{
+				  		// todo: not control ep
+				  		//control_stall(pdev);
+				  	}
 				}
 				else
 				{
-					//usbd_handler_brdy_bulk_out8(pdev, pipe, ep);	// usbd_read_data inside
-					HAL_PCD_DataOutStageCallback(hpcd, ep);
+					USB_OTG_EPTypeDef * const ep = & hpcd->OUT_ep [epnt];
+				  	unsigned count;
+				  	if (usbd_read_data(USBx, pipe, ep->xfer_buff, ep->xfer_len - ep->xfer_count, & count) == 0)
+				  	{
+						ep->xfer_buff += count;
+						ep->xfer_count += count;
+				  	}
+				  	else
+				  	{
+				  		// todo: not control ep
+				  		//control_stall(pdev);
+				  	}
 				}
 			}
 		}
@@ -4453,7 +4022,6 @@ static void r7s721_usbdevice_handler(PCD_HandleTypeDef *hpcd)
 		default:
 			break;
 		}
-		//usbd_handle_dvst(pdev, (intsts0 & USB_INTSTS0_DVSQ) >> USB_INTSTS0_DVSQ_SHIFT);
 	}
 	if ((intsts0msk & (1uL << USB_INTSTS0_RESM_SHIFT)) != 0)	// RESM
 	{
@@ -8396,86 +7964,6 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 
 #endif /* WITHUSBCDC */
 
-#if WITHUSBCDCEEM
-	{
-		/* полнофункциональное устройство */
-		const uint_fast8_t pipe = USBD_EP_CDCEEM_IN & 0x7F;
-
-		numoutendpoints += 1;
-		#if WITHUSBUAC
-			#if WITHRTS96 || WITHRTS192
-				const int ncdceemindatapackets = 3 * mul2, ncdceemoutdatapackets = 4;
-			#else /* WITHRTS96 || WITHRTS192 */
-				const int ncdceemindatapackets = 2 * mul2, ncdceemoutdatapackets = 2;
-			#endif /* WITHRTS96 || WITHRTS192 */
-		#else /* WITHUSBUAC */
-			const int ncdceemindatapackets = 4 * mul2, ncdceemoutdatapackets = 4;
-		#endif /* WITHUSBUAC */
-
-		maxoutpacketsize4 = ulmax16(maxoutpacketsize4, ncdceemoutdatapackets * size2buff4(USBD_CDCEEM_BUFSIZE));
-
-
-		const uint_fast16_t size4 = ncdceemindatapackets * (size2buff4(USBD_CDCEEM_BUFSIZE) + add3tx);
-		ASSERT(last4 >= size4);
-		last4 -= size4;
-		instance->DIEPTXF [pipe - 1] = usbd_makeTXFSIZ(last4, size4);
-		PRINTF(PSTR("usbd_fifo_initialize5 EEM %u bytes: 4*(full4-last4)=%u\n"), 4 * size4, 4 * (full4 - last4));
-	}
-#endif /* WITHUSBCDCEEM */
-
-#if WITHUSBCDCECM
-	{
-		/* полнофункциональное устройство */
-		const uint_fast8_t pipeint = USBD_EP_CDCECM_INT & 0x7F;
-		const uint_fast8_t pipe = USBD_EP_CDCECM_IN & 0x7F;
-
-		numoutendpoints += 1;
-		const int ncdcecmmindatapackets = 2 * mul2, ncdcecmmoutdatapackets = 2, ncdcecmmintpackets = 2;
-
-		maxoutpacketsize4 = ulmax16(maxoutpacketsize4, ncdcecmmoutdatapackets * size2buff4(USBD_CDCECM_OUT_BUFSIZE));
-
-
-		const uint_fast16_t size4 = ncdcecmmindatapackets * (size2buff4(USBD_CDCECM_IN_BUFSIZE) + add3tx);
-		ASSERT(last4 >= size4);
-		last4 -= size4;
-		instance->DIEPTXF [pipe - 1] = usbd_makeTXFSIZ(last4, size4);
-		PRINTF(PSTR("usbd_fifo_initialize6 CDCECM %u bytes: 4*(full4-last4)=%u\n"), 4 * size4, 4 * (full4 - last4));
-
-		const uint_fast16_t size4int = ncdcecmmintpackets * (size2buff4(USBD_CDCECM_INT_SIZE) + add3tx);
-		ASSERT(last4 >= size4int);
-		last4 -= size4int;
-		instance->DIEPTXF [pipeint - 1] = usbd_makeTXFSIZ(last4, size4int);
-		PRINTF(PSTR("usbd_fifo_initialize6 CDCECM INT %u bytes: 4*(full4-last4)=%u\n"), 4 * size4int, 4 * (full4 - last4));
-	}
-#endif /* WITHUSBCDCECM */
-
-#if WITHUSBRNDIS
-	{
-		/* полнофункциональное устройство */
-		const uint_fast8_t pipeint = USBD_EP_RNDIS_INT & 0x7F;
-		const uint_fast8_t pipe = USBD_EP_RNDIS_IN & 0x7F;
-
-		numoutendpoints += 1;
-		const int nrndismindatapackets = 2 * mul2, nrndismoutdatapackets = 2, nrndismintpackets = 2;
-
-		maxoutpacketsize4 = ulmax16(maxoutpacketsize4, nrndismoutdatapackets * size2buff4(USBD_RNDIS_OUT_BUFSIZE));
-
-
-		const uint_fast16_t size4 = nrndismindatapackets * (size2buff4(USBD_RNDIS_IN_BUFSIZE) + add3tx);
-		ASSERT(last4 >= size4);
-		last4 -= size4;
-		instance->DIEPTXF [pipe - 1] = usbd_makeTXFSIZ(last4, size4);
-		PRINTF(PSTR("usbd_fifo_initialize7 RNDIS %u bytes: 4*(full4-last4)=%u\n"), 4 * size4, 4 * (full4 - last4));
-
-		const uint_fast16_t size4int = nrndismintpackets * (size2buff4(USBD_RNDIS_INT_SIZE) + add3tx);
-		ASSERT(last4 >= size4int);
-		last4 -= size4int;
-		instance->DIEPTXF [pipeint - 1] = usbd_makeTXFSIZ(last4, size4int);
-		PRINTF(PSTR("usbd_fifo_initialize7 RNDIS INT %u bytes: 4*(full4-last4)=%u\n"), 4 * size4int, 4 * (full4 - last4));
-	}
-#endif /* WITHUSBRNDIS */
-
-
 #if WITHUSBHID && 0
 	{
 		/* ... устройство */
@@ -8993,10 +8481,6 @@ static USBD_StatusTypeDef USBD_XXX_Init(USBD_HandleTypeDef *pdev, uint_fast8_t c
 	//PRINTF(PSTR("USBD_XXX_Init: cfgidx=%d\n"), cfgidx);
 	memset(altinterfaces, 0, sizeof altinterfaces);
 
-#if WITHUSBCDCEEM
-	cdceemout_initialize();
-#endif /* WITHUSBCDCEEM */
-
 #if WITHUSBCDC
     /* cdc Open EP IN */
  	for (offset = 0; offset < WITHUSBHWCDC_N; ++ offset)
@@ -9023,59 +8507,6 @@ static USBD_StatusTypeDef USBD_XXX_Init(USBD_HandleTypeDef *pdev, uint_fast8_t c
 	dwDTERate [INTERFACE_CDC_CONTROL_3a] = 115200;
 	dwDTERate [INTERFACE_CDC_CONTROL_3b] = 115200;
 #endif /* WITHUSBCDC */
-
-#if WITHUSBCDCEEM
-    /* cdc Open EP IN */
-    USBD_LL_OpenEP(pdev,
-                   USBD_EP_CDCEEM_IN,
-                   USBD_EP_TYPE_BULK,
-                   USBD_CDCEEM_BUFSIZE);
-
- 	USBD_LL_Transmit(pdev, USBD_EP_CDCEEM_IN, NULL, 0);
- 	//USBD_LL_Transmit(pdev, USBD_EP_CDCEEM_IN, "0123456789abcdef", 16);
-
-     /* cdc Open EP OUT */
-    USBD_LL_OpenEP(pdev, USBD_EP_CDCEEM_OUT, USBD_EP_TYPE_BULK, USBD_CDCEEM_BUFSIZE);
-
-    /* CDC Prepare Out endpoint to receive 1st packet */
-    USBD_LL_PrepareReceive(pdev, USB_ENDPOINT_OUT(USBD_EP_CDCEEM_OUT), cdceembuffout,  USBD_CDCEEM_BUFSIZE);
-
-	cdceemout_initialize();
-#endif /* WITHUSBCDCEEM */
-
-#if WITHUSBRNDIS
-	rndis_resp_initialize();
-
-	USBD_LL_OpenEP(pdev,
-		   USBD_EP_RNDIS_IN,
-		   USBD_EP_TYPE_BULK,
-		   USBD_RNDIS_IN_BUFSIZE);
-
-	USBD_LL_Transmit(pdev, USBD_EP_RNDIS_IN, NULL, 0);
-	/* cdc Open EP OUT */
-	USBD_LL_OpenEP(pdev, USBD_EP_RNDIS_OUT, USBD_EP_TYPE_BULK, USBD_RNDIS_OUT_BUFSIZE);
-	/* RNDIS Open EP interrupt */
-	USBD_LL_OpenEP(pdev, USBD_EP_RNDIS_INT, USBD_EP_TYPE_INTR, USBD_RNDIS_INT_SIZE);
-
-	/* RNDIS Prepare Out endpoint to receive 1st packet */
-	USBD_LL_PrepareReceive(pdev, USB_ENDPOINT_OUT(USBD_EP_RNDIS_OUT), rndisbuffout,  USBD_RNDIS_OUT_BUFSIZE);
-#endif /* WITHUSBRNDIS */
-
-#if WITHUSBCDCECM
-	USBD_LL_OpenEP(pdev,
-		   USBD_EP_CDCECM_IN,
-		   USBD_EP_TYPE_BULK,
-		   USBD_CDCECM_IN_BUFSIZE);
-
-	USBD_LL_Transmit(pdev, USBD_EP_CDCECM_IN, NULL, 0);
-	/* cdc Open EP OUT */
-	USBD_LL_OpenEP(pdev, USBD_EP_CDCECM_OUT, USBD_EP_TYPE_BULK, USBD_CDCECM_OUT_BUFSIZE);
-	/* CDCECM Open EP interrupt */
-	USBD_LL_OpenEP(pdev, USBD_EP_CDCECM_INT, USBD_EP_TYPE_INTR, USBD_CDCECM_INT_SIZE);
-
-	/* CDCECM Prepare Out endpoint to receive 1st packet */
-	USBD_LL_PrepareReceive(pdev, USB_ENDPOINT_OUT(USBD_EP_CDCECM_OUT), cdcecmbuffout,  USBD_CDCECM_OUT_BUFSIZE);
-#endif /* WITHUSBCDCECM */
 
 #if WITHUSBUAC
 	terminalsprops [TERMINAL_ID_SELECTOR_6] [AUDIO_CONTROL_UNDEFINED] = 1;
@@ -9141,28 +8572,6 @@ static USBD_StatusTypeDef USBD_XXX_DeInit(USBD_HandleTypeDef *pdev, uint_fast8_t
 	usb_cdc_control_state [INTERFACE_CDC_CONTROL_3b] = 0;
 
 #endif /* WITHUSBCDC */
-
-
-#if WITHUSBCDCEEM
-
-	USBD_LL_CloseEP(pdev, USBD_EP_CDCEEM_IN);
-	USBD_LL_CloseEP(pdev, USBD_EP_CDCEEM_OUT);
-	cdceemout_initialize();
-#endif /* WITHUSBCDCEEM */
-
-#if WITHUSBRNDIS
-	USBD_LL_CloseEP(pdev, USBD_EP_RNDIS_IN);
-	USBD_LL_CloseEP(pdev, USBD_EP_RNDIS_INT);
-	USBD_LL_CloseEP(pdev, USBD_EP_RNDIS_OUT);
-	//rndis_resp_cleanup();
-	rndis_resp_initialize();
-#endif /* WITHUSBRNDIS */
-
-#if WITHUSBCDCECM
-	USBD_LL_CloseEP(pdev, USBD_EP_CDCECM_IN);
-	USBD_LL_CloseEP(pdev, USBD_EP_CDCECM_INT);
-	USBD_LL_CloseEP(pdev, USBD_EP_CDCECM_OUT);
-#endif /* WITHUSBCDCECM */
 
 #if WITHUSBUAC
 	{
@@ -9362,45 +8771,6 @@ static USBD_StatusTypeDef USBD_XXX_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 		return USBD_OK;
 #endif /* WITHUSBDFU */
 
-	#if WITHUSBRNDIS
-			case INTERFACE_RNDIS_CONTROL_5:	// RNDIS control
-				switch (req->bRequest)
-				{
-				case 0x01:	// GET_ENCAPSULATED_RESPONSE
-					//PRINTF(PSTR("USBD_ClassXXX_Setup IN: INTERFACE_RNDIS_CONTROL_5: GET_ENCAPSULATED_RESPONSE: bRequest=%02X, wIndex=%04X, wLength=%04X\n"), req->bRequest, req->wIndex, req->wLength);
-					{
-						if (rndis_resp_ptr != NULL)
-						{
-							rndis_resp_release(rndis_resp_ptr);
-							rndis_resp_ptr = NULL;
-						}
-						if (rndis_resp_ready(& rndis_resp_ptr))
-						{
-							//TP();
-							USBD_CtlSendData(pdev, rndis_resp_ptr, ulmin16( USBD_peek_u32(& rndis_resp_ptr [4]), ulmin16(RNDIS_RESP_SIZE, req->wLength)));
-						}
-						else
-						{
-							//TP();
-							static RAMNOINIT_D1 USBALIGN_BEGIN uint8_t ep0resp [RNDIS_RESP_SIZE] USBALIGN_END;
-							ep0resp [0] = 0;
-							USBD_CtlSendData(pdev, ep0resp, ulmin16(1, ulmin16(RNDIS_RESP_SIZE, req->wLength)));
-						}
-					}
-					break;
-
-				default:
-					PRINTF(PSTR("USBD_ClassXXX_Setup IN: INTERFACE_RNDIS_CONTROL_5: xxx: bRequest=%02X, wIndex=%04X, wLength=%04X\n"), req->bRequest, req->wIndex, req->wLength);
-					{
-						static RAMNOINIT_D1 USBALIGN_BEGIN uint8_t ep0resp [1] USBALIGN_END;
-						ep0resp [0] = 0;
-						USBD_CtlSendData(pdev, ep0resp, ulmin16(1, ulmin16(1, req->wLength)));
-					}
-					break;
-				}
-				break;
-	#endif /* WITHUSBRNDIS */
-
 			default:
 				PRINTF(PSTR("USBD_ClassXXX_Setup IN: default path 3: interfacev=%02X\n"), interfacev);
 				TP();
@@ -9509,10 +8879,6 @@ static USBD_StatusTypeDef USBD_XXX_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 	#endif /* WITHUSBCDC */
 	#if WITHUSBUAC
 	#endif /* WITHUSBUAC */
-	#if WITHUSBCDCEEM
-	#endif /* WITHUSBCDCEEM */
-	#if WITHUSBRNDIS
-	#endif /* WITHUSBRNDIS */
 	#if WITHUSBHID
 	#endif /* WITHUSBHID */
 			switch (interfacev)
@@ -9571,78 +8937,6 @@ static USBD_StatusTypeDef USBD_XXX_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 				}
 				break;
 	#endif /* WITHUSBUAC */
-
-	#if WITHUSBCDCEEM
-			case INTERFACE_CDCEEM_DATA_6:	// CDC EEM data
-				switch (req->bRequest)
-				{
-				case CDC_SET_CONTROL_LINE_STATE:
-					// Выполнение этого запроса не требует дополнительного чтения данных
-					//PRINTF(PSTR("USBD_ClassXXX_Setup OUT: INTERFACE_CDCEEM_DATA_6 CDC_SET_CONTROL_LINE_STATE, wValue=%04X\n"), req->wValue);
-					//usb_cdc_control_state [interfacev] = req->wValue;
-					break;
-				default:
-					PRINTF(PSTR("USBD_ClassXXX_Setup OUT: INTERFACE_CDCEEM_DATA_6: bRequest=%02X, wIndex=%04X, wLength=%04X\n"), req->bRequest, req->wIndex, req->wLength);
-					break;
-				}
-				if (req->wLength != 0)
-				{
-					USBD_CtlPrepareRx(pdev, cdceem_ep0databuffout, ulmin16(ARRAY_SIZE(cdceem_ep0databuffout), req->wLength));
-				}
-				else
-				{
-					USBD_CtlSendStatus(pdev);
-				}
-				break;
-	#endif /* WITHUSBCDCEEM */
-
-	#if WITHUSBRNDIS
-			case INTERFACE_RNDIS_CONTROL_5:	// RNDIS control
-				switch (req->bRequest)
-				{
-				//case CDC_SET_CONTROL_LINE_STATE:
-					// Выполнение этого запроса не требует дополнительного чтения данных
-				//	PRINTF(PSTR("USBD_ClassXXX_Setup: INTERFACE_RNDIS_CONTROL_5 CDC_SET_CONTROL_LINE_STATE, wValue=%04X\n"), req->wValue);
-					//usb_cdc_control_state [interfacev] = req->wValue;
-				//	break;
-				default:
-					//PRINTF(PSTR("USBD_ClassXXX_Setup OUT: INTERFACE_RNDIS_CONTROL_5: bRequest=%02X, wIndex=%04X, wLength=%04X\n"), req->bRequest, req->wIndex, req->wLength);
-					break;
-				}
-				if (req->wLength != 0)
-				{
-					USBD_CtlPrepareRx(pdev, rndis_ep0databuffout, ulmin16(ARRAY_SIZE(rndis_ep0databuffout), req->wLength));
-				}
-				else
-				{
-					USBD_CtlSendStatus(pdev);
-				}
-				break;
-	#endif /* WITHUSBRNDIS */
-
-	#if WITHUSBCDCECM
-			case INTERFACE_CDCECM_CONTROL_5:	// CDCECM control
-				switch (req->bRequest)
-				{
-				//case CDC_SET_CONTROL_LINE_STATE:
-					// Выполнение этого запроса не требует дополнительного чтения данных
-				//	PRINTF(PSTR("USBD_ClassXXX_Setup: INTERFACE_CDCECM_CONTROL_5 CDC_SET_CONTROL_LINE_STATE, wValue=%04X\n"), req->wValue);
-					//usb_cdc_control_state [interfacev] = req->wValue;
-				//	break;
-				default:
-					//PRINTF(PSTR("USBD_ClassXXX_Setup OUT: INTERFACE_CDCECM_CONTROL_5: bRequest=%02X, wIndex=%04X, wLength=%04X\n"), req->bRequest, req->wIndex, req->wLength);
-					break;
-				}
-				if (req->wLength != 0)
-				{
-					USBD_CtlPrepareRx(pdev, cdcecm_ep0databuffout, ulmin16(ARRAY_SIZE(cdcecm_ep0databuffout), req->wLength));
-				}
-				else
-				{
-					USBD_CtlSendStatus(pdev);
-				}
-				break;
-	#endif /* WITHUSBCDCECM */
 
 	#if WITHUSBHID
 			case INTERFACE_HID_CONTROL_7:	// USB HID interfacei
@@ -9733,11 +9027,6 @@ static USBD_StatusTypeDef USBD_XXX_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 		#endif /* WITHUSBUACIN2 */
 		#endif /* WITHUSBUAC */
 
-		#if WITHUSBCDCEEM
-				case INTERFACE_CDCEEM_DATA_6:	// CDC ECM interfacei
-					//PRINTF(PSTR("USBD_ClassXXX_Setup: INTERFACE_CDCEEM_DATA_6: set interfacev=%02X to %02X\n"), interfacev, LO_BYTE(req->wValue));
-					break;
-		#endif /* WITHUSBCDCEEM */
 		#if WITHUSBHID
 				//case INTERFACE_HID_CONTROL_7:	// HID interfacei
 				//	PRINTF(PSTR("USBD_ClassXXX_Setup: INTERFACE_HID_CONTROL_7: set interfacev=%02X to %02X\n"), interfacev, LO_BYTE(req->wValue));
@@ -9776,7 +9065,7 @@ static USBD_StatusTypeDef USBD_XXX_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 	return USBD_OK;
 }
 
-static USBD_StatusTypeDef USBD_XXX_DataIn (USBD_HandleTypeDef *pdev, uint_fast8_t epnum)
+static USBD_StatusTypeDef USBD_XXX_DataIn(USBD_HandleTypeDef *pdev, uint_fast8_t epnum)
 {
 	// epnum without direction bit
 	//PRINTF(PSTR("USBD_LL_DataInStage: IN: epnum=%02X\n"), epnum);
@@ -9861,38 +9150,6 @@ static USBD_StatusTypeDef USBD_XXX_DataIn (USBD_HandleTypeDef *pdev, uint_fast8_
 		break;
 #endif /* WITHUSBUACIN2 */
 #endif /* WITHUSBUAC */
-
-#if WITHUSBCDCEEM
-	case (USBD_EP_CDCEEM_IN & 0x7F):
-		//USBD_LL_Transmit(pdev, USBD_EP_CDCEEM_IN, NULL, 0);
-		USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), dbd, sizeof dbd);
-		//PRINTF(PSTR("USBD_LL_DataInStage: USBD_EP_CDCEEM_IN\n"));
-		break;
-#endif /* WITHUSBCDCEEM */
-
-#if WITHUSBRNDIS
-	case (USBD_EP_RNDIS_IN & 0x7F):
-		USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), NULL, 0);
-		//PRINTF(PSTR("USBD_LL_DataInStage: USBD_EP_RNDIS_IN\n"));
-		break;
-
-	case (USBD_EP_RNDIS_INT & 0x7F):
-		//USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), NULL, 0);
-		//PRINTF(PSTR("USBD_LL_DataInStage: USBD_EP_RNDIS_INT\n"));
-		break;
-#endif /* WITHUSBRNDIS */
-
-#if WITHUSBCDCECM
-	case (USBD_EP_CDCECM_IN & 0x7F):
-		USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), NULL, 0);
-		//PRINTF(PSTR("USBD_LL_DataInStage: USBD_EP_CDCECM_IN\n"));
-		break;
-
-	case (USBD_EP_CDCECM_INT & 0x7F):
-		//USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), NULL, 0);
-		//PRINTF(PSTR("USBD_LL_DataInStage: USBD_EP_CDCECM_INT\n"));
-		break;
-#endif /* WITHUSBCDCECM */
 
 	default:
 		TP();
@@ -10070,22 +9327,6 @@ static USBD_StatusTypeDef USBD_XXX_DataOut(USBD_HandleTypeDef *pdev, uint_fast8_
 		break;
 #endif /* WITHUSBUAC */
 
-#if WITHUSBCDCEEM
-	case USBD_EP_CDCEEM_OUT:
-		cdceemout_buffer_save(cdceembuffout, USBD_LL_GetRxDataSize(pdev, epnum));
-		/* Prepare Out endpoint to receive next cdc eem data packet */
-		USBD_LL_PrepareReceive(pdev, USB_ENDPOINT_OUT(epnum), cdceembuffout, USBD_CDCEEM_BUFSIZE);
-		break;
-#endif /* WITHUSBCDCEEM */
-
-#if WITHUSBRNDIS
-	case USBD_EP_RNDIS_OUT:
-		rndisout_buffer_save(rndisbuffout, USBD_LL_GetRxDataSize(pdev, epnum));
-		/* Prepare Out endpoint to receive next rndis data packet */
-		USBD_LL_PrepareReceive(pdev, USB_ENDPOINT_OUT(epnum), rndisbuffout, USBD_RNDIS_OUT_BUFSIZE);
-		break;
-#endif /* WITHUSBRNDIS */
-
 	default:
 		PRINTF(PSTR("USBD_XXX_DataOut: epnum=%02X\n"), epnum);
 		TP();
@@ -10103,7 +9344,7 @@ static USBD_StatusTypeDef USBD_XXX_DataOut(USBD_HandleTypeDef *pdev, uint_fast8_
 * @param  req: usb request
 * @retval status
 */
-USBD_StatusTypeDef  USBD_StdItfReq (USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef  *req)
+USBD_StatusTypeDef  USBD_StdItfReq(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef  *req)
 {
 	//PRINTF(PSTR("USBD_StdItfReq: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"),
 	//	req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
@@ -10145,7 +9386,7 @@ USBD_StatusTypeDef  USBD_StdItfReq (USBD_HandleTypeDef *pdev, USBD_SetupReqTyped
 * @param  req: usb request
 * @retval status
 */
-USBD_StatusTypeDef  USBD_StdEPReq (USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef  *req)
+USBD_StatusTypeDef  USBD_StdEPReq(USBD_HandleTypeDef * pdev, USBD_SetupReqTypedef * req)
 {
 	//PRINTF(PSTR("USBD_StdEPReq: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"),
 	//	req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
@@ -10166,7 +9407,6 @@ USBD_StatusTypeDef  USBD_StdEPReq (USBD_HandleTypeDef *pdev, USBD_SetupReqTypede
 
   switch (req->bRequest)
   {
-
   case USB_REQ_SET_FEATURE :
  	//PRINTF(PSTR("USBD_StdEPReq: USB_REQ_SET_FEATURE: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"),
 	//	req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
@@ -10827,419 +10067,6 @@ USBD_StatusTypeDef USBD_LL_SetupStage(USBD_HandleTypeDef *pdev, const uint32_t *
 	}
 	return USBD_OK;
 }
-
-#if WITHUSBRNDIS
-
-#include "ndis.h"
-
-#define RNDIS_MAJOR_VERSION	1
-#define RNDIS_MINOR_VERSION 0
-
-#define RNDIS_STATUS_SUCCESS            0x00000000
-#define RNDIS_STATUS_FAILURE            0xC0000001
-#define RNDIS_STATUS_INVALID_DATA       0xC0010015
-#define RNDIS_STATUS_NOT_SUPPORTED      0xC00000BB
-#define RNDIS_STATUS_MEDIA_CONNECT      0x4001000B
-#define RNDIS_STATUS_MEDIA_DISCONNECT   0x4001000C
-
-
-/* Message set for Connectionless (802.3) Devices */
-#define REMOTE_NDIS_PACKET_MSG          0x00000001
-#define REMOTE_NDIS_INITIALIZE_MSG      0x00000002
-#define REMOTE_NDIS_HALT_MSG            0x00000003
-#define REMOTE_NDIS_QUERY_MSG           0x00000004
-#define REMOTE_NDIS_SET_MSG             0x00000005
-#define REMOTE_NDIS_RESET_MSG           0x00000006
-#define REMOTE_NDIS_INDICATE_STATUS_MSG 0x00000007
-#define REMOTE_NDIS_KEEPALIVE_MSG       0x00000008
-#define REMOTE_NDIS_INITIALIZE_CMPLT    0x80000002
-#define REMOTE_NDIS_QUERY_CMPLT         0x80000004
-#define REMOTE_NDIS_SET_CMPLT           0x80000005
-#define REMOTE_NDIS_RESET_CMPLT         0x80000006
-#define REMOTE_NDIS_KEEPALIVE_CMPLT     0x80000008
-
-#define RNDIS_MTU                                       3000                           // MTU value
-#define RNDIS_VENDOR                                    "MGS1"                      // NIC vendor name
-#define STATION_HWADDR                                  0x30,0x89,0x84,0x6A,0x96,0xAA  // station MAC
-#define PERMANENT_HWADDR                                0x30,0x89,0x84,0x6A,0x96,0xAA  // permanent MAC
-
-#define ETH_HEADER_SIZE                 14
-#define ETH_MIN_PACKET_SIZE             60
-#define ETH_MAX_PACKET_SIZE             (ETH_HEADER_SIZE + RNDIS_MTU)
-#define RNDIS_HEADER_SIZE               44//sizeof(rndis_data_packet_t)
-#define RNDIS_RX_BUFFER_SIZE            (ETH_MAX_PACKET_SIZE + RNDIS_HEADER_SIZE)
-
-
-typedef enum rnids_state_e {
-	rndis_uninitialized,
-	rndis_initialized,
-	rndis_data_initialized
-} rndis_state_t;
-
-typedef struct {
-	uint32_t		txok;
-	uint32_t		rxok;
-	uint32_t		txbad;
-	uint32_t		rxbad;
-} usb_eth_stat_t;
-
-
-static uint8_t station_hwaddr[6] = { STATION_HWADDR };
-static uint8_t permanent_hwaddr[6] = { PERMANENT_HWADDR };
-static usb_eth_stat_t usb_eth_stat = { 0, 0, 0, 0 };
-static rndis_state_t rndis_state = rndis_uninitialized;
-static uint32_t oid_packet_filter = 0x0000000;
-
-static const char *rndis_vendor = RNDIS_VENDOR;
-
-static const uint32_t OIDSupportedList[] =
-{
-  OID_GEN_SUPPORTED_LIST,
-  OID_GEN_HARDWARE_STATUS,
-  OID_GEN_MEDIA_SUPPORTED,
-  OID_GEN_MEDIA_IN_USE,
-  //    OID_GEN_MAXIMUM_LOOKAHEAD,
-  OID_GEN_MAXIMUM_FRAME_SIZE,
-  OID_GEN_LINK_SPEED,
-  //    OID_GEN_TRANSMIT_BUFFER_SPACE,
-  //    OID_GEN_RECEIVE_BUFFER_SPACE,
-  OID_GEN_TRANSMIT_BLOCK_SIZE,
-  OID_GEN_RECEIVE_BLOCK_SIZE,
-  OID_GEN_VENDOR_ID,
-  OID_GEN_VENDOR_DESCRIPTION,
-  OID_GEN_VENDOR_DRIVER_VERSION,
-  OID_GEN_CURRENT_PACKET_FILTER,
-  //    OID_GEN_CURRENT_LOOKAHEAD,
-  //    OID_GEN_DRIVER_VERSION,
-  OID_GEN_MAXIMUM_TOTAL_SIZE,
-  OID_GEN_PROTOCOL_OPTIONS,
-  OID_GEN_MAC_OPTIONS,
-  OID_GEN_MEDIA_CONNECT_STATUS,
-  OID_GEN_MAXIMUM_SEND_PACKETS,
-  OID_802_3_PERMANENT_ADDRESS,
-  OID_802_3_CURRENT_ADDRESS,
-  OID_802_3_MULTICAST_LIST,
-  OID_802_3_MAXIMUM_LIST_SIZE,
-  OID_802_3_MAC_OPTIONS
-};
-#define OID_LIST_LENGTH (sizeof(OIDSupportedList) / sizeof(*OIDSupportedList))
-
-static void response_available(USBD_HandleTypeDef *pdev)
-{
-	static RAMNOINIT_D1 USBALIGN_BEGIN uint8_t resp [USBD_RNDIS_INT_SIZE] USBALIGN_END;
-
-	USBD_poke_u32(& resp [0], 0x00000001);
-	USBD_poke_u32(& resp [4], 0x00000000);
-
-	USBD_LL_Transmit(pdev, USBD_EP_RNDIS_INT, resp, USBD_RNDIS_INT_SIZE);
-}
-
-// https://docs.microsoft.com/en-us/windows-hardware/drivers/network/remote-ndis-query-cmplt
-static void rndis_query_cmplt32(USBD_HandleTypeDef  *pdev, int status, uint_fast32_t data)
-{
-	uint8_t * ep0resp;
-	if (! rndis_resp_allocate(& ep0resp))
-		return;
-	const uint_fast32_t RequestId = USBD_peek_u32(& rndis_ep0databuffout [8]);
-	const uint_fast32_t MessageLength = 28;
-	USBD_poke_u32(& ep0resp [0], REMOTE_NDIS_QUERY_CMPLT);	// MessageType
-	USBD_poke_u32(& ep0resp [4], MessageLength);	// MessageLength
-	USBD_poke_u32(& ep0resp [8], RequestId);	// RequestId <- MessageId
-	USBD_poke_u32(& ep0resp [12], status);	// Status
-	USBD_poke_u32(& ep0resp [16], 4);	// InformationBufferLength
-	USBD_poke_u32(& ep0resp [20], 16);	// InformationBufferOffset
-
-	USBD_poke_u32(& ep0resp [24], data);	// data
-	rndis_resp_tosensd(ep0resp);
-	response_available(pdev);
-}
-
-// https://docs.microsoft.com/en-us/windows-hardware/drivers/network/remote-ndis-query-cmplt
-static void rndis_query_cmplt(USBD_HandleTypeDef * pdev, int status, const void * data, int size)
-{
-	uint8_t * ep0resp;
-	if (! rndis_resp_allocate(& ep0resp))
-		return;
-	const uint_fast32_t RequestId = USBD_peek_u32(& rndis_ep0databuffout [8]);
-	const uint_fast32_t MessageLength = 24 + size;
-	ASSERT(MessageLength <= RNDIS_RESP_SIZE);
-	if (MessageLength > RNDIS_RESP_SIZE)
-		return;
-	USBD_poke_u32(& ep0resp [0], REMOTE_NDIS_QUERY_CMPLT);	// MessageType
-	USBD_poke_u32(& ep0resp [4], MessageLength);	// MessageLength
-	USBD_poke_u32(& ep0resp [8], RequestId);	// RequestId <- MessageId
-	USBD_poke_u32(& ep0resp [12], status);	// Status
-	USBD_poke_u32(& ep0resp [16], size);	// InformationBufferLength
-	USBD_poke_u32(& ep0resp [20], size ? 16 : 0);	// InformationBufferOffset
-
-	if (size != 0 && data != NULL && MessageLength <= 256)
-		memcpy(& ep0resp [24], data, size);
-
-	rndis_resp_tosensd(ep0resp);
-	response_available(pdev);
-}
-
-// https://docs.microsoft.com/en-us/windows-hardware/drivers/network/remote-ndis-query-msg
-static void rndis_query(USBD_HandleTypeDef  *pdev)
-{
-	const uint_fast32_t oid = USBD_peek_u32(& rndis_ep0databuffout [12]);
-	uint_fast32_t eth_link_speed = 12000000uL;
-	switch (pdev->dev_speed)
-	{
-	case USBD_SPEED_HIGH:
-		eth_link_speed = 480000000uL;
-		break;
-	case USBD_SPEED_LOW:
-		eth_link_speed = 6000000uL;
-		break;
-	case USBD_SPEED_FULL:
-		eth_link_speed = 12000000uL;
-		break;
-	}
-
-	switch (oid)
-	{
-	case OID_GEN_SUPPORTED_LIST:         rndis_query_cmplt(pdev, RNDIS_STATUS_SUCCESS, OIDSupportedList, 4 * OID_LIST_LENGTH); return;
-	case OID_GEN_VENDOR_DRIVER_VERSION:  rndis_query_cmplt32(pdev, RNDIS_STATUS_SUCCESS, 0x00001000);  return;
-	case OID_802_3_CURRENT_ADDRESS:      rndis_query_cmplt(pdev, RNDIS_STATUS_SUCCESS, &station_hwaddr, 6); return;
-	case OID_802_3_PERMANENT_ADDRESS:    rndis_query_cmplt(pdev, RNDIS_STATUS_SUCCESS, &permanent_hwaddr, 6); return;
-	case OID_GEN_MEDIA_SUPPORTED:        rndis_query_cmplt32(pdev, RNDIS_STATUS_SUCCESS, NDIS_MEDIUM_802_3); return;
-	case OID_GEN_MEDIA_IN_USE:           rndis_query_cmplt32(pdev, RNDIS_STATUS_SUCCESS, NDIS_MEDIUM_802_3); return;
-	case OID_GEN_PHYSICAL_MEDIUM:        rndis_query_cmplt32(pdev, RNDIS_STATUS_SUCCESS, NDIS_MEDIUM_802_3); return;
-	case OID_GEN_HARDWARE_STATUS:        rndis_query_cmplt32(pdev, RNDIS_STATUS_SUCCESS, 0); return;
-	case OID_GEN_LINK_SPEED:             rndis_query_cmplt32(pdev, RNDIS_STATUS_SUCCESS, eth_link_speed / 100); return;
-	case OID_GEN_VENDOR_ID:              rndis_query_cmplt32(pdev, RNDIS_STATUS_SUCCESS, 0x00FFFFFF); return;
-	case OID_GEN_VENDOR_DESCRIPTION:     rndis_query_cmplt(pdev, RNDIS_STATUS_SUCCESS, rndis_vendor, strlen(rndis_vendor) + 1); return;
-	case OID_GEN_CURRENT_PACKET_FILTER:  rndis_query_cmplt32(pdev, RNDIS_STATUS_SUCCESS, oid_packet_filter); return;
-	case OID_GEN_MAXIMUM_FRAME_SIZE:     rndis_query_cmplt32(pdev, RNDIS_STATUS_SUCCESS, ETH_MAX_PACKET_SIZE - ETH_HEADER_SIZE); return;
-	case OID_GEN_MAXIMUM_TOTAL_SIZE:     rndis_query_cmplt32(pdev, RNDIS_STATUS_SUCCESS, ETH_MAX_PACKET_SIZE); return;
-	case OID_GEN_TRANSMIT_BLOCK_SIZE:    rndis_query_cmplt32(pdev, RNDIS_STATUS_SUCCESS, ETH_MAX_PACKET_SIZE); return;
-	case OID_GEN_RECEIVE_BLOCK_SIZE:     rndis_query_cmplt32(pdev, RNDIS_STATUS_SUCCESS, ETH_MAX_PACKET_SIZE); return;
-	case OID_GEN_MEDIA_CONNECT_STATUS:   rndis_query_cmplt32(pdev, RNDIS_STATUS_SUCCESS, NDIS_MEDIA_STATE_CONNECTED); return;
-	//	case OID_GEN_CURRENT_LOOKAHEAD:      rndis_query_cmplt32(pdev, RNDIS_STATUS_SUCCESS, RNDIS_RX_BUFFER_SIZE); return;
-	case OID_GEN_RNDIS_CONFIG_PARAMETER: rndis_query_cmplt32(pdev, RNDIS_STATUS_SUCCESS, 0); return;
-	case OID_802_3_MAXIMUM_LIST_SIZE:    rndis_query_cmplt32(pdev, RNDIS_STATUS_SUCCESS, 1); return;
-	case OID_802_3_MULTICAST_LIST:       rndis_query_cmplt32(pdev, RNDIS_STATUS_NOT_SUPPORTED, 0); return;
-	case OID_802_3_MAC_OPTIONS:          rndis_query_cmplt32(pdev, RNDIS_STATUS_NOT_SUPPORTED, 0); return;
-	case OID_GEN_MAC_OPTIONS:            rndis_query_cmplt32(pdev, RNDIS_STATUS_SUCCESS, /*MAC_OPT*/ 0); return;
-	case OID_802_3_RCV_ERROR_ALIGNMENT:  rndis_query_cmplt32(pdev, RNDIS_STATUS_SUCCESS, 0); return;
-	case OID_802_3_XMIT_ONE_COLLISION:   rndis_query_cmplt32(pdev, RNDIS_STATUS_SUCCESS, 0); return;
-	case OID_802_3_XMIT_MORE_COLLISIONS: rndis_query_cmplt32(pdev, RNDIS_STATUS_SUCCESS, 0); return;
-	case OID_GEN_XMIT_OK:                rndis_query_cmplt32(pdev, RNDIS_STATUS_SUCCESS, usb_eth_stat.txok); return;
-	case OID_GEN_RCV_OK:                 rndis_query_cmplt32(pdev, RNDIS_STATUS_SUCCESS, usb_eth_stat.rxok); return;
-	case OID_GEN_RCV_ERROR:              rndis_query_cmplt32(pdev, RNDIS_STATUS_SUCCESS, usb_eth_stat.rxbad); return;
-	case OID_GEN_XMIT_ERROR:             rndis_query_cmplt32(pdev, RNDIS_STATUS_SUCCESS, usb_eth_stat.txbad); return;
-	case OID_GEN_RCV_NO_BUFFER:          rndis_query_cmplt32(pdev, RNDIS_STATUS_SUCCESS, 0); return;
-	default:                             rndis_query_cmplt(pdev, RNDIS_STATUS_FAILURE, NULL, 0); return;
-	}
-}
-
-
-static void rndis_handle_config_parm(const char * data, int keyoffset, int valoffset, int keylen, int vallen)
-{
-}
-
-// https://docs.microsoft.com/en-us/windows-hardware/drivers/network/remote-ndis-set-msg
-static void rndis_handle_set_msg(void * pdev)
-{
-	//rndis_set_cmplt_t *c;
-	//rndis_set_msg_t *m;
-	const uint_fast32_t oid = USBD_peek_u32(& rndis_ep0databuffout [12]);
-	const uint_fast32_t RequestId = USBD_peek_u32(& rndis_ep0databuffout [8]);
-	const uint_fast32_t InformationBufferLength = USBD_peek_u32(& rndis_ep0databuffout [16]);
-	const uint_fast32_t InformationBufferOffset = USBD_peek_u32(& rndis_ep0databuffout [20]);
-
-	//c = (rndis_set_cmplt_t *)encapsulated_buffer;
-	//m = (rndis_set_msg_t *)encapsulated_buffer;
-
-	/* Never have longer parameter names than PARM_NAME_LENGTH */
-	/*
-	char parmname[PARM_NAME_LENGTH+1];
-	uint8_t i;
-	int8_t parmlength;
-	*/
-
-	/* The parameter name seems to be transmitted in uint16_t, but */
-	/* we want this in uint8_t. Hence have to throw out some info... */
-
-	/*
-	if (CFGBUF->ParameterNameLength > (PARM_NAME_LENGTH*2))
-	{
-		parmlength = PARM_NAME_LENGTH * 2;
-	}
-	else
-	{
-		parmlength = CFGBUF->ParameterNameLength;
-	}
-	i = 0;
-	while (parmlength > 0)
-	{
-		// Convert from uint16_t to char array.
-		parmname[i] = (char)*(PARMNAME + 2*i); // FSE! FIX IT!
-		parmlength -= 2;
-		i++;
-	}
-	*/
-
-	uint8_t * ep0resp;
-	if (! rndis_resp_allocate(& ep0resp))
-		return;
-
-	// https://docs.microsoft.com/en-us/windows-hardware/drivers/network/remote-ndis-set-cmplt
-	USBD_poke_u32(& ep0resp [0], REMOTE_NDIS_SET_CMPLT);	// MessageType
-	USBD_poke_u32(& ep0resp [4], 16);	// MessageLength
-	USBD_poke_u32(& ep0resp [8], RequestId);	// RequestId <- MessageId
-	USBD_poke_u32(& ep0resp [12], RNDIS_STATUS_SUCCESS);	// Status
-
-	switch (oid)
-	{
-		/* Parameters set up in 'Advanced' tab */
-		case OID_GEN_RNDIS_CONFIG_PARAMETER:
-			{
-                //rndis_config_parameter_t *p;
-				//char *ptr = (char *)m;
-				//ptr += sizeof(rndis_generic_msg_t);
-				//ptr += m->InformationBufferOffset;
-				//p = (rndis_config_parameter_t *)ptr;
-				//rndis_handle_config_parm(ptr, p->ParameterNameOffset, p->ParameterValueOffset, p->ParameterNameLength, p->ParameterValueLength);
-			}
-			break;
-
-		/* Mandatory general OIDs */
-		case OID_GEN_CURRENT_PACKET_FILTER:
-			oid_packet_filter = USBD_peek_u32(& rndis_ep0databuffout [InformationBufferOffset + 8]);
-			//oid_packet_filter = *INFBUF;
-			//if (oid_packet_filter)
-			//{
-			//	rndis_packetFilter(oid_packet_filter);
-			//	rndis_state = rndis_data_initialized;
-			//}
-			//else
-			//{
-			//	rndis_state = rndis_initialized;
-			//}
-			break;
-
-		case OID_GEN_CURRENT_LOOKAHEAD:
-			break;
-
-		case OID_GEN_PROTOCOL_OPTIONS:
-			break;
-
-		/* Mandatory 802_3 OIDs */
-		case OID_802_3_MULTICAST_LIST:
-			break;
-
-		/* Power Managment: fails for now */
-		case OID_PNP_ADD_WAKE_UP_PATTERN:
-		case OID_PNP_REMOVE_WAKE_UP_PATTERN:
-		case OID_PNP_ENABLE_WAKE_UP:
-		default:
-			USBD_poke_u32(& ep0resp [12], RNDIS_STATUS_FAILURE);	// Status
-			break;
-	}
-
-	rndis_resp_tosensd(ep0resp);
-	response_available(pdev);
-}
-
-static void rndisout_buffer_save(
-	const uint8_t * data,
-	uint_fast16_t length
-	)
-{
-	//usb_eth_stat.rxok++;
-	//TP();
-}
-
-static void usbd_rndis_ep0_recv(USBD_HandleTypeDef *pdev)
-{
-	const uint_fast32_t MessageType = USBD_peek_u32(& rndis_ep0databuffout [0]);
-	const uint_fast32_t RequestId = USBD_peek_u32(& rndis_ep0databuffout [8]);
-	// See https://docs.microsoft.com/en-us/windows-hardware/drivers/network/remote-ndis-control-messages
-	switch (MessageType)
-	{
-	case REMOTE_NDIS_INITIALIZE_MSG:	// https://msdn.microsoft.com/en-us/library/windows/hardware/ff570624
-		{
-			uint8_t * ep0resp;
-			if (! rndis_resp_allocate(& ep0resp))
-				return;
-			// Prepare REMOTE_NDIS_INITIALIZE_CMPLT
-			// https://msdn.microsoft.com/library/windows/hardware/ff570621
-			USBD_poke_u32(& ep0resp [0], REMOTE_NDIS_INITIALIZE_CMPLT);	// MessageType
-			USBD_poke_u32(& ep0resp [4], 52);	// MessageLength
-			USBD_poke_u32(& ep0resp [8], RequestId);	// RequestId <- MessageId
-			USBD_poke_u32(& ep0resp [12], RNDIS_STATUS_SUCCESS);	// Status RNDIS_STATUS_SUCCESS
-			USBD_poke_u32(& ep0resp [16], ulmin32(RNDIS_MAJOR_VERSION, USBD_peek_u32(& rndis_ep0databuffout [12])));	// MajorVersion
-			USBD_poke_u32(& ep0resp [20], ulmin32(RNDIS_MINOR_VERSION, USBD_peek_u32(& rndis_ep0databuffout [16])));	// MinorVersion
-			USBD_poke_u32(& ep0resp [24], 0x00000001);	// DeviceFlags RNDIS_DF_CONNECTIONLESS
-			USBD_poke_u32(& ep0resp [28], 0x00000000);	// Medium 0 - RNDIS_MEDIUM_802_3
-			USBD_poke_u32(& ep0resp [32], 1);	// MaxPacketsPerMessage
-			USBD_poke_u32(& ep0resp [36], RNDIS_RX_BUFFER_SIZE);	// MaxTransferSize
-			USBD_poke_u32(& ep0resp [40], 0);	// PacketAlignmentFactor
-			USBD_poke_u32(& ep0resp [44], 0);	// AFListOffset
-			USBD_poke_u32(& ep0resp [48], 0);	// AFListSize
-
-			rndis_resp_tosensd(ep0resp);
-			response_available(pdev);
-
-			rndis_state = rndis_initialized;
-
-		}
-		break;
-
-	case REMOTE_NDIS_QUERY_MSG:	// https://docs.microsoft.com/en-us/windows-hardware/drivers/network/remote-ndis-query-msg
-		//PRINTF(PSTR("USBD_LL_DataOutStage: xx03: Oid=%08lX\n"), USBD_peek_u32(& rndis_ep0databuffout [12]));
-		rndis_query(pdev);
-		break;
-
-
-	case REMOTE_NDIS_SET_MSG:
-		// https://docs.microsoft.com/en-us/windows-hardware/drivers/network/remote-ndis-set-msg
-		// https://docs.microsoft.com/en-us/windows-hardware/drivers/network/remote-ndis-set-cmplt
-		rndis_handle_set_msg(pdev);
-		break;
-
-	case REMOTE_NDIS_RESET_MSG:
-		{
-			uint8_t * ep0resp;
-			if (! rndis_resp_allocate(& ep0resp))
-				return;
-			USBD_poke_u32(& ep0resp [0], REMOTE_NDIS_RESET_CMPLT);	// MessageType
-			USBD_poke_u32(& ep0resp [4], 16);	// MessageLength
-			USBD_poke_u32(& ep0resp [8], RequestId);	// RequestId <- MessageId
-			USBD_poke_u32(& ep0resp [12], RNDIS_STATUS_SUCCESS);	// Status RNDIS_STATUS_SUCCESS
-			// We have data to send back
-			rndis_resp_tosensd(ep0resp);
-			response_available(pdev);
-		}
-		break;
-
-	case REMOTE_NDIS_KEEPALIVE_MSG:
-		// https://docs.microsoft.com/en-us/windows-hardware/drivers/network/remote-ndis-keepalive-cmplt
-		{
-			uint8_t * ep0resp;
-			if (! rndis_resp_allocate(& ep0resp))
-				return;
-			USBD_poke_u32(& ep0resp [0], REMOTE_NDIS_KEEPALIVE_CMPLT);	// MessageType
-			USBD_poke_u32(& ep0resp [4], 16);	// MessageLength
-			USBD_poke_u32(& ep0resp [8], RequestId);	// RequestId <- MessageId
-			USBD_poke_u32(& ep0resp [12], RNDIS_STATUS_SUCCESS);	// Status RNDIS_STATUS_SUCCESS
-			// We have data to send back
-			rndis_resp_tosensd(ep0resp);
-			response_available(pdev);
-		}
-		break;
-
-	default:
-		PRINTF(PSTR("USBD_LL_DataOutStage: xx07: MessageType=%08lX\n"), MessageType);
-		TP();
-		break;
-
-	} // switch по типу RNDIS сообщения
-}
-
-#endif /* WITHUSBRNDIS */
 
 /**
 * @brief  USBD_DataOutStage
