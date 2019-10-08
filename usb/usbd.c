@@ -2426,7 +2426,7 @@ static void dcp_acksend(USBD_HandleTypeDef *pdev)
 }
 
 // NAK
-static void nak_ep0(USBD_HandleTypeDef *pdev)
+static void nak_ep0_unused(USBD_HandleTypeDef *pdev)
 {
 	//PRINTF(PSTR("nak_ep0\n"));
 
@@ -3651,7 +3651,6 @@ static void usb0_function_save_request(USB_OTG_GlobalTypeDef * USBx, USBD_SetupR
 {
 	const uint_fast16_t usbreq = USBx->USBREQ;
 
-
 	req->bmRequest     = LO_BYTE(usbreq & USB_FUNCTION_bmRequestType); //(pdata [0] >> 0) & 0x00FF;
 	req->bRequest      = HI_BYTE(usbreq & USB_FUNCTION_bRequest); //(pdata [0] >> 8) & 0x00FF;
 	req->wValue        = USBx->USBVAL; //(pdata [0] >> 16) & 0xFFFF;
@@ -3730,7 +3729,6 @@ static void usbd_handle_ctrt(PCD_HandleTypeDef *hpcd, uint_fast8_t ctsq)
 		// Set Line Coding here
 		// xxx_EP0_RxReady
         HAL_PCD_DataOutStageCallback(hpcd, 0);
-        //HAL_PCD_SetupStageCallback(hpcd);
 
 		USBx->DCPCTR |= USB_DCPCTR_CCPL;	// CCPL
 		break;
@@ -4930,7 +4928,7 @@ static USBD_StatusTypeDef USBD_CtlSendDataNecXXX(USBD_HandleTypeDef *pdev, const
 	return USBD_OK;
 }
 
-static void USBD_CtlErrorNecXXX( USBD_HandleTypeDef *pdev,
+static void USBD_CtlErrorNec_UNUSED( USBD_HandleTypeDef *pdev,
                             const USBD_SetupReqTypedef *req)
 {
 	stall_ep0(pdev);
