@@ -921,9 +921,13 @@ typedef struct
                                  This parameter must be a number between Min_Data = 0 and Max_Data = 1    */
 #endif
   
+  // STM32 specific field
   uint_fast8_t  tx_fifo_num;    /*!< Transmission FIFO number
                                  This parameter must be a number between Min_Data = 1 and Max_Data = 15   */
-                                
+
+  // RENESAS specific field
+  uint_fast8_t	pipe_num;	//
+
   uint_fast32_t  maxpacket;      /*!< Endpoint Max packet size
                                  This parameter must be a number between Min_Data = 0 and Max_Data = 64KB */
 
@@ -1561,8 +1565,8 @@ HAL_StatusTypeDef HAL_PCD_Start(PCD_HandleTypeDef *hpcd);
 HAL_StatusTypeDef HAL_PCD_Stop(PCD_HandleTypeDef *hpcd);
 void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd);
 
-void HAL_PCD_DataOutStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum, uint8_t pipe);
-void HAL_PCD_DataInStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum, uint8_t pipe);
+void HAL_PCD_DataOutStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum);
+void HAL_PCD_DataInStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum);
 void HAL_PCD_SetupStageCallback(PCD_HandleTypeDef *hpcd);
 void HAL_PCD_SOFCallback(PCD_HandleTypeDef *hpcd);
 void HAL_PCD_ResetCallback(PCD_HandleTypeDef *hpcd);
@@ -1796,8 +1800,8 @@ static USBD_StatusTypeDef USBD_SetClassConfig(USBD_HandleTypeDef  *pdev, uint_fa
 static USBD_StatusTypeDef USBD_ClrClassConfig(USBD_HandleTypeDef  *pdev, uint_fast8_t cfgidx);
 
 USBD_StatusTypeDef USBD_LL_SetupStage(USBD_HandleTypeDef *pdev, const uint32_t *psetup);
-USBD_StatusTypeDef USBD_LL_DataOutStage(USBD_HandleTypeDef *pdev, uint_fast8_t epnum, uint8_t *pdata, uint8_t pipe);
-USBD_StatusTypeDef USBD_LL_DataInStage(USBD_HandleTypeDef *pdev, uint_fast8_t epnum, uint8_t *pdata, uint8_t pipe);
+USBD_StatusTypeDef USBD_LL_DataOutStage(USBD_HandleTypeDef *pdev, uint_fast8_t epnum, uint8_t *pdata);
+USBD_StatusTypeDef USBD_LL_DataInStage(USBD_HandleTypeDef *pdev, uint_fast8_t epnum, uint8_t *pdata);
 
 USBD_StatusTypeDef USBD_LL_Reset(USBD_HandleTypeDef  *pdev);
 USBD_StatusTypeDef USBD_LL_SetSpeed(USBD_HandleTypeDef  *pdev, USBD_SpeedTypeDef speed);
@@ -3928,19 +3932,19 @@ static void usbd_handle_ctrt(PCD_HandleTypeDef *hpcd, uint_fast8_t ctsq)
 	}
 }
 
-static const uint_fast8_t usbd_usedpipes [] =
+static const struct { uint8_t pipe, ep; } usbd_usedpipes [] =
 {
 #if WITHUSBUAC
-	HARDWARE_USBD_PIPE_ISOC_OUT,	// ISOC OUT Аудиоданные от компьютера в TRX - D0FIFOB0
-	HARDWARE_USBD_PIPE_ISOC_IN,		// ISOC IN Аудиоданные в компьютер из TRX - D0FIFOB1
+	{	HARDWARE_USBD_PIPE_ISOC_OUT,	USBD_EP_AUDIO_OUT, },		// ISOC OUT Аудиоданные от компьютера в TRX - D0FIFOB0
+	{	HARDWARE_USBD_PIPE_ISOC_IN,		USBD_EP_AUDIO_IN, },		// ISOC IN Аудиоданные в компьютер из TRX - D0FIFOB1
 #endif /* WITHUSBUAC */
 #if WITHUSBCDC
-	HARDWARE_USBD_PIPE_CDC_OUT,		// CDC OUT Данные ком-порта от компьютера в TRX
-	HARDWARE_USBD_PIPE_CDC_IN,		// CDC IN Данные ком-порта в компьютер из TRX
-	HARDWARE_USBD_PIPE_CDC_INT,
-	HARDWARE_USBD_PIPE_CDC_OUTb,	// CDC OUT dummy interfacei
-	HARDWARE_USBD_PIPE_CDC_INb,		// CDC IN dummy interfacei
-	HARDWARE_USBD_PIPE_CDC_INTb,
+	{	HARDWARE_USBD_PIPE_CDC_OUT,		USBD_EP_CDC_OUT, },		// CDC OUT Данные ком-порта от компьютера в TRX
+	{	HARDWARE_USBD_PIPE_CDC_IN,		USBD_EP_CDC_IN, },		// CDC IN Данные ком-порта в компьютер из TRX
+	{	HARDWARE_USBD_PIPE_CDC_INT,		USBD_EP_CDC_INT, },
+	{	HARDWARE_USBD_PIPE_CDC_OUTb,	USBD_EP_CDC_OUTb, },	// CDC OUT dummy interfacei
+	{	HARDWARE_USBD_PIPE_CDC_INb,		USBD_EP_CDC_INb, },		// CDC IN dummy interfacei
+	{	HARDWARE_USBD_PIPE_CDC_INTb,	USBD_EP_CDC_INTb, },
 #endif /* WITHUSBCDC */
 #if WITHUSBCDCEEM
 #endif /* WITHUSBCDCEEM */
@@ -3967,7 +3971,7 @@ static void usbd_pipes_enable(PCD_TypeDef * const Instance)
 
 	for (i = 0; i < sizeof usbd_usedpipes / sizeof usbd_usedpipes [0]; ++ i)
 	{
-		const uint_fast8_t pipe = usbd_usedpipes [i];
+		const uint_fast8_t pipe = usbd_usedpipes [i].pipe;
 		volatile uint16_t * const PIPEnCTR = (& Instance->PIPE1CTR) + (pipe - 1);
 
 		* PIPEnCTR = 0x0000;	// NAK
@@ -4015,7 +4019,7 @@ static void usbd_pipes_disable(PCD_TypeDef * const Instance)
 	}
 	for (i = 0; i < sizeof usbd_usedpipes / sizeof usbd_usedpipes [0]; ++ i)
 	{
-		const uint_fast8_t pipe = usbd_usedpipes [i];
+		const uint_fast8_t pipe = usbd_usedpipes [i].pipe;
 		volatile uint16_t * const PIPEnCTR = (& Instance->PIPE1CTR) + (pipe - 1);
 
 		* PIPEnCTR = 0x0000;	// NAK
@@ -4522,7 +4526,7 @@ static void r7s721_usbdevice_handler(PCD_HandleTypeDef *hpcd)
 
 		if ((bempsts & (1U << 0)) != 0)	// PIPE0, DCP
 		{
-			HAL_PCD_DataInStageCallback(hpcd, 0, 0);
+			HAL_PCD_DataInStageCallback(hpcd, 0);
 
 			//if (control_transmit2(pdev) != 0)
 			//{
@@ -4556,7 +4560,7 @@ static void r7s721_usbdevice_handler(PCD_HandleTypeDef *hpcd)
 		if ((brdysts & (1U << 0)) != 0)		// PIPE0 - DCP
 		{
 			//usbd_handler_brdy8_dcp_out(pdev, 0);
-			HAL_PCD_DataOutStageCallback(hpcd, 0, 0);
+			HAL_PCD_DataOutStageCallback(hpcd, 0);
 		}
 
 		for (i = 0; i < sizeof brdyenbpipes2 / sizeof brdyenbpipes2 [0]; ++ i)
@@ -4568,12 +4572,12 @@ static void r7s721_usbdevice_handler(PCD_HandleTypeDef *hpcd)
 				if ((ep & 0x80) != 0)
 				{
 					//usbd_handler_brdy_bulk_in8(pdev, pipe, ep);
-					HAL_PCD_DataInStageCallback(hpcd, 0x7f & ep, pipe);
+					HAL_PCD_DataInStageCallback(hpcd, 0x7f & ep);
 				}
 				else
 				{
 					//usbd_handler_brdy_bulk_out8(pdev, pipe, ep);
-					HAL_PCD_DataOutStageCallback(hpcd, ep, pipe);
+					HAL_PCD_DataOutStageCallback(hpcd, ep);
 				}
 			}
 		}
@@ -5033,12 +5037,12 @@ HAL_StatusTypeDef USB_EPStartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDef
 {
 	if (ep->is_in == 1)
 	{
-		PRINTF(PSTR("USB_EPStartXfer IN, ep->num=%d, ep->tx_fifo_num=%d\n"), (int) ep->num, (int) ep->tx_fifo_num);
+		PRINTF(PSTR("USB_EPStartXfer IN, ep->num=%d, ep->pipe_num=%d\n"), (int) ep->num, (int) ep->pipe_num);
 		/* IN endpoint */
 	}
 	else
 	{
-		PRINTF(PSTR("USB_EPStartXfer OUT, ep->num=%d, ep->tx_fifo_num=%d\n"), (int) ep->num, (int) ep->tx_fifo_num);
+		PRINTF(PSTR("USB_EPStartXfer OUT, ep->num=%d, ep->pipe_num=%d\n"), (int) ep->num, (int) ep->pipe_num);
 		/* OUT endpoint */
 	}
 	return HAL_OK;
@@ -5279,9 +5283,7 @@ HAL_StatusTypeDef USB_DoPing(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t ch_num)
   */
 HAL_StatusTypeDef USB_EPSetStall(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_EPTypeDef *ep)
 {
-	uint_fast8_t pipe = 0;
-	ep->num;
-	ep->is_in;
+	uint_fast8_t pipe = ep->pipe_num;
 	//PRINTF(PSTR("USB_EPSetStall\n"));
 
 	USBx->CFIFOSEL =
@@ -7705,38 +7707,57 @@ HAL_StatusTypeDef HAL_PCD_Init(PCD_HandleTypeDef *hpcd)
  /* Force Device Mode*/
  USB_SetCurrentMode(hpcd->Instance , USB_OTG_DEVICE_MODE);
 
- /* Init endpoints structures */
- for (i = 0; i < 15 ; i++)
- {
-   /* Init ep structure */
-   hpcd->IN_ep[i].is_in = 1;
-   hpcd->IN_ep[i].num = i;
-   hpcd->IN_ep[i].tx_fifo_num = i;
-   /* Control until ep is activated */
-   hpcd->IN_ep[i].type = USBD_EP_TYPE_CTRL;
-   hpcd->IN_ep[i].maxpacket = 0;
-   hpcd->IN_ep[i].xfer_buff = NULL;
-   hpcd->IN_ep[i].xfer_len = 0;
- }
+	/* Init endpoints structures */
+	for (i = 0; i < 15 ; i++)
+	{
+		/* Init ep structure */
+		hpcd->IN_ep[i].is_in = 1;
+		hpcd->IN_ep[i].num = i;
+		hpcd->IN_ep[i].tx_fifo_num = i;
+		/* Control until ep is activated */
+		hpcd->IN_ep[i].type = USBD_EP_TYPE_CTRL;
+		hpcd->IN_ep[i].maxpacket = 0;
+		hpcd->IN_ep[i].xfer_buff = NULL;
+		hpcd->IN_ep[i].xfer_len = 0;
+	}
 
- for (i = 0; i < 15 ; i++)
- {
-   hpcd->OUT_ep[i].is_in = 0;
-   hpcd->OUT_ep[i].num = i;
-   hpcd->IN_ep[i].tx_fifo_num = i;
-   /* Control until ep is activated */
-   hpcd->OUT_ep[i].type = USBD_EP_TYPE_CTRL;
-   hpcd->OUT_ep[i].maxpacket = 0;
-   hpcd->OUT_ep[i].xfer_buff = NULL;
-   hpcd->OUT_ep[i].xfer_len = 0;
+	for (i = 0; i < 15 ; i++)
+	{
+		hpcd->OUT_ep[i].is_in = 0;
+		hpcd->OUT_ep[i].num = i;
+		hpcd->IN_ep[i].tx_fifo_num = i;
+		/* Control until ep is activated */
+		hpcd->OUT_ep[i].type = USBD_EP_TYPE_CTRL;
+		hpcd->OUT_ep[i].maxpacket = 0;
+		hpcd->OUT_ep[i].xfer_buff = NULL;
+		hpcd->OUT_ep[i].xfer_len = 0;
 
-   ////hpcd->Instance->DIEPTXF[i] = 0;
- }
+		////hpcd->Instance->DIEPTXF[i] = 0;
+	}
 
- /* Init Device */
- USB_DevInit(hpcd->Instance, & hpcd->Init);
+#if CPUSTYLE_R7S721
+	for (i = 0; i < sizeof usbd_usedpipes / sizeof usbd_usedpipes [0]; ++ i)
+	{
+		const uint_fast8_t pipe = usbd_usedpipes [i].pipe;
+		const uint_fast8_t ep = usbd_usedpipes [i].ep;
+		if (ep & 0x80)
+		{
+			   hpcd->IN_ep[ep & 0x7F].pipe_num = pipe;
+		}
+		else
+		{
+			   hpcd->OUT_ep[ep & 0x7F].pipe_num = pipe;
+		}
+	}
+	hpcd->IN_ep[0].pipe_num = 0;
+	hpcd->OUT_ep[0].pipe_num = 0;
 
- HAL_PCD_SetState(hpcd, HAL_PCD_STATE_READY);
+#endif /* CPUSTYLE_R7S721 */
+
+	/* Init Device */
+	USB_DevInit(hpcd->Instance, & hpcd->Init);
+
+	HAL_PCD_SetState(hpcd, HAL_PCD_STATE_READY);
 
 #ifdef USB_OTG_GLPMCFG_LPMEN
  /* Activate LPM */
@@ -8208,9 +8229,9 @@ void HAL_PCD_SetupStageCallback(PCD_HandleTypeDef *hpcd)
   * @param  epnum: Endpoint Number - without direction bit
   * @retval None
   */
-void HAL_PCD_DataOutStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum, uint8_t pipe)
+void HAL_PCD_DataOutStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum)
 {
-  USBD_LL_DataOutStage((USBD_HandleTypeDef*)hpcd->pData, epnum, hpcd->OUT_ep [epnum].xfer_buff, pipe);
+  USBD_LL_DataOutStage((USBD_HandleTypeDef*)hpcd->pData, epnum, hpcd->OUT_ep [epnum].xfer_buff);
 }
 
 /**
@@ -8219,9 +8240,9 @@ void HAL_PCD_DataOutStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum, uint8_
   * @param  epnum: Endpoint Number - without direction bit
   * @retval None
   */
-void HAL_PCD_DataInStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum, uint8_t pipe)
+void HAL_PCD_DataInStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum)
 {
-  USBD_LL_DataInStage((USBD_HandleTypeDef*)hpcd->pData, epnum, hpcd->IN_ep [epnum].xfer_buff, pipe);
+  USBD_LL_DataInStage((USBD_HandleTypeDef*)hpcd->pData, epnum, hpcd->IN_ep [epnum].xfer_buff);
 }
 
 /**
@@ -11258,7 +11279,7 @@ static void usbd_rndis_ep0_recv(USBD_HandleTypeDef *pdev)
 * @param  epnum: endpoint index
 * @retval status
 */
-USBD_StatusTypeDef USBD_LL_DataOutStage(USBD_HandleTypeDef *pdev, uint_fast8_t epnum, uint8_t *pdata, uint8_t pipe)
+USBD_StatusTypeDef USBD_LL_DataOutStage(USBD_HandleTypeDef *pdev, uint_fast8_t epnum, uint8_t *pdata)
 {
 	//PRINTF(PSTR("USBD_LL_DataOutStage:\n"));
 
@@ -11316,7 +11337,7 @@ USBD_StatusTypeDef USBD_LL_DataOutStage(USBD_HandleTypeDef *pdev, uint_fast8_t e
 * @retval status
 */
 
-USBD_StatusTypeDef USBD_LL_DataInStage(USBD_HandleTypeDef *pdev, uint_fast8_t epnum, uint8_t * pdata, uint8_t pipe)
+USBD_StatusTypeDef USBD_LL_DataInStage(USBD_HandleTypeDef *pdev, uint_fast8_t epnum, uint8_t * pdata)
 {
 //	PRINTF(PSTR("USBD_LL_DataInStage:\n"));
 
