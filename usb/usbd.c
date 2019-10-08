@@ -3958,6 +3958,7 @@ static void r7s721_usbdevice_handler(PCD_HandleTypeDef *hpcd)
 			{
 				if ((epnt & 0x80) != 0)
 				{
+					//usbd_handler_brdy_bulk_in8(pdev, pipe, ep);	// usbd_write_data inside
 					USB_OTG_EPTypeDef * const ep = & hpcd->IN_ep [epnt & 0x7F];
 				  	if (usbd_write_data(USBx, pipe, ep->xfer_buff, ep->xfer_len) == 0)
 				  	{
@@ -3969,9 +3970,11 @@ static void r7s721_usbdevice_handler(PCD_HandleTypeDef *hpcd)
 				  		// todo: not control ep
 				  		//control_stall(pdev);
 				  	}
+					HAL_PCD_DataInStageCallback(hpcd, 0x7f & epnt);
 				}
 				else
 				{
+					//usbd_handler_brdy_bulk_out8(pdev, pipe, ep);	// usbd_read_data inside
 					USB_OTG_EPTypeDef * const ep = & hpcd->OUT_ep [epnt];
 				  	unsigned count;
 				  	if (usbd_read_data(USBx, pipe, ep->xfer_buff, ep->xfer_len - ep->xfer_count, & count) == 0)
@@ -3984,6 +3987,7 @@ static void r7s721_usbdevice_handler(PCD_HandleTypeDef *hpcd)
 				  		// todo: not control ep
 				  		//control_stall(pdev);
 				  	}
+					HAL_PCD_DataOutStageCallback(hpcd, epnt);
 				}
 			}
 		}
