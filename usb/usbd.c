@@ -2821,7 +2821,7 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 
 
 
-static void usbd_handle_resume(PCD_TypeDef * const Instance)
+static void usbd_handle_resume(PCD_TypeDef * const USBx)
 {
 	//PRINTF(PSTR("usbd_handle_resume\n"));
 	usbd_pipes_enable(Instance);
@@ -2843,7 +2843,8 @@ static void usbd_handle_resume(PCD_TypeDef * const Instance)
 #endif /* WITHUSBUAC */
 }
 
-static void usbd_handle_suspend(PCD_TypeDef * const Instance)
+// not used now
+static void usbd_handle_suspend(PCD_TypeDef * const USBx)
 {
 	//PRINTF(PSTR("usbd_handle_suspend\n"));
 	usbd_pipes_disable(Instance);
