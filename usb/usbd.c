@@ -2346,6 +2346,8 @@ static void usbd_handle_ctrt(PCD_HandleTypeDef *hpcd, uint_fast8_t ctsq)
 {
 	USB_OTG_GlobalTypeDef * const USBx = hpcd->Instance;
 	USBD_HandleTypeDef * const pdev = hpcd->pData;
+
+
 	/*
 		0: Idle or setup stage
 		1: Control read data stage
@@ -2370,8 +2372,8 @@ static void usbd_handle_ctrt(PCD_HandleTypeDef *hpcd, uint_fast8_t ctsq)
 		//PRINTF(PSTR("actions_seq1\n"));
 		// 1: Control read data stage
 		// seq1 OUT token -> seq2 -> seq0
-		USBx->INTSTS0 = (uint16_t) ~ USB_INTSTS0_VALID;	// Clear VALID - in seq 1, 3 and 5
-		usb_save_request(USBx, & pdev->request);
+		////USBx->INTSTS0 = (uint16_t) ~ USB_INTSTS0_VALID;	// Clear VALID - in seq 1, 3 and 5
+		////usb_save_request(USBx, & pdev->request);
         HAL_PCD_SetupStageCallback(hpcd);
 		break;
 
@@ -2385,14 +2387,15 @@ static void usbd_handle_ctrt(PCD_HandleTypeDef *hpcd, uint_fast8_t ctsq)
 		// xxx_TxSent
 		HAL_PCD_DataInStageCallback(hpcd, 0);
 		USBx->DCPCTR |= USB_DCPCTR_CCPL;	// CCPL
+		(void) USBx->DCPCTR;
 		break;
 
 	case 3:
 		//PRINTF(PSTR("actions_seq3\n"));
 		// 3: Control write data stage
 		// seq3 IN token -> seq4 ->seq0
-		USBx->INTSTS0 = (uint16_t) ~ USB_INTSTS0_VALID;	// Clear VALID - in seq 1, 3 and 5
-		usb_save_request(USBx, & pdev->request);
+		////USBx->INTSTS0 = (uint16_t) ~ USB_INTSTS0_VALID;	// Clear VALID - in seq 1, 3 and 5
+		////usb_save_request(USBx, & pdev->request);
         HAL_PCD_SetupStageCallback(hpcd);
 		break;
 
@@ -2405,16 +2408,18 @@ static void usbd_handle_ctrt(PCD_HandleTypeDef *hpcd, uint_fast8_t ctsq)
 		// xxx_EP0_RxReady
         HAL_PCD_DataOutStageCallback(hpcd, 0);
 		USBx->DCPCTR |= USB_DCPCTR_CCPL;	// CCPL
+		(void) USBx->DCPCTR;
 		break;
 
 	case 5:
 		//PRINTF(PSTR("actions_seq5\n"));
 		// 5: Control write (no data) status stage
 		// seq5 -> seq0
-		USBx->INTSTS0 = (uint16_t) ~ (1uL << USB_INTSTS0_VALID_SHIFT);	// Clear VALID - in seq 1, 3 and 5
-		usb_save_request(USBx, & pdev->request);
+		////USBx->INTSTS0 = (uint16_t) ~ (1uL << USB_INTSTS0_VALID_SHIFT);	// Clear VALID - in seq 1, 3 and 5
+		////usb_save_request(USBx, & pdev->request);
 		HAL_PCD_SetupStageCallback(hpcd);
 		USBx->DCPCTR |= USB_DCPCTR_CCPL;	// CCPL
+		(void) USBx->DCPCTR;
 		break;
 
 	case 6:
@@ -2941,7 +2946,7 @@ static void r7s721_usbdevice_handler(PCD_HandleTypeDef *hpcd)
 		  	}
 		  	else
 		  	{
-		  		control_stall(pdev);
+		  		//control_stall(pdev);
 		  	}
 		}
 
@@ -2992,7 +2997,12 @@ static void r7s721_usbdevice_handler(PCD_HandleTypeDef *hpcd)
 		//PRINTF(PSTR("r7s721_usbdevice_handler trapped - CTRT, CTSQ=%d\n"), (intsts0 >> 0) & 0x07);
 		USBx->INTSTS0 = (uint16_t) ~ (1uL << USB_INTSTS0_CTRT_SHIFT);	// Clear CTRT
 
-		usbd_handle_ctrt(hpcd, intsts0 & USB_INTSTS0_CTSQ);
+		if ((intsts0 & USB_INTSTS0_VALID) != 0)
+		{
+			usb_save_request(USBx, & pdev->request);
+			USBx->INTSTS0 = (uint16_t) ~ USB_INTSTS0_VALID;	// Clear VALID - in seq 1, 3 and 5
+		}
+		usbd_handle_ctrt(hpcd, (intsts0 & USB_INTSTS0_CTSQ) >> USB_INTSTS0_CTSQ_SHIFT);
 	}
 	if ((intsts0msk & USB_INTSTS0_DVST) != 0)	// DVSE
 	{
@@ -3463,6 +3473,7 @@ static USBD_StatusTypeDef USBD_CtlSendDataNecXXX(USBD_HandleTypeDef *pdev, const
 	USBx->DCPCTR = (USBx->DCPCTR & ~ USB_DCPCTR_PID) |
 		DEVDRV_USBF_PID_NAK * (1uL << USB_DCPCTR_PID_SHIFT) |	// PID 00: NAK
 		0;
+	(void) USBx->DCPCTR;
 
 	if (size <= USB_OTG_MAX_EP0_SIZE)
 	{
@@ -3491,6 +3502,7 @@ static USBD_StatusTypeDef USBD_CtlSendDataNecXXX(USBD_HandleTypeDef *pdev, const
 	USBx->DCPCTR = (USBx->DCPCTR & ~ USB_DCPCTR_PID) |
 		DEVDRV_USBF_PID_BUF * (1uL << USB_DCPCTR_PID_SHIFT) |	// PID 01: BUF response (depending on the buffer state)
 		0;
+	(void) USBx->DCPCTR;
 
 	return USBD_OK;
 }
