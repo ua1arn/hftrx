@@ -3322,7 +3322,7 @@ static void actions_seq2(
 
 void HAL_PCD_SetupStageCallback(PCD_HandleTypeDef *hpcd);
 
-static void usb0_function_save_request(USB_OTG_GlobalTypeDef * USBx, USBD_SetupReqTypedef *req)
+static void usb_save_request(USB_OTG_GlobalTypeDef * USBx, USBD_SetupReqTypedef *req)
 {
 	const uint_fast16_t usbreq = USBx->USBREQ;
 
@@ -3333,7 +3333,7 @@ static void usb0_function_save_request(USB_OTG_GlobalTypeDef * USBx, USBD_SetupR
 	req->wLength       = USBx->USBLENG; //(pdata [1] >> 16) & 0xFFFF;
 
 #if 0
-	PRINTF(PSTR("usb0_function_save_request: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"),
+	PRINTF(PSTR("usb_save_request: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"),
 		req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
 #endif
 }
@@ -3367,7 +3367,7 @@ static void usbd_handle_ctrt(PCD_HandleTypeDef *hpcd, uint_fast8_t ctsq)
 		// 1: Control read data stage
 		// seq1 OUT token -> seq2 -> seq0
 		USBx->INTSTS0 = (uint16_t) ~ USB_INTSTS0_VALID;	// Clear VALID - in seq 1, 3 and 5
-		usb0_function_save_request(USBx, & pdev->request);
+		usb_save_request(USBx, & pdev->request);
 
 		//actions_seq1(pdev, & pdev->request);	// USBD_XXX_Setup
         HAL_PCD_SetupStageCallback(hpcd);
@@ -3391,11 +3391,14 @@ static void usbd_handle_ctrt(PCD_HandleTypeDef *hpcd, uint_fast8_t ctsq)
 		// 3: Control write data stage
 		// seq3 IN token -> seq4 ->seq0
 		USBx->INTSTS0 = (uint16_t) ~ USB_INTSTS0_VALID;	// Clear VALID - in seq 1, 3 and 5
-		usb0_function_save_request(USBx, & pdev->request);
+		usb_save_request(USBx, & pdev->request);
 
 		//actions_seq3(pdev, & pdev->request);// USBD_XXX_Setup
         HAL_PCD_SetupStageCallback(hpcd);
-        dcp_acksend(pdev);	// ACK - читаем дальше
+
+        //dcp_acksend(pdev);	// ACK - читаем дальше
+        USBD_CtlSendStatus(pdev);
+
 		break;
 
 	case 4:
@@ -3415,10 +3418,13 @@ static void usbd_handle_ctrt(PCD_HandleTypeDef *hpcd, uint_fast8_t ctsq)
 		// 5: Control write (no data) status stage
 		// seq5 -> seq0
 		USBx->INTSTS0 = (uint16_t) ~ (1uL << USB_INTSTS0_VALID_SHIFT);	// Clear VALID - in seq 1, 3 and 5
-		usb0_function_save_request(USBx, & pdev->request);
+		usb_save_request(USBx, & pdev->request);
 
 		//actions_seq5(pdev, & pdev->request);// USBD_XXX_Setup
         HAL_PCD_SetupStageCallback(hpcd);
+
+        //dcp_acksend(pdev);	// ACK - читаем дальше
+        USBD_CtlSendStatus(pdev);
 
 		USBx->DCPCTR |= USB_DCPCTR_CCPL;	// CCPL
 		break;
