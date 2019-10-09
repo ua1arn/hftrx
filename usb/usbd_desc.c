@@ -776,7 +776,7 @@ static unsigned UAC2_TopologyIN48(
 {
 	unsigned n = 0;
 	const uint_fast8_t bCSourceID = TERMINAL_ID_CLKSOURCE_UACIN48; //bTerminalID + 3;
-	const uint_fast8_t FU_ID = TERMINAL_ID_FU_IN + offset * MAX_TERMINALS_IN_INTERFACE;
+	const uint_fast8_t FU_ID = TERMINAL_ID_FU2_IN + offset * MAX_TERMINALS_IN_INTERFACE;
 
 	n += UAC2_clock_source(fill, p + n, maxsize - n, bCSourceID);
 	if (WITHUSENOFU_IN48)
@@ -804,7 +804,7 @@ static unsigned UAC2_Topology_inout_IN48(
 {
 	unsigned n = 0;
 	const uint_fast8_t bCSourceID = TERMINAL_ID_CLKSOURCE_UACINOUT; //bTerminalID + 3;
-	const uint_fast8_t FU_ID = TERMINAL_ID_FU_IN + offset * MAX_TERMINALS_IN_INTERFACE;
+	const uint_fast8_t FU_ID = TERMINAL_ID_FU2_IN + offset * MAX_TERMINALS_IN_INTERFACE;
 
 	n += UAC2_clock_source(fill, p + n, maxsize - n, bCSourceID);
 	if (WITHUSENOFU_IN48)
@@ -835,7 +835,7 @@ static unsigned UAC2_Topology_inout_OUT48(
 {
 	unsigned n = 0;
 	const uint_fast8_t bCSourceID = TERMINAL_ID_CLKSOURCE_UACINOUT; //bTerminalID + 3;
-	const uint_fast8_t FU_ID = TERMINAL_ID_FU_OUT + offset * MAX_TERMINALS_IN_INTERFACE;
+	const uint_fast8_t FU_ID = TERMINAL_ID_FU2_OUT + offset * MAX_TERMINALS_IN_INTERFACE;
 
 	// already done in UAC2_Topology_inout_IN48
 	//n += UAC2_clock_source(fill, p + n, maxsize - n, bCSourceID);
@@ -867,7 +867,7 @@ static unsigned UAC2_TopologyIN48_INRTS(
 {
 	unsigned n = 0;
 	const uint_fast8_t bCSourceID = TERMINAL_ID_CLKSOURCE_UACIN48_UACINRTS; //bTerminalID + 3;
-	const uint_fast8_t FU_ID = TERMINAL_ID_FU_IN + offset * MAX_TERMINALS_IN_INTERFACE;
+	const uint_fast8_t FU_ID = TERMINAL_ID_FU2_IN + offset * MAX_TERMINALS_IN_INTERFACE;
 
 	n += UAC2_clock_source(fill, p + n, maxsize - n, bCSourceID);
 	if (WITHUSENOFU_IN48_INRTS)
@@ -898,7 +898,7 @@ static unsigned UAC2_TopologyOUT48(
 {
 	unsigned n = 0;
 	const uint_fast8_t bCSourceID = TERMINAL_ID_CLKSOURCE_UACOUT48; //bTerminalID + 3;
-	const uint_fast8_t FU_ID = TERMINAL_ID_FU_OUT + offset * MAX_TERMINALS_IN_INTERFACE;
+	const uint_fast8_t FU_ID = TERMINAL_ID_FU2_OUT + offset * MAX_TERMINALS_IN_INTERFACE;
 
 	n += UAC2_clock_source(fill, p + n, maxsize - n, bCSourceID);
 	if (WITHUSENOFU_OUT48)
@@ -927,7 +927,7 @@ static unsigned UAC2_TopologyINRTS(
 {
 	unsigned n = 0;
 	const uint_fast8_t bCSourceID = TERMINAL_ID_CLKSOURCE_UACINRTS; //bTerminalID + 3;
-	const uint_fast8_t FU_ID = TERMINAL_ID_FU_IN + offset * MAX_TERMINALS_IN_INTERFACE;
+	const uint_fast8_t FU_ID = TERMINAL_ID_FU2_IN + offset * MAX_TERMINALS_IN_INTERFACE;
 
 	n += UAC2_clock_source(fill, p + n, maxsize - n, bCSourceID);
 	if (WITHUSENOFU_INRTS)
@@ -1971,7 +1971,7 @@ static unsigned UAC1_TopologyIN48(
 	)
 {
 	unsigned n = 0;
-	const uint_fast8_t FU_ID = TERMINAL_ID_FU_IN + offset * MAX_TERMINALS_IN_INTERFACE;
+	const uint_fast8_t FU_ID = TERMINAL_ID_FU1_IN + offset * MAX_TERMINALS_IN_INTERFACE;
 
 	if (WITHUSENOFU_IN48)
 	{
@@ -2001,7 +2001,7 @@ static unsigned UAC1_TopologyIN48_INRTS(
 	)
 {
 	unsigned n = 0;
-	const uint_fast8_t FU_ID = TERMINAL_ID_FU_IN + offset * MAX_TERMINALS_IN_INTERFACE;
+	const uint_fast8_t FU_ID = TERMINAL_ID_FU1_IN + offset * MAX_TERMINALS_IN_INTERFACE;
 
 	if (WITHUSENOFU_IN48_INRTS)
 	{
@@ -2030,7 +2030,7 @@ static unsigned UAC1_TopologyOUT48(
 	)
 {
 	unsigned n = 0;
-	const uint_fast8_t FU_ID = TERMINAL_ID_FU_OUT + offset * MAX_TERMINALS_IN_INTERFACE;
+	const uint_fast8_t FU_ID = TERMINAL_ID_FU1_OUT + offset * MAX_TERMINALS_IN_INTERFACE;
 
 	if (WITHUSENOFU_OUT48)
 	{
@@ -2057,7 +2057,7 @@ static unsigned UAC1_TopologyINRTS(
 	)
 {
 	unsigned n = 0;
-	const uint_fast8_t FU_ID = TERMINAL_ID_FU_IN + offset * MAX_TERMINALS_IN_INTERFACE;
+	const uint_fast8_t FU_ID = TERMINAL_ID_FU1_IN + offset * MAX_TERMINALS_IN_INTERFACE;
 
 	if (WITHUSENOFU_INRTS)
 	{
