@@ -3379,13 +3379,7 @@ static void usbd_handle_ctrt(PCD_HandleTypeDef *hpcd, uint_fast8_t ctsq)
 		// seq3 IN token -> seq4 ->seq0
 		USBx->INTSTS0 = (uint16_t) ~ USB_INTSTS0_VALID;	// Clear VALID - in seq 1, 3 and 5
 		usb_save_request(USBx, & pdev->request);
-
-		//actions_seq3(pdev, & pdev->request);// USBD_XXX_Setup
         HAL_PCD_SetupStageCallback(hpcd);
-
-        //dcp_acksend(pdev);	// ACK - читаем дальше
-        USBD_CtlSendStatus(pdev);
-
 		break;
 
 	case 4:
@@ -3410,8 +3404,7 @@ static void usbd_handle_ctrt(PCD_HandleTypeDef *hpcd, uint_fast8_t ctsq)
 		//actions_seq5(pdev, & pdev->request);// USBD_XXX_Setup
         HAL_PCD_SetupStageCallback(hpcd);
 
-        //dcp_acksend(pdev);	// ACK - читаем дальше
-        USBD_CtlSendStatus(pdev);
+        ////USBD_CtlSendStatus(pdev);	// ACK - не нужно. ACK или ошибкой должно закончиться выполнение HAL_PCD_SetupStageCallback
 
 		USBx->DCPCTR |= USB_DCPCTR_CCPL;	// CCPL
 		break;
@@ -8612,7 +8605,7 @@ static USBD_StatusTypeDef USBD_XXX_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 	static USBALIGN_BEGIN uint8_t buff [32] USBALIGN_END;	// was: 7
 	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
 
-	//PRINTF(PSTR("USBD_ClassXXX_Setup: bRequest=%02X, wIndex=%04X, wLength=%04X, wValue=%04X (interfacev=%02X)\n"), req->bRequest, req->wIndex, req->wLength, req->wValue, interfacev);
+	PRINTF(PSTR("USBD_ClassXXX_Setup: bRequest=%02X, wIndex=%04X, wLength=%04X, wValue=%04X (interfacev=%02X)\n"), req->bRequest, req->wIndex, req->wLength, req->wValue, interfacev);
 	unsigned len = 0;
 	if ((req->bmRequest & USB_REQ_TYPE_DIR) != 0)
 	{
@@ -8999,7 +8992,7 @@ static USBD_StatusTypeDef USBD_XXX_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 			switch (req->bRequest)
 			{
 			case USB_REQ_SET_INTERFACE :
-				//PRINTF(PSTR("USBD_ClassXXX_Setup: USB_REQ_TYPE_STANDARD USB_REQ_SET_INTERFACE interfacev=%d, value=%d\n"), interfacev, LO_BYTE(req->wValue));
+				PRINTF(PSTR("USBD_ClassXXX_Setup: USB_REQ_TYPE_STANDARD USB_REQ_SET_INTERFACE interfacev=%d, value=%d\n"), interfacev, LO_BYTE(req->wValue));
 				if (interfacev < INTERFACE_count)
 					altinterfaces [interfacev] = LO_BYTE(req->wValue);
 				switch (interfacev)
@@ -9167,7 +9160,7 @@ static USBD_StatusTypeDef USBD_XXX_EP0_RxReady(USBD_HandleTypeDef *pdev)
 
 	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
 
-	//PRINTF(PSTR("1 USBD_XXX_EP0_RxReady: interfacev=%u: bRequest=%u, wLength=%u\n"), interfacev, req->bRequest, req->wLength);
+	PRINTF(PSTR("1 USBD_XXX_EP0_RxReady: interfacev=%u: bRequest=%u, wLength=%u\n"), interfacev, req->bRequest, req->wLength);
 	switch (interfacev)
 	{
 	default:
@@ -9343,12 +9336,10 @@ static USBD_StatusTypeDef USBD_XXX_DataOut(USBD_HandleTypeDef *pdev, uint_fast8_
 */
 USBD_StatusTypeDef  USBD_StdItfReq(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef  *req)
 {
-	//PRINTF(PSTR("USBD_StdItfReq: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"),
-	//	req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
+	//PRINTF(PSTR("USBD_StdItfReq: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
 
 	USBD_StatusTypeDef ret = USBD_OK;
 
-	//PRINTF(PSTR("USBD_StdItfReq: interfacev=%d\n"), interfacev);
 	switch (pdev->dev_state)
 	{
 	case USBD_STATE_CONFIGURED:
@@ -9358,13 +9349,30 @@ USBD_StatusTypeDef  USBD_StdItfReq(USBD_HandleTypeDef *pdev, USBD_SetupReqTypede
 			{
 				ret = pdev->pClasses [di]->Setup(pdev, req);
 				if (ret != USBD_OK)
+				{
+					TP();
 					break;
+				}
 			}
-
+#if CPUSTYLE_R7S721
+			if ((ret == USBD_OK))
+			{
+				USBD_CtlSendStatus(pdev);
+			}
+			else
+			{
+				TP();
+			}
+#else /* CPUSTYLE_R7S721 */
 			if ((req->wLength == 0) && (ret == USBD_OK))
 			{
 				USBD_CtlSendStatus(pdev);
 			}
+			else
+			{
+				TP();
+			}
+#endif /* CPUSTYLE_R7S721 */
 		}
 		break;
 
@@ -9385,8 +9393,7 @@ USBD_StatusTypeDef  USBD_StdItfReq(USBD_HandleTypeDef *pdev, USBD_SetupReqTypede
 */
 USBD_StatusTypeDef  USBD_StdEPReq(USBD_HandleTypeDef * pdev, USBD_SetupReqTypedef * req)
 {
-	//PRINTF(PSTR("USBD_StdEPReq: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"),
-	//	req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
+	//PRINTF(PSTR("USBD_StdEPReq: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
 	uint8_t   ep_addr;
 	USBD_StatusTypeDef ret = USBD_OK;
 	USBD_EndpointTypeDef   *pep;
@@ -9671,7 +9678,7 @@ static void USBD_GetDescriptor(USBD_HandleTypeDef *pdev,
 static void USBD_SetAddress(USBD_HandleTypeDef *pdev,
                             const USBD_SetupReqTypedef *req)
 {
-	PRINTF(PSTR("USBD_SetAddress 0x%02X:\n"), LO_BYTE(req->wValue) & 0x7F);
+	//PRINTF(PSTR("USBD_SetAddress 0x%02X:\n"), LO_BYTE(req->wValue) & 0x7F);
 
 	if ((req->wIndex == 0) && (req->wLength == 0))
 	{
@@ -9968,15 +9975,14 @@ static void USBD_ClrFeature(USBD_HandleTypeDef *pdev,
 */
 USBD_StatusTypeDef  USBD_StdDevReq(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef  *req)
 {
-	//PRINTF(PSTR("USBD_StdDevReq: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"),
-	//	req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
+	//PRINTF(PSTR("USBD_StdDevReq: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
 	//PRINTF(PSTR("USBD_StdDevReq: req->bRequest=%d\n"), (int) req->bRequest);
 	USBD_StatusTypeDef ret = USBD_OK;
 
 	switch (req->bRequest)
 	{
 	case USB_REQ_GET_DESCRIPTOR:
-		USBD_GetDescriptor(pdev, req) ;
+		USBD_GetDescriptor(pdev, req);
 		break;
 
 	case USB_REQ_SET_ADDRESS:
@@ -10074,7 +10080,7 @@ USBD_StatusTypeDef USBD_LL_SetupStage(USBD_HandleTypeDef *pdev, const uint32_t *
 */
 USBD_StatusTypeDef USBD_LL_DataOutStage(USBD_HandleTypeDef *pdev, uint_fast8_t epnum, uint8_t *pdata)
 {
-	//PRINTF(PSTR("USBD_LL_DataOutStage:\n"));
+	PRINTF(PSTR("USBD_LL_DataOutStage:\n"));
 
 	if (epnum == 0)
 	{
@@ -13920,7 +13926,7 @@ static const USBD_ClassTypeDef USBD_CLASS_XXX =
 	USBD_XXX_DeInit,	// DeInit
 	USBD_XXX_Setup,		// Setup
 	NULL,	//USBD_XXX_EP0_TxSent,	// EP0_TxSent
-	USBD_XXX_EP0_RxReady,	//USBD_XXX_EP0_RxReady,	// RxReady
+	USBD_XXX_EP0_RxReady,	//USBD_XXX_EP0_RxReady,	// EP0_RxReady
 	USBD_XXX_DataIn,	// DataIn
 	USBD_XXX_DataOut,	// DataOut
 	NULL,	//USBD_XXX_SOF,	// SOF
