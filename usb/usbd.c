@@ -2685,18 +2685,12 @@ static void usb0_function_SetDescriptor(USBD_HandleTypeDef *pdev, const USBD_Set
 static void usb0_function_ClearFeature(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req)
 {
 	//PRINTF(PSTR("usb0_function_ClearFeature: ReqTypeRecip=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
-#if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32F4XX
-	dcp_acksend(pdev);
-#endif /* CPUSTYLE_STM32F7XX | CPUSTYLE_STM32F4XX */
 }
 
 /* Control Write No Data Status Stage seq= 5 */
 static void usb0_function_SetFeature(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req)
 {
 	//PRINTF(PSTR("usb0_function_SetFeature: ReqTypeRecip=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
-#if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32F4XX
-	dcp_acksend(pdev);
-#endif /* CPUSTYLE_STM32F7XX | CPUSTYLE_STM32F4XX */
 }
 
 /* Control Write No Data Status Stage seq= 5 */
@@ -2706,13 +2700,6 @@ static void usb0_function_SetAddress(USBD_HandleTypeDef *pdev, const USBD_SetupR
   //PRINTF(PSTR("usb0_function_SetAddress: ReqTypeRecip=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqTypeRecip, ReqValue, ReqIndex, ReqLength);
 	// wValue = device address
 	PRINTF(PSTR("SetAddress: address=0x%02lx\n"), LO_BYTE(req->wValue));
-#if 0//CPUSTYLE_STM32H7XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32F4XX
-	USBx_DEVICE->DCFG = (USBx_DEVICE->DCFG & ~ (USB_OTG_DCFG_DAD)) |
-		LO_BYTE(req->wValue) * USB_OTG_DCFG_DAD_0 |
-		0;
-	//USBD_CtlSendData(pdev, NULL, 0);
-	dcp_acksend(pdev);
-#endif /* CPUSTYLE_STM32F7XX | CPUSTYLE_STM32F4XX */
 }
 
 
