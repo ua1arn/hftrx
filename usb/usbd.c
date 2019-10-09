@@ -2374,7 +2374,7 @@ static void usbd_handle_ctrt(PCD_HandleTypeDef *hpcd, uint_fast8_t ctsq)
 		// seq1 OUT token -> seq2 -> seq0
 		////USBx->INTSTS0 = (uint16_t) ~ USB_INTSTS0_VALID;	// Clear VALID - in seq 1, 3 and 5
 		////usb_save_request(USBx, & pdev->request);
-        HAL_PCD_SetupStageCallback(hpcd);
+        //HAL_PCD_SetupStageCallback(hpcd);
 		break;
 
 	case 2:
@@ -2396,7 +2396,7 @@ static void usbd_handle_ctrt(PCD_HandleTypeDef *hpcd, uint_fast8_t ctsq)
 		// seq3 IN token -> seq4 ->seq0
 		////USBx->INTSTS0 = (uint16_t) ~ USB_INTSTS0_VALID;	// Clear VALID - in seq 1, 3 and 5
 		////usb_save_request(USBx, & pdev->request);
-        HAL_PCD_SetupStageCallback(hpcd);
+        //HAL_PCD_SetupStageCallback(hpcd);
 		break;
 
 	case 4:
@@ -2417,7 +2417,7 @@ static void usbd_handle_ctrt(PCD_HandleTypeDef *hpcd, uint_fast8_t ctsq)
 		// seq5 -> seq0
 		////USBx->INTSTS0 = (uint16_t) ~ (1uL << USB_INTSTS0_VALID_SHIFT);	// Clear VALID - in seq 1, 3 and 5
 		////usb_save_request(USBx, & pdev->request);
-		HAL_PCD_SetupStageCallback(hpcd);
+		//HAL_PCD_SetupStageCallback(hpcd);
 		USBx->DCPCTR |= USB_DCPCTR_CCPL;	// CCPL
 		(void) USBx->DCPCTR;
 		break;
@@ -3001,6 +3001,7 @@ static void r7s721_usbdevice_handler(PCD_HandleTypeDef *hpcd)
 		{
 			usb_save_request(USBx, & pdev->request);
 			USBx->INTSTS0 = (uint16_t) ~ USB_INTSTS0_VALID;	// Clear VALID - in seq 1, 3 and 5
+	        HAL_PCD_SetupStageCallback(hpcd);
 		}
 		usbd_handle_ctrt(hpcd, (intsts0 & USB_INTSTS0_CTSQ) >> USB_INTSTS0_CTSQ_SHIFT);
 	}
