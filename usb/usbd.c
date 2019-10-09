@@ -2070,12 +2070,12 @@ static unsigned USBD_UAC2_FeatureUnit_req(
 	case 0x01:	// CURR
 		switch (terminalID)
 		{
-		case TERMINAL_ID_FU_IN + 0 * MAX_TERMINALS_IN_INTERFACE:
-		case TERMINAL_ID_FU_IN + 1 * MAX_TERMINALS_IN_INTERFACE:
-		case TERMINAL_ID_FU_IN + 2 * MAX_TERMINALS_IN_INTERFACE:
-		case TERMINAL_ID_FU_OUT + 0 * MAX_TERMINALS_IN_INTERFACE:
-		case TERMINAL_ID_FU_OUT + 1 * MAX_TERMINALS_IN_INTERFACE:
-		case TERMINAL_ID_FU_OUT + 2 * MAX_TERMINALS_IN_INTERFACE:
+		case TERMINAL_ID_FU2_IN + 0 * MAX_TERMINALS_IN_INTERFACE:
+		case TERMINAL_ID_FU2_IN + 1 * MAX_TERMINALS_IN_INTERFACE:
+		case TERMINAL_ID_FU2_IN + 2 * MAX_TERMINALS_IN_INTERFACE:
+		case TERMINAL_ID_FU2_OUT + 0 * MAX_TERMINALS_IN_INTERFACE:
+		case TERMINAL_ID_FU2_OUT + 1 * MAX_TERMINALS_IN_INTERFACE:
+		case TERMINAL_ID_FU2_OUT + 2 * MAX_TERMINALS_IN_INTERFACE:
 			switch (controlID)
 			{
 			case 1:
@@ -2093,12 +2093,12 @@ static unsigned USBD_UAC2_FeatureUnit_req(
 	case 0x02:	// RANGE
 		switch (terminalID)
 		{
-		case TERMINAL_ID_FU_IN + 0 * MAX_TERMINALS_IN_INTERFACE:
-		case TERMINAL_ID_FU_IN + 1 * MAX_TERMINALS_IN_INTERFACE:
-		case TERMINAL_ID_FU_IN + 2 * MAX_TERMINALS_IN_INTERFACE:
-		case TERMINAL_ID_FU_OUT + 0 * MAX_TERMINALS_IN_INTERFACE:
-		case TERMINAL_ID_FU_OUT + 1 * MAX_TERMINALS_IN_INTERFACE:
-		case TERMINAL_ID_FU_OUT + 2 * MAX_TERMINALS_IN_INTERFACE:
+		case TERMINAL_ID_FU2_IN + 0 * MAX_TERMINALS_IN_INTERFACE:
+		case TERMINAL_ID_FU2_IN + 1 * MAX_TERMINALS_IN_INTERFACE:
+		case TERMINAL_ID_FU2_IN + 2 * MAX_TERMINALS_IN_INTERFACE:
+		case TERMINAL_ID_FU2_OUT + 0 * MAX_TERMINALS_IN_INTERFACE:
+		case TERMINAL_ID_FU2_OUT + 1 * MAX_TERMINALS_IN_INTERFACE:
+		case TERMINAL_ID_FU2_OUT + 2 * MAX_TERMINALS_IN_INTERFACE:
 			switch (controlID)
 			{
 			case 1:
@@ -2336,6 +2336,7 @@ static void control_stall(USBD_HandleTypeDef *pdev)
 		//1 * (1uL << USB_DCPCTR_PID_SHIFT) |	// PID 01: BUF response (depending on the buffer state)
 		DEVDRV_USBF_PID_STALL * (1uL << USB_DCPCTR_PID_SHIFT) |	// PID 02: STALL response
 		0;
+	(void) USBx->DCPCTR;
 }
 
 static uint_fast8_t
@@ -2387,6 +2388,7 @@ static USBD_StatusTypeDef USBD_CtlSendDataNec(USBD_HandleTypeDef *pdev, const ui
 	USBx->DCPCTR = (USBx->DCPCTR & ~ USB_DCPCTR_PID) |
 		DEVDRV_USBF_PID_NAK * (1uL << USB_DCPCTR_PID_SHIFT) |	// PID 00: NAK
 		0;
+	(void) USBx->DCPCTR;
 
 	if (size <= USB_OTG_MAX_EP0_SIZE)
 	{
@@ -2415,6 +2417,7 @@ static USBD_StatusTypeDef USBD_CtlSendDataNec(USBD_HandleTypeDef *pdev, const ui
 	USBx->DCPCTR = (USBx->DCPCTR & ~ USB_DCPCTR_PID) |
 		DEVDRV_USBF_PID_BUF * (1uL << USB_DCPCTR_PID_SHIFT) |	// PID 01: BUF response (depending on the buffer state)
 		0;
+	(void) USBx->DCPCTR;
 
 	return USBD_OK;
 }
@@ -2437,6 +2440,7 @@ static void dcp_acksend(USBD_HandleTypeDef *pdev)
 	Instance->DCPCTR = (Instance->DCPCTR & ~ USB_DCPCTR_PID) |
 		0x01 * MASK2LSB(USB_DCPCTR_PID) |	// PID 01: BUF response (depending on the buffer state)
 		0;
+	(void) Instance->DCPCTR;
 
 }
 
@@ -2453,6 +2457,7 @@ static void nak_ep0(USBD_HandleTypeDef *pdev)
 			//1 * (1uL << USB_DCPCTR_CCPL_SHIFT) |	// CCPL - Не имеет значения в моих тестах
 			DEVDRV_USBF_PID_NAK * (1uL << USB_DCPCTR_PID_SHIFT) |	// PID 00: NAK response
 			0;
+		(void) USBx->DCPCTR;
 	}
 
 	const uint_fast8_t pipe = 0;	// DCP
@@ -2472,6 +2477,7 @@ static void nak_ep0(USBD_HandleTypeDef *pdev)
 		//1 * (1uL << 0) |	// PID 01: BUF response (depending on the buffer state)
 		//2 * (1uL << 0) |	// PID 02: STALL response
 		0;
+	(void) USBx->DCPCTR;
 }
 
 // STALL
@@ -2498,6 +2504,7 @@ static void stall_ep0(USBD_HandleTypeDef *pdev)
 		//1 * (1uL << 0) |	// PID 01: BUF response (depending on the buffer state)
 		DEVDRV_USBF_PID_STALL * (1uL << USB_DCPCTR_PID_SHIFT) |	// PID 02: STALL response
 		0;
+	(void) USBx->DCPCTR;
 
 }
 
@@ -2652,9 +2659,11 @@ usbd_handler_nrdy(USBD_HandleTypeDef *pdev, uint_fast8_t pipe)
 			Instance->DCPCTR = (Instance->DCPCTR & ~ USB_DCPCTR_PID) |
 				DEVDRV_USBF_PID_NAK * (1uL << USB_DCPCTR_PID_SHIFT) |	// PID 00: NAK
 				0;
+			(void) Instance->DCPCTR;
 			Instance->DCPCTR = (Instance->DCPCTR & ~ USB_DCPCTR_PID) |
 				DEVDRV_USBF_PID_BUF * (1uL << USB_DCPCTR_PID_SHIFT) |	// PID 01: BUF response (depending on the buffer state)
 				0;
+			(void) Instance->DCPCTR;
 		}
 		else
 		{
@@ -2663,9 +2672,11 @@ usbd_handler_nrdy(USBD_HandleTypeDef *pdev, uint_fast8_t pipe)
 			* PIPEnCTR = (* PIPEnCTR & ~ USB_PIPEnCTR_1_5_PID) |
 				DEVDRV_USBF_PID_NAK * (1uL << USB_PIPEnCTR_1_5_PID_SHIFT) |	// PID 00: NAK
 				0;
+			(void) * PIPEnCTR;
 			* PIPEnCTR = (* PIPEnCTR & ~ USB_PIPEnCTR_1_5_PID) |
 				DEVDRV_USBF_PID_BUF * (1uL << USB_PIPEnCTR_1_5_PID_SHIFT) |	// PID 01: BUF response (depending on the buffer state)
 				0;
+			(void) * PIPEnCTR;
 		}
 	}
 	(void) pid;
@@ -3346,12 +3357,12 @@ static void usbdFunctionReq_seq1(USBD_HandleTypeDef *pdev, const USBD_SetupReqTy
 						len = USBD_UAC2_ClockSource_req(req, buff);
 						break;
 
-					case TERMINAL_ID_FU_IN + 0 * MAX_TERMINALS_IN_INTERFACE:
-					case TERMINAL_ID_FU_IN + 1 * MAX_TERMINALS_IN_INTERFACE:
-					case TERMINAL_ID_FU_IN + 2 * MAX_TERMINALS_IN_INTERFACE:
-					case TERMINAL_ID_FU_OUT + 0 * MAX_TERMINALS_IN_INTERFACE:
-					case TERMINAL_ID_FU_OUT + 1 * MAX_TERMINALS_IN_INTERFACE:
-					case TERMINAL_ID_FU_OUT + 2 * MAX_TERMINALS_IN_INTERFACE:
+					case TERMINAL_ID_FU2_IN + 0 * MAX_TERMINALS_IN_INTERFACE:
+					case TERMINAL_ID_FU2_IN + 1 * MAX_TERMINALS_IN_INTERFACE:
+					case TERMINAL_ID_FU2_IN + 2 * MAX_TERMINALS_IN_INTERFACE:
+					case TERMINAL_ID_FU2_OUT + 0 * MAX_TERMINALS_IN_INTERFACE:
+					case TERMINAL_ID_FU2_OUT + 1 * MAX_TERMINALS_IN_INTERFACE:
+					case TERMINAL_ID_FU2_OUT + 2 * MAX_TERMINALS_IN_INTERFACE:
 						len = USBD_UAC2_FeatureUnit_req(req, buff);
 						break;
 					}
@@ -3847,32 +3858,22 @@ static void actions_seq4(
 
 void HAL_PCD_SetupStageCallback(PCD_HandleTypeDef *hpcd);
 
-static void usb0_function_save_request(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef *req)
+static void usb_save_request(USB_OTG_GlobalTypeDef * const USBx, USBD_SetupReqTypedef *req)
 {
 #if CPUSTYLE_R7S721
-	USB_OTG_GlobalTypeDef * const Instance = ((PCD_HandleTypeDef *) pdev->pData)->Instance;
-
-	const uint_fast16_t usbreq = Instance->USBREQ;
-
+	const uint_fast16_t usbreq = USBx->USBREQ;
 
 	req->bmRequest     = LO_BYTE(usbreq & USB_FUNCTION_bmRequestType); //(pdata [0] >> 0) & 0x00FF;
 	req->bRequest      = HI_BYTE(usbreq & USB_FUNCTION_bRequest); //(pdata [0] >> 8) & 0x00FF;
-	req->wValue        = Instance->USBVAL; //(pdata [0] >> 16) & 0xFFFF;
-	req->wIndex        = Instance->USBINDX; //(pdata [1] >> 0) & 0xFFFF;
-	req->wLength       = Instance->USBLENG; //(pdata [1] >> 16) & 0xFFFF;
+	req->wValue        = USBx->USBVAL; //(pdata [0] >> 16) & 0xFFFF;
+	req->wIndex        = USBx->USBINDX; //(pdata [1] >> 0) & 0xFFFF;
+	req->wLength       = USBx->USBLENG; //(pdata [1] >> 16) & 0xFFFF;
 
 #endif
 
 #if 0
 	PRINTF(PSTR("USBD_ParseSetupRequest: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"),
 		req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
-#endif
-
-#if 0
-	PRINTF(
-		PSTR("ReqType=%02X, ReqTypeType=%02X, ReqTypeRecip=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"),
-		gReqType, gReqTypeType, gReqTypeRecip, gReqRequest, gReqValue, gReqIndex, gReqLength
-		);
 #endif
 }
 
@@ -3903,9 +3904,6 @@ static void usbd_handle_ctrt(USBD_HandleTypeDef *pdev, uint_fast8_t ctsq)
 		//PRINTF(PSTR("actions_seq1\n"));
 		// 1: Control read data stage
 		// seq1 OUT token -> seq2 -> seq0
-		Instance->INTSTS0 = (uint16_t) ~ (1uL << USB_INTSTS0_VALID_SHIFT);	// Clear VALID - in seq 1, 3 and 5
-		usb0_function_save_request(pdev, & pdev->request);
-
 		actions_seq1(pdev, & pdev->request);	// USBD_XXX_Setup
         //HAL_PCD_SetupStageCallback((PCD_HandleTypeDef *) pdev->pData);
 
@@ -3918,14 +3916,13 @@ static void usbd_handle_ctrt(USBD_HandleTypeDef *pdev, uint_fast8_t ctsq)
 		// после - usbdFunctionReq_seq1 - напимер после запроса GET_LINE_CODING
 
 		Instance->DCPCTR |= 1 * (1uL << USB_DCPCTR_CCPL_SHIFT);	// CCPL
+		(void) Instance->DCPCTR;
 		break;
 
 	case 3:
 		//PRINTF(PSTR("actions_seq3\n"));
 		// 3: Control write data stage
 		// seq3 IN token -> seq4 ->seq0
-		Instance->INTSTS0 = (uint16_t) ~ (1uL << USB_INTSTS0_VALID_SHIFT);	// Clear VALID - in seq 1, 3 and 5
-		usb0_function_save_request(pdev, & pdev->request);
 
 		actions_seq3(pdev, & pdev->request);// USBD_XXX_Setup
         //HAL_PCD_SetupStageCallback((PCD_HandleTypeDef *) pdev->pData);
@@ -3934,23 +3931,24 @@ static void usbd_handle_ctrt(USBD_HandleTypeDef *pdev, uint_fast8_t ctsq)
 	case 4:
 		//PRINTF(PSTR("actions_seq4\n"));
 		// 4: Control write status stage
+
 		actions_seq4(pdev, & pdev->request);
 		// после usbd_handler_brdy8_dcp_out
 
 		Instance->DCPCTR |= 1 * (1uL << USB_DCPCTR_CCPL_SHIFT);	// CCPL
+		(void) Instance->DCPCTR;
 		break;
 
 	case 5:
 		//PRINTF(PSTR("actions_seq5\n"));
 		// 5: Control write (no data) status stage
 		// seq5 -> seq0
-		Instance->INTSTS0 = (uint16_t) ~ (1uL << USB_INTSTS0_VALID_SHIFT);	// Clear VALID - in seq 1, 3 and 5
-		usb0_function_save_request(pdev, & pdev->request);
 
 		actions_seq5(pdev, & pdev->request);// USBD_XXX_Setup
         //HAL_PCD_SetupStageCallback((PCD_HandleTypeDef *) pdev->pData);
 
 		Instance->DCPCTR |= 1 * (1uL << USB_DCPCTR_CCPL_SHIFT);	// CCPL
+		(void) Instance->DCPCTR;
 		break;
 
 	case 6:
@@ -4608,8 +4606,15 @@ static void r7s721_usbdevice_handler(PCD_HandleTypeDef *hhcd)
 	{
 		//PRINTF(PSTR("r7s721_usbdevice_handler trapped - CTRT, CTSQ=%d\n"), (intsts0 >> 0) & 0x07);
 		USBx->INTSTS0 = (uint16_t) ~ (1uL << USB_INTSTS0_CTRT_SHIFT);	// Clear CTRT
+		if ((intsts0 & USB_INTSTS0_VALID) != 0)
+		{
+			// Setup syage detectd
+			usb_save_request(USBx, & pdev->request);
+			USBx->INTSTS0 = (uint16_t) ~ USB_INTSTS0_VALID;	// Clear VALID - in seq 1, 3 and 5
+			//ASSERT(ctsq == 1 || ctsq == 3 || ctsq == 5);
+		}
 
-		usbd_handle_ctrt(pdev, intsts0 & USB_INTSTS0_CTSQ);
+		usbd_handle_ctrt(pdev, (intsts0 & USB_INTSTS0_CTSQ) >> USB_INTSTS0_CTSQ_SHIFT);
 	}
 	if ((intsts0msk & (1uL << USB_INTSTS0_DVST_SHIFT)) != 0)	// DVSE
 	{
@@ -4980,6 +4985,7 @@ HAL_StatusTypeDef USB_EP0StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDe
 		USBx->DCPCTR = (USBx->DCPCTR & ~ USB_DCPCTR_PID) |
 			DEVDRV_USBF_PID_NAK * (1uL << USB_DCPCTR_PID_SHIFT) |	// PID 00: NAK
 			0;
+		(void) USBx->DCPCTR;
 
 		/* IN endpoint */
 		if (ep->xfer_len == 0)
@@ -8631,7 +8637,8 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 
 static void USBD_ParseSetupRequest(USBD_SetupReqTypedef *req, const uint32_t * pdata)
 {
-	req->bmRequest     = (pdata [0] >> 0) & 0x00FF;
+#if CPUSTYLE_STM32
+	req->bmRequest     = (pdata [0] >> 0) & 0x00FF;	// bmRequestType
 	req->bRequest      = (pdata [0] >> 8) & 0x00FF;
 	req->wValue        = (pdata [0] >> 16) & 0xFFFF;
 	req->wIndex        = (pdata [1] >> 0) & 0xFFFF;
@@ -8640,6 +8647,7 @@ static void USBD_ParseSetupRequest(USBD_SetupReqTypedef *req, const uint32_t * p
 	PRINTF(PSTR("USBD_ParseSetupRequest: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"),
 		req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
 #endif
+#endif /* CPUSTYLE_STM32 */
 }
 
 
@@ -9366,12 +9374,12 @@ static USBD_StatusTypeDef USBD_XXX_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 							len = USBD_UAC2_ClockSource_req(req, buff);
 							break;
 
-						case TERMINAL_ID_FU_IN + 0 * MAX_TERMINALS_IN_INTERFACE:
-						case TERMINAL_ID_FU_IN + 1 * MAX_TERMINALS_IN_INTERFACE:
-						case TERMINAL_ID_FU_IN + 2 * MAX_TERMINALS_IN_INTERFACE:
-						case TERMINAL_ID_FU_OUT + 0 * MAX_TERMINALS_IN_INTERFACE:
-						case TERMINAL_ID_FU_OUT + 1 * MAX_TERMINALS_IN_INTERFACE:
-						case TERMINAL_ID_FU_OUT + 2 * MAX_TERMINALS_IN_INTERFACE:
+						case TERMINAL_ID_FU2_IN + 0 * MAX_TERMINALS_IN_INTERFACE:
+						case TERMINAL_ID_FU2_IN + 1 * MAX_TERMINALS_IN_INTERFACE:
+						case TERMINAL_ID_FU2_IN + 2 * MAX_TERMINALS_IN_INTERFACE:
+						case TERMINAL_ID_FU2_OUT + 0 * MAX_TERMINALS_IN_INTERFACE:
+						case TERMINAL_ID_FU2_OUT + 1 * MAX_TERMINALS_IN_INTERFACE:
+						case TERMINAL_ID_FU2_OUT + 2 * MAX_TERMINALS_IN_INTERFACE:
 							len = USBD_UAC2_FeatureUnit_req(req, buff);
 							break;
 						}
