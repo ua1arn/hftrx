@@ -2372,10 +2372,7 @@ static void usbd_handle_ctrt(PCD_HandleTypeDef *hpcd, uint_fast8_t ctsq)
 		// seq1 OUT token -> seq2 -> seq0
 		USBx->INTSTS0 = (uint16_t) ~ USB_INTSTS0_VALID;	// Clear VALID - in seq 1, 3 and 5
 		usb_save_request(USBx, & pdev->request);
-
-		//actions_seq1(pdev, & pdev->request);	// USBD_XXX_Setup
         HAL_PCD_SetupStageCallback(hpcd);
-
 		break;
 
 	case 2:
@@ -2407,7 +2404,6 @@ static void usbd_handle_ctrt(PCD_HandleTypeDef *hpcd, uint_fast8_t ctsq)
 		// Set Line Coding here
 		// xxx_EP0_RxReady
         HAL_PCD_DataOutStageCallback(hpcd, 0);
-
 		USBx->DCPCTR |= USB_DCPCTR_CCPL;	// CCPL
 		break;
 
@@ -2417,12 +2413,7 @@ static void usbd_handle_ctrt(PCD_HandleTypeDef *hpcd, uint_fast8_t ctsq)
 		// seq5 -> seq0
 		USBx->INTSTS0 = (uint16_t) ~ (1uL << USB_INTSTS0_VALID_SHIFT);	// Clear VALID - in seq 1, 3 and 5
 		usb_save_request(USBx, & pdev->request);
-
-		//actions_seq5(pdev, & pdev->request);// USBD_XXX_Setup
-        HAL_PCD_SetupStageCallback(hpcd);
-
-        ////USBD_CtlSendStatus(pdev);	// ACK - не нужно. ACK или ошибкой должно закончиться выполнение HAL_PCD_SetupStageCallback
-
+		HAL_PCD_SetupStageCallback(hpcd);
 		USBx->DCPCTR |= USB_DCPCTR_CCPL;	// CCPL
 		break;
 
@@ -2824,7 +2815,7 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 static void usbd_handle_resume(PCD_TypeDef * const USBx)
 {
 	//PRINTF(PSTR("usbd_handle_resume\n"));
-	usbd_pipes_enable(Instance);
+	usbd_pipes_enable(USBx);
 
 	memset(altinterfaces, 0, sizeof altinterfaces);
 #if WITHUSBCDC
@@ -2847,7 +2838,7 @@ static void usbd_handle_resume(PCD_TypeDef * const USBx)
 static void usbd_handle_suspend(PCD_TypeDef * const USBx)
 {
 	//PRINTF(PSTR("usbd_handle_suspend\n"));
-	usbd_pipes_disable(Instance);
+	usbd_pipes_disable(USBx);
 
 	memset(altinterfaces, 0, sizeof altinterfaces);
 #if WITHUSBCDC
@@ -7887,7 +7878,7 @@ static USBD_StatusTypeDef USBD_XXX_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 	static USBALIGN_BEGIN uint8_t buff [32] USBALIGN_END;	// was: 7
 	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
 
-	PRINTF(PSTR("USBD_ClassXXX_Setup: bRequest=%02X, wIndex=%04X, wLength=%04X, wValue=%04X (interfacev=%02X)\n"), req->bRequest, req->wIndex, req->wLength, req->wValue, interfacev);
+	//PRINTF(PSTR("USBD_ClassXXX_Setup: bRequest=%02X, wIndex=%04X, wLength=%04X, wValue=%04X (interfacev=%02X)\n"), req->bRequest, req->wIndex, req->wLength, req->wValue, interfacev);
 	unsigned len = 0;
 	if ((req->bmRequest & USB_REQ_TYPE_DIR) != 0)
 	{
@@ -8127,12 +8118,6 @@ static USBD_StatusTypeDef USBD_XXX_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 		switch (req->bmRequest & USB_REQ_TYPE_MASK)
 		{
 		case USB_REQ_TYPE_CLASS:
-	#if WITHUSBCDC
-	#endif /* WITHUSBCDC */
-	#if WITHUSBUAC
-	#endif /* WITHUSBUAC */
-	#if WITHUSBHID
-	#endif /* WITHUSBHID */
 			switch (interfacev)
 			{
 	#if WITHUSBCDC
@@ -8254,30 +8239,30 @@ static USBD_StatusTypeDef USBD_XXX_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 			switch (req->bRequest)
 			{
 			case USB_REQ_SET_INTERFACE :
-				PRINTF(PSTR("USBD_ClassXXX_Setup: USB_REQ_TYPE_STANDARD USB_REQ_SET_INTERFACE interfacev=%d, value=%d\n"), interfacev, LO_BYTE(req->wValue));
+				//PRINTF(PSTR("USBD_ClassXXX_Setup: USB_REQ_TYPE_STANDARD USB_REQ_SET_INTERFACE interfacev=%d, value=%d\n"), interfacev, LO_BYTE(req->wValue));
 				if (interfacev < INTERFACE_count)
 					altinterfaces [interfacev] = LO_BYTE(req->wValue);
 				switch (interfacev)
 				{
-		#if WITHUSBCDC
+			#if WITHUSBCDC
 				case INTERFACE_CDC_CONTROL_3a:	// CDC interface
 				case INTERFACE_CDC_CONTROL_3b:	// CDC interface
 					break;
-		#endif /* WITHUSBCDC */
+			#endif /* WITHUSBCDC */
 
-		#if WITHUSBUAC
-			case INTERFACE_AUDIO_MIKE: // Audio interfacei: recording device
-				buffers_set_uacinalt(altinterfaces [interfacev]);
-				break;
-			case INTERFACE_AUDIO_SPK:	// DATA OUT Audio interfacei: playback device
-				buffers_set_uacoutalt(altinterfaces [interfacev]);
-				break;
-		#if WITHUSBUACIN2
-			case INTERFACE_AUDIO_RTS: // Audio interfacei: recording device
-				buffers_set_uacinrtsalt(altinterfaces [interfacev]);
-				break;
-		#endif /* WITHUSBUACIN2 */
-		#endif /* WITHUSBUAC */
+			#if WITHUSBUAC
+				case INTERFACE_AUDIO_MIKE: // Audio interfacei: recording device
+					buffers_set_uacinalt(altinterfaces [interfacev]);
+					break;
+				case INTERFACE_AUDIO_SPK:	// DATA OUT Audio interfacei: playback device
+					buffers_set_uacoutalt(altinterfaces [interfacev]);
+					break;
+			#if WITHUSBUACIN2
+				case INTERFACE_AUDIO_RTS: // Audio interfacei: recording device
+					buffers_set_uacinrtsalt(altinterfaces [interfacev]);
+					break;
+			#endif /* WITHUSBUACIN2 */
+			#endif /* WITHUSBUAC */
 
 		#if WITHUSBHID
 				//case INTERFACE_HID_CONTROL_7:	// HID interfacei
@@ -9342,7 +9327,7 @@ USBD_StatusTypeDef USBD_LL_SetupStage(USBD_HandleTypeDef *pdev, const uint32_t *
 */
 USBD_StatusTypeDef USBD_LL_DataOutStage(USBD_HandleTypeDef *pdev, uint_fast8_t epnum, uint8_t *pdata)
 {
-	PRINTF(PSTR("USBD_LL_DataOutStage:\n"));
+	//PRINTF(PSTR("USBD_LL_DataOutStage:\n"));
 
 	if (epnum == 0)
 	{
