@@ -1849,10 +1849,7 @@ static uint_fast16_t /* volatile */ g_usb0_function_PipeIgnore [16];
 // Эта функция не должна общаться с DCPCTR - она универсальная
 static uint_fast8_t usbd_read_data(PCD_TypeDef * const USBx, uint_fast8_t pipe, uint8_t * data, unsigned size, unsigned * readcnt)
 {
-	ASSERT(USBx == WITHUSBHW_DEVICE);
-
 	//PRINTF(PSTR("selected read from c_fifo%u 0, CFIFOCTR=%04X, CFIFOSEL=%04X\n"), pipe, Instance->CFIFOCTR, Instance->CFIFOSEL);
-
 	USBx->CFIFOSEL =
 		//1 * (1uL << USB_CFIFOSEL_RCNT_SHIFT) |		// RCNT
 		(pipe << USB_CFIFOSEL_CURPIPE_SHIFT) |	// CURPIPE 0000: DCP
@@ -1889,7 +1886,6 @@ usbd_write_data(PCD_TypeDef * const USBx, uint_fast8_t pipe, const uint8_t * dat
 	else
 		PRINTF(PSTR("usbd_write_data, pipe=%d, size=%d, data[]={}\n"), pipe, size);
 #endif
-
 
 	USBx->CFIFOSEL =
 		//1 * (1uL << USB_CFIFOSEL_RCNT_SHIFT) |		// RCNT
@@ -2914,16 +2910,16 @@ static void r7s721_usbdevice_handler(PCD_HandleTypeDef *hpcd)
 	}
 	if ((intsts0msk & USB_INTSTS0_NRDY) != 0)	// NRDY
 	{
-		uint_fast8_t i;
+		uint_fast8_t pipe;
 		//PRINTF(PSTR("r7s721_usbdevice_handler trapped - NRDY, NRDYSTS=0x%04X\n"), USBx->NRDYSTS);
 		const uint_fast16_t nrdysts = USBx->NRDYSTS & USBx->NRDYENB;	// NRDY Interrupt Status Register
-		for (i = 0; i < 16; ++ i)
+		for (pipe = 0; pipe < 16; ++ pipe)
 		{
-			const uint_fast16_t mask = (uint_fast16_t) 1 << i;
+			const uint_fast16_t mask = (uint_fast16_t) 1 << pipe;
 			if ((nrdysts & mask) != 0)
 			{
 				USBx->NRDYSTS = ~ mask;
-				usbd_handler_nrdy(pdev, i);
+				usbd_handler_nrdy(pdev, pipe);
 			}
 		}
 	}
@@ -2994,16 +2990,19 @@ static void r7s721_usbdevice_handler(PCD_HandleTypeDef *hpcd)
 	}
 	if ((intsts0msk & USB_INTSTS0_CTRT) != 0)	// CTRT
 	{
+		const uint_fast8_t ctsq = (intsts0 & USB_INTSTS0_CTSQ) >> USB_INTSTS0_CTSQ_SHIFT;
+		if ((intsts0 & USB_INTSTS0_VALID) != 0)
+		{
+			// Setup syage detectd
+			usb_save_request(USBx, & pdev->request);
+			USBx->INTSTS0 = (uint16_t) ~ USB_INTSTS0_VALID;	// Clear VALID - in seq 1, 3 and 5
+			//ASSERT(ctsq == 1 || ctsq == 3 || ctsq == 5);
+	        HAL_PCD_SetupStageCallback(hpcd);
+		}
 		//PRINTF(PSTR("r7s721_usbdevice_handler trapped - CTRT, CTSQ=%d\n"), (intsts0 >> 0) & 0x07);
 		USBx->INTSTS0 = (uint16_t) ~ (1uL << USB_INTSTS0_CTRT_SHIFT);	// Clear CTRT
 
-		if ((intsts0 & USB_INTSTS0_VALID) != 0)
-		{
-			usb_save_request(USBx, & pdev->request);
-			USBx->INTSTS0 = (uint16_t) ~ USB_INTSTS0_VALID;	// Clear VALID - in seq 1, 3 and 5
-	        HAL_PCD_SetupStageCallback(hpcd);
-		}
-		usbd_handle_ctrt(hpcd, (intsts0 & USB_INTSTS0_CTSQ) >> USB_INTSTS0_CTSQ_SHIFT);
+		usbd_handle_ctrt(hpcd, ctsq);
 	}
 	if ((intsts0msk & USB_INTSTS0_DVST) != 0)	// DVSE
 	{
@@ -3706,22 +3705,31 @@ HAL_StatusTypeDef USB_EPSetStall(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_EPTy
 	uint_fast8_t pipe = ep->pipe_num;
 	//PRINTF(PSTR("USB_EPSetStall\n"));
 
-	USBx->CFIFOSEL =
-		//1 * (1uL << USB_CFIFOSEL_RCNT_SHIFT) |		// RCNT
-		(pipe << USB_CFIFOSEL_CURPIPE_SHIFT) |	// CURPIPE 0000: DCP
-		1 * (1uL << USB_CFIFOSEL_ISEL_SHIFT_) * (pipe == 0) |	// ISEL 1: Writing to the buffer memory is selected (for DCP)
-		0;
-
-	if (usbd_wait_fifo(USBx, pipe, USBD_FRDY_COUNT) == 0)
+	if (pipe == 0)
 	{
-		USBx->CFIFOCTR = USB_CFIFOCTR_BCLR;	// BCLR
+		USBx->DCPCTR = (USBx->DCPCTR & ~ (USB_DCPCTR_PID)) |
+			//DEVDRV_USBF_PID_NAK * (1uL << 0) |	// PID 00: NAK
+			//1 * (1uL << 0) |	// PID 01: BUF response (depending on the buffer state)
+			DEVDRV_USBF_PID_STALL * (1uL << USB_DCPCTR_PID_SHIFT) |	// PID 02: STALL response
+			0;
+		(void) USBx->DCPCTR;
+	}
+	else
+	{
+/*
+		USBx->CFIFOSEL =
+			//1 * (1uL << USB_CFIFOSEL_RCNT_SHIFT) |		// RCNT
+			(pipe << USB_CFIFOSEL_CURPIPE_SHIFT) |	// CURPIPE 0000: DCP
+			1 * (1uL << USB_CFIFOSEL_ISEL_SHIFT_) * (pipe == 0) |	// ISEL 1: Writing to the buffer memory is selected (for DCP)
+			0;
+
+		if (usbd_wait_fifo(USBx, pipe, USBD_FRDY_COUNT) == 0)
+		{
+			USBx->CFIFOCTR = USB_CFIFOCTR_BCLR;	// BCLR
+		}
+*/
 	}
 
-	USBx->DCPCTR = (USBx->DCPCTR & ~ (USB_DCPCTR_PID)) |
-		//DEVDRV_USBF_PID_NAK * (1uL << 0) |	// PID 00: NAK
-		//1 * (1uL << 0) |	// PID 01: BUF response (depending on the buffer state)
-		DEVDRV_USBF_PID_STALL * (1uL << USB_DCPCTR_PID_SHIFT) |	// PID 02: STALL response
-		0;
 
 	return HAL_OK;
 }
@@ -3734,6 +3742,23 @@ HAL_StatusTypeDef USB_EPSetStall(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_EPTy
   */
 HAL_StatusTypeDef USB_EPClearStall(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_EPTypeDef *ep)
 {
+	uint_fast8_t pipe = ep->pipe_num;
+	//PRINTF(PSTR("USB_EPSetStall\n"));
+
+	if (pipe == 0)
+	{
+		// TODO: check thos code
+		USBx->DCPCTR = (USBx->DCPCTR & ~ (USB_DCPCTR_PID)) |
+			DEVDRV_USBF_PID_NAK * (1uL << 0) |	// PID 00: NAK
+			//1 * (1uL << 0) |	// PID 01: BUF response (depending on the buffer state)
+			//DEVDRV_USBF_PID_STALL * (1uL << USB_DCPCTR_PID_SHIFT) |	// PID 02: STALL response
+			0;
+		(void) USBx->DCPCTR;
+	}
+	else
+	{
+
+	}
 	return HAL_OK;
 }
 
