@@ -2874,12 +2874,11 @@ static void usbd_handle_suspend(PCD_TypeDef * const USBx)
 		1 * USB_INTENB0_RSME |	// RSME
 
 */
-static void r7s721_usbdevice_handler(PCD_HandleTypeDef *hpcd)
+// Renesas
+void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 {
 	USB_OTG_GlobalTypeDef * const USBx = hpcd->Instance;
 	USBD_HandleTypeDef * const pdev = hpcd->pData;
-	//USB_OTG_GlobalTypeDef * const Instance = hhcd->Instance;
-	//ASSERT(Instance == WITHUSBHW_DEVICE);
 	const uint_fast16_t intsts0 = USBx->INTSTS0;
 	const uint_fast16_t intsts1 = USBx->INTSTS1;
 	const uint_fast16_t intsts0msk = intsts0 & USBx->INTENB0;
@@ -2888,12 +2887,12 @@ static void r7s721_usbdevice_handler(PCD_HandleTypeDef *hpcd)
 	if ((intsts0msk & USB_INTSTS0_SOFR) != 0)	// SOFR
 	{
 		USBx->INTSTS0 = (uint16_t) ~ USB_INTSTS0_SOFR;	// Clear SOFR
-		//PRINTF(PSTR("r7s721_usbdevice_handler trapped - SOFR\n"));
+		//PRINTF(PSTR("HAL_PCD_IRQHandler trapped - SOFR\n"));
 		HAL_PCD_SOFCallback(hpcd);
 	}
 	if ((intsts0msk & USB_INTSTS0_BEMP) != 0)	// BEMP
 	{
-		//PRINTF(PSTR("r7s721_usbdevice_handler trapped - BEMP, BEMPSTS=0x%04X\n"), USBx->BEMPSTS);
+		//PRINTF(PSTR("HAL_PCD_IRQHandler trapped - BEMP, BEMPSTS=0x%04X\n"), USBx->BEMPSTS);
 		const uint_fast16_t bempsts = USBx->BEMPSTS & USBx->BEMPENB;	// BEMP Interrupt Status Register
 		USBx->BEMPSTS = ~ bempsts;
 
@@ -2911,7 +2910,7 @@ static void r7s721_usbdevice_handler(PCD_HandleTypeDef *hpcd)
 	if ((intsts0msk & USB_INTSTS0_NRDY) != 0)	// NRDY
 	{
 		uint_fast8_t pipe;
-		//PRINTF(PSTR("r7s721_usbdevice_handler trapped - NRDY, NRDYSTS=0x%04X\n"), USBx->NRDYSTS);
+		//PRINTF(PSTR("HAL_PCD_IRQHandler trapped - NRDY, NRDYSTS=0x%04X\n"), USBx->NRDYSTS);
 		const uint_fast16_t nrdysts = USBx->NRDYSTS & USBx->NRDYENB;	// NRDY Interrupt Status Register
 		for (pipe = 0; pipe < 16; ++ pipe)
 		{
@@ -2926,7 +2925,7 @@ static void r7s721_usbdevice_handler(PCD_HandleTypeDef *hpcd)
 	if ((intsts0msk & USB_INTSTS0_BRDY) != 0)	// BRDY
 	{
 		uint_fast8_t i;
-		//PRINTF(PSTR("r7s721_usbdevice_handler trapped - BRDY, BRDYSTS=0x%04X\n"), USBx->BRDYSTS);
+		//PRINTF(PSTR("HAL_PCD_IRQHandler trapped - BRDY, BRDYSTS=0x%04X\n"), USBx->BRDYSTS);
 		const uint_fast16_t brdysts = USBx->BRDYSTS & USBx->BRDYENB;	// BRDY Interrupt Status Register
 		USBx->BRDYSTS = ~ brdysts;
 
@@ -2999,15 +2998,15 @@ static void r7s721_usbdevice_handler(PCD_HandleTypeDef *hpcd)
 			//ASSERT(ctsq == 1 || ctsq == 3 || ctsq == 5);
 	        HAL_PCD_SetupStageCallback(hpcd);
 		}
-		//PRINTF(PSTR("r7s721_usbdevice_handler trapped - CTRT, CTSQ=%d\n"), (intsts0 >> 0) & 0x07);
-		USBx->INTSTS0 = (uint16_t) ~ (1uL << USB_INTSTS0_CTRT_SHIFT);	// Clear CTRT
+		//PRINTF(PSTR("HAL_PCD_IRQHandler trapped - CTRT, CTSQ=%d\n"), (intsts0 >> 0) & 0x07);
+		USBx->INTSTS0 = (uint16_t) ~ USB_INTSTS0_CTRT;	// Clear CTRT
 
 		usbd_handle_ctrt(hpcd, ctsq);
 	}
 	if ((intsts0msk & USB_INTSTS0_DVST) != 0)	// DVSE
 	{
-		//PRINTF(PSTR("r7s721_usbdevice_handler trapped - DVSE, DVSQ=%d\n"), (intsts0 & USB_INTSTS0_DVSQ) >> USB_INTSTS0_DVSQ_SHIFT);
-		USBx->INTSTS0 = (uint16_t) ~ (1uL << USB_INTSTS0_DVST_SHIFT);	// Clear DVSE
+		//PRINTF(PSTR("HAL_PCD_IRQHandler trapped - DVSE, DVSQ=%d\n"), (intsts0 & USB_INTSTS0_DVSQ) >> USB_INTSTS0_DVSQ_SHIFT);
+		USBx->INTSTS0 = (uint16_t) ~ USB_INTSTS0_DVST;	// Clear DVSE
 		switch ((intsts0 & USB_INTSTS0_DVSQ) >> USB_INTSTS0_DVSQ_SHIFT)
 		{
 		case 0x01:
@@ -3032,28 +3031,28 @@ static void r7s721_usbdevice_handler(PCD_HandleTypeDef *hpcd)
 			break;
 		}
 	}
-	if ((intsts0msk & (1uL << USB_INTSTS0_RESM_SHIFT)) != 0)	// RESM
+	if ((intsts0msk & USB_INTSTS0_RESM) != 0)	// RESM
 	{
-		USBx->INTSTS0 = (uint16_t) ~ (1uL << USB_INTSTS0_RESM_SHIFT);	// Clear RESM
-		//PRINTF(PSTR("r7s721_usbdevice_handler trapped - RESM\n"));
+		USBx->INTSTS0 = (uint16_t) ~ USB_INTSTS0_RESM;	// Clear RESM
+		//PRINTF(PSTR("HAL_PCD_IRQHandler trapped - RESM\n"));
 		usbd_handle_resume(USBx);
 	}
-	if ((intsts0msk & (1uL << USB_INTSTS0_VBINT_SHIFT)) != 0)	// VBINT
+	if ((intsts0msk & USB_INTSTS0_VBINT) != 0)	// VBINT
 	{
 		USBx->INTSTS0 = (uint16_t) ~ USB_INTSTS0_VBINT;	// Clear VBINT - enabled by VBSE
-		PRINTF(PSTR("r7s721_usbdevice_handler trapped - VBINT, VBSTS=%d\n"), (intsts0 & USB_INTSTS0_VBSTS) != 0);
+		PRINTF(PSTR("HAL_PCD_IRQHandler trapped - VBINT, VBSTS=%d\n"), (intsts0 & USB_INTSTS0_VBSTS) != 0);
 	//	usbd_handle_vbuse(usbd_getvbus());
 	}
 }
 
 static void r7s721_usbi0_device_handler(void)
 {
-	r7s721_usbdevice_handler(& hpcd_USB_OTG);
+	HAL_PCD_IRQHandler(& hpcd_USB_OTG);
 }
 
 static void r7s721_usbi1_device_handler(void)
 {
-	r7s721_usbdevice_handler(& hpcd_USB_OTG);
+	HAL_PCD_IRQHandler(& hpcd_USB_OTG);
 }
 
 
@@ -3092,7 +3091,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
 
 }
 
-static void r7s721_usbhost_handler(HCD_HandleTypeDef *hhcd)
+void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd)
 {
 	USB_OTG_GlobalTypeDef * const USBx = hhcd->Instance;
 	const uint_fast16_t intsts0 = USBx->INTSTS0;
@@ -3100,45 +3099,45 @@ static void r7s721_usbhost_handler(HCD_HandleTypeDef *hhcd)
 	const uint_fast16_t intsts0msk = intsts0 & USBx->INTENB0;
 	const uint_fast16_t intsts1msk = intsts1 & USBx->INTENB1;
 
-	//PRINTF(PSTR("r7s721_usbhost_handler trapped, intsts0=%04X, intsts1=%04X\n"), intsts0, intsts1);
+	//PRINTF(PSTR("HAL_HCD_IRQHandler trapped, intsts0=%04X, intsts1=%04X\n"), intsts0, intsts1);
 	if ((intsts0msk & USB_INTSTS0_SOFR) != 0)	// SOFR
 	{
 		USBx->INTSTS0 = (uint16_t) ~ USB_INTSTS0_SOFR;	// Clear SOFR
-		//PRINTF(PSTR("r7s721_usbhost_handler trapped - SOFR\n"));
+		//PRINTF(PSTR("HAL_HCD_IRQHandler trapped - SOFR\n"));
 	}
 	if ((intsts1msk & USB_INTSTS1_BCHG) != 0)	// BCHG
 	{
 		USBx->INTSTS1 = (uint16_t) ~ USB_INTSTS1_BCHG;
-		//PRINTF(PSTR("r7s721_usbhost_handler trapped - BCHG\n"));
+		//PRINTF(PSTR("HAL_HCD_IRQHandler trapped - BCHG\n"));
 	}
 	if ((intsts1msk & USB_INTSTS1_DTCH) != 0)	// DTCH
 	{
 		USBx->INTSTS1 = (uint16_t) ~ USB_INTSTS1_DTCH;
-		//PRINTF(PSTR("r7s721_usbhost_handler trapped - DTCH\n"));
+		//PRINTF(PSTR("HAL_HCD_IRQHandler trapped - DTCH\n"));
 		HAL_HCD_Disconnect_Callback(hhcd);
 	}
 	if ((intsts1msk & USB_INTSTS1_ATTCH) != 0)	// ATTCH
 	{
 		USBx->INTSTS1 = (uint16_t) ~ USB_INTSTS1_ATTCH;
-		//PRINTF(PSTR("r7s721_usbhost_handler trapped - ATTCH\n"));
+		//PRINTF(PSTR("HAL_HCD_IRQHandler trapped - ATTCH\n"));
 		HAL_HCD_Connect_Callback(hhcd);
 	}
 	if ((intsts0msk & (1uL << USB_INTSTS0_VBINT_SHIFT)) != 0)	// VBINT
 	{
 		USBx->INTSTS0 = (uint16_t) ~ USB_INTSTS0_VBINT;	// Clear VBINT - enabled by VBSE
-		//PRINTF(PSTR("r7s721_usbhost_handler trapped - VBINT, VBSTS=%d\n"), (intsts0 & USB_INTSTS0_VBSTS) != 0);	// TODO: masked VBSTS
+		//PRINTF(PSTR("HAL_HCD_IRQHandler trapped - VBINT, VBSTS=%d\n"), (intsts0 & USB_INTSTS0_VBSTS) != 0);	// TODO: masked VBSTS
 	//	usbd_handle_vbuse(usbd_getvbus());
 	}
 }
 
 static void r7s721_usbi0_host_handler(void)
 {
-	r7s721_usbhost_handler(& hhcd_USB_OTG);
+	HAL_HCD_IRQHandler(& hhcd_USB_OTG);
 }
 
 static void r7s721_usbi1_host_handler(void)
 {
-	r7s721_usbhost_handler(& hhcd_USB_OTG);
+	HAL_HCD_IRQHandler(& hhcd_USB_OTG);
 }
 
 void HAL_HCD_MspInit(HCD_HandleTypeDef* hpcd)
@@ -8959,7 +8958,7 @@ static void USBD_GetDescriptor(USBD_HandleTypeDef *pdev,
 * @retval status
 */
 // on renesas not exists
-// r7s721_usbdevice_handler trapped - DVSE, DVSQ
+// HAL_PCD_IRQHandler trapped - DVSE, DVSQ
 static void USBD_SetAddress(USBD_HandleTypeDef *pdev,
                             const USBD_SetupReqTypedef *req)
 {
@@ -9751,12 +9750,12 @@ static HAL_StatusTypeDef PCD_WriteEmptyTxFifo(PCD_HandleTypeDef *hpcd, uint32_t 
 #define USB_OTG_CORE_ID_310A          0x4F54310A
 #define USB_OTG_CORE_ID_320A          0x4F54320A
 
-// F4, F7, H7...
 /**
   * @brief  Handle PCD interrupt request.
   * @param  hpcd: PCD handle
   * @retval HAL status
   */
+// F4, F7, H7...
 void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 {
 	//	PRINTF(PSTR("HAL_PCD_IRQHandler:\n"));
@@ -10472,6 +10471,7 @@ static HAL_StatusTypeDef PCD_EP_ISR_Handler(PCD_HandleTypeDef *hpcd)
   * @param  hpcd: PCD handle
   * @retval HAL status
   */
+// STM32F1xx
 void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 {
   uint32_t wInterrupt_Mask = 0;
@@ -10548,14 +10548,14 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 /* For the available peripheral interrupt handler names,                      */
 /* please refer to the startup file (startup_stm32f1xx.s).                    */
 /******************************************************************************/
-PCD_HandleTypeDef hpcd_USB_FS;
 
 /**
 * @brief This function handles USB low priority or CAN RX0 interrupts.
 */
+// F1
 void USB_LP_CAN1_RX0_IRQHandler(void)
 {
-  HAL_PCD_IRQHandler(& hpcd_USB_FS);
+  HAL_PCD_IRQHandler(& hpcd_USB_OTG);
 }
 
 #endif /* CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX */
