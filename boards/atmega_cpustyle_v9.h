@@ -170,7 +170,7 @@
 		// подключение по версии "ы" - LS020 и Si570 - вместо AD9951.
 		#define LS020_RESET_PORT 	PORTC
 		#define LS020_RESET_DDR 	DDRC
-		#define LS020_RST			(1U << PC2)		// Pin 21 of TQFP44  RESET LS020 при Si570 - был CS AD9951
+		#define LS020_RESET			(1U << PC2)		// Pin 21 of TQFP44  RESET LS020 при Si570 - был CS AD9951
 
 		#define LS020_RS_PORT 		PORTC
 		#define LS020_RS_DDR 		DDRC
@@ -214,7 +214,7 @@
 
 		#define LS020_RESET_PORT 	PORTC
 		#define LS020_RESET_DDR 	DDRC
-		#define LS020_RST			(1U << PC1)		// Pin 20 of TQFP44 
+		#define LS020_RESET			(1U << PC1)		// Pin 20 of TQFP44 
 
 		#define LS020_RS_PORT 		PORTC
 		#define LS020_RS_DDR 		DDRC
@@ -327,7 +327,7 @@
 		} while(0)
 
 	#define LS020_RESET_INITIALIZE() do { \
-			HARDWARE_OUTPUT_INITIALIZE(LS020_RESET_PORT, LS020_RESET_DDR, LS020_RST, LS020_RST); \
+			HARDWARE_OUTPUT_INITIALIZE(LS020_RESET_PORT, LS020_RESET_DDR, LS020_RESET, LS020_RESET); \
 		} while(0)
 
 	#define LS020_RS_SET(v) do { \
@@ -335,9 +335,9 @@
 			else  LS020_RS_PORT_C(LS020_RS); \
 		} while (0)
 
-	#define LS020_RST_SET(v) do { \
-			if ((v) != 0) LS020_RST_PORT_S(LS020_RST); \
-			else  LS020_RST_PORT_C(LS020_RST); \
+	#define LS020_RESET_SET(v) do { \
+			if ((v) != 0) LS020_RESET_PORT_S(LS020_RESET); \
+			else  LS020_RESET_PORT_C(LS020_RESET); \
 		} while (0)
 
 	#define LS020_RESET_PORT_S(b)	do { LS020_RESET_PORT |= (b); } while (0)

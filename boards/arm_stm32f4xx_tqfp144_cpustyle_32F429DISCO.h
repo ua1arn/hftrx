@@ -117,7 +117,7 @@ Free:
 
 #define LS020_RESET_INITIALIZE() \
 	do { \
-		arm_hardware_piod_outputs2m(LS020_RST, LS020_RST); \
+		arm_hardware_piod_outputs2m(LS020_RESET, LS020_RESET); \
 	} while (0)
 
 #define LS020_RS_SET(v) do { \
@@ -125,9 +125,9 @@ Free:
 		else  LS020_RS_PORT_C(LS020_RS); \
 	} while (0)
 
-#define LS020_RST_SET(v) do { \
-		if ((v) != 0) LS020_RST_PORT_S(LS020_RST); \
-		else  LS020_RST_PORT_C(LS020_RST); \
+#define LS020_RESET_SET(v) do { \
+		if ((v) != 0) LS020_RESET_PORT_S(LS020_RESET); \
+		else  LS020_RESET_PORT_C(LS020_RESET); \
 	} while (0)
 
 
@@ -135,13 +135,13 @@ Free:
 	// эти контроллеры требуют только RESET
 	//#define LS020_RESET_PORT_S(v)		do { GPIOD->BSRR = BSRR_S(v); __DSB(); } while (0)
 	//#define LS020_RESET_PORT_C(v)		do { GPIOD->BSRR = BSRR_C(v); __DSB(); } while (0)
-	//#define LS020_RST			(1u << 8)			// D6 signal
+	//#define LS020_RESET			(1u << 8)			// D6 signal
 
 #elif LCDMODE_SPI_RA
 	// Эти контроллеры требуют RESET и RS
 	//#define LS020_RESET_PORT_S(v)		do { GPIOD->BSRR = BSRR_S(v); __DSB(); } while (0)
 	//#define LS020_RESET_PORT_C(v)		do { GPIOD->BSRR = BSRR_C(v); __DSB(); } while (0)
-	//#define LS020_RST			(1u << 8)			// D6 signal
+	//#define LS020_RESET			(1u << 8)			// D6 signal
 	#define LS020_RS_PORT_S(v)		do { GPIOD->BSRR = BSRR_S(v); __DSB(); } while (0)
 	#define LS020_RS_PORT_C(v)		do { GPIOD->BSRR = BSRR_C(v); __DSB(); } while (0)
 	#define LS020_RS			(1u << 13)			// PD13 signal

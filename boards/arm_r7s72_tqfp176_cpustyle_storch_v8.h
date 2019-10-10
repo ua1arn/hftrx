@@ -96,8 +96,6 @@
 
 //#define WRITEE_BIT				(1u << 12)	// RD/~WR  P3_12 - должен быть в "0" - как при записи - для управления буферами на шине данных LCD
 
-/* В данной версии платы ошибка в схеме - для работы преобразователей уровня "наружу" WRITEE_BIT долже быть в "1".
-*/
 #define LS020_RS_INITIALIZE() \
 	do { \
 		arm_hardware_pio7_outputs(LS020_RS, LS020_RS); \
@@ -105,16 +103,16 @@
 
 #define LS020_RESET_INITIALIZE() \
 	do { \
-		arm_hardware_pio7_outputs(LS020_RST, LS020_RST); \
+		arm_hardware_pio7_outputs(LS020_RESET, LS020_RESET); \
 	} while (0)
 
 #define LS020_RS_SET(v) do { \
 		if ((v) != 0) LS020_RS_PORT_S(LS020_RS); \
 		else  LS020_RS_PORT_C(LS020_RS); \
 	} while (0)
-#define LS020_RST_SET(v) do { \
-		if ((v) != 0) LS020_RST_PORT_S(LS020_RST); \
-		else  LS020_RST_PORT_C(LS020_RST); \
+#define LS020_RESET_SET(v) do { \
+		if ((v) != 0) LS020_RESET_PORT_S(LS020_RESET); \
+		else  LS020_RESET_PORT_C(LS020_RESET); \
 	} while (0)
 
 #if LCDMODE_SPI_NA
@@ -129,7 +127,7 @@
 
 	#define LS020_RESET_PORT_S(v) do {	R7S721_TARGET_PORT_S(7, v); } while (0)
 	#define LS020_RESET_PORT_C(v) do {	R7S721_TARGET_PORT_C(7, v); } while (0)
-	#define LS020_RST			(1u << 1)			// * P7_1 D6 signal in HD44780 socket
+	#define LS020_RESET			(1u << 1)			// * P7_1 D6 signal in HD44780 socket
 
 #elif LCDMODE_SPI_RA
 	// Эти контроллеры требуют RESET и RS
@@ -140,7 +138,7 @@
 
 	#define LS020_RESET_PORT_S(v) do {	R7S721_TARGET_PORT_S(7, v); } while (0)
 	#define LS020_RESET_PORT_C(v) do {	R7S721_TARGET_PORT_C(7, v); } while (0)
-	#define LS020_RST			(1u << 1)			// P7_1 D6 signal in HD44780 socket
+	#define LS020_RESET			(1u << 1)			// P7_1 D6 signal in HD44780 socket
 
 #elif LCDMODE_HD44780 && (LCDMODE_SPI == 0)
 
@@ -701,7 +699,7 @@
 
 	#define LS020_RESET_PORT_S(v) do {	R7S721_TARGET_PORT_S(7, v); } while (0)
 	#define LS020_RESET_PORT_C(v) do {	R7S721_TARGET_PORT_C(7, v); } while (0)
-	#define LS020_RST			(1u << 1)			// * P7_1 D6 NRESET
+	#define LS020_RESET			(1u << 1)			// * P7_1 D6 NRESET
 
 	/* demode values: 0: static signal, 1: DE controlled */
 	/* Table 34.9 Bit Allocation of RGB Signal Input for RGB565 Output */ 

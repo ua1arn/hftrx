@@ -54,7 +54,7 @@
 
 #define LS020_RESET_INITIALIZE() \
 	do { \
-		arm_hardware_pioe_outputs2m(LS020_RST, LS020_RST); \
+		arm_hardware_pioe_outputs2m(LS020_RESET, LS020_RESET); \
 	} while (0)
 
 #define LS020_RS_SET(v) do { \
@@ -62,9 +62,9 @@
 		else  LS020_RS_PORT_C(LS020_RS); \
 	} while (0)
 
-#define LS020_RST_SET(v) do { \
-		if ((v) != 0) LS020_RST_PORT_S(LS020_RST); \
-		else  LS020_RST_PORT_C(LS020_RST); \
+#define LS020_RESET_SET(v) do { \
+		if ((v) != 0) LS020_RESET_PORT_S(LS020_RESET); \
+		else  LS020_RESET_PORT_C(LS020_RESET); \
 	} while (0)
 
 #if LCDMODE_SPI_NA
@@ -79,7 +79,7 @@
 
 	#define LS020_RESET_PORT_S(v)		do { GPIOE->BSRR = BSRR_S(v); __DSB(); } while (0)
 	#define LS020_RESET_PORT_C(v)		do { GPIOE->BSRR = BSRR_C(v); __DSB(); } while (0)
-	#define LS020_RST			(1u << 10)			// * PE10 D6 signal in HD44780 socket
+	#define LS020_RESET			(1u << 10)			// * PE10 D6 signal in HD44780 socket
 
 #elif LCDMODE_SPI_RA
 	// Эти контроллеры требуют RESET и RS
@@ -90,7 +90,7 @@
 
 	#define LS020_RESET_PORT_S(v)		do { GPIOE->BSRR = BSRR_S(v); __DSB(); } while (0)
 	#define LS020_RESET_PORT_C(v)		do { GPIOE->BSRR = BSRR_C(v); __DSB(); } while (0)
-	#define LS020_RST			(1u << 10)			// * PE10 D6 signal in HD44780 socket
+	#define LS020_RESET			(1u << 10)			// * PE10 D6 signal in HD44780 socket
 
 #elif LCDMODE_HD44780 && (LCDMODE_SPI == 0)
 
