@@ -45,7 +45,7 @@
 /* over NRST pin */
 #define LS020_RESET_INITIALIZE() \
 	do { \
-		arm_hardware_pioc_outputs2m(LS020_RST, LS020_RST); /* PC15 */ \
+		arm_hardware_pioc_outputs2m(LS020_RESET, LS020_RESET); /* PC15 */ \
 	} while (0)
 
 #define LS020_RS_SET(v) do { \
@@ -53,16 +53,16 @@
 		else  LS020_RS_PORT_C(LS020_RS); \
 	} while (0)
 
-#define LS020_RST_SET(v) do { \
-		if ((v) != 0) LS020_RST_PORT_S(LS020_RST); \
-		else  LS020_RST_PORT_C(LS020_RST); \
+#define LS020_RESET_SET(v) do { \
+		if ((v) != 0) LS020_RESET_PORT_S(LS020_RESET); \
+		else  LS020_RESET_PORT_C(LS020_RESET); \
 	} while (0)
 
 #if LCDMODE_SPI_RN
 	// эти контроллеры требуют только RESET
 	#define LS020_RESET_PORT_S(v)		do { GPIOC->BSRR = BSRR_S(v); __DSB(); } while (0)
 	#define LS020_RESET_PORT_C(v)		do { GPIOC->BSRR = BSRR_C(v); __DSB(); } while (0)
-	#define LS020_RST			(1u << 15)			// PC15
+	#define LS020_RESET			(1u << 15)			// PC15
 
 #elif LCDMODE_SPI_NA
 	// Эти контроллеры требуют только RS
@@ -74,7 +74,7 @@
 	// Эти контроллеры требуют RESET и RS
 	#define LS020_RESET_PORT_S(v)		do { GPIOC->BSRR = BSRR_S(v); __DSB(); } while (0)
 	#define LS020_RESET_PORT_C(v)		do { GPIOC->BSRR = BSRR_C(v); __DSB(); } while (0)
-	#define LS020_RST			(1u << 15)			// PC15
+	#define LS020_RESET			(1u << 15)			// PC15
 
 	#define LS020_RS_PORT_S(v)		do { GPIOA->BSRR = BSRR_S(v); __DSB(); } while (0)
 	#define LS020_RS_PORT_C(v)		do { GPIOA->BSRR = BSRR_C(v); __DSB(); } while (0)

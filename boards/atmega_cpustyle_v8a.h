@@ -38,7 +38,7 @@
 #elif LCDMODE_SPI_RA
 	#define LS020_RESET_PORT PORTC
 	#define LS020_RESET_DDR DDRC
-	#define LS020_RST	(1U << PC2)			// Pin 21 - D6 signal in HD44780 socket
+	#define LS020_RESET	(1U << PC2)			// Pin 21 - D6 signal in HD44780 socket
 
 	#define LS020_RS_PORT PORTC
 	#define LS020_RS_DDR DDRC
@@ -47,7 +47,7 @@
 #elif LCDMODE_SPI_RN
 	#define LS020_RESET_PORT PORTC
 	#define LS020_RESET_DDR DDRC
-	#define LS020_RST	(1U << PC2)			// Pin 21 - D6 signal in HD44780 socket
+	#define LS020_RESET	(1U << PC2)			// Pin 21 - D6 signal in HD44780 socket
 
 #elif LCDMODE_HD44780 && (LCDMODE_SPI == 0)
 	// HD44780 контроллеры
@@ -294,8 +294,8 @@
 		} while(0)
 
 	#define LS020_RESET_INITIALIZE() do { \
-			LS020_RESET_PORT |= LS020_RST; \
-			LS020_RESET_DDR |= LS020_RST; \
+			LS020_RESET_PORT |= LS020_RESET; \
+			LS020_RESET_DDR |= LS020_RESET; \
 		} while(0)
 
 	#define LS020_RS_SET(v) do { \
@@ -303,9 +303,9 @@
 			else  LS020_RS_PORT_C(LS020_RS); \
 		} while (0)
 
-	#define LS020_RST_SET(v) do { \
-			if ((v) != 0) LS020_RST_PORT_S(LS020_RST); \
-			else  LS020_RST_PORT_C(LS020_RST); \
+	#define LS020_RESET_SET(v) do { \
+			if ((v) != 0) LS020_RESET_PORT_S(LS020_RESET); \
+			else  LS020_RESET_PORT_C(LS020_RESET); \
 		} while (0)
 
 	#define LS020_RESET_PORT_S(b)	do { LS020_RESET_PORT |= (b); } while (0)

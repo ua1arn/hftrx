@@ -61,7 +61,7 @@
 
 	#define LS020_RESET_PORT PORTB
 	#define LS020_RESET_DDR DDRB
-	#define LS020_RST	(1U << PB0)			// D4 signal in HD44780 socket
+	#define LS020_RESET	(1U << PB0)			// D4 signal in HD44780 socket
 
 	#define LS020_RS_PORT PORTB
 	#define LS020_RS_DDR DDRB
@@ -328,7 +328,7 @@
 		} while(0)
 
 	#define LS020_RESET_INITIALIZE() do { \
-			HARDWARE_OUTPUT_INITIALIZE(LS020_RESET_PORT, LS020_RESET_DDR, LS020_RST, LS020_RST); \
+			HARDWARE_OUTPUT_INITIALIZE(LS020_RESET_PORT, LS020_RESET_DDR, LS020_RESET, LS020_RESET); \
 		} while(0)
 
 	#define LS020_RS_SET(v) do { \
@@ -336,9 +336,9 @@
 			else  LS020_RS_PORT_C(LS020_RS); \
 		} while (0)
 
-	#define LS020_RST_SET(v) do { \
-			if ((v) != 0) LS020_RST_PORT_S(LS020_RST); \
-			else  LS020_RST_PORT_C(LS020_RST); \
+	#define LS020_RESET_SET(v) do { \
+			if ((v) != 0) LS020_RESET_PORT_S(LS020_RESET); \
+			else  LS020_RESET_PORT_C(LS020_RESET); \
 		} while (0)
 
 	#define LS020_RESET_PORT_S(b)	do { LS020_RESET_PORT |= (b); } while (0)

@@ -48,24 +48,24 @@
 
 #define LS020_RESET_INITIALIZE() \
 	do { \
-		arm_hardware_pioa_outputs(LS020_RST, LS020_RST); \
-		arm_hardware_pioa_only(LS020_RST); \
+		arm_hardware_pioa_outputs(LS020_RESET, LS020_RESET); \
+		arm_hardware_pioa_only(LS020_RESET); \
 	} while (0)
 
 #define LS020_RS_SET(v) do { \
 		if ((v) != 0) LS020_RS_PORT_S(LS020_RS); \
 		else  LS020_RS_PORT_C(LS020_RS); \
 	} while (0)
-#define LS020_RST_SET(v) do { \
-		if ((v) != 0) LS020_RST_PORT_S(LS020_RST); \
-		else  LS020_RST_PORT_C(LS020_RST); \
+#define LS020_RESET_SET(v) do { \
+		if ((v) != 0) LS020_RESET_PORT_S(LS020_RESET); \
+		else  LS020_RESET_PORT_C(LS020_RESET); \
 	} while (0)
 
 #if LCDMODE_SPI_RN
 	// Эти контроллеры требуют RESET
 	#define LS020_RESET_PORT_S(v)		do { AT91C_BASE_PIOA->PIO_SODR = (v); } while (0)
 	#define LS020_RESET_PORT_C(v)		do { AT91C_BASE_PIOA->PIO_CODR = (v); } while (0)
-	#define LS020_RST				AT91C_PIO_PA8			// D6 signal in HD44760 socket
+	#define LS020_RESET				AT91C_PIO_PA8			// D6 signal in HD44760 socket
 
 #elif LCDMODE_SPI_RA
 	// Эти контроллеры требуют RESET и RS
@@ -75,7 +75,7 @@
 
 	#define LS020_RESET_PORT_S(v)		do { AT91C_BASE_PIOA->PIO_SODR = (v); } while (0)
 	#define LS020_RESET_PORT_C(v)		do { AT91C_BASE_PIOA->PIO_CODR = (v); } while (0)
-	#define LS020_RST			AT91C_PIO_PA8			// D6 signal in HD44760 socket
+	#define LS020_RESET			AT91C_PIO_PA8			// D6 signal in HD44760 socket
 
 #elif LCDMODE_SPI_NA
 	// Эти контроллеры требуют RS
