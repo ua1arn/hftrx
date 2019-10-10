@@ -48,6 +48,15 @@
 		arm_hardware_pioc_outputs2m(LS020_RST, LS020_RST); /* PC15 */ \
 	} while (0)
 
+#define LS020_RS_SET(v) do { \
+		if ((v) != 0) LS020_RS_PORT_S(LS020_RS); \
+		else  LS020_RS_PORT_C(LS020_RS); \
+	} while (0)
+
+#define LS020_RST_SET(v) do { \
+		if ((v) != 0) LS020_RST_PORT_S(LS020_RST); \
+		else  LS020_RST_PORT_C(LS020_RST); \
+	} while (0)
 
 #if LCDMODE_SPI_RN
 	// эти контроллеры требуют только RESET
@@ -295,7 +304,7 @@
 	#define SPI_ALLCS_PORT_C(v)	do { GPIOB->BSRR = BSRR_C(v); __DSB(); } while (0)
 
 #else
-	// Есть внешний дешифратор на шине адреса SPI 
+	// Есть внешний дешифратор на шине адреса SPI
 
 	// биты вывода адреса чипселект дешифратора
 	#define SPI_ADDRESS_PORT_S(v)	do { GPIOB->BSRR = BSRR_S(v); __DSB(); } while (0)

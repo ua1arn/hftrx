@@ -160,6 +160,15 @@
 //#define SPI_IOUPDATE_BIT (1U << PB4)	// IOUPDATE
 
 
+#define LS020_RS_SET(v) do { \
+		if ((v) != 0) LS020_RS_PORT_S(LS020_RS); \
+		else  LS020_RS_PORT_C(LS020_RS); \
+	} while (0)
+
+#define LS020_RST_SET(v) do { \
+		if ((v) != 0) LS020_RST_PORT_S(LS020_RST); \
+		else  LS020_RST_PORT_C(LS020_RST); \
+	} while (0)
 
 #if LCDMODE_SPI_NA
 	#define LS020_RS_PORT PORTC

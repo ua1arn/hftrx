@@ -24,6 +24,16 @@
 // Новый контроллер Explorer-а
 // Приёмник "Воронёнок"
 
+#define LS020_RS_SET(v) do { \
+		if ((v) != 0) LS020_RS_PORT_S(LS020_RS); \
+		else  LS020_RS_PORT_C(LS020_RS); \
+	} while (0)
+
+#define LS020_RST_SET(v) do { \
+		if ((v) != 0) LS020_RST_PORT_S(LS020_RST); \
+		else  LS020_RST_PORT_C(LS020_RST); \
+	} while (0)
+
 #if LCDMODE_SPI_NA
 	#define LS020_RS_PORT PORTC
 	#define LS020_RS_DDR DDRC
@@ -219,7 +229,7 @@
 	#define SPI_ALLCS_PORT PORTB
 	#define SPI_ALLCS_DDR DDRB
 
-	#define SPI_CSEL4 (1U << PB0)	// LS020 - доступен - если не исползуется индикатор HD44780 или UC1608	
+	#define SPI_CSEL4 (1U << PB0)	// LS020 - доступен - если не исползуется индикатор HD44780 или UC1608
 	#define SPI_CSEL1 (1U << PB1)	// NVRAM - доступен - если не исползуется индикатор HD44780 или UC1608
 	#define SPI_CSEL0 (1U << PB2)	// NC or DDS1
 	//#define SPI_CSELX (1U << PB3)	// XXXX - доступен - если не исползуется индикатор HD44780 или UC1608
@@ -239,7 +249,7 @@
 	#define SPI_ALLCS_BITS	0		// требуется для указания того, что работа с прямым выбором CS (без дешифратора) не требуется
 	#define SPI_ALLCS_BITSNEG 0		// Выходы, активные при "1"
 
-	// Есть внешний дешифратор на шине адреса SPI 
+	// Есть внешний дешифратор на шине адреса SPI
 	#define SPI_ADDRESS_PORT PORTB
 	#define SPI_ADDRESS_DDR DDRB
 
