@@ -2874,7 +2874,7 @@ static void usbd_handle_suspend(PCD_TypeDef * const USBx)
 		1 * USB_INTENB0_RSME |	// RSME
 
 */
-// Renesas
+// Renesas, usb device
 void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 {
 	USB_OTG_GlobalTypeDef * const USBx = hpcd->Instance;
@@ -3045,12 +3045,12 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 	}
 }
 
-static void r7s721_usbi0_device_handler(void)
+void device_USBI0_IRQHandler(void)
 {
 	HAL_PCD_IRQHandler(& hpcd_USB_OTG);
 }
 
-static void r7s721_usbi1_device_handler(void)
+void device_USBI1_IRQHandler(void)
 {
 	HAL_PCD_IRQHandler(& hpcd_USB_OTG);
 }
@@ -3063,7 +3063,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
 	if (hpcd->Instance == & USB200)
 	{
 		const IRQn_ID_t int_id = USBI0_IRQn;
-		IRQ_SetHandler(int_id, r7s721_usbi0_device_handler);
+		IRQ_SetHandler(int_id, device_USBI0_IRQHandler);
 		IRQ_SetPriority(int_id, ARM_SYSTEM_PRIORITY);
 		IRQ_Enable(int_id);
 
@@ -3077,7 +3077,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
 	else if (hpcd->Instance == & USB201)
 	{
 		const IRQn_ID_t int_id = USBI1_IRQn;
-		IRQ_SetHandler(int_id, r7s721_usbi1_device_handler);
+		IRQ_SetHandler(int_id, device_USBI1_IRQHandler);
 		IRQ_SetPriority(int_id, ARM_SYSTEM_PRIORITY);
 		IRQ_Enable(int_id);
 
@@ -3091,6 +3091,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
 
 }
 
+// Renesas, usb host
 void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd)
 {
 	USB_OTG_GlobalTypeDef * const USBx = hhcd->Instance;
@@ -3130,12 +3131,12 @@ void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd)
 	}
 }
 
-static void r7s721_usbi0_host_handler(void)
+static void host_USBI0_IRQHandler(void)
 {
 	HAL_HCD_IRQHandler(& hhcd_USB_OTG);
 }
 
-static void r7s721_usbi1_host_handler(void)
+static void host_USBI1_IRQHandler(void)
 {
 	HAL_HCD_IRQHandler(& hhcd_USB_OTG);
 }
@@ -3145,7 +3146,7 @@ void HAL_HCD_MspInit(HCD_HandleTypeDef* hpcd)
 	if (hpcd->Instance == & USB200)
 	{
 		const IRQn_ID_t int_id = USBI0_IRQn;
-		IRQ_SetHandler(int_id, r7s721_usbi0_host_handler);
+		IRQ_SetHandler(int_id, host_USBI0_IRQHandler);
 		IRQ_SetPriority(int_id, ARM_SYSTEM_PRIORITY);
 		IRQ_Enable(int_id);
 
@@ -3159,7 +3160,7 @@ void HAL_HCD_MspInit(HCD_HandleTypeDef* hpcd)
 	else if (hpcd->Instance == & USB201)
 	{
 		const IRQn_ID_t int_id = USBI1_IRQn;
-		IRQ_SetHandler(int_id, r7s721_usbi1_host_handler);
+		IRQ_SetHandler(int_id, host_USBI1_IRQHandler);
 		IRQ_SetPriority(int_id, ARM_SYSTEM_PRIORITY);
 		IRQ_Enable(int_id);
 
