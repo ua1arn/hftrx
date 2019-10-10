@@ -73,6 +73,16 @@
 		arm_hardware_pio3_outputs(LS020_RST, LS020_RST); \
 	} while (0)
 
+#define LS020_RS_SET(v) do { \
+		if ((v) != 0) LS020_RS_PORT_S(LS020_RS); \
+		else  LS020_RS_PORT_C(LS020_RS); \
+	} while (0)
+
+#define LS020_RST_SET(v) do { \
+		if ((v) != 0) LS020_RST_PORT_S(LS020_RST); \
+		else  LS020_RST_PORT_C(LS020_RST); \
+	} while (0)
+
 #if LCDMODE_SPI_NA
 	// эти контроллеры требуют только RS
 

@@ -229,7 +229,7 @@
 	#define SPI_ALLCS_BITS	0		// требуется для указания того, что работа с прямым выбором CS (без дешифратора) не требуется
 	#define SPI_ALLCS_BITSNEG 0		// Выходы, активные при "1"
 
-	// Есть внешний дешифратор на шине адреса SPI 
+	// Есть внешний дешифратор на шине адреса SPI
 	#define SPI_ADDRESS_PORT PORTB
 	#define SPI_ADDRESS_DDR DDRB
 	//#define SPI_ADDRESS_PIN PINB
@@ -297,6 +297,16 @@
 			LS020_RESET_PORT |= LS020_RST; \
 			LS020_RESET_DDR |= LS020_RST; \
 		} while(0)
+
+	#define LS020_RS_SET(v) do { \
+			if ((v) != 0) LS020_RS_PORT_S(LS020_RS); \
+			else  LS020_RS_PORT_C(LS020_RS); \
+		} while (0)
+
+	#define LS020_RST_SET(v) do { \
+			if ((v) != 0) LS020_RST_PORT_S(LS020_RST); \
+			else  LS020_RST_PORT_C(LS020_RST); \
+		} while (0)
 
 	#define LS020_RESET_PORT_S(b)	do { LS020_RESET_PORT |= (b); } while (0)
 	#define LS020_RESET_PORT_C(b)	do { LS020_RESET_PORT &= ~ (b); } while (0)

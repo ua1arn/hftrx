@@ -52,6 +52,16 @@
 			LS020_RESET_DDR_S = LS020_RST; \
 		} while(0)
 
+	#define LS020_RS_SET(v) do { \
+			if ((v) != 0) LS020_RS_PORT_S(LS020_RS); \
+			else  LS020_RS_PORT_C(LS020_RS); \
+		} while (0)
+
+	#define LS020_RST_SET(v) do { \
+			if ((v) != 0) LS020_RST_PORT_S(LS020_RST); \
+			else  LS020_RST_PORT_C(LS020_RST); \
+		} while (0)
+
 	// I2C interface pins
 	#if WITHTWISW
 	//	#error Why without WITHTWIHW?
@@ -322,7 +332,7 @@
 	// в этой версии платы нет управления IORESET, IOUPDATE идёт с выхода дешифратора CS интерфейса SPI
 	//#define SPI_IOUPDATE_BIT (1U << PB3)	// используются порты SPI
 
-	// Есть внешний дешифратор на шине адреса SPI 
+	// Есть внешний дешифратор на шине адреса SPI
 	#define SPI_ADDRESS_PORT (PORTB.OUT)
 	#define SPI_ADDRESS_PORT_S(v)	do { PORTB.OUTSET = (v); } while (0)
 	#define SPI_ADDRESS_PORT_C(v)	do { PORTB.OUTCLR = (v); } while (0)

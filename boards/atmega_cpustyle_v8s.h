@@ -28,6 +28,16 @@
 // Аппаратура контроллера в корпусе DIP40/TQFP44 с общими выводами для HD44780 и I2C (не одновременно)
 // "простой синтезатор на AD9835"
 
+#define LS020_RS_SET(v) do { \
+		if ((v) != 0) LS020_RS_PORT_S(LS020_RS); \
+		else  LS020_RS_PORT_C(LS020_RS); \
+	} while (0)
+
+#define LS020_RST_SET(v) do { \
+		if ((v) != 0) LS020_RST_PORT_S(LS020_RST); \
+		else  LS020_RST_PORT_C(LS020_RST); \
+	} while (0)
+
 #if LCDMODE_SPI_RN
 	#define LS020_RESET_PORT PORTC
 	#define LS020_RESET_DDR DDRC
