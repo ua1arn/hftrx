@@ -67,12 +67,12 @@
 	// USB device parameters
 	#define WITHUSBHW_DEVICE	(& USB201)	/* на этом устройстве поддерживается функциональность DEVUCE	*/
 	#define WITHUSBHWVBUSSENSE	1	/* используется предопределенный вывод VBUS_SENSE */
-	#define WITHDEVONHIGHSPEED	1	/* Для DEVICE используется встроенная в процессор поддержка USB HS */
-	#define WITHHIGHSPEEDDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
+	//#define WITHDEVONHIGHSPEED	1	/* Для DEVICE используется встроенная в процессор поддержка USB HS */
+	//#define WITHHIGHSPEEDDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
 
 	// USB device parameters
-	#define WITHUSBHW_HOST	(& USB200)	/* на этом устройстве поддерживается функциональность HOST	*/
-	#define WITHHOSTONHIGHSPEED	1	/* Для HOST используется встроенная в процессор поддержка USB HS */
+	//#define WITHUSBHW_HOST	(& USB200)	/* на этом устройстве поддерживается функциональность HOST	*/
+	//#define WITHHOSTONHIGHSPEED	1	/* Для HOST используется встроенная в процессор поддержка USB HS */
 
 	//#define WITHUART1HW	1	/* Используется периферийный контроллер последовательного порта #1 SCIF0 */
 	#define WITHUART2HW	1	/* Используется периферийный контроллер последовательного порта #2 SCIF3 */
@@ -106,6 +106,15 @@
 #define LS020_RESET_INITIALIZE() \
 	do { \
 		arm_hardware_pio7_outputs(LS020_RST, LS020_RST); \
+	} while (0)
+
+#define LS020_RS_SET(v) do { \
+		if ((v) != 0) LS020_RS_PORT_S(LS020_RS); \
+		else  LS020_RS_PORT_C(LS020_RS); \
+	} while (0)
+#define LS020_RST_SET(v) do { \
+		if ((v) != 0) LS020_RST_PORT_S(LS020_RST); \
+		else  LS020_RST_PORT_C(LS020_RST); \
 	} while (0)
 
 #if LCDMODE_SPI_NA

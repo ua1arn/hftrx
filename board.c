@@ -299,11 +299,7 @@ prog_gpioreg(void)
 {
 
 	#if LS020_RST
-		// LCD reset bit
-		if (glob_lcdreset != 0)
-			LS020_RESET_PORT_S(LS020_RST);
-		else
-			LS020_RESET_PORT_C(LS020_RST);
+		LS020_RST_SET(glob_lcdreset)	// LCD reset bit
 	#endif /* LS020_RST */
 
 	#if TARGET_CS4272_RESET_BIT
@@ -358,10 +354,7 @@ prog_gpioreg(void)
 void board_lcd_rs(uint_fast8_t state)	
 {
 #if LS020_RS
-	if (state != 0)
-		LS020_RS_PORT_S(LS020_RS);
-	else
-		LS020_RS_PORT_C(LS020_RS);
+	LS020_RS_SET(state)	// LCD register address
 #endif /* LS020_RS */
 }
 
