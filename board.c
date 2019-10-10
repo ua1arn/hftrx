@@ -298,9 +298,9 @@ static void
 prog_gpioreg(void)
 {
 
-	#if LS020_RST
-		LS020_RST_SET(glob_lcdreset)	// LCD reset bit
-	#endif /* LS020_RST */
+	#if LS020_RESET
+		LS020_RESET_SET(glob_lcdreset);	// LCD reset bit
+	#endif /* LS020_RESET */
 
 	#if TARGET_CS4272_RESET_BIT
 		// CODEC2 reset
@@ -354,7 +354,7 @@ prog_gpioreg(void)
 void board_lcd_rs(uint_fast8_t state)	
 {
 #if LS020_RS
-	LS020_RS_SET(state)	// LCD register address
+	LS020_RS_SET(state);	// LCD register address
 #endif /* LS020_RS */
 }
 
@@ -377,9 +377,9 @@ board_gpio_init(void)
 
 	///////////////////////
 	// LCD RST bit
-	#if LS020_RST
+	#if LS020_RESET
 		LS020_RESET_INITIALIZE();
-	#endif /* LS020_RST */
+	#endif /* LS020_RESET */
 
 	// DDS RESET
 	#if TARGET_DDSRESET_BIT

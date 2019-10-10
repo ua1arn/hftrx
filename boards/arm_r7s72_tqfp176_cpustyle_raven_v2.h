@@ -70,7 +70,7 @@
 #define LS020_RESET_INITIALIZE() \
 	do { \
 		arm_hardware_pio3_outputs(WRITEE_BIT, 0); /* в новой версии платы выдавать "0" */ \
-		arm_hardware_pio3_outputs(LS020_RST, LS020_RST); \
+		arm_hardware_pio3_outputs(LS020_RESET, LS020_RESET); \
 	} while (0)
 
 #define LS020_RS_SET(v) do { \
@@ -78,9 +78,9 @@
 		else  LS020_RS_PORT_C(LS020_RS); \
 	} while (0)
 
-#define LS020_RST_SET(v) do { \
-		if ((v) != 0) LS020_RST_PORT_S(LS020_RST); \
-		else  LS020_RST_PORT_C(LS020_RST); \
+#define LS020_RESET_SET(v) do { \
+		if ((v) != 0) LS020_RESET_PORT_S(LS020_RESET); \
+		else  LS020_RESET_PORT_C(LS020_RESET); \
 	} while (0)
 
 #if LCDMODE_SPI_NA
@@ -95,7 +95,7 @@
 
 	#define LS020_RESET_PORT_S(v) do {	R7S721_TARGET_PORT_S(3, v); } while (0)
 	#define LS020_RESET_PORT_C(v) do {	R7S721_TARGET_PORT_C(3, v); } while (0)
-	#define LS020_RST			(1u << 10)			// * P3_10 D6 signal in HD44780 socket
+	#define LS020_RESET			(1u << 10)			// * P3_10 D6 signal in HD44780 socket
 
 #elif LCDMODE_SPI_RA
 	// Эти контроллеры требуют RESET и RS
@@ -106,7 +106,7 @@
 
 	#define LS020_RESET_PORT_S(v) do {	R7S721_TARGET_PORT_S(3, v); } while (0)
 	#define LS020_RESET_PORT_C(v) do {	R7S721_TARGET_PORT_C(3, v); } while (0)
-	#define LS020_RST			(1u << 10)			// P3_10 D6 signal in HD44780 socket
+	#define LS020_RESET			(1u << 10)			// P3_10 D6 signal in HD44780 socket
 
 #elif LCDMODE_HD44780 && (LCDMODE_SPI == 0)
 

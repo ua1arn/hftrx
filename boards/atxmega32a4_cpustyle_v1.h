@@ -34,7 +34,7 @@
 
 	//#define LS020_RESET_PORT_S(v)	do { PORTC.OUTSET = (v); } while (0)
 	//#define LS020_RESET_PORT_C(v)	do { PORTC.OUTCLR = (v); } while (0)
-	//#define LS020_RST	(PIN2_bm)			// 
+	//#define LS020_RESET	(PIN2_bm)			// 
 
 	#define LS020_RS_PORT_S(v)	do { PORTC.OUTSET = (v); } while (0)
 	#define LS020_RS_PORT_C(v)	do { PORTC.OUTCLR = (v); } while (0)
@@ -48,8 +48,8 @@
 		} while(0)
 
 	#define LS020_RESET_INITIALIZE() do { \
-			LS020_RESET_PORT_S(LS020_RST); \
-			LS020_RESET_DDR_S = LS020_RST; \
+			LS020_RESET_PORT_S(LS020_RESET); \
+			LS020_RESET_DDR_S = LS020_RESET; \
 		} while(0)
 
 	#define LS020_RS_SET(v) do { \
@@ -57,9 +57,9 @@
 			else  LS020_RS_PORT_C(LS020_RS); \
 		} while (0)
 
-	#define LS020_RST_SET(v) do { \
-			if ((v) != 0) LS020_RST_PORT_S(LS020_RST); \
-			else  LS020_RST_PORT_C(LS020_RST); \
+	#define LS020_RESET_SET(v) do { \
+			if ((v) != 0) LS020_RESET_PORT_S(LS020_RESET); \
+			else  LS020_RESET_PORT_C(LS020_RESET); \
 		} while (0)
 
 	// I2C interface pins

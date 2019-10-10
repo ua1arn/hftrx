@@ -49,9 +49,9 @@
 		if ((v) != 0) LS020_RS_PORT_S(LS020_RS); \
 		else  LS020_RS_PORT_C(LS020_RS); \
 	} while (0)
-#define LS020_RST_SET(v) do { \
-		if ((v) != 0) LS020_RST_PORT_S(LS020_RST); \
-		else  LS020_RST_PORT_C(LS020_RST); \
+#define LS020_RESET_SET(v) do { \
+		if ((v) != 0) LS020_RESET_PORT_S(LS020_RESET); \
+		else  LS020_RESET_PORT_C(LS020_RESET); \
 	} while (0)
 
 #if LCDMODE_ILI9320 || LCDMODE_S1D13781
@@ -59,7 +59,7 @@
 	#define LS020_RESET_PORT_S(v)		do { AT91C_BASE_PIOA->PIO_SODR = (v); } while (0)
 	#define LS020_RESET_PORT_C(v)		do { AT91C_BASE_PIOA->PIO_CODR = (v); } while (0)
 	//#define LS020_RS	AT91C_PIO_PA31
-	#define LS020_RST	AT91C_PIO_PA30
+	#define LS020_RESET	AT91C_PIO_PA30
 
 #elif LCDMODE_LS020
 
@@ -69,7 +69,7 @@
 
 	#define LS020_RESET_PORT_S(v)		do { AT91C_BASE_PIOA->PIO_SODR = (v); } while (0)
 	#define LS020_RESET_PORT_C(v)		do { AT91C_BASE_PIOA->PIO_CODR = (v); } while (0)
-	#define LS020_RST	AT91C_PIO_PA30
+	#define LS020_RESET	AT91C_PIO_PA30
 
 #elif LCDMODE_HD44780
 
