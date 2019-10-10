@@ -1284,7 +1284,8 @@ typedef enum
 typedef enum
 {
 	HOST_IDLE = 0,
-	HOST_DEV_WAIT_FOR_ATTACHMENT0,
+	HOST_DEV_BUS_RESET_ON,
+	HOST_DEV_BUS_RESET_OFF,
 	HOST_DEV_WAIT_FOR_ATTACHMENT,
 	HOST_DEV_BEFORE_ATTACHED,
 	HOST_DEV_ATTACHED,
@@ -1660,7 +1661,7 @@ void             HAL_HCD_HC_NotifyURBChange_Callback(HCD_HandleTypeDef *hhcd,
 /** @defgroup HCD_Exported_Functions_Group3 Peripheral Control functions
   * @{
   */
-HAL_StatusTypeDef       HAL_HCD_ResetPort(HCD_HandleTypeDef *hhcd);
+HAL_StatusTypeDef       HAL_HCD_ResetPort(HCD_HandleTypeDef *hhcd, uint_fast8_t status);
 HAL_StatusTypeDef       HAL_HCD_Start(HCD_HandleTypeDef *hhcd);
 HAL_StatusTypeDef       HAL_HCD_Stop(HCD_HandleTypeDef *hhcd);
 /**
@@ -1724,7 +1725,7 @@ USBH_StatusTypeDef   USBH_LL_Stop         (USBH_HandleTypeDef *phost);
 USBH_StatusTypeDef   USBH_LL_Connect      (USBH_HandleTypeDef *phost);
 USBH_StatusTypeDef   USBH_LL_Disconnect   (USBH_HandleTypeDef *phost);
 USBH_SpeedTypeDef    USBH_LL_GetSpeed     (USBH_HandleTypeDef *phost);
-USBH_StatusTypeDef   USBH_LL_ResetPort    (USBH_HandleTypeDef *phost);
+USBH_StatusTypeDef   USBH_LL_ResetPort    (USBH_HandleTypeDef *phost, uint_fast8_t status);
 uint32_t             USBH_LL_GetLastXferSize   (USBH_HandleTypeDef *phost, uint8_t );
 USBH_StatusTypeDef   USBH_LL_DriverVBUS   (USBH_HandleTypeDef *phost, uint_fast8_t );
 
@@ -1980,7 +1981,7 @@ uint32_t USB_ReadDevInEPInterrupt(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t epnu
 void USB_ClearInterrupts(USB_OTG_GlobalTypeDef *USBx, uint32_t interrupt);
 
 static HAL_StatusTypeDef USB_InitFSLSPClkSel(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t freq);
-static HAL_StatusTypeDef USB_ResetPort(USB_OTG_GlobalTypeDef *USBx);
+static HAL_StatusTypeDef USB_ResetPort(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t state);
 static HAL_StatusTypeDef USB_DriveVbus(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t state);
 static uint32_t  USB_GetHostSpeed(USB_OTG_GlobalTypeDef *USBx);
 
@@ -2069,12 +2070,12 @@ static unsigned USBD_UAC2_FeatureUnit_req(
 	case 0x01:	// CURR
 		switch (terminalID)
 		{
-		case TERMINAL_ID_FU_IN + 0 * MAX_TERMINALS_IN_INTERFACE:
-		case TERMINAL_ID_FU_IN + 1 * MAX_TERMINALS_IN_INTERFACE:
-		case TERMINAL_ID_FU_IN + 2 * MAX_TERMINALS_IN_INTERFACE:
-		case TERMINAL_ID_FU_OUT + 0 * MAX_TERMINALS_IN_INTERFACE:
-		case TERMINAL_ID_FU_OUT + 1 * MAX_TERMINALS_IN_INTERFACE:
-		case TERMINAL_ID_FU_OUT + 2 * MAX_TERMINALS_IN_INTERFACE:
+		case TERMINAL_ID_FU2_IN + 0 * MAX_TERMINALS_IN_INTERFACE:
+		case TERMINAL_ID_FU2_IN + 1 * MAX_TERMINALS_IN_INTERFACE:
+		case TERMINAL_ID_FU2_IN + 2 * MAX_TERMINALS_IN_INTERFACE:
+		case TERMINAL_ID_FU2_OUT + 0 * MAX_TERMINALS_IN_INTERFACE:
+		case TERMINAL_ID_FU2_OUT + 1 * MAX_TERMINALS_IN_INTERFACE:
+		case TERMINAL_ID_FU2_OUT + 2 * MAX_TERMINALS_IN_INTERFACE:
 			switch (controlID)
 			{
 			case 1:
@@ -2092,12 +2093,12 @@ static unsigned USBD_UAC2_FeatureUnit_req(
 	case 0x02:	// RANGE
 		switch (terminalID)
 		{
-		case TERMINAL_ID_FU_IN + 0 * MAX_TERMINALS_IN_INTERFACE:
-		case TERMINAL_ID_FU_IN + 1 * MAX_TERMINALS_IN_INTERFACE:
-		case TERMINAL_ID_FU_IN + 2 * MAX_TERMINALS_IN_INTERFACE:
-		case TERMINAL_ID_FU_OUT + 0 * MAX_TERMINALS_IN_INTERFACE:
-		case TERMINAL_ID_FU_OUT + 1 * MAX_TERMINALS_IN_INTERFACE:
-		case TERMINAL_ID_FU_OUT + 2 * MAX_TERMINALS_IN_INTERFACE:
+		case TERMINAL_ID_FU2_IN + 0 * MAX_TERMINALS_IN_INTERFACE:
+		case TERMINAL_ID_FU2_IN + 1 * MAX_TERMINALS_IN_INTERFACE:
+		case TERMINAL_ID_FU2_IN + 2 * MAX_TERMINALS_IN_INTERFACE:
+		case TERMINAL_ID_FU2_OUT + 0 * MAX_TERMINALS_IN_INTERFACE:
+		case TERMINAL_ID_FU2_OUT + 1 * MAX_TERMINALS_IN_INTERFACE:
+		case TERMINAL_ID_FU2_OUT + 2 * MAX_TERMINALS_IN_INTERFACE:
 			switch (controlID)
 			{
 			case 1:
@@ -2335,6 +2336,7 @@ static void control_stall(USBD_HandleTypeDef *pdev)
 		//1 * (1uL << USB_DCPCTR_PID_SHIFT) |	// PID 01: BUF response (depending on the buffer state)
 		DEVDRV_USBF_PID_STALL * (1uL << USB_DCPCTR_PID_SHIFT) |	// PID 02: STALL response
 		0;
+	(void) USBx->DCPCTR;
 }
 
 static uint_fast8_t
@@ -2365,7 +2367,7 @@ control_transmit2(USBD_HandleTypeDef *pdev)
 	}
 	else if (ep0data != NULL)
 	{
-		// если последний пакет был кратет USB_OTG_MAX_EP0_SIZE, то передаем пакет нулевого размера
+		// если последний пакет был кратен USB_OTG_MAX_EP0_SIZE, то передаем пакет нулевого размера
 		if (control_transmit0single(pdev, ep0data, 0))
 			return 1;
 		ep0data = NULL;
@@ -2386,6 +2388,7 @@ static USBD_StatusTypeDef USBD_CtlSendDataNec(USBD_HandleTypeDef *pdev, const ui
 	USBx->DCPCTR = (USBx->DCPCTR & ~ USB_DCPCTR_PID) |
 		DEVDRV_USBF_PID_NAK * (1uL << USB_DCPCTR_PID_SHIFT) |	// PID 00: NAK
 		0;
+	(void) USBx->DCPCTR;
 
 	if (size <= USB_OTG_MAX_EP0_SIZE)
 	{
@@ -2414,6 +2417,7 @@ static USBD_StatusTypeDef USBD_CtlSendDataNec(USBD_HandleTypeDef *pdev, const ui
 	USBx->DCPCTR = (USBx->DCPCTR & ~ USB_DCPCTR_PID) |
 		DEVDRV_USBF_PID_BUF * (1uL << USB_DCPCTR_PID_SHIFT) |	// PID 01: BUF response (depending on the buffer state)
 		0;
+	(void) USBx->DCPCTR;
 
 	return USBD_OK;
 }
@@ -2436,6 +2440,7 @@ static void dcp_acksend(USBD_HandleTypeDef *pdev)
 	Instance->DCPCTR = (Instance->DCPCTR & ~ USB_DCPCTR_PID) |
 		0x01 * MASK2LSB(USB_DCPCTR_PID) |	// PID 01: BUF response (depending on the buffer state)
 		0;
+	(void) Instance->DCPCTR;
 
 }
 
@@ -2452,6 +2457,7 @@ static void nak_ep0(USBD_HandleTypeDef *pdev)
 			//1 * (1uL << USB_DCPCTR_CCPL_SHIFT) |	// CCPL - Не имеет значения в моих тестах
 			DEVDRV_USBF_PID_NAK * (1uL << USB_DCPCTR_PID_SHIFT) |	// PID 00: NAK response
 			0;
+		(void) USBx->DCPCTR;
 	}
 
 	const uint_fast8_t pipe = 0;	// DCP
@@ -2471,6 +2477,7 @@ static void nak_ep0(USBD_HandleTypeDef *pdev)
 		//1 * (1uL << 0) |	// PID 01: BUF response (depending on the buffer state)
 		//2 * (1uL << 0) |	// PID 02: STALL response
 		0;
+	(void) USBx->DCPCTR;
 }
 
 // STALL
@@ -2497,6 +2504,7 @@ static void stall_ep0(USBD_HandleTypeDef *pdev)
 		//1 * (1uL << 0) |	// PID 01: BUF response (depending on the buffer state)
 		DEVDRV_USBF_PID_STALL * (1uL << USB_DCPCTR_PID_SHIFT) |	// PID 02: STALL response
 		0;
+	(void) USBx->DCPCTR;
 
 }
 
@@ -2651,9 +2659,11 @@ usbd_handler_nrdy(USBD_HandleTypeDef *pdev, uint_fast8_t pipe)
 			Instance->DCPCTR = (Instance->DCPCTR & ~ USB_DCPCTR_PID) |
 				DEVDRV_USBF_PID_NAK * (1uL << USB_DCPCTR_PID_SHIFT) |	// PID 00: NAK
 				0;
+			(void) Instance->DCPCTR;
 			Instance->DCPCTR = (Instance->DCPCTR & ~ USB_DCPCTR_PID) |
 				DEVDRV_USBF_PID_BUF * (1uL << USB_DCPCTR_PID_SHIFT) |	// PID 01: BUF response (depending on the buffer state)
 				0;
+			(void) Instance->DCPCTR;
 		}
 		else
 		{
@@ -2662,9 +2672,11 @@ usbd_handler_nrdy(USBD_HandleTypeDef *pdev, uint_fast8_t pipe)
 			* PIPEnCTR = (* PIPEnCTR & ~ USB_PIPEnCTR_1_5_PID) |
 				DEVDRV_USBF_PID_NAK * (1uL << USB_PIPEnCTR_1_5_PID_SHIFT) |	// PID 00: NAK
 				0;
+			(void) * PIPEnCTR;
 			* PIPEnCTR = (* PIPEnCTR & ~ USB_PIPEnCTR_1_5_PID) |
 				DEVDRV_USBF_PID_BUF * (1uL << USB_PIPEnCTR_1_5_PID_SHIFT) |	// PID 01: BUF response (depending on the buffer state)
 				0;
+			(void) * PIPEnCTR;
 		}
 	}
 	(void) pid;
@@ -2972,7 +2984,7 @@ static void usb0_function_GetDescriptor(USBD_HandleTypeDef *pdev, const USBD_Set
 		{
 		case 0xF8:
 			// Запрос появляется при запуске MixW2
-			//USBD_CtlSendData(Instance, StringDescrTbl [STRING_ID_7].data, ulmin16(req->wLength, StringDescrTbl [STRING_ID_7].size));
+			//USBD_CtlSendData(pdev, StringDescrTbl [STRING_ID_7].data, ulmin16(req->wLength, StringDescrTbl [STRING_ID_7].size));
 			USBD_CtlError(pdev, req);
 			return;
 
@@ -3345,12 +3357,12 @@ static void usbdFunctionReq_seq1(USBD_HandleTypeDef *pdev, const USBD_SetupReqTy
 						len = USBD_UAC2_ClockSource_req(req, buff);
 						break;
 
-					case TERMINAL_ID_FU_IN + 0 * MAX_TERMINALS_IN_INTERFACE:
-					case TERMINAL_ID_FU_IN + 1 * MAX_TERMINALS_IN_INTERFACE:
-					case TERMINAL_ID_FU_IN + 2 * MAX_TERMINALS_IN_INTERFACE:
-					case TERMINAL_ID_FU_OUT + 0 * MAX_TERMINALS_IN_INTERFACE:
-					case TERMINAL_ID_FU_OUT + 1 * MAX_TERMINALS_IN_INTERFACE:
-					case TERMINAL_ID_FU_OUT + 2 * MAX_TERMINALS_IN_INTERFACE:
+					case TERMINAL_ID_FU2_IN + 0 * MAX_TERMINALS_IN_INTERFACE:
+					case TERMINAL_ID_FU2_IN + 1 * MAX_TERMINALS_IN_INTERFACE:
+					case TERMINAL_ID_FU2_IN + 2 * MAX_TERMINALS_IN_INTERFACE:
+					case TERMINAL_ID_FU2_OUT + 0 * MAX_TERMINALS_IN_INTERFACE:
+					case TERMINAL_ID_FU2_OUT + 1 * MAX_TERMINALS_IN_INTERFACE:
+					case TERMINAL_ID_FU2_OUT + 2 * MAX_TERMINALS_IN_INTERFACE:
 						len = USBD_UAC2_FeatureUnit_req(req, buff);
 						break;
 					}
@@ -3846,32 +3858,22 @@ static void actions_seq4(
 
 void HAL_PCD_SetupStageCallback(PCD_HandleTypeDef *hpcd);
 
-static void usb0_function_save_request(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef *req)
+static void usb_save_request(USB_OTG_GlobalTypeDef * const USBx, USBD_SetupReqTypedef *req)
 {
 #if CPUSTYLE_R7S721
-	USB_OTG_GlobalTypeDef * const Instance = ((PCD_HandleTypeDef *) pdev->pData)->Instance;
-
-	const uint_fast16_t usbreq = Instance->USBREQ;
-
+	const uint_fast16_t usbreq = USBx->USBREQ;
 
 	req->bmRequest     = LO_BYTE(usbreq & USB_FUNCTION_bmRequestType); //(pdata [0] >> 0) & 0x00FF;
 	req->bRequest      = HI_BYTE(usbreq & USB_FUNCTION_bRequest); //(pdata [0] >> 8) & 0x00FF;
-	req->wValue        = Instance->USBVAL; //(pdata [0] >> 16) & 0xFFFF;
-	req->wIndex        = Instance->USBINDX; //(pdata [1] >> 0) & 0xFFFF;
-	req->wLength       = Instance->USBLENG; //(pdata [1] >> 16) & 0xFFFF;
+	req->wValue        = USBx->USBVAL; //(pdata [0] >> 16) & 0xFFFF;
+	req->wIndex        = USBx->USBINDX; //(pdata [1] >> 0) & 0xFFFF;
+	req->wLength       = USBx->USBLENG; //(pdata [1] >> 16) & 0xFFFF;
 
 #endif
 
 #if 0
 	PRINTF(PSTR("USBD_ParseSetupRequest: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"),
 		req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
-#endif
-
-#if 0
-	PRINTF(
-		PSTR("ReqType=%02X, ReqTypeType=%02X, ReqTypeRecip=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"),
-		gReqType, gReqTypeType, gReqTypeRecip, gReqRequest, gReqValue, gReqIndex, gReqLength
-		);
 #endif
 }
 
@@ -3902,9 +3904,6 @@ static void usbd_handle_ctrt(USBD_HandleTypeDef *pdev, uint_fast8_t ctsq)
 		//PRINTF(PSTR("actions_seq1\n"));
 		// 1: Control read data stage
 		// seq1 OUT token -> seq2 -> seq0
-		Instance->INTSTS0 = (uint16_t) ~ (1uL << USB_INTSTS0_VALID_SHIFT);	// Clear VALID - in seq 1, 3 and 5
-		usb0_function_save_request(pdev, & pdev->request);
-
 		actions_seq1(pdev, & pdev->request);	// USBD_XXX_Setup
         //HAL_PCD_SetupStageCallback((PCD_HandleTypeDef *) pdev->pData);
 
@@ -3917,14 +3916,13 @@ static void usbd_handle_ctrt(USBD_HandleTypeDef *pdev, uint_fast8_t ctsq)
 		// после - usbdFunctionReq_seq1 - напимер после запроса GET_LINE_CODING
 
 		Instance->DCPCTR |= 1 * (1uL << USB_DCPCTR_CCPL_SHIFT);	// CCPL
+		(void) Instance->DCPCTR;
 		break;
 
 	case 3:
 		//PRINTF(PSTR("actions_seq3\n"));
 		// 3: Control write data stage
 		// seq3 IN token -> seq4 ->seq0
-		Instance->INTSTS0 = (uint16_t) ~ (1uL << USB_INTSTS0_VALID_SHIFT);	// Clear VALID - in seq 1, 3 and 5
-		usb0_function_save_request(pdev, & pdev->request);
 
 		actions_seq3(pdev, & pdev->request);// USBD_XXX_Setup
         //HAL_PCD_SetupStageCallback((PCD_HandleTypeDef *) pdev->pData);
@@ -3933,23 +3931,24 @@ static void usbd_handle_ctrt(USBD_HandleTypeDef *pdev, uint_fast8_t ctsq)
 	case 4:
 		//PRINTF(PSTR("actions_seq4\n"));
 		// 4: Control write status stage
+
 		actions_seq4(pdev, & pdev->request);
 		// после usbd_handler_brdy8_dcp_out
 
 		Instance->DCPCTR |= 1 * (1uL << USB_DCPCTR_CCPL_SHIFT);	// CCPL
+		(void) Instance->DCPCTR;
 		break;
 
 	case 5:
 		//PRINTF(PSTR("actions_seq5\n"));
 		// 5: Control write (no data) status stage
 		// seq5 -> seq0
-		Instance->INTSTS0 = (uint16_t) ~ (1uL << USB_INTSTS0_VALID_SHIFT);	// Clear VALID - in seq 1, 3 and 5
-		usb0_function_save_request(pdev, & pdev->request);
 
 		actions_seq5(pdev, & pdev->request);// USBD_XXX_Setup
         //HAL_PCD_SetupStageCallback((PCD_HandleTypeDef *) pdev->pData);
 
 		Instance->DCPCTR |= 1 * (1uL << USB_DCPCTR_CCPL_SHIFT);	// CCPL
+		(void) Instance->DCPCTR;
 		break;
 
 	case 6:
@@ -4607,8 +4606,15 @@ static void r7s721_usbdevice_handler(PCD_HandleTypeDef *hhcd)
 	{
 		//PRINTF(PSTR("r7s721_usbdevice_handler trapped - CTRT, CTSQ=%d\n"), (intsts0 >> 0) & 0x07);
 		USBx->INTSTS0 = (uint16_t) ~ (1uL << USB_INTSTS0_CTRT_SHIFT);	// Clear CTRT
+		if ((intsts0 & USB_INTSTS0_VALID) != 0)
+		{
+			// Setup syage detectd
+			usb_save_request(USBx, & pdev->request);
+			USBx->INTSTS0 = (uint16_t) ~ USB_INTSTS0_VALID;	// Clear VALID - in seq 1, 3 and 5
+			//ASSERT(ctsq == 1 || ctsq == 3 || ctsq == 5);
+		}
 
-		usbd_handle_ctrt(pdev, intsts0 & USB_INTSTS0_CTSQ);
+		usbd_handle_ctrt(pdev, (intsts0 & USB_INTSTS0_CTSQ) >> USB_INTSTS0_CTSQ_SHIFT);
 	}
 	if ((intsts0msk & (1uL << USB_INTSTS0_DVST_SHIFT)) != 0)	// DVSE
 	{
@@ -4786,7 +4792,17 @@ uint32_t USB_GetCurrentFrame (USB_OTG_GlobalTypeDef *USBx)
   */
 static uint32_t USB_GetHostSpeed (USB_OTG_GlobalTypeDef *USBx)
 {
-	return USB_OTG_SPEED_HIGH;
+	switch ((USBx->DVSTCTR0 & USB_DVSTCTR0_RHST) >> USB_DVSTCTR0_RHST_SHIFT)
+	{
+	case 0x01:
+		return USB_OTG_SPEED_LOW;
+	case 0x02:
+		return USB_OTG_SPEED_FULL;
+	case 0x03:
+		return USB_OTG_SPEED_HIGH;
+	default:
+		return USB_OTG_SPEED_LOW;
+	}
 }
 
 
@@ -4921,8 +4937,11 @@ HAL_StatusTypeDef  USB_DevDisconnect (USB_OTG_GlobalTypeDef *USBx)
 {
 	//PRINTF(PSTR("USB_DevDisconnect (USBx=%p)\n"), USBx);
 
-	USBx->SYSCFG0 &= ~ USB_SYSCFG_DPRPU;	// DPRPU 0: Pulling up the D+ line is disabled.
-	(void) USBx->SYSSTS0;
+	USBx->SYSCFG0 = (USBx->SYSCFG0 & ~ (USB_SYSCFG_DPRPU | USB_SYSCFG_DRPD)) |
+			0 * USB_SYSCFG_DPRPU |	// DPRPU 0: Pulling up the D+ line is disabled.
+			0 * USB_SYSCFG_DRPD |	// DRPD0: Pulling down the lines is disabled.
+			0;
+	(void) USBx->SYSCFG0;
 	//HAL_Delay(3);
 
 	return HAL_OK;
@@ -4937,8 +4956,11 @@ HAL_StatusTypeDef  USB_DevConnect (USB_OTG_GlobalTypeDef *USBx)
 {
 	//PRINTF(PSTR("USB_DevConnect (USBx=%p)\n"), USBx);
 
-	USBx->SYSCFG0 |= USB_SYSCFG_DPRPU;	// DPRPU 1: Pulling up the D+ line is enabled.
-	(void) USBx->SYSSTS0;
+	USBx->SYSCFG0 = (USBx->SYSCFG0 & ~ (USB_SYSCFG_DPRPU | USB_SYSCFG_DRPD)) |
+			1 * USB_SYSCFG_DPRPU |	// DPRPU 1: Pulling up the D+ line is enabled.
+			0 * USB_SYSCFG_DRPD |	// DRPD 0: Pulling down the lines is disabled.
+			0;
+	(void) USBx->SYSCFG0;
 	//HAL_Delay(3);
 
 	return HAL_OK;
@@ -4963,6 +4985,7 @@ HAL_StatusTypeDef USB_EP0StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDe
 		USBx->DCPCTR = (USBx->DCPCTR & ~ USB_DCPCTR_PID) |
 			DEVDRV_USBF_PID_NAK * (1uL << USB_DCPCTR_PID_SHIFT) |	// PID 00: NAK
 			0;
+		(void) USBx->DCPCTR;
 
 		/* IN endpoint */
 		if (ep->xfer_len == 0)
@@ -4999,6 +5022,8 @@ HAL_StatusTypeDef USB_EP0StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDe
 
 HAL_StatusTypeDef USB_HC_StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_HCTypeDef *hc, uint_fast8_t dma)
 {
+	ASSERT(dma == 0);
+
 	return HAL_OK;
 }
 
@@ -5018,16 +5043,23 @@ HAL_StatusTypeDef USB_HC_Halt(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t hc_num)
 /**
 * @brief  USB_OTG_ResetPort : Reset Host Port
   * @param  USBx : Selected device
+  * @param  state : activate reset
   * @retval HAL status
   * @note : (1)The application must wait at least 10 ms
   *   before clearing the reset bit.
   */
-static HAL_StatusTypeDef USB_ResetPort(USB_OTG_GlobalTypeDef *USBx)
+static HAL_StatusTypeDef USB_ResetPort(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t state)
 {
-	USBx->DVSTCTR0 |= USB_DVSTCTR0_USBRST;
-	local_delay_ms(10);
-	USBx->DVSTCTR0 &= ~ USB_DVSTCTR0_USBRST;
-	local_delay_ms(10);
+	if (state)
+	{
+		USBx->DVSTCTR0 |= USB_DVSTCTR0_USBRST;
+		(void) USBx->DVSTCTR0;
+	}
+	else
+	{
+		USBx->DVSTCTR0 &= ~ USB_DVSTCTR0_USBRST;
+		(void) USBx->DVSTCTR0;
+	}
 
 	return HAL_OK;
 }
@@ -5081,32 +5113,29 @@ static HAL_StatusTypeDef USB_HostInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG
 	//hpcd->Instance->CFIFOSEL = 0;	// не помогает с первым чтением из DCP
 	//hpcd->Instance->CFIFOCTR = USB_CFIFOCTR_BCLR;	// BCLR
 
+	USBx->SYSCFG0 &= ~ USB_SYSCFG_USBE;	// USBE 0: USB module operation is disabled.
+	(void) USBx->SYSCFG0;
+
 	USBx->SOFCFG =
 		//USB_SOFCFG_BRDYM |	// BRDYM
 		0;
 
-	USBx->SYSCFG0 &= ~ USB_SYSCFG_DPRPU;	// DPRPU 0: Pulling up the D+ line is disabled.
-	(void) USBx->SYSSTS0;
-
-	USBx->SYSCFG0 |= USB_SYSCFG_DRPD;	// DRPD 1: Pulling down the lines is enabled.
-	(void) USBx->SYSSTS0;
+	USBx->SYSCFG0 = (USBx->SYSCFG0 & ~ (USB_SYSCFG_DPRPU | USB_SYSCFG_DRPD)) |
+			0 * USB_SYSCFG_DPRPU |	// DPRPU 0: Pulling up the D+ line is disabled.
+			1 * USB_SYSCFG_DRPD |	// DRPD 1: Pulling down the lines is enabled.
+			0;
+	(void) USBx->SYSCFG0;
 
 	USBx->SYSCFG0 |= USB_SYSCFG_DCFM;	// DCFM 1: Host controller mode is selected
-	(void) USBx->SYSSTS0;
+	(void) USBx->SYSCFG0;
 
 	USBx->SYSCFG0 |= USB_SYSCFG_USBE;	// USBE 1: USB module operation is enabled.
-	(void) USBx->SYSSTS0;
+	(void) USBx->SYSCFG0;
 
-	if (cfg->speed == USBD_SPEED_HIGH)
-	{
-		USBx->SYSCFG0 |= USB_SYSCFG_HSE;	// HSE
-		(void) USBx->SYSSTS0;
-	}
-	else
-	{
-		USBx->SYSCFG0 &= ~ USB_SYSCFG_HSE;	// HSE
-		(void) USBx->SYSSTS0;
-	}
+	USBx->SYSCFG0 = (USBx->SYSCFG0 & ~ (USB_SYSCFG_HSE)) |
+			(cfg->speed == USBD_SPEED_HIGH) * USB_SYSCFG_HSE |	// HSE
+			0;
+	(void) USBx->SYSCFG0;
 
 	/*
 	The RSME, DVSE, and CTRE bits can be set to 1 only when the function controller mode is selected; do not set these bits to 1
@@ -5436,27 +5465,30 @@ static HAL_StatusTypeDef USB_CoreInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG
   */
 static HAL_StatusTypeDef USB_DevInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_CfgTypeDef * cfg)
 {
+	USBx->SYSCFG0 &= ~ USB_SYSCFG_USBE;	// USBE 0: USB module operation is disabled.
+	(void) USBx->SYSCFG0;
+
 	USBx->SOFCFG =
 		//USB_SOFCFG_BRDYM |	// BRDYM
 		0;
-	(void) USBx->SYSSTS0;
+	(void) USBx->SOFCFG;
+
+	USBx->SYSCFG0 = (USBx->SYSCFG0 & ~ (USB_SYSCFG_DPRPU | USB_SYSCFG_DRPD)) |
+			0 * USB_SYSCFG_DPRPU |	// DPRPU 0: Pulling up the D+ line is disabled.
+			0 * USB_SYSCFG_DRPD |	// DRPD 0: Pulling down the lines is disabled.
+			0;
+	(void) USBx->SYSCFG0;
 
 	USBx->SYSCFG0 &= ~ USB_SYSCFG_DCFM;	// DCFM 0: Device controller mode is selected
-	(void) USBx->SYSSTS0;
+	(void) USBx->SYSCFG0;
 
 	USBx->SYSCFG0 |= USB_SYSCFG_USBE;	// USBE 1: USB module operation is enabled.
-	(void) USBx->SYSSTS0;
+	(void) USBx->SYSCFG0;
 
-	if (cfg->speed == USBD_SPEED_HIGH)
-	{
-		USBx->SYSCFG0 |= USB_SYSCFG_HSE;	// HSE
-		(void) USBx->SYSSTS0;
-	}
-	else
-	{
-		USBx->SYSCFG0 &= ~ USB_SYSCFG_HSE;	// HSE
-		(void) USBx->SYSSTS0;
-	}
+	USBx->SYSCFG0 = (USBx->SYSCFG0 & ~ (USB_SYSCFG_HSE)) |
+			(cfg->speed == USBD_SPEED_HIGH) * USB_SYSCFG_HSE |	// HSE
+			0;
+	(void) USBx->SYSCFG0;
 
 	USBx->INTENB0 =
 		(cfg->Sof_enable != USB_FALSE) * USB_INTENB0_SOFE |	// SOFE	1: Frame Number Update Interrupt Enable
@@ -7221,20 +7253,22 @@ static HAL_StatusTypeDef USB_InitFSLSPClkSel(USB_OTG_GlobalTypeDef *USBx, uint_f
 /**
 * @brief  USB_OTG_ResetPort : Reset Host Port
   * @param  USBx : Selected device
+  * @param  state : activate reset
   * @retval HAL status
   * @note : (1)The application must wait at least 10 ms
   *   before clearing the reset bit.
   */
-static HAL_StatusTypeDef USB_ResetPort(USB_OTG_GlobalTypeDef *USBx)
+static HAL_StatusTypeDef USB_ResetPort(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t state)
 {
   uint32_t hprt0 = USBx_HPRT0;
 
-  hprt0 &= ~(USB_OTG_HPRT_PENA    | USB_OTG_HPRT_PCDET |
-    USB_OTG_HPRT_PENCHNG | USB_OTG_HPRT_POCCHNG );
+  hprt0 &= ~ (USB_OTG_HPRT_PENA | USB_OTG_HPRT_PCDET | USB_OTG_HPRT_PENCHNG | USB_OTG_HPRT_POCCHNG);
 
-  USBx_HPRT0 = (USB_OTG_HPRT_PRST | hprt0);
-  HAL_Delay (10);                                /* See Note #1 */
-  USBx_HPRT0 = ((~USB_OTG_HPRT_PRST) & hprt0);
+  if (state)
+	  USBx_HPRT0 = (USB_OTG_HPRT_PRST | hprt0);
+  else
+	  USBx_HPRT0 = ((~ USB_OTG_HPRT_PRST) & hprt0);
+
   return HAL_OK;
 }
 
@@ -8603,7 +8637,8 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 
 static void USBD_ParseSetupRequest(USBD_SetupReqTypedef *req, const uint32_t * pdata)
 {
-	req->bmRequest     = (pdata [0] >> 0) & 0x00FF;
+#if CPUSTYLE_STM32
+	req->bmRequest     = (pdata [0] >> 0) & 0x00FF;	// bmRequestType
 	req->bRequest      = (pdata [0] >> 8) & 0x00FF;
 	req->wValue        = (pdata [0] >> 16) & 0xFFFF;
 	req->wIndex        = (pdata [1] >> 0) & 0xFFFF;
@@ -8612,6 +8647,7 @@ static void USBD_ParseSetupRequest(USBD_SetupReqTypedef *req, const uint32_t * p
 	PRINTF(PSTR("USBD_ParseSetupRequest: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"),
 		req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
 #endif
+#endif /* CPUSTYLE_STM32 */
 }
 
 
@@ -9338,12 +9374,12 @@ static USBD_StatusTypeDef USBD_XXX_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 							len = USBD_UAC2_ClockSource_req(req, buff);
 							break;
 
-						case TERMINAL_ID_FU_IN + 0 * MAX_TERMINALS_IN_INTERFACE:
-						case TERMINAL_ID_FU_IN + 1 * MAX_TERMINALS_IN_INTERFACE:
-						case TERMINAL_ID_FU_IN + 2 * MAX_TERMINALS_IN_INTERFACE:
-						case TERMINAL_ID_FU_OUT + 0 * MAX_TERMINALS_IN_INTERFACE:
-						case TERMINAL_ID_FU_OUT + 1 * MAX_TERMINALS_IN_INTERFACE:
-						case TERMINAL_ID_FU_OUT + 2 * MAX_TERMINALS_IN_INTERFACE:
+						case TERMINAL_ID_FU2_IN + 0 * MAX_TERMINALS_IN_INTERFACE:
+						case TERMINAL_ID_FU2_IN + 1 * MAX_TERMINALS_IN_INTERFACE:
+						case TERMINAL_ID_FU2_IN + 2 * MAX_TERMINALS_IN_INTERFACE:
+						case TERMINAL_ID_FU2_OUT + 0 * MAX_TERMINALS_IN_INTERFACE:
+						case TERMINAL_ID_FU2_OUT + 1 * MAX_TERMINALS_IN_INTERFACE:
+						case TERMINAL_ID_FU2_OUT + 2 * MAX_TERMINALS_IN_INTERFACE:
 							len = USBD_UAC2_FeatureUnit_req(req, buff);
 							break;
 						}
@@ -15152,7 +15188,7 @@ static USBD_StatusTypeDef USBD_HS_Init(PCD_HandleTypeDef * hpcd, USBD_HandleType
 
 	pdev->nClasses = 0;
 	/* Set Device initial State */
-	pdev->dev_state  = USBD_STATE_DEFAULT;
+	pdev->dev_state = USBD_STATE_DEFAULT;
 	/* Initialize low level driver */
 	USBD_LL_HS_Init(hpcd, pdev);
 
@@ -15164,8 +15200,8 @@ static USBD_StatusTypeDef USBD_FS_Init(PCD_HandleTypeDef * hpcd, USBD_HandleType
 	/* Check whether the USB Host handle is valid */
 	if(pdev == NULL)
 	{
-	//USBD_ErrLog("Invalid Device handle");
-	return USBD_FAIL;
+		//USBD_ErrLog("Invalid Device handle");
+		return USBD_FAIL;
 	}
 
 	pdev->nClasses = 0;
@@ -15398,9 +15434,10 @@ HAL_StatusTypeDef HAL_HCD_Stop(HCD_HandleTypeDef *hhcd)
   * @param  hhcd: HCD handle
   * @retval HAL status
   */
-HAL_StatusTypeDef HAL_HCD_ResetPort(HCD_HandleTypeDef *hhcd)
+HAL_StatusTypeDef HAL_HCD_ResetPort(HCD_HandleTypeDef *hhcd, uint_fast8_t status)
 {
-  return (USB_ResetPort(hhcd->Instance));
+	USB_ResetPort(hhcd->Instance, status);
+	return HAL_OK;
 }
 
 /**
@@ -15498,27 +15535,29 @@ USBH_StatusTypeDef  USBH_LL_Stop (USBH_HandleTypeDef *phost)
   */
 USBH_SpeedTypeDef USBH_LL_GetSpeed  (USBH_HandleTypeDef *phost)
 {
-  USBH_SpeedTypeDef speed = USBH_SPEED_FULL;
+	USBH_SpeedTypeDef speed;
 
-  switch (HAL_HCD_GetCurrentSpeed(phost->pData))
-  {
-  case 0 :
-    speed = USBH_SPEED_HIGH;
-    break;
+	switch (HAL_HCD_GetCurrentSpeed(phost->pData))
+	{
+	case USB_OTG_SPEED_HIGH:
+		speed = USBH_SPEED_HIGH;
+		break;
 
-  case 1 :
-    speed = USBH_SPEED_FULL;
-    break;
+	case USB_OTG_SPEED_HIGH_IN_FULL:
+		speed = USBH_SPEED_FULL;
+		break;
 
-  case 2 :
-    speed = USBH_SPEED_LOW;
-    break;
+	case USB_OTG_SPEED_LOW:
+		speed = USBH_SPEED_LOW;
+		break;
 
-  default:
-   speed = USBH_SPEED_FULL;
-    break;
-  }
-  return  speed;
+	default:
+	case USB_OTG_SPEED_FULL:
+		speed = USBH_SPEED_FULL;
+		break;
+	}
+	PRINTF(PSTR("USBH_LL_GetSpeed: (high=0, full=1, low=2) speed=%d\n"), (int) speed);
+	return speed;
 }
 
 /**
@@ -15527,12 +15566,12 @@ USBH_SpeedTypeDef USBH_LL_GetSpeed  (USBH_HandleTypeDef *phost)
   * @param  phost: Host handle
   * @retval USBH Status
   */
-USBH_StatusTypeDef USBH_LL_ResetPort (USBH_HandleTypeDef *phost)
+USBH_StatusTypeDef USBH_LL_ResetPort (USBH_HandleTypeDef *phost, uint_fast8_t status)
 {
   HAL_StatusTypeDef hal_status = HAL_OK;
   USBH_StatusTypeDef usb_status = USBH_OK;
 
-  hal_status = HAL_HCD_ResetPort(phost->pData);
+  hal_status = HAL_HCD_ResetPort(phost->pData, status);
   switch (hal_status) {
     case HAL_OK :
       usb_status = USBH_OK;
@@ -18071,7 +18110,7 @@ static void USBH_ProcessDelay(
 	)
 {
 	const uint_fast16_t nticks = NTICKS(delayMS);
-	if (nticks > 2)
+	if (nticks > 1)
 	{
 		phost->gPushTicks = nticks;
 		phost->gPushState = state;
@@ -18100,17 +18139,24 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
 		if (phost->device.is_connected)  
 		{
 			/* Wait for 200 ms after connection */
-			USBH_ProcessDelay(phost, HOST_DEV_WAIT_FOR_ATTACHMENT0, 200);
+			USBH_ProcessDelay(phost, HOST_DEV_BUS_RESET_ON, 200);
 		}
 		break;
 
-	case HOST_DEV_WAIT_FOR_ATTACHMENT0:
-		PRINTF(PSTR("USBH_Process: HOST_DEV_WAIT_FOR_ATTACHMENT0\n"));
-		USBH_LL_ResetPort(phost);
-#if (USBH_USE_OS == 1)
-		osMessagePut ( phost->os_event, USBH_PORT_EVENT, 0);
-#endif
-		phost->gState = HOST_DEV_WAIT_FOR_ATTACHMENT; 
+	case HOST_DEV_BUS_RESET_ON:
+		//PRINTF(PSTR("USBH_Process: HOST_DEV_BUS_RESET_ON\n"));
+		USBH_LL_ResetPort(phost, 1);
+		USBH_ProcessDelay(phost, HOST_DEV_BUS_RESET_OFF, 50);
+		break;
+
+	case HOST_DEV_BUS_RESET_OFF:
+		//PRINTF(PSTR("USBH_Process: HOST_DEV_BUS_RESET_OFF\n"));
+		USBH_LL_ResetPort(phost, 0);
+
+	#if (USBH_USE_OS == 1)
+			osMessagePut ( phost->os_event, USBH_PORT_EVENT, 0);
+	#endif
+		phost->gState = HOST_DEV_WAIT_FOR_ATTACHMENT;
 		break;
 
 	case HOST_DELAY:
