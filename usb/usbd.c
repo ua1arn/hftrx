@@ -658,7 +658,7 @@ typedef struct
   
   uint_fast32_t  xfer_count;     /*!< Partial transfer length in case of multi packet transfer                 */
 
-}USB_OTG_EPTypeDef;
+} USB_OTG_EPTypeDef;
 
 typedef struct
 {
@@ -712,7 +712,7 @@ typedef struct
   USB_OTG_HCStateTypeDef   state;     /*!< Host Channel state. 
                                            This parameter can be any value of @ref USB_OTG_HCStateTypeDef  */ 
                                              
-}USB_OTG_HCTypeDef;
+} USB_OTG_HCTypeDef;
 
 /** 
   * @brief  HAL Lock structures definition  
@@ -2181,9 +2181,11 @@ usbd_handler_nrdy(USBD_HandleTypeDef *pdev, uint_fast8_t pipe)
 			Instance->DCPCTR = (Instance->DCPCTR & ~ USB_DCPCTR_PID) |
 				DEVDRV_USBF_PID_NAK * (1uL << USB_DCPCTR_PID_SHIFT) |	// PID 00: NAK
 				0;
+			(void) Instance->DCPCTR;
 			Instance->DCPCTR = (Instance->DCPCTR & ~ USB_DCPCTR_PID) |
 				DEVDRV_USBF_PID_BUF * (1uL << USB_DCPCTR_PID_SHIFT) |	// PID 01: BUF response (depending on the buffer state)
 				0;
+			(void) Instance->DCPCTR;
 		}
 		else
 		{
@@ -2192,9 +2194,11 @@ usbd_handler_nrdy(USBD_HandleTypeDef *pdev, uint_fast8_t pipe)
 			* PIPEnCTR = (* PIPEnCTR & ~ USB_PIPEnCTR_1_5_PID) |
 				DEVDRV_USBF_PID_NAK * (1uL << USB_PIPEnCTR_1_5_PID_SHIFT) |	// PID 00: NAK
 				0;
+			(void) * PIPEnCTR;
 			* PIPEnCTR = (* PIPEnCTR & ~ USB_PIPEnCTR_1_5_PID) |
 				DEVDRV_USBF_PID_BUF * (1uL << USB_PIPEnCTR_1_5_PID_SHIFT) |	// PID 01: BUF response (depending on the buffer state)
 				0;
+			(void) * PIPEnCTR;
 		}
 	}
 	(void) pid;
@@ -2955,7 +2959,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 				{
 					//usbd_handler_brdy_bulk_in8(pdev, pipe, ep);	// usbd_write_data inside
 					USB_OTG_EPTypeDef * const ep = & hpcd->IN_ep [epnt & 0x7F];
-				  	if (usbd_write_data(USBx, pipe, ep->xfer_buff, ep->xfer_len) == 0)
+				  	if (usbd_write_data(USBx, ep->pipe_num, ep->xfer_buff, ep->xfer_len) == 0)
 				  	{
 						ep->xfer_buff += ep->xfer_len;
 						ep->xfer_count += ep->xfer_len;
@@ -2972,7 +2976,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 					//usbd_handler_brdy_bulk_out8(pdev, pipe, ep);	// usbd_read_data inside
 					USB_OTG_EPTypeDef * const ep = & hpcd->OUT_ep [epnt];
 				  	unsigned count;
-				  	if (usbd_read_data(USBx, pipe, ep->xfer_buff, ep->xfer_len - ep->xfer_count, & count) == 0)
+				  	if (usbd_read_data(USBx, ep->pipe_num, ep->xfer_buff, ep->xfer_len - ep->xfer_count, & count) == 0)
 				  	{
 						ep->xfer_buff += count;
 						ep->xfer_count += count;
@@ -2982,7 +2986,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 				  		// todo: not control ep
 				  		//control_stall(pdev);
 				  	}
-					HAL_PCD_DataOutStageCallback(hpcd, epnt);
+					HAL_PCD_DataOutStageCallback(hpcd, ep->num);	// start next transfer
 				}
 			}
 		}
