@@ -624,8 +624,6 @@ static void usbdVendorReq_seq0(USBD_HandleTypeDef *pdev, const USBD_SetupReqType
 	//PRINTF(PSTR("usbdVendorReq_seq0: ReqType=%02X, ReqRequest=%02X, ReqValue=%04X, ReqIndex=%04X, ReqLength=%04X\n"), ReqType, ReqRequest, ReqValue, ReqIndex, ReqLength);
 }
 
-void HAL_PCD_SetupStageCallback(PCD_HandleTypeDef *hpcd);
-
 static void usb_save_request(USB_OTG_GlobalTypeDef * USBx, USBD_SetupReqTypedef *req)
 {
 	const uint_fast16_t usbreq = USBx->USBREQ;
@@ -5354,11 +5352,22 @@ static void USBD_ParseSetupRequest(USBD_SetupReqTypedef *req, const uint32_t * p
 	req->wValue        = (pdata [0] >> 16) & 0xFFFF;
 	req->wIndex        = (pdata [1] >> 0) & 0xFFFF;
 	req->wLength       = (pdata [1] >> 16) & 0xFFFF;
+
+#elif CPUSTYLE_R7S721 && 0
+	const uint_fast16_t usbreq = USBx->USBREQ;
+
+	req->bmRequest     = LO_BYTE(usbreq & USB_FUNCTION_bmRequestType); //(pdata [0] >> 0) & 0x00FF;
+	req->bRequest      = HI_BYTE(usbreq & USB_FUNCTION_bRequest); //(pdata [0] >> 8) & 0x00FF;
+	req->wValue        = USBx->USBVAL; //(pdata [0] >> 16) & 0xFFFF;
+	req->wIndex        = USBx->USBINDX; //(pdata [1] >> 0) & 0xFFFF;
+	req->wLength       = USBx->USBLENG; //(pdata [1] >> 16) & 0xFFFF;
+#else
+	#error Undefined CPUSTYLE_xxx
+#endif /* CPUSTYLE_STM32 */
 #if 0
 	PRINTF(PSTR("USBD_ParseSetupRequest: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"),
 		req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
 #endif
-#endif /* CPUSTYLE_STM32 */
 }
 
 
@@ -5703,18 +5712,19 @@ USBD_StatusTypeDef  USBD_CtlSendStatus(USBD_HandleTypeDef  *pdev)
 * @param  pdev: device instance
 * @retval status
 */
-USBD_StatusTypeDef  USBD_CtlReceiveStatus (USBD_HandleTypeDef  *pdev)
+USBD_StatusTypeDef  USBD_CtlReceiveStatus(USBD_HandleTypeDef  *pdev)
 {
-  /* Set EP0 State */
-  pdev->ep0_state = USBD_EP0_STATUS_OUT;
+	USBD_SetupReqTypedef * const req = & pdev->request;
+	//PRINTF(PSTR("USBD_CtlReceiveStatus: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
+	//PRINTF(PSTR("USBD_CtlReceiveStatus\n"));
 
- /* Start the transfer */
-  USBD_LL_PrepareReceive( pdev,
-                    0,
-                    NULL,
-                    0);
+	/* Set EP0 State */
+	pdev->ep0_state = USBD_EP0_STATUS_OUT;
 
-  return USBD_OK;
+	/* Start the transfer */
+	USBD_LL_PrepareReceive( pdev, 0, NULL, 0);
+
+	return USBD_OK;
 }
 
 
@@ -5785,7 +5795,7 @@ void USBD_CtlError(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req)
 */
 USBD_StatusTypeDef  USBD_StdItfReq(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef  *req)
 {
-	//PRINTF(PSTR("USBD_StdItfReq: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
+	PRINTF(PSTR("USBD_StdItfReq: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
 
 	USBD_StatusTypeDef ret = USBD_OK;
 
@@ -5980,7 +5990,7 @@ static void USBD_GetDescriptor(USBD_HandleTypeDef *pdev,
 	const uint8_t *pbuf;
 	const uint_fast8_t index = LO_BYTE(req->wValue);
 
-	//PRINTF(PSTR("USBD_GetDescriptor: %02X, wLength=%04X (%d dec), ix=%u\n"), HI_BYTE(req->wValue), req->wLength, req->wLength, LO_BYTE(req->wValue));
+	PRINTF(PSTR("USBD_GetDescriptor: %d, wLength=%04X (%d dec), ix=%u\n"), (int) HI_BYTE(req->wValue), req->wLength, req->wLength, LO_BYTE(req->wValue));
 
 	switch (HI_BYTE(req->wValue))
 	{
@@ -6468,7 +6478,7 @@ USBD_StatusTypeDef  USBD_StdDevReq(USBD_HandleTypeDef *pdev, const USBD_SetupReq
 */
 USBD_StatusTypeDef USBD_LL_SetupStage(USBD_HandleTypeDef *pdev, const uint32_t *psetup)
 {
-
+	//PRINTF("USBD_LL_SetupStage\n");
 	USBD_ParseSetupRequest(& pdev->request, psetup);
 
 	pdev->ep0_state = USBD_EP0_SETUP;
@@ -6539,7 +6549,7 @@ USBD_StatusTypeDef USBD_LL_DataOutStage(USBD_HandleTypeDef *pdev, uint_fast8_t e
 		}
 		else
 		{
-			TP();
+			//TP(); // появяляется на STM32 - в состоянии USBD_EP0_STATUS_OUT
 		}
 	}
 	else if (pdev->dev_state == USBD_STATE_CONFIGURED)
@@ -6566,7 +6576,7 @@ USBD_StatusTypeDef USBD_LL_DataOutStage(USBD_HandleTypeDef *pdev, uint_fast8_t e
 
 USBD_StatusTypeDef USBD_LL_DataInStage(USBD_HandleTypeDef *pdev, uint_fast8_t epnum, uint8_t * pdata)
 {
-//	PRINTF(PSTR("USBD_LL_DataInStage:\n"));
+	//PRINTF(PSTR("USBD_LL_DataInStage:\n"));
 
 	if (epnum == 0)
 	{
@@ -6609,14 +6619,14 @@ USBD_StatusTypeDef USBD_LL_DataInStage(USBD_HandleTypeDef *pdev, uint_fast8_t ep
 				{
 					if (pdev->dev_state == USBD_STATE_CONFIGURED)
 					{
-			        	  uint_fast8_t di;
-			        	  for (di = 0; di < pdev->nClasses; ++ di)
-			        	  {
-			        		  /* for each device function */
-			        		  const USBD_ClassTypeDef * const pClass = pdev->pClasses [di];
-			            	  if (pClass->EP0_TxSent != NULL)
-			            		  pClass->EP0_TxSent(pdev);
-			        	  }
+						uint_fast8_t di;
+						for (di = 0; di < pdev->nClasses; ++ di)
+						{
+							/* for each device function */
+							const USBD_ClassTypeDef * const pClass = pdev->pClasses [di];
+							if (pClass->EP0_TxSent != NULL)
+								pClass->EP0_TxSent(pdev);
+						}
 					}
 					USBD_CtlReceiveStatus(pdev);
 				}
