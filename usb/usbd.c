@@ -1305,8 +1305,6 @@ static void HAL_PCD_AdressedCallback(PCD_HandleTypeDef *hpcd);	// RENESAS specif
 /** @addtogroup PCD_Exported_Functions_Group3 Peripheral Control functions
   * @{
   */
-HAL_StatusTypeDef HAL_PCD_DevConnect(PCD_HandleTypeDef *hpcd);
-HAL_StatusTypeDef HAL_PCD_DevDisconnect(PCD_HandleTypeDef *hpcd);
 HAL_StatusTypeDef HAL_PCD_SetAddress(PCD_HandleTypeDef *hpcd, uint_fast8_t address);
 HAL_StatusTypeDef HAL_PCD_EP_Open(PCD_HandleTypeDef *hpcd, uint_fast8_t ep_addr, uint_fast8_t tx_fifo_num, uint_fast16_t ep_mps, uint_fast8_t ep_type);
 HAL_StatusTypeDef HAL_PCD_EP_Close(PCD_HandleTypeDef *hpcd, uint_fast8_t ep_addr);
@@ -3364,7 +3362,8 @@ HAL_StatusTypeDef  USB_DevDisconnect (USB_OTG_GlobalTypeDef *USBx)
 			0 * USB_SYSCFG_DRPD |	// DRPD0: Pulling down the lines is disabled.
 			0;
 	(void) USBx->SYSCFG0;
-	//HAL_Delay(3);
+
+	HARDWARE_DELAY_MS(3);
 
 	return HAL_OK;
 }
@@ -3383,7 +3382,8 @@ HAL_StatusTypeDef  USB_DevConnect (USB_OTG_GlobalTypeDef *USBx)
 			0 * USB_SYSCFG_DRPD |	// DRPD 0: Pulling down the lines is disabled.
 			0;
 	(void) USBx->SYSCFG0;
-	//HAL_Delay(3);
+
+	HARDWARE_DELAY_MS(3);
 
 	return HAL_OK;
 }
@@ -3877,11 +3877,6 @@ static void Error_Handler(void)
 
 #define UNUSED(x) ((void)(x))
 
-	static void HAL_Delay(uint32_t ms)
-	{
-		HARDWARE_DELAY_MS(ms);
-	}
-
 	static uint32_t HAL_GetTick(void)
 	{
 		return HARDWARE_GETTICK_MS();
@@ -4101,7 +4096,7 @@ static HAL_StatusTypeDef USB_HS_PHYCInit(USB_OTG_GlobalTypeDef *USBx)
   USB_HS_PHYC->USB_HS_PHYC_PLL |= USB_HS_PHYC_PLL_PLLEN;
 
   /* 2ms Delay required to get internal phy clock stable */
-  HAL_Delay(2);
+  HARDWARE_DELAY_MS(2);
 
   return HAL_OK;
 }
@@ -4244,7 +4239,7 @@ HAL_StatusTypeDef USB_SetCurrentMode(USB_OTG_GlobalTypeDef *USBx, USB_OTG_ModeTy
   {
     USBx->GUSBCFG |= USB_OTG_GUSBCFG_FDMOD;
   }
-  HAL_Delay(50);
+  HARDWARE_DELAY_MS(50);
 
   return HAL_OK;
 }
@@ -5442,7 +5437,8 @@ HAL_StatusTypeDef  USB_DevConnect (USB_OTG_GlobalTypeDef *USBx)
 	//PRINTF(PSTR("USB_DevConnect (USBx=%p)\n"), USBx);
 	USBx_DEVICE->DCTL &= ~ USB_OTG_DCTL_SDIS;
 	ASSERT((USBx_DEVICE->DCTL & USB_OTG_DCTL_SDIS) == 0);
-	HAL_Delay(3);
+
+	HARDWARE_DELAY_MS(3);
 
 	return HAL_OK;  
 }
@@ -5459,7 +5455,8 @@ HAL_StatusTypeDef  USB_DevDisconnect (USB_OTG_GlobalTypeDef *USBx)
 
 	USBx_DEVICE->DCTL |= USB_OTG_DCTL_SDIS;
 	ASSERT((USBx_DEVICE->DCTL & USB_OTG_DCTL_SDIS) != 0);
-	HAL_Delay(3);
+
+	HARDWARE_DELAY_MS(3);
 
 	return HAL_OK;  
 }
@@ -5698,7 +5695,7 @@ static HAL_StatusTypeDef USB_HostInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG
   /* Enable VBUS driving */
   USB_DriveVbus(USBx, 1);
 
-  HAL_Delay(200);
+  HARDWARE_DELAY_MS(200);
 
   /* Disable all interrupts. */
   USBx->GINTMSK = 0;
@@ -5995,7 +5992,7 @@ void HAL_PCDEx_BCD_VBUSDetect(PCD_HandleTypeDef *hpcd)
     }
 
     /* Right response got */
-    HAL_Delay(100U);
+	HARDWARE_DELAY_MS(100);
 
     /* Check Detect flag*/
     if (USBx->GCCFG & USB_OTG_GCCFG_DCDET)
@@ -6007,7 +6004,7 @@ void HAL_PCDEx_BCD_VBUSDetect(PCD_HandleTypeDef *hpcd)
     (without charging capability) */
     USBx->GCCFG &=~ USB_OTG_GCCFG_DCDEN;
     USBx->GCCFG |=  USB_OTG_GCCFG_PDEN;
-    HAL_Delay(100U);
+    HARDWARE_DELAY_MS(100);
 
     if (!(USBx->GCCFG & USB_OTG_GCCFG_PDET))
     {
@@ -6020,7 +6017,7 @@ void HAL_PCDEx_BCD_VBUSDetect(PCD_HandleTypeDef *hpcd)
       Port or Dedicated Charging Port */
       USBx->GCCFG &=~ USB_OTG_GCCFG_PDEN;
       USBx->GCCFG |=  USB_OTG_GCCFG_SDEN;
-      HAL_Delay(100U);
+      HARDWARE_DELAY_MS(100);
 
       if ((USBx->GCCFG) & USB_OTG_GCCFG_SDET)
       {
@@ -6331,32 +6328,6 @@ HAL_StatusTypeDef HAL_PCD_Stop(PCD_HandleTypeDef *hpcd)
 @endverbatim
   * @{
   */
-
-/**
-  * @brief  Connect the USB device.
-  * @param  hpcd: PCD handle
-  * @retval HAL status
-  */
-HAL_StatusTypeDef HAL_PCD_DevConnect(PCD_HandleTypeDef *hpcd)
-{
-  __HAL_LOCK(hpcd);
-  USB_DevConnect(hpcd->Instance);
-  __HAL_UNLOCK(hpcd);
-  return HAL_OK;
-}
-
-/**
-  * @brief  Disconnect the USB device.
-  * @param  hpcd: PCD handle
-  * @retval HAL status
-  */
-HAL_StatusTypeDef HAL_PCD_DevDisconnect(PCD_HandleTypeDef *hpcd)
-{
-  __HAL_LOCK(hpcd);
-  USB_DevDisconnect(hpcd->Instance);
-  __HAL_UNLOCK(hpcd);
-  return HAL_OK;
-}
 
 /**
   * @brief  Set the USB Device address.
@@ -13769,7 +13740,7 @@ USBH_StatusTypeDef  USBH_LL_DriverVBUS(USBH_HandleTypeDef *phost, uint_fast8_t s
 			board_update();
 		}
 	}
-	HAL_Delay(200);
+	HARDWARE_DELAY_MS(200);
 	return USBH_OK;
 }
 
