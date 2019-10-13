@@ -596,7 +596,7 @@ static USBD_StatusTypeDef USBD_UAC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 			switch (req->bRequest)
 			{
 			case USB_REQ_GET_INTERFACE :
-				PRINTF(PSTR("USBD_UAC_Setup IN: USB_REQ_TYPE_STANDARD USB_REQ_GET_INTERFACE dir=%02X interfacev=%d\n"), req->bmRequest & 0x80, interfacev);
+				//PRINTF(PSTR("USBD_UAC_Setup IN: USB_REQ_TYPE_STANDARD USB_REQ_GET_INTERFACE dir=%02X interfacev=%d\n"), req->bmRequest & 0x80, interfacev);
 				switch (interfacev)
 				{
 
@@ -660,20 +660,20 @@ static USBD_StatusTypeDef USBD_UAC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 				switch (interfacev)
 				{
 				case INTERFACE_AUDIO_MIKE: // Audio interfacei: recording device
-					PRINTF(PSTR("USBD_UAC_Setup: USB_REQ_TYPE_STANDARD USB_REQ_SET_INTERFACE INTERFACE_AUDIO_MIKE interfacev=%d, value=%d\n"), interfacev, LO_BYTE(req->wValue));
+					//PRINTF(PSTR("USBD_UAC_Setup: USB_REQ_TYPE_STANDARD USB_REQ_SET_INTERFACE INTERFACE_AUDIO_MIKE interfacev=%d, value=%d\n"), interfacev, LO_BYTE(req->wValue));
 					altinterfaces [interfacev] = LO_BYTE(req->wValue);
 					buffers_set_uacinalt(altinterfaces [interfacev]);
 					USBD_CtlSendStatus(pdev);
 					break;
 				case INTERFACE_AUDIO_SPK:	// DATA OUT Audio interfacei: playback device
-					PRINTF(PSTR("USBD_UAC_Setup: USB_REQ_TYPE_STANDARD USB_REQ_SET_INTERFACE INTERFACE_AUDIO_SPK interfacev=%d, value=%d\n"), interfacev, LO_BYTE(req->wValue));
+					//PRINTF(PSTR("USBD_UAC_Setup: USB_REQ_TYPE_STANDARD USB_REQ_SET_INTERFACE INTERFACE_AUDIO_SPK interfacev=%d, value=%d\n"), interfacev, LO_BYTE(req->wValue));
 					altinterfaces [interfacev] = LO_BYTE(req->wValue);
 					buffers_set_uacoutalt(altinterfaces [interfacev]);
 					USBD_CtlSendStatus(pdev);
 					break;
 			#if WITHUSBUACIN2
 				case INTERFACE_AUDIO_RTS: // Audio interfacei: recording device
-					PRINTF(PSTR("USBD_UAC_Setup: USB_REQ_TYPE_STANDARD USB_REQ_SET_INTERFACE INTERFACE_AUDIO_RTS interfacev=%d, value=%d\n"), interfacev, LO_BYTE(req->wValue));
+					//PRINTF(PSTR("USBD_UAC_Setup: USB_REQ_TYPE_STANDARD USB_REQ_SET_INTERFACE INTERFACE_AUDIO_RTS interfacev=%d, value=%d\n"), interfacev, LO_BYTE(req->wValue));
 					altinterfaces [interfacev] = LO_BYTE(req->wValue);
 					buffers_set_uacinrtsalt(altinterfaces [interfacev]);
 					USBD_CtlSendStatus(pdev);
@@ -728,7 +728,7 @@ static USBD_StatusTypeDef USBD_UAC_EP0_RxReady(USBD_HandleTypeDef *pdev)
 					const uint_fast8_t terminalID = HI_BYTE(req->wIndex);
 					const uint_fast8_t controlID = HI_BYTE(req->wValue);	// AUDIO_MUTE_CONTROL, AUDIO_VOLUME_CONTROL, ...
 					terminalsprops [terminalID] [controlID] = uac_ep0databuffout [0];
-					PRINTF(PSTR("USBD_XXX_EP0_RxReady: AUDIO_REQUEST_SET_CUR: interfacev=%u, %u=%u\n"), interfacev, terminalID, uac_ep0databuffout [0]);
+					//PRINTF(PSTR("USBD_XXX_EP0_RxReady: AUDIO_REQUEST_SET_CUR: interfacev=%u, %u=%u\n"), interfacev, terminalID, uac_ep0databuffout [0]);
 				}
 				break;
 			default:
@@ -736,7 +736,7 @@ static USBD_StatusTypeDef USBD_UAC_EP0_RxReady(USBD_HandleTypeDef *pdev)
 					const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
 					const uint_fast8_t terminalID = HI_BYTE(req->wIndex);
 					const uint_fast8_t controlID = HI_BYTE(req->wValue);	// AUDIO_MUTE_CONTROL, AUDIO_VOLUME_CONTROL, ...
-					PRINTF(PSTR("USBD_XXX_EP0_RxReady: request=%u: interfacev=%u, %u=%u\n"), req->bRequest, interfacev, terminalID, uac_ep0databuffout [0]);
+					//PRINTF(PSTR("USBD_XXX_EP0_RxReady: request=%u: interfacev=%u, %u=%u\n"), req->bRequest, interfacev, terminalID, uac_ep0databuffout [0]);
 				}
 				break;
 			}

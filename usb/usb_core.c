@@ -114,7 +114,36 @@ static ApplicationTypeDef Appli_state = APPLICATION_IDLE;
 #define DEVDRV_USBF_PID_STALL                       (0x0002u)
 #define DEVDRV_USBF_PID_STALL2                      (0x0003u)
 
-#define USBD_FRDY_COUNT 50
+
+static void control_stall(USBD_HandleTypeDef *pdev)
+{
+	USB_OTG_GlobalTypeDef * const USBx = ((PCD_HandleTypeDef *) pdev->pData)->Instance;
+	USBx->DCPCTR = (USBx->DCPCTR & ~ (USB_DCPCTR_PID)) |
+		//DEVDRV_USBF_PID_NAK * (1uL << USB_DCPCTR_PID_SHIFT) |	// PID 00: NAK
+		//1 * (1uL << USB_DCPCTR_PID_SHIFT) |	// PID 01: BUF response (depending on the buffer state)
+		DEVDRV_USBF_PID_STALL * (1uL << USB_DCPCTR_PID_SHIFT) |	// PID 02: STALL response
+		0;
+}
+
+// ACK
+static void dcp_acksend(USB_OTG_GlobalTypeDef * const Instance)
+{
+	if (((Instance->DCPCTR & USB_DCPCTR_PID) >> USB_DCPCTR_PID_SHIFT) == 0x03)
+	{
+		Instance->DCPCTR = (Instance->DCPCTR & ~ USB_DCPCTR_PID) |
+			DEVDRV_USBF_PID_NAK * (1uL << USB_DCPCTR_PID_SHIFT) |	// PID 00: NAK response
+			0;
+	}
+	//control_transmit0single(pdev, NULL, 0);
+
+	Instance->DCPCTR = (Instance->DCPCTR & ~ USB_DCPCTR_PID) |
+		0x01 * MASK2LSB(USB_DCPCTR_PID) |	// PID 01: BUF response (depending on the buffer state)
+		0;
+
+}
+
+
+#define USBD_FRDY_COUNT 10
 
 static uint_fast8_t usbd_wait_fifo(PCD_TypeDef * const USBx, uint_fast8_t pipe, unsigned waitcnt)
 {
@@ -146,110 +175,6 @@ static uint_fast8_t usbd_wait_fifo(PCD_TypeDef * const USBx, uint_fast8_t pipe, 
 	return 0;
 }
 
-static uint_fast16_t /* volatile */ g_usb0_function_PipeIgnore [16];
-
-// Эта функция не должна общаться с DCPCTR - она универсальная
-static uint_fast8_t usbd_read_data(PCD_TypeDef * const USBx, uint_fast8_t pipe, uint8_t * data, unsigned size, unsigned * readcnt)
-{
-	//PRINTF(PSTR("selected read from c_fifo%u 0, CFIFOCTR=%04X, CFIFOSEL=%04X\n"), pipe, Instance->CFIFOCTR, Instance->CFIFOSEL);
-	USBx->CFIFOSEL =
-		//1 * (1uL << USB_CFIFOSEL_RCNT_SHIFT) |		// RCNT
-		(pipe << USB_CFIFOSEL_CURPIPE_SHIFT) |	// CURPIPE 0000: DCP
-		0 * USB_CFIFOSEL_MBW |	// MBW 00: 8-bit width
-		0;
-
-	if (usbd_wait_fifo(USBx, pipe, USBD_FRDY_COUNT))
-	{
-		PRINTF(PSTR("usbd_read_data: usbd_wait_fifo error\n"));
-		return 1;	// error
-	}
-
-	g_usb0_function_PipeIgnore [pipe] = 0;
-	unsigned count = 0;
-	unsigned size8 = (USBx->CFIFOCTR & USB_CFIFOCTR_DTLN) >> USB_CFIFOCTR_DTLN_SHIFT;
-	size = ulmin16(size, size8);
-	//PRINTF(PSTR("selected read from c_fifo%u 3, CFIFOCTR=%04X, CFIFOSEL=%04X\n"), pipe, Instance->CFIFOCTR, Instance->CFIFOSEL);
-	count = size;
-	while (size --)
-	{
-		* data ++ = USBx->CFIFO.UINT8 [R_IO_HH]; // HH=3
-	}
-	//PRINTF(PSTR("selected read from c_fifo%u 4, CFIFOCTR=%04X, CFIFOSEL=%04X\n"), pipe, Instance->CFIFOCTR, Instance->CFIFOSEL);
-
-	USBx->CFIFOCTR = USB_CFIFOCTR_BCLR;	// BCLR
-	* readcnt = count;
-	//PRINTF(PSTR("selected read from c_fifo%u 5, CFIFOCTR=%04X, CFIFOSEL=%04X\n"), pipe, Instance->CFIFOCTR, Instance->CFIFOSEL);
-	return 0;	// OK
-}
-
-static uint_fast8_t
-usbd_write_data(PCD_TypeDef * const USBx, uint_fast8_t pipe, const uint8_t * data, unsigned size)
-{
-#if 1
-	if (data != NULL && size != 0)
-		PRINTF(PSTR("usbd_write_data, pipe=%d, size=%d, data[]={%02x,%02x,%02x,%02x,%02x,..}\n"), pipe, size, data [0], data [1], data [2], data [3], data [4]);
-	else
-		PRINTF(PSTR("usbd_write_data, pipe=%d, size=%d, data[]={}\n"), pipe, size);
-#endif
-
-	USBx->CFIFOSEL =
-		//1 * (1uL << USB_CFIFOSEL_RCNT_SHIFT) |		// RCNT
-		(pipe << USB_CFIFOSEL_CURPIPE_SHIFT) |	// CURPIPE 0000: DCP
-		0 * USB_CFIFOSEL_MBW |	// MBW 00: 8-bit width
-		1 * USB_CFIFOSEL_ISEL_ * (pipe == 0) |	// ISEL 1: Writing to the buffer memory is selected (for DCP)
-		0;
-
-	if (usbd_wait_fifo(USBx, pipe, USBD_FRDY_COUNT))
-	{
-		PRINTF(PSTR("usbd_write_data: usbd_wait_fifo error\n"));
-		return 1;	// error
-	}
-
-	g_usb0_function_PipeIgnore [pipe] = 0;
-    while (size --)
-	{
-    	USBx->CFIFO.UINT8 [R_IO_HH] = * data ++; // HH=3
-	}
-    USBx->CFIFOCTR = USB_CFIFOCTR_BVAL;	// BVAL
-	return 0;	// OK
-}
-
-static uint_fast8_t control_read_data(USBD_HandleTypeDef *pdev, uint8_t * data, unsigned size, unsigned * readcnt)
-{
-	USB_OTG_GlobalTypeDef * const USBx = ((PCD_HandleTypeDef *) pdev->pData)->Instance;
-	return usbd_read_data(USBx, 0, data, size, readcnt);	// pipe=0: DCP
-}
-
-static void control_stall(USBD_HandleTypeDef *pdev)
-{
-	USB_OTG_GlobalTypeDef * const USBx = ((PCD_HandleTypeDef *) pdev->pData)->Instance;
-	USBx->DCPCTR = (USBx->DCPCTR & ~ (USB_DCPCTR_PID)) |
-		//DEVDRV_USBF_PID_NAK * (1uL << USB_DCPCTR_PID_SHIFT) |	// PID 00: NAK
-		//1 * (1uL << USB_DCPCTR_PID_SHIFT) |	// PID 01: BUF response (depending on the buffer state)
-		DEVDRV_USBF_PID_STALL * (1uL << USB_DCPCTR_PID_SHIFT) |	// PID 02: STALL response
-		0;
-}
-
-// ACK
-static void dcp_acksend(USBD_HandleTypeDef *pdev)
-{
-	USB_OTG_GlobalTypeDef * const Instance = ((PCD_HandleTypeDef *) pdev->pData)->Instance;
-
-	//PRINTF(PSTR("dcp_acksend\n"));
-
-	if (((Instance->DCPCTR & USB_DCPCTR_PID) >> USB_DCPCTR_PID_SHIFT) == 0x03)
-	{
-		Instance->DCPCTR = (Instance->DCPCTR & ~ USB_DCPCTR_PID) |
-			DEVDRV_USBF_PID_NAK * (1uL << USB_DCPCTR_PID_SHIFT) |	// PID 00: NAK response
-			0;
-	}
-	//control_transmit0single(pdev, NULL, 0);
-
-	Instance->DCPCTR = (Instance->DCPCTR & ~ USB_DCPCTR_PID) |
-		0x01 * MASK2LSB(USB_DCPCTR_PID) |	// PID 01: BUF response (depending on the buffer state)
-		0;
-
-}
 
 // NAK
 static void nak_ep0_unused(USBD_HandleTypeDef *pdev)
@@ -311,6 +236,84 @@ static void stall_ep0(USBD_HandleTypeDef *pdev)
 		0;
 
 }
+
+static uint_fast16_t /* volatile */ g_usb0_function_PipeIgnore [16];
+
+// Эта функция не должна общаться с DCPCTR - она универсальная
+static uint_fast8_t usbd_read_data(PCD_TypeDef * const USBx, uint_fast8_t pipe, uint8_t * data, unsigned size, unsigned * readcnt)
+{
+	//PRINTF(PSTR("selected read from c_fifo%u 0, CFIFOCTR=%04X, CFIFOSEL=%04X\n"), pipe, Instance->CFIFOCTR, Instance->CFIFOSEL);
+	USBx->CFIFOSEL =
+		//1 * (1uL << USB_CFIFOSEL_RCNT_SHIFT) |		// RCNT
+		(pipe << USB_CFIFOSEL_CURPIPE_SHIFT) |	// CURPIPE 0000: DCP
+		0 * USB_CFIFOSEL_MBW |	// MBW 00: 8-bit width
+		0;
+
+	if (usbd_wait_fifo(USBx, pipe, USBD_FRDY_COUNT))
+	{
+		PRINTF(PSTR("usbd_read_data: usbd_wait_fifo error, USBx->CFIFOSEL=%08lX\n"), (unsigned long) USBx->CFIFOSEL);
+		return 1;	// error
+	}
+
+	g_usb0_function_PipeIgnore [pipe] = 0;
+	unsigned count = 0;
+	unsigned size8 = (USBx->CFIFOCTR & USB_CFIFOCTR_DTLN) >> USB_CFIFOCTR_DTLN_SHIFT;
+	size = ulmin16(size, size8);
+	//PRINTF(PSTR("selected read from c_fifo%u 3, CFIFOCTR=%04X, CFIFOSEL=%04X\n"), pipe, Instance->CFIFOCTR, Instance->CFIFOSEL);
+	count = size;
+	while (size --)
+	{
+		* data ++ = USBx->CFIFO.UINT8 [R_IO_HH]; // HH=3
+	}
+	//PRINTF(PSTR("selected read from c_fifo%u 4, CFIFOCTR=%04X, CFIFOSEL=%04X\n"), pipe, Instance->CFIFOCTR, Instance->CFIFOSEL);
+
+	USBx->CFIFOCTR = USB_CFIFOCTR_BCLR;	// BCLR
+	* readcnt = count;
+	//PRINTF(PSTR("selected read from c_fifo%u 5, CFIFOCTR=%04X, CFIFOSEL=%04X\n"), pipe, Instance->CFIFOCTR, Instance->CFIFOSEL);
+	return 0;	// OK
+}
+
+static uint_fast8_t
+usbd_write_data(PCD_TypeDef * const USBx, uint_fast8_t pipe, const uint8_t * data, unsigned size)
+{
+#if 0
+	if (data != NULL && size != 0)
+		PRINTF(PSTR("usbd_write_data, pipe=%d, size=%d, data[]={%02x,%02x,%02x,%02x,%02x,..}\n"), pipe, size, data [0], data [1], data [2], data [3], data [4]);
+	else
+	{
+		PRINTF(PSTR("usbd_write_data, pipe=%d, size=%d, data[]={}\n"), pipe, size);
+	}
+#endif
+
+	if (size == 0 && pipe == 0)
+	{
+		// set pid=buf
+		dcp_acksend(USBx);
+		return 0;
+	}
+
+	USBx->CFIFOSEL =
+		//1 * (1uL << USB_CFIFOSEL_RCNT_SHIFT) |		// RCNT
+		(pipe << USB_CFIFOSEL_CURPIPE_SHIFT) |	// CURPIPE 0000: DCP
+		0 * USB_CFIFOSEL_MBW |	// MBW 00: 8-bit width
+		1 * USB_CFIFOSEL_ISEL_ * (pipe == 0) |	// ISEL 1: Writing to the buffer memory is selected (for DCP)
+		0;
+
+	if (usbd_wait_fifo(USBx, pipe, USBD_FRDY_COUNT))
+	{
+		PRINTF(PSTR("usbd_write_data: usbd_wait_fifo error, USBx->CFIFOSEL=%08lX\n"), (unsigned long) USBx->CFIFOSEL);
+		return 1;	// error
+	}
+
+	g_usb0_function_PipeIgnore [pipe] = 0;
+    while (size --)
+	{
+    	USBx->CFIFO.UINT8 [R_IO_HH] = * data ++; // HH=3
+	}
+    USBx->CFIFOCTR = USB_CFIFOCTR_BVAL;	// BVAL
+	return 0;	// OK
+}
+
 
 // NRDY pipe Interrupt handler
 static void
@@ -5412,7 +5415,6 @@ USBD_StatusTypeDef  USBD_CtlSendStatus(USBD_HandleTypeDef  *pdev)
 
 	/* Start the transfer */
 	USBD_LL_Transmit(pdev, 0x00, NULL, 0);
-	//dcp_acksend(pdev);
 
 	return USBD_OK;
 }
@@ -5506,7 +5508,7 @@ void USBD_CtlError(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req)
 */
 USBD_StatusTypeDef  USBD_StdItfReq(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef  *req)
 {
-	PRINTF(PSTR("USBD_StdItfReq: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
+	//PRINTF(PSTR("USBD_StdItfReq: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
 
 	USBD_StatusTypeDef ret = USBD_OK;
 
@@ -5532,7 +5534,6 @@ USBD_StatusTypeDef  USBD_StdItfReq(USBD_HandleTypeDef *pdev, USBD_SetupReqTypede
 			{
 #if CPUSTYLE_R7S721
 				USBD_LL_Transmit(pdev, 0x00, NULL, 0);
-				//dcp_acksend(pdev);
 #endif
 				//TP();
 			}
@@ -5701,7 +5702,7 @@ static void USBD_GetDescriptor(USBD_HandleTypeDef *pdev,
 	const uint8_t *pbuf;
 	const uint_fast8_t index = LO_BYTE(req->wValue);
 
-	PRINTF(PSTR("USBD_GetDescriptor: %d, wLength=%04X (%d dec), ix=%u\n"), (int) HI_BYTE(req->wValue), req->wLength, req->wLength, LO_BYTE(req->wValue));
+	//PRINTF(PSTR("USBD_GetDescriptor: %d, wLength=%04X (%d dec), ix=%u\n"), (int) HI_BYTE(req->wValue), req->wLength, req->wLength, LO_BYTE(req->wValue));
 
 	switch (HI_BYTE(req->wValue))
 	{
