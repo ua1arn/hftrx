@@ -58,7 +58,7 @@ static RAMDTCM volatile uint_fast16_t usb_cdc_control_state [INTERFACE_count];
 	static USBALIGN_BEGIN uint8_t cdc2buffin [VIRTUAL_COM_PORT_IN_DATA_SIZE] USBALIGN_END;
 	static RAMDTCM uint_fast16_t cdc2buffinlevel;
 
-	static USBALIGN_BEGIN uint8_t cdc_ep0databuffout [USB_OTG_MAX_EP0_SIZE] USBALIGN_END;
+	static USBALIGN_BEGIN uint8_t cdc_epXdatabuffout [USB_OTG_MAX_EP0_SIZE] USBALIGN_END;
 
 	static RAMDTCM uint_fast32_t dwDTERate [INTERFACE_count];
 
@@ -7922,7 +7922,7 @@ static USBD_StatusTypeDef USBD_XXX_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 	static USBALIGN_BEGIN uint8_t buff [32] USBALIGN_END;	// was: 7
 	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
 
-	//PRINTF(PSTR("USBD_ClassXXX_Setup: bRequest=%02X, wIndex=%04X, wLength=%04X, wValue=%04X (interfacev=%02X)\n"), req->bRequest, req->wIndex, req->wLength, req->wValue, interfacev);
+	PRINTF(PSTR("USBD_ClassXXX_Setup: bRequest=%02X, wIndex=%04X, wLength=%04X, wValue=%04X (interfacev=%02X)\n"), req->bRequest, req->wIndex, req->wLength, req->wValue, interfacev);
 	unsigned len = 0;
 	if ((req->bmRequest & USB_REQ_TYPE_DIR) != 0)
 	{
@@ -8171,22 +8171,24 @@ static USBD_StatusTypeDef USBD_XXX_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 				{
 				case CDC_SET_CONTROL_LINE_STATE:
 					// Выполнение этого запроса не требует дополнительного чтения данных
-					//PRINTF(PSTR("USBD_ClassXXX_Setup OUT: CDC_SET_CONTROL_LINE_STATE, wValue=%04X\n"), req->wValue);
+					PRINTF(PSTR("USBD_ClassXXX_Setup OUT: CDC_SET_CONTROL_LINE_STATE, wValue=%04X\n"), req->wValue);
 					usb_cdc_control_state [interfacev] = req->wValue;
 					break;
 
 				default:
-					//PRINTF(PSTR("USBD_ClassXXX_Setup OUT: bRequest=%02X, wValue=%04X, wLength=%04X\n"), req->bRequest, req->wValue, req->wLength);
+					PRINTF(PSTR("USBD_ClassXXX_Setup OUT: bRequest=%02X, wValue=%04X, wLength=%04X\n"), req->bRequest, req->wValue, req->wLength);
 					//TP();
 					break;
 				}
 				// stm32
 				if (req->wLength != 0)
 				{
-					USBD_CtlPrepareRx(pdev, cdc_ep0databuffout, ulmin16(ARRAY_SIZE(cdc_ep0databuffout), req->wLength));
+					TP();
+					USBD_CtlPrepareRx(pdev, cdc_epXdatabuffout, ulmin16(ARRAY_SIZE(cdc_epXdatabuffout), req->wLength));
 				}
 				else
 				{
+					TP();
 					USBD_CtlSendStatus(pdev);
 				}
 				break;
@@ -8203,7 +8205,7 @@ static USBD_StatusTypeDef USBD_XXX_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 					switch (req->bRequest)
 					{
 					default:
-						//PRINTF(PSTR("USBD_ClassXXX_Setup OUT: OUT: INTERFACE_AUDIO_CONTROL_SPK: ???? = %02X\n"), req->bRequest);
+						PRINTF(PSTR("USBD_ClassXXX_Setup OUT: OUT: INTERFACE_AUDIO_CONTROL_XXX: ???? = %02X\n"), req->bRequest);
 						break;
 					}
 				}
@@ -8508,19 +8510,6 @@ static USBD_StatusTypeDef USBD_XXX_EP0_RxReady(USBD_HandleTypeDef *pdev)
 
 #if WITHUSBCDC
 	case INTERFACE_CDC_CONTROL_3a:	// CDC interface
-		{
-			switch (req->bRequest)
-			{
-			case CDC_SET_LINE_CODING:
-				{
-					const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
-					dwDTERate [interfacev] = USBD_peek_u32(& cdc_ep0databuffout [0]);
-					PRINTF(PSTR("CDC_SET_LINE_CODING: interfacev=%u, dwDTERate=%lu, bits=%u\n"), interfacev, dwDTERate [interfacev], cdc_ep0databuffout [6]);
-				}
-				break;
-			}
-		}
-		break;
 	case INTERFACE_CDC_CONTROL_3b:	// CDC interface
 		{
 			switch (req->bRequest)
@@ -8528,9 +8517,12 @@ static USBD_StatusTypeDef USBD_XXX_EP0_RxReady(USBD_HandleTypeDef *pdev)
 			case CDC_SET_LINE_CODING:
 				{
 					const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
-					dwDTERate [interfacev] = USBD_peek_u32(& cdc_ep0databuffout [0]);
-					PRINTF(PSTR("CDC_SET_LINE_CODING: interfacev=%u, dwDTERate=%lu, bits=%u\n"), interfacev, dwDTERate [interfacev], cdc_ep0databuffout [6]);
+					dwDTERate [interfacev] = USBD_peek_u32(& cdc_epXdatabuffout [0]);
+					PRINTF(PSTR("CDC_SET_LINE_CODING: interfacev=%u, dwDTERate=%lu, bits=%u\n"), interfacev, dwDTERate [interfacev], cdc_epXdatabuffout [6]);
 				}
+				break;
+			default:
+				TP();
 				break;
 			}
 		}
@@ -9375,11 +9367,12 @@ USBD_StatusTypeDef USBD_LL_DataOutStage(USBD_HandleTypeDef *pdev, uint_fast8_t e
 
 	if (epnum == 0)
 	{
-		//PRINTF(PSTR("USBD_LL_DataOutStage: EP0 epnum=%02X\n"), epnum);
-		USBD_EndpointTypeDef * const pep = & pdev->ep_out [0];
+		PRINTF(PSTR("USBD_LL_DataOutStage: EP0 epnum=%d, pdev->ep0_state=%d\n"), (int) epnum, (int) pdev->ep0_state);
 
 		if (pdev->ep0_state == USBD_EP0_DATA_OUT)
 		{
+			USBD_EndpointTypeDef * const pep = & pdev->ep_out [0];
+			TP();
 			if (pep->rem_length > pep->maxpacket)
 			{
 				pep->rem_length -=  pep->maxpacket;
@@ -9390,6 +9383,7 @@ USBD_StatusTypeDef USBD_LL_DataOutStage(USBD_HandleTypeDef *pdev, uint_fast8_t e
 			}
 			else
 			{
+				TP();
 				if ((pdev->dev_state == USBD_STATE_CONFIGURED))
 				{
 		        	  uint_fast8_t di;
@@ -9403,6 +9397,10 @@ USBD_StatusTypeDef USBD_LL_DataOutStage(USBD_HandleTypeDef *pdev, uint_fast8_t e
 				}
 				USBD_CtlSendStatus(pdev);
 			}
+		}
+		else
+		{
+			TP();
 		}
 	}
 	else if (pdev->dev_state == USBD_STATE_CONFIGURED)
