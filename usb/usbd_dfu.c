@@ -17,7 +17,6 @@
 #include "usb_core.h"
 
 
-#if WITHUSBDFU
 
 typedef USBALIGN_BEGIN struct
 {
@@ -41,14 +40,9 @@ typedef USBALIGN_BEGIN struct
 
 static USBD_DFU_HandleTypeDef gdfu;
 
-
-
-static USBD_StatusTypeDef  USBD_DFU_Init (USBD_HandleTypeDef *pdev,
-                               uint_fast8_t cfgidx);
-static USBD_StatusTypeDef  USBD_DFU_DeInit (USBD_HandleTypeDef *pdev,
-                                 uint_fast8_t cfgidx);
-static USBD_StatusTypeDef  USBD_DFU_Setup (USBD_HandleTypeDef *pdev,
-                                const USBD_SetupReqTypedef *req);
+static USBD_StatusTypeDef  USBD_DFU_Init (USBD_HandleTypeDef *pdev, int_fast8_t cfgidx);
+static USBD_StatusTypeDef  USBD_DFU_DeInit (USBD_HandleTypeDef *pdev, uint_fast8_t cfgidx);
+static USBD_StatusTypeDef  USBD_DFU_Setup (USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req);
 static USBD_StatusTypeDef  USBD_DFU_DataIn(USBD_HandleTypeDef *pdev, uint_fast8_t epnum);
 static USBD_StatusTypeDef  USBD_DFU_DataOut(USBD_HandleTypeDef *pdev, uint_fast8_t epnum);
 static USBD_StatusTypeDef  USBD_DFU_EP0_RxReady(USBD_HandleTypeDef *pdev);
@@ -65,69 +59,6 @@ static void DFU_GetState(USBD_HandleTypeDef *pdev);
 static void DFU_Abort(USBD_HandleTypeDef *pdev);
 static void DFU_Leave(USBD_HandleTypeDef *pdev);
 
-#endif /* WITHUSBDFU */
-
-static USBD_StatusTypeDef USBD_DFU_EP0_RxReady(USBD_HandleTypeDef *pdev)
-{
-	const USBD_SetupReqTypedef * const req = & pdev->request;
-
-	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
-
-	//PRINTF(PSTR("1 USBD_XXX_EP0_RxReady: interfacev=%u: bRequest=%u, wLength=%u\n"), interfacev, req->bRequest, req->wLength);
-	switch (interfacev)
-	{
-#if WITHUSBDFU
-	case INTERFACE_DFU_CONTROL:
-		{
-			switch (req->bRequest)
-			{
-			case DFU_DNLOAD:
-				//TP();
-				DFU_Download(pdev, req);	// used then upload/download command issued
-				break;
-
-			case DFU_UPLOAD:
-				TP();
-				DFU_Upload(pdev, req);	// never called
-				break;
-
-			case DFU_GETSTATUS:
-				TP();
-				DFU_GetStatus(pdev);// never called
-				break;
-
-			case DFU_CLRSTATUS:
-				DFU_ClearStatus(pdev);
-				break;
-
-			case DFU_GETSTATE:
-				TP();
-				DFU_GetState(pdev);
-				break;
-
-			case DFU_ABORT:
-				TP();
-				DFU_Abort(pdev);	// not called
-				break;
-
-			case DFU_DETACH:
-				TP();
-				DFU_Detach(pdev, req);
-				break;
-			default:
-				USBD_CtlError (pdev, req);
-				//ret = USBD_FAIL;
-				break;
-			}
-		}
-		break;
-#endif /* WITHUSBDFU */
-	}
-	return USBD_OK;
-}
-
-
-#if WITHUSBDFU
 
 /////////
 // https://github.com/renesas-rz/rza1_qspi_flash/blob/master/qspi_flash.c
@@ -143,7 +74,7 @@ static USBD_StatusTypeDef USBD_DFU_EP0_RxReady(USBD_HandleTypeDef *pdev)
 // P4_5: CS#
 // P4_6: MOSI
 // P4_7: MISO
-void spidf_initialize(void)
+static void spidf_initialize(void)
 {
 #if 0
 	// spi multi-io hang on
@@ -717,7 +648,7 @@ USBD_DFU_MediaTypeDef;
   * @brief  Memory initialization routine.
   * @retval USBD_OK if operation is successful, MAL_FAIL else.
   */
-uint16_t MEM_If_Init_HS(void)
+static uint16_t MEM_If_Init_HS(void)
 {
 	PRINTF(PSTR("MEM_If_Init_HS\n"));
 	spidf_initialize();
@@ -730,7 +661,7 @@ uint16_t MEM_If_Init_HS(void)
   * @brief  De-Initializes Memory.
   * @retval USBD_OK if operation is successful, MAL_FAIL else.
   */
-uint16_t MEM_If_DeInit_HS(void)
+static uint16_t MEM_If_DeInit_HS(void)
 {
 	PRINTF(PSTR("MEM_If_DeInit_HS\n"));
 	spidf_uninitialize();
@@ -744,7 +675,7 @@ uint16_t MEM_If_DeInit_HS(void)
   * @retval USBD_OK if operation is successful, MAL_FAIL else.
   */
 // called on each PAGESIZE region (see strFlashDesc)
-uint16_t MEM_If_Erase_HS(uint32_t Addr)
+static uint16_t MEM_If_Erase_HS(uint32_t Addr)
 {
 	//PRINTF(PSTR("MEM_If_Erase_HS: addr=%08lX\n"), Addr);
 	if (Addr >= BOOTLOADER_SELFBASE && (Addr + BOOTLOADER_PAGESIZE) <= (BOOTLOADER_SELFBASE + BOOTLOADER_APPFULL))
@@ -759,13 +690,16 @@ uint16_t MEM_If_Erase_HS(uint32_t Addr)
   * @param  Len: Number of data to be written (in bytes).
   * @retval USBD_OK if operation is successful, MAL_FAIL else.
   */
-uint16_t MEM_If_Write_HS(uint8_t *src, uint32_t dest, uint32_t Len)
+static uint16_t MEM_If_Write_HS(uint8_t *src, uint32_t dest, uint32_t Len)
 {
 	//PRINTF(PSTR("MEM_If_Write_HS: addr=%08lX, len=%03lX\n"), dest, Len);
 	if (dest >= BOOTLOADER_SELFBASE && (dest + Len) <= (BOOTLOADER_SELFBASE + BOOTLOADER_APPFULL))
 	{
+#if WITHISBOOTLOADER
+		// физическое выполненеие записи
 		if (writeDATAFLASH(dest, src, Len))
 			return USBD_FAIL;
+#endif /* WITHISBOOTLOADER */
 	}
 #if WITHISBOOTLOADER
 	if (dest >= BOOTLOADER_APPAREA && (dest + Len) <= (BOOTLOADER_APPAREA + BOOTLOADER_APPFULL))
@@ -787,7 +721,7 @@ uint16_t MEM_If_Write_HS(uint8_t *src, uint32_t dest, uint32_t Len)
   * @param  Len: Number of data to be read (in bytes).
   * @retval Pointer to the physical address where data should be read.
   */
-uint8_t *MEM_If_Read_HS(uint32_t src, uint8_t *dest, uint32_t Len)
+static uint8_t *MEM_If_Read_HS(uint32_t src, uint8_t *dest, uint32_t Len)
 {
 	/* Return a valid address to avoid HardFault */
 	/* USER CODE BEGIN 4 */
@@ -806,7 +740,7 @@ uint8_t *MEM_If_Read_HS(uint32_t src, uint8_t *dest, uint32_t Len)
   * @param  buffer: used for returning the time necessary for a program or an erase operation
   * @retval 0 if operation is successful
   */
-uint16_t MEM_If_GetStatus_HS(uint32_t Add, uint8_t Cmd, uint8_t *buffer)
+static uint16_t MEM_If_GetStatus_HS(uint32_t Add, uint8_t Cmd, uint8_t *buffer)
 {
 	/* USER CODE BEGIN 11 */
 	spitarget_t target = targetdataflash;	/* addressing to chip */
@@ -829,7 +763,7 @@ uint16_t MEM_If_GetStatus_HS(uint32_t Add, uint8_t Cmd, uint8_t *buffer)
 	/* USER CODE END 11 */
 }
 
-USBALIGN_BEGIN USBD_DFU_MediaTypeDef USBD_DFU_fops_HS USBALIGN_END =
+static USBALIGN_BEGIN USBD_DFU_MediaTypeDef USBD_DFU_fops_HS USBALIGN_END =
 {
     "dddd",
     MEM_If_Init_HS,
@@ -1125,9 +1059,6 @@ static USBD_StatusTypeDef  USBD_DFU_Setup (USBD_HandleTypeDef *pdev,
   return ret;
 }
 
-#endif /* WITHUSBDFU */
-
-#if  WITHUSBDFU
 /******************************************************************************
      DFU Class requests management
 ******************************************************************************/
@@ -1521,7 +1452,7 @@ static void DFU_Abort(USBD_HandleTypeDef *pdev)
   * @param  pdev: device instance
   * @retval None
   */
-void DFU_Leave(USBD_HandleTypeDef *pdev)
+static void DFU_Leave(USBD_HandleTypeDef *pdev)
 {
 	PRINTF(PSTR("DFU_Leave\n"));
  USBD_DFU_HandleTypeDef   *hdfu;
@@ -1568,10 +1499,71 @@ void DFU_Leave(USBD_HandleTypeDef *pdev)
 static void
 USBD_DFU_ColdInit(void)
 {
+    /* Initialize Hardware layer */
+    if (USBD_DFU_fops_HS.Init() != USBD_OK)
+    {
+		PRINTF(PSTR("USBD_DFU_ColdInit: data flash initialization failure\n"));
+    }
+}
 
-	USBD_DFU_Init(& hUsbDevice, 1);
 
+static USBD_StatusTypeDef USBD_DFU_EP0_RxReady(USBD_HandleTypeDef *pdev)
+{
+	const USBD_SetupReqTypedef * const req = & pdev->request;
 
+	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
+
+	//PRINTF(PSTR("1 USBD_XXX_EP0_RxReady: interfacev=%u: bRequest=%u, wLength=%u\n"), interfacev, req->bRequest, req->wLength);
+	switch (interfacev)
+	{
+
+	case INTERFACE_DFU_CONTROL:
+		{
+			switch (req->bRequest)
+			{
+			case DFU_DNLOAD:
+				//TP();
+				DFU_Download(pdev, req);	// used then upload/download command issued
+				break;
+
+			case DFU_UPLOAD:
+				TP();
+				DFU_Upload(pdev, req);	// never called
+				break;
+
+			case DFU_GETSTATUS:
+				TP();
+				DFU_GetStatus(pdev);// never called
+				break;
+
+			case DFU_CLRSTATUS:
+				DFU_ClearStatus(pdev);
+				break;
+
+			case DFU_GETSTATE:
+				TP();
+				DFU_GetState(pdev);
+				break;
+
+			case DFU_ABORT:
+				TP();
+				DFU_Abort(pdev);	// not called
+				break;
+
+			case DFU_DETACH:
+				TP();
+				DFU_Detach(pdev, req);
+				break;
+			default:
+				USBD_CtlError (pdev, req);
+				//ret = USBD_FAIL;
+				break;
+			}
+		}
+		break;
+
+	}
+	return USBD_OK;
 }
 
 USBD_ClassTypeDef  USBD_CLASS_DFU =
@@ -1581,7 +1573,7 @@ USBD_ClassTypeDef  USBD_CLASS_DFU =
 	USBD_DFU_DeInit,
 	USBD_DFU_Setup,
 	USBD_DFU_EP0_TxSent,			// call from USBD_LL_DataInStage after end of send data trough EP0
-	NULL, //USBD_DFU_EP0_RxReady,	// call from USBD_LL_DataOutStage after end of receieve data trough EP0
+	USBD_DFU_EP0_RxReady,	// call from USBD_LL_DataOutStage after end of receieve data trough EP0
 	NULL, //USBD_DFU_DataIn,
 	NULL, //USBD_DFU_DataOut,
 	NULL, //USBD_DFU_SOF,
@@ -1589,6 +1581,5 @@ USBD_ClassTypeDef  USBD_CLASS_DFU =
 	NULL, //USBD_DFU_IsoOutIncomplete,
 };
 
-#endif /* WITHUSBDFU */
 
 #endif /* WITHUSBHW && WITHUSBDFU */
