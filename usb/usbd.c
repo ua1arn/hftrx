@@ -13219,12 +13219,12 @@ void HAL_PCD_MspDeInit(PCD_HandleTypeDef *pcdHandle)
 
 #elif CPUSTYLE_STM32H7XX
 
-	  if (pcdHandle->Instance == USB_OTG_HS)
+	  if (pcdHandle->Instance == USB1_OTG_HS)
 	  {
 	    /* Peripheral interrupt Deinit*/
 	    NVIC_DisableIRQ(OTG_HS_IRQn);
 	  }
-	  else if (pcdHandle->Instance == USB_OTG_FS)
+	  else if (pcdHandle->Instance == USB2_OTG_FS)
 	  {
 	    /* Peripheral interrupt Deinit*/
 	    NVIC_DisableIRQ(OTG_FS_IRQn);
@@ -13232,12 +13232,14 @@ void HAL_PCD_MspDeInit(PCD_HandleTypeDef *pcdHandle)
 
 #elif CPUSTYLE_STM32
 
+#if defined (USB_OTG_HS)
 	  if (pcdHandle->Instance == USB_OTG_HS)
 	  {
 	    /* Peripheral interrupt Deinit*/
 	    NVIC_DisableIRQ(OTG_HS_IRQn);
 	  }
-	  else if (pcdHandle->Instance == USB_OTG_FS)
+#endif /* defined (USB_OTG_HS) */
+	  if (pcdHandle->Instance == USB_OTG_FS)
 	  {
 	    /* Peripheral interrupt Deinit*/
 	    NVIC_DisableIRQ(OTG_FS_IRQn);
@@ -13316,12 +13318,15 @@ static USBD_StatusTypeDef  USBD_LL_Init(PCD_HandleTypeDef * hpcd, USBD_HandleTyp
 	// У OTH_HS размер FIFO 4096 байт
 	usbd_fifo_initialize(hpcd, 4096, 1);
 #else /* CPUSTYLE_R7S721 */
-	if (pcdHandle->Instance == USB_OTG_HS)
+
+#if defined (USB_OTG_HS)
+	if (hpcd->Instance == USB_OTG_HS)
 	{
 		// У OTH_HS размер FIFO 4096 байт
 		usbd_fifo_initialize(hpcd, 4096, 1);
 	}
 	else
+#endif /* defined (USB_OTG_HS) */
 	{
 		// У OTH_FS размер FIFO 1280 байт
 		usbd_fifo_initialize(hpcd, 1280, 1);
@@ -13905,7 +13910,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
 			NVIC_SetPriority(OTG_HS_EP1_IN_IRQn, ARM_SYSTEM_PRIORITY);
 			NVIC_EnableIRQ(OTG_HS_EP1_IN_IRQn);	// OTG_HS_EP1_IN_IRQHandler() enable
 		}
-		NVIC_SetVector(OTG_HS_IRQn, (uintptr_t) & device_host_OTG_HS_IRQHandler);
+		NVIC_SetVector(OTG_HS_IRQn, (uintptr_t) & device_OTG_HS_IRQHandler);
 		NVIC_SetPriority(OTG_HS_IRQn, ARM_SYSTEM_PRIORITY);
 		NVIC_EnableIRQ(OTG_HS_IRQn);	// OTG_HS_IRQHandler() enable
 
@@ -13921,7 +13926,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
 		RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN;	/* USB/OTG FS companion - VBUS? */
 		(void) RCC->APB2ENR;
 
-		NVIC_SetVector(OTG_FS_IRQn, (uintptr_t) & device_host_OTG_FS_IRQHandler);
+		NVIC_SetVector(OTG_FS_IRQn, (uintptr_t) & device_OTG_FS_IRQHandler);
 		NVIC_SetPriority(OTG_FS_IRQn, ARM_SYSTEM_PRIORITY);
 		NVIC_EnableIRQ(OTG_FS_IRQn);	// OTG_FS_IRQHandler() enable
 
@@ -13977,12 +13982,14 @@ void HAL_HCD_MspInit(HCD_HandleTypeDef* hcdHandle)
 
 void HAL_HCD_MspDeInit(HCD_HandleTypeDef* hpcd)
 {
+#if defined (USB_OTG_HS)
   if (hpcd->Instance == USB_OTG_HS)
   {
     /* Peripheral interrupt Deinit*/
     NVIC_DisableIRQ(OTG_HS_IRQn);
   }
-  else if (hpcd->Instance == USB_OTG_FS)
+#endif /* defined (USB_OTG_HS) */
+  if (hpcd->Instance == USB_OTG_FS)
   {
 	    /* Peripheral interrupt Deinit*/
 	    NVIC_DisableIRQ(OTG_FS_IRQn);
