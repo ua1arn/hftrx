@@ -200,6 +200,7 @@ static USBD_StatusTypeDef USBD_CDC_DataOut(USBD_HandleTypeDef *pdev, uint_fast8_
 		/* Prepare Out endpoint to receive next cdc data packet */
 		USBD_LL_PrepareReceive(pdev, USB_ENDPOINT_OUT(epnum), cdc2buffout, VIRTUAL_COM_PORT_OUT_DATA_SIZE);
 		break;
+
 	default:
 		break;
 	}
@@ -230,6 +231,7 @@ static USBD_StatusTypeDef USBD_CDC_EP0_RxReady(USBD_HandleTypeDef *pdev)
 			}
 		}
 		break;
+
 	default:
 		break;
 	}
@@ -278,8 +280,6 @@ static USBD_StatusTypeDef USBD_CDC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 	static USBALIGN_BEGIN uint8_t buff [32] USBALIGN_END;	// was: 7
 	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
 
-	//PRINTF(PSTR("USBD_CDC_Setup: bRequest=%02X, wIndex=%04X, wLength=%04X, wValue=%04X (interfacev=%02X)\n"), req->bRequest, req->wIndex, req->wLength, req->wValue, interfacev);
-	unsigned len = 0;
 	if ((req->bmRequest & USB_REQ_TYPE_DIR) != 0)
 	{
 		// IN direction
@@ -288,14 +288,14 @@ static USBD_StatusTypeDef USBD_CDC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 		case USB_REQ_TYPE_CLASS:
 			switch (interfacev)
 			{
-	#if WITHUSBCDC
+
 			case INTERFACE_CDC_CONTROL_3a:	// CDC interface
 			case INTERFACE_CDC_CONTROL_3b:	// CDC interface
 				{
 					switch (req->bRequest)
 					{
 					case CDC_GET_LINE_CODING:
-						//PRINTF(PSTR("USBD_CDC_Setup IN: GET_LINE_CODING, dwDTERate=%lu\n"), (unsigned long) dwDTERate [interfacev]);
+						//PRINTF(PSTR("USBD_CDC_Setup IN: CDC_GET_LINE_CODING, dwDTERate=%lu\n"), (unsigned long) dwDTERate [interfacev]);
 						USBD_poke_u32(& buff [0], dwDTERate [interfacev]); // dwDTERate
 						buff [4] = 0;	// 1 stop bit
 						buff [5] = 0;	// parity=none
@@ -311,7 +311,9 @@ static USBD_StatusTypeDef USBD_CDC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 					}
 				}
 				break;
-	#endif /* WITHUSBCDC */
+
+			default:
+				break;
 			}
 			break;
 		}
@@ -324,7 +326,6 @@ static USBD_StatusTypeDef USBD_CDC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 		case USB_REQ_TYPE_CLASS:
 			switch (interfacev)
 			{
-	#if WITHUSBCDC
 			case INTERFACE_CDC_CONTROL_3a:	// CDC interface
 			case INTERFACE_CDC_CONTROL_3b:	// CDC interface
 				switch (req->bRequest)
@@ -336,7 +337,6 @@ static USBD_StatusTypeDef USBD_CDC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 					break;
 
 				default:
-
 					//PRINTF(PSTR("USBD_CDC_Setup OUT: INTERFACE_CDC_CONTRO:_xxx: bRequest=%02X, wValue=%04X, wLength=%04X\n"), req->bRequest, req->wValue, req->wLength);
 					//TP();
 					break;
@@ -350,7 +350,9 @@ static USBD_StatusTypeDef USBD_CDC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 					USBD_CtlSendStatus(pdev);
 				}
 				break;
-	#endif /* WITHUSBCDC */
+
+			default:
+					break;
 			}
 			break;
 
@@ -382,7 +384,6 @@ static USBD_StatusTypeDef USBD_CDC_Init(USBD_HandleTypeDef *pdev, uint_fast8_t c
 {
 	uint8_t offset;
 
-#if WITHUSBCDC
     /* cdc Open EP IN */
  	for (offset = 0; offset < WITHUSBHWCDC_N; ++ offset)
 	{
@@ -407,7 +408,7 @@ static USBD_StatusTypeDef USBD_CDC_Init(USBD_HandleTypeDef *pdev, uint_fast8_t c
 	usb_cdc_control_state [INTERFACE_CDC_CONTROL_3b] = 0;
 	dwDTERate [INTERFACE_CDC_CONTROL_3a] = 115200;
 	dwDTERate [INTERFACE_CDC_CONTROL_3b] = 115200;
-#endif /* WITHUSBCDC */
+
 	return USBD_OK;
 
 }

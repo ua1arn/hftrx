@@ -160,7 +160,7 @@ static unsigned USBD_fill_range_lay3pb2opt(uint8_t * b, uint_fast32_t v1, uint_f
 }
 
 
-#if WITHUSBUAC
+
 
 uint_fast16_t usbd_getuacinmaxpacket(void)
 {
@@ -193,26 +193,23 @@ uint_fast16_t usbd_getuacinrtsmaxpacket(void)
 
 #endif /* WITHUSBUACIN2 */
 
-#endif /* WITHUSBUAC */
+
 
 // Состояние - выбранные альтернативные конфигурации по каждому интерфейсу USB configuration descriptor
 static RAMDTCM uint8_t altinterfaces [INTERFACE_count];
 
-#if WITHUSBUAC
-
-	static RAMDTCM uint8_t terminalsprops [256] [16];
-
-	static RAMDTCM uintptr_t uacinaddr = 0;
-	static RAMDTCM uint_fast16_t uacinsize = 0;
-	static RAMDTCM uintptr_t uacinrtsaddr = 0;
-	static RAMDTCM uint_fast16_t uacinrtssize = 0;
-
-	static USBALIGN_BEGIN uint8_t uacoutbuff [VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT] USBALIGN_END;
-
-	static USBALIGN_BEGIN uint8_t uac_ep0databuffout [USB_OTG_MAX_EP0_SIZE] USBALIGN_END;
 
 
-#endif /* WITHUSBUAC */
+static RAMDTCM uint8_t terminalsprops [256] [16];
+
+static RAMDTCM uintptr_t uacinaddr = 0;
+static RAMDTCM uint_fast16_t uacinsize = 0;
+static RAMDTCM uintptr_t uacinrtsaddr = 0;
+static RAMDTCM uint_fast16_t uacinrtssize = 0;
+
+static USBALIGN_BEGIN uint8_t uacoutbuff [VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT] USBALIGN_END;
+
+static USBALIGN_BEGIN uint8_t uac_ep0databuffout [USB_OTG_MAX_EP0_SIZE] USBALIGN_END;
 
 
 static USBD_StatusTypeDef USBD_UAC_DeInit(USBD_HandleTypeDef *pdev, uint_fast8_t cfgidx)
@@ -220,7 +217,7 @@ static USBD_StatusTypeDef USBD_UAC_DeInit(USBD_HandleTypeDef *pdev, uint_fast8_t
 	uint_fast8_t offset;
 	//PRINTF(PSTR("USBD_UAC_DeInit\n"));
 
-#if WITHUSBUAC
+
 	{
 		USBD_LL_CloseEP(pdev, USBD_EP_AUDIO_IN);
 
@@ -254,13 +251,10 @@ static USBD_StatusTypeDef USBD_UAC_DeInit(USBD_HandleTypeDef *pdev, uint_fast8_t
 		uacout_buffer_stop();
 	}
 
-#endif /* WITHUSBUAC */
-
 	//PRINTF(PSTR("USBD_XXX_DeInit done\n"));
 	return USBD_OK;
 }
 
-#if WITHUSBUAC
 
 // UAC1: Выполнение запроса к FeatureUnit UAC1
 // see UAC1_AudioFeatureUnit
@@ -280,22 +274,22 @@ static unsigned USBD_UAC1_FeatureUnit_req(
 		return 0;
 
 	case AUDIO_REQUEST_GET_CUR:
-		//PRINTF(PSTR("AUDIO_REQUEST_GET_CUR: interfacev=%u,  %u\n"), interfacev, terminalID);
+		//PRINTF(PSTR("USBD_UAC1_FeatureUnit_req: AUDIO_REQUEST_GET_CUR: interfacev=%u,  %u\n"), interfacev, terminalID);
 		buff [0] = terminalsprops [terminalID] [controlID];
 		return 1;
 
 	case AUDIO_REQUEST_GET_MIN:
-		//PRINTF(PSTR("AUDIO_REQUEST_GET_MIN: interfacev=%u,  %u\n"), interfacev, terminalID);
+		//PRINTF(PSTR("USBD_UAC1_FeatureUnit_req: AUDIO_REQUEST_GET_MIN: interfacev=%u,  %u\n"), interfacev, terminalID);
 		buff [0] = 0;
 		return 1;
 
 	case AUDIO_REQUEST_GET_MAX:
-		//PRINTF(PSTR("AUDIO_REQUEST_GET_MAX: interfacev=%u,  %u\n"), interfacev, terminalID);
+		//PRINTF(PSTR("USBD_UAC1_FeatureUnit_req: AUDIO_REQUEST_GET_MAX: interfacev=%u,  %u\n"), interfacev, terminalID);
 		buff [0] = 100;
 		return 1;
 
 	case AUDIO_REQUEST_GET_RES:
-		//PRINTF(PSTR("AUDIO_REQUEST_GET_MAX: interfacev=%u,  %u\n"), interfacev, terminalID);
+		//PRINTF(PSTR("USBD_UAC1_FeatureUnit_req: AUDIO_REQUEST_GET_MAX: interfacev=%u,  %u\n"), interfacev, terminalID);
 		buff [0] = 1;
 		return 1;
 	}
@@ -319,22 +313,22 @@ static unsigned USBD_UAC1_Selector_req(
 		return 0;
 
 	case AUDIO_REQUEST_GET_CUR:
-		//PRINTF(PSTR("AUDIO_REQUEST_GET_CUR: interfacev=%u,  %u\n"), interfacev, terminalID);
+		//PRINTF(PSTR("USBD_UAC1_Selector_req: AUDIO_REQUEST_GET_CUR: interfacev=%u,  %u\n"), interfacev, terminalID);
 		buff [0] = terminalsprops [terminalID] [controlID];
 		return 1;
 
 	case AUDIO_REQUEST_GET_MIN:
-		//PRINTF(PSTR("AUDIO_REQUEST_GET_MIN: interfacev=%u,  %u\n"), interfacev, terminalID);
+		//PRINTF(PSTR("USBD_UAC1_Selector_req: AUDIO_REQUEST_GET_MIN: interfacev=%u,  %u\n"), interfacev, terminalID);
 		buff [0] = 1;
 		return 1;
 
 	case AUDIO_REQUEST_GET_MAX:
-		//PRINTF(PSTR("AUDIO_REQUEST_GET_MAX: interfacev=%u,  %u\n"), interfacev, terminalID);
+		//PRINTF(PSTR("USBD_UAC1_Selector_req: AUDIO_REQUEST_GET_MAX: interfacev=%u,  %u\n"), interfacev, terminalID);
 		buff [0] = TERMINAL_ID_SELECTOR_6_INPUTS;
 		return 1;
 
 	case AUDIO_REQUEST_GET_RES:
-		//PRINTF(PSTR("AUDIO_REQUEST_GET_MAX: interfacev=%u,  %u\n"), interfacev, terminalID);
+		//PRINTF(PSTR("USBD_UAC1_Selector_req: AUDIO_REQUEST_GET_MAX: interfacev=%u,  %u\n"), interfacev, terminalID);
 		buff [0] = 1;
 		return 1;
 	}
@@ -522,7 +516,7 @@ static unsigned USBD_UAC2_ClockSource_req(
 	}
 	return 0;
 }
-#endif /* WITHUSBUAC */
+
 
 
 static USBD_StatusTypeDef USBD_UAC_Setup(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req)
@@ -540,7 +534,6 @@ static USBD_StatusTypeDef USBD_UAC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 		case USB_REQ_TYPE_CLASS:
 			switch (interfacev)
 			{
-	#if WITHUSBUAC
 		#if WITHUSBUACIN2
 			case INTERFACE_AUDIO_CONTROL_RTS:	/* AUDIO spectrum control interface */
 		#endif /* WITHUSBUACIN2 */
@@ -587,11 +580,16 @@ static USBD_StatusTypeDef USBD_UAC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 						len = USBD_UAC1_Selector_req(req, buff);
 						break;
 					}
+					ASSERT(len != 0);
+					ASSERT(req->wLength != 0);
 					USBD_CtlSendData(pdev, buff, ulmin16(len, req->wLength));
 					break;
 				} // audio interfaces
 				break;
-	#endif /* WITHUSBUAC */
+
+			default:
+				// Other interfaces
+				break;
 			}
 			break;
 		case USB_REQ_TYPE_STANDARD:
@@ -601,7 +599,7 @@ static USBD_StatusTypeDef USBD_UAC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 				PRINTF(PSTR("USBD_UAC_Setup IN: USB_REQ_TYPE_STANDARD USB_REQ_GET_INTERFACE dir=%02X interfacev=%d\n"), req->bmRequest & 0x80, interfacev);
 				switch (interfacev)
 				{
-#if WITHUSBUAC
+
 			#if WITHUSBUACIN2
 				case INTERFACE_AUDIO_CONTROL_RTS:	/* AUDIO spectrum control interface */
 			#endif /* WITHUSBUACIN2 */
@@ -610,7 +608,10 @@ static USBD_StatusTypeDef USBD_UAC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 					buff [0] = altinterfaces [interfacev];
 					USBD_CtlSendData(pdev, buff, ulmin16(ARRAY_SIZE(buff), req->wLength));
 					break;
-#endif /* WITHUSBCDC */
+
+				default:
+					// Other interfaces
+					break;
 				}
 				break;
 			}
@@ -629,7 +630,7 @@ static USBD_StatusTypeDef USBD_UAC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 		case USB_REQ_TYPE_CLASS:
 			switch (interfacev)
 			{
-	#if WITHUSBUAC
+
 		#if WITHUSBUACIN2
 			case INTERFACE_AUDIO_CONTROL_RTS:	/* AUDIO spectrum control interface */
 		#endif /* WITHUSBUACIN2 */
@@ -644,7 +645,11 @@ static USBD_StatusTypeDef USBD_UAC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 					USBD_CtlSendStatus(pdev);
 				}
 				break;
-	#endif /* WITHUSBUAC */
+
+			default:
+				// Other interfaces
+				break;
+
 			}
 			break;
 
@@ -652,28 +657,32 @@ static USBD_StatusTypeDef USBD_UAC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 			switch (req->bRequest)
 			{
 			case USB_REQ_SET_INTERFACE :
-				PRINTF(PSTR("USBD_UAC_Setup: USB_REQ_TYPE_STANDARD USB_REQ_SET_INTERFACE interfacev=%d, value=%d\n"), interfacev, LO_BYTE(req->wValue));
 				switch (interfacev)
 				{
-			#if WITHUSBUAC
 				case INTERFACE_AUDIO_MIKE: // Audio interfacei: recording device
+					PRINTF(PSTR("USBD_UAC_Setup: USB_REQ_TYPE_STANDARD USB_REQ_SET_INTERFACE INTERFACE_AUDIO_MIKE interfacev=%d, value=%d\n"), interfacev, LO_BYTE(req->wValue));
 					altinterfaces [interfacev] = LO_BYTE(req->wValue);
 					buffers_set_uacinalt(altinterfaces [interfacev]);
 					USBD_CtlSendStatus(pdev);
 					break;
 				case INTERFACE_AUDIO_SPK:	// DATA OUT Audio interfacei: playback device
+					PRINTF(PSTR("USBD_UAC_Setup: USB_REQ_TYPE_STANDARD USB_REQ_SET_INTERFACE INTERFACE_AUDIO_SPK interfacev=%d, value=%d\n"), interfacev, LO_BYTE(req->wValue));
 					altinterfaces [interfacev] = LO_BYTE(req->wValue);
 					buffers_set_uacoutalt(altinterfaces [interfacev]);
 					USBD_CtlSendStatus(pdev);
 					break;
 			#if WITHUSBUACIN2
 				case INTERFACE_AUDIO_RTS: // Audio interfacei: recording device
+					PRINTF(PSTR("USBD_UAC_Setup: USB_REQ_TYPE_STANDARD USB_REQ_SET_INTERFACE INTERFACE_AUDIO_RTS interfacev=%d, value=%d\n"), interfacev, LO_BYTE(req->wValue));
 					altinterfaces [interfacev] = LO_BYTE(req->wValue);
 					buffers_set_uacinrtsalt(altinterfaces [interfacev]);
 					USBD_CtlSendStatus(pdev);
 					break;
 			#endif /* WITHUSBUACIN2 */
-			#endif /* WITHUSBUAC */
+
+				default:
+					// Other interfaces
+					break;
 				}
 			}
 			break;
@@ -732,6 +741,10 @@ static USBD_StatusTypeDef USBD_UAC_EP0_RxReady(USBD_HandleTypeDef *pdev)
 				break;
 			}
 		}
+		break;
+
+	default:
+		// Other interfaces
 		break;
 	}
 	return USBD_OK;
