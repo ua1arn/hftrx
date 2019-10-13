@@ -2429,6 +2429,7 @@ static void usbd_handle_ctrt(PCD_HandleTypeDef *hpcd, uint_fast8_t ctsq)
 		break;
 
 	default:
+		PRINTF(PSTR("actions_seqXXX\n"));
 		// x: Control transfer sequence error
 		USBD_CtlError(pdev, & pdev->request);
 		break;
@@ -2999,8 +3000,9 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 			// Setup syage detectd
 			usb_save_request(USBx, & pdev->request);
 			USBx->INTSTS0 = (uint16_t) ~ USB_INTSTS0_VALID;	// Clear VALID - in seq 1, 3 and 5
-			//ASSERT(ctsq == 1 || ctsq == 3 || ctsq == 5);
+			ASSERT(ctsq == 1 || ctsq == 3 || ctsq == 5);
 	        HAL_PCD_SetupStageCallback(hpcd);
+	        //PRINTF("setup phase ended\n");
 		}
 		//PRINTF(PSTR("HAL_PCD_IRQHandler trapped - CTRT, CTSQ=%d\n"), (intsts0 >> 0) & 0x07);
 		USBx->INTSTS0 = (uint16_t) ~ USB_INTSTS0_CTRT;	// Clear CTRT
@@ -7379,21 +7381,19 @@ static USBD_StatusTypeDef USBD_ClrClassConfig(USBD_HandleTypeDef  *pdev, uint_fa
 * @param  len: length of data to be received
 * @retval status
 */
-static USBD_StatusTypeDef  USBD_CtlPrepareRx (USBD_HandleTypeDef  *pdev,
+static USBD_StatusTypeDef  USBD_CtlPrepareRx(USBD_HandleTypeDef  *pdev,
                                   uint8_t *pbuf,
                                   uint16_t len)
 {
-  /* Set EP0 State */
-  pdev->ep0_state = USBD_EP0_DATA_OUT;
-  pdev->ep_out[0].total_length = len;
-  pdev->ep_out[0].rem_length   = len;
-  /* Start the transfer */
-  USBD_LL_PrepareReceive (pdev,
-                          0,
-                          pbuf,
-                         len);
+	//PRINTF(PSTR("USBD_CtlPrepareRx, len=%d\n"), (int) len);
+	/* Set EP0 State */
+	pdev->ep0_state = USBD_EP0_DATA_OUT;
+	pdev->ep_out[0].total_length = len;
+	pdev->ep_out[0].rem_length   = len;
+	/* Start the transfer */
+	USBD_LL_PrepareReceive(pdev, 0, pbuf, len);
 
-  return USBD_OK;
+	return USBD_OK;
 }
 
 /**
@@ -7404,10 +7404,11 @@ static USBD_StatusTypeDef  USBD_CtlPrepareRx (USBD_HandleTypeDef  *pdev,
 * @param  len: length of data to be received
 * @retval status
 */
-USBD_StatusTypeDef  USBD_CtlContinueRx (USBD_HandleTypeDef  *pdev,
+USBD_StatusTypeDef  USBD_CtlContinueRx(USBD_HandleTypeDef  *pdev,
                                           uint8_t *pbuf,
                                           uint16_t len)
 {
+	//PRINTF(PSTR("USBD_CtlContinueRx\n"));
 
 	USBD_LL_PrepareReceive (pdev,
 					  0,
@@ -7421,17 +7422,17 @@ USBD_StatusTypeDef  USBD_CtlContinueRx (USBD_HandleTypeDef  *pdev,
 * @param  pdev: device instance
 * @retval status
 */
-USBD_StatusTypeDef  USBD_CtlSendStatus (USBD_HandleTypeDef  *pdev)
+USBD_StatusTypeDef  USBD_CtlSendStatus(USBD_HandleTypeDef  *pdev)
 {
+	//PRINTF(PSTR("USBD_CtlSendStatus\n"));
+	/* Set EP0 State */
+	pdev->ep0_state = USBD_EP0_STATUS_IN;
 
-  /* Set EP0 State */
-  pdev->ep0_state = USBD_EP0_STATUS_IN;
+	/* Start the transfer */
+	USBD_LL_Transmit(pdev, 0x00, NULL, 0);
+	//dcp_acksend(pdev);
 
- /* Start the transfer */
-  USBD_LL_Transmit(pdev, 0x00, NULL, 0);
-  //dcp_acksend(pdev);
-
-  return USBD_OK;
+	return USBD_OK;
 }
 
 /**
@@ -7922,7 +7923,7 @@ static USBD_StatusTypeDef USBD_XXX_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 	static USBALIGN_BEGIN uint8_t buff [32] USBALIGN_END;	// was: 7
 	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
 
-	PRINTF(PSTR("USBD_ClassXXX_Setup: bRequest=%02X, wIndex=%04X, wLength=%04X, wValue=%04X (interfacev=%02X)\n"), req->bRequest, req->wIndex, req->wLength, req->wValue, interfacev);
+	//PRINTF(PSTR("USBD_ClassXXX_Setup: bRequest=%02X, wIndex=%04X, wLength=%04X, wValue=%04X (interfacev=%02X)\n"), req->bRequest, req->wIndex, req->wLength, req->wValue, interfacev);
 	unsigned len = 0;
 	if ((req->bmRequest & USB_REQ_TYPE_DIR) != 0)
 	{
@@ -8176,19 +8177,16 @@ static USBD_StatusTypeDef USBD_XXX_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 					break;
 
 				default:
-					PRINTF(PSTR("USBD_ClassXXX_Setup OUT: bRequest=%02X, wValue=%04X, wLength=%04X\n"), req->bRequest, req->wValue, req->wLength);
+					//PRINTF(PSTR("USBD_ClassXXX_Setup OUT: INTERFACE_CDC_CONTRO:_xxx: bRequest=%02X, wValue=%04X, wLength=%04X\n"), req->bRequest, req->wValue, req->wLength);
 					//TP();
 					break;
 				}
-				// stm32
 				if (req->wLength != 0)
 				{
-					TP();
 					USBD_CtlPrepareRx(pdev, cdc_epXdatabuffout, ulmin16(ARRAY_SIZE(cdc_epXdatabuffout), req->wLength));
 				}
 				else
 				{
-					TP();
 					USBD_CtlSendStatus(pdev);
 				}
 				break;
@@ -8453,7 +8451,7 @@ static USBD_StatusTypeDef USBD_XXX_EP0_RxReady(USBD_HandleTypeDef *pdev)
 
 	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
 
-	PRINTF(PSTR("1 USBD_XXX_EP0_RxReady: interfacev=%u: bRequest=%u, wLength=%u\n"), interfacev, req->bRequest, req->wLength);
+	//PRINTF(PSTR("1 USBD_XXX_EP0_RxReady: interfacev=%u: bRequest=%u, wLength=%u\n"), interfacev, req->bRequest, req->wLength);
 	switch (interfacev)
 	{
 	default:
@@ -8518,7 +8516,7 @@ static USBD_StatusTypeDef USBD_XXX_EP0_RxReady(USBD_HandleTypeDef *pdev)
 				{
 					const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
 					dwDTERate [interfacev] = USBD_peek_u32(& cdc_epXdatabuffout [0]);
-					PRINTF(PSTR("CDC_SET_LINE_CODING: interfacev=%u, dwDTERate=%lu, bits=%u\n"), interfacev, dwDTERate [interfacev], cdc_epXdatabuffout [6]);
+					PRINTF(PSTR("USBD_XXX_EP0_RxReady: CDC_SET_LINE_CODING: interfacev=%u, dwDTERate=%lu, bits=%u\n"), interfacev, dwDTERate [interfacev], cdc_epXdatabuffout [6]);
 				}
 				break;
 			default:
@@ -8545,7 +8543,7 @@ static USBD_StatusTypeDef USBD_XXX_EP0_RxReady(USBD_HandleTypeDef *pdev)
 					const uint_fast8_t terminalID = HI_BYTE(req->wIndex);
 					const uint_fast8_t controlID = HI_BYTE(req->wValue);	// AUDIO_MUTE_CONTROL, AUDIO_VOLUME_CONTROL, ...
 					terminalsprops [terminalID] [controlID] = uac_ep0databuffout [0];
-					PRINTF(PSTR("AUDIO_REQUEST_SET_CUR: interfacev=%u, %u=%u\n"), interfacev, terminalID, uac_ep0databuffout [0]);
+					PRINTF(PSTR("USBD_XXX_EP0_RxReady: AUDIO_REQUEST_SET_CUR: interfacev=%u, %u=%u\n"), interfacev, terminalID, uac_ep0databuffout [0]);
 				}
 				break;
 			default:
@@ -8553,7 +8551,7 @@ static USBD_StatusTypeDef USBD_XXX_EP0_RxReady(USBD_HandleTypeDef *pdev)
 					const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
 					const uint_fast8_t terminalID = HI_BYTE(req->wIndex);
 					const uint_fast8_t controlID = HI_BYTE(req->wValue);	// AUDIO_MUTE_CONTROL, AUDIO_VOLUME_CONTROL, ...
-					PRINTF(PSTR("request=%u: interfacev=%u, %u=%u\n"), req->bRequest, interfacev, terminalID, uac_ep0databuffout [0]);
+					PRINTF(PSTR("USBD_XXX_EP0_RxReady: request=%u: interfacev=%u, %u=%u\n"), req->bRequest, interfacev, terminalID, uac_ep0databuffout [0]);
 				}
 				break;
 			}
@@ -8637,25 +8635,18 @@ USBD_StatusTypeDef  USBD_StdItfReq(USBD_HandleTypeDef *pdev, USBD_SetupReqTypede
 					break;
 				}
 			}
-#if CPUSTYLE_R7S721
-			if ((ret == USBD_OK))
-			{
-				USBD_CtlSendStatus(pdev);
-			}
-			else
-			{
-				TP();
-			}
-#else /* CPUSTYLE_R7S721 */
 			if ((req->wLength == 0) && (ret == USBD_OK))
 			{
 				USBD_CtlSendStatus(pdev);
 			}
 			else
 			{
-				TP();
+#if CPUSTYLE_R7S721
+				USBD_LL_Transmit(pdev, 0x00, NULL, 0);
+				//dcp_acksend(pdev);
+#endif
+				//TP();
 			}
-#endif /* CPUSTYLE_R7S721 */
 		}
 		break;
 
@@ -9367,12 +9358,11 @@ USBD_StatusTypeDef USBD_LL_DataOutStage(USBD_HandleTypeDef *pdev, uint_fast8_t e
 
 	if (epnum == 0)
 	{
-		PRINTF(PSTR("USBD_LL_DataOutStage: EP0 epnum=%d, pdev->ep0_state=%d\n"), (int) epnum, (int) pdev->ep0_state);
+		//PRINTF(PSTR("USBD_LL_DataOutStage: EP0 epnum=%d, pdev->ep0_state=%d\n"), (int) epnum, (int) pdev->ep0_state);
 
 		if (pdev->ep0_state == USBD_EP0_DATA_OUT)
 		{
 			USBD_EndpointTypeDef * const pep = & pdev->ep_out [0];
-			TP();
 			if (pep->rem_length > pep->maxpacket)
 			{
 				pep->rem_length -=  pep->maxpacket;
@@ -9383,7 +9373,6 @@ USBD_StatusTypeDef USBD_LL_DataOutStage(USBD_HandleTypeDef *pdev, uint_fast8_t e
 			}
 			else
 			{
-				TP();
 				if ((pdev->dev_state == USBD_STATE_CONFIGURED))
 				{
 		        	  uint_fast8_t di;
