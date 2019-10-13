@@ -7,6 +7,7 @@
 //
 
 // Синтезатор с процессором STM32F401RB
+// новый SW20xx
 
 #ifndef ARM_STM32FXXX_TQFP64_CPUSTYLE_V1K_H_INCLUDED
 #define ARM_STM32FXXX_TQFP64_CPUSTYLE_V1K_H_INCLUDED 1
