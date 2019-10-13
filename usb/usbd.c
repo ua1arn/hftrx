@@ -783,7 +783,7 @@ typedef USBALIGN_BEGIN struct _USBD_HandleTypeDef
   USBALIGN_BEGIN uint8_t  dev_default_config [32] USBALIGN_END;	// used 1 enement
   USBALIGN_BEGIN uint8_t  dev_config_status [32] USBALIGN_END;	// used two elements
   
-  USBD_SpeedTypeDef       dev_speed; 
+  USBD_SpeedTypeDef       dev_speed; 	// USBD_SPEED_xxx
   USBD_EndpointTypeDef    ep_in [15];
   USBD_EndpointTypeDef    ep_out [15];  
   uint_fast32_t           ep0_state;  
@@ -3987,6 +3987,7 @@ static HAL_StatusTypeDef USB_DevInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_
 	USBx->SYSCFG0 |= USB_SYSCFG_USBE;	// USBE 1: USB module operation is enabled.
 	(void) USBx->SYSCFG0;
 
+	PRINTF("USB_DevInit: cfg->speed=%d\n", (int) cfg->speed);
 	USBx->SYSCFG0 = (USBx->SYSCFG0 & ~ (USB_SYSCFG_HSE)) |
 			(cfg->speed == USBD_SPEED_HIGH) * USB_SYSCFG_HSE |	// HSE
 			0;
@@ -6730,8 +6731,8 @@ void HAL_PCD_ResetCallback(PCD_HandleTypeDef *hpcd)
 		speed = USBD_SPEED_FULL;
 		break;
 	}
-	//PRINTF(PSTR("HAL_PCD_ResetCallback: speed=%d\n"), (int) speed);
-	USBD_LL_SetSpeed((USBD_HandleTypeDef*)hpcd->pData, speed);
+	PRINTF(PSTR("HAL_PCD_ResetCallback: speed=%d\n"), (int) speed);
+	USBD_LL_SetSpeed((USBD_HandleTypeDef*)hpcd->pData, speed);	// USBD_SPEED_xxx
 
 	/*Reset Device*/
 	USBD_LL_Reset((USBD_HandleTypeDef*)hpcd->pData);
@@ -9551,7 +9552,7 @@ USBD_StatusTypeDef USBD_LL_Reset(USBD_HandleTypeDef  *pdev)
 */
 USBD_StatusTypeDef USBD_LL_SetSpeed(USBD_HandleTypeDef  *pdev, USBD_SpeedTypeDef speed)
 {
-	pdev->dev_speed = speed;
+	pdev->dev_speed = speed;	// USBD_SPEED_xxx
 	return USBD_OK;
 }
 
@@ -10038,7 +10039,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 
       if (USB_GetDevSpeed(hpcd->Instance) == USB_OTG_SPEED_HIGH)
       {
-        hpcd->Init.speed            = USB_OTG_SPEED_HIGH;
+        hpcd->Init.speed            = PCD_SPEED_HIGH;
         hpcd->Init.ep0_mps          = USB_OTG_HS_MAX_PACKET_SIZE;
         hpcd->Instance->GUSBCFG = (hpcd->Instance->GUSBCFG & ~ USB_OTG_GUSBCFG_TRDT) |
 			(uint32_t)((USBD_HS_TRDT_VALUE << USB_OTG_GUSBCFG_TRDT_Pos) & USB_OTG_GUSBCFG_TRDT) |
@@ -10046,7 +10047,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
       }
       else
       {
-        hpcd->Init.speed            = USB_OTG_SPEED_FULL;
+        hpcd->Init.speed            = PCD_SPEED_FULL;
         hpcd->Init.ep0_mps          = USB_OTG_FS_MAX_PACKET_SIZE ;
 
         /* The USBTRD is configured according to the tables below, depending on AHB frequency
@@ -10218,12 +10219,16 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
   }
 }
 
-void OTG_HS_IRQHandler(void)
+void device_OTG_HS_IRQHandler(void)
 {
-#if defined (WITHUSBHW_DEVICE) && WITHDEVONHIGHSPEED
+#if defined (WITHUSBHW_DEVICE)
 	HAL_PCD_IRQHandler(& hpcd_USB_OTG);
 #endif /* defined (WITHUSBHW_DEVICE) */
-#if defined (WITHUSBHW_HOST) && WITHHOSTONHIGHSPEED
+}
+
+void host_OTG_HS_IRQHandler(void)
+{
+#if defined (WITHUSBHW_HOST)
 	HAL_HCD_IRQHandler(& hhcd_USB_OTG);
 #endif /* defined (WITHUSBHW_HOST) */
 }
@@ -10231,12 +10236,16 @@ void OTG_HS_IRQHandler(void)
 /**
 * @brief This function handles USB On The Go HS End Point 1 Out global interrupt.
 */
-void OTG_HS_EP1_OUT_IRQHandler(void)
+void device_OTG_HS_EP1_OUT_IRQHandler(void)
 {
-#if defined (WITHUSBHW_DEVICE) && WITHDEVONHIGHSPEED
+#if defined (WITHUSBHW_DEVICE)
 	HAL_PCD_IRQHandler(& hpcd_USB_OTG);
 #endif /* defined (WITHUSBHW_DEVICE) */
-#if defined (WITHUSBHW_HOST) && WITHHOSTONHIGHSPEED
+}
+
+void host_OTG_HS_EP1_OUT_IRQHandler(void)
+{
+#if defined (WITHUSBHW_HOST)
 	HAL_HCD_IRQHandler(& hhcd_USB_OTG);
 #endif /* defined (WITHUSBHW_HOST) */
 }
@@ -10244,22 +10253,30 @@ void OTG_HS_EP1_OUT_IRQHandler(void)
 /**
 * @brief This function handles USB On The Go HS End Point 1 In global interrupt.
 */
-void OTG_HS_EP1_IN_IRQHandler(void)
+void device_OTG_HS_EP1_IN_IRQHandler(void)
 {
-#if defined (WITHUSBHW_DEVICE) && WITHDEVONHIGHSPEED
+#if defined (WITHUSBHW_DEVICE)
 	HAL_PCD_IRQHandler(& hpcd_USB_OTG);
 #endif /* defined (WITHUSBHW_DEVICE) */
-#if defined (WITHUSBHW_HOST) && WITHHOSTONHIGHSPEED
+}
+
+void host_OTG_HS_EP1_IN_IRQHandler(void)
+{
+#if defined (WITHUSBHW_HOST)
 	HAL_HCD_IRQHandler(& hhcd_USB_OTG);
 #endif /* defined (WITHUSBHW_HOST) */
 }
 
-void OTG_FS_IRQHandler(void)
+void device_OTG_FS_IRQHandler(void)
 {
-#if defined (WITHUSBHW_DEVICE) && ! WITHDEVONHIGHSPEED
+#if defined (WITHUSBHW_DEVICE)
 	HAL_PCD_IRQHandler(& hpcd_USB_OTG);
 #endif /* defined (WITHUSBHW_DEVICE) */
-#if defined (WITHUSBHW_HOST) && ! WITHHOSTONHIGHSPEED
+}
+
+void host_OTG_FS_IRQHandler(void)
+{
+#if defined (WITHUSBHW_HOST)
 	HAL_HCD_IRQHandler(& hhcd_USB_OTG);
 #endif /* defined (WITHUSBHW_HOST) */
 }
@@ -13230,13 +13247,40 @@ static const USBD_ClassTypeDef USBD_CLASS_XXX =
   * @param  hpcd: PCD handle
   * @retval None
   */
-void HAL_PCD_MspDeInit(PCD_HandleTypeDef *hpcd)
+void HAL_PCD_MspDeInit(PCD_HandleTypeDef *pcdHandle)
 {
 #if CPUSTYLE_R7S721
-	hpcd->Instance->SYSCFG0 &= ~ USB_SYSCFG_USBE;
-	hpcd->Instance->INTENB0 = 0;
-	hpcd->Instance->INTENB1 = 0;
+
+	pcdHandle->Instance->SYSCFG0 &= ~ USB_SYSCFG_USBE;
+	pcdHandle->Instance->INTENB0 = 0;
+	pcdHandle->Instance->INTENB1 = 0;
+
+#elif CPUSTYLE_STM32H7XX
+
+	  if (pcdHandle->Instance == USB_OTG_HS)
+	  {
+	    /* Peripheral interrupt Deinit*/
+	    NVIC_DisableIRQ(OTG_HS_IRQn);
+	  }
+	  else if (pcdHandle->Instance == USB_OTG_FS)
+	  {
+	    /* Peripheral interrupt Deinit*/
+	    NVIC_DisableIRQ(OTG_FS_IRQn);
+	  }
+
 #elif CPUSTYLE_STM32
+
+	  if (pcdHandle->Instance == USB_OTG_HS)
+	  {
+	    /* Peripheral interrupt Deinit*/
+	    NVIC_DisableIRQ(OTG_HS_IRQn);
+	  }
+	  else if (pcdHandle->Instance == USB_OTG_FS)
+	  {
+	    /* Peripheral interrupt Deinit*/
+	    NVIC_DisableIRQ(OTG_FS_IRQn);
+	  }
+
 #else
 	#error HAL_PCD_MspDeInit should be implemented
 #endif
@@ -13248,59 +13292,7 @@ void HAL_PCD_MspDeInit(PCD_HandleTypeDef *hpcd)
   * @param  pdev: Device handle
   * @retval USBD Status
   */
-static USBD_StatusTypeDef  USBD_LL_FS_Init (PCD_HandleTypeDef * hpcd, USBD_HandleTypeDef *pdev)
-{
-	/* Link The driver to the stack */
-	hpcd->pData = pdev;
-	pdev->pData = hpcd;
-
-	hpcd->Instance = WITHUSBHW_DEVICE;
-
-#if CPUSTYLE_R7S721
-	#if WITHHIGHSPEEDDESC && WITHDEVONHIGHSPEED
-		hpcd->Init.speed = PCD_SPEED_HIGH;
-	#else /* WITHHIGHSPEEDDESC && WITHDEVONHIGHSPEED */
-		hpcd->Init.speed = PCD_SPEED_FULL;
-	#endif /* WITHHIGHSPEEDDESC && WITHDEVONHIGHSPEED */
-#else /* CPUSTYLE_R7S721 */
-	hpcd->Init.speed = PCD_SPEED_FULL;
-#endif /* CPUSTYLE_R7S721 */
-
-	hpcd->Init.dev_endpoints = 6;
-	hpcd->Init.dma_enable = USB_DISABLE;
-	hpcd->Init.ep0_mps = DEP0CTL_MPS_64;
-	hpcd->Init.phy_itface = PCD_PHY_EMBEDDED;
-	hpcd->Init.Sof_enable = USB_DISABLE;
-	hpcd->Init.low_power_enable = USB_DISABLE;
-	hpcd->Init.lpm_enable = USB_DISABLE;
-	hpcd->Init.battery_charging_enable = USB_ENABLE;
-#if WITHUSBHWVBUSSENSE	/* используется предопределенный вывод VBUS_SENSE */
-	hpcd->Init.vbus_sensing_enable = USB_ENABLE;
-#else /* WITHUSBHWVBUSSENSE */
-	hpcd->Init.vbus_sensing_enable = USB_DISABLE;
-#endif /* WITHUSBHWVBUSSENSE */
-	hpcd->Init.use_dedicated_ep1 = USB_DISABLE;
-	hpcd->Init.use_external_vbus = USB_DISABLE;
-
-	if (HAL_PCD_Init(hpcd) != HAL_OK)
-	{
-		Error_Handler();
-	}
-
-#if CPUSTYLE_R7S721
-	usbd_pipes_initialize(hpcd);
-#elif CPUSTYLE_STM32H7XX
-	// У OTH_HS размер FIFO 4096 байт
-	usbd_fifo_initialize(hpcd, 4096, 1);
-#else /* CPUSTYLE_R7S721 */
-	// У OTH_FS размер FIFO 1280 байт
-	usbd_fifo_initialize(hpcd, 1280, 0);
-#endif /* CPUSTYLE_R7S721 */
-
-	return USBD_OK;
-}
-
-static USBD_StatusTypeDef  USBD_LL_HS_Init (PCD_HandleTypeDef * hpcd, USBD_HandleTypeDef *pdev)
+static USBD_StatusTypeDef  USBD_LL_Init(PCD_HandleTypeDef * hpcd, USBD_HandleTypeDef *pdev)
 {
 	/* Link The driver to the stack */
 	hpcd->pData = pdev;
@@ -13310,37 +13302,38 @@ static USBD_StatusTypeDef  USBD_LL_HS_Init (PCD_HandleTypeDef * hpcd, USBD_Handl
 
 #if CPUSTYLE_R7S721
 
-	#if WITHHIGHSPEEDDESC
+	#if WITHUSBDEV_HSDESC
 		hpcd->Init.speed = PCD_SPEED_HIGH;
-	#else /* WITHHIGHSPEEDDESC */
+	#else /* WITHUSBDEV_HSDESC */
 		hpcd->Init.speed = PCD_SPEED_FULL;
-	#endif /* WITHHIGHSPEEDDESC */
+	#endif /* WITHUSBDEV_HSDESC */
 	hpcd->Init.phy_itface = USB_OTG_EMBEDDED_PHY;
 
 #else /* CPUSTYLE_R7S721 */
 
-	#if WITHHIGHSPEEDDESC
+	#if WITHUSBDEV_HSDESC
 		hpcd->Init.speed = PCD_SPEED_HIGH;
-	#else /* WITHUSBHWVBUSSENSE */
+	#else /* WITHUSBDEV_HSDESC */
 		hpcd->Init.speed = PCD_SPEED_FULL;
-	#endif /* WITHHIGHSPEEDDESC */
-	#if WITHUSBHWHIGHSPEEDULPI
+	#endif /* WITHUSBDEV_HSDESC */
+
+	#if WITHUSBDEV_HIGHSPEEDULPI
 		hpcd->Init.phy_itface = USB_OTG_ULPI_PHY;
-	#elif WITHUSBHWHIGHSPEEDPHYC
+	#elif WITHUSBDEV_HIGHSPEEDPHYC
 		hpcd->Init.phy_itface = USB_OTG_HS_EMBEDDED_PHY;
-	#else /* WITHUSBHWHIGHSPEEDULPI */
+	#else /* WITHUSBDEV_HIGHSPEEDULPI */
 		hpcd->Init.phy_itface = USB_OTG_EMBEDDED_PHY;
-	#endif /* WITHUSBHWHIGHSPEEDULPI */
+	#endif /* WITHUSBDEV_HIGHSPEEDULPI */
 
 #endif /* CPUSTYLE_R7S721 */
 
-	#if WITHUSBHWVBUSSENSE	/* используется предопределенный вывод VBUS_SENSE */
+	#if WITHUSBDEV_VBUSSENSE	/* используется предопределенный вывод VBUS_SENSE */
 		hpcd->Init.vbus_sensing_enable = USB_ENABLE;
-	#else /* WITHUSBHWVBUSSENSE */
+	#else /* WITHUSBDEV_VBUSSENSE */
 		hpcd->Init.vbus_sensing_enable = USB_DISABLE;
-	#endif /* WITHUSBHWVBUSSENSE */
+	#endif /* WITHUSBDEV_VBUSSENSE */
 
-	hpcd->Init.dev_endpoints = 9;
+	hpcd->Init.dev_endpoints = 9;	// or 6 for FS devices
 	hpcd->Init.dma_enable = ! USB_ENABLE; // xyz
 	hpcd->Init.ep0_mps = DEP0CTL_MPS_64;
 	hpcd->Init.Sof_enable = USB_DISABLE;
@@ -13357,7 +13350,20 @@ static USBD_StatusTypeDef  USBD_LL_HS_Init (PCD_HandleTypeDef * hpcd, USBD_Handl
 
 #if CPUSTYLE_R7S721
 	usbd_pipes_initialize(hpcd);
+#elif CPUSTYLE_STM32H7XX
+	// У OTH_HS размер FIFO 4096 байт
+	usbd_fifo_initialize(hpcd, 4096, 1);
 #else /* CPUSTYLE_R7S721 */
+	if (pcdHandle->Instance == USB_OTG_HS)
+	{
+		// У OTH_HS размер FIFO 4096 байт
+		usbd_fifo_initialize(hpcd, 4096, 1);
+	}
+	else
+	{
+		// У OTH_FS размер FIFO 1280 байт
+		usbd_fifo_initialize(hpcd, 1280, 1);
+	}
 	// У OTH_HS размер FIFO 4096 байт
 	usbd_fifo_initialize(hpcd, 4096, 1);
 #endif /* CPUSTYLE_R7S721 */
@@ -13377,14 +13383,14 @@ static USBD_StatusTypeDef  USBD_LL_DeInit (USBD_HandleTypeDef *pdev)
 }
 
 /**
-* @brief  USBD_Init
+* @brief  USBD_Init2
 *         Initializes the device stack and load the class driver
 * @param  pdev: device instance
 * @param  pdesc: Descriptor structure address
 * @param  id: Low level core index
 * @retval None
 */
-static USBD_StatusTypeDef USBD_HS_Init(PCD_HandleTypeDef * hpcd, USBD_HandleTypeDef *pdev)
+static USBD_StatusTypeDef USBD_Init2(USBD_HandleTypeDef *pdev)
 {
 	/* Check whether the USB Host handle is valid */
 	if(pdev == NULL)
@@ -13392,68 +13398,17 @@ static USBD_StatusTypeDef USBD_HS_Init(PCD_HandleTypeDef * hpcd, USBD_HandleType
 		//USBD_ErrLog("Invalid Device handle");
 		return USBD_FAIL;
 	}
-
 	pdev->nClasses = 0;
-	/* Set Device initial State */
-	pdev->dev_state = USBD_STATE_DEFAULT;
-	/* Initialize low level driver */
-	USBD_LL_HS_Init(hpcd, pdev);
 
-	return USBD_OK;
-}
 
-static USBD_StatusTypeDef USBD_FS_Init(PCD_HandleTypeDef * hpcd, USBD_HandleTypeDef *pdev)
-{
-	/* Check whether the USB Host handle is valid */
-	if(pdev == NULL)
-	{
-		//USBD_ErrLog("Invalid Device handle");
-		return USBD_FAIL;
-	}
-
-	pdev->nClasses = 0;
 	/* Set Device initial State */
 	pdev->dev_state  = USBD_STATE_DEFAULT;
+	//pdev->id = id;
 	/* Initialize low level driver */
-	USBD_LL_FS_Init(hpcd, pdev);
+	/* Init Device Library,Add Supported Class and Start the library*/
+	USBD_LL_Init(& hpcd_USB_OTG, pdev);
 
 	return USBD_OK;
-}
-
-/**
-* @brief  USBD_Init
-*         Initializes the device stack and load the class driver
-* @param  pdev: device instance
-* @param  pdesc: Descriptor structure address
-* @param  id: Low level core index
-* @retval None
-*/
-static USBD_StatusTypeDef USBD_Init2(USBD_HandleTypeDef *pdev, uint_fast8_t ifhs)
-{
-  /* Check whether the USB Host handle is valid */
-  if(pdev == NULL)
-  {
-    //USBD_ErrLog("Invalid Device handle");
-    return USBD_FAIL;
-  }
-	pdev->nClasses = 0;
-
-
-  /* Set Device initial State */
-  pdev->dev_state  = USBD_STATE_DEFAULT;
-  //pdev->id = id;
-  /* Initialize low level driver */
-	/* Init Device Library,Add Supported Class and Start the library*/
-	if (ifhs != 0)
-	{
-		USBD_HS_Init(& hpcd_USB_OTG, pdev);
-	}
-	else
-	{
-		USBD_FS_Init(& hpcd_USB_OTG, pdev);
-	}
-
-  return USBD_OK;
 }
 
 /**
@@ -13489,17 +13444,17 @@ static USBD_StatusTypeDef USBD_DeInit(USBD_HandleTypeDef *pdev)
 static void hardware_usbd_initialize(void)
 {
 	extern USBD_ClassTypeDef  USBD_CLASS_DFU;
-	#if WITHDEVONHIGHSPEED
-		const uint_fast8_t ifhs = 1;
-	#else /* WITHDEVONHIGHSPEED */
-		const uint_fast8_t ifhs = 0;
-	#endif /* WITHDEVONHIGHSPEED */
+#if WITHUSBDEV_HSDESC
+	usbd_descriptors_initialize(1);
+#else /* WITHUSBDEV_HSDESC */
+	usbd_descriptors_initialize(0);
+#endif /* WITHUSBDEV_HSDESC */
 
 #if WITHUSBUAC
 	uacout_buffer_initialize();
 #endif /* WITHUSBUAC */
 
-	USBD_Init2(& hUsbDevice, ifhs);
+	USBD_Init2(& hUsbDevice);
 	USBD_AddClass(& hUsbDevice, & USBD_CLASS_XXX);
 	//USBD_AddClass(& hUsbDevice, & USBD_CLASS_AUDIO);
 	//USBD_AddClass(& hUsbDevice, & USBD_CDC1);
@@ -13511,13 +13466,7 @@ static void hardware_usbd_initialize(void)
 /* вызывается при запрещённых прерываниях. */
 static void board_usbd_initialize(void)
 {
-	#if WITHDEVONHIGHSPEED
-		const uint_fast8_t deschs = 1;
-	#else /* WITHDEVONHIGHSPEED */
-		const uint_fast8_t deschs = 0;
-	#endif /* WITHDEVONHIGHSPEED */
 
-	usbd_descriptors_initialize(deschs);
 	hardware_usbd_initialize();
 	hardware_usbd_dma_initialize();
 	hardware_usbd_dma_enable();
@@ -13890,15 +13839,15 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
 
 		if (hpcd->Init.use_dedicated_ep1 == USB_ENABLE)
 		{
-			NVIC_SetVector(OTG_HS_EP1_OUT_IRQn, (uintptr_t) & OTG_HS_EP1_OUT_IRQHandler);
+			NVIC_SetVector(OTG_HS_EP1_OUT_IRQn, (uintptr_t) & device_OTG_HS_EP1_OUT_IRQHandler);
 			NVIC_SetPriority(OTG_HS_EP1_OUT_IRQn, ARM_SYSTEM_PRIORITY);
 			NVIC_EnableIRQ(OTG_HS_EP1_OUT_IRQn);	// OTG_HS_EP1_OUT_IRQHandler() enable
 
-			NVIC_SetVector(OTG_HS_EP1_IN_IRQn, (uintptr_t) & OTG_HS_EP1_IN_IRQHandler);
+			NVIC_SetVector(OTG_HS_EP1_IN_IRQn, (uintptr_t) & device_OTG_HS_EP1_IN_IRQHandler);
 			NVIC_SetPriority(OTG_HS_EP1_IN_IRQn, ARM_SYSTEM_PRIORITY);
 			NVIC_EnableIRQ(OTG_HS_EP1_IN_IRQn);	// OTG_HS_EP1_IN_IRQHandler() enable
 		}
-		NVIC_SetVector(OTG_HS_IRQn, (uintptr_t) & OTG_HS_IRQHandler);
+		NVIC_SetVector(OTG_HS_IRQn, (uintptr_t) & device_OTG_HS_IRQHandler);
 		NVIC_SetPriority(OTG_HS_IRQn, ARM_SYSTEM_PRIORITY);
 		NVIC_EnableIRQ(OTG_HS_IRQn);	// OTG_HS_IRQHandler() enable
 
@@ -13926,7 +13875,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
 		RCC->AHB2ENR |= RCC_AHB2ENR_D2SRAM3EN;
 		(void) RCC->AHB2ENR;
 
-		NVIC_SetVector(OTG_FS_IRQn, (uintptr_t) & OTG_FS_IRQHandler);
+		NVIC_SetVector(OTG_FS_IRQn, (uintptr_t) & device_OTG_FS_IRQHandler);
 		NVIC_SetPriority(OTG_FS_IRQn, ARM_SYSTEM_PRIORITY);
 		NVIC_EnableIRQ(OTG_FS_IRQn);	// OTG_FS_IRQHandler() enable
 
@@ -13943,7 +13892,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
 	RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN;	/* USB/OTG FS companion - VBUS? */
 	(void) RCC->APB2ENR;
 
-	NVIC_SetVector(OTG_FS_IRQn, (uintptr_t) & OTG_FS_IRQHandler);
+	NVIC_SetVector(OTG_FS_IRQn, (uintptr_t) & device_OTG_FS_IRQHandler);
 	NVIC_SetPriority(OTG_FS_IRQn, ARM_SYSTEM_PRIORITY);
 	NVIC_EnableIRQ(OTG_FS_IRQn);	// OTG_FS_IRQHandler() enable
 
@@ -13986,15 +13935,15 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
 
 		if (hpcd->Init.use_dedicated_ep1 == USB_ENABLE)
 		{
-			NVIC_SetVector(OTG_HS_EP1_OUT_IRQn, (uintptr_t) & OTG_HS_EP1_OUT_IRQHandler);
+			NVIC_SetVector(OTG_HS_EP1_OUT_IRQn, (uintptr_t) & device_OTG_HS_EP1_OUT_IRQHandler);
 			NVIC_SetPriority(OTG_HS_EP1_OUT_IRQn, ARM_SYSTEM_PRIORITY);
 			NVIC_EnableIRQ(OTG_HS_EP1_OUT_IRQn);	// OTG_HS_EP1_OUT_IRQHandler() enable
 
-			NVIC_SetVector(OTG_HS_EP1_IN_IRQn, (uintptr_t) & OTG_HS_EP1_IN_IRQHandler);
+			NVIC_SetVector(OTG_HS_EP1_IN_IRQn, (uintptr_t) & device_OTG_HS_EP1_IN_IRQHandler);
 			NVIC_SetPriority(OTG_HS_EP1_IN_IRQn, ARM_SYSTEM_PRIORITY);
 			NVIC_EnableIRQ(OTG_HS_EP1_IN_IRQn);	// OTG_HS_EP1_IN_IRQHandler() enable
 		}
-		NVIC_SetVector(OTG_HS_IRQn, (uintptr_t) & OTG_HS_IRQHandler);
+		NVIC_SetVector(OTG_HS_IRQn, (uintptr_t) & device_host_OTG_HS_IRQHandler);
 		NVIC_SetPriority(OTG_HS_IRQn, ARM_SYSTEM_PRIORITY);
 		NVIC_EnableIRQ(OTG_HS_IRQn);	// OTG_HS_IRQHandler() enable
 
@@ -14010,7 +13959,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
 		RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN;	/* USB/OTG FS companion - VBUS? */
 		(void) RCC->APB2ENR;
 
-		NVIC_SetVector(OTG_FS_IRQn, (uintptr_t) & OTG_FS_IRQHandler);
+		NVIC_SetVector(OTG_FS_IRQn, (uintptr_t) & device_host_OTG_FS_IRQHandler);
 		NVIC_SetPriority(OTG_FS_IRQn, ARM_SYSTEM_PRIORITY);
 		NVIC_EnableIRQ(OTG_FS_IRQn);	// OTG_FS_IRQHandler() enable
 
@@ -14037,7 +13986,7 @@ void HAL_HCD_MspInit(HCD_HandleTypeDef* hcdHandle)
 			RCC->APB4ENR |= RCC_APB4ENR_SYSCFGEN;	/* USB/OTG HS companion - VBUS? */
 			(void) RCC->APB2ENR;
 
-			NVIC_SetVector(OTG_FS_IRQn, (uintptr_t) & OTG_FS_IRQHandler);
+			NVIC_SetVector(OTG_FS_IRQn, (uintptr_t) & host_OTG_FS_IRQHandler);
 			NVIC_SetPriority(OTG_FS_IRQn, ARM_SYSTEM_PRIORITY);
 			NVIC_EnableIRQ(OTG_FS_IRQn);	// OTG_FS_IRQHandler() enable
 
@@ -14052,7 +14001,7 @@ void HAL_HCD_MspInit(HCD_HandleTypeDef* hcdHandle)
 			RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN;	/* USB/OTG FS companion - VBUS? */
 			(void) RCC->APB2ENR;
 
-			NVIC_SetVector(OTG_FS_IRQn, (uintptr_t) & OTG_FS_IRQHandler);
+			NVIC_SetVector(OTG_FS_IRQn, (uintptr_t) & host_OTG_FS_IRQHandler);
 			NVIC_SetPriority(OTG_FS_IRQn, ARM_SYSTEM_PRIORITY);
 			NVIC_EnableIRQ(OTG_FS_IRQn);	// OTG_FS_IRQHandler() enable
 
@@ -14066,27 +14015,15 @@ void HAL_HCD_MspInit(HCD_HandleTypeDef* hcdHandle)
 
 void HAL_HCD_MspDeInit(HCD_HandleTypeDef* hpcd)
 {
-  if (hpcd->Instance == USB_OTG_FS)
+  if (hpcd->Instance == USB_OTG_HS)
   {
-  /* USER CODE BEGIN USB_OTG_FS_MspDeInit 0 */
-
-  /* USER CODE END USB_OTG_FS_MspDeInit 0 */
-    /* Peripheral clock disable */
-    //__HAL_RCC_USB_OTG_FS_CLK_DISABLE();
-
-    /**USB_OTG_FS GPIO Configuration
-    PA9     ------> USB_OTG_FS_VBUS
-    PA11     ------> USB_OTG_FS_DM
-    PA12     ------> USB_OTG_FS_DP
-    */
-    //HAL_GPIO_DeInit(GPIOA, GPIO_PIN_9|GPIO_PIN_11|GPIO_PIN_12);
-
     /* Peripheral interrupt Deinit*/
-    NVIC_DisableIRQ(OTG_FS_IRQn);
-
-  /* USER CODE BEGIN USB_OTG_FS_MspDeInit 1 */
-
-  /* USER CODE END USB_OTG_FS_MspDeInit 1 */
+    NVIC_DisableIRQ(OTG_HS_IRQn);
+  }
+  else if (hpcd->Instance == USB_OTG_FS)
+  {
+	    /* Peripheral interrupt Deinit*/
+	    NVIC_DisableIRQ(OTG_FS_IRQn);
   }
 }
 
@@ -16670,14 +16607,14 @@ static void HCD_Port_IRQHandler(HCD_HandleTypeDef *hhcd)
       }
       else
       {
-        if(hhcd->Init.speed == HCD_SPEED_FULL)
+        if (hhcd->Init.speed == HCD_SPEED_FULL)
         {
           USBx_HOST->HFIR = (uint32_t)60000;
         }
       }
       HAL_HCD_Connect_Callback(hhcd);
       
-      if(hhcd->Init.speed == HCD_SPEED_HIGH)
+      if (hhcd->Init.speed == HCD_SPEED_HIGH)
       {
         USB_UNMASK_INTERRUPT(hhcd->Instance, USB_OTG_GINTSTS_DISCINT); 
       }
@@ -17165,7 +17102,7 @@ USBH_StatusTypeDef  USBH_LL_Init(USBH_HandleTypeDef *phost)
 
 		hhcd_USB_OTG.Instance = WITHUSBHW_HOST;
 		hhcd_USB_OTG.Init.Host_channels = 16;
-		hhcd_USB_OTG.Init.speed = USBD_SPEED_HIGH;
+		hhcd_USB_OTG.Init.speed = PCD_SPEED_HIGH;
 		hhcd_USB_OTG.Init.dma_enable = USB_DISABLE;
 		hhcd_USB_OTG.Init.phy_itface = HCD_PHY_EMBEDDED;
 		hhcd_USB_OTG.Init.Sof_enable = USB_DISABLE;

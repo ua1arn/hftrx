@@ -3941,11 +3941,6 @@ static unsigned fill_Configuration_descriptor(
 		const fill_func_t fill_main_group	// fill functional descriptor(s)
 		)
 {
-#if WITHDEVONHIGHSPEED && WITHHIGHSPEEDDESC
-	//const int highspeedEPs = 1;
-#else /* WITHDEVONHIGHSPEED && WITHHIGHSPEEDDESC */
-	//const int highspeedEPs = 0;
-#endif /* WITHDEVONHIGHSPEED && WITHHIGHSPEEDDESC */
 	const int highspeedEPs = highspeed;
 	unsigned length = 9;
 	unsigned totalsize = length + fill_main_group(0, buff, maxsize - length, highspeedEPs);

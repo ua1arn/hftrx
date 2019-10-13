@@ -505,8 +505,8 @@ void hardware_adc_initialize(void);
 	#define ATTRWEAK __attribute__ ((weak))
 	// Use __attribute__ ((weak, alias("Default_Handler")))
 
-	//#define PSTR(s) (s)
-	#define PSTR(s) (__extension__({static const char __c[] FLASHMEM = (s); &__c[0];}))
+	#define PSTR(s) (s)
+	//#define PSTR(s) (__extension__({static const char __c[] FLASHMEM = (s); &__c[0];}))
 
 	void RAMFUNC local_delay_us(int timeUS);
 	void local_delay_ms(int timeMS);
