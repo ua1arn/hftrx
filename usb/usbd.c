@@ -3000,8 +3000,12 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 			// Setup syage detectd
 			usb_save_request(USBx, & pdev->request);
 			USBx->INTSTS0 = (uint16_t) ~ USB_INTSTS0_VALID;	// Clear VALID - in seq 1, 3 and 5
-			ASSERT(ctsq == 1 || ctsq == 3 || ctsq == 5);
-	        HAL_PCD_SetupStageCallback(hpcd);
+			if (ctsq != 0 && ctsq != 1 && ctsq != 3 && ctsq != 5)
+			{
+				PRINTF("srsq=%d\n", (int) ctsq);
+			}
+			ASSERT(ctsq == 0 || ctsq == 1 || ctsq == 3 || ctsq == 5);
+			HAL_PCD_SetupStageCallback(hpcd);
 	        //PRINTF("setup phase ended\n");
 		}
 		//PRINTF(PSTR("HAL_PCD_IRQHandler trapped - CTRT, CTSQ=%d\n"), (intsts0 >> 0) & 0x07);
@@ -3299,9 +3303,11 @@ HAL_StatusTypeDef USB_SetCurrentMode(USB_OTG_GlobalTypeDef *USBx, USB_OTG_ModeTy
 	{
 	case USB_OTG_DEVICE_MODE:
 		USBx->SYSCFG0 &= ~ USB_SYSCFG_DCFM;	// DCFM01: Devide controller mode is selected
+		(void) USBx->SYSCFG0;
 		break;
 	case USB_OTG_HOST_MODE:
 		USBx->SYSCFG0 |= USB_SYSCFG_DCFM;	// DCFM 1: Host controller mode is selected
+		(void) USBx->SYSCFG0;
 		break;
 	case USB_OTG_DRD_MODE:
 		ASSERT(0);
@@ -3642,9 +3648,6 @@ static HAL_StatusTypeDef USB_HostInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG
 			0;
 	(void) USBx->SYSCFG0;
 
-	USBx->SYSCFG0 |= USB_SYSCFG_DCFM;	// DCFM 1: Host controller mode is selected
-	(void) USBx->SYSCFG0;
-
 	USBx->SYSCFG0 |= USB_SYSCFG_USBE;	// USBE 1: USB module operation is enabled.
 	(void) USBx->SYSCFG0;
 
@@ -3652,6 +3655,9 @@ static HAL_StatusTypeDef USB_HostInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG
 			(cfg->speed == USBD_SPEED_HIGH) * USB_SYSCFG_HSE |	// HSE
 			0;
 	(void) USBx->SYSCFG0;
+
+	USBx->INTSTS0 = 0;
+	USBx->INTSTS1 = 0;
 
 	/*
 	The RSME, DVSE, and CTRE bits can be set to 1 only when the function controller mode is selected; do not set these bits to 1
@@ -3983,9 +3989,6 @@ static HAL_StatusTypeDef USB_DevInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_
 			0;
 	(void) USBx->SYSCFG0;
 
-	USBx->SYSCFG0 &= ~ USB_SYSCFG_DCFM;	// DCFM 0: Device controller mode is selected
-	(void) USBx->SYSCFG0;
-
 	USBx->SYSCFG0 |= USB_SYSCFG_USBE;	// USBE 1: USB module operation is enabled.
 	(void) USBx->SYSCFG0;
 
@@ -3994,6 +3997,9 @@ static HAL_StatusTypeDef USB_DevInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_
 			(cfg->speed == USBD_SPEED_HIGH) * USB_SYSCFG_HSE |	// HSE
 			0;
 	(void) USBx->SYSCFG0;
+
+	USBx->INTSTS0 = 0;
+	USBx->INTSTS1 = 0;
 
 	USBx->INTENB0 =
 		(cfg->Sof_enable != USB_FALSE) * USB_INTENB0_SOFE |	// SOFE	1: Frame Number Update Interrupt Enable
@@ -8097,7 +8103,7 @@ static USBD_StatusTypeDef USBD_XXX_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 			switch (req->bRequest)
 			{
 			case USB_REQ_GET_INTERFACE :
-				//PRINTF(PSTR("USBD_ClassXXX_Setup IN: USB_REQ_TYPE_STANDARD USB_REQ_GET_INTERFACE dir=%02X interfacev=%d\n"), req->bmRequest & 0x80, interfacev);
+				PRINTF(PSTR("USBD_ClassXXX_Setup IN: USB_REQ_TYPE_STANDARD USB_REQ_GET_INTERFACE dir=%02X interfacev=%d\n"), req->bmRequest & 0x80, interfacev);
 				if (interfacev < INTERFACE_count)
 				{
 					buff [0] = altinterfaces [interfacev];
@@ -8177,6 +8183,7 @@ static USBD_StatusTypeDef USBD_XXX_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 					break;
 
 				default:
+
 					//PRINTF(PSTR("USBD_ClassXXX_Setup OUT: INTERFACE_CDC_CONTRO:_xxx: bRequest=%02X, wValue=%04X, wLength=%04X\n"), req->bRequest, req->wValue, req->wLength);
 					//TP();
 					break;
@@ -8247,11 +8254,6 @@ static USBD_StatusTypeDef USBD_XXX_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 			case INTERFACE_DFU_CONTROL:	// USB DFU interfacei
 				switch (req->bRequest)
 				{
-				//case CDC_SET_CONTROL_LINE_STATE:
-					// Выполнение этого запроса не требует дополнительного чтения данных
-					//PRINTF(PSTR("USBD_ClassXXX_Setup OUT: INTERFACE_HID_CONTROL_7 CDC_SET_CONTROL_LINE_STATE, wValue=%04X\n"), req->wValue);
-					//usb_cdc_control_state [interfacev] = req->wValue;
-					//break;
 				default:
 					PRINTF(PSTR("USBD_ClassXXX_Setup OUT: INTERFACE_DFU_CONTROL: bRequest=%02X, wIndex=%04X, wLength=%04X\n"), req->bRequest, req->wIndex, req->wLength);
 					break;
@@ -8283,7 +8285,7 @@ static USBD_StatusTypeDef USBD_XXX_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 			switch (req->bRequest)
 			{
 			case USB_REQ_SET_INTERFACE :
-				//PRINTF(PSTR("USBD_ClassXXX_Setup: USB_REQ_TYPE_STANDARD USB_REQ_SET_INTERFACE interfacev=%d, value=%d\n"), interfacev, LO_BYTE(req->wValue));
+				PRINTF(PSTR("USBD_ClassXXX_Setup: USB_REQ_TYPE_STANDARD USB_REQ_SET_INTERFACE interfacev=%d, value=%d\n"), interfacev, LO_BYTE(req->wValue));
 				if (interfacev < INTERFACE_count)
 					altinterfaces [interfacev] = LO_BYTE(req->wValue);
 				switch (interfacev)
@@ -8291,6 +8293,8 @@ static USBD_StatusTypeDef USBD_XXX_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 			#if WITHUSBCDC
 				case INTERFACE_CDC_CONTROL_3a:	// CDC interface
 				case INTERFACE_CDC_CONTROL_3b:	// CDC interface
+					PRINTF("CDC interface %d set to %d\n", (int) interfacev, (int) altinterfaces [interfacev]);
+					//bufers_set_cdcalt(altinterfaces [interfacev]);
 					break;
 			#endif /* WITHUSBCDC */
 
