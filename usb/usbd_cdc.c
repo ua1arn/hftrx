@@ -225,7 +225,7 @@ static USBD_StatusTypeDef USBD_CDC_EP0_RxReady(USBD_HandleTypeDef *pdev)
 				{
 					const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
 					dwDTERate [interfacev] = USBD_peek_u32(& cdc_epXdatabuffout [0]);
-					PRINTF(PSTR("USBD_CDC_EP0_RxReady: CDC_SET_LINE_CODING: interfacev=%u, dwDTERate=%lu, bits=%u\n"), interfacev, dwDTERate [interfacev], cdc_epXdatabuffout [6]);
+					//PRINTF(PSTR("USBD_CDC_EP0_RxReady: CDC_SET_LINE_CODING: interfacev=%u, dwDTERate=%lu, bits=%u\n"), interfacev, dwDTERate [interfacev], cdc_epXdatabuffout [6]);
 				}
 				break;
 			}
@@ -332,27 +332,26 @@ static USBD_StatusTypeDef USBD_CDC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 				{
 				case CDC_SET_CONTROL_LINE_STATE:
 					// Выполнение этого запроса не требует дополнительного чтения данных
-					PRINTF(PSTR("USBD_CDC_Setup OUT: CDC_SET_CONTROL_LINE_STATE, wValue=%04X\n"), req->wValue);
+					//PRINTF(PSTR("USBD_CDC_Setup OUT: CDC_SET_CONTROL_LINE_STATE, wValue=%04X\n"), req->wValue);
 					usb_cdc_control_state [interfacev] = req->wValue;
+					ASSERT(req->wLength == 0);
+					if (req->wLength != 0)
+					{
+						USBD_CtlPrepareRx(pdev, cdc_epXdatabuffout, ulmin16(ARRAY_SIZE(cdc_epXdatabuffout), req->wLength));
+					}
+					else
+					{
+						USBD_CtlSendStatus(pdev);
+					}
 					break;
 
 				default:
-					//PRINTF(PSTR("USBD_CDC_Setup OUT: INTERFACE_CDC_CONTRO:_xxx: bRequest=%02X, wValue=%04X, wLength=%04X\n"), req->bRequest, req->wValue, req->wLength);
-					//TP();
 					break;
-				}
-				if (req->wLength != 0)
-				{
-					USBD_CtlPrepareRx(pdev, cdc_epXdatabuffout, ulmin16(ARRAY_SIZE(cdc_epXdatabuffout), req->wLength));
-				}
-				else
-				{
-					USBD_CtlSendStatus(pdev);
 				}
 				break;
 
 			default:
-					break;
+				break;
 			}
 			break;
 
@@ -365,7 +364,7 @@ static USBD_StatusTypeDef USBD_CDC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 				case INTERFACE_CDC_CONTROL_3a:	// CDC interface
 				case INTERFACE_CDC_CONTROL_3b:	// CDC interface
 					altinterfaces [interfacev] = LO_BYTE(req->wValue);
-					PRINTF("USBD_CDC_Setup: CDC interface %d set to %d\n", (int) interfacev, (int) altinterfaces [interfacev]);
+					//PRINTF("USBD_CDC_Setup: CDC interface %d set to %d\n", (int) interfacev, (int) altinterfaces [interfacev]);
 					//bufers_set_cdcalt(altinterfaces [interfacev]);
 					USBD_CtlSendStatus(pdev);
 					break;
