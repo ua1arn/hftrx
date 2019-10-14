@@ -1009,7 +1009,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 		  	}
 		  	else
 		  	{
-		  		control_stall(pdev);
+		  		//control_stall(pdev);
 		  	}
 		}
 
