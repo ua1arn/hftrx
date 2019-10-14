@@ -6173,7 +6173,12 @@ USBD_StatusTypeDef  USBD_StdDevReq(USBD_HandleTypeDef *pdev, const USBD_SetupReq
 	case USB_REQ_CLEAR_FEATURE:
 		USBD_ClrFeature (pdev, req);
 		break;
-
+#if WITHUSBDFU
+	case DFU_VENDOR_CODE:
+		// WCID devices support
+		TP();
+		break;
+#endif /* WITHUSBDFU */
 	default:
 		TP();
 		PRINTF(PSTR("USBD_StdDevReq: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
