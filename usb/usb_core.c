@@ -9,7 +9,6 @@
 #include "pio.h"
 #include "board.h"
 #include "audio.h"
-#include "spifuncs.h"
 
 #include "display/display.h"
 #include "formats.h"
@@ -251,7 +250,7 @@ static uint_fast8_t usbd_read_data(PCD_TypeDef * const USBx, uint_fast8_t pipe, 
 
 	if (usbd_wait_fifo(USBx, pipe, USBD_FRDY_COUNT))
 	{
-		PRINTF(PSTR("usbd_read_data: usbd_wait_fifo error, USBx->CFIFOSEL=%08lX\n"), (unsigned long) USBx->CFIFOSEL);
+		PRINTF(PSTR("usbd_read_data: usbd_wait_fifo error, pipe=%d, USBx->CFIFOSEL=%08lX\n"), (int) pipe, (unsigned long) USBx->CFIFOSEL);
 		return 1;	// error
 	}
 
@@ -1010,7 +1009,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 		  	}
 		  	else
 		  	{
-		  		//control_stall(pdev);
+		  		control_stall(pdev);
 		  	}
 		}
 
@@ -1050,6 +1049,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 				  	{
 				  		// todo: not control ep
 				  		//control_stall(pdev);
+				  		TP();
 				  	}
 					HAL_PCD_DataOutStageCallback(hpcd, ep->num);	// start next transfer
 				}

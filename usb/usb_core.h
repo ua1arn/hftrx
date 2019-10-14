@@ -1432,6 +1432,8 @@ USBD_StatusTypeDef  USBD_CtlPrepareRx(USBD_HandleTypeDef  *pdev,
                                   uint16_t len);
 USBD_StatusTypeDef  USBD_CtlSendStatus(USBD_HandleTypeDef  *pdev);
 
+USBD_StatusTypeDef  USBD_Stop(USBD_HandleTypeDef *pdev);
+
 extern const USBD_ClassTypeDef USBD_CLASS_UAC;
 extern const USBD_ClassTypeDef USBD_CLASS_CDC;
 extern const USBD_ClassTypeDef USBD_CLASS_DFU;
