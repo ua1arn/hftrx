@@ -142,7 +142,8 @@ static void dcp_acksend(USB_OTG_GlobalTypeDef * const Instance)
 }
 
 
-#define USBD_FRDY_COUNT 10
+#define USBD_FRDY_COUNT_WRITE 10
+#define USBD_FRDY_COUNT_READ 10
 
 static uint_fast8_t usbd_wait_fifo(PCD_TypeDef * const USBx, uint_fast8_t pipe, unsigned waitcnt)
 {
@@ -197,7 +198,7 @@ static void nak_ep0_unused(USBD_HandleTypeDef *pdev)
 		(pipe << USB_CFIFOSEL_CURPIPE_SHIFT) |	// CURPIPE 0000: DCP
 		1 * (1uL << USB_CFIFOSEL_ISEL_SHIFT_) * (pipe == 0) |	// ISEL 1: Writing to the buffer memory is selected (for DCP)
 		0;
-	if (usbd_wait_fifo(USBx, pipe, USBD_FRDY_COUNT))
+	if (usbd_wait_fifo(USBx, pipe, USBD_FRDY_COUNT_WRITE))
 		return;
 
 	USBx->CFIFOCTR = (1uL << USB_CFIFOCTR_BCLR_SHIFT);	// BCLR
@@ -223,7 +224,7 @@ static void stall_ep0(USBD_HandleTypeDef *pdev)
 		1 * (1uL << USB_CFIFOSEL_ISEL_SHIFT_) * (pipe == 0) |	// ISEL 1: Writing to the buffer memory is selected (for DCP)
 		0;
 
-	if (usbd_wait_fifo(USBx, pipe, USBD_FRDY_COUNT) == 0)
+	if (usbd_wait_fifo(USBx, pipe, USBD_FRDY_COUNT_WRITE) == 0)
 	{
 		USBx->CFIFOCTR = USB_CFIFOCTR_BCLR;	// BCLR
 	}
@@ -248,7 +249,7 @@ static uint_fast8_t usbd_read_data(PCD_TypeDef * const USBx, uint_fast8_t pipe, 
 		0 * USB_CFIFOSEL_MBW |	// MBW 00: 8-bit width
 		0;
 
-	if (usbd_wait_fifo(USBx, pipe, USBD_FRDY_COUNT))
+	if (usbd_wait_fifo(USBx, pipe, USBD_FRDY_COUNT_READ))
 	{
 		PRINTF(PSTR("usbd_read_data: usbd_wait_fifo error, pipe=%d, USBx->CFIFOSEL=%08lX\n"), (int) pipe, (unsigned long) USBx->CFIFOSEL);
 		return 1;	// error
@@ -298,7 +299,7 @@ usbd_write_data(PCD_TypeDef * const USBx, uint_fast8_t pipe, const uint8_t * dat
 		1 * USB_CFIFOSEL_ISEL_ * (pipe == 0) |	// ISEL 1: Writing to the buffer memory is selected (for DCP)
 		0;
 
-	if (usbd_wait_fifo(USBx, pipe, USBD_FRDY_COUNT))
+	if (usbd_wait_fifo(USBx, pipe, USBD_FRDY_COUNT_WRITE))
 	{
 		PRINTF(PSTR("usbd_write_data: usbd_wait_fifo error, USBx->CFIFOSEL=%08lX\n"), (unsigned long) USBx->CFIFOSEL);
 		return 1;	// error
