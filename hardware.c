@@ -9437,7 +9437,7 @@ SystemInit(void)
 	// Таблица находится в области вне Data Cache
 	vectors_relocate();
 #endif /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM0 || CPUSTYLE_ARM_CM7 */
-#if WITHDEBUG
+#if WITHDEBUG && ! WITHISBOOTLOADER
 	// В функции инициализации компорта есть NVIC_SetVector
 	// При вызове до перемещения таблиц прерывания получаем HardFault на STM32F7XXX
 	HARDWARE_DEBUG_INITIALIZE();
