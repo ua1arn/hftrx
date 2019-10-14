@@ -10173,6 +10173,9 @@ static USBD_StatusTypeDef  USBD_LL_Init(PCD_HandleTypeDef * hpcd, USBD_HandleTyp
 	#endif /* WITHUSBDEV_HSDESC */
 	hpcd->Init.phy_itface = USB_OTG_EMBEDDED_PHY;
 
+	hpcd->Init.ep0_mps = 64; //USB_OTG_HS_MAX_PACKET_SIZE;
+	hpcd->Init.dev_endpoints = 15;
+
 #else /* CPUSTYLE_R7S721 */
 
 	#if WITHUSBDEV_HSDESC
@@ -10188,6 +10191,8 @@ static USBD_StatusTypeDef  USBD_LL_Init(PCD_HandleTypeDef * hpcd, USBD_HandleTyp
 	#else /* WITHUSBDEV_HIGHSPEEDULPI */
 		hpcd->Init.phy_itface = USB_OTG_EMBEDDED_PHY;
 	#endif /* WITHUSBDEV_HIGHSPEEDULPI */
+		hpcd->Init.ep0_mps = DEP0CTL_MPS_64;
+		hpcd->Init.dev_endpoints = 9;	// or 6 for FS devices
 
 #endif /* CPUSTYLE_R7S721 */
 
@@ -10197,9 +10202,7 @@ static USBD_StatusTypeDef  USBD_LL_Init(PCD_HandleTypeDef * hpcd, USBD_HandleTyp
 		hpcd->Init.vbus_sensing_enable = USB_DISABLE;
 	#endif /* WITHUSBDEV_VBUSSENSE */
 
-	hpcd->Init.dev_endpoints = 9;	// or 6 for FS devices
 	hpcd->Init.dma_enable = ! USB_ENABLE; // xyz
-	hpcd->Init.ep0_mps = DEP0CTL_MPS_64;
 	hpcd->Init.Sof_enable = USB_DISABLE;
 	hpcd->Init.low_power_enable = USB_DISABLE;
 	hpcd->Init.lpm_enable = USB_DISABLE;

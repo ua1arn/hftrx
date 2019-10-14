@@ -756,14 +756,36 @@ static uint16_t MEM_If_Write_HS(uint8_t *src, uint32_t dest, uint32_t Len)
   */
 static uint8_t *MEM_If_Read_HS(uint32_t src, uint8_t *dest, uint32_t Len)
 {
+	/*
+	PRINTF(PSTR("MEM_If_Read_HS: src=%08lX, len=%03lX\n"), src, Len);
+	dest [0] = src >> 24;
+	dest [1] = src >> 16;
+	dest [2] = src >> 8;
+	dest [3] = src >> 0;
+	dest [4] = 'D';
+	dest [5] = 'E';
+	dest [6] = 'A';
+	dest [7] = 'D';
+	dest [8] = 'B';
+	dest [9] = 'E';
+	dest [10] = 'E';
+	dest [11] = 'F';
+	dest [Len - 4] = ~ src >> 24;
+	dest [Len - 3] = ~ src >> 16;
+	dest [Len - 2] = ~ src >> 8;
+	dest [Len - 1] = ~ src >> 0;
+	return dest;
+	*/
+
 	/* Return a valid address to avoid HardFault */
-	/* USER CODE BEGIN 4 */
 	spitarget_t target = targetdataflash;	/* addressing to chip */
 	if (timed_dataflash_read_status(target))
+	{
+		//TP();
 		return dest;	// todo: error handling need
+	}
 	readDATAFLASH(src, dest, Len);
 	return dest;
-	/* USER CODE END 4 */
 }
 
 /**
