@@ -17451,13 +17451,14 @@ void bootloader_detach(void)
 		;
 }
 
+
 static void bootloader_mainloop(void)
 {
 	board_set_bglight(WITHLCDBACKLIGHTMIN);
 	board_update();
 	//local_delay_ms(1000);
 	//printhex(BOOTLOADER_APPAREA, (void *) BOOTLOADER_APPAREA, 512);
-	debug_printf_P(PSTR("Ready jump to application at %p. Press 'r'\n"), (void *) BOOTLOADER_APPAREA);
+	PRINTF(PSTR("Ready jump to application at %p. Press 'r' at any time\n"), (void *) BOOTLOADER_APPAREA);
 ddd:
 	for (;;)
 	{
@@ -17470,14 +17471,13 @@ ddd:
 				break;
 		}
 #endif /* WITHDEBUG */
-#if CPUSTYLE_R7S721
-		unsigned v = WITHUSBHW_DEVICE->INTSTS0;
-		if ((v & USB_INTSTS0_VBSTS) == 0)
+		if (hardware_usbd_get_vbusbefore() == 0)
 			break;
-#else /* CPUSTYLE_R7S721 */
-		break;
-#endif /* CPUSTYLE_R7S721 */
+		if (hardware_usbd_get_vbusnow() == 0)
+			break;
 	}
+
+	PRINTF(PSTR("Compare signature of to application\n"));
 
 	static const char sgn [] = "DREAM";
 	const size_t len = strlen(sgn);

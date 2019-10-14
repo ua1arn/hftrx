@@ -1441,4 +1441,6 @@ extern const USBD_ClassTypeDef USBD_CLASS_DFU;
 uint_fast16_t usbd_getuacinrtsmaxpacket(void);
 uint_fast16_t usbd_getuacinmaxpacket(void);
 
+void usbd_descriptors_initialize(uint_fast8_t deschs);
+
 #endif /* USB_USB_CORE_H_ */

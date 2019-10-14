@@ -10310,6 +10310,23 @@ USBD_StatusTypeDef USBD_DeInit(USBD_HandleTypeDef *pdev)
 	return USBD_OK;
 }
 
+// BOOTLOADER support
+static uint_fast8_t device_vbusbefore;
+
+uint_fast8_t hardware_usbd_get_vbusbefore(void)
+{
+	return device_vbusbefore;
+}
+
+uint_fast8_t hardware_usbd_get_vbusnow(void)
+{
+#if CPUSTYLE_R7S721
+	return (WITHUSBHW_DEVICE->INTSTS0 & USB_INTSTS0_VBSTS) != 0;
+#else /* CPUSTYLE_R7S721 */
+	return 0;
+#endif /* CPUSTYLE_R7S721 */
+}
+
 /* вызывается при запрещённых прерываниях. */
 static void hardware_usbd_initialize(void)
 {
@@ -10319,8 +10336,12 @@ static void hardware_usbd_initialize(void)
 	usbd_descriptors_initialize(0);
 #endif /* WITHUSBDEV_HSDESC */
 
-
 	USBD_Init2(& hUsbDevice);
+
+	// поддержка работы бутлоадера на платах, где есть подпитка VBUS от DP через защитные диоды
+	device_vbusbefore = hardware_usbd_get_vbusnow();
+	PRINTF(PSTR("hardware_usbd_initialize: device_vbusbefore=%d\n"), (int) device_vbusbefore);
+
 #if WITHUSBUAC
 	USBD_AddClass(& hUsbDevice, & USBD_CLASS_UAC);
 #endif /* WITHUSBUAC */

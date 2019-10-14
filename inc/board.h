@@ -268,9 +268,12 @@ void board_usb_activate(void);
 void board_usb_deactivate(void);
 void board_usb_deinitialize(void);
 
-void usbd_descriptors_initialize(uint_fast8_t deschs);
 void hardware_usbd_dma_initialize(void);
 void hardware_usbd_dma_enable(void);
+
+
+uint_fast8_t hardware_usbd_get_vbusnow(void);
+uint_fast8_t hardware_usbd_get_vbusbefore(void);
 
 uint_fast8_t board_get_adcinputs(void);	/* получить количество каналов АЦП, задействованных в устройстве */
 uint_fast8_t board_get_adcch(uint_fast8_t index);	/* получить канал АЦП но индексу в таблице */
