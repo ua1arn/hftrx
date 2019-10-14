@@ -1485,7 +1485,7 @@ static USBD_StatusTypeDef  USBD_DFU_Init(USBD_HandleTypeDef *pdev, uint_fast8_t 
 
 const USBD_ClassTypeDef  USBD_CLASS_DFU =
 {
-	USBD_DFU_ColdInit,
+	0, //USBD_DFU_ColdInit,
 	USBD_DFU_Init,
 	USBD_DFU_DeInit,
 	USBD_DFU_Setup,
