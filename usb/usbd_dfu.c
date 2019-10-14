@@ -17,6 +17,25 @@
 
 #include "usb_core.h"
 
+static uint_fast32_t ulmin32(uint_fast32_t a, uint_fast32_t b)
+{
+	return a < b ? a : b;
+}
+
+static uint_fast32_t ulmax32(uint_fast32_t a, uint_fast32_t b)
+{
+	return a > b ? a : b;
+}
+
+static uint_fast16_t ulmin16(uint_fast16_t a, uint_fast16_t b)
+{
+	return a < b ? a : b;
+}
+
+static uint_fast16_t ulmax16(uint_fast16_t a, uint_fast16_t b)
+{
+	return a > b ? a : b;
+}
 
 /* записать в буфер для ответа 24-бит значение */
 static void USBD_poke_u24(uint8_t * buff, uint_fast32_t v)
@@ -921,23 +940,23 @@ static USBD_StatusTypeDef  USBD_DFU_EP0_TxSent (USBD_HandleTypeDef *pdev)
   * @param  req: usb requests
   * @retval status
   */
-static USBD_StatusTypeDef  USBD_DFU_Setup (USBD_HandleTypeDef *pdev,
+static USBD_StatusTypeDef  USBD_DFU_Setup(USBD_HandleTypeDef *pdev,
                                 const USBD_SetupReqTypedef *req)
 {
-  uint8_t *pbuf = 0;
-  uint16_t len = 0;
-  uint8_t ret = USBD_OK;
-  //USBD_DFU_HandleTypeDef   *hdfu;
+	uint8_t *pbuf = 0;
+	uint16_t len = 0;
+	uint8_t ret = USBD_OK;
+	//USBD_DFU_HandleTypeDef   *hdfu;
 
-    //hdfu = (USBD_DFU_HandleTypeDef*) pdev->pClassData;
-    //hdfu = & gdfu;
-	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
-	if (interfacev != INTERFACE_DFU_CONTROL)
-		  return USBD_OK;
+	//hdfu = (USBD_DFU_HandleTypeDef*) pdev->pClassData;
+	//hdfu = & gdfu;
 
   switch (req->bmRequest & USB_REQ_TYPE_MASK)
   {
   case USB_REQ_TYPE_CLASS :
+	  if (LO_BYTE(req->wIndex) != INTERFACE_DFU_CONTROL)
+			return USBD_OK;
+
     switch (req->bRequest)
     {
     case DFU_DNLOAD:
@@ -975,12 +994,21 @@ static USBD_StatusTypeDef  USBD_DFU_Setup (USBD_HandleTypeDef *pdev,
     }
     break;
 
-  case USB_REQ_TYPE_STANDARD:
-    switch (req->bRequest)
-    {
-    default:
-       break;
-   }
+    case USB_REQ_TYPE_STANDARD:
+      switch (req->bRequest)
+      {
+      default:
+    		//PRINTF(PSTR("1 USBD_DFU_Setup: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
+        break;
+     }
+
+      case USB_REQ_TYPE_VENDOR:
+        switch (req->bRequest)
+        {
+        default:
+       		//PRINTF(PSTR("2 USBD_DFU_Setup: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
+          break;
+       }
 
     default:
     	break;

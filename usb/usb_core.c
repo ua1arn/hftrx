@@ -5742,16 +5742,15 @@ static void USBD_GetDescriptor(USBD_HandleTypeDef *pdev,
 				return;
 
 			case 0xEE:
+				// WCID devices support
 				// Microsoft OS String Descriptor, ReqLength=0x12
 				if (MsftStringDescr [0].data != NULL && MsftStringDescr [0].size != 0)
 				{
-					//TP();
 					len = MsftStringDescr [0].size;
 					pbuf = MsftStringDescr [0].data;
 				}
 				else
 				{
-					//TP();
 					USBD_CtlError(pdev, req);
 					return;
 				}
@@ -6173,12 +6172,22 @@ USBD_StatusTypeDef  USBD_StdDevReq(USBD_HandleTypeDef *pdev, const USBD_SetupReq
 	case USB_REQ_CLEAR_FEATURE:
 		USBD_ClrFeature (pdev, req);
 		break;
+
 #if WITHUSBDFU
 	case DFU_VENDOR_CODE:
 		// WCID devices support
-		TP();
-		break;
+		if (MsftCompFeatureDescr[0].size != 0)
+		{
+			USBD_CtlSendData(pdev, MsftCompFeatureDescr[0].data, ulmin16(MsftCompFeatureDescr[0].size, req->wLength));
+		}
+		else
+		{
+			TP();
+			USBD_CtlError(pdev, req);
+		}
+		return USBD_OK;
 #endif /* WITHUSBDFU */
+
 	default:
 		TP();
 		PRINTF(PSTR("USBD_StdDevReq: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
@@ -6202,7 +6211,7 @@ USBD_StatusTypeDef USBD_LL_SetupStage(USBD_HandleTypeDef *pdev, const uint32_t *
 	pdev->ep0_state = USBD_EP0_SETUP;
 	pdev->ep0_data_len = pdev->request.wLength;
 
-	switch (pdev->request.bmRequest & 0x1F)
+	switch (pdev->request.bmRequest & USB_FUNCTION_bmRequestTypeRecip)
 	{
 	case USB_REQ_RECIPIENT_DEVICE:
 		USBD_StdDevReq(pdev, & pdev->request);
@@ -6217,7 +6226,7 @@ USBD_StatusTypeDef USBD_LL_SetupStage(USBD_HandleTypeDef *pdev, const uint32_t *
 		break;
 
 	default:
-		USBD_LL_StallEP(pdev, pdev->request.bmRequest & 0x80);
+		USBD_LL_StallEP(pdev, pdev->request.bmRequest & USB_FUNCTION_bmRequestTypeDir);
 		break;
 	}
 	return USBD_OK;
