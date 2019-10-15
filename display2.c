@@ -88,6 +88,9 @@ static int_fast16_t glob_topdb = 30;	/* верхний предел FFT */
 static int_fast16_t glob_bottomdb = 130;	/* нижний предел FFT */
 static uint_fast8_t glob_zoomxpow2;	/* уменьшение отображаемого участка спектра - horisontal magnification power of two */
 
+static int_fast16_t glob_topdbwf = 0;	/* верхний предел FFT */
+static int_fast16_t glob_bottomdbwf = 137;	/* нижний предел FFT */
+
 //#define WIDEFREQ (TUNE_TOP > 100000000L)
 
 static const FLASHMEM int32_t vals10 [] =
@@ -491,8 +494,8 @@ static void display_txrxstatecompact(
 // todo: учесть LCDMODE_COLORED
 
 // параметры отображения состояния прием/пеердача
-static const COLOR_T colorsfg_2alarm [2] = { COLOR_BLACK, COLOR_BLACK, };
-static const COLOR_T colorsbg_2alarm [2] = { COLOR_GREEN, COLOR_RED, };
+static const COLOR_T colorsfg_2rxtx [2] = { COLOR_GREEN, COLOR_RED, };
+static const COLOR_T colorsbg_2rxtx [2] = { COLOR_BLACK, COLOR_BLACK, };
 
 // параметры отображения состояний из трех вариантов
 static const COLOR_T colorsfg_4state [4] = { COLOR_BLACK, COLOR_WHITE, COLOR_WHITE, COLOR_WHITE, };
@@ -523,7 +526,7 @@ static void display_txrxstate2(
 	static const FLASHMEM char text0 [] = "RX";
 	static const FLASHMEM char text1 [] = "TX";
 	const FLASHMEM char * const labels [2] = { text0, text1 };
-	display2_text_P(x, y, labels, colorsfg_2alarm, colorsbg_2alarm, state);
+	display2_text_P(x, y, labels, colorsfg_2rxtx, colorsbg_2rxtx, state);
 #endif /* WITHTX */
 }
 
@@ -1379,6 +1382,25 @@ static void display_siglevel7(
 
 	char buff [32];
 	local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("%-+4d" "dBm"), tracemax - UINT8_MAX);
+	(void) v;
+	const char * const labels [1] = { buff, };
+	display2_text(x, y, labels, colorsfg_1state, colorsbg_1state, 0);
+#endif /* WITHIF4DSP */
+}
+
+// Отображение уровня сигнала в dBm
+static void display_siglevel4(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	void * pv
+	)
+{
+#if WITHIF4DSP
+	uint_fast8_t tracemax;
+	uint_fast8_t v = board_getsmeter(& tracemax, 0, UINT8_MAX, 0);
+
+	char buff [32];
+	local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("%-+4d"), tracemax - UINT8_MAX);
 	(void) v;
 	const char * const labels [1] = { buff, };
 	display2_text(x, y, labels, colorsfg_1state, colorsbg_1state, 0);
@@ -4022,6 +4044,7 @@ enum
 #if 1
 		{	0,	20,	display2_legend,	REDRM_MODE, PGSWR, },	// Отображение оцифровки шкалы S-метра, PWR & SWR-метра
 		{	0,	24,	display2_bars,		REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
+		{	25, 24, display_siglevel4, REDRM_BARS, PGSWR, },	// уровень сигнала
 		{	0,	28,	dsp_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
 		{	0,	28,	display2_spectrum,	REDRM_BARS, PGSPE, },// подготовка изображения спектра
 		{	0,	28,	display2_waterfall,	REDRM_BARS, PGWFL, },// подготовка изображения водопада
@@ -4979,10 +5002,10 @@ static uint_fast8_t wfclear;			// стирание всей областии о�
 enum { PALETTESIZE = 256 };
 static PACKEDCOLOR565_T wfpalette [PALETTESIZE];
 
-#define COLOR565_GRIDCOLOR		TFTRGB565(48, 48, 48)		//COLOR_GRAY - center marker
-#define COLOR565_GRIDCOLOR2		TFTRGB565(128, 128, 128)		//COLOR_DARKRED - other markers
-#define COLOR565_SPECTRUMBG		TFTRGB565(0, 96, 48)			//
-#define COLOR565_SPECTRUMBG2	TFTRGB565(0, 48, 32)		//COLOR_xxx - полоса пропускания приемника
+#define COLOR565_GRIDCOLOR		TFTRGB565(128, 0, 0)		//COLOR_GRAY - center marker
+#define COLOR565_GRIDCOLOR2		TFTRGB565(96, 96, 96)		//COLOR_DARKRED - other markers
+#define COLOR565_SPECTRUMBG		TFTRGB565(0, 64, 24)			//
+#define COLOR565_SPECTRUMBG2	TFTRGB565(0, 24, 8)		//COLOR_xxx - полоса пропускания приемника
 #define COLOR565_SPECTRUMFG		TFTRGB565(0, 255, 0)		//COLOR_GREEN
 #define COLOR565_SPECTRUMFENCE	TFTRGB565(255, 255, 255)	//COLOR_WHITE
 #define COLOR565_SPECTRUMLINE	TFTRGB565(0, 255, 0)	//COLOR_GREEN
@@ -5166,8 +5189,39 @@ display_colorbuffer_set_vline(
 }
 
 // отрисовка маркеров частот
+static void
+display_colorgrid_xor(
+	volatile PACKEDCOLOR565_T * buffer,
+	uint_fast16_t row0,	// вертикальная координата начала занимаемой области (0..dy-1) сверху вниз
+	uint_fast16_t h,	// высота
+	int_fast32_t f0,	// center frequency
+	int_fast32_t bw		// span
+	)
+{
+	const COLOR565_T color0 = COLOR565_GRIDCOLOR;	// макркр на центре
+	const COLOR565_T color = COLOR565_GRIDCOLOR2;
+	//
+	const int_fast32_t go = f0 % (int) glob_gridstep;	// шаг сетки
+	const int_fast32_t gs = (int) glob_gridstep;	// шаг сетки
+	const int_fast32_t halfbw = bw / 2;
+	int_fast32_t df;	// кратное сетке значение
+	for (df = - halfbw / gs * gs - go; df < halfbw; df += gs)
+	{
+		uint_fast16_t xmarker;
+		if (df > - halfbw)
+		{
+			// Маркер частоты кратной glob_gridstep - XOR линию
+			xmarker = deltafreq2x_abs(f0, df, bw, ALLDX);
+			if (xmarker != UINT16_MAX)
+				display_colorbuffer_xor_vline(buffer, ALLDX, ALLDY, xmarker, row0, h, color);
+		}
+	}
+	display_colorbuffer_xor_vline(buffer, ALLDX, ALLDY, ALLDX / 2, row0, h, color0);	// center frequency marker
+}
+
+// отрисовка маркеров частот
 static void 
-display_colorgrid(
+display_colorgrid_set(
 	volatile PACKEDCOLOR565_T * buffer,
 	uint_fast16_t row0,	// вертикальная координата начала занимаемой области (0..dy-1) сверху вниз
 	uint_fast16_t h,	// высота
@@ -5190,10 +5244,10 @@ display_colorgrid(
 			// Маркер частоты кратной glob_gridstep - XOR линию
 			xmarker = deltafreq2x_abs(f0, df, bw, ALLDX);
 			if (xmarker != UINT16_MAX)
-				display_colorbuffer_xor_vline(buffer, ALLDX, ALLDY, xmarker, row0, h, color);
+				display_colorbuffer_set_vline(buffer, ALLDX, ALLDY, xmarker, row0, h, color);
 		}
 	}
-	display_colorbuffer_xor_vline(buffer, ALLDX, ALLDY, ALLDX / 2, row0, h, color0);	// center frequency marker
+	display_colorbuffer_set_vline(buffer, ALLDX, ALLDY, ALLDX / 2, row0, h, color0);	// center frequency marker
 }
 
 // Спектр на монохромных дисплеях
@@ -5309,7 +5363,11 @@ static void display2_spectrum(
 				const uint_fast8_t inband = (x >= xleft && x <= xright);	// в полосе пропускания приемника = "шторка"
 				// формирование фона растра
 				display_colorbuffer_set_vline(colorpip, ALLDX, ALLDY, x, SPY0, SPDY, inband ? COLOR565_SPECTRUMBG2 : COLOR565_SPECTRUMBG);
-
+			}
+			display_colorgrid_set(colorpip, SPY0, SPDY, f0, bw);	// отрисовка маркеров частот
+			for (x = 0; x < ALLDX; ++ x)
+			{
+				// ломанная
 				uint_fast16_t ynew = SPDY - 1 - dsp_mag2y(filter_spectrum(x), SPDY - 1, glob_topdb, glob_bottomdb);
 				if (x != 0)
 					display_colorbuffer_line_set(colorpip, ALLDX, ALLDY, x - 1, ylast, x, ynew, COLOR565_SPECTRUMLINE);
@@ -5345,8 +5403,8 @@ static void display2_spectrum(
 					}
 				}
 			}
+			display_colorgrid_xor(colorpip, SPY0, SPDY, f0, bw);	// отрисовка маркеров частот
 		}
-		display_colorgrid(colorpip, SPY0, SPDY, f0, bw);	// отрисовка маркеров частот
 	}
 
 #endif
@@ -5477,7 +5535,7 @@ static void dsp_latchwaterfall(
 	for (x = 0; x < ALLDX; ++ x)
 	{
 		// для водопада
-		const int val = dsp_mag2y(filter_waterfall(x), PALETTESIZE - 1, glob_topdb, glob_bottomdb); // возвращает значения от 0 до dy включительно
+		const int val = dsp_mag2y(filter_waterfall(x), PALETTESIZE - 1, glob_topdbwf, glob_bottomdbwf); // возвращает значения от 0 до dy включительно
 
 #if WITHFASTWATERFLOW
 		wfarray [wfrow] [x] = wfpalette [val];	// запись в буфер водопада цветовой точки

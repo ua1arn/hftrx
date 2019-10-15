@@ -1821,8 +1821,6 @@ HAL_StatusTypeDef USB_DeactivateDedicatedEndpoint(USB_OTG_GlobalTypeDef *USBx, U
  *  @brief macros to handle interrupts and specific clock configurations
  * @{
  */
-#define __HAL_PCD_ENABLE(h)                   do { USB_EnableGlobalInt((h)->Instance); } while (0)
-#define __HAL_PCD_DISABLE(h)                  do { USB_DisableGlobalInt((h)->Instance); } while (0)
 
 #define __HAL_PCD_GET_FLAG(h, imask)      ((USB_ReadInterrupts((h)->Instance) & (imask)) == (imask))
 #define __HAL_PCD_CLEAR_FLAG(h, imask)    do { (((h)->Instance->GINTSTS) = (imask)); } while (0)
