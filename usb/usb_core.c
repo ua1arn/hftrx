@@ -113,6 +113,177 @@ static ApplicationTypeDef Appli_state = APPLICATION_IDLE;
 #define DEVDRV_USBF_PID_STALL                       (0x0002u)
 #define DEVDRV_USBF_PID_STALL2                      (0x0003u)
 
+enum
+{
+	USB_PIPE0,
+	USB_PIPE1,
+	USB_PIPE2,
+	USB_PIPE3,
+	USB_PIPE4,
+	USB_PIPE5,
+	USB_PIPE6,
+	USB_PIPE7,
+	USB_PIPE8,
+	USB_PIPE9,
+	USB_PIPE10,
+	USB_PIPE11,
+	USB_PIPE12,
+	USB_PIPE13,
+	USB_PIPE14,
+	USB_PIPE15
+};
+
+static volatile uint16_t *get_pipectr_reg(PCD_TypeDef * const USBx, uint_fast8_t pipe)
+{
+    if (pipe == USB_PIPE0) {
+        return & (USBx->DCPCTR);
+    } else {
+        return & (USBx->PIPE1CTR) + (pipe - USB_PIPE1);
+    }
+}
+
+static volatile uint16_t * get_pipetre_reg(PCD_TypeDef * const USBx, uint_fast8_t pipe)
+{
+    if ((pipe >= USB_PIPE1) && (pipe <= USB_PIPE5)) {
+        return & (USBx->PIPE1TRE) + ((pipe - USB_PIPE1) * 2);
+    } else if ((pipe >= USB_PIPE9) && (pipe <= USB_PIPE10)) {
+        return & (USBx->PIPE9TRE) + ((pipe - USB_PIPE9) * 2);
+    } else if ((pipe >= USB_PIPE11) && (pipe <= USB_PIPE15)) {
+        return & (USBx->PIPEBTRE) + ((pipe - USB_PIPE11) * 2);
+    } else {
+        return NULL;
+    }
+}
+
+static volatile uint16_t * get_pipetrn_reg(PCD_TypeDef * const USBx, uint_fast8_t pipe)
+{
+    if ((pipe >= USB_PIPE1) && (pipe <= USB_PIPE5)) {
+        return & (USBx->PIPE1TRN) + ((pipe - USB_PIPE1) * 2);
+    } else if ((pipe >= USB_PIPE9) && (pipe <= USB_PIPE10)) {
+        return & (USBx->PIPE9TRN) + ((pipe - USB_PIPE9) * 2);
+    } else if ((pipe >= USB_PIPE11) && (pipe <= USB_PIPE15)) {
+        return & (USBx->PIPEBTRN) + ((pipe - USB_PIPE11) * 2);
+    } else {
+        return NULL;
+    }
+}
+
+static volatile uint16_t * get_fifoctr_reg(PCD_TypeDef * const USBx, uint_fast8_t pipe)
+{
+	return & (USBx->CFIFOCTR);
+/*
+    uint16_t fifo_use = PIPE2FIFO(pipe);
+
+    if ((fifo_use & USB_FUNCTION_D0FIFO_USE) == USB_FUNCTION_D0FIFO_USE) {
+        return & (USBx->D0FIFOCTR);
+    } else if ((fifo_use & USB_FUNCTION_D1FIFO_USE) == USB_FUNCTION_D1FIFO_USE) {
+        return & (USBx->D1FIFOCTR);
+    } else {
+        return & (USBx->CFIFOCTR);
+    }
+*/
+}
+
+static volatile uint16_t * get_fifosel_reg(PCD_TypeDef * const USBx, uint_fast8_t pipe)
+{
+    return & (USBx->CFIFOSEL);
+
+/*
+    uint16_t fifo_use = PIPE2FIFO(pipe);
+
+    if ((fifo_use & USB_FUNCTION_D0FIFO_USE) == USB_FUNCTION_D0FIFO_USE) {
+        return (uint16_t *) & (USBx->D0FIFOSEL);
+    } else if ((fifo_use & USB_FUNCTION_D1FIFO_USE) == USB_FUNCTION_D1FIFO_USE) {
+        return (uint16_t *) & (USBx->D1FIFOSEL);
+    } else {
+        return (uint16_t *) & (USBx->CFIFOSEL);
+    }
+*/
+}
+
+static volatile uint32_t * get_fifo_reg(PCD_TypeDef * const USBx, uint_fast8_t pipe)
+{
+	return & (USBx->CFIFO.UINT32);
+
+/*
+    uint16_t fifo_use = PIPE2FIFO(pipe);
+
+    if ((fifo_use & USB_FUNCTION_D0FIFO_USE) == USB_FUNCTION_D0FIFO_USE) {
+        return & (USBx->D0FIFO);
+    } else if ((fifo_use & USB_FUNCTION_D1FIFO_USE) == USB_FUNCTION_D1FIFO_USE) {
+        return & (USBx->D1FIFO);
+    } else {
+        return & (USBx->CFIFO);
+    }
+*/
+}
+
+
+static uint_fast8_t get_pid(PCD_TypeDef * const USBx, uint_fast8_t pipe)
+{
+    volatile uint16_t *p_reg;
+
+    p_reg = get_pipectr_reg(USBx, pipe);
+    return *p_reg & USB_PIPEnCTR_1_5_PID;
+}
+
+static void set_mbw(PCD_TypeDef * const USBx, uint_fast8_t pipe, uint16_t data)
+{
+    volatile uint16_t *p_reg;
+
+    p_reg = get_fifosel_reg(USBx, pipe);
+    *p_reg &= (~USB_CFIFOSEL_MBW);
+    if (data != 0) {
+        *p_reg |= data;
+    }
+}
+
+static void set_pid(PCD_TypeDef * const USBx, uint_fast8_t pipe, uint_fast8_t new_pid)
+{
+    volatile uint16_t *p_reg;
+    uint16_t old_pid;
+
+    p_reg = get_pipectr_reg(USBx, pipe);
+    old_pid = get_pid(USBx, pipe);
+
+    switch (new_pid) {
+        case DEVDRV_USBF_PID_STALL:
+            if ((old_pid & DEVDRV_USBF_PID_BUF) == DEVDRV_USBF_PID_BUF) {
+                *p_reg &= (~USB_PIPEnCTR_1_5_PID);
+                *p_reg |= DEVDRV_USBF_PID_STALL2;
+            } else {
+                *p_reg &= (~USB_PIPEnCTR_1_5_PID);
+                *p_reg |= new_pid;
+            }
+            break;
+        case DEVDRV_USBF_PID_BUF:
+            if (((old_pid & DEVDRV_USBF_PID_STALL) == DEVDRV_USBF_PID_STALL) ||
+                    ((old_pid & DEVDRV_USBF_PID_STALL2) == DEVDRV_USBF_PID_STALL2)) {
+                *p_reg &= (~USB_PIPEnCTR_1_5_PID);
+                *p_reg |= DEVDRV_USBF_PID_NAK;
+            }
+            *p_reg &= (~USB_PIPEnCTR_1_5_PID);
+            *p_reg |= new_pid;
+            break;
+        case DEVDRV_USBF_PID_NAK:
+            if ((old_pid & DEVDRV_USBF_PID_STALL2) == DEVDRV_USBF_PID_STALL2) {
+                *p_reg &= (~USB_PIPEnCTR_1_5_PID);
+                *p_reg |= DEVDRV_USBF_PID_STALL;
+            }
+            *p_reg &= (~USB_PIPEnCTR_1_5_PID);
+            *p_reg |= new_pid;
+
+            do {
+                local_delay_us(1);
+                p_reg = get_pipectr_reg(USBx, pipe);
+            } while ((*p_reg & USB_PIPEnCTR_1_5_PBUSY) == USB_PIPEnCTR_1_5_PBUSY);
+            break;
+        default:
+            *p_reg &= (~USB_PIPEnCTR_1_5_PID);
+            *p_reg |= new_pid;
+            break;
+    }
+}
 
 static void control_stall(USBD_HandleTypeDef *pdev)
 {
@@ -288,7 +459,7 @@ usbd_write_data(PCD_TypeDef * const USBx, uint_fast8_t pipe, const uint8_t * dat
 	if (size == 0 && pipe == 0)
 	{
 		// set pid=buf
-		dcp_acksend(USBx);
+		set_pid(USBx, 0, DEVDRV_USBF_PID_BUF);
 		return 0;
 	}
 
@@ -1751,33 +1922,7 @@ HAL_StatusTypeDef USB_EPSetStall(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_EPTy
 {
 	uint_fast8_t pipe = ep->pipe_num;
 	//PRINTF(PSTR("USB_EPSetStall\n"));
-
-	if (pipe == 0)
-	{
-		USBx->DCPCTR = (USBx->DCPCTR & ~ (USB_DCPCTR_PID)) |
-			//DEVDRV_USBF_PID_NAK * (1uL << 0) |	// PID 00: NAK
-			//1 * (1uL << 0) |	// PID 01: BUF response (depending on the buffer state)
-			DEVDRV_USBF_PID_STALL * (1uL << USB_DCPCTR_PID_SHIFT) |	// PID 02: STALL response
-			0;
-		(void) USBx->DCPCTR;
-	}
-	else
-	{
-/*
-		USBx->CFIFOSEL =
-			//1 * (1uL << USB_CFIFOSEL_RCNT_SHIFT) |		// RCNT
-			(pipe << USB_CFIFOSEL_CURPIPE_SHIFT) |	// CURPIPE 0000: DCP
-			1 * (1uL << USB_CFIFOSEL_ISEL_SHIFT_) * (pipe == 0) |	// ISEL 1: Writing to the buffer memory is selected (for DCP)
-			0;
-
-		if (usbd_wait_fifo(USBx, pipe, USBD_FRDY_COUNT) == 0)
-		{
-			USBx->CFIFOCTR = USB_CFIFOCTR_BCLR;	// BCLR
-		}
-*/
-	}
-
-
+	set_pid(USBx, pipe, DEVDRV_USBF_PID_STALL);
 	return HAL_OK;
 }
 
@@ -1789,23 +1934,10 @@ HAL_StatusTypeDef USB_EPSetStall(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_EPTy
   */
 HAL_StatusTypeDef USB_EPClearStall(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_EPTypeDef *ep)
 {
+	// For bulk and interrupt endpoints also set even frame number
 	uint_fast8_t pipe = ep->pipe_num;
-	//PRINTF(PSTR("USB_EPSetStall\n"));
-
-	if (pipe == 0)
-	{
-		// TODO: check thos code
-		USBx->DCPCTR = (USBx->DCPCTR & ~ (USB_DCPCTR_PID)) |
-			DEVDRV_USBF_PID_NAK * (1uL << 0) |	// PID 00: NAK
-			//1 * (1uL << 0) |	// PID 01: BUF response (depending on the buffer state)
-			//DEVDRV_USBF_PID_STALL * (1uL << USB_DCPCTR_PID_SHIFT) |	// PID 02: STALL response
-			0;
-		(void) USBx->DCPCTR;
-	}
-	else
-	{
-
-	}
+	//PRINTF(PSTR("USB_EPClearStall\n"));
+	set_pid(USBx, pipe, DEVDRV_USBF_PID_NAK);
 	return HAL_OK;
 }
 
@@ -5191,7 +5323,7 @@ USBD_StatusTypeDef  USBD_LL_FlushEP (USBD_HandleTypeDef *pdev, uint8_t ep_addr)
   * @param  ep_addr: Endpoint Number
   * @retval USBD Status
   */
-USBD_StatusTypeDef  USBD_LL_StallEP (USBD_HandleTypeDef *pdev, uint8_t ep_addr)
+USBD_StatusTypeDef  USBD_LL_StallEP(USBD_HandleTypeDef *pdev, uint8_t ep_addr)
 {
   HAL_PCD_EP_SetStall((PCD_HandleTypeDef *) pdev->pData, ep_addr);
   return USBD_OK;
