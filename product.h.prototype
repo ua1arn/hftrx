@@ -18,8 +18,8 @@
 #endif
 
 //#define WITHDEBUG		1	/* Отладочная печать через COM-порт. */
-//#define DEBUGSPEED 500000L
-#define DEBUGSPEED 115200L
+#define DEBUGSPEED 500000L
+//#define DEBUGSPEED 115200L
 //#define DEFAULTDIALFREQ	12798000L
 //#define DEFAULTDIALFREQ	225000L
 //#define DEFAULTDIALFREQ	14021000L
@@ -38,13 +38,13 @@
 //#define CTLSTYLE_RAVENDSP_V2	1	// Fixed trx:  Renesas R7S721020VCFP, SD-CARD, DUAL WATCH, NAU8822L и FPGA EP4CE22E22I7N
 //#define CTLSTYLE_STORCH_V1	1	// STM32F746ZET6, USB, SD-CARD, DUAL WATCH, NAU8822L и FPGA EP4CE22E22I7N
 //#define CTLSTYLE_STORCH_V2	1	// wide LCD interface, STM32F746ZET6, 2xUSB, SD-CARD, DUAL WATCH, NAU8822L и FPGA EP4CE22E22I7N,
-#define CTLSTYLE_STORCH_V3	1	// Rmainunit_v5fm.pcb, Rmainunit_v5jm.pcb, Rmainunit_v5km.pcb STM32F767ZET6, 2xUSB, SD-CARD, 8-bit display imnterface, NAU8822L и FPGA EP4CE22E22I7N
+//#define CTLSTYLE_STORCH_V3	1	// Rmainunit_v5fm.pcb, Rmainunit_v5jm.pcb, Rmainunit_v5km.pcb STM32F767ZET6, 2xUSB, SD-CARD, 8-bit display imnterface, NAU8822L и FPGA EP4CE22E22I7N
 //#define CTLSTYLE_STORCH_V5	1	// Rmainunit_v5l.pcb STM32F767ZET6, 2xmini-USB, mini SD-CARD, 8-bit display imnterface, NAU8822L и FPGA EP4CE22E22I7N
 
 // Дисплей с фреймбуфером
 //#define CTLSTYLE_STORCH_V6	1	// Rmainunit_v5la.pcb STM32H743IIT6, TFT 4.3", 2xmini-USB, mini SD-CARD, 8-bit display imnterface, NAU8822L и FPGA EP4CE22E22I7N
 //#define CTLSTYLE_STORCH_V7	1	// rmainunit_v5km0.pcb, rmainunit_v5km1.pcb STM32H743IIT6, TFT 4.3", 2xUSB, SD-CARD, NAU8822L и FPGA EP4CE22E22I7N
-//#define CTLSTYLE_STORCH_V8	1	// rmainunit_v5km2.pcb rmainunit_v5km3.pcb rmainunit_v5km4.pcb R7S721020VCFP, TFT 4.3" или 7", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N, AD9246BCPZ-125
+#define CTLSTYLE_STORCH_V8	1	// rmainunit_v5km2.pcb rmainunit_v5km3.pcb rmainunit_v5km4.pcb R7S721020VCFP, TFT 4.3" или 7", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N, AD9246BCPZ-125
 
 //
 //#define CTLSTYLE_DSPV1A	1	// Плата "Дятел" с кодеками для DSPIF4 с 12 кГц IF DSP трактом
@@ -53,7 +53,7 @@
 //#define CTLSTYLE_V1B	1	// Контроллер "Воробей" STM32F101RB или ATMega644PA - atmega644_ctlstyle_v1.h
 //#define CTLSTYLE_V1C	1	// Контроллер "Воробей-2" на STM32F105RC с местом под кодек.
 //#define CTLSTYLE_V1V	1	// Контроллер "Колибри" на ATMega328 - atmega328_ctlstyle_v1.h
-//#define CTLSTYLE_V1K	1	// Контроллер на STM32F401RB
+//#define CTLSTYLE_V1K	1	// Контроллер на STM32F401RB - новый SW20xx
 //#define CTLSTYLE_OLEG4Z_V1	1	// Rmainunit_v5fm.pcb STM32F767ZET6, 2xUSB, WFM, FPGA EP4CE22E22I7N
 
 // Модемы
@@ -295,9 +295,9 @@
 	#include "paramdepend.h"				/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32fxxx_tqfp64_cpustyle_v8a.h"	/* STM32F101RB	*/
 #elif CPUSTYLE_STM32 && CTLSTYLE_V1K
-	#include "boards/arm_stm32fxxx_tqfp64_ctlstyle_v1k.h"	// Синтезатор "Воробей"
+	#include "boards/arm_stm32fxxx_tqfp64_ctlstyle_v1k.h"	// Синтезатор "Воробей" - новый SW20xx
 	#include "paramdepend.h"				/* проверка зависимостей параметров конфигурации */
-	#include "boards/arm_stm32fxxx_tqfp64_cpustyle_v1k.h"	/* STM32F401RB	*/
+	#include "boards/arm_stm32fxxx_tqfp64_cpustyle_v1k.h"	/* STM32F401RB - новый SW20xx*/
 #elif CPUSTYLE_STM32 && CTLSTYLE_V1E
 	#include "boards/arm_stm32fxxx_tssop20_ctlstyle_v1.h"	// плата с процессором STM32F030F4P (TSSOP-20)
 	#include "paramdepend.h"				/* проверка зависимостей параметров конфигурации */

@@ -23,6 +23,7 @@ TRGT = arm-none-eabi-
 CC   = $(TRGT)gcc
 CP   = $(TRGT)objcopy
 AS   = $(TRGT)gcc -x assembler-with-cpp
+SIZE = $(TRGT)size --format=sysv --radix=16
 HEX  = $(CP) -O ihex -R .noinit -R .bss -R .vram -R .heap
 BIN  = $(CP) -O binary -R .noinit -R .bss -R .vram -R .heap
 
@@ -166,11 +167,11 @@ $(OBJDIR)/%.o: %.s
 
 %_boot.elf: $(OBJS)
 	$(CC) $(OBJS) $(LDFLAGS_BOOT) $(LIBS) -o $@
-	$(TRGT)size --format=sysv --radix=16 $@
+	$(SIZE) $@
 
 %_app.elf: $(OBJS)
 	$(CC) $(OBJS) $(LDFLAGS_APP) $(LIBS) -o $@
-	$(TRGT)size --format=sysv --radix=16 $@
+	$(SIZE) $@
 
 %hex: %elf
 	$(HEX) $< $@

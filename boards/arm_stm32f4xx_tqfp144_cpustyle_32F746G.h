@@ -36,17 +36,15 @@
 #define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 #if 1
 	// use FS
-	//#define WITHDEVONHIGHSPEED	1	/* Для DEVICE используется встроенная в процессор поддержка USB HS */
-	//#define WITHHIGHSPEEDDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
-	//#define WITHUSBHWVBUSSENSE	1	/* используется предопределенный вывод VBUS_SENSE */
+	//#define WITHUSBDEV_HSDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
+	//#define WITHUSBDEV_VBUSSENSE	1	/* используется предопределенный вывод VBUS_SENSE */
 	#define WITHUSBHW_DEVICE	USB_OTG_FS	/* на этом устройстве поддерживается функциональность DEVUCE	*/
 #else
 	// USE HS with ULPI
-	#define WITHDEVONHIGHSPEED	1	/* Для DEVICE используется встроенная в процессор поддержка USB HS */
-	//#define WITHHIGHSPEEDDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
-	#define WITHUSBHWVBUSSENSE	1	/* используется предопределенный вывод VBUS_SENSE */
-	#define WITHUSBHWHIGHSPEEDULPI	1
-	//#define WITHUSBHWHIGHSPEEDPHYC	1
+	//#define WITHUSBDEV_HSDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
+	#define WITHUSBDEV_VBUSSENSE	1	/* используется предопределенный вывод VBUS_SENSE */
+	#define WITHUSBDEV_HIGHSPEEDULPI	1
+	//#define WITHUSBDEV_HIGHSPEEDPHYC	1
 	#define WITHUSBHW_DEVICE	USB_OTG_HS	/* на этом устройстве поддерживается функциональность DEVUCE	*/
 #endif
 

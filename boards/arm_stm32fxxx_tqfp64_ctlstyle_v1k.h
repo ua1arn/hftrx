@@ -5,6 +5,7 @@
 // UA1ARN
 //
 // Синтезатор с процессором STM32F401RB
+// новый SW20xx
 //
 
 #ifndef ARM_STM32FXXX_TQFP64_CTLSTYLE_V1K_H_INCLUDED
@@ -92,8 +93,8 @@
 	// +++ Особые варианты расположения кнопок на клавиатуре
 	//#define KEYBSTYLE_SW2013RDX	1	// 8-ми кнопочная клавиатура
 	#define KEYBSTYLE_SW2016RDX	1	// 8-ми кнопочная клавиатура
-	//#define KEYBSTYLE_SW2013RDX_LTIYUR	1		// 12-ти кнопочная клавиатура LTIYUR (check KI_COUNT) 
-	//#define KEYBSTYLE_SW2013RDX_UT7LC	1	// 12-ти кнопочная клавиатура UT7LC (check KI_COUNT) 
+	//#define KEYBSTYLE_SW2013RDX_LTIYUR	1		// 12-ти кнопочная клавиатура LTIYUR (check KI_COUNT)
+	//#define KEYBSTYLE_SW2013RDX_UT7LC	1	// 12-ти кнопочная клавиатура UT7LC (check KI_COUNT)
 	// --- Особые варианты расположения кнопок на клавиатуре
 
 	// +++ Одна из этих строк определяет тип дисплея, для которого компилируется прошивка

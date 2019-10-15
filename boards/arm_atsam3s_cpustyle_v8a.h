@@ -20,9 +20,8 @@
 #define WITHUART2HW	1	/* Используется периферийный контроллер последовательного порта #2 */
 
 //#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
-//#define WITHUSBHWVBUSSENSE	1	/* используется предопределенный вывод VBUS_SENSE */
-//#define WITHDEVONHIGHSPEED	1	/* Для DEVICE используется встроенная в процессор поддержка USB HS */
-//#define WITHHIGHSPEEDDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
+//#define WITHUSBDEV_VBUSSENSE	1	/* используется предопределенный вывод VBUS_SENSE */
+//#define WITHUSBDEV_HSDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
 
 //#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
 #define WITHCAT_USART2		1

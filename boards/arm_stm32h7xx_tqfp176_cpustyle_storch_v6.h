@@ -40,11 +40,10 @@
 #define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 #define WITHUSBHW_DEVICE	USB_OTG_HS	/* на этом устройстве поддерживается функциональность DEVUCE	*/
 //#define WITHUSBHW_HOST		USB_OTG_FS
-#define WITHUSBHWVBUSSENSE	1	/* используется предопределенный вывод VBUS_SENSE */
-#define WITHDEVONHIGHSPEED	1	/* Для DEVICE используется встроенная в процессор поддержка USB HS */
-//#define WITHHIGHSPEEDDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
-//#define WITHUSBHWHIGHSPEEDULPI	1
-//#define WITHUSBHWHIGHSPEEDPHYC	1
+#define WITHUSBDEV_VBUSSENSE	1	/* используется предопределенный вывод VBUS_SENSE */
+//#define WITHUSBDEV_HSDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
+//#define WITHUSBDEV_HIGHSPEEDULPI	1
+//#define WITHUSBDEV_HIGHSPEEDPHYC	1
 //#define WITHHOSTONHIGHSPEED	1	/* Для HOST используется встроенная в процессор поддержка USB HS */
 
 //#define WITHUART1HW	1	/* PA9, PA10 Используется периферийный контроллер последовательного порта #1 */
