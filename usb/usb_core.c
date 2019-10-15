@@ -443,6 +443,8 @@ static void usbd_handle_ctrt(PCD_HandleTypeDef *hpcd, uint_fast8_t ctsq)
 		// End of sending data trough EP0
 		// xxx_TxSent
 		//pdev->ep0_state = USBD_EP0_STATUS_IN;
+		TP();
+        /* TX COMPLETE */
 		HAL_PCD_DataInStageCallback(hpcd, 0);
 		USBx->DCPCTR |= USB_DCPCTR_CCPL;	// CCPL
 		(void) USBx->DCPCTR;
@@ -961,6 +963,10 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 
 		if ((bempsts & (1U << 0)) != 0)	// PIPE0, DCP
 		{
+			USBD_EndpointTypeDef * const pep = & pdev->ep_in [0];
+			//ASSERT(pdev->ep0_state != USBD_EP0_DATA_IN || pep->rem_length == 0 || hpcd->IN_ep [0].xfer_buff != NULL);
+			TP();
+			/* TX COMPLETE */
 			HAL_PCD_DataInStageCallback(hpcd, 0);
 
 			//if (control_transmit2(pdev) != 0)
@@ -1025,6 +1031,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 				{
 					//usbd_handler_brdy_bulk_in8(pdev, pipe, ep);	// usbd_write_data inside
 					USB_OTG_EPTypeDef * const ep = & hpcd->IN_ep [epnt & 0x7F];
+					ASSERT(ep->xfer_len == 0 || ep->xfer_buff != NULL);
 				  	if (usbd_write_data(USBx, ep->pipe_num, ep->xfer_buff, ep->xfer_len) == 0)
 				  	{
 						ep->xfer_buff += ep->xfer_len;
@@ -1035,6 +1042,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 				  		// todo: not control ep
 				  		//control_stall(pdev);
 				  	}
+					TP();
 					HAL_PCD_DataInStageCallback(hpcd, 0x7f & epnt);
 				}
 				else
@@ -1498,9 +1506,7 @@ HAL_StatusTypeDef USB_EP0StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDe
 	{
 		//PRINTF(PSTR("USB_EP0StartXfer: IN direction, ep->xfer_len=%d, ep->maxpacket=%d\n"), (int) ep->xfer_len, (int) ep->maxpacket);
 
-		USBx->DCPCTR = (USBx->DCPCTR & ~ USB_DCPCTR_PID) |
-			DEVDRV_USBF_PID_NAK * (1uL << USB_DCPCTR_PID_SHIFT) |	// PID 00: NAK
-			0;
+		set_pid(USBx, pipe, DEVDRV_USBF_PID_NAK);
 
 		/* IN endpoint */
 		if (ep->xfer_len == 0)
@@ -1515,6 +1521,8 @@ HAL_StatusTypeDef USB_EP0StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDe
 			{
 				ep->xfer_len = ep->maxpacket;
 			}
+			ASSERT(ep->xfer_len == 0 || ep->xfer_buff != NULL);
+
 			int err = usbd_write_data(USBx, pipe, ep->xfer_buff, ep->xfer_len);	// pipe=0: DCP
 			////ASSERT(err == 0);
 			// эти манипуляци пока не по оригиналу
@@ -1522,9 +1530,7 @@ HAL_StatusTypeDef USB_EP0StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDe
 			ep->xfer_count += ep->xfer_len;
 		}
 
-		USBx->DCPCTR = (USBx->DCPCTR & ~ USB_DCPCTR_PID) |
-			DEVDRV_USBF_PID_BUF * (1uL << USB_DCPCTR_PID_SHIFT) |	// PID 01: BUF response (depending on the buffer state)
-			0;
+		set_pid(USBx, pipe, DEVDRV_USBF_PID_BUF);
 	}
 	else
 	{
@@ -4471,6 +4477,7 @@ uint16_t HAL_PCD_EP_GetRxCount(PCD_HandleTypeDef *hpcd, uint_fast8_t ep_addr)
   */
 HAL_StatusTypeDef HAL_PCD_EP_Transmit(PCD_HandleTypeDef *hpcd, uint_fast8_t ep_addr, const uint8_t *pBuf, uint_fast32_t len)
 {
+	ASSERT(len == 0 || pBuf != NULL);
 
 	USB_OTG_EPTypeDef * const ep = & hpcd->IN_ep [ep_addr & 0x7F];
 
@@ -4606,39 +4613,13 @@ HAL_StatusTypeDef HAL_PCD_EP_Flush(PCD_HandleTypeDef *hpcd, uint_fast8_t ep_addr
 }
 
 /**
-  * @}
-  */
-
-
-
-
-
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
-
-/** @addtogroup USBD_OTG_DRIVER
-  * @{
-  */
-
-/** @defgroup USBD_CONF
-  * @brief usb otg low level driver configuration file
-  * @{
-  */
-
-/** @defgroup USBD_CONF_Exported_Defines
-  * @{
-  */
-
-
-static void Error_Handler(void);
-
-/**
   * @brief  Setup stage callback
   * @param  hpcd: PCD handle
   * @retval None
   */
 void HAL_PCD_SetupStageCallback(PCD_HandleTypeDef *hpcd)
 {
-  USBD_LL_SetupStage((USBD_HandleTypeDef*)hpcd->pData, hpcd->PSetup);
+	USBD_LL_SetupStage((USBD_HandleTypeDef*)hpcd->pData, hpcd->PSetup);
 }
 
 /**
@@ -4649,7 +4630,7 @@ void HAL_PCD_SetupStageCallback(PCD_HandleTypeDef *hpcd)
   */
 void HAL_PCD_DataOutStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum)
 {
-  USBD_LL_DataOutStage((USBD_HandleTypeDef*)hpcd->pData, epnum, hpcd->OUT_ep [epnum].xfer_buff);
+	USBD_LL_DataOutStage((USBD_HandleTypeDef*)hpcd->pData, epnum, hpcd->OUT_ep [epnum].xfer_buff);
 }
 
 /**
@@ -4660,7 +4641,7 @@ void HAL_PCD_DataOutStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum)
   */
 void HAL_PCD_DataInStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum)
 {
-  USBD_LL_DataInStage((USBD_HandleTypeDef*)hpcd->pData, epnum, hpcd->IN_ep [epnum].xfer_buff);
+	USBD_LL_DataInStage((USBD_HandleTypeDef*)hpcd->pData, epnum, hpcd->IN_ep [epnum].xfer_buff);
 }
 
 /**
@@ -4670,7 +4651,7 @@ void HAL_PCD_DataInStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum)
   */
 void HAL_PCD_SOFCallback(PCD_HandleTypeDef *hpcd)
 {
-  USBD_LL_SOF((USBD_HandleTypeDef*)hpcd->pData);
+	USBD_LL_SOF((USBD_HandleTypeDef*)hpcd->pData);
 }
 
 /**
@@ -5442,6 +5423,7 @@ USBD_StatusTypeDef  USBD_CtlSendData(USBD_HandleTypeDef  *pdev,
                               const uint8_t *pbuf,
                                uint16_t len)
 {
+	ASSERT(len == 0 || pbuf != NULL);
 	/* Set EP0 State */
 	pdev->ep0_state = USBD_EP0_DATA_IN;
 	pdev->ep_in[0].total_length = len;
@@ -5464,6 +5446,7 @@ USBD_StatusTypeDef  USBD_CtlContinueSendData (USBD_HandleTypeDef  *pdev,
                                        const uint8_t *pbuf,
                                        uint16_t len)
 {
+	ASSERT(len == 0 || pbuf != NULL);
 	/* Start the next transfer */
 	USBD_LL_Transmit(pdev, 0x00, pbuf, len);
 
@@ -6301,6 +6284,7 @@ USBD_StatusTypeDef USBD_LL_DataInStage(USBD_HandleTypeDef *pdev, uint_fast8_t ep
 			if (pep->rem_length > pep->maxpacket)
 			{
 				pep->rem_length -=  pep->maxpacket;
+				ASSERT(pep->rem_length == 0 || pdata != NULL);
 
 				USBD_CtlContinueSendData (pdev,
 									  pdata,
