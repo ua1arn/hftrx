@@ -1029,8 +1029,11 @@ HAL_StatusTypeDef HAL_PCD_DeActivateRemoteWakeup(PCD_HandleTypeDef *hpcd);
  *  @brief macros to handle interrupts and specific clock configurations
  * @{
  */
-#define __HAL_HCD_ENABLE(h)                   do { USB_EnableGlobalInt ((h)->Instance); } while (0)
-#define __HAL_HCD_DISABLE(h)                  do { USB_DisableGlobalInt ((h)->Instance); } while (0)
+#define __HAL_HCD_ENABLE(h)                   do { USB_EnableGlobalInt((h)->Instance); } while (0)
+#define __HAL_HCD_DISABLE(h)                  do { USB_DisableGlobalInt((h)->Instance); } while (0)
+
+#define __HAL_PCD_ENABLE(h)                   do { /*USB_EnableGlobalInt((h)->Instance); */} while (0)
+#define __HAL_PCD_DISABLE(h)                  do { /*USB_DisableGlobalInt((h)->Instance); */} while (0)
 
 #define __HAL_HCD_GET_FLAG(h, intr)      ((USB_ReadInterrupts((h)->Instance) & (intr)) == (intr))
 #define __HAL_HCD_CLEAR_FLAG(h, intr)    do { (((h)->Instance->GINTSTS) = (intr)); } while (0)

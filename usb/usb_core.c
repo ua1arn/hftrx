@@ -1223,23 +1223,22 @@ void HAL_HCD_MspInit(HCD_HandleTypeDef* hpcd)
 	if (hpcd->Instance == & USB200)
 	{
 		const IRQn_ID_t int_id = USBI0_IRQn;
-		IRQ_SetHandler(int_id, host_USBI0_IRQHandler);
-		IRQ_SetPriority(int_id, ARM_SYSTEM_PRIORITY);
-		IRQ_Enable(int_id);
+		VERIFY(IRQ_SetHandler(int_id, host_USBI0_IRQHandler) == 0);
+		VERIFY(IRQ_SetPriority(int_id, ARM_SYSTEM_PRIORITY) == 0);
+		VERIFY(IRQ_Enable(int_id) == 0);
 
 		/* ---- Supply clock to the USB20(channel 0) ---- */
 		CPG.STBCR7 &= ~ CPG_STBCR7_MSTP71;	// Module Stop 71 0: Channel 0 of the USB 2.0 host/function module runs.
 		(void) CPG.STBCR7;			/* Dummy read */
 
 		HARDWARE_USB0_INITIALIZE();
-
 	}
 	else if (hpcd->Instance == & USB201)
 	{
 		const IRQn_ID_t int_id = USBI1_IRQn;
-		IRQ_SetHandler(int_id, host_USBI1_IRQHandler);
-		IRQ_SetPriority(int_id, ARM_SYSTEM_PRIORITY);
-		IRQ_Enable(int_id);
+		VERIFY(IRQ_SetHandler(int_id, host_USBI1_IRQHandler) == 0);
+		VERIFY(IRQ_SetPriority(int_id, ARM_SYSTEM_PRIORITY) == 0);
+		VERIFY(IRQ_Enable(int_id) == 0);
 
 		/* ---- Supply clock to the USB20(channel 1) ---- */
 		CPG.STBCR7 &= ~ CPG_STBCR7_MSTP70;	// Module Stop 70 0: Channel 1 of the USB 2.0 host/function module runs.
@@ -1252,6 +1251,30 @@ void HAL_HCD_MspInit(HCD_HandleTypeDef* hpcd)
 
 void HAL_HCD_MspDeInit(HCD_HandleTypeDef* hpcd)
 {
+	if (hpcd->Instance == & USB200)
+	{
+		const IRQn_ID_t int_id = USBI0_IRQn;
+		IRQ_Disable(int_id);
+
+		/* ---- Supply clock to the USB20(channel 0) ---- */
+		//CPG.STBCR7 &= ~ CPG_STBCR7_MSTP71;	// Module Stop 71 0: Channel 0 of the USB 2.0 host/function module runs.
+		//(void) CPG.STBCR7;			/* Dummy read */
+
+		//HARDWARE_USB0_UNINITIALIZE();
+
+	}
+	else if (hpcd->Instance == & USB201)
+	{
+		const IRQn_ID_t int_id = USBI1_IRQn;
+		IRQ_Disable(int_id);
+
+		/* ---- Supply clock to the USB20(channel 1) ---- */
+		CPG.STBCR7 &= ~ CPG_STBCR7_MSTP70;	// Module Stop 70 0: Channel 1 of the USB 2.0 host/function module runs.
+		//CPG.STBCR7 &= ~ CPG_STBCR7_MSTP71;	// Module Stop 71 0: Channel 0 of the USB 2.0 host/function module runs.
+		(void) CPG.STBCR7;			/* Dummy read */
+
+		//HARDWARE_USB1_UNINITIALIZE();
+	}
 	hpcd->Instance->SYSCFG0 &= ~ USB_SYSCFG_USBE;
 	hpcd->Instance->INTENB0 = 0;
 	hpcd->Instance->INTENB1 = 0;
@@ -1349,9 +1372,6 @@ HAL_StatusTypeDef USB_DisableGlobalInt(USB_OTG_GlobalTypeDef *USBx)
 
 
 #endif /* defined (WITHUSBHW_DEVICE) */
-
-#define __HAL_PCD_ENABLE(h)                   do { /*USB_EnableGlobalInt((h)->Instance); */} while (0)
-#define __HAL_PCD_DISABLE(h)                  do { /*USB_DisableGlobalInt((h)->Instance); */} while (0)
 
 
 /**
@@ -10113,6 +10133,30 @@ void HAL_PCD_MspDeInit(PCD_HandleTypeDef *pcdHandle)
 {
 #if CPUSTYLE_R7S721
 
+	if (pcdHandle->Instance == & USB200)
+	{
+		const IRQn_ID_t int_id = USBI0_IRQn;
+		IRQ_Disable(int_id);
+
+		/* ---- Supply clock to the USB20(channel 0) ---- */
+		//CPG.STBCR7 &= ~ CPG_STBCR7_MSTP71;	// Module Stop 71 0: Channel 0 of the USB 2.0 host/function module runs.
+		//(void) CPG.STBCR7;			/* Dummy read */
+
+		//HARDWARE_USB0_UNINITIALIZE();
+
+	}
+	else if (pcdHandle->Instance == & USB201)
+	{
+		const IRQn_ID_t int_id = USBI1_IRQn;
+		IRQ_Disable(int_id);
+
+		/* ---- Supply clock to the USB20(channel 1) ---- */
+		CPG.STBCR7 &= ~ CPG_STBCR7_MSTP70;	// Module Stop 70 0: Channel 1 of the USB 2.0 host/function module runs.
+		//CPG.STBCR7 &= ~ CPG_STBCR7_MSTP71;	// Module Stop 71 0: Channel 0 of the USB 2.0 host/function module runs.
+		(void) CPG.STBCR7;			/* Dummy read */
+
+		//HARDWARE_USB1_UNINITIALIZE();
+	}
 	pcdHandle->Instance->SYSCFG0 &= ~ USB_SYSCFG_USBE;
 	pcdHandle->Instance->INTENB0 = 0;
 	pcdHandle->Instance->INTENB1 = 0;
@@ -10962,7 +11006,7 @@ uint32_t HAL_HCD_GetCurrentFrame(HCD_HandleTypeDef *hhcd)
 HAL_StatusTypeDef HAL_HCD_Init(HCD_HandleTypeDef *hhcd)
 {
 	/* Check the HCD handle allocation */
-	if(hhcd == NULL)
+	if (hhcd == NULL)
 	{
 		return HAL_ERROR;
 	}
@@ -10982,12 +11026,12 @@ HAL_StatusTypeDef HAL_HCD_Init(HCD_HandleTypeDef *hhcd)
 	USB_CoreInit(hhcd->Instance, & hhcd->Init);
 
 	/* Force Host Mode*/
-	USB_SetCurrentMode(hhcd->Instance , USB_OTG_HOST_MODE);
+	USB_SetCurrentMode(hhcd->Instance, USB_OTG_HOST_MODE);
 
 	/* Init Host */
 	USB_HostInit(hhcd->Instance, & hhcd->Init);
 
-	hhcd->State= HAL_HCD_STATE_READY;
+	hhcd->State = HAL_HCD_STATE_READY;
 
 	return HAL_OK;
 }
