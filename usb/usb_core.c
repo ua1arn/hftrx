@@ -301,9 +301,6 @@ static uint_fast8_t usbd_wait_fifo(PCD_TypeDef * const USBx, uint_fast8_t pipe, 
 	return 0;
 }
 
-
-static uint_fast16_t /* volatile */ g_usb0_function_PipeIgnore [16];
-
 // Эта функция не должна общаться с DCPCTR - она универсальная
 static uint_fast8_t usbd_read_data(PCD_TypeDef * const USBx, uint_fast8_t pipe, uint8_t * data, unsigned size, unsigned * readcnt)
 {
@@ -320,7 +317,7 @@ static uint_fast8_t usbd_read_data(PCD_TypeDef * const USBx, uint_fast8_t pipe, 
 		return 1;	// error
 	}
 
-	g_usb0_function_PipeIgnore [pipe] = 0;
+	ASSERT(size == 0 || data != NULL);
 	unsigned count = 0;
 	unsigned size8 = (USBx->CFIFOCTR & USB_CFIFOCTR_DTLN) >> USB_CFIFOCTR_DTLN_SHIFT;
 	size = ulmin16(size, size8);
@@ -341,7 +338,13 @@ static uint_fast8_t usbd_read_data(PCD_TypeDef * const USBx, uint_fast8_t pipe, 
 static uint_fast8_t
 usbd_write_data(PCD_TypeDef * const USBx, uint_fast8_t pipe, const uint8_t * data, unsigned size)
 {
-#if 0
+#if 1
+	if (data == NULL && size != 0)
+	{
+		TP();
+		for (;;)
+			;
+	}
 	if (data != NULL && size != 0)
 		PRINTF(PSTR("usbd_write_data, pipe=%d, size=%d, data[]={%02x,%02x,%02x,%02x,%02x,..}\n"), pipe, size, data [0], data [1], data [2], data [3], data [4]);
 	else
@@ -369,8 +372,7 @@ usbd_write_data(PCD_TypeDef * const USBx, uint_fast8_t pipe, const uint8_t * dat
 		PRINTF(PSTR("usbd_write_data: usbd_wait_fifo error, USBx->CFIFOSEL=%08lX\n"), (unsigned long) USBx->CFIFOSEL);
 		return 1;	// error
 	}
-
-	g_usb0_function_PipeIgnore [pipe] = 0;
+	ASSERT(size == 0 || data != NULL);
     while (size --)
 	{
     	USBx->CFIFO.UINT8 [R_IO_HH] = * data ++; // HH=3
@@ -543,7 +545,6 @@ static void usbd_pipes_enable(PCD_TypeDef * const Instance)
 		* PIPEnCTR = 0x0001;	// STALL->BUF
 		Instance->NRDYENB |= (1u << pipe);
 
-		g_usb0_function_PipeIgnore [pipe] = 0;
 	}
 	for (i = 0; i < sizeof brdyenbpipes2 / sizeof brdyenbpipes2 [0]; ++ i)
 	{
@@ -11474,6 +11475,7 @@ USBH_StatusTypeDef  USBH_ReEnumerate(USBH_HandleTypeDef *phost)
 	return USBH_OK;
 }
 
+#if defined (WITHUSBHW_HOST)
 
 /**
   * @brief  HCD_Init
@@ -11547,6 +11549,7 @@ USBH_StatusTypeDef  USBH_DeInit(USBH_HandleTypeDef *phost)
 	return USBH_OK;
 }
 
+#endif /* defined (WITHUSBHW_HOST) */
 
 /*
  * user callback definition
