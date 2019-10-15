@@ -1850,6 +1850,12 @@ hardware_get_encoder2_bits(void)
 
 static uint_fast8_t adc_input;
 
+// Проверка что индекс входа АЦП относится ко встроенной периферии процессора
+static uint_fast8_t
+isadchw(uint_fast8_t adci)
+{
+	return (adci < BOARD_ADCX0BASE && adci < BOARD_ADCX1BASE);
+}
 
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
@@ -1874,7 +1880,7 @@ void RAMFUNC_NONILINE ADC_Handler(void)
 		else
 		{
 			const uint_fast8_t adci = board_get_adcch(adc_input);
-			if (adci < BOARD_ADCX0BASE)
+			if (isadchw(adci))
 			{
 				// Select next ADC input (only one)
 				const portholder_t mask = ADC_CHER_CH0 << adci;
@@ -1908,7 +1914,7 @@ static RAMFUNC_NONILINE void AT91F_ADC_IRQHandler(void)
 		{
 			// Select next ADC input (only one)
 			const uint_fast8_t adci = board_get_adcch(adc_input);
-			if (adci < BOARD_ADCX0BASE)
+			if (isadchw(adci))
 			{
 				const portholder_t mask = AT91C_ADC_CH0 << adci;
 				AT91C_BASE_ADC->ADC_CHDR = ~ mask; /* disable ADC inputs */
@@ -1956,7 +1962,7 @@ static RAMFUNC_NONILINE void AT91F_ADC_IRQHandler(void)
 			{
 				// Select next ADC input (only one)
 				const uint_fast8_t adci = board_get_adcch(adc_input);
-				if (adci < BOARD_ADCX0BASE)
+				if (isadchw(adci))
 				{
 					ADMUX = hardware_atmega_admux(adci);
 					ADCSRA |= (1U << ADSC);			// Start the AD conversion
@@ -1996,7 +2002,7 @@ static RAMFUNC_NONILINE void AT91F_ADC_IRQHandler(void)
 			{
 				// Select next ADC input (only one)
 				const uint_fast8_t adci = board_get_adcch(adc_input);
-				if (adci < BOARD_ADCX0BASE)
+				if (isadchw(adci))
 				{
 					ADCA.CH0.MUXCTRL = adci;
 					ADCA.CH0.CTRL |= (1U << ADC_CH_START_bp);			// Start the AD conversion
@@ -2075,7 +2081,7 @@ ADCs_IRQHandler(ADC_TypeDef * p)
 			{
 				// Select next ADC input (only one)
 				const uint_fast8_t adci = board_get_adcch(adc_input);
-				if (adci < BOARD_ADCX0BASE)
+				if (isadchw(adci))
 				{
 					// Установить следующий вход (блок ADC может измениться)
 					const adcinmap_t * const adcmap = getadcmap(adci);
@@ -2132,7 +2138,7 @@ adcs_stm32f4xx_irq_handler(void)
 		{
 			// Select next ADC input (only one)
 			const uint_fast8_t adci = board_get_adcch(adc_input);
-			if (adci < BOARD_ADCX0BASE)
+			if (isadchw(adci))
 			{
 				ADC1->SQR3 = (ADC1->SQR3 & ~ ADC_SQR3_SQ1) | (ADC_SQR3_SQ1_0 * adci);
 				#if CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX
@@ -2180,7 +2186,7 @@ ADC1_2_IRQHandler(void)
 				{
 					// Select next ADC input (only one)
 					const uint_fast8_t adci = board_get_adcch(adc_input);
-					if (adci < BOARD_ADCX0BASE)
+					if (isadchw(adci))
 					{
 						ADC1->CHSELR = 1UL <<  board_get_adcch(adc_input);
 						ADC1->CR = ADC_CR_ADSTART;	// ADC Start of Regular conversion
@@ -2210,7 +2216,7 @@ ADC1_2_IRQHandler(void)
 				{
 					// Select next ADC input (only one)
 					const uint_fast8_t adci = board_get_adcch(adc_input);
-					if (adci < BOARD_ADCX0BASE)
+					if (isadchw(adci))
 					{
 						ADC1->CHSELR = 1UL << adci;
 						ADC1->CR = ADC_CR_ADSTART;	// ADC Start of Regular conversion
@@ -2243,7 +2249,7 @@ ADC1_2_IRQHandler(void)
 			{
 				// Select next ADC input (only one)
 				const uint_fast8_t adci = board_get_adcch(adc_input);
-				if (adci < BOARD_ADCX0BASE)
+				if (isadchw(adci))
 				{
 					ADC1->CHSELR |= 1UL << adci;
 					ADC1->CR = ADC_CR_ADSTART;	// ADC Start of Regular conversion
@@ -2275,7 +2281,7 @@ ADC1_2_IRQHandler(void)
 		{
 			// Select next ADC input (only one)
 			const uint_fast8_t adci = board_get_adcch(adc_input);
-			if (adci < BOARD_ADCX0BASE)
+			if (isadchw(adci))
 			{
 				ADC1->SQR1 = (ADC1->SQR1 & ~ ADC_SQR1_SQ1) | (ADC_SQR1_SQ1_0 * adci); 
 				ADC1->CR |= ADC_CR_ADSTART;	// ADC Start of Regular conversion
@@ -2328,7 +2334,7 @@ r7s721_adi_irq_handler(void)
 		{
 			// Select next ADC input (only one)
 			const uint_fast8_t adci = board_get_adcch(adc_input);
-			if (adci < BOARD_ADCX0BASE && adci < BOARD_ADCX1BASE)
+			if (isadchw(adci))
 			{
 				ADC.ADCSR = (ADC.ADCSR & ~ (ADC_SR_ADF | ADC_SR_CH)) | 
 					(adci << ADC_SR_CH_SHIFT) |	// канал для преобразования
@@ -2639,7 +2645,7 @@ void hardware_adc_initialize(void)
 	for (i = 0; i < board_get_adcinputs(); ++ i)
 	{
 		const uint_fast8_t adci = board_get_adcch(i);
-		if (adci >= BOARD_ADCX0BASE)
+		if (! isadchw(adci))
 			continue;
 		const adcinmap_t * const adcmap = getadcmap(adci);
 		ADC_TypeDef * const adc = adcmap->adc;
@@ -2657,7 +2663,7 @@ void hardware_adc_initialize(void)
 	for (i = 0; i < board_get_adcinputs(); ++ i)
 	{
 		const uint_fast8_t adci = board_get_adcch(i);
-		if (adci >= BOARD_ADCX0BASE)
+		if (! isadchw(adci))
 			continue;
 		const adcinmap_t * const adcmap = getadcmap(adci);
 		ADC_TypeDef * const adc = adcmap->adc;
@@ -2738,7 +2744,7 @@ void hardware_adc_initialize(void)
 	for (i = 0; i < board_get_adcinputs(); ++ i)
 	{
 		const uint_fast8_t adci = board_get_adcch(i);
-		if (adci >= BOARD_ADCX0BASE)
+		if (! isadchw(adci))
 			continue;
 		const adcinmap_t * const adcmap = getadcmap(adci);
 		ADC_TypeDef * const adc = adcmap->adc;
@@ -3089,7 +3095,6 @@ void hardware_adc_initialize(void)
 
 	//debug_printf_P(PSTR("hardware_adc_initialize done\n"));
 }
-
 // хотя бы один вход (s-метр) есть.
 static void 
 hardware_adc_startonescan(void)
@@ -3097,10 +3102,11 @@ hardware_adc_startonescan(void)
 	//ASSERT((adc_input == 0) || (adc_input == board_get_adcinputs()));	// проверяем, успело ли отработать ранее запущенное преобразование
 	if ((adc_input != 0) && (adc_input < board_get_adcinputs()))
 		return;	// не успели
+	// Ищем первый АЦП из встроеных в процессор
 	for (adc_input = 0; adc_input < board_get_adcinputs(); ++ adc_input)
 	{
 		const uint_fast8_t adci = board_get_adcch(adc_input);
-		if (adci < BOARD_ADCX0BASE && adci < BOARD_ADCX1BASE)
+		if (isadchw(adci))
 			break;
 	}
 	if (adc_input >= board_get_adcinputs())
