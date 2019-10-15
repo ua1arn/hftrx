@@ -4186,7 +4186,9 @@ HAL_StatusTypeDef HAL_PCD_Init(PCD_HandleTypeDef *hpcd)
 		/* Init ep structure */
 		hpcd->IN_ep[i].is_in = 1;
 		hpcd->IN_ep[i].num = i;
+#if CPUSTYLE_STM32
 		hpcd->IN_ep[i].tx_fifo_num = i;
+#endif /* CPUSTYLE_STM32 */
 		/* Control until ep is activated */
 		hpcd->IN_ep[i].type = USBD_EP_TYPE_CTRL;
 		hpcd->IN_ep[i].maxpacket = 0;
@@ -4198,7 +4200,9 @@ HAL_StatusTypeDef HAL_PCD_Init(PCD_HandleTypeDef *hpcd)
 	{
 		hpcd->OUT_ep[i].is_in = 0;
 		hpcd->OUT_ep[i].num = i;
+#if CPUSTYLE_STM32
 		hpcd->IN_ep[i].tx_fifo_num = i;
+#endif /* CPUSTYLE_STM32 */
 		/* Control until ep is activated */
 		hpcd->OUT_ep[i].type = USBD_EP_TYPE_CTRL;
 		hpcd->OUT_ep[i].maxpacket = 0;
@@ -4386,11 +4390,15 @@ HAL_StatusTypeDef HAL_PCD_EP_Open(PCD_HandleTypeDef *hpcd, uint_fast8_t ep_addr,
 	ep->is_in = (0x80 & ep_addr) != 0;
 	ep->maxpacket = ep_mps;
 	ep->type = ep_type;
+
+#if CPUSTYLE_STM32
 	if (ep->is_in)
 	{
 		/* Assign a Tx FIFO */
 		ep->tx_fifo_num = tx_fifo_num;
 	}
+#endif /* CPUSTYLE_STM32 */
+
 	/* Set initial data PID. */
 	if (ep_type == USBD_EP_TYPE_BULK )
 	{

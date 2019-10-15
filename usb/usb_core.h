@@ -161,7 +161,7 @@ typedef  struct  usb_setup_req
     uint_fast16_t  wValue;
     uint_fast16_t  wIndex;
     uint_fast16_t  wLength;
-}USBD_SetupReqTypedef;
+} USBD_SetupReqTypedef;
 
 struct _USBD_HandleTypeDef;
 
@@ -172,14 +172,14 @@ typedef enum
   USBD_SPEED_HIGH  = 0,
   USBD_SPEED_FULL  = 1,
   USBD_SPEED_LOW   = 2,
-}USBD_SpeedTypeDef;
+} USBD_SpeedTypeDef;
 
 /* Following USB Device status */
 typedef enum {
   USBD_OK   = 0,
   USBD_BUSY,
   USBD_FAIL,
-}USBD_StatusTypeDef;
+} USBD_StatusTypeDef;
 
 typedef struct _Device_cb
 {
@@ -230,7 +230,7 @@ typedef enum
   LPM_L1 = 0x01U, /* LPM L1 sleep */
   LPM_L2 = 0x02U, /* suspend */
   LPM_L3 = 0x03U, /* off */
-}PCD_LPM_StateTypeDef;
+} PCD_LPM_StateTypeDef;
 
 
 /**
@@ -242,7 +242,7 @@ typedef enum
    USB_OTG_HOST_MODE    = 1U,
    USB_OTG_DRD_MODE     = 2U
 
-}USB_OTG_ModeTypeDef;
+} USB_OTG_ModeTypeDef;
 
 
 /**
@@ -256,7 +256,7 @@ typedef enum {
   URB_ERROR,
   URB_STALL
 
-}USB_OTG_URBStateTypeDef;
+} USB_OTG_URBStateTypeDef;
 
 /**
   * @brief  Host channel States  definition
@@ -272,7 +272,7 @@ typedef enum {
   HC_BBLERR,
   HC_DATATGLERR
 
-}USB_OTG_HCStateTypeDef;
+} USB_OTG_HCStateTypeDef;
 
 /**
   * @brief  PCD Initialization Structure definition
@@ -312,8 +312,9 @@ typedef struct
 
   uint32_t use_external_vbus;    /*!< Enable or disable the use of the external VBUS.                        */
 
-}USB_OTG_CfgTypeDef;
+} USB_OTG_CfgTypeDef;
 
+// Device controller endpoint
 typedef struct
 {
   uint_fast8_t   num;            /*!< Endpoint number
@@ -337,12 +338,18 @@ typedef struct
                                  This parameter must be a number between Min_Data = 0 and Max_Data = 1    */
 #endif
 
+#if CPUSTYLE_R7S721
+
+  // RENESAS specific field
+  uint_fast8_t	pipe_num;
+
+#elif CPUSTYLE_STM32
+
   // STM32 specific field
   uint_fast8_t  tx_fifo_num;    /*!< Transmission FIFO number
                                  This parameter must be a number between Min_Data = 1 and Max_Data = 15   */
 
-  // RENESAS specific field
-  uint_fast8_t	pipe_num;	//
+#endif /* CPUSTYLE_R7S721 */
 
   uint_fast32_t  maxpacket;      /*!< Endpoint Max packet size
                                  This parameter must be a number between Min_Data = 0 and Max_Data = 64KB */
@@ -357,9 +364,10 @@ typedef struct
 
 } USB_OTG_EPTypeDef;
 
+// Host controller endpoint
 typedef struct
 {
-  uint8_t   dev_addr ;     /*!< USB device address.
+  uint8_t   dev_addr;     /*!< USB device address.
                                 This parameter must be a number between Min_Data = 1 and Max_Data = 255    */
 
   uint8_t   ch_num;        /*!< Host channel number.
