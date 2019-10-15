@@ -88,6 +88,9 @@ static int_fast16_t glob_topdb = 30;	/* верхний предел FFT */
 static int_fast16_t glob_bottomdb = 130;	/* нижний предел FFT */
 static uint_fast8_t glob_zoomxpow2;	/* уменьшение отображаемого участка спектра - horisontal magnification power of two */
 
+static int_fast16_t glob_topdbwf = 0;	/* верхний предел FFT */
+static int_fast16_t glob_bottomdbwf = 137;	/* нижний предел FFT */
+
 //#define WIDEFREQ (TUNE_TOP > 100000000L)
 
 static const FLASHMEM int32_t vals10 [] =
@@ -5532,7 +5535,7 @@ static void dsp_latchwaterfall(
 	for (x = 0; x < ALLDX; ++ x)
 	{
 		// для водопада
-		const int val = dsp_mag2y(filter_waterfall(x), PALETTESIZE - 1, glob_topdb, glob_bottomdb); // возвращает значения от 0 до dy включительно
+		const int val = dsp_mag2y(filter_waterfall(x), PALETTESIZE - 1, glob_topdbwf, glob_bottomdbwf); // возвращает значения от 0 до dy включительно
 
 #if WITHFASTWATERFLOW
 		wfarray [wfrow] [x] = wfpalette [val];	// запись в буфер водопада цветовой точки
