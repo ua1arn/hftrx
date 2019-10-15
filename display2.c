@@ -4375,6 +4375,7 @@ enum
 		{	0,	30,	display2_bars,	REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
 		//{	0,	35,	display2_legend_tx,	REDRM_MODE, PGSWR, },	// Отображение оцифровки шкалы PWR & SWR-метра
 		//{	0,	40,	display2_bars_tx,	REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
+		{	25,	30, display_siglevel4, REDRM_BARS, PGSWR, },	// signal leval dBm
 	#if WITHSPECTRUMWF
 		{	0,	DLES,	dsp_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
 		{	0,	DLES,	display2_spectrum,	REDRM_BARS, PGSPE, },// подготовка изображения спектра
