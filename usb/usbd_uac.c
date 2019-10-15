@@ -636,6 +636,12 @@ static USBD_StatusTypeDef USBD_UAC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 		#endif /* WITHUSBUACIN2 */
 			case INTERFACE_AUDIO_CONTROL_MIKE:	// AUDIO control interface
 			case INTERFACE_AUDIO_CONTROL_SPK:	// AUDIO control interface
+				switch (req->bRequest)
+				{
+				default:
+					break;
+				}
+				/* все запросы этого класса устройств */
 				if (req->wLength != 0)
 				{
 					USBD_CtlPrepareRx (pdev, uac_ep0databuffout, ulmin16(ARRAY_SIZE(uac_ep0databuffout), req->wLength));
