@@ -224,9 +224,14 @@ static USBD_StatusTypeDef USBD_CDC_EP0_RxReady(USBD_HandleTypeDef *pdev)
 			case CDC_SET_LINE_CODING:
 				{
 					const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
+					ASSERT(req->wLength == 7);
 					dwDTERate [interfacev] = USBD_peek_u32(& cdc_epXdatabuffout [0]);
 					//PRINTF(PSTR("USBD_CDC_EP0_RxReady: CDC_SET_LINE_CODING: interfacev=%u, dwDTERate=%lu, bits=%u\n"), interfacev, dwDTERate [interfacev], cdc_epXdatabuffout [6]);
 				}
+				break;
+			default:
+				// непонятно, для чего эти данные?
+				TP();
 				break;
 			}
 		}
@@ -335,18 +340,19 @@ static USBD_StatusTypeDef USBD_CDC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 					//PRINTF(PSTR("USBD_CDC_Setup OUT: CDC_SET_CONTROL_LINE_STATE, wValue=%04X\n"), req->wValue);
 					usb_cdc_control_state [interfacev] = req->wValue;
 					ASSERT(req->wLength == 0);
-					if (req->wLength != 0)
-					{
-						USBD_CtlPrepareRx(pdev, cdc_epXdatabuffout, ulmin16(ARRAY_SIZE(cdc_epXdatabuffout), req->wLength));
-					}
-					else
-					{
-						USBD_CtlSendStatus(pdev);
-					}
 					break;
 
 				default:
 					break;
+				}
+				/* все запросы этого класса устройств */
+				if (req->wLength != 0)
+				{
+					USBD_CtlPrepareRx(pdev, cdc_epXdatabuffout, ulmin16(ARRAY_SIZE(cdc_epXdatabuffout), req->wLength));
+				}
+				else
+				{
+					USBD_CtlSendStatus(pdev);
 				}
 				break;
 
