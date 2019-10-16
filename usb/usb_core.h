@@ -1195,7 +1195,7 @@ typedef enum {
 
 
 
-USBD_StatusTypeDef  USBD_LL_Stop (USBD_HandleTypeDef *pdev);
+USBD_StatusTypeDef  USBD_LL_Stop(USBD_HandleTypeDef *pdev);
 USBD_StatusTypeDef  USBD_LL_Start(USBD_HandleTypeDef *pdev);
 
 

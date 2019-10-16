@@ -1557,6 +1557,8 @@ HAL_StatusTypeDef USB_EP0StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDe
   */
 HAL_StatusTypeDef USB_EPStartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDef *ep, uint_fast8_t dma)
 {
+	const uint_fast8_t pipe = ep->pipe_num;	// Renesas specific parameter
+	ASSERT(dma == 0);
 	if (ep->is_in == 1)
 	{
 		//PRINTF(PSTR("USB_EPStartXfer IN, ep->num=%d, ep->pipe_num=%d\n"), (int) ep->num, (int) ep->pipe_num);
@@ -1933,6 +1935,7 @@ HAL_StatusTypeDef USB_CoreInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_CfgTyp
 {
 	USBx->SUSPMODE &= ~ USB_SUSPMODE_SUSPM;	// SUSPM 0: The clock supplied to this module is stopped.
 
+	// This setting shared for USB200 and USB201
 	SYSCFG0_0 = (SYSCFG0_0 & ~ (USB_SYSCFG_UPLLE | USB_SYSCFG_UCKSEL)) |
 		1 * USB_SYSCFG_UPLLE |	// UPLLE 1: Enables operation of the internal PLL.
 		1 * USB_SYSCFG_UCKSEL |	// UCKSEL 1: The 12-MHz EXTAL clock is selected.
@@ -1971,7 +1974,7 @@ HAL_StatusTypeDef USB_DevInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_CfgType
 	USBx->SYSCFG0 |= USB_SYSCFG_USBE;	// USBE 1: USB module operation is enabled.
 	(void) USBx->SYSCFG0;
 
-	PRINTF("USB_DevInit: cfg->speed=%d\n", (int) cfg->speed);
+	//PRINTF("USB_DevInit: cfg->speed=%d\n", (int) cfg->speed);
 	USBx->SYSCFG0 = (USBx->SYSCFG0 & ~ (USB_SYSCFG_HSE)) |
 			(cfg->speed == USBD_SPEED_HIGH) * USB_SYSCFG_HSE |	// HSE
 			0;
@@ -3004,7 +3007,7 @@ void USB_ReadPacket(USB_OTG_GlobalTypeDef *USBx, uint8_t *dest, uint_fast16_t le
 	uint_fast32_t i = 0;
 	uint_fast32_t count32b = (len + 3) / 4;
 
-	for ( i = 0; i < count32b; i++, dest += 4 )
+	for ( i = 0; i < count32b; i ++, dest += 4 )
 	{
 		* (KEYWORDPACKED uint32_t *) dest = USBx_DFIFO(0);
 	}
@@ -3196,12 +3199,12 @@ HAL_StatusTypeDef USB_HC_StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_HCTypeDe
   if (dma)
   {
     /* xfer_buff MUST be 32-bits aligned */
-    USBx_HC(hc->ch_num)->HCDMA = (uint32_t)hc->xfer_buff;
+    USBx_HC(hc->ch_num)->HCDMA = (uintptr_t) hc->xfer_buff;
   }
 
   is_oddframe = (USBx_HOST->HFNUM & 0x01) ? 0 : 1;
   USBx_HC(hc->ch_num)->HCCHAR &= ~ USB_OTG_HCCHAR_ODDFRM;
-  USBx_HC(hc->ch_num)->HCCHAR |= (is_oddframe << 29);
+  USBx_HC(hc->ch_num)->HCCHAR |= (is_oddframe << USB_OTG_HCCHAR_ODDFRM_Pos);
 
   /* Set host channel enable */
   tmpreg = USBx_HC(hc->ch_num)->HCCHAR;
@@ -4080,32 +4083,32 @@ void HAL_PCD_SetState(PCD_HandleTypeDef *hpcd, PCD_StateTypeDef state)
   */
 HAL_StatusTypeDef HAL_PCD_Init(PCD_HandleTypeDef *hpcd)
 { 
-  uint32_t i = 0;
+	uint_fast8_t i;
 
-  /* Check the PCD handle allocation */
-  if(hpcd == NULL)
-  {
-    return HAL_ERROR;
-  }
-  /* Check the parameters */
-  //assert_param(IS_PCD_ALL_INSTANCE(hpcd->Instance));
+	/* Check the PCD handle allocation */
+	if (hpcd == NULL)
+	{
+		return HAL_ERROR;
+	}
+	/* Check the parameters */
+	//assert_param(IS_PCD_ALL_INSTANCE(hpcd->Instance));
 
-  HAL_PCD_SetState(hpcd, HAL_PCD_STATE_BUSY);
-  
-  /* Init the low level hardware : GPIO, CLOCK, NVIC... */
-  HAL_PCD_MspInit(hpcd);
+	HAL_PCD_SetState(hpcd, HAL_PCD_STATE_BUSY);
 
-  /* Disable the Interrupts */
- __HAL_PCD_DISABLE(hpcd);
+	/* Init the low level hardware : GPIO, CLOCK, NVIC... */
+	HAL_PCD_MspInit(hpcd);
 
- /*Init the Core (common init.) */
- USB_CoreInit(hpcd->Instance, & hpcd->Init);
+	/* Disable the Interrupts */
+	__HAL_PCD_DISABLE(hpcd);
 
- /* Force Device Mode*/
- USB_SetCurrentMode(hpcd->Instance , USB_OTG_DEVICE_MODE);
+	/* Init the Core (common init.) */
+	USB_CoreInit(hpcd->Instance, & hpcd->Init);
+
+	/* Force Device Mode*/
+	USB_SetCurrentMode(hpcd->Instance , USB_OTG_DEVICE_MODE);
 
 	/* Init endpoints structures */
-	for (i = 0; i < 15 ; i++)
+	for (i = 0; i < 15 ; i ++)
 	{
 		/* Init ep structure */
 		hpcd->IN_ep[i].is_in = 1;
@@ -4120,7 +4123,7 @@ HAL_StatusTypeDef HAL_PCD_Init(PCD_HandleTypeDef *hpcd)
 		hpcd->IN_ep[i].xfer_len = 0;
 	}
 
-	for (i = 0; i < 15 ; i++)
+	for (i = 0; i < 15 ; i ++)
 	{
 		hpcd->OUT_ep[i].is_in = 0;
 		hpcd->OUT_ep[i].num = i;
@@ -4163,23 +4166,23 @@ HAL_StatusTypeDef HAL_PCD_Init(PCD_HandleTypeDef *hpcd)
 	HAL_PCD_SetState(hpcd, HAL_PCD_STATE_READY);
 
 #ifdef USB_OTG_GLPMCFG_LPMEN
- /* Activate LPM */
- if (hpcd->Init.lpm_enable == USB_ENABLE)
- {
-   HAL_PCDEx_ActivateLPM(hpcd);
- }
+	/* Activate LPM */
+	if (hpcd->Init.lpm_enable == USB_ENABLE)
+	{
+		HAL_PCDEx_ActivateLPM(hpcd);
+	}
 #endif /* USB_OTG_GLPMCFG_LPMEN */
 
 #ifdef USB_OTG_GCCFG_BCDEN
- /* Activate Battery charging */
- if (hpcd->Init.battery_charging_enable == USB_ENABLE)
- {
-   HAL_PCDEx_ActivateBCD(hpcd);
- }
+	/* Activate Battery charging */
+	if (hpcd->Init.battery_charging_enable == USB_ENABLE)
+	{
+		HAL_PCDEx_ActivateBCD(hpcd);
+	}
 #endif /* USB_OTG_GCCFG_BCDEN */
 
- USB_DevDisconnect (hpcd->Instance);
- return HAL_OK;
+	USB_DevDisconnect (hpcd->Instance);
+	return HAL_OK;
 }
 
 /**
@@ -4189,23 +4192,23 @@ HAL_StatusTypeDef HAL_PCD_Init(PCD_HandleTypeDef *hpcd)
   */
 HAL_StatusTypeDef HAL_PCD_DeInit(PCD_HandleTypeDef *hpcd)
 {
-  /* Check the PCD handle allocation */
-  if(hpcd == NULL)
-  {
-    return HAL_ERROR;
-  }
+	/* Check the PCD handle allocation */
+	if(hpcd == NULL)
+	{
+		return HAL_ERROR;
+	}
 
-  HAL_PCD_SetState(hpcd, HAL_PCD_STATE_BUSY);
+	HAL_PCD_SetState(hpcd, HAL_PCD_STATE_BUSY);
 
-  /* Stop Device */
-  HAL_PCD_Stop(hpcd);
+	/* Stop Device */
+	HAL_PCD_Stop(hpcd);
 
-  /* DeInit the low level hardware */
-  HAL_PCD_MspDeInit(hpcd);
+	/* DeInit the low level hardware */
+	HAL_PCD_MspDeInit(hpcd);
 
-  HAL_PCD_SetState(hpcd, HAL_PCD_STATE_RESET);
-  
-  return HAL_OK;
+	HAL_PCD_SetState(hpcd, HAL_PCD_STATE_RESET);
+
+	return HAL_OK;
 }
 
 /**
@@ -5589,7 +5592,7 @@ USBD_StatusTypeDef  USBD_StdEPReq(USBD_HandleTypeDef * pdev, USBD_SetupReqTypede
 
     case USBD_STATE_CONFIGURED:
       pep = ((ep_addr & 0x80) != 0) ? &pdev->ep_in[ep_addr & 0x7F]: &pdev->ep_out[ep_addr & 0x7F];
-      if(USBD_LL_IsStallEP(pdev, ep_addr))
+      if (USBD_LL_IsStallEP(pdev, ep_addr))
       {
 		pep->epstatus [0] = 0x01;
 		pep->epstatus [1] = 0x00;
@@ -5600,7 +5603,7 @@ USBD_StatusTypeDef  USBD_StdEPReq(USBD_HandleTypeDef * pdev, USBD_SetupReqTypede
         pep->epstatus [1] = 0x00;
       }
 
-      USBD_CtlSendData (pdev, pep->epstatus, 2);
+      USBD_CtlSendData(pdev, pep->epstatus, 2);
       break;
 
     default:
@@ -5754,7 +5757,7 @@ static void USBD_GetDescriptor(USBD_HandleTypeDef *pdev,
 	if ((len != 0) && (req->wLength != 0))
 	{
 		//PRINTF(PSTR("USBD_GetDescriptor: %02X, wLength=%04X (%d dec), ix=%u, datalen=%u\n"), HI_BYTE(req->wValue), req->wLength, req->wLength, LO_BYTE(req->wValue), len);
-		USBD_CtlSendData (pdev, pbuf, ulmin16(len, req->wLength));
+		USBD_CtlSendData(pdev, pbuf, ulmin16(len, req->wLength));
 	}
 
 }
@@ -5858,7 +5861,7 @@ static void USBD_SetConfig(USBD_HandleTypeDef *pdev,
 {
 
 	const uint_fast8_t  cfgidx = LO_BYTE(req->wValue);
-	PRINTF(PSTR("USBD_SetConfig: cfgidx=%d, pdev->dev_state=%d\n"), cfgidx, pdev->dev_state);
+	//PRINTF(PSTR("USBD_SetConfig: cfgidx=%d, pdev->dev_state=%d\n"), cfgidx, pdev->dev_state);
 
 	switch (pdev->dev_state)
 	{
@@ -5867,7 +5870,7 @@ static void USBD_SetConfig(USBD_HandleTypeDef *pdev,
 		{
 			pdev->dev_config [0] = cfgidx;
 			pdev->dev_state = USBD_STATE_CONFIGURED;
-			if(USBD_SetClassConfig(pdev, cfgidx) == USBD_FAIL)
+			if (USBD_SetClassConfig(pdev, cfgidx) == USBD_FAIL)
 			{
 				TP();
 				USBD_CtlError(pdev, req);
@@ -5899,7 +5902,7 @@ static void USBD_SetConfig(USBD_HandleTypeDef *pdev,
 
 			/* set new configuration */
 			pdev->dev_config [0] = cfgidx;
-			if(USBD_SetClassConfig(pdev, cfgidx) == USBD_FAIL)
+			if (USBD_SetClassConfig(pdev, cfgidx) == USBD_FAIL)
 			{
 				TP();
 				USBD_CtlError(pdev, req);
@@ -5946,12 +5949,11 @@ static void USBD_GetConfig(USBD_HandleTypeDef *pdev,
 		{
 		case USBD_STATE_ADDRESSED:
 			pdev->dev_default_config [0] = 0;
-			USBD_CtlSendData (pdev, pdev->dev_default_config, 1);
+			USBD_CtlSendData(pdev, pdev->dev_default_config, 1);
 			break;
 
 		case USBD_STATE_CONFIGURED:
-
-			USBD_CtlSendData (pdev, pdev->dev_config, 1);
+			USBD_CtlSendData(pdev, pdev->dev_config, 1);
 			break;
 
 		default:
@@ -5979,7 +5981,7 @@ static void USBD_GetStatus(USBD_HandleTypeDef *pdev,
 	case USBD_STATE_ADDRESSED:
 	case USBD_STATE_CONFIGURED:
 
-		#if (USBD_SELF_POWERED == 1)
+		#if USBD_SELF_POWERED != 0
 			pdev->dev_config_status [0] = USB_CONFIG_SELF_POWERED;
 			pdev->dev_config_status [1] = 0;
 		#else
@@ -5992,7 +5994,7 @@ static void USBD_GetStatus(USBD_HandleTypeDef *pdev,
 			pdev->dev_config_status [0] |= USB_CONFIG_REMOTE_WAKEUP;
 		}
 
-		USBD_CtlSendData (pdev, pdev->dev_config_status, 2);
+		USBD_CtlSendData(pdev, pdev->dev_config_status, 2);
 		break;
 
 	default :
@@ -10110,7 +10112,7 @@ void HAL_PCD_MspDeInit(PCD_HandleTypeDef *pcdHandle)
   * @param  pdev: Device handle
   * @retval USBD Status
   */
-static USBD_StatusTypeDef  USBD_LL_Init(PCD_HandleTypeDef * hpcd, USBD_HandleTypeDef *pdev)
+USBD_StatusTypeDef  USBD_LL_Init(PCD_HandleTypeDef * hpcd, USBD_HandleTypeDef *pdev)
 {
 	/* Link The driver to the stack */
 	hpcd->pData = pdev;
@@ -10200,10 +10202,10 @@ static USBD_StatusTypeDef  USBD_LL_Init(PCD_HandleTypeDef * hpcd, USBD_HandleTyp
   * @param  pdev: Device handle
   * @retval USBD Status
   */
-static USBD_StatusTypeDef  USBD_LL_DeInit (USBD_HandleTypeDef *pdev)
+USBD_StatusTypeDef  USBD_LL_DeInit(USBD_HandleTypeDef *pdev)
 {
-  HAL_PCD_DeInit((PCD_HandleTypeDef*)pdev->pData);
-  return USBD_OK;
+	HAL_PCD_DeInit((PCD_HandleTypeDef*)pdev->pData);
+	return USBD_OK;
 }
 
 /**
@@ -10214,7 +10216,7 @@ static USBD_StatusTypeDef  USBD_LL_DeInit (USBD_HandleTypeDef *pdev)
 * @param  id: Low level core index
 * @retval None
 */
-static USBD_StatusTypeDef USBD_Init2(USBD_HandleTypeDef *pdev)
+USBD_StatusTypeDef USBD_Init2(USBD_HandleTypeDef *pdev)
 {
 	/* Check whether the USB Host handle is valid */
 	if(pdev == NULL)
@@ -10245,7 +10247,7 @@ USBD_StatusTypeDef USBD_DeInit(USBD_HandleTypeDef *pdev)
 {
 	uint_fast8_t di;
 	/* Set Default State */
-	pdev->dev_state  = USBD_STATE_DEFAULT;
+	pdev->dev_state = USBD_STATE_DEFAULT;
 
 	/* Free Class Resources */
 	for (di = 0; di < pdev->nClasses; ++ di)
@@ -10294,7 +10296,7 @@ static void hardware_usbd_initialize(void)
 
 	// поддержка работы бутлоадера на платах, где есть подпитка VBUS от DP через защитные диоды
 	device_vbusbefore = hardware_usbd_get_vbusnow();
-	PRINTF(PSTR("hardware_usbd_initialize: device_vbusbefore=%d\n"), (int) device_vbusbefore);
+	//PRINTF(PSTR("hardware_usbd_initialize: device_vbusbefore=%d\n"), (int) device_vbusbefore);
 
 #if WITHUSBUAC
 	USBD_AddClass(& hUsbDevice, & USBD_CLASS_UAC);

@@ -3958,7 +3958,7 @@ static unsigned fill_Configuration_descriptor(
 		* buff ++ = bNumInterfaces;			/* bNumInterfaces  */
 		* buff ++ = bConfigurationValue;    /* bConfigurationValue - Value to use as an argument to the SetConfiguration() request to select this configuration */
 		* buff ++ = STRING_ID_0;       		/* iConfiguration - Index of string descriptor describing this configuration */
-		* buff ++ = 0xC0;                   /* bmAttributes  BUS Powred, self powered */
+		* buff ++ = 0xC0;                   /* bmAttributes  BUS Powred, self powered. See USBD_SELF_POWERED */
 		* buff ++ = USB_CONFIG_POWER_MA(250);/* bMaxPower = 250 mA. Сделано как попытка улучшить работу через активные USB изоляторы для обеспечения их питания. */
 
 		fill_main_group(1, buff, maxsize - length, highspeedEPs);
