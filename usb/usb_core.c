@@ -2727,48 +2727,6 @@ HAL_StatusTypeDef USB_EPStartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDef
 		/* IN endpoint */
 		USB_OTG_INEndpointTypeDef * const inep = USBx_INEP(ep->num);
 
-	#if 0
-		while (! (((inep->DTXFSTS & USB_OTG_DTXFSTS_INEPTFSAV) >> USB_OTG_DTXFSTS_INEPTFSAV_Pos) >= ((ep->xfer_len + 3) / 4)))
-		{
-			PRINTF(PSTR("ep%d: avl=%04lX, need=%04lX, sts=%08lX\n"), ep->num, ((inep->DTXFSTS & USB_OTG_DTXFSTS_INEPTFSAV) >> USB_OTG_DTXFSTS_INEPTFSAV_Pos), ((ep->xfer_len + 3) / 4), USBx->GRSTCTL);
-			USB_FlushTxFifo(USBx, ep->num);
-			//ASSERT(((inep->DTXFSTS & USB_OTG_DTXFSTS_INEPTFSAV) >> USB_OTG_DTXFSTS_INEPTFSAV_Pos) >= ((ep->xfer_len + 3) / 4));
-		}
-		switch (ep->num)
-		{
-		case 0:
-			ASSERT(((inep->DTXFSTS & USB_OTG_DTXFSTS_INEPTFSAV) >> USB_OTG_DTXFSTS_INEPTFSAV_Pos) >= ((ep->xfer_len + 3) / 4));
-			break;
-		case 1:
-			ASSERT(((inep->DTXFSTS & USB_OTG_DTXFSTS_INEPTFSAV) >> USB_OTG_DTXFSTS_INEPTFSAV_Pos) >= ((ep->xfer_len + 3) / 4));
-			break;
-		case 2:
-			ASSERT(((inep->DTXFSTS & USB_OTG_DTXFSTS_INEPTFSAV) >> USB_OTG_DTXFSTS_INEPTFSAV_Pos) >= ((ep->xfer_len + 3) / 4));
-			break;
-		case 3:
-			ASSERT(((inep->DTXFSTS & USB_OTG_DTXFSTS_INEPTFSAV) >> USB_OTG_DTXFSTS_INEPTFSAV_Pos) >= ((ep->xfer_len + 3) / 4));
-			break;
-		case 4:
-			ASSERT(((inep->DTXFSTS & USB_OTG_DTXFSTS_INEPTFSAV) >> USB_OTG_DTXFSTS_INEPTFSAV_Pos) >= ((ep->xfer_len + 3) / 4));
-			break;
-		case 5:
-			ASSERT(((inep->DTXFSTS & USB_OTG_DTXFSTS_INEPTFSAV) >> USB_OTG_DTXFSTS_INEPTFSAV_Pos) >= ((ep->xfer_len + 3) / 4));
-			break;
-		case 6:
-			ASSERT(((inep->DTXFSTS & USB_OTG_DTXFSTS_INEPTFSAV) >> USB_OTG_DTXFSTS_INEPTFSAV_Pos) >= ((ep->xfer_len + 3) / 4));
-			break;
-		case 7:
-			ASSERT(((inep->DTXFSTS & USB_OTG_DTXFSTS_INEPTFSAV) >> USB_OTG_DTXFSTS_INEPTFSAV_Pos) >= ((ep->xfer_len + 3) / 4));
-			break;
-		case 8:
-			ASSERT(((inep->DTXFSTS & USB_OTG_DTXFSTS_INEPTFSAV) >> USB_OTG_DTXFSTS_INEPTFSAV_Pos) >= ((ep->xfer_len + 3) / 4));
-			break;
-		case 9:
-			ASSERT(((inep->DTXFSTS & USB_OTG_DTXFSTS_INEPTFSAV) >> USB_OTG_DTXFSTS_INEPTFSAV_Pos) >= ((ep->xfer_len + 3) / 4));
-			break;
-		}
-	#endif
-
 		/* Zero Length Packet? */
 		if (ep->xfer_len == 0)
 		{
