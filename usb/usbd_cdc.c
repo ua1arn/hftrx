@@ -19,8 +19,86 @@
 
 #include "usb_core.h"
 
+
+// CDC class-specific request codes
+// (usbcdc11.pdf, 6.2, Table 46)
+// see Table 45 for info about the specific requests.
+#define CDC_SEND_ENCAPSULATED_COMMAND           0x00
+#define CDC_GET_ENCAPSULATED_RESPONSE           0x01
+#define CDC_SET_COMM_FEATURE                    0x02
+#define CDC_GET_COMM_FEATURE                    0x03
+#define CDC_CLEAR_COMM_FEATURE                  0x04
+#define CDC_SET_AUX_LINE_STATE                  0x10
+#define CDC_SET_HOOK_STATE                      0x11
+#define CDC_PULSE_SETUP                         0x12
+#define CDC_SEND_PULSE                          0x13
+#define CDC_SET_PULSE_TIME                      0x14
+#define CDC_RING_AUX_JACK                       0x15
+#define CDC_SET_LINE_CODING                     0x20
+#define CDC_GET_LINE_CODING                     0x21
+#define CDC_SET_CONTROL_LINE_STATE              0x22
+#define CDC_SEND_BREAK                          0x23
+#define CDC_SET_RINGER_PARMS                    0x30
+#define CDC_GET_RINGER_PARMS                    0x31
+#define CDC_SET_OPERATION_PARMS                 0x32
+#define CDC_GET_OPERATION_PARMS                 0x33
+#define CDC_SET_LINE_PARMS                      0x34
+#define CDC_GET_LINE_PARMS                      0x35
+#define CDC_DIAL_DIGITS                         0x36
+#define CDC_SET_UNIT_PARAMETER                  0x37
+#define CDC_GET_UNIT_PARAMETER                  0x38
+#define CDC_CLEAR_UNIT_PARAMETER                0x39
+#define CDC_GET_PROFILE                         0x3A
+#define CDC_SET_ETHERNET_MULTICAST_FILTERS      0x40
+#define CDC_SET_ETHERNET_PMP_FILTER             0x41
+#define CDC_GET_ETHERNET_PMP_FILTER             0x42
+#define CDC_SET_ETHERNET_PACKET_FILTER          0x43
+#define CDC_GET_ETHERNET_STATISTIC              0x44
+#define CDC_SET_ATM_DATA_FORMAT                 0x50
+#define CDC_GET_ATM_DEVICE_STATISTICS           0x51
+#define CDC_SET_ATM_DEFAULT_VC                  0x52
+#define CDC_GET_ATM_VC_STATISTICS               0x53
+
+// Communication feature selector codes
+// (usbcdc11.pdf, 6.2.2..6.2.4, Table 47)
+#define CDC_ABSTRACT_STATE                      0x01
+#define CDC_COUNTRY_SETTING                     0x02
+
+// Feature Status returned for ABSTRACT_STATE Selector
+// (usbcdc11.pdf, 6.2.3, Table 48)
+#define CDC_IDLE_SETTING                        (1 << 0)
+#define CDC_DATA_MULTPLEXED_STATE               (1 << 1)
+
+
+// Control signal bitmap values for the SetControlLineState request
+// (usbcdc11.pdf, 6.2.14, Table 51)
+#define CDC_DTE_PRESENT                         (1 << 0)
+#define CDC_ACTIVATE_CARRIER                    (1 << 1)
+
+// CDC class-specific notification codes
+// (usbcdc11.pdf, 6.3, Table 68)
+// see Table 67 for Info about class-specific notifications
+#define CDC_NOTIFICATION_NETWORK_CONNECTION     0x00
+#define CDC_RESPONSE_AVAILABLE                  0x01
+#define CDC_AUX_JACK_HOOK_STATE                 0x08
+#define CDC_RING_DETECT                         0x09
+#define CDC_NOTIFICATION_SERIAL_STATE           0x20
+#define CDC_CALL_STATE_CHANGE                   0x28
+#define CDC_LINE_STATE_CHANGE                   0x29
+#define CDC_CONNECTION_SPEED_CHANGE             0x2A
+
+// UART state bitmap values (Serial state notification).
+// (usbcdc11.pdf, 6.3.5, Table 69)
+#define CDC_SERIAL_STATE_OVERRUN                (1 << 6)  // receive data overrun error has occurred
+#define CDC_SERIAL_STATE_PARITY                 (1 << 5)  // parity error has occurred
+#define CDC_SERIAL_STATE_FRAMING                (1 << 4)  // framing error has occurred
+#define CDC_SERIAL_STATE_RING                   (1 << 3)  // state of ring signal detection
+#define CDC_SERIAL_STATE_BREAK                  (1 << 2)  // state of break detection
+#define CDC_SERIAL_STATE_TX_CARRIER             (1 << 1)  // state of transmission carrier
+#define CDC_SERIAL_STATE_RX_CARRIER             (1 << 0)  // state of receiver carrier
+
 // Состояние - выбранные альтернативные конфигурации по каждому интерфейсу USB configuration descriptor
-static RAMDTCM uint8_t altinterfaces [INTERFACE_count];
+//static RAMDTCM uint8_t altinterfaces [INTERFACE_count];
 
 static RAMDTCM volatile uint_fast16_t usb_cdc_control_state [INTERFACE_count];
 
@@ -364,12 +442,13 @@ static USBD_StatusTypeDef USBD_CDC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 		case USB_REQ_TYPE_STANDARD:
 			switch (req->bRequest)
 			{
-			case USB_REQ_SET_INTERFACE :
+			case USB_REQ_SET_INTERFACE:
 				switch (interfacev)
 				{
 				case INTERFACE_CDC_CONTROL_3a:	// CDC interface
 				case INTERFACE_CDC_CONTROL_3b:	// CDC interface
-					altinterfaces [interfacev] = LO_BYTE(req->wValue);
+					// Only zero value here
+					//altinterfaces [interfacev] = LO_BYTE(req->wValue);
 					//PRINTF("USBD_CDC_Setup: CDC interface %d set to %d\n", (int) interfacev, (int) altinterfaces [interfacev]);
 					//bufers_set_cdcalt(altinterfaces [interfacev]);
 					USBD_CtlSendStatus(pdev);
@@ -444,7 +523,7 @@ static void USBD_CDC_ColdInit(void)
 {
 	usb_cdc_control_state [INTERFACE_CDC_CONTROL_3a] = 0;
 	usb_cdc_control_state [INTERFACE_CDC_CONTROL_3b] = 0;
-	memset(altinterfaces, 0, sizeof altinterfaces);
+	//memset(altinterfaces, 0, sizeof altinterfaces);
 }
 
 const USBD_ClassTypeDef USBD_CLASS_CDC =

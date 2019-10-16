@@ -4293,6 +4293,8 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 		score += partlen;
 	}
 	{
+		// https://docs.microsoft.com/en-us/windows-hardware/drivers/usbcon/microsoft-defined-usb-descriptors
+		// https://docs.microsoft.com/en-us/windows-hardware/drivers/usbcon/microsoft-os-1-0-descriptors-specification
 		// Microsoft Compatible ID Feature Descriptor
 		static const uint8_t MsftCompFeatureDescrProto [40] =
 		{

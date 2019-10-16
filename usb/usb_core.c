@@ -338,13 +338,13 @@ static uint_fast8_t usbd_read_data(PCD_TypeDef * const USBx, uint_fast8_t pipe, 
 static uint_fast8_t
 usbd_write_data(PCD_TypeDef * const USBx, uint_fast8_t pipe, const uint8_t * data, unsigned size)
 {
-#if 1
 	if (data == NULL && size != 0)
 	{
 		TP();
 		for (;;)
 			;
 	}
+#if 0
 	if (data != NULL && size != 0)
 		PRINTF(PSTR("usbd_write_data, pipe=%d, size=%d, data[]={%02x,%02x,%02x,%02x,%02x,..}\n"), pipe, size, data [0], data [1], data [2], data [3], data [4]);
 	else
@@ -443,7 +443,7 @@ static void usbd_handle_ctrt(PCD_HandleTypeDef *hpcd, uint_fast8_t ctsq)
 		// End of sending data trough EP0
 		// xxx_TxSent
 		//pdev->ep0_state = USBD_EP0_STATUS_IN;
-		TP();
+		//TP();
         /* TX COMPLETE */
 		HAL_PCD_DataInStageCallback(hpcd, 0);
 		USBx->DCPCTR |= USB_DCPCTR_CCPL;	// CCPL
@@ -965,7 +965,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 		{
 			USBD_EndpointTypeDef * const pep = & pdev->ep_in [0];
 			//ASSERT(pdev->ep0_state != USBD_EP0_DATA_IN || pep->rem_length == 0 || hpcd->IN_ep [0].xfer_buff != NULL);
-			TP();
+			//TP();
 			/* TX COMPLETE */
 			HAL_PCD_DataInStageCallback(hpcd, 0);
 
@@ -991,7 +991,8 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 					continue;
 				//usbd_handler_nrdy(pdev, pipe);
                 /*if (pipe_ctrl[i].enable) */ {
-                    if (((get_pid(USBx, pipe) & DEVDRV_USBF_PID_STALL) != DEVDRV_USBF_PID_STALL) && ((get_pid(USBx, pipe) & DEVDRV_USBF_PID_STALL2) != DEVDRV_USBF_PID_STALL2)) {
+					const uint_fast8_t pid = get_pid(USBx, pipe);
+                    if (((pid & DEVDRV_USBF_PID_STALL) != DEVDRV_USBF_PID_STALL) && ((pid & DEVDRV_USBF_PID_STALL2) != DEVDRV_USBF_PID_STALL2)) {
                         set_pid(USBx, pipe, DEVDRV_USBF_PID_BUF);
                     }
                 }
@@ -1042,7 +1043,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 				  		// todo: not control ep
 				  		//control_stall(pdev);
 				  	}
-					TP();
+					//TP();
 					HAL_PCD_DataInStageCallback(hpcd, 0x7f & epnt);
 				}
 				else
@@ -5579,6 +5580,14 @@ USBD_StatusTypeDef  USBD_StdEPReq(USBD_HandleTypeDef * pdev, USBD_SetupReqTypede
     break;
 
   case USB_REQ_GET_STATUS:
+	  /*
+	         Например, стандартный запрос GetStatus может быть направлен на устройство,
+	  	   интерфейс или конечную точку.
+	  	   Когда он направлен на устройство, он возвращает флаги, показывающие статус удаленного пробуждения (remote wakeup),
+	  	   и является ли устройство самопитаемым.
+	  	   Однако тот же запрос, направленный к интерфейсу,
+	  	   всегда вернет 0, или если запрос будет направлен на конечную точку, то он вернет состояние флага halt (флаг останова) для конечной точки.
+	  */
  	//PRINTF(PSTR("USBD_StdEPReq: USB_REQ_GET_STATUS: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"),
 	//	req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
     switch (pdev->dev_state)
@@ -5971,9 +5980,18 @@ static void USBD_GetConfig(USBD_HandleTypeDef *pdev,
 * @param  req: usb request
 * @retval status
 */
+// device status
 static void USBD_GetStatus(USBD_HandleTypeDef *pdev,
                            const USBD_SetupReqTypedef *req)
 {
+	/*
+	       Например, стандартный запрос GetStatus может быть направлен на устройство,
+		   интерфейс или конечную точку.
+		   Когда он направлен на устройство, он возвращает флаги, показывающие статус удаленного пробуждения (remote wakeup),
+		   и является ли устройство самопитаемым.
+		   Однако тот же запрос, направленный к интерфейсу,
+		   всегда вернет 0, или если запрос будет направлен на конечную точку, то он вернет состояние флага halt (флаг останова) для конечной точки.
+	*/
 
 	//PRINTF(PSTR("USBD_GetStatus:\n"));
 	switch (pdev->dev_state)
@@ -6093,7 +6111,7 @@ USBD_StatusTypeDef  USBD_StdDevReq(USBD_HandleTypeDef *pdev, const USBD_SetupReq
 		break;
 
 	case USB_REQ_GET_STATUS:
-		USBD_GetStatus (pdev, req);
+		USBD_GetStatus (pdev, req);	// device status
 		break;
 
 	case USB_REQ_SET_FEATURE:
