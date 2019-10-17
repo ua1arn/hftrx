@@ -3958,7 +3958,7 @@ static unsigned fill_Configuration_descriptor(
 		* buff ++ = bNumInterfaces;			/* bNumInterfaces  */
 		* buff ++ = bConfigurationValue;    /* bConfigurationValue - Value to use as an argument to the SetConfiguration() request to select this configuration */
 		* buff ++ = STRING_ID_0;       		/* iConfiguration - Index of string descriptor describing this configuration */
-		* buff ++ = 0xC0;                   /* bmAttributes  BUS Powred, self powered */
+		* buff ++ = 0xC0;                   /* bmAttributes  BUS Powred, self powered. See USBD_SELF_POWERED */
 		* buff ++ = USB_CONFIG_POWER_MA(250);/* bMaxPower = 250 mA. Сделано как попытка улучшить работу через активные USB изоляторы для обеспечения их питания. */
 
 		fill_main_group(1, buff, maxsize - length, highspeedEPs);
@@ -4267,8 +4267,8 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 		}
 	}
 
-#if WITHUSBDFU
 	{
+		// При наличии этого дескриптора система начинает запрашивать по всем интеряейсам MsftCompFeatureDescr
 		// Microsoft OS String Descriptor 
 		static const uint8_t MsftStringDescrProto [18] =
 		{
@@ -4292,7 +4292,11 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 		MsftStringDescr [0].data = alldescbuffer + score;
 		score += partlen;
 	}
+
+#if WITHUSBDFU
 	{
+		// https://docs.microsoft.com/en-us/windows-hardware/drivers/usbcon/microsoft-defined-usb-descriptors
+		// https://docs.microsoft.com/en-us/windows-hardware/drivers/usbcon/microsoft-os-1-0-descriptors-specification
 		// Microsoft Compatible ID Feature Descriptor
 		static const uint8_t MsftCompFeatureDescrProto [40] =
 		{
@@ -4371,7 +4375,7 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 	}
 
 	// Binary Device Object Store (BOS) Descriptor
-	if (USB_FUNCTION_BCD_USB > 0x0200)
+	if (USB_FUNCTION_BCD_USB > 0x0201)
 	{
 		unsigned partlen;
 		score += fill_align4(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score);

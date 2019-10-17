@@ -301,9 +301,6 @@ static uint_fast8_t usbd_wait_fifo(PCD_TypeDef * const USBx, uint_fast8_t pipe, 
 	return 0;
 }
 
-
-static uint_fast16_t /* volatile */ g_usb0_function_PipeIgnore [16];
-
 // Эта функция не должна общаться с DCPCTR - она универсальная
 static uint_fast8_t usbd_read_data(PCD_TypeDef * const USBx, uint_fast8_t pipe, uint8_t * data, unsigned size, unsigned * readcnt)
 {
@@ -320,7 +317,7 @@ static uint_fast8_t usbd_read_data(PCD_TypeDef * const USBx, uint_fast8_t pipe, 
 		return 1;	// error
 	}
 
-	g_usb0_function_PipeIgnore [pipe] = 0;
+	ASSERT(size == 0 || data != NULL);
 	unsigned count = 0;
 	unsigned size8 = (USBx->CFIFOCTR & USB_CFIFOCTR_DTLN) >> USB_CFIFOCTR_DTLN_SHIFT;
 	size = ulmin16(size, size8);
@@ -341,6 +338,12 @@ static uint_fast8_t usbd_read_data(PCD_TypeDef * const USBx, uint_fast8_t pipe, 
 static uint_fast8_t
 usbd_write_data(PCD_TypeDef * const USBx, uint_fast8_t pipe, const uint8_t * data, unsigned size)
 {
+	if (data == NULL && size != 0)
+	{
+		TP();
+		for (;;)
+			;
+	}
 #if 0
 	if (data != NULL && size != 0)
 		PRINTF(PSTR("usbd_write_data, pipe=%d, size=%d, data[]={%02x,%02x,%02x,%02x,%02x,..}\n"), pipe, size, data [0], data [1], data [2], data [3], data [4]);
@@ -369,8 +372,7 @@ usbd_write_data(PCD_TypeDef * const USBx, uint_fast8_t pipe, const uint8_t * dat
 		PRINTF(PSTR("usbd_write_data: usbd_wait_fifo error, USBx->CFIFOSEL=%08lX\n"), (unsigned long) USBx->CFIFOSEL);
 		return 1;	// error
 	}
-
-	g_usb0_function_PipeIgnore [pipe] = 0;
+	ASSERT(size == 0 || data != NULL);
     while (size --)
 	{
     	USBx->CFIFO.UINT8 [R_IO_HH] = * data ++; // HH=3
@@ -441,6 +443,8 @@ static void usbd_handle_ctrt(PCD_HandleTypeDef *hpcd, uint_fast8_t ctsq)
 		// End of sending data trough EP0
 		// xxx_TxSent
 		//pdev->ep0_state = USBD_EP0_STATUS_IN;
+		//TP();
+        /* TX COMPLETE */
 		HAL_PCD_DataInStageCallback(hpcd, 0);
 		USBx->DCPCTR |= USB_DCPCTR_CCPL;	// CCPL
 		(void) USBx->DCPCTR;
@@ -543,7 +547,6 @@ static void usbd_pipes_enable(PCD_TypeDef * const Instance)
 		* PIPEnCTR = 0x0001;	// STALL->BUF
 		Instance->NRDYENB |= (1u << pipe);
 
-		g_usb0_function_PipeIgnore [pipe] = 0;
 	}
 	for (i = 0; i < sizeof brdyenbpipes2 / sizeof brdyenbpipes2 [0]; ++ i)
 	{
@@ -960,6 +963,10 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 
 		if ((bempsts & (1U << 0)) != 0)	// PIPE0, DCP
 		{
+			USBD_EndpointTypeDef * const pep = & pdev->ep_in [0];
+			//ASSERT(pdev->ep0_state != USBD_EP0_DATA_IN || pep->rem_length == 0 || hpcd->IN_ep [0].xfer_buff != NULL);
+			//TP();
+			/* TX COMPLETE */
 			HAL_PCD_DataInStageCallback(hpcd, 0);
 
 			//if (control_transmit2(pdev) != 0)
@@ -984,7 +991,8 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 					continue;
 				//usbd_handler_nrdy(pdev, pipe);
                 /*if (pipe_ctrl[i].enable) */ {
-                    if (((get_pid(USBx, pipe) & DEVDRV_USBF_PID_STALL) != DEVDRV_USBF_PID_STALL) && ((get_pid(USBx, pipe) & DEVDRV_USBF_PID_STALL2) != DEVDRV_USBF_PID_STALL2)) {
+					const uint_fast8_t pid = get_pid(USBx, pipe);
+                    if (((pid & DEVDRV_USBF_PID_STALL) != DEVDRV_USBF_PID_STALL) && ((pid & DEVDRV_USBF_PID_STALL2) != DEVDRV_USBF_PID_STALL2)) {
                         set_pid(USBx, pipe, DEVDRV_USBF_PID_BUF);
                     }
                 }
@@ -1024,6 +1032,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 				{
 					//usbd_handler_brdy_bulk_in8(pdev, pipe, ep);	// usbd_write_data inside
 					USB_OTG_EPTypeDef * const ep = & hpcd->IN_ep [epnt & 0x7F];
+					ASSERT(ep->xfer_len == 0 || ep->xfer_buff != NULL);
 				  	if (usbd_write_data(USBx, ep->pipe_num, ep->xfer_buff, ep->xfer_len) == 0)
 				  	{
 						ep->xfer_buff += ep->xfer_len;
@@ -1034,6 +1043,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 				  		// todo: not control ep
 				  		//control_stall(pdev);
 				  	}
+					//TP();
 					HAL_PCD_DataInStageCallback(hpcd, 0x7f & epnt);
 				}
 				else
@@ -1497,9 +1507,7 @@ HAL_StatusTypeDef USB_EP0StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDe
 	{
 		//PRINTF(PSTR("USB_EP0StartXfer: IN direction, ep->xfer_len=%d, ep->maxpacket=%d\n"), (int) ep->xfer_len, (int) ep->maxpacket);
 
-		USBx->DCPCTR = (USBx->DCPCTR & ~ USB_DCPCTR_PID) |
-			DEVDRV_USBF_PID_NAK * (1uL << USB_DCPCTR_PID_SHIFT) |	// PID 00: NAK
-			0;
+		set_pid(USBx, pipe, DEVDRV_USBF_PID_NAK);
 
 		/* IN endpoint */
 		if (ep->xfer_len == 0)
@@ -1514,6 +1522,8 @@ HAL_StatusTypeDef USB_EP0StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDe
 			{
 				ep->xfer_len = ep->maxpacket;
 			}
+			ASSERT(ep->xfer_len == 0 || ep->xfer_buff != NULL);
+
 			int err = usbd_write_data(USBx, pipe, ep->xfer_buff, ep->xfer_len);	// pipe=0: DCP
 			////ASSERT(err == 0);
 			// эти манипуляци пока не по оригиналу
@@ -1521,9 +1531,7 @@ HAL_StatusTypeDef USB_EP0StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDe
 			ep->xfer_count += ep->xfer_len;
 		}
 
-		USBx->DCPCTR = (USBx->DCPCTR & ~ USB_DCPCTR_PID) |
-			DEVDRV_USBF_PID_BUF * (1uL << USB_DCPCTR_PID_SHIFT) |	// PID 01: BUF response (depending on the buffer state)
-			0;
+		set_pid(USBx, pipe, DEVDRV_USBF_PID_BUF);
 	}
 	else
 	{
@@ -1550,6 +1558,8 @@ HAL_StatusTypeDef USB_EP0StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDe
   */
 HAL_StatusTypeDef USB_EPStartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDef *ep, uint_fast8_t dma)
 {
+	const uint_fast8_t pipe = ep->pipe_num;	// Renesas specific parameter
+	ASSERT(dma == 0);
 	if (ep->is_in == 1)
 	{
 		//PRINTF(PSTR("USB_EPStartXfer IN, ep->num=%d, ep->pipe_num=%d\n"), (int) ep->num, (int) ep->pipe_num);
@@ -1926,6 +1936,7 @@ HAL_StatusTypeDef USB_CoreInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_CfgTyp
 {
 	USBx->SUSPMODE &= ~ USB_SUSPMODE_SUSPM;	// SUSPM 0: The clock supplied to this module is stopped.
 
+	// This setting shared for USB200 and USB201
 	SYSCFG0_0 = (SYSCFG0_0 & ~ (USB_SYSCFG_UPLLE | USB_SYSCFG_UCKSEL)) |
 		1 * USB_SYSCFG_UPLLE |	// UPLLE 1: Enables operation of the internal PLL.
 		1 * USB_SYSCFG_UCKSEL |	// UCKSEL 1: The 12-MHz EXTAL clock is selected.
@@ -1964,7 +1975,7 @@ HAL_StatusTypeDef USB_DevInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_CfgType
 	USBx->SYSCFG0 |= USB_SYSCFG_USBE;	// USBE 1: USB module operation is enabled.
 	(void) USBx->SYSCFG0;
 
-	PRINTF("USB_DevInit: cfg->speed=%d\n", (int) cfg->speed);
+	//PRINTF("USB_DevInit: cfg->speed=%d\n", (int) cfg->speed);
 	USBx->SYSCFG0 = (USBx->SYSCFG0 & ~ (USB_SYSCFG_HSE)) |
 			(cfg->speed == USBD_SPEED_HIGH) * USB_SYSCFG_HSE |	// HSE
 			0;
@@ -2720,48 +2731,6 @@ HAL_StatusTypeDef USB_EPStartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDef
 		/* IN endpoint */
 		USB_OTG_INEndpointTypeDef * const inep = USBx_INEP(ep->num);
 
-	#if 0
-		while (! (((inep->DTXFSTS & USB_OTG_DTXFSTS_INEPTFSAV) >> USB_OTG_DTXFSTS_INEPTFSAV_Pos) >= ((ep->xfer_len + 3) / 4)))
-		{
-			PRINTF(PSTR("ep%d: avl=%04lX, need=%04lX, sts=%08lX\n"), ep->num, ((inep->DTXFSTS & USB_OTG_DTXFSTS_INEPTFSAV) >> USB_OTG_DTXFSTS_INEPTFSAV_Pos), ((ep->xfer_len + 3) / 4), USBx->GRSTCTL);
-			USB_FlushTxFifo(USBx, ep->num);
-			//ASSERT(((inep->DTXFSTS & USB_OTG_DTXFSTS_INEPTFSAV) >> USB_OTG_DTXFSTS_INEPTFSAV_Pos) >= ((ep->xfer_len + 3) / 4));
-		}
-		switch (ep->num)
-		{
-		case 0:
-			ASSERT(((inep->DTXFSTS & USB_OTG_DTXFSTS_INEPTFSAV) >> USB_OTG_DTXFSTS_INEPTFSAV_Pos) >= ((ep->xfer_len + 3) / 4));
-			break;
-		case 1:
-			ASSERT(((inep->DTXFSTS & USB_OTG_DTXFSTS_INEPTFSAV) >> USB_OTG_DTXFSTS_INEPTFSAV_Pos) >= ((ep->xfer_len + 3) / 4));
-			break;
-		case 2:
-			ASSERT(((inep->DTXFSTS & USB_OTG_DTXFSTS_INEPTFSAV) >> USB_OTG_DTXFSTS_INEPTFSAV_Pos) >= ((ep->xfer_len + 3) / 4));
-			break;
-		case 3:
-			ASSERT(((inep->DTXFSTS & USB_OTG_DTXFSTS_INEPTFSAV) >> USB_OTG_DTXFSTS_INEPTFSAV_Pos) >= ((ep->xfer_len + 3) / 4));
-			break;
-		case 4:
-			ASSERT(((inep->DTXFSTS & USB_OTG_DTXFSTS_INEPTFSAV) >> USB_OTG_DTXFSTS_INEPTFSAV_Pos) >= ((ep->xfer_len + 3) / 4));
-			break;
-		case 5:
-			ASSERT(((inep->DTXFSTS & USB_OTG_DTXFSTS_INEPTFSAV) >> USB_OTG_DTXFSTS_INEPTFSAV_Pos) >= ((ep->xfer_len + 3) / 4));
-			break;
-		case 6:
-			ASSERT(((inep->DTXFSTS & USB_OTG_DTXFSTS_INEPTFSAV) >> USB_OTG_DTXFSTS_INEPTFSAV_Pos) >= ((ep->xfer_len + 3) / 4));
-			break;
-		case 7:
-			ASSERT(((inep->DTXFSTS & USB_OTG_DTXFSTS_INEPTFSAV) >> USB_OTG_DTXFSTS_INEPTFSAV_Pos) >= ((ep->xfer_len + 3) / 4));
-			break;
-		case 8:
-			ASSERT(((inep->DTXFSTS & USB_OTG_DTXFSTS_INEPTFSAV) >> USB_OTG_DTXFSTS_INEPTFSAV_Pos) >= ((ep->xfer_len + 3) / 4));
-			break;
-		case 9:
-			ASSERT(((inep->DTXFSTS & USB_OTG_DTXFSTS_INEPTFSAV) >> USB_OTG_DTXFSTS_INEPTFSAV_Pos) >= ((ep->xfer_len + 3) / 4));
-			break;
-		}
-	#endif
-
 		/* Zero Length Packet? */
 		if (ep->xfer_len == 0)
 		{
@@ -3039,7 +3008,7 @@ void USB_ReadPacket(USB_OTG_GlobalTypeDef *USBx, uint8_t *dest, uint_fast16_t le
 	uint_fast32_t i = 0;
 	uint_fast32_t count32b = (len + 3) / 4;
 
-	for ( i = 0; i < count32b; i++, dest += 4 )
+	for ( i = 0; i < count32b; i ++, dest += 4 )
 	{
 		* (KEYWORDPACKED uint32_t *) dest = USBx_DFIFO(0);
 	}
@@ -3231,12 +3200,12 @@ HAL_StatusTypeDef USB_HC_StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_HCTypeDe
   if (dma)
   {
     /* xfer_buff MUST be 32-bits aligned */
-    USBx_HC(hc->ch_num)->HCDMA = (uint32_t)hc->xfer_buff;
+    USBx_HC(hc->ch_num)->HCDMA = (uintptr_t) hc->xfer_buff;
   }
 
   is_oddframe = (USBx_HOST->HFNUM & 0x01) ? 0 : 1;
   USBx_HC(hc->ch_num)->HCCHAR &= ~ USB_OTG_HCCHAR_ODDFRM;
-  USBx_HC(hc->ch_num)->HCCHAR |= (is_oddframe << 29);
+  USBx_HC(hc->ch_num)->HCCHAR |= (is_oddframe << USB_OTG_HCCHAR_ODDFRM_Pos);
 
   /* Set host channel enable */
   tmpreg = USBx_HC(hc->ch_num)->HCCHAR;
@@ -4115,32 +4084,32 @@ void HAL_PCD_SetState(PCD_HandleTypeDef *hpcd, PCD_StateTypeDef state)
   */
 HAL_StatusTypeDef HAL_PCD_Init(PCD_HandleTypeDef *hpcd)
 { 
-  uint32_t i = 0;
+	uint_fast8_t i;
 
-  /* Check the PCD handle allocation */
-  if(hpcd == NULL)
-  {
-    return HAL_ERROR;
-  }
-  /* Check the parameters */
-  //assert_param(IS_PCD_ALL_INSTANCE(hpcd->Instance));
+	/* Check the PCD handle allocation */
+	if (hpcd == NULL)
+	{
+		return HAL_ERROR;
+	}
+	/* Check the parameters */
+	//assert_param(IS_PCD_ALL_INSTANCE(hpcd->Instance));
 
-  HAL_PCD_SetState(hpcd, HAL_PCD_STATE_BUSY);
-  
-  /* Init the low level hardware : GPIO, CLOCK, NVIC... */
-  HAL_PCD_MspInit(hpcd);
+	HAL_PCD_SetState(hpcd, HAL_PCD_STATE_BUSY);
 
-  /* Disable the Interrupts */
- __HAL_PCD_DISABLE(hpcd);
+	/* Init the low level hardware : GPIO, CLOCK, NVIC... */
+	HAL_PCD_MspInit(hpcd);
 
- /*Init the Core (common init.) */
- USB_CoreInit(hpcd->Instance, & hpcd->Init);
+	/* Disable the Interrupts */
+	__HAL_PCD_DISABLE(hpcd);
 
- /* Force Device Mode*/
- USB_SetCurrentMode(hpcd->Instance , USB_OTG_DEVICE_MODE);
+	/* Init the Core (common init.) */
+	USB_CoreInit(hpcd->Instance, & hpcd->Init);
+
+	/* Force Device Mode*/
+	USB_SetCurrentMode(hpcd->Instance , USB_OTG_DEVICE_MODE);
 
 	/* Init endpoints structures */
-	for (i = 0; i < 15 ; i++)
+	for (i = 0; i < 15 ; i ++)
 	{
 		/* Init ep structure */
 		hpcd->IN_ep[i].is_in = 1;
@@ -4155,7 +4124,7 @@ HAL_StatusTypeDef HAL_PCD_Init(PCD_HandleTypeDef *hpcd)
 		hpcd->IN_ep[i].xfer_len = 0;
 	}
 
-	for (i = 0; i < 15 ; i++)
+	for (i = 0; i < 15 ; i ++)
 	{
 		hpcd->OUT_ep[i].is_in = 0;
 		hpcd->OUT_ep[i].num = i;
@@ -4198,23 +4167,23 @@ HAL_StatusTypeDef HAL_PCD_Init(PCD_HandleTypeDef *hpcd)
 	HAL_PCD_SetState(hpcd, HAL_PCD_STATE_READY);
 
 #ifdef USB_OTG_GLPMCFG_LPMEN
- /* Activate LPM */
- if (hpcd->Init.lpm_enable == USB_ENABLE)
- {
-   HAL_PCDEx_ActivateLPM(hpcd);
- }
+	/* Activate LPM */
+	if (hpcd->Init.lpm_enable == USB_ENABLE)
+	{
+		HAL_PCDEx_ActivateLPM(hpcd);
+	}
 #endif /* USB_OTG_GLPMCFG_LPMEN */
 
 #ifdef USB_OTG_GCCFG_BCDEN
- /* Activate Battery charging */
- if (hpcd->Init.battery_charging_enable == USB_ENABLE)
- {
-   HAL_PCDEx_ActivateBCD(hpcd);
- }
+	/* Activate Battery charging */
+	if (hpcd->Init.battery_charging_enable == USB_ENABLE)
+	{
+		HAL_PCDEx_ActivateBCD(hpcd);
+	}
 #endif /* USB_OTG_GCCFG_BCDEN */
 
- USB_DevDisconnect (hpcd->Instance);
- return HAL_OK;
+	USB_DevDisconnect (hpcd->Instance);
+	return HAL_OK;
 }
 
 /**
@@ -4224,23 +4193,23 @@ HAL_StatusTypeDef HAL_PCD_Init(PCD_HandleTypeDef *hpcd)
   */
 HAL_StatusTypeDef HAL_PCD_DeInit(PCD_HandleTypeDef *hpcd)
 {
-  /* Check the PCD handle allocation */
-  if(hpcd == NULL)
-  {
-    return HAL_ERROR;
-  }
+	/* Check the PCD handle allocation */
+	if(hpcd == NULL)
+	{
+		return HAL_ERROR;
+	}
 
-  HAL_PCD_SetState(hpcd, HAL_PCD_STATE_BUSY);
+	HAL_PCD_SetState(hpcd, HAL_PCD_STATE_BUSY);
 
-  /* Stop Device */
-  HAL_PCD_Stop(hpcd);
+	/* Stop Device */
+	HAL_PCD_Stop(hpcd);
 
-  /* DeInit the low level hardware */
-  HAL_PCD_MspDeInit(hpcd);
+	/* DeInit the low level hardware */
+	HAL_PCD_MspDeInit(hpcd);
 
-  HAL_PCD_SetState(hpcd, HAL_PCD_STATE_RESET);
-  
-  return HAL_OK;
+	HAL_PCD_SetState(hpcd, HAL_PCD_STATE_RESET);
+
+	return HAL_OK;
 }
 
 /**
@@ -4470,6 +4439,7 @@ uint16_t HAL_PCD_EP_GetRxCount(PCD_HandleTypeDef *hpcd, uint_fast8_t ep_addr)
   */
 HAL_StatusTypeDef HAL_PCD_EP_Transmit(PCD_HandleTypeDef *hpcd, uint_fast8_t ep_addr, const uint8_t *pBuf, uint_fast32_t len)
 {
+	ASSERT(len == 0 || pBuf != NULL);
 
 	USB_OTG_EPTypeDef * const ep = & hpcd->IN_ep [ep_addr & 0x7F];
 
@@ -4605,39 +4575,13 @@ HAL_StatusTypeDef HAL_PCD_EP_Flush(PCD_HandleTypeDef *hpcd, uint_fast8_t ep_addr
 }
 
 /**
-  * @}
-  */
-
-
-
-
-
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
-
-/** @addtogroup USBD_OTG_DRIVER
-  * @{
-  */
-
-/** @defgroup USBD_CONF
-  * @brief usb otg low level driver configuration file
-  * @{
-  */
-
-/** @defgroup USBD_CONF_Exported_Defines
-  * @{
-  */
-
-
-static void Error_Handler(void);
-
-/**
   * @brief  Setup stage callback
   * @param  hpcd: PCD handle
   * @retval None
   */
 void HAL_PCD_SetupStageCallback(PCD_HandleTypeDef *hpcd)
 {
-  USBD_LL_SetupStage((USBD_HandleTypeDef*)hpcd->pData, hpcd->PSetup);
+	USBD_LL_SetupStage((USBD_HandleTypeDef*)hpcd->pData, hpcd->PSetup);
 }
 
 /**
@@ -4648,7 +4592,7 @@ void HAL_PCD_SetupStageCallback(PCD_HandleTypeDef *hpcd)
   */
 void HAL_PCD_DataOutStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum)
 {
-  USBD_LL_DataOutStage((USBD_HandleTypeDef*)hpcd->pData, epnum, hpcd->OUT_ep [epnum].xfer_buff);
+	USBD_LL_DataOutStage((USBD_HandleTypeDef*)hpcd->pData, epnum, hpcd->OUT_ep [epnum].xfer_buff);
 }
 
 /**
@@ -4659,7 +4603,7 @@ void HAL_PCD_DataOutStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum)
   */
 void HAL_PCD_DataInStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum)
 {
-  USBD_LL_DataInStage((USBD_HandleTypeDef*)hpcd->pData, epnum, hpcd->IN_ep [epnum].xfer_buff);
+	USBD_LL_DataInStage((USBD_HandleTypeDef*)hpcd->pData, epnum, hpcd->IN_ep [epnum].xfer_buff);
 }
 
 /**
@@ -4669,7 +4613,7 @@ void HAL_PCD_DataInStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum)
   */
 void HAL_PCD_SOFCallback(PCD_HandleTypeDef *hpcd)
 {
-  USBD_LL_SOF((USBD_HandleTypeDef*)hpcd->pData);
+	USBD_LL_SOF((USBD_HandleTypeDef*)hpcd->pData);
 }
 
 /**
@@ -5441,6 +5385,7 @@ USBD_StatusTypeDef  USBD_CtlSendData(USBD_HandleTypeDef  *pdev,
                               const uint8_t *pbuf,
                                uint16_t len)
 {
+	ASSERT(len == 0 || pbuf != NULL);
 	/* Set EP0 State */
 	pdev->ep0_state = USBD_EP0_DATA_IN;
 	pdev->ep_in[0].total_length = len;
@@ -5463,6 +5408,7 @@ USBD_StatusTypeDef  USBD_CtlContinueSendData (USBD_HandleTypeDef  *pdev,
                                        const uint8_t *pbuf,
                                        uint16_t len)
 {
+	ASSERT(len == 0 || pbuf != NULL);
 	/* Start the next transfer */
 	USBD_LL_Transmit(pdev, 0x00, pbuf, len);
 
@@ -5634,6 +5580,14 @@ USBD_StatusTypeDef  USBD_StdEPReq(USBD_HandleTypeDef * pdev, USBD_SetupReqTypede
     break;
 
   case USB_REQ_GET_STATUS:
+	  /*
+	         Например, стандартный запрос GetStatus может быть направлен на устройство,
+	  	   интерфейс или конечную точку.
+	  	   Когда он направлен на устройство, он возвращает флаги, показывающие статус удаленного пробуждения (remote wakeup),
+	  	   и является ли устройство самопитаемым.
+	  	   Однако тот же запрос, направленный к интерфейсу,
+	  	   всегда вернет 0, или если запрос будет направлен на конечную точку, то он вернет состояние флага halt (флаг останова) для конечной точки.
+	  */
  	//PRINTF(PSTR("USBD_StdEPReq: USB_REQ_GET_STATUS: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"),
 	//	req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
     switch (pdev->dev_state)
@@ -5647,7 +5601,7 @@ USBD_StatusTypeDef  USBD_StdEPReq(USBD_HandleTypeDef * pdev, USBD_SetupReqTypede
 
     case USBD_STATE_CONFIGURED:
       pep = ((ep_addr & 0x80) != 0) ? &pdev->ep_in[ep_addr & 0x7F]: &pdev->ep_out[ep_addr & 0x7F];
-      if(USBD_LL_IsStallEP(pdev, ep_addr))
+      if (USBD_LL_IsStallEP(pdev, ep_addr))
       {
 		pep->epstatus [0] = 0x01;
 		pep->epstatus [1] = 0x00;
@@ -5658,7 +5612,7 @@ USBD_StatusTypeDef  USBD_StdEPReq(USBD_HandleTypeDef * pdev, USBD_SetupReqTypede
         pep->epstatus [1] = 0x00;
       }
 
-      USBD_CtlSendData (pdev, pep->epstatus, 2);
+      USBD_CtlSendData(pdev, pep->epstatus, 2);
       break;
 
     default:
@@ -5812,7 +5766,7 @@ static void USBD_GetDescriptor(USBD_HandleTypeDef *pdev,
 	if ((len != 0) && (req->wLength != 0))
 	{
 		//PRINTF(PSTR("USBD_GetDescriptor: %02X, wLength=%04X (%d dec), ix=%u, datalen=%u\n"), HI_BYTE(req->wValue), req->wLength, req->wLength, LO_BYTE(req->wValue), len);
-		USBD_CtlSendData (pdev, pbuf, ulmin16(len, req->wLength));
+		USBD_CtlSendData(pdev, pbuf, ulmin16(len, req->wLength));
 	}
 
 }
@@ -5916,7 +5870,7 @@ static void USBD_SetConfig(USBD_HandleTypeDef *pdev,
 {
 
 	const uint_fast8_t  cfgidx = LO_BYTE(req->wValue);
-	PRINTF(PSTR("USBD_SetConfig: cfgidx=%d, pdev->dev_state=%d\n"), cfgidx, pdev->dev_state);
+	//PRINTF(PSTR("USBD_SetConfig: cfgidx=%d, pdev->dev_state=%d\n"), cfgidx, pdev->dev_state);
 
 	switch (pdev->dev_state)
 	{
@@ -5925,7 +5879,7 @@ static void USBD_SetConfig(USBD_HandleTypeDef *pdev,
 		{
 			pdev->dev_config [0] = cfgidx;
 			pdev->dev_state = USBD_STATE_CONFIGURED;
-			if(USBD_SetClassConfig(pdev, cfgidx) == USBD_FAIL)
+			if (USBD_SetClassConfig(pdev, cfgidx) == USBD_FAIL)
 			{
 				TP();
 				USBD_CtlError(pdev, req);
@@ -5957,7 +5911,7 @@ static void USBD_SetConfig(USBD_HandleTypeDef *pdev,
 
 			/* set new configuration */
 			pdev->dev_config [0] = cfgidx;
-			if(USBD_SetClassConfig(pdev, cfgidx) == USBD_FAIL)
+			if (USBD_SetClassConfig(pdev, cfgidx) == USBD_FAIL)
 			{
 				TP();
 				USBD_CtlError(pdev, req);
@@ -6004,12 +5958,11 @@ static void USBD_GetConfig(USBD_HandleTypeDef *pdev,
 		{
 		case USBD_STATE_ADDRESSED:
 			pdev->dev_default_config [0] = 0;
-			USBD_CtlSendData (pdev, pdev->dev_default_config, 1);
+			USBD_CtlSendData(pdev, pdev->dev_default_config, 1);
 			break;
 
 		case USBD_STATE_CONFIGURED:
-
-			USBD_CtlSendData (pdev, pdev->dev_config, 1);
+			USBD_CtlSendData(pdev, pdev->dev_config, 1);
 			break;
 
 		default:
@@ -6027,9 +5980,18 @@ static void USBD_GetConfig(USBD_HandleTypeDef *pdev,
 * @param  req: usb request
 * @retval status
 */
+// device status
 static void USBD_GetStatus(USBD_HandleTypeDef *pdev,
                            const USBD_SetupReqTypedef *req)
 {
+	/*
+	       Например, стандартный запрос GetStatus может быть направлен на устройство,
+		   интерфейс или конечную точку.
+		   Когда он направлен на устройство, он возвращает флаги, показывающие статус удаленного пробуждения (remote wakeup),
+		   и является ли устройство самопитаемым.
+		   Однако тот же запрос, направленный к интерфейсу,
+		   всегда вернет 0, или если запрос будет направлен на конечную точку, то он вернет состояние флага halt (флаг останова) для конечной точки.
+	*/
 
 	//PRINTF(PSTR("USBD_GetStatus:\n"));
 	switch (pdev->dev_state)
@@ -6037,7 +5999,7 @@ static void USBD_GetStatus(USBD_HandleTypeDef *pdev,
 	case USBD_STATE_ADDRESSED:
 	case USBD_STATE_CONFIGURED:
 
-		#if (USBD_SELF_POWERED == 1)
+		#if USBD_SELF_POWERED != 0
 			pdev->dev_config_status [0] = USB_CONFIG_SELF_POWERED;
 			pdev->dev_config_status [1] = 0;
 		#else
@@ -6050,7 +6012,7 @@ static void USBD_GetStatus(USBD_HandleTypeDef *pdev,
 			pdev->dev_config_status [0] |= USB_CONFIG_REMOTE_WAKEUP;
 		}
 
-		USBD_CtlSendData (pdev, pdev->dev_config_status, 2);
+		USBD_CtlSendData(pdev, pdev->dev_config_status, 2);
 		break;
 
 	default :
@@ -6149,7 +6111,7 @@ USBD_StatusTypeDef  USBD_StdDevReq(USBD_HandleTypeDef *pdev, const USBD_SetupReq
 		break;
 
 	case USB_REQ_GET_STATUS:
-		USBD_GetStatus (pdev, req);
+		USBD_GetStatus (pdev, req);	// device status
 		break;
 
 	case USB_REQ_SET_FEATURE:
@@ -6300,6 +6262,7 @@ USBD_StatusTypeDef USBD_LL_DataInStage(USBD_HandleTypeDef *pdev, uint_fast8_t ep
 			if (pep->rem_length > pep->maxpacket)
 			{
 				pep->rem_length -=  pep->maxpacket;
+				ASSERT(pep->rem_length == 0 || pdata != NULL);
 
 				USBD_CtlContinueSendData (pdev,
 									  pdata,
@@ -10167,7 +10130,7 @@ void HAL_PCD_MspDeInit(PCD_HandleTypeDef *pcdHandle)
   * @param  pdev: Device handle
   * @retval USBD Status
   */
-static USBD_StatusTypeDef  USBD_LL_Init(PCD_HandleTypeDef * hpcd, USBD_HandleTypeDef *pdev)
+USBD_StatusTypeDef  USBD_LL_Init(PCD_HandleTypeDef * hpcd, USBD_HandleTypeDef *pdev)
 {
 	/* Link The driver to the stack */
 	hpcd->pData = pdev;
@@ -10257,10 +10220,10 @@ static USBD_StatusTypeDef  USBD_LL_Init(PCD_HandleTypeDef * hpcd, USBD_HandleTyp
   * @param  pdev: Device handle
   * @retval USBD Status
   */
-static USBD_StatusTypeDef  USBD_LL_DeInit (USBD_HandleTypeDef *pdev)
+USBD_StatusTypeDef  USBD_LL_DeInit(USBD_HandleTypeDef *pdev)
 {
-  HAL_PCD_DeInit((PCD_HandleTypeDef*)pdev->pData);
-  return USBD_OK;
+	HAL_PCD_DeInit((PCD_HandleTypeDef*)pdev->pData);
+	return USBD_OK;
 }
 
 /**
@@ -10271,7 +10234,7 @@ static USBD_StatusTypeDef  USBD_LL_DeInit (USBD_HandleTypeDef *pdev)
 * @param  id: Low level core index
 * @retval None
 */
-static USBD_StatusTypeDef USBD_Init2(USBD_HandleTypeDef *pdev)
+USBD_StatusTypeDef USBD_Init2(USBD_HandleTypeDef *pdev)
 {
 	/* Check whether the USB Host handle is valid */
 	if(pdev == NULL)
@@ -10302,7 +10265,7 @@ USBD_StatusTypeDef USBD_DeInit(USBD_HandleTypeDef *pdev)
 {
 	uint_fast8_t di;
 	/* Set Default State */
-	pdev->dev_state  = USBD_STATE_DEFAULT;
+	pdev->dev_state = USBD_STATE_DEFAULT;
 
 	/* Free Class Resources */
 	for (di = 0; di < pdev->nClasses; ++ di)
@@ -10351,7 +10314,7 @@ static void hardware_usbd_initialize(void)
 
 	// поддержка работы бутлоадера на платах, где есть подпитка VBUS от DP через защитные диоды
 	device_vbusbefore = hardware_usbd_get_vbusnow();
-	PRINTF(PSTR("hardware_usbd_initialize: device_vbusbefore=%d\n"), (int) device_vbusbefore);
+	//PRINTF(PSTR("hardware_usbd_initialize: device_vbusbefore=%d\n"), (int) device_vbusbefore);
 
 #if WITHUSBUAC
 	USBD_AddClass(& hUsbDevice, & USBD_CLASS_UAC);
@@ -11474,6 +11437,7 @@ USBH_StatusTypeDef  USBH_ReEnumerate(USBH_HandleTypeDef *phost)
 	return USBH_OK;
 }
 
+#if defined (WITHUSBHW_HOST)
 
 /**
   * @brief  HCD_Init
@@ -11547,6 +11511,7 @@ USBH_StatusTypeDef  USBH_DeInit(USBH_HandleTypeDef *phost)
 	return USBH_OK;
 }
 
+#endif /* defined (WITHUSBHW_HOST) */
 
 /*
  * user callback definition
