@@ -1048,10 +1048,46 @@ static USBD_StatusTypeDef USBD_DFU_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 	//hdfu = (USBD_DFU_HandleTypeDef*) pdev->pClassData;
 	//hdfu = & gdfu;
 
-	if (req->bRequest == DFU_VENDOR_CODE)
+	// WCID devices support
+	/*
+		Extended properties OS descriptors are associated with a particular interface or function,
+		so a device can have as many descriptors as it has interfaces or functions.
+	*/
+	// В документе от Микрософт по другому расположены данные в запросе: LO_BYTE(req->wValue) это результат запуска и тестирования
+	if (req->bRequest == DFU_VENDOR_CODE && LO_BYTE(req->wValue) == INTERFACE_DFU_CONTROL && req->wIndex == 0x05)
 	{
-		TP();
-		PRINTF(PSTR("0 USBD_DFU_Setup: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
+		PRINTF(PSTR("MS USBD_DFU_Setup: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
+		return USBD_OK;
+		// https://docs.microsoft.com/en-us/windows-hardware/drivers/usbcon/microsoft-defined-usb-descriptors
+		// https://docs.microsoft.com/en-us/windows-hardware/drivers/usbcon/microsoft-os-1-0-descriptors-specification
+		// Microsoft Compatible ID Feature Descriptor
+		// non-const: на всякий случай - эта структура передается и по DMA. А если FLASH MEMORY для таких операций не подходит?
+		static USBALIGN_BEGIN uint8_t MsftCompFeatureDescrProto [40] =
+		{
+			0x28, 0x00, 0x00, 0x00,	// Descriptor length (40 bytes)
+			0x00, 0x01,	// Version ('1.0')
+			0x04, 0x00,	// Compatibility ID Descriptor index
+			0x01,							// Number of sections (1)
+			0x00, 0x00, 0x00, 0x00,			// Reserved
+			0x00, 0x00, 0x00,				// Reserved
+			INTERFACE_DFU_CONTROL,			// Interface Number
+			0x01,							// reserved
+#if 0
+			'W', 'I', 'N', 'U', 'S', 'B', 0x00, 0x00,				// Compatible ID
+#else
+			'L', 'I', 'B', 'U', 'S', 'B', '0', 0x00,				// Compatible ID
+			//'L', 'I', 'B', 'U', 'S', 'B', 'K', 0x00,				// Compatible ID
+#endif
+			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,			// Sub-Compatible ID
+			0x00, 0x00, 0x00, 0x00,			// Reserved
+			0x00, 0x00,						// Reserved
+		} USBALIGN_END;
+
+
+		// WCID devices support
+		USBD_CtlSendData(pdev, MsftCompFeatureDescrProto, ulmin16(sizeof MsftCompFeatureDescrProto, req->wLength));
+		return USBD_OK;
+
 	}
 	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
 
@@ -1116,14 +1152,15 @@ static USBD_StatusTypeDef USBD_DFU_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
           if (pdev->dev_state == USBD_STATE_CONFIGURED)
           {
         	  	static USBALIGN_BEGIN uint8_t status_info [2] USBALIGN_END;
-				PRINTF(PSTR("1 USBD_DFU_Setup: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
+				PRINTF(PSTR("1 USBD_DFU_Setup USB_REQ_GET_STATUS: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
             	TP();
 				USBD_CtlSendData(pdev, status_info, 2);
           }
           break;
         case USB_REQ_GET_INTERFACE:
          {
-         	TP();
+			// не видел вызовов этой функции
+        	 	TP();
          	break;
          }
 
@@ -1137,14 +1174,6 @@ static USBD_StatusTypeDef USBD_DFU_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
     		//PRINTF(PSTR("1 USBD_DFU_Setup: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
         break;
      }
-
-      case USB_REQ_TYPE_VENDOR:
-        switch (req->bRequest)
-        {
-        default:
-       		//PRINTF(PSTR("2 USBD_DFU_Setup: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
-          break;
-       }
 
     default:
     	break;

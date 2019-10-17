@@ -524,6 +524,21 @@ static USBD_StatusTypeDef USBD_UAC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 	static USBALIGN_BEGIN uint8_t buff [32] USBALIGN_END;	// was: 7
 	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
 
+	// WCID devices support
+	// В документе от Микрософт по другому расположены данные в запросе: LO_BYTE(req->wValue) это результат запуска и тестирования
+	if (req->bRequest == DFU_VENDOR_CODE &&
+			(
+#if WITHUSBUACIN2
+					LO_BYTE(req->wValue) == INTERFACE_AUDIO_CONTROL_RTS ||
+#endif /* WITHUSBUACIN2 */
+					LO_BYTE(req->wValue) == INTERFACE_AUDIO_CONTROL_MIKE ||
+					LO_BYTE(req->wValue) == INTERFACE_AUDIO_CONTROL_SPK ||
+					0)
+			&& req->wIndex == 0x05)
+	{
+		PRINTF(PSTR("MS USBD_UAC_Setup: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
+		return USBD_OK;
+	}
 	//PRINTF(PSTR("USBD_UAC_Setup: bRequest=%02X, wIndex=%04X, wLength=%04X, wValue=%04X (interfacev=%02X)\n"), req->bRequest, req->wIndex, req->wLength, req->wValue, interfacev);
 	unsigned len = 0;
 	if ((req->bmRequest & USB_REQ_TYPE_DIR) != 0)
@@ -595,8 +610,9 @@ static USBD_StatusTypeDef USBD_UAC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 		case USB_REQ_TYPE_STANDARD:
 			switch (req->bRequest)
 			{
-			case USB_REQ_GET_INTERFACE :
-				PRINTF(PSTR("USBD_UAC_Setup IN: USB_REQ_TYPE_STANDARD USB_REQ_GET_INTERFACE dir=%02X interfacev=%d\n"), req->bmRequest & 0x80, interfacev);
+			case USB_REQ_GET_INTERFACE:
+				// не видел вызовов этой функции
+				//PRINTF(PSTR("USBD_UAC_Setup IN: USB_REQ_TYPE_STANDARD USB_REQ_GET_INTERFACE dir=%02X interfacev=%d\n"), req->bmRequest & 0x80, interfacev);
 				switch (interfacev)
 				{
 
@@ -618,7 +634,8 @@ static USBD_StatusTypeDef USBD_UAC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 			break;
 
 		default:
-			TP();
+			//TP();
+			//PRINTF(PSTR("X USBD_UAC_Setup: bRequest=%02X, wIndex=%04X, wLength=%04X, wValue=%04X (interfacev=%02X)\n"), req->bRequest, req->wIndex, req->wLength, req->wValue, interfacev);
 			break;
 		}
 	}

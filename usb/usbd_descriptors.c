@@ -4267,8 +4267,8 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 		}
 	}
 
-#if WITHUSBDFU
 	{
+		// При наличии этого дескриптора система начинает запрашивать по всем интеряейсам MsftCompFeatureDescr
 		// Microsoft OS String Descriptor 
 		static const uint8_t MsftStringDescrProto [18] =
 		{
@@ -4292,6 +4292,8 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 		MsftStringDescr [0].data = alldescbuffer + score;
 		score += partlen;
 	}
+
+#if WITHUSBDFU
 	{
 		// https://docs.microsoft.com/en-us/windows-hardware/drivers/usbcon/microsoft-defined-usb-descriptors
 		// https://docs.microsoft.com/en-us/windows-hardware/drivers/usbcon/microsoft-os-1-0-descriptors-specification
@@ -4373,7 +4375,7 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 	}
 
 	// Binary Device Object Store (BOS) Descriptor
-	if (USB_FUNCTION_BCD_USB > 0x0200)
+	if (USB_FUNCTION_BCD_USB > 0x0201)
 	{
 		unsigned partlen;
 		score += fill_align4(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score);
