@@ -60,6 +60,7 @@
 	//#define FQMODEL_70200		1	// 1-st if = 70.2 MHz, 2-nd IF-200 kHz
 
 	#define FQMODEL_FPGA		1	// FPGA + IQ over I2S
+	//#define XVTR_NYQ1			1	// Support Nyquist-style frequency conversion
 	#if 0
 		#define DIRECT_80M0_X1		1	/* Тактовый генератор на плате 80.0 МГц */
 		#define BANDSELSTYLERE_UPCONV56M_36M	1	/* Up-conversion with working band .030..36 MHz */

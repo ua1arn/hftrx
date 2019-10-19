@@ -6376,7 +6376,7 @@ gethintlo0(
 	uint_fast8_t lo0side	/* формируем гетеродин для указанной боковой полосы */
 	)
 {
-#if defined (XVTR1_TYPE)
+#if XVTR_R820T2
 	const uint_fast32_t lo0step = R820T_LOSTEP;
 	// дискретность перестройки гетеродина конвертора
 	if (lo0side == LOCODE_UPPER)		/* При преобразовании на этом гетеродине происходит инверсия спектра */
@@ -7347,6 +7347,55 @@ flagne_u32_cat(uint_fast32_t * oldval, uint_fast32_t v, uint_fast8_t catindex)
 
 #endif /* WITHCAT */
 
+
+#if XVTR_NYQ1
+// Частота из лююой зоны найквиста преобразуется в первую
+static uint_fast32_t FQMODEL_TUNING_TO_NYQ1(uint_fast32_t f)
+{
+	uint_fast32_t f1 = (f % DUCDDC_FREQ);
+	return f1 >= (DUCDDC_FREQ / 2) ? (DUCDDC_FREQ - f1) : f1;
+}
+#endif /* XVTR_NYQ1 */
+
+// tuning frequency to band pass frequency adjust
+static uint_fast32_t
+nyquistadj(uint_fast32_t f)
+{
+#if 0//XVTR_R820T2
+	reuturn R820T_IFFREQ;
+#elif XVTR_NYQ1
+	return FQMODEL_TUNING_TO_NYQ1(f);
+#else /* XVTR_NYQ1 */
+	return f;
+#endif /* XVTR_NYQ1 */
+}
+
+// tuning frequency to PA low pass frequency adjust
+static uint_fast32_t
+nyquistadj2(uint_fast32_t f)
+{
+#if 0//XVTR_R820T2
+	reuturn R820T_IFFREQ;
+#elif XVTR_NYQ1
+	return FQMODEL_TUNING_TO_NYQ1(f);
+#else /* XVTR_NYQ1 */
+	return f;
+#endif /* XVTR_NYQ1 */
+}
+
+// tuning frequency to external PA (ACC socket) frequency adjust
+static uint_fast32_t
+nyquistadj3(uint_fast32_t f)
+{
+#if 0//XVTR_R820T2
+	reuturn R820T_IFFREQ;
+#elif XVTR_NYQ1
+	return FQMODEL_TUNING_TO_NYQ1(f);
+#else /* XVTR_NYQ1 */
+	return f;
+#endif /* XVTR_NYQ1 */
+}
+
 /*
  параметры:
  tx - не-0: переключение аппаратуры в режим передачи
@@ -7405,9 +7454,9 @@ updateboard(
 	#if CTLSTYLE_IGOR
 		full2 |= flagne_u16(& bandf100khint, freq / 100000uL);
 	#else /* CTLSTYLE_IGOR */
-		full2 |= flagne_u8(& bandfhint, bandf_calc(freq));
-		full2 |= flagne_u8(& bandf2hint, bandf2_calc(freq));
-		full2 |= flagne_u8(& bandf3hint, bandf3_calc(freq));
+		full2 |= flagne_u8(& bandfhint, bandf_calc(nyquistadj(freq)));
+		full2 |= flagne_u8(& bandf2hint, bandf2_calc(nyquistadj2(freq)));
+		full2 |= flagne_u8(& bandf3hint, bandf3_calc(nyquistadj3(freq)));
 	#endif /* CTLSTYLE_IGOR */
 		full2 |= flagne_u8(& lo0side, getsidelo0(freq));	// LOCODE_UPPER, LOCODE_LOWER or LOCODE_TARGETED
 		full2 |= flagne_u32(& lo0hint, gethintlo0(freq, lo0side));
@@ -16626,15 +16675,15 @@ hamradio_initialize(void)
 	bandf2_calc_initialize();
 	bandf3_calc_initialize();
 #if CTLSTYLE_SW2011ALL
-	board_set_bandfonhpf(bandf_calc(14000000L));	/* в SW20xx частота (диапазон), с которого включается ФВЧ на входе приёмника */
-	board_set_bandfonuhf(bandf_calc(85000000L));
+	board_set_bandfonhpf(bandf_calc(nyquistadj(14000000L)));	/* в SW20xx частота (диапазон), с которого включается ФВЧ на входе приёмника */
+	board_set_bandfonuhf(bandf_calc(nyquistadj(85000000L)));
 #endif /* CTLSTYLE_SW2011ALL */
 #if CTLREGMODE_RA4YBO_V1 || CTLREGMODE_RA4YBO_V2 || CTLREGMODE_RA4YBO_V3 || CTLREGMODE_RA4YBO_V3A
-	board_set_bandfonuhf(bandf_calc(111000000L));
+	board_set_bandfonuhf(bandf_calc(nyquistadj(111000000L)));
 #endif /* CTLREGMODE_RA4YBO_V1 || CTLREGMODE_RA4YBO_V2 || CTLREGMODE_RA4YBO_V3 || CTLREGMODE_RA4YBO_V3A */
-#if defined (XVTR1_TYPE)
-	//board_set_bandfxvrtr(bandf_calc(R820T_IFFREQ))	// Жтот диапазон подставляется как ПЧ для трансвертора
-#endif /* defined (XVTR1_TYPE) */
+#if XVTR_R820T2
+	//board_set_bandfxvrtr(bandf_calc(R820T_IFFREQ))	// Этот диапазон подставляется как ПЧ для трансвертора
+#endif /* XVTR_R820T2 */
 	board_init_chips();	// программирование всех микросхем синтезатора.
 
 #if WITHUSESDCARD

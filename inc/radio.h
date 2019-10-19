@@ -1039,13 +1039,13 @@ void spool_0p128(void);	// OPERA support
 	//#define R820T_LOSTEP (R820T_REFERENCE / 16)	// 1.92 MHz
 	#define R820T_LOSTEP (R820T_REFERENCE / 32)	// 920 kHz
 
-	#if defined (XVTR1_TYPE)
+	#if XVTR_R820T2
 		#define LO0_SIDE_F(freq) ((freq) >= 50000000uL ? LOCODE_UPPER : LOCODE_INVALID)	/* при отсутствующем конверторе - на нём нет инверсии спектра */
 		#define LO1_SIDE	LOCODE_LOWER	/* rf->baseband: При преобразовании на этом гетеродине нет инверсии спектра */
-	#else
+	#else /* XVTR_R820T2 */
 		#define LO0_SIDE	LOCODE_INVALID	/* при отсутствующем конверторе - на нём нет инверсии спектра */
 		#define LO1_SIDE_F(freq) ((((freq) % DUCDDC_FREQ) >= (DUCDDC_FREQ / 2)) ? LOCODE_UPPER : LOCODE_LOWER)	/* rf->baseband: сторона зависит от рабочей частоты */
-	#endif
+	#endif /* XVTR_R820T2 */
 	//#define LO1_SIDE	LOCODE_LOWER	/* rf->baseband: При преобразовании на этом гетеродине нет инверсии спектра */
 	#define LO2_SIDE	LOCODE_INVALID	/* при отсутствующем гетеродине - на нём нет инверсии спектра */
 	#define LO3_SIDE	LOCODE_INVALID	/* при отсутствующем гетеродине - на нём нет инверсии спектра */
@@ -1056,7 +1056,11 @@ void spool_0p128(void);	// OPERA support
 	#define LO4_POWER2 0
 	#define IF3_MODEL IF3_TYPE_BYPASS
 
-	#if BANDSELSTYLERE_UPCONV56M
+	#if BANDSELSTYLERE_UPCONV56M && XVTR_NYQ1
+		#define TUNE_BOTTOM 30000L		/* 30 kHz нижняя частота настройки */
+		#define TUNE_TOP (DUCDDC_FREQ + 56000000L)		/* верхняя частота настройки */
+		//#define TUNE_TOP 56000000L		/* верхняя частота настройки */
+	#elif BANDSELSTYLERE_UPCONV56M
 		#define TUNE_BOTTOM 30000L		/* 30 kHz нижняя частота настройки */
 		#define TUNE_TOP 56000000L		/* верхняя частота настройки */
 	#elif BANDSELSTYLERE_UPCONV56M_45M	/* версия до 45 МГц */

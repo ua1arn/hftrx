@@ -380,7 +380,8 @@
 	//#define RTC1_TYPE RTC_TYPE_STM32F4xx	/* STM32F4xx/STM32F7xx internal RTC peripherial */
 	//#define TSC1_TYPE TSC_TYPE_STMPE811	/* touch screen controller */
 	//#define DAC1_TYPE	99999		/* наличие ЦАП для подстройки тактовой частоты */
-	#define	XVTR1_TYPE XVTR_TYPE_R820T	/* R820T chip */
+
+	#define	XVTR_R820T2 	1	/* R820T chip */
 
 	#define DDS1_CLK_DIV	1		/* Делитель опорной частоты перед подачей в DDS1 */
 
