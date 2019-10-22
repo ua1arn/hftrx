@@ -11823,12 +11823,12 @@ static void vectors_relocate(void)
 // Set interrupt vector wrapper
 void arm_hardware_set_handler_overrealtime(uint_fast16_t int_id, void (* handler)(void))
 {
-#if (CPUSTYLE_ARM_CA9 || CPUSTYLE_ARM_CA7)
+#if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 
 	VERIFY(IRQ_SetHandler(int_id, handler) == 0);
 	VERIFY(IRQ_SetPriority(int_id, ARM_OVERREALTIME_PRIORITY) == 0);
+	VERIFY(IRQ_SetMode(int_id, IRQ_MODE_DOMAIN_NONSECURE | IRQ_MODE_CPU_0) == 0);
 	VERIFY(IRQ_Enable(int_id) == 0);
-	VERITY(IRQ_SetMode(int_id, IRQ_MODE_DOMAIN_NONSECURE | IRQ_MODE_CPU_0) == 0);
 
 #else /* CPUSTYLE_STM32MP1 */
 
@@ -11842,12 +11842,12 @@ void arm_hardware_set_handler_overrealtime(uint_fast16_t int_id, void (* handler
 // Set interrupt vector wrapper
 void arm_hardware_set_handler_realtime(uint_fast16_t int_id, void (* handler)(void))
 {
-#if (CPUSTYLE_ARM_CA9 || CPUSTYLE_ARM_CA7)
+#if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 
 	VERIFY(IRQ_SetHandler(int_id, handler) == 0);
 	VERIFY(IRQ_SetPriority(int_id, ARM_REALTIME_PRIORITY) == 0);
+	VERIFY(IRQ_SetMode(int_id, IRQ_MODE_DOMAIN_NONSECURE | IRQ_MODE_CPU_0) == 0);
 	VERIFY(IRQ_Enable(int_id) == 0);
-	VERITY(IRQ_SetMode(int_id, IRQ_MODE_DOMAIN_NONSECURE | IRQ_MODE_CPU_0) == 0);
 
 #else /* CPUSTYLE_STM32MP1 */
 
@@ -11861,12 +11861,12 @@ void arm_hardware_set_handler_realtime(uint_fast16_t int_id, void (* handler)(vo
 // Set interrupt vector wrapper
 void arm_hardware_set_handler_system(uint_fast16_t int_id, void (* handler)(void))
 {
-#if (CPUSTYLE_ARM_CA9 || CPUSTYLE_ARM_CA7)
+#if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 
 	VERIFY(IRQ_SetHandler(int_id, handler) == 0);
 	VERIFY(IRQ_SetPriority(int_id, ARM_SYSTEM_PRIORITY) == 0);
+	VERIFY(IRQ_SetMode(int_id, IRQ_MODE_DOMAIN_NONSECURE | IRQ_MODE_CPU_0) == 0);
 	VERIFY(IRQ_Enable(int_id) == 0);
-	VERITY(IRQ_SetMode(int_id, IRQ_MODE_DOMAIN_NONSECURE | IRQ_MODE_CPU_0) == 0);
 
 #else /* CPUSTYLE_STM32MP1 */
 
