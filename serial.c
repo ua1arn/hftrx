@@ -1028,18 +1028,8 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 	/* Serial port break data(SPB2DT)  1: High-level */
 	//SCIF0.SCSPTR |= 0x0003;
 
-	{
-		const IRQn_ID_t int_id = SCIFRXI0_IRQn;
-		IRQ_SetHandler(int_id, r7s721_scifrxi0_interrupt);
-		IRQ_SetPriority(int_id, ARM_SYSTEM_PRIORITY);
-		IRQ_Enable(int_id);
-	}
-	{
-		const IRQn_ID_t int_id = SCIFTXI0_IRQn;
-		IRQ_SetHandler(int_id, r7s721_sciftxi0_interrupt);
-		IRQ_SetPriority(int_id, ARM_SYSTEM_PRIORITY);
-		IRQ_Enable(int_id);
-	}
+   arm_hardware_set_handler_system(SCIFRXI0_IRQn, r7s721_scifrxi0_interrupt);
+   arm_hardware_set_handler_system(SCIFTXI0_IRQn, r7s721_sciftxi0_interrupt);
 
 	HARDWARE_USART1_INITIALIZE();	/* Присоединить периферию к выводам */
 
@@ -1056,10 +1046,7 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 
 	if (debug == 0)
 	{
-		const IRQn_ID_t int_id = USART1_IRQn;
-		IRQ_SetHandler(int_id, USART1_IRQHandler);
-		IRQ_SetPriority(int_id, ARM_SYSTEM_PRIORITY);
-		IRQ_Enable(int_id);		// enable USART1_IRQHandler();
+	   arm_hardware_set_handler_system(USART1_IRQn, USART1_IRQHandler);
 	}
 
 	USART1->CR1 |= USART_CR1_UE; // Включение USART1.
@@ -2127,18 +2114,8 @@ xxxx!;
 	/* Serial port break data(SPB2DT)  1: High-level */
 	//SCIF3.SCSPTR |= 0x0003;
 
-	{
-		const IRQn_ID_t int_id = SCIFRXI3_IRQn;
-		IRQ_SetHandler(int_id, r7s721_scifrxi3_interrupt);
-		IRQ_SetPriority(int_id, ARM_SYSTEM_PRIORITY);
-		IRQ_Enable(int_id);
-	}
-	{
-		const IRQn_ID_t int_id = SCIFTXI3_IRQn;
-		IRQ_SetHandler(int_id, r7s721_sciftxi3_interrupt);
-		IRQ_SetPriority(int_id, ARM_SYSTEM_PRIORITY);
-		IRQ_Enable(int_id);
-	}
+   arm_hardware_set_handler_system(SCIFRXI3_IRQn, r7s721_scifrxi3_interrupt);
+   arm_hardware_set_handler_system(SCIFTXI3_IRQn, r7s721_sciftxi3_interrupt);
 
 	HARDWARE_USART2_INITIALIZE();	/* Присоединить периферию к выводам */
 
@@ -2155,10 +2132,7 @@ xxxx!;
 
 	if (debug == 0)
 	{
-		const IRQn_ID_t int_id = USART2_IRQn;
-		IRQ_SetHandler(int_id, USART2_IRQHandler);
-		IRQ_SetPriority(int_id, ARM_SYSTEM_PRIORITY);
-		IRQ_Enable(int_id);		// enable USART1_IRQHandler();
+		arm_hardware_set_handler_system(USART2_IRQn, USART2_IRQHandler);
 	}
 
 	USART1->CR1 |= USART_CR1_UE; // Включение USART1.

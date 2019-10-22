@@ -295,22 +295,7 @@ DMA_I2S2_TX_initialize(void)
 	DMA1->HIFCR = DMA_HISR_TCIF4;	// Clear TC interrupt flag соответствующий stream
 	DMA1_Stream4->CR |= DMA_SxCR_TCIE;	// Разрешаем прерывания от DMA
 
-#if CPUSTYLE_STM32MP1
-
-	{
-		const IRQn_ID_t int_id = DMA1_Stream4_IRQn;
-		IRQ_SetHandler(int_id, DMA1_Stream4_IRQHandler);
-		IRQ_SetPriority(int_id, ARM_REALTIME_PRIORITY);
-		IRQ_Enable(int_id);
-	}
-
-#else /* CPUSTYLE_STM32MP1 */
-
-	NVIC_SetVector(DMA1_Stream4_IRQn, (uintptr_t) & DMA1_Stream4_IRQHandler);
-	NVIC_SetPriority(DMA1_Stream4_IRQn, ARM_REALTIME_PRIORITY);
-	NVIC_EnableIRQ(DMA1_Stream4_IRQn);	// DMA1_Stream4_IRQHandler() enable
-
-#endif /* CPUSTYLE_STM32MP1 */
+	arm_hardware_set_handler_realtime(DMA1_Stream4_IRQn, DMA1_Stream4_IRQHandler);
 
 	DMA1_Stream4->CR |= DMA_SxCR_EN;
 }
@@ -356,9 +341,7 @@ DMA_I2S2ext_rx_init(void)
 	DMA1->LIFCR = DMA_LISR_TCIF3;	// Clear TC interrupt flag
 	DMA1_Stream3->CR |= DMA_SxCR_TCIE;	// Разрешаем прерывания от DMA
 
-	NVIC_SetVector(DMA1_Stream3_IRQn, (uintptr_t) & DMA1_Stream3_IRQHandler);
-	NVIC_SetPriority(DMA1_Stream3_IRQn, ARM_REALTIME_PRIORITY);
-	NVIC_EnableIRQ(DMA1_Stream3_IRQn);	// DMA1_Stream3_IRQHandler() enable
+	arm_hardware_set_handler_realtime(DMA1_Stream3_IRQn, DMA1_Stream3_IRQHandler);
 
 	DMA1_Stream3->CR |= DMA_SxCR_EN;
 }
@@ -412,22 +395,7 @@ DMA_I2S3_RX_initialize(void)
 	DMA1->LIFCR = DMA_LISR_TCIF0;	// Clear TC interrupt flag
 	DMA1_Stream0->CR |= DMA_SxCR_TCIE;	// Разрешаем прерывания от DMA
 
-#if CPUSTYLE_STM32MP1
-
-	{
-		const IRQn_ID_t int_id = DMA1_Stream0_IRQn;
-		IRQ_SetHandler(int_id, DMA1_Stream0_IRQHandler);
-		IRQ_SetPriority(int_id, ARM_REALTIME_PRIORITY);
-		IRQ_Enable(int_id);
-	}
-
-#else /* CPUSTYLE_STM32MP1 */
-
-	NVIC_SetVector(DMA1_Stream0_IRQn, (uintptr_t) & DMA1_Stream0_IRQHandler);
-	NVIC_SetPriority(DMA1_Stream0_IRQn, ARM_REALTIME_PRIORITY);
-	NVIC_EnableIRQ(DMA1_Stream0_IRQn);	// DMA1_Stream0_IRQHandler() enable
-
-#endif /* CPUSTYLE_STM32MP1 */
+	arm_hardware_set_handler_realtime(DMA1_Stream0_IRQn, DMA1_Stream0_IRQHandler);
 
 	DMA1_Stream0->CR |= DMA_SxCR_EN;
 }
@@ -1184,22 +1152,7 @@ static void DMA_SAI1_A_TX_initialize(void)
 	DMA2->LIFCR = DMA_LISR_TCIF1;	// Clear TC interrupt flag
 	DMA2_Stream1->CR |= DMA_SxCR_TCIE;	// Разрешаем прерывания от DMA
 
-#if CPUSTYLE_STM32MP1
-
-	{
-		const IRQn_ID_t int_id = DMA2_Stream1_IRQn;
-		IRQ_SetHandler(int_id, DMA2_Stream1_IRQHandler);
-		IRQ_SetPriority(int_id, ARM_REALTIME_PRIORITY);
-		IRQ_Enable(int_id);
-	}
-
-#else /* CPUSTYLE_STM32MP1 */
-
-	NVIC_SetVector(DMA2_Stream1_IRQn, (uintptr_t) & DMA2_Stream1_IRQHandler);
-	NVIC_SetPriority(DMA2_Stream1_IRQn, ARM_REALTIME_PRIORITY);
-	NVIC_EnableIRQ(DMA2_Stream1_IRQn);	// DMA2_Stream1_IRQHandler() enable
-
-#endif /* CPUSTYLE_STM32MP1 */
+	arm_hardware_set_handler_realtime(DMA2_Stream1_IRQn, DMA2_Stream1_IRQHandler);
 
 	DMA2_Stream1->CR |= DMA_SxCR_EN;
 
@@ -1255,22 +1208,7 @@ static void DMA_SAI1_B_RX_initialize(void)
 	DMA2->HIFCR = (DMA_HIFCR_CTCIF5 /* | DMA_HIFCR_CTEIF5 */);	// Clear TC interrupt flag соответствующий stream
 	DMA2_Stream5->CR |= (DMA_SxCR_TCIE /* | DMA_SxCR_TEIE */);	// прерывания от DMA по TC и TE
 
-#if CPUSTYLE_STM32MP1
-
-	{
-		const IRQn_ID_t int_id = DMA2_Stream5_IRQn;
-		IRQ_SetHandler(int_id, DMA2_Stream5_IRQHandler);
-		IRQ_SetPriority(int_id, ARM_REALTIME_PRIORITY);
-		IRQ_Enable(int_id);
-	}
-
-#else /* CPUSTYLE_STM32MP1 */
-
-	NVIC_SetVector(DMA2_Stream5_IRQn, (uintptr_t) & DMA2_Stream5_IRQHandler);
-	NVIC_SetPriority(DMA2_Stream5_IRQn, ARM_REALTIME_PRIORITY);
-	NVIC_EnableIRQ(DMA2_Stream5_IRQn);	// DMA2_Stream5_IRQHandler() enable
-
-#endif /* CPUSTYLE_STM32MP1 */
+	arm_hardware_set_handler_realtime(DMA2_Stream5_IRQn, DMA2_Stream5_IRQHandler);
 
 	DMA2_Stream5->CR |= DMA_SxCR_EN;
 }
@@ -1678,9 +1616,7 @@ static void DMA_SAI2_A_TX_initializeXXX(void)
 	DMA2->HIFCR = DMA_HIFCR_CTCIF4;	// Clear TC interrupt flag соответствующий stream
 	DMA2_Stream4->CR |= DMA_SxCR_TCIE;	// Разрешаем прерывания от DMA
 
-	NVIC_SetVector(DMA2_Stream4_IRQn, (uintptr_t) & DMA2_Stream4_IRQHandler);
-	NVIC_SetPriority(DMA2_Stream4_IRQn, ARM_REALTIME_PRIORITY);
-	NVIC_EnableIRQ(DMA2_Stream4_IRQn);	// DMA2_Stream4_IRQHandler() enable
+	arm_hardware_set_handler_realtime(DMA2_Stream4_IRQn, DMA2_Stream4_IRQHandler);
 
 	DMA2_Stream4->CR |= DMA_SxCR_EN;
 }
@@ -1731,9 +1667,7 @@ static void DMA_SAI2_A_TX_initializeAUDIO48(void)
 	DMA2->HIFCR = DMA_HIFCR_CTCIF4;	// Clear TC interrupt flag соответствующий stream
 	DMA2_Stream4->CR |= DMA_SxCR_TCIE;	// Разрешаем прерывания от DMA
 
-	NVIC_SetVector(DMA2_Stream4_IRQn, (uintptr_t) & DMA2_Stream4_IRQHandler);
-	NVIC_SetPriority(DMA2_Stream4_IRQn, ARM_REALTIME_PRIORITY);
-	NVIC_EnableIRQ(DMA2_Stream4_IRQn);	// DMA2_Stream4_IRQHandler() enable
+	arm_hardware_set_handler_realtime(DMA2_Stream4_IRQn, DMA2_Stream4_IRQHandler);
 
 	DMA2_Stream4->CR |= DMA_SxCR_EN;
 }
@@ -1786,9 +1720,7 @@ static void DMA_SAI2_B_RX_initializeRTS96(void)
 	DMA2->HIFCR = (DMA_HIFCR_CTCIF7 /*| DMA_HIFCR_CTEIF7 */);	// Clear TC interrupt flag соответствующий stream
 	DMA2_Stream7->CR |= (DMA_SxCR_TCIE /* | DMA_SxCR_TEIE */);	// прерывания от DMA по TC и TE
 
-	NVIC_SetVector(DMA2_Stream7_IRQn, (uintptr_t) & DMA2_Stream7_IRQHandler);
-	NVIC_SetPriority(DMA2_Stream7_IRQn, ARM_REALTIME_PRIORITY);
-	NVIC_EnableIRQ(DMA2_Stream7_IRQn);	// DMA2_Stream7_IRQHandler() enable
+	arm_hardware_set_handler_realtime(DMA2_Stream7_IRQn, DMA2_Stream7_IRQHandler);
 
 	DMA2_Stream7->CR |= DMA_SxCR_EN;
 }
@@ -1841,9 +1773,7 @@ static void DMA_SAI2_B_RX_initializeAUDIO48(void)
 	DMA2->HIFCR = (DMA_HIFCR_CTCIF7 /*| DMA_HIFCR_CTEIF7 */);	// Clear TC interrupt flag соответствующий stream
 	DMA2_Stream7->CR |= (DMA_SxCR_TCIE /* | DMA_SxCR_TEIE */);	// прерывания от DMA по TC и TE
 
-	NVIC_SetVector(DMA2_Stream7_IRQn, (uintptr_t) & DMA2_Stream7_IRQHandler);
-	NVIC_SetPriority(DMA2_Stream7_IRQn, ARM_REALTIME_PRIORITY);
-	NVIC_EnableIRQ(DMA2_Stream7_IRQn);	// DMA2_Stream7_IRQHandler() enable
+	arm_hardware_set_handler_realtime(DMA2_Stream7_IRQn, DMA2_Stream7_IRQHandler);
 
 	DMA2_Stream7->CR |= DMA_SxCR_EN;
 }
@@ -2156,9 +2086,7 @@ static void DMA_SAI2_B_RX_initializeWFM(void)
 	DMA2->HIFCR = (DMA_HIFCR_CTCIF7 /*| DMA_HIFCR_CTEIF7 */);	// Clear TC interrupt flag соответствующий stream
 	DMA2_Stream7->CR |= (DMA_SxCR_TCIE /* | DMA_SxCR_TEIE */);	// прерывания от DMA по TC и TE
 
-	NVIC_SetVector(DMA2_Stream7_IRQn, (uintptr_t) & DMA2_Stream7_IRQHandler);
-	NVIC_SetPriority(DMA2_Stream7_IRQn, ARM_REALTIME_PRIORITY);
-	NVIC_EnableIRQ(DMA2_Stream7_IRQn);	// DMA2_Stream7_IRQHandler() enable
+	arm_hardware_set_handler_realtime(DMA2_Stream7_IRQn, DMA2_Stream7_IRQHandler);
 
 	DMA2_Stream7->CR |= DMA_SxCR_EN;
 	debug_printf_P(PSTR("DMA_SAI2_B_RX_initializeWFM done.\n"));
@@ -2354,12 +2282,7 @@ static void r7s721_ssif0_dmarx_initialize(void)
 		1 * (1U << 0) |		// PR		1: Round robin mode
 		0;
 
-	{
-		const IRQn_ID_t int_id = DMAINT0_IRQn;
-		IRQ_SetHandler(int_id, r7s721_ssif0_rxdma);
-		IRQ_SetPriority(int_id, ARM_REALTIME_PRIORITY);
-		IRQ_Enable(int_id);
-	}
+	arm_hardware_set_handler_realtime(DMAINT0_IRQn, r7s721_ssif0_rxdma);
 
 	DMAC0.CHCTRL_n = 1 * (1U << 3);		// SWRST
 	DMAC0.CHCTRL_n = 1 * (1U << 17);	// CLRINTMSK
@@ -2425,12 +2348,7 @@ static void r7s721_ssif0_dmatx_initialize(void)
 		1 * (1U << 0) |		// PR		1: Round robin mode
 		0;
 
-	{
-		const IRQn_ID_t int_id = DMAINT1_IRQn;
-		IRQ_SetHandler(int_id, r7s721_ssif0_txdma);
-		IRQ_SetPriority(int_id, ARM_REALTIME_PRIORITY);
-		IRQ_Enable(int_id);
-	}
+	arm_hardware_set_handler_realtime(DMAINT1_IRQn, r7s721_ssif0_txdma);
 
 	DMAC1.CHCTRL_n = 1 * (1U << 3);		// SWRST
 	DMAC1.CHCTRL_n = 1 * (1U << 17);	// CLRINTMSK
@@ -2618,12 +2536,7 @@ static void r7s721_ssif1_dmarx_initialize(void)
 		1 * (1U << 0) |		// PR		1: Round robin mode
 		0;
 
-	{
-		const IRQn_ID_t int_id = DMAINT2_IRQn;
-		IRQ_SetHandler(int_id, r7s721_ssif1_rxdma);
-		IRQ_SetPriority(int_id, ARM_REALTIME_PRIORITY);
-		IRQ_Enable(int_id);
-	}
+	arm_hardware_set_handler_realtime(DMAINT2_IRQn, r7s721_ssif1_rxdma);
 
 	DMAC2.CHCTRL_n = 1 * (1U << 3);		// SWRST
 	DMAC2.CHCTRL_n = 1 * (1U << 17);	// CLRINTMSK
@@ -2689,12 +2602,7 @@ static void r7s721_ssif1_dmatx_initialize(void)
 		1 * (1U << 0) |		// PR		1: Round robin mode
 		0;
 
-	{
-		const IRQn_ID_t int_id = DMAINT3_IRQn;
-		IRQ_SetHandler(int_id, r7s721_ssif1_txdma);
-		IRQ_SetPriority(int_id, ARM_REALTIME_PRIORITY);
-		IRQ_Enable(int_id);
-	}
+	arm_hardware_set_handler_realtime(DMAINT3_IRQn, r7s721_ssif1_txdma);
 
 	DMAC3.CHCTRL_n = 1 * (1U << 3);		// SWRST
 	DMAC3.CHCTRL_n = 1 * (1U << 17);	// CLRINTMSK
@@ -2858,12 +2766,7 @@ static void r7s721_ssif2_dmarx_initialize(void)
 		1 * (1U << 0) |		// PR		1: Round robin mode
 		0;
 
-	{
-		const IRQn_ID_t int_id = DMAINT4_IRQn;
-		IRQ_SetHandler(int_id, r7s721_ssif2_rxdma_handler);
-		IRQ_SetPriority(int_id, ARM_REALTIME_PRIORITY);
-		IRQ_Enable(int_id);
-	}
+	arm_hardware_set_handler_realtime(DMAINT4_IRQn, r7s721_ssif2_rxdma_handler);
 
 	DMAC4.CHCTRL_n = 1 * (1U << 3);		// SWRST
 	DMAC4.CHCTRL_n = 1 * (1U << 17);	// CLRINTMSK
@@ -3258,12 +3161,7 @@ static void r7s721_usb0_dma1_dmatx_initialize(void)
 		1 * (1U << 0) |		// PR		1: Round robin mode
 		0;
 
-	{
-		const IRQn_ID_t int_id = DMAINT12_IRQn;
-		IRQ_SetHandler(int_id, r7s721_usbX_dma1_dmatx_handler);
-		IRQ_SetPriority(int_id, ARM_REALTIME_PRIORITY);
-		IRQ_Enable(int_id);
-	}
+	arm_hardware_set_handler_realtime(DMAINT12_IRQn, r7s721_usbX_dma1_dmatx_handler);
 
 	DMAC12.CHCTRL_n = DMAC12_CHCTRL_n_SWRST;		// SWRST
 	DMAC12.CHCTRL_n = DMAC12_CHCTRL_n_CLRINTMSK;	// CLRINTMSK
@@ -3365,12 +3263,7 @@ static void r7s721_usb0_dma0_dmarx_initialize(void)
 		1 * (1U << 0) |		// PR		1: Round robin mode
 		0;
 
-	{
-		const IRQn_ID_t int_id = DMAINT13_IRQn;
-		IRQ_SetHandler(int_id, r7s721_usbX_dma0_dmarx_handler);
-		IRQ_SetPriority(int_id, ARM_SYSTEM_PRIORITY);
-		IRQ_Enable(int_id);
-	}
+	arm_hardware_set_handler_system(DMAINT13_IRQn, r7s721_usbX_dma0_dmarx_handler);
 
 	DMAC13.CHCTRL_n = 1 * (1U << 3);		// SWRST
 	DMAC13.CHCTRL_n = 1 * (1U << 17);	// CLRINTMSK
@@ -3447,12 +3340,7 @@ static void r7s721_usb1_dma1_dmatx_initialize(void)
 		1 * (1U << 0) |		// PR		1: Round robin mode
 		0;
 
-	{
-		const IRQn_ID_t int_id = DMAINT12_IRQn;
-		IRQ_SetHandler(int_id, r7s721_usbX_dma1_dmatx_handler);
-		IRQ_SetPriority(int_id, ARM_REALTIME_PRIORITY);
-		IRQ_Enable(int_id);
-	}
+	arm_hardware_set_handler_realtime(DMAINT12_IRQn, r7s721_usbX_dma1_dmatx_handler);
 
 	DMAC12.CHCTRL_n = DMAC12_CHCTRL_n_SWRST;		// SWRST
 	DMAC12.CHCTRL_n = DMAC12_CHCTRL_n_CLRINTMSK;	// CLRINTMSK
@@ -3522,12 +3410,7 @@ static void r7s721_usb1_dma0_dmarx_initialize(void)
 		1 * (1U << 0) |		// PR		1: Round robin mode
 		0;
 
-	{
-		const IRQn_ID_t int_id = DMAINT13_IRQn;
-		IRQ_SetHandler(int_id, r7s721_usbX_dma0_dmarx_handler);
-		IRQ_SetPriority(int_id, ARM_SYSTEM_PRIORITY);
-		IRQ_Enable(int_id);
-	}
+	arm_hardware_set_handler_system(DMAINT13_IRQn, r7s721_usbX_dma0_dmarx_handler);
 
 	DMAC13.CHCTRL_n = 1 * (1U << 3);		// SWRST
 	DMAC13.CHCTRL_n = 1 * (1U << 17);	// CLRINTMSK

@@ -7595,20 +7595,11 @@ nestedirqtest(void)
 	}
 	board_init_io();		/* инициализация чипселектов и SPI, I2C, загрузка FPGA */
 	hardware_timer_initialize(3);
-	{
-		const IRQn_ID_t int_id = OSTMI0TINT_IRQn;
-		IRQ_SetHandler(int_id, r7s721_ostm0_interrupt_test);	/* ==== Register OS timer interrupt handler ==== */
-		IRQ_SetPriority(int_id, ARM_SYSTEM_PRIORITY);		/* ==== Set priority of OS timer interrupt to 5 ==== */
-		IRQ_Enable(int_id);		/* ==== Validate OS timer interrupt ==== */
-	}
+	arm_hardware_set_handler_system(OSTMI0TINT_IRQn, r7s721_ostm0_interrupt_test);
 	hardware_elkey_timer_initialize();
 	hardware_elkey_set_speed(4);
-	{
-		const IRQn_ID_t int_id = OSTMI1TINT_IRQn;
-		IRQ_SetHandler(int_id, r7s721_ostm1_interrupt_test);	/* ==== Register OS timer interrupt handler ==== */
-		IRQ_SetPriority(int_id, ARM_REALTIME_PRIORITY);		/* ==== Set priority of OS timer interrupt to 5 ==== */
-		IRQ_Enable(int_id);		/* ==== Validate OS timer interrupt ==== */
-	}
+	arm_hardware_set_handler_realtime(OSTMI1TINT_IRQn, r7s721_ostm1_interrupt_test);
+
 #if defined (ENCODER_BITS)
 	#if CTLSTYLE_RAVENDSP_V9
 		do { \

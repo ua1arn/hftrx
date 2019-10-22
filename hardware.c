@@ -1781,12 +1781,7 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 
 	OSTM0.OSTMnCMP = calcdivround_p0clock(ticksfreq) - 1;
 
-	{
-		const IRQn_ID_t int_id = OSTMI0TINT_IRQn;
-		IRQ_SetHandler(int_id, r7s721_ostm0_interrupt);	/* ==== Register OS timer interrupt handler ==== */
-		IRQ_SetPriority(int_id, ARM_SYSTEM_PRIORITY);		/* ==== Set priority of OS timer interrupt to 5 ==== */
-		IRQ_Enable(int_id);		/* ==== Validate OS timer interrupt ==== */
-	}
+	arm_hardware_set_handler_system(OSTMI0TINT_IRQn, r7s721_ostm0_interrupt);
 
 	OSTM0.OSTMnTS = 0x01u;      /* Start counting */
 
@@ -3039,12 +3034,7 @@ void hardware_adc_initialize(void)
 	HARDWARE_ADC_INITIALIZE(ainmask);
 
 	// connect to interrupt
-	{
-		const IRQn_ID_t int_id = ADI_IRQn;	/* 12bit A/D converter                */
-		IRQ_SetHandler(int_id, r7s721_adi_irq_handler);
-		IRQ_SetPriority(int_id, ARM_SYSTEM_PRIORITY);
-		IRQ_Enable(int_id);
-	}
+	arm_hardware_set_handler_system(ADI_IRQn, r7s721_adi_irq_handler);
 
 	// первый запуск производится в hardware_adc_startonescan().
 	// А здесь всё...
@@ -4152,10 +4142,8 @@ void hardware_spi_master_initialize(void)
 			0;
 
 		{
-			//const IRQn_ID_t int_id = DMAINT15_IRQn;
-			//IRQ_SetHandler(int_id, r7s721_usb0_dma1_dmatx_handler);
-			//IRQ_SetPriority(int_id, ARM_REALTIME_PRIORITY);
-			//IRQ_Enable(int_id);
+			// connect to interrupt
+			//arm_hardware_set_handler_system(DMAINT15_IRQn, r7s721_usb0_dma1_dmatx_handler);
 		}
 
 		DMAC15.CHCTRL_n = DMAC15_CHCTRL_n_SWRST;		// SWRST
@@ -6163,12 +6151,7 @@ hardware_elkey_timer_initialize(void)
     /* ---- OSTM count stop trigger register (TT) setting ---- */
     OSTM1.OSTMnTT = 0x01u;      /* Stop counting */
 
-	{
-		const IRQn_ID_t int_id = OSTMI1TINT_IRQn;
-		IRQ_SetHandler(int_id, r7s721_ostm1_interrupt);	/* ==== Register OS timer interrupt handler ==== */
-		IRQ_SetPriority(int_id, ARM_SYSTEM_PRIORITY);		/* ==== Set priority of OS timer interrupt to 5 ==== */
-		IRQ_Enable(int_id);		/* ==== Validate OS timer interrupt ==== */
-	}
+    arm_hardware_set_handler_system(OSTMI1TINT_IRQn, r7s721_ostm1_interrupt);
 
 	OSTM1.OSTMnTS = 0x01u;      /* Start counting */
 
@@ -6658,12 +6641,7 @@ void hardware_sdhost_initialize(void)
 	hardware_sdhost_setbuswidth(0);
 	hardware_sdhost_setspeed(400000uL);
 
-	{
-		const IRQn_ID_t int_id = DMAINT14_IRQn;
-		IRQ_SetHandler(int_id, r7s721_sdhi0_dma_handler);
-		IRQ_SetPriority(int_id, ARM_SYSTEM_PRIORITY);
-		IRQ_Enable(int_id);
-	}
+    arm_hardware_set_handler_system(DMAINT14_IRQn, r7s721_sdhi0_dma_handler);
 
 	HARDWARE_SDIO_INITIALIZE();	// Подсоединить контроллер к выводам процессора
 
@@ -6683,13 +6661,8 @@ void hardware_sdhost_initialize(void)
 	hardware_sdhost_setbuswidth(0);
 	hardware_sdhost_setspeed(400000uL);
 
-	NVIC_SetVector(SDIO_IRQn, (uintptr_t) & SDIO_IRQHandler);
-	NVIC_SetPriority(SDIO_IRQn, ARM_SYSTEM_PRIORITY);
-	NVIC_EnableIRQ(SDIO_IRQn);	// SDIO_IRQHandler() enable
-
-	NVIC_SetVector(DMA2_Stream6_IRQn, (uintptr_t) & DMA2_Stream6_IRQHandler);
-	NVIC_SetPriority(DMA2_Stream6_IRQn, ARM_SYSTEM_PRIORITY);
-	NVIC_EnableIRQ(DMA2_Stream6_IRQn);	// DMA2_Stream6_IRQHandler() enable
+   arm_hardware_set_handler_system(SDIO_IRQn, SDIO_IRQHandler);
+   arm_hardware_set_handler_system(DMA2_Stream6_IRQn, DMA2_Stream6_IRQHandler);
 
 	HARDWARE_SDIO_INITIALIZE();	// Подсоединить контроллер к выводам процессора
 	// разрешить тактирование карты памяти
@@ -6711,13 +6684,8 @@ void hardware_sdhost_initialize(void)
 	hardware_sdhost_setbuswidth(0);
 	hardware_sdhost_setspeed(400000uL);
 
-	NVIC_SetVector(SDMMC1_IRQn, (uintptr_t) & SDMMC1_IRQHandler);
-	NVIC_SetPriority(SDMMC1_IRQn, ARM_SYSTEM_PRIORITY);
-	NVIC_EnableIRQ(SDMMC1_IRQn);	// SDIO_IRQHandler() enable
-
-	NVIC_SetVector(DMA2_Stream6_IRQn, (uintptr_t) & DMA2_Stream6_IRQHandler);
-	NVIC_SetPriority(DMA2_Stream6_IRQn, ARM_SYSTEM_PRIORITY);
-	NVIC_EnableIRQ(DMA2_Stream6_IRQn);	// DMA2_Stream6_IRQHandler() enable
+   arm_hardware_set_handler_system(SDMMC1_IRQn, SDMMC1_IRQHandler);
+   arm_hardware_set_handler_system(DMA2_Stream6_IRQn, DMA2_Stream6_IRQHandler);
 
 	HARDWARE_SDIO_INITIALIZE();	// Подсоединить контроллер к выводам процессора
 	// разрешить тактирование карты памяти
@@ -6741,9 +6709,7 @@ void hardware_sdhost_initialize(void)
 	hardware_sdhost_setbuswidth(0);
 	hardware_sdhost_setspeed(400000uL);
 
-	NVIC_SetVector(SDMMC1_IRQn, (uintptr_t) & SDMMC1_IRQHandler);
-	NVIC_SetPriority(SDMMC1_IRQn, ARM_SYSTEM_PRIORITY);
-	NVIC_EnableIRQ(SDMMC1_IRQn);	// SDIO_IRQHandler() enable
+   arm_hardware_set_handler_system(SDMMC1_IRQn, SDMMC1_IRQHandler);
 
 	// разрешить тактирование карты памяти
 	SDMMC1->POWER = 3 * SDMMC_POWER_PWRCTRL_0;
@@ -11852,6 +11818,66 @@ static void vectors_relocate(void)
 	//ASSERT(SCB->VTOR == (uint32_t) & ramVectors);
 }
 #endif /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM0 || CPUSTYLE_ARM_CM7 */
+
+#if CPUSTYLE_ARM
+// Set interrupt vector wrapper
+void arm_hardware_set_handler_overrealtime(uint_fast16_t int_id, void (* handler)(void))
+{
+#if (CPUSTYLE_ARM_CA9 || CPUSTYLE_ARM_CA7)
+
+	VERIFY(IRQ_SetHandler(int_id, handler) == 0);
+	VERIFY(IRQ_SetPriority(int_id, ARM_OVERREALTIME_PRIORITY) == 0);
+	VERIFY(IRQ_Enable(int_id) == 0);
+	VERITY(IRQ_SetMode(int_id, IRQ_MODE_DOMAIN_NONSECURE | IRQ_MODE_CPU_0) == 0);
+
+#else /* CPUSTYLE_STM32MP1 */
+
+	NVIC_SetVector(int_id, (uintptr_t) handler);
+	NVIC_SetPriority(int_id, ARM_OVERREALTIME_PRIORITY);
+	NVIC_EnableIRQ(int_id);
+
+#endif /* CPUSTYLE_STM32MP1 */
+}
+
+// Set interrupt vector wrapper
+void arm_hardware_set_handler_realtime(uint_fast16_t int_id, void (* handler)(void))
+{
+#if (CPUSTYLE_ARM_CA9 || CPUSTYLE_ARM_CA7)
+
+	VERIFY(IRQ_SetHandler(int_id, handler) == 0);
+	VERIFY(IRQ_SetPriority(int_id, ARM_REALTIME_PRIORITY) == 0);
+	VERIFY(IRQ_Enable(int_id) == 0);
+	VERITY(IRQ_SetMode(int_id, IRQ_MODE_DOMAIN_NONSECURE | IRQ_MODE_CPU_0) == 0);
+
+#else /* CPUSTYLE_STM32MP1 */
+
+	NVIC_SetVector(int_id, (uintptr_t) handler);
+	NVIC_SetPriority(int_id, ARM_REALTIME_PRIORITY);
+	NVIC_EnableIRQ(int_id);
+
+#endif /* CPUSTYLE_STM32MP1 */
+}
+
+// Set interrupt vector wrapper
+void arm_hardware_set_handler_system(uint_fast16_t int_id, void (* handler)(void))
+{
+#if (CPUSTYLE_ARM_CA9 || CPUSTYLE_ARM_CA7)
+
+	VERIFY(IRQ_SetHandler(int_id, handler) == 0);
+	VERIFY(IRQ_SetPriority(int_id, ARM_SYSTEM_PRIORITY) == 0);
+	VERIFY(IRQ_Enable(int_id) == 0);
+	VERITY(IRQ_SetMode(int_id, IRQ_MODE_DOMAIN_NONSECURE | IRQ_MODE_CPU_0) == 0);
+
+#else /* CPUSTYLE_STM32MP1 */
+
+	NVIC_SetVector(int_id, (uintptr_t) handler);
+	NVIC_SetPriority(int_id, ARM_SYSTEM_PRIORITY);
+	NVIC_EnableIRQ(int_id);
+
+#endif /* CPUSTYLE_STM32MP1 */
+}
+
+#endif /* CPUSTYLE_ARM */
 
 
 // hack for eliminate exception handling unwinding code
