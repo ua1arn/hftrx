@@ -6,15 +6,15 @@
 //
 
 #include "hardware.h"
-#include "pio.h"
 #include "board.h"
 #include "audio.h"
 #include "synthcalcs.h"
-#include "spifuncs.h"
 #include "keyboard.h"
 
 #include "display/display.h"
 #include "formats.h"
+#include "inc/gpio.h"
+#include "inc/spi.h"
 
 #if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_STMPE811)
 

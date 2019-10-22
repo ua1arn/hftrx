@@ -8,9 +8,9 @@
 #include "hardware.h"
 #include "board.h"
 #include "display.h"
-#include "spifuncs.h"
 #include <stdint.h>
 
+#include "../inc/spi.h"
 #include "display.h"
 #include "formats.h"
 

@@ -7,8 +7,8 @@
 /* TWI (I2C) interface */
 //
 #include "hardware.h"	/* зависящие от процессора функции работы с портами */
-#include "pio.h"
 #include "formats.h"	// for debug prints
+#include "inc/gpio.h"
 
 #if WITHTWIHW || WITHTWISW
 

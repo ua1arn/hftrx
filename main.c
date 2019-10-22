@@ -15,12 +15,11 @@
 #include "display/display.h"
 #include "formats.h"
 
-#include "spifuncs.h"
-
 #include "audio.h"
 
 #include "codecs/tlv320aic23.h"	// константы управления усилением кодека
 #include "codecs/nau8822.h"
+#include "inc/spi.h"
 
 #if WITHUSEAUDIOREC || WITHUSESDCARD
 	#include "sdcard.h"

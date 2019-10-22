@@ -18,10 +18,10 @@
 #include "display/display.h"
 #include "formats.h"
 
-#include "spifuncs.h"
-
 #include "codecs/tlv320aic23.h"	// константы управления усилением кодека
 #include "codecs/nau8822.h"
+#include "inc/spi.h"
+#include "inc/gpio.h"
 
 #if WITHUSEAUDIOREC
 	#include "fatfs/ff.h"
@@ -4078,7 +4078,7 @@ static void sdcard_filesystest(void)
 //HARDWARE_SPI_HANGON()	- поддержка SPI программатора - подключение к программируемому устройству
 //HARDWARE_SPI_HANGOFF() - поддержка SPI программатора - отключение от программируемого устройства
 
-#if defined(targetdataflash)
+#if 0 && defined(targetdataflash)
 
 static void spi_hangon(void)
 {

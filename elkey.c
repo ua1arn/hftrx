@@ -10,8 +10,8 @@
 
 #include "hardware.h"
 #include "board.h"
-#include "spifuncs.h"
 #include "formats.h"
+#include "inc/spi.h"
 
 #if WITHELKEY
 // 

@@ -7,7 +7,6 @@
 #ifndef PARAMDEPEND_H_INCLUDED
 #define PARAMDEPEND_H_INCLUDED 1
 
-
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */

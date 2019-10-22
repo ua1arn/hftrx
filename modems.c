@@ -4,12 +4,11 @@
 #include "hardware.h"	/* зависящие от процессора функции работы с портами */
 #include "board.h"
 #include "audio.h"
-#include "spifuncs.h"
-
 #include <string.h>
 #include <math.h>
 #include <ctype.h>
 #include <assert.h>
+#include "inc/spi.h"
 
 #if WITHMODEM
 

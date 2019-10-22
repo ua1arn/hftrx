@@ -12,11 +12,10 @@
 #include <math.h>
 
 #include "board.h"
-#include "spifuncs.h"
 #include "audio.h"
-#include "pio.h"
-
 #include "formats.h"	// for debug prints
+#include "inc/gpio.h"
+#include "inc/spi.h"
 
 
 static unsigned long ulmin(

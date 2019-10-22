@@ -6,7 +6,6 @@
 //
 
 #include "hardware.h"
-#include "pio.h"
 #include "board.h"
 #include "audio.h"
 #include "formats.h"
@@ -4423,7 +4422,7 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 		unsigned partlen;
 		const uint_fast8_t id = STRING_ID_DFU_0;
 		char b [128];
-		local_snprintf_P(b, ARRAY_SIZE(b), strFlashDesc_3, 
+		local_snprintf_P(b, ARRAY_SIZE(b), strFlashDesc_4,
 			USBD_DFU_FLASHNAME,
 			(unsigned long) BOOTLOADER_APPBASE,
 			(unsigned) (BOOTLOADER_APPSIZE / BOOTLOADER_PAGESIZE),
@@ -4441,7 +4440,7 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 		unsigned partlen;
 		const uint_fast8_t id = STRING_ID_DFU_1;
 		char b [128];
-		local_snprintf_P(b, ARRAY_SIZE(b), strFlashDesc_3, 
+		local_snprintf_P(b, ARRAY_SIZE(b), strFlashDesc_4,
 			USBD_DFU_FLASHNAME,
 			(unsigned long) BOOTLOADER_SELFBASE,
 			(unsigned) (BOOTLOADER_SELFSIZE / BOOTLOADER_PAGESIZE),
@@ -4460,7 +4459,7 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 		unsigned partlen;
 		const uint_fast8_t id = STRING_ID_DFU_2;
 		char b [128];
-		local_snprintf_P(b, ARRAY_SIZE(b), strFlashDesc_3, 
+		local_snprintf_P(b, ARRAY_SIZE(b), strFlashDesc_3,
 			(unsigned long) BOOTLOADER_APPAREA,
 			(unsigned) (BOOTLOADER_APPFULL / BOOTLOADER_PAGESIZE),
 			(unsigned) (BOOTLOADER_PAGESIZE / 1024)

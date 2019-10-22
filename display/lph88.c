@@ -13,7 +13,7 @@
 #include "display.h"
 #include <stdint.h>
 
-#include "spifuncs.h"
+#include "../inc/spi.h"
 
 #if LCDMODE_LPH88
 

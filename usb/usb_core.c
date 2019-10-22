@@ -6,13 +6,14 @@
 //
 
 #include "hardware.h"
-#include "pio.h"
 #include "board.h"
 #include "audio.h"
 
 #include "display/display.h"
 #include "formats.h"
 #include <string.h>
+
+#include "gpio.h"
 
 #if WITHUSBHW
 

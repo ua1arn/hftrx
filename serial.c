@@ -12,10 +12,10 @@
 #include <math.h>
 
 #include "board.h"
-#include "spifuncs.h"
 #include "audio.h"
 
 #include "formats.h"	// for debug prints
+#include "inc/spi.h"
 
 #if WITHUART1HW 
 

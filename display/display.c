@@ -9,11 +9,10 @@
 
 #include "hardware.h"
 #include "board.h"
-#include "spifuncs.h"	// hardware_spi_master_send_frame
-
 #include "display.h"
 #include "formats.h"
 #include <string.h>
+#include "../inc/spi.h"	// hardware_spi_master_send_frame
 
 #if LCDMODE_LTDC && ! defined (SDRAM_BANK_ADDR)
 	// буфер экрана

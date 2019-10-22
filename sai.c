@@ -6,12 +6,12 @@
 //
 
 #include "hardware.h"	/* зависящие от процессора функции работы с портами */
-#include "pio.h"
 #include "board.h"
 
 #include "audio.h"
 
 #include "formats.h"	// for debug prints
+#include "inc/gpio.h"
 
 //#include <string.h>		// memcpy() for debug
 

@@ -8,7 +8,6 @@
 #include "hardware.h"	/* зависящие от процессора функции работы с портами */
 #include "board.h"
 #include "audio.h"
-#include "spifuncs.h"
 #include "formats.h"	// for debug prints
 
 #include "codecs/tlv320aic23.h"	// константы управления усилением кодека
@@ -19,6 +18,7 @@
 #include <string.h>
 #include <math.h>
 #include <assert.h>
+#include "inc/spi.h"
 
 //#define WITHLIMITEDAGCATTACK 1
 #define DUALFILTERSPROCESSING 1	// Фильтры НЧ для левого и правого каналов - вынсено в конфигурационный файл

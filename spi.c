@@ -6,10 +6,10 @@
 //
 
 #include "hardware.h"	/* зависящие от процессора функции работы с портами */
-#include "spifuncs.h"
-
 #include <stdlib.h>
 //#include <assert.h>
+#include "spi.h"
+#include "gpio.h"
 
 // битовые маски, соответствующие биту в байте по его номеру.
 const uint_fast8_t rbvalues [8] =
@@ -608,3 +608,231 @@ void spi_initialize(void)
 }
 
 #endif /* WITHSPIHW || WITHSPISW */
+
+#if WIHSPIDFHW
+
+
+/////////
+// https://github.com/renesas-rz/rza1_qspi_flash/blob/master/qspi_flash.c
+
+
+// Use block SPIBSC0
+// 17. SPI Multi I/O Bus Controller
+//
+// P4_2: WP#
+// P4_4: SCLK
+// P4_5: CS#
+// P4_6: MOSI
+// P4_7: MISO
+void spidf_initialize(void)
+{
+#if 0
+	// spi multi-io hang on
+	CPG.STBCR9 &= ~ CPG_STBCR9_BIT_MSTP93;	// Module Stop 93	- 0: Clock supply to channel 0 of the SPI multi I/O bus controller is runnuing.
+	(void) CPG.STBCR9;			/* Dummy read */
+#endif
+
+#if 0
+	SPIBSC0.CMNCR |= SPIBSC_CMNCR_MD;	// SPI mode.
+	(void) SPIBSC0.CMNCR;
+	ASSERT(SPIBSC0.CMNCR & SPIBSC_CMNCR_MD);
+
+	SPIBSC0.SPBCR = (SPIBSC0.SPBCR & ~ (SPIBSC_SPBCR_BRDV | SPIBSC_SPBCR_SPBR)) |
+		(0 << SPIBSC_SPBCR_BRDV_SHIFT) |	// 0..3
+		(2 << SPIBSC_SPBCR_SPBR_SHIFT) |	// 0..255
+		0;
+
+	arm_hardware_pio4_alternative(1U << 4, R7S721_PIOALT_4);	/* P4_4 SCLK / SPBCLK_0 */
+	arm_hardware_pio4_alternative(1U << 5, R7S721_PIOALT_4);	/* P4_5 CS# / SPBSSL_0 */
+	arm_hardware_pio4_alternative(1U << 6, R7S721_PIOALT_4);	/* P4_6 MOSI / SPBIO00_0 */
+	arm_hardware_pio4_alternative(1U << 7, R7S721_PIOALT_4);	/* P4_7 MISO / SPBIO10_0 */
+
+	/*
+		The transfer format is determined based on the following registers.
+		- Common control register (CMNCR)
+		- SSL delay register (SSLDR)
+		- Bit rate setting register (SPBCR)
+		- SPI mode control register (SMCR)
+		- SPI mode command setting register (SMCMR)
+		- SPI mode address setting register (SMADR)
+		- SPI mode option setting register (SMOPR)
+		- SPI mode enable setting register (SMENR)
+		- SPI mode read data register (SMRDR)
+		- SPI mode write data register (SMWDR)
+		- SPI mode dummy cycle setting register (SMDMCR)
+		- SPI mode DDR enable register (SMDRENR)*
+	*/
+	SPIBSC0.SMENR = (SPIBSC0.SMENR & ~ (SPIBSC_SMENR_ADE | SPIBSC_SMENR_SPIDE)) |
+		(0x00 << SPIBSC_SMENR_ADE_SHIFT) | /* No address send */
+		(0x08 << SPIBSC_SMENR_SPIDE_SHIFT) | /* 8 bits transferred (enables data at address 0 of the SPI mode read/write data registers 0) */
+		0;
+
+	SPIBSC0.SMCMR =
+		(0x9F << SPIBSC_SMCMR_CMD_SHIFT) | /* 0x9f read id register */
+		(0x00 << SPIBSC_SMCMR_OCMD_SHIFT) | /* xxxx */
+		0;
+
+	SPIBSC0.SMCR = SPIBSC_SMCR_SPIE | SPIBSC_SMCR_SPIRE | SPIBSC_SMCR_SPIWE;
+
+	SPIBSC0.SMWDR0.UINT32 = 0xFFFFFFFF;
+	TP();
+	while ((SPIBSC0.CMNSR & SPIBSC_CMNSR_TEND) == 0)
+		;
+	debug_printf_P(PSTR("SMRDR0=%08lX\n"), SPIBSC0.SMRDR0.UINT32);
+	TP();
+	SPIBSC0.SMWDR0.UINT32 = 0xFFFFFFFF;
+	TP();
+	while ((SPIBSC0.CMNSR & SPIBSC_CMNSR_TEND) == 0)
+		;
+	debug_printf_P(PSTR("SMRDR0=%08lX\n"), SPIBSC0.SMRDR0.UINT32);
+
+#endif
+
+#if 0
+	SPIBSC0.SPBCR = 0x200;	// baud rate
+	SPIBSC0.SSLDR = 0x00;	// delay
+	SPIBSC0.DRCR = 0x0000;
+
+	SPIBSC0.CMNCR =
+		SPIBSC_CMNCR_MD |	// spi mode
+		(0x03 << SPIBSC_CMNCR_MOIIO3_SHIFT) |
+		(0x03 << SPIBSC_CMNCR_MOIIO2_SHIFT) |
+		(0x03 << SPIBSC_CMNCR_MOIIO1_SHIFT) |
+		(0x03 << SPIBSC_CMNCR_MOIIO0_SHIFT) |
+		(0x03 << SPIBSC_CMNCR_IO3FV_SHIFT) |
+		(0x03 << SPIBSC_CMNCR_IO2FV_SHIFT) |
+		(0x03 << SPIBSC_CMNCR_IO0FV_SHIFT) |
+		1 * SPIBSC_CMNCR_CPHAR |
+		1 * SPIBSC_CMNCR_CPHAT |
+		0;
+
+	SPIBSC0.SMENR =
+		0;
+
+	SPIBSC0.SMCR =
+		SPIBSC_SMCR_SPIE |
+		SPIBSC_SMCR_SPIRE |
+		SPIBSC_SMCR_SPIWE |
+		0;
+#endif
+
+	// Connrect I/O pins
+	arm_hardware_pio4_outputs(1U << 2, 1U << 2);				/* P4_2 WP / SPBIO20_0 */
+	arm_hardware_pio4_outputs(1U << 3, 1U << 3);				/* P4_3 NC / SPBIO30_0 */
+	//arm_hardware_pio4_alternative(1U << 4, R7S721_PIOALT_4);	/* P4_4 SCLK / SPBCLK_0 */
+	arm_hardware_pio4_outputs(1U << 4, 1U << 4);	/* P4_4 SCLK / SPBCLK_0 */
+	//arm_hardware_pio4_alternative(1U << 5, R7S721_PIOALT_4);	/* P4_5 CS# / SPBSSL_0 */
+	arm_hardware_pio4_outputs(1U << 5, 1 * (1U << 5));			/* P4_5 CS# / SPBSSL_0 */
+	//arm_hardware_pio4_alternative(1U << 6, R7S721_PIOALT_4);	/* P4_6 MOSI / SPBIO00_0 */
+	arm_hardware_pio4_outputs(1U << 6, 1U << 6);	/* P4_6 MOSI / SPBIO00_0 */
+	//arm_hardware_pio4_alternative(1U << 7, R7S721_PIOALT_4);	/* P4_7 MISO / SPBIO10_0 */
+	arm_hardware_pio4_inputs(1U << 7);	/* P4_7 MISO / SPBIO10_0 */
+}
+
+#define SPIDF_MISO() ((R7S721_INPUT_PORT(4) & (1U << 7)) != 0)
+#define SPIDF_MOSI(v) do { if (v) R7S721_TARGET_PORT_S(4, (1U << 6)); else R7S721_TARGET_PORT_C(4, (1U << 6)); } while (0)
+#define SPIDF_SCLK(v) do { if (v) R7S721_TARGET_PORT_S(4, (1U << 4)); else R7S721_TARGET_PORT_C(4, (1U << 4)); } while (0)
+
+static uint_fast8_t spidf_rbit(uint_fast8_t v)
+{
+	uint_fast8_t r;
+	SPIDF_MOSI(v);
+	SPIDF_SCLK(0);
+	r = SPIDF_MISO();
+	SPIDF_SCLK(1);
+	return r;
+}
+
+static void spidf_wbit(uint_fast8_t v)
+{
+	SPIDF_MOSI(v);
+	SPIDF_SCLK(0);
+	SPIDF_SCLK(1);
+}
+
+
+uint_fast8_t spidf_read_byte(spitarget_t target, uint_fast8_t v)
+{
+	uint_fast8_t r = 0;
+
+	r = r * 2 + spidf_rbit(v & 0x80);
+	r = r * 2 + spidf_rbit(v & 0x40);
+	r = r * 2 + spidf_rbit(v & 0x20);
+	r = r * 2 + spidf_rbit(v & 0x10);
+	r = r * 2 + spidf_rbit(v & 0x08);
+	r = r * 2 + spidf_rbit(v & 0x04);
+	r = r * 2 + spidf_rbit(v & 0x02);
+	r = r * 2 + spidf_rbit(v & 0x01);
+
+	return r;
+}
+
+static void spidf_write_byte(spitarget_t target, uint_fast8_t v)
+{
+	spidf_wbit(v & 0x80);
+	spidf_wbit(v & 0x40);
+	spidf_wbit(v & 0x20);
+	spidf_wbit(v & 0x10);
+	spidf_wbit(v & 0x08);
+	spidf_wbit(v & 0x04);
+	spidf_wbit(v & 0x02);
+	spidf_wbit(v & 0x01);
+}
+
+void spidf_uninitialize(void)
+{
+	//arm_hardware_pio4_inputs(0xFC);		// Отключить процессор от SERIAL FLASH
+#if 0
+	// spi multi-io hang off
+	CPG.STBCR9 |= CPG_STBCR9_BIT_MSTP93;	// Module Stop 93	- 1: Clock supply to channel 0 of the SPI multi I/O bus controller is halted.
+	(void) CPG.STBCR9;			/* Dummy read */
+#endif
+}
+
+void spidf_select(spitarget_t target, uint_fast8_t mode)
+{
+#if 1
+	// Connrect I/O pins
+	arm_hardware_pio4_outputs(0x7C, 0x7C);
+#endif
+	do {	R7S721_TARGET_PORT_C(4, (1U << 5)); } while (0);
+}
+
+void spidf_unselect(spitarget_t target)
+{
+	do {	R7S721_TARGET_PORT_S(4, (1U << 5)); } while (0);
+#if 1
+	arm_hardware_pio4_inputs(0x7C);		// Отключить процессор от SERIAL FLASH
+#endif
+}
+
+void spidf_to_read(spitarget_t target)
+{
+}
+
+void spidf_to_write(spitarget_t target)
+{
+}
+
+void spidf_progval8_p1(spitarget_t target, uint_fast8_t sendval)
+{
+	spidf_write_byte(target, sendval);
+}
+
+void spidf_progval8_p2(spitarget_t target, uint_fast8_t sendval)
+{
+	spidf_write_byte(target, sendval);
+}
+
+uint_fast8_t spidf_complete(spitarget_t target)
+{
+	return 0;
+}
+
+uint_fast8_t spidf_progval8(spitarget_t target, uint_fast8_t sendval)
+{
+	return spidf_read_byte(target, sendval);
+}
+
+
+#endif /* WIHSPIDFHW */

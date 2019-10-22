@@ -20,6 +20,7 @@
 #define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 //#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	*/
 #define WITHSDRAMHW	1	/* В процессоре есть внешняя память */
+#define WIHSPIDFHW	1	/* обслуживание DATA FLASH */
 
 //#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 //#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */

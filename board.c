@@ -6,11 +6,11 @@
 //
 
 #include "hardware.h"
-#include "pio.h"
 #include "board.h"
 #include "audio.h"
+#include "inc/gpio.h"
+#include "inc/spi.h"
 #include "synthcalcs.h"
-#include "spifuncs.h"
 #include "keyboard.h"
 
 #define CTLREG_SPIMODE	SPIC_MODE3	
