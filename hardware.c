@@ -669,7 +669,7 @@ hardware_uart1_set_speed(uint_fast32_t baudrate)
 	USARTE0.BAUDCTRLA = (value & 0xff);	/* Значение получено уже уменьшенное на 1 */
 	USARTE0.BAUDCTRLB = (ATXMEGA_UBR_BSEL << 4) | ((value >> 8) & 0x0f);
 
-#elif CPUSTYLE_STM32
+#elif CPUSTYLE_STM32 || CPUSTYLE_STM32MP1
 
 	// uart1 on apb2 up to 72/36 MHz
 
@@ -830,7 +830,7 @@ hardware_uart2_set_speed(uint_fast32_t baudrate)
 	USARTE1.BAUDCTRLA = (value & 0xff);	/* Значение получено уже уменьшенное на 1 */
 	USARTE1.BAUDCTRLB = (ATXMEGA_UBR_BSEL << 4) | ((value >> 8) & 0x0f);
 
-#elif CPUSTYLE_STM32
+#elif CPUSTYLE_STM32 || CPUSTYLE_STM32MP1
 
 	// uart2 on apb1
 
@@ -1198,12 +1198,6 @@ static RAMFUNC void spool_adcdonebundle(void)
 			spool_elkeybundle();
 		}
 	}
-	#else
-	void  
-	TIM3_IRQHandler(void)
-	{
-	}
-
 	#endif /* WITHELKEY */
 
 	/* прерывания от валколера при наличии в системе вложенных прерываний вызываются на уровне приоритета REALTINE */
@@ -1462,18 +1456,9 @@ static RAMFUNC void spool_adcdonebundle(void)
 		}
 	}
 
-	RAMFUNC_NONILINE void USART0_Handler(void)
-	{
-	}
+#elif CPUSTYLE_AT91SAM7S
 
-	RAMFUNC_NONILINE void USART1_Handler(void)
-	{
-	}
-
-
-#elif CPUSTYLE_AT91SAM7S 
-
-	RAMFUNC_NONILINE void AT91F_PIOA_IRQHandler(void) 
+	RAMFUNC_NONILINE void AT91F_PIOA_IRQHandler(void)
 	{
 		// When the software reads PIO_ISR, all the interrupts are automatically cleared. This signifies that
 		// all the interrupts that are pending when PIO_ISR is read must be handled.
@@ -1641,7 +1626,14 @@ static RAMFUNC void spool_adcdonebundle(void)
 	}
 
 #elif CPUSTYLE_STM32MP1
-	#warning Insert code for CPUSTYLE_STM32MP1
+	#warning Insert interrupt handlers code for CPUSTYLE_STM32MP1
+	void
+	SysTick_Handler(void)
+	{
+		spool_systimerbundle1();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
+		spool_systimerbundle2();	// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
+	}
+
 #else
 
 	#error Undefined CPUSTYLE_XXX interrrupts handlers
