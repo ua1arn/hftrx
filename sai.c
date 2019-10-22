@@ -97,32 +97,7 @@ static uintptr_t dma_flush32tx(uintptr_t addr)
 	return addr;
 }
 
-#if CPUSTYLE_STM32MP1
-
-static const codechw_t fpgacodechw =
-{
-	NULL, // r7s721_ssif1_fullduplex_initialize,
-	NULL, // hardware_dummy_initialize,
-	NULL, // r7s721_ssif1_dmarx_initialize,
-	NULL, // r7s721_ssif1_dmatx_initialize,
-	NULL, // r7s721_ssif1_fullduplex_enable,
-	NULL, // hardware_dummy_enable,
-	"ssif1-audiocodechw"
-};
-
-static const codechw_t audiocodechw =
-{
-	NULL, // r7s721_ssif0_fullduplex_initialize,
-	NULL, // hardware_dummy_initialize,
-	NULL, // r7s721_ssif0_dmarx_initialize,
-	NULL, // r7s721_ssif0_dmatx_initialize,
-	NULL, // r7s721_ssif0_fullduplex_enable,
-	NULL, // hardware_dummy_enable,
-	"ssif0-audiocodechw"
-};
-
-
-#elif CPUSTYLE_STM32
+#if CPUSTYLE_STM32 || CPUSTYLE_STM32MP1
 
 enum
 {
@@ -277,10 +252,17 @@ DMA_I2S2_TX_initialize(void)
 {
 	/* SPI2_TX - Stream4, Channel0 */ 
 	/* DMA для передачи по I2S2*/
-	RCC->AHB1ENR |= RCC_AHB1ENR_DMA1EN;//включил DMA1
-	__DSB();
+#if CPUSTYLE_STM32MP1
+	RCC->MC_AHB2ENSETR |= RCC_MC_AHB2ENSETR_DMA1EN; // включил DMA1
+	(void) RCC->MC_AHB2ENSETR;
+	RCC->MC_AHB2ENSETR |= RCC_MC_AHB2ENSETR_DMAMUXEN; // включил DMAMUX
+	(void) RCC->MC_AHB2ENSETR;
+#else /* CPUSTYLE_STM32MP1 */
+	RCC->AHB1ENR |= RCC_AHB1ENR_DMA1EN;	// включил DMA1
+	(void) RCC->AHB1ENR;
+#endif /* CPUSTYLE_STM32MP1 */
 
-#if CPUSTYLE_STM32H7XX
+#if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 	// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
 	// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
 	enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
@@ -313,9 +295,22 @@ DMA_I2S2_TX_initialize(void)
 	DMA1->HIFCR = DMA_HISR_TCIF4;	// Clear TC interrupt flag соответствующий stream
 	DMA1_Stream4->CR |= DMA_SxCR_TCIE;	// Разрешаем прерывания от DMA
 
+#if CPUSTYLE_STM32MP1
+
+	{
+		const IRQn_ID_t int_id = DMA1_Stream4_IRQn;
+		IRQ_SetHandler(int_id, DMA1_Stream4_IRQHandler);
+		IRQ_SetPriority(int_id, ARM_REALTIME_PRIORITY);
+		IRQ_Enable(int_id);
+	}
+
+#else /* CPUSTYLE_STM32MP1 */
+
 	NVIC_SetVector(DMA1_Stream4_IRQn, (uintptr_t) & DMA1_Stream4_IRQHandler);
 	NVIC_SetPriority(DMA1_Stream4_IRQn, ARM_REALTIME_PRIORITY);
 	NVIC_EnableIRQ(DMA1_Stream4_IRQn);	// DMA1_Stream4_IRQHandler() enable
+
+#endif /* CPUSTYLE_STM32MP1 */
 
 	DMA1_Stream4->CR |= DMA_SxCR_EN;
 }
@@ -328,8 +323,15 @@ DMA_I2S2ext_rx_init(void)
 {
 	const uint_fast8_t ch = 3;
 	/* I2S2_EXT_RX - Stream3, Channel3 */ 
-	RCC->AHB1ENR |= RCC_AHB1ENR_DMA1EN;//включил DMA1
-	__DSB();
+#if CPUSTYLE_STM32MP1
+	RCC->MC_AHB2ENSETR |= RCC_MC_AHB2ENSETR_DMA1EN; // включил DMA1
+	(void) RCC->MC_AHB2ENSETR;
+	RCC->MC_AHB2ENSETR |= RCC_MC_AHB2ENSETR_DMAMUXEN; // включил DMAMUX
+	(void) RCC->MC_AHB2ENSETR;
+#else /* CPUSTYLE_STM32MP1 */
+	RCC->AHB1ENR |= RCC_AHB1ENR_DMA1EN;	// включил DMA1
+	(void) RCC->AHB1ENR;
+#endif /* CPUSTYLE_STM32MP1 */
 
 	DMA1_Stream3->PAR = (uint32_t) & I2S2ext->DR;
     DMA1_Stream3->M0AR = dma_invalidate16rx(allocate_dmabuffer16());
@@ -369,10 +371,15 @@ static void
 DMA_I2S3_RX_initialize(void)
 {
 	/* I2S3_RX - DMA1, Stream0, Channel0 */ 
-	RCC->AHB1ENR |= RCC_AHB1ENR_DMA1EN;	//включил DMA1
-	__DSB();
+#if CPUSTYLE_STM32MP1
+	RCC->MC_AHB2ENSETR |= RCC_MC_AHB2ENSETR_DMA1EN; // включил DMA1
+	(void) RCC->MC_AHB2ENSETR;
+#else /* CPUSTYLE_STM32MP1 */
+	RCC->AHB1ENR |= RCC_AHB1ENR_DMA1EN;	// включил DMA1
+	(void) RCC->AHB1ENR;
+#endif /* CPUSTYLE_STM32MP1 */
 
-#if CPUSTYLE_STM32H7XX
+#if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 	// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
 	// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
 	enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
@@ -405,9 +412,22 @@ DMA_I2S3_RX_initialize(void)
 	DMA1->LIFCR = DMA_LISR_TCIF0;	// Clear TC interrupt flag
 	DMA1_Stream0->CR |= DMA_SxCR_TCIE;	// Разрешаем прерывания от DMA
 
+#if CPUSTYLE_STM32MP1
+
+	{
+		const IRQn_ID_t int_id = DMA1_Stream0_IRQn;
+		IRQ_SetHandler(int_id, DMA1_Stream0_IRQHandler);
+		IRQ_SetPriority(int_id, ARM_REALTIME_PRIORITY);
+		IRQ_Enable(int_id);
+	}
+
+#else /* CPUSTYLE_STM32MP1 */
+
 	NVIC_SetVector(DMA1_Stream0_IRQn, (uintptr_t) & DMA1_Stream0_IRQHandler);
 	NVIC_SetPriority(DMA1_Stream0_IRQn, ARM_REALTIME_PRIORITY);
 	NVIC_EnableIRQ(DMA1_Stream0_IRQn);	// DMA1_Stream0_IRQHandler() enable
+
+#endif /* CPUSTYLE_STM32MP1 */
 
 	DMA1_Stream0->CR |= DMA_SxCR_EN;
 }
@@ -517,12 +537,15 @@ hardware_i2s2_master_fullduplex_initialize(void)		/* инициализация 
 static void 
 hardware_i2s2_slave_tx_initialize(void)		/* инициализация I2S2, STM32F4xx */
 {
-#if CPUSTYLE_STM32H7XX
+#if CPUSTYLE_STM32MP1
+	RCC->MC_APB1ENSETR |= RCC_MC_APB1ENSETR_SPI2EN; // Подать тактирование
+	(void) RCC->MC_APB1ENSETR;
+#elif CPUSTYLE_STM32H7XX
 	RCC->APB1LENR |= RCC_APB1LENR_SPI2EN; // Подать тактирование
-	__DSB();
+	(void) RCC->APB1LENR;
 #else /* CPUSTYLE_STM32H7XX */
 	RCC->APB1ENR |= RCC_APB1ENR_SPI2EN; // Подать тактирование
-	__DSB();
+	(void) RCC->APB1ENR;
 #endif /* CPUSTYLE_STM32H7XX */
 	        
 	const portholder_t i2smode = 
@@ -662,12 +685,15 @@ static void
 hardware_i2s3_slave_rx_initialize(void)		/* инициализация I2S3 STM32F4xx */
 {
 	debug_printf_P(PSTR("hardware_i2s3_slave_rx_initialize\n"));
-#if CPUSTYLE_STM32H7XX
+#if CPUSTYLE_STM32MP1
+	RCC->MC_APB1ENSETR |= RCC_MC_APB1ENSETR_SPI3EN; // Подать тактирование
+	(void) RCC->MC_APB1ENSETR;
+#elif CPUSTYLE_STM32H7XX
 	RCC->APB1LENR |= RCC_APB1LENR_SPI3EN; // Подать тактирование
-	__DSB();
+	(void) RCC->APB1LENR;
 #else /* CPUSTYLE_STM32H7XX */
 	RCC->APB1ENR |= RCC_APB1ENR_SPI3EN; // Подать тактирование
-	__DSB();
+	(void) RCC->APB1LENR;
 #endif /* CPUSTYLE_STM32H7XX */
 	        
 	const portholder_t i2smode = 
@@ -704,7 +730,7 @@ hardware_i2s2_fullduplex_enable(void)
 {
 
 
-#if CPUSTYLE_STM32H7XX
+#if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 
 	I2S2ext->CFG1 |= SPI_CFG1_RXDMAEN; // DMA по приему (slave)
 	SPI2->CFG1 |= SPI_CFG1_TXDMAEN; // DMA по передаче
@@ -734,7 +760,7 @@ hardware_i2s2_fullduplex_enable(void)
 static void 
 hardware_i2s2_tx_enable(void)
 {
-#if CPUSTYLE_STM32H7XX
+#if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 	SPI2->CFG1 |= SPI_CFG1_TXDMAEN; // DMA по передаче
 	SPI2->CR1 |= SPI_CR1_SPE;		// I2S enable
 	SPI2->CR1 |= SPI_CR1_CSTART;	// I2S run
@@ -751,7 +777,7 @@ hardware_i2s2_tx_enable(void)
 static void 
 hardware_i2s3_rx_enable(void)
 {
-#if CPUSTYLE_STM32H7XX
+#if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 
 	SPI3->CFG1 |= SPI_CFG1_RXDMAEN; // DMA по приёму
 	SPI3->CR1 |= SPI_CR1_SPE;		// I2S enable
@@ -892,6 +918,9 @@ static void hardware_sai1_sai2_clock_selection(void)
 		*/
 	#elif CPUSTYLE_STM32H7XX
 		#warning TODO: implement for CPUSTYLE_STM32H7XX
+
+	#elif CPUSTYLE_STM32MP1
+		#warning TODO: implement for CPUSTYLE_STM32MP1
 
 	#else /* defined (STM32F446xx) */
 		// clock sources:
@@ -1113,10 +1142,17 @@ static void DMA_SAI1_A_TX_initialize(void)
 {
 	/* SAI1_A - Stream1, Channel0 */ 
 	/* DMA для передачи по I2S2*/
-	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;//включил DMA2
-	__DSB();
+#if CPUSTYLE_STM32MP1
+	RCC->MC_AHB2ENSETR |= RCC_MC_AHB2ENSETR_DMA2EN; // включил DMA2
+	(void) RCC->MC_AHB2ENSETR;
+	RCC->MC_AHB2ENSETR |= RCC_MC_AHB2ENSETR_DMAMUXEN; // включил DMAMUX
+	(void) RCC->MC_AHB2ENSETR;
+#else /* CPUSTYLE_STM32MP1 */
+	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;	// включил DMA2
+	(void) RCC->AHB1ENR;
+#endif /* CPUSTYLE_STM32MP1 */
 
-#if CPUSTYLE_STM32H7XX
+#if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 	// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
 	// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
 	enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
@@ -1148,9 +1184,22 @@ static void DMA_SAI1_A_TX_initialize(void)
 	DMA2->LIFCR = DMA_LISR_TCIF1;	// Clear TC interrupt flag
 	DMA2_Stream1->CR |= DMA_SxCR_TCIE;	// Разрешаем прерывания от DMA
 
+#if CPUSTYLE_STM32MP1
+
+	{
+		const IRQn_ID_t int_id = DMA2_Stream1_IRQn;
+		IRQ_SetHandler(int_id, DMA2_Stream1_IRQHandler);
+		IRQ_SetPriority(int_id, ARM_REALTIME_PRIORITY);
+		IRQ_Enable(int_id);
+	}
+
+#else /* CPUSTYLE_STM32MP1 */
+
 	NVIC_SetVector(DMA2_Stream1_IRQn, (uintptr_t) & DMA2_Stream1_IRQHandler);
 	NVIC_SetPriority(DMA2_Stream1_IRQn, ARM_REALTIME_PRIORITY);
 	NVIC_EnableIRQ(DMA2_Stream1_IRQn);	// DMA2_Stream1_IRQHandler() enable
+
+#endif /* CPUSTYLE_STM32MP1 */
 
 	DMA2_Stream1->CR |= DMA_SxCR_EN;
 
@@ -1162,10 +1211,17 @@ static void DMA_SAI1_A_TX_initialize(void)
 static void DMA_SAI1_B_RX_initialize(void)
 {
 	/* SAI1_B - Stream5, Channel0 */ 
-	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;//включил DMA2
-	__DSB();
+#if CPUSTYLE_STM32MP1
+	RCC->MC_AHB2ENSETR |= RCC_MC_AHB2ENSETR_DMA2EN; // включил DMA2
+	(void) RCC->MC_AHB2ENSETR;
+	RCC->MC_AHB2ENSETR |= RCC_MC_AHB2ENSETR_DMAMUXEN; // включил DMAMUX
+	(void) RCC->MC_AHB2ENSETR;
+#else /* CPUSTYLE_STM32MP1 */
+	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;	// включил DMA2
+	(void) RCC->AHB1ENR;
+#endif /* CPUSTYLE_STM32MP1 */
 
-#if CPUSTYLE_STM32H7XX
+#if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 	enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
 	//const uint_fast8_t muxi = 88;	// SAI1_B
 	//stm32h7xx_dma2mux(muxi, 0x05);
@@ -1199,9 +1255,22 @@ static void DMA_SAI1_B_RX_initialize(void)
 	DMA2->HIFCR = (DMA_HIFCR_CTCIF5 /* | DMA_HIFCR_CTEIF5 */);	// Clear TC interrupt flag соответствующий stream
 	DMA2_Stream5->CR |= (DMA_SxCR_TCIE /* | DMA_SxCR_TEIE */);	// прерывания от DMA по TC и TE
 
+#if CPUSTYLE_STM32MP1
+
+	{
+		const IRQn_ID_t int_id = DMA2_Stream5_IRQn;
+		IRQ_SetHandler(int_id, DMA2_Stream5_IRQHandler);
+		IRQ_SetPriority(int_id, ARM_REALTIME_PRIORITY);
+		IRQ_Enable(int_id);
+	}
+
+#else /* CPUSTYLE_STM32MP1 */
+
 	NVIC_SetVector(DMA2_Stream5_IRQn, (uintptr_t) & DMA2_Stream5_IRQHandler);
 	NVIC_SetPriority(DMA2_Stream5_IRQn, ARM_REALTIME_PRIORITY);
 	NVIC_EnableIRQ(DMA2_Stream5_IRQn);	// DMA2_Stream5_IRQHandler() enable
+
+#endif /* CPUSTYLE_STM32MP1 */
 
 	DMA2_Stream5->CR |= DMA_SxCR_EN;
 }
@@ -1212,9 +1281,19 @@ static void hardware_sai1_master_fullduplex_initialize(void)		/* инициал�
 {
 	hardware_sai1_sai2_clock_selection();
 
+#if CPUSTYLE_STM32MP1
+#else /* CPUSTYLE_STM32MP1 */
+#endif /* CPUSTYLE_STM32MP1 */
+	// Теперь настроим модуль SAI.
+#if CPUSTYLE_STM32MP1
+	// Теперь настроим модуль SAI.
+	RCC->MC_APB2ENSETR |= RCC_MC_APB2ENSETR_SAI1EN; //подать тактирование
+	(void) RCC->MC_APB2ENSETR;
+#else /* CPUSTYLE_STM32MP1 */
 	// Теперь настроим модуль SAI.
 	RCC->APB2ENR |= RCC_APB2ENR_SAI1EN; //подать тактирование
-	__DSB();
+	(void) RCC->APB2ENR;
+#endif /* CPUSTYLE_STM32MP1 */
 	
 
 	SAI1_Block_A->CR1 &= ~ SAI_xCR1_SAIEN;
@@ -1329,9 +1408,15 @@ static void hardware_sai1_slave_fullduplex_initialize(void)		/* инициали
 {
 	hardware_sai1_sai2_clock_selection();
 
+#if CPUSTYLE_STM32MP1
+	// Теперь настроим модуль SAI.
+	RCC->MC_APB2ENSETR |= RCC_MC_APB2ENSETR_SAI1EN; //подать тактирование
+	(void) RCC->MC_APB2ENSETR;
+#else /* CPUSTYLE_STM32MP1 */
 	// Теперь настроим модуль SAI.
 	RCC->APB2ENR |= RCC_APB2ENR_SAI1EN; //подать тактирование
-	__DSB();
+	(void) RCC->APB2ENR;
+#endif /* CPUSTYLE_STM32MP1 */
 	
 	SAI1_Block_A->CR1 &= ~ SAI_xCR1_SAIEN;
 	SAI1_Block_B->CR1 &= ~ SAI_xCR1_SAIEN;
@@ -1551,10 +1636,17 @@ void DMA2_Stream4_IRQHandler(void)
 static void DMA_SAI2_A_TX_initializeXXX(void)
 {
 
-	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;//включил DMA2
-	__DSB();
+#if CPUSTYLE_STM32MP1
+	RCC->MC_AHB2ENSETR |= RCC_MC_AHB2ENSETR_DMA2EN; // включил DMA2
+	(void) RCC->MC_AHB2ENSETR;
+	RCC->MC_AHB2ENSETR |= RCC_MC_AHB2ENSETR_DMAMUXEN; // включил DMAMUX
+	(void) RCC->MC_AHB2ENSETR;
+#else /* CPUSTYLE_STM32MP1 */
+	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;	// включил DMA2
+	(void) RCC->AHB1ENR;
+#endif /* CPUSTYLE_STM32MP1 */
 
-	#if CPUSTYLE_STM32H7XX
+	#if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 		// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
 		// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
 		enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
@@ -1597,10 +1689,17 @@ static void DMA_SAI2_A_TX_initializeXXX(void)
 // Use arm_hardware_flush
 static void DMA_SAI2_A_TX_initializeAUDIO48(void)
 {
-	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;//включил DMA2
-	__DSB();
+#if CPUSTYLE_STM32MP1
+	RCC->MC_AHB2ENSETR |= RCC_MC_AHB2ENSETR_DMA2EN; // включил DMA2
+	(void) RCC->MC_AHB2ENSETR;
+	RCC->MC_AHB2ENSETR |= RCC_MC_AHB2ENSETR_DMAMUXEN; // включил DMAMUX
+	(void) RCC->MC_AHB2ENSETR;
+#else /* CPUSTYLE_STM32MP1 */
+	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;	// включил DMA2
+	(void) RCC->AHB1ENR;
+#endif /* CPUSTYLE_STM32MP1 */
 
-	#if CPUSTYLE_STM32H7XX
+	#if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 		// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
 		// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
 		enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
@@ -1644,10 +1743,17 @@ static void DMA_SAI2_A_TX_initializeAUDIO48(void)
 // Use arm_hardware_invalidate
 static void DMA_SAI2_B_RX_initializeRTS96(void)
 {
-	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;//включил DMA2
-	__DSB();
+#if CPUSTYLE_STM32MP1
+	RCC->MC_AHB2ENSETR |= RCC_MC_AHB2ENSETR_DMA2EN; // включил DMA2
+	(void) RCC->MC_AHB2ENSETR;
+	RCC->MC_AHB2ENSETR |= RCC_MC_AHB2ENSETR_DMAMUXEN; // включил DMAMUX
+	(void) RCC->MC_AHB2ENSETR;
+#else /* CPUSTYLE_STM32MP1 */
+	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;	// включил DMA2
+	(void) RCC->AHB1ENR;
+#endif /* CPUSTYLE_STM32MP1 */
 
-	#if CPUSTYLE_STM32H7XX
+	#if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 		// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
 		// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
 		enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
@@ -1692,10 +1798,17 @@ static void DMA_SAI2_B_RX_initializeRTS96(void)
 // Use arm_hardware_invalidate
 static void DMA_SAI2_B_RX_initializeAUDIO48(void)
 {
-	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;//включил DMA2
-	__DSB();
+#if CPUSTYLE_STM32MP1
+	RCC->MC_AHB2ENSETR |= RCC_MC_AHB2ENSETR_DMA2EN; // включил DMA2
+	(void) RCC->MC_AHB2ENSETR;
+	RCC->MC_AHB2ENSETR |= RCC_MC_AHB2ENSETR_DMAMUXEN; // включил DMAMUX
+	(void) RCC->MC_AHB2ENSETR;
+#else /* CPUSTYLE_STM32MP1 */
+	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;	// включил DMA2
+	(void) RCC->AHB1ENR;
+#endif /* CPUSTYLE_STM32MP1 */
 
-	#if CPUSTYLE_STM32H7XX
+	#if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 		// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
 		// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
 		enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
@@ -1743,9 +1856,15 @@ static void hardware_sai2_slave_fullduplex_initialize(void)
 	debug_printf_P(PSTR("hardware_sai2_slave_fullduplex_initialize start\n"));
 	hardware_sai1_sai2_clock_selection();
 
+#if CPUSTYLE_STM32MP1
+	// Теперь настроим модуль SAI.
+	RCC->MC_APB2ENSETR |= RCC_MC_APB2ENSETR_SAI2EN; //подать тактирование
+	(void) RCC->MC_APB2ENSETR;
+#else /* CPUSTYLE_STM32MP1 */
 	// Теперь настроим модуль SAI.
 	RCC->APB2ENR |= RCC_APB2ENR_SAI2EN; //подать тактирование
-	__DSB();
+	(void) RCC->APB2ENR;
+#endif /* CPUSTYLE_STM32MP1 */
 	
 
 	SAI2_Block_A->CR1 &= ~ SAI_xCR1_SAIEN;
@@ -1854,9 +1973,15 @@ static void hardware_sai2_master_fullduplex_initialize(void)		/* инициал�
 {
 	hardware_sai1_sai2_clock_selection();
 
+#if CPUSTYLE_STM32MP1
+	// Теперь настроим модуль SAI.
+	RCC->MC_APB2ENSETR |= RCC_MC_APB2ENSETR_SAI2EN; //подать тактирование
+	(void) RCC->MC_APB2ENSETR;
+#else /* CPUSTYLE_STM32MP1 */
 	// Теперь настроим модуль SAI.
 	RCC->APB2ENR |= RCC_APB2ENR_SAI2EN; //подать тактирование
-	__DSB();
+	(void) RCC->APB2ENR;
+#endif /* CPUSTYLE_STM32MP1 */
 	
 
 	SAI2_Block_A->CR1 &= ~ SAI_xCR1_SAIEN;
@@ -1988,10 +2113,17 @@ static void DMA_SAI2_B_RX_initializeWFM(void)
 {
 	debug_printf_P(PSTR("DMA_SAI2_B_RX_initializeWFM start.\n"));
 
-	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;//включил DMA2
-	__DSB();
+#if CPUSTYLE_STM32MP1
+	RCC->MC_AHB2ENSETR |= RCC_MC_AHB2ENSETR_DMA2EN; // включил DMA2
+	(void) RCC->MC_AHB2ENSETR;
+	RCC->MC_AHB2ENSETR |= RCC_MC_AHB2ENSETR_DMAMUXEN; // включил DMAMUX
+	(void) RCC->MC_AHB2ENSETR;
+#else /* CPUSTYLE_STM32MP1 */
+	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;	// включил DMA2
+	(void) RCC->AHB1ENR;
+#endif /* CPUSTYLE_STM32MP1 */
 
-	#if CPUSTYLE_STM32H7XX
+	#if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 		// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
 		// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
 		enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
