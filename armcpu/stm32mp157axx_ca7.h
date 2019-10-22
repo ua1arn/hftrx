@@ -71,6 +71,8 @@
  * @brief STM32MP1XX Interrupt Number Definition, according to the selected device
  *        in @ref Library_configuration_section
  */
+ // reference: Table 117 RM0436 Rev 3
+
  typedef enum IRQn
  {
 	/******  SGI Interrupts Numbers                 ****************************************/
@@ -81,7 +83,7 @@
 	SGI4_IRQn            =  4,
 	SGI5_IRQn            =  5,
 	SGI6_IRQn            =  6,
-	SGI7_IRQn            =  7,
+	SGI7_IRQn            =  7,	// software generated interrupt 7 (recommended non-secure)
 	SGI8_IRQn            =  8,	// software generated interrupt 8 (recommended secure)
 	SGI9_IRQn            =  9,
 	SGI10_IRQn           = 10,
@@ -89,7 +91,7 @@
 	SGI12_IRQn           = 12,
 	SGI13_IRQn           = 13,
 	SGI14_IRQn           = 14,
-	SGI15_IRQn           = 15,
+	SGI15_IRQn           = 15,	// software generated interrupt 15 (recommended secure)
 
 	PPI6 = 25,	// Virtual maintenance interrupt.
 	PPI5 = 26,	// Hypervisor timer event.
