@@ -661,7 +661,7 @@ hardware_i2s3_slave_rx_initialize(void)		/* инициализация I2S3 STM3
 	(void) RCC->APB1LENR;
 #else /* CPUSTYLE_STM32H7XX */
 	RCC->APB1ENR |= RCC_APB1ENR_SPI3EN; // Подать тактирование
-	(void) RCC->APB1LENR;
+	(void) RCC->APB1ENR;
 #endif /* CPUSTYLE_STM32H7XX */
 	        
 	const portholder_t i2smode = 
