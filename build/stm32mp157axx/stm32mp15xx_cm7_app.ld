@@ -1,10 +1,13 @@
 /* $Id$ */
-/* RENESAS RZ/A1L R7S721020 memory layout */
+/* ST STM32MP157AAB3 memory layout */
 /* Linker script to configure memory regions. */
 MEMORY
 {
-  RAM (rwx)  : ORIGIN = 0x20000000, LENGTH = 3056k
-  TTB (rwx)  : ORIGIN = 0x202FC000, LENGTH = 16k
+  FLASH (rx) 	: ORIGIN = 0x70000000, LENGTH = 4M		/* W25Q32FVZPIG */
+  RAM (rwx) 	: ORIGIN = 0xC0000000, LENGTH = 256M 	/* DDR3 single chip NT5CC128M16IP-DI */
+  SYSRAM (rwx)	: ORIGIN = 0x2FFC0000, LENGTH = 240k	/* SYSRAM - 256 kB */
+  TTB (rwx)  	: ORIGIN = 0x2FFFC000, LENGTH = 16k		/* last 16 kB SYSRAM for TTB */
+  SRAM (rwx)  	: ORIGIN = 0x20000000, LENGTH = 384k	/* Cortex-M4 memories */
 }
 
 /* Library configurations */

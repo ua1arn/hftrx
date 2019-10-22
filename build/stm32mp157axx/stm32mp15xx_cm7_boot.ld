@@ -3,9 +3,11 @@
 /* Linker script to configure memory regions. */
 MEMORY
 {
-  FLASH (rx) : ORIGIN = 0x18000000, LENGTH = 128k
-  RAM (rwx)  : ORIGIN = 0x20200000, LENGTH = 1008k
-  TTB (rwx)  : ORIGIN = 0x202FC000, LENGTH = 16k
+  FLASH (rx) 	: ORIGIN = 0x70000000, LENGTH = 4M		/* W25Q32FVZPIG */
+  DDR3 (rwx) 	: ORIGIN = 0xC0000000, LENGTH = 256M 	/* DDR3 single chip NT5CC128M16IP-DI */
+  RAM (rwx)		: ORIGIN = 0x2FFC0000, LENGTH = 240k	/* SYSRAM - 256 kB */
+  TTB (rwx)  	: ORIGIN = 0x2FFFC000, LENGTH = 16k		/* last 16 kB SYSRAM for TTB */
+  SRAM (rwx)  	: ORIGIN = 0x20000000, LENGTH = 384k	/* Cortex-M4 memories */
 }
 
 /* Library configurations */
