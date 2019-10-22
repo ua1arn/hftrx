@@ -9125,7 +9125,7 @@ void arm_hardware_invalidate(uintptr_t base, size_t size)
 
 
 /* считать конфигурационные параметры data cache */
-static void ca9_cache_setup(void)
+static void ca9_ca7_cache_setup(void)
 {
 	uint32_t ccsidr0 [8];	// data cache parameters
 	uint32_t ccsidr1 [8];	// instruction cache parameters
@@ -9162,6 +9162,22 @@ arm_hardware_invalidate_all(void)
 	L1C_InvalidateBTAC();
 }
 
+#if CPUSTYLE_STM32MP1
+
+// Snoop control unit (SCU) done these functionality
+// Сейчас эта память будет записываться по DMA куда-то
+void arm_hardware_flush(uintptr_t base, size_t size)
+{
+
+}
+
+// Snoop control unit (SCU) done these functionality
+// Сейчас эта память будет записываться по DMA куда-то. Потом содержимое не требуется
+void arm_hardware_flush_invalidate(uintptr_t base, size_t size)
+{
+}
+
+#else /* CPUSTYLE_STM32MP1 */
 // Сейчас эта память будет записываться по DMA куда-то
 void arm_hardware_flush(uintptr_t base, size_t size)
 {
@@ -9193,6 +9209,7 @@ void arm_hardware_flush_invalidate(uintptr_t base, size_t size)
 		base += DCACHEROWSIZE;
 	}
 }
+#endif /* CPUSTYLE_STM32MP1 */
 
 #else
 
@@ -11197,7 +11214,7 @@ void cpu_initialize(void)
 		cpu_tms320f2833x_flash_waitstates(3, 5);		// commented in RAM configuration
 	#endif
 
-#elif CPUSTYLE_R7S721
+#elif CPUSTYLE_R7S721 || CPUSTYLE_STM32MP1
 
 	extern unsigned long __etext, __bss_start__, __bss_end__, __data_end__, __data_start__, __stack;
 
@@ -11235,7 +11252,7 @@ void cpu_initialize(void)
 	//CP15_enableMMU();
 	MMU_Enable();
 
-	ca9_cache_setup();
+	ca9_ca7_cache_setup();
 
 #if 0 && WITHDEBUG
 	uint_fast32_t leveli;
@@ -11289,6 +11306,13 @@ void cpu_initialize(void)
 		debug_printf_P(PSTR("cpu_initialize1: vectors mapped failure.\n"));
 	}
 #endif
+
+#else
+	#error Undefined CPUSTYLE_XXX
+#endif
+
+
+#if CPUSTYLE_R7S721
 	/* TN-RZ*-A011A/E recommends switch off USB_X1 if usb USB not used */
 	CPG.STBCR7 &= ~ CPG_STBCR7_MSTP70;	// Module Stop 71 0: Channel 0 of the USB 2.0 host/function module runs.
 	CPG.STBCR7 &= ~ CPG_STBCR7_MSTP71;	// Module Stop 71 0: Channel 0 of the USB 2.0 host/function module runs.
@@ -11303,11 +11327,6 @@ void cpu_initialize(void)
 	USB201.SYSCFG0 |= USB_SYSCFG_UCKSEL; // UCKSEL 1: The 12-MHz EXTAL clock is selected.
 	local_delay_ms(2);	// required 1 ms delay - see R01UH0437EJ0200 Rev.2.00 28.4.1 System Control and Oscillation Control
 	CPG.STBCR7 |= CPG_STBCR7_MSTP70;	// Module Stop 70 0: Channel 1 of the USB 2.0 host/function module halts.
-
-#elif CPUSTYLE_STM32MP1
-	#warning Insert code for CPUSTYLE_STM32MP1
-#else
-	#error Undefined CPUSTYLE_XXX
 #endif
 
 	// Инициализация контроллера прерываний
