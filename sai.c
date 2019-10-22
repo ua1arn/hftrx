@@ -257,21 +257,28 @@ DMA_I2S2_TX_initialize(void)
 	(void) RCC->MC_AHB2ENSETR;
 	RCC->MC_AHB2ENSETR |= RCC_MC_AHB2ENSETR_DMAMUXEN; // включил DMAMUX
 	(void) RCC->MC_AHB2ENSETR;
-#else /* CPUSTYLE_STM32MP1 */
-	RCC->AHB1ENR |= RCC_AHB1ENR_DMA1EN;	// включил DMA1
-	(void) RCC->AHB1ENR;
-#endif /* CPUSTYLE_STM32MP1 */
-
-#if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 	// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
 	// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
 	enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
 	DMAMUX1_Channel4->CCR = 40 * DMAMUX_CxCR_DMAREQ_ID_0;	// SPI2_TX
 	DMA1_Stream4->PAR = (uintptr_t) & SPI2->TXDR;
-#else /* CPUSTYLE_STM32H7XX */
+
+#elif CPUSTYLE_STM32H7XX
+	RCC->AHB1ENR |= RCC_AHB1ENR_DMA1EN;	// включил DMA1
+	(void) RCC->AHB1ENR;
+	// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
+	// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
+	enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
+	DMAMUX1_Channel4->CCR = 40 * DMAMUX_CxCR_DMAREQ_ID_0;	// SPI2_TX
+	DMA1_Stream4->PAR = (uintptr_t) & SPI2->TXDR;
+
+#else /* others */
+	RCC->AHB1ENR |= RCC_AHB1ENR_DMA1EN;	// включил DMA1
+	(void) RCC->AHB1ENR;
 	const uint_fast8_t ch = 0;
 	DMA1_Stream4->PAR = (uintptr_t) & SPI2->DR;
-#endif /* CPUSTYLE_STM32H7XX */
+
+#endif /* CPUSTYLE_STM32MP1 */
 
     DMA1_Stream4->M0AR = dma_flush16tx(allocate_dmabuffer16());
     DMA1_Stream4->M1AR = dma_flush16tx(allocate_dmabuffer16());
@@ -308,17 +315,10 @@ DMA_I2S2ext_rx_init(void)
 {
 	const uint_fast8_t ch = 3;
 	/* I2S2_EXT_RX - Stream3, Channel3 */ 
-#if CPUSTYLE_STM32MP1
-	RCC->MC_AHB2ENSETR |= RCC_MC_AHB2ENSETR_DMA1EN; // включил DMA1
-	(void) RCC->MC_AHB2ENSETR;
-	RCC->MC_AHB2ENSETR |= RCC_MC_AHB2ENSETR_DMAMUXEN; // включил DMAMUX
-	(void) RCC->MC_AHB2ENSETR;
-#else /* CPUSTYLE_STM32MP1 */
 	RCC->AHB1ENR |= RCC_AHB1ENR_DMA1EN;	// включил DMA1
 	(void) RCC->AHB1ENR;
-#endif /* CPUSTYLE_STM32MP1 */
-
 	DMA1_Stream3->PAR = (uintptr_t) & I2S2ext->DR;
+
     DMA1_Stream3->M0AR = dma_invalidate16rx(allocate_dmabuffer16());
     DMA1_Stream3->M1AR = dma_invalidate16rx(allocate_dmabuffer16());
 	DMA1_Stream3->NDTR = (DMA1_Stream3->NDTR & ~ DMA_SxNDT) |
@@ -357,21 +357,28 @@ DMA_I2S3_RX_initialize(void)
 #if CPUSTYLE_STM32MP1
 	RCC->MC_AHB2ENSETR |= RCC_MC_AHB2ENSETR_DMA1EN; // включил DMA1
 	(void) RCC->MC_AHB2ENSETR;
-#else /* CPUSTYLE_STM32MP1 */
-	RCC->AHB1ENR |= RCC_AHB1ENR_DMA1EN;	// включил DMA1
-	(void) RCC->AHB1ENR;
-#endif /* CPUSTYLE_STM32MP1 */
-
-#if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 	// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
 	// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
 	enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
 	DMAMUX1_Channel0->CCR = 61 * DMAMUX_CxCR_DMAREQ_ID_0;	// SPI3_RX
 	DMA1_Stream0->PAR = (uintptr_t) & SPI3->RXDR;
-#else /* CPUSTYLE_STM32H7XX */
+
+#elif CPUSTYLE_STM32H7XX
+	RCC->AHB1ENR |= RCC_AHB1ENR_DMA1EN;	// включил DMA1
+	(void) RCC->AHB1ENR;
+	// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
+	// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
+	enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
+	DMAMUX1_Channel0->CCR = 61 * DMAMUX_CxCR_DMAREQ_ID_0;	// SPI3_RX
+	DMA1_Stream0->PAR = (uintptr_t) & SPI3->RXDR;
+
+#else /* others */
+	RCC->AHB1ENR |= RCC_AHB1ENR_DMA1EN;	// включил DMA1
+	(void) RCC->AHB1ENR;
 	const uint_fast8_t ch = 0;
 	DMA1_Stream0->PAR = (uintptr_t) & SPI3->DR;
-#endif /* CPUSTYLE_STM32H7XX */
+
+#endif /* CPUSTYLE_STM32MP1 */
 
     DMA1_Stream0->M0AR = dma_invalidate16rx(allocate_dmabuffer16());
     DMA1_Stream0->M1AR = dma_invalidate16rx(allocate_dmabuffer16());
@@ -1115,21 +1122,29 @@ static void DMA_SAI1_A_TX_initialize(void)
 	(void) RCC->MC_AHB2ENSETR;
 	RCC->MC_AHB2ENSETR |= RCC_MC_AHB2ENSETR_DMAMUXEN; // включил DMAMUX
 	(void) RCC->MC_AHB2ENSETR;
-#else /* CPUSTYLE_STM32MP1 */
-	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;	// включил DMA2
-	(void) RCC->AHB1ENR;
-#endif /* CPUSTYLE_STM32MP1 */
-
-#if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 	// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
 	// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
 	enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
 	DMAMUX1_Channel9->CCR = 87 * DMAMUX_CxCR_DMAREQ_ID_0;	// SAI1_A
-#else /* CPUSTYLE_STM32H7XX */
-	const uint_fast8_t ch = 0;
-#endif /* CPUSTYLE_STM32H7XX */
-
 	DMA2_Stream1->PAR = (uintptr_t) & SAI1_Block_A->DR;
+
+#elif CPUSTYLE_STM32H7XX
+	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;	// включил DMA2
+	(void) RCC->AHB1ENR;
+	// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
+	// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
+	enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
+	DMAMUX1_Channel9->CCR = 87 * DMAMUX_CxCR_DMAREQ_ID_0;	// SAI1_A
+	DMA2_Stream1->PAR = (uintptr_t) & SAI1_Block_A->DR;
+
+#else /* others */
+	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;	// включил DMA2
+	(void) RCC->AHB1ENR;
+	const uint_fast8_t ch = 0;
+	DMA2_Stream1->PAR = (uintptr_t) & SAI1_Block_A->DR;
+
+#endif /* CPUSTYLE_STM32MP1 */
+
 	DMA2_Stream1->M0AR = dma_flush32tx(allocate_dmabuffer32tx());
 	DMA2_Stream1->M1AR = dma_flush32tx(allocate_dmabuffer32tx());
 	DMA2_Stream1->NDTR = (DMA2_Stream1->NDTR & ~ DMA_SxNDT) |
@@ -1169,23 +1184,33 @@ static void DMA_SAI1_B_RX_initialize(void)
 	(void) RCC->MC_AHB2ENSETR;
 	RCC->MC_AHB2ENSETR |= RCC_MC_AHB2ENSETR_DMAMUXEN; // включил DMAMUX
 	(void) RCC->MC_AHB2ENSETR;
-#else /* CPUSTYLE_STM32MP1 */
-	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;	// включил DMA2
-	(void) RCC->AHB1ENR;
-#endif /* CPUSTYLE_STM32MP1 */
-
-#if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
-	enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
 	//const uint_fast8_t muxi = 88;	// SAI1_B
 	//stm32h7xx_dma2mux(muxi, 0x05);
 	// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
 	// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
 	DMAMUX1_Channel13->CCR = 88 * DMAMUX_CxCR_DMAREQ_ID_0;
-#else /* CPUSTYLE_STM32H7XX */
-	const uint_fast8_t ch = 0;
-#endif /* CPUSTYLE_STM32H7XX */
-
+	enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
 	DMA2_Stream5->PAR = (uintptr_t) & SAI1_Block_B->DR;
+
+#elif CPUSTYLE_STM32H7XX
+	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;	// включил DMA2
+	(void) RCC->AHB1ENR;
+	//const uint_fast8_t muxi = 88;	// SAI1_B
+	//stm32h7xx_dma2mux(muxi, 0x05);
+	// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
+	// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
+	DMAMUX1_Channel13->CCR = 88 * DMAMUX_CxCR_DMAREQ_ID_0;
+	enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
+	DMA2_Stream5->PAR = (uintptr_t) & SAI1_Block_B->DR;
+
+#else /* others */
+	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;	// включил DMA2
+	(void) RCC->AHB1ENR;
+	const uint_fast8_t ch = 0;
+	DMA2_Stream5->PAR = (uintptr_t) & SAI1_Block_B->DR;
+
+#endif /* CPUSTYLE_STM32MP1 */
+
 	DMA2_Stream5->M0AR = dma_invalidate32rx(allocate_dmabuffer32rx());
 	DMA2_Stream5->M1AR = dma_invalidate32rx(allocate_dmabuffer32rx());
 	DMA2_Stream5->NDTR = (DMA2_Stream5->NDTR & ~ DMA_SxNDT) |
@@ -1576,21 +1601,29 @@ static void DMA_SAI2_A_TX_initializeXXX(void)
 	(void) RCC->MC_AHB2ENSETR;
 	RCC->MC_AHB2ENSETR |= RCC_MC_AHB2ENSETR_DMAMUXEN; // включил DMAMUX
 	(void) RCC->MC_AHB2ENSETR;
-#else /* CPUSTYLE_STM32MP1 */
+	// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
+	// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
+	enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
+	DMAMUX1_Channel12->CCR = 89 * DMAMUX_CxCR_DMAREQ_ID_0;	// SAI2_A
+	DMA2_Stream4->PAR = (uintptr_t) & SAI2_Block_A->DR;
+
+#elif CPUSTYLE_STM32H7XX
 	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;	// включил DMA2
 	(void) RCC->AHB1ENR;
+	// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
+	// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
+	enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
+	DMAMUX1_Channel12->CCR = 89 * DMAMUX_CxCR_DMAREQ_ID_0;	// SAI2_A
+	DMA2_Stream4->PAR = (uintptr_t) & SAI2_Block_A->DR;
+
+#else /* others */
+	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;	// включил DMA2
+	(void) RCC->AHB1ENR;
+	const uint_fast8_t ch = 3;
+	DMA2_Stream4->PAR = (uintptr_t) & SAI2_Block_A->DR;
+
 #endif /* CPUSTYLE_STM32MP1 */
 
-	#if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
-		// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
-		// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
-		enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
-		DMAMUX1_Channel12->CCR = 89 * DMAMUX_CxCR_DMAREQ_ID_0;	// SAI2_A
-	#else /* CPUSTYLE_STM32H7XX */
-		const uint_fast8_t ch = 3;
-	#endif /* CPUSTYLE_STM32H7XX */
-
-	DMA2_Stream4->PAR = (uintptr_t) & SAI2_Block_A->DR;
 	DMA2_Stream4->M0AR = dma_flush32tx(allocate_dmabuffer32tx());
 	DMA2_Stream4->M1AR = dma_flush32tx(allocate_dmabuffer32tx());
 	DMA2_Stream4->NDTR = (DMA2_Stream4->NDTR & ~ DMA_SxNDT) |
@@ -1627,21 +1660,29 @@ static void DMA_SAI2_A_TX_initializeAUDIO48(void)
 	(void) RCC->MC_AHB2ENSETR;
 	RCC->MC_AHB2ENSETR |= RCC_MC_AHB2ENSETR_DMAMUXEN; // включил DMAMUX
 	(void) RCC->MC_AHB2ENSETR;
-#else /* CPUSTYLE_STM32MP1 */
+	// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
+	// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
+	enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
+	DMAMUX1_Channel12->CCR = 89 * DMAMUX_CxCR_DMAREQ_ID_0;	// SAI2_A
+	DMA2_Stream4->PAR = (uintptr_t) & SAI2_Block_A->DR;
+
+#elif CPUSTYLE_STM32H7XX
 	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;	// включил DMA2
 	(void) RCC->AHB1ENR;
+	// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
+	// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
+	enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
+	DMAMUX1_Channel12->CCR = 89 * DMAMUX_CxCR_DMAREQ_ID_0;	// SAI2_A
+	DMA2_Stream4->PAR = (uintptr_t) & SAI2_Block_A->DR;
+
+#else /* others */
+	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;	// включил DMA2
+	(void) RCC->AHB1ENR;
+	const uint_fast8_t ch = 3;
+	DMA2_Stream4->PAR = (uintptr_t) & SAI2_Block_A->DR;
+
 #endif /* CPUSTYLE_STM32MP1 */
 
-	#if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
-		// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
-		// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
-		enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
-		DMAMUX1_Channel12->CCR = 89 * DMAMUX_CxCR_DMAREQ_ID_0;	// SAI2_A
-	#else /* CPUSTYLE_STM32H7XX */
-		const uint_fast8_t ch = 3;
-	#endif /* CPUSTYLE_STM32H7XX */
-
-	DMA2_Stream4->PAR = (uintptr_t) & SAI2_Block_A->DR;
 	DMA2_Stream4->M0AR = dma_flush32tx(allocate_dmabuffer32tx());
 	DMA2_Stream4->M1AR = dma_flush32tx(allocate_dmabuffer32tx());
 	DMA2_Stream4->NDTR = (DMA2_Stream4->NDTR & ~ DMA_SxNDT) |
@@ -1679,22 +1720,30 @@ static void DMA_SAI2_B_RX_initializeRTS96(void)
 	(void) RCC->MC_AHB2ENSETR;
 	RCC->MC_AHB2ENSETR |= RCC_MC_AHB2ENSETR_DMAMUXEN; // включил DMAMUX
 	(void) RCC->MC_AHB2ENSETR;
-#else /* CPUSTYLE_STM32MP1 */
+	// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
+	// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
+	enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
+	DMAMUX1_Channel15->CCR = 90 * DMAMUX_CxCR_DMAREQ_ID_0;	// SAI2_B
+	DMA2_Stream7->PAR = (uintptr_t) & SAI2_Block_B->DR;
+
+#elif CPUSTYLE_STM32H7XX
 	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;	// включил DMA2
 	(void) RCC->AHB1ENR;
+	// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
+	// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
+	enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
+	DMAMUX1_Channel15->CCR = 90 * DMAMUX_CxCR_DMAREQ_ID_0;	// SAI2_B
+	DMA2_Stream7->PAR = (uintptr_t) & SAI2_Block_B->DR;
+
+#else /* others */
+	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;	// включил DMA2
+	(void) RCC->AHB1ENR;
+	/* DMA2	Stream7	Channel 0 */
+	const uint_fast8_t ch = 0;
+	DMA2_Stream7->PAR = (uintptr_t) & SAI2_Block_B->DR;
+
 #endif /* CPUSTYLE_STM32MP1 */
 
-	#if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
-		// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
-		// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
-		enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
-		DMAMUX1_Channel15->CCR = 90 * DMAMUX_CxCR_DMAREQ_ID_0;	// SAI2_B
-	#else /* CPUSTYLE_STM32H7XX */
-		/* DMA2	Stream7	Channel 0 */ 
-		const uint_fast8_t ch = 0;
-	#endif /* CPUSTYLE_STM32H7XX */
-
-	DMA2_Stream7->PAR = (uintptr_t) & SAI2_Block_B->DR;
 	DMA2_Stream7->M0AR = dma_invalidate192rts(allocate_dmabuffer192rts());
 	DMA2_Stream7->M1AR = dma_invalidate192rts(allocate_dmabuffer192rts());
 	DMA2_Stream7->NDTR = (DMA2_Stream7->NDTR & ~ DMA_SxNDT) |
@@ -1732,22 +1781,30 @@ static void DMA_SAI2_B_RX_initializeAUDIO48(void)
 	(void) RCC->MC_AHB2ENSETR;
 	RCC->MC_AHB2ENSETR |= RCC_MC_AHB2ENSETR_DMAMUXEN; // включил DMAMUX
 	(void) RCC->MC_AHB2ENSETR;
+	// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
+	// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
+	enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
+	DMAMUX1_Channel15->CCR = 90 * DMAMUX_CxCR_DMAREQ_ID_0;	// SAI2_B
+	DMA2_Stream7->PAR = (uintptr_t) & SAI2_Block_B->DR;
+
+#elif CPUSTYLE_STM32H7XX
+	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;	// включил DMA2
+	(void) RCC->AHB1ENR;
+	// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
+	// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
+	enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
+	DMAMUX1_Channel15->CCR = 90 * DMAMUX_CxCR_DMAREQ_ID_0;	// SAI2_B
+	DMA2_Stream7->PAR = (uintptr_t) & SAI2_Block_B->DR;
+
 #else /* CPUSTYLE_STM32MP1 */
 	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;	// включил DMA2
 	(void) RCC->AHB1ENR;
+	/* DMA2	Stream7	Channel 0 */
+	const uint_fast8_t ch = 0;
+	DMA2_Stream7->PAR = (uintptr_t) & SAI2_Block_B->DR;
+
 #endif /* CPUSTYLE_STM32MP1 */
 
-	#if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
-		// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
-		// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
-		enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
-		DMAMUX1_Channel15->CCR = 90 * DMAMUX_CxCR_DMAREQ_ID_0;	// SAI2_B
-	#else /* CPUSTYLE_STM32H7XX */
-		/* DMA2	Stream7	Channel 0 */ 
-		const uint_fast8_t ch = 0;
-	#endif /* CPUSTYLE_STM32H7XX */
-
-	DMA2_Stream7->PAR = (uintptr_t) & SAI2_Block_B->DR;
 	DMA2_Stream7->M0AR = dma_invalidate32rx(allocate_dmabuffer32rx());
 	DMA2_Stream7->M1AR = dma_invalidate32rx(allocate_dmabuffer32rx());
 	DMA2_Stream7->NDTR = (DMA2_Stream7->NDTR & ~ DMA_SxNDT) |
@@ -2045,22 +2102,30 @@ static void DMA_SAI2_B_RX_initializeWFM(void)
 	(void) RCC->MC_AHB2ENSETR;
 	RCC->MC_AHB2ENSETR |= RCC_MC_AHB2ENSETR_DMAMUXEN; // включил DMAMUX
 	(void) RCC->MC_AHB2ENSETR;
-#else /* CPUSTYLE_STM32MP1 */
+	// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
+	// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
+	enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
+	DMAMUX1_Channel15->CCR = 90 * DMAMUX_CxCR_DMAREQ_ID_0;	// SAI2_B
+	DMA2_Stream7->PAR = (uintptr_t) & SAI2_Block_B->DR;
+
+#elif CPUSTYLE_STM32H7XX
 	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;	// включил DMA2
 	(void) RCC->AHB1ENR;
+	// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
+	// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
+	enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
+	DMAMUX1_Channel15->CCR = 90 * DMAMUX_CxCR_DMAREQ_ID_0;	// SAI2_B
+	DMA2_Stream7->PAR = (uintptr_t) & SAI2_Block_B->DR;
+
+#else /* others */
+	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;	// включил DMA2
+	(void) RCC->AHB1ENR;
+	/* DMA2	Stream7	Channel 0 */
+	const uint_fast8_t ch = 0;
+	DMA2_Stream7->PAR = (uintptr_t) & SAI2_Block_B->DR;
+
 #endif /* CPUSTYLE_STM32MP1 */
 
-	#if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
-		// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
-		// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
-		enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
-		DMAMUX1_Channel15->CCR = 90 * DMAMUX_CxCR_DMAREQ_ID_0;	// SAI2_B
-	#else /* CPUSTYLE_STM32H7XX */
-		/* DMA2	Stream7	Channel 0 */ 
-		const uint_fast8_t ch = 0;
-	#endif /* CPUSTYLE_STM32H7XX */
-
-	DMA2_Stream7->PAR = (uintptr_t) & SAI2_Block_B->DR;
 	DMA2_Stream7->M0AR = dma_invalidate32rx(allocate_dmabuffer32rx());
 	DMA2_Stream7->M1AR = dma_invalidate32rx(allocate_dmabuffer32rx());
 	DMA2_Stream7->NDTR = (DMA2_Stream7->NDTR & ~ DMA_SxNDT) |
