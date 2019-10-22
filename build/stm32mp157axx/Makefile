@@ -142,13 +142,14 @@ CPFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
 # makefile rules
 #
 
-all: APP
+all: APP APP2
 
 bootloader: BOOT BOOT2
 
 BOOT: $(OBJS) $(PROJECT)_boot.elf $(PROJECT)_boot.hex
 BOOT2: $(OBJS) $(PROJECT)_boot.elf $(PROJECT)_boot.bin
 APP: $(OBJS) $(PROJECT)_app.elf $(PROJECT)_app.bin
+APP2: $(OBJS) $(PROJECT)_app.elf $(PROJECT)_app.hex
 
 $(OBJDIR)/%.o: %.c
 	@mkdir -p $(@D)
