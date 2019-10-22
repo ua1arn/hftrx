@@ -9162,7 +9162,14 @@ arm_hardware_invalidate_all(void)
 	L1C_InvalidateBTAC();
 }
 
-#if CPUSTYLE_STM32MP1
+// Записать содержимое кэша данных в память
+// применяетмся после начальной инициализации среды выполнния
+void arm_hardware_flush_all(void)
+{
+	L1C_CleanDCacheAll();
+}
+
+#if CPUSTYLE_ARM_CA7
 
 // Snoop control unit (SCU) done these functionality
 // Сейчас эта память будет записываться по DMA куда-то
@@ -9177,7 +9184,8 @@ void arm_hardware_flush_invalidate(uintptr_t base, size_t size)
 {
 }
 
-#else /* CPUSTYLE_STM32MP1 */
+#else /* CPUSTYLE_ARM_CA7 */
+
 // Сейчас эта память будет записываться по DMA куда-то
 void arm_hardware_flush(uintptr_t base, size_t size)
 {
@@ -9188,14 +9196,6 @@ void arm_hardware_flush(uintptr_t base, size_t size)
 		L1C_CleanDCacheMVA((void *) mva);		// записать буфер, кэш продолжает хранить
 		base += DCACHEROWSIZE;
 	}
-}
-
-
-// Записать содержимое кэша данных в память
-// применяетмся после начальной инициализации среды выполнния
-void arm_hardware_flush_all(void)
-{
-	L1C_CleanDCacheAll();
 }
 
 // Сейчас эта память будет записываться по DMA куда-то. Потом содержимое не требуется
@@ -9209,7 +9209,8 @@ void arm_hardware_flush_invalidate(uintptr_t base, size_t size)
 		base += DCACHEROWSIZE;
 	}
 }
-#endif /* CPUSTYLE_STM32MP1 */
+
+#endif /* CPUSTYLE_ARM_CA7 */
 
 #else
 
