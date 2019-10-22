@@ -5,7 +5,7 @@
 // автор Гена Завидовский mgs2001@mail.ru
 // UA1ARN
 //
-// Трансивер с DSP обработкой "Воронёнок-2" на процессоре 
+// Трансивер с DSP обработкой "Воронёнок-2" на процессоре
 // STM32F446ZET6, STM32F746ZGT6 с кодеком TLV320AIC23B и FPGA EP4CE22E22I7N
 // с функцией DUAL WATCH
 // Rmainunit_v3bm.pcb
@@ -139,14 +139,14 @@
 	#define WITHIF4DSP	1	// "Дятел"
 
 	#if 0
-		#define DIRECT_80M0_X1		1	/* Тактовый генератор на плате 80.0 МГц */	
+		#define DIRECT_80M0_X1		1	/* Тактовый генератор на плате 80.0 МГц */
 		#define BANDSELSTYLERE_UPCONV56M_36M	1	/* Up-conversion with working band .030..36 MHz */
 	#elif 0
-		#define DIRECT_100M0_X1		1	/* Тактовый генератор на плате 100.0 МГц */	
+		#define DIRECT_100M0_X1		1	/* Тактовый генератор на плате 100.0 МГц */
 		#define BANDSELSTYLERE_UPCONV56M_45M	1	/* Up-conversion with working band .030..45 MHz */
 	#else
-		//#define DIRECT_125M0_X1		1	/* Тактовый генератор на плате 125.0 МГц */	
-		#define DIRECT_122M88_X1	1	/* Тактовый генератор 122.880 МГц */	
+		//#define DIRECT_125M0_X1		1	/* Тактовый генератор на плате 125.0 МГц */
+		#define DIRECT_122M88_X1	1	/* Тактовый генератор 122.880 МГц */
 		#define BANDSELSTYLERE_UPCONV56M	1	/* Up-conversion with working band .030..56 MHz */
 	#endif
 
@@ -158,10 +158,10 @@
 	#define WITHPOWERTRIMMIN	10	// Нижний предел регулировки (показываетый на дисплее)
 	#define WITHPOWERTRIMMAX	100	// Верхний предел регулировки (показываетый на дисплее)
 
-	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея 
+	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея
 	#define WITHLCDBACKLIGHTMIN	0	// Нижний предел регулировки (показываетый на дисплее)
 	#define WITHLCDBACKLIGHTMAX	3	// Верхний предел регулировки (показываетый на дисплее)
-	#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры 
+	#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры
 
 	#define WITHPABIASTRIM		1	// имеется управление током оконечного каскада усидителя мощности передатчика
 	#define	WITHPABIASMIN		0
@@ -286,6 +286,7 @@
 	#define WITHRTS96 1		/* вместо выходного аудиосигнала передача квадратур по USB */
 	//#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
 	//#define WITHOPERA4BEACON	1	/* работа маяком в OPERA */
+	#define BOARD_FFTZOOM_POW2MAX 1	/* x1, x2 */
 
 	#if 0
 		#define WITHUSBHEADSET 1	/* трансивер работает USB гарнитурой для компьютера - режим тестирования */
@@ -323,7 +324,7 @@
 	#define WITHCAT		1	/* используется CAT */
 	//#define WITHDEBUG		1	/* Отладочная печать через COM-порт. Без CAT (WITHCAT) */
 	//#define WITHMODEM		1	/* Устройство работает как радиомодем с последовательным интерфейсом */
-	//#define WITHFREEDV	1	/* поддержка режима FreeDV - http://freedv.org/ */ 
+	//#define WITHFREEDV	1	/* поддержка режима FreeDV - http://freedv.org/ */
 	//#define WITHNMEA		1	/* используется NMEA parser */
 	//#define WITHBEACON	1	/* Используется режим маяка */
 	#define WITHVOX			1	/* используется VOX */

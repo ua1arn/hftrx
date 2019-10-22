@@ -19,7 +19,7 @@
 #include "display.h"
 #include <stdint.h>
 
-#include "spifuncs.h"
+#include "spi.h"
 #include "l2f50.h"
 
 #include "./fonts/ls020_font_small.h"

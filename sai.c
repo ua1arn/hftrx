@@ -267,10 +267,10 @@ DMA_I2S2_TX_initialize(void)
 	// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
 	enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
 	DMAMUX1_Channel4->CCR = 40 * DMAMUX_CxCR_DMAREQ_ID_0;	// SPI2_TX
-	DMA1_Stream4->PAR = (uint32_t) & SPI2->TXDR;
+	DMA1_Stream4->PAR = (uintptr_t) & SPI2->TXDR;
 #else /* CPUSTYLE_STM32H7XX */
 	const uint_fast8_t ch = 0;
-	DMA1_Stream4->PAR = (uint32_t) & SPI2->DR;
+	DMA1_Stream4->PAR = (uintptr_t) & SPI2->DR;
 #endif /* CPUSTYLE_STM32H7XX */
 
     DMA1_Stream4->M0AR = dma_flush16tx(allocate_dmabuffer16());
@@ -318,7 +318,7 @@ DMA_I2S2ext_rx_init(void)
 	(void) RCC->AHB1ENR;
 #endif /* CPUSTYLE_STM32MP1 */
 
-	DMA1_Stream3->PAR = (uint32_t) & I2S2ext->DR;
+	DMA1_Stream3->PAR = (uintptr_t) & I2S2ext->DR;
     DMA1_Stream3->M0AR = dma_invalidate16rx(allocate_dmabuffer16());
     DMA1_Stream3->M1AR = dma_invalidate16rx(allocate_dmabuffer16());
 	DMA1_Stream3->NDTR = (DMA1_Stream3->NDTR & ~ DMA_SxNDT) |
@@ -367,10 +367,10 @@ DMA_I2S3_RX_initialize(void)
 	// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
 	enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
 	DMAMUX1_Channel0->CCR = 61 * DMAMUX_CxCR_DMAREQ_ID_0;	// SPI3_RX
-	DMA1_Stream0->PAR = (uint32_t) & SPI3->RXDR;
+	DMA1_Stream0->PAR = (uintptr_t) & SPI3->RXDR;
 #else /* CPUSTYLE_STM32H7XX */
 	const uint_fast8_t ch = 0;
-	DMA1_Stream0->PAR = (uint32_t) & SPI3->DR;
+	DMA1_Stream0->PAR = (uintptr_t) & SPI3->DR;
 #endif /* CPUSTYLE_STM32H7XX */
 
     DMA1_Stream0->M0AR = dma_invalidate16rx(allocate_dmabuffer16());
@@ -1129,7 +1129,7 @@ static void DMA_SAI1_A_TX_initialize(void)
 	const uint_fast8_t ch = 0;
 #endif /* CPUSTYLE_STM32H7XX */
 
-	DMA2_Stream1->PAR = (uint32_t) & SAI1_Block_A->DR;
+	DMA2_Stream1->PAR = (uintptr_t) & SAI1_Block_A->DR;
 	DMA2_Stream1->M0AR = dma_flush32tx(allocate_dmabuffer32tx());
 	DMA2_Stream1->M1AR = dma_flush32tx(allocate_dmabuffer32tx());
 	DMA2_Stream1->NDTR = (DMA2_Stream1->NDTR & ~ DMA_SxNDT) |
@@ -1185,7 +1185,7 @@ static void DMA_SAI1_B_RX_initialize(void)
 	const uint_fast8_t ch = 0;
 #endif /* CPUSTYLE_STM32H7XX */
 
-	DMA2_Stream5->PAR = (uint32_t) & SAI1_Block_B->DR;
+	DMA2_Stream5->PAR = (uintptr_t) & SAI1_Block_B->DR;
 	DMA2_Stream5->M0AR = dma_invalidate32rx(allocate_dmabuffer32rx());
 	DMA2_Stream5->M1AR = dma_invalidate32rx(allocate_dmabuffer32rx());
 	DMA2_Stream5->NDTR = (DMA2_Stream5->NDTR & ~ DMA_SxNDT) |
@@ -1219,9 +1219,6 @@ static void hardware_sai1_master_fullduplex_initialize(void)		/* инициал�
 {
 	hardware_sai1_sai2_clock_selection();
 
-#if CPUSTYLE_STM32MP1
-#else /* CPUSTYLE_STM32MP1 */
-#endif /* CPUSTYLE_STM32MP1 */
 	// Теперь настроим модуль SAI.
 #if CPUSTYLE_STM32MP1
 	// Теперь настроим модуль SAI.
@@ -1593,7 +1590,7 @@ static void DMA_SAI2_A_TX_initializeXXX(void)
 		const uint_fast8_t ch = 3;
 	#endif /* CPUSTYLE_STM32H7XX */
 
-	DMA2_Stream4->PAR = (uint32_t) & SAI2_Block_A->DR;
+	DMA2_Stream4->PAR = (uintptr_t) & SAI2_Block_A->DR;
 	DMA2_Stream4->M0AR = dma_flush32tx(allocate_dmabuffer32tx());
 	DMA2_Stream4->M1AR = dma_flush32tx(allocate_dmabuffer32tx());
 	DMA2_Stream4->NDTR = (DMA2_Stream4->NDTR & ~ DMA_SxNDT) |
@@ -1644,7 +1641,7 @@ static void DMA_SAI2_A_TX_initializeAUDIO48(void)
 		const uint_fast8_t ch = 3;
 	#endif /* CPUSTYLE_STM32H7XX */
 
-	DMA2_Stream4->PAR = (uint32_t) & SAI2_Block_A->DR;
+	DMA2_Stream4->PAR = (uintptr_t) & SAI2_Block_A->DR;
 	DMA2_Stream4->M0AR = dma_flush32tx(allocate_dmabuffer32tx());
 	DMA2_Stream4->M1AR = dma_flush32tx(allocate_dmabuffer32tx());
 	DMA2_Stream4->NDTR = (DMA2_Stream4->NDTR & ~ DMA_SxNDT) |
@@ -3431,7 +3428,7 @@ static void r7s721_usb1_dma0_dmatx_enable(void)
 
 #endif /* WITHUSBUAC */
 
-#elif CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP157A
+#elif CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 
 // Канал DMA ещё занят - оставляем в очереди, иначе получить данные через getfilled_dmabufferx и начать предавать в host
 void refreshDMA_uacin(void)
@@ -3460,7 +3457,7 @@ void hardware_usbd_dma_initialize(void)
 	}
 #endif /* WITHUSBUAC */
 
-#elif CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP157A
+#elif CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 
 #else
 	#error Unsupported USB hardware 
@@ -3475,7 +3472,7 @@ void hardware_usbd_dma_enable(void)
 	r7s721_usb0_dma0_dmarx_enable();
 	r7s721_usb0_dma0_dmatx_enable();
 #endif /* WITHUSBUAC */
-#elif CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP157A
+#elif CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 
 #else
 	#error Unsupported USB hardware 
