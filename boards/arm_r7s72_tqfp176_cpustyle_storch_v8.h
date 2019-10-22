@@ -26,6 +26,9 @@
 
 #if WITHISBOOTLOADER
 
+	//#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
+	//#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	*/
+
 	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 	#define WITHUSBDEV_VBUSSENSE	1	/* используется предопределенный вывод VBUS_SENSE */
 	#define WITHUSBDEV_HSDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
@@ -52,6 +55,8 @@
 
 #else /* WITHISBOOTLOADER */
 
+	#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
+	//#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	*/
 	//#define WITHCPUDACHW	1	/* использование DAC - в renesas R7S72 нету */
 	#define WITHCPUADCHW 	1	/* использование ADC */
 

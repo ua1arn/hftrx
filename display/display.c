@@ -906,13 +906,14 @@ void display_hardware_initialize(void)
 {
 	debug_printf_P(PSTR("display_hardware_initialize start\n"));
 
-#if LCDMODE_LTDC 
-	#if LCDMODE_LTDCSDRAMBUFF
-		arm_hardware_sdram_initialize();
-	#endif /* LCDMODE_LTDCSDRAMBUFF */
+#if WITHLTDCHW
+
+#if WITHDMA2DHW
+	arm_hardware_dma2d_initialize();
+#endif /* WITHDMA2DHW */
 	// STM32F4xxx with LCD-TFT Controller (LTDC)
 	arm_hardware_ltdc_initialize();
-#endif /* LCDMODE_LTDC */
+#endif /* WITHLTDCHW */
 
 #if LCDMODE_HARD_SPI
 #elif LCDMODE_HARD_I2C

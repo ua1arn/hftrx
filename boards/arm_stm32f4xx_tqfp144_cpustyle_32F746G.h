@@ -33,6 +33,10 @@
 //#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
 //#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
 
+#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
+#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	*/
+//#define WITHSDRAMHW	1	/* В процессоре есть внешняя память */
+
 #define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 #if 1
 	// use FS

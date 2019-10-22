@@ -9536,9 +9536,20 @@ SystemInit(void)
 
 #endif
 
+#if WITHSDRAMHW && WITHISBOOTLOADER
+	/* В процессоре есть внешняя память - если уже в ней то не трогаем */
+	arm_hardware_sdram_initialize();
+
+#elif WITHSDRAMHW && CTLSTYLE_V1D
+	/* В процессоре есть внешняя память - только данные */
+	arm_hardware_sdram_initialize();
+
+#endif /* WITHSDRAMHW && WITHISBOOTLOADER */
+
 #if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM0 || CPUSTYLE_ARM_CM7
 	// Таблица находится в области вне Data Cache
 	vectors_relocate();
+
 #endif /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM0 || CPUSTYLE_ARM_CM7 */
 #if WITHDEBUG && ! WITHISBOOTLOADER
 	// В функции инициализации компорта есть NVIC_SetVector
@@ -10816,22 +10827,6 @@ static void r7s721_ttb_map(
 	unsigned i = va >> 20;
 	tlbbase [i] =  r7s721_accessbits(la);
 }
-
-#if LCDMODE_LTDC && LCDMODE_LTDCSDRAMBUFF
-
-#if LCDMODE_LTDCSDRAMBUFF
-
-void arm_hardware_sdram_initialize(void)
-{
-
-}
-#endif /* LCDMODE_LTDCSDRAMBUFF */
-
-void arm_hardware_ltdc_initialize(void)
-{
-}
-
-#endif /* LCDMODE_LTDC && LCDMODE_LTDCSDRAMBUFF */
 
 #endif /* CPUSTYLE_R7S721 */
 

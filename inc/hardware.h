@@ -700,8 +700,9 @@ void hardware_twi_master_configure(void);
 
 uint32_t hardware_get_random(void);
 
-void arm_hardware_ltdc_initialize(void);	// STM32F4xxx with LCD-TFT Controller (LTDC)
-void arm_hardware_sdram_initialize(void);
+void arm_hardware_ltdc_initialize(void);	// LCD-TFT Controller (LTDC) with framebuffer
+void arm_hardware_dma2d_initialize(void);	// Graphic engine
+void arm_hardware_sdram_initialize(void);	// External memory region(s)
 void arm_hardware_ltdc_pip_set(uintptr_t addr);	// set PIP framebuffer address
 void arm_hardware_ltdc_pip_off(void);	// set PIP framebuffer address
 

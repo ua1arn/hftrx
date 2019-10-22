@@ -13,8 +13,9 @@
 
 #include "formats.h"	// for debug prints
 
+#if WITHSDRAMHW
 
-#if CPUSTYLE_STM32 && LCDMODE_LTDC && LCDMODE_LTDCSDRAMBUFF
+#if CPUSTYLE_STM32
 
 #define assert_param(expr) do { } while (0)
 /**
@@ -3032,4 +3033,14 @@ void arm_hardware_sdram_initialize(void)
   SDRAM_InitSequence(); 
   
 }
-#endif /* CPUSTYLE_STM32 && LCDMODE_LTDC && LCDMODE_LTDCSDRAMBUFF*/
+
+#elif CPUSTYLE_STM32MP157A
+
+void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
+{
+
+}
+
+#endif
+
+#endif /* WITHSDRAMHW */
