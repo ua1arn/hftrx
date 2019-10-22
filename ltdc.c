@@ -1278,7 +1278,7 @@ arm_hardware_ltdc_initialize(void)
 	debug_printf_P(PSTR("arm_hardware_ltdc_initialize done\n"));
 }
 
-#elif CPUSTYLE_STM32
+#elif CPUSTYLE_STM32 || CPUSTYLE_STM32MP1
 
 /** @defgroup LTDC_Pixelformat 
   * @{
@@ -1793,13 +1793,25 @@ arm_hardware_ltdc_initialize(void)
 	/* Initialize the LCD */
 
 #if CPUSTYLE_STM32H7XX
+
 	/* Enable the LTDC Clock */
 	RCC->APB3ENR |= RCC_APB3ENR_LTDCEN;	/* LTDC clock enable */
-	__DSB();
+	(void) RCC->APB3ENR;
 
 	/* Enable the DMA2D Clock */
 	RCC->AHB3ENR |= RCC_AHB3ENR_DMA2DEN;	/* DMA2D clock enable */
-	__DSB();
+	(void) RCC->APB3ENR;
+
+#elif CPUSTYLE_STM32MP1
+
+	/* Enable the LTDC Clock */
+	RCC->MP_APB4ENSETR |= RCC_MP_APB4ENSETR_LTDCEN;	/* LTDC clock enable */
+	(void) RCC->MP_APB4ENSETR;
+
+	/* Enable the DMA2D Clock */
+	//RCC->MP_APB4ENSETR |= RCC_AHB3ENR_DMA2DEN;	/* DMA2D clock enable */
+	//(void) RCC->MP_APB4ENSETR;
+
 #else /* CPUSTYLE_STM32H7XX */
 	/* Enable the LTDC Clock */
 	RCC->APB2ENR |= RCC_APB2ENR_LTDCEN;	/* LTDC clock enable */

@@ -17,7 +17,7 @@
 #define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
 #define WITHSPIHWDMA 	1	/* Использование DMA при обмене по SPI */
 //#define WITHSPISW 	1	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */
-#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	*/
+//#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	*/
 
 //#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 //#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
@@ -652,8 +652,6 @@
 
 	#define	HARDWARE_BL_INITIALIZE() do { \
 		/* step-up backlight converter */ \
-		arm_hardware_piof_outputs((1U << 1), 1 * (1U << 1));		/* PF1 - enable backlight */ \
-		arm_hardware_piof_opendrain((1U << 3) | (1U << 2), 0 * (1U << 3) | 0 * (1U << 2));	/* PF3:PF2 - backlight current adjust */ \
 		} while (0)
 
 #if WITHDCDCFREQCTL

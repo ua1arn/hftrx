@@ -1640,6 +1640,8 @@ static RAMFUNC void spool_adcdonebundle(void)
 		spool_elkeybundle();
 	}
 
+#elif CPUSTYLE_STM32MP1
+	#warning Insert code for CPUSTYLE_STM32MP1
 #else
 
 	#error Undefined CPUSTYLE_XXX interrrupts handlers
@@ -1796,6 +1798,8 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 
 	OSTM0.OSTMnTS = 0x01u;      /* Start counting */
 
+#elif CPUSTYLE_STM32MP1
+	#warning Insert code for CPUSTYLE_STM32MP1
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -2346,6 +2350,8 @@ r7s721_adi_irq_handler(void)
 	}
 }
 
+#elif CPUSTYLE_STM32MP1
+	#warning Insert code for CPUSTYLE_STM32MP1
 #else
 	#error No CPUSTYLE_XXXXX defined
 #endif
@@ -3088,6 +3094,8 @@ void hardware_adc_initialize(void)
 
 	// первый запуск производится в hardware_adc_startonescan().
 	// А здесь всё...
+#elif CPUSTYLE_STM32MP1
+	#warning Insert code for CPUSTYLE_STM32MP1
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -3187,6 +3195,8 @@ hardware_adc_startonescan(void)
 #elif CPUSTYLE_STM32F0XX
 	#warning: #warning Must be implemented for this CPU
 
+#elif CPUSTYLE_STM32MP1
+	#warning Insert code for CPUSTYLE_STM32MP1
 #else
 
 	#error Undefined CPUSTYLE_XXX
@@ -4163,6 +4173,8 @@ void hardware_spi_master_initialize(void)
 #endif /* WITHSPIHWDMA */
 
 	SPIIO_INITIALIZE();
+#elif CPUSTYLE_STM32MP1
+	#warning Insert code for CPUSTYLE_STM32MP1
 #else
 	#error Wrong CPUSTYLE macro
 #endif
@@ -4427,6 +4439,9 @@ void hardware_spi_master_setfreq(uint_fast8_t spispeedindex, int_fast32_t spispe
 	spi_spcmd0_val32w [spispeedindex][SPIC_MODE2] = spcmd32w | SPCMD_MODE2;
 	spi_spcmd0_val32w [spispeedindex][SPIC_MODE3] = spcmd32w | SPCMD_MODE3;
 
+#elif CPUSTYLE_STM32MP1
+	#warning Insert code for CPUSTYLE_STM32MP1
+
 #else
 	#error Wrong CPUSTYLE macro
 #endif
@@ -4549,6 +4564,8 @@ void hardware_spi_connect(uint_fast8_t spispeedindex, spi_modes_t spimode)
 
 	HARDWARE_SPI_CONNECT();
 
+#elif CPUSTYLE_STM32MP1
+	#warning Insert code for CPUSTYLE_STM32MP1
 #else
 	#error Wrong CPUSTYLE macro
 #endif
@@ -4603,6 +4620,8 @@ void hardware_spi_disconnect(void)
 
 	HARDWARE_SPI_DISCONNECT();
 
+#elif CPUSTYLE_STM32MP1
+	#warning Insert code for CPUSTYLE_STM32MP1
 #else
 	#error Wrong CPUSTYLE macro
 #endif
@@ -4662,6 +4681,9 @@ hardware_spi_ready_b8_void(void)
 		;
 	(void) HW_SPIUSED->SPDR.UINT8 [R_IO_LL]; // LL=0
 
+#elif CPUSTYLE_STM32MP1
+	#warning Insert code for CPUSTYLE_STM32MP1
+
 #else
 	#error Wrong CPUSTYLE macro
 #endif
@@ -4720,6 +4742,9 @@ portholder_t hardware_spi_complete_b8(void)	/* дождаться готовно
 	while ((HW_SPIUSED->SPSR & (1U << 7)) == 0)	// SPRF bit
 		;
 	return HW_SPIUSED->SPDR.UINT8 [R_IO_LL]; // LL=0
+
+#elif CPUSTYLE_STM32MP1
+	#warning Insert code for CPUSTYLE_STM32MP1
 
 #else
 	#error Wrong CPUSTYLE macro
@@ -4972,6 +4997,9 @@ hardware_spi_master_send_frame_8bpartial(
 
 	HW_SPIUSED->SPBFCR &= ~ RSPIn_SPBFCR_RXRST;		// Разрешить прием
 
+#elif CPUSTYLE_STM32MP1
+	#warning Insert code for CPUSTYLE_STM32MP1
+
 #else
 	#error Undefined CPUSTYLE_xxxx
 #endif
@@ -5137,6 +5165,9 @@ hardware_spi_master_send_frame_16bpartial(
 
 	HW_SPIUSED->SPBFCR &= ~ RSPIn_SPBFCR_RXRST;		// Разрешить прием
 
+#elif CPUSTYLE_STM32MP1
+	#warning Insert code for CPUSTYLE_STM32MP1
+
 #else
 	#error Undefined CPUSTYLE_xxxx
 #endif
@@ -5289,6 +5320,10 @@ hardware_spi_master_read_frame_16bpartial(
 	HARDWARE_SPI_DISCONNECT_MOSI();	// выход данных в "1" - для нормальной работы SD CARD
 
 	HARDWARE_SPI_CONNECT_MOSI();	// Возвращаем в обычный режим работы
+
+#elif CPUSTYLE_STM32MP1
+	#warning Insert code for CPUSTYLE_STM32MP1
+
 
 #else
 	#error Undefined CPUSTYLE_xxxx
@@ -5445,6 +5480,10 @@ hardware_spi_master_read_frame_8bpartial(
 	HARDWARE_SPI_DISCONNECT_MOSI();	// выход данных в "1" - для нормальной работы SD CARD
 
 	HARDWARE_SPI_CONNECT_MOSI();	// Возвращаем в обычный режим работы
+
+#elif CPUSTYLE_STM32MP1
+	#warning Insert code for CPUSTYLE_STM32MP1
+
 
 #else
 	#error Undefined CPUSTYLE_xxxx
@@ -5650,6 +5689,10 @@ void hardware_spi_connect_b16(uint_fast8_t spispeedindex, spi_modes_t spimode)
 
 	HARDWARE_SPI_CONNECT();
 
+#elif CPUSTYLE_STM32MP1
+	#warning Insert code for CPUSTYLE_STM32MP1
+
+
 #else
 	#error Wrong CPUSTYLE macro
 #endif
@@ -5696,6 +5739,10 @@ portholder_t hardware_spi_complete_b16(void)	/* дождаться готовн�
 		;
 	return HW_SPIUSED->SPDR.UINT16 [R_IO_L]; // L=0
 
+#elif CPUSTYLE_STM32MP1
+	#warning Insert code for CPUSTYLE_STM32MP1
+
+
 #else
 	#error Wrong CPUSTYLE macro
 #endif
@@ -5738,6 +5785,10 @@ static void hardware_spi_ready_b16_void(void)	/* дождаться готовн
 		;
 	(void) HW_SPIUSED->SPDR.UINT16 [R_IO_L];	 // L=0
 
+#elif CPUSTYLE_STM32MP1
+	#warning Insert code for CPUSTYLE_STM32MP1
+
+
 #else
 	#error Wrong CPUSTYLE macro
 #endif
@@ -5775,6 +5826,10 @@ void hardware_spi_b16_p1(
 #elif CPUSTYLE_R7S721
 
 	HW_SPIUSED->SPDR.UINT16 [R_IO_L] = v; // L=0
+
+#elif CPUSTYLE_STM32MP1
+	#warning Insert code for CPUSTYLE_STM32MP1
+
 
 #else
 	#error Wrong CPUSTYLE macro
@@ -5828,6 +5883,9 @@ void hardware_spi_connect_b32(uint_fast8_t spispeedindex, spi_modes_t spimode)
 
 	HARDWARE_SPI_CONNECT();
 
+#elif CPUSTYLE_STM32MP1
+	#warning Insert code for CPUSTYLE_STM32MP1
+
 #else
 	#error Wrong CPUSTYLE macro
 #endif
@@ -5851,6 +5909,10 @@ portholder_t hardware_spi_complete_b32(void)	/* дождаться готовн�
 		;
 	return HW_SPIUSED->SPDR.UINT32;
 
+#elif CPUSTYLE_STM32MP1
+	#warning Insert code for CPUSTYLE_STM32MP1
+
+
 #else
 	#error Wrong CPUSTYLE macro
 #endif
@@ -5871,6 +5933,10 @@ static void hardware_spi_ready_b32_void(void)	/* дождаться готовн
 	while ((HW_SPIUSED->SPSR & (1U << 7)) == 0)	// SPRF bit
 		;
 	(void) HW_SPIUSED->SPDR.UINT32;
+
+#elif CPUSTYLE_STM32MP1
+	#warning Insert code for CPUSTYLE_STM32MP1
+
 
 #else
 	#error Wrong CPUSTYLE macro
@@ -5893,6 +5959,10 @@ void hardware_spi_b32_p1(
 #elif CPUSTYLE_R7S721
 
 	HW_SPIUSED->SPDR.UINT32 = v;
+
+#elif CPUSTYLE_STM32MP1
+	#warning Insert code for CPUSTYLE_STM32MP1
+
 
 #else
 	#error Wrong CPUSTYLE macro
@@ -5955,6 +6025,10 @@ void hardware_spi_b8_p1(
 #elif CPUSTYLE_R7S721
 
 	HW_SPIUSED->SPDR.UINT8 [R_IO_LL] = v; // LL=0
+
+#elif CPUSTYLE_STM32MP1
+	#warning Insert code for CPUSTYLE_STM32MP1
+
 
 #else
 	#error Wrong CPUSTYLE macro
@@ -6113,6 +6187,10 @@ hardware_elkey_timer_initialize(void)
 
 	OSTM1.OSTMnTS = 0x01u;      /* Start counting */
 
+#elif CPUSTYLE_STM32MP1
+	#warning Insert code for CPUSTYLE_STM32MP1
+
+
 #else
 	#error Undefined CPUSTYLE_XXX
 #endif
@@ -6195,6 +6273,10 @@ void hardware_elkey_set_speed(uint_fast32_t ticksfreq)
 		0 * (1U << 1) |	// Interval Timer Mode
 		1 * (1U << 0) |	// Enables the interrupts when counting starts.
 		0;
+
+#elif CPUSTYLE_STM32MP1
+	#warning Insert code for CPUSTYLE_STM32MP1
+
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -6279,6 +6361,9 @@ void hardware_elkey_set_speed128(uint_fast32_t ticksfreq, int scale)
 		0 * (1U << 1) |	// Interval Timer Mode
 		1 * (1U << 0) |	// Enables the interrupts when counting starts.
 		0;
+
+#elif CPUSTYLE_STM32MP1
+	#warning Insert code for CPUSTYLE_STM32MP1
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -6722,6 +6807,11 @@ void local_delay_us(int timeUS)
 		//const unsigned long top = timeUS * 1600UL / (CPU_FREQ / 1000000);	// tested @ 150 MHz Execute from RAM
 	#elif CPUSTYPE_TMS320F2833X	&& 0	// FLASH code
 		const unsigned long top = timeUS * 480UL / (CPU_FREQ / 1000000);	// Execute from RAM
+
+	#elif CPUSTYLE_STM32MP1
+		#warning Update code for CPUSTYLE_STM32MP1
+		const int top = timeUS * 13800 / (CPU_FREQ / 1000000);
+
 	#else
 		#error TODO: calibrate local_delay_us constant
 		const int top = timeUS * 175 / (CPU_FREQ / 1000000);
@@ -10257,10 +10347,17 @@ static void r7s721_intc_initialize(void)
 		/* 584 00002020 */	(IRQ_MODE_TYPE_IRQ | IRQ_MODE_DOMAIN_NONSECURE | IRQ_MODE_CPU_0 | IRQ_MODE_TRIG_LEVEL | IRQ_MODE_MODEL_1N),
 		/* 585 00002020 */	(IRQ_MODE_TYPE_IRQ | IRQ_MODE_DOMAIN_NONSECURE | IRQ_MODE_CPU_0 | IRQ_MODE_TRIG_LEVEL | IRQ_MODE_MODEL_1N),
 		/* 586 00002020 */	(IRQ_MODE_TYPE_IRQ | IRQ_MODE_DOMAIN_NONSECURE | IRQ_MODE_CPU_0 | IRQ_MODE_TRIG_LEVEL | IRQ_MODE_MODEL_1N),
-	};
+
+#elif CPUSTYLE_STM32MP1
+	#warning Insert code for CPUSTYLE_STM32MP1
+	/*   0 00000024 */	(IRQ_MODE_TYPE_IRQ | IRQ_MODE_DOMAIN_NONSECURE | IRQ_MODE_CPU_0 | IRQ_MODE_TRIG_EDGE | IRQ_MODE_MODEL_NN),
+	/*   1 00000024 */	(IRQ_MODE_TYPE_IRQ | IRQ_MODE_DOMAIN_NONSECURE | IRQ_MODE_CPU_0 | IRQ_MODE_TRIG_EDGE | IRQ_MODE_MODEL_NN),
+
 #else
 	#error Wronf CPUSTYLE_XXXXXXXXX
 #endif
+	};
+
 	IRQn_ID_t irqn;
 
 	IRQ_Initialize();
@@ -11226,7 +11323,9 @@ void cpu_initialize(void)
 	USB201.SYSCFG0 |= USB_SYSCFG_UCKSEL; // UCKSEL 1: The 12-MHz EXTAL clock is selected.
 	local_delay_ms(2);	// required 1 ms delay - see R01UH0437EJ0200 Rev.2.00 28.4.1 System Control and Oscillation Control
 	CPG.STBCR7 |= CPG_STBCR7_MSTP70;	// Module Stop 70 0: Channel 1 of the USB 2.0 host/function module halts.
-	
+
+#elif CPUSTYLE_STM32MP1
+	#warning Insert code for CPUSTYLE_STM32MP1
 #else
 	#error Undefined CPUSTYLE_XXX
 #endif
