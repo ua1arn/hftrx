@@ -84,7 +84,8 @@ calcdivround2(
 	return (ref < freq) ? 1 : ((ref + freq / 2) / freq);
 }
 
-#if CPUSTYLE_STM32
+#if CPUSTYLE_STM32 || CPUSTYLE_STM32MP1
+
 	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
 	static uint_fast32_t 
 	NOINLINEAT
@@ -146,7 +147,7 @@ calcdivround2(
 	}
 #endif /* SIDETONE_TARGET_BIT != 0 */
 
-#if CPUSTYLE_STM32H7XX
+#if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 	/* для устройств тактирующихся от per_ck */
 	static uint_fast32_t 
 	NOINLINEAT
@@ -356,7 +357,7 @@ static uint_fast32_t arm_hardware_stm32f7xx_pllq_initialize(void);	// Настр
 		AT91C_TC_CLKS_TIMER_DIV5_CLOCK, // is a TCxCLK = MCLK / 1024
 	};
 
-#elif CPUSTYLE_STM32
+#elif CPUSTYLE_STM32 || CPUSTYLE_STM32MP1
 
 	// Параметры функции calcdivider().
 	// 
@@ -368,7 +369,7 @@ static uint_fast32_t arm_hardware_stm32f7xx_pllq_initialize(void);	// Настр
 		//STM32F_AC_TIMER_WIDTH = 16,	STM32F_AC_TIMER_TAPS = (65535), // Advanced-control timers
 		//STM32F_BA_TIMER_WIDTH = 16,	STM32F_BA_TIMER_TAPS = (65535), // Basic timers
 
-#if CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32FHXX
+#if CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32FHXX || CPUSTYLE_STM32MP1
 		STM32F_TIM2_TIMER_WIDTH = 32,	STM32F_TIM2_TIMER_TAPS = (65535), // General-purpose timers TIM2 and TIM5 on CPUSTYLE_STM32F4XX
 		STM32F_TIM5_TIMER_WIDTH = 32,	STM32F_TIM5_TIMER_TAPS = (65535), // General-purpose timers TIM2 and TIM5 on CPUSTYLE_STM32F4XX
 #else /* CPUSTYLE_STM32F4XX */
@@ -3222,7 +3223,7 @@ hardware_adc_startonescan(void)
 
 		return calcdivround_p0clock(760000uL * 2);	// на выходе формирователя делитель на 2 - требуемую частоту умножаем на два
 
-#elif CPUSTYLE_STM32H7XX
+#elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 		struct FREQ 
 		{
 			uint_fast16_t dcdcdiv;
@@ -3727,7 +3728,7 @@ hardware_beep_initialize(void)
 	#if CPUSTYLE_AT91SAM7S || CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 		static portholder_t spi_csr_val8w [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 */
 		static portholder_t spi_csr_val16w [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 в режиме 16-ти битных слов. */
-	#elif CPUSTYLE_STM32H7XX
+	#elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 		static portholder_t spi_cfg1_val8w [SPIC_SPEEDS_COUNT];
 		static portholder_t spi_cfg1_val16w [SPIC_SPEEDS_COUNT];
 		static portholder_t spi_cfg1_val32w [SPIC_SPEEDS_COUNT];
@@ -4172,12 +4173,11 @@ void hardware_spi_master_initialize(void)
 #endif /* WITHSPIHWDMA */
 
 	SPIIO_INITIALIZE();
+
 #elif CPUSTYLE_STM32MP1
-	#warning Insert code for CPUSTYLE_STM32MP1
+
 	RCC->MC_APB2ENSETR |= RCC_MC_APB2ENSETR_SPI1EN; // подать тактирование
 	(void) RCC->MC_APB2ENSETR;
-
-
 	/* настраиваем в режиме disconnect */
 	SPIIO_INITIALIZE();
 
@@ -4351,7 +4351,7 @@ void hardware_spi_master_setfreq(uint_fast8_t spispeedindex, int_fast32_t spispe
 	spi_cr1_val16w [spispeedindex][SPIC_MODE2] = cr1bits | CR1_MODE2;
 	spi_cr1_val16w [spispeedindex][SPIC_MODE3] = cr1bits | CR1_MODE3;
 
-#elif CPUSTYLE_STM32H7XX
+#elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 
 	unsigned value;	/* делителя нет, есть только прескалер - значение делителя не используется */
 	const uint_fast8_t prei = calcdivider(calcdivround_per_ck(spispeed), STM32F_SPIBR_WIDTH, STM32F_SPIBR_TAPS, & value, 1);
@@ -4571,7 +4571,16 @@ void hardware_spi_connect(uint_fast8_t spispeedindex, spi_modes_t spimode)
 	HARDWARE_SPI_CONNECT();
 
 #elif CPUSTYLE_STM32MP1
-	#warning Insert code for CPUSTYLE_STM32MP1
+
+	HARDWARE_SPI_CONNECT();
+
+	SPI1->CFG1 = spi_cfg1_val8w [spispeedindex];
+	SPI1->CFG2 = spi_cfg2_val [spimode];
+	SPI1->CR1 |= SPI_CR1_SSI;
+
+	SPI1->CR1 |= SPI_CR1_SPE;
+	SPI1->CR1 |= SPI_CR1_CSTART;
+
 #else
 	#error Wrong CPUSTYLE macro
 #endif
@@ -4627,7 +4636,15 @@ void hardware_spi_disconnect(void)
 	HARDWARE_SPI_DISCONNECT();
 
 #elif CPUSTYLE_STM32MP1
-	#warning Insert code for CPUSTYLE_STM32MP1
+	//#warning Insert code for CPUSTYLE_STM32MP1
+
+	SPI1->CR1 |= SPI_CR1_CSUSP;
+	while ((SPI1->CR1 & SPI_CR1_CSTART) != 0)
+		;
+	SPI1->CR1 &= ~ SPI_CR1_SPE;
+	// connect back to GPIO
+	HARDWARE_SPI_DISCONNECT();
+
 #else
 	#error Wrong CPUSTYLE macro
 #endif
@@ -4666,7 +4683,7 @@ hardware_spi_ready_b8_void(void)
 		;
 	//(void) TARGETHARD_SPI.DATA;
 
-#elif CPUSTYLE_STM32H7XX
+#elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 
 	//while ((SPI1->SR & SPI_SR_TXC) == 0)	
 	//	;
@@ -4686,9 +4703,6 @@ hardware_spi_ready_b8_void(void)
 	while ((HW_SPIUSED->SPSR & (1U << 7)) == 0)	// SPRF bit
 		;
 	(void) HW_SPIUSED->SPDR.UINT8 [R_IO_LL]; // LL=0
-
-#elif CPUSTYLE_STM32MP1
-	#warning Insert code for CPUSTYLE_STM32MP1
 
 #else
 	#error Wrong CPUSTYLE macro
@@ -4725,7 +4739,7 @@ portholder_t hardware_spi_complete_b8(void)	/* дождаться готовно
 		;
 	return TARGETHARD_SPI.DATA;
 
-#elif CPUSTYLE_STM32H7XX
+#elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 
 	//while ((SPI1->SR & SPI_SR_TXC) == 0)	
 	//	;
@@ -4748,9 +4762,6 @@ portholder_t hardware_spi_complete_b8(void)	/* дождаться готовно
 	while ((HW_SPIUSED->SPSR & (1U << 7)) == 0)	// SPRF bit
 		;
 	return HW_SPIUSED->SPDR.UINT8 [R_IO_LL]; // LL=0
-
-#elif CPUSTYLE_STM32MP1
-	#warning Insert code for CPUSTYLE_STM32MP1
 
 #else
 	#error Wrong CPUSTYLE macro
@@ -5674,7 +5685,7 @@ void hardware_spi_connect_b16(uint_fast8_t spispeedindex, spi_modes_t spimode)
 		__DSB();
 	#endif
 
-#elif CPUSTYLE_STM32H7XX
+#elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 
 		HARDWARE_SPI_CONNECT();
 
@@ -5694,10 +5705,6 @@ void hardware_spi_connect_b16(uint_fast8_t spispeedindex, spi_modes_t spimode)
 	HW_SPIUSED->SPCMD0 = spi_spcmd0_val16w [spispeedindex] [spimode];
 
 	HARDWARE_SPI_CONNECT();
-
-#elif CPUSTYLE_STM32MP1
-	#warning Insert code for CPUSTYLE_STM32MP1
-
 
 #else
 	#error Wrong CPUSTYLE macro
@@ -5721,7 +5728,7 @@ portholder_t hardware_spi_complete_b16(void)	/* дождаться готовн�
 		;
 	return (AT91C_BASE_SPI->SPI_RDR & AT91C_SPI_TD);
 
-#elif CPUSTYLE_STM32H7XX
+#elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 
 	//while ((SPI1->SR & SPI_SR_TXC) == 0)
 	//	;
@@ -5745,10 +5752,6 @@ portholder_t hardware_spi_complete_b16(void)	/* дождаться готовн�
 		;
 	return HW_SPIUSED->SPDR.UINT16 [R_IO_L]; // L=0
 
-#elif CPUSTYLE_STM32MP1
-	#warning Insert code for CPUSTYLE_STM32MP1
-
-
 #else
 	#error Wrong CPUSTYLE macro
 #endif
@@ -5770,7 +5773,7 @@ static void hardware_spi_ready_b16_void(void)	/* дождаться готовн
 		;
 	(void) AT91C_BASE_SPI->SPI_RDR;
 
-#elif CPUSTYLE_STM32H7XX
+#elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 
 	//while ((SPI1->SR & SPI_SR_TXC) == 0)
 	//	;
@@ -5790,10 +5793,6 @@ static void hardware_spi_ready_b16_void(void)	/* дождаться готовн
 	while ((HW_SPIUSED->SPSR & (1U << 7)) == 0)	// SPRF bit
 		;
 	(void) HW_SPIUSED->SPDR.UINT16 [R_IO_L];	 // L=0
-
-#elif CPUSTYLE_STM32MP1
-	#warning Insert code for CPUSTYLE_STM32MP1
-
 
 #else
 	#error Wrong CPUSTYLE macro
@@ -5817,7 +5816,7 @@ void hardware_spi_b16_p1(
 
 	AT91C_BASE_SPI->SPI_TDR = v & AT91C_SPI_TD;
 
-#elif CPUSTYLE_STM32H7XX
+#elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 
 	* (volatile uint16_t *) & (SPI1)->TXDR = v;	// prevent data packing feature
 
@@ -5832,10 +5831,6 @@ void hardware_spi_b16_p1(
 #elif CPUSTYLE_R7S721
 
 	HW_SPIUSED->SPDR.UINT16 [R_IO_L] = v; // L=0
-
-#elif CPUSTYLE_STM32MP1
-	#warning Insert code for CPUSTYLE_STM32MP1
-
 
 #else
 	#error Wrong CPUSTYLE macro
@@ -5890,7 +5885,15 @@ void hardware_spi_connect_b32(uint_fast8_t spispeedindex, spi_modes_t spimode)
 	HARDWARE_SPI_CONNECT();
 
 #elif CPUSTYLE_STM32MP1
-	#warning Insert code for CPUSTYLE_STM32MP1
+
+	HARDWARE_SPI_CONNECT();
+
+	SPI1->CFG1 = spi_cfg1_val32w [spispeedindex];
+	SPI1->CFG2 = spi_cfg2_val [spimode];
+	SPI1->CR1 |= SPI_CR1_SSI;
+
+	SPI1->CR1 |= SPI_CR1_SPE;
+	SPI1->CR1 |= SPI_CR1_CSTART;
 
 #else
 	#error Wrong CPUSTYLE macro
@@ -5900,7 +5903,7 @@ void hardware_spi_connect_b32(uint_fast8_t spispeedindex, spi_modes_t spimode)
 
 portholder_t hardware_spi_complete_b32(void)	/* дождаться готовности */
 {
-#if CPUSTYLE_STM32H7XX
+#if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 
 	//while ((SPI1->SR & SPI_SR_TXC) == 0)	
 	//	;
@@ -5915,10 +5918,6 @@ portholder_t hardware_spi_complete_b32(void)	/* дождаться готовн�
 		;
 	return HW_SPIUSED->SPDR.UINT32;
 
-#elif CPUSTYLE_STM32MP1
-	#warning Insert code for CPUSTYLE_STM32MP1
-
-
 #else
 	#error Wrong CPUSTYLE macro
 #endif
@@ -5926,7 +5925,7 @@ portholder_t hardware_spi_complete_b32(void)	/* дождаться готовн�
 
 static void hardware_spi_ready_b32_void(void)	/* дождаться готовности */
 {
-#if CPUSTYLE_STM32H7XX
+#if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 
 	//while ((SPI1->SR & SPI_SR_TXC) == 0)	
 	//	;
@@ -5939,10 +5938,6 @@ static void hardware_spi_ready_b32_void(void)	/* дождаться готовн
 	while ((HW_SPIUSED->SPSR & (1U << 7)) == 0)	// SPRF bit
 		;
 	(void) HW_SPIUSED->SPDR.UINT32;
-
-#elif CPUSTYLE_STM32MP1
-	#warning Insert code for CPUSTYLE_STM32MP1
-
 
 #else
 	#error Wrong CPUSTYLE macro
@@ -5958,17 +5953,13 @@ void hardware_spi_b32_p1(
 	portholder_t v		/* значениеслова для передачи */
 	)
 {
-#if CPUSTYLE_STM32H7XX
+#if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 	
 	* (volatile uint32_t *) & (SPI1)->TXDR = v;	// prevent data packing feature
 
 #elif CPUSTYLE_R7S721
 
 	HW_SPIUSED->SPDR.UINT32 = v;
-
-#elif CPUSTYLE_STM32MP1
-	#warning Insert code for CPUSTYLE_STM32MP1
-
 
 #else
 	#error Wrong CPUSTYLE macro
@@ -6016,7 +6007,7 @@ void hardware_spi_b8_p1(
 
 	TARGETHARD_SPI.DATA = v; // запуск передачи
 
-#elif CPUSTYLE_STM32H7XX
+#elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 
 	* (volatile uint8_t *) & (SPI1)->TXDR = v;	// prevent data packing feature
 
@@ -6031,10 +6022,6 @@ void hardware_spi_b8_p1(
 #elif CPUSTYLE_R7S721
 
 	HW_SPIUSED->SPDR.UINT8 [R_IO_LL] = v; // LL=0
-
-#elif CPUSTYLE_STM32MP1
-	#warning Insert code for CPUSTYLE_STM32MP1
-
 
 #else
 	#error Wrong CPUSTYLE macro

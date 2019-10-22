@@ -559,38 +559,96 @@ extern "C" {
 
 #elif CPUSTYLE_STM32MP1
 
+
+	//! GPIO Alternate Functions
+	typedef enum {
+		AF_SYSTEM,		//!< AF0 - SYSTEM*
+		AF_TIM1,		//!< AF1 - TIM1/2
+		AF_TIM2 = 1,	//!< AF1 - TIM1/2
+		AF_TIM3,		//!< AF2 - TIM3/4/5
+		AF_TIM4 = 2,	//!< AF2 - TIM3/4/5
+		AF_TIM5 = 2,	//!< AF2 - TIM3/4/5
+		AF_TIM8,		//!< AF3 - TIM9/10/11
+		AF_TIM9 = 3,	//!< AF3 - TIM9/10/11
+		AF_TIM10 = 3,	//!< AF3 - TIM9/10/11
+		AF_TIM11 = 3,	//!< AF3 - TIM9/10/11
+		AF_I2C1,		//!< AF4 - I2C1/2/3
+		AF_I2C2 = 4,	//!< AF4 - I2C1/2/3
+		AF_I2C3 = 4,	//!< AF4 - I2C1/2/3
+		AF_SPI1,		//!< AF5 - SPI1/2
+		AF_SPI2 = 5,	//!< AF5 - SPI1/2
+		AF_SPI3,		//!< AF6 - SPI3
+		AF_SPI2ext = 6,	//!< AF6 - SPI3
+		AF_SAI = 6,		//!< AF6 - SAI1/SAI2
+		AF_USART1,		//!< AF7 - USART1/2/3
+		AF_USART2 = 7,	//!< AF7 - USART1/2/3
+		AF_USART3 = 7,	//!< AF7 - USART1/2/3
+		AF_USART4,		//!< AF8 - USART4/5/6
+		AF_USART5 = 8,	//!< AF8 - USART4/5/6
+		AF_USART6 = 8,	//!< AF8 - USART4/5/6
+		AF_CAN1,		//!< AF9 - CAN1/2
+		AF_CAN2 = 9,	//!< AF9 - CAN1/2
+		AF_TIM12 = 9,	//!< AF9 - TIM12/13/14
+		AF_TIM13 = 9,	//!< AF9 - TIM12/13/14
+		AF_TIM14 = 9,	//!< AF9 - TIM12/13/14
+		AF_OTGFS,		//!< AF10 - OTGFS
+		AF_OTGHS = 10,	//!< AF10 - OTGHS
+		AF_SAI2 = 10,	//!< AF10 - SAI2
+		AF_ETH,			//!< AF11 - ETH
+		AF_FSMC,		//!< AF12 - FSMC
+		AF_SDIO = 12,	//!< AF12 - SDIO
+		AF_OTGHS_FS = 12, //!< AF12 - OTG HS configured in FS
+		AF_DCMI,		//!< AF13 - DCMI
+		AF_AF14,		//!< AF14 - RI
+		AF_EVENT		//!< AF15 - SYSTEM (EVENTOUT)
+	} GPIO_AFLH_t;
+
 	// все параметры требуют уточнения, пока заглушки
 	#define ARM_CA9_CACHELEVELMAX	1	/* максимальный уровень cache в процессоре */
 	#define ARM_CA9_PRIORITYSHIFT 3	/* ICCPMR[7:3] is valid bit */
-	//#define WITHCPUXTAL 12000000uL			/* На процессоре установлен кварц 12.000 МГц */
-	#define CPU_FREQ	(30 * WITHCPUXTAL)		/* 12 MHz * 30 - clock mode 0, xtal 12 MHz */
 
-	#define BCLOCK_FREQ		(CPU_FREQ / 3)		// 120 MHz
-	#define P1CLOCK_FREQ	(CPU_FREQ / 6)		// 60 MHz
-	#define P0CLOCK_FREQ	(CPU_FREQ / 12)		// 30 MHz
+	#define CPU_FREQ	(650000000uL)		/* 12 MHz * 30 - clock mode 0, xtal 12 MHz */
+	/* частоты, подающиеся на периферию */
+	#define	PCLK1_FREQ (CPU_FREQ / 4)	// 42 MHz PCLK1 frequency
+	#define	PCLK1_TIMERS_FREQ (CPU_FREQ / 2)	// 42 MHz PCLK1 frequency
+	#define	PCLK2_FREQ (CPU_FREQ / 4)	// 84 MHz PCLK2 frequency
+	#define	PCLK2_TIMERS_FREQ (CPU_FREQ / 2)	// 84 MHz PCLK2 frequency
+	#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config станавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
+	#define PER_CK_FREQ 64000000uL	// 2. The per_ck clock could be hse_ck, hsi_ker_ck or csi_ker_ck according to CKPERSEL selection.
 
-	#define TICKS_FREQUENCY		(200uL * 1) // at ARM - 400 Hz
+	#define TICKS_FREQUENCY	 (200U)	// 200 Hz
 
 	// ADC clock frequency: 1..20 MHz
-	#define ADC_FREQ	2000000uL	/* тактовая частота SAR преобразователя АЦП. */
 	#define SCL_CLOCK	400000uL	/* 400 kHz I2C/TWI speed */
 
-	#define SPISPEED 8000000uL	/* 8 MHz (10.5) на SCLK - требуемая скорость передачи по SPI */
-	#define SPISPEEDUFAST (P1CLOCK_FREQ / 3)	// 20 MHz
+	//#define SPISPEED (PCLK1_FREQ / 16)	/* 3.5 MHz на SCLK - требуемая скорость передачи по SPI */
+	//#define SPISPEED (PCLK1_FREQ / 8)	/* 7 MHz на SCLK - требуемая скорость передачи по SPI */
+	#define SPISPEED (PCLK1_FREQ / 4)	/* 14 MHz на SCLK - требуемая скорость передачи по SPI */
+	#define SPISPEEDUFAST 12000000uL//(PCLK1_FREQ / 2)	/* 28 на SCLK - требуемая скорость передачи по SPI */
 	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
 	#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
+
+	#define ADCVREF_CPU	33		// 3.3 volt
+	#define DACVREF_CPU	33		// 3.3 volt
+	#define HARDWARE_DACBITS 12	/* ЦАП работает с 12-битными значениями */
+	#define HARDWARE_ADCINPUTS	40	/* до 32-ти входов АЦП */
+	/* тип для хранения данных, считанных с АЦП */
+	typedef uint_fast16_t adcvalholder_t;
+	//#define HARDWARE_ADCBITS 8	/* АЦП работает с 8-битными значениями */
+	//#define HARDWARE_ADCBITS 10	/* АЦП работает с 10-битными значениями */
+	#define HARDWARE_ADCBITS 12	/* АЦП работает с 12-битными значениями */
+	//#define HARDWARE_ADCBITS 14	/* АЦП работает с 14-битными значениями */
+	//#define HARDWARE_ADCBITS 16	/* АЦП работает с 16-битными значениями */
+	#define ADC_FREQ	10000000uL	/* тактовая частота SAR преобразователя АЦП. */
+	#define WITHREFSENSORVAL	1240	/* Reference voltage: STM32H743 1.180 1.216 1.255 */
 
 	#define ADCVREF_CPU	33		// 3.3 volt
 	#define HARDWARE_ADCBITS 12	/* АЦП работает с 12-битными значениями */
 
 	#define HARDWARE_ADCINPUTS	40	/* до 8-ти входов АЦП */
-	/* тип для хранения данных, считанных с АЦП */
-	typedef uint_fast16_t adcvalholder_t;
-	#define WITHREFSENSORVAL	1210	/* Reference voltage: x = 1.21V */
 
 	#define DACVREF_CPU	33		// 3.3 volt
 	#define HARDWARE_DACBITS 12	/* ЦАП работает с 12-битными значениями */
-
 
 #else
 
