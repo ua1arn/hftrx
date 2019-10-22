@@ -4016,8 +4016,8 @@ void hardware_spi_master_initialize(void)
 	//cpu_stm32f1xx_setmapr(AFIO_MAPR_SPI1_REMAP);
 
 	// Теперь настроим модуль SPI.
-	RCC->APB2ENR |= RCC_APB2ENR_SPI1EN; //подать тактирование
-	__DSB();
+	RCC->APB2ENR |= RCC_APB2ENR_SPI1EN; // подать тактирование
+	(void) RCC->APB2ENR;
 	SPI1->CR1 = 0x0000;             //очистить первый управляющий регистр
 	SPI1->CR2 = 0x0000;	// SPI_CR2_SSOE;             //очистить второй управляющий регистр
 
@@ -4175,6 +4175,8 @@ void hardware_spi_master_initialize(void)
 	SPIIO_INITIALIZE();
 #elif CPUSTYLE_STM32MP1
 	#warning Insert code for CPUSTYLE_STM32MP1
+	RCC->MC_APB2ENSETR |= RCC_MC_APB2ENSETR_SPI1EN; // подать тактирование
+	(void) RCC->MC_APB2ENSETR;
 #else
 	#error Wrong CPUSTYLE macro
 #endif
