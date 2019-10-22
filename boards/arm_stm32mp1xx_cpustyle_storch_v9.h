@@ -754,4 +754,20 @@
 		TUNE_INITIALIZE(); \
 		} while (0)
 
+
+		// Bootloader parameters
+		#define BOOTLOADER_APPAREA 0xC0000000	/* адрес ОЗУ, куда перемещать application */
+		#define BOOTLOADER_APPFULL (1024uL * 2048)	// 2MB
+
+		#define BOOTLOADER_SELFBASE 0x70000000	/* адрес где лежит во FLASH образ application */
+		#define BOOTLOADER_SELFSIZE (1024uL * 128)	// 128
+
+		#define BOOTLOADER_APPBASE 0x70020000	/* адрес где лежит во FLASH образ application */
+		#define BOOTLOADER_APPSIZE (BOOTLOADER_APPFULL - BOOTLOADER_SELFSIZE)	// 2048 - 128
+
+		#define BOOTLOADER_PAGESIZE (1024uL * 4)	// W25Q32FV with 4 KB pages
+
+		#define USBD_DFU_XFER_SIZE 64	// match to (Q)SPI FLASH MEMORY page size
+		#define USBD_DFU_FLASHNAME "W25Q32FV"
+
 #endif /* ARM_STM32MP1_CPUSTYLE_STORCH_V9_H_INCLUDED */

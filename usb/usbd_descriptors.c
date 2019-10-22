@@ -145,13 +145,6 @@ struct stringtempl
 	const char * str;
 };
 
-// STM32H743IIT6 descriptors:
-// Note: fixed position format
-//static const char strFlashDesc [] = "@Internal Flash /0x08000000/16*128Kg";
-//static const char strOptBytesDesc [] = "@Option Bytes /0x5200201C/01*128 e";
-
-static const char strFlashDesc [] = "@SPI Flash : M25Px/0x18000000/32*064Kg";
-//static const char strFlashDesc [] = "@Internal Flash /0x08000000/16*128Kg";
 static const struct stringtempl strtemplates [] =
 {
 	{ STRING_ID_1, "MicroGenSF", },		// Manufacturer
@@ -163,11 +156,6 @@ static const struct stringtempl strtemplates [] =
 	{ STRING_ID_RNDIS, PRODUCTSTR " Remote NDIS", },
 
 	{ STRING_ID_DFU, "Storch DFU Device", },
-	#if 0//! WITHISBOOTLOADER
-		{ STRING_ID_DFU_0, strFlashDesc, },
-		{ STRING_ID_DFU_1, strBootloaderFlashDesc, },
-		//{ STRING_ID_DFU_1, strOptBytesDesc, },
-	#endif /* ! WITHISBOOTLOADER */
 
 	{ STRING_ID_a0, "Storch RX Voice", },		// tag for Interface Descriptor 0/0 Audio
 	{ STRING_ID_a1, "Storch RX Spectrum", },	// tag for Interface Descriptor 0/0 Audio
@@ -4431,13 +4419,12 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 	
 #if WITHUSBDFU
 	{
-		static const char strFlashDesc_3 [] = "@SPI Flash APPLICATION: M25Px/0x%08lx/%02u*%03uKg";	// 128 k for bootloader
+		static const char strFlashDesc_4 [] = "@SPI Flash APPLICATION: %s/0x%08lx/%02u*%03uKg";	// 128 k for bootloader
 		unsigned partlen;
-		// Формирование MAC адреса данного устройства
-		// TODO: При модификации не забыть про достоверность значений
 		const uint_fast8_t id = STRING_ID_DFU_0;
 		char b [128];
 		local_snprintf_P(b, ARRAY_SIZE(b), strFlashDesc_3, 
+			USBD_DFU_FLASHNAME,
 			(unsigned long) BOOTLOADER_APPBASE,
 			(unsigned) (BOOTLOADER_APPSIZE / BOOTLOADER_PAGESIZE),
 			(unsigned) (BOOTLOADER_PAGESIZE / 1024)
@@ -4450,13 +4437,12 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 	}
 	{
 		// Re-write bootloader parameters
-		static const char strFlashDesc_3 [] = "@SPI Flash BOOTLOADER: M25Px/0x%08lx/%02u*%03uKg";	// 128 k for bootloader
+		static const char strFlashDesc_4 [] = "@SPI Flash BOOTLOADER: %s/0x%08lx/%02u*%03uKg";	// 128 k for bootloader
 		unsigned partlen;
-		// Формирование MAC адреса данного устройства
-		// TODO: При модификации не забыть про достоверность значений
 		const uint_fast8_t id = STRING_ID_DFU_1;
 		char b [128];
 		local_snprintf_P(b, ARRAY_SIZE(b), strFlashDesc_3, 
+			USBD_DFU_FLASHNAME,
 			(unsigned long) BOOTLOADER_SELFBASE,
 			(unsigned) (BOOTLOADER_SELFSIZE / BOOTLOADER_PAGESIZE),
 			(unsigned) (BOOTLOADER_PAGESIZE / 1024)
@@ -4472,8 +4458,6 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 		// RAM target for debug
 		static const char strFlashDesc_3 [] = "@SRAM APPLICATION/0x%08lx/%02u*%03uKg";	// 128 k for bootloader
 		unsigned partlen;
-		// Формирование MAC адреса данного устройства
-		// TODO: При модификации не забыть про достоверность значений
 		const uint_fast8_t id = STRING_ID_DFU_2;
 		char b [128];
 		local_snprintf_P(b, ARRAY_SIZE(b), strFlashDesc_3, 
