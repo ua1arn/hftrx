@@ -23,6 +23,7 @@ TRGT = arm-none-eabi-
 CC   = $(TRGT)gcc
 CP   = $(TRGT)objcopy
 AS   = $(TRGT)gcc -x assembler-with-cpp
+SIZE = $(TRGT)size --format=sysv --radix=16
 HEX  = $(CP) -O ihex -R .noinit -R .bss -R .vram -R .heap
 BIN  = $(CP) -O binary -R .noinit -R .bss -R .vram -R .heap
 
@@ -163,11 +164,11 @@ $(OBJDIR)/%.o: %.s
 
 %_boot.elf: $(OBJS)
 	$(CC) $(OBJS) $(LDFLAGS_BOOT) $(LIBS) -o $@
-	$(TRGT)size --format=sysv --radix=16 $@
+	$(SIZE) $@
 
 %_app.elf: $(OBJS)
 	$(CC) $(OBJS) $(LDFLAGS_APP) $(LIBS) -o $@
-	$(TRGT)size --format=sysv --radix=16 $@
+	$(SIZE) $@
 
 %hex: %elf
 	$(HEX) $< $@
@@ -175,11 +176,17 @@ $(OBJDIR)/%.o: %.s
 %bin: %elf
 	$(BIN) $< $@
 
+
 clean:
 	-rm -fR $(OBJDIR)
-	-rm -f $(PROJECT)_rom.elf $(PROJECT)_rom.map $(PROJECT)_rom.hex $(PROJECT)_rom.bin
+	-rm -f $(PROJECT)_boot.elf $(PROJECT)_boot.map
+	-rm -f $(PROJECT)_app.elf $(PROJECT)_app.map
+	
+clean2:
+	-rm -fR $(OBJDIR)
 	-rm -f $(PROJECT)_boot.elf $(PROJECT)_boot.map $(PROJECT)_boot.hex $(PROJECT)_boot.bin
 	-rm -f $(PROJECT)_app.elf $(PROJECT)_app.map $(PROJECT)_app.hex $(PROJECT)_app.bin
+
 
 # 
 # Include the dependency files, should be the last of the makefile

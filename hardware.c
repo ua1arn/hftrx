@@ -4177,6 +4177,11 @@ void hardware_spi_master_initialize(void)
 	#warning Insert code for CPUSTYLE_STM32MP1
 	RCC->MC_APB2ENSETR |= RCC_MC_APB2ENSETR_SPI1EN; // подать тактирование
 	(void) RCC->MC_APB2ENSETR;
+
+
+	/* настраиваем в режиме disconnect */
+	SPIIO_INITIALIZE();
+
 #else
 	#error Wrong CPUSTYLE macro
 #endif
