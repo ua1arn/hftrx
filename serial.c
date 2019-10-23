@@ -1028,9 +1028,11 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 	/* Serial port break data(SPB2DT)  1: High-level */
 	//SCIF0.SCSPTR |= 0x0003;
 
-   arm_hardware_set_handler_system(SCIFRXI0_IRQn, SCIFRXI0_IRQHandler);
-   arm_hardware_set_handler_system(SCIFTXI0_IRQn, SCIFTXI0_IRQHandler);
-
+	if (debug == 0)
+	{
+	   arm_hardware_set_handler_system(SCIFRXI0_IRQn, SCIFRXI0_IRQHandler);
+	   arm_hardware_set_handler_system(SCIFTXI0_IRQn, SCIFTXI0_IRQHandler);
+	}
 	HARDWARE_USART1_INITIALIZE();	/* Присоединить периферию к выводам */
 
 	SCIF0.SCSCR |= 0x0030;	// TE RE - SCIF0 transmitting and receiving operations are enabled */
@@ -2114,9 +2116,11 @@ xxxx!;
 	/* Serial port break data(SPB2DT)  1: High-level */
 	//SCIF3.SCSPTR |= 0x0003;
 
-   arm_hardware_set_handler_system(SCIFRXI3_IRQn, SCIFRXI3_IRQHandler);
-   arm_hardware_set_handler_system(SCIFTXI3_IRQn, SCIFTXI3_IRQHandler);
-
+	if (debug == 0)
+	{
+	   arm_hardware_set_handler_system(SCIFRXI3_IRQn, SCIFRXI3_IRQHandler);
+	   arm_hardware_set_handler_system(SCIFTXI3_IRQn, SCIFTXI3_IRQHandler);
+	}
 	HARDWARE_USART2_INITIALIZE();	/* Присоединить периферию к выводам */
 
 	SCIF3.SCSCR |= 0x0030;	// TE RE - SCIF3 transmitting and receiving operations are enabled */
