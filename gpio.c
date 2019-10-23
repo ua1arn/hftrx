@@ -1153,7 +1153,7 @@ arm_hardware_pioa_inputs(unsigned long ipins)
 	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOAEN;	/* I/O port A clock enable */
 	(void) RCC->MC_AHB4ENSETR;
 	// Установка режима выводов
-	arm_stm32mp1_hardware_pio_prog(GPIOA, ipins, 0, 1, 1, 0);	/* mode, speed, pupdr, typer */
+	arm_stm32mp1_hardware_pio_prog(GPIOA, ipins, STM32MP1_GPIO_MODE_INPIUT, 1, 1, 0);	/* mode, speed, pupdr, typer */
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -1211,7 +1211,7 @@ arm_hardware_piob_inputs(unsigned long ipins)
 	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOBEN;	/* I/O port B clock enable */
 	(void) RCC->MC_AHB4ENSETR;
 	// Установка режима выводов
-	arm_stm32mp1_hardware_pio_prog(GPIOB, ipins, 0, 1, 1, 0);	/* mode, speed, pupdr, typer */
+	arm_stm32mp1_hardware_pio_prog(GPIOB, ipins, STM32MP1_GPIO_MODE_INPIUT, 1, 1, 0);	/* mode, speed, pupdr, typer */
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -1269,7 +1269,7 @@ arm_hardware_pioc_inputs(unsigned long ipins)
 	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOCEN;	/* I/O port C clock enable */
 	(void) RCC->MC_AHB4ENSETR;
 	// Установка режима выводов
-	arm_stm32mp1_hardware_pio_prog(GPIOC, ipins, 0, 1, 1, 0);	/* mode, speed, pupdr, typer */
+	arm_stm32mp1_hardware_pio_prog(GPIOC, ipins, STM32MP1_GPIO_MODE_INPIUT, 1, 1, 0);	/* mode, speed, pupdr, typer */
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -1319,7 +1319,7 @@ arm_hardware_piod_inputs(unsigned long ipins)
 	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIODEN;	/* I/O port D clock enable */
 	(void) RCC->MC_AHB4ENSETR;
 	// Установка режима выводов
-	arm_stm32mp1_hardware_pio_prog(GPIOD, ipins, 0, 1, 1, 0);	/* mode, speed, pupdr, typer */
+	arm_stm32mp1_hardware_pio_prog(GPIOD, ipins, STM32MP1_GPIO_MODE_INPIUT, 1, 1, 0);	/* mode, speed, pupdr, typer */
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -1362,7 +1362,7 @@ arm_hardware_pioe_inputs(unsigned long ipins)
 	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOEEN;	/* I/O port E clock enable */
 	(void) RCC->MC_AHB4ENSETR;
 	// Установка режима выводов
-	arm_stm32mp1_hardware_pio_prog(GPIOE, ipins, 0, 1, 1, 0);	/* mode, speed, pupdr, typer */
+	arm_stm32mp1_hardware_pio_prog(GPIOE, ipins, STM32MP1_GPIO_MODE_INPIUT, 1, 1, 0);	/* mode, speed, pupdr, typer */
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -1407,7 +1407,7 @@ arm_hardware_piof_inputs(unsigned long ipins)
 	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOFEN;	/* I/O port F clock enable */
 	(void) RCC->MC_AHB4ENSETR;
 	// Установка режима выводов
-	arm_stm32mp1_hardware_pio_prog(GPIOF, ipins, 0, 1, 1, 0);	/* mode, speed, pupdr, typer */
+	arm_stm32mp1_hardware_pio_prog(GPIOF, ipins, STM32MP1_GPIO_MODE_INPIUT, 1, 1, 0);	/* mode, speed, pupdr, typer */
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -1452,7 +1452,7 @@ arm_hardware_piog_inputs(unsigned long ipins)
 	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOGEN;	/* I/O port G clock enable */
 	(void) RCC->MC_AHB4ENSETR;
 	// Установка режима выводов
-	arm_stm32mp1_hardware_pio_prog(GPIOG, ipins, 0, 1, 1, 0);	/* mode, speed, pupdr, typer */
+	arm_stm32mp1_hardware_pio_prog(GPIOG, ipins, STM32MP1_GPIO_MODE_INPIUT, 1, 1, 0);	/* mode, speed, pupdr, typer */
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -5466,7 +5466,6 @@ arm_hardware_pioj_inputs(unsigned long ipins)
 	arm_stm32f30x_hardware_pio_prog(GPIOJ, ipins, 0, 1, 1, 0);	/* mode, speed, pupdr, typer */
 
 #elif CPUSTYLE_STM32MP1
-	#warning Insert code for CPUSTYLE_STM32MP1
 
 	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOJEN;	/* I/O port J clock enable */
 	(void) RCC->MC_AHB4ENSETR;
@@ -5668,7 +5667,6 @@ arm_hardware_piok_inputs(unsigned long ipins)
 	arm_stm32f30x_hardware_pio_prog(GPIOK, ipins, 0, 1, 1, 0);	/* mode, speed, pupdr, typer */
 
 #elif CPUSTYLE_STM32MP1
-	#warning Insert code for CPUSTYLE_STM32MP1
 
 	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOKEN;	/* I/O port K clock enable */
 	(void) RCC->MC_AHB4ENSETR;
@@ -5882,14 +5880,13 @@ void arm_hardware_pioa_periphopendrain_altfn2(unsigned long opins, unsigned af)
 	arm_stm32f30x_hardware_pio_prog(GPIOA, opins, 0, STM32F_GPIO_SPEED_2M, 0, 1);	/* mode, speed, pupdr, typer */
 
 #elif CPUSTYLE_STM32MP1
-	#warning Insert code for CPUSTYLE_STM32MP1
 
 	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOAEN;	/* I/O port A clock enable */
 	(void) RCC->MC_AHB4ENSETR;
 
 	arm_stm32mp1_hardware_pio_altfn(GPIOA, opins, af);
 	// Установка режима выводов
-	arm_stm32mp1_hardware_pio_prog(GPIOA, opins, 2, STM32MP1_GPIO_SPEED_2M, 1, 1);	/* mode, speed, pupdr, typer */
+	arm_stm32mp1_hardware_pio_prog(GPIOA, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_2M, 1, STM32MP1_GPIO_OT_OD);	/* mode, speed, pupdr, typer */
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -5941,14 +5938,13 @@ void arm_hardware_piob_periphopendrain_altfn2(unsigned long opins, unsigned af)
 	arm_stm32f30x_hardware_pio_prog(GPIOB, opins, 0, STM32F_GPIO_SPEED_2M, 0, 1);	/* mode, speed, pupdr, typer */
 
 #elif CPUSTYLE_STM32MP1
-	#warning Insert code for CPUSTYLE_STM32MP1
 
 	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOBEN;	/* I/O port B clock enable */
 	(void) RCC->MC_AHB4ENSETR;
 
 	arm_stm32mp1_hardware_pio_altfn(GPIOB, opins, af);
 	// Установка режима выводов
-	arm_stm32mp1_hardware_pio_prog(GPIOB, opins, 2, STM32MP1_GPIO_SPEED_2M, 1, 1);	/* mode, speed, pupdr, typer */
+	arm_stm32mp1_hardware_pio_prog(GPIOB, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_2M, 1, STM32MP1_GPIO_OT_OD);	/* mode, speed, pupdr, typer */
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -6001,14 +5997,13 @@ void arm_hardware_pioc_periphopendrain_altfn2(unsigned long opins, unsigned af)
 	arm_stm32f30x_hardware_pio_prog(GPIOC, opins, 0, STM32F_GPIO_SPEED_2M, 0, 1);	/* mode, speed, pupdr, typer */
 
 #elif CPUSTYLE_STM32MP1
-	#warning Insert code for CPUSTYLE_STM32MP1
 
 	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOCEN;	/* I/O port C clock enable */
 	(void) RCC->MC_AHB4ENSETR;
 
 	arm_stm32mp1_hardware_pio_altfn(GPIOC, opins, af);
 	// Установка режима выводов
-	arm_stm32mp1_hardware_pio_prog(GPIOC, opins, 2, STM32MP1_GPIO_SPEED_2M, 1, 1);	/* mode, speed, pupdr, typer */
+	arm_stm32mp1_hardware_pio_prog(GPIOC, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_2M, 1, STM32MP1_GPIO_OT_OD);	/* mode, speed, pupdr, typer */
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -6061,14 +6056,13 @@ void arm_hardware_piod_periphopendrain_altfn2(unsigned long opins, unsigned af)
 	arm_stm32f30x_hardware_pio_prog(GPIOD, opins, 0, STM32F_GPIO_SPEED_2M, 0, 1);	/* mode, speed, pupdr, typer */
 
 #elif CPUSTYLE_STM32MP1
-	#warning Insert code for CPUSTYLE_STM32MP1
 
 	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIODEN;	/* I/O port D clock enable */
 	(void) RCC->MC_AHB4ENSETR;
 
 	arm_stm32mp1_hardware_pio_altfn(GPIOD, opins, af);
 	// Установка режима выводов
-	arm_stm32mp1_hardware_pio_prog(GPIOD, opins, 2, STM32MP1_GPIO_SPEED_2M, 1, 1);	/* mode, speed, pupdr, typer */
+	arm_stm32mp1_hardware_pio_prog(GPIOD, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_2M, 1, STM32MP1_GPIO_OT_OD);	/* mode, speed, pupdr, typer */
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -6112,14 +6106,13 @@ void arm_hardware_pioe_periphopendrain_altfn2(unsigned long opins, unsigned af)
 	arm_stm32f30x_hardware_pio_prog(GPIOE, opins, 0, STM32F_GPIO_SPEED_2M, 0, 1);	/* mode, speed, pupdr, typer */
 
 #elif CPUSTYLE_STM32MP1
-	#warning Insert code for CPUSTYLE_STM32MP1
 
 	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOEEN;	/* I/O port E clock enable */
 	(void) RCC->MC_AHB4ENSETR;
 
 	arm_stm32mp1_hardware_pio_altfn(GPIOE, opins, af);
 	// Установка режима выводов
-	arm_stm32mp1_hardware_pio_prog(GPIOE, opins, 2, STM32MP1_GPIO_SPEED_2M, 1, 1);	/* mode, speed, pupdr, typer */
+	arm_stm32mp1_hardware_pio_prog(GPIOE, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_2M, 1, STM32MP1_GPIO_OT_OD);	/* mode, speed, pupdr, typer */
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -6165,14 +6158,13 @@ void arm_hardware_piof_periphopendrain_altfn2(unsigned long opins, unsigned af)
 	arm_stm32f30x_hardware_pio_prog(GPIOF, opins, 0, STM32F_GPIO_SPEED_2M, 0, 1);	/* mode, speed, pupdr, typer */
 
 #elif CPUSTYLE_STM32MP1
-	#warning Insert code for CPUSTYLE_STM32MP1
 
 	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOFEN;	/* I/O port F clock enable */
 	(void) RCC->MC_AHB4ENSETR;
 
 	arm_stm32mp1_hardware_pio_altfn(GPIOF, opins, af);
 	// Установка режима выводов
-	arm_stm32mp1_hardware_pio_prog(GPIOF, opins, 2, STM32MP1_GPIO_SPEED_2M, 1, 1);	/* mode, speed, pupdr, typer */
+	arm_stm32mp1_hardware_pio_prog(GPIOF, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_2M, 1, STM32MP1_GPIO_OT_OD);	/* mode, speed, pupdr, typer */
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -6214,14 +6206,13 @@ void arm_hardware_piog_periphopendrain_altfn2(unsigned long opins, unsigned af)
 
 
 #elif CPUSTYLE_STM32MP1
-	#warning Insert code for CPUSTYLE_STM32MP1
 
 	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOGEN;	/* I/O port G clock enable */
 	(void) RCC->MC_AHB4ENSETR;
 
 	arm_stm32mp1_hardware_pio_altfn(GPIOG, opins, af);
 	// Установка режима выводов
-	arm_stm32mp1_hardware_pio_prog(GPIOG, opins, 2, STM32MP1_GPIO_SPEED_2M, 1, 1);	/* mode, speed, pupdr, typer */
+	arm_stm32mp1_hardware_pio_prog(GPIOG, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_2M, 1, STM32MP1_GPIO_OT_OD);	/* mode, speed, pupdr, typer */
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -6240,7 +6231,6 @@ arm_hardware_pioa_updown(unsigned long up, unsigned long down)
 	arm_stm32f30x_hardware_pio_pupdr(GPIOA, up, down);
 
 #elif CPUSTYLE_STM32MP1
-	#warning Insert code for CPUSTYLE_STM32MP1
 
 	arm_stm32mp1_hardware_pio_pupdr(GPIOA, up, down);
 
@@ -6259,7 +6249,6 @@ arm_hardware_piob_updown(unsigned long up, unsigned long down)
 	arm_stm32f30x_hardware_pio_pupdr(GPIOB, up, down);
 
 #elif CPUSTYLE_STM32MP1
-	#warning Insert code for CPUSTYLE_STM32MP1
 
 	arm_stm32mp1_hardware_pio_pupdr(GPIOB, up, down);
 
@@ -6278,7 +6267,6 @@ arm_hardware_pioc_updown(unsigned long up, unsigned long down)
 	arm_stm32f30x_hardware_pio_pupdr(GPIOC, up, down);
 
 #elif CPUSTYLE_STM32MP1
-	#warning Insert code for CPUSTYLE_STM32MP1
 
 	arm_stm32mp1_hardware_pio_pupdr(GPIOC, up, down);
 
@@ -6297,7 +6285,6 @@ arm_hardware_piod_updown(unsigned long up, unsigned long down)
 	arm_stm32f30x_hardware_pio_pupdr(GPIOD, up, down);
 
 #elif CPUSTYLE_STM32MP1
-	#warning Insert code for CPUSTYLE_STM32MP1
 
 	arm_stm32mp1_hardware_pio_pupdr(GPIOD, up, down);
 
@@ -6316,7 +6303,6 @@ arm_hardware_pioe_updown(unsigned long up, unsigned long down)
 	arm_stm32f30x_hardware_pio_pupdr(GPIOE, up, down);
 
 #elif CPUSTYLE_STM32MP1
-	#warning Insert code for CPUSTYLE_STM32MP1
 
 	arm_stm32mp1_hardware_pio_pupdr(GPIOE, up, down);
 
@@ -6337,7 +6323,6 @@ arm_hardware_piof_updown(unsigned long up, unsigned long down)
 	arm_stm32f30x_hardware_pio_pupdr(GPIOF, up, down);
 
 #elif CPUSTYLE_STM32MP1
-	#warning Insert code for CPUSTYLE_STM32MP1
 
 	arm_stm32mp1_hardware_pio_pupdr(GPIOF, up, down);
 
@@ -6360,7 +6345,6 @@ arm_hardware_piog_updown(unsigned long up, unsigned long down)
 	arm_stm32f30x_hardware_pio_pupdr(GPIOG, up, down);
 
 #elif CPUSTYLE_STM32MP1
-	#warning Insert code for CPUSTYLE_STM32MP1
 
 	arm_stm32mp1_hardware_pio_pupdr(GPIOG, up, down);
 
@@ -6383,7 +6367,6 @@ arm_hardware_pioh_updown(unsigned long up, unsigned long down)
 	arm_stm32f30x_hardware_pio_pupdr(GPIOH, up, down);
 
 #elif CPUSTYLE_STM32MP1
-	#warning Insert code for CPUSTYLE_STM32MP1
 
 	arm_stm32mp1_hardware_pio_pupdr(GPIOH, up, down);
 
@@ -6406,7 +6389,6 @@ arm_hardware_pioi_updown(unsigned long up, unsigned long down)
 	arm_stm32f30x_hardware_pio_pupdr(GPIOI, up, down);
 
 #elif CPUSTYLE_STM32MP1
-	#warning Insert code for CPUSTYLE_STM32MP1
 
 	arm_stm32mp1_hardware_pio_pupdr(GPIOI, up, down);
 
@@ -6429,7 +6411,6 @@ arm_hardware_pioj_updown(unsigned long up, unsigned long down)
 	arm_stm32f30x_hardware_pio_pupdr(GPIOJ, up, down);
 
 #elif CPUSTYLE_STM32MP1
-	#warning Insert code for CPUSTYLE_STM32MP1
 
 	arm_stm32mp1_hardware_pio_pupdr(GPIOJ, up, down);
 
@@ -6452,7 +6433,6 @@ arm_hardware_piok_updown(unsigned long up, unsigned long down)
 	arm_stm32f30x_hardware_pio_pupdr(GPIOK, up, down);
 
 #elif CPUSTYLE_STM32MP1
-	#warning Insert code for CPUSTYLE_STM32MP1
 
 	arm_stm32mp1_hardware_pio_pupdr(GPIOK, up, down);
 
@@ -6473,7 +6453,6 @@ arm_hardware_pioa_updownoff(unsigned long ipins)
 	arm_stm32f30x_hardware_pio_pupoff(GPIOA, ipins);
 
 #elif CPUSTYLE_STM32MP1
-	#warning Insert code for CPUSTYLE_STM32MP1
 
 	arm_stm32mp1_hardware_pio_pupoff(GPIOA, ipins);
 
@@ -6492,7 +6471,6 @@ arm_hardware_piob_updownoff(unsigned long ipins)
 	arm_stm32f30x_hardware_pio_pupoff(GPIOB, ipins);
 
 #elif CPUSTYLE_STM32MP1
-	#warning Insert code for CPUSTYLE_STM32MP1
 
 	arm_stm32mp1_hardware_pio_pupoff(GPIOB, ipins);
 
@@ -6511,7 +6489,6 @@ arm_hardware_pioc_updownoff(unsigned long ipins)
 	arm_stm32f30x_hardware_pio_pupoff(GPIOC, ipins);
 
 #elif CPUSTYLE_STM32MP1
-	#warning Insert code for CPUSTYLE_STM32MP1
 
 	arm_stm32mp1_hardware_pio_pupoff(GPIOC, ipins);
 
@@ -6530,7 +6507,6 @@ arm_hardware_piod_updownoff(unsigned long ipins)
 	arm_stm32f30x_hardware_pio_pupoff(GPIOD, ipins);
 
 #elif CPUSTYLE_STM32MP1
-	#warning Insert code for CPUSTYLE_STM32MP1
 
 	arm_stm32mp1_hardware_pio_pupoff(GPIOD, ipins);
 
@@ -6549,7 +6525,6 @@ arm_hardware_pioe_updownoff(unsigned long ipins)
 	arm_stm32f30x_hardware_pio_pupoff(GPIOE, ipins);
 
 #elif CPUSTYLE_STM32MP1
-	#warning Insert code for CPUSTYLE_STM32MP1
 
 	arm_stm32mp1_hardware_pio_pupoff(GPIOE, ipins);
 
@@ -6570,7 +6545,6 @@ arm_hardware_piof_updownoff(unsigned long ipins)
 	arm_stm32f30x_hardware_pio_pupoff(GPIOF, ipins);
 
 #elif CPUSTYLE_STM32MP1
-	#warning Insert code for CPUSTYLE_STM32MP1
 
 	arm_stm32mp1_hardware_pio_pupoff(GPIOF, ipins);
 
@@ -6593,7 +6567,6 @@ arm_hardware_piog_updownoff(unsigned long ipins)
 	arm_stm32f30x_hardware_pio_pupoff(GPIOG, ipins);
 
 #elif CPUSTYLE_STM32MP1
-	#warning Insert code for CPUSTYLE_STM32MP1
 
 	arm_stm32mp1_hardware_pio_pupoff(GPIOG, ipins);
 
@@ -6617,7 +6590,6 @@ arm_hardware_pioh_updownoff(unsigned long ipins)
 	arm_stm32f30x_hardware_pio_pupoff(GPIOH, ipins);
 
 #elif CPUSTYLE_STM32MP1
-	#warning Insert code for CPUSTYLE_STM32MP1
 
 	arm_stm32mp1_hardware_pio_pupoff(GPIOH, ipins);
 
@@ -6640,7 +6612,6 @@ arm_hardware_pioi_updownoff(unsigned long ipins)
 	arm_stm32f30x_hardware_pio_pupoff(GPIOI, ipins);
 
 #elif CPUSTYLE_STM32MP1
-	#warning Insert code for CPUSTYLE_STM32MP1
 
 	arm_stm32mp1_hardware_pio_pupoff(GPIOI, ipins);
 
@@ -6663,7 +6634,6 @@ arm_hardware_pioj_updownoff(unsigned long ipins)
 	arm_stm32f30x_hardware_pio_pupoff(GPIOJ, ipins);
 
 #elif CPUSTYLE_STM32MP1
-	#warning Insert code for CPUSTYLE_STM32MP1
 
 	arm_stm32mp1_hardware_pio_pupoff(GPIOJ, ipins);
 
@@ -6686,7 +6656,6 @@ arm_hardware_piok_updownoff(unsigned long ipins)
 	arm_stm32f30x_hardware_pio_pupoff(GPIOK, ipins);
 
 #elif CPUSTYLE_STM32MP1
-	#warning Insert code for CPUSTYLE_STM32MP1
 
 	arm_stm32mp1_hardware_pio_pupoff(GPIOK, ipins);
 
@@ -6725,10 +6694,7 @@ arm_hardware_pioa_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 	(void) PIOA->PIO_ISR; // consume interrupt request
 	PIOA->PIO_IER = (ipins);	// interrupt on change pin enable
 
-	NVIC_SetVector(PIOA_IRQn, (uintptr_t) & PIOA_IRQHandler);
-	NVIC_SetPriority(PIOA_IRQn, priority);
-	NVIC_EnableIRQ(PIOA_IRQn);		// enable PIOA_Handler();
-
+	arm_hardware_set_handler(PIOA_IRQn, PIOA_IRQHandler, priority);
 
 #elif CPUSTYLE_STM32F1XX
 
@@ -6762,10 +6728,7 @@ arm_hardware_piob_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 	(void) PIOB->PIO_ISR; // consume interrupt request
 	PIOB->PIO_IER = (ipins);	// interrupt on change pin enable
 
-	NVIC_SetVector(PIOB_IRQn, (uintptr_t) & PIOB_IRQHandler);
-	NVIC_SetPriority(PIOB_IRQn, priority);
-	NVIC_EnableIRQ(PIOB_IRQn);		// enable PIOB_Handler();
-
+	arm_hardware_set_handler(PIOB_IRQn, PIOB_IRQHandler, priority);
 
 #elif CPUSTYLE_STM32F1XX
 
@@ -6797,10 +6760,7 @@ arm_hardware_pioc_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 	(void) PIOC->PIO_ISR; // consume interrupt request
 	PIOC->PIO_IER = (ipins);	// interrupt on change pin enable
 
-	NVIC_SetVector(PIOC_IRQn, (uintptr_t) & PIOC_IRQHandler);
-	NVIC_SetPriority(PIOC_IRQn, priority);
-	NVIC_EnableIRQ(PIOC_IRQn);		// enable PIOC_Handler();
-
+	arm_hardware_set_handler(PIOC_IRQn, PIOC_IRQHandler, priority);
 
 #elif CPUSTYLE_STM32F1XX
 
@@ -6832,10 +6792,7 @@ arm_hardware_piod_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 	(void) PIOD->PIO_ISR; // consume interrupt request
 	PIOD->PIO_IER = (ipins);	// interrupt on change pin enable
 
-	NVIC_SetVector(PIOD_IRQn, (uintptr_t) & PIOD_IRQHandler);
-	NVIC_SetPriority(PIOD_IRQn, priority);
-	NVIC_EnableIRQ(PIOD_IRQn);		// enable PIOD_Handler();
-
+	arm_hardware_set_handler(PIOD_IRQn, PIOD_IRQHandler, priority);
 
 #elif CPUSTYLE_STM32F1XX
 
@@ -6868,10 +6825,7 @@ arm_hardware_pioe_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 	(void) PIOE->PIO_ISR; // consume interrupt request
 	PIOE->PIO_IER = (ipins);	// interrupt on change pin enable
 
-	NVIC_SetVector(PIOE_IRQn, (uintptr_t) & PIOE_IRQHandler);
-	NVIC_SetPriority(PIOE_IRQn, priority);
-	NVIC_EnableIRQ(PIOE_IRQn);		// enable PIOE_Handler();
-
+	arm_hardware_set_handler(PIOE_IRQn, PIOE_IRQHandler, priority);
 
 #elif CPUSTYLE_STM32F1XX
 
@@ -6904,10 +6858,7 @@ arm_hardware_piof_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 	(void) PIOF->PIO_ISR; // consume interrupt request
 	PIOF->PIO_IER = (ipins);	// interrupt on change pin enable
 
-	NVIC_SetVector(PIOF_IRQn, (uintptr_t) & PIOF_IRQHandler);
-	NVIC_SetPriority(PIOF_IRQn, priority);
-	NVIC_EnableIRQ(PIOF_IRQn);		// enable PIOF_Handler();
-
+	arm_hardware_set_handler(PIOF_IRQn, PIOF_IRQHandler, priority);
 
 #elif CPUSTYLE_STM32F1XX
 
@@ -6939,10 +6890,7 @@ arm_hardware_piog_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 	(void) PIOG->PIO_ISR; // consume interrupt request
 	PIOG->PIO_IER = (ipins);	// interrupt on change pin enable
 
-	NVIC_SetVector(PIOG_IRQn, (uintptr_t) & PIOG_IRQHandler);
-	NVIC_SetPriority(PIOG_IRQn, priority);
-	NVIC_EnableIRQ(PIOG_IRQn);		// enable PIOG_Handler();
-
+	arm_hardware_set_handler(PIOG_IRQn, PIOG_IRQHandler, priority);
 
 #elif CPUSTYLE_STM32F1XX
 

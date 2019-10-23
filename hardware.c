@@ -2338,7 +2338,7 @@ r7s721_adi_irq_handler(void)
 }
 
 #elif CPUSTYLE_STM32MP1
-	#warning Insert code for CPUSTYLE_STM32MP1
+	#warning Insert ADC interrupt code for CPUSTYLE_STM32MP1
 #else
 	#error No CPUSTYLE_XXXXX defined
 #endif
@@ -4156,7 +4156,7 @@ void hardware_spi_master_initialize(void)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_APB2ENSETR |= RCC_MC_APB2ENSETR_SPI1EN; // подать тактирование
+	RCC->MC_APB2ENSETR = RCC_MC_APB2ENSETR_SPI1EN; // подать тактирование
 	(void) RCC->MC_APB2ENSETR;
 	/* настраиваем в режиме disconnect */
 	SPIIO_INITIALIZE();
