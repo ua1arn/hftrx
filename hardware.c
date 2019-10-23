@@ -11821,7 +11821,7 @@ static void vectors_relocate(void)
 
 #if CPUSTYLE_ARM
 // Set interrupt vector wrapper
-void arm_hardware_set_handler_overrealtime(uint_fast16_t int_id, void (* handler)(void))
+void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint_fast8_t priority)
 {
 #if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 
@@ -11840,41 +11840,21 @@ void arm_hardware_set_handler_overrealtime(uint_fast16_t int_id, void (* handler
 }
 
 // Set interrupt vector wrapper
+void arm_hardware_set_handler_overrealtime(uint_fast16_t int_id, void (* handler)(void))
+{
+	arm_hardware_set_handler(int_id, handler, ARM_OVERREALTIME_PRIORITY);
+}
+
+// Set interrupt vector wrapper
 void arm_hardware_set_handler_realtime(uint_fast16_t int_id, void (* handler)(void))
 {
-#if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
-
-	VERIFY(IRQ_SetHandler(int_id, handler) == 0);
-	VERIFY(IRQ_SetPriority(int_id, ARM_REALTIME_PRIORITY) == 0);
-	VERIFY(IRQ_SetMode(int_id, IRQ_MODE_DOMAIN_NONSECURE | IRQ_MODE_CPU_0) == 0);
-	VERIFY(IRQ_Enable(int_id) == 0);
-
-#else /* CPUSTYLE_STM32MP1 */
-
-	NVIC_SetVector(int_id, (uintptr_t) handler);
-	NVIC_SetPriority(int_id, ARM_REALTIME_PRIORITY);
-	NVIC_EnableIRQ(int_id);
-
-#endif /* CPUSTYLE_STM32MP1 */
+	arm_hardware_set_handler(int_id, handler, ARM_REALTIME_PRIORITY);
 }
 
 // Set interrupt vector wrapper
 void arm_hardware_set_handler_system(uint_fast16_t int_id, void (* handler)(void))
 {
-#if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
-
-	VERIFY(IRQ_SetHandler(int_id, handler) == 0);
-	VERIFY(IRQ_SetPriority(int_id, ARM_SYSTEM_PRIORITY) == 0);
-	VERIFY(IRQ_SetMode(int_id, IRQ_MODE_DOMAIN_NONSECURE | IRQ_MODE_CPU_0) == 0);
-	VERIFY(IRQ_Enable(int_id) == 0);
-
-#else /* CPUSTYLE_STM32MP1 */
-
-	NVIC_SetVector(int_id, (uintptr_t) handler);
-	NVIC_SetPriority(int_id, ARM_SYSTEM_PRIORITY);
-	NVIC_EnableIRQ(int_id);
-
-#endif /* CPUSTYLE_STM32MP1 */
+	arm_hardware_set_handler(int_id, handler, ARM_SYSTEM_PRIORITY);
 }
 
 #endif /* CPUSTYLE_ARM */

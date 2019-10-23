@@ -819,6 +819,7 @@ void FIQ_Handler(void);
 void IRQ_Handler(void);
 
 // Set interrupt vector wrappers
+void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint_fast8_t priority);
 void arm_hardware_set_handler_overrealtime(uint_fast16_t int_id, void (* handler)(void));
 void arm_hardware_set_handler_realtime(uint_fast16_t int_id, void (* handler)(void));
 void arm_hardware_set_handler_system(uint_fast16_t int_id, void (* handler)(void));

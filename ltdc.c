@@ -1798,7 +1798,7 @@ arm_hardware_ltdc_initialize(void)
 	(void) RCC->APB3ENR;
 #elif CPUSTYLE_STM32MP1
 	/* Enable the LTDC Clock */
-	RCC->MP_APB4ENSETR |= RCC_MP_APB4ENSETR_LTDCEN;	/* LTDC clock enable */
+	RCC->MP_APB4ENSETR = RCC_MP_APB4ENSETR_LTDCEN;	/* LTDC clock enable */
 	(void) RCC->MP_APB4ENSETR;
 #else /* CPUSTYLE_STM32H7XX */
 	/* Enable the LTDC Clock */

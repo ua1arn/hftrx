@@ -153,7 +153,7 @@
 #elif CPUSTYLE_R7S721
 
 	// Приём символа он последовательного порта
-	static RAMFUNC_NONILINE void r7s721_scifrxi0_interrupt(void)
+	static RAMFUNC_NONILINE void SCIFRXI0_IRQHandler(void)
 	{
 		(void) SCIF0.SCFSR;						// Перед сбросом бита RDF должно произойти его чтение в ненулевом состоянии
 		SCIF0.SCFSR = (uint16_t) ~ SCIF0_SCFSR_RDF;	// RDF=0 читать незачем (в примерах странное - сбрасывабтся и другие биты)
@@ -163,7 +163,7 @@
 	}
 
 	// Передача символа в последовательный порт
-	static RAMFUNC_NONILINE void r7s721_sciftxi0_interrupt(void)
+	static RAMFUNC_NONILINE void SCIFTXI0_IRQHandler(void)
 	{
 		HARDWARE_UART1_ONTXCHAR(& SCIF0);
 	}
@@ -1028,8 +1028,8 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 	/* Serial port break data(SPB2DT)  1: High-level */
 	//SCIF0.SCSPTR |= 0x0003;
 
-   arm_hardware_set_handler_system(SCIFRXI0_IRQn, r7s721_scifrxi0_interrupt);
-   arm_hardware_set_handler_system(SCIFTXI0_IRQn, r7s721_sciftxi0_interrupt);
+   arm_hardware_set_handler_system(SCIFRXI0_IRQn, SCIFRXI0_IRQHandler);
+   arm_hardware_set_handler_system(SCIFTXI0_IRQn, SCIFTXI0_IRQHandler);
 
 	HARDWARE_USART1_INITIALIZE();	/* Присоединить периферию к выводам */
 
@@ -1037,7 +1037,7 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_APB5ENSETR |= RCC_MC_APB5ENSETR_USART1EN; // Включение тактирования USART1.
+	RCC->MC_APB5ENSETR = RCC_MC_APB5ENSETR_USART1EN; // Включение тактирования USART1.
 	(void) RCC->MC_APB5ENSETR;
 
 	USART1->CR1 |= (USART_CR1_RE | USART_CR1_TE); // Transmitter Enable & Receiver Enables
@@ -1216,7 +1216,7 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 #elif CPUSTYLE_R7S721
 
 	// Приём символа он последовательного порта
-	static void r7s721_scifrxi3_interrupt(void)
+	static void SCIFRXI3_IRQHandler(void)
 	{
 		(void) SCIF3.SCFSR;						// Перед сбросом бита RDF должно произойти его чтение в ненулевом состоянии
 		SCIF3.SCFSR = (uint16_t) ~ SCIF3_SCFSR_RDF;	// RDF=0 читать незачем (в примерах странное - сбрасывабтся и другие биты)
@@ -1226,7 +1226,7 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 	}
 
 	// Передача символа в последовательный порт
-	static void r7s721_sciftxi3_interrupt(void)
+	static void SCIFTXI3_IRQHandler(void)
 	{
 		HARDWARE_UART2_ONTXCHAR(& SCIF3);
 	}
@@ -2114,8 +2114,8 @@ xxxx!;
 	/* Serial port break data(SPB2DT)  1: High-level */
 	//SCIF3.SCSPTR |= 0x0003;
 
-   arm_hardware_set_handler_system(SCIFRXI3_IRQn, r7s721_scifrxi3_interrupt);
-   arm_hardware_set_handler_system(SCIFTXI3_IRQn, r7s721_sciftxi3_interrupt);
+   arm_hardware_set_handler_system(SCIFRXI3_IRQn, SCIFRXI3_IRQHandler);
+   arm_hardware_set_handler_system(SCIFTXI3_IRQn, SCIFTXI3_IRQHandler);
 
 	HARDWARE_USART2_INITIALIZE();	/* Присоединить периферию к выводам */
 
@@ -2123,7 +2123,7 @@ xxxx!;
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_APB1ENSETR |= RCC_MC_APB1ENSETR_USART2EN; // Включение тактирования USART1.
+	RCC->MC_APB1ENSETR = RCC_MC_APB1ENSETR_USART2EN; // Включение тактирования USART1.
 	(void) RCC->MC_APB1ENSETR;
 
 	USART1->CR1 |= (USART_CR1_RE | USART_CR1_TE); // Transmitter Enable & Receiver Enables
