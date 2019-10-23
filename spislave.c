@@ -29,15 +29,27 @@ static uint8_t spi3rxbuf16 [DSPCTL_BUFSIZE];
 
 static void DMA1_SPI3_RX_initialize(void)
 {
-	/* SPI3_RX - Stream0, Channel0 */ 
-	RCC->AHB1ENR |= RCC_AHB1ENR_DMA1EN;//включил DMA1 
-	__DSB();
 
 #if CPUSTYLE_STM32H7XX
+	/* SPI3_RX - Stream0, Channel0 */
+	RCC->AHB1ENR |= RCC_AHB1ENR_DMA1EN;//включил DMA1
+	(void) RCC->AHB1ENR;
+	enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
+	DMAMUX1_Channel0->CCR = 61 * DMAMUX_CxCR_DMAREQ_ID_0;	// SPI3_RX
+	DMA1_Stream0->PAR = (uint32_t) & SPI3->RXDR;
+#elif CPUSTYLE_STM32MP1
+	/* SPI3_RX - Stream0, Channel0 */
+	RCC->MC_AHB2ENSETR = RCC_MC_AHB2ENSETR_DMA1EN; // включил DMA1
+	(void) RCC->MC_AHB2ENSETR;
+	RCC->MC_AHB2ENSETR = RCC_MC_AHB2ENSETR_DMAMUXEN; // включил DMAMUX
+	(void) RCC->MC_AHB2ENSETR;
 	enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
 	DMAMUX1_Channel0->CCR = 61 * DMAMUX_CxCR_DMAREQ_ID_0;	// SPI3_RX
 	DMA1_Stream0->PAR = (uint32_t) & SPI3->RXDR;
 #else /* CPUSTYLE_STM32H7XX */
+	/* SPI3_RX - Stream0, Channel0 */
+	RCC->AHB1ENR |= RCC_AHB1ENR_DMA1EN;//включил DMA1
+	(void) RCC->AHB1ENR;
 	const uint_fast8_t ch = 0;
 	DMA1_Stream0->PAR = (uint32_t) & SPI3->DR;
 #endif /* CPUSTYLE_STM32H7XX */
@@ -127,10 +139,10 @@ void hardware_spi_slave_initialize(void)
 #if CPUSTYLE_STM32F4XX
 
 #if CPUSTYLE_STM32H7XX
-	RCC->APB1LENR |= RCC_APB1LENR_SPI3EN; // Подать тактирование   
+	RCC->APB1LENR |= RCC_APB1LENR_SPI3EN; // Подать тактирование
 	__DSB();
 #else /* CPUSTYLE_STM32H7XX */
-	RCC->APB1ENR |= RCC_APB1ENR_SPI3EN; // Подать тактирование   
+	RCC->APB1ENR |= RCC_APB1ENR_SPI3EN; // Подать тактирование
 	__DSB();
 #endif /* CPUSTYLE_STM32H7XX */
 
