@@ -11823,18 +11823,19 @@ static void vectors_relocate(void)
 // Set interrupt vector wrapper
 void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint_fast8_t priority)
 {
-	PRINTF("arm_hardware_set_handler: int_id=%u, handler=%p priority=%u\n", int_id, handler, priority);
 #if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 
+	VERIFY(IRQ_Disable(int_id) == 0);
 	VERIFY(IRQ_SetHandler(int_id, handler) == 0);
-	VERIFY(IRQ_SetPriority(int_id, ARM_OVERREALTIME_PRIORITY) == 0);
-	//VERIFY(IRQ_SetMode(int_id, IRQ_MODE_DOMAIN_NONSECURE | IRQ_MODE_CPU_0) == 0);
+	VERIFY(IRQ_SetPriority(int_id, priority) == 0);
+	//VERIFY(IRQ_SetMode(int_id, IRQ_MODE_DOMAIN_NONSECURE | IRQ_MODE_CPU_ALL) == 0);
 	VERIFY(IRQ_Enable(int_id) == 0);
 
 #else /* CPUSTYLE_STM32MP1 */
 
+	NVIC_DisableIRQ(int_id);
 	NVIC_SetVector(int_id, (uintptr_t) handler);
-	NVIC_SetPriority(int_id, ARM_OVERREALTIME_PRIORITY);
+	NVIC_SetPriority(int_id, priority);
 	NVIC_EnableIRQ(int_id);
 
 #endif /* CPUSTYLE_STM32MP1 */
