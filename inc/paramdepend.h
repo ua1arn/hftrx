@@ -557,6 +557,10 @@ extern "C" {
 
 	#define ARM_CA9_CACHELEVELMAX	1	/* максимальный уровень cache в процессоре */
 
+	// GIC_SetConfiguration parameters
+	#define GIC_CONFIG_EDGE 0x03
+	#define GIC_CONFIG_LEVEL 0x01
+
 #elif CPUSTYLE_STM32MP1
 
 
