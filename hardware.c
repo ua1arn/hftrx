@@ -10368,6 +10368,7 @@ static void ca9_ca7_intc_initialize(void)
 		VERIFY(0 == IRQ_SetMode(irqn, modes [irqn]));
 		VERIFY(0 == IRQ_SetPriority(irqn, 31));
 		VERIFY(0 == IRQ_SetHandler(irqn, Userdef_INTC_Dummy_Interrupt));
+		GIC_ClearPendingIRQ(irqn);
 	}
 
 	//irq_modes_print();
