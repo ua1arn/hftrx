@@ -5003,13 +5003,25 @@ static uint_fast8_t wfclear;			// стирание всей областии о�
 enum { PALETTESIZE = 256 };
 static PACKEDCOLOR565_T wfpalette [PALETTESIZE];
 
-#define COLOR565_GRIDCOLOR		TFTRGB565(128, 0, 0)		//COLOR_GRAY - center marker
-#define COLOR565_GRIDCOLOR2		TFTRGB565(96, 96, 96)		//COLOR_DARKRED - other markers
-#define COLOR565_SPECTRUMBG		TFTRGB565(0, 64, 24)			//
-#define COLOR565_SPECTRUMBG2	TFTRGB565(0, 24, 8)		//COLOR_xxx - полоса пропускания приемника
-#define COLOR565_SPECTRUMFG		TFTRGB565(0, 255, 0)		//COLOR_GREEN
-#define COLOR565_SPECTRUMFENCE	TFTRGB565(255, 255, 255)	//COLOR_WHITE
-#define COLOR565_SPECTRUMLINE	TFTRGB565(0, 255, 0)	//COLOR_GREEN
+#if 0
+	// new (for ats52).
+	#define COLOR565_GRIDCOLOR		TFTRGB565(128, 0, 0)		//COLOR_GRAY - center marker
+	#define COLOR565_GRIDCOLOR2		TFTRGB565(96, 96, 96)		//COLOR_DARKRED - other markers
+	#define COLOR565_SPECTRUMBG		TFTRGB565(0, 64, 24)			//
+	#define COLOR565_SPECTRUMBG2	TFTRGB565(0, 24, 8)		//COLOR_xxx - полоса пропускания приемника
+	#define COLOR565_SPECTRUMFG		TFTRGB565(0, 255, 0)		//COLOR_GREEN
+	#define COLOR565_SPECTRUMFENCE	TFTRGB565(255, 255, 255)	//COLOR_WHITE
+	#define COLOR565_SPECTRUMLINE	TFTRGB565(0, 255, 0)	//COLOR_GREEN
+#else
+	// old
+	#define COLOR565_GRIDCOLOR        TFTRGB565(128, 128, 0)        //COLOR_GRAY - center marker
+	#define COLOR565_GRIDCOLOR2        TFTRGB565(128, 0, 0x00)        //COLOR_DARKRED - other markers
+	#define COLOR565_SPECTRUMBG        TFTRGB565(0, 0, 0)            //COLOR_BLACK
+	#define COLOR565_SPECTRUMBG2    TFTRGB565(0, 128, 128)        //COLOR_CYAN - полоса пропускания приемника
+	#define COLOR565_SPECTRUMFG		TFTRGB565(0, 255, 0)		//COLOR_GREEN
+	#define COLOR565_SPECTRUMFENCE	TFTRGB565(255, 255, 255)	//COLOR_WHITE
+	#define COLOR565_SPECTRUMLINE	TFTRGB565(0, 255, 0)	//COLOR_GREEN
+#endif
 
 // Код взят из проекта Malamute
 static void wfpalette_initialize(void)
