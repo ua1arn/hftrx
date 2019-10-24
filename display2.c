@@ -1042,8 +1042,10 @@ static void display_mainsub3(
 	)
 {
 #if WITHUSEDUALWATCH
-	const char FLASHMEM * const labels [1] = { hamradio_get_mainsubrxmode3_value_P(), };
-	display2_text_P(x, y, labels, colorsfg_1state, colorsbg_1state, 0);
+	uint_fast8_t state;
+	hamradio_get_vfomode5_value(& state);
+	const char FLASHMEM * const label = hamradio_get_mainsubrxmode3_value_P();
+	display_2states_P(x, y, state, label, label);
 #endif /* WITHUSEDUALWATCH */
 }
 
@@ -1433,7 +1435,7 @@ static void display_span9(
 }
 // Отображение уровня сигнала в баллах шкалы S
 // S9+60
-static void display_siglevel5(
+static void display_smeter5(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
 	void * pv
@@ -3879,7 +3881,7 @@ enum
 			{	0,	18,	display2_waterfall,	REDRM_BARS, PG1, },// подготовка изображения водопада
 			{	0,	18,	display2_colorbuff,	REDRM_BARS,	PG1, },// Отображение водопада и/или спектра
 
-			{	27, 18,	display_siglevel5,	REDRM_BARS, PGNOMEMU, },	// signal level
+			{	27, 18,	display_smeter5,	REDRM_BARS, PGNOMEMU, },	// signal level
 		#endif /* WITHIF4DSP */
 			//---
 			//{	22, 25,	display_samfreqdelta8, REDRM_BARS, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
@@ -4037,14 +4039,15 @@ enum
 
 		{	0,	16,	display_mainsub3,	REDRM_MODE, PGALL, },	// main/sub RX: A/A, A/B, B/A, etc
 		//{	0,	16,	display_rec3,		REDRM_BARS, PGALL, },	// Отображение режима записи аудио фрагмента
-		{	5,	16,	display_vfomode3,	REDRM_MODE, PGALL, },	// SPLIT
+		{	5,	16,	display_vfomode3,	REDRM_MODE, PGALL, },	// SPLIT - не очень нужно при наличии индикации на A/B (display_mainsub3) яркостью.
 		{	9,	16,	display_freqX_b,	REDRM_FRQB, PGALL, },	// SUB FREQ
 		{	21,	16,	display_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
 
 #if 1
 		{	0,	20,	display2_legend,	REDRM_MODE, PGSWR, },	// Отображение оцифровки шкалы S-метра, PWR & SWR-метра
 		{	0,	24,	display2_bars,		REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
-		{	25, 24, display_siglevel4, REDRM_BARS, PGSWR, },	// уровень сигнала
+		//{	25, 24, display_siglevel4, REDRM_BARS, PGSWR, },	// уровень сигнала
+		{	25, 24, display_smeter5, 	REDRM_BARS, PGSWR, },	// уровень сигнала в баллах S
 		{	0,	28,	dsp_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
 		{	0,	28,	display2_spectrum,	REDRM_BARS, PGSPE, },// подготовка изображения спектра
 		{	0,	28,	display2_waterfall,	REDRM_BARS, PGWFL, },// подготовка изображения водопада
@@ -4210,7 +4213,7 @@ enum
 
 		//{	0,	51,	display_samfreqdelta8, REDRM_BARS, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
 		{	0,	51,	display_time8,		REDRM_BARS, PGALL,	},	// TIME
-		{	9,	51,	display_siglevel5,	REDRM_BARS, PGALL, },	// signal level in S points
+		{	9,	51,	display_smeter5,	REDRM_BARS, PGALL, },	// signal level in S points
 		{	15, 51,	display_thermo4,	REDRM_VOLT, PGALL, },	// thermo sensor
 	#if CTLSTYLE_RA4YBO || CTLSTYLE_RA4YBO_V3
 		{	19, 51,	display_currlevel5alt, REDRM_VOLT, PGALL, },	// PA drain current dd.d without "A"
