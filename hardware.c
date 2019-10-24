@@ -9599,6 +9599,12 @@ void IRQ_Handler(void)
 {
 	const IRQn_ID_t irqn = IRQ_GetActiveIRQ();
 	IRQHandler_t const handler = IRQ_GetHandler(irqn);
+	// See R01UH0437EJ0200 Rev.2.00 7.8.3 Reading Interrupt ID Values from Interrupt Acknowledge Register (ICCIAR)
+	// IHI0048B_b_gic_architecture_specification.pdf
+	// See ARM IHI 0048B.b 3.4.2 Special interrupt numbers when a GIC supports interrupt grouping
+
+	//IRQ_SetPriority(0, IRQ_GetPriority(0));
+
 	if (handler != NULL)
 	{
 #if WITHNESTEDINTERRUPTS
@@ -9728,15 +9734,29 @@ static void irq_modes_print(void)
 
 }
 /******************************************************************************
-* Function Name: r7s721_intc_initialize
+* Function Name: ca9_ca7_intc_initialize
 * Description  : Executes initial setting for the INTC.
 *              : The interrupt mask level is set to 31 to receive interrupts 
 *              : with the interrupt priority level 0 to 30.
 * Arguments    : none
 * Return Value : none
 ******************************************************************************/
-static void r7s721_intc_initialize(void)
+static void ca9_ca7_intc_initialize(void)
 {
+
+	//PRINTF("ca9_ca7_intc_initialize: ICPIDR0=%08lX\n", ICPIDR0);	// ICPIDR0
+	//PRINTF("ca9_ca7_intc_initialize: ICPIDR1=%08lX\n", ICPIDR1);	// ICPIDR1
+	//PRINTF("ca9_ca7_intc_initialize: ICPIDR2=%08lX\n", ICPIDR2);	// ICPIDR2
+
+	// GIC version diagnostics
+	switch (ICPIDR1 & 0x0F)
+	{
+	case 0x03:	PRINTF("ca9_ca7_intc_initialize: ARM GICv1\n"); break;
+	case 0x04:	PRINTF("ca9_ca7_intc_initialize: ARM GICv2\n"); break;
+	default:	PRINTF("ca9_ca7_intc_initialize: ARM GICv? (code=%08lX)\n", (unsigned long) ICPIDR1); break;
+	}
+
+
 	static const uint32_t modes [] =
 	{
 #if CPUSTYLE_R7S721020
@@ -10329,7 +10349,7 @@ static void r7s721_intc_initialize(void)
 		/* 586 00002020 */	(IRQ_MODE_TYPE_IRQ | IRQ_MODE_DOMAIN_NONSECURE | IRQ_MODE_CPU_0 | IRQ_MODE_TRIG_LEVEL | IRQ_MODE_MODEL_1N),
 
 #elif CPUSTYLE_STM32MP1
-	#warning Insert code for CPUSTYLE_STM32MP1
+	#warning Insert table for CPUSTYLE_STM32MP1
 	/*   0 00000024 */	(IRQ_MODE_TYPE_IRQ | IRQ_MODE_DOMAIN_NONSECURE | IRQ_MODE_CPU_0 | IRQ_MODE_TRIG_EDGE | IRQ_MODE_MODEL_NN),
 	/*   1 00000024 */	(IRQ_MODE_TYPE_IRQ | IRQ_MODE_DOMAIN_NONSECURE | IRQ_MODE_CPU_0 | IRQ_MODE_TRIG_EDGE | IRQ_MODE_MODEL_NN),
 
@@ -10344,10 +10364,10 @@ static void r7s721_intc_initialize(void)
 
 	for (irqn = 0; irqn < (sizeof modes / sizeof modes [0]); ++ irqn)
 	{
-		IRQ_Disable(irqn);
+		VERIFY(0 == IRQ_Disable(irqn));
 		VERIFY(0 == IRQ_SetMode(irqn, modes [irqn]));
-		IRQ_SetPriority(irqn, 31);
-		IRQ_SetHandler(irqn, Userdef_INTC_Dummy_Interrupt);
+		VERIFY(0 == IRQ_SetPriority(irqn, 31));
+		VERIFY(0 == IRQ_SetHandler(irqn, Userdef_INTC_Dummy_Interrupt));
 	}
 
 	//irq_modes_print();
@@ -10450,14 +10470,14 @@ void IRQ_HandlerOld(void)
 }
 
 /******************************************************************************
-* Function Name: r7s721_intc_initialize
+* Function Name: ca9_ca7_intc_initialize
 * Description  : Executes initial setting for the INTC.
 *              : The interrupt mask level is set to 31 to receive interrupts
 *              : with the interrupt priority level 0 to 30.
 * Arguments    : none
 * Return Value : none
 ******************************************************************************/
-static void r7s721_intc_initializeOld(void)
+static void ca9_ca7_intc_initializeOld(void)
 {
 
 	/* ==== Total number of registers ==== */
@@ -10803,7 +10823,7 @@ static void
 arm_gic_initialize(void)
 {
 #if CPUSTYLE_R7S721
-	r7s721_intc_initialize();
+	ca9_ca7_intc_initialize();
 #endif /* CPUSTYLE_R7S721 */
 	
 #if WITHNESTEDINTERRUPTS

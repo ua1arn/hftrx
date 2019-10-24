@@ -746,6 +746,10 @@ extern "C" {
 
 #elif (CPUSTYLE_ARM_CA9 || CPUSTYLE_ARM_CA7)
 
+	#define ICPIDR0	(* (const volatile uint32_t *) (GIC_INTERFACE_BASE + 0xFE0))
+	#define ICPIDR1	(* (const volatile uint32_t *) (GIC_INTERFACE_BASE + 0xFE4))
+	#define ICPIDR2	(* (const volatile uint32_t *) (GIC_INTERFACE_BASE + 0xFE8))
+
 	#if WITHNESTEDINTERRUPTS
 
 		#define ARM_CA9_ENCODE_PRIORITY(v) ((v) << ARM_CA9_PRIORITYSHIFT)
@@ -784,7 +788,6 @@ extern "C" {
 
 		#define ASSERT_IRQL_SYSTEM() ASSERT(IS_RPR_SYSTEM())	/* executed from non-realtime interrupts */
 		#define ASSERT_IRQL_USER() ASSERT(IS_RPR_USER())	/* executed from user level */
-
 
 		#if 0 && WITHDEBUG
 			// отладочная версия - контроль правильного контекста запрета/разрешения прерываний
