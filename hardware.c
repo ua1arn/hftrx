@@ -9744,19 +9744,6 @@ static void irq_modes_print(void)
 static void ca9_ca7_intc_initialize(void)
 {
 
-	//PRINTF("ca9_ca7_intc_initialize: ICPIDR0=%08lX\n", ICPIDR0);	// ICPIDR0
-	//PRINTF("ca9_ca7_intc_initialize: ICPIDR1=%08lX\n", ICPIDR1);	// ICPIDR1
-	//PRINTF("ca9_ca7_intc_initialize: ICPIDR2=%08lX\n", ICPIDR2);	// ICPIDR2
-
-	// GIC version diagnostics
-	switch (ICPIDR1 & 0x0F)
-	{
-	case 0x03:	PRINTF("ca9_ca7_intc_initialize: ARM GICv1\n"); break;
-	case 0x04:	PRINTF("ca9_ca7_intc_initialize: ARM GICv2\n"); break;
-	default:	PRINTF("ca9_ca7_intc_initialize: ARM GICv? (code=%08lX)\n", (unsigned long) ICPIDR1); break;
-	}
-
-
 	static const uint32_t modes [] =
 	{
 #if CPUSTYLE_R7S721020
@@ -10357,10 +10344,7 @@ static void ca9_ca7_intc_initialize(void)
 	#error Wronf CPUSTYLE_XXXXXXXXX
 #endif
 	};
-
 	IRQn_ID_t irqn;
-
-	IRQ_Initialize();
 
 	for (irqn = 0; irqn < (sizeof modes / sizeof modes [0]); ++ irqn)
 	{
@@ -10368,67 +10352,9 @@ static void ca9_ca7_intc_initialize(void)
 		VERIFY(0 == IRQ_SetMode(irqn, modes [irqn]));
 		VERIFY(0 == IRQ_SetPriority(irqn, 31));
 		VERIFY(0 == IRQ_SetHandler(irqn, Userdef_INTC_Dummy_Interrupt));
-		GIC_ClearPendingIRQ(irqn);
+		GIC_SetGroup(irqn, 0);
 	}
 
-	//irq_modes_print();
-    //GIC_Enable();	// инициализирует не совсем так как надо для работы
-if (0)
-{
-	// а так работает...
-  uint32_t i;
-  uint32_t priority_field;
-
-  //A reset sets all bits in the IGROUPRs corresponding to the SPIs to 0,
-  //configuring all of the interrupts as Secure.
-
-  //Disable interrupt forwarding
-  GIC_DisableInterface();
-
-  /* Priority level is implementation defined.
-   To determine the number of priority bits implemented write 0xFF to an IPRIORITYR
-   priority field and read back the value stored.*/
-  GIC_SetPriority((IRQn_Type)0U, 0xFFU);
-  priority_field = GIC_GetPriority((IRQn_Type)0U);
-
-  //SGI and PPI
-  for (i = 0U; i < 32U; i++)
-  {
-    if(i > 15U) {
-      //Set level-sensitive (and N-N model) for PPI
-      GIC_SetConfiguration((IRQn_Type)i, 0U);
-    }
-    //Disable SGI and PPI interrupts
-    GIC_DisableIRQ((IRQn_Type)i);
-    //Set priority
-    GIC_SetPriority((IRQn_Type)i, priority_field/2U);
-  }
-  //Enable interface
-  GIC_EnableInterface();
-  //Set binary point to 0
-  GIC_SetBinaryPoint(0U);
-  //Set priority mask
-  GIC_SetInterfacePriorityMask(0xFFU);
-}
-
-
-    /* Interrupt Priority Mask Register setting */
-    /* Enable priorities for all interrupts */
-#if WITHNESTEDINTERRUPTS
-    GIC_SetInterfacePriorityMask(gARM_BASEPRI_ALL_ENABLED);	// GICC_PMR
-#endif /* WITHNESTEDINTERRUPTS */
-    /* Binary Point Register setting */
-    /* Group priority field [7:3], Subpriority field [2:0](Do not use) */
-    //INTC.ICCBPR = 0x00000002uL; // Binary Point Register, GICC_BPR, may be ARM_CA9_PRIORITYSHIFT - 1
-	GIC_SetBinaryPoint(2);
-    /* CPU Interface Control Register setting */
-    //INTC.ICCICR = 0x00000003uL;	// GICC_CTLR
-	GIC_EnableInterface();	// check GICInterface->CTLR a same for INTC.ICCICR
-
-    /* Initial setting 2 to receive GIC interrupt request */
-    /* Distributor Control Register setting */
-    //INTC.ICDDCR = 0x00000001uL;
-	GIC_EnableDistributor();	// check GICDistributor->CTLR a same for INTC.ICDDCR
 }
 
 #if 0
@@ -10592,64 +10518,6 @@ static void ca9_ca7_intc_initializeOld(void)
     	 /* Set all interrupts to be disabled */
     	* (addr + offset) = 0xFFFFFFFFuL;
     }
-
-	//GIC_Enable();	// инициализирует не совсем так как надо для работы
-if (0)
-{
-	// а так работает...
-  uint32_t i;
-  uint32_t priority_field;
-
-  //A reset sets all bits in the IGROUPRs corresponding to the SPIs to 0,
-  //configuring all of the interrupts as Secure.
-
-  //Disable interrupt forwarding
-  GIC_DisableInterface();
-
-  /* Priority level is implementation defined.
-   To determine the number of priority bits implemented write 0xFF to an IPRIORITYR
-   priority field and read back the value stored.*/
-  GIC_SetPriority((IRQn_Type)0U, 0xFFU);
-  priority_field = GIC_GetPriority((IRQn_Type)0U);
-
-  //SGI and PPI
-  for (i = 0U; i < 32U; i++)
-  {
-    if(i > 15U) {
-      //Set level-sensitive (and N-N model) for PPI
-      GIC_SetConfiguration((IRQn_Type)i, 0U);
-    }
-    //Disable SGI and PPI interrupts
-    GIC_DisableIRQ((IRQn_Type)i);
-    //Set priority
-    GIC_SetPriority((IRQn_Type)i, priority_field/2U);
-  }
-  //Enable interface
-  GIC_EnableInterface();
-  //Set binary point to 0
-  GIC_SetBinaryPoint(0U);
-  //Set priority mask
-  GIC_SetInterfacePriorityMask(0xFFU);
-}
-
-
-    /* Interrupt Priority Mask Register setting */
-    /* Enable priorities for all interrupts */
-#if WITHNESTEDINTERRUPTS
-    GIC_SetInterfacePriorityMask(gARM_BASEPRI_ALL_ENABLED);	// GICC_PMR
-#endif /* WITHNESTEDINTERRUPTS */
-    /* Binary Point Register setting */
-    /* Group priority field [7:3], Subpriority field [2:0](Do not use) */
-    //INTC.ICCBPR = 0x00000002uL; // Binary Point Register, GICC_BPR, may be ARM_CA9_PRIORITYSHIFT - 1
-	GIC_SetBinaryPoint(2);
-    /* CPU Interface Control Register setting */
-    //INTC.ICCICR = 0x00000003uL;	// GICC_CTLR
-	GIC_EnableInterface();	// check GICInterface->CTLR a same for INTC.ICCICR
-
-    /* Initial setting 2 to receive GIC interrupt request */
-    /* Distributor Control Register setting */
-    //INTC.ICDDCR = 0x00000001uL;
-	GIC_EnableDistributor();	// check GICDistributor->CTLR a same for INTC.ICDDCR
 }
 
 #endif
@@ -10820,12 +10688,46 @@ static void r7s721_ttb_map(
 	These registers are byte-accessible.
 */
 
-static void 
+static void
 arm_gic_initialize(void)
 {
+
+	//PRINTF("arm_gic_initialize: ICPIDR0=%08lX\n", ICPIDR0);	// ICPIDR0
+	//PRINTF("arm_gic_initialize: ICPIDR1=%08lX\n", ICPIDR1);	// ICPIDR1
+	//PRINTF("arm_gic_initialize: ICPIDR2=%08lX\n", ICPIDR2);	// ICPIDR2
+
+	// GIC version diagnostics
+	switch (ICPIDR1 & 0x0F)
+	{
+	case 0x03:	PRINTF("arm_gic_initialize: ARM GICv1\n"); break;
+	case 0x04:	PRINTF("arm_gic_initialize: ARM GICv2\n"); break;
+	default:	PRINTF("arm_gic_initialize: ARM GICv? (code=%08lX)\n", (unsigned long) ICPIDR1); break;
+	}
+
+
+	IRQ_Initialize();
+
 #if CPUSTYLE_R7S721
 	ca9_ca7_intc_initialize();
 #endif /* CPUSTYLE_R7S721 */
+
+    /* Interrupt Priority Mask Register setting */
+    /* Enable priorities for all interrupts */
+#if WITHNESTEDINTERRUPTS
+    GIC_SetInterfacePriorityMask(gARM_BASEPRI_ALL_ENABLED);	// GICC_PMR
+#endif /* WITHNESTEDINTERRUPTS */
+    /* Binary Point Register setting */
+    /* Group priority field [7:3], Subpriority field [2:0](Do not use) */
+    //INTC.ICCBPR = 0x00000002uL; // Binary Point Register, GICC_BPR, may be ARM_CA9_PRIORITYSHIFT - 1
+	GIC_SetBinaryPoint(2);
+    /* CPU Interface Control Register setting */
+    //INTC.ICCICR = 0x00000003uL;	// GICC_CTLR
+	GIC_EnableInterface();	// check GICInterface->CTLR a same for INTC.ICCICR
+
+    /* Initial setting 2 to receive GIC interrupt request */
+    /* Distributor Control Register setting */
+    //INTC.ICDDCR = 0x00000001uL;
+	GIC_EnableDistributor();	// check GICDistributor->CTLR a same for INTC.ICDDCR
 	
 #if WITHNESTEDINTERRUPTS
     GIC_SetInterfacePriorityMask(gARM_BASEPRI_ALL_ENABLED);
