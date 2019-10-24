@@ -783,17 +783,16 @@
 		} while (0)
 
 	// Bootloader parameters
-	#define BOOTLOADER_APPAREA 0x20000000	/* адрес ОЗУ, куда перемещать application */
+	#define BOOTLOADER_APPAREA Renesas_RZ_A1_ONCHIP_SRAM_BASE	/* адрес ОЗУ, куда перемещать application */
 	#define BOOTLOADER_APPFULL (1024uL * 2048)	// 2MB
 
-	#define BOOTLOADER_SELFBASE 0x18000000	/* адрес где лежит во FLASH образ application */
+	#define BOOTLOADER_SELFBASE Renesas_RZ_A1_SPI_IO0	/* адрес где лежит во FLASH образ application */
 	#define BOOTLOADER_SELFSIZE (1024uL * 128)	// 128
 
-	#define BOOTLOADER_APPBASE 0x18020000	/* адрес где лежит во FLASH образ application */
+	#define BOOTLOADER_APPBASE (BOOTLOADER_SELFBASE + BOOTLOADER_SELFSIZE)	/* адрес где лежит во FLASH образ application */
 	#define BOOTLOADER_APPSIZE (BOOTLOADER_APPFULL - BOOTLOADER_SELFSIZE)	// 2048 - 128
 
 	#define BOOTLOADER_PAGESIZE (1024uL * 64)	// M25Px with 64 KB pages
-
 	#define USBD_DFU_XFER_SIZE 64	// match to (Q)SPI FLASH MEMORY page size
 	#define USBD_DFU_FLASHNAME "M25Px"
 
