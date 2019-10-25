@@ -9676,6 +9676,7 @@ display2_bars(
 	void * pv
 	)
 {
+#if WITHBARS
 	if (userfsg)
 	{
 	}
@@ -9687,7 +9688,7 @@ display2_bars(
 	{
 		display2_bars_rx(x, y, pv);
 	}
-
+#endif /* WITHBARS */
 }
 
 #if CTLSTYLE_RA4YBO_AM0

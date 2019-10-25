@@ -1613,14 +1613,14 @@ static RAMFUNC void spool_adcdonebundle(void)
 #elif CPUSTYLE_R7S721
 
 	// Таймер "тиков"
-	static void r7s721_ostm0_interrupt(void)
+	static void OSTMI0TINT_IRQHandler(void)
 	{
 		spool_systimerbundle1();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
 		spool_systimerbundle2();	// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
 	}
 
 	// Таймер электронного ключа
-	static void r7s721_ostm1_interrupt(void)
+	static void OSTMI1TINT_IRQHandler(void)
 	{
 		spool_elkeybundle();
 	}
@@ -1781,7 +1781,7 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 
 	OSTM0.OSTMnCMP = calcdivround_p0clock(ticksfreq) - 1;
 
-	arm_hardware_set_handler_system(OSTMI0TINT_IRQn, r7s721_ostm0_interrupt);
+	arm_hardware_set_handler_system(OSTMI0TINT_IRQn, OSTMI0TINT_IRQHandler);
 
 	OSTM0.OSTMnTS = 0x01u;      /* Start counting */
 
@@ -6151,7 +6151,7 @@ hardware_elkey_timer_initialize(void)
     /* ---- OSTM count stop trigger register (TT) setting ---- */
     OSTM1.OSTMnTT = 0x01u;      /* Stop counting */
 
-    arm_hardware_set_handler_system(OSTMI1TINT_IRQn, r7s721_ostm1_interrupt);
+    arm_hardware_set_handler_system(OSTMI1TINT_IRQn, OSTMI1TINT_IRQHandler);
 
 	OSTM1.OSTMnTS = 0x01u;      /* Start counting */
 
@@ -6729,7 +6729,7 @@ void hardware_sdhost_initialize(void)
 	#pragma CODE_SECTION(local_delay_us, "ramfuncs")
 #endif /* CPUSTYPE_TMS320F2833X */
 
-void local_delay_us(int timeUS)
+void RAMFUNC_NONILINE local_delay_us(int timeUS)
 {
 	#if CPUSTYLE_AT91SAM7S
 		const int top = timeUS * 175 / (CPU_FREQ / 1000000);
@@ -9581,8 +9581,6 @@ arm_cpu_CMx_initialize_NVIC(void)
 #include "formats.h"
 //#include "hardware_r7s721.h"
 
-#define IRQ_GIC_LINE_COUNT           (587)   /* The number of interrupt sources */
-
 //#define INTC_LEVEL_SENSITIVE    (0)     /* Level sense  */
 //#define INTC_EDGE_TRIGGER       (1)     /* Edge trigger */
 
@@ -9666,6 +9664,9 @@ void IRQ_HandlerXXXXX(void)
 	}
 }
 #endif
+
+#if 0
+
 static const char * mode_trig(uint32_t mode)
 {
 	switch (mode & IRQ_MODE_TRIG_Msk)
@@ -9680,6 +9681,7 @@ static const char * mode_trig(uint32_t mode)
 	default: return "error";
 	}
 }
+
 static const char * mode_type(uint32_t mode)
 {
 	switch (mode & IRQ_MODE_TYPE_Msk)
@@ -9689,6 +9691,7 @@ static const char * mode_type(uint32_t mode)
 	default: return "error";
 	}
 }
+
 static const char * mode_domain(uint32_t mode)
 {
 	switch (mode & IRQ_MODE_DOMAIN_Msk)
@@ -9698,6 +9701,7 @@ static const char * mode_domain(uint32_t mode)
 	default: return "error";
 	}
 }
+
 static const char * mode_model(uint32_t mode)
 {
 	switch (mode & IRQ_MODE_MODEL_Msk)
@@ -9707,6 +9711,7 @@ static const char * mode_model(uint32_t mode)
 	default: return "error";
 	}
 }
+
 static const char * mode_cpu(uint32_t mode)
 {
 	switch (mode & IRQ_MODE_CPU_Msk)
@@ -9723,6 +9728,7 @@ static const char * mode_cpu(uint32_t mode)
 	default: return "error";
 	}
 }
+
 static void irq_modes_print(void)
 {
 	IRQn_ID_t irqn;
@@ -9733,6 +9739,9 @@ static void irq_modes_print(void)
     }
 
 }
+
+#endif
+
 /******************************************************************************
 * Function Name: ca9_ca7_intc_initialize
 * Description  : Executes initial setting for the INTC.

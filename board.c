@@ -7185,6 +7185,11 @@ hardware_txpath_initialize(void)
 
 #else /* WITHTX */
 
+void hardware_ptt_port_initialize(void)
+{
+
+}
+
 /* функция вызывается из пользовательской программы. */
 /* запрос от внешней аппаратуры на переход в режим TUNE */
 uint_fast8_t 
@@ -7192,7 +7197,24 @@ hardware_get_tune(void)
 {
 	return 0;
 }
+/* функция вызывается из пользовательской программы. */
+uint_fast8_t
+hardware_get_ptt(void)
+{
+	return 0;
+}
 
+/* функция вызывается из обработчиков прерывания или при запрещённых прерываниях. */
+void hardware_txpath_set(
+	portholder_t txpathstate
+	)
+{
+}
+
+void
+hardware_txpath_initialize(void)
+{
+}
 
 #endif /* WITHTX */
 

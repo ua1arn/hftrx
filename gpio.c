@@ -1460,7 +1460,6 @@ arm_hardware_piog_inputs(unsigned long ipins)
 }
 #endif /* defined (GPIOG) */
 
-
 void 
 arm_hardware_pioa_analoginput(unsigned long ipins)
 {
