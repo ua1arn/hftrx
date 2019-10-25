@@ -340,7 +340,6 @@ static RAMDTCM struct Complex Sig [FFTSizeFilters];
 
 static RAMDTCM FLOAT_t txlevelfenceHALF = INT32_MAX / 2;
 
-//static RAMDTCM int_fast32_t txlevelfenceSSB_INTEGER = INT32_MAX - 1;
 static RAMDTCM FLOAT_t txlevelfenceSSB = INT32_MAX / 2;
 static RAMDTCM FLOAT_t txlevelfenceDIGI = INT32_MAX / 2;
 
@@ -5830,10 +5829,17 @@ void dsp_initialize(void)
 
 	txlevelfenceDIGI = txlevelfence;
 	txlevelfenceSSB = txlevelfence * (FLOAT_t) M_SQRT1_2;
-	//txlevelfenceSSB_INTEGER = txlevelfenceSSB;	// Для источника шума
 	txlevelfenceBPSK = txlevelfence / (FLOAT_t) 1.5;
 	txlevelfenceNFM = txlevelfence / 2;
 	txlevelfenceCW = txlevelfence / 2;
+
+#if 1
+	txlevelfenceDIGI = txlevelfence;
+	txlevelfenceSSB = txlevelfence;// * (FLOAT_t) M_SQRT1_2;
+	txlevelfenceBPSK = txlevelfence;// / (FLOAT_t) 1.5;
+	txlevelfenceNFM = txlevelfence;// / 2;
+	txlevelfenceCW = txlevelfence;// / 2;
+#endif
 
 	// Разрядность приёмного тракта
 	#if WITHIFADCWIDTH > DSP_FLOAT_BITSMANTISSA
