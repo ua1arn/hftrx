@@ -5833,7 +5833,7 @@ void dsp_initialize(void)
 	txlevelfenceNFM = txlevelfence / 2;
 	txlevelfenceCW = txlevelfence / 2;
 
-#if 1
+#if 0
 	txlevelfenceDIGI = txlevelfence * (FLOAT_t) 0.92;
 	txlevelfenceSSB = txlevelfence * (FLOAT_t) 0.92;
 	txlevelfenceBPSK = txlevelfence * (FLOAT_t) 0.92;
