@@ -203,6 +203,9 @@ typedef uint16_t PACKEDCOLOR565_T;
 	#define HALFCOUNT_SMALL2 1	// small2 size
 
 	#define HALFCOUNT_FREQA HALFCOUNT_BIG
+
+#elif LCDMODE_DUMMY
+
 #else
 	#error Undefined display type
 #endif

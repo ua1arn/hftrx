@@ -1383,6 +1383,39 @@ extern "C" {
 #elif LCDMODE_HD44780 && LCDMODE_WH1604
 	#define DSTYLE_T_X16_Y4	1	
 
+#elif LCDMODE_DUMMY
+
+	#define DSTYLE_G_DUMMY	1	// пустой список лтображения
+
+	#define DIM_X 480
+	#define DIM_Y 272
+	#define LCDMODE_COLORED	1
+	#define LCDMODE_HORFILL	1
+	#define LTDC_DOTCLK	9000000uL	// частота пикселей при работе с интерфейсом RGB
+
+	#define HALFCOUNT_FREQA 1
+	#define HALFCOUNT_SMALL 1
+	#define HALFCOUNT_BIG 1
+	#define CHAR_W	6
+	#define CHAR_H	8
+	#define SMALLCHARH 8 /* Font height */
+	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в ячейкт сетки разметки отображния */
+	#define ROWS2GRID(rows) ((rows) * 1)		/* перевести количество символов в ячейкт сетки разметки отображния */
+	#define GRID2X(cellsx) ((cellsx) * CHAR_W)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
+	#define GRID2Y(cellsy) ((cellsy) * CHAR_H)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
+
+
+	#define DISPLAYMODES_FPS 5	/* количество обновлений отображения режимов работы */
+	#define DISPLAY_FPS	10	/* обновление показаний частоты за секунду */
+	#define DISPLAYSWR_FPS 5	/* количество обновлений SWR за секунду */
+
+	// Цветное изображение не поддерживается на этом дисплее (заглушка).
+	#define TFTRGB(r, g, b)	(0)
+	typedef uint_fast8_t COLOR_T;	/* цвета не поддерживаются - заглушка */
+	typedef uint8_t PACKEDCOLOR_T;
+
+	#define DISPLAY_BUS_INITIALIZE() do {} while (0)
+
 #else
 	#error Unrecognized dislay layout used (LCDMODE_XXXX)
 #endif

@@ -82,7 +82,7 @@
 	// +++ Одна из этих строк определяет тип дисплея, для которого компилируется прошивка
 #if WITHISBOOTLOADER
 
-	#define LCDMODE_ILI9341	1	/* 320*240 SF-TC240T-9370-T с контроллером ILI9341 - STM32F4DISCO */
+	#define LCDMODE_DUMMY	1
 
 #elif 1
 
