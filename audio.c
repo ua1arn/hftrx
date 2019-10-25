@@ -5834,11 +5834,11 @@ void dsp_initialize(void)
 	txlevelfenceCW = txlevelfence / 2;
 
 #if 1
-	txlevelfenceDIGI = txlevelfence;
-	txlevelfenceSSB = txlevelfence;// * (FLOAT_t) M_SQRT1_2;
-	txlevelfenceBPSK = txlevelfence;// / (FLOAT_t) 1.5;
-	txlevelfenceNFM = txlevelfence;// / 2;
-	txlevelfenceCW = txlevelfence;// / 2;
+	txlevelfenceDIGI = txlevelfence * (FLOAT_t) 0.92;
+	txlevelfenceSSB = txlevelfence * (FLOAT_t) 0.92;
+	txlevelfenceBPSK = txlevelfence * (FLOAT_t) 0.92;
+	txlevelfenceNFM = txlevelfence * (FLOAT_t) 0.92;
+	txlevelfenceCW = txlevelfence * (FLOAT_t) 0.92;
 #endif
 
 	// Разрядность приёмного тракта
