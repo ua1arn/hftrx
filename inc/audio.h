@@ -234,7 +234,7 @@ extern "C" {
 // stereo, 16 bit samples
 // По звуковому каналу передается стерео, 16 бит, 48 кГц - 288 байт размер данных в ендпонтт
 #define HARDWARE_USBD_AUDIO_IN_SAMPLEBITS_AUDIO48	16
-#define VIRTUAL_AUDIO_PORT_DATA_SIZE_IN_AUDIO48		(DMABUFFSIZEUACIN16 * sizeof (uint16_t))
+#define UAC_IN48_DATA_SIZE (DMABUFFSIZEUACIN16 * sizeof (uint16_t))
 
 
 
@@ -260,8 +260,8 @@ extern "C" {
 
 #define HARDWARE_USBD_AUDIO_OUT_SAMPLEBITS_AUDIO48	16
 
-// используются свои буферы
-#define VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT	( \
+// буфер приема потока данных от USB к модуоятору
+#define UAC_OUT48_DATA_SIZE	( \
 	MSOUTSAMPLES * \
 	((HARDWARE_USBD_AUDIO_OUT_SAMPLEBITS_AUDIO48 * HARDWARE_USBD_AUDIO_OUT_CHANNELS_AUDIO48 + 7) / 8) \
 	)

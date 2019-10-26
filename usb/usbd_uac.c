@@ -161,7 +161,7 @@ static unsigned USBD_fill_range_lay3pb2opt(uint8_t * b, uint_fast32_t v1, uint_f
 
 uint_fast16_t usbd_getuacinmaxpacket(void)
 {
-	uint_fast16_t maxpacket = VIRTUAL_AUDIO_PORT_DATA_SIZE_IN_AUDIO48;
+	uint_fast16_t maxpacket = UAC_IN48_DATA_SIZE;
 
 #if ! WITHUSBUACIN2
 	#if WITHRTS96
@@ -204,7 +204,7 @@ static RAMDTCM uint_fast16_t uacinsize = 0;
 static RAMDTCM uintptr_t uacinrtsaddr = 0;
 static RAMDTCM uint_fast16_t uacinrtssize = 0;
 
-static USBALIGN_BEGIN uint8_t uacoutbuff [VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT] USBALIGN_END;
+static USBALIGN_BEGIN uint8_t uacoutbuff [UAC_OUT48_DATA_SIZE] USBALIGN_END;
 
 static USBALIGN_BEGIN uint8_t uac_ep0databuffout [USB_OTG_MAX_EP0_SIZE] USBALIGN_END;
 
@@ -720,7 +720,7 @@ static USBD_StatusTypeDef USBD_UAC_DataOut(USBD_HandleTypeDef *pdev, uint_fast8_
 		// use audio data
 		uacout_buffer_save(uacoutbuff, USBD_LL_GetRxDataSize(pdev, epnum));
 		/* Prepare Out endpoint to receive next audio data packet */
-		USBD_LL_PrepareReceive(pdev, USB_ENDPOINT_OUT(epnum), uacoutbuff, VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT);
+		USBD_LL_PrepareReceive(pdev, USB_ENDPOINT_OUT(epnum), uacoutbuff, UAC_OUT48_DATA_SIZE);
 		break;
 	}
 	return USBD_OK;
@@ -851,10 +851,10 @@ static USBD_StatusTypeDef USBD_UAC_Init(USBD_HandleTypeDef *pdev, uint_fast8_t c
 	USBD_LL_OpenEP(pdev,
 				   USBD_EP_AUDIO_OUT,
 				   USBD_EP_TYPE_ISOC,
-				   VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT);
+				   UAC_OUT48_DATA_SIZE);
 
    /* UAC Prepare Out endpoint to receive 1st packet */
-	USBD_LL_PrepareReceive(pdev, USB_ENDPOINT_OUT(USBD_EP_AUDIO_OUT), uacoutbuff, VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT);
+	USBD_LL_PrepareReceive(pdev, USB_ENDPOINT_OUT(USBD_EP_AUDIO_OUT), uacoutbuff, UAC_OUT48_DATA_SIZE);
 
 	uacout_buffer_start();
 	return USBD_OK;

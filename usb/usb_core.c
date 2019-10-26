@@ -828,7 +828,7 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 		const uint_fast8_t pipe = HARDWARE_USBD_PIPE_ISOC_OUT;	// PIPE1
 		const uint_fast8_t epnum = USBD_EP_AUDIO_OUT;
 		const uint_fast8_t dir = 0;
-		const uint_fast16_t maxpacket = VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT;
+		const uint_fast16_t maxpacket = UAC_OUT48_DATA_SIZE;
 		//PRINTF(PSTR("usbd_pipe_initialize: pipe=%u endpoint=%02X\n"), pipe, epnum);
 
 		Instance->PIPESEL = pipe << USB_PIPESEL_PIPESEL_SHIFT;
@@ -4836,7 +4836,7 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 		#endif /* WITHRTS96 || WITHRTS192 */
 #endif /* WITHUSBUACIN2 */
 		const uint_fast16_t uacinmaxpacket = usbd_getuacinmaxpacket();
-		maxoutpacketsize4 = ulmax16(maxoutpacketsize4, nuacoutpackets * size2buff4(VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT));
+		maxoutpacketsize4 = ulmax16(maxoutpacketsize4, nuacoutpackets * size2buff4(UAC_OUT48_DATA_SIZE));
 
 		const uint_fast16_t size4 = nuacinpackets * (size2buff4(uacinmaxpacket) + add3tx);
 		ASSERT(last4 >= size4);

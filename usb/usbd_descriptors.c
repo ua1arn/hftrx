@@ -1042,7 +1042,7 @@ static unsigned UAC2_fill_14_OUT48(uint_fast8_t fill, uint8_t * buff, unsigned m
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT);
+		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(UAC_OUT48_DATA_SIZE);
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = USB_ENDPOINT_DESCRIPTOR_TYPE;         /* bDescriptorType */
@@ -1113,7 +1113,7 @@ static unsigned UAC2_fill_27_IN48(uint_fast8_t fill, uint8_t * buff, unsigned ma
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(VIRTUAL_AUDIO_PORT_DATA_SIZE_IN_AUDIO48); // was: 0x300
+		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(UAC_IN48_DATA_SIZE); // was: 0x300
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;							/* bLength */
 		* buff ++ = USB_ENDPOINT_DESCRIPTOR_TYPE;	// bDescriptorType
@@ -1285,7 +1285,7 @@ static unsigned UAC1_fill_27_IN48(uint_fast8_t fill, uint8_t * buff, unsigned ma
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(VIRTUAL_AUDIO_PORT_DATA_SIZE_IN_AUDIO48); // was: 0x300
+		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(UAC_IN48_DATA_SIZE); // was: 0x300
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;							/* bLength */
 		* buff ++ = USB_ENDPOINT_DESCRIPTOR_TYPE;	// bDescriptorType
@@ -2145,7 +2145,7 @@ static unsigned UAC1_fill_14_OUT48(uint_fast8_t fill, uint8_t * buff, unsigned m
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT);
+		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(UAC_OUT48_DATA_SIZE);
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = USB_ENDPOINT_DESCRIPTOR_TYPE;         /* bDescriptorType */

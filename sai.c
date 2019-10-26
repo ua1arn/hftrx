@@ -3230,8 +3230,8 @@ static void r7s721_usb0_dma1_dmatx_initialize(void)
 	//DMAC12.CHCTRL_n = 1 * (1U << 0);		// SETEN
 }
 
-static USBALIGN_BEGIN uint8_t uacoutbuff0 [VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT] USBALIGN_END;
-static USBALIGN_BEGIN uint8_t uacoutbuff1 [VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT] USBALIGN_END;
+static USBALIGN_BEGIN uint8_t uacoutbuff0 [UAC_OUT48_DATA_SIZE] USBALIGN_END;
+static USBALIGN_BEGIN uint8_t uacoutbuff1 [UAC_OUT48_DATA_SIZE] USBALIGN_END;
 
 // USB AUDIO
 // DMA по приему USB0 DMA0 - обработчик прерывания
@@ -3251,13 +3251,13 @@ static RAMFUNC_NONILINE void r7s721_usbX_dma0_dmarx_handler(void)
 	// Прием с автопереключением больше нигде не подтвержден.
 	if (b == 0)
 	{
-		uacout_buffer_save(uacoutbuff0, VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT);
-		arm_hardware_flush_invalidate((uintptr_t) uacoutbuff0, VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT);
+		uacout_buffer_save(uacoutbuff0, UAC_OUT48_DATA_SIZE);
+		arm_hardware_flush_invalidate((uintptr_t) uacoutbuff0, UAC_OUT48_DATA_SIZE);
 	}
 	else
 	{
-		uacout_buffer_save(uacoutbuff1, VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT);
-		arm_hardware_flush_invalidate((uintptr_t) uacoutbuff1, VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT);
+		uacout_buffer_save(uacoutbuff1, UAC_OUT48_DATA_SIZE);
+		arm_hardware_flush_invalidate((uintptr_t) uacoutbuff1, UAC_OUT48_DATA_SIZE);
 	}
 }
 
@@ -3267,8 +3267,8 @@ static RAMFUNC_NONILINE void r7s721_usbX_dma0_dmarx_handler(void)
 
 static void r7s721_usb0_dma0_dmarx_initialize(void)
 {
-	arm_hardware_flush_invalidate((uintptr_t) uacoutbuff0, VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT);
-	arm_hardware_flush_invalidate((uintptr_t) uacoutbuff1, VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT);
+	arm_hardware_flush_invalidate((uintptr_t) uacoutbuff0, UAC_OUT48_DATA_SIZE);
+	arm_hardware_flush_invalidate((uintptr_t) uacoutbuff1, UAC_OUT48_DATA_SIZE);
 
 	enum { id = 13 };	// 13: DMAC13
 	// DMAC13
@@ -3282,8 +3282,8 @@ static void r7s721_usb0_dma0_dmarx_initialize(void)
 	DMAC13.N1DA_n = (uintptr_t) uacoutbuff1;
 
     /* Set Transfer Size */
-    DMAC13.N0TB_n = VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT;	// размер в байтах
-    DMAC13.N1TB_n = VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT;	// размер в байтах
+    DMAC13.N0TB_n = UAC_OUT48_DATA_SIZE;	// размер в байтах
+    DMAC13.N1TB_n = UAC_OUT48_DATA_SIZE;	// размер в байтах
 
 	// Values from Table 9.4 On-Chip Peripheral Module Requests
 	// USB0_DMA0 (channel 0 receive FIFO full)
@@ -3414,8 +3414,8 @@ static void r7s721_usb1_dma1_dmatx_initialize(void)
 
 static void r7s721_usb1_dma0_dmarx_initialize(void)
 {
-	arm_hardware_flush_invalidate((uintptr_t) uacoutbuff0, VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT);
-	arm_hardware_flush_invalidate((uintptr_t) uacoutbuff1, VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT);
+	arm_hardware_flush_invalidate((uintptr_t) uacoutbuff0, UAC_OUT48_DATA_SIZE);
+	arm_hardware_flush_invalidate((uintptr_t) uacoutbuff1, UAC_OUT48_DATA_SIZE);
 
 	enum { id = 13 };	// 13: DMAC13
 	// DMAC13
@@ -3429,8 +3429,8 @@ static void r7s721_usb1_dma0_dmarx_initialize(void)
 	DMAC13.N1DA_n = (uintptr_t) uacoutbuff1;
 
     /* Set Transfer Size */
-    DMAC13.N0TB_n = VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT;	// размер в байтах
-    DMAC13.N1TB_n = VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT;	// размер в байтах
+    DMAC13.N0TB_n = UAC_OUT48_DATA_SIZE;	// размер в байтах
+    DMAC13.N1TB_n = UAC_OUT48_DATA_SIZE;	// размер в байтах
 
 	// Values from Table 9.4 On-Chip Peripheral Module Requests
 	// USB1_DMA0 (channel 0 receive FIFO full)
