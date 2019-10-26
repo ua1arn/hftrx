@@ -16669,8 +16669,10 @@ static void initialize2(void)
 		//extmenu = 1;	/* сразу включаем инженерный режим - без перезагрузки доступны все пункты */
 	}
 	//blinkmain();
-
 #endif /* NVRAM_TYPE == NVRAM_TYPE_FM25XXXX */
+
+	(void) mclearnvram;
+
 #if WITHDEBUG
 	dbg_puts_impl_P(PSTR("initialize2() finished.\n"));
 #endif
