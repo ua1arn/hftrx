@@ -5052,11 +5052,15 @@ PACKEDCOLOR565_T * getscratchpip(void)
 #endif /* LCDMODE_LTDC_PIP16 */
 }
 
-static const FLOAT_t spectrum_beta = 0.25;					// incoming value coefficient
-static const FLOAT_t spectrum_alpha = 1 - (FLOAT_t) 0.25;	// old value coefficient
+// Параметры фильтров данных спектра и водопада
+#define DISPLAY_SPECTRUM_BETA (0.25)
+#define DISPLAY_WATERFALL_BETA (0.5)
 
-static const FLOAT_t waterfall_beta = 0.5;					// incoming value coefficient
-static const FLOAT_t waterfall_alpha = 1 - (FLOAT_t) 0.5;	// old value coefficient
+static const FLOAT_t spectrum_beta = (FLOAT_t) DISPLAY_SPECTRUM_BETA;					// incoming value coefficient
+static const FLOAT_t spectrum_alpha = 1 - (FLOAT_t) DISPLAY_SPECTRUM_BETA;	// old value coefficient
+
+static const FLOAT_t waterfall_beta = (FLOAT_t) DISPLAY_WATERFALL_BETA;					// incoming value coefficient
+static const FLOAT_t waterfall_alpha = 1 - (FLOAT_t) DISPLAY_WATERFALL_BETA;	// old value coefficient
 
 static RAMBIG FLOAT_t spavgarray [ALLDX];	// массив входных данных для отображения (через фильтры).
 static RAMBIG FLOAT_t Yold_wtf [ALLDX];
