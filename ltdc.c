@@ -4,7 +4,7 @@
 // автор Гена Завидовский mgs2001@mail.ru
 // UA1ARN
 //
-// STM32F42XX LCD-TFT Controller (LTDC)
+// STM32xxx LCD-TFT Controller (LTDC)
 // RENESAS Video Display Controller 5
 //	Video Display Controller 5 (5): Image Synthesizer
 //	Video Display Controller 5 (7): Output Controller
@@ -1935,24 +1935,6 @@ void arm_hardware_ltdc_pip_off(void)	// set PIP framebuffer address
 }
 
 #endif /* LCDMODE_LTDC_PIP16 */
-
-#if WITHDMA2DHW
-
-void arm_hardware_dma2d_initialize(void)
-{
-#if CPUSTYLE_STM32H7XX
-	/* Enable the DMA2D Clock */
-	RCC->AHB3ENR |= RCC_AHB3ENR_DMA2DEN;	/* DMA2D clock enable */
-	(void) RCC->APB3ENR;
-
-#else /* CPUSTYLE_STM32H7XX */
-	/* Enable the DMA2D Clock */
-	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2DEN;	/* DMA2D clock enable */
-	(void) RCC->AHB1ENR;
-#endif /* CPUSTYLE_STM32H7XX */
-}
-
-#endif /* WITHDMA2DHW */
 
 #endif /* CPUSTYLE_STM32 */
 

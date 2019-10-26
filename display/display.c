@@ -176,10 +176,30 @@ static void RAMFUNC_NONILINE display_fillrect(
 #endif /* LCDMODE_LTDC */
 }
 
+
+#if WITHDMA2DHW
+
+void arm_hardware_dma2d_initialize(void)
+{
+#if CPUSTYLE_STM32H7XX
+	/* Enable the DMA2D Clock */
+	RCC->AHB3ENR |= RCC_AHB3ENR_DMA2DEN;	/* DMA2D clock enable */
+	(void) RCC->APB3ENR;
+
+#else /* CPUSTYLE_STM32H7XX */
+	/* Enable the DMA2D Clock */
+	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2DEN;	/* DMA2D clock enable */
+	(void) RCC->AHB1ENR;
+#endif /* CPUSTYLE_STM32H7XX */
+}
+
+#endif /* WITHDMA2DHW */
+
+
 /* заполнение прямоугольной области буфера цветом */
 void 
 dma2d_fillrect2_RGB565(
-	volatile PACKEDCOLOR565_T * buffer,
+	PACKEDCOLOR565_T * buffer,
 	uint_fast16_t dx,	// размеры буфера
 	uint_fast16_t dy,
 	uint_fast16_t col,	// позиция окна в буфере,
@@ -258,7 +278,7 @@ dma2d_fillrect2_RGB565(
 /* заполнение прямоугольного буфера цветом */
 static void 
 dma2d_fillrect(
-	volatile PACKEDCOLOR565_T * buffer,
+	PACKEDCOLOR565_T * buffer,
 	uint_fast16_t dx,
 	uint_fast16_t dy,
 	COLOR565_T color
@@ -449,7 +469,7 @@ void display_showbuffer(
 
 // начальная инициализация буфера
 void display_colorbuffer_fill(
-	volatile PACKEDCOLOR565_T * buffer,
+	PACKEDCOLOR565_T * buffer,
 	uint_fast16_t dx,	
 	uint_fast16_t dy,
 	COLOR565_T color
@@ -503,7 +523,7 @@ void display_colorbuffer_fill(
 
 // поставить цветную точку.
 void display_colorbuffer_set(
-	volatile PACKEDCOLOR565_T * buffer,
+	PACKEDCOLOR565_T * buffer,
 	uint_fast16_t dx,	
 	uint_fast16_t dy,
 	uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
@@ -525,7 +545,7 @@ void display_colorbuffer_set(
 
 // поставить цветную точку.
 void display_colorbuffer_xor(
-	volatile PACKEDCOLOR565_T * buffer,
+	PACKEDCOLOR565_T * buffer,
 	uint_fast16_t dx,	
 	uint_fast16_t dy,
 	uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
@@ -549,7 +569,7 @@ void display_colorbuffer_xor(
 
 // Выдать буфер на дисплей
 void display_colorbuffer_show(
-	const volatile PACKEDCOLOR565_T * buffer,
+	const PACKEDCOLOR565_T * buffer,
 	uint_fast16_t dx,	
 	uint_fast16_t dy,
 	uint_fast16_t col,	// горизонтальная координата левого верхнего угла на экране (0..dx-1) слева направо
@@ -560,7 +580,7 @@ void display_colorbuffer_show(
 
 // установить данный буфер как область для PIP
 void display_colorbuffer_pip(
-	volatile const PACKEDCOLOR565_T * buffer,
+	const PACKEDCOLOR565_T * buffer,
 	uint_fast16_t dx,	
 	uint_fast16_t dy
 	)
@@ -573,7 +593,7 @@ void display_colorbuffer_pip(
 
 // Выдать буфер на дисплей
 void display_colorbuffer_show(
-	volatile const PACKEDCOLOR565_T * buffer,
+	const PACKEDCOLOR565_T * buffer,
 	uint_fast16_t dx,	
 	uint_fast16_t dy,
 	uint_fast16_t col,	// горизонтальная координата левого верхнего угла на экране (0..dx-1) слева направо
@@ -630,7 +650,7 @@ void display_colorbuffer_show(
 	#if LCDMODE_COLORED
 		display_plotfrom(col, row);
 		display_plotstart(dy);
-		display_plot((const PACKEDCOLOR565_T *) buffer, dx, dy);
+		display_plot(buffer, dx, dy);
 		display_plotstop();
 	#endif
 #endif /* defined (DMA2D) && LCDMODE_LTDC */
@@ -644,7 +664,7 @@ void display_colorbuffer_show(
 #define SWAP(a, b)  do { (a) ^= (b); (b) ^= (a); (a) ^= (b); } while (0)
 // Нарисовать линию указанным цветом
 void display_colorbuffer_line_set(
-	volatile PACKEDCOLOR565_T * buffer,
+	PACKEDCOLOR565_T * buffer,
 	uint_fast16_t dx,	
 	uint_fast16_t dy,
 	uint_fast16_t x0,	
@@ -905,12 +925,14 @@ void display_hardware_initialize(void)
 {
 	debug_printf_P(PSTR("display_hardware_initialize start\n"));
 
-#if WITHLTDCHW
 
 #if WITHDMA2DHW
+	// Image construction hardware
 	arm_hardware_dma2d_initialize();
 #endif /* WITHDMA2DHW */
-	// STM32F4xxx with LCD-TFT Controller (LTDC)
+#if WITHLTDCHW
+	// STM32xxx LCD-TFT Controller (LTDC)
+	// RENESAS Video Display Controller 5
 	arm_hardware_ltdc_initialize();
 #endif /* WITHLTDCHW */
 

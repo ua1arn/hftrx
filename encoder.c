@@ -133,7 +133,6 @@ static int safegetposition_kbd(void)
 #endif
 }
 
-#if WITHKBDENCODER
 
 // вызывается из обработчика таймерного прерывания - клавиатура.
 void encoder_kbdctl(
@@ -141,12 +140,12 @@ void encoder_kbdctl(
 	uint_fast8_t accel		// 0 - одиночное нажатие на клавишу, иначе автоповтор
 	)
 {
+#if WITHKBDENCODER
 	int_fast8_t d = code == ENC_CODE_STEP_UP ? 1 : -1;
 	position_kbd += d * (accel ? 5 : 1);
-
+#endif
 }
 
-#endif
 
 
 /* накопитель прерываний от валкодера - знаковое число */

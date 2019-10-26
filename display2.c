@@ -5255,7 +5255,7 @@ deltafreq2x_abs(
 // получить адрес требуемой позиции в буфере
 volatile PACKEDCOLOR565_T *
 display_colorbuffer_at(
-	volatile PACKEDCOLOR565_T * buffer,
+	PACKEDCOLOR565_T * buffer,
 	uint_fast16_t dx,
 	uint_fast16_t dy,
 	uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
@@ -5276,7 +5276,7 @@ display_colorbuffer_at(
 // Поставить цветную полосу
 // Формат RGB565
 void display_colorbuffer_xor_vline(
-	volatile PACKEDCOLOR565_T * buffer,
+	PACKEDCOLOR565_T * buffer,
 	uint_fast16_t dx,	
 	uint_fast16_t dy,
 	uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
@@ -5293,7 +5293,7 @@ void display_colorbuffer_xor_vline(
 // Формат RGB565
 static void 
 display_colorbuffer_set_vline(
-	volatile PACKEDCOLOR565_T * buffer,
+	PACKEDCOLOR565_T * buffer,
 	uint_fast16_t dx,	
 	uint_fast16_t dy,
 	uint_fast16_t col,	// горизонтальная координата начального пикселя (0..dx-1) слева направо
@@ -5309,7 +5309,7 @@ display_colorbuffer_set_vline(
 // отрисовка маркеров частот
 static void
 display_colorgrid_xor(
-	volatile PACKEDCOLOR565_T * buffer,
+	PACKEDCOLOR565_T * buffer,
 	uint_fast16_t row0,	// вертикальная координата начала занимаемой области (0..dy-1) сверху вниз
 	uint_fast16_t h,	// высота
 	int_fast32_t f0,	// center frequency
@@ -5340,7 +5340,7 @@ display_colorgrid_xor(
 // отрисовка маркеров частот
 static void 
 display_colorgrid_set(
-	volatile PACKEDCOLOR565_T * buffer,
+	PACKEDCOLOR565_T * buffer,
 	uint_fast16_t row0,	// вертикальная координата начала занимаемой области (0..dy-1) сверху вниз
 	uint_fast16_t h,	// высота
 	int_fast32_t f0,	// center frequency
