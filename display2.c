@@ -75,7 +75,7 @@ static void display2_legend_tx(
 	void * pv
 	);
 
-static PACKEDCOLOR565_T * getscratchpip(void);
+PACKEDCOLOR565_T * getscratchpip(void);
 
 // Параметры отображения спектра и водопада
 
@@ -5022,7 +5022,8 @@ enum
 
 #if LCDMODE_LTDC_PIP16
 
-	// один буфер установлен для отображения, второй еше отображается. Третий заполняем новым изображением.
+	// один буфер установлен для отображения, второй еше отображается.
+	// Третий заполняем новым изображением.
 	enum { NPIPS = 3 };
 	static RAMFRAMEBUFF ALIGNX_BEGIN PACKEDCOLOR565_T colorpips [NPIPS] [GXSIZE(ALLDX, ALLDY)] ALIGNX_END;
 	static int pipphase;
@@ -5042,7 +5043,7 @@ enum
 
 #endif /* LCDMODE_LTDC_PIP16 */
 
-static PACKEDCOLOR565_T * getscratchpip(void)
+PACKEDCOLOR565_T * getscratchpip(void)
 {
 #if LCDMODE_LTDC_PIP16
 	return colorpips [pipphase];
