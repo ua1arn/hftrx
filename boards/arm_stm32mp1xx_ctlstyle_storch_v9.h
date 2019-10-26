@@ -25,52 +25,8 @@
 	//#define WITHUSESAII2S	1	/* I2S PLL	*/
 	//#define LTDC_DOTCLK	9000000UL	// частота пикселей при работе с интерфейсом RGB
 
-	#if 1
-		// при наличии внешнего кварцевого резонатора
-		#define WITHCPUXTAL 12000000uL	/* На процессоре установлен кварц 12.000 МГц */
-		#define REF1_DIV 6			// ref freq = 2.0000 MHz
-		#define REF3_DIV 6			// ref freq = 2.0000 MHz
-
-		#if defined(STM32F767xx)
-			// normal operation frequency
-			#define REF1_MUL 216		// 2*216.000 MHz (192 <= PLLN <= 432)
-			#define HARDWARE_FLASH_LATENCY FLASH_ACR_LATENCY_6WS
-		#elif CPUSTYLE_STM32F7XX
-			// normal operation frequency
-			#define REF1_MUL 216		// 2*216.000 MHz (192 <= PLLN <= 432)
-			#define HARDWARE_FLASH_LATENCY FLASH_ACR_LATENCY_7WS
-		#elif CPUSTYLE_STM32H7XX
-			// normal operation frequency
-			#define REF1_MUL 384		// 2*384.000 MHz (192 <= PLLN <= 432)
-			#define REF3_MUL 135		// 2*135.000 MHz (192 <= PLLN <= 432)
-			#define HARDWARE_FLASH_LATENCY FLASH_ACR_LATENCY_2WS
-		#endif
-
-	#else
-
-		#if defined(STM32F767xx)
-			// тактирование от внутреннего RC генератора 16 МГц
-			#define REF1_DIV 8			// ref freq = 2.000 MHz
-			// normal operation frequency
-			#define REF1_MUL 216		// 2*216.000 MHz (192 <= PLLN <= 432)
-			#define HARDWARE_FLASH_LATENCY FLASH_ACR_LATENCY_6WS
-		#elif CPUSTYLE_STM32F7XX
-			// тактирование от внутреннего RC генератора 16 МГц
-			#define REF1_DIV 8			// ref freq = 2.000 MHz
-			// normal operation frequency
-			#define REF1_MUL 216		// 2*216.000 MHz (192 <= PLLN <= 432)
-			#define HARDWARE_FLASH_LATENCY FLASH_ACR_LATENCY_7WS
-		#elif CPUSTYLE_STM32H7XX
-			// тактирование от внутреннего RC генератора 64 МГц
-			#define REF1_DIV 32			// ref freq = 2.000 MHz
-			#define REF3_DIV 32			// ref freq = 2.000 MHz
-			// normal operation frequency
-			#define REF1_MUL 384		// 2*384.000 MHz (192 <= PLLN <= 432)
-			#define REF3_MUL 135		// 2*135.000 MHz (192 <= PLLN <= 432)
-			#define HARDWARE_FLASH_LATENCY FLASH_ACR_LATENCY_2WS
-		#endif
-
-	#endif
+	// при наличии внешнего кварцевого резонатора
+	#define WITHCPUXTAL 24000000uL	/* На процессоре установлен кварц 24.000 МГц */
 
 	#if WITHI2SCLOCKFROMPIN
 		#define FPGADECIMATION 2560

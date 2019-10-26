@@ -53,7 +53,7 @@ extern "C" {
 	/* частоты, подающиеся на периферию */
 	#define	PCLK1_FREQ (CPU_FREQ / 1)	// 48 MHz PCLK1 frequency
 	#define	PCLK2_FREQ (CPU_FREQ / 1)	// 48 MHz PCLK2 frequency
-	#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config станавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
+	#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
 
 	#define TICKS_FREQUENCY		(200uL * 1) // at ARM - 400 Hz
 
@@ -94,7 +94,7 @@ extern "C" {
 	/* частоты, подающиеся на периферию */
 	#define	PCLK1_FREQ (CPU_FREQ / 1)	// 48 MHz PCLK1 frequency
 	#define	PCLK2_FREQ (CPU_FREQ / 1)	// 48 MHz PCLK2 frequency
-	#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config станавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
+	#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
 
 	#define TICKS_FREQUENCY		(200uL * 1) // at ARM - 200 Hz
 
@@ -129,7 +129,7 @@ extern "C" {
 		#define	PCLK1_TIMERS_FREQ (CPU_FREQ / 1)
 		#define	PCLK2_FREQ (CPU_FREQ / 1)	// PCLK2 frequency
 	#endif
-	#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config станавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
+	#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
 
 	#define SPISPEED (PCLK1_FREQ / 4)	/* 9.0 MHz на SCLK - требуемая скорость передачи по SPI */
 	#define TICKS_FREQUENCY		(200uL * 1) // at ARM - 200 Hz
@@ -231,7 +231,7 @@ extern "C" {
 			#define	PCLK1_FREQ (CPU_FREQ / 2)	// 42 MHz PCLK1 frequency - ti,er clocks is 85 MHz
 			#define	PCLK1_TIMERS_FREQ (CPU_FREQ / 1)	// 42 MHz PCLK1 frequency - ti,er clocks is 85 MHz
 			#define	PCLK2_FREQ (CPU_FREQ / 1)	// 84 MHz PCLK2 frequency
-			#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config станавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
+			#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
 
  		#elif CPUSTYLE_STM32H7XX
 
@@ -248,7 +248,7 @@ extern "C" {
 			#define	PCLK1_TIMERS_FREQ (CPU_FREQ / 2)	// 42 MHz PCLK1 frequency
 			#define	PCLK2_FREQ (CPU_FREQ / 4)	// 84 MHz PCLK2 frequency
 			#define	PCLK2_TIMERS_FREQ (CPU_FREQ / 2)	// 84 MHz PCLK2 frequency
-			#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config станавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
+			#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
 			#define PER_CK_FREQ 64000000uL	// 2. The per_ck clock could be hse_ck, hsi_ker_ck or csi_ker_ck according to CKPERSEL selection.
 
 		#else
@@ -265,7 +265,7 @@ extern "C" {
 			#define	PCLK1_FREQ (CPU_FREQ / 4)	// 42 MHz PCLK1 frequency
 			#define	PCLK1_TIMERS_FREQ (CPU_FREQ / 4)	// 42 MHz PCLK1 frequency
 			#define	PCLK2_FREQ (CPU_FREQ / 2)	// 84 MHz PCLK2 frequency
-			#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config станавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
+			#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
 		#endif
 
 	#elif CPUSTYLE_STM32F30X
@@ -291,7 +291,7 @@ extern "C" {
 			#define	PCLK1_FREQ (CPU_FREQ / 1)	// PCLK1 frequency
 			#define	PCLK2_FREQ (CPU_FREQ / 1)	// PCLK2 frequency
 		#endif
-		#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config станавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
+		#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
 
 	#endif
 
@@ -341,7 +341,7 @@ extern "C" {
 	//#define CPU_FREQ 48000000uL
 	//#define CPU_FREQ 32000000uL
 	//#define CPU_FREQ 12000000uL
-	#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config станавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
+	#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
 
 	// ADC clock frequency: 1..20 MHz
 	#define ADC_FREQ	2000000uL	/* тактовая частота SAR преобразователя АЦП. */
@@ -370,7 +370,7 @@ extern "C" {
 	//#define CPU_FREQ 48000000uL
 	//#define CPU_FREQ 32000000uL
 	//#define CPU_FREQ 12000000uL
-	#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config станавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
+	#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
 
 	// ADC clock frequency: 1..20 MHz
 	#define ADC_FREQ	2000000uL	/* тактовая частота SAR преобразователя АЦП. */
@@ -611,7 +611,7 @@ extern "C" {
 	#define ARM_CA9_CACHELEVELMAX	1	/* максимальный уровень cache в процессоре */
 	#define ARM_CA9_PRIORITYSHIFT 3	/* ICCPMR[7:3] is valid bit */
 
-	#define CPU_FREQ	(650000000uL)		/* 12 MHz * 30 - clock mode 0, xtal 12 MHz */
+	#define CPU_FREQ	(WITHCPUXTAL * 15)		/* 360 MHz = 24 MHz * 15 */
 	/* частоты, подающиеся на периферию */
 	#define	PCLK1_FREQ (CPU_FREQ / 4)	// 42 MHz PCLK1 frequency
 	#define	PCLK1_TIMERS_FREQ (CPU_FREQ / 2)	// 42 MHz PCLK1 frequency
