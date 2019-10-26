@@ -690,7 +690,7 @@ void buffers_initialize(void)
 	#elif defined (STM32F746xx)
 		RAMNOINIT_D1 static records16_t recordsarray16 [8];
 	#elif defined (STM32F429xx)
-		RAMNOINIT_D1 static records16_t recordsarray16 [8];
+		RAMNOINIT_D1 static records16_t recordsarray16 [4];
 	#elif defined (STM32H743xx)
 		RAMNOINIT_D1 static records16_t recordsarray16 [8];
 	#else
@@ -1290,6 +1290,7 @@ static RAMFUNC void buffers_resample(void)
 	// направление получившегося буфера получателю.
 	buffers_savefromresampling(p);
 }
+
 #endif /* WITHUSBUAC */
 // --- Коммутация потоков аудиоданных
 

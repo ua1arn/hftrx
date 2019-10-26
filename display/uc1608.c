@@ -7,12 +7,12 @@
 
 #include "hardware.h"
 #include "board.h"
-#include "spifuncs.h"
 #include "display.h"
 #include <stdint.h>
 
 #include "./display.h"
 #include "./formats.h"
+#include "../inc/spi.h"
 
 #if LCDMODE_UC1608
 

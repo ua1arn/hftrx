@@ -6,11 +6,11 @@
 //
 
 #include "hardware.h"
-#include "pio.h"
 #include "board.h"
 #include "audio.h"
+#include "inc/gpio.h"
+#include "inc/spi.h"
 #include "synthcalcs.h"
-#include "spifuncs.h"
 #include "keyboard.h"
 
 #define CTLREG_SPIMODE	SPIC_MODE3	
@@ -275,11 +275,9 @@ static void prog_rfadc_update(void);
 	#endif /* (RTC1_TYPE == RTC_TYPE_M41T81) */
 #endif /* defined(RTC1_TYPE) */
 
-#if defined(XVTR1_TYPE)
-	#if (XVTR1_TYPE == XVTR_TYPE_R820T)
-		#include "chip/r820t.h"
-	#endif /* (XVTR1_TYPE == XVTR_TYPE_R820T) */
-#endif /* defined(XVTR1_TYPE) */
+#if XVTR_R820T2
+	#include "chip/r820t.h"
+#endif /* XVTR_R820T2 */
 
 #if CTLREGMODE_RAVENDSP_V3 || CTLREGMODE_RAVENDSP_V4 || CTLREGMODE_RAVENDSP_V5
 
@@ -5428,11 +5426,11 @@ void prog_xvtr_freq(
 	uint_fast8_t enable		/* разрешить работу */
 	)
 {
-#if (XVTR1_TYPE == XVTR_TYPE_R820T)
+#if XVTR_R820T2
 	r820t_enable(enable);
 	if (enable)
 		r820t_setfreq(f);
-#endif /* (XVTR1_TYPE == XVTR_TYPE_R820T) */
+#endif /* XVTR_R820T2 */
 }
 
 
@@ -6921,10 +6919,10 @@ void board_reset(void)
 /* вызывается при разрешённых прерываниях. */
 void board_init_chips(void)
 {
-#if (XVTR1_TYPE == XVTR_TYPE_R820T)
+#if XVTR_R820T2
 	r820t_initialize();
 	r820t_enable(0);
-#endif /* (XVTR1_TYPE == XVTR_TYPE_R820T) */
+#endif /* XVTR_R820T2 */
 
 #if defined(ADC1_TYPE)
 	prog_rfadc_initialize();
@@ -7205,6 +7203,11 @@ hardware_txpath_initialize(void)
 
 #else /* WITHTX */
 
+void hardware_ptt_port_initialize(void)
+{
+
+}
+
 /* функция вызывается из пользовательской программы. */
 /* запрос от внешней аппаратуры на переход в режим TUNE */
 uint_fast8_t 
@@ -7212,7 +7215,24 @@ hardware_get_tune(void)
 {
 	return 0;
 }
+/* функция вызывается из пользовательской программы. */
+uint_fast8_t
+hardware_get_ptt(void)
+{
+	return 0;
+}
 
+/* функция вызывается из обработчиков прерывания или при запрещённых прерываниях. */
+void hardware_txpath_set(
+	portholder_t txpathstate
+	)
+{
+}
+
+void
+hardware_txpath_initialize(void)
+{
+}
 
 #endif /* WITHTX */
 

@@ -34,8 +34,7 @@
 #include "display.h"
 #include <stdint.h>
 
-#include "spifuncs.h"
-
+#include "../inc/spi.h"
 #include "formats.h"	// for debug prints
 
 #if LCDMODE_ST7735 || LCDMODE_ILI9163 || LCDMODE_ILI9341

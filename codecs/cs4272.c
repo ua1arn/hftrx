@@ -8,9 +8,8 @@
 #include "hardware.h"
 #include "board.h"
 
-#include "spifuncs.h"
-
 #include "./formats.h"
+#include "../inc/spi.h"
 
 #if defined(CODEC2_TYPE) && (CODEC2_TYPE == CODEC_TYPE_CS4272)
 

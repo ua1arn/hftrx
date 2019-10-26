@@ -6,13 +6,14 @@
 //
 
 #include "hardware.h"
-#include "pio.h"
 #include "board.h"
 #include "audio.h"
 
 #include "display/display.h"
 #include "formats.h"
 #include <string.h>
+
+#include "gpio.h"
 
 #if WITHUSBHW
 
@@ -1149,10 +1150,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
 
 	if (hpcd->Instance == & USB200)
 	{
-		const IRQn_ID_t int_id = USBI0_IRQn;
-		IRQ_SetHandler(int_id, device_USBI0_IRQHandler);
-		IRQ_SetPriority(int_id, ARM_SYSTEM_PRIORITY);
-		IRQ_Enable(int_id);
+		arm_hardware_set_handler_system(USBI0_IRQn, device_USBI0_IRQHandler);
 
 		/* ---- Supply clock to the USB20(channel 0) ---- */
 		CPG.STBCR7 &= ~ CPG_STBCR7_MSTP71;	// Module Stop 71 0: Channel 0 of the USB 2.0 host/function module runs.
@@ -1163,10 +1161,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
 	}
 	else if (hpcd->Instance == & USB201)
 	{
-		const IRQn_ID_t int_id = USBI1_IRQn;
-		IRQ_SetHandler(int_id, device_USBI1_IRQHandler);
-		IRQ_SetPriority(int_id, ARM_SYSTEM_PRIORITY);
-		IRQ_Enable(int_id);
+		arm_hardware_set_handler_system(USBI1_IRQn, device_USBI1_IRQHandler);
 
 		/* ---- Supply clock to the USB20(channel 1) ---- */
 		CPG.STBCR7 &= ~ CPG_STBCR7_MSTP70;	// Module Stop 70 0: Channel 1 of the USB 2.0 host/function module runs.
@@ -1232,10 +1227,7 @@ void HAL_HCD_MspInit(HCD_HandleTypeDef* hpcd)
 {
 	if (hpcd->Instance == & USB200)
 	{
-		const IRQn_ID_t int_id = USBI0_IRQn;
-		VERIFY(IRQ_SetHandler(int_id, host_USBI0_IRQHandler) == 0);
-		VERIFY(IRQ_SetPriority(int_id, ARM_SYSTEM_PRIORITY) == 0);
-		VERIFY(IRQ_Enable(int_id) == 0);
+		arm_hardware_set_handler_system(USBI0_IRQn, host_USBI0_IRQHandler);
 
 		/* ---- Supply clock to the USB20(channel 0) ---- */
 		CPG.STBCR7 &= ~ CPG_STBCR7_MSTP71;	// Module Stop 71 0: Channel 0 of the USB 2.0 host/function module runs.
@@ -1245,10 +1237,7 @@ void HAL_HCD_MspInit(HCD_HandleTypeDef* hpcd)
 	}
 	else if (hpcd->Instance == & USB201)
 	{
-		const IRQn_ID_t int_id = USBI1_IRQn;
-		VERIFY(IRQ_SetHandler(int_id, host_USBI1_IRQHandler) == 0);
-		VERIFY(IRQ_SetPriority(int_id, ARM_SYSTEM_PRIORITY) == 0);
-		VERIFY(IRQ_Enable(int_id) == 0);
+		arm_hardware_set_handler_system(USBI1_IRQn, host_USBI1_IRQHandler);
 
 		/* ---- Supply clock to the USB20(channel 1) ---- */
 		CPG.STBCR7 &= ~ CPG_STBCR7_MSTP70;	// Module Stop 70 0: Channel 1 of the USB 2.0 host/function module runs.

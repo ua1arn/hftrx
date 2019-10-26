@@ -14,7 +14,7 @@
 
 #include "board.h"
 #include "sdcard.h"
-#include "spifuncs.h"
+#include "spi.h"
 #include "fatfs/ff.h"	
 #include "fatfs/diskio.h"		/* FatFs lower layer API */
 

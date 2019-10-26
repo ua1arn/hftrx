@@ -261,6 +261,7 @@
 	//#define WITHUSEAUDIOREC		1	// Запись звука на SD CARD
 	//#define WITHUSEDUALWATCH	1	// Второй приемник
 	#define WITHRTS96 1		/* вместо выходного аудиосигнала передача квадратур по USB */
+	#define BOARD_FFTZOOM_POW2MAX 1	/* x1, x2 */
 	#define KEYB_FPANEL20_V0A_AVB	1	/* перевернутый */
 	//#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
 

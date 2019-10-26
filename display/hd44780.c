@@ -13,7 +13,7 @@
 #include "display.h"
 #include "hd44780.h"
 #include "board.h"
-#include "spifuncs.h"
+#include "spi.h"
 
 #include <stdlib.h>
 

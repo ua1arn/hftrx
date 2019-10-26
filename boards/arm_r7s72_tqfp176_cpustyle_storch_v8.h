@@ -26,6 +26,10 @@
 
 #if WITHISBOOTLOADER
 
+	#define WIHSPIDFHW	1	/* обслуживание DATA FLASH */
+	//#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
+	//#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	*/
+
 	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 	#define WITHUSBDEV_VBUSSENSE	1	/* используется предопределенный вывод VBUS_SENSE */
 	#define WITHUSBDEV_HSDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
@@ -52,6 +56,8 @@
 
 #else /* WITHISBOOTLOADER */
 
+	#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
+	//#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	*/
 	//#define WITHCPUDACHW	1	/* использование DAC - в renesas R7S72 нету */
 	#define WITHCPUADCHW 	1	/* использование ADC */
 
@@ -789,5 +795,19 @@
 		HARDWARE_BL_INITIALIZE(); \
 		HARDWARE_LVDSTX_INITIALIZE(); \
 		} while (0)
+
+	// Bootloader parameters
+	#define BOOTLOADER_APPAREA Renesas_RZ_A1_ONCHIP_SRAM_BASE	/* адрес ОЗУ, куда перемещать application */
+	#define BOOTLOADER_APPFULL (1024uL * 2048)	// 2MB
+
+	#define BOOTLOADER_SELFBASE Renesas_RZ_A1_SPI_IO0	/* адрес где лежит во FLASH образ application */
+	#define BOOTLOADER_SELFSIZE (1024uL * 128)	// 128
+
+	#define BOOTLOADER_APPBASE (BOOTLOADER_SELFBASE + BOOTLOADER_SELFSIZE)	/* адрес где лежит во FLASH образ application */
+	#define BOOTLOADER_APPSIZE (BOOTLOADER_APPFULL - BOOTLOADER_SELFSIZE)	// 2048 - 128
+
+	#define BOOTLOADER_PAGESIZE (1024uL * 64)	// M25Px with 64 KB pages
+	#define USBD_DFU_XFER_SIZE 64	// match to (Q)SPI FLASH MEMORY page size
+	#define USBD_DFU_FLASHNAME "M25Px"
 
 #endif /* ARM_R7S72_TQFP176_CPUSTYLE_STORCH_V8_H_INCLUDED */

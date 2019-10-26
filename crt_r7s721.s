@@ -274,8 +274,6 @@ ExitFunction:
    nop
    b ExitFunction   
 
-DRCR0_addr:		.word 0x3FEFA00C
-
 	.ascii " DREAM RX project " __DATE__ " " __TIME__ " "
 	.align 8
 

@@ -3,6 +3,9 @@
 #ifndef PIO_H_INCLUDED
 #define PIO_H_INCLUDED
 
+#include "hardware.h"
+#include <stdint.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
@@ -11,6 +14,18 @@ extern "C" {
 
 	#define BSRR_S(v) ((v) * GPIO_BSRR_BS0)	/* Преобразование значения для установки бита в регистре */
 	#define BSRR_C(v) ((v) * GPIO_BSRR_BR0)	/* Преобразование значения для сброса бита в регистре */
+
+	#define STM32MP1_GPIO_MODE_INPIUT	0
+	#define STM32MP1_GPIO_MODE_GPIO	1
+	#define STM32MP1_GPIO_MODE_ALT	2
+	#define STM32MP1_GPIO_MODE_ANALOG	3
+
+	#define STM32MP1_GPIO_OT_PP	0	// Push-pool output type
+	#define STM32MP1_GPIO_OT_OD	1	// Open Drain output type
+
+	#define STM32MP1_GPIO_SPEED_50M	2
+	#define STM32MP1_GPIO_SPEED_20M	1
+	#define STM32MP1_GPIO_SPEED_2M	0
 
 #elif CPUSTYLE_STM32
 

@@ -8,8 +8,8 @@
 #include "hardware.h"
 #include "synthcalcs.h"
 #include "board.h"
-#include "spifuncs.h"
 #include "formats.h"	/* sprintf() replacement */
+#include "inc/spi.h"
 
 //#define WITHSI5351AREPLACE 1
 

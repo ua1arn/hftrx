@@ -18,10 +18,10 @@
 #include "display/display.h"
 #include "formats.h"
 
-#include "spifuncs.h"
-
 #include "codecs/tlv320aic23.h"	// константы управления усилением кодека
 #include "codecs/nau8822.h"
+#include "inc/spi.h"
+#include "inc/gpio.h"
 
 #if WITHUSEAUDIOREC
 	#include "fatfs/ff.h"
@@ -4078,7 +4078,7 @@ static void sdcard_filesystest(void)
 //HARDWARE_SPI_HANGON()	- поддержка SPI программатора - подключение к программируемому устройству
 //HARDWARE_SPI_HANGOFF() - поддержка SPI программатора - отключение от программируемого устройства
 
-#if defined(targetdataflash)
+#if 0 && defined(targetdataflash)
 
 static void spi_hangon(void)
 {
@@ -7595,20 +7595,11 @@ nestedirqtest(void)
 	}
 	board_init_io();		/* инициализация чипселектов и SPI, I2C, загрузка FPGA */
 	hardware_timer_initialize(3);
-	{
-		const IRQn_ID_t int_id = OSTMI0TINT_IRQn;
-		IRQ_SetHandler(int_id, r7s721_ostm0_interrupt_test);	/* ==== Register OS timer interrupt handler ==== */
-		IRQ_SetPriority(int_id, ARM_SYSTEM_PRIORITY);		/* ==== Set priority of OS timer interrupt to 5 ==== */
-		IRQ_Enable(int_id);		/* ==== Validate OS timer interrupt ==== */
-	}
+	arm_hardware_set_handler_system(OSTMI0TINT_IRQn, r7s721_ostm0_interrupt_test);
 	hardware_elkey_timer_initialize();
 	hardware_elkey_set_speed(4);
-	{
-		const IRQn_ID_t int_id = OSTMI1TINT_IRQn;
-		IRQ_SetHandler(int_id, r7s721_ostm1_interrupt_test);	/* ==== Register OS timer interrupt handler ==== */
-		IRQ_SetPriority(int_id, ARM_REALTIME_PRIORITY);		/* ==== Set priority of OS timer interrupt to 5 ==== */
-		IRQ_Enable(int_id);		/* ==== Validate OS timer interrupt ==== */
-	}
+	arm_hardware_set_handler_realtime(OSTMI1TINT_IRQn, r7s721_ostm1_interrupt_test);
+
 #if defined (ENCODER_BITS)
 	#if CTLSTYLE_RAVENDSP_V9
 		do { \

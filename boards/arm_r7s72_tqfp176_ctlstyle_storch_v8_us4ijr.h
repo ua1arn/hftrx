@@ -11,17 +11,6 @@
 #ifndef ARM_R7S72_TQFP176_CTLSTYLE_STORCH_V8_H_INCLUDED
 #define ARM_R7S72_TQFP176_CTLSTYLE_STORCH_V8_H_INCLUDED 1
 
-	#define BOOTLOADER_APPAREA 0x20000000	/* адрес ОЗУ, куда перемезать application */
-	#define BOOTLOADER_APPFULL (1024uL * 2048)	// 2MB
-
-	#define BOOTLOADER_SELFBASE 0x18000000	/* адрес, где лежит во FLASH образ application */
-	#define BOOTLOADER_SELFSIZE (1024uL * 128)	// 128
-
-	#define BOOTLOADER_APPBASE 0x18020000	/* адрес, где лежит во FLASH образ application */
-	#define BOOTLOADER_APPSIZE (BOOTLOADER_APPFULL - BOOTLOADER_SELFSIZE)	// 2048 - 128
-
-	#define BOOTLOADER_PAGESIZE (1024uL * 64)	// M25Px with 64 KB pages
-
 	//#define WITHSAICLOCKFROMI2S 1	/* Блок SAI1 тактируется от PLL I2S */
 	#define WITHI2SCLOCKFROMPIN 1	// тактовая частота на SPI2 (I2S) подается с внешнего генератора, в процессор вводится через AUDIO_X1 сигнал интерфейса
 	#define WITHSAICLOCKFROMPIN 1	// тактовая частота на SAI1 подается с внешнего генератора, в процессор вводится через AUDIO_X1 сигнал интерфейса
@@ -93,7 +82,7 @@
 	// +++ Одна из этих строк определяет тип дисплея, для которого компилируется прошивка
 #if WITHISBOOTLOADER
 
-	#define LCDMODE_ILI9341	1	/* 320*240 SF-TC240T-9370-T с контроллером ILI9341 - STM32F4DISCO */
+	#define LCDMODE_DUMMY	1
 
 #elif 1
 

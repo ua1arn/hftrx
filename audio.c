@@ -8,7 +8,6 @@
 #include "hardware.h"	/* зависящие от процессора функции работы с портами */
 #include "board.h"
 #include "audio.h"
-#include "spifuncs.h"
 #include "formats.h"	// for debug prints
 
 #include "codecs/tlv320aic23.h"	// константы управления усилением кодека
@@ -19,6 +18,7 @@
 #include <string.h>
 #include <math.h>
 #include <assert.h>
+#include "inc/spi.h"
 
 //#define WITHLIMITEDAGCATTACK 1
 #define DUALFILTERSPROCESSING 1	// Фильтры НЧ для левого и правого каналов - вынсено в конфигурационный файл
@@ -141,6 +141,7 @@ static uint_fast8_t 	glob_sidetonelevel = 10;	/* Уровень сигнала �
 static uint_fast8_t 	glob_subtonelevel = 0;	/* Уровень сигнала CTCSS в процентах - 0%..100% */
 static uint_fast8_t 	glob_amdepth = 30;		/* Глубина модуляции в АМ - 0..100% */
 static uint_fast8_t		glob_dacscale = 100;	/* На какую часть (в процентах) от полной амплитуды использцется ЦАП передатчика */
+static uint_fast16_t	glob_gdigiscale = 250;	/* Увеличение усиления при передаче в цифровых режимах 100..300% */
 
 static uint_fast8_t 	glob_digigainmax = 96;
 static uint_fast8_t		glob_gvad605 = UINT8_MAX;	/* напряжение на AD605 (управление усилением тракта ПЧ */
@@ -338,9 +339,8 @@ static RAMDTCM struct Complex Sig [FFTSizeFilters];
 	#error Strange WITHIFADCWIDTH & WITHAFDACWIDTH relations
 #endif
 
-static RAMDTCM FLOAT_t txlevelfenceHALF = INT32_MAX / 2;
+static RAMDTCM FLOAT_t txlevelfenceAM = INT32_MAX / 2;
 
-//static RAMDTCM int_fast32_t txlevelfenceSSB_INTEGER = INT32_MAX - 1;
 static RAMDTCM FLOAT_t txlevelfenceSSB = INT32_MAX / 2;
 static RAMDTCM FLOAT_t txlevelfenceDIGI = INT32_MAX / 2;
 
@@ -3723,7 +3723,7 @@ static RAMFUNC FLOAT_t preparevi(
 		return txlevelfenceBPSK;	// постоянная составляющая с максимальным уровнем
 
 	case DSPCTL_MODE_TX_CW:
-		return txlevelfenceHALF;	// постоянная составляющая с максимальным уровнем
+		return txlevelfenceCW;	// постоянная составляющая с максимальным уровнем
 
 	case DSPCTL_MODE_TX_DIGI:
 	case DSPCTL_MODE_TX_SSB:
@@ -5742,6 +5742,25 @@ rxparam_update(uint_fast8_t profile, uint_fast8_t pathi)
 static void 
 txparam_update(uint_fast8_t profile)
 {
+	// Разрядность передающего тракта
+	#if WITHIFDACWIDTH > DSP_FLOAT_BITSMANTISSA
+		const int_fast32_t dacFS = 0x7ffff000L >> (32 - WITHIFDACWIDTH);	/* 0x7ffff800L так как float имеет максимум 24 бита в мантиссе (23 явных и один - старший - подразумевается всегда единица) */
+	#else /* WITHIFDACWIDTH > DSP_FLOAT_BITSMANTISSA */
+		const int_fast32_t dacFS = (((uint_fast64_t) 1 << (WITHIFDACWIDTH - 1)) - 1);
+	#endif /* WITHIFDACWIDTH > DSP_FLOAT_BITSMANTISSA */
+
+	const FLOAT_t txlevelfence = dacFS * db2ratio(- 1);	// контролировать по отсутствию индикации переполнения DUC при передаче
+
+	const FLOAT_t c1MODES = (FLOAT_t) HARDWARE_DACSCALE;	// предотвращение переполнения
+	const FLOAT_t c1DIGI = c1MODES * (FLOAT_t) glob_gdigiscale / 100;
+
+	txlevelfenceAM = 	txlevelfence * c1MODES;	// Для режимов с lo6=0 - у которых нет подавления нерабочей боковой
+	txlevelfenceSSB = 	txlevelfence * c1MODES;
+	txlevelfenceBPSK = 	txlevelfence * c1MODES;
+	txlevelfenceNFM = 	txlevelfence * c1MODES;
+	txlevelfenceCW = 	txlevelfence * c1MODES;
+	txlevelfenceBPSK = 	txlevelfence * c1MODES;
+	txlevelfenceDIGI = 	txlevelfence * c1DIGI;
 
 	// Параметры АРУ микрофона
 	comp_parameters_update(& txagcparams [profile], (int) glob_mikeagcgain);
@@ -5759,7 +5778,7 @@ txparam_update(uint_fast8_t profile)
 		// AM parameters
 		const FLOAT_t amshapesignal = (FLOAT_t) (int) glob_amdepth / (100 + (int) glob_amdepth);
 		amshapesignalHALF = amshapesignal / 2;
-		amcarrierHALF = txlevelfenceHALF - txlevelfenceHALF * amshapesignal;
+		amcarrierHALF = txlevelfenceAM - txlevelfenceAM * amshapesignal;
 	}
 
 	scaleDAC = (FLOAT_t) (int) glob_dacscale / 100;
@@ -5783,7 +5802,8 @@ trxparam_update(void)
 {
 	// CW & sidetone edge
 	enveloplen0 = NSAITICKS(glob_cwedgetime) + 1;		/* количество сэмплов, за которое меняется огибающая */
-
+	// 0.707 == M_SQRT1_2
+	/* http://gregstoll.dyndns.org/~gregstoll/floattohex/ use for tests */
 }
 
 /* вызывается при разрешённых прерываниях. */
@@ -5814,26 +5834,6 @@ void dsp_initialize(void)
 #endif /* WITHDSPLOCALFIR */
 
 	omega2ftw_k1 = POWF(2, NCOFTWBITS);
-
-	// 0.707 == M_SQRT1_2
-	/* http://gregstoll.dyndns.org/~gregstoll/floattohex/ use for tests */
-
-	// Разрядность передающего тракта
-	#if WITHIFDACWIDTH > DSP_FLOAT_BITSMANTISSA
-		const int_fast32_t dacFS = 0x7ffff000L >> (32 - WITHIFDACWIDTH);	/* 0x7ffff800L так как float имеет максимум 24 бита в мантиссе (23 явных и один - старший - подразумевается всегда единица) */
-	#else /* WITHIFDACWIDTH > DSP_FLOAT_BITSMANTISSA */
-		const int_fast32_t dacFS = (((uint_fast64_t) 1 << (WITHIFDACWIDTH - 1)) - 1);
-	#endif /* WITHIFDACWIDTH > DSP_FLOAT_BITSMANTISSA */
-
-	const FLOAT_t txlevelfence = dacFS * db2ratio(- 1);	// контролировать по отсутствию индикации переполнения DUC при передаче
-	txlevelfenceHALF = txlevelfence / 2;	// Для режимов с lo6=0 - у которых нет подавления нерабочей боковой
-
-	txlevelfenceDIGI = txlevelfence;
-	txlevelfenceSSB = txlevelfence * (FLOAT_t) M_SQRT1_2;
-	//txlevelfenceSSB_INTEGER = txlevelfenceSSB;	// Для источника шума
-	txlevelfenceBPSK = txlevelfence / (FLOAT_t) 1.5;
-	txlevelfenceNFM = txlevelfence / 2;
-	txlevelfenceCW = txlevelfence / 2;
 
 	// Разрядность приёмного тракта
 	#if WITHIFADCWIDTH > DSP_FLOAT_BITSMANTISSA
@@ -6322,6 +6322,16 @@ board_set_dacscale(uint_fast8_t n)	/* Использование амплиту�
 }
 
 void 
+board_set_gdigiscale(uint_fast16_t n)	/* Увеличение усиления при передаче в цифровых режимах 100..300% */
+{
+	if (glob_gdigiscale != n)
+	{
+		glob_gdigiscale = n;
+		board_dsp1regchanged();
+	}
+}
+
+void
 board_set_mik1level(uint_fast16_t n)	/* усиление микрофонного усилителя */
 {
 	if (glob_mik1level != n)

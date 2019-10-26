@@ -13,7 +13,7 @@
 #include "display.h"
 #include <stdint.h>
 
-#include "spifuncs.h"
+#include "../inc/spi.h"
 #include "formats.h"		// debug output support
 
 #if LCDMODE_S1D13781

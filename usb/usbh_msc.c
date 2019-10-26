@@ -7,11 +7,8 @@
 */
 
 #include "hardware.h"
-#include "pio.h"
 #include "board.h"
 #include "audio.h"
-#include "spifuncs.h"
-
 #include "display/display.h"
 #include "formats.h"
 #include <string.h>

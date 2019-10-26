@@ -12,11 +12,10 @@
 #include <math.h>
 
 #include "board.h"
-#include "spifuncs.h"
 #include "audio.h"
-#include "pio.h"
-
 #include "formats.h"	// for debug prints
+#include "inc/gpio.h"
+#include "inc/spi.h"
 
 
 static unsigned long ulmin(
@@ -85,7 +84,8 @@ calcdivround2(
 	return (ref < freq) ? 1 : ((ref + freq / 2) / freq);
 }
 
-#if CPUSTYLE_STM32
+#if CPUSTYLE_STM32 || CPUSTYLE_STM32MP1
+
 	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
 	static uint_fast32_t 
 	NOINLINEAT
@@ -147,7 +147,7 @@ calcdivround2(
 	}
 #endif /* SIDETONE_TARGET_BIT != 0 */
 
-#if CPUSTYLE_STM32H7XX
+#if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 	/* для устройств тактирующихся от per_ck */
 	static uint_fast32_t 
 	NOINLINEAT
@@ -357,7 +357,7 @@ static uint_fast32_t arm_hardware_stm32f7xx_pllq_initialize(void);	// Настр
 		AT91C_TC_CLKS_TIMER_DIV5_CLOCK, // is a TCxCLK = MCLK / 1024
 	};
 
-#elif CPUSTYLE_STM32
+#elif CPUSTYLE_STM32 || CPUSTYLE_STM32MP1
 
 	// Параметры функции calcdivider().
 	// 
@@ -369,7 +369,7 @@ static uint_fast32_t arm_hardware_stm32f7xx_pllq_initialize(void);	// Настр
 		//STM32F_AC_TIMER_WIDTH = 16,	STM32F_AC_TIMER_TAPS = (65535), // Advanced-control timers
 		//STM32F_BA_TIMER_WIDTH = 16,	STM32F_BA_TIMER_TAPS = (65535), // Basic timers
 
-#if CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32FHXX
+#if CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32FHXX || CPUSTYLE_STM32MP1
 		STM32F_TIM2_TIMER_WIDTH = 32,	STM32F_TIM2_TIMER_TAPS = (65535), // General-purpose timers TIM2 and TIM5 on CPUSTYLE_STM32F4XX
 		STM32F_TIM5_TIMER_WIDTH = 32,	STM32F_TIM5_TIMER_TAPS = (65535), // General-purpose timers TIM2 and TIM5 on CPUSTYLE_STM32F4XX
 #else /* CPUSTYLE_STM32F4XX */
@@ -669,7 +669,7 @@ hardware_uart1_set_speed(uint_fast32_t baudrate)
 	USARTE0.BAUDCTRLA = (value & 0xff);	/* Значение получено уже уменьшенное на 1 */
 	USARTE0.BAUDCTRLB = (ATXMEGA_UBR_BSEL << 4) | ((value >> 8) & 0x0f);
 
-#elif CPUSTYLE_STM32
+#elif CPUSTYLE_STM32 || CPUSTYLE_STM32MP1
 
 	// uart1 on apb2 up to 72/36 MHz
 
@@ -830,7 +830,7 @@ hardware_uart2_set_speed(uint_fast32_t baudrate)
 	USARTE1.BAUDCTRLA = (value & 0xff);	/* Значение получено уже уменьшенное на 1 */
 	USARTE1.BAUDCTRLB = (ATXMEGA_UBR_BSEL << 4) | ((value >> 8) & 0x0f);
 
-#elif CPUSTYLE_STM32
+#elif CPUSTYLE_STM32 || CPUSTYLE_STM32MP1
 
 	// uart2 on apb1
 
@@ -1198,12 +1198,6 @@ static RAMFUNC void spool_adcdonebundle(void)
 			spool_elkeybundle();
 		}
 	}
-	#else
-	void  
-	TIM3_IRQHandler(void)
-	{
-	}
-
 	#endif /* WITHELKEY */
 
 	/* прерывания от валколера при наличии в системе вложенных прерываний вызываются на уровне приоритета REALTINE */
@@ -1462,18 +1456,9 @@ static RAMFUNC void spool_adcdonebundle(void)
 		}
 	}
 
-	RAMFUNC_NONILINE void USART0_Handler(void)
-	{
-	}
+#elif CPUSTYLE_AT91SAM7S
 
-	RAMFUNC_NONILINE void USART1_Handler(void)
-	{
-	}
-
-
-#elif CPUSTYLE_AT91SAM7S 
-
-	RAMFUNC_NONILINE void AT91F_PIOA_IRQHandler(void) 
+	RAMFUNC_NONILINE void AT91F_PIOA_IRQHandler(void)
 	{
 		// When the software reads PIO_ISR, all the interrupts are automatically cleared. This signifies that
 		// all the interrupts that are pending when PIO_ISR is read must be handled.
@@ -1628,16 +1613,25 @@ static RAMFUNC void spool_adcdonebundle(void)
 #elif CPUSTYLE_R7S721
 
 	// Таймер "тиков"
-	static void r7s721_ostm0_interrupt(void)
+	static void OSTMI0TINT_IRQHandler(void)
 	{
 		spool_systimerbundle1();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
 		spool_systimerbundle2();	// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
 	}
 
 	// Таймер электронного ключа
-	static void r7s721_ostm1_interrupt(void)
+	static void OSTMI1TINT_IRQHandler(void)
 	{
 		spool_elkeybundle();
+	}
+
+#elif CPUSTYLE_STM32MP1
+	#warning Insert interrupt handlers code for CPUSTYLE_STM32MP1
+	void
+	SysTick_Handler(void)
+	{
+		spool_systimerbundle1();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
+		spool_systimerbundle2();	// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
 	}
 
 #else
@@ -1787,15 +1781,12 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 
 	OSTM0.OSTMnCMP = calcdivround_p0clock(ticksfreq) - 1;
 
-	{
-		const IRQn_ID_t int_id = OSTMI0TINT_IRQn;
-		IRQ_SetHandler(int_id, r7s721_ostm0_interrupt);	/* ==== Register OS timer interrupt handler ==== */
-		IRQ_SetPriority(int_id, ARM_SYSTEM_PRIORITY);		/* ==== Set priority of OS timer interrupt to 5 ==== */
-		IRQ_Enable(int_id);		/* ==== Validate OS timer interrupt ==== */
-	}
+	arm_hardware_set_handler_system(OSTMI0TINT_IRQn, OSTMI0TINT_IRQHandler);
 
 	OSTM0.OSTMnTS = 0x01u;      /* Start counting */
 
+#elif CPUSTYLE_STM32MP1
+	#warning Insert code for CPUSTYLE_STM32MP1
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -2346,6 +2337,8 @@ r7s721_adi_irq_handler(void)
 	}
 }
 
+#elif CPUSTYLE_STM32MP1
+	#warning Insert ADC interrupt code for CPUSTYLE_STM32MP1
 #else
 	#error No CPUSTYLE_XXXXX defined
 #endif
@@ -3041,12 +3034,7 @@ void hardware_adc_initialize(void)
 	HARDWARE_ADC_INITIALIZE(ainmask);
 
 	// connect to interrupt
-	{
-		const IRQn_ID_t int_id = ADI_IRQn;	/* 12bit A/D converter                */
-		IRQ_SetHandler(int_id, r7s721_adi_irq_handler);
-		IRQ_SetPriority(int_id, ARM_SYSTEM_PRIORITY);
-		IRQ_Enable(int_id);
-	}
+	arm_hardware_set_handler_system(ADI_IRQn, r7s721_adi_irq_handler);
 
 	// первый запуск производится в hardware_adc_startonescan().
 	// А здесь всё...
@@ -3088,6 +3076,8 @@ void hardware_adc_initialize(void)
 
 	// первый запуск производится в hardware_adc_startonescan().
 	// А здесь всё...
+#elif CPUSTYLE_STM32MP1
+	#warning Insert code for CPUSTYLE_STM32MP1
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -3187,6 +3177,8 @@ hardware_adc_startonescan(void)
 #elif CPUSTYLE_STM32F0XX
 	#warning: #warning Must be implemented for this CPU
 
+#elif CPUSTYLE_STM32MP1
+	#warning Insert code for CPUSTYLE_STM32MP1
 #else
 
 	#error Undefined CPUSTYLE_XXX
@@ -3213,7 +3205,7 @@ hardware_adc_startonescan(void)
 
 		return calcdivround_p0clock(760000uL * 2);	// на выходе формирователя делитель на 2 - требуемую частоту умножаем на два
 
-#elif CPUSTYLE_STM32H7XX
+#elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 		struct FREQ 
 		{
 			uint_fast16_t dcdcdiv;
@@ -3718,7 +3710,7 @@ hardware_beep_initialize(void)
 	#if CPUSTYLE_AT91SAM7S || CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 		static portholder_t spi_csr_val8w [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 */
 		static portholder_t spi_csr_val16w [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 в режиме 16-ти битных слов. */
-	#elif CPUSTYLE_STM32H7XX
+	#elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 		static portholder_t spi_cfg1_val8w [SPIC_SPEEDS_COUNT];
 		static portholder_t spi_cfg1_val16w [SPIC_SPEEDS_COUNT];
 		static portholder_t spi_cfg1_val32w [SPIC_SPEEDS_COUNT];
@@ -4006,8 +3998,8 @@ void hardware_spi_master_initialize(void)
 	//cpu_stm32f1xx_setmapr(AFIO_MAPR_SPI1_REMAP);
 
 	// Теперь настроим модуль SPI.
-	RCC->APB2ENR |= RCC_APB2ENR_SPI1EN; //подать тактирование
-	__DSB();
+	RCC->APB2ENR |= RCC_APB2ENR_SPI1EN; // подать тактирование
+	(void) RCC->APB2ENR;
 	SPI1->CR1 = 0x0000;             //очистить первый управляющий регистр
 	SPI1->CR2 = 0x0000;	// SPI_CR2_SSOE;             //очистить второй управляющий регистр
 
@@ -4150,10 +4142,8 @@ void hardware_spi_master_initialize(void)
 			0;
 
 		{
-			//const IRQn_ID_t int_id = DMAINT15_IRQn;
-			//IRQ_SetHandler(int_id, r7s721_usb0_dma1_dmatx_handler);
-			//IRQ_SetPriority(int_id, ARM_REALTIME_PRIORITY);
-			//IRQ_Enable(int_id);
+			// connect to interrupt
+			//arm_hardware_set_handler_system(DMAINT15_IRQn, r7s721_usb0_dma1_dmatx_handler);
 		}
 
 		DMAC15.CHCTRL_n = DMAC15_CHCTRL_n_SWRST;		// SWRST
@@ -4163,6 +4153,14 @@ void hardware_spi_master_initialize(void)
 #endif /* WITHSPIHWDMA */
 
 	SPIIO_INITIALIZE();
+
+#elif CPUSTYLE_STM32MP1
+
+	RCC->MC_APB2ENSETR = RCC_MC_APB2ENSETR_SPI1EN; // подать тактирование
+	(void) RCC->MC_APB2ENSETR;
+	/* настраиваем в режиме disconnect */
+	SPIIO_INITIALIZE();
+
 #else
 	#error Wrong CPUSTYLE macro
 #endif
@@ -4333,7 +4331,7 @@ void hardware_spi_master_setfreq(uint_fast8_t spispeedindex, int_fast32_t spispe
 	spi_cr1_val16w [spispeedindex][SPIC_MODE2] = cr1bits | CR1_MODE2;
 	spi_cr1_val16w [spispeedindex][SPIC_MODE3] = cr1bits | CR1_MODE3;
 
-#elif CPUSTYLE_STM32H7XX
+#elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 
 	unsigned value;	/* делителя нет, есть только прескалер - значение делителя не используется */
 	const uint_fast8_t prei = calcdivider(calcdivround_per_ck(spispeed), STM32F_SPIBR_WIDTH, STM32F_SPIBR_TAPS, & value, 1);
@@ -4426,6 +4424,9 @@ void hardware_spi_master_setfreq(uint_fast8_t spispeedindex, int_fast32_t spispe
 	spi_spcmd0_val32w [spispeedindex][SPIC_MODE1] = spcmd32w | SPCMD_MODE1;
 	spi_spcmd0_val32w [spispeedindex][SPIC_MODE2] = spcmd32w | SPCMD_MODE2;
 	spi_spcmd0_val32w [spispeedindex][SPIC_MODE3] = spcmd32w | SPCMD_MODE3;
+
+#elif CPUSTYLE_STM32MP1
+	#warning Insert code for CPUSTYLE_STM32MP1
 
 #else
 	#error Wrong CPUSTYLE macro
@@ -4549,6 +4550,17 @@ void hardware_spi_connect(uint_fast8_t spispeedindex, spi_modes_t spimode)
 
 	HARDWARE_SPI_CONNECT();
 
+#elif CPUSTYLE_STM32MP1
+
+	HARDWARE_SPI_CONNECT();
+
+	SPI1->CFG1 = spi_cfg1_val8w [spispeedindex];
+	SPI1->CFG2 = spi_cfg2_val [spimode];
+	SPI1->CR1 |= SPI_CR1_SSI;
+
+	SPI1->CR1 |= SPI_CR1_SPE;
+	SPI1->CR1 |= SPI_CR1_CSTART;
+
 #else
 	#error Wrong CPUSTYLE macro
 #endif
@@ -4603,6 +4615,16 @@ void hardware_spi_disconnect(void)
 
 	HARDWARE_SPI_DISCONNECT();
 
+#elif CPUSTYLE_STM32MP1
+	//#warning Insert code for CPUSTYLE_STM32MP1
+
+	SPI1->CR1 |= SPI_CR1_CSUSP;
+	while ((SPI1->CR1 & SPI_CR1_CSTART) != 0)
+		;
+	SPI1->CR1 &= ~ SPI_CR1_SPE;
+	// connect back to GPIO
+	HARDWARE_SPI_DISCONNECT();
+
 #else
 	#error Wrong CPUSTYLE macro
 #endif
@@ -4641,7 +4663,7 @@ hardware_spi_ready_b8_void(void)
 		;
 	//(void) TARGETHARD_SPI.DATA;
 
-#elif CPUSTYLE_STM32H7XX
+#elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 
 	//while ((SPI1->SR & SPI_SR_TXC) == 0)	
 	//	;
@@ -4697,7 +4719,7 @@ portholder_t hardware_spi_complete_b8(void)	/* дождаться готовно
 		;
 	return TARGETHARD_SPI.DATA;
 
-#elif CPUSTYLE_STM32H7XX
+#elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 
 	//while ((SPI1->SR & SPI_SR_TXC) == 0)	
 	//	;
@@ -4972,6 +4994,9 @@ hardware_spi_master_send_frame_8bpartial(
 
 	HW_SPIUSED->SPBFCR &= ~ RSPIn_SPBFCR_RXRST;		// Разрешить прием
 
+#elif CPUSTYLE_STM32MP1
+	#warning Insert code for CPUSTYLE_STM32MP1
+
 #else
 	#error Undefined CPUSTYLE_xxxx
 #endif
@@ -5137,6 +5162,9 @@ hardware_spi_master_send_frame_16bpartial(
 
 	HW_SPIUSED->SPBFCR &= ~ RSPIn_SPBFCR_RXRST;		// Разрешить прием
 
+#elif CPUSTYLE_STM32MP1
+	#warning Insert code for CPUSTYLE_STM32MP1
+
 #else
 	#error Undefined CPUSTYLE_xxxx
 #endif
@@ -5289,6 +5317,10 @@ hardware_spi_master_read_frame_16bpartial(
 	HARDWARE_SPI_DISCONNECT_MOSI();	// выход данных в "1" - для нормальной работы SD CARD
 
 	HARDWARE_SPI_CONNECT_MOSI();	// Возвращаем в обычный режим работы
+
+#elif CPUSTYLE_STM32MP1
+	#warning Insert code for CPUSTYLE_STM32MP1
+
 
 #else
 	#error Undefined CPUSTYLE_xxxx
@@ -5445,6 +5477,10 @@ hardware_spi_master_read_frame_8bpartial(
 	HARDWARE_SPI_DISCONNECT_MOSI();	// выход данных в "1" - для нормальной работы SD CARD
 
 	HARDWARE_SPI_CONNECT_MOSI();	// Возвращаем в обычный режим работы
+
+#elif CPUSTYLE_STM32MP1
+	#warning Insert code for CPUSTYLE_STM32MP1
+
 
 #else
 	#error Undefined CPUSTYLE_xxxx
@@ -5629,7 +5665,7 @@ void hardware_spi_connect_b16(uint_fast8_t spispeedindex, spi_modes_t spimode)
 		__DSB();
 	#endif
 
-#elif CPUSTYLE_STM32H7XX
+#elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 
 		HARDWARE_SPI_CONNECT();
 
@@ -5672,7 +5708,7 @@ portholder_t hardware_spi_complete_b16(void)	/* дождаться готовн�
 		;
 	return (AT91C_BASE_SPI->SPI_RDR & AT91C_SPI_TD);
 
-#elif CPUSTYLE_STM32H7XX
+#elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 
 	//while ((SPI1->SR & SPI_SR_TXC) == 0)
 	//	;
@@ -5717,7 +5753,7 @@ static void hardware_spi_ready_b16_void(void)	/* дождаться готовн
 		;
 	(void) AT91C_BASE_SPI->SPI_RDR;
 
-#elif CPUSTYLE_STM32H7XX
+#elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 
 	//while ((SPI1->SR & SPI_SR_TXC) == 0)
 	//	;
@@ -5760,7 +5796,7 @@ void hardware_spi_b16_p1(
 
 	AT91C_BASE_SPI->SPI_TDR = v & AT91C_SPI_TD;
 
-#elif CPUSTYLE_STM32H7XX
+#elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 
 	* (volatile uint16_t *) & (SPI1)->TXDR = v;	// prevent data packing feature
 
@@ -5828,6 +5864,17 @@ void hardware_spi_connect_b32(uint_fast8_t spispeedindex, spi_modes_t spimode)
 
 	HARDWARE_SPI_CONNECT();
 
+#elif CPUSTYLE_STM32MP1
+
+	HARDWARE_SPI_CONNECT();
+
+	SPI1->CFG1 = spi_cfg1_val32w [spispeedindex];
+	SPI1->CFG2 = spi_cfg2_val [spimode];
+	SPI1->CR1 |= SPI_CR1_SSI;
+
+	SPI1->CR1 |= SPI_CR1_SPE;
+	SPI1->CR1 |= SPI_CR1_CSTART;
+
 #else
 	#error Wrong CPUSTYLE macro
 #endif
@@ -5836,7 +5883,7 @@ void hardware_spi_connect_b32(uint_fast8_t spispeedindex, spi_modes_t spimode)
 
 portholder_t hardware_spi_complete_b32(void)	/* дождаться готовности */
 {
-#if CPUSTYLE_STM32H7XX
+#if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 
 	//while ((SPI1->SR & SPI_SR_TXC) == 0)	
 	//	;
@@ -5858,7 +5905,7 @@ portholder_t hardware_spi_complete_b32(void)	/* дождаться готовн�
 
 static void hardware_spi_ready_b32_void(void)	/* дождаться готовности */
 {
-#if CPUSTYLE_STM32H7XX
+#if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 
 	//while ((SPI1->SR & SPI_SR_TXC) == 0)	
 	//	;
@@ -5886,7 +5933,7 @@ void hardware_spi_b32_p1(
 	portholder_t v		/* значениеслова для передачи */
 	)
 {
-#if CPUSTYLE_STM32H7XX
+#if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 	
 	* (volatile uint32_t *) & (SPI1)->TXDR = v;	// prevent data packing feature
 
@@ -5940,7 +5987,7 @@ void hardware_spi_b8_p1(
 
 	TARGETHARD_SPI.DATA = v; // запуск передачи
 
-#elif CPUSTYLE_STM32H7XX
+#elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 
 	* (volatile uint8_t *) & (SPI1)->TXDR = v;	// prevent data packing feature
 
@@ -6104,14 +6151,13 @@ hardware_elkey_timer_initialize(void)
     /* ---- OSTM count stop trigger register (TT) setting ---- */
     OSTM1.OSTMnTT = 0x01u;      /* Stop counting */
 
-	{
-		const IRQn_ID_t int_id = OSTMI1TINT_IRQn;
-		IRQ_SetHandler(int_id, r7s721_ostm1_interrupt);	/* ==== Register OS timer interrupt handler ==== */
-		IRQ_SetPriority(int_id, ARM_SYSTEM_PRIORITY);		/* ==== Set priority of OS timer interrupt to 5 ==== */
-		IRQ_Enable(int_id);		/* ==== Validate OS timer interrupt ==== */
-	}
+    arm_hardware_set_handler_system(OSTMI1TINT_IRQn, OSTMI1TINT_IRQHandler);
 
 	OSTM1.OSTMnTS = 0x01u;      /* Start counting */
+
+#elif CPUSTYLE_STM32MP1
+	#warning Insert code for CPUSTYLE_STM32MP1
+
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -6196,6 +6242,10 @@ void hardware_elkey_set_speed(uint_fast32_t ticksfreq)
 		1 * (1U << 0) |	// Enables the interrupts when counting starts.
 		0;
 
+#elif CPUSTYLE_STM32MP1
+	#warning Insert code for CPUSTYLE_STM32MP1
+
+
 #else
 	#error Undefined CPUSTYLE_XXX
 #endif
@@ -6279,6 +6329,9 @@ void hardware_elkey_set_speed128(uint_fast32_t ticksfreq, int scale)
 		0 * (1U << 1) |	// Interval Timer Mode
 		1 * (1U << 0) |	// Enables the interrupts when counting starts.
 		0;
+
+#elif CPUSTYLE_STM32MP1
+	#warning Insert code for CPUSTYLE_STM32MP1
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -6588,12 +6641,7 @@ void hardware_sdhost_initialize(void)
 	hardware_sdhost_setbuswidth(0);
 	hardware_sdhost_setspeed(400000uL);
 
-	{
-		const IRQn_ID_t int_id = DMAINT14_IRQn;
-		IRQ_SetHandler(int_id, r7s721_sdhi0_dma_handler);
-		IRQ_SetPriority(int_id, ARM_SYSTEM_PRIORITY);
-		IRQ_Enable(int_id);
-	}
+    arm_hardware_set_handler_system(DMAINT14_IRQn, r7s721_sdhi0_dma_handler);
 
 	HARDWARE_SDIO_INITIALIZE();	// Подсоединить контроллер к выводам процессора
 
@@ -6613,13 +6661,8 @@ void hardware_sdhost_initialize(void)
 	hardware_sdhost_setbuswidth(0);
 	hardware_sdhost_setspeed(400000uL);
 
-	NVIC_SetVector(SDIO_IRQn, (uintptr_t) & SDIO_IRQHandler);
-	NVIC_SetPriority(SDIO_IRQn, ARM_SYSTEM_PRIORITY);
-	NVIC_EnableIRQ(SDIO_IRQn);	// SDIO_IRQHandler() enable
-
-	NVIC_SetVector(DMA2_Stream6_IRQn, (uintptr_t) & DMA2_Stream6_IRQHandler);
-	NVIC_SetPriority(DMA2_Stream6_IRQn, ARM_SYSTEM_PRIORITY);
-	NVIC_EnableIRQ(DMA2_Stream6_IRQn);	// DMA2_Stream6_IRQHandler() enable
+   arm_hardware_set_handler_system(SDIO_IRQn, SDIO_IRQHandler);
+   arm_hardware_set_handler_system(DMA2_Stream6_IRQn, DMA2_Stream6_IRQHandler);
 
 	HARDWARE_SDIO_INITIALIZE();	// Подсоединить контроллер к выводам процессора
 	// разрешить тактирование карты памяти
@@ -6641,13 +6684,8 @@ void hardware_sdhost_initialize(void)
 	hardware_sdhost_setbuswidth(0);
 	hardware_sdhost_setspeed(400000uL);
 
-	NVIC_SetVector(SDMMC1_IRQn, (uintptr_t) & SDMMC1_IRQHandler);
-	NVIC_SetPriority(SDMMC1_IRQn, ARM_SYSTEM_PRIORITY);
-	NVIC_EnableIRQ(SDMMC1_IRQn);	// SDIO_IRQHandler() enable
-
-	NVIC_SetVector(DMA2_Stream6_IRQn, (uintptr_t) & DMA2_Stream6_IRQHandler);
-	NVIC_SetPriority(DMA2_Stream6_IRQn, ARM_SYSTEM_PRIORITY);
-	NVIC_EnableIRQ(DMA2_Stream6_IRQn);	// DMA2_Stream6_IRQHandler() enable
+   arm_hardware_set_handler_system(SDMMC1_IRQn, SDMMC1_IRQHandler);
+   arm_hardware_set_handler_system(DMA2_Stream6_IRQn, DMA2_Stream6_IRQHandler);
 
 	HARDWARE_SDIO_INITIALIZE();	// Подсоединить контроллер к выводам процессора
 	// разрешить тактирование карты памяти
@@ -6671,9 +6709,7 @@ void hardware_sdhost_initialize(void)
 	hardware_sdhost_setbuswidth(0);
 	hardware_sdhost_setspeed(400000uL);
 
-	NVIC_SetVector(SDMMC1_IRQn, (uintptr_t) & SDMMC1_IRQHandler);
-	NVIC_SetPriority(SDMMC1_IRQn, ARM_SYSTEM_PRIORITY);
-	NVIC_EnableIRQ(SDMMC1_IRQn);	// SDIO_IRQHandler() enable
+   arm_hardware_set_handler_system(SDMMC1_IRQn, SDMMC1_IRQHandler);
 
 	// разрешить тактирование карты памяти
 	SDMMC1->POWER = 3 * SDMMC_POWER_PWRCTRL_0;
@@ -6693,7 +6729,7 @@ void hardware_sdhost_initialize(void)
 	#pragma CODE_SECTION(local_delay_us, "ramfuncs")
 #endif /* CPUSTYPE_TMS320F2833X */
 
-void local_delay_us(int timeUS)
+void RAMFUNC_NONILINE local_delay_us(int timeUS)
 {
 	#if CPUSTYLE_AT91SAM7S
 		const int top = timeUS * 175 / (CPU_FREQ / 1000000);
@@ -6722,6 +6758,11 @@ void local_delay_us(int timeUS)
 		//const unsigned long top = timeUS * 1600UL / (CPU_FREQ / 1000000);	// tested @ 150 MHz Execute from RAM
 	#elif CPUSTYPE_TMS320F2833X	&& 0	// FLASH code
 		const unsigned long top = timeUS * 480UL / (CPU_FREQ / 1000000);	// Execute from RAM
+
+	#elif CPUSTYLE_STM32MP1
+		#warning Update code for CPUSTYLE_STM32MP1
+		const int top = timeUS * 13800 / (CPU_FREQ / 1000000);
+
 	#else
 		#error TODO: calibrate local_delay_us constant
 		const int top = timeUS * 175 / (CPU_FREQ / 1000000);
@@ -9050,7 +9091,7 @@ void arm_hardware_invalidate(uintptr_t base, size_t size)
 
 
 /* считать конфигурационные параметры data cache */
-static void ca9_cache_setup(void)
+static void ca9_ca7_cache_setup(void)
 {
 	uint32_t ccsidr0 [8];	// data cache parameters
 	uint32_t ccsidr1 [8];	// instruction cache parameters
@@ -9087,6 +9128,30 @@ arm_hardware_invalidate_all(void)
 	L1C_InvalidateBTAC();
 }
 
+// Записать содержимое кэша данных в память
+// применяетмся после начальной инициализации среды выполнния
+void arm_hardware_flush_all(void)
+{
+	L1C_CleanDCacheAll();
+}
+
+#if CPUSTYLE_ARM_CA7
+
+// Snoop control unit (SCU) done these functionality
+// Сейчас эта память будет записываться по DMA куда-то
+void arm_hardware_flush(uintptr_t base, size_t size)
+{
+
+}
+
+// Snoop control unit (SCU) done these functionality
+// Сейчас эта память будет записываться по DMA куда-то. Потом содержимое не требуется
+void arm_hardware_flush_invalidate(uintptr_t base, size_t size)
+{
+}
+
+#else /* CPUSTYLE_ARM_CA7 */
+
 // Сейчас эта память будет записываться по DMA куда-то
 void arm_hardware_flush(uintptr_t base, size_t size)
 {
@@ -9097,14 +9162,6 @@ void arm_hardware_flush(uintptr_t base, size_t size)
 		L1C_CleanDCacheMVA((void *) mva);		// записать буфер, кэш продолжает хранить
 		base += DCACHEROWSIZE;
 	}
-}
-
-
-// Записать содержимое кэша данных в память
-// применяетмся после начальной инициализации среды выполнния
-void arm_hardware_flush_all(void)
-{
-	L1C_CleanDCacheAll();
 }
 
 // Сейчас эта память будет записываться по DMA куда-то. Потом содержимое не требуется
@@ -9118,6 +9175,8 @@ void arm_hardware_flush_invalidate(uintptr_t base, size_t size)
 		base += DCACHEROWSIZE;
 	}
 }
+
+#endif /* CPUSTYLE_ARM_CA7 */
 
 #else
 
@@ -9439,9 +9498,20 @@ SystemInit(void)
 
 #endif
 
+#if WITHSDRAMHW && WITHISBOOTLOADER
+	/* В процессоре есть внешняя память - если уже в ней то не трогаем */
+	arm_hardware_sdram_initialize();
+
+#elif WITHSDRAMHW && CTLSTYLE_V1D
+	/* В процессоре есть внешняя память - только данные */
+	arm_hardware_sdram_initialize();
+
+#endif /* WITHSDRAMHW && WITHISBOOTLOADER */
+
 #if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM0 || CPUSTYLE_ARM_CM7
 	// Таблица находится в области вне Data Cache
 	vectors_relocate();
+
 #endif /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM0 || CPUSTYLE_ARM_CM7 */
 #if WITHDEBUG && ! WITHISBOOTLOADER
 	// В функции инициализации компорта есть NVIC_SetVector
@@ -9511,8 +9581,6 @@ arm_cpu_CMx_initialize_NVIC(void)
 #include "formats.h"
 //#include "hardware_r7s721.h"
 
-#define IRQ_GIC_LINE_COUNT           (587)   /* The number of interrupt sources */
-
 //#define INTC_LEVEL_SENSITIVE    (0)     /* Level sense  */
 //#define INTC_EDGE_TRIGGER       (1)     /* Edge trigger */
 
@@ -9529,6 +9597,12 @@ void IRQ_Handler(void)
 {
 	const IRQn_ID_t irqn = IRQ_GetActiveIRQ();
 	IRQHandler_t const handler = IRQ_GetHandler(irqn);
+	// See R01UH0437EJ0200 Rev.2.00 7.8.3 Reading Interrupt ID Values from Interrupt Acknowledge Register (ICCIAR)
+	// IHI0048B_b_gic_architecture_specification.pdf
+	// See ARM IHI 0048B.b 3.4.2 Special interrupt numbers when a GIC supports interrupt grouping
+
+	//IRQ_SetPriority(0, IRQ_GetPriority(0));
+
 	if (handler != NULL)
 	{
 #if WITHNESTEDINTERRUPTS
@@ -9590,6 +9664,9 @@ void IRQ_HandlerXXXXX(void)
 	}
 }
 #endif
+
+#if 0
+
 static const char * mode_trig(uint32_t mode)
 {
 	switch (mode & IRQ_MODE_TRIG_Msk)
@@ -9604,6 +9681,7 @@ static const char * mode_trig(uint32_t mode)
 	default: return "error";
 	}
 }
+
 static const char * mode_type(uint32_t mode)
 {
 	switch (mode & IRQ_MODE_TYPE_Msk)
@@ -9613,6 +9691,7 @@ static const char * mode_type(uint32_t mode)
 	default: return "error";
 	}
 }
+
 static const char * mode_domain(uint32_t mode)
 {
 	switch (mode & IRQ_MODE_DOMAIN_Msk)
@@ -9622,6 +9701,7 @@ static const char * mode_domain(uint32_t mode)
 	default: return "error";
 	}
 }
+
 static const char * mode_model(uint32_t mode)
 {
 	switch (mode & IRQ_MODE_MODEL_Msk)
@@ -9631,6 +9711,7 @@ static const char * mode_model(uint32_t mode)
 	default: return "error";
 	}
 }
+
 static const char * mode_cpu(uint32_t mode)
 {
 	switch (mode & IRQ_MODE_CPU_Msk)
@@ -9647,6 +9728,7 @@ static const char * mode_cpu(uint32_t mode)
 	default: return "error";
 	}
 }
+
 static void irq_modes_print(void)
 {
 	IRQn_ID_t irqn;
@@ -9657,16 +9739,20 @@ static void irq_modes_print(void)
     }
 
 }
+
+#endif
+
 /******************************************************************************
-* Function Name: r7s721_intc_initialize
+* Function Name: ca9_ca7_intc_initialize
 * Description  : Executes initial setting for the INTC.
 *              : The interrupt mask level is set to 31 to receive interrupts 
 *              : with the interrupt priority level 0 to 30.
 * Arguments    : none
 * Return Value : none
 ******************************************************************************/
-static void r7s721_intc_initialize(void)
+static void ca9_ca7_intc_initialize(void)
 {
+
 	static const uint32_t modes [] =
 	{
 #if CPUSTYLE_R7S721020
@@ -10257,80 +10343,27 @@ static void r7s721_intc_initialize(void)
 		/* 584 00002020 */	(IRQ_MODE_TYPE_IRQ | IRQ_MODE_DOMAIN_NONSECURE | IRQ_MODE_CPU_0 | IRQ_MODE_TRIG_LEVEL | IRQ_MODE_MODEL_1N),
 		/* 585 00002020 */	(IRQ_MODE_TYPE_IRQ | IRQ_MODE_DOMAIN_NONSECURE | IRQ_MODE_CPU_0 | IRQ_MODE_TRIG_LEVEL | IRQ_MODE_MODEL_1N),
 		/* 586 00002020 */	(IRQ_MODE_TYPE_IRQ | IRQ_MODE_DOMAIN_NONSECURE | IRQ_MODE_CPU_0 | IRQ_MODE_TRIG_LEVEL | IRQ_MODE_MODEL_1N),
-	};
+
+#elif CPUSTYLE_STM32MP1
+	#warning Insert table for CPUSTYLE_STM32MP1
+	/*   0 00000024 */	(IRQ_MODE_TYPE_IRQ | IRQ_MODE_DOMAIN_NONSECURE | IRQ_MODE_CPU_0 | IRQ_MODE_TRIG_EDGE | IRQ_MODE_MODEL_NN),
+	/*   1 00000024 */	(IRQ_MODE_TYPE_IRQ | IRQ_MODE_DOMAIN_NONSECURE | IRQ_MODE_CPU_0 | IRQ_MODE_TRIG_EDGE | IRQ_MODE_MODEL_NN),
+
 #else
 	#error Wronf CPUSTYLE_XXXXXXXXX
 #endif
+	};
 	IRQn_ID_t irqn;
-
-	IRQ_Initialize();
 
 	for (irqn = 0; irqn < (sizeof modes / sizeof modes [0]); ++ irqn)
 	{
-		IRQ_Disable(irqn);
+		VERIFY(0 == IRQ_Disable(irqn));
 		VERIFY(0 == IRQ_SetMode(irqn, modes [irqn]));
-		IRQ_SetPriority(irqn, 31);
-		IRQ_SetHandler(irqn, Userdef_INTC_Dummy_Interrupt);
+		VERIFY(0 == IRQ_SetPriority(irqn, 31));
+		VERIFY(0 == IRQ_SetHandler(irqn, Userdef_INTC_Dummy_Interrupt));
+		GIC_SetGroup(irqn, 0);
 	}
 
-	//irq_modes_print();
-    //GIC_Enable();	// инициализирует не совсем так как надо для работы
-if (0)
-{
-	// а так работает...
-  uint32_t i;
-  uint32_t priority_field;
-
-  //A reset sets all bits in the IGROUPRs corresponding to the SPIs to 0,
-  //configuring all of the interrupts as Secure.
-
-  //Disable interrupt forwarding
-  GIC_DisableInterface();
-
-  /* Priority level is implementation defined.
-   To determine the number of priority bits implemented write 0xFF to an IPRIORITYR
-   priority field and read back the value stored.*/
-  GIC_SetPriority((IRQn_Type)0U, 0xFFU);
-  priority_field = GIC_GetPriority((IRQn_Type)0U);
-
-  //SGI and PPI
-  for (i = 0U; i < 32U; i++)
-  {
-    if(i > 15U) {
-      //Set level-sensitive (and N-N model) for PPI
-      GIC_SetConfiguration((IRQn_Type)i, 0U);
-    }
-    //Disable SGI and PPI interrupts
-    GIC_DisableIRQ((IRQn_Type)i);
-    //Set priority
-    GIC_SetPriority((IRQn_Type)i, priority_field/2U);
-  }
-  //Enable interface
-  GIC_EnableInterface();
-  //Set binary point to 0
-  GIC_SetBinaryPoint(0U);
-  //Set priority mask
-  GIC_SetInterfacePriorityMask(0xFFU);
-}
-
-
-    /* Interrupt Priority Mask Register setting */
-    /* Enable priorities for all interrupts */
-#if WITHNESTEDINTERRUPTS
-    GIC_SetInterfacePriorityMask(gARM_BASEPRI_ALL_ENABLED);	// GICC_PMR
-#endif /* WITHNESTEDINTERRUPTS */
-    /* Binary Point Register setting */
-    /* Group priority field [7:3], Subpriority field [2:0](Do not use) */
-    //INTC.ICCBPR = 0x00000002uL; // Binary Point Register, GICC_BPR, may be ARM_CA9_PRIORITYSHIFT - 1
-	GIC_SetBinaryPoint(2);
-    /* CPU Interface Control Register setting */
-    //INTC.ICCICR = 0x00000003uL;	// GICC_CTLR
-	GIC_EnableInterface();	// check GICInterface->CTLR a same for INTC.ICCICR
-
-    /* Initial setting 2 to receive GIC interrupt request */
-    /* Distributor Control Register setting */
-    //INTC.ICDDCR = 0x00000001uL;
-	GIC_EnableDistributor();	// check GICDistributor->CTLR a same for INTC.ICDDCR
 }
 
 #if 0
@@ -10373,14 +10406,14 @@ void IRQ_HandlerOld(void)
 }
 
 /******************************************************************************
-* Function Name: r7s721_intc_initialize
+* Function Name: ca9_ca7_intc_initialize
 * Description  : Executes initial setting for the INTC.
 *              : The interrupt mask level is set to 31 to receive interrupts
 *              : with the interrupt priority level 0 to 30.
 * Arguments    : none
 * Return Value : none
 ******************************************************************************/
-static void r7s721_intc_initializeOld(void)
+static void ca9_ca7_intc_initializeOld(void)
 {
 
 	/* ==== Total number of registers ==== */
@@ -10494,64 +10527,6 @@ static void r7s721_intc_initializeOld(void)
     	 /* Set all interrupts to be disabled */
     	* (addr + offset) = 0xFFFFFFFFuL;
     }
-
-	//GIC_Enable();	// инициализирует не совсем так как надо для работы
-if (0)
-{
-	// а так работает...
-  uint32_t i;
-  uint32_t priority_field;
-
-  //A reset sets all bits in the IGROUPRs corresponding to the SPIs to 0,
-  //configuring all of the interrupts as Secure.
-
-  //Disable interrupt forwarding
-  GIC_DisableInterface();
-
-  /* Priority level is implementation defined.
-   To determine the number of priority bits implemented write 0xFF to an IPRIORITYR
-   priority field and read back the value stored.*/
-  GIC_SetPriority((IRQn_Type)0U, 0xFFU);
-  priority_field = GIC_GetPriority((IRQn_Type)0U);
-
-  //SGI and PPI
-  for (i = 0U; i < 32U; i++)
-  {
-    if(i > 15U) {
-      //Set level-sensitive (and N-N model) for PPI
-      GIC_SetConfiguration((IRQn_Type)i, 0U);
-    }
-    //Disable SGI and PPI interrupts
-    GIC_DisableIRQ((IRQn_Type)i);
-    //Set priority
-    GIC_SetPriority((IRQn_Type)i, priority_field/2U);
-  }
-  //Enable interface
-  GIC_EnableInterface();
-  //Set binary point to 0
-  GIC_SetBinaryPoint(0U);
-  //Set priority mask
-  GIC_SetInterfacePriorityMask(0xFFU);
-}
-
-
-    /* Interrupt Priority Mask Register setting */
-    /* Enable priorities for all interrupts */
-#if WITHNESTEDINTERRUPTS
-    GIC_SetInterfacePriorityMask(gARM_BASEPRI_ALL_ENABLED);	// GICC_PMR
-#endif /* WITHNESTEDINTERRUPTS */
-    /* Binary Point Register setting */
-    /* Group priority field [7:3], Subpriority field [2:0](Do not use) */
-    //INTC.ICCBPR = 0x00000002uL; // Binary Point Register, GICC_BPR, may be ARM_CA9_PRIORITYSHIFT - 1
-	GIC_SetBinaryPoint(2);
-    /* CPU Interface Control Register setting */
-    //INTC.ICCICR = 0x00000003uL;	// GICC_CTLR
-	GIC_EnableInterface();	// check GICInterface->CTLR a same for INTC.ICCICR
-
-    /* Initial setting 2 to receive GIC interrupt request */
-    /* Distributor Control Register setting */
-    //INTC.ICDDCR = 0x00000001uL;
-	GIC_EnableDistributor();	// check GICDistributor->CTLR a same for INTC.ICDDCR
 }
 
 #endif
@@ -10713,22 +10688,6 @@ static void r7s721_ttb_map(
 	tlbbase [i] =  r7s721_accessbits(la);
 }
 
-#if LCDMODE_LTDC && LCDMODE_LTDCSDRAMBUFF
-
-#if LCDMODE_LTDCSDRAMBUFF
-
-void arm_hardware_sdram_initialize(void)
-{
-
-}
-#endif /* LCDMODE_LTDCSDRAMBUFF */
-
-void arm_hardware_ltdc_initialize(void)
-{
-}
-
-#endif /* LCDMODE_LTDC && LCDMODE_LTDCSDRAMBUFF */
-
 #endif /* CPUSTYLE_R7S721 */
 
 #if (CPUSTYLE_ARM_CA9 || CPUSTYLE_ARM_CA7)
@@ -10738,12 +10697,46 @@ void arm_hardware_ltdc_initialize(void)
 	These registers are byte-accessible.
 */
 
-static void 
+static void
 arm_gic_initialize(void)
 {
+
+	//PRINTF("arm_gic_initialize: ICPIDR0=%08lX\n", ICPIDR0);	// ICPIDR0
+	//PRINTF("arm_gic_initialize: ICPIDR1=%08lX\n", ICPIDR1);	// ICPIDR1
+	//PRINTF("arm_gic_initialize: ICPIDR2=%08lX\n", ICPIDR2);	// ICPIDR2
+
+	// GIC version diagnostics
+	switch (ICPIDR1 & 0x0F)
+	{
+	case 0x03:	PRINTF("arm_gic_initialize: ARM GICv1\n"); break;
+	case 0x04:	PRINTF("arm_gic_initialize: ARM GICv2\n"); break;
+	default:	PRINTF("arm_gic_initialize: ARM GICv? (code=%08lX)\n", (unsigned long) ICPIDR1); break;
+	}
+
+
+	IRQ_Initialize();
+
 #if CPUSTYLE_R7S721
-	r7s721_intc_initialize();
+	ca9_ca7_intc_initialize();
 #endif /* CPUSTYLE_R7S721 */
+
+    /* Interrupt Priority Mask Register setting */
+    /* Enable priorities for all interrupts */
+#if WITHNESTEDINTERRUPTS
+    GIC_SetInterfacePriorityMask(gARM_BASEPRI_ALL_ENABLED);	// GICC_PMR
+#endif /* WITHNESTEDINTERRUPTS */
+    /* Binary Point Register setting */
+    /* Group priority field [7:3], Subpriority field [2:0](Do not use) */
+    //INTC.ICCBPR = 0x00000002uL; // Binary Point Register, GICC_BPR, may be ARM_CA9_PRIORITYSHIFT - 1
+	GIC_SetBinaryPoint(2);
+    /* CPU Interface Control Register setting */
+    //INTC.ICCICR = 0x00000003uL;	// GICC_CTLR
+	GIC_EnableInterface();	// check GICInterface->CTLR a same for INTC.ICCICR
+
+    /* Initial setting 2 to receive GIC interrupt request */
+    /* Distributor Control Register setting */
+    //INTC.ICDDCR = 0x00000001uL;
+	GIC_EnableDistributor();	// check GICDistributor->CTLR a same for INTC.ICDDCR
 	
 #if WITHNESTEDINTERRUPTS
     GIC_SetInterfacePriorityMask(gARM_BASEPRI_ALL_ENABLED);
@@ -11120,7 +11113,7 @@ void cpu_initialize(void)
 		cpu_tms320f2833x_flash_waitstates(3, 5);		// commented in RAM configuration
 	#endif
 
-#elif CPUSTYLE_R7S721
+#elif CPUSTYLE_R7S721 || CPUSTYLE_STM32MP1
 
 	extern unsigned long __etext, __bss_start__, __bss_end__, __data_end__, __data_start__, __stack;
 
@@ -11158,7 +11151,7 @@ void cpu_initialize(void)
 	//CP15_enableMMU();
 	MMU_Enable();
 
-	ca9_cache_setup();
+	ca9_ca7_cache_setup();
 
 #if 0 && WITHDEBUG
 	uint_fast32_t leveli;
@@ -11212,6 +11205,13 @@ void cpu_initialize(void)
 		debug_printf_P(PSTR("cpu_initialize1: vectors mapped failure.\n"));
 	}
 #endif
+
+#else
+	#error Undefined CPUSTYLE_XXX
+#endif
+
+
+#if CPUSTYLE_R7S721
 	/* TN-RZ*-A011A/E recommends switch off USB_X1 if usb USB not used */
 	CPG.STBCR7 &= ~ CPG_STBCR7_MSTP70;	// Module Stop 71 0: Channel 0 of the USB 2.0 host/function module runs.
 	CPG.STBCR7 &= ~ CPG_STBCR7_MSTP71;	// Module Stop 71 0: Channel 0 of the USB 2.0 host/function module runs.
@@ -11226,9 +11226,6 @@ void cpu_initialize(void)
 	USB201.SYSCFG0 |= USB_SYSCFG_UCKSEL; // UCKSEL 1: The 12-MHz EXTAL clock is selected.
 	local_delay_ms(2);	// required 1 ms delay - see R01UH0437EJ0200 Rev.2.00 28.4.1 System Control and Oscillation Control
 	CPG.STBCR7 |= CPG_STBCR7_MSTP70;	// Module Stop 70 0: Channel 1 of the USB 2.0 host/function module halts.
-	
-#else
-	#error Undefined CPUSTYLE_XXX
 #endif
 
 	// Инициализация контроллера прерываний
@@ -11753,6 +11750,48 @@ static void vectors_relocate(void)
 	//ASSERT(SCB->VTOR == (uint32_t) & ramVectors);
 }
 #endif /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM0 || CPUSTYLE_ARM_CM7 */
+
+#if CPUSTYLE_ARM
+// Set interrupt vector wrapper
+void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint_fast8_t priority)
+{
+#if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
+
+	VERIFY(IRQ_Disable(int_id) == 0);
+	VERIFY(IRQ_SetHandler(int_id, handler) == 0);
+	VERIFY(IRQ_SetPriority(int_id, priority) == 0);
+	GIC_SetTarget(int_id, 0x01);	// CPU#0
+	VERIFY(IRQ_Enable(int_id) == 0);
+
+#else /* CPUSTYLE_STM32MP1 */
+
+	NVIC_DisableIRQ(int_id);
+	NVIC_SetVector(int_id, (uintptr_t) handler);
+	NVIC_SetPriority(int_id, priority);
+	NVIC_EnableIRQ(int_id);
+
+#endif /* CPUSTYLE_STM32MP1 */
+}
+
+// Set interrupt vector wrapper
+void arm_hardware_set_handler_overrealtime(uint_fast16_t int_id, void (* handler)(void))
+{
+	arm_hardware_set_handler(int_id, handler, ARM_OVERREALTIME_PRIORITY);
+}
+
+// Set interrupt vector wrapper
+void arm_hardware_set_handler_realtime(uint_fast16_t int_id, void (* handler)(void))
+{
+	arm_hardware_set_handler(int_id, handler, ARM_REALTIME_PRIORITY);
+}
+
+// Set interrupt vector wrapper
+void arm_hardware_set_handler_system(uint_fast16_t int_id, void (* handler)(void))
+{
+	arm_hardware_set_handler(int_id, handler, ARM_SYSTEM_PRIORITY);
+}
+
+#endif /* CPUSTYLE_ARM */
 
 
 // hack for eliminate exception handling unwinding code

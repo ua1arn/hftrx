@@ -11,17 +11,6 @@
 #ifndef ARM_R7S72_TQFP176_CTLSTYLE_STORCH_V8_H_INCLUDED
 #define ARM_R7S72_TQFP176_CTLSTYLE_STORCH_V8_H_INCLUDED 1
 
-	#define BOOTLOADER_APPAREA 0x20000000	/* адрес ОЗУ, куда перемезать application */
-	#define BOOTLOADER_APPFULL (1024uL * 2048)	// 2MB
-
-	#define BOOTLOADER_SELFBASE 0x18000000	/* адрес, где лежит во FLASH образ application */
-	#define BOOTLOADER_SELFSIZE (1024uL * 128)	// 128
-
-	#define BOOTLOADER_APPBASE 0x18020000	/* адрес, где лежит во FLASH образ application */
-	#define BOOTLOADER_APPSIZE (BOOTLOADER_APPFULL - BOOTLOADER_SELFSIZE)	// 2048 - 128
-
-	#define BOOTLOADER_PAGESIZE (1024uL * 64)	// M25Px with 64 KB pages
-
 	//#define WITHSAICLOCKFROMI2S 1	/* Блок SAI1 тактируется от PLL I2S */
 	#define WITHI2SCLOCKFROMPIN 1	// тактовая частота на SPI2 (I2S) подается с внешнего генератора, в процессор вводится через AUDIO_X1 сигнал интерфейса
 	#define WITHSAICLOCKFROMPIN 1	// тактовая частота на SAI1 подается с внешнего генератора, в процессор вводится через AUDIO_X1 сигнал интерфейса
@@ -60,6 +49,7 @@
 	//#define FQMODEL_70200		1	// 1-st if = 70.2 MHz, 2-nd IF-200 kHz
 
 	#define FQMODEL_FPGA		1	// FPGA + IQ over I2S
+	//#define XVTR_NYQ1			1	// Support Nyquist-style frequency conversion
 	#if 0
 		#define DIRECT_80M0_X1		1	/* Тактовый генератор на плате 80.0 МГц */
 		#define BANDSELSTYLERE_UPCONV56M_36M	1	/* Up-conversion with working band .030..36 MHz */
@@ -93,7 +83,7 @@
 	// +++ Одна из этих строк определяет тип дисплея, для которого компилируется прошивка
 #if WITHISBOOTLOADER
 
-	#define LCDMODE_ILI9341	1	/* 320*240 SF-TC240T-9370-T с контроллером ILI9341 - STM32F4DISCO */
+	#define LCDMODE_DUMMY	1
 
 #elif 0
 
@@ -226,7 +216,7 @@
 	//#define BOARD_FILTER_8P0		0	/* 6.0 kHz filter */
 	// --- заглушки для плат с DSP обработкой
 
-	#define WITHNESTEDINTERRUPTS	1	/* используется при наличии real-time части. */
+	//#define WITHNESTEDINTERRUPTS	1	/* используется при наличии real-time части. */
 	//#define WITHINTEGRATEDDSP		1	/* в программу включена инициализация и запуск DSP части. */
 	#define WITHIFDACWIDTH	32		// 1 бит знак и 31 бит значащих
 	#define WITHIFADCWIDTH	32		// 1 бит знак и 31 бит значащих

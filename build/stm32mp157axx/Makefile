@@ -23,6 +23,7 @@ TRGT = arm-none-eabi-
 CC   = $(TRGT)gcc
 CP   = $(TRGT)objcopy
 AS   = $(TRGT)gcc -x assembler-with-cpp
+SIZE = $(TRGT)size --format=sysv --radix=16
 HEX  = $(CP) -O ihex -R .noinit -R .bss -R .vram -R .heap
 BIN  = $(CP) -O binary -R .noinit -R .bss -R .vram -R .heap
 
@@ -70,7 +71,8 @@ PROJECT = stm32mp157axx
 
 # Define linker script file here
 LDSCRIPT_BOOT = ./stm32mp15xx_cm7_boot.ld
-LDSCRIPT_APP = ./stm32mp15xx_cm7_app.ld
+#LDSCRIPT_APP = ./stm32mp15xx_cm7_app.ld
+LDSCRIPT_APP = ./stm32mp15xx_cm7_qspiapp.ld
 
 # List all user C define here, like -D_DEBUG=1
 UDEFS = -DNDEBUG=1 -DCPUSTYLE_STM32MP1=1 -DCPUSTYLE_STM32MP157A=1 -DSTM32MP157Axx=1
@@ -141,13 +143,14 @@ CPFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
 # makefile rules
 #
 
-all: APP
+all: APP APP2
 
 bootloader: BOOT BOOT2
 
 BOOT: $(OBJS) $(PROJECT)_boot.elf $(PROJECT)_boot.hex
 BOOT2: $(OBJS) $(PROJECT)_boot.elf $(PROJECT)_boot.bin
 APP: $(OBJS) $(PROJECT)_app.elf $(PROJECT)_app.bin
+APP2: $(OBJS) $(PROJECT)_app.elf $(PROJECT)_app.hex
 
 $(OBJDIR)/%.o: %.c
 	@mkdir -p $(@D)
@@ -163,11 +166,11 @@ $(OBJDIR)/%.o: %.s
 
 %_boot.elf: $(OBJS)
 	$(CC) $(OBJS) $(LDFLAGS_BOOT) $(LIBS) -o $@
-	$(TRGT)size --format=sysv --radix=16 $@
+	$(SIZE) $@
 
 %_app.elf: $(OBJS)
 	$(CC) $(OBJS) $(LDFLAGS_APP) $(LIBS) -o $@
-	$(TRGT)size --format=sysv --radix=16 $@
+	$(SIZE) $@
 
 %hex: %elf
 	$(HEX) $< $@
@@ -175,11 +178,17 @@ $(OBJDIR)/%.o: %.s
 %bin: %elf
 	$(BIN) $< $@
 
+
 clean:
 	-rm -fR $(OBJDIR)
-	-rm -f $(PROJECT)_rom.elf $(PROJECT)_rom.map $(PROJECT)_rom.hex $(PROJECT)_rom.bin
+	-rm -f $(PROJECT)_boot.elf $(PROJECT)_boot.map
+	-rm -f $(PROJECT)_app.elf $(PROJECT)_app.map
+	
+clean2:
+	-rm -fR $(OBJDIR)
 	-rm -f $(PROJECT)_boot.elf $(PROJECT)_boot.map $(PROJECT)_boot.hex $(PROJECT)_boot.bin
 	-rm -f $(PROJECT)_app.elf $(PROJECT)_app.map $(PROJECT)_app.hex $(PROJECT)_app.bin
+
 
 # 
 # Include the dependency files, should be the last of the makefile

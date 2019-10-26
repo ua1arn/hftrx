@@ -78,6 +78,10 @@ Free:
 //#define WITHI2SHW	1	/* Использование I2S - аудиокодек	*/
 #define WITHSAI1HW	1	/* Использование SAI1 - FPGA или IF codec	*/
 
+#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
+#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	*/
+#define WITHSDRAMHW	1	/* В процессоре есть внешняя память */
+
 #if 1
 	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 	#define WITHUSBDEV_VBUSSENSE	1	/* используется предопределенный вывод VBUS_SENSE */

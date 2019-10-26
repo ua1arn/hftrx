@@ -7,7 +7,6 @@
 #ifndef PARAMDEPEND_H_INCLUDED
 #define PARAMDEPEND_H_INCLUDED 1
 
-
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
@@ -54,7 +53,7 @@ extern "C" {
 	/* частоты, подающиеся на периферию */
 	#define	PCLK1_FREQ (CPU_FREQ / 1)	// 48 MHz PCLK1 frequency
 	#define	PCLK2_FREQ (CPU_FREQ / 1)	// 48 MHz PCLK2 frequency
-	#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config станавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
+	#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
 
 	#define TICKS_FREQUENCY		(200uL * 1) // at ARM - 400 Hz
 
@@ -95,7 +94,7 @@ extern "C" {
 	/* частоты, подающиеся на периферию */
 	#define	PCLK1_FREQ (CPU_FREQ / 1)	// 48 MHz PCLK1 frequency
 	#define	PCLK2_FREQ (CPU_FREQ / 1)	// 48 MHz PCLK2 frequency
-	#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config станавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
+	#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
 
 	#define TICKS_FREQUENCY		(200uL * 1) // at ARM - 200 Hz
 
@@ -130,7 +129,7 @@ extern "C" {
 		#define	PCLK1_TIMERS_FREQ (CPU_FREQ / 1)
 		#define	PCLK2_FREQ (CPU_FREQ / 1)	// PCLK2 frequency
 	#endif
-	#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config станавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
+	#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
 
 	#define SPISPEED (PCLK1_FREQ / 4)	/* 9.0 MHz на SCLK - требуемая скорость передачи по SPI */
 	#define TICKS_FREQUENCY		(200uL * 1) // at ARM - 200 Hz
@@ -232,7 +231,7 @@ extern "C" {
 			#define	PCLK1_FREQ (CPU_FREQ / 2)	// 42 MHz PCLK1 frequency - ti,er clocks is 85 MHz
 			#define	PCLK1_TIMERS_FREQ (CPU_FREQ / 1)	// 42 MHz PCLK1 frequency - ti,er clocks is 85 MHz
 			#define	PCLK2_FREQ (CPU_FREQ / 1)	// 84 MHz PCLK2 frequency
-			#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config станавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
+			#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
 
  		#elif CPUSTYLE_STM32H7XX
 
@@ -249,7 +248,7 @@ extern "C" {
 			#define	PCLK1_TIMERS_FREQ (CPU_FREQ / 2)	// 42 MHz PCLK1 frequency
 			#define	PCLK2_FREQ (CPU_FREQ / 4)	// 84 MHz PCLK2 frequency
 			#define	PCLK2_TIMERS_FREQ (CPU_FREQ / 2)	// 84 MHz PCLK2 frequency
-			#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config станавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
+			#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
 			#define PER_CK_FREQ 64000000uL	// 2. The per_ck clock could be hse_ck, hsi_ker_ck or csi_ker_ck according to CKPERSEL selection.
 
 		#else
@@ -266,7 +265,7 @@ extern "C" {
 			#define	PCLK1_FREQ (CPU_FREQ / 4)	// 42 MHz PCLK1 frequency
 			#define	PCLK1_TIMERS_FREQ (CPU_FREQ / 4)	// 42 MHz PCLK1 frequency
 			#define	PCLK2_FREQ (CPU_FREQ / 2)	// 84 MHz PCLK2 frequency
-			#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config станавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
+			#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
 		#endif
 
 	#elif CPUSTYLE_STM32F30X
@@ -292,7 +291,7 @@ extern "C" {
 			#define	PCLK1_FREQ (CPU_FREQ / 1)	// PCLK1 frequency
 			#define	PCLK2_FREQ (CPU_FREQ / 1)	// PCLK2 frequency
 		#endif
-		#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config станавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
+		#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
 
 	#endif
 
@@ -342,7 +341,7 @@ extern "C" {
 	//#define CPU_FREQ 48000000uL
 	//#define CPU_FREQ 32000000uL
 	//#define CPU_FREQ 12000000uL
-	#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config станавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
+	#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
 
 	// ADC clock frequency: 1..20 MHz
 	#define ADC_FREQ	2000000uL	/* тактовая частота SAR преобразователя АЦП. */
@@ -371,7 +370,7 @@ extern "C" {
 	//#define CPU_FREQ 48000000uL
 	//#define CPU_FREQ 32000000uL
 	//#define CPU_FREQ 12000000uL
-	#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config станавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
+	#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
 
 	// ADC clock frequency: 1..20 MHz
 	#define ADC_FREQ	2000000uL	/* тактовая частота SAR преобразователя АЦП. */
@@ -558,40 +557,102 @@ extern "C" {
 
 	#define ARM_CA9_CACHELEVELMAX	1	/* максимальный уровень cache в процессоре */
 
+	// GIC_SetConfiguration parameters
+	#define GIC_CONFIG_EDGE 0x03
+	#define GIC_CONFIG_LEVEL 0x01
+
 #elif CPUSTYLE_STM32MP1
+
+
+	//! GPIO Alternate Functions
+	typedef enum {
+		AF_SYSTEM,		//!< AF0 - SYSTEM*
+		AF_TIM1,		//!< AF1 - TIM1/2
+		AF_TIM2 = 1,	//!< AF1 - TIM1/2
+		AF_TIM3,		//!< AF2 - TIM3/4/5
+		AF_TIM4 = 2,	//!< AF2 - TIM3/4/5
+		AF_TIM5 = 2,	//!< AF2 - TIM3/4/5
+		AF_TIM8,		//!< AF3 - TIM9/10/11
+		AF_TIM9 = 3,	//!< AF3 - TIM9/10/11
+		AF_TIM10 = 3,	//!< AF3 - TIM9/10/11
+		AF_TIM11 = 3,	//!< AF3 - TIM9/10/11
+		AF_I2C1,		//!< AF4 - I2C1/2/3
+		AF_I2C2 = 4,	//!< AF4 - I2C1/2/3
+		AF_I2C3 = 4,	//!< AF4 - I2C1/2/3
+		AF_SPI1,		//!< AF5 - SPI1/2
+		AF_SPI2 = 5,	//!< AF5 - SPI1/2
+		AF_SPI3,		//!< AF6 - SPI3
+		AF_SPI2ext = 6,	//!< AF6 - SPI3
+		AF_SAI = 6,		//!< AF6 - SAI1/SAI2
+		AF_USART1,		//!< AF7 - USART1/2/3
+		AF_USART2 = 7,	//!< AF7 - USART1/2/3
+		AF_USART3 = 7,	//!< AF7 - USART1/2/3
+		AF_USART4,		//!< AF8 - USART4/5/6
+		AF_USART5 = 8,	//!< AF8 - USART4/5/6
+		AF_USART6 = 8,	//!< AF8 - USART4/5/6
+		AF_CAN1,		//!< AF9 - CAN1/2
+		AF_CAN2 = 9,	//!< AF9 - CAN1/2
+		AF_TIM12 = 9,	//!< AF9 - TIM12/13/14
+		AF_TIM13 = 9,	//!< AF9 - TIM12/13/14
+		AF_TIM14 = 9,	//!< AF9 - TIM12/13/14
+		AF_OTGFS,		//!< AF10 - OTGFS
+		AF_OTGHS = 10,	//!< AF10 - OTGHS
+		AF_SAI2 = 10,	//!< AF10 - SAI2
+		AF_ETH,			//!< AF11 - ETH
+		AF_FSMC,		//!< AF12 - FSMC
+		AF_SDIO = 12,	//!< AF12 - SDIO
+		AF_OTGHS_FS = 12, //!< AF12 - OTG HS configured in FS
+		AF_DCMI,		//!< AF13 - DCMI
+		AF_AF14,		//!< AF14 - RI
+		AF_EVENT		//!< AF15 - SYSTEM (EVENTOUT)
+	} GPIO_AFLH_t;
 
 	// все параметры требуют уточнения, пока заглушки
 	#define ARM_CA9_CACHELEVELMAX	1	/* максимальный уровень cache в процессоре */
 	#define ARM_CA9_PRIORITYSHIFT 3	/* ICCPMR[7:3] is valid bit */
-	//#define WITHCPUXTAL 12000000uL			/* На процессоре установлен кварц 12.000 МГц */
-	#define CPU_FREQ	(30 * WITHCPUXTAL)		/* 12 MHz * 30 - clock mode 0, xtal 12 MHz */
 
-	#define BCLOCK_FREQ		(CPU_FREQ / 3)		// 120 MHz
-	#define P1CLOCK_FREQ	(CPU_FREQ / 6)		// 60 MHz
-	#define P0CLOCK_FREQ	(CPU_FREQ / 12)		// 30 MHz
+	#define CPU_FREQ	(WITHCPUXTAL * 15)		/* 360 MHz = 24 MHz * 15 */
+	/* частоты, подающиеся на периферию */
+	#define	PCLK1_FREQ (CPU_FREQ / 4)	// 42 MHz PCLK1 frequency
+	#define	PCLK1_TIMERS_FREQ (CPU_FREQ / 2)	// 42 MHz PCLK1 frequency
+	#define	PCLK2_FREQ (CPU_FREQ / 4)	// 84 MHz PCLK2 frequency
+	#define	PCLK2_TIMERS_FREQ (CPU_FREQ / 2)	// 84 MHz PCLK2 frequency
+	#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config станавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
+	#define PER_CK_FREQ 64000000uL	// 2. The per_ck clock could be hse_ck, hsi_ker_ck or csi_ker_ck according to CKPERSEL selection.
 
-	#define TICKS_FREQUENCY		(200uL * 1) // at ARM - 400 Hz
+	#define TICKS_FREQUENCY	 (200U)	// 200 Hz
 
 	// ADC clock frequency: 1..20 MHz
-	#define ADC_FREQ	2000000uL	/* тактовая частота SAR преобразователя АЦП. */
 	#define SCL_CLOCK	400000uL	/* 400 kHz I2C/TWI speed */
 
-	#define SPISPEED 8000000uL	/* 8 MHz (10.5) на SCLK - требуемая скорость передачи по SPI */
-	#define SPISPEEDUFAST (P1CLOCK_FREQ / 3)	// 20 MHz
+	//#define SPISPEED (PCLK1_FREQ / 16)	/* 3.5 MHz на SCLK - требуемая скорость передачи по SPI */
+	//#define SPISPEED (PCLK1_FREQ / 8)	/* 7 MHz на SCLK - требуемая скорость передачи по SPI */
+	#define SPISPEED (PCLK1_FREQ / 4)	/* 14 MHz на SCLK - требуемая скорость передачи по SPI */
+	#define SPISPEEDUFAST 12000000uL//(PCLK1_FREQ / 2)	/* 28 на SCLK - требуемая скорость передачи по SPI */
 	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
 	#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
+
+	#define ADCVREF_CPU	33		// 3.3 volt
+	#define DACVREF_CPU	33		// 3.3 volt
+	#define HARDWARE_DACBITS 12	/* ЦАП работает с 12-битными значениями */
+	#define HARDWARE_ADCINPUTS	40	/* до 32-ти входов АЦП */
+	/* тип для хранения данных, считанных с АЦП */
+	typedef uint_fast16_t adcvalholder_t;
+	//#define HARDWARE_ADCBITS 8	/* АЦП работает с 8-битными значениями */
+	//#define HARDWARE_ADCBITS 10	/* АЦП работает с 10-битными значениями */
+	#define HARDWARE_ADCBITS 12	/* АЦП работает с 12-битными значениями */
+	//#define HARDWARE_ADCBITS 14	/* АЦП работает с 14-битными значениями */
+	//#define HARDWARE_ADCBITS 16	/* АЦП работает с 16-битными значениями */
+	#define ADC_FREQ	10000000uL	/* тактовая частота SAR преобразователя АЦП. */
+	#define WITHREFSENSORVAL	1240	/* Reference voltage: STM32H743 1.180 1.216 1.255 */
 
 	#define ADCVREF_CPU	33		// 3.3 volt
 	#define HARDWARE_ADCBITS 12	/* АЦП работает с 12-битными значениями */
 
 	#define HARDWARE_ADCINPUTS	40	/* до 8-ти входов АЦП */
-	/* тип для хранения данных, считанных с АЦП */
-	typedef uint_fast16_t adcvalholder_t;
-	#define WITHREFSENSORVAL	1210	/* Reference voltage: x = 1.21V */
 
 	#define DACVREF_CPU	33		// 3.3 volt
 	#define HARDWARE_DACBITS 12	/* ЦАП работает с 12-битными значениями */
-
 
 #else
 
@@ -685,6 +746,10 @@ extern "C" {
 
 #elif (CPUSTYLE_ARM_CA9 || CPUSTYLE_ARM_CA7)
 
+	#define ICPIDR0	(* (const volatile uint32_t *) (GIC_INTERFACE_BASE + 0xFE0))
+	#define ICPIDR1	(* (const volatile uint32_t *) (GIC_INTERFACE_BASE + 0xFE4))
+	#define ICPIDR2	(* (const volatile uint32_t *) (GIC_INTERFACE_BASE + 0xFE8))
+
 	#if WITHNESTEDINTERRUPTS
 
 		#define ARM_CA9_ENCODE_PRIORITY(v) ((v) << ARM_CA9_PRIORITYSHIFT)
@@ -723,7 +788,6 @@ extern "C" {
 
 		#define ASSERT_IRQL_SYSTEM() ASSERT(IS_RPR_SYSTEM())	/* executed from non-realtime interrupts */
 		#define ASSERT_IRQL_USER() ASSERT(IS_RPR_USER())	/* executed from user level */
-
 
 		#if 0 && WITHDEBUG
 			// отладочная версия - контроль правильного контекста запрета/разрешения прерываний
@@ -828,7 +892,6 @@ extern "C" {
 #define DDS_TYPE_FPGAV2		8	// NCO, DDC/DUC
 #define DDS_TYPE_ATTINY2313	9	// experemental: nco=/7, dds=/9
 
-#define XVTR_TYPE_R820T		10
 #define	ADC_TYPE_AD9246		15
 
 #define PLL_TYPE_LMX2306	20
@@ -1319,6 +1382,39 @@ extern "C" {
 
 #elif LCDMODE_HD44780 && LCDMODE_WH1604
 	#define DSTYLE_T_X16_Y4	1	
+
+#elif LCDMODE_DUMMY
+
+	#define DSTYLE_G_DUMMY	1	// пустой список лтображения
+
+	#define DIM_X 480
+	#define DIM_Y 272
+	#define LCDMODE_COLORED	1
+	#define LCDMODE_HORFILL	1
+	#define LTDC_DOTCLK	9000000uL	// частота пикселей при работе с интерфейсом RGB
+
+	#define HALFCOUNT_FREQA 1
+	#define HALFCOUNT_SMALL 1
+	#define HALFCOUNT_BIG 1
+	#define CHAR_W	6
+	#define CHAR_H	8
+	#define SMALLCHARH 8 /* Font height */
+	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в ячейкт сетки разметки отображния */
+	#define ROWS2GRID(rows) ((rows) * 1)		/* перевести количество символов в ячейкт сетки разметки отображния */
+	#define GRID2X(cellsx) ((cellsx) * CHAR_W)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
+	#define GRID2Y(cellsy) ((cellsy) * CHAR_H)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
+
+
+	#define DISPLAYMODES_FPS 5	/* количество обновлений отображения режимов работы */
+	#define DISPLAY_FPS	10	/* обновление показаний частоты за секунду */
+	#define DISPLAYSWR_FPS 5	/* количество обновлений SWR за секунду */
+
+	// Цветное изображение не поддерживается на этом дисплее (заглушка).
+	#define TFTRGB(r, g, b)	(0)
+	typedef uint_fast16_t COLOR_T;	/* цвета не поддерживаются - заглушка */
+	typedef uint16_t PACKEDCOLOR_T;
+
+	#define DISPLAY_BUS_INITIALIZE() do {} while (0)
 
 #else
 	#error Unrecognized dislay layout used (LCDMODE_XXXX)

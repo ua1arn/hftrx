@@ -9,9 +9,9 @@
 
 
 
+#include "../inc/spi.h"
 #include "hardware.h"
 #include "display.h"
-#include "spifuncs.h"
 
 //#include "formats.h"	// for debug prints
 

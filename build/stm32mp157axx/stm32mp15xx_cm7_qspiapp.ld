@@ -1,13 +1,11 @@
 /* $Id$ */
-/* RENESAS RZ/A1L R7S721020 memory layout */
+/* ST STM32MP157AAB3 memory layout */
 /* Linker script to configure memory regions. */
 MEMORY
 {
-  FLASH (rx) 	: ORIGIN = 0x70000000, LENGTH = 4M		/* W25Q32FVZPIG */
-  DDR3 (rwx) 	: ORIGIN = 0xC0000000, LENGTH = 256M 	/* DDR3 single chip NT5CC128M16IP-DI */
-  RAM (rwx)		: ORIGIN = 0x2FFC0000, LENGTH = 240k	/* SYSRAM - 256 kB */
+  ROM (rx) 	: ORIGIN = 0x70000000, LENGTH = 4M		/* W25Q32FVZPIG */
+  RAM (rwx)	: ORIGIN = 0x2FFC0000, LENGTH = 240k	/* SYSRAM - 256 kB */
   TTB (rwx)  	: ORIGIN = 0x2FFFC000, LENGTH = 16k		/* last 16 kB SYSRAM for TTB */
-  SRAM (rwx)  	: ORIGIN = 0x20000000, LENGTH = 384k	/* Cortex-M4 memories */
 }
 
 /* Library configurations */
@@ -45,27 +43,32 @@ SECTIONS
 {
 	.text :
 	{
+		KEEP(*(.vectors))
+		__Vectors_End = .;
+		__Vectors_Size = __Vectors_End - __Vectors;
 		KEEP(*(.init))
 		KEEP(*(.initfunc))
 		KEEP(*(.initdata))
 		KEEP(*(.fini))
-	} > FLASH
+		*(.text*)
+	} > ROM
 
 	.ARM.extab :
 	{
 		*(.ARM.extab* .gnu.linkonce.armextab.*)
-	} > FLASH
+	} > ROM
 
 	__exidx_start = .;
 	.ARM.exidx :
 	{
 		*(.ARM.exidx* .gnu.linkonce.armexidx.*)
-	} > FLASH
+	} > ROM
 	__exidx_end = .;
 
 	/* To copy multiple ROM to RAM sections,
 	 * uncomment .copy.table section and,
 	 * define __STARTUP_COPY_MULTIPLE in startup_ARMCMx.S */
+
 	.copy.table :
 	{
 		. = ALIGN(4);
@@ -73,13 +76,11 @@ SECTIONS
 		LONG (__etext)
 		LONG (__data_start__)
 		LONG (__data_end__ - __data_start__)
-	/*
 		LONG (__etext2)
 		LONG (__data2_start__)
 		LONG (__data2_end__ - __data2_start__)
-	*/
 		__copy_table_end__ = .;
-	} > FLASH
+	} > ROM
 
 	/* To clear multiple BSS sections,
 	 * uncomment .zero.table section and,
@@ -95,19 +96,13 @@ SECTIONS
 		LONG (__bss2_end__ - __bss2_start__)
 	*/
 		__zero_table_end__ = .;
-	} > FLASH
+	} > ROM
 
 	__etext = .;
 
 	.data : AT (__etext)
 	{
 		__data_start__ = .;
-		KEEP(*(.vectors))
-		__Vectors_End = .;
-		__Vectors_Size = __Vectors_End - __Vectors;
-		__end__ = .;
-
-		*(.text*)
 
 		/* .ctors */
 		*crtbegin.o(.ctors)
@@ -129,6 +124,7 @@ SECTIONS
 
 		*(vtable)
 		*(.data*)
+		*(.dtcm*)
 	   . = ALIGN(4);	/* one line added by ua1arn */
 
 		. = ALIGN(4);
@@ -159,6 +155,26 @@ SECTIONS
 
 	} > RAM
 
+	. = __etext + __data_end__ - __data_start__;
+
+	__etext2 = .;
+
+	.itcm : AT (__etext2)
+	{
+		__data2_start__ = .;
+		*(.itcm*)
+		*(.text.__ieee754_logf)
+		*(.text.__ieee754_powf)
+		*(.text.__ieee754_rem_pio2f)
+		*(.text.__ieee754_sqrtf)
+		*(.text.__kernel_rem_pio2f)
+
+		. = ALIGN(4);
+		__data2_end__ = .;
+	} > RAM
+
+	. = __etext2 + __data2_end__ - __data2_start__;
+
 	.bss :
 	{
 		. = ALIGN(32);
@@ -173,6 +189,13 @@ SECTIONS
 	{
 		. = ALIGN(32);
 		*(.noinit)
+		. = ALIGN(32);
+	} > RAM
+
+	.vram :
+	{
+		. = ALIGN(32);
+		*(.framebuff)
 		. = ALIGN(32);
 	} > RAM
 
@@ -203,5 +226,5 @@ SECTIONS
 	/* PROVIDE(__ttb_end__ = ORIGIN(TTB) + LENGTH(TTB)); */
 
 	/* Check if data + heap + stack exceeds RAM limit */
-	ASSERT(__StackLimit >= __HeapLimit, "region RAM overflowed with stack")
+	/* ASSERT(__StackLimit >= __HeapLimit, "region RAM overflowed with stack") */
 }

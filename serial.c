@@ -12,10 +12,10 @@
 #include <math.h>
 
 #include "board.h"
-#include "spifuncs.h"
 #include "audio.h"
 
 #include "formats.h"	// for debug prints
+#include "inc/spi.h"
 
 #if WITHUART1HW 
 
@@ -45,7 +45,7 @@
 			HARDWARE_UART1_ONTXCHAR(USART1);
 	}
 
-#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32H7XX || CPUSTYLE_STM32F7XX
+#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32H7XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32MP1
 
 	void RAMFUNC_NONILINE USART1_IRQHandler(void)
 	{
@@ -153,7 +153,7 @@
 #elif CPUSTYLE_R7S721
 
 	// Приём символа он последовательного порта
-	static RAMFUNC_NONILINE void r7s721_scifrxi0_interrupt(void)
+	static RAMFUNC_NONILINE void SCIFRXI0_IRQHandler(void)
 	{
 		(void) SCIF0.SCFSR;						// Перед сбросом бита RDF должно произойти его чтение в ненулевом состоянии
 		SCIF0.SCFSR = (uint16_t) ~ SCIF0_SCFSR_RDF;	// RDF=0 читать незачем (в примерах странное - сбрасывабтся и другие биты)
@@ -163,7 +163,7 @@
 	}
 
 	// Передача символа в последовательный порт
-	static RAMFUNC_NONILINE void r7s721_sciftxi0_interrupt(void)
+	static RAMFUNC_NONILINE void SCIFTXI0_IRQHandler(void)
 	{
 		HARDWARE_UART1_ONTXCHAR(& SCIF0);
 	}
@@ -217,7 +217,7 @@ void hardware_uart1_enabletx(uint_fast8_t state)
 		#error Wrong HARDWARE_ARM_USExxx value
 	#endif /* HARDWARE_ARM_USEUSART0 */
 
-#elif CPUSTYLE_STM32
+#elif CPUSTYLE_STM32 || CPUSTYLE_STM32MP1
 
 	if (state)
 		USART1->CR1 |= USART_CR1_TXEIE;
@@ -396,7 +396,7 @@ void hardware_uart1_enablerx(uint_fast8_t state)
 	else
 		USARTE0.CTRLA = (USARTE0.CTRLA & ~ USART_RXCINTLVL_gm) | USART_RXCINTLVL_OFF_gc;
 
-#elif CPUSTYLE_STM32
+#elif CPUSTYLE_STM32 || CPUSTYLE_STM32MP1
 
 	if (state)
 		USART1->CR1 |= USART_CR1_RXNEIE;
@@ -464,7 +464,7 @@ void hardware_uart1_tx(void * ctx, uint_fast8_t c)
 
 	USART1->DR = c;
 
-#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32H7XX || CPUSTYLE_STM32F7XX
+#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32H7XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32MP1
 
 	USART1->TDR = c;
 
@@ -477,6 +477,9 @@ void hardware_uart1_tx(void * ctx, uint_fast8_t c)
 	(void) SCIF0.SCFSR;			// Перед сбросом бита TDFE должно произойти его чтение в ненулевом состоянии
 	SCIF0.SCFTDR = c;
 	SCIF0.SCFSR = (uint16_t) ~ (1U << SCIF0_SCFSR_TDFE_SHIFT);	// TDFE=0 читать незачем (в примерах странное)
+
+#elif CPUSTYLE_STM32MP1
+	#warning Insert code for CPUSTYLE_STM32MP1
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -555,7 +558,7 @@ hardware_usart1_getchar(char * cp)
 		return 0;
 	* cp = USART1->DR;
 
-#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32H7XX || CPUSTYLE_STM32F7XX
+#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32H7XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32MP1
 	const uint_fast32_t isr = USART1->ISR;
 	if (isr & USART_ISR_ORE)
 		USART1->ICR = USART_ICR_ORECF;
@@ -654,7 +657,7 @@ hardware_usart1_putchar(uint_fast8_t c)
 		return 0;
 	USART1->DR = c;
 
-#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32H7XX || CPUSTYLE_STM32F7XX
+#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32H7XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32MP1
 
 	if ((USART1->ISR & USART_ISR_TXE) == 0)
 		return 0;
@@ -801,7 +804,7 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 #elif CPUSTYLE_STM32F1XX
 
 	RCC->APB2ENR |= RCC_APB2ENR_USART1EN; // Включение тактирования USART1.
-	__DSB();
+	(void) RCC->APB2ENR;
 
 	USART1->CR1 |= (USART_CR1_RE | USART_CR1_TE); // Transmitter Enable & Receiver Enables
 
@@ -823,7 +826,7 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
 
 	RCC->APB2ENR |= RCC_APB2ENR_USART1EN; // Включение тактирования USART1.
-	__DSB();
+	(void) RCC->APB2ENR;
 
 	USART1->CR1 |= (USART_CR1_RE | USART_CR1_TE); // Transmitter Enable & Receiver Enables
 
@@ -1025,22 +1028,30 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 	/* Serial port break data(SPB2DT)  1: High-level */
 	//SCIF0.SCSPTR |= 0x0003;
 
+	if (debug == 0)
 	{
-		const IRQn_ID_t int_id = SCIFRXI0_IRQn;
-		IRQ_SetHandler(int_id, r7s721_scifrxi0_interrupt);
-		IRQ_SetPriority(int_id, ARM_SYSTEM_PRIORITY);
-		IRQ_Enable(int_id);
+	   arm_hardware_set_handler_system(SCIFRXI0_IRQn, SCIFRXI0_IRQHandler);
+	   arm_hardware_set_handler_system(SCIFTXI0_IRQn, SCIFTXI0_IRQHandler);
 	}
-	{
-		const IRQn_ID_t int_id = SCIFTXI0_IRQn;
-		IRQ_SetHandler(int_id, r7s721_sciftxi0_interrupt);
-		IRQ_SetPriority(int_id, ARM_SYSTEM_PRIORITY);
-		IRQ_Enable(int_id);
-	}
-
 	HARDWARE_USART1_INITIALIZE();	/* Присоединить периферию к выводам */
 
 	SCIF0.SCSCR |= 0x0030;	// TE RE - SCIF0 transmitting and receiving operations are enabled */
+
+#elif CPUSTYLE_STM32MP1
+
+	RCC->MC_APB5ENSETR = RCC_MC_APB5ENSETR_USART1EN; // Включение тактирования USART1.
+	(void) RCC->MC_APB5ENSETR;
+
+	USART1->CR1 |= (USART_CR1_RE | USART_CR1_TE); // Transmitter Enable & Receiver Enables
+
+	HARDWARE_USART1_INITIALIZE();	/* Присоединить периферию к выводам */
+
+	if (debug == 0)
+	{
+	   arm_hardware_set_handler_system(USART1_IRQn, USART1_IRQHandler);
+	}
+
+	USART1->CR1 |= USART_CR1_UE; // Включение USART1.
 
 #else
 
@@ -1080,7 +1091,7 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 			HARDWARE_UART2_ONTXCHAR(USART2);
 	}
 
-#elif CPUSTYLE_STM32H7XX
+#elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 
 	void RAMFUNC_NONILINE USART2_IRQHandler(void)
 	{
@@ -1207,7 +1218,7 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 #elif CPUSTYLE_R7S721
 
 	// Приём символа он последовательного порта
-	static void r7s721_scifrxi3_interrupt(void)
+	static void SCIFRXI3_IRQHandler(void)
 	{
 		(void) SCIF3.SCFSR;						// Перед сбросом бита RDF должно произойти его чтение в ненулевом состоянии
 		SCIF3.SCFSR = (uint16_t) ~ SCIF3_SCFSR_RDF;	// RDF=0 читать незачем (в примерах странное - сбрасывабтся и другие биты)
@@ -1217,12 +1228,14 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 	}
 
 	// Передача символа в последовательный порт
-	static void r7s721_sciftxi3_interrupt(void)
+	static void SCIFTXI3_IRQHandler(void)
 	{
 		HARDWARE_UART2_ONTXCHAR(& SCIF3);
 	}
 
 #elif CPUSTYLE_STM32MP157A
+	#warning Insert interrupt handlers code for CPUSTYLE_STM32MP1
+
 #else
 
 	#error Undefined CPUSTYLE_XXX
@@ -1292,7 +1305,7 @@ void hardware_uart2_enabletx(uint_fast8_t state)
 		#error Wrong HARDWARE_ARM_USExxx value
 	#endif /* HARDWARE_ARM_USEUSART0 */
 
-#elif CPUSTYLE_STM32
+#elif CPUSTYLE_STM32 || CPUSTYLE_STM32MP1
 
 	if (state)
 		USART2->CR1 |= USART_CR1_TXEIE;
@@ -1358,8 +1371,6 @@ void hardware_uart2_enabletx(uint_fast8_t state)
 		SCIF3.SCSCR |= (1U << 7);	// TIE Transmit Interrupt Enable
 	else
 		SCIF3.SCSCR &= ~ (1U << 7);	// TIE Transmit Interrupt Enable
-
-#elif CPUSTYLE_STM32MP157A
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -1448,7 +1459,7 @@ void hardware_uart2_enablerx(uint_fast8_t state)
 	else
 		USARTE1.CTRLA = (USARTE1.CTRLA & ~ USART_RXCINTLVL_gm) | USART_RXCINTLVL_OFF_gc;
 
-#elif CPUSTYLE_STM32
+#elif CPUSTYLE_STM32 || CPUSTYLE_STM32MP1
 
 	if (state)
 		USART2->CR1 |= USART_CR1_RXNEIE;
@@ -1468,8 +1479,6 @@ void hardware_uart2_enablerx(uint_fast8_t state)
 		SCIF3.SCSCR |= (1U << 6);	// RIE Receive Interrupt Enable
 	else
 		SCIF3.SCSCR &= ~ (1U << 6);	// RIE Receive Interrupt Enable
-
-#elif CPUSTYLE_STM32MP157A
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -1519,7 +1528,7 @@ void hardware_uart2_tx(void * ctx, uint_fast8_t c)
 
 	USART2->DR = c;
 
-#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32H7XX || CPUSTYLE_STM32F7XX
+#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32H7XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32MP1
 
 	USART2->TDR = c;
 
@@ -1532,8 +1541,6 @@ void hardware_uart2_tx(void * ctx, uint_fast8_t c)
 	(void) SCIF3.SCFSR;			// Перед сбросом бита TDFE должно произойти его чтение в ненулевом состоянии
 	SCIF3.SCFTDR = c;
 	SCIF3.SCFSR = (uint16_t) ~ (1U << SCIF3_SCFSR_TDFE_SHIFT);	// TDFE=0 читать незачем (в примерах странное)
-
-#elif CPUSTYLE_STM32MP157A
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -1610,7 +1617,7 @@ hardware_usart2_getchar(char * cp)
 		return 0;
 	* cp = USART2->DR;
 
-#elif CPUSTYLE_STM32H7XX
+#elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 
 	const uint_fast32_t isr = USART2->ISR;
 	if (isr & USART_ISR_ORE)
@@ -1644,8 +1651,6 @@ hardware_usart2_getchar(char * cp)
 		return 0;
 	* cp = SCIF3.SCFRDR;
 	SCIF3.SCFSR = (uint16_t) ~ (1U << 1);	// RDF=0 читать незачем (в примерах странное)
-
-#elif CPUSTYLE_STM32MP157A
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -1725,7 +1730,7 @@ hardware_usart2_putchar(uint_fast8_t c)
 		return 0;
 	USART2->DR = c;
 
-#elif CPUSTYLE_STM32H7XX
+#elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 
 	if ((USART2->ISR & USART_ISR_TXE_TXFNF) == 0)
 		return 0;
@@ -1749,8 +1754,6 @@ hardware_usart2_putchar(uint_fast8_t c)
 		return 0;
 	SCIF3.SCFTDR = c;
 	SCIF3.SCFSR = (uint16_t) ~ (1U << SCIF3_SCFSR_TDFE_SHIFT);	// TDFE=0 читать незачем (в примерах странное)
-
-#elif CPUSTYLE_STM32MP157A
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -2113,24 +2116,30 @@ xxxx!;
 	/* Serial port break data(SPB2DT)  1: High-level */
 	//SCIF3.SCSPTR |= 0x0003;
 
+	if (debug == 0)
 	{
-		const IRQn_ID_t int_id = SCIFRXI3_IRQn;
-		IRQ_SetHandler(int_id, r7s721_scifrxi3_interrupt);
-		IRQ_SetPriority(int_id, ARM_SYSTEM_PRIORITY);
-		IRQ_Enable(int_id);
+	   arm_hardware_set_handler_system(SCIFRXI3_IRQn, SCIFRXI3_IRQHandler);
+	   arm_hardware_set_handler_system(SCIFTXI3_IRQn, SCIFTXI3_IRQHandler);
 	}
-	{
-		const IRQn_ID_t int_id = SCIFTXI3_IRQn;
-		IRQ_SetHandler(int_id, r7s721_sciftxi3_interrupt);
-		IRQ_SetPriority(int_id, ARM_SYSTEM_PRIORITY);
-		IRQ_Enable(int_id);
-	}
-
 	HARDWARE_USART2_INITIALIZE();	/* Присоединить периферию к выводам */
 
 	SCIF3.SCSCR |= 0x0030;	// TE RE - SCIF3 transmitting and receiving operations are enabled */
 
-#elif CPUSTYLE_STM32MP157A
+#elif CPUSTYLE_STM32MP1
+
+	RCC->MC_APB1ENSETR = RCC_MC_APB1ENSETR_USART2EN; // Включение тактирования USART1.
+	(void) RCC->MC_APB1ENSETR;
+
+	USART1->CR1 |= (USART_CR1_RE | USART_CR1_TE); // Transmitter Enable & Receiver Enables
+
+	HARDWARE_USART2_INITIALIZE();	/* Присоединить периферию к выводам */
+
+	if (debug == 0)
+	{
+		arm_hardware_set_handler_system(USART2_IRQn, USART2_IRQHandler);
+	}
+
+	USART1->CR1 |= USART_CR1_UE; // Включение USART1.
 
 #else
 	#error Undefined CPUSTYLE_XXX

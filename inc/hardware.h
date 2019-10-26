@@ -432,12 +432,25 @@ void hardware_adc_initialize(void);
 		#define VTRATTR	// __attribute__ ((section("vtable"), used, aligned(256 * 4)))
 		#define FLASHMEMINIT	__attribute__((section(".initdata"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
 		#define FLASHMEMINITFUNC	__attribute__((section(".initfunc"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
-		#define RAMFUNC_NONILINE // __attribute__((__section__(".ramfunc"), noinline))  
-		#define RAMFUNC			 // __attribute__((__section__(".ramfunc")))  
+		#define RAMFUNC_NONILINE // __attribute__((__section__(".ramfunc"), noinline))
+		#define RAMFUNC			 // __attribute__((__section__(".ramfunc")))
 		#define RAMNOINIT_D1	__attribute__((section(".noinit"))) /* размещение в памяти SRAM_D1 */
 		#define RAMFRAMEBUFF	__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
 		#define RAMDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
 		#define RAMBIGDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
+		#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
+		#define RAMHEAP __attribute__((used, section(".heap"), aligned(32))) // memory used as heap zone
+	#elif CPUSTYLE_STM32MP1
+		// TODO: Use SYSRAM as DTCM/ITCM
+		#define VTRATTR	// __attribute__ ((section("vtable"), used, aligned(256 * 4)))
+		#define FLASHMEMINIT	__attribute__((section(".initdata"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
+		#define FLASHMEMINITFUNC	__attribute__((section(".initfunc"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
+		#define RAMFUNC_NONILINE __attribute__((__section__(".itcm"), noinline))
+		#define RAMFUNC			 __attribute__((__section__(".itcm")))
+		#define RAMNOINIT_D1	__attribute__((section(".noinit"))) /* размещение в памяти SRAM_D1 */
+		#define RAMFRAMEBUFF	__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
+		#define RAMDTCM			__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
+		#define RAMBIGDTCM		__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 		#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
 		#define RAMHEAP __attribute__((used, section(".heap"), aligned(32))) // memory used as heap zone
 	#elif (CPUSTYLE_STM32H7XX)
@@ -687,8 +700,9 @@ void hardware_twi_master_configure(void);
 
 uint32_t hardware_get_random(void);
 
-void arm_hardware_ltdc_initialize(void);	// STM32F4xxx with LCD-TFT Controller (LTDC)
-void arm_hardware_sdram_initialize(void);
+void arm_hardware_ltdc_initialize(void);	// LCD-TFT Controller (LTDC) with framebuffer
+void arm_hardware_dma2d_initialize(void);	// Graphic engine
+void arm_hardware_sdram_initialize(void);	// External memory region(s)
 void arm_hardware_ltdc_pip_set(uintptr_t addr);	// set PIP framebuffer address
 void arm_hardware_ltdc_pip_off(void);	// set PIP framebuffer address
 
@@ -803,6 +817,12 @@ void PAbort_Handler(void);
 void DAbort_Handler(void);
 void FIQ_Handler(void);
 void IRQ_Handler(void);
+
+// Set interrupt vector wrappers
+void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint_fast8_t priority);
+void arm_hardware_set_handler_overrealtime(uint_fast16_t int_id, void (* handler)(void));
+void arm_hardware_set_handler_realtime(uint_fast16_t int_id, void (* handler)(void));
+void arm_hardware_set_handler_system(uint_fast16_t int_id, void (* handler)(void));
 
 #ifdef __cplusplus
 }

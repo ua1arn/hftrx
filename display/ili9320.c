@@ -13,8 +13,7 @@
 #include "display.h"
 #include <stdint.h>
 
-#include "spifuncs.h"
-
+#include "../inc/spi.h"
 #include "formats.h"	// for debug prints
 
 #if LCDMODE_ILI9320

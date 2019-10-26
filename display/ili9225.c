@@ -14,7 +14,7 @@
 #include "display.h"
 #include <stdint.h>
 
-#include "spifuncs.h"
+#include "../inc/spi.h"
 #include "board.h"
 
 //#include "formats.h"	// for debug prints

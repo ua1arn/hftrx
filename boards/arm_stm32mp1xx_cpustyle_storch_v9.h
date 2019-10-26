@@ -15,9 +15,12 @@
 #define WITHSPI16BIT	1	/* возможно использование 16-ти битных слов при обмене по SPI */
 #define WITHSPI32BIT	1	/* возможно использование 32-ти битных слов при обмене по SPI */
 #define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
-#define WITHSPIHWDMA 	1	/* Использование DMA при обмене по SPI */
+//#define WITHSPIHWDMA 	1	/* Использование DMA при обмене по SPI */
 //#define WITHSPISW 	1	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */
-#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	*/
+////*#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
+//#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	- у STM32MP1 его нет */
+////*#define WITHSDRAMHW	1	/* В процессоре есть внешняя память */
+//#define WIHSPIDFHW	1	/* обслуживание DATA FLASH */
 
 //#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 //#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
@@ -33,6 +36,12 @@
 //#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
 //#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
 
+//#define WITHUART1HW	1	/* PA9, PA10 Используется периферийный контроллер последовательного порта #1 */
+#define WITHUART2HW	1	/* PD5, PD6 Используется периферийный контроллер последовательного порта #2 */
+//#define WITHCAT_USART2		1
+#define WITHDEBUG_USART2	1
+#define WITHNMEA_USART2		1	/* порт подключения GPS/GLONASS */
+
 //#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 #if WITHUSBHW
 	#define WITHUSBDEV_VBUSSENSE	1	/* используется предопределенный вывод VBUS_SENSE */
@@ -47,14 +56,9 @@
 	#define WITHUSBHW_DEVICE	USB_OTG_HS	/* на этом устройстве поддерживается функциональность DEVUCE	*/
 	//#define WITHUSBHW_HOST		USB_OTG_FS
 
-	//#define WITHUART1HW	1	/* PA9, PA10 Используется периферийный контроллер последовательного порта #1 */
-	#define WITHUART2HW	1	/* PD5, PD6 Используется периферийный контроллер последовательного порта #2 */
 
 	#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
 	#define WITHMODEM_CDC	1
-	//#define WITHCAT_USART2		1
-	#define WITHDEBUG_USART2	1
-	#define WITHNMEA_USART2		1	/* порт подключения GPS/GLONASS */
 
 	#if WITHINTEGRATEDDSP
 
@@ -652,8 +656,6 @@
 
 	#define	HARDWARE_BL_INITIALIZE() do { \
 		/* step-up backlight converter */ \
-		arm_hardware_piof_outputs((1U << 1), 1 * (1U << 1));		/* PF1 - enable backlight */ \
-		arm_hardware_piof_opendrain((1U << 3) | (1U << 2), 0 * (1U << 3) | 0 * (1U << 2));	/* PF3:PF2 - backlight current adjust */ \
 		} while (0)
 
 #if WITHDCDCFREQCTL
@@ -753,5 +755,21 @@
 		TXDISABLE_INITIALIZE(); \
 		TUNE_INITIALIZE(); \
 		} while (0)
+
+
+		// Bootloader parameters
+		#define BOOTLOADER_APPAREA DRAM_MEM_BASE	/* адрес ОЗУ, куда перемещать application */
+		#define BOOTLOADER_APPFULL (1024uL * 2048)	// 2MB
+
+		#define BOOTLOADER_SELFBASE QSPI_MEM_BASE	/* адрес где лежит во FLASH образ application */
+		#define BOOTLOADER_SELFSIZE (1024uL * 128)	// 128
+
+		#define BOOTLOADER_APPBASE (BOOTLOADER_SELFBASE + BOOTLOADER_SELFSIZE)	/* адрес где лежит во FLASH образ application */
+		#define BOOTLOADER_APPSIZE (BOOTLOADER_APPFULL - BOOTLOADER_SELFSIZE)	// 2048 - 128
+
+		#define BOOTLOADER_PAGESIZE (1024uL * 4)	// W25Q32FV with 4 KB pages
+
+		#define USBD_DFU_XFER_SIZE 64	// match to (Q)SPI FLASH MEMORY page size
+		#define USBD_DFU_FLASHNAME "W25Q32FV"
 
 #endif /* ARM_STM32MP1_CPUSTYLE_STORCH_V9_H_INCLUDED */

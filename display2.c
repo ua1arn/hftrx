@@ -1042,8 +1042,10 @@ static void display_mainsub3(
 	)
 {
 #if WITHUSEDUALWATCH
-	const char FLASHMEM * const labels [1] = { hamradio_get_mainsubrxmode3_value_P(), };
-	display2_text_P(x, y, labels, colorsfg_1state, colorsbg_1state, 0);
+	uint_fast8_t state;
+	hamradio_get_vfomode5_value(& state);
+	const char FLASHMEM * const label = hamradio_get_mainsubrxmode3_value_P();
+	display_2states_P(x, y, state, label, label);
 #endif /* WITHUSEDUALWATCH */
 }
 
@@ -1433,7 +1435,7 @@ static void display_span9(
 }
 // Отображение уровня сигнала в баллах шкалы S
 // S9+60
-static void display_siglevel5(
+static void display_smeter5(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
 	void * pv
@@ -3849,7 +3851,6 @@ enum
 		#define DISPLC_RJ		1	// количество скрытых справа цифр в отображении частоты
 		static const FLASHMEM struct dzone dzones [] =
 		{
-#if ! WITHISBOOTLOADER
 			{	0,	0,	display2_pip_off,	REDRM_MODE,	PG0 | REDRSUBSET_MENU },	// Выключить PIP если на данной странице не требуется
 			{	0,	0,	display_txrxstate2, REDRM_MODE, PGALL, },
 			{	3,	0,	display_voxtune3,	REDRM_MODE, PGALL, },
@@ -3879,7 +3880,7 @@ enum
 			{	0,	18,	display2_waterfall,	REDRM_BARS, PG1, },// подготовка изображения водопада
 			{	0,	18,	display2_colorbuff,	REDRM_BARS,	PG1, },// Отображение водопада и/или спектра
 
-			{	27, 18,	display_siglevel5,	REDRM_BARS, PGNOMEMU, },	// signal level
+			{	27, 18,	display_smeter5,	REDRM_BARS, PGNOMEMU, },	// signal level
 		#endif /* WITHIF4DSP */
 			//---
 			//{	22, 25,	display_samfreqdelta8, REDRM_BARS, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
@@ -3901,7 +3902,6 @@ enum
 			{	1 + LABELW * 1 + 1,	18,	display_multilinemenu_block_params,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
 			{	1 + LABELW * 2 + 2,	18,	display_multilinemenu_block_vals,	REDRM_MVAL, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
 		#endif /* WITHMENU */
-#endif /* ! WITHISBOOTLOADER */
 		};
 
 		/* получить координаты окна с панорамой и/или водопадом. */
@@ -4037,14 +4037,15 @@ enum
 
 		{	0,	16,	display_mainsub3,	REDRM_MODE, PGALL, },	// main/sub RX: A/A, A/B, B/A, etc
 		//{	0,	16,	display_rec3,		REDRM_BARS, PGALL, },	// Отображение режима записи аудио фрагмента
-		{	5,	16,	display_vfomode3,	REDRM_MODE, PGALL, },	// SPLIT
+		{	5,	16,	display_vfomode3,	REDRM_MODE, PGALL, },	// SPLIT - не очень нужно при наличии индикации на A/B (display_mainsub3) яркостью.
 		{	9,	16,	display_freqX_b,	REDRM_FRQB, PGALL, },	// SUB FREQ
 		{	21,	16,	display_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
 
 #if 1
 		{	0,	20,	display2_legend,	REDRM_MODE, PGSWR, },	// Отображение оцифровки шкалы S-метра, PWR & SWR-метра
 		{	0,	24,	display2_bars,		REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
-		{	25, 24, display_siglevel4, REDRM_BARS, PGSWR, },	// уровень сигнала
+		//{	25, 24, display_siglevel4, REDRM_BARS, PGSWR, },	// уровень сигнала
+		{	25, 24, display_smeter5, 	REDRM_BARS, PGSWR, },	// уровень сигнала в баллах S
 		{	0,	28,	dsp_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
 		{	0,	28,	display2_spectrum,	REDRM_BARS, PGSPE, },// подготовка изображения спектра
 		{	0,	28,	display2_waterfall,	REDRM_BARS, PGWFL, },// подготовка изображения водопада
@@ -4210,7 +4211,7 @@ enum
 
 		//{	0,	51,	display_samfreqdelta8, REDRM_BARS, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
 		{	0,	51,	display_time8,		REDRM_BARS, PGALL,	},	// TIME
-		{	9,	51,	display_siglevel5,	REDRM_BARS, PGALL, },	// signal level in S points
+		{	9,	51,	display_smeter5,	REDRM_BARS, PGALL, },	// signal level in S points
 		{	15, 51,	display_thermo4,	REDRM_VOLT, PGALL, },	// thermo sensor
 	#if CTLSTYLE_RA4YBO || CTLSTYLE_RA4YBO_V3
 		{	19, 51,	display_currlevel5alt, REDRM_VOLT, PGALL, },	// PA drain current dd.d without "A"
@@ -4410,6 +4411,110 @@ enum
 		{	5,	25,	display_datetime12,	REDRM_BARS, PGSLP, },	// DATE & TIME // DATE&TIME Jan-01 13:40
 		{	20, 25,	display_voltlevelV5, REDRM_VOLT, PGSLP, },	// voltmeter with "V"
 	};
+
+#if WITHMENU
+	void display2_getmultimenu(multimenuwnd_t * p)
+	{
+		p->multilinemenu_max_rows = 15;
+		p->ystep = 4;	// количество ячеек разметки на одну строку меню
+		p->reverse = 1;
+	}
+#endif /* WITHMENU */
+
+	/* получить координаты окна с панорамой и/или водопадом. */
+	void display2_getpipparams(pipparams_t * p)
+	{
+		p->x = GRID2X(0);	// позиция верхнего левого угла в пикселях
+		p->y = GRID2Y(DLES);	// позиция верхнего левого угла в пикселях
+		p->w = GRID2X(CHARS2GRID(BDTH_ALLRX));	// размер по горизонтали в пикселях
+		p->h = GRID2Y(BDCV_ALLRX);				// размер по вертикали в пикселях
+		p->frame = (uintptr_t) getscratchpip();
+	}
+
+#elif DSTYLE_G_DUMMY
+
+#if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
+	//					"012345678901234567890123"
+	#define SWRPWRMAP	"1   2   3   4  0% | 100%"
+	#define SWRMAX	(SWRMIN * 40 / 10)	// 4.0 - значение на полной шкале
+#else
+	//					"012345678901234567890123"
+	#define POWERMAP	"0    25    50   75   100"
+	#define SWRMAP		"1   |   2  |   3   |   4"	//
+	#define SWRMAX	(SWRMIN * 40 / 10)	// 4.0 - значение на полной шкале
+#endif
+//						"012345678901234567890123"
+#define SMETERMAP		"1  3  5  7  9 +20 +40 60"
+enum
+{
+	BDTH_ALLRXBARS = 24,	// ширина зоны для отображение барграфов на индикаторе
+	BDTH_ALLRX = 40,	// ширина зоны для отображение графического окна на индикаторе
+
+	BDTH_LEFTRX = 12,	// ширина индикатора баллов (без плюслв)
+	BDTH_RIGHTRX = BDTH_ALLRXBARS - BDTH_LEFTRX,	// ширина индикатора плюсов
+	BDTH_SPACERX = 0,
+	BDTH_ALLSWR = 13,
+	BDTH_SPACESWR = 2,
+	BDTH_ALLPWR = 9,
+	BDTH_SPACEPWR = 0,
+
+	BDCV_ALLRX = ROWS2GRID(55),	// количество строк, отведенное под S-метр, панораму, иные отображения
+	/* совмещение на одном экрание водопада и панорамы */
+	BDCO_SPMRX = ROWS2GRID(0),	// смещение спектра по вертикали в ячейках от начала общего поля
+	BDCV_SPMRX = ROWS2GRID(27),	// вертикальный размер спектра в ячейках
+	BDCO_WFLRX = BDCV_SPMRX,	// смещение водопада по вертикали в ячейках от начала общего поля
+	BDCV_WFLRX = BDCV_ALLRX - BDCV_SPMRX	// вертикальный размер водопада в ячейках
+};
+enum {
+	DLES = 35,	// spectrum window upper line
+	DLE1 = 93
+};
+
+
+enum
+{
+	PATTERN_SPACE = 0x00,	/* очищаем место за SWR и PWR метром этим символом */
+	PATTERN_BAR_FULL = 0xFF,
+	PATTERN_BAR_HALF = 0x3c,
+	PATTERN_BAR_EMPTYFULL = 0x00,	//0x00
+	PATTERN_BAR_EMPTYHALF = 0x00	//0x00
+};
+
+enum
+{
+	DPAGE0,					// Страница, в которой отображаются основные (или все)
+	DISPLC_MODCOUNT
+};
+
+enum
+{
+	PG0 = REDRSUBSET(DPAGE0),
+	PGALL = PG0 | REDRSUBSET_MENU,
+	PGWFL = PG0,	// страница отображения водопада
+	PGSPE = PG0,	// страница отображения панорамы
+	PGSWR = PG0,	// страница отоюражения S-meter и SWR-meter
+	PGLATCH = PGALL,	// страницы, на которых возможно отображение водопада или панорамы.
+	PGSLP = REDRSUBSET_SLEEP,
+	PGunused
+};
+
+#if 1//TUNE_TOP > 100000000uL
+	#define DISPLC_WIDTH	9	// количество цифр в отображении частоты
+#else
+	#define DISPLC_WIDTH	8	// количество цифр в отображении частоты
+#endif
+#define DISPLC_RJ		0	// количество скрытых справа цифр в отображении частоты
+
+// 480/5 = 96, 800/16=50
+// 272/5 = 54, 480/16=30 (old)
+//#define GRID2X(cellsx) ((cellsx) * 16)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
+//#define GRID2Y(cellsy) ((cellsy) * 5)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
+//#define SMALLCHARH 15 /* Font height */
+//#define SMALLCHARW 16 /* Font width */
+static const FLASHMEM struct dzone dzones [] =
+{
+	{	0,	0,	display2_pip_off,	REDRM_MODE,	PGSLP | REDRSUBSET_MENU },	// Выключить PIP если на данной странице не требуется
+};
 
 #if WITHMENU
 	void display2_getmultimenu(multimenuwnd_t * p)
@@ -5003,13 +5108,25 @@ static uint_fast8_t wfclear;			// стирание всей областии о�
 enum { PALETTESIZE = 256 };
 static PACKEDCOLOR565_T wfpalette [PALETTESIZE];
 
-#define COLOR565_GRIDCOLOR		TFTRGB565(128, 0, 0)		//COLOR_GRAY - center marker
-#define COLOR565_GRIDCOLOR2		TFTRGB565(96, 96, 96)		//COLOR_DARKRED - other markers
-#define COLOR565_SPECTRUMBG		TFTRGB565(0, 64, 24)			//
-#define COLOR565_SPECTRUMBG2	TFTRGB565(0, 24, 8)		//COLOR_xxx - полоса пропускания приемника
-#define COLOR565_SPECTRUMFG		TFTRGB565(0, 255, 0)		//COLOR_GREEN
-#define COLOR565_SPECTRUMFENCE	TFTRGB565(255, 255, 255)	//COLOR_WHITE
-#define COLOR565_SPECTRUMLINE	TFTRGB565(0, 255, 0)	//COLOR_GREEN
+#if 0
+	// new (for ats52).
+	#define COLOR565_GRIDCOLOR		TFTRGB565(128, 0, 0)		//COLOR_GRAY - center marker
+	#define COLOR565_GRIDCOLOR2		TFTRGB565(96, 96, 96)		//COLOR_DARKRED - other markers
+	#define COLOR565_SPECTRUMBG		TFTRGB565(0, 64, 24)			//
+	#define COLOR565_SPECTRUMBG2	TFTRGB565(0, 24, 8)		//COLOR_xxx - полоса пропускания приемника
+	#define COLOR565_SPECTRUMFG		TFTRGB565(0, 255, 0)		//COLOR_GREEN
+	#define COLOR565_SPECTRUMFENCE	TFTRGB565(255, 255, 255)	//COLOR_WHITE
+	#define COLOR565_SPECTRUMLINE	TFTRGB565(0, 255, 0)	//COLOR_GREEN
+#else
+	// old
+	#define COLOR565_GRIDCOLOR        TFTRGB565(128, 128, 0)        //COLOR_GRAY - center marker
+	#define COLOR565_GRIDCOLOR2        TFTRGB565(128, 0, 0x00)        //COLOR_DARKRED - other markers
+	#define COLOR565_SPECTRUMBG        TFTRGB565(0, 0, 0)            //COLOR_BLACK
+	#define COLOR565_SPECTRUMBG2    TFTRGB565(0, 128, 128)        //COLOR_CYAN - полоса пропускания приемника
+	#define COLOR565_SPECTRUMFG		TFTRGB565(0, 255, 0)		//COLOR_GREEN
+	#define COLOR565_SPECTRUMFENCE	TFTRGB565(255, 255, 255)	//COLOR_WHITE
+	#define COLOR565_SPECTRUMLINE	TFTRGB565(0, 255, 0)	//COLOR_GREEN
+#endif
 
 // Код взят из проекта Malamute
 static void wfpalette_initialize(void)
@@ -5138,7 +5255,7 @@ deltafreq2x_abs(
 // получить адрес требуемой позиции в буфере
 volatile PACKEDCOLOR565_T *
 display_colorbuffer_at(
-	volatile PACKEDCOLOR565_T * buffer,
+	PACKEDCOLOR565_T * buffer,
 	uint_fast16_t dx,
 	uint_fast16_t dy,
 	uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
@@ -5159,7 +5276,7 @@ display_colorbuffer_at(
 // Поставить цветную полосу
 // Формат RGB565
 void display_colorbuffer_xor_vline(
-	volatile PACKEDCOLOR565_T * buffer,
+	PACKEDCOLOR565_T * buffer,
 	uint_fast16_t dx,	
 	uint_fast16_t dy,
 	uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
@@ -5176,7 +5293,7 @@ void display_colorbuffer_xor_vline(
 // Формат RGB565
 static void 
 display_colorbuffer_set_vline(
-	volatile PACKEDCOLOR565_T * buffer,
+	PACKEDCOLOR565_T * buffer,
 	uint_fast16_t dx,	
 	uint_fast16_t dy,
 	uint_fast16_t col,	// горизонтальная координата начального пикселя (0..dx-1) слева направо
@@ -5192,7 +5309,7 @@ display_colorbuffer_set_vline(
 // отрисовка маркеров частот
 static void
 display_colorgrid_xor(
-	volatile PACKEDCOLOR565_T * buffer,
+	PACKEDCOLOR565_T * buffer,
 	uint_fast16_t row0,	// вертикальная координата начала занимаемой области (0..dy-1) сверху вниз
 	uint_fast16_t h,	// высота
 	int_fast32_t f0,	// center frequency
@@ -5223,7 +5340,7 @@ display_colorgrid_xor(
 // отрисовка маркеров частот
 static void 
 display_colorgrid_set(
-	volatile PACKEDCOLOR565_T * buffer,
+	PACKEDCOLOR565_T * buffer,
 	uint_fast16_t row0,	// вертикальная координата начала занимаемой области (0..dy-1) сверху вниз
 	uint_fast16_t h,	// высота
 	int_fast32_t f0,	// center frequency

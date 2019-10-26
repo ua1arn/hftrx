@@ -9,8 +9,8 @@
 
 #include <stdint.h>
 
+#include "gpio.h"
 #include "hardware.h"
-#include "pio.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -490,6 +490,9 @@ void hardware_spi_master_read_frame_16b(uint16_t * pBuffer, uint_fast32_t size);
 // Send a frame of bytes via SPI
 void hardware_spi_master_send_frame(const uint8_t * pBuffer, uint_fast32_t size);
 void hardware_spi_master_send_frame_16b(const uint16_t * pBuffer, uint_fast32_t size);
+
+#define targetdataflash 0
+#define SPIMODE_AT26DF081A	SPIC_MODE3
 
 // Serial flash (boot memory) interface
 void spidf_initialize(void);

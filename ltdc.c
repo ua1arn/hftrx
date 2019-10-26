@@ -4,7 +4,7 @@
 // автор Гена Завидовский mgs2001@mail.ru
 // UA1ARN
 //
-// STM32F42XX LCD-TFT Controller (LTDC)
+// STM32xxx LCD-TFT Controller (LTDC)
 // RENESAS Video Display Controller 5
 //	Video Display Controller 5 (5): Image Synthesizer
 //	Video Display Controller 5 (7): Output Controller
@@ -16,9 +16,9 @@
 #include <string.h>
 
 #include "formats.h"	// for debug prints
-#include "spifuncs.h"
+#include "inc/spi.h"
 
-#if LCDMODE_LTDC
+#if WITHLTDCHW
 
 
 #if LCDMODE_LQ043T3DX02K
@@ -1278,7 +1278,7 @@ arm_hardware_ltdc_initialize(void)
 	debug_printf_P(PSTR("arm_hardware_ltdc_initialize done\n"));
 }
 
-#elif CPUSTYLE_STM32
+#elif CPUSTYLE_STM32 || CPUSTYLE_STM32MP1
 
 /** @defgroup LTDC_Pixelformat 
   * @{
@@ -1795,19 +1795,15 @@ arm_hardware_ltdc_initialize(void)
 #if CPUSTYLE_STM32H7XX
 	/* Enable the LTDC Clock */
 	RCC->APB3ENR |= RCC_APB3ENR_LTDCEN;	/* LTDC clock enable */
-	__DSB();
-
-	/* Enable the DMA2D Clock */
-	RCC->AHB3ENR |= RCC_AHB3ENR_DMA2DEN;	/* DMA2D clock enable */
-	__DSB();
+	(void) RCC->APB3ENR;
+#elif CPUSTYLE_STM32MP1
+	/* Enable the LTDC Clock */
+	RCC->MP_APB4ENSETR = RCC_MP_APB4ENSETR_LTDCEN;	/* LTDC clock enable */
+	(void) RCC->MP_APB4ENSETR;
 #else /* CPUSTYLE_STM32H7XX */
 	/* Enable the LTDC Clock */
 	RCC->APB2ENR |= RCC_APB2ENR_LTDCEN;	/* LTDC clock enable */
-	__DSB();
-
-	/* Enable the DMA2D Clock */
-	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2DEN;	/* DMA2D clock enable */
-	__DSB();
+	(void) RCC->APB2ENR;
 #endif /* CPUSTYLE_STM32H7XX */
 
 	/* Configure the LCD Control pins */
@@ -1942,4 +1938,4 @@ void arm_hardware_ltdc_pip_off(void)	// set PIP framebuffer address
 
 #endif /* CPUSTYLE_STM32 */
 
-#endif /* LCDMODE_LTDC */
+#endif /* WITHLTDCHW */
