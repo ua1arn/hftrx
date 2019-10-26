@@ -353,7 +353,6 @@ extern "C" {
 	// STM32MP157Axx
 	// STM32MP157AAB3
 
-	#define STM32MP157Axx	1	// todo: move to Makefile as -DSTM32MP157Axx=1
 	#define CORE_CA7	1
 	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
 	#define	CPUSTYLE_ARM_CA7	1

@@ -611,7 +611,8 @@ extern "C" {
 	#define ARM_CA9_CACHELEVELMAX	1	/* максимальный уровень cache в процессоре */
 	#define ARM_CA9_PRIORITYSHIFT 3	/* ICCPMR[7:3] is valid bit */
 
-	#define CPU_FREQ	(WITHCPUXTAL * 15)		/* 360 MHz = 24 MHz * 15 */
+	//#define CPU_FREQ	(WITHCPUXTAL * 15)		/* 360 MHz = 24 MHz * 15 */
+	#define CPU_FREQ	(64000000uL)		/* At boot enabled HSI64 - 64 MHz */
 	/* частоты, подающиеся на периферию */
 	#define	PCLK1_FREQ (CPU_FREQ / 4)	// 42 MHz PCLK1 frequency
 	#define	PCLK1_TIMERS_FREQ (CPU_FREQ / 2)	// 42 MHz PCLK1 frequency

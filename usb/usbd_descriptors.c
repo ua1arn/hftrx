@@ -1025,8 +1025,8 @@ static unsigned UAC2_FormatTypeDescroptor_OUT48(uint_fast8_t fill, uint8_t * buf
 		* buff ++ = AUDIO_INTERFACE_DESCRIPTOR_TYPE;		/* bDescriptorType */
 		* buff ++ = AUDIO_STREAMING_FORMAT_TYPE;			/* bDescriptorSubtype */
 		* buff ++ = AUDIO_FORMAT_TYPE_I;							/* bFormatType */
-		* buff ++ = (HARDWARE_USBD_AUDIO_OUT_SAMPLEBITS_AUDIO48 + 7) / 8;	//bSubslotSize
-		* buff ++ = HARDWARE_USBD_AUDIO_OUT_SAMPLEBITS_AUDIO48;	//bBitResolution   (32 bits per sample)
+		* buff ++ = (UACOUT_AUDIO48_SAMPLEBITS + 7) / 8;	//bSubslotSize
+		* buff ++ = UACOUT_AUDIO48_SAMPLEBITS;	//bBitResolution   (32 bits per sample)
 		/* 6 byte*/
 	}
 	return length;
@@ -2123,9 +2123,9 @@ static unsigned UAC1_FormatTypeDescroptor_OUT48(uint_fast8_t fill, uint8_t * buf
 		* buff ++ = AUDIO_INTERFACE_DESCRIPTOR_TYPE;		/* bDescriptorType */
 		* buff ++ = AUDIO_STREAMING_FORMAT_TYPE;			/* bDescriptorSubtype */
 		* buff ++ = AUDIO_FORMAT_TYPE_I;							/* bFormatType */
-		* buff ++ = HARDWARE_USBD_AUDIO_OUT_CHANNELS_AUDIO48;		/* bNrChannels */
-		* buff ++ = (HARDWARE_USBD_AUDIO_OUT_SAMPLEBITS_AUDIO48 + 7) / 8; /* bSubFrameSize :  2 Bytes per frame (16bits) */
-		* buff ++ = HARDWARE_USBD_AUDIO_OUT_SAMPLEBITS_AUDIO48;		/* bBitResolution (16-bits per sample) */
+		* buff ++ = UACOUT_AUDIO48_CHANNELS;		/* bNrChannels */
+		* buff ++ = (UACOUT_AUDIO48_SAMPLEBITS + 7) / 8; /* bSubFrameSize :  2 Bytes per frame (16bits) */
+		* buff ++ = UACOUT_AUDIO48_SAMPLEBITS;		/* bBitResolution (16-bits per sample) */
 		* buff ++ = 1;										/* bSamFreqType only one frequency supported */
 		* buff ++ = LO_BYTE(samplefreq1);	/* Audio sampling frequency coded on 3 bytes */
 		* buff ++ = HI_BYTE(samplefreq1);
