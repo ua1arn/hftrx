@@ -23,8 +23,7 @@
 //#define DEFAULTDIALFREQ	12798000L
 //#define DEFAULTDIALFREQ	225000L
 //#define DEFAULTDIALFREQ	14021000L
-//#define WITHISBOOTLOADER	1	/* Сейчас компилируем и собирем bootloader (Renesas R7S721020VCFP) */
-//#undef WITHDEBUG
+//#define WITHISBOOTLOADER	1	/* соответствующим Build Target компилируем и собирем bootloader (Renesas R7S721020VCFP) */
 
 #ifndef NIGHTBUILD
 // Современные конфигурации:
@@ -54,10 +53,9 @@
 //#define CTLSTYLE_V1C	1	// Контроллер "Воробей-2" на STM32F105RC с местом под кодек.
 //#define CTLSTYLE_V1V	1	// Контроллер "Колибри" на ATMega328 - atmega328_ctlstyle_v1.h
 //#define CTLSTYLE_V1K	1	// Контроллер на STM32F401RB - новый SW20xx
-//#define CTLSTYLE_OLEG4Z_V1	1	// Rmainunit_v5fm.pcb STM32F767ZET6, 2xUSB, WFM, FPGA EP4CE22E22I7N
+//#define CTLSTYLE_OLEG4Z_V1	1	// Rmainunit_v5fm.pcb STM32F767ZET6, 2xUSB, WFM, FPGA EP4CE22E22I7N, R820T2
 
 // Модемы
-//#define CTLSTYLE_RAVENDSP_V8	1	// HF modem only Rmainunit_v6bm.pcb STM32F746ZET6
 //#define CTLSTYLE_STORCH_V4	1	// Rmainunit_v5im.pcb UHF modem v2
 
 // Конфигурации под трансиверы UR3LMZ (без внешнего дешифратора адреса).
@@ -223,10 +221,6 @@
 	#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_oleg4z_v1.h"	// Rmainunit_v5fm.pcb (USBx2, wide display interface)
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32f4xx_tqfp144_cpustyle_oleg4z_v1.h"	// Rmainunit_v5fm.pcb (USBx2, wide display interface)
-#elif CPUSTYLE_STM32 && CTLSTYLE_RAVENDSP_V8		// modem-only и FPGA EP4CE22E22I7N
-	#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_raven_v8.h"	// Rmainunit_v6bm.pcb modem-only 
-	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
-	#include "boards/arm_stm32f4xx_tqfp144_cpustyle_raven_v8.h"	// Rmainunit_v6bm.pcb modem-only 
 #elif CPUSTYLE_R7S721 && CTLSTYLE_RAVENDSP_V9	// SD-CARD. DUAL WATCH, RENESAS R7S721xxx
 	#include "boards/arm_r7s72_tqfp176_ctlstyle_raven_v9.h"	// Rmainunit_v7bm.pcb
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
