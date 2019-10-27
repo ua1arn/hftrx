@@ -6,15 +6,15 @@
 */
 
 #include "hardware.h"
+
+#if WITHUSBHW && WITHUSBUAC
+
 #include "board.h"
 #include "audio.h"
 #include "display/display.h"
 #include "formats.h"
-#include <string.h>
-
-#if WITHUSBHW && WITHUSBUAC
-
 #include "usb_core.h"
+#include <string.h>
 
 
 static uint_fast32_t ulmin32(uint_fast32_t a, uint_fast32_t b)
@@ -197,7 +197,7 @@ static RAMDTCM uint8_t altinterfaces [INTERFACE_count];
 
 
 
-static RAMDTCM uint8_t terminalsprops [256] [16];
+//static RAMDTCM uint8_t terminalsprops [256] [16];
 
 static RAMDTCM uintptr_t uacinaddr = 0;
 static RAMDTCM uint_fast16_t uacinsize = 0;
@@ -243,7 +243,7 @@ static USBD_StatusTypeDef USBD_UAC_DeInit(USBD_HandleTypeDef *pdev, uint_fast8_t
 #endif /* WITHUSBUACIN2 */
 
 		USBD_LL_CloseEP(pdev, USBD_EP_AUDIO_OUT);
-		terminalsprops [TERMINAL_ID_SELECTOR_6] [AUDIO_CONTROL_UNDEFINED] = 1;
+		//terminalsprops [TERMINAL_ID_SELECTOR_6] [AUDIO_CONTROL_UNDEFINED] = 1;
 		buffers_set_uacoutalt(altinterfaces [INTERFACE_AUDIO_SPK]);
 		uacout_buffer_stop();
 	}
@@ -260,6 +260,7 @@ static unsigned USBD_UAC1_FeatureUnit_req(
 	uint8_t * buff
 	)
 {
+	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
 	const uint_fast8_t terminalID = HI_BYTE(req->wIndex);
 	const uint_fast8_t controlID = HI_BYTE(req->wValue);	// AUDIO_MUTE_CONTROL, AUDIO_VOLUME_CONTROL, ...
 	//const uint_fast8_t channelNumber = LO_BYTE(req->wValue);
@@ -271,9 +272,14 @@ static unsigned USBD_UAC1_FeatureUnit_req(
 		return 0;
 
 	case AUDIO_REQUEST_GET_CUR:
-		//PRINTF(PSTR("USBD_UAC1_FeatureUnit_req: AUDIO_REQUEST_GET_CUR: interfacev=%u,  %u\n"), interfacev, terminalID);
-		buff [0] = terminalsprops [terminalID] [controlID];
+		PRINTF(PSTR("USBD_UAC1_FeatureUnit_req: AUDIO_REQUEST_GET_CUR: interfacev=%u,  terminal=%u\n"), interfacev, terminalID);
+		buff [0] = 0; //terminalsprops [terminalID] [controlID];
 		return 1;
+
+	case AUDIO_REQUEST_SET_CUR:
+		PRINTF(PSTR("USBD_UAC1_FeatureUnit_req: AUDIO_REQUEST_SET_CUR: interfacev=%u,  terminal=%u, value=%d\n"), interfacev, terminalID, buff [0]);
+		//terminalsprops [terminalID] [controlID] = buff [0];
+		return 0;
 
 	case AUDIO_REQUEST_GET_MIN:
 		//PRINTF(PSTR("USBD_UAC1_FeatureUnit_req: AUDIO_REQUEST_GET_MIN: interfacev=%u,  %u\n"), interfacev, terminalID);
@@ -282,7 +288,7 @@ static unsigned USBD_UAC1_FeatureUnit_req(
 
 	case AUDIO_REQUEST_GET_MAX:
 		//PRINTF(PSTR("USBD_UAC1_FeatureUnit_req: AUDIO_REQUEST_GET_MAX: interfacev=%u,  %u\n"), interfacev, terminalID);
-		buff [0] = 100;
+		buff [0] = 0;
 		return 1;
 
 	case AUDIO_REQUEST_GET_RES:
@@ -299,6 +305,7 @@ static unsigned USBD_UAC1_Selector_req(
 	uint8_t * buff
 	)
 {
+	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
 	const uint_fast8_t terminalID = HI_BYTE(req->wIndex);
 	const uint_fast8_t controlID = HI_BYTE(req->wValue);	// AUDIO_MUTE_CONTROL, AUDIO_VOLUME_CONTROL, ...
 	//const uint_fast8_t channelNumber = LO_BYTE(req->wValue);
@@ -310,9 +317,15 @@ static unsigned USBD_UAC1_Selector_req(
 		return 0;
 
 	case AUDIO_REQUEST_GET_CUR:
-		//PRINTF(PSTR("USBD_UAC1_Selector_req: AUDIO_REQUEST_GET_CUR: interfacev=%u,  %u\n"), interfacev, terminalID);
-		buff [0] = terminalsprops [terminalID] [controlID];
+		PRINTF(PSTR("USBD_UAC1_Selector_req: AUDIO_REQUEST_GET_CUR: interfacev=%u,  terminal=%u\n"), interfacev, terminalID);
+		buff [0] = 1; //terminalsprops [terminalID] [controlID];
 		return 1;
+
+	case AUDIO_REQUEST_SET_CUR:
+		PRINTF(PSTR("USBD_UAC1_Selector_req: AUDIO_REQUEST_SET_CUR: interfacev=%u,  terminal=%u, value=%d\n"), interfacev, terminalID, buff [0]);
+		//terminalsprops [terminalID] [controlID] = buff [0];
+		return 0;
+
 
 	case AUDIO_REQUEST_GET_MIN:
 		//PRINTF(PSTR("USBD_UAC1_Selector_req: AUDIO_REQUEST_GET_MIN: interfacev=%u,  %u\n"), interfacev, terminalID);
@@ -740,23 +753,27 @@ static USBD_StatusTypeDef USBD_UAC_EP0_RxReady(USBD_HandleTypeDef *pdev)
 	case INTERFACE_AUDIO_CONTROL_MIKE:	// AUDIO control interface
 	case INTERFACE_AUDIO_CONTROL_SPK:	// AUDIO control interface
 		{
-			switch (req->bRequest)
+			const uint_fast8_t terminalID = HI_BYTE(req->wIndex);
+			switch (terminalID)
 			{
-			case AUDIO_REQUEST_SET_CUR:
-				{
-					const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
-					const uint_fast8_t terminalID = HI_BYTE(req->wIndex);
-					const uint_fast8_t controlID = HI_BYTE(req->wValue);	// AUDIO_MUTE_CONTROL, AUDIO_VOLUME_CONTROL, ...
-					terminalsprops [terminalID] [controlID] = uac_ep0databuffout [0];
-					//PRINTF(PSTR("USBD_XXX_EP0_RxReady: AUDIO_REQUEST_SET_CUR: interfacev=%u, %u=%u\n"), interfacev, terminalID, uac_ep0databuffout [0]);
-				}
-				break;
+			case TERMINAL_ID_FU1_IN + 0 * MAX_TERMINALS_IN_INTERFACE:
+			case TERMINAL_ID_FU1_IN + 1 * MAX_TERMINALS_IN_INTERFACE:
+			case TERMINAL_ID_FU1_IN + 2 * MAX_TERMINALS_IN_INTERFACE:
+			case TERMINAL_ID_FU1_OUT + 0 * MAX_TERMINALS_IN_INTERFACE:
+			case TERMINAL_ID_FU1_OUT + 1 * MAX_TERMINALS_IN_INTERFACE:
+			case TERMINAL_ID_FU1_OUT + 2 * MAX_TERMINALS_IN_INTERFACE:
+				USBD_UAC1_FeatureUnit_req(req, uac_ep0databuffout);
+				return USBD_OK;
+			case TERMINAL_ID_SELECTOR_6:
+				USBD_UAC1_Selector_req(req, uac_ep0databuffout);
+				return USBD_OK;
+
 			default:
 				{
 					const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
 					const uint_fast8_t terminalID = HI_BYTE(req->wIndex);
 					const uint_fast8_t controlID = HI_BYTE(req->wValue);	// AUDIO_MUTE_CONTROL, AUDIO_VOLUME_CONTROL, ...
-					//PRINTF(PSTR("USBD_XXX_EP0_RxReady: request=%u: interfacev=%u, %u=%u\n"), req->bRequest, interfacev, terminalID, uac_ep0databuffout [0]);
+					PRINTF(PSTR("USBD_XXX_EP0_RxReady: request=%u: interfacev=%u, %u=%u\n"), req->bRequest, interfacev, terminalID, uac_ep0databuffout [0]);
 				}
 				break;
 			}
@@ -829,7 +846,7 @@ static USBD_StatusTypeDef USBD_UAC_Init(USBD_HandleTypeDef *pdev, uint_fast8_t c
 	//PRINTF(PSTR("USBD_XXX_Init: cfgidx=%d\n"), cfgidx);
 	altinterfaces [INTERFACE_AUDIO_MIKE] = 0;
 	altinterfaces [INTERFACE_AUDIO_SPK] = 0;
-	terminalsprops [TERMINAL_ID_SELECTOR_6] [AUDIO_CONTROL_UNDEFINED] = 1;
+	//terminalsprops [TERMINAL_ID_SELECTOR_6] [AUDIO_CONTROL_UNDEFINED] = 1;
 	buffers_set_uacinalt(altinterfaces [INTERFACE_AUDIO_MIKE]);
 	buffers_set_uacoutalt(altinterfaces [INTERFACE_AUDIO_SPK]);
 
