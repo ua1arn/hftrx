@@ -429,7 +429,7 @@ static unsigned UAC2_AudioControlIT_IN48(
 		const uint_fast16_t wTerminalType = AUDIO_TERMINAL_RADIO_RECEIVER;
 		const uint_fast32_t wChannelConfig = UACIN_CONFIG_IN48;
 		const uint_fast8_t bNrChannels = UAC_count_channels(wChannelConfig);
-		const uint_fast16_t bmControls = 0;//0x0003;
+		const uint_fast16_t bmControls = 0x0003;
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = AUDIO_INTERFACE_DESCRIPTOR_TYPE; // CS_INTERFACE Descriptor Type
@@ -476,7 +476,7 @@ static unsigned UAC2_AudioControlIT_IN48_INRTS(
 		const uint_fast16_t wTerminalType = AUDIO_TERMINAL_RADIO_RECEIVER;
 		const uint_fast32_t wChannelConfig = UACIN_CONFIG_IN48_INRTS;
 		const uint_fast8_t bNrChannels = UAC_count_channels(wChannelConfig);
-		const uint_fast16_t bmControls = 0;//0x0003;
+		const uint_fast16_t bmControls = 0x0003;
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = AUDIO_INTERFACE_DESCRIPTOR_TYPE; // CS_INTERFACE Descriptor Type
@@ -565,7 +565,7 @@ static unsigned UAC2_AudioControlIT_OUT48(
 		// 4.3.2.1 Input Terminal Descriptor 
 		const uint_fast16_t wTerminalType = AUDIO_TERMINAL_USB_STREAMING;
 		const uint_fast32_t wChannelConfig = UACOUT_CONFIG_OUT48;
-		const uint_fast8_t bNrChannels = 1;//UAC2_OUT_bNrChannels; //3;//UAC_count_channels(wChannelConfig);
+		const uint_fast8_t bNrChannels = 2;//UAC2_OUT_bNrChannels; //3;//UAC_count_channels(wChannelConfig);
 		const uint_fast16_t bmControls = 0;//0x0003;
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;									/* 0 bLength */
@@ -2599,7 +2599,8 @@ static unsigned fill_UAC2_function(uint_fast8_t fill, uint8_t * p, unsigned maxs
 
 	#else /* WITHUSBUACIN2 */
 		/* на одном устройстве различные форматы для передачи в компьютер для передачи спектра и звука */
-		n += fill_UAC2_IN48_INRTS_function(fill, p + n, maxsize - n, highspeed, 0);
+			//n += fill_UAC2_IN48_INRTS_function(fill, p + n, maxsize - n, highspeed, 0);
+			n += fill_UAC2_IN48_function(fill, p + n, maxsize - n, highspeed, 0);
 
 	#endif /* WITHUSBUACIN2 */
 #endif /* WITHUSBUACIN */
