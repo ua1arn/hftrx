@@ -686,7 +686,7 @@ static unsigned UAC2_AudioFeatureUnit_IN(
 		// and so on...
 		0;
 
-	const uint_fast8_t n = 1 + UAC2_IN_bNrChannels; // 1: Only master channel controls, 3: master, left and right
+	const uint_fast8_t n = 3; //1 + UAC2_IN_bNrChannels; // 1: Only master channel controls, 3: master, left and right
 	const uint_fast8_t length = 6 + 4 * n;
 	ASSERT(maxsize >= length);
 	if (maxsize < length)
@@ -2593,14 +2593,15 @@ static unsigned fill_UAC2_function(uint_fast8_t fill, uint8_t * p, unsigned maxs
 		n += fill_UAC2_IN48_function(fill, p + n, maxsize - n, highspeed, 0);
 		#if WITHRTS96 || WITHRTS192
 			n += fill_UAC2_INRTS_function(fill, p + n, maxsize - n, highspeed, 1);
+
 		#else /* WITHRTS96 || WITHRTS192 */
 			#error WITHRTS96 or WITHRTS192 required for WITHUSBUACIN2
+
 		#endif /* WITHRTS96 || WITHRTS192 */
 
 	#else /* WITHUSBUACIN2 */
 		/* на одном устройстве различные форматы для передачи в компьютер для передачи спектра и звука */
-			n += fill_UAC2_IN48_INRTS_function(fill, p + n, maxsize - n, highspeed, 0);
-			//n += fill_UAC2_IN48_function(fill, p + n, maxsize - n, highspeed, 0);
+		n += fill_UAC2_IN48_INRTS_function(fill, p + n, maxsize - n, highspeed, 0);
 
 	#endif /* WITHUSBUACIN2 */
 #endif /* WITHUSBUACIN */
@@ -2608,6 +2609,7 @@ static unsigned fill_UAC2_function(uint_fast8_t fill, uint8_t * p, unsigned maxs
 #if WITHUSBUACOUT
 	// Вывод звука из комьпютера
 	n += fill_UAC2_OUT48_function(fill, p + n, maxsize - n, highspeed, 2);
+
 #endif /* WITHUSBUACOUT */
 
 	return n;
