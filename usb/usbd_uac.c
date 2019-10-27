@@ -51,38 +51,43 @@ USBD_peek_u32(
 }
 
 /* записать в буфер для ответа 32-бит значение */
-static void USBD_poke_u32(uint8_t * buff, uint_fast32_t v)
+static unsigned USBD_poke_u32(uint8_t * buff, uint_fast32_t v)
 {
 	buff [0] = LO_BYTE(v);
 	buff [1] = HI_BYTE(v);
 	buff [2] = HI_24BY(v);
 	buff [3] = HI_32BY(v);
+	return 4;
 }
 
 /* записать в буфер для ответа 24-бит значение */
-static void USBD_poke_u24(uint8_t * buff, uint_fast32_t v)
+static unsigned USBD_poke_u24(uint8_t * buff, uint_fast32_t v)
 {
 	buff [0] = LO_BYTE(v);
 	buff [1] = HI_BYTE(v);
 	buff [2] = HI_24BY(v);
+	return 3;
 }
 
 /* записать в буфер для ответа 16-бит значение */
-static void USBD_poke_u16(uint8_t * buff, uint_fast16_t v)
+static unsigned USBD_poke_u16(uint8_t * buff, uint_fast16_t v)
 {
 	buff [0] = LO_BYTE(v);
 	buff [1] = HI_BYTE(v);
+	return 2;
 }
 
 /* записать в буфер для ответа 8-бит значение */
-static void USBD_poke_u8(uint8_t * buff, uint_fast8_t v)
+static unsigned USBD_poke_u8(uint8_t * buff, uint_fast8_t v)
 {
 	buff [0] = v;
+	return 1;
 }
 
 // Fill Layout 1 Parameter Block
 static unsigned USBD_fill_range_lay1pb(uint8_t * b, uint_fast8_t v)
 {
+	unsigned n = 0;
 /*
 	If a subrange consists of only a single value,
 	the corresponding triplet must contain that value for
@@ -90,17 +95,18 @@ static unsigned USBD_fill_range_lay1pb(uint8_t * b, uint_fast8_t v)
 	and the RES subattribute must be set to zero.
 */
 
-	USBD_poke_u16(b + 0, 1);	// number of subranges
-	USBD_poke_u8(b + 2, v);	// MIN
-	USBD_poke_u8(b + 3, v);	// MAX
-	USBD_poke_u8(b + 4, 0);	// RES
+	n += USBD_poke_u16(b + 0, 1);	// number of subranges
+	n += USBD_poke_u8(b + 2, v);	// MIN
+	n += USBD_poke_u8(b + 3, v);	// MAX
+	n += USBD_poke_u8(b + 4, 0);	// RES
 
-	return 5;
+	return n;
 }
 
 // Fill Layout 2 Parameter Block
 static unsigned USBD_fill_range_lay2pb(uint8_t * b, uint_fast16_t v)
 {
+	unsigned n = 0;
 /*
 	If a subrange consists of only a single value,
 	the corresponding triplet must contain that value for
@@ -108,17 +114,18 @@ static unsigned USBD_fill_range_lay2pb(uint8_t * b, uint_fast16_t v)
 	and the RES subattribute must be set to zero.
 */
 
-	USBD_poke_u16(b + 0, 1);	// number of subranges
-	USBD_poke_u16(b + 2, v);	// MIN
-	USBD_poke_u16(b + 3, v);	// MAX
-	USBD_poke_u16(b + 4, 0);	// RES
+	n += USBD_poke_u16(b + 0, 1);	// number of subranges
+	n += USBD_poke_u16(b + 2, v);	// MIN
+	n += USBD_poke_u16(b + 3, v);	// MAX
+	n += USBD_poke_u16(b + 4, 0);	// RES
 
-	return 8;
+	return n;
 }
 
 // Fill Layout 3 Parameter Block
 static unsigned USBD_fill_range_lay3pb(uint8_t * b, uint_fast32_t v)
 {
+	unsigned n = 0;
 /*
 	If a subrange consists of only a single value,
 	the corresponding triplet must contain that value for
@@ -126,18 +133,19 @@ static unsigned USBD_fill_range_lay3pb(uint8_t * b, uint_fast32_t v)
 	and the RES subattribute must be set to zero.
 */
 
-	USBD_poke_u16(b + 0, 1);	// number of subranges
-	USBD_poke_u32(b + 2, v);	// MIN
-	USBD_poke_u32(b + 6, v);	// MAX
-	USBD_poke_u32(b + 10, 0);	// RES
+	n += USBD_poke_u16(b + 0, 1);	// number of subranges
+	n += USBD_poke_u32(b + 2, v);	// MIN
+	n += USBD_poke_u32(b + 6, v);	// MAX
+	n += USBD_poke_u32(b + 10, 0);	// RES
 
-	return 14;
+	return n;
 }
 
 // Fill Layout 3 Parameter Block
 // with two discrete options
 static unsigned USBD_fill_range_lay3pb2opt(uint8_t * b, uint_fast32_t v1, uint_fast32_t v2)
 {
+	unsigned n = 0;
 /*
 	If a subrange consists of only a single value,
 	the corresponding triplet must contain that value for
@@ -145,15 +153,15 @@ static unsigned USBD_fill_range_lay3pb2opt(uint8_t * b, uint_fast32_t v1, uint_f
 	and the RES subattribute must be set to zero.
 */
 
-	USBD_poke_u16(b + 0, 2);	// number of subranges
-	USBD_poke_u32(b + 2, v1);	// MIN
-	USBD_poke_u32(b + 6, v1);	// MAX
-	USBD_poke_u32(b + 10, 0);	// RES
-	USBD_poke_u32(b + 14, v2);	// MIN
-	USBD_poke_u32(b + 18, v2);	// MAX
-	USBD_poke_u32(b + 22, 0);	// RES
+	n += USBD_poke_u16(b + 0, 2);	// number of subranges
+	n += USBD_poke_u32(b + 2, v1);	// MIN
+	n += USBD_poke_u32(b + 6, v1);	// MAX
+	n += USBD_poke_u32(b + 10, 0);	// RES
+	n += USBD_poke_u32(b + 14, v2);	// MIN
+	n += USBD_poke_u32(b + 18, v2);	// MAX
+	n += USBD_poke_u32(b + 22, 0);	// RES
 
-	return 26;
+	return n;
 }
 
 
@@ -262,40 +270,53 @@ static unsigned USBD_UAC1_FeatureUnit_req(
 {
 	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
 	const uint_fast8_t terminalID = HI_BYTE(req->wIndex);
-	const uint_fast8_t controlID = HI_BYTE(req->wValue);	// AUDIO_MUTE_CONTROL, AUDIO_VOLUME_CONTROL, ...
-	//const uint_fast8_t channelNumber = LO_BYTE(req->wValue);
-	switch (req->bRequest)
+	const uint_fast8_t CS = HI_BYTE(req->wValue);	// The Control Selector indicates which type of Control this request is manipulating. (Volume, Mute, etc.)
+	const uint_fast8_t CN = LO_BYTE(req->wValue);	// The Channel Number (CN) indicates which logical channel of the cluster is to be influenced
+	// CS=1: Mute - supports only CUR (1 byte)
+	// CS=2: Volume supports CUR, MIN, MAX, and RES (2 byte)
+	const uint_fast8_t val8 = req->wLength == 1 ? buff [0] : UINT8_MAX;
+	const uint_fast16_t val16 =  req->wLength == 2 ? buff [1] * 256 + buff [0] : UINT16_MAX;
+	if (CS == AUDIO_MUTE_CONTROL)
 	{
-	default:
-		// Undefined request
-		TP();
+		// Mute control
+		if (req->bRequest == AUDIO_REQUEST_GET_CUR)
+		{
+			// Mute control CUR request response
+			return ulmin16(USBD_poke_u8(buff, 0), req->wLength);
+		}
+		// AUDIO_REQUEST_SET_CUR
+		//PRINTF(PSTR("USBD_UAC1_FeatureUnit_req: AUDIO_REQUEST_SET_CUR: interfacev=%u,  terminal=%u, CS=%d, CN=%d, value=%d\n"), interfacev, terminalID, CS, CN, val8);
 		return 0;
-
-	case AUDIO_REQUEST_GET_CUR:
-		PRINTF(PSTR("USBD_UAC1_FeatureUnit_req: AUDIO_REQUEST_GET_CUR: interfacev=%u,  terminal=%u\n"), interfacev, terminalID);
-		buff [0] = 0; //terminalsprops [terminalID] [controlID];
-		return 1;
-
-	case AUDIO_REQUEST_SET_CUR:
-		PRINTF(PSTR("USBD_UAC1_FeatureUnit_req: AUDIO_REQUEST_SET_CUR: interfacev=%u,  terminal=%u, value=%d\n"), interfacev, terminalID, buff [0]);
-		//terminalsprops [terminalID] [controlID] = buff [0];
-		return 0;
-
-	case AUDIO_REQUEST_GET_MIN:
-		//PRINTF(PSTR("USBD_UAC1_FeatureUnit_req: AUDIO_REQUEST_GET_MIN: interfacev=%u,  %u\n"), interfacev, terminalID);
-		buff [0] = 0;
-		return 1;
-
-	case AUDIO_REQUEST_GET_MAX:
-		//PRINTF(PSTR("USBD_UAC1_FeatureUnit_req: AUDIO_REQUEST_GET_MAX: interfacev=%u,  %u\n"), interfacev, terminalID);
-		buff [0] = 0;
-		return 1;
-
-	case AUDIO_REQUEST_GET_RES:
-		//PRINTF(PSTR("USBD_UAC1_FeatureUnit_req: AUDIO_REQUEST_GET_MAX: interfacev=%u,  %u\n"), interfacev, terminalID);
-		buff [0] = 1;
-		return 1;
 	}
+	if (CS == AUDIO_VOLUME_CONTROL)
+	{
+		// Volume control
+		switch (req->bRequest)
+		{
+		case AUDIO_REQUEST_GET_CUR:
+			//PRINTF(PSTR("USBD_UAC1_FeatureUnit_req: AUDIO_REQUEST_GET_CUR: interfacev=%u,  terminal=%u, CS=%d, CN=%d\n"), interfacev, terminalID, CS, CN);
+			return ulmin16(USBD_poke_u16(buff, 0), req->wLength);
+
+		case AUDIO_REQUEST_SET_CUR:
+			//PRINTF(PSTR("USBD_UAC1_FeatureUnit_req: AUDIO_REQUEST_SET_CUR: interfacev=%u,  terminal=%u, CS=%d, CN=%d, value=%d\n"), interfacev, terminalID, CS, CN, val16);
+			//terminalsprops [terminalID] [controlID] = buff [0];
+			return 0;
+
+		case AUDIO_REQUEST_GET_MIN:
+			//PRINTF(PSTR("USBD_UAC1_FeatureUnit_req: AUDIO_REQUEST_GET_MIN: interfacev=%u,  terminal=%u, CS=%d, CN=%d, \n"), interfacev, terminalID, CS, CN);
+			return ulmin16(USBD_poke_u16(buff, 0), req->wLength);
+
+		case AUDIO_REQUEST_GET_MAX:
+			//PRINTF(PSTR("USBD_UAC1_FeatureUnit_req: AUDIO_REQUEST_GET_MAX: interfacev=%u,  terminal=%u, CS=%d, CN=%d, \n"), interfacev, terminalID, CS, CN);
+			return ulmin16(USBD_poke_u16(buff, 0 * 100), req->wLength);
+
+		case AUDIO_REQUEST_GET_RES:
+			//PRINTF(PSTR("USBD_UAC1_FeatureUnit_req: AUDIO_REQUEST_GET_RES: interfacev=%u,  terminal=%u, CS=%d, CN=%d, \n"), interfacev, terminalID, CS, CN);
+			return ulmin16(USBD_poke_u16(buff, 1), req->wLength);
+		}
+	}
+	TP();
+	return 0;
 }
 
 // UAC1: Выполнение запроса к Selector UAC1
@@ -317,12 +338,12 @@ static unsigned USBD_UAC1_Selector_req(
 		return 0;
 
 	case AUDIO_REQUEST_GET_CUR:
-		PRINTF(PSTR("USBD_UAC1_Selector_req: AUDIO_REQUEST_GET_CUR: interfacev=%u,  terminal=%u\n"), interfacev, terminalID);
+		//PRINTF(PSTR("USBD_UAC1_Selector_req: AUDIO_REQUEST_GET_CUR: interfacev=%u,  terminal=%u\n"), interfacev, terminalID);
 		buff [0] = 1; //terminalsprops [terminalID] [controlID];
 		return 1;
 
 	case AUDIO_REQUEST_SET_CUR:
-		PRINTF(PSTR("USBD_UAC1_Selector_req: AUDIO_REQUEST_SET_CUR: interfacev=%u,  terminal=%u, value=%d\n"), interfacev, terminalID, buff [0]);
+		//PRINTF(PSTR("USBD_UAC1_Selector_req: AUDIO_REQUEST_SET_CUR: interfacev=%u,  terminal=%u, value=%d\n"), interfacev, terminalID, buff [0]);
 		//terminalsprops [terminalID] [controlID] = buff [0];
 		return 0;
 
@@ -428,7 +449,7 @@ static unsigned USBD_UAC2_ClockSource_req(
 				return 0;
 			case 1:
 				// FREQ
-				// todo: depend on mode
+				// FIXME: depend on mode (alt interface) for TERMINAL_ID_CLKSOURCE_UACINOUT
 				USBD_poke_u32(buff + 0, dsp_get_samplerateuacin_audio48()); // sample rate
 				return 4;
 			case 2:
