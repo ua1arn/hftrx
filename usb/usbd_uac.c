@@ -328,8 +328,7 @@ static unsigned USBD_UAC1_Selector_req(
 {
 	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
 	const uint_fast8_t terminalID = HI_BYTE(req->wIndex);
-	const uint_fast8_t controlID = HI_BYTE(req->wValue);	// AUDIO_MUTE_CONTROL, AUDIO_VOLUME_CONTROL, ...
-	//const uint_fast8_t channelNumber = LO_BYTE(req->wValue);
+	const uint_fast8_t val8 = req->wLength == 1 ? buff [0] : UINT8_MAX;
 	switch (req->bRequest)
 	{
 	default:
@@ -337,31 +336,26 @@ static unsigned USBD_UAC1_Selector_req(
 		TP();
 		return 0;
 
-	case AUDIO_REQUEST_GET_CUR:
-		//PRINTF(PSTR("USBD_UAC1_Selector_req: AUDIO_REQUEST_GET_CUR: interfacev=%u,  terminal=%u\n"), interfacev, terminalID);
-		buff [0] = 1; //terminalsprops [terminalID] [controlID];
-		return 1;
-
 	case AUDIO_REQUEST_SET_CUR:
-		//PRINTF(PSTR("USBD_UAC1_Selector_req: AUDIO_REQUEST_SET_CUR: interfacev=%u,  terminal=%u, value=%d\n"), interfacev, terminalID, buff [0]);
+		//PRINTF(PSTR("USBD_UAC1_Selector_req: AUDIO_REQUEST_SET_CUR: interfacev=%u,  terminal=%u, value=%d\n"), interfacev, terminalID, val8);
 		//terminalsprops [terminalID] [controlID] = buff [0];
 		return 0;
 
+	case AUDIO_REQUEST_GET_CUR:
+		//PRINTF(PSTR("USBD_UAC1_Selector_req: AUDIO_REQUEST_GET_CUR: interfacev=%u,  terminal=%u\n"), interfacev, terminalID);
+		return ulmin16(USBD_poke_u8(buff, 1), req->wLength);
 
 	case AUDIO_REQUEST_GET_MIN:
-		//PRINTF(PSTR("USBD_UAC1_Selector_req: AUDIO_REQUEST_GET_MIN: interfacev=%u,  %u\n"), interfacev, terminalID);
-		buff [0] = 1;
-		return 1;
+		//PRINTF(PSTR("USBD_UAC1_Selector_req: AUDIO_REQUEST_GET_MIN: interfacev=%u,  terminal=%u\n"), interfacev, terminalID);
+		return ulmin16(USBD_poke_u8(buff, 1), req->wLength);
 
 	case AUDIO_REQUEST_GET_MAX:
-		//PRINTF(PSTR("USBD_UAC1_Selector_req: AUDIO_REQUEST_GET_MAX: interfacev=%u,  %u\n"), interfacev, terminalID);
-		buff [0] = TERMINAL_ID_SELECTOR_6_INPUTS;
-		return 1;
+		//PRINTF(PSTR("USBD_UAC1_Selector_req: AUDIO_REQUEST_GET_MAX: interfacev=%u,  terminal=%u\n"), interfacev, terminalID);
+		return ulmin16(USBD_poke_u8(buff, TERMINAL_ID_SELECTOR_6_INPUTS), req->wLength);
 
 	case AUDIO_REQUEST_GET_RES:
-		//PRINTF(PSTR("USBD_UAC1_Selector_req: AUDIO_REQUEST_GET_MAX: interfacev=%u,  %u\n"), interfacev, terminalID);
-		buff [0] = 1;
-		return 1;
+		//PRINTF(PSTR("USBD_UAC1_Selector_req: AUDIO_REQUEST_GET_MIN: interfacev=%u,  terminal=%u\n"), interfacev, terminalID);
+		return ulmin16(USBD_poke_u8(buff, 1), req->wLength);
 	}
 }
 
