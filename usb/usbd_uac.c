@@ -122,6 +122,47 @@ static unsigned USBD_fill_range_lay2pb(uint8_t * b, uint_fast16_t v)
 	return n;
 }
 
+// Fill Layout 2 Parameter Block
+static unsigned USBD_fill_range_lay2pbMinMax(uint8_t * b, uint_fast16_t vmin, uint_fast16_t vmax)
+{
+	unsigned n = 0;
+/*
+	If a subrange consists of only a single value,
+	the corresponding triplet must contain that value for
+	both its MIN and MAX subattribute
+	and the RES subattribute must be set to zero.
+*/
+
+	n += USBD_poke_u16(b + 0, 1);	// number of subranges
+	n += USBD_poke_u16(b + 2, vmin);	// MIN
+	n += USBD_poke_u16(b + 3, vmax);	// MAX
+	n += USBD_poke_u16(b + 4, 1);	// RES
+
+	return n;
+}
+
+// Fill Layout 2 Parameter Block
+static unsigned USBD_fill_range_lay2pbOpt(uint8_t * b, uint_fast16_t v1, uint_fast16_t v2)
+{
+	unsigned n = 0;
+/*
+	If a subrange consists of only a single value,
+	the corresponding triplet must contain that value for
+	both its MIN and MAX subattribute
+	and the RES subattribute must be set to zero.
+*/
+
+	n += USBD_poke_u16(b + 0, 1);	// number of subranges
+	n += USBD_poke_u16(b + 2, v1);	// MIN
+	n += USBD_poke_u16(b + 3, v1);	// MAX
+	n += USBD_poke_u16(b + 4, 0);	// RES
+	n += USBD_poke_u16(b + 2, v2);	// MIN
+	n += USBD_poke_u16(b + 3, v2);	// MAX
+	n += USBD_poke_u16(b + 4, 0);	// RES
+
+	return n;
+}
+
 // Fill Layout 3 Parameter Block
 static unsigned USBD_fill_range_lay3pb(uint8_t * b, uint_fast32_t v)
 {
@@ -282,7 +323,7 @@ static unsigned USBD_UAC1_FeatureUnit_req(
 		if (req->bRequest == AUDIO_REQUEST_GET_CUR)
 		{
 			// Mute control CUR request response
-			return ulmin16(USBD_poke_u8(buff, 0), req->wLength);
+			return USBD_poke_u8(buff, 0);
 		}
 		// AUDIO_REQUEST_SET_CUR
 		//PRINTF(PSTR("USBD_UAC1_FeatureUnit_req: AUDIO_REQUEST_SET_CUR: interfacev=%u,  terminal=%u, CS=%d, CN=%d, value=%d\n"), interfacev, terminalID, CS, CN, val8);
@@ -295,7 +336,7 @@ static unsigned USBD_UAC1_FeatureUnit_req(
 		{
 		case AUDIO_REQUEST_GET_CUR:
 			//PRINTF(PSTR("USBD_UAC1_FeatureUnit_req: AUDIO_REQUEST_GET_CUR: interfacev=%u,  terminal=%u, CS=%d, CN=%d\n"), interfacev, terminalID, CS, CN);
-			return ulmin16(USBD_poke_u16(buff, 0), req->wLength);
+			return USBD_poke_u16(buff, 0);
 
 		case AUDIO_REQUEST_SET_CUR:
 			//PRINTF(PSTR("USBD_UAC1_FeatureUnit_req: AUDIO_REQUEST_SET_CUR: interfacev=%u,  terminal=%u, CS=%d, CN=%d, value=%d\n"), interfacev, terminalID, CS, CN, val16);
@@ -304,15 +345,15 @@ static unsigned USBD_UAC1_FeatureUnit_req(
 
 		case AUDIO_REQUEST_GET_MIN:
 			//PRINTF(PSTR("USBD_UAC1_FeatureUnit_req: AUDIO_REQUEST_GET_MIN: interfacev=%u,  terminal=%u, CS=%d, CN=%d, \n"), interfacev, terminalID, CS, CN);
-			return ulmin16(USBD_poke_u16(buff, 0), req->wLength);
+			return USBD_poke_u16(buff, 0);
 
 		case AUDIO_REQUEST_GET_MAX:
 			//PRINTF(PSTR("USBD_UAC1_FeatureUnit_req: AUDIO_REQUEST_GET_MAX: interfacev=%u,  terminal=%u, CS=%d, CN=%d, \n"), interfacev, terminalID, CS, CN);
-			return ulmin16(USBD_poke_u16(buff, 0 * 100), req->wLength);
+			return USBD_poke_u16(buff, 0 * 100);
 
 		case AUDIO_REQUEST_GET_RES:
 			//PRINTF(PSTR("USBD_UAC1_FeatureUnit_req: AUDIO_REQUEST_GET_RES: interfacev=%u,  terminal=%u, CS=%d, CN=%d, \n"), interfacev, terminalID, CS, CN);
-			return ulmin16(USBD_poke_u16(buff, 1), req->wLength);
+			return USBD_poke_u16(buff, 1);
 		}
 	}
 	TP();
@@ -343,19 +384,19 @@ static unsigned USBD_UAC1_Selector_req(
 
 	case AUDIO_REQUEST_GET_CUR:
 		//PRINTF(PSTR("USBD_UAC1_Selector_req: AUDIO_REQUEST_GET_CUR: interfacev=%u,  terminal=%u\n"), interfacev, terminalID);
-		return ulmin16(USBD_poke_u8(buff, 1), req->wLength);
+		return USBD_poke_u8(buff, 1);
 
 	case AUDIO_REQUEST_GET_MIN:
 		//PRINTF(PSTR("USBD_UAC1_Selector_req: AUDIO_REQUEST_GET_MIN: interfacev=%u,  terminal=%u\n"), interfacev, terminalID);
-		return ulmin16(USBD_poke_u8(buff, 1), req->wLength);
+		return USBD_poke_u8(buff, 1);
 
 	case AUDIO_REQUEST_GET_MAX:
 		//PRINTF(PSTR("USBD_UAC1_Selector_req: AUDIO_REQUEST_GET_MAX: interfacev=%u,  terminal=%u\n"), interfacev, terminalID);
-		return ulmin16(USBD_poke_u8(buff, TERMINAL_ID_SELECTOR_6_INPUTS), req->wLength);
+		return USBD_poke_u8(buff, TERMINAL_ID_SELECTOR_6_INPUTS);
 
 	case AUDIO_REQUEST_GET_RES:
 		//PRINTF(PSTR("USBD_UAC1_Selector_req: AUDIO_REQUEST_GET_MIN: interfacev=%u,  terminal=%u\n"), interfacev, terminalID);
-		return ulmin16(USBD_poke_u8(buff, 1), req->wLength);
+		return USBD_poke_u8(buff, 1);
 	}
 }
 
@@ -366,10 +407,11 @@ static unsigned USBD_UAC2_FeatureUnit_req(
 	uint8_t * buff
 	)
 {
+	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
 	const uint_fast8_t terminalID = HI_BYTE(req->wIndex);
 	const uint_fast8_t controlID = HI_BYTE(req->wValue);	// AUDIO_MUTE_CONTROL, AUDIO_VOLUME_CONTROL, ...
 	const uint_fast8_t channelNumber = LO_BYTE(req->wValue);
-	//PRINTF(PSTR("1 req->bRequest=%u: interfacev=%u,  controlID=%u, channelNumber=%u, terminalID=%u\n"), req->bRequest, interfacev, controlID, channelNumber, terminalID);
+	PRINTF(PSTR("1 req->bmRequest=%04X req->bRequest=%u req->wLength=%d, interfacev=%u,  controlID=%u, channelNumber=%u, terminalID=%u\n"), req->bmRequest, req->bRequest, req->wLength, interfacev, controlID, channelNumber, terminalID);
 	switch (req->bRequest)
 	{
 	default:
@@ -377,17 +419,17 @@ static unsigned USBD_UAC2_FeatureUnit_req(
 		TP();
 		return 0;
 
-	case 0x01:	// CURR
+	case 0x01:	// CUR
 		switch (controlID)
 		{
 		case 1:
 			// MUTE
-			USBD_poke_u8(buff, 0);
-			return 1;
+			PRINTF(PSTR("2 CUR req->bmRequest=%04X req->bRequest=%u req->wLength=%d, interfacev=%u,  controlID=%u, channelNumber=%u, terminalID=%u\n"), req->bmRequest, req->bRequest, req->wLength, interfacev, controlID, channelNumber, terminalID);
+			return USBD_poke_u8(buff, 0);
 		case 2:
 			// VOLUME
-			USBD_poke_u16(buff, 0);
-			return 2;
+			PRINTF(PSTR("3 CUR req->bmRequest=%04X req->bRequest=%u req->wLength=%d, interfacev=%u,  controlID=%u, channelNumber=%u, terminalID=%u\n"), req->bmRequest, req->bRequest, req->wLength, interfacev, controlID, channelNumber, terminalID);
+			return USBD_poke_u16(buff, 0);
 		default:
 			// Undefined control ID
 			TP();
@@ -400,10 +442,12 @@ static unsigned USBD_UAC2_FeatureUnit_req(
 		{
 		case 1:
 			// MUTE
+			PRINTF(PSTR("4 RANGE req->bmRequest=%04X req->bRequest=%u req->wLength=%d, interfacev=%u,  controlID=%u, channelNumber=%u, terminalID=%u\n"), req->bmRequest, req->bRequest, req->wLength, interfacev, controlID, channelNumber, terminalID);
 			return USBD_fill_range_lay1pb(buff, 0);
 		case 2:
 			// VOLUME
-			return USBD_fill_range_lay2pb(buff, 0);
+			PRINTF(PSTR("5 RANGE req->bmRequest=%04X req->bRequest=%u req->wLength=%d, interfacev=%u,  controlID=%u, channelNumber=%u, terminalID=%u\n"), req->bmRequest, req->bRequest, req->wLength, interfacev, controlID, channelNumber, terminalID);
+			return USBD_fill_range_lay2pbMinMax(buff, 0, 100);
 		default:
 			// Undefined control ID
 			TP();
@@ -444,12 +488,10 @@ static unsigned USBD_UAC2_ClockSource_req(
 			case 1:
 				// FREQ
 				// FIXME: depend on mode (alt interface) for TERMINAL_ID_CLKSOURCE_UACINOUT
-				USBD_poke_u32(buff + 0, dsp_get_samplerateuacin_audio48()); // sample rate
-				return 4;
+				return USBD_poke_u32(buff + 0, dsp_get_samplerateuacin_audio48()); // sample rate
 			case 2:
 				// VALID
-				USBD_poke_u8(buff + 0, 1); // valid
-				return 1;
+				return USBD_poke_u8(buff + 0, 1); // valid
 			}
 			break;
 		case TERMINAL_ID_CLKSOURCE_UACINRTS:
@@ -461,12 +503,10 @@ static unsigned USBD_UAC2_ClockSource_req(
 				return 0;
 			case 1:
 				// FREQ
-				USBD_poke_u32(buff + 0, dsp_get_samplerateuacin_rts()); // sample rate
-				return 4;
+				return USBD_poke_u32(buff + 0, dsp_get_samplerateuacin_rts()); // sample rate
 			case 2:
 				// VALID
-				USBD_poke_u8(buff + 0, 1); // valid
-				return 1;
+				return USBD_poke_u8(buff + 0, 1); // valid
 			}
 			break;
 		case TERMINAL_ID_CLKSOURCE_UACIN48:
@@ -479,12 +519,10 @@ static unsigned USBD_UAC2_ClockSource_req(
 				return 0;
 			case 1:
 				// FREQ
-				USBD_poke_u32(buff + 0, dsp_get_samplerateuacin_audio48()); // sample rate
-				return 4;
+				return USBD_poke_u32(buff + 0, dsp_get_samplerateuacin_audio48()); // sample rate
 			case 2:
 				// VALID
-				USBD_poke_u8(buff + 0, 1); // valid
-				return 1;
+				return USBD_poke_u8(buff + 0, 1); // valid
 			}
 			break;
 		}
@@ -508,7 +546,8 @@ static unsigned USBD_UAC2_ClockSource_req(
 				return 0;
 			case 1:
 				// FREQ
-				return USBD_fill_range_lay3pb2opt(buff, dsp_get_samplerateuacin_audio48(), dsp_get_samplerateuacin_rts());
+				//return USBD_fill_range_lay3pb2opt(buff, dsp_get_samplerateuacin_audio48(), dsp_get_samplerateuacin_rts());
+				return USBD_fill_range_lay3pb(buff, dsp_get_samplerateuacin_audio48());
 			}
 			break;
 		case TERMINAL_ID_CLKSOURCE_UACINRTS:

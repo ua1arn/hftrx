@@ -411,6 +411,7 @@ static unsigned UAC2_AC_InterfaceDescriptor(
 // audio20.pdf: Table 4-9: Input Terminal Descriptor
 // Stereo signal source
 // Audio only
+// IN path topology
 static unsigned UAC2_AudioControlIT_IN48(
 	uint_fast8_t fill, uint8_t * buff, unsigned maxsize,
 	uint_fast8_t bTerminalID,
@@ -426,7 +427,7 @@ static unsigned UAC2_AudioControlIT_IN48(
 	{
 		// 4.3.2.1 Input Terminal Descriptor 
 		const uint_fast16_t wTerminalType = AUDIO_TERMINAL_RADIO_RECEIVER;
-		const uint_fast32_t wChannelConfig = HARDWARE_USBD_AUDIO_CONFIG_IN48;
+		const uint_fast32_t wChannelConfig = UACIN_CONFIG_IN48;
 		const uint_fast8_t bNrChannels = UAC_count_channels(wChannelConfig);
 		const uint_fast16_t bmControls = 0;//0x0003;
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
@@ -473,7 +474,7 @@ static unsigned UAC2_AudioControlIT_IN48_INRTS(
 	{
 		// 4.3.2.1 Input Terminal Descriptor
 		const uint_fast16_t wTerminalType = AUDIO_TERMINAL_RADIO_RECEIVER;
-		const uint_fast32_t wChannelConfig = HARDWARE_USBD_AUDIO_CONFIG_IN48_INRTS;
+		const uint_fast32_t wChannelConfig = UACIN_CONFIG_IN48_INRTS;
 		const uint_fast8_t bNrChannels = UAC_count_channels(wChannelConfig);
 		const uint_fast16_t bmControls = 0;//0x0003;
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
@@ -515,7 +516,7 @@ static unsigned UAC2_AudioControlIT_INRTS(
 	{
 		// 4.3.2.1 Input Terminal Descriptor 
 		const uint_fast16_t wTerminalType = AUDIO_TERMINAL_RADIO_RECEIVER;
-		const uint_fast32_t wChannelConfig = HARDWARE_USBD_AUDIO_CONFIG_INRTS;
+		const uint_fast32_t wChannelConfig = UACIN_CONFIG_INRTS;
 		const uint_fast8_t bNrChannels = UAC_count_channels(wChannelConfig);
 		const uint_fast16_t bmControls = 0;//0x0003;
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
@@ -547,6 +548,7 @@ static unsigned UAC2_AudioControlIT_INRTS(
 // audio10.pdf: Table 4-3: Input Terminal Descriptor
 // audio48 only
 // AC Input Terminal Descriptor
+// OOT path topology element
 static unsigned UAC2_AudioControlIT_OUT48(
 	uint_fast8_t fill, uint8_t * buff, unsigned maxsize, 
 	uint_fast8_t bTerminalID,
@@ -562,8 +564,8 @@ static unsigned UAC2_AudioControlIT_OUT48(
 	{
 		// 4.3.2.1 Input Terminal Descriptor 
 		const uint_fast16_t wTerminalType = AUDIO_TERMINAL_USB_STREAMING;
-		const uint_fast32_t wChannelConfig = HARDWARE_USBD_AUDIO_CONFIG_OUT48;
-		const uint_fast8_t bNrChannels = 1;//UAC_count_channels(wChannelConfig);
+		const uint_fast32_t wChannelConfig = UACOUT_CONFIG_OUT48;
+		const uint_fast8_t bNrChannels = 1;//UAC2_OUT_bNrChannels; //3;//UAC_count_channels(wChannelConfig);
 		const uint_fast16_t bmControls = 0;//0x0003;
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;									/* 0 bLength */
@@ -592,6 +594,7 @@ static unsigned UAC2_AudioControlIT_OUT48(
 /*! USB Microphone Output Terminal Descriptor bSourceID -> bTerminalID */
 // Audio Control Output Terminal Descriptor 
 // Audio или RTS
+// IN path topology
 static unsigned UAC2_AudioControlOT_IN(
 	uint_fast8_t fill, uint8_t * buff, unsigned maxsize, 
 	uint_fast8_t bTerminalID,
@@ -657,7 +660,67 @@ static unsigned UAC_AudioSelectorUnit_IN(
 // Audio Control Feature Unit Descriptor 
 // See 4.3.2.5 Feature Unit Descriptor for details
 // В нашем случае используется для подавления отображения раздельных элементов регулировки уровня по каналам
-static unsigned UAC2_AudioFeatureUnit(
+// IN path topology
+static unsigned UAC2_AudioFeatureUnit_IN(
+	uint_fast8_t fill, uint8_t * buff, unsigned maxsize,
+	uint_fast8_t bUnitID,
+	uint_fast8_t bSourceID,
+	uint_fast8_t offset
+	)
+{
+	// Параметр определяет, ккие управляющие элементы появляются на страничке управления "Custom"
+	// Причем, на этой страничке собраны все управляющие элементы со всех Feature Unit Descriptor
+	// в пути сигнала данного источника звука.
+	// Each element:
+	// 0x00 - not present
+	// 0x01 - If a Control is present but read-only,
+	// 0x03 - If a Control is also Host programmable
+	// в нашем случае для предотвращения управления со стороны операционной системы
+	// говорим, что соответствющие элементы у нас есть...
+	const uint_fast32_t bmaControls =
+		1 * (0x01 << 0) |	// Mute Control
+		1 * (0x01 << 2) |	// Volume Control
+		0 * (0x01 << 4) |	// Bass Control
+		0 * (0x01 << 6) |	// Mid Control
+		0 * (0x01 << 8) |	// Treble Control
+		// and so on...
+		0;
+
+	const uint_fast8_t n = 1 + UAC2_IN_bNrChannels; // 1: Only master channel controls, 3: master, left and right
+	const uint_fast8_t length = 6 + 4 * n;
+	ASSERT(maxsize >= length);
+	if (maxsize < length)
+		return 0;
+	if (fill != 0 && buff != NULL)
+	{
+		uint_fast8_t i;
+		// See 4.3.2.5 Feature Unit Descriptor for details
+		* buff ++ = length;							/* 0 bLength */
+		* buff ++ = AUDIO_INTERFACE_DESCRIPTOR_TYPE;/* 1 bDescriptorType */
+		* buff ++ = AUDIO_CONTROL_FEATURE_UNIT;     /* 2 bDescriptorSubtype */
+		* buff ++ = bUnitID;             			/* 3 bUnitID */
+		* buff ++ = bSourceID;						/* 4 bSourceID */
+		for (i = 0; i < n; ++ i)
+		{
+			uint_fast32_t v = bmaControls;
+			uint_fast8_t cs = 4;
+			while (cs --)
+			{
+				* buff ++ = (uint8_t) v;
+				v >>= 8;
+			}
+		}
+		* buff ++ = 0;//STRING_ID_b;                    /* 5+(ch+1)*4 iTerminal */
+		/* 6 + 4 * n bytes */
+	}
+	return length;
+}
+
+// Audio Control Feature Unit Descriptor
+// See 4.3.2.5 Feature Unit Descriptor for details
+// В нашем случае используется для подавления отображения раздельных элементов регулировки уровня по каналам
+// OOT path topology
+static unsigned UAC2_AudioFeatureUnit_OUT(
 	uint_fast8_t fill, uint8_t * buff, unsigned maxsize,
 	uint_fast8_t bUnitID,
 	uint_fast8_t bSourceID,
@@ -717,6 +780,7 @@ static unsigned UAC2_AudioFeatureUnit(
 // Audio Control Output Terminal Descriptor 
 // bSourceID -> bTerminalID
 // audio48 only
+// OOT path topology - final element (modulator, speaker, ...)
 static unsigned UAC2_AudioControlOT_OUT(
 	uint_fast8_t fill, uint8_t * buff, unsigned maxsize, 
 	uint_fast8_t bTerminalID,
@@ -777,7 +841,7 @@ static unsigned UAC2_TopologyIN48(
 	{
 		// Только один источник для компьютера
 		n += UAC2_AudioControlOT_IN(fill, p + n, maxsize - n,  bTerminalID, FU_ID, bCSourceID, offset);	/* AUDIO_TERMINAL_USB_STREAMING Terminal Descriptor TERMINAL_ID_FU_AUDIO -> TERMINAL_UACIN48_UACINRTS */
-		n += UAC2_AudioFeatureUnit(fill, p + n, maxsize - n, FU_ID, bTerminalID + 1, offset);	/* USB microphone Audio Feature Unit Descriptor TERMINAL_UACOUT48 -> TERMINAL_ID_FU_AUDIO */
+		n += UAC2_AudioFeatureUnit_IN(fill, p + n, maxsize - n, FU_ID, bTerminalID + 1, offset);	/* USB microphone Audio Feature Unit Descriptor TERMINAL_UACOUT48 -> TERMINAL_ID_FU_AUDIO */
 		n += UAC2_AudioControlIT_IN48(fill, p + n, maxsize - n, bTerminalID + 1, bCSourceID, offset);	/* AUDIO_TERMINAL_RADIO_RECEIVER */
 	}
 
@@ -805,7 +869,7 @@ static unsigned UAC2_Topology_inout_IN48(
 	{
 		// Только один источник для компьютера
 		n += UAC2_AudioControlOT_IN(fill, p + n, maxsize - n,  bTerminalID, FU_ID, bCSourceID, offset);	/* AUDIO_TERMINAL_USB_STREAMING Terminal Descriptor TERMINAL_ID_FU_AUDIO -> TERMINAL_UACIN48_UACINRTS */
-		n += UAC2_AudioFeatureUnit(fill, p + n, maxsize - n, FU_ID, bTerminalID + 1, offset);	/* USB microphone Audio Feature Unit Descriptor TERMINAL_UACOUT48 -> TERMINAL_ID_FU_AUDIO */
+		n += UAC2_AudioFeatureUnit_IN(fill, p + n, maxsize - n, FU_ID, bTerminalID + 1, offset);	/* USB microphone Audio Feature Unit Descriptor TERMINAL_UACOUT48 -> TERMINAL_ID_FU_AUDIO */
 		n += UAC2_AudioControlIT_IN48(fill, p + n, maxsize - n, bTerminalID + 1, bCSourceID, offset);	/* AUDIO_TERMINAL_RADIO_RECEIVER */
 	}
 
@@ -813,8 +877,9 @@ static unsigned UAC2_Topology_inout_IN48(
 }
 
 // Заполнение схемы вывода звука
-// OUT data flow
+// OOT path topology
 // audio48 only
+// OOT path topology
 static unsigned UAC2_Topology_inout_OUT48(
 	uint_fast8_t fill, uint8_t * p, unsigned maxsize,
 	uint_fast8_t bTerminalID,	// терминал, завершающий поток обработки
@@ -836,7 +901,7 @@ static unsigned UAC2_Topology_inout_OUT48(
 	else
 	{
 		n += UAC2_AudioControlIT_OUT48(fill, p + n, maxsize - n, bTerminalID, bCSourceID, offset);	/* AUDIO_TERMINAL_USB_STREAMING Input Terminal Descriptor TERMINAL_UACOUT48 */
-		n += UAC2_AudioFeatureUnit(fill, p + n, maxsize - n, FU_ID, bTerminalID, offset);	/* USB Speaker Audio Feature Unit Descriptor TERMINAL_UACOUT48 -> TERMINAL_ID_FU_5 */
+		n += UAC2_AudioFeatureUnit_OUT(fill, p + n, maxsize - n, FU_ID, bTerminalID, offset);	/* USB Speaker Audio Feature Unit Descriptor TERMINAL_UACOUT48 -> TERMINAL_ID_FU_5 */
 		n += UAC2_AudioControlOT_OUT(fill, p + n, maxsize - n, bTerminalID + 1, FU_ID, bCSourceID, offset);	/* AUDIO_TERMINAL_RADIO_TRANSMITTER Output Terminal Descriptor TERMINAL_ID_FU_5 -> TERMINAL_ID_OT_3 */
 	}
 
@@ -846,7 +911,7 @@ static unsigned UAC2_Topology_inout_OUT48(
 // Заполнение схемы ввода звука
 // IN data flow
 // Элементы добавлояются в дескриптор в порядке обратном порядку прохождения информационного потока
-//
+// IN path topology
 static unsigned UAC2_TopologyIN48_INRTS(
 	uint_fast8_t fill, uint8_t * p, unsigned maxsize,
 	uint_fast8_t bTerminalID,	// терминал, завершающий поток обработки
@@ -868,7 +933,7 @@ static unsigned UAC2_TopologyIN48_INRTS(
 	{
 		// Только один источник для компьютера
 		n += UAC2_AudioControlOT_IN(fill, p + n, maxsize - n,  bTerminalID, FU_ID, bCSourceID, offset);	/* AUDIO_TERMINAL_USB_STREAMING Terminal Descriptor TERMINAL_ID_FU_AUDIO -> TERMINAL_UACIN48_UACINRTS */
-		n += UAC2_AudioFeatureUnit(fill, p + n, maxsize - n, FU_ID, bTerminalID + 1, offset);	/* USB microphone Audio Feature Unit Descriptor TERMINAL_UACOUT48 -> TERMINAL_ID_FU_AUDIO */
+		n += UAC2_AudioFeatureUnit_IN(fill, p + n, maxsize - n, FU_ID, bTerminalID + 1, offset);	/* USB microphone Audio Feature Unit Descriptor TERMINAL_UACOUT48 -> TERMINAL_ID_FU_AUDIO */
 		n += UAC2_AudioControlIT_IN48_INRTS(fill, p + n, maxsize - n, bTerminalID + 1, bCSourceID, offset);	/* AUDIO_TERMINAL_RADIO_RECEIVER */
 	}
 
@@ -878,6 +943,7 @@ static unsigned UAC2_TopologyIN48_INRTS(
 // Заполнение схемы вывода звука
 // OUT data flow
 // audio48 only
+// OOT path topology
 static unsigned UAC2_TopologyOUT48(
 	uint_fast8_t fill, uint8_t * p, unsigned maxsize, 
 	uint_fast8_t bTerminalID,	// терминал, завершающий поток обработки
@@ -898,7 +964,7 @@ static unsigned UAC2_TopologyOUT48(
 	else
 	{
 		n += UAC2_AudioControlIT_OUT48(fill, p + n, maxsize - n, bTerminalID, bCSourceID, offset);	/* AUDIO_TERMINAL_USB_STREAMING Input Terminal Descriptor TERMINAL_UACOUT48 */
-		n += UAC2_AudioFeatureUnit(fill, p + n, maxsize - n, FU_ID, bTerminalID, offset);	/* USB Speaker Audio Feature Unit Descriptor TERMINAL_UACOUT48 -> TERMINAL_ID_FU_5 */
+		n += UAC2_AudioFeatureUnit_OUT(fill, p + n, maxsize - n, FU_ID, bTerminalID, offset);	/* USB Speaker Audio Feature Unit Descriptor TERMINAL_UACOUT48 -> TERMINAL_ID_FU_5 */
 		n += UAC2_AudioControlOT_OUT(fill, p + n, maxsize - n, bTerminalID + 1, FU_ID, bCSourceID, offset);	/* AUDIO_TERMINAL_RADIO_TRANSMITTER Output Terminal Descriptor TERMINAL_ID_FU_5 -> TERMINAL_ID_OT_3 */
 	}
 
@@ -927,7 +993,7 @@ static unsigned UAC2_TopologyINRTS(
 	else
 	{
 		n += UAC2_AudioControlOT_IN(fill, p + n, maxsize - n,  bTerminalID, FU_ID, bCSourceID, offset);	/* AUDIO_TERMINAL_USB_STREAMING Terminal Descriptor TERMINAL_ID_IT_2 -> TERMINAL_UACIN48_UACINRTS */
-		n += UAC2_AudioFeatureUnit(fill, p + n, maxsize - n, FU_ID, bTerminalID + 1, offset);	/* USB microphone Audio Feature Unit Descriptor TERMINAL_UACOUT48 -> TERMINAL_ID_FU_RTS */
+		n += UAC2_AudioFeatureUnit_IN(fill, p + n, maxsize - n, FU_ID, bTerminalID + 1, offset);	/* USB microphone Audio Feature Unit Descriptor TERMINAL_UACOUT48 -> TERMINAL_ID_FU_RTS */
 		n += UAC2_AudioControlIT_INRTS(fill, p + n, maxsize - n, bTerminalID + 1, bCSourceID, offset);	/* AUDIO_TERMINAL_RADIO_RECEIVER */
 	}
 
@@ -1264,7 +1330,7 @@ static unsigned UAC1_FormatTypeDescroptor_IN48(uint_fast8_t fill, uint8_t * buff
 		* buff ++ = AUDIO_INTERFACE_DESCRIPTOR_TYPE;// CS_INTERFACE Descriptor Type (bDescriptorType) 0x24
 		* buff ++ = AUDIO_STREAMING_FORMAT_TYPE;   // FORMAT_TYPE subtype. (bDescriptorSubtype) 0x02
 		* buff ++ = AUDIO_FORMAT_TYPE_I;							/* bFormatType */
-		* buff ++ = HARDWARE_USBD_AUDIO_IN_CHANNELS_AUDIO48;		/* bNrChannels */
+		* buff ++ = UACIN_FMT_CHANNELS_AUDIO48;		/* bNrChannels */
 		* buff ++ = (HARDWARE_USBD_AUDIO_IN_SAMPLEBITS_AUDIO48 + 7) / 8; /* bSubFrameSize :  2 Bytes per frame (16bits) */
 		* buff ++ = HARDWARE_USBD_AUDIO_IN_SAMPLEBITS_AUDIO48;		/* bBitResolution (16-bits per sample) */
 		* buff ++ = 1;										/* bSamFreqType only one frequency supported */
@@ -1318,7 +1384,7 @@ static unsigned UAC1_FormatTypeDescroptor_RTS96(uint_fast8_t fill, uint8_t * buf
 		* buff ++ = AUDIO_INTERFACE_DESCRIPTOR_TYPE;// CS_INTERFACE Descriptor Type (bDescriptorType) 0x24
 		* buff ++ = AUDIO_STREAMING_FORMAT_TYPE;   // FORMAT_TYPE subtype. (bDescriptorSubtype) 0x02
 		* buff ++ = AUDIO_FORMAT_TYPE_I;							/* bFormatType */
-		* buff ++ = HARDWARE_USBD_AUDIO_IN_CHANNELS_RTS;		/* bNrChannels */
+		* buff ++ = UACIN_FMT_CHANNELS_RTS;		/* bNrChannels */
 		* buff ++ = (HARDWARE_USBD_AUDIO_IN_SAMPLEBITS_RTS96 + 7) / 8; /* bSubFrameSize :  2 Bytes per frame (16bits) */
 		* buff ++ = HARDWARE_USBD_AUDIO_IN_SAMPLEBITS_RTS96;		/* bBitResolution (16-bits per sample) */
 		* buff ++ = 1;										/* bSamFreqType only one frequency supported */
@@ -1374,7 +1440,7 @@ static unsigned UAC1_FormatTypeDescroptor_RTS192(uint_fast8_t fill, uint8_t * bu
 		* buff ++ = AUDIO_INTERFACE_DESCRIPTOR_TYPE;// CS_INTERFACE Descriptor Type (bDescriptorType) 0x24
 		* buff ++ = AUDIO_STREAMING_FORMAT_TYPE;   // FORMAT_TYPE subtype. (bDescriptorSubtype) 0x02
 		* buff ++ = AUDIO_FORMAT_TYPE_I;							/* bFormatType */
-		* buff ++ = HARDWARE_USBD_AUDIO_IN_CHANNELS_RTS;		/* bNrChannels */
+		* buff ++ = UACIN_FMT_CHANNELS_RTS;		/* bNrChannels */
 		* buff ++ = (HARDWARE_USBD_AUDIO_IN_SAMPLEBITS_RTS192 + 7) / 8; /* bSubFrameSize :  2 Bytes per frame (16bits) */
 		* buff ++ = HARDWARE_USBD_AUDIO_IN_SAMPLEBITS_RTS192;		/* bBitResolution (16-bits per sample) */
 		* buff ++ = 1;										/* bSamFreqType only one frequency supported */
@@ -1672,7 +1738,7 @@ static unsigned UAC1_AudioControlIT_IN48(uint_fast8_t fill, uint8_t * buff, unsi
 	{
 		// 4.3.2.1 Input Terminal Descriptor
 		const uint_fast16_t wTerminalType = AUDIO_TERMINAL_RADIO_RECEIVER;
-		const uint_fast16_t wChannelConfig = HARDWARE_USBD_AUDIO_CONFIG_IN48;
+		const uint_fast16_t wChannelConfig = UACIN_CONFIG_IN48;
 		const uint_fast8_t bNrChannels = UAC_count_channels(wChannelConfig);
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
@@ -1708,7 +1774,7 @@ static unsigned UAC1_AudioControlIT_IN48_INRTS(uint_fast8_t fill, uint8_t * buff
 	{
 		// 4.3.2.1 Input Terminal Descriptor
 		const uint_fast16_t wTerminalType = AUDIO_TERMINAL_RADIO_RECEIVER;
-		const uint_fast16_t wChannelConfig = HARDWARE_USBD_AUDIO_CONFIG_IN48_INRTS;
+		const uint_fast16_t wChannelConfig = UACIN_CONFIG_IN48_INRTS;
 		const uint_fast8_t bNrChannels = UAC_count_channels(wChannelConfig);
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
@@ -1739,7 +1805,7 @@ static unsigned UAC1_AudioControlIT_INRTS(uint_fast8_t fill, uint8_t * buff, uns
 	{
 		// 4.3.2.1 Input Terminal Descriptor
 		const uint_fast16_t wTerminalType = AUDIO_TERMINAL_RADIO_RECEIVER;
-		const uint_fast16_t wChannelConfig = HARDWARE_USBD_AUDIO_CONFIG_INRTS;
+		const uint_fast16_t wChannelConfig = UACIN_CONFIG_INRTS;
 		const uint_fast8_t bNrChannels = UAC_count_channels(wChannelConfig);
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
@@ -1778,7 +1844,7 @@ static unsigned UAC1_AudioControlIT_OUT48(
 	{
 		// 4.3.2.1 Input Terminal Descriptor
 		const uint_fast16_t wTerminalType = AUDIO_TERMINAL_USB_STREAMING;
-		const uint_fast16_t wChannelConfig = HARDWARE_USBD_AUDIO_CONFIG_OUT48;
+		const uint_fast16_t wChannelConfig = UACOUT_CONFIG_OUT48;
 		const uint_fast8_t bNrChannels = UAC_count_channels(wChannelConfig);
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;									/* bLength */
@@ -2123,7 +2189,7 @@ static unsigned UAC1_FormatTypeDescroptor_OUT48(uint_fast8_t fill, uint8_t * buf
 		* buff ++ = AUDIO_INTERFACE_DESCRIPTOR_TYPE;		/* bDescriptorType */
 		* buff ++ = AUDIO_STREAMING_FORMAT_TYPE;			/* bDescriptorSubtype */
 		* buff ++ = AUDIO_FORMAT_TYPE_I;							/* bFormatType */
-		* buff ++ = UACOUT_AUDIO48_CHANNELS;		/* bNrChannels */
+		* buff ++ = UACOUT_FMT_CHANNELS_AUDIO48;		/* bNrChannels */
 		* buff ++ = (UACOUT_AUDIO48_SAMPLEBITS + 7) / 8; /* bSubFrameSize :  2 Bytes per frame (16bits) */
 		* buff ++ = UACOUT_AUDIO48_SAMPLEBITS;		/* bBitResolution (16-bits per sample) */
 		* buff ++ = 1;										/* bSamFreqType only one frequency supported */

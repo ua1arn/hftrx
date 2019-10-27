@@ -160,20 +160,26 @@ extern "C" {
 // Конфигурация потоков в Input Terminal Descriptor
 // bNrChannels в 4.3.2.1 Input Terminal Descriptor образуется подсчетом битов в данном поле
 // Может быть использовано AUDIO_CHANNEL_M
-#define HARDWARE_USBD_AUDIO_CONFIG_IN48 			(AUDIO_CHANNEL_L | AUDIO_CHANNEL_R)
-#define HARDWARE_USBD_AUDIO_CONFIG_INRTS 			(AUDIO_CHANNEL_L | AUDIO_CHANNEL_R)
-#define HARDWARE_USBD_AUDIO_CONFIG_IN48_INRTS 		(AUDIO_CHANNEL_L | AUDIO_CHANNEL_R)
-#define HARDWARE_USBD_AUDIO_CONFIG_OUT48 			(AUDIO_CHANNEL_L | AUDIO_CHANNEL_R)
+#define UACIN_CONFIG_IN48 			(AUDIO_CHANNEL_L | AUDIO_CHANNEL_R)
+#define UACIN_CONFIG_INRTS 			(AUDIO_CHANNEL_L | AUDIO_CHANNEL_R)
+#define UACIN_CONFIG_IN48_INRTS 	(AUDIO_CHANNEL_L | AUDIO_CHANNEL_R)
+#define UACOUT_CONFIG_OUT48 		(AUDIO_CHANNEL_L | AUDIO_CHANNEL_R)
 
-// количество каналов
-#define HARDWARE_USBD_AUDIO_IN_CHANNELS_AUDIO48			2
-#define HARDWARE_USBD_AUDIO_IN_CHANNELS_RTS				2	// I/Q всегда стерео
-#define HARDWARE_USBD_AUDIO_IN_CHANNELS_AUDIO48_RTS		2	// при совмещении аудио и I/Q всегда стерео
+// IN/OUT path topology parameters
+#define UAC2_IN_bNrChannels 2	//UAC_count_channels(wChannelConfig); 1: Only master channel controls, 3: master, left and right
+#define UAC2_OUT_bNrChannels 2	//UAC_count_channels(wChannelConfig); 1: Only master channel controls, 3: master, left and right
+
+// количество каналов в дескрипторах формата потока
+#define UACIN_FMT_CHANNELS_AUDIO48			2
+#define UACIN_FMT_CHANNELS_RTS				2	// I/Q всегда стерео
+#define UACIN_FMT_CHANNELS_AUDIO48_RTS		2	// при совмещении аудио и I/Q всегда стерео
 
 #if WITHUABUACOUTAUDIO48MONO
-	#define UACOUT_AUDIO48_CHANNELS	1
+	// количество каналов в дескрипторах формата потока
+	#define UACOUT_FMT_CHANNELS_AUDIO48	1
 #else /* WITHUABUACOUTAUDIO48MONO */
-	#define UACOUT_AUDIO48_CHANNELS	2
+	// количество каналов в дескрипторах формата потока
+	#define UACOUT_FMT_CHANNELS_AUDIO48	2
 #endif /* WITHUABUACOUTAUDIO48MONO */
 
 // коррекция размера с учетом требуемого выравнивания
@@ -186,7 +192,7 @@ extern "C" {
 #define MSINSAMPLES		(MSOUTSAMPLES + 1) /* количество сэмплов за милисекунду в UAC IN */
 
 
-#define DMABUFSTEPUACIN16	(HARDWARE_USBD_AUDIO_IN_CHANNELS_AUDIO48)		// 2 - каждому сэмплу соответствует два числа в  буфере для выдачи по USB в host
+#define DMABUFSTEPUACIN16	(UACIN_FMT_CHANNELS_AUDIO48)		// 2 - каждому сэмплу соответствует два числа в  буфере для выдачи по USB в host
 
 #define DMABUFFSIZEUACIN16 (MSINSAMPLES * DMABUFSTEPUACIN16)	/* размер под USB ENDPOINT PACKET SIZE В буфере помещаются пары значений - стерео кодек */
 
@@ -263,7 +269,7 @@ extern "C" {
 // буфер приема потока данных от USB к модуоятору
 #define UAC_OUT48_DATA_SIZE	( \
 	MSOUTSAMPLES * \
-	((UACOUT_AUDIO48_SAMPLEBITS * UACOUT_AUDIO48_CHANNELS + 7) / 8) \
+	((UACOUT_AUDIO48_SAMPLEBITS * UACOUT_FMT_CHANNELS_AUDIO48 + 7) / 8) \
 	)
 
 
