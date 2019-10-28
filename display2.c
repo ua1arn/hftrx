@@ -4051,6 +4051,7 @@ enum
 		{	0,	28,	display2_waterfall,	REDRM_BARS, PGWFL, },// подготовка изображения водопада
 		{	0,	28,	display2_colorbuff,	REDRM_BARS,	PGWFL | PGSPE, },// Отображение водопада и/или спектра
 #else
+		{	0,	0,	display2_pip_off,	REDRM_MODE,	PGALL },	// Выключить PIP если на данной странице не требуется
 		{	0,	20,	display2_adctest,	REDRM_BARS, PGSWR, },	// ADC raw data print
 #endif
 	
@@ -4384,6 +4385,7 @@ enum
 		{	0,	DLES,	display2_colorbuff,	REDRM_BARS,	PGWFL | PGSPE, },// Отображение водопада и/или спектра
 	#endif /* WITHSPECTRUMWF */
 #else
+		{	0,	0,	display2_pip_off,	REDRM_MODE,	PGSWR },	// Выключить PIP если на данной странице не требуется
 		{	0,	25,	display2_adctest,	REDRM_BARS, PGSWR, },	// ADC raw data print
 #endif
 

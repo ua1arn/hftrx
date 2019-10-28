@@ -9583,13 +9583,13 @@ display2_adctest(
 	{
 		// UA1CEI 100W PA board 2xRD100HHF1 
 		// ADC inputs configuration
-		{	targetxad2,	"REFER",	1,	0,	10, },	// DRAIN (MCP3208, negative from midpoint at CH1: ch0=in-, ch1=in+)
-		{	targetxad2,	"DRAIN",	0,	0,	10, },	// DRAIN (MCP3208, negative from midpoint at CH1)
+		{	targetxad2,	"REFER",	PAREFERIX2 & 0x07,	0,	10, },	// DRAIN (MCP3208, negative from midpoint at CH1: ch0=in-, ch1=in+)
+		{	targetxad2,	"DRAIN",	PASENSEIX2 & 0x07,	0,	10, },	// DRAIN (MCP3208, negative from midpoint at CH1)
 		//{	targetxad2,	"DRAIN",	1,	1,	10, },	// DRAIN (MCP3208, negative from midpoint at CH1: ch0=in-, ch1=in+)
 		//{	targetxad2,	"DRAIN",	0,	1,	10, },	// DRAIN (MCP3208, negative from midpoint at CH1)
 		//{	targetxad2,	"REFER",	1,	0,	10, },	// reference (2.5 volt)
-		{	targetxad2,	"REFL ",	2,	0,	10, },	// REFLECTED
-		{	targetxad2,	"FWD  ",	3,	0,	10, },	// FORWARD
+		{	targetxad2,	"REFL ",	REF & 0x07,	0,	10, },	// REFLECTED
+		{	targetxad2,	"FWD  ",	FWD & 0x07,	0,	10, },	// FORWARD
 		//{	targetxad2,	"Vcc  ",	4,	0,	57,	},	// VDD 4.7k + 1k
 		//{	targetxad2,	"3.3  ",	5,	0,	10,	},	// VDD 4.7k + 1k
 		//{	targetxad2,	"gnd  ",	7,	0,	10,	},	// VDD 4.7k + 1k
