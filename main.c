@@ -9562,6 +9562,8 @@ display_refreshperformed_bars(void)
 	enableIRQ();
 }
 
+#if WITHCURRLEVEL2
+
 void 
 display2_adctest(
 	uint_fast8_t x, 
@@ -9623,6 +9625,7 @@ display2_adctest(
 #endif /* targetxad2 */
 }
 
+#endif /* WITHCURRLEVEL2 */
 // S-METER
 /* отображение S-метра на приёме или передаче */
 // Функция вызывается из display2.c
