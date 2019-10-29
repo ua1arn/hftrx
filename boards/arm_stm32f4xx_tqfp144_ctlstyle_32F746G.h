@@ -228,8 +228,8 @@
 	//#define WITHUSEAUDIOREC		1	// Запись звука на SD CARD
 	//#define WITHUSEDUALWATCH	1	// Второй приемник
 	#define WITHDACSTRAIGHT 1	/* Требуется формирование кода для ЦАП в режиме беззнакового кода */
-	//#define WITHRTS96 1		/* вместо выходного аудиосигнала передача квадратур по USB */
-	//#define WITHRTS192 1		/* вместо выходного аудиосигнала передача квадратур по USB */
+	//#define WITHRTS96 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
+	//#define WITHRTS192 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
 	#define WITHSUSBSPKONLY 1
 	#define WITHSKIPUSERMODE 1	// debug option: не отдавать в USER MODE блоки для фильтрации аудиосигнала
 	//#define BOARD_FFTZOOM_POW2MAX 1	// Возможные масштабы FFT x1, x2

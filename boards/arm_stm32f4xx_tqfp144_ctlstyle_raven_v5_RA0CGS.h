@@ -272,7 +272,7 @@
 	#define WITHUSEAUDIOREC		1	// Запись звука на SD CARD
 	#define WITHUSEDUALWATCH	1	// Второй приемник
 	//#define WITHMODEMIQLOOPBACK	1	/* модем получает собственные передаваемые квадратуры */
-	#define WITHRTS96 1		/* вместо выходного аудиосигнала передача квадратур по USB */
+	#define WITHRTS96 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
 	#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
 
 	#if 0

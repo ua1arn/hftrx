@@ -266,7 +266,7 @@
 
 	#if 1
 		#define WITHTRANSPARENTIQ	1	/* процессор просто поддерживает двунаправленный обмен между USB и FPGA */
-		#define WITHRTS96 1		/* вместо выходного аудиосигнала передача квадратур по USB */
+		#define WITHRTS96 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
 		#define	WITHBBOXMIKESRC	BOARD_TXAUDIO_USB
 	#endif
 

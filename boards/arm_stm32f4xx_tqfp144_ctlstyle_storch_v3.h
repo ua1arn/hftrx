@@ -281,10 +281,13 @@
 	//#define WITHUSEAUDIOREC2CH	1	// Запись звука на SD CARD в стерео
 	//#define WITHUSEAUDIORECCLASSIC	1	// стандартный формат записи, без "дыр"
 
-	#define WITHRTS96 1		/* вместо выходного аудиосигнала передача квадратур по USB */
+	#define WITHRTS96 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
 	#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
 
 	#if 0
+		#define WITHBBOX	1	// Black Box mode - устройство без органов управления
+		#define	WITHBBOXSUBMODE	SUBMODE_CW	// единственный режим работы
+	#elif 0
 		#define WITHUSBHEADSET 1	/* трансивер работает USB гарнитурой для компьютера - режим тестирования */
 		#define WITHBBOX	1	// Black Box mode - устройство без органов управления
 		#define	WITHBBOXMIKESRC	BOARD_TXAUDIO_USB
