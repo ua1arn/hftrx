@@ -5151,6 +5151,11 @@ getmonitx(
 // Сохранение сэмплов с выхода демодулятора
 static void save16demod(FLOAT_t ch0, FLOAT_t ch1)
 {
+#if 0
+	// для тестирования шумоподавителя.
+	const FLOAT_t tone = get_lout16() * 0.9f;
+	ch0 = ch1 = tone;
+#endif
 #if WITHSKIPUSERMODE
 	#if WITHUSEDUALWATCH
 		const FLOAT32P_t i = { { ch0, ch1, }, };
@@ -5164,6 +5169,7 @@ static void save16demod(FLOAT_t ch0, FLOAT_t ch1)
 	savesampleout16tospeex(ch0, ch1);	// через user-level обработчик
 #endif /* WITHSKIPUSERMODE */
 }
+
 #if WITHDSPEXTDDC
 // Обработка полученного от DMA буфера с выборками или квадратурами (или двухканальный приём).
 // Вызывается на ARM_REALTIME_PRIORITY уровне.
