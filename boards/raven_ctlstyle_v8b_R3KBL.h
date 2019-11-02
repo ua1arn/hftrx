@@ -231,7 +231,7 @@
 	#endif
 
 
-#if CPUSTYLE_STM32
+#if CPUSTYLE_STM32F
 
 	#define WITHSPLIT	1	/* управление режимами расстройки одной кнопкой */
 	//#define WITHSPLITEX	1	/* Трехкнопочное управление режимами расстройки */

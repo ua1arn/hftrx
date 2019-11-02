@@ -84,7 +84,7 @@ calcdivround2(
 	return (ref < freq) ? 1 : ((ref + freq / 2) / freq);
 }
 
-#if CPUSTYLE_STM32 || CPUSTYLE_STM32MP1
+#if CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
 
 	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
 	static uint_fast32_t 
@@ -357,7 +357,7 @@ static uint_fast32_t arm_hardware_stm32f7xx_pllq_initialize(void);	// Настр
 		AT91C_TC_CLKS_TIMER_DIV5_CLOCK, // is a TCxCLK = MCLK / 1024
 	};
 
-#elif CPUSTYLE_STM32 || CPUSTYLE_STM32MP1
+#elif CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
 
 	// Параметры функции calcdivider().
 	// 
@@ -669,7 +669,7 @@ hardware_uart1_set_speed(uint_fast32_t baudrate)
 	USARTE0.BAUDCTRLA = (value & 0xff);	/* Значение получено уже уменьшенное на 1 */
 	USARTE0.BAUDCTRLB = (ATXMEGA_UBR_BSEL << 4) | ((value >> 8) & 0x0f);
 
-#elif CPUSTYLE_STM32 || CPUSTYLE_STM32MP1
+#elif CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
 
 	// uart1 on apb2 up to 72/36 MHz
 
@@ -830,7 +830,7 @@ hardware_uart2_set_speed(uint_fast32_t baudrate)
 	USARTE1.BAUDCTRLA = (value & 0xff);	/* Значение получено уже уменьшенное на 1 */
 	USARTE1.BAUDCTRLB = (ATXMEGA_UBR_BSEL << 4) | ((value >> 8) & 0x0f);
 
-#elif CPUSTYLE_STM32 || CPUSTYLE_STM32MP1
+#elif CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
 
 	// uart2 on apb1
 
@@ -1177,7 +1177,7 @@ static RAMFUNC void spool_adcdonebundle(void)
 }
 #endif /* WITHCPUADCHW */
 
-#if CPUSTYLE_STM32
+#if CPUSTYLE_STM32F
 
 	void  
 	SysTick_Handler(void)
@@ -3363,7 +3363,7 @@ void hardware_sounds_disable(void)
 
 	TCD1.CTRLA = 0x00;
 
-#elif CPUSTYLE_STM32
+#elif CPUSTYLE_STM32F
 
 	TIM4->CR1 = 0x00;
 
@@ -3479,7 +3479,7 @@ void hardware_sounds_setfreq(
 	// разрешение прерываний на входе в PMIC
 	//PMIC.CTRL |= (PMIC_HILVLEN_bm | PMIC_MEDLVLEN_bm | PMIC_LOLVLEN_bm);
 
-#elif CPUSTYLE_STM32
+#elif CPUSTYLE_STM32F
 
 	TIM4->PSC = ((1UL << prei) - 1) & TIM_PSC_PSC;
 
@@ -3613,7 +3613,7 @@ hardware_beep_initialize(void)
 	TCD1.CTRLB = (TC1_CCAEN_bm | TC_WGMODE_FRQ_gc);
 	SIDETONE_TARGET_DDR |= SIDETONE_TARGET_BIT; // (1U << DDD7);	// output pin connection - test without this string need.
 
-#elif CPUSTYLE_STM32
+#elif CPUSTYLE_STM32F
 
 	// apb1
 	RCC->APB1ENR |= RCC_APB1ENR_TIM4EN;   //подаем тактирование на TIM4
@@ -3680,7 +3680,7 @@ hardware_calc_sound_params(
 
 	return calcdivider(calcdivround10(tonefreq * 2), ATXMEGA_TIMER_WIDTH, ATXMEGA_TIMER_TAPS, pvalue, 1);
 
-#elif CPUSTYLE_STM32
+#elif CPUSTYLE_STM32F
 
 	// for tim1 use apb2, for other apb1
 	// now - tim4
@@ -4595,7 +4595,7 @@ void hardware_spi_disconnect(void)
 	// connect back to GPIO
 	HARDWARE_SPI_DISCONNECT();
 
-#elif CPUSTYLE_STM32
+#elif CPUSTYLE_STM32F
 
 	SPI1->CR1 &= ~ SPI_CR1_SPE;
 
@@ -4672,7 +4672,7 @@ hardware_spi_ready_b8_void(void)
 	(void) * (volatile uint8_t *) & SPI1->RXDR;	/* clear SPI_SR_RXP in status register */
 
 
-#elif CPUSTYLE_STM32
+#elif CPUSTYLE_STM32F
 
 	while ((SPI1->SR & SPI_SR_RXNE) == 0)	
 		;
@@ -4728,7 +4728,7 @@ portholder_t hardware_spi_complete_b8(void)	/* дождаться готовно
 	const portholder_t t = * (volatile uint8_t *) & SPI1->RXDR;	// prevent data packing feature
 	return t;
 
-#elif CPUSTYLE_STM32
+#elif CPUSTYLE_STM32F
 
 	while ((SPI1->SR & SPI_SR_RXNE) == 0)	
 		;
@@ -5717,7 +5717,7 @@ portholder_t hardware_spi_complete_b16(void)	/* дождаться готовн�
 	const portholder_t t = * (volatile uint16_t *) & SPI1->RXDR;	/* SPI_RXDR_RXDR clear SPI_SR_RXNE in status register */
 	return t;
 
-#elif CPUSTYLE_STM32
+#elif CPUSTYLE_STM32F
 
 	while ((SPI1->SR & SPI_SR_RXNE) == 0)
 		;
@@ -5762,7 +5762,7 @@ static void hardware_spi_ready_b16_void(void)	/* дождаться готовн
 	(void) * (volatile uint16_t *) & SPI1->RXDR;	/* clear SPI_SR_RXNE in status register */
 
 
-#elif CPUSTYLE_STM32
+#elif CPUSTYLE_STM32F
 
 	while ((SPI1->SR & SPI_SR_RXNE) == 0)
 		;
@@ -5804,7 +5804,7 @@ void hardware_spi_b16_p1(
 
 	* (volatile uint16_t *) & (SPI1)->DR = v;	// prevent data packing feature
 
-#elif CPUSTYLE_STM32
+#elif CPUSTYLE_STM32F
 
 	(SPI1)->DR = v;
 
@@ -5995,7 +5995,7 @@ void hardware_spi_b8_p1(
 
 	* (volatile uint8_t *) & (SPI1)->DR = v;	// prevent data packing feature
 
-#elif CPUSTYLE_STM32
+#elif CPUSTYLE_STM32F
 
 	SPI1->DR = v;
 
@@ -6130,7 +6130,7 @@ hardware_elkey_timer_initialize(void)
 	NVIC_SetPriority(TIM3_IRQn, ARM_SYSTEM_PRIORITY);
 	NVIC_EnableIRQ(TIM3_IRQn);		// enable TIM3_IRQHandler();
 
-#elif CPUSTYLE_STM32
+#elif CPUSTYLE_STM32F
 
 	RCC->APB1ENR |= RCC_APB1ENR_TIM3EN;   // подаем тактирование на TIM3
 	__DSB();
@@ -6220,7 +6220,7 @@ void hardware_elkey_set_speed(uint_fast32_t ticksfreq)
 	TIM3->ARR = value;
 	TIM3->CR1 = TIM_CR1_CEN | TIM_CR1_ARPE; /* разрешить перезагрузку и включить таймер = перенесено в установку скорости - если счётчик успевал превысить значение ARR - считал до конца */
 
-#elif CPUSTYLE_STM32
+#elif CPUSTYLE_STM32F
 	// TIM2 & TIM5 on CPUSTYLE_STM32F4XX have 32-bit CNT and ARR registers
 	// TIM7 located on APB1
 	// TIM7 on APB1
@@ -6308,7 +6308,7 @@ void hardware_elkey_set_speed128(uint_fast32_t ticksfreq, int scale)
 	TIM3->ARR = value;
 	TIM3->CR1 = TIM_CR1_CEN | TIM_CR1_ARPE; /* разрешить перезагрузку и включить таймер = перенесено в установку скорости - если счётчик успевал превысить значение ARR - считал до конца */
 
-#elif CPUSTYLE_STM32
+#elif CPUSTYLE_STM32F
 	// TIM2 & TIM5 on CPUSTYLE_STM32F4XX have 32-bit CNT and ARR registers
 	// TIM7 located on APB1
 	// TIM7 on APB1

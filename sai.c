@@ -97,7 +97,7 @@ static uintptr_t dma_flush32tx(uintptr_t addr)
 	return addr;
 }
 
-#if CPUSTYLE_STM32 || CPUSTYLE_STM32MP1
+#if CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
 
 enum
 {
@@ -2921,7 +2921,7 @@ static const codechw_t fpgaspectrumhw =
 	"sai2-fpga spectrum for WFM"
 };
 
-#endif /* CPUSTYLE_STM32 */
+#endif /* CPUSTYLE_STM32F */
 
 
 #if WITHI2SHW
@@ -3039,7 +3039,7 @@ void hardware_dac_initialize(void)		/* инициализация DAC на STM32
 	RCC->APB1LENR |= RCC_APB1LENR_DAC12EN; //подать тактирование
 	__DSB();
 
-#elif CPUSTYLE_STM32
+#elif CPUSTYLE_STM32F
 
 	RCC->APB1ENR |= RCC_APB1ENR_DACEN; //подать тактирование
 	__DSB();

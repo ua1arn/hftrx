@@ -12,7 +12,7 @@
 #include <math.h>
 #include "inc/gpio.h"
 
-#if CPUSTYLE_STM32 || CPUSTYLE_STM32MP1
+#if CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
 // Перенос каждого бита в байте в позицию с увеличенным в 4 раза номером.
 static portholder_t
 power4(uint_fast8_t v)
@@ -69,9 +69,9 @@ power4(uint_fast8_t v)
 
 	return tablepow4 [v & 0xff];
 }
-#endif /* CPUSTYLE_STM32 || CPUSTYLE_STM32MP1 */
+#endif /* CPUSTYLE_STM32F || CPUSTYLE_STM32MP1 */
 
-#if CPUSTYLE_STM32 || CPUSTYLE_STM32MP1
+#if CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
 // Перенос каждого бита в байте в позицию с увеличенным в 2 раза номером.
 static portholder_t
 power2(uint_fast16_t v)
@@ -97,7 +97,7 @@ power2(uint_fast16_t v)
 
 	return r;
 }
-#endif /* CPUSTYLE_STM32 || CPUSTYLE_STM32MP1 */
+#endif /* CPUSTYLE_STM32F || CPUSTYLE_STM32MP1 */
 
 #if CPUSTYLE_R7S721
 

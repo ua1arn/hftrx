@@ -15,7 +15,7 @@
 
 #if WITHSDRAMHW
 
-#if CPUSTYLE_STM32
+#if CPUSTYLE_STM32F
 
 #define assert_param(expr) do { } while (0)
 /**

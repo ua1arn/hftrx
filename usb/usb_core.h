@@ -343,7 +343,7 @@ typedef struct
   // RENESAS specific field
   uint_fast8_t	pipe_num;
 
-#elif CPUSTYLE_STM32
+#elif CPUSTYLE_STM32F
 
   // STM32 specific field
   uint_fast8_t  tx_fifo_num;    /*!< Transmission FIFO number

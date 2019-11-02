@@ -4504,7 +4504,7 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 		StringDescrTbl [id].data = alldescbuffer + score;
 		score += partlen;
 	}
-#elif 0 //CPUSTYLE_STM32 && defined(UID_BASE)
+#elif 0 //CPUSTYLE_STM32F && defined(UID_BASE)
 	{
 		unsigned partlen;
 		const uint_fast8_t id = STRING_ID_3;
@@ -4531,7 +4531,7 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 		StringDescrTbl [id].data = alldescbuffer + score;
 		score += partlen;
 	}
-#endif /* CPUSTYLE_STM32 && defined(UID_BASE) */
+#endif /* CPUSTYLE_STM32F && defined(UID_BASE) */
 
 	arm_hardware_flush_invalidate((uintptr_t) alldescbuffer, score);
 	debug_printf_P(PSTR("usbd_descriptors_initialize: total length=%u\n"), score);

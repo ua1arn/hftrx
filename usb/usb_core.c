@@ -4103,9 +4103,9 @@ HAL_StatusTypeDef HAL_PCD_Init(PCD_HandleTypeDef *hpcd)
 		/* Init ep structure */
 		hpcd->IN_ep[i].is_in = 1;
 		hpcd->IN_ep[i].num = i;
-#if CPUSTYLE_STM32
+#if CPUSTYLE_STM32F
 		hpcd->IN_ep[i].tx_fifo_num = i;
-#endif /* CPUSTYLE_STM32 */
+#endif /* CPUSTYLE_STM32F */
 		/* Control until ep is activated */
 		hpcd->IN_ep[i].type = USBD_EP_TYPE_CTRL;
 		hpcd->IN_ep[i].maxpacket = 0;
@@ -4117,9 +4117,9 @@ HAL_StatusTypeDef HAL_PCD_Init(PCD_HandleTypeDef *hpcd)
 	{
 		hpcd->OUT_ep[i].is_in = 0;
 		hpcd->OUT_ep[i].num = i;
-#if CPUSTYLE_STM32
+#if CPUSTYLE_STM32F
 		hpcd->IN_ep[i].tx_fifo_num = i;
-#endif /* CPUSTYLE_STM32 */
+#endif /* CPUSTYLE_STM32F */
 		/* Control until ep is activated */
 		hpcd->OUT_ep[i].type = USBD_EP_TYPE_CTRL;
 		hpcd->OUT_ep[i].maxpacket = 0;
@@ -4308,13 +4308,13 @@ HAL_StatusTypeDef HAL_PCD_EP_Open(PCD_HandleTypeDef *hpcd, uint_fast8_t ep_addr,
 	ep->maxpacket = ep_mps;
 	ep->type = ep_type;
 
-#if CPUSTYLE_STM32
+#if CPUSTYLE_STM32F
 	if (ep->is_in)
 	{
 		/* Assign a Tx FIFO */
 		ep->tx_fifo_num = tx_fifo_num;
 	}
-#endif /* CPUSTYLE_STM32 */
+#endif /* CPUSTYLE_STM32F */
 
 	/* Set initial data PID. */
 	if (ep_type == USBD_EP_TYPE_BULK )
@@ -4981,7 +4981,7 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 // На RENESAS ничего не делаем - req уже заполнен чтением из контроллера USB
 static void USBD_ParseSetupRequest(USBD_SetupReqTypedef *req, const uint32_t * pdata)
 {
-#if CPUSTYLE_STM32
+#if CPUSTYLE_STM32F
 	req->bmRequest     = (pdata [0] >> 0) & 0x00FF;
 	req->bRequest      = (pdata [0] >> 8) & 0x00FF;
 	req->wValue        = (pdata [0] >> 16) & 0xFFFF;
@@ -4998,7 +4998,7 @@ static void USBD_ParseSetupRequest(USBD_SetupReqTypedef *req, const uint32_t * p
 	req->wLength       = USBx->USBLENG; //(pdata [1] >> 16) & 0xFFFF;
 #else
 	//#error Undefined CPUSTYLE_xxx
-#endif /* CPUSTYLE_STM32 */
+#endif /* CPUSTYLE_STM32F */
 #if 0
 	PRINTF(PSTR("USBD_ParseSetupRequest: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"),
 		req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
@@ -10093,7 +10093,7 @@ void HAL_PCD_MspDeInit(PCD_HandleTypeDef *pcdHandle)
 	    NVIC_DisableIRQ(OTG_FS_IRQn);
 	  }
 
-#elif CPUSTYLE_STM32
+#elif CPUSTYLE_STM32F
 
 #if defined (USB_OTG_HS)
 	  if (pcdHandle->Instance == USB_OTG_HS)
@@ -10326,7 +10326,7 @@ static void board_usbd_initialize(void)
 }
 
 
-#if CPUSTYLE_STM32
+#if CPUSTYLE_STM32F
 /**
   * @brief  Initiate Do Ping protocol
   * @param  USBx : Selected device
@@ -10408,7 +10408,7 @@ HAL_StatusTypeDef USB_StopHost(USB_OTG_GlobalTypeDef *USBx)
   return HAL_OK;
 }
 
-#endif /* CPUSTYLE_STM32 */
+#endif /* CPUSTYLE_STM32F */
 
 /**
   * @brief  Start the host driver
@@ -10635,7 +10635,7 @@ USBH_StatusTypeDef  USBH_LL_DriverVBUS(USBH_HandleTypeDef *phost, uint_fast8_t s
 	return USBH_OK;
 }
 
-#if CPUSTYLE_STM32
+#if CPUSTYLE_STM32F
 
 /**
   * @brief  Initializes the PCD MSP.
@@ -10894,7 +10894,7 @@ uint32_t USB_GetCurrentFrame (USB_OTG_GlobalTypeDef *USBx)
 
 
 #elif CPUSTYLE_R7S721
-#endif /* CPUSTYLE_STM32 */
+#endif /* CPUSTYLE_STM32F */
 /**
   * @brief  USBH_LL_SetTimer
   *         Set the initial Host Timer tick
@@ -13365,7 +13365,7 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
  return USBH_OK;
 }
 
-#if CPUSTYLE_STM32
+#if CPUSTYLE_STM32F
 //++++ host interrupt handlers
 
 /**
@@ -13777,7 +13777,7 @@ static void HCD_HC_OUT_IRQHandler(HCD_HandleTypeDef *hhcd, uint8_t chnum)
   }
 }
 
-#endif /* CPUSTYLE_STM32 */
+#endif /* CPUSTYLE_STM32F */
 
 /*******************************************************************************
                        LL Driver Callbacks (HCD -> USB Host Library)
@@ -13827,7 +13827,7 @@ void HAL_HCD_HC_NotifyURBChange_Callback(HCD_HandleTypeDef *hhcd, uint8_t chnum,
 }
 
 //---- host interrupt handlers
-#if CPUSTYLE_STM32
+#if CPUSTYLE_STM32F
 /**
   * @brief  This function handles HCD interrupt request.
   * @param  hhcd: HCD handle
@@ -13931,7 +13931,7 @@ void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd)
 	}
 }
 
-#endif /* CPUSTYLE_STM32 */
+#endif /* CPUSTYLE_STM32F */
 
 
 #if defined (WITHUSBHW_DEVICE)
