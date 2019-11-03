@@ -9233,8 +9233,8 @@ static void vectors_relocate(void);
 /* Extended TrustZone protection controller access function */
 static void FLASHMEMINITFUNC
 tzpc_set_prot(
-		uint_fast8_t id,	/* IP code */
-		uint_fast8_t val	/* 0x00..0x03: protection style */
+	uint_fast8_t id,	/* IP code */
+	uint_fast8_t val	/* 0x00..0x03: protection style */
 	)
 {
 	const uint_fast8_t pos = (id % 16);
@@ -9253,6 +9253,18 @@ void
 FLASHMEMINITFUNC
 SystemInit(void)
 {
+#if CPUSTYLE_STM32MP1
+
+	// Set peripheral is not secure (Read and Write by secure and non secure)
+	tzpc_set_prot(0, 0x03);		// STGENC
+	tzpc_set_prot(1, 0x03);		// BKPSRAM
+	tzpc_set_prot(3, 0x03);		// USART1
+	tzpc_set_prot(7, 0x03);		// RNG1
+	tzpc_set_prot(10, 0x03);	// DDRCTRL
+	tzpc_set_prot(11, 0x03);	// DDRPHYC
+
+#endif /* CPUSTYLE_STM32MP1 */
+
 #if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7
 
 	#if WITHDEBUG && WITHINTEGRATEDDSP && CPUSTYLE_ARM_CM7
@@ -9283,18 +9295,6 @@ SystemInit(void)
 	#endif
 
 #endif /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7 */
-
-#if CPUSTYLE_STM32MP157A
-
-	// Peripheral is not secure (Read and Write by secure and non secure)
-	tzpc_set_prot(0, 0x03);		// STGENC
-	tzpc_set_prot(1, 0x03);		// BKPSRAM
-	tzpc_set_prot(3, 0x03);		// USART1
-	tzpc_set_prot(7, 0x03);		// RNG1
-	tzpc_set_prot(10, 0x03);	// DDRCTRL
-	tzpc_set_prot(11, 0x03);	// DDRPHYC
-
-#endif /* CPUSTYLE_STM32MP157A */
 
 #if (CPUSTYLE_ARM_CA9 || CPUSTYLE_ARM_CA7)
 
