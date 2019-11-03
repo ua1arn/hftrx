@@ -3038,7 +3038,14 @@ void arm_hardware_sdram_initialize(void)
 
 void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 {
+/*
+	RCC->DDRITFCR |= RCC_DDRITFCR_DDRPHYCAPBEN;
+	(void) RCC->DDRITFCR;
+	RCC->DDRITFCR |= RCC_DDRITFCR_DDRCAPBEN;
+	(void) RCC->DDRITFCR;
 
+	DDRPHYC->MSTR |= 0x00000001;	// DDR3 mode
+*/
 }
 
 #endif
