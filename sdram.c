@@ -3036,6 +3036,268 @@ void arm_hardware_sdram_initialize(void)
 
 #elif CPUSTYLE_STM32MP157A
 
+// Taken from https://github.com/ARM-software/arm-trusted-firmware
+
+
+#define INT8_C(x)  x
+#define INT16_C(x) x
+#define INT32_C(x) x
+#define INT64_C(x) x ## LL
+
+#define UINT8_C(x)  x
+#define UINT16_C(x) x
+#define UINT32_C(x) x ## U
+#define UINT64_C(x) x ## ULL
+
+#define INTMAX_C(x)  x ## LL
+#define UINTMAX_C(x) x ## ULL
+
+/* Compute the number of elements in the given array */
+#define ARRAY_SIZE(a)				\
+	(sizeof(a) / sizeof((a)[0]))
+
+#define IS_POWER_OF_TWO(x)			\
+	(((x) & ((x) - 1)) == 0)
+
+#define SIZE_FROM_LOG2_WORDS(n)		(4 << (n))
+
+#define BIT_32(nr)			(U(1) << (nr))
+#define BIT_64(nr)			(ULL(1) << (nr))
+
+#ifdef __aarch64__
+#define BIT				BIT_64
+#else
+#define BIT				BIT_32
+#endif
+
+/*
+ * Create a contiguous bitmask starting at bit position @l and ending at
+ * position @h. For example
+ * GENMASK_64(39, 21) gives us the 64bit vector 0x000000ffffe00000.
+ */
+#if defined(__LINKER__) || defined(__ASSEMBLER__)
+#define GENMASK_32(h, l) \
+	(((0xFFFFFFFF) << (l)) & (0xFFFFFFFF >> (32 - 1 - (h))))
+
+#define GENMASK_64(h, l) \
+	((~0 << (l)) & (~0 >> (64 - 1 - (h))))
+#else
+#define GENMASK_32(h, l) \
+	(((~UINT32_C(0)) << (l)) & (~UINT32_C(0) >> (32 - 1 - (h))))
+
+#define GENMASK_64(h, l) \
+	(((~UINT64_C(0)) << (l)) & (~UINT64_C(0) >> (64 - 1 - (h))))
+#endif
+
+#ifdef __aarch64__
+#define GENMASK				GENMASK_64
+#else
+#define GENMASK				GENMASK_32
+#endif
+
+/*
+ * This variant of div_round_up can be used in macro definition but should not
+ * be used in C code as the `div` parameter is evaluated twice.
+ */
+#define DIV_ROUND_UP_2EVAL(n, d)	(((n) + (d) - 1) / (d))
+
+#define div_round_up(val, div) __extension__ ({	\
+	__typeof__(div) _div = (div);		\
+	((val) + _div - (__typeof__(div)) 1) / _div;		\
+})
+
+#define MIN(x, y) __extension__ ({	\
+	__typeof__(x) _x = (x);		\
+	__typeof__(y) _y = (y);		\
+	(void)(&_x == &_y);		\
+	_x < _y ? _x : _y;		\
+})
+
+#define MAX(x, y) __extension__ ({	\
+	__typeof__(x) _x = (x);		\
+	__typeof__(y) _y = (y);		\
+	(void)(&_x == &_y);		\
+	_x > _y ? _x : _y;		\
+})
+
+/*
+ * The round_up() macro rounds up a value to the given boundary in a
+ * type-agnostic yet type-safe manner. The boundary must be a power of two.
+ * In other words, it computes the smallest multiple of boundary which is
+ * greater than or equal to value.
+ *
+ * round_down() is similar but rounds the value down instead.
+ */
+#define round_boundary(value, boundary)		\
+	((__typeof__(value))((boundary) - 1))
+
+#define round_up(value, boundary)		\
+	((((value) - 1) | round_boundary(value, boundary)) + 1)
+
+#define round_down(value, boundary)		\
+	((value) & ~round_boundary(value, boundary))
+
+/* DDR Controller Register fields */
+#define DDRCTRL_MSTR_DDR3			BIT(0)
+#define DDRCTRL_MSTR_LPDDR2			BIT(2)
+#define DDRCTRL_MSTR_LPDDR3			BIT(3)
+#define DDRCTRL_MSTR_DATA_BUS_WIDTH_MASK	GENMASK(13, 12)
+#define DDRCTRL_MSTR_DATA_BUS_WIDTH_FULL	0
+#define DDRCTRL_MSTR_DATA_BUS_WIDTH_HALF	BIT(12)
+#define DDRCTRL_MSTR_DATA_BUS_WIDTH_QUARTER	BIT(13)
+#define DDRCTRL_MSTR_DLL_OFF_MODE		BIT(15)
+
+#define DDRCTRL_STAT_OPERATING_MODE_MASK	GENMASK(2, 0)
+#define DDRCTRL_STAT_OPERATING_MODE_NORMAL	BIT(0)
+#define DDRCTRL_STAT_OPERATING_MODE_SR		(BIT(0) | BIT(1))
+#define DDRCTRL_STAT_SELFREF_TYPE_MASK		GENMASK(5, 4)
+#define DDRCTRL_STAT_SELFREF_TYPE_ASR		(BIT(4) | BIT(5))
+#define DDRCTRL_STAT_SELFREF_TYPE_SR		BIT(5)
+
+#define DDRCTRL_MRCTRL0_MR_TYPE_WRITE		U(0)
+/* Only one rank supported */
+#define DDRCTRL_MRCTRL0_MR_RANK_SHIFT		4
+#define DDRCTRL_MRCTRL0_MR_RANK_ALL \
+					BIT(DDRCTRL_MRCTRL0_MR_RANK_SHIFT)
+#define DDRCTRL_MRCTRL0_MR_ADDR_SHIFT		12
+#define DDRCTRL_MRCTRL0_MR_ADDR_MASK		GENMASK(15, 12)
+#define DDRCTRL_MRCTRL0_MR_WR			BIT(31)
+
+#define DDRCTRL_MRSTAT_MR_WR_BUSY		BIT(0)
+
+#define DDRCTRL_PWRCTL_SELFREF_EN		BIT(0)
+#define DDRCTRL_PWRCTL_POWERDOWN_EN		BIT(1)
+#define DDRCTRL_PWRCTL_EN_DFI_DRAM_CLK_DISABLE	BIT(3)
+#define DDRCTRL_PWRCTL_SELFREF_SW		BIT(5)
+
+#define DDRCTRL_PWRTMG_SELFREF_TO_X32_MASK	GENMASK(19, 12)
+#define DDRCTRL_PWRTMG_SELFREF_TO_X32_0		BIT(16)
+
+#define DDRCTRL_RFSHCTL3_DIS_AUTO_REFRESH	BIT(0)
+
+#define DDRCTRL_HWLPCTL_HW_LP_EN		BIT(0)
+
+#define DDRCTRL_RFSHTMG_T_RFC_NOM_X1_X32_MASK	GENMASK(27, 16)
+#define DDRCTRL_RFSHTMG_T_RFC_NOM_X1_X32_SHIFT	16
+
+#define DDRCTRL_INIT0_SKIP_DRAM_INIT_MASK	GENMASK(31, 30)
+#define DDRCTRL_INIT0_SKIP_DRAM_INIT_NORMAL	BIT(30)
+
+#define DDRCTRL_DFIMISC_DFI_INIT_COMPLETE_EN	BIT(0)
+
+#define DDRCTRL_DBG1_DIS_HIF			BIT(1)
+
+#define DDRCTRL_DBGCAM_WR_DATA_PIPELINE_EMPTY	BIT(29)
+#define DDRCTRL_DBGCAM_RD_DATA_PIPELINE_EMPTY	BIT(28)
+#define DDRCTRL_DBGCAM_DBG_WR_Q_EMPTY		BIT(26)
+#define DDRCTRL_DBGCAM_DBG_LPR_Q_DEPTH		GENMASK(12, 8)
+#define DDRCTRL_DBGCAM_DBG_HPR_Q_DEPTH		GENMASK(4, 0)
+#define DDRCTRL_DBGCAM_DATA_PIPELINE_EMPTY \
+		(DDRCTRL_DBGCAM_WR_DATA_PIPELINE_EMPTY | \
+		 DDRCTRL_DBGCAM_RD_DATA_PIPELINE_EMPTY)
+#define DDRCTRL_DBGCAM_DBG_Q_DEPTH \
+		(DDRCTRL_DBGCAM_DBG_WR_Q_EMPTY | \
+		 DDRCTRL_DBGCAM_DBG_LPR_Q_DEPTH | \
+		 DDRCTRL_DBGCAM_DBG_HPR_Q_DEPTH)
+
+#define DDRCTRL_DBGCMD_RANK0_REFRESH		BIT(0)
+
+#define DDRCTRL_DBGSTAT_RANK0_REFRESH_BUSY	BIT(0)
+
+#define DDRCTRL_SWCTL_SW_DONE			BIT(0)
+
+#define DDRCTRL_SWSTAT_SW_DONE_ACK		BIT(0)
+
+#define DDRCTRL_PCTRL_N_PORT_EN			BIT(0)
+
+/* DDR PHY registers offsets */
+#define DDRPHYC_PIR				0x004
+#define DDRPHYC_PGCR				0x008
+#define DDRPHYC_PGSR				0x00C
+#define DDRPHYC_DLLGCR				0x010
+#define DDRPHYC_ACDLLCR				0x014
+#define DDRPHYC_PTR0				0x018
+#define DDRPHYC_ACIOCR				0x024
+#define DDRPHYC_DXCCR				0x028
+#define DDRPHYC_DSGCR				0x02C
+#define DDRPHYC_ZQ0CR0				0x180
+#define DDRPHYC_DX0GCR				0x1C0
+#define DDRPHYC_DX0DLLCR			0x1CC
+#define DDRPHYC_DX1GCR				0x200
+#define DDRPHYC_DX1DLLCR			0x20C
+#define DDRPHYC_DX2GCR				0x240
+#define DDRPHYC_DX2DLLCR			0x24C
+#define DDRPHYC_DX3GCR				0x280
+#define DDRPHYC_DX3DLLCR			0x28C
+
+/* DDR PHY Register fields */
+#define DDRPHYC_PIR_INIT			BIT(0)
+#define DDRPHYC_PIR_DLLSRST			BIT(1)
+#define DDRPHYC_PIR_DLLLOCK			BIT(2)
+#define DDRPHYC_PIR_ZCAL			BIT(3)
+#define DDRPHYC_PIR_ITMSRST			BIT(4)
+#define DDRPHYC_PIR_DRAMRST			BIT(5)
+#define DDRPHYC_PIR_DRAMINIT			BIT(6)
+#define DDRPHYC_PIR_QSTRN			BIT(7)
+#define DDRPHYC_PIR_ICPC			BIT(16)
+#define DDRPHYC_PIR_ZCALBYP			BIT(30)
+#define DDRPHYC_PIR_INITSTEPS_MASK		GENMASK(31, 7)
+
+#define DDRPHYC_PGCR_DFTCMP			BIT(2)
+#define DDRPHYC_PGCR_PDDISDX			BIT(24)
+#define DDRPHYC_PGCR_RFSHDT_MASK		GENMASK(28, 25)
+
+#define DDRPHYC_PGSR_IDONE			BIT(0)
+#define DDRPHYC_PGSR_DTERR			BIT(5)
+#define DDRPHYC_PGSR_DTIERR			BIT(6)
+#define DDRPHYC_PGSR_DFTERR			BIT(7)
+#define DDRPHYC_PGSR_RVERR			BIT(8)
+#define DDRPHYC_PGSR_RVEIRR			BIT(9)
+
+#define DDRPHYC_DLLGCR_BPS200			BIT(23)
+
+#define DDRPHYC_ACDLLCR_DLLSRST			BIT(30)
+#define DDRPHYC_ACDLLCR_DLLDIS			BIT(31)
+
+#define DDRPHYC_PTR0_TDLLSRST_OFFSET		0
+#define DDRPHYC_PTR0_TDLLSRST_MASK		GENMASK(5, 0)
+#define DDRPHYC_PTR0_TDLLLOCK_OFFSET		6
+#define DDRPHYC_PTR0_TDLLLOCK_MASK		GENMASK(17, 6)
+#define DDRPHYC_PTR0_TITMSRST_OFFSET		18
+#define DDRPHYC_PTR0_TITMSRST_MASK		GENMASK(21, 18)
+
+#define DDRPHYC_ACIOCR_ACPDD			BIT(3)
+#define DDRPHYC_ACIOCR_ACPDR			BIT(4)
+#define DDRPHYC_ACIOCR_CKPDD_MASK		GENMASK(10, 8)
+#define DDRPHYC_ACIOCR_CKPDD_0			BIT(8)
+#define DDRPHYC_ACIOCR_CKPDR_MASK		GENMASK(13, 11)
+#define DDRPHYC_ACIOCR_CKPDR_0			BIT(11)
+#define DDRPHYC_ACIOCR_CSPDD_MASK		GENMASK(21, 18)
+#define DDRPHYC_ACIOCR_CSPDD_0			BIT(18)
+#define DDRPHYC_ACIOCR_RSTPDD			BIT(27)
+#define DDRPHYC_ACIOCR_RSTPDR			BIT(28)
+
+#define DDRPHYC_DXCCR_DXPDD			BIT(2)
+#define DDRPHYC_DXCCR_DXPDR			BIT(3)
+
+#define DDRPHYC_DSGCR_CKEPDD_MASK		GENMASK(19, 16)
+#define DDRPHYC_DSGCR_CKEPDD_0			BIT(16)
+#define DDRPHYC_DSGCR_ODTPDD_MASK		GENMASK(23, 20)
+#define DDRPHYC_DSGCR_ODTPDD_0			BIT(20)
+#define DDRPHYC_DSGCR_NL2PD			BIT(24)
+
+#define DDRPHYC_ZQ0CRN_ZDATA_MASK		GENMASK(27, 0)
+#define DDRPHYC_ZQ0CRN_ZDATA_SHIFT		0
+#define DDRPHYC_ZQ0CRN_ZDEN			BIT(28)
+#define DDRPHYC_ZQ0CRN_ZQPD			BIT(31)
+
+#define DDRPHYC_DXNGCR_DXEN			BIT(0)
+
+#define DDRPHYC_DXNDLLCR_DLLSRST		BIT(30)
+#define DDRPHYC_DXNDLLCR_DLLDIS			BIT(31)
+#define DDRPHYC_DXNDLLCR_SDPHASE_MASK		GENMASK(17, 14)
+#define DDRPHYC_DXNDLLCR_SDPHASE_SHIFT		14
+
 void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 {
 /*
