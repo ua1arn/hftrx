@@ -9228,7 +9228,23 @@ uint_fast32_t cpu_getdebugticks(void)
 
 static void vectors_relocate(void);
 
+#if defined (TZPC)
 
+/* Extended TrustZone protection controller access function */
+static void FLASHMEMINITFUNC
+tzpc_set_prot(
+		uint_fast8_t id,
+		uint_fast8_t val
+	)
+{
+	const uint_fast8_t pos = (id % 16);
+	const uint_fast8_t ix = (id / 16);
+	const uint_fast32_t mask = 0x03uL << pos;
+	volatile uint32_t * const reg = & TZPC->DECPROT0 + ix;
+	* reg = (* reg & ~ mask) | ((val << pos) & mask);
+}
+
+#endif /* defined (TZPC) */
 /* функция вызывается из start-up до копирования в SRAM всех "быстрых" функций и до инициализации переменных
 */
 // watchdog disable, clock initialize, cache enable
@@ -9264,9 +9280,23 @@ SystemInit(void)
 	#ifdef UNALIGNED_SUPPORT_DISABLE
 		SCB->CCR |= SCB_CCR_UNALIGN_TRP_Msk;
 	#endif
+
 #endif /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7 */
 
+#if CPUSTYLE_STM32MP157A
+
+	// Peripheral is not secure (Read and Write by secure and non secure)
+	tzpc_set_prot(0, 0x03);		// STGENC
+	tzpc_set_prot(1, 0x03);		// BKPSRAM
+	tzpc_set_prot(3, 0x03);		// USART1
+	tzpc_set_prot(7, 0x03);		// RNG1
+	tzpc_set_prot(10, 0x03);	// DDRCTRL
+	tzpc_set_prot(11, 0x03);	// DDRPHYC
+
+#endif /* CPUSTYLE_STM32MP157A */
+
 #if (CPUSTYLE_ARM_CA9 || CPUSTYLE_ARM_CA7)
+
 	#if WITHDEBUG
 	{
 		// Поддержка для функций диагностики быстродействия BEGINx_STAMP/ENDx_STAMP - audio.c
@@ -9301,6 +9331,7 @@ SystemInit(void)
 		__set_CP(15, 0, 0x8000000f, 9, 12, 3);
 	}
 	#endif /* WITHDEBUG */
+
 #endif /* (CPUSTYLE_ARM_CA9 || CPUSTYLE_ARM_CA7) */
 
 #if CPUSTYLE_STM32F1XX
