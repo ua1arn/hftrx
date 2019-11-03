@@ -9228,13 +9228,13 @@ uint_fast32_t cpu_getdebugticks(void)
 
 static void vectors_relocate(void);
 
-#if defined (TZPC)
+#if CPUSTYLE_STM32MP1 && defined (TZPC)
 
 /* Extended TrustZone protection controller access function */
 static void FLASHMEMINITFUNC
 tzpc_set_prot(
-		uint_fast8_t id,
-		uint_fast8_t val
+		uint_fast8_t id,	/* IP code */
+		uint_fast8_t val	/* 0x00..0x03: protection style */
 	)
 {
 	const uint_fast8_t pos = (id % 16);
@@ -9244,7 +9244,8 @@ tzpc_set_prot(
 	* reg = (* reg & ~ mask) | ((val << pos) & mask);
 }
 
-#endif /* defined (TZPC) */
+#endif /* CPUSTYLE_STM32MP1 && defined (TZPC) */
+
 /* функция вызывается из start-up до копирования в SRAM всех "быстрых" функций и до инициализации переменных
 */
 // watchdog disable, clock initialize, cache enable
