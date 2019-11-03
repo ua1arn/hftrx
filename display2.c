@@ -5649,7 +5649,8 @@ static void dsp_latchwaterfall(
 	(void) pv;
 
 	// запоминание информации спектра для спектрограммы
-	dsp_getspectrumrow(spavgarray, ALLDX, glob_zoomxpow2);
+	if (! dsp_getspectrumrow(spavgarray, ALLDX, glob_zoomxpow2))
+		return;	// еще нет новых данных.
 
 #if (! LCDMODE_S1D13781_NHWACCEL && LCDMODE_S1D13781)
 #else

@@ -4761,6 +4761,7 @@ static RAMFUNC uint_fast8_t isneedmute(uint_fast8_t dspmode)
 // Поддержка панорпамы и водопада
 
 static volatile uint_fast8_t rendering;
+static volatile uint_fast32_t renderready;
 /*
 uint_fast8_t hamradio_get_notchvalueXXX(int_fast32_t * p)
 {
@@ -4783,7 +4784,7 @@ void saveIQRTSxx(FLOAT_t iv, FLOAT_t qv)
 		fft_largelast = (fft_largelast == 0) ? (LARGEFFT - 1) : (fft_largelast - 1);
 		FFT_largebuffI [fft_largelast] = FFT_largebuffI [fft_largelast + LARGEFFT] = iv;
 		FFT_largebuffQ [fft_largelast] = FFT_largebuffQ [fft_largelast + LARGEFFT] = qv;
-
+		renderready = (renderready < LARGEFFT) ? (renderready + 1) : LARGEFFT;
 	}
 	else
 	{
@@ -4826,18 +4827,6 @@ static void printsigwnd(void)
 	debug_printf_P(PSTR("};\n"));
 }
 #endif
-
-static int raster2fft(
-	int x,	// window pos
-	int dx	// width
-	)
-{
-	const int xm = dx / 2;	// middle
-	const int delta = x - xm;	// delta in pixels
-	const int fftoffset = delta * ((int) NORMALFFT / 2 - 1) / xm;
-	return fftoffset < 0 ? ((int) NORMALFFT + fftoffset) : fftoffset;
-	
-}
 
 // Нормирование уровня сигнала к шкале
 // возвращает значения от 0 до ymax включительно
@@ -4910,18 +4899,42 @@ make_cmplx(
 	}
 }
 
+static int raster2fft(
+	int x,	// window pos
+	int dx	// width
+	)
+{
+	const int xm = dx / 2;	// middle
+	const int delta = x - xm;	// delta in pixels
+	const int fftoffset = delta * ((int) NORMALFFT / 2 - 1) / xm;
+	return fftoffset < 0 ? ((int) NORMALFFT + fftoffset) : fftoffset;
+
+}
+
 // Копрование информации о спектре с текущую строку буфера
 // wfarray (преобразование к пикселям растра */
-void dsp_getspectrumrow(
+uint_fast8_t dsp_getspectrumrow(
 	FLOAT_t * const hbase,	// Буфер амплитуд
 	uint_fast16_t dx,		// X width (pixels) of display window
 	uint_fast8_t zoompow2	// horisontal magnification power of two
 	)
 {
+	const uint_fast32_t needsize = ((uint_fast32_t) NORMALFFT << zoompow2);
 	uint_fast16_t i;
 	uint_fast16_t x;
 
-	rendering = 1;	// запрет обновления буфера с исходными данными
+	// проверка, есть ли нудное количество данных для формирования спектра
+	global_disableIRQ();
+	if (0) //(renderready < needsize)
+	{
+		global_enableIRQ();
+		return 0;
+	}
+	else
+	{
+		rendering = 1;	// запрет обновления буфера с исходными данными
+		global_enableIRQ();
+	}
 
 	float32_t * const largesigI = & FFT_largebuffI [fft_largelast];
 	float32_t * const largesigQ = & FFT_largebuffQ [fft_largelast];
@@ -4937,7 +4950,10 @@ void dsp_getspectrumrow(
 	// Подготовить массив комплексных чисел для преобразования в частотную область
 	make_cmplx(zoomfft_st.cmplx_sig, NORMALFFT, largesigQ, largesigI);
 
+	global_disableIRQ();
+	renderready = 0;
 	rendering = 0;
+	global_enableIRQ();
 
 	arm_cmplx_mult_real_f32(zoomfft_st.cmplx_sig, wnd256, zoomfft_st.cmplx_sig,  NORMALFFT);	// Применить оконную функцию к IQ буферу
 	arm_cfft_f32(FFTCONFIGSpectrum, zoomfft_st.cmplx_sig, 0, 1);	// forward transform
@@ -4949,6 +4965,7 @@ void dsp_getspectrumrow(
 		const int fftpos = raster2fft(x, dx);
 		hbase [x] = zoomfft_st.cmplx_sig [fftpos] * fftcoeff;
 	}
+	return 1;
 }
 
 static void
@@ -4961,7 +4978,7 @@ dsp_rasterinitialize(void)
 
 #else /* (WITHRTS96 || WITHRTS192) && ! WITHTRANSPARENTIQ */
 
-void dsp_getspectrumrow(
+uint_fast8_t dsp_getspectrumrow(
 	FLOAT_t * const hbase,
 	uint_fast16_t dx,	// pixel X width of display window
 	uint_fast8_t zoompow2	// horisontal magnification power of two
@@ -4972,6 +4989,7 @@ void dsp_getspectrumrow(
 	{
 		hbase [x] = 0;
 	}
+	return 1;
 }
 
 // Нормирование уровня сигнала к шкале

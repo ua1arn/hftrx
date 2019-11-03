@@ -573,7 +573,7 @@ void dsp_initialize(void);
 #if WITHINTEGRATEDDSP
 	// Копрование информации о спектре с текущую строку буфера
 	// wfarray (преобразование к пикселям растра */
-	void dsp_getspectrumrow(
+	uint_fast8_t dsp_getspectrumrow(
 		FLOAT_t * const hbase,
 		uint_fast16_t dx,	// pixel X width (pixels) of display window
 		uint_fast8_t zoompow2	// horisontal magnification power of two
