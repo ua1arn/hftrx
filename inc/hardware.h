@@ -428,7 +428,6 @@ void hardware_adc_initialize(void);
 	#define NOINLINEAT // __attribute__((noinline))
 
 	#if CPUSTYLE_R7S721
-		#define VTRATTR	// __attribute__ ((section("vtable"), used, aligned(256 * 4)))
 		#define FLASHMEMINIT	__attribute__((section(".initdata"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
 		#define FLASHMEMINITFUNC	__attribute__((section(".initfunc"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
 		#define RAMFUNC_NONILINE // __attribute__((__section__(".ramfunc"), noinline))
@@ -441,7 +440,6 @@ void hardware_adc_initialize(void);
 		#define RAMHEAP __attribute__((used, section(".heap"), aligned(32))) // memory used as heap zone
 	#elif CPUSTYLE_STM32MP1
 		// TODO: Use SYSRAM as DTCM/ITCM
-		#define VTRATTR	// __attribute__ ((section("vtable"), used, aligned(256 * 4)))
 		#define FLASHMEMINIT	__attribute__((section(".initdata"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
 		#define FLASHMEMINITFUNC	__attribute__((section(".initfunc"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
 		#define RAMFUNC_NONILINE __attribute__((__section__(".itcm"), noinline))

@@ -127,7 +127,6 @@ SECTIONS
 
 		KEEP(*(.eh_frame*))
 
-		*(vtable)
 		*(.data*)
 	   . = ALIGN(4);	/* one line added by ua1arn */
 
