@@ -40,16 +40,16 @@
 	#define FFTSizeFiltersM 10
 	#define FFTCONFIGFilters	(& arm_cfft_sR_f32_len1024)
 
-	#define FFTSizeSpectrumM 10
-	#define FFTCONFIGSpectrum	(& arm_cfft_sR_f32_len1024)
+	#define FFTSizeSpectrumM 9
+	#define FFTCONFIGSpectrum	(& arm_cfft_sR_f32_len512)
 
 #elif CPUSTYLE_R7S721 && ! WITHNOSPEEX
 	// With speex
 	#define FFTSizeFiltersM 10
 	#define FFTCONFIGFilters	(& arm_cfft_sR_f32_len1024)
 
-	#define FFTSizeSpectrumM 10
-	#define FFTCONFIGSpectrum	(& arm_cfft_sR_f32_len1024)
+	#define FFTSizeSpectrumM 9
+	#define FFTCONFIGSpectrum	(& arm_cfft_sR_f32_len512)
 
 #elif CPUSTYLE_STM32H7XX && WITHNOSPEEX
 	// No speex
