@@ -52,8 +52,8 @@
 #define  USB_DESC_TYPE_OTHER_SPEED_CONFIGURATION           7
 #define  USB_DESC_TYPE_BOS                                 0x0F
 
-#define USB_CONFIG_REMOTE_WAKEUP                           2
-#define USB_CONFIG_SELF_POWERED                            1
+#define USB_CONFIG_REMOTE_WAKEUP                           0x02
+#define USB_CONFIG_SELF_POWERED                            0x01
 
 /*  Device Status */
 #define USBD_STATE_DEFAULT                                1
