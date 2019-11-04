@@ -9264,7 +9264,7 @@ SystemInit(void)
 	tzpc_set_prot(11, 0x03);	// DDRPHYC
 
 #endif /* CPUSTYLE_STM32MP1 */
-#if 0
+#if CPUSTYLE_STM32MP1
 	{
 		// LED blinking test
 		const uint_fast32_t mask = (1uL << 14);	// PA14
@@ -9276,7 +9276,7 @@ SystemInit(void)
 			local_delay_ms(50);
 		}
 	}
-#endif
+#endif /* CPUSTYLE_STM32MP1 */
 #if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7
 
 	#if WITHDEBUG && WITHINTEGRATEDDSP && CPUSTYLE_ARM_CM7
