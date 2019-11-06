@@ -2232,7 +2232,7 @@ static RAMFUNC_NONILINE FLOAT32P_t filter_firp_rx_SSB_IQ(FLOAT32P_t NewSample)
 
 	// shift the old samples
 	// fir_head -  Начало обрабатываемой части буфера
-	// fir_head + Ntap -  Позиция за концом обрабатываемого буфер
+	// fir_head + Ntap -  Позиция за концом обрабатываемого буфера
 	fir_head = (fir_head == 0) ? (Ntap - 1) : (fir_head - 1);
     x [fir_head] = x [fir_head + Ntap] = NewSample;
 
@@ -2271,7 +2271,7 @@ static RAMFUNC_NONILINE FLOAT32P_t filter_firp_tx_SSB_IQ(FLOAT32P_t NewSample)
 
 	// shift the old samples
 	// fir_head -  Начало обрабатываемой части буфера
-	// fir_head + Ntap -  Позиция за концом обрабатываемого буфер
+	// fir_head + Ntap -  Позиция за концом обрабатываемого буфера
 	fir_head = (fir_head == 0) ? (Ntap - 1) : (fir_head - 1);
     x [fir_head] = x [fir_head + Ntap] = NewSample;
 
@@ -2316,7 +2316,7 @@ static RAMFUNC_NONILINE FLOAT32P_t filter_fir4_rx_SSB_IQ(FLOAT32P_t NewSample, u
 
 	// shift the old samples
 	// fir_head -  Начало обрабатываемой части буфера
-	// fir_head + Ntap -  Позиция за концом обрабатываемого буфер
+	// fir_head + Ntap -  Позиция за концом обрабатываемого буфера
 	fir_head = (fir_head == 0) ? (Ntap - 1) : (fir_head - 1);
 	const uint_fast16_t fir_tail = fir_head + Ntap;
 	// Calculate the new output
@@ -2425,7 +2425,7 @@ static RAMFUNC_NONILINE FLOAT32P_t filter_fir4_tx_SSB_IQ(FLOAT32P_t NewSample, u
 
 	// shift the old samples
 	// fir_head -  Начало обрабатываемой части буфера
-	// fir_head + Ntap -  Позиция за концом обрабатываемого буфер
+	// fir_head + Ntap -  Позиция за концом обрабатываемого буфера
 	fir_head = (fir_head == 0) ? (Ntap - 1) : (fir_head - 1);
 
 	// Если текущий == 0 - его и все через один игнорируем
@@ -3964,13 +3964,52 @@ static RAMFUNC FLOAT_t arctan2(FLOAT_t y, FLOAT_t x)
 
 //////////////////////////
 
+// Демодуляция FM (без арктангенса).
+static RAMFUNC ncoftwi_t demodulator_FM2(
+	FLOAT32P_t v0,
+	const uint_fast8_t pathi				// 0/1: main_RX/sub_RX
+	)
+{
+	// Здесь, имея квадратурные сигналы vp1.IV и vp1.QV, начинаем демодуляцию
+	//
+	// tnx Richard Lyons
+	// https://www.embedded.com/dsp-tricks-frequency-demodulation-algorithms/
+	//
+	enum { Ntap = 3 - 1 };
+
+	// буфер с сохраненными значениями сэмплов
+	static RAMDTCM FLOAT32P_t xs [NTRX] [Ntap * 2]; // input samples (force CCM allocation)
+	static RAMDTCM uint_fast8_t fir_heads [NTRX];		// позиция записи в буфер в последний раз
+	uint_fast8_t * const phead = & fir_heads [pathi];
+	// shift the old samples
+	// * phead -  Начало обрабатываемой части буфера
+	// * phead + Ntap -  Позиция за концом обрабатываемого буфера
+	FLOAT32P_t * const xp = & xs [pathi] [* phead];
+	const FLOAT_t qt = (v0.QV - xp [1].QV) * xp [0].IV;
+	const FLOAT_t it = (v0.IV - xp [1].IV) * xp [0].QV;
+
+	* phead = (* phead == 0) ? (Ntap - 1) : (* phead - 1);
+	xp [0] = xp [Ntap] = v0;
+
+	const FLOAT_t r = qt - it;
+
+	static RAMDTCM ncoftwi_t prev_fi [NTRX];
+
+	const ncoftwi_t fi = 0;//OMEGA2FTWI(ATAN2F(vp1.QV, vp1.IV));	//  returns a value in the range –pi to pi radians, using the signs of both parameters to determine the quadrant of the return value.
+
+	const ncoftwi_t d_fi = (ncoftwi_t) (fi - prev_fi [pathi]);
+	prev_fi [pathi] = fi;
+
+	return d_fi;
+}
+
 // Демодуляция FM
 static RAMFUNC ncoftwi_t demodulator_FM(
 	FLOAT32P_t vp1,
 	const uint_fast8_t pathi				// 0/1: main_RX/sub_RX
 	)
 {
-	// Здесь, имея квадратурные сигналы vp1.IV и vp1.QV, начинаем демодуляции
+	// Здесь, имея квадратурные сигналы vp1.IV и vp1.QV, начинаем демодуляцию
 	//
 	// tnx Vladimir Vassilevsky
 	// http://www.dsprelated.com/showmessage/71491/2.php
