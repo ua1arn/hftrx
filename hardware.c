@@ -9254,6 +9254,20 @@ FLASHMEMINITFUNC
 SystemInit(void)
 {
 #if CPUSTYLE_STM32MP1
+	RCC->TZCR &= ~ (RCC_TZCR_TZEN | RCC_TZCR_MCKPROT);
+	{
+		// LED blinking test
+		const uint_fast32_t mask = (1uL << 14);	// PA14 - GREEN LED LD5 on DK1/DK2 MB1272.pdf
+		for (;;)
+		{
+			arm_hardware_pioa_outputs(mask, 1 * mask);
+			local_delay_ms(250);
+			arm_hardware_pioa_outputs(mask, 0 * mask);
+			local_delay_ms(250);
+		}
+	}
+#endif /* CPUSTYLE_STM32MP1 */
+#if CPUSTYLE_STM32MP1
 
 	// Set peripheral is not secure (Read and Write by secure and non secure)
 	tzpc_set_prot(0, 0x03);		// STGENC
@@ -9263,19 +9277,6 @@ SystemInit(void)
 	tzpc_set_prot(10, 0x03);	// DDRCTRL
 	tzpc_set_prot(11, 0x03);	// DDRPHYC
 
-#endif /* CPUSTYLE_STM32MP1 */
-#if CPUSTYLE_STM32MP1
-	{
-		// LED blinking test
-		const uint_fast32_t mask = (1uL << 14);	// PA14
-		for (;;)
-		{
-			arm_hardware_pioa_outputs(mask, 1 * mask);
-			local_delay_ms(50);
-			arm_hardware_pioa_outputs(mask, 0 * mask);
-			local_delay_ms(50);
-		}
-	}
 #endif /* CPUSTYLE_STM32MP1 */
 #if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7
 
