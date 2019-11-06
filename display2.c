@@ -4257,20 +4257,17 @@ enum
 	// 480/5 = 96, 800/16=50
 
 	#if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
-		//					"012345678901234567890123"
-		#define SWRPWRMAP	"1   2   3   4  0% | 100%" 
+		//					"012345678901234567890123456789"
+		#define SWRPWRMAP	"1    2    3    4  0%   |  100%"
 		#define SWRMAX	(SWRMIN * 40 / 10)	// 4.0 - значение на полной шкале
 	#else
-		//					"012345678901234567890123"
-		#define POWERMAP	"0    25    50   75   100"
-		#define SWRMAP		"1   |   2  |   3   |   4"	// 
-		#define SWRMAX	(SWRMIN * 40 / 10)	// 4.0 - значение на полной шкале
+		#error Should be defined WITHSHOWSWRPWR
 	#endif
-	//						"012345678901234567890123"
-	#define SMETERMAP		"1  3  5  7  9 +20 +40 60"
+	//						"012345678901234567890123456789"
+	#define SMETERMAP		"1   3   5   7   9  +20 +40 +60"
 	enum
 	{
-		BDTH_ALLRXBARS = 24,	// ширина зоны для отображение барграфов на индикаторе
+		BDTH_ALLRXBARS = 30,	// ширина зоны для отображение барграфов на индикаторе
 #if 0
 		BDTH_ALLRX = 50,	// ширина зоны для отображение графического окна на индикаторе
 		BDCV_ALLRX = ROWS2GRID(49),	// количество строк, отведенное под S-метр, панораму, иные отображения
@@ -4279,12 +4276,12 @@ enum
 		BDCV_ALLRX = ROWS2GRID(55),	// количество строк, отведенное под S-метр, панораму, иные отображения
 #endif
 
-		BDTH_LEFTRX = 12,	// ширина индикатора баллов (без плюсов)
+		BDTH_LEFTRX = 17,	// ширина индикатора баллов (без плюсов)
 		BDTH_RIGHTRX = BDTH_ALLRXBARS - BDTH_LEFTRX,	// ширина индикатора плюсов
 		BDTH_SPACERX = 0,
-		BDTH_ALLSWR = 13,
+		BDTH_ALLSWR = 16,
 		BDTH_SPACESWR = 2,
-		BDTH_ALLPWR = 9,
+		BDTH_ALLPWR = 12,
 		BDTH_SPACEPWR = 0,
 
 		/* совмещение на одном экрание водопада и панорамы */
@@ -4382,7 +4379,7 @@ enum
 		{	0,	30,	display2_bars,	REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
 		//{	0,	35,	display2_legend_tx,	REDRM_MODE, PGSWR, },	// Отображение оцифровки шкалы PWR & SWR-метра
 		//{	0,	40,	display2_bars_tx,	REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
-		{	25,	30, display_siglevel4, REDRM_BARS, PGSWR, },	// signal leval dBm
+		{	31,	30, display_siglevel4, REDRM_BARS, PGSWR, },	// signal leval dBm
 	#if WITHSPECTRUMWF
 		{	0,	DLES,	dsp_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
 		{	0,	DLES,	display2_spectrum,	REDRM_BARS, PGSPE, },// подготовка изображения спектра
