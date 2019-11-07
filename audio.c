@@ -3323,14 +3323,10 @@ static RAMFUNC FLOAT_t agc_getsiglevel(
 	FLOAT32P_t sampleiq
 	)
 {
-	const FLOAT_t sample1 = SQRTF((FLOAT_t) sampleiq.IV * sampleiq.IV + (FLOAT_t) sampleiq.QV * sampleiq.QV);
-	return sample1;
-	const FLOAT_t sample2 = FMAXF(FABSF(sampleiq.IV), FABSF(sampleiq.QV));	// используется эта формула, так как цель - исключить арифметическое переполнение.
-	const FLOAT_t sample = FMAXF(sample1, sample2);
-
-	//return sample2;
+	const FLOAT_t sample = SQRTF((FLOAT_t) sampleiq.IV * sampleiq.IV + (FLOAT_t) sampleiq.QV * sampleiq.QV);
 	return sample;
 }
+
 //
 // постоянные времени системы АРУ
 // Инициализация сделана для того, чтобы поместить эти переменные в обюласть CCM памяти
@@ -3965,48 +3961,43 @@ static RAMFUNC FLOAT_t arctan2(FLOAT_t y, FLOAT_t x)
 //////////////////////////
 
 // Демодуляция FM (без арктангенса).
-static RAMFUNC ncoftwi_t demodulator_FM2(
-	FLOAT32P_t v0,
-	const uint_fast8_t pathi				// 0/1: main_RX/sub_RX
+static RAMFUNC ncoftwi_t demodulator_FMnew(
+	FLOAT32P_t vp1,
+	const uint_fast8_t pathi,				// 0/1: main_RX/sub_RX
+	FLOAT_t siglevel
 	)
 {
+	if (vp1.IV == 0 && vp1.QV == 0)
+		vp1.QV = 1;
 	// Здесь, имея квадратурные сигналы vp1.IV и vp1.QV, начинаем демодуляцию
 	//
 	// tnx Richard Lyons
-	// https://www.embedded.com/dsp-tricks-frequency-demodulation-algorithms/
+	// https://www.embedded.com/dsp-tricks-frequency-demodulation-algorithms
 	//
-	enum { Ntap = 3 - 1 };
+	enum { Ntap = 3 };
 
 	// буфер с сохраненными значениями сэмплов
 	static RAMDTCM FLOAT32P_t xs [NTRX] [Ntap * 2]; // input samples (force CCM allocation)
 	static RAMDTCM uint_fast8_t fir_heads [NTRX];		// позиция записи в буфер в последний раз
 	uint_fast8_t * const phead = & fir_heads [pathi];
-	// shift the old samples
 	// * phead -  Начало обрабатываемой части буфера
 	// * phead + Ntap -  Позиция за концом обрабатываемого буфера
-	FLOAT32P_t * const xp = & xs [pathi] [* phead];
-	const FLOAT_t qt = (v0.QV - xp [1].QV) * xp [0].IV;
-	const FLOAT_t it = (v0.IV - xp [1].IV) * xp [0].QV;
-
+	// shift the old samples
 	* phead = (* phead == 0) ? (Ntap - 1) : (* phead - 1);
-	xp [0] = xp [Ntap] = v0;
-
-	const FLOAT_t r = qt - it;
-
-	static RAMDTCM ncoftwi_t prev_fi [NTRX];
-
-	const ncoftwi_t fi = 0;//OMEGA2FTWI(ATAN2F(vp1.QV, vp1.IV));	//  returns a value in the range –pi to pi radians, using the signs of both parameters to determine the quadrant of the return value.
-
-	const ncoftwi_t d_fi = (ncoftwi_t) (fi - prev_fi [pathi]);
-	prev_fi [pathi] = fi;
-
-	return d_fi;
+	FLOAT32P_t * const xp = & xs [pathi] [* phead];
+	xp [0] = xp [Ntap] = vp1;
+	const FLOAT_t qt = (xp [0].QV - xp [2].QV) * xp [1].IV;
+	const FLOAT_t it = (xp [0].IV - xp [2].IV) * xp [1].QV;
+	const FLOAT_t r = (qt - it) / siglevel;
+	const ncoftwi_t fi = r / (FLOAT_t) 6.44;//(FLOAT_t) M_TWOPI;//OMEGA2FTWI(ATAN2F(vp1.QV, vp1.IV));	//  returns a value in the range –pi to pi radians, using the signs of both parameters to determine the quadrant of the return value.
+	return fi;
 }
 
 // Демодуляция FM
 static RAMFUNC ncoftwi_t demodulator_FM(
 	FLOAT32P_t vp1,
-	const uint_fast8_t pathi				// 0/1: main_RX/sub_RX
+	const uint_fast8_t pathi,				// 0/1: main_RX/sub_RX
+	FLOAT_t siglevel
 	)
 {
 	// Здесь, имея квадратурные сигналы vp1.IV и vp1.QV, начинаем демодуляцию
@@ -4319,10 +4310,11 @@ static RAMFUNC_NONILINE FLOAT_t baseband_demodulator(
 	case DSPCTL_MODE_RX_BPSK:
 		if (pathi == 0)
 		{
-			/*const FLOAT_t fltstrengthslow = */ agc_measure_float(dspmode, agc_getsiglevel(vp0f), pathi);
+			const FLOAT_t siglevel = agc_getsiglevel(vp0f);
+			/*const FLOAT_t fltstrengthslow = */ agc_measure_float(dspmode, siglevel, pathi);
 			//const FLOAT_t gain = agc_getgain_float(fltstrengthslow, pathi);
 			//INT32P_t vp0i32;
-			//saved_delta_fi [pathi] = demodulator_FM(vp0f, pathi);	// погрешность настройки - требуется фильтровать ФНЧ
+			//saved_delta_fi [pathi] = demodulator_FM(vp0f, pathi, siglevel);	// погрешность настройки - требуется фильтровать ФНЧ
 			modem_demod_iq(vp0f);
 		}
 		r = 0;
@@ -4333,9 +4325,10 @@ static RAMFUNC_NONILINE FLOAT_t baseband_demodulator(
 		if (/*DUALRXFLT || */pathi == 0)
 		{
 			// Демодуляция NBFM
-			const FLOAT_t fltstrengthslow = agc_measure_float(dspmode, agc_getsiglevel(vp0f), pathi);
+			const FLOAT_t siglevel = agc_getsiglevel(vp0f);
+			const FLOAT_t fltstrengthslow = agc_measure_float(dspmode, siglevel, pathi);
 			//const FLOAT_t gain = agc_getgain_float(fltstrengthslow, pathi);
-			saved_delta_fi [pathi] = demodulator_FM(vp0f, pathi);	// погрешность настройки - требуется фильтровать ФНЧ
+			saved_delta_fi [pathi] = demodulator_FM(vp0f, pathi, siglevel);	// погрешность настройки - требуется фильтровать ФНЧ
 			//const int fdelta10 = ((int64_t) saved_delta_fi [pathi] * ARMSAIRATE * 10) >> 32;	// Отклнение частоты в 0.1 герц единицах
 			// значение для прослушивания
 			// 0.707 == M_SQRT1_2
@@ -4352,12 +4345,13 @@ static RAMFUNC_NONILINE FLOAT_t baseband_demodulator(
 		{
 			/* AM demodulation */
 			// Здесь, имея квадратурные сигналы vp1.IV и vp1.QV, начинаем демодуляции
-			const FLOAT_t fltstrengthslow = agc_measure_float(dspmode, agc_getsiglevel(vp0f), pathi);
+			const FLOAT_t siglevel = agc_getsiglevel(vp0f);
+			const FLOAT_t fltstrengthslow = agc_measure_float(dspmode, siglevel, pathi);
 			const FLOAT_t gain = agc_getgain_float(fltstrengthslow, pathi);
 			const FLOAT32P_t vp1 = scalepair(agc_delaysignal(vp0f, pathi), gain);
 			// Демодуляция АМ
 			const FLOAT_t sample = SQRTF(vp1.IV * vp1.IV + vp1.QV * vp1.QV);// * (FLOAT_t) 0.5; //M_SQRT1_2;
-			//saved_delta_fi [pathi] = demodulator_FM(vp2, pathi);	// погрешность настройки - требуется фильтровать ФНЧ
+			//saved_delta_fi [pathi] = demodulator_FM(vp0f, pathi, siglevel);	// погрешность настройки - требуется фильтровать ФНЧ
 			r = sample * rxoutdenom;
 			r *= agc_squelchopen(fltstrengthslow, pathi);
 		}
@@ -4374,11 +4368,12 @@ static RAMFUNC_NONILINE FLOAT_t baseband_demodulator(
 		{
 			/* synchronous AM demodulation */
 			// Здесь, имея квадратурные сигналы vp1.IV и vp1.QV, начинаем демодуляции
-			const FLOAT_t fltstrengthslow = agc_measure_float(dspmode, agc_getsiglevel(vp0f), pathi);
+			const FLOAT_t siglevel = agc_getsiglevel(vp0f);
+			const FLOAT_t fltstrengthslow = agc_measure_float(dspmode, siglevel, pathi);
 			const FLOAT_t gain = agc_getgain_float(fltstrengthslow, pathi);
 			const FLOAT32P_t vp1 = scalepair(agc_delaysignal(vp0f, pathi), gain);
 			//const FLOAT_t sample = SQRTF(vp1.IV * vp1.IV + vp1.QV * vp1.QV) * (FLOAT_t) 0.5; //M_SQRT1_2;
-			//saved_delta_fi [pathi] = demodulator_FM(vp2, pathi);	// погрешность настройки - требуется фильтровать ФНЧ
+			//saved_delta_fi [pathi] = demodulator_FM(vp0f, pathi, siglevel);	// погрешность настройки - требуется фильтровать ФНЧ
 			// Демодуляция SАМ
 			const FLOAT_t sample = demodulator_SAM(vp1, pathi);
 			r = sample * rxoutdenom;
@@ -5463,7 +5458,7 @@ void RAMFUNC dsp_extbuffer32rx(const int32_t * buff)
 	dbuff [i + DMABUF32RX0I] = simval.IV;
 	dbuff [i + DMABUF32RX0Q] = simval.QV;
 
-	// пфнорама
+	// панорама
 	const FLOAT32P_t simval0 = scalepair(get_float_monofreq2(), rxlevelfence);	// frequency2
 	dbuff [i + DMABUF32RTS0I] = simval0.IV;
 	dbuff [i + DMABUF32RTS0Q] = simval0.QV;
