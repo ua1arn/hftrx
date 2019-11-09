@@ -397,9 +397,9 @@ typedef struct
 
   uint8_t   *xfer_buff;    /*!< Pointer to transfer buffer.                                                */
 
-  uint32_t  xfer_len;      /*!< Current transfer length.                                                   */
+  uint_fast32_t  xfer_len;      /*!< Current transfer length.                                                   */
 
-  uint32_t  xfer_count;    /*!< Partial transfer length in case of multi packet transfer.                  */
+  uint_fast32_t  xfer_count;    /*!< Partial transfer length in case of multi packet transfer.                  */
 
   uint8_t   toggle_in;     /*!< IN transfer current toggle flag.
                                 This parameter must be a number between Min_Data = 0 and Max_Data = 1      */
@@ -492,7 +492,7 @@ typedef USBALIGN_BEGIN struct _USBD_HandleTypeDef
   USBD_EndpointTypeDef    ep_in [15];
   USBD_EndpointTypeDef    ep_out [15];
   uint_fast32_t           ep0_state;
-  uint_fast32_t           ep0_data_len;
+  uint_fast32_t           ep0_data_len;	// from setup stage
   uint_fast8_t            dev_state;
   uint_fast8_t            dev_old_state;
   uint_fast8_t            dev_address;

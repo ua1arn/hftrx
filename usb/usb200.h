@@ -167,11 +167,7 @@
 #define USB_OTG_HS_MAX_PACKET_SIZE           512U
 #define USB_OTG_FS_MAX_PACKET_SIZE           64U
 
-#if CPUSTYLE_R7S721
-	#define USB_OTG_MAX_EP0_SIZE                 64U
-#else /* CPUSTYLE_R7S721 */
-	#define USB_OTG_MAX_EP0_SIZE                 64U
-#endif /* CPUSTYLE_R7S721 */
+#define USB_OTG_MAX_EP0_SIZE                 64U
 
 /* Audio Interface Subclass Codes */
 #define AUDIO_SUBCLASS_UNDEFINED                0x00
