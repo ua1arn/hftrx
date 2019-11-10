@@ -3478,7 +3478,7 @@ enum
 			PG0 = REDRSUBSET(DPAGE0),
 			PG1 = REDRSUBSET(DPAGE1),
 			PGALL = PG0 | PG1 | REDRSUBSET_MENU,
-			PGLATCH = PGALL,
+			PGLATCH = PGALL | REDRSUBSET_SLEEP,
 			PGunused
 		};
 		#define DISPLC_WIDTH	8	// количество цифр в отображении частоты
@@ -3614,7 +3614,7 @@ enum
 		#else /* WITHDSPEXTDDC */
 			PGALL = PG0 | REDRSUBSET_MENU,
 		#endif /* WITHDSPEXTDDC */
-			PGLATCH = PGALL,
+			PGLATCH = PGALL | REDRSUBSET_SLEEP,
 			PGunused
 		};
 		#define DISPLC_WIDTH	8	// количество цифр в отображении частоты
@@ -3844,7 +3844,7 @@ enum
 			PGALL = PG0 | REDRSUBSET_MENU,
 			PGNOMEMU = PG0,
 		#endif /* WITHIF4DSP */
-			PGLATCH = PGALL,	// страницы, на которых возможно отображение водопада или панорамы.
+			PGLATCH = PGALL | REDRSUBSET_SLEEP,	// страницы, на которых возможно отображение водопада или панорамы.
 			PGunused
 		};
 		#define DISPLC_WIDTH	8	// количество цифр в отображении частоты
@@ -3994,7 +3994,7 @@ enum
 			PGWFL = PG0,	// страница отображения водопада
 			PGSPE = PG0,	// страница отображения панорамы
 			PGSWR = PG0,	// страница отоюражения S-meter и SWR-meter
-			PGLATCH = PGALL,	// страницы, на которых возможно отображение водопада или панорамы.
+			PGLATCH = PGALL | REDRSUBSET_SLEEP,	// страницы, на которых возможно отображение водопада или панорамы.
 			PGSLP = REDRSUBSET_SLEEP,
 			PGunused
 		};
@@ -4318,7 +4318,7 @@ enum
 		PGWFL = PG0,	// страница отображения водопада
 		PGSPE = PG0,	// страница отображения панорамы
 		PGSWR = PG0,	// страница отоюражения S-meter и SWR-meter
-		PGLATCH = PGALL,	// страницы, на которых возможно отображение водопада или панорамы.
+		PGLATCH = PGALL | REDRSUBSET_SLEEP,	// страницы, на которых возможно отображение водопада или панорамы.
 		PGSLP = REDRSUBSET_SLEEP,
 		PGunused
 	};
@@ -4488,18 +4488,6 @@ enum
 {
 	DPAGE0,					// Страница, в которой отображаются основные (или все)
 	DISPLC_MODCOUNT
-};
-
-enum
-{
-	PG0 = REDRSUBSET(DPAGE0),
-	PGALL = PG0 | REDRSUBSET_MENU,
-	PGWFL = PG0,	// страница отображения водопада
-	PGSPE = PG0,	// страница отображения панорамы
-	PGSWR = PG0,	// страница отоюражения S-meter и SWR-meter
-	PGLATCH = PGALL,	// страницы, на которых возможно отображение водопада или панорамы.
-	PGSLP = REDRSUBSET_SLEEP,
-	PGunused
 };
 
 #if 1//TUNE_TOP > 100000000uL
