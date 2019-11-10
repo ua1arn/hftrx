@@ -4287,7 +4287,7 @@ static RAMFUNC_NONILINE FLOAT_t baseband_demodulator(
 #endif /* WITHMODEM */
 
 	case DSPCTL_MODE_RX_NFM:
-		if (/*DUALRXFLT || */pathi == 0)
+		if (DUALRXFLT || pathi == 0)
 		{
 			// Демодуляция NBFM
 			const FLOAT_t sigpower = agc_getsigpower(vp0f);
@@ -4924,7 +4924,7 @@ uint_fast8_t dsp_getspectrumrow(
 
 	// проверка, есть ли нудное количество данных для формирования спектра
 	global_disableIRQ();
-	if (0) //(renderready < needsize)
+	if (renderready < needsize)
 	{
 		global_enableIRQ();
 		return 0;
