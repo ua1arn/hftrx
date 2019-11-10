@@ -965,7 +965,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 		if ((bempsts & (1U << 0)) != 0)	// PIPE0, DCP
 		{
 			USBD_EndpointTypeDef * const pep = & pdev->ep_in [0];
-			//ASSERT(pdev->ep0_state != USBD_EP0_DATA_IN || pep->rem_length == 0 || hpcd->IN_ep [0].xfer_buff != NULL);
+			// Отсюда вызывается с проблемными параметрами на RENESAS
 			//TP();
 			/* TX COMPLETE */
 			HAL_PCD_DataInStageCallback(hpcd, 0);
@@ -1043,8 +1043,8 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 				  	{
 				  		// todo: not control ep
 				  		//control_stall(pdev);
+				  		TP();
 				  	}
-					//TP();
 					HAL_PCD_DataInStageCallback(hpcd, 0x7f & epnt);
 				}
 				else
@@ -1078,7 +1078,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 			USBx->INTSTS0 = (uint16_t) ~ USB_INTSTS0_VALID;	// Clear VALID - in seq 1, 3 and 5
 			if (ctsq != 0 && ctsq != 1 && ctsq != 3 && ctsq != 5)
 			{
-				PRINTF("srsq=%d\n", (int) ctsq);
+				PRINTF("strange srsq=%d\n", (int) ctsq);
 			}
 			ASSERT(ctsq == 0 || ctsq == 1 || ctsq == 3 || ctsq == 5);
 			//ASSERT((intsts0 & USB_INTSTS0_VALID) != 0);
@@ -1097,6 +1097,21 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 		switch ((intsts0 & USB_INTSTS0_DVSQ) >> USB_INTSTS0_DVSQ_SHIFT)
 		{
 		case 0x01:
+			if (USB_GetDevSpeed(hpcd->Instance) == USB_OTG_SPEED_HIGH)
+			{
+				hpcd->Init.speed = PCD_SPEED_HIGH;
+				hpcd->Init.ep0_mps = USB_OTG_HS_MAX_PACKET_SIZE;
+				/*
+				hpcd->Instance->GUSBCFG = (hpcd->Instance->GUSBCFG & ~ USB_OTG_GUSBCFG_TRDT) |
+				(uint32_t)((USBD_HS_TRDT_VALUE << USB_OTG_GUSBCFG_TRDT_Pos) & USB_OTG_GUSBCFG_TRDT) |
+				0;
+				*/
+			}
+			else
+			{
+				hpcd->Init.speed = PCD_SPEED_FULL;
+				hpcd->Init.ep0_mps = USB_OTG_FS_MAX_PACKET_SIZE ;
+			}
 			HAL_PCD_ResetCallback(hpcd);
 			break;
 
@@ -1474,6 +1489,27 @@ HAL_StatusTypeDef  USB_DevConnect (USB_OTG_GlobalTypeDef *USBx)
 	HARDWARE_DELAY_MS(3);
 
 	return HAL_OK;
+}
+/**
+  * @brief  USB_GetDevSpeed :Return the  Dev Speed
+  * @param  USBx : Selected device
+  * @retval speed : device speed
+  *          This parameter can be one of these values:
+  *            @arg USB_OTG_SPEED_HIGH: High speed mode
+  *            @arg USB_OTG_SPEED_FULL: Full speed mode
+  *            @arg USB_OTG_SPEED_LOW: Low speed mode
+  */
+uint_fast8_t USB_GetDevSpeed(USB_OTG_GlobalTypeDef *USBx)
+{
+	switch ((USBx->DVSTCTR0 & USB_DVSTCTR0_RHST) >> USB_DVSTCTR0_RHST_SHIFT)
+	{
+	case 0x02:
+		return USB_OTG_SPEED_FULL;
+	case 0x03:
+		return USB_OTG_SPEED_HIGH;
+	default:
+		return USB_OTG_SPEED_LOW;
+	}
 }
 
 /**
@@ -4429,9 +4465,9 @@ uint16_t HAL_PCD_EP_GetRxCount(PCD_HandleTypeDef *hpcd, uint_fast8_t ep_addr)
 HAL_StatusTypeDef HAL_PCD_EP_Transmit(PCD_HandleTypeDef *hpcd, uint_fast8_t ep_addr, const uint8_t *pBuf, uint_fast32_t len)
 {
 	ASSERT(len == 0 || pBuf != NULL);
-
 	USB_OTG_EPTypeDef * const ep = & hpcd->IN_ep [ep_addr & 0x7F];
 
+	//PRINTF("HAL_PCD_EP_Transmit: ep=%p, ep_addr=%X, pBuf=%p, len=%u. maxpacket=%u\n", ep, ep_addr, pBuf, len, ep->maxpacket);
 	/*setup and start the Xfer */
 	ep->xfer_buff = (uint8_t *) pBuf;
 	ep->xfer_len = len;
@@ -5128,8 +5164,8 @@ uint8_t USBD_LL_IsStallEP (USBD_HandleTypeDef *pdev, uint8_t ep_addr)
   */
 USBD_StatusTypeDef  USBD_LL_SetUSBAddress (USBD_HandleTypeDef *pdev, uint8_t dev_addr)
 {
-  HAL_PCD_SetAddress((PCD_HandleTypeDef*) pdev->pData, dev_addr);
-  return USBD_OK;
+	HAL_PCD_SetAddress((PCD_HandleTypeDef*) pdev->pData, dev_addr);
+	return USBD_OK;
 }
 
 /**
@@ -5145,8 +5181,8 @@ USBD_StatusTypeDef  USBD_LL_Transmit(USBD_HandleTypeDef *pdev,
                                       const uint8_t  *pbuf,
                                       uint_fast32_t  size)
 {
-  HAL_PCD_EP_Transmit((PCD_HandleTypeDef*) pdev->pData, ep_addr, pbuf, size);
-  return USBD_OK;
+	HAL_PCD_EP_Transmit((PCD_HandleTypeDef*) pdev->pData, ep_addr, pbuf, size);
+	return USBD_OK;
 }
 
 /**
@@ -5174,7 +5210,7 @@ USBD_StatusTypeDef  USBD_LL_PrepareReceive(USBD_HandleTypeDef *pdev,
   */
 uint32_t USBD_LL_GetRxDataSize  (USBD_HandleTypeDef *pdev, uint8_t  ep_addr)
 {
-  return HAL_PCD_EP_GetRxCount((PCD_HandleTypeDef*) pdev->pData, ep_addr);
+	return HAL_PCD_EP_GetRxCount((PCD_HandleTypeDef*) pdev->pData, ep_addr);
 }
 
 /** @defgroup USBD_CORE_Private_Functions
@@ -5186,13 +5222,13 @@ uint32_t USBD_LL_GetRxDataSize  (USBD_HandleTypeDef *pdev, uint8_t  ep_addr)
   * @param  pdev: Device Handle
   * @retval USBD Status
   */
-USBD_StatusTypeDef  USBD_Start  (USBD_HandleTypeDef *pdev)
+USBD_StatusTypeDef  USBD_Start(USBD_HandleTypeDef *pdev)
 {
 
-  /* Start the low level driver  */
-  USBD_LL_Start(pdev);
+	/* Start the low level driver  */
+	USBD_LL_Start(pdev);
 
-  return USBD_OK;
+	return USBD_OK;
 }
 /**
   * @brief  USBD_Stop
@@ -5223,9 +5259,9 @@ USBD_StatusTypeDef  USBD_Stop(USBD_HandleTypeDef *pdev)
 * @param  pdev: device instance
 * @retval status
 */
-USBD_StatusTypeDef  USBD_RunTestMode (USBD_HandleTypeDef  *pdev)
+USBD_StatusTypeDef  USBD_RunTestMode(USBD_HandleTypeDef  *pdev)
 {
-  return USBD_OK;
+	return USBD_OK;
 }
 
 
@@ -5295,7 +5331,7 @@ USBD_StatusTypeDef  USBD_CtlPrepareRx(USBD_HandleTypeDef  *pdev,
 	/* Set EP0 State */
 	pdev->ep0_state = USBD_EP0_DATA_OUT;
 	pdev->ep_out[0].total_length = len;
-	pdev->ep_out[0].rem_length   = len;
+	pdev->ep_out[0].rem_length = len;
 	/* Start the transfer */
 	USBD_LL_PrepareReceive(pdev, 0, pbuf, len);
 
@@ -5370,15 +5406,17 @@ USBD_StatusTypeDef  USBD_CtlReceiveStatus(USBD_HandleTypeDef  *pdev)
 * @param  len: length of data to be sent
 * @retval status
 */
-USBD_StatusTypeDef  USBD_CtlSendData(USBD_HandleTypeDef  *pdev,
+USBD_StatusTypeDef USBD_CtlSendData(USBD_HandleTypeDef  *pdev,
                               const uint8_t *pbuf,
                                uint16_t len)
 {
+	//PRINTF("USBD_CtlSendData: pdev=%p, pbuf=%p, len=%d, pep=%p\n", pdev, pbuf, len, & pdev->ep_in [0]);
 	ASSERT(len == 0 || pbuf != NULL);
 	/* Set EP0 State */
 	pdev->ep0_state = USBD_EP0_DATA_IN;
 	pdev->ep_in[0].total_length = len;
 	pdev->ep_in[0].rem_length = len;
+
 	/* Start the transfer */
 	USBD_LL_Transmit(pdev, 0x00, pbuf, len);
 
@@ -5393,10 +5431,11 @@ USBD_StatusTypeDef  USBD_CtlSendData(USBD_HandleTypeDef  *pdev,
 * @param  len: length of data to be sent
 * @retval status
 */
-USBD_StatusTypeDef  USBD_CtlContinueSendData (USBD_HandleTypeDef  *pdev,
+USBD_StatusTypeDef USBD_CtlContinueSendData(USBD_HandleTypeDef  *pdev,
                                        const uint8_t *pbuf,
                                        uint16_t len)
 {
+	//PRINTF("USBD_CtlContinueSendData: pdev=%p, pbuf=%p, len=%d, pep=%p\n", pdev, pbuf, len, & pdev->ep_in [0]);
 	ASSERT(len == 0 || pbuf != NULL);
 	/* Start the next transfer */
 	USBD_LL_Transmit(pdev, 0x00, pbuf, len);
@@ -6244,40 +6283,33 @@ USBD_StatusTypeDef USBD_LL_DataInStage(USBD_HandleTypeDef *pdev, uint_fast8_t ep
 	if (epnum == 0)
 	{
 		USBD_EndpointTypeDef * const pep = & pdev->ep_in [0];
-		//PRINTF(PSTR("USBD_LL_DataInStage: IN: EP0: epnum=%02X\n"), epnum);
+		PRINTF(PSTR("USBD_LL_DataInStage: IN: EP0: pdata=%p, pdev->ep0_data_len=%d\n"), pdata, (int) pdev->ep0_data_len);
 
 		if (pdev->ep0_state == USBD_EP0_DATA_IN)
 		{
 			if (pep->rem_length > pep->maxpacket)
 			{
-				pep->rem_length -=  pep->maxpacket;
-				ASSERT(pep->rem_length == 0 || pdata != NULL);
-
-				USBD_CtlContinueSendData (pdev,
-									  pdata,
-									  pep->rem_length);
+				pep->rem_length -= pep->maxpacket;
+				//TP();
+				// падаем тут.
+				USBD_CtlContinueSendData(pdev, pdata, pep->rem_length);
 
 				/* Prepare endpoint for premature end of transfer */
-				USBD_LL_PrepareReceive (pdev,
-									0,
-									NULL,
-									0);
+				USBD_LL_PrepareReceive (pdev, 0, NULL, 0);
 			}
 			else
-			{ /* last packet is MPS multiple, so send ZLP packet */
+			{
+				/* last packet is MPS multiple, so send ZLP packet */
 				if ((pep->total_length % pep->maxpacket == 0) &&
 						(pep->total_length >= pep->maxpacket) &&
 						 (pep->total_length < pdev->ep0_data_len ))
 				{
-
+					//TP();
 					USBD_CtlContinueSendData(pdev, NULL, 0);
 					pdev->ep0_data_len = 0;
 
 					/* Prepare endpoint for premature end of transfer */
-					USBD_LL_PrepareReceive (pdev,
-										0,
-										NULL,
-										0);
+					USBD_LL_PrepareReceive(pdev, 0, NULL, 0);
 				}
 				else
 				{
@@ -6328,12 +6360,10 @@ USBD_StatusTypeDef USBD_LL_Reset(USBD_HandleTypeDef  *pdev)
 {
 	/* Open EP0 OUT */
 	USBD_LL_OpenEP(pdev, 0x00, USBD_EP_TYPE_CTRL, USB_OTG_MAX_EP0_SIZE);
-
 	pdev->ep_out[0].maxpacket = USB_OTG_MAX_EP0_SIZE;
 
 	/* Open EP0 IN */
 	USBD_LL_OpenEP(pdev, 0x80, USBD_EP_TYPE_CTRL, USB_OTG_MAX_EP0_SIZE);
-
 	pdev->ep_in[0].maxpacket = USB_OTG_MAX_EP0_SIZE;
 	/* Upon Reset call user call back */
 	pdev->dev_state = USBD_STATE_DEFAULT;
@@ -6634,7 +6664,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 					if (hpcd->Init.dma_enable == USB_ENABLE)
 					{
 					  hpcd->OUT_ep [epnum].xfer_count = hpcd->OUT_ep [epnum].maxpacket - ((USBx_OUTEP(epnum)->DOEPTSIZ & USB_OTG_DOEPTSIZ_XFRSIZ) >> USB_OTG_DOEPTSIZ_XFRSIZ_Pos);
-					  hpcd->OUT_ep[ epnum].xfer_buff += hpcd->OUT_ep [epnum].maxpacket;
+					  hpcd->OUT_ep [epnum].xfer_buff += hpcd->OUT_ep [epnum].maxpacket;
 					}
 
 					HAL_PCD_DataOutStageCallback(hpcd, epnum);
@@ -7177,7 +7207,7 @@ static HAL_StatusTypeDef PCD_EP_ISR_Handler(PCD_HandleTypeDef *hpcd)
           if (ep->xfer_count != 0)
           {
             USB_ReadPMA(hpcd->Instance, ep->xfer_buff, ep->pmaadress, ep->xfer_count);
-            ep->xfer_buff+=ep->xfer_count;
+            ep->xfer_buff += ep->xfer_count;
           }
 
           /* Process Control Data OUT Packet*/
@@ -7287,7 +7317,7 @@ static HAL_StatusTypeDef PCD_EP_ISR_Handler(PCD_HandleTypeDef *hpcd)
         }
         /*multi-packet on the NON control IN endpoint*/
         ep->xfer_count = PCD_GET_EP_TX_CNT(hpcd->Instance, ep->num);
-        ep->xfer_buff+=ep->xfer_count;
+        ep->xfer_buff += ep->xfer_count;
 
         /* Zero Length Packet? */
         if (ep->xfer_len == 0)
@@ -10128,15 +10158,16 @@ USBD_StatusTypeDef  USBD_LL_Init(PCD_HandleTypeDef * hpcd, USBD_HandleTypeDef *p
 	hpcd->Instance = WITHUSBHW_DEVICE;
 
 #if CPUSTYLE_R7S721
-
+	// Значение ep0_mps и speed обновится после reset шины
 	#if WITHUSBDEV_HSDESC
 		hpcd->Init.speed = PCD_SPEED_HIGH;
+		hpcd->Init.ep0_mps = USB_OTG_HS_MAX_PACKET_SIZE;
 	#else /* WITHUSBDEV_HSDESC */
 		hpcd->Init.speed = PCD_SPEED_FULL;
+		hpcd->Init.ep0_mps = USB_OTG_FS_MAX_PACKET_SIZE;
 	#endif /* WITHUSBDEV_HSDESC */
 	hpcd->Init.phy_itface = USB_OTG_EMBEDDED_PHY;
 
-	hpcd->Init.ep0_mps = 64; //USB_OTG_HS_MAX_PACKET_SIZE;
 	hpcd->Init.dev_endpoints = 15;
 
 #else /* CPUSTYLE_R7S721 */
@@ -13389,7 +13420,7 @@ static void HCD_RXQLVL_IRQHandler(HCD_HandleTypeDef *hhcd)
 		if ((pktcnt > 0) && (hhcd->hc [channelnum].xfer_buff != (void *)0))
 		{
 
-			USB_ReadPacket(hhcd->Instance, hhcd->hc[channelnum].xfer_buff, pktcnt);
+			USB_ReadPacket(hhcd->Instance, hhcd->hc [channelnum].xfer_buff, pktcnt);
 
 			/*manage multiple Xfer */
 			hhcd->hc [channelnum].xfer_buff += pktcnt;

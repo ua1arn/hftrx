@@ -56,6 +56,7 @@
 
 #else /* WITHISBOOTLOADER */
 
+	#define WIHSPIDFHW	1	/* обслуживание DATA FLASH */
 	#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 	//#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	*/
 	//#define WITHCPUDACHW	1	/* использование DAC - в renesas R7S72 нету */
