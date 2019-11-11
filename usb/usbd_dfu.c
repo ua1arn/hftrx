@@ -484,6 +484,8 @@ static int verifyDATAFLASH(unsigned long flashoffset, const unsigned char * data
 	unsigned char v;
 	spitarget_t target = targetdataflash;	/* addressing to chip */
 
+	timed_dataflash_read_status(target);
+
 	//debug_printf_P(PSTR("Compare from address %08lX\n"), flashoffset);
 
 	spidf_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
@@ -522,6 +524,8 @@ static void readDATAFLASH(unsigned long flashoffset, unsigned char * data, unsig
 	unsigned long err = 0;
 	unsigned char v;
 	spitarget_t target = targetdataflash;	/* addressing to chip */
+
+	timed_dataflash_read_status(target);
 
 	//debug_printf_P(PSTR("Compare from address %08lX\n"), flashoffset);
 
@@ -828,7 +832,7 @@ static USBD_StatusTypeDef  USBD_DFU_EP0_TxSent(USBD_HandleTypeDef *pdev)
       /* Preform the write operation */
       if (USBD_DFU_fops_HS.Write(hdfu->buffer.d8, addr, hdfu->wlength) != USBD_OK)
       {
-          printhex(addr, hdfu->buffer.d8, hdfu->wlength);
+          //printhex(addr, hdfu->buffer.d8, hdfu->wlength);
 #if 1
 		    /* Reset the global length and block number */
 		    hdfu->wlength = 0;
