@@ -6283,17 +6283,14 @@ USBD_StatusTypeDef USBD_LL_DataInStage(USBD_HandleTypeDef *pdev, uint_fast8_t ep
 	if (epnum == 0)
 	{
 		USBD_EndpointTypeDef * const pep = & pdev->ep_in [0];
-		PRINTF(PSTR("USBD_LL_DataInStage: IN: EP0: pdata=%p, pdev->ep0_data_len=%d\n"), pdata, (int) pdev->ep0_data_len);
+		//PRINTF(PSTR("USBD_LL_DataInStage: IN: EP0: pdata=%p, pdev->ep0_data_len=%d\n"), pdata, (int) pdev->ep0_data_len);
 
 		if (pdev->ep0_state == USBD_EP0_DATA_IN)
 		{
 			if (pep->rem_length > pep->maxpacket)
 			{
 				pep->rem_length -= pep->maxpacket;
-				//TP();
-				// падаем тут.
 				USBD_CtlContinueSendData(pdev, pdata, pep->rem_length);
-
 				/* Prepare endpoint for premature end of transfer */
 				USBD_LL_PrepareReceive (pdev, 0, NULL, 0);
 			}
@@ -6304,10 +6301,8 @@ USBD_StatusTypeDef USBD_LL_DataInStage(USBD_HandleTypeDef *pdev, uint_fast8_t ep
 						(pep->total_length >= pep->maxpacket) &&
 						 (pep->total_length < pdev->ep0_data_len ))
 				{
-					//TP();
 					USBD_CtlContinueSendData(pdev, NULL, 0);
 					pdev->ep0_data_len = 0;
-
 					/* Prepare endpoint for premature end of transfer */
 					USBD_LL_PrepareReceive(pdev, 0, NULL, 0);
 				}
