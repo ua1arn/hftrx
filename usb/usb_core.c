@@ -303,9 +303,9 @@ static uint_fast8_t usbd_wait_fifo(PCD_TypeDef * const USBx, uint_fast8_t pipe, 
 }
 
 // Эта функция не должна общаться с DCPCTR - она универсальная
-static uint_fast8_t usbd_read_data(PCD_TypeDef * const USBx, uint_fast8_t pipe, uint8_t * data, unsigned size, unsigned * readcnt)
+static uint_fast8_t USB_ReadPacketNec(PCD_TypeDef * const USBx, uint_fast8_t pipe, uint8_t * data, unsigned size, unsigned * readcnt)
 {
-	//PRINTF(PSTR("usbd_read_data: pipe=%d, data=%p, size=%d\n"), (int) pipe, data, (int) size);
+	//PRINTF(PSTR("USB_ReadPacketNec: pipe=%d, data=%p, size=%d\n"), (int) pipe, data, (int) size);
 	//PRINTF(PSTR("selected read from c_fifo%u 0, CFIFOCTR=%04X, CFIFOSEL=%04X\n"), pipe, Instance->CFIFOCTR, Instance->CFIFOSEL);
 	USBx->CFIFOSEL =
 		1 * (1uL << USB_CFIFOSEL_RCNT_SHIFT) |		// RCNT
@@ -315,7 +315,7 @@ static uint_fast8_t usbd_read_data(PCD_TypeDef * const USBx, uint_fast8_t pipe, 
 
 	if (usbd_wait_fifo(USBx, pipe, USBD_FRDY_COUNT_READ))
 	{
-		PRINTF(PSTR("usbd_read_data: usbd_wait_fifo error, pipe=%d, USBx->CFIFOSEL=%08lX\n"), (int) pipe, (unsigned long) USBx->CFIFOSEL);
+		PRINTF(PSTR("USB_ReadPacketNec: usbd_wait_fifo error, pipe=%d, USBx->CFIFOSEL=%08lX\n"), (int) pipe, (unsigned long) USBx->CFIFOSEL);
 		return 1;	// error
 	}
 
@@ -338,19 +338,19 @@ static uint_fast8_t usbd_read_data(PCD_TypeDef * const USBx, uint_fast8_t pipe, 
 }
 
 static uint_fast8_t
-usbd_write_data(PCD_TypeDef * const USBx, uint_fast8_t pipe, const uint8_t * data, unsigned size)
+USB_WritePacketNec(PCD_TypeDef * const USBx, uint_fast8_t pipe, const uint8_t * data, unsigned size)
 {
 	ASSERT(size == 0 || data != NULL);
 #if 0
 	if (data != NULL && size != 0)
-		PRINTF(PSTR("usbd_write_data: pipe=%d, size=%d, data@%p[]={%02x,%02x,%02x,%02x,%02x,..}\n"), pipe, size, data, data [0], data [1], data [2], data [3], data [4]);
+		PRINTF(PSTR("USB_WritePacketNec: pipe=%d, size=%d, data@%p[]={%02x,%02x,%02x,%02x,%02x,..}\n"), pipe, size, data, data [0], data [1], data [2], data [3], data [4]);
 	else if (size == 0 && pipe == 0)
 	{
-		PRINTF(PSTR("usbd_write_data: DCP ZLP\n"));
+		PRINTF(PSTR("USB_WritePacketNec: DCP ZLP\n"));
 	}
 	else
 	{
-		PRINTF(PSTR("usbd_write_data: pipe=%d, size=%d, data[]={}\n"), pipe, size);
+		PRINTF(PSTR("USB_WritePacketNec: pipe=%d, size=%d, data[]={}\n"), pipe, size);
 	}
 #endif
 
@@ -370,7 +370,7 @@ usbd_write_data(PCD_TypeDef * const USBx, uint_fast8_t pipe, const uint8_t * dat
 
 	if (usbd_wait_fifo(USBx, pipe, USBD_FRDY_COUNT_WRITE))
 	{
-		PRINTF(PSTR("usbd_write_data: usbd_wait_fifo error, USBx->CFIFOSEL=%08lX\n"), (unsigned long) USBx->CFIFOSEL);
+		PRINTF(PSTR("USB_WritePacketNec: usbd_wait_fifo error, USBx->CFIFOSEL=%08lX\n"), (unsigned long) USBx->CFIFOSEL);
 		return 1;	// error
 	}
 	ASSERT(size == 0 || data != NULL);
@@ -1013,7 +1013,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 		{
 			USB_OTG_EPTypeDef * const ep = & hpcd->OUT_ep [0];
 		  	unsigned bcnt;
-		  	if (usbd_read_data(USBx, 0, ep->xfer_buff, ep->xfer_len - ep->xfer_count, & bcnt) == 0)
+		  	if (USB_ReadPacketNec(USBx, 0, ep->xfer_buff, ep->xfer_len - ep->xfer_count, & bcnt) == 0)
 		  	{
 				ep->xfer_buff += bcnt;
 				ep->xfer_count += bcnt;
@@ -1043,7 +1043,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 				{
 					USB_OTG_EPTypeDef * const ep = & hpcd->OUT_ep [epnt];
 				  	unsigned bcnt;
-				  	if (usbd_read_data(USBx, ep->pipe_num, ep->xfer_buff, ep->xfer_len - ep->xfer_count, & bcnt) == 0)
+				  	if (USB_ReadPacketNec(USBx, ep->pipe_num, ep->xfer_buff, ep->xfer_len - ep->xfer_count, & bcnt) == 0)
 				  	{
 						ep->xfer_buff += bcnt;
 						ep->xfer_count += bcnt;
@@ -1529,7 +1529,7 @@ HAL_StatusTypeDef USB_EP0StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDe
 		if (ep->xfer_len == 0)
 		{
 			/* Zero Length Packet */
-			int err = usbd_write_data(USBx, pipe, NULL, 0);	// pipe=0: DCP
+			int err = USB_WritePacketNec(USBx, pipe, NULL, 0);	// pipe=0: DCP
 			ASSERT(err == 0);
 		}
 		else
@@ -1540,7 +1540,7 @@ HAL_StatusTypeDef USB_EP0StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDe
 			}
 			ASSERT(ep->xfer_len == 0 || ep->xfer_buff != NULL);
 
-			int err = usbd_write_data(USBx, pipe, ep->xfer_buff, ep->xfer_len);	// pipe=0: DCP
+			int err = USB_WritePacketNec(USBx, pipe, ep->xfer_buff, ep->xfer_len);	// pipe=0: DCP
 			ASSERT(err == 0);
 		}
 
@@ -1577,7 +1577,7 @@ HAL_StatusTypeDef USB_EPStartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDef
 	{
 		//PRINTF(PSTR("USB_EPStartXfer IN, ep->num=%d, ep->pipe_num=%d\n"), (int) ep->num, (int) ep->pipe_num);
 		/* IN endpoint */
-		int err = usbd_write_data(USBx, pipe, ep->xfer_buff, ep->xfer_len);
+		int err = USB_WritePacketNec(USBx, pipe, ep->xfer_buff, ep->xfer_len);
 		////ASSERT(err == 0);
 	}
 	else
