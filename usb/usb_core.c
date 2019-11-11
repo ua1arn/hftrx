@@ -5488,6 +5488,7 @@ USBD_StatusTypeDef  USBD_StdItfReq(USBD_HandleTypeDef *pdev, USBD_SetupReqTypede
 			else
 			{
 #if CPUSTYLE_R7S721
+			// FIXME:
 			// Hack code!!!!
 			// Для передачи в сторону USB HOST больших чем 64 байта кусков
 			#if WITHUSBDFU
