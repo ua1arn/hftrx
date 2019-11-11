@@ -305,6 +305,7 @@ static uint_fast8_t usbd_wait_fifo(PCD_TypeDef * const USBx, uint_fast8_t pipe, 
 // Эта функция не должна общаться с DCPCTR - она универсальная
 static uint_fast8_t usbd_read_data(PCD_TypeDef * const USBx, uint_fast8_t pipe, uint8_t * data, unsigned size, unsigned * readcnt)
 {
+	//PRINTF(PSTR("usbd_read_data: pipe=%d, data=%p, size=%d\n"), (int) pipe, data, (int) size);
 	//PRINTF(PSTR("selected read from c_fifo%u 0, CFIFOCTR=%04X, CFIFOSEL=%04X\n"), pipe, Instance->CFIFOCTR, Instance->CFIFOSEL);
 	USBx->CFIFOSEL =
 		//1 * (1uL << USB_CFIFOSEL_RCNT_SHIFT) |		// RCNT
@@ -314,7 +315,7 @@ static uint_fast8_t usbd_read_data(PCD_TypeDef * const USBx, uint_fast8_t pipe, 
 
 	if (usbd_wait_fifo(USBx, pipe, USBD_FRDY_COUNT_READ))
 	{
-		PRINTF(PSTR("usbd_read_data: usbd_wait_fifo error, pipe=%d, USBx->CFIFOSEL=%08lX\n"), (int) pipe, (unsigned long) USBx->CFIFOSEL);
+		//PRINTF(PSTR("usbd_read_data: usbd_wait_fifo error, pipe=%d, USBx->CFIFOSEL=%08lX\n"), (int) pipe, (unsigned long) USBx->CFIFOSEL);
 		return 1;	// error
 	}
 
@@ -468,7 +469,7 @@ static void usbd_handle_ctrt(PCD_HandleTypeDef *hpcd, uint_fast8_t ctsq)
 		// Set Line Coding here
 		// xxx_EP0_RxReady
 		//pdev->ep0_state = USBD_EP0_STATUS_OUT;
-        HAL_PCD_DataOutStageCallback(hpcd, 0);
+        //HAL_PCD_DataOutStageCallback(hpcd, 0);
 		USBx->DCPCTR |= USB_DCPCTR_CCPL;	// CCPL
 		(void) USBx->DCPCTR;
 		break;
@@ -1017,9 +1018,11 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 				//usbd_handler_brdy8_dcp_out(pdev, 0);	// usbd_read_data inside
 				ep->xfer_buff += count;
 				ep->xfer_count += count;
+				HAL_PCD_DataOutStageCallback(hpcd, ep->num);	// start next transfer
 		  	}
 		  	else
 		  	{
+		  		TP();
 		  		//control_stall(pdev);
 		  	}
 		}
@@ -5325,7 +5328,7 @@ USBD_StatusTypeDef  USBD_CtlPrepareRx(USBD_HandleTypeDef  *pdev,
                                   uint8_t *pbuf,
                                   uint16_t len)
 {
-	//PRINTF(PSTR("USBD_CtlPrepareRx, len=%d\n"), (int) len);
+	//PRINTF(PSTR("USBD_CtlPrepareRx: len=%d\n"), (int) len);
 	/* Set EP0 State */
 	pdev->ep0_state = USBD_EP0_DATA_OUT;
 	pdev->ep_out[0].total_length = len;
@@ -12152,7 +12155,7 @@ void  USBH_ParseInterfaceDesc (USBH_InterfaceDescTypeDef *if_descriptor,
   * @param  buf: Buffer where the parsed descriptor stored
   * @retval None
   */
-void  USBH_ParseEPDesc (USBH_EpDescTypeDef  *ep_descriptor,
+void  USBH_ParseEPDesc(USBH_EpDescTypeDef  *ep_descriptor,
                                uint8_t *buf)
 {
 
