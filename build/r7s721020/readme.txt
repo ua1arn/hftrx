@@ -5,7 +5,7 @@
 Результатом работы является файл tc1_r7s721020_app.bin
 
 Загрузчик:
-Выполнить make clean, затем make boot
+Выполнить make clean, затем make bootloader
 Результатом работы является файл tc1_r7s721020_boot.hex и tc1_r7s721020_boot.bin
 Требуются изменения в product.h
 
