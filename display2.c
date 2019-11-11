@@ -4505,7 +4505,7 @@ enum
 //#define SMALLCHARW 16 /* Font width */
 static const FLASHMEM struct dzone dzones [] =
 {
-	{	0,	0,	display2_pip_off,	REDRM_MODE,	PGSLP | REDRSUBSET_MENU },	// Выключить PIP если на данной странице не требуется
+	{	0,	0,	display2_pip_off,	REDRM_MODE,	REDRSUBSET_SLEEP | REDRSUBSET_MENU },	// Выключить PIP если на данной странице не требуется
 };
 
 #if WITHMENU

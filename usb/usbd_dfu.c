@@ -121,6 +121,52 @@ static void USBD_poke_u24(uint8_t * buff, uint_fast32_t v)
 	buff [2] = HI_24BY(v);
 }
 
+/* получить 32-бит значение */
+static uint_fast32_t
+USBD_peek_u32(
+	const uint8_t * buff
+	)
+{
+	return
+		((uint_fast32_t) buff [3] << 24) +
+		((uint_fast32_t) buff [2] << 16) +
+		((uint_fast32_t) buff [1] << 8) +
+		((uint_fast32_t) buff [0] << 0);
+}
+
+
+static int
+toprintc(int c)
+{
+	if (c < 0x20 || c >= 0x7f)
+		return '.';
+	return c;
+}
+
+static void
+printhex(unsigned long voffs, const unsigned char * buff, unsigned length)
+{
+	unsigned i, j;
+	unsigned rows = (length + 15) / 16;
+
+	for (i = 0; i < rows; ++ i)
+	{
+		const int trl = ((length - 1) - i * 16) % 16 + 1;
+		debug_printf_P(PSTR("%08lX "), voffs + i * 16);
+		for (j = 0; j < trl; ++ j)
+			debug_printf_P(PSTR(" %02X"), buff [i * 16 + j]);
+
+		debug_printf_P(PSTR("%*s"), (16 - trl) * 3, "");
+
+		debug_printf_P(PSTR("  "));
+		for (j = 0; j < trl; ++ j)
+			debug_printf_P(PSTR("%c"), toprintc(buff [i * 16 + j]));
+
+		debug_printf_P(PSTR("\n"));
+	}
+}
+
+/*****************************************/
 
 typedef USBALIGN_BEGIN struct
 {
@@ -438,6 +484,8 @@ static int verifyDATAFLASH(unsigned long flashoffset, const unsigned char * data
 	unsigned char v;
 	spitarget_t target = targetdataflash;	/* addressing to chip */
 
+	timed_dataflash_read_status(target);
+
 	//debug_printf_P(PSTR("Compare from address %08lX\n"), flashoffset);
 
 	spidf_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
@@ -477,6 +525,8 @@ static void readDATAFLASH(unsigned long flashoffset, unsigned char * data, unsig
 	unsigned char v;
 	spitarget_t target = targetdataflash;	/* addressing to chip */
 
+	timed_dataflash_read_status(target);
+
 	//debug_printf_P(PSTR("Compare from address %08lX\n"), flashoffset);
 
 	spidf_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
@@ -507,12 +557,12 @@ static void readDATAFLASH(unsigned long flashoffset, unsigned char * data, unsig
 typedef struct
 {
   const char* pStrDesc;
-  uint16_t (* Init)     (void);
-  uint16_t (* DeInit)   (void);
-  uint16_t (* Erase)    (uint32_t Add);
-  uint16_t (* Write)    (uint8_t *src, uint32_t dest, uint32_t Len);
+  USBD_StatusTypeDef (* Init)     (void);
+  USBD_StatusTypeDef (* DeInit)   (void);
+  USBD_StatusTypeDef (* Erase)    (uint32_t Add);
+  USBD_StatusTypeDef (* Write)    (uint8_t *src, uint32_t dest, uint32_t Len);
   uint8_t* (* Read)     (uint32_t src, uint8_t *dest, uint32_t Len);
-  uint16_t (* GetStatus)(uint32_t Add, uint8_t cmd, uint8_t *buff);
+  USBD_StatusTypeDef (* GetStatus)(uint32_t Add, uint8_t cmd, uint8_t *buff);
 }
 USBD_DFU_MediaTypeDef;
 /**
@@ -526,7 +576,7 @@ USBD_DFU_MediaTypeDef;
   * @brief  Memory initialization routine.
   * @retval USBD_OK if operation is successful, MAL_FAIL else.
   */
-static uint16_t MEM_If_Init_HS(void)
+static USBD_StatusTypeDef MEM_If_Init_HS(void)
 {
 	PRINTF(PSTR("MEM_If_Init_HS\n"));
 	spidf_initialize();
@@ -539,7 +589,7 @@ static uint16_t MEM_If_Init_HS(void)
   * @brief  De-Initializes Memory.
   * @retval USBD_OK if operation is successful, MAL_FAIL else.
   */
-static uint16_t MEM_If_DeInit_HS(void)
+static USBD_StatusTypeDef MEM_If_DeInit_HS(void)
 {
 	PRINTF(PSTR("MEM_If_DeInit_HS\n"));
 	spidf_uninitialize();
@@ -553,11 +603,17 @@ static uint16_t MEM_If_DeInit_HS(void)
   * @retval USBD_OK if operation is successful, MAL_FAIL else.
   */
 // called on each PAGESIZE region (see strFlashDesc)
-static uint16_t MEM_If_Erase_HS(uint32_t Addr)
+static USBD_StatusTypeDef MEM_If_Erase_HS(uint32_t Addr)
 {
 	//PRINTF(PSTR("MEM_If_Erase_HS: addr=%08lX\n"), Addr);
 	if (Addr >= BOOTLOADER_SELFBASE && (Addr + BOOTLOADER_PAGESIZE) <= (BOOTLOADER_SELFBASE + BOOTLOADER_APPFULL))
+	{
+#if WITHISBOOTLOADER
+		// физическое выполненеие записи
 		sectoreraseDATAFLASH(Addr);
+#else /* WITHISBOOTLOADER */
+#endif /* WITHISBOOTLOADER */
+	}
 	return (USBD_OK);
 }
 
@@ -568,7 +624,7 @@ static uint16_t MEM_If_Erase_HS(uint32_t Addr)
   * @param  Len: Number of data to be written (in bytes).
   * @retval USBD_OK if operation is successful, MAL_FAIL else.
   */
-static uint16_t MEM_If_Write_HS(uint8_t *src, uint32_t dest, uint32_t Len)
+static USBD_StatusTypeDef MEM_If_Write_HS(uint8_t *src, uint32_t dest, uint32_t Len)
 {
 	//PRINTF(PSTR("MEM_If_Write_HS: addr=%08lX, len=%03lX\n"), dest, Len);
 	if (dest >= BOOTLOADER_SELFBASE && (dest + Len) <= (BOOTLOADER_SELFBASE + BOOTLOADER_APPFULL))
@@ -577,10 +633,13 @@ static uint16_t MEM_If_Write_HS(uint8_t *src, uint32_t dest, uint32_t Len)
 		// физическое выполненеие записи
 		if (writeDATAFLASH(dest, src, Len))
 			return USBD_FAIL;
+		// сравнение после записи
+		if (verifyDATAFLASH(dest, src, Len))
+			return USBD_FAIL;
 #else /* WITHISBOOTLOADER */
 		// сравнение как тест
-		//if (verifyDATAFLASH(dest, src, Len))
-		//	return USBD_FAIL;
+		if (verifyDATAFLASH(dest, src, Len))
+			return USBD_FAIL;
 #endif /* WITHISBOOTLOADER */
 	}
 #if WITHISBOOTLOADER
@@ -644,7 +703,7 @@ static uint8_t *MEM_If_Read_HS(uint32_t src, uint8_t *dest, uint32_t Len)
   * @param  buffer: used for returning the time necessary for a program or an erase operation
   * @retval 0 if operation is successful
   */
-static uint16_t MEM_If_GetStatus_HS(uint32_t Add, uint8_t Cmd, uint8_t *buffer)
+static USBD_StatusTypeDef MEM_If_GetStatus_HS(uint32_t Add, uint8_t Cmd, uint8_t *buffer)
 {
 	/* USER CODE BEGIN 11 */
 	spitarget_t target = targetdataflash;	/* addressing to chip */
@@ -720,7 +779,7 @@ static USBD_StatusTypeDef  USBD_DFU_DeInit(USBD_HandleTypeDef *pdev,
   * @retval status
   */
 // call from USBD_LL_DataInStage after end of send data trough EP0
-static USBD_StatusTypeDef  USBD_DFU_EP0_TxSent (USBD_HandleTypeDef *pdev)
+static USBD_StatusTypeDef  USBD_DFU_EP0_TxSent(USBD_HandleTypeDef *pdev)
 {
  uint32_t addr;
  USBD_SetupReqTypedef     req;
@@ -742,17 +801,11 @@ static USBD_StatusTypeDef  USBD_DFU_EP0_TxSent (USBD_HandleTypeDef *pdev)
       }
       else if  (( hdfu->buffer.d8 [0] ==  DFU_CMD_SETADDRESSPOINTER ) && (hdfu->wlength == 5))
       {
-        hdfu->data_ptr  = hdfu->buffer.d8 [1];
-        hdfu->data_ptr += hdfu->buffer.d8 [2] << 8;
-        hdfu->data_ptr += hdfu->buffer.d8 [3] << 16;
-        hdfu->data_ptr += hdfu->buffer.d8 [4] << 24;
+		  hdfu->data_ptr = USBD_peek_u32(& hdfu->buffer.d8 [1]);
       }
       else if (( hdfu->buffer.d8 [0] ==  DFU_CMD_ERASE ) && (hdfu->wlength == 5))
       {
-        hdfu->data_ptr  = hdfu->buffer.d8 [1];
-        hdfu->data_ptr += hdfu->buffer.d8 [2] << 8;
-        hdfu->data_ptr += hdfu->buffer.d8 [3] << 16;
-        hdfu->data_ptr += hdfu->buffer.d8 [4] << 24;
+    	  hdfu->data_ptr = USBD_peek_u32(& hdfu->buffer.d8 [1]);
 
         if (USBD_DFU_fops_HS.Erase(hdfu->data_ptr) != USBD_OK)
         {
@@ -779,6 +832,21 @@ static USBD_StatusTypeDef  USBD_DFU_EP0_TxSent (USBD_HandleTypeDef *pdev)
       /* Preform the write operation */
       if (USBD_DFU_fops_HS.Write(hdfu->buffer.d8, addr, hdfu->wlength) != USBD_OK)
       {
+          //printhex(addr, hdfu->buffer.d8, hdfu->wlength);
+#if 1
+		    /* Reset the global length and block number */
+		    hdfu->wlength = 0;
+		    hdfu->wblock_num = 0;
+
+		    /* Update the state machine */
+		    hdfu->dev_state = DFU_STATE_ERROR;
+
+		    hdfu->dev_status [1] = 0;
+		    hdfu->dev_status [2] = 0;
+		    hdfu->dev_status [3] = 0;
+		    hdfu->dev_status [4] = hdfu->dev_state;
+		    return USBD_OK;
+#endif
         return USBD_FAIL;
       }
     }
