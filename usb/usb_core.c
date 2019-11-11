@@ -315,7 +315,7 @@ static uint_fast8_t usbd_read_data(PCD_TypeDef * const USBx, uint_fast8_t pipe, 
 
 	if (usbd_wait_fifo(USBx, pipe, USBD_FRDY_COUNT_READ))
 	{
-		//PRINTF(PSTR("usbd_read_data: usbd_wait_fifo error, pipe=%d, USBx->CFIFOSEL=%08lX\n"), (int) pipe, (unsigned long) USBx->CFIFOSEL);
+		PRINTF(PSTR("usbd_read_data: usbd_wait_fifo error, pipe=%d, USBx->CFIFOSEL=%08lX\n"), (int) pipe, (unsigned long) USBx->CFIFOSEL);
 		return 1;	// error
 	}
 
@@ -1012,12 +1012,11 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 		if ((brdysts & (1U << 0)) != 0)		// PIPE0 - DCP
 		{
 			USB_OTG_EPTypeDef * const ep = & hpcd->OUT_ep [0];
-		  	unsigned count;
-		  	if (usbd_read_data(USBx, 0, ep->xfer_buff, ep->xfer_len - ep->xfer_count, & count) == 0)
+		  	unsigned bcnt;
+		  	if (usbd_read_data(USBx, 0, ep->xfer_buff, ep->xfer_len - ep->xfer_count, & bcnt) == 0)
 		  	{
-				//usbd_handler_brdy8_dcp_out(pdev, 0);	// usbd_read_data inside
-				ep->xfer_buff += count;
-				ep->xfer_count += count;
+				ep->xfer_buff += bcnt;
+				ep->xfer_count += bcnt;
 				HAL_PCD_DataOutStageCallback(hpcd, ep->num);	// start next transfer
 		  	}
 		  	else
@@ -1042,13 +1041,12 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 				}
 				else
 				{
-					//usbd_handler_brdy_bulk_out8(pdev, pipe, ep);	// usbd_read_data inside
 					USB_OTG_EPTypeDef * const ep = & hpcd->OUT_ep [epnt];
-				  	unsigned count;
-				  	if (usbd_read_data(USBx, ep->pipe_num, ep->xfer_buff, ep->xfer_len - ep->xfer_count, & count) == 0)
+				  	unsigned bcnt;
+				  	if (usbd_read_data(USBx, ep->pipe_num, ep->xfer_buff, ep->xfer_len - ep->xfer_count, & bcnt) == 0)
 				  	{
-						ep->xfer_buff += count;
-						ep->xfer_count += count;
+						ep->xfer_buff += bcnt;
+						ep->xfer_count += bcnt;
 				  	}
 				  	else
 				  	{
@@ -5209,7 +5207,7 @@ USBD_StatusTypeDef  USBD_LL_PrepareReceive(USBD_HandleTypeDef *pdev,
   * @param  ep_addr: Endpoint Number
   * @retval Recived Data Size
   */
-uint32_t USBD_LL_GetRxDataSize  (USBD_HandleTypeDef *pdev, uint8_t  ep_addr)
+uint32_t USBD_LL_GetRxDataSize(USBD_HandleTypeDef *pdev, uint8_t  ep_addr)
 {
 	return HAL_PCD_EP_GetRxCount((PCD_HandleTypeDef*) pdev->pData, ep_addr);
 }
