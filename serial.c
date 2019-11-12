@@ -217,7 +217,7 @@ void hardware_uart1_enabletx(uint_fast8_t state)
 		#error Wrong HARDWARE_ARM_USExxx value
 	#endif /* HARDWARE_ARM_USEUSART0 */
 
-#elif CPUSTYLE_STM32 || CPUSTYLE_STM32MP1
+#elif CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
 
 	if (state)
 		USART1->CR1 |= USART_CR1_TXEIE;
@@ -396,7 +396,7 @@ void hardware_uart1_enablerx(uint_fast8_t state)
 	else
 		USARTE0.CTRLA = (USARTE0.CTRLA & ~ USART_RXCINTLVL_gm) | USART_RXCINTLVL_OFF_gc;
 
-#elif CPUSTYLE_STM32 || CPUSTYLE_STM32MP1
+#elif CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
 
 	if (state)
 		USART1->CR1 |= USART_CR1_RXNEIE;
@@ -1305,7 +1305,7 @@ void hardware_uart2_enabletx(uint_fast8_t state)
 		#error Wrong HARDWARE_ARM_USExxx value
 	#endif /* HARDWARE_ARM_USEUSART0 */
 
-#elif CPUSTYLE_STM32 || CPUSTYLE_STM32MP1
+#elif CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
 
 	if (state)
 		USART2->CR1 |= USART_CR1_TXEIE;
@@ -1459,7 +1459,7 @@ void hardware_uart2_enablerx(uint_fast8_t state)
 	else
 		USARTE1.CTRLA = (USARTE1.CTRLA & ~ USART_RXCINTLVL_gm) | USART_RXCINTLVL_OFF_gc;
 
-#elif CPUSTYLE_STM32 || CPUSTYLE_STM32MP1
+#elif CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
 
 	if (state)
 		USART2->CR1 |= USART_CR1_RXNEIE;

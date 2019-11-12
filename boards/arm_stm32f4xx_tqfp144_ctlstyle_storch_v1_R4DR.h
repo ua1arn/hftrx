@@ -274,15 +274,16 @@
 	//#define WITHDSPLOCALFIR 1		/* test: Фильтрация квадратур осуществляется процессором */
 	#define WITHIF4DSP	1	// "Дятел"
 
-	#define WITHUSESDCARD		1	// Включение поддержки SD CARD
-	#define WITHUSEAUDIOREC		1	// Запись звука на SD CARD
+	//#define WITHUSESDCARD		1	// Включение поддержки SD CARD
+	//#define WITHUSEAUDIOREC		1	// Запись звука на SD CARD
 	//#define WITHUSEAUDIORECCLASSIC	1	// стандартный формат записи, без "дыр"
 	//#define WITHUSEAUDIOREC2CH	1	// Запись звука на SD CARD в стерео
 
 	#define WITHUSEDUALWATCH	1	// Второй приемник
 	#define WITHDACSTRAIGHT 1	/* Требуется формирование кода для ЦАП в режиме беззнакового кода */
-	#define WITHRTS96 1		/* вместо выходного аудиосигнала передача квадратур по USB */
+	#define WITHRTS96 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
 	#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
+	#define BOARD_FFTZOOM_POW2MAX 3	// Возможные масштабы FFT x1, x2, x4, x8
 
 	#if 0
 		#define WITHBBOX	1	// Black Box mode - устройство без органов управления

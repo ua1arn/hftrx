@@ -1025,8 +1025,8 @@ static unsigned UAC2_FormatTypeDescroptor_OUT48(uint_fast8_t fill, uint8_t * buf
 		* buff ++ = AUDIO_INTERFACE_DESCRIPTOR_TYPE;		/* bDescriptorType */
 		* buff ++ = AUDIO_STREAMING_FORMAT_TYPE;			/* bDescriptorSubtype */
 		* buff ++ = AUDIO_FORMAT_TYPE_I;							/* bFormatType */
-		* buff ++ = (HARDWARE_USBD_AUDIO_OUT_SAMPLEBITS_AUDIO48 + 7) / 8;	//bSubslotSize
-		* buff ++ = HARDWARE_USBD_AUDIO_OUT_SAMPLEBITS_AUDIO48;	//bBitResolution   (32 bits per sample)
+		* buff ++ = (UACOUT_AUDIO48_SAMPLEBITS + 7) / 8;	//bSubslotSize
+		* buff ++ = UACOUT_AUDIO48_SAMPLEBITS;	//bBitResolution   (32 bits per sample)
 		/* 6 byte*/
 	}
 	return length;
@@ -1042,7 +1042,7 @@ static unsigned UAC2_fill_14_OUT48(uint_fast8_t fill, uint8_t * buff, unsigned m
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT);
+		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(UAC_OUT48_DATA_SIZE);
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = USB_ENDPOINT_DESCRIPTOR_TYPE;         /* bDescriptorType */
@@ -1113,7 +1113,7 @@ static unsigned UAC2_fill_27_IN48(uint_fast8_t fill, uint8_t * buff, unsigned ma
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(VIRTUAL_AUDIO_PORT_DATA_SIZE_IN_AUDIO48); // was: 0x300
+		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(UAC_IN48_DATA_SIZE); // was: 0x300
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;							/* bLength */
 		* buff ++ = USB_ENDPOINT_DESCRIPTOR_TYPE;	// bDescriptorType
@@ -1285,7 +1285,7 @@ static unsigned UAC1_fill_27_IN48(uint_fast8_t fill, uint8_t * buff, unsigned ma
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(VIRTUAL_AUDIO_PORT_DATA_SIZE_IN_AUDIO48); // was: 0x300
+		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(UAC_IN48_DATA_SIZE); // was: 0x300
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;							/* bLength */
 		* buff ++ = USB_ENDPOINT_DESCRIPTOR_TYPE;	// bDescriptorType
@@ -2123,9 +2123,9 @@ static unsigned UAC1_FormatTypeDescroptor_OUT48(uint_fast8_t fill, uint8_t * buf
 		* buff ++ = AUDIO_INTERFACE_DESCRIPTOR_TYPE;		/* bDescriptorType */
 		* buff ++ = AUDIO_STREAMING_FORMAT_TYPE;			/* bDescriptorSubtype */
 		* buff ++ = AUDIO_FORMAT_TYPE_I;							/* bFormatType */
-		* buff ++ = HARDWARE_USBD_AUDIO_OUT_CHANNELS_AUDIO48;		/* bNrChannels */
-		* buff ++ = (HARDWARE_USBD_AUDIO_OUT_SAMPLEBITS_AUDIO48 + 7) / 8; /* bSubFrameSize :  2 Bytes per frame (16bits) */
-		* buff ++ = HARDWARE_USBD_AUDIO_OUT_SAMPLEBITS_AUDIO48;		/* bBitResolution (16-bits per sample) */
+		* buff ++ = UACOUT_AUDIO48_CHANNELS;		/* bNrChannels */
+		* buff ++ = (UACOUT_AUDIO48_SAMPLEBITS + 7) / 8; /* bSubFrameSize :  2 Bytes per frame (16bits) */
+		* buff ++ = UACOUT_AUDIO48_SAMPLEBITS;		/* bBitResolution (16-bits per sample) */
 		* buff ++ = 1;										/* bSamFreqType only one frequency supported */
 		* buff ++ = LO_BYTE(samplefreq1);	/* Audio sampling frequency coded on 3 bytes */
 		* buff ++ = HI_BYTE(samplefreq1);
@@ -2145,7 +2145,7 @@ static unsigned UAC1_fill_14_OUT48(uint_fast8_t fill, uint8_t * buff, unsigned m
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT);
+		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(UAC_OUT48_DATA_SIZE);
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = USB_ENDPOINT_DESCRIPTOR_TYPE;         /* bDescriptorType */
@@ -4504,7 +4504,7 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 		StringDescrTbl [id].data = alldescbuffer + score;
 		score += partlen;
 	}
-#elif 0 //CPUSTYLE_STM32 && defined(UID_BASE)
+#elif 0 //CPUSTYLE_STM32F && defined(UID_BASE)
 	{
 		unsigned partlen;
 		const uint_fast8_t id = STRING_ID_3;
@@ -4531,7 +4531,7 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 		StringDescrTbl [id].data = alldescbuffer + score;
 		score += partlen;
 	}
-#endif /* CPUSTYLE_STM32 && defined(UID_BASE) */
+#endif /* CPUSTYLE_STM32F && defined(UID_BASE) */
 
 	arm_hardware_flush_invalidate((uintptr_t) alldescbuffer, score);
 	debug_printf_P(PSTR("usbd_descriptors_initialize: total length=%u\n"), score);

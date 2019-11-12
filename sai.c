@@ -97,7 +97,7 @@ static uintptr_t dma_flush32tx(uintptr_t addr)
 	return addr;
 }
 
-#if CPUSTYLE_STM32 || CPUSTYLE_STM32MP1
+#if CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
 
 enum
 {
@@ -2294,8 +2294,8 @@ static void r7s721_ssif0_dmarx_initialize(void)
 	enum { id = 0 };		// 0: DMAC0
 	// DMAC0
    /* Set Source Start Address */
-    DMAC0.N0SA_n = (uint32_t) & SSIF0.SSIFRDR;	// Fixed source address
-    DMAC0.N1SA_n = (uint32_t) & SSIF0.SSIFRDR;	// Fixed source address
+    DMAC0.N0SA_n = (uintptr_t) & SSIF0.SSIFRDR;	// Fixed source address
+    DMAC0.N1SA_n = (uintptr_t) & SSIF0.SSIFRDR;	// Fixed source address
 
     /* Set Destination Start Address */
 	DMAC0.N0DA_n = dma_invalidate16rx(allocate_dmabuffer16());
@@ -2364,8 +2364,8 @@ static void r7s721_ssif0_dmatx_initialize(void)
 	DMAC1.N1SA_n = dma_flush16tx(allocate_dmabuffer16());
 
     /* Set Destination Start Address */
-    DMAC1.N0DA_n = (uint32_t) & SSIF0.SSIFTDR;	// Fixed destination address
-    DMAC1.N1DA_n = (uint32_t) & SSIF0.SSIFTDR;	// Fixed destination address
+    DMAC1.N0DA_n = (uintptr_t) & SSIF0.SSIFTDR;	// Fixed destination address
+    DMAC1.N1DA_n = (uintptr_t) & SSIF0.SSIFTDR;	// Fixed destination address
 
     /* Set Transfer Size */
     DMAC1.N0TB_n = DMABUFFSIZE16 * sizeof (int16_t);	// размер в байтах
@@ -2548,8 +2548,8 @@ static void r7s721_ssif1_dmarx_initialize(void)
 	enum { id = 2 };	// 2: DMAC2
 	// DMAC2
 	/* Set Source Start Address */
-    DMAC2.N0SA_n = (uint32_t) & SSIF1.SSIFRDR;	// Fixed source address
-    DMAC2.N1SA_n = (uint32_t) & SSIF1.SSIFRDR;	// Fixed source address
+    DMAC2.N0SA_n = (uintptr_t) & SSIF1.SSIFRDR;	// Fixed source address
+    DMAC2.N1SA_n = (uintptr_t) & SSIF1.SSIFRDR;	// Fixed source address
 
     /* Set Destination Start Address */
 	DMAC2.N0DA_n = dma_invalidate32rx(allocate_dmabuffer32rx());
@@ -2618,8 +2618,8 @@ static void r7s721_ssif1_dmatx_initialize(void)
 	DMAC3.N1SA_n = dma_flush32tx(allocate_dmabuffer32tx());
 
     /* Set Destination Start Address */
-    DMAC3.N0DA_n = (uint32_t) & SSIF1.SSIFTDR;	// Fixed destination address
-    DMAC3.N1DA_n = (uint32_t) & SSIF1.SSIFTDR;	// Fixed destination address
+    DMAC3.N0DA_n = (uintptr_t) & SSIF1.SSIFTDR;	// Fixed destination address
+    DMAC3.N1DA_n = (uintptr_t) & SSIF1.SSIFTDR;	// Fixed destination address
 
     /* Set Transfer Size */
     DMAC3.N0TB_n = DMABUFFSIZE32TX * sizeof (int32_t);	// размер в байтах
@@ -2778,8 +2778,8 @@ static void r7s721_ssif2_dmarx_initialize(void)
 	enum { id = 4 };	// 4: DMAC4
 	// DMAC4
 	/* Set Source Start Address */
-    DMAC4.N0SA_n = (uint32_t) & SSIF2.SSIFRDR;	// Fixed source address
-    DMAC4.N1SA_n = (uint32_t) & SSIF2.SSIFRDR;	// Fixed source address
+    DMAC4.N0SA_n = (uintptr_t) & SSIF2.SSIFRDR;	// Fixed source address
+    DMAC4.N1SA_n = (uintptr_t) & SSIF2.SSIFRDR;	// Fixed source address
 
     /* Set Destination Start Address */
 	DMAC4.N0DA_n = dma_invalidate192rts(allocate_dmabuffer192rts());
@@ -2921,7 +2921,7 @@ static const codechw_t fpgaspectrumhw =
 	"sai2-fpga spectrum for WFM"
 };
 
-#endif /* CPUSTYLE_STM32 */
+#endif /* CPUSTYLE_STM32F */
 
 
 #if WITHI2SHW
@@ -3039,7 +3039,7 @@ void hardware_dac_initialize(void)		/* инициализация DAC на STM32
 	RCC->APB1LENR |= RCC_APB1LENR_DAC12EN; //подать тактирование
 	__DSB();
 
-#elif CPUSTYLE_STM32
+#elif CPUSTYLE_STM32F
 
 	RCC->APB1ENR |= RCC_APB1ENR_DACEN; //подать тактирование
 	__DSB();
@@ -3176,8 +3176,8 @@ static void r7s721_usb0_dma1_dmatx_initialize(void)
 	/* Set Source Start Address */
 
     /* Set Destination Start Address */
-    DMAC12.N0DA_n = (uint32_t) & WITHUSBHW_DEVICE->D1FIFO.UINT32;	// Fixed destination address
-    //DMAC12.N1DA_n = (uint32_t) & WITHUSBHW_DEVICE->D1FIFO.UINT32;	// Fixed destination address
+    DMAC12.N0DA_n = (uintptr_t) & WITHUSBHW_DEVICE->D1FIFO.UINT32;	// Fixed destination address
+    //DMAC12.N1DA_n = (uintptr_t) & WITHUSBHW_DEVICE->D1FIFO.UINT32;	// Fixed destination address
 
     /* Set Transfer Size */
     //DMAC12.N0TB_n = DMABUFFSIZE16 * sizeof (int16_t);	// размер в байтах
@@ -3230,8 +3230,8 @@ static void r7s721_usb0_dma1_dmatx_initialize(void)
 	//DMAC12.CHCTRL_n = 1 * (1U << 0);		// SETEN
 }
 
-static USBALIGN_BEGIN uint8_t uacoutbuff0 [VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT] USBALIGN_END;
-static USBALIGN_BEGIN uint8_t uacoutbuff1 [VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT] USBALIGN_END;
+static USBALIGN_BEGIN uint8_t uacoutbuff0 [UAC_OUT48_DATA_SIZE] USBALIGN_END;
+static USBALIGN_BEGIN uint8_t uacoutbuff1 [UAC_OUT48_DATA_SIZE] USBALIGN_END;
 
 // USB AUDIO
 // DMA по приему USB0 DMA0 - обработчик прерывания
@@ -3251,13 +3251,13 @@ static RAMFUNC_NONILINE void r7s721_usbX_dma0_dmarx_handler(void)
 	// Прием с автопереключением больше нигде не подтвержден.
 	if (b == 0)
 	{
-		uacout_buffer_save(uacoutbuff0, VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT);
-		arm_hardware_flush_invalidate((uintptr_t) uacoutbuff0, VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT);
+		uacout_buffer_save(uacoutbuff0, UAC_OUT48_DATA_SIZE);
+		arm_hardware_flush_invalidate((uintptr_t) uacoutbuff0, UAC_OUT48_DATA_SIZE);
 	}
 	else
 	{
-		uacout_buffer_save(uacoutbuff1, VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT);
-		arm_hardware_flush_invalidate((uintptr_t) uacoutbuff1, VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT);
+		uacout_buffer_save(uacoutbuff1, UAC_OUT48_DATA_SIZE);
+		arm_hardware_flush_invalidate((uintptr_t) uacoutbuff1, UAC_OUT48_DATA_SIZE);
 	}
 }
 
@@ -3267,23 +3267,23 @@ static RAMFUNC_NONILINE void r7s721_usbX_dma0_dmarx_handler(void)
 
 static void r7s721_usb0_dma0_dmarx_initialize(void)
 {
-	arm_hardware_flush_invalidate((uintptr_t) uacoutbuff0, VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT);
-	arm_hardware_flush_invalidate((uintptr_t) uacoutbuff1, VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT);
+	arm_hardware_flush_invalidate((uintptr_t) uacoutbuff0, UAC_OUT48_DATA_SIZE);
+	arm_hardware_flush_invalidate((uintptr_t) uacoutbuff1, UAC_OUT48_DATA_SIZE);
 
 	enum { id = 13 };	// 13: DMAC13
 	// DMAC13
 	/* Set Source Start Address */
 	/* регистры USB PIPE (HARDWARE_USBD_PIPE_ISOC_OUT) */
-    DMAC13.N0SA_n = (uint32_t) & WITHUSBHW_DEVICE->D0FIFO.UINT32;	// Fixed source address
-    DMAC13.N1SA_n = (uint32_t) & WITHUSBHW_DEVICE->D0FIFO.UINT32;	// Fixed source address
+    DMAC13.N0SA_n = (uintptr_t) & WITHUSBHW_DEVICE->D0FIFO.UINT32;	// Fixed source address
+    DMAC13.N1SA_n = (uintptr_t) & WITHUSBHW_DEVICE->D0FIFO.UINT32;	// Fixed source address
 
 	/* Set Destination Start Address */
 	DMAC13.N0DA_n = (uintptr_t) uacoutbuff0;
 	DMAC13.N1DA_n = (uintptr_t) uacoutbuff1;
 
     /* Set Transfer Size */
-    DMAC13.N0TB_n = VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT;	// размер в байтах
-    DMAC13.N1TB_n = VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT;	// размер в байтах
+    DMAC13.N0TB_n = UAC_OUT48_DATA_SIZE;	// размер в байтах
+    DMAC13.N1TB_n = UAC_OUT48_DATA_SIZE;	// размер в байтах
 
 	// Values from Table 9.4 On-Chip Peripheral Module Requests
 	// USB0_DMA0 (channel 0 receive FIFO full)
@@ -3355,8 +3355,8 @@ static void r7s721_usb1_dma1_dmatx_initialize(void)
 	/* Set Source Start Address */
 
     /* Set Destination Start Address */
-    DMAC12.N0DA_n = (uint32_t) & WITHUSBHW_DEVICE->D1FIFO.UINT32;	// Fixed destination address
-    //DMAC12.N1DA_n = (uint32_t) & WITHUSBHW_DEVICE->D1FIFO.UINT32;	// Fixed destination address
+    DMAC12.N0DA_n = (uintptr_t) & WITHUSBHW_DEVICE->D1FIFO.UINT32;	// Fixed destination address
+    //DMAC12.N1DA_n = (uintptr_t) & WITHUSBHW_DEVICE->D1FIFO.UINT32;	// Fixed destination address
 
     /* Set Transfer Size */
     //DMAC12.N0TB_n = DMABUFFSIZE16 * sizeof (int16_t);	// размер в байтах
@@ -3414,23 +3414,23 @@ static void r7s721_usb1_dma1_dmatx_initialize(void)
 
 static void r7s721_usb1_dma0_dmarx_initialize(void)
 {
-	arm_hardware_flush_invalidate((uintptr_t) uacoutbuff0, VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT);
-	arm_hardware_flush_invalidate((uintptr_t) uacoutbuff1, VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT);
+	arm_hardware_flush_invalidate((uintptr_t) uacoutbuff0, UAC_OUT48_DATA_SIZE);
+	arm_hardware_flush_invalidate((uintptr_t) uacoutbuff1, UAC_OUT48_DATA_SIZE);
 
 	enum { id = 13 };	// 13: DMAC13
 	// DMAC13
 	/* Set Source Start Address */
 	/* регистры USB PIPE (HARDWARE_USBD_PIPE_ISOC_OUT) */
-    DMAC13.N0SA_n = (uint32_t) & WITHUSBHW_DEVICE->D0FIFO.UINT32;	// Fixed source address
-    DMAC13.N1SA_n = (uint32_t) & WITHUSBHW_DEVICE->D0FIFO.UINT32;	// Fixed source address
+    DMAC13.N0SA_n = (uintptr_t) & WITHUSBHW_DEVICE->D0FIFO.UINT32;	// Fixed source address
+    DMAC13.N1SA_n = (uintptr_t) & WITHUSBHW_DEVICE->D0FIFO.UINT32;	// Fixed source address
 
 	/* Set Destination Start Address */
 	DMAC13.N0DA_n = (uintptr_t) uacoutbuff0;
 	DMAC13.N1DA_n = (uintptr_t) uacoutbuff1;
 
     /* Set Transfer Size */
-    DMAC13.N0TB_n = VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT;	// размер в байтах
-    DMAC13.N1TB_n = VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT;	// размер в байтах
+    DMAC13.N0TB_n = UAC_OUT48_DATA_SIZE;	// размер в байтах
+    DMAC13.N1TB_n = UAC_OUT48_DATA_SIZE;	// размер в байтах
 
 	// Values from Table 9.4 On-Chip Peripheral Module Requests
 	// USB1_DMA0 (channel 0 receive FIFO full)

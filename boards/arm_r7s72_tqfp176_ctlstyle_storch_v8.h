@@ -261,16 +261,15 @@
 	// --- заглушки для плат с DSP обработкой
 
 	//#define WITHRTS192	1		// Есть канал спектроанализатора - не забыть включить WITHSAI2HW
-	#define WITHRTS96		1		/* вместо выходного аудиосигнала передача квадратур по USB */
+	#define WITHRTS96		1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
 
 	#define ENCRES_DEFAULT ENCRES_128
 	//#define ENCRES_DEFAULT ENCRES_24
 	#define WITHDIRECTFREQENER	1
 	#define	WITHENCODER	1	/* для изменения частоты имеется енкодер */
 	#define WITHENCODER2	1		/* есть второй валкодер */
-	#define WITHPWBUTTON	1	/* Наличие схемы электронного включения питания */
-	#define BOARD_ENCODER2_DIVIDE 4
-
+  #define BOARD_ENCODER2_DIVIDE 2
+  #define WITHPWBUTTON	1	/* Наличие схемы электронного включения питания */
 
 	//#define WITHSKIPUSERMODE 1	// debug option: не отдавать в USER MODE блоки для фильтрации аудиосигнала
 	//#define BOARD_FFTZOOM_POW2MAX 1	// Возможные масштабы FFT x1, x2
@@ -344,8 +343,7 @@
 
 	#define WITHBARS		1	/* отображение S-метра и SWR-метра */
 
-	#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
-	#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
+	#define WITHVOLTLEVEL	1	/* отображение напряжения питания */
 	////#define WITHTHERMOLEVEL	1	/* отображение температуры */
 
 	//#define WITHSWLMODE	1	/* поддержка запоминания множества частот в swl-mode */
@@ -487,18 +485,34 @@
 	#if WITHTHERMOLEVEL
 		XTHERMOIX = BOARD_ADCXIN(6),		// MCP3208 CH6 Exernal thermo sensor ST LM235Z
 	#endif /* WITHTHERMOLEVEL */
-	#if WITHVOLTLEVEL 
-		VOLTSOURCE = BOARD_ADCXIN(7),		// MCP3208 CH7 Средняя точка делителя напряжения, для АКБ
-	#endif /* WITHVOLTLEVEL */
 
-	#if WITHSWRMTR
-		PWRI = 0,			// PB1
-		FWD = 0, REF = 1,	// PB0	SWR-meter
-	#endif /* WITHSWRMTR */
+	#if 1
+		// main board - 5W
+		#if WITHVOLTLEVEL
+			VOLTSOURCE = BOARD_ADCX1IN(7),		// MCP3208 CH7 Средняя точка делителя напряжения, для АКБ
+		#endif /* WITHVOLTLEVEL */
 
-	#if WITHCURRLEVEL
-		PASENSEIX = 2,		// PA1 PA current sense - ACS712-05 chip
-	#endif /* WITHCURRLEVEL */
+		#if WITHSWRMTR
+			PWRI = 0,			// PB1
+			FWD = 0, REF = 1,	// PB0	SWR-meter
+		#endif /* WITHSWRMTR */
+
+		#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
+		#if WITHCURRLEVEL
+			PASENSEIX = 2,		// PA1 PA current sense - ACS712-05 chip
+		#endif /* WITHCURRLEVEL */
+	#else
+		// UA1CEI PA board: MCP3208 at targetext2 - P2_0 external SPI device (PA BOARD ADC)
+		VOLTSOURCE = BOARD_ADCX2IN(4),		// MCP3208 CH7 Средняя точка делителя напряжения, для АКБ
+
+		FWD = BOARD_ADCX2IN(2),
+		REF = BOARD_ADCX2IN(3),
+		PWRI = FWD,
+
+		#define WITHCURRLEVEL2	1	/* отображение тока оконечного каскада */
+		PASENSEIX2 = BOARD_ADCX2IN(0),	// DRAIN
+		PAREFERIX2 = BOARD_ADCX2IN(1),	// reference (1/2 напряжения питания ACS712ELCTR-30B-T).
+	#endif
 
 		KI0 = 3, KI1 = 4, KI2 = 5, KI3 = 6, KI4 = 7		// клавиатура
 	};

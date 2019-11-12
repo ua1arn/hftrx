@@ -84,7 +84,7 @@ extern "C" {
 
 		#define DMABUFSTEP16	2		// 2 - каждому сэмплу при обмене с AUDIO CODEC соответствует два числа в DMA буфере
 
-	#elif CPUSTYLE_STM32 || CPUSTYLE_STM32MP1
+	#elif CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
 
 		// buff data layout: I main/I sub/Q main/Q sub
 		#define DMABUFSTEP32RX	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
@@ -171,9 +171,9 @@ extern "C" {
 #define HARDWARE_USBD_AUDIO_IN_CHANNELS_AUDIO48_RTS		2	// при совмещении аудио и I/Q всегда стерео
 
 #if WITHUABUACOUTAUDIO48MONO
-	#define HARDWARE_USBD_AUDIO_OUT_CHANNELS_AUDIO48	1
+	#define UACOUT_AUDIO48_CHANNELS	1
 #else /* WITHUABUACOUTAUDIO48MONO */
-	#define HARDWARE_USBD_AUDIO_OUT_CHANNELS_AUDIO48	2
+	#define UACOUT_AUDIO48_CHANNELS	2
 #endif /* WITHUABUACOUTAUDIO48MONO */
 
 // коррекция размера с учетом требуемого выравнивания
@@ -234,7 +234,7 @@ extern "C" {
 // stereo, 16 bit samples
 // По звуковому каналу передается стерео, 16 бит, 48 кГц - 288 байт размер данных в ендпонтт
 #define HARDWARE_USBD_AUDIO_IN_SAMPLEBITS_AUDIO48	16
-#define VIRTUAL_AUDIO_PORT_DATA_SIZE_IN_AUDIO48		(DMABUFFSIZEUACIN16 * sizeof (uint16_t))
+#define UAC_IN48_DATA_SIZE (DMABUFFSIZEUACIN16 * sizeof (uint16_t))
 
 
 
@@ -258,12 +258,12 @@ extern "C" {
 #define FSINTERVAL_255MS 255
 
 
-#define HARDWARE_USBD_AUDIO_OUT_SAMPLEBITS_AUDIO48	16
+#define UACOUT_AUDIO48_SAMPLEBITS	16
 
-// используются свои буферы
-#define VIRTUAL_AUDIO_PORT_DATA_SIZE_OUT	( \
+// буфер приема потока данных от USB к модуоятору
+#define UAC_OUT48_DATA_SIZE	( \
 	MSOUTSAMPLES * \
-	((HARDWARE_USBD_AUDIO_OUT_SAMPLEBITS_AUDIO48 * HARDWARE_USBD_AUDIO_OUT_CHANNELS_AUDIO48 + 7) / 8) \
+	((UACOUT_AUDIO48_SAMPLEBITS * UACOUT_AUDIO48_CHANNELS + 7) / 8) \
 	)
 
 
@@ -573,7 +573,7 @@ void dsp_initialize(void);
 #if WITHINTEGRATEDDSP
 	// Копрование информации о спектре с текущую строку буфера
 	// wfarray (преобразование к пикселям растра */
-	void dsp_getspectrumrow(
+	uint_fast8_t dsp_getspectrumrow(
 		FLOAT_t * const hbase,
 		uint_fast16_t dx,	// pixel X width (pixels) of display window
 		uint_fast8_t zoompow2	// horisontal magnification power of two

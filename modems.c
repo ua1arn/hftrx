@@ -2,16 +2,19 @@
 //
 
 #include "hardware.h"	/* зависящие от процессора функции работы с портами */
-#include "board.h"
+
+#if WITHMODEM
+
 #include "audio.h"
+#include "board.h"
+#include "display/display.h"
+#include "formats.h"
+#include "spi.h"
+
 #include <string.h>
 #include <math.h>
 #include <ctype.h>
 #include <assert.h>
-#include "inc/spi.h"
-
-#if WITHMODEM
-
 //////////////////
 // ++++++
 
@@ -104,6 +107,7 @@ static uint8_t * modem_rx_buffer;
 static size_t modem_rx_maxlength;	// размер буфера для сохранения данных принятых из радиоканала
 static uint_fast32_t modem_rx_bodylen;	// принятый размер
 
+static void modem_spool(void * ctx);
 // функции
 
 // Обновление CRC для очередного бита

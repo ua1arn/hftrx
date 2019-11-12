@@ -9569,6 +9569,8 @@ display_refreshperformed_bars(void)
 	enableIRQ();
 }
 
+#if WITHCURRLEVEL2
+
 void 
 display2_adctest(
 	uint_fast8_t x, 
@@ -9590,13 +9592,13 @@ display2_adctest(
 	{
 		// UA1CEI 100W PA board 2xRD100HHF1 
 		// ADC inputs configuration
-		{	targetxad2,	"REFER",	1,	0,	10, },	// DRAIN (MCP3208, negative from midpoint at CH1: ch0=in-, ch1=in+)
-		{	targetxad2,	"DRAIN",	0,	0,	10, },	// DRAIN (MCP3208, negative from midpoint at CH1)
+		{	targetxad2,	"REFER",	PAREFERIX2 & 0x07,	0,	10, },	// DRAIN (MCP3208, negative from midpoint at CH1: ch0=in-, ch1=in+)
+		{	targetxad2,	"DRAIN",	PASENSEIX2 & 0x07,	0,	10, },	// DRAIN (MCP3208, negative from midpoint at CH1)
 		//{	targetxad2,	"DRAIN",	1,	1,	10, },	// DRAIN (MCP3208, negative from midpoint at CH1: ch0=in-, ch1=in+)
 		//{	targetxad2,	"DRAIN",	0,	1,	10, },	// DRAIN (MCP3208, negative from midpoint at CH1)
 		//{	targetxad2,	"REFER",	1,	0,	10, },	// reference (2.5 volt)
-		{	targetxad2,	"REFL ",	2,	0,	10, },	// REFLECTED
-		{	targetxad2,	"FWD  ",	3,	0,	10, },	// FORWARD
+		{	targetxad2,	"REFL ",	REF & 0x07,	0,	10, },	// REFLECTED
+		{	targetxad2,	"FWD  ",	FWD & 0x07,	0,	10, },	// FORWARD
 		//{	targetxad2,	"Vcc  ",	4,	0,	57,	},	// VDD 4.7k + 1k
 		//{	targetxad2,	"3.3  ",	5,	0,	10,	},	// VDD 4.7k + 1k
 		//{	targetxad2,	"gnd  ",	7,	0,	10,	},	// VDD 4.7k + 1k
@@ -9630,6 +9632,7 @@ display2_adctest(
 #endif /* targetxad2 */
 }
 
+#endif /* WITHCURRLEVEL2 */
 // S-METER
 /* отображение S-метра на приёме или передаче */
 // Функция вызывается из display2.c
@@ -16691,8 +16694,10 @@ static void initialize2(void)
 		//extmenu = 1;	/* сразу включаем инженерный режим - без перезагрузки доступны все пункты */
 	}
 	//blinkmain();
-
 #endif /* NVRAM_TYPE == NVRAM_TYPE_FM25XXXX */
+
+	(void) mclearnvram;
+
 #if WITHDEBUG
 	dbg_puts_impl_P(PSTR("initialize2() finished.\n"));
 #endif
@@ -17524,6 +17529,8 @@ printhex(unsigned long voffs, const unsigned char * buff, unsigned length)
 	}
 }
 
+// Сюда попадаем из USB DFU клвсса при приходе команды
+// DFU_Detach после USBD_Stop
 void bootloader_detach(void)
 {
 	__disable_irq();
@@ -17550,6 +17557,7 @@ static void bootloader_mainloop(void)
 	//printhex(BOOTLOADER_APPAREA, (void *) BOOTLOADER_APPAREA, 512);
 	PRINTF(PSTR("Ready jump to application at %p. Press 'r' at any time\n"), (void *) BOOTLOADER_APPAREA);
 ddd:
+#if WITHUSBHW
 	for (;;)
 	{
 #if WITHDEBUG
@@ -17566,7 +17574,7 @@ ddd:
 		if (hardware_usbd_get_vbusnow() == 0)
 			break;
 	}
-
+#endif /* WITHUSBHW */
 	PRINTF(PSTR("Compare signature of to application\n"));
 
 	static const char sgn [] = "DREAM";
@@ -17581,8 +17589,10 @@ ddd:
 	if ((offset + len) > zonelen)
 		goto ddd;
 
+#if WITHUSBHW
 	board_usb_deactivate();
 	board_usb_deinitialize();
+#endif /* WITHUSBHW */
 	bootloader_detach();
 }
 

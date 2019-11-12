@@ -15,7 +15,9 @@
 //#define HARDWARE_ARM_USEUSART0 1		// US0:
 //#define HARDWARE_ARM_USEUSART1 1		// US1: PA9/PA10 pins
 
+#define WIHSPIDFHW	1	/* обслуживание DATA FLASH */
 #define WITHSPI16BIT	1		/* возможно использование 16-ти битных слов при обмене по SPI */
+#define WITHSPI32BIT	1		/* возможно использование 32-ти битных слов при обмене по SPI */
 #define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
 #define WITHSPIHWDMA 	1	/* Использование DMA при обмене по SPI */
 //#define WITHSPISW 	1	/* Использование программного управления SPI. */
@@ -54,6 +56,7 @@
 //#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
 //#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
 //#define WITHUSBHID		1	/* HID использовать Human Interface Device на USB соединении */
+#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
 
 #define WRITEE_BIT				(1u << 12)	// RD/~WR  P3_12 - должен быть в "0" - как при записи - для управления буферами на шине данных LCD
 
@@ -667,11 +670,31 @@
 	#define HARDWARE_SIDETONE_INITIALIZE() do { \
 		} while (0)
 
+	#define HARDWARE_USB0_INITIALIZE() do { \
+		} while (0)
+
+	#define HARDWARE_USB1_INITIALIZE() do { \
+		} while (0)
+
 	/* макроопределение, которое должно включить в себя все инициализации */
 	#define	HARDWARE_INITIALIZE() do { \
 		HARDWARE_SIDETONE_INITIALIZE(); \
 		HARDWARE_KBD_INITIALIZE(); \
 		HARDWARE_DAC_INITIALIZE(); \
 		} while (0)
+
+	// Bootloader parameters
+	#define BOOTLOADER_APPAREA Renesas_RZ_A1_ONCHIP_SRAM_BASE	/* адрес ОЗУ, куда перемещать application */
+	#define BOOTLOADER_APPFULL (1024uL * 2048)	// 2MB
+
+	#define BOOTLOADER_SELFBASE Renesas_RZ_A1_SPI_IO0	/* адрес где лежит во FLASH образ application */
+	#define BOOTLOADER_SELFSIZE (1024uL * 128)	// 128
+
+	#define BOOTLOADER_APPBASE (BOOTLOADER_SELFBASE + BOOTLOADER_SELFSIZE)	/* адрес где лежит во FLASH образ application */
+	#define BOOTLOADER_APPSIZE (BOOTLOADER_APPFULL - BOOTLOADER_SELFSIZE)	// 2048 - 128
+
+	#define BOOTLOADER_PAGESIZE (1024uL * 64)	// M25Px with 64 KB pages
+	#define USBD_DFU_XFER_SIZE 256	// match to (Q)SPI FLASH MEMORY page size
+	#define USBD_DFU_FLASHNAME "M25P16"
 
 #endif /* ARM_R7S72_TQFP176_CPUSTYLE_RAVEN_V9_H_INCLUDED */

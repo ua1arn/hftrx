@@ -56,6 +56,7 @@
 
 #else /* WITHISBOOTLOADER */
 
+	#define WIHSPIDFHW	1	/* обслуживание DATA FLASH */
 	#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 	//#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	*/
 	//#define WITHCPUDACHW	1	/* использование DAC - в renesas R7S72 нету */
@@ -807,7 +808,7 @@
 	#define BOOTLOADER_APPSIZE (BOOTLOADER_APPFULL - BOOTLOADER_SELFSIZE)	// 2048 - 128
 
 	#define BOOTLOADER_PAGESIZE (1024uL * 64)	// M25Px with 64 KB pages
-	#define USBD_DFU_XFER_SIZE 64	// match to (Q)SPI FLASH MEMORY page size
-	#define USBD_DFU_FLASHNAME "M25Px"
+	#define USBD_DFU_XFER_SIZE 256	// match to (Q)SPI FLASH MEMORY page size
+	#define USBD_DFU_FLASHNAME "M25P16"
 
 #endif /* ARM_R7S72_TQFP176_CPUSTYLE_STORCH_V8_H_INCLUDED */

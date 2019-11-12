@@ -611,12 +611,13 @@ extern "C" {
 	#define ARM_CA9_CACHELEVELMAX	1	/* максимальный уровень cache в процессоре */
 	#define ARM_CA9_PRIORITYSHIFT 3	/* ICCPMR[7:3] is valid bit */
 
-	#define CPU_FREQ	(WITHCPUXTAL * 15)		/* 360 MHz = 24 MHz * 15 */
+	//#define CPU_FREQ	(WITHCPUXTAL * 15)		/* 360 MHz = 24 MHz * 15 */
+	#define CPU_FREQ	(64000000uL)		/* At boot enabled HSI64 - 64 MHz */
 	/* частоты, подающиеся на периферию */
-	#define	PCLK1_FREQ (CPU_FREQ / 4)	// 42 MHz PCLK1 frequency
-	#define	PCLK1_TIMERS_FREQ (CPU_FREQ / 2)	// 42 MHz PCLK1 frequency
-	#define	PCLK2_FREQ (CPU_FREQ / 4)	// 84 MHz PCLK2 frequency
-	#define	PCLK2_TIMERS_FREQ (CPU_FREQ / 2)	// 84 MHz PCLK2 frequency
+	#define	PCLK1_FREQ CPU_FREQ //(CPU_FREQ / 4)	// 42 MHz PCLK1 frequency
+	#define	PCLK1_TIMERS_FREQ CPU_FREQ //(CPU_FREQ / 2)	// 42 MHz PCLK1 frequency
+	#define	PCLK2_FREQ CPU_FREQ //(CPU_FREQ / 4)	// 84 MHz PCLK2 frequency
+	#define	PCLK2_TIMERS_FREQ CPU_FREQ //(CPU_FREQ / 2)	// 84 MHz PCLK2 frequency
 	#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config станавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
 	#define PER_CK_FREQ 64000000uL	// 2. The per_ck clock could be hse_ck, hsi_ker_ck or csi_ker_ck according to CKPERSEL selection.
 
@@ -1020,7 +1021,7 @@ extern "C" {
 
 		#define NVRAM_END E2END
 
-	#elif defined (NVRAM_TYPE) && (NVRAM_TYPE == NVRAM_TYPE_BKPSRAM) && CPUSTYLE_STM32
+	#elif defined (NVRAM_TYPE) && (NVRAM_TYPE == NVRAM_TYPE_BKPSRAM) && CPUSTYLE_STM32F
 
 		#define NVRAM_END 4095U		/* 4K of RAM at BKPSRAM_BASE */
 

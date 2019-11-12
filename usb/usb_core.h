@@ -52,8 +52,8 @@
 #define  USB_DESC_TYPE_OTHER_SPEED_CONFIGURATION           7
 #define  USB_DESC_TYPE_BOS                                 0x0F
 
-#define USB_CONFIG_REMOTE_WAKEUP                           2
-#define USB_CONFIG_SELF_POWERED                            1
+#define USB_CONFIG_REMOTE_WAKEUP                           0x02
+#define USB_CONFIG_SELF_POWERED                            0x01
 
 /*  Device Status */
 #define USBD_STATE_DEFAULT                                1
@@ -343,7 +343,7 @@ typedef struct
   // RENESAS specific field
   uint_fast8_t	pipe_num;
 
-#elif CPUSTYLE_STM32
+#elif CPUSTYLE_STM32F
 
   // STM32 specific field
   uint_fast8_t  tx_fifo_num;    /*!< Transmission FIFO number
@@ -397,9 +397,9 @@ typedef struct
 
   uint8_t   *xfer_buff;    /*!< Pointer to transfer buffer.                                                */
 
-  uint32_t  xfer_len;      /*!< Current transfer length.                                                   */
+  uint_fast32_t  xfer_len;      /*!< Current transfer length.                                                   */
 
-  uint32_t  xfer_count;    /*!< Partial transfer length in case of multi packet transfer.                  */
+  uint_fast32_t  xfer_count;    /*!< Partial transfer length in case of multi packet transfer.                  */
 
   uint8_t   toggle_in;     /*!< IN transfer current toggle flag.
                                 This parameter must be a number between Min_Data = 0 and Max_Data = 1      */
@@ -492,7 +492,7 @@ typedef USBALIGN_BEGIN struct _USBD_HandleTypeDef
   USBD_EndpointTypeDef    ep_in [15];
   USBD_EndpointTypeDef    ep_out [15];
   uint_fast32_t           ep0_state;
-  uint_fast32_t           ep0_data_len;
+  uint_fast32_t           ep0_data_len;	// from setup stage
   uint_fast8_t            dev_state;
   uint_fast8_t            dev_old_state;
   uint_fast8_t            dev_address;

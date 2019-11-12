@@ -3825,58 +3825,6 @@ prog_ctrlreg(uint_fast8_t plane)
 	}
 }
 
-#elif CTLREGMODE_RAVENDSP_V8	// Rmainunit_v6bm modem only
-
-#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
-
-// "Воронёнок" с DSP и FPGA, SD-CARD
-static void 
-//NOINLINEAT
-prog_ctrlreg(uint_fast8_t plane)
-{
-#if defined(DDS1_TYPE)
-	prog_fpga_ctrlreg(targetfpga1);	// FPGA control register
-#endif
-
-	// registers chain control register
-	{
-		const spitarget_t target = targetctl1;
-
-		rbtype_t rbbuff [7] = { 0 };
-		/* +++ Управление согласующим устройством */
-		/* дополнительный регистр */
-		RBBIT(0063, glob_tx);				/* pin 03:индикатор передачи */
-		RBBIT(0062, glob_antenna);			// pin 02: выбор антенны (0 - ANT1, 1 - ANT2)
-		RBBIT(0061, ! glob_tuner_bypass);		// pin 01: обход СУ (1 - работа)
-		RBBIT(0060, glob_tuner_bypass ? 0 : glob_tuner_type);		/* pin 15: TYPE OF TUNER 	*/
-		/* регистр управления массивом конденсаторов */
-		RBVAL8(0050, glob_tuner_bypass ? 0 : glob_tuner_C);			/* Capacitors tuner bank 	*/
-		/* регистр управления наборной индуктивностью. */
-		RBVAL8(0040, glob_tuner_bypass ? 0 : glob_tuner_L);			/* Inductors tuner bank 	*/
-		/* --- Управление согласующим устройством */
-		// DD23 STP08CP05TTR на части передатчика
-		RBVAL8(0030, 1U << glob_bandf2);		// D0..D7: band select бит выбора диапазонного фильтра передатчика
-
-		// DD1 STP08CP05TTR в управлении диапазонными фильтрами приёмника
-		RBVAL(0021, glob_tx ? 0 : (1U << glob_bandf) >> 1, 7);		// D1: 1, D7..D1: band select бит выбора диапазонного фильтра приёмника
-		RBBIT(0020, glob_bandf == 0);		// D0: средневолновый ФНЧ
-
-		// DD3 STP08CP05TTR в управлении диапазонными фильтрами приёмника
-		RBVAL(0016, glob_att, 2);			/* D7:D6: 12 dB and 6 dB attenuator control */
-		RBBIT(0013, glob_tx);				// D3: TX ANT relay
-		RBBIT(0012, glob_tx);				// D2: ext ptt
-		RBBIT(0010, glob_bandf == 0);		// D0: средневолновый ФНЧ
-
-		// DD21 SN74HC595PW
-		RBBIT(0007, glob_tx);				// D7: driver stages power
-		RBBIT(0006, glob_tx);				// D6: EXT PTT signal
-
-		spi_select(target, CTLREG_SPIMODE);
-		prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-		spi_unselect(target);
-	}
-}
-
 #elif CTLREGMODE_RAVENDSP_V9	// renesas Rmainunit_v7bm.pcb
 
 #define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
@@ -6109,8 +6057,6 @@ static void board_fpga_loader_PS(void)
 		#include "rbf/rbfimage_v7_1ch.h"	//
 	#elif CTLSTYLE_RAVENDSP_V7 && (DDS1_CLK_MUL == 1)
 		#include "rbf/rbfimage_v7a_2ch.h"	// CTLSTYLE_RAVENDSP_V7
-	#elif CTLSTYLE_RAVENDSP_V8 && (DDS1_CLK_MUL == 1)
-		#include "rbf/rbfimage_v8.h"
 	#elif CTLSTYLE_RAVENDSP_V9 && (DDS1_CLK_MUL == 1)
 		#include "rbf/rbfimage_v7renesas_2ch.h"
 	#elif CTLSTYLE_RAVENDSP_V2 && (DDS1_CLK_MUL == 1) && WITHRTS192

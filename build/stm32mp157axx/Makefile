@@ -37,9 +37,8 @@ LTO = -flto
 
 # This product incorporates the ARM single-core Cortex-A9 MPCore, where the IP version is r3p0.
 MCU  = cortex-a7
+#CORE = -march=armv7-a -mfloat-abi=hard -mfpu=vfpv4-d16 -ftree-vectorize
 CORE = -march=armv7-a -mfloat-abi=hard -mfpu=vfpv4-d16 -mfpu=neon -ftree-vectorize
-#CORE = -march=armv7-a -mfloat-abi=hard -mfpu=neon
-#CORE = -march=armv7-a -mfloat-abi=hard -mfpu=neon -ftree-vectorize
 
 # List all default C defines here, like -D_DEBUG=1
 DDEFS = 
@@ -70,9 +69,9 @@ SRCDIR = ../..
 PROJECT = stm32mp157axx
 
 # Define linker script file here
-LDSCRIPT_BOOT = ./stm32mp15xx_cm7_boot.ld
+#LDSCRIPT_BOOT = ./stm32mp15xx_cm7_boot.ld
 #LDSCRIPT_APP = ./stm32mp15xx_cm7_app.ld
-LDSCRIPT_APP = ./stm32mp15xx_cm7_qspiapp.ld
+LDSCRIPT_APP = ./stm32mp15xx_cm7_boot.ld
 
 # List all user C define here, like -D_DEBUG=1
 UDEFS = -DNDEBUG=1 -DCPUSTYLE_STM32MP1=1 -DCPUSTYLE_STM32MP157A=1 -DSTM32MP157Axx=1

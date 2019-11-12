@@ -2401,7 +2401,7 @@ uintptr_t getfilled_dmabufferx(uint_fast16_t * sizep)
 		return 0;
 
 	case UACINALT_AUDIO48:
-		* sizep = VIRTUAL_AUDIO_PORT_DATA_SIZE_IN_AUDIO48;
+		* sizep = UAC_IN48_DATA_SIZE;
 		return getfilled_dmabuffer16uacin();
 
 #if ! WITHUSBUACIN2
