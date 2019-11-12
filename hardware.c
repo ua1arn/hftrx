@@ -9648,6 +9648,16 @@ void IRQ_Handler(void)
 
 	//IRQ_SetPriority(0, IRQ_GetPriority(0));
 
+#if 0
+	switch (irqn)
+	{
+	//case PL310ERR_IRQn:
+	//	break;
+	default:
+		PRINTF(PSTR("IRQ_Handler: irq=%d, handler=%p\n"), (int) irqn, (void *) handler);
+		break;
+	}
+#endif
 	if (handler != NULL)
 	{
 #if WITHNESTEDINTERRUPTS
