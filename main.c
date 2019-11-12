@@ -17507,6 +17507,8 @@ printhex(unsigned long voffs, const unsigned char * buff, unsigned length)
 	}
 }
 
+// Сюда попадаем из USB DFU клвсса при приходе команды
+// DFU_Detach после USBD_Stop
 void bootloader_detach(void)
 {
 	__disable_irq();
@@ -17533,6 +17535,7 @@ static void bootloader_mainloop(void)
 	//printhex(BOOTLOADER_APPAREA, (void *) BOOTLOADER_APPAREA, 512);
 	PRINTF(PSTR("Ready jump to application at %p. Press 'r' at any time\n"), (void *) BOOTLOADER_APPAREA);
 ddd:
+#if WITHUSBHW
 	for (;;)
 	{
 #if WITHDEBUG
@@ -17549,7 +17552,7 @@ ddd:
 		if (hardware_usbd_get_vbusnow() == 0)
 			break;
 	}
-
+#endif /* WITHUSBHW */
 	PRINTF(PSTR("Compare signature of to application\n"));
 
 	static const char sgn [] = "DREAM";
@@ -17564,8 +17567,10 @@ ddd:
 	if ((offset + len) > zonelen)
 		goto ddd;
 
+#if WITHUSBHW
 	board_usb_deactivate();
 	board_usb_deinitialize();
+#endif /* WITHUSBHW */
 	bootloader_detach();
 }
 
