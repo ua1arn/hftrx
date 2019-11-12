@@ -306,9 +306,8 @@ static uint_fast8_t usbd_wait_fifo(PCD_TypeDef * const USBx, uint_fast8_t pipe, 
 static uint_fast8_t USB_ReadPacketNec(PCD_TypeDef * const USBx, uint_fast8_t pipe, uint8_t * data, unsigned size, unsigned * readcnt)
 {
 	//PRINTF(PSTR("USB_ReadPacketNec: pipe=%d, data=%p, size=%d\n"), (int) pipe, data, (int) size);
-	//PRINTF(PSTR("selected read from c_fifo%u 0, CFIFOCTR=%04X, CFIFOSEL=%04X\n"), pipe, Instance->CFIFOCTR, Instance->CFIFOSEL);
 	USBx->CFIFOSEL =
-		1 * (1uL << USB_CFIFOSEL_RCNT_SHIFT) |		// RCNT
+		//1 * (1uL << USB_CFIFOSEL_RCNT_SHIFT) |		// RCNT
 		(pipe << USB_CFIFOSEL_CURPIPE_SHIFT) |	// CURPIPE 0000: DCP
 		0 * USB_CFIFOSEL_MBW |	// MBW 00: 8-bit width
 		0;
@@ -323,17 +322,17 @@ static uint_fast8_t USB_ReadPacketNec(PCD_TypeDef * const USBx, uint_fast8_t pip
 	unsigned count = 0;
 	unsigned size8 = (USBx->CFIFOCTR & USB_CFIFOCTR_DTLN) >> USB_CFIFOCTR_DTLN_SHIFT;
 	size = ulmin16(size, size8);
-	//PRINTF(PSTR("selected read from c_fifo%u 3, CFIFOCTR=%04X, CFIFOSEL=%04X\n"), pipe, Instance->CFIFOCTR, Instance->CFIFOSEL);
 	count = size;
+
+	//if (size == 0)
+	//	USBx->CFIFOCTR = USB_CFIFOCTR_BCLR;	// BCLR
+
 	while (size --)
 	{
 		* data ++ = USBx->CFIFO.UINT8 [R_IO_HH]; // HH=3
 	}
-	//PRINTF(PSTR("selected read from c_fifo%u 4, CFIFOCTR=%04X, CFIFOSEL=%04X\n"), pipe, Instance->CFIFOCTR, Instance->CFIFOSEL);
 
-	//USBx->CFIFOCTR = USB_CFIFOCTR_BCLR;	// BCLR
 	* readcnt = count;
-	//PRINTF(PSTR("selected read from c_fifo%u 5, CFIFOCTR=%04X, CFIFOSEL=%04X\n"), pipe, Instance->CFIFOCTR, Instance->CFIFOSEL);
 	return 0;	// OK
 }
 
