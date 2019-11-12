@@ -494,15 +494,15 @@
 	//#define KBD_MASK (1U << 0)	// PF0
 	//#define KBD_TARGET_PIN (GPIOF->IDR)
 
-#if 1//WITHENCODER2
-	// P7_8
 	#define TARGET_ENC2BTN_BIT (1U << 0)	// PF0 - second encoder button with pull-up
+	#define TARGET_POWERBTN_BIT (1U << 8)	// PA8 - ~CPU_POWER_SW signal
+#if WITHENCODER2
+	// P7_8
 	#define TARGET_ENC2BTN_GET	((GPIOF->IDR) & TARGET_ENC2BTN_BIT) == 0)
 #endif /* WITHENCODER2 */
 
-#if 1//WITHPWBUTTON
+#if WITHPWBUTTON
 	// P5_3 - ~CPU_POWER_SW signal
-	#define TARGET_POWERBTN_BIT (1U << 8)	// PA8 - ~CPU_POWER_SW signal
 	#define TARGET_POWERBTN_GET	((GPIOA->IDR) & TARGET_POWERBTN_BIT) == 0)
 #endif /* WITHPWBUTTON */
 

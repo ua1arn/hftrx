@@ -643,15 +643,15 @@
 	//#define KBD_TARGET_PIN (R7S721_INPUT_PORT(7))
 
 
+	#define TARGET_ENC2BTN_BIT (1U << 8)	// P7_8 - second encoder button with pull-up
 #if WITHENCODER2
 	// P7_8
-	#define TARGET_ENC2BTN_BIT (1U << 8)	// P7_8 - second encoder button with pull-up
 	#define TARGET_ENC2BTN_GET	((R7S721_INPUT_PORT(7) & TARGET_ENC2BTN_BIT) == 0)
 #endif /* WITHENCODER2 */
 
+	#define TARGET_POWERBTN_BIT (1U << 3)	// P5_3 - ~CPU_POWER_SW signal
 #if WITHPWBUTTON
 	// P5_3 - ~CPU_POWER_SW signal
-	#define TARGET_POWERBTN_BIT (1U << 3)	// P5_3 - ~CPU_POWER_SW signal
 	#define TARGET_POWERBTN_GET	((R7S721_INPUT_PORT(5) & TARGET_POWERBTN_BIT) == 0)
 #endif /* WITHPWBUTTON */
 

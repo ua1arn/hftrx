@@ -8215,15 +8215,19 @@ board_get_pressed_key(void)
 	enum { AKBDEND = 0 };
 #endif	/* KEYBOARD_USE_ADC */
 
+#if defined (TARGET_ENC2BTN_GET)
+	if (TARGET_ENC2BTN_GET != 0)
+		return AKBDEND + 0;
+#endif /* defined (TARGET_ENC2BTN_GET) */
+#if defined (TARGET_POWERBTN_GET)
+	if (TARGET_POWERBTN_GET != 0)
+		return AKBDEND + 1;
+#endif /* defined (TARGET_POWERBTN_GET) */
+
 #if KBD_MASK
 
 	uint_fast8_t i;
 	uint_fast8_t bitpos;
-	static const uint_fast8_t (*buttons [])(void) =
-	{
-		bnchk_encoder2,
-		bnchk_poweroff,
-	};
 	const portholder_t v = ~ KBD_TARGET_PIN;
 	portholder_t srcmask = KBD_MASK;
 	

@@ -67,6 +67,9 @@ uint_fast8_t getexitkey(void)
 		{ KIF_NONE, KBD_CODE_MAX, KBD_CODE_MAX,  },
 		{ KIF_NONE, KBD_CODE_MAX, KBD_CODE_MAX,  },
 		{ KIF_NONE, KBD_CODE_MAX, KBD_CODE_MAX,  },
+		// encoder2 & power buttons
+		{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, },
+		{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, },
 	};
 
 uint_fast8_t getexitkey(void)
@@ -99,6 +102,9 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ 	KIF_NONE,		KBD_CODE_MOX,		KBD_CODE_TXTUNE, },		// TUN
 	{	KIF_NONE, 		KBD_CODE_LOCK, 		KBD_CODE_LOCK_HOLDED, },// LOCK
 	{	KIF_NONE, 		KBD_CODE_BW,		KBD_CODE_MAX, },		// FST
+	// encoder2 & power buttons
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, },
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, },
 };
 
 uint_fast8_t getexitkey(void)
@@ -131,6 +137,9 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ 	KIF_NONE,		KBD_CODE_ATUBYPASS,		KBD_CODE_ATUSTART, },		// BYP/ATU
 	{	KIF_NONE, 		KBD_CODE_BW,			KBD_CODE_LOCK, },		// BW/LOC
 	{	KIF_NONE, 		KBD_CODE_IFSHIFT,		KBD_CODE_MENU_CWSPEED, },		// IF SH / WPM
+	// encoder2 & power buttons
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, },
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, },
 };
 
 uint_fast8_t getexitkey(void)
@@ -163,6 +172,9 @@ const struct qmkey qmdefs [NQMKEYS] =
 	//{ KIF_NONE,		KBD_CODE_MAX,		KBD_CODE_MAX, },
 	//{	KIF_NONE, 		KBD_CODE_MAX, 		KBD_CODE_MAX, },
 	//{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, },
+	// encoder2 & power buttons
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, },
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, },
 };
 
 uint_fast8_t getexitkey(void)
@@ -195,6 +207,9 @@ const struct qmkey qmdefs [NQMKEYS] =
 	//{ KIF_NONE,		KBD_CODE_MAX,		KBD_CODE_MAX, },
 	//{	KIF_NONE, 		KBD_CODE_MAX, 		KBD_CODE_MAX, },
 	//{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, },
+	// encoder2 & power buttons
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, },
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, },
 };
 
 uint_fast8_t getexitkey(void)
@@ -227,6 +242,9 @@ const struct qmkey qmdefs [NQMKEYS] =
 	//{ KIF_NONE,		KBD_CODE_MAX,		KBD_CODE_MAX, },
 	//{	KIF_NONE, 		KBD_CODE_MAX, 		KBD_CODE_MAX, },
 	//{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, },
+	// encoder2 & power buttons
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, },
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, },
 };
 
 uint_fast8_t getexitkey(void)
@@ -259,6 +277,9 @@ const struct qmkey qmdefs [NQMKEYS] =
 	//{ KIF_NONE,		KBD_CODE_MAX,		KBD_CODE_MAX, },
 	//{	KIF_NONE, 		KBD_CODE_MAX, 		KBD_CODE_MAX, },
 	//{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, },
+	// encoder2 & power buttons
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, },
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, },
 };
 
 uint_fast8_t getexitkey(void)
@@ -291,7 +312,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 	//{ KIF_NONE,		KBD_CODE_MAX,		KBD_CODE_MAX, },
 	//{	KIF_NONE, 		KBD_CODE_MAX, 		KBD_CODE_MAX, },
 	//{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, },
-	// дополнительный элемент
+	// encoder2 & power buttons
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, },
 	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, },
 };
 
@@ -327,7 +349,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 	//{ KIF_NONE,		KBD_CODE_MAX,		KBD_CODE_MAX, },
 	//{	KIF_NONE, 		KBD_CODE_MAX, 		KBD_CODE_MAX, },
 	//{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, },
-	// дополнительный элемент
+	// encoder2 & power buttons
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, },
 	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, },
 };
 
@@ -362,7 +385,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 	//{ KIF_NONE,		KBD_CODE_MAX,		KBD_CODE_MAX, },
 	//{	KIF_NONE, 		KBD_CODE_MAX, 		KBD_CODE_MAX, },
 	//{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, },
-	// дополнительный элемент
+	// encoder2 & power buttons
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, },
 	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, },
 };
 
@@ -396,7 +420,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ 	KIF_NONE,		KBD_CODE_BW,		KBD_CODE_MAX, },
 	{	KIF_NONE, 		KBD_CODE_MAX, 		KBD_CODE_MAX, },
 	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, },
-	// дополнительный элемент
+	// encoder2 & power buttons
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, },
 	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, },
 };
 
@@ -431,7 +456,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ 	KIF_NONE,		KBD_CODE_AGC,		KBD_CODE_MAX, },
 	{	KIF_NONE, 		KBD_CODE_LDSPTGL, 	KBD_CODE_MAX, },
 	{	KIF_NONE, 		KBD_CODE_NOTCHTOGGLE,		KBD_CODE_MAX, },
-	// дополнительный элемент
+	// encoder2 & power buttons
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, },
 	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, },
 };
 
@@ -459,7 +485,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_SLOW,		KBD_CODE_BAND_DOWN,KBD_CODE_MAX, },
 	{ KIF_ERASE,	KBD_CODE_SPLIT, KBD_CODE_SPLIT_HOLDED, },
 	{ KIF_NONE,		KBD_CODE_MAX, KBD_CODE_MAX, },
-	// дополнительный элемент
+	// encoder2 & power buttons
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, },
 	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, },
 };
 
@@ -485,7 +512,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_SLOW,		KBD_CODE_BAND_DOWN,KBD_CODE_MAX, },
 	{ KIF_ERASE,	KBD_CODE_SPLIT, KBD_CODE_SPLIT_HOLDED, },
 	{ KIF_NONE,		KBD_CODE_MAX, KBD_CODE_MAX, },
-	// дополнительный элемент
+	// encoder2 & power buttons
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, },
 	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, },
 };
 
@@ -547,7 +575,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE,		KBD_CODE_USER2,		KBD_CODE_MAX, },
 	{ KIF_NONE,		KBD_CODE_USER3,		KBD_CODE_MAX, },
 	{ KIF_NONE,		KBD_CODE_USER4,		KBD_CODE_MAX, },
-	// дополнительный элемент
+	// encoder2 & power buttons
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, },
 	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, },
 };
 
@@ -583,7 +612,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 	//{	KIF_FAST, 		ENC_CODE_STEP_DOWN, ENC_CODE_STEP_DOWN, },
 	//{	KIF_FAST, 		ENC_CODE_STEP_UP, 	ENC_CODE_STEP_UP, },
 	//{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, },
-	// дополнительный элемент
+	// encoder2 & power buttons
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, },
 	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, },
 };
 
@@ -619,7 +649,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 	//{	KIF_FAST, 		ENC_CODE_STEP_DOWN, ENC_CODE_STEP_DOWN, },
 	//{	KIF_FAST, 		ENC_CODE_STEP_UP, 	ENC_CODE_STEP_UP, },
 	//{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, },
-	// дополнительный элемент
+	// encoder2 & power buttons
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, },
 	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, },
 };
 
@@ -647,7 +678,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE, KBD_CODE_MAX,	KBD_CODE_MAX, },	
 	{ KIF_NONE, KBD_CODE_MAX,	KBD_CODE_MAX, },	
 	{ KIF_NONE, KBD_CODE_MAX,	KBD_CODE_MAX, },	
-	// дополнительный элемент
+	// encoder2 & power buttons
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, },
 	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, },
 };
 
@@ -679,7 +711,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE,KBD_CODE_MAX,KBD_CODE_MAX, },
 	{ KIF_ERASE,KBD_CODE_SPLIT,KBD_CODE_SPLIT_HOLDED, },
 	{ KIF_EXTMENU,KBD_CODE_DISPMODE,KBD_CODE_MENU, },
-	// дополнительный элемент
+	// encoder2 & power buttons
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, },
 	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, },
 };
 
@@ -725,8 +758,9 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE,		KBD_CODE_ENTERFREQ,	KBD_CODE_ENTERFREQDONE, '7', },
 	//{ KIF_FAST,		ENC_CODE_STEP_DOWN,	ENC_CODE_STEP_DOWN, 	'#', },
 	{ KIF_NONE,		KBD_CODE_DWATCHTOGGLE, KBD_CODE_DWATCHHOLD, '#', },
-	// дополнительный элемент
-	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
+	// encoder2 & power buttons
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, },
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, },
 };
 
 uint_fast8_t getexitkey(void)
@@ -769,7 +803,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE,		KBD_CODE_22,		KBD_CODE_MAX,			'2', },	// #22: 2
 	{ KIF_NONE,		KBD_CODE_23,		KBD_CODE_MAX,			'1', },	// #23: 1
 
-	// дополнительный элемент
+	// encoder2 & power buttons
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 };
 
@@ -814,7 +849,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE,		KBD_CODE_ENTERFREQ,	KBD_CODE_ENTERFREQDONE, '7', },
 	//{ KIF_FAST,		ENC_CODE_STEP_DOWN,	ENC_CODE_STEP_DOWN, 	'#', },
 	{ KIF_NONE,		KBD_CODE_DWATCHTOGGLE, KBD_CODE_DWATCHHOLD, '#', },
-	// дополнительный элемент
+	// encoder2 & power buttons
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 };
 
@@ -1173,6 +1209,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 
 	/* кнопка дополнительного валкодера */
 	{ KIF_NONE,		KBD_ENC2_PRESS,		KBD_ENC2_HOLD, 		' ', },
+	// power button
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 };
 
 uint_fast8_t getexitkey(void)
@@ -1398,7 +1436,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE,		KBD_CODE_BAND_24M9,	KBD_CODE_BAND_24M9, 	'8', },	// 15
 	{ KIF_NONE,		KBD_CODE_BAND_28M0,	KBD_CODE_BAND_28M0, 	'9', },	// 16
 	{ KIF_NONE,		KBD_CODE_ENTERFREQ,	KBD_CODE_ENTERFREQDONE, '0', },	// 17
-	// дополнительный элемент
+	// encoder2 & power buttons
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 };
 
@@ -1455,7 +1494,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE,		KBD_CODE_3,			KBD_CODE_3, 			'4', }, // S4
 	{ KIF_NONE,		KBD_CODE_4,			KBD_CODE_4, 			'5', },	// S5
 	{ KIF_NONE,		KBD_CODE_5,			KBD_CODE_5, 			'6', },	// S6
-	// дополнительный элемент
+	// encoder2 & power buttons
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 };
 
@@ -1484,7 +1524,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_ERASE,	KBD_CODE_SPLIT,		KBD_CODE_SPLIT_HOLDED, 	'4', },
 	{ KIF_NONE,		KBD_CODE_ENTERFREQ,	KBD_CODE_ENTERFREQDONE, '7', },
 	{ KIF_NONE,		KBD_CODE_LOCK,		KBD_CODE_LOCK_HOLDED, 	'0', },
-	// дополнительный элемент
+	// encoder2 & power buttons
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 };
 
@@ -1513,7 +1554,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_SLOW,		KBD_CODE_BAND_DOWN,	KBD_CODE_BAND_DOWN, 	'9', },
 	{ KIF_SLOW,		KBD_CODE_BAND_UP,	KBD_CODE_BAND_UP, 		'6', },
 	{ KIF_NONE,		KBD_CODE_MODE,		KBD_CODE_MODEMOD, 		'3', },
-	// дополнительный элемент
+	// encoder2 & power buttons
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 };
 
@@ -1542,7 +1584,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_SLOW,		KBD_CODE_BAND_DOWN,	KBD_CODE_BAND_DOWN, 	'9', },
 	{ KIF_SLOW,		KBD_CODE_BAND_UP,	KBD_CODE_BAND_UP, 		'6', },
 	{ KIF_NONE,		KBD_CODE_MODE,		KBD_CODE_MODEMOD, 		'3', },
-	// дополнительный элемент
+	// encoder2 & power buttons
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 };
 
@@ -1574,7 +1617,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE, KBD_CODE_MAX, KBD_CODE_MAX,  },
 	{ KIF_NONE, KBD_CODE_MAX, KBD_CODE_MAX,  },
 	{ KIF_NONE, KBD_CODE_MAX, KBD_CODE_MAX,  },
-	// дополнительный элемент
+	// encoder2 & power buttons
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 };
 
@@ -1603,7 +1647,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE, KBD_CODE_MAX, KBD_CODE_MAX,  },
 	{ KIF_NONE, KBD_CODE_GEN_HAM, KBD_CODE_GEN_HAM,  },
 	{ KIF_NONE, KBD_CODE_MOX, KBD_CODE_TXTUNE,  },
-	// дополнительный элемент
+	// encoder2 & power buttons
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 };
 
@@ -1633,7 +1678,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE, KBD_CODE_ATT, KBD_CODE_PAMP,  },
 	{ KIF_NONE, KBD_CODE_MODE, KBD_CODE_MODEMOD,  },
 	{ KIF_NONE, KBD_CODE_BW, KBD_CODE_AGC,  },
-	// дополнительный элемент
+	// encoder2 & power buttons
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 };
 
@@ -1661,7 +1707,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE,  KBD_CODE_LOCK,  KBD_CODE_LOCK_HOLDED,   },
 	{ KIF_EXTMENU, KBD_CODE_DISPMODE,  KBD_CODE_MENU,   },
 	{ KIF_NONE,  KBD_CODE_BW,  KBD_CODE_AGC,   },
-	// дополнительный элемент
+	// encoder2 & power buttons
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 };
 
@@ -1691,6 +1738,9 @@ uint_fast8_t getexitkey(void)
 		{ KIF_SLOW,  KBD_CODE_BAND_DOWN,  KBD_CODE_BAND_DOWN,   },
 		{ KIF_ERASE,  KBD_CODE_SPLIT,  KBD_CODE_SPLIT_HOLDED,   },
 		{ KIF_NONE,  KBD_CODE_ATT,  KBD_CODE_LOCK,   },
+		// encoder2 & power buttons
+		{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
+		{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 	};
 
 	uint_fast8_t getexitkey(void)
@@ -1751,7 +1801,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE,	KBD_CODE_VOXTOGGLE,	KBD_CODE_MAX, },
 	{ KIF_SLOW, KBD_CODE_CWSPEEDDOWN, 	KBD_CODE_CWSPEEDDOWN, },
 	{ KIF_SLOW, KBD_CODE_CWSPEEDUP, 	KBD_CODE_CWSPEEDUP, },
-	// дополнительный элемент
+	// encoder2 & power buttons
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 };
 
@@ -1779,7 +1830,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE, KBD_CODE_MOX, KBD_CODE_TXTUNE, '6', },
 	{ KIF_SLOW, KBD_CODE_BAND_UP, KBD_CODE_BAND_UP, '9', },
 	{ KIF_FAST, ENC_CODE_STEP_UP, ENC_CODE_STEP_UP, '#', },
-	// дополнительный элемент
+	// encoder2 & power buttons
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 };
 
@@ -1798,7 +1850,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE,		KBD_CODE_USER2, KBD_CODE_MAX, },		// ревербератор
 	{ KIF_NONE,		KBD_CODE_USER1, KBD_CODE_MAX, },		// эквалайзер
 	{ KIF_NONE,		KBD_CODE_MAX, KBD_CODE_MAX, },
-	// дополнительный элемент
+	// encoder2 & power buttons
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 };
 
@@ -1841,7 +1894,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_SLOW, KBD_CODE_BAND_DOWN, KBD_CODE_BAND_DOWN, '4' },
 	{ KIF_NONE, KBD_CODE_MODE, KBD_CODE_MODEMOD, '7' },
 	{ KIF_ERASE, KBD_CODE_SPLIT, KBD_CODE_SPLIT_HOLDED, '*' },
-	// дополнительный элемент
+	// encoder2 & power buttons
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 };
 
@@ -1873,7 +1927,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE,	KBD_CODE_USER2,	KBD_CODE_MAX, ' ' },
 	{ KIF_NONE,	KBD_CODE_ATUBYPASS,	KBD_CODE_ATUSTART, },		// BYP/ATU
 	{ KIF_NONE,	KBD_CODE_IFSHIFT,	KBD_CODE_MAX, ' ' },
-	// дополнительный элемент
+	// encoder2 & power buttons
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 };
 
@@ -1905,7 +1960,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE,	KBD_CODE_USER2,	KBD_CODE_MAX, ' ' },
 	{ KIF_NONE,	KBD_CODE_USER3,	KBD_CODE_MAX, ' ' },
 	{ KIF_NONE,	KBD_CODE_USER4,	KBD_CODE_MAX, ' ' },
-	// дополнительный элемент
+	// encoder2 & power buttons
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 };
 
@@ -1945,7 +2001,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_ERASE, KBD_CODE_SPLIT, KBD_CODE_SPLIT_HOLDED, '*' },
 	{ KIF_NONE,	KBD_CODE_USER5,	KBD_CODE_MAX, ' ' },	// reverb
 	{ KIF_NONE, KBD_CODE_MAX, KBD_CODE_MAX, ' '  },		// клавиша отсутствует
-	// дополнительный элемент
+	// encoder2 & power buttons
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 };
 
@@ -1983,7 +2040,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE, KBD_CODE_TUNERTYPE, KBD_CODE_TUNERTYPE, ' '  },		// TUNER TYPE
 	{ KIF_SLOW4, KBD_CODE_CAP_UP, KBD_CODE_CAP_UP, ' '  },		// С++
 	{ KIF_SLOW4, KBD_CODE_CAP_DOWN, KBD_CODE_CAP_DOWN, ' '  },		// С--
-	// дополнительный элемент
+	// encoder2 & power buttons
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 };
 
@@ -2015,7 +2073,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE, KBD_CODE_MOX, KBD_CODE_TXTUNE, '0'  },
 	{ KIF_FAST, ENC_CODE_STEP_DOWN, ENC_CODE_STEP_DOWN, ' '  },
 	{ KIF_FAST, ENC_CODE_STEP_UP, ENC_CODE_STEP_UP, ' '  },
-	// дополнительный элемент
+	// encoder2 & power buttons
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 };
 
@@ -2047,7 +2106,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE, KBD_CODE_MOX, KBD_CODE_TXTUNE, '0'  },					// MOX
 	{ KIF_NONE,	KBD_CODE_ATUBYPASS,	KBD_CODE_ATUSTART, ' ' },		// BYP/ATU: was PWR
 	{ KIF_NONE, KBD_CODE_LDSPTGL, KBD_CODE_4, ' '  },				// SPEAKER
-	// дополнительный элемент
+	// encoder2 & power buttons
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 };
 
@@ -2076,7 +2136,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE, KBD_CODE_9, KBD_CODE_9,  },
 	{ KIF_NONE, KBD_CODE_10, KBD_CODE_10,  },
 	{ KIF_NONE, KBD_CODE_11, KBD_CODE_11,  },
-	// дополнительный элемент
+	// encoder2 & power buttons
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 };
 
@@ -2111,7 +2172,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_SLOW,		KBD_CODE_BAND_DOWN,		KBD_CODE_BAND_DOWN, 	' ', },
 	{ KIF_SLOW,		KBD_CODE_BAND_UP,		KBD_CODE_BAND_UP, 		' ', },
 	{ KIF_SLOW,		KBD_CODE_17,			KBD_CODE_17,			' ', },
-	// дополнительный элемент
+	// encoder2 & power buttons
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 };
 
@@ -2136,6 +2198,9 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_SLOW, KBD_CODE_10, KBD_CODE_10,  },
 	{ KIF_SLOW, KBD_CODE_11, KBD_CODE_11,  },
 	#endif
+	// encoder2 & power buttons
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 };
 
 uint_fast8_t getexitkey(void)
@@ -2162,7 +2227,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE,		KBD_CODE_MODE,		KBD_CODE_MODEMOD, 		' ', },
 	{ KIF_EXTMENU,	KBD_CODE_TXTUNE,	KBD_CODE_MENU, 			' ', },
 	{ KIF_NONE,		KBD_CODE_MAX,		KBD_CODE_MAX, ' '  },		// клавиша отсутствует
-	// дополнительный элемент
+	// encoder2 & power buttons
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 };
 
@@ -2185,7 +2251,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE, KBD_CODE_MAX, KBD_CODE_MAX,  },
 	{ KIF_NONE, KBD_CODE_MAX, KBD_CODE_MAX,  },
 	{ KIF_NONE, KBD_CODE_MAX, KBD_CODE_MAX,  },
-	// дополнительный элемент
+	// encoder2 & power buttons
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 };
 
@@ -2211,7 +2278,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_SLOW, KBD_CODE_9, KBD_CODE_9,  },
 	{ KIF_SLOW, KBD_CODE_10, KBD_CODE_10,  },
 	{ KIF_SLOW, KBD_CODE_11, KBD_CODE_11,  },
-	// дополнительный элемент
+	// encoder2 & power buttons
+	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 };
 
