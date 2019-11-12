@@ -372,13 +372,16 @@ typedef struct
 	#define FIRBUFSIZE SPEEXNN
 #endif /* WITHNOSPEEX */
 
-// Ограничение алгоритма генератции параметров фильтра - нечётное значение Ntap.
+// Ограничение алгоритма генерации параметров фильтра - нечётное значение Ntap.
 // Кроме того, для функций фильтрации с использованием симметрии коэффициентов, требуется кратность 2 половины Ntap
 
 #define NtapValidate(n)	((unsigned) (n) / 8 * 8 + 1)
 #define NtapCoeffs(n)	((unsigned) (n) / 2 + 1)
 
-#if ! WITHDSPLOCALFIR
+#if WITHNOSPEEX
+	#define	Ntap_rx_AUDIO	NtapValidate(511)
+	#define Ntap_tx_MIKE	NtapValidate(511)
+#elif ! WITHDSPLOCALFIR
 	#define	Ntap_rx_AUDIO	NtapValidate(SPEEXNN * 2 - 7)
 	#define Ntap_tx_MIKE	NtapValidate(241) //Ntap_rx_AUDIO
 #else /* ! WITHDSPLOCALFIR */
