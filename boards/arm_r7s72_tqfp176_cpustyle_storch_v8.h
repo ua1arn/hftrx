@@ -638,12 +638,26 @@
 			} while (0)
 
 #if WITHKEYBOARD
-	/* P7_8: pull-up second encoder button */
-	#define KBD_MASK (1U << 8)	// P7_8
-	#define KBD_TARGET_PIN (R7S721_INPUT_PORT(7))
+	/* P7_8: second encoder button with pull-up */
+	//#define KBD_MASK (1U << 8)	// P7_8
+	//#define KBD_TARGET_PIN (R7S721_INPUT_PORT(7))
+
+
+#if 1//WITHENCODER2
+	// P7_8
+	#define TARGET_ENC2BTN_BIT (1U << 8)	// P7_8 - second encoder button with pull-up
+	#define TARGET_ENC2BTN_GET	((R7S721_INPUT_PORT(7) & TARGET_ENC2BTN_BIT) == 0)
+#endif /* WITHENCODER2 */
+
+#if 1//WITHPWBUTTON
+	// P5_3 - ~CPU_POWER_SW signal
+	#define TARGET_POWERBTN_BIT (1U << 3)	// P5_3 - ~CPU_POWER_SW signal
+	#define TARGET_POWERBTN_GET	((R7S721_INPUT_PORT(5) & TARGET_POWERBTN_BIT) == 0)
+#endif /* WITHPWBUTTON */
 
 	#define HARDWARE_KBD_INITIALIZE() do { \
-			arm_hardware_pio7_inputs(KBD_MASK); \
+			arm_hardware_pio7_inputs(TARGET_ENC2BTN_BIT); \
+			arm_hardware_pio5_inputs(TARGET_POWERBTN_BIT); \
 		} while (0)
 
 #else /* WITHKEYBOARD */

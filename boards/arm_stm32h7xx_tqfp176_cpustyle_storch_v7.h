@@ -491,12 +491,26 @@
 
 #if WITHKEYBOARD
 	/* PF0: pull-up second encoder button */
-	#define KBD_MASK (1U << 0)	// PF0
-	#define KBD_TARGET_PIN (GPIOF->IDR)
+	//#define KBD_MASK (1U << 0)	// PF0
+	//#define KBD_TARGET_PIN (GPIOF->IDR)
+
+#if 1//WITHENCODER2
+	// P7_8
+	#define TARGET_ENC2BTN_BIT (1U << 0)	// PF0 - second encoder button with pull-up
+	#define TARGET_ENC2BTN_GET	((GPIOF->IDR) & TARGET_ENC2BTN_BIT) == 0)
+#endif /* WITHENCODER2 */
+
+#if 1//WITHPWBUTTON
+	// P5_3 - ~CPU_POWER_SW signal
+	#define TARGET_POWERBTN_BIT (1U << 8)	// PA8 - ~CPU_POWER_SW signal
+	#define TARGET_POWERBTN_GET	((GPIOA->IDR) & TARGET_POWERBTN_BIT) == 0)
+#endif /* WITHPWBUTTON */
 
 	#define HARDWARE_KBD_INITIALIZE() do { \
-			arm_hardware_piof_inputs(KBD_MASK); \
-			arm_hardware_piof_updown(KBD_MASK, 0);	/* PF10: pull-up second encoder button */ \
+			arm_hardware_piof_inputs(TARGET_ENC2BTN_BIT); \
+			arm_hardware_piof_updown(TARGET_ENC2BTN_BIT, 0); \	/* PF0: pull-up second encoder button */ \
+			arm_hardware_pioa_inputs(TARGET_POWERBTN_BIT); \
+			arm_hardware_pioa_updown(TARGET_POWERBTN_BIT, 0);	/* PA8: pull-up second encoder button */ \
 		} while (0)
 
 #else /* WITHKEYBOARD */
