@@ -28,8 +28,8 @@
 	//#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	*/
 
 	//#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
-	#define WITHUSBDEV_VBUSSENSE	1	/* используется предопределенный вывод VBUS_SENSE */
-	#define WITHUSBDEV_HSDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
+	//#define WITHUSBDEV_VBUSSENSE	1	/* используется предопределенный вывод VBUS_SENSE */
+	//#define WITHUSBDEV_HSDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
 	//#define WITHUSBHW_DEVICE	(& USB200)	/* на этом устройстве поддерживается функциональность DEVUCE	*/
 	//#define WITHUSBHW_HOST	(& USB200)	/* на этом устройстве поддерживается функциональность HOST	*/
 	//#define WITHHOSTONHIGHSPEED	1	/* Для HOST используется встроенная в процессор поддержка USB HS */
@@ -49,7 +49,7 @@
 	//#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
 	//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
 	//#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
-	#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
+	//#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
 
 #else /* WITHISBOOTLOADER */
 
