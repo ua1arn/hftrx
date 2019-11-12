@@ -268,8 +268,8 @@
 	#define WITHDIRECTFREQENER	1
 	#define	WITHENCODER	1	/* для изменения частоты имеется енкодер */
 	#define WITHENCODER2	1		/* есть второй валкодер */
-  #define BOARD_ENCODER2_DIVIDE 2
-  #define WITHPWBUTTON	1	/* Наличие схемы электронного включения питания */
+	#define BOARD_ENCODER2_DIVIDE 2
+	//#define WITHPWBUTTON	1	/* Наличие схемы электронного включения питания */
 
 	//#define WITHSKIPUSERMODE 1	// debug option: не отдавать в USER MODE блоки для фильтрации аудиосигнала
 	//#define BOARD_FFTZOOM_POW2MAX 1	// Возможные масштабы FFT x1, x2
