@@ -12,10 +12,6 @@
 #ifndef ARM_R7S72_TQFP176_CPUSTYLE_RAVEN_V9_H_INCLUDED
 #define ARM_R7S72_TQFP176_CPUSTYLE_RAVEN_V9_H_INCLUDED 1
 
-//#define HARDWARE_ARM_USEUSART0 1		// US0:
-//#define HARDWARE_ARM_USEUSART1 1		// US1: PA9/PA10 pins
-
-#define WIHSPIDFHW	1	/* обслуживание DATA FLASH */
 #define WITHSPI16BIT	1		/* возможно использование 16-ти битных слов при обмене по SPI */
 #define WITHSPI32BIT	1		/* возможно использование 32-ти битных слов при обмене по SPI */
 #define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
@@ -25,38 +21,74 @@
 //#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 //#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 
-#define WITHI2SHW	1	/* Использование SSIF0 I2S 2*16 bit - аудио кодек */
-#define WITHSAI1HW	1	/* Использование SSIF1 I2S 8*32 bit - FPGA IF codec */
-//#define WITHSAI2HW	1	/* Использование SSIF2 I2S 2*32 (2*24) bit - FPGA панорама	*/
+#if WITHISBOOTLOADER
 
-//#define WITHCPUDACHW	1	/* использование DAC - в renesas R7S72 нету */
-#define WITHCPUADCHW 	1	/* использование ADC */
+	#define WIHSPIDFHW	1	/* обслуживание DATA FLASH */
+	//#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
+	//#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	*/
 
-#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
-#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
+	//#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
+	#define WITHUSBDEV_VBUSSENSE	1	/* используется предопределенный вывод VBUS_SENSE */
+	#define WITHUSBDEV_HSDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
+	//#define WITHUSBHW_DEVICE	(& USB200)	/* на этом устройстве поддерживается функциональность DEVUCE	*/
+	//#define WITHUSBHW_HOST	(& USB200)	/* на этом устройстве поддерживается функциональность HOST	*/
+	//#define WITHHOSTONHIGHSPEED	1	/* Для HOST используется встроенная в процессор поддержка USB HS */
 
-#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
-#define WITHUSBDEV_VBUSSENSE	1	/* используется предопределенный вывод VBUS_SENSE */
-#define WITHUSBDEV_HSDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
-#define WITHUSBHW_DEVICE	(& USB200)	/* на этом устройстве поддерживается функциональность DEVUCE	*/
+	#define WITHUART1HW	1	/* Используется периферийный контроллер последовательного порта #1 SCIF0 */
+	//#define WITHUART2HW	1	/* Используется периферийный контроллер последовательного порта #2 SCIF3 */
 
-#define WITHUART1HW	1	/* Используется периферийный контроллер последовательного порта #1 SCIF0 */
-//#define WITHUART2HW	1	/* Используется периферийный контроллер последовательного порта #2 SCIF3 */
+	//#define WITHCAT_USART2	1
+	//#define WITHCAT_CDC			1	/* использовать виртуальный последовательный порт на USB соединении */
+	//#define WITHMODEM_CDC		1
+	#define WITHDEBUG_USART1	1
+	#define WITHMODEM_USART1	1
+	#define WITHNMEA_USART1		1	/* порт подключения GPS/GLONASS */
 
-//#define WITHCAT_USART1	1
-#define WITHCAT_CDC			1	/* использовать виртуальный последовательный порт на USB соединении */
-#define WITHMODEM_CDC		1
-#define WITHDEBUG_USART1	1
-//#define WITHMODEM_USART1	1
-#define WITHNMEA_USART2		1	/* порт подключения GPS/GLONASS */
+	//#define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
+	//#define WITHUSBCDC		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
+	//#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
+	//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
+	//#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
+	#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
 
-#define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
+#else /* WITHISBOOTLOADER */
 
-#define WITHUSBCDC		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
-//#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
-//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
-//#define WITHUSBHID		1	/* HID использовать Human Interface Device на USB соединении */
-#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
+	#define WIHSPIDFHW	1	/* обслуживание DATA FLASH */
+
+	#define WITHI2SHW	1	/* Использование SSIF0 I2S 2*16 bit - аудио кодек */
+	#define WITHSAI1HW	1	/* Использование SSIF1 I2S 8*32 bit - FPGA IF codec */
+	//#define WITHSAI2HW	1	/* Использование SSIF2 I2S 2*32 (2*24) bit - FPGA панорама	*/
+
+	//#define WITHCPUDACHW	1	/* использование DAC - в renesas R7S72 нету */
+	#define WITHCPUADCHW 	1	/* использование ADC */
+
+	#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
+	#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
+
+	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
+	#define WITHUSBDEV_VBUSSENSE	1	/* используется предопределенный вывод VBUS_SENSE */
+	#define WITHUSBDEV_HSDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
+	#define WITHUSBHW_DEVICE	(& USB200)	/* на этом устройстве поддерживается функциональность DEVUCE	*/
+
+	#define WITHUART1HW	1	/* Используется периферийный контроллер последовательного порта #1 SCIF0 */
+	//#define WITHUART2HW	1	/* Используется периферийный контроллер последовательного порта #2 SCIF3 */
+
+	//#define WITHCAT_USART1	1
+	#define WITHCAT_CDC			1	/* использовать виртуальный последовательный порт на USB соединении */
+	#define WITHMODEM_CDC		1
+	#define WITHDEBUG_USART1	1
+	//#define WITHMODEM_USART1	1
+	#define WITHNMEA_USART2		1	/* порт подключения GPS/GLONASS */
+
+	#define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
+
+	#define WITHUSBCDC		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
+	//#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
+	//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
+	//#define WITHUSBHID		1	/* HID использовать Human Interface Device на USB соединении */
+	#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
+
+#endif
 
 #define WRITEE_BIT				(1u << 12)	// RD/~WR  P3_12 - должен быть в "0" - как при записи - для управления буферами на шине данных LCD
 
