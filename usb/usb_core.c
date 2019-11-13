@@ -10653,7 +10653,7 @@ USBH_StatusTypeDef USBH_LL_ResetPort (USBH_HandleTypeDef *phost, uint_fast8_t st
 USBH_StatusTypeDef  USBH_LL_DriverVBUS(USBH_HandleTypeDef *phost, uint_fast8_t state)
 {
 	//PRINTF(PSTR("USBH_LL_DriverVBUS(%d), phost->id=%d, HOST_FS=%d\n"), (int) state, (int) phost->id, (int) HOST_FS);
-	if (phost->id == HOST_FS) // compare to WITHUSBHW_HOST
+	//if (phost->id == HOST_FS) // compare to WITHUSBHW_HOST
 	{
 		if (state != USB_FALSE)
 		{

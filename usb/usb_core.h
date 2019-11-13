@@ -23,6 +23,33 @@
 /*---------- -----------*/
 #define USBD_SELF_POWERED     1
 
+/*----------   -----------*/
+#define USBH_MAX_NUM_ENDPOINTS      8
+
+/*----------   -----------*/
+#define USBH_MAX_NUM_INTERFACES      10
+
+/*----------   -----------*/
+#define USBH_MAX_NUM_CONFIGURATION      1
+
+/*----------   -----------*/
+#define USBH_KEEP_CFG_DESCRIPTOR      1
+
+/*----------   -----------*/
+#define USBH_MAX_NUM_SUPPORTED_CLASS      1
+
+/*----------   -----------*/
+#define USBH_MAX_SIZE_CONFIGURATION      1024
+
+/*----------   -----------*/
+#define USBH_MAX_DATA_BUFFER      1024
+
+/*----------   -----------*/
+#define USBH_DEBUG_LEVEL      0
+
+/*----------   -----------*/
+#define USBH_USE_OS      0
+
 #define USB_OTG_HS_MAX_PACKET_SIZE           64//512U
 #define USB_OTG_FS_MAX_PACKET_SIZE           64U
 
@@ -491,11 +518,6 @@ typedef USBALIGN_BEGIN struct _USBD_HandleTypeDef
 } USBALIGN_END USBD_HandleTypeDef;
 
 
-/****************************************/
-/* #define for FS and HS identification */
-#define HOST_HS 		0
-#define HOST_FS 		1
-
 /** @addtogroup USBH_LIB
   * @{
   */
@@ -517,33 +539,6 @@ typedef USBALIGN_BEGIN struct _USBD_HandleTypeDef
 #define USBH_ADDRESS_DEFAULT                     0
 #define USBH_ADDRESS_ASSIGNED                    1
 #define USBH_MPS_DEFAULT                         0x40
-
-/*----------   -----------*/
-#define USBH_MAX_NUM_ENDPOINTS      8
-
-/*----------   -----------*/
-#define USBH_MAX_NUM_INTERFACES      10
-
-/*----------   -----------*/
-#define USBH_MAX_NUM_CONFIGURATION      1
-
-/*----------   -----------*/
-#define USBH_KEEP_CFG_DESCRIPTOR      1
-
-/*----------   -----------*/
-#define USBH_MAX_NUM_SUPPORTED_CLASS      1
-
-/*----------   -----------*/
-#define USBH_MAX_SIZE_CONFIGURATION      1024
-
-/*----------   -----------*/
-#define USBH_MAX_DATA_BUFFER      1024
-
-/*----------   -----------*/
-#define USBH_DEBUG_LEVEL      0
-
-/*----------   -----------*/
-#define USBH_USE_OS      0
 
 typedef union
 {
@@ -899,7 +894,7 @@ typedef struct _USBH_HandleTypeDef
 	uint32_t              ClassNumber;
 	uint32_t              Pipes [15];
 	volatile uint32_t         Timer;
-	uint8_t               id;
+	//uint8_t               id;
 	void*                 pData;
 	void                 (* pUser )(struct _USBH_HandleTypeDef *pHandle, uint8_t id);
 
