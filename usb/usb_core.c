@@ -1528,8 +1528,8 @@ HAL_StatusTypeDef USB_EP0StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDe
 		if (ep->xfer_len == 0)
 		{
 			/* Zero Length Packet */
-			int err = USB_WritePacketNec(USBx, pipe, NULL, 0);	// pipe=0: DCP
-			ASSERT(err == 0);
+			//int err = USB_WritePacketNec(USBx, pipe, NULL, 0);	// pipe=0: DCP
+			//ASSERT(err == 0);
 		}
 		else
 		{
@@ -5489,31 +5489,12 @@ USBD_StatusTypeDef  USBD_StdItfReq(USBD_HandleTypeDef *pdev, USBD_SetupReqTypede
 #if CPUSTYLE_R7S721
 			// FIXME:
 			// Hack code!!!!
-			// Для передачи в сторону USB HOST больших чем 64 байта кусков
-			if (req->bRequest == USB_REQ_GET_INTERFACE)
+			if ((req->bmRequest & USB_REQ_TYPE_DIR) == 0)
 			{
-				//TP();
-				break;
-			}
-			#if WITHUSBDFU
-				// USBD_StdItfReq: bmRequest=00A1, bRequest=0002, wValue=0201, wIndex=0008, wLength=0100
-				// 1: DFU_DNLOAD
-				// 2: DFU_UPLOAD
-				if (LO_BYTE(req->wIndex) != INTERFACE_DFU_CONTROL || req->bRequest != 2)
-				{
-					PRINTF(PSTR("USBD_StdItfReq hack: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
-					//PRINTF(PSTR("USBD_StdItfReq: pdev->ep0_data_len=%d\n"), (int) pdev->ep0_data_len);
-					USBD_LL_Transmit(pdev, 0x00, NULL, 0);
-				}
-				else
-				{
-					//PRINTF(PSTR("USBD_StdItfReq: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
-					//PRINTF("USBD_StdItfReq: pdev->ep0_data_len=%d\n", (int) pdev->ep0_data_len);
-				}
-			#else /* WITHUSBDFU */
+				// OUT direction
 				PRINTF(PSTR("USBD_StdItfReq hack: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
 				USBD_LL_Transmit(pdev, 0x00, NULL, 0);
-			#endif /* WITHUSBDFU */
+			}
 #endif
 			}
 		}
