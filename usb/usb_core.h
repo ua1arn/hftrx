@@ -12,6 +12,22 @@
 #include "usbch9.h"
 
 
+	/*---------- -----------*/
+//#define USBD_MAX_NUM_INTERFACES     7	// ?
+/*---------- -----------*/
+//#define USBD_MAX_NUM_CONFIGURATION     3
+/*---------- -----------*/
+#define USBD_DEBUG_LEVEL     0
+/*---------- -----------*/
+#define USBD_LPM_ENABLED     0
+/*---------- -----------*/
+#define USBD_SELF_POWERED     1
+
+#define USB_OTG_HS_MAX_PACKET_SIZE           64//512U
+#define USB_OTG_FS_MAX_PACKET_SIZE           64U
+
+#define USB_OTG_MAX_EP0_SIZE                 64U
+
 
 #define USB_FUNCTION_bRequest                       (0xff00u)       /* b15-8:bRequest */
 #define USB_FUNCTION_bmRequestType                  (0x00ffu)       /* b7-0: bmRequestType */
@@ -19,41 +35,6 @@
 #define USB_FUNCTION_bmRequestTypeType              (0x0060u)       /* b6-5: Type */
 #define USB_FUNCTION_bmRequestTypeRecip             (0x001fu)       /* b4-0: Recipient USB_RECIPIENT_MASK */
 
-
-#define  USB_REQ_TYPE_STANDARD                          0x00
-#define  USB_REQ_TYPE_CLASS                             0x20
-#define  USB_REQ_TYPE_VENDOR                            0x40
-#define  USB_REQ_TYPE_MASK                              0x60
-#define  USB_REQ_TYPE_DIR                               0x80	// IN for non-zero
-
-#define  USB_REQ_RECIPIENT_DEVICE                       0x00
-#define  USB_REQ_RECIPIENT_INTERFACE                    0x01
-#define  USB_REQ_RECIPIENT_ENDPOINT                     0x02
-#define  USB_REQ_RECIPIENT_MASK                         0x03
-
-#define  USB_REQ_GET_STATUS                             0x00
-#define  USB_REQ_CLEAR_FEATURE                          0x01
-#define  USB_REQ_SET_FEATURE                            0x03
-#define  USB_REQ_SET_ADDRESS                            0x05
-#define  USB_REQ_GET_DESCRIPTOR                         0x06
-#define  USB_REQ_SET_DESCRIPTOR                         0x07
-#define  USB_REQ_GET_CONFIGURATION                      0x08
-#define  USB_REQ_SET_CONFIGURATION                      0x09
-#define  USB_REQ_GET_INTERFACE                          0x0A
-#define  USB_REQ_SET_INTERFACE                          0x0B
-#define  USB_REQ_SYNCH_FRAME                            0x0C
-
-#define  USB_DESC_TYPE_DEVICE                              1
-#define  USB_DESC_TYPE_CONFIGURATION                       2
-#define  USB_DESC_TYPE_STRING                              3
-#define  USB_DESC_TYPE_INTERFACE                           4
-#define  USB_DESC_TYPE_ENDPOINT                            5
-#define  USB_DESC_TYPE_DEVICE_QUALIFIER                    6
-#define  USB_DESC_TYPE_OTHER_SPEED_CONFIGURATION           7
-#define  USB_DESC_TYPE_BOS                                 0x0F
-
-#define USB_CONFIG_REMOTE_WAKEUP                           0x02
-#define USB_CONFIG_SELF_POWERED                            0x01
 
 /*  Device Status */
 #define USBD_STATE_DEFAULT                                1
@@ -1453,5 +1434,26 @@ uint_fast16_t usbd_getuacinrtsmaxpacket(void);
 uint_fast16_t usbd_getuacinmaxpacket(void);
 
 void usbd_descriptors_initialize(uint_fast8_t deschs);
+
+struct descholder
+{
+	const uint8_t * data;
+	unsigned size;
+};
+
+#define USBD_CONFIGCOUNT 4
+
+extern struct descholder MsftStringDescr [1];	// Microsoft OS String Descriptor
+extern struct descholder MsftCompFeatureDescr [1];	// Microsoft Compatible ID Feature Descriptor
+extern struct descholder StringDescrTbl [];
+extern struct descholder ConfigDescrTbl [USBD_CONFIGCOUNT];
+extern struct descholder DeviceDescrTbl [USBD_CONFIGCOUNT];
+extern struct descholder DeviceQualifierTbl [USBD_CONFIGCOUNT];
+extern struct descholder OtherSpeedConfigurationTbl [USBD_CONFIGCOUNT];
+extern struct descholder BinaryDeviceObjectStoreTbl [1];
+extern struct descholder HIDReportDescrTbl [1];
+uint_fast8_t usbd_get_stringsdesc_count(void);
+
+#define DFU_VENDOR_CODE 0x44
 
 #endif /* USB_USB_CORE_H_ */

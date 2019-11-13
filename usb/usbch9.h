@@ -408,17 +408,6 @@ enum
 
 #endif /* WITHPLAINDESCROPTOR */
 
-	/*---------- -----------*/
-//#define USBD_MAX_NUM_INTERFACES     7	// ?
-/*---------- -----------*/
-//#define USBD_MAX_NUM_CONFIGURATION     3
-/*---------- -----------*/
-#define USBD_DEBUG_LEVEL     0
-/*---------- -----------*/
-#define USBD_LPM_ENABLED     0
-/*---------- -----------*/
-#define USBD_SELF_POWERED     1
-
 
 enum
 {
@@ -458,26 +447,5 @@ enum
 
 	UACOUTALTALT_top
 };
-
-struct descholder
-{
-	const uint8_t * data;
-	unsigned size;
-};
-
-#define USBD_CONFIGCOUNT 4
-
-extern struct descholder MsftStringDescr [1];	// Microsoft OS String Descriptor
-extern struct descholder MsftCompFeatureDescr [1];	// Microsoft Compatible ID Feature Descriptor
-extern struct descholder StringDescrTbl [];
-extern struct descholder ConfigDescrTbl [USBD_CONFIGCOUNT];
-extern struct descholder DeviceDescrTbl [USBD_CONFIGCOUNT];
-extern struct descholder DeviceQualifierTbl [USBD_CONFIGCOUNT];
-extern struct descholder OtherSpeedConfigurationTbl [USBD_CONFIGCOUNT];
-extern struct descholder BinaryDeviceObjectStoreTbl [1];
-extern struct descholder HIDReportDescrTbl [1];
-uint_fast8_t usbd_get_stringsdesc_count(void);
-
-#define DFU_VENDOR_CODE 0x44
 
 #endif  /* __CHAP_9_H__ */
