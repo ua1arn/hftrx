@@ -5492,7 +5492,7 @@ USBD_StatusTypeDef  USBD_StdItfReq(USBD_HandleTypeDef *pdev, USBD_SetupReqTypede
 			if ((req->bmRequest & USB_REQ_TYPE_DIR) == 0)
 			{
 				// OUT direction
-				PRINTF(PSTR("USBD_StdItfReq hack: bmRequest=%04X, bRequest=%02X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
+				//PRINTF(PSTR("USBD_StdItfReq hack: bmRequest=%04X, bRequest=%02X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
 				USBD_LL_Transmit(pdev, 0x00, NULL, 0);
 			}
 #endif
