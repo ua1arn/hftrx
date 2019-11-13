@@ -5490,12 +5490,19 @@ USBD_StatusTypeDef  USBD_StdItfReq(USBD_HandleTypeDef *pdev, USBD_SetupReqTypede
 			// FIXME:
 			// Hack code!!!!
 			// Для передачи в сторону USB HOST больших чем 64 байта кусков
+			if (req->bRequest == USB_REQ_GET_INTERFACE)
+			{
+				//TP();
+				break;
+			}
 			#if WITHUSBDFU
 				// USBD_StdItfReq: bmRequest=00A1, bRequest=0002, wValue=0201, wIndex=0008, wLength=0100
 				// 1: DFU_DNLOAD
 				// 2: DFU_UPLOAD
 				if (LO_BYTE(req->wIndex) != INTERFACE_DFU_CONTROL || req->bRequest != 2)
 				{
+					PRINTF(PSTR("USBD_StdItfReq hack: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
+					//PRINTF(PSTR("USBD_StdItfReq: pdev->ep0_data_len=%d\n"), (int) pdev->ep0_data_len);
 					USBD_LL_Transmit(pdev, 0x00, NULL, 0);
 				}
 				else
@@ -5504,6 +5511,7 @@ USBD_StatusTypeDef  USBD_StdItfReq(USBD_HandleTypeDef *pdev, USBD_SetupReqTypede
 					//PRINTF("USBD_StdItfReq: pdev->ep0_data_len=%d\n", (int) pdev->ep0_data_len);
 				}
 			#else /* WITHUSBDFU */
+				PRINTF(PSTR("USBD_StdItfReq hack: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
 				USBD_LL_Transmit(pdev, 0x00, NULL, 0);
 			#endif /* WITHUSBDFU */
 #endif
@@ -5982,8 +5990,7 @@ static void USBD_SetConfig(USBD_HandleTypeDef *pdev,
 static void USBD_GetConfig(USBD_HandleTypeDef *pdev,
                            const USBD_SetupReqTypedef *req)
 {
-	PRINTF(PSTR("USBD_GetConfig:\n"));
-
+	//PRINTF(PSTR("USBD_GetConfig:\n"));
 	if (req->wLength != 1)
 	{
 		TP();
@@ -7435,101 +7442,6 @@ void USB_LP_CAN1_RX0_IRQHandler(void)
 }
 
 #endif /* CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX */
-
-/** @defgroup USBH_CTLREQ_Exported_Defines
-  * @{
-  */
-/*Standard Feature Selector for clear feature command*/
-#define FEATURE_SELECTOR_ENDPOINT         0X00
-#define FEATURE_SELECTOR_DEVICE           0X01
-
-
-#define INTERFACE_DESC_TYPE               0x04
-#define ENDPOINT_DESC_TYPE                0x05
-#define INTERFACE_DESC_SIZE               0x09
-
-#define ValBit(VAR,POS)                               (VAR & (1 << POS))
-#define SetBit(VAR,POS)                               (VAR |= (1 << POS))
-#define ClrBit(VAR,POS)                               (VAR &= ((1 << POS)^255))
-
-#define  LE16(addr)             (((uint16_t)(*((uint8_t *)(addr))))\
-                                + (((uint16_t)(*(((uint8_t *)(addr)) + 1))) << 8))
-
-#define  LE16S(addr)              (uint16_t)(LE16((addr)))
-
-#define  LE32(addr)              ((((uint32_t)(*(((uint8_t *)(addr)) + 0))) + \
-                                              (((uint32_t)(*(((uint8_t *)(addr)) + 1))) << 8) + \
-                                              (((uint32_t)(*(((uint8_t *)(addr)) + 2))) << 16) + \
-                                              (((uint32_t)(*(((uint8_t *)(addr)) + 3))) << 24)))
-
-#define  LE64(addr)              ((((uint64_t)(*(((uint8_t *)(addr)) + 0))) + \
-                                              (((uint64_t)(*(((uint8_t *)(addr)) + 1))) <<  8) +\
-                                              (((uint64_t)(*(((uint8_t *)(addr)) + 2))) << 16) +\
-                                              (((uint64_t)(*(((uint8_t *)(addr)) + 3))) << 24) +\
-                                              (((uint64_t)(*(((uint8_t *)(addr)) + 4))) << 32) +\
-                                              (((uint64_t)(*(((uint8_t *)(addr)) + 5))) << 40) +\
-                                              (((uint64_t)(*(((uint8_t *)(addr)) + 6))) << 48) +\
-                                              (((uint64_t)(*(((uint8_t *)(addr)) + 7))) << 56)))
-
-
-#define  LE24(addr)              ((((uint32_t)(*(((uint8_t *)(addr)) + 0))) + \
-                                              (((uint32_t)(*(((uint8_t *)(addr)) + 1))) << 8) + \
-                                              (((uint32_t)(*(((uint8_t *)(addr)) + 2))) << 16)))
-
-
-#define  LE32S(addr)              (int32_t)(LE32((addr)))
-
-#define  USB_LEN_DESC_HDR                               0x02
-#define  USB_LEN_DEV_DESC                               0x12
-#define  USB_LEN_CFG_DESC                               0x09
-#define  USB_LEN_IF_DESC                                0x09
-#define  USB_LEN_EP_DESC                                0x07
-#define  USB_LEN_OTG_DESC                               0x03
-#define  USB_LEN_SETUP_PKT                              0x08
-
-/* bmRequestType :D7 Data Phase Transfer Direction  */
-#define  USB_REQ_DIR_MASK                               0x80
-#define  USB_H2D                                        0x00
-#define  USB_D2H                                        0x80
-
-/* bmRequestType D6..5 Type */
-#define  USB_REQ_TYPE_STANDARD                          0x00
-#define  USB_REQ_TYPE_CLASS                             0x20
-#define  USB_REQ_TYPE_VENDOR                            0x40
-#define  USB_REQ_TYPE_RESERVED                          0x60
-
-/* bmRequestType D4..0 Recipient */
-#define  USB_REQ_RECIPIENT_DEVICE                       0x00
-#define  USB_REQ_RECIPIENT_INTERFACE                    0x01
-#define  USB_REQ_RECIPIENT_ENDPOINT                     0x02
-#define  USB_REQ_RECIPIENT_OTHER                        0x03
-
-/* Table 9-4. Standard Request Codes  */
-/* bRequest , Value */
-#define  USB_REQ_GET_STATUS                             0x00
-#define  USB_REQ_CLEAR_FEATURE                          0x01
-#define  USB_REQ_SET_FEATURE                            0x03
-#define  USB_REQ_SET_ADDRESS                            0x05
-#define  USB_REQ_GET_DESCRIPTOR                         0x06
-#define  USB_REQ_SET_DESCRIPTOR                         0x07
-#define  USB_REQ_GET_CONFIGURATION                      0x08
-#define  USB_REQ_SET_CONFIGURATION                      0x09
-#define  USB_REQ_GET_INTERFACE                          0x0A
-#define  USB_REQ_SET_INTERFACE                          0x0B
-#define  USB_REQ_SYNCH_FRAME                            0x0C
-
-/* Table 9-5. Descriptor Types of USB Specifications */
-#define  USB_DESC_TYPE_DEVICE                              1
-#define  USB_DESC_TYPE_CONFIGURATION                       2
-#define  USB_DESC_TYPE_STRING                              3
-#define  USB_DESC_TYPE_INTERFACE                           4
-#define  USB_DESC_TYPE_ENDPOINT                            5
-#define  USB_DESC_TYPE_DEVICE_QUALIFIER                    6
-#define  USB_DESC_TYPE_OTHER_SPEED_CONFIGURATION           7
-#define  USB_DESC_TYPE_INTERFACE_POWER                     8
-#define  USB_DESC_TYPE_HID                                 0x21
-#define  USB_DESC_TYPE_HID_REPORT                          0x22
-
 /**
   * @}
   */

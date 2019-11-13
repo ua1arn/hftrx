@@ -998,17 +998,20 @@ static USBD_StatusTypeDef USBD_DFU_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 				USBD_CtlSendData(pdev, status_info, 2);
           }
           break;
+
         case USB_REQ_GET_INTERFACE:
          {
-			// не видел вызовов этой функции
-        	 	TP();
-         	break;
+			static USBALIGN_BEGIN uint8_t buff [64] USBALIGN_END;
+			//PRINTF(PSTR("USBD_DFU_Setup: USB_REQ_TYPE_STANDARD USB_REQ_GET_INTERFACE dir=%02X interfacev=%d, req->wLength=%d\n"), req->bmRequest & 0x80, interfacev, (int) req->wLength);
+			buff [0] = altinterfaces [interfacev];
+			USBD_CtlSendData(pdev, buff, ulmin16(ARRAY_SIZE(buff), req->wLength));
          }
+     	break;
 
         case USB_REQ_SET_INTERFACE:
  			// Вызывается с номером фльтернативной конфигурации (0, 1, 2). Пррчем 0 ставится после использования ненулевых
 			altinterfaces [interfacev] = LO_BYTE(req->wValue);
-			//PRINTF("USBD_DFU_Setup: DFU interface %d set to %d\n", (int) interfacev, (int) altinterfaces [interfacev]);
+			//PRINTF("USBD_DFU_Setup: USB_REQ_TYPE_STANDARD USB_REQ_SET_INTERFACE DFU interface %d set to %d\n", (int) interfacev, (int) altinterfaces [interfacev]);
 			break;
 
        default:

@@ -564,7 +564,7 @@ static USBD_StatusTypeDef USBD_UAC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 		PRINTF(PSTR("MS USBD_UAC_Setup: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
 		return USBD_OK;
 	}
-	//PRINTF(PSTR("USBD_UAC_Setup: bRequest=%02X, wIndex=%04X, wLength=%04X, wValue=%04X (interfacev=%02X)\n"), req->bRequest, req->wIndex, req->wLength, req->wValue, interfacev);
+	//PRINTF(PSTR("USBD_UAC_Setup: bmRequest=%04X, bRequest=%04X, wIndex=%04X, wLength=%04X, wValue=%04X (interfacev=%02X)\n"), req->bmRequest, req->bRequest, req->wIndex, req->wLength, req->wValue, interfacev);
 	unsigned len = 0;
 	if ((req->bmRequest & USB_REQ_TYPE_DIR) != 0)
 	{
@@ -632,20 +632,24 @@ static USBD_StatusTypeDef USBD_UAC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 				break;
 			}
 			break;
+
 		case USB_REQ_TYPE_STANDARD:
 			switch (req->bRequest)
 			{
 			case USB_REQ_GET_INTERFACE:
 				// не видел вызовов этой функции
-				//PRINTF(PSTR("USBD_UAC_Setup IN: USB_REQ_TYPE_STANDARD USB_REQ_GET_INTERFACE dir=%02X interfacev=%d\n"), req->bmRequest & 0x80, interfacev);
 				switch (interfacev)
 				{
 
 			#if WITHUSBUACIN2
 				case INTERFACE_AUDIO_CONTROL_RTS:	/* AUDIO spectrum control interface */
+				case INTERFACE_AUDIO_RTS:	/* AUDIO spectrum control interface */
 			#endif /* WITHUSBUACIN2 */
 				case INTERFACE_AUDIO_CONTROL_MIKE:	// AUDIO control interface
+				case INTERFACE_AUDIO_MIKE:	// AUDIO control interface
 				case INTERFACE_AUDIO_CONTROL_SPK:	// AUDIO control interface
+				case INTERFACE_AUDIO_SPK:	// AUDIO control interface
+					//PRINTF(PSTR("USBD_UAC_Setup IN: USB_REQ_TYPE_STANDARD USB_REQ_GET_INTERFACE dir=%02X interfacev=%d, req->wLength=%d\n"), req->bmRequest & 0x80, interfacev, (int) req->wLength);
 					buff [0] = altinterfaces [interfacev];
 					USBD_CtlSendData(pdev, buff, ulmin16(ARRAY_SIZE(buff), req->wLength));
 					break;
@@ -705,6 +709,7 @@ static USBD_StatusTypeDef USBD_UAC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 			switch (req->bRequest)
 			{
 			case USB_REQ_SET_INTERFACE :
+				//PRINTF(PSTR("USBD_UAC_Setup: USB_REQ_TYPE_STANDARD USB_REQ_SET_INTERFACE interfacev=%d, value=%d\n"), interfacev, LO_BYTE(req->wValue));
 				switch (interfacev)
 				{
 				case INTERFACE_AUDIO_MIKE: // Audio interface: recording device

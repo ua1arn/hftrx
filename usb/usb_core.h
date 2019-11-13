@@ -50,17 +50,17 @@
 /*----------   -----------*/
 #define USBH_USE_OS      0
 
-#define USB_OTG_HS_MAX_PACKET_SIZE           64//512U
+#define USB_OTG_HS_MAX_PACKET_SIZE           512U
 #define USB_OTG_FS_MAX_PACKET_SIZE           64U
 
 #define USB_OTG_MAX_EP0_SIZE                 64U
 
 
-#define USB_FUNCTION_bRequest                       (0xff00u)       /* b15-8:bRequest */
-#define USB_FUNCTION_bmRequestType                  (0x00ffu)       /* b7-0: bmRequestType */
+#define USB_FUNCTION_bRequest                       (0xFF00u)       /* b15-8:bRequest */
+#define USB_FUNCTION_bmRequestType                  (0x00FFu)       /* b7-0: bmRequestType */
 #define USB_FUNCTION_bmRequestTypeDir               (0x0080u)       /* b7  : Data transfer direction - IN if non-zero */
 #define USB_FUNCTION_bmRequestTypeType              (0x0060u)       /* b6-5: Type */
-#define USB_FUNCTION_bmRequestTypeRecip             (0x001fu)       /* b4-0: Recipient USB_RECIPIENT_MASK */
+#define USB_FUNCTION_bmRequestTypeRecip             (0x001Fu)       /* b4-0: Recipient USB_RECIPIENT_MASK */
 
 
 /*  Device Status */
@@ -1403,6 +1403,38 @@ uint32_t  USB_GetHostSpeed(USB_OTG_GlobalTypeDef *USBx);
 
 #define  USB_DISABLE   0
 #define  USB_ENABLE    1
+
+
+#define ValBit(VAR,POS)                               (VAR & (1 << POS))
+#define SetBit(VAR,POS)                               (VAR |= (1 << POS))
+#define ClrBit(VAR,POS)                               (VAR &= ((1 << POS)^255))
+
+#define  LE16(addr)             (((uint16_t)(*((uint8_t *)(addr))))\
+                                + (((uint16_t)(*(((uint8_t *)(addr)) + 1))) << 8))
+
+#define  LE16S(addr)              (uint16_t)(LE16((addr)))
+
+#define  LE32(addr)              ((((uint32_t)(*(((uint8_t *)(addr)) + 0))) + \
+                                              (((uint32_t)(*(((uint8_t *)(addr)) + 1))) << 8) + \
+                                              (((uint32_t)(*(((uint8_t *)(addr)) + 2))) << 16) + \
+                                              (((uint32_t)(*(((uint8_t *)(addr)) + 3))) << 24)))
+
+#define  LE64(addr)              ((((uint64_t)(*(((uint8_t *)(addr)) + 0))) + \
+                                              (((uint64_t)(*(((uint8_t *)(addr)) + 1))) <<  8) +\
+                                              (((uint64_t)(*(((uint8_t *)(addr)) + 2))) << 16) +\
+                                              (((uint64_t)(*(((uint8_t *)(addr)) + 3))) << 24) +\
+                                              (((uint64_t)(*(((uint8_t *)(addr)) + 4))) << 32) +\
+                                              (((uint64_t)(*(((uint8_t *)(addr)) + 5))) << 40) +\
+                                              (((uint64_t)(*(((uint8_t *)(addr)) + 6))) << 48) +\
+                                              (((uint64_t)(*(((uint8_t *)(addr)) + 7))) << 56)))
+
+
+#define  LE24(addr)              ((((uint32_t)(*(((uint8_t *)(addr)) + 0))) + \
+                                              (((uint32_t)(*(((uint8_t *)(addr)) + 1))) << 8) + \
+                                              (((uint32_t)(*(((uint8_t *)(addr)) + 2))) << 16)))
+
+
+#define  LE32S(addr)              (int32_t)(LE32((addr)))
 
 USBD_StatusTypeDef  USBD_LL_PrepareReceive(USBD_HandleTypeDef *pdev,
                                            uint8_t  ep_addr,

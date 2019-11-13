@@ -413,6 +413,27 @@ static USBD_StatusTypeDef USBD_CDC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 				break;
 			}
 			break;
+
+		case USB_REQ_TYPE_STANDARD:
+			switch (interfacev)
+			{
+
+			case INTERFACE_CDC_CONTROL_3a:	// CDC interface
+			case INTERFACE_CDC_CONTROL_3b:	// CDC interface
+			case INTERFACE_CDC_DATA_4a:	// CDC interface
+			case INTERFACE_CDC_DATA_4b:	// CDC interface
+				{
+					case USB_REQ_GET_INTERFACE:
+					{
+						static USBALIGN_BEGIN uint8_t buff [64] USBALIGN_END;
+						//PRINTF(PSTR("USBD_CDC_Setup: USB_REQ_TYPE_STANDARD USB_REQ_GET_INTERFACE dir=%02X interfacev=%d, req->wLength=%d\n"), req->bmRequest & 0x80, interfacev, (int) req->wLength);
+						buff [0] = 0;
+						USBD_CtlSendData(pdev, buff, ulmin16(ARRAY_SIZE(buff), req->wLength));
+					}
+					break;
+				}
+			}
+			break;
 		}
 	}
 	else
@@ -460,7 +481,9 @@ static USBD_StatusTypeDef USBD_CDC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 				switch (interfacev)
 				{
 				case INTERFACE_CDC_CONTROL_3a:	// CDC interface
+				case INTERFACE_CDC_DATA_4a:	// CDC interface
 				case INTERFACE_CDC_CONTROL_3b:	// CDC interface
+				case INTERFACE_CDC_DATA_4b:	// CDC interface
 					// Only zero value here
 					//altinterfaces [interfacev] = LO_BYTE(req->wValue);
 					//PRINTF("USBD_CDC_Setup: CDC interface %d set to %d\n", (int) interfacev, (int) altinterfaces [interfacev]);

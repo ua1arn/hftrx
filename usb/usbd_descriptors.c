@@ -3987,7 +3987,10 @@ static unsigned fill_Device_descriptor(uint8_t * buff, unsigned maxsize, uint_fa
 
 // Only for high speed capable devices 
 // Device Qualifier Descriptor 
-static unsigned fill_DeviceQualifier_descriptor(uint8_t * buff, unsigned maxsize, uint_fast8_t bNumConfigurations)
+static unsigned fill_DeviceQualifier_descriptor(
+	uint8_t * buff, unsigned maxsize,
+	uint_fast8_t bNumConfigurations	/* number of other-speed configurations */
+	)
 {
 	const unsigned length = 10;
 	ASSERT(maxsize >= length);
@@ -4004,7 +4007,7 @@ static unsigned fill_DeviceQualifier_descriptor(uint8_t * buff, unsigned maxsize
 		* buff ++ = 2;										/*  5:bDeviceSubClass - Common Class Sub Class */
 		* buff ++ = 1;										/*  6:bDeviceProtocol - Interface Association Descriptor protocol */
 		* buff ++ = USB_OTG_MAX_EP0_SIZE;                   /*  7:bMaxPacketSize0 (for DCP) */
-		* buff ++ = bNumConfigurations;                     /*  8:bNumConfigurations */
+		* buff ++ = bNumConfigurations;                     /*  8:bNumConfigurations - number of other-speed configurations */
 		* buff ++ = 0;                                      /*  9:bReserved */
 	}
 	return length;
@@ -4227,6 +4230,7 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 #endif /* WITHPLAINDESCROPTOR */
 	};
 	const uint_fast8_t bNumConfigurations = ARRAY_SIZE(funcs);
+	const uint_fast8_t bNumOtherSpeedConfigurations = 0;
 
 	{
 		// Device Descriptor
@@ -4315,12 +4319,12 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 	}
 #endif /* WITHUSBDFU */
 
-	if (0) //(HSdesc != 0)
+	if (HSdesc != 0)
 	{
 		unsigned partlen;
 		// Device Qualifier
 		score += fill_align4(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score);
-		partlen = fill_DeviceQualifier_descriptor(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score, bNumConfigurations);
+		partlen = fill_DeviceQualifier_descriptor(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score, bNumOtherSpeedConfigurations);
 		DeviceQualifierTbl [0].size = partlen;
 		DeviceQualifierTbl [0].data = alldescbuffer + score;
 		score += partlen;
