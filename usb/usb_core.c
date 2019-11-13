@@ -324,8 +324,8 @@ static uint_fast8_t USB_ReadPacketNec(PCD_TypeDef * const USBx, uint_fast8_t pip
 	size = ulmin16(size, size8);
 	count = size;
 
-	//if (size == 0)
-	//	USBx->CFIFOCTR = USB_CFIFOCTR_BCLR;	// BCLR
+	if (size == 0)
+		USBx->CFIFOCTR = USB_CFIFOCTR_BCLR;	// BCLR
 
 	while (size --)
 	{
@@ -1090,7 +1090,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 			if (USB_GetDevSpeed(hpcd->Instance) == USB_OTG_SPEED_HIGH)
 			{
 				hpcd->Init.speed = PCD_SPEED_HIGH;
-				hpcd->Init.ep0_mps = USB_OTG_HS_MAX_PACKET_SIZE;
+				hpcd->Init.ep0_mps = USB_OTG_MAX_EP0_SIZE; //USB_OTG_HS_MAX_PACKET_SIZE;
 				/*
 				hpcd->Instance->GUSBCFG = (hpcd->Instance->GUSBCFG & ~ USB_OTG_GUSBCFG_TRDT) |
 				(uint32_t)((USBD_HS_TRDT_VALUE << USB_OTG_GUSBCFG_TRDT_Pos) & USB_OTG_GUSBCFG_TRDT) |
@@ -1100,7 +1100,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 			else
 			{
 				hpcd->Init.speed = PCD_SPEED_FULL;
-				hpcd->Init.ep0_mps = USB_OTG_FS_MAX_PACKET_SIZE ;
+				hpcd->Init.ep0_mps = USB_OTG_MAX_EP0_SIZE; //USB_OTG_FS_MAX_PACKET_SIZE ;
 			}
 			HAL_PCD_ResetCallback(hpcd);
 			break;
@@ -6891,16 +6891,16 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 
       if (USB_GetDevSpeed(hpcd->Instance) == USB_OTG_SPEED_HIGH)
       {
-        hpcd->Init.speed            = PCD_SPEED_HIGH;
-        hpcd->Init.ep0_mps          = USB_OTG_HS_MAX_PACKET_SIZE;
+        hpcd->Init.speed = PCD_SPEED_HIGH;
+        hpcd->Init.ep0_mps = USB_OTG_MAX_EP0_SIZE; //USB_OTG_HS_MAX_PACKET_SIZE;
         hpcd->Instance->GUSBCFG = (hpcd->Instance->GUSBCFG & ~ USB_OTG_GUSBCFG_TRDT) |
 			(uint32_t)((USBD_HS_TRDT_VALUE << USB_OTG_GUSBCFG_TRDT_Pos) & USB_OTG_GUSBCFG_TRDT) |
 			0;
       }
       else
       {
-        hpcd->Init.speed            = PCD_SPEED_FULL;
-        hpcd->Init.ep0_mps          = USB_OTG_FS_MAX_PACKET_SIZE ;
+        hpcd->Init.speed = PCD_SPEED_FULL;
+        hpcd->Init.ep0_mps = USB_OTG_MAX_EP0_SIZE;//USB_OTG_FS_MAX_PACKET_SIZE ;
 
         /* The USBTRD is configured according to the tables below, depending on AHB frequency
         used by application. In the low AHB frequency range it is used to stretch enough the USB response
@@ -10168,10 +10168,10 @@ USBD_StatusTypeDef  USBD_LL_Init(PCD_HandleTypeDef * hpcd, USBD_HandleTypeDef *p
 	// Значение ep0_mps и speed обновится после reset шины
 	#if WITHUSBDEV_HSDESC
 		hpcd->Init.speed = PCD_SPEED_HIGH;
-		hpcd->Init.ep0_mps = USB_OTG_HS_MAX_PACKET_SIZE;
+		hpcd->Init.ep0_mps = USB_OTG_MAX_EP0_SIZE; //USB_OTG_HS_MAX_PACKET_SIZE;
 	#else /* WITHUSBDEV_HSDESC */
 		hpcd->Init.speed = PCD_SPEED_FULL;
-		hpcd->Init.ep0_mps = USB_OTG_FS_MAX_PACKET_SIZE;
+		hpcd->Init.ep0_mps = USB_OTG_MAX_EP0_SIZE; //USB_OTG_FS_MAX_PACKET_SIZE;
 	#endif /* WITHUSBDEV_HSDESC */
 	hpcd->Init.phy_itface = USB_OTG_EMBEDDED_PHY;
 
@@ -10181,8 +10181,10 @@ USBD_StatusTypeDef  USBD_LL_Init(PCD_HandleTypeDef * hpcd, USBD_HandleTypeDef *p
 
 	#if WITHUSBDEV_HSDESC
 		hpcd->Init.speed = PCD_SPEED_HIGH;
+		hpcd->Init.ep0_mps = USB_OTG_MAX_EP0_SIZE; //DEP0CTL_MPS_64;
 	#else /* WITHUSBDEV_HSDESC */
 		hpcd->Init.speed = PCD_SPEED_FULL;
+		hpcd->Init.ep0_mps = USB_OTG_MAX_EP0_SIZE; //DEP0CTL_MPS_64;
 	#endif /* WITHUSBDEV_HSDESC */
 
 	#if WITHUSBDEV_HIGHSPEEDULPI
@@ -10192,7 +10194,6 @@ USBD_StatusTypeDef  USBD_LL_Init(PCD_HandleTypeDef * hpcd, USBD_HandleTypeDef *p
 	#else /* WITHUSBDEV_HIGHSPEEDULPI */
 		hpcd->Init.phy_itface = USB_OTG_EMBEDDED_PHY;
 	#endif /* WITHUSBDEV_HIGHSPEEDULPI */
-		hpcd->Init.ep0_mps = DEP0CTL_MPS_64;
 		hpcd->Init.dev_endpoints = 9;	// or 6 for FS devices
 
 #endif /* CPUSTYLE_R7S721 */
@@ -12005,7 +12006,7 @@ USBH_StatusTypeDef  DeInitStateMachine(USBH_HandleTypeDef *phost)
   * @param  length: Length of the descriptor
   * @retval None
   */
-void  USBH_ParseDevDesc (USBH_DevDescTypeDef* dev_desc,
+void  USBH_ParseDevDesc(USBH_DevDescTypeDef* dev_desc,
                                 uint8_t *buf,
                                 uint16_t length)
 {
