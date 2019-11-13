@@ -897,7 +897,7 @@ static USBD_StatusTypeDef USBD_DFU_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 	// В документе от Микрософт по другому расположены данные в запросе: LO_BYTE(req->wValue) это результат запуска и тестирования
 	if (req->bRequest == DFU_VENDOR_CODE && LO_BYTE(req->wValue) == INTERFACE_DFU_CONTROL && req->wIndex == 0x05)
 	{
-		PRINTF(PSTR("MS USBD_DFU_Setup: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
+		PRINTF(PSTR("MS USBD_DFU_Setup: bmRequest=%04X, bRequest=%02X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
 		return USBD_OK;
 		// https://docs.microsoft.com/en-us/windows-hardware/drivers/usbcon/microsoft-defined-usb-descriptors
 		// https://docs.microsoft.com/en-us/windows-hardware/drivers/usbcon/microsoft-os-1-0-descriptors-specification
@@ -993,7 +993,7 @@ static USBD_StatusTypeDef USBD_DFU_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
           if (pdev->dev_state == USBD_STATE_CONFIGURED)
           {
         	  	static USBALIGN_BEGIN uint8_t status_info [2] USBALIGN_END;
-				PRINTF(PSTR("1 USBD_DFU_Setup USB_REQ_GET_STATUS: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
+				PRINTF(PSTR("1 USBD_DFU_Setup USB_REQ_GET_STATUS: bmRequest=%04X, bRequest=%02X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
             	TP();
 				USBD_CtlSendData(pdev, status_info, 2);
           }
@@ -1015,7 +1015,7 @@ static USBD_StatusTypeDef USBD_DFU_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 			break;
 
        default:
-    		//PRINTF(PSTR("1 USBD_DFU_Setup: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
+    		//PRINTF(PSTR("1 USBD_DFU_Setup: bmRequest=%04X, bRequest=%02X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
         break;
      }
 

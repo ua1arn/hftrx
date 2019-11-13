@@ -392,7 +392,7 @@ static void usb_save_request(USB_OTG_GlobalTypeDef * USBx, USBD_SetupReqTypedef 
 	req->wLength       = USBx->USBLENG; //(pdata [1] >> 16) & 0xFFFF;
 
 #if 0
-	PRINTF(PSTR("usb_save_request: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"),
+	PRINTF(PSTR("usb_save_request: bmRequest=%04X, bRequest=%02X, wValue=%04X, wIndex=%04X, wLength=%04X\n"),
 		req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
 #endif
 }
@@ -5034,7 +5034,7 @@ static void USBD_ParseSetupRequest(USBD_SetupReqTypedef *req, const uint32_t * p
 	//#error Undefined CPUSTYLE_xxx
 #endif /* CPUSTYLE_STM32F */
 #if 0
-	PRINTF(PSTR("USBD_ParseSetupRequest: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"),
+	PRINTF(PSTR("USBD_ParseSetupRequest: bmRequest=%04X, bRequest=%02X, wValue=%04X, wIndex=%04X, wLength=%04X\n"),
 		req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
 #endif
 }
@@ -5384,7 +5384,7 @@ USBD_StatusTypeDef  USBD_CtlSendStatus(USBD_HandleTypeDef  *pdev)
 USBD_StatusTypeDef  USBD_CtlReceiveStatus(USBD_HandleTypeDef  *pdev)
 {
 	USBD_SetupReqTypedef * const req = & pdev->request;
-	//PRINTF(PSTR("USBD_CtlReceiveStatus: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
+	//PRINTF(PSTR("USBD_CtlReceiveStatus: bmRequest=%04X, bRequest=%02X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
 	//PRINTF(PSTR("USBD_CtlReceiveStatus\n"));
 
 	/* Set EP0 State */
@@ -5452,7 +5452,7 @@ USBD_StatusTypeDef USBD_CtlContinueSendData(USBD_HandleTypeDef  *pdev,
 
 void USBD_CtlError(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req)
 {
-	//PRINTF(PSTR("USBD_CtlError: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
+	//PRINTF(PSTR("USBD_CtlError: bmRequest=%04X, bRequest=%02X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
 
 	USBD_LL_StallEP(pdev, 0x80);
 	USBD_LL_StallEP(pdev, 0);
@@ -5467,7 +5467,7 @@ void USBD_CtlError(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req)
 */
 USBD_StatusTypeDef  USBD_StdItfReq(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef  *req)
 {
-	//PRINTF(PSTR("USBD_StdItfReq: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
+	//PRINTF(PSTR("USBD_StdItfReq: bmRequest=%04X, bRequest=%02X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
 
 	USBD_StatusTypeDef ret = USBD_OK;
 
@@ -5492,7 +5492,7 @@ USBD_StatusTypeDef  USBD_StdItfReq(USBD_HandleTypeDef *pdev, USBD_SetupReqTypede
 			if ((req->bmRequest & USB_REQ_TYPE_DIR) == 0)
 			{
 				// OUT direction
-				PRINTF(PSTR("USBD_StdItfReq hack: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
+				PRINTF(PSTR("USBD_StdItfReq hack: bmRequest=%04X, bRequest=%02X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
 				USBD_LL_Transmit(pdev, 0x00, NULL, 0);
 			}
 #endif
@@ -5517,7 +5517,7 @@ USBD_StatusTypeDef  USBD_StdItfReq(USBD_HandleTypeDef *pdev, USBD_SetupReqTypede
 */
 USBD_StatusTypeDef  USBD_StdEPReq(USBD_HandleTypeDef * pdev, USBD_SetupReqTypedef * req)
 {
-	//PRINTF(PSTR("USBD_StdEPReq: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
+	//PRINTF(PSTR("USBD_StdEPReq: bmRequest=%04X, bRequest=%02X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
 	uint8_t   ep_addr;
 	USBD_StatusTypeDef ret = USBD_OK;
 	USBD_EndpointTypeDef   *pep;
@@ -5536,7 +5536,7 @@ USBD_StatusTypeDef  USBD_StdEPReq(USBD_HandleTypeDef * pdev, USBD_SetupReqTypede
   switch (req->bRequest)
   {
   case USB_REQ_SET_FEATURE :
- 	//PRINTF(PSTR("USBD_StdEPReq: USB_REQ_SET_FEATURE: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"),
+ 	//PRINTF(PSTR("USBD_StdEPReq: USB_REQ_SET_FEATURE: bmRequest=%04X, bRequest=%02X, wValue=%04X, wIndex=%04X, wLength=%04X\n"),
 	//	req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
 
     switch (pdev->dev_state)
@@ -5572,7 +5572,7 @@ USBD_StatusTypeDef  USBD_StdEPReq(USBD_HandleTypeDef * pdev, USBD_SetupReqTypede
     break;
 
   case USB_REQ_CLEAR_FEATURE :
- 	//PRINTF(PSTR("USBD_StdEPReq: USB_REQ_CLEAR_FEATURE: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"),
+ 	//PRINTF(PSTR("USBD_StdEPReq: USB_REQ_CLEAR_FEATURE: bmRequest=%04X, bRequest=%02X, wValue=%04X, wIndex=%04X, wLength=%04X\n"),
 	//	req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
 
     switch (pdev->dev_state)
@@ -5614,7 +5614,7 @@ USBD_StatusTypeDef  USBD_StdEPReq(USBD_HandleTypeDef * pdev, USBD_SetupReqTypede
 	  	   Однако тот же запрос, направленный к интерфейсу,
 	  	   всегда вернет 0, или если запрос будет направлен на конечную точку, то он вернет состояние флага halt (флаг останова) для конечной точки.
 	  */
- 	//PRINTF(PSTR("USBD_StdEPReq: USB_REQ_GET_STATUS: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"),
+ 	//PRINTF(PSTR("USBD_StdEPReq: USB_REQ_GET_STATUS: bmRequest=%04X, bRequest=%02X, wValue=%04X, wIndex=%04X, wLength=%04X\n"),
 	//	req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
     switch (pdev->dev_state)
     {
@@ -5650,7 +5650,7 @@ USBD_StatusTypeDef  USBD_StdEPReq(USBD_HandleTypeDef * pdev, USBD_SetupReqTypede
 
   default:
 	  TP();
-	//PRINTF(PSTR("USBD_StdEPReq: ???? bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"),
+	//PRINTF(PSTR("USBD_StdEPReq: ???? bmRequest=%04X, bRequest=%02X, wValue=%04X, wIndex=%04X, wLength=%04X\n"),
 	//	req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
     break;
   }
@@ -6113,7 +6113,7 @@ static void USBD_ClrFeature(USBD_HandleTypeDef *pdev,
 */
 USBD_StatusTypeDef  USBD_StdDevReq(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef  *req)
 {
-	//PRINTF(PSTR("USBD_StdDevReq: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
+	//PRINTF(PSTR("USBD_StdDevReq: bmRequest=%04X, bRequest=%02X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
 	//PRINTF(PSTR("USBD_StdDevReq: req->bRequest=%d\n"), (int) req->bRequest);
 	USBD_StatusTypeDef ret = USBD_OK;
 
@@ -6164,7 +6164,7 @@ USBD_StatusTypeDef  USBD_StdDevReq(USBD_HandleTypeDef *pdev, const USBD_SetupReq
 
 	default:
 		TP();
-		PRINTF(PSTR("USBD_StdDevReq: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
+		PRINTF(PSTR("USBD_StdDevReq: bmRequest=%04X, bRequest=%02X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
 		USBD_CtlError(pdev, req);
 		break;
 	}

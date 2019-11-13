@@ -369,7 +369,7 @@ static unsigned USBD_UAC2_FeatureUnit_req(
 	const uint_fast8_t terminalID = HI_BYTE(req->wIndex);
 	const uint_fast8_t controlID = HI_BYTE(req->wValue);	// AUDIO_MUTE_CONTROL, AUDIO_VOLUME_CONTROL, ...
 	const uint_fast8_t channelNumber = LO_BYTE(req->wValue);
-	//PRINTF(PSTR("1 req->bRequest=%u: interfacev=%u,  controlID=%u, channelNumber=%u, terminalID=%u\n"), req->bRequest, interfacev, controlID, channelNumber, terminalID);
+
 	switch (req->bRequest)
 	{
 	default:
@@ -415,6 +415,39 @@ static unsigned USBD_UAC2_FeatureUnit_req(
 }
 
 // UAC2: Выполнение запроса CURR/RANGE
+static unsigned USBD_UAC2_CloclMultiplier_req(
+	const USBD_SetupReqTypedef *req,
+	uint8_t * buff
+	)
+{
+	const uint_fast8_t terminalID = HI_BYTE(req->wIndex);
+	const uint_fast8_t controlID = HI_BYTE(req->wValue);
+	const uint_fast8_t channelNumber = LO_BYTE(req->wValue);
+	const uint_fast32_t denominator = FPGADECIMATION;
+	const uint_fast32_t numerator = DDS1_CLK_MUL;
+
+	switch (req->bRequest)
+	{
+	case 0x01:	// CURR
+		switch (controlID)
+		{
+		default:
+			// Undefined control ID
+			TP();
+			return 0;
+		case 1:
+			// CM_NUMERATOR_CONTROL
+			return USBD_poke_u16(buff + 0, numerator); // numerator
+		case 2:
+			// CM_DENOMINATOR_CONTROL
+			return USBD_poke_u16(buff + 0, denominator); // denominator
+		}
+		break;
+	}
+	return 0;
+}
+
+// UAC2: Выполнение запроса CURR/RANGE
 static unsigned USBD_UAC2_ClockSource_req(
 	const USBD_SetupReqTypedef *req,
 	uint8_t * buff
@@ -423,126 +456,41 @@ static unsigned USBD_UAC2_ClockSource_req(
 	const uint_fast8_t terminalID = HI_BYTE(req->wIndex);
 	const uint_fast8_t controlID = HI_BYTE(req->wValue);
 	const uint_fast8_t channelNumber = LO_BYTE(req->wValue);
+	const uint_fast32_t freq = REFERENCE_FREQ;
+
 	switch (req->bRequest)
 	{
 	case 0x01:	// CURR
-		switch (terminalID)
+		switch (controlID)
 		{
 		default:
-			// Undefined terminalID
+			// Undefined control ID
 			TP();
 			return 0;
-
-		case TERMINAL_ID_CLKSOURCE_UACIN48_UACINRTS:
-		case TERMINAL_ID_CLKSOURCE_UACINOUT:
-			switch (controlID)
-			{
-			default:
-				// Undefined control ID
-				TP();
-				return 0;
-			case 1:
-				// FREQ
-				// FIXME: depend on mode (alt interface) for TERMINAL_ID_CLKSOURCE_UACINOUT
-				USBD_poke_u32(buff + 0, dsp_get_samplerateuacin_audio48()); // sample rate
-				return 4;
-			case 2:
-				// VALID
-				USBD_poke_u8(buff + 0, 1); // valid
-				return 1;
-			}
-			break;
-		case TERMINAL_ID_CLKSOURCE_UACINRTS:
-			switch (controlID)
-			{
-			default:
-				// Undefined control ID
-				TP();
-				return 0;
-			case 1:
-				// FREQ
-				USBD_poke_u32(buff + 0, dsp_get_samplerateuacin_rts()); // sample rate
-				return 4;
-			case 2:
-				// VALID
-				USBD_poke_u8(buff + 0, 1); // valid
-				return 1;
-			}
-			break;
-		case TERMINAL_ID_CLKSOURCE_UACIN48:
-		case TERMINAL_ID_CLKSOURCE_UACOUT48:
-			switch (controlID)
-			{
-			default:
-				// Undefined control ID
-				TP();
-				return 0;
-			case 1:
-				// FREQ
-				USBD_poke_u32(buff + 0, dsp_get_samplerateuacin_audio48()); // sample rate
-				return 4;
-			case 2:
-				// VALID
-				USBD_poke_u8(buff + 0, 1); // valid
-				return 1;
-			}
-			break;
+		case 1:
+			// FREQ
+			return USBD_poke_u32(buff + 0, freq); // sample rate
+		case 2:
+			// VALID
+			return USBD_poke_u8(buff + 0, 1); // valid
 		}
 		break;
 	case 0x02:	// RANGE
 		// The Clock Validity Control must have only the CUR attribute
-		switch (terminalID)
+		switch (controlID)
 		{
 		default:
-			// Undefined terminalID
+			// Undefined control ID
 			TP();
 			return 0;
-
-		case TERMINAL_ID_CLKSOURCE_UACIN48_UACINRTS:
-		case TERMINAL_ID_CLKSOURCE_UACINOUT:
-			switch (controlID)
-			{
-			default:
-				// Undefined control ID
-				TP();
-				return 0;
-			case 1:
-				// FREQ
-				return USBD_fill_range_lay3pb2opt(buff, dsp_get_samplerateuacin_audio48(), dsp_get_samplerateuacin_rts());
-			}
-			break;
-		case TERMINAL_ID_CLKSOURCE_UACINRTS:
-			switch (controlID)
-			{
-			default:
-				// Undefined control ID
-				TP();
-				return 0;
-			case 1:
-				// FREQ
-				return USBD_fill_range_lay3pb(buff, dsp_get_samplerateuacin_rts());
-			}
-			break;
-		case TERMINAL_ID_CLKSOURCE_UACIN48:
-		case TERMINAL_ID_CLKSOURCE_UACOUT48:
-			switch (controlID)
-			{
-			default:
-				// Undefined control ID
-				TP();
-				return 0;
-			case 1:
-				// FREQ
-				return USBD_fill_range_lay3pb(buff, dsp_get_samplerateuacin_audio48());
-			}
-			break;
+		case 1:
+			// FREQ
+			return USBD_fill_range_lay3pb(buff, freq);
 		}
 		break;
 	}
 	return 0;
 }
-
-
 
 static USBD_StatusTypeDef USBD_UAC_Setup(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req)
 {
@@ -561,10 +509,10 @@ static USBD_StatusTypeDef USBD_UAC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 					0)
 			&& req->wIndex == 0x05)
 	{
-		PRINTF(PSTR("MS USBD_UAC_Setup: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
+		PRINTF(PSTR("MS USBD_UAC_Setup: bmRequest=%04X, bRequest=%02X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
 		return USBD_OK;
 	}
-	//PRINTF(PSTR("USBD_UAC_Setup: bmRequest=%04X, bRequest=%04X, wIndex=%04X, wLength=%04X, wValue=%04X (interfacev=%02X)\n"), req->bmRequest, req->bRequest, req->wIndex, req->wLength, req->wValue, interfacev);
+	//PRINTF(PSTR("USBD_UAC_Setup: bmRequest=%04X, bRequest=%02X, wIndex=%04X, wLength=%04X, wValue=%04X (interfacev=%02X)\n"), req->bmRequest, req->bRequest, req->wIndex, req->wLength, req->wValue, interfacev);
 	unsigned len = 0;
 	if ((req->bmRequest & USB_REQ_TYPE_DIR) != 0)
 	{
@@ -590,11 +538,18 @@ static USBD_StatusTypeDef USBD_UAC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 						PRINTF(PSTR("USBD_UAC_Setup IN: default path 1: req->bRequest=%02X\n"), req->bRequest);
 						len = 0;
 						break;
-					case TERMINAL_ID_CLKSOURCE_UACIN48_UACINRTS:
-					case TERMINAL_ID_CLKSOURCE_UACINOUT:
-					case TERMINAL_ID_CLKSOURCE_UACINRTS:
-					case TERMINAL_ID_CLKSOURCE_UACIN48:
-					case TERMINAL_ID_CLKSOURCE_UACOUT48:
+
+					case TERMINAL_ID_CLKMULTIPLIER_UACIN48_UACINRTS:
+					case TERMINAL_ID_CLKMULTIPLIER_UACINOUT:
+					case TERMINAL_ID_CLKMULTIPLIER_UACINRTS:
+					case TERMINAL_ID_CLKMULTIPLIER_UACIN48:
+					case TERMINAL_ID_CLKMULTIPLIER_UACOUT48:
+						len = USBD_UAC2_CloclMultiplier_req(req, buff);
+						break;
+
+					case TERMINAL_ID_CLKSOURCE + 0 * MAX_TERMINALS_IN_INTERFACE:
+					case TERMINAL_ID_CLKSOURCE + 1 * MAX_TERMINALS_IN_INTERFACE:
+					case TERMINAL_ID_CLKSOURCE + 2 * MAX_TERMINALS_IN_INTERFACE:
 						len = USBD_UAC2_ClockSource_req(req, buff);
 						break;
 

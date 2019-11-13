@@ -372,7 +372,7 @@ static USBD_StatusTypeDef USBD_CDC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 					0)
 			&& req->wIndex == 0x05)
 	{
-		PRINTF(PSTR("MS USBD_CDC_Setup: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
+		PRINTF(PSTR("MS USBD_CDC_Setup: bmRequest=%04X, bRequest=%02X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
 		//USBD_CtlError(pdev, req);
 		return USBD_OK;
 	}

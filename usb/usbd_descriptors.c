@@ -324,7 +324,10 @@ static unsigned CDCACM_fill_31(uint_fast8_t fill, uint8_t * buff, unsigned maxsi
 // AC Clock Source Descriptor
 // CS_SAM_FREQ_CONTROL = 1
 // CS_CLOCK_VALID_CONTROL = 2
-static unsigned UAC2_clock_source(uint_fast8_t fill, uint8_t * buff, unsigned maxsize, uint_fast8_t bClockID)
+static unsigned UAC2_clock_source(
+	uint_fast8_t fill, uint8_t * buff, unsigned maxsize,
+	uint_fast8_t bClockID
+	)
 {
 	const uint_fast8_t length = 8;
 	ASSERT(maxsize >= length);
@@ -343,6 +346,33 @@ static unsigned UAC2_clock_source(uint_fast8_t fill, uint8_t * buff, unsigned ma
 								clock validity control: 0b01 - host read only */ 
 		* buff ++ = TERMINAL_ID_UNDEFINED;       /* bAssocTerminal(0x00) */ 
 		* buff ++ = STRING_ID_0;/* iClockSource(0x01): Not requested */
+	}
+	return length;
+}
+
+// 4.7.2.3 Clock Multiplier Descriptor
+// Clock Multiplier
+static unsigned UAC2_clock_multiplier(
+	uint_fast8_t fill, uint8_t * buff, unsigned maxsize,
+	uint_fast8_t bClockID,
+	uint_fast8_t bCSourceID
+	)
+{
+	const uint_fast8_t length = 7;
+	ASSERT(maxsize >= length);
+	if (maxsize < length)
+		return 0;
+	if (fill != 0 && buff != NULL)
+	{
+		const uint_fast8_t bmControls = 0x05;	/* D3..2: Clock Denominator Control */
+		// Вызов для заполнения; а не только для проверки занимаемого места в буфере
+		* buff ++ = length;						  /* bLength */
+		* buff ++ = CS_INTERFACE;  	/* bDescriptorType(0x24): CS_INTERFACE */
+		* buff ++ = 0x0C;       	/* bDescriptorSubType CLOCK_MULTIPLIER */
+		* buff ++ = bClockID;   	/* bClockID */
+		* buff ++ = bCSourceID;   	/* bCSourceID */
+		* buff ++ = bmControls;
+		* buff ++ = STRING_ID_0;	/* iClockSource(0x01): Not requested */
 	}
 	return length;
 }
@@ -763,10 +793,12 @@ static unsigned UAC2_TopologyIN48(
 	)
 {
 	unsigned n = 0;
-	const uint_fast8_t bCSourceID = TERMINAL_ID_CLKSOURCE_UACIN48; //bTerminalID + 3;
+	const uint_fast8_t bOSC = TERMINAL_ID_CLKSOURCE + offset * MAX_TERMINALS_IN_INTERFACE;
+	const uint_fast8_t bCSourceID = TERMINAL_ID_CLKMULTIPLIER_UACIN48; //bTerminalID + 3;
 	const uint_fast8_t FU_ID = TERMINAL_ID_FU2_IN + offset * MAX_TERMINALS_IN_INTERFACE;
 
-	n += UAC2_clock_source(fill, p + n, maxsize - n, bCSourceID);
+	n += UAC2_clock_source(fill, p + n, maxsize - n, bOSC);
+	n += UAC2_clock_multiplier(fill, p + n, maxsize - n, bCSourceID, bOSC);
 	if (WITHUSENOFU_IN48)
 	{
 		// Только один источник для компьютера
@@ -791,10 +823,12 @@ static unsigned UAC2_Topology_inout_IN48(
 	)
 {
 	unsigned n = 0;
-	const uint_fast8_t bCSourceID = TERMINAL_ID_CLKSOURCE_UACINOUT; //bTerminalID + 3;
+	const uint_fast8_t bOSC = TERMINAL_ID_CLKSOURCE + offset * MAX_TERMINALS_IN_INTERFACE;
+	const uint_fast8_t bCSourceID = TERMINAL_ID_CLKMULTIPLIER_UACINOUT; //bTerminalID + 3;
 	const uint_fast8_t FU_ID = TERMINAL_ID_FU2_IN + offset * MAX_TERMINALS_IN_INTERFACE;
 
-	n += UAC2_clock_source(fill, p + n, maxsize - n, bCSourceID);
+	n += UAC2_clock_source(fill, p + n, maxsize - n, bOSC);
+	n += UAC2_clock_multiplier(fill, p + n, maxsize - n, bCSourceID, bOSC);
 	if (WITHUSENOFU_IN48)
 	{
 		// Только один источник для компьютера
@@ -822,11 +856,13 @@ static unsigned UAC2_Topology_inout_OUT48(
 	)
 {
 	unsigned n = 0;
-	const uint_fast8_t bCSourceID = TERMINAL_ID_CLKSOURCE_UACINOUT; //bTerminalID + 3;
+	const uint_fast8_t bOSC = TERMINAL_ID_CLKSOURCE + offset * MAX_TERMINALS_IN_INTERFACE;
+	const uint_fast8_t bCSourceID = TERMINAL_ID_CLKMULTIPLIER_UACINOUT; //bTerminalID + 3;
 	const uint_fast8_t FU_ID = TERMINAL_ID_FU2_OUT + offset * MAX_TERMINALS_IN_INTERFACE;
 
 	// already done in UAC2_Topology_inout_IN48
-	//n += UAC2_clock_source(fill, p + n, maxsize - n, bCSourceID);
+	//n += UAC2_clock_source(fill, p + n, maxsize - n, bOSC);
+	//n += UAC2_clock_multiplier(fill, p + n, maxsize - n, bCSourceID, bOSC);
 	if (WITHUSENOFU_OUT48)
 	{
 		// без feature unit между IT и OT
@@ -854,10 +890,12 @@ static unsigned UAC2_TopologyIN48_INRTS(
 	)
 {
 	unsigned n = 0;
-	const uint_fast8_t bCSourceID = TERMINAL_ID_CLKSOURCE_UACIN48_UACINRTS; //bTerminalID + 3;
+	const uint_fast8_t bOSC = TERMINAL_ID_CLKSOURCE + offset * MAX_TERMINALS_IN_INTERFACE;
+	const uint_fast8_t bCSourceID = TERMINAL_ID_CLKMULTIPLIER_UACIN48_UACINRTS; //bTerminalID + 3;
 	const uint_fast8_t FU_ID = TERMINAL_ID_FU2_IN + offset * MAX_TERMINALS_IN_INTERFACE;
 
-	n += UAC2_clock_source(fill, p + n, maxsize - n, bCSourceID);
+	n += UAC2_clock_source(fill, p + n, maxsize - n, bOSC);
+	n += UAC2_clock_multiplier(fill, p + n, maxsize - n, bCSourceID, bOSC);
 	if (WITHUSENOFU_IN48_INRTS)
 	{
 		// Только один источник для компьютера
@@ -885,10 +923,12 @@ static unsigned UAC2_TopologyOUT48(
 	)
 {
 	unsigned n = 0;
-	const uint_fast8_t bCSourceID = TERMINAL_ID_CLKSOURCE_UACOUT48; //bTerminalID + 3;
+	const uint_fast8_t bOSC = TERMINAL_ID_CLKSOURCE + offset * MAX_TERMINALS_IN_INTERFACE;
+	const uint_fast8_t bCSourceID = TERMINAL_ID_CLKMULTIPLIER_UACOUT48; //bTerminalID + 3;
 	const uint_fast8_t FU_ID = TERMINAL_ID_FU2_OUT + offset * MAX_TERMINALS_IN_INTERFACE;
 
-	n += UAC2_clock_source(fill, p + n, maxsize - n, bCSourceID);
+	n += UAC2_clock_source(fill, p + n, maxsize - n, bOSC);
+	n += UAC2_clock_multiplier(fill, p + n, maxsize - n, bCSourceID, bOSC);
 	if (WITHUSENOFU_OUT48)
 	{
 		// без feature unit между IT и OT
@@ -914,10 +954,12 @@ static unsigned UAC2_TopologyINRTS(
 	)
 {
 	unsigned n = 0;
-	const uint_fast8_t bCSourceID = TERMINAL_ID_CLKSOURCE_UACINRTS; //bTerminalID + 3;
+	const uint_fast8_t bOSC = TERMINAL_ID_CLKSOURCE + offset * MAX_TERMINALS_IN_INTERFACE;
+	const uint_fast8_t bCSourceID = TERMINAL_ID_CLKMULTIPLIER_UACINRTS; //bTerminalID + 3;
 	const uint_fast8_t FU_ID = TERMINAL_ID_FU2_IN + offset * MAX_TERMINALS_IN_INTERFACE;
 
-	n += UAC2_clock_source(fill, p + n, maxsize - n, bCSourceID);
+	n += UAC2_clock_source(fill, p + n, maxsize - n, bOSC);
+	n += UAC2_clock_multiplier(fill, p + n, maxsize - n, bCSourceID, bOSC);
 	if (WITHUSENOFU_INRTS)
 	{
 		// Только один источник для компьютера
