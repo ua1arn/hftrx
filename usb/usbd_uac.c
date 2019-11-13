@@ -414,8 +414,8 @@ static unsigned USBD_UAC2_FeatureUnit_req(
 	return 0;
 }
 
-// UAC2: Выполнение запроса CURR/RANGE
-static unsigned USBD_UAC2_CloclMultiplier_req(
+// UAC2: Выполнение запроса CURR
+static unsigned USBD_UAC2_CloclMultiplier_req_48k(
 	const USBD_SetupReqTypedef *req,
 	uint8_t * buff
 	)
@@ -424,6 +424,39 @@ static unsigned USBD_UAC2_CloclMultiplier_req(
 	const uint_fast8_t controlID = HI_BYTE(req->wValue);
 	const uint_fast8_t channelNumber = LO_BYTE(req->wValue);
 	const uint_fast32_t denominator = FPGADECIMATION;
+	const uint_fast32_t numerator = DDS1_CLK_MUL;
+
+	switch (req->bRequest)
+	{
+	case 0x01:	// CURR
+		switch (controlID)
+		{
+		default:
+			// Undefined control ID
+			TP();
+			return 0;
+		case 1:
+			// CM_NUMERATOR_CONTROL
+			return USBD_poke_u16(buff + 0, numerator); // numerator
+		case 2:
+			// CM_DENOMINATOR_CONTROL
+			return USBD_poke_u16(buff + 0, denominator); // denominator
+		}
+		break;
+	}
+	return 0;
+}
+
+// UAC2: Выполнение запроса CURR
+static unsigned USBD_UAC2_CloclMultiplier_req_96k(
+	const USBD_SetupReqTypedef *req,
+	uint8_t * buff
+	)
+{
+	const uint_fast8_t terminalID = HI_BYTE(req->wIndex);
+	const uint_fast8_t controlID = HI_BYTE(req->wValue);
+	const uint_fast8_t channelNumber = LO_BYTE(req->wValue);
+	const uint_fast32_t denominator = FPGADECIMATION / 2;
 	const uint_fast32_t numerator = DDS1_CLK_MUL;
 
 	switch (req->bRequest)
@@ -540,11 +573,14 @@ static USBD_StatusTypeDef USBD_UAC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 						break;
 
 					case TERMINAL_ID_CLKMULTIPLIER_UACIN48_UACINRTS:
-					case TERMINAL_ID_CLKMULTIPLIER_UACINOUT:
-					case TERMINAL_ID_CLKMULTIPLIER_UACINRTS:
 					case TERMINAL_ID_CLKMULTIPLIER_UACIN48:
 					case TERMINAL_ID_CLKMULTIPLIER_UACOUT48:
-						len = USBD_UAC2_CloclMultiplier_req(req, buff);
+					case TERMINAL_ID_CLKMULTIPLIER_UACINOUT:
+						len = USBD_UAC2_CloclMultiplier_req_48k(req, buff);
+						break;
+
+					case TERMINAL_ID_CLKMULTIPLIER_UACINRTS:
+						len = USBD_UAC2_CloclMultiplier_req_96k(req, buff);
 						break;
 
 					case TERMINAL_ID_CLKSOURCE + 0 * MAX_TERMINALS_IN_INTERFACE:
