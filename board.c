@@ -365,6 +365,9 @@ void board_lcd_rs(uint_fast8_t state)
 static void
 board_gpio_init(void)
 {
+	#if defined (HARDWARE_INITIALIZE)
+		HARDWARE_INITIALIZE();
+	#endif /* defined (HARDWARE_INITIALIZE) */
 	///////////////////////
 	// CODEC2 reset
 	#if TARGET_CS4272_RESET_BIT
@@ -404,9 +407,6 @@ board_gpio_init(void)
 		HARDWARE_KBD_INITIALIZE();
 	#endif /* defined (HARDWARE_KBD_INITIALIZE) */
 	/* макроопределение, которое должно включить в себя все инициализации */
-	#if defined (HARDWARE_INITIALIZE)
-		HARDWARE_INITIALIZE();
-	#endif /* defined (HARDWARE_INITIALIZE) */
 	#if defined (TARGET_FPGA_OVF_INITIALIZE)
 		TARGET_FPGA_OVF_INITIALIZE();
 	#endif /* defined (TARGET_FPGA_OVF_INITIALIZE) */

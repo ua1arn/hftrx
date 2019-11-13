@@ -121,9 +121,10 @@ power2(uint_fast16_t v)
 
 #define r7s721_pio_inputs(n, ipins1) do { \
 		const portholder_t ipins2 = (ipins1); \
+		GPIO.PM ## n |= (ipins2);	/* Port Mode Register (PMn): 0 - output, 1 - input */ \
 		GPIO.PIPC ## n &= ~ (ipins2);	/* Port IP Control Register: 0 - direction control from PMn, 1 - from alternative function */ \
 		GPIO.PMC ## n &= ~ (ipins2);	/* Port Mode Control Register: 0 - port, 1 - alternative */ \
-		GPIO.PM ## n |= (ipins2);	/* Port Mode Register (PMn): 0 - output, 1 - input */ \
+		GPIO.PBDC ## n &= ~ (ipins2);	/* Port Bidirection Control Register (PBDCn): 1: Bidirectional mode enabled */ \
 		GPIO.PIBC ## n |= (ipins2);	/* Port Input Buffer Control Register (PIBCn): 0 - hiZ, 1 - input */ \
 	} while (0)
 
@@ -133,13 +134,13 @@ power2(uint_fast16_t v)
 		GPIO.PNOT ## n &= ~ (opins2); /* Port NOT Register (PNOTn) */ \
 		GPIO.PIPC ## n &= ~ (opins2);	/* Port IP Control Register: 0 - direction control from PMn, 1 - from alternative function */ \
 		GPIO.PSR ## n = ((opins2) * 0x10000UL) | ((initialstate2) & (opins2)); \
-		GPIO.PMC ## n &= ~ (opins2);	/* Port Mode Control Register: 0 - port, 1 - alternative */ \
-		GPIO.PM ## n &= ~ (opins2);	/* Port Mode Register (PMn): 0 - output, 1 - input */ \
 		GPIO.PBDC ## n |= (opins2);	/* Port Bidirection Control Register (PBDCn): 1: Bidirectional mode enabled */ \
 		GPIO.PIBC ## n &= ~ (opins2);	/* Port Input Buffer Control Register (PIBCn): 0 - hiZ, 1 - input */ \
+		GPIO.PMC ## n &= ~ (opins2);	/* Port Mode Control Register: 0 - port, 1 - alternative */ \
+		GPIO.PM ## n &= ~ (opins2);	/* Port Mode Register (PMn): 0 - output, 1 - input */ \
 	} while (0)
 
-#define r7s721_pio_alternative(n, iopins1, alt1) do { \
+#define R7S721_PIOX_ALTERNATIVE(n, iopins1, alt1) do { \
 		const portholder_t iopins2 = (iopins1); \
 		const int alt2 = (alt1); \
 		const int pfcae = ((alt2) & 0x04) != 0; \
@@ -174,6 +175,7 @@ static void r7s721_pio_onchangeinterrupt(
 		if ((ipins & mask) == 0)
 			continue;
 		const IRQn_ID_t int_id = irqbase + bitpos;
+		IRQ_Disable(int_id);
 		GIC_SetConfiguration(int_id, edge ? GIC_CONFIG_EDGE : GIC_CONFIG_LEVEL);
 		arm_hardware_set_handler(int_id, vector, priority);
 	}
@@ -311,59 +313,59 @@ void arm_hardware_pio11_outputs(unsigned long opins, unsigned long initialstate)
 // alternative
 void arm_hardware_pio1_alternative(unsigned long iopins, unsigned alt)
 {
-	r7s721_pio_alternative(1, iopins, alt);
+	R7S721_PIOX_ALTERNATIVE(1, iopins, alt);
 }
 
 void arm_hardware_pio2_alternative(unsigned long iopins, unsigned alt)
 {
-	r7s721_pio_alternative(2, iopins, alt);
+	R7S721_PIOX_ALTERNATIVE(2, iopins, alt);
 }
 
 void arm_hardware_pio3_alternative(unsigned long iopins, unsigned alt)
 {
-	r7s721_pio_alternative(3, iopins, alt);
+	R7S721_PIOX_ALTERNATIVE(3, iopins, alt);
 }
 
 void arm_hardware_pio4_alternative(unsigned long iopins, unsigned alt)
 {
-	r7s721_pio_alternative(4, iopins, alt);
+	R7S721_PIOX_ALTERNATIVE(4, iopins, alt);
 }
 
 void arm_hardware_pio5_alternative(unsigned long iopins, unsigned alt)
 {
-	r7s721_pio_alternative(5, iopins, alt);
+	R7S721_PIOX_ALTERNATIVE(5, iopins, alt);
 }
 
 void arm_hardware_pio6_alternative(unsigned long iopins, unsigned alt)
 {
-	r7s721_pio_alternative(6, iopins, alt);
+	R7S721_PIOX_ALTERNATIVE(6, iopins, alt);
 }
 
 void arm_hardware_pio7_alternative(unsigned long iopins, unsigned alt)
 {
-	r7s721_pio_alternative(7, iopins, alt);
+	R7S721_PIOX_ALTERNATIVE(7, iopins, alt);
 }
 
 void arm_hardware_pio8_alternative(unsigned long iopins, unsigned alt)
 {
-	r7s721_pio_alternative(8, iopins, alt);
+	R7S721_PIOX_ALTERNATIVE(8, iopins, alt);
 }
 
 void arm_hardware_pio9_alternative(unsigned long iopins, unsigned alt)
 {
-	r7s721_pio_alternative(9, iopins, alt);
+	R7S721_PIOX_ALTERNATIVE(9, iopins, alt);
 }
 
 #if CPUSTYLE_R7S721001	// RZ/A1H
 
 void arm_hardware_pio10_alternative(unsigned long iopins, unsigned alt)
 {
-	r7s721_pio_alternative(10, iopins, alt);
+	R7S721_PIOX_ALTERNATIVE(10, iopins, alt);
 }
 
 void arm_hardware_pio11_alternative(unsigned long iopins, unsigned alt)
 {
-	r7s721_pio_alternative(11, iopins, alt);
+	R7S721_PIOX_ALTERNATIVE(11, iopins, alt);
 }
 #endif /* CPUSTYLE_R7S721001 */
 
@@ -512,53 +514,65 @@ static void r7s721_IRQn_IRQHandler(void)
 	{
 		enum { irq = 0 };
 		INTC.IRQRR = (uint16_t) ~ (1u << irq);
+		ASSERT(r7s721_IRQn_user [irq] != NULL);
 		(* r7s721_IRQn_user [irq])();
 	}
 	else if ((irqrr & (1U << 1)) != 0)
 	{
 		enum { irq = 1 };
 		INTC.IRQRR = (uint16_t) ~ (1u << irq);
+		ASSERT(r7s721_IRQn_user [irq] != NULL);
 		(* r7s721_IRQn_user [irq])();
 	}
 	else if ((irqrr & (1U << 2)) != 0)
 	{
 		enum { irq = 2 };
 		INTC.IRQRR = (uint16_t) ~ (1u << irq);
+		ASSERT(r7s721_IRQn_user [irq] != NULL);
 		(* r7s721_IRQn_user [irq])();
 	}
 	else if ((irqrr & (1U << 3)) != 0)
 	{
 		enum { irq = 3 };
 		INTC.IRQRR = (uint16_t) ~ (1u << irq);
+		ASSERT(r7s721_IRQn_user [irq] != NULL);
 		(* r7s721_IRQn_user [irq])();
 	}
 	else if ((irqrr & (1U << 4)) != 0)
 	{
 		enum { irq = 4 };
 		INTC.IRQRR = (uint16_t) ~ (1u << irq);
+		ASSERT(r7s721_IRQn_user [irq] != NULL);
 		(* r7s721_IRQn_user [irq])();
 	}
 	else if ((irqrr & (1U << 5)) != 0)
 	{
 		enum { irq = 5 };
 		INTC.IRQRR = (uint16_t) ~ (1u << irq);
+		ASSERT(r7s721_IRQn_user [irq] != NULL);
 		(* r7s721_IRQn_user [irq])();
 	}
 	else if ((irqrr & (1U << 6)) != 0)
 	{
 		enum { irq = 6 };
 		INTC.IRQRR = (uint16_t) ~ (1u << irq);
+		ASSERT(r7s721_IRQn_user [irq] != NULL);
 		(* r7s721_IRQn_user [irq])();
 	}
 	else if ((irqrr & (1U << 7)) != 0)
 	{
 		enum { irq = 7 };
 		INTC.IRQRR = (uint16_t) ~ (1u << irq);
+		ASSERT(r7s721_IRQn_user [irq] != NULL);
 		(* r7s721_IRQn_user [irq])();
+	}
+	else
+	{
+		ASSERT(0);
 	}
 }
 
-// IRQ0..IRQ7
+// Set handlers and mode for IRQ0..IRQ7
 /*
 	edge values
 	00: Interrupt request is detected on low level of IRQn input
@@ -572,10 +586,11 @@ void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority,
 	r7s721_IRQn_user [irq] = vector;
 
 	INTC.ICR1 = (INTC.ICR1 & ~ (0x03uL << (irq * 2))) |
-		edge * (1uL << (irq * 2)) |
+		(edge << (irq * 2)) |
 		0;
 	{
 		const IRQn_ID_t int_id = IRQ0_IRQn + irq;
+		IRQ_Disable(int_id);
 		GIC_SetConfiguration(int_id, GIC_CONFIG_LEVEL);
 		arm_hardware_set_handler(int_id, r7s721_IRQn_IRQHandler, priority);
 	}

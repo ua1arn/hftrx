@@ -255,8 +255,16 @@
 	//#define ENCODER2_BITS ((1u << 9) | (1u << 8))		// P2_9, P2_8
 	//#define ENCODER2_SHIFT 8
 
+	/*
+		edge values
+		00: Interrupt request is detected on low level of IRQn input
+		01: Interrupt request is detected on falling edge of IRQn input
+		10: Interrupt request is detected on rising edge of IRQn input
+		11: Interrupt request is detected on both edges of IRQn input
+	*/
 	#define ENCODER_INITIALIZE() \
 		do { \
+			arm_hardware_pio2_inputs(1u << 8); /* P2_8 соединена перемычкой c PA_7 */ \
 			arm_hardware_pio2_alternative(ENCODER_BITS, R7S721_PIOALT_4); \
 			arm_hardware_irqn_interrupt(1, 3, ARM_OVERREALTIME_PRIORITY, spool_encinterrupt); /* IRQ1, both edges */ \
 			arm_hardware_irqn_interrupt(2, 3, ARM_OVERREALTIME_PRIORITY, spool_encinterrupt); /* IRQ2, both edges */ \
@@ -708,8 +716,22 @@
 	#define HARDWARE_USB1_INITIALIZE() do { \
 		} while (0)
 
+	#define HARDWARE_GPIO_RESET() do { \
+		arm_hardware_pio0_inputs(0x0F); \
+		arm_hardware_pio1_inputs(0xFFFF); \
+		arm_hardware_pio2_inputs(0x03FF); \
+		arm_hardware_pio3_inputs(0xFFFF); \
+		arm_hardware_pio4_inputs(0x00FF); \
+		arm_hardware_pio5_inputs(0xFFFF); \
+		arm_hardware_pio6_inputs(0xFFFF); \
+		arm_hardware_pio7_inputs(0x0FFF); \
+		arm_hardware_pio8_inputs(0xFFFF); \
+		arm_hardware_pio9_inputs(0x003F); \
+		} while (0)
+
 	/* макроопределение, которое должно включить в себя все инициализации */
 	#define	HARDWARE_INITIALIZE() do { \
+		/* HARDWARE_GPIO_RESET(); */ \
 		HARDWARE_SIDETONE_INITIALIZE(); \
 		HARDWARE_KBD_INITIALIZE(); \
 		HARDWARE_DAC_INITIALIZE(); \

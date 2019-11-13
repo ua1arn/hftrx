@@ -608,7 +608,7 @@ static USBD_StatusTypeDef MEM_If_Erase_HS(uint32_t Addr)
 	//PRINTF(PSTR("MEM_If_Erase_HS: addr=%08lX\n"), Addr);
 	if (Addr >= BOOTLOADER_SELFBASE && (Addr + BOOTLOADER_PAGESIZE) <= (BOOTLOADER_SELFBASE + BOOTLOADER_APPFULL))
 	{
-#if WITHISBOOTLOADER
+#if 1//WITHISBOOTLOADER
 		// физическое выполненеие записи
 		sectoreraseDATAFLASH(Addr);
 #else /* WITHISBOOTLOADER */
@@ -629,7 +629,7 @@ static USBD_StatusTypeDef MEM_If_Write_HS(uint8_t *src, uint32_t dest, uint32_t 
 	//PRINTF(PSTR("MEM_If_Write_HS: addr=%08lX, len=%03lX\n"), dest, Len);
 	if (dest >= BOOTLOADER_SELFBASE && (dest + Len) <= (BOOTLOADER_SELFBASE + BOOTLOADER_APPFULL))
 	{
-#if WITHISBOOTLOADER
+#if 1//WITHISBOOTLOADER
 		// физическое выполненеие записи
 		if (writeDATAFLASH(dest, src, Len))
 			return USBD_FAIL;

@@ -179,9 +179,17 @@
 	#define ENCODER_BITS (ENCODER_BITA | ENCODER_BITB)
 	#define ENCODER_SHIFT 8	// Отсутствие этого значения означает что биты не подряд
 
+	/*
+		edge values
+		00: Interrupt request is detected on low level of IRQn input
+		01: Interrupt request is detected on falling edge of IRQn input
+		10: Interrupt request is detected on rising edge of IRQn input
+		11: Interrupt request is detected on both edges of IRQn input
+	*/
 	#define ENCODER_INITIALIZE() \
 		do { \
-			arm_hardware_pio5_alternative(ENCODER2_BITS, R7S721_PIOALT_4); \
+			/* arm_hardware_pio5_alternative(ENCODER2_BITS, R7S721_PIOALT_4); */ \
+			arm_hardware_pio5_inputs(ENCODER2_BITS); \
 			/* arm_hardware_irqn_interrupt(5, 3, ARM_OVERREALTIME_PRIORITY, spool_encinterrupt2); */ /* IRQ5, both edges */ \
 			/* arm_hardware_irqn_interrupt(6, 3, ARM_OVERREALTIME_PRIORITY, spool_encinterrupt2); */ /* IRQ6, both edges */ \
 			arm_hardware_pio5_alternative(ENCODER_BITS, R7S721_PIOALT_4); \
