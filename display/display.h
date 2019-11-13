@@ -942,8 +942,11 @@ void display_putpixel(
 
 void board_set_topdb(int_fast16_t v);	/* верхний предел FFT */
 void board_set_bottomdb(int_fast16_t v);	/* нижний предел FFT */
+void board_set_topdbwf(int_fast16_t v);	/* верхний предел FFT */
+void board_set_bottomdbwf(int_fast16_t v);	/* нижний предел FFT */
 void board_set_zoomxpow2(uint_fast8_t v);	/* уменьшение отображаемого участка спектра */
 void board_set_fillspect(uint_fast8_t v); /* заливать заполнением площадь под графиком спектра */
+void board_set_wflevelsep(uint_fast8_t v); /* чувствительность водопада регулируется отдельной парой параметров */
 
 #ifdef __cplusplus
 }

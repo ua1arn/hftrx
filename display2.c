@@ -84,12 +84,16 @@ static int_fast16_t glob_gridstep = 10000;	// 10 kHz - шаг сетки
 
 // waterfall/spectrum parameters
 static uint_fast8_t glob_fillspect;	/* заливать заполнением площадь под графиком спектра */
+
 static int_fast16_t glob_topdb = 30;	/* верхний предел FFT */
 static int_fast16_t glob_bottomdb = 130;	/* нижний предел FFT */
-static uint_fast8_t glob_zoomxpow2;	/* уменьшение отображаемого участка спектра - horisontal magnification power of two */
 
 static int_fast16_t glob_topdbwf = 0;	/* верхний предел FFT */
 static int_fast16_t glob_bottomdbwf = 137;	/* нижний предел FFT */
+
+static uint_fast8_t glob_wflevelsep;	/* чувствительность водопада регулируется отдельной парой параметров */
+
+static uint_fast8_t glob_zoomxpow2;	/* уменьшение отображаемого участка спектра - horisontal magnification power of two */
 
 //#define WIDEFREQ (TUNE_TOP > 100000000L)
 
@@ -5651,7 +5655,7 @@ static void dsp_latchwaterfall(
 	for (x = 0; x < ALLDX; ++ x)
 	{
 		// для водопада
-		const int val = dsp_mag2y(filter_waterfall(x), PALETTESIZE - 1, glob_topdbwf, glob_bottomdbwf); // возвращает значения от 0 до dy включительно
+		const int val = dsp_mag2y(filter_waterfall(x), PALETTESIZE - 1, glob_wflevelsep ? glob_topdbwf : glob_topdb, glob_wflevelsep ? glob_bottomdbwf : glob_bottomdb); // возвращает значения от 0 до dy включительно
 
 #if WITHFASTWATERFLOW
 		wfarray [wfrow] [x] = wfpalette [val];	// запись в буфер водопада цветовой точки
@@ -6135,18 +6139,32 @@ board_set_fillspect(uint_fast8_t v)
 	glob_fillspect = v != 0;
 }
 
-/* верхний предел FFT */
+/* верхний предел FFT - spectrum */
 void
 board_set_topdb(int_fast16_t v)
 {
 	glob_topdb = v;
 }
 
-/* нижний предел FFT */
+/* нижний предел FFT - spectrum */
 void
 board_set_bottomdb(int_fast16_t v)
 {
 	glob_bottomdb = v;
+}
+
+/* верхний предел FFT - waterflow */
+void
+board_set_topdbwf(int_fast16_t v)
+{
+	glob_topdbwf = v;
+}
+
+/* нижний предел FFT - waterflow*/
+void
+board_set_bottomdbwf(int_fast16_t v)
+{
+	glob_bottomdbwf = v;
 }
 
 /* уменьшение отображаемого участка спектра */
@@ -6156,3 +6174,11 @@ board_set_zoomxpow2(uint_fast8_t v)
 {
 	glob_zoomxpow2 = v;
 }
+
+/* чувствительность водопада регулируется отдельной парой параметров */
+void
+board_set_wflevelsep(uint_fast8_t v)
+{
+	glob_wflevelsep = v != 0;
+}
+

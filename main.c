@@ -2409,7 +2409,10 @@ struct nvmap
 	uint8_t gfillspect;
 	uint8_t gtopdb;		/* нижний предел FFT */
 	uint8_t gbottomdb;	/* верхний предел FFT */
+	uint8_t gtopdbwf;		/* нижний предел FFT waterflow */
+	uint8_t gbottomdbwf;	/* верхний предел FFT waterflow */
 	uint8_t gzoomxpow2;
+	uint8_t gwflevelsep;	/* чувствительность водопада регулируется отдельной парой параметров */
 #endif /* WITHSPECTRUMWF */
 #if WITHBCBANDS
 	uint8_t bandsetbcast;	/* Broadcasting radio bands */
@@ -3024,6 +3027,9 @@ static uint_fast8_t displaybarsfps = DISPLAYSWR_FPS;
 	static uint_fast8_t gfillspect;
 	static uint_fast8_t gtopdb = 30;	/* верхний предел FFT */
 	static uint_fast8_t gbottomdb = 130;	/* нижний предел FFT */
+	static uint_fast8_t gtopdbwf = 30;	/* верхний предел FFT waterflow*/
+	static uint_fast8_t gbottomdbwf = 130;	/* нижний предел FFT waterflow */
+	static uint_fast8_t gwflevelsep;	/* чувствительность водопада регулируется отдельной парой параметров */
 	static uint_fast8_t gzoomxpow2;		/* степень двойки - состояние растягиваия спектра (уменьшение наблюдаемой полосы частот) */
 #endif /* WITHSPECTRUMWF */
 #if WITHLCDBACKLIGHT
@@ -7934,7 +7940,10 @@ updateboard(
 			board_set_fillspect(gfillspect);	/* заливать заполнением площадь под графиком спектра */
 			board_set_topdb(gtopdb);		/* верхний предел FFT */
 			board_set_bottomdb(gbottomdb);		/* нижний предел FFT */
+			board_set_topdbwf(gtopdbwf);		/* верхний предел FFT для водопада */
+			board_set_bottomdbwf(gbottomdbwf);		/* нижний предел FFT для водопада */
 			board_set_zoomxpow2(gzoomxpow2);	/* уменьшение отображаемого участка спектра */
+			board_set_wflevelsep(gwflevelsep);	/* чувствительность водопада регулируется отдельной парой параметров */
 		#endif /* WITHSPECTRUMWF */
 	#endif /* WITHIF4DSP */
 
@@ -12366,7 +12375,7 @@ static const FLASHMEM struct menudef menutable [] =
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"TOP DB  ", 7, 0, 0,	ISTEP1,	
+		"TOP DB  ", 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		0, 60,							/* сколько не показывать сверху */
 		offsetof(struct nvmap, gtopdb),
@@ -12381,6 +12390,33 @@ static const FLASHMEM struct menudef menutable [] =
 		offsetof(struct nvmap, gbottomdb),
 		NULL,
 		& gbottomdb,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	{
+		"WFPARAMS", 7, 3, RJ_YES,	ISTEP1,
+		ITEM_VALUE,
+		0, 1,							/* водопад отдельными папаметрами */
+		offsetof(struct nvmap, gwflevelsep),
+		NULL,
+		& gwflevelsep,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	{
+		"TOP WF  ", 7, 0, 0,	ISTEP1,
+		ITEM_VALUE,
+		0, 60,							/* сколько не показывать сверху */
+		offsetof(struct nvmap, gtopdbwf),
+		NULL,
+		& gtopdbwf,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	{
+		"BOTTM WF", 7, 0, 0,	ISTEP1,
+		ITEM_VALUE,
+		80, 160,							/* диапазон отображаемых значений */
+		offsetof(struct nvmap, gbottomdbwf),
+		NULL,
+		& gbottomdbwf,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
