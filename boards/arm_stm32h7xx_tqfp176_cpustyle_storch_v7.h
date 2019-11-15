@@ -498,17 +498,17 @@
 	#define TARGET_POWERBTN_BIT (1U << 8)	// PA8 - ~CPU_POWER_SW signal
 #if WITHENCODER2
 	// P7_8
-	#define TARGET_ENC2BTN_GET	((GPIOF->IDR) & TARGET_ENC2BTN_BIT) == 0)
+	#define TARGET_ENC2BTN_GET	(((GPIOF->IDR) & TARGET_ENC2BTN_BIT) == 0)
 #endif /* WITHENCODER2 */
 
 #if WITHPWBUTTON
 	// P5_3 - ~CPU_POWER_SW signal
-	#define TARGET_POWERBTN_GET	((GPIOA->IDR) & TARGET_POWERBTN_BIT) == 0)
+	#define TARGET_POWERBTN_GET	(((GPIOA->IDR) & TARGET_POWERBTN_BIT) == 0)
 #endif /* WITHPWBUTTON */
 
 	#define HARDWARE_KBD_INITIALIZE() do { \
 			arm_hardware_piof_inputs(TARGET_ENC2BTN_BIT); \
-			arm_hardware_piof_updown(TARGET_ENC2BTN_BIT, 0); \	/* PF0: pull-up second encoder button */ \
+			arm_hardware_piof_updown(TARGET_ENC2BTN_BIT, 0); /* PF0: pull-up second encoder button */ \
 			arm_hardware_pioa_inputs(TARGET_POWERBTN_BIT); \
 			arm_hardware_pioa_updown(TARGET_POWERBTN_BIT, 0);	/* PA8: pull-up second encoder button */ \
 		} while (0)

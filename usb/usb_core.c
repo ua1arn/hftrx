@@ -11368,7 +11368,7 @@ USBH_StatusTypeDef  USBH_ReEnumerate(USBH_HandleTypeDef *phost)
   * @retval USBH Status
   */
 /* вызывается при разрешённых прерываниях. */
-USBH_StatusTypeDef  USBH_Init(USBH_HandleTypeDef *phost, void (*pUsrFunc)(USBH_HandleTypeDef *phost, uint8_t ), uint8_t id)
+USBH_StatusTypeDef  USBH_Init(USBH_HandleTypeDef *phost, void (*pUsrFunc)(USBH_HandleTypeDef *phost, uint8_t ))
 {
   /* Check whether the USB Host handle is valid */
   if (phost == NULL)
@@ -11378,7 +11378,7 @@ USBH_StatusTypeDef  USBH_Init(USBH_HandleTypeDef *phost, void (*pUsrFunc)(USBH_H
   }
 
   /* Set DRiver ID */
-  phost->id = id;
+  //phost->id = id;
 
   /* Unlink class*/
   phost->pActiveClass = NULL;
@@ -13883,7 +13883,7 @@ void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd)
 USBH_StatusTypeDef  USBH_LL_Init(USBH_HandleTypeDef *phost)
 {
 	/* Init USB_IP */
-	if (phost->id == HOST_FS)
+	//if (WITHUSBHW_HOST == USB_OTG_FS)
 	{
 		/* Link The driver to the stack */
 		hhcd_USB_OTG.pData = phost;
@@ -13891,7 +13891,7 @@ USBH_StatusTypeDef  USBH_LL_Init(USBH_HandleTypeDef *phost)
 
 		hhcd_USB_OTG.Instance = WITHUSBHW_HOST;
 		hhcd_USB_OTG.Init.Host_channels = 16;
-		hhcd_USB_OTG.Init.speed = PCD_SPEED_HIGH;
+		hhcd_USB_OTG.Init.speed = PCD_SPEED_FULL;
 		hhcd_USB_OTG.Init.dma_enable = USB_DISABLE;
 		hhcd_USB_OTG.Init.phy_itface = HCD_PHY_EMBEDDED;
 		hhcd_USB_OTG.Init.Sof_enable = USB_DISABLE;
@@ -13929,7 +13929,7 @@ void board_usb_initialize(void)
 
 #if defined (WITHUSBHW_HOST)
 	/* Init Host Library,Add Supported Class and Start the library*/
-	USBH_Init(& hUsbHost, USBH_UserProcess, HOST_FS);
+	USBH_Init(& hUsbHost, USBH_UserProcess);
 
 	#if WITHUSEUSBFLASH
 		USBH_RegisterClass(&hUsbHost, & USBH_msc);
