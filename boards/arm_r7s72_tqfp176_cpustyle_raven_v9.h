@@ -81,6 +81,7 @@
 	#define WITHNMEA_USART2		1	/* порт подключения GPS/GLONASS */
 
 	#define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
+	//#define WITHUAC2		1	/* UAC2 support */
 
 	#define WITHUSBCDC		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
 	//#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
