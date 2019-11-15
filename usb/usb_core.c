@@ -1090,7 +1090,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 			if (USB_GetDevSpeed(hpcd->Instance) == USB_OTG_SPEED_HIGH)
 			{
 				hpcd->Init.speed = PCD_SPEED_HIGH;
-				hpcd->Init.ep0_mps = USB_OTG_MAX_EP0_SIZE; //USB_OTG_HS_MAX_PACKET_SIZE;
+				//hpcd->Init.ep0_mps = USB_OTG_MAX_EP0_SIZE; //USB_OTG_HS_MAX_PACKET_SIZE;
 				/*
 				hpcd->Instance->GUSBCFG = (hpcd->Instance->GUSBCFG & ~ USB_OTG_GUSBCFG_TRDT) |
 				(uint32_t)((USBD_HS_TRDT_VALUE << USB_OTG_GUSBCFG_TRDT_Pos) & USB_OTG_GUSBCFG_TRDT) |
@@ -1100,7 +1100,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 			else
 			{
 				hpcd->Init.speed = PCD_SPEED_FULL;
-				hpcd->Init.ep0_mps = USB_OTG_MAX_EP0_SIZE; //USB_OTG_FS_MAX_PACKET_SIZE ;
+				//hpcd->Init.ep0_mps = USB_OTG_MAX_EP0_SIZE; //USB_OTG_FS_MAX_PACKET_SIZE ;
 			}
 			HAL_PCD_ResetCallback(hpcd);
 			break;
@@ -6880,7 +6880,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
       if (USB_GetDevSpeed(hpcd->Instance) == USB_OTG_SPEED_HIGH)
       {
         hpcd->Init.speed = PCD_SPEED_HIGH;
-        hpcd->Init.ep0_mps = USB_OTG_MAX_EP0_SIZE; //USB_OTG_HS_MAX_PACKET_SIZE;
+        //hpcd->Init.ep0_mps = USB_OTG_MAX_EP0_SIZE; //USB_OTG_HS_MAX_PACKET_SIZE;
         hpcd->Instance->GUSBCFG = (hpcd->Instance->GUSBCFG & ~ USB_OTG_GUSBCFG_TRDT) |
 			(uint32_t)((USBD_HS_TRDT_VALUE << USB_OTG_GUSBCFG_TRDT_Pos) & USB_OTG_GUSBCFG_TRDT) |
 			0;
@@ -6888,7 +6888,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
       else
       {
         hpcd->Init.speed = PCD_SPEED_FULL;
-        hpcd->Init.ep0_mps = USB_OTG_MAX_EP0_SIZE;//USB_OTG_FS_MAX_PACKET_SIZE ;
+        //hpcd->Init.ep0_mps = USB_OTG_MAX_EP0_SIZE;//USB_OTG_FS_MAX_PACKET_SIZE ;
 
         /* The USBTRD is configured according to the tables below, depending on AHB frequency
         used by application. In the low AHB frequency range it is used to stretch enough the USB response
@@ -10061,10 +10061,10 @@ USBD_StatusTypeDef  USBD_LL_Init(PCD_HandleTypeDef * hpcd, USBD_HandleTypeDef *p
 	// Значение ep0_mps и speed обновится после reset шины
 	#if WITHUSBDEV_HSDESC
 		hpcd->Init.speed = PCD_SPEED_HIGH;
-		hpcd->Init.ep0_mps = USB_OTG_MAX_EP0_SIZE; //USB_OTG_HS_MAX_PACKET_SIZE;
+		//hpcd->Init.ep0_mps = USB_OTG_MAX_EP0_SIZE; //USB_OTG_HS_MAX_PACKET_SIZE;
 	#else /* WITHUSBDEV_HSDESC */
 		hpcd->Init.speed = PCD_SPEED_FULL;
-		hpcd->Init.ep0_mps = USB_OTG_MAX_EP0_SIZE; //USB_OTG_FS_MAX_PACKET_SIZE;
+		//hpcd->Init.ep0_mps = USB_OTG_MAX_EP0_SIZE; //USB_OTG_FS_MAX_PACKET_SIZE;
 	#endif /* WITHUSBDEV_HSDESC */
 	hpcd->Init.phy_itface = USB_OTG_EMBEDDED_PHY;
 
@@ -10074,10 +10074,10 @@ USBD_StatusTypeDef  USBD_LL_Init(PCD_HandleTypeDef * hpcd, USBD_HandleTypeDef *p
 
 	#if WITHUSBDEV_HSDESC
 		hpcd->Init.speed = PCD_SPEED_HIGH;
-		hpcd->Init.ep0_mps = USB_OTG_MAX_EP0_SIZE; //DEP0CTL_MPS_64;
+		//hpcd->Init.ep0_mps = USB_OTG_MAX_EP0_SIZE; //DEP0CTL_MPS_64;
 	#else /* WITHUSBDEV_HSDESC */
 		hpcd->Init.speed = PCD_SPEED_FULL;
-		hpcd->Init.ep0_mps = USB_OTG_MAX_EP0_SIZE; //DEP0CTL_MPS_64;
+		//hpcd->Init.ep0_mps = USB_OTG_MAX_EP0_SIZE; //DEP0CTL_MPS_64;
 	#endif /* WITHUSBDEV_HSDESC */
 
 	#if WITHUSBDEV_HIGHSPEEDULPI
@@ -13883,25 +13883,22 @@ void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd)
 USBH_StatusTypeDef  USBH_LL_Init(USBH_HandleTypeDef *phost)
 {
 	/* Init USB_IP */
-	//if (WITHUSBHW_HOST == USB_OTG_FS)
+	/* Link The driver to the stack */
+	hhcd_USB_OTG.pData = phost;
+	phost->pData = & hhcd_USB_OTG;
+
+	hhcd_USB_OTG.Instance = WITHUSBHW_HOST;
+	hhcd_USB_OTG.Init.Host_channels = 16;
+	hhcd_USB_OTG.Init.speed = PCD_SPEED_FULL;
+	hhcd_USB_OTG.Init.dma_enable = USB_DISABLE;
+	hhcd_USB_OTG.Init.phy_itface = HCD_PHY_EMBEDDED;
+	hhcd_USB_OTG.Init.Sof_enable = USB_DISABLE;
+	if (HAL_HCD_Init(& hhcd_USB_OTG) != HAL_OK)
 	{
-		/* Link The driver to the stack */
-		hhcd_USB_OTG.pData = phost;
-		phost->pData = & hhcd_USB_OTG;
-
-		hhcd_USB_OTG.Instance = WITHUSBHW_HOST;
-		hhcd_USB_OTG.Init.Host_channels = 16;
-		hhcd_USB_OTG.Init.speed = PCD_SPEED_FULL;
-		hhcd_USB_OTG.Init.dma_enable = USB_DISABLE;
-		hhcd_USB_OTG.Init.phy_itface = HCD_PHY_EMBEDDED;
-		hhcd_USB_OTG.Init.Sof_enable = USB_DISABLE;
-		if (HAL_HCD_Init(& hhcd_USB_OTG) != HAL_OK)
-		{
-			ASSERT(0);
-		}
-
-		USBH_LL_SetTimer(phost, HAL_HCD_GetCurrentFrame(&hhcd_USB_OTG));
+		ASSERT(0);
 	}
+
+	USBH_LL_SetTimer(phost, HAL_HCD_GetCurrentFrame(&hhcd_USB_OTG));
 	return USBH_OK;
 }
 

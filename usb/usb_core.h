@@ -300,8 +300,12 @@ typedef struct
 
   uint32_t dma_enable;           /*!< Enable or disable of the USB embedded DMA.                             */
 
+#if 0
+  // нигде не используется (только устанавливается)
   uint32_t ep0_mps;              /*!< Set the Endpoint 0 Max Packet size.
                                       This parameter can be any value of @ref USB_EP0_MPS_                   */
+
+#endif
 
   uint32_t phy_itface;           /*!< Select the used PHY interface.
                                       This parameter can be any value of @ref USB_Core_PHY_                  */
