@@ -70,6 +70,10 @@
 		#define ARMSAIMCLK	12288000 //(PLLSAI_FREQ_OUT / 14)
 		// UAC2 clock parameters
 		#define FPGADECIMATION 2560
+
+		#define UAC2_CLKSRC (WITHCPUXOSC / 25)
+		#define UAC2_DIV (14 * 256)
+		#define UAC2_MUL 344
 	#endif /* WITHI2SCLOCKFROMPIN */
 
 	#define HARDWARE_DACSCALE 1
