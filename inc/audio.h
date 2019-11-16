@@ -368,8 +368,10 @@ typedef struct
 
 #if WITHNOSPEEX
 	#define FIRBUFSIZE 1024	/* это не порядок фильтра, просто размер буфера при передачи данных к user mode обработчику */
+
 #else /* WITHNOSPEEX */
 	#define FIRBUFSIZE SPEEXNN
+
 #endif /* WITHNOSPEEX */
 
 // Ограничение алгоритма генерации параметров фильтра - нечётное значение Ntap.
@@ -378,20 +380,24 @@ typedef struct
 #define NtapValidate(n)	((unsigned) (n) / 8 * 8 + 1)
 #define NtapCoeffs(n)	((unsigned) (n) / 2 + 1)
 
-#if WITHNOSPEEX
-	#define	Ntap_rx_AUDIO	NtapValidate(511)
-	#define Ntap_tx_MIKE	NtapValidate(511)
-#elif ! WITHDSPLOCALFIR
-	#define	Ntap_rx_AUDIO	NtapValidate(SPEEXNN * 2 - 7)
-	#define Ntap_tx_MIKE	NtapValidate(241) //Ntap_rx_AUDIO
-#else /* ! WITHDSPLOCALFIR */
+#if WITHDSPLOCALFIR
+	/* Фильтрация квадратур осуществляется процессором */
 	#define	Ntap_rx_AUDIO	NtapValidate(241)
-	//#define Ntap_tx_MIKE	Ntap_rx_AUDIO
-#endif /* ! WITHDSPLOCALFIR */
+
+#else /* WITHDSPLOCALFIR */
+	#if WITHNOSPEEX
+		#define	Ntap_rx_AUDIO	NtapValidate(511)
+		#define Ntap_tx_MIKE	NtapValidate(241)
+
+	#else /* WITHNOSPEEX */
+		#define	Ntap_rx_AUDIO	NtapValidate(SPEEXNN * 2 - 7)
+		#define Ntap_tx_MIKE	NtapValidate(241) //Ntap_rx_AUDIO
+
+	#endif /* ! WITHDSPLOCALFIR */
+
+#endif /* WITHDSPLOCALFIR */
 
 #if WITHDSPEXTFIR || WITHDSPEXTDDC
-
-
 	// Параметры фильтров в случае использования FPGA с фильтром на квадратурных каналах
 	#define Ntap_trxi_IQ		1535	// Фильтр в FPGA
 	#define HARDWARE_COEFWIDTH	24		// Разрядность коэффициентов. format is S0.22
@@ -405,15 +411,19 @@ typedef struct
 		#define Ntap_rx_SSB_IQ	NtapValidate(241)	// SSB/CW filters: complex numbers, floating-point implementation
 		#define Ntap_tx_SSB_IQ	NtapValidate(241)	// SSB/CW TX filter: complex numbers, floating-point implementation
 		#define Ntap_tx_MIKE	NtapValidate(105)	// single samples, floating point implementation
+
 	#elif CPUSTYLE_STM32F7XX
 		#define Ntap_rx_SSB_IQ	NtapValidate(241)	// SSB/CW filters: complex numbers, floating-point implementation
 		#define Ntap_tx_SSB_IQ	NtapValidate(241)	// SSB/CW TX filter: complex numbers, floating-point implementation
 		#define Ntap_tx_MIKE	NtapValidate(105)	// single samples, floating point implementation
+
 	#else
 		#define Ntap_rx_SSB_IQ	NtapValidate(181)	// SSB/CW filters: complex numbers, floating-point implementation
 		#define Ntap_tx_SSB_IQ	NtapValidate(181)	// SSB/CW TX filter: complex numbers, floating-point implementation
 		#define Ntap_tx_MIKE	NtapValidate(105)	// single samples, floating point implementation
+
 	#endif
+
 #endif /* WITHDSPLOCALFIR */
 
 uint_fast8_t modem_getnextbit(
@@ -491,7 +501,6 @@ void savesampleout96stereo(int_fast32_t ch0, int_fast32_t ch1);
 void savesampleout192stereo(int_fast32_t ch0, int_fast32_t ch1);
 
 #if WITHINTEGRATEDDSP
-
 	#include "speex\arch.h"
 	#include "speex\speex_preprocess.h"
 
@@ -499,8 +508,10 @@ void savesampleout192stereo(int_fast32_t ch0, int_fast32_t ch1);
 
 #if WITHNOSPEEX
 	typedef float32_t speexel_t;
+
 #else /* WITHNOSPEEX */
 	typedef int16_t speexel_t;
+
 #endif /* WITHNOSPEEX */
 uint_fast8_t takespeexready_user(speexel_t * * dest);
 void releasespeexbuffer_user(speexel_t * t);

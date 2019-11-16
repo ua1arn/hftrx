@@ -5373,11 +5373,16 @@ void RAMFUNC dsp_extbuffer32rx(const int32_t * buff)
 			const INT32P_t dual = vi;
 			savesampleout32stereo(iq2tx(dual.IV), iq2tx(dual.QV));	// кодек получает 24 бита left justified в 32-х битном числе.
 			//savesampleout16stereo(injectsidetone(dual.IV, sdtn), injectsidetone(dual.QV, sdtn));
-			recordsampleUAC(get_lout16(), get_rout16());	// Запись в UAC демодулированного сигнала без озвучки клавиш
+			//recordsampleUAC(get_lout16(), get_rout16());	// Запись в UAC демодулированного сигнала без озвучки клавиш
+			recordsampleUAC(
+				(int_fast32_t) buff [i + DMABUF32RXI] >> 16,
+				(int_fast32_t) buff [i + DMABUF32RXQ] >> 16
+				);
 		}
 		else
 		{
 			savesampleout32stereo(iq2tx(0), iq2tx(0));	// кодек получает 24 бита left justified в 32-х битном числе.
+			recordsampleUAC(0, 0);
 		}
 
 #elif WITHTRANSPARENTIQ

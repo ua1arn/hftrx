@@ -68,7 +68,11 @@
 		// Частота формируется процессором
 		#define ARMI2SMCLK	12288000 //(PLLSAI_FREQ_OUT / 14)
 		#define ARMSAIMCLK	12288000 //(PLLSAI_FREQ_OUT / 14)
+		// UAC2 clock parameters
+		#define FPGADECIMATION 2560
 	#endif /* WITHI2SCLOCKFROMPIN */
+
+	#define HARDWARE_DACSCALE 1
 
 	/* модели синтезаторов - схемы частотообразования */
 
