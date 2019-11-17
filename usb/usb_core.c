@@ -447,7 +447,6 @@ static void usbd_handle_ctrt(PCD_HandleTypeDef *hpcd, uint_fast8_t ctsq)
         /* TX COMPLETE */
 		//HAL_PCD_DataInStageCallback(hpcd, 0);
 		USBx->DCPCTR |= USB_DCPCTR_CCPL;	// CCPL
-		(void) USBx->DCPCTR;
 		break;
 
 	case 3:
@@ -470,7 +469,6 @@ static void usbd_handle_ctrt(PCD_HandleTypeDef *hpcd, uint_fast8_t ctsq)
 		//pdev->ep0_state = USBD_EP0_STATUS_OUT;
         //HAL_PCD_DataOutStageCallback(hpcd, 0);
 		USBx->DCPCTR |= USB_DCPCTR_CCPL;	// CCPL
-		(void) USBx->DCPCTR;
 		break;
 
 	case 5:
@@ -480,8 +478,8 @@ static void usbd_handle_ctrt(PCD_HandleTypeDef *hpcd, uint_fast8_t ctsq)
 		usb_save_request(USBx, & pdev->request);
 		USBx->INTSTS0 = (uint16_t) ~ USB_INTSTS0_VALID;	// Clear VALID - in seq 1, 3 and 5
 		HAL_PCD_SetupStageCallback(hpcd);
-		USBx->DCPCTR |= USB_DCPCTR_CCPL;	// CCPL
-		(void) USBx->DCPCTR;
+		hpcd->run_later_ctrl_comp = 1;
+		//USBx->DCPCTR |= USB_DCPCTR_CCPL;	// CCPL
 		break;
 
 	case 6:
@@ -948,6 +946,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 	const uint_fast16_t intsts1 = USBx->INTSTS1;
 	const uint_fast16_t intsts0msk = intsts0 & USBx->INTENB0;
 	const uint_fast16_t intsts1msk = intsts1 & USBx->INTENB1;
+	hpcd->run_later_ctrl_comp = 0;
 
 	if ((intsts0msk & USB_INTSTS0_SOFR) != 0)	// SOFR
 	{
@@ -1135,6 +1134,12 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 		USBx->INTSTS0 = (uint16_t) ~ USB_INTSTS0_VBINT;	// Clear VBINT - enabled by VBSE
 		PRINTF(PSTR("HAL_PCD_IRQHandler trapped - VBINT, VBSTS=%d\n"), (intsts0 & USB_INTSTS0_VBSTS) != 0);
 	//	usbd_handle_vbuse(usbd_getvbus());
+	}
+	if (hpcd->run_later_ctrl_comp != 0)
+	{
+		USBx->DCPCTR &= USB_DCPCTR_PID;
+		USBx->DCPCTR |= DEVDRV_USBF_PID_BUF;	// CCPL
+		USBx->DCPCTR |= USB_DCPCTR_CCPL;	// CCPL
 	}
 }
 
@@ -4531,6 +4536,8 @@ HAL_StatusTypeDef HAL_PCD_EP_SetStall(PCD_HandleTypeDef *hpcd, uint_fast8_t ep_a
   if ((ep_addr & 0x7F) == 0)
   {
     USB_EP0_OutStart(hpcd->Instance, hpcd->Init.dma_enable, (uint8_t *)hpcd->PSetup);
+    hpcd->run_later_ctrl_comp = 0;
+
   }
   __HAL_UNLOCK(hpcd);
 
@@ -5487,14 +5494,12 @@ USBD_StatusTypeDef  USBD_StdItfReq(USBD_HandleTypeDef *pdev, USBD_SetupReqTypede
 			else
 			{
 #if CPUSTYLE_R7S721
-			// FIXME:
-			// Hack code!!!!
-			if ((req->bmRequest & USB_REQ_TYPE_DIR) == 0)
-			{
-				// OUT direction
-				//PRINTF(PSTR("USBD_StdItfReq hack: bmRequest=%04X, bRequest=%02X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
-				USBD_LL_Transmit(pdev, 0x00, NULL, 0);
-			}
+				// FIXME:
+				// Hack code!!!!
+				if ((req->bmRequest & USB_REQ_TYPE_DIR) == 0)
+				{
+					((PCD_HandleTypeDef *) pdev->pData)->run_later_ctrl_comp = 1;
+				}
 #endif
 			}
 		}

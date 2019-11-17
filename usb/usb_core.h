@@ -472,6 +472,7 @@ typedef USBALIGN_BEGIN struct
 	#endif
 
   uint32_t battery_charging_active;     /*!< Enable or disable Battery charging.        */
+  uint_fast8_t            run_later_ctrl_comp;	// Renesas hardware specific item
 
   void                    * pData;       /*!< Pointer to upper stack Handler */
 } USBALIGN_END PCD_HandleTypeDef;
