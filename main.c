@@ -3169,26 +3169,35 @@ enum
 	static uint_fast8_t gmikeagcgain = 30;	/* Максимальное усидение АРУ микрофона */
 	static uint_fast8_t  gmikehclip;		/* Ограничитель */
 
-#if WITHUSBUAC
-	static uint_fast8_t gdatamode;	/* передача звука с USB вместо обычного источника */
-	uint_fast8_t hamradio_get_datamode(void) { return gdatamode; }
+	#if WITHUSBUAC
+		static uint_fast8_t gdatamode;	/* передача звука с USB вместо обычного источника */
+		uint_fast8_t hamradio_get_datamode(void) { return gdatamode; }
 
-	#if WITHUSBHEADSET
-		static uint_fast8_t guacplayer = 1;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
-	#else /* WITHUSBHEADSET */
-		static uint_fast8_t guacplayer;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
-	#endif /* WITHUSBHEADSET */
-	#if WITHRTS96 || WITHRTS192 || WITHTRANSPARENTIQ
-		static uint_fast8_t  gswapiq;		/* Поменять местами I и Q сэмплы в потоке RTS96 */
-	#endif /* WITHRTS96 || WITHRTS192 || WITHTRANSPARENTIQ */
-#else /* WITHUSBUAC */
-	enum { gdatamode = 0 };	/* передача звука с USB вместо обычного источника */
-	enum { guacplayer = 0 };
-#endif /* WITHUSBUAC */
-#if WITHAFCODEC1HAVEPROC
-	static uint_fast8_t gmikeequalizer;	// включение обработки сигнала с микрофона (эффекты, эквалайзер, ...)
-	static uint_fast8_t gmikeequalizerparams [HARDWARE_CODEC1_NPROCPARAMS] = { 12, 12, 12, 12, 12 };	// Эквалайзер 80Hz 230Hz 650Hz 	1.8kHz 5.3kHz
-#endif /* WITHAFCODEC1HAVEPROC */
+		#if WITHUSBHEADSET
+			static uint_fast8_t guacplayer = 1;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
+		#else /* WITHUSBHEADSET */
+			static uint_fast8_t guacplayer;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
+		#endif /* WITHUSBHEADSET */
+		#if WITHRTS96 || WITHRTS192 || WITHTRANSPARENTIQ
+			static uint_fast8_t  gswapiq;		/* Поменять местами I и Q сэмплы в потоке RTS96 */
+		#endif /* WITHRTS96 || WITHRTS192 || WITHTRANSPARENTIQ */
+	#else /* WITHUSBUAC */
+		enum { gdatamode = 0 };	/* передача звука с USB вместо обычного источника */
+		enum { guacplayer = 0 };
+	#endif /* WITHUSBUAC */
+	#if WITHAFCODEC1HAVEPROC
+		#define EQUALIZERBASE 12
+		static int_fast32_t getequalizerbase(void)
+		{
+			return - EQUALIZERBASE;
+		}
+		static uint_fast8_t gmikeequalizer;	// включение обработки сигнала с микрофона (эффекты, эквалайзер, ...)
+		static uint_fast8_t gmikeequalizerparams [HARDWARE_CODEC1_NPROCPARAMS] =
+		{
+			// Эквалайзер 80Hz 230Hz 650Hz 	1.8kHz 5.3kHz
+			EQUALIZERBASE, EQUALIZERBASE, EQUALIZERBASE, EQUALIZERBASE, EQUALIZERBASE
+		};
+	#endif /* WITHAFCODEC1HAVEPROC */
 	static uint_fast8_t gagcoff;
 #else /* WITHIF4DSP */
 	static const uint_fast8_t gagcoff = 0;
@@ -3558,14 +3567,6 @@ static int_fast32_t getadcoffsbase(void)
 {
 	return - ADCOFFSETMID;
 }
-
-#if WITHAFCODEC1HAVEPROC	/* кодек имеет управление обработкой микрофонного сигнала (эффекты, эквалайзер, ...) */
-
-static int_fast32_t getequalizerbase(void)
-{
-	return - 12;
-}
-#endif /* WITHAFCODEC1HAVEPROC */
 
 
 #if defined(REFERENCE_FREQ)
@@ -13778,7 +13779,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	{
 		"EQUA .08", 2 + WSIGNFLAG, 0, 0,	ISTEP1,	
 		ITEM_VALUE,
-		0, 12 * 2,
+		0, EQUALIZERBASE * 2,
 		offsetof(struct nvmap, gmikeequalizerparams [0]),
 		NULL,
 		& gmikeequalizerparams [0],
@@ -13787,7 +13788,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	{
 		"EQUA .23", 2 + WSIGNFLAG, 0, 0,	ISTEP1,	
 		ITEM_VALUE,
-		0, 12 * 2,
+		0, EQUALIZERBASE * 2,
 		offsetof(struct nvmap, gmikeequalizerparams [1]),
 		NULL,
 		& gmikeequalizerparams [1],
@@ -13796,7 +13797,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	{
 		"EQUA .65", 2 + WSIGNFLAG, 0, 0,	ISTEP1,	
 		ITEM_VALUE,
-		0, 12 * 2,
+		0, EQUALIZERBASE * 2,
 		offsetof(struct nvmap, gmikeequalizerparams [2]),
 		NULL,
 		& gmikeequalizerparams [2],
@@ -13805,7 +13806,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	{
 		"EQUA 1.8", 2 + WSIGNFLAG, 0, 0,	ISTEP1,	
 		ITEM_VALUE,
-		0, 12 * 2,
+		0, EQUALIZERBASE * 2,
 		offsetof(struct nvmap, gmikeequalizerparams [3]),
 		NULL,
 		& gmikeequalizerparams [3],
@@ -13814,7 +13815,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	{
 		"EQUA 5.3", 2 + WSIGNFLAG, 0, 0,	ISTEP1,	
 		ITEM_VALUE,
-		0, 12 * 2,
+		0, EQUALIZERBASE * 2,
 		offsetof(struct nvmap, gmikeequalizerparams [4]),
 		NULL,
 		& gmikeequalizerparams [4],
