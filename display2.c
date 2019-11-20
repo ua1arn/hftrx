@@ -25,19 +25,19 @@ static const COLOR_T colorsfg_2rxtx [2] = { COLOR_GREEN, COLOR_RED, };
 static const COLOR_T colorsbg_2rxtx [2] = { COLOR_BLACK, COLOR_BLACK, };
 
 // параметры отображения состояний из трех вариантов
-static const COLOR_T colorsfg_4state [4] = { COLOR_BLACK, COLOR_RED, COLOR_STATE, COLOR_STATE, };
-static const COLOR_T colorsbg_4state [4] = { COLOR_STATE, COLOR_DARKSTATE, COLOR_DARKSTATE, COLOR_DARKSTATE, };
+static const COLOR_T colorsfg_4state [4] = { COLOR_BLACK, COLOR_RED, DESIGNCOLORSTATE, DESIGNCOLORSTATE, };
+static const COLOR_T colorsbg_4state [4] = { DESIGNCOLORSTATE, DESIGNCOLORDARKSTATE, DESIGNCOLORDARKSTATE, DESIGNCOLORDARKSTATE, };
 
 // параметры отображения состояний из двух вариантов
-static const COLOR_T colorsfg_2state [2] = { COLOR_BLACK, COLOR_STATE, };
-static const COLOR_T colorsbg_2state [2] = { COLOR_STATE, COLOR_DARKSTATE, };
+static const COLOR_T colorsfg_2state [2] = { COLOR_BLACK, DESIGNCOLORSTATE, };
+static const COLOR_T colorsbg_2state [2] = { DESIGNCOLORSTATE, DESIGNCOLORDARKSTATE, };
 
 // параметры отображения текстов без вариантов
-static const COLOR_T colorsfg_1state [1] = { COLOR_STATE, };
+static const COLOR_T colorsfg_1state [1] = { DESIGNCOLORSTATE, };
 static const COLOR_T colorsbg_1state [1] = { COLOR_BLACK, };	// устанавливается в цвет фона из палитры
 
 // параметры отображения текстов без вариантов
-static const COLOR_T colorsfg_1freq [1] = { BIGCOLOR, };
+static const COLOR_T colorsfg_1freq [1] = { DESIGNBIGCOLOR, };
 static const COLOR_T colorsbg_1freq [1] = { COLOR_BLACK, };	// устанавливается в цвет фона из палитры
 
 // todo: switch off -Wunused-function
