@@ -3224,8 +3224,8 @@ void spool_0p128(void);	// OPERA support
 #define TIMECOLOR	COLOR_GREEN
 #define VOLTCOLOR	COLOR_GREEN
 
-#if 0
-	// "All-in-red": FT1000 inpired color scheme
+#if 1
+	// "All-in-red": FT1000 inspired color scheme
 	#define BIGCOLOR COLOR_RED 		// DARK RED
 	#define BIGCOLORHALF COLOR_RED 	// DARK RED
 	#define COLOR_STATE	COLOR_RED
