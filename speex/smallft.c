@@ -38,8 +38,8 @@
 #include "os_support.h"
 
 static void drfti1(int n, float *wa, int *ifac){
-  static const int ntryh[4] = { 4,2,3,5 };
-  static const float tpi = 6.28318530717958648f;
+  static int ntryh[4] = { 4,2,3,5 };
+  static float tpi = 6.28318530717958648f;
   float arg,argh,argld,fi;
   int ntry=0,i,j=-1;
   int k1, l1, l2, ib;
@@ -98,8 +98,8 @@ static void drfti1(int n, float *wa, int *ifac){
       for (ii=2;ii<ido;ii+=2){
 	fi+=1.f;
 	arg=fi*argld;
-	wa[i++]=cosf(arg);
-	wa[i++]=sinf(arg);
+	wa[i++]=cos(arg);
+	wa[i++]=sin(arg);
       }
       is+=ido;
     }
@@ -170,7 +170,7 @@ static void dradf2(int ido,int l1,float *cc,float *ch,float *wa1){
 
 static void dradf4(int ido,int l1,float *cc,float *ch,float *wa1,
 	    float *wa2,float *wa3){
-  static const float hsqt2 = .70710678118654752f;
+  static float hsqt2 = .70710678118654752f;
   int i,k,t0,t1,t2,t3,t4,t5,t6;
   float ci2,ci3,ci4,cr2,cr3,cr4,ti1,ti2,ti3,ti4,tr1,tr2,tr3,tr4;
   t0=l1*ido;
@@ -273,7 +273,7 @@ static void dradf4(int ido,int l1,float *cc,float *ch,float *wa1,
 static void dradfg(int ido,int ip,int l1,int idl1,float *cc,float *c1,
                           float *c2,float *ch,float *ch2,float *wa){
 
-  static const float tpi=6.283185307179586f;
+  static float tpi=6.283185307179586f;
   int idij,ipph,i,j,k,l,ic,ik,is;
   int t0,t1,t2,t3,t4,t5,t6,t7,t8,t9,t10;
   float dc2,ai1,ai2,ar1,ar2,ds2;
@@ -282,8 +282,8 @@ static void dradfg(int ido,int ip,int l1,int idl1,float *cc,float *c1,
   int idp2,ipp2;
 
   arg=tpi/(float)ip;
-  dcp=cosf(arg);
-  dsp=sinf(arg);
+  dcp=cos(arg);
+  dsp=sin(arg);
   ipph=(ip+1)>>1;
   ipp2=ip;
   idp2=ido;
@@ -687,8 +687,8 @@ L105:
 
 static void dradb3(int ido,int l1,float *cc,float *ch,float *wa1,
                           float *wa2){
-  static const float taur = -.5f;
-  static const float taui = .8660254037844386f;
+  static float taur = -.5f;
+  static float taui = .8660254037844386f;
   int i,k,t0,t1,t2,t3,t4,t5,t6,t7,t8,t9,t10;
   float ci2,ci3,di2,di3,cr2,cr3,dr2,dr3,ti2,tr2;
   t0=l1*ido;
@@ -750,7 +750,7 @@ static void dradb3(int ido,int l1,float *cc,float *ch,float *wa1,
 
 static void dradb4(int ido,int l1,float *cc,float *ch,float *wa1,
 			  float *wa2,float *wa3){
-  static const float sqrt2=1.414213562373095f;
+  static float sqrt2=1.414213562373095f;
   int i,k,t0,t1,t2,t3,t4,t5,t6,t7,t8;
   float ci2,ci3,ci4,cr2,cr3,cr4,ti1,ti2,ti3,ti4,tr1,tr2,tr3,tr4;
   t0=l1*ido;
@@ -841,7 +841,7 @@ static void dradb4(int ido,int l1,float *cc,float *ch,float *wa1,
 
 static void dradbg(int ido,int ip,int l1,int idl1,float *cc,float *c1,
             float *c2,float *ch,float *ch2,float *wa){
-  static const float tpi=6.283185307179586f;
+  static float tpi=6.283185307179586f;
   int idij,ipph,i,j,k,l,ik,is,t0,t1,t2,t3,t4,t5,t6,t7,t8,t9,t10,
       t11,t12;
   float dc2,ai1,ai2,ar1,ar2,ds2;
@@ -852,8 +852,8 @@ static void dradbg(int ido,int ip,int l1,int idl1,float *cc,float *c1,
   t10=ip*ido;
   t0=l1*ido;
   arg=tpi/(float)ip;
-  dcp=cosf(arg);
-  dsp=sinf(arg);
+  dcp=cos(arg);
+  dsp=sin(arg);
   nbd=(ido-1)>>1;
   ipp2=ip;
   ipph=(ip+1)>>1;

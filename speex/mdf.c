@@ -69,12 +69,12 @@
 #include "config.h"
 #endif
 
-#include "speex/arch.h"
+#include "arch.h"
 #include "speex/speex_echo.h"
-#include "speex/fftwrap.h"
-#include "speex/pseudofloat.h"
-#include "speex/math_approx.h"
-#include "speex/os_support.h"
+#include "fftwrap.h"
+#include "pseudofloat.h"
+#include "math_approx.h"
+#include "os_support.h"
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846

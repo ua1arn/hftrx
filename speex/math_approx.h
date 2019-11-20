@@ -43,18 +43,18 @@
 #define spx_acos acosf
 #define spx_exp expf
 #define spx_cos_norm(x) (cosf((.5f*M_PI)*(x)))
-#define spx_atan atanf
+#define spx_atan ATANF
 
 /** Generate a pseudo-random number */
 static inline spx_word16_t speex_rand(spx_word16_t std, spx_int32_t *seed)
 {
-   const unsigned long jflone = 0x3f800000uL;
-   const unsigned long jflmsk = 0x007fffffuL;
-   union {long i; float f;} ran;
+   const unsigned int jflone = 0x3f800000;
+   const unsigned int jflmsk = 0x007fffff;
+   union {int i; float f;} ran;
    *seed = 1664525 * *seed + 1013904223;
    ran.i = jflone | (jflmsk & *seed);
-   ran.f -= 1.5f;
-   return 3.4642f*std*ran.f;
+   ran.f -= 1.5;
+   return 3.4642*std*ran.f;
 }
 
 

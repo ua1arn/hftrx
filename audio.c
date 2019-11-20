@@ -607,7 +607,7 @@ static RAMDTCM ncoftw_t anglestep_lout2 = FTWAF(5600), anglestep_rout2 = FTWAF(6
 static RAMDTCM ncoftw_t angle_lout2, angle_rout2;
 
 // test IQ frequency
-static RAMDTCM ncoftw_t anglestep_monofreq = FTWAF(200);
+static RAMDTCM ncoftw_t anglestep_monofreq = FTWAF(0);
 static RAMDTCM ncoftw_t angle_monofreq;
 
 // test IQ frequency
@@ -3043,13 +3043,15 @@ static void copytospeex(float * frame)
 #endif
 }
 
-
+#if ! WITHNOSPEEX
+// Speex support
 void dsp_recalceq(uint_fast8_t pathi, float * frame)
 {
 	dsp_recalceq_coeffs(pathi, FIRCoef_rx_AUDIO [gwprof] [pathi], Ntap_rx_AUDIO);	// calculate 1/2 of coefficients
 	imp_response(FIRCoef_rx_AUDIO [gwprof] [pathi], Ntap_rx_AUDIO);	// Получение АЧХ из коэффициентов симмметричного FIR
 	copytospeex(frame);
 }
+#endif /* ! WITHNOSPEEX */
 
 #if WITHMODEM
 

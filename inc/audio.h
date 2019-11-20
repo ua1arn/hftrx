@@ -510,7 +510,7 @@ void savesampleout192stereo(int_fast32_t ch0, int_fast32_t ch1);
 	typedef float32_t speexel_t;
 
 #else /* WITHNOSPEEX */
-	typedef int16_t speexel_t;
+	typedef float speexel_t;
 
 #endif /* WITHNOSPEEX */
 uint_fast8_t takespeexready_user(speexel_t * * dest);
