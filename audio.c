@@ -376,8 +376,8 @@ typedef uint32_t ncoftw_t;
 typedef int32_t ncoftwi_t;
 #define NCOFTWBITS 32	// количество битов в ncoftw_t
 #define ASH (NCOFTWBITS - TABLELOG2)	// 22 = 32 - log2(number of items in sintable)
-#define FTW2ANGLEI(ftw)	((uint32_t) (ftw) >> ASH)
-#define FTW2ANGLEQ(ftw)	((uint32_t) ((ftw) + 0x40000000L) >> ASH)	// косинус опережает на четверть оборота
+//#define FTW2ANGLEI(ftw)	((uint32_t) (ftw) >> ASH)
+//#define FTW2ANGLEQ(ftw)	((uint32_t) ((ftw) + 0x40000000L) >> ASH)	// косинус опережает на четверть оборота
 #define FTWROUND(ftw) ((uint32_t) (ftw))
 #define FTWAF001(freq) (((int_fast64_t) (freq) << NCOFTWBITS) / ARMI2SRATE100)
 #define FTWAF(freq) (((int_fast64_t) (freq) << NCOFTWBITS) / ARMI2SRATE)
@@ -389,7 +389,7 @@ static FLOAT_t omega2ftw_k1; // = POWF(2, NCOFTWBITS);
 #define FTW2_SINCOS_Q31(angle) ((ncoftwi_t) (angle))
 // Convert ncoftw_t to q31 argument for arm_sin_q31
 // The Q31 input value is in the range [0 +0.9999] and is mapped to a radian value in the range [0 2*PI).
-#define FTW2_COS_Q31(angle) ((q31_t) ((((ncoftw_t) angle) + 0x8000000uL) / 2))
+#define FTW2_COS_Q31(angle) ((q31_t) ((((ncoftw_t) angle) + 0x80000000uL) / 2))
 #define FAST_Q31_2_FLOAT(val) ((q31_t) (val) / (FLOAT_t) 2147483648)
 
 #ifndef BOARD_FFTZOOM_POW2MAX
@@ -578,22 +578,37 @@ static RAMFUNC int32_t peekvali32(uint32_t a)
 
 #endif /* WITHLOOPBACKTEST */
 
-static RAMFUNC FLOAT32P_t getsincosf(ncoftw_t angle)
+static RAMFUNC FLOAT_t getsinf(ncoftw_t angle)
 {
-	FLOAT32P_t v;
-	q31_t sinv;
-	q31_t cosv;
-	arm_sin_cos_q31(FTW2_SINCOS_Q31(angle), & sinv, & cosv);
-	v.IV = FAST_Q31_2_FLOAT(sinv);	// todo: use arm_q31_to_float
-	v.QV = FAST_Q31_2_FLOAT(cosv);
+	FLOAT_t v;
+	const q31_t sinv = arm_sin_q31(FTW2_COS_Q31(angle));
+	//v = FAST_Q31_2_FLOAT(sinv);	// todo: use arm_q31_to_float
+	arm_q31_to_float(& sinv, & v, 1);
 	return v;
 }
 
 static RAMFUNC FLOAT_t getcosf(ncoftw_t angle)
 {
 	FLOAT_t v;
-	const q31_t sinv = arm_cos_q31(FTW2_COS_Q31(angle));
-	v = FAST_Q31_2_FLOAT(sinv);	// todo: use arm_q31_to_float
+	const q31_t cosv = arm_cos_q31(FTW2_COS_Q31(angle));
+	//v = FAST_Q31_2_FLOAT(cosv);	// todo: use arm_q31_to_float
+	arm_q31_to_float(& cosv, & v, 1);
+	return v;
+}
+
+static RAMFUNC FLOAT32P_t getsincosf(ncoftw_t angle)
+{
+	FLOAT32P_t v;
+	q31_t sincosv [2];
+#if 1
+	sincosv [0] = arm_sin_q31(FTW2_COS_Q31(angle));
+	sincosv [1] = arm_cos_q31(FTW2_COS_Q31(angle));
+#else
+	arm_sin_cos_q31(FTW2_SINCOS_Q31(angle), & sincosv [0], & sincosv [1]);
+	// at index 0 all fine
+	// at index 1 with sidetones
+#endif
+	arm_q31_to_float(sincosv, v.ivqv, 2);
 	return v;
 }
 
@@ -650,7 +665,7 @@ static int get_lout24(void)
 }
 #endif
 
-#if 0
+#if 1
 // test IQ frequency
 static RAMFUNC FLOAT32P_t get_float_monofreq(void)
 {
@@ -5216,7 +5231,7 @@ void RAMFUNC dsp_extbuffer32wfm(const int32_t * buff)
 			const FLOAT_t left = (a0 + a1 + a2 + a3) / 4;
 			save16demod(left, left);
 
-			// Измеритль уровня
+			// Измеритель уровня
 			const FLOAT32P_t p0 = { { buff [i + DMABUF32RXWFM0I], buff [i + DMABUF32RXWFM0Q] } };
 			const FLOAT_t l0 = SQRTF(agc_getsigpower(p0));
 			const FLOAT32P_t p1 = { { buff [i + DMABUF32RXWFM1I], buff [i + DMABUF32RXWFM1Q] } };
