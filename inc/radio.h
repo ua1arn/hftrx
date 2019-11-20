@@ -3206,6 +3206,66 @@ void spool_0p128(void);	// OPERA support
 
 #endif /* HYBRID_DDS_ATTINY2313 */
 
+
+// Цвета используемые для отображения
+// различных элементов на экране.
+
+#define LCOLOR	COLOR_GREEN		// цвет левой половины S-метра
+#define RCOLOR	COLOR_RED			// цвет правой половины S-метра
+#define PWRCOLOR	COLOR_RED		// цвет измерителя мощности
+#define SWRCOLOR	COLOR_YELLOW		// цвет SWR-метра
+
+#define OVFCOLOR COLOR_RED
+#define LOCKCOLOR COLOR_RED
+#define MODECOLOR COLOR_WHITE
+#define TXRXMODECOLOR COLOR_BLACK
+#define MODECOLORBG_TX COLOR_RED
+#define MODECOLORBG_RX	COLOR_GREEN
+#define TIMECOLOR	COLOR_GREEN
+#define VOLTCOLOR	COLOR_GREEN
+
+#if 0
+	// "All-in-red": FT1000 inpired color scheme
+	#define BIGCOLOR COLOR_RED 		// DARK RED
+	#define BIGCOLORHALF COLOR_RED 	// DARK RED
+	#define COLOR_STATE	COLOR_RED
+	#define COLOR_DARKSTATE	COLOR_DARKRED
+#else
+	#define BIGCOLOR COLOR_YELLOW 		// GOLD
+	#define BIGCOLORHALF COLOR_YELLOW
+	#define COLOR_STATE	COLOR_GREEN
+	#define COLOR_DARKSTATE	COLOR_DARKGREEN
+#endif
+
+
+
+#if 0
+	// new (for ats52).
+	#define COLOR565_GRIDCOLOR		TFTRGB565(128, 0, 0)		//COLOR_GRAY - center marker
+	#define COLOR565_GRIDCOLOR2		TFTRGB565(96, 96, 96)		//COLOR_DARKRED - other markers
+	#define COLOR565_SPECTRUMBG		TFTRGB565(0, 64, 24)			//
+	#define COLOR565_SPECTRUMBG2	TFTRGB565(0, 24, 8)		//COLOR_xxx - полоса пропускания приемника
+	#define COLOR565_SPECTRUMFG		TFTRGB565(0, 255, 0)		//COLOR_GREEN
+	#define COLOR565_SPECTRUMFENCE	TFTRGB565(255, 255, 255)	//COLOR_WHITE
+	#define COLOR565_SPECTRUMLINE	TFTRGB565(0, 255, 0)	//COLOR_GREEN
+#else
+	// old
+	#define COLOR565_GRIDCOLOR        TFTRGB565(128, 128, 0)        //COLOR_GRAY - center marker
+	#define COLOR565_GRIDCOLOR2        TFTRGB565(128, 0, 0x00)        //COLOR_DARKRED - other markers
+	#define COLOR565_SPECTRUMBG        TFTRGB565(0, 0, 0)            //COLOR_BLACK
+	#define COLOR565_SPECTRUMBG2    TFTRGB565(0, 128, 128)        //COLOR_CYAN - полоса пропускания приемника
+	#define COLOR565_SPECTRUMFG		TFTRGB565(0, 255, 0)		//COLOR_GREEN
+	#define COLOR565_SPECTRUMFENCE	TFTRGB565(255, 255, 255)	//COLOR_WHITE
+	#define COLOR565_SPECTRUMLINE	TFTRGB565(0, 255, 0)	//COLOR_GREEN
+#endif
+
+#define MENUGROUPCOLOR COLOR_YELLOW
+#define MENUCOLOR COLOR_WHITE
+#define MNUVALCOLOR COLOR_WHITE
+#define MENUSELCOLOR	COLOR_GREEN
+
+#define LABELW 8
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

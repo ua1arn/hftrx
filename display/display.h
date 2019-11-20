@@ -354,35 +354,6 @@ typedef uint16_t PACKEDCOLOR565_T;
 
 #define COLOR_KEY	TFTRGB(0xA0, 0, 0xA0)	// Цвет для прозрачных пикселей
 
-// Цвета используемые для отображения
-// различных элементов на экране.
-
-#define LCOLOR	COLOR_GREEN		// цвет левой половины S-метра
-#define RCOLOR	COLOR_RED			// цвет правой половины S-метра
-#define PWRCOLOR	COLOR_RED		// цвет измерителя мощности
-#define SWRCOLOR	COLOR_YELLOW		// цвет SWR-метра
-
-#define OVFCOLOR COLOR_RED
-#define LOCKCOLOR COLOR_RED
-#define MODECOLOR COLOR_WHITE
-#define TXRXMODECOLOR COLOR_BLACK
-#define MODECOLORBG_TX COLOR_RED
-#define MODECOLORBG_RX	COLOR_GREEN
-#define TIMECOLOR	COLOR_GREEN
-#define VOLTCOLOR	COLOR_GREEN
-
-#define BIGCOLOR COLOR_YELLOW // GOLD
-#define BIGCOLORHALF TFTRGB(192, 192, 0) //COLOR_OLIVE // DARK GOLD
-//#define FRQCOLOR GRAY
-#define FRQCOLOR COLOR_YELLOW // GOLD
-
-#define MENUGROUPCOLOR COLOR_YELLOW
-#define MENUCOLOR COLOR_WHITE
-#define MNUVALCOLOR COLOR_WHITE
-#define MENUSELCOLOR	COLOR_GREEN
-
-#define LABELW 8
-
 uint_fast8_t display_getpagesmax(void);	// количество разных вариантов отображения (menuset)
 uint_fast8_t display_getpagesleep(void);	// номер варианта отображения для "сна"
 uint_fast8_t display_getfreqformat(uint_fast8_t * prjv);	// получить параметры отображения частоты (для функции прямого ввода)

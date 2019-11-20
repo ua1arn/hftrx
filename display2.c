@@ -17,6 +17,29 @@
 
 #define WITHPLACEHOLDERS 1	//  отображение макета с еще незанятыми полями
 
+
+// todo: учесть LCDMODE_COLORED
+
+// параметры отображения состояния прием/пеердача
+static const COLOR_T colorsfg_2rxtx [2] = { COLOR_GREEN, COLOR_RED, };
+static const COLOR_T colorsbg_2rxtx [2] = { COLOR_BLACK, COLOR_BLACK, };
+
+// параметры отображения состояний из трех вариантов
+static const COLOR_T colorsfg_4state [4] = { COLOR_BLACK, COLOR_RED, COLOR_STATE, COLOR_STATE, };
+static const COLOR_T colorsbg_4state [4] = { COLOR_STATE, COLOR_DARKSTATE, COLOR_DARKSTATE, COLOR_DARKSTATE, };
+
+// параметры отображения состояний из двух вариантов
+static const COLOR_T colorsfg_2state [2] = { COLOR_BLACK, COLOR_STATE, };
+static const COLOR_T colorsbg_2state [2] = { COLOR_STATE, COLOR_DARKSTATE, };
+
+// параметры отображения текстов без вариантов
+static const COLOR_T colorsfg_1state [1] = { COLOR_STATE, };
+static const COLOR_T colorsbg_1state [1] = { COLOR_BLACK, };	// устанавливается в цвет фона из палитры
+
+// параметры отображения текстов без вариантов
+static const COLOR_T colorsfg_1freq [1] = { BIGCOLOR, };
+static const COLOR_T colorsbg_1freq [1] = { COLOR_BLACK, };	// устанавливается в цвет фона из палитры
+
 // todo: switch off -Wunused-function
 
 #if WITHDIRECTFREQENER
@@ -249,7 +272,7 @@ static void display_freqXbig_a(
 	uint_fast8_t fullwidth = display_getfreqformat(& rj);
 	const uint_fast8_t comma = 3 - rj;
 
-	display_setcolors3(BIGCOLOR, BGCOLOR, BIGCOLORHALF);
+	display_setcolors3(colorsfg_1freq [0], colorsbg_1freq [0], colorsfg_1freq [0]);
 	if (pv != NULL)
 	{
 #if WITHDIRECTFREQENER
@@ -290,7 +313,7 @@ static void display_freqX_a(
 	uint_fast8_t fullwidth = display_getfreqformat(& rj);
 	const uint_fast8_t comma = 3 - rj;
 
-	display_setcolors3(BIGCOLOR, BGCOLOR, BIGCOLORHALF);
+	display_setcolors3(colorsfg_1freq [0], colorsbg_1freq [0], colorsfg_1freq [0]);
 	if (pv != NULL)
 	{
 #if WITHDIRECTFREQENER
@@ -331,7 +354,7 @@ static void display_freqchr_a(
 	uint_fast8_t fullwidth = display_getfreqformat(& rj);
 	const uint_fast8_t comma = 3 - rj;
 
-	display_setcolors3(BIGCOLOR, BGCOLOR, BIGCOLORHALF);
+	display_setcolors3(colorsfg_1freq [0], colorsbg_1freq [0], colorsfg_1freq [0]);
 	if (pv != NULL)
 	{
 #if WITHDIRECTFREQENER
@@ -372,7 +395,7 @@ static void display_freqchr_b(
 	uint_fast8_t fullwidth = display_getfreqformat(& rj);
 	const uint_fast8_t comma = 3 - rj;
 
-	display_setcolors(BIGCOLOR, BGCOLOR);
+	display_setcolors3(colorsfg_1freq [0], colorsbg_1freq [0], colorsfg_1freq [0]);
 #if 0
 	if (pv != NULL)
 	{
@@ -415,7 +438,7 @@ static void display_freqX_b(
 
 	const uint_fast32_t freq = hamradio_get_freq_b();
 
-	display_setcolors(FRQCOLOR, BGCOLOR);
+	display_setcolors(colorsfg_1freq [0], colorsbg_1freq [0]);
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 	do
 	{
@@ -435,7 +458,7 @@ static void display_freqmeter10(
 	char buffer [32];
 	local_snprintf_P(buffer, sizeof buffer / sizeof buffer [0], PSTR("%10lu"), board_get_fqmeter());
 
-	display_setcolors(FRQCOLOR, BGCOLOR);
+	display_setcolors(colorsfg_1freq [0], colorsbg_1freq [0]);
 	display_at(x, y, buffer);
 #endif /* WITHFQMETER */
 }
@@ -494,28 +517,6 @@ static void display_txrxstatecompact(
 	display_at_P(x, y, tx ? PSTR("T") : PSTR(" "));
 #endif /* WITHTX */
 }
-
-// todo: учесть LCDMODE_COLORED
-
-// параметры отображения состояния прием/пеердача
-static const COLOR_T colorsfg_2rxtx [2] = { COLOR_GREEN, COLOR_RED, };
-static const COLOR_T colorsbg_2rxtx [2] = { COLOR_BLACK, COLOR_BLACK, };
-
-// параметры отображения состояний из трех вариантов
-static const COLOR_T colorsfg_4state [4] = { COLOR_BLACK, COLOR_WHITE, COLOR_WHITE, COLOR_WHITE, };
-static const COLOR_T colorsbg_4state [4] = { COLOR_GREEN, COLOR_DARKGREEN, COLOR_DARKGREEN, COLOR_DARKGREEN, };
-
-// параметры отображения состояний из двух вариантов
-static const COLOR_T colorsfg_2state [2] = { COLOR_BLACK, COLOR_WHITE, };
-static const COLOR_T colorsbg_2state [2] = { COLOR_GREEN, COLOR_DARKGREEN, };
-
-// параметры отображения текстов без вариантов
-static const COLOR_T colorsfg_1state [1] = { COLOR_GREEN, };
-static const COLOR_T colorsbg_1state [1] = { COLOR_BLACK, };	// устанавливается в цвет фона из палитры
-
-// параметры отображения текстов без вариантов
-static const COLOR_T colorsfg_1gold [1] = { COLOR_YELLOW, };
-static const COLOR_T colorsbg_1gold [1] = { COLOR_BLACK, };	// устанавливается в цвет фона из палитры
 
 // Отображение режимов TX / RX
 static void display_txrxstate2(
@@ -1218,7 +1219,7 @@ static void display_mode3_a(
 	)
 {
 	const char FLASHMEM * const labels [1] = { hamradio_get_mode_a_value_P(), };
-	display2_text_P(x, y, labels, colorsfg_1gold, colorsbg_1gold, 0);
+	display2_text_P(x, y, labels, colorsfg_1freq, colorsbg_1freq, 0);
 }
 
 
@@ -1230,7 +1231,7 @@ static void display_mode3_b(
 	)
 {
 	const char FLASHMEM * const labels [1] = { hamradio_get_mode_b_value_P(), };
-	display2_text_P(x, y, labels, colorsfg_1gold, colorsbg_1gold, 0);
+	display2_text_P(x, y, labels, colorsfg_1freq, colorsbg_1freq, 0);
 }
 
 // dd.dV - 5 places
@@ -4048,8 +4049,8 @@ enum
 #if 1
 		{	0,	20,	display2_legend,	REDRM_MODE, PGSWR, },	// Отображение оцифровки шкалы S-метра, PWR & SWR-метра
 		{	0,	24,	display2_bars,		REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
-		//{	25, 24, display_siglevel4, REDRM_BARS, PGSWR, },	// уровень сигнала
-		{	25, 24, display_smeter5, 	REDRM_BARS, PGSWR, },	// уровень сигнала в баллах S
+		{	25, 24, display_siglevel4, REDRM_BARS, PGSWR, },	// уровень сигнала
+		//{	25, 24, display_smeter5, 	REDRM_BARS, PGSWR, },	// уровень сигнала в баллах S
 		{	0,	28,	dsp_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
 		{	0,	28,	display2_spectrum,	REDRM_BARS, PGSPE, },// подготовка изображения спектра
 		{	0,	28,	display2_waterfall,	REDRM_BARS, PGWFL, },// подготовка изображения водопада
@@ -5108,26 +5109,6 @@ static uint_fast8_t wfclear;			// стирание всей областии о�
 
 enum { PALETTESIZE = 256 };
 static PACKEDCOLOR565_T wfpalette [PALETTESIZE];
-
-#if 0
-	// new (for ats52).
-	#define COLOR565_GRIDCOLOR		TFTRGB565(128, 0, 0)		//COLOR_GRAY - center marker
-	#define COLOR565_GRIDCOLOR2		TFTRGB565(96, 96, 96)		//COLOR_DARKRED - other markers
-	#define COLOR565_SPECTRUMBG		TFTRGB565(0, 64, 24)			//
-	#define COLOR565_SPECTRUMBG2	TFTRGB565(0, 24, 8)		//COLOR_xxx - полоса пропускания приемника
-	#define COLOR565_SPECTRUMFG		TFTRGB565(0, 255, 0)		//COLOR_GREEN
-	#define COLOR565_SPECTRUMFENCE	TFTRGB565(255, 255, 255)	//COLOR_WHITE
-	#define COLOR565_SPECTRUMLINE	TFTRGB565(0, 255, 0)	//COLOR_GREEN
-#else
-	// old
-	#define COLOR565_GRIDCOLOR        TFTRGB565(128, 128, 0)        //COLOR_GRAY - center marker
-	#define COLOR565_GRIDCOLOR2        TFTRGB565(128, 0, 0x00)        //COLOR_DARKRED - other markers
-	#define COLOR565_SPECTRUMBG        TFTRGB565(0, 0, 0)            //COLOR_BLACK
-	#define COLOR565_SPECTRUMBG2    TFTRGB565(0, 128, 128)        //COLOR_CYAN - полоса пропускания приемника
-	#define COLOR565_SPECTRUMFG		TFTRGB565(0, 255, 0)		//COLOR_GREEN
-	#define COLOR565_SPECTRUMFENCE	TFTRGB565(255, 255, 255)	//COLOR_WHITE
-	#define COLOR565_SPECTRUMLINE	TFTRGB565(0, 255, 0)	//COLOR_GREEN
-#endif
 
 // Код взят из проекта Malamute
 static void wfpalette_initialize(void)
