@@ -3058,7 +3058,7 @@ static void copytospeex(float * frame)
 #endif
 }
 
-
+// for SPEEX - equalizer in frequency domain
 void dsp_recalceq(uint_fast8_t pathi, float * frame)
 {
 	dsp_recalceq_coeffs(pathi, FIRCoef_rx_AUDIO [gwprof] [pathi], Ntap_rx_AUDIO);	// calculate 1/2 of coefficients
@@ -5434,6 +5434,7 @@ void RAMFUNC dsp_extbuffer32rx(const int32_t * buff)
 	// Режимы трансиверов с внешним DDC
 
 #if 0
+	// Тестирование - заменить приянтые квадратуры синтезированными
 	int32_t * const dbuff = (int32_t *) buff;
 
 	// приемник

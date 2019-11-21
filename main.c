@@ -7041,13 +7041,13 @@ static uint_fast8_t getlo4div(
 
 typedef struct lmsnrstate_tag
 {
-#if WITHNOSPEEX
 	// FIR audio filter
 	float32_t speexEQcoeff [Ntap_rx_AUDIO];
 	arm_fir_instance_f32 fir_instance;
 	float32_t fir_state [FIRBUFSIZE + Ntap_rx_AUDIO - 1];
 	float32_t wire1 [FIRBUFSIZE];
 
+#if WITHNOSPEEX
 	// NLMS NR
 	arm_lms_norm_instance_f32 lms2_Norm_instance;
 	float32_t lms2_stateF32 [NOISE_REDUCTION_TAPS + NOISE_REDUCTION_BLOCK_SIZE];
@@ -7142,16 +7142,16 @@ static void speex_update_rx(void)
 	{
 		lmsnrstate_t * const nrp = & lmsnrstates [pathi];
 		// Получение параметров эквалайзера
-#if WITHNOSPEEX
 		float32_t * const dCoefs = nrp->speexEQcoeff;
 		dsp_recalceq_coeffs(pathi, dCoefs, Ntap_rx_AUDIO);	// calculate 1/2 of coefficients
 		fir_expand_symmetric(dCoefs, Ntap_rx_AUDIO);	// Duplicate symmetrical part of coeffs.
+#if WITHNOSPEEX
 #else /* WITHNOSPEEX */
 		SpeexPreprocessState * const st = nrp->st_handle;
 		ASSERT(st != NULL);
 
-		static float32_t speexEQresp [SPEEXNN];
-		dsp_recalceq(pathi, speexEQresp);
+		static float32_t speexEQresp [SPEEXNN];	// распределение усиления по частотам
+		dsp_recalceq(pathi, speexEQresp);	// for SPEEX - equalizer in frequency domain
 
 		speex_preprocess_ctl(st, SPEEX_PREPROCESS_SET_DENOISE, & denoise);
 		speex_preprocess_ctl(st, SPEEX_PREPROCESS_SET_NOISE_SUPPRESS, & supress);
@@ -7166,6 +7166,9 @@ static void InitNoiseReduction(void)
 	for (pathi = 0; pathi < NTRX; ++ pathi)
 	{
 		lmsnrstate_t * const nrp = & lmsnrstates [pathi];
+
+		arm_fir_init_f32(& nrp->fir_instance, Ntap_rx_AUDIO, nrp->speexEQcoeff, nrp->fir_state, FIRBUFSIZE);
+
 #if WITHNOSPEEX
 
 		arm_lms_norm_init_f32(& nrp->lms2_Norm_instance, NOISE_REDUCTION_TAPS, nrp->lms2_normCoeff_f32, nrp->lms2_stateF32, NOISE_REDUCTION_STEP, NOISE_REDUCTION_BLOCK_SIZE);
@@ -7174,9 +7177,6 @@ static void InitNoiseReduction(void)
 
 		nrp->reference_index_old = 0;
 		nrp->reference_index_new = 0;
-		// Declare State buffer of size (numTaps + blockSize - 1)
-
-		arm_fir_init_f32(& nrp->fir_instance, Ntap_rx_AUDIO, nrp->speexEQcoeff, nrp->fir_state, FIRBUFSIZE);
 #else /* WITHNOSPEEX */
 
 		nrp->st_handle = speex_preprocess_state_init(SPEEXNN, ARMI2SRATE);
@@ -7206,31 +7206,50 @@ static void processNoiseReduction(lmsnrstate_t * nrp, const float* bufferIn, flo
 static void processingonebuff(lmsnrstate_t * const nrp, speexel_t * p)
 {
 	const uint_fast8_t mode = submodes [gsubmode].mode;
-	const uint_fast8_t nospeex = gtx || mode == MODE_DIGI || gdatamode;	// не делать жаже коррекцию АЧХ
+	const uint_fast8_t nospeex = gtx || mode == MODE_DIGI || gdatamode;	// не делать даже коррекцию АЧХ
+	const uint_fast8_t denoise = ! nospeex && gnoisereducts [mode];
 	//////////////////////////////////////////////
 	// Filtering
 	// Use CMSIS DSP interface
 #if WITHNOSPEEX
-	const uint_fast8_t denoise = ! nospeex && gnoisereducts [mode];
 	if (denoise)
 	{
 		// Filtering and denoise.
-		nrp->outsp = p;
 		arm_fir_f32(& nrp->fir_instance, p, nrp->wire1, FIRBUFSIZE);
 		processNoiseReduction(nrp, nrp->wire1, p);	// result copy back
+		nrp->outsp = p;
+	}
+	else if (nospeex)
+	{
+		// не делать даже коррекцию АЧХ
+		nrp->outsp = p;
 	}
 	else
 	{
 		// Filtering only.
-		nrp->outsp = nrp-> wire1;
-		arm_fir_f32(& nrp->fir_instance, p, nrp->outsp, FIRBUFSIZE);
+		arm_fir_f32(& nrp->fir_instance, p, nrp->wire1, FIRBUFSIZE);
+		nrp->outsp = nrp->wire1;
 	}
 #else /* WITHNOSPEEX */
-	nrp->outsp = p;
-	if (! nospeex)
-		speex_preprocess_run(nrp->st_handle, p);
-	else
+	if (denoise)
+	{
+		// Filtering and denoise.
+		arm_fir_f32(& nrp->fir_instance, p, nrp->wire1, FIRBUFSIZE);
+		speex_preprocess_run(nrp->st_handle, nrp->wire1);
+		nrp->outsp = nrp->wire1;
+	}
+	else if (nospeex)
+	{
+		// не делать даже коррекцию АЧХ
 		speex_preprocess_estimate_update(nrp->st_handle, p);
+		nrp->outsp = p;
+	}
+	else
+	{
+		// Filtering only.
+		arm_fir_f32(& nrp->fir_instance, p, nrp->wire1, FIRBUFSIZE);
+		nrp->outsp = nrp->wire1;
+	}
 #endif /* WITHNOSPEEX */
 }
 

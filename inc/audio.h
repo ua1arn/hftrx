@@ -510,7 +510,7 @@ void savesampleout192stereo(int_fast32_t ch0, int_fast32_t ch1);
 	typedef float32_t speexel_t;
 
 #else /* WITHNOSPEEX */
-	typedef int16_t speexel_t;
+	typedef float32_t speexel_t;
 
 #endif /* WITHNOSPEEX */
 uint_fast8_t takespeexready_user(speexel_t * * dest);
@@ -622,7 +622,7 @@ uint_fast8_t dsp_getmikeadcoverflow(void); /* получения признак�
 void dsp_speed_diagnostics(void);	/* DSP speed test */
 void buffers_diagnostics(void);
 void dtmftest(void);
-void dsp_recalceq(uint_fast8_t pathi, float * frame);	// for SPEEX
+void dsp_recalceq(uint_fast8_t pathi, float * frame);	// for SPEEX - equalizer in frequency domain
 void dsp_recalceq_coeffs(uint_fast8_t pathi, float * dCoeff, int iCoefNum);	// calculate 1/2 of coefficients
 void fir_expand_symmetric(FLOAT_t * dCoeff, int Ntap);			// Duplicate symmetrical part of coeffs.
 
