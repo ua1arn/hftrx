@@ -1966,7 +1966,7 @@ HAL_StatusTypeDef USB_CoreInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_CfgTyp
 	// The cycle period required to consecutively access registers of this controller must be at least 67 ns.
 	// TODO: compute BWAIT value on-the-fly
 	// Use P1CLOCK_FREQ
-	const uint_fast32_t bwait = ulmin32(calcdivround2(P1CLOCK_FREQ, 15000000uL) - 2, 63);
+	const uint_fast32_t bwait = ulmin32(ulmax32(calcdivround2(P1CLOCK_FREQ, 15000000uL), 2) - 2, 63);
 	USBx->BUSWAIT = (bwait << USB_BUSWAIT_BWAIT_SHIFT) & USB_BUSWAIT_BWAIT;	// 5 cycles = 75 nS minimum
 
 	USBx->SUSPMODE &= ~ USB_SUSPMODE_SUSPM;	// SUSPM 0: The clock supplied to this module is stopped.
