@@ -95,6 +95,7 @@
 
 	//#define DSTYLE_UR3LMZMOD	1	// Расположение элементов экрана в трансиверах UR3LMZ
 	#define	FONTSTYLE_ITALIC	1	// Использовать альтернативный шрифт
+	#define COLORSTYLE_RED	1	// Цвета а-ля FT-1000
 
 	// +++ Особые варианты расположения кнопок на клавиатуре
 	#define KEYB_RAVEN20_V5	1		/* 5 линий клавиатуры: расположение кнопок для Воробей с DSP обработкой */
@@ -183,12 +184,17 @@
 	#define WITHRTS96 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
 	//#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
 	//#define WITHUSEAUDIOREC2CH	1	// Запись звука на SD CARD в стерео
-    #define WITHNOSPEEX    1    // Без шумоподавителя SPEEX
+    //#define WITHNOSPEEX    1    // Без шумоподавителя SPEEX
 	#define BOARD_FFTZOOM_POW2MAX 1	// Возможные масштабы FFT x1, x2
 	//#define BOARD_FFTZOOM_POW2MAX 2	// Возможные масштабы FFT x1, x2, x4
 	//#define WITHFASTWATERFLOW	1	/* быстрое отображение водопада (но требует больше памяти) */
 
 	#if 0
+		#define WITHBBOX	1	// Black Box mode - устройство без органов управления
+		#define	WITHBBOXSUBMODE	SUBMODE_CW	// единственный режим работы
+	#elif 0
+		#define WITHUSBHEADSET 1
+	#elif 0
 		#define WITHBBOX	1	// Black Box mode - устройство без органов управления
 		#define	WITHBBOXFREQ	26985000L		// частота после включения
 		//#define	WITHBBOXFREQ	(26985000L - 260)		// частота после включения - 135 коррекция частоты платы с  122.88 для попадания в приём платы с 100 МГц генератором без коррекции
@@ -224,7 +230,6 @@
 	#define	WITHFPGALOAD_PS	1	/* FPGA загружается процессором с помощью SPI */
 
 	// +++ Эти строки можно отключать, уменьшая функциональность готового изделия
-	#define WITHUSBHEADSET 1
 	//#define WITHRFSG	1	/* включено управление ВЧ сигнал-генератором. */
 	#define WITHTX		1	/* включено управление передатчиком - сиквенсор, электронный ключ. */
 	//#define WITHAUTOTUNER	1	/* Есть функция автотюнера */

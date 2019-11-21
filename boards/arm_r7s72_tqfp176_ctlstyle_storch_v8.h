@@ -72,6 +72,7 @@
 
 	//#define DSTYLE_UR3LMZMOD	1	// Расположение элементов экрана в трансиверах UR3LMZ
 	#define	FONTSTYLE_ITALIC	1	// Использовать альтернативный шрифт
+	#define COLORSTYLE_RED	1	// Цвета а-ля FT-1000
 
 	// +++ Особые варианты расположения кнопок на клавиатуре
 	#define KEYB_FPANEL20_V0A	1	/* 20 кнопок на 5 линий - плата rfrontpanel_v0 + LCDMODE_UC1608 в нормальном расположении */
@@ -486,7 +487,7 @@
 		XTHERMOIX = BOARD_ADCXIN(6),		// MCP3208 CH6 Exernal thermo sensor ST LM235Z
 	#endif /* WITHTHERMOLEVEL */
 
-	#if 1
+	#if 0
 		// main board - 5W
 		#if WITHVOLTLEVEL
 			VOLTSOURCE = BOARD_ADCX1IN(7),		// MCP3208 CH7 Средняя точка делителя напряжения, для АКБ

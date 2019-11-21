@@ -71,6 +71,7 @@
 
 	//#define DSTYLE_UR3LMZMOD	1	// Расположение элементов экрана в трансиверах UR3LMZ
 	#define	FONTSTYLE_ITALIC	1	// Использовать альтернативный шрифт
+	#define COLORSTYLE_RED	1	// Цвета а-ля FT-1000
 
 	// +++ Особые варианты расположения кнопок на клавиатуре
 	#define KEYB_FPANEL20_V0A	1	/* 20 кнопок на 5 линий - плата rfrontpanel_v0 + LCDMODE_UC1608 в нормальном расположении */
