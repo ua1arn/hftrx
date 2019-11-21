@@ -223,7 +223,7 @@
 	#endif
 	#define WITHUSESDCARD 1			// Включение поддержки SD CARD
 	#define WITHUSEAUDIOREC	1	// Запись звука на SD CARD
-	//#define WITHUSEDUALWATCH	1	// Второй приемник
+	#define WITHUSEDUALWATCH	1	// Второй приемник
 
 	// FPGA section
 	//#define	WITHFPGAWAIT_AS	1	/* FPGA загружается из собственной микросхемы загрузчика - дождаться окончания загрузки перед инициализацией SPI в процессоре */
