@@ -375,9 +375,6 @@ static uint_fast8_t getRxGate(void);	/* разрешение работы тра
 typedef uint32_t ncoftw_t;
 typedef int32_t ncoftwi_t;
 #define NCOFTWBITS 32	// количество битов в ncoftw_t
-#define ASH (NCOFTWBITS - TABLELOG2)	// 22 = 32 - log2(number of items in sintable)
-//#define FTW2ANGLEI(ftw)	((uint32_t) (ftw) >> ASH)
-//#define FTW2ANGLEQ(ftw)	((uint32_t) ((ftw) + 0x40000000L) >> ASH)	// косинус опережает на четверть оборота
 #define FTWROUND(ftw) ((uint32_t) (ftw))
 #define FTWAF001(freq) (((int_fast64_t) (freq) << NCOFTWBITS) / ARMI2SRATE100)
 #define FTWAF(freq) (((int_fast64_t) (freq) << NCOFTWBITS) / ARMI2SRATE)
