@@ -167,6 +167,11 @@ printhex(unsigned long voffs, const unsigned char * buff, unsigned length)
 }
 
 /*****************************************/
+#if WITHISBOOTLOADER
+	#define USBD_DFU_XFER_SIZE (MAX(USBD_DFU_RAM_XFER_SIZE, USBD_DFU_FLASH_XFER_SIZE))
+#else /* WITHISBOOTLOADER */
+	#define USBD_DFU_XFER_SIZE USBD_DFU_FLASH_XFER_SIZE
+#endif /* WITHISBOOTLOADER */
 
 typedef USBALIGN_BEGIN struct
 {
@@ -827,7 +832,7 @@ static USBD_StatusTypeDef  USBD_DFU_EP0_TxSent(USBD_HandleTypeDef *pdev)
     else if (hdfu->wblock_num > 1)
     {
       /* Decode the required address */
-      addr = ((hdfu->wblock_num - 2) * USBD_DFU_XFER_SIZE) + hdfu->data_ptr;
+      addr = ((hdfu->wblock_num - 2) * usbd_dfu_get_xfer_size(altinterfaces [INTERFACE_DFU_CONTROL])) + hdfu->data_ptr;
 
       /* Preform the write operation */
       if (USBD_DFU_fops_HS.Write(hdfu->buffer.d8, addr, hdfu->wlength) != USBD_OK)
@@ -1025,6 +1030,20 @@ static USBD_StatusTypeDef USBD_DFU_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
   return ret;
 }
 
+uint_fast16_t
+usbd_dfu_get_xfer_size(uint_fast8_t alt)
+{
+	switch (alt)
+	{
+	default:
+	case 0: return USBD_DFU_FLASH_XFER_SIZE;
+	case 1: return USBD_DFU_FLASH_XFER_SIZE;
+#if WITHISBOOTLOADER
+	case 2: return USBD_DFU_RAM_XFER_SIZE;
+#endif /* WITHISBOOTLOADER */
+	}
+}
+
 /******************************************************************************
      DFU Class requests management
 ******************************************************************************/
@@ -1194,7 +1213,7 @@ static void DFU_Upload(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req
         hdfu->dev_status [3] = 0;
         hdfu->dev_status [4] = hdfu->dev_state;
 
-        addr = ((hdfu->wblock_num - 2) * USBD_DFU_XFER_SIZE) + hdfu->data_ptr;  /* Change is Accelerated*/
+        addr = ((hdfu->wblock_num - 2) * usbd_dfu_get_xfer_size(altinterfaces [INTERFACE_DFU_CONTROL])) + hdfu->data_ptr;  /* Change is Accelerated*/
 
         /* Return the physical address where data are stored */
         phaddr = USBD_DFU_fops_HS.Read(addr, hdfu->buffer.d8, hdfu->wlength);

@@ -3826,7 +3826,8 @@ static unsigned DFU_InterfaceDescriptor(uint_fast8_t fill, uint8_t * buff, unsig
 
 /* 4.1.3 Run-Time DFU Functional Descriptor */
 static unsigned DFU_FunctionalDescriptorReadWrite(
-	uint_fast8_t fill, uint8_t * buff, unsigned maxsize
+	uint_fast8_t fill, uint8_t * buff, unsigned maxsize,
+	uint_fast16_t wTransferSize
 	)
 {
 	const uint_fast8_t length = 9;
@@ -3844,7 +3845,6 @@ static unsigned DFU_FunctionalDescriptorReadWrite(
 			0;
 		const uint_fast16_t bcdDFUVersion = 0x0110;
 		const uint_fast16_t wDetachTimeOut = 500;
-		const uint_fast16_t wTransferSize = USBD_DFU_XFER_SIZE;
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = DFU_DESCRIPTOR_TYPE;	// bDescriptorType: DFU FUNCTIONAL descriptor type 
@@ -3860,7 +3860,8 @@ static unsigned DFU_FunctionalDescriptorReadWrite(
 }
 /* 4.1.3 Run-Time DFU Functional Descriptor */
 static unsigned DFU_FunctionalDescriptorWriteOnly(
-	uint_fast8_t fill, uint8_t * buff, unsigned maxsize
+	uint_fast8_t fill, uint8_t * buff, unsigned maxsize,
+	uint_fast16_t wTransferSize
 	)
 {
 	const uint_fast8_t length = 9;
@@ -3878,7 +3879,6 @@ static unsigned DFU_FunctionalDescriptorWriteOnly(
 			0;
 		const uint_fast16_t bcdDFUVersion = 0x0110;
 		const uint_fast16_t wDetachTimeOut = 500;
-		const uint_fast16_t wTransferSize = USBD_DFU_XFER_SIZE;
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = DFU_DESCRIPTOR_TYPE;	// bDescriptorType: DFU FUNCTIONAL descriptor type 
@@ -3902,14 +3902,17 @@ static unsigned fill_DFU_function(uint_fast8_t fill, uint8_t * p, unsigned maxsi
 	//
 	n += DFU_InterfaceAssociationDescriptor(fill, p + n, maxsize - n, INTERFACE_DFU_CONTROL, INTERFACE_DFU_count);
 
-	n += DFU_InterfaceDescriptor(fill, p + n, maxsize - n, INTERFACE_DFU_CONTROL, ialt ++, STRING_ID_DFU_0);	/* DFU Interface Descriptor */
-	n += DFU_FunctionalDescriptorReadWrite(fill, p + n, maxsize - n);	/* DFU Functional Descriptor */
+	n += DFU_InterfaceDescriptor(fill, p + n, maxsize - n, INTERFACE_DFU_CONTROL, ialt, STRING_ID_DFU_0);	/* DFU Interface Descriptor */
+	n += DFU_FunctionalDescriptorReadWrite(fill, p + n, maxsize - n, usbd_dfu_get_xfer_size(ialt));	/* DFU Functional Descriptor */
+	ialt += 1;
 
-	n += DFU_InterfaceDescriptor(fill, p + n, maxsize - n, INTERFACE_DFU_CONTROL, ialt ++, STRING_ID_DFU_1);	/* DFU Interface Descriptor */
-	n += DFU_FunctionalDescriptorReadWrite(fill, p + n, maxsize - n);	/* DFU Functional Descriptor */
+	n += DFU_InterfaceDescriptor(fill, p + n, maxsize - n, INTERFACE_DFU_CONTROL, ialt, STRING_ID_DFU_1);	/* DFU Interface Descriptor */
+	n += DFU_FunctionalDescriptorReadWrite(fill, p + n, maxsize - n, usbd_dfu_get_xfer_size(ialt));	/* DFU Functional Descriptor */
+	ialt += 1;
 #if WITHISBOOTLOADER
-	n += DFU_InterfaceDescriptor(fill, p + n, maxsize - n, INTERFACE_DFU_CONTROL, ialt ++, STRING_ID_DFU_2);	/* DFU Interface Descriptor */
-	n += DFU_FunctionalDescriptorWriteOnly(fill, p + n, maxsize - n);	/* DFU Functional Descriptor */
+	n += DFU_InterfaceDescriptor(fill, p + n, maxsize - n, INTERFACE_DFU_CONTROL, ialt, STRING_ID_DFU_2);	/* DFU Interface Descriptor */
+	n += DFU_FunctionalDescriptorWriteOnly(fill, p + n, maxsize - n, usbd_dfu_get_xfer_size(ialt));	/* DFU Functional Descriptor */
+	ialt += 1;
 #endif /* WITHISBOOTLOADER */
 
 	return n;
