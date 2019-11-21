@@ -27,7 +27,7 @@ extern "C" {
 	#define STM32MP1_GPIO_SPEED_20M	1
 	#define STM32MP1_GPIO_SPEED_2M	0
 
-#elif CPUSTYLE_STM32
+#elif CPUSTYLE_STM32F
 
 	#define BSRR_S(v) ((v) * GPIO_BSRR_BS0)	/* Преобразование значения для установки бита в регистре */
 	#define BSRR_C(v) ((v) * GPIO_BSRR_BR0)	/* Преобразование значения для сброса бита в регистре */
@@ -117,7 +117,7 @@ extern "C" {
 		} while (0)
 
 
-#endif /* CPUSTYLE_STM32 */
+#endif /* CPUSTYLE_STM32F */
 
 void arm_hardware_pioa_inputs(unsigned long ipins);
 void arm_hardware_pioa_outputs(unsigned long opins, unsigned long initialstate);

@@ -12,10 +12,8 @@
 #ifndef ARM_R7S72_TQFP176_CPUSTYLE_RAVEN_V9_H_INCLUDED
 #define ARM_R7S72_TQFP176_CPUSTYLE_RAVEN_V9_H_INCLUDED 1
 
-//#define HARDWARE_ARM_USEUSART0 1		// US0:
-//#define HARDWARE_ARM_USEUSART1 1		// US1: PA9/PA10 pins
-
 #define WITHSPI16BIT	1		/* возможно использование 16-ти битных слов при обмене по SPI */
+#define WITHSPI32BIT	1		/* возможно использование 32-ти битных слов при обмене по SPI */
 #define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
 #define WITHSPIHWDMA 	1	/* Использование DMA при обмене по SPI */
 //#define WITHSPISW 	1	/* Использование программного управления SPI. */
@@ -23,37 +21,75 @@
 //#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 //#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 
-#define WITHI2SHW	1	/* Использование SSIF0 I2S 2*16 bit - аудио кодек */
-#define WITHSAI1HW	1	/* Использование SSIF1 I2S 8*32 bit - FPGA IF codec */
-//#define WITHSAI2HW	1	/* Использование SSIF2 I2S 2*32 (2*24) bit - FPGA панорама	*/
+#if WITHISBOOTLOADER
 
-//#define WITHCPUDACHW	1	/* использование DAC - в renesas R7S72 нету */
-#define WITHCPUADCHW 	1	/* использование ADC */
+	#define WIHSPIDFHW	1	/* обслуживание DATA FLASH */
+	//#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
+	//#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	*/
 
-#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
-#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
+	//#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
+	//#define WITHUSBDEV_VBUSSENSE	1	/* используется предопределенный вывод VBUS_SENSE */
+	//#define WITHUSBDEV_HSDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
+	//#define WITHUSBHW_DEVICE	(& USB200)	/* на этом устройстве поддерживается функциональность DEVUCE	*/
+	//#define WITHUSBHW_HOST	(& USB200)	/* на этом устройстве поддерживается функциональность HOST	*/
+	//#define WITHHOSTONHIGHSPEED	1	/* Для HOST используется встроенная в процессор поддержка USB HS */
 
-#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
-#define WITHUSBDEV_VBUSSENSE	1	/* используется предопределенный вывод VBUS_SENSE */
-#define WITHUSBDEV_HSDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
-#define WITHUSBHW_DEVICE	(& USB200)	/* на этом устройстве поддерживается функциональность DEVUCE	*/
+	#define WITHUART1HW	1	/* Используется периферийный контроллер последовательного порта #1 SCIF0 */
+	//#define WITHUART2HW	1	/* Используется периферийный контроллер последовательного порта #2 SCIF3 */
 
-#define WITHUART1HW	1	/* Используется периферийный контроллер последовательного порта #1 SCIF0 */
-//#define WITHUART2HW	1	/* Используется периферийный контроллер последовательного порта #2 SCIF3 */
+	//#define WITHCAT_USART2	1
+	//#define WITHCAT_CDC			1	/* использовать виртуальный последовательный порт на USB соединении */
+	//#define WITHMODEM_CDC		1
+	#define WITHDEBUG_USART1	1
+	#define WITHMODEM_USART1	1
+	#define WITHNMEA_USART1		1	/* порт подключения GPS/GLONASS */
 
-//#define WITHCAT_USART1	1
-#define WITHCAT_CDC			1	/* использовать виртуальный последовательный порт на USB соединении */
-#define WITHMODEM_CDC		1
-#define WITHDEBUG_USART1	1
-//#define WITHMODEM_USART1	1
-#define WITHNMEA_USART2		1	/* порт подключения GPS/GLONASS */
+	//#define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
+	//#define WITHUSBCDC		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
+	//#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
+	//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
+	//#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
+	//#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
 
-#define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
+#else /* WITHISBOOTLOADER */
 
-#define WITHUSBCDC		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
-//#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
-//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
-//#define WITHUSBHID		1	/* HID использовать Human Interface Device на USB соединении */
+	#define WIHSPIDFHW	1	/* обслуживание DATA FLASH */
+
+	#define WITHI2SHW	1	/* Использование SSIF0 I2S 2*16 bit - аудио кодек */
+	#define WITHSAI1HW	1	/* Использование SSIF1 I2S 8*32 bit - FPGA IF codec */
+	//#define WITHSAI2HW	1	/* Использование SSIF2 I2S 2*32 (2*24) bit - FPGA панорама	*/
+
+	//#define WITHCPUDACHW	1	/* использование DAC - в renesas R7S72 нету */
+	#define WITHCPUADCHW 	1	/* использование ADC */
+
+	#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
+	#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
+
+	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
+	#define WITHUSBDEV_VBUSSENSE	1	/* используется предопределенный вывод VBUS_SENSE */
+	#define WITHUSBDEV_HSDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
+	#define WITHUSBHW_DEVICE	(& USB200)	/* на этом устройстве поддерживается функциональность DEVUCE	*/
+
+	#define WITHUART1HW	1	/* Используется периферийный контроллер последовательного порта #1 SCIF0 */
+	//#define WITHUART2HW	1	/* Используется периферийный контроллер последовательного порта #2 SCIF3 */
+
+	//#define WITHCAT_USART1	1
+	#define WITHCAT_CDC			1	/* использовать виртуальный последовательный порт на USB соединении */
+	#define WITHMODEM_CDC		1
+	#define WITHDEBUG_USART1	1
+	//#define WITHMODEM_USART1	1
+	#define WITHNMEA_USART2		1	/* порт подключения GPS/GLONASS */
+
+	#define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
+	//#define WITHUAC2		1	/* UAC2 support */
+
+	#define WITHUSBCDC		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
+	//#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
+	//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
+	//#define WITHUSBHID		1	/* HID использовать Human Interface Device на USB соединении */
+	#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
+
+#endif
 
 #define WRITEE_BIT				(1u << 12)	// RD/~WR  P3_12 - должен быть в "0" - как при записи - для управления буферами на шине данных LCD
 
@@ -220,8 +256,16 @@
 	//#define ENCODER2_BITS ((1u << 9) | (1u << 8))		// P2_9, P2_8
 	//#define ENCODER2_SHIFT 8
 
+	/*
+		edge values
+		00: Interrupt request is detected on low level of IRQn input
+		01: Interrupt request is detected on falling edge of IRQn input
+		10: Interrupt request is detected on rising edge of IRQn input
+		11: Interrupt request is detected on both edges of IRQn input
+	*/
 	#define ENCODER_INITIALIZE() \
 		do { \
+			arm_hardware_pio2_inputs(1u << 8); /* P2_8 соединена перемычкой c PA_7 */ \
 			arm_hardware_pio2_alternative(ENCODER_BITS, R7S721_PIOALT_4); \
 			arm_hardware_irqn_interrupt(1, 3, ARM_OVERREALTIME_PRIORITY, spool_encinterrupt); /* IRQ1, both edges */ \
 			arm_hardware_irqn_interrupt(2, 3, ARM_OVERREALTIME_PRIORITY, spool_encinterrupt); /* IRQ2, both edges */ \
@@ -667,11 +711,46 @@
 	#define HARDWARE_SIDETONE_INITIALIZE() do { \
 		} while (0)
 
+	#define HARDWARE_USB0_INITIALIZE() do { \
+		} while (0)
+
+	#define HARDWARE_USB1_INITIALIZE() do { \
+		} while (0)
+
+	#define HARDWARE_GPIO_RESET() do { \
+		arm_hardware_pio0_inputs(0x0F); \
+		arm_hardware_pio1_inputs(0xFFFF); \
+		arm_hardware_pio2_inputs(0x03FF); \
+		arm_hardware_pio3_inputs(0xFFFF); \
+		arm_hardware_pio4_inputs(0x00FF); \
+		arm_hardware_pio5_inputs(0xFFFF); \
+		arm_hardware_pio6_inputs(0xFFFF); \
+		arm_hardware_pio7_inputs(0x0FFF); \
+		arm_hardware_pio8_inputs(0xFFFF); \
+		arm_hardware_pio9_inputs(0x003F); \
+		} while (0)
+
 	/* макроопределение, которое должно включить в себя все инициализации */
 	#define	HARDWARE_INITIALIZE() do { \
+		/* HARDWARE_GPIO_RESET(); */ \
 		HARDWARE_SIDETONE_INITIALIZE(); \
 		HARDWARE_KBD_INITIALIZE(); \
 		HARDWARE_DAC_INITIALIZE(); \
 		} while (0)
+
+	// Bootloader parameters
+	#define BOOTLOADER_APPAREA Renesas_RZ_A1_ONCHIP_SRAM_BASE	/* адрес ОЗУ, куда перемещать application */
+	#define BOOTLOADER_APPFULL (1024uL * 2048)	// 2MB
+
+	#define BOOTLOADER_SELFBASE Renesas_RZ_A1_SPI_IO0	/* адрес где лежит во FLASH образ application */
+	#define BOOTLOADER_SELFSIZE (1024uL * 128)	// 128
+
+	#define BOOTLOADER_APPBASE (BOOTLOADER_SELFBASE + BOOTLOADER_SELFSIZE)	/* адрес где лежит во FLASH образ application */
+	#define BOOTLOADER_APPSIZE (BOOTLOADER_APPFULL - BOOTLOADER_SELFSIZE)	// 2048 - 128
+
+	#define BOOTLOADER_PAGESIZE (1024uL * 64)	// M25Px with 64 KB pages
+	#define USBD_DFU_RAM_XFER_SIZE 1024
+	#define USBD_DFU_FLASH_XFER_SIZE 256	// match to (Q)SPI FLASH MEMORY page size
+	#define USBD_DFU_FLASHNAME "M25P16"
 
 #endif /* ARM_R7S72_TQFP176_CPUSTYLE_RAVEN_V9_H_INCLUDED */

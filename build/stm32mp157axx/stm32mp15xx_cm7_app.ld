@@ -53,6 +53,7 @@ SECTIONS
 		KEEP(*(.initdata))
 		KEEP(*(.fini))
 		*(.text*)
+		*(.itcm*)
 	} > RAM
 
 	.ARM.extab :
@@ -126,10 +127,9 @@ SECTIONS
 
 		KEEP(*(.eh_frame*))
 
-		*(vtable)
 		*(.data*)
 	   . = ALIGN(4);	/* one line added by ua1arn */
-
+		*(.dtcm*)
 		. = ALIGN(4);
 		/* preinit data */
 		PROVIDE_HIDDEN (__preinit_array_start = .);

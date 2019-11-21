@@ -52,14 +52,14 @@
 
 	#define FQMODEL_FPGA		1	// FPGA + IQ over I2S
 	#if 0
-		#define DIRECT_80M0_X1		1	/* Тактовый генератор на плате 80.0 МГц */	
+		#define DIRECT_80M0_X1		1	/* Тактовый генератор на плате 80.0 МГц */
 		#define BANDSELSTYLERE_UPCONV56M_36M	1	/* Up-conversion with working band .030..36 MHz */
 	#elif 0
-		#define DIRECT_100M0_X1		1	/* Тактовый генератор на плате 100.0 МГц */	
+		#define DIRECT_100M0_X1		1	/* Тактовый генератор на плате 100.0 МГц */
 		#define BANDSELSTYLERE_UPCONV56M_45M	1	/* Up-conversion with working band .030..45 MHz */
 	#else
-		//#define DIRECT_125M0_X1		1	/* Тактовый генератор на плате 125.0 МГц */	
-		#define DIRECT_122M88_X1	1	/* Тактовый генератор 122.880 МГц */	
+		//#define DIRECT_125M0_X1		1	/* Тактовый генератор на плате 125.0 МГц */
+		#define DIRECT_122M88_X1	1	/* Тактовый генератор 122.880 МГц */
 		#define DIRECT_XXXX_X1	1
 		//#define REFERENCE_FREQ	(122880000ul + 900)
 		#define BANDSELSTYLERE_UPCONV56M	1	/* Up-conversion with working band .030..56 MHz */
@@ -68,10 +68,10 @@
 
 	#define CTLREGMODE_RAVENDSP_V9	1	/* renesas */
 
-	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея 
+	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея
 	#define WITHLCDBACKLIGHTMIN	0	// Нижний предел регулировки (показываетый на дисплее)
 	#define WITHLCDBACKLIGHTMAX	3	// Верхний предел регулировки (показываетый на дисплее)
-	#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры 
+	#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры
 
 	/* коды входов коммутатора источников сигнала для УНЧ приёмника */
 	#define BOARD_DETECTOR_SSB 	0		// Заглушка
@@ -95,6 +95,7 @@
 
 	//#define DSTYLE_UR3LMZMOD	1	// Расположение элементов экрана в трансиверах UR3LMZ
 	#define	FONTSTYLE_ITALIC	1	// Использовать альтернативный шрифт
+	#define COLORSTYLE_RED	1	// Цвета а-ля FT-1000
 
 	// +++ Особые варианты расположения кнопок на клавиатуре
 	#define KEYB_RAVEN20_V5	1		/* 5 линий клавиатуры: расположение кнопок для Воробей с DSP обработкой */
@@ -143,6 +144,7 @@
 	//#define LCDMODE_ILI9320	1	/* Индикатор 248*320 с контроллером ILI9320 */
 	#define LCDMODE_ILI9341	1	/* 320*240 SF-TC240T-9370-T с контроллером ILI9341 - STM32F4DISCO */
 	#define LCDMODE_ILI9341_TOPDOWN	1	/* LCDMODE_ILI9341 - перевернуть изображение (для выводов справа) */
+	//#define LCDMODE_HORFILL 1		/* в SPI режиме заполняется по горизонтали
 	//#define LCDMODE_LQ043T3DX02K 1	/* LQ043T3DX02K panel (272*480) - SONY PSP-1000 display */
 	// --- Одна из этих строк определяет тип дисплея, для которого компилируется прошивка
 
@@ -179,11 +181,20 @@
 	#define WITHDSPEXTFIR 1			/* Фильтрация квадратур осуществляется внешней аппаратурой */
 	#define WITHIF4DSP	1	// "Дятел"
 	//#define WITHMODEMIQLOOPBACK	1	/* модем получает собственные передаваемые квадратуры */
-	#define WITHRTS96 1		/* вместо выходного аудиосигнала передача квадратур по USB */
+	#define WITHRTS96 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
 	//#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
 	//#define WITHUSEAUDIOREC2CH	1	// Запись звука на SD CARD в стерео
+    //#define WITHNOSPEEX    1    // Без шумоподавителя SPEEX
+	#define BOARD_FFTZOOM_POW2MAX 1	// Возможные масштабы FFT x1, x2
+	//#define BOARD_FFTZOOM_POW2MAX 2	// Возможные масштабы FFT x1, x2, x4
+	//#define WITHFASTWATERFLOW	1	/* быстрое отображение водопада (но требует больше памяти) */
 
 	#if 0
+		#define WITHBBOX	1	// Black Box mode - устройство без органов управления
+		#define	WITHBBOXSUBMODE	SUBMODE_CW	// единственный режим работы
+	#elif 0
+		#define WITHUSBHEADSET 1
+	#elif 0
 		#define WITHBBOX	1	// Black Box mode - устройство без органов управления
 		#define	WITHBBOXFREQ	26985000L		// частота после включения
 		//#define	WITHBBOXFREQ	(26985000L - 260)		// частота после включения - 135 коррекция частоты платы с  122.88 для попадания в приём платы с 100 МГц генератором без коррекции
@@ -212,7 +223,7 @@
 	#endif
 	#define WITHUSESDCARD 1			// Включение поддержки SD CARD
 	#define WITHUSEAUDIOREC	1	// Запись звука на SD CARD
-	//#define WITHUSEDUALWATCH	1	// Второй приемник
+	#define WITHUSEDUALWATCH	1	// Второй приемник
 
 	// FPGA section
 	//#define	WITHFPGAWAIT_AS	1	/* FPGA загружается из собственной микросхемы загрузчика - дождаться окончания загрузки перед инициализацией SPI в процессоре */
@@ -229,7 +240,7 @@
 	//#define WITHDEBUG		1	/* Отладочная печать через COM-порт. */
 	//#define WITHNMEA		1	/* используется NMEA parser */
 	//#define WITHMODEM		1	/* Устройство работает как радиомодем с последовательным интерфейсом */
-	//#define WITHFREEDV	1	/* поддержка режима FreeDV - http://freedv.org/ */ 
+	//#define WITHFREEDV	1	/* поддержка режима FreeDV - http://freedv.org/ */
 	//#define WITHBEACON	1	/* Используется режим маяка */
 	#define WITHVOX			1	/* используется VOX */
 	////#define WITHSHOWSWRPWR 1	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
@@ -243,9 +254,9 @@
 	#define WITHVIBROPLEX	1	/* возможность эмуляции передачи виброплексом */
 
 	// Есть ли регулировка параметров потенциометрами
-	////#define WITHPOTWPM		1	/* используется регулировка скорости передачи в телеграфе потенциометром */
-	#define WITHPOTIFGAIN		1	/* регуляторы усиления ПЧ на потенциометрах */
-	#define WITHPOTAFGAIN		1	/* регуляторы усиления НЧ на потенциометрах */
+	//#define WITHPOTWPM		1	/* используется регулировка скорости передачи в телеграфе потенциометром */
+	////#define WITHPOTIFGAIN		1	/* регуляторы усиления ПЧ на потенциометрах */
+	////#define WITHPOTAFGAIN		1	/* регуляторы усиления НЧ на потенциометрах */
 	#define WITHSLEEPTIMER	1	/* выключить индикатор и вывод звука по истечениии указанного времени */
 
 	#define WITHMENU 	1	/* функциональность меню может быть отключена - если настраивать нечего */

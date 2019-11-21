@@ -324,7 +324,10 @@ static unsigned CDCACM_fill_31(uint_fast8_t fill, uint8_t * buff, unsigned maxsi
 // AC Clock Source Descriptor
 // CS_SAM_FREQ_CONTROL = 1
 // CS_CLOCK_VALID_CONTROL = 2
-static unsigned UAC2_clock_source(uint_fast8_t fill, uint8_t * buff, unsigned maxsize, uint_fast8_t bClockID)
+static unsigned UAC2_clock_source(
+	uint_fast8_t fill, uint8_t * buff, unsigned maxsize,
+	uint_fast8_t bClockID
+	)
 {
 	const uint_fast8_t length = 8;
 	ASSERT(maxsize >= length);
@@ -343,6 +346,33 @@ static unsigned UAC2_clock_source(uint_fast8_t fill, uint8_t * buff, unsigned ma
 								clock validity control: 0b01 - host read only */ 
 		* buff ++ = TERMINAL_ID_UNDEFINED;       /* bAssocTerminal(0x00) */ 
 		* buff ++ = STRING_ID_0;/* iClockSource(0x01): Not requested */
+	}
+	return length;
+}
+
+// 4.7.2.3 Clock Multiplier Descriptor
+// Clock Multiplier
+static unsigned UAC2_clock_multiplier(
+	uint_fast8_t fill, uint8_t * buff, unsigned maxsize,
+	uint_fast8_t bClockID,
+	uint_fast8_t bCSourceID
+	)
+{
+	const uint_fast8_t length = 7;
+	ASSERT(maxsize >= length);
+	if (maxsize < length)
+		return 0;
+	if (fill != 0 && buff != NULL)
+	{
+		const uint_fast8_t bmControls = 0x05;	/* D3..2: Clock Denominator Control */
+		// Вызов для заполнения; а не только для проверки занимаемого места в буфере
+		* buff ++ = length;						  /* bLength */
+		* buff ++ = CS_INTERFACE;  	/* bDescriptorType(0x24): CS_INTERFACE */
+		* buff ++ = 0x0C;       	/* bDescriptorSubType CLOCK_MULTIPLIER */
+		* buff ++ = bClockID;   	/* bClockID */
+		* buff ++ = bCSourceID;   	/* bCSourceID */
+		* buff ++ = bmControls;
+		* buff ++ = STRING_ID_0;	/* iClockSource(0x01): Not requested */
 	}
 	return length;
 }
@@ -827,10 +857,12 @@ static unsigned UAC2_TopologyIN48(
 	)
 {
 	unsigned n = 0;
-	const uint_fast8_t bCSourceID = TERMINAL_ID_CLKSOURCE_UACIN48; //bTerminalID + 3;
+	const uint_fast8_t bOSC = TERMINAL_ID_CLKSOURCE + offset * MAX_TERMINALS_IN_INTERFACE;
+	const uint_fast8_t bCSourceID = TERMINAL_ID_CLKMULTIPLIER_UACIN48; //bTerminalID + 3;
 	const uint_fast8_t FU_ID = TERMINAL_ID_FU2_IN + offset * MAX_TERMINALS_IN_INTERFACE;
 
-	n += UAC2_clock_source(fill, p + n, maxsize - n, bCSourceID);
+	n += UAC2_clock_source(fill, p + n, maxsize - n, bOSC);
+	n += UAC2_clock_multiplier(fill, p + n, maxsize - n, bCSourceID, bOSC);
 	if (WITHUSENOFU_IN48)
 	{
 		// Только один источник для компьютера
@@ -855,10 +887,12 @@ static unsigned UAC2_Topology_inout_IN48(
 	)
 {
 	unsigned n = 0;
-	const uint_fast8_t bCSourceID = TERMINAL_ID_CLKSOURCE_UACINOUT; //bTerminalID + 3;
+	const uint_fast8_t bOSC = TERMINAL_ID_CLKSOURCE + offset * MAX_TERMINALS_IN_INTERFACE;
+	const uint_fast8_t bCSourceID = TERMINAL_ID_CLKMULTIPLIER_UACINOUT; //bTerminalID + 3;
 	const uint_fast8_t FU_ID = TERMINAL_ID_FU2_IN + offset * MAX_TERMINALS_IN_INTERFACE;
 
-	n += UAC2_clock_source(fill, p + n, maxsize - n, bCSourceID);
+	n += UAC2_clock_source(fill, p + n, maxsize - n, bOSC);
+	n += UAC2_clock_multiplier(fill, p + n, maxsize - n, bCSourceID, bOSC);
 	if (WITHUSENOFU_IN48)
 	{
 		// Только один источник для компьютера
@@ -887,11 +921,13 @@ static unsigned UAC2_Topology_inout_OUT48(
 	)
 {
 	unsigned n = 0;
-	const uint_fast8_t bCSourceID = TERMINAL_ID_CLKSOURCE_UACINOUT; //bTerminalID + 3;
+	const uint_fast8_t bOSC = TERMINAL_ID_CLKSOURCE + offset * MAX_TERMINALS_IN_INTERFACE;
+	const uint_fast8_t bCSourceID = TERMINAL_ID_CLKMULTIPLIER_UACINOUT; //bTerminalID + 3;
 	const uint_fast8_t FU_ID = TERMINAL_ID_FU2_OUT + offset * MAX_TERMINALS_IN_INTERFACE;
 
 	// already done in UAC2_Topology_inout_IN48
-	//n += UAC2_clock_source(fill, p + n, maxsize - n, bCSourceID);
+	//n += UAC2_clock_source(fill, p + n, maxsize - n, bOSC);
+	//n += UAC2_clock_multiplier(fill, p + n, maxsize - n, bCSourceID, bOSC);
 	if (WITHUSENOFU_OUT48)
 	{
 		// без feature unit между IT и OT
@@ -919,10 +955,12 @@ static unsigned UAC2_TopologyIN48_INRTS(
 	)
 {
 	unsigned n = 0;
-	const uint_fast8_t bCSourceID = TERMINAL_ID_CLKSOURCE_UACIN48_UACINRTS; //bTerminalID + 3;
+	const uint_fast8_t bOSC = TERMINAL_ID_CLKSOURCE + offset * MAX_TERMINALS_IN_INTERFACE;
+	const uint_fast8_t bCSourceID = TERMINAL_ID_CLKMULTIPLIER_UACIN48_UACINRTS; //bTerminalID + 3;
 	const uint_fast8_t FU_ID = TERMINAL_ID_FU2_IN + offset * MAX_TERMINALS_IN_INTERFACE;
 
-	n += UAC2_clock_source(fill, p + n, maxsize - n, bCSourceID);
+	n += UAC2_clock_source(fill, p + n, maxsize - n, bOSC);
+	n += UAC2_clock_multiplier(fill, p + n, maxsize - n, bCSourceID, bOSC);
 	if (WITHUSENOFU_IN48_INRTS)
 	{
 		// Только один источник для компьютера
@@ -951,10 +989,12 @@ static unsigned UAC2_TopologyOUT48(
 	)
 {
 	unsigned n = 0;
-	const uint_fast8_t bCSourceID = TERMINAL_ID_CLKSOURCE_UACOUT48; //bTerminalID + 3;
+	const uint_fast8_t bOSC = TERMINAL_ID_CLKSOURCE + offset * MAX_TERMINALS_IN_INTERFACE;
+	const uint_fast8_t bCSourceID = TERMINAL_ID_CLKMULTIPLIER_UACOUT48; //bTerminalID + 3;
 	const uint_fast8_t FU_ID = TERMINAL_ID_FU2_OUT + offset * MAX_TERMINALS_IN_INTERFACE;
 
-	n += UAC2_clock_source(fill, p + n, maxsize - n, bCSourceID);
+	n += UAC2_clock_source(fill, p + n, maxsize - n, bOSC);
+	n += UAC2_clock_multiplier(fill, p + n, maxsize - n, bCSourceID, bOSC);
 	if (WITHUSENOFU_OUT48)
 	{
 		// без feature unit между IT и OT
@@ -980,10 +1020,12 @@ static unsigned UAC2_TopologyINRTS(
 	)
 {
 	unsigned n = 0;
-	const uint_fast8_t bCSourceID = TERMINAL_ID_CLKSOURCE_UACINRTS; //bTerminalID + 3;
+	const uint_fast8_t bOSC = TERMINAL_ID_CLKSOURCE + offset * MAX_TERMINALS_IN_INTERFACE;
+	const uint_fast8_t bCSourceID = TERMINAL_ID_CLKMULTIPLIER_UACINRTS; //bTerminalID + 3;
 	const uint_fast8_t FU_ID = TERMINAL_ID_FU2_IN + offset * MAX_TERMINALS_IN_INTERFACE;
 
-	n += UAC2_clock_source(fill, p + n, maxsize - n, bCSourceID);
+	n += UAC2_clock_source(fill, p + n, maxsize - n, bOSC);
+	n += UAC2_clock_multiplier(fill, p + n, maxsize - n, bCSourceID, bOSC);
 	if (WITHUSENOFU_INRTS)
 	{
 		// Только один источник для компьютера
@@ -3853,7 +3895,8 @@ static unsigned DFU_InterfaceDescriptor(uint_fast8_t fill, uint8_t * buff, unsig
 
 /* 4.1.3 Run-Time DFU Functional Descriptor */
 static unsigned DFU_FunctionalDescriptorReadWrite(
-	uint_fast8_t fill, uint8_t * buff, unsigned maxsize
+	uint_fast8_t fill, uint8_t * buff, unsigned maxsize,
+	uint_fast16_t wTransferSize
 	)
 {
 	const uint_fast8_t length = 9;
@@ -3871,7 +3914,6 @@ static unsigned DFU_FunctionalDescriptorReadWrite(
 			0;
 		const uint_fast16_t bcdDFUVersion = 0x0110;
 		const uint_fast16_t wDetachTimeOut = 500;
-		const uint_fast16_t wTransferSize = USBD_DFU_XFER_SIZE;
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = DFU_DESCRIPTOR_TYPE;	// bDescriptorType: DFU FUNCTIONAL descriptor type 
@@ -3887,7 +3929,8 @@ static unsigned DFU_FunctionalDescriptorReadWrite(
 }
 /* 4.1.3 Run-Time DFU Functional Descriptor */
 static unsigned DFU_FunctionalDescriptorWriteOnly(
-	uint_fast8_t fill, uint8_t * buff, unsigned maxsize
+	uint_fast8_t fill, uint8_t * buff, unsigned maxsize,
+	uint_fast16_t wTransferSize
 	)
 {
 	const uint_fast8_t length = 9;
@@ -3905,7 +3948,6 @@ static unsigned DFU_FunctionalDescriptorWriteOnly(
 			0;
 		const uint_fast16_t bcdDFUVersion = 0x0110;
 		const uint_fast16_t wDetachTimeOut = 500;
-		const uint_fast16_t wTransferSize = USBD_DFU_XFER_SIZE;
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = DFU_DESCRIPTOR_TYPE;	// bDescriptorType: DFU FUNCTIONAL descriptor type 
@@ -3929,14 +3971,17 @@ static unsigned fill_DFU_function(uint_fast8_t fill, uint8_t * p, unsigned maxsi
 	//
 	n += DFU_InterfaceAssociationDescriptor(fill, p + n, maxsize - n, INTERFACE_DFU_CONTROL, INTERFACE_DFU_count);
 
-	n += DFU_InterfaceDescriptor(fill, p + n, maxsize - n, INTERFACE_DFU_CONTROL, ialt ++, STRING_ID_DFU_0);	/* DFU Interface Descriptor */
-	n += DFU_FunctionalDescriptorReadWrite(fill, p + n, maxsize - n);	/* DFU Functional Descriptor */
+	n += DFU_InterfaceDescriptor(fill, p + n, maxsize - n, INTERFACE_DFU_CONTROL, ialt, STRING_ID_DFU_0);	/* DFU Interface Descriptor */
+	n += DFU_FunctionalDescriptorReadWrite(fill, p + n, maxsize - n, usbd_dfu_get_xfer_size(ialt));	/* DFU Functional Descriptor */
+	ialt += 1;
 
-	n += DFU_InterfaceDescriptor(fill, p + n, maxsize - n, INTERFACE_DFU_CONTROL, ialt ++, STRING_ID_DFU_1);	/* DFU Interface Descriptor */
-	n += DFU_FunctionalDescriptorReadWrite(fill, p + n, maxsize - n);	/* DFU Functional Descriptor */
+	n += DFU_InterfaceDescriptor(fill, p + n, maxsize - n, INTERFACE_DFU_CONTROL, ialt, STRING_ID_DFU_1);	/* DFU Interface Descriptor */
+	n += DFU_FunctionalDescriptorReadWrite(fill, p + n, maxsize - n, usbd_dfu_get_xfer_size(ialt));	/* DFU Functional Descriptor */
+	ialt += 1;
 #if WITHISBOOTLOADER
-	n += DFU_InterfaceDescriptor(fill, p + n, maxsize - n, INTERFACE_DFU_CONTROL, ialt ++, STRING_ID_DFU_2);	/* DFU Interface Descriptor */
-	n += DFU_FunctionalDescriptorWriteOnly(fill, p + n, maxsize - n);	/* DFU Functional Descriptor */
+	n += DFU_InterfaceDescriptor(fill, p + n, maxsize - n, INTERFACE_DFU_CONTROL, ialt, STRING_ID_DFU_2);	/* DFU Interface Descriptor */
+	n += DFU_FunctionalDescriptorWriteOnly(fill, p + n, maxsize - n, usbd_dfu_get_xfer_size(ialt));	/* DFU Functional Descriptor */
+	ialt += 1;
 #endif /* WITHISBOOTLOADER */
 
 	return n;
@@ -4056,7 +4101,10 @@ static unsigned fill_Device_descriptor(uint8_t * buff, unsigned maxsize, uint_fa
 
 // Only for high speed capable devices 
 // Device Qualifier Descriptor 
-static unsigned fill_DeviceQualifier_descriptor(uint8_t * buff, unsigned maxsize, uint_fast8_t bNumConfigurations)
+static unsigned fill_DeviceQualifier_descriptor(
+	uint8_t * buff, unsigned maxsize,
+	uint_fast8_t bNumConfigurations	/* number of other-speed configurations */
+	)
 {
 	const unsigned length = 10;
 	ASSERT(maxsize >= length);
@@ -4073,7 +4121,7 @@ static unsigned fill_DeviceQualifier_descriptor(uint8_t * buff, unsigned maxsize
 		* buff ++ = 2;										/*  5:bDeviceSubClass - Common Class Sub Class */
 		* buff ++ = 1;										/*  6:bDeviceProtocol - Interface Association Descriptor protocol */
 		* buff ++ = USB_OTG_MAX_EP0_SIZE;                   /*  7:bMaxPacketSize0 (for DCP) */
-		* buff ++ = bNumConfigurations;                     /*  8:bNumConfigurations */
+		* buff ++ = bNumConfigurations;                     /*  8:bNumConfigurations - number of other-speed configurations */
 		* buff ++ = 0;                                      /*  9:bReserved */
 	}
 	return length;
@@ -4296,6 +4344,7 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 #endif /* WITHPLAINDESCROPTOR */
 	};
 	const uint_fast8_t bNumConfigurations = ARRAY_SIZE(funcs);
+	const uint_fast8_t bNumOtherSpeedConfigurations = 0;
 
 	{
 		// Device Descriptor
@@ -4384,12 +4433,12 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 	}
 #endif /* WITHUSBDFU */
 
-	if (0) //(HSdesc != 0)
+	if (HSdesc != 0)
 	{
 		unsigned partlen;
 		// Device Qualifier
 		score += fill_align4(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score);
-		partlen = fill_DeviceQualifier_descriptor(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score, bNumConfigurations);
+		partlen = fill_DeviceQualifier_descriptor(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score, bNumOtherSpeedConfigurations);
 		DeviceQualifierTbl [0].size = partlen;
 		DeviceQualifierTbl [0].data = alldescbuffer + score;
 		score += partlen;
@@ -4573,7 +4622,7 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 		StringDescrTbl [id].data = alldescbuffer + score;
 		score += partlen;
 	}
-#elif 0 //CPUSTYLE_STM32 && defined(UID_BASE)
+#elif 0 //CPUSTYLE_STM32F && defined(UID_BASE)
 	{
 		unsigned partlen;
 		const uint_fast8_t id = STRING_ID_3;
@@ -4600,7 +4649,7 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 		StringDescrTbl [id].data = alldescbuffer + score;
 		score += partlen;
 	}
-#endif /* CPUSTYLE_STM32 && defined(UID_BASE) */
+#endif /* CPUSTYLE_STM32F && defined(UID_BASE) */
 
 	arm_hardware_flush_invalidate((uintptr_t) alldescbuffer, score);
 	debug_printf_P(PSTR("usbd_descriptors_initialize: total length=%u\n"), score);

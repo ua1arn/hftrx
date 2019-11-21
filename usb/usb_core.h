@@ -12,48 +12,56 @@
 #include "usbch9.h"
 
 
+	/*---------- -----------*/
+//#define USBD_MAX_NUM_INTERFACES     7	// ?
+/*---------- -----------*/
+//#define USBD_MAX_NUM_CONFIGURATION     3
+/*---------- -----------*/
+#define USBD_DEBUG_LEVEL     0
+/*---------- -----------*/
+#define USBD_LPM_ENABLED     0
+/*---------- -----------*/
+#define USBD_SELF_POWERED     1
 
-#define USB_FUNCTION_bRequest                       (0xff00u)       /* b15-8:bRequest */
-#define USB_FUNCTION_bmRequestType                  (0x00ffu)       /* b7-0: bmRequestType */
+/*----------   -----------*/
+#define USBH_MAX_NUM_ENDPOINTS      8
+
+/*----------   -----------*/
+#define USBH_MAX_NUM_INTERFACES      10
+
+/*----------   -----------*/
+#define USBH_MAX_NUM_CONFIGURATION      1
+
+/*----------   -----------*/
+#define USBH_KEEP_CFG_DESCRIPTOR      1
+
+/*----------   -----------*/
+#define USBH_MAX_NUM_SUPPORTED_CLASS      1
+
+/*----------   -----------*/
+#define USBH_MAX_SIZE_CONFIGURATION      1024
+
+/*----------   -----------*/
+#define USBH_MAX_DATA_BUFFER      1024
+
+/*----------   -----------*/
+#define USBH_DEBUG_LEVEL      0
+
+/*----------   -----------*/
+#define USBH_USE_OS      0
+
+#define USB_OTG_HS_MAX_PACKET_SIZE           512U
+#define USB_OTG_FS_MAX_PACKET_SIZE           64U
+
+#define USB_OTG_MAX_EP0_SIZE                 64U
+
+
+#define USB_FUNCTION_bRequest                       (0xFF00u)       /* b15-8:bRequest */
+#define USB_FUNCTION_bmRequestType                  (0x00FFu)       /* b7-0: bmRequestType */
 #define USB_FUNCTION_bmRequestTypeDir               (0x0080u)       /* b7  : Data transfer direction - IN if non-zero */
 #define USB_FUNCTION_bmRequestTypeType              (0x0060u)       /* b6-5: Type */
-#define USB_FUNCTION_bmRequestTypeRecip             (0x001fu)       /* b4-0: Recipient USB_RECIPIENT_MASK */
+#define USB_FUNCTION_bmRequestTypeRecip             (0x001Fu)       /* b4-0: Recipient USB_RECIPIENT_MASK */
 
-
-#define  USB_REQ_TYPE_STANDARD                          0x00
-#define  USB_REQ_TYPE_CLASS                             0x20
-#define  USB_REQ_TYPE_VENDOR                            0x40
-#define  USB_REQ_TYPE_MASK                              0x60
-#define  USB_REQ_TYPE_DIR                               0x80	// IN for non-zero
-
-#define  USB_REQ_RECIPIENT_DEVICE                       0x00
-#define  USB_REQ_RECIPIENT_INTERFACE                    0x01
-#define  USB_REQ_RECIPIENT_ENDPOINT                     0x02
-#define  USB_REQ_RECIPIENT_MASK                         0x03
-
-#define  USB_REQ_GET_STATUS                             0x00
-#define  USB_REQ_CLEAR_FEATURE                          0x01
-#define  USB_REQ_SET_FEATURE                            0x03
-#define  USB_REQ_SET_ADDRESS                            0x05
-#define  USB_REQ_GET_DESCRIPTOR                         0x06
-#define  USB_REQ_SET_DESCRIPTOR                         0x07
-#define  USB_REQ_GET_CONFIGURATION                      0x08
-#define  USB_REQ_SET_CONFIGURATION                      0x09
-#define  USB_REQ_GET_INTERFACE                          0x0A
-#define  USB_REQ_SET_INTERFACE                          0x0B
-#define  USB_REQ_SYNCH_FRAME                            0x0C
-
-#define  USB_DESC_TYPE_DEVICE                              1
-#define  USB_DESC_TYPE_CONFIGURATION                       2
-#define  USB_DESC_TYPE_STRING                              3
-#define  USB_DESC_TYPE_INTERFACE                           4
-#define  USB_DESC_TYPE_ENDPOINT                            5
-#define  USB_DESC_TYPE_DEVICE_QUALIFIER                    6
-#define  USB_DESC_TYPE_OTHER_SPEED_CONFIGURATION           7
-#define  USB_DESC_TYPE_BOS                                 0x0F
-
-#define USB_CONFIG_REMOTE_WAKEUP                           2
-#define USB_CONFIG_SELF_POWERED                            1
 
 /*  Device Status */
 #define USBD_STATE_DEFAULT                                1
@@ -292,8 +300,12 @@ typedef struct
 
   uint32_t dma_enable;           /*!< Enable or disable of the USB embedded DMA.                             */
 
+#if 0
+  // нигде не используется (только устанавливается)
   uint32_t ep0_mps;              /*!< Set the Endpoint 0 Max Packet size.
                                       This parameter can be any value of @ref USB_EP0_MPS_                   */
+
+#endif
 
   uint32_t phy_itface;           /*!< Select the used PHY interface.
                                       This parameter can be any value of @ref USB_Core_PHY_                  */
@@ -343,7 +355,7 @@ typedef struct
   // RENESAS specific field
   uint_fast8_t	pipe_num;
 
-#elif CPUSTYLE_STM32
+#elif CPUSTYLE_STM32F
 
   // STM32 specific field
   uint_fast8_t  tx_fifo_num;    /*!< Transmission FIFO number
@@ -397,9 +409,9 @@ typedef struct
 
   uint8_t   *xfer_buff;    /*!< Pointer to transfer buffer.                                                */
 
-  uint32_t  xfer_len;      /*!< Current transfer length.                                                   */
+  uint_fast32_t  xfer_len;      /*!< Current transfer length.                                                   */
 
-  uint32_t  xfer_count;    /*!< Partial transfer length in case of multi packet transfer.                  */
+  uint_fast32_t  xfer_count;    /*!< Partial transfer length in case of multi packet transfer.                  */
 
   uint8_t   toggle_in;     /*!< IN transfer current toggle flag.
                                 This parameter must be a number between Min_Data = 0 and Max_Data = 1      */
@@ -460,6 +472,7 @@ typedef USBALIGN_BEGIN struct
 	#endif
 
   uint32_t battery_charging_active;     /*!< Enable or disable Battery charging.        */
+  uint_fast8_t            run_later_ctrl_comp;	// Renesas hardware specific item
 
   void                    * pData;       /*!< Pointer to upper stack Handler */
 } USBALIGN_END PCD_HandleTypeDef;
@@ -492,7 +505,7 @@ typedef USBALIGN_BEGIN struct _USBD_HandleTypeDef
   USBD_EndpointTypeDef    ep_in [15];
   USBD_EndpointTypeDef    ep_out [15];
   uint_fast32_t           ep0_state;
-  uint_fast32_t           ep0_data_len;
+  uint_fast32_t           ep0_data_len;	// from setup stage
   uint_fast8_t            dev_state;
   uint_fast8_t            dev_old_state;
   uint_fast8_t            dev_address;
@@ -509,11 +522,6 @@ typedef USBALIGN_BEGIN struct _USBD_HandleTypeDef
   void                    *pData;  // PCD_HandleTypeDef*
 } USBALIGN_END USBD_HandleTypeDef;
 
-
-/****************************************/
-/* #define for FS and HS identification */
-#define HOST_HS 		0
-#define HOST_FS 		1
 
 /** @addtogroup USBH_LIB
   * @{
@@ -536,33 +544,6 @@ typedef USBALIGN_BEGIN struct _USBD_HandleTypeDef
 #define USBH_ADDRESS_DEFAULT                     0
 #define USBH_ADDRESS_ASSIGNED                    1
 #define USBH_MPS_DEFAULT                         0x40
-
-/*----------   -----------*/
-#define USBH_MAX_NUM_ENDPOINTS      8
-
-/*----------   -----------*/
-#define USBH_MAX_NUM_INTERFACES      10
-
-/*----------   -----------*/
-#define USBH_MAX_NUM_CONFIGURATION      1
-
-/*----------   -----------*/
-#define USBH_KEEP_CFG_DESCRIPTOR      1
-
-/*----------   -----------*/
-#define USBH_MAX_NUM_SUPPORTED_CLASS      1
-
-/*----------   -----------*/
-#define USBH_MAX_SIZE_CONFIGURATION      1024
-
-/*----------   -----------*/
-#define USBH_MAX_DATA_BUFFER      1024
-
-/*----------   -----------*/
-#define USBH_DEBUG_LEVEL      0
-
-/*----------   -----------*/
-#define USBH_USE_OS      0
 
 typedef union
 {
@@ -918,7 +899,7 @@ typedef struct _USBH_HandleTypeDef
 	uint32_t              ClassNumber;
 	uint32_t              Pipes [15];
 	volatile uint32_t         Timer;
-	uint8_t               id;
+	//uint8_t               id;
 	void*                 pData;
 	void                 (* pUser )(struct _USBH_HandleTypeDef *pHandle, uint8_t id);
 
@@ -1137,7 +1118,7 @@ void USBH_ParseInterfaceDesc (USBH_InterfaceDescTypeDef  *if_descriptor, uint8_t
 
 
 
-USBH_StatusTypeDef  USBH_Init(USBH_HandleTypeDef *phost, void (*pUsrFunc)(USBH_HandleTypeDef *phost, uint8_t ), uint8_t id);
+USBH_StatusTypeDef  USBH_Init(USBH_HandleTypeDef *phost, void (*pUsrFunc)(USBH_HandleTypeDef *phost, uint8_t ));
 USBH_StatusTypeDef  USBH_DeInit(USBH_HandleTypeDef *phost);
 USBH_StatusTypeDef  USBH_RegisterClass(USBH_HandleTypeDef *phost, USBH_ClassTypeDef *pclass);
 USBH_StatusTypeDef  USBH_SelectInterface(USBH_HandleTypeDef *phost, uint8_t interfacei);
@@ -1428,6 +1409,38 @@ uint32_t  USB_GetHostSpeed(USB_OTG_GlobalTypeDef *USBx);
 #define  USB_DISABLE   0
 #define  USB_ENABLE    1
 
+
+#define ValBit(VAR,POS)                               (VAR & (1 << POS))
+#define SetBit(VAR,POS)                               (VAR |= (1 << POS))
+#define ClrBit(VAR,POS)                               (VAR &= ((1 << POS)^255))
+
+#define  LE16(addr)             (((uint16_t)(*((uint8_t *)(addr))))\
+                                + (((uint16_t)(*(((uint8_t *)(addr)) + 1))) << 8))
+
+#define  LE16S(addr)              (uint16_t)(LE16((addr)))
+
+#define  LE32(addr)              ((((uint32_t)(*(((uint8_t *)(addr)) + 0))) + \
+                                              (((uint32_t)(*(((uint8_t *)(addr)) + 1))) << 8) + \
+                                              (((uint32_t)(*(((uint8_t *)(addr)) + 2))) << 16) + \
+                                              (((uint32_t)(*(((uint8_t *)(addr)) + 3))) << 24)))
+
+#define  LE64(addr)              ((((uint64_t)(*(((uint8_t *)(addr)) + 0))) + \
+                                              (((uint64_t)(*(((uint8_t *)(addr)) + 1))) <<  8) +\
+                                              (((uint64_t)(*(((uint8_t *)(addr)) + 2))) << 16) +\
+                                              (((uint64_t)(*(((uint8_t *)(addr)) + 3))) << 24) +\
+                                              (((uint64_t)(*(((uint8_t *)(addr)) + 4))) << 32) +\
+                                              (((uint64_t)(*(((uint8_t *)(addr)) + 5))) << 40) +\
+                                              (((uint64_t)(*(((uint8_t *)(addr)) + 6))) << 48) +\
+                                              (((uint64_t)(*(((uint8_t *)(addr)) + 7))) << 56)))
+
+
+#define  LE24(addr)              ((((uint32_t)(*(((uint8_t *)(addr)) + 0))) + \
+                                              (((uint32_t)(*(((uint8_t *)(addr)) + 1))) << 8) + \
+                                              (((uint32_t)(*(((uint8_t *)(addr)) + 2))) << 16)))
+
+
+#define  LE32S(addr)              (int32_t)(LE32((addr)))
+
 USBD_StatusTypeDef  USBD_LL_PrepareReceive(USBD_HandleTypeDef *pdev,
                                            uint8_t  ep_addr,
                                            uint8_t  *pbuf,
@@ -1453,5 +1466,27 @@ uint_fast16_t usbd_getuacinrtsmaxpacket(void);
 uint_fast16_t usbd_getuacinmaxpacket(void);
 
 void usbd_descriptors_initialize(uint_fast8_t deschs);
+
+struct descholder
+{
+	const uint8_t * data;
+	unsigned size;
+};
+
+#define USBD_CONFIGCOUNT 4
+
+extern struct descholder MsftStringDescr [1];	// Microsoft OS String Descriptor
+extern struct descholder MsftCompFeatureDescr [1];	// Microsoft Compatible ID Feature Descriptor
+extern struct descholder StringDescrTbl [];
+extern struct descholder ConfigDescrTbl [USBD_CONFIGCOUNT];
+extern struct descholder DeviceDescrTbl [USBD_CONFIGCOUNT];
+extern struct descholder DeviceQualifierTbl [USBD_CONFIGCOUNT];
+extern struct descholder OtherSpeedConfigurationTbl [USBD_CONFIGCOUNT];
+extern struct descholder BinaryDeviceObjectStoreTbl [1];
+extern struct descholder HIDReportDescrTbl [1];
+uint_fast8_t usbd_get_stringsdesc_count(void);
+
+#define DFU_VENDOR_CODE 0x44
+uint_fast16_t usbd_dfu_get_xfer_size(uint_fast8_t alt);
 
 #endif /* USB_USB_CORE_H_ */

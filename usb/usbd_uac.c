@@ -122,47 +122,6 @@ static unsigned USBD_fill_range_lay2pb(uint8_t * b, uint_fast16_t v)
 	return n;
 }
 
-// Fill Layout 2 Parameter Block
-static unsigned USBD_fill_range_lay2pbMinMax(uint8_t * b, uint_fast16_t vmin, uint_fast16_t vmax)
-{
-	unsigned n = 0;
-/*
-	If a subrange consists of only a single value,
-	the corresponding triplet must contain that value for
-	both its MIN and MAX subattribute
-	and the RES subattribute must be set to zero.
-*/
-
-	n += USBD_poke_u16(b + 0, 1);	// number of subranges
-	n += USBD_poke_u16(b + 2, vmin);	// MIN
-	n += USBD_poke_u16(b + 3, vmax);	// MAX
-	n += USBD_poke_u16(b + 4, 1);	// RES
-
-	return n;
-}
-
-// Fill Layout 2 Parameter Block
-static unsigned USBD_fill_range_lay2pbOpt(uint8_t * b, uint_fast16_t v1, uint_fast16_t v2)
-{
-	unsigned n = 0;
-/*
-	If a subrange consists of only a single value,
-	the corresponding triplet must contain that value for
-	both its MIN and MAX subattribute
-	and the RES subattribute must be set to zero.
-*/
-
-	n += USBD_poke_u16(b + 0, 1);	// number of subranges
-	n += USBD_poke_u16(b + 2, v1);	// MIN
-	n += USBD_poke_u16(b + 3, v1);	// MAX
-	n += USBD_poke_u16(b + 4, 0);	// RES
-	n += USBD_poke_u16(b + 2, v2);	// MIN
-	n += USBD_poke_u16(b + 3, v2);	// MAX
-	n += USBD_poke_u16(b + 4, 0);	// RES
-
-	return n;
-}
-
 // Fill Layout 3 Parameter Block
 static unsigned USBD_fill_range_lay3pb(uint8_t * b, uint_fast32_t v)
 {
@@ -244,10 +203,6 @@ uint_fast16_t usbd_getuacinrtsmaxpacket(void)
 // Состояние - выбранные альтернативные конфигурации по каждому интерфейсу USB configuration descriptor
 static RAMDTCM uint8_t altinterfaces [INTERFACE_count];
 
-
-
-//static RAMDTCM uint8_t terminalsprops [256] [16];
-
 static RAMDTCM uintptr_t uacinaddr = 0;
 static RAMDTCM uint_fast16_t uacinsize = 0;
 static RAMDTCM uintptr_t uacinrtsaddr = 0;
@@ -260,42 +215,46 @@ static USBALIGN_BEGIN uint8_t uac_ep0databuffout [USB_OTG_MAX_EP0_SIZE] USBALIGN
 
 static USBD_StatusTypeDef USBD_UAC_DeInit(USBD_HandleTypeDef *pdev, uint_fast8_t cfgidx)
 {
-	uint_fast8_t offset;
-	//PRINTF(PSTR("USBD_UAC_DeInit\n"));
-
-
+#if ! CPUSTYLE_R7S721
+	// На Renesas аудио endpoints обслуживаются контроллером DMA
+	USBD_LL_CloseEP(pdev, USBD_EP_AUDIO_IN);
+#endif /* ! CPUSTYLE_R7S721 */
+	if (uacinaddr != 0)
 	{
-		USBD_LL_CloseEP(pdev, USBD_EP_AUDIO_IN);
-
-		if (uacinaddr != 0)
-		{
-			global_disableIRQ();
-			release_dmabufferx(uacinaddr);
-			global_enableIRQ();
-			uacinaddr = 0;
-		}
-		altinterfaces [INTERFACE_AUDIO_MIKE] = 0;
-		altinterfaces [INTERFACE_AUDIO_SPK] = 0;
-		buffers_set_uacinalt(altinterfaces [INTERFACE_AUDIO_MIKE]);
+		global_disableIRQ();
+		release_dmabufferx(uacinaddr);
+		global_enableIRQ();
+		uacinaddr = 0;
+	}
+	altinterfaces [INTERFACE_AUDIO_MIKE] = 0;
+	altinterfaces [INTERFACE_AUDIO_SPK] = 0;
+	buffers_set_uacinalt(altinterfaces [INTERFACE_AUDIO_MIKE]);
 
 #if WITHUSBUACIN2
-		USBD_LL_CloseEP(pdev, USBD_EP_RTS_IN);
-		if (uacinrtsaddr != 0)
-		{
-			global_disableIRQ();
-			release_dmabufferxrts(uacinrtsaddr);
-			global_enableIRQ();
-			uacinrtsaddr = 0;
-		}
-		altinterfaces [INTERFACE_AUDIO_RTS] = 0;
-		buffers_set_uacinrtsalt(altinterfaces [INTERFACE_AUDIO_RTS]);
+
+#if ! CPUSTYLE_R7S721
+	// На Renesas аудио endpoints обслуживаются контроллером DMA
+	USBD_LL_CloseEP(pdev, USBD_EP_RTS_IN);
+#endif /* ! CPUSTYLE_R7S721 */
+
+	if (uacinrtsaddr != 0)
+	{
+		global_disableIRQ();
+		release_dmabufferxrts(uacinrtsaddr);
+		global_enableIRQ();
+		uacinrtsaddr = 0;
+	}
+	altinterfaces [INTERFACE_AUDIO_RTS] = 0;
+	buffers_set_uacinrtsalt(altinterfaces [INTERFACE_AUDIO_RTS]);
 #endif /* WITHUSBUACIN2 */
 
-		USBD_LL_CloseEP(pdev, USBD_EP_AUDIO_OUT);
-		//terminalsprops [TERMINAL_ID_SELECTOR_6] [AUDIO_CONTROL_UNDEFINED] = 1;
-		buffers_set_uacoutalt(altinterfaces [INTERFACE_AUDIO_SPK]);
-		uacout_buffer_stop();
-	}
+#if ! CPUSTYLE_R7S721
+	// На Renesas аудио endpoints обслуживаются контроллером DMA
+	USBD_LL_CloseEP(pdev, USBD_EP_AUDIO_OUT);
+#endif /* ! CPUSTYLE_R7S721 */
+	//terminalsprops [TERMINAL_ID_SELECTOR_6] [AUDIO_CONTROL_UNDEFINED] = 1;
+	buffers_set_uacoutalt(altinterfaces [INTERFACE_AUDIO_SPK]);
+	uacout_buffer_stop();
 
 	//PRINTF(PSTR("USBD_XXX_DeInit done\n"));
 	return USBD_OK;
@@ -323,7 +282,7 @@ static unsigned USBD_UAC1_FeatureUnit_req(
 		if (req->bRequest == AUDIO_REQUEST_GET_CUR)
 		{
 			// Mute control CUR request response
-			return USBD_poke_u8(buff, 0);
+			return ulmin16(USBD_poke_u8(buff, 0), req->wLength);
 		}
 		// AUDIO_REQUEST_SET_CUR
 		//PRINTF(PSTR("USBD_UAC1_FeatureUnit_req: AUDIO_REQUEST_SET_CUR: interfacev=%u,  terminal=%u, CS=%d, CN=%d, value=%d\n"), interfacev, terminalID, CS, CN, val8);
@@ -336,7 +295,7 @@ static unsigned USBD_UAC1_FeatureUnit_req(
 		{
 		case AUDIO_REQUEST_GET_CUR:
 			//PRINTF(PSTR("USBD_UAC1_FeatureUnit_req: AUDIO_REQUEST_GET_CUR: interfacev=%u,  terminal=%u, CS=%d, CN=%d\n"), interfacev, terminalID, CS, CN);
-			return USBD_poke_u16(buff, 0);
+			return ulmin16(USBD_poke_u16(buff, 0), req->wLength);
 
 		case AUDIO_REQUEST_SET_CUR:
 			//PRINTF(PSTR("USBD_UAC1_FeatureUnit_req: AUDIO_REQUEST_SET_CUR: interfacev=%u,  terminal=%u, CS=%d, CN=%d, value=%d\n"), interfacev, terminalID, CS, CN, val16);
@@ -345,15 +304,15 @@ static unsigned USBD_UAC1_FeatureUnit_req(
 
 		case AUDIO_REQUEST_GET_MIN:
 			//PRINTF(PSTR("USBD_UAC1_FeatureUnit_req: AUDIO_REQUEST_GET_MIN: interfacev=%u,  terminal=%u, CS=%d, CN=%d, \n"), interfacev, terminalID, CS, CN);
-			return USBD_poke_u16(buff, 0);
+			return ulmin16(USBD_poke_u16(buff, 0), req->wLength);
 
 		case AUDIO_REQUEST_GET_MAX:
 			//PRINTF(PSTR("USBD_UAC1_FeatureUnit_req: AUDIO_REQUEST_GET_MAX: interfacev=%u,  terminal=%u, CS=%d, CN=%d, \n"), interfacev, terminalID, CS, CN);
-			return USBD_poke_u16(buff, 0 * 100);
+			return ulmin16(USBD_poke_u16(buff, 0 * 100), req->wLength);
 
 		case AUDIO_REQUEST_GET_RES:
 			//PRINTF(PSTR("USBD_UAC1_FeatureUnit_req: AUDIO_REQUEST_GET_RES: interfacev=%u,  terminal=%u, CS=%d, CN=%d, \n"), interfacev, terminalID, CS, CN);
-			return USBD_poke_u16(buff, 1);
+			return ulmin16(USBD_poke_u16(buff, 1), req->wLength);
 		}
 	}
 	TP();
@@ -384,19 +343,19 @@ static unsigned USBD_UAC1_Selector_req(
 
 	case AUDIO_REQUEST_GET_CUR:
 		//PRINTF(PSTR("USBD_UAC1_Selector_req: AUDIO_REQUEST_GET_CUR: interfacev=%u,  terminal=%u\n"), interfacev, terminalID);
-		return USBD_poke_u8(buff, 1);
+		return ulmin16(USBD_poke_u8(buff, 1), req->wLength);
 
 	case AUDIO_REQUEST_GET_MIN:
 		//PRINTF(PSTR("USBD_UAC1_Selector_req: AUDIO_REQUEST_GET_MIN: interfacev=%u,  terminal=%u\n"), interfacev, terminalID);
-		return USBD_poke_u8(buff, 1);
+		return ulmin16(USBD_poke_u8(buff, 1), req->wLength);
 
 	case AUDIO_REQUEST_GET_MAX:
 		//PRINTF(PSTR("USBD_UAC1_Selector_req: AUDIO_REQUEST_GET_MAX: interfacev=%u,  terminal=%u\n"), interfacev, terminalID);
-		return USBD_poke_u8(buff, TERMINAL_ID_SELECTOR_6_INPUTS);
+		return ulmin16(USBD_poke_u8(buff, TERMINAL_ID_SELECTOR_6_INPUTS), req->wLength);
 
 	case AUDIO_REQUEST_GET_RES:
 		//PRINTF(PSTR("USBD_UAC1_Selector_req: AUDIO_REQUEST_GET_MIN: interfacev=%u,  terminal=%u\n"), interfacev, terminalID);
-		return USBD_poke_u8(buff, 1);
+		return ulmin16(USBD_poke_u8(buff, 1), req->wLength);
 	}
 }
 
@@ -407,11 +366,10 @@ static unsigned USBD_UAC2_FeatureUnit_req(
 	uint8_t * buff
 	)
 {
-	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
 	const uint_fast8_t terminalID = HI_BYTE(req->wIndex);
 	const uint_fast8_t controlID = HI_BYTE(req->wValue);	// AUDIO_MUTE_CONTROL, AUDIO_VOLUME_CONTROL, ...
 	const uint_fast8_t channelNumber = LO_BYTE(req->wValue);
-	PRINTF(PSTR("1 req->bmRequest=%04X req->bRequest=%u req->wLength=%d, interfacev=%u,  controlID=%u, channelNumber=%u, terminalID=%u\n"), req->bmRequest, req->bRequest, req->wLength, interfacev, controlID, channelNumber, terminalID);
+
 	switch (req->bRequest)
 	{
 	default:
@@ -419,17 +377,17 @@ static unsigned USBD_UAC2_FeatureUnit_req(
 		TP();
 		return 0;
 
-	case 0x01:	// CUR
+	case 0x01:	// CURR
 		switch (controlID)
 		{
 		case 1:
 			// MUTE
-			PRINTF(PSTR("2 CUR req->bmRequest=%04X req->bRequest=%u req->wLength=%d, interfacev=%u,  controlID=%u, channelNumber=%u, terminalID=%u\n"), req->bmRequest, req->bRequest, req->wLength, interfacev, controlID, channelNumber, terminalID);
-			return USBD_poke_u8(buff, 0);
+			USBD_poke_u8(buff, 0);
+			return 1;
 		case 2:
 			// VOLUME
-			PRINTF(PSTR("3 CUR req->bmRequest=%04X req->bRequest=%u req->wLength=%d, interfacev=%u,  controlID=%u, channelNumber=%u, terminalID=%u\n"), req->bmRequest, req->bRequest, req->wLength, interfacev, controlID, channelNumber, terminalID);
-			return USBD_poke_u16(buff, 0);
+			USBD_poke_u16(buff, 0);
+			return 2;
 		default:
 			// Undefined control ID
 			TP();
@@ -442,16 +400,80 @@ static unsigned USBD_UAC2_FeatureUnit_req(
 		{
 		case 1:
 			// MUTE
-			PRINTF(PSTR("4 RANGE req->bmRequest=%04X req->bRequest=%u req->wLength=%d, interfacev=%u,  controlID=%u, channelNumber=%u, terminalID=%u\n"), req->bmRequest, req->bRequest, req->wLength, interfacev, controlID, channelNumber, terminalID);
 			return USBD_fill_range_lay1pb(buff, 0);
 		case 2:
 			// VOLUME
-			PRINTF(PSTR("5 RANGE req->bmRequest=%04X req->bRequest=%u req->wLength=%d, interfacev=%u,  controlID=%u, channelNumber=%u, terminalID=%u\n"), req->bmRequest, req->bRequest, req->wLength, interfacev, controlID, channelNumber, terminalID);
-			return USBD_fill_range_lay2pbMinMax(buff, 0, 100);
+			return USBD_fill_range_lay2pb(buff, 0);
 		default:
 			// Undefined control ID
 			TP();
 			return 0;
+		}
+		break;
+	}
+	return 0;
+}
+
+// UAC2: Выполнение запроса CURR
+static unsigned USBD_UAC2_CloclMultiplier_req_48k(
+	const USBD_SetupReqTypedef *req,
+	uint8_t * buff
+	)
+{
+	const uint_fast8_t terminalID = HI_BYTE(req->wIndex);
+	const uint_fast8_t controlID = HI_BYTE(req->wValue);
+	const uint_fast8_t channelNumber = LO_BYTE(req->wValue);
+	const uint_fast32_t denominator = FPGADECIMATION;
+	const uint_fast32_t numerator = DDS1_CLK_MUL;
+
+	switch (req->bRequest)
+	{
+	case 0x01:	// CURR
+		switch (controlID)
+		{
+		default:
+			// Undefined control ID
+			TP();
+			return 0;
+		case 1:
+			// CM_NUMERATOR_CONTROL
+			return USBD_poke_u16(buff + 0, numerator); // numerator
+		case 2:
+			// CM_DENOMINATOR_CONTROL
+			return USBD_poke_u16(buff + 0, denominator); // denominator
+		}
+		break;
+	}
+	return 0;
+}
+
+// UAC2: Выполнение запроса CURR
+static unsigned USBD_UAC2_CloclMultiplier_req_96k(
+	const USBD_SetupReqTypedef *req,
+	uint8_t * buff
+	)
+{
+	const uint_fast8_t terminalID = HI_BYTE(req->wIndex);
+	const uint_fast8_t controlID = HI_BYTE(req->wValue);
+	const uint_fast8_t channelNumber = LO_BYTE(req->wValue);
+	const uint_fast32_t denominator = FPGADECIMATION / 2;
+	const uint_fast32_t numerator = DDS1_CLK_MUL;
+
+	switch (req->bRequest)
+	{
+	case 0x01:	// CURR
+		switch (controlID)
+		{
+		default:
+			// Undefined control ID
+			TP();
+			return 0;
+		case 1:
+			// CM_NUMERATOR_CONTROL
+			return USBD_poke_u16(buff + 0, numerator); // numerator
+		case 2:
+			// CM_DENOMINATOR_CONTROL
+			return USBD_poke_u16(buff + 0, denominator); // denominator
 		}
 		break;
 	}
@@ -467,121 +489,41 @@ static unsigned USBD_UAC2_ClockSource_req(
 	const uint_fast8_t terminalID = HI_BYTE(req->wIndex);
 	const uint_fast8_t controlID = HI_BYTE(req->wValue);
 	const uint_fast8_t channelNumber = LO_BYTE(req->wValue);
+	const uint_fast32_t freq = REFERENCE_FREQ;
+
 	switch (req->bRequest)
 	{
 	case 0x01:	// CURR
-		switch (terminalID)
+		switch (controlID)
 		{
 		default:
-			// Undefined terminalID
+			// Undefined control ID
 			TP();
 			return 0;
-
-		case TERMINAL_ID_CLKSOURCE_UACIN48_UACINRTS:
-		case TERMINAL_ID_CLKSOURCE_UACINOUT:
-			switch (controlID)
-			{
-			default:
-				// Undefined control ID
-				TP();
-				return 0;
-			case 1:
-				// FREQ
-				// FIXME: depend on mode (alt interface) for TERMINAL_ID_CLKSOURCE_UACINOUT
-				return USBD_poke_u32(buff + 0, dsp_get_samplerateuacin_audio48()); // sample rate
-			case 2:
-				// VALID
-				return USBD_poke_u8(buff + 0, 1); // valid
-			}
-			break;
-		case TERMINAL_ID_CLKSOURCE_UACINRTS:
-			switch (controlID)
-			{
-			default:
-				// Undefined control ID
-				TP();
-				return 0;
-			case 1:
-				// FREQ
-				return USBD_poke_u32(buff + 0, dsp_get_samplerateuacin_rts()); // sample rate
-			case 2:
-				// VALID
-				return USBD_poke_u8(buff + 0, 1); // valid
-			}
-			break;
-		case TERMINAL_ID_CLKSOURCE_UACIN48:
-		case TERMINAL_ID_CLKSOURCE_UACOUT48:
-			switch (controlID)
-			{
-			default:
-				// Undefined control ID
-				TP();
-				return 0;
-			case 1:
-				// FREQ
-				return USBD_poke_u32(buff + 0, dsp_get_samplerateuacin_audio48()); // sample rate
-			case 2:
-				// VALID
-				return USBD_poke_u8(buff + 0, 1); // valid
-			}
-			break;
+		case 1:
+			// FREQ
+			return USBD_poke_u32(buff + 0, freq); // sample rate
+		case 2:
+			// VALID
+			return USBD_poke_u8(buff + 0, 1); // valid
 		}
 		break;
 	case 0x02:	// RANGE
 		// The Clock Validity Control must have only the CUR attribute
-		switch (terminalID)
+		switch (controlID)
 		{
 		default:
-			// Undefined terminalID
+			// Undefined control ID
 			TP();
 			return 0;
-
-		case TERMINAL_ID_CLKSOURCE_UACIN48_UACINRTS:
-		case TERMINAL_ID_CLKSOURCE_UACINOUT:
-			switch (controlID)
-			{
-			default:
-				// Undefined control ID
-				TP();
-				return 0;
-			case 1:
-				// FREQ
-				//return USBD_fill_range_lay3pb2opt(buff, dsp_get_samplerateuacin_audio48(), dsp_get_samplerateuacin_rts());
-				return USBD_fill_range_lay3pb(buff, dsp_get_samplerateuacin_audio48());
-			}
-			break;
-		case TERMINAL_ID_CLKSOURCE_UACINRTS:
-			switch (controlID)
-			{
-			default:
-				// Undefined control ID
-				TP();
-				return 0;
-			case 1:
-				// FREQ
-				return USBD_fill_range_lay3pb(buff, dsp_get_samplerateuacin_rts());
-			}
-			break;
-		case TERMINAL_ID_CLKSOURCE_UACIN48:
-		case TERMINAL_ID_CLKSOURCE_UACOUT48:
-			switch (controlID)
-			{
-			default:
-				// Undefined control ID
-				TP();
-				return 0;
-			case 1:
-				// FREQ
-				return USBD_fill_range_lay3pb(buff, dsp_get_samplerateuacin_audio48());
-			}
-			break;
+		case 1:
+			// FREQ
+			return USBD_fill_range_lay3pb(buff, freq);
 		}
 		break;
 	}
 	return 0;
 }
-
-
 
 static USBD_StatusTypeDef USBD_UAC_Setup(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req)
 {
@@ -600,10 +542,10 @@ static USBD_StatusTypeDef USBD_UAC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 					0)
 			&& req->wIndex == 0x05)
 	{
-		PRINTF(PSTR("MS USBD_UAC_Setup: bmRequest=%04X, bRequest=%04X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
+		PRINTF(PSTR("MS USBD_UAC_Setup: bmRequest=%04X, bRequest=%02X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
 		return USBD_OK;
 	}
-	//PRINTF(PSTR("USBD_UAC_Setup: bRequest=%02X, wIndex=%04X, wLength=%04X, wValue=%04X (interfacev=%02X)\n"), req->bRequest, req->wIndex, req->wLength, req->wValue, interfacev);
+	//PRINTF(PSTR("USBD_UAC_Setup: bmRequest=%04X, bRequest=%02X, wIndex=%04X, wLength=%04X, wValue=%04X (interfacev=%02X)\n"), req->bmRequest, req->bRequest, req->wIndex, req->wLength, req->wValue, interfacev);
 	unsigned len = 0;
 	if ((req->bmRequest & USB_REQ_TYPE_DIR) != 0)
 	{
@@ -629,11 +571,21 @@ static USBD_StatusTypeDef USBD_UAC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 						PRINTF(PSTR("USBD_UAC_Setup IN: default path 1: req->bRequest=%02X\n"), req->bRequest);
 						len = 0;
 						break;
-					case TERMINAL_ID_CLKSOURCE_UACIN48_UACINRTS:
-					case TERMINAL_ID_CLKSOURCE_UACINOUT:
-					case TERMINAL_ID_CLKSOURCE_UACINRTS:
-					case TERMINAL_ID_CLKSOURCE_UACIN48:
-					case TERMINAL_ID_CLKSOURCE_UACOUT48:
+
+					case TERMINAL_ID_CLKMULTIPLIER_UACIN48_UACINRTS:
+					case TERMINAL_ID_CLKMULTIPLIER_UACIN48:
+					case TERMINAL_ID_CLKMULTIPLIER_UACOUT48:
+					case TERMINAL_ID_CLKMULTIPLIER_UACINOUT:
+						len = USBD_UAC2_CloclMultiplier_req_48k(req, buff);
+						break;
+
+					case TERMINAL_ID_CLKMULTIPLIER_UACINRTS:
+						len = USBD_UAC2_CloclMultiplier_req_96k(req, buff);
+						break;
+
+					case TERMINAL_ID_CLKSOURCE + 0 * MAX_TERMINALS_IN_INTERFACE:
+					case TERMINAL_ID_CLKSOURCE + 1 * MAX_TERMINALS_IN_INTERFACE:
+					case TERMINAL_ID_CLKSOURCE + 2 * MAX_TERMINALS_IN_INTERFACE:
 						len = USBD_UAC2_ClockSource_req(req, buff);
 						break;
 
@@ -671,20 +623,24 @@ static USBD_StatusTypeDef USBD_UAC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 				break;
 			}
 			break;
+
 		case USB_REQ_TYPE_STANDARD:
 			switch (req->bRequest)
 			{
 			case USB_REQ_GET_INTERFACE:
 				// не видел вызовов этой функции
-				//PRINTF(PSTR("USBD_UAC_Setup IN: USB_REQ_TYPE_STANDARD USB_REQ_GET_INTERFACE dir=%02X interfacev=%d\n"), req->bmRequest & 0x80, interfacev);
 				switch (interfacev)
 				{
 
 			#if WITHUSBUACIN2
 				case INTERFACE_AUDIO_CONTROL_RTS:	/* AUDIO spectrum control interface */
+				case INTERFACE_AUDIO_RTS:	/* AUDIO spectrum control interface */
 			#endif /* WITHUSBUACIN2 */
 				case INTERFACE_AUDIO_CONTROL_MIKE:	// AUDIO control interface
+				case INTERFACE_AUDIO_MIKE:	// AUDIO control interface
 				case INTERFACE_AUDIO_CONTROL_SPK:	// AUDIO control interface
+				case INTERFACE_AUDIO_SPK:	// AUDIO control interface
+					//PRINTF(PSTR("USBD_UAC_Setup IN: USB_REQ_TYPE_STANDARD USB_REQ_GET_INTERFACE dir=%02X interfacev=%d, req->wLength=%d\n"), req->bmRequest & 0x80, interfacev, (int) req->wLength);
 					buff [0] = altinterfaces [interfacev];
 					USBD_CtlSendData(pdev, buff, ulmin16(ARRAY_SIZE(buff), req->wLength));
 					break;
@@ -744,6 +700,7 @@ static USBD_StatusTypeDef USBD_UAC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 			switch (req->bRequest)
 			{
 			case USB_REQ_SET_INTERFACE :
+				//PRINTF(PSTR("USBD_UAC_Setup: USB_REQ_TYPE_STANDARD USB_REQ_SET_INTERFACE interfacev=%d, value=%d\n"), interfacev, LO_BYTE(req->wValue));
 				switch (interfacev)
 				{
 				case INTERFACE_AUDIO_MIKE: // Audio interface: recording device
@@ -904,20 +861,28 @@ static USBD_StatusTypeDef USBD_UAC_Init(USBD_HandleTypeDef *pdev, uint_fast8_t c
 	buffers_set_uacinalt(altinterfaces [INTERFACE_AUDIO_MIKE]);
 	buffers_set_uacoutalt(altinterfaces [INTERFACE_AUDIO_SPK]);
 
+#if ! CPUSTYLE_R7S721
+	// На Renesas аудио endpoints обслуживаются контроллером DMA
 	/* uac Open EP IN */
 	USBD_LL_OpenEP(pdev, USBD_EP_AUDIO_IN, USBD_EP_TYPE_ISOC, usbd_getuacinmaxpacket());	// was: VIRTUAL_AUDIO_PORT_DATA_SIZE_IN
 	USBD_LL_Transmit(pdev, USBD_EP_AUDIO_IN, NULL, 0);
+#endif /* ! CPUSTYLE_R7S721 */
 
 #if WITHUSBUACIN2
 	altinterfaces [INTERFACE_AUDIO_RTS] = 0;
 	buffers_set_uacinrtsalt(altinterfaces [INTERFACE_AUDIO_RTS]);
 
+#if ! CPUSTYLE_R7S721
+	// На Renesas аудио endpoints обслуживаются контроллером DMA
 	/* uac Open EP IN */
 	USBD_LL_OpenEP(pdev, USBD_EP_RTS_IN, USBD_EP_TYPE_ISOC, usbd_getuacinrtsmaxpacket());	// was: VIRTUAL_AUDIO_PORT_DATA_SIZE_IN
 	USBD_LL_Transmit(pdev, USBD_EP_RTS_IN, NULL, 0);
+#endif /* ! CPUSTYLE_R7S721 */
 
 #endif /* WITHUSBUACIN2 */
 
+#if ! CPUSTYLE_R7S721
+	// На Renesas аудио endpoints обслуживаются контроллером DMA
 	/* UAC Open EP OUT */
 	USBD_LL_OpenEP(pdev,
 				   USBD_EP_AUDIO_OUT,
@@ -926,6 +891,8 @@ static USBD_StatusTypeDef USBD_UAC_Init(USBD_HandleTypeDef *pdev, uint_fast8_t c
 
    /* UAC Prepare Out endpoint to receive 1st packet */
 	USBD_LL_PrepareReceive(pdev, USB_ENDPOINT_OUT(USBD_EP_AUDIO_OUT), uacoutbuff, UAC_OUT48_DATA_SIZE);
+
+#endif /* ! CPUSTYLE_R7S721 */
 
 	uacout_buffer_start();
 	return USBD_OK;

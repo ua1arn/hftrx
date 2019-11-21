@@ -17,6 +17,29 @@
 
 #define WITHPLACEHOLDERS 1	//  отображение макета с еще незанятыми полями
 
+
+// todo: учесть LCDMODE_COLORED
+
+// параметры отображения состояния прием/пеердача
+static const COLOR_T colorsfg_2rxtx [2] = { COLOR_GREEN, COLOR_RED, };
+static const COLOR_T colorsbg_2rxtx [2] = { COLOR_BLACK, COLOR_BLACK, };
+
+// параметры отображения состояний из трех вариантов
+static const COLOR_T colorsfg_4state [4] = { COLOR_BLACK, COLOR_RED, DESIGNCOLORSTATE, DESIGNCOLORSTATE, };
+static const COLOR_T colorsbg_4state [4] = { DESIGNCOLORSTATE, DESIGNCOLORDARKSTATE, DESIGNCOLORDARKSTATE, DESIGNCOLORDARKSTATE, };
+
+// параметры отображения состояний из двух вариантов
+static const COLOR_T colorsfg_2state [2] = { COLOR_BLACK, DESIGNCOLORSTATE, };
+static const COLOR_T colorsbg_2state [2] = { DESIGNCOLORSTATE, DESIGNCOLORDARKSTATE, };
+
+// параметры отображения текстов без вариантов
+static const COLOR_T colorsfg_1state [1] = { DESIGNCOLORSTATE, };
+static const COLOR_T colorsbg_1state [1] = { COLOR_BLACK, };	// устанавливается в цвет фона из палитры
+
+// параметры отображения текстов без вариантов
+static const COLOR_T colorsfg_1freq [1] = { DESIGNBIGCOLOR, };
+static const COLOR_T colorsbg_1freq [1] = { COLOR_BLACK, };	// устанавливается в цвет фона из палитры
+
 // todo: switch off -Wunused-function
 
 #if WITHDIRECTFREQENER
@@ -84,12 +107,16 @@ static int_fast16_t glob_gridstep = 10000;	// 10 kHz - шаг сетки
 
 // waterfall/spectrum parameters
 static uint_fast8_t glob_fillspect;	/* заливать заполнением площадь под графиком спектра */
+
 static int_fast16_t glob_topdb = 30;	/* верхний предел FFT */
 static int_fast16_t glob_bottomdb = 130;	/* нижний предел FFT */
-static uint_fast8_t glob_zoomxpow2;	/* уменьшение отображаемого участка спектра - horisontal magnification power of two */
 
 static int_fast16_t glob_topdbwf = 0;	/* верхний предел FFT */
 static int_fast16_t glob_bottomdbwf = 137;	/* нижний предел FFT */
+
+static uint_fast8_t glob_wflevelsep;	/* чувствительность водопада регулируется отдельной парой параметров */
+
+static uint_fast8_t glob_zoomxpow2;	/* уменьшение отображаемого участка спектра - horisontal magnification power of two */
 
 //#define WIDEFREQ (TUNE_TOP > 100000000L)
 
@@ -245,7 +272,7 @@ static void display_freqXbig_a(
 	uint_fast8_t fullwidth = display_getfreqformat(& rj);
 	const uint_fast8_t comma = 3 - rj;
 
-	display_setcolors3(BIGCOLOR, BGCOLOR, BIGCOLORHALF);
+	display_setcolors3(colorsfg_1freq [0], colorsbg_1freq [0], colorsfg_1freq [0]);
 	if (pv != NULL)
 	{
 #if WITHDIRECTFREQENER
@@ -286,7 +313,7 @@ static void display_freqX_a(
 	uint_fast8_t fullwidth = display_getfreqformat(& rj);
 	const uint_fast8_t comma = 3 - rj;
 
-	display_setcolors3(BIGCOLOR, BGCOLOR, BIGCOLORHALF);
+	display_setcolors3(colorsfg_1freq [0], colorsbg_1freq [0], colorsfg_1freq [0]);
 	if (pv != NULL)
 	{
 #if WITHDIRECTFREQENER
@@ -327,7 +354,7 @@ static void display_freqchr_a(
 	uint_fast8_t fullwidth = display_getfreqformat(& rj);
 	const uint_fast8_t comma = 3 - rj;
 
-	display_setcolors3(BIGCOLOR, BGCOLOR, BIGCOLORHALF);
+	display_setcolors3(colorsfg_1freq [0], colorsbg_1freq [0], colorsfg_1freq [0]);
 	if (pv != NULL)
 	{
 #if WITHDIRECTFREQENER
@@ -368,7 +395,7 @@ static void display_freqchr_b(
 	uint_fast8_t fullwidth = display_getfreqformat(& rj);
 	const uint_fast8_t comma = 3 - rj;
 
-	display_setcolors(BIGCOLOR, BGCOLOR);
+	display_setcolors3(colorsfg_1freq [0], colorsbg_1freq [0], colorsfg_1freq [0]);
 #if 0
 	if (pv != NULL)
 	{
@@ -411,7 +438,7 @@ static void display_freqX_b(
 
 	const uint_fast32_t freq = hamradio_get_freq_b();
 
-	display_setcolors(FRQCOLOR, BGCOLOR);
+	display_setcolors(colorsfg_1freq [0], colorsbg_1freq [0]);
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 	do
 	{
@@ -431,7 +458,7 @@ static void display_freqmeter10(
 	char buffer [32];
 	local_snprintf_P(buffer, sizeof buffer / sizeof buffer [0], PSTR("%10lu"), board_get_fqmeter());
 
-	display_setcolors(FRQCOLOR, BGCOLOR);
+	display_setcolors(colorsfg_1freq [0], colorsbg_1freq [0]);
 	display_at(x, y, buffer);
 #endif /* WITHFQMETER */
 }
@@ -490,28 +517,6 @@ static void display_txrxstatecompact(
 	display_at_P(x, y, tx ? PSTR("T") : PSTR(" "));
 #endif /* WITHTX */
 }
-
-// todo: учесть LCDMODE_COLORED
-
-// параметры отображения состояния прием/пеердача
-static const COLOR_T colorsfg_2rxtx [2] = { COLOR_GREEN, COLOR_RED, };
-static const COLOR_T colorsbg_2rxtx [2] = { COLOR_BLACK, COLOR_BLACK, };
-
-// параметры отображения состояний из трех вариантов
-static const COLOR_T colorsfg_4state [4] = { COLOR_BLACK, COLOR_WHITE, COLOR_WHITE, COLOR_WHITE, };
-static const COLOR_T colorsbg_4state [4] = { COLOR_GREEN, COLOR_DARKGREEN, COLOR_DARKGREEN, COLOR_DARKGREEN, };
-
-// параметры отображения состояний из двух вариантов
-static const COLOR_T colorsfg_2state [2] = { COLOR_BLACK, COLOR_WHITE, };
-static const COLOR_T colorsbg_2state [2] = { COLOR_GREEN, COLOR_DARKGREEN, };
-
-// параметры отображения текстов без вариантов
-static const COLOR_T colorsfg_1state [1] = { COLOR_GREEN, };
-static const COLOR_T colorsbg_1state [1] = { COLOR_BLACK, };	// устанавливается в цвет фона из палитры
-
-// параметры отображения текстов без вариантов
-static const COLOR_T colorsfg_1gold [1] = { COLOR_YELLOW, };
-static const COLOR_T colorsbg_1gold [1] = { COLOR_BLACK, };	// устанавливается в цвет фона из палитры
 
 // Отображение режимов TX / RX
 static void display_txrxstate2(
@@ -1214,7 +1219,7 @@ static void display_mode3_a(
 	)
 {
 	const char FLASHMEM * const labels [1] = { hamradio_get_mode_a_value_P(), };
-	display2_text_P(x, y, labels, colorsfg_1gold, colorsbg_1gold, 0);
+	display2_text_P(x, y, labels, colorsfg_1freq, colorsbg_1freq, 0);
 }
 
 
@@ -1226,7 +1231,7 @@ static void display_mode3_b(
 	)
 {
 	const char FLASHMEM * const labels [1] = { hamradio_get_mode_b_value_P(), };
-	display2_text_P(x, y, labels, colorsfg_1gold, colorsbg_1gold, 0);
+	display2_text_P(x, y, labels, colorsfg_1freq, colorsbg_1freq, 0);
 }
 
 // dd.dV - 5 places
@@ -3478,7 +3483,7 @@ enum
 			PG0 = REDRSUBSET(DPAGE0),
 			PG1 = REDRSUBSET(DPAGE1),
 			PGALL = PG0 | PG1 | REDRSUBSET_MENU,
-			PGLATCH = PGALL,
+			PGLATCH = PGALL | REDRSUBSET_SLEEP,
 			PGunused
 		};
 		#define DISPLC_WIDTH	8	// количество цифр в отображении частоты
@@ -3614,7 +3619,7 @@ enum
 		#else /* WITHDSPEXTDDC */
 			PGALL = PG0 | REDRSUBSET_MENU,
 		#endif /* WITHDSPEXTDDC */
-			PGLATCH = PGALL,
+			PGLATCH = PGALL | REDRSUBSET_SLEEP,
 			PGunused
 		};
 		#define DISPLC_WIDTH	8	// количество цифр в отображении частоты
@@ -3844,7 +3849,7 @@ enum
 			PGALL = PG0 | REDRSUBSET_MENU,
 			PGNOMEMU = PG0,
 		#endif /* WITHIF4DSP */
-			PGLATCH = PGALL,	// страницы, на которых возможно отображение водопада или панорамы.
+			PGLATCH = PGALL | REDRSUBSET_SLEEP,	// страницы, на которых возможно отображение водопада или панорамы.
 			PGunused
 		};
 		#define DISPLC_WIDTH	8	// количество цифр в отображении частоты
@@ -3994,7 +3999,7 @@ enum
 			PGWFL = PG0,	// страница отображения водопада
 			PGSPE = PG0,	// страница отображения панорамы
 			PGSWR = PG0,	// страница отоюражения S-meter и SWR-meter
-			PGLATCH = PGALL,	// страницы, на которых возможно отображение водопада или панорамы.
+			PGLATCH = PGALL | REDRSUBSET_SLEEP,	// страницы, на которых возможно отображение водопада или панорамы.
 			PGSLP = REDRSUBSET_SLEEP,
 			PGunused
 		};
@@ -4044,13 +4049,14 @@ enum
 #if 1
 		{	0,	20,	display2_legend,	REDRM_MODE, PGSWR, },	// Отображение оцифровки шкалы S-метра, PWR & SWR-метра
 		{	0,	24,	display2_bars,		REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
-		//{	25, 24, display_siglevel4, REDRM_BARS, PGSWR, },	// уровень сигнала
-		{	25, 24, display_smeter5, 	REDRM_BARS, PGSWR, },	// уровень сигнала в баллах S
+		{	25, 24, display_siglevel4, REDRM_BARS, PGSWR, },	// уровень сигнала
+		//{	25, 24, display_smeter5, 	REDRM_BARS, PGSWR, },	// уровень сигнала в баллах S
 		{	0,	28,	dsp_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
 		{	0,	28,	display2_spectrum,	REDRM_BARS, PGSPE, },// подготовка изображения спектра
 		{	0,	28,	display2_waterfall,	REDRM_BARS, PGWFL, },// подготовка изображения водопада
 		{	0,	28,	display2_colorbuff,	REDRM_BARS,	PGWFL | PGSPE, },// Отображение водопада и/или спектра
 #else
+		{	0,	0,	display2_pip_off,	REDRM_MODE,	PGALL },	// Выключить PIP если на данной странице не требуется
 		{	0,	20,	display2_adctest,	REDRM_BARS, PGSWR, },	// ADC raw data print
 #endif
 	
@@ -4256,31 +4262,33 @@ enum
 	// 480/5 = 96, 800/16=50
 
 	#if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
-		//					"012345678901234567890123"
-		#define SWRPWRMAP	"1   2   3   4  0% | 100%" 
+		//					"012345678901234567890123456789"
+		#define SWRPWRMAP	"1    2    3    4  0%   |  100%"
 		#define SWRMAX	(SWRMIN * 40 / 10)	// 4.0 - значение на полной шкале
 	#else
-		//					"012345678901234567890123"
-		#define POWERMAP	"0    25    50   75   100"
-		#define SWRMAP		"1   |   2  |   3   |   4"	// 
-		#define SWRMAX	(SWRMIN * 40 / 10)	// 4.0 - значение на полной шкале
+		#error Should be defined WITHSHOWSWRPWR
 	#endif
-	//						"012345678901234567890123"
-	#define SMETERMAP		"1  3  5  7  9 +20 +40 60"
+	//						"012345678901234567890123456789"
+	#define SMETERMAP		"1   3   5   7   9  +20 +40 +60"
 	enum
 	{
-		BDTH_ALLRXBARS = 24,	// ширина зоны для отображение барграфов на индикаторе
+		BDTH_ALLRXBARS = 30,	// ширина зоны для отображение барграфов на индикаторе
+#if 0
+		BDTH_ALLRX = 50,	// ширина зоны для отображение графического окна на индикаторе
+		BDCV_ALLRX = ROWS2GRID(49),	// количество строк, отведенное под S-метр, панораму, иные отображения
+#else
 		BDTH_ALLRX = 40,	// ширина зоны для отображение графического окна на индикаторе
+		BDCV_ALLRX = ROWS2GRID(55),	// количество строк, отведенное под S-метр, панораму, иные отображения
+#endif
 
-		BDTH_LEFTRX = 12,	// ширина индикатора баллов (без плюслв)
+		BDTH_LEFTRX = 17,	// ширина индикатора баллов (без плюсов)
 		BDTH_RIGHTRX = BDTH_ALLRXBARS - BDTH_LEFTRX,	// ширина индикатора плюсов
 		BDTH_SPACERX = 0,
-		BDTH_ALLSWR = 13,
+		BDTH_ALLSWR = 16,
 		BDTH_SPACESWR = 2,
-		BDTH_ALLPWR = 9,
+		BDTH_ALLPWR = 12,
 		BDTH_SPACEPWR = 0,
 
-		BDCV_ALLRX = ROWS2GRID(55),	// количество строк, отведенное под S-метр, панораму, иные отображения
 		/* совмещение на одном экрание водопада и панорамы */
 		BDCO_SPMRX = ROWS2GRID(0),	// смещение спектра по вертикали в ячейках от начала общего поля
 		BDCV_SPMRX = ROWS2GRID(27),	// вертикальный размер спектра в ячейках
@@ -4315,7 +4323,7 @@ enum
 		PGWFL = PG0,	// страница отображения водопада
 		PGSPE = PG0,	// страница отображения панорамы
 		PGSWR = PG0,	// страница отоюражения S-meter и SWR-meter
-		PGLATCH = PGALL,	// страницы, на которых возможно отображение водопада или панорамы.
+		PGLATCH = PGALL | REDRSUBSET_SLEEP,	// страницы, на которых возможно отображение водопада или панорамы.
 		PGSLP = REDRSUBSET_SLEEP,
 		PGunused
 	};
@@ -4370,13 +4378,13 @@ enum
 		{	9,	20,	display_freqX_b,	REDRM_FRQB, PGALL, },	// SUB FREQ
 		{	21, 20,	display_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
 
-
 #if 1
 		{	0,	25,	display2_legend,	REDRM_MODE, PGSWR, },	// Отображение оцифровки шкалы S-метра
 		{	0,	30,	display2_bars,	REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
 		//{	0,	35,	display2_legend_tx,	REDRM_MODE, PGSWR, },	// Отображение оцифровки шкалы PWR & SWR-метра
 		//{	0,	40,	display2_bars_tx,	REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
-		{	25,	30, display_siglevel4, REDRM_BARS, PGSWR, },	// signal leval dBm
+		{	31,	30, display_siglevel4, REDRM_BARS, PGSWR, },	// signal leval dBm
+		{	36, 30,	display_freqdelta8, REDRM_BARS, PGSWR, },	// выход ЧМ демодулятора
 	#if WITHSPECTRUMWF
 		{	0,	DLES,	dsp_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
 		{	0,	DLES,	display2_spectrum,	REDRM_BARS, PGSPE, },// подготовка изображения спектра
@@ -4384,6 +4392,7 @@ enum
 		{	0,	DLES,	display2_colorbuff,	REDRM_BARS,	PGWFL | PGSPE, },// Отображение водопада и/или спектра
 	#endif /* WITHSPECTRUMWF */
 #else
+		{	0,	0,	display2_pip_off,	REDRM_MODE,	PGSWR },	// Выключить PIP если на данной странице не требуется
 		{	0,	25,	display2_adctest,	REDRM_BARS, PGSWR, },	// ADC raw data print
 #endif
 
@@ -4486,18 +4495,6 @@ enum
 	DISPLC_MODCOUNT
 };
 
-enum
-{
-	PG0 = REDRSUBSET(DPAGE0),
-	PGALL = PG0 | REDRSUBSET_MENU,
-	PGWFL = PG0,	// страница отображения водопада
-	PGSPE = PG0,	// страница отображения панорамы
-	PGSWR = PG0,	// страница отоюражения S-meter и SWR-meter
-	PGLATCH = PGALL,	// страницы, на которых возможно отображение водопада или панорамы.
-	PGSLP = REDRSUBSET_SLEEP,
-	PGunused
-};
-
 #if 1//TUNE_TOP > 100000000uL
 	#define DISPLC_WIDTH	9	// количество цифр в отображении частоты
 #else
@@ -4513,7 +4510,7 @@ enum
 //#define SMALLCHARW 16 /* Font width */
 static const FLASHMEM struct dzone dzones [] =
 {
-	{	0,	0,	display2_pip_off,	REDRM_MODE,	PGSLP | REDRSUBSET_MENU },	// Выключить PIP если на данной странице не требуется
+	{	0,	0,	display2_pip_off,	REDRM_MODE,	REDRSUBSET_SLEEP | REDRSUBSET_MENU },	// Выключить PIP если на данной странице не требуется
 };
 
 #if WITHMENU
@@ -5113,26 +5110,6 @@ static uint_fast8_t wfclear;			// стирание всей областии о�
 enum { PALETTESIZE = 256 };
 static PACKEDCOLOR565_T wfpalette [PALETTESIZE];
 
-#if 0
-	// new (for ats52).
-	#define COLOR565_GRIDCOLOR		TFTRGB565(128, 0, 0)		//COLOR_GRAY - center marker
-	#define COLOR565_GRIDCOLOR2		TFTRGB565(96, 96, 96)		//COLOR_DARKRED - other markers
-	#define COLOR565_SPECTRUMBG		TFTRGB565(0, 64, 24)			//
-	#define COLOR565_SPECTRUMBG2	TFTRGB565(0, 24, 8)		//COLOR_xxx - полоса пропускания приемника
-	#define COLOR565_SPECTRUMFG		TFTRGB565(0, 255, 0)		//COLOR_GREEN
-	#define COLOR565_SPECTRUMFENCE	TFTRGB565(255, 255, 255)	//COLOR_WHITE
-	#define COLOR565_SPECTRUMLINE	TFTRGB565(0, 255, 0)	//COLOR_GREEN
-#else
-	// old
-	#define COLOR565_GRIDCOLOR        TFTRGB565(128, 128, 0)        //COLOR_GRAY - center marker
-	#define COLOR565_GRIDCOLOR2        TFTRGB565(128, 0, 0x00)        //COLOR_DARKRED - other markers
-	#define COLOR565_SPECTRUMBG        TFTRGB565(0, 0, 0)            //COLOR_BLACK
-	#define COLOR565_SPECTRUMBG2    TFTRGB565(0, 128, 128)        //COLOR_CYAN - полоса пропускания приемника
-	#define COLOR565_SPECTRUMFG		TFTRGB565(0, 255, 0)		//COLOR_GREEN
-	#define COLOR565_SPECTRUMFENCE	TFTRGB565(255, 255, 255)	//COLOR_WHITE
-	#define COLOR565_SPECTRUMLINE	TFTRGB565(0, 255, 0)	//COLOR_GREEN
-#endif
-
 // Код взят из проекта Malamute
 static void wfpalette_initialize(void)
 {
@@ -5647,7 +5624,8 @@ static void dsp_latchwaterfall(
 	(void) pv;
 
 	// запоминание информации спектра для спектрограммы
-	dsp_getspectrumrow(spavgarray, ALLDX, glob_zoomxpow2);
+	if (! dsp_getspectrumrow(spavgarray, ALLDX, glob_zoomxpow2))
+		return;	// еще нет новых данных.
 
 #if (! LCDMODE_S1D13781_NHWACCEL && LCDMODE_S1D13781)
 #else
@@ -5658,7 +5636,7 @@ static void dsp_latchwaterfall(
 	for (x = 0; x < ALLDX; ++ x)
 	{
 		// для водопада
-		const int val = dsp_mag2y(filter_waterfall(x), PALETTESIZE - 1, glob_topdbwf, glob_bottomdbwf); // возвращает значения от 0 до dy включительно
+		const int val = dsp_mag2y(filter_waterfall(x), PALETTESIZE - 1, glob_wflevelsep ? glob_topdbwf : glob_topdb, glob_wflevelsep ? glob_bottomdbwf : glob_bottomdb); // возвращает значения от 0 до dy включительно
 
 #if WITHFASTWATERFLOW
 		wfarray [wfrow] [x] = wfpalette [val];	// запись в буфер водопада цветовой точки
@@ -6142,18 +6120,32 @@ board_set_fillspect(uint_fast8_t v)
 	glob_fillspect = v != 0;
 }
 
-/* верхний предел FFT */
+/* верхний предел FFT - spectrum */
 void
 board_set_topdb(int_fast16_t v)
 {
 	glob_topdb = v;
 }
 
-/* нижний предел FFT */
+/* нижний предел FFT - spectrum */
 void
 board_set_bottomdb(int_fast16_t v)
 {
 	glob_bottomdb = v;
+}
+
+/* верхний предел FFT - waterflow */
+void
+board_set_topdbwf(int_fast16_t v)
+{
+	glob_topdbwf = v;
+}
+
+/* нижний предел FFT - waterflow*/
+void
+board_set_bottomdbwf(int_fast16_t v)
+{
+	glob_bottomdbwf = v;
 }
 
 /* уменьшение отображаемого участка спектра */
@@ -6163,3 +6155,11 @@ board_set_zoomxpow2(uint_fast8_t v)
 {
 	glob_zoomxpow2 = v;
 }
+
+/* чувствительность водопада регулируется отдельной парой параметров */
+void
+board_set_wflevelsep(uint_fast8_t v)
+{
+	glob_wflevelsep = v != 0;
+}
+

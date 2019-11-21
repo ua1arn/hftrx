@@ -84,7 +84,7 @@ extern "C" {
 
 		#define DMABUFSTEP16	2		// 2 - каждому сэмплу при обмене с AUDIO CODEC соответствует два числа в DMA буфере
 
-	#elif CPUSTYLE_STM32 || CPUSTYLE_STM32MP1
+	#elif CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
 
 		// buff data layout: I main/I sub/Q main/Q sub
 		#define DMABUFSTEP32RX	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
@@ -146,10 +146,10 @@ extern "C" {
 #endif /* CPUSTYLE_R7S721 */
 
 #if WITHUAC2
-	#define WITHUSENOFU_IN48 			1	// 1 - без использования Feature Unit, 0 - с использованием, игнорирование управления громкостью
-	#define WITHUSENOFU_INRTS 			1	// 1 - без использования Feature Unit, 0 - с использованием, игнорирование управления громкостью
-	#define WITHUSENOFU_IN48_INRTS 		1	// 1 - без использования Feature Unit, 0 - с использованием, игнорирование управления громкостью
-	#define WITHUSENOFU_OUT48 			1	// 1 - без использования Feature Unit, 0 - с использованием, игнорирование управления громкостью
+	#define WITHUSENOFU_IN48 			0	// 1 - без использования Feature Unit, 0 - с использованием, игнорирование управления громкостью
+	#define WITHUSENOFU_INRTS 			0	// 1 - без использования Feature Unit, 0 - с использованием, игнорирование управления громкостью
+	#define WITHUSENOFU_IN48_INRTS 		0	// 1 - без использования Feature Unit, 0 - с использованием, игнорирование управления громкостью
+	#define WITHUSENOFU_OUT48 			0	// 1 - без использования Feature Unit, 0 - с использованием, игнорирование управления громкостью
 #else /* WITHUAC2 */
 	#define WITHUSENOFU_IN48 			0	// 1 - без использования Feature Unit, 0 - с использованием, игнорирование управления громкостью
 	#define WITHUSENOFU_INRTS 			0	// 1 - без использования Feature Unit, 0 - с использованием, игнорирование управления громкостью
@@ -374,27 +374,36 @@ typedef struct
 
 #if WITHNOSPEEX
 	#define FIRBUFSIZE 1024	/* это не порядок фильтра, просто размер буфера при передачи данных к user mode обработчику */
+
 #else /* WITHNOSPEEX */
 	#define FIRBUFSIZE SPEEXNN
+
 #endif /* WITHNOSPEEX */
 
-// Ограничение алгоритма генератции параметров фильтра - нечётное значение Ntap.
+// Ограничение алгоритма генерации параметров фильтра - нечётное значение Ntap.
 // Кроме того, для функций фильтрации с использованием симметрии коэффициентов, требуется кратность 2 половины Ntap
 
 #define NtapValidate(n)	((unsigned) (n) / 8 * 8 + 1)
 #define NtapCoeffs(n)	((unsigned) (n) / 2 + 1)
 
-#if ! WITHDSPLOCALFIR
-	#define	Ntap_rx_AUDIO	NtapValidate(SPEEXNN * 2 - 7)
-	#define Ntap_tx_MIKE	NtapValidate(241) //Ntap_rx_AUDIO
-#else /* ! WITHDSPLOCALFIR */
+#if WITHDSPLOCALFIR
+	/* Фильтрация квадратур осуществляется процессором */
 	#define	Ntap_rx_AUDIO	NtapValidate(241)
-	//#define Ntap_tx_MIKE	Ntap_rx_AUDIO
-#endif /* ! WITHDSPLOCALFIR */
+
+#else /* WITHDSPLOCALFIR */
+	#if WITHNOSPEEX
+		#define	Ntap_rx_AUDIO	NtapValidate(511)
+		#define Ntap_tx_MIKE	NtapValidate(241)
+
+	#else /* WITHNOSPEEX */
+		#define	Ntap_rx_AUDIO	NtapValidate(SPEEXNN * 2 - 7)
+		#define Ntap_tx_MIKE	NtapValidate(241) //Ntap_rx_AUDIO
+
+	#endif /* ! WITHDSPLOCALFIR */
+
+#endif /* WITHDSPLOCALFIR */
 
 #if WITHDSPEXTFIR || WITHDSPEXTDDC
-
-
 	// Параметры фильтров в случае использования FPGA с фильтром на квадратурных каналах
 	#define Ntap_trxi_IQ		1535	// Фильтр в FPGA
 	#define HARDWARE_COEFWIDTH	24		// Разрядность коэффициентов. format is S0.22
@@ -408,15 +417,19 @@ typedef struct
 		#define Ntap_rx_SSB_IQ	NtapValidate(241)	// SSB/CW filters: complex numbers, floating-point implementation
 		#define Ntap_tx_SSB_IQ	NtapValidate(241)	// SSB/CW TX filter: complex numbers, floating-point implementation
 		#define Ntap_tx_MIKE	NtapValidate(105)	// single samples, floating point implementation
+
 	#elif CPUSTYLE_STM32F7XX
 		#define Ntap_rx_SSB_IQ	NtapValidate(241)	// SSB/CW filters: complex numbers, floating-point implementation
 		#define Ntap_tx_SSB_IQ	NtapValidate(241)	// SSB/CW TX filter: complex numbers, floating-point implementation
 		#define Ntap_tx_MIKE	NtapValidate(105)	// single samples, floating point implementation
+
 	#else
 		#define Ntap_rx_SSB_IQ	NtapValidate(181)	// SSB/CW filters: complex numbers, floating-point implementation
 		#define Ntap_tx_SSB_IQ	NtapValidate(181)	// SSB/CW TX filter: complex numbers, floating-point implementation
 		#define Ntap_tx_MIKE	NtapValidate(105)	// single samples, floating point implementation
+
 	#endif
+
 #endif /* WITHDSPLOCALFIR */
 
 uint_fast8_t modem_getnextbit(
@@ -494,7 +507,6 @@ void savesampleout96stereo(int_fast32_t ch0, int_fast32_t ch1);
 void savesampleout192stereo(int_fast32_t ch0, int_fast32_t ch1);
 
 #if WITHINTEGRATEDDSP
-
 	#include "speex\arch.h"
 	#include "speex\speex_preprocess.h"
 
@@ -502,8 +514,10 @@ void savesampleout192stereo(int_fast32_t ch0, int_fast32_t ch1);
 
 #if WITHNOSPEEX
 	typedef float32_t speexel_t;
+
 #else /* WITHNOSPEEX */
-	typedef int16_t speexel_t;
+	typedef float32_t speexel_t;
+
 #endif /* WITHNOSPEEX */
 uint_fast8_t takespeexready_user(speexel_t * * dest);
 void releasespeexbuffer_user(speexel_t * t);
@@ -579,7 +593,7 @@ void dsp_initialize(void);
 #if WITHINTEGRATEDDSP
 	// Копрование информации о спектре с текущую строку буфера
 	// wfarray (преобразование к пикселям растра */
-	void dsp_getspectrumrow(
+	uint_fast8_t dsp_getspectrumrow(
 		FLOAT_t * const hbase,
 		uint_fast16_t dx,	// pixel X width (pixels) of display window
 		uint_fast8_t zoompow2	// horisontal magnification power of two
@@ -614,7 +628,7 @@ uint_fast8_t dsp_getmikeadcoverflow(void); /* получения признак�
 void dsp_speed_diagnostics(void);	/* DSP speed test */
 void buffers_diagnostics(void);
 void dtmftest(void);
-void dsp_recalceq(uint_fast8_t pathi, float * frame);	// for SPEEX
+void dsp_recalceq(uint_fast8_t pathi, float * frame);	// for SPEEX - equalizer in frequency domain
 void dsp_recalceq_coeffs(uint_fast8_t pathi, float * dCoeff, int iCoefNum);	// calculate 1/2 of coefficients
 void fir_expand_symmetric(FLOAT_t * dCoeff, int Ntap);			// Duplicate symmetrical part of coeffs.
 

@@ -2409,7 +2409,10 @@ struct nvmap
 	uint8_t gfillspect;
 	uint8_t gtopdb;		/* нижний предел FFT */
 	uint8_t gbottomdb;	/* верхний предел FFT */
+	uint8_t gtopdbwf;		/* нижний предел FFT waterflow */
+	uint8_t gbottomdbwf;	/* верхний предел FFT waterflow */
 	uint8_t gzoomxpow2;
+	uint8_t gwflevelsep;	/* чувствительность водопада регулируется отдельной парой параметров */
 #endif /* WITHSPECTRUMWF */
 #if WITHBCBANDS
 	uint8_t bandsetbcast;	/* Broadcasting radio bands */
@@ -3024,6 +3027,9 @@ static uint_fast8_t displaybarsfps = DISPLAYSWR_FPS;
 	static uint_fast8_t gfillspect;
 	static uint_fast8_t gtopdb = 30;	/* верхний предел FFT */
 	static uint_fast8_t gbottomdb = 130;	/* нижний предел FFT */
+	static uint_fast8_t gtopdbwf = 30;	/* верхний предел FFT waterflow*/
+	static uint_fast8_t gbottomdbwf = 130;	/* нижний предел FFT waterflow */
+	static uint_fast8_t gwflevelsep;	/* чувствительность водопада регулируется отдельной парой параметров */
 	static uint_fast8_t gzoomxpow2;		/* степень двойки - состояние растягиваия спектра (уменьшение наблюдаемой полосы частот) */
 #endif /* WITHSPECTRUMWF */
 #if WITHLCDBACKLIGHT
@@ -3041,6 +3047,10 @@ static uint_fast8_t displaybarsfps = DISPLAYSWR_FPS;
 #else /* WITHKBDBACKLIGHT */
 	enum { kblight = 0 };
 #endif /* WITHKBDBACKLIGHT */
+
+#if WITHPWBUTTON	/* Наличие схемы электронного включения питания */
+	static uint_fast8_t gpoweronhold = 1;	/* выдать "1" на выход удержания питания включенным */
+#endif /* WITHPWBUTTON */
 
 #if LCDMODE_COLORED
 	static uint_fast8_t gbluebgnd;
@@ -3159,26 +3169,35 @@ enum
 	static uint_fast8_t gmikeagcgain = 30;	/* Максимальное усидение АРУ микрофона */
 	static uint_fast8_t  gmikehclip;		/* Ограничитель */
 
-#if WITHUSBUAC
-	static uint_fast8_t gdatamode;	/* передача звука с USB вместо обычного источника */
-	uint_fast8_t hamradio_get_datamode(void) { return gdatamode; }
+	#if WITHUSBUAC
+		static uint_fast8_t gdatamode;	/* передача звука с USB вместо обычного источника */
+		uint_fast8_t hamradio_get_datamode(void) { return gdatamode; }
 
-	#if WITHUSBHEADSET
-		static uint_fast8_t guacplayer = 1;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
-	#else /* WITHUSBHEADSET */
-		static uint_fast8_t guacplayer;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
-	#endif /* WITHUSBHEADSET */
-	#if WITHRTS96 || WITHRTS192 || WITHTRANSPARENTIQ
-		static uint_fast8_t  gswapiq;		/* Поменять местами I и Q сэмплы в потоке RTS96 */
-	#endif /* WITHRTS96 || WITHRTS192 || WITHTRANSPARENTIQ */
-#else /* WITHUSBUAC */
-	enum { gdatamode = 0 };	/* передача звука с USB вместо обычного источника */
-	enum { guacplayer = 0 };
-#endif /* WITHUSBUAC */
-#if WITHAFCODEC1HAVEPROC
-	static uint_fast8_t gmikeequalizer;	// включение обработки сигнала с микрофона (эффекты, эквалайзер, ...)
-	static uint_fast8_t gmikeequalizerparams [HARDWARE_CODEC1_NPROCPARAMS] = { 12, 12, 12, 12, 12 };	// Эквалайзер 80Hz 230Hz 650Hz 	1.8kHz 5.3kHz
-#endif /* WITHAFCODEC1HAVEPROC */
+		#if WITHUSBHEADSET
+			static uint_fast8_t guacplayer = 1;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
+		#else /* WITHUSBHEADSET */
+			static uint_fast8_t guacplayer;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
+		#endif /* WITHUSBHEADSET */
+		#if WITHRTS96 || WITHRTS192 || WITHTRANSPARENTIQ
+			static uint_fast8_t  gswapiq;		/* Поменять местами I и Q сэмплы в потоке RTS96 */
+		#endif /* WITHRTS96 || WITHRTS192 || WITHTRANSPARENTIQ */
+	#else /* WITHUSBUAC */
+		enum { gdatamode = 0 };	/* передача звука с USB вместо обычного источника */
+		enum { guacplayer = 0 };
+	#endif /* WITHUSBUAC */
+	#if WITHAFCODEC1HAVEPROC
+		#define EQUALIZERBASE 12
+		static int_fast32_t getequalizerbase(void)
+		{
+			return - EQUALIZERBASE;
+		}
+		static uint_fast8_t gmikeequalizer;	// включение обработки сигнала с микрофона (эффекты, эквалайзер, ...)
+		static uint_fast8_t gmikeequalizerparams [HARDWARE_CODEC1_NPROCPARAMS] =
+		{
+			// Эквалайзер 80Hz 230Hz 650Hz 	1.8kHz 5.3kHz
+			EQUALIZERBASE, EQUALIZERBASE, EQUALIZERBASE, EQUALIZERBASE, EQUALIZERBASE
+		};
+	#endif /* WITHAFCODEC1HAVEPROC */
 	static uint_fast8_t gagcoff;
 #else /* WITHIF4DSP */
 	static const uint_fast8_t gagcoff = 0;
@@ -3548,14 +3567,6 @@ static int_fast32_t getadcoffsbase(void)
 {
 	return - ADCOFFSETMID;
 }
-
-#if WITHAFCODEC1HAVEPROC	/* кодек имеет управление обработкой микрофонного сигнала (эффекты, эквалайзер, ...) */
-
-static int_fast32_t getequalizerbase(void)
-{
-	return - 12;
-}
-#endif /* WITHAFCODEC1HAVEPROC */
 
 
 #if defined(REFERENCE_FREQ)
@@ -7030,13 +7041,13 @@ static uint_fast8_t getlo4div(
 
 typedef struct lmsnrstate_tag
 {
-#if WITHNOSPEEX
 	// FIR audio filter
 	float32_t speexEQcoeff [Ntap_rx_AUDIO];
 	arm_fir_instance_f32 fir_instance;
 	float32_t fir_state [FIRBUFSIZE + Ntap_rx_AUDIO - 1];
 	float32_t wire1 [FIRBUFSIZE];
 
+#if WITHNOSPEEX
 	// NLMS NR
 	arm_lms_norm_instance_f32 lms2_Norm_instance;
 	float32_t lms2_stateF32 [NOISE_REDUCTION_TAPS + NOISE_REDUCTION_BLOCK_SIZE];
@@ -7131,16 +7142,16 @@ static void speex_update_rx(void)
 	{
 		lmsnrstate_t * const nrp = & lmsnrstates [pathi];
 		// Получение параметров эквалайзера
-#if WITHNOSPEEX
 		float32_t * const dCoefs = nrp->speexEQcoeff;
 		dsp_recalceq_coeffs(pathi, dCoefs, Ntap_rx_AUDIO);	// calculate 1/2 of coefficients
 		fir_expand_symmetric(dCoefs, Ntap_rx_AUDIO);	// Duplicate symmetrical part of coeffs.
+#if WITHNOSPEEX
 #else /* WITHNOSPEEX */
 		SpeexPreprocessState * const st = nrp->st_handle;
 		ASSERT(st != NULL);
 
-		static float32_t speexEQresp [SPEEXNN];
-		dsp_recalceq(pathi, speexEQresp);
+		static float32_t speexEQresp [SPEEXNN];	// распределение усиления по частотам
+		dsp_recalceq(pathi, speexEQresp);	// for SPEEX - equalizer in frequency domain
 
 		speex_preprocess_ctl(st, SPEEX_PREPROCESS_SET_DENOISE, & denoise);
 		speex_preprocess_ctl(st, SPEEX_PREPROCESS_SET_NOISE_SUPPRESS, & supress);
@@ -7155,6 +7166,9 @@ static void InitNoiseReduction(void)
 	for (pathi = 0; pathi < NTRX; ++ pathi)
 	{
 		lmsnrstate_t * const nrp = & lmsnrstates [pathi];
+
+		arm_fir_init_f32(& nrp->fir_instance, Ntap_rx_AUDIO, nrp->speexEQcoeff, nrp->fir_state, FIRBUFSIZE);
+
 #if WITHNOSPEEX
 
 		arm_lms_norm_init_f32(& nrp->lms2_Norm_instance, NOISE_REDUCTION_TAPS, nrp->lms2_normCoeff_f32, nrp->lms2_stateF32, NOISE_REDUCTION_STEP, NOISE_REDUCTION_BLOCK_SIZE);
@@ -7163,9 +7177,6 @@ static void InitNoiseReduction(void)
 
 		nrp->reference_index_old = 0;
 		nrp->reference_index_new = 0;
-		// Declare State buffer of size (numTaps + blockSize - 1)
-
-		arm_fir_init_f32(& nrp->fir_instance, Ntap_rx_AUDIO, nrp->speexEQcoeff, nrp->fir_state, FIRBUFSIZE);
 #else /* WITHNOSPEEX */
 
 		nrp->st_handle = speex_preprocess_state_init(SPEEXNN, ARMI2SRATE);
@@ -7195,31 +7206,50 @@ static void processNoiseReduction(lmsnrstate_t * nrp, const float* bufferIn, flo
 static void processingonebuff(lmsnrstate_t * const nrp, speexel_t * p)
 {
 	const uint_fast8_t mode = submodes [gsubmode].mode;
-	const uint_fast8_t nospeex = gtx || mode == MODE_DIGI || gdatamode;	// не делать жаже коррекцию АЧХ
+	const uint_fast8_t nospeex = gtx || mode == MODE_DIGI || gdatamode;	// не делать даже коррекцию АЧХ
+	const uint_fast8_t denoise = ! nospeex && gnoisereducts [mode];
 	//////////////////////////////////////////////
 	// Filtering
 	// Use CMSIS DSP interface
 #if WITHNOSPEEX
-	const uint_fast8_t denoise = ! nospeex && gnoisereducts [mode];
 	if (denoise)
 	{
 		// Filtering and denoise.
-		nrp->outsp = p;
 		arm_fir_f32(& nrp->fir_instance, p, nrp->wire1, FIRBUFSIZE);
 		processNoiseReduction(nrp, nrp->wire1, p);	// result copy back
+		nrp->outsp = p;
+	}
+	else if (nospeex)
+	{
+		// не делать даже коррекцию АЧХ
+		nrp->outsp = p;
 	}
 	else
 	{
 		// Filtering only.
-		nrp->outsp = nrp-> wire1;
-		arm_fir_f32(& nrp->fir_instance, p, nrp->outsp, FIRBUFSIZE);
+		arm_fir_f32(& nrp->fir_instance, p, nrp->wire1, FIRBUFSIZE);
+		nrp->outsp = nrp->wire1;
 	}
 #else /* WITHNOSPEEX */
-	nrp->outsp = p;
-	if (! nospeex)
-		speex_preprocess_run(nrp->st_handle, p);
-	else
+	if (denoise)
+	{
+		// Filtering and denoise.
+		arm_fir_f32(& nrp->fir_instance, p, nrp->wire1, FIRBUFSIZE);
+		speex_preprocess_run(nrp->st_handle, nrp->wire1);
+		nrp->outsp = nrp->wire1;
+	}
+	else if (nospeex)
+	{
+		// не делать даже коррекцию АЧХ
 		speex_preprocess_estimate_update(nrp->st_handle, p);
+		nrp->outsp = p;
+	}
+	else
+	{
+		// Filtering only.
+		arm_fir_f32(& nrp->fir_instance, p, nrp->wire1, FIRBUFSIZE);
+		nrp->outsp = nrp->wire1;
+	}
 #endif /* WITHNOSPEEX */
 }
 
@@ -7930,7 +7960,10 @@ updateboard(
 			board_set_fillspect(gfillspect);	/* заливать заполнением площадь под графиком спектра */
 			board_set_topdb(gtopdb);		/* верхний предел FFT */
 			board_set_bottomdb(gbottomdb);		/* нижний предел FFT */
+			board_set_topdbwf(gtopdbwf);		/* верхний предел FFT для водопада */
+			board_set_bottomdbwf(gbottomdbwf);		/* нижний предел FFT для водопада */
 			board_set_zoomxpow2(gzoomxpow2);	/* уменьшение отображаемого участка спектра */
+			board_set_wflevelsep(gwflevelsep);	/* чувствительность водопада регулируется отдельной парой параметров */
 		#endif /* WITHSPECTRUMWF */
 	#endif /* WITHIF4DSP */
 
@@ -7987,6 +8020,9 @@ updateboard(
 	#if WITHKBDBACKLIGHT
 		board_set_kblight((dimmflag || sleepflag || dimmmode) ? 0 : kblight);			/* подсвтка клавиатуры */
 	#endif /* WITHKBDBACKLIGHT */
+	#if WITHPWBUTTON
+		board_set_poweron(gpoweronhold);
+	#endif /* WITHPWBUTTON */
 	#if WITHNBONOFF
 		board_set_nfmnbon(lockmode);	/* Включние noise blanker на SW2014FM */
 	#endif /* WITHNBONOFF */
@@ -9562,6 +9598,8 @@ display_refreshperformed_bars(void)
 	enableIRQ();
 }
 
+#if WITHCURRLEVEL2
+
 void 
 display2_adctest(
 	uint_fast8_t x, 
@@ -9583,13 +9621,13 @@ display2_adctest(
 	{
 		// UA1CEI 100W PA board 2xRD100HHF1 
 		// ADC inputs configuration
-		{	targetxad2,	"REFER",	1,	0,	10, },	// DRAIN (MCP3208, negative from midpoint at CH1: ch0=in-, ch1=in+)
-		{	targetxad2,	"DRAIN",	0,	0,	10, },	// DRAIN (MCP3208, negative from midpoint at CH1)
+		{	targetxad2,	"REFER",	PAREFERIX2 & 0x07,	0,	10, },	// DRAIN (MCP3208, negative from midpoint at CH1: ch0=in-, ch1=in+)
+		{	targetxad2,	"DRAIN",	PASENSEIX2 & 0x07,	0,	10, },	// DRAIN (MCP3208, negative from midpoint at CH1)
 		//{	targetxad2,	"DRAIN",	1,	1,	10, },	// DRAIN (MCP3208, negative from midpoint at CH1: ch0=in-, ch1=in+)
 		//{	targetxad2,	"DRAIN",	0,	1,	10, },	// DRAIN (MCP3208, negative from midpoint at CH1)
 		//{	targetxad2,	"REFER",	1,	0,	10, },	// reference (2.5 volt)
-		{	targetxad2,	"REFL ",	2,	0,	10, },	// REFLECTED
-		{	targetxad2,	"FWD  ",	3,	0,	10, },	// FORWARD
+		{	targetxad2,	"REFL ",	REF & 0x07,	0,	10, },	// REFLECTED
+		{	targetxad2,	"FWD  ",	FWD & 0x07,	0,	10, },	// FORWARD
 		//{	targetxad2,	"Vcc  ",	4,	0,	57,	},	// VDD 4.7k + 1k
 		//{	targetxad2,	"3.3  ",	5,	0,	10,	},	// VDD 4.7k + 1k
 		//{	targetxad2,	"gnd  ",	7,	0,	10,	},	// VDD 4.7k + 1k
@@ -9623,6 +9661,7 @@ display2_adctest(
 #endif /* targetxad2 */
 }
 
+#endif /* WITHCURRLEVEL2 */
 // S-METER
 /* отображение S-метра на приёме или передаче */
 // Функция вызывается из display2.c
@@ -12356,7 +12395,7 @@ static const FLASHMEM struct menudef menutable [] =
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		"TOP DB  ", 7, 0, 0,	ISTEP1,	
+		"TOP DB  ", 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		0, 60,							/* сколько не показывать сверху */
 		offsetof(struct nvmap, gtopdb),
@@ -12371,6 +12410,33 @@ static const FLASHMEM struct menudef menutable [] =
 		offsetof(struct nvmap, gbottomdb),
 		NULL,
 		& gbottomdb,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	{
+		"WFPARAMS", 7, 3, RJ_YES,	ISTEP1,
+		ITEM_VALUE,
+		0, 1,							/* водопад отдельными папаметрами */
+		offsetof(struct nvmap, gwflevelsep),
+		NULL,
+		& gwflevelsep,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	{
+		"TOP WF  ", 7, 0, 0,	ISTEP1,
+		ITEM_VALUE,
+		0, 60,							/* сколько не показывать сверху */
+		offsetof(struct nvmap, gtopdbwf),
+		NULL,
+		& gtopdbwf,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	{
+		"BOTTM WF", 7, 0, 0,	ISTEP1,
+		ITEM_VALUE,
+		80, 160,							/* диапазон отображаемых значений */
+		offsetof(struct nvmap, gbottomdbwf),
+		NULL,
+		& gbottomdbwf,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
@@ -13732,7 +13798,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	{
 		"EQUA .08", 2 + WSIGNFLAG, 0, 0,	ISTEP1,	
 		ITEM_VALUE,
-		0, 12 * 2,
+		0, EQUALIZERBASE * 2,
 		offsetof(struct nvmap, gmikeequalizerparams [0]),
 		NULL,
 		& gmikeequalizerparams [0],
@@ -13741,7 +13807,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	{
 		"EQUA .23", 2 + WSIGNFLAG, 0, 0,	ISTEP1,	
 		ITEM_VALUE,
-		0, 12 * 2,
+		0, EQUALIZERBASE * 2,
 		offsetof(struct nvmap, gmikeequalizerparams [1]),
 		NULL,
 		& gmikeequalizerparams [1],
@@ -13750,7 +13816,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	{
 		"EQUA .65", 2 + WSIGNFLAG, 0, 0,	ISTEP1,	
 		ITEM_VALUE,
-		0, 12 * 2,
+		0, EQUALIZERBASE * 2,
 		offsetof(struct nvmap, gmikeequalizerparams [2]),
 		NULL,
 		& gmikeequalizerparams [2],
@@ -13759,7 +13825,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	{
 		"EQUA 1.8", 2 + WSIGNFLAG, 0, 0,	ISTEP1,	
 		ITEM_VALUE,
-		0, 12 * 2,
+		0, EQUALIZERBASE * 2,
 		offsetof(struct nvmap, gmikeequalizerparams [3]),
 		NULL,
 		& gmikeequalizerparams [3],
@@ -13768,7 +13834,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	{
 		"EQUA 5.3", 2 + WSIGNFLAG, 0, 0,	ISTEP1,	
 		ITEM_VALUE,
-		0, 12 * 2,
+		0, EQUALIZERBASE * 2,
 		offsetof(struct nvmap, gmikeequalizerparams [4]),
 		NULL,
 		& gmikeequalizerparams [4],
@@ -15753,6 +15819,15 @@ freqvalid(
 
 #endif /* WITHDIRECTFREQENER */
 
+#if WITHPWBUTTON
+static void
+uif_pwbutton_press(void)
+{
+	gpoweronhold = 0;
+	updateboard(1, 0);
+}
+#endif /* WITHPWBUTTON */
+
 #if WITHKEYBOARD
 
 /* возврат ненуля - было какое-либо нажатие, клавиша уже обработана
@@ -15809,6 +15884,12 @@ process_key_menuset_common(uint_fast8_t kbch)
 		sdcardformat();
 		return 1;	/* клавиша уже обработана */
 #endif /* WITHUSEAUDIOREC */
+
+#if WITHPWBUTTON
+	case KBD_CODE_POWEROFF:
+		uif_pwbutton_press();
+		return 1;
+#endif /* WITHPWBUTTON */
 
 #if WITHENCODER2
 	case KBD_ENC2_PRESS:
@@ -17504,6 +17585,8 @@ printhex(unsigned long voffs, const unsigned char * buff, unsigned length)
 	}
 }
 
+// Сюда попадаем из USB DFU клвсса при приходе команды
+// DFU_Detach после USBD_Stop
 void bootloader_detach(void)
 {
 	__disable_irq();
@@ -17530,6 +17613,7 @@ static void bootloader_mainloop(void)
 	//printhex(BOOTLOADER_APPAREA, (void *) BOOTLOADER_APPAREA, 512);
 	PRINTF(PSTR("Ready jump to application at %p. Press 'r' at any time\n"), (void *) BOOTLOADER_APPAREA);
 ddd:
+#if WITHUSBHW
 	for (;;)
 	{
 #if WITHDEBUG
@@ -17546,7 +17630,7 @@ ddd:
 		if (hardware_usbd_get_vbusnow() == 0)
 			break;
 	}
-
+#endif /* WITHUSBHW */
 	PRINTF(PSTR("Compare signature of to application\n"));
 
 	static const char sgn [] = "DREAM";
@@ -17561,8 +17645,10 @@ ddd:
 	if ((offset + len) > zonelen)
 		goto ddd;
 
+#if WITHUSBHW
 	board_usb_deactivate();
 	board_usb_deinitialize();
+#endif /* WITHUSBHW */
 	bootloader_detach();
 }
 

@@ -618,7 +618,7 @@ static void speex_compute_agc(SpeexPreprocessState *st, spx_word16_t Pframe, spx
 }
 #endif
 
-static void preprocess_analysis(SpeexPreprocessState *st, spx_int16_t *x)
+static void preprocess_analysis(SpeexPreprocessState *st, /* spx_int16_t */ float *x)
 {
    int i;
    int N = SPEEXNN;
@@ -654,6 +654,7 @@ static void preprocess_analysis(SpeexPreprocessState *st, spx_int16_t *x)
    /* Perform FFT */
    spx_fft(st->fft_lookup, st->frame, st->ft);
    /* Apply equalizer */
+/*
    st->ft[0] *= st->equalizer2[0];
    st->ft[2*N-1] *= st->equalizer2[N-1];
    for (i=1;i<N;i++)
@@ -661,6 +662,7 @@ static void preprocess_analysis(SpeexPreprocessState *st, spx_int16_t *x)
 	   st->ft[2*i] *= st->equalizer2[i];
 	   st->ft[2*i-1] *= st->equalizer2[i];
    }
+*/
    /* Power spectrum */
    ps[0]=MULT16_16(st->ft[0],st->ft[0]);
    for (i=1;i<N;i++)
@@ -728,12 +730,12 @@ static void update_noise_prob(SpeexPreprocessState *st)
 
 void speex_echo_get_residual(SpeexEchoState *st, spx_word32_t *Yout, int len);
 
-EXPORT int speex_preprocess(SpeexPreprocessState *st, spx_int16_t *x, spx_int32_t *echo)
+EXPORT int speex_preprocess(SpeexPreprocessState *st, /* spx_int16_t */ float *x, spx_int32_t *echo)
 {
    return speex_preprocess_run(st, x);
 }
 
-EXPORT int speex_preprocess_run(SpeexPreprocessState *st, spx_int16_t *x)
+EXPORT int speex_preprocess_run(SpeexPreprocessState *st, /* spx_int16_t */ float *x)
 {
    int i;
    int M;
@@ -1019,7 +1021,7 @@ EXPORT int speex_preprocess_run(SpeexPreprocessState *st, spx_int16_t *x)
    }
 }
 
-EXPORT void speex_preprocess_estimate_update(SpeexPreprocessState *st, spx_int16_t *x)
+EXPORT void speex_preprocess_estimate_update(SpeexPreprocessState *st, /* spx_int16_t */ float *x)
 {
    int i;
    int N = SPEEXNN;

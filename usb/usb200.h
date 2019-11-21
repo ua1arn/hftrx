@@ -133,6 +133,106 @@
 
 */
 
+#define  USB_REQ_TYPE_STANDARD                          0x00
+#define  USB_REQ_TYPE_CLASS                             0x20
+#define  USB_REQ_TYPE_VENDOR                            0x40
+#define  USB_REQ_TYPE_MASK                              0x60
+#define  USB_REQ_TYPE_DIR                               0x80	// IN for non-zero
+
+#define  USB_REQ_RECIPIENT_DEVICE                       0x00
+#define  USB_REQ_RECIPIENT_INTERFACE                    0x01
+#define  USB_REQ_RECIPIENT_ENDPOINT                     0x02
+#define  USB_REQ_RECIPIENT_MASK                         0x03
+
+#define  USB_REQ_GET_STATUS                             0x00
+#define  USB_REQ_CLEAR_FEATURE                          0x01
+#define  USB_REQ_SET_FEATURE                            0x03
+#define  USB_REQ_SET_ADDRESS                            0x05
+#define  USB_REQ_GET_DESCRIPTOR                         0x06
+#define  USB_REQ_SET_DESCRIPTOR                         0x07
+#define  USB_REQ_GET_CONFIGURATION                      0x08
+#define  USB_REQ_SET_CONFIGURATION                      0x09
+#define  USB_REQ_GET_INTERFACE                          0x0A
+#define  USB_REQ_SET_INTERFACE                          0x0B
+#define  USB_REQ_SYNCH_FRAME                            0x0C
+
+
+/** @defgroup USBH_CTLREQ_Exported_Defines
+  * @{
+  */
+/*Standard Feature Selector for clear feature command*/
+#define FEATURE_SELECTOR_ENDPOINT         0x00
+#define FEATURE_SELECTOR_DEVICE           0x01
+
+
+#define INTERFACE_DESC_TYPE               0x04
+#define ENDPOINT_DESC_TYPE                0x05
+#define INTERFACE_DESC_SIZE               0x09
+
+#define  USB_LEN_DESC_HDR                               0x02
+#define  USB_LEN_DEV_DESC                               0x12
+#define  USB_LEN_CFG_DESC                               0x09
+#define  USB_LEN_IF_DESC                                0x09
+#define  USB_LEN_EP_DESC                                0x07
+#define  USB_LEN_OTG_DESC                               0x03
+#define  USB_LEN_SETUP_PKT                              0x08
+
+/* bmRequestType :D7 Data Phase Transfer Direction  */
+#define  USB_REQ_DIR_MASK                               0x80
+#define  USB_H2D                                        0x00
+#define  USB_D2H                                        0x80
+
+/* bmRequestType D6..5 Type */
+#define  USB_REQ_TYPE_STANDARD                          0x00
+#define  USB_REQ_TYPE_CLASS                             0x20
+#define  USB_REQ_TYPE_VENDOR                            0x40
+#define  USB_REQ_TYPE_RESERVED                          0x60
+
+/* bmRequestType D4..0 Recipient */
+#define  USB_REQ_RECIPIENT_DEVICE                       0x00
+#define  USB_REQ_RECIPIENT_INTERFACE                    0x01
+#define  USB_REQ_RECIPIENT_ENDPOINT                     0x02
+#define  USB_REQ_RECIPIENT_OTHER                        0x03
+
+/* Table 9-4. Standard Request Codes  */
+/* bRequest , Value */
+#define  USB_REQ_GET_STATUS                             0x00
+#define  USB_REQ_CLEAR_FEATURE                          0x01
+#define  USB_REQ_SET_FEATURE                            0x03
+#define  USB_REQ_SET_ADDRESS                            0x05
+#define  USB_REQ_GET_DESCRIPTOR                         0x06
+#define  USB_REQ_SET_DESCRIPTOR                         0x07
+#define  USB_REQ_GET_CONFIGURATION                      0x08
+#define  USB_REQ_SET_CONFIGURATION                      0x09
+#define  USB_REQ_GET_INTERFACE                          0x0A
+#define  USB_REQ_SET_INTERFACE                          0x0B
+#define  USB_REQ_SYNCH_FRAME                            0x0C
+
+/* Table 9-5. Descriptor Types of USB Specifications */
+#define  USB_DESC_TYPE_DEVICE                              1
+#define  USB_DESC_TYPE_CONFIGURATION                       2
+#define  USB_DESC_TYPE_STRING                              3
+#define  USB_DESC_TYPE_INTERFACE                           4
+#define  USB_DESC_TYPE_ENDPOINT                            5
+#define  USB_DESC_TYPE_DEVICE_QUALIFIER                    6
+#define  USB_DESC_TYPE_OTHER_SPEED_CONFIGURATION           7
+#define  USB_DESC_TYPE_INTERFACE_POWER                     8
+#define  USB_DESC_TYPE_HID                                 0x21
+#define  USB_DESC_TYPE_HID_REPORT                          0x22
+
+
+#define  USB_DESC_TYPE_DEVICE                              1
+#define  USB_DESC_TYPE_CONFIGURATION                       2
+#define  USB_DESC_TYPE_STRING                              3
+#define  USB_DESC_TYPE_INTERFACE                           4
+#define  USB_DESC_TYPE_ENDPOINT                            5
+#define  USB_DESC_TYPE_DEVICE_QUALIFIER                    6
+#define  USB_DESC_TYPE_OTHER_SPEED_CONFIGURATION           7
+#define  USB_DESC_TYPE_BOS                                 0x0F
+
+#define USB_CONFIG_REMOTE_WAKEUP                           0x02
+#define USB_CONFIG_SELF_POWERED                            0x01
+
 #define CS_INTERFACE                 0x24
 
 #define CDC_INTERFACE_DESCRIPTOR_TYPE                 0x24
@@ -163,15 +263,6 @@
 #define USB_FEATURE_EP_HALT                                0
 #define USB_FEATURE_REMOTE_WAKEUP                          1
 #define USB_FEATURE_TEST_MODE                              2
-
-#define USB_OTG_HS_MAX_PACKET_SIZE           512U
-#define USB_OTG_FS_MAX_PACKET_SIZE           64U
-
-#if CPUSTYLE_R7S721
-	#define USB_OTG_MAX_EP0_SIZE                 64U
-#else /* CPUSTYLE_R7S721 */
-	#define USB_OTG_MAX_EP0_SIZE                 64U
-#endif /* CPUSTYLE_R7S721 */
 
 /* Audio Interface Subclass Codes */
 #define AUDIO_SUBCLASS_UNDEFINED                0x00

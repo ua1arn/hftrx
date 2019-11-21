@@ -56,6 +56,7 @@
 
 #else /* WITHISBOOTLOADER */
 
+	#define WIHSPIDFHW	1	/* обслуживание DATA FLASH */
 	#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 	//#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	*/
 	//#define WITHCPUDACHW	1	/* использование DAC - в renesas R7S72 нету */
@@ -178,9 +179,17 @@
 	#define ENCODER_BITS (ENCODER_BITA | ENCODER_BITB)
 	#define ENCODER_SHIFT 8	// Отсутствие этого значения означает что биты не подряд
 
+	/*
+		edge values
+		00: Interrupt request is detected on low level of IRQn input
+		01: Interrupt request is detected on falling edge of IRQn input
+		10: Interrupt request is detected on rising edge of IRQn input
+		11: Interrupt request is detected on both edges of IRQn input
+	*/
 	#define ENCODER_INITIALIZE() \
 		do { \
-			arm_hardware_pio5_alternative(ENCODER2_BITS, R7S721_PIOALT_4); \
+			/* arm_hardware_pio5_alternative(ENCODER2_BITS, R7S721_PIOALT_4); */ \
+			arm_hardware_pio5_inputs(ENCODER2_BITS); \
 			/* arm_hardware_irqn_interrupt(5, 3, ARM_OVERREALTIME_PRIORITY, spool_encinterrupt2); */ /* IRQ5, both edges */ \
 			/* arm_hardware_irqn_interrupt(6, 3, ARM_OVERREALTIME_PRIORITY, spool_encinterrupt2); */ /* IRQ6, both edges */ \
 			arm_hardware_pio5_alternative(ENCODER_BITS, R7S721_PIOALT_4); \
@@ -637,12 +646,26 @@
 			} while (0)
 
 #if WITHKEYBOARD
-	/* P7_8: pull-up second encoder button */
-	#define KBD_MASK (1U << 8)	// P7_8
-	#define KBD_TARGET_PIN (R7S721_INPUT_PORT(7))
+	/* P7_8: second encoder button with pull-up */
+	//#define KBD_MASK (1U << 8)	// P7_8
+	//#define KBD_TARGET_PIN (R7S721_INPUT_PORT(7))
+
+
+	#define TARGET_ENC2BTN_BIT (1U << 8)	// P7_8 - second encoder button with pull-up
+#if WITHENCODER2
+	// P7_8
+	#define TARGET_ENC2BTN_GET	((R7S721_INPUT_PORT(7) & TARGET_ENC2BTN_BIT) == 0)
+#endif /* WITHENCODER2 */
+
+	#define TARGET_POWERBTN_BIT (1U << 3)	// P5_3 - ~CPU_POWER_SW signal
+#if WITHPWBUTTON
+	// P5_3 - ~CPU_POWER_SW signal
+	#define TARGET_POWERBTN_GET	((R7S721_INPUT_PORT(5) & TARGET_POWERBTN_BIT) == 0)
+#endif /* WITHPWBUTTON */
 
 	#define HARDWARE_KBD_INITIALIZE() do { \
-			arm_hardware_pio7_inputs(KBD_MASK); \
+			arm_hardware_pio7_inputs(TARGET_ENC2BTN_BIT); \
+			arm_hardware_pio5_inputs(TARGET_POWERBTN_BIT); \
 		} while (0)
 
 #else /* WITHKEYBOARD */
@@ -793,7 +816,8 @@
 	#define BOOTLOADER_APPSIZE (BOOTLOADER_APPFULL - BOOTLOADER_SELFSIZE)	// 2048 - 128
 
 	#define BOOTLOADER_PAGESIZE (1024uL * 64)	// M25Px with 64 KB pages
-	#define USBD_DFU_XFER_SIZE 64	// match to (Q)SPI FLASH MEMORY page size
-	#define USBD_DFU_FLASHNAME "M25Px"
+	#define USBD_DFU_RAM_XFER_SIZE 1024
+	#define USBD_DFU_FLASH_XFER_SIZE 256	// match to (Q)SPI FLASH MEMORY page size
+	#define USBD_DFU_FLASHNAME "M25P16"
 
 #endif /* ARM_R7S72_TQFP176_CPUSTYLE_STORCH_V8_H_INCLUDED */

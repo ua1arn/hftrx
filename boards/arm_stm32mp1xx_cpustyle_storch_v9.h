@@ -769,7 +769,8 @@
 
 		#define BOOTLOADER_PAGESIZE (1024uL * 4)	// W25Q32FV with 4 KB pages
 
-		#define USBD_DFU_XFER_SIZE 64	// match to (Q)SPI FLASH MEMORY page size
+		#define USBD_DFU_RAM_XFER_SIZE 1024
+		#define USBD_DFU_FLASH_XFER_SIZE 256	// match to (Q)SPI FLASH MEMORY page size
 		#define USBD_DFU_FLASHNAME "W25Q32FV"
 
 #endif /* ARM_STM32MP1_CPUSTYLE_STORCH_V9_H_INCLUDED */

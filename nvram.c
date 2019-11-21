@@ -361,14 +361,14 @@ ui16min(uint_least16_t a, uint_least16_t b)
 	#endif /* CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX */
 	}
 #endif /* (NVRAM_TYPE != NVRAM_TYPE_CPUEEPROM) */
-#endif /* CPUSTYLE_STM32 */
+#endif /* CPUSTYLE_STM32F */
 
 void nvram_initialize(void)
 {
 	//debug_printf_P(PSTR("nvram_initialize\n"));
 #if (NVRAM_TYPE == NVRAM_TYPE_BKPSRAM)
 
-	#if CPUSTYLE_STM32
+	#if CPUSTYLE_STM32F
 		// RCC_APB1ENR_RTCAPBEN ???
 		RCC->APB1ENR |= RCC_APB1ENR_PWREN;	// включить тактирование power management
 		__DSB();
@@ -393,7 +393,7 @@ void nvram_initialize(void)
 
 		stm32f4xx_bddisable();
 
-	#endif /* CPUSTYLE_STM32 */
+	#endif /* CPUSTYLE_STM32F */
 #elif (NVRAM_TYPE != NVRAM_TYPE_CPUEEPROM)
 
 	eeprom_initialize(targetnvram);

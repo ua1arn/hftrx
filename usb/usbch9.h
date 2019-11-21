@@ -205,16 +205,17 @@ enum
 
 	TERMINAL_ID_FU1_IN = 96,
 	TERMINAL_ID_FU1_OUT = 112,
+	TERMINAL_ID_CLKSOURCE = 128,
 
-	TERMINAL_ID_FU2_IN = 128,
-	TERMINAL_ID_FU2_OUT = 144,
+	TERMINAL_ID_FU2_IN = 144,
+	TERMINAL_ID_FU2_OUT = 160,
 
 
-	TERMINAL_ID_CLKSOURCE_UACINOUT = 240,	// shared in/our clock source
-	TERMINAL_ID_CLKSOURCE_UACIN48_UACINRTS,
-	TERMINAL_ID_CLKSOURCE_UACINRTS,
-	TERMINAL_ID_CLKSOURCE_UACIN48,
-	TERMINAL_ID_CLKSOURCE_UACOUT48,
+	TERMINAL_ID_CLKMULTIPLIER_UACINOUT = 176,	// shared in/our clock source
+	TERMINAL_ID_CLKMULTIPLIER_UACIN48_UACINRTS,
+	TERMINAL_ID_CLKMULTIPLIER_UACINRTS,
+	TERMINAL_ID_CLKMULTIPLIER_UACIN48,
+	TERMINAL_ID_CLKMULTIPLIER_UACOUT48,
 
 	TERMINAL_ID_count_unused
 };
@@ -408,17 +409,6 @@ enum
 
 #endif /* WITHPLAINDESCROPTOR */
 
-	/*---------- -----------*/
-//#define USBD_MAX_NUM_INTERFACES     7	// ?
-/*---------- -----------*/
-//#define USBD_MAX_NUM_CONFIGURATION     3
-/*---------- -----------*/
-#define USBD_DEBUG_LEVEL     0
-/*---------- -----------*/
-#define USBD_LPM_ENABLED     0
-/*---------- -----------*/
-#define USBD_SELF_POWERED     1
-
 
 enum
 {
@@ -458,26 +448,5 @@ enum
 
 	UACOUTALTALT_top
 };
-
-struct descholder
-{
-	const uint8_t * data;
-	unsigned size;
-};
-
-#define USBD_CONFIGCOUNT 4
-
-extern struct descholder MsftStringDescr [1];	// Microsoft OS String Descriptor
-extern struct descholder MsftCompFeatureDescr [1];	// Microsoft Compatible ID Feature Descriptor
-extern struct descholder StringDescrTbl [];
-extern struct descholder ConfigDescrTbl [USBD_CONFIGCOUNT];
-extern struct descholder DeviceDescrTbl [USBD_CONFIGCOUNT];
-extern struct descholder DeviceQualifierTbl [USBD_CONFIGCOUNT];
-extern struct descholder OtherSpeedConfigurationTbl [USBD_CONFIGCOUNT];
-extern struct descholder BinaryDeviceObjectStoreTbl [1];
-extern struct descholder HIDReportDescrTbl [1];
-uint_fast8_t usbd_get_stringsdesc_count(void);
-
-#define DFU_VENDOR_CODE 0x44
 
 #endif  /* __CHAP_9_H__ */

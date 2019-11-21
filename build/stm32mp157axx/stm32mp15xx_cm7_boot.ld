@@ -49,18 +49,18 @@ SECTIONS
 		KEEP(*(.initfunc))
 		KEEP(*(.initdata))
 		KEEP(*(.fini))
-	} > FLASH
+	} > RAM
 
 	.ARM.extab :
 	{
 		*(.ARM.extab* .gnu.linkonce.armextab.*)
-	} > FLASH
+	} > RAM
 
 	__exidx_start = .;
 	.ARM.exidx :
 	{
 		*(.ARM.exidx* .gnu.linkonce.armexidx.*)
-	} > FLASH
+	} > RAM
 	__exidx_end = .;
 
 	/* To copy multiple ROM to RAM sections,
@@ -70,16 +70,16 @@ SECTIONS
 	{
 		. = ALIGN(4);
 		__copy_table_start__ = .;
+	/*
 		LONG (__etext)
 		LONG (__data_start__)
 		LONG (__data_end__ - __data_start__)
-	/*
 		LONG (__etext2)
 		LONG (__data2_start__)
 		LONG (__data2_end__ - __data2_start__)
 	*/
 		__copy_table_end__ = .;
-	} > FLASH
+	} > RAM
 
 	/* To clear multiple BSS sections,
 	 * uncomment .zero.table section and,
@@ -95,7 +95,7 @@ SECTIONS
 		LONG (__bss2_end__ - __bss2_start__)
 	*/
 		__zero_table_end__ = .;
-	} > FLASH
+	} > RAM
 
 	__etext = .;
 
@@ -127,7 +127,6 @@ SECTIONS
 
 		KEEP(*(.eh_frame*))
 
-		*(vtable)
 		*(.data*)
 	   . = ALIGN(4);	/* one line added by ua1arn */
 
