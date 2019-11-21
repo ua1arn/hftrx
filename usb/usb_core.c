@@ -1962,6 +1962,13 @@ HAL_StatusTypeDef  USB_SetDevAddress (USB_OTG_GlobalTypeDef *USBx, uint_fast8_t 
   */
 HAL_StatusTypeDef USB_CoreInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_CfgTypeDef *cfg)
 {
+	// P1 clock (66.7 MHz max) period = 15 ns
+	// The cycle period required to consecutively access registers of this controller must be at least 67 ns.
+	// TODO: compute BWAIT value on-the-fly
+	// Use P1CLOCK_FREQ
+	const uint_fast32_t bwait = ulmin32(calcdivround2(P1CLOCK_FREQ, 15000000uL) - 2, 63);
+	USBx->BUSWAIT = (bwait << USB_BUSWAIT_BWAIT_SHIFT) & USB_BUSWAIT_BWAIT;	// 5 cycles = 75 nS minimum
+
 	USBx->SUSPMODE &= ~ USB_SUSPMODE_SUSPM;	// SUSPM 0: The clock supplied to this module is stopped.
 
 	// This setting shared for USB200 and USB201
@@ -1970,10 +1977,7 @@ HAL_StatusTypeDef USB_CoreInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_CfgTyp
 		1 * USB_SYSCFG_UCKSEL |	// UCKSEL 1: The 12-MHz EXTAL clock is selected.
 		0;
 	HARDWARE_DELAY_MS(2);	// required 1 ms delay - see R01UH0437EJ0200 Rev.2.00 28.4.1 System Control and Oscillation Control
-	// P1 clock (66.7 MHz max) period = 15 ns
-	// The cycle period required to consecutively access registers of this controller must be at least 67 ns.
-	// TODO: compute BWAIT value on-the-fly
-	USBx->BUSWAIT = (0x03 << USB_BUSWAIT_BWAIT_SHIFT) & USB_BUSWAIT_BWAIT;	// 5 cycles = 75 nS minimum
+
 	USBx->SUSPMODE |= USB_SUSPMODE_SUSPM;	// SUSPM 1: The clock supplied to this module is enabled.
 
 	return HAL_OK;
