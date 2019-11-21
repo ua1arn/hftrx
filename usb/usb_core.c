@@ -1294,7 +1294,7 @@ void HAL_HCD_MspDeInit(HCD_HandleTypeDef* hpcd)
   * @param  USBx : Selected device
   * @retval current frame number
 */
-uint32_t USB_GetCurrentFrame (USB_OTG_GlobalTypeDef *USBx)
+uint32_t USB_GetCurrentFrame(USB_OTG_GlobalTypeDef *USBx)
 {
 	return (USBx->FRMNUM & USB_FRMNUM_FRNM) >> USB_FRMNUM_FRNM_SHIFT;
 }
@@ -1970,7 +1970,9 @@ HAL_StatusTypeDef USB_CoreInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_CfgTyp
 		1 * USB_SYSCFG_UCKSEL |	// UCKSEL 1: The 12-MHz EXTAL clock is selected.
 		0;
 	HARDWARE_DELAY_MS(2);	// required 1 ms delay - see R01UH0437EJ0200 Rev.2.00 28.4.1 System Control and Oscillation Control
-
+	// P1 clock (66.7 MHz max) period = 15 ns
+	// The cycle period required to consecutively access registers of this controller must be at least 67 ns.
+	USBx->BUSWAIT = 0x03;	// 5 cycles = 75 nS minimum
 	USBx->SUSPMODE |= USB_SUSPMODE_SUSPM;	// SUSPM 1: The clock supplied to this module is enabled.
 
 	return HAL_OK;
