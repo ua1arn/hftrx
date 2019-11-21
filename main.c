@@ -7983,6 +7983,7 @@ updateboard(
 			board_set_nfmdeviation100(75);
 			board_set_dacscale(gdacscale);	/* Использование амплитуды сигнала с ЦАП передатчика - 0..100% */
 			board_set_gdigiscale(gdigiscale);	/* Увеличение усиления при передаче в цифровых режимах 100..300% */
+			board_set_amdepth(gamdepth);	/* Глубина модуляции в АМ - 0..100% */
 		}
 		#endif /* WITHIF4DSP */
 		seq_set_rxtxdelay(rxtxdelay, txrxdelay, pretxdelay ? txrxdelay : 0);	/* установить задержку пре переходе на передачу и обратно. */
@@ -7992,7 +7993,6 @@ updateboard(
 			board_set_mik1level(mik1level);
 		#endif /* WITHMIC1LEVEL */
 		board_set_autotune(reqautotune);
-		board_set_amdepth(gamdepth);	/* Глубина модуляции в АМ - 0..100% */
 	#endif /* WITHTX */
 
 	#if CTLSTYLE_IGOR
