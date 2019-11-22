@@ -367,18 +367,6 @@ static void r7s721_usb0_dma0_dmarx_initialize(void)
 	DMAC13.CHCTRL_n = 1 * (1U << 0);		// SETEN
 }
 
-static void r7s721_usb0_dma0_dmarx_enable(void)
-{
-	// Инициализация порта доступа к регистрам FIFO
-	//const uint_fast8_t pipe = HARDWARE_USBD_PIPE_ISOC_OUT;
-}
-
-static void r7s721_usb0_dma0_dmatx_enable(void)
-{
-	// Инициализация порта доступа к регистрам FIFO
-	//const uint_fast8_t pipe = HARDWARE_USBD_PIPE_ISOC_IN;
-}
-
 // audio codec
 // DMA по передаче USB1 DMA1
 // Use arm_hardware_flush
@@ -544,47 +532,6 @@ void refreshDMA_uacin(void)
 #else
 	#error Unsupported USB hardware
 #endif
-
-
-/* вызывается при запрещённых прерываниях. */
-static void hardware_usbd_dma_initialize(void)
-{
-#if CPUSTYLE_R7S721
-#if WITHUSBUAC
-	if (WITHUSBHW_DEVICE == & USB200)
-	{
-		r7s721_usb0_dma0_dmarx_initialize();
-		r7s721_usb0_dma1_dmatx_initialize();
-	}
-	else if (WITHUSBHW_DEVICE == & USB201)
-	{
-		r7s721_usb1_dma0_dmarx_initialize();
-		r7s721_usb1_dma1_dmatx_initialize();
-	}
-#endif /* WITHUSBUAC */
-
-#elif CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
-
-#else
-	#error Unsupported USB hardware
-#endif
-}
-
-/* вызывается при запрещённых прерываниях. */
-static void hardware_usbd_dma_enable(void)
-{
-#if CPUSTYLE_R7S721
-#if WITHUSBUAC
-	r7s721_usb0_dma0_dmarx_enable();
-	r7s721_usb0_dma0_dmatx_enable();
-#endif /* WITHUSBUAC */
-#elif CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
-
-#else
-	#error Unsupported USB hardware
-#endif
-}
-
 
 #if CPUSTYLE_R7S721
 
@@ -10750,8 +10697,21 @@ static void board_usbd_initialize(void)
 {
 
 	hardware_usbd_initialize();
-	hardware_usbd_dma_initialize();
-	hardware_usbd_dma_enable();
+
+#if CPUSTYLE_R7S721
+#if WITHUSBUAC
+	if (WITHUSBHW_DEVICE == & USB200)
+	{
+		r7s721_usb0_dma0_dmarx_initialize();
+		r7s721_usb0_dma1_dmatx_initialize();
+	}
+	else if (WITHUSBHW_DEVICE == & USB201)
+	{
+		r7s721_usb1_dma0_dmarx_initialize();
+		r7s721_usb1_dma1_dmatx_initialize();
+	}
+#endif /* WITHUSBUAC */
+#endif /* CPUSTYLE_R7S721 */
 }
 
 
@@ -14447,6 +14407,7 @@ void board_usb_activate(void)
 #if defined (WITHUSBHW_HOST)
 	USBH_Start(& hUsbHost);
 #endif /* defined (WITHUSBHW_HOST) */
+
 	PRINTF(PSTR("board_usb_activate done.\n"));
 }
 
@@ -14454,6 +14415,7 @@ void board_usb_activate(void)
 void board_usb_deactivate(void)
 {
 	//PRINTF(PSTR("board_usb_activate start.\n"));
+
 #if defined (WITHUSBHW_HOST)
 	USBH_Stop(& hUsbHost);
 #endif /* defined (WITHUSBHW_HOST) */
@@ -14461,6 +14423,7 @@ void board_usb_deactivate(void)
 #if defined (WITHUSBHW_DEVICE)
 	  USBD_Stop(&hUsbDevice);
 #endif /* defined (WITHUSBHW_DEVICE) */
+
 	//PRINTF(PSTR("board_usb_activate done.\n"));
 }
 
