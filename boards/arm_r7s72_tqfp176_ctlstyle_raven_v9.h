@@ -66,12 +66,48 @@
 	#endif
 	// --- вариации прошивки, специфические для разных плат
 
-	#define CTLREGMODE_RAVENDSP_V9	1	/* renesas */
+#if WITHISBOOTLOADER
+	#define LCDMODE_DUMMY	1
+	//#define CTLREGSTYLE_NOCTLREG 1
+	/* коды входов коммутатора источников сигнала для УНЧ приёмника */
+	#define BOARD_DETECTOR_SSB 	0		// Заглушка
 
-	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея
-	#define WITHLCDBACKLIGHTMIN	0	// Нижний предел регулировки (показываетый на дисплее)
-	#define WITHLCDBACKLIGHTMAX	3	// Верхний предел регулировки (показываетый на дисплее)
-	#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры
+	#define BOARD_DETECTOR_FM	0
+	#define BOARD_DETECTOR_AM	0
+	#define BOARD_DETECTOR_MUTE	0
+	#define BOARD_DETECTOR_TUNE	0
+
+	// +++ заглушки для плат с DSP обработкой
+	#define	BOARD_AGCCODE_ON	0
+	#define	BOARD_AGCCODE_OFF	0
+
+	/* коды фильтров второй ПЧ, выдаваемые на дешифраторы */
+	#define BOARD_FILTER_0P5		0	/* 0.5 or 0.3 kHz filter */
+	#define BOARD_FILTER_3P1		0	/* 3.1 or 2.75 kHz filter */
+	//#define BOARD_FILTER_6P0		0	/* 6.0 kHz filter */
+	//#define BOARD_FILTER_8P0		0	/* 6.0 kHz filter */
+	// --- заглушки для плат с DSP обработкой
+	// --- Эти строки можно отключать, уменьшая функциональность готового изделия
+
+	#define WITHMODESETMIXONLY 1	// Use only product detector
+
+	/* что за память настроек и частот используется в контроллере */
+	//#define NVRAM_TYPE NVRAM_TYPE_FM25XXXX	// SERIAL FRAM AUTODETECT
+	//#define NVRAM_TYPE NVRAM_TYPE_FM25L04	// Так же при использовании FM25040A - 5 вольт, 512 байт
+	//#define NVRAM_TYPE NVRAM_TYPE_FM25L16
+	//#define NVRAM_TYPE NVRAM_TYPE_FM25L64
+	//#define NVRAM_TYPE NVRAM_TYPE_FM25L256	// FM25L256, FM25W256
+	//#define NVRAM_TYPE NVRAM_TYPE_CPUEEPROM
+
+	//#define NVRAM_TYPE NVRAM_TYPE_AT25040A
+	//#define NVRAM_TYPE NVRAM_TYPE_AT25L16		// demo board with atxmega128a4u
+	//#define NVRAM_TYPE NVRAM_TYPE_AT25256A
+	#define NVRAM_TYPE NVRAM_TYPE_NOTHING	// нет NVRAM
+	#define HARDWARE_IGNORENONVRAM	1		// отладка на платах где нет никакого NVRAM
+
+	// End of NVRAM definitions section
+
+#else /* WITHISBOOTLOADER */
 
 	/* коды входов коммутатора источников сигнала для УНЧ приёмника */
 	#define BOARD_DETECTOR_SSB 	0		// Заглушка
@@ -87,15 +123,12 @@
 	#define BOARD_FILTER_8P0		0	/* 6.0 kHz filter */
 	// --- заглушки для плат с DSP обработкой
 
-	#define WITHPREAMPATT2_6DB		1	// Управление УВЧ и двухкаскадным аттенюатором с затуханиями 0 - 6 - 12 - 18 dB */
-	//#define WITHATT2_6DB		1		// LTC2217 Управление двухкаскадным аттенюатором с затуханиями 0 - 6 - 12 - 18 dB без УВЧ
-
 	#define WITHAGCMODEONOFF	1	// АРУ вкл/выкл
 	#define	WITHMIC1LEVEL		1	// установка усиления микрофона
 
 	//#define DSTYLE_UR3LMZMOD	1	// Расположение элементов экрана в трансиверах UR3LMZ
 	#define	FONTSTYLE_ITALIC	1	// Использовать альтернативный шрифт
-	#define COLORSTYLE_RED	1	// Цвета а-ля FT-1000
+	//#define COLORSTYLE_RED	1	// Цвета а-ля FT-1000
 
 	// +++ Особые варианты расположения кнопок на клавиатуре
 	#define KEYB_RAVEN20_V5	1		/* 5 линий клавиатуры: расположение кнопок для Воробей с DSP обработкой */
@@ -223,7 +256,7 @@
 	#endif
 	#define WITHUSESDCARD 1			// Включение поддержки SD CARD
 	#define WITHUSEAUDIOREC	1	// Запись звука на SD CARD
-	#define WITHUSEDUALWATCH	1	// Второй приемник
+	//#define WITHUSEDUALWATCH	1	// Второй приемник
 
 	// FPGA section
 	//#define	WITHFPGAWAIT_AS	1	/* FPGA загружается из собственной микросхемы загрузчика - дождаться окончания загрузки перед инициализацией SPI в процессоре */
@@ -255,7 +288,7 @@
 
 	// Есть ли регулировка параметров потенциометрами
 	//#define WITHPOTWPM		1	/* используется регулировка скорости передачи в телеграфе потенциометром */
-	////#define WITHPOTIFGAIN		1	/* регуляторы усиления ПЧ на потенциометрах */
+	#define WITHPOTIFGAIN		1	/* регуляторы усиления ПЧ на потенциометрах */
 	#define WITHPOTAFGAIN		1	/* регуляторы усиления НЧ на потенциометрах */
 	#define WITHSLEEPTIMER	1	/* выключить индикатор и вывод звука по истечениии указанного времени */
 
@@ -303,8 +336,27 @@
 	//#define TSC1_TYPE TSC_TYPE_STMPE811	/* touch screen controller */
 	//#define DAC1_TYPE	99999		/* наличие ЦАП для подстройки тактовой частоты */
 
-	#define targetlcd	targetext1 	/* LCD over SPI line devices control */ 
-	#define targetuc1608 targetext1	/* LCD with positive chip select signal	*/
+	#define WITHCATEXT	1	/* Расширенный набор команд CAT */
+	#define WITHELKEY	1
+	#define WITHKBDENCODER 1	// перестройка частоты кнопками
+	#define WITHKEYBOARD 1	/* в данном устройстве есть клавиатура */
+	#define KEYBOARD_USE_ADC	1	/* на одной линии установлено  четыре  клавиши. на vref - 6.8K, далее 2.2К, 4.7К и 13K. */
+
+
+#endif /* WITHISBOOTLOADER */
+
+
+	#define CTLREGMODE_RAVENDSP_V9	1	/* renesas */
+
+	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея
+	#define WITHLCDBACKLIGHTMIN	0	// Нижний предел регулировки (показываетый на дисплее)
+	#define WITHLCDBACKLIGHTMAX	3	// Верхний предел регулировки (показываетый на дисплее)
+	#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры
+
+	#define WITHAGCMODEONOFF	1	// АРУ вкл/выкл
+	#define WITHPREAMPATT2_6DB		1	// Управление УВЧ и двухкаскадным аттенюатором с затуханиями 0 - 6 - 12 - 18 dB */
+	//#define WITHATT2_6DB		1		// LTC2217 Управление двухкаскадным аттенюатором с затуханиями 0 - 6 - 12 - 18 dB без УВЧ
+	#define DEFPREAMPSTATE 	0	/* УВЧ по умолчанию включён (1) или выключен (0) */
 
 	#define DDS1_CLK_DIV	1		/* Делитель опорной частоты перед подачей в DDS1 */
 
@@ -318,11 +370,9 @@
 	/* фильтры, для которых стоит признак HAVE */
 	#define IF3_FHAVE	( IF3_FMASK_0P5 | IF3_FMASK_3P1 /*| IF3_FMASK_6P0 | IF3_FMASK_8P0*/)
 
-	#define WITHCATEXT	1	/* Расширенный набор команд CAT */
-	#define WITHELKEY	1
-	#define WITHKBDENCODER 1	// перестройка частоты кнопками
-	#define WITHKEYBOARD 1	/* в данном устройстве есть клавиатура */
-	#define KEYBOARD_USE_ADC	1	/* на одной линии установлено  четыре  клавиши. на vref - 6.8K, далее 2.2К, 4.7К и 13K. */
+
+	#define targetlcd	targetext1 	/* LCD over SPI line devices control */
+	#define targetuc1608 targetext1	/* LCD with positive chip select signal	*/
 
 // Назначения входов АЦП процессора.
 enum 
