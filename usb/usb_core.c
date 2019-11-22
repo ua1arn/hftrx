@@ -25,14 +25,17 @@ static uint_fast8_t notseq;
 
 #if CPUSTYLE_R7S721
 	// на RENESAS для работы с изохронными ендпоинтами используется DMA
-	#define WITHDMAHW_UACIN 1
-	#define WITHDMAHW_UACOUT 1
+	//#define WITHDMAHW_UACIN 1
+	//#define WITHDMAHW_UACOUT 1
 #endif /* CPUSTYLE_R7S721 */
 
 #if CPUSTYLE_R7S721
 
 struct epassignments { uint8_t pipe, ep; };
 
+// В DCP разрешены BRDY, BEMP
+
+// PIEPEs, в которых разрешается прерывание NRDY (все кроме DCP)
 static const struct epassignments usbd_usedpipes [] =
 {
 #if WITHUSBUAC
@@ -49,7 +52,7 @@ static const struct epassignments usbd_usedpipes [] =
 #endif /* WITHUSBCDC */
 };
 
-
+// PIEPEs, в которых разрешается прерывание BRDY (все кроме DCP)
 static const struct epassignments brdyenbpipes2 [] =
 {
 	//{ 0x00, 0x00 },		// DCP
@@ -74,6 +77,9 @@ usbd_epaddr2pipe(uint_fast8_t ep_addr)
 {
 	switch (ep_addr)
 	{
+	default:
+		ASSERT(0);
+		return 0;
 	case 0x00: return 0;
 	case 0x80: return 0;
 #if WITHUSBUAC
@@ -90,6 +96,16 @@ usbd_epaddr2pipe(uint_fast8_t ep_addr)
 #endif /* WITHUSBCDC */
 	}
 }
+
+static uint_fast8_t
+usbd_getpipe(const USB_OTG_EPTypeDef * ep)
+{
+	if (ep->is_in)
+		return usbd_epaddr2pipe(ep->num | 0x80);
+	else
+		return usbd_epaddr2pipe(ep->num);
+}
+
 #endif /* CPUSTYLE_R7S721 */
 
 static uint_fast32_t ulmin32(uint_fast32_t a, uint_fast32_t b)
@@ -981,43 +997,60 @@ static void usbd_handle_ctrt(PCD_HandleTypeDef *hpcd, uint_fast8_t ctsq)
 	}
 }
 
+static void usbd_pipe_enable(PCD_TypeDef * const USBx, uint_fast8_t pipe)
+{
+	volatile uint16_t * const PIPEnCTR = get_pipectr_reg(USBx, pipe);
 
-static void usbd_pipes_enable(PCD_TypeDef * const Instance)
+	* PIPEnCTR = 0x0000;	// NAK
+	while ((* PIPEnCTR & (USB_PIPEnCTR_1_5_PBUSY | USB_PIPEnCTR_1_5_CSSTS)) != 0)	// PBUSY, CSSTS
+		;
+
+	* PIPEnCTR = USB_PIPEnCTR_1_5_SQCLR;
+
+	* PIPEnCTR = 0x0003;	// NAK->STALL
+	* PIPEnCTR = 0x0002;	// NAK->STALL
+	* PIPEnCTR = 0x0001;	// STALL->BUF
+	USBx->NRDYENB |= (1u << pipe);
+}
+
+static void usbd_pipe_disable(PCD_TypeDef * const USBx, uint_fast8_t pipe)
+{
+	volatile uint16_t * const PIPEnCTR = get_pipectr_reg(USBx, pipe);
+
+	* PIPEnCTR = 0x0000;	// NAK
+	while ((* PIPEnCTR & (USB_PIPEnCTR_1_5_PBUSY | USB_PIPEnCTR_1_5_CSSTS)) != 0)	// PBUSY, CSSTS
+		;
+
+	//* PIPEnCTR = 0x0003;	// NAK->STALL
+	//* PIPEnCTR = 0x0002;	// NAK->STALL
+	//* PIPEnCTR = 0x0001;	// STALL->BUF
+	USBx->NRDYENB &= ~ (1u << pipe);
+}
+
+static void usbd_pipes_enable(PCD_TypeDef * const USBx)
 {
 	uint_fast8_t i;
 
 	for (i = 0; i < sizeof usbd_usedpipes / sizeof usbd_usedpipes [0]; ++ i)
 	{
 		const uint_fast8_t pipe = usbd_usedpipes [i].pipe;
-		volatile uint16_t * const PIPEnCTR = (& Instance->PIPE1CTR) + (pipe - 1);
-
-		* PIPEnCTR = 0x0000;	// NAK
-		while ((* PIPEnCTR & (USB_PIPEnCTR_1_5_PBUSY | USB_PIPEnCTR_1_5_CSSTS)) != 0)	// PBUSY, CSSTS
-			;
-
-		* PIPEnCTR = USB_PIPEnCTR_1_5_SQCLR;
-
-		* PIPEnCTR = 0x0003;	// NAK->STALL
-		* PIPEnCTR = 0x0002;	// NAK->STALL
-		* PIPEnCTR = 0x0001;	// STALL->BUF
-		Instance->NRDYENB |= (1u << pipe);
-
+		usbd_pipe_enable(USBx, pipe);
 	}
 	for (i = 0; i < sizeof brdyenbpipes2 / sizeof brdyenbpipes2 [0]; ++ i)
 	{
 		const uint_fast8_t pipe = brdyenbpipes2 [i].pipe;
-		Instance->BRDYENB |= (1uL << pipe);	// Прерывание по заполненности приёмного (OUT) или для заполнения передающего (IN) буфера
+		USBx->BRDYENB |= (1uL << pipe);	// Прерывание по заполненности приёмного (OUT) или для заполнения передающего (IN) буфера
 	}
 	if (1)
 	{
 		// DCP, control pipe
 		uint_fast8_t pipe = 0;	// PIPE0
-		Instance->BRDYENB |= (1uL << pipe);	// Прерывание по заполненности приёмного (OUT) буфера
-		Instance->BEMPENB |= (1uL << pipe);	// Прерывание окончания передачи передающего (IN) буфера
+		USBx->BRDYENB |= (1uL << pipe);	// Прерывание по заполненности приёмного (OUT) буфера
+		USBx->BEMPENB |= (1uL << pipe);	// Прерывание окончания передачи передающего (IN) буфера
 	}
 }
 
-static void usbd_pipes_disable(PCD_TypeDef * const Instance)
+static void usbd_pipes_disable(PCD_TypeDef * const USBx)
 {
 	uint_fast8_t i;
 
@@ -1025,27 +1058,18 @@ static void usbd_pipes_disable(PCD_TypeDef * const Instance)
 	{
 		// DCP, control pipe
 		uint_fast8_t pipe = 0;	// PIPE0
-		Instance->BRDYENB &= ~ (1uL << pipe);	// Прерывание по заполненности приёмного (OUT) буфера
-		Instance->BEMPENB &= ~ (1uL << pipe);	// Прерывание окончания передачи передающего (IN) буфера
+		USBx->BRDYENB &= ~ (1uL << pipe);	// Прерывание по заполненности приёмного (OUT) буфера
+		USBx->BEMPENB &= ~ (1uL << pipe);	// Прерывание окончания передачи передающего (IN) буфера
 	}
 	for (i = 0; i < sizeof brdyenbpipes2 / sizeof brdyenbpipes2 [0]; ++ i)
 	{
 		const uint_fast8_t pipe = brdyenbpipes2 [i].pipe;
-		Instance->BRDYENB &= ~ (1uL << pipe);	// Прерывание по заполненности приёмного (OUT) или для заполнения передающего (IN) буфера
+		USBx->BRDYENB &= ~ (1uL << pipe);	// Прерывание по заполненности приёмного (OUT) или для заполнения передающего (IN) буфера
 	}
 	for (i = 0; i < sizeof usbd_usedpipes / sizeof usbd_usedpipes [0]; ++ i)
 	{
 		const uint_fast8_t pipe = usbd_usedpipes [i].pipe;
-		volatile uint16_t * const PIPEnCTR = (& Instance->PIPE1CTR) + (pipe - 1);
-
-		* PIPEnCTR = 0x0000;	// NAK
-		while ((* PIPEnCTR & (USB_PIPEnCTR_1_5_PBUSY | USB_PIPEnCTR_1_5_CSSTS)) != 0)	// PBUSY, CSSTS
-			;
-
-		//* PIPEnCTR = 0x0003;	// NAK->STALL
-		//* PIPEnCTR = 0x0002;	// NAK->STALL
-		//* PIPEnCTR = 0x0001;	// STALL->BUF
-		Instance->NRDYENB &= ~ (1u << pipe);
+		usbd_pipe_disable(USBx, pipe);
 	}
 }
 
@@ -1498,7 +1522,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 				{
 					USB_OTG_EPTypeDef * const ep = & hpcd->OUT_ep [epnt];
 				  	unsigned bcnt;
-				  	if (USB_ReadPacketNec(USBx, ep->pipe_num, ep->xfer_buff, ep->xfer_len - ep->xfer_count, & bcnt) == 0)
+				  	if (USB_ReadPacketNec(USBx, usbd_epaddr2pipe(epnt), ep->xfer_buff, ep->xfer_len - ep->xfer_count, & bcnt) == 0)
 				  	{
 						ep->xfer_buff += bcnt;
 						ep->xfer_count += bcnt;
@@ -2030,17 +2054,20 @@ HAL_StatusTypeDef USB_EP0StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDe
   */
 HAL_StatusTypeDef USB_EPStartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDef *ep, uint_fast8_t dma)
 {
-	const uint_fast8_t pipe = ep->pipe_num;	// Renesas specific parameter
 	ASSERT(dma == 0);
 	if (ep->is_in == 1)
 	{
+		/* IN endpoint */
+		//USB_OTG_INEndpointTypeDef * const inep = USBx_INEP(ep->num);
 		//PRINTF(PSTR("USB_EPStartXfer IN, ep->num=%d, ep->pipe_num=%d\n"), (int) ep->num, (int) ep->pipe_num);
 		/* IN endpoint */
-		int err = USB_WritePacketNec(USBx, pipe, ep->xfer_buff, ep->xfer_len);
+		int err = USB_WritePacketNec(USBx, usbd_getpipe(ep), ep->xfer_buff, ep->xfer_len);
 		////ASSERT(err == 0);
 	}
 	else
 	{
+		/* OUT endpoint */
+		//USB_OTG_OUTEndpointTypeDef * const outep = USBx_OUTEP(ep->num);
 		//PRINTF(PSTR("USB_EPStartXfer OUT, ep->num=%d, ep->pipe_num=%d\n"), (int) ep->num, (int) ep->pipe_num);
 		/* OUT endpoint */
 
@@ -2233,9 +2260,8 @@ HAL_StatusTypeDef USB_DoPing(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t ch_num)
   */
 HAL_StatusTypeDef USB_EPSetStall(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_EPTypeDef *ep)
 {
-	uint_fast8_t pipe = ep->pipe_num;
 	//PRINTF(PSTR("USB_EPSetStall\n"));
-	set_pid(USBx, pipe, DEVDRV_USBF_PID_STALL);
+	set_pid(USBx, usbd_getpipe(ep), DEVDRV_USBF_PID_STALL);
 	return HAL_OK;
 }
 
@@ -2249,7 +2275,7 @@ HAL_StatusTypeDef USB_EPClearStall(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_EP
 {
 	// For bulk and interrupt endpoints also set even frame number
     volatile uint16_t * p_reg;
-	uint_fast8_t pipe = ep->pipe_num;
+	const uint_fast8_t pipe = usbd_getpipe(ep);
 	//PRINTF(PSTR("USB_EPClearStall\n"));
 	set_pid(USBx, pipe, DEVDRV_USBF_PID_NAK);
 
@@ -4629,27 +4655,6 @@ HAL_StatusTypeDef HAL_PCD_Init(PCD_HandleTypeDef *hpcd)
 
 		////hpcd->Instance->DIEPTXF[i] = 0;
 	}
-
-#if CPUSTYLE_R7S721
-
-	// Заполнение полей специфичных для RENESAS
-	for (i = 0; i < sizeof usbd_usedpipes / sizeof usbd_usedpipes [0]; ++ i)
-	{
-		const uint_fast8_t pipe = usbd_usedpipes [i].pipe;
-		const uint_fast8_t ep = usbd_usedpipes [i].ep;
-		if (ep & 0x80)
-		{
-			hpcd->IN_ep[ep & 0x7F].pipe_num = pipe;
-		}
-		else
-		{
-			hpcd->OUT_ep[ep & 0x7F].pipe_num = pipe;
-		}
-	}
-	hpcd->IN_ep[0].pipe_num = 0;
-	hpcd->OUT_ep[0].pipe_num = 0;
-
-#endif /* CPUSTYLE_R7S721 */
 
 	/* Init Device */
 	USB_DevInit(hpcd->Instance, & hpcd->Init);

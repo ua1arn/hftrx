@@ -353,7 +353,7 @@ typedef struct
 #if CPUSTYLE_R7S721
 
   // RENESAS specific field
-  uint_fast8_t	pipe_num;
+  //uint_fast8_t	pipe_num;
 
 #elif CPUSTYLE_STM32F
 
