@@ -109,51 +109,50 @@ power2(uint_fast16_t v)
 
 #define r7s721_jpio_inputs(n, ipins1) do { \
 		const portholder_t ipins2 = (ipins1); \
-		GPIO.JPMC ## n &= ~ (ipins2);	/* Port Mode Control Register: 0 - port, 1 - alternative */ \
-		GPIO.JPIBC ## n |= (ipins2);	/* Port Input Buffer Control Register (PIBCn): 0 - hiZ, 1 - input */ \
+		GPIO.JPMC ## n &= ~ ipins2;	/* Port Mode Control Register: 0 - port, 1 - alternative */ \
+		GPIO.JPIBC ## n |= ipins2;	/* Port Input Buffer Control Register (PIBCn): 0 - hiZ, 1 - input */ \
 	} while (0)
 
 #define r7s721_pio0_inputs(n, ipins1) do { \
 		const portholder_t ipins2 = (ipins1); \
-		GPIO.PMC ## n &= ~ (ipins2);	/* Port Mode Control Register: 0 - port, 1 - alternative */ \
-		GPIO.PIBC ## n |= (ipins2);	/* Port Input Buffer Control Register (PIBCn): 0 - hiZ, 1 - input */ \
+		GPIO.PMC ## n &= ~ ipins2;	/* Port Mode Control Register: 0 - port, 1 - alternative */ \
+		GPIO.PIBC ## n |= ipins2;	/* Port Input Buffer Control Register (PIBCn): 0 - hiZ, 1 - input */ \
 	} while (0)
 
 #define r7s721_pio_inputs(n, ipins1) do { \
 		const portholder_t ipins2 = (ipins1); \
-		GPIO.PM ## n |= (ipins2);	/* Port Mode Register (PMn): 0 - output, 1 - input */ \
-		GPIO.PIPC ## n &= ~ (ipins2);	/* Port IP Control Register: 0 - direction control from PMn, 1 - from alternative function */ \
-		GPIO.PMC ## n &= ~ (ipins2);	/* Port Mode Control Register: 0 - port, 1 - alternative */ \
-		GPIO.PBDC ## n &= ~ (ipins2);	/* Port Bidirection Control Register (PBDCn): 1: Bidirectional mode enabled */ \
-		GPIO.PIBC ## n |= (ipins2);	/* Port Input Buffer Control Register (PIBCn): 0 - hiZ, 1 - input */ \
+		GPIO.PM ## n |= ipins2;	/* Port Mode Register (PMn): 0 - output, 1 - input */ \
+		GPIO.PIPC ## n &= ~ ipins2;	/* Port IP Control Register: 0 - direction control from PMn, 1 - from alternative function */ \
+		GPIO.PMC ## n &= ~ ipins2;	/* Port Mode Control Register: 0 - port, 1 - alternative */ \
+		GPIO.PBDC ## n &= ~ ipins2;	/* Port Bidirection Control Register (PBDCn): 1: Bidirectional mode enabled */ \
+		GPIO.PIBC ## n |= ipins2;	/* Port Input Buffer Control Register (PIBCn): 0 - hiZ, 1 - input */ \
 	} while (0)
 
 #define r7s721_pio_outputs(n, opins1, initialstate1) do { \
-		const portholder_t initialstate2 = (initialstate1); \
 		const portholder_t opins2 = (opins1); \
-		GPIO.PNOT ## n &= ~ (opins2); /* Port NOT Register (PNOTn) */ \
-		GPIO.PIPC ## n &= ~ (opins2);	/* Port IP Control Register: 0 - direction control from PMn, 1 - from alternative function */ \
-		GPIO.PSR ## n = ((opins2) * 0x10000UL) | ((initialstate2) & (opins2)); \
-		GPIO.PBDC ## n |= (opins2);	/* Port Bidirection Control Register (PBDCn): 1: Bidirectional mode enabled */ \
-		GPIO.PIBC ## n &= ~ (opins2);	/* Port Input Buffer Control Register (PIBCn): 0 - hiZ, 1 - input */ \
-		GPIO.PMC ## n &= ~ (opins2);	/* Port Mode Control Register: 0 - port, 1 - alternative */ \
-		GPIO.PM ## n &= ~ (opins2);	/* Port Mode Register (PMn): 0 - output, 1 - input */ \
+		GPIO.PNOT ## n &= ~ opins2; /* Port NOT Register (PNOTn) */ \
+		GPIO.PIPC ## n &= ~ opins2;	/* Port IP Control Register: 0 - direction control from PMn, 1 - from alternative function */ \
+		GPIO.PSR ## n = (opins2 * 0x10000uL) | (initialstate1); \
+		GPIO.PBDC ## n |= opins2;	/* Port Bidirection Control Register (PBDCn): 1: Bidirectional mode enabled */ \
+		GPIO.PIBC ## n &= ~ opins2;	/* Port Input Buffer Control Register (PIBCn): 0 - hiZ, 1 - input */ \
+		GPIO.PMC ## n &= ~ opins2;	/* Port Mode Control Register: 0 - port, 1 - alternative */ \
+		GPIO.PM ## n &= ~ opins2;	/* Port Mode Register (PMn): 0 - output, 1 - input */ \
 	} while (0)
 
 #define R7S721_PIOX_ALTERNATIVE(n, iopins1, alt1) do { \
 		const portholder_t iopins2 = (iopins1); \
 		const int alt2 = (alt1); \
-		const int pfcae = ((alt2) & 0x04) != 0; \
-		const int pfce = ((alt2) & 0x02) != 0; \
-		const int pfc = ((alt2) & 0x01) != 0; \
-		GPIO.PNOT ## n &= ~ (iopins2); /* Port NOT Register (PNOTn) */ \
-		GPIO.PM ## n |= (iopins2);	/* Port Mode Register (PMn): 0 - output, 1 - input */ \
-		GPIO.PMC ## n |= (iopins2);	/* Port Mode Control Register: 0 - port, 1 - alternative */ \
-		GPIO.PFCAE ## n = (GPIO.PFCAE ## n & ~ (iopins2)) | ((iopins2) * pfcae); /* Port Function Control Additional Expansion Register (PFCAEn) */ \
-		GPIO.PFCE ## n = (GPIO.PFCE ## n & ~ (iopins2)) | ((iopins2) * pfce); /* Port Function Control Expansion Register (PFCEn) */ \
-		GPIO.PFC ## n = (GPIO.PFC ## n & ~ (iopins2)) | ((iopins2) * pfc); ; /* Port Function Control Register (PFCn) */ \
-		GPIO.PBDC ## n |= (iopins2);	/* Port Bidirection Control Register (PBDCn) 1: Bidirectional mode enabled */ \
-		GPIO.PIPC ## n |= (iopins2);	/* Port IP Control Register: 0 - direction control from PMn, 1 - from alternative function */ \
+		const int pfcae = (alt2 & 0x04) != 0; \
+		const int pfce = (alt2 & 0x02) != 0; \
+		const int pfc = (alt2 & 0x01) != 0; \
+		GPIO.PNOT ## n &= ~ iopins2; /* Port NOT Register (PNOTn) */ \
+		GPIO.PM ## n |= iopins2;	/* Port Mode Register (PMn): 0 - output, 1 - input */ \
+		GPIO.PMC ## n |= iopins2;	/* Port Mode Control Register: 0 - port, 1 - alternative */ \
+		GPIO.PFCAE ## n = (GPIO.PFCAE ## n & ~ iopins2) | (iopins2 * pfcae); /* Port Function Control Additional Expansion Register (PFCAEn) */ \
+		GPIO.PFCE ## n = (GPIO.PFCE ## n & ~ iopins2) | (iopins2 * pfce); /* Port Function Control Expansion Register (PFCEn) */ \
+		GPIO.PFC ## n = (GPIO.PFC ## n & ~ iopins2) | (iopins2 * pfc); ; /* Port Function Control Register (PFCn) */ \
+		GPIO.PBDC ## n |= iopins2;	/* Port Bidirection Control Register (PBDCn) 1: Bidirectional mode enabled */ \
+		GPIO.PIPC ## n |= iopins2;	/* Port IP Control Register: 0 - direction control from PMn, 1 - from alternative function */ \
 	} while (0)
 
 
