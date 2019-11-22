@@ -660,7 +660,8 @@ const codec2if_t * board_getfpgacodecif(void);		// получить интерф
 void uacout_buffer_initialize(void);
 void uacout_buffer_start(void);
 void uacout_buffer_stop(void);
-void uacout_buffer_save(const uint8_t * buff, uint_fast16_t size);
+void uacout_buffer_save_system(const uint8_t * buff, uint_fast16_t size);
+void uacout_buffer_save_realtime(const uint8_t * buff, uint_fast16_t size);
 
 
 #define USBALIGN_BEGIN __attribute__ ((aligned (32)))

@@ -15,6 +15,9 @@
 
 #include "gpio.h"
 
+#define WITHNDMA_UACIN 1
+#define WITHNDMA_UACOOU 1
+
 #if WITHUSBHW
 
 #include "usb200.h"
@@ -211,8 +214,8 @@ static void r7s721_usb0_dma1_dmatx_initialize(void)
 	/* Set Source Start Address */
 
     /* Set Destination Start Address */
-    DMAC12.N0DA_n = (uintptr_t) & WITHUSBHW_DEVICE->D1FIFO.UINT32;	// Fixed destination address
-    //DMAC12.N1DA_n = (uintptr_t) & WITHUSBHW_DEVICE->D1FIFO.UINT32;	// Fixed destination address
+    DMAC12.N0DA_n = (uintptr_t) & USB200.D1FIFO.UINT32;	// Fixed destination address
+    //DMAC12.N1DA_n = (uintptr_t) & USB200.D1FIFO.UINT32;	// Fixed destination address
 
     /* Set Transfer Size */
     //DMAC12.N0TB_n = DMABUFFSIZE16 * sizeof (int16_t);	// размер в байтах
@@ -286,12 +289,12 @@ static RAMFUNC_NONILINE void r7s721_usbX_dma0_dmarx_handler(void)
 	// Прием с автопереключением больше нигде не подтвержден.
 	if (b == 0)
 	{
-		uacout_buffer_save(uacoutbuff0, UAC_OUT48_DATA_SIZE);
+		uacout_buffer_save_realtime(uacoutbuff0, UAC_OUT48_DATA_SIZE);
 		arm_hardware_flush_invalidate((uintptr_t) uacoutbuff0, UAC_OUT48_DATA_SIZE);
 	}
 	else
 	{
-		uacout_buffer_save(uacoutbuff1, UAC_OUT48_DATA_SIZE);
+		uacout_buffer_save_realtime(uacoutbuff1, UAC_OUT48_DATA_SIZE);
 		arm_hardware_flush_invalidate((uintptr_t) uacoutbuff1, UAC_OUT48_DATA_SIZE);
 	}
 }
@@ -309,8 +312,8 @@ static void r7s721_usb0_dma0_dmarx_initialize(void)
 	// DMAC13
 	/* Set Source Start Address */
 	/* регистры USB PIPE (HARDWARE_USBD_PIPE_ISOC_OUT) */
-    DMAC13.N0SA_n = (uintptr_t) & WITHUSBHW_DEVICE->D0FIFO.UINT32;	// Fixed source address
-    DMAC13.N1SA_n = (uintptr_t) & WITHUSBHW_DEVICE->D0FIFO.UINT32;	// Fixed source address
+    DMAC13.N0SA_n = (uintptr_t) & USB200.D0FIFO.UINT32;	// Fixed source address
+    DMAC13.N1SA_n = (uintptr_t) & USB200.D0FIFO.UINT32;	// Fixed source address
 
 	/* Set Destination Start Address */
 	DMAC13.N0DA_n = (uintptr_t) uacoutbuff0;
@@ -360,7 +363,7 @@ static void r7s721_usb0_dma0_dmarx_initialize(void)
 		1 * (1U << 0) |		// PR		1: Round robin mode
 		0;
 
-	arm_hardware_set_handler_system(DMAINT13_IRQn, r7s721_usbX_dma0_dmarx_handler);
+	arm_hardware_set_handler_realtime(DMAINT13_IRQn, r7s721_usbX_dma0_dmarx_handler);
 
 	DMAC13.CHCTRL_n = 1 * (1U << 3);		// SWRST
 	DMAC13.CHCTRL_n = 1 * (1U << 17);	// CLRINTMSK
@@ -378,8 +381,8 @@ static void r7s721_usb1_dma1_dmatx_initialize(void)
 	/* Set Source Start Address */
 
     /* Set Destination Start Address */
-    DMAC12.N0DA_n = (uintptr_t) & WITHUSBHW_DEVICE->D1FIFO.UINT32;	// Fixed destination address
-    //DMAC12.N1DA_n = (uintptr_t) & WITHUSBHW_DEVICE->D1FIFO.UINT32;	// Fixed destination address
+    DMAC12.N0DA_n = (uintptr_t) & USB201.D1FIFO.UINT32;	// Fixed destination address
+    //DMAC12.N1DA_n = (uintptr_t) & USB201.D1FIFO.UINT32;	// Fixed destination address
 
     /* Set Transfer Size */
     //DMAC12.N0TB_n = DMABUFFSIZE16 * sizeof (int16_t);	// размер в байтах
@@ -444,8 +447,8 @@ static void r7s721_usb1_dma0_dmarx_initialize(void)
 	// DMAC13
 	/* Set Source Start Address */
 	/* регистры USB PIPE (HARDWARE_USBD_PIPE_ISOC_OUT) */
-    DMAC13.N0SA_n = (uintptr_t) & WITHUSBHW_DEVICE->D0FIFO.UINT32;	// Fixed source address
-    DMAC13.N1SA_n = (uintptr_t) & WITHUSBHW_DEVICE->D0FIFO.UINT32;	// Fixed source address
+    DMAC13.N0SA_n = (uintptr_t) & USB201.D0FIFO.UINT32;	// Fixed source address
+    DMAC13.N1SA_n = (uintptr_t) & USB201.D0FIFO.UINT32;	// Fixed source address
 
 	/* Set Destination Start Address */
 	DMAC13.N0DA_n = (uintptr_t) uacoutbuff0;
@@ -495,7 +498,7 @@ static void r7s721_usb1_dma0_dmarx_initialize(void)
 		1 * (1U << 0) |		// PR		1: Round robin mode
 		0;
 
-	arm_hardware_set_handler_system(DMAINT13_IRQn, r7s721_usbX_dma0_dmarx_handler);
+    arm_hardware_set_handler_realtime(DMAINT13_IRQn, r7s721_usbX_dma0_dmarx_handler);
 
 	DMAC13.CHCTRL_n = 1 * (1U << 3);		// SWRST
 	DMAC13.CHCTRL_n = 1 * (1U << 17);	// CLRINTMSK
