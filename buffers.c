@@ -2279,7 +2279,7 @@ void uacout_buffer_stop(void)
 
 /* вызыватся из не-realtime функции обработчика прерывания */
 // Работает на ARM_SYSTEM_PRIORITY
-void uacout_buffer_save(const uint8_t * buff, uint_fast16_t size)
+void uacout_buffer_save_system(const uint8_t * buff, uint_fast16_t size)
 {
 	const size_t dmabuffer16size = DMABUFFSIZE16 * sizeof (int16_t);	// размер в байтах
 
@@ -2349,6 +2349,85 @@ void uacout_buffer_save(const uint8_t * buff, uint_fast16_t size)
 			global_disableIRQ();
 			processing_dmabuffer16rxuac(uacoutaddr);
 			global_enableIRQ();
+			uacoutaddr = 0;
+			uacoutbufflevel = 0;
+		}
+	}
+
+#endif /* WITHUABUACOUTAUDIO48MONO */
+}
+/* вызыватся из realtime функции обработчика прерывания */
+// Работает на ARM_REALTIME_PRIORITY
+void uacout_buffer_save_realtime(const uint8_t * buff, uint_fast16_t size)
+{
+	const size_t dmabuffer16size = DMABUFFSIZE16 * sizeof (int16_t);	// размер в байтах
+
+#if WITHUABUACOUTAUDIO48MONO
+
+	for (;;)
+	{
+		const uint_fast16_t insamples = size / 2;	// количество сэмплов во входном буфере
+		const uint_fast16_t outsamples = (dmabuffer16size - uacoutbufflevel) / 2 / DMABUFSTEP16;
+		const uint_fast16_t chunksamples = ulmin16(insamples, outsamples);
+		if (chunksamples == 0)
+			break;
+		if (uacoutaddr == 0)
+		{
+ 			//global_disableIRQ();
+			uacoutaddr = allocate_dmabuffer16();
+			//global_enableIRQ();
+			uacoutbufflevel = 0;
+		}
+		//memcpy((uint8_t *) uacoutaddr + uacoutbufflevel, buff, chunk);
+		{
+			// копирование нужного количества сэмплов с прербразованием из моно в стерео
+			const uint16_t * src = (const uint16_t *) buff;
+			uint16_t * dst = (uint16_t *) ((uint8_t *) uacoutaddr + uacoutbufflevel);
+			uint_fast16_t n = chunksamples;
+			while (n --)
+			{
+				const uint_fast16_t v = * src ++;
+				* dst ++ = v;
+				* dst ++ = v;
+			}
+		}
+		const uint_fast16_t inchunk = chunksamples * 2;
+		const uint_fast16_t outchunk = chunksamples * 2 * DMABUFSTEP16;	// разхмер в байтах
+		size -= inchunk;	// проход по входому буферу
+		buff += inchunk;	// проход входому буферу
+
+		if ((uacoutbufflevel += outchunk) >= dmabuffer16size)
+		{
+			//global_disableIRQ();
+			processing_dmabuffer16rxuac(uacoutaddr);
+			//global_enableIRQ();
+			uacoutaddr = 0;
+			uacoutbufflevel = 0;
+		}
+	}
+#else /* WITHUABUACOUTAUDIO48MONO */
+
+	for (;;)
+	{
+		const uint_fast16_t chunk = ulmin16(size, dmabuffer16size - uacoutbufflevel);
+		if (chunk == 0)
+			break;
+		if (uacoutaddr == 0)
+		{
+ 			//global_disableIRQ();
+			uacoutaddr = allocate_dmabuffer16();
+			//global_enableIRQ();
+			uacoutbufflevel = 0;
+		}
+		memcpy((uint8_t *) uacoutaddr + uacoutbufflevel, buff, chunk);
+		size -= chunk;		// проход по входому буферу
+		buff += chunk;		// проход по входому буферу
+
+		if ((uacoutbufflevel += chunk) >= dmabuffer16size)	// проход по вывходому буферу
+		{
+			//global_disableIRQ();
+			processing_dmabuffer16rxuac(uacoutaddr);
+			//global_enableIRQ();
 			uacoutaddr = 0;
 			uacoutbufflevel = 0;
 		}

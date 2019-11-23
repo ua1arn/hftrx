@@ -23,6 +23,91 @@
 
 static uint_fast8_t notseq;
 
+#if CPUSTYLE_R7S721 && WITHUSBUAC
+	// на RENESAS для работы с изохронными ендпоинтами используется DMA
+	//#define WITHDMAHW_UACIN 1
+	//#define WITHDMAHW_UACOUT 1
+#endif /* CPUSTYLE_R7S721 */
+
+#if CPUSTYLE_R7S721
+
+static uint_fast8_t
+usbd_epaddr2pipe(uint_fast8_t ep_addr)
+{
+	switch (ep_addr)
+	{
+	default:
+		ASSERT(0);
+		return 0;
+	case 0x00: return 0;
+	case 0x80: return 0;
+#if WITHUSBUAC
+	case USBD_EP_AUDIO_OUT:	return HARDWARE_USBD_PIPE_ISOC_OUT;
+	case USBD_EP_AUDIO_IN:	return HARDWARE_USBD_PIPE_ISOC_IN;
+#endif /* WITHUSBUAC */
+#if WITHUSBCDC
+	case USBD_EP_CDC_OUT:	return HARDWARE_USBD_PIPE_CDC_OUT;
+	case USBD_EP_CDC_IN:	return HARDWARE_USBD_PIPE_CDC_IN;
+	case USBD_EP_CDC_INT:	return HARDWARE_USBD_PIPE_CDC_INT;
+	case USBD_EP_CDC_OUTb:	return HARDWARE_USBD_PIPE_CDC_OUTb;
+	case USBD_EP_CDC_INb:	return HARDWARE_USBD_PIPE_CDC_INb;
+	case USBD_EP_CDC_INTb:	return HARDWARE_USBD_PIPE_CDC_INTb;
+#endif /* WITHUSBCDC */
+	}
+}
+
+static uint_fast8_t usbd_is_dmapipe(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t pipe)
+{
+	switch (pipe)
+	{
+	default: break;
+#if WITHDMAHW_UACIN
+	case HARDWARE_USBD_PIPE_ISOC_IN:
+		  return 1;
+#endif /* WITHDMAHW_UACIN */
+#if WITHDMAHW_UACOUT
+	case HARDWARE_USBD_PIPE_ISOC_OUT:
+		  return 1;
+#endif /* WITHNDMA_UACOUT */
+	}
+	return 0;
+}
+
+// DCP (PIPE0) как аргумент недопустим
+static uint_fast8_t
+usbd_pipe2epaddr(uint_fast8_t pipe)
+{
+	switch (pipe)
+	{
+	default:
+		ASSERT(0);
+		return 0;
+#if WITHUSBUAC
+	case HARDWARE_USBD_PIPE_ISOC_OUT: return USBD_EP_AUDIO_OUT;
+	case HARDWARE_USBD_PIPE_ISOC_IN: return USBD_EP_AUDIO_IN;
+#endif /* WITHUSBUAC */
+#if WITHUSBCDC
+	case HARDWARE_USBD_PIPE_CDC_OUT: return USBD_EP_CDC_OUT;
+	case HARDWARE_USBD_PIPE_CDC_IN: return USBD_EP_CDC_IN;
+	case HARDWARE_USBD_PIPE_CDC_INT: return USBD_EP_CDC_INT;
+	case HARDWARE_USBD_PIPE_CDC_OUTb: return USBD_EP_CDC_OUTb;
+	case HARDWARE_USBD_PIPE_CDC_INb: return USBD_EP_CDC_INb;
+	case HARDWARE_USBD_PIPE_CDC_INTb: return USBD_EP_CDC_INTb;
+#endif /* WITHUSBCDC */
+	}
+}
+
+static uint_fast8_t
+usbd_getpipe(const USB_OTG_EPTypeDef * ep)
+{
+	if (ep->is_in)
+		return usbd_epaddr2pipe(ep->num | 0x80);
+	else
+		return usbd_epaddr2pipe(ep->num);
+}
+
+#endif /* CPUSTYLE_R7S721 */
+
 static uint_fast32_t ulmin32(uint_fast32_t a, uint_fast32_t b)
 {
 	return a < b ? a : b;
@@ -104,7 +189,7 @@ static ApplicationTypeDef Appli_state = APPLICATION_IDLE;
 
 #if CPUSTYLE_R7S721
 
-#if WITHUSBUAC
+#if WITHDMAHW_UACIN
 
 // Сейчас эта память будет записываться по DMA куда-то
 // Потом содержимое не требуется
@@ -164,9 +249,8 @@ void refreshDMA_uacin(void)
 // DMA по передаче USB0 DMA1 - обработчик прерывания
 // DMA по передаче USB1 DMA1 - обработчик прерывания
 // Use arm_hardware_flush
-// ARM_REALTIME_PRIORITY
-
-void r7s721_usbX_dma1_dmatx_handler(void)
+// Работает на ARM_REALTIME_PRIORITY
+static void RAMFUNC_NONILINE r7s721_usbX_dma1_dmatx_handler(void)
 {
 	ASSERT(DMAC12.N0SA_n != 0);
 	release_dmabufferx(DMAC12.N0SA_n);
@@ -204,15 +288,17 @@ void r7s721_usbX_dma1_dmatx_handler(void)
 // DMA по передаче USB0 DMA1
 // Use arm_hardware_flush
 
-static void r7s721_usb0_dma1_dmatx_initialize(void)
+static void r7s721_usb0_dma1_dmatx_initialize(uint_fast8_t pipe)
 {
+	USB_OTG_GlobalTypeDef * const USBx = & USB200;
+
 	enum { id = 12 };	// 12: DMAC12
 	// DMAC12
 	/* Set Source Start Address */
 
     /* Set Destination Start Address */
-    DMAC12.N0DA_n = (uintptr_t) & WITHUSBHW_DEVICE->D1FIFO.UINT32;	// Fixed destination address
-    //DMAC12.N1DA_n = (uintptr_t) & WITHUSBHW_DEVICE->D1FIFO.UINT32;	// Fixed destination address
+    DMAC12.N0DA_n = (uintptr_t) & USBx->D1FIFO.UINT32;	// Fixed destination address
+    //DMAC12.N1DA_n = (uintptr_t) & USBx->D1FIFO.UINT32;	// Fixed destination address
 
     /* Set Transfer Size */
     //DMAC12.N0TB_n = DMABUFFSIZE16 * sizeof (int16_t);	// размер в байтах
@@ -258,6 +344,25 @@ static void r7s721_usb0_dma1_dmatx_initialize(void)
 		1 * (1U << 0) |		// PR		1: Round robin mode
 		0;
 
+#if 1
+	// Разрешение DMA
+	// Сперва без DREQE
+	USBx->D1FIFOSEL =
+		pipe * (1uL << USB_DnFIFOSEL_CURPIPE_SHIFT) |	// CURPIPE 0000: DCP
+		2 * (1uL << USB_DnFIFOSEL_MBW_SHIFT) |	// MBW 10: 32-bit width
+		0 * (1uL << USB_DnFIFOSEL_DREQE_SHIFT) | // DREQE 1: DMA transfer request is enabled.
+		0;
+	(void) USBx->D1FIFOSEL;
+
+	// Потом выставить DREQE
+	USBx->D1FIFOSEL =
+		pipe * (1uL << USB_DnFIFOSEL_CURPIPE_SHIFT) |	// CURPIPE 0000: DCP
+		2 * (1uL << USB_DnFIFOSEL_MBW_SHIFT) |	// MBW 10: 32-bit width
+		1 * (1uL << USB_DnFIFOSEL_DREQE_SHIFT) | // DREQE 1: DMA transfer request is enabled.
+		0;
+	(void) USBx->D1FIFOSEL;
+#endif
+
 	arm_hardware_set_handler_realtime(DMAINT12_IRQn, r7s721_usbX_dma1_dmatx_handler);
 
 	DMAC12.CHCTRL_n = DMAC12_CHCTRL_n_SWRST;		// SWRST
@@ -265,14 +370,123 @@ static void r7s721_usb0_dma1_dmatx_initialize(void)
 	//DMAC12.CHCTRL_n = 1 * (1U << 0);		// SETEN
 }
 
+// audio codec
+// DMA по передаче USB1 DMA1
+// Use arm_hardware_flush
+
+static void r7s721_usb1_dma1_dmatx_initialize(uint_fast8_t pipe)
+{
+	USB_OTG_GlobalTypeDef * const USBx = & USB201;
+
+	enum { id = 12 };	// 12: DMAC12
+	// DMAC12
+	/* Set Source Start Address */
+
+    /* Set Destination Start Address */
+    DMAC12.N0DA_n = (uintptr_t) & USBx->D1FIFO.UINT32;	// Fixed destination address
+    //DMAC12.N1DA_n = (uintptr_t) & USBx->D1FIFO.UINT32;	// Fixed destination address
+
+    /* Set Transfer Size */
+    //DMAC12.N0TB_n = DMABUFFSIZE16 * sizeof (int16_t);	// размер в байтах
+    //DMAC12.N1TB_n = DMABUFFSIZE16 * sizeof (int16_t);	// размер в байтах
+
+	// Values from Table 9.4 On-Chip Peripheral Module Requests
+	// USB1_DMA1 (channel 1 transmit FIFO empty)
+	const uint_fast8_t mid = 0x23;
+	const uint_fast8_t rid = 3;
+	const uint_fast8_t tm = 0;
+	const uint_fast8_t am = 2;
+	const uint_fast8_t lvl = 1;
+	const uint_fast8_t reqd = 1;
+	const uint_fast8_t hien = 1;
+
+	DMAC12.CHCFG_n =
+		0 * (1U << DMAC12_CHCFG_n_DMS_SHIFT) |		// DMS	0: Register mode
+		0 * (1U << DMAC12_CHCFG_n_REN_SHIFT) |		// REN	0: Does not continue DMA transfers.
+		0 * (1U << DMAC12_CHCFG_n_RSW_SHIFT) |		// RSW	1: Inverts RSEL automatically after a DMA transaction.
+		0 * (1U << DMAC12_CHCFG_n_RSEL_SHIFT) |		// RSEL	0: Executes the Next0 Register Set
+		0 * (1U << DMAC12_CHCFG_n_SBE_SHIFT) |		// SBE	0: Stops the DMA transfer without sweeping the buffer (initial value).
+		0 * (1U << DMAC12_CHCFG_n_DEM_SHIFT) |		// DEM	0: Does not mask the DMA transfer end interrupt - прерывания каждый раз после TC
+		tm * (1U << DMAC12_CHCFG_n_TM_SHIFT) |		// TM	0: Single transfer mode - берётся из Table 9.4
+		1 * (1U << DMAC12_CHCFG_n_DAD_SHIFT) |		// DAD	1: Fixed destination address
+		0 * (1U << DMAC12_CHCFG_n_SAD_SHIFT) |		// SAD	0: Increment source address
+		2 * (1U << DMAC12_CHCFG_n_DDS_SHIFT) |		// DDS	2: 32 bits, 1: 16 bits (Destination Data Size)
+		2 * (1U << DMAC12_CHCFG_n_SDS_SHIFT) |		// SDS	2: 32 bits, 1: 16 bits (Source Data Size)
+		am * (1U << DMAC12_CHCFG_n_AM_SHIFT) |		// AM	1: ACK mode: Level mode (active until the transfer request from an on-chip peripheral module
+		lvl * (1U << DMAC12_CHCFG_n_LVL_SHIFT) |	// LVL	1: Detects based on the level.
+		hien * (1U << DMAC12_CHCFG_n_HIEN_SHIFT) |	// HIEN	1: When LVL = 1: Detects a request when the signal is at the High level.
+		reqd * (1U << DMAC12_CHCFG_n_REQD_SHIFT) |	// REQD		Request Direction
+		(id & 0x07) * (1U << DMAC12_CHCFG_n_SEL_SHIFT) | // SEL	0: CH0/CH8
+		0;
+
+	enum { dmarsshift = (id & 0x01) * 16 };
+	DMAC1213.DMARS = (DMAC1213.DMARS & ~ ((DMAC1213_DMARS_CH12_MID | DMAC1213_DMARS_CH12_RID) << dmarsshift)) |
+		mid * (1U << (DMAC1213_DMARS_CH12_MID_SHIFT + dmarsshift)) |		// MID
+		rid * (1U << (DMAC1213_DMARS_CH12_RID_SHIFT + dmarsshift)) |		// RID
+		0;
+
+    DMAC815.DCTRL_0_7 = (DMAC815.DCTRL_0_7 & ~ (/*(1U << 1) | */(1U << 0))) |
+		//1 * (1U << 1) |		// LVINT	1: Level output
+		1 * (1U << 0) |		// PR		1: Round robin mode
+		0;
+
+
+#if 1
+	// Разрешение DMA
+	// Сперва без DREQE
+	USBx->D1FIFOSEL =
+		pipe * (1uL << USB_DnFIFOSEL_CURPIPE_SHIFT) |	// CURPIPE 0000: DCP
+		2 * (1uL << USB_DnFIFOSEL_MBW_SHIFT) |	// MBW 10: 32-bit width
+		0 * (1uL << USB_DnFIFOSEL_DREQE_SHIFT) | // DREQE 1: DMA transfer request is enabled.
+		0;
+	(void) USBx->D1FIFOSEL;
+
+	// Потом выставить DREQE
+	USBx->D1FIFOSEL =
+		pipe * (1uL << USB_DnFIFOSEL_CURPIPE_SHIFT) |	// CURPIPE 0000: DCP
+		2 * (1uL << USB_DnFIFOSEL_MBW_SHIFT) |	// MBW 10: 32-bit width
+		1 * (1uL << USB_DnFIFOSEL_DREQE_SHIFT) | // DREQE 1: DMA transfer request is enabled.
+		0;
+	(void) USBx->D1FIFOSEL;
+#endif
+	arm_hardware_set_handler_realtime(DMAINT12_IRQn, r7s721_usbX_dma1_dmatx_handler);
+
+	DMAC12.CHCTRL_n = DMAC12_CHCTRL_n_SWRST;		// SWRST
+	DMAC12.CHCTRL_n = DMAC12_CHCTRL_n_CLRINTMSK;	// CLRINTMSK
+	//DMAC12.CHCTRL_n = 1 * (1U << 0);		// SETEN
+}
+
+static void r7s721_usb0_dma1_dmatx_stop(uint_fast8_t pipe)
+{
+	USB_OTG_GlobalTypeDef * const USBx = & USB200;
+	USBx->D1FIFOSEL = 0;
+}
+
+static void r7s721_usb1_dma1_dmatx_stop(uint_fast8_t pipe)
+{
+	USB_OTG_GlobalTypeDef * const USBx = & USB201;
+	USBx->D1FIFOSEL = 0;
+}
+
+#else /* WITHDMAHW_UACIN */
+
+// USB AUDIO
+// Канал DMA ещё занят - оставляем в очереди, иначе получить данные через getfilled_dmabufferx
+void refreshDMA_uacin(void)
+{
+}
+
+#endif /* WITHDMAHW_UACIN */
+
+#if WITHDMAHW_UACOUT
+
 static USBALIGN_BEGIN uint8_t uacoutbuff0 [UAC_OUT48_DATA_SIZE] USBALIGN_END;
 static USBALIGN_BEGIN uint8_t uacoutbuff1 [UAC_OUT48_DATA_SIZE] USBALIGN_END;
 
 // USB AUDIO
 // DMA по приему USB0 DMA0 - обработчик прерывания
 // DMA по приему USB1 DMA0 - обработчик прерывания
-// Работает на ARM_SYSTEM_PRIORITY
-
+// Работает на ARM_REALTIME_PRIORITY
 static RAMFUNC_NONILINE void r7s721_usbX_dma0_dmarx_handler(void)
 {
 	// Enable switch to next regidters set
@@ -286,12 +500,12 @@ static RAMFUNC_NONILINE void r7s721_usbX_dma0_dmarx_handler(void)
 	// Прием с автопереключением больше нигде не подтвержден.
 	if (b == 0)
 	{
-		uacout_buffer_save(uacoutbuff0, UAC_OUT48_DATA_SIZE);
+		uacout_buffer_save_realtime(uacoutbuff0, UAC_OUT48_DATA_SIZE);
 		arm_hardware_flush_invalidate((uintptr_t) uacoutbuff0, UAC_OUT48_DATA_SIZE);
 	}
 	else
 	{
-		uacout_buffer_save(uacoutbuff1, UAC_OUT48_DATA_SIZE);
+		uacout_buffer_save_realtime(uacoutbuff1, UAC_OUT48_DATA_SIZE);
 		arm_hardware_flush_invalidate((uintptr_t) uacoutbuff1, UAC_OUT48_DATA_SIZE);
 	}
 }
@@ -299,9 +513,10 @@ static RAMFUNC_NONILINE void r7s721_usbX_dma0_dmarx_handler(void)
 
 // USB AUDIO
 // DMA по приёму usb0_dma0
-
-static void r7s721_usb0_dma0_dmarx_initialize(void)
+static void r7s721_usb0_dma0_dmarx_initialize(uint_fast8_t pipe)
 {
+	USB_OTG_GlobalTypeDef * const USBx = & USB200;
+
 	arm_hardware_flush_invalidate((uintptr_t) uacoutbuff0, UAC_OUT48_DATA_SIZE);
 	arm_hardware_flush_invalidate((uintptr_t) uacoutbuff1, UAC_OUT48_DATA_SIZE);
 
@@ -309,8 +524,8 @@ static void r7s721_usb0_dma0_dmarx_initialize(void)
 	// DMAC13
 	/* Set Source Start Address */
 	/* регистры USB PIPE (HARDWARE_USBD_PIPE_ISOC_OUT) */
-    DMAC13.N0SA_n = (uintptr_t) & WITHUSBHW_DEVICE->D0FIFO.UINT32;	// Fixed source address
-    DMAC13.N1SA_n = (uintptr_t) & WITHUSBHW_DEVICE->D0FIFO.UINT32;	// Fixed source address
+    DMAC13.N0SA_n = (uintptr_t) & USBx->D0FIFO.UINT32;	// Fixed source address
+    DMAC13.N1SA_n = (uintptr_t) & USBx->D0FIFO.UINT32;	// Fixed source address
 
 	/* Set Destination Start Address */
 	DMAC13.N0DA_n = (uintptr_t) uacoutbuff0;
@@ -360,83 +575,38 @@ static void r7s721_usb0_dma0_dmarx_initialize(void)
 		1 * (1U << 0) |		// PR		1: Round robin mode
 		0;
 
-	arm_hardware_set_handler_system(DMAINT13_IRQn, r7s721_usbX_dma0_dmarx_handler);
-
-	DMAC13.CHCTRL_n = 1 * (1U << 3);		// SWRST
-	DMAC13.CHCTRL_n = 1 * (1U << 17);	// CLRINTMSK
-	DMAC13.CHCTRL_n = 1 * (1U << 0);		// SETEN
-}
-
-// audio codec
-// DMA по передаче USB1 DMA1
-// Use arm_hardware_flush
-
-static void r7s721_usb1_dma1_dmatx_initialize(void)
-{
-	enum { id = 12 };	// 12: DMAC12
-	// DMAC12
-	/* Set Source Start Address */
-
-    /* Set Destination Start Address */
-    DMAC12.N0DA_n = (uintptr_t) & WITHUSBHW_DEVICE->D1FIFO.UINT32;	// Fixed destination address
-    //DMAC12.N1DA_n = (uintptr_t) & WITHUSBHW_DEVICE->D1FIFO.UINT32;	// Fixed destination address
-
-    /* Set Transfer Size */
-    //DMAC12.N0TB_n = DMABUFFSIZE16 * sizeof (int16_t);	// размер в байтах
-    //DMAC12.N1TB_n = DMABUFFSIZE16 * sizeof (int16_t);	// размер в байтах
-
-	// Values from Table 9.4 On-Chip Peripheral Module Requests
-	// USB1_DMA1 (channel 1 transmit FIFO empty)
-	const uint_fast8_t mid = 0x23;
-	const uint_fast8_t rid = 3;
-	const uint_fast8_t tm = 0;
-	const uint_fast8_t am = 2;
-	const uint_fast8_t lvl = 1;
-	const uint_fast8_t reqd = 1;
-	const uint_fast8_t hien = 1;
-
-	DMAC12.CHCFG_n =
-		0 * (1U << DMAC12_CHCFG_n_DMS_SHIFT) |		// DMS	0: Register mode
-		0 * (1U << DMAC12_CHCFG_n_REN_SHIFT) |		// REN	0: Does not continue DMA transfers.
-		0 * (1U << DMAC12_CHCFG_n_RSW_SHIFT) |		// RSW	1: Inverts RSEL automatically after a DMA transaction.
-		0 * (1U << DMAC12_CHCFG_n_RSEL_SHIFT) |		// RSEL	0: Executes the Next0 Register Set
-		0 * (1U << DMAC12_CHCFG_n_SBE_SHIFT) |		// SBE	0: Stops the DMA transfer without sweeping the buffer (initial value).
-		0 * (1U << DMAC12_CHCFG_n_DEM_SHIFT) |		// DEM	0: Does not mask the DMA transfer end interrupt - прерывания каждый раз после TC
-		tm * (1U << DMAC12_CHCFG_n_TM_SHIFT) |		// TM	0: Single transfer mode - берётся из Table 9.4
-		1 * (1U << DMAC12_CHCFG_n_DAD_SHIFT) |		// DAD	1: Fixed destination address
-		0 * (1U << DMAC12_CHCFG_n_SAD_SHIFT) |		// SAD	0: Increment source address
-		2 * (1U << DMAC12_CHCFG_n_DDS_SHIFT) |		// DDS	2: 32 bits, 1: 16 bits (Destination Data Size)
-		2 * (1U << DMAC12_CHCFG_n_SDS_SHIFT) |		// SDS	2: 32 bits, 1: 16 bits (Source Data Size)
-		am * (1U << DMAC12_CHCFG_n_AM_SHIFT) |		// AM	1: ACK mode: Level mode (active until the transfer request from an on-chip peripheral module
-		lvl * (1U << DMAC12_CHCFG_n_LVL_SHIFT) |	// LVL	1: Detects based on the level.
-		hien * (1U << DMAC12_CHCFG_n_HIEN_SHIFT) |	// HIEN	1: When LVL = 1: Detects a request when the signal is at the High level.
-		reqd * (1U << DMAC12_CHCFG_n_REQD_SHIFT) |	// REQD		Request Direction
-		(id & 0x07) * (1U << DMAC12_CHCFG_n_SEL_SHIFT) | // SEL	0: CH0/CH8
+#if 1
+	// Разрешение DMA
+	// Сперва без DREQE
+	USBx->D0FIFOSEL =
+		pipe * (1uL << USB_DnFIFOSEL_CURPIPE_SHIFT) |	// CURPIPE 0000: DCP
+		2 * (1uL << USB_DnFIFOSEL_MBW_SHIFT) |	// MBW 10: 32-bit width
+		0 * (1uL << USB_DnFIFOSEL_DREQE_SHIFT) | // DREQE 1: DMA transfer request is enabled.
 		0;
+	(void) USBx->D0FIFOSEL;
 
-	enum { dmarsshift = (id & 0x01) * 16 };
-	DMAC1213.DMARS = (DMAC1213.DMARS & ~ ((DMAC1213_DMARS_CH12_MID | DMAC1213_DMARS_CH12_RID) << dmarsshift)) |
-		mid * (1U << (DMAC1213_DMARS_CH12_MID_SHIFT + dmarsshift)) |		// MID
-		rid * (1U << (DMAC1213_DMARS_CH12_RID_SHIFT + dmarsshift)) |		// RID
+	// Потом выставить DREQE
+	USBx->D0FIFOSEL =
+		pipe * (1uL << USB_DnFIFOSEL_CURPIPE_SHIFT) |	// CURPIPE 0000: DCP
+		2 * (1uL << USB_DnFIFOSEL_MBW_SHIFT) |	// MBW 10: 32-bit width
+		1 * (1uL << USB_DnFIFOSEL_DREQE_SHIFT) | // DREQE 1: DMA transfer request is enabled.
 		0;
+	(void) USBx->D0FIFOSEL;
+#endif
 
-    DMAC815.DCTRL_0_7 = (DMAC815.DCTRL_0_7 & ~ (/*(1U << 1) | */(1U << 0))) |
-		//1 * (1U << 1) |		// LVINT	1: Level output
-		1 * (1U << 0) |		// PR		1: Round robin mode
-		0;
+	arm_hardware_set_handler_realtime(DMAINT13_IRQn, r7s721_usbX_dma0_dmarx_handler);
 
-	arm_hardware_set_handler_realtime(DMAINT12_IRQn, r7s721_usbX_dma1_dmatx_handler);
-
-	DMAC12.CHCTRL_n = DMAC12_CHCTRL_n_SWRST;		// SWRST
-	DMAC12.CHCTRL_n = DMAC12_CHCTRL_n_CLRINTMSK;	// CLRINTMSK
-	//DMAC12.CHCTRL_n = 1 * (1U << 0);		// SETEN
+	DMAC13.CHCTRL_n = DMAC13_CHCTRL_n_SWRST;		// SWRST
+	DMAC13.CHCTRL_n = DMAC13_CHCTRL_n_CLRINTMSK;	// CLRINTMSK
+	DMAC13.CHCTRL_n = DMAC13_CHCTRL_n_SETEN;		// SETEN
 }
 
 // USB AUDIO
 // DMA по приёму usb0_dma0
-
-static void r7s721_usb1_dma0_dmarx_initialize(void)
+static void r7s721_usb1_dma0_dmarx_initialize(uint_fast8_t pipe)
 {
+	USB_OTG_GlobalTypeDef * const USBx = & USB201;
+
 	arm_hardware_flush_invalidate((uintptr_t) uacoutbuff0, UAC_OUT48_DATA_SIZE);
 	arm_hardware_flush_invalidate((uintptr_t) uacoutbuff1, UAC_OUT48_DATA_SIZE);
 
@@ -444,8 +614,8 @@ static void r7s721_usb1_dma0_dmarx_initialize(void)
 	// DMAC13
 	/* Set Source Start Address */
 	/* регистры USB PIPE (HARDWARE_USBD_PIPE_ISOC_OUT) */
-    DMAC13.N0SA_n = (uintptr_t) & WITHUSBHW_DEVICE->D0FIFO.UINT32;	// Fixed source address
-    DMAC13.N1SA_n = (uintptr_t) & WITHUSBHW_DEVICE->D0FIFO.UINT32;	// Fixed source address
+    DMAC13.N0SA_n = (uintptr_t) & USBx->D0FIFO.UINT32;	// Fixed source address
+    DMAC13.N1SA_n = (uintptr_t) & USBx->D0FIFO.UINT32;	// Fixed source address
 
 	/* Set Destination Start Address */
 	DMAC13.N0DA_n = (uintptr_t) uacoutbuff0;
@@ -495,43 +665,49 @@ static void r7s721_usb1_dma0_dmarx_initialize(void)
 		1 * (1U << 0) |		// PR		1: Round robin mode
 		0;
 
-	arm_hardware_set_handler_system(DMAINT13_IRQn, r7s721_usbX_dma0_dmarx_handler);
+#if 1
+	// Разрешение DMA
+	// Сперва без DREQE
+	USBx->D0FIFOSEL =
+		pipe * (1uL << USB_DnFIFOSEL_CURPIPE_SHIFT) |	// CURPIPE 0000: DCP
+		2 * (1uL << USB_DnFIFOSEL_MBW_SHIFT) |	// MBW 10: 32-bit width
+		0 * (1uL << USB_DnFIFOSEL_DREQE_SHIFT) | // DREQE 1: DMA transfer request is enabled.
+		0;
+	(void) USBx->D0FIFOSEL;
 
-	DMAC13.CHCTRL_n = 1 * (1U << 3);		// SWRST
-	DMAC13.CHCTRL_n = 1 * (1U << 17);	// CLRINTMSK
-	DMAC13.CHCTRL_n = 1 * (1U << 0);		// SETEN
-}
-
-static void r7s721_usb1_dma0_dmarx_enable(void)
-{
-	// Инициализация порта доступа к регистрам FIFO
-	//const uint_fast8_t pipe = HARDWARE_USBD_PIPE_ISOC_OUT;
-}
-
-static void r7s721_usb1_dma0_dmatx_enable(void)
-{
-	// Инициализация порта доступа к регистрам FIFO
-	//const uint_fast8_t pipe = HARDWARE_USBD_PIPE_ISOC_IN;
-}
-
-#else /* WITHUSBUAC */
-// Канал DMA ещё занят - оставляем в очереди, иначе получить данные через getfilled_dmabufferx и начать предавать в host
-void refreshDMA_uacin(void)
-{
-}
-
-#endif /* WITHUSBUAC */
-
-#elif CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
-
-// Канал DMA ещё занят - оставляем в очереди, иначе получить данные через getfilled_dmabufferx и начать предавать в host
-void refreshDMA_uacin(void)
-{
-}
-
-#else
-	#error Unsupported USB hardware
+	// Потом выставить DREQE
+	USBx->D0FIFOSEL =
+		pipe * (1uL << USB_DnFIFOSEL_CURPIPE_SHIFT) |	// CURPIPE 0000: DCP
+		2 * (1uL << USB_DnFIFOSEL_MBW_SHIFT) |	// MBW 10: 32-bit width
+		1 * (1uL << USB_DnFIFOSEL_DREQE_SHIFT) | // DREQE 1: DMA transfer request is enabled.
+		0;
+	(void) USBx->D0FIFOSEL;
 #endif
+
+    arm_hardware_set_handler_realtime(DMAINT13_IRQn, r7s721_usbX_dma0_dmarx_handler);
+
+	DMAC13.CHCTRL_n = DMAC13_CHCTRL_n_SWRST;		// SWRST
+	DMAC13.CHCTRL_n = DMAC13_CHCTRL_n_CLRINTMSK;	// CLRINTMSK
+	DMAC13.CHCTRL_n = DMAC13_CHCTRL_n_SETEN;		// SETEN
+}
+
+static void r7s721_usb0_dma0_dmarx_stop(uint_fast8_t pipe)
+{
+	USB_OTG_GlobalTypeDef * const USBx = & USB200;
+	USBx->D0FIFOSEL = 0;
+}
+
+static void r7s721_usb1_dma0_dmarx_stop(uint_fast8_t pipe)
+{
+	USB_OTG_GlobalTypeDef * const USBx = & USB201;
+	USBx->D0FIFOSEL = 0;
+}
+
+#endif /* WITHDMAHW_UACOUT */
+
+#else  /* CPUSTYLE_R7S721 */
+
+#endif /* CPUSTYLE_R7S721 */
 
 #if CPUSTYLE_R7S721
 
@@ -654,10 +830,8 @@ static volatile uint32_t * get_fifo_reg(PCD_TypeDef * const USBx, uint_fast8_t p
 
 static uint_fast8_t get_pid(PCD_TypeDef * const USBx, uint_fast8_t pipe)
 {
-    volatile uint16_t *p_reg;
-
-    p_reg = get_pipectr_reg(USBx, pipe);
-    return *p_reg & USB_PIPEnCTR_1_5_PID;
+    volatile uint16_t * const PIPEnCTR = get_pipectr_reg(USBx, pipe);
+    return * PIPEnCTR & USB_PIPEnCTR_1_5_PID;
 }
 
 static void set_mbw(PCD_TypeDef * const USBx, uint_fast8_t pipe, uint16_t data)
@@ -673,10 +847,10 @@ static void set_mbw(PCD_TypeDef * const USBx, uint_fast8_t pipe, uint16_t data)
 
 static void set_pid(PCD_TypeDef * const USBx, uint_fast8_t pipe, uint_fast8_t new_pid)
 {
-    volatile uint16_t *p_reg;
+    volatile uint16_t * const p_reg = get_pipectr_reg(USBx, pipe);
     uint16_t old_pid;
 
-    p_reg = get_pipectr_reg(USBx, pipe);
+
     old_pid = get_pid(USBx, pipe);
 
     switch (new_pid) {
@@ -708,7 +882,7 @@ static void set_pid(PCD_TypeDef * const USBx, uint_fast8_t pipe, uint_fast8_t ne
 
             do {
                 local_delay_us(1);
-                p_reg = get_pipectr_reg(USBx, pipe);
+                //p_reg = get_pipectr_reg(USBx, pipe);
             } while ((*p_reg & USB_PIPEnCTR_1_5_PBUSY) == USB_PIPEnCTR_1_5_PBUSY);
             break;
         default:
@@ -737,11 +911,28 @@ static uint_fast8_t usbd_wait_fifo(PCD_TypeDef * const USBx, uint_fast8_t pipe, 
 // Эта функция не должна общаться с DCPCTR - она универсальная
 static uint_fast8_t USB_ReadPacketNec(PCD_TypeDef * const USBx, uint_fast8_t pipe, uint8_t * data, unsigned size, unsigned * readcnt)
 {
+	uint_fast8_t mbw;
+	switch (pipe)
+	{
+	default:
+		mbw = 0x00;	// MBW 00: 8-bit width
+		break;
+#if WITHDMAHW_UACIN
+	case HARDWARE_USBD_PIPE_ISOC_IN:
+		mbw = 0x02;	// MBW 10: 32-bit width
+		break;
+#endif /* WITHDMAHW_UACIN */
+#if WITHDMAHW_UACOUT
+	case HARDWARE_USBD_PIPE_ISOC_OUT:
+		mbw = 0x02;	// MBW 10: 32-bit width
+		break;
+#endif /* WITHNDMA_UACOUT */
+	}
 	//PRINTF(PSTR("USB_ReadPacketNec: pipe=%d, data=%p, size=%d\n"), (int) pipe, data, (int) size);
 	USBx->CFIFOSEL =
 		//1 * (1uL << USB_CFIFOSEL_RCNT_SHIFT) |		// RCNT
 		(pipe << USB_CFIFOSEL_CURPIPE_SHIFT) |	// CURPIPE 0000: DCP
-		0 * USB_CFIFOSEL_MBW |	// MBW 00: 8-bit width
+		(mbw << USB_CFIFOSEL_MBW_SHIFT) |	// MBW 00: 8-bit width
 		0;
 
 	if (usbd_wait_fifo(USBx, pipe, USBD_FRDY_COUNT_READ))
@@ -759,18 +950,51 @@ static uint_fast8_t USB_ReadPacketNec(PCD_TypeDef * const USBx, uint_fast8_t pip
 	if (size == 0)
 		USBx->CFIFOCTR = USB_CFIFOCTR_BCLR;	// BCLR
 
-	while (size --)
+	if (mbw == 0x02)
 	{
-		* data ++ = USBx->CFIFO.UINT8 [R_IO_HH]; // HH=3
+		uint32_t * data32 = (uint32_t *) data;
+		while (size --)
+		{
+			* data32 ++ = USBx->CFIFO.UINT32;
+		}
+		* readcnt = count * 4;
 	}
-
-	* readcnt = count;
+	else if (mbw == 0x01)
+	{
+		uint16_t * data16 = (uint16_t *) data;
+		while (size --)
+		{
+			* data16 ++ = USBx->CFIFO.UINT16 [R_IO_H]; // H=1
+		}
+		* readcnt = count * 2;
+	}
+	else
+	{
+		while (size --)
+		{
+			* data ++ = USBx->CFIFO.UINT8 [R_IO_HH]; // HH=3
+		}
+		* readcnt = count;
+	}
 	return 0;	// OK
 }
 
 static uint_fast8_t
 USB_WritePacketNec(PCD_TypeDef * const USBx, uint_fast8_t pipe, const uint8_t * data, unsigned size)
 {
+	uint_fast8_t mbw;
+	switch (size & 0x03)
+	{
+	case 0:
+		mbw = 0x02;	// MBW 10: 32-bit width
+		break;
+	case 2:
+		mbw = 0x01;	// MBW 01: 16-bit width
+		break;
+	default:
+		mbw = 0x00;	// MBW 00: 8-bit width
+		break;
+	}
 	ASSERT(size == 0 || data != NULL);
 #if 0
 	if (data != NULL && size != 0)
@@ -795,8 +1019,8 @@ USB_WritePacketNec(PCD_TypeDef * const USBx, uint_fast8_t pipe, const uint8_t * 
 	USBx->CFIFOSEL =
 		//1 * (1uL << USB_CFIFOSEL_RCNT_SHIFT) |		// RCNT
 		(pipe << USB_CFIFOSEL_CURPIPE_SHIFT) |	// CURPIPE 0000: DCP
-		0 * USB_CFIFOSEL_MBW |	// MBW 00: 8-bit width
-		1 * USB_CFIFOSEL_ISEL_ * (pipe == 0) |	// ISEL 1: Writing to the buffer memory is selected (for DCP)
+		(mbw << USB_CFIFOSEL_MBW_SHIFT) |	// MBW 00: 8-bit width
+		(0x01 << USB_CFIFOSEL_ISEL_SHIFT_) * (pipe == 0) |	// ISEL 1: Writing to the buffer memory is selected (for DCP)
 		0;
 
 	if (usbd_wait_fifo(USBx, pipe, USBD_FRDY_COUNT_WRITE))
@@ -805,9 +1029,32 @@ USB_WritePacketNec(PCD_TypeDef * const USBx, uint_fast8_t pipe, const uint8_t * 
 		return 1;	// error
 	}
 	ASSERT(size == 0 || data != NULL);
-    while (size --)
+	if (mbw == 0x02)
 	{
-    	USBx->CFIFO.UINT8 [R_IO_HH] = * data ++; // HH=3
+		// 32 bit transfers
+		const uint32_t * data32 = (const uint32_t *) data;
+		size = size / 4;
+		while (size --)
+		{
+			USBx->CFIFO.UINT32 = * data32 ++;
+		}
+	}
+	else if (mbw == 0x01)
+	{
+		// 16 bit transfers
+		const uint16_t * data16 = (const uint16_t *) data;
+		size = size / 2;
+		while (size --)
+		{
+			USBx->CFIFO.UINT16 [R_IO_H] = * data16 ++; // R_IO_H=1
+		}
+	}
+	else
+	{
+		while (size --)
+		{
+			USBx->CFIFO.UINT8 [R_IO_HH] = * data ++; // R_IO_HH=3
+		}
 	}
     USBx->CFIFOCTR = USB_CFIFOCTR_BVAL;	// BVAL
 	return 0;	// OK
@@ -928,113 +1175,17 @@ static void usbd_handle_ctrt(PCD_HandleTypeDef *hpcd, uint_fast8_t ctsq)
 	}
 }
 
-static const struct { uint8_t pipe, ep; } usbd_usedpipes [] =
-{
-#if WITHUSBUAC
-	{	HARDWARE_USBD_PIPE_ISOC_OUT,	USBD_EP_AUDIO_OUT, },		// ISOC OUT Аудиоданные от компьютера в TRX - D0FIFOB0
-	{	HARDWARE_USBD_PIPE_ISOC_IN,		USBD_EP_AUDIO_IN, },		// ISOC IN Аудиоданные в компьютер из TRX - D0FIFOB1
-#endif /* WITHUSBUAC */
-#if WITHUSBCDC
-	{	HARDWARE_USBD_PIPE_CDC_OUT,		USBD_EP_CDC_OUT, },		// CDC OUT Данные ком-порта от компьютера в TRX
-	{	HARDWARE_USBD_PIPE_CDC_IN,		USBD_EP_CDC_IN, },		// CDC IN Данные ком-порта в компьютер из TRX
-	{	HARDWARE_USBD_PIPE_CDC_INT,		USBD_EP_CDC_INT, },
-	{	HARDWARE_USBD_PIPE_CDC_OUTb,	USBD_EP_CDC_OUTb, },	// CDC OUT dummy interfacei
-	{	HARDWARE_USBD_PIPE_CDC_INb,		USBD_EP_CDC_INb, },		// CDC IN dummy interfacei
-	{	HARDWARE_USBD_PIPE_CDC_INTb,	USBD_EP_CDC_INTb, },
-#endif /* WITHUSBCDC */
-};
-
-
-static const struct { uint8_t pipe, ep; } brdyenbpipes2 [] =
-{
-	//{ 0x00, 0x00 },		// DCP
-#if WITHUSBCDC
-	{ HARDWARE_USBD_PIPE_CDC_OUT, USBD_EP_CDC_OUT },		// CDC OUT Данные ком-порта от компьютера в TRX
-	{ HARDWARE_USBD_PIPE_CDC_IN, USBD_EP_CDC_IN },		// CDC IN Данные ком-порта в компьютер из TRX
-	{ HARDWARE_USBD_PIPE_CDC_OUTb, USBD_EP_CDC_OUTb },	// CDC OUT dummy interfacei
-	{ HARDWARE_USBD_PIPE_CDC_INb, USBD_EP_CDC_INb },		// CDC IN dummy interfacei
-#endif /* WITHUSBCDC */
-};
-
-
-static void usbd_pipes_enable(PCD_TypeDef * const Instance)
-{
-	uint_fast8_t i;
-
-	for (i = 0; i < sizeof usbd_usedpipes / sizeof usbd_usedpipes [0]; ++ i)
-	{
-		const uint_fast8_t pipe = usbd_usedpipes [i].pipe;
-		volatile uint16_t * const PIPEnCTR = (& Instance->PIPE1CTR) + (pipe - 1);
-
-		* PIPEnCTR = 0x0000;	// NAK
-		while ((* PIPEnCTR & (USB_PIPEnCTR_1_5_PBUSY | USB_PIPEnCTR_1_5_CSSTS)) != 0)	// PBUSY, CSSTS
-			;
-
-		* PIPEnCTR = USB_PIPEnCTR_1_5_SQCLR;
-
-		* PIPEnCTR = 0x0003;	// NAK->STALL
-		* PIPEnCTR = 0x0002;	// NAK->STALL
-		* PIPEnCTR = 0x0001;	// STALL->BUF
-		Instance->NRDYENB |= (1u << pipe);
-
-	}
-	for (i = 0; i < sizeof brdyenbpipes2 / sizeof brdyenbpipes2 [0]; ++ i)
-	{
-		const uint_fast8_t pipe = brdyenbpipes2 [i].pipe;
-		Instance->BRDYENB |= (1uL << pipe);	// Прерывание по заполненности приёмного (OUT) или для заполнения передающего (IN) буфера
-	}
-	if (1)
-	{
-		// DCP, control pipe
-		uint_fast8_t pipe = 0;	// PIPE0
-		Instance->BRDYENB |= (1uL << pipe);	// Прерывание по заполненности приёмного (OUT) буфера
-		Instance->BEMPENB |= (1uL << pipe);	// Прерывание окончания передачи передающего (IN) буфера
-	}
-}
-
-static void usbd_pipes_disable(PCD_TypeDef * const Instance)
-{
-	uint_fast8_t i;
-
-	if (1)
-	{
-		// DCP, control pipe
-		uint_fast8_t pipe = 0;	// PIPE0
-		Instance->BRDYENB &= ~ (1uL << pipe);	// Прерывание по заполненности приёмного (OUT) буфера
-		Instance->BEMPENB &= ~ (1uL << pipe);	// Прерывание окончания передачи передающего (IN) буфера
-	}
-	for (i = 0; i < sizeof brdyenbpipes2 / sizeof brdyenbpipes2 [0]; ++ i)
-	{
-		const uint_fast8_t pipe = brdyenbpipes2 [i].pipe;
-		Instance->BRDYENB &= ~ (1uL << pipe);	// Прерывание по заполненности приёмного (OUT) или для заполнения передающего (IN) буфера
-	}
-	for (i = 0; i < sizeof usbd_usedpipes / sizeof usbd_usedpipes [0]; ++ i)
-	{
-		const uint_fast8_t pipe = usbd_usedpipes [i].pipe;
-		volatile uint16_t * const PIPEnCTR = (& Instance->PIPE1CTR) + (pipe - 1);
-
-		* PIPEnCTR = 0x0000;	// NAK
-		while ((* PIPEnCTR & (USB_PIPEnCTR_1_5_PBUSY | USB_PIPEnCTR_1_5_CSSTS)) != 0)	// PBUSY, CSSTS
-			;
-
-		//* PIPEnCTR = 0x0003;	// NAK->STALL
-		//* PIPEnCTR = 0x0002;	// NAK->STALL
-		//* PIPEnCTR = 0x0001;	// STALL->BUF
-		Instance->NRDYENB &= ~ (1u << pipe);
-	}
-}
-
 static void
 usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 {
-	PCD_TypeDef * const Instance = hpcd->Instance;
+	PCD_TypeDef * const USBx = hpcd->Instance;
 	PRINTF(PSTR("usbd_pipes_initialize\n"));
 	/*
 		at initialize:
 		usbd_handler_brdy: после инициализации появляется для тех pipe, у которых dir=0 (read direction)
 	*/
 	{
-		Instance->DCPMAXP = (USB_OTG_MAX_EP0_SIZE << USB_DCPMAXP_MXPS_SHIFT);
+		USBx->DCPMAXP = (USB_OTG_MAX_EP0_SIZE << USB_DCPMAXP_MXPS_SHIFT);
 	}
 	unsigned bufnumb64 = 0x10;
 #if WITHUSBCDC
@@ -1046,11 +1197,11 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 		const uint_fast8_t dir = 0;
 		//PRINTF(PSTR("usbd_pipe_initialize: pipe=%u endpoint=%02X\n"), pipe, epnum);
 
-		Instance->PIPESEL = pipe << USB_PIPESEL_PIPESEL_SHIFT;
-		while ((Instance->PIPESEL & USB_PIPESEL_PIPESEL) != (pipe << USB_PIPESEL_PIPESEL_SHIFT))
+		USBx->PIPESEL = pipe << USB_PIPESEL_PIPESEL_SHIFT;
+		while ((USBx->PIPESEL & USB_PIPESEL_PIPESEL) != (pipe << USB_PIPESEL_PIPESEL_SHIFT))
 			;
 		ASSERT(pipe == 3);
-		Instance->PIPECFG =
+		USBx->PIPECFG =
 			(0x0F & epnum) * (1u << USB_PIPECFG_EPNUM_SHIFT) |	// EPNUM endpoint
 			dir * (1u << USB_PIPECFG_DIR_SHIFT) |			// DIR 1: Transmitting direction 0: Receiving direction
 			1 * (1u << USB_PIPECFG_TYPE_SHIFT) |			// TYPE 1: Bulk transfer
@@ -1058,12 +1209,12 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 			0;
 		const unsigned bufsize64 = (VIRTUAL_COM_PORT_OUT_DATA_SIZE + 63) / 64;
 
-		Instance->PIPEBUF = ((bufsize64 - 1) << USB_PIPEBUF_BUFSIZE_SHIFT) | (bufnumb64 << USB_PIPEBUF_BUFNMB_SHIFT);
-		Instance->PIPEMAXP = VIRTUAL_COM_PORT_OUT_DATA_SIZE << USB_PIPEMAXP_MXPS_SHIFT;
+		USBx->PIPEBUF = ((bufsize64 - 1) << USB_PIPEBUF_BUFSIZE_SHIFT) | (bufnumb64 << USB_PIPEBUF_BUFNMB_SHIFT);
+		USBx->PIPEMAXP = VIRTUAL_COM_PORT_OUT_DATA_SIZE << USB_PIPEMAXP_MXPS_SHIFT;
 		bufnumb64 += bufsize64 * 2; // * 2 for DBLB
 		ASSERT(bufnumb64 <= 0x100);
 
-		Instance->PIPESEL = 0;
+		USBx->PIPESEL = 0;
 	}
 	if (1)
 	{
@@ -1073,11 +1224,11 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 		const uint_fast8_t dir = 1;
 		//PRINTF(PSTR("usbd_pipe_initialize: pipe=%u endpoint=%02X\n"), pipe, epnum);
 
-		Instance->PIPESEL = pipe << USB_PIPESEL_PIPESEL_SHIFT;
-		while ((Instance->PIPESEL & USB_PIPESEL_PIPESEL) != (pipe << USB_PIPESEL_PIPESEL_SHIFT))
+		USBx->PIPESEL = pipe << USB_PIPESEL_PIPESEL_SHIFT;
+		while ((USBx->PIPESEL & USB_PIPESEL_PIPESEL) != (pipe << USB_PIPESEL_PIPESEL_SHIFT))
 			;
 		ASSERT(pipe == 4);
-		Instance->PIPECFG =
+		USBx->PIPECFG =
 			(0x0F & epnum) * (1u << USB_PIPECFG_EPNUM_SHIFT) |		// EPNUM endpoint
 			dir * (1u << USB_PIPECFG_DIR_SHIFT) |		// DIR 1: Transmitting direction 0: Receiving direction
 			1 * (1u << USB_PIPECFG_TYPE_SHIFT) |		// TYPE 1: Bulk transfer
@@ -1085,12 +1236,12 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 			0;
 		const unsigned bufsize64 = (VIRTUAL_COM_PORT_IN_DATA_SIZE + 63) / 64;
 
-		Instance->PIPEBUF = ((bufsize64 - 1) << USB_PIPEBUF_BUFSIZE_SHIFT) | (bufnumb64 << USB_PIPEBUF_BUFNMB_SHIFT);
-		Instance->PIPEMAXP = VIRTUAL_COM_PORT_IN_DATA_SIZE << USB_PIPEMAXP_MXPS_SHIFT;
+		USBx->PIPEBUF = ((bufsize64 - 1) << USB_PIPEBUF_BUFSIZE_SHIFT) | (bufnumb64 << USB_PIPEBUF_BUFNMB_SHIFT);
+		USBx->PIPEMAXP = VIRTUAL_COM_PORT_IN_DATA_SIZE << USB_PIPEMAXP_MXPS_SHIFT;
 		bufnumb64 += bufsize64 * 2; // * 2 for DBLB
 		ASSERT(bufnumb64 <= 0x100);
 
-		Instance->PIPESEL = 0;
+		USBx->PIPESEL = 0;
 	}
 	if (1)
 	{
@@ -1100,23 +1251,23 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 		const uint_fast8_t dir = 1;
 		//PRINTF(PSTR("usbd_pipe_initialize: pipe=%u endpoint=%02X\n"), pipe, epnum);
 
-		Instance->PIPESEL = pipe << USB_PIPESEL_PIPESEL_SHIFT;
-		while ((Instance->PIPESEL & USB_PIPESEL_PIPESEL) != (pipe << USB_PIPESEL_PIPESEL_SHIFT))
+		USBx->PIPESEL = pipe << USB_PIPESEL_PIPESEL_SHIFT;
+		while ((USBx->PIPESEL & USB_PIPESEL_PIPESEL) != (pipe << USB_PIPESEL_PIPESEL_SHIFT))
 			;
 		ASSERT(pipe == 6);
-		Instance->PIPECFG =
+		USBx->PIPECFG =
 			(0x0F & epnum) * (1u << USB_PIPECFG_EPNUM_SHIFT) |		// EPNUM endpoint
 			dir * (1u << USB_PIPECFG_DIR_SHIFT) |		// DIR 1: Transmitting direction 0: Receiving direction
 			2 * (1u << USB_PIPECFG_TYPE_SHIFT) |		// TYPE 2: Interrupt transfer
 			0 * USB_PIPECFG_DBLB |		// DBLB - для interrupt должен быть 0
 			0;
 		const unsigned bufsize64 = (VIRTUAL_COM_PORT_INT_SIZE + 63) / 64;
-		Instance->PIPEBUF = ((bufsize64 - 1) << USB_PIPEBUF_BUFSIZE_SHIFT) | (bufnumb64 << USB_PIPEBUF_BUFNMB_SHIFT);
-		Instance->PIPEMAXP = VIRTUAL_COM_PORT_INT_SIZE << USB_PIPEMAXP_MXPS_SHIFT;
+		USBx->PIPEBUF = ((bufsize64 - 1) << USB_PIPEBUF_BUFSIZE_SHIFT) | (bufnumb64 << USB_PIPEBUF_BUFNMB_SHIFT);
+		USBx->PIPEMAXP = VIRTUAL_COM_PORT_INT_SIZE << USB_PIPEMAXP_MXPS_SHIFT;
 		bufnumb64 += bufsize64 * 1; // * 2 for DBLB
 		ASSERT(bufnumb64 <= 0x100);
 
-		Instance->PIPESEL = 0;
+		USBx->PIPESEL = 0;
 	}
 	if (1)
 	{
@@ -1126,23 +1277,23 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 		const uint_fast8_t dir = 0;
 		//PRINTF(PSTR("usbd_pipe_initialize: pipe=%u endpoint=%02X\n"), pipe, epnum);
 
-		Instance->PIPESEL = pipe << USB_PIPESEL_PIPESEL_SHIFT;
-		while ((Instance->PIPESEL & USB_PIPESEL_PIPESEL) != (pipe << USB_PIPESEL_PIPESEL_SHIFT))
+		USBx->PIPESEL = pipe << USB_PIPESEL_PIPESEL_SHIFT;
+		while ((USBx->PIPESEL & USB_PIPESEL_PIPESEL) != (pipe << USB_PIPESEL_PIPESEL_SHIFT))
 			;
 		ASSERT(pipe == 14);
-		Instance->PIPECFG =
+		USBx->PIPECFG =
 			(0x0F & epnum) * (1u << USB_PIPECFG_EPNUM_SHIFT) |	// EPNUM endpoint
 			dir * (1u << USB_PIPECFG_DIR_SHIFT) |			// DIR 1: Transmitting direction 0: Receiving direction
 			1 * (1u << USB_PIPECFG_TYPE_SHIFT) |			// TYPE 1: Bulk transfer
 			1 * (1u << 9) |				// DBLB
 			0;
 		const unsigned bufsize64 = (VIRTUAL_COM_PORT_OUT_DATA_SIZE + 63) / 64;
-		Instance->PIPEBUF = ((bufsize64 - 1) << USB_PIPEBUF_BUFSIZE_SHIFT) | (bufnumb64 << USB_PIPEBUF_BUFNMB_SHIFT);
-		Instance->PIPEMAXP = VIRTUAL_COM_PORT_OUT_DATA_SIZE << USB_PIPEMAXP_MXPS_SHIFT;
+		USBx->PIPEBUF = ((bufsize64 - 1) << USB_PIPEBUF_BUFSIZE_SHIFT) | (bufnumb64 << USB_PIPEBUF_BUFNMB_SHIFT);
+		USBx->PIPEMAXP = VIRTUAL_COM_PORT_OUT_DATA_SIZE << USB_PIPEMAXP_MXPS_SHIFT;
 		bufnumb64 += bufsize64 * 2; // * 2 for DBLB
 		ASSERT(bufnumb64 <= 0x100);
 
-		Instance->PIPESEL = 0;
+		USBx->PIPESEL = 0;
 	}
 	if (1)
 	{
@@ -1152,23 +1303,23 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 		const uint_fast8_t dir = 1;
 		//PRINTF(PSTR("usbd_pipe_initialize: pipe=%u endpoint=%02X\n"), pipe, epnum);
 
-		Instance->PIPESEL = pipe << USB_PIPESEL_PIPESEL_SHIFT;
-		while ((Instance->PIPESEL & USB_PIPESEL_PIPESEL) != (pipe << USB_PIPESEL_PIPESEL_SHIFT))
+		USBx->PIPESEL = pipe << USB_PIPESEL_PIPESEL_SHIFT;
+		while ((USBx->PIPESEL & USB_PIPESEL_PIPESEL) != (pipe << USB_PIPESEL_PIPESEL_SHIFT))
 			;
 		ASSERT(pipe == 15);
-		Instance->PIPECFG =
+		USBx->PIPECFG =
 			(0x0F & epnum) * (1u << USB_PIPECFG_EPNUM_SHIFT) |		// EPNUM endpoint
 			dir * (1u << USB_PIPECFG_DIR_SHIFT) |		// DIR 1: Transmitting direction 0: Receiving direction
 			1 * (1u << USB_PIPECFG_TYPE_SHIFT) |		// TYPE 1: Bulk transfer
 			1 * USB_PIPECFG_DBLB |		// DBLB
 			0;
 		const unsigned bufsize64 = (VIRTUAL_COM_PORT_IN_DATA_SIZE + 63) / 64;
-		Instance->PIPEBUF = ((bufsize64 - 1) << USB_PIPEBUF_BUFSIZE_SHIFT) | (bufnumb64 << USB_PIPEBUF_BUFNMB_SHIFT);
-		Instance->PIPEMAXP = VIRTUAL_COM_PORT_IN_DATA_SIZE << USB_PIPEMAXP_MXPS_SHIFT;
+		USBx->PIPEBUF = ((bufsize64 - 1) << USB_PIPEBUF_BUFSIZE_SHIFT) | (bufnumb64 << USB_PIPEBUF_BUFNMB_SHIFT);
+		USBx->PIPEMAXP = VIRTUAL_COM_PORT_IN_DATA_SIZE << USB_PIPEMAXP_MXPS_SHIFT;
 		bufnumb64 += bufsize64 * 2; // * 2 for DBLB
 		ASSERT(bufnumb64 <= 0x100);
 
-		Instance->PIPESEL = 0;
+		USBx->PIPESEL = 0;
 	}
 	if (1)
 	{
@@ -1178,23 +1329,23 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 		const uint_fast8_t dir = 1;
 		//PRINTF(PSTR("usbd_pipe_initialize: pipe=%u endpoint=%02X\n"), pipe, epnum);
 
-		Instance->PIPESEL = pipe << USB_PIPESEL_PIPESEL_SHIFT;
-		while ((Instance->PIPESEL & USB_PIPESEL_PIPESEL) != (pipe << USB_PIPESEL_PIPESEL_SHIFT))
+		USBx->PIPESEL = pipe << USB_PIPESEL_PIPESEL_SHIFT;
+		while ((USBx->PIPESEL & USB_PIPESEL_PIPESEL) != (pipe << USB_PIPESEL_PIPESEL_SHIFT))
 			;
 		ASSERT(pipe == 7);
-		Instance->PIPECFG =
+		USBx->PIPECFG =
 			(0x0F & epnum) * (1u << USB_PIPECFG_EPNUM_SHIFT) |		// EPNUM endpoint
 			dir * (1u << USB_PIPECFG_DIR_SHIFT) |		// DIR 1: Transmitting direction 0: Receiving direction
 			2 * (1u << USB_PIPECFG_TYPE_SHIFT) |		// TYPE 2: Interrupt transfer
 			0 * USB_PIPECFG_DBLB |		// DBLB - для interrupt должен быть 0
 			0;
 		const unsigned bufsize64 = (VIRTUAL_COM_PORT_INT_SIZE + 63) / 64;
-		Instance->PIPEBUF = ((bufsize64 - 1) << USB_PIPEBUF_BUFSIZE_SHIFT) | (bufnumb64 << USB_PIPEBUF_BUFNMB_SHIFT);
-		Instance->PIPEMAXP = VIRTUAL_COM_PORT_INT_SIZE << USB_PIPEMAXP_MXPS_SHIFT;
+		USBx->PIPEBUF = ((bufsize64 - 1) << USB_PIPEBUF_BUFSIZE_SHIFT) | (bufnumb64 << USB_PIPEBUF_BUFNMB_SHIFT);
+		USBx->PIPEMAXP = VIRTUAL_COM_PORT_INT_SIZE << USB_PIPEMAXP_MXPS_SHIFT;
 		bufnumb64 += bufsize64 * 1; // * 2 for DBLB
 		ASSERT(bufnumb64 <= 0x100);
 
-		Instance->PIPESEL = 0;
+		USBx->PIPESEL = 0;
 	}
 #endif /* WITHUSBCDC */
 
@@ -1210,43 +1361,45 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 		const uint_fast16_t maxpacket = usbd_getuacinmaxpacket();
 		//PRINTF(PSTR("usbd_pipe_initialize: pipe=%u endpoint=%02X\n"), pipe, epnum);
 
-		Instance->PIPESEL = pipe << USB_PIPESEL_PIPESEL_SHIFT;
-		while ((Instance->PIPESEL & USB_PIPESEL_PIPESEL) != (pipe << USB_PIPESEL_PIPESEL_SHIFT))
+		USBx->PIPESEL = pipe << USB_PIPESEL_PIPESEL_SHIFT;
+		while ((USBx->PIPESEL & USB_PIPESEL_PIPESEL) != (pipe << USB_PIPESEL_PIPESEL_SHIFT))
 			;
 		ASSERT(pipe == 2);
-		Instance->PIPECFG =
+		USBx->PIPECFG =
 			(0x0F & epnum) * (1u << USB_PIPECFG_EPNUM_SHIFT) |		// EPNUM endpoint
 			dir * (1u << USB_PIPECFG_DIR_SHIFT) |		// DIR 1: Transmitting direction 0: Receiving direction
 			3 * (1u << USB_PIPECFG_TYPE_SHIFT) |		// TYPE 11: Isochronous transfer
 			////1 * USB_PIPECFG_DBLB |		// DBLB - убрано, т.к PIPEMAXP динамически меняется - поведение не понятно.
 			0;
-		//Instance->PIPEPERI =
+		//USBx->PIPEPERI =
 		//	1 * (1U << 12) |	// IFS
 		//	0;
 		const unsigned bufsize64 = (maxpacket + 63) / 64;
-		Instance->PIPEBUF = ((bufsize64 - 1) << USB_PIPEBUF_BUFSIZE_SHIFT) | (bufnumb64 << USB_PIPEBUF_BUFNMB_SHIFT);
-		Instance->PIPEMAXP = maxpacket << USB_PIPEMAXP_MXPS_SHIFT;
+		USBx->PIPEBUF = ((bufsize64 - 1) << USB_PIPEBUF_BUFSIZE_SHIFT) | (bufnumb64 << USB_PIPEBUF_BUFNMB_SHIFT);
+		USBx->PIPEMAXP = maxpacket << USB_PIPEMAXP_MXPS_SHIFT;
 		bufnumb64 += bufsize64 * 2; // * 2 for DBLB
 		ASSERT(bufnumb64 <= 0x100);
 
-		Instance->PIPESEL = 0;
+		USBx->PIPESEL = 0;
 
+#if 0
 		// Разрешение DMA
 		// Сперва без DREQE
-		Instance->D1FIFOSEL =
+		USBx->D1FIFOSEL =
 			pipe * (1uL << USB_DnFIFOSEL_CURPIPE_SHIFT) |	// CURPIPE 0000: DCP
 			2 * (1uL << USB_DnFIFOSEL_MBW_SHIFT) |	// MBW 10: 32-bit width
 			0 * (1uL << USB_DnFIFOSEL_DREQE_SHIFT) | // DREQE 1: DMA transfer request is enabled.
 			0;
-		(void) Instance->D1FIFOSEL;
+		(void) USBx->D1FIFOSEL;
 
 		// Потом выставить DREQE
-		Instance->D1FIFOSEL =
+		USBx->D1FIFOSEL =
 			pipe * (1uL << USB_DnFIFOSEL_CURPIPE_SHIFT) |	// CURPIPE 0000: DCP
 			2 * (1uL << USB_DnFIFOSEL_MBW_SHIFT) |	// MBW 10: 32-bit width
 			1 * (1uL << USB_DnFIFOSEL_DREQE_SHIFT) | // DREQE 1: DMA transfer request is enabled.
 			0;
-		(void) Instance->D1FIFOSEL;
+		(void) USBx->D1FIFOSEL;
+#endif
 	}
 #endif /* WITHUSBUAC */
 #if WITHUSBUAC
@@ -1260,11 +1413,11 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 		const uint_fast16_t maxpacket = UAC_OUT48_DATA_SIZE;
 		//PRINTF(PSTR("usbd_pipe_initialize: pipe=%u endpoint=%02X\n"), pipe, epnum);
 
-		Instance->PIPESEL = pipe << USB_PIPESEL_PIPESEL_SHIFT;
-		while ((Instance->PIPESEL & USB_PIPESEL_PIPESEL) != (pipe << USB_PIPESEL_PIPESEL_SHIFT))
+		USBx->PIPESEL = pipe << USB_PIPESEL_PIPESEL_SHIFT;
+		while ((USBx->PIPESEL & USB_PIPESEL_PIPESEL) != (pipe << USB_PIPESEL_PIPESEL_SHIFT))
 			;
 		ASSERT(pipe == 1);
-		Instance->PIPECFG =
+		USBx->PIPECFG =
 			(0x0F & epnum) * (1u << USB_PIPECFG_EPNUM_SHIFT) |		// EPNUM endpoint
 			dir * (1u << USB_PIPECFG_DIR_SHIFT) |		// DIR 1: Transmitting direction 0: Receiving direction
 			3 * (1u << USB_PIPECFG_TYPE_SHIFT) |		// TYPE 11: Isochronous transfer
@@ -1272,28 +1425,31 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 			0;
 
 		const unsigned bufsize64 = (maxpacket + 63) / 64;
-		Instance->PIPEBUF = ((bufsize64 - 1) << USB_PIPEBUF_BUFSIZE_SHIFT) | (bufnumb64 << USB_PIPEBUF_BUFNMB_SHIFT);
-		Instance->PIPEMAXP = maxpacket << USB_PIPEMAXP_MXPS_SHIFT;
+		USBx->PIPEBUF = ((bufsize64 - 1) << USB_PIPEBUF_BUFSIZE_SHIFT) | (bufnumb64 << USB_PIPEBUF_BUFNMB_SHIFT);
+		USBx->PIPEMAXP = maxpacket << USB_PIPEMAXP_MXPS_SHIFT;
 		bufnumb64 += bufsize64 * 2; // * 2 for DBLB
 		ASSERT(bufnumb64 <= 0x100);
 
-		Instance->PIPESEL = 0;
+		USBx->PIPESEL = 0;
+
+#if 0
 		// Разрешение DMA
 		// Сперва без DREQE
-		Instance->D0FIFOSEL =
+		USBx->D0FIFOSEL =
 			pipe * (1uL << USB_DnFIFOSEL_CURPIPE_SHIFT) |	// CURPIPE 0000: DCP
 			2 * (1uL << USB_DnFIFOSEL_MBW_SHIFT) |	// MBW 10: 32-bit width
 			0 * (1uL << USB_DnFIFOSEL_DREQE_SHIFT) | // DREQE 1: DMA transfer request is enabled.
 			0;
-		(void) Instance->D0FIFOSEL;
+		(void) USBx->D0FIFOSEL;
 
 		// Потом выставить DREQE
-		Instance->D0FIFOSEL =
+		USBx->D0FIFOSEL =
 			pipe * (1uL << USB_DnFIFOSEL_CURPIPE_SHIFT) |	// CURPIPE 0000: DCP
 			2 * (1uL << USB_DnFIFOSEL_MBW_SHIFT) |	// MBW 10: 32-bit width
 			1 * (1uL << USB_DnFIFOSEL_DREQE_SHIFT) | // DREQE 1: DMA transfer request is enabled.
 			0;
-		(void) Instance->D0FIFOSEL;
+		(void) USBx->D0FIFOSEL;
+#endif
 	}
 #endif /* WITHUSBUAC */
 
@@ -1301,56 +1457,10 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 	uint_fast8_t pipe;
 	for (pipe = 1; pipe <= 15; ++ pipe)
 	{
-		Instance->PIPESEL = pipe;
-		PRINTF(PSTR("USB pipe%02d PIPEBUF=%04X PIPEMAXP=%u\n"), pipe, Instance->PIPEBUF, Instance->PIPEMAXP & USB_PIPEMAXP_MXPS);
+		USBx->PIPESEL = pipe;
+		PRINTF(PSTR("USB pipe%02d PIPEBUF=%04X PIPEMAXP=%u\n"), pipe, USBx->PIPEBUF, USBx->PIPEMAXP & USB_PIPEMAXP_MXPS);
 	}
 	*/
-}
-
-
-
-static void usbd_handle_resume(PCD_TypeDef * const USBx)
-{
-	//PRINTF(PSTR("usbd_handle_resume\n"));
-
-	//memset(altinterfaces, 0, sizeof altinterfaces);
-#if WITHUSBCDC && 0
-	usb_cdc_control_state [INTERFACE_CDC_CONTROL_3a] = 0;
-	usb_cdc_control_state [INTERFACE_CDC_CONTROL_3b] = 0;
-	dwDTERate [INTERFACE_CDC_CONTROL_3a] = 115200;
-	dwDTERate [INTERFACE_CDC_CONTROL_3b] = 115200;
-#endif /* WITHUSBCDC */
-#if WITHUSBUAC && 0
-	terminalsprops [TERMINAL_ID_SELECTOR_6] [AUDIO_CONTROL_UNDEFINED] = 1;
-	buffers_set_uacinalt(altinterfaces [INTERFACE_AUDIO_MIKE]);
-	buffers_set_uacoutalt(altinterfaces [INTERFACE_AUDIO_SPK]);
-	#if WITHUSBUACIN2
-		buffers_set_uacinrtsalt(altinterfaces [INTERFACE_AUDIO_RTS]);
-	#endif /* WITHUSBUACIN2 */
-#endif /* WITHUSBUAC */
-}
-
-// not used now
-static void usbd_handle_suspend(PCD_TypeDef * const USBx)
-{
-	//PRINTF(PSTR("usbd_handle_suspend\n"));
-	usbd_pipes_disable(USBx);
-
-	//memset(altinterfaces, 0, sizeof altinterfaces);
-#if WITHUSBCDC && 0
-	/* при потере связи с host снять запрос на передачу */
-	usb_cdc_control_state [INTERFACE_CDC_CONTROL_3a] = 0;
-	usb_cdc_control_state [INTERFACE_CDC_CONTROL_3b] = 0;
-	HARDWARE_CDC_ONDISCONNECT();
-#endif /* WITHUSBCDC */
-#if WITHUSBUAC && 0
-	terminalsprops [TERMINAL_ID_SELECTOR_6] [AUDIO_CONTROL_UNDEFINED] = 1;
-	buffers_set_uacinalt(altinterfaces [INTERFACE_AUDIO_MIKE]);
-	buffers_set_uacoutalt(altinterfaces [INTERFACE_AUDIO_SPK]);
-	#if WITHUSBUACIN2
-		buffers_set_uacinrtsalt(altinterfaces [INTERFACE_AUDIO_RTS]);
-	#endif /* WITHUSBUACIN2 */
-#endif /* WITHUSBUAC */
 }
 
 #if defined (WITHUSBHW_DEVICE)
@@ -1456,12 +1566,12 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 		  	}
 		}
 
-		for (i = 0; i < sizeof brdyenbpipes2 / sizeof brdyenbpipes2 [0]; ++ i)
+		for (i = 1; i < 16; ++ i)
 		{
-			const uint_fast8_t pipe = brdyenbpipes2 [i].pipe;
-			const uint_fast8_t epnt = brdyenbpipes2 [i].ep;
+			const uint_fast8_t pipe = i;
 			if ((brdysts & (1U << pipe)) != 0)
 			{
+				const uint_fast8_t epnt = usbd_pipe2epaddr(pipe);
 				if ((epnt & 0x80) != 0)
 				{
 					USB_OTG_EPTypeDef * const ep = & hpcd->IN_ep [epnt & 0x7F];
@@ -1473,7 +1583,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 				{
 					USB_OTG_EPTypeDef * const ep = & hpcd->OUT_ep [epnt];
 				  	unsigned bcnt;
-				  	if (USB_ReadPacketNec(USBx, ep->pipe_num, ep->xfer_buff, ep->xfer_len - ep->xfer_count, & bcnt) == 0)
+				  	if (USB_ReadPacketNec(USBx, pipe, ep->xfer_buff, ep->xfer_len - ep->xfer_count, & bcnt) == 0)
 				  	{
 						ep->xfer_buff += bcnt;
 						ep->xfer_count += bcnt;
@@ -1558,8 +1668,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 	{
 		USBx->INTSTS0 = (uint16_t) ~ USB_INTSTS0_RESM;	// Clear RESM
 		//PRINTF(PSTR("HAL_PCD_IRQHandler trapped - RESM\n"));
-		usbd_pipes_enable(USBx);
-		usbd_handle_resume(USBx);
+		//usbd_handle_resume(USBx);
 	}
 	if ((intsts0msk & USB_INTSTS0_VBINT) != 0)	// VBINT
 	{
@@ -1575,17 +1684,15 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 	}
 }
 
-void device_USBI0_IRQHandler(void)
+static void RAMFUNC_NONILINE device_USBI0_IRQHandler(void)
 {
 	HAL_PCD_IRQHandler(& hpcd_USB_OTG);
 }
 
-void device_USBI1_IRQHandler(void)
+static void RAMFUNC_NONILINE device_USBI1_IRQHandler(void)
 {
 	HAL_PCD_IRQHandler(& hpcd_USB_OTG);
 }
-
-
 
 void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
 {
@@ -1845,6 +1952,98 @@ HAL_StatusTypeDef USB_SetCurrentMode(USB_OTG_GlobalTypeDef *USBx, USB_OTG_ModeTy
 
 	return HAL_OK;
 }
+
+static void usbd_attachdma(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t pipe)
+{
+	switch (pipe)
+	{
+	default: break;
+#if WITHDMAHW_UACIN
+	case HARDWARE_USBD_PIPE_ISOC_IN:
+		if (USBx == & USB200)
+		{
+			// USB0 TX DMA
+			r7s721_usb0_dma1_dmatx_initialize(pipe);
+		}
+		else if (USBx == & USB201)
+		{
+			// USB1 TX DMA
+			r7s721_usb1_dma1_dmatx_initialize(pipe);
+		}
+		else
+		{
+			ASSERT(0);
+		}
+		break;
+#endif /* WITHDMAHW_UACIN */
+#if WITHDMAHW_UACOUT
+	case HARDWARE_USBD_PIPE_ISOC_OUT:
+		if (USBx == & USB200)
+		{
+			// USB0 RX DMA
+			r7s721_usb0_dma0_dmarx_initialize(pipe);
+
+		}
+		else if (USBx == & USB201)
+		{
+			// USB1 RX DMA
+			r7s721_usb1_dma0_dmarx_initialize(pipe);
+
+		}
+		else
+		{
+			ASSERT(0);
+		}
+		break;
+#endif /* WITHNDMA_UACOUT */
+	}
+}
+
+static void usbd_detachdma(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t pipe)
+{
+	switch (pipe)
+	{
+	default: break;
+#if WITHDMAHW_UACIN
+	case HARDWARE_USBD_PIPE_ISOC_IN:
+		if (USBx == & USB200)
+		{
+			// USB0 TX DMA
+			r7s721_usb0_dma1_dmatx_stop(pipe);
+		}
+		else if (USBx == & USB201)
+		{
+			// USB1 TX DMA
+			r7s721_usb1_dma1_dmatx_stop(pipe);
+		}
+		else
+		{
+			ASSERT(0);
+		}
+		break;
+#endif /* WITHDMAHW_UACIN */
+#if WITHDMAHW_UACOUT
+	case HARDWARE_USBD_PIPE_ISOC_OUT:
+		if (USBx == & USB200)
+		{
+			// USB0 RX DMA
+			r7s721_usb0_dma0_dmarx_stop(pipe);
+
+		}
+		else if (USBx == & USB201)
+		{
+			// USB1 RX DMA
+			r7s721_usb1_dma0_dmarx_stop(pipe);
+
+		}
+		else
+		{
+			ASSERT(0);
+		}
+		break;
+#endif /* WITHNDMA_UACOUT */
+	}
+}
 /**
   * @brief  Activate and configure an endpoint
   * @param  USBx : Selected device
@@ -1853,6 +2052,35 @@ HAL_StatusTypeDef USB_SetCurrentMode(USB_OTG_GlobalTypeDef *USBx, USB_OTG_ModeTy
   */
 HAL_StatusTypeDef USB_ActivateEndpoint(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDef *ep)
 {
+	const uint_fast8_t pipe = usbd_getpipe(ep);
+	volatile uint16_t * const PIPEnCTR = get_pipectr_reg(USBx, pipe);
+
+	* PIPEnCTR = 0x0000;	// NAK
+	while ((* PIPEnCTR & (USB_PIPEnCTR_1_5_PBUSY | USB_PIPEnCTR_1_5_CSSTS)) != 0)	// PBUSY, CSSTS
+		;
+
+	* PIPEnCTR = USB_PIPEnCTR_1_5_SQCLR;
+
+	* PIPEnCTR = 0x0003;	// NAK->STALL
+	* PIPEnCTR = 0x0002;	// NAK->STALL
+	* PIPEnCTR = 0x0001;	// STALL->BUF
+
+	USBx->NRDYENB |= (1uL << pipe);
+	if (usbd_is_dmapipe(USBx, pipe))
+	{
+		usbd_attachdma(USBx, pipe);
+	}
+	else
+	{
+		// В endpoints, задействованных в DMA обмене, не разрешать.
+		USBx->BRDYENB |= (1uL << pipe);	// Прерывание по заполненности приёмного (OUT) буфера
+
+	}
+
+	if (pipe == 0)
+	{
+		USBx->BEMPENB |= (1uL << pipe);	// Прерывание окончания передачи передающего (IN) буфера
+	}
 	return HAL_OK;
 }
 
@@ -1864,6 +2092,8 @@ HAL_StatusTypeDef USB_ActivateEndpoint(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTy
   */
 HAL_StatusTypeDef USB_ActivateDedicatedEndpoint(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDef *ep)
 {
+	// RENESAS: may be used as DMA abstraction
+	const uint_fast8_t pipe = usbd_getpipe(ep);
 	return HAL_OK;
 }
 
@@ -1875,6 +2105,20 @@ HAL_StatusTypeDef USB_ActivateDedicatedEndpoint(USB_OTG_GlobalTypeDef *USBx, USB
   */
 HAL_StatusTypeDef USB_DeactivateEndpoint(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDef *ep)
 {
+	const uint_fast8_t pipe = usbd_getpipe(ep);
+	volatile uint16_t * const PIPEnCTR = get_pipectr_reg(USBx, pipe);
+
+	* PIPEnCTR = 0x0000;	// NAK
+	while ((* PIPEnCTR & (USB_PIPEnCTR_1_5_PBUSY | USB_PIPEnCTR_1_5_CSSTS)) != 0)	// PBUSY, CSSTS
+		;
+
+	USBx->NRDYENB &= ~ (1uL << pipe);	// Прерывание по заполненности приёмного (OUT) буфера
+	USBx->BRDYENB &= ~ (1uL << pipe);	// Прерывание по заполненности приёмного (OUT) буфера
+	USBx->BEMPENB &= ~ (1uL << pipe);	// Прерывание окончания передачи передающего (IN) буфера
+	if (usbd_is_dmapipe(USBx, pipe))
+	{
+		usbd_detachdma(USBx, pipe);
+	}
 	return HAL_OK;
 }
 
@@ -2007,17 +2251,20 @@ HAL_StatusTypeDef USB_EP0StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDe
   */
 HAL_StatusTypeDef USB_EPStartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDef *ep, uint_fast8_t dma)
 {
-	const uint_fast8_t pipe = ep->pipe_num;	// Renesas specific parameter
 	ASSERT(dma == 0);
 	if (ep->is_in == 1)
 	{
+		/* IN endpoint */
+		//USB_OTG_INEndpointTypeDef * const inep = USBx_INEP(ep->num);
 		//PRINTF(PSTR("USB_EPStartXfer IN, ep->num=%d, ep->pipe_num=%d\n"), (int) ep->num, (int) ep->pipe_num);
 		/* IN endpoint */
-		int err = USB_WritePacketNec(USBx, pipe, ep->xfer_buff, ep->xfer_len);
+		int err = USB_WritePacketNec(USBx, usbd_getpipe(ep), ep->xfer_buff, ep->xfer_len);
 		////ASSERT(err == 0);
 	}
 	else
 	{
+		/* OUT endpoint */
+		//USB_OTG_OUTEndpointTypeDef * const outep = USBx_OUTEP(ep->num);
 		//PRINTF(PSTR("USB_EPStartXfer OUT, ep->num=%d, ep->pipe_num=%d\n"), (int) ep->num, (int) ep->pipe_num);
 		/* OUT endpoint */
 
@@ -2210,9 +2457,8 @@ HAL_StatusTypeDef USB_DoPing(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t ch_num)
   */
 HAL_StatusTypeDef USB_EPSetStall(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_EPTypeDef *ep)
 {
-	uint_fast8_t pipe = ep->pipe_num;
 	//PRINTF(PSTR("USB_EPSetStall\n"));
-	set_pid(USBx, pipe, DEVDRV_USBF_PID_STALL);
+	set_pid(USBx, usbd_getpipe(ep), DEVDRV_USBF_PID_STALL);
 	return HAL_OK;
 }
 
@@ -2226,7 +2472,7 @@ HAL_StatusTypeDef USB_EPClearStall(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_EP
 {
 	// For bulk and interrupt endpoints also set even frame number
     volatile uint16_t * p_reg;
-	uint_fast8_t pipe = ep->pipe_num;
+	const uint_fast8_t pipe = usbd_getpipe(ep);
 	//PRINTF(PSTR("USB_EPClearStall\n"));
 	set_pid(USBx, pipe, DEVDRV_USBF_PID_NAK);
 
@@ -4607,27 +4853,6 @@ HAL_StatusTypeDef HAL_PCD_Init(PCD_HandleTypeDef *hpcd)
 		////hpcd->Instance->DIEPTXF[i] = 0;
 	}
 
-#if CPUSTYLE_R7S721
-
-	// Заполнение полей специфичных для RENESAS
-	for (i = 0; i < sizeof usbd_usedpipes / sizeof usbd_usedpipes [0]; ++ i)
-	{
-		const uint_fast8_t pipe = usbd_usedpipes [i].pipe;
-		const uint_fast8_t ep = usbd_usedpipes [i].ep;
-		if (ep & 0x80)
-		{
-			hpcd->IN_ep[ep & 0x7F].pipe_num = pipe;
-		}
-		else
-		{
-			hpcd->OUT_ep[ep & 0x7F].pipe_num = pipe;
-		}
-	}
-	hpcd->IN_ep[0].pipe_num = 0;
-	hpcd->OUT_ep[0].pipe_num = 0;
-
-#endif /* CPUSTYLE_R7S721 */
-
 	/* Init Device */
 	USB_DevInit(hpcd->Instance, & hpcd->Init);
 
@@ -5246,9 +5471,9 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 	uint_fast8_t i;
 	const int add3tx = bigbuff ? 3 : 1;	// tx fifo add places
 	const int mul2 = bigbuff ? 3 : 1;	// tx fifo buffers
-	PCD_TypeDef * const instance = hpcd->Instance;
+	PCD_TypeDef * const USBx = hpcd->Instance;
 
-	PRINTF(PSTR("usbd_fifo_initialize: power-on GRXFSIZ=%u\n"), instance->GRXFSIZ & USB_OTG_GRXFSIZ_RXFD);
+	PRINTF(PSTR("usbd_fifo_initialize: power-on GRXFSIZ=%u\n"), USBx->GRXFSIZ & USB_OTG_GRXFSIZ_RXFD);
 	// DocID028270 Rev 2 (RM0410): 41.11.3 FIFO RAM allocation
 	// DocID028270 Rev 2 (RM0410): 41.16.6 Device programming model
 
@@ -5321,7 +5546,7 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 		const uint_fast16_t size4 = nuacinpackets * (size2buff4(uacinmaxpacket) + add3tx);
 		ASSERT(last4 >= size4);
 		last4 -= size4;
-		instance->DIEPTXF [pipe - 1] = usbd_makeTXFSIZ(last4, size4);
+		USBx->DIEPTXF [pipe - 1] = usbd_makeTXFSIZ(last4, size4);
 		PRINTF(PSTR("usbd_fifo_initialize2 - UAC %u bytes: 4*(full4-last4)=%u\n"), 4 * size4, 4 * (full4 - last4));
 	}
 #if WITHUSBUACIN2
@@ -5335,7 +5560,7 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 		const uint_fast16_t size4 = nuacinpackets * (size2buff4(uacinmaxpacket) + add3tx);
 		ASSERT(last4 >= size4);
 		last4 -= size4;
-		instance->DIEPTXF [pipe - 1] = usbd_makeTXFSIZ(last4, size4);
+		USBx->DIEPTXF [pipe - 1] = usbd_makeTXFSIZ(last4, size4);
 		PRINTF(PSTR("usbd_fifo_initialize3 - UAC3 %u bytes: 4*(full4-last4)=%u\n"), 4 * size4, 4 * (full4 - last4));
 	}
 #endif /* WITHUSBUACIN2 */
@@ -5351,8 +5576,8 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 		if (bigbuff == 0 && i > 0)
 		{
 			// на маленьких контроллерах только первый USB CDC может обмениваться данными
-			instance->DIEPTXF [pipe - 1] = usbd_makeTXFSIZ(last4dummy, size4dummy);
-			instance->DIEPTXF [pipeint - 1] = usbd_makeTXFSIZ(last4dummy, size4dummy);
+			USBx->DIEPTXF [pipe - 1] = usbd_makeTXFSIZ(last4dummy, size4dummy);
+			USBx->DIEPTXF [pipeint - 1] = usbd_makeTXFSIZ(last4dummy, size4dummy);
 
 		}
 		else
@@ -5375,8 +5600,8 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 			const uint_fast16_t size4 = ncdcindatapackets * (size2buff4(VIRTUAL_COM_PORT_IN_DATA_SIZE) + add3tx);
 			ASSERT(last4 >= size4);
 			last4 -= size4;
-			instance->DIEPTXF [pipe - 1] = usbd_makeTXFSIZ(last4, size4);
-			instance->DIEPTXF [pipeint - 1] = usbd_makeTXFSIZ(last4dummy, size4dummy);
+			USBx->DIEPTXF [pipe - 1] = usbd_makeTXFSIZ(last4, size4);
+			USBx->DIEPTXF [pipeint - 1] = usbd_makeTXFSIZ(last4dummy, size4dummy);
 			PRINTF(PSTR("usbd_fifo_initialize4 CDC %u bytes: 4*(full4-last4)=%u\n"), 4 * size4, 4 * (full4 - last4));
 		}
 	}
@@ -5391,7 +5616,7 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 		const uint_fast16_t size4 = size2buff4(HIDMOUSE_INT_DATA_SIZE);
 		ASSERT(last4 >= size4);
 		last4 -= size4;
-		instance->DIEPTXF [pipe - 1] = usbd_makeTXFSIZ(last4, size4);
+		USBx->DIEPTXF [pipe - 1] = usbd_makeTXFSIZ(last4, size4);
 		PRINTF(PSTR("usbd_fifo_initialize8 HID %u bytes: 4*(full4-last4)=%u\n"), 4 * size4, 4 * (full4 - last4));
 	}
 #endif /* WITHUSBHID */
@@ -5404,7 +5629,7 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 		const uint_fast16_t size4 = 2 * (size2buff4(USB_OTG_MAX_EP0_SIZE) + add3tx);
 		ASSERT(last4 >= size4);
 		last4 -= size4;
-		instance->DIEPTXF0_HNPTXFSIZ = usbd_makeTXFSIZ(last4, size4);
+		USBx->DIEPTXF0_HNPTXFSIZ = usbd_makeTXFSIZ(last4, size4);
 		PRINTF(PSTR("usbd_fifo_initialize10 TX FIFO %u bytes: 4*(full4-last4)=%u\n"), 4 * size4, 4 * (full4 - last4));
 	}
 	/* control endpoint RX FIFO */
@@ -5423,7 +5648,7 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 
 		PRINTF(PSTR("usbd_fifo_initialize11 RX FIFO %u bytes: 4*(full4-last4)=%u bytes (last4=%u, size4=%u)\n"), 4 * size4, 4 * (full4 - last4), last4, size4);
 		ASSERT(last4 >= size4);
-		instance->GRXFSIZ = (instance->GRXFSIZ & ~ USB_OTG_GRXFSIZ_RXFD) |
+		USBx->GRXFSIZ = (USBx->GRXFSIZ & ~ USB_OTG_GRXFSIZ_RXFD) |
 			(last4 << USB_OTG_GRXFSIZ_RXFD_Pos) |	// was: size4 - то что осталось
 			0;
 		base4 += size4;
@@ -5453,8 +5678,8 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 #endif
 	}
 
-	USB_FlushRxFifo(instance);
-	USB_FlushTxFifoAll(instance);
+	USB_FlushRxFifo(USBx);
+	USB_FlushTxFifoAll(USBx);
 }
 #endif /* (CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX) */
 
@@ -5524,6 +5749,7 @@ USBD_StatusTypeDef  USBD_LL_OpenEP(
 	uint8_t  ep_type,
 	uint16_t ep_mps)
 {
+
 	HAL_PCD_EP_Open((PCD_HandleTypeDef*) pdev->pData,
 		ep_addr,
 		ep_addr & 0x7F,	// tx_fifo_num
@@ -5539,10 +5765,11 @@ USBD_StatusTypeDef  USBD_LL_OpenEP(
   * @param  ep_addr: Endpoint Number
   * @retval USBD Status
   */
-USBD_StatusTypeDef  USBD_LL_CloseEP (USBD_HandleTypeDef *pdev, uint8_t ep_addr)
+USBD_StatusTypeDef  USBD_LL_CloseEP(USBD_HandleTypeDef *pdev, uint8_t ep_addr)
 {
-  HAL_PCD_EP_Close((PCD_HandleTypeDef*) pdev->pData, ep_addr);
-  return USBD_OK;
+
+	HAL_PCD_EP_Close((PCD_HandleTypeDef*) pdev->pData, ep_addr);
+	return USBD_OK;
 }
 
 /**
@@ -5625,6 +5852,7 @@ USBD_StatusTypeDef  USBD_LL_Transmit(USBD_HandleTypeDef *pdev,
                                       const uint8_t  *pbuf,
                                       uint_fast32_t  size)
 {
+
 	HAL_PCD_EP_Transmit((PCD_HandleTypeDef*) pdev->pData, ep_addr, pbuf, size);
 	return USBD_OK;
 }
@@ -5642,6 +5870,7 @@ USBD_StatusTypeDef  USBD_LL_PrepareReceive(USBD_HandleTypeDef *pdev,
                                            uint8_t  *pbuf,
                                            uint16_t  size)
 {
+
 	HAL_PCD_EP_Receive((PCD_HandleTypeDef*) pdev->pData, ep_addr, pbuf, size);
 	return USBD_OK;
 }
@@ -10699,16 +10928,24 @@ static void board_usbd_initialize(void)
 	hardware_usbd_initialize();
 
 #if CPUSTYLE_R7S721
-#if WITHUSBUAC
+#if WITHUSBUAC && 0
 	if (WITHUSBHW_DEVICE == & USB200)
 	{
-		r7s721_usb0_dma0_dmarx_initialize();
-		r7s721_usb0_dma1_dmatx_initialize();
+#if WITHDMAHW_UACOUT
+		r7s721_usb0_dma0_dmarx_initialize(HARDWARE_USBD_PIPE_ISOC_OUT);
+#endif /* WITHDMAHW_UACOUT */
+#if WITHDMAHW_UACIN
+		r7s721_usb0_dma1_dmatx_initialize(HARDWARE_USBD_PIPE_ISOC_IN);
+#endif /* WITHDMAHW_UACIN */
 	}
 	else if (WITHUSBHW_DEVICE == & USB201)
 	{
-		r7s721_usb1_dma0_dmarx_initialize();
-		r7s721_usb1_dma1_dmatx_initialize();
+#if WITHDMAHW_UACOUT
+		r7s721_usb1_dma0_dmarx_initialize(HARDWARE_USBD_PIPE_ISOC_OUT);
+#endif /* WITHDMAHW_UACOUT */
+#if WITHDMAHW_UACIN
+		r7s721_usb1_dma1_dmatx_initialize(HARDWARE_USBD_PIPE_ISOC_IN);
+#endif /* WITHDMAHW_UACIN */
 	}
 #endif /* WITHUSBUAC */
 #endif /* CPUSTYLE_R7S721 */

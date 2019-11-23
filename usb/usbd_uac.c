@@ -215,10 +215,7 @@ static USBALIGN_BEGIN uint8_t uac_ep0databuffout [USB_OTG_MAX_EP0_SIZE] USBALIGN
 
 static USBD_StatusTypeDef USBD_UAC_DeInit(USBD_HandleTypeDef *pdev, uint_fast8_t cfgidx)
 {
-#if ! CPUSTYLE_R7S721
-	// На Renesas аудио endpoints обслуживаются контроллером DMA
 	USBD_LL_CloseEP(pdev, USBD_EP_AUDIO_IN);
-#endif /* ! CPUSTYLE_R7S721 */
 	if (uacinaddr != 0)
 	{
 		global_disableIRQ();
@@ -232,10 +229,7 @@ static USBD_StatusTypeDef USBD_UAC_DeInit(USBD_HandleTypeDef *pdev, uint_fast8_t
 
 #if WITHUSBUACIN2
 
-#if ! CPUSTYLE_R7S721
-	// На Renesas аудио endpoints обслуживаются контроллером DMA
 	USBD_LL_CloseEP(pdev, USBD_EP_RTS_IN);
-#endif /* ! CPUSTYLE_R7S721 */
 
 	if (uacinrtsaddr != 0)
 	{
@@ -248,10 +242,7 @@ static USBD_StatusTypeDef USBD_UAC_DeInit(USBD_HandleTypeDef *pdev, uint_fast8_t
 	buffers_set_uacinrtsalt(altinterfaces [INTERFACE_AUDIO_RTS]);
 #endif /* WITHUSBUACIN2 */
 
-#if ! CPUSTYLE_R7S721
-	// На Renesas аудио endpoints обслуживаются контроллером DMA
 	USBD_LL_CloseEP(pdev, USBD_EP_AUDIO_OUT);
-#endif /* ! CPUSTYLE_R7S721 */
 	//terminalsprops [TERMINAL_ID_SELECTOR_6] [AUDIO_CONTROL_UNDEFINED] = 1;
 	buffers_set_uacoutalt(altinterfaces [INTERFACE_AUDIO_SPK]);
 	uacout_buffer_stop();
@@ -742,7 +733,7 @@ static USBD_StatusTypeDef USBD_UAC_DataOut(USBD_HandleTypeDef *pdev, uint_fast8_
 	case USBD_EP_AUDIO_OUT:
 		/* UAC EP OUT */
 		// use audio data
-		uacout_buffer_save(uacoutbuff, USBD_LL_GetRxDataSize(pdev, epnum));
+		uacout_buffer_save_system(uacoutbuff, USBD_LL_GetRxDataSize(pdev, epnum));
 		/* Prepare Out endpoint to receive next audio data packet */
 		USBD_LL_PrepareReceive(pdev, USB_ENDPOINT_OUT(epnum), uacoutbuff, UAC_OUT48_DATA_SIZE);
 		break;
@@ -861,28 +852,20 @@ static USBD_StatusTypeDef USBD_UAC_Init(USBD_HandleTypeDef *pdev, uint_fast8_t c
 	buffers_set_uacinalt(altinterfaces [INTERFACE_AUDIO_MIKE]);
 	buffers_set_uacoutalt(altinterfaces [INTERFACE_AUDIO_SPK]);
 
-#if ! CPUSTYLE_R7S721
-	// На Renesas аудио endpoints обслуживаются контроллером DMA
 	/* uac Open EP IN */
 	USBD_LL_OpenEP(pdev, USBD_EP_AUDIO_IN, USBD_EP_TYPE_ISOC, usbd_getuacinmaxpacket());	// was: VIRTUAL_AUDIO_PORT_DATA_SIZE_IN
 	USBD_LL_Transmit(pdev, USBD_EP_AUDIO_IN, NULL, 0);
-#endif /* ! CPUSTYLE_R7S721 */
 
 #if WITHUSBUACIN2
 	altinterfaces [INTERFACE_AUDIO_RTS] = 0;
 	buffers_set_uacinrtsalt(altinterfaces [INTERFACE_AUDIO_RTS]);
 
-#if ! CPUSTYLE_R7S721
-	// На Renesas аудио endpoints обслуживаются контроллером DMA
 	/* uac Open EP IN */
 	USBD_LL_OpenEP(pdev, USBD_EP_RTS_IN, USBD_EP_TYPE_ISOC, usbd_getuacinrtsmaxpacket());	// was: VIRTUAL_AUDIO_PORT_DATA_SIZE_IN
 	USBD_LL_Transmit(pdev, USBD_EP_RTS_IN, NULL, 0);
-#endif /* ! CPUSTYLE_R7S721 */
 
 #endif /* WITHUSBUACIN2 */
 
-#if ! CPUSTYLE_R7S721
-	// На Renesas аудио endpoints обслуживаются контроллером DMA
 	/* UAC Open EP OUT */
 	USBD_LL_OpenEP(pdev,
 				   USBD_EP_AUDIO_OUT,
@@ -891,8 +874,6 @@ static USBD_StatusTypeDef USBD_UAC_Init(USBD_HandleTypeDef *pdev, uint_fast8_t c
 
    /* UAC Prepare Out endpoint to receive 1st packet */
 	USBD_LL_PrepareReceive(pdev, USB_ENDPOINT_OUT(USBD_EP_AUDIO_OUT), uacoutbuff, UAC_OUT48_DATA_SIZE);
-
-#endif /* ! CPUSTYLE_R7S721 */
 
 	uacout_buffer_start();
 	return USBD_OK;
