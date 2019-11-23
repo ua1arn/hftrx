@@ -3707,7 +3707,154 @@ enum
 
 	#endif /* DSTYLE_UR3LMZMOD && WITHONEATTONEAMP */
 
+#elif DSTYLE_G_X320_Y240 && WITHSPECTRUMWF
+	// DSP version - with spectrum scope
+	// TFT панель 320 * 240 ADI_3.2_AM-240320D4TOQW-T00H(R)
+	// 320*240 SF-TC240T-9370-T с контроллером ILI9341
+	// 32*15 знакомест 10*16
+	#define CHAR_W	10
+	#define CHAR_H	8
+	#define SMALLCHARH 16 /* Font height */
+
+	#if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
+		//					"012345678901234567890123"
+		#define SWRPWRMAP	"1   2   3   4  0% | 100%"
+		#define SWRMAX	(SWRMIN * 40 / 10)	// 4.0 - значение на полной шкале
+	#else
+		//					"012345678901234567890123"
+		#define POWERMAP	"0    25    50   75   100"
+		#define SWRMAP		"1   |   2  |   3   |   4"	//
+		#define SWRMAX	(SWRMIN * 40 / 10)	// 4.0 - значение на полной шкале
+	#endif
+	//						"012345678901234567890123"
+	#define SMETERMAP		"1  3  5  7  9 +20 +40 60"
+
+	enum
+	{
+		BDCV_ALLRX = 10,	// общая высота, отведенная под панораму, водопад и иные отображения
+
+		BDCO_SPMRX = 0,	// смещение спектра по вертикали в ячейках от начала общего поля
+		BDCV_SPMRX = 5,	// вертикальный размер спектра в ячейках
+
+		BDCO_WFLRX = 4,	// смещение водопада по вертикали в ячейках от начала общего поля
+		BDCV_WFLRX = 5,	// вертикальный размер водопада в ячейках
+
+		BDTH_ALLRX = 24,	// ширина зоны для отображение полосы на индикаторе
+		BDTH_RIGHTRX = 11,	// ширина индикатора плюсов
+		BDTH_LEFTRX = BDTH_ALLRX - BDTH_RIGHTRX,	// ширина индикатора баллов
+		BDTH_SPACERX = 0,
+	#if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
+		BDTH_ALLSWR = 13,
+		BDTH_SPACESWR = 2,
+		BDTH_ALLPWR = 9,
+		BDTH_SPACEPWR = 0
+	#else /* WITHSHOWSWRPWR */
+		BDTH_ALLSWR = BDTH_ALLRX,
+		BDTH_SPACESWR = BDTH_SPACERX,
+		BDTH_ALLPWR = BDTH_ALLRX,
+		BDTH_SPACEPWR = BDTH_SPACERX
+	#endif /* WITHSHOWSWRPWR */
+	};
+	enum
+	{
+		PATTERN_SPACE = 0x00,	/* очищаем место за SWR и PWR метром этим символом */
+		PATTERN_BAR_FULL = 0x7e,
+		PATTERN_BAR_HALF = 0x3c,
+		PATTERN_BAR_EMPTYFULL = 0x00,
+		PATTERN_BAR_EMPTYHALF = 0x00
+	};
+	#define SWRMAX	(SWRMIN * 40 / 10)	// 4.0 - значение на полной шкале
+
+	enum
+	{
+		DPAGE0,					// Страница, в которой отображаются основные (или все)
+		DISPLC_MODCOUNT
+	};
+	enum {
+		PG0 = REDRSUBSET(DPAGE0),
+		PGALL = PG0 | REDRSUBSET_MENU,
+		PGNOMEMU = PG0,
+		PGLATCH = PGALL | REDRSUBSET_SLEEP,	// страницы, на которых возможно отображение водопада или панорамы.
+		PGunused
+	};
+	#define DISPLC_WIDTH	8	// количество цифр в отображении частоты
+	#define DISPLC_RJ		1	// количество скрытых справа цифр в отображении частоты
+	static const FLASHMEM struct dzone dzones [] =
+	{
+		{	0,	0,	display2_pip_off,	REDRM_MODE,	PG0 | REDRSUBSET_MENU },	// Выключить PIP если на данной странице не требуется
+		{	0,	0,	display_txrxstate2, REDRM_MODE, PGALL, },
+		{	3,	0,	display_voxtune3,	REDRM_MODE, PGALL, },
+		{	7,	0,	display_att4,		REDRM_MODE, PGALL, },
+		{	12, 0,	display_pre3,		REDRM_MODE, PGALL, },
+	#if WITHDSPEXTDDC
+		{	16, 0,	display_ovf3,		REDRM_BARS, PGALL, },	// ovf/pre
+	#endif /* WITHDSPEXTDDC */
+		{	20, 0,	display_lockstate4, REDRM_MODE, PGALL, },
+		{	25, 0,	display_agc3,		REDRM_MODE, PGALL, },
+		{	29, 0,	display_rxbw3,		REDRM_MODE, PGALL, },
+
+		{	0,	3,	display_freqXbig_a, REDRM_FREQ, PGALL, },
+		{	29, 3,	display_mode3_a,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
+		//---
+		{	0,	9,	display_vfomode5,	REDRM_MODE, PGALL, },	// SPLIT
+		{	6,	9,	display_freqX_b,	REDRM_FRQB, PGALL, },
+	#if WITHUSEDUALWATCH
+		{	25, 9,	display_mainsub3,	REDRM_MODE, PGNOMEMU, },	// main/sub RX
+	#endif /* WITHUSEDUALWATCH */
+		{	29, 9,	display_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
+		//---
+		{	0,	12,	display2_legend,	REDRM_MODE, PG0, },	// Отображение оцифровки шкалы S-метра, PWR & SWR-метра
+		{	0,	15,	display2_bars,		REDRM_BARS, PG0, },	// S-METER, SWR-METER, POWER-METER
+		{	27, 15,	display_smeter5,	REDRM_BARS, PG0, },	// signal level
+
+		{	0,	18,	dsp_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
+		{	0,	18,	display2_spectrum,	REDRM_BARS, PG0, },// подготовка изображения спектра
+		{	0,	18,	display2_waterfall,	REDRM_BARS, PG0, },// подготовка изображения водопада
+		{	0,	18,	display2_colorbuff,	REDRM_BARS,	PG0, },// Отображение водопада и/или спектра
+
+		//---
+		//{	22, 25,	display_samfreqdelta8, REDRM_BARS, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
+
+	#if WITHVOLTLEVEL
+		{	0, 28,	display_voltlevelV5, REDRM_VOLT, PGALL, },	// voltmeter with "V"
+	#endif /* WITHVOLTLEVEL */
+	#if WITHCURRLEVEL
+		{	6, 28,	display_currlevelA6, REDRM_VOLT, PGALL, },	// amphermeter with "A"
+	#endif /* WITHCURRLEVEL */
+	#if defined (RTC1_TYPE)
+		{	13, 28,	display_time8,		REDRM_BARS, PGALL, },	// TIME
+	#endif /* defined (RTC1_TYPE) */
+	#if WITHUSEAUDIOREC
+		{	25, 28,	display_rec3,		REDRM_BARS, PGALL, },	// Отображение режима записи аудио фрагмента
+	#endif /* WITHUSEAUDIOREC */
+	#if WITHMENU
+		{	1 + LABELW * 0 + 0,	18,	display_multilinemenu_block_groups,	REDRM_MLBL, 	REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
+		{	1 + LABELW * 1 + 1,	18,	display_multilinemenu_block_params,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
+		{	1 + LABELW * 2 + 2,	18,	display_multilinemenu_block_vals,	REDRM_MVAL, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
+	#endif /* WITHMENU */
+	};
+
+	/* получить координаты окна с панорамой и/или водопадом. */
+	void display2_getpipparams(pipparams_t * p)
+	{
+		p->x = GRID2X(0);	// позиция верхнего левого угла в пикселях
+		p->y = GRID2Y(18);	// позиция верхнего левого угла в пикселях
+		p->w = GRID2X(CHARS2GRID(BDTH_ALLRX));	// размер по горизонтали в пикселях
+		p->h = GRID2Y(BDCV_ALLRX);				// размер по вертикали в пикселях
+		p->frame = (uintptr_t) getscratchpip();
+	}
+
+	#if WITHMENU
+		void display2_getmultimenu(multimenuwnd_t * p)
+		{
+			p->multilinemenu_max_rows = 5;
+			p->ystep = 2;	// количество ячеек разметки на одну строку меню
+			p->reverse = 1;
+		}
+	#endif /* WITHMENU */
+
 #elif DSTYLE_G_X320_Y240
+	// No DSP version - no spectrum scope
 	// TFT панель 320 * 240 ADI_3.2_AM-240320D4TOQW-T00H(R)
 	// 320*240 SF-TC240T-9370-T с контроллером ILI9341
 	// 32*15 знакомест 10*16
@@ -3831,7 +3978,7 @@ enum
 		};
 		#define SWRMAX	(SWRMIN * 40 / 10)	// 4.0 - значение на полной шкале
 
-		enum 
+		enum
 		{
 			DPAGE0,					// Страница, в которой отображаются основные (или все)
 		#if WITHIF4DSP
