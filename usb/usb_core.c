@@ -1381,25 +1381,6 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 		ASSERT(bufnumb64 <= 0x100);
 
 		USBx->PIPESEL = 0;
-
-#if 0
-		// Разрешение DMA
-		// Сперва без DREQE
-		USBx->D1FIFOSEL =
-			pipe * (1uL << USB_DnFIFOSEL_CURPIPE_SHIFT) |	// CURPIPE 0000: DCP
-			2 * (1uL << USB_DnFIFOSEL_MBW_SHIFT) |	// MBW 10: 32-bit width
-			0 * (1uL << USB_DnFIFOSEL_DREQE_SHIFT) | // DREQE 1: DMA transfer request is enabled.
-			0;
-		(void) USBx->D1FIFOSEL;
-
-		// Потом выставить DREQE
-		USBx->D1FIFOSEL =
-			pipe * (1uL << USB_DnFIFOSEL_CURPIPE_SHIFT) |	// CURPIPE 0000: DCP
-			2 * (1uL << USB_DnFIFOSEL_MBW_SHIFT) |	// MBW 10: 32-bit width
-			1 * (1uL << USB_DnFIFOSEL_DREQE_SHIFT) | // DREQE 1: DMA transfer request is enabled.
-			0;
-		(void) USBx->D1FIFOSEL;
-#endif
 	}
 #endif /* WITHUSBUAC */
 #if WITHUSBUAC
@@ -1431,25 +1412,6 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 		ASSERT(bufnumb64 <= 0x100);
 
 		USBx->PIPESEL = 0;
-
-#if 0
-		// Разрешение DMA
-		// Сперва без DREQE
-		USBx->D0FIFOSEL =
-			pipe * (1uL << USB_DnFIFOSEL_CURPIPE_SHIFT) |	// CURPIPE 0000: DCP
-			2 * (1uL << USB_DnFIFOSEL_MBW_SHIFT) |	// MBW 10: 32-bit width
-			0 * (1uL << USB_DnFIFOSEL_DREQE_SHIFT) | // DREQE 1: DMA transfer request is enabled.
-			0;
-		(void) USBx->D0FIFOSEL;
-
-		// Потом выставить DREQE
-		USBx->D0FIFOSEL =
-			pipe * (1uL << USB_DnFIFOSEL_CURPIPE_SHIFT) |	// CURPIPE 0000: DCP
-			2 * (1uL << USB_DnFIFOSEL_MBW_SHIFT) |	// MBW 10: 32-bit width
-			1 * (1uL << USB_DnFIFOSEL_DREQE_SHIFT) | // DREQE 1: DMA transfer request is enabled.
-			0;
-		(void) USBx->D0FIFOSEL;
-#endif
 	}
 #endif /* WITHUSBUAC */
 
@@ -10924,31 +10886,7 @@ static void hardware_usbd_initialize(void)
 /* вызывается при запрещённых прерываниях. */
 static void board_usbd_initialize(void)
 {
-
 	hardware_usbd_initialize();
-
-#if CPUSTYLE_R7S721
-#if WITHUSBUAC && 0
-	if (WITHUSBHW_DEVICE == & USB200)
-	{
-#if WITHDMAHW_UACOUT
-		r7s721_usb0_dma0_dmarx_initialize(HARDWARE_USBD_PIPE_ISOC_OUT);
-#endif /* WITHDMAHW_UACOUT */
-#if WITHDMAHW_UACIN
-		r7s721_usb0_dma1_dmatx_initialize(HARDWARE_USBD_PIPE_ISOC_IN);
-#endif /* WITHDMAHW_UACIN */
-	}
-	else if (WITHUSBHW_DEVICE == & USB201)
-	{
-#if WITHDMAHW_UACOUT
-		r7s721_usb1_dma0_dmarx_initialize(HARDWARE_USBD_PIPE_ISOC_OUT);
-#endif /* WITHDMAHW_UACOUT */
-#if WITHDMAHW_UACIN
-		r7s721_usb1_dma1_dmatx_initialize(HARDWARE_USBD_PIPE_ISOC_IN);
-#endif /* WITHDMAHW_UACIN */
-	}
-#endif /* WITHUSBUAC */
-#endif /* CPUSTYLE_R7S721 */
 }
 
 
