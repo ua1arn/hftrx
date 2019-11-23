@@ -101,7 +101,6 @@
 
 #endif
 
-#define FFTSizeFilters (1 << (FFTSizeFiltersM))
 
 #define FFTSizeSpectrum (1 << (FFTSizeSpectrumM))
 #define FFTSizeFilters (1 << (FFTSizeFiltersM))
