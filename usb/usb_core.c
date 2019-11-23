@@ -915,16 +915,16 @@ static uint_fast8_t USB_ReadPacketNec(PCD_TypeDef * const USBx, uint_fast8_t pip
 	switch (pipe)
 	{
 	default:
-		mbw = 0;	// MBW 00: 8-bit width
+		mbw = 0x00;	// MBW 00: 8-bit width
 		break;
 #if WITHDMAHW_UACIN
 	case HARDWARE_USBD_PIPE_ISOC_IN:
-		mbw = 2;	// MBW 10: 32-bit width
+		mbw = 0x02;	// MBW 10: 32-bit width
 		break;
 #endif /* WITHDMAHW_UACIN */
 #if WITHDMAHW_UACOUT
 	case HARDWARE_USBD_PIPE_ISOC_OUT:
-		mbw = 2;	// MBW 10: 32-bit width
+		mbw = 0x02;	// MBW 10: 32-bit width
 		break;
 #endif /* WITHNDMA_UACOUT */
 	}
@@ -932,7 +932,7 @@ static uint_fast8_t USB_ReadPacketNec(PCD_TypeDef * const USBx, uint_fast8_t pip
 	USBx->CFIFOSEL =
 		//1 * (1uL << USB_CFIFOSEL_RCNT_SHIFT) |		// RCNT
 		(pipe << USB_CFIFOSEL_CURPIPE_SHIFT) |	// CURPIPE 0000: DCP
-		mbw * USB_CFIFOSEL_MBW |	// MBW 00: 8-bit width
+		(mbw << USB_CFIFOSEL_MBW_SHIFT) |	// MBW 00: 8-bit width
 		0;
 
 	if (usbd_wait_fifo(USBx, pipe, USBD_FRDY_COUNT_READ))
@@ -950,7 +950,7 @@ static uint_fast8_t USB_ReadPacketNec(PCD_TypeDef * const USBx, uint_fast8_t pip
 	if (size == 0)
 		USBx->CFIFOCTR = USB_CFIFOCTR_BCLR;	// BCLR
 
-	if (mbw == 2)
+	if (mbw == 0x02)
 	{
 		uint32_t * data32 = (uint32_t *) data;
 		while (size --)
@@ -958,6 +958,15 @@ static uint_fast8_t USB_ReadPacketNec(PCD_TypeDef * const USBx, uint_fast8_t pip
 			* data32 ++ = USBx->CFIFO.UINT32;
 		}
 		* readcnt = count * 4;
+	}
+	else if (mbw == 0x01)
+	{
+		uint16_t * data16 = (uint16_t *) data;
+		while (size --)
+		{
+			* data16 ++ = USBx->CFIFO.UINT16 [R_IO_H]; // H=1
+		}
+		* readcnt = count * 2;
 	}
 	else
 	{
@@ -974,41 +983,18 @@ static uint_fast8_t
 USB_WritePacketNec(PCD_TypeDef * const USBx, uint_fast8_t pipe, const uint8_t * data, unsigned size)
 {
 	uint_fast8_t mbw;
-	if (pipe == 0)
-	{
-		mbw = 0;
-	}
-	else
 	switch (size & 0x03)
 	{
 	case 0:
-		mbw = 2;	// MBW 10: 32-bit width
+		mbw = 0x02;	// MBW 10: 32-bit width
 		break;
 	case 2:
-		mbw = 1;	// MBW 01: 16-bit width
+		mbw = 0x01;	// MBW 01: 16-bit width
 		break;
 	default:
-		mbw = 0;	// MBW 00: 8-bit width
+		mbw = 0x00;	// MBW 00: 8-bit width
 		break;
 	}
-
-	switch (pipe)
-	{
-	default:
-		mbw = 0;	// MBW 00: 8-bit width
-		break;
-#if WITHDMAHW_UACIN
-	case HARDWARE_USBD_PIPE_ISOC_IN:
-		mbw = 2;	// MBW 10: 32-bit width
-		break;
-#endif /* WITHDMAHW_UACIN */
-#if WITHDMAHW_UACOUT
-	case HARDWARE_USBD_PIPE_ISOC_OUT:
-		mbw = 2;	// MBW 10: 32-bit width
-		break;
-#endif /* WITHNDMA_UACOUT */
-	}
-
 	ASSERT(size == 0 || data != NULL);
 #if 0
 	if (data != NULL && size != 0)
@@ -1033,8 +1019,8 @@ USB_WritePacketNec(PCD_TypeDef * const USBx, uint_fast8_t pipe, const uint8_t * 
 	USBx->CFIFOSEL =
 		//1 * (1uL << USB_CFIFOSEL_RCNT_SHIFT) |		// RCNT
 		(pipe << USB_CFIFOSEL_CURPIPE_SHIFT) |	// CURPIPE 0000: DCP
-		mbw * USB_CFIFOSEL_MBW |	// MBW 00: 8-bit width
-		1 * USB_CFIFOSEL_ISEL_ * (pipe == 0) |	// ISEL 1: Writing to the buffer memory is selected (for DCP)
+		(mbw << USB_CFIFOSEL_MBW_SHIFT) |	// MBW 00: 8-bit width
+		(0x01 << USB_CFIFOSEL_ISEL_SHIFT_) * (pipe == 0) |	// ISEL 1: Writing to the buffer memory is selected (for DCP)
 		0;
 
 	if (usbd_wait_fifo(USBx, pipe, USBD_FRDY_COUNT_WRITE))
@@ -1043,7 +1029,7 @@ USB_WritePacketNec(PCD_TypeDef * const USBx, uint_fast8_t pipe, const uint8_t * 
 		return 1;	// error
 	}
 	ASSERT(size == 0 || data != NULL);
-	if (mbw == 2)
+	if (mbw == 0x02)
 	{
 		// 32 bit transfers
 		const uint32_t * data32 = (const uint32_t *) data;
@@ -1053,7 +1039,7 @@ USB_WritePacketNec(PCD_TypeDef * const USBx, uint_fast8_t pipe, const uint8_t * 
 			USBx->CFIFO.UINT32 = * data32 ++;
 		}
 	}
-	else if (mbw == 1)
+	else if (mbw == 0x01)
 	{
 		// 16 bit transfers
 		const uint16_t * data16 = (const uint16_t *) data;
