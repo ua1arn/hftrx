@@ -26,7 +26,7 @@ static uint_fast8_t notseq;
 #if CPUSTYLE_R7S721 && WITHUSBUAC
 	// на RENESAS для работы с изохронными ендпоинтами используется DMA
 	//#define WITHDMAHW_UACIN 1
-	#define WITHDMAHW_UACOUT 1
+	//#define WITHDMAHW_UACOUT 1
 #endif /* CPUSTYLE_R7S721 */
 
 #if CPUSTYLE_R7S721
@@ -911,11 +911,28 @@ static uint_fast8_t usbd_wait_fifo(PCD_TypeDef * const USBx, uint_fast8_t pipe, 
 // Эта функция не должна общаться с DCPCTR - она универсальная
 static uint_fast8_t USB_ReadPacketNec(PCD_TypeDef * const USBx, uint_fast8_t pipe, uint8_t * data, unsigned size, unsigned * readcnt)
 {
+	uint_fast8_t mbw;
+	switch (pipe)
+	{
+	default:
+		mbw = 0;	// MBW 00: 8-bit width
+		break;
+#if WITHDMAHW_UACIN
+	case HARDWARE_USBD_PIPE_ISOC_IN:
+		mbw = 2;	// MBW 10: 32-bit width
+		break;
+#endif /* WITHDMAHW_UACIN */
+#if WITHDMAHW_UACOUT
+	case HARDWARE_USBD_PIPE_ISOC_OUT:
+		mbw = 2;	// MBW 10: 32-bit width
+		break;
+#endif /* WITHNDMA_UACOUT */
+	}
 	//PRINTF(PSTR("USB_ReadPacketNec: pipe=%d, data=%p, size=%d\n"), (int) pipe, data, (int) size);
 	USBx->CFIFOSEL =
 		//1 * (1uL << USB_CFIFOSEL_RCNT_SHIFT) |		// RCNT
 		(pipe << USB_CFIFOSEL_CURPIPE_SHIFT) |	// CURPIPE 0000: DCP
-		0 * USB_CFIFOSEL_MBW |	// MBW 00: 8-bit width
+		mbw * USB_CFIFOSEL_MBW |	// MBW 00: 8-bit width
 		0;
 
 	if (usbd_wait_fifo(USBx, pipe, USBD_FRDY_COUNT_READ))
@@ -933,18 +950,65 @@ static uint_fast8_t USB_ReadPacketNec(PCD_TypeDef * const USBx, uint_fast8_t pip
 	if (size == 0)
 		USBx->CFIFOCTR = USB_CFIFOCTR_BCLR;	// BCLR
 
-	while (size --)
+	if (mbw == 2)
 	{
-		* data ++ = USBx->CFIFO.UINT8 [R_IO_HH]; // HH=3
+		uint32_t * data32 = (uint32_t *) data;
+		while (size --)
+		{
+			* data32 ++ = USBx->CFIFO.UINT32;
+		}
+		* readcnt = count * 4;
 	}
-
-	* readcnt = count;
+	else
+	{
+		while (size --)
+		{
+			* data ++ = USBx->CFIFO.UINT8 [R_IO_HH]; // HH=3
+		}
+		* readcnt = count;
+	}
 	return 0;	// OK
 }
 
 static uint_fast8_t
 USB_WritePacketNec(PCD_TypeDef * const USBx, uint_fast8_t pipe, const uint8_t * data, unsigned size)
 {
+	uint_fast8_t mbw;
+	if (pipe == 0)
+	{
+		mbw = 0;
+	}
+	else
+	switch (size & 0x03)
+	{
+	case 0:
+		mbw = 2;	// MBW 10: 32-bit width
+		break;
+	case 2:
+		mbw = 1;	// MBW 01: 16-bit width
+		break;
+	default:
+		mbw = 0;	// MBW 00: 8-bit width
+		break;
+	}
+
+	switch (pipe)
+	{
+	default:
+		mbw = 0;	// MBW 00: 8-bit width
+		break;
+#if WITHDMAHW_UACIN
+	case HARDWARE_USBD_PIPE_ISOC_IN:
+		mbw = 2;	// MBW 10: 32-bit width
+		break;
+#endif /* WITHDMAHW_UACIN */
+#if WITHDMAHW_UACOUT
+	case HARDWARE_USBD_PIPE_ISOC_OUT:
+		mbw = 2;	// MBW 10: 32-bit width
+		break;
+#endif /* WITHNDMA_UACOUT */
+	}
+
 	ASSERT(size == 0 || data != NULL);
 #if 0
 	if (data != NULL && size != 0)
@@ -969,7 +1033,7 @@ USB_WritePacketNec(PCD_TypeDef * const USBx, uint_fast8_t pipe, const uint8_t * 
 	USBx->CFIFOSEL =
 		//1 * (1uL << USB_CFIFOSEL_RCNT_SHIFT) |		// RCNT
 		(pipe << USB_CFIFOSEL_CURPIPE_SHIFT) |	// CURPIPE 0000: DCP
-		0 * USB_CFIFOSEL_MBW |	// MBW 00: 8-bit width
+		mbw * USB_CFIFOSEL_MBW |	// MBW 00: 8-bit width
 		1 * USB_CFIFOSEL_ISEL_ * (pipe == 0) |	// ISEL 1: Writing to the buffer memory is selected (for DCP)
 		0;
 
@@ -979,9 +1043,32 @@ USB_WritePacketNec(PCD_TypeDef * const USBx, uint_fast8_t pipe, const uint8_t * 
 		return 1;	// error
 	}
 	ASSERT(size == 0 || data != NULL);
-    while (size --)
+	if (mbw == 2)
 	{
-    	USBx->CFIFO.UINT8 [R_IO_HH] = * data ++; // HH=3
+		// 32 bit transfers
+		const uint32_t * data32 = (const uint32_t *) data;
+		size = size / 4;
+		while (size --)
+		{
+			USBx->CFIFO.UINT32 = * data32 ++;
+		}
+	}
+	else if (mbw == 1)
+	{
+		// 16 bit transfers
+		const uint16_t * data16 = (const uint16_t *) data;
+		size = size / 2;
+		while (size --)
+		{
+			USBx->CFIFO.UINT16 [R_IO_H] = * data16 ++; // R_IO_H=1
+		}
+	}
+	else
+	{
+		while (size --)
+		{
+			USBx->CFIFO.UINT8 [R_IO_HH] = * data ++; // R_IO_HH=3
+		}
 	}
     USBx->CFIFOCTR = USB_CFIFOCTR_BVAL;	// BVAL
 	return 0;	// OK
