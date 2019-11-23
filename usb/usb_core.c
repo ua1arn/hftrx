@@ -1882,7 +1882,6 @@ HAL_StatusTypeDef USB_SetCurrentMode(USB_OTG_GlobalTypeDef *USBx, USB_OTG_ModeTy
 
 static void usbd_attachdma(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t pipe)
 {
-	//return;
 	switch (pipe)
 	{
 	default: break;
@@ -1929,7 +1928,6 @@ static void usbd_attachdma(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t pipe)
 
 static void usbd_detachdma(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t pipe)
 {
-	//return;
 	switch (pipe)
 	{
 	default: break;
@@ -5678,19 +5676,6 @@ USBD_StatusTypeDef  USBD_LL_OpenEP(
 	uint8_t  ep_type,
 	uint16_t ep_mps)
 {
-	switch (ep_addr)
-	{
-	default:
-		break;
-#if WITHDMAHW_UACIN
-	case USBD_EP_AUDIO_IN:
-		  return USBD_OK;
-#endif /* WITHDMAHW_UACIN */
-#if WITHDMAHW_UACOUT
-	case USBD_EP_AUDIO_OUT:
-		  return USBD_OK;
-#endif /* WITHNDMA_UACOUT */
-	}
 
 	HAL_PCD_EP_Open((PCD_HandleTypeDef*) pdev->pData,
 		ep_addr,
@@ -5709,19 +5694,6 @@ USBD_StatusTypeDef  USBD_LL_OpenEP(
   */
 USBD_StatusTypeDef  USBD_LL_CloseEP(USBD_HandleTypeDef *pdev, uint8_t ep_addr)
 {
-	switch (ep_addr)
-	{
-	default:
-		break;
-#if WITHDMAHW_UACIN
-	case USBD_EP_AUDIO_IN:
-		  return USBD_OK;
-#endif /* WITHDMAHW_UACIN */
-#if WITHDMAHW_UACOUT
-	case USBD_EP_AUDIO_OUT:
-		  return USBD_OK;
-#endif /* WITHNDMA_UACOUT */
-	}
 
 	HAL_PCD_EP_Close((PCD_HandleTypeDef*) pdev->pData, ep_addr);
 	return USBD_OK;
@@ -5807,19 +5779,6 @@ USBD_StatusTypeDef  USBD_LL_Transmit(USBD_HandleTypeDef *pdev,
                                       const uint8_t  *pbuf,
                                       uint_fast32_t  size)
 {
-	switch (ep_addr)
-	{
-	default:
-		break;
-#if WITHDMAHW_UACIN
-	case USBD_EP_AUDIO_IN:
-		  return USBD_OK;
-#endif /* WITHDMAHW_UACIN */
-#if WITHDMAHW_UACOUT
-	case USBD_EP_AUDIO_OUT:
-		  return USBD_OK;
-#endif /* WITHNDMA_UACOUT */
-	}
 
 	HAL_PCD_EP_Transmit((PCD_HandleTypeDef*) pdev->pData, ep_addr, pbuf, size);
 	return USBD_OK;
@@ -5838,19 +5797,6 @@ USBD_StatusTypeDef  USBD_LL_PrepareReceive(USBD_HandleTypeDef *pdev,
                                            uint8_t  *pbuf,
                                            uint16_t  size)
 {
-	switch (ep_addr)
-	{
-	default:
-		break;
-#if WITHDMAHW_UACIN
-	case USBD_EP_AUDIO_IN:
-		  return USBD_OK;
-#endif /* WITHDMAHW_UACIN */
-#if WITHDMAHW_UACOUT
-	case USBD_EP_AUDIO_OUT:
-		  return USBD_OK;
-#endif /* WITHNDMA_UACOUT */
-	}
 
 	HAL_PCD_EP_Receive((PCD_HandleTypeDef*) pdev->pData, ep_addr, pbuf, size);
 	return USBD_OK;
