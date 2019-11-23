@@ -279,7 +279,7 @@ static unsigned USBD_UAC1_FeatureUnit_req(
 		//PRINTF(PSTR("USBD_UAC1_FeatureUnit_req: AUDIO_REQUEST_SET_CUR: interfacev=%u,  terminal=%u, CS=%d, CN=%d, value=%d\n"), interfacev, terminalID, CS, CN, val8);
 		return 0;
 	}
-	if (CS == AUDIO_VOLUME_CONTROL)
+	else if (CS == AUDIO_VOLUME_CONTROL)
 	{
 		// Volume control
 		switch (req->bRequest)
@@ -816,6 +816,7 @@ static USBD_StatusTypeDef USBD_UAC_DataIn(USBD_HandleTypeDef *pdev, uint_fast8_t
 			USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), NULL, 0);
 		}
 		break;
+
 #if WITHUSBUACIN2
 	case ((USBD_EP_RTS_IN) & 0x7F):
 		if (uacinrtsaddr != 0)
@@ -867,13 +868,9 @@ static USBD_StatusTypeDef USBD_UAC_Init(USBD_HandleTypeDef *pdev, uint_fast8_t c
 #endif /* WITHUSBUACIN2 */
 
 	/* UAC Open EP OUT */
-	USBD_LL_OpenEP(pdev,
-				   USBD_EP_AUDIO_OUT,
-				   USBD_EP_TYPE_ISOC,
-				   UAC_OUT48_DATA_SIZE);
-
+	USBD_LL_OpenEP(pdev, USBD_EP_AUDIO_OUT, USBD_EP_TYPE_ISOC, UAC_OUT48_DATA_SIZE);
    /* UAC Prepare Out endpoint to receive 1st packet */
-	USBD_LL_PrepareReceive(pdev, USB_ENDPOINT_OUT(USBD_EP_AUDIO_OUT), uacoutbuff, UAC_OUT48_DATA_SIZE);
+	USBD_LL_PrepareReceive(pdev, USBD_EP_AUDIO_OUT, uacoutbuff, UAC_OUT48_DATA_SIZE);
 
 	uacout_buffer_start();
 	return USBD_OK;
