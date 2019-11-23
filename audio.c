@@ -3938,7 +3938,7 @@ static RAMFUNC FLOAT_t arctan2(FLOAT_t y, FLOAT_t x)
 //////////////////////////
 
 // Демодуляция FM (без арктангенса).
-static RAMFUNC ncoftwi_t demodulator_FM(
+static RAMFUNC ncoftwi_t demodulator_FMnew(
 	FLOAT32P_t vp1,
 	const uint_fast8_t pathi,				// 0/1: main_RX/sub_RX
 	FLOAT_t sigpower
@@ -3970,7 +3970,7 @@ static RAMFUNC ncoftwi_t demodulator_FM(
 }
 
 // Демодуляция FM
-static RAMFUNC ncoftwi_t demodulator_FMold(
+static RAMFUNC ncoftwi_t demodulator_FM(
 	FLOAT32P_t vp1,
 	const uint_fast8_t pathi,				// 0/1: main_RX/sub_RX
 	FLOAT_t sigpower
@@ -4301,7 +4301,7 @@ static RAMFUNC_NONILINE FLOAT_t baseband_demodulator(
 #endif /* WITHMODEM */
 
 	case DSPCTL_MODE_RX_NFM:
-		if (DUALRXFLT || pathi == 0)
+		if (/*DUALRXFLT || */ pathi == 0)
 		{
 			// Демодуляция NBFM
 			const FLOAT_t sigpower = agc_getsigpower(vp0f);
