@@ -23,54 +23,13 @@
 
 static uint_fast8_t notseq;
 
-#if CPUSTYLE_R7S721
+#if CPUSTYLE_R7S721 && WITHUSBUAC
 	// на RENESAS для работы с изохронными ендпоинтами используется DMA
 	//#define WITHDMAHW_UACIN 1
 	//#define WITHDMAHW_UACOUT 1
 #endif /* CPUSTYLE_R7S721 */
 
 #if CPUSTYLE_R7S721
-
-struct epassignments { uint8_t pipe, ep; };
-
-// В DCP разрешены BRDY, BEMP
-
-// PIEPEs, в которых разрешается прерывание NRDY (все кроме DCP)
-static const struct epassignments usbd_usedpipes [] =
-{
-#if WITHUSBUAC
-	{	HARDWARE_USBD_PIPE_ISOC_OUT,	USBD_EP_AUDIO_OUT, },		// ISOC OUT Аудиоданные от компьютера в TRX - D0FIFOB0
-	{	HARDWARE_USBD_PIPE_ISOC_IN,		USBD_EP_AUDIO_IN, },		// ISOC IN Аудиоданные в компьютер из TRX - D0FIFOB1
-#endif /* WITHUSBUAC */
-#if WITHUSBCDC
-	{	HARDWARE_USBD_PIPE_CDC_OUT,		USBD_EP_CDC_OUT, },		// CDC OUT Данные ком-порта от компьютера в TRX
-	{	HARDWARE_USBD_PIPE_CDC_IN,		USBD_EP_CDC_IN, },		// CDC IN Данные ком-порта в компьютер из TRX
-	{	HARDWARE_USBD_PIPE_CDC_INT,		USBD_EP_CDC_INT, },
-	{	HARDWARE_USBD_PIPE_CDC_OUTb,	USBD_EP_CDC_OUTb, },	// CDC OUT dummy interfacei
-	{	HARDWARE_USBD_PIPE_CDC_INb,		USBD_EP_CDC_INb, },		// CDC IN dummy interfacei
-	{	HARDWARE_USBD_PIPE_CDC_INTb,	USBD_EP_CDC_INTb, },
-#endif /* WITHUSBCDC */
-};
-
-// PIEPEs, в которых разрешается прерывание BRDY (все кроме DCP)
-static const struct epassignments brdyenbpipes2 [] =
-{
-	//{ 0x00, 0x00 },		// DCP
-#if WITHUSBUAC
-	#if ! WITHDMAHW_UACOUT
-		{	HARDWARE_USBD_PIPE_ISOC_OUT,	USBD_EP_AUDIO_OUT, },		// ISOC OUT Аудиоданные от компьютера в TRX - D0FIFOB0
-	#endif /* ! WITHDMAHW_UACOUT */
-	#if ! WITHDMAHW_UACIN
-		{	HARDWARE_USBD_PIPE_ISOC_IN,		USBD_EP_AUDIO_IN, },		// ISOC IN Аудиоданные в компьютер из TRX - D0FIFOB1
-	#endif /* ! WITHDMAHW_UACIN */
-#endif /* WITHUSBUAC */
-#if WITHUSBCDC
-	{ HARDWARE_USBD_PIPE_CDC_OUT, USBD_EP_CDC_OUT },		// CDC OUT Данные ком-порта от компьютера в TRX
-	{ HARDWARE_USBD_PIPE_CDC_IN, USBD_EP_CDC_IN },		// CDC IN Данные ком-порта в компьютер из TRX
-	{ HARDWARE_USBD_PIPE_CDC_OUTb, USBD_EP_CDC_OUTb },	// CDC OUT dummy interfacei
-	{ HARDWARE_USBD_PIPE_CDC_INb, USBD_EP_CDC_INb },		// CDC IN dummy interfacei
-#endif /* WITHUSBCDC */
-};
 
 static uint_fast8_t
 usbd_epaddr2pipe(uint_fast8_t ep_addr)
@@ -93,6 +52,47 @@ usbd_epaddr2pipe(uint_fast8_t ep_addr)
 	case USBD_EP_CDC_OUTb:	return HARDWARE_USBD_PIPE_CDC_OUTb;
 	case USBD_EP_CDC_INb:	return HARDWARE_USBD_PIPE_CDC_INb;
 	case USBD_EP_CDC_INTb:	return HARDWARE_USBD_PIPE_CDC_INTb;
+#endif /* WITHUSBCDC */
+	}
+}
+
+static uint_fast8_t usbd_is_dmapipe(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t pipe)
+{
+	switch (pipe)
+	{
+	default: break;
+#if WITHDMAHW_UACIN
+	case HARDWARE_USBD_PIPE_ISOC_IN:
+		  return 1;
+#endif /* WITHDMAHW_UACIN */
+#if WITHDMAHW_UACOUT
+	case HARDWARE_USBD_PIPE_ISOC_OUT:
+		  return 1;
+#endif /* WITHNDMA_UACOUT */
+	}
+	return 0;
+}
+
+// DCP (PIPE0) как аргумент недопустим
+static uint_fast8_t
+usbd_pipe2epaddr(uint_fast8_t pipe)
+{
+	switch (pipe)
+	{
+	default:
+		ASSERT(0);
+		return 0;
+#if WITHUSBUAC
+	case HARDWARE_USBD_PIPE_ISOC_OUT: return USBD_EP_AUDIO_OUT;
+	case HARDWARE_USBD_PIPE_ISOC_IN: return USBD_EP_AUDIO_IN;
+#endif /* WITHUSBUAC */
+#if WITHUSBCDC
+	case HARDWARE_USBD_PIPE_CDC_OUT: return USBD_EP_CDC_OUT;
+	case HARDWARE_USBD_PIPE_CDC_IN: return USBD_EP_CDC_IN;
+	case HARDWARE_USBD_PIPE_CDC_INT: return USBD_EP_CDC_INT;
+	case HARDWARE_USBD_PIPE_CDC_OUTb: return USBD_EP_CDC_OUTb;
+	case HARDWARE_USBD_PIPE_CDC_INb: return USBD_EP_CDC_INb;
+	case HARDWARE_USBD_PIPE_CDC_INTb: return USBD_EP_CDC_INTb;
 #endif /* WITHUSBCDC */
 	}
 }
@@ -288,15 +288,17 @@ static void RAMFUNC_NONILINE r7s721_usbX_dma1_dmatx_handler(void)
 // DMA по передаче USB0 DMA1
 // Use arm_hardware_flush
 
-static void r7s721_usb0_dma1_dmatx_initialize(void)
+static void r7s721_usb0_dma1_dmatx_initialize(uint_fast8_t pipe)
 {
+	USB_OTG_GlobalTypeDef * const USBx = & USB200;
+
 	enum { id = 12 };	// 12: DMAC12
 	// DMAC12
 	/* Set Source Start Address */
 
     /* Set Destination Start Address */
-    DMAC12.N0DA_n = (uintptr_t) & USB200.D1FIFO.UINT32;	// Fixed destination address
-    //DMAC12.N1DA_n = (uintptr_t) & USB200.D1FIFO.UINT32;	// Fixed destination address
+    DMAC12.N0DA_n = (uintptr_t) & USBx->D1FIFO.UINT32;	// Fixed destination address
+    //DMAC12.N1DA_n = (uintptr_t) & USBx->D1FIFO.UINT32;	// Fixed destination address
 
     /* Set Transfer Size */
     //DMAC12.N0TB_n = DMABUFFSIZE16 * sizeof (int16_t);	// размер в байтах
@@ -342,6 +344,25 @@ static void r7s721_usb0_dma1_dmatx_initialize(void)
 		1 * (1U << 0) |		// PR		1: Round robin mode
 		0;
 
+#if 0
+	// Разрешение DMA
+	// Сперва без DREQE
+	USBx->D1FIFOSEL =
+		pipe * (1uL << USB_DnFIFOSEL_CURPIPE_SHIFT) |	// CURPIPE 0000: DCP
+		2 * (1uL << USB_DnFIFOSEL_MBW_SHIFT) |	// MBW 10: 32-bit width
+		0 * (1uL << USB_DnFIFOSEL_DREQE_SHIFT) | // DREQE 1: DMA transfer request is enabled.
+		0;
+	(void) USBx->D1FIFOSEL;
+
+	// Потом выставить DREQE
+	USBx->D1FIFOSEL =
+		pipe * (1uL << USB_DnFIFOSEL_CURPIPE_SHIFT) |	// CURPIPE 0000: DCP
+		2 * (1uL << USB_DnFIFOSEL_MBW_SHIFT) |	// MBW 10: 32-bit width
+		1 * (1uL << USB_DnFIFOSEL_DREQE_SHIFT) | // DREQE 1: DMA transfer request is enabled.
+		0;
+	(void) USBx->D1FIFOSEL;
+#endif
+
 	arm_hardware_set_handler_realtime(DMAINT12_IRQn, r7s721_usbX_dma1_dmatx_handler);
 
 	DMAC12.CHCTRL_n = DMAC12_CHCTRL_n_SWRST;		// SWRST
@@ -353,15 +374,17 @@ static void r7s721_usb0_dma1_dmatx_initialize(void)
 // DMA по передаче USB1 DMA1
 // Use arm_hardware_flush
 
-static void r7s721_usb1_dma1_dmatx_initialize(void)
+static void r7s721_usb1_dma1_dmatx_initialize(uint_fast8_t pipe)
 {
+	USB_OTG_GlobalTypeDef * const USBx = & USB201;
+
 	enum { id = 12 };	// 12: DMAC12
 	// DMAC12
 	/* Set Source Start Address */
 
     /* Set Destination Start Address */
-    DMAC12.N0DA_n = (uintptr_t) & USB201.D1FIFO.UINT32;	// Fixed destination address
-    //DMAC12.N1DA_n = (uintptr_t) & USB201.D1FIFO.UINT32;	// Fixed destination address
+    DMAC12.N0DA_n = (uintptr_t) & USBx->D1FIFO.UINT32;	// Fixed destination address
+    //DMAC12.N1DA_n = (uintptr_t) & USBx->D1FIFO.UINT32;	// Fixed destination address
 
     /* Set Transfer Size */
     //DMAC12.N0TB_n = DMABUFFSIZE16 * sizeof (int16_t);	// размер в байтах
@@ -407,6 +430,25 @@ static void r7s721_usb1_dma1_dmatx_initialize(void)
 		1 * (1U << 0) |		// PR		1: Round robin mode
 		0;
 
+
+#if 0
+	// Разрешение DMA
+	// Сперва без DREQE
+	USBx->D1FIFOSEL =
+		pipe * (1uL << USB_DnFIFOSEL_CURPIPE_SHIFT) |	// CURPIPE 0000: DCP
+		2 * (1uL << USB_DnFIFOSEL_MBW_SHIFT) |	// MBW 10: 32-bit width
+		0 * (1uL << USB_DnFIFOSEL_DREQE_SHIFT) | // DREQE 1: DMA transfer request is enabled.
+		0;
+	(void) USBx->D1FIFOSEL;
+
+	// Потом выставить DREQE
+	USBx->D1FIFOSEL =
+		pipe * (1uL << USB_DnFIFOSEL_CURPIPE_SHIFT) |	// CURPIPE 0000: DCP
+		2 * (1uL << USB_DnFIFOSEL_MBW_SHIFT) |	// MBW 10: 32-bit width
+		1 * (1uL << USB_DnFIFOSEL_DREQE_SHIFT) | // DREQE 1: DMA transfer request is enabled.
+		0;
+	(void) USBx->D1FIFOSEL;
+#endif
 	arm_hardware_set_handler_realtime(DMAINT12_IRQn, r7s721_usbX_dma1_dmatx_handler);
 
 	DMAC12.CHCTRL_n = DMAC12_CHCTRL_n_SWRST;		// SWRST
@@ -414,6 +456,17 @@ static void r7s721_usb1_dma1_dmatx_initialize(void)
 	//DMAC12.CHCTRL_n = 1 * (1U << 0);		// SETEN
 }
 
+static void r7s721_usb0_dma1_dmatx_stop(uint_fast8_t pipe)
+{
+	USB_OTG_GlobalTypeDef * const USBx = & USB200;
+	USBx->D1FIFOSEL = 0;
+}
+
+static void r7s721_usb1_dma1_dmatx_stop(uint_fast8_t pipe)
+{
+	USB_OTG_GlobalTypeDef * const USBx = & USB201;
+	USBx->D1FIFOSEL = 0;
+}
 
 #else /* WITHDMAHW_UACIN */
 
@@ -460,8 +513,10 @@ static RAMFUNC_NONILINE void r7s721_usbX_dma0_dmarx_handler(void)
 
 // USB AUDIO
 // DMA по приёму usb0_dma0
-static void r7s721_usb0_dma0_dmarx_initialize(void)
+static void r7s721_usb0_dma0_dmarx_initialize(uint_fast8_t pipe)
 {
+	USB_OTG_GlobalTypeDef * const USBx = & USB200;
+
 	arm_hardware_flush_invalidate((uintptr_t) uacoutbuff0, UAC_OUT48_DATA_SIZE);
 	arm_hardware_flush_invalidate((uintptr_t) uacoutbuff1, UAC_OUT48_DATA_SIZE);
 
@@ -469,8 +524,8 @@ static void r7s721_usb0_dma0_dmarx_initialize(void)
 	// DMAC13
 	/* Set Source Start Address */
 	/* регистры USB PIPE (HARDWARE_USBD_PIPE_ISOC_OUT) */
-    DMAC13.N0SA_n = (uintptr_t) & USB200.D0FIFO.UINT32;	// Fixed source address
-    DMAC13.N1SA_n = (uintptr_t) & USB200.D0FIFO.UINT32;	// Fixed source address
+    DMAC13.N0SA_n = (uintptr_t) & USBx->D0FIFO.UINT32;	// Fixed source address
+    DMAC13.N1SA_n = (uintptr_t) & USBx->D0FIFO.UINT32;	// Fixed source address
 
 	/* Set Destination Start Address */
 	DMAC13.N0DA_n = (uintptr_t) uacoutbuff0;
@@ -520,17 +575,38 @@ static void r7s721_usb0_dma0_dmarx_initialize(void)
 		1 * (1U << 0) |		// PR		1: Round robin mode
 		0;
 
+#if 0
+	// Разрешение DMA
+	// Сперва без DREQE
+	USBx->D0FIFOSEL =
+		pipe * (1uL << USB_DnFIFOSEL_CURPIPE_SHIFT) |	// CURPIPE 0000: DCP
+		2 * (1uL << USB_DnFIFOSEL_MBW_SHIFT) |	// MBW 10: 32-bit width
+		0 * (1uL << USB_DnFIFOSEL_DREQE_SHIFT) | // DREQE 1: DMA transfer request is enabled.
+		0;
+	(void) USBx->D0FIFOSEL;
+
+	// Потом выставить DREQE
+	USBx->D0FIFOSEL =
+		pipe * (1uL << USB_DnFIFOSEL_CURPIPE_SHIFT) |	// CURPIPE 0000: DCP
+		2 * (1uL << USB_DnFIFOSEL_MBW_SHIFT) |	// MBW 10: 32-bit width
+		1 * (1uL << USB_DnFIFOSEL_DREQE_SHIFT) | // DREQE 1: DMA transfer request is enabled.
+		0;
+	(void) USBx->D0FIFOSEL;
+#endif
+
 	arm_hardware_set_handler_realtime(DMAINT13_IRQn, r7s721_usbX_dma0_dmarx_handler);
 
-	DMAC13.CHCTRL_n = 1 * (1U << 3);		// SWRST
-	DMAC13.CHCTRL_n = 1 * (1U << 17);	// CLRINTMSK
-	DMAC13.CHCTRL_n = 1 * (1U << 0);		// SETEN
+	DMAC13.CHCTRL_n = DMAC13_CHCTRL_n_SWRST;		// SWRST
+	DMAC13.CHCTRL_n = DMAC13_CHCTRL_n_CLRINTMSK;	// CLRINTMSK
+	DMAC13.CHCTRL_n = DMAC13_CHCTRL_n_SETEN;		// SETEN
 }
 
 // USB AUDIO
 // DMA по приёму usb0_dma0
-static void r7s721_usb1_dma0_dmarx_initialize(void)
+static void r7s721_usb1_dma0_dmarx_initialize(uint_fast8_t pipe)
 {
+	USB_OTG_GlobalTypeDef * const USBx = & USB201;
+
 	arm_hardware_flush_invalidate((uintptr_t) uacoutbuff0, UAC_OUT48_DATA_SIZE);
 	arm_hardware_flush_invalidate((uintptr_t) uacoutbuff1, UAC_OUT48_DATA_SIZE);
 
@@ -538,8 +614,8 @@ static void r7s721_usb1_dma0_dmarx_initialize(void)
 	// DMAC13
 	/* Set Source Start Address */
 	/* регистры USB PIPE (HARDWARE_USBD_PIPE_ISOC_OUT) */
-    DMAC13.N0SA_n = (uintptr_t) & USB201.D0FIFO.UINT32;	// Fixed source address
-    DMAC13.N1SA_n = (uintptr_t) & USB201.D0FIFO.UINT32;	// Fixed source address
+    DMAC13.N0SA_n = (uintptr_t) & USBx->D0FIFO.UINT32;	// Fixed source address
+    DMAC13.N1SA_n = (uintptr_t) & USBx->D0FIFO.UINT32;	// Fixed source address
 
 	/* Set Destination Start Address */
 	DMAC13.N0DA_n = (uintptr_t) uacoutbuff0;
@@ -588,12 +664,42 @@ static void r7s721_usb1_dma0_dmarx_initialize(void)
 		//1 * (1U << 1) |		// LVINT	1: Level output
 		1 * (1U << 0) |		// PR		1: Round robin mode
 		0;
+#if 0
+	// Разрешение DMA
+	// Сперва без DREQE
+	USBx->D0FIFOSEL =
+		pipe * (1uL << USB_DnFIFOSEL_CURPIPE_SHIFT) |	// CURPIPE 0000: DCP
+		2 * (1uL << USB_DnFIFOSEL_MBW_SHIFT) |	// MBW 10: 32-bit width
+		0 * (1uL << USB_DnFIFOSEL_DREQE_SHIFT) | // DREQE 1: DMA transfer request is enabled.
+		0;
+	(void) USBx->D0FIFOSEL;
+
+	// Потом выставить DREQE
+	USBx->D0FIFOSEL =
+		pipe * (1uL << USB_DnFIFOSEL_CURPIPE_SHIFT) |	// CURPIPE 0000: DCP
+		2 * (1uL << USB_DnFIFOSEL_MBW_SHIFT) |	// MBW 10: 32-bit width
+		1 * (1uL << USB_DnFIFOSEL_DREQE_SHIFT) | // DREQE 1: DMA transfer request is enabled.
+		0;
+	(void) USBx->D0FIFOSEL;
+#endif
 
     arm_hardware_set_handler_realtime(DMAINT13_IRQn, r7s721_usbX_dma0_dmarx_handler);
 
-	DMAC13.CHCTRL_n = 1 * (1U << 3);		// SWRST
-	DMAC13.CHCTRL_n = 1 * (1U << 17);	// CLRINTMSK
-	DMAC13.CHCTRL_n = 1 * (1U << 0);		// SETEN
+	DMAC13.CHCTRL_n = DMAC13_CHCTRL_n_SWRST;		// SWRST
+	DMAC13.CHCTRL_n = DMAC13_CHCTRL_n_CLRINTMSK;	// CLRINTMSK
+	DMAC13.CHCTRL_n = DMAC13_CHCTRL_n_SETEN;		// SETEN
+}
+
+static void r7s721_usb0_dma0_dmarx_stop(uint_fast8_t pipe)
+{
+	USB_OTG_GlobalTypeDef * const USBx = & USB200;
+	USBx->D0FIFOSEL = 0;
+}
+
+static void r7s721_usb1_dma0_dmarx_stop(uint_fast8_t pipe)
+{
+	USB_OTG_GlobalTypeDef * const USBx = & USB201;
+	USBx->D0FIFOSEL = 0;
 }
 
 #endif /* WITHDMAHW_UACOUT */
@@ -1202,6 +1308,7 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 
 		USBx->PIPESEL = 0;
 
+#if 1
 		// Разрешение DMA
 		// Сперва без DREQE
 		USBx->D1FIFOSEL =
@@ -1218,6 +1325,7 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 			1 * (1uL << USB_DnFIFOSEL_DREQE_SHIFT) | // DREQE 1: DMA transfer request is enabled.
 			0;
 		(void) USBx->D1FIFOSEL;
+#endif
 	}
 #endif /* WITHUSBUAC */
 #if WITHUSBUAC
@@ -1249,6 +1357,8 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 		ASSERT(bufnumb64 <= 0x100);
 
 		USBx->PIPESEL = 0;
+
+#if 1
 		// Разрешение DMA
 		// Сперва без DREQE
 		USBx->D0FIFOSEL =
@@ -1265,6 +1375,7 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 			1 * (1uL << USB_DnFIFOSEL_DREQE_SHIFT) | // DREQE 1: DMA transfer request is enabled.
 			0;
 		(void) USBx->D0FIFOSEL;
+#endif
 	}
 #endif /* WITHUSBUAC */
 
@@ -1381,12 +1492,12 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 		  	}
 		}
 
-		for (i = 0; i < sizeof brdyenbpipes2 / sizeof brdyenbpipes2 [0]; ++ i)
+		for (i = 1; i < 16; ++ i)
 		{
-			const uint_fast8_t pipe = brdyenbpipes2 [i].pipe;
-			const uint_fast8_t epnt = brdyenbpipes2 [i].ep;
+			const uint_fast8_t pipe = i;
 			if ((brdysts & (1U << pipe)) != 0)
 			{
+				const uint_fast8_t epnt = usbd_pipe2epaddr(pipe);
 				if ((epnt & 0x80) != 0)
 				{
 					USB_OTG_EPTypeDef * const ep = & hpcd->IN_ep [epnt & 0x7F];
@@ -1398,7 +1509,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 				{
 					USB_OTG_EPTypeDef * const ep = & hpcd->OUT_ep [epnt];
 				  	unsigned bcnt;
-				  	if (USB_ReadPacketNec(USBx, usbd_epaddr2pipe(epnt), ep->xfer_buff, ep->xfer_len - ep->xfer_count, & bcnt) == 0)
+				  	if (USB_ReadPacketNec(USBx, pipe, ep->xfer_buff, ep->xfer_len - ep->xfer_count, & bcnt) == 0)
 				  	{
 						ep->xfer_buff += bcnt;
 						ep->xfer_count += bcnt;
@@ -1767,6 +1878,100 @@ HAL_StatusTypeDef USB_SetCurrentMode(USB_OTG_GlobalTypeDef *USBx, USB_OTG_ModeTy
 
 	return HAL_OK;
 }
+
+static void usbd_attachdma(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t pipe)
+{
+	return;
+	switch (pipe)
+	{
+	default: break;
+#if WITHDMAHW_UACIN
+	case HARDWARE_USBD_PIPE_ISOC_IN:
+		if (USBx == & USB200)
+		{
+			// USB0 TX DMA
+			r7s721_usb0_dma1_dmatx_initialize(pipe);
+		}
+		else if (USBx == & USB201)
+		{
+			// USB1 TX DMA
+			r7s721_usb1_dma1_dmatx_initialize(pipe);
+		}
+		else
+		{
+			ASSERT(0);
+		}
+		break;
+#endif /* WITHDMAHW_UACIN */
+#if WITHDMAHW_UACOUT
+	case HARDWARE_USBD_PIPE_ISOC_OUT:
+		if (USBx == & USB200)
+		{
+			// USB0 RX DMA
+			r7s721_usb0_dma0_dmarx_initialize(pipe);
+
+		}
+		else if (USBx == & USB201)
+		{
+			// USB1 RX DMA
+			r7s721_usb1_dma0_dmarx_initialize(pipe);
+
+		}
+		else
+		{
+			ASSERT(0);
+		}
+		break;
+#endif /* WITHNDMA_UACOUT */
+	}
+}
+
+static void usbd_detachdma(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t pipe)
+{
+	return;
+	switch (pipe)
+	{
+	default: break;
+#if WITHDMAHW_UACIN
+	case HARDWARE_USBD_PIPE_ISOC_IN:
+		if (USBx == & USB200)
+		{
+			// USB0 TX DMA
+			r7s721_usb0_dma1_dmatx_stop(pipe);
+		}
+		else if (USBx == & USB201)
+		{
+			// USB1 TX DMA
+			r7s721_usb1_dma1_dmatx_stop(pipe);
+		}
+		else
+		{
+			ASSERT(0);
+		}
+		break;
+#endif /* WITHDMAHW_UACIN */
+#if WITHDMAHW_UACOUT
+	case HARDWARE_USBD_PIPE_ISOC_OUT:
+		if (USBx == & USB200)
+		{
+			// USB0 RX DMA
+			r7s721_usb0_dma0_dmarx_stop(pipe);
+
+		}
+		else if (USBx == & USB201)
+		{
+			// USB1 RX DMA
+			r7s721_usb1_dma0_dmarx_stop(pipe);
+
+		}
+		else
+		{
+			ASSERT(0);
+		}
+		break;
+#endif /* WITHNDMA_UACOUT */
+	}
+}
 /**
   * @brief  Activate and configure an endpoint
   * @param  USBx : Selected device
@@ -1789,8 +1994,16 @@ HAL_StatusTypeDef USB_ActivateEndpoint(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTy
 	* PIPEnCTR = 0x0001;	// STALL->BUF
 
 	USBx->NRDYENB |= (1uL << pipe);
-	// В endpoints, задействованных в DMA обмене, не разрешать.
-	USBx->BRDYENB |= (1uL << pipe);	// Прерывание по заполненности приёмного (OUT) буфера
+	if (usbd_is_dmapipe(USBx, pipe))
+	{
+		usbd_attachdma(USBx, pipe);
+	}
+	else
+	{
+		// В endpoints, задействованных в DMA обмене, не разрешать.
+		USBx->BRDYENB |= (1uL << pipe);	// Прерывание по заполненности приёмного (OUT) буфера
+
+	}
 
 	if (pipe == 0)
 	{
@@ -1830,6 +2043,10 @@ HAL_StatusTypeDef USB_DeactivateEndpoint(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EP
 	USBx->NRDYENB &= ~ (1uL << pipe);	// Прерывание по заполненности приёмного (OUT) буфера
 	USBx->BRDYENB &= ~ (1uL << pipe);	// Прерывание по заполненности приёмного (OUT) буфера
 	USBx->BEMPENB &= ~ (1uL << pipe);	// Прерывание окончания передачи передающего (IN) буфера
+	if (usbd_is_dmapipe(USBx, pipe))
+	{
+		usbd_detachdma(USBx, pipe);
+	}
 	return HAL_OK;
 }
 
@@ -10691,23 +10908,23 @@ static void board_usbd_initialize(void)
 	hardware_usbd_initialize();
 
 #if CPUSTYLE_R7S721
-#if WITHUSBUAC
+#if WITHUSBUAC && 1
 	if (WITHUSBHW_DEVICE == & USB200)
 	{
 #if WITHDMAHW_UACOUT
-		r7s721_usb0_dma0_dmarx_initialize();
+		r7s721_usb0_dma0_dmarx_initialize(HARDWARE_USBD_PIPE_ISOC_OUT);
 #endif /* WITHDMAHW_UACOUT */
 #if WITHDMAHW_UACIN
-		r7s721_usb0_dma1_dmatx_initialize();
+		r7s721_usb0_dma1_dmatx_initialize(HARDWARE_USBD_PIPE_ISOC_IN);
 #endif /* WITHDMAHW_UACIN */
 	}
 	else if (WITHUSBHW_DEVICE == & USB201)
 	{
 #if WITHDMAHW_UACOUT
-		r7s721_usb1_dma0_dmarx_initialize();
+		r7s721_usb1_dma0_dmarx_initialize(HARDWARE_USBD_PIPE_ISOC_OUT);
 #endif /* WITHDMAHW_UACOUT */
 #if WITHDMAHW_UACIN
-		r7s721_usb1_dma1_dmatx_initialize();
+		r7s721_usb1_dma1_dmatx_initialize(HARDWARE_USBD_PIPE_ISOC_IN);
 #endif /* WITHDMAHW_UACIN */
 	}
 #endif /* WITHUSBUAC */
