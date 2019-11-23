@@ -25,8 +25,8 @@ static uint_fast8_t notseq;
 
 #if CPUSTYLE_R7S721 && WITHUSBUAC
 	// на RENESAS для работы с изохронными ендпоинтами используется DMA
-	//#define WITHDMAHW_UACIN 1
-	//#define WITHDMAHW_UACOUT 1
+	#define WITHDMAHW_UACIN 1
+	#define WITHDMAHW_UACOUT 1
 #endif /* CPUSTYLE_R7S721 */
 
 #if CPUSTYLE_R7S721
@@ -344,7 +344,7 @@ static void r7s721_usb0_dma1_dmatx_initialize(uint_fast8_t pipe)
 		1 * (1U << 0) |		// PR		1: Round robin mode
 		0;
 
-#if 0
+#if 1
 	// Разрешение DMA
 	// Сперва без DREQE
 	USBx->D1FIFOSEL =
@@ -431,7 +431,7 @@ static void r7s721_usb1_dma1_dmatx_initialize(uint_fast8_t pipe)
 		0;
 
 
-#if 0
+#if 1
 	// Разрешение DMA
 	// Сперва без DREQE
 	USBx->D1FIFOSEL =
@@ -575,7 +575,7 @@ static void r7s721_usb0_dma0_dmarx_initialize(uint_fast8_t pipe)
 		1 * (1U << 0) |		// PR		1: Round robin mode
 		0;
 
-#if 0
+#if 1
 	// Разрешение DMA
 	// Сперва без DREQE
 	USBx->D0FIFOSEL =
@@ -664,7 +664,8 @@ static void r7s721_usb1_dma0_dmarx_initialize(uint_fast8_t pipe)
 		//1 * (1U << 1) |		// LVINT	1: Level output
 		1 * (1U << 0) |		// PR		1: Round robin mode
 		0;
-#if 0
+
+#if 1
 	// Разрешение DMA
 	// Сперва без DREQE
 	USBx->D0FIFOSEL =
@@ -1308,7 +1309,7 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 
 		USBx->PIPESEL = 0;
 
-#if 1
+#if 0
 		// Разрешение DMA
 		// Сперва без DREQE
 		USBx->D1FIFOSEL =
@@ -1358,7 +1359,7 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 
 		USBx->PIPESEL = 0;
 
-#if 1
+#if 0
 		// Разрешение DMA
 		// Сперва без DREQE
 		USBx->D0FIFOSEL =
@@ -1881,7 +1882,7 @@ HAL_StatusTypeDef USB_SetCurrentMode(USB_OTG_GlobalTypeDef *USBx, USB_OTG_ModeTy
 
 static void usbd_attachdma(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t pipe)
 {
-	return;
+	//return;
 	switch (pipe)
 	{
 	default: break;
@@ -1928,7 +1929,7 @@ static void usbd_attachdma(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t pipe)
 
 static void usbd_detachdma(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t pipe)
 {
-	return;
+	//return;
 	switch (pipe)
 	{
 	default: break;
@@ -10908,7 +10909,7 @@ static void board_usbd_initialize(void)
 	hardware_usbd_initialize();
 
 #if CPUSTYLE_R7S721
-#if WITHUSBUAC && 1
+#if WITHUSBUAC && 0
 	if (WITHUSBHW_DEVICE == & USB200)
 	{
 #if WITHDMAHW_UACOUT
