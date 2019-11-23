@@ -510,18 +510,17 @@ void savesampleout192stereo(int_fast32_t ch0, int_fast32_t ch1);
 	#include "speex\arch.h"
 	#include "speex\speex_preprocess.h"
 
+	#if WITHNOSPEEX
+		typedef float32_t speexel_t;
+
+	#else /* WITHNOSPEEX */
+		typedef float32_t speexel_t;
+
+	#endif /* WITHNOSPEEX */
+	uint_fast8_t takespeexready_user(speexel_t * * dest);
+	void releasespeexbuffer_user(speexel_t * t);
+	void savesampleout16tospeex(speexel_t ch0, speexel_t ch1);
 #endif /* WITHINTEGRATEDDSP */
-
-#if WITHNOSPEEX
-	typedef float32_t speexel_t;
-
-#else /* WITHNOSPEEX */
-	typedef float32_t speexel_t;
-
-#endif /* WITHNOSPEEX */
-uint_fast8_t takespeexready_user(speexel_t * * dest);
-void releasespeexbuffer_user(speexel_t * t);
-void savesampleout16tospeex(speexel_t ch0, speexel_t ch1);
 
 
 uint32_t allocate_dmabuffer192rts(void);
