@@ -487,7 +487,7 @@
 		XTHERMOIX = BOARD_ADCXIN(6),		// MCP3208 CH6 Exernal thermo sensor ST LM235Z
 	#endif /* WITHTHERMOLEVEL */
 
-	#if 0
+	#if 1
 		// main board - 5W
 		#if WITHVOLTLEVEL
 			VOLTSOURCE = BOARD_ADCX1IN(7),		// MCP3208 CH7 Средняя точка делителя напряжения, для АКБ

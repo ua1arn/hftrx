@@ -218,8 +218,7 @@
 	//#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
 	//#define WITHUSEAUDIOREC2CH	1	// Запись звука на SD CARD в стерео
     //#define WITHNOSPEEX    1    // Без шумоподавителя SPEEX
-	#define BOARD_FFTZOOM_POW2MAX 1	// Возможные масштабы FFT x1, x2
-	//#define BOARD_FFTZOOM_POW2MAX 2	// Возможные масштабы FFT x1, x2, x4
+	#define BOARD_FFTZOOM_POW2MAX 3	// Возможные масштабы FFT x1, x2, x4, x8
 	//#define WITHFASTWATERFLOW	1	/* быстрое отображение водопада (но требует больше памяти) */
 
 	#if 0
