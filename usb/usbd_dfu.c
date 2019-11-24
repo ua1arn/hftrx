@@ -168,7 +168,8 @@ printhex(unsigned long voffs, const unsigned char * buff, unsigned length)
 
 /*****************************************/
 #if WITHISBOOTLOADER
-	#define USBD_DFU_XFER_SIZE (MAX(USBD_DFU_RAM_XFER_SIZE, USBD_DFU_FLASH_XFER_SIZE))
+	#define PREPROCMAX(a, b) ((a) > (b) ? (a) : (b))
+	#define USBD_DFU_XFER_SIZE (PREPROCMAX(USBD_DFU_RAM_XFER_SIZE, USBD_DFU_FLASH_XFER_SIZE))
 #else /* WITHISBOOTLOADER */
 	#define USBD_DFU_XFER_SIZE USBD_DFU_FLASH_XFER_SIZE
 #endif /* WITHISBOOTLOADER */
