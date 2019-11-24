@@ -78,7 +78,7 @@
 	#define WITHMODEM_CDC		1
 	#define WITHDEBUG_USART1	1
 	//#define WITHMODEM_USART1	1
-	#define WITHNMEA_USART2		1	/* порт подключения GPS/GLONASS */
+	#define WITHNMEA_USART1		1	/* порт подключения GPS/GLONASS */
 
 	#define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
 	//#define WITHUAC2		1	/* UAC2 support */
