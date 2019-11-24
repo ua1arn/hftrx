@@ -926,8 +926,10 @@ static uint_fast8_t USB_ReadPacketNecNew(PCD_TypeDef * const USBx, uint_fast8_t 
 		return 1;	// error
 	}
 
+	const unsigned dtln = (USBx->CFIFOCTR & USB_CFIFOCTR_DTLN) >> USB_CFIFOCTR_DTLN_SHIFT;
+	unsigned size32 = dtln >> 2;
+	unsigned size8 = dtln & 0x03;
 	unsigned count = 0;		// результат - общее количество прочитаных байт
-	unsigned size32 = (USBx->CFIFOCTR & USB_CFIFOCTR_DTLN) >> USB_CFIFOCTR_DTLN_SHIFT;
 	if (size32 != 0)
 	{
 		uint32_t * data32 = (uint32_t *) data;
@@ -939,12 +941,11 @@ static uint_fast8_t USB_ReadPacketNecNew(PCD_TypeDef * const USBx, uint_fast8_t 
 		}
 		data = (uint8_t *) data32;
 	}
-	// switch to 8 bit width (32->8 permitted without wait)
-	USBx->CFIFOSEL = cfifosel | (0x00 << USB_CFIFOSEL_MBW_SHIFT);	// MBW 00: 8-bit width
-	(void) USBx->CFIFOSEL;
-	unsigned size8 = (USBx->CFIFOCTR & USB_CFIFOCTR_DTLN) >> USB_CFIFOCTR_DTLN_SHIFT;
-	if (size8 != 0)
+	if ((count + 1) <= size && size8 != 0)
 	{
+		// switch to 8 bit width (32->8 permitted without wait)
+		USBx->CFIFOSEL = cfifosel | (0x00 << USB_CFIFOSEL_MBW_SHIFT);	// MBW 00: 8-bit width
+		(void) USBx->CFIFOSEL;
 		while ((count + 1) <= size && size8 != 0)
 		{
 			* data ++ = USBx->CFIFO.UINT8 [R_IO_HH]; // R_IO_HH=3
