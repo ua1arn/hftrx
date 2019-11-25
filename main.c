@@ -7042,7 +7042,7 @@ static uint_fast8_t getlo4div(
 typedef struct lmsnrstate_tag
 {
 	// FIR audio filter
-	float32_t speexEQcoeff [Ntap_rx_AUDIO];
+	float32_t firEQcoeff [Ntap_rx_AUDIO];
 	arm_fir_instance_f32 fir_instance;
 	float32_t fir_state [FIRBUFSIZE + Ntap_rx_AUDIO - 1];
 	float32_t wire1 [FIRBUFSIZE];
@@ -7142,7 +7142,7 @@ static void speex_update_rx(void)
 	{
 		lmsnrstate_t * const nrp = & lmsnrstates [pathi];
 		// Получение параметров эквалайзера
-		float32_t * const dCoefs = nrp->speexEQcoeff;
+		float32_t * const dCoefs = nrp->firEQcoeff;
 		dsp_recalceq_coeffs(pathi, dCoefs, Ntap_rx_AUDIO);	// calculate 1/2 of coefficients
 		fir_expand_symmetric(dCoefs, Ntap_rx_AUDIO);	// Duplicate symmetrical part of coeffs.
 #if WITHNOSPEEX
@@ -7150,12 +7150,12 @@ static void speex_update_rx(void)
 		SpeexPreprocessState * const st = nrp->st_handle;
 		ASSERT(st != NULL);
 
-		static float32_t speexEQresp [SPEEXNN];	// распределение усиления по частотам
-		dsp_recalceq(pathi, speexEQresp);	// for SPEEX - equalizer in frequency domain
+		//static float32_t speexEQresp [SPEEXNN];	// распределение усиления по частотам
+		//dsp_recalceq(pathi, speexEQresp);	// for SPEEX - equalizer in frequency domain
 
 		speex_preprocess_ctl(st, SPEEX_PREPROCESS_SET_DENOISE, & denoise);
 		speex_preprocess_ctl(st, SPEEX_PREPROCESS_SET_NOISE_SUPPRESS, & supress);
-		speex_preprocess_ctl(st, SPEEX_PREPROCESS_SET_EQUALIZER, speexEQresp);
+		//speex_preprocess_ctl(st, SPEEX_PREPROCESS_SET_EQUALIZER, speexEQresp);
 #endif /* WITHNOSPEEX */
 	}
 }
@@ -7167,7 +7167,7 @@ static void InitNoiseReduction(void)
 	{
 		lmsnrstate_t * const nrp = & lmsnrstates [pathi];
 
-		arm_fir_init_f32(& nrp->fir_instance, Ntap_rx_AUDIO, nrp->speexEQcoeff, nrp->fir_state, FIRBUFSIZE);
+		arm_fir_init_f32(& nrp->fir_instance, Ntap_rx_AUDIO, nrp->firEQcoeff, nrp->fir_state, FIRBUFSIZE);
 
 #if WITHNOSPEEX
 

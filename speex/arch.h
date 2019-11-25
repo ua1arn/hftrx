@@ -101,8 +101,9 @@
 
 #endif
 
-
+// Обображение спектра и волопада
 #define FFTSizeSpectrum (1 << (FFTSizeSpectrumM))
+// Используется при формировании корректированной АЧХ звука. Должно быть размером достаточным влезли используемые фильтры
 #define FFTSizeFilters (1 << (FFTSizeFiltersM))
 
 #define SPEEXNN (FFTSizeFilters / 2)

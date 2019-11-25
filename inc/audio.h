@@ -391,13 +391,15 @@ typedef struct
 	#define	Ntap_rx_AUDIO	NtapValidate(241)
 
 #else /* WITHDSPLOCALFIR */
+	#define	Ntap_rx_AUDIO	NtapValidate(511)
+	#define Ntap_tx_MIKE	NtapValidate(241)
 	#if WITHNOSPEEX
-		#define	Ntap_rx_AUDIO	NtapValidate(511)
-		#define Ntap_tx_MIKE	NtapValidate(241)
+		////#define	Ntap_rx_AUDIO	NtapValidate(511)
+		////#define Ntap_tx_MIKE	NtapValidate(241)
 
 	#else /* WITHNOSPEEX */
-		#define	Ntap_rx_AUDIO	NtapValidate(SPEEXNN * 2 - 7)
-		#define Ntap_tx_MIKE	NtapValidate(241) //Ntap_rx_AUDIO
+		////#define	Ntap_rx_AUDIO	NtapValidate(SPEEXNN * 2 - 7)
+		////#define Ntap_tx_MIKE	NtapValidate(241) //Ntap_rx_AUDIO
 
 	#endif /* ! WITHDSPLOCALFIR */
 
