@@ -909,77 +909,25 @@ static uint_fast8_t usbd_wait_fifo(PCD_TypeDef * const USBx, uint_fast8_t pipe, 
 }
 
 // Эта функция не должна общаться с DCPCTR - она универсальная
-static uint_fast8_t USB_ReadPacketNecNew(PCD_TypeDef * const USBx, uint_fast8_t pipe, uint8_t * data, unsigned size, unsigned * readcnt)
-{
-	//PRINTF(PSTR("USB_ReadPacketNec: pipe=%d, data=%p, size=%d\n"), (int) pipe, data, (int) size);
-	ASSERT(size == 0 || data != NULL);
-	const uint_fast16_t cfifosel =
-		1 * (1uL << USB_CFIFOSEL_RCNT_SHIFT) |		// RCNT
-		(pipe << USB_CFIFOSEL_CURPIPE_SHIFT) |	// CURPIPE 0000: DCP
-		(0x00 << USB_CFIFOSEL_ISEL_SHIFT_) * (pipe == 0) |	// ISEL 0: Reading to the buffer memory is selected (for DCP)
-		0;
-
-	USBx->CFIFOSEL = cfifosel | (0x02 << USB_CFIFOSEL_MBW_SHIFT);	// MBW 10: 32-bit width
-	if (usbd_wait_fifo(USBx, pipe, USBD_FRDY_COUNT_READ))
-	{
-		PRINTF(PSTR("USB_ReadPacketNec: usbd_wait_fifo error, pipe=%d, USBx->CFIFOSEL=%08lX\n"), (int) pipe, (unsigned long) USBx->CFIFOSEL);
-		return 1;	// error
-	}
-
-	const unsigned dtln = (USBx->CFIFOCTR & USB_CFIFOCTR_DTLN) >> USB_CFIFOCTR_DTLN_SHIFT;
-	unsigned size32 = dtln >> 2;
-	unsigned size8 = dtln & 0x03;
-	unsigned count = 0;		// результат - общее количество прочитаных байт
-	if (size32 != 0)
-	{
-		uint32_t * data32 = (uint32_t *) data;
-		while ((count + 4) <= size && size32 != 0)
-		{
-			* data32 ++ = USBx->CFIFO.UINT32;
-			count += 4;
-			-- size32;
-		}
-		data = (uint8_t *) data32;
-	}
-	if ((count + 1) <= size && size8 != 0)
-	{
-		// switch to 8 bit width (32->8 permitted without wait)
-		USBx->CFIFOSEL = cfifosel | (0x00 << USB_CFIFOSEL_MBW_SHIFT);	// MBW 00: 8-bit width
-		(void) USBx->CFIFOSEL;
-		while ((count + 1) <= size && size8 != 0)
-		{
-			* data ++ = USBx->CFIFO.UINT8 [R_IO_HH]; // R_IO_HH=3
-			count += 1;
-			-- size8;
-		}
-	}
-	* readcnt = count;
-	return 0;	// OK
-}
-
-// Эта функция не должна общаться с DCPCTR - она универсальная
 static uint_fast8_t USB_ReadPacketNec(PCD_TypeDef * const USBx, uint_fast8_t pipe, uint8_t * data, unsigned size, unsigned * readcnt)
 {
-	uint_fast8_t mbw;
-	switch (pipe)
+	uint_fast16_t mbw;
+	// Допустимое выравнивание смотрим по размеру приемного буфера
+	switch (size & 0x03)
 	{
+	case 0:
+		mbw = 0x02;	// MBW 10: 32-bit width
+		break;
+	case 2:
+		mbw = 0x01;	// MBW 01: 16-bit width
+		break;
 	default:
 		mbw = 0x00;	// MBW 00: 8-bit width
 		break;
-#if WITHDMAHW_UACIN
-	case HARDWARE_USBD_PIPE_ISOC_IN:
-		mbw = 0x02;	// MBW 10: 32-bit width
-		break;
-#endif /* WITHDMAHW_UACIN */
-#if WITHDMAHW_UACOUT
-	case HARDWARE_USBD_PIPE_ISOC_OUT:
-		mbw = 0x02;	// MBW 10: 32-bit width
-		break;
-#endif /* WITHNDMA_UACOUT */
 	}
+
 	//PRINTF(PSTR("USB_ReadPacketNec: pipe=%d, data=%p, size=%d\n"), (int) pipe, data, (int) size);
 	USBx->CFIFOSEL =
-		//1 * (1uL << USB_CFIFOSEL_RCNT_SHIFT) |		// RCNT
 		(pipe << USB_CFIFOSEL_CURPIPE_SHIFT) |	// CURPIPE 0000: DCP
 		(mbw << USB_CFIFOSEL_MBW_SHIFT) |	// MBW 00: 8-bit width
 		0;
@@ -991,39 +939,43 @@ static uint_fast8_t USB_ReadPacketNec(PCD_TypeDef * const USBx, uint_fast8_t pip
 	}
 
 	ASSERT(size == 0 || data != NULL);
-	unsigned count = 0;
-	unsigned size8 = (USBx->CFIFOCTR & USB_CFIFOCTR_DTLN) >> USB_CFIFOCTR_DTLN_SHIFT;
-	size = ulmin16(size, size8);
-	count = size;
+	unsigned dtln = (USBx->CFIFOCTR & USB_CFIFOCTR_DTLN) >> USB_CFIFOCTR_DTLN_SHIFT;
+	size = ulmin16(size, dtln);
+	* readcnt = size;
 
 	if (size == 0)
+	{
 		USBx->CFIFOCTR = USB_CFIFOCTR_BCLR;	// BCLR
+		return 0;
+	}
 
 	if (mbw == 0x02)
 	{
+		// MBW 10: 32-bit width
 		uint32_t * data32 = (uint32_t *) data;
-		while (size --)
+		size = (size + 3) / 4;
+		do
 		{
 			* data32 ++ = USBx->CFIFO.UINT32;
-		}
-		* readcnt = count * 4;
+		} while (-- size);
 	}
 	else if (mbw == 0x01)
 	{
+		// MBW 01: 16-bit width
 		uint16_t * data16 = (uint16_t *) data;
-		while (size --)
+		size = (size + 1) / 2;
+		do
 		{
 			* data16 ++ = USBx->CFIFO.UINT16 [R_IO_H]; // H=1
-		}
-		* readcnt = count * 2;
+		} while (-- size);
 	}
 	else
 	{
-		while (size --)
+		// MBW 00: 8-bit width
+		do
 		{
 			* data ++ = USBx->CFIFO.UINT8 [R_IO_HH]; // HH=3
-		}
-		* readcnt = count;
+		} while (-- size);
 	}
 	return 0;	// OK
 }
@@ -1071,10 +1023,10 @@ USB_WritePacketNec(PCD_TypeDef * const USBx, uint_fast8_t pipe, const uint8_t * 
 	{
 		// 32 bit transfers
 		const uint32_t * data32 = (const uint32_t *) data;
-		while (size32 --)
+		do
 		{
 			USBx->CFIFO.UINT32 = * data32 ++;
-		}
+		} while (-- size32);
 		data = (const uint8_t *) data32;
 	}
 	if (size8 != 0)
@@ -1082,10 +1034,10 @@ USB_WritePacketNec(PCD_TypeDef * const USBx, uint_fast8_t pipe, const uint8_t * 
 		// switch to 8 bit width (32->8 permitted without wait)
 		USBx->CFIFOSEL = cfifosel | (0x00 << USB_CFIFOSEL_MBW_SHIFT);	// MBW 00: 8-bit width
 		(void) USBx->CFIFOSEL;
-		while (size8 --)
+		do
 		{
 			USBx->CFIFO.UINT8 [R_IO_HH] = * data ++; // R_IO_HH=3
-		}
+		} while (-- size8);
 	}
 
     USBx->CFIFOCTR = USB_CFIFOCTR_BVAL;	// BVAL
