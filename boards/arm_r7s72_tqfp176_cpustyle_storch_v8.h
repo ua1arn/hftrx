@@ -73,7 +73,7 @@
 	// USB device parameters
 	#define WITHUSBHW_DEVICE	(& USB201)	/* на этом устройстве поддерживается функциональность DEVUCE	*/
 	#define WITHUSBDEV_VBUSSENSE	1	/* используется предопределенный вывод VBUS_SENSE */
-	#define WITHUSBDEV_HSDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
+	//#define WITHUSBDEV_HSDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
 
 	// USB host parameters
 	//#define WITHUSBHW_HOST	(& USB200)	/* на этом устройстве поддерживается функциональность HOST	*/
@@ -96,7 +96,7 @@
 	//#define WITHUSBRNDIS	1	/* RNDIS использовать Remote NDIS на USB соединении */
 	//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
 	//#define WITHUSBHID		1	/* HID использовать Human Interface Device на USB соединении */
-	//#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
+	#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
 #endif /* WITHISBOOTLOADER */
 
 //#define WRITEE_BIT				(1u << 12)	// RD/~WR  P3_12 - должен быть в "0" - как при записи - для управления буферами на шине данных LCD
