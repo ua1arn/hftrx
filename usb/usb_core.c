@@ -26,7 +26,7 @@ static uint_fast8_t notseq;
 #if CPUSTYLE_R7S721 && WITHUSBUAC
 	// на RENESAS для работы с изохронными ендпоинтами используется DMA
 	//#define WITHDMAHW_UACIN 1		// при этой опции после пересоединения USB кабеля отвалтвается поток IN
-	//#define WITHDMAHW_UACOUT 1	// Устойчиво работает - но пропуск пакетов
+	#define WITHDMAHW_UACOUT 1	// Устойчиво работает - но пропуск пакетов
 #endif /* CPUSTYLE_R7S721 */
 
 #if CPUSTYLE_R7S721
@@ -1341,8 +1341,8 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 		const uint_fast8_t pipe = HARDWARE_USBD_PIPE_ISOC_IN;	// PIPE2
 		const uint_fast8_t epnum = USBD_EP_AUDIO_IN;
 		const uint_fast8_t dir = 1;
-
 		const uint_fast16_t maxpacket = usbd_getuacinmaxpacket();
+		const uint_fast8_t dblb = 0;	// убрано, т.к PIPEMAXP динамически меняется - поведение не понятно.
 		//PRINTF(PSTR("usbd_pipe_initialize: pipe=%u endpoint=%02X\n"), pipe, epnum);
 
 		USBx->PIPESEL = pipe << USB_PIPESEL_PIPESEL_SHIFT;
@@ -1353,7 +1353,7 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 			(0x0F & epnum) * (1u << USB_PIPECFG_EPNUM_SHIFT) |		// EPNUM endpoint
 			dir * (1u << USB_PIPECFG_DIR_SHIFT) |		// DIR 1: Transmitting direction 0: Receiving direction
 			3 * (1u << USB_PIPECFG_TYPE_SHIFT) |		// TYPE 11: Isochronous transfer
-			////1 * USB_PIPECFG_DBLB |		// DBLB - убрано, т.к PIPEMAXP динамически меняется - поведение не понятно.
+			dblb * USB_PIPECFG_DBLB |		// DBLB
 			0;
 		//USBx->PIPEPERI =
 		//	1 * (1U << 12) |	// IFS
@@ -1361,7 +1361,7 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 		const unsigned bufsize64 = (maxpacket + 63) / 64;
 		USBx->PIPEBUF = ((bufsize64 - 1) << USB_PIPEBUF_BUFSIZE_SHIFT) | (bufnumb64 << USB_PIPEBUF_BUFNMB_SHIFT);
 		USBx->PIPEMAXP = maxpacket << USB_PIPEMAXP_MXPS_SHIFT;
-		bufnumb64 += bufsize64 * 2; // * 2 for DBLB
+		bufnumb64 += bufsize64 * (dblb + 1); // * 2 for DBLB
 		ASSERT(bufnumb64 <= 0x100);
 
 		USBx->PIPESEL = 0;
@@ -1376,6 +1376,7 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 		const uint_fast8_t epnum = USBD_EP_AUDIO_OUT;
 		const uint_fast8_t dir = 0;
 		const uint_fast16_t maxpacket = UAC_OUT48_DATA_SIZE;
+		const uint_fast8_t dblb = 1;
 		//PRINTF(PSTR("usbd_pipe_initialize: pipe=%u endpoint=%02X\n"), pipe, epnum);
 
 		USBx->PIPESEL = pipe << USB_PIPESEL_PIPESEL_SHIFT;
@@ -1386,13 +1387,13 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 			(0x0F & epnum) * (1u << USB_PIPECFG_EPNUM_SHIFT) |		// EPNUM endpoint
 			dir * (1u << USB_PIPECFG_DIR_SHIFT) |		// DIR 1: Transmitting direction 0: Receiving direction
 			3 * (1u << USB_PIPECFG_TYPE_SHIFT) |		// TYPE 11: Isochronous transfer
-			1 * USB_PIPECFG_DBLB |		// DBLB
+			dblb * USB_PIPECFG_DBLB |		// DBLB
 			0;
 
 		const unsigned bufsize64 = (maxpacket + 63) / 64;
 		USBx->PIPEBUF = ((bufsize64 - 1) << USB_PIPEBUF_BUFSIZE_SHIFT) | (bufnumb64 << USB_PIPEBUF_BUFNMB_SHIFT);
 		USBx->PIPEMAXP = maxpacket << USB_PIPEMAXP_MXPS_SHIFT;
-		bufnumb64 += bufsize64 * 2; // * 2 for DBLB
+		bufnumb64 += bufsize64 * (dblb + 1); // * 2 for DBLB
 		ASSERT(bufnumb64 <= 0x100);
 
 		USBx->PIPESEL = 0;
