@@ -201,8 +201,12 @@ enum
 		LIST_ENTRY item;
 		ALIGNX_BEGIN int32_t buff [DMABUFFSIZE32RX] ALIGNX_END;
 	} ALIGNX_END voice32rx_t;
+	// исправляемая погрешность = 0.02% - один сэмпл добавить/убрать на 5000 сэмплов
 
-	static RAMDTCM const uint_fast8_t VOICESMIKE16NORMAL = 5;	// Нормальное количество буферов в очереди
+	enum { SKIPPED = 5000 / (DMABUFFSIZE16 / DMABUFSTEP16) };
+	static const uint_fast8_t VOICESMIKE16NORMAL = 5;	// Нормальное количество буферов в очереди
+	static const uint_fast8_t RESAMPLE16NORMAL = SKIPPED * 2;	// Нормальное количество буферов в очереди
+
 	static RAMDTCM LIST_ENTRY3 voicesmike16;	// буферы с оцифрованными звуками с микрофона/Line in
 	static RAMDTCM LIST_ENTRY3 resample16;		// буферы от USB для синхронизации
 
@@ -263,7 +267,6 @@ enum
 
 	static RAMDTCM LIST_ENTRY2 uacinfree16;
 	static RAMDTCM LIST_ENTRY2 uacinready16;	// Буферы для записи в вудиоканал USB к компьютер 2*16*24 kS/S
-	//static const uint_fast8_t VOICESMIKE16NORMAL = VOICESMIKE16NORMAL;	// Нормальное количество буферов в очереди
 
 #endif /* WITHUSBUAC */
 
@@ -592,9 +595,9 @@ void buffers_initialize(void)
 
 #if WITHINTEGRATEDDSP
 
-	static voice16_t voicesarray16 [47];
+	static voice16_t voicesarray16 [192];
 
-	InitializeListHead3(& resample16, VOICESMIKE16NORMAL);	// буферы от USB для синхронизации
+	InitializeListHead3(& resample16, RESAMPLE16NORMAL);	// буферы от USB для синхронизации
 	InitializeListHead3(& voicesmike16, VOICESMIKE16NORMAL);	// список оцифрованных с АЦП
 	InitializeListHead2(& voicesphones16);	// список для выдачи на ЦАП
 	InitializeListHead2(& voicesfree16);	// Незаполненные
@@ -935,11 +938,10 @@ RAMFUNC static void buffers_savetoresampling16(voice16_t * p)
 	// Помеестить в очередь принятых с USB UAC
 	InsertHeadList3(& resample16, & p->item);
 
-	if (GetCountList3(& resample16) > (VOICESMIKE16NORMAL * 2))
+	if (GetCountList3(& resample16) > (RESAMPLE16NORMAL * 2))
 	{
 		// Из-за ошибок с асинхронным аудио пришлось добавить ограничение на размер этой очереди
 		const PLIST_ENTRY t = RemoveTailList3(& resample16);
-
 		InsertHeadList2(& voicesfree16, t);
 
 	#if WITHBUFFERSDEBUG
@@ -1175,8 +1177,6 @@ static RAMFUNC unsigned getsamplemsuacout(
 	static RAMDTCM uint_fast8_t part = 0;
 	static int16_t * RAMDTCM datas [NPARTS] = { NULL, NULL };		// начальный адрес пары сэмплов во входном буфере
 	static RAMDTCM unsigned sizes [NPARTS] = { 0, 0 };			// количество сэмплов во входном буфере
-	// исправляемая погрешность = 0.02% - один сэмпл добавить/убрать на 5000 сэмплов
-	enum { SKIPPED = 5000 / (DMABUFFSIZE16 / DMABUFSTEP16) };
 
 	static unsigned skipsense = SKIPPED;
 
@@ -1206,8 +1206,8 @@ static RAMFUNC unsigned getsamplemsuacout(
 
 			skipsense = (skipsense == 0) ? SKIPPED : skipsense - 1;
 
-			const uint_fast8_t LOW = VOICESMIKE16NORMAL - 3;
-			const uint_fast8_t HIGH = VOICESMIKE16NORMAL + 1;
+			const unsigned LOW = RESAMPLE16NORMAL - (SKIPPED * 1);
+			const unsigned HIGH = RESAMPLE16NORMAL + (SKIPPED * 1);
 
 			if (valid && GetCountList3(& resample16) <= LOW)
 			{
