@@ -707,6 +707,12 @@ static void r7s721_usb1_dma0_dmarx_stop(uint_fast8_t pipe)
 
 #else  /* CPUSTYLE_R7S721 */
 
+// USB AUDIO
+// Канал DMA ещё занят - оставляем в очереди, иначе получить данные через getfilled_dmabufferx
+void refreshDMA_uacin(void)
+{
+}
+
 #endif /* CPUSTYLE_R7S721 */
 
 #if CPUSTYLE_R7S721
