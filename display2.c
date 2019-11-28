@@ -6129,9 +6129,6 @@ void display2_bgprocess(void)
 			continue;
 		(* p->redraw)(p->x, p->y, NULL);
 		walkis [keyi] += 1;
-	#if WITHINTEGRATEDDSP
-		audioproc_spool_user();		// решение проблем с прерыванием звука при стирании экрана
-	#endif /* WITHINTEGRATEDDSP */
 		break;
 	}
 	if (walkis [keyi] >= WALKCOUNT)
