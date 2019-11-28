@@ -31,10 +31,6 @@
 
 #define  ARRAY_SIZE(a)  (sizeof(a)/sizeof(a[0]))
 
-#if WITHSECTOGGLE
-static uint_fast8_t sectoggle;
-#endif /* WITHSECTOGGLE */
-
 #if WITHRFSG
 	#error WITHRFSG now not supported
 #endif /* WITHRFSG */
@@ -12000,9 +11996,6 @@ processmessages(uint_fast8_t * kbch, uint_fast8_t * kbready, uint_fast8_t inmenu
 		return;
 	
 	case MSGT_1SEC:
-#if WITHSECTOGGLE
-		sectoggle = ! sectoggle;
-#endif /* WITHSECTOGGLE */
 #if WITHLCDBACKLIGHT || WITHKBDBACKLIGHT
 		if (dimmtime == 0)
 		{
@@ -12113,12 +12106,6 @@ processtxrequest(void)
 #if WITHTX
 	uint_fast8_t txreq = 0;
 	uint_fast8_t tunreq = 0;
-#if WITHSECTOGGLE
-	if (sectoggle)
-	{
-		txreq = 1;
-	}
-#endif /* WITHSECTOGGLE */
 	if (moxmode || hardware_get_ptt())	// тангента, педаль
 	{
 #if WITHCAT	

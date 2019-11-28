@@ -4457,28 +4457,19 @@ static INT32P_t loopbacktestaudio(INT32P_t vi0, uint_fast8_t dspmode, FLOAT_t sh
 	//vi.QV = 0;	// заглушить правый канал
 	//vi.IV = get_dualtone16();	// двухтоновый сигнал
 
-#if WITHSECTOGGLE
-
-	// генерация переиодического сигнала
-	{
-		FLOAT_t v = (get_lout16() + get_rout16()) * shape / 2;
-		vi.IV = v;
-		vi.QV = v;
-	}
-
-#elif 0
+#if 0
 
 	// Самопрослушивание микрофона
 	vi.QV = vi.IV;	// в правый канал копируем левый канал (микрофон)
 
-#else /* WITHSECTOGGLE */
+#else
 
 	// Генерация двух тонов для разных каналов
 	vi.IV = get_lout16();		// тон 700 Hz
 	vi.QV = get_rout16();		// тон 500 Hz
 	//vi.QV = vi.IV;	// в правый канал копируем левый канал (микрофон)
 
-#endif /* WITHSECTOGGLE */
+#endif
 
 	//float f0 = ssb_iir(vi); // / 4; // * (0x7fff / (float) 0x16000);
 	//const float f = filter_fir_tx_MIKE(vi0, 0); //ssb_iir2(vi) * (0x7ff0 / (float) 0x7fff);
