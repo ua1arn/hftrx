@@ -673,15 +673,31 @@ static void st7735_clear(COLOR_T bg)
 	unsigned long i;
 	
 	display_gotoxy(0, 0);
-	st7735_set_strype(DIM_Y);	// установить окно высотой в весь экран
-
 	st7735_setcolor(COLOR_WHITE, bg, bg);
+
+#if WITHSPIEXT16 && WITHSPIHWDMA
+	enum { LNBURST = 1 };
+	static ALIGNX_BEGIN PACKEDCOLOR565_T colorbuf [GXSIZE(DIM_X, LNBURST)] ALIGNX_END;
+	for (i = 0; i < sizeof colorbuf / sizeof colorbuf [0]; ++ i)
+	{
+		colorbuf [i] = bg;
+	}
+	for (i = 0; i < DIM_Y; i += LNBURST)
+	{
+		display_colorbuffer_show(colorbuf, DIM_X, LNBURST, 0, i);
+	#if WITHINTEGRATEDDSP
+		audioproc_spool_user();		// решение проблем с прерыванием звука при стирании экрана
+	#endif /* WITHINTEGRATEDDSP */
+	}
+#else /* WITHSPIEXT16 */
+	st7735_set_strype(DIM_Y);	// установить окно высотой в весь экран
 	st7735_put_char_begin();
 	for (i = 0; i < ((unsigned long) DIM_Y * DIM_X) / 8; ++ i)
 	{
 		st7735_pix8(0x00);	// Выдать восемь пикселей цвета фона
 	}
 	st7735_put_char_end();
+#endif /* WITHSPIEXT16 */
 
 }
 

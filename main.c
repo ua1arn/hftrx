@@ -3887,6 +3887,9 @@ static void auto_tune(void)
 			goto aborted;
 		tunerind = statuses [tunertype].tunerind;
 		updateboard_tuner();
+	#if WITHINTEGRATEDDSP
+		audioproc_spool_user();		// решение проблем с прерыванием звука при стирании экрана
+	#endif /* WITHINTEGRATEDDSP */
 
 		// проверка - а может уже нашли подходяшее согласование?
 		////if (statuses [tunertype].swr <= TUS_SWR1p1)
@@ -3896,6 +3899,9 @@ static void auto_tune(void)
 			goto aborted;
 		tunercap = statuses [tunertype].tunercap;
 		updateboard_tuner();
+	#if WITHINTEGRATEDDSP
+		audioproc_spool_user();		// решение проблем с прерыванием звука при стирании экрана
+	#endif /* WITHINTEGRATEDDSP */
 
 		// проверка - а может уже нашли подходяшее согласование?
 		////if (statuses [tunertype].swr <= TUS_SWR1p1)
@@ -7254,7 +7260,7 @@ static void processingonebuff(lmsnrstate_t * const nrp, speexel_t * p)
 }
 
 // user-mode processing
-static void 
+void
 audioproc_spool_user(void)
 {
 	speexel_t * p;

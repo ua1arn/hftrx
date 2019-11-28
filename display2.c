@@ -6078,6 +6078,9 @@ display_walktrough(
 		if ((p->key != key) || (p->subset & subset) == 0)
 			continue;
 		(* p->redraw)(p->x, p->y, pv);
+	#if WITHINTEGRATEDDSP
+		audioproc_spool_user();		// решение проблем с прерыванием звука при стирании экрана
+	#endif /* WITHINTEGRATEDDSP */
 	}
 }
 
@@ -6126,6 +6129,9 @@ void display2_bgprocess(void)
 			continue;
 		(* p->redraw)(p->x, p->y, NULL);
 		walkis [keyi] += 1;
+	#if WITHINTEGRATEDDSP
+		audioproc_spool_user();		// решение проблем с прерыванием звука при стирании экрана
+	#endif /* WITHINTEGRATEDDSP */
 		break;
 	}
 	if (walkis [keyi] >= WALKCOUNT)
@@ -6310,4 +6316,3 @@ board_set_wflevelsep(uint_fast8_t v)
 {
 	glob_wflevelsep = v != 0;
 }
-
