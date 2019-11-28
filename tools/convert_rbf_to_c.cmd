@@ -13,8 +13,6 @@ rbf2c.exe %SRCPATH%\t1_v7_2ch.rbf ..\rbf\rbfimage_v7_2ch.h
 rbf2c.exe %SRCPATH%\t1_v7a_2ch.rbf ..\rbf\rbfimage_v7a_2ch.h
 rbf2c.exe %SRCPATH%\t1_v7_oleg4z.rbf ..\rbf\rbfimage_oleg4z.h
 rbf2c.exe %SRCPATH%\t1_v7renesas_2ch.rbf ..\rbf\rbfimage_v7renesas_2ch.h
-rbf2c.exe %SRCPATH%\t1_v8renes_2ch.rbf ..\rbf\rbfimage_v8renesas_2ch.h
-rbf2c.exe %SRCPATH%\t1_v8renes96_2ch.rbf ..\rbf\rbfimage_v8renesas96k_2ch.h
 rbf2c.exe %SRCPATH%\t1_v8t_96k.rbf ..\rbf\rbfimage_v8t_96k.h
 rbf2c.exe %SRCPATH%\t1_v8t_192k.rbf ..\rbf\rbfimage_v8t_192k.h
 

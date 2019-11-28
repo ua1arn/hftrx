@@ -7607,15 +7607,6 @@ nestedirqtest(void)
 			arm_hardware_irqn_interrupt(1, 3, ARM_SYSTEM_PRIORITY, spool_encinterruptR); /* IRQ1, both edges */ \
 			arm_hardware_irqn_interrupt(2, 3, ARM_SYSTEM_PRIORITY, spool_encinterruptR); /* IRQ2, both edges */ \
 		} while (0);
-	#elif CTLSTYLE_RAVENDSP_V2
-		do { \
-			arm_hardware_pio5_alternative(ENCODER_BITS, R7S721_PIOALT_4); \
-			arm_hardware_irqn_interrupt(3, 3, ARM_SYSTEM_PRIORITY, spool_encinterruptR); /* IRQ3, both edges */ \
-			arm_hardware_irqn_interrupt(4, 3, ARM_SYSTEM_PRIORITY, spool_encinterruptR); /* IRQ4, both edges */ \
-			arm_hardware_pio5_alternative(ENCODER2_BITS, R7S721_PIOALT_4); \
-			arm_hardware_irqn_interrupt(5, 3, ARM_SYSTEM_PRIORITY, spool_encinterruptR); /* IRQ5, both edges */ \
-			arm_hardware_irqn_interrupt(6, 3, ARM_SYSTEM_PRIORITY, spool_encinterruptR); /* IRQ6, both edges */ \
-		} while (0);
 	#endif
 #endif /* defined (ENCODER_BITS) */
 	debug_printf_P(PSTR("ICCRPR=%02x cpsr=%08lx* \n"), GICC_RPR, __get_CPSR());
