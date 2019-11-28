@@ -3794,14 +3794,15 @@ enum
 		{	29, 0,	display_rxbw3,		REDRM_MODE, PGALL, },
 
 		{	0,	3,	display_freqXbig_a, REDRM_FREQ, PGALL, },
-		{	29, 3,	display_mode3_a,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
+		{	25, 3,	display_mode3_a,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
+		{	29, 3,	display_nr3,		REDRM_MODE,	PGALL, },	// NR
 		//---
 		{	0,	9,	display_vfomode5,	REDRM_MODE, PGALL, },	// SPLIT
 		{	6,	9,	display_freqX_b,	REDRM_FRQB, PGALL, },
 	#if WITHUSEDUALWATCH
-		{	25, 9,	display_mainsub3,	REDRM_MODE, PGNOMEMU, },	// main/sub RX
+		{	29, 9,	display_mainsub3,	REDRM_MODE, PGNOMEMU, },	// main/sub RX
 	#endif /* WITHUSEDUALWATCH */
-		{	29, 9,	display_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
+		{	25, 9,	display_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
 		//---
 		{	0,	12,	display2_legend,	REDRM_MODE, PG0, },	// Отображение оцифровки шкалы S-метра, PWR & SWR-метра
 		{	0,	15,	display2_bars,		REDRM_BARS, PG0, },	// S-METER, SWR-METER, POWER-METER
