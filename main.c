@@ -5353,6 +5353,8 @@ enum
 	RJ_MDMMODE,		/* параметр - тип модуляции модема */
 	RJ_MONTH,		/* параметр - месяц 1..12 */
 	RJ_POWER,		/* отображние мощности HP/LP */
+	RJ_SIGNED,		/* отображние знакового числа (меню на втором валкодере) */
+	RJ_UNSIGNED,		/* отображние знакового числа (меню на втором валкодере) */
 	//
 	RJ_notused
 };
@@ -5454,7 +5456,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 #if ! WITHPOTAFGAIN
 	{
 		"VOLUME   ",
-		0,		// rj
+		RJ_UNSIGNED,		// rj
 		ISTEP1,
 		BOARD_AFGAIN_MIN, BOARD_AFGAIN_MAX, 					// Громкость в процентах
 		offsetof(struct nvmap, afgain1),
@@ -5467,7 +5469,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 #if ! WITHPOTIFGAIN
 	{
 		"RF GAIN  ",
-		0,		// rj
+		RJ_UNSIGNED,		// rj
 		ISTEP1,
 		BOARD_IFGAIN_MIN, BOARD_IFGAIN_MAX, 					// Усиление ПЧ/ВЧ в процентах
 		offsetof(struct nvmap, rfgain1),
@@ -5481,7 +5483,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 #if WITHELKEY && ! WITHPOTWPM
 	{
 		"CW SPEED ",
-		0,		// rj
+		RJ_UNSIGNED,		// rj
 		ISTEP1,
 		CWWPMMIN, CWWPMMAX,		// minimal WPM = 10, maximal = 60 (also changed by command KS).
 		offsetof(struct nvmap, elkeywpm),
@@ -5495,7 +5497,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 #if WITHPOWERTRIM
 	{
 		"TX POWER ",
-		0,		// rj
+		RJ_UNSIGNED,		// rj
 		ISTEP1,
 		WITHPOWERTRIMMIN, WITHPOWERTRIMMAX,
 		offsetof(struct nvmap, gnormalpower),
@@ -5507,7 +5509,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 #elif WITHIF4DSP
 	{
 		"DAC SCALE",
-		0,		// rj
+		RJ_UNSIGNED,		// rj
 		ISTEP1,
 		0, 100,
 		offsetof(struct nvmap, gdacscale),
@@ -5520,7 +5522,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 #if WITHNOTCHFREQ && ! WITHPOTNOTCH
 	{
 		"NOTCH FRQ",
-		0,		// rj
+		RJ_UNSIGNED,		// rj
 		ISTEP50,
 		WITHNOTCHFREQMIN, WITHNOTCHFREQMAX,
 		offsetof(struct nvmap, gnotchfreq),	/* центральная частота NOTCH */
@@ -5546,7 +5548,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 #if WITHMIC1LEVEL
 	{
 		"MIKE LEVL",
-		0,	
+		RJ_UNSIGNED,
 		ISTEP1,		/* подстройка усиления микрофонного усилителя через меню. */
 		WITHMIKEINGAINMIN, WITHMIKEINGAINMAX, 
 		offsetof(struct nvmap, mik1level),	/* усиление микрофонного усилителя */
@@ -5559,7 +5561,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 #if WITHIF4DSP
 	{
 		"MIKE CLIP",
-		0,
+		RJ_UNSIGNED,
 		ISTEP1,	
 		0, 90, 					/* Ограничение */
 		offsetof(struct nvmap, gmikehclip),
@@ -5573,7 +5575,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 #if WITHIF4DSP
 	{
 		"NR LEVEL ", 
-		0,		// rj
+		RJ_UNSIGNED,		// rj
 		ISTEP1,		/* nr level */
 		0, NRLEVELMAX, 
 		offsetof(struct nvmap, gnoisereductvl),	/* уровень сигнала болше которого открывается шумодав */
@@ -5584,7 +5586,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 	},
 	{
 		"SQUELCH  ", 
-		0,		// rj
+		RJ_UNSIGNED,		// rj
 		ISTEP1,		/* squelch level */
 		0, SQUELCHMAX, 
 		offsetof(struct nvmap, gsquelch),	/* уровень сигнала болше которого открывается шумодав */
@@ -5596,7 +5598,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 #if WITHSPECTRUMWF
 	{
 		"BOTTOM DB",
-		0,		// rj
+		RJ_UNSIGNED,		// rj
 		ISTEP1,		/* spectrum range */
 		80, 160,
 		offsetof(struct nvmap, gbottomdb),	/* диапазон отображаемых значений */
@@ -5618,6 +5620,20 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 	},
 #endif /* WITHSPECTRUMWF */
 #endif /* WITHIF4DSP */
+#if WITHIFSHIFT && ! WITHPOTIFSHIFT
+	// Увеличение значения параметра смещает слышимую часть спектра в более высокие частоты
+	{
+		"IF SHIFT ",
+		RJ_SIGNED,		// rj
+		ISTEP50,
+		IFSHIFTTMIN, IFSHIFTMAX,			/* -3 kHz..+3 kHz in 50 Hz steps */
+		offsetof(struct nvmap, ifshifoffset),
+		& ifshifoffset,
+		NULL,
+		getifshiftbase, /* складывается со смещением и отображается */
+		enc2menu_adjust,	/* функция для изменения значения параметра */
+	},
+#endif /* WITHIFSHIFT && ! WITHPOTIFSHIFT */
 };
 
 /* получение названия редактируемого параметра */
@@ -5642,7 +5658,7 @@ enc2menu_value(
 	enum { WDTH = 9 };	// ширина поля для отображения
 	const FLASHMEM struct enc2menu * const mp = & enc2menus [item];
 	static char b [WDTH + 1];	// на этот буфер возвращается указатель
-	int_fast32_t value;
+	long int value;
 
 	//const nvramaddress_t nvram = mp->nvram;
 	if (mp->pval16 != NULL)
@@ -5675,8 +5691,12 @@ enc2menu_value(
 	case RJ_POW2:
 		local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("%*u"), WDTH, 1U << value);
 		break;
+	case RJ_SIGNED:
+		local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("%*+ld"), WDTH, (signed long) value);
+		break;
+	case RJ_UNSIGNED:
 	default:
-		local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("%*u"), WDTH, value);
+		local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("%*lu"), WDTH, (unsigned long) value);
 		break;
 	}
 	return b;
@@ -12720,7 +12740,7 @@ static const FLASHMEM struct menudef menutable [] =
 	{
 		"IF SHIFT", 4 + WSIGNFLAG, 2, 1, 	ISTEP50, 
 		ITEM_VALUE,
-		IFSHIFTTMIN, IFSHIFTMAX,			/* -3 kHz..+3 kHz in 5 Hz steps */
+		IFSHIFTTMIN, IFSHIFTMAX,			/* -3 kHz..+3 kHz in 50 Hz steps */
 		offsetof(struct nvmap, ifshifoffset),
 		& ifshifoffset,
 		NULL,
