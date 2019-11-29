@@ -17,9 +17,29 @@ extern const phase_t phase_0;
 #define FPGA_DECODE_FQMETER	(0)
 #define FPGA_DECODE_NCO3	(1u << 4)
 #define FPGA_DECODE_NCO4	(1u << 5)
+#define FPGA_DECODE_NBLVL	(1u << 6)
 
 
 /* programming FPGA SPI registers */
+
+static void prog_fpga_valX(
+	spitarget_t target,		/* addressing to chip */
+	uint_fast32_t v32,		/* 32bit control value */
+	uint_fast8_t addr
+	)
+{
+	rbtype_t rbbuff [5] = { 0 };
+
+	RBVAL8(040, addr);
+	RBVAL8(030, v32 >> 24);
+	RBVAL8(020, v32 >> 16);
+	RBVAL8(010, v32 >> 8);
+	RBVAL8(000, v32 >> 0);
+
+	spi_select2(target, CTLREG_SPIMODE, SPIC_SPEEDUFAST);
+	prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
+	spi_unselect(target);
+}
 
 static void prog_fpga_freqX(
 	spitarget_t target,		/* addressing to chip */
@@ -32,18 +52,7 @@ static void prog_fpga_freqX(
 #else
 	const uint_fast32_t v32 = (* val) << (32 - FTW_RESOLUTION);
 #endif
-
-	rbtype_t rbbuff [5] = { 0 };	
-
-	RBVAL8(040, addr);
-	RBVAL8(030, v32 >> 24);
-	RBVAL8(020, v32 >> 16);
-	RBVAL8(010, v32 >> 8);
-	RBVAL8(000, v32 >> 0);
-
-	spi_select2(target, CTLREG_SPIMODE, SPIC_SPEEDUFAST);
-	prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-	spi_unselect(target);
+	prog_fpga_valX(target, v32, addr);
 }
 
 static void prog_fpga_freq1(
@@ -86,6 +95,13 @@ static void prog_fpga_freq1_rts(
 	prog_fpga_freqX(target, val, FPGA_DECODE_NCORTS);
 }
 
+static void prog_fpga_nblevel(
+	spitarget_t target,		/* addressing to chip */
+	uint_fast32_t val		/* FTW parameter for NCO */
+	)
+{
+	prog_fpga_valX(target, val, FPGA_DECODE_NBLVL);
+}
 
 // FPGA control register
 static void
@@ -159,6 +175,7 @@ static void prog_fpga_initialize(
 	prog_fpga_freq1(target, & phase_0);
 	prog_fpga_freq2(target, & phase_0);
 	prog_fpga_freq1_rts(target, & phase_0);
+	prog_fpga_nblevel(target, INT32_MAX);	/* при таком значении NB не срабатывает */
 }
 
 #endif /* FPGA_V1_C_INCLUDED */
