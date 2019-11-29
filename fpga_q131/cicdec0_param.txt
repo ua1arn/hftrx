@@ -4,7 +4,7 @@ blank_gen    : READ
 alpha     : 0
 fc1       : 1.25e+006
 fc2       : 3.75e+006
-length    : 1535
+length    : 1023
 samp_rate : 1e+007
 win_type  : NON 
 flt_type  : LPF 
@@ -13,7 +13,7 @@ flt_type  : LPF
 alpha     : 0
 fc1       : 1.25e+006
 fc2       : 3.75e+006
-length    : 1535
+length    : 1023
 samp_rate : 1e+007
 win_type  : NON 
 flt_type  : LPF 
@@ -33,7 +33,7 @@ out_full_chk    : 0
 out_msb_rad     : MSB_TRN 
 out_lsb_rad     : LSB_TRN 
 out_lose_lsb    : 23
-out_lose_msb    : 12
+out_lose_msb    : 11
 out_sbf_chk     : 0
 arch_struct_sel  : 4
 arch_data_store  : 4
@@ -44,8 +44,8 @@ arch_reload_coef_sgl_clock : 0
 arch_num_mbs     : 2
 arch_no_sym      : 0
 num_bank_set    : 2
-num_mac         : 3
-num_cycles      : 256
+num_mac         : 1
+num_cycles      : 512
 arch_pipeline      : 3
 poly_type       : 0
 poly_fact       : 1
@@ -61,14 +61,14 @@ blank_num_sys   : 0
 rate_ctrl       : RATE_CTRL_OFF 
 atlantic_out    : MASTER 
 atlantic_in     : MASTER 
-fir_bit_width   : 67
-num_coef_mem     : 3
+fir_bit_width   : 66
+num_coef_mem     : 1
 coef_mem_width  : 24
-coef_mem_addr   : 8
+coef_mem_addr   : 9
 num_coef_one_mem : 1
 fmax			: 0
-num_lc			: 102546
-num_m4k			: 24
+num_lc			: 67090
+num_m4k			: 18
 num_m512			: 0
 num_MRAM			: 0
 num_mul			: 0

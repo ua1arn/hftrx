@@ -407,7 +407,8 @@ typedef struct
 
 #if WITHDSPEXTFIR || WITHDSPEXTDDC
 	// Параметры фильтров в случае использования FPGA с фильтром на квадратурных каналах
-	#define Ntap_trxi_IQ		1535	// Фильтр в FPGA
+	//#define Ntap_trxi_IQ		1535	// Фильтр в FPGA (1024+512-1)
+	#define Ntap_trxi_IQ		1023	// Фильтр в FPGA
 	#define HARDWARE_COEFWIDTH	24		// Разрядность коэффициентов. format is S0.22
 	#define HARDWARE_DACSCALE	(0.82)	// на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
 

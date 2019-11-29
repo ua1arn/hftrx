@@ -256,4 +256,5 @@ set_global_assignment -name QIP_FILE lpm_decode_4ch_en.qip
 set_global_assignment -name BDF_FILE fqmemter.bdf
 set_global_assignment -name QIP_FILE altpll_9p6.qip
 set_global_assignment -name PHYSICAL_SYNTHESIS_COMBO_LOGIC_FOR_AREA ON
+set_global_assignment -name BDF_FILE nb_4ch.bdf
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
