@@ -9256,13 +9256,22 @@ SystemInit(void)
 #if CPUSTYLE_STM32MP1
 	RCC->TZCR &= ~ (RCC_TZCR_TZEN | RCC_TZCR_MCKPROT);
 	{
+		//uint32_t volatile * const p = (uint32_t volatile *) 0x2FFC0000;
+		//* p = 0xDEADBEEF;
+		//for (;;)
+		//	++ * p;
 		// LED blinking test
-		const uint_fast32_t mask = (1uL << 14);	// PA14 - GREEN LED LD5 on DK1/DK2 MB1272.pdf
+		//const uint_fast32_t mask = (1uL << 14);	// PA14 - GREEN LED LD5 on DK1/DK2 MB1272.pdf
+		const uint_fast32_t maskd = (1uL << 14);	// PD14 - LED on small board
+		const uint_fast32_t maskg = (1uL << 13);	// PG13 - LCD_R0
 		for (;;)
 		{
-			arm_hardware_pioa_outputs(mask, 1 * mask);
+			++ * p;
+			arm_hardware_piod_outputs(maskd, 1 * maskd);
+			arm_hardware_piog_outputs(maskg, 1 * maskg);
 			local_delay_ms(250);
-			arm_hardware_pioa_outputs(mask, 0 * mask);
+			arm_hardware_piod_outputs(maskd, 0 * maskd);
+			arm_hardware_piog_outputs(maskg, 0 * maskg);
 			local_delay_ms(250);
 		}
 	}
@@ -9276,6 +9285,7 @@ SystemInit(void)
 	tzpc_set_prot(7, 0x03);		// RNG1
 	tzpc_set_prot(10, 0x03);	// DDRCTRL
 	tzpc_set_prot(11, 0x03);	// DDRPHYC
+	tzpc_set_prot(32, 0x03);	// UART4
 
 #endif /* CPUSTYLE_STM32MP1 */
 #if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7
