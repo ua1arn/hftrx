@@ -9237,7 +9237,7 @@ tzpc_set_prot(
 	uint_fast8_t val	/* 0x00..0x03: protection style */
 	)
 {
-	const uint_fast8_t pos = (id % 16);
+	const uint_fast8_t pos = (id % 16) * 2;
 	const uint_fast8_t ix = (id / 16);
 	const uint_fast32_t mask = 0x03uL << pos;
 	volatile uint32_t * const reg = & TZPC->DECPROT0 + ix;
