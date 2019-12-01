@@ -1,11 +1,14 @@
 /* $Id$ */
 /* RENESAS RZ/A1L R7S721020 memory layout */
 /* Linker script to configure memory regions. */
+
+/* Note: due to ROM code RAM needs, FSBL payload is limited to 247 KB.  */
+/* The ROM code loads the image into SYSRAM internal memory at address 0x2ffc2400.  */
 MEMORY
 {
   FLASH (rx) 	: ORIGIN = 0x70000000, LENGTH = 4M		/* W25Q32FVZPIG */
   DDR3 (rwx) 	: ORIGIN = 0xC0000000, LENGTH = 256M 	/* DDR3 single chip NT5CC128M16IP-DI */
-  RAM (rwx)		: ORIGIN = 0x2FFC0000, LENGTH = 240k	/* SYSRAM - 256 kB */
+  RAM (rwx)		: ORIGIN = 0x2FFC2400, LENGTH = 231k	/* SYSRAM - 256 kB */
   TTB (rwx)  	: ORIGIN = 0x2FFFC000, LENGTH = 16k		/* last 16 kB SYSRAM for TTB */
   SRAM (rwx)  	: ORIGIN = 0x20000000, LENGTH = 384k	/* Cortex-M4 memories */
 }
