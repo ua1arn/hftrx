@@ -273,7 +273,7 @@ line_loop:
 #endif /* __STARTUP_CLEAR_BSS_MULTIPLE || __STARTUP_CLEAR_BSS */
 
 #ifndef __NO_SYSTEM_INIT
-	bl	SystemInit
+	/* bl	SystemInit */
 #endif
 
 #ifndef __START
@@ -287,8 +287,9 @@ ExitFunction:
    nop
    b ExitFunction   
 
+	.align 4, 0
 	.ascii " DREAM RX project " __DATE__ " " __TIME__ " "
-	.align 8
+	.align 4, 0
 
 /****************************************************************************/
 /*                         Default interrupt handler                        */
@@ -296,7 +297,7 @@ ExitFunction:
    .section .text
    .code 32
 
-	.align 4
+	.align 4, 0
 DummyResetHandler:
    b DummyResetHandler
 
