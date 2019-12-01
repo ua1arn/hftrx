@@ -64,18 +64,6 @@ display_wrdatabar_end(void)
 {
 }
 
-
-void
-display_wrdatabig_begin(void)
-{
-}
-
-
-void
-display_wrdatabig_end(void)
-{
-}
-
 /* отображение одной вертикальной полосы на графическом индикаторе */
 /* старшие биты соответствуют верхним пикселям изображения */
 /* вызывается между вызовами display_wrdatabar_begin() и display_wrdatabar_end() */
@@ -144,6 +132,37 @@ display_reset(void)
 /* Разряжаем конденсаторы питания */
 void display_discharge(void)
 {
+}
+
+void
+display_wrdata2_begin(void)
+{
+}
+
+void
+display_wrdata2_end(void)
+{
+}
+
+
+void
+display_wrdatabig_begin(void)
+{
+}
+
+
+void
+display_wrdatabig_end(void)
+{
+}
+
+// Вызов этой функции только внутри display_wrdata_begin() и display_wrdata_end();
+// Используется при выводе на графический ндикатор, если ТРЕБУЕТСЯ переключать полосы отображения
+void
+display_put_char_small2(uint_fast8_t c, uint_fast8_t lowhalf)
+{
+	(void) lowhalf;
+	(void) c;
 }
 
 #endif /* LCDMODE_DUMMY */

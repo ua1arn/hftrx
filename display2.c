@@ -4677,7 +4677,7 @@ static const FLASHMEM struct dzone dzones [] =
 		p->y = GRID2Y(DLES);	// позиция верхнего левого угла в пикселях
 		p->w = GRID2X(CHARS2GRID(BDTH_ALLRX));	// размер по горизонтали в пикселях
 		p->h = GRID2Y(BDCV_ALLRX);				// размер по вертикали в пикселях
-		p->frame = (uintptr_t) getscratchpip();
+		p->frame = (uintptr_t) 0;
 	}
 
 #else
