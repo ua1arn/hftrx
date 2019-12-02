@@ -9264,15 +9264,17 @@ SystemInit(void)
 		//const uint_fast32_t mask = (1uL << 14);	// PA14 - GREEN LED LD5 on DK1/DK2 MB1272.pdf
 		const uint_fast32_t maskd = (1uL << 14);	// PD14 - LED on small board
 		const uint_fast32_t maskg = (1uL << 13);	// PG13 - LCD_R0
+		arm_hardware_piod_outputs(maskd, 1 * maskd);
+		arm_hardware_piog_outputs(maskg, 1 * maskg);
 		for (;;)
 		{
-			++ * p;
-			arm_hardware_piod_outputs(maskd, 1 * maskd);
-			arm_hardware_piog_outputs(maskg, 1 * maskg);
-			local_delay_ms(250);
-			arm_hardware_piod_outputs(maskd, 0 * maskd);
-			arm_hardware_piog_outputs(maskg, 0 * maskg);
-			local_delay_ms(250);
+			(GPIOD)->BSRR = BSRR_S(maskd);
+			(GPIOG)->BSRR = BSRR_S(maskg);
+			__DSB();
+			(GPIOD)->BSRR = BSRR_C(maskd);
+			(GPIOG)->BSRR = BSRR_C(maskg);
+			__DSB();
+
 		}
 	}
 #endif /* CPUSTYLE_STM32MP1 */
