@@ -103,6 +103,7 @@ FIQAddr:       .word FIQ_Handler
 Reset_Handler7:
 
 	/* Mask interrupts */
+    mov   	lr, #0
 	cpsid   if
 	mrc     p15, 0, r0, c0, c0, 5      /* Read MPIDR */
 	ands    r0, r0, #3
@@ -115,21 +116,27 @@ gotosleep:
     */    
    msr   CPSR_c, #ARM_MODE_UNDEF   /* 0x1b Undefined Instruction Mode */
    ldr   sp, =__stack_und_end
+   mov   lr, #0
    
    msr   CPSR_c, #ARM_MODE_ABORT   /* 0x17 Abort Mode */
    ldr   sp, =__stack_abt_end
+   mov   lr, #0
    
    msr   CPSR_c, #ARM_MODE_FIQ     /* 0x11 FIQ Mode */
    ldr   sp, =__stack_fiq_end
+   mov   lr, #0
    
    msr   CPSR_c, #ARM_MODE_IRQ     /* 0x12 IRQ Mode */
    ldr   sp, =__stack_irq_end
+   mov   lr, #0
 
    msr   CPSR_c, #ARM_MODE_SVC     /* 0x13 Supervisor Mode */
    ldr   sp, =__stack_svc_end
+   mov   lr, #0
 
    msr   CPSR_c, #ARM_MODE_SYS     /* 0x1F Priviledged Operating Mode */
    ldr   sp, =__stack	/* __stack_syc_end */
+   mov   lr, #0
 
 #if 0
 	/* Clean Data Cache  */
