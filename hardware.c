@@ -9253,32 +9253,16 @@ void
 FLASHMEMINITFUNC
 SystemInit(void)
 {
-#if CPUSTYLE_STM32MP1
-	RCC->TZCR &= ~ (RCC_TZCR_TZEN | RCC_TZCR_MCKPROT);
-	{
-		//uint32_t volatile * const p = (uint32_t volatile *) 0x2FFC0000;
-		//* p = 0xDEADBEEF;
-		//for (;;)
-		//	++ * p;
-		// LED blinking test
-		//const uint_fast32_t mask = (1uL << 14);	// PA14 - GREEN LED LD5 on DK1/DK2 MB1272.pdf
-		const uint_fast32_t maskd = (1uL << 14);	// PD14 - LED on small board
-		const uint_fast32_t maskg = (1uL << 13);	// PG13 - LCD_R0
-		arm_hardware_piod_outputs(maskd, 1 * maskd);
-		arm_hardware_piog_outputs(maskg, 1 * maskg);
-		for (;;)
-		{
-			(GPIOD)->BSRR = BSRR_S(maskd);
-			(GPIOG)->BSRR = BSRR_S(maskg);
-			__DSB();
-			(GPIOD)->BSRR = BSRR_C(maskd);
-			(GPIOG)->BSRR = BSRR_C(maskg);
-			__DSB();
+#if 0//CPUSTYLE_STM32MP1
 
-		}
-	}
-#endif /* CPUSTYLE_STM32MP1 */
-#if CPUSTYLE_STM32MP1
+	/*
+	 * Interconnect update : select master using the port 1.
+	 * LTDC = AXI_M9.
+	 */
+	//mmio_write_32(syscfg_base + SYSCFG_ICNR, SYSCFG_ICNR_AXI_M9);
+
+	RCC->TZCR &= ~ (RCC_TZCR_TZEN | RCC_TZCR_MCKPROT);
+	RCC->MC_APB5ENSETR = RCC_MC_APB5ENSETR_TZPCEN;
 
 	// Set peripheral is not secure (Read and Write by secure and non secure)
 	tzpc_set_prot(0, 0x03);		// STGENC
@@ -9289,6 +9273,60 @@ SystemInit(void)
 	tzpc_set_prot(11, 0x03);	// DDRPHYC
 	tzpc_set_prot(32, 0x03);	// UART4
 
+#endif /* CPUSTYLE_STM32MP1 */
+
+#if CPUSTYLE_STM32MP1
+	//local_delay_ms(100);
+	RCC->TZCR &= ~ (RCC_TZCR_MCKPROT);
+	//RCC->TZCR &= ~ (RCC_TZCR_TZEN | RCC_TZCR_MCKPROT);
+	//RCC->MC_APB5ENSETR = RCC_MC_APB5ENSETR_TZPCEN;
+	//RCC->MC_APB5ENSETR = RCC_MC_APB5ENSETR_BSECEN;
+
+	//BSEC->BSEC_DENABLE |= BSEC_DENABLE_DBGEN_Msk;
+	//BSEC->BSEC_DENABLE |= BSEC_DENABLE_NIDEN_Msk;
+	//BSEC->BSEC_DENABLE |= BSEC_DENABLE_DEVICEEN_Msk;
+	//BSEC->BSEC_DENABLE |= BSEC_DENABLE_SPIDEN_Msk;
+	//BSEC->BSEC_DENABLE |= BSEC_DENABLE_SPNIDEN_Msk;
+	//BSEC->BSEC_DENABLE &= ~ BSEC_DENABLE_CP15SDISABLE_Msk;
+	//BSEC->BSEC_DENABLE &= ~ BSEC_DENABLE_CFGSDISABLE_Msk;
+	//BSEC->BSEC_DENABLE |= BSEC_DENABLE_DBGSWENABLE_Msk;
+	{
+		/*
+			QUADSPI_CLK 	PF10	AS pin 01	U13-38 (traced to PA7)
+			QUADSPI_BK1_NCS PB6 	AS pin 08	U12-21 (traced to PB12)
+			QUADSPI_BK1_IO0 PF8
+			QUADSPI_BK1_IO1 PF9
+		*/
+		//arm_hardware_piof_inputs(1uL << 8);
+		//arm_hardware_piof_inputs(1uL << 9);
+		//arm_hardware_piof_inputs(1uL << 10);
+		//arm_hardware_piob_inputs(1uL << 6);
+	}
+	{
+		//HARDWARE_DEBUG_INITIALIZE();
+		//HARDWARE_DEBUG_SET_SPEED(DEBUGSPEED);
+		//arm_hardware_pioa_altfn20(1uL << 13, 0);	// DBGTRO
+		// LED blinking test
+		//const uint_fast32_t mask = (1uL << 14);	// PA14 - GREEN LED LD5 on DK1/DK2 MB1272.pdf
+		const uint_fast32_t maskd = (1uL << 14);	// PD14 - LED on small board
+		const uint_fast32_t maskg = (1uL << 13);	// PG13 - LCD_R0
+		arm_hardware_piod_outputs(maskd, 1 * maskd);
+		arm_hardware_piog_outputs(maskg, 1 * maskg);
+		for (;;)
+		{
+			//dbg_putchar('5');
+			(GPIOD)->BSRR = BSRR_S(maskd);
+			(GPIOG)->BSRR = BSRR_S(maskg);
+			//local_delay_ms(100);
+			__DSB();
+			//dbg_putchar('#');
+			(GPIOD)->BSRR = BSRR_C(maskd);
+			(GPIOG)->BSRR = BSRR_C(maskg);
+			//local_delay_ms(100);
+			__DSB();
+
+		}
+	}
 #endif /* CPUSTYLE_STM32MP1 */
 #if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7
 
