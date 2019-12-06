@@ -25835,9 +25835,9 @@ peripheral. It shall be used to deallocate a peripheral from MCU */
 #define TIM1_AF1_BKINE_Pos         (0U)
 #define TIM1_AF1_BKINE_Msk         (0x1U << TIM1_AF1_BKINE_Pos)                /*!< 0x00000001 */
 #define TIM1_AF1_BKINE             TIM1_AF1_BKINE_Msk                          /*!<BKINE Break input enable bit */
-#define TIM1_AF1_BKDFBK0E_Pos      (8U)
-#define TIM1_AF1_BKDFBK0E_Msk      (0x1U << TIM1_AF1_BKDFBK0E_Pos)             /*!< 0x00000100 */
-#define TIM1_AF1_BKDFBK0E          TIM1_AF1_BKDFBK0E_Msk                       /*!<BKDFBK0E Break input DFSDM Break 0 */
+#define TIM1_AF1_BKDF1BK0E_Pos      (8U)
+#define TIM1_AF1_BKDF1BK0E_Msk      (0x1U << TIM1_AF1_BKDF1BK0E_Pos)             /*!< 0x00000100 */
+#define TIM1_AF1_BKDF1BK0E          TIM1_AF1_BKDF1BK0E_Msk                       /*!<BKDF1BK0E Break input DFSDM Break 0 */
 #define TIM1_AF1_BKINP_Pos         (9U)
 #define TIM1_AF1_BKINP_Msk         (0x1U << TIM1_AF1_BKINP_Pos)                /*!< 0x00000200 */
 #define TIM1_AF1_BKINP             TIM1_AF1_BKINP_Msk                          /*!<BRKINP Break input polarity */
@@ -25854,9 +25854,9 @@ peripheral. It shall be used to deallocate a peripheral from MCU */
 #define TIM1_AF2_BK2INE_Pos        (0U)
 #define TIM1_AF2_BK2INE_Msk        (0x1U << TIM1_AF2_BK2INE_Pos)               /*!< 0x00000001 */
 #define TIM1_AF2_BK2INE            TIM1_AF2_BK2INE_Msk                         /*!<BK2INE Break input 2 enable bit */
-#define TIM1_AF2_BK2DFBK1E_Pos     (8U)
-#define TIM1_AF2_BK2DFBK1E_Msk     (0x1U << TIM1_AF2_BK2DFBK1E_Pos)            /*!< 0x00000100 */
-#define TIM1_AF2_BK2DFBK1E         TIM1_AF2_BK2DFBK1E_Msk                      /*!<BK2DFBK1E Break input2 DFSDM Break 1 */
+#define TIM1_AF2_BK2DF1BK1E_Pos     (8U)
+#define TIM1_AF2_BK2DF1BK1E_Msk     (0x1U << TIM1_AF2_BK2DF1BK1E_Pos)            /*!< 0x00000100 */
+#define TIM1_AF2_BK2DF1BK1E         TIM1_AF2_BK2DF1BK1E_Msk                      /*!<BK2DF1BK1E Break input2 DFSDM Break 1 */
 #define TIM1_AF2_BK2INP_Pos        (9U)
 #define TIM1_AF2_BK2INP_Msk        (0x1U << TIM1_AF2_BK2INP_Pos)               /*!< 0x00000200 */
 #define TIM1_AF2_BK2INP            TIM1_AF2_BK2INP_Msk                         /*!<BRKINP Break2 input polarity */
