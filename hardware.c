@@ -9277,8 +9277,8 @@ SystemInit(void)
 
 #if CPUSTYLE_STM32MP1
 	//local_delay_ms(100);
-	RCC->TZCR &= ~ (RCC_TZCR_MCKPROT);
-	//RCC->TZCR &= ~ (RCC_TZCR_TZEN | RCC_TZCR_MCKPROT);
+	//RCC->TZCR &= ~ (RCC_TZCR_MCKPROT);
+	RCC->TZCR &= ~ (RCC_TZCR_TZEN | RCC_TZCR_MCKPROT);
 	//RCC->MC_APB5ENSETR = RCC_MC_APB5ENSETR_TZPCEN;
 	//RCC->MC_APB5ENSETR = RCC_MC_APB5ENSETR_BSECEN;
 
@@ -9290,6 +9290,7 @@ SystemInit(void)
 	//BSEC->BSEC_DENABLE &= ~ BSEC_DENABLE_CP15SDISABLE_Msk;
 	//BSEC->BSEC_DENABLE &= ~ BSEC_DENABLE_CFGSDISABLE_Msk;
 	//BSEC->BSEC_DENABLE |= BSEC_DENABLE_DBGSWENABLE_Msk;
+	if (0)
 	{
 		/*
 			QUADSPI_CLK 	PF10	AS pin 01	U13-38 (traced to PA7)
@@ -9301,6 +9302,12 @@ SystemInit(void)
 		//arm_hardware_piof_inputs(1uL << 9);
 		//arm_hardware_piof_inputs(1uL << 10);
 		//arm_hardware_piob_inputs(1uL << 6);
+	}
+	if (0)
+	{
+		RCC->OCENSETR = RCC_OCENSETR_HSEON;
+		//while ((RCC->OCRDYR & RCC_OCRDYR_HSERDY) == 0)
+		//	;
 	}
 	{
 		//HARDWARE_DEBUG_INITIALIZE();
