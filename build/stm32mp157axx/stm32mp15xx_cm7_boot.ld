@@ -119,6 +119,8 @@ SECTIONS
 		__end__ = .;
 
 		*(.text*)
+		*(.itcm*)
+		*(.dtcm*)
 
 		/* .ctors */
 		*crtbegin.o(.ctors)

@@ -17674,6 +17674,7 @@ ddd:
 }
 
 #endif /* WITHISBOOTLOADER */
+
 /* Главная функция программы */
 int 
 //__attribute__ ((used))
