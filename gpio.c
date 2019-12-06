@@ -1164,8 +1164,8 @@ arm_hardware_pioa_inputs(unsigned long ipins)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOAEN;	/* I/O port A clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOAEN;	/* I/O port A clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 	// Установка режима выводов
 	arm_stm32mp1_hardware_pio_prog(GPIOA, ipins, STM32MP1_GPIO_MODE_INPIUT, 1, 1, 0);	/* mode, speed, pupdr, typer */
 
@@ -1222,8 +1222,8 @@ arm_hardware_piob_inputs(unsigned long ipins)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOBEN;	/* I/O port B clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOBEN;	/* I/O port B clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 	// Установка режима выводов
 	arm_stm32mp1_hardware_pio_prog(GPIOB, ipins, STM32MP1_GPIO_MODE_INPIUT, 1, 1, 0);	/* mode, speed, pupdr, typer */
 
@@ -1280,8 +1280,8 @@ arm_hardware_pioc_inputs(unsigned long ipins)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOCEN;	/* I/O port C clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOCEN;	/* I/O port C clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 	// Установка режима выводов
 	arm_stm32mp1_hardware_pio_prog(GPIOC, ipins, STM32MP1_GPIO_MODE_INPIUT, 1, 1, 0);	/* mode, speed, pupdr, typer */
 
@@ -1330,8 +1330,8 @@ arm_hardware_piod_inputs(unsigned long ipins)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIODEN;	/* I/O port D clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIODEN;	/* I/O port D clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 	// Установка режима выводов
 	arm_stm32mp1_hardware_pio_prog(GPIOD, ipins, STM32MP1_GPIO_MODE_INPIUT, 1, 1, 0);	/* mode, speed, pupdr, typer */
 
@@ -1373,8 +1373,8 @@ arm_hardware_pioe_inputs(unsigned long ipins)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOEEN;	/* I/O port E clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOEEN;	/* I/O port E clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 	// Установка режима выводов
 	arm_stm32mp1_hardware_pio_prog(GPIOE, ipins, STM32MP1_GPIO_MODE_INPIUT, 1, 1, 0);	/* mode, speed, pupdr, typer */
 
@@ -1418,8 +1418,8 @@ arm_hardware_piof_inputs(unsigned long ipins)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOFEN;	/* I/O port F clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOFEN;	/* I/O port F clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 	// Установка режима выводов
 	arm_stm32mp1_hardware_pio_prog(GPIOF, ipins, STM32MP1_GPIO_MODE_INPIUT, 1, 1, 0);	/* mode, speed, pupdr, typer */
 
@@ -1463,8 +1463,8 @@ arm_hardware_piog_inputs(unsigned long ipins)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOGEN;	/* I/O port G clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOGEN;	/* I/O port G clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 	// Установка режима выводов
 	arm_stm32mp1_hardware_pio_prog(GPIOG, ipins, STM32MP1_GPIO_MODE_INPIUT, 1, 1, 0);	/* mode, speed, pupdr, typer */
 
@@ -1514,8 +1514,8 @@ arm_hardware_pioa_analoginput(unsigned long ipins)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOAEN;	/* I/O port A clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOAEN;	/* I/O port A clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 	// Установка режима выводов
 	arm_stm32mp1_hardware_pio_prog(GPIOA, ipins, STM32MP1_GPIO_MODE_ANALOG, 1, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -1564,8 +1564,8 @@ arm_hardware_piob_analoginput(unsigned long ipins)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOBEN;	/* I/O port B clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOBEN;	/* I/O port B clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 	// Установка режима выводов
 	arm_stm32mp1_hardware_pio_prog(GPIOB, ipins, STM32MP1_GPIO_MODE_ANALOG, 1, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -1614,8 +1614,8 @@ arm_hardware_pioc_analoginput(unsigned long ipins)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOCEN;	/* I/O port C clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOCEN;	/* I/O port C clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 	// Установка режима выводов
 	arm_stm32mp1_hardware_pio_prog(GPIOC, ipins, STM32MP1_GPIO_MODE_ANALOG, 1, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -1698,8 +1698,8 @@ arm_hardware_pioa_outputs(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOAEN;	/* I/O port A clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOAEN;	/* I/O port A clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 	// Установка начального состояния битов
 	arm_stm32f4xx_hardware_pio_setstate(GPIOA, opins, initialstate);
 	// Установка режима выводов
@@ -1783,8 +1783,8 @@ arm_hardware_pioa_outputs10m(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOAEN;	/* I/O port A clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOAEN;	/* I/O port A clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 	// Установка начального состояния битов
 	arm_stm32f4xx_hardware_pio_setstate(GPIOA, opins, initialstate);
 	// Установка режима выводов
@@ -1869,8 +1869,8 @@ arm_hardware_pioa_outputs50m(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOAEN;	/* I/O port A clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOAEN;	/* I/O port A clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 	// Установка начального состояния битов
 	arm_stm32f4xx_hardware_pio_setstate(GPIOA, opins, initialstate);
 	// Установка режима выводов
@@ -1944,8 +1944,8 @@ arm_hardware_piob_outputs(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOBEN;	/* I/O port B clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOBEN;	/* I/O port B clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 	// Установка начального состояния битов
 	arm_stm32f4xx_hardware_pio_setstate(GPIOB, opins, initialstate);
 	// Установка режима выводов
@@ -2030,8 +2030,8 @@ arm_hardware_piob_outputs50m(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOBEN;	/* I/O port B clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOBEN;	/* I/O port B clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 	// Установка начального состояния битов
 	arm_stm32f4xx_hardware_pio_setstate(GPIOB, opins, initialstate);
 	// Установка режима выводов
@@ -2117,8 +2117,8 @@ arm_hardware_pioc_outputs50m(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOCEN;	/* I/O port C clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOCEN;	/* I/O port C clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 	// Установка начального состояния битов
 	arm_stm32f4xx_hardware_pio_setstate(GPIOC, opins, initialstate);
 	// Установка режима выводов
@@ -2192,8 +2192,8 @@ arm_hardware_pioc_outputs(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOCEN;	/* I/O port C clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOCEN;	/* I/O port C clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 	// Установка начального состояния битов
 	arm_stm32f4xx_hardware_pio_setstate(GPIOC, opins, initialstate);
 	// Установка режима выводов
@@ -2255,8 +2255,8 @@ arm_hardware_pioa_outputs2m(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOAEN;	/* I/O port A clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOAEN;	/* I/O port A clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 	// Установка начального состояния битов
 	arm_stm32f4xx_hardware_pio_setstate(GPIOA, opins, initialstate);
 	// Установка режима выводов
@@ -2318,8 +2318,8 @@ arm_hardware_piob_outputs2m(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOBEN;	/* I/O port B clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOBEN;	/* I/O port B clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 	// Установка начального состояния битов
 	arm_stm32f4xx_hardware_pio_setstate(GPIOB, opins, initialstate);
 	// Установка режима выводов
@@ -2381,8 +2381,8 @@ arm_hardware_pioc_outputs2m(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOCEN;	/* I/O port C clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOCEN;	/* I/O port C clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 	// Установка начального состояния битов
 	arm_stm32f4xx_hardware_pio_setstate(GPIOC, opins, initialstate);
 	// Установка режима выводов
@@ -2444,8 +2444,8 @@ arm_hardware_piod_outputs2m(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIODEN;	/* I/O port D clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIODEN;	/* I/O port D clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 	// Установка начального состояния битов
 	arm_stm32f4xx_hardware_pio_setstate(GPIOD, opins, initialstate);
 	// Установка режима выводов
@@ -2498,8 +2498,8 @@ arm_hardware_piod_outputs(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIODEN;	/* I/O port D clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIODEN;	/* I/O port D clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 	// Установка начального состояния битов
 	arm_stm32f4xx_hardware_pio_setstate(GPIOD, opins, initialstate);
 	// Установка режима выводов
@@ -2552,8 +2552,8 @@ arm_hardware_pioe_outputs(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOEEN;	/* I/O port E clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOEEN;	/* I/O port E clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 	// Установка начального состояния битов
 	arm_stm32f4xx_hardware_pio_setstate(GPIOE, opins, initialstate);
 	// Установка режима выводов
@@ -2606,8 +2606,8 @@ arm_hardware_pioe_outputs2m(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOEEN;	/* I/O port E clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOEEN;	/* I/O port E clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 	// Установка начального состояния битов
 	arm_stm32f4xx_hardware_pio_setstate(GPIOE, opins, initialstate);
 	// Установка режима выводов
@@ -2664,8 +2664,8 @@ arm_hardware_piof_outputs(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOFEN;	/* I/O port F clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOFEN;	/* I/O port F clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 	// Установка начального состояния битов
 	arm_stm32f4xx_hardware_pio_setstate(GPIOF, opins, initialstate);
 	// Установка режима выводов
@@ -2719,8 +2719,8 @@ arm_hardware_piof_outputs2m(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOFEN;	/* I/O port F clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOFEN;	/* I/O port F clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 	// Установка начального состояния битов
 	arm_stm32f4xx_hardware_pio_setstate(GPIOF, opins, initialstate);
 	// Установка режима выводов
@@ -2779,8 +2779,8 @@ arm_hardware_piog_outputs(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOGEN;	/* I/O port G clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOGEN;	/* I/O port G clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 	// Установка начального состояния битов
 	arm_stm32f4xx_hardware_pio_setstate(GPIOG, opins, initialstate);
 	// Установка режима выводов
@@ -2835,8 +2835,8 @@ arm_hardware_piog_outputs2m(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOGEN;	/* I/O port G clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOGEN;	/* I/O port G clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 	// Установка начального состояния битов
 	arm_stm32f4xx_hardware_pio_setstate(GPIOG, opins, initialstate);
 	// Установка режима выводов
@@ -2890,8 +2890,8 @@ arm_hardware_piog_outputs50m(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOGEN;	/* I/O port G clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOGEN;	/* I/O port G clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 	// Установка начального состояния битов
 	arm_stm32f4xx_hardware_pio_setstate(GPIOG, opins, initialstate);
 	// Установка режима выводов
@@ -2950,8 +2950,8 @@ arm_hardware_pioh_outputs(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOHEN;	/* I/O port H clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOHEN;	/* I/O port H clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 	// Установка начального состояния битов
 	arm_stm32f4xx_hardware_pio_setstate(GPIOH, opins, initialstate);
 	// Установка режима выводов
@@ -3005,8 +3005,8 @@ arm_hardware_pioh_outputs2m(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOHEN;	/* I/O port H clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOHEN;	/* I/O port H clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 	// Установка начального состояния битов
 	arm_stm32f4xx_hardware_pio_setstate(GPIOH, opins, initialstate);
 	// Установка режима выводов
@@ -3065,8 +3065,8 @@ arm_hardware_pioi_outputs(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOIEN;	/* I/O port I clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOIEN;	/* I/O port I clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 	// Установка начального состояния битов
 	arm_stm32f4xx_hardware_pio_setstate(GPIOI, opins, initialstate);
 	// Установка режима выводов
@@ -3120,8 +3120,8 @@ arm_hardware_pioi_outputs2m(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOIEN;	/* I/O port I clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOIEN;	/* I/O port I clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 	// Установка начального состояния битов
 	arm_stm32f4xx_hardware_pio_setstate(GPIOI, opins, initialstate);
 	// Установка режима выводов
@@ -3181,8 +3181,8 @@ arm_hardware_piok_outputs(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOKEN;	/* I/O port K clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOKEN;	/* I/O port K clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 	// Установка начального состояния битов
 	arm_stm32f4xx_hardware_pio_setstate(GPIOK, opins, initialstate);
 	// Установка режима выводов
@@ -3236,8 +3236,8 @@ arm_hardware_piok_outputs2m(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOKEN;	/* I/O port K clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOKEN;	/* I/O port K clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 	// Установка начального состояния битов
 	arm_stm32f4xx_hardware_pio_setstate(GPIOK, opins, initialstate);
 	// Установка режима выводов
@@ -3325,8 +3325,8 @@ arm_hardware_pioa_opendrain(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOAEN;	/* I/O port A clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOAEN;	/* I/O port A clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 	// Установка начального состояния битов
 	arm_stm32f4xx_hardware_pio_setstate(GPIOA, opins, initialstate);
 	// Установка режима выводов
@@ -3387,8 +3387,8 @@ arm_hardware_piob_opendrain(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOBEN;	/* I/O port B clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOBEN;	/* I/O port B clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 	// Установка начального состояния битов
 	arm_stm32f4xx_hardware_pio_setstate(GPIOB, opins, initialstate);
 	// Установка режима выводов
@@ -3450,8 +3450,8 @@ arm_hardware_pioc_opendrain(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOCEN;	/* I/O port C clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOCEN;	/* I/O port C clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 	// Установка начального состояния битов
 	arm_stm32f4xx_hardware_pio_setstate(GPIOC, opins, initialstate);
 	// Установка режима выводов
@@ -3513,8 +3513,8 @@ arm_hardware_piod_opendrain(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIODEN;	/* I/O port D clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIODEN;	/* I/O port D clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 	// Установка начального состояния битов
 	arm_stm32f4xx_hardware_pio_setstate(GPIOD, opins, initialstate);
 	// Установка режима выводов
@@ -3567,8 +3567,8 @@ arm_hardware_pioe_opendrain(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOEEN;	/* I/O port E clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOEEN;	/* I/O port E clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 	// Установка начального состояния битов
 	arm_stm32f4xx_hardware_pio_setstate(GPIOE, opins, initialstate);
 	// Установка режима выводов
@@ -3623,8 +3623,8 @@ arm_hardware_piof_opendrain(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOFEN;	/* I/O portFA clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOFEN;	/* I/O portFA clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 	// Установка начального состояния битов
 	arm_stm32f4xx_hardware_pio_setstate(GPIOF, opins, initialstate);
 	// Установка режима выводов
@@ -3678,8 +3678,8 @@ arm_hardware_piog_opendrain(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOGEN;	/* I/O port G clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOGEN;	/* I/O port G clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 	// Установка начального состояния битов
 	arm_stm32f4xx_hardware_pio_setstate(GPIOG, opins, initialstate);
 	// Установка режима выводов
@@ -3734,8 +3734,8 @@ arm_hardware_pioh_opendrain(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOHEN;	/* I/O port H clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOHEN;	/* I/O port H clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 	// Установка начального состояния битов
 	arm_stm32f4xx_hardware_pio_setstate(GPIOH, opins, initialstate);
 	// Установка режима выводов
@@ -3952,8 +3952,8 @@ arm_hardware_pioa_altfn50(unsigned long opins, unsigned af)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOAEN;	/* I/O port A clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOAEN;	/* I/O port A clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 	arm_stm32mp1_hardware_pio_altfn(GPIOA, opins, af);
 	// Установка режима выводов
 	arm_stm32mp1_hardware_pio_prog(GPIOA, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
@@ -4009,8 +4009,8 @@ arm_hardware_piob_altfn50(unsigned long opins, unsigned af)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOBEN;	/* I/O port B clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOBEN;	/* I/O port B clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 	arm_stm32mp1_hardware_pio_altfn(GPIOB, opins, af);
 	// Установка режима выводов
 	arm_stm32mp1_hardware_pio_prog(GPIOB, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
@@ -4058,8 +4058,8 @@ arm_hardware_pioc_altfn50(unsigned long opins, unsigned af)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOCEN;	/* I/O port C clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOCEN;	/* I/O port C clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 	arm_stm32mp1_hardware_pio_altfn(GPIOC, opins, af);
 	// Установка режима выводов
 	arm_stm32mp1_hardware_pio_prog(GPIOC, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
@@ -4108,8 +4108,8 @@ arm_hardware_piod_altfn20(unsigned long opins, unsigned af)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIODEN;	/* I/O port D clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIODEN;	/* I/O port D clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 	arm_stm32mp1_hardware_pio_altfn(GPIOD, opins, af);
 	// Установка режима выводов
 	arm_stm32mp1_hardware_pio_prog(GPIOD, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
@@ -4158,8 +4158,8 @@ arm_hardware_piod_altfn50(unsigned long opins, unsigned af)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIODEN;	/* I/O port D clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIODEN;	/* I/O port D clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 	arm_stm32mp1_hardware_pio_altfn(GPIOD, opins, af);
 	// Установка режима выводов
 	arm_stm32mp1_hardware_pio_prog(GPIOD, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
@@ -4216,8 +4216,8 @@ arm_hardware_pioa_altfn2(unsigned long opins, unsigned af)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOAEN;	/* I/O port A clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOAEN;	/* I/O port A clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 	arm_stm32mp1_hardware_pio_altfn(GPIOA, opins, af);
 	// Установка режима выводов
 	arm_stm32mp1_hardware_pio_prog(GPIOA, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
@@ -4274,8 +4274,8 @@ arm_hardware_pioa_altfn20(unsigned long opins, unsigned af)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOAEN;	/* I/O port A clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOAEN;	/* I/O port A clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 	arm_stm32mp1_hardware_pio_altfn(GPIOA, opins, af);
 	// Установка режима выводов
 	arm_stm32mp1_hardware_pio_prog(GPIOA, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
@@ -4332,8 +4332,8 @@ arm_hardware_piob_altfn2(unsigned long opins, unsigned af)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOBEN;	/* I/O port B clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOBEN;	/* I/O port B clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 	arm_stm32mp1_hardware_pio_altfn(GPIOB, opins, af);
 	// Установка режима выводов
 	arm_stm32mp1_hardware_pio_prog(GPIOB, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
@@ -4390,8 +4390,8 @@ arm_hardware_piob_altfn20(unsigned long opins, unsigned af)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOBEN;	/* I/O port B clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOBEN;	/* I/O port B clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 	arm_stm32mp1_hardware_pio_altfn(GPIOB, opins, af);
 	// Установка режима выводов
 	arm_stm32mp1_hardware_pio_prog(GPIOB, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
@@ -4448,8 +4448,8 @@ arm_hardware_pioc_altfn2(unsigned long opins, unsigned af)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOCEN;	/* I/O port C clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOCEN;	/* I/O port C clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 	arm_stm32mp1_hardware_pio_altfn(GPIOC, opins, af);
 	// Установка режима выводов
 	arm_stm32mp1_hardware_pio_prog(GPIOC, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
@@ -4506,8 +4506,8 @@ arm_hardware_pioc_altfn20(unsigned long opins, unsigned af)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOCEN;	/* I/O port C clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOCEN;	/* I/O port C clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 	arm_stm32mp1_hardware_pio_altfn(GPIOC, opins, af);
 	// Установка режима выводов
 	arm_stm32mp1_hardware_pio_prog(GPIOC, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
@@ -4556,8 +4556,8 @@ arm_hardware_piod_altfn2(unsigned long opins, unsigned af)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIODEN;	/* I/O port D clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIODEN;	/* I/O port D clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 	arm_stm32mp1_hardware_pio_altfn(GPIOD, opins, af);
 	// Установка режима выводов
 	arm_stm32mp1_hardware_pio_prog(GPIOD, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
@@ -4608,8 +4608,8 @@ arm_hardware_pioe_altfn2(unsigned long opins, unsigned af)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOEEN;	/* I/O port E clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOEEN;	/* I/O port E clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 
 	arm_stm32mp1_hardware_pio_altfn(GPIOE, opins, af);
 	// Установка режима выводов
@@ -4659,8 +4659,8 @@ arm_hardware_pioe_altfn20(unsigned long opins, unsigned af)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOEEN;	/* I/O port E clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOEEN;	/* I/O port E clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 
 	arm_stm32mp1_hardware_pio_altfn(GPIOE, opins, af);
 	// Установка режима выводов
@@ -4710,8 +4710,8 @@ arm_hardware_pioe_altfn50(unsigned long opins, unsigned af)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOFEN;	/* I/O port F clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOFEN;	/* I/O port F clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 
 	arm_stm32mp1_hardware_pio_altfn(GPIOF, opins, af);
 	// Установка режима выводов
@@ -4766,8 +4766,8 @@ arm_hardware_piof_altfn2(unsigned long opins, unsigned af)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOFEN;	/* I/O port F clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOFEN;	/* I/O port F clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 
 	arm_stm32mp1_hardware_pio_altfn(GPIOF, opins, af);
 	// Установка режима выводов
@@ -4817,8 +4817,8 @@ arm_hardware_piof_altfn20(unsigned long opins, unsigned af)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOFEN;	/* I/O port F clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOFEN;	/* I/O port F clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 
 	arm_stm32mp1_hardware_pio_altfn(GPIOF, opins, af);
 	// Установка режима выводов
@@ -4868,8 +4868,8 @@ arm_hardware_piof_altfn50(unsigned long opins, unsigned af)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOFEN;	/* I/O port F clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOFEN;	/* I/O port F clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 
 	arm_stm32mp1_hardware_pio_altfn(GPIOF, opins, af);
 	// Установка режима выводов
@@ -4923,8 +4923,8 @@ arm_hardware_piog_altfn2(unsigned long opins, unsigned af)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOGEN;	/* I/O port G clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOGEN;	/* I/O port G clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 
 	arm_stm32mp1_hardware_pio_altfn(GPIOG, opins, af);
 	// Установка режима выводов
@@ -4974,8 +4974,8 @@ arm_hardware_piog_altfn20(unsigned long opins, unsigned af)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOGEN;	/* I/O port G clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOGEN;	/* I/O port G clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 
 	arm_stm32mp1_hardware_pio_altfn(GPIOG, opins, af);
 	// Установка режима выводов
@@ -5025,8 +5025,8 @@ arm_hardware_piog_altfn50(unsigned long opins, unsigned af)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOGEN;	/* I/O port G clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOGEN;	/* I/O port G clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 
 	arm_stm32mp1_hardware_pio_altfn(GPIOG, opins, af);
 	// Установка режима выводов
@@ -5076,8 +5076,8 @@ arm_hardware_pioh_inputs(unsigned long ipins)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOHEN;	/* I/O port H clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOHEN;	/* I/O port H clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 	// Установка режима выводов
 	arm_stm32mp1_hardware_pio_prog(GPIOH, ipins, 0, 1, 1, 0);	/* mode, speed, pupdr, typer */
 
@@ -5125,8 +5125,8 @@ arm_hardware_pioh_altfn2(unsigned long opins, unsigned af)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOHEN;	/* I/O port $ clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOHEN;	/* I/O port $ clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 	// Установка режима выводов
 	arm_stm32mp1_hardware_pio_prog(GPIOH, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -5174,8 +5174,8 @@ arm_hardware_pioh_altfn20(unsigned long opins, unsigned af)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOHEN;	/* I/O port $ clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOHEN;	/* I/O port $ clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 	// Установка режима выводов
 	arm_stm32mp1_hardware_pio_prog(GPIOH, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -5223,8 +5223,8 @@ arm_hardware_pioh_altfn50(unsigned long opins, unsigned af)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOHEN;	/* I/O port $ clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOHEN;	/* I/O port $ clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 	// Установка режима выводов
 	arm_stm32mp1_hardware_pio_prog(GPIOH, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -5271,8 +5271,8 @@ arm_hardware_pioi_inputs(unsigned long ipins)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOIEN;	/* I/O port I clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOIEN;	/* I/O port I clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 	// Установка режима выводов
 	arm_stm32mp1_hardware_pio_prog(GPIOI, ipins, 0, 1, 1, 0);	/* mode, speed, pupdr, typer */
 
@@ -5320,8 +5320,8 @@ arm_hardware_pioi_altfn2(unsigned long opins, unsigned af)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOIEN;	/* I/O port I clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOIEN;	/* I/O port I clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 
 	arm_stm32mp1_hardware_pio_altfn(GPIOI, opins, af);
 	// Установка режима выводов
@@ -5371,8 +5371,8 @@ arm_hardware_pioi_altfn20(unsigned long opins, unsigned af)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOIEN;	/* I/O port I clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOIEN;	/* I/O port I clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 
 	arm_stm32mp1_hardware_pio_altfn(GPIOI, opins, af);
 	// Установка режима выводов
@@ -5422,8 +5422,8 @@ arm_hardware_pioi_altfn50(unsigned long opins, unsigned af)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOIEN;	/* I/O port I clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOIEN;	/* I/O port I clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 
 	arm_stm32mp1_hardware_pio_altfn(GPIOI, opins, af);
 	// Установка режима выводов
@@ -5472,8 +5472,8 @@ arm_hardware_pioj_inputs(unsigned long ipins)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOJEN;	/* I/O port J clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOJEN;	/* I/O port J clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 	// Установка режима выводов
 	arm_stm32mp1_hardware_pio_prog(GPIOJ, ipins, 0, 1, 1, 0);	/* mode, speed, pupdr, typer */
 
@@ -5521,8 +5521,8 @@ arm_hardware_pioj_altfn2(unsigned long opins, unsigned af)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOJEN;	/* I/O port J clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOJEN;	/* I/O port J clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 
 	arm_stm32mp1_hardware_pio_altfn(GPIOJ, opins, af);
 	// Установка режима выводов
@@ -5572,8 +5572,8 @@ arm_hardware_pioj_altfn20(unsigned long opins, unsigned af)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOJEN;	/* I/O port J clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOJEN;	/* I/O port J clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 
 	arm_stm32mp1_hardware_pio_altfn(GPIOJ, opins, af);
 	// Установка режима выводов
@@ -5623,8 +5623,8 @@ arm_hardware_pioj_altfn50(unsigned long opins, unsigned af)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOJEN;	/* I/O port J clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOJEN;	/* I/O port J clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 
 	arm_stm32mp1_hardware_pio_altfn(GPIOJ, opins, af);
 	// Установка режима выводов
@@ -5673,8 +5673,8 @@ arm_hardware_piok_inputs(unsigned long ipins)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOKEN;	/* I/O port K clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOKEN;	/* I/O port K clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 	// Установка режима выводов
 	arm_stm32mp1_hardware_pio_prog(GPIOK, ipins, 0, 1, 1, 0);	/* mode, speed, pupdr, typer */
 
@@ -5722,8 +5722,8 @@ arm_hardware_piok_altfn2(unsigned long opins, unsigned af)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOKEN;	/* I/O port K clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOKEN;	/* I/O port K clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 
 	arm_stm32mp1_hardware_pio_altfn(GPIOK, opins, af);
 	// Установка режима выводов
@@ -5773,8 +5773,8 @@ arm_hardware_piok_altfn20(unsigned long opins, unsigned af)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOKEN;	/* I/O port K clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOKEN;	/* I/O port K clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 
 	arm_stm32mp1_hardware_pio_altfn(GPIOK, opins, af);
 	// Установка режима выводов
@@ -5824,8 +5824,8 @@ arm_hardware_piok_altfn50(unsigned long opins, unsigned af)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOKEN;	/* I/O port K clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOKEN;	/* I/O port K clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 
 	arm_stm32mp1_hardware_pio_altfn(GPIOK, opins, af);
 	// Установка режима выводов
@@ -5885,8 +5885,8 @@ void arm_hardware_pioa_periphopendrain_altfn2(unsigned long opins, unsigned af)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOAEN;	/* I/O port A clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOAEN;	/* I/O port A clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 
 	arm_stm32mp1_hardware_pio_altfn(GPIOA, opins, af);
 	// Установка режима выводов
@@ -5942,8 +5942,8 @@ void arm_hardware_piob_periphopendrain_altfn2(unsigned long opins, unsigned af)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOBEN;	/* I/O port B clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOBEN;	/* I/O port B clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 
 	arm_stm32mp1_hardware_pio_altfn(GPIOB, opins, af);
 	// Установка режима выводов
@@ -6000,8 +6000,8 @@ void arm_hardware_pioc_periphopendrain_altfn2(unsigned long opins, unsigned af)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOCEN;	/* I/O port C clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOCEN;	/* I/O port C clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 
 	arm_stm32mp1_hardware_pio_altfn(GPIOC, opins, af);
 	// Установка режима выводов
@@ -6058,8 +6058,8 @@ void arm_hardware_piod_periphopendrain_altfn2(unsigned long opins, unsigned af)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIODEN;	/* I/O port D clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIODEN;	/* I/O port D clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 
 	arm_stm32mp1_hardware_pio_altfn(GPIOD, opins, af);
 	// Установка режима выводов
@@ -6108,8 +6108,8 @@ void arm_hardware_pioe_periphopendrain_altfn2(unsigned long opins, unsigned af)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOEEN;	/* I/O port E clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOEEN;	/* I/O port E clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 
 	arm_stm32mp1_hardware_pio_altfn(GPIOE, opins, af);
 	// Установка режима выводов
@@ -6160,8 +6160,8 @@ void arm_hardware_piof_periphopendrain_altfn2(unsigned long opins, unsigned af)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOFEN;	/* I/O port F clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOFEN;	/* I/O port F clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 
 	arm_stm32mp1_hardware_pio_altfn(GPIOF, opins, af);
 	// Установка режима выводов
@@ -6208,8 +6208,8 @@ void arm_hardware_piog_periphopendrain_altfn2(unsigned long opins, unsigned af)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOGEN;	/* I/O port G clock enable */
-	(void) RCC->MC_AHB4ENSETR;
+	RCC->MP_AHB4ENSETR = RCC_MC_AHB4ENSETR_GPIOGEN;	/* I/O port G clock enable */
+	//(void) RCC->MP_AHB4ENSETR;
 
 	arm_stm32mp1_hardware_pio_altfn(GPIOG, opins, af);
 	// Установка режима выводов
