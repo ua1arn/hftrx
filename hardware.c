@@ -9246,13 +9246,129 @@ tzpc_set_prot(
 
 #endif /* CPUSTYLE_STM32MP1 && defined (TZPC) */
 
+#if CPUSTYLE_STM32MP1
+void stm32mp1_pll_initialize(void)
+{
+	// PLL1 DIVN=0x1f. DIVM=0x4, DIVP=0x0
+	// HSI 64MHz/5*32 = 409.6 MHz
+	// HSI 64MHz/5*42 = 537.6 MHz
+	//RCC->MP_APB5ENSETR = RCC_MC_APB5ENSETR_TZPCEN;
+	//(void) RCC->MP_APB5ENSETR;
+	RCC->TZCR &= ~ (RCC_TZCR_MCKPROT);
+	RCC->TZCR &= ~ (RCC_TZCR_TZEN);
+	// переключение на HSI на всякий случай перед программированием PLL
+	// HSI ON
+	RCC->OCENSETR = RCC_OCENSETR_HSION;
+	while ((RCC->OCRDYR & RCC_OCRDYR_HSIRDY) == 0)
+		;
+	//0x0: HSI selected as AXI sub-system clock (hsi_ck) (default after reset)
+	//0x1: HSE selected as AXI sub-system clock (hse_ck)
+	//0x2: PLL2 selected as AXI sub-system clock (pll2_p_ck)
+	//others: axiss_ck is gated
+	RCC->ASSCKSELR = (RCC->ASSCKSELR & ~ (RCC_ASSCKSELR_AXISSRC_Msk)) |
+			(0x02 << RCC_ASSCKSELR_AXISSRC_Pos) |	// HSI
+			0;
+	while ((RCC->ASSCKSELR & RCC_ASSCKSELR_AXISSRCRDY_Msk) == 0)
+		;
+	//	0x0: HSI selected as MPU sub-system clock (hsi_ck) (default after reset)
+	//	0x1: HSE selected as MPU sub-system clock (hse_ck)
+	//	0x2: PLL1 selected as MPU sub-system clock (pll1_p_ck)
+	//	0x3: PLL1 via MPUDIV is selected as MPU sub-system clock (pll1_p_ck / 2 MPUDIV).
+	RCC->MPCKSELR = (RCC->MPCKSELR & ~ (RCC_MPCKSELR_MPUSRC_Msk)) |
+		(0x02 << RCC_MPCKSELR_MPUSRC_Pos) |	// HSI
+		0;
+	while((RCC->MPCKSELR & RCC_MPCKSELR_MPUSRCRDY_Msk) == 0)
+		;
+
+	// HSE ON
+	RCC->OCENSETR = RCC_OCENSETR_HSEON;
+	while ((RCC->OCRDYR & RCC_OCRDYR_HSERDY) == 0)
+		;
+	goto end;
+
+	RCC->PLL1CR &= ~ RCC_PLL1CR_PLLON_Msk;
+	RCC->PLL2CR &= ~ RCC_PLL2CR_PLLON_Msk;
+	// PLL12 source mux
+	RCC->RCK12SELR = (RCC->RCK12SELR & ~ (RCC_RCK12SELR_PLL12SRC_Msk)) |
+		(0x01 < RCC_RCK12SELR_PLL12SRC_Pos) |	// 0x1: HSE selected as PLL clock (hse_ck)
+		0;
+	while ((RCC->RCK12SELR & RCC_RCK12SELR_PLL12SRCRDY_Msk) == 0)
+		;
+	// PLL1 DIVM1 = 2
+	// PLL1 DIVN1 = 54
+	RCC->PLL1CFGR1 = (RCC->PLL1CFGR1 & ~ (RCC_PLL1CFGR1_DIVN_Msk | RCC_PLL1CFGR1_DIVM1_Msk)) |
+		((2 - 1) < RCC_PLL1CFGR1_DIVM1_Pos) |
+		((54 - 1) < RCC_PLL1CFGR1_DIVN_Pos) |
+		0;
+
+	// PLL1 DIVP1 = 1
+	RCC->PLL1CFGR2 = (RCC->PLL1CFGR2 & ~ (RCC_PLL1CFGR2_DIVP_Msk | RCC_PLL1CFGR2_DIVQ_Msk | RCC_PLL1CFGR2_DIVR_Msk)) |
+		((1 - 1) < RCC_PLL1CFGR2_DIVP_Pos) |
+		((2 - 1) < RCC_PLL1CFGR2_DIVQ_Pos) |
+		((2 - 1) < RCC_PLL1CFGR2_DIVR_Pos) |
+		0;
+
+	RCC->PLL1CR |= RCC_PLL1CR_PLLON_Msk;
+	while ((RCC->PLL1CR & RCC_PLL1CR_PLL1RDY_Msk) == 0)
+		;
+
+	RCC->PLL1CR &= ~ RCC_PLL1CR_SSCG_CTRL_Msk;
+
+	// PLL2 DIVM2 = 2
+	// PLL2 DIVN2 = 44
+	RCC->PLL2CFGR1 = (RCC->PLL2CFGR1 & ~ (RCC_PLL2CFGR1_DIVN_Msk | RCC_PLL2CFGR1_DIVM2_Msk)) |
+		((2 - 1) < RCC_PLL2CFGR1_DIVM2_Pos) |
+		((44) < RCC_PLL2CFGR1_DIVN_Pos) |
+		0;
+
+	// PLL2 DIVP1 = 1
+	RCC->PLL2CFGR2 = (RCC->PLL2CFGR2 & ~ (RCC_PLL2CFGR2_DIVP_Msk | RCC_PLL2CFGR2_DIVQ_Msk | RCC_PLL2CFGR2_DIVR_Msk)) |
+		((1 - 1) < RCC_PLL1CFGR2_DIVP_Pos) |
+		((2 - 1) < RCC_PLL1CFGR2_DIVQ_Pos) |
+		((2 - 1) < RCC_PLL1CFGR2_DIVR_Pos) |
+		0;
+
+	RCC->PLL2CR |= RCC_PLL2CR_PLLON_Msk;
+	while ((RCC->PLL2CR & RCC_PLL2CR_PLL2RDY_Msk) == 0)
+		;
+
+	RCC->PLL2CR &= ~ RCC_PLL2CR_SSCG_CTRL_Msk;
+
+	//0x0: HSI selected as AXI sub-system clock (hsi_ck) (default after reset)
+	//0x1: HSE selected as AXI sub-system clock (hse_ck)
+	//0x2: PLL2 selected as AXI sub-system clock (pll2_p_ck)
+	//others: axiss_ck is gated
+	RCC->ASSCKSELR = (RCC->ASSCKSELR & ~ (RCC_ASSCKSELR_AXISSRC_Msk)) |
+			(0x02 << RCC_ASSCKSELR_AXISSRC_Pos) |
+			0;
+	while ((RCC->ASSCKSELR & RCC_ASSCKSELR_AXISSRCRDY_Msk) == 0)
+		;
+	//	0x0: HSI selected as MPU sub-system clock (hsi_ck) (default after reset)
+	//	0x1: HSE selected as MPU sub-system clock (hse_ck)
+	//	0x2: PLL1 selected as MPU sub-system clock (pll1_p_ck)
+	//	0x3: PLL1 via MPUDIV is selected as MPU sub-system clock (pll1_p_ck / 2 MPUDIV).
+	RCC->MPCKSELR = (RCC->MPCKSELR & ~ (RCC_MPCKSELR_MPUSRC_Msk)) |
+		(0x02 << RCC_MPCKSELR_MPUSRC_Pos) |
+		0;
+	while((RCC->MPCKSELR & RCC_MPCKSELR_MPUSRCRDY_Msk) == 0)
+		;
+
+	end:
+	;
+}
+#endif /* CPUSTYLE_STM32MP1 */
+
 /* функция вызывается из start-up до копирования в SRAM всех "быстрых" функций и до инициализации переменных
 */
 // watchdog disable, clock initialize, cache enable
-void 
+void
 FLASHMEMINITFUNC
 SystemInit(void)
 {
+#if CPUSTYLE_STM32MP1
+	//stm32mp1_pll_initialize();
+	return;
+#endif /* CPUSTYLE_STM32MP1 */
 #if 0//CPUSTYLE_STM32MP1
 
 	/*
@@ -9261,8 +9377,10 @@ SystemInit(void)
 	 */
 	//mmio_write_32(syscfg_base + SYSCFG_ICNR, SYSCFG_ICNR_AXI_M9);
 
-	RCC->TZCR &= ~ (RCC_TZCR_TZEN | RCC_TZCR_MCKPROT);
-	RCC->MC_APB5ENSETR = RCC_MC_APB5ENSETR_TZPCEN;
+	//RCC->TZCR &= ~ (RCC_TZCR_TZEN | RCC_TZCR_MCKPROT);
+	RCC->TZCR &= ~ (RCC_TZCR_TZEN);
+	RCC->MP_APB5ENSETR = RCC_MC_APB5ENSETR_TZPCEN;
+	(void) RCC->MP_APB5ENSETR;
 
 	// Set peripheral is not secure (Read and Write by secure and non secure)
 	tzpc_set_prot(0, 0x03);		// STGENC
@@ -9277,10 +9395,10 @@ SystemInit(void)
 
 #if CPUSTYLE_STM32MP1
 	//local_delay_ms(100);
-	//RCC->TZCR &= ~ (RCC_TZCR_MCKPROT);
-	RCC->TZCR &= ~ (RCC_TZCR_TZEN | RCC_TZCR_MCKPROT);
-	//RCC->MC_APB5ENSETR = RCC_MC_APB5ENSETR_TZPCEN;
-	//RCC->MC_APB5ENSETR = RCC_MC_APB5ENSETR_BSECEN;
+	RCC->TZCR &= ~ (RCC_TZCR_TZEN);
+	//RCC->TZCR &= ~ (RCC_TZCR_TZEN | RCC_TZCR_MCKPROT);
+	//RCC->MP_APB5ENSETR = RCC_MC_APB5ENSETR_TZPCEN;
+	//RCC->MP_APB5ENSETR = RCC_MC_APB5ENSETR_BSECEN;
 
 	//BSEC->BSEC_DENABLE |= BSEC_DENABLE_DBGEN_Msk;
 	//BSEC->BSEC_DENABLE |= BSEC_DENABLE_NIDEN_Msk;
@@ -9303,13 +9421,8 @@ SystemInit(void)
 		//arm_hardware_piof_inputs(1uL << 10);
 		//arm_hardware_piob_inputs(1uL << 6);
 	}
-	if (0)
 	{
-		RCC->OCENSETR = RCC_OCENSETR_HSEON;
-		//while ((RCC->OCRDYR & RCC_OCRDYR_HSERDY) == 0)
-		//	;
-	}
-	{
+		//RCC->MP_APB5ENSETR = RCC_MC_APB5ENSETR_TZPCEN;
 		//HARDWARE_DEBUG_INITIALIZE();
 		//HARDWARE_DEBUG_SET_SPEED(DEBUGSPEED);
 		//arm_hardware_pioa_altfn20(1uL << 13, 0);	// DBGTRO
