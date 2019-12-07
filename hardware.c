@@ -9272,27 +9272,28 @@ tzpc_set_prot(
 	// PLL2 DIVN2 = 44
 	// PLL2 DIVP1 = 1
 	#define PLL1DIVM	2	// ref1_ck = 12 MHz
-	#define PLL1DIVN	54
+	#define PLL1DIVN	54	// 12*54 = 648 MHz
 	#define PLL1DIVP	1
 	#define PLL1DIVQ	2
 	#define PLL1DIVR	2
 
 	#define PLL2DIVM	2	// ref2_ck = 12 MHz
-	#define PLL2DIVN	44
-	#define PLL2DIVP	1
+	#define PLL2DIVN	44	// 528 MHz
+	#define PLL2DIVP	2	// div2=minimum
 	#define PLL2DIVQ	2
 	#define PLL2DIVR	2
 #else
 	// HSI version (HSI=64 MHz)
 	#define PLL1DIVM	5	// ref1_ck = 12.8 MHz
-	#define PLL1DIVN	32
+	#define PLL1DIVN	50	// x25..x100: 12.8 * 50 = 640 MHz
+	//#define PLL1DIVN	32	// x25..x100: 12.8 * 32 = 409.6 MHz
 	#define PLL1DIVP	1
 	#define PLL1DIVQ	2
 	#define PLL1DIVR	2
 
 	#define PLL2DIVM	5	// ref2_ck = 12.8 MHz
-	#define PLL2DIVN	35
-	#define PLL2DIVP	1
+	#define PLL2DIVN	35	// 12.8 * 35 = 448 MHz
+	#define PLL2DIVP	2	// div2=minimum
 	#define PLL2DIVQ	2
 	#define PLL2DIVR	2
 #endif
@@ -9371,20 +9372,20 @@ void stm32mp1_pll_initialize(void)
 
 	// PLL12 source mux
 	RCC->RCK12SELR = (RCC->RCK12SELR & ~ (RCC_RCK12SELR_PLL12SRC_Msk)) |
-		(0x00 < RCC_RCK12SELR_PLL12SRC_Pos) |	// HSI
+		(0x00 << RCC_RCK12SELR_PLL12SRC_Pos) |	// HSI
 		0;
 	while ((RCC->RCK12SELR & RCC_RCK12SELR_PLL12SRCRDY_Msk) == 0)
 		;
 
 	RCC->PLL1CFGR1 = (RCC->PLL1CFGR1 & ~ (RCC_PLL1CFGR1_DIVN_Msk | RCC_PLL1CFGR1_DIVM1_Msk)) |
-		((PLL1DIVM - 1) < RCC_PLL1CFGR1_DIVM1_Pos) |
-		((PLL1DIVN - 1) < RCC_PLL1CFGR1_DIVN_Pos) |
+		((PLL1DIVM - 1) << RCC_PLL1CFGR1_DIVM1_Pos) |
+		((PLL1DIVN - 1) << RCC_PLL1CFGR1_DIVN_Pos) |
 		0;
 
 	RCC->PLL1CFGR2 = (RCC->PLL1CFGR2 & ~ (RCC_PLL1CFGR2_DIVP_Msk | RCC_PLL1CFGR2_DIVQ_Msk | RCC_PLL1CFGR2_DIVR_Msk)) |
-		((PLL1DIVP - 1) < RCC_PLL1CFGR2_DIVP_Pos) |
-		((PLL1DIVQ - 1) < RCC_PLL1CFGR2_DIVQ_Pos) |
-		((PLL1DIVR - 1) < RCC_PLL1CFGR2_DIVR_Pos) |
+		((PLL1DIVP - 1) << RCC_PLL1CFGR2_DIVP_Pos) |
+		((PLL1DIVQ - 1) << RCC_PLL1CFGR2_DIVQ_Pos) |
+		((PLL1DIVR - 1) << RCC_PLL1CFGR2_DIVR_Pos) |
 		0;
 
 	RCC->PLL1CR |= RCC_PLL1CR_DIVPEN_Msk;	// P output eable
@@ -9397,15 +9398,18 @@ void stm32mp1_pll_initialize(void)
 	RCC->PLL1CR &= ~ RCC_PLL1CR_SSCG_CTRL_Msk;
 
 	RCC->PLL2CFGR1 = (RCC->PLL2CFGR1 & ~ (RCC_PLL2CFGR1_DIVN_Msk | RCC_PLL2CFGR1_DIVM2_Msk)) |
-		((PLL2DIVN - 1) < RCC_PLL2CFGR1_DIVN_Pos) |
-		((PLL2DIVM - 1) < RCC_PLL2CFGR1_DIVM2_Pos) |
+		((PLL2DIVN - 1) << RCC_PLL2CFGR1_DIVN_Pos) |
+		((PLL2DIVM - 1) << RCC_PLL2CFGR1_DIVM2_Pos) |
 		0;
 
 	RCC->PLL2CFGR2 = (RCC->PLL2CFGR2 & ~ (RCC_PLL2CFGR2_DIVP_Msk | RCC_PLL2CFGR2_DIVQ_Msk | RCC_PLL2CFGR2_DIVR_Msk)) |
-		((PLL2DIVP - 1) < RCC_PLL2CFGR2_DIVP_Pos) |
-		((PLL2DIVQ - 1) < RCC_PLL2CFGR2_DIVQ_Pos) |
-		((PLL2DIVR - 1) < RCC_PLL2CFGR2_DIVR_Pos) |
+		((PLL2DIVP - 1) << RCC_PLL2CFGR2_DIVP_Pos) |
+		((PLL2DIVQ - 1) << RCC_PLL2CFGR2_DIVQ_Pos) |
+		((PLL2DIVR - 1) << RCC_PLL2CFGR2_DIVR_Pos) |
 		0;
+
+	RCC->PLL2CR |= RCC_PLL2CR_DIVPEN_Msk;	// P output eable
+	(void) RCC->PLL2CR;
 
 	RCC->PLL2CR |= RCC_PLL2CR_PLLON_Msk;
 	while ((RCC->PLL2CR & RCC_PLL2CR_PLL2RDY_Msk) == 0)
