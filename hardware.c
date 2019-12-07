@@ -9394,6 +9394,26 @@ void stm32mp1_pll_initialize(void)
 		0;
 	while((RCC->MPCKSELR & RCC_MPCKSELR_MPUSRCRDY_Msk) == 0)
 		;
+#if WITHUART1HW
+	// usart1
+	RCC->UART1CKSELR = (RCC->UART1CKSELR & ~ (RCC_UART1CKSELR_UART1SRC_Msk)) |
+		(0x02 << RCC_UART1CKSELR_UART1SRC_Pos) | // HSI
+		0;
+	(void) RCC->UART1CKSELR;
+#endif /* WITHUART1HW */
+
+#if WITHUART2HW
+	// usart2
+	//0x0: pclk1 clock selected as kernel peripheral clock (default after reset)
+	//0x1: pll4_q_ck clock selected as kernel peripheral clock
+	//0x2: hsi_ker_ck clock selected as kernel peripheral clock
+	//0x3: csi_ker_ck clock selected as kernel peripheral clock
+	//0x4: hse_ker_ck clock selected as kernel peripheral clock
+	RCC->UART24CKSELR = (RCC->UART24CKSELR & ~ (RCC_UART24CKSELR_UART24SRC_Msk)) |
+		(0x02 << RCC_UART24CKSELR_UART24SRC_Pos) |	// HSI
+		0;
+	(void) RCC->UART24CKSELR;
+#endif /* WITHUART2HW */
 }
 #endif /* CPUSTYLE_STM32MP1 */
 
@@ -9406,6 +9426,8 @@ SystemInit(void)
 {
 #if CPUSTYLE_STM32MP1
 	stm32mp1_pll_initialize();
+	//HARDWARE_DEBUG_INITIALIZE();
+	//HARDWARE_DEBUG_SET_SPEED(DEBUGSPEED);
 	return;
 #endif /* CPUSTYLE_STM32MP1 */
 #if 0//CPUSTYLE_STM32MP1
