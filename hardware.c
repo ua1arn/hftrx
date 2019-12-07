@@ -4156,8 +4156,8 @@ void hardware_spi_master_initialize(void)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_APB2ENSETR = RCC_MC_APB2ENSETR_SPI1EN; // подать тактирование
-	(void) RCC->MC_APB2ENSETR;
+	RCC->MP_APB2ENSETR = RCC_MC_APB2ENSETR_SPI1EN; // подать тактирование
+	//(void) RCC->MP_APB2ENSETR;
 	/* настраиваем в режиме disconnect */
 	SPIIO_INITIALIZE();
 
