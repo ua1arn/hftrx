@@ -9228,24 +9228,6 @@ uint_fast32_t cpu_getdebugticks(void)
 
 static void vectors_relocate(void);
 
-#if CPUSTYLE_STM32MP1 && defined (TZPC)
-
-/* Extended TrustZone protection controller access function */
-static void FLASHMEMINITFUNC
-tzpc_set_prot(
-	uint_fast8_t id,	/* IP code */
-	uint_fast8_t val	/* 0x00..0x03: protection style */
-	)
-{
-	const uint_fast8_t pos = (id % 16) * 2;
-	const uint_fast8_t ix = (id / 16);
-	const uint_fast32_t mask = 0x03uL << pos;
-	volatile uint32_t * const reg = & TZPC->DECPROT0 + ix;
-	* reg = (* reg & ~ mask) | ((val << pos) & mask);
-}
-
-#endif /* CPUSTYLE_STM32MP1 && defined (TZPC) */
-
 #if CPUSTYLE_STM32MP1
 
 void stm32mp1_pll_initialize(void)
@@ -9437,6 +9419,22 @@ void stm32mp1_pll_initialize(void)
 	(void) RCC->SPI2S1CKSELR;
 #endif /* WITHSPIHW */
 }
+
+
+/* Extended TrustZone protection controller access function */
+static void FLASHMEMINITFUNC
+tzpc_set_prot(
+	uint_fast8_t id,	/* IP code */
+	uint_fast8_t val	/* 0x00..0x03: protection style */
+	)
+{
+	const uint_fast8_t pos = (id % 16) * 2;
+	const uint_fast8_t ix = (id / 16);
+	const uint_fast32_t mask = 0x03uL << pos;
+	volatile uint32_t * const reg = & TZPC->DECPROT0 + ix;
+	* reg = (* reg & ~ mask) | ((val << pos) & mask);
+}
+
 #endif /* CPUSTYLE_STM32MP1 */
 
 /* функция вызывается из start-up до копирования в SRAM всех "быстрых" функций и до инициализации переменных
@@ -9446,91 +9444,6 @@ void
 FLASHMEMINITFUNC
 SystemInit(void)
 {
-#if CPUSTYLE_STM32MP1
-	stm32mp1_pll_initialize();
-	//HARDWARE_DEBUG_INITIALIZE();
-	//HARDWARE_DEBUG_SET_SPEED(DEBUGSPEED);
-	//return;
-#endif /* CPUSTYLE_STM32MP1 */
-#if 0//CPUSTYLE_STM32MP1
-
-	/*
-	 * Interconnect update : select master using the port 1.
-	 * LTDC = AXI_M9.
-	 */
-	//mmio_write_32(syscfg_base + SYSCFG_ICNR, SYSCFG_ICNR_AXI_M9);
-
-	//RCC->TZCR &= ~ (RCC_TZCR_TZEN | RCC_TZCR_MCKPROT);
-	RCC->TZCR &= ~ (RCC_TZCR_TZEN);
-	RCC->MP_APB5ENSETR = RCC_MC_APB5ENSETR_TZPCEN;
-	(void) RCC->MP_APB5ENSETR;
-
-	// Set peripheral is not secure (Read and Write by secure and non secure)
-	tzpc_set_prot(0, 0x03);		// STGENC
-	tzpc_set_prot(1, 0x03);		// BKPSRAM
-	tzpc_set_prot(3, 0x03);		// USART1
-	tzpc_set_prot(7, 0x03);		// RNG1
-	tzpc_set_prot(10, 0x03);	// DDRCTRL
-	tzpc_set_prot(11, 0x03);	// DDRPHYC
-	tzpc_set_prot(32, 0x03);	// UART4
-
-#endif /* CPUSTYLE_STM32MP1 */
-
-#if 0//CPUSTYLE_STM32MP1
-	//local_delay_ms(100);
-	RCC->TZCR &= ~ (RCC_TZCR_TZEN);
-	//RCC->TZCR &= ~ (RCC_TZCR_TZEN | RCC_TZCR_MCKPROT);
-	//RCC->MP_APB5ENSETR = RCC_MC_APB5ENSETR_TZPCEN;
-	//RCC->MP_APB5ENSETR = RCC_MC_APB5ENSETR_BSECEN;
-
-	//BSEC->BSEC_DENABLE |= BSEC_DENABLE_DBGEN_Msk;
-	//BSEC->BSEC_DENABLE |= BSEC_DENABLE_NIDEN_Msk;
-	//BSEC->BSEC_DENABLE |= BSEC_DENABLE_DEVICEEN_Msk;
-	//BSEC->BSEC_DENABLE |= BSEC_DENABLE_SPIDEN_Msk;
-	//BSEC->BSEC_DENABLE |= BSEC_DENABLE_SPNIDEN_Msk;
-	//BSEC->BSEC_DENABLE &= ~ BSEC_DENABLE_CP15SDISABLE_Msk;
-	//BSEC->BSEC_DENABLE &= ~ BSEC_DENABLE_CFGSDISABLE_Msk;
-	//BSEC->BSEC_DENABLE |= BSEC_DENABLE_DBGSWENABLE_Msk;
-	if (0)
-	{
-		/*
-			QUADSPI_CLK 	PF10	AS pin 01	U13-38 (traced to PA7)
-			QUADSPI_BK1_NCS PB6 	AS pin 08	U12-21 (traced to PB12)
-			QUADSPI_BK1_IO0 PF8
-			QUADSPI_BK1_IO1 PF9
-		*/
-		//arm_hardware_piof_inputs(1uL << 8);
-		//arm_hardware_piof_inputs(1uL << 9);
-		//arm_hardware_piof_inputs(1uL << 10);
-		//arm_hardware_piob_inputs(1uL << 6);
-	}
-	{
-		//RCC->MP_APB5ENSETR = RCC_MC_APB5ENSETR_TZPCEN;
-		//HARDWARE_DEBUG_INITIALIZE();
-		//HARDWARE_DEBUG_SET_SPEED(DEBUGSPEED);
-		//arm_hardware_pioa_altfn20(1uL << 13, 0);	// DBGTRO
-		// LED blinking test
-		//const uint_fast32_t mask = (1uL << 14);	// PA14 - GREEN LED LD5 on DK1/DK2 MB1272.pdf
-		const uint_fast32_t maskd = (1uL << 14);	// PD14 - LED on small board
-		const uint_fast32_t maskg = (1uL << 13);	// PG13 - LCD_R0
-		arm_hardware_piod_outputs(maskd, 1 * maskd);
-		arm_hardware_piog_outputs(maskg, 1 * maskg);
-		for (;;)
-		{
-			//dbg_putchar('5');
-			(GPIOD)->BSRR = BSRR_S(maskd);
-			(GPIOG)->BSRR = BSRR_S(maskg);
-			//local_delay_ms(100);
-			__DSB();
-			//dbg_putchar('#');
-			(GPIOD)->BSRR = BSRR_C(maskd);
-			(GPIOG)->BSRR = BSRR_C(maskg);
-			//local_delay_ms(100);
-			__DSB();
-
-		}
-	}
-#endif /* CPUSTYLE_STM32MP1 */
 #if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7
 
 	#if WITHDEBUG && WITHINTEGRATEDDSP && CPUSTYLE_ARM_CM7
@@ -9684,14 +9597,14 @@ SystemInit(void)
 
 // Плата с процессором STM32L051K6T (TQFP-32)
 
-#if ARM_STM32L051_TQFP32_CPUSTYLE_V1_H_INCLUDED
-	// power on bit
-	{
-		enum { WORKMASK = 1U << 11 };	/* PA11 */
-		arm_hardware_pioa_outputs(WORKMASK, WORKMASK * (1 != 0));
+	#if ARM_STM32L051_TQFP32_CPUSTYLE_V1_H_INCLUDED
+		// power on bit
+		{
+			enum { WORKMASK = 1U << 11 };	/* PA11 */
+			arm_hardware_pioa_outputs(WORKMASK, WORKMASK * (1 != 0));
 
-	}
-#endif /* ARM_STM32L051_TQFP32_CPUSTYLE_V1_H_INCLUDED */
+		}
+	#endif /* ARM_STM32L051_TQFP32_CPUSTYLE_V1_H_INCLUDED */
 	//lowlevel_stm32l0xx_pll_clock();
 	lowlevel_stm32l0xx_hsi_clock();
 
@@ -9791,8 +9704,47 @@ SystemInit(void)
 			0;
 	}
 
+#elif CPUSTYLE_STM32MP1
+
+	stm32mp1_pll_initialize();
+
+	/*
+	 * Interconnect update : select master using the port 1.
+	 * LTDC = AXI_M9.
+	 */
+	//mmio_write_32(syscfg_base + SYSCFG_ICNR, SYSCFG_ICNR_AXI_M9);
+
+	//RCC->TZCR &= ~ (RCC_TZCR_TZEN | RCC_TZCR_MCKPROT);
+	RCC->TZCR &= ~ (RCC_TZCR_TZEN);
+	RCC->MP_APB5ENSETR = RCC_MC_APB5ENSETR_TZPCEN;
+	(void) RCC->MP_APB5ENSETR;
+
+	// Set peripheral is not secure (Read and Write by secure and non secure)
+	tzpc_set_prot(0, 0x03);		// STGENC
+	tzpc_set_prot(1, 0x03);		// BKPSRAM
+	tzpc_set_prot(3, 0x03);		// USART1
+	tzpc_set_prot(7, 0x03);		// RNG1
+	tzpc_set_prot(10, 0x03);	// DDRCTRL
+	tzpc_set_prot(11, 0x03);	// DDRPHYC
+	tzpc_set_prot(32, 0x03);	// UART4
+
+
+	if (1)
+	{
+		/*
+			QUADSPI_CLK 	PF10	AS pin 01	U13-38 (traced to PA7)
+			QUADSPI_BK1_NCS PB6 	AS pin 08	U12-21 (traced to PB12)
+			QUADSPI_BK1_IO0 PF8
+			QUADSPI_BK1_IO1 PF9
+		*/
+		arm_hardware_piof_inputs(1uL << 8);
+		arm_hardware_piof_inputs(1uL << 9);
+		arm_hardware_piof_inputs(1uL << 10);
+		arm_hardware_piob_inputs(1uL << 6);
+	}
+
 #else
-	//#error Undefined CPUSTYLE_XXX
+	#error Undefined CPUSTYLE_XXX
 
 #endif
 
