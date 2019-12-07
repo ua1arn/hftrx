@@ -243,9 +243,9 @@ DMA_I2S2_TX_initialize(void)
 	/* DMA для передачи по I2S2*/
 #if CPUSTYLE_STM32MP1
 	RCC->MP_AHB2ENSETR = RCC_MC_AHB2ENSETR_DMA1EN; // включил DMA1
-	//(void) RCC->MP_AHB2ENSETR;
+	(void) RCC->MP_AHB2ENSETR;
 	RCC->MP_AHB2ENSETR = RCC_MC_AHB2ENSETR_DMAMUXEN; // включил DMAMUX
-	//(void) RCC->MP_AHB2ENSETR;
+	(void) RCC->MP_AHB2ENSETR;
 	// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
 	// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
 	enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
@@ -345,7 +345,7 @@ DMA_I2S3_RX_initialize(void)
 	/* I2S3_RX - DMA1, Stream0, Channel0 */ 
 #if CPUSTYLE_STM32MP1
 	RCC->MP_AHB2ENSETR = RCC_MC_AHB2ENSETR_DMA1EN; // включил DMA1
-	//(void) RCC->MP_AHB2ENSETR;
+	(void) RCC->MP_AHB2ENSETR;
 	// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
 	// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
 	enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
@@ -503,7 +503,7 @@ hardware_i2s2_slave_tx_initialize(void)		/* инициализация I2S2, STM
 {
 #if CPUSTYLE_STM32MP1
 	RCC->MP_APB1ENSETR = RCC_MC_APB1ENSETR_SPI2EN; // Подать тактирование
-	//(void) RCC->MP_APB1ENSETR;
+	(void) RCC->MP_APB1ENSETR;
 #elif CPUSTYLE_STM32H7XX
 	RCC->APB1LENR |= RCC_APB1LENR_SPI2EN; // Подать тактирование
 	(void) RCC->APB1LENR;
@@ -651,7 +651,7 @@ hardware_i2s3_slave_rx_initialize(void)		/* инициализация I2S3 STM3
 	debug_printf_P(PSTR("hardware_i2s3_slave_rx_initialize\n"));
 #if CPUSTYLE_STM32MP1
 	RCC->MP_APB1ENSETR = RCC_MC_APB1ENSETR_SPI3EN; // Подать тактирование
-	//(void) RCC->MP_APB1ENSETR;
+	(void) RCC->MP_APB1ENSETR;
 #elif CPUSTYLE_STM32H7XX
 	RCC->APB1LENR |= RCC_APB1LENR_SPI3EN; // Подать тактирование
 	(void) RCC->APB1LENR;
@@ -1108,9 +1108,9 @@ static void DMA_SAI1_A_TX_initialize(void)
 	/* DMA для передачи по I2S2*/
 #if CPUSTYLE_STM32MP1
 	RCC->MP_AHB2ENSETR = RCC_MC_AHB2ENSETR_DMA2EN; // включил DMA2
-	//(void) RCC->MP_AHB2ENSETR;
+	(void) RCC->MP_AHB2ENSETR;
 	RCC->MP_AHB2ENSETR = RCC_MC_AHB2ENSETR_DMAMUXEN; // включил DMAMUX
-	//(void) RCC->MP_AHB2ENSETR;
+	(void) RCC->MP_AHB2ENSETR;
 	// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
 	// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
 	enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
@@ -1170,9 +1170,9 @@ static void DMA_SAI1_B_RX_initialize(void)
 	/* SAI1_B - Stream5, Channel0 */ 
 #if CPUSTYLE_STM32MP1
 	RCC->MP_AHB2ENSETR = RCC_MC_AHB2ENSETR_DMA2EN; // включил DMA2
-	//(void) RCC->MP_AHB2ENSETR;
+	(void) RCC->MP_AHB2ENSETR;
 	RCC->MP_AHB2ENSETR = RCC_MC_AHB2ENSETR_DMAMUXEN; // включил DMAMUX
-	//(void) RCC->MP_AHB2ENSETR;
+	(void) RCC->MP_AHB2ENSETR;
 	//const uint_fast8_t muxi = 88;	// SAI1_B
 	//stm32h7xx_dma2mux(muxi, 0x05);
 	// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
@@ -1237,7 +1237,7 @@ static void hardware_sai1_master_fullduplex_initialize(void)		/* инициал�
 #if CPUSTYLE_STM32MP1
 	// Теперь настроим модуль SAI.
 	RCC->MP_APB2ENSETR = RCC_MC_APB2ENSETR_SAI1EN; //подать тактирование
-	//(void) RCC->MP_APB2ENSETR;
+	(void) RCC->MP_APB2ENSETR;
 #else /* CPUSTYLE_STM32MP1 */
 	// Теперь настроим модуль SAI.
 	RCC->APB2ENR |= RCC_APB2ENR_SAI1EN; //подать тактирование
@@ -1360,7 +1360,7 @@ static void hardware_sai1_slave_fullduplex_initialize(void)		/* инициали
 #if CPUSTYLE_STM32MP1
 	// Теперь настроим модуль SAI.
 	RCC->MP_APB2ENSETR = RCC_MC_APB2ENSETR_SAI1EN; //подать тактирование
-	//(void) RCC->MP_APB2ENSETR;
+	(void) RCC->MP_APB2ENSETR;
 #else /* CPUSTYLE_STM32MP1 */
 	// Теперь настроим модуль SAI.
 	RCC->APB2ENR |= RCC_APB2ENR_SAI1EN; //подать тактирование
@@ -1587,9 +1587,9 @@ static void DMA_SAI2_A_TX_initializeXXX(void)
 
 #if CPUSTYLE_STM32MP1
 	RCC->MP_AHB2ENSETR = RCC_MC_AHB2ENSETR_DMA2EN; // включил DMA2
-	//(void) RCC->MP_AHB2ENSETR;
+	(void) RCC->MP_AHB2ENSETR;
 	RCC->MP_AHB2ENSETR = RCC_MC_AHB2ENSETR_DMAMUXEN; // включил DMAMUX
-	//(void) RCC->MP_AHB2ENSETR;
+	(void) RCC->MP_AHB2ENSETR;
 	// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
 	// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
 	enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
@@ -1646,9 +1646,9 @@ static void DMA_SAI2_A_TX_initializeAUDIO48(void)
 {
 #if CPUSTYLE_STM32MP1
 	RCC->MP_AHB2ENSETR = RCC_MC_AHB2ENSETR_DMA2EN; // включил DMA2
-	//(void) RCC->MP_AHB2ENSETR;
+	(void) RCC->MP_AHB2ENSETR;
 	RCC->MP_AHB2ENSETR = RCC_MC_AHB2ENSETR_DMAMUXEN; // включил DMAMUX
-	//(void) RCC->MP_AHB2ENSETR;
+	(void) RCC->MP_AHB2ENSETR;
 	// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
 	// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
 	enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
@@ -1706,9 +1706,9 @@ static void DMA_SAI2_B_RX_initializeRTS96(void)
 {
 #if CPUSTYLE_STM32MP1
 	RCC->MP_AHB2ENSETR = RCC_MC_AHB2ENSETR_DMA2EN; // включил DMA2
-	//(void) RCC->MP_AHB2ENSETR;
+	(void) RCC->MP_AHB2ENSETR;
 	RCC->MP_AHB2ENSETR = RCC_MC_AHB2ENSETR_DMAMUXEN; // включил DMAMUX
-	//(void) RCC->MP_AHB2ENSETR;
+	(void) RCC->MP_AHB2ENSETR;
 	// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
 	// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
 	enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
@@ -1767,9 +1767,9 @@ static void DMA_SAI2_B_RX_initializeAUDIO48(void)
 {
 #if CPUSTYLE_STM32MP1
 	RCC->MP_AHB2ENSETR = RCC_MC_AHB2ENSETR_DMA2EN; // включил DMA2
-	//(void) RCC->MP_AHB2ENSETR;
+	(void) RCC->MP_AHB2ENSETR;
 	RCC->MP_AHB2ENSETR = RCC_MC_AHB2ENSETR_DMAMUXEN; // включил DMAMUX
-	//(void) RCC->MP_AHB2ENSETR;
+	(void) RCC->MP_AHB2ENSETR;
 	// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
 	// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
 	enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
@@ -1832,7 +1832,7 @@ static void hardware_sai2_slave_fullduplex_initialize(void)
 #if CPUSTYLE_STM32MP1
 	// Теперь настроим модуль SAI.
 	RCC->MP_APB2ENSETR = RCC_MC_APB2ENSETR_SAI2EN; //подать тактирование
-	//(void) RCC->MP_APB2ENSETR;
+	(void) RCC->MP_APB2ENSETR;
 #else /* CPUSTYLE_STM32MP1 */
 	// Теперь настроим модуль SAI.
 	RCC->APB2ENR |= RCC_APB2ENR_SAI2EN; //подать тактирование
@@ -1949,7 +1949,7 @@ static void hardware_sai2_master_fullduplex_initialize(void)		/* инициал�
 #if CPUSTYLE_STM32MP1
 	// Теперь настроим модуль SAI.
 	RCC->MP_APB2ENSETR = RCC_MC_APB2ENSETR_SAI2EN; //подать тактирование
-	//(void) RCC->MP_APB2ENSETR;
+	(void) RCC->MP_APB2ENSETR;
 #else /* CPUSTYLE_STM32MP1 */
 	// Теперь настроим модуль SAI.
 	RCC->APB2ENR |= RCC_APB2ENR_SAI2EN; //подать тактирование
@@ -2088,9 +2088,9 @@ static void DMA_SAI2_B_RX_initializeWFM(void)
 
 #if CPUSTYLE_STM32MP1
 	RCC->MP_AHB2ENSETR = RCC_MC_AHB2ENSETR_DMA2EN; // включил DMA2
-	//(void) RCC->MP_AHB2ENSETR;
+	(void) RCC->MP_AHB2ENSETR;
 	RCC->MP_AHB2ENSETR = RCC_MC_AHB2ENSETR_DMAMUXEN; // включил DMAMUX
-	//(void) RCC->MP_AHB2ENSETR;
+	(void) RCC->MP_AHB2ENSETR;
 	// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
 	// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
 	enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };

@@ -40,9 +40,9 @@ static void DMA1_SPI3_RX_initialize(void)
 #elif CPUSTYLE_STM32MP1
 	/* SPI3_RX - Stream0, Channel0 */
 	RCC->MP_AHB2ENSETR = RCC_MC_AHB2ENSETR_DMA1EN; // включил DMA1
-	//(void) RCC->MP_AHB2ENSETR;
+	(void) RCC->MP_AHB2ENSETR;
 	RCC->MP_AHB2ENSETR = RCC_MC_AHB2ENSETR_DMAMUXEN; // включил DMAMUX
-	//(void) RCC->MP_AHB2ENSETR;
+	(void) RCC->MP_AHB2ENSETR;
 	enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
 	DMAMUX1_Channel0->CCR = 61 * DMAMUX_CxCR_DMAREQ_ID_0;	// SPI3_RX
 	DMA1_Stream0->PAR = (uint32_t) & SPI3->RXDR;

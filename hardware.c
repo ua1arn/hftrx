@@ -4157,7 +4157,7 @@ void hardware_spi_master_initialize(void)
 #elif CPUSTYLE_STM32MP1
 
 	RCC->MP_APB2ENSETR = RCC_MC_APB2ENSETR_SPI1EN; // подать тактирование
-	//(void) RCC->MP_APB2ENSETR;
+	(void) RCC->MP_APB2ENSETR;
 	/* настраиваем в режиме disconnect */
 	SPIIO_INITIALIZE();
 
@@ -9252,10 +9252,12 @@ void stm32mp1_pll_initialize(void)
 	// PLL1 DIVN=0x1f. DIVM=0x4, DIVP=0x0
 	// HSI 64MHz/5*32 = 409.6 MHz
 	// HSI 64MHz/5*42 = 537.6 MHz
-	RCC->MP_APB5ENSETR = RCC_MC_APB5ENSETR_TZPCEN;
+	//RCC->MP_APB5ENSETR = RCC_MC_APB5ENSETR_TZPCEN;
 	//(void) RCC->MP_APB5ENSETR;
 	RCC->TZCR &= ~ (RCC_TZCR_MCKPROT);
 	RCC->TZCR &= ~ (RCC_TZCR_TZEN);
+
+	return;
 	// переключение на HSI на всякий случай перед программированием PLL
 	// HSI ON
 	RCC->OCENSETR = RCC_OCENSETR_HSION;
