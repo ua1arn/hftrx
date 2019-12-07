@@ -9249,6 +9249,7 @@ tzpc_set_prot(
 #if CPUSTYLE_STM32MP1
 void stm32mp1_pll_initialize(void)
 {
+	//return;
 	// PLL1 DIVN=0x1f. DIVM=0x4, DIVP=0x0
 	// HSI 64MHz/5*32 = 409.6 MHz
 	// HSI 64MHz/5*42 = 537.6 MHz
@@ -9306,9 +9307,10 @@ void stm32mp1_pll_initialize(void)
 		;
 	// PLL1 DIVM1 = 2
 	// PLL1 DIVN1 = 54
+
 	RCC->PLL1CFGR1 = (RCC->PLL1CFGR1 & ~ (RCC_PLL1CFGR1_DIVN_Msk | RCC_PLL1CFGR1_DIVM1_Msk)) |
 		((5 - 1) < RCC_PLL1CFGR1_DIVM1_Pos) |
-		((50 - 1) < RCC_PLL1CFGR1_DIVN_Pos) |
+		((32 - 1) < RCC_PLL1CFGR1_DIVN_Pos) |
 		0;
 
 	// PLL1 DIVP1 = 1
@@ -9324,16 +9326,18 @@ void stm32mp1_pll_initialize(void)
 
 	RCC->PLL1CR &= ~ RCC_PLL1CR_SSCG_CTRL_Msk;
 
+	//RCC->PLL1CR |= RCC_PLL1CR_DIVPEN_Msk;	// P output eable
+
 	// PLL2 DIVM2 = 2
 	// PLL2 DIVN2 = 44
 	RCC->PLL2CFGR1 = (RCC->PLL2CFGR1 & ~ (RCC_PLL2CFGR1_DIVN_Msk | RCC_PLL2CFGR1_DIVM2_Msk)) |
-		((8 - 1) < RCC_PLL2CFGR1_DIVM2_Pos) |
-		((66) < RCC_PLL2CFGR1_DIVN_Pos) |
+		((35 - 1) < RCC_PLL2CFGR1_DIVN_Pos) |
+		((5 - 1) < RCC_PLL2CFGR1_DIVM2_Pos) |
 		0;
 
 	// PLL2 DIVP1 = 1
 	RCC->PLL2CFGR2 = (RCC->PLL2CFGR2 & ~ (RCC_PLL2CFGR2_DIVP_Msk | RCC_PLL2CFGR2_DIVQ_Msk | RCC_PLL2CFGR2_DIVR_Msk)) |
-		((2 - 1) < RCC_PLL2CFGR2_DIVP_Pos) |
+		((1 - 1) < RCC_PLL2CFGR2_DIVP_Pos) |
 		((2 - 1) < RCC_PLL2CFGR2_DIVQ_Pos) |
 		((2 - 1) < RCC_PLL2CFGR2_DIVR_Pos) |
 		0;
@@ -9349,7 +9353,7 @@ void stm32mp1_pll_initialize(void)
 	//0x2: PLL2 selected as AXI sub-system clock (pll2_p_ck)
 	//others: axiss_ck is gated
 	RCC->ASSCKSELR = (RCC->ASSCKSELR & ~ (RCC_ASSCKSELR_AXISSRC_Msk)) |
-			(0x02 << RCC_ASSCKSELR_AXISSRC_Pos) |
+			(0x02 << RCC_ASSCKSELR_AXISSRC_Pos) |	// PLL2
 			0;
 	while ((RCC->ASSCKSELR & RCC_ASSCKSELR_AXISSRCRDY_Msk) == 0)
 		;
@@ -9360,7 +9364,7 @@ void stm32mp1_pll_initialize(void)
 	//	0x2: PLL1 selected as MPU sub-system clock (pll1_p_ck)
 	//	0x3: PLL1 via MPUDIV is selected as MPU sub-system clock (pll1_p_ck / 2 MPUDIV).
 	RCC->MPCKSELR = (RCC->MPCKSELR & ~ (RCC_MPCKSELR_MPUSRC_Msk)) |
-		(0x02 << RCC_MPCKSELR_MPUSRC_Pos) |
+		(0x02 << RCC_MPCKSELR_MPUSRC_Pos) |	// PLL1
 		0;
 	while((RCC->MPCKSELR & RCC_MPCKSELR_MPUSRCRDY_Msk) == 0)
 		;
