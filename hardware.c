@@ -9293,24 +9293,22 @@ void stm32mp1_pll_initialize(void)
 	while ((RCC->PLL1CR & RCC_PLL1CR_PLL1RDY_Msk) != 0)
 		;
 
-	goto end;
-
 	// HSE ON
-	RCC->OCENSETR = RCC_OCENSETR_HSEON;
-	while ((RCC->OCRDYR & RCC_OCRDYR_HSERDY) == 0)
-		;
+	//RCC->OCENSETR = RCC_OCENSETR_HSEON;
+	//while ((RCC->OCRDYR & RCC_OCRDYR_HSERDY) == 0)
+	//	;
 
 	// PLL12 source mux
 	RCC->RCK12SELR = (RCC->RCK12SELR & ~ (RCC_RCK12SELR_PLL12SRC_Msk)) |
-		(0x01 < RCC_RCK12SELR_PLL12SRC_Pos) |	// 0x1: HSE selected as PLL clock (hse_ck)
+		(0x00 < RCC_RCK12SELR_PLL12SRC_Pos) |	// HSI
 		0;
 	while ((RCC->RCK12SELR & RCC_RCK12SELR_PLL12SRCRDY_Msk) == 0)
 		;
 	// PLL1 DIVM1 = 2
 	// PLL1 DIVN1 = 54
 	RCC->PLL1CFGR1 = (RCC->PLL1CFGR1 & ~ (RCC_PLL1CFGR1_DIVN_Msk | RCC_PLL1CFGR1_DIVM1_Msk)) |
-		((2 - 1) < RCC_PLL1CFGR1_DIVM1_Pos) |
-		((54 - 1) < RCC_PLL1CFGR1_DIVN_Pos) |
+		((5 - 1) < RCC_PLL1CFGR1_DIVM1_Pos) |
+		((50 - 1) < RCC_PLL1CFGR1_DIVN_Pos) |
 		0;
 
 	// PLL1 DIVP1 = 1
@@ -9329,15 +9327,15 @@ void stm32mp1_pll_initialize(void)
 	// PLL2 DIVM2 = 2
 	// PLL2 DIVN2 = 44
 	RCC->PLL2CFGR1 = (RCC->PLL2CFGR1 & ~ (RCC_PLL2CFGR1_DIVN_Msk | RCC_PLL2CFGR1_DIVM2_Msk)) |
-		((2 - 1) < RCC_PLL2CFGR1_DIVM2_Pos) |
-		((44) < RCC_PLL2CFGR1_DIVN_Pos) |
+		((8 - 1) < RCC_PLL2CFGR1_DIVM2_Pos) |
+		((66) < RCC_PLL2CFGR1_DIVN_Pos) |
 		0;
 
 	// PLL2 DIVP1 = 1
 	RCC->PLL2CFGR2 = (RCC->PLL2CFGR2 & ~ (RCC_PLL2CFGR2_DIVP_Msk | RCC_PLL2CFGR2_DIVQ_Msk | RCC_PLL2CFGR2_DIVR_Msk)) |
-		((1 - 1) < RCC_PLL1CFGR2_DIVP_Pos) |
-		((2 - 1) < RCC_PLL1CFGR2_DIVQ_Pos) |
-		((2 - 1) < RCC_PLL1CFGR2_DIVR_Pos) |
+		((2 - 1) < RCC_PLL2CFGR2_DIVP_Pos) |
+		((2 - 1) < RCC_PLL2CFGR2_DIVQ_Pos) |
+		((2 - 1) < RCC_PLL2CFGR2_DIVR_Pos) |
 		0;
 
 	RCC->PLL2CR |= RCC_PLL2CR_PLLON_Msk;
@@ -9355,6 +9353,8 @@ void stm32mp1_pll_initialize(void)
 			0;
 	while ((RCC->ASSCKSELR & RCC_ASSCKSELR_AXISSRCRDY_Msk) == 0)
 		;
+	goto end;
+
 	//	0x0: HSI selected as MPU sub-system clock (hsi_ck) (default after reset)
 	//	0x1: HSE selected as MPU sub-system clock (hse_ck)
 	//	0x2: PLL1 selected as MPU sub-system clock (pll1_p_ck)
