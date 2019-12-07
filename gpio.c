@@ -805,8 +805,8 @@ void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority,
 				RCC->APB4ENR |= RCC_APB4ENR_SYSCFGEN;     // включить тактирование альтернативных функций
 				(void) RCC->APB4ENR;
 			#elif CPUSTYLE_STM32MP1
-				RCC->MC_APB3ENSETR = RCC_MC_APB3ENSETR_SYSCFGEN;     // включить тактирование альтернативных функций
-				(void) RCC->MC_APB3ENSETR;
+				RCC->MP_APB3ENSETR = RCC_MC_APB3ENSETR_SYSCFGEN;     // включить тактирование альтернативных функций
+				//(void) RCC->MP_APB3ENSETR;
 			#else /* CPUSTYLE_STM32H7XX */
 				RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN;     // включить тактирование альтернативных функций
 				(void) RCC->APB2ENR;
