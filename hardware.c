@@ -9257,7 +9257,6 @@ void stm32mp1_pll_initialize(void)
 	RCC->TZCR &= ~ (RCC_TZCR_MCKPROT);
 	RCC->TZCR &= ~ (RCC_TZCR_TZEN);
 
-	return;
 	// переключение на HSI на всякий случай перед программированием PLL
 	// HSI ON
 	RCC->OCENSETR = RCC_OCENSETR_HSION;
@@ -9268,7 +9267,7 @@ void stm32mp1_pll_initialize(void)
 	//0x2: PLL2 selected as AXI sub-system clock (pll2_p_ck)
 	//others: axiss_ck is gated
 	RCC->ASSCKSELR = (RCC->ASSCKSELR & ~ (RCC_ASSCKSELR_AXISSRC_Msk)) |
-			(0x02 << RCC_ASSCKSELR_AXISSRC_Pos) |	// HSI
+			(0x00 << RCC_ASSCKSELR_AXISSRC_Pos) |	// HSI
 			0;
 	while ((RCC->ASSCKSELR & RCC_ASSCKSELR_AXISSRCRDY_Msk) == 0)
 		;
@@ -9277,19 +9276,25 @@ void stm32mp1_pll_initialize(void)
 	//	0x2: PLL1 selected as MPU sub-system clock (pll1_p_ck)
 	//	0x3: PLL1 via MPUDIV is selected as MPU sub-system clock (pll1_p_ck / 2 MPUDIV).
 	RCC->MPCKSELR = (RCC->MPCKSELR & ~ (RCC_MPCKSELR_MPUSRC_Msk)) |
-		(0x02 << RCC_MPCKSELR_MPUSRC_Pos) |	// HSI
+		(0x00 << RCC_MPCKSELR_MPUSRC_Pos) |	// HSI
 		0;
 	while((RCC->MPCKSELR & RCC_MPCKSELR_MPUSRCRDY_Msk) == 0)
 		;
+
+	goto end;
 
 	// HSE ON
 	RCC->OCENSETR = RCC_OCENSETR_HSEON;
 	while ((RCC->OCRDYR & RCC_OCRDYR_HSERDY) == 0)
 		;
 
+	// Stop PLL1
+	RCC->PLL1CR &= ~ RCC_PLL1CR_DIVPEN_Msk;
 	RCC->PLL1CR &= ~ RCC_PLL1CR_PLLON_Msk;
+
+	// Stop PLL2
 	RCC->PLL2CR &= ~ RCC_PLL2CR_PLLON_Msk;
-	goto end;
+
 	// PLL12 source mux
 	RCC->RCK12SELR = (RCC->RCK12SELR & ~ (RCC_RCK12SELR_PLL12SRC_Msk)) |
 		(0x01 < RCC_RCK12SELR_PLL12SRC_Pos) |	// 0x1: HSE selected as PLL clock (hse_ck)
