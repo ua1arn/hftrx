@@ -9281,6 +9281,10 @@ void stm32mp1_pll_initialize(void)
 	while((RCC->MPCKSELR & RCC_MPCKSELR_MPUSRCRDY_Msk) == 0)
 		;
 
+	// Stop PLL2
+	RCC->PLL2CR &= ~ RCC_PLL2CR_PLLON_Msk;
+	(void) RCC->PLL2CR;
+
 	// Stop PLL1
 	RCC->PLL1CR &= ~ RCC_PLL1CR_DIVPEN_Msk;
 	(void) RCC->PLL1CR;
@@ -9290,10 +9294,6 @@ void stm32mp1_pll_initialize(void)
 		;
 
 	goto end;
-
-	// Stop PLL2
-	RCC->PLL2CR &= ~ RCC_PLL2CR_PLLON_Msk;
-	(void) RCC->PLL2CR;
 
 	// HSE ON
 	RCC->OCENSETR = RCC_OCENSETR_HSEON;
