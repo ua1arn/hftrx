@@ -9247,8 +9247,45 @@ tzpc_set_prot(
 #endif /* CPUSTYLE_STM32MP1 && defined (TZPC) */
 
 #if CPUSTYLE_STM32MP1
+// ref1_ck, ref2_ck - 8..16 MHz
+// PLL1, PLL2 VCOs
+#if 1
+	// HSI version
+	#define PLL1DIVM	5
+	#define PLL1DIVN	32
+	#define PLL1DIVP	1
+	#define PLL1DIVQ	2
+	#define PLL1DIVR	2
+
+	#define PLL2DIVM	5
+	#define PLL2DIVN	35
+	#define PLL2DIVP	1
+	#define PLL2DIVQ	2
+	#define PLL2DIVR	2
+#else
+	// HSE 24 MHz version
+	// PLL1 DIVM1 = 2
+	// PLL1 DIVN1 = 54
+	// PLL1 DIVP1 = 1
+	// PLL2 DIVM2 = 2
+	// PLL2 DIVN2 = 44
+	// PLL2 DIVP1 = 1
+	#define PLL1DIVM	2
+	#define PLL1DIVN	54
+	#define PLL1DIVP	1
+	#define PLL1DIVQ	2
+	#define PLL1DIVR	2
+
+	#define PLL2DIVM	2
+	#define PLL2DIVN	44
+	#define PLL2DIVP	1
+	#define PLL2DIVQ	2
+	#define PLL2DIVR	2
+#endif
+
 void stm32mp1_pll_initialize(void)
 {
+
 	//return;
 	// PLL1 DIVN=0x1f. DIVM=0x4, DIVP=0x0
 	// HSI 64MHz/5*32 = 409.6 MHz
@@ -9305,19 +9342,16 @@ void stm32mp1_pll_initialize(void)
 		0;
 	while ((RCC->RCK12SELR & RCC_RCK12SELR_PLL12SRCRDY_Msk) == 0)
 		;
-	// PLL1 DIVM1 = 2
-	// PLL1 DIVN1 = 54
 
 	RCC->PLL1CFGR1 = (RCC->PLL1CFGR1 & ~ (RCC_PLL1CFGR1_DIVN_Msk | RCC_PLL1CFGR1_DIVM1_Msk)) |
-		((5 - 1) < RCC_PLL1CFGR1_DIVM1_Pos) |
-		((32 - 1) < RCC_PLL1CFGR1_DIVN_Pos) |
+		((PLL1DIVM - 1) < RCC_PLL1CFGR1_DIVM1_Pos) |
+		((PLL1DIVN - 1) < RCC_PLL1CFGR1_DIVN_Pos) |
 		0;
 
-	// PLL1 DIVP1 = 1
 	RCC->PLL1CFGR2 = (RCC->PLL1CFGR2 & ~ (RCC_PLL1CFGR2_DIVP_Msk | RCC_PLL1CFGR2_DIVQ_Msk | RCC_PLL1CFGR2_DIVR_Msk)) |
-		((1 - 1) < RCC_PLL1CFGR2_DIVP_Pos) |
-		((2 - 1) < RCC_PLL1CFGR2_DIVQ_Pos) |
-		((2 - 1) < RCC_PLL1CFGR2_DIVR_Pos) |
+		((PLL1DIVP - 1) < RCC_PLL1CFGR2_DIVP_Pos) |
+		((PLL1DIVQ - 1) < RCC_PLL1CFGR2_DIVQ_Pos) |
+		((PLL1DIVR - 1) < RCC_PLL1CFGR2_DIVR_Pos) |
 		0;
 
 	RCC->PLL1CR |= RCC_PLL1CR_PLLON_Msk;
@@ -9328,18 +9362,15 @@ void stm32mp1_pll_initialize(void)
 
 	//RCC->PLL1CR |= RCC_PLL1CR_DIVPEN_Msk;	// P output eable
 
-	// PLL2 DIVM2 = 2
-	// PLL2 DIVN2 = 44
 	RCC->PLL2CFGR1 = (RCC->PLL2CFGR1 & ~ (RCC_PLL2CFGR1_DIVN_Msk | RCC_PLL2CFGR1_DIVM2_Msk)) |
-		((35 - 1) < RCC_PLL2CFGR1_DIVN_Pos) |
-		((5 - 1) < RCC_PLL2CFGR1_DIVM2_Pos) |
+		((PLL2DIVN - 1) < RCC_PLL2CFGR1_DIVN_Pos) |
+		((PLL2DIVM - 1) < RCC_PLL2CFGR1_DIVM2_Pos) |
 		0;
 
-	// PLL2 DIVP1 = 1
 	RCC->PLL2CFGR2 = (RCC->PLL2CFGR2 & ~ (RCC_PLL2CFGR2_DIVP_Msk | RCC_PLL2CFGR2_DIVQ_Msk | RCC_PLL2CFGR2_DIVR_Msk)) |
-		((1 - 1) < RCC_PLL2CFGR2_DIVP_Pos) |
-		((2 - 1) < RCC_PLL2CFGR2_DIVQ_Pos) |
-		((2 - 1) < RCC_PLL2CFGR2_DIVR_Pos) |
+		((PLL2DIVP - 1) < RCC_PLL2CFGR2_DIVP_Pos) |
+		((PLL2DIVQ - 1) < RCC_PLL2CFGR2_DIVQ_Pos) |
+		((PLL2DIVR - 1) < RCC_PLL2CFGR2_DIVR_Pos) |
 		0;
 
 	RCC->PLL2CR |= RCC_PLL2CR_PLLON_Msk;
