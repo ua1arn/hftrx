@@ -7661,12 +7661,12 @@ void lowtests(void)
 			//dbg_putchar('5');
 			(GPIOD)->BSRR = BSRR_S(maskd);
 			(GPIOG)->BSRR = BSRR_S(maskg);
-			local_delay_ms(10);
+			local_delay_us(100);
 			__DSB();
 			//dbg_putchar('#');
 			(GPIOD)->BSRR = BSRR_C(maskd);
 			(GPIOG)->BSRR = BSRR_C(maskg);
-			local_delay_ms(10);
+			local_delay_us(100);
 			__DSB();
 
 		}

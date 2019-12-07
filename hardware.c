@@ -9252,7 +9252,7 @@ void stm32mp1_pll_initialize(void)
 	// PLL1 DIVN=0x1f. DIVM=0x4, DIVP=0x0
 	// HSI 64MHz/5*32 = 409.6 MHz
 	// HSI 64MHz/5*42 = 537.6 MHz
-	//RCC->MP_APB5ENSETR = RCC_MC_APB5ENSETR_TZPCEN;
+	RCC->MP_APB5ENSETR = RCC_MC_APB5ENSETR_TZPCEN;
 	//(void) RCC->MP_APB5ENSETR;
 	RCC->TZCR &= ~ (RCC_TZCR_MCKPROT);
 	RCC->TZCR &= ~ (RCC_TZCR_TZEN);
@@ -9284,10 +9284,10 @@ void stm32mp1_pll_initialize(void)
 	RCC->OCENSETR = RCC_OCENSETR_HSEON;
 	while ((RCC->OCRDYR & RCC_OCRDYR_HSERDY) == 0)
 		;
-	goto end;
 
 	RCC->PLL1CR &= ~ RCC_PLL1CR_PLLON_Msk;
 	RCC->PLL2CR &= ~ RCC_PLL2CR_PLLON_Msk;
+	goto end;
 	// PLL12 source mux
 	RCC->RCK12SELR = (RCC->RCK12SELR & ~ (RCC_RCK12SELR_PLL12SRC_Msk)) |
 		(0x01 < RCC_RCK12SELR_PLL12SRC_Pos) |	// 0x1: HSE selected as PLL clock (hse_ck)
@@ -9366,7 +9366,7 @@ FLASHMEMINITFUNC
 SystemInit(void)
 {
 #if CPUSTYLE_STM32MP1
-	//stm32mp1_pll_initialize();
+	stm32mp1_pll_initialize();
 	return;
 #endif /* CPUSTYLE_STM32MP1 */
 #if 0//CPUSTYLE_STM32MP1
