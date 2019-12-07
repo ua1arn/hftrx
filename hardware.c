@@ -9249,20 +9249,21 @@ tzpc_set_prot(
 #if CPUSTYLE_STM32MP1
 // ref1_ck, ref2_ck - 8..16 MHz
 // PLL1, PLL2 VCOs
-#if 1
-	// HSI version
-	#define PLL1DIVM	5
-	#define PLL1DIVN	32
-	#define PLL1DIVP	1
-	#define PLL1DIVQ	2
-	#define PLL1DIVR	2
+//
+	#if WITHCPUXOSC
+		// с внешним генератором
+		#define	REFINFREQ WITHCPUXOSC
+	#elif WITHCPUXTAL
+		// с внешним кварцем
+		#define	REFINFREQ WITHCPUXTAL
+	#elif CPUSTYLE_STM32MP1
+		// На внутреннем генераторе
+		#define	REFINFREQ 64000000uL
+	#endif /* WITHCPUXTAL */
 
-	#define PLL2DIVM	5
-	#define PLL2DIVN	35
-	#define PLL2DIVP	1
-	#define PLL2DIVQ	2
-	#define PLL2DIVR	2
-#else
+// Варианты конфигурации тактирования
+#if 0
+	#define WITHCPUXTAL 24000000uL	/* На процессоре установлен кварц 24.000 МГц */
 	// HSE 24 MHz version
 	// PLL1 DIVM1 = 2
 	// PLL1 DIVN1 = 54
@@ -9270,14 +9271,27 @@ tzpc_set_prot(
 	// PLL2 DIVM2 = 2
 	// PLL2 DIVN2 = 44
 	// PLL2 DIVP1 = 1
-	#define PLL1DIVM	2
+	#define PLL1DIVM	2	// ref1_ck = 12 MHz
 	#define PLL1DIVN	54
 	#define PLL1DIVP	1
 	#define PLL1DIVQ	2
 	#define PLL1DIVR	2
 
-	#define PLL2DIVM	2
+	#define PLL2DIVM	2	// ref2_ck = 12 MHz
 	#define PLL2DIVN	44
+	#define PLL2DIVP	1
+	#define PLL2DIVQ	2
+	#define PLL2DIVR	2
+#else
+	// HSI version (HSI=64 MHz)
+	#define PLL1DIVM	5	// ref1_ck = 12.8 MHz
+	#define PLL1DIVN	32
+	#define PLL1DIVP	1
+	#define PLL1DIVQ	2
+	#define PLL1DIVR	2
+
+	#define PLL2DIVM	5	// ref2_ck = 12.8 MHz
+	#define PLL2DIVN	35
 	#define PLL2DIVP	1
 	#define PLL2DIVQ	2
 	#define PLL2DIVR	2
@@ -9331,10 +9345,29 @@ void stm32mp1_pll_initialize(void)
 	while ((RCC->PLL1CR & RCC_PLL1CR_PLL1RDY_Msk) != 0)
 		;
 
-	// HSE ON
-	//RCC->OCENSETR = RCC_OCENSETR_HSEON;
-	//while ((RCC->OCRDYR & RCC_OCRDYR_HSERDY) == 0)
-	//	;
+	#if WITHCPUXOSC
+		#error rr1
+		// с внешним генератором
+		// HSEBYP
+		RCC->OCENSETR = RCC_OCENSETR_HSEBYP;
+		(void) RCC->OCENSETR;
+
+	#elif WITHCPUXTAL
+		#error rr2
+		// с внешним кварцем
+		// HSE ON
+		RCC->OCENSETR = RCC_OCENSETR_HSEON;
+		(void) RCC->OCENSETR;
+		while ((RCC->OCRDYR & RCC_OCRDYR_HSERDY) == 0)
+			;
+
+	#elif CPUSTYLE_STM32MP1
+		//#error rr3
+		// На внутреннем генераторе
+		//RCC->OCENCLRR = RCC_OCENCLRR_HSEON;
+		//(void) RCC->OCENCLRR;
+
+	#endif /* WITHCPUXTAL */
 
 	// PLL12 source mux
 	RCC->RCK12SELR = (RCC->RCK12SELR & ~ (RCC_RCK12SELR_PLL12SRC_Msk)) |
