@@ -1039,8 +1039,8 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_APB5ENSETR = RCC_MC_APB5ENSETR_USART1EN; // Включение тактирования USART1.
-	(void) RCC->MC_APB5ENSETR;
+	RCC->MP_APB5ENSETR = RCC_MC_APB5ENSETR_USART1EN; // Включение тактирования USART1.
+	(void) RCC->MP_APB5ENSETR;
 
 	USART1->CR1 |= (USART_CR1_RE | USART_CR1_TE); // Transmitter Enable & Receiver Enables
 
@@ -2127,8 +2127,8 @@ xxxx!;
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MC_APB1ENSETR = RCC_MC_APB1ENSETR_USART2EN; // Включение тактирования USART1.
-	(void) RCC->MC_APB1ENSETR;
+	RCC->MP_APB1ENSETR = RCC_MC_APB1ENSETR_USART2EN; // Включение тактирования USART1.
+	(void) RCC->MP_APB1ENSETR;
 
 	USART1->CR1 |= (USART_CR1_RE | USART_CR1_TE); // Transmitter Enable & Receiver Enables
 

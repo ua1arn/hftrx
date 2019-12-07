@@ -37,7 +37,7 @@
 //#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
 
 //#define WITHUART1HW	1	/* PA9, PA10 Используется периферийный контроллер последовательного порта #1 */
-#define WITHUART2HW	1	/* PD5, PD6 Используется периферийный контроллер последовательного порта #2 */
+#define WITHUART2HW	1	/* PA2, PA3 Используется периферийный контроллер последовательного порта #2 */
 //#define WITHCAT_USART2		1
 #define WITHDEBUG_USART2	1
 #define WITHNMEA_USART2		1	/* порт подключения GPS/GLONASS */
@@ -484,8 +484,8 @@
 			arm_hardware_pioa_updown((1uL << 10), 0);	/* PA10: pull-up RX data */ \
 		} while (0)
 	#define HARDWARE_USART2_INITIALIZE() do { \
-			arm_hardware_piod_altfn2((1uL << 5) | (1uL << 6), AF_USART2); /* PD5: TX DATA line (2 MHz), PD6: RX data line */ \
-			arm_hardware_piod_updown((1uL << 6), 0);	/* PD6: pull-up RX data */ \
+			arm_hardware_pioa_altfn2((1uL << 2) | (1uL << 3), AF_USART2); /* PA2: TX DATA line (2 MHz), PA3: RX data line */ \
+			arm_hardware_pioa_updown((1uL << 3), 0);	/* PA3: pull-up RX data */ \
 		} while (0)
 
 #endif
