@@ -9363,16 +9363,24 @@ void stm32mp1_pll_initialize(void)
 			;
 
 	#elif CPUSTYLE_STM32MP1
-		//#error rr3
 		// На внутреннем генераторе
-		//RCC->OCENCLRR = RCC_OCENCLRR_HSEON;
-		//(void) RCC->OCENCLRR;
+		RCC->OCENCLRR = RCC_OCENCLRR_HSEON;
+		(void) RCC->OCENCLRR;
 
 	#endif /* WITHCPUXTAL */
 
 	// PLL12 source mux
+	// 0x0: HSI selected as PLL clock (hsi_ck) (default after reset)
+	// 0x1: HSE selected as PLL clock (hse_ck)
 	RCC->RCK12SELR = (RCC->RCK12SELR & ~ (RCC_RCK12SELR_PLL12SRC_Msk)) |
+	#if WITHCPUXOSC || WITHCPUXTAL
+		// с внешним генератором
+		// с внешним кварцем
+		(0x01 << RCC_RCK12SELR_PLL12SRC_Pos) |	// HSE
+	#else
+		// На внутреннем генераторе
 		(0x00 << RCC_RCK12SELR_PLL12SRC_Pos) |	// HSI
+	#endif
 		0;
 	while ((RCC->RCK12SELR & RCC_RCK12SELR_PLL12SRCRDY_Msk) == 0)
 		;
