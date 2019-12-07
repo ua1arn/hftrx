@@ -6761,7 +6761,7 @@ void RAMFUNC_NONILINE local_delay_us(int timeUS)
 
 	#elif CPUSTYLE_STM32MP1
 		#warning Update code for CPUSTYLE_STM32MP1
-		const int top = timeUS * 13800 / (CPU_FREQ / 1000000);
+		const int top = timeUS * 950 / (CPU_FREQ / 1000000);
 
 	#else
 		#error TODO: calibrate local_delay_us constant
@@ -9247,56 +9247,6 @@ tzpc_set_prot(
 #endif /* CPUSTYLE_STM32MP1 && defined (TZPC) */
 
 #if CPUSTYLE_STM32MP1
-// ref1_ck, ref2_ck - 8..16 MHz
-// PLL1, PLL2 VCOs
-//
-	#if WITHCPUXOSC
-		// с внешним генератором
-		#define	REFINFREQ WITHCPUXOSC
-	#elif WITHCPUXTAL
-		// с внешним кварцем
-		#define	REFINFREQ WITHCPUXTAL
-	#elif CPUSTYLE_STM32MP1
-		// На внутреннем генераторе
-		#define	REFINFREQ 64000000uL
-	#endif /* WITHCPUXTAL */
-
-// Варианты конфигурации тактирования
-#if 0
-	#define WITHCPUXTAL 24000000uL	/* На процессоре установлен кварц 24.000 МГц */
-	// HSE 24 MHz version
-	// PLL1 DIVM1 = 2
-	// PLL1 DIVN1 = 54
-	// PLL1 DIVP1 = 1
-	// PLL2 DIVM2 = 2
-	// PLL2 DIVN2 = 44
-	// PLL2 DIVP1 = 1
-	#define PLL1DIVM	2	// ref1_ck = 12 MHz
-	#define PLL1DIVN	54	// 12*54 = 648 MHz
-	#define PLL1DIVP	1
-	#define PLL1DIVQ	2
-	#define PLL1DIVR	2
-
-	#define PLL2DIVM	2	// ref2_ck = 12 MHz
-	#define PLL2DIVN	44	// 528 MHz
-	#define PLL2DIVP	2	// div2=minimum
-	#define PLL2DIVQ	2
-	#define PLL2DIVR	2
-#else
-	// HSI version (HSI=64 MHz)
-	#define PLL1DIVM	5	// ref1_ck = 12.8 MHz
-	#define PLL1DIVN	50	// x25..x100: 12.8 * 50 = 640 MHz
-	//#define PLL1DIVN	32	// x25..x100: 12.8 * 32 = 409.6 MHz
-	#define PLL1DIVP	1
-	#define PLL1DIVQ	2
-	#define PLL1DIVR	2
-
-	#define PLL2DIVM	5	// ref2_ck = 12.8 MHz
-	#define PLL2DIVN	35	// 12.8 * 35 = 448 MHz
-	#define PLL2DIVP	2	// div2=minimum
-	#define PLL2DIVQ	2
-	#define PLL2DIVR	2
-#endif
 
 void stm32mp1_pll_initialize(void)
 {
@@ -9354,7 +9304,7 @@ void stm32mp1_pll_initialize(void)
 		(void) RCC->OCENSETR;
 
 	#elif WITHCPUXTAL
-		#error rr2
+		//#error rr2
 		// с внешним кварцем
 		// HSE ON
 		RCC->OCENSETR = RCC_OCENSETR_HSEON;

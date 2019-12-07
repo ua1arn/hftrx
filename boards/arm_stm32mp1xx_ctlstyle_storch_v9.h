@@ -27,6 +27,41 @@
 	//#define WITHUSESAII2S	1	/* I2S PLL	*/
 	//#define LTDC_DOTCLK	9000000UL	// частота пикселей при работе с интерфейсом RGB
 
+	// Варианты конфигурации тактирования
+	// ref1_ck, ref2_ck - 8..16 MHz
+	// PLL1, PLL2 VCOs
+	#if 1
+		#define WITHCPUXTAL 24000000uL	/* На процессоре установлен кварц 24.000 МГц */
+		//#define WITHCPUXOSC 24000000uL	/* На процессоре установлен генератор 24.000 МГц */
+
+		#define PLL1DIVM	2	// ref1_ck = 12 MHz
+		#define PLL1DIVN	54	// 12*54 = 648 MHz
+		#define PLL1DIVP	1
+		#define PLL1DIVQ	2
+		#define PLL1DIVR	2
+
+		#define PLL2DIVM	2	// ref2_ck = 12 MHz
+		#define PLL2DIVN	44	// 528 MHz
+		#define PLL2DIVP	2	// div2=minimum 528/2 = 264 MHz
+		#define PLL2DIVQ	2
+		#define PLL2DIVR	2
+
+	#else
+		// HSI version (HSI=64 MHz)
+		#define PLL1DIVM	5	// ref1_ck = 12.8 MHz
+		#define PLL1DIVN	50	// x25..x100: 12.8 * 50 = 640 MHz
+		//#define PLL1DIVN	32	// x25..x100: 12.8 * 32 = 409.6 MHz
+		#define PLL1DIVP	1
+		#define PLL1DIVQ	2
+		#define PLL1DIVR	2
+
+		#define PLL2DIVM	5	// ref2_ck = 12.8 MHz
+		#define PLL2DIVN	35	// 12.8 * 35 = 448 MHz
+		#define PLL2DIVP	2	// div2=minimum
+		#define PLL2DIVQ	2
+		#define PLL2DIVR	2
+
+	#endif
 
 	#if WITHI2SCLOCKFROMPIN
 		#define FPGADECIMATION 2560
