@@ -12,11 +12,11 @@
 #ifndef ARM_STM32MP1_CPUSTYLE_STORCH_V9_H_INCLUDED
 #define ARM_STM32MP1_CPUSTYLE_STORCH_V9_H_INCLUDED 1
 
-#define WITHSPI16BIT	1	/* возможно использование 16-ти битных слов при обмене по SPI */
-#define WITHSPI32BIT	1	/* возможно использование 32-ти битных слов при обмене по SPI */
-#define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
+//#define WITHSPI16BIT	1	/* возможно использование 16-ти битных слов при обмене по SPI */
+//#define WITHSPI32BIT	1	/* возможно использование 32-ти битных слов при обмене по SPI */
+//#define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
 //#define WITHSPIHWDMA 	1	/* Использование DMA при обмене по SPI */
-//#define WITHSPISW 	1	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */
+#define WITHSPISW 	1	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */
 ////*#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 //#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	- у STM32MP1 его нет */
 ////*#define WITHSDRAMHW	1	/* В процессоре есть внешняя память */
@@ -25,13 +25,13 @@
 //#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 //#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 #if WITHINTEGRATEDDSP
-	#define WITHI2SHW	1	/* Использование I2S - аудиокодек на I2S2 и I2S2_alt	*/
+	#define WITHI2SHW	1	/* Использование I2S - аудиокодек на I2S2 и I2S2_alt или I2S2 и I2S3	*/
 	#define WITHSAI1HW	1	/* Использование SAI1 - FPGA или IF codec	*/
 	//#define WITHSAI2HW	1	/* Использование SAI2 - FPGA или IF codec	*/
 #endif /* WITHINTEGRATEDDSP */
 
-#define WITHCPUDACHW	1	/* использование встроенного в процессор DAC */
-#define WITHCPUADCHW 	1	/* использование встроенного в процессор ADC */
+//#define WITHCPUDACHW	1	/* использование встроенного в процессор DAC */
+//#define WITHCPUADCHW 	1	/* использование встроенного в процессор ADC */
 
 //#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
 //#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
@@ -408,16 +408,16 @@
 
 #if WITHSPIHW || WITHSPISW
 	// Набор определений для работы без внешнего дешифратора
-	#define SPI_ALLCS_PORT_S(v)	do { GPIOG->BSRR = BSRR_S(v); __DSB(); } while (0)
-	#define SPI_ALLCS_PORT_C(v)	do { GPIOG->BSRR = BSRR_C(v); __DSB(); } while (0)
+	#define SPI_ALLCS_PORT_S(v)	do { GPIOE->BSRR = BSRR_S(v); __DSB(); } while (0)
+	#define SPI_ALLCS_PORT_C(v)	do { GPIOE->BSRR = BSRR_C(v); __DSB(); } while (0)
 
-	#define targetext1	(1uL << 15)	// PG15 ext1 on front panel
-	#define targetxad2	(1uL << 14)	// PG14 ext2(not connected now)
-	#define targetnvram	(1uL << 4)	// PG4 nvmem FM25L16B
-	#define targetctl1	(1uL << 3)	// PG7 board control registers chain
-	#define targetcodec1	(1uL << 2)	// PG6 on-board codec1 NAU8822L
-	#define targetfpga1	(1uL << 1)	// PG1 FPGA control registers CS1
-	#define targetfpga2	(1uL << 0)	// PG0 FPGA control registers CS2
+	#define targetext1		(0 * 1uL << 15)	// PG15 ext1 on front panel
+	#define targetxad2		(0 * 1uL << 14)	// PG14 ext2(not connected now)
+	#define targetnvram		(1uL << 2)		// PE2 nvmem FM25L16B
+	#define targetctl1		(0 * 1uL << 3)	// PG7 board control registers chain
+	#define targetcodec1	(1uL << 15)		// PE15 on-board codec1 NAU8822L
+	#define targetfpga1		(0 * 1uL << 1)	// PG1 FPGA control registers CS1
+	#define targetfpga2		(0 * 1uL << 0)	// PG0 FPGA control registers CS2
 
 	// Здесь должны быть перечислены все биты формирования CS в устройстве.
 	#define SPI_ALLCS_BITS ( \
@@ -443,13 +443,13 @@
 	/* инициализация лиий выбора периферийных микросхем */
 	#define SPI_ALLCS_INITIALIZE() \
 		do { \
-			arm_hardware_piog_outputs(SPI_ALLCS_BITS, SPI_ALLCS_BITS ^ SPI_ALLCS_BITSNEG); \
+			arm_hardware_pioe_outputs(SPI_ALLCS_BITS, SPI_ALLCS_BITS ^ SPI_ALLCS_BITSNEG); \
 		} while (0)
 
 	// MOSI & SCK port
-	#define SPI_TARGET_SCLK_PORT_C(v)	do { GPIOA->BSRR = BSRR_C(v); __DSB(); } while (0)
-	#define SPI_TARGET_SCLK_PORT_S(v)	do { GPIOA->BSRR = BSRR_S(v); __DSB(); } while (0)
-	#define	SPI_SCLK_BIT			(1uL << 5)	// * PA5 бит, через который идет синхронизация SPI
+	#define SPI_TARGET_SCLK_PORT_C(v)	do { GPIOB->BSRR = BSRR_C(v); __DSB(); } while (0)
+	#define SPI_TARGET_SCLK_PORT_S(v)	do { GPIOB->BSRR = BSRR_S(v); __DSB(); } while (0)
+	#define	SPI_SCLK_BIT			(1uL << 3)	// * PB3 бит, через который идет синхронизация SPI
 
 	#define SPI_TARGET_MOSI_PORT_C(v)	do { GPIOB->BSRR = BSRR_C(v); __DSB(); } while (0)
 	#define SPI_TARGET_MOSI_PORT_S(v)	do { GPIOB->BSRR = BSRR_S(v); __DSB(); } while (0)
@@ -459,16 +459,16 @@
 	#define	SPI_MISO_BIT			(1uL << 4)	// * PB4 бит, через который идет ввод с SPI.
 
 	#define SPIIO_INITIALIZE() do { \
-			arm_hardware_pioa_outputs(SPI_SCLK_BIT, SPI_SCLK_BIT); /* PA5 */ \
+			arm_hardware_piob_outputs(SPI_SCLK_BIT, SPI_SCLK_BIT); /* PB3 */ \
 			arm_hardware_piob_outputs(SPI_MOSI_BIT, SPI_MOSI_BIT); /* PB5 */ \
 			arm_hardware_piob_inputs(SPI_MISO_BIT); /* PB4 */ \
 		} while (0)
 	#define HARDWARE_SPI_CONNECT() do { \
 			arm_hardware_piob_altfn20(SPI_MOSI_BIT | SPI_MISO_BIT, AF_SPI1); /* В этих процессорах и входы и выходы перекдючаются на ALT FN */ \
-			arm_hardware_pioa_altfn20(SPI_SCLK_BIT, AF_SPI1); /* В этих процессорах и входы и выходы перекдючаются на ALT FN */ \
+			arm_hardware_piob_altfn20(SPI_SCLK_BIT, AF_SPI1); /* В этих процессорах и входы и выходы перекдючаются на ALT FN */ \
 		} while (0)
 	#define HARDWARE_SPI_DISCONNECT() do { \
-			arm_hardware_pioa_outputs(SPI_SCLK_BIT, SPI_SCLK_BIT); \
+			arm_hardware_piob_outputs(SPI_SCLK_BIT, SPI_SCLK_BIT); \
 			arm_hardware_piob_outputs(SPI_MOSI_BIT, SPI_MOSI_BIT); \
 			arm_hardware_piob_inputs(SPI_MISO_BIT); \
 		} while (0)
@@ -479,16 +479,16 @@
 			arm_hardware_piob_outputs(SPI_MOSI_BIT, SPI_MOSI_BIT);	/* PIO enable for MOSI bit (SD CARD read support)  */ \
 		} while (0)
 
-	#define HARDWARE_USART1_INITIALIZE() do { \
-			arm_hardware_pioa_altfn2((1uL << 9) | (1uL << 10), AF_USART1); /* PA9: TX DATA line (2 MHz), PA10: RX data line */ \
-			arm_hardware_pioa_updown((1uL << 10), 0);	/* PA10: pull-up RX data */ \
-		} while (0)
-	#define HARDWARE_USART2_INITIALIZE() do { \
-			arm_hardware_pioa_altfn2((1uL << 2) | (1uL << 3), AF_USART2); /* PA2: TX DATA line (2 MHz), PA3: RX data line */ \
-			arm_hardware_pioa_updown((1uL << 3), 0);	/* PA3: pull-up RX data */ \
-		} while (0)
+#endif /* WITHSPIHW || WITHSPISW */
 
-#endif
+#define HARDWARE_USART1_INITIALIZE() do { \
+		arm_hardware_pioa_altfn2((1uL << 9) | (1uL << 10), AF_USART1); /* PA9: TX DATA line (2 MHz), PA10: RX data line */ \
+		arm_hardware_pioa_updown((1uL << 10), 0);	/* PA10: pull-up RX data */ \
+	} while (0)
+#define HARDWARE_USART2_INITIALIZE() do { \
+		arm_hardware_pioa_altfn2((1uL << 2) | (1uL << 3), AF_USART2); /* PA2: TX DATA line (2 MHz), PA3: RX data line */ \
+		arm_hardware_pioa_updown((1uL << 3), 0);	/* PA3: pull-up RX data */ \
+	} while (0)
 
 #if WITHKEYBOARD
 	/* PF0: pull-up second encoder button */
@@ -605,6 +605,11 @@
 	#define HARDWARE_DAC_ALC(v) do { /* вывод 12-битного значения на ЦАП - канал 1 */ \
 			DAC1->DHR12R1 = (v); /* DAC1 set value */ \
 		} while (0)
+
+#else /* WITHCPUDACHW */
+	#define HARDWARE_DAC_INITIALIZE() do { \
+		} while (0)
+
 #endif /* WITHCPUDACHW */
 
 #if WITHCPUADCHW

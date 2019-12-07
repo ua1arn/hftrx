@@ -4337,7 +4337,7 @@ void hardware_spi_master_setfreq(uint_fast8_t spispeedindex, int_fast32_t spispe
 	const uint_fast8_t prei = calcdivider(calcdivround_per_ck(spispeed), STM32F_SPIBR_WIDTH, STM32F_SPIBR_TAPS, & value, 1);
 	const uint_fast32_t cfg1baudrate = (prei * SPI_CFG1_MBR_0) & SPI_CFG1_MBR_Msk;
 	const uint_fast32_t cfg1 = cfg1baudrate;// | (SPI_CFG1_CRCSIZE_0 * 7);
-	debug_printf_P(PSTR("hardware_spi_master_setfreq: prei=%u, value=%u, spispeed=%u\n"), prei, value, spispeed);
+	//debug_printf_P(PSTR("hardware_spi_master_setfreq: prei=%u, value=%u, spispeed=%u\n"), prei, value, spispeed);
 
 	spi_cfg1_val8w [spispeedindex] = cfg1 |
 		7 * SPI_CFG1_DSIZE_0 |
@@ -9394,6 +9394,16 @@ void stm32mp1_pll_initialize(void)
 		0;
 	while((RCC->MPCKSELR & RCC_MPCKSELR_MPUSRCRDY_Msk) == 0)
 		;
+
+	//0x0: hsi_ker_ck clock selected (default after reset)
+	//0x1: csi_ker_ck clock selected
+	//0x2: hse_ker_ck clock selected
+	//0x3: Clock disabled
+	RCC->CPERCKSELR = (RCC->CPERCKSELR & ~ (RCC_CPERCKSELR_CKPERSRC_Msk)) |
+		(0x00 << RCC_CPERCKSELR_CKPERSRC_Pos) |	// per_ck
+		0;
+	(void) RCC->CPERCKSELR;
+
 #if WITHUART1HW
 	// usart1
 	RCC->UART1CKSELR = (RCC->UART1CKSELR & ~ (RCC_UART1CKSELR_UART1SRC_Msk)) |
@@ -9414,6 +9424,18 @@ void stm32mp1_pll_initialize(void)
 		0;
 	(void) RCC->UART24CKSELR;
 #endif /* WITHUART2HW */
+
+#if WITHSPIHW
+	//0x0: pll4_p_ck clock selected as kernel peripheral clock (default after reset)
+	//0x1: pll3_q_ck clock selected as kernel peripheral clock
+	//0x2: I2S_CKIN clock selected as kernel peripheral clock
+	//0x3: per_ck clock selected as kernel peripheral clock
+	//0x4: pll3_r_ck clock selected as kernel peripheral clock
+	RCC->SPI2S1CKSELR = (RCC->SPI2S1CKSELR & ~ (RCC_SPI2S1CKSELR_SPI1SRC_Msk)) |
+		(0x03 << RCC_SPI2S1CKSELR_SPI1SRC_Pos) |	// per_ck
+		0;
+	(void) RCC->SPI2S1CKSELR;
+#endif /* WITHSPIHW */
 }
 #endif /* CPUSTYLE_STM32MP1 */
 
@@ -10996,7 +11018,7 @@ arm_gic_initialize(void)
 	{
 	case 0x03:	PRINTF("arm_gic_initialize: ARM GICv1\n"); break;
 	case 0x04:	PRINTF("arm_gic_initialize: ARM GICv2\n"); break;
-	default:	PRINTF("arm_gic_initialize: ARM GICv? (code=%08lX)\n", (unsigned long) ICPIDR1); break;
+	default:	PRINTF("arm_gic_initialize: ARM GICv? (code=%08lX @%p)\n", (unsigned long) ICPIDR1, & ICPIDR1); break;
 	}
 
 

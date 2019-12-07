@@ -611,6 +611,7 @@ extern "C" {
 	#define ARM_CA9_CACHELEVELMAX	1	/* максимальный уровень cache в процессоре */
 	#define ARM_CA9_PRIORITYSHIFT 3	/* ICCPMR[7:3] is valid bit */
 
+	#define HSIFREQ 64000000uL
 	//
 	#if WITHCPUXOSC
 		// с генератором
@@ -620,7 +621,7 @@ extern "C" {
 		#define	REFINFREQ WITHCPUXTAL
 	#else /* WITHCPUXTAL */
 		// На внутреннем генераторе
-		#define	REFINFREQ 64000000uL
+		#define	REFINFREQ HSIFREQ
 	#endif /* WITHCPUXTAL */
 
 	//#define CPU_FREQ	(WITHCPUXTAL * 15)		/* 360 MHz = 24 MHz * 15 */
@@ -632,7 +633,7 @@ extern "C" {
 	#define	PCLK2_FREQ (AXISS_FREQ / 4)	// 84 MHz PCLK2 frequency
 	#define	PCLK2_TIMERS_FREQ (AXISS_FREQ / 2)	// 84 MHz PCLK2 frequency
 	#define SYSTICK_FREQ AXISS_FREQ	// SysTick_Config станавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
-	#define PER_CK_FREQ 64000000uL	// 2. The per_ck clock could be hse_ck, hsi_ker_ck or csi_ker_ck according to CKPERSEL selection.
+	#define PER_CK_FREQ HSIFREQ	// 2. The per_ck clock could be hse_ck, hsi_ker_ck or csi_ker_ck according to CKPERSEL selection.
 
 	#define TICKS_FREQUENCY	 (200U)	// 200 Hz
 
