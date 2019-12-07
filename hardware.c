@@ -4337,7 +4337,7 @@ void hardware_spi_master_setfreq(uint_fast8_t spispeedindex, int_fast32_t spispe
 	const uint_fast8_t prei = calcdivider(calcdivround_per_ck(spispeed), STM32F_SPIBR_WIDTH, STM32F_SPIBR_TAPS, & value, 1);
 	const uint_fast32_t cfg1baudrate = (prei * SPI_CFG1_MBR_0) & SPI_CFG1_MBR_Msk;
 	const uint_fast32_t cfg1 = cfg1baudrate;// | (SPI_CFG1_CRCSIZE_0 * 7);
-	debug_printf_P(PSTR("hardware_spi_master_setfreq: prei=%u, value=%u, spispeed=%u\n"), prei, value, spispeed);
+	//debug_printf_P(PSTR("hardware_spi_master_setfreq: prei=%u, value=%u, spispeed=%u\n"), prei, value, spispeed);
 
 	spi_cfg1_val8w [spispeedindex] = cfg1 |
 		7 * SPI_CFG1_DSIZE_0 |
@@ -9228,24 +9228,6 @@ uint_fast32_t cpu_getdebugticks(void)
 
 static void vectors_relocate(void);
 
-#if CPUSTYLE_STM32MP1 && defined (TZPC)
-
-/* Extended TrustZone protection controller access function */
-static void FLASHMEMINITFUNC
-tzpc_set_prot(
-	uint_fast8_t id,	/* IP code */
-	uint_fast8_t val	/* 0x00..0x03: protection style */
-	)
-{
-	const uint_fast8_t pos = (id % 16) * 2;
-	const uint_fast8_t ix = (id / 16);
-	const uint_fast32_t mask = 0x03uL << pos;
-	volatile uint32_t * const reg = & TZPC->DECPROT0 + ix;
-	* reg = (* reg & ~ mask) | ((val << pos) & mask);
-}
-
-#endif /* CPUSTYLE_STM32MP1 && defined (TZPC) */
-
 #if CPUSTYLE_STM32MP1
 
 void stm32mp1_pll_initialize(void)
@@ -9394,7 +9376,65 @@ void stm32mp1_pll_initialize(void)
 		0;
 	while((RCC->MPCKSELR & RCC_MPCKSELR_MPUSRCRDY_Msk) == 0)
 		;
+
+	//0x0: hsi_ker_ck clock selected (default after reset)
+	//0x1: csi_ker_ck clock selected
+	//0x2: hse_ker_ck clock selected
+	//0x3: Clock disabled
+	RCC->CPERCKSELR = (RCC->CPERCKSELR & ~ (RCC_CPERCKSELR_CKPERSRC_Msk)) |
+		(0x00 << RCC_CPERCKSELR_CKPERSRC_Pos) |	// per_ck
+		0;
+	(void) RCC->CPERCKSELR;
+
+#if WITHUART1HW
+	// usart1
+	RCC->UART1CKSELR = (RCC->UART1CKSELR & ~ (RCC_UART1CKSELR_UART1SRC_Msk)) |
+		(0x02 << RCC_UART1CKSELR_UART1SRC_Pos) | // HSI
+		0;
+	(void) RCC->UART1CKSELR;
+#endif /* WITHUART1HW */
+
+#if WITHUART2HW
+	// usart2
+	//0x0: pclk1 clock selected as kernel peripheral clock (default after reset)
+	//0x1: pll4_q_ck clock selected as kernel peripheral clock
+	//0x2: hsi_ker_ck clock selected as kernel peripheral clock
+	//0x3: csi_ker_ck clock selected as kernel peripheral clock
+	//0x4: hse_ker_ck clock selected as kernel peripheral clock
+	RCC->UART24CKSELR = (RCC->UART24CKSELR & ~ (RCC_UART24CKSELR_UART24SRC_Msk)) |
+		(0x02 << RCC_UART24CKSELR_UART24SRC_Pos) |	// HSI
+		0;
+	(void) RCC->UART24CKSELR;
+#endif /* WITHUART2HW */
+
+#if WITHSPIHW
+	//0x0: pll4_p_ck clock selected as kernel peripheral clock (default after reset)
+	//0x1: pll3_q_ck clock selected as kernel peripheral clock
+	//0x2: I2S_CKIN clock selected as kernel peripheral clock
+	//0x3: per_ck clock selected as kernel peripheral clock
+	//0x4: pll3_r_ck clock selected as kernel peripheral clock
+	RCC->SPI2S1CKSELR = (RCC->SPI2S1CKSELR & ~ (RCC_SPI2S1CKSELR_SPI1SRC_Msk)) |
+		(0x03 << RCC_SPI2S1CKSELR_SPI1SRC_Pos) |	// per_ck
+		0;
+	(void) RCC->SPI2S1CKSELR;
+#endif /* WITHSPIHW */
 }
+
+
+/* Extended TrustZone protection controller access function */
+static void FLASHMEMINITFUNC
+tzpc_set_prot(
+	uint_fast8_t id,	/* IP code */
+	uint_fast8_t val	/* 0x00..0x03: protection style */
+	)
+{
+	const uint_fast8_t pos = (id % 16) * 2;
+	const uint_fast8_t ix = (id / 16);
+	const uint_fast32_t mask = 0x03uL << pos;
+	volatile uint32_t * const reg = & TZPC->DECPROT0 + ix;
+	* reg = (* reg & ~ mask) | ((val << pos) & mask);
+}
+
 #endif /* CPUSTYLE_STM32MP1 */
 
 /* функция вызывается из start-up до копирования в SRAM всех "быстрых" функций и до инициализации переменных
@@ -9404,89 +9444,6 @@ void
 FLASHMEMINITFUNC
 SystemInit(void)
 {
-#if CPUSTYLE_STM32MP1
-	stm32mp1_pll_initialize();
-	return;
-#endif /* CPUSTYLE_STM32MP1 */
-#if 0//CPUSTYLE_STM32MP1
-
-	/*
-	 * Interconnect update : select master using the port 1.
-	 * LTDC = AXI_M9.
-	 */
-	//mmio_write_32(syscfg_base + SYSCFG_ICNR, SYSCFG_ICNR_AXI_M9);
-
-	//RCC->TZCR &= ~ (RCC_TZCR_TZEN | RCC_TZCR_MCKPROT);
-	RCC->TZCR &= ~ (RCC_TZCR_TZEN);
-	RCC->MP_APB5ENSETR = RCC_MC_APB5ENSETR_TZPCEN;
-	(void) RCC->MP_APB5ENSETR;
-
-	// Set peripheral is not secure (Read and Write by secure and non secure)
-	tzpc_set_prot(0, 0x03);		// STGENC
-	tzpc_set_prot(1, 0x03);		// BKPSRAM
-	tzpc_set_prot(3, 0x03);		// USART1
-	tzpc_set_prot(7, 0x03);		// RNG1
-	tzpc_set_prot(10, 0x03);	// DDRCTRL
-	tzpc_set_prot(11, 0x03);	// DDRPHYC
-	tzpc_set_prot(32, 0x03);	// UART4
-
-#endif /* CPUSTYLE_STM32MP1 */
-
-#if CPUSTYLE_STM32MP1
-	//local_delay_ms(100);
-	RCC->TZCR &= ~ (RCC_TZCR_TZEN);
-	//RCC->TZCR &= ~ (RCC_TZCR_TZEN | RCC_TZCR_MCKPROT);
-	//RCC->MP_APB5ENSETR = RCC_MC_APB5ENSETR_TZPCEN;
-	//RCC->MP_APB5ENSETR = RCC_MC_APB5ENSETR_BSECEN;
-
-	//BSEC->BSEC_DENABLE |= BSEC_DENABLE_DBGEN_Msk;
-	//BSEC->BSEC_DENABLE |= BSEC_DENABLE_NIDEN_Msk;
-	//BSEC->BSEC_DENABLE |= BSEC_DENABLE_DEVICEEN_Msk;
-	//BSEC->BSEC_DENABLE |= BSEC_DENABLE_SPIDEN_Msk;
-	//BSEC->BSEC_DENABLE |= BSEC_DENABLE_SPNIDEN_Msk;
-	//BSEC->BSEC_DENABLE &= ~ BSEC_DENABLE_CP15SDISABLE_Msk;
-	//BSEC->BSEC_DENABLE &= ~ BSEC_DENABLE_CFGSDISABLE_Msk;
-	//BSEC->BSEC_DENABLE |= BSEC_DENABLE_DBGSWENABLE_Msk;
-	if (0)
-	{
-		/*
-			QUADSPI_CLK 	PF10	AS pin 01	U13-38 (traced to PA7)
-			QUADSPI_BK1_NCS PB6 	AS pin 08	U12-21 (traced to PB12)
-			QUADSPI_BK1_IO0 PF8
-			QUADSPI_BK1_IO1 PF9
-		*/
-		//arm_hardware_piof_inputs(1uL << 8);
-		//arm_hardware_piof_inputs(1uL << 9);
-		//arm_hardware_piof_inputs(1uL << 10);
-		//arm_hardware_piob_inputs(1uL << 6);
-	}
-	{
-		//RCC->MP_APB5ENSETR = RCC_MC_APB5ENSETR_TZPCEN;
-		//HARDWARE_DEBUG_INITIALIZE();
-		//HARDWARE_DEBUG_SET_SPEED(DEBUGSPEED);
-		//arm_hardware_pioa_altfn20(1uL << 13, 0);	// DBGTRO
-		// LED blinking test
-		//const uint_fast32_t mask = (1uL << 14);	// PA14 - GREEN LED LD5 on DK1/DK2 MB1272.pdf
-		const uint_fast32_t maskd = (1uL << 14);	// PD14 - LED on small board
-		const uint_fast32_t maskg = (1uL << 13);	// PG13 - LCD_R0
-		arm_hardware_piod_outputs(maskd, 1 * maskd);
-		arm_hardware_piog_outputs(maskg, 1 * maskg);
-		for (;;)
-		{
-			//dbg_putchar('5');
-			(GPIOD)->BSRR = BSRR_S(maskd);
-			(GPIOG)->BSRR = BSRR_S(maskg);
-			//local_delay_ms(100);
-			__DSB();
-			//dbg_putchar('#');
-			(GPIOD)->BSRR = BSRR_C(maskd);
-			(GPIOG)->BSRR = BSRR_C(maskg);
-			//local_delay_ms(100);
-			__DSB();
-
-		}
-	}
-#endif /* CPUSTYLE_STM32MP1 */
 #if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7
 
 	#if WITHDEBUG && WITHINTEGRATEDDSP && CPUSTYLE_ARM_CM7
@@ -9640,14 +9597,14 @@ SystemInit(void)
 
 // Плата с процессором STM32L051K6T (TQFP-32)
 
-#if ARM_STM32L051_TQFP32_CPUSTYLE_V1_H_INCLUDED
-	// power on bit
-	{
-		enum { WORKMASK = 1U << 11 };	/* PA11 */
-		arm_hardware_pioa_outputs(WORKMASK, WORKMASK * (1 != 0));
+	#if ARM_STM32L051_TQFP32_CPUSTYLE_V1_H_INCLUDED
+		// power on bit
+		{
+			enum { WORKMASK = 1U << 11 };	/* PA11 */
+			arm_hardware_pioa_outputs(WORKMASK, WORKMASK * (1 != 0));
 
-	}
-#endif /* ARM_STM32L051_TQFP32_CPUSTYLE_V1_H_INCLUDED */
+		}
+	#endif /* ARM_STM32L051_TQFP32_CPUSTYLE_V1_H_INCLUDED */
 	//lowlevel_stm32l0xx_pll_clock();
 	lowlevel_stm32l0xx_hsi_clock();
 
@@ -9747,8 +9704,47 @@ SystemInit(void)
 			0;
 	}
 
+#elif CPUSTYLE_STM32MP1
+
+	stm32mp1_pll_initialize();
+
+	/*
+	 * Interconnect update : select master using the port 1.
+	 * LTDC = AXI_M9.
+	 */
+	//mmio_write_32(syscfg_base + SYSCFG_ICNR, SYSCFG_ICNR_AXI_M9);
+
+	//RCC->TZCR &= ~ (RCC_TZCR_TZEN | RCC_TZCR_MCKPROT);
+	RCC->TZCR &= ~ (RCC_TZCR_TZEN);
+	RCC->MP_APB5ENSETR = RCC_MC_APB5ENSETR_TZPCEN;
+	(void) RCC->MP_APB5ENSETR;
+
+	// Set peripheral is not secure (Read and Write by secure and non secure)
+	tzpc_set_prot(0, 0x03);		// STGENC
+	tzpc_set_prot(1, 0x03);		// BKPSRAM
+	tzpc_set_prot(3, 0x03);		// USART1
+	tzpc_set_prot(7, 0x03);		// RNG1
+	tzpc_set_prot(10, 0x03);	// DDRCTRL
+	tzpc_set_prot(11, 0x03);	// DDRPHYC
+	tzpc_set_prot(32, 0x03);	// UART4
+
+
+	if (1)
+	{
+		/*
+			QUADSPI_CLK 	PF10	AS pin 01	U13-38 (traced to PA7)
+			QUADSPI_BK1_NCS PB6 	AS pin 08	U12-21 (traced to PB12)
+			QUADSPI_BK1_IO0 PF8
+			QUADSPI_BK1_IO1 PF9
+		*/
+		arm_hardware_piof_inputs(1uL << 8);
+		arm_hardware_piof_inputs(1uL << 9);
+		arm_hardware_piof_inputs(1uL << 10);
+		arm_hardware_piob_inputs(1uL << 6);
+	}
+
 #else
-	//#error Undefined CPUSTYLE_XXX
+	#error Undefined CPUSTYLE_XXX
 
 #endif
 
@@ -10974,7 +10970,7 @@ arm_gic_initialize(void)
 	{
 	case 0x03:	PRINTF("arm_gic_initialize: ARM GICv1\n"); break;
 	case 0x04:	PRINTF("arm_gic_initialize: ARM GICv2\n"); break;
-	default:	PRINTF("arm_gic_initialize: ARM GICv? (code=%08lX)\n", (unsigned long) ICPIDR1); break;
+	default:	PRINTF("arm_gic_initialize: ARM GICv? (code=%08lX @%p)\n", (unsigned long) ICPIDR1, & ICPIDR1); break;
 	}
 
 
@@ -11377,7 +11373,15 @@ void cpu_initialize(void)
 		cpu_tms320f2833x_flash_waitstates(3, 5);		// commented in RAM configuration
 	#endif
 
-#elif CPUSTYLE_R7S721 || CPUSTYLE_STM32MP1
+#elif CPUSTYLE_STM32MP1
+
+	extern unsigned long __etext, __bss_start__, __bss_end__, __data_end__, __data_start__, __stack;
+
+	debug_printf_P(PSTR("cpu_initialize1: CP15=%08lX, __data_start__=%p\n"), __get_SCTLR(), & __data_start__);
+	debug_printf_P(PSTR("__etext=%p, __bss_start__=%p, __bss_end__=%p, __data_start__=%p, __data_end__=%p\n"), & __etext, & __bss_start__, & __bss_end__, & __data_start__, & __data_end__);
+	debug_printf_P(PSTR("__stack=%p, SystemInit=%p\n"), & __stack, SystemInit);
+
+#elif CPUSTYLE_R7S721
 
 	extern unsigned long __etext, __bss_start__, __bss_end__, __data_end__, __data_start__, __stack;
 

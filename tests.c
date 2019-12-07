@@ -7643,11 +7643,10 @@ static unsigned RAMFUNC_NONILINE testramfunc2(void)
 
 void lowtests(void)
 {
-#if CPUSTYLE_STM32MP1
+#if 0 && CPUSTYLE_STM32MP1
 	{
 		//RCC->MP_APB5ENSETR = RCC_MC_APB5ENSETR_TZPCEN;
-		//HARDWARE_DEBUG_INITIALIZE();
-		//HARDWARE_DEBUG_SET_SPEED(DEBUGSPEED);
+		PRINTF("Hello. STM32MP157\n");
 		//arm_hardware_pioa_altfn20(1uL << 13, 0);	// DBGTRO
 		// LED blinking test
 		//const uint_fast32_t mask = (1uL << 14);	// PA14 - GREEN LED LD5 on DK1/DK2 MB1272.pdf

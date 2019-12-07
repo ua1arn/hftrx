@@ -17410,7 +17410,9 @@ hamradio_mainloop(void)
 {
 	hamradio_main_initialize();
 	for (;;)
+	{
 		hamradio_main_step();
+	}
 }
 
 #if 0
