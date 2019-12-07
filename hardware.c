@@ -9354,13 +9354,14 @@ void stm32mp1_pll_initialize(void)
 		((PLL1DIVR - 1) < RCC_PLL1CFGR2_DIVR_Pos) |
 		0;
 
+	RCC->PLL1CR |= RCC_PLL1CR_DIVPEN_Msk;	// P output eable
+	(void) RCC->PLL1CR;
+
 	RCC->PLL1CR |= RCC_PLL1CR_PLLON_Msk;
 	while ((RCC->PLL1CR & RCC_PLL1CR_PLL1RDY_Msk) == 0)
 		;
 
 	RCC->PLL1CR &= ~ RCC_PLL1CR_SSCG_CTRL_Msk;
-
-	//RCC->PLL1CR |= RCC_PLL1CR_DIVPEN_Msk;	// P output eable
 
 	RCC->PLL2CFGR1 = (RCC->PLL2CFGR1 & ~ (RCC_PLL2CFGR1_DIVN_Msk | RCC_PLL2CFGR1_DIVM2_Msk)) |
 		((PLL2DIVN - 1) < RCC_PLL2CFGR1_DIVN_Pos) |
@@ -9388,7 +9389,6 @@ void stm32mp1_pll_initialize(void)
 			0;
 	while ((RCC->ASSCKSELR & RCC_ASSCKSELR_AXISSRCRDY_Msk) == 0)
 		;
-	goto end;
 
 	//	0x0: HSI selected as MPU sub-system clock (hsi_ck) (default after reset)
 	//	0x1: HSE selected as MPU sub-system clock (hse_ck)
@@ -9399,9 +9399,6 @@ void stm32mp1_pll_initialize(void)
 		0;
 	while((RCC->MPCKSELR & RCC_MPCKSELR_MPUSRCRDY_Msk) == 0)
 		;
-
-	end:
-	;
 }
 #endif /* CPUSTYLE_STM32MP1 */
 
