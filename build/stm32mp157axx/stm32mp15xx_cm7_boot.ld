@@ -16,7 +16,7 @@ MEMORY
 {
   FLASH (rx) 	: ORIGIN = 0x70000000, LENGTH = 4M		/* W25Q32FVZPIG */
   DDR3 (rwx) 	: ORIGIN = 0xC0000000, LENGTH = 256M 	/* DDR3 single chip NT5CC128M16IP-DI */
-  RAM (rwx)		: ORIGIN = 0x2FFC2500, LENGTH = 0x00039B00	/* SYSRAM - 256 kB - 16 - 10 + 256 B */
+  RAM (rwx)		: ORIGIN = 0x2FFC2500, LENGTH = 0x00039B00	/* SYSRAM - 256k - 16k - 9k + 256 B */
   TTB (rwx)  	: ORIGIN = 0x2FFFC000, LENGTH = 16k		/* last 16 kB SYSRAM for TTB */
   SRAM (rwx)  	: ORIGIN = 0x20000000, LENGTH = 384k	/* Cortex-M4 memories */
 }
@@ -60,6 +60,10 @@ SECTIONS
 		KEEP(*(.initfunc))
 		KEEP(*(.initdata))
 		KEEP(*(.fini))
+
+		*(.text*)
+		*(.itcm*)
+		*(.dtcm*)
 	} > RAM
 
 	.ARM.extab :
@@ -110,17 +114,13 @@ SECTIONS
 
 	__etext = .;
 
-	.data : AT (__etext)
+	.data : /*AT (__etext)*/
 	{
 		__data_start__ = .;
 		KEEP(*(.vectors))
 		__Vectors_End = .;
 		__Vectors_Size = __Vectors_End - __Vectors;
 		__end__ = .;
-
-		*(.text*)
-		*(.itcm*)
-		*(.dtcm*)
 
 		/* .ctors */
 		*crtbegin.o(.ctors)

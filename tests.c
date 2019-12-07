@@ -7643,11 +7643,9 @@ static unsigned RAMFUNC_NONILINE testramfunc2(void)
 
 void lowtests(void)
 {
-#if 1 && CPUSTYLE_STM32MP1
+#if 0 && CPUSTYLE_STM32MP1
 	{
 		//RCC->MP_APB5ENSETR = RCC_MC_APB5ENSETR_TZPCEN;
-		HARDWARE_DEBUG_INITIALIZE();
-		HARDWARE_DEBUG_SET_SPEED(DEBUGSPEED);
 		PRINTF("Hello. STM32MP157\n");
 		//arm_hardware_pioa_altfn20(1uL << 13, 0);	// DBGTRO
 		// LED blinking test
@@ -7656,15 +7654,14 @@ void lowtests(void)
 		const uint_fast32_t maskg = (1uL << 13);	// PG13 - LCD_R0
 		arm_hardware_piod_outputs(maskd, 1 * maskd);
 		arm_hardware_piog_outputs(maskg, 1 * maskg);
-		//for (;;)
-		if (0)
+		for (;;)
 		{
-			dbg_putchar('5');
+			//dbg_putchar('5');
 			(GPIOD)->BSRR = BSRR_S(maskd);
 			(GPIOG)->BSRR = BSRR_S(maskg);
 			local_delay_ms(50);
 			__DSB();
-			dbg_putchar('#');
+			//dbg_putchar('#');
 			(GPIOD)->BSRR = BSRR_C(maskd);
 			(GPIOG)->BSRR = BSRR_C(maskg);
 			local_delay_ms(50);

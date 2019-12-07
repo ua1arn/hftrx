@@ -9450,7 +9450,7 @@ SystemInit(void)
 	stm32mp1_pll_initialize();
 	//HARDWARE_DEBUG_INITIALIZE();
 	//HARDWARE_DEBUG_SET_SPEED(DEBUGSPEED);
-	return;
+	//return;
 #endif /* CPUSTYLE_STM32MP1 */
 #if 0//CPUSTYLE_STM32MP1
 
@@ -9476,7 +9476,7 @@ SystemInit(void)
 
 #endif /* CPUSTYLE_STM32MP1 */
 
-#if CPUSTYLE_STM32MP1
+#if 0//CPUSTYLE_STM32MP1
 	//local_delay_ms(100);
 	RCC->TZCR &= ~ (RCC_TZCR_TZEN);
 	//RCC->TZCR &= ~ (RCC_TZCR_TZEN | RCC_TZCR_MCKPROT);
@@ -11421,7 +11421,15 @@ void cpu_initialize(void)
 		cpu_tms320f2833x_flash_waitstates(3, 5);		// commented in RAM configuration
 	#endif
 
-#elif CPUSTYLE_R7S721 || CPUSTYLE_STM32MP1
+#elif CPUSTYLE_STM32MP1
+
+	extern unsigned long __etext, __bss_start__, __bss_end__, __data_end__, __data_start__, __stack;
+
+	debug_printf_P(PSTR("cpu_initialize1: CP15=%08lX, __data_start__=%p\n"), __get_SCTLR(), & __data_start__);
+	debug_printf_P(PSTR("__etext=%p, __bss_start__=%p, __bss_end__=%p, __data_start__=%p, __data_end__=%p\n"), & __etext, & __bss_start__, & __bss_end__, & __data_start__, & __data_end__);
+	debug_printf_P(PSTR("__stack=%p, SystemInit=%p\n"), & __stack, SystemInit);
+
+#elif CPUSTYLE_R7S721
 
 	extern unsigned long __etext, __bss_start__, __bss_end__, __data_end__, __data_start__, __stack;
 
