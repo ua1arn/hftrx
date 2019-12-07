@@ -9281,19 +9281,24 @@ void stm32mp1_pll_initialize(void)
 	while((RCC->MPCKSELR & RCC_MPCKSELR_MPUSRCRDY_Msk) == 0)
 		;
 
+	// Stop PLL1
+	RCC->PLL1CR &= ~ RCC_PLL1CR_DIVPEN_Msk;
+	(void) RCC->PLL1CR;
+	RCC->PLL1CR &= ~ RCC_PLL1CR_PLLON_Msk;
+	(void) RCC->PLL1CR;
+	while ((RCC->PLL1CR & RCC_PLL1CR_PLL1RDY_Msk) != 0)
+		;
+
 	goto end;
+
+	// Stop PLL2
+	RCC->PLL2CR &= ~ RCC_PLL2CR_PLLON_Msk;
+	(void) RCC->PLL2CR;
 
 	// HSE ON
 	RCC->OCENSETR = RCC_OCENSETR_HSEON;
 	while ((RCC->OCRDYR & RCC_OCRDYR_HSERDY) == 0)
 		;
-
-	// Stop PLL1
-	RCC->PLL1CR &= ~ RCC_PLL1CR_DIVPEN_Msk;
-	RCC->PLL1CR &= ~ RCC_PLL1CR_PLLON_Msk;
-
-	// Stop PLL2
-	RCC->PLL2CR &= ~ RCC_PLL2CR_PLLON_Msk;
 
 	// PLL12 source mux
 	RCC->RCK12SELR = (RCC->RCK12SELR & ~ (RCC_RCK12SELR_PLL12SRC_Msk)) |
