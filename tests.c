@@ -5358,11 +5358,46 @@ GrideTest(void)
 
 #endif /* LCDMODE_COLORED */
 
+#if 0
+static int
+toprintc(int c)
+{
+	if (c < 0x20 || c >= 0x7f)
+		return '.';
+	return c;
+}
+
+void
+printhex(unsigned long voffs, const unsigned char * buff, unsigned length)
+{
+	unsigned i, j;
+	unsigned rows = (length + 15) / 16;
+
+	for (i = 0; i < rows; ++ i)
+	{
+		const int trl = ((length - 1) - i * 16) % 16 + 1;
+		debug_printf_P(PSTR("%08lX "), voffs + i * 16);
+		for (j = 0; j < trl; ++ j)
+			debug_printf_P(PSTR(" %02X"), buff [i * 16 + j]);
+
+		debug_printf_P(PSTR("%*s"), (16 - trl) * 3, "");
+
+		debug_printf_P(PSTR("  "));
+		for (j = 0; j < trl; ++ j)
+			debug_printf_P(PSTR("%c"), toprintc(buff [i * 16 + j]));
+
+		debug_printf_P(PSTR("\n"));
+	}
+}
+
+#endif
+
 void hightests(void)
 {
-#if 1 && defined (__GNUC__)
+#if 0 && defined (__GNUC__)
 	{
 		debug_printf_P(PSTR("__GNUC__=%d, __GNUC_MINOR__=%d\n"), (int) __GNUC__, (int) __GNUC_MINOR__);
+		//printhex(0x70000000, (const uint8_t *) 0x70000000, 256);
 	}
 #endif
 #if 0

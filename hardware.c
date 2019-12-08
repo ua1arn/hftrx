@@ -9713,6 +9713,8 @@ SystemInit(void)
 	 * LTDC = AXI_M9.
 	 */
 	//mmio_write_32(syscfg_base + SYSCFG_ICNR, SYSCFG_ICNR_AXI_M9);
+	SYSCFG->ICNR = SYSCFG_ICNR_AXI_M9;
+	(void) SYSCFG->ICNR;
 
 	//RCC->TZCR &= ~ (RCC_TZCR_TZEN | RCC_TZCR_MCKPROT);
 	RCC->TZCR &= ~ (RCC_TZCR_TZEN);
@@ -9731,6 +9733,7 @@ SystemInit(void)
 
 	if (1)
 	{
+		// Hang-off QSPI memory
 		/*
 			QUADSPI_CLK 	PF10	AS pin 01	U13-38 (traced to PA7)
 			QUADSPI_BK1_NCS PB6 	AS pin 08	U12-21 (traced to PB12)
