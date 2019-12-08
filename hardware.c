@@ -9343,13 +9343,21 @@ void stm32mp1_pll_initialize(void)
 		0;
 
 	RCC->PLL2CFGR2 = (RCC->PLL2CFGR2 & ~ (RCC_PLL2CFGR2_DIVP_Msk | RCC_PLL2CFGR2_DIVQ_Msk | RCC_PLL2CFGR2_DIVR_Msk)) |
-		((PLL2DIVP - 1) << RCC_PLL2CFGR2_DIVP_Pos) |
-		((PLL2DIVQ - 1) << RCC_PLL2CFGR2_DIVQ_Pos) |
-		((PLL2DIVR - 1) << RCC_PLL2CFGR2_DIVR_Pos) |
+		((PLL2DIVP - 1) << RCC_PLL2CFGR2_DIVP_Pos) |	// pll2_p_ck - AXI clock (1..128 -> 0x00..0x7f)
+		((PLL2DIVQ - 1) << RCC_PLL2CFGR2_DIVQ_Pos) |	// GPU clock (1..128 -> 0x00..0x7f)
+		((PLL2DIVR - 1) << RCC_PLL2CFGR2_DIVR_Pos) |	// DDR clock (1..128 -> 0x00..0x7f)
 		0;
 
-	RCC->PLL2CR |= RCC_PLL2CR_DIVPEN_Msk;	// P output eable
+	RCC->PLL2CR |= RCC_PLL2CR_DIVPEN_Msk;	// pll2_p_ck - AXI clock
 	(void) RCC->PLL2CR;
+
+	RCC->PLL2CR |= RCC_PLL2CR_DIVQEN_Msk;	// GPU clock
+	(void) RCC->PLL2CR;
+
+#if WITHSDRAMHW
+	RCC->PLL2CR |= RCC_PLL2CR_DIVREN_Msk;	// DDR clock
+	(void) RCC->PLL2CR;
+#endif /* WITHSDRAMHW */
 
 	RCC->PLL2CR |= RCC_PLL2CR_PLLON_Msk;
 	while ((RCC->PLL2CR & RCC_PLL2CR_PLL2RDY_Msk) == 0)
@@ -9385,6 +9393,9 @@ void stm32mp1_pll_initialize(void)
 		(0x00 << RCC_CPERCKSELR_CKPERSRC_Pos) |	// per_ck
 		0;
 	(void) RCC->CPERCKSELR;
+
+	// PLL3
+
 
 #if WITHUART1HW
 	// usart1
@@ -9716,20 +9727,22 @@ SystemInit(void)
 	SYSCFG->ICNR = SYSCFG_ICNR_AXI_M9;
 	(void) SYSCFG->ICNR;
 
-	//RCC->TZCR &= ~ (RCC_TZCR_TZEN | RCC_TZCR_MCKPROT);
-	RCC->TZCR &= ~ (RCC_TZCR_TZEN);
-	RCC->MP_APB5ENSETR = RCC_MC_APB5ENSETR_TZPCEN;
-	(void) RCC->MP_APB5ENSETR;
+	if (1)
+	{
+		//RCC->TZCR &= ~ (RCC_TZCR_TZEN | RCC_TZCR_MCKPROT);
+		RCC->TZCR &= ~ (RCC_TZCR_TZEN);
+		RCC->MP_APB5ENSETR = RCC_MC_APB5ENSETR_TZPCEN;
+		(void) RCC->MP_APB5ENSETR;
 
-	// Set peripheral is not secure (Read and Write by secure and non secure)
-	tzpc_set_prot(0, 0x03);		// STGENC
-	tzpc_set_prot(1, 0x03);		// BKPSRAM
-	tzpc_set_prot(3, 0x03);		// USART1
-	tzpc_set_prot(7, 0x03);		// RNG1
-	tzpc_set_prot(10, 0x03);	// DDRCTRL
-	tzpc_set_prot(11, 0x03);	// DDRPHYC
-	tzpc_set_prot(32, 0x03);	// UART4
-
+		// Set peripheral is not secure (Read and Write by secure and non secure)
+		tzpc_set_prot(0, 0x03);		// STGENC
+		tzpc_set_prot(1, 0x03);		// BKPSRAM
+		tzpc_set_prot(3, 0x03);		// USART1
+		tzpc_set_prot(7, 0x03);		// RNG1
+		tzpc_set_prot(10, 0x03);	// DDRCTRL
+		tzpc_set_prot(11, 0x03);	// DDRPHYC
+		tzpc_set_prot(32, 0x03);	// UART4
+	}
 
 	if (1)
 	{
@@ -9751,11 +9764,11 @@ SystemInit(void)
 
 #endif
 
-#if WITHSDRAMHW && WITHISBOOTLOADER
+#if 0000 && WITHSDRAMHW && WITHISBOOTLOADER
 	/* В процессоре есть внешняя память - если уже в ней то не трогаем */
 	arm_hardware_sdram_initialize();
 
-#elif WITHSDRAMHW && CTLSTYLE_V1D
+#elif 0000 && WITHSDRAMHW && CTLSTYLE_V1D
 	/* В процессоре есть внешняя память - только данные */
 	arm_hardware_sdram_initialize();
 
@@ -9766,13 +9779,29 @@ SystemInit(void)
 	vectors_relocate();
 
 #endif /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM0 || CPUSTYLE_ARM_CM7 */
+
 #if WITHDEBUG && ! WITHISBOOTLOADER
 	// В функции инициализации компорта есть NVIC_SetVector
 	// При вызове до перемещения таблиц прерывания получаем HardFault на STM32F7XXX
+	// UPD: пофиксено. Дебагер не вызывает NVIC_SetVector
 	HARDWARE_DEBUG_INITIALIZE();
 	HARDWARE_DEBUG_SET_SPEED(DEBUGSPEED);
 
 #endif /* WITHDEBUG */
+
+#if WITHSDRAMHW && WITHISBOOTLOADER
+	/* В процессоре есть внешняя память - если уже в ней то не трогаем */
+	arm_hardware_sdram_initialize();
+
+#elif WITHSDRAMHW && CTLSTYLE_V1D
+	/* В процессоре есть внешняя память - только данные */
+	arm_hardware_sdram_initialize();
+
+#elif WITHSDRAMHW && CPUSTYLE_STM32MP157A
+	/* В процессоре есть внешняя память */
+	arm_hardware_sdram_initialize();
+
+#endif /* WITHSDRAMHW && WITHISBOOTLOADER */
 }
 
 #if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7 || CPUSTYLE_ARM_CM0

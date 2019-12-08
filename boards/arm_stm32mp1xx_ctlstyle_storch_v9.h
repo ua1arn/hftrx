@@ -43,8 +43,8 @@
 		#define PLL2DIVM	2	// ref2_ck = 12 MHz
 		#define PLL2DIVN	44	// 528 MHz
 		#define PLL2DIVP	2	// div2=minimum 528/2 = 264 MHz
-		#define PLL2DIVQ	2
-		#define PLL2DIVR	2
+		#define PLL2DIVQ	2	// GPU clock divider
+		#define PLL2DIVR	3	// DDR clock divider
 
 	#else
 		// HSI version (HSI=64 MHz)
@@ -58,8 +58,8 @@
 		#define PLL2DIVM	5	// ref2_ck = 12.8 MHz
 		#define PLL2DIVN	35	// 12.8 * 35 = 448 MHz
 		#define PLL2DIVP	2	// div2=minimum
-		#define PLL2DIVQ	2
-		#define PLL2DIVR	2
+		#define PLL2DIVQ	2	// GPU clock divider
+		#define PLL2DIVR	3	// DDR clock divider
 
 	#endif
 
