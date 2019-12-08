@@ -3540,6 +3540,7 @@ prog_ctrlreg(uint_fast8_t plane)
 		const uint_fast8_t txgated = glob_tx && glob_txgate;
 
 #if WITHAUTOTUNER
+	#if 0
 		// Плата управления LPF и тюнером от avbelnn
 
 		// Геннадий схему брал на краснодарском форуме Аист сообщение 545 от avbelnn.
@@ -3558,6 +3559,23 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBBIT(0070, ! glob_tuner_bypass);	// в обесточенном состоянии - режим BYPASS
 		RBVAL8(0060, glob_tuner_C);
 		RBVAL8(0050, glob_tuner_L);
+
+	#elif SHORTSET8 || FULLSET8
+
+	#elif SHORTSET7 || FULLSET7
+
+		/* +++ Управление согласующим устройством */
+		/* регистр управления массивом конденсаторов */
+		RBBIT(067, glob_tuner_bypass ? 0 : glob_tuner_type);		/* pin 7: TYPE OF TUNER 	*/
+		RBVAL(060, glob_tuner_bypass ? 0 : (revbits8(glob_tuner_C) >> 1), 7);/* Capacitors tuner bank 	*/
+		/* регистр управления наборной индуктивностью. */
+		RBBIT(057, ! glob_tuner_bypass);		// pin 7: обход СУ
+		RBVAL(050, glob_tuner_bypass ? 0 : (revbits8(glob_tuner_L) >> 1), 7);			/* pin 15, 1..6: Inductors tuner bank 	*/
+		/* --- Управление согласующим устройством */
+
+	#else
+		#error WITHAUTOTUNER and unknown details
+	#endif
 #endif /* WITHAUTOTUNER */
 
 		// DD21 SN74HC595PW + ULN2003APW на разъём управления LPF
