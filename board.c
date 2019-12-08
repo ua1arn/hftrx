@@ -3540,7 +3540,7 @@ prog_ctrlreg(uint_fast8_t plane)
 		const uint_fast8_t txgated = glob_tx && glob_txgate;
 
 #if WITHAUTOTUNER
-	#if 0
+	#if WITHAUTOTUNER_AVBELNN
 		// Плата управления LPF и тюнером от avbelnn
 
 		// Геннадий схему брал на краснодарском форуме Аист сообщение 545 от avbelnn.
