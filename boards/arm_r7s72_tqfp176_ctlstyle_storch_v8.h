@@ -307,6 +307,11 @@
 		/* TUNER & PA board 2*RD16 by avbelnn@yandex.ru */
 		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
 		#define SHORTSET8	1
+		#define WITHAUTOTUNER_AVBELNN	1	/* Плата управления LPF и тюнером от avbelnn */
+	#elif 0
+		/* TUNER by R3LL */
+		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
+		#define SHORTSET7	1
 	#endif
 
 	/* Board hardware configuration */
