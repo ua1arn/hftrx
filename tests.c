@@ -7681,7 +7681,7 @@ void lowtests(void)
 #if 0 && CPUSTYLE_STM32MP1
 	{
 		//RCC->MP_APB5ENSETR = RCC_MC_APB5ENSETR_TZPCEN;
-		PRINTF("Hello. STM32MP157\n");
+		//PRINTF("Hello. STM32MP157\n");
 		//arm_hardware_pioa_altfn20(1uL << 13, 0);	// DBGTRO
 		// LED blinking test
 		//const uint_fast32_t mask = (1uL << 14);	// PA14 - GREEN LED LD5 on DK1/DK2 MB1272.pdf
@@ -7694,12 +7694,12 @@ void lowtests(void)
 			//dbg_putchar('5');
 			(GPIOD)->BSRR = BSRR_S(maskd);
 			(GPIOG)->BSRR = BSRR_S(maskg);
-			local_delay_ms(50);
+			local_delay_ms(250);
 			__DSB();
 			//dbg_putchar('#');
 			(GPIOD)->BSRR = BSRR_C(maskd);
 			(GPIOG)->BSRR = BSRR_C(maskg);
-			local_delay_ms(50);
+			local_delay_ms(250);
 			__DSB();
 
 		}
