@@ -3322,6 +3322,10 @@ void arm_hardware_sdram_initialize(void)
 //	to finish.
 //	This wait time is relative to Step 8, i.e. relative to when the DLL reset command was
 //	issued onto the SDRAM command bus.
+static void stm32mp1_ddr_init(void)
+{
+
+}
 
 void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 {
@@ -3337,6 +3341,17 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 	(void) RCC->DDRITFCR;
 
 	//PRINTF("arm_hardware_sdram_initialize: DDRC->MSTR=%08lX\n", DDRC->MSTR);
+	/* Disable axidcg clock gating during init */
+	//mmio_clrbits_32(priv->rcc + RCC_DDRITFCR, RCC_DDRITFCR_AXIDCGEN);
+	RCC->DDRITFCR &= ~ RCC_DDRITFCR_AXIDCGEN;
+	(void) RCC->DDRITFCR;
+
+	stm32mp1_ddr_init();
+
+	/* Enable axidcg clock gating */
+	//mmio_setbits_32(priv->rcc + RCC_DDRITFCR, RCC_DDRITFCR_AXIDCGEN);
+	RCC->DDRITFCR |= RCC_DDRITFCR_AXIDCGEN;
+	(void) RCC->DDRITFCR;
 
 
 	//DDRPHYC->DDRCTRL_MSTR |= 0x00000001;	// DDR3 mode
