@@ -5392,21 +5392,14 @@ printhex(unsigned long voffs, const unsigned char * buff, unsigned length)
 
 #endif
 
-
-static void hw_swi(void)
-{
-	__asm volatile (" SWI  0" : /* no outputs */ : /* no inputs */  );
-}
-
 void hightests(void)
 {
-#if 1 && defined (__GNUC__)
+#if 0 && defined (__GNUC__)
 	{
 		debug_printf_P(PSTR("__GNUC__=%d, __GNUC_MINOR__=%d\n"), (int) __GNUC__, (int) __GNUC_MINOR__);
 		//printhex(0x20000000, (const uint8_t *) 0x20000000, 256);	// /* Cortex-M4 memories */
 		//printhex(0xC0000000, (const uint8_t *) 0xC0000000, 256);	// DDR3
 		//printhex(0x70000000, (const uint8_t *) 0x70000000, 256);	// QSPI
-		//hw_swi();
 		//arm_hardware_sdram_initialize();
 	}
 #endif
