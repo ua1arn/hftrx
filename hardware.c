@@ -9870,7 +9870,8 @@ arm_cpu_CMx_initialize_NVIC(void)
 
 static void Userdef_INTC_Dummy_Interrupt(void)
 {
-	debug_printf_P(PSTR("Userdef_INTC_Dummy_Interrupt()\n"));
+	const IRQn_ID_t irqn = IRQ_GetActiveIRQ();
+	debug_printf_P(PSTR("Userdef_INTC_Dummy_Interrupt(), irqn=%d\n"), (int) irqn);
 	for (;;)
 		;
 }
@@ -11421,6 +11422,17 @@ void cpu_initialize(void)
 	__set_SCTLR(__get_SCTLR() & ~ SCTLR_A_Msk);	// 0 = Strict alignment fault checking disabled. This is the reset value.
 
 	//PRINTF("vbar=%08lX, mvbar=%08lX\n", __get_VBAR(), __get_MVBAR());
+
+	IRQn_ID_t irqn;
+	for (irqn = 0; irqn < 1020 /* IRQ_GIC_LINE_COUNT */; ++ irqn)
+	{
+		VERIFY(0 == IRQ_Disable(irqn));
+		//VERIFY(0 == IRQ_SetMode(irqn, modes [irqn]));
+		VERIFY(0 == IRQ_SetPriority(irqn, 31));
+		VERIFY(0 == IRQ_SetHandler(irqn, Userdef_INTC_Dummy_Interrupt));
+		GIC_SetGroup(irqn, 0);
+	}
+
 
 #elif CPUSTYLE_R7S721
 
