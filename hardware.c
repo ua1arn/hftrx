@@ -11409,19 +11409,18 @@ void cpu_initialize(void)
 
 	extern unsigned long __etext, __bss_start__, __bss_end__, __data_end__, __data_start__, __stack, __Vectors;
 
-	debug_printf_P(PSTR("cpu_initialize1: CP15=%08lX, __data_start__=%p\n"), __get_SCTLR(), & __data_start__);
-	debug_printf_P(PSTR("__etext=%p, __bss_start__=%p, __bss_end__=%p, __data_start__=%p, __data_end__=%p\n"), & __etext, & __bss_start__, & __bss_end__, & __data_start__, & __data_end__);
-	debug_printf_P(PSTR("__stack=%p, SystemInit=%p, __Vectors=%p\n"), & __stack, SystemInit, & __Vectors);
+	//debug_printf_P(PSTR("cpu_initialize1: CP15=%08lX, __data_start__=%p\n"), __get_SCTLR(), & __data_start__);
+	//debug_printf_P(PSTR("__etext=%p, __bss_start__=%p, __bss_end__=%p, __data_start__=%p, __data_end__=%p\n"), & __etext, & __bss_start__, & __bss_end__, & __data_start__, & __data_end__);
+	//debug_printf_P(PSTR("__stack=%p, SystemInit=%p, __Vectors=%p\n"), & __stack, SystemInit, & __Vectors);
 
 	const uintptr_t vbase = (uintptr_t) & __Vectors;
-	__set_VBAR(vbase);	 // Set Vector Base Address Register
-	//CP15_set_vbase_address(0); // Set Vector Base Address Register
+	__set_VBAR(vbase);	 // Set Vector Base Address Register (bits 4..0 should be zero)
+	__set_MVBAR(vbase);	 // Set Vector Base Address Register (bits 4..0 should be zero) - на работу не вличет... но на всякий случай
 
-	__set_MVBAR(vbase);	 // Set Vector Base Address Register
-	//CP15_set_mvbase_address(0);	//  Set Monitor Vector Base Address Register
-
-	__set_SCTLR(__get_SCTLR() | SCTLR_V_Msk);	// enable vector relocation
+	__set_SCTLR(__get_SCTLR() & ~ SCTLR_V_Msk);	// v=0 - use VBAR as vectors address
 	__set_SCTLR(__get_SCTLR() & ~ SCTLR_A_Msk);	// 0 = Strict alignment fault checking disabled. This is the reset value.
+
+	//PRINTF("vbar=%08lX, mvbar=%08lX\n", __get_VBAR(), __get_MVBAR());
 
 #elif CPUSTYLE_R7S721
 
