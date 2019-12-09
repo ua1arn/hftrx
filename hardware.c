@@ -1177,7 +1177,24 @@ static RAMFUNC void spool_adcdonebundle(void)
 }
 #endif /* WITHCPUADCHW */
 
-#if CPUSTYLE_STM32F
+#if CPUSTYLE_STM32MP1
+
+	#if WITHELKEY
+
+	// 1/20 dot length interval timer
+	void
+	TIM3_IRQHandler(void)
+	{
+		const portholder_t st = TIM3->SR;
+		if ((st & TIM_SR_UIF) != 0)
+		{
+			TIM3->SR = ~ TIM_SR_UIF;	// clear UIF interrupt request
+			spool_elkeybundle();
+		}
+	}
+	#endif /* WITHELKEY */
+
+#elif CPUSTYLE_STM32F
 
 	void  
 	SysTick_Handler(void)
@@ -6123,22 +6140,18 @@ hardware_elkey_timer_initialize(void)
 #elif CPUSTYLE_STM32H7XX
 
 	RCC->APB1LENR |= RCC_APB1LENR_TIM3EN;   // подаем тактирование на TIM3
-	__DSB();
+	(void) RCC->APB1LENR;
 	TIM3->DIER = TIM_DIER_UIE;        	 // разрешить событие от таймера
 
-	NVIC_SetVector(TIM3_IRQn, (uintptr_t) & TIM3_IRQHandler);
-	NVIC_SetPriority(TIM3_IRQn, ARM_SYSTEM_PRIORITY);
-	NVIC_EnableIRQ(TIM3_IRQn);		// enable TIM3_IRQHandler();
+	arm_hardware_set_handler_system(TIM3_IRQn, TIM3_IRQHandler);
 
 #elif CPUSTYLE_STM32F
 
 	RCC->APB1ENR |= RCC_APB1ENR_TIM3EN;   // подаем тактирование на TIM3
-	__DSB();
+	(void) RCC->APB1ENR;
 	TIM3->DIER = TIM_DIER_UIE;        	 // разрешить событие от таймера
 
-	NVIC_SetVector(TIM3_IRQn, (uintptr_t) & TIM3_IRQHandler);
-	NVIC_SetPriority(TIM3_IRQn, ARM_SYSTEM_PRIORITY);
-	NVIC_EnableIRQ(TIM3_IRQn);		// enable TIM3_IRQHandler();
+	arm_hardware_set_handler_system(TIM3_IRQn, TIM3_IRQHandler);
 
 #elif CPUSTYLE_R7S721
 
@@ -6156,8 +6169,12 @@ hardware_elkey_timer_initialize(void)
 	OSTM1.OSTMnTS = 0x01u;      /* Start counting */
 
 #elif CPUSTYLE_STM32MP1
-	#warning Insert code for CPUSTYLE_STM32MP1
 
+	RCC->MP_APB1ENSETR |= RCC_MC_APB1ENSETR_TIM3EN;   // подаем тактирование на TIM3
+	(void) RCC->MP_APB1ENSETR;
+	TIM3->DIER = TIM_DIER_UIE;        	 // разрешить событие от таймера
+
+	arm_hardware_set_handler_system(TIM3_IRQn, TIM3_IRQHandler);
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -6208,7 +6225,7 @@ void hardware_elkey_set_speed(uint_fast32_t ticksfreq)
 	// разрешение прерываний на входе в PMIC
 	PMIC.CTRL |= (PMIC_HILVLEN_bm | PMIC_MEDLVLEN_bm | PMIC_LOLVLEN_bm);
 	
-#elif CPUSTYLE_STM32H7XX
+#elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 	// TIM2 & TIM5 on CPUSTYLE_STM32F4XX have 32-bit CNT and ARR registers
 	// TIM7 located on APB1
 	// TIM7 on APB1
@@ -6241,10 +6258,6 @@ void hardware_elkey_set_speed(uint_fast32_t ticksfreq)
 		0 * (1U << 1) |	// Interval Timer Mode
 		1 * (1U << 0) |	// Enables the interrupts when counting starts.
 		0;
-
-#elif CPUSTYLE_STM32MP1
-	#warning Insert code for CPUSTYLE_STM32MP1
-
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -9429,6 +9442,27 @@ void stm32mp1_pll_initialize(void)
 		0;
 	(void) RCC->SPI2S1CKSELR;
 #endif /* WITHSPIHW */
+
+	// TIM2, TIM3, TIM4, TIM5, TIM6, TIM7, TIM12, TIM13 and TIM14.s
+	RCC->TIMG1PRER = (RCC->TIMG1PRER & ~ (RCC_TIMG1PRER_TIMG1PRE_Msk)) |
+		(0x00 << RCC_TIMG1PRER_TIMG1PRE_Pos) |
+		0;
+	(void) RCC->TIMG1PRER;
+	while ((RCC->TIMG1PRER & RCC_TIMG1PRER_TIMG1PRERDY_Msk) == 0)
+		;
+
+	// TIM1, TIM8, TIM15, TIM16, and TIM17.
+	RCC->TIMG2PRER = (RCC->TIMG2PRER & ~ (RCC_TIMG2PRER_TIMG2PRE_Msk)) |
+		(0x00 << RCC_TIMG2PRER_TIMG2PRE_Pos) |
+		0;
+	(void) RCC->TIMG2PRER;
+	while ((RCC->TIMG2PRER & RCC_TIMG2PRER_TIMG2PRERDY_Msk) == 0)
+		;
+
+#if WITHELKEY
+	// TIM3 used
+
+#endif /* WITHELKEY */
 }
 
 
@@ -12076,7 +12110,21 @@ static void vectors_relocate(void)
 // Set interrupt vector wrapper
 void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint_fast8_t priority)
 {
-#if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
+#if CPUSTYLE_AT91SAM7S
+
+	const uint_fast32_t mask32 = (1UL << int_id);
+
+	AT91C_BASE_AIC->AIC_IDCR = mask32;		// disable interrupt
+	AT91C_BASE_AIC->AIC_SVR [int_id] = (AT91_REG) handler;
+	AT91C_BASE_AIC->AIC_SMR [int_id] =
+		(AT91C_AIC_SRCTYPE & AT91C_AIC_SRCTYPE_HIGH_LEVEL) |
+		(AT91C_AIC_PRIOR & AT91C_AIC_PRIOR_HIGHEST) |
+		0;
+	AT91C_BASE_AIC->AIC_ICCR = mask32;		// clear pending interrupt
+	AT91C_BASE_AIC->AIC_IECR = mask32;	// enable interrupt
+
+#elif defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
+	// Cortex-A computers
 
 	VERIFY(IRQ_Disable(int_id) == 0);
 	VERIFY(IRQ_SetHandler(int_id, handler) == 0);
